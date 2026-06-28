@@ -113,10 +113,12 @@ export function Board({ state, onCellClick }: BoardProps) {
   }
 
   return (
-    <div className="w-full px-2 py-2 max-w-[460px] mx-auto">
+    <div className="w-full h-full max-w-[460px] mx-auto px-2 py-1.5 flex items-center justify-center [container-type:size]">
       <div
-        className="relative w-full aspect-square grid gap-[2px] bg-panel border border-border rounded-lg p-1 shadow-[0_2px_16px_rgba(27,36,48,0.08)]"
+        className="relative grid gap-[2px] bg-panel border border-border rounded-lg p-1 shadow-[0_2px_16px_rgba(27,36,48,0.08)]"
         style={{
+          width: 'min(100cqw, 100cqh)',
+          height: 'min(100cqw, 100cqh)',
           gridTemplateColumns: `repeat(${SIZE}, 1fr)`,
           gridTemplateRows: `repeat(${SIZE}, 1fr)`,
         }}
