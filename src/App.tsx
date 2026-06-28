@@ -27,20 +27,31 @@ const MESSAGE_COLORS: Record<string, string> = {
 export default function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
 
-  // Oynanan bir kelimeye tıklanınca gösterilen anlam penceresi.
+  // Oynanan kelime(ler)e tıklanınca gösterilen anlam penceresi. Bir hamlede
+  // birden fazla kelime oluştuysa hepsi listelenir.
   const [meaning, setMeaning] = useState<{
-    word: string;
-    data: WordMeaning | null;
-    loading: boolean;
+    entries: { word: string; data: WordMeaning | null; loading: boolean }[];
   } | null>(null);
 
-  const openMeaning = (word: string) => {
-    setMeaning({ word, data: null, loading: true });
-    void fetchMeaning(word).then((data) => {
-      setMeaning((cur) =>
-        cur && cur.word === word ? { word, data, loading: false } : cur,
-      );
+  const openMeaning = (words: string[]) => {
+    const unique = [...new Set(words)];
+    if (unique.length === 0) return;
+    setMeaning({
+      entries: unique.map((word) => ({ word, data: null, loading: true })),
     });
+    for (const word of unique) {
+      void fetchMeaning(word).then((data) => {
+        setMeaning((cur) =>
+          cur
+            ? {
+                entries: cur.entries.map((e) =>
+                  e.word === word ? { ...e, data, loading: false } : e,
+                ),
+              }
+            : cur,
+        );
+      });
+    }
   };
 
   // YZ sırası: kısa bir düşünme gecikmesiyle otomatik oyna.
@@ -72,10 +83,17 @@ export default function App() {
 
   const handleCellClick = (r: number, c: number) => {
     const k = key(r, c);
-    // Son oynanan kelimenin harfine tıklanırsa anlamını göster.
+    // Son oynanan kelimenin harfine tıklanırsa anlamını göster. Aynı hamlede
+    // oluşan tüm kelimeleri (tıklanan önce gelir) listele.
     const lw = state.lastWords[k];
     if (lw) {
-      openMeaning(lw.word);
+      const words = [
+        lw.word,
+        ...Object.values(state.lastWords)
+          .filter((w) => w.by === lw.by)
+          .map((w) => w.word),
+      ];
+      openMeaning(words);
       return;
     }
     if (state.isGameOver || me.isAI || state.swapMode) return;
@@ -209,12 +227,7 @@ export default function App() {
       </div>
 
       {meaning && (
-        <MeaningModal
-          word={meaning.word}
-          data={meaning.data}
-          loading={meaning.loading}
-          onClose={() => setMeaning(null)}
-        />
+        <MeaningModal entries={meaning.entries} onClose={() => setMeaning(null)} />
       )}
 
       <GameOver
