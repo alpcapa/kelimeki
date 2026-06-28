@@ -57,7 +57,7 @@ export function GameHeader({ state }: GameHeaderProps) {
         <button
           onClick={() => setShowTiles(true)}
           aria-label="Kalan taşlar"
-          className="text-center px-1.5 py-0.5 rounded-md hover:bg-bg active:scale-95 transition-all"
+          className="text-center px-1.5 py-0.5 rounded-md hover:bg-panel active:scale-95 transition-all"
         >
           <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
             Torba
