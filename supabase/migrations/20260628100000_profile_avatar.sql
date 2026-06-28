@@ -41,7 +41,10 @@ create policy "avatars_user_delete" on storage.objects
   );
 
 -- ── LEADERBOARD GÖRÜNÜMÜ (avatar dahil) ──────────────────────────────────────
-create or replace view public.leaderboard
+-- Not: create or replace view yalnızca sona sütun eklemeye izin verir; sütun
+-- sırasını değiştirmemek için önce görünümü düşürüyoruz.
+drop view if exists public.leaderboard;
+create view public.leaderboard
 with (security_invoker = true) as
 select
   g.user_id,
