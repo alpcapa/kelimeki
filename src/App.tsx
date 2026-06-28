@@ -7,6 +7,7 @@ import { GameOver } from './components/GameOver';
 import { AccountBar } from './components/AccountBar';
 import { MeaningModal } from './components/MeaningModal';
 import { createInitialState, gameReducer } from './game/gameReducer';
+import { calcScore } from './utils/validator';
 import { key } from './utils/board';
 import { useAuth } from './hooks/useAuth';
 import { fetchMeaning, saveGame } from './lib/api';
@@ -120,6 +121,12 @@ export default function App() {
 
   const canAct = state.playerTurn && !state.isGameOver;
 
+  // Yerleştirilen taşların potansiyel puanı (kelime geçerli olmasa da
+  // gösterilir); oluşan tüm kelimeler + bonuslar üzerinden hesaplanır.
+  const placedCount = Object.keys(state.placed).length;
+  const potentialScore =
+    placedCount > 0 ? calcScore(state.board, state.placed, state.bonuses) : 0;
+
   const evolveColor =
     state.turnsUntilEvolve <= 1
       ? 'text-red'
@@ -156,6 +163,13 @@ export default function App() {
         >
           {state.message}
         </div>
+
+        {placedCount > 0 && (
+          <div className="text-center font-mono text-[12px] text-gold tracking-[0.5px]">
+            Potansiyel puan:{' '}
+            <span className="font-bold">+{potentialScore}</span>
+          </div>
+        )}
 
         <Rack
           tiles={state.playerRack}
