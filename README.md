@@ -63,6 +63,35 @@ src/
 | YZ rengi  | `#FF4060` |
 | Altın     | `#FFD040` |
 
+## Supabase (veritabanı)
+
+Çevrimiçi özellikler (kullanıcı hesapları, liderlik tablosu, istatistikler, DB'deki kelime listesi) Supabase ile sağlanır. Anahtarlar ayarlı değilse oyun **çevrimdışı/yerel** olarak sorunsuz çalışır.
+
+**Şema** `supabase/migrations/` altındadır:
+
+- `20260628090000_init.sql` — `profiles`, `games`, `words` tabloları; `leaderboard` & `player_stats` view'ları; RLS politikaları; auth trigger'ı; `is_valid_word` RPC.
+- `20260628090100_seed_words.sql` — 1091 Türkçe kelimeyi `words` tablosuna yükler.
+
+**Migration'ları uygulama**
+
+Supabase CLI ile:
+
+```bash
+supabase link --project-ref xvqlizifakkkoqahaxsg
+supabase db push
+```
+
+veya her `.sql` dosyasını Supabase panelindeki **SQL Editor**'da çalıştırarak.
+
+**İstemci yapılandırması** — `.env.example` dosyasını `.env` olarak kopyalayıp doldurun:
+
+```bash
+VITE_SUPABASE_URL=https://xvqlizifakkkoqahaxsg.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_...   # Project Settings → API
+```
+
+Veri erişimi `src/lib/` altında: `supabase.ts` (istemci), `api.ts` (saveGame, fetchLeaderboard, fetchPlayerStats, auth, `isValidWordRemote`), `database.types.ts` (şema tipleri).
+
 ## Dağıtım
 
 Depo Vercel'e bağlanıp doğrudan dağıtılabilir; `vercel.json` Vite ön ayarlarını içerir.
