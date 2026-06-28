@@ -24,6 +24,14 @@ const BONUS_CLASSES: Record<string, string> = {
   tl: 'bg-[#F0E6FB] text-[#7C3AED] border-[#DCC8F4]',
 };
 
+// Tahtanın hemen altında gösterilen bonus açıklaması.
+const LEGEND = [
+  { label: '2×K', bg: '#E4F6EA', border: '1px solid #16A34A' },
+  { label: '3×K', bg: '#FCEBDC', border: '1px solid #D97706' },
+  { label: '2×H', bg: '#E1ECFD', border: '1px solid #2563EB' },
+  { label: '3×H', bg: '#F0E6FB', border: '1px solid #7C3AED' },
+];
+
 export function Board({ state, onCellClick }: BoardProps) {
   const { board, placed, bonuses, lastWords, players, current } = state;
 
@@ -113,12 +121,12 @@ export function Board({ state, onCellClick }: BoardProps) {
   }
 
   return (
-    <div className="w-full h-full max-w-[680px] mx-auto px-3 py-2.5 flex items-center justify-center [container-type:size]">
+    <div className="w-full h-full max-w-[680px] mx-auto px-3 pt-2.5 pb-1 flex flex-col items-center justify-center [container-type:size]">
       <div
         className="relative grid gap-[2px] bg-panel border border-border rounded-lg p-1 shadow-[0_2px_16px_rgba(27,36,48,0.08)]"
         style={{
-          width: 'min(100cqw, 100cqh)',
-          height: 'min(100cqw, 100cqh)',
+          width: 'min(100cqw, calc(100cqh - 20px))',
+          height: 'min(100cqw, calc(100cqh - 20px))',
           gridTemplateColumns: `repeat(${SIZE}, 1fr)`,
           gridTemplateRows: `repeat(${SIZE}, 1fr)`,
         }}
@@ -154,6 +162,24 @@ export function Board({ state, onCellClick }: BoardProps) {
             );
           })}
         </div>
+      </div>
+
+      <div
+        className="flex gap-2 justify-center flex-wrap shrink-0 pt-1"
+        style={{ width: 'min(100cqw, calc(100cqh - 20px))' }}
+      >
+        {LEGEND.map((item) => (
+          <div
+            key={item.label}
+            className="text-[8px] font-mono flex items-center gap-[3px] text-muted"
+          >
+            <span
+              className="w-2 h-2 rounded-[1px]"
+              style={{ background: item.bg, border: item.border }}
+            />
+            {item.label}
+          </div>
+        ))}
       </div>
     </div>
   );

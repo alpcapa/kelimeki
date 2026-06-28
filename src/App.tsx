@@ -23,13 +23,6 @@ const MESSAGE_COLORS: Record<string, string> = {
   '': 'text-muted',
 };
 
-const LEGEND = [
-  { label: '2×K', bg: '#E4F6EA', border: '1px solid #16A34A' },
-  { label: '3×K', bg: '#FCEBDC', border: '1px solid #D97706' },
-  { label: '2×H', bg: '#E1ECFD', border: '1px solid #2563EB' },
-  { label: '3×H', bg: '#F0E6FB', border: '1px solid #7C3AED' },
-];
-
 export default function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
 
@@ -115,21 +108,6 @@ export default function App() {
       </div>
 
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5 shrink-0">
-        <div className="flex gap-2 justify-center flex-wrap">
-          {LEGEND.map((item) => (
-            <div
-              key={item.label}
-              className="text-[8px] font-mono flex items-center gap-[3px] text-muted"
-            >
-              <span
-                className="w-2 h-2 rounded-[1px]"
-                style={{ background: item.bg, border: item.border }}
-              />
-              {item.label}
-            </div>
-          ))}
-        </div>
-
         <div
           className={`text-[11px] font-mono text-center min-h-[15px] py-0.5 ${
             MESSAGE_COLORS[state.messageType]
