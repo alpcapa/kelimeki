@@ -8,7 +8,9 @@ import type {
   NewGame,
   PlayerStats,
   Profile,
+  WordMeaning,
 } from './database.types';
+import { getLocalMeaning } from '../data/meanings';
 
 /** Tamamlanan bir oyunu kaydeder (oturum açıksa). Eklenen kaydın id'sini döner. */
 export async function saveGame(game: NewGame): Promise<string | null> {
@@ -99,6 +101,37 @@ export async function isValidWordRemote(word: string): Promise<boolean | null> {
     return null;
   }
   return Boolean(data);
+}
+
+/**
+ * Bir kelimenin sözlük anlamlarını döner. Önce Supabase'i (word_meaning RPC)
+ * dener; yapılandırılmamışsa ya da kayıt yoksa yerel sözlüğe (meanings.json)
+ * düşer. Hiçbir yerde bulunamazsa null döner.
+ */
+export async function fetchMeaning(word: string): Promise<WordMeaning | null> {
+  // Tahtadaki harfler büyük olabilir; Türkçe kurallarıyla küçült (İ→i, I→ı).
+  const norm = word.toLocaleLowerCase('tr');
+  if (supabase) {
+    const { data, error } = await supabase.rpc('word_meaning', {
+      p_word: norm,
+    });
+    if (error) {
+      console.error('[Harfik] fetchMeaning hatası:', error.message);
+    } else if (Array.isArray(data) && data.length > 0) {
+      const row = data[0] as WordMeaning;
+      return {
+        word: row.word,
+        pos: row.pos,
+        meanings: row.meanings ?? [],
+      };
+    }
+  }
+  // Yerel yedek.
+  const local = await getLocalMeaning(norm);
+  if (local) {
+    return { word: norm, pos: local.pos, meanings: local.meanings };
+  }
+  return null;
 }
 
 // ── Auth yardımcıları ───────────────────────────────────────────────────────
