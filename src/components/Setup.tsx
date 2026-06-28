@@ -37,7 +37,9 @@ export function Setup({ onStart }: SetupProps) {
         name: names[i].trim()
           ? names[i].trim()
           : ai[i]
-            ? `YZ ${i + 1}`
+            ? count === 2
+              ? 'Yapay Zeka'
+              : `Yapay Zeka ${i + 1}`
             : `Oyuncu ${i + 1}`,
         isAI: ai[i],
       };
@@ -117,7 +119,13 @@ export function Setup({ onStart }: SetupProps) {
                 <input
                   value={names[i]}
                   onChange={(e) => setName(i, e.target.value)}
-                  placeholder={ai[i] ? `YZ ${i + 1}` : `Oyuncu ${i + 1}`}
+                  placeholder={
+                    ai[i]
+                      ? count === 2
+                        ? 'Yapay Zeka'
+                        : `Yapay Zeka ${i + 1}`
+                      : `Oyuncu ${i + 1}`
+                  }
                   maxLength={14}
                   className="flex-1 min-w-0 bg-transparent outline-none font-sans text-sm text-text placeholder:text-muted"
                 />
