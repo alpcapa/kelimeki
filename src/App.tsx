@@ -1,11 +1,14 @@
 // Harfik — ana uygulama: durum, sıra akışı ve düzen
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { GameHeader } from './components/GameHeader';
 import { Board } from './components/Board';
 import { Rack } from './components/Rack';
 import { GameOver } from './components/GameOver';
+import { AccountBar } from './components/AccountBar';
 import { createInitialState, gameReducer } from './game/gameReducer';
 import { key } from './utils/board';
+import { useAuth } from './hooks/useAuth';
+import { saveGame } from './lib/api';
 
 const AI_THINK_MS = 1400;
 const TOAST_MS = 2000;
@@ -28,6 +31,31 @@ const LEGEND = [
 
 export default function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
+  const { user } = useAuth();
+  const savedRef = useRef(false);
+
+  // Oyun bitince (oturum açıksa) sonucu bir kez kaydet.
+  useEffect(() => {
+    if (!state.isGameOver) {
+      savedRef.current = false;
+      return;
+    }
+    if (savedRef.current || !user) return;
+    savedRef.current = true;
+    const result =
+      state.playerScore > state.aiScore
+        ? 'win'
+        : state.playerScore < state.aiScore
+          ? 'lose'
+          : 'tie';
+    void saveGame({
+      player_score: state.playerScore,
+      ai_score: state.aiScore,
+      result,
+      turn_count: state.turnCount,
+      best_word: state.bestWord || null,
+    });
+  }, [state.isGameOver, user, state.playerScore, state.aiScore, state.turnCount, state.bestWord]);
 
   // YZ sırası: kısa bir düşünme gecikmesiyle hamle yap.
   useEffect(() => {
@@ -80,6 +108,8 @@ export default function App() {
         aiScore={state.aiScore}
         bagCount={state.bag.length}
       />
+
+      <AccountBar />
 
       <div className="w-full max-w-[460px] flex items-center justify-between px-3.5 py-1.5 text-[10px] font-mono tracking-[1px] uppercase">
         <span className={state.playerTurn ? 'text-accent font-bold' : 'text-muted'}>

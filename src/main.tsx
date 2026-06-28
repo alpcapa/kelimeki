@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { AuthProvider } from './hooks/useAuth';
 
 // Kendi sunucumuzdan servis edilen yazı tipleri (Google'a gidip gelmek yok).
 // Türkçe için yalnızca latin + latin-ext alt kümeleri yüklenir.
@@ -21,6 +22,8 @@ import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </StrictMode>,
 );

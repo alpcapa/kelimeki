@@ -43,6 +43,7 @@ export function createInitialState(): GameState {
     turnsUntilEvolve: EVOLVE_INTERVAL,
     consecutivePasses: 0,
     isGameOver: false,
+    bestWord: '',
     message: 'Bir harf seç, sonra tahtaya yerleştir.',
     messageType: '',
     turnLabel: 'Senin sıran',
@@ -216,6 +217,12 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const playerRack = [...state.playerRack];
       playerRack.push(...drawTiles(bag, RACK_SIZE - playerRack.length));
 
+      // En uzun oynanan kelimeyi istatistik için izle.
+      const longest = check.words!.reduce(
+        (best, w) => (w.length > best.length ? w : best),
+        state.bestWord,
+      );
+
       const moved: GameState = {
         ...state,
         board,
@@ -225,6 +232,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         playerScore: state.playerScore + pts,
         consecutivePasses: 0,
         selectedTile: null,
+        bestWord: longest,
         message: `+${pts} puan! Kelimeler: ${check.words!.join(', ')}`,
         messageType: 'ok',
       };

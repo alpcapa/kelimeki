@@ -52,6 +52,8 @@ export interface GameState {
   turnsUntilEvolve: number;
   consecutivePasses: number;
   isGameOver: boolean;
+  /** Oyuncunun bu oyunda oynadığı en uzun kelime (istatistik için). */
+  bestWord: string;
   /** Durum çubuğu mesajı. */
   message: string;
   messageType: '' | 'ok' | 'err' | 'warn';
