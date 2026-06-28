@@ -1,6 +1,7 @@
 // Harfik — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
 import {
   BONUS_LABELS,
+  CORNER,
   PLAYER_COLORS,
   SIZE,
   regionOf,
@@ -34,6 +35,18 @@ export function Board({ state, onCellClick }: BoardProps) {
     undefined,
   ];
   for (const p of players) cornerColor[p.corner] = PLAYER_COLORS[p.colorIndex];
+
+  // Köşe bölgesi -> o köşedeki oyuncunun numarası (1, 2, …) — soluk filigran.
+  const cornerNumber: (number | undefined)[] = [
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+  ];
+  players.forEach((p, i) => (cornerNumber[p.corner] = i + 1));
+
+  // 5×5 köşenin tahtaya oranı (kenar uzunluğu).
+  const cornerFrac = `${(CORNER / SIZE) * 100}%`;
 
   const colorOf = (owner: number | undefined): PlayerColor | undefined =>
     owner === undefined ? undefined : PLAYER_COLORS[players[owner]?.colorIndex ?? 0];
@@ -102,13 +115,43 @@ export function Board({ state, onCellClick }: BoardProps) {
   return (
     <div className="w-full px-2 py-2 max-w-[460px] mx-auto">
       <div
-        className="w-full aspect-square grid gap-[2px] bg-panel border border-border rounded-lg p-1 shadow-[0_2px_16px_rgba(27,36,48,0.08)]"
+        className="relative w-full aspect-square grid gap-[2px] bg-panel border border-border rounded-lg p-1 shadow-[0_2px_16px_rgba(27,36,48,0.08)]"
         style={{
           gridTemplateColumns: `repeat(${SIZE}, 1fr)`,
           gridTemplateRows: `repeat(${SIZE}, 1fr)`,
         }}
       >
         {cells}
+
+        {/* Her oyuncunun 5×5 köşesine soluk numara filigranı. */}
+        <div className="pointer-events-none absolute inset-1">
+          {[0, 1, 2, 3].map((i) => {
+            const col = cornerColor[i];
+            const num = cornerNumber[i];
+            if (!col || !num) return null;
+            const top = i === 0 || i === 1;
+            const left = i === 0 || i === 2;
+            return (
+              <div
+                key={i}
+                className="absolute flex items-center justify-center font-mono font-bold leading-none"
+                style={{
+                  width: cornerFrac,
+                  height: cornerFrac,
+                  top: top ? 0 : 'auto',
+                  bottom: top ? 'auto' : 0,
+                  left: left ? 0 : 'auto',
+                  right: left ? 'auto' : 0,
+                  color: col.base,
+                  opacity: 0.13,
+                  fontSize: 'clamp(34px, 15vw, 88px)',
+                }}
+              >
+                {num}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
