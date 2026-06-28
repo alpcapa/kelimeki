@@ -115,6 +115,21 @@ export default function App() {
       </div>
 
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5 shrink-0">
+        <div className="flex gap-2 justify-center flex-wrap">
+          {LEGEND.map((item) => (
+            <div
+              key={item.label}
+              className="text-[8px] font-mono flex items-center gap-[3px] text-muted"
+            >
+              <span
+                className="w-2 h-2 rounded-[1px]"
+                style={{ background: item.bg, border: item.border }}
+              />
+              {item.label}
+            </div>
+          ))}
+        </div>
+
         <div
           className={`text-[11px] font-mono text-center min-h-[15px] py-0.5 ${
             MESSAGE_COLORS[state.messageType]
@@ -142,21 +157,6 @@ export default function App() {
           swapMode={state.swapMode}
           swapSelection={state.swapSelection}
         />
-
-        <div className="flex gap-2 justify-center flex-wrap py-1">
-          {LEGEND.map((item) => (
-            <div
-              key={item.label}
-              className="text-[8px] font-mono flex items-center gap-[3px] text-muted"
-            >
-              <span
-                className="w-2 h-2 rounded-[1px]"
-                style={{ background: item.bg, border: item.border }}
-              />
-              {item.label}
-            </div>
-          ))}
-        </div>
 
         {state.swapMode ? (
           <div className="flex gap-1.5">
