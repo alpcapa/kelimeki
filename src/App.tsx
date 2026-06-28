@@ -113,7 +113,11 @@ export default function App() {
       <GameHeader state={state} />
 
       <div className="flex-1 min-h-0 w-full flex items-center justify-center">
-        <Board state={state} onCellClick={handleCellClick} />
+        <Board
+          state={state}
+          onCellClick={handleCellClick}
+          potentialScore={placedCount > 0 ? potentialScore : null}
+        />
       </div>
 
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5 shrink-0">
@@ -124,12 +128,6 @@ export default function App() {
         >
           {state.message}
         </div>
-
-        {placedCount > 0 && (
-          <div className="text-center font-mono text-[12px] text-gold tracking-[0.5px]">
-            Potansiyel puan: <span className="font-bold">+{potentialScore}</span>
-          </div>
-        )}
 
         <Rack
           tiles={me.rack}
