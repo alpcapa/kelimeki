@@ -95,6 +95,15 @@ export default function App() {
 
   const canAct = !state.isGameOver && !me.isAI;
 
+  // Pas, sırayı tümüyle harcadığı için onay ister.
+  const handlePass = () => {
+    const placed = Object.keys(state.placed).length > 0;
+    const msg = placed
+      ? 'Pas geçilsin mi? Tahtaya koyduğun taşlar rafa geri alınır ve sıran geçer.'
+      : 'Pas geçmek istediğine emin misin? Sıran karşı tarafa geçer.';
+    if (window.confirm(msg)) dispatch({ type: 'PASS' });
+  };
+
   const placedCount = Object.keys(state.placed).length;
   const potentialScore =
     placedCount > 0 ? calcScore(state.board, state.placed, state.bonuses) : 0;
@@ -172,7 +181,7 @@ export default function App() {
               </button>
               <button
                 disabled={!canAct}
-                onClick={() => dispatch({ type: 'PASS' })}
+                onClick={handlePass}
                 className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-muted border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
               >
                 Pas
