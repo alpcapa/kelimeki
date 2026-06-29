@@ -28,7 +28,6 @@ export function GameHeader({ state, onLogoClick }: GameHeaderProps) {
         {players.map((p, i) => {
           const col = PLAYER_COLORS[p.colorIndex];
           const active = i === current;
-          // Başlıkta dar alan için YZ oyuncusu kısaca "YZ" (4 kişilikse "YZ 2").
           const label = p.isAI
             ? players.length === 2
               ? 'YZ'

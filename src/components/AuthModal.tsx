@@ -1,6 +1,8 @@
 // Harfik — giriş / kayıt ekranı
 import { useState } from 'react';
 import { Modal } from './Modal';
+import { TermsModal } from './TermsModal';
+import { PrivacyModal } from './PrivacyModal';
 import { signIn, signUp, sendPasswordReset } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -21,6 +23,9 @@ export function AuthModal({ onClose }: AuthModalProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const switchMode = (next: Mode) => {
     setMode(next);
@@ -46,12 +51,14 @@ export function AuthModal({ onClose }: AuthModalProps) {
       } else {
         if (!firstName.trim()) throw new Error('Ad zorunludur.');
         if (!lastName.trim()) throw new Error('Soyad zorunludur.');
+        if (!termsAccepted) throw new Error('Kullanım Koşulları ve Gizlilik Politikası\'nı kabul etmelisiniz.');
         const { data, error } = await signUp(
           email,
           password,
           firstName.trim(),
           lastName.trim(),
           nickname.trim() || undefined,
+          termsAccepted,
         );
         if (error) throw error;
         if (data.session) {
@@ -76,6 +83,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
   const title = mode === 'login' ? 'Giriş' : mode === 'signup' ? 'Kayıt' : 'Şifremi Unuttum';
 
   return (
+    <>
     <Modal title={title} onClose={onClose}>
       <form onSubmit={submit} className="flex flex-col gap-3">
         {mode === 'signup' && (
@@ -137,6 +145,35 @@ export function AuthModal({ onClose }: AuthModalProps) {
           </p>
         )}
 
+        {mode === 'signup' && (
+          <label className="flex items-start gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+              className="mt-0.5 shrink-0 accent-accent"
+            />
+            <span className="text-xs font-sans text-muted leading-relaxed">
+              <button
+                type="button"
+                onClick={() => setShowTerms(true)}
+                className="text-accent hover:underline"
+              >
+                Kullanım Koşulları
+              </button>
+              {' '}ve{' '}
+              <button
+                type="button"
+                onClick={() => setShowPrivacy(true)}
+                className="text-accent hover:underline"
+              >
+                Gizlilik Politikası
+              </button>
+              'nı okudum ve kabul ediyorum.
+            </span>
+          </label>
+        )}
+
         {error && <p className="text-red text-xs font-mono">{error}</p>}
         {info && <p className="text-gold text-xs font-mono">{info}</p>}
 
@@ -190,5 +227,8 @@ export function AuthModal({ onClose }: AuthModalProps) {
         )}
       </div>
     </Modal>
+    {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+    {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+    </>
   );
 }
