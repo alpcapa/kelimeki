@@ -417,7 +417,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const ownerBonus = invadedOwnerIdx >= 0 ? Math.round(basePts / 2) : 0;
       const pts = basePts - ownerBonus;
       const bonusNote = invadedOwnerIdx >= 0
-        ? ` (${ownerBonus} puan ${state.players[invadedOwnerIdx].name}'a gitti)`
+        ? ` (${ownerBonus} puanı ${state.players[invadedOwnerIdx].name} kaptı)`
         : '';
 
       // Yerleştirmeleri tahtaya işle.
@@ -553,7 +553,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       });
 
       const aiInvasionNote = aiOwnerBonus > 0
-        ? ` ${state.players[aiInvadedOwnerIdx].name} +${aiOwnerBonus} puan aldı.`
+        ? ` (${aiOwnerBonus} puanı ${state.players[aiInvadedOwnerIdx].name} kaptı)`
         : '';
       const moved: GameState = {
         ...state,
