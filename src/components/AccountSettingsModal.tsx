@@ -124,7 +124,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
     <Modal title="Hesap Ayarları" onClose={onClose}>
       {/* Profil fotoğrafı */}
       <div className="flex items-center gap-3 mb-4">
-        <Avatar url={profile?.photo_url} name={name} size={56} />
+        <Avatar url={profile?.avatar_url} name={name} size={56} />
         <div>
           <button
             type="button"

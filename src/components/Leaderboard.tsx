@@ -64,7 +64,7 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
                     {i + 1}
                   </span>
                   <Avatar
-                    url={r.photo_url}
+                    url={r.avatar_url}
                     name={name}
                     size={22}
                     className="mr-2 shrink-0"

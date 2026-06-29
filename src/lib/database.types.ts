@@ -5,12 +5,11 @@ export type GameResult = 'win' | 'lose' | 'tie';
 
 export interface Profile {
   id: string;
-  email: string;
+  username: string;
   first_name: string;
   last_name: string;
-  full_name: string;
   display_name: string | null;
-  photo_url: string;
+  avatar_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -48,9 +47,10 @@ export interface WordMeaning {
 
 export interface LeaderboardRow {
   user_id: string;
+  username: string | null;
   first_name: string | null;
   display_name: string | null;
-  photo_url: string | null;
+  avatar_url: string | null;
   best_score: number;
   total_score: number;
   games_played: number;

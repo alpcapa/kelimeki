@@ -194,7 +194,7 @@ export async function signOut() {
 
 /** Oturum açan oyuncunun profilini günceller. Profil yoksa oluşturur. */
 export async function updateProfile(
-  patch: { first_name?: string; last_name?: string; display_name?: string | null; photo_url?: string },
+  patch: { first_name?: string; last_name?: string; display_name?: string | null; avatar_url?: string },
 ): Promise<Profile | null> {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
   const {
@@ -215,12 +215,11 @@ export async function updateProfile(
     const lastName = patch.last_name ?? '';
     const { error: createErr } = await supabase.from('profiles').insert({
       id: user.id,
-      email: user.email ?? '',
+      username: user.email ? user.email.split('@')[0] : user.id,
       first_name: firstName,
       last_name: lastName,
-      full_name: [firstName, lastName].filter(Boolean).join(' '),
       display_name: patch.display_name ?? null,
-      photo_url: patch.photo_url ?? '',
+      avatar_url: patch.avatar_url ?? null,
     });
     if (createErr) throw new Error(createErr.message);
   }
@@ -279,7 +278,7 @@ export async function uploadAvatar(file: File): Promise<string> {
   const { data } = supabase.storage.from('avatars').getPublicUrl(path);
   // Önbelleği atlamak için sürüm parametresi ekle (aynı yol üzerine yazılır).
   const url = `${data.publicUrl}?v=${Date.now()}`;
-  await updateProfile({ photo_url: url });
+  await updateProfile({ avatar_url: url });
   return url;
 }
 
