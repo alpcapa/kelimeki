@@ -21,7 +21,10 @@ export function ScoreCard({ onClose, onLeaderboard }: ScoreCardProps) {
   }, []);
 
   const name =
-    profile?.display_name || profile?.first_name || user?.email || 'Oyuncu';
+    profile?.username ||
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() ||
+    user?.email ||
+    'Oyuncu';
 
   const winRatio =
     stats && stats.games_played > 0
@@ -81,7 +84,7 @@ export function ScoreCard({ onClose, onLeaderboard }: ScoreCardProps) {
         onClick={onLeaderboard}
         className="mt-5 w-full bg-accent text-white rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform"
       >
-        🏆 Sıralamayı Gör
+        🏆 Lider Tablosu
       </button>
     </Modal>
   );

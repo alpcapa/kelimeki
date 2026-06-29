@@ -14,8 +14,8 @@ export function Setup({ onStart }: SetupProps) {
   const { user, profile, loading } = useAuth();
   // Oturum açıldıysa 1. oyuncu her zaman hesap sahibidir.
   const accountName =
-    profile?.display_name ||
-    profile?.first_name ||
+    profile?.username ||
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() ||
     (user?.email ? user.email.split('@')[0] : null);
 
   const [count, setCount] = useState<2 | 4>(2);
@@ -211,6 +211,12 @@ export function Setup({ onStart }: SetupProps) {
           );
         })}
       </div>
+
+      {accountName && ai.slice(1, count).every(Boolean) && (
+        <p className="text-[11px] font-mono text-muted text-center leading-relaxed px-1">
+          Sadece yapay zekaya karşı oynanan oyunların hiçbir kaydı tutulmaz.
+        </p>
+      )}
 
       <button
         onClick={handleStart}
