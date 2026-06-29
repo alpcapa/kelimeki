@@ -198,13 +198,6 @@ export default function App() {
           <div className="flex gap-1.5">
             <button
               disabled={!canAct}
-              onClick={() => dispatch({ type: 'RECALL_ALL' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
-            >
-              Geri Al
-            </button>
-            <button
-              disabled={!canAct}
               onClick={handlePass}
               className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
@@ -223,6 +216,13 @@ export default function App() {
               className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Değiştir
+            </button>
+            <button
+              disabled={!canAct}
+              onClick={() => dispatch({ type: 'RECALL_ALL' })}
+              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+            >
+              Geri Al
             </button>
             <button
               onClick={() => setShowTiles(true)}
