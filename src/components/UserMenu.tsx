@@ -72,14 +72,14 @@ export function UserMenu() {
               …
             </span>
           ) : (
-            <Avatar url={profile?.photo_url} name={name} size={32} />
+            <Avatar url={profile?.avatar_url} name={name} size={32} />
           )}
         </button>
 
         {open && (
           <div className="absolute right-0 top-full mt-2 w-56 bg-panel border border-border rounded-xl shadow-lg overflow-hidden z-[160]">
             <div className="flex items-center gap-2.5 px-3 py-3 border-b border-border">
-              <Avatar url={profile?.photo_url} name={name} size={36} />
+              <Avatar url={profile?.avatar_url} name={name} size={36} />
               <div className="min-w-0">
                 <div className="text-sm font-bold text-text truncate">{name}</div>
                 {user?.email && (

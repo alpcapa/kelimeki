@@ -108,7 +108,8 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
 
       setInfo(notes.length ? notes.join(' ') : 'Değişiklik yok.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Bir hata oluştu.');
+      const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
+      setError(msg || 'Bir hata oluştu.');
     } finally {
       setBusy(false);
     }
@@ -123,7 +124,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
     <Modal title="Hesap Ayarları" onClose={onClose}>
       {/* Profil fotoğrafı */}
       <div className="flex items-center gap-3 mb-4">
-        <Avatar url={profile?.photo_url} name={name} size={56} />
+        <Avatar url={profile?.avatar_url} name={name} size={56} />
         <div>
           <button
             type="button"
@@ -235,7 +236,8 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
                 if (error) throw error;
                 setInfo('Şifre sıfırlama bağlantısı e-postana gönderildi.');
               } catch (err) {
-                setError(err instanceof Error ? err.message : 'Bir hata oluştu.');
+                const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
+                setError(msg || 'Bir hata oluştu.');
               }
             }}
             className="text-left text-[10px] text-accent font-mono hover:underline"

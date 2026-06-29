@@ -44,7 +44,7 @@ export function ScoreCard({ onClose, onLeaderboard }: ScoreCardProps) {
   return (
     <Modal title="Skor Kartı" onClose={onClose}>
       <div className="mb-4 flex items-center gap-3">
-        <Avatar url={profile?.photo_url} name={name} size={44} />
+        <Avatar url={profile?.avatar_url} name={name} size={44} />
         <div className="min-w-0">
           <div className="text-base font-bold text-text truncate">{name}</div>
           {user?.email && (

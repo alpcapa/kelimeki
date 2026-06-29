@@ -192,9 +192,9 @@ export async function signOut() {
 
 // ── Profil güncelleme ────────────────────────────────────────────────────────
 
-/** Oturum açan oyuncunun profilini günceller ve güncel kaydı döner. */
+/** Oturum açan oyuncunun profilini günceller. Profil yoksa oluşturur. */
 export async function updateProfile(
-  patch: { first_name?: string; last_name?: string; display_name?: string | null; photo_url?: string },
+  patch: { first_name?: string; last_name?: string; display_name?: string | null; avatar_url?: string },
 ): Promise<Profile | null> {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
   const {
@@ -206,10 +206,25 @@ export async function updateProfile(
     .from('profiles')
     .update(patch)
     .eq('id', user.id)
-    .select('*')
-    .single();
-  if (error) throw error;
-  return data as Profile;
+    .select('id');
+  if (error) throw new Error(error.message);
+
+  // Profil satırı henüz oluşturulmamışsa kayıt aç.
+  if (!data || data.length === 0) {
+    const firstName = patch.first_name ?? '';
+    const lastName = patch.last_name ?? '';
+    const { error: createErr } = await supabase.from('profiles').insert({
+      id: user.id,
+      username: user.email ? user.email.split('@')[0] : user.id,
+      first_name: firstName,
+      last_name: lastName,
+      display_name: patch.display_name ?? null,
+      avatar_url: patch.avatar_url ?? null,
+    });
+    if (createErr) throw new Error(createErr.message);
+  }
+
+  return null;
 }
 
 /** Oturum açan kullanıcının e-postasını değiştirir (doğrulama gerekebilir). */
@@ -263,7 +278,7 @@ export async function uploadAvatar(file: File): Promise<string> {
   const { data } = supabase.storage.from('avatars').getPublicUrl(path);
   // Önbelleği atlamak için sürüm parametresi ekle (aynı yol üzerine yazılır).
   const url = `${data.publicUrl}?v=${Date.now()}`;
-  await updateProfile({ photo_url: url });
+  await updateProfile({ avatar_url: url });
   return url;
 }
 

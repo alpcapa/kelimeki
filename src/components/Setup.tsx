@@ -144,7 +144,7 @@ export function Setup({ onStart }: SetupProps) {
             >
               {isAccount ? (
                 <Avatar
-                  url={profile?.photo_url}
+                  url={profile?.avatar_url}
                   name={accountName}
                   size={20}
                   className="shrink-0"
