@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
   <rect width="32" height="32" rx="6" fill="#0D1318"/>
   <rect x="2.5" y="2.5" width="27" height="27" rx="4.5" fill="#0F1C26" stroke="#00C8FF" stroke-width="1.5"/>
-  <!-- H glyph in accent -->
-  <g fill="#00C8FF">
-    <rect x="9" y="8" width="3.5" height="16" rx="1"/>
-    <rect x="19.5" y="8" width="3.5" height="16" rx="1"/>
-    <rect x="9" y="14.25" width="14" height="3.5" rx="1"/>
-  </g>
-  <!-- accent dot in player color -->
-  <circle cx="24.5" cy="9" r="2" fill="#FF4060"/>
+  <!-- Lowercase h: left stem (full height) -->
+  <rect x="8.5" y="5.5" width="3.5" height="18" rx="1" fill="#00C8FF"/>
+  <!-- Lowercase h: arch connector -->
+  <rect x="12" y="12" width="11" height="3.5" rx="1" fill="#00C8FF"/>
+  <!-- Lowercase h: right stem -->
+  <rect x="19.5" y="12" width="3.5" height="11.5" rx="1" fill="#00C8FF"/>
+  <!-- Underline -->
+  <rect x="8" y="25.5" width="15" height="1.5" rx="0.75" fill="#00C8FF"/>
 </svg>

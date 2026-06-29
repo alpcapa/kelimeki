@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0F1C26"/>
+  <!-- Lowercase h: left stem (full height) -->
+  <rect x="146" y="80" width="48" height="312" rx="12" fill="#00C8FF"/>
+  <!-- Lowercase h: arch connector -->
+  <rect x="194" y="200" width="172" height="48" rx="12" fill="#00C8FF"/>
+  <!-- Lowercase h: right stem -->
+  <rect x="318" y="200" width="48" height="192" rx="12" fill="#00C8FF"/>
+  <!-- Underline -->
+  <rect x="126" y="416" width="260" height="18" rx="9" fill="#00C8FF"/>
+</svg>
