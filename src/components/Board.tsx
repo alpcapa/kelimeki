@@ -54,6 +54,38 @@ const LEGEND = [
   { label: '3×H', bg: 'linear-gradient(135deg, #CEB4FA, #DCC8FC)', border: 'none' },
 ];
 
+/** Her köşenin merkeze bakan 2 iç kenarına (L şeklinde) renk çizgisi ekler. */
+function cornerEdgeStyle(
+  r: number,
+  c: number,
+  cornerColors: (PlayerColor | undefined)[],
+): React.CSSProperties {
+  const s: React.CSSProperties = {};
+  const border = (color: string) => `2px solid ${color}`;
+
+  // Köşe 0: sol-üst (0–4, 0–4) → alt ve sağ kenar
+  if (r < CORNER && c < CORNER && cornerColors[0]) {
+    if (r === CORNER - 1) s.borderBottom = border(cornerColors[0].base);
+    if (c === CORNER - 1) s.borderRight = border(cornerColors[0].base);
+  }
+  // Köşe 1: sağ-üst (0–4, 8–12) → alt ve sol kenar
+  if (r < CORNER && c >= SIZE - CORNER && cornerColors[1]) {
+    if (r === CORNER - 1) s.borderBottom = border(cornerColors[1].base);
+    if (c === SIZE - CORNER) s.borderLeft = border(cornerColors[1].base);
+  }
+  // Köşe 2: sol-alt (8–12, 0–4) → üst ve sağ kenar
+  if (r >= SIZE - CORNER && c < CORNER && cornerColors[2]) {
+    if (r === SIZE - CORNER) s.borderTop = border(cornerColors[2].base);
+    if (c === CORNER - 1) s.borderRight = border(cornerColors[2].base);
+  }
+  // Köşe 3: sağ-alt (8–12, 8–12) → üst ve sol kenar
+  if (r >= SIZE - CORNER && c >= SIZE - CORNER && cornerColors[3]) {
+    if (r === SIZE - CORNER) s.borderTop = border(cornerColors[3].base);
+    if (c === SIZE - CORNER) s.borderLeft = border(cornerColors[3].base);
+  }
+  return s;
+}
+
 export function Board({ state, onCellClick, potentialScore }: BoardProps) {
   const { board, placed, bonuses, lastWords, players, current } = state;
 
@@ -130,6 +162,11 @@ export function Board({ state, onCellClick, potentialScore }: BoardProps) {
         // Merkez (tarafsız) boş kare: nömorfik içe gömülü.
         classes.push('bg-[#DDE4EE] cursor-pointer');
         style = { boxShadow: 'inset 3px 3px 6px rgba(163,177,198,0.6), inset -2px -2px 5px rgba(255,255,255,0.8)' };
+      }
+
+      const edgeBorder = cornerEdgeStyle(r, c, cornerColor);
+      if (Object.keys(edgeBorder).length > 0) {
+        style = style ? { ...style, ...edgeBorder } : edgeBorder;
       }
 
       cells.push(
