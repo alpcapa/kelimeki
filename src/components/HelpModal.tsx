@@ -101,8 +101,9 @@ export function HelpModal({ onClose }: HelpModalProps) {
             kelime olduğu sürece bölgenin içine doğru da hamle yapılabilir.
           </P>
           <P>
-            <strong>Köşe bonusu:</strong> Rakip köşesine giren bir kelime için %50 ek puan
-            kazanırsın.
+            <strong>Köşe vergisi:</strong> Rakip köşesine giren bir hamleden kazandığın puanın
+            yarısı o köşenin sahibine aktarılır. "Oyna" tuşuna bastığında puan dağılımını gösteren
+            bir uyarı çıkar; onaylarsan hamle gerçekleşir.
           </P>
         </Section>
 
