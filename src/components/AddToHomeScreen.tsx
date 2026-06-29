@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const DISMISSED_KEY = 'harfik_a2hs_dismissed';
+const DISMISSED_KEY = 'harfik_a2hs_dismissed_session';
 
 function isStandalone() {
   return (
@@ -14,7 +14,7 @@ export function AddToHomeScreen() {
 
   useEffect(() => {
     if (isStandalone()) return;
-    if (localStorage.getItem(DISMISSED_KEY)) return;
+    if (sessionStorage.getItem(DISMISSED_KEY)) return;
     // Short delay so the banner doesn't flash on first paint.
     const t = setTimeout(() => setVisible(true), 1200);
     return () => clearTimeout(t);
@@ -22,7 +22,7 @@ export function AddToHomeScreen() {
 
   const dismiss = () => {
     setVisible(false);
-    localStorage.setItem(DISMISSED_KEY, '1');
+    sessionStorage.setItem(DISMISSED_KEY, '1');
   };
 
   if (!visible) return null;
