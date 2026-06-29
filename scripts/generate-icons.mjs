@@ -45,7 +45,7 @@ const html = `<!DOCTYPE html>
   }
   .wordmark {
     font-family: 'Caveat', cursive;
-    font-size: 240px;
+    font-size: 278px;
     font-weight: 700;
     color: #2563EB;
     letter-spacing: 16px;
@@ -58,9 +58,9 @@ const html = `<!DOCTYPE html>
 <body>
 <div class="logo">
   <div class="wordmark">harfik</div>
-  <svg width="560" height="28" viewBox="0 0 560 28" fill="none">
-    <path d="M16 14 Q140 4 280 14 Q420 24 544 14"
-          stroke="#2563EB" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <svg width="650" height="32" viewBox="0 0 650 32" fill="none">
+    <path d="M16 16 Q162.5 4 325 16 Q487.5 28 634 16"
+          stroke="#2563EB" stroke-width="10" stroke-linecap="round" fill="none"/>
   </svg>
 </div>
 </body>
