@@ -84,8 +84,6 @@ export function AuthModal({ onClose }: AuthModalProps) {
 
   return (
     <>
-      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
-      {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
     <Modal title={title} onClose={onClose}>
       <form onSubmit={submit} className="flex flex-col gap-3">
         {mode === 'signup' && (
@@ -229,6 +227,8 @@ export function AuthModal({ onClose }: AuthModalProps) {
         )}
       </div>
     </Modal>
+    {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+    {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
     </>
   );
 }
