@@ -1,3 +1,4 @@
+import { chromium } from 'playwright';
 import sharp from 'sharp';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
@@ -5,60 +6,75 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Embed Caveat Bold font as base64 so librsvg can render it
-const fontPath = join(__dirname, '../node_modules/@fontsource/caveat/files/caveat-latin-700-normal.woff');
+// Embed the local Caveat Bold woff2 as a data URI so the browser
+// renders the font identically to the in-app logo, without any CDN.
+const fontPath = join(__dirname, '../node_modules/@fontsource/caveat/files/caveat-latin-700-normal.woff2');
 const fontB64 = readFileSync(fontPath).toString('base64');
+const fontDataUri = `data:font/woff2;base64,${fontB64}`;
 
-function buildSvg(size) {
-  // Scale all measurements relative to 512 base
-  const s = size / 512;
-  const fs = Math.round(360 * s);       // font-size
-  const cy = Math.round(392 * s);       // baseline y of "h"
-  // Curved line centred under "h", ~260px wide at 512
-  const lw = Math.round(260 * s);
-  const lx = Math.round((size - lw) / 2);
-  const ly = Math.round(430 * s);       // y of curve midpoint
-  const amp = Math.round(7 * s);        // curve amplitude
-  const sw = Math.max(2, Math.round(5 * s)); // stroke-width
+// The logo HTML exactly mirrors Setup.tsx at a scale that fills a square canvas.
+// We render at 2× (1024px) then downsample for crisp edges.
+const RENDER = 1024;
+const PADDING = 64; // px of white breathing room on each side
 
-  // Scale the logo's exact S-curve path (viewBox 0 0 100 8) to lw wide,
-  // with quarter-point control nodes matching the original design.
-  const scaleX = lw / 92; // original spans x=4..96 → 92 units
-  const x0  = lx + Math.round(0  * scaleX);   // start  (original x=4)
-  const cp1 = lx + Math.round(21 * scaleX);   // ctrl1  (original x=25)
-  const mid = lx + Math.round(46 * scaleX);   // mid    (original x=50)
-  const cp2 = lx + Math.round(71 * scaleX);   // ctrl2  (original x=75)
-  const x3  = lx + lw;                         // end    (original x=96)
+const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+  @font-face {
+    font-family: 'Caveat';
+    font-style: normal;
+    font-weight: 700;
+    src: url('${fontDataUri}') format('woff2');
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: ${RENDER}px;
+    height: ${RENDER}px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .wordmark {
+    font-family: 'Caveat', cursive;
+    font-size: 240px;
+    font-weight: 700;
+    color: #2563EB;
+    letter-spacing: 16px;
+    line-height: 1;
+    /* nudge right to visually compensate for letter-spacing on last char */
+    padding-left: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="logo">
+  <div class="wordmark">harfik</div>
+  <svg width="560" height="28" viewBox="0 0 560 28" fill="none">
+    <path d="M16 14 Q140 4 280 14 Q420 24 544 14"
+          stroke="#2563EB" stroke-width="9" stroke-linecap="round" fill="none"/>
+  </svg>
+</div>
+</body>
+</html>`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <defs>
-    <style>
-      @font-face {
-        font-family: 'Caveat';
-        font-style: normal;
-        font-weight: 700;
-        src: url('data:font/woff;base64,${fontB64}') format('woff');
-      }
-    </style>
-  </defs>
-  <rect width="${size}" height="${size}" fill="#FFFFFF"/>
-  <text
-    x="${size / 2}"
-    y="${cy}"
-    font-family="Caveat, sans-serif"
-    font-size="${fs}"
-    font-weight="700"
-    fill="#2563EB"
-    text-anchor="middle"
-    dominant-baseline="auto">h</text>
-  <path
-    d="M${x0} ${ly} Q${cp1} ${ly - amp} ${mid} ${ly} Q${cp2} ${ly + amp} ${x3} ${ly}"
-    stroke="#2563EB"
-    stroke-width="${sw}"
-    stroke-linecap="round"
-    fill="none"/>
-</svg>`;
-}
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const page = await browser.newPage();
+await page.setViewportSize({ width: RENDER, height: RENDER });
+await page.setContent(html, { waitUntil: 'networkidle' });
+// Give the font an extra tick to paint
+await page.waitForTimeout(200);
+
+const screenshot = await page.screenshot({ type: 'png' });
+await browser.close();
 
 const targets = [
   { size: 512, name: 'icon-512.png' },
@@ -67,7 +83,9 @@ const targets = [
 ];
 
 for (const { size, name } of targets) {
-  const svg = Buffer.from(buildSvg(size));
-  await sharp(svg).png().toFile(join(__dirname, '../public', name));
+  await sharp(screenshot)
+    .resize(size, size, { fit: 'cover', kernel: 'lanczos3' })
+    .png()
+    .toFile(join(__dirname, '../public', name));
   console.log(`✓ ${name} (${size}×${size})`);
 }
