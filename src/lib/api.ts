@@ -205,10 +205,27 @@ export async function updateEmail(email: string) {
   return supabase.auth.updateUser({ email });
 }
 
-/** Oturum açan kullanıcının şifresini değiştirir. */
-export async function updatePassword(password: string) {
+/**
+ * Oturum açan kullanıcının şifresini değiştirir.
+ * Eski şifreyi doğrulamak için önce yeniden giriş yapılır.
+ */
+export async function updatePassword(oldPassword: string, newPassword: string) {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
-  return supabase.auth.updateUser({ password });
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) throw new Error('Oturum açık değil.');
+  // Eski şifreyi doğrula.
+  const { error: authErr } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: oldPassword,
+  });
+  if (authErr) throw new Error('Mevcut şifre hatalı.');
+  return supabase.auth.updateUser({ password: newPassword });
+}
+
+/** Şifre sıfırlama e-postası gönderir. */
+export async function sendPasswordReset(email: string) {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  return supabase.auth.resetPasswordForEmail(email);
 }
 
 /**
