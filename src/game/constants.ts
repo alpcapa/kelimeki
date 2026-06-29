@@ -40,7 +40,7 @@ export interface PlayerColor {
 }
 
 export const PLAYER_COLORS: PlayerColor[] = [
-  { base: '#2563EB', tint: '#DBE6FF', zone: '#EEF3FF', text: '#11317A' }, // mavi
+  { base: '#2563EB', tint: '#AABFFF', zone: '#EEF3FF', text: '#11317A' }, // mavi
   { base: '#DC2626', tint: '#FBDADA', zone: '#FDEFEF', text: '#7A1414' }, // kırmızı
   { base: '#16A34A', tint: '#D6F3E1', zone: '#EDFAF1', text: '#0B5128' }, // yeşil
   { base: '#D97706', tint: '#FCEAD0', zone: '#FEF6EA', text: '#7A4408' }, // turuncu
