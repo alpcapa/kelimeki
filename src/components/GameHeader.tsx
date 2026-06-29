@@ -1,9 +1,7 @@
-// Harfik — başlık: skorlar, torba ve hesap menüsü
-import { useState } from 'react';
+// Harfik — başlık: skorlar ve hesap menüsü
 import { PLAYER_COLORS } from '../game/constants';
 import type { GameState } from '../game/types';
 import { UserMenu } from './UserMenu';
-import { RemainingTilesModal } from './RemainingTilesModal';
 
 interface GameHeaderProps {
   state: GameState;
@@ -11,8 +9,6 @@ interface GameHeaderProps {
 
 export function GameHeader({ state }: GameHeaderProps) {
   const { players, current } = state;
-  const bagCount = state.bag.length;
-  const [showTiles, setShowTiles] = useState(false);
   return (
     <header className="w-full max-w-[680px] flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border">
       <div className="font-mono text-lg font-bold text-accent tracking-[2px] shrink-0">
@@ -54,25 +50,8 @@ export function GameHeader({ state }: GameHeaderProps) {
           );
         })}
 
-        <button
-          onClick={() => setShowTiles(true)}
-          aria-label="Kalan taşlar"
-          className="text-center px-1.5 py-0.5 rounded-md hover:bg-panel active:scale-95 transition-all"
-        >
-          <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
-            Torba
-          </div>
-          <div className="font-mono text-sm font-bold leading-none text-muted">
-            {bagCount}
-          </div>
-        </button>
-
         <UserMenu />
       </div>
-
-      {showTiles && (
-        <RemainingTilesModal state={state} onClose={() => setShowTiles(false)} />
-      )}
     </header>
   );
 }
