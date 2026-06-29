@@ -42,6 +42,7 @@ const html = `<!DOCTYPE html>
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    filter: drop-shadow(0 8px 20px rgba(37, 99, 235, 0.22));
   }
   .wordmark {
     font-family: 'Caveat', cursive;
