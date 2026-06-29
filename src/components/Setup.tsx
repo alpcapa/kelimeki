@@ -4,6 +4,7 @@ import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
 import { useAuth } from '../hooks/useAuth';
 import { Avatar } from './Avatar';
+import { LogoOptions } from './LogoOptions';
 
 interface SetupProps {
   onStart: (players: PlayerSetup[]) => void;
@@ -58,6 +59,8 @@ export function Setup({ onStart }: SetupProps) {
           diğerlerine ulaşamazsın.
         </p>
       </div>
+
+      <LogoOptions />
 
       <div className="flex flex-col gap-2">
         <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
