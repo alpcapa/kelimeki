@@ -230,7 +230,7 @@ export default function App() {
               onClick={() => setShowTiles(true)}
               className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform"
             >
-              Torba {state.bag.length}
+              Torba <span className="text-[13px] text-accent">{state.bag.length}</span>
             </button>
           </div>
         )}
