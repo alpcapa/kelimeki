@@ -33,7 +33,7 @@ function LogoOption({
           alignItems: 'center',
         }}
       >
-        HARFİK
+        harfik
         {decoration}
       </div>
       <p className="text-[10px] text-muted font-mono text-center mt-1">{description}</p>
