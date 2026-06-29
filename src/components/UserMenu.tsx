@@ -115,7 +115,7 @@ export function UserMenu() {
                 setOpen(false);
               }}
             >
-              <span aria-hidden>🏆</span> Sıralama
+              <span aria-hidden>🏆</span> Lider Tablosu
             </button>
 
             <button
