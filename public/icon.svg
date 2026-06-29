@@ -1,11 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#0F1C26"/>
-  <!-- Lowercase h: left stem (full height) -->
-  <rect x="146" y="80" width="48" height="312" rx="12" fill="#00C8FF"/>
-  <!-- Lowercase h: arch connector -->
-  <rect x="194" y="200" width="172" height="48" rx="12" fill="#00C8FF"/>
-  <!-- Lowercase h: right stem -->
-  <rect x="318" y="200" width="48" height="192" rx="12" fill="#00C8FF"/>
-  <!-- Underline -->
-  <rect x="126" y="416" width="260" height="18" rx="9" fill="#00C8FF"/>
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <!-- Lowercase h in Caveat Bold #2563EB — rendered via generate-icons.mjs with embedded font -->
+  <text
+    x="256" y="392"
+    font-family="Caveat, sans-serif"
+    font-size="360"
+    font-weight="700"
+    fill="#2563EB"
+    text-anchor="middle">h</text>
+  <!-- S-curve underline matching the logo design -->
+  <path
+    d="M126 430 Q185 423 256 430 Q327 437 386 430"
+    stroke="#2563EB"
+    stroke-width="5"
+    stroke-linecap="round"
+    fill="none"/>
 </svg>
