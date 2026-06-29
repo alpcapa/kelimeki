@@ -123,12 +123,10 @@ export function Board({ state, onCellClick, potentialScore }: BoardProps) {
   }
 
   return (
-    <div className="w-full h-full max-w-[680px] mx-auto px-3 pt-2 pb-1 flex flex-col items-center justify-start [container-type:size]">
+    <div className="w-full max-w-[680px] mx-auto px-3 pt-2 pb-1 flex flex-col items-center">
       <div
-        className="relative grid gap-[1px] bg-panel border border-border rounded-lg p-1 shadow-[0_2px_16px_rgba(27,36,48,0.08)]"
+        className="relative grid gap-[1px] bg-panel border border-border rounded-lg p-1 shadow-[0_2px_16px_rgba(27,36,48,0.08)] w-full aspect-square"
         style={{
-          width: 'min(100cqw, calc(100cqh - 24px))',
-          height: 'min(100cqw, calc(100cqh - 24px))',
           gridTemplateColumns: `repeat(${SIZE}, 1fr)`,
           gridTemplateRows: `repeat(${SIZE}, 1fr)`,
         }}
@@ -166,10 +164,7 @@ export function Board({ state, onCellClick, potentialScore }: BoardProps) {
         </div>
       </div>
 
-      <div
-        className="flex items-center justify-between gap-2 shrink-0 pt-1"
-        style={{ width: 'min(100cqw, calc(100cqh - 24px))' }}
-      >
+      <div className="flex items-center justify-between gap-2 shrink-0 pt-1 w-full">
         <div className="font-mono text-[11px] text-gold tracking-[0.5px] whitespace-nowrap">
           {potentialScore != null && (
             <>
