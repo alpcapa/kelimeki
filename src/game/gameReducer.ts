@@ -5,6 +5,7 @@ import {
   RACK_SIZE,
   buildInitialBonuses,
   cornersFor,
+  regionOf,
 } from './constants';
 import type { GameState, Owner, Player, Tile } from './types';
 import { buildBag, drawTiles } from '../utils/bag';
@@ -19,7 +20,7 @@ import {
 import {
   cellAllowed,
   calcScore,
-  computeOpenCorners,
+  computeBreachedCorners,
   validatePlacement,
 } from '../utils/validator';
 import { findAIMove } from '../utils/ai';
@@ -223,7 +224,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
 
       // Bölge kuralı: kendi köşen, merkez ya da açılmış bir köşe olmalı.
       const me = state.players[state.current];
-      const open = computeOpenCorners(state.board, state.players);
+      const open = computeBreachedCorners(state.board, state.players);
       if (!cellAllowed(me.corner, open, r, c)) {
         return {
           ...state,
@@ -380,7 +381,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
     case 'PLAY': {
       if (state.phase !== 'play' || state.isGameOver) return state;
       const me = state.players[state.current];
-      const open = computeOpenCorners(state.board, state.players);
+      const open = computeBreachedCorners(state.board, state.players);
       const check = validatePlacement(
         state.board,
         state.placed,
@@ -391,8 +392,17 @@ export function gameReducer(state: GameState, action: Action): GameState {
       if (!check.valid) {
         return { ...state, message: check.reason!, messageType: 'err' };
       }
-      const pts = calcScore(state.board, state.placed, state.bonuses);
+      const basePts = calcScore(state.board, state.placed, state.bonuses);
       const formed = getFormedWords(state.board, state.placed);
+
+      // Rakip köşesine giriş bonusu: %50 fazla puan.
+      const invadedZone = Object.keys(state.placed).some((k) => {
+        const [r, c] = k.split(',').map(Number);
+        const region = regionOf(r, c);
+        return region !== -1 && region !== me.corner;
+      });
+      const pts = invadedZone ? Math.round(basePts * 1.5) : basePts;
+      const bonusNote = invadedZone ? ' (+%50 köşe bonusu!)' : '';
 
       // Yerleştirmeleri tahtaya işle.
       const board = state.board.map((row) => [...row]);
@@ -419,7 +429,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         consecutivePasses: 0,
         selectedTile: null,
         lastWords: setLastWords(state.lastWords, formed, state.current),
-        message: `${me.name}: +${pts} puan! Kelimeler: ${check.words!.join(', ')}`,
+        message: `${me.name}: +${pts} puan${bonusNote} Kelimeler: ${check.words!.join(', ')}`,
         messageType: 'ok',
       };
       return advanceTurn(moved);
@@ -447,7 +457,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const me = state.players[state.current];
       if (!me.isAI) return state;
 
-      const open = computeOpenCorners(state.board, state.players);
+      const open = computeBreachedCorners(state.board, state.players);
       const move = findAIMove(
         state.board,
         me.rack,

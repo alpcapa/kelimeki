@@ -82,6 +82,20 @@ export function inCorner(corner: number, r: number, c: number): boolean {
 }
 
 /**
+ * Verilen hücre, köşe bölgesinin "iç sınır" karesinde mi?
+ * İç sınır = merkeze bakan kenar satırı/sütunu (5×5'in iç çevresi).
+ * Sahip burada oynayınca bölge "ihlal edilmiş" sayılır.
+ */
+export function isZoneBoundaryCell(corner: number, r: number, c: number): boolean {
+  if (!inCorner(corner, r, c)) return false;
+  const b = cornerBounds(corner);
+  // İç sınır: merkeze en yakın satır VEYA sütun.
+  const innerRow = corner <= 1 ? b.r1 : b.r0; // üst köşeler → en alt satır; alt köşeler → en üst satır
+  const innerCol = corner === 0 || corner === 2 ? b.c1 : b.c0; // sol köşeler → en sağ sütun; sağ köşeler → en sol sütun
+  return r === innerRow || c === innerCol;
+}
+
+/**
  * Oyuncu sayısına göre köşe ataması.
  *  - 2 oyuncu: çapraz köşeler (sol-üst, sağ-alt).
  *  - 4 oyuncu: dört köşe.
