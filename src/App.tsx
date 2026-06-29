@@ -311,9 +311,9 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              Rakip köşesinde oynuyorsun. Bu hamleden kazanacağın{' '}
-              <strong>{potentialScore} puanın yarısı ({invasionConfirm.ownerPts} puan)</strong>{' '}
-              <strong>{invasionConfirm.ownerName}</strong>'a aktarılacak.
+              Dikkat, rakip köşesinde oynuyorsun. Bu hamleden kazanacağın{' '}
+              <strong>{potentialScore} puanın yarısını ({invasionConfirm.ownerPts} puan)</strong>{' '}
+              <strong>{invasionConfirm.ownerName}</strong> kapacak.
               Devam etmek istiyor musun?
             </p>
             <div className="flex gap-2 mt-1">
