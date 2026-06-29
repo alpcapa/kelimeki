@@ -97,13 +97,9 @@ export function HelpModal({ onClose }: HelpModalProps) {
           </P>
           <P>
             Sınır ihlal edilmeden diğer oyuncular orada oynayamaz. İhlal gerçekleştiği anda
-            sınıra değen kelime üzerine istediğin gibi bağlantı yapabilirsin. Sınıra değen bir
-            kelime olduğu sürece bölgenin içine doğru da hamle yapılabilir.
-          </P>
-          <P>
-            <strong>Köşe vergisi:</strong> Rakip köşesine giren bir hamleden kazandığın puanın
-            yarısı o köşenin sahibine aktarılır. "Oyna" tuşuna bastığında puan dağılımını gösteren
-            bir uyarı çıkar; onaylarsan hamle gerçekleşir.
+            sınıra değen kelime üzerine rakipler istediği gibi bağlantı yapabilir. Sınıra değen
+            bir kelime olduğu sürece bölgenin içine doğru da hamle yapılabilir ama rakip köşesine
+            giren bir hamleden kazanılan puanın yarısı o köşenin sahibine aktarılır.
           </P>
         </Section>
 
