@@ -41,9 +41,16 @@ export function Rack({
             : `${tiles.length} harf`}
         </span>
       </div>
-      <div className="flex gap-[3px] min-h-[46px]">
+      <div
+        className="min-h-[46px]"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${tiles.length || 1}, 1fr)`,
+          gap: '3px',
+        }}
+      >
         {tiles.map((tile, i) => (
-          <div key={`${tile.letter}-${i}`} className="flex-1 min-w-0 max-w-[38px] h-[46px]">
+          <div key={`${tile.letter}-${i}`} className="h-[46px]">
             <Tile
               tile={tile}
               variant="rack"
