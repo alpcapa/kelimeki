@@ -38,7 +38,10 @@ export function UserMenu() {
   if (!configured) return null;
 
   const name =
-    profile?.display_name || profile?.first_name || user?.email || 'Hesabım';
+    profile?.username ||
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() ||
+    user?.email ||
+    'Hesabım';
 
   // ── Oturum yok: Giriş / Kayıt düğmesi ──────────────────────────────────────
   if (!loading && !user) {
