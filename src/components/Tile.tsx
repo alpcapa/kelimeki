@@ -59,7 +59,7 @@ export function Tile({ tile, variant, color, selected = false, onClick }: TilePr
         style={{ WebkitTextStrokeWidth: isRack ? '0.7px' : '0.35px' }}
         className={[
           'font-mono font-bold leading-none [-webkit-text-stroke-color:currentColor]',
-          isRack ? 'text-[24px]' : 'text-[clamp(9px,2.4vw,15px)] text-tile-letter',
+          isRack ? 'text-[24px]' : 'text-[clamp(12px,3.2vw,20px)] text-tile-letter',
         ].join(' ')}
       >
         {display}
@@ -70,7 +70,7 @@ export function Tile({ tile, variant, color, selected = false, onClick }: TilePr
           'absolute font-mono font-bold leading-none',
           isRack
             ? 'top-[3px] right-[4px] text-[10px] text-[#8B5E00]'
-            : 'top-[1px] right-[1.5px] text-[clamp(5px,1.2vw,8px)] text-accent',
+            : 'top-[1px] right-[1.5px] text-[clamp(6px,1.6vw,10px)] text-accent',
         ].join(' ')}
       >
         {tile.pts}

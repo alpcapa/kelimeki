@@ -123,8 +123,8 @@ export function Board({ state, onCellClick, potentialScore }: BoardProps) {
         // Bir oyuncunun köşesindeki boş kare: nömorfik içe gömülü + oyuncu tonu.
         classes.push('cursor-pointer');
         style = {
-          background: zone.zone,
-          boxShadow: `inset 3px 3px 6px rgba(163,177,198,0.5), inset -2px -2px 5px rgba(255,255,255,0.75), inset 0 0 0 1px ${zone.base}33`,
+          background: zone.tint,
+          boxShadow: `inset 2px 2px 5px ${zone.base}22, inset -1px -1px 3px rgba(255,255,255,0.6)`,
         };
       } else {
         // Merkez (tarafsız) boş kare: nömorfik içe gömülü.
