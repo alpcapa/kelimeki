@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <!-- Lowercase h in Caveat Bold #2563EB — rendered via generate-icons.mjs with embedded font -->
+  <text
+    x="256" y="392"
+    font-family="Caveat, sans-serif"
+    font-size="360"
+    font-weight="700"
+    fill="#2563EB"
+    text-anchor="middle">h</text>
+  <!-- S-curve underline matching the logo design -->
+  <path
+    d="M126 430 Q185 423 256 430 Q327 437 386 430"
+    stroke="#2563EB"
+    stroke-width="5"
+    stroke-linecap="round"
+    fill="none"/>
+</svg>
