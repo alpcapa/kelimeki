@@ -30,7 +30,6 @@ export function Rack({
     <div
       className="bg-[#DDE4EE] rounded-[16px] p-3"
       style={{
-        borderLeft: `3px solid ${swapMode ? '#D97706' : color.base}`,
         boxShadow: '5px 5px 14px rgba(163,177,198,0.65), -3px -3px 10px rgba(255,255,255,0.9)',
       }}
     >
