@@ -54,6 +54,44 @@ export function computeBreachedCorners(board: Board, players: Player[]): boolean
 export const computeOpenCorners = computeBreachedCorners;
 
 /**
+ * Verilen başlangıç hücrelerinden (bu köşe bölgesi içinde kalarak) taşlar
+ * üzerinden yayılıp bölgenin iç sınır karesine ulaşılıp ulaşılamadığını
+ * kontrol eder. Sadece yeni konan taşın bitişiği değil, o taşa bağlı tüm
+ * harf zincirini (yeni + tahtadaki mevcut taşlar) dikkate alır — örn. yeni
+ * bir taş, sınıra zaten ulaşmış eski bir kelimeye bağlanıyorsa da geçerlidir.
+ */
+export function zoneReachesBoundary(
+  board: Board,
+  placed: Placed,
+  zone: number,
+  starts: [number, number][],
+): boolean {
+  const b = cornerBounds(zone);
+  const visited = new Set<string>();
+  const stack: [number, number][] = [...starts];
+  while (stack.length > 0) {
+    const [r, c] = stack.pop()!;
+    const k = key(r, c);
+    if (visited.has(k)) continue;
+    visited.add(k);
+    if (isZoneBoundaryCell(zone, r, c)) return true;
+    const neighbors: [number, number][] = [
+      [r - 1, c],
+      [r + 1, c],
+      [r, c - 1],
+      [r, c + 1],
+    ];
+    for (const [nr, nc] of neighbors) {
+      if (nr < b.r0 || nr > b.r1 || nc < b.c0 || nc > b.c1) continue;
+      const nk = key(nr, nc);
+      if (visited.has(nk)) continue;
+      if (placed[nk] || board[nr][nc]) stack.push([nr, nc]);
+    }
+  }
+  return false;
+}
+
+/**
  * Sırası gelen oyuncu (r,c) hücresine taş koyabilir mi?
  *  - Merkez hücreler herkese açık.
  *  - Kendi köşen her zaman açık.
@@ -107,48 +145,21 @@ export function validatePlacementStructural(
     }
   }
 
-  // Rakip köşeye giriş kuralı: bu köşeye ilk kez giriliyorsa en az bir yeni
-  // taş, o köşenin iç sınır karesinde veya yanında (ve sınır karesi dolu)
-  // olmalıdır. Köşe içinde zaten taş varsa (daha önce girilmiş) bu kural
-  // uygulanmaz; bağlantı kuralı yeterlidir.
+  // Rakip köşeye giriş kuralı: yeni taşın bulunduğu rakip bölgede, o taşa
+  // bağlı harf zinciri (yeni + tahtadaki mevcut taşlar, her yönde) bölgenin
+  // iç sınır karesine ulaşmalıdır. Zincir zaten sınıra ulaşmışsa (örn. daha
+  // önce ihlal edilmiş bir kelimeye bağlanılıyorsa) tekrar sınıra değmek
+  // gerekmez — tüm bağlı harfler dikkate alınır, yalnızca yeni taşın
+  // bitişiği değil.
   const foreignZoneCoords = coords.filter(([r, c]) => {
     const region = regionOf(r, c);
     return region !== -1 && region !== ownCorner;
   });
   if (foreignZoneCoords.length > 0) {
     const foreignZones = new Set(foreignZoneCoords.map(([r, c]) => regionOf(r, c) as number));
-    const allZonesAlreadyEntered = [...foreignZones].every((zone) => {
-      const b = cornerBounds(zone);
-      for (let r = b.r0; r <= b.r1; r++) {
-        for (let c = b.c0; c <= b.c1; c++) {
-          if (board[r][c] && !isZoneBoundaryCell(zone, r, c)) return true;
-        }
-      }
-      return false;
-    });
-
-    if (!allZonesAlreadyEntered) {
-      const touchesBoundary = foreignZoneCoords.some(([r, c]) => {
-        const zone = regionOf(r, c) as number;
-        if (isZoneBoundaryCell(zone, r, c)) return true;
-        return (
-          [
-            [r - 1, c],
-            [r + 1, c],
-            [r, c - 1],
-            [r, c + 1],
-          ] as [number, number][]
-        ).some(
-          ([nr, nc]) =>
-            nr >= 0 &&
-            nr < SIZE &&
-            nc >= 0 &&
-            nc < SIZE &&
-            isZoneBoundaryCell(zone, nr, nc) &&
-            board[nr][nc] !== null,
-        );
-      });
-      if (!touchesBoundary) {
+    for (const zone of foreignZones) {
+      const starts = foreignZoneCoords.filter(([r, c]) => regionOf(r, c) === zone);
+      if (!zoneReachesBoundary(board, placed, zone, starts)) {
         return {
           valid: false,
           reason: 'Rakip köşesine girerken sınır karesindeki bir taşa değmelisin.',
