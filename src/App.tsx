@@ -75,24 +75,18 @@ export default function App() {
     }
   };
 
-  // Sadece AI ile oynanan oyunlar (rakiplerin tamamı AI) lider tablosuna kaydedilmez.
-  const isAIOnlyGame =
-    state.phase === 'play' &&
-    state.players.length > 0 &&
-    state.players.slice(1).every((p) => p.isAI);
-
-  // Oyun bitince giriş yapmış kullanıcının sonucunu kaydet (en az bir insan rakip gerekli).
+  // Oyun bitince giriş yapmış kullanıcının sonucunu kaydet (YZ'ye karşı oyunlar dahil).
   useEffect(() => {
     if (!state.isGameOver || state.phase !== 'play') return;
-    if (isAIOnlyGame) return; // AI-only oyunlar kaydedilmez
     const human = state.players.find((p) => !p.isAI);
-    const ai = state.players.find((p) => p.isAI);
-    if (!human || !ai) return;
+    const opponents = state.players.filter((p) => p !== human);
+    if (!human || opponents.length === 0) return;
+    const bestOpponentScore = Math.max(...opponents.map((p) => p.score));
     const result =
-      human.score > ai.score ? 'win' : human.score < ai.score ? 'lose' : 'tie';
+      human.score > bestOpponentScore ? 'win' : human.score < bestOpponentScore ? 'lose' : 'tie';
     void saveGame({
       player_score: human.score,
-      ai_score: ai.score,
+      ai_score: bestOpponentScore,
       result,
       turn_count: state.turnCount,
       best_move_score: human.bestMoveScore || null,

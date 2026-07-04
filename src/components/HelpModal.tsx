@@ -174,17 +174,17 @@ export function HelpModal({ onClose }: HelpModalProps) {
         </Section>
 
         <Section title="Puan Tablosu">
-          <P>Torbada toplam 186 taş bulunur.</P>
+          <P>Torbada toplam 100 taş bulunur.</P>
           <div className="flex flex-col gap-1 mt-0.5">
-            <TileRow pts="1" tiles="A (×20)  E (×14)  İ (×13)  K (×13)  L (×13)  R (×11)  N (×9)  T (×9)" />
-            <TileRow pts="2" tiles="I (×7)  M (×7)  O (×6)  S (×6)  U (×6)" />
-            <TileRow pts="3" tiles="B (×4)  Ç (×4)  D (×4)  Ü (×4)  Y (×4)" />
-            <TileRow pts="4" tiles="C (×4)  Ş (×4)  Z (×4)" />
-            <TileRow pts="5" tiles="G (×2)  H (×2)  P (×2)" />
-            <TileRow pts="7" tiles="F (×2)  Ö (×2)  V (×2)" />
-            <TileRow pts="8" tiles="Ğ (×2)" />
-            <TileRow pts="10" tiles="J (×2)" />
-            <TileRow pts="0" tiles="? Joker (×4)" />
+            <TileRow pts="1" tiles="A (×12)  E (×8)  İ (×7)  K (×7)  L (×7)  R (×6)  N (×5)  T (×5)" />
+            <TileRow pts="2" tiles="I (×4)  M (×4)  O (×3)  S (×3)  U (×3)" />
+            <TileRow pts="3" tiles="B (×2)  Ç (×2)  D (×2)  Ü (×2)  Y (×2)" />
+            <TileRow pts="4" tiles="C (×2)  Ş (×2)  Z (×2)" />
+            <TileRow pts="5" tiles="G (×1)  H (×1)  P (×1)" />
+            <TileRow pts="7" tiles="F (×1)  Ö (×1)  V (×1)" />
+            <TileRow pts="8" tiles="Ğ (×1)" />
+            <TileRow pts="10" tiles="J (×1)" />
+            <TileRow pts="0" tiles="? Joker (×2)" />
           </div>
         </Section>
 

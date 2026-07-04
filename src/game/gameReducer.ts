@@ -145,12 +145,25 @@ function setLastWords(
   return next;
 }
 
-/** Kalan raf puanlarını her oyuncudan düşerek oyunu bitirir. */
+/**
+ * Kalan raf puanlarını her oyuncudan düşerek oyunu bitirir. Torba boşken
+ * rafını tamamen bitiren oyuncu varsa (gerçek bitiriş), diğerlerinin elinde
+ * kalan taşların toplam puanı ona eklenir.
+ */
 function endGame(state: GameState): GameState {
-  const players = state.players.map((p) => ({
-    ...p,
-    score: Math.max(0, p.score - p.rack.reduce((s, t) => s + t.pts, 0)),
-  }));
+  const remaining = (p: Player) => p.rack.reduce((s, t) => s + t.pts, 0);
+  const finisher =
+    state.bag.length === 0 ? state.players.find((p) => p.rack.length === 0) : undefined;
+  const bonus = finisher
+    ? state.players
+        .filter((p) => p !== finisher)
+        .reduce((s, p) => s + remaining(p), 0)
+    : 0;
+
+  const players = state.players.map((p) => {
+    const score = Math.max(0, p.score - remaining(p)) + (p === finisher ? bonus : 0);
+    return { ...p, score };
+  });
   return {
     ...state,
     players,
@@ -496,15 +509,37 @@ export function gameReducer(state: GameState, action: Action): GameState {
         isFirstMove(state),
       );
 
-      // Geçerli hamle yoksa YZ pas geçer.
+      // Geçerli hamle yoksa: torbada taş varsa rafını değiştirir (aksi halde
+      // oynanamayan aynı harflerle sonsuza dek pas geçer); torba boşsa pas
+      // geçer. Her iki durum da pas sayacını artırır — herkes art arda
+      // tıkanırsa oyun yine de biter, sadece tıkanan oyuncu bir sonraki
+      // turunda şansını taze harflerle dener.
       if (!move) {
         const consecutivePasses = state.consecutivePasses + 1;
-        const moved: GameState = {
-          ...state,
-          consecutivePasses,
-          message: `${me.name} pas geçti.`,
-          messageType: 'warn',
-        };
+        let moved: GameState;
+        if (state.bag.length > 0) {
+          const returned = me.rack.map((t) => ({
+            letter: t.wild ? '?' : t.letter,
+            pts: t.pts,
+          }));
+          const bag = shuffle([...state.bag, ...returned]);
+          const rack = drawTiles(bag, returned.length);
+          moved = {
+            ...state,
+            bag,
+            players: withRack(state, rack),
+            consecutivePasses,
+            message: `${me.name} harflerini değiştirdi.`,
+            messageType: 'warn',
+          };
+        } else {
+          moved = {
+            ...state,
+            consecutivePasses,
+            message: `${me.name} pas geçti.`,
+            messageType: 'warn',
+          };
+        }
         if (consecutivePasses >= state.players.length * MAX_PASS_ROUNDS) {
           return endGame(moved);
         }

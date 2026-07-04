@@ -1,6 +1,6 @@
 // Harfik — sağ üst köşedeki hesap menüsü.
 // Oturum yoksa "Giriş / Kayıt" düğmesi; oturum varsa profil küçük resmi ve
-// açılır menü (Hesap Ayarları, Skor Kartı, Sıralama, Çıkış) gösterir.
+// açılır menü (Hesap Ayarları, Skor Kartı, Çıkış) gösterir.
 // Yalnızca Supabase yapılandırıldığında görünür.
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -9,10 +9,9 @@ import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { ScoreCard } from './ScoreCard';
 import { AccountSettingsModal } from './AccountSettingsModal';
-import { Leaderboard } from './Leaderboard';
 import { HelpModal } from './HelpModal';
 
-type ActiveModal = 'auth' | 'account' | 'score' | 'leaderboard' | 'help' | null;
+type ActiveModal = 'auth' | 'account' | 'score' | 'help' | null;
 
 export function UserMenu() {
   const { user, profile, configured, loading } = useAuth();
@@ -115,15 +114,6 @@ export function UserMenu() {
             <button
               className={item}
               onClick={() => {
-                setModal('leaderboard');
-                setOpen(false);
-              }}
-            >
-              <span aria-hidden>🏆</span> Lider Tablosu
-            </button>
-            <button
-              className={item}
-              onClick={() => {
                 setModal('help');
                 setOpen(false);
               }}
@@ -147,15 +137,7 @@ export function UserMenu() {
       {modal === 'account' && (
         <AccountSettingsModal onClose={() => setModal(null)} />
       )}
-      {modal === 'score' && (
-        <ScoreCard
-          onClose={() => setModal(null)}
-          onLeaderboard={() => setModal('leaderboard')}
-        />
-      )}
-      {modal === 'leaderboard' && (
-        <Leaderboard onClose={() => setModal(null)} />
-      )}
+      {modal === 'score' && <ScoreCard onClose={() => setModal(null)} />}
       {modal === 'help' && (
         <HelpModal onClose={() => setModal(null)} />
       )}

@@ -9,7 +9,7 @@
 - **Köşe vergisi** — Rakip köşesinde oynanan hamlenin puanı ikiye bölünür: yarısı saldırgana kalır, yarısı köşe sahibine aktarılır. Hamle öncesinde onay penceresi gösterilir.
 - **Akıllı YZ** — Rafından heceleyebildiği, sözlükçe geçerli en yüksek puanlı hamleyi arar; çapraz kelimeleri de doğrular.
 - **Tam sözlük** — TDK Güncel Türkçe Sözlük (12. baskı) kaynaklı **92.771 oynanabilir kelime**, anlamlarıyla birlikte.
-- **Türkçe alfabe** — Ç, Ğ, İ, Ö, Ş, Ü dahil tam harf dağılımı ve puanlar. Joker (`?`) desteklenir. Toplam 186 taş.
+- **Türkçe alfabe** — Ç, Ğ, İ, Ö, Ş, Ü dahil tam harf dağılımı ve puanlar. Joker (`?`) desteklenir. Toplam 100 taş.
 - **Bingo bonusu** — 7 taşın tamamını tek hamlede kullanınca +50 puan.
 - **Dokunmatik** — Mobil öncelikli düzen; harf seç → kareye dokun → **Oyna**.
 
@@ -61,7 +61,7 @@ src/
 │   ├── words.ts       # Türkçe kelime listesi (92.771 kelime, üretilmiş)
 │   ├── meanings.json  # kelime → anlamlar (tembel yüklenir, ~6 MB)
 │   ├── meanings.ts    # anlam yükleyici
-│   └── tiles.ts       # Türkçe harf dağılımı ve puanlar (186 taş)
+│   └── tiles.ts       # Türkçe harf dağılımı ve puanlar (100 taş)
 ├── utils/
 │   ├── validator.ts   # kelime doğrulama, bölge kuralları, puanlama
 │   ├── ai.ts          # YZ oyuncu mantığı
