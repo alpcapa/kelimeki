@@ -133,11 +133,13 @@ export async function fetchMeaning(word: string): Promise<WordMeaning | null> {
       console.error('[Harfik] fetchMeaning hatası:', error.message);
     } else if (Array.isArray(data) && data.length > 0) {
       const row = data[0] as WordMeaning;
-      return {
-        word: row.word,
-        pos: row.pos,
-        meanings: row.meanings ?? [],
-      };
+      if (Array.isArray(row.meanings) && row.meanings.length > 0) {
+        return {
+          word: row.word,
+          pos: row.pos,
+          meanings: row.meanings,
+        };
+      }
     }
   }
   // Yerel yedek.
