@@ -9,10 +9,10 @@ import { Setup } from './components/Setup';
 import { MeaningModal } from './components/MeaningModal';
 import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
-import { calcScore, computeBreachedCorners, validatePlacementStructural } from './utils/validator';
+import { calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacementStructural } from './utils/validator';
 import { key } from './utils/board';
 import { trUpper, trLower } from './utils/turkish';
-import { PLAYER_COLORS, regionOf } from './game/constants';
+import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, saveGame } from './lib/api';
 import type { WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
@@ -44,10 +44,9 @@ export default function App() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   // Rakip köşeye giriş onay popup'ı.
-  const [invasionConfirm, setInvasionConfirm] = useState<{
-    ownerName: string;
-    ownerPts: number;
-  } | null>(null);
+  const [invasionConfirm, setInvasionConfirm] = useState<
+    { ownerName: string; ownerPts: number }[] | null
+  >(null);
 
   // Sunucu kelime doğrulaması sırasında true — butonu devre dışı bırakır.
   const [validating, setValidating] = useState(false);
@@ -171,18 +170,13 @@ export default function App() {
 
   const handlePlay = async () => {
     // Rakip köşeye giriş tespiti.
-    let invasion: { ownerName: string; ownerPts: number } | null = null;
-    for (const k of Object.keys(state.placed)) {
-      const [r, c] = k.split(',').map(Number);
-      const region = regionOf(r, c);
-      if (region !== -1 && region !== me.corner) {
-        const owner = state.players.find((p) => p.corner === region);
-        if (owner) {
-          invasion = { ownerName: owner.name, ownerPts: Math.round(potentialScore / 2) };
-          break;
-        }
-      }
-    }
+    const placedCoords = Object.keys(state.placed).map(
+      (k) => k.split(',').map(Number) as [number, number],
+    );
+    const { shares } = computeInvasionSplit(placedCoords, me.corner, state.players, potentialScore);
+    const invasion = shares.length > 0
+      ? shares.map((s) => ({ ownerName: state.players[s.index].name, ownerPts: s.amount }))
+      : null;
 
     // Sunucu kelime doğrulaması (Supabase yapılandırılmışsa).
     if (isSupabaseConfigured) {
@@ -355,10 +349,22 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              Dikkat, rakip köşesinde oynuyorsun. Bu hamleden kazanacağın{' '}
-              <strong>{potentialScore} puanın yarısını ({invasionConfirm.ownerPts} puan)</strong>{' '}
-              <strong>{invasionConfirm.ownerName}</strong> kapacak.
-              Devam etmek istiyor musun?
+              Dikkat, rakip köşesinde oynuyorsun. Bu hamleden kazanacağın {potentialScore} puanın{' '}
+              {invasionConfirm.length > 1
+                ? invasionConfirm
+                    .map((inv, i) => (
+                      <span key={i}>
+                        <strong>{inv.ownerPts} puanını</strong> <strong>{inv.ownerName}</strong>
+                        {i < invasionConfirm.length - 1 ? ', ' : ' '}
+                      </span>
+                    ))
+                : (
+                  <>
+                    <strong>yarısını ({invasionConfirm[0].ownerPts} puan)</strong>{' '}
+                    <strong>{invasionConfirm[0].ownerName}</strong>{' '}
+                  </>
+                )}
+              kapacak. Devam etmek istiyor musun?
             </p>
             <div className="flex gap-2 mt-1">
               <button

@@ -1,0 +1,15 @@
+-- Harfik — eski 1086 kelimelik başlangıç seed'inden (20260628090100_seed_words.sql)
+-- kalan, asıl TDK sözlüğünde (20260628090300_seed_dictionary.sql) karşılığı
+-- olmayan satırları temizler.
+--
+-- O ilk seed anlam/tür sütunları eklenmeden önce yazılmıştı, bu yüzden
+-- satırları hep meanings = '[]' ile kaldı. TDK sözlüğü aynı kelimeyi de
+-- içeriyorsa "on conflict do update" ile üzerine yazıp gerçek anlamını
+-- kazandırdı; içermiyorsa (tek harfler, "tahtaya", "rafından", "oynadı" gibi
+-- arayüz metninden kopya kırıntılar vb.) satır anlamsız haliyle kaldı ve
+-- is_valid_word RPC'si bunları yanlışlıkla geçerli kelime sayıyordu.
+--
+-- TDK sözlüğündeki her madde en az bir anlamla eklendiği için (bkz.
+-- scripts/build-dictionary.mjs), meanings = '[]' olan satırlar güvenle
+-- silinebilir — geriye yalnızca local words.ts ile birebir aynı sözlük kalır.
+delete from public.words where meanings = '[]'::jsonb;

@@ -5,7 +5,6 @@ import {
   RACK_SIZE,
   buildInitialBonuses,
   cornersFor,
-  regionOf,
 } from './constants';
 import type { GameState, Owner, Player, Tile } from './types';
 import { buildBag, drawTiles } from '../utils/bag';
@@ -21,6 +20,7 @@ import {
   cellAllowed,
   calcScore,
   computeBreachedCorners,
+  computeInvasionSplit,
   validatePlacement,
   validatePlacementStructural,
 } from '../utils/validator';
@@ -419,20 +419,13 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const basePts = calcScore(state.board, state.placed, state.bonuses);
       const formed = getFormedWords(state.board, state.placed);
 
-      // Rakip köşeye giriş: kazanılan puanın yarısı o köşenin sahibine aktarılır.
-      let invadedOwnerIdx = -1;
-      for (const k of Object.keys(state.placed)) {
-        const [r, c] = k.split(',').map(Number);
-        const region = regionOf(r, c);
-        if (region !== -1 && region !== me.corner) {
-          const idx = state.players.findIndex((p) => p.corner === region);
-          if (idx >= 0) { invadedOwnerIdx = idx; break; }
-        }
-      }
-      const ownerBonus = invadedOwnerIdx >= 0 ? Math.round(basePts / 2) : 0;
-      const pts = basePts - ownerBonus;
-      const bonusNote = invadedOwnerIdx >= 0
-        ? ` (${ownerBonus} puanı ${state.players[invadedOwnerIdx].name} kaptı)`
+      // Rakip köşeye giriş: kazanılan puan köşe sahip(ler)iyle paylaşılır.
+      const placedCoords = Object.keys(state.placed).map(
+        (k) => k.split(',').map(Number) as [number, number],
+      );
+      const { pts, shares } = computeInvasionSplit(placedCoords, me.corner, state.players, basePts);
+      const bonusNote = shares.length > 0
+        ? ` (${shares.map((s) => `${s.amount} puanı ${state.players[s.index].name} kaptı`).join(', ')})`
         : '';
 
       // Yerleştirmeleri tahtaya işle.
@@ -455,8 +448,9 @@ export function gameReducer(state: GameState, action: Action): GameState {
         if (i === state.current) {
           return { ...p, rack, score: p.score + pts, bestMoveScore: Math.max(p.bestMoveScore, pts), longestWord: newLongestWord };
         }
-        if (i === invadedOwnerIdx) {
-          return { ...p, score: p.score + ownerBonus };
+        const share = shares.find((s) => s.index === i);
+        if (share) {
+          return { ...p, score: p.score + share.amount };
         }
         return p;
       });
@@ -568,29 +562,27 @@ export function gameReducer(state: GameState, action: Action): GameState {
         me.longestWord,
       );
 
-      let aiInvadedOwnerIdx = -1;
-      for (const p of move.placements) {
-        const region = regionOf(p.r, p.c);
-        if (region !== -1 && region !== me.corner) {
-          const idx = state.players.findIndex((pl) => pl.corner === region);
-          if (idx >= 0) { aiInvadedOwnerIdx = idx; break; }
-        }
-      }
-      const aiOwnerBonus = aiInvadedOwnerIdx >= 0 ? Math.round(move.score / 2) : 0;
-      const aiPts = move.score - aiOwnerBonus;
+      const aiCoords = move.placements.map((p) => [p.r, p.c] as [number, number]);
+      const { pts: aiPts, shares: aiShares } = computeInvasionSplit(
+        aiCoords,
+        me.corner,
+        state.players,
+        move.score,
+      );
 
       const players = state.players.map((p, i) => {
         if (i === state.current) {
           return { ...p, rack, score: p.score + aiPts, bestMoveScore: Math.max(p.bestMoveScore, aiPts), longestWord: aiLongestWord };
         }
-        if (i === aiInvadedOwnerIdx) {
-          return { ...p, score: p.score + aiOwnerBonus };
+        const share = aiShares.find((s) => s.index === i);
+        if (share) {
+          return { ...p, score: p.score + share.amount };
         }
         return p;
       });
 
-      const aiInvasionNote = aiOwnerBonus > 0
-        ? ` (${aiOwnerBonus} puanı ${state.players[aiInvadedOwnerIdx].name} kaptı)`
+      const aiInvasionNote = aiShares.length > 0
+        ? ` (${aiShares.map((s) => `${s.amount} puanı ${state.players[s.index].name} kaptı`).join(', ')})`
         : '';
       const moved: GameState = {
         ...state,
