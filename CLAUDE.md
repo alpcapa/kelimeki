@@ -61,7 +61,8 @@ src/
 
 ## Bileşen Notları
 
-- **`UserMenu`** — Giriş yapmamış kullanıcıya sadece "Giriş" butonu gösterir. Giriş yapılmışsa dropdown menüde Hesap Ayarları / Skor Kartı / Lider Tablosu / Nasıl Oynanır? / Çıkış Yap bulunur. Supabase yapılandırılmamışsa bileşen `null` döner.
+- **`UserMenu`** — Giriş yapmamış kullanıcıya sadece "Giriş" butonu gösterir. Giriş yapılmışsa dropdown menüde Hesap Ayarları / Skor Kartı / Nasıl Oynanır? / Çıkış Yap bulunur. Lider Tablosu, başlangıçta sadece YZ'ye karşı oynanacağından menüden kaldırıldı (`Leaderboard` bileşeni ve API'leri hâlâ mevcut, ileride yeniden bağlanabilir). Supabase yapılandırılmamışsa bileşen `null` döner.
+- **Skor Kartı (`ScoreCard`)** — YZ'ye karşı oynanan oyunlar dahil tüm oyun sonuçlarını gösterir (`games` tablosu, `player_stats` view). `saveGame()` yalnızca oturum açık kullanıcı için kayıt oluşturur (`App.tsx` — oyun bitince tüm oyuncular için, insan rakip şartı kaldırıldı); girişsiz hiçbir oyun verisi tutulmaz.
 - **`Setup`** — Oyun başlangıç ekranı. "Nasıl oynanır?" linki burada da bulunur.
 - **`Board`** — Her köşenin iç 2 kenarında (merkeze bakan L şeklinde) oyuncu rengiyle 2px çizgi gösterilir (`cornerEdgeStyle`).
 - **`HelpModal`** — Oyun kuralları sayfası. Türkçe, kapsamlı.

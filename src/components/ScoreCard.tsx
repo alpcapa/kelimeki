@@ -8,11 +8,9 @@ import { useAuth } from '../hooks/useAuth';
 
 interface ScoreCardProps {
   onClose: () => void;
-  /** Sıralama tablosunu açar. */
-  onLeaderboard: () => void;
 }
 
-export function ScoreCard({ onClose, onLeaderboard }: ScoreCardProps) {
+export function ScoreCard({ onClose }: ScoreCardProps) {
   const { user, profile } = useAuth();
   const [stats, setStats] = useState<PlayerStats | null | undefined>(undefined);
 
@@ -80,13 +78,6 @@ export function ScoreCard({ onClose, onLeaderboard }: ScoreCardProps) {
           </div>
         </>
       )}
-
-      <button
-        onClick={onLeaderboard}
-        className="mt-5 w-full bg-accent text-white rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform"
-      >
-        🏆 Lider Tablosu
-      </button>
     </Modal>
   );
 }
