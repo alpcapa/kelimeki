@@ -222,6 +222,46 @@ export function validatePlacement(
 }
 
 /**
+ * Verilen hücrelerin girdiği, oynayana ait olmayan köşelerin sahiplerini
+ * (oyuncu indeksi) tekrarsız ve sırayla döndürür. Bir kelime iki farklı
+ * rakip köşesine birden girebilir (örn. üst sıradaki uzun bir kelime hem
+ * sol-üst hem sağ-üst köşeye değebilir).
+ */
+export function computeInvadedOwners(
+  coords: [number, number][],
+  ownCorner: number,
+  players: Player[],
+): number[] {
+  const idxs: number[] = [];
+  const seen = new Set<number>();
+  for (const [r, c] of coords) {
+    const region = regionOf(r, c);
+    if (region === -1 || region === ownCorner) continue;
+    const idx = players.findIndex((p) => p.corner === region);
+    if (idx >= 0 && !seen.has(idx)) {
+      seen.add(idx);
+      idxs.push(idx);
+    }
+  }
+  return idxs;
+}
+
+/**
+ * Rakip köşe(ler)ine giren bir hamlenin puanını paylaştırır: puan, saldırgan
+ * ve girilen her köşe sahibi arasında eşit bölünür (1 köşe → yarı yarıya,
+ * 2 köşe → üçe bölünür). Sahip sayısı 0 ise tüm puan saldırgana kalır.
+ */
+export function splitInvasionScore(
+  basePts: number,
+  ownerCount: number,
+): { attackerPts: number; ownerShare: number } {
+  if (ownerCount === 0) return { attackerPts: basePts, ownerShare: 0 };
+  const parties = ownerCount + 1;
+  const ownerShare = Math.round(basePts / parties);
+  return { attackerPts: basePts - ownerShare * ownerCount, ownerShare };
+}
+
+/**
  * Bu turda oluşan tüm kelimelerin toplam puanını hesaplar. Bonuslar yalnızca
  * bu turda yeni konan taşlara uygulanır. Tüm raf kullanılırsa bingo bonusu.
  */
