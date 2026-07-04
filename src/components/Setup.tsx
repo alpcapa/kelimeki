@@ -222,9 +222,9 @@ export function Setup({ onStart }: SetupProps) {
         })}
       </div>
 
-      {accountName && ai.slice(1, count).every(Boolean) && (
+      {!accountName && (
         <p className="text-[11px] font-mono text-muted text-center leading-relaxed px-1">
-          Sadece yapay zekaya karşı oynanan oyunların hiçbir kaydı tutulmaz.
+          Giriş yapmadan oynadığınız oyunların istatistikleri tutulmaz.
         </p>
       )}
 
