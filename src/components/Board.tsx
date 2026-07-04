@@ -194,30 +194,34 @@ export function Board({ state, onCellClick, moveStatus }: BoardProps) {
       >
         {cells}
 
-        {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan. */}
-        {moveStatus && (
+        {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
+            Her oluşan kelime kendi çerçevesini alır; ilgisiz hücreler kapsanmaz. */}
+        {moveStatus?.frames.map((f, i) => (
           <div
+            key={i}
             className="pointer-events-none rounded-[7px] z-10"
             style={{
-              gridRow: `${moveStatus.minR + 1} / ${moveStatus.maxR + 2}`,
-              gridColumn: `${moveStatus.minC + 1} / ${moveStatus.maxC + 2}`,
+              gridRow: `${f.minR + 1} / ${f.maxR + 2}`,
+              gridColumn: `${f.minC + 1} / ${f.maxC + 2}`,
               border: `2.5px solid ${moveStatus.valid ? '#1FA05C' : '#E0483A'}`,
               position: 'relative',
             }}
           >
-            <span
-              className="absolute -top-[9px] -right-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
-              style={{
-                background: moveStatus.valid ? '#1FA05C' : '#E0483A',
-                fontSize: 'clamp(8px,2vw,11px)',
-                padding: '3px 6px',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
-              }}
-            >
-              +{moveStatus.score}
-            </span>
+            {i === 0 && (
+              <span
+                className="absolute -top-[9px] -right-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
+                style={{
+                  background: moveStatus.valid ? '#1FA05C' : '#E0483A',
+                  fontSize: 'clamp(8px,2vw,11px)',
+                  padding: '3px 6px',
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
+                }}
+              >
+                +{moveStatus.score}
+              </span>
+            )}
           </div>
-        )}
+        ))}
 
         {/* Her oyuncunun 5×5 köşesine soluk numara filigranı. */}
         <div className="pointer-events-none absolute inset-1">

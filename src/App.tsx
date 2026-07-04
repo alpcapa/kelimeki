@@ -136,19 +136,24 @@ export default function App() {
       open,
       isFirstMove(state),
     );
+    const boxOf = (coords: [number, number][]) => ({
+      minR: Math.min(...coords.map((p) => p[0])),
+      maxR: Math.max(...coords.map((p) => p[0])),
+      minC: Math.min(...coords.map((p) => p[1])),
+      maxC: Math.max(...coords.map((p) => p[1])),
+    });
+
+    // Her oluşan kelime kendi (düz satır/sütun) çerçevesini alır — tek bir
+    // kapsayan dikdörtgen kullanılmaz, aksi halde kelimeyle ilgisiz hücreler
+    // de çerçeve içinde kalabilir.
     const formed = getFormedWords(state.board, state.placed);
-    const coords = formed.length > 0
-      ? formed.flatMap((f) => f.coords)
-      : (placedKeys.map((k) => k.split(',').map(Number)) as [number, number][]);
-    const rows = coords.map((p) => p[0]);
-    const cols = coords.map((p) => p[1]);
+    const frames = formed.length > 0
+      ? formed.map((f) => boxOf(f.coords))
+      : [boxOf(placedKeys.map((k) => k.split(',').map(Number)) as [number, number][])];
 
     return {
       valid: result.valid,
-      minR: Math.min(...rows),
-      maxR: Math.max(...rows),
-      minC: Math.min(...cols),
-      maxC: Math.max(...cols),
+      frames,
       score: calcScore(state.board, state.placed, state.bonuses),
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps

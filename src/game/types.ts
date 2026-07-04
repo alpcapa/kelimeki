@@ -92,14 +92,20 @@ export interface ValidationResult {
   words?: string[];
 }
 
-/** Tahtada, "Oyna"ya basmadan önce anlık gösterilen hamle çerçevesi. */
-export interface MoveStatus {
-  /** Yerel sözlüğe göre şu anki yerleştirme geçerli mi? */
-  valid: boolean;
+/** Tek bir kelimenin (satır ya da sütun boyunca) kapladığı hücre aralığı. */
+export interface MoveFrame {
   minR: number;
   maxR: number;
   minC: number;
   maxC: number;
+}
+
+/** Tahtada, "Oyna"ya basmadan önce anlık gösterilen hamle çerçevesi/leri. */
+export interface MoveStatus {
+  /** Yerel sözlüğe göre şu anki yerleştirme geçerli mi? */
+  valid: boolean;
+  /** Oluşan her kelimenin kendi çerçevesi (ilgisiz hücreleri kapsamaz). */
+  frames: MoveFrame[];
   /** Bu hamlenin (henüz oynanmamış) potansiyel puanı. */
   score: number;
 }
