@@ -496,15 +496,37 @@ export function gameReducer(state: GameState, action: Action): GameState {
         isFirstMove(state),
       );
 
-      // Geçerli hamle yoksa YZ pas geçer.
+      // Geçerli hamle yoksa: torbada taş varsa rafını değiştirir (aksi halde
+      // oynanamayan aynı harflerle sonsuza dek pas geçer); torba boşsa pas
+      // geçer. Her iki durum da pas sayacını artırır — herkes art arda
+      // tıkanırsa oyun yine de biter, sadece tıkanan oyuncu bir sonraki
+      // turunda şansını taze harflerle dener.
       if (!move) {
         const consecutivePasses = state.consecutivePasses + 1;
-        const moved: GameState = {
-          ...state,
-          consecutivePasses,
-          message: `${me.name} pas geçti.`,
-          messageType: 'warn',
-        };
+        let moved: GameState;
+        if (state.bag.length > 0) {
+          const returned = me.rack.map((t) => ({
+            letter: t.wild ? '?' : t.letter,
+            pts: t.pts,
+          }));
+          const bag = shuffle([...state.bag, ...returned]);
+          const rack = drawTiles(bag, returned.length);
+          moved = {
+            ...state,
+            bag,
+            players: withRack(state, rack),
+            consecutivePasses,
+            message: `${me.name} harflerini değiştirdi.`,
+            messageType: 'warn',
+          };
+        } else {
+          moved = {
+            ...state,
+            consecutivePasses,
+            message: `${me.name} pas geçti.`,
+            messageType: 'warn',
+          };
+        }
         if (consecutivePasses >= state.players.length * MAX_PASS_ROUNDS) {
           return endGame(moved);
         }
