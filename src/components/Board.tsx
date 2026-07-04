@@ -182,6 +182,64 @@ export function Board({ state, onCellClick, moveStatus }: BoardProps) {
     }
   }
 
+  // Oyna'ya basmadan önce anlık geçerlilik çerçevesi: oluşan tüm kelimelerin
+  // hücrelerini kapsayan TEK bir dış hat çizilir (iç kesişim hücrelerinde
+  // ayırıcı çizgi olmaz) — her hücrenin yalnızca kümenin dışına bakan
+  // kenarlarına çizgi eklenir.
+  const moveOutline: React.ReactNode[] = [];
+  if (moveStatus) {
+    // Kesişim hücreleri (hem ana hem çapraz kelimede) birden fazla kez
+    // geçebilir — tekilleştir, aksi halde aynı hücreye iki kez çerçeve çizilir.
+    const uniqueCells = [...new Map(moveStatus.cells.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
+    const cellSet = new Set(uniqueCells.map(([r, c]) => key(r, c)));
+    const color = moveStatus.valid ? '#1FA05C' : '#E0483A';
+    let badge: [number, number] | null = null;
+    for (const [r, c] of uniqueCells) {
+      if (!badge || r < badge[0] || (r === badge[0] && c > badge[1])) badge = [r, c];
+    }
+    for (const [r, c] of uniqueCells) {
+      const top = cellSet.has(key(r - 1, c));
+      const bottom = cellSet.has(key(r + 1, c));
+      const left = cellSet.has(key(r, c - 1));
+      const right = cellSet.has(key(r, c + 1));
+      const side = (occupied: boolean) => (occupied ? 'none' : `2.5px solid ${color}`);
+      const radius = (a: boolean, b: boolean) => (!a && !b ? '5px' : '0');
+      moveOutline.push(
+        <div
+          key={`${r},${c}`}
+          className="pointer-events-none z-10"
+          style={{
+            gridRow: `${r + 1} / ${r + 2}`,
+            gridColumn: `${c + 1} / ${c + 2}`,
+            borderTop: side(top),
+            borderBottom: side(bottom),
+            borderLeft: side(left),
+            borderRight: side(right),
+            borderTopLeftRadius: radius(top, left),
+            borderTopRightRadius: radius(top, right),
+            borderBottomLeftRadius: radius(bottom, left),
+            borderBottomRightRadius: radius(bottom, right),
+            position: 'relative',
+          }}
+        >
+          {badge && badge[0] === r && badge[1] === c && (
+            <span
+              className="absolute -top-[9px] -right-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
+              style={{
+                background: color,
+                fontSize: 'clamp(8px,2vw,11px)',
+                padding: '3px 6px',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
+              }}
+            >
+              +{moveStatus.score}
+            </span>
+          )}
+        </div>,
+      );
+    }
+  }
+
   return (
     <div className="w-full max-w-[680px] mx-auto px-3 pt-2 pb-3 flex flex-col items-center">
       <div
@@ -194,34 +252,9 @@ export function Board({ state, onCellClick, moveStatus }: BoardProps) {
       >
         {cells}
 
-        {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
-            Her oluşan kelime kendi çerçevesini alır; ilgisiz hücreler kapsanmaz. */}
-        {moveStatus?.frames.map((f, i) => (
-          <div
-            key={i}
-            className="pointer-events-none rounded-[7px] z-10"
-            style={{
-              gridRow: `${f.minR + 1} / ${f.maxR + 2}`,
-              gridColumn: `${f.minC + 1} / ${f.maxC + 2}`,
-              border: `2.5px solid ${moveStatus.valid ? '#1FA05C' : '#E0483A'}`,
-              position: 'relative',
-            }}
-          >
-            {i === 0 && (
-              <span
-                className="absolute -top-[9px] -right-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
-                style={{
-                  background: moveStatus.valid ? '#1FA05C' : '#E0483A',
-                  fontSize: 'clamp(8px,2vw,11px)',
-                  padding: '3px 6px',
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
-                }}
-              >
-                +{moveStatus.score}
-              </span>
-            )}
-          </div>
-        ))}
+        {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan:
+            tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
+        {moveOutline}
 
         {/* Her oyuncunun 5×5 köşesine soluk numara filigranı. */}
         <div className="pointer-events-none absolute inset-1">
