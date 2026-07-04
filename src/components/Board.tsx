@@ -173,7 +173,7 @@ export function Board({ state, onCellClick, moveStatus }: BoardProps) {
         <div
           key={k}
           className={classes.join(' ')}
-          style={style}
+          style={{ ...style, gridRow: `${r + 1} / ${r + 2}`, gridColumn: `${c + 1} / ${c + 2}` }}
           onClick={() => onCellClick(r, c)}
         >
           {content}
