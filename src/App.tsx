@@ -45,7 +45,7 @@ export default function App() {
 
   // Rakip köşeye giriş onay popup'ı.
   const [invasionConfirm, setInvasionConfirm] = useState<{
-    ownerName: string;
+    ownerNames: string[];
     ownerPts: number;
   } | null>(null);
 
@@ -170,18 +170,20 @@ export default function App() {
   const canAct = !state.isGameOver && !me.isAI;
 
   const handlePlay = async () => {
-    // Rakip köşeye giriş tespiti.
-    let invasion: { ownerName: string; ownerPts: number } | null = null;
+    // Rakip köşeye giriş tespiti — düz bir kelime en fazla 2 köşeyi ihlal edebilir.
+    let invasion: { ownerNames: string[]; ownerPts: number } | null = null;
+    const invadedOwnerNames: string[] = [];
     for (const k of Object.keys(state.placed)) {
       const [r, c] = k.split(',').map(Number);
       const region = regionOf(r, c);
       if (region !== -1 && region !== me.corner) {
         const owner = state.players.find((p) => p.corner === region);
-        if (owner) {
-          invasion = { ownerName: owner.name, ownerPts: Math.round(potentialScore / 2) };
-          break;
-        }
+        if (owner && !invadedOwnerNames.includes(owner.name)) invadedOwnerNames.push(owner.name);
       }
+    }
+    if (invadedOwnerNames.length > 0) {
+      const ownerPts = Math.round(potentialScore / (invadedOwnerNames.length + 1));
+      invasion = { ownerNames: invadedOwnerNames, ownerPts };
     }
 
     // Sunucu kelime doğrulaması (Supabase yapılandırılmışsa).
@@ -355,9 +357,12 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              Dikkat, rakip köşesinde oynuyorsun. Bu hamleden kazanacağın{' '}
-              <strong>{potentialScore} puanın yarısını ({invasionConfirm.ownerPts} puan)</strong>{' '}
-              <strong>{invasionConfirm.ownerName}</strong> kapacak.
+              Dikkat, {invasionConfirm.ownerNames.length > 1 ? 'iki rakip köşesinde' : 'rakip köşesinde'} oynuyorsun. Bu hamleden kazanacağın{' '}
+              <strong>
+                {potentialScore} puanın {invasionConfirm.ownerNames.length > 1 ? "3'te 1'ini" : 'yarısını'} ({invasionConfirm.ownerPts} puan
+                {invasionConfirm.ownerNames.length > 1 ? ' her biri' : ''})
+              </strong>{' '}
+              <strong>{invasionConfirm.ownerNames.join(' ve ')}</strong> kapacak.
               Devam etmek istiyor musun?
             </p>
             <div className="flex gap-2 mt-1">

@@ -213,6 +213,42 @@ function withRack(state: GameState, rack: Tile[]): Player[] {
   return state.players.map((p, i) => (i === state.current ? { ...p, rack } : p));
 }
 
+/**
+ * Bir hamlede taş konan hücrelerden, saldırganın kendi köşesi dışındaki
+ * ihlal edilen köşelerin sahiplerini (tekrarsız, karşılaşma sırasına göre)
+ * döndürür. Düz bir kelime tek satır/sütun boyunca uzandığından en fazla
+ * 2 farklı köşeyi ihlal edebilir.
+ */
+function invadedOwnerIndices(
+  cells: Iterable<[number, number]>,
+  players: Player[],
+  myCorner: number,
+): number[] {
+  const owners: number[] = [];
+  for (const [r, c] of cells) {
+    const region = regionOf(r, c);
+    if (region !== -1 && region !== myCorner) {
+      const idx = players.findIndex((p) => p.corner === region);
+      if (idx >= 0 && !owners.includes(idx)) owners.push(idx);
+    }
+  }
+  return owners;
+}
+
+/**
+ * Hamle puanını saldırgan ve ihlal edilen köşe sahipleri arasında paylaştırır.
+ * Tek köşe ihlalinde puan ikiye, iki köşe ihlalinde üçe bölünür; sahiplerin
+ * payı eşittir, yuvarlama artığı saldırgana kalır.
+ */
+function splitInvasionScore(
+  basePts: number,
+  ownerCount: number,
+): { bonusPerOwner: number; attackerPts: number } {
+  if (ownerCount === 0) return { bonusPerOwner: 0, attackerPts: basePts };
+  const bonusPerOwner = Math.round(basePts / (ownerCount + 1));
+  return { bonusPerOwner, attackerPts: basePts - bonusPerOwner * ownerCount };
+}
+
 export function gameReducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case 'INIT':
@@ -419,20 +455,18 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const basePts = calcScore(state.board, state.placed, state.bonuses);
       const formed = getFormedWords(state.board, state.placed);
 
-      // Rakip köşeye giriş: kazanılan puanın yarısı o köşenin sahibine aktarılır.
-      let invadedOwnerIdx = -1;
-      for (const k of Object.keys(state.placed)) {
+      // Rakip köşeye giriş: kazanılan puan, ihlal edilen köşe sahipleriyle paylaşılır.
+      const cells: [number, number][] = Object.keys(state.placed).map((k) => {
         const [r, c] = k.split(',').map(Number);
-        const region = regionOf(r, c);
-        if (region !== -1 && region !== me.corner) {
-          const idx = state.players.findIndex((p) => p.corner === region);
-          if (idx >= 0) { invadedOwnerIdx = idx; break; }
-        }
-      }
-      const ownerBonus = invadedOwnerIdx >= 0 ? Math.round(basePts / 2) : 0;
-      const pts = basePts - ownerBonus;
-      const bonusNote = invadedOwnerIdx >= 0
-        ? ` (${ownerBonus} puanı ${state.players[invadedOwnerIdx].name} kaptı)`
+        return [r, c];
+      });
+      const invadedOwnerIdxs = invadedOwnerIndices(cells, state.players, me.corner);
+      const { bonusPerOwner: ownerBonus, attackerPts: pts } = splitInvasionScore(
+        basePts,
+        invadedOwnerIdxs.length,
+      );
+      const bonusNote = invadedOwnerIdxs.length > 0
+        ? ` (${ownerBonus} puanı ${invadedOwnerIdxs.map((i) => state.players[i].name).join(' ve ')} kaptı)`
         : '';
 
       // Yerleştirmeleri tahtaya işle.
@@ -455,7 +489,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         if (i === state.current) {
           return { ...p, rack, score: p.score + pts, bestMoveScore: Math.max(p.bestMoveScore, pts), longestWord: newLongestWord };
         }
-        if (i === invadedOwnerIdx) {
+        if (invadedOwnerIdxs.includes(i)) {
           return { ...p, score: p.score + ownerBonus };
         }
         return p;
@@ -568,29 +602,28 @@ export function gameReducer(state: GameState, action: Action): GameState {
         me.longestWord,
       );
 
-      let aiInvadedOwnerIdx = -1;
-      for (const p of move.placements) {
-        const region = regionOf(p.r, p.c);
-        if (region !== -1 && region !== me.corner) {
-          const idx = state.players.findIndex((pl) => pl.corner === region);
-          if (idx >= 0) { aiInvadedOwnerIdx = idx; break; }
-        }
-      }
-      const aiOwnerBonus = aiInvadedOwnerIdx >= 0 ? Math.round(move.score / 2) : 0;
-      const aiPts = move.score - aiOwnerBonus;
+      const aiInvadedOwnerIdxs = invadedOwnerIndices(
+        move.placements.map((p): [number, number] => [p.r, p.c]),
+        state.players,
+        me.corner,
+      );
+      const { bonusPerOwner: aiOwnerBonus, attackerPts: aiPts } = splitInvasionScore(
+        move.score,
+        aiInvadedOwnerIdxs.length,
+      );
 
       const players = state.players.map((p, i) => {
         if (i === state.current) {
           return { ...p, rack, score: p.score + aiPts, bestMoveScore: Math.max(p.bestMoveScore, aiPts), longestWord: aiLongestWord };
         }
-        if (i === aiInvadedOwnerIdx) {
+        if (aiInvadedOwnerIdxs.includes(i)) {
           return { ...p, score: p.score + aiOwnerBonus };
         }
         return p;
       });
 
       const aiInvasionNote = aiOwnerBonus > 0
-        ? ` (${aiOwnerBonus} puanı ${state.players[aiInvadedOwnerIdx].name} kaptı)`
+        ? ` (${aiOwnerBonus} puanı ${aiInvadedOwnerIdxs.map((i) => state.players[i].name).join(' ve ')} kaptı)`
         : '';
       const moved: GameState = {
         ...state,
