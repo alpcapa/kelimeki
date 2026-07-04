@@ -99,5 +99,4 @@ from unnest(array[
 ]) as w
 on conflict (word) do nothing;
 
--- Yardimci fonksiyon artik gerekli degil.
-drop function if exists public.harfik_points (text);
+-- harfik_points kalıcı: sonraki migration'lar (seed_dictionary.sql) da kullanıyor.
