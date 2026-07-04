@@ -145,12 +145,25 @@ function setLastWords(
   return next;
 }
 
-/** Kalan raf puanlarını her oyuncudan düşerek oyunu bitirir. */
+/**
+ * Kalan raf puanlarını her oyuncudan düşerek oyunu bitirir. Torba boşken
+ * rafını tamamen bitiren oyuncu varsa (gerçek bitiriş), diğerlerinin elinde
+ * kalan taşların toplam puanı ona eklenir.
+ */
 function endGame(state: GameState): GameState {
-  const players = state.players.map((p) => ({
-    ...p,
-    score: Math.max(0, p.score - p.rack.reduce((s, t) => s + t.pts, 0)),
-  }));
+  const remaining = (p: Player) => p.rack.reduce((s, t) => s + t.pts, 0);
+  const finisher =
+    state.bag.length === 0 ? state.players.find((p) => p.rack.length === 0) : undefined;
+  const bonus = finisher
+    ? state.players
+        .filter((p) => p !== finisher)
+        .reduce((s, p) => s + remaining(p), 0)
+    : 0;
+
+  const players = state.players.map((p) => {
+    const score = Math.max(0, p.score - remaining(p)) + (p === finisher ? bonus : 0);
+    return { ...p, score };
+  });
   return {
     ...state,
     players,
