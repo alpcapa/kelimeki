@@ -26,6 +26,41 @@ export function canSpell(word: string, rack: string[]): boolean {
   return true;
 }
 
+export interface InvasionShare {
+  playerIdx: number;
+  pts: number;
+}
+
+/**
+ * Bir hamlenin girdiği rakip köşelerini ve puan paylaşımını hesaplar.
+ * N farklı rakip köşesine girilirse puan (N+1) kişi arasında (saldırgan +
+ * her köşe sahibi) eşit paylaşılır.
+ */
+export function computeInvasionShares(
+  placedCells: { r: number; c: number }[],
+  myCorner: number,
+  players: Player[],
+  basePts: number,
+): { attackerPts: number; shares: InvasionShare[] } {
+  const ownerIdxs: number[] = [];
+  for (const { r, c } of placedCells) {
+    const region = regionOf(r, c);
+    if (region !== -1 && region !== myCorner) {
+      const idx = players.findIndex((p) => p.corner === region);
+      if (idx >= 0 && !ownerIdxs.includes(idx)) ownerIdxs.push(idx);
+    }
+  }
+  if (ownerIdxs.length === 0) return { attackerPts: basePts, shares: [] };
+
+  const shareCount = ownerIdxs.length + 1;
+  const shares = ownerIdxs.map((playerIdx) => ({
+    playerIdx,
+    pts: Math.round(basePts / shareCount),
+  }));
+  const attackerPts = basePts - shares.reduce((sum, s) => sum + s.pts, 0);
+  return { attackerPts, shares };
+}
+
 /**
  * Hangi köşelerin "ihlal edildiğini" hesaplar.
  * Kural: Köşe sahibi bölgesinin iç sınır karesine taş koyduğunda bölge ihlal

@@ -54,7 +54,7 @@ src/
 
 - **Köşe bölgeleri:** 4 köşe (0=sol-üst, 1=sağ-üst, 2=sol-alt, 3=sağ-alt). 2 oyuncuda çapraz köşeler (0 ve 3), 4 oyuncuda dördü kullanılır.
 - **Köşe ihlali:** Bir oyuncu kendi 5×5 bölgesinin iç sınır karesine (`isZoneBoundaryCell`) taş koyduğunda o köşe "ihlal edilmiş" (`breached`) sayılır ve rakipler girebilir.
-- **Köşe vergisi:** Rakip köşesine giren hamlenin puanı ikiye bölünür; yarısı saldırgana kalır, yarısı köşe sahibine aktarılır. İnsan oyuncu için "Oyna" öncesinde onay modalı (`invasionConfirm` state) gösterilir. YZ için de aynı kural otomatik uygulanır.
+- **Köşe vergisi:** Rakip köşesine giren hamlenin puanı, saldırgan ve girilen köşe sahip(ler)i arasında eşit paylaşılır (1 rakip köşesi → 2 kişi, 2 rakip köşesi → 3 kişi; bkz. `computeInvasionShares` — `src/utils/validator.ts`). İnsan oyuncu için "Oyna" öncesinde onay modalı (`invasionConfirm` state) gösterilir. YZ için de aynı kural otomatik uygulanır.
 - **Oyun bitişi:** Raf boş + torba boş → oyun biter. Kalan raf taşları oyuncunun puanından düşülür. Alternatif: tüm oyuncular arka arkaya MAX_PASS_ROUNDS tur pas geçerse biter.
 - **Joker (`?`):** 4 adet, 0 puan, oynanırken herhangi bir Türkçe harfe dönüşür.
 - **Torba:** Toplam 100 taş (Türkçe dağılım, `src/data/tiles.ts`). Not: bir ara 186'ya çıkarılmıştı, ama simülasyon torbanın gerçek bitirişi (rafını torba boşken tamamen bitirme + rakip puanlarını kapma) neredeyse imkânsız kıldığını gösterdi (4 oyunculuda 0/10), bu yüzden orijinal 100'e geri dönüldü.
