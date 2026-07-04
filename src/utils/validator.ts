@@ -222,6 +222,34 @@ export function validatePlacement(
 }
 
 /**
+ * Rakip köşe(ler)ine giriş vergisini hesaplar. Hamle tek bir rakip köşesine
+ * giriyorsa kazanılan puan ikiye bölünür (yarısı köşe sahibine). İki farklı
+ * rakip köşesine aynı anda giriliyorsa puan üç kişi arasında (saldırgan +
+ * iki köşe sahibi) eşit paylaşılır. Yuvarlama farkı saldırganda kalır, böylece
+ * toplam puan her zaman korunur.
+ */
+export function computeInvasionSplit(
+  coords: [number, number][],
+  ownCorner: number,
+  players: Player[],
+  basePts: number,
+): { pts: number; shares: { index: number; amount: number }[] } {
+  const invadedIdx = new Set<number>();
+  for (const [r, c] of coords) {
+    const region = regionOf(r, c);
+    if (region !== -1 && region !== ownCorner) {
+      const idx = players.findIndex((p) => p.corner === region);
+      if (idx >= 0) invadedIdx.add(idx);
+    }
+  }
+  if (invadedIdx.size === 0) return { pts: basePts, shares: [] };
+  const share = Math.round(basePts / (invadedIdx.size + 1));
+  const shares = [...invadedIdx].map((index) => ({ index, amount: share }));
+  const pts = basePts - share * invadedIdx.size;
+  return { pts, shares };
+}
+
+/**
  * Bu turda oluşan tüm kelimelerin toplam puanını hesaplar. Bonuslar yalnızca
  * bu turda yeni konan taşlara uygulanır. Tüm raf kullanılırsa bingo bonusu.
  */
