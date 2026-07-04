@@ -1,5 +1,5 @@
 // Harfik — ana uygulama: kurulum, çok oyunculu sıra akışı ve düzen
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { GameHeader } from './components/GameHeader';
 import { Board } from './components/Board';
 import { Rack } from './components/Rack';
@@ -9,8 +9,8 @@ import { Setup } from './components/Setup';
 import { MeaningModal } from './components/MeaningModal';
 import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
-import { calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacementStructural } from './utils/validator';
-import { key } from './utils/board';
+import { calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { getFormedWords, key } from './utils/board';
 import { trUpper, trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, saveGame } from './lib/api';
@@ -118,6 +118,41 @@ export default function App() {
     const t = setTimeout(() => dispatch({ type: 'AI_PLAY' }), AI_THINK_MS);
     return () => clearTimeout(t);
   }, [aiTurn, state.current, state.turnCount]);
+
+  // Oyna'ya basmadan önce, tahtaya konan taşların anlık geçerlilik/puan
+  // çerçevesi (yeşil/kırmızı). Yerel sözlükle kontrol edilir; sunucu
+  // doğrulaması yalnızca Oyna'ya basınca (handlePlay) çalışır.
+  const moveStatus = useMemo(() => {
+    const placedKeys = Object.keys(state.placed);
+    if (placedKeys.length === 0) return null;
+    const current = state.players[state.current];
+    if (!current) return null;
+
+    const open = computeBreachedCorners(state.board, state.players);
+    const result = validatePlacement(
+      state.board,
+      state.placed,
+      current.corner,
+      open,
+      isFirstMove(state),
+    );
+    const formed = getFormedWords(state.board, state.placed);
+    const coords = formed.length > 0
+      ? formed.flatMap((f) => f.coords)
+      : (placedKeys.map((k) => k.split(',').map(Number)) as [number, number][]);
+    const rows = coords.map((p) => p[0]);
+    const cols = coords.map((p) => p[1]);
+
+    return {
+      valid: result.valid,
+      minR: Math.min(...rows),
+      maxR: Math.max(...rows),
+      minC: Math.min(...cols),
+      maxC: Math.max(...cols),
+      score: calcScore(state.board, state.placed, state.bonuses),
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.placed, state.board, state.players, state.current]);
 
   // ── Kurulum ekranı ─────────────────────────────────────────────────────────
   if (state.phase === 'setup') {
@@ -235,9 +270,7 @@ export default function App() {
     if (window.confirm(msg)) dispatch({ type: 'PASS' });
   };
 
-  const placedCount = Object.keys(state.placed).length;
-  const potentialScore =
-    placedCount > 0 ? calcScore(state.board, state.placed, state.bonuses) : 0;
+  const potentialScore = moveStatus?.score ?? 0;
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
@@ -249,7 +282,7 @@ export default function App() {
       <Board
         state={state}
         onCellClick={handleCellClick}
-        potentialScore={placedCount > 0 ? potentialScore : null}
+        moveStatus={moveStatus}
       />
 
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">

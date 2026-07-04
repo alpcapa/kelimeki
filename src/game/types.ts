@@ -91,3 +91,15 @@ export interface ValidationResult {
   reason?: string;
   words?: string[];
 }
+
+/** Tahtada, "Oyna"ya basmadan önce anlık gösterilen hamle çerçevesi. */
+export interface MoveStatus {
+  /** Yerel sözlüğe göre şu anki yerleştirme geçerli mi? */
+  valid: boolean;
+  minR: number;
+  maxR: number;
+  minC: number;
+  maxC: number;
+  /** Bu hamlenin (henüz oynanmamış) potansiyel puanı. */
+  score: number;
+}

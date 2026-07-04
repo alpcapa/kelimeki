@@ -7,15 +7,15 @@ import {
   regionOf,
   type PlayerColor,
 } from '../game/constants';
-import type { GameState } from '../game/types';
+import type { GameState, MoveStatus } from '../game/types';
 import { key } from '../utils/board';
 import { Tile } from './Tile';
 
 interface BoardProps {
   state: GameState;
   onCellClick: (r: number, c: number) => void;
-  /** Tahtaya konan taşların potansiyel puanı; taş yoksa null. */
-  potentialScore: number | null;
+  /** Oyna'ya basmadan önceki anlık geçerlilik/puan çerçevesi; taş yoksa null. */
+  moveStatus: MoveStatus | null;
 }
 
 // Nömorfik bonus kareleri: sadece yazı rengi (arkaplan style ile verilir).
@@ -86,7 +86,7 @@ function cornerEdgeStyle(
   return s;
 }
 
-export function Board({ state, onCellClick, potentialScore }: BoardProps) {
+export function Board({ state, onCellClick, moveStatus }: BoardProps) {
   const { board, placed, bonuses, lastWords, players, current } = state;
 
   // Köşe bölgesi -> o köşenin sahibinin rengi (boş kareleri renklendirmek için).
@@ -194,6 +194,31 @@ export function Board({ state, onCellClick, potentialScore }: BoardProps) {
       >
         {cells}
 
+        {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan. */}
+        {moveStatus && (
+          <div
+            className="pointer-events-none rounded-[7px] z-10"
+            style={{
+              gridRow: `${moveStatus.minR + 1} / ${moveStatus.maxR + 2}`,
+              gridColumn: `${moveStatus.minC + 1} / ${moveStatus.maxC + 2}`,
+              border: `2.5px solid ${moveStatus.valid ? '#1FA05C' : '#E0483A'}`,
+              position: 'relative',
+            }}
+          >
+            <span
+              className="absolute -top-[9px] -right-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
+              style={{
+                background: moveStatus.valid ? '#1FA05C' : '#E0483A',
+                fontSize: 'clamp(8px,2vw,11px)',
+                padding: '3px 6px',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
+              }}
+            >
+              +{moveStatus.score}
+            </span>
+          </div>
+        )}
+
         {/* Her oyuncunun 5×5 köşesine soluk numara filigranı. */}
         <div className="pointer-events-none absolute inset-1">
           {[0, 1, 2, 3].map((i) => {
@@ -225,14 +250,7 @@ export function Board({ state, onCellClick, potentialScore }: BoardProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 shrink-0 pt-1 w-full">
-        <div className="font-mono text-[11px] text-gold tracking-[0.5px] whitespace-nowrap">
-          {potentialScore != null && (
-            <>
-              Potansiyel: <span className="font-bold">+{potentialScore}</span>
-            </>
-          )}
-        </div>
+      <div className="flex items-center justify-end gap-2 shrink-0 pt-1 w-full">
         <div className="flex gap-2 justify-end flex-wrap">
           {LEGEND.map((item) => (
             <div
