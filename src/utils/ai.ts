@@ -52,10 +52,25 @@ export function findAIMove(
   isFirstMove: boolean,
 ): AIMove | null {
   const rackLetters = rack.map((t) => t.letter);
-  const candidates = [...WORD_SET]
+  const wordPool = [...WORD_SET]
     .filter((w) => w.length >= 2 && w.length <= 7)
-    .map((w) => trUpper(w))
-    .filter((w) => canSpell(w, rackLetters));
+    .map((w) => trUpper(w));
+  const candidates = wordPool.filter((w) => canSpell(w, rackLetters));
+
+  // Çapalı hamlelerde kelimenin bir harfi tahtada zaten var olabilir (çapa).
+  // O harfi rafta aramaya gerek yok — rafa + çapa harfine göre gevşetilmiş
+  // aday listesi, harfe göre önbelleklenir.
+  const anchoredCandidatesCache = new Map<string, string[]>();
+  const candidatesForAnchor = (letter: string): string[] => {
+    let cached = anchoredCandidatesCache.get(letter);
+    if (!cached) {
+      cached = wordPool.filter(
+        (w) => w.includes(letter) && canSpell(w, [...rackLetters, letter]),
+      );
+      anchoredCandidatesCache.set(letter, cached);
+    }
+    return cached;
+  };
 
   let best: AIMove | null = null;
 
@@ -198,7 +213,7 @@ export function findAIMove(
       const anchorTile = board[r][c];
       if (!anchorTile) continue;
       const anchor = tileLetter(anchorTile);
-      for (const W of candidates) {
+      for (const W of candidatesForAnchor(anchor)) {
         let idx = W.indexOf(anchor);
         while (idx >= 0) {
           tryPlace(W, r, c, idx, true);
