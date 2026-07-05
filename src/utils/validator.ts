@@ -54,6 +54,24 @@ export function computeBreachedCorners(board: Board, players: Player[]): boolean
 export const computeOpenCorners = computeBreachedCorners;
 
 /**
+ * Oyuncunun sahip olduğu köşelerden, henüz hiç kendi taşının bulunmadığı
+ * ("taze") olanları döner. 2 oyunculu oyunda her oyuncunun iki köşesi
+ * olduğundan, bir köşeden kelimeye başladıktan sonra diğer (taze) köşesinden
+ * de bağımsız bir kelimeyle başlayabilmesi için kullanılır.
+ */
+export function freshCorners(board: Board, ownCorners: number[], owner: number): number[] {
+  return ownCorners.filter((corner) => {
+    const b = cornerBounds(corner);
+    for (let r = b.r0; r <= b.r1; r++) {
+      for (let c = b.c0; c <= b.c1; c++) {
+        if (board[r][c]?.owner === owner) return false;
+      }
+    }
+    return true;
+  });
+}
+
+/**
  * Verilen başlangıç hücrelerinden (bu köşe bölgesi içinde kalarak) taşlar
  * üzerinden yayılıp bölgenin iç sınır karesine ulaşılıp ulaşılamadığını
  * kontrol eder. Sadece yeni konan taşın bitişiği değil, o taşa bağlı tüm
@@ -117,6 +135,7 @@ export function cellAllowed(
 export function validatePlacementStructural(
   board: Board,
   placed: Placed,
+  owner: number,
   ownCorners: number[],
   openCorners: boolean[],
   isFirstMove: boolean,
@@ -168,11 +187,13 @@ export function validatePlacementStructural(
     }
   }
 
+  const fresh = freshCorners(board, ownCorners, owner);
+  const startsFreshCorner = coords.some(([r, c]) =>
+    fresh.some((corner) => inCorner(corner, r, c)),
+  );
+
   if (isFirstMove) {
-    const startsHome = coords.some(([r, c]) =>
-      ownCorners.some((corner) => inCorner(corner, r, c)),
-    );
-    if (!startsHome) {
+    if (!startsFreshCorner) {
       return { valid: false, reason: 'İlk kelimen kendi köşenden başlamalı.' };
     }
   } else {
@@ -187,7 +208,9 @@ export function validatePlacementStructural(
           nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc],
       ),
     );
-    if (!connects) {
+    // Bağlanmıyorsa, oyuncunun henüz kullanmadığı bir köşesinden bağımsız
+    // yeni bir kelimeyle başlaması da (ilk hamledeki gibi) geçerlidir.
+    if (!connects && !startsFreshCorner) {
       return { valid: false, reason: 'Kelime mevcut harflere bağlanmalı.' };
     }
   }
@@ -207,11 +230,12 @@ export function validatePlacementStructural(
 export function validatePlacement(
   board: Board,
   placed: Placed,
+  owner: number,
   ownCorners: number[],
   openCorners: boolean[],
   isFirstMove: boolean,
 ): ValidationResult {
-  const structural = validatePlacementStructural(board, placed, ownCorners, openCorners, isFirstMove);
+  const structural = validatePlacementStructural(board, placed, owner, ownCorners, openCorners, isFirstMove);
   if (!structural.valid) return structural;
 
   const formed = getFormedWords(board, placed);

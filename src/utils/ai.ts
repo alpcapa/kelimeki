@@ -7,7 +7,7 @@ import { SIZE, cornerBounds, inCorner, regionOf } from '../game/constants';
 import type { AIMove, BonusType, Placement, Tile } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { letterPoints } from '../data/tiles';
-import { canSpell, calcScore, cellAllowed, zoneReachesBoundary } from './validator';
+import { canSpell, calcScore, cellAllowed, freshCorners, zoneReachesBoundary } from './validator';
 import { trLower, trUpper } from './turkish';
 import { getFormedWords, key, tileLetter, type Board } from './board';
 
@@ -103,42 +103,47 @@ export function findAIMove(
   const allowed = (r: number, c: number) =>
     cellAllowed(corners, breachedCorners, r, c);
 
-  // ── İlk hamle: kendi köşelerinden birinden başla ────────────────────────────
-  if (isFirstMove) {
-    for (const homeCorner of corners) {
-      const b = cornerBounds(homeCorner);
-      for (let sr = b.r0; sr <= b.r1; sr++) {
-        for (let sc = b.c0; sc <= b.c1; sc++) {
-          for (const W of candidates) {
-            for (const horiz of [true, false]) {
-              const er = horiz ? sr : sr + W.length - 1;
-              const ec = horiz ? sc + W.length - 1 : sc;
-              if (er >= SIZE || ec >= SIZE) continue;
-              let ok = true;
-              let touchesCorner = false;
-              const positions: [number, number][] = [];
-              for (let i = 0; i < W.length; i++) {
-                const rr = horiz ? sr : sr + i;
-                const cc = horiz ? sc + i : sc;
-                if (board[rr][cc] || !allowed(rr, cc)) {
-                  ok = false;
-                  break;
-                }
-                if (inCorner(homeCorner, rr, cc)) touchesCorner = true;
-                positions.push([rr, cc]);
+  // Verilen köşeden, tahtadaki mevcut taşlardan bağımsız yeni bir kelimeyle
+  // başlayan tüm yerleşimleri dener (ilk hamle ya da henüz kullanılmamış
+  // ikinci köşeden başlama).
+  const tryCornerStart = (homeCorner: number) => {
+    const b = cornerBounds(homeCorner);
+    for (let sr = b.r0; sr <= b.r1; sr++) {
+      for (let sc = b.c0; sc <= b.c1; sc++) {
+        for (const W of candidates) {
+          for (const horiz of [true, false]) {
+            const er = horiz ? sr : sr + W.length - 1;
+            const ec = horiz ? sc + W.length - 1 : sc;
+            if (er >= SIZE || ec >= SIZE) continue;
+            let ok = true;
+            let touchesCorner = false;
+            const positions: [number, number][] = [];
+            for (let i = 0; i < W.length; i++) {
+              const rr = horiz ? sr : sr + i;
+              const cc = horiz ? sc + i : sc;
+              if (board[rr][cc] || !allowed(rr, cc)) {
+                ok = false;
+                break;
               }
-              if (!ok || !touchesCorner) continue;
-              const tiles = consumeRack(W.split(''), rackLetters, owner);
-              if (!tiles) continue;
-              consider(
-                positions.map(([pr, pc], i) => ({ r: pr, c: pc, tile: tiles[i] })),
-                W,
-              );
+              if (inCorner(homeCorner, rr, cc)) touchesCorner = true;
+              positions.push([rr, cc]);
             }
+            if (!ok || !touchesCorner) continue;
+            const tiles = consumeRack(W.split(''), rackLetters, owner);
+            if (!tiles) continue;
+            consider(
+              positions.map(([pr, pc], i) => ({ r: pr, c: pc, tile: tiles[i] })),
+              W,
+            );
           }
         }
       }
     }
+  };
+
+  // ── İlk hamle: kendi köşelerinden birinden başla ────────────────────────────
+  if (isFirstMove) {
+    for (const homeCorner of corners) tryCornerStart(homeCorner);
     return best;
   }
 
@@ -210,6 +215,13 @@ export function findAIMove(
         }
       }
     }
+  }
+
+  // Henüz kullanılmamış (taze) bir köşesi varsa, oradan da bağımsız bir
+  // kelimeyle başlayabilir — 2 köşeli oyunda ikinci köşe ilk köşeden
+  // bağımsız kullanılabilir olmalı.
+  for (const homeCorner of freshCorners(board, corners, owner)) {
+    tryCornerStart(homeCorner);
   }
 
   return best;

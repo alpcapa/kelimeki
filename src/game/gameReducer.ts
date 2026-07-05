@@ -438,8 +438,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const me = state.players[state.current];
       const open = computeBreachedCorners(state.board, state.players);
       const check = action.skipWordCheck
-        ? validatePlacementStructural(state.board, state.placed, me.corners, open, isFirstMove(state))
-        : validatePlacement(state.board, state.placed, me.corners, open, isFirstMove(state));
+        ? validatePlacementStructural(state.board, state.placed, state.current, me.corners, open, isFirstMove(state))
+        : validatePlacement(state.board, state.placed, state.current, me.corners, open, isFirstMove(state));
       if (!check.valid) {
         return { ...state, message: check.reason!, messageType: 'err' };
       }

@@ -142,6 +142,7 @@ export default function App() {
     const result = validatePlacement(
       state.board,
       state.placed,
+      state.current,
       current.corners,
       open,
       isFirstMove(state),
@@ -232,6 +233,7 @@ export default function App() {
       const structural = validatePlacementStructural(
         state.board,
         state.placed,
+        state.current,
         me.corners,
         open,
         isFirstMove(state),
