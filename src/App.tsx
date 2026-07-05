@@ -9,10 +9,11 @@ import { Setup } from './components/Setup';
 import { MeaningModal } from './components/MeaningModal';
 import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
+import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import { calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { getFormedWords, key } from './utils/board';
-import { trUpper, trLower } from './utils/turkish';
+import { trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, saveGame } from './lib/api';
 import type { WordMeaning } from './lib/database.types';
@@ -43,6 +44,9 @@ export default function App() {
 
   // Hamle geçmişi penceresi.
   const [showHistory, setShowHistory] = useState(false);
+
+  // Joker taş konurken hangi harfe dönüşeceğini seçme penceresi.
+  const [pendingWild, setPendingWild] = useState<{ r: number; c: number } | null>(null);
 
   // Oyundan çıkış onay popup'ı.
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -199,13 +203,13 @@ export default function App() {
     }
     if (state.board[r][c]) return;
 
-    let wildLetter: string | undefined;
     const sel = state.selectedTile !== null ? me.rack[state.selectedTile] : null;
     if (sel && sel.letter === '?') {
-      const l = window.prompt('Joker hangi harf olsun? (Türkçe)');
-      wildLetter = trUpper(l || 'A');
+      // Joker taş: hangi harfe dönüşeceği seçilene kadar taş konmaz.
+      setPendingWild({ r, c });
+      return;
     }
-    dispatch({ type: 'PLACE_TILE', r, c, wildLetter });
+    dispatch({ type: 'PLACE_TILE', r, c });
   };
 
   const canAct = !state.isGameOver && !me.isAI;
@@ -467,6 +471,16 @@ export default function App() {
           state={state}
           humanIndex={rackPlayerIndex}
           onClose={() => setShowHistory(false)}
+        />
+      )}
+
+      {pendingWild && (
+        <WildcardModal
+          onSelect={(letter) => {
+            dispatch({ type: 'PLACE_TILE', r: pendingWild.r, c: pendingWild.c, wildLetter: letter });
+            setPendingWild(null);
+          }}
+          onClose={() => setPendingWild(null)}
         />
       )}
 
