@@ -34,11 +34,11 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     { label: 'Galibiyet', value: stats?.wins ?? 0, cls: 'text-green' },
     { label: 'Mağlubiyet', value: stats?.losses ?? 0, cls: 'text-red' },
     { label: 'Kazanma Oranı', value: winRatio, cls: 'text-accent' },
-    { label: 'En Yüksek Puan', value: stats?.best_score ?? 0, cls: 'text-gold' },
+    { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
     { label: 'Beraberlik', value: stats?.ties ?? 0, cls: 'text-muted' },
-    { label: 'En İyi Hamle', value: stats?.best_move_score ?? '—', cls: 'text-accent' },
-    { label: 'Ortalama Hamle', value: stats?.avg_move_score ?? 0, cls: 'text-accent' },
-    { label: 'En Yüksek Kelime', value: stats?.best_word ?? '—', cls: 'text-text' },
+    { label: 'En İyi Hamle Puanı', value: stats?.best_move_score ?? 0, cls: 'text-accent' },
+    { label: 'Ortalama Hamle Puanı', value: stats?.avg_move_score ?? 0, cls: 'text-accent' },
+    { label: 'En Yüksek Kelime Puanı', value: stats?.best_move_score ?? 0, cls: 'text-text' },
     { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
   ];
 
