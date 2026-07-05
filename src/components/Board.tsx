@@ -7,15 +7,17 @@ import {
   regionOf,
   type PlayerColor,
 } from '../game/constants';
-import type { GameState } from '../game/types';
+import type { GameState, MoveStatus } from '../game/types';
 import { key } from '../utils/board';
 import { Tile } from './Tile';
 
 interface BoardProps {
   state: GameState;
   onCellClick: (r: number, c: number) => void;
-  /** Tahtaya konan taşların potansiyel puanı; taş yoksa null. */
-  potentialScore: number | null;
+  /** Oyna'ya basmadan önceki anlık geçerlilik/puan çerçevesi; taş yoksa null. */
+  moveStatus: MoveStatus | null;
+  /** "Hamle Geçmişi" linkine tıklanınca çağrılır. */
+  onOpenHistory: () => void;
 }
 
 // Nömorfik bonus kareleri: sadece yazı rengi (arkaplan style ile verilir).
@@ -86,7 +88,7 @@ function cornerEdgeStyle(
   return s;
 }
 
-export function Board({ state, onCellClick, potentialScore }: BoardProps) {
+export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardProps) {
   const { board, placed, bonuses, lastWords, players, current } = state;
 
   // Köşe bölgesi -> o köşenin sahibinin rengi (boş kareleri renklendirmek için).
@@ -173,10 +175,68 @@ export function Board({ state, onCellClick, potentialScore }: BoardProps) {
         <div
           key={k}
           className={classes.join(' ')}
-          style={style}
+          style={{ ...style, gridRow: `${r + 1} / ${r + 2}`, gridColumn: `${c + 1} / ${c + 2}` }}
           onClick={() => onCellClick(r, c)}
         >
           {content}
+        </div>,
+      );
+    }
+  }
+
+  // Oyna'ya basmadan önce anlık geçerlilik çerçevesi: oluşan tüm kelimelerin
+  // hücrelerini kapsayan TEK bir dış hat çizilir (iç kesişim hücrelerinde
+  // ayırıcı çizgi olmaz) — her hücrenin yalnızca kümenin dışına bakan
+  // kenarlarına çizgi eklenir.
+  const moveOutline: React.ReactNode[] = [];
+  if (moveStatus) {
+    // Kesişim hücreleri (hem ana hem çapraz kelimede) birden fazla kez
+    // geçebilir — tekilleştir, aksi halde aynı hücreye iki kez çerçeve çizilir.
+    const uniqueCells = [...new Map(moveStatus.cells.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
+    const cellSet = new Set(uniqueCells.map(([r, c]) => key(r, c)));
+    const color = moveStatus.valid ? '#1FA05C' : '#E0483A';
+    let badge: [number, number] | null = null;
+    for (const [r, c] of uniqueCells) {
+      if (!badge || r < badge[0] || (r === badge[0] && c > badge[1])) badge = [r, c];
+    }
+    for (const [r, c] of uniqueCells) {
+      const top = cellSet.has(key(r - 1, c));
+      const bottom = cellSet.has(key(r + 1, c));
+      const left = cellSet.has(key(r, c - 1));
+      const right = cellSet.has(key(r, c + 1));
+      const side = (occupied: boolean) => (occupied ? 'none' : `2.5px solid ${color}`);
+      const radius = (a: boolean, b: boolean) => (!a && !b ? '5px' : '0');
+      moveOutline.push(
+        <div
+          key={`${r},${c}`}
+          className="pointer-events-none z-10"
+          style={{
+            gridRow: `${r + 1} / ${r + 2}`,
+            gridColumn: `${c + 1} / ${c + 2}`,
+            borderTop: side(top),
+            borderBottom: side(bottom),
+            borderLeft: side(left),
+            borderRight: side(right),
+            borderTopLeftRadius: radius(top, left),
+            borderTopRightRadius: radius(top, right),
+            borderBottomLeftRadius: radius(bottom, left),
+            borderBottomRightRadius: radius(bottom, right),
+            position: 'relative',
+          }}
+        >
+          {badge && badge[0] === r && badge[1] === c && (
+            <span
+              className="absolute -top-[9px] -right-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
+              style={{
+                background: color,
+                fontSize: 'clamp(8px,2vw,11px)',
+                padding: '3px 6px',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
+              }}
+            >
+              +{moveStatus.score}
+            </span>
+          )}
         </div>,
       );
     }
@@ -193,6 +253,10 @@ export function Board({ state, onCellClick, potentialScore }: BoardProps) {
         }}
       >
         {cells}
+
+        {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan:
+            tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
+        {moveOutline}
 
         {/* Her oyuncunun 5×5 köşesine soluk numara filigranı. */}
         <div className="pointer-events-none absolute inset-1">
@@ -226,13 +290,12 @@ export function Board({ state, onCellClick, potentialScore }: BoardProps) {
       </div>
 
       <div className="flex items-center justify-between gap-2 shrink-0 pt-1 w-full">
-        <div className="font-mono text-[11px] text-gold tracking-[0.5px] whitespace-nowrap">
-          {potentialScore != null && (
-            <>
-              Potansiyel: <span className="font-bold">+{potentialScore}</span>
-            </>
-          )}
-        </div>
+        <button
+          onClick={onOpenHistory}
+          className="text-[9px] font-mono font-bold uppercase tracking-[0.5px] text-accent underline underline-offset-2 shrink-0"
+        >
+          Hamle Geçmişi
+        </button>
         <div className="flex gap-2 justify-end flex-wrap">
           {LEGEND.map((item) => (
             <div

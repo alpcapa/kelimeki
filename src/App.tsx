@@ -1,5 +1,5 @@
 // Harfik — ana uygulama: kurulum, çok oyunculu sıra akışı ve düzen
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { GameHeader } from './components/GameHeader';
 import { Board } from './components/Board';
 import { Rack } from './components/Rack';
@@ -8,10 +8,12 @@ import { UserMenu } from './components/UserMenu';
 import { Setup } from './components/Setup';
 import { MeaningModal } from './components/MeaningModal';
 import { RemainingTilesModal } from './components/RemainingTilesModal';
+import { MoveHistoryModal } from './components/MoveHistoryModal';
+import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
-import { calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacementStructural } from './utils/validator';
-import { key } from './utils/board';
-import { trUpper, trLower } from './utils/turkish';
+import { calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { getFormedWords, key } from './utils/board';
+import { trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, saveGame } from './lib/api';
 import type { WordMeaning } from './lib/database.types';
@@ -39,6 +41,12 @@ export default function App() {
 
   // Torba (kalan taşlar) penceresi.
   const [showTiles, setShowTiles] = useState(false);
+
+  // Hamle geçmişi penceresi.
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Joker taş konurken hangi harfe dönüşeceğini seçme penceresi.
+  const [pendingWild, setPendingWild] = useState<{ r: number; c: number } | null>(null);
 
   // Oyundan çıkış onay popup'ı.
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -119,6 +127,38 @@ export default function App() {
     return () => clearTimeout(t);
   }, [aiTurn, state.current, state.turnCount]);
 
+  // Oyna'ya basmadan önce, tahtaya konan taşların anlık geçerlilik/puan
+  // çerçevesi (yeşil/kırmızı). Yerel sözlükle kontrol edilir; sunucu
+  // doğrulaması yalnızca Oyna'ya basınca (handlePlay) çalışır.
+  const moveStatus = useMemo(() => {
+    const placedKeys = Object.keys(state.placed);
+    if (placedKeys.length === 0) return null;
+    const current = state.players[state.current];
+    if (!current) return null;
+
+    const open = computeBreachedCorners(state.board, state.players);
+    const result = validatePlacement(
+      state.board,
+      state.placed,
+      current.corner,
+      open,
+      isFirstMove(state),
+    );
+    // Oluşan tüm kelimelerin hücrelerini birleştir; Board bunun etrafına
+    // tek, boşluksuz bir dış çerçeve çizer (ortak hücrelerde iç çizgi olmaz).
+    const formed = getFormedWords(state.board, state.placed);
+    const cells = formed.length > 0
+      ? formed.flatMap((f) => f.coords)
+      : (placedKeys.map((k) => k.split(',').map(Number)) as [number, number][]);
+
+    return {
+      valid: result.valid,
+      cells,
+      score: calcScore(state.board, state.placed, state.bonuses),
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.placed, state.board, state.players, state.current]);
+
   // ── Kurulum ekranı ─────────────────────────────────────────────────────────
   if (state.phase === 'setup') {
     return (
@@ -134,7 +174,13 @@ export default function App() {
 
   // ── Oyun ekranı ──────────────────────────────────────────────────────────────
   const me = state.players[state.current];
-  const myColor = PLAYER_COLORS[me.colorIndex];
+  // Harf rafı: sıra bir insanda ise (aynı cihazdan sırayla oynanan hotseat
+  // modunda birden fazla insan olabilir) HER ZAMAN o anki insanın kendi
+  // rafı gösterilir; sıra bir YZ'deyse onun gizli tutulması gereken rafı
+  // asla gösterilmez, bunun yerine ilk insan oyuncuya düşülür.
+  const rackPlayer = me.isAI ? (state.players.find((p) => !p.isAI) ?? me) : me;
+  const rackColor = PLAYER_COLORS[rackPlayer.colorIndex];
+  const rackPlayerIndex = state.players.indexOf(rackPlayer);
 
   const handleCellClick = (r: number, c: number) => {
     const k = key(r, c);
@@ -157,13 +203,13 @@ export default function App() {
     }
     if (state.board[r][c]) return;
 
-    let wildLetter: string | undefined;
     const sel = state.selectedTile !== null ? me.rack[state.selectedTile] : null;
     if (sel && sel.letter === '?') {
-      const l = window.prompt('Joker hangi harf olsun? (Türkçe)');
-      wildLetter = trUpper(l || 'A');
+      // Joker taş: hangi harfe dönüşeceği seçilene kadar taş konmaz.
+      setPendingWild({ r, c });
+      return;
     }
-    dispatch({ type: 'PLACE_TILE', r, c, wildLetter });
+    dispatch({ type: 'PLACE_TILE', r, c });
   };
 
   const canAct = !state.isGameOver && !me.isAI;
@@ -235,9 +281,7 @@ export default function App() {
     if (window.confirm(msg)) dispatch({ type: 'PASS' });
   };
 
-  const placedCount = Object.keys(state.placed).length;
-  const potentialScore =
-    placedCount > 0 ? calcScore(state.board, state.placed, state.bonuses) : 0;
+  const potentialScore = moveStatus?.score ?? 0;
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
@@ -249,7 +293,8 @@ export default function App() {
       <Board
         state={state}
         onCellClick={handleCellClick}
-        potentialScore={placedCount > 0 ? potentialScore : null}
+        moveStatus={moveStatus}
+        onOpenHistory={() => setShowHistory(true)}
       />
 
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
@@ -264,15 +309,15 @@ export default function App() {
         <div className="flex gap-1.5 items-stretch">
           <div className="flex-1 min-w-0">
             <Rack
-              tiles={me.rack}
+              tiles={rackPlayer.rack}
               selectedTile={state.selectedTile}
               onSelect={(i) => {
                 if (me.isAI) return;
                 if (state.swapMode) dispatch({ type: 'TOGGLE_SWAP_TILE', index: i });
                 else dispatch({ type: 'SELECT_TILE', index: i });
               }}
-              title={me.name}
-              color={myColor}
+              title={rackPlayer.name}
+              color={rackColor}
               swapMode={state.swapMode}
               swapSelection={state.swapSelection}
             />
@@ -419,6 +464,24 @@ export default function App() {
 
       {showTiles && (
         <RemainingTilesModal state={state} onClose={() => setShowTiles(false)} />
+      )}
+
+      {showHistory && (
+        <MoveHistoryModal
+          state={state}
+          humanIndex={rackPlayerIndex}
+          onClose={() => setShowHistory(false)}
+        />
+      )}
+
+      {pendingWild && (
+        <WildcardModal
+          onSelect={(letter) => {
+            dispatch({ type: 'PLACE_TILE', r: pendingWild.r, c: pendingWild.c, wildLetter: letter });
+            setPendingWild(null);
+          }}
+          onClose={() => setPendingWild(null)}
+        />
       )}
 
       <GameOver

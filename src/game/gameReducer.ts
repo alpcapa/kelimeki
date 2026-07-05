@@ -6,7 +6,7 @@ import {
   buildInitialBonuses,
   cornersFor,
 } from './constants';
-import type { GameState, Owner, Player, Tile } from './types';
+import type { GameState, HistoryEntry, Owner, Player, Tile } from './types';
 import { buildBag, drawTiles } from '../utils/bag';
 import { shuffle } from '../utils/random';
 import { trUpper } from '../utils/turkish';
@@ -69,6 +69,7 @@ export function createInitialState(): GameState {
     message: '',
     messageType: '',
     lastWords: {},
+    moveHistory: [],
   };
 }
 
@@ -111,6 +112,7 @@ function startGame(setup: PlayerSetup[]): GameState {
     message: `${players[0].name}, kendi köşenden bir kelime kur.`,
     messageType: '',
     lastWords: {},
+    moveHistory: [],
   };
 }
 
@@ -206,6 +208,29 @@ function recallAll(state: GameState): GameState {
     i === state.current ? { ...p, rack } : p,
   );
   return { ...state, players, placed: {}, selectedTile: null };
+}
+
+/**
+ * Bir hamlenin hamle geçmişine ekleyeceği satırları oluşturur: oynayanın
+ * kendi satırı + köşesi ihlal edilen her oyuncu için ayrı bir bonus satırı.
+ */
+function appendMoveHistory(
+  prev: HistoryEntry[],
+  turn: number,
+  actor: Owner,
+  words: string[],
+  pts: number,
+  shares: { index: number; amount: number }[],
+): HistoryEntry[] {
+  const actorEntry: HistoryEntry = { turn, player: actor, words, points: pts };
+  if (shares.length > 0) {
+    actorEntry.lostShares = shares.map((s) => ({ to: s.index, amount: s.amount }));
+  }
+  const entries: HistoryEntry[] = [...prev, actorEntry];
+  for (const s of shares) {
+    entries.push({ turn, player: s.index, words: [], points: s.amount, invasionFrom: actor });
+  }
+  return entries;
 }
 
 /** Aktif oyuncunun rafından bir taş çıkararak oyuncular dizisini günceller. */
@@ -464,6 +489,14 @@ export function gameReducer(state: GameState, action: Action): GameState {
         consecutivePasses: 0,
         selectedTile: null,
         lastWords: setLastWords(state.lastWords, formed, state.current),
+        moveHistory: appendMoveHistory(
+          state.moveHistory,
+          state.turnCount,
+          state.current,
+          formed.map((f) => f.word),
+          pts,
+          shares,
+        ),
         message: `${me.name}: +${pts} puan${bonusNote} Kelimeler: ${check.words!.join(', ')}`,
         messageType: 'ok',
       };
@@ -591,6 +624,14 @@ export function gameReducer(state: GameState, action: Action): GameState {
         players,
         consecutivePasses: 0,
         lastWords: setLastWords(state.lastWords, formed, state.current),
+        moveHistory: appendMoveHistory(
+          state.moveHistory,
+          state.turnCount,
+          state.current,
+          formed.map((f) => f.word),
+          aiPts,
+          aiShares,
+        ),
         message: `${me.name} "${move.word}" oynadı. +${aiPts} puan.${aiInvasionNote}`,
         messageType: 'ok',
       };
