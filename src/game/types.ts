@@ -38,14 +38,24 @@ export interface Player {
   isAI: boolean;
   rack: Tile[];
   score: number;
-  /** Bu oyundaki en yüksek tek hamle puanı. */
+  /**
+   * Bu oyundaki en yüksek tek hamle puanı (tek veya çok kelimeli, harf/kelime
+   * çarpanları dahil) — köşe vergisi kesintisinden ÖNCEKİ brüt puan.
+   */
   bestMoveScore: number;
-  /** `bestMoveScore` puanını üreten hamledeki ana kelime. */
+  /** Bu oyundaki en yüksek tek kelime puanı (bir hamlede oluşan kelimelerin en yükseği). */
+  bestWordScore: number;
+  /** `bestWordScore` puanını üreten kelime. */
   bestWord: string;
   /** Bu oyunda oluşturulan en uzun kelime. */
   longestWord: string;
   /** Bu oyunda oynanan (geçilmemiş) hamle sayısı. */
   moveCount: number;
+  /**
+   * Bu oyunda oynanan hamlelerin brüt puanları toplamı (köşe vergisi ve raf
+   * düşümü hariç) — "ortalama hamle puanı" istatistiği için.
+   */
+  moveScoreSum: number;
 }
 
 /** YZ'nin bulduğu hamle. */

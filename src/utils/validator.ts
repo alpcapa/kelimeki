@@ -275,6 +275,35 @@ export function computeInvasionSplit(
   return { pts, shares };
 }
 
+/** Tek bir kelimenin (harf/kelime çarpanları dahil) puanını hesaplar. */
+function wordPoints(
+  coords: [number, number][],
+  board: Board,
+  placed: Placed,
+  bonuses: Record<string, BonusType>,
+): number {
+  let sum = 0;
+  let wordMult = 1;
+  for (const [r, c] of coords) {
+    const k = key(r, c);
+    const newTile = placed[k];
+    const pts = newTile?.pts ?? board[r][c]?.pts ?? 0;
+    const b = newTile ? bonuses[k] : undefined; // bonus yalnızca yeni taşta
+    if (b === 'dl') sum += pts * 2;
+    else if (b === 'tl') sum += pts * 3;
+    else if (b === 'dw') {
+      wordMult *= 2;
+      sum += pts;
+    } else if (b === 'tw') {
+      wordMult *= 3;
+      sum += pts;
+    } else {
+      sum += pts;
+    }
+  }
+  return sum * wordMult;
+}
+
 /**
  * Bu turda oluşan tüm kelimelerin toplam puanını hesaplar. Bonuslar yalnızca
  * bu turda yeni konan taşlara uygulanır. Tüm raf kullanılırsa bingo bonusu.
@@ -286,27 +315,24 @@ export function calcScore(
 ): number {
   let total = 0;
   for (const { coords } of getFormedWords(board, placed)) {
-    let sum = 0;
-    let wordMult = 1;
-    for (const [r, c] of coords) {
-      const k = key(r, c);
-      const newTile = placed[k];
-      const pts = newTile?.pts ?? board[r][c]?.pts ?? 0;
-      const b = newTile ? bonuses[k] : undefined; // bonus yalnızca yeni taşta
-      if (b === 'dl') sum += pts * 2;
-      else if (b === 'tl') sum += pts * 3;
-      else if (b === 'dw') {
-        wordMult *= 2;
-        sum += pts;
-      } else if (b === 'tw') {
-        wordMult *= 3;
-        sum += pts;
-      } else {
-        sum += pts;
-      }
-    }
-    total += sum * wordMult;
+    total += wordPoints(coords, board, placed, bonuses);
   }
   if (Object.keys(placed).length >= 7) total += BINGO_BONUS;
   return total;
+}
+
+/**
+ * Bu turda oluşan her kelimenin kendi puanını ayrı ayrı döner (bingo bonusu
+ * hariç — o tek bir kelimeye değil hamlenin tamamına ait). "En yüksek kelime
+ * puanı" istatistiği için, hamlenin toplam puanından bağımsız olarak.
+ */
+export function calcWordScores(
+  board: Board,
+  placed: Placed,
+  bonuses: Record<string, BonusType>,
+): { word: string; score: number }[] {
+  return getFormedWords(board, placed).map(({ word, coords }) => ({
+    word,
+    score: wordPoints(coords, board, placed, bonuses),
+  }));
 }

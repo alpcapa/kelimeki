@@ -98,8 +98,10 @@ export default function App() {
       turn_count: state.turnCount,
       move_count: human.moveCount || null,
       best_move_score: human.bestMoveScore || null,
+      best_word_score: human.bestWordScore || null,
       best_word: human.bestWord || null,
       longest_word: human.longestWord || null,
+      move_points_sum: human.moveScoreSum || null,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);
