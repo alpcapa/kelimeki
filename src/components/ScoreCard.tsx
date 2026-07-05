@@ -29,7 +29,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
       ? `%${Math.round((stats.wins / stats.games_played) * 100)}`
       : '%0';
 
-  const cells: { label: string; value: number | string; cls?: string }[] = [
+  const cells: { label: string; value: number | string; cls?: string; wide?: boolean }[] = [
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
     { label: 'Galibiyet', value: stats?.wins ?? 0, cls: 'text-green' },
     { label: 'Mağlubiyet', value: stats?.losses ?? 0, cls: 'text-red' },
@@ -37,7 +37,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     { label: 'En Yüksek', value: stats?.best_score ?? 0, cls: 'text-gold' },
     { label: 'Beraberlik', value: stats?.ties ?? 0, cls: 'text-muted' },
     { label: 'En İyi Hamle', value: stats?.best_move_score ?? '—', cls: 'text-accent' },
-    { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text' },
+    { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
   ];
 
   return (
@@ -65,7 +65,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             {cells.map((c) => (
               <div
                 key={c.label}
-                className="bg-bg border border-border rounded-md py-3 px-1 text-center"
+                className={`bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-2' : ''}`}
               >
                 <div className={`font-mono text-xl font-bold ${c.cls ?? 'text-text'}`}>
                   {c.value}
