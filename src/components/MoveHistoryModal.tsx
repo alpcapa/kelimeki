@@ -15,10 +15,8 @@ export function MoveHistoryModal({ state, humanIndex, onClose }: MoveHistoryModa
   return (
     <Modal title="Hamle Geçmişi" onClose={onClose}>
       <p className="text-[10px] font-mono text-muted mb-3 leading-relaxed">
-        Bu oyunda kazandığın tüm hamleler ve puanlar (rakiplerin senin köşene
-        girmesinden kaptığın puanlar dahil, <span className="text-gold font-bold">altın</span>{' '}
-        renkte; sen rakip köşesine girip <span className="text-red font-bold">kaptırdığın</span>{' '}
-        puanlar not olarak). Toplam <span className="font-bold text-accent">{total}</span> puan.
+        Bu oyunda kazandığın tüm hamleler ve puanlar. Toplam{' '}
+        <span className="font-bold text-accent text-[15px]">{total}</span> puan.
       </p>
 
       {entries.length === 0 ? (
