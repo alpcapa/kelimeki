@@ -37,6 +37,8 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     { label: 'En Yüksek Puan', value: stats?.best_score ?? 0, cls: 'text-gold' },
     { label: 'Beraberlik', value: stats?.ties ?? 0, cls: 'text-muted' },
     { label: 'En İyi Hamle', value: stats?.best_move_score ?? '—', cls: 'text-accent' },
+    { label: 'Ortalama Hamle', value: stats?.avg_move_score ?? 0, cls: 'text-accent' },
+    { label: 'En Yüksek Kelime', value: stats?.best_word ?? '—', cls: 'text-text' },
     { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
   ];
 
@@ -65,7 +67,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             {cells.map((c) => (
               <div
                 key={c.label}
-                className={`bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-2' : ''}`}
+                className={`bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : ''}`}
               >
                 <div className={`font-mono text-xl font-bold ${c.cls ?? 'text-text'}`}>
                   {c.value}

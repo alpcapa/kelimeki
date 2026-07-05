@@ -40,8 +40,12 @@ export interface Player {
   score: number;
   /** Bu oyundaki en yüksek tek hamle puanı. */
   bestMoveScore: number;
+  /** `bestMoveScore` puanını üreten hamledeki ana kelime. */
+  bestWord: string;
   /** Bu oyunda oluşturulan en uzun kelime. */
   longestWord: string;
+  /** Bu oyunda oynanan (geçilmemiş) hamle sayısı. */
+  moveCount: number;
 }
 
 /** YZ'nin bulduğu hamle. */

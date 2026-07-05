@@ -96,7 +96,9 @@ export default function App() {
       ai_score: bestOpponentScore,
       result,
       turn_count: state.turnCount,
+      move_count: human.moveCount || null,
       best_move_score: human.bestMoveScore || null,
+      best_word: human.bestWord || null,
       longest_word: human.longestWord || null,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
