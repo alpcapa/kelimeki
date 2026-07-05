@@ -130,7 +130,11 @@ export function getFormedWords(board: Board, placed: Placed): FormedWord[] {
 
   const addWord = (fw: FormedWord) => {
     if (fw.word.length < 2) return;
-    const sig = `${fw.coords[0][0]},${fw.coords[0][1]}:${fw.word}`;
+    // Başlangıç + bitiş hücresi imzada kullanılır: yatay ve dikey iki kelime
+    // aynı hücreden başlayıp aynı metni yazsa bile (örn. ikisi de "YA"),
+    // yönleri farklı olduğu için ayrı kelimeler olarak sayılmalı.
+    const [er, ec] = fw.coords[fw.coords.length - 1];
+    const sig = `${fw.coords[0][0]},${fw.coords[0][1]}-${er},${ec}`;
     if (seen.has(sig)) return;
     seen.add(sig);
     result.push(fw);
