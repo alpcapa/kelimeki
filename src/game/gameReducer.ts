@@ -19,6 +19,7 @@ import {
 import {
   cellAllowed,
   calcScore,
+  calcWordScores,
   computeBreachedCorners,
   computeInvasionSplit,
   validatePlacement,
@@ -69,6 +70,7 @@ export function createInitialState(): GameState {
     message: '',
     messageType: '',
     lastWords: {},
+    lastMoveCells: [],
     moveHistory: [],
   };
 }
@@ -86,15 +88,17 @@ function startGame(setup: PlayerSetup[]): GameState {
           ? 'Yapay Zeka'
           : `Yapay Zeka ${i + 1}`
         : `Oyuncu ${i + 1}`),
-    corner: corners[i],
+    corners: corners[i],
     colorIndex: i % PLAYER_COLORS.length,
     isAI: s.isAI,
     rack: drawTiles(bag, RACK_SIZE),
     score: 0,
     bestMoveScore: 0,
+    bestWordScore: 0,
     bestWord: '',
     longestWord: '',
     moveCount: 0,
+    moveScoreSum: 0,
   }));
 
   return {
@@ -114,6 +118,7 @@ function startGame(setup: PlayerSetup[]): GameState {
     message: `${players[0].name}, kendi köşenden bir kelime kur.`,
     messageType: '',
     lastWords: {},
+    lastMoveCells: [],
     moveHistory: [],
   };
 }
@@ -276,7 +281,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       // Bölge kuralı: kendi köşen, merkez ya da açılmış bir köşe olmalı.
       const me = state.players[state.current];
       const open = computeBreachedCorners(state.board, state.players);
-      if (!cellAllowed(me.corner, open, r, c)) {
+      if (!cellAllowed(me.corners, open, r, c)) {
         return {
           ...state,
           message: 'Burası başka bir oyuncunun köşesi — henüz oraya oynayamazsın.',
@@ -438,19 +443,24 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const me = state.players[state.current];
       const open = computeBreachedCorners(state.board, state.players);
       const check = action.skipWordCheck
-        ? validatePlacementStructural(state.board, state.placed, me.corner, open, isFirstMove(state))
-        : validatePlacement(state.board, state.placed, me.corner, open, isFirstMove(state));
+        ? validatePlacementStructural(state.board, state.placed, state.current, me.corners, open, isFirstMove(state))
+        : validatePlacement(state.board, state.placed, state.current, me.corners, open, isFirstMove(state));
       if (!check.valid) {
         return { ...state, message: check.reason!, messageType: 'err' };
       }
       const basePts = calcScore(state.board, state.placed, state.bonuses);
       const formed = getFormedWords(state.board, state.placed);
+      const wordScores = calcWordScores(state.board, state.placed, state.bonuses);
+      const bestWordThisMove = wordScores.reduce(
+        (best, w) => (w.score > best.score ? w : best),
+        { word: '', score: 0 },
+      );
 
       // Rakip köşeye giriş: kazanılan puan köşe sahip(ler)iyle paylaşılır.
       const placedCoords = Object.keys(state.placed).map(
         (k) => k.split(',').map(Number) as [number, number],
       );
-      const { pts, shares } = computeInvasionSplit(placedCoords, me.corner, state.players, basePts);
+      const { pts, shares } = computeInvasionSplit(placedCoords, me.corners, state.players, basePts);
       const bonusNote = shares.length > 0
         ? ` (${shares.map((s) => `${s.amount} puanı ${state.players[s.index].name} kaptı`).join(', ')})`
         : '';
@@ -471,17 +481,20 @@ export function gameReducer(state: GameState, action: Action): GameState {
         (best, fw) => (fw.word.length > best.length ? fw.word : best),
         me.longestWord,
       );
-      const isNewBest = pts > me.bestMoveScore;
+      const isNewBestMove = basePts > me.bestMoveScore;
+      const isNewBestWord = bestWordThisMove.score > me.bestWordScore;
       const players = state.players.map((p, i) => {
         if (i === state.current) {
           return {
             ...p,
             rack,
             score: p.score + pts,
-            bestMoveScore: isNewBest ? pts : p.bestMoveScore,
-            bestWord: isNewBest ? formed[0]?.word ?? p.bestWord : p.bestWord,
+            bestMoveScore: isNewBestMove ? basePts : p.bestMoveScore,
+            bestWordScore: isNewBestWord ? bestWordThisMove.score : p.bestWordScore,
+            bestWord: isNewBestWord ? bestWordThisMove.word : p.bestWord,
             longestWord: newLongestWord,
             moveCount: p.moveCount + 1,
+            moveScoreSum: p.moveScoreSum + basePts,
           };
         }
         const share = shares.find((s) => s.index === i);
@@ -500,6 +513,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         consecutivePasses: 0,
         selectedTile: null,
         lastWords: setLastWords(state.lastWords, formed, state.current),
+        lastMoveCells: formed.flatMap((f) => f.coords),
         moveHistory: appendMoveHistory(
           state.moveHistory,
           state.turnCount,
@@ -542,7 +556,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         me.rack,
         state.bonuses,
         state.current,
-        me.corner,
+        me.corners,
         open,
         isFirstMove(state),
       );
@@ -588,6 +602,11 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const placedMap: Record<string, Tile> = {};
       for (const p of move.placements) placedMap[key(p.r, p.c)] = p.tile;
       const formed = getFormedWords(state.board, placedMap);
+      const aiWordScores = calcWordScores(state.board, placedMap, state.bonuses);
+      const aiBestWordThisMove = aiWordScores.reduce(
+        (best, w) => (w.score > best.score ? w : best),
+        { word: '', score: 0 },
+      );
 
       const board = state.board.map((row) => [...row]);
       const rack = [...me.rack];
@@ -609,22 +628,25 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const aiCoords = move.placements.map((p) => [p.r, p.c] as [number, number]);
       const { pts: aiPts, shares: aiShares } = computeInvasionSplit(
         aiCoords,
-        me.corner,
+        me.corners,
         state.players,
         move.score,
       );
 
-      const aiIsNewBest = aiPts > me.bestMoveScore;
+      const aiIsNewBestMove = move.score > me.bestMoveScore;
+      const aiIsNewBestWord = aiBestWordThisMove.score > me.bestWordScore;
       const players = state.players.map((p, i) => {
         if (i === state.current) {
           return {
             ...p,
             rack,
             score: p.score + aiPts,
-            bestMoveScore: aiIsNewBest ? aiPts : p.bestMoveScore,
-            bestWord: aiIsNewBest ? formed[0]?.word ?? p.bestWord : p.bestWord,
+            bestMoveScore: aiIsNewBestMove ? move.score : p.bestMoveScore,
+            bestWordScore: aiIsNewBestWord ? aiBestWordThisMove.score : p.bestWordScore,
+            bestWord: aiIsNewBestWord ? aiBestWordThisMove.word : p.bestWord,
             longestWord: aiLongestWord,
             moveCount: p.moveCount + 1,
+            moveScoreSum: p.moveScoreSum + move.score,
           };
         }
         const share = aiShares.find((s) => s.index === i);
@@ -644,6 +666,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         players,
         consecutivePasses: 0,
         lastWords: setLastWords(state.lastWords, formed, state.current),
+        lastMoveCells: formed.flatMap((f) => f.coords),
         moveHistory: appendMoveHistory(
           state.moveHistory,
           state.turnCount,

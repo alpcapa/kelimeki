@@ -34,7 +34,7 @@ export function canSpell(word: string, rack: string[]): boolean {
  */
 export function computeBreachedCorners(board: Board, players: Player[]): boolean[] {
   const breached = [false, false, false, false];
-  const owned = new Set(players.map((p) => p.corner));
+  const owned = new Set(players.flatMap((p) => p.corners));
   for (let i = 0; i < 4; i++) if (!owned.has(i)) breached[i] = true;
 
   for (let r = 0; r < SIZE; r++) {
@@ -52,6 +52,24 @@ export function computeBreachedCorners(board: Board, players: Player[]): boolean
 
 /** @deprecated Yeni kod computeBreachedCorners kullanmalı. */
 export const computeOpenCorners = computeBreachedCorners;
+
+/**
+ * Oyuncunun sahip olduğu köşelerden, henüz hiç kendi taşının bulunmadığı
+ * ("taze") olanları döner. 2 oyunculu oyunda her oyuncunun iki köşesi
+ * olduğundan, bir köşeden kelimeye başladıktan sonra diğer (taze) köşesinden
+ * de bağımsız bir kelimeyle başlayabilmesi için kullanılır.
+ */
+export function freshCorners(board: Board, ownCorners: number[], owner: number): number[] {
+  return ownCorners.filter((corner) => {
+    const b = cornerBounds(corner);
+    for (let r = b.r0; r <= b.r1; r++) {
+      for (let c = b.c0; c <= b.c1; c++) {
+        if (board[r][c]?.owner === owner) return false;
+      }
+    }
+    return true;
+  });
+}
 
 /**
  * Verilen başlangıç hücrelerinden (bu köşe bölgesi içinde kalarak) taşlar
@@ -98,14 +116,14 @@ export function zoneReachesBoundary(
  *  - Rakip köşe yalnızca ihlal edilmişse (breached) erişilebilir.
  */
 export function cellAllowed(
-  ownCorner: number,
+  ownCorners: number[],
   breachedCorners: boolean[],
   r: number,
   c: number,
 ): boolean {
   const region = regionOf(r, c);
   if (region === -1) return true;
-  if (region === ownCorner) return true;
+  if (ownCorners.includes(region)) return true;
   return breachedCorners[region];
 }
 
@@ -117,7 +135,8 @@ export function cellAllowed(
 export function validatePlacementStructural(
   board: Board,
   placed: Placed,
-  ownCorner: number,
+  owner: number,
+  ownCorners: number[],
   openCorners: boolean[],
   isFirstMove: boolean,
 ): ValidationResult {
@@ -137,7 +156,7 @@ export function validatePlacementStructural(
 
   // Bölge kuralı: her yeni taş izinli bir hücreye konmalı.
   for (const [r, c] of coords) {
-    if (!cellAllowed(ownCorner, openCorners, r, c)) {
+    if (!cellAllowed(ownCorners, openCorners, r, c)) {
       return {
         valid: false,
         reason: 'Bu köşe henüz ihlal edilmedi — sahip sınır karesine oynamadan girilemiyor.',
@@ -153,7 +172,7 @@ export function validatePlacementStructural(
   // bitişiği değil.
   const foreignZoneCoords = coords.filter(([r, c]) => {
     const region = regionOf(r, c);
-    return region !== -1 && region !== ownCorner;
+    return region !== -1 && !ownCorners.includes(region);
   });
   if (foreignZoneCoords.length > 0) {
     const foreignZones = new Set(foreignZoneCoords.map(([r, c]) => regionOf(r, c) as number));
@@ -168,9 +187,13 @@ export function validatePlacementStructural(
     }
   }
 
+  const fresh = freshCorners(board, ownCorners, owner);
+  const startsFreshCorner = coords.some(([r, c]) =>
+    fresh.some((corner) => inCorner(corner, r, c)),
+  );
+
   if (isFirstMove) {
-    const startsHome = coords.some(([r, c]) => inCorner(ownCorner, r, c));
-    if (!startsHome) {
+    if (!startsFreshCorner) {
       return { valid: false, reason: 'İlk kelimen kendi köşenden başlamalı.' };
     }
   } else {
@@ -185,7 +208,9 @@ export function validatePlacementStructural(
           nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc],
       ),
     );
-    if (!connects) {
+    // Bağlanmıyorsa, oyuncunun henüz kullanmadığı bir köşesinden bağımsız
+    // yeni bir kelimeyle başlaması da (ilk hamledeki gibi) geçerlidir.
+    if (!connects && !startsFreshCorner) {
       return { valid: false, reason: 'Kelime mevcut harflere bağlanmalı.' };
     }
   }
@@ -205,11 +230,12 @@ export function validatePlacementStructural(
 export function validatePlacement(
   board: Board,
   placed: Placed,
-  ownCorner: number,
+  owner: number,
+  ownCorners: number[],
   openCorners: boolean[],
   isFirstMove: boolean,
 ): ValidationResult {
-  const structural = validatePlacementStructural(board, placed, ownCorner, openCorners, isFirstMove);
+  const structural = validatePlacementStructural(board, placed, owner, ownCorners, openCorners, isFirstMove);
   if (!structural.valid) return structural;
 
   const formed = getFormedWords(board, placed);
@@ -230,15 +256,15 @@ export function validatePlacement(
  */
 export function computeInvasionSplit(
   coords: [number, number][],
-  ownCorner: number,
+  ownCorners: number[],
   players: Player[],
   basePts: number,
 ): { pts: number; shares: { index: number; amount: number }[] } {
   const invadedIdx = new Set<number>();
   for (const [r, c] of coords) {
     const region = regionOf(r, c);
-    if (region !== -1 && region !== ownCorner) {
-      const idx = players.findIndex((p) => p.corner === region);
+    if (region !== -1 && !ownCorners.includes(region)) {
+      const idx = players.findIndex((p) => p.corners.includes(region));
       if (idx >= 0) invadedIdx.add(idx);
     }
   }
@@ -247,6 +273,35 @@ export function computeInvasionSplit(
   const shares = [...invadedIdx].map((index) => ({ index, amount: share }));
   const pts = basePts - share * invadedIdx.size;
   return { pts, shares };
+}
+
+/** Tek bir kelimenin (harf/kelime çarpanları dahil) puanını hesaplar. */
+function wordPoints(
+  coords: [number, number][],
+  board: Board,
+  placed: Placed,
+  bonuses: Record<string, BonusType>,
+): number {
+  let sum = 0;
+  let wordMult = 1;
+  for (const [r, c] of coords) {
+    const k = key(r, c);
+    const newTile = placed[k];
+    const pts = newTile?.pts ?? board[r][c]?.pts ?? 0;
+    const b = newTile ? bonuses[k] : undefined; // bonus yalnızca yeni taşta
+    if (b === 'dl') sum += pts * 2;
+    else if (b === 'tl') sum += pts * 3;
+    else if (b === 'dw') {
+      wordMult *= 2;
+      sum += pts;
+    } else if (b === 'tw') {
+      wordMult *= 3;
+      sum += pts;
+    } else {
+      sum += pts;
+    }
+  }
+  return sum * wordMult;
 }
 
 /**
@@ -260,27 +315,24 @@ export function calcScore(
 ): number {
   let total = 0;
   for (const { coords } of getFormedWords(board, placed)) {
-    let sum = 0;
-    let wordMult = 1;
-    for (const [r, c] of coords) {
-      const k = key(r, c);
-      const newTile = placed[k];
-      const pts = newTile?.pts ?? board[r][c]?.pts ?? 0;
-      const b = newTile ? bonuses[k] : undefined; // bonus yalnızca yeni taşta
-      if (b === 'dl') sum += pts * 2;
-      else if (b === 'tl') sum += pts * 3;
-      else if (b === 'dw') {
-        wordMult *= 2;
-        sum += pts;
-      } else if (b === 'tw') {
-        wordMult *= 3;
-        sum += pts;
-      } else {
-        sum += pts;
-      }
-    }
-    total += sum * wordMult;
+    total += wordPoints(coords, board, placed, bonuses);
   }
   if (Object.keys(placed).length >= 7) total += BINGO_BONUS;
   return total;
+}
+
+/**
+ * Bu turda oluşan her kelimenin kendi puanını ayrı ayrı döner (bingo bonusu
+ * hariç — o tek bir kelimeye değil hamlenin tamamına ait). "En yüksek kelime
+ * puanı" istatistiği için, hamlenin toplam puanından bağımsız olarak.
+ */
+export function calcWordScores(
+  board: Board,
+  placed: Placed,
+  bonuses: Record<string, BonusType>,
+): { word: string; score: number }[] {
+  return getFormedWords(board, placed).map(({ word, coords }) => ({
+    word,
+    score: wordPoints(coords, board, placed, bonuses),
+  }));
 }

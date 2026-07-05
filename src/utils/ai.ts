@@ -7,7 +7,7 @@ import { SIZE, cornerBounds, inCorner, regionOf } from '../game/constants';
 import type { AIMove, BonusType, Placement, Tile } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { letterPoints } from '../data/tiles';
-import { canSpell, calcScore, cellAllowed, zoneReachesBoundary } from './validator';
+import { canSpell, calcScore, cellAllowed, freshCorners, zoneReachesBoundary } from './validator';
 import { trLower, trUpper } from './turkish';
 import { getFormedWords, key, tileLetter, type Board } from './board';
 
@@ -39,7 +39,7 @@ function consumeRack(
 
 /**
  * Sırası gelen YZ oyuncusu için en iyi hamleyi döndürür (yoksa null → pas).
- * `corner` YZ'nin köşesi, `openCorners` açık köşeler, `isFirstMove` bu
+ * `corners` YZ'nin köşeleri, `openCorners` açık köşeler, `isFirstMove` bu
  * oyuncunun ilk hamlesi mi.
  */
 export function findAIMove(
@@ -47,7 +47,7 @@ export function findAIMove(
   rack: Tile[],
   bonuses: Record<string, BonusType>,
   owner: number,
-  corner: number,
+  corners: number[],
   breachedCorners: boolean[],
   isFirstMove: boolean,
 ): AIMove | null {
@@ -84,7 +84,7 @@ export function findAIMove(
     // Rakip köşeye giriş: köşeye bağlı harf zinciri sınır karesine ulaşmalı.
     const foreignPlacements = placements.filter((p) => {
       const region = regionOf(p.r, p.c);
-      return region !== -1 && region !== corner;
+      return region !== -1 && !corners.includes(region);
     });
     if (foreignPlacements.length > 0) {
       const foreignZones = new Set(foreignPlacements.map((p) => regionOf(p.r, p.c) as number));
@@ -101,11 +101,13 @@ export function findAIMove(
 
   // Yeni konacak tüm hücreler bölge kurallarına uymalı.
   const allowed = (r: number, c: number) =>
-    cellAllowed(corner, breachedCorners, r, c);
+    cellAllowed(corners, breachedCorners, r, c);
 
-  // ── İlk hamle: kendi köşesinden başla ───────────────────────────────────────
-  if (isFirstMove) {
-    const b = cornerBounds(corner);
+  // Verilen köşeden, tahtadaki mevcut taşlardan bağımsız yeni bir kelimeyle
+  // başlayan tüm yerleşimleri dener (ilk hamle ya da henüz kullanılmamış
+  // ikinci köşeden başlama).
+  const tryCornerStart = (homeCorner: number) => {
+    const b = cornerBounds(homeCorner);
     for (let sr = b.r0; sr <= b.r1; sr++) {
       for (let sc = b.c0; sc <= b.c1; sc++) {
         for (const W of candidates) {
@@ -123,7 +125,7 @@ export function findAIMove(
                 ok = false;
                 break;
               }
-              if (inCorner(corner, rr, cc)) touchesCorner = true;
+              if (inCorner(homeCorner, rr, cc)) touchesCorner = true;
               positions.push([rr, cc]);
             }
             if (!ok || !touchesCorner) continue;
@@ -137,6 +139,11 @@ export function findAIMove(
         }
       }
     }
+  };
+
+  // ── İlk hamle: kendi köşelerinden birinden başla ────────────────────────────
+  if (isFirstMove) {
+    for (const homeCorner of corners) tryCornerStart(homeCorner);
     return best;
   }
 
@@ -208,6 +215,13 @@ export function findAIMove(
         }
       }
     }
+  }
+
+  // Henüz kullanılmamış (taze) bir köşesi varsa, oradan da bağımsız bir
+  // kelimeyle başlayabilir — 2 köşeli oyunda ikinci köşe ilk köşeden
+  // bağımsız kullanılabilir olmalı.
+  for (const homeCorner of freshCorners(board, corners, owner)) {
+    tryCornerStart(homeCorner);
   }
 
   return best;

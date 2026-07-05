@@ -98,8 +98,10 @@ export default function App() {
       turn_count: state.turnCount,
       move_count: human.moveCount || null,
       best_move_score: human.bestMoveScore || null,
+      best_word_score: human.bestWordScore || null,
       best_word: human.bestWord || null,
       longest_word: human.longestWord || null,
+      move_points_sum: human.moveScoreSum || null,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);
@@ -142,7 +144,8 @@ export default function App() {
     const result = validatePlacement(
       state.board,
       state.placed,
-      current.corner,
+      state.current,
+      current.corners,
       open,
       isFirstMove(state),
     );
@@ -221,7 +224,7 @@ export default function App() {
     const placedCoords = Object.keys(state.placed).map(
       (k) => k.split(',').map(Number) as [number, number],
     );
-    const { shares } = computeInvasionSplit(placedCoords, me.corner, state.players, potentialScore);
+    const { shares } = computeInvasionSplit(placedCoords, me.corners, state.players, potentialScore);
     const invasion = shares.length > 0
       ? shares.map((s) => ({ ownerName: state.players[s.index].name, ownerPts: s.amount }))
       : null;
@@ -232,7 +235,8 @@ export default function App() {
       const structural = validatePlacementStructural(
         state.board,
         state.placed,
-        me.corner,
+        state.current,
+        me.corners,
         open,
         isFirstMove(state),
       );

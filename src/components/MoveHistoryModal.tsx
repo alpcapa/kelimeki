@@ -11,22 +11,21 @@ interface MoveHistoryModalProps {
 export function MoveHistoryModal({ state, humanIndex, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory.filter((e) => e.player === humanIndex);
   const total = entries.reduce((s, e) => s + e.points, 0);
-  const recentEntries = entries.slice(-7);
 
   return (
     <Modal title="Hamle Geçmişi" onClose={onClose}>
       <p className="text-[10px] font-mono text-muted mb-3 leading-relaxed">
-        Bu oyunda kazandığın son {recentEntries.length} hamle ve puanları. Toplam{' '}
+        Bu oyunda kazandığın {entries.length} hamle ve puanları. Toplam{' '}
         <span className="font-bold text-accent text-[15px]">{total}</span> puan.
       </p>
 
-      {recentEntries.length === 0 ? (
+      {entries.length === 0 ? (
         <p className="text-[11px] font-mono text-muted text-center py-4">
           Henüz kazanılmış bir puan yok.
         </p>
       ) : (
         <div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
-          {[...recentEntries].reverse().map((e, i) => {
+          {[...entries].reverse().map((e, i) => {
             const isInvasion = e.invasionFrom !== undefined;
             const label = isInvasion
               ? `${state.players[e.invasionFrom!]?.name ?? '?'} köşene girdi`

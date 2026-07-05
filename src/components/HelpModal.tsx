@@ -68,10 +68,11 @@ export function HelpModal({ onClose }: HelpModalProps) {
 
         <Section title="Temel Kurallar">
           <P>
-            <strong>Başlangıç:</strong> Her oyuncu tahtanın bir köşesindeki 5×5'lik bölgeye
+            <strong>Başlangıç:</strong> Her oyuncu tahtanın köşelerindeki 5×5'lik bölgelere
             sahiptir. Bu alanlar o kişinin özel koruma alanıdır ve bu alanın dışına temas etmeden
-            diğer oyuncular buraya ekleme yapamaz. 2 kişilik oyunda çapraz köşeler (sol-üst ↔
-            sağ-alt), 4 kişilik oyunda dört köşe kullanılır.
+            diğer oyuncular buraya ekleme yapamaz. 2 kişilik oyunda her oyuncu çapraz iki köşeye
+            sahiptir (1. oyuncu sol-üst + sağ-alt, 2. oyuncu sağ-üst + sol-alt), 4 kişilik oyunda
+            her oyuncu tek bir köşe kullanır.
           </P>
           <P>
             <strong>İlk hamle:</strong> İlk kelimende en az bir harf kendi köşe bölgene

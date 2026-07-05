@@ -96,12 +96,15 @@ export function isZoneBoundaryCell(corner: number, r: number, c: number): boolea
 }
 
 /**
- * Oyuncu sayısına göre köşe ataması.
- *  - 2 oyuncu: çapraz köşeler (sol-üst, sağ-alt).
- *  - 4 oyuncu: dört köşe.
+ * Oyuncu sayısına göre köşe ataması (her oyuncunun sahip olduğu köşe indeksleri).
+ *  - 2 oyuncu: dört köşe de kullanılır, her oyuncu kendi çapraz köşe çiftine
+ *    sahip olur — 1. oyuncu sol-üst + sağ-alt (0, 3), 2. oyuncu sağ-üst +
+ *    sol-alt (1, 2). Böylece köşeler çapraz (X) desende paylaşılır, boş köşe
+ *    kalmaz.
+ *  - 4 oyuncu: her oyuncu tek bir köşeye sahip olur.
  */
-export function cornersFor(playerCount: number): number[] {
-  return playerCount === 2 ? [0, 3] : [0, 1, 2, 3];
+export function cornersFor(playerCount: number): number[][] {
+  return playerCount === 2 ? [[0, 3], [1, 2]] : [[0], [1], [2], [3]];
 }
 
 // ── Başlangıç bonus yerleşimi (LexFront prototipinden) ───────────────────────
