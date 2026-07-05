@@ -5,6 +5,7 @@ import {
   RACK_SIZE,
   buildInitialBonuses,
   cornersFor,
+  jokerFinishBonus,
 } from './constants';
 import type { GameState, HistoryEntry, Owner, Player, Tile } from './types';
 import { buildBag, drawTiles } from '../utils/bag';
@@ -428,6 +429,17 @@ export function gameReducer(state: GameState, action: Action): GameState {
         swapMode: false,
         swapSelection: [],
         consecutivePasses: 0,
+        moveHistory: [
+          ...state.moveHistory,
+          {
+            turn: state.turnCount,
+            player: state.current,
+            words: [],
+            points: 0,
+            action: 'exchange',
+            tileCount: returned.length,
+          },
+        ],
         message: `${me.name} ${returned.length} taş değiştirdi ve sırasını kullandı.`,
         messageType: 'warn',
       };
@@ -477,6 +489,13 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const rack = [...me.rack];
       rack.push(...drawTiles(bag, RACK_SIZE - rack.length));
 
+      // Bu hamle rafı + torbayı tamamen bitiriyorsa ve aralarında joker
+      // varsa, jokerli bitiş bonusu eklenir (köşe vergisine tabi değildir).
+      const jokerCount = Object.values(state.placed).filter((t) => t.wild).length;
+      const finishesGame = rack.length === 0 && bag.length === 0;
+      const finishBonus = finishesGame ? jokerFinishBonus(jokerCount) : 0;
+      const finishBonusNote = finishBonus > 0 ? ` (jokerli bitiş bonusu +${finishBonus})` : '';
+
       const newLongestWord = formed.reduce(
         (best, fw) => (fw.word.length > best.length ? fw.word : best),
         me.longestWord,
@@ -488,7 +507,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           return {
             ...p,
             rack,
-            score: p.score + pts,
+            score: p.score + pts + finishBonus,
             bestMoveScore: isNewBestMove ? basePts : p.bestMoveScore,
             bestWordScore: isNewBestWord ? bestWordThisMove.score : p.bestWordScore,
             bestWord: isNewBestWord ? bestWordThisMove.word : p.bestWord,
@@ -519,10 +538,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
           state.turnCount,
           state.current,
           formed.map((f) => f.word),
-          pts,
+          pts + finishBonus,
           shares,
         ),
-        message: `${me.name}: +${pts} puan${bonusNote} Kelimeler: ${check.words!.join(', ')}`,
+        message: `${me.name}: +${pts} puan${bonusNote}${finishBonusNote} Kelimeler: ${check.words!.join(', ')}`,
         messageType: 'ok',
       };
       return advanceTurn(moved);
@@ -535,6 +554,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const moved: GameState = {
         ...recalled,
         consecutivePasses,
+        moveHistory: [
+          ...state.moveHistory,
+          { turn: state.turnCount, player: state.current, words: [], points: 0, action: 'pass' },
+        ],
         message: `${state.players[state.current].name} pas geçti.`,
         messageType: 'warn',
       };
@@ -581,6 +604,17 @@ export function gameReducer(state: GameState, action: Action): GameState {
             bag,
             players: withRack(state, rack),
             consecutivePasses,
+            moveHistory: [
+              ...state.moveHistory,
+              {
+                turn: state.turnCount,
+                player: state.current,
+                words: [],
+                points: 0,
+                action: 'exchange',
+                tileCount: returned.length,
+              },
+            ],
             message: `${me.name} harflerini değiştirdi.`,
             messageType: 'warn',
           };
@@ -588,6 +622,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
           moved = {
             ...state,
             consecutivePasses,
+            moveHistory: [
+              ...state.moveHistory,
+              { turn: state.turnCount, player: state.current, words: [], points: 0, action: 'pass' },
+            ],
             message: `${me.name} pas geçti.`,
             messageType: 'warn',
           };
@@ -620,6 +658,12 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const bag = [...state.bag];
       rack.push(...drawTiles(bag, RACK_SIZE - rack.length));
 
+      // Bu hamle rafı + torbayı tamamen bitiriyorsa ve aralarında joker
+      // varsa, jokerli bitiş bonusu eklenir (köşe vergisine tabi değildir).
+      const aiJokerCount = move.placements.filter((p) => p.tile.wild).length;
+      const aiFinishesGame = rack.length === 0 && bag.length === 0;
+      const aiFinishBonus = aiFinishesGame ? jokerFinishBonus(aiJokerCount) : 0;
+
       const aiLongestWord = formed.reduce(
         (best, fw) => (fw.word.length > best.length ? fw.word : best),
         me.longestWord,
@@ -640,7 +684,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           return {
             ...p,
             rack,
-            score: p.score + aiPts,
+            score: p.score + aiPts + aiFinishBonus,
             bestMoveScore: aiIsNewBestMove ? move.score : p.bestMoveScore,
             bestWordScore: aiIsNewBestWord ? aiBestWordThisMove.score : p.bestWordScore,
             bestWord: aiIsNewBestWord ? aiBestWordThisMove.word : p.bestWord,
@@ -659,6 +703,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const aiInvasionNote = aiShares.length > 0
         ? ` (${aiShares.map((s) => `${s.amount} puanı ${state.players[s.index].name} kaptı`).join(', ')})`
         : '';
+      const aiFinishBonusNote = aiFinishBonus > 0 ? ` (jokerli bitiş bonusu +${aiFinishBonus})` : '';
       const moved: GameState = {
         ...state,
         board,
@@ -672,10 +717,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
           state.turnCount,
           state.current,
           formed.map((f) => f.word),
-          aiPts,
+          aiPts + aiFinishBonus,
           aiShares,
         ),
-        message: `${me.name} "${move.word}" oynadı. +${aiPts} puan.${aiInvasionNote}`,
+        message: `${me.name} "${move.word}" oynadı. +${aiPts} puan.${aiInvasionNote}${aiFinishBonusNote}`,
         messageType: 'ok',
       };
       return advanceTurn(moved);

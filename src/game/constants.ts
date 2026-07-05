@@ -16,6 +16,16 @@ export const BINGO_BONUS = 50;
 /** Rafta tutulan taş sayısı. */
 export const RACK_SIZE = 7;
 
+/**
+ * Oyunu bitiren hamlede (raf + torba tamamen boşalırsa) oynanan taşlar
+ * arasında joker varsa verilen ekstra bonus: 1 joker +50, 2 joker +150.
+ */
+export function jokerFinishBonus(jokerCount: number): number {
+  if (jokerCount >= 2) return 150;
+  if (jokerCount === 1) return 50;
+  return 0;
+}
+
 /** Bonus kare kısa etiketleri (K3 = üç kat kelime vb.). */
 export const BONUS_LABELS: Record<BonusType, string> = {
   tw: 'K3',

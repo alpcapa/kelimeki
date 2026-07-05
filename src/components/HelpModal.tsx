@@ -156,12 +156,19 @@ export function HelpModal({ onClose }: HelpModalProps) {
             harfe dönüşebilir. Puan değeri <strong>0</strong>'dır; bonus kareler de jokere
             uygulanmaz.
           </P>
+          <P>
+            Rafını ve torbayı tamamen bitiren hamlende joker de oynadıysan ekstra bonus
+            kazanırsın: <strong>1 jokerle bitiş +50</strong>, <strong>2 jokerle bitiş +150</strong>.
+          </P>
         </Section>
 
         <Section title="Sözlük">
           <P>
             Yalnızca Türkçe kelimeler geçerlidir. Her hamledeki tüm yeni kelimeler (ana kelime +
             yan oluşumlar) sözlükte bulunmalıdır.
+          </P>
+          <P>
+            Sadece Türk Dil Kurumu sözlüğünde yer alan kelimeler bulunur.
           </P>
         </Section>
 

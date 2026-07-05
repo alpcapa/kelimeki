@@ -11,11 +11,12 @@ interface MoveHistoryModalProps {
 export function MoveHistoryModal({ state, humanIndex, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory.filter((e) => e.player === humanIndex);
   const total = entries.reduce((s, e) => s + e.points, 0);
+  const scoringMoveCount = entries.filter((e) => !e.action).length;
 
   return (
     <Modal title="Hamle Geçmişi" onClose={onClose}>
       <p className="text-[10px] font-mono text-muted mb-3 leading-relaxed">
-        Bu oyunda kazandığın {entries.length} hamle ve puanları. Toplam{' '}
+        Bu oyunda kazandığın {scoringMoveCount} hamle ve puanları. Toplam{' '}
         <span className="font-bold text-accent text-[15px]">{total}</span> puan.
       </p>
 
@@ -29,9 +30,13 @@ export function MoveHistoryModal({ state, humanIndex, onClose }: MoveHistoryModa
             const isInvasion = e.invasionFrom !== undefined;
             const label = isInvasion
               ? `${state.players[e.invasionFrom!]?.name ?? '?'} köşene girdi`
-              : e.words.length > 0
-                ? e.words.join(', ')
-                : '—';
+              : e.action === 'pass'
+                ? 'Pas geçti'
+                : e.action === 'exchange'
+                  ? `${e.tileCount} taş değiştirdi`
+                  : e.words.length > 0
+                    ? e.words.join(', ')
+                    : '—';
             return (
               <div
                 key={i}
@@ -46,14 +51,16 @@ export function MoveHistoryModal({ state, humanIndex, onClose }: MoveHistoryModa
                       {label}
                     </span>
                   </div>
-                  <span
-                    className={[
-                      'text-[13px] font-mono font-bold shrink-0',
-                      isInvasion ? 'text-gold' : 'text-green',
-                    ].join(' ')}
-                  >
-                    +{e.points}
-                  </span>
+                  {!e.action && (
+                    <span
+                      className={[
+                        'text-[13px] font-mono font-bold shrink-0',
+                        isInvasion ? 'text-gold' : 'text-green',
+                      ].join(' ')}
+                    >
+                      +{e.points}
+                    </span>
+                  )}
                 </div>
                 {e.lostShares && e.lostShares.length > 0 && (
                   <span className="text-[9px] font-mono text-red">

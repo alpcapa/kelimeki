@@ -249,10 +249,10 @@ export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardPr
     });
   };
 
-  // En son oynanan hamlenin etrafına kalıcı sarı çerçeve — özellikle YZ
+  // En son oynanan hamlenin etrafına kalıcı açık mavi çerçeve — özellikle YZ
   // oynayınca nereye oynadığı belli olsun diye.
   const lastMoveOutline = state.lastMoveCells.length > 0
-    ? buildOutline(state.lastMoveCells, '#D4A017', 'last')
+    ? buildOutline(state.lastMoveCells, '#38BDF8', 'last')
     : [];
 
   // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.

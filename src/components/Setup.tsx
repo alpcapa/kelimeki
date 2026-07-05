@@ -70,8 +70,7 @@ export function Setup({ onStart }: SetupProps) {
       <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
         <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
           <p className="text-sm text-text font-sans leading-relaxed">
-            Giriş yapmadan sadece yapay zeka ile oynayabilirsiniz. Ayrıca, elde ettiğiniz
-            puanlar ve istatistikler tutulmaz, lider tablosunda yer almaz.
+            Giriş yapmadan oynadığınız oyunların istatistikleri tutulmaz.
           </p>
           <div className="flex gap-2 mt-1">
             <button
@@ -92,14 +91,14 @@ export function Setup({ onStart }: SetupProps) {
     )}
 
     <div className="w-full max-w-[460px] px-4 py-6 flex flex-col gap-5">
-      <div className="text-center flex flex-col items-center gap-1">
+      <div className="text-center flex flex-col items-center gap-1 -mt-3">
         <div style={{ fontFamily: "'Caveat', cursive", fontSize: 52, fontWeight: 700, color: '#2563EB', letterSpacing: 4, lineHeight: 1 }}>
           harfik
         </div>
         <svg width="100" height="8" viewBox="0 0 100 8" fill="none">
           <path d="M4 4 Q25 1 50 4 Q75 7 96 4" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" fill="none" />
         </svg>
-        <p className="text-muted text-xs font-mono mt-1">
+        <p className="text-muted text-xs font-mono mt-4">
           Çok farklı bir kelime oyunu sizlerle. Her oyuncunun köşesi onun
           kalesi gibidir. Oyuna köşenden başlayıp ilerlersin. Köşene giren
           olursa cezayı keser puanın yarısını alırsın. Haydi sen de dene ve gör.
