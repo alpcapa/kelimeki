@@ -188,31 +188,34 @@ export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardPr
     }
   }
 
-  // Oyna'ya basmadan önce anlık geçerlilik çerçevesi: oluşan tüm kelimelerin
-  // hücrelerini kapsayan TEK bir dış hat çizilir (iç kesişim hücrelerinde
-  // ayırıcı çizgi olmaz) — her hücrenin yalnızca kümenin dışına bakan
-  // kenarlarına çizgi eklenir.
-  const moveOutline: React.ReactNode[] = [];
-  if (moveStatus) {
-    // Kesişim hücreleri (hem ana hem çapraz kelimede) birden fazla kez
-    // geçebilir — tekilleştir, aksi halde aynı hücreye iki kez çerçeve çizilir.
-    const uniqueCells = [...new Map(moveStatus.cells.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
+  // Verilen hücre kümesini kapsayan TEK bir dış hat üretir (iç kesişim
+  // hücrelerinde ayırıcı çizgi olmaz) — her hücrenin yalnızca kümenin
+  // dışına bakan kenarlarına çizgi eklenir. `badgeScore` verilirse en üst
+  // sağdaki hücrenin köşesine puan rozeti eklenir.
+  const buildOutline = (
+    cellsList: [number, number][],
+    color: string,
+    keyPrefix: string,
+    badgeScore?: number,
+  ): React.ReactNode[] => {
+    const uniqueCells = [...new Map(cellsList.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
     const cellSet = new Set(uniqueCells.map(([r, c]) => key(r, c)));
-    const color = moveStatus.valid ? '#1FA05C' : '#E0483A';
     let badge: [number, number] | null = null;
-    for (const [r, c] of uniqueCells) {
-      if (!badge || r < badge[0] || (r === badge[0] && c > badge[1])) badge = [r, c];
+    if (badgeScore !== undefined) {
+      for (const [r, c] of uniqueCells) {
+        if (!badge || r < badge[0] || (r === badge[0] && c > badge[1])) badge = [r, c];
+      }
     }
-    for (const [r, c] of uniqueCells) {
+    return uniqueCells.map(([r, c]) => {
       const top = cellSet.has(key(r - 1, c));
       const bottom = cellSet.has(key(r + 1, c));
       const left = cellSet.has(key(r, c - 1));
       const right = cellSet.has(key(r, c + 1));
       const side = (occupied: boolean) => (occupied ? 'none' : `2.5px solid ${color}`);
       const radius = (a: boolean, b: boolean) => (!a && !b ? '5px' : '0');
-      moveOutline.push(
+      return (
         <div
-          key={`${r},${c}`}
+          key={`${keyPrefix}-${r},${c}`}
           className="pointer-events-none z-10"
           style={{
             gridRow: `${r + 1} / ${r + 2}`,
@@ -238,13 +241,24 @@ export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardPr
                 boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
               }}
             >
-              +{moveStatus.score}
+              +{badgeScore}
             </span>
           )}
-        </div>,
+        </div>
       );
-    }
-  }
+    });
+  };
+
+  // En son oynanan hamlenin etrafına kalıcı sarı çerçeve — özellikle YZ
+  // oynayınca nereye oynadığı belli olsun diye.
+  const lastMoveOutline = state.lastMoveCells.length > 0
+    ? buildOutline(state.lastMoveCells, '#D4A017', 'last')
+    : [];
+
+  // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
+  const moveOutline = moveStatus
+    ? buildOutline(moveStatus.cells, moveStatus.valid ? '#1FA05C' : '#E0483A', 'move', moveStatus.score)
+    : [];
 
   return (
     <div className="w-full max-w-[680px] mx-auto px-3 pt-2 pb-3 flex flex-col items-center">
@@ -257,6 +271,9 @@ export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardPr
         }}
       >
         {cells}
+
+        {/* En son oynanan hamlenin etrafındaki kalıcı sarı çerçeve. */}
+        {lastMoveOutline}
 
         {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan:
             tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}

@@ -69,6 +69,7 @@ export function createInitialState(): GameState {
     message: '',
     messageType: '',
     lastWords: {},
+    lastMoveCells: [],
     moveHistory: [],
   };
 }
@@ -114,6 +115,7 @@ function startGame(setup: PlayerSetup[]): GameState {
     message: `${players[0].name}, kendi köşenden bir kelime kur.`,
     messageType: '',
     lastWords: {},
+    lastMoveCells: [],
     moveHistory: [],
   };
 }
@@ -500,6 +502,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         consecutivePasses: 0,
         selectedTile: null,
         lastWords: setLastWords(state.lastWords, formed, state.current),
+        lastMoveCells: formed.flatMap((f) => f.coords),
         moveHistory: appendMoveHistory(
           state.moveHistory,
           state.turnCount,
@@ -644,6 +647,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         players,
         consecutivePasses: 0,
         lastWords: setLastWords(state.lastWords, formed, state.current),
+        lastMoveCells: formed.flatMap((f) => f.coords),
         moveHistory: appendMoveHistory(
           state.moveHistory,
           state.turnCount,

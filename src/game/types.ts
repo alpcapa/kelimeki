@@ -88,6 +88,11 @@ export interface GameState {
    * Bu hücrelere tıklayınca kelimenin anlamı gösterilir.
    */
   lastWords: Record<CellKey, { word: string; by: Owner }>;
+  /**
+   * En son oynanan hamledeki tüm hücreler (tahtada nerede oynandığını sarı
+   * çerçeveyle göstermek için) — bir sonraki hamlede değişir.
+   */
+  lastMoveCells: [number, number][];
   /** Oyun boyunca tüm oyuncuların hamle/puan geçmişi (en yeni sonda). */
   moveHistory: HistoryEntry[];
 }
