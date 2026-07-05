@@ -170,11 +170,13 @@ export default function App() {
 
   // ── Oyun ekranı ──────────────────────────────────────────────────────────────
   const me = state.players[state.current];
-  // Harf rafında her zaman İNSAN oyuncunun kendi taşları gösterilir — sıra
-  // bir YZ'deyken bile onun rafı (gizli tutulması gereken bilgi) görünmemeli.
-  const human = state.players.find((p) => !p.isAI) ?? me;
-  const humanColor = PLAYER_COLORS[human.colorIndex];
-  const humanIndex = state.players.findIndex((p) => !p.isAI);
+  // Harf rafı: sıra bir insanda ise (aynı cihazdan sırayla oynanan hotseat
+  // modunda birden fazla insan olabilir) HER ZAMAN o anki insanın kendi
+  // rafı gösterilir; sıra bir YZ'deyse onun gizli tutulması gereken rafı
+  // asla gösterilmez, bunun yerine ilk insan oyuncuya düşülür.
+  const rackPlayer = me.isAI ? (state.players.find((p) => !p.isAI) ?? me) : me;
+  const rackColor = PLAYER_COLORS[rackPlayer.colorIndex];
+  const rackPlayerIndex = state.players.indexOf(rackPlayer);
 
   const handleCellClick = (r: number, c: number) => {
     const k = key(r, c);
@@ -303,15 +305,15 @@ export default function App() {
         <div className="flex gap-1.5 items-stretch">
           <div className="flex-1 min-w-0">
             <Rack
-              tiles={human.rack}
+              tiles={rackPlayer.rack}
               selectedTile={state.selectedTile}
               onSelect={(i) => {
                 if (me.isAI) return;
                 if (state.swapMode) dispatch({ type: 'TOGGLE_SWAP_TILE', index: i });
                 else dispatch({ type: 'SELECT_TILE', index: i });
               }}
-              title={human.name}
-              color={humanColor}
+              title={rackPlayer.name}
+              color={rackColor}
               swapMode={state.swapMode}
               swapSelection={state.swapSelection}
             />
@@ -463,7 +465,7 @@ export default function App() {
       {showHistory && (
         <MoveHistoryModal
           state={state}
-          humanIndex={humanIndex}
+          humanIndex={rackPlayerIndex}
           onClose={() => setShowHistory(false)}
         />
       )}

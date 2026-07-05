@@ -222,7 +222,11 @@ function appendMoveHistory(
   pts: number,
   shares: { index: number; amount: number }[],
 ): HistoryEntry[] {
-  const entries: HistoryEntry[] = [...prev, { turn, player: actor, words, points: pts }];
+  const actorEntry: HistoryEntry = { turn, player: actor, words, points: pts };
+  if (shares.length > 0) {
+    actorEntry.lostShares = shares.map((s) => ({ to: s.index, amount: s.amount }));
+  }
+  const entries: HistoryEntry[] = [...prev, actorEntry];
   for (const s of shares) {
     entries.push({ turn, player: s.index, words: [], points: s.amount, invasionFrom: actor });
   }

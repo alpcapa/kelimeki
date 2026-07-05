@@ -102,6 +102,11 @@ export interface HistoryEntry {
    * `player`in köşesine girmesinden (köşe vergisi) geldi.
    */
   invasionFrom?: Owner;
+  /**
+   * Doluysa: bu hamle bir ya da daha fazla rakip köşesine girdiği için
+   * puanın bir kısmı o köşe sahiplerine kaptırıldı.
+   */
+  lostShares?: { to: Owner; amount: number }[];
 }
 
 export interface ValidationResult {
