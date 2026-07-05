@@ -8,6 +8,7 @@ import { UserMenu } from './components/UserMenu';
 import { Setup } from './components/Setup';
 import { MeaningModal } from './components/MeaningModal';
 import { RemainingTilesModal } from './components/RemainingTilesModal';
+import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import { calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { getFormedWords, key } from './utils/board';
@@ -39,6 +40,9 @@ export default function App() {
 
   // Torba (kalan taşlar) penceresi.
   const [showTiles, setShowTiles] = useState(false);
+
+  // Hamle geçmişi penceresi.
+  const [showHistory, setShowHistory] = useState(false);
 
   // Oyundan çıkış onay popup'ı.
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -170,6 +174,7 @@ export default function App() {
   // bir YZ'deyken bile onun rafı (gizli tutulması gereken bilgi) görünmemeli.
   const human = state.players.find((p) => !p.isAI) ?? me;
   const humanColor = PLAYER_COLORS[human.colorIndex];
+  const humanIndex = state.players.findIndex((p) => !p.isAI);
 
   const handleCellClick = (r: number, c: number) => {
     const k = key(r, c);
@@ -283,6 +288,7 @@ export default function App() {
         state={state}
         onCellClick={handleCellClick}
         moveStatus={moveStatus}
+        onOpenHistory={() => setShowHistory(true)}
       />
 
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
@@ -452,6 +458,14 @@ export default function App() {
 
       {showTiles && (
         <RemainingTilesModal state={state} onClose={() => setShowTiles(false)} />
+      )}
+
+      {showHistory && (
+        <MoveHistoryModal
+          state={state}
+          humanIndex={humanIndex}
+          onClose={() => setShowHistory(false)}
+        />
       )}
 
       <GameOver

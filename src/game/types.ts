@@ -84,6 +84,24 @@ export interface GameState {
    * Bu hücrelere tıklayınca kelimenin anlamı gösterilir.
    */
   lastWords: Record<CellKey, { word: string; by: Owner }>;
+  /** Oyun boyunca tüm oyuncuların hamle/puan geçmişi (en yeni sonda). */
+  moveHistory: HistoryEntry[];
+}
+
+/** Hamle geçmişinde tek bir satır: bir oyuncunun aldığı puan ve kaynağı. */
+export interface HistoryEntry {
+  turn: number;
+  /** Bu puanı skoruna ekleyen oyuncu. */
+  player: Owner;
+  /** Oynanan kelime(ler); köşe vergisi bonusu satırlarında boş dizi. */
+  words: string[];
+  /** Bu satırda `player`in skoruna eklenen puan. */
+  points: number;
+  /**
+   * Doluysa: bu puan kendi hamlesinden değil, `invasionFrom` oyuncusunun
+   * `player`in köşesine girmesinden (köşe vergisi) geldi.
+   */
+  invasionFrom?: Owner;
 }
 
 export interface ValidationResult {

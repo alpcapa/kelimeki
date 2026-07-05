@@ -16,6 +16,8 @@ interface BoardProps {
   onCellClick: (r: number, c: number) => void;
   /** Oyna'ya basmadan önceki anlık geçerlilik/puan çerçevesi; taş yoksa null. */
   moveStatus: MoveStatus | null;
+  /** "Hamle Geçmişi" linkine tıklanınca çağrılır. */
+  onOpenHistory: () => void;
 }
 
 // Nömorfik bonus kareleri: sadece yazı rengi (arkaplan style ile verilir).
@@ -86,7 +88,7 @@ function cornerEdgeStyle(
   return s;
 }
 
-export function Board({ state, onCellClick, moveStatus }: BoardProps) {
+export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardProps) {
   const { board, placed, bonuses, lastWords, players, current } = state;
 
   // Köşe bölgesi -> o köşenin sahibinin rengi (boş kareleri renklendirmek için).
@@ -287,7 +289,13 @@ export function Board({ state, onCellClick, moveStatus }: BoardProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 shrink-0 pt-1 w-full">
+      <div className="flex items-center justify-between gap-2 shrink-0 pt-1 w-full">
+        <button
+          onClick={onOpenHistory}
+          className="text-[9px] font-mono font-bold uppercase tracking-[0.5px] text-accent underline underline-offset-2 shrink-0"
+        >
+          Hamle Geçmişi
+        </button>
         <div className="flex gap-2 justify-end flex-wrap">
           {LEGEND.map((item) => (
             <div
