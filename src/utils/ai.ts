@@ -39,7 +39,7 @@ function consumeRack(
 
 /**
  * Sırası gelen YZ oyuncusu için en iyi hamleyi döndürür (yoksa null → pas).
- * `corner` YZ'nin köşesi, `openCorners` açık köşeler, `isFirstMove` bu
+ * `corners` YZ'nin köşeleri, `openCorners` açık köşeler, `isFirstMove` bu
  * oyuncunun ilk hamlesi mi.
  */
 export function findAIMove(
@@ -47,7 +47,7 @@ export function findAIMove(
   rack: Tile[],
   bonuses: Record<string, BonusType>,
   owner: number,
-  corner: number,
+  corners: number[],
   breachedCorners: boolean[],
   isFirstMove: boolean,
 ): AIMove | null {
@@ -84,7 +84,7 @@ export function findAIMove(
     // Rakip köşeye giriş: köşeye bağlı harf zinciri sınır karesine ulaşmalı.
     const foreignPlacements = placements.filter((p) => {
       const region = regionOf(p.r, p.c);
-      return region !== -1 && region !== corner;
+      return region !== -1 && !corners.includes(region);
     });
     if (foreignPlacements.length > 0) {
       const foreignZones = new Set(foreignPlacements.map((p) => regionOf(p.r, p.c) as number));
@@ -101,38 +101,40 @@ export function findAIMove(
 
   // Yeni konacak tüm hücreler bölge kurallarına uymalı.
   const allowed = (r: number, c: number) =>
-    cellAllowed(corner, breachedCorners, r, c);
+    cellAllowed(corners, breachedCorners, r, c);
 
-  // ── İlk hamle: kendi köşesinden başla ───────────────────────────────────────
+  // ── İlk hamle: kendi köşelerinden birinden başla ────────────────────────────
   if (isFirstMove) {
-    const b = cornerBounds(corner);
-    for (let sr = b.r0; sr <= b.r1; sr++) {
-      for (let sc = b.c0; sc <= b.c1; sc++) {
-        for (const W of candidates) {
-          for (const horiz of [true, false]) {
-            const er = horiz ? sr : sr + W.length - 1;
-            const ec = horiz ? sc + W.length - 1 : sc;
-            if (er >= SIZE || ec >= SIZE) continue;
-            let ok = true;
-            let touchesCorner = false;
-            const positions: [number, number][] = [];
-            for (let i = 0; i < W.length; i++) {
-              const rr = horiz ? sr : sr + i;
-              const cc = horiz ? sc + i : sc;
-              if (board[rr][cc] || !allowed(rr, cc)) {
-                ok = false;
-                break;
+    for (const homeCorner of corners) {
+      const b = cornerBounds(homeCorner);
+      for (let sr = b.r0; sr <= b.r1; sr++) {
+        for (let sc = b.c0; sc <= b.c1; sc++) {
+          for (const W of candidates) {
+            for (const horiz of [true, false]) {
+              const er = horiz ? sr : sr + W.length - 1;
+              const ec = horiz ? sc + W.length - 1 : sc;
+              if (er >= SIZE || ec >= SIZE) continue;
+              let ok = true;
+              let touchesCorner = false;
+              const positions: [number, number][] = [];
+              for (let i = 0; i < W.length; i++) {
+                const rr = horiz ? sr : sr + i;
+                const cc = horiz ? sc + i : sc;
+                if (board[rr][cc] || !allowed(rr, cc)) {
+                  ok = false;
+                  break;
+                }
+                if (inCorner(homeCorner, rr, cc)) touchesCorner = true;
+                positions.push([rr, cc]);
               }
-              if (inCorner(corner, rr, cc)) touchesCorner = true;
-              positions.push([rr, cc]);
+              if (!ok || !touchesCorner) continue;
+              const tiles = consumeRack(W.split(''), rackLetters, owner);
+              if (!tiles) continue;
+              consider(
+                positions.map(([pr, pc], i) => ({ r: pr, c: pc, tile: tiles[i] })),
+                W,
+              );
             }
-            if (!ok || !touchesCorner) continue;
-            const tiles = consumeRack(W.split(''), rackLetters, owner);
-            if (!tiles) continue;
-            consider(
-              positions.map(([pr, pc], i) => ({ r: pr, c: pc, tile: tiles[i] })),
-              W,
-            );
           }
         }
       }

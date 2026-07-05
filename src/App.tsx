@@ -142,7 +142,7 @@ export default function App() {
     const result = validatePlacement(
       state.board,
       state.placed,
-      current.corner,
+      current.corners,
       open,
       isFirstMove(state),
     );
@@ -221,7 +221,7 @@ export default function App() {
     const placedCoords = Object.keys(state.placed).map(
       (k) => k.split(',').map(Number) as [number, number],
     );
-    const { shares } = computeInvasionSplit(placedCoords, me.corner, state.players, potentialScore);
+    const { shares } = computeInvasionSplit(placedCoords, me.corners, state.players, potentialScore);
     const invasion = shares.length > 0
       ? shares.map((s) => ({ ownerName: state.players[s.index].name, ownerPts: s.amount }))
       : null;
@@ -232,7 +232,7 @@ export default function App() {
       const structural = validatePlacementStructural(
         state.board,
         state.placed,
-        me.corner,
+        me.corners,
         open,
         isFirstMove(state),
       );

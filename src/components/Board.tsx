@@ -98,7 +98,9 @@ export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardPr
     undefined,
     undefined,
   ];
-  for (const p of players) cornerColor[p.corner] = PLAYER_COLORS[p.colorIndex];
+  for (const p of players) {
+    for (const corner of p.corners) cornerColor[corner] = PLAYER_COLORS[p.colorIndex];
+  }
 
   // Köşe bölgesi -> o köşedeki oyuncunun numarası (1, 2, …) — soluk filigran.
   const cornerNumber: (number | undefined)[] = [
@@ -107,7 +109,9 @@ export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardPr
     undefined,
     undefined,
   ];
-  players.forEach((p, i) => (cornerNumber[p.corner] = i + 1));
+  players.forEach((p, i) => {
+    for (const corner of p.corners) cornerNumber[corner] = i + 1;
+  });
 
   // 5×5 köşenin tahtaya oranı (kenar uzunluğu).
   const cornerFrac = `${(CORNER / SIZE) * 100}%`;

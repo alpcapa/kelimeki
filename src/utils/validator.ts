@@ -34,7 +34,7 @@ export function canSpell(word: string, rack: string[]): boolean {
  */
 export function computeBreachedCorners(board: Board, players: Player[]): boolean[] {
   const breached = [false, false, false, false];
-  const owned = new Set(players.map((p) => p.corner));
+  const owned = new Set(players.flatMap((p) => p.corners));
   for (let i = 0; i < 4; i++) if (!owned.has(i)) breached[i] = true;
 
   for (let r = 0; r < SIZE; r++) {
@@ -98,14 +98,14 @@ export function zoneReachesBoundary(
  *  - Rakip köşe yalnızca ihlal edilmişse (breached) erişilebilir.
  */
 export function cellAllowed(
-  ownCorner: number,
+  ownCorners: number[],
   breachedCorners: boolean[],
   r: number,
   c: number,
 ): boolean {
   const region = regionOf(r, c);
   if (region === -1) return true;
-  if (region === ownCorner) return true;
+  if (ownCorners.includes(region)) return true;
   return breachedCorners[region];
 }
 
@@ -117,7 +117,7 @@ export function cellAllowed(
 export function validatePlacementStructural(
   board: Board,
   placed: Placed,
-  ownCorner: number,
+  ownCorners: number[],
   openCorners: boolean[],
   isFirstMove: boolean,
 ): ValidationResult {
@@ -137,7 +137,7 @@ export function validatePlacementStructural(
 
   // Bölge kuralı: her yeni taş izinli bir hücreye konmalı.
   for (const [r, c] of coords) {
-    if (!cellAllowed(ownCorner, openCorners, r, c)) {
+    if (!cellAllowed(ownCorners, openCorners, r, c)) {
       return {
         valid: false,
         reason: 'Bu köşe henüz ihlal edilmedi — sahip sınır karesine oynamadan girilemiyor.',
@@ -153,7 +153,7 @@ export function validatePlacementStructural(
   // bitişiği değil.
   const foreignZoneCoords = coords.filter(([r, c]) => {
     const region = regionOf(r, c);
-    return region !== -1 && region !== ownCorner;
+    return region !== -1 && !ownCorners.includes(region);
   });
   if (foreignZoneCoords.length > 0) {
     const foreignZones = new Set(foreignZoneCoords.map(([r, c]) => regionOf(r, c) as number));
@@ -169,7 +169,9 @@ export function validatePlacementStructural(
   }
 
   if (isFirstMove) {
-    const startsHome = coords.some(([r, c]) => inCorner(ownCorner, r, c));
+    const startsHome = coords.some(([r, c]) =>
+      ownCorners.some((corner) => inCorner(corner, r, c)),
+    );
     if (!startsHome) {
       return { valid: false, reason: 'İlk kelimen kendi köşenden başlamalı.' };
     }
@@ -205,11 +207,11 @@ export function validatePlacementStructural(
 export function validatePlacement(
   board: Board,
   placed: Placed,
-  ownCorner: number,
+  ownCorners: number[],
   openCorners: boolean[],
   isFirstMove: boolean,
 ): ValidationResult {
-  const structural = validatePlacementStructural(board, placed, ownCorner, openCorners, isFirstMove);
+  const structural = validatePlacementStructural(board, placed, ownCorners, openCorners, isFirstMove);
   if (!structural.valid) return structural;
 
   const formed = getFormedWords(board, placed);
@@ -230,15 +232,15 @@ export function validatePlacement(
  */
 export function computeInvasionSplit(
   coords: [number, number][],
-  ownCorner: number,
+  ownCorners: number[],
   players: Player[],
   basePts: number,
 ): { pts: number; shares: { index: number; amount: number }[] } {
   const invadedIdx = new Set<number>();
   for (const [r, c] of coords) {
     const region = regionOf(r, c);
-    if (region !== -1 && region !== ownCorner) {
-      const idx = players.findIndex((p) => p.corner === region);
+    if (region !== -1 && !ownCorners.includes(region)) {
+      const idx = players.findIndex((p) => p.corners.includes(region));
       if (idx >= 0) invadedIdx.add(idx);
     }
   }

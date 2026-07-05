@@ -86,7 +86,7 @@ function startGame(setup: PlayerSetup[]): GameState {
           ? 'Yapay Zeka'
           : `Yapay Zeka ${i + 1}`
         : `Oyuncu ${i + 1}`),
-    corner: corners[i],
+    corners: corners[i],
     colorIndex: i % PLAYER_COLORS.length,
     isAI: s.isAI,
     rack: drawTiles(bag, RACK_SIZE),
@@ -276,7 +276,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       // Bölge kuralı: kendi köşen, merkez ya da açılmış bir köşe olmalı.
       const me = state.players[state.current];
       const open = computeBreachedCorners(state.board, state.players);
-      if (!cellAllowed(me.corner, open, r, c)) {
+      if (!cellAllowed(me.corners, open, r, c)) {
         return {
           ...state,
           message: 'Burası başka bir oyuncunun köşesi — henüz oraya oynayamazsın.',
@@ -438,8 +438,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const me = state.players[state.current];
       const open = computeBreachedCorners(state.board, state.players);
       const check = action.skipWordCheck
-        ? validatePlacementStructural(state.board, state.placed, me.corner, open, isFirstMove(state))
-        : validatePlacement(state.board, state.placed, me.corner, open, isFirstMove(state));
+        ? validatePlacementStructural(state.board, state.placed, me.corners, open, isFirstMove(state))
+        : validatePlacement(state.board, state.placed, me.corners, open, isFirstMove(state));
       if (!check.valid) {
         return { ...state, message: check.reason!, messageType: 'err' };
       }
@@ -450,7 +450,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const placedCoords = Object.keys(state.placed).map(
         (k) => k.split(',').map(Number) as [number, number],
       );
-      const { pts, shares } = computeInvasionSplit(placedCoords, me.corner, state.players, basePts);
+      const { pts, shares } = computeInvasionSplit(placedCoords, me.corners, state.players, basePts);
       const bonusNote = shares.length > 0
         ? ` (${shares.map((s) => `${s.amount} puanı ${state.players[s.index].name} kaptı`).join(', ')})`
         : '';
@@ -542,7 +542,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         me.rack,
         state.bonuses,
         state.current,
-        me.corner,
+        me.corners,
         open,
         isFirstMove(state),
       );
@@ -609,7 +609,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const aiCoords = move.placements.map((p) => [p.r, p.c] as [number, number]);
       const { pts: aiPts, shares: aiShares } = computeInvasionSplit(
         aiCoords,
-        me.corner,
+        me.corners,
         state.players,
         move.score,
       );

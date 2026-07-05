@@ -52,7 +52,7 @@ src/
 
 ## Oyun Mekaniği Özeti
 
-- **Köşe bölgeleri:** 4 köşe (0=sol-üst, 1=sağ-üst, 2=sol-alt, 3=sağ-alt). 2 oyuncuda çapraz köşeler (0 ve 3), 4 oyuncuda dördü kullanılır.
+- **Köşe bölgeleri:** 4 köşe (0=sol-üst, 1=sağ-üst, 2=sol-alt, 3=sağ-alt). 2 oyuncuda dördü de kullanılır — her oyuncu çapraz köşe çiftine sahiptir (1. oyuncu 0+3, 2. oyuncu 1+2), boş köşe kalmaz. 4 oyuncuda her oyuncu tek bir köşeye sahiptir. Bir oyuncunun sahip olduğu köşeler `Player.corners: number[]` alanında tutulur (`cornersFor`, `src/game/constants.ts`).
 - **Köşe ihlali:** Bir oyuncu kendi 5×5 bölgesinin iç sınır karesine (`isZoneBoundaryCell`) taş koyduğunda o köşe "ihlal edilmiş" (`breached`) sayılır ve rakipler girebilir.
 - **Köşe vergisi:** Rakip köşesine giren hamlenin puanı ikiye bölünür; yarısı saldırgana kalır, yarısı köşe sahibine aktarılır. Aynı hamle iki farklı rakip köşesine birden giriyorsa puan üç kişi arasında (saldırgan + iki köşe sahibi) eşit paylaşılır (`computeInvasionSplit`, `src/utils/validator.ts`). İnsan oyuncu için "Oyna" öncesinde onay modalı (`invasionConfirm` state) gösterilir. YZ için de aynı kural otomatik uygulanır.
 - **Oyun bitişi:** Raf boş + torba boş → oyun biter. Kalan raf taşları oyuncunun puanından düşülür. Alternatif: tüm oyuncular arka arkaya MAX_PASS_ROUNDS tur pas geçerse biter.

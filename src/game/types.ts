@@ -30,8 +30,8 @@ export interface Placement {
 /** Yerel (aynı cihaz) oyuncu. */
 export interface Player {
   name: string;
-  /** Atanmış köşe bölgesi indeksi (0..3). */
-  corner: number;
+  /** Atanmış köşe bölgesi indeksleri (0..3) — 2 oyunculu oyunda iki köşe. */
+  corners: number[];
   /** Renk paleti indeksi (PLAYER_COLORS). */
   colorIndex: number;
   /** Bu oyuncuyu yapay zekâ mı oynuyor? */
