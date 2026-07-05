@@ -163,6 +163,9 @@ export function HelpModal({ onClose }: HelpModalProps) {
             Yalnızca Türkçe kelimeler geçerlidir. Her hamledeki tüm yeni kelimeler (ana kelime +
             yan oluşumlar) sözlükte bulunmalıdır.
           </P>
+          <P>
+            Sadece Türk Dil Kurumu sözlüğünde yer alan kelimeler bulunur.
+          </P>
         </Section>
 
         <Section title="Oyunun Sonu">
