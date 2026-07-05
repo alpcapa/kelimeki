@@ -126,6 +126,10 @@ export interface HistoryEntry {
    * puanın bir kısmı o köşe sahiplerine kaptırıldı.
    */
   lostShares?: { to: Owner; amount: number }[];
+  /** Doluysa: bu satır bir kelime hamlesi değil, pas ya da taş değişimidir. */
+  action?: 'pass' | 'exchange';
+  /** `action` 'exchange' ise değiştirilen taş sayısı. */
+  tileCount?: number;
 }
 
 export interface ValidationResult {

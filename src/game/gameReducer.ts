@@ -428,6 +428,17 @@ export function gameReducer(state: GameState, action: Action): GameState {
         swapMode: false,
         swapSelection: [],
         consecutivePasses: 0,
+        moveHistory: [
+          ...state.moveHistory,
+          {
+            turn: state.turnCount,
+            player: state.current,
+            words: [],
+            points: 0,
+            action: 'exchange',
+            tileCount: returned.length,
+          },
+        ],
         message: `${me.name} ${returned.length} taş değiştirdi ve sırasını kullandı.`,
         messageType: 'warn',
       };
@@ -535,6 +546,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const moved: GameState = {
         ...recalled,
         consecutivePasses,
+        moveHistory: [
+          ...state.moveHistory,
+          { turn: state.turnCount, player: state.current, words: [], points: 0, action: 'pass' },
+        ],
         message: `${state.players[state.current].name} pas geçti.`,
         messageType: 'warn',
       };
@@ -581,6 +596,17 @@ export function gameReducer(state: GameState, action: Action): GameState {
             bag,
             players: withRack(state, rack),
             consecutivePasses,
+            moveHistory: [
+              ...state.moveHistory,
+              {
+                turn: state.turnCount,
+                player: state.current,
+                words: [],
+                points: 0,
+                action: 'exchange',
+                tileCount: returned.length,
+              },
+            ],
             message: `${me.name} harflerini değiştirdi.`,
             messageType: 'warn',
           };
@@ -588,6 +614,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
           moved = {
             ...state,
             consecutivePasses,
+            moveHistory: [
+              ...state.moveHistory,
+              { turn: state.turnCount, player: state.current, words: [], points: 0, action: 'pass' },
+            ],
             message: `${me.name} pas geçti.`,
             messageType: 'warn',
           };
