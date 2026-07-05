@@ -70,8 +70,7 @@ export function Setup({ onStart }: SetupProps) {
       <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
         <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
           <p className="text-sm text-text font-sans leading-relaxed">
-            Giriş yapmadan sadece yapay zeka ile oynayabilirsiniz. Ayrıca, elde ettiğiniz
-            puanlar ve istatistikler tutulmaz, lider tablosunda yer almaz.
+            Giriş yapmadan oynadığınız oyunların istatistikleri tutulmaz.
           </p>
           <div className="flex gap-2 mt-1">
             <button
