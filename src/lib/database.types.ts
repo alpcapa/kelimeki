@@ -22,6 +22,7 @@ export interface Game {
   ai_score: number;
   result: GameResult;
   turn_count: number;
+  move_count: number | null;
   best_word: string | null;
   best_move_score: number | null;
   longest_word: string | null;
@@ -34,6 +35,7 @@ export type NewGame = Pick<
   'player_score' | 'ai_score' | 'result' | 'turn_count'
 > & {
   user_id?: string | null;
+  move_count?: number | null;
   best_word?: string | null;
   best_move_score?: number | null;
   longest_word?: string | null;
@@ -72,6 +74,8 @@ export interface PlayerStats {
   ties: number;
   best_score: number;
   avg_score: number;
+  avg_move_score: number | null;
   best_move_score: number | null;
+  best_word: string | null;
   longest_word: string | null;
 }
