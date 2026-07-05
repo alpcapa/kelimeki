@@ -166,7 +166,10 @@ export default function App() {
 
   // ── Oyun ekranı ──────────────────────────────────────────────────────────────
   const me = state.players[state.current];
-  const myColor = PLAYER_COLORS[me.colorIndex];
+  // Harf rafında her zaman İNSAN oyuncunun kendi taşları gösterilir — sıra
+  // bir YZ'deyken bile onun rafı (gizli tutulması gereken bilgi) görünmemeli.
+  const human = state.players.find((p) => !p.isAI) ?? me;
+  const humanColor = PLAYER_COLORS[human.colorIndex];
 
   const handleCellClick = (r: number, c: number) => {
     const k = key(r, c);
@@ -294,15 +297,15 @@ export default function App() {
         <div className="flex gap-1.5 items-stretch">
           <div className="flex-1 min-w-0">
             <Rack
-              tiles={me.rack}
+              tiles={human.rack}
               selectedTile={state.selectedTile}
               onSelect={(i) => {
                 if (me.isAI) return;
                 if (state.swapMode) dispatch({ type: 'TOGGLE_SWAP_TILE', index: i });
                 else dispatch({ type: 'SELECT_TILE', index: i });
               }}
-              title={me.name}
-              color={myColor}
+              title={human.name}
+              color={humanColor}
               swapMode={state.swapMode}
               swapSelection={state.swapSelection}
             />
