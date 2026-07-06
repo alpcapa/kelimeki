@@ -117,22 +117,29 @@ export function cornersFor(playerCount: number): number[][] {
   return playerCount === 2 ? [[0, 3], [1, 2]] : [[0], [1], [2], [3]];
 }
 
-// ── Başlangıç bonus yerleşimi (LexFront prototipinden) ───────────────────────
+// ── Başlangıç bonus yerleşimi ────────────────────────────────────────────────
+// Kural: aynı satır/sütunda yer alan iki "kelime çarpanı" (K2/K3) hücresi
+// arasında en az 6 hücrelik mesafe olmalı — aksi halde tek bir kelime iki
+// çarpana birden basıp aynı hamlede kelime puanını 2-3 kez katlayabilir.
+// Merkez (6,6) K3; diğer K2/K3'ler merkezden eşit uzaklıktaki köşegen
+// halkalarda (satır/sütun değerleri {1,2,3} ve {9,10,11}) konumlandırılmış,
+// böylece hiçbir K2/K3 çifti aynı satır/sütunda 6'dan az mesafede değil.
 const TW: [number, number][] = [
-  [0, 0], [0, 12], [12, 0], [12, 12], [3, 6], [6, 3], [6, 9], [9, 6],
+  [6, 6], [0, 0], [0, 12], [12, 0], [12, 12],
+];
+const DW: [number, number][] = [
+  [1, 1], [1, 11], [11, 1], [11, 11],
+  [2, 2], [2, 10], [10, 2], [10, 10],
+  [3, 3], [3, 9], [9, 3], [9, 9],
 ];
 const TL: [number, number][] = [
   [0, 3], [0, 9], [3, 0], [9, 0], [3, 12], [9, 12], [12, 3], [12, 9],
-  [2, 2], [2, 10], [10, 2], [10, 10],
+  [6, 2], [2, 6], [6, 10], [10, 6],
 ];
 const DL: [number, number][] = [
-  [1, 1], [1, 11], [11, 1], [11, 11], [3, 4], [4, 3], [3, 8], [4, 9],
-  [8, 3], [9, 4], [8, 9], [9, 8], [6, 6],
+  [3, 4], [4, 3], [3, 8], [4, 9], [8, 3], [9, 4], [8, 9], [9, 8],
   [0, 6], [12, 6], [6, 0], [6, 12],
-];
-const DW: [number, number][] = [
-  [1, 4], [4, 1], [1, 8], [4, 11], [8, 1], [11, 4], [8, 11], [11, 8],
-  [5, 5], [5, 7], [7, 5], [7, 7],
+  [4, 6], [6, 4], [6, 8], [8, 6],
 ];
 
 export function buildInitialBonuses(): Record<CellKey, BonusType> {
