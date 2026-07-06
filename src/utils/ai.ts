@@ -72,7 +72,15 @@ export function findAIMove(
     return cached;
   };
 
-  let best: AIMove | null = null;
+  // Rakip köşesine giren hamlede puan paylaşılır (bkz. computeInvasionSplit).
+  // YZ, mecbur kalmadıkça (kendi/ortak alanda geçerli bir hamlesi varken)
+  // rakip köşesine girmemeli. Bu yüzden iki ayrı en-iyi takip edilir:
+  // `bestSafe` yalnızca kendi köşeleri + ortak alanı kullanan hamleler için,
+  // `bestAny` (paylaşım sonrası kendisine kalacak puana göre sıralanan) tüm
+  // hamleler için. Kendi/ortak alanda hamle varsa her zaman o tercih edilir.
+  let bestSafe: AIMove | null = null;
+  let bestAny: AIMove | null = null;
+  let bestAnyEffective = -Infinity;
 
   const consider = (placements: Placement[], word: string) => {
     const placed: Record<string, Tile> = {};
@@ -86,8 +94,8 @@ export function findAIMove(
       const region = regionOf(p.r, p.c);
       return region !== -1 && !corners.includes(region);
     });
+    const foreignZones = new Set(foreignPlacements.map((p) => regionOf(p.r, p.c) as number));
     if (foreignPlacements.length > 0) {
-      const foreignZones = new Set(foreignPlacements.map((p) => regionOf(p.r, p.c) as number));
       for (const zone of foreignZones) {
         const starts = foreignPlacements
           .filter((p) => regionOf(p.r, p.c) === zone)
@@ -96,7 +104,21 @@ export function findAIMove(
       }
     }
     const score = calcScore(board, placed, bonuses);
-    if (!best || score > best.score) best = { word, score, placements };
+    if (foreignZones.size === 0) {
+      if (!bestSafe || score > bestSafe.score) bestSafe = { word, score, placements };
+      if (score > bestAnyEffective) {
+        bestAnyEffective = score;
+        bestAny = { word, score, placements };
+      }
+      return;
+    }
+    // Paylaşım sonrası YZ'ye kalacak gerçek puan (bkz. computeInvasionSplit).
+    const share = Math.round(score / (foreignZones.size + 1));
+    const effective = score - share * foreignZones.size;
+    if (effective > bestAnyEffective) {
+      bestAnyEffective = effective;
+      bestAny = { word, score, placements };
+    }
   };
 
   // Yeni konacak tüm hücreler bölge kurallarına uymalı.
@@ -144,7 +166,7 @@ export function findAIMove(
   // ── İlk hamle: kendi köşelerinden birinden başla ────────────────────────────
   if (isFirstMove) {
     for (const homeCorner of corners) tryCornerStart(homeCorner);
-    return best;
+    return bestSafe;
   }
 
   // ── Çapalı hamleler: tahtadaki her taşı eksen alarak dene ────────────────────
@@ -224,5 +246,10 @@ export function findAIMove(
     tryCornerStart(homeCorner);
   }
 
-  return best;
+  // Kendi köşesinde ve/veya ortak alanda geçerli bir hamle varsa, puanı
+  // paylaşmak zorunda kalmamak için o hamle rakip köşesine giren herhangi
+  // bir hamleye tercih edilir. Yalnızca hiç güvenli hamle yoksa (mecburen)
+  // rakip köşesine girilir — bu durumda da paylaşım sonrası kendisine
+  // kalacak puana göre en iyi seçenek kullanılır.
+  return bestSafe ?? bestAny;
 }
