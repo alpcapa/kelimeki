@@ -118,28 +118,37 @@ export function cornersFor(playerCount: number): number[][] {
 }
 
 // ── Başlangıç bonus yerleşimi ────────────────────────────────────────────────
-// Kural: aynı satır/sütunda yer alan iki "kelime çarpanı" (K2/K3) hücresi
-// arasında en az 6 hücrelik mesafe olmalı — aksi halde tek bir kelime iki
-// çarpana birden basıp aynı hamlede kelime puanını 2-3 kez katlayabilir.
-// Merkez (6,6) K3; diğer K2/K3'ler merkezden eşit uzaklıktaki köşegen
-// halkalarda (satır/sütun değerleri {1,2,3} ve {9,10,11}) konumlandırılmış,
-// böylece hiçbir K2/K3 çifti aynı satır/sütunda 6'dan az mesafede değil.
+// Her bonus türü tek bir "tohum" hücreden, tahtanın 8 simetri işlemiyle
+// (yatay ayna, dikey ayna, transpoze — ve bunların bileşimleri) türetilir.
+// Bu yöntem sayesinde aynı türden iki hücre asla rastlantısal biçimde aynı
+// satır/sütunu paylaşmaz: paylaşım varsa tohumun kendisiyle simetriği
+// arasındadır ve mesafesi bilinçli seçilmiştir.
+//   K2/K3 (kelime çarpanı): aynı satır/sütunda en az 8 hücre mesafe — bir
+//   kelimenin iki kelime çarpanına birden basıp puanı 4-9 kat katlaması
+//   neredeyse imkânsız.
+//   H2/H3 (harf çarpanı): daha sık ama K2/K3'ten uzak durur; en kötü
+//   çakışma iki harf çarpanı arasında (katkısı çarpımsal değil, düşük risk).
+// Merkez (6,6), dört tahta köşesi ve dört kenar orta noktası ([6,0], [6,12],
+// [0,6], [12,6]) K3'tür. Kenar ortası ile merkez arası mesafe sadece 6 —
+// tam 7 taşlık bir bingo ikisine birden basıp puanı 9 kat katlayabilir;
+// bu, klasik Scrabble düzenine sadakat için bilinçli kabul edilmiş bir
+// istisnadır (kuralın geri kalanı hâlâ en az 8 hücre şartını korur).
 const TW: [number, number][] = [
   [6, 6], [0, 0], [0, 12], [12, 0], [12, 12],
+  [6, 0], [6, 12], [0, 6], [12, 6],
 ];
 const DW: [number, number][] = [
-  [1, 1], [1, 11], [11, 1], [11, 11],
-  [2, 2], [2, 10], [10, 2], [10, 10],
-  [3, 3], [3, 9], [9, 3], [9, 9],
+  [2, 1], [2, 11], [10, 1], [10, 11],
+  [1, 2], [1, 10], [11, 2], [11, 10],
+  [5, 5], [7, 7],
 ];
 const TL: [number, number][] = [
-  [0, 3], [0, 9], [3, 0], [9, 0], [3, 12], [9, 12], [12, 3], [12, 9],
-  [6, 2], [2, 6], [6, 10], [10, 6],
+  [4, 3], [4, 9], [8, 3], [8, 9],
+  [3, 4], [3, 8], [9, 4], [9, 8],
 ];
 const DL: [number, number][] = [
-  [3, 4], [4, 3], [3, 8], [4, 9], [8, 3], [9, 4], [8, 9], [9, 8],
-  [0, 6], [12, 6], [6, 0], [6, 12],
-  [4, 6], [6, 4], [6, 8], [8, 6],
+  [5, 10], [7, 2],
+  [2, 7], [10, 5],
 ];
 
 export function buildInitialBonuses(): Record<CellKey, BonusType> {
