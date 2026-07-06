@@ -54,11 +54,11 @@ export function Tile({ tile, variant, color, selected = false, onClick }: TilePr
           : '',
       ].join(' ')}
     >
-      {/* Harf — büyük ve kalın (Space Mono 700 + ince kontur). */}
+      {/* Harf — büyük ve kalın (Nunito 800 + ince kontur). */}
       <span
         style={{ WebkitTextStrokeWidth: isRack ? '0.7px' : '0.35px' }}
         className={[
-          'font-mono font-bold leading-none [-webkit-text-stroke-color:currentColor]',
+          'font-tile font-extrabold leading-none [-webkit-text-stroke-color:currentColor]',
           isRack ? 'text-[24px]' : 'text-[clamp(14px,3.8vw,24px)] text-tile-letter',
         ].join(' ')}
       >
