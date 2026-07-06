@@ -128,12 +128,14 @@ export function cornersFor(playerCount: number): number[][] {
 //   neredeyse imkânsız.
 //   H2/H3 (harf çarpanı): daha sık ama K2/K3'ten uzak durur; en kötü
 //   çakışma iki harf çarpanı arasında (katkısı çarpımsal değil, düşük risk).
-// Merkez (6,6) ve dört tahta köşesi K3'tür; merkez satırı ve sütunu başka
-// hiçbir bonus içermez (önceki tasarımda merkez sırası 2'şer hücre arayla
-// 7 bonusa kadar sıkışıyordu — bu, tek bir kelimenin art arda birden fazla
-// çarpana basmasını kolaylaştırdığı için kaldırıldı).
+// Merkez (6,6), dört tahta köşesi ve dört kenar orta noktası ([6,0], [6,12],
+// [0,6], [12,6]) K3'tür. Kenar ortası ile merkez arası mesafe sadece 6 —
+// tam 7 taşlık bir bingo ikisine birden basıp puanı 9 kat katlayabilir;
+// bu, klasik Scrabble düzenine sadakat için bilinçli kabul edilmiş bir
+// istisnadır (kuralın geri kalanı hâlâ en az 8 hücre şartını korur).
 const TW: [number, number][] = [
   [6, 6], [0, 0], [0, 12], [12, 0], [12, 12],
+  [6, 0], [6, 12], [0, 6], [12, 6],
 ];
 const DW: [number, number][] = [
   [2, 1], [2, 11], [10, 1], [10, 11],
