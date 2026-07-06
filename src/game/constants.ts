@@ -147,8 +147,8 @@ const TL: [number, number][] = [
   [5, 5], [7, 7],
 ];
 const DL: [number, number][] = [
-  [5, 2], [5, 10], [7, 2], [7, 10],
-  [2, 5], [2, 7], [10, 5], [10, 7],
+  [5, 10], [7, 2],
+  [2, 7], [10, 5],
 ];
 
 export function buildInitialBonuses(): Record<CellKey, BonusType> {
