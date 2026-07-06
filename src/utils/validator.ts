@@ -154,6 +154,29 @@ export function validatePlacementStructural(
     return { valid: false, reason: 'Harfler aynı satır ya da sütunda olmalı.' };
   }
 
+  // Süreklilik kuralı: yerleştirilen taşlar arasında, tahtada zaten bir taş
+  // bulunmayan boş hücre olamaz — aradaki her hücre ya bu turda konmuş ya da
+  // önceden tahtada olmalı.
+  if (horiz) {
+    const r = rows[0];
+    const minC = Math.min(...cols);
+    const maxC = Math.max(...cols);
+    for (let c = minC; c <= maxC; c++) {
+      if (!placed[key(r, c)] && !board[r][c]) {
+        return { valid: false, reason: 'Harfler arasında boşluk bırakılamaz.' };
+      }
+    }
+  } else {
+    const c = cols[0];
+    const minR = Math.min(...rows);
+    const maxR = Math.max(...rows);
+    for (let r = minR; r <= maxR; r++) {
+      if (!placed[key(r, c)] && !board[r][c]) {
+        return { valid: false, reason: 'Harfler arasında boşluk bırakılamaz.' };
+      }
+    }
+  }
+
   // Bölge kuralı: her yeni taş izinli bir hücreye konmalı.
   for (const [r, c] of coords) {
     if (!cellAllowed(ownCorners, openCorners, r, c)) {
