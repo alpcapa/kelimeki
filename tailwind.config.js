@@ -22,6 +22,7 @@ export default {
       fontFamily: {
         sans: ['"Space Grotesk"', 'sans-serif'],
         mono: ['"Space Mono"', 'monospace'],
+        tile: ['"Nunito"', 'sans-serif'],
       },
       keyframes: {
         pulse: {

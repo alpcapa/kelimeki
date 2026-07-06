@@ -10,6 +10,12 @@
 // harfleri içeren, 2–25 harfli tokenlar tutulur (noktalama/şapkalı ünlü
 // içeren atasözü vb. maddeler birleştirme sonrası da elenir).
 //
+// TDK'nin coğrafi/özel ad kapsamı eksiktir (Atina, Paris, Türkiye gibi çoğu
+// ülke/başkent/dil adı GTS'te yok); bu eksik dünya ülkeleri, başkentleri,
+// büyük şehirleri ve dilleri scripts/proper-nouns.mjs ile tamamlanır (GTS'te
+// zaten varsa dokunulmaz). GTS kaynağı olmadan yalnızca bu listeyi
+// güncellemek için scripts/augment-dictionary.mjs kullanılır.
+//
 //   src/data/words.ts       — oyun doğrulaması için sıralı kelime listesi
 //                             (WORD_LIST / WORD_SET)
 //   src/data/meanings.json  — { kelime: { pos, meanings: string[] } }
@@ -32,6 +38,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
+import { PROPER_NOUNS } from './proper-nouns.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -128,6 +135,15 @@ for await (const line of rl) {
     if (!existing.pos) existing.pos = pos;
   } else {
     dict.set(word, { pos, meanings });
+  }
+}
+
+// TDK'nin coğrafi/özel ad kapsamı eksik (bkz. proper-nouns.mjs başlığı);
+// GTS'te bulunmayan ülke/başkent/şehir/dil adlarını burada tamamlıyoruz.
+// GTS'te zaten varsa (gerçek TDK tanımı) dokunmuyoruz.
+for (const [word, meaning] of Object.entries(PROPER_NOUNS)) {
+  if (!dict.has(word)) {
+    dict.set(word, { pos: null, meanings: [meaning] });
   }
 }
 

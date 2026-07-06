@@ -34,7 +34,7 @@ export function RemainingTilesModal({ state, onClose }: RemainingTilesModalProps
             >
               <span
                 style={{ WebkitTextStrokeWidth: '0.5px' }}
-                className="font-mono font-bold text-[19px] text-tile-letter [-webkit-text-stroke-color:currentColor] leading-none"
+                className="font-tile font-extrabold text-[19px] text-tile-letter [-webkit-text-stroke-color:currentColor] leading-none"
               >
                 {display}
               </span>
