@@ -124,17 +124,17 @@ export function cornersFor(playerCount: number): number[][] {
 // Merkez (6,6) K3; diğer K2/K3'ler merkezden eşit uzaklıktaki köşegen
 // halkalarda (satır/sütun değerleri {1,2,3} ve {9,10,11}) konumlandırılmış,
 // böylece hiçbir K2/K3 çifti aynı satır/sütunda 6'dan az mesafede değil.
-// İstisna: her köşe bölgesinin merkeze bakan iç ucuna (5×5'in son hücresi)
-// konan K3, bu mesafe kuralının dışındadır — köşenin kendi iç sınırını
-// işaretleyen ayrı bir amaca hizmet eder.
+// Köşe bölgelerinin yerel (line4,col4) hücresi {1,2,3}/{9,10,11} halkasının
+// "3"/"9" üyesidir; burada K2 yerine K3 konulmuştur (DW artık sadece {1,2}/
+// {10,11} üyelerini taşır) — mesafe kuralı yine de korunur (satır/sütun
+// başına en az 6 hücre).
 const TW: [number, number][] = [
   [6, 6], [0, 0], [0, 12], [12, 0], [12, 12],
-  [4, 4], [4, 8], [8, 4], [8, 8],
+  [3, 3], [3, 9], [9, 3], [9, 9],
 ];
 const DW: [number, number][] = [
   [1, 1], [1, 11], [11, 1], [11, 11],
   [2, 2], [2, 10], [10, 2], [10, 10],
-  [3, 3], [3, 9], [9, 3], [9, 9],
 ];
 const TL: [number, number][] = [
   [0, 3], [0, 9], [3, 0], [9, 0], [3, 12], [9, 12], [12, 3], [12, 9],
