@@ -118,32 +118,35 @@ export function cornersFor(playerCount: number): number[][] {
 }
 
 // ── Başlangıç bonus yerleşimi ────────────────────────────────────────────────
-// Kural: aynı satır/sütunda yer alan iki "kelime çarpanı" (K2/K3) hücresi
-// arasında en az 6 hücrelik mesafe olmalı — aksi halde tek bir kelime iki
-// çarpana birden basıp aynı hamlede kelime puanını 2-3 kez katlayabilir.
-// Merkez (6,6) K3; diğer K2/K3'ler merkezden eşit uzaklıktaki köşegen
-// halkalarda (satır/sütun değerleri {1,2,3} ve {9,10,11}) konumlandırılmış,
-// böylece hiçbir K2/K3 çifti aynı satır/sütunda 6'dan az mesafede değil.
-// Köşe bölgelerinin yerel (line4,col4) hücresi {1,2,3}/{9,10,11} halkasının
-// "3"/"9" üyesidir; burada K2 yerine K3 konulmuştur (DW artık sadece {1,2}/
-// {10,11} üyelerini taşır) — mesafe kuralı yine de korunur (satır/sütun
-// başına en az 6 hücre).
+// Her bonus türü tek bir "tohum" hücreden, tahtanın 8 simetri işlemiyle
+// (yatay ayna, dikey ayna, transpoze — ve bunların bileşimleri) türetilir.
+// Bu yöntem sayesinde aynı türden iki hücre asla rastlantısal biçimde aynı
+// satır/sütunu paylaşmaz: paylaşım varsa tohumun kendisiyle simetriği
+// arasındadır ve mesafesi bilinçli seçilmiştir.
+//   K2/K3 (kelime çarpanı): aynı satır/sütunda en az 8 hücre mesafe — bir
+//   kelimenin iki kelime çarpanına birden basıp puanı 4-9 kat katlaması
+//   neredeyse imkânsız.
+//   H2/H3 (harf çarpanı): daha sık ama K2/K3'ten uzak durur; en kötü
+//   çakışma iki harf çarpanı arasında (katkısı çarpımsal değil, düşük risk).
+// Merkez (6,6) ve dört tahta köşesi K3'tür; merkez satırı ve sütunu başka
+// hiçbir bonus içermez (önceki tasarımda merkez sırası 2'şer hücre arayla
+// 7 bonusa kadar sıkışıyordu — bu, tek bir kelimenin art arda birden fazla
+// çarpana basmasını kolaylaştırdığı için kaldırıldı).
 const TW: [number, number][] = [
   [6, 6], [0, 0], [0, 12], [12, 0], [12, 12],
-  [3, 3], [3, 9], [9, 3], [9, 9],
 ];
 const DW: [number, number][] = [
-  [1, 1], [1, 11], [11, 1], [11, 11],
-  [2, 2], [2, 10], [10, 2], [10, 10],
+  [2, 1], [2, 11], [10, 1], [10, 11],
+  [1, 2], [1, 10], [11, 2], [11, 10],
 ];
 const TL: [number, number][] = [
-  [0, 3], [0, 9], [3, 0], [9, 0], [3, 12], [9, 12], [12, 3], [12, 9],
-  [6, 2], [2, 6], [6, 10], [10, 6],
+  [4, 3], [4, 9], [8, 3], [8, 9],
+  [3, 4], [3, 8], [9, 4], [9, 8],
+  [5, 5], [7, 7],
 ];
 const DL: [number, number][] = [
-  [2, 4], [4, 2], [2, 8], [4, 10], [8, 2], [10, 4], [8, 10], [10, 8],
-  [0, 6], [12, 6], [6, 0], [6, 12],
-  [4, 6], [6, 4], [6, 8], [8, 6],
+  [5, 2], [5, 10], [7, 2], [7, 10],
+  [2, 5], [2, 7], [10, 5], [10, 7],
 ];
 
 export function buildInitialBonuses(): Record<CellKey, BonusType> {
