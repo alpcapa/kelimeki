@@ -10,12 +10,21 @@ interface ScoreCardProps {
   onClose: () => void;
 }
 
+const TABS = [2, 4] as const;
+
 export function ScoreCard({ onClose }: ScoreCardProps) {
   const { user, profile } = useAuth();
-  const [stats, setStats] = useState<PlayerStats | null | undefined>(undefined);
+  const [statsByCount, setStatsByCount] = useState<
+    Record<number, PlayerStats | null | undefined>
+  >({ 2: undefined, 4: undefined });
+  const [tab, setTab] = useState<(typeof TABS)[number]>(2);
 
   useEffect(() => {
-    fetchPlayerStats().then(setStats);
+    for (const count of TABS) {
+      fetchPlayerStats(count).then((s) =>
+        setStatsByCount((cur) => ({ ...cur, [count]: s })),
+      );
+    }
   }, []);
 
   const name =
@@ -23,6 +32,8 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() ||
     user?.email ||
     'Oyuncu';
+
+  const stats = statsByCount[tab];
 
   const winRatio =
     stats && stats.games_played > 0
@@ -54,13 +65,30 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
         </div>
       </div>
 
+      <div className="mb-3 flex gap-2">
+        {TABS.map((count) => (
+          <button
+            key={count}
+            type="button"
+            onClick={() => setTab(count)}
+            className={`flex-1 rounded-md border py-1.5 text-xs font-mono font-bold transition-colors ${
+              tab === count
+                ? 'border-accent bg-accent/10 text-accent'
+                : 'border-border bg-bg text-muted'
+            }`}
+          >
+            {count} Oyunculu
+          </button>
+        ))}
+      </div>
+
       {stats === undefined ? (
         <p className="text-muted text-xs font-mono text-center py-4">Yükleniyor…</p>
       ) : (
         <>
           {!stats && (
             <p className="text-muted text-[10px] font-mono text-center pb-2">
-              Henüz oyun kaydın yok. Bir oyun bitir!
+              Henüz {tab} oyunculu oyun kaydın yok.
             </p>
           )}
           <div className="grid grid-cols-3 gap-2">

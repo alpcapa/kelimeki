@@ -61,8 +61,8 @@ export async function fetchMyLeaderboardRank(userId: string): Promise<MyLeaderbo
   return row ? { rank: Number(row.rank), total_score: Number(row.total_score) } : null;
 }
 
-/** Oturum açan oyuncunun istatistik özetini döner. */
-export async function fetchPlayerStats(): Promise<PlayerStats | null> {
+/** Oturum açan oyuncunun belirli oyuncu sayısındaki istatistik özetini döner. */
+export async function fetchPlayerStats(playerCount: number): Promise<PlayerStats | null> {
   if (!supabase) return null;
   const {
     data: { user },
@@ -73,6 +73,7 @@ export async function fetchPlayerStats(): Promise<PlayerStats | null> {
     .from('player_stats')
     .select('*')
     .eq('user_id', user.id)
+    .eq('player_count', playerCount)
     .maybeSingle();
   if (error) {
     console.error('[Harfik] fetchPlayerStats hatası:', error.message);
