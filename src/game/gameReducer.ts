@@ -476,7 +476,13 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const placedCoords = Object.keys(state.placed).map(
         (k) => k.split(',').map(Number) as [number, number],
       );
-      const { pts, shares } = computeInvasionSplit(placedCoords, me.corners, state.players, basePts);
+      const { pts, shares } = computeInvasionSplit(
+        placedCoords,
+        state.current,
+        state.players,
+        basePts,
+        state.board,
+      );
       const bonusNote = shares.length > 0
         ? ` (${shares.map((s) => `${s.amount} puanı ${state.players[s.index].name} kaptı`).join(', ')})`
         : '';
@@ -584,6 +590,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         state.current,
         me.corners,
         isFirstMove(state),
+        state.players,
       );
 
       // Geçerli hamle yoksa: torbada taş varsa rafını değiştirir (aksi halde
@@ -674,9 +681,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const aiCoords = move.placements.map((p) => [p.r, p.c] as [number, number]);
       const { pts: aiPts, shares: aiShares } = computeInvasionSplit(
         aiCoords,
-        me.corners,
+        state.current,
         state.players,
         move.score,
+        state.board,
       );
 
       const aiIsNewBestMove = move.score > me.bestMoveScore;

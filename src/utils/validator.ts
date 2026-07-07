@@ -1,5 +1,5 @@
 // Harfik — kelime doğrulama, bölge kuralları ve puanlama
-import { BINGO_BONUS, SIZE, cornerBounds, inCorner, regionOf } from '../game/constants';
+import { BINGO_BONUS, SIZE, cornerBounds, inCorner } from '../game/constants';
 import type { BonusType, Player, ValidationResult } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { trLower } from './turkish';
@@ -153,28 +153,29 @@ export function validatePlacement(
 }
 
 /**
- * Rakip köşe(ler)ine sınır vergisini hesaplar. Bu tur konan taşlardan biri
- * bir rakip köşesinin içine düşüyorsa (girme) ya da dışarıdan sınırına
- * bitişikse (değme), kazanılan puan ikiye bölünür (yarısı köşe sahibine).
- * Rakip köşesine girmek için artık hiçbir ön koşul yok — her zaman serbest.
- * Aynı anda iki farklı rakip köşesine giriliyor/değiliyorsa puan üç kişi
- * arasında (saldırgan + iki köşe sahibi) eşit paylaşılır. Yuvarlama farkı
- * saldırganda kalır, böylece toplam puan her zaman korunur.
+ * Bir oyuncunun bölgesini hesaplar: kendi köşe kare(ler)i + oradan yalnızca
+ * kendi taşları üzerinden ortogonal olarak bağlı tüm hücreler. Genişleme
+ * sadece oyuncunun kendi bölgesinden mümkündür — bir hücre, oyuncunun
+ * köşesine kendi taşlarıyla kesintisiz bağlıysa bölgeye katılır; boş
+ * hücreler ya da başka bir oyuncunun taşları zinciri kesmez ama genişletmez.
  */
-export function computeInvasionSplit(
-  coords: [number, number][],
-  ownCorners: number[],
-  players: Player[],
-  basePts: number,
-): { pts: number; shares: { index: number; amount: number }[] } {
-  const touchedIdx = new Set<number>();
-  const addIfForeign = (region: number) => {
-    if (region === -1 || ownCorners.includes(region)) return;
-    const idx = players.findIndex((p) => p.corners.includes(region));
-    if (idx >= 0) touchedIdx.add(idx);
-  };
-  for (const [r, c] of coords) {
-    addIfForeign(regionOf(r, c));
+export function computeTerritory(board: Board, ownCorners: number[], owner: number): Set<string> {
+  const territory = new Set<string>();
+  const stack: [number, number][] = [];
+  for (const corner of ownCorners) {
+    const b = cornerBounds(corner);
+    for (let r = b.r0; r <= b.r1; r++) {
+      for (let c = b.c0; c <= b.c1; c++) {
+        const k = key(r, c);
+        if (!territory.has(k)) {
+          territory.add(k);
+          stack.push([r, c]);
+        }
+      }
+    }
+  }
+  while (stack.length > 0) {
+    const [r, c] = stack.pop()!;
     const neighbors: [number, number][] = [
       [r - 1, c],
       [r + 1, c],
@@ -183,7 +184,59 @@ export function computeInvasionSplit(
     ];
     for (const [nr, nc] of neighbors) {
       if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
-      addIfForeign(regionOf(nr, nc));
+      const k = key(nr, nc);
+      if (territory.has(k)) continue;
+      if (board[nr][nc]?.owner === owner) {
+        territory.add(k);
+        stack.push([nr, nc]);
+      }
+    }
+  }
+  return territory;
+}
+
+/** Tüm oyuncuların bölgelerini (indekslerine göre) hesaplar. */
+export function computeAllTerritories(board: Board, players: Player[]): Set<string>[] {
+  return players.map((p, i) => computeTerritory(board, p.corners, i));
+}
+
+/**
+ * Rakip bölge(ler)ine sınır vergisini hesaplar. Bu tur konan taşlardan biri
+ * bir rakip bölgesinin içine düşüyorsa (girme) ya da dışarıdan sınırına
+ * bitişikse (değme), kazanılan puan ikiye bölünür (yarısı bölge sahibine).
+ * Bölge artık sabit 5x5 köşe değil, `computeTerritory` ile hesaplanan —
+ * oyuncunun kendi taşlarıyla köşesinden genişlettiği— dinamik alandır.
+ * Rakip bölgesine girmek için hiçbir ön koşul yok — her zaman serbest.
+ * Aynı anda iki farklı rakip bölgesine giriliyor/değiliyorsa puan üç kişi
+ * arasında (saldırgan + iki bölge sahibi) eşit paylaşılır. Yuvarlama farkı
+ * saldırganda kalır, böylece toplam puan her zaman korunur.
+ */
+export function computeInvasionSplit(
+  coords: [number, number][],
+  ownerIndex: number,
+  players: Player[],
+  basePts: number,
+  board: Board,
+): { pts: number; shares: { index: number; amount: number }[] } {
+  const territories = computeAllTerritories(board, players);
+  const touchedIdx = new Set<number>();
+  const addIfForeign = (r: number, c: number) => {
+    const k = key(r, c);
+    for (let i = 0; i < territories.length; i++) {
+      if (i !== ownerIndex && territories[i].has(k)) touchedIdx.add(i);
+    }
+  };
+  for (const [r, c] of coords) {
+    addIfForeign(r, c);
+    const neighbors: [number, number][] = [
+      [r - 1, c],
+      [r + 1, c],
+      [r, c - 1],
+      [r, c + 1],
+    ];
+    for (const [nr, nc] of neighbors) {
+      if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+      addIfForeign(nr, nc);
     }
   }
   if (touchedIdx.size === 0) return { pts: basePts, shares: [] };

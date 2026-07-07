@@ -4,11 +4,11 @@ import {
   CORNER,
   PLAYER_COLORS,
   SIZE,
-  regionOf,
   type PlayerColor,
 } from '../game/constants';
 import type { GameState, MoveStatus } from '../game/types';
 import { key } from '../utils/board';
+import { computeAllTerritories } from '../utils/validator';
 import { Tile } from './Tile';
 
 interface BoardProps {
@@ -67,38 +67,6 @@ const LEGEND = [
   { label: 'H3', desc: 'harf x3',   bg: 'linear-gradient(135deg, #CEB4FA, #DCC8FC)', border: 'none' },
 ];
 
-/** Her köşenin merkeze bakan 2 iç kenarına (L şeklinde) renk çizgisi ekler. */
-function cornerEdgeStyle(
-  r: number,
-  c: number,
-  cornerColors: (PlayerColor | undefined)[],
-): React.CSSProperties {
-  const s: React.CSSProperties = {};
-  const border = (color: string) => `2px solid ${color}`;
-
-  // Köşe 0: sol-üst (0–4, 0–4) → alt ve sağ kenar
-  if (r < CORNER && c < CORNER && cornerColors[0]) {
-    if (r === CORNER - 1) s.borderBottom = border(cornerColors[0].base);
-    if (c === CORNER - 1) s.borderRight = border(cornerColors[0].base);
-  }
-  // Köşe 1: sağ-üst (0–4, 8–12) → alt ve sol kenar
-  if (r < CORNER && c >= SIZE - CORNER && cornerColors[1]) {
-    if (r === CORNER - 1) s.borderBottom = border(cornerColors[1].base);
-    if (c === SIZE - CORNER) s.borderLeft = border(cornerColors[1].base);
-  }
-  // Köşe 2: sol-alt (8–12, 0–4) → üst ve sağ kenar
-  if (r >= SIZE - CORNER && c < CORNER && cornerColors[2]) {
-    if (r === SIZE - CORNER) s.borderTop = border(cornerColors[2].base);
-    if (c === CORNER - 1) s.borderRight = border(cornerColors[2].base);
-  }
-  // Köşe 3: sağ-alt (8–12, 8–12) → üst ve sol kenar
-  if (r >= SIZE - CORNER && c >= SIZE - CORNER && cornerColors[3]) {
-    if (r === SIZE - CORNER) s.borderTop = border(cornerColors[3].base);
-    if (c === SIZE - CORNER) s.borderLeft = border(cornerColors[3].base);
-  }
-  return s;
-}
-
 export function Board({
   state,
   onCellClick,
@@ -144,6 +112,17 @@ export function Board({
 
   const currentColor = PLAYER_COLORS[players[current]?.colorIndex ?? 0];
 
+  // Her oyuncunun bölgesi: kendi köşesi + oradan kendi taşlarıyla genişleyen
+  // alan. Sabit 5×5 köşenin aksine hamle oynandıkça büyür.
+  const territories = computeAllTerritories(board, players);
+  const territoryOwnerAt = (r: number, c: number): number => {
+    const k = key(r, c);
+    for (let i = 0; i < territories.length; i++) {
+      if (territories[i].has(k)) return i;
+    }
+    return -1;
+  };
+
   const cells = [];
 
   for (let r = 0; r < SIZE; r++) {
@@ -154,8 +133,8 @@ export function Board({
       // Sürüklenmekte olan taş, alındığı hücrede boşmuş gibi çizilir (görsel olarak).
       const placedTile = k === dragHiddenKey ? undefined : rawPlacedTile;
       const bonus = bonuses[k];
-      const region = regionOf(r, c);
-      const zone = region >= 0 ? cornerColor[region] : undefined;
+      const territoryOwner = territoryOwnerAt(r, c);
+      const zone = territoryOwner >= 0 ? PLAYER_COLORS[players[territoryOwner]?.colorIndex ?? 0] : undefined;
 
       let content: React.ReactNode = null;
       let style: React.CSSProperties | undefined;
@@ -193,11 +172,6 @@ export function Board({
         // Merkez (tarafsız) boş kare: nömorfik içe gömülü.
         classes.push('bg-[#DDE4EE] cursor-pointer');
         style = { boxShadow: 'inset 3px 3px 6px rgba(163,177,198,0.6), inset -2px -2px 5px rgba(255,255,255,0.8)' };
-      }
-
-      const edgeBorder = cornerEdgeStyle(r, c, cornerColor);
-      if (Object.keys(edgeBorder).length > 0) {
-        style = style ? { ...style, ...edgeBorder } : edgeBorder;
       }
 
       // Bu turda yerleştirilmiş (henüz oynanmamış) bir taş, tıklama yerine
@@ -296,6 +270,17 @@ export function Board({
     });
   };
 
+  // Her oyuncunun bölgesinin dış hattı — köşeden taşlarla genişledikçe
+  // sınır da ona göre büyür.
+  const territoryOutlines = players.flatMap((p, i) => {
+    const territoryCells = [...territories[i]].map(
+      (k) => k.split(',').map(Number) as [number, number],
+    );
+    return territoryCells.length > 0
+      ? buildOutline(territoryCells, PLAYER_COLORS[p.colorIndex].base, `territory-${i}`)
+      : [];
+  });
+
   // En son oynanan hamlenin etrafına kalıcı açık mavi çerçeve — özellikle YZ
   // oynayınca nereye oynadığı belli olsun diye.
   const lastMoveOutline = state.lastMoveCells.length > 0
@@ -318,6 +303,9 @@ export function Board({
         }}
       >
         {cells}
+
+        {/* Her oyuncunun genişleyen bölgesinin dış hattı. */}
+        {territoryOutlines}
 
         {/* En son oynanan hamlenin etrafındaki kalıcı sarı çerçeve. */}
         {lastMoveOutline}

@@ -3,11 +3,11 @@
 // YZ, rafından heceleyebildiği kelimeler arasından, bölge kurallarına uyan
 // ve sözlükçe geçerli en yüksek puanlı hamleyi arar. İlk hamlesini kendi
 // köşesinden başlatır; sonra mevcut taşları çapa alarak yeni kelimeler kurar.
-import { SIZE, cornerBounds, inCorner, regionOf } from '../game/constants';
-import type { AIMove, BonusType, Placement, Tile } from '../game/types';
+import { SIZE, cornerBounds, inCorner } from '../game/constants';
+import type { AIMove, BonusType, Placement, Player, Tile } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { letterPoints } from '../data/tiles';
-import { canSpell, calcScore, freshCorners } from './validator';
+import { canSpell, calcScore, computeAllTerritories, freshCorners } from './validator';
 import { trLower, trUpper } from './turkish';
 import { getFormedWords, key, tileLetter, type Board } from './board';
 
@@ -48,6 +48,7 @@ export function findAIMove(
   owner: number,
   corners: number[],
   isFirstMove: boolean,
+  players: Player[],
 ): AIMove | null {
   const rackLetters = rack.map((t) => t.letter);
   const wordPool = [...WORD_SET]
@@ -82,6 +83,10 @@ export function findAIMove(
   let bestAny: AIMove | null = null;
   let bestAnyEffective = -Infinity;
 
+  // Rakiplerin bölgeleri (kendi köşelerinden, kendi taşlarıyla genişleyen
+  // dinamik alan) — arama boyunca tahta sabit olduğundan bir kez hesaplanır.
+  const territories = computeAllTerritories(board, players);
+
   const consider = (placements: Placement[], word: string) => {
     const placed: Record<string, Tile> = {};
     for (const p of placements) placed[key(p.r, p.c)] = p.tile;
@@ -89,14 +94,17 @@ export function findAIMove(
     for (const fw of getFormedWords(board, placed)) {
       if (!WORD_SET.has(trLower(fw.word))) return;
     }
-    // Yeni taşlardan biri bir rakip köşesinin içine düşüyorsa (girme) ya da
-    // dışarıdan sınırına bitişikse (değme), o köşeyle puan paylaşılır.
-    const touchedZones = new Set<number>();
-    const addIfForeign = (region: number) => {
-      if (region !== -1 && !corners.includes(region)) touchedZones.add(region);
+    // Yeni taşlardan biri bir rakip bölgesinin içine düşüyorsa (girme) ya da
+    // dışarıdan sınırına bitişikse (değme), o bölgeyle puan paylaşılır.
+    const touchedIdx = new Set<number>();
+    const addIfForeign = (r: number, c: number) => {
+      const k = key(r, c);
+      for (let i = 0; i < territories.length; i++) {
+        if (i !== owner && territories[i].has(k)) touchedIdx.add(i);
+      }
     };
     for (const p of placements) {
-      addIfForeign(regionOf(p.r, p.c));
+      addIfForeign(p.r, p.c);
       const neighbors: [number, number][] = [
         [p.r - 1, p.c],
         [p.r + 1, p.c],
@@ -105,11 +113,11 @@ export function findAIMove(
       ];
       for (const [nr, nc] of neighbors) {
         if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
-        addIfForeign(regionOf(nr, nc));
+        addIfForeign(nr, nc);
       }
     }
     const score = calcScore(board, placed, bonuses);
-    if (touchedZones.size === 0) {
+    if (touchedIdx.size === 0) {
       if (!bestSafe || score > bestSafe.score) bestSafe = { word, score, placements };
       if (score > bestAnyEffective) {
         bestAnyEffective = score;
@@ -118,8 +126,8 @@ export function findAIMove(
       return;
     }
     // Paylaşım sonrası YZ'ye kalacak gerçek puan (bkz. computeInvasionSplit).
-    const share = Math.round(score / (touchedZones.size + 1));
-    const effective = score - share * touchedZones.size;
+    const share = Math.round(score / (touchedIdx.size + 1));
+    const effective = score - share * touchedIdx.size;
     if (effective > bestAnyEffective) {
       bestAnyEffective = effective;
       bestAny = { word, score, placements };
