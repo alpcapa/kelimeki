@@ -3931,7 +3931,7 @@ export const WORD_LIST: readonly string[] = [
   "osurukmantarı", "osuruş", "oşekilde", "oşinografi", "ot", "otacı", "otacılık", "otağ", "otağcı", "otağcılık", "otakdirde", "otalama", "otalamak", "otama", "otamak", "otantik",
   "otantiklik", "otaraflıolmamak", "otaraktabeziolmamak", "otarma", "otarmak", "otarsi", "otçu", "otçul", "otçullar", "otçulluk", "otel", "otelci", "otelcilik", "otelfaresi", "otelgarni", "otgibi",
   "otgibiyaşamak", "otist", "otistik", "otizm", "otizmli", "otlak", "otlakçı", "otlakçılık", "otlakçılıketmek", "otlakiye", "otlaklama", "otlama", "otlamak", "otlanma", "otlanmak", "otlatabilme",
-  "otlatabilmek", "otlatılma", "otlatılmak", "otlatma", "otlatmak", "otlatmasistemi", "otlu", "otlubağa", "otluk", "otlukbeli", "otlupeynir", "otoban", "otobiyografi", "otobiyografik", "otobur", "otoburlar",
+  "otlatabilmek", "otlatılma", "otlatılmak", "otlatma", "otlatmak", "otlatmasistemi", "otlu", "otlubağa", "otluk", "otlukbeli", "otlupeynir", "oto", "otoban", "otobiyografi", "otobiyografik", "otobur", "otoburlar",
   "otoburluk", "otobüs", "otobüsçü", "otobüsçülük", "otodidakt", "otodidaktik", "otodrag", "otoerotizm", "otofokus", "otogar", "otogaz", "otograf", "otografi", "otojestiyon", "otokar", "otoklav",
   "otokontrol", "otokrasi", "otokrat", "otokratik", "otokratlık", "otokritik", "otokton", "otokuaför", "otolit", "otoman", "otomasyon", "otomat", "otomatiğegeçmek", "otomatik", "otomatikleşme", "otomatikleşmek",
   "otomatikleştirme", "otomatikleştirmek", "otomatiklik", "otomatikman", "otomatikolarak", "otomatiksigorta", "otomatizm", "otomobil", "otomobilci", "otomobilcilik", "otomobilkolçağı", "otomotiv", "otonom", "otonomi", "otonomluk", "otopark",
