@@ -1,5 +1,5 @@
 // Harfik — kelime doğrulama, bölge kuralları ve puanlama
-import { BINGO_BONUS, SIZE, cornerBounds, inCorner, isZoneBoundaryCell, regionOf } from '../game/constants';
+import { BINGO_BONUS, SIZE, cornerBounds, inCorner, regionOf } from '../game/constants';
 import type { BonusType, Player, ValidationResult } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { trLower } from './turkish';
@@ -27,33 +27,6 @@ export function canSpell(word: string, rack: string[]): boolean {
 }
 
 /**
- * Hangi köşelerin "ihlal edildiğini" hesaplar.
- * Kural: Köşe sahibi bölgesinin iç sınır karesine taş koyduğunda bölge ihlal
- * edilmiş sayılır; yalnızca o andan itibaren rakipler bu köşeye girebilir.
- * Hiçbir oyuncuya ait olmayan köşeler baştan ihlal edilmiş (açık) kabul edilir.
- */
-export function computeBreachedCorners(board: Board, players: Player[]): boolean[] {
-  const breached = [false, false, false, false];
-  const owned = new Set(players.flatMap((p) => p.corners));
-  for (let i = 0; i < 4; i++) if (!owned.has(i)) breached[i] = true;
-
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      if (!board[r][c]) continue;
-      for (let corner = 0; corner < 4; corner++) {
-        if (!breached[corner] && isZoneBoundaryCell(corner, r, c)) {
-          breached[corner] = true;
-        }
-      }
-    }
-  }
-  return breached;
-}
-
-/** @deprecated Yeni kod computeBreachedCorners kullanmalı. */
-export const computeOpenCorners = computeBreachedCorners;
-
-/**
  * Oyuncunun sahip olduğu köşelerden, henüz hiç kendi taşının bulunmadığı
  * ("taze") olanları döner. 2 oyunculu oyunda her oyuncunun iki köşesi
  * olduğundan, bir köşeden kelimeye başladıktan sonra diğer (taze) köşesinden
@@ -72,59 +45,21 @@ export function freshCorners(board: Board, ownCorners: number[], owner: number):
 }
 
 /**
- * Verilen başlangıç hücrelerinden (bu köşe bölgesi içinde kalarak) taşlar
- * üzerinden yayılıp bölgenin iç sınır karesine ulaşılıp ulaşılamadığını
- * kontrol eder. Sadece yeni konan taşın bitişiği değil, o taşa bağlı tüm
- * harf zincirini (yeni + tahtadaki mevcut taşlar) dikkate alır — örn. yeni
- * bir taş, sınıra zaten ulaşmış eski bir kelimeye bağlanıyorsa da geçerlidir.
- */
-export function zoneReachesBoundary(
-  board: Board,
-  placed: Placed,
-  zone: number,
-  starts: [number, number][],
-): boolean {
-  const b = cornerBounds(zone);
-  const visited = new Set<string>();
-  const stack: [number, number][] = [...starts];
-  while (stack.length > 0) {
-    const [r, c] = stack.pop()!;
-    const k = key(r, c);
-    if (visited.has(k)) continue;
-    visited.add(k);
-    if (isZoneBoundaryCell(zone, r, c)) return true;
-    const neighbors: [number, number][] = [
-      [r - 1, c],
-      [r + 1, c],
-      [r, c - 1],
-      [r, c + 1],
-    ];
-    for (const [nr, nc] of neighbors) {
-      if (nr < b.r0 || nr > b.r1 || nc < b.c0 || nc > b.c1) continue;
-      const nk = key(nr, nc);
-      if (visited.has(nk)) continue;
-      if (placed[nk] || board[nr][nc]) stack.push([nr, nc]);
-    }
-  }
-  return false;
-}
-
-/**
  * Sırası gelen oyuncu (r,c) hücresine taş koyabilir mi?
- *  - Merkez hücreler herkese açık.
+ *  - Tarafsız (merkez) hücreler herkese açık.
  *  - Kendi köşen her zaman açık.
- *  - Rakip köşe yalnızca ihlal edilmişse (breached) erişilebilir.
+ *  - Bir rakibin köşesine hiçbir zaman taş konamaz — köşeler her zaman
+ *    yalnızca sahibine aittir. Rakip bölgelerle etkileşim yalnızca dışarıdan
+ *    sınıra değerek olur (bkz. computeInvasionSplit).
  */
 export function cellAllowed(
   ownCorners: number[],
-  breachedCorners: boolean[],
   r: number,
   c: number,
 ): boolean {
   const region = regionOf(r, c);
   if (region === -1) return true;
-  if (ownCorners.includes(region)) return true;
-  return breachedCorners[region];
+  return ownCorners.includes(region);
 }
 
 /**
@@ -137,7 +72,6 @@ export function validatePlacementStructural(
   placed: Placed,
   owner: number,
   ownCorners: number[],
-  openCorners: boolean[],
   isFirstMove: boolean,
 ): ValidationResult {
   const keys = Object.keys(placed);
@@ -177,36 +111,14 @@ export function validatePlacementStructural(
     }
   }
 
-  // Bölge kuralı: her yeni taş izinli bir hücreye konmalı.
+  // Bölge kuralı: her yeni taş kendi köşende ya da tarafsız alanda olmalı —
+  // bir rakibin köşesine hiç taş konamaz.
   for (const [r, c] of coords) {
-    if (!cellAllowed(ownCorners, openCorners, r, c)) {
+    if (!cellAllowed(ownCorners, r, c)) {
       return {
         valid: false,
-        reason: 'Bu köşe henüz ihlal edilmedi — sahip sınır karesine oynamadan girilemiyor.',
+        reason: 'Burası bir rakibin köşesi — oraya oynayamazsın.',
       };
-    }
-  }
-
-  // Rakip köşeye giriş kuralı: yeni taşın bulunduğu rakip bölgede, o taşa
-  // bağlı harf zinciri (yeni + tahtadaki mevcut taşlar, her yönde) bölgenin
-  // iç sınır karesine ulaşmalıdır. Zincir zaten sınıra ulaşmışsa (örn. daha
-  // önce ihlal edilmiş bir kelimeye bağlanılıyorsa) tekrar sınıra değmek
-  // gerekmez — tüm bağlı harfler dikkate alınır, yalnızca yeni taşın
-  // bitişiği değil.
-  const foreignZoneCoords = coords.filter(([r, c]) => {
-    const region = regionOf(r, c);
-    return region !== -1 && !ownCorners.includes(region);
-  });
-  if (foreignZoneCoords.length > 0) {
-    const foreignZones = new Set(foreignZoneCoords.map(([r, c]) => regionOf(r, c) as number));
-    for (const zone of foreignZones) {
-      const starts = foreignZoneCoords.filter(([r, c]) => regionOf(r, c) === zone);
-      if (!zoneReachesBoundary(board, placed, zone, starts)) {
-        return {
-          valid: false,
-          reason: 'Rakip köşesine girerken sınır karesindeki bir taşa değmelisin.',
-        };
-      }
     }
   }
 
@@ -255,10 +167,9 @@ export function validatePlacement(
   placed: Placed,
   owner: number,
   ownCorners: number[],
-  openCorners: boolean[],
   isFirstMove: boolean,
 ): ValidationResult {
-  const structural = validatePlacementStructural(board, placed, owner, ownCorners, openCorners, isFirstMove);
+  const structural = validatePlacementStructural(board, placed, owner, ownCorners, isFirstMove);
   if (!structural.valid) return structural;
 
   const formed = getFormedWords(board, placed);
@@ -271,9 +182,10 @@ export function validatePlacement(
 }
 
 /**
- * Rakip köşe(ler)ine giriş vergisini hesaplar. Hamle tek bir rakip köşesine
- * giriyorsa kazanılan puan ikiye bölünür (yarısı köşe sahibine). İki farklı
- * rakip köşesine aynı anda giriliyorsa puan üç kişi arasında (saldırgan +
+ * Rakip köşe(ler)ine sınır vergisini hesaplar. Bu tur konan taşlardan biri
+ * (taşın kendisi bölgenin dışında kalsa bile) bir rakip köşesinin sınırına
+ * bitişikse, kazanılan puan ikiye bölünür (yarısı köşe sahibine). Aynı anda
+ * iki farklı rakip köşesine değiliyorsa puan üç kişi arasında (saldırgan +
  * iki köşe sahibi) eşit paylaşılır. Yuvarlama farkı saldırganda kalır, böylece
  * toplam puan her zaman korunur.
  */
@@ -283,18 +195,26 @@ export function computeInvasionSplit(
   players: Player[],
   basePts: number,
 ): { pts: number; shares: { index: number; amount: number }[] } {
-  const invadedIdx = new Set<number>();
+  const touchedIdx = new Set<number>();
   for (const [r, c] of coords) {
-    const region = regionOf(r, c);
-    if (region !== -1 && !ownCorners.includes(region)) {
+    const neighbors: [number, number][] = [
+      [r - 1, c],
+      [r + 1, c],
+      [r, c - 1],
+      [r, c + 1],
+    ];
+    for (const [nr, nc] of neighbors) {
+      if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+      const region = regionOf(nr, nc);
+      if (region === -1 || ownCorners.includes(region)) continue;
       const idx = players.findIndex((p) => p.corners.includes(region));
-      if (idx >= 0) invadedIdx.add(idx);
+      if (idx >= 0) touchedIdx.add(idx);
     }
   }
-  if (invadedIdx.size === 0) return { pts: basePts, shares: [] };
-  const share = Math.round(basePts / (invadedIdx.size + 1));
-  const shares = [...invadedIdx].map((index) => ({ index, amount: share }));
-  const pts = basePts - share * invadedIdx.size;
+  if (touchedIdx.size === 0) return { pts: basePts, shares: [] };
+  const share = Math.round(basePts / (touchedIdx.size + 1));
+  const shares = [...touchedIdx].map((index) => ({ index, amount: share }));
+  const pts = basePts - share * touchedIdx.size;
   return { pts, shares };
 }
 

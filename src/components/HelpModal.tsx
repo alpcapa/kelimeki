@@ -69,40 +69,32 @@ export function HelpModal({ onClose }: HelpModalProps) {
         <Section title="Temel Kurallar">
           <P>
             <strong>Başlangıç:</strong> Her oyuncu tahtanın köşelerindeki 5×5'lik bölgelere
-            sahiptir. Bu alanlar o kişinin özel koruma alanıdır ve bu alanın dışına temas etmeden
-            diğer oyuncular buraya ekleme yapamaz. 2 kişilik oyunda her oyuncu çapraz iki köşeye
-            sahiptir (1. oyuncu sol-üst + sağ-alt, 2. oyuncu sağ-üst + sol-alt), 4 kişilik oyunda
-            her oyuncu tek bir köşe kullanır.
+            sahiptir. Bu alanlar o kişiye özeldir — bir rakibin köşesine oyun boyunca hiç taş
+            konamaz. 2 kişilik oyunda her oyuncu çapraz iki köşeye sahiptir (1. oyuncu sol-üst +
+            sağ-alt, 2. oyuncu sağ-üst + sol-alt), 4 kişilik oyunda her oyuncu tek bir köşe kullanır.
           </P>
           <P>
             <strong>İlk hamle:</strong> İlk kelimende en az bir harf kendi köşe bölgene
-            düşmelidir. Koyduğun kelime bölgenin dışındaki alana taşarsa veya sınıra değerse
-            hemen bir oyuncu buraya ekleme yapıp %50 daha fazla puan alabilir. O nedenle, mümkün
-            oldukça ilk başlarda bölgenin sınırlarına yaklaşma. Böylece, her oyuncu kendi
-            bölgesinde elindeki taşlarla maksimum puanı alıp sonra dışarıya doğru açılmalıdır.
+            düşmelidir.
           </P>
           <P>
             <strong>Bağlantı:</strong> Her hamle, oyun tahtasındaki mevcut harflere yatay ya da
             dikey olarak bağlanmalıdır. Harfler aynı satır veya aynı sütun üzerinde olmalıdır.
-            Bölge sınırına değen taşlara diğer oyuncular bağlantı yapabilir, onun dışında
-            rakibinin bölgesinde bağlantı yapılamaz.
           </P>
         </Section>
 
-        <Section title="Köşe Bölgeleri">
+        <Section title="Köşe Sınırı ve Puan Paylaşımı">
           <P>
-            Kendi köşen senin kalen gibidir. Sahibi olan kişi 5×5 alanın kenarına değen bir hamle
-            yapana kadar kimse o bölgenin içinde bağlantı yapamaz. Rakip köşesine girebilmek için
-            önce o köşenin sahibinin sınır çizgili alana değen bir hamle yapmış olması gerekir.
-            Buna <em>sınır ihlali</em> denir.
+            Kendi köşen senin kalendir — bir rakip oraya asla taş koyamaz. Ama tahtanın ortak
+            (tarafsız) alanında oynarken kelimen bir rakibin köşesine bitişik düşerse (köşenin
+            içine girmen gerekmez, sadece kenarına değmesi yeter), o hamleden kazandığın puanın
+            yarısı köşenin sahibine gider. Aynı hamle iki farklı rakip köşesine birden değiyorsa
+            puan üç kişi arasında (sen ve iki köşe sahibi) eşit paylaşılır.
           </P>
           <P>
-            Sınır ihlal edilmeden diğer oyuncular orada oynayamaz. İhlal gerçekleştiği anda
-            sınıra değen kelime üzerine rakipler istediği gibi bağlantı yapabilir. Sınıra değen
-            bir kelime olduğu sürece bölgenin içine doğru da hamle yapılabilir ama rakip köşesine
-            giren bir hamleden kazanılan puanın yarısı o köşenin sahibine aktarılır. Aynı hamleyle
-            iki farklı rakip köşesine birden girilirse puan üç kişi arasında (saldırgan ve iki
-            köşe sahibi) eşit paylaşılır.
+            Oyunun başında herkes kendi köşesinde oynar; ama tahta doldukça ortak alanda rakip
+            sınırlarına değmeden hamle yapmak zorlaşır — bu yüzden oyunun ilerleyen turlarında
+            sınıra değmek neredeyse kaçınılmaz olur.
           </P>
         </Section>
 

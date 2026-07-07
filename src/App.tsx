@@ -11,7 +11,7 @@ import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
-import { cellAllowed, calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { cellAllowed, calcScore, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { getFormedWords, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
@@ -188,13 +188,11 @@ export default function App() {
     const current = state.players[state.current];
     if (!current) return null;
 
-    const open = computeBreachedCorners(state.board, state.players);
     const result = validatePlacement(
       state.board,
       state.placed,
       state.current,
       current.corners,
-      open,
       isFirstMove(state),
     );
     // Oluşan tüm kelimelerin hücrelerini birleştir; Board bunun etrafına
@@ -253,8 +251,7 @@ export default function App() {
   const isCellFreeFor = (source: DragSource, r: number, c: number) => {
     if (source.kind === 'placed' && source.r === r && source.c === c) return false;
     if (state.board[r][c] || state.placed[key(r, c)]) return false;
-    const open = computeBreachedCorners(state.board, state.players);
-    return cellAllowed(me.corners, open, r, c);
+    return cellAllowed(me.corners, r, c);
   };
 
   const moveDrag = (e: React.PointerEvent) => {
@@ -377,13 +374,11 @@ export default function App() {
 
     // Sunucu kelime doğrulaması (Supabase yapılandırılmışsa).
     if (isSupabaseConfigured) {
-      const open = computeBreachedCorners(state.board, state.players);
       const structural = validatePlacementStructural(
         state.board,
         state.placed,
         state.current,
         me.corners,
-        open,
         isFirstMove(state),
       );
       if (structural.valid && structural.words && structural.words.length > 0) {
@@ -568,7 +563,7 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              Dikkat, rakip köşesinde oynuyorsun. Bu hamleden kazanacağın {potentialScore} puanın{' '}
+              Dikkat, kelimen rakip köşesinin sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
               {invasionConfirm.length > 1
                 ? invasionConfirm
                     .map((inv, i) => (
