@@ -4282,7 +4282,7 @@ export const WORD_LIST: readonly string[] = [
   "risksiz", "risksizlik", "riskyönetimi", "ritim", "ritimli", "ritimlilik", "ritimsaz", "ritimsiz", "ritimsizlik", "ritmik", "ritmikjimnastik", "ritmiksayma", "ritüel", "rivayet", "rivayetbirleşikzamanı", "riya",
   "riyad", "riyal", "riyala", "riyale", "riyaset", "riyasetetmek", "riyaseticumhur", "riyasız", "riyazet", "riyazi", "riyaziyat", "riyaziye", "riyaziyeci", "riyolit", "rize", "rizeli",
   "rizelilik", "riziko", "rizikolu", "rizikosuz", "roaming", "roba", "robalı", "robot", "robotgibi", "robotik", "robotikameliyat", "robotikcerrahi", "robotikkodlama", "robotlaşma", "robotlaşmak", "robotlaştırma",
-  "robotlaştırmak", "robotluk", "robotresim", "roda", "rodaj", "rodeo", "rodeocu", "rodeoculuk", "rodos", "rodyum", "roka", "roket", "roketatar", "rokfor", "rokforpeyniri", "rokoko",
+  "robotlaştırmak", "robotluk", "robotresim", "roda", "rodaj", "rodeo", "rodeocu", "rodeoculuk", "rodos", "rodyum", "rok", "roka", "roket", "roketatar", "rokfor", "rokforpeyniri", "rokoko",
   "rol", "rolalmak", "rolcü", "rolcülük", "rolçalmak", "rolçatışması", "roldağılımı", "roldağıtmak", "roliflası", "rolkapmak", "rolkesmek", "rolmodeli", "roloynamak", "rolüneçıkmak", "rolüolmak", "rolyapmak",
   "rom", "roma", "romalı", "roman", "romancı", "romancılık", "romanesk", "romanımsı", "romanıyazılmak", "romanist", "romanlaşma", "romanlaşmak", "romanlaştırılma", "romanlaştırılmak", "romanlaştırma", "romanlaştırmak",
   "romanolog", "romanoloji", "romans", "romansı", "romantik", "romantiklik", "romantizm", "romanya", "romanyalı", "romatizma", "romatizmalı", "romatizmasıtutmak", "romatizmasız", "romen", "romence", "rondel",
