@@ -100,8 +100,9 @@ export function Setup({ onStart }: SetupProps) {
         </svg>
         <p className="text-muted text-xs font-mono mt-4">
           Çok farklı bir kelime oyunu sizlerle. Her oyuncunun köşesi onun
-          kalesi gibidir. Oyuna köşenden başlayıp ilerlersin. Sınırına değen
-          olursa cezayı keser puanın yarısını alırsın. Haydi sen de dene ve gör.
+          kalesi gibidir. Oyuna köşenden başlayıp ilerlersin. Köşene giren ya
+          da sınırına değen olursa cezayı keser puanın yarısını alırsın. Haydi
+          sen de dene ve gör.
         </p>
         <button
           onClick={() => setShowHelp(true)}

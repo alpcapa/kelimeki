@@ -118,12 +118,13 @@ export interface HistoryEntry {
   points: number;
   /**
    * Doluysa: bu puan kendi hamlesinden değil, `invasionFrom` oyuncusunun
-   * `player`in köşe sınırına değmesinden (köşe vergisi) geldi.
+   * `player`in köşesine girmesinden ya da sınırına değmesinden (köşe vergisi)
+   * geldi.
    */
   invasionFrom?: Owner;
   /**
-   * Doluysa: bu hamle bir ya da daha fazla rakip köşesinin sınırına değdiği
-   * için puanın bir kısmı o köşe sahiplerine kaptırıldı.
+   * Doluysa: bu hamle bir ya da daha fazla rakip köşesine girdiği ya da
+   * sınırına değdiği için puanın bir kısmı o köşe sahiplerine kaptırıldı.
    */
   lostShares?: { to: Owner; amount: number }[];
   /** Doluysa: bu satır bir kelime hamlesi değil, pas ya da taş değişimidir. */

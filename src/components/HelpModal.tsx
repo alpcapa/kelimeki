@@ -69,8 +69,7 @@ export function HelpModal({ onClose }: HelpModalProps) {
         <Section title="Temel Kurallar">
           <P>
             <strong>Başlangıç:</strong> Her oyuncu tahtanın köşelerindeki 5×5'lik bölgelere
-            sahiptir. Bu alanlar o kişiye özeldir — bir rakibin köşesine oyun boyunca hiç taş
-            konamaz. 2 kişilik oyunda her oyuncu çapraz iki köşeye sahiptir (1. oyuncu sol-üst +
+            sahiptir. 2 kişilik oyunda her oyuncu çapraz iki köşeye sahiptir (1. oyuncu sol-üst +
             sağ-alt, 2. oyuncu sağ-üst + sol-alt), 4 kişilik oyunda her oyuncu tek bir köşe kullanır.
           </P>
           <P>
@@ -83,18 +82,14 @@ export function HelpModal({ onClose }: HelpModalProps) {
           </P>
         </Section>
 
-        <Section title="Köşe Sınırı ve Puan Paylaşımı">
+        <Section title="Köşe Vergisi">
           <P>
-            Kendi köşen senin kalendir — bir rakip oraya asla taş koyamaz. Ama tahtanın ortak
-            (tarafsız) alanında oynarken kelimen bir rakibin köşesine bitişik düşerse (köşenin
-            içine girmen gerekmez, sadece kenarına değmesi yeter), o hamleden kazandığın puanın
-            yarısı köşenin sahibine gider. Aynı hamle iki farklı rakip köşesine birden değiyorsa
-            puan üç kişi arasında (sen ve iki köşe sahibi) eşit paylaşılır.
-          </P>
-          <P>
-            Oyunun başında herkes kendi köşesinde oynar; ama tahta doldukça ortak alanda rakip
-            sınırlarına değmeden hamle yapmak zorlaşır — bu yüzden oyunun ilerleyen turlarında
-            sınıra değmek neredeyse kaçınılmaz olur.
+            İlk hamleden sonra bir rakibin köşesine de taş koyabilirsin — buna hiçbir ön koşul
+            yok, her zaman serbesttir. Ama bir hamlen bir rakip köşesinin içine düşerse ya da
+            dışarıdan sınırına bitişik olursa (köşenin içine girmen şart değil, kenarına değmesi
+            yeter), o hamleden kazandığın puanın yarısı köşenin sahibine gider. Aynı hamle iki
+            farklı rakip köşesiyle birden etkileşirse puan üç kişi arasında (sen ve iki köşe
+            sahibi) eşit paylaşılır.
           </P>
         </Section>
 

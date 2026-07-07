@@ -18,7 +18,6 @@ import {
   type FormedWord,
 } from '../utils/board';
 import {
-  cellAllowed,
   calcScore,
   calcWordScores,
   computeInvasionSplit,
@@ -280,16 +279,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         return state; // dolu kare
       }
 
-      // Bölge kuralı: kendi köşen ya da tarafsız alan olmalı.
       const me = state.players[state.current];
-      if (!cellAllowed(me.corners, r, c)) {
-        return {
-          ...state,
-          message: 'Burası bir rakibin köşesi — oraya oynayamazsın.',
-          messageType: 'err',
-        };
-      }
-
       const source = me.rack[idx];
       if (!source) return state;
       const tile: Tile = { ...source, owner: state.current };
@@ -316,9 +306,6 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const tile = state.placed[fromKey];
       if (!tile || fromKey === toKey) return state;
       if (state.board[action.to.r][action.to.c] || state.placed[toKey]) return state;
-
-      const me = state.players[state.current];
-      if (!cellAllowed(me.corners, action.to.r, action.to.c)) return state;
 
       const placed = { ...state.placed };
       delete placed[fromKey];

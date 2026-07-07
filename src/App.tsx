@@ -11,7 +11,7 @@ import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
-import { cellAllowed, calcScore, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { calcScore, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { getFormedWords, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
@@ -250,8 +250,7 @@ export default function App() {
 
   const isCellFreeFor = (source: DragSource, r: number, c: number) => {
     if (source.kind === 'placed' && source.r === r && source.c === c) return false;
-    if (state.board[r][c] || state.placed[key(r, c)]) return false;
-    return cellAllowed(me.corners, r, c);
+    return !state.board[r][c] && !state.placed[key(r, c)];
   };
 
   const moveDrag = (e: React.PointerEvent) => {
@@ -563,7 +562,7 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              Dikkat, kelimen rakip köşesinin sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
+              Dikkat, kelimen rakip köşesine giriyor ya da sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
               {invasionConfirm.length > 1
                 ? invasionConfirm
                     .map((inv, i) => (

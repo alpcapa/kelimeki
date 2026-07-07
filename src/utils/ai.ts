@@ -7,7 +7,7 @@ import { SIZE, cornerBounds, inCorner, regionOf } from '../game/constants';
 import type { AIMove, BonusType, Placement, Tile } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { letterPoints } from '../data/tiles';
-import { canSpell, calcScore, cellAllowed, freshCorners } from './validator';
+import { canSpell, calcScore, freshCorners } from './validator';
 import { trLower, trUpper } from './turkish';
 import { getFormedWords, key, tileLetter, type Board } from './board';
 
@@ -70,12 +70,14 @@ export function findAIMove(
     return cached;
   };
 
-  // Bir rakip köşesinin sınırına değen hamlede puan paylaşılır (bkz.
-  // computeInvasionSplit). YZ, mecbur kalmadıkça (böyle bir sınıra değmeyen
-  // geçerli bir hamlesi varken) sınıra değmemeli. Bu yüzden iki ayrı en-iyi
-  // takip edilir: `bestSafe` yalnızca hiçbir rakip köşeye değmeyen hamleler
-  // için, `bestAny` (paylaşım sonrası kendisine kalacak puana göre sıralanan)
-  // tüm hamleler için. `bestSafe` varsa her zaman o tercih edilir.
+  // Bir rakip köşesine girilen ya da sınırına dışarıdan değinilen hamlede
+  // puan paylaşılır (bkz. computeInvasionSplit) — girmek için artık hiçbir
+  // ön koşul yok, her zaman serbest. YZ, mecbur kalmadıkça (böyle bir
+  // paylaşım gerektirmeyen geçerli bir hamlesi varken) paylaşım yapmamalı.
+  // Bu yüzden iki ayrı en-iyi takip edilir: `bestSafe` yalnızca hiçbir rakip
+  // köşeyle etkileşmeyen hamleler için, `bestAny` (paylaşım sonrası
+  // kendisine kalacak puana göre sıralanan) tüm hamleler için. `bestSafe`
+  // varsa her zaman o tercih edilir.
   let bestSafe: AIMove | null = null;
   let bestAny: AIMove | null = null;
   let bestAnyEffective = -Infinity;
@@ -87,10 +89,14 @@ export function findAIMove(
     for (const fw of getFormedWords(board, placed)) {
       if (!WORD_SET.has(trLower(fw.word))) return;
     }
-    // Yeni taşlardan biri (kendisi bölgenin dışında kalsa bile) bir rakip
-    // köşesinin sınırına bitişikse, o köşeyle puan paylaşılır.
+    // Yeni taşlardan biri bir rakip köşesinin içine düşüyorsa (girme) ya da
+    // dışarıdan sınırına bitişikse (değme), o köşeyle puan paylaşılır.
     const touchedZones = new Set<number>();
+    const addIfForeign = (region: number) => {
+      if (region !== -1 && !corners.includes(region)) touchedZones.add(region);
+    };
     for (const p of placements) {
+      addIfForeign(regionOf(p.r, p.c));
       const neighbors: [number, number][] = [
         [p.r - 1, p.c],
         [p.r + 1, p.c],
@@ -99,8 +105,7 @@ export function findAIMove(
       ];
       for (const [nr, nc] of neighbors) {
         if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
-        const region = regionOf(nr, nc);
-        if (region !== -1 && !corners.includes(region)) touchedZones.add(region);
+        addIfForeign(regionOf(nr, nc));
       }
     }
     const score = calcScore(board, placed, bonuses);
@@ -121,9 +126,6 @@ export function findAIMove(
     }
   };
 
-  // Yeni konacak tüm hücreler bölge kurallarına uymalı.
-  const allowed = (r: number, c: number) => cellAllowed(corners, r, c);
-
   // Verilen köşeden, tahtadaki mevcut taşlardan bağımsız yeni bir kelimeyle
   // başlayan tüm yerleşimleri dener (ilk hamle ya da henüz kullanılmamış
   // ikinci köşeden başlama).
@@ -142,7 +144,7 @@ export function findAIMove(
             for (let i = 0; i < W.length; i++) {
               const rr = horiz ? sr : sr + i;
               const cc = horiz ? sc + i : sc;
-              if (board[rr][cc] || !allowed(rr, cc)) {
+              if (board[rr][cc]) {
                 ok = false;
                 break;
               }
@@ -207,7 +209,6 @@ export function findAIMove(
       if (existing) {
         if (tileLetter(existing) !== W[i]) return; // mevcut taşla uyuşmuyor
       } else {
-        if (!allowed(rr, cc)) return; // bölge kuralı
         newLetters.push(W[i]);
         newPositions.push([rr, cc]);
       }
@@ -245,9 +246,10 @@ export function findAIMove(
     tryCornerStart(homeCorner);
   }
 
-  // Hiçbir rakip köşesine değmeyen geçerli bir hamle varsa, puanı paylaşmak
-  // zorunda kalmamak için o hamle her zaman tercih edilir. Yalnızca hiç
-  // güvenli hamle yoksa (mecburen) sınıra değilir — bu durumda da paylaşım
-  // sonrası kendisine kalacak puana göre en iyi seçenek kullanılır.
+  // Hiçbir rakip köşeyle etkileşmeyen geçerli bir hamle varsa, puanı
+  // paylaşmak zorunda kalmamak için o hamle her zaman tercih edilir.
+  // Yalnızca hiç güvenli hamle yoksa (mecburen) rakip köşeye girilir/sınırına
+  // değilir — bu durumda da paylaşım sonrası kendisine kalacak puana göre en
+  // iyi seçenek kullanılır.
   return bestSafe ?? bestAny;
 }

@@ -45,24 +45,6 @@ export function freshCorners(board: Board, ownCorners: number[], owner: number):
 }
 
 /**
- * Sırası gelen oyuncu (r,c) hücresine taş koyabilir mi?
- *  - Tarafsız (merkez) hücreler herkese açık.
- *  - Kendi köşen her zaman açık.
- *  - Bir rakibin köşesine hiçbir zaman taş konamaz — köşeler her zaman
- *    yalnızca sahibine aittir. Rakip bölgelerle etkileşim yalnızca dışarıdan
- *    sınıra değerek olur (bkz. computeInvasionSplit).
- */
-export function cellAllowed(
-  ownCorners: number[],
-  r: number,
-  c: number,
-): boolean {
-  const region = regionOf(r, c);
-  if (region === -1) return true;
-  return ownCorners.includes(region);
-}
-
-/**
  * Yapısal doğrulama — hizalama, bölge kuralları, bağlantı, kelime varlığı;
  * sözlük kontrolü yapılmaz. Geçerliyse oluşan kelimeleri döner.
  * Sunucu doğrulaması yaparken önce bu çağrılır, ardından kelimeler RPC'ye gönderilir.
@@ -108,17 +90,6 @@ export function validatePlacementStructural(
       if (!placed[key(r, c)] && !board[r][c]) {
         return { valid: false, reason: 'Harfler arasında boşluk bırakılamaz.' };
       }
-    }
-  }
-
-  // Bölge kuralı: her yeni taş kendi köşende ya da tarafsız alanda olmalı —
-  // bir rakibin köşesine hiç taş konamaz.
-  for (const [r, c] of coords) {
-    if (!cellAllowed(ownCorners, r, c)) {
-      return {
-        valid: false,
-        reason: 'Burası bir rakibin köşesi — oraya oynayamazsın.',
-      };
     }
   }
 
@@ -183,11 +154,12 @@ export function validatePlacement(
 
 /**
  * Rakip köşe(ler)ine sınır vergisini hesaplar. Bu tur konan taşlardan biri
- * (taşın kendisi bölgenin dışında kalsa bile) bir rakip köşesinin sınırına
- * bitişikse, kazanılan puan ikiye bölünür (yarısı köşe sahibine). Aynı anda
- * iki farklı rakip köşesine değiliyorsa puan üç kişi arasında (saldırgan +
- * iki köşe sahibi) eşit paylaşılır. Yuvarlama farkı saldırganda kalır, böylece
- * toplam puan her zaman korunur.
+ * bir rakip köşesinin içine düşüyorsa (girme) ya da dışarıdan sınırına
+ * bitişikse (değme), kazanılan puan ikiye bölünür (yarısı köşe sahibine).
+ * Rakip köşesine girmek için artık hiçbir ön koşul yok — her zaman serbest.
+ * Aynı anda iki farklı rakip köşesine giriliyor/değiliyorsa puan üç kişi
+ * arasında (saldırgan + iki köşe sahibi) eşit paylaşılır. Yuvarlama farkı
+ * saldırganda kalır, böylece toplam puan her zaman korunur.
  */
 export function computeInvasionSplit(
   coords: [number, number][],
@@ -196,7 +168,13 @@ export function computeInvasionSplit(
   basePts: number,
 ): { pts: number; shares: { index: number; amount: number }[] } {
   const touchedIdx = new Set<number>();
+  const addIfForeign = (region: number) => {
+    if (region === -1 || ownCorners.includes(region)) return;
+    const idx = players.findIndex((p) => p.corners.includes(region));
+    if (idx >= 0) touchedIdx.add(idx);
+  };
   for (const [r, c] of coords) {
+    addIfForeign(regionOf(r, c));
     const neighbors: [number, number][] = [
       [r - 1, c],
       [r + 1, c],
@@ -205,10 +183,7 @@ export function computeInvasionSplit(
     ];
     for (const [nr, nc] of neighbors) {
       if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
-      const region = regionOf(nr, nc);
-      if (region === -1 || ownCorners.includes(region)) continue;
-      const idx = players.findIndex((p) => p.corners.includes(region));
-      if (idx >= 0) touchedIdx.add(idx);
+      addIfForeign(regionOf(nr, nc));
     }
   }
   if (touchedIdx.size === 0) return { pts: basePts, shares: [] };
