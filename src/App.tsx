@@ -213,13 +213,16 @@ export default function App() {
 
   // Oyna'ya basmadan önce, geçersiz bir hamle varsa sebebini canlı olarak
   // alttaki mesaj alanında göster — oyuncu Oyna'ya basmadan neden geçersiz
-  // olduğunu (köşe kuralı, sözlük vb.) hemen görsün.
+  // olduğunu (köşe kuralı, sözlük vb.) hemen görsün. Geçerliyse aynı mesaj
+  // ("Oyna tuşuyla kelimeyi onayla.") yeşile döner.
   const liveMessage = moveStatus && !moveStatus.valid && moveStatus.reason
     ? moveStatus.reason
     : state.message;
   const liveMessageType = moveStatus && !moveStatus.valid && moveStatus.reason
     ? 'err'
-    : state.messageType;
+    : moveStatus?.valid
+      ? 'ok'
+      : state.messageType;
 
   // ── Kurulum ekranı ─────────────────────────────────────────────────────────
   if (state.phase === 'setup') {
