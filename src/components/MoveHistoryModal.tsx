@@ -29,7 +29,7 @@ export function MoveHistoryModal({ state, humanIndex, onClose }: MoveHistoryModa
           {[...entries].reverse().map((e, i) => {
             const isInvasion = e.invasionFrom !== undefined;
             const label = isInvasion
-              ? `${state.players[e.invasionFrom!]?.name ?? '?'} köşene girdi`
+              ? `${state.players[e.invasionFrom!]?.name ?? '?'} köşene girdi/değdi`
               : e.action === 'pass'
                 ? 'Pas geçti'
                 : e.action === 'exchange'

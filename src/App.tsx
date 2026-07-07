@@ -11,7 +11,7 @@ import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
-import { cellAllowed, calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { calcScore, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { getFormedWords, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
@@ -188,13 +188,11 @@ export default function App() {
     const current = state.players[state.current];
     if (!current) return null;
 
-    const open = computeBreachedCorners(state.board, state.players);
     const result = validatePlacement(
       state.board,
       state.placed,
       state.current,
       current.corners,
-      open,
       isFirstMove(state),
     );
     // Oluşan tüm kelimelerin hücrelerini birleştir; Board bunun etrafına
@@ -206,11 +204,25 @@ export default function App() {
 
     return {
       valid: result.valid,
+      reason: result.reason,
       cells,
       score: calcScore(state.board, state.placed, state.bonuses),
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.placed, state.board, state.players, state.current]);
+
+  // Oyna'ya basmadan önce, geçersiz bir hamle varsa sebebini canlı olarak
+  // alttaki mesaj alanında göster — oyuncu Oyna'ya basmadan neden geçersiz
+  // olduğunu (köşe kuralı, sözlük vb.) hemen görsün. Geçerliyse aynı mesaj
+  // ("Oyna tuşuyla kelimeyi onayla.") yeşile döner.
+  const liveMessage = moveStatus && !moveStatus.valid && moveStatus.reason
+    ? moveStatus.reason
+    : state.message;
+  const liveMessageType = moveStatus && !moveStatus.valid && moveStatus.reason
+    ? 'err'
+    : moveStatus?.valid
+      ? 'ok'
+      : state.messageType;
 
   // ── Kurulum ekranı ─────────────────────────────────────────────────────────
   if (state.phase === 'setup') {
@@ -252,9 +264,7 @@ export default function App() {
 
   const isCellFreeFor = (source: DragSource, r: number, c: number) => {
     if (source.kind === 'placed' && source.r === r && source.c === c) return false;
-    if (state.board[r][c] || state.placed[key(r, c)]) return false;
-    const open = computeBreachedCorners(state.board, state.players);
-    return cellAllowed(me.corners, open, r, c);
+    return !state.board[r][c] && !state.placed[key(r, c)];
   };
 
   const moveDrag = (e: React.PointerEvent) => {
@@ -377,13 +387,11 @@ export default function App() {
 
     // Sunucu kelime doğrulaması (Supabase yapılandırılmışsa).
     if (isSupabaseConfigured) {
-      const open = computeBreachedCorners(state.board, state.players);
       const structural = validatePlacementStructural(
         state.board,
         state.placed,
         state.current,
         me.corners,
-        open,
         isFirstMove(state),
       );
       if (structural.valid && structural.words && structural.words.length > 0) {
@@ -466,10 +474,10 @@ export default function App() {
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
         <div
           className={`text-[11px] font-mono text-center min-h-[15px] py-0.5 ${
-            MESSAGE_COLORS[state.messageType]
+            MESSAGE_COLORS[liveMessageType]
           }`}
         >
-          {state.message}
+          {liveMessage}
         </div>
 
         <div className="flex gap-1.5 items-stretch">
@@ -568,7 +576,7 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              Dikkat, rakip köşesinde oynuyorsun. Bu hamleden kazanacağın {potentialScore} puanın{' '}
+              Dikkat, kelimen rakip köşesine giriyor ya da sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
               {invasionConfirm.length > 1
                 ? invasionConfirm
                     .map((inv, i) => (

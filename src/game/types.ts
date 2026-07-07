@@ -118,12 +118,13 @@ export interface HistoryEntry {
   points: number;
   /**
    * Doluysa: bu puan kendi hamlesinden değil, `invasionFrom` oyuncusunun
-   * `player`in köşesine girmesinden (köşe vergisi) geldi.
+   * `player`in köşesine girmesinden ya da sınırına değmesinden (köşe vergisi)
+   * geldi.
    */
   invasionFrom?: Owner;
   /**
-   * Doluysa: bu hamle bir ya da daha fazla rakip köşesine girdiği için
-   * puanın bir kısmı o köşe sahiplerine kaptırıldı.
+   * Doluysa: bu hamle bir ya da daha fazla rakip köşesine girdiği ya da
+   * sınırına değdiği için puanın bir kısmı o köşe sahiplerine kaptırıldı.
    */
   lostShares?: { to: Owner; amount: number }[];
   /** Doluysa: bu satır bir kelime hamlesi değil, pas ya da taş değişimidir. */
@@ -142,6 +143,8 @@ export interface ValidationResult {
 export interface MoveStatus {
   /** Yerel sözlüğe göre şu anki yerleştirme geçerli mi? */
   valid: boolean;
+  /** Geçersizse, sebebi (köşe kuralı, sözlük vb.) — "Oyna"ya basmadan gösterilir. */
+  reason?: string;
   /** Oluşan tüm kelimelere ait hücreler (birleşik dış çerçeve için). */
   cells: [number, number][];
   /** Bu hamlenin (henüz oynanmamış) potansiyel puanı. */

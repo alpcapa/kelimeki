@@ -53,11 +53,12 @@ src/
 ## Oyun Mekaniği Özeti
 
 - **Köşe bölgeleri:** 4 köşe (0=sol-üst, 1=sağ-üst, 2=sol-alt, 3=sağ-alt). 2 oyuncuda dördü de kullanılır — her oyuncu çapraz köşe çiftine sahiptir (1. oyuncu 0+3, 2. oyuncu 1+2), boş köşe kalmaz. 4 oyuncuda her oyuncu tek bir köşeye sahiptir. Bir oyuncunun sahip olduğu köşeler `Player.corners: number[]` alanında tutulur (`cornersFor`, `src/game/constants.ts`).
-- **Köşe ihlali:** Bir oyuncu kendi 5×5 bölgesinin iç sınır karesine (`isZoneBoundaryCell`) taş koyduğunda o köşe "ihlal edilmiş" (`breached`) sayılır ve rakipler girebilir.
-- **Köşe vergisi:** Rakip köşesine giren hamlenin puanı ikiye bölünür; yarısı saldırgana kalır, yarısı köşe sahibine aktarılır. Aynı hamle iki farklı rakip köşesine birden giriyorsa puan üç kişi arasında (saldırgan + iki köşe sahibi) eşit paylaşılır (`computeInvasionSplit`, `src/utils/validator.ts`). İnsan oyuncu için "Oyna" öncesinde onay modalı (`invasionConfirm` state) gösterilir. YZ için de aynı kural otomatik uygulanır.
+- **Köşeye giriş:** İlk hamleden sonra bir rakibin köşesine taş koymanın hiçbir ön koşulu yok — her zaman serbest (eski "ihlal"/breach durumu kaldırıldı).
+- **Köşe vergisi:** Bu turda konan taşlardan biri bir rakip köşesinin içine düşüyorsa (girme) ya da kendisi bölgenin dışında kalsa bile sınırına bitişikse (değme), hamlenin puanı ikiye bölünür; yarısı oynayana kalır, yarısı köşe sahibine aktarılır. Aynı hamle iki farklı rakip köşesiyle birden etkileşirse puan üç kişi arasında (oynayan + iki köşe sahibi) eşit paylaşılır (`computeInvasionSplit`, `src/utils/validator.ts`). İnsan oyuncu için "Oyna" öncesinde onay modalı (`invasionConfirm` state) gösterilir. YZ için de aynı kural otomatik uygulanır.
 - **Oyun bitişi:** Raf boş + torba boş → oyun biter. Kalan raf taşları oyuncunun puanından düşülür. Alternatif: tüm oyuncular arka arkaya MAX_PASS_ROUNDS tur pas geçerse biter.
-- **Joker (`?`):** 4 adet, 0 puan, oynanırken herhangi bir Türkçe harfe dönüşür.
-- **Torba:** Toplam 100 taş (Türkçe dağılım, `src/data/tiles.ts`). Not: bir ara 186'ya çıkarılmıştı, ama simülasyon torbanın gerçek bitirişi (rafını torba boşken tamamen bitirme + rakip puanlarını kapma) neredeyse imkânsız kıldığını gösterdi (4 oyunculuda 0/10), bu yüzden orijinal 100'e geri dönüldü.
+- **Joker (`?`):** 2 adet, 0 puan, oynanırken herhangi bir Türkçe harfe dönüşür.
+- **Torba:** 2 oyunculu oyunda 100 taş (Türkçe dağılım, `src/data/tiles.ts`). Not: bir ara tüm modlarda 186'ya çıkarılmıştı, ama simülasyon torbanın gerçek bitirişini (rafını torba boşken tamamen bitirme + rakip puanlarını kapma) neredeyse imkânsız kıldığını gösterdi (4 oyunculuda 0/10), bu yüzden 100'e geri dönüldü.
+- **Oyuncu sayısına göre torba ölçeği:** 4 oyunculu oyunlarda raflarda sabit 4×7=28 taş kilitli kaldığından torba çok hızlı tükenip köşe sınırıyla hiç etkileşim olmadan oyun bitebiliyordu. Simülasyon 2 oyuncunun taş artışına çok hassas (gerçek bitiş oranı %10 artışta bile çöküyor), 4 oyuncununsa %20 artışı (115 taş) "gerçek bitiş" oranını makul koruyarak (~%40) köşe etkileşimini belirgin artırdığını gösterdi (ort. 2.4 → 6.1 etkileşim/oyun). Bu yüzden torba büyüklüğü oyuncu sayısına göre ölçeklenir: `BAG_SCALE_BY_PLAYER_COUNT` (`src/data/tiles.ts`) — 2p ×1, 4p ×1.2 — `buildBag(playerCount)` ve `remainingTiles(board, rack, playerCount)` bu ölçeklenmiş dağılımı kullanır.
 
 ## Bileşen Notları
 

@@ -69,40 +69,27 @@ export function HelpModal({ onClose }: HelpModalProps) {
         <Section title="Temel Kurallar">
           <P>
             <strong>Başlangıç:</strong> Her oyuncu tahtanın köşelerindeki 5×5'lik bölgelere
-            sahiptir. Bu alanlar o kişinin özel koruma alanıdır ve bu alanın dışına temas etmeden
-            diğer oyuncular buraya ekleme yapamaz. 2 kişilik oyunda her oyuncu çapraz iki köşeye
-            sahiptir (1. oyuncu sol-üst + sağ-alt, 2. oyuncu sağ-üst + sol-alt), 4 kişilik oyunda
-            her oyuncu tek bir köşe kullanır.
+            sahiptir. 2 kişilik oyunda her oyuncu çapraz iki köşeye sahiptir (1. oyuncu sol-üst +
+            sağ-alt, 2. oyuncu sağ-üst + sol-alt), 4 kişilik oyunda her oyuncu tek bir köşe kullanır.
           </P>
           <P>
             <strong>İlk hamle:</strong> İlk kelimende en az bir harf kendi köşe bölgene
-            düşmelidir. Koyduğun kelime bölgenin dışındaki alana taşarsa veya sınıra değerse
-            hemen bir oyuncu buraya ekleme yapıp %50 daha fazla puan alabilir. O nedenle, mümkün
-            oldukça ilk başlarda bölgenin sınırlarına yaklaşma. Böylece, her oyuncu kendi
-            bölgesinde elindeki taşlarla maksimum puanı alıp sonra dışarıya doğru açılmalıdır.
+            düşmelidir.
           </P>
           <P>
             <strong>Bağlantı:</strong> Her hamle, oyun tahtasındaki mevcut harflere yatay ya da
             dikey olarak bağlanmalıdır. Harfler aynı satır veya aynı sütun üzerinde olmalıdır.
-            Bölge sınırına değen taşlara diğer oyuncular bağlantı yapabilir, onun dışında
-            rakibinin bölgesinde bağlantı yapılamaz.
           </P>
         </Section>
 
-        <Section title="Köşe Bölgeleri">
+        <Section title="Köşe Vergisi">
           <P>
-            Kendi köşen senin kalen gibidir. Sahibi olan kişi 5×5 alanın kenarına değen bir hamle
-            yapana kadar kimse o bölgenin içinde bağlantı yapamaz. Rakip köşesine girebilmek için
-            önce o köşenin sahibinin sınır çizgili alana değen bir hamle yapmış olması gerekir.
-            Buna <em>sınır ihlali</em> denir.
-          </P>
-          <P>
-            Sınır ihlal edilmeden diğer oyuncular orada oynayamaz. İhlal gerçekleştiği anda
-            sınıra değen kelime üzerine rakipler istediği gibi bağlantı yapabilir. Sınıra değen
-            bir kelime olduğu sürece bölgenin içine doğru da hamle yapılabilir ama rakip köşesine
-            giren bir hamleden kazanılan puanın yarısı o köşenin sahibine aktarılır. Aynı hamleyle
-            iki farklı rakip köşesine birden girilirse puan üç kişi arasında (saldırgan ve iki
-            köşe sahibi) eşit paylaşılır.
+            İlk hamleden sonra bir rakibin köşesine de taş koyabilirsin — buna hiçbir ön koşul
+            yok, her zaman serbesttir. Ama bir hamlen bir rakip köşesinin içine düşerse ya da
+            dışarıdan sınırına bitişik olursa (köşenin içine girmen şart değil, kenarına değmesi
+            yeter), o hamleden kazandığın puanın yarısı köşenin sahibine gider. Aynı hamle iki
+            farklı rakip köşesiyle birden etkileşirse puan üç kişi arasında (sen ve iki köşe
+            sahibi) eşit paylaşılır.
           </P>
         </Section>
 
@@ -152,7 +139,7 @@ export function HelpModal({ onClose }: HelpModalProps) {
 
         <Section title="Joker (Yıldız) Taşı">
           <P>
-            Torbada 4 adet joker vardır. Joker taşı, oynandığında istediğin herhangi bir Türkçe
+            Torbada 2 adet joker vardır. Joker taşı, oynandığında istediğin herhangi bir Türkçe
             harfe dönüşebilir. Puan değeri <strong>0</strong>'dır; bonus kareler de jokere
             uygulanmaz.
           </P>
@@ -184,7 +171,11 @@ export function HelpModal({ onClose }: HelpModalProps) {
         </Section>
 
         <Section title="Puan Tablosu">
-          <P>Torbada toplam 100 taş bulunur.</P>
+          <P>
+            Torbada toplam 100 taş bulunur (2 kişilik oyun). Aşağıdaki dökümde adetler bu
+            değere göredir; 4 kişilik oyunda köşe etkileşimi daha çabuk yaşansın diye torba
+            %20 daha büyük (toplam 115 taş) kurulur, oranlar aynı kalır.
+          </P>
           <div className="flex flex-col gap-1 mt-0.5">
             <TileRow pts="1" tiles="A (×12)  E (×8)  İ (×7)  K (×7)  L (×7)  R (×6)  N (×5)  T (×5)" />
             <TileRow pts="2" tiles="I (×4)  M (×4)  O (×3)  S (×3)  U (×3)" />

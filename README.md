@@ -5,11 +5,11 @@
 ## Oyun
 
 - **13×13 tahta** — Scrabble benzeri kelime yerleştirme, harf/kelime bonusları (H2, H3, K2, K3).
-- **Köşe bölgeleri** — Her oyuncu 5×5'lik bir köşeden başlar. 2 kişilik oyunda çapraz köşeler (sol-üst ↔ sağ-alt), 4 kişilik oyunda dört köşe kullanılır. Kendi köşen korunmuştur; rakipler ancak sen sınır karesine taş koyduktan sonra girebilir.
-- **Köşe vergisi** — Rakip köşesinde oynanan hamlenin puanı ikiye bölünür: yarısı saldırgana kalır, yarısı köşe sahibine aktarılır. Hamle öncesinde onay penceresi gösterilir.
+- **Köşe bölgeleri** — Her oyuncu 5×5'lik bir köşeden başlar. 2 kişilik oyunda çapraz köşeler (sol-üst ↔ sağ-alt), 4 kişilik oyunda dört köşe kullanılır. İlk hamleden sonra bir rakibin köşesine taş koymanın hiçbir ön koşulu yok — her zaman serbest.
+- **Köşe vergisi** — Bir hamle rakip köşesinin içine düşerse (girme) ya da dışarıdan sınırına bitişik olursa (değme), hamlenin puanı ikiye bölünür: yarısı oynayana kalır, yarısı köşe sahibine aktarılır. Hamle öncesinde onay penceresi gösterilir.
 - **Akıllı YZ** — Rafından heceleyebildiği, sözlükçe geçerli en yüksek puanlı hamleyi arar; çapraz kelimeleri de doğrular.
 - **Tam sözlük** — TDK Güncel Türkçe Sözlük (12. baskı) kaynaklı **92.771 oynanabilir kelime**, anlamlarıyla birlikte.
-- **Türkçe alfabe** — Ç, Ğ, İ, Ö, Ş, Ü dahil tam harf dağılımı ve puanlar. Joker (`?`) desteklenir. Toplam 100 taş.
+- **Türkçe alfabe** — Ç, Ğ, İ, Ö, Ş, Ü dahil tam harf dağılımı ve puanlar. Joker (`?`) desteklenir. Torba 2 kişilik oyunda 100, 4 kişilik oyunda 115 taş.
 - **Bingo bonusu** — 7 taşın tamamını tek hamlede kullanınca +50 puan.
 - **Dokunmatik** — Mobil öncelikli düzen; harf seç → kareye dokun → **Oyna**.
 

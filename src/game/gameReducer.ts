@@ -18,10 +18,8 @@ import {
   type FormedWord,
 } from '../utils/board';
 import {
-  cellAllowed,
   calcScore,
   calcWordScores,
-  computeBreachedCorners,
   computeInvasionSplit,
   validatePlacement,
   validatePlacementStructural,
@@ -81,7 +79,7 @@ export function createInitialState(): GameState {
 function startGame(setup: PlayerSetup[]): GameState {
   const count = setup.length;
   const corners = cornersFor(count);
-  const bag = buildBag();
+  const bag = buildBag(count);
   const players: Player[] = setup.map((s, i) => ({
     name:
       s.name.trim() ||
@@ -221,7 +219,7 @@ function recallAll(state: GameState): GameState {
 
 /**
  * Bir hamlenin hamle geçmişine ekleyeceği satırları oluşturur: oynayanın
- * kendi satırı + köşesi ihlal edilen her oyuncu için ayrı bir bonus satırı.
+ * kendi satırı + sınırına değinilen her oyuncu için ayrı bir bonus satırı.
  */
 function appendMoveHistory(
   prev: HistoryEntry[],
@@ -281,17 +279,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         return state; // dolu kare
       }
 
-      // Bölge kuralı: kendi köşen, merkez ya da açılmış bir köşe olmalı.
       const me = state.players[state.current];
-      const open = computeBreachedCorners(state.board, state.players);
-      if (!cellAllowed(me.corners, open, r, c)) {
-        return {
-          ...state,
-          message: 'Burası başka bir oyuncunun köşesi — henüz oraya oynayamazsın.',
-          messageType: 'err',
-        };
-      }
-
       const source = me.rack[idx];
       if (!source) return state;
       const tile: Tile = { ...source, owner: state.current };
@@ -318,10 +306,6 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const tile = state.placed[fromKey];
       if (!tile || fromKey === toKey) return state;
       if (state.board[action.to.r][action.to.c] || state.placed[toKey]) return state;
-
-      const me = state.players[state.current];
-      const open = computeBreachedCorners(state.board, state.players);
-      if (!cellAllowed(me.corners, open, action.to.r, action.to.c)) return state;
 
       const placed = { ...state.placed };
       delete placed[fromKey];
@@ -474,10 +458,9 @@ export function gameReducer(state: GameState, action: Action): GameState {
     case 'PLAY': {
       if (state.phase !== 'play' || state.isGameOver) return state;
       const me = state.players[state.current];
-      const open = computeBreachedCorners(state.board, state.players);
       const check = action.skipWordCheck
-        ? validatePlacementStructural(state.board, state.placed, state.current, me.corners, open, isFirstMove(state))
-        : validatePlacement(state.board, state.placed, state.current, me.corners, open, isFirstMove(state));
+        ? validatePlacementStructural(state.board, state.placed, state.current, me.corners, isFirstMove(state))
+        : validatePlacement(state.board, state.placed, state.current, me.corners, isFirstMove(state));
       if (!check.valid) {
         return { ...state, message: check.reason!, messageType: 'err' };
       }
@@ -489,7 +472,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         { word: '', score: 0 },
       );
 
-      // Rakip köşeye giriş: kazanılan puan köşe sahip(ler)iyle paylaşılır.
+      // Rakip köşe sınırına değme: kazanılan puan köşe sahip(ler)iyle paylaşılır.
       const placedCoords = Object.keys(state.placed).map(
         (k) => k.split(',').map(Number) as [number, number],
       );
@@ -594,14 +577,12 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const me = state.players[state.current];
       if (!me.isAI) return state;
 
-      const open = computeBreachedCorners(state.board, state.players);
       const move = findAIMove(
         state.board,
         me.rack,
         state.bonuses,
         state.current,
         me.corners,
-        open,
         isFirstMove(state),
       );
 
