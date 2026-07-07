@@ -18,6 +18,17 @@ interface BoardProps {
   moveStatus: MoveStatus | null;
   /** "Hamle Geçmişi" linkine tıklanınca çağrılır. */
   onOpenHistory: () => void;
+  /** Şu an sürüklenmekte olan, bu tur yerleştirilmiş taşın hücre anahtarı — o hücre boşmuş gibi çizilir. */
+  dragHiddenKey?: string | null;
+  /** Sürükleme sırasında işaretçinin üzerinde olduğu hücre (bırakma hedefi vurgusu). */
+  dragOverKey?: string | null;
+  /** `dragOverKey` hücresine bırakmak geçerli mi? */
+  dragOverValid?: boolean;
+  /** Bu tur yerleştirilmiş bir taşın sürüklenmesini başlatır. */
+  onTilePointerDown?: (r: number, c: number, e: React.PointerEvent<HTMLDivElement>) => void;
+  onTilePointerMove?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onTilePointerUp?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onTilePointerCancel?: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
 // Nömorfik bonus kareleri: sadece yazı rengi (arkaplan style ile verilir).
@@ -88,7 +99,19 @@ function cornerEdgeStyle(
   return s;
 }
 
-export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardProps) {
+export function Board({
+  state,
+  onCellClick,
+  moveStatus,
+  onOpenHistory,
+  dragHiddenKey = null,
+  dragOverKey = null,
+  dragOverValid = false,
+  onTilePointerDown,
+  onTilePointerMove,
+  onTilePointerUp,
+  onTilePointerCancel,
+}: BoardProps) {
   const { board, placed, bonuses, lastWords, players, current } = state;
 
   // Köşe bölgesi -> o köşenin sahibinin rengi (boş kareleri renklendirmek için).
@@ -127,7 +150,9 @@ export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardPr
     for (let c = 0; c < SIZE; c++) {
       const k = key(r, c);
       const boardTile = board[r][c];
-      const placedTile = placed[k];
+      const rawPlacedTile = placed[k];
+      // Sürüklenmekte olan taş, alındığı hücrede boşmuş gibi çizilir (görsel olarak).
+      const placedTile = k === dragHiddenKey ? undefined : rawPlacedTile;
       const bonus = bonuses[k];
       const region = regionOf(r, c);
       const zone = region >= 0 ? cornerColor[region] : undefined;
@@ -175,12 +200,34 @@ export function Board({ state, onCellClick, moveStatus, onOpenHistory }: BoardPr
         style = style ? { ...style, ...edgeBorder } : edgeBorder;
       }
 
+      // Bu turda yerleştirilmiş (henüz oynanmamış) bir taş, tıklama yerine
+      // sürükleme jestiyle (basılı tut → hareket ettir → bırak) yönetilir.
+      const hasPending = !!rawPlacedTile;
+
+      if (dragOverKey === k) {
+        style = {
+          ...style,
+          outline: `2px dashed ${dragOverValid ? '#1FA05C' : '#E0483A'}`,
+          outlineOffset: '-2px',
+        };
+      }
+
       cells.push(
         <div
           key={k}
           className={classes.join(' ')}
-          style={{ ...style, gridRow: `${r + 1} / ${r + 2}`, gridColumn: `${c + 1} / ${c + 2}` }}
-          onClick={() => onCellClick(r, c)}
+          style={{
+            ...style,
+            gridRow: `${r + 1} / ${r + 2}`,
+            gridColumn: `${c + 1} / ${c + 2}`,
+            ...(hasPending ? { touchAction: 'none' } : null),
+          }}
+          data-cell={`${r},${c}`}
+          onClick={hasPending ? undefined : () => onCellClick(r, c)}
+          onPointerDown={hasPending ? (e) => onTilePointerDown?.(r, c, e) : undefined}
+          onPointerMove={hasPending ? onTilePointerMove : undefined}
+          onPointerUp={hasPending ? onTilePointerUp : undefined}
+          onPointerCancel={hasPending ? onTilePointerCancel : undefined}
         >
           {content}
         </div>,

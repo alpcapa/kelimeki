@@ -15,6 +15,14 @@ interface RackProps {
   swapMode?: boolean;
   /** Değiştirmek için seçilen taş indeksleri. */
   swapSelection?: number[];
+  /** Raftaki taşların sürüklenerek tahtaya konabilmesi mümkün mü? */
+  draggable?: boolean;
+  /** Şu an sürüklenmekte olan raf taşının indeksi — o slot boşmuş gibi çizilir. */
+  dragHiddenIndex?: number | null;
+  onTilePointerDown?: (index: number, e: React.PointerEvent<HTMLDivElement>) => void;
+  onTilePointerMove?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onTilePointerUp?: (e: React.PointerEvent<HTMLDivElement>) => void;
+  onTilePointerCancel?: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
 export function Rack({
@@ -25,9 +33,16 @@ export function Rack({
   color,
   swapMode = false,
   swapSelection = [],
+  draggable = false,
+  dragHiddenIndex = null,
+  onTilePointerDown,
+  onTilePointerMove,
+  onTilePointerUp,
+  onTilePointerCancel,
 }: RackProps) {
   return (
     <div
+      data-rack="true"
       className="bg-[#DDE4EE] rounded-[16px] p-3"
       style={{
         boxShadow: '5px 5px 14px rgba(163,177,198,0.65), -3px -3px 10px rgba(255,255,255,0.9)',
@@ -51,16 +66,30 @@ export function Rack({
           gap: '3px',
         }}
       >
-        {tiles.map((tile, i) => (
-          <div key={`${tile.letter}-${i}`} className="h-[46px]">
-            <Tile
-              tile={tile}
-              variant="rack"
-              selected={swapMode ? swapSelection.includes(i) : selectedTile === i}
-              onClick={() => onSelect(i)}
-            />
-          </div>
-        ))}
+        {tiles.map((tile, i) => {
+          const isDraggable = draggable && !swapMode;
+          return (
+            <div
+              key={`${tile.letter}-${i}`}
+              className="h-[46px]"
+              style={{
+                opacity: dragHiddenIndex === i ? 0 : 1,
+                ...(isDraggable ? { touchAction: 'none' } : null),
+              }}
+              onPointerDown={isDraggable ? (e) => onTilePointerDown?.(i, e) : undefined}
+              onPointerMove={isDraggable ? onTilePointerMove : undefined}
+              onPointerUp={isDraggable ? onTilePointerUp : undefined}
+              onPointerCancel={isDraggable ? onTilePointerCancel : undefined}
+            >
+              <Tile
+                tile={tile}
+                variant="rack"
+                selected={swapMode ? swapSelection.includes(i) : selectedTile === i}
+                onClick={isDraggable ? undefined : () => onSelect(i)}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

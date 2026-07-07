@@ -39,7 +39,8 @@ export type Action =
   | { type: 'ABANDON' }
   | { type: 'START'; players: PlayerSetup[] }
   | { type: 'SELECT_TILE'; index: number }
-  | { type: 'PLACE_TILE'; r: number; c: number; wildLetter?: string }
+  | { type: 'PLACE_TILE'; r: number; c: number; wildLetter?: string; rackIndex?: number }
+  | { type: 'MOVE_PLACED_TILE'; from: { r: number; c: number }; to: { r: number; c: number } }
   | { type: 'RECALL_CELL'; r: number; c: number }
   | { type: 'RECALL_ALL' }
   | { type: 'SHUFFLE_RACK' }
@@ -270,7 +271,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
 
     case 'PLACE_TILE': {
       if (state.phase !== 'play' || state.isGameOver) return state;
-      if (state.selectedTile === null) {
+      const idx = action.rackIndex ?? state.selectedTile;
+      if (idx === null || idx === undefined) {
         return { ...state, message: 'Önce bir harf seç.', messageType: '' };
       }
       const { r, c } = action;
@@ -290,14 +292,15 @@ export function gameReducer(state: GameState, action: Action): GameState {
         };
       }
 
-      const source = me.rack[state.selectedTile];
+      const source = me.rack[idx];
+      if (!source) return state;
       const tile: Tile = { ...source, owner: state.current };
       if (tile.letter === '?') {
         const wl = trUpper(action.wildLetter || 'A');
         tile.wild = true;
         tile.wildLetter = wl;
       }
-      const rack = me.rack.filter((_, i) => i !== state.selectedTile);
+      const rack = me.rack.filter((_, i) => i !== idx);
       return {
         ...state,
         placed: { ...state.placed, [k]: tile },
@@ -306,6 +309,24 @@ export function gameReducer(state: GameState, action: Action): GameState {
         message: 'Oyna tuşuyla kelimeyi onayla.',
         messageType: '',
       };
+    }
+
+    case 'MOVE_PLACED_TILE': {
+      if (state.phase !== 'play' || state.isGameOver) return state;
+      const fromKey = key(action.from.r, action.from.c);
+      const toKey = key(action.to.r, action.to.c);
+      const tile = state.placed[fromKey];
+      if (!tile || fromKey === toKey) return state;
+      if (state.board[action.to.r][action.to.c] || state.placed[toKey]) return state;
+
+      const me = state.players[state.current];
+      const open = computeBreachedCorners(state.board, state.players);
+      if (!cellAllowed(me.corners, open, action.to.r, action.to.c)) return state;
+
+      const placed = { ...state.placed };
+      delete placed[fromKey];
+      placed[toKey] = tile;
+      return { ...state, placed, selectedTile: null };
     }
 
     case 'RECALL_CELL': {

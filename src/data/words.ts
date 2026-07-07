@@ -2701,7 +2701,7 @@ export const WORD_LIST: readonly string[] = [
   "izleniş", "izlenme", "izlenmek", "izletebilme", "izletebilmek", "izletilme", "izletilmek", "izletiş", "izletme", "izletmek", "izlettirme", "izlettirmek", "izlev", "izleyebilme", "izleyebilmek", "izleyici",
   "izleyicilik", "izleyiş", "izlimermi", "izmarit", "izmaritgiller", "izmihlal", "izmir", "izmirli", "izmirlilik", "izmit", "iznik", "izninizle", "izobar", "izobareğrisi", "izohips", "izohipseğrisi",
   "izolasyon", "izolatör", "izole", "izolebant", "izoleetmek", "izomer", "izomeri", "izomerik", "izomerleşme", "izometri", "izomorf", "izomorfik", "izomorfizm", "izoterm", "izotermeğrisi", "izotop",
-  "izsürmek", "izzet", "izzetinefis", "izzetinefsinedokunmak", "izzetinefsineyedirememek", "izzetüikbal", "izzetüikram", "jaguar", "jakar", "jakarlı", "jakarta", "jaketatay", "jaketataylı", "jakoben", "jakobenizm", "jakuzi",
+  "izsürmek", "izzet", "izzetinefis", "izzetinefsinedokunmak", "izzetinefsineyedirememek", "izzetüikbal", "izzetüikram", "jaguar", "jak", "jakar", "jakarlı", "jakarta", "jaketatay", "jaketataylı", "jakoben", "jakobenizm", "jakuzi",
   "jakuzili", "jakuzisiz", "jale", "jaluzi", "jaluzili", "jaluzisiz", "jamaika", "jambon", "jambonluk", "jandarma", "jandarmakarakolu", "jandarmalık", "janjan", "janjanlı", "janr", "jant",
   "janti", "japon", "japonca", "japone", "japonya", "japonyalı", "jargon", "jarse", "jartiyer", "je", "jel", "jelatin", "jelatinleme", "jelatinlemek", "jelatinli", "jelatinsiz",
   "jelleşme", "jelleşmek", "jeloz", "jenerasyon", "jeneratör", "jenerik", "jenosit", "jeodezi", "jeodinamik", "jeofizik", "jeofizikçi", "jeokimya", "jeokimyacı", "jeolog", "jeoloji", "jeolojik",

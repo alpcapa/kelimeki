@@ -11,8 +11,10 @@ import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
-import { calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { cellAllowed, calcScore, computeBreachedCorners, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { getFormedWords, key } from './utils/board';
+import type { Tile as TileModel } from './game/types';
+import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, saveGame } from './lib/api';
@@ -21,6 +23,16 @@ import { useAuth } from './hooks/useAuth';
 import { AddToHomeScreen } from './components/AddToHomeScreen';
 
 const AI_THINK_MS = 1100;
+// Sürüklemenin "tıklama" değil gerçek bir sürükleme sayılması için gereken
+// minimum işaretçi hareketi (piksel).
+const DRAG_THRESHOLD = 6;
+// Sürüklenen taşın görseli, parmağın altında kalıp görüşü engellememesi için
+// işaretçinin bu kadar üzerinde çizilir.
+const DRAG_LIFT = 30;
+
+type DragSource =
+  | { kind: 'rack'; index: number; tile: TileModel }
+  | { kind: 'placed'; r: number; c: number; tile: TileModel };
 
 const MESSAGE_COLORS: Record<string, string> = {
   ok: 'text-green',
@@ -46,7 +58,9 @@ export default function App() {
   const [showHistory, setShowHistory] = useState(false);
 
   // Joker taş konurken hangi harfe dönüşeceğini seçme penceresi.
-  const [pendingWild, setPendingWild] = useState<{ r: number; c: number } | null>(null);
+  const [pendingWild, setPendingWild] = useState<
+    { r: number; c: number; rackIndex?: number } | null
+  >(null);
 
   // Oyundan çıkış onay popup'ı.
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -60,6 +74,40 @@ export default function App() {
   const [validating, setValidating] = useState(false);
   // Sunucu doğrulaması başarılıysa true; reducer'a skipWordCheck iletilir.
   const pendingSkipWordCheck = useRef(false);
+
+  // ── Taş sürükleme (fare + dokunmatik) ───────────────────────────────────
+  // Jest sırasında değişen anlık veri `dragRef`de tutulur (her pointer
+  // olayında render tetiklemeden okunup güncellenir); `ghost` yalnızca
+  // gerçek bir sürükleme başladığında (eşik aşılınca) set edilir ve
+  // sürüklenen taşın parmak/imleci takip eden görselini tetikler.
+  const dragRef = useRef<{
+    source: DragSource;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  } | null>(null);
+  const [ghost, setGhost] = useState<{
+    x: number;
+    y: number;
+    source: DragSource;
+    overKey: string | null;
+    overValid: boolean;
+  } | null>(null);
+  // Gerçek bir sürükleme bitişinin hemen ardından gelen "hayalet" click
+  // olayını yutmak için (bırakılan hücrenin altındaki onClick'i tetiklemesin).
+  const suppressClickRef = useRef(false);
+
+  useEffect(() => {
+    const swallow = (e: MouseEvent) => {
+      if (suppressClickRef.current) {
+        suppressClickRef.current = false;
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('click', swallow, true);
+    return () => document.removeEventListener('click', swallow, true);
+  }, []);
 
   const openMeaning = (words: string[]) => {
     const unique = [...new Set(words)];
@@ -187,6 +235,106 @@ export default function App() {
   const rackColor = PLAYER_COLORS[rackPlayer.colorIndex];
   const rackPlayerIndex = state.players.indexOf(rackPlayer);
 
+  // Raftan bir taş ya da tahtaya bu tur konmuş bir taş sürüklenmeye başlanır.
+  const beginDrag = (source: DragSource, e: React.PointerEvent) => {
+    if (!canAct || state.swapMode) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { source, startX: e.clientX, startY: e.clientY, moved: false };
+  };
+
+  // Bırakma hedefini (varsa) bulur: tahta hücresi ya da raf alanı.
+  const dropTargetsAt = (x: number, y: number) => {
+    const el = document.elementFromPoint(x, y);
+    const cellEl = el?.closest('[data-cell]') as HTMLElement | null;
+    const rackEl = el?.closest('[data-rack]') as HTMLElement | null;
+    return { cellEl, rackEl };
+  };
+
+  const isCellFreeFor = (source: DragSource, r: number, c: number) => {
+    if (source.kind === 'placed' && source.r === r && source.c === c) return false;
+    if (state.board[r][c] || state.placed[key(r, c)]) return false;
+    const open = computeBreachedCorners(state.board, state.players);
+    return cellAllowed(me.corners, open, r, c);
+  };
+
+  const moveDrag = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    if (!d.moved) {
+      const dist = Math.hypot(e.clientX - d.startX, e.clientY - d.startY);
+      if (dist < DRAG_THRESHOLD) return;
+      d.moved = true;
+    }
+    const { cellEl } = dropTargetsAt(e.clientX, e.clientY);
+    let overKey: string | null = null;
+    let overValid = false;
+    if (cellEl?.dataset.cell) {
+      const [r, c] = cellEl.dataset.cell.split(',').map(Number);
+      overKey = key(r, c);
+      overValid = isCellFreeFor(d.source, r, c);
+    }
+    setGhost({ x: e.clientX, y: e.clientY, source: d.source, overKey, overValid });
+  };
+
+  const endDrag = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    dragRef.current = null;
+    setGhost(null);
+    if (!d) return;
+    try {
+      (e.target as Element).releasePointerCapture?.(e.pointerId);
+    } catch {
+      // yakalama zaten bırakılmış olabilir — yok sayılır.
+    }
+
+    if (!d.moved) {
+      // Hareket yok: sıradan bir dokunuş/tık — eski davranış korunur.
+      if (d.source.kind === 'rack') {
+        dispatch({ type: 'SELECT_TILE', index: d.source.index });
+      } else {
+        dispatch({ type: 'RECALL_CELL', r: d.source.r, c: d.source.c });
+      }
+      return;
+    }
+
+    // Gerçek bir sürükleme oldu — bırakılan hücrenin altındaki "hayalet"
+    // click olayını yut (yoksa yanlışlıkla o hücrenin onClick'ini tetikler).
+    // Dokunmatikte belirgin hareketten sonra tarayıcı genelde hiç click
+    // üretmez, bu yüzden bayrak bir sonraki tick'te kendini temizler —
+    // aksi halde sonraki (ilgisiz) bir dokunuşu sessizce yutabilirdi.
+    suppressClickRef.current = true;
+    setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
+
+    const { cellEl, rackEl } = dropTargetsAt(e.clientX, e.clientY);
+    if (cellEl?.dataset.cell) {
+      const [r, c] = cellEl.dataset.cell.split(',').map(Number);
+      if (isCellFreeFor(d.source, r, c)) {
+        if (d.source.kind === 'rack') {
+          if (d.source.tile.letter === '?') {
+            setPendingWild({ r, c, rackIndex: d.source.index });
+          } else {
+            dispatch({ type: 'PLACE_TILE', r, c, rackIndex: d.source.index });
+          }
+        } else {
+          dispatch({
+            type: 'MOVE_PLACED_TILE',
+            from: { r: d.source.r, c: d.source.c },
+            to: { r, c },
+          });
+        }
+      }
+    } else if (rackEl && d.source.kind === 'placed') {
+      dispatch({ type: 'RECALL_CELL', r: d.source.r, c: d.source.c });
+    }
+  };
+
+  const cancelDrag = () => {
+    dragRef.current = null;
+    setGhost(null);
+  };
+
   const handleCellClick = (r: number, c: number) => {
     const k = key(r, c);
     // Son oynanan kelimenin harfine tıklanırsa anlamını göster. Aynı hamlede
@@ -202,10 +350,8 @@ export default function App() {
       return;
     }
     if (state.isGameOver || me.isAI || state.swapMode) return;
-    if (state.placed[k]) {
-      dispatch({ type: 'RECALL_CELL', r, c });
-      return;
-    }
+    // Bu tur konmuş bir taşın hücresi buraya hiç ulaşmaz — Board o hücreye
+    // onClick yerine sürükleme (basılı tut/bırak) olay dinleyicileri bağlar.
     if (state.board[r][c]) return;
 
     const sel = state.selectedTile !== null ? me.rack[state.selectedTile] : null;
@@ -289,6 +435,11 @@ export default function App() {
 
   const potentialScore = moveStatus?.score ?? 0;
 
+  const dragHiddenKey = ghost && ghost.source.kind === 'placed'
+    ? key(ghost.source.r, ghost.source.c)
+    : null;
+  const dragHiddenIndex = ghost && ghost.source.kind === 'rack' ? ghost.source.index : null;
+
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
       <GameHeader
@@ -301,6 +452,15 @@ export default function App() {
         onCellClick={handleCellClick}
         moveStatus={moveStatus}
         onOpenHistory={() => setShowHistory(true)}
+        dragHiddenKey={dragHiddenKey}
+        dragOverKey={ghost?.overKey ?? null}
+        dragOverValid={ghost?.overValid ?? false}
+        onTilePointerDown={(r, c, e) =>
+          beginDrag({ kind: 'placed', r, c, tile: state.placed[key(r, c)] }, e)
+        }
+        onTilePointerMove={moveDrag}
+        onTilePointerUp={endDrag}
+        onTilePointerCancel={cancelDrag}
       />
 
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
@@ -326,6 +486,14 @@ export default function App() {
               color={rackColor}
               swapMode={state.swapMode}
               swapSelection={state.swapSelection}
+              draggable={canAct}
+              dragHiddenIndex={dragHiddenIndex}
+              onTilePointerDown={(i, e) =>
+                beginDrag({ kind: 'rack', index: i, tile: rackPlayer.rack[i] }, e)
+              }
+              onTilePointerMove={moveDrag}
+              onTilePointerUp={endDrag}
+              onTilePointerCancel={cancelDrag}
             />
           </div>
           {!state.swapMode && (
@@ -483,11 +651,37 @@ export default function App() {
       {pendingWild && (
         <WildcardModal
           onSelect={(letter) => {
-            dispatch({ type: 'PLACE_TILE', r: pendingWild.r, c: pendingWild.c, wildLetter: letter });
+            dispatch({
+              type: 'PLACE_TILE',
+              r: pendingWild.r,
+              c: pendingWild.c,
+              wildLetter: letter,
+              rackIndex: pendingWild.rackIndex,
+            });
             setPendingWild(null);
           }}
           onClose={() => setPendingWild(null)}
         />
+      )}
+
+      {ghost && (
+        <div
+          className="fixed z-[300] pointer-events-none"
+          style={{
+            left: ghost.x,
+            top: ghost.y - DRAG_LIFT,
+            width: 46,
+            height: 46,
+            transform: 'translate(-50%, -50%) scale(1.1)',
+            filter: 'drop-shadow(0 10px 16px rgba(0,0,0,0.35))',
+          }}
+        >
+          <Tile
+            tile={ghost.source.tile}
+            variant={ghost.source.kind === 'rack' ? 'rack' : 'placed'}
+            color={ghost.source.kind === 'placed' ? PLAYER_COLORS[me.colorIndex] : undefined}
+          />
+        </div>
       )}
 
       <GameOver
