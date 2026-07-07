@@ -381,7 +381,13 @@ export default function App() {
     const placedCoords = Object.keys(state.placed).map(
       (k) => k.split(',').map(Number) as [number, number],
     );
-    const { shares } = computeInvasionSplit(placedCoords, me.corners, state.players, potentialScore);
+    const { shares } = computeInvasionSplit(
+      placedCoords,
+      state.current,
+      state.players,
+      potentialScore,
+      state.board,
+    );
     const invasion = shares.length > 0
       ? shares.map((s) => ({ ownerName: state.players[s.index].name, ownerPts: s.amount }))
       : null;
