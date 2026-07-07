@@ -1,12 +1,12 @@
 // Harfik — taş torbası
-import { TILE_DATA } from '../data/tiles';
+import { tileDataForPlayerCount } from '../data/tiles';
 import type { Tile } from '../game/types';
 import { shuffle } from './random';
 
-/** TILE_DATA dağılımına göre karıştırılmış torba oluşturur. */
-export function buildBag(): Tile[] {
+/** Oyuncu sayısına göre ölçeklenmiş dağılıma göre karıştırılmış torba oluşturur. */
+export function buildBag(playerCount: number): Tile[] {
   const b: Tile[] = [];
-  for (const [letter, { pts, cnt }] of Object.entries(TILE_DATA)) {
+  for (const [letter, { pts, cnt }] of Object.entries(tileDataForPlayerCount(playerCount))) {
     for (let i = 0; i < cnt; i++) b.push({ letter, pts });
   }
   return shuffle(b);
@@ -41,14 +41,17 @@ function tileKey(t: Tile): string {
 /**
  * "Dışarıda" kalan taşları döndürür: tüm dağılımdan tahtadaki taşlar ve
  * verilen rafftaki (bakan oyuncunun) taşlar çıkarılır. Sonuçta torbadaki
- * ve diğer oyuncuların elindeki (görünmeyen) taşlar kalır.
+ * ve diğer oyuncuların elindeki (görünmeyen) taşlar kalır. `playerCount`,
+ * bu oyunda kullanılan (ölçeklenmiş) dağılımı bulmak için gerekli.
  */
 export function remainingTiles(
   board: (Tile | null)[][],
   myRack: Tile[],
+  playerCount: number,
 ): RemainingLetter[] {
+  const data = tileDataForPlayerCount(playerCount);
   const counts: Record<string, number> = {};
-  for (const [letter, { cnt }] of Object.entries(TILE_DATA)) counts[letter] = cnt;
+  for (const [letter, { cnt }] of Object.entries(data)) counts[letter] = cnt;
 
   const dec = (t: Tile) => {
     const k = tileKey(t);
@@ -57,7 +60,7 @@ export function remainingTiles(
   for (const row of board) for (const cell of row) if (cell) dec(cell);
   for (const t of myRack) dec(t);
 
-  return Object.entries(TILE_DATA).map(([letter, { pts }]) => ({
+  return Object.entries(data).map(([letter, { pts }]) => ({
     letter,
     pts,
     count: Math.max(0, counts[letter]),

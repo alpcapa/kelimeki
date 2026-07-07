@@ -139,7 +139,7 @@ export function HelpModal({ onClose }: HelpModalProps) {
 
         <Section title="Joker (Yıldız) Taşı">
           <P>
-            Torbada 4 adet joker vardır. Joker taşı, oynandığında istediğin herhangi bir Türkçe
+            Torbada 2 adet joker vardır. Joker taşı, oynandığında istediğin herhangi bir Türkçe
             harfe dönüşebilir. Puan değeri <strong>0</strong>'dır; bonus kareler de jokere
             uygulanmaz.
           </P>
@@ -171,7 +171,11 @@ export function HelpModal({ onClose }: HelpModalProps) {
         </Section>
 
         <Section title="Puan Tablosu">
-          <P>Torbada toplam 100 taş bulunur.</P>
+          <P>
+            Torbada toplam 100 taş bulunur (2 kişilik oyun). Aşağıdaki dökümde adetler bu
+            değere göredir; 4 kişilik oyunda köşe etkileşimi daha çabuk yaşansın diye torba
+            %20 daha büyük (toplam 115 taş) kurulur, oranlar aynı kalır.
+          </P>
           <div className="flex flex-col gap-1 mt-0.5">
             <TileRow pts="1" tiles="A (×12)  E (×8)  İ (×7)  K (×7)  L (×7)  R (×6)  N (×5)  T (×5)" />
             <TileRow pts="2" tiles="I (×4)  M (×4)  O (×3)  S (×3)  U (×3)" />
