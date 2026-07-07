@@ -46,28 +46,3 @@ export const TILE_DATA: Readonly<Record<string, TileInfo>> = {
 export function letterPoints(letter: string): number {
   return TILE_DATA[letter]?.pts ?? 0;
 }
-
-/**
- * Oyuncu sayısına göre torba büyüklüğü çarpanı. 4 oyunculu oyunlarda taşlar
- * 2 oyunculuya göre orantılı olarak daha hızlı tükeniyor (raflarda sabit
- * 4×7=28 taş kilitli kalıyor) ve köşe sınırına hiç ulaşılamadan oyun
- * bitebiliyor; simülasyon 2 oyuncunun taş artışına çok daha hassas
- * (gerçek bitiş oranı %10 artışta bile çöküyor), 4 oyuncununsa %20 artışı
- * "gerçek bitiş" oranını makul ölçüde koruyarak (~%40) köşe etkileşimini
- * belirgin biçimde artırdığını (ort. 2.4 → 6.1 etkileşim/oyun) gösterdi.
- */
-export const BAG_SCALE_BY_PLAYER_COUNT: Readonly<Record<number, number>> = {
-  2: 1,
-  4: 1.2,
-};
-
-/** Verilen oyuncu sayısı için ölçeklenmiş harf dağılımını döndürür. */
-export function tileDataForPlayerCount(playerCount: number): Readonly<Record<string, TileInfo>> {
-  const scale = BAG_SCALE_BY_PLAYER_COUNT[playerCount] ?? 1;
-  if (scale === 1) return TILE_DATA;
-  const out: Record<string, TileInfo> = {};
-  for (const [letter, info] of Object.entries(TILE_DATA)) {
-    out[letter] = { pts: info.pts, cnt: Math.max(1, Math.round(info.cnt * scale)) };
-  }
-  return out;
-}
