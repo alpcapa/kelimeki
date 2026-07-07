@@ -204,11 +204,22 @@ export default function App() {
 
     return {
       valid: result.valid,
+      reason: result.reason,
       cells,
       score: calcScore(state.board, state.placed, state.bonuses),
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.placed, state.board, state.players, state.current]);
+
+  // Oyna'ya basmadan önce, geçersiz bir hamle varsa sebebini canlı olarak
+  // alttaki mesaj alanında göster — oyuncu Oyna'ya basmadan neden geçersiz
+  // olduğunu (köşe kuralı, sözlük vb.) hemen görsün.
+  const liveMessage = moveStatus && !moveStatus.valid && moveStatus.reason
+    ? moveStatus.reason
+    : state.message;
+  const liveMessageType = moveStatus && !moveStatus.valid && moveStatus.reason
+    ? 'err'
+    : state.messageType;
 
   // ── Kurulum ekranı ─────────────────────────────────────────────────────────
   if (state.phase === 'setup') {
@@ -460,10 +471,10 @@ export default function App() {
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
         <div
           className={`text-[11px] font-mono text-center min-h-[15px] py-0.5 ${
-            MESSAGE_COLORS[state.messageType]
+            MESSAGE_COLORS[liveMessageType]
           }`}
         >
-          {state.message}
+          {liveMessage}
         </div>
 
         <div className="flex gap-1.5 items-stretch">

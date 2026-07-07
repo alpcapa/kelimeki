@@ -143,6 +143,8 @@ export interface ValidationResult {
 export interface MoveStatus {
   /** Yerel sözlüğe göre şu anki yerleştirme geçerli mi? */
   valid: boolean;
+  /** Geçersizse, sebebi (köşe kuralı, sözlük vb.) — "Oyna"ya basmadan gösterilir. */
+  reason?: string;
   /** Oluşan tüm kelimelere ait hücreler (birleşik dış çerçeve için). */
   cells: [number, number][];
   /** Bu hamlenin (henüz oynanmamış) potansiyel puanı. */
