@@ -79,7 +79,7 @@ export function createInitialState(): GameState {
 function startGame(setup: PlayerSetup[]): GameState {
   const count = setup.length;
   const corners = cornersFor(count);
-  const bag = buildBag(count);
+  const bag = buildBag();
   const players: Player[] = setup.map((s, i) => ({
     name:
       s.name.trim() ||

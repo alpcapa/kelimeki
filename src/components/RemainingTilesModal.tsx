@@ -10,7 +10,7 @@ interface RemainingTilesModalProps {
 
 export function RemainingTilesModal({ state, onClose }: RemainingTilesModalProps) {
   const myRack = state.players[state.current]?.rack ?? [];
-  const rows = remainingTiles(state.board, myRack, state.players.length);
+  const rows = remainingTiles(state.board, myRack);
   const total = rows.reduce((s, r) => s + r.count, 0);
 
   return (
