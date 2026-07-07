@@ -144,6 +144,7 @@ export default function App() {
       ai_score: bestOpponentScore,
       result,
       turn_count: state.turnCount,
+      player_count: state.players.length,
       move_count: human.moveCount || null,
       best_move_score: human.bestMoveScore || null,
       best_word_score: human.bestWordScore || null,

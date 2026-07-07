@@ -22,6 +22,7 @@ export interface Game {
   ai_score: number;
   result: GameResult;
   turn_count: number;
+  player_count: number;
   move_count: number | null;
   best_word: string | null;
   best_move_score: number | null;
@@ -35,7 +36,7 @@ export interface Game {
 /** games tablosuna eklenecek yeni kayıt. */
 export type NewGame = Pick<
   Game,
-  'player_score' | 'ai_score' | 'result' | 'turn_count'
+  'player_score' | 'ai_score' | 'result' | 'turn_count' | 'player_count'
 > & {
   user_id?: string | null;
   move_count?: number | null;
@@ -73,6 +74,7 @@ export interface MyLeaderboardRank {
 
 export interface PlayerStats {
   user_id: string;
+  player_count: number;
   games_played: number;
   wins: number;
   losses: number;
