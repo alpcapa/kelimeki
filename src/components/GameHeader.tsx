@@ -13,17 +13,28 @@ export function GameHeader({ state, onLogoClick, onNewGame }: GameHeaderProps) {
   const { players, current, isGameOver } = state;
   return (
     <header className="w-full max-w-[680px] flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border">
-      <button
-        onClick={onLogoClick}
-        className="shrink-0 flex flex-col items-center leading-none active:opacity-70 transition-opacity"
-        style={{ fontFamily: "'Caveat', cursive", fontSize: 28, fontWeight: 700, color: '#2563EB', letterSpacing: 3 }}
-        aria-label="Oyundan çık"
-      >
-        harfik
-        <svg width="64" height="6" viewBox="0 0 64 6" fill="none">
-          <path d="M2 3 Q16 1 32 3 Q48 5 62 3" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" fill="none" />
-        </svg>
-      </button>
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          onClick={onLogoClick}
+          className="shrink-0 flex flex-col items-center leading-none active:opacity-70 transition-opacity"
+          style={{ fontFamily: "'Caveat', cursive", fontSize: 28, fontWeight: 700, color: '#2563EB', letterSpacing: 3 }}
+          aria-label="Oyundan çık"
+        >
+          harfik
+          <svg width="64" height="6" viewBox="0 0 64 6" fill="none">
+            <path d="M2 3 Q16 1 32 3 Q48 5 62 3" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" fill="none" />
+          </svg>
+        </button>
+
+        {isGameOver && onNewGame && (
+          <button
+            onClick={onNewGame}
+            className="shrink-0 bg-accent text-white rounded-md px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[1px] font-sans active:scale-95 transition-transform"
+          >
+            Yeni Oyun
+          </button>
+        )}
+      </div>
 
       <div className="flex gap-2 items-center flex-wrap justify-end">
         {players.map((p, i) => {
@@ -58,15 +69,6 @@ export function GameHeader({ state, onLogoClick, onNewGame }: GameHeaderProps) {
             </div>
           );
         })}
-
-        {isGameOver && onNewGame && (
-          <button
-            onClick={onNewGame}
-            className="shrink-0 bg-accent text-white rounded-md px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[1px] font-sans active:scale-95 transition-transform"
-          >
-            Yeni Oyun
-          </button>
-        )}
 
         <UserMenu />
       </div>
