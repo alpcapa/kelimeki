@@ -50,7 +50,7 @@ const CENTER_TEXT = 'text-[#7C2D12]';
 
 // Tahtanın hemen altında gösterilen bonus açıklaması.
 const LEGEND = [
-  { label: 'X2', desc: 'bölgedeki her kelime x2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
+  { label: 'X2', desc: 'bölgede yeni taş: kelime x2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
   { label: 'X3', desc: 'tam merkez: kelime x3',   bg: 'linear-gradient(135deg, #FDBA74, #F97316)', border: 'none' },
 ];
 
