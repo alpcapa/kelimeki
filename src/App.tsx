@@ -118,6 +118,19 @@ export default function App() {
     return () => document.removeEventListener('click', swallow, true);
   }, []);
 
+  // Bir taş sürüklemesi sürerken (raftan ya da tahtadan) dokunmatik
+  // tarayıcının sayfayı kaydırmasını engelle. `touch-action: none` çoğu
+  // durumda yeterli ama parmak hızlı hareket ettiğinde ya da pointer
+  // capture bazı tarayıcılarda güvenilmez olduğunda devreye girmeyebiliyor;
+  // bu, sürükleme sırasında kaydırmayı kesin olarak engelleyen bir yedek.
+  useEffect(() => {
+    const preventScrollWhileDragging = (e: TouchEvent) => {
+      if (dragRef.current) e.preventDefault();
+    };
+    document.addEventListener('touchmove', preventScrollWhileDragging, { passive: false });
+    return () => document.removeEventListener('touchmove', preventScrollWhileDragging);
+  }, []);
+
   const openMeaning = (words: string[]) => {
     const unique = [...new Set(words)];
     if (unique.length === 0) return;
