@@ -3,7 +3,7 @@
 // YZ, rafından heceleyebildiği kelimeler arasından, bölge kurallarına uyan
 // ve sözlükçe geçerli en yüksek puanlı hamleyi arar. İlk hamlesini kendi
 // köşesinden başlatır; sonra mevcut taşları çapa alarak yeni kelimeler kurar.
-import { SIZE, cornerBounds, inCorner } from '../game/constants';
+import { SIZE, cornerBounds, cornerCell } from '../game/constants';
 import type { AIMove, BonusType, Placement, Player, Tile } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { letterPoints } from '../data/tiles';
@@ -139,6 +139,7 @@ export function findAIMove(
   // ikinci köşeden başlama).
   const tryCornerStart = (homeCorner: number) => {
     const b = cornerBounds(homeCorner);
+    const [homeR, homeC] = cornerCell(homeCorner);
     for (let sr = b.r0; sr <= b.r1; sr++) {
       for (let sc = b.c0; sc <= b.c1; sc++) {
         for (const W of candidates) {
@@ -156,7 +157,7 @@ export function findAIMove(
                 ok = false;
                 break;
               }
-              if (inCorner(homeCorner, rr, cc)) touchesCorner = true;
+              if (rr === homeR && cc === homeC) touchesCorner = true;
               positions.push([rr, cc]);
             }
             if (!ok || !touchesCorner) continue;

@@ -4,6 +4,8 @@ import {
   CORNER,
   PLAYER_COLORS,
   SIZE,
+  cornerCell,
+  inBonusZone,
   type PlayerColor,
 } from '../game/constants';
 import type { GameState, MoveStatus } from '../game/types';
@@ -31,41 +33,33 @@ interface BoardProps {
   onTilePointerCancel?: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
-// Nömorfik bonus kareleri: sadece yazı rengi (arkaplan style ile verilir).
-const BONUS_CLASSES: Record<string, string> = {
-  dw: 'text-[#0D6B28]',
-  tw: 'text-[#8B4200]',
-  dl: 'text-[#0A3A90]',
-  tl: 'text-[#4A1A90]',
-};
-
-// Nömorfik bonus kareleri inline stilleri.
-const BONUS_STYLES: Record<string, React.CSSProperties> = {
-  dw: {
-    background: 'linear-gradient(135deg, #B8ECC8, #C8F0D4)',
-    boxShadow: 'inset 2px 2px 5px rgba(100,180,120,0.3), inset -1px -1px 3px rgba(255,255,255,0.8), 0 2px 4px rgba(100,180,120,0.2)',
-  },
-  tw: {
-    background: 'linear-gradient(135deg, #FAC890, #FBD8A8)',
-    boxShadow: 'inset 2px 2px 5px rgba(200,120,40,0.25), inset -1px -1px 3px rgba(255,255,255,0.8), 0 2px 4px rgba(200,120,40,0.15)',
-  },
-  dl: {
-    background: 'linear-gradient(135deg, #9EC8FA, #B0D4FC)',
-    boxShadow: 'inset 2px 2px 5px rgba(40,100,200,0.25), inset -1px -1px 3px rgba(255,255,255,0.8), 0 2px 4px rgba(40,100,200,0.15)',
-  },
-  tl: {
-    background: 'linear-gradient(135deg, #CEB4FA, #DCC8FC)',
-    boxShadow: 'inset 2px 2px 5px rgba(120,60,220,0.25), inset -1px -1px 3px rgba(255,255,255,0.8), 0 2px 4px rgba(120,60,220,0.15)',
-  },
+// Merkezdeki x2 bonus bölgesi (ve tam ortadaki K3 hücresi) altın rengi ve
+// yazısı — nömorfik, diğer köşe tonlarıyla karışmasın diye sıcak/altın.
+const GOLD_ZONE_TEXT = 'text-[#7A5900]';
+const GOLD_ZONE_STYLE: React.CSSProperties = {
+  background: 'linear-gradient(135deg, #FDE68A, #FBBF24)',
+  boxShadow: 'inset 2px 2px 5px rgba(180,130,10,0.3), inset -1px -1px 3px rgba(255,255,255,0.7), 0 2px 4px rgba(180,130,10,0.2)',
 };
 
 // Tahtanın hemen altında gösterilen bonus açıklaması.
 const LEGEND = [
-  { label: 'K2', desc: 'kelime x2', bg: 'linear-gradient(135deg, #B8ECC8, #C8F0D4)', border: 'none' },
-  { label: 'K3', desc: 'kelime x3', bg: 'linear-gradient(135deg, #FAC890, #FBD8A8)', border: 'none' },
-  { label: 'H2', desc: 'harf x2',   bg: 'linear-gradient(135deg, #9EC8FA, #B0D4FC)', border: 'none' },
-  { label: 'H3', desc: 'harf x3',   bg: 'linear-gradient(135deg, #CEB4FA, #DCC8FC)', border: 'none' },
+  { label: 'X2', desc: 'bölgedeki her kelime x2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
+  { label: 'K3', desc: 'tam merkez: kelime x3',   bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
 ];
+
+/** Bir oyuncunun ilk hamlesinde mutlaka değmesi gereken köşe hücresindeki ev işareti. */
+function HomeMark({ color }: { color: PlayerColor }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="w-[55%] h-[55%]"
+      style={{ opacity: 0.85 }}
+      fill={color.base}
+    >
+      <path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5Z" />
+    </svg>
+  );
+}
 
 export function Board({
   state,
@@ -104,8 +98,19 @@ export function Board({
     for (const corner of p.corners) cornerNumber[corner] = i + 1;
   });
 
-  // 5×5 köşenin tahtaya oranı (kenar uzunluğu).
+  // Köşe bölgesinin tahtaya oranı (kenar uzunluğu).
   const cornerFrac = `${(CORNER / SIZE) * 100}%`;
+
+  // Köşenin tam ucundaki tek başlangıç hücresi -> o köşenin sahibinin rengi.
+  // İlk hamle bu hücreye değmek zorunda olduğundan burada bir "ev" işareti
+  // gösterilir.
+  const homeCellColor = new Map<string, PlayerColor>();
+  players.forEach((p) => {
+    for (const corner of p.corners) {
+      const [hr, hc] = cornerCell(corner);
+      homeCellColor.set(key(hr, hc), PLAYER_COLORS[p.colorIndex]);
+    }
+  });
 
   const colorOf = (owner: number | undefined): PlayerColor | undefined =>
     owner === undefined ? undefined : PLAYER_COLORS[players[owner]?.colorIndex ?? 0];
@@ -113,7 +118,7 @@ export function Board({
   const currentColor = PLAYER_COLORS[players[current]?.colorIndex ?? 0];
 
   // Her oyuncunun bölgesi: kendi köşesi + oradan kendi taşlarıyla genişleyen
-  // alan. Sabit 5×5 köşenin aksine hamle oynandıkça büyür.
+  // alan. Sabit 4×4 köşenin aksine hamle oynandıkça büyür.
   const territories = computeAllTerritories(board, players);
   const territoryOwnerAt = (r: number, c: number): number => {
     const k = key(r, c);
@@ -133,8 +138,10 @@ export function Board({
       // Sürüklenmekte olan taş, alındığı hücrede boşmuş gibi çizilir (görsel olarak).
       const placedTile = k === dragHiddenKey ? undefined : rawPlacedTile;
       const bonus = bonuses[k];
+      const inZone = inBonusZone(r, c);
       const territoryOwner = territoryOwnerAt(r, c);
       const zone = territoryOwner >= 0 ? PLAYER_COLORS[players[territoryOwner]?.colorIndex ?? 0] : undefined;
+      const homeColor = homeCellColor.get(k);
 
       let content: React.ReactNode = null;
       let style: React.CSSProperties | undefined;
@@ -156,11 +163,12 @@ export function Board({
       } else if (placedTile) {
         classes.push('bg-transparent');
         content = <Tile tile={placedTile} variant="placed" color={currentColor} />;
-      } else if (bonus) {
-        classes.push(BONUS_CLASSES[bonus], 'cursor-pointer', 'text-[clamp(7px,1.9vw,12px)]');
-        content = BONUS_LABELS[bonus];
-        style = { ...BONUS_STYLES[bonus] };
-        if (zone) style = { ...style, outline: `1.5px solid ${zone.base}44` };
+      } else if (inZone) {
+        // Merkezdeki x2 bonus bölgesi — altın zemin. Tam ortadaki tek hücre
+        // ayrıca K3, geri kalanı X2 yazar.
+        classes.push(GOLD_ZONE_TEXT, 'cursor-pointer', 'text-[clamp(7px,1.9vw,12px)]');
+        content = bonus ? BONUS_LABELS[bonus] : 'X2';
+        style = { ...GOLD_ZONE_STYLE };
       } else if (zone) {
         // Bir oyuncunun köşesindeki boş kare: nömorfik içe gömülü + oyuncu tonu.
         classes.push('cursor-pointer');
@@ -172,6 +180,11 @@ export function Board({
         // Merkez (tarafsız) boş kare: nömorfik içe gömülü.
         classes.push('bg-[#DDE4EE] cursor-pointer');
         style = { boxShadow: 'inset 3px 3px 6px rgba(163,177,198,0.6), inset -2px -2px 5px rgba(255,255,255,0.8)' };
+      }
+
+      if (homeColor && !boardTile && !placedTile) {
+        // Oyuncunun mutlaka değmesi gereken başlangıç köşesi: ev işareti.
+        content = <HomeMark color={homeColor} />;
       }
 
       // Bu turda yerleştirilmiş (henüz oynanmamış) bir taş, tıklama yerine
@@ -314,7 +327,7 @@ export function Board({
             tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
         {moveOutline}
 
-        {/* Her oyuncunun 5×5 köşesine soluk numara filigranı. */}
+        {/* Her oyuncunun 4×4 köşesine soluk numara filigranı. */}
         <div className="pointer-events-none absolute inset-1">
           {[0, 1, 2, 3].map((i) => {
             const col = cornerColor[i];

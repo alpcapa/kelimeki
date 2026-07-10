@@ -68,13 +68,14 @@ export function HelpModal({ onClose }: HelpModalProps) {
 
         <Section title="Temel Kurallar">
           <P>
-            <strong>Başlangıç:</strong> Her oyuncu tahtanın köşelerindeki 5×5'lik bölgelere
-            sahiptir. 2 kişilik oyunda her oyuncu çapraz iki köşeye sahiptir (1. oyuncu sol-üst +
-            sağ-alt, 2. oyuncu sağ-üst + sol-alt), 4 kişilik oyunda her oyuncu tek bir köşe kullanır.
+            <strong>Başlangıç:</strong> Her oyuncu tahtanın köşelerindeki 4×4'lük bölgelere
+            sahiptir. 2 kişilik oyunda 1. oyuncu sol-üst, 2. oyuncu sağ-alt köşeyi kullanır; 4
+            kişilik oyunda her oyuncu tek bir köşe kullanır. Köşelerdeki ev işaretli kare, o
+            oyuncunun başlangıç noktasıdır.
           </P>
           <P>
-            <strong>İlk hamle:</strong> İlk kelimende en az bir harf kendi köşe bölgene
-            düşmelidir.
+            <strong>İlk hamle:</strong> İlk kelimen mutlaka kendi köşendeki ev işaretli kareye
+            değmelidir, oradan tahtanın ortasına doğru ilerlersin.
           </P>
           <P>
             <strong>Bağlantı:</strong> Her hamle, oyun tahtasındaki mevcut harflere yatay ya da
@@ -93,14 +94,17 @@ export function HelpModal({ onClose }: HelpModalProps) {
           </P>
         </Section>
 
-        <Section title="Bonus Kareler">
+        <Section title="Bonus Bölgesi">
           <div className="flex flex-col gap-1.5 mt-0.5">
-            <Pill label="K3" color="#DC2626" desc="Üç kat kelime puanı" />
-            <Pill label="K2" color="#D97706" desc="İki kat kelime puanı" />
-            <Pill label="H3" color="#2563EB" desc="Üç kat harf puanı" />
-            <Pill label="H2" color="#16A34A" desc="İki kat harf puanı" />
+            <Pill label="X2" color="#FBBF24" desc="Bölgeye giren her kelimenin puanı ikiye katlanır" />
+            <Pill label="K3" color="#FBBF24" desc="Tam merkezdeki tek kare: kelime puanı üçe katlanır" />
           </div>
-          <P>Bonuslar yalnızca o tura yeni konan taşa uygulanır.</P>
+          <P>
+            Tahtanın ortasındaki 5×5'lik altın bölgeye giren (bir harfi bu bölgeye düşen) her
+            kelimenin puanı x2 olur — bu, sadece oraya ilk gidene değil, bölgeye her uğrayan
+            kelimeye uygulanır. Tam merkezdeki tek kare ayrıca K3'tür (üç kat kelime), ama bu
+            yalnızca o kareye o tur yeni bir taş konursa uygulanır.
+          </P>
         </Section>
 
         <Section title="Hamle Seçenekleri">

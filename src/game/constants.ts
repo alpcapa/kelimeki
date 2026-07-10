@@ -4,8 +4,8 @@ import type { BonusType, CellKey } from './types';
 /** Tahta 13x13. */
 export const SIZE = 13;
 
-/** Köşe bölgelerinin kenar uzunluğu (5x5). */
-export const CORNER = 5;
+/** Köşe bölgelerinin kenar uzunluğu (4x4). */
+export const CORNER = 4;
 
 /** Tüm oyuncular üst üste bu kadar tur pas geçtiğinde oyun biter. */
 export const MAX_PASS_ROUNDS = 2;
@@ -26,12 +26,9 @@ export function jokerFinishBonus(jokerCount: number): number {
   return 0;
 }
 
-/** Bonus kare kısa etiketleri (K3 = üç kat kelime vb.). */
+/** Bonus kare kısa etiketi: K3 = üç kat kelime. */
 export const BONUS_LABELS: Record<BonusType, string> = {
   tw: 'K3',
-  dw: 'K2',
-  tl: 'H3',
-  dl: 'H2',
 };
 
 // ── Oyuncu renkleri ──────────────────────────────────────────────────────────
@@ -53,7 +50,7 @@ export const PLAYER_COLORS: PlayerColor[] = [
   { base: '#2563EB', tint: '#AABFFF', zone: '#EEF3FF', text: '#11317A' }, // mavi
   { base: '#DC2626', tint: '#FBDADA', zone: '#FDEFEF', text: '#7A1414' }, // kırmızı
   { base: '#16A34A', tint: '#D6F3E1', zone: '#EDFAF1', text: '#0B5128' }, // yeşil
-  { base: '#D97706', tint: '#FCEAD0', zone: '#FEF6EA', text: '#7A4408' }, // turuncu
+  { base: '#7C3AED', tint: '#DCC8FC', zone: '#F3ECFE', text: '#4A1A90' }, // mor
 ];
 
 // ── Köşe bölgeleri ───────────────────────────────────────────────────────────
@@ -92,56 +89,54 @@ export function inCorner(corner: number, r: number, c: number): boolean {
 }
 
 /**
+ * Bir köşe bölgesinin en uç (tek) hücresi — oyuncunun ilk hamlesinde mutlaka
+ * değmesi gereken başlangıç noktası. Görsel olarak burada bir "ev" işareti
+ * gösterilir.
+ */
+export function cornerCell(corner: number): [number, number] {
+  const b = cornerBounds(corner);
+  const top = corner === 0 || corner === 1;
+  const left = corner === 0 || corner === 2;
+  return [top ? b.r0 : b.r1, left ? b.c0 : b.c1];
+}
+
+/**
  * Oyuncu sayısına göre köşe ataması (her oyuncunun sahip olduğu köşe indeksleri).
- *  - 2 oyuncu: dört köşe de kullanılır, her oyuncu kendi çapraz köşe çiftine
- *    sahip olur — 1. oyuncu sol-üst + sağ-alt (0, 3), 2. oyuncu sağ-üst +
- *    sol-alt (1, 2). Böylece köşeler çapraz (X) desende paylaşılır, boş köşe
- *    kalmaz.
+ *  - 2 oyuncu: her oyuncu tek bir köşeye sahip olur — 1. oyuncu sol-üst (0),
+ *    2. oyuncu sağ-alt (3).
  *  - 4 oyuncu: her oyuncu tek bir köşeye sahip olur.
  */
 export function cornersFor(playerCount: number): number[][] {
-  return playerCount === 2 ? [[0, 3], [1, 2]] : [[0], [1], [2], [3]];
+  return playerCount === 2 ? [[0], [3]] : [[0], [1], [2], [3]];
 }
 
-// ── Başlangıç bonus yerleşimi ────────────────────────────────────────────────
-// Her bonus türü tek bir "tohum" hücreden, tahtanın 8 simetri işlemiyle
-// (yatay ayna, dikey ayna, transpoze — ve bunların bileşimleri) türetilir.
-// Bu yöntem sayesinde aynı türden iki hücre asla rastlantısal biçimde aynı
-// satır/sütunu paylaşmaz: paylaşım varsa tohumun kendisiyle simetriği
-// arasındadır ve mesafesi bilinçli seçilmiştir.
-//   K2/K3 (kelime çarpanı): aynı satır/sütunda en az 8 hücre mesafe — bir
-//   kelimenin iki kelime çarpanına birden basıp puanı 4-9 kat katlaması
-//   neredeyse imkânsız.
-//   H2/H3 (harf çarpanı): daha sık ama K2/K3'ten uzak durur; en kötü
-//   çakışma iki harf çarpanı arasında (katkısı çarpımsal değil, düşük risk).
-// Merkez (6,6), dört tahta köşesi ve dört kenar orta noktası ([6,0], [6,12],
-// [0,6], [12,6]) K3'tür. Kenar ortası ile merkez arası mesafe sadece 6 —
-// tam 7 taşlık bir bingo ikisine birden basıp puanı 9 kat katlayabilir;
-// bu, klasik Scrabble düzenine sadakat için bilinçli kabul edilmiş bir
-// istisnadır (kuralın geri kalanı hâlâ en az 8 hücre şartını korur).
-const TW: [number, number][] = [
-  [6, 6], [0, 0], [0, 12], [12, 0], [12, 12],
-  [6, 0], [6, 12], [0, 6], [12, 6],
-];
-const DW: [number, number][] = [
-  [2, 1], [2, 11], [10, 1], [10, 11],
-  [1, 2], [1, 10], [11, 2], [11, 10],
-  [5, 5], [7, 7],
-];
-const TL: [number, number][] = [
-  [4, 3], [4, 9], [8, 3], [8, 9],
-  [3, 4], [3, 8], [9, 4], [9, 8],
-];
-const DL: [number, number][] = [
-  [5, 10], [7, 2],
-  [2, 7], [10, 5],
-];
+// ── Merkez bonus bölgesi ─────────────────────────────────────────────────────
+// Köşeler (CORNER×CORNER) küçülünce ortada kalan CORNER genişliğindeki şerit
+// otomatik olarak (SIZE - 2*CORNER) kenar uzunluğunda bir kare olur — 13 ve
+// CORNER=4 için 5×5. Bu alana giren her kelimenin puanı ikiye katlanır (bir
+// klasik bonus karesinin aksine, alanı ilk kullanan değil, oraya her uğrayan
+// kelime bundan faydalanır). Alanın tam ortası (tek hücre) ayrıca K3 (üç kat
+// kelime) olarak işaretlidir.
+export const BONUS_ZONE = {
+  r0: CORNER,
+  r1: SIZE - CORNER - 1,
+  c0: CORNER,
+  c1: SIZE - CORNER - 1,
+};
 
+/** Verilen hücre, merkezdeki x2 bonus bölgesinin içinde mi? */
+export function inBonusZone(r: number, c: number): boolean {
+  return r >= BONUS_ZONE.r0 && r <= BONUS_ZONE.r1 && c >= BONUS_ZONE.c0 && c <= BONUS_ZONE.c1;
+}
+
+/** Tahtanın tam merkezi — bonus bölgesinin tek K3 hücresi. */
+export const BOARD_CENTER: [number, number] = [Math.floor(SIZE / 2), Math.floor(SIZE / 2)];
+
+// ── Başlangıç bonus yerleşimi ────────────────────────────────────────────────
+// Tüm klasik bonus kareleri kaldırıldı; tek istisna tahtanın tam ortası, o da
+// hâlâ K3 (üç kat kelime) olarak işaretli — geri kalan puan katlaması artık
+// `inBonusZone` ile ayrıca uygulanan x2 bölge bonusundan gelir (bkz. yukarı).
 export function buildInitialBonuses(): Record<CellKey, BonusType> {
-  const b: Record<CellKey, BonusType> = {};
-  TW.forEach(([r, c]) => (b[`${r},${c}`] = 'tw'));
-  TL.forEach(([r, c]) => (b[`${r},${c}`] = 'tl'));
-  DL.forEach(([r, c]) => (b[`${r},${c}`] = 'dl'));
-  DW.forEach(([r, c]) => (b[`${r},${c}`] = 'dw'));
-  return b;
+  const [r, c] = BOARD_CENTER;
+  return { [`${r},${c}`]: 'tw' };
 }

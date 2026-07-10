@@ -1,5 +1,5 @@
 // Harfik — kelime doğrulama, bölge kuralları ve puanlama
-import { BINGO_BONUS, SIZE, cornerBounds, inCorner } from '../game/constants';
+import { BINGO_BONUS, SIZE, cornerBounds, cornerCell, inBonusZone } from '../game/constants';
 import type { BonusType, Player, ValidationResult } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { trLower } from './turkish';
@@ -28,9 +28,10 @@ export function canSpell(word: string, rack: string[]): boolean {
 
 /**
  * Oyuncunun sahip olduğu köşelerden, henüz hiç kendi taşının bulunmadığı
- * ("taze") olanları döner. 2 oyunculu oyunda her oyuncunun iki köşesi
- * olduğundan, bir köşeden kelimeye başladıktan sonra diğer (taze) köşesinden
- * de bağımsız bir kelimeyle başlayabilmesi için kullanılır.
+ * ("taze") olanları döner. Her oyuncunun tek bir köşesi olduğundan, bu
+ * yalnızca ilk hamleden önce (o köşe hâlâ boşken) doludur; bir kez
+ * oynandıktan sonra oyuncunun tüm sonraki kelimeleri mevcut taşlara
+ * bağlanmak zorundadır.
  */
 export function freshCorners(board: Board, ownCorners: number[], owner: number): number[] {
   return ownCorners.filter((corner) => {
@@ -95,12 +96,15 @@ export function validatePlacementStructural(
 
   const fresh = freshCorners(board, ownCorners, owner);
   const startsFreshCorner = coords.some(([r, c]) =>
-    fresh.some((corner) => inCorner(corner, r, c)),
+    fresh.some((corner) => {
+      const [cr, cc] = cornerCell(corner);
+      return r === cr && c === cc;
+    }),
   );
 
   if (isFirstMove) {
     if (!startsFreshCorner) {
-      return { valid: false, reason: 'İlk kelimen kendi köşenden başlamalı.' };
+      return { valid: false, reason: 'İlk kelimen kendi köşe karesine değmeli.' };
     }
   } else {
     const connects = coords.some(([r, c]) =>
@@ -246,7 +250,14 @@ export function computeInvasionSplit(
   return { pts, shares };
 }
 
-/** Tek bir kelimenin (harf/kelime çarpanları dahil) puanını hesaplar. */
+/**
+ * Tek bir kelimenin puanını hesaplar. Tahtanın tam ortasındaki tek K3
+ * hücresine bu turda yeni bir taş konursa kelime puanı üçe katlanır (klasik
+ * bonus kare gibi — yalnızca yeni taşta). Ayrıca kelimenin herhangi bir
+ * hücresi (yeni ya da önceden tahtada duran) merkezdeki 5×5 bonus bölgesine
+ * düşüyorsa puan ayrıca ikiye katlanır — bu, alanı yalnızca ilk kullanana
+ * değil, oraya her uğrayan kelimeye uygulanır.
+ */
 function wordPoints(
   coords: [number, number][],
   board: Board,
@@ -255,23 +266,16 @@ function wordPoints(
 ): number {
   let sum = 0;
   let wordMult = 1;
+  let touchesZone = false;
   for (const [r, c] of coords) {
     const k = key(r, c);
     const newTile = placed[k];
     const pts = newTile?.pts ?? board[r][c]?.pts ?? 0;
-    const b = newTile ? bonuses[k] : undefined; // bonus yalnızca yeni taşta
-    if (b === 'dl') sum += pts * 2;
-    else if (b === 'tl') sum += pts * 3;
-    else if (b === 'dw') {
-      wordMult *= 2;
-      sum += pts;
-    } else if (b === 'tw') {
-      wordMult *= 3;
-      sum += pts;
-    } else {
-      sum += pts;
-    }
+    if (newTile && bonuses[k] === 'tw') wordMult *= 3;
+    sum += pts;
+    if (inBonusZone(r, c)) touchesZone = true;
   }
+  if (touchesZone) wordMult *= 2;
   return sum * wordMult;
 }
 
