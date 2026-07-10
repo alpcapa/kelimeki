@@ -17,6 +17,10 @@ export function MoveHistoryModal({ state, playerIndex, onClose }: MoveHistoryMod
     : state.moveHistory.filter((e) => e.player === playerIndex);
   const total = entries.reduce((s, e) => s + e.points, 0);
   const scoringMoveCount = entries.filter((e) => !e.action).length;
+  // "Oyun Geçmişi"nde vergi geliri satırı ayrı bir kart olarak gösterilmez:
+  // aynı hamle zaten hamleyi yapanın kendi satırında (kelime + net puan +
+  // kaptırılan pay notu) tam olarak anlatılıyor, ikinci satır sadece tekrar olur.
+  const displayEntries = allPlayers ? entries.filter((e) => e.invasionFrom === undefined) : entries;
 
   return (
     <Modal title={allPlayers ? 'Oyun Geçmişi' : 'Hamle Geçmişi'} onClose={onClose}>
@@ -25,13 +29,13 @@ export function MoveHistoryModal({ state, playerIndex, onClose }: MoveHistoryMod
         puanları. Toplam <span className="font-bold text-accent text-[15px]">{total}</span> puan.
       </p>
 
-      {entries.length === 0 ? (
+      {displayEntries.length === 0 ? (
         <p className="text-[11px] font-mono text-muted text-center py-4">
           Henüz kazanılmış bir puan yok.
         </p>
       ) : (
         <div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
-          {[...entries].reverse().map((e, i) => {
+          {[...displayEntries].reverse().map((e, i) => {
             const isInvasion = e.invasionFrom !== undefined;
             // Vergi geliri satırında (isInvasion) başlıkta hamleyi yapan
             // (invasionFrom) gösterilir — puanı asıl `e.player` kazanmış olsa
