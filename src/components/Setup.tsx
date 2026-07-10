@@ -1,8 +1,10 @@
 // Harfik — oyun kurulum ekranı: oyuncu sayısı (2/4), isimler ve YZ seçimi
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
 import { useAuth } from '../hooks/useAuth';
+import { fetchPlayerStats } from '../lib/api';
+import type { PlayerStats } from '../lib/database.types';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
@@ -27,6 +29,21 @@ export function Setup({ onStart }: SetupProps) {
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+
+  const [accountStats, setAccountStats] = useState<PlayerStats | null | undefined>(undefined);
+  useEffect(() => {
+    if (!user) {
+      setAccountStats(undefined);
+      return;
+    }
+    let cancelled = false;
+    fetchPlayerStats(count).then((s) => {
+      if (!cancelled) setAccountStats(s);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, count]);
 
   const setName = (i: number, v: string) =>
     setNames((cur) => cur.map((n, idx) => (idx === i ? v : n)));
@@ -171,6 +188,9 @@ export function Setup({ onStart }: SetupProps) {
               {isAccount ? (
                 <span className="flex-1 min-w-0 font-sans text-sm font-bold text-text truncate">
                   {accountName}
+                  {accountStats && (
+                    <span className="font-mono font-normal text-muted"> ({accountStats.total_score})</span>
+                  )}
                 </span>
               ) : (
                 <input
