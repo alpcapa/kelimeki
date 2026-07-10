@@ -113,10 +113,11 @@ export function cornersFor(playerCount: number): number[][] {
 // ── Merkez bonus bölgesi ─────────────────────────────────────────────────────
 // Köşeler (CORNER×CORNER) küçülünce ortada kalan CORNER genişliğindeki şerit
 // otomatik olarak (SIZE - 2*CORNER) kenar uzunluğunda bir kare olur — 13 ve
-// CORNER=4 için 5×5. Bu alana giren her kelimenin puanı ikiye katlanır (bir
-// klasik bonus karesinin aksine, alanı ilk kullanan değil, oraya her uğrayan
-// kelime bundan faydalanır). Alanın tam ortası (tek hücre) ayrıca X3 (üç kat
-// kelime) olarak işaretlidir.
+// CORNER=4 için 5×5. Bu alandaki bir hücreye bu turda yeni bir taş konursa o
+// kelimenin puanı ikiye katlanır — klasik bonus kare gibi, yalnızca hücre ilk
+// kullanıldığında; sonraki turlarda o hücredeki (artık eski) taşa bağlanan
+// kelimeler x2 almaz. Alanın tam ortası (tek hücre) ayrıca X3 (üç kat kelime)
+// olarak işaretlidir.
 export const BONUS_ZONE = {
   r0: CORNER,
   r1: SIZE - CORNER - 1,

@@ -256,10 +256,12 @@ export function computeInvasionSplit(
 /**
  * Tek bir kelimenin puanını hesaplar. Tahtanın tam ortasındaki tek X3
  * hücresine bu turda yeni bir taş konursa kelime puanı üçe katlanır (klasik
- * bonus kare gibi — yalnızca yeni taşta). Ayrıca kelimenin herhangi bir
- * hücresi (yeni ya da önceden tahtada duran) merkezdeki 5×5 bonus bölgesine
- * düşüyorsa puan ayrıca ikiye katlanır — bu, alanı yalnızca ilk kullanana
- * değil, oraya her uğrayan kelimeye uygulanır.
+ * bonus kare gibi — yalnızca yeni taşta). Aynı şekilde, kelimenin bu turda
+ * yeni konan bir taşı merkezdeki 5×5 bonus bölgesine düşüyorsa puan ayrıca
+ * ikiye katlanır — ama yalnızca o hücreye yeni taş konduğu turda. Önceden
+ * tahtada duran bir taşla (o taş daha önceki bir turda oraya konmuş olsa
+ * bile) sadece bağlantı kurmak x2 kazandırmaz; her bonus hücresi klasik
+ * bonus kare gibi yalnızca bir kez, ilk kullanıldığı turda etkilidir.
  */
 function wordPoints(
   coords: [number, number][],
@@ -276,7 +278,7 @@ function wordPoints(
     const pts = newTile?.pts ?? board[r][c]?.pts ?? 0;
     if (newTile && bonuses[k] === 'tw') wordMult *= 3;
     sum += pts;
-    if (inBonusZone(r, c)) touchesZone = true;
+    if (newTile && inBonusZone(r, c)) touchesZone = true;
   }
   if (touchesZone) wordMult *= 2;
   return sum * wordMult;

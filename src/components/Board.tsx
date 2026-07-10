@@ -50,7 +50,7 @@ const CENTER_TEXT = 'text-[#7C2D12]';
 
 // Tahtanın hemen altında gösterilen bonus açıklaması.
 const LEGEND = [
-  { label: 'X2', desc: 'bölgedeki her kelime x2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
+  { label: 'X2', desc: 'bölgede yeni taş: kelime x2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
   { label: 'X3', desc: 'tam merkez: kelime x3',   bg: 'linear-gradient(135deg, #FDBA74, #F97316)', border: 'none' },
 ];
 
@@ -168,11 +168,7 @@ export function Board({
       const isLastWord = !!lastWords[k];
 
       if (boardTile) {
-        classes.push(
-          isLastWord
-            ? 'bg-transparent cursor-pointer rounded-[5px] ring-2 ring-gold/60'
-            : 'bg-transparent cursor-default',
-        );
+        classes.push(isLastWord ? 'bg-transparent cursor-pointer' : 'bg-transparent cursor-default');
         content = <Tile tile={boardTile} variant="board" color={colorOf(boardTile.owner)} />;
       } else if (placedTile) {
         classes.push('bg-transparent');
@@ -257,10 +253,12 @@ export function Board({
   ): React.ReactNode[] => {
     const uniqueCells = [...new Map(cellsList.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
     const cellSet = new Set(uniqueCells.map(([r, c]) => key(r, c)));
+    // Rozet en üst-soldaki hücreye konur (tahtaya konan taşın kendi puan
+    // üst simgesiyle çakışmaması için sağ üst yerine sol üst köşede).
     let badge: [number, number] | null = null;
     if (badgeScore !== undefined) {
       for (const [r, c] of uniqueCells) {
-        if (!badge || r < badge[0] || (r === badge[0] && c > badge[1])) badge = [r, c];
+        if (!badge || r < badge[0] || (r === badge[0] && c < badge[1])) badge = [r, c];
       }
     }
     return uniqueCells.map(([r, c]) => {
@@ -292,7 +290,7 @@ export function Board({
         >
           {badge && badge[0] === r && badge[1] === c && (
             <span
-              className="absolute -top-[9px] -right-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
+              className="absolute -top-[9px] -left-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
               style={{
                 background: color,
                 fontSize: 'clamp(8px,2vw,11px)',
