@@ -97,12 +97,12 @@ export function HelpModal({ onClose }: HelpModalProps) {
         <Section title="Bonus Bölgesi">
           <div className="flex flex-col gap-1.5 mt-0.5">
             <Pill label="X2" color="#FBBF24" desc="Bölgeye giren her kelimenin puanı ikiye katlanır" />
-            <Pill label="X3" color="#9A1B3F" desc="Tam merkezdeki tek kare: kelime puanı üçe katlanır" />
+            <Pill label="X3" color="#F97316" desc="Tam merkezdeki tek kare: kelime puanı üçe katlanır" />
           </div>
           <P>
             Tahtanın ortasındaki 5×5'lik altın bölgeye giren (bir harfi bu bölgeye düşen) her
             kelimenin puanı x2 olur — bu, sadece oraya ilk gidene değil, bölgeye her uğrayan
-            kelimeye uygulanır. Tam merkezdeki tek kare farklı renkli X3 etiketini taşır (üç kat
+            kelimeye uygulanır. Tam merkezdeki tek kare turuncu zeminli X3 etiketini taşır (üç kat
             kelime), ama bu yalnızca o kareye o tur yeni bir taş konursa uygulanır.
           </P>
         </Section>

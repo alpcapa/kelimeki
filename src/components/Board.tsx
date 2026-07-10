@@ -35,18 +35,22 @@ interface BoardProps {
 }
 
 // Merkezdeki x2 bonus bölgesi altın rengi — nömorfik, diğer köşe tonlarıyla
-// karışmasın diye sıcak/altın. Tam ortadaki tek X3 hücresi farklı (bordo) bir
-// renkle öne çıkar.
+// karışmasın diye sıcak/altın. Tam ortadaki tek X3 hücresi turuncu bir zeminle
+// öne çıkar.
 const GOLD_ZONE_STYLE: React.CSSProperties = {
   background: 'linear-gradient(135deg, #FDE68A, #FBBF24)',
   boxShadow: 'inset 2px 2px 5px rgba(180,130,10,0.3), inset -1px -1px 3px rgba(255,255,255,0.7), 0 2px 4px rgba(180,130,10,0.2)',
 };
-const CENTER_TEXT = 'text-[#9A1B3F]';
+const CENTER_ZONE_STYLE: React.CSSProperties = {
+  background: 'linear-gradient(135deg, #FDBA74, #F97316)',
+  boxShadow: 'inset 2px 2px 5px rgba(180,80,10,0.35), inset -1px -1px 3px rgba(255,255,255,0.7), 0 2px 4px rgba(180,80,10,0.25)',
+};
+const CENTER_TEXT = 'text-[#7C2D12]';
 
 // Tahtanın hemen altında gösterilen bonus açıklaması.
 const LEGEND = [
   { label: 'X2', desc: 'bölgedeki her kelime x2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
-  { label: 'X3', desc: 'tam merkez: kelime x3',   bg: '#9A1B3F', border: 'none' },
+  { label: 'X3', desc: 'tam merkez: kelime x3',   bg: 'linear-gradient(135deg, #FDBA74, #F97316)', border: 'none' },
 ];
 
 /** Bir oyuncunun ilk hamlesinde mutlaka değmesi gereken köşe hücresindeki ev işareti. */
@@ -175,9 +179,9 @@ export function Board({
       } else if (inZone) {
         // Merkezdeki x2 bonus bölgesi — altın zemin, büyük "X2" filigranı
         // bölgenin tamamının arkasına yazılır (aşağıda). Tam ortadaki tek
-        // hücre bunun dışında, kendi X3 etiketini farklı bir renkle taşır.
+        // hücre bunun dışında, turuncu zemin + kendi X3 etiketiyle öne çıkar.
         classes.push('cursor-pointer');
-        style = { ...GOLD_ZONE_STYLE };
+        style = bonus ? { ...CENTER_ZONE_STYLE } : { ...GOLD_ZONE_STYLE };
         if (bonus) {
           classes.push(CENTER_TEXT, 'text-[clamp(7px,1.9vw,12px)]');
           content = BONUS_LABELS[bonus];
