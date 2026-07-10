@@ -6,11 +6,10 @@ import { UserMenu } from './UserMenu';
 interface GameHeaderProps {
   state: GameState;
   onLogoClick?: () => void;
-  onNewGame?: () => void;
 }
 
-export function GameHeader({ state, onLogoClick, onNewGame }: GameHeaderProps) {
-  const { players, current, isGameOver } = state;
+export function GameHeader({ state, onLogoClick }: GameHeaderProps) {
+  const { players, current } = state;
   return (
     <header className="w-full max-w-[680px] flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border">
       <button
@@ -26,16 +25,6 @@ export function GameHeader({ state, onLogoClick, onNewGame }: GameHeaderProps) {
       </button>
 
       <div className="flex gap-2 items-center flex-wrap justify-end">
-        {isGameOver && onNewGame && (
-          <button
-            onClick={onNewGame}
-            className="shrink-0 rounded-md px-2 py-1 bg-accent text-white text-center active:scale-95 transition-transform"
-          >
-            <div className="text-[8px] uppercase tracking-[1px] font-mono leading-none">Yeni</div>
-            <div className="text-sm font-mono font-bold leading-none uppercase mt-0.5">Oyun</div>
-          </button>
-        )}
-
         {players.map((p, i) => {
           const col = PLAYER_COLORS[p.colorIndex];
           const active = i === current;

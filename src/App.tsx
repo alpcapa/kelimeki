@@ -54,11 +54,9 @@ export default function App() {
   // Torba (kalan taşlar) penceresi.
   const [showTiles, setShowTiles] = useState(false);
 
-  // Hamle geçmişi penceresi.
+  // Oyun geçmişi penceresi (tüm oyuncuların hamleleri) — hem oynarken
+  // Board'daki linkten, hem oyun bitince GameOver ekranından açılabilir.
   const [showHistory, setShowHistory] = useState(false);
-
-  // Oyun sonu ekranındaki tüm oyunculara ait hamle geçmişi penceresi.
-  const [showAllHistory, setShowAllHistory] = useState(false);
 
   // Oyun sonu ekranı kapatıldı mı (X'e basıldı mı) — board'u görmek için.
   const [gameOverDismissed, setGameOverDismissed] = useState(false);
@@ -116,6 +114,19 @@ export default function App() {
     };
     document.addEventListener('click', swallow, true);
     return () => document.removeEventListener('click', swallow, true);
+  }, []);
+
+  // Bir taş sürüklemesi sürerken (raftan ya da tahtadan) dokunmatik
+  // tarayıcının sayfayı kaydırmasını engelle. `touch-action: none` çoğu
+  // durumda yeterli ama parmak hızlı hareket ettiğinde ya da pointer
+  // capture bazı tarayıcılarda güvenilmez olduğunda devreye girmeyebiliyor;
+  // bu, sürükleme sırasında kaydırmayı kesin olarak engelleyen bir yedek.
+  useEffect(() => {
+    const preventScrollWhileDragging = (e: TouchEvent) => {
+      if (dragRef.current) e.preventDefault();
+    };
+    document.addEventListener('touchmove', preventScrollWhileDragging, { passive: false });
+    return () => document.removeEventListener('touchmove', preventScrollWhileDragging);
   }, []);
 
   const openMeaning = (words: string[]) => {
@@ -260,7 +271,6 @@ export default function App() {
   // asla gösterilmez, bunun yerine ilk insan oyuncuya düşülür.
   const rackPlayer = me.isAI ? (state.players.find((p) => !p.isAI) ?? me) : me;
   const rackColor = PLAYER_COLORS[rackPlayer.colorIndex];
-  const rackPlayerIndex = state.players.indexOf(rackPlayer);
 
   // Raftan bir taş ya da tahtaya bu tur konmuş bir taş sürüklenmeye başlanır.
   const beginDrag = (source: DragSource, e: React.PointerEvent) => {
@@ -474,7 +484,6 @@ export default function App() {
       <GameHeader
         state={state}
         onLogoClick={() => setShowExitConfirm(true)}
-        onNewGame={() => dispatch({ type: 'INIT' })}
       />
 
       <Board
@@ -527,13 +536,22 @@ export default function App() {
             />
           </div>
           {!state.swapMode && (
-            <button
-              disabled={!canAct || validating}
-              onClick={() => { void handlePlay(); }}
-              className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
-            >
-              {validating ? 'Kontrol…' : 'Oyna'}
-            </button>
+            state.isGameOver ? (
+              <button
+                onClick={() => dispatch({ type: 'INIT' })}
+                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform"
+              >
+                Yeni Oyun Aç
+              </button>
+            ) : (
+              <button
+                disabled={!canAct || validating}
+                onClick={() => { void handlePlay(); }}
+                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              >
+                {validating ? 'Kontrol…' : 'Oyna'}
+              </button>
+            )
           )}
         </div>
 
@@ -635,7 +653,9 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              {'Bu oyundan çıkmak istediğine emin misin? Oyun kaydedilmez ve mevcut ilerleme silinir.'}
+              {state.isGameOver
+                ? 'Anasayfaya dönmek istediğinden emin misin?'
+                : 'Bu oyundan çıkmak istediğine emin misin? Oyun kaydedilmez ve mevcut ilerleme silinir.'}
             </p>
             <div className="flex gap-2 mt-1">
               <button
@@ -664,15 +684,7 @@ export default function App() {
       )}
 
       {showHistory && (
-        <MoveHistoryModal
-          state={state}
-          playerIndex={rackPlayerIndex}
-          onClose={() => setShowHistory(false)}
-        />
-      )}
-
-      {showAllHistory && (
-        <MoveHistoryModal state={state} onClose={() => setShowAllHistory(false)} />
+        <MoveHistoryModal state={state} onClose={() => setShowHistory(false)} />
       )}
 
       {pendingWild && (
@@ -715,7 +727,7 @@ export default function App() {
         show={state.isGameOver && !gameOverDismissed}
         players={state.players}
         turnCount={state.turnCount}
-        onOpenHistory={() => setShowAllHistory(true)}
+        onOpenHistory={() => setShowHistory(true)}
         onClose={() => setGameOverDismissed(true)}
       />
     </div>

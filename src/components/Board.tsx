@@ -20,7 +20,7 @@ interface BoardProps {
   onCellClick: (r: number, c: number) => void;
   /** Oyna'ya basmadan önceki anlık geçerlilik/puan çerçevesi; taş yoksa null. */
   moveStatus: MoveStatus | null;
-  /** "Hamle Geçmişi" linkine tıklanınca çağrılır. */
+  /** "Oyun Geçmişi" linkine tıklanınca çağrılır. */
   onOpenHistory: () => void;
   /** Şu an sürüklenmekte olan, bu tur yerleştirilmiş taşın hücre anahtarı — o hücre boşmuş gibi çizilir. */
   dragHiddenKey?: string | null;
@@ -50,8 +50,8 @@ const CENTER_TEXT = 'text-[#7C2D12]';
 
 // Tahtanın hemen altında gösterilen bonus açıklaması.
 const LEGEND = [
-  { label: 'X2', desc: 'bölgede yeni taş: kelime x2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
-  { label: 'X3', desc: 'tam merkez: kelime x3',   bg: 'linear-gradient(135deg, #FDBA74, #F97316)', border: 'none' },
+  { label: 'X2', desc: '- kelime X2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
+  { label: 'X3', desc: '- kelime X3', bg: 'linear-gradient(135deg, #FDBA74, #F97316)', border: 'none' },
 ];
 
 /** Bir oyuncunun ilk hamlesinde mutlaka değmesi gereken köşe hücresindeki ev işareti. */
@@ -433,7 +433,7 @@ export function Board({
           onClick={onOpenHistory}
           className="text-[9px] font-mono font-bold uppercase tracking-[0.5px] text-accent underline underline-offset-2 shrink-0"
         >
-          Hamle Geçmişi
+          Oyun Geçmişi
         </button>
         <div className="flex gap-2 justify-end flex-wrap">
           {LEGEND.map((item) => (
