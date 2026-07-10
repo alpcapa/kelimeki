@@ -311,6 +311,16 @@ export function Board({
       : [];
   });
 
+  // Merkezdeki x2 bonus bölgesinin tam dış hattı — altın/turuncu zeminle
+  // uyumlu koyu amber bir çerçeve.
+  const zoneCells: [number, number][] = [];
+  for (let r = BONUS_ZONE.r0; r <= BONUS_ZONE.r1; r++) {
+    for (let c = BONUS_ZONE.c0; c <= BONUS_ZONE.c1; c++) {
+      zoneCells.push([r, c]);
+    }
+  }
+  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone');
+
   // En son oynanan hamlenin etrafına kalıcı açık mavi çerçeve — özellikle YZ
   // oynayınca nereye oynadığı belli olsun diye.
   const lastMoveOutline = state.lastMoveCells.length > 0
@@ -336,6 +346,9 @@ export function Board({
 
         {/* Her oyuncunun genişleyen bölgesinin dış hattı. */}
         {territoryOutlines}
+
+        {/* Merkezdeki x2 bonus bölgesinin dış hattı. */}
+        {zoneOutline}
 
         {/* En son oynanan hamlenin etrafındaki kalıcı sarı çerçeve. */}
         {lastMoveOutline}
