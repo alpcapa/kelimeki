@@ -251,7 +251,7 @@ export function computeInvasionSplit(
 }
 
 /**
- * Tek bir kelimenin puanını hesaplar. Tahtanın tam ortasındaki tek K3
+ * Tek bir kelimenin puanını hesaplar. Tahtanın tam ortasındaki tek X3
  * hücresine bu turda yeni bir taş konursa kelime puanı üçe katlanır (klasik
  * bonus kare gibi — yalnızca yeni taşta). Ayrıca kelimenin herhangi bir
  * hücresi (yeni ya da önceden tahtada duran) merkezdeki 5×5 bonus bölgesine

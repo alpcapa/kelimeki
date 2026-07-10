@@ -4,7 +4,7 @@
 
 ## Oyun
 
-- **13×13 tahta** — Scrabble benzeri kelime yerleştirme; ortadaki 5×5 altın bölge her kelimeyi x2 yapar, tam merkez ayrıca K3 (üç kat kelime).
+- **13×13 tahta** — Scrabble benzeri kelime yerleştirme; ortadaki 5×5 altın bölge her kelimeyi x2 yapar, tam merkez ayrıca X3 (üç kat kelime).
 - **Köşe bölgeleri** — Her oyuncu 4×4'lük bir köşeden başlar (2 kişilik oyunda sol-üst ↔ sağ-alt, 4 kişilik oyunda dört köşenin her biri bir oyuncuda). İlk hamle köşenin ev işaretli tek karesine değmek zorundadır. İlk hamleden sonra bir rakibin köşesine taş koymanın hiçbir ön koşulu yok — her zaman serbest.
 - **Köşe vergisi** — Bir hamle rakip köşesinin içine düşerse (girme) ya da dışarıdan sınırına bitişik olursa (değme), hamlenin puanı ikiye bölünür: yarısı oynayana kalır, yarısı köşe sahibine aktarılır. Hamle öncesinde onay penceresi gösterilir.
 - **Akıllı YZ** — Rafından heceleyebildiği, sözlükçe geçerli en yüksek puanlı hamleyi arar; çapraz kelimeleri de doğrular.

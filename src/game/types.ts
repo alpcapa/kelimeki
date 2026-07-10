@@ -3,7 +3,7 @@
 /** Bir taşı/hamleyi yapan oyuncunun indeksi (0..3). */
 export type Owner = number;
 
-/** Bonus kare türü: yalnızca tahtanın tam ortasındaki tek K3 (üç kat kelime) hücresi kullanır. */
+/** Bonus kare türü: yalnızca tahtanın tam ortasındaki tek X3 (üç kat kelime) hücresi kullanır. */
 export type BonusType = 'tw';
 
 export interface Tile {

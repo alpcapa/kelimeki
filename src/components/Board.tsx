@@ -1,6 +1,7 @@
 // Harfik — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
 import {
   BONUS_LABELS,
+  BONUS_ZONE,
   CORNER,
   PLAYER_COLORS,
   SIZE,
@@ -33,18 +34,19 @@ interface BoardProps {
   onTilePointerCancel?: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
-// Merkezdeki x2 bonus bölgesi (ve tam ortadaki K3 hücresi) altın rengi ve
-// yazısı — nömorfik, diğer köşe tonlarıyla karışmasın diye sıcak/altın.
-const GOLD_ZONE_TEXT = 'text-[#7A5900]';
+// Merkezdeki x2 bonus bölgesi altın rengi — nömorfik, diğer köşe tonlarıyla
+// karışmasın diye sıcak/altın. Tam ortadaki tek X3 hücresi farklı (bordo) bir
+// renkle öne çıkar.
 const GOLD_ZONE_STYLE: React.CSSProperties = {
   background: 'linear-gradient(135deg, #FDE68A, #FBBF24)',
   boxShadow: 'inset 2px 2px 5px rgba(180,130,10,0.3), inset -1px -1px 3px rgba(255,255,255,0.7), 0 2px 4px rgba(180,130,10,0.2)',
 };
+const CENTER_TEXT = 'text-[#9A1B3F]';
 
 // Tahtanın hemen altında gösterilen bonus açıklaması.
 const LEGEND = [
   { label: 'X2', desc: 'bölgedeki her kelime x2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
-  { label: 'K3', desc: 'tam merkez: kelime x3',   bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
+  { label: 'X3', desc: 'tam merkez: kelime x3',   bg: '#9A1B3F', border: 'none' },
 ];
 
 /** Bir oyuncunun ilk hamlesinde mutlaka değmesi gereken köşe hücresindeki ev işareti. */
@@ -100,6 +102,13 @@ export function Board({
 
   // Köşe bölgesinin tahtaya oranı (kenar uzunluğu).
   const cornerFrac = `${(CORNER / SIZE) * 100}%`;
+
+  // Merkezdeki x2 bonus bölgesinin tahtaya oranı ve konumu — köşe numarası
+  // filigranıyla aynı mantıkla, tek büyük bir "X2" o bölgenin arkasına yazılır.
+  const zoneSize = BONUS_ZONE.r1 - BONUS_ZONE.r0 + 1;
+  const zoneFrac = `${(zoneSize / SIZE) * 100}%`;
+  const zoneTop = `${(BONUS_ZONE.r0 / SIZE) * 100}%`;
+  const zoneLeft = `${(BONUS_ZONE.c0 / SIZE) * 100}%`;
 
   // Köşenin tam ucundaki tek başlangıç hücresi -> o köşenin sahibinin rengi.
   // İlk hamle bu hücreye değmek zorunda olduğundan burada bir "ev" işareti
@@ -164,11 +173,15 @@ export function Board({
         classes.push('bg-transparent');
         content = <Tile tile={placedTile} variant="placed" color={currentColor} />;
       } else if (inZone) {
-        // Merkezdeki x2 bonus bölgesi — altın zemin. Tam ortadaki tek hücre
-        // ayrıca K3, geri kalanı X2 yazar.
-        classes.push(GOLD_ZONE_TEXT, 'cursor-pointer', 'text-[clamp(7px,1.9vw,12px)]');
-        content = bonus ? BONUS_LABELS[bonus] : 'X2';
+        // Merkezdeki x2 bonus bölgesi — altın zemin, büyük "X2" filigranı
+        // bölgenin tamamının arkasına yazılır (aşağıda). Tam ortadaki tek
+        // hücre bunun dışında, kendi X3 etiketini farklı bir renkle taşır.
+        classes.push('cursor-pointer');
         style = { ...GOLD_ZONE_STYLE };
+        if (bonus) {
+          classes.push(CENTER_TEXT, 'text-[clamp(7px,1.9vw,12px)]');
+          content = BONUS_LABELS[bonus];
+        }
       } else if (zone) {
         // Bir oyuncunun köşesindeki boş kare: nömorfik içe gömülü + oyuncu tonu.
         classes.push('cursor-pointer');
@@ -355,6 +368,24 @@ export function Board({
               </div>
             );
           })}
+        </div>
+
+        {/* Merkezdeki x2 bonus bölgesinin arkasına yazılan büyük "X2" filigranı. */}
+        <div className="pointer-events-none absolute inset-1">
+          <div
+            className="absolute flex items-center justify-center font-mono font-bold leading-none"
+            style={{
+              width: zoneFrac,
+              height: zoneFrac,
+              top: zoneTop,
+              left: zoneLeft,
+              color: '#92660A',
+              opacity: 0.28,
+              fontSize: 'clamp(60px, 24vw, 165px)',
+            }}
+          >
+            X2
+          </div>
         </div>
       </div>
 

@@ -26,9 +26,9 @@ export function jokerFinishBonus(jokerCount: number): number {
   return 0;
 }
 
-/** Bonus kare kısa etiketi: K3 = üç kat kelime. */
+/** Bonus kare kısa etiketi: X3 = üç kat kelime. */
 export const BONUS_LABELS: Record<BonusType, string> = {
-  tw: 'K3',
+  tw: 'X3',
 };
 
 // ── Oyuncu renkleri ──────────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ export function cornersFor(playerCount: number): number[][] {
 // otomatik olarak (SIZE - 2*CORNER) kenar uzunluğunda bir kare olur — 13 ve
 // CORNER=4 için 5×5. Bu alana giren her kelimenin puanı ikiye katlanır (bir
 // klasik bonus karesinin aksine, alanı ilk kullanan değil, oraya her uğrayan
-// kelime bundan faydalanır). Alanın tam ortası (tek hücre) ayrıca K3 (üç kat
+// kelime bundan faydalanır). Alanın tam ortası (tek hücre) ayrıca X3 (üç kat
 // kelime) olarak işaretlidir.
 export const BONUS_ZONE = {
   r0: CORNER,
@@ -129,12 +129,12 @@ export function inBonusZone(r: number, c: number): boolean {
   return r >= BONUS_ZONE.r0 && r <= BONUS_ZONE.r1 && c >= BONUS_ZONE.c0 && c <= BONUS_ZONE.c1;
 }
 
-/** Tahtanın tam merkezi — bonus bölgesinin tek K3 hücresi. */
+/** Tahtanın tam merkezi — bonus bölgesinin tek X3 hücresi. */
 export const BOARD_CENTER: [number, number] = [Math.floor(SIZE / 2), Math.floor(SIZE / 2)];
 
 // ── Başlangıç bonus yerleşimi ────────────────────────────────────────────────
 // Tüm klasik bonus kareleri kaldırıldı; tek istisna tahtanın tam ortası, o da
-// hâlâ K3 (üç kat kelime) olarak işaretli — geri kalan puan katlaması artık
+// hâlâ X3 (üç kat kelime) olarak işaretli — geri kalan puan katlaması artık
 // `inBonusZone` ile ayrıca uygulanan x2 bölge bonusundan gelir (bkz. yukarı).
 export function buildInitialBonuses(): Record<CellKey, BonusType> {
   const [r, c] = BOARD_CENTER;
