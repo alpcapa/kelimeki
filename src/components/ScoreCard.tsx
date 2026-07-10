@@ -35,16 +35,15 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
 
   const stats = statsByCount[tab];
 
-  const winRatio =
-    stats && stats.games_played > 0
-      ? `%${Math.round((stats.wins / stats.games_played) * 100)}`
-      : '%0';
+  const pct = (n: number) =>
+    stats && stats.games_played > 0 ? `%${Math.round((n / stats.games_played) * 100)}` : '%0';
 
   const cells: { label: string; value: number | string; cls?: string; wide?: boolean }[] = [
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
-    { label: 'Galibiyet', value: stats?.wins ?? 0, cls: 'text-green' },
-    { label: 'Mağlubiyet', value: stats?.losses ?? 0, cls: 'text-red' },
-    { label: 'Kazanma Oranı', value: winRatio, cls: 'text-accent' },
+    { label: 'Toplam Birincilik', value: stats?.first_places ?? 0, cls: 'text-gold' },
+    { label: 'Toplam İkincilik', value: stats?.second_places ?? 0, cls: 'text-accent' },
+    { label: 'Birincilik Oranı', value: pct(stats?.first_places ?? 0), cls: 'text-gold' },
+    { label: 'İkincilik Oranı', value: pct(stats?.second_places ?? 0), cls: 'text-accent' },
     { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
     { label: 'Beraberlik', value: stats?.ties ?? 0, cls: 'text-muted' },
     { label: 'En İyi Hamle Puanı', value: stats?.best_move_score ?? 0, cls: 'text-accent' },

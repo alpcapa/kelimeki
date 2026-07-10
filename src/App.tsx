@@ -139,10 +139,15 @@ export default function App() {
     const bestOpponentScore = Math.max(...opponents.map((p) => p.score));
     const result =
       human.score > bestOpponentScore ? 'win' : human.score < bestOpponentScore ? 'lose' : 'tie';
+    // Bitiş sırası: tüm oyuncuların skorları büyükten küçüğe sıralanır, insanın
+    // skoru bu sırada ilk kez göründüğü konum + 1'dir (eşit skorlar aynı sırayı paylaşır).
+    const scoresDesc = state.players.map((p) => p.score).sort((a, b) => b - a);
+    const rank = scoresDesc.indexOf(human.score) + 1;
     void saveGame({
       player_score: human.score,
       ai_score: bestOpponentScore,
       result,
+      rank,
       turn_count: state.turnCount,
       player_count: state.players.length,
       move_count: human.moveCount || null,
