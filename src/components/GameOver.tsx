@@ -7,11 +7,11 @@ interface GameOverProps {
   show: boolean;
   players: Player[];
   turnCount: number;
-  onRestart: () => void;
   onOpenHistory: () => void;
+  onClose: () => void;
 }
 
-export function GameOver({ show, players, turnCount, onRestart, onOpenHistory }: GameOverProps) {
+export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: GameOverProps) {
   if (!show) return null;
 
   const ranked = players
@@ -23,6 +23,14 @@ export function GameOver({ show, players, turnCount, onRestart, onOpenHistory }:
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-[18px] p-6 bg-[rgba(255,255,255,0.94)]">
+      <button
+        onClick={onClose}
+        aria-label="Kapat"
+        className="absolute top-4 right-4 text-muted hover:text-text text-xl leading-none w-9 h-9 flex items-center justify-center rounded-full active:scale-90 transition-transform"
+      >
+        ✕
+      </button>
+
       <div
         className="font-mono text-[30px] font-bold tracking-[2px] text-center"
         style={{ color: tie ? '#B7791F' : winColor.base }}
@@ -68,13 +76,6 @@ export function GameOver({ show, players, turnCount, onRestart, onOpenHistory }:
           <span className="font-mono font-bold text-muted">{turnCount}</span>
         </div>
       </div>
-
-      <button
-        onClick={onRestart}
-        className="bg-accent text-white rounded-lg px-9 py-3.5 text-[13px] font-bold tracking-[2px] uppercase font-sans active:scale-95 transition-transform"
-      >
-        Yeni Oyun
-      </button>
 
       <button
         onClick={onOpenHistory}

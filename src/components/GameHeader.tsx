@@ -6,10 +6,11 @@ import { UserMenu } from './UserMenu';
 interface GameHeaderProps {
   state: GameState;
   onLogoClick?: () => void;
+  onNewGame?: () => void;
 }
 
-export function GameHeader({ state, onLogoClick }: GameHeaderProps) {
-  const { players, current } = state;
+export function GameHeader({ state, onLogoClick, onNewGame }: GameHeaderProps) {
+  const { players, current, isGameOver } = state;
   return (
     <header className="w-full max-w-[680px] flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border">
       <button
@@ -57,6 +58,15 @@ export function GameHeader({ state, onLogoClick }: GameHeaderProps) {
             </div>
           );
         })}
+
+        {isGameOver && onNewGame && (
+          <button
+            onClick={onNewGame}
+            className="shrink-0 bg-accent text-white rounded-md px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[1px] font-sans active:scale-95 transition-transform"
+          >
+            Yeni Oyun
+          </button>
+        )}
 
         <UserMenu />
       </div>
