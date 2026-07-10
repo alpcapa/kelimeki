@@ -21,6 +21,8 @@ export interface Game {
   player_score: number;
   ai_score: number;
   result: GameResult;
+  /** Oyuncunun oyunu bitirdiği sıra (1 = birinci). Eski kayıtlarda bilinmiyorsa null. */
+  rank: number | null;
   turn_count: number;
   player_count: number;
   move_count: number | null;
@@ -36,7 +38,7 @@ export interface Game {
 /** games tablosuna eklenecek yeni kayıt. */
 export type NewGame = Pick<
   Game,
-  'player_score' | 'ai_score' | 'result' | 'turn_count' | 'player_count'
+  'player_score' | 'ai_score' | 'result' | 'rank' | 'turn_count' | 'player_count'
 > & {
   user_id?: string | null;
   move_count?: number | null;
@@ -86,4 +88,6 @@ export interface PlayerStats {
   best_word_score: number | null;
   best_word: string | null;
   longest_word: string | null;
+  first_places: number;
+  second_places: number;
 }
