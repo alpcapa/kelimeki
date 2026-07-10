@@ -57,6 +57,9 @@ export default function App() {
   // Hamle geçmişi penceresi.
   const [showHistory, setShowHistory] = useState(false);
 
+  // Oyun sonu ekranındaki tüm oyunculara ait hamle geçmişi penceresi.
+  const [showAllHistory, setShowAllHistory] = useState(false);
+
   // Joker taş konurken hangi harfe dönüşeceğini seçme penceresi.
   const [pendingWild, setPendingWild] = useState<
     { r: number; c: number; rackIndex?: number } | null
@@ -656,9 +659,13 @@ export default function App() {
       {showHistory && (
         <MoveHistoryModal
           state={state}
-          humanIndex={rackPlayerIndex}
+          playerIndex={rackPlayerIndex}
           onClose={() => setShowHistory(false)}
         />
+      )}
+
+      {showAllHistory && (
+        <MoveHistoryModal state={state} onClose={() => setShowAllHistory(false)} />
       )}
 
       {pendingWild && (
@@ -702,6 +709,7 @@ export default function App() {
         players={state.players}
         turnCount={state.turnCount}
         onRestart={() => dispatch({ type: 'INIT' })}
+        onOpenHistory={() => setShowAllHistory(true)}
       />
     </div>
   );

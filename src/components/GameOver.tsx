@@ -8,9 +8,10 @@ interface GameOverProps {
   players: Player[];
   turnCount: number;
   onRestart: () => void;
+  onOpenHistory: () => void;
 }
 
-export function GameOver({ show, players, turnCount, onRestart }: GameOverProps) {
+export function GameOver({ show, players, turnCount, onRestart, onOpenHistory }: GameOverProps) {
   if (!show) return null;
 
   const ranked = players
@@ -73,6 +74,13 @@ export function GameOver({ show, players, turnCount, onRestart }: GameOverProps)
         className="bg-accent text-white rounded-lg px-9 py-3.5 text-[13px] font-bold tracking-[2px] uppercase font-sans active:scale-95 transition-transform"
       >
         Yeni Oyun
+      </button>
+
+      <button
+        onClick={onOpenHistory}
+        className="text-[11px] font-mono font-bold uppercase tracking-[1px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity"
+      >
+        Oyun Geçmişi
       </button>
     </div>
   );
