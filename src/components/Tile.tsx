@@ -17,6 +17,9 @@ interface TileProps {
 export function Tile({ tile, variant, color, selected = false, onClick }: TileProps) {
   const isRack = variant === 'rack';
   const raw = tileLetter(tile) || tile.letter;
+  // Tahtaya konmuş joker (harfi seçilmiş olsa da) puan yerine yıldız gösterir;
+  // rafta duran joker taşı puan köşesinde 0'ı korur.
+  const isPlacedJoker = !isRack && tile.wild;
   // Joker (?) rafta yıldız olarak görünür; oynanınca seçilen harfe döner.
   const display = raw === '?' ? '★' : raw;
 
@@ -64,7 +67,7 @@ export function Tile({ tile, variant, color, selected = false, onClick }: TilePr
       >
         {display}
       </span>
-      {/* Puan — harfin sağ üstünde üst simge gibi. */}
+      {/* Puan — harfin sağ üstünde üst simge gibi. Tahtadaki joker 0 puan yerine minik yıldız gösterir. */}
       <span
         className={[
           'absolute font-mono font-bold leading-none',
@@ -73,7 +76,7 @@ export function Tile({ tile, variant, color, selected = false, onClick }: TilePr
             : 'top-[1px] right-[1.5px] text-[clamp(6px,1.6vw,10px)] text-accent',
         ].join(' ')}
       >
-        {tile.pts}
+        {isPlacedJoker ? '★' : tile.pts}
       </span>
     </div>
   );

@@ -257,10 +257,12 @@ export function Board({
   ): React.ReactNode[] => {
     const uniqueCells = [...new Map(cellsList.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
     const cellSet = new Set(uniqueCells.map(([r, c]) => key(r, c)));
+    // Rozet en üst-soldaki hücreye konur (tahtaya konan taşın kendi puan
+    // üst simgesiyle çakışmaması için sağ üst yerine sol üst köşede).
     let badge: [number, number] | null = null;
     if (badgeScore !== undefined) {
       for (const [r, c] of uniqueCells) {
-        if (!badge || r < badge[0] || (r === badge[0] && c > badge[1])) badge = [r, c];
+        if (!badge || r < badge[0] || (r === badge[0] && c < badge[1])) badge = [r, c];
       }
     }
     return uniqueCells.map(([r, c]) => {
@@ -292,7 +294,7 @@ export function Board({
         >
           {badge && badge[0] === r && badge[1] === c && (
             <span
-              className="absolute -top-[9px] -right-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
+              className="absolute -top-[9px] -left-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
               style={{
                 background: color,
                 fontSize: 'clamp(8px,2vw,11px)',
