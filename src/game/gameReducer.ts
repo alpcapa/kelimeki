@@ -251,8 +251,9 @@ export function gameReducer(state: GameState, action: Action): GameState {
       return createInitialState();
 
     case 'ABANDON':
-      // Oyundan çıkış: -500 ceza skoru setup ekranına dönmeden önce uygulanır.
-      // Skor yalnızca görsel (kalıcı istatistiklere kaydedilmez).
+      // Oyundan çıkış: teslim kaydı (varsa 2 puan ceza) App.tsx'te bu action
+      // dispatch edilmeden önce saveGame ile kaydedilir; burada yalnızca
+      // setup ekranına dönülür.
       return createInitialState();
 
     case 'START': {
