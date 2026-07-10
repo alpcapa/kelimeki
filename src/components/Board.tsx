@@ -168,11 +168,7 @@ export function Board({
       const isLastWord = !!lastWords[k];
 
       if (boardTile) {
-        classes.push(
-          isLastWord
-            ? 'bg-transparent cursor-pointer rounded-[5px] ring-2 ring-gold/60'
-            : 'bg-transparent cursor-default',
-        );
+        classes.push(isLastWord ? 'bg-transparent cursor-pointer' : 'bg-transparent cursor-default');
         content = <Tile tile={boardTile} variant="board" color={colorOf(boardTile.owner)} />;
       } else if (placedTile) {
         classes.push('bg-transparent');
