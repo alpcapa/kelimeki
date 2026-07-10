@@ -2082,7 +2082,7 @@ export const WORD_LIST: readonly string[] = [
   "gizliçekimyapmak", "gizlidengizliye", "gizlidernek", "gizlidil", "gizlidin", "gizlidintaşımak", "gizliduruşma", "gizligizli", "gizlikamera", "gizlikapaklı", "gizlilik", "gizlioturum", "gizlioy", "gizlireklam", "gizliservis", "gizlisıtma",
   "gizlişeker", "gizlitutmak", "gizliyama", "gladyatör", "gladyatörlük", "gladyo", "glase", "glasiye", "glasnost", "glasyolog", "glasyoloji", "glasyolojik", "glasyolojist", "glayöl", "glikojen", "glikol",
   "glikoz", "glikozit", "glikozlu", "glikozüri", "gliserin", "global", "globalleşme", "globalleşmek", "globalleştirme", "globalleştirmek", "globallik", "globülin", "glokom", "glokoni", "glüten", "glütenekmeği",
-  "glütentutkalı", "gnays", "goblen", "gocuk", "gocuklu", "gocuksuz", "gocundurma", "gocundurmak", "gocunma", "gocunmak", "godoş", "godoşluk", "gofre", "gofreli", "gofresiz", "gofret",
+  "glütentutkalı", "gnays", "go", "goblen", "gocuk", "gocuklu", "gocuksuz", "gocundurma", "gocundurmak", "gocunma", "gocunmak", "godoş", "godoşluk", "gofre", "gofreli", "gofresiz", "gofret",
   "gojiberry", "gol", "golaçısı", "golatmak", "golcü", "golcülük", "golçizgisi", "golçizgiteknolojisi", "golf", "golfçü", "golfçülük", "golfpantolon", "golfstrim", "golkaçırmak", "golkralı", "golkurtarmak",
   "gollü", "gollük", "gololmak", "golsevinci", "golsüz", "golsüzlük", "goltoto", "golvuruşu", "golyemek", "gomalak", "gonca", "gondol", "gondolcu", "gondolculuk", "gonk", "gonokok",
   "goril", "goşist", "goşistlik", "goşizm", "gotça", "gotik", "gotlar", "goygoy", "goygoyaçıkmak", "goygoycu", "goygoyculuk", "goygoyculuketmek", "goygoyculukyapmak", "goygoyyapmak", "göbeğiçatlamak", "göbeğiçıkmak",
