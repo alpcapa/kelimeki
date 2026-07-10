@@ -243,12 +243,17 @@ export function Board({
   // Verilen hücre kümesini kapsayan TEK bir dış hat üretir (iç kesişim
   // hücrelerinde ayırıcı çizgi olmaz) — her hücrenin yalnızca kümenin
   // dışına bakan kenarlarına çizgi eklenir. `badgeScore` verilirse en üst
-  // sağdaki hücrenin köşesine puan rozeti eklenir.
+  // sağdaki hücrenin köşesine puan rozeti eklenir. `extraOpen`, kümenin
+  // dışına bakan bir kenarı da "kapalı" (çizgisiz) sayabilmek için — bonus
+  // bölgesi/merkez çerçevesi, bir oyuncunun bölgesinin İÇİNDEN geçen kendi
+  // kenarını bu şekilde bastırır, böylece oyuncunun genişleyen bölgesi
+  // içinde gereksiz bir amber çizgi kalmaz.
   const buildOutline = (
     cellsList: [number, number][],
     color: string,
     keyPrefix: string,
     badgeScore?: number,
+    extraOpen?: (r: number, c: number, nr: number, nc: number) => boolean,
   ): React.ReactNode[] => {
     const uniqueCells = [...new Map(cellsList.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
     const cellSet = new Set(uniqueCells.map(([r, c]) => key(r, c)));
@@ -259,10 +264,12 @@ export function Board({
       }
     }
     return uniqueCells.map(([r, c]) => {
-      const top = cellSet.has(key(r - 1, c));
-      const bottom = cellSet.has(key(r + 1, c));
-      const left = cellSet.has(key(r, c - 1));
-      const right = cellSet.has(key(r, c + 1));
+      const isOpen = (nr: number, nc: number) =>
+        cellSet.has(key(nr, nc)) || (extraOpen ? extraOpen(r, c, nr, nc) : false);
+      const top = isOpen(r - 1, c);
+      const bottom = isOpen(r + 1, c);
+      const left = isOpen(r, c - 1);
+      const right = isOpen(r, c + 1);
       const side = (occupied: boolean) => (occupied ? 'none' : `2.5px solid ${color}`);
       const radius = (a: boolean, b: boolean) => (!a && !b ? '5px' : '0');
       return (
@@ -312,6 +319,14 @@ export function Board({
       : [];
   });
 
+  // Bir bonus-bölgesi kenarını, iki tarafı da AYNI oyuncunun bölgesine
+  // aitse "açık" (çizgisiz) sayar — bir oyuncunun genişleyen bölgesi bonus
+  // alanına girip devam ettiğinde, amber çerçeve o iç bağlantıyı kesmesin.
+  const sameTerritoryOpen = (r: number, c: number, nr: number, nc: number) => {
+    const owner = territoryOwnerAt(r, c);
+    return owner >= 0 && owner === territoryOwnerAt(nr, nc);
+  };
+
   // Merkezdeki x2 bonus bölgesinin tam dış hattı — altın/turuncu zeminle
   // uyumlu koyu amber bir çerçeve.
   const zoneCells: [number, number][] = [];
@@ -320,10 +335,10 @@ export function Board({
       zoneCells.push([r, c]);
     }
   }
-  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone');
+  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone', undefined, sameTerritoryOpen);
 
   // Tam ortadaki tek X3 hücresinin kendi çerçevesi — turuncu zeminle uyumlu.
-  const centerOutline = buildOutline([BOARD_CENTER], '#9A3412', 'center-zone');
+  const centerOutline = buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', undefined, sameTerritoryOpen);
 
   // En son oynanan hamlenin etrafına kalıcı açık mavi çerçeve — özellikle YZ
   // oynayınca nereye oynadığı belli olsun diye.
