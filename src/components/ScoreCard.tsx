@@ -52,6 +52,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     { label: 'En İyi Hamle Puanı', value: stats?.best_move_score ?? 0, cls: 'text-accent' },
     { label: 'Ortalama Hamle Puanı', value: stats?.avg_move_score ?? 0, cls: 'text-accent' },
     { label: 'En Yüksek Kelime Puanı', value: stats?.best_word_score ?? 0, cls: 'text-text' },
+    { label: 'Teslim Olunan', value: stats?.surrendered_count ?? 0, cls: 'text-red' },
     { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
   ];
 

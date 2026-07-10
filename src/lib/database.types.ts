@@ -32,6 +32,8 @@ export interface Game {
   longest_word: string | null;
   /** Bu oyunda oynanan hamlelerin brüt puanları toplamı (ortalama hamle puanı için). */
   move_points_sum: number | null;
+  /** Oyuncu oyunu bitirmeden (logoya basıp) terk etti mi? */
+  surrendered: boolean;
   created_at: string;
 }
 
@@ -47,6 +49,7 @@ export type NewGame = Pick<
   best_word_score?: number | null;
   longest_word?: string | null;
   move_points_sum?: number | null;
+  surrendered?: boolean;
 };
 
 /** Bir kelimenin sözlük kaydı (word_meaning RPC çıktısı). */
@@ -93,7 +96,10 @@ export interface PlayerStats {
   /**
    * Lig puanı (oyun içi ham skorların toplamı değil): 1.=2, 2.=1, 3./4.=0.
    * Beraber bitirenler grubun en iyi sırasının puanını paylaşır (2 kişilik
-   * tam beraberlikte ikisi de rank=1 olur, ikisi de 2 alır).
+   * tam beraberlikte ikisi de rank=1 olur, ikisi de 2 alır). Teslim olunan
+   * oyunlar sıradan bağımsız olarak sabit -2 puan getirir.
    */
   total_score: number;
+  /** Oyuncunun bitirmeden terk ettiği (teslim olduğu) oyun sayısı. */
+  surrendered_count: number;
 }

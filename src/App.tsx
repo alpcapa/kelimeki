@@ -18,7 +18,7 @@ import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, saveGame } from './lib/api';
-import type { WordMeaning } from './lib/database.types';
+import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
 import { AddToHomeScreen } from './components/AddToHomeScreen';
 
@@ -150,20 +150,21 @@ export default function App() {
     }
   };
 
-  // Oyun bitince giriş yapmış kullanıcının sonucunu kaydet (YZ'ye karşı oyunlar dahil).
-  useEffect(() => {
-    if (!state.isGameOver || state.phase !== 'play') return;
+  // İnsan oyuncunun oyun sonu kaydını oluşturur — hem oyun normal bittiğinde
+  // hem de oyuncu bitmeden (logoya basıp) teslim olduğunda kullanılır.
+  const buildGameRecord = (surrendered: boolean) => {
     const human = state.players.find((p) => !p.isAI);
     const opponents = state.players.filter((p) => p !== human);
-    if (!human || opponents.length === 0) return;
+    if (!human || opponents.length === 0) return null;
     const bestOpponentScore = Math.max(...opponents.map((p) => p.score));
-    const result =
-      human.score > bestOpponentScore ? 'win' : human.score < bestOpponentScore ? 'lose' : 'tie';
+    const result: GameResult = surrendered
+      ? 'lose'
+      : human.score > bestOpponentScore ? 'win' : human.score < bestOpponentScore ? 'lose' : 'tie';
     // Bitiş sırası: tüm oyuncuların skorları büyükten küçüğe sıralanır, insanın
     // skoru bu sırada ilk kez göründüğü konum + 1'dir (eşit skorlar aynı sırayı paylaşır).
     const scoresDesc = state.players.map((p) => p.score).sort((a, b) => b - a);
     const rank = scoresDesc.indexOf(human.score) + 1;
-    void saveGame({
+    return {
       player_score: human.score,
       ai_score: bestOpponentScore,
       result,
@@ -176,7 +177,15 @@ export default function App() {
       best_word: human.bestWord || null,
       longest_word: human.longestWord || null,
       move_points_sum: human.moveScoreSum || null,
-    });
+      surrendered,
+    };
+  };
+
+  // Oyun bitince giriş yapmış kullanıcının sonucunu kaydet (YZ'ye karşı oyunlar dahil).
+  useEffect(() => {
+    if (!state.isGameOver || state.phase !== 'play') return;
+    const record = buildGameRecord(false);
+    if (record) void saveGame(record);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);
 
@@ -655,11 +664,18 @@ export default function App() {
             <p className="text-sm text-text font-sans leading-relaxed">
               {state.isGameOver
                 ? 'Anasayfaya dönmek istediğinden emin misin?'
-                : 'Bu oyundan çıkmak istediğine emin misin? Oyun kaydedilmez ve mevcut ilerleme silinir.'}
+                : 'Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.'}
             </p>
             <div className="flex gap-2 mt-1">
               <button
-                onClick={() => { setShowExitConfirm(false); dispatch({ type: 'ABANDON' }); }}
+                onClick={() => {
+                  setShowExitConfirm(false);
+                  if (!state.isGameOver) {
+                    const record = buildGameRecord(true);
+                    if (record) void saveGame(record);
+                  }
+                  dispatch({ type: 'ABANDON' });
+                }}
                 className="flex-1 py-2.5 rounded-md bg-red text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Çık
