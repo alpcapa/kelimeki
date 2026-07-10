@@ -235,7 +235,7 @@ function appendMoveHistory(
   }
   const entries: HistoryEntry[] = [...prev, actorEntry];
   for (const s of shares) {
-    entries.push({ turn, player: s.index, words: [], points: s.amount, invasionFrom: actor });
+    entries.push({ turn, player: s.index, words, points: s.amount, invasionFrom: actor });
   }
   return entries;
 }

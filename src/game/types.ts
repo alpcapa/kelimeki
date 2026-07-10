@@ -112,7 +112,11 @@ export interface HistoryEntry {
   turn: number;
   /** Bu puanı skoruna ekleyen oyuncu. */
   player: Owner;
-  /** Oynanan kelime(ler); köşe vergisi bonusu satırlarında boş dizi. */
+  /**
+   * Oynanan kelime(ler). Köşe vergisi bonusu satırlarında (`invasionFrom`
+   * dolu) bu, vergiyi tetikleyen hamlede oynanan kelime(ler)dir — `player`in
+   * kendisi oynamamıştır, sadece bölgesine giren/değen hamlede geçen kelime.
+   */
   words: string[];
   /** Bu satırda `player`in skoruna eklenen puan. */
   points: number;

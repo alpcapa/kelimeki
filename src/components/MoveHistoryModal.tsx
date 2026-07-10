@@ -37,10 +37,11 @@ export function MoveHistoryModal({ state, playerIndex, onClose }: MoveHistoryMod
             const invaderName = isInvasion
               ? (state.players[e.invasionFrom!]?.name ?? '?')
               : undefined;
+            const invasionWords = e.words.length > 0 ? ` (${e.words.join(', ')})` : '';
             const label = isInvasion
               ? allPlayers
-                ? `${invaderName} ${owner?.name ?? '?'}'nın bölgesine girdi/değdi`
-                : `${invaderName} bölgene girdi/değdi`
+                ? `${invaderName} ${owner?.name ?? '?'}'nın bölgesine girdi/değdi${invasionWords}`
+                : `${invaderName} bölgene girdi/değdi${invasionWords}`
               : e.action === 'pass'
                 ? 'Pas geçti'
                 : e.action === 'exchange'
