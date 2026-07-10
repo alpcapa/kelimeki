@@ -98,6 +98,14 @@ export function HelpModal({ onClose }: HelpModalProps) {
             kalır. Aynı hamle iki farklı rakip bölgesiyle birden etkileşirse puan üç kişi
             arasında (sen ve iki bölge sahibi) eşit paylaşılır — bu durumda herkese 1/3 düşer.
           </P>
+          <P>
+            Vergi ödeyerek rakip bölgesine koyduğun taş orada kalıcı olarak senindir: bölgeler
+            her hamleden sonra yeniden hesaplanır, bu yüzden o taş kendi taşlarınla kesintisiz
+            bağlıysa (köşenden oraya kadar uzanan bir zincir oluşturuyorsa) artık senin
+            bölgene dahil olur — rakibin bölgesi o noktada küçülür, seninki büyür. Sadece tek
+            başına, kendi zincirine bağlanmayan izole bir taş bırakırsan orası hâlâ rakibin
+            bölgesinde sayılır.
+          </P>
         </Section>
 
         <Section title="Bonus Bölgesi">
