@@ -35,6 +35,8 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
 
   const stats = statsByCount[tab];
 
+  const totalScore = TABS.reduce((sum, count) => sum + (statsByCount[count]?.total_score ?? 0), 0);
+
   const pct = (n: number) =>
     stats && stats.games_played > 0 ? `%${Math.round((n / stats.games_played) * 100)}` : '%0';
 
@@ -63,7 +65,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           )}
         </div>
         <div className="text-right shrink-0">
-          <div className="font-mono text-xl font-bold text-gold">{stats?.total_score ?? 0}</div>
+          <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
           <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
             Toplam Puan
           </div>
