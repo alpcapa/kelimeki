@@ -33,22 +33,22 @@ export function MoveHistoryModal({ state, playerIndex, onClose }: MoveHistoryMod
         <div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
           {[...entries].reverse().map((e, i) => {
             const isInvasion = e.invasionFrom !== undefined;
-            const owner = state.players[e.player];
-            const invaderName = isInvasion
-              ? (state.players[e.invasionFrom!]?.name ?? '?')
+            // Vergi geliri satırında (isInvasion) başlıkta hamleyi yapan
+            // (invasionFrom) gösterilir — puanı asıl `e.player` kazanmış olsa
+            // da bu satır o hamleyi anlatır, bölge sahibinin kendi hamlesini değil.
+            const headerPlayer = isInvasion ? state.players[e.invasionFrom!] : state.players[e.player];
+            const label = e.action === 'pass'
+              ? 'Pas geçti'
+              : e.action === 'exchange'
+                ? `${e.tileCount} taş değiştirdi`
+                : e.words.length > 0
+                  ? isInvasion && !allPlayers
+                    ? `${headerPlayer?.name ?? '?'}: ${e.words.join(', ')}`
+                    : e.words.join(', ')
+                  : '—';
+            const captureNote = isInvasion
+              ? `${e.points} puanı ${state.players[e.player]?.name ?? '?'}'ye kaptırdı`
               : undefined;
-            const invasionWords = e.words.length > 0 ? ` (${e.words.join(', ')})` : '';
-            const label = isInvasion
-              ? allPlayers
-                ? `${invaderName} ${owner?.name ?? '?'}'nın bölgesine girdi/değdi${invasionWords}`
-                : `${invaderName} bölgene girdi/değdi${invasionWords}`
-              : e.action === 'pass'
-                ? 'Pas geçti'
-                : e.action === 'exchange'
-                  ? `${e.tileCount} taş değiştirdi`
-                  : e.words.length > 0
-                    ? e.words.join(', ')
-                    : '—';
             return (
               <div
                 key={i}
@@ -60,10 +60,10 @@ export function MoveHistoryModal({ state, playerIndex, onClose }: MoveHistoryMod
                       {allPlayers && (
                         <span
                           className="w-2 h-2 rounded-sm shrink-0"
-                          style={{ background: PLAYER_COLORS[owner.colorIndex].base }}
+                          style={{ background: PLAYER_COLORS[headerPlayer.colorIndex].base }}
                         />
                       )}
-                      {allPlayers ? `${owner?.name ?? '?'} · ${e.turn + 1}. tur` : `${e.turn + 1}. tur`}
+                      {allPlayers ? `${headerPlayer?.name ?? '?'} · ${e.turn + 1}. tur` : `${e.turn + 1}. tur`}
                     </span>
                     <span className="text-[12px] font-mono font-bold text-text truncate">
                       {label}
@@ -80,16 +80,21 @@ export function MoveHistoryModal({ state, playerIndex, onClose }: MoveHistoryMod
                     </span>
                   )}
                 </div>
-                {e.lostShares && e.lostShares.length > 0 && (
-                  <span className="text-[9px] font-mono text-red">
-                    {e.lostShares
-                      .map((s) =>
-                        allPlayers
-                          ? `${s.amount} puanı ${state.players[s.to]?.name ?? '?'}'ye kaptırdı`
-                          : `${s.amount} puanı ${state.players[s.to]?.name ?? '?'}'ye kaptırdın`,
-                      )
-                      .join(', ')}
-                  </span>
+                {captureNote ? (
+                  <span className="text-[9px] font-mono text-red">{captureNote}</span>
+                ) : (
+                  e.lostShares &&
+                  e.lostShares.length > 0 && (
+                    <span className="text-[9px] font-mono text-red">
+                      {e.lostShares
+                        .map((s) =>
+                          allPlayers
+                            ? `${s.amount} puanı ${state.players[s.to]?.name ?? '?'}'ye kaptırdı`
+                            : `${s.amount} puanı ${state.players[s.to]?.name ?? '?'}'ye kaptırdın`,
+                        )
+                        .join(', ')}
+                    </span>
+                  )
                 )}
               </div>
             );
