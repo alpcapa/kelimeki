@@ -1,9 +1,13 @@
 // Harfik — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
 import {
+  BOARD_CENTER,
   BONUS_LABELS,
+  BONUS_ZONE,
   CORNER,
   PLAYER_COLORS,
   SIZE,
+  cornerCell,
+  inBonusZone,
   type PlayerColor,
 } from '../game/constants';
 import type { GameState, MoveStatus } from '../game/types';
@@ -31,41 +35,38 @@ interface BoardProps {
   onTilePointerCancel?: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
-// Nömorfik bonus kareleri: sadece yazı rengi (arkaplan style ile verilir).
-const BONUS_CLASSES: Record<string, string> = {
-  dw: 'text-[#0D6B28]',
-  tw: 'text-[#8B4200]',
-  dl: 'text-[#0A3A90]',
-  tl: 'text-[#4A1A90]',
+// Merkezdeki x2 bonus bölgesi altın rengi — nömorfik, diğer köşe tonlarıyla
+// karışmasın diye sıcak/altın. Tam ortadaki tek X3 hücresi turuncu bir zeminle
+// öne çıkar.
+const GOLD_ZONE_STYLE: React.CSSProperties = {
+  background: 'linear-gradient(135deg, #FDE68A, #FBBF24)',
+  boxShadow: 'inset 2px 2px 5px rgba(180,130,10,0.3), inset -1px -1px 3px rgba(255,255,255,0.7), 0 2px 4px rgba(180,130,10,0.2)',
 };
-
-// Nömorfik bonus kareleri inline stilleri.
-const BONUS_STYLES: Record<string, React.CSSProperties> = {
-  dw: {
-    background: 'linear-gradient(135deg, #B8ECC8, #C8F0D4)',
-    boxShadow: 'inset 2px 2px 5px rgba(100,180,120,0.3), inset -1px -1px 3px rgba(255,255,255,0.8), 0 2px 4px rgba(100,180,120,0.2)',
-  },
-  tw: {
-    background: 'linear-gradient(135deg, #FAC890, #FBD8A8)',
-    boxShadow: 'inset 2px 2px 5px rgba(200,120,40,0.25), inset -1px -1px 3px rgba(255,255,255,0.8), 0 2px 4px rgba(200,120,40,0.15)',
-  },
-  dl: {
-    background: 'linear-gradient(135deg, #9EC8FA, #B0D4FC)',
-    boxShadow: 'inset 2px 2px 5px rgba(40,100,200,0.25), inset -1px -1px 3px rgba(255,255,255,0.8), 0 2px 4px rgba(40,100,200,0.15)',
-  },
-  tl: {
-    background: 'linear-gradient(135deg, #CEB4FA, #DCC8FC)',
-    boxShadow: 'inset 2px 2px 5px rgba(120,60,220,0.25), inset -1px -1px 3px rgba(255,255,255,0.8), 0 2px 4px rgba(120,60,220,0.15)',
-  },
+const CENTER_ZONE_STYLE: React.CSSProperties = {
+  background: 'linear-gradient(135deg, #FDBA74, #F97316)',
+  boxShadow: 'inset 2px 2px 5px rgba(180,80,10,0.35), inset -1px -1px 3px rgba(255,255,255,0.7), 0 2px 4px rgba(180,80,10,0.25)',
 };
+const CENTER_TEXT = 'text-[#7C2D12]';
 
 // Tahtanın hemen altında gösterilen bonus açıklaması.
 const LEGEND = [
-  { label: 'K2', desc: 'kelime x2', bg: 'linear-gradient(135deg, #B8ECC8, #C8F0D4)', border: 'none' },
-  { label: 'K3', desc: 'kelime x3', bg: 'linear-gradient(135deg, #FAC890, #FBD8A8)', border: 'none' },
-  { label: 'H2', desc: 'harf x2',   bg: 'linear-gradient(135deg, #9EC8FA, #B0D4FC)', border: 'none' },
-  { label: 'H3', desc: 'harf x3',   bg: 'linear-gradient(135deg, #CEB4FA, #DCC8FC)', border: 'none' },
+  { label: 'X2', desc: 'bölgedeki her kelime x2', bg: 'linear-gradient(135deg, #FDE68A, #FBBF24)', border: 'none' },
+  { label: 'X3', desc: 'tam merkez: kelime x3',   bg: 'linear-gradient(135deg, #FDBA74, #F97316)', border: 'none' },
 ];
+
+/** Bir oyuncunun ilk hamlesinde mutlaka değmesi gereken köşe hücresindeki ev işareti. */
+function HomeMark({ color }: { color: PlayerColor }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="w-[55%] h-[55%]"
+      style={{ opacity: 0.85 }}
+      fill={color.base}
+    >
+      <path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5Z" />
+    </svg>
+  );
+}
 
 export function Board({
   state,
@@ -104,8 +105,26 @@ export function Board({
     for (const corner of p.corners) cornerNumber[corner] = i + 1;
   });
 
-  // 5×5 köşenin tahtaya oranı (kenar uzunluğu).
+  // Köşe bölgesinin tahtaya oranı (kenar uzunluğu).
   const cornerFrac = `${(CORNER / SIZE) * 100}%`;
+
+  // Merkezdeki x2 bonus bölgesinin tahtaya oranı ve konumu — köşe numarası
+  // filigranıyla aynı mantıkla, tek büyük bir "X2" o bölgenin arkasına yazılır.
+  const zoneSize = BONUS_ZONE.r1 - BONUS_ZONE.r0 + 1;
+  const zoneFrac = `${(zoneSize / SIZE) * 100}%`;
+  const zoneTop = `${(BONUS_ZONE.r0 / SIZE) * 100}%`;
+  const zoneLeft = `${(BONUS_ZONE.c0 / SIZE) * 100}%`;
+
+  // Köşenin tam ucundaki tek başlangıç hücresi -> o köşenin sahibinin rengi.
+  // İlk hamle bu hücreye değmek zorunda olduğundan burada bir "ev" işareti
+  // gösterilir.
+  const homeCellColor = new Map<string, PlayerColor>();
+  players.forEach((p) => {
+    for (const corner of p.corners) {
+      const [hr, hc] = cornerCell(corner);
+      homeCellColor.set(key(hr, hc), PLAYER_COLORS[p.colorIndex]);
+    }
+  });
 
   const colorOf = (owner: number | undefined): PlayerColor | undefined =>
     owner === undefined ? undefined : PLAYER_COLORS[players[owner]?.colorIndex ?? 0];
@@ -113,7 +132,7 @@ export function Board({
   const currentColor = PLAYER_COLORS[players[current]?.colorIndex ?? 0];
 
   // Her oyuncunun bölgesi: kendi köşesi + oradan kendi taşlarıyla genişleyen
-  // alan. Sabit 5×5 köşenin aksine hamle oynandıkça büyür.
+  // alan. Sabit 4×4 köşenin aksine hamle oynandıkça büyür.
   const territories = computeAllTerritories(board, players);
   const territoryOwnerAt = (r: number, c: number): number => {
     const k = key(r, c);
@@ -133,8 +152,10 @@ export function Board({
       // Sürüklenmekte olan taş, alındığı hücrede boşmuş gibi çizilir (görsel olarak).
       const placedTile = k === dragHiddenKey ? undefined : rawPlacedTile;
       const bonus = bonuses[k];
+      const inZone = inBonusZone(r, c);
       const territoryOwner = territoryOwnerAt(r, c);
       const zone = territoryOwner >= 0 ? PLAYER_COLORS[players[territoryOwner]?.colorIndex ?? 0] : undefined;
+      const homeColor = homeCellColor.get(k);
 
       let content: React.ReactNode = null;
       let style: React.CSSProperties | undefined;
@@ -156,11 +177,16 @@ export function Board({
       } else if (placedTile) {
         classes.push('bg-transparent');
         content = <Tile tile={placedTile} variant="placed" color={currentColor} />;
-      } else if (bonus) {
-        classes.push(BONUS_CLASSES[bonus], 'cursor-pointer', 'text-[clamp(7px,1.9vw,12px)]');
-        content = BONUS_LABELS[bonus];
-        style = { ...BONUS_STYLES[bonus] };
-        if (zone) style = { ...style, outline: `1.5px solid ${zone.base}44` };
+      } else if (inZone) {
+        // Merkezdeki x2 bonus bölgesi — altın zemin, büyük "X2" filigranı
+        // bölgenin tamamının arkasına yazılır (aşağıda). Tam ortadaki tek
+        // hücre bunun dışında, turuncu zemin + kendi X3 etiketiyle öne çıkar.
+        classes.push('cursor-pointer');
+        style = bonus ? { ...CENTER_ZONE_STYLE } : { ...GOLD_ZONE_STYLE };
+        if (bonus) {
+          classes.push(CENTER_TEXT, 'text-[clamp(7px,1.9vw,12px)]');
+          content = BONUS_LABELS[bonus];
+        }
       } else if (zone) {
         // Bir oyuncunun köşesindeki boş kare: nömorfik içe gömülü + oyuncu tonu.
         classes.push('cursor-pointer');
@@ -172,6 +198,11 @@ export function Board({
         // Merkez (tarafsız) boş kare: nömorfik içe gömülü.
         classes.push('bg-[#DDE4EE] cursor-pointer');
         style = { boxShadow: 'inset 3px 3px 6px rgba(163,177,198,0.6), inset -2px -2px 5px rgba(255,255,255,0.8)' };
+      }
+
+      if (homeColor && !boardTile && !placedTile) {
+        // Oyuncunun mutlaka değmesi gereken başlangıç köşesi: ev işareti.
+        content = <HomeMark color={homeColor} />;
       }
 
       // Bu turda yerleştirilmiş (henüz oynanmamış) bir taş, tıklama yerine
@@ -212,12 +243,17 @@ export function Board({
   // Verilen hücre kümesini kapsayan TEK bir dış hat üretir (iç kesişim
   // hücrelerinde ayırıcı çizgi olmaz) — her hücrenin yalnızca kümenin
   // dışına bakan kenarlarına çizgi eklenir. `badgeScore` verilirse en üst
-  // sağdaki hücrenin köşesine puan rozeti eklenir.
+  // sağdaki hücrenin köşesine puan rozeti eklenir. `extraOpen`, kümenin
+  // dışına bakan bir kenarı da "kapalı" (çizgisiz) sayabilmek için — bonus
+  // bölgesi/merkez çerçevesi, bir oyuncunun bölgesinin İÇİNDEN geçen kendi
+  // kenarını bu şekilde bastırır, böylece oyuncunun genişleyen bölgesi
+  // içinde gereksiz bir amber çizgi kalmaz.
   const buildOutline = (
     cellsList: [number, number][],
     color: string,
     keyPrefix: string,
     badgeScore?: number,
+    extraOpen?: (r: number, c: number, nr: number, nc: number) => boolean,
   ): React.ReactNode[] => {
     const uniqueCells = [...new Map(cellsList.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
     const cellSet = new Set(uniqueCells.map(([r, c]) => key(r, c)));
@@ -228,10 +264,12 @@ export function Board({
       }
     }
     return uniqueCells.map(([r, c]) => {
-      const top = cellSet.has(key(r - 1, c));
-      const bottom = cellSet.has(key(r + 1, c));
-      const left = cellSet.has(key(r, c - 1));
-      const right = cellSet.has(key(r, c + 1));
+      const isOpen = (nr: number, nc: number) =>
+        cellSet.has(key(nr, nc)) || (extraOpen ? extraOpen(r, c, nr, nc) : false);
+      const top = isOpen(r - 1, c);
+      const bottom = isOpen(r + 1, c);
+      const left = isOpen(r, c - 1);
+      const right = isOpen(r, c + 1);
       const side = (occupied: boolean) => (occupied ? 'none' : `2.5px solid ${color}`);
       const radius = (a: boolean, b: boolean) => (!a && !b ? '5px' : '0');
       return (
@@ -281,6 +319,27 @@ export function Board({
       : [];
   });
 
+  // Bir bonus-bölgesi kenarını, iki tarafı da AYNI oyuncunun bölgesine
+  // aitse "açık" (çizgisiz) sayar — bir oyuncunun genişleyen bölgesi bonus
+  // alanına girip devam ettiğinde, amber çerçeve o iç bağlantıyı kesmesin.
+  const sameTerritoryOpen = (r: number, c: number, nr: number, nc: number) => {
+    const owner = territoryOwnerAt(r, c);
+    return owner >= 0 && owner === territoryOwnerAt(nr, nc);
+  };
+
+  // Merkezdeki x2 bonus bölgesinin tam dış hattı — altın/turuncu zeminle
+  // uyumlu koyu amber bir çerçeve.
+  const zoneCells: [number, number][] = [];
+  for (let r = BONUS_ZONE.r0; r <= BONUS_ZONE.r1; r++) {
+    for (let c = BONUS_ZONE.c0; c <= BONUS_ZONE.c1; c++) {
+      zoneCells.push([r, c]);
+    }
+  }
+  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone', undefined, sameTerritoryOpen);
+
+  // Tam ortadaki tek X3 hücresinin kendi çerçevesi — turuncu zeminle uyumlu.
+  const centerOutline = buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', undefined, sameTerritoryOpen);
+
   // En son oynanan hamlenin etrafına kalıcı açık mavi çerçeve — özellikle YZ
   // oynayınca nereye oynadığı belli olsun diye.
   const lastMoveOutline = state.lastMoveCells.length > 0
@@ -304,7 +363,15 @@ export function Board({
       >
         {cells}
 
-        {/* Her oyuncunun genişleyen bölgesinin dış hattı. */}
+        {/* Merkezdeki x2 bonus bölgesinin dış hattı. */}
+        {zoneOutline}
+
+        {/* Tam ortadaki tek X3 hücresinin kendi çerçevesi. */}
+        {centerOutline}
+
+        {/* Her oyuncunun genişleyen bölgesinin dış hattı — bonus bölgesi
+            çerçevesinin üzerinde çizilir, böylece bir oyuncunun bölgesi
+            bonus alanına ilerlediğinde sınır kendi renginde kalır. */}
         {territoryOutlines}
 
         {/* En son oynanan hamlenin etrafındaki kalıcı sarı çerçeve. */}
@@ -314,7 +381,7 @@ export function Board({
             tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
         {moveOutline}
 
-        {/* Her oyuncunun 5×5 köşesine soluk numara filigranı. */}
+        {/* Her oyuncunun 4×4 köşesine soluk numara filigranı. */}
         <div className="pointer-events-none absolute inset-1">
           {[0, 1, 2, 3].map((i) => {
             const col = cornerColor[i];
@@ -342,6 +409,24 @@ export function Board({
               </div>
             );
           })}
+        </div>
+
+        {/* Merkezdeki x2 bonus bölgesinin arkasına yazılan büyük "X2" filigranı. */}
+        <div className="pointer-events-none absolute inset-1">
+          <div
+            className="absolute flex items-center justify-center font-mono font-bold leading-none"
+            style={{
+              width: zoneFrac,
+              height: zoneFrac,
+              top: zoneTop,
+              left: zoneLeft,
+              color: '#92660A',
+              opacity: 0.28,
+              fontSize: 'clamp(60px, 24vw, 165px)',
+            }}
+          >
+            X2
+          </div>
         </div>
       </div>
 

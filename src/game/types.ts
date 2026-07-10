@@ -3,8 +3,8 @@
 /** Bir taşı/hamleyi yapan oyuncunun indeksi (0..3). */
 export type Owner = number;
 
-/** Bonus kare türleri: 2K/3K kelime, 2H/3H harf çarpanı. */
-export type BonusType = 'dw' | 'tw' | 'dl' | 'tl';
+/** Bonus kare türü: yalnızca tahtanın tam ortasındaki tek X3 (üç kat kelime) hücresi kullanır. */
+export type BonusType = 'tw';
 
 export interface Tile {
   /** Raftaki/torbadaki ham harf ('?' joker olabilir). */

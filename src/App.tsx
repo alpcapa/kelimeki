@@ -584,20 +584,13 @@ export default function App() {
           <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
               Dikkat, kelimen rakip köşesine giriyor ya da sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
-              {invasionConfirm.length > 1
-                ? invasionConfirm
-                    .map((inv, i) => (
-                      <span key={i}>
-                        <strong>{inv.ownerPts} puanını</strong> <strong>{inv.ownerName}</strong>
-                        {i < invasionConfirm.length - 1 ? ', ' : ' '}
-                      </span>
-                    ))
-                : (
-                  <>
-                    <strong>yarısını ({invasionConfirm[0].ownerPts} puan)</strong>{' '}
-                    <strong>{invasionConfirm[0].ownerName}</strong>{' '}
-                  </>
-                )}
+              {invasionConfirm
+                .map((inv, i) => (
+                  <span key={i}>
+                    <strong>{inv.ownerPts} puanını</strong> <strong>{inv.ownerName}</strong>
+                    {i < invasionConfirm.length - 1 ? ', ' : ' '}
+                  </span>
+                ))}
               kapacak. Devam etmek istiyor musun?
             </p>
             <div className="flex gap-2 mt-1">
