@@ -57,13 +57,16 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
       <div className="mb-4 flex items-center gap-3">
         <Avatar url={profile?.avatar_url} name={name} size={44} />
         <div className="min-w-0 flex-1">
-          <div className="text-base font-bold text-text truncate">
-            {name}{' '}
-            <span className="font-mono text-gold">({stats?.total_score ?? 0})</span>
-          </div>
+          <div className="text-base font-bold text-text truncate">{name}</div>
           {user?.email && (
             <div className="text-xs text-muted font-mono truncate">{user.email}</div>
           )}
+        </div>
+        <div className="text-right shrink-0">
+          <div className="font-mono text-xl font-bold text-gold">{stats?.total_score ?? 0}</div>
+          <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
+            Toplam Puan
+          </div>
         </div>
       </div>
 
