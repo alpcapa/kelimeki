@@ -699,10 +699,6 @@ export default function App() {
         <RemainingTilesModal state={state} onClose={() => setShowTiles(false)} />
       )}
 
-      {showHistory && (
-        <MoveHistoryModal state={state} onClose={() => setShowHistory(false)} />
-      )}
-
       {pendingWild && (
         <WildcardModal
           onSelect={(letter) => {
@@ -746,6 +742,10 @@ export default function App() {
         onOpenHistory={() => setShowHistory(true)}
         onClose={() => setGameOverDismissed(true)}
       />
+
+      {showHistory && (
+        <MoveHistoryModal state={state} onClose={() => setShowHistory(false)} />
+      )}
     </div>
   );
 }
