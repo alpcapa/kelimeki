@@ -47,7 +47,7 @@ export function MoveHistoryModal({ state, playerIndex, onClose }: MoveHistoryMod
                     : e.words.join(', ')
                   : '—';
             const captureNote = isInvasion
-              ? `${e.points} puanı ${state.players[e.player]?.name ?? '?'}'ye kaptırdı`
+              ? `${e.points} puanı ${state.players[e.player]?.name ?? '?'} kaptı`
               : undefined;
             return (
               <div
@@ -87,11 +87,7 @@ export function MoveHistoryModal({ state, playerIndex, onClose }: MoveHistoryMod
                   e.lostShares.length > 0 && (
                     <span className="text-[9px] font-mono text-red">
                       {e.lostShares
-                        .map((s) =>
-                          allPlayers
-                            ? `${s.amount} puanı ${state.players[s.to]?.name ?? '?'}'ye kaptırdı`
-                            : `${s.amount} puanı ${state.players[s.to]?.name ?? '?'}'ye kaptırdın`,
-                        )
+                        .map((s) => `${s.amount} puanı ${state.players[s.to]?.name ?? '?'} kaptı`)
                         .join(', ')}
                     </span>
                   )
