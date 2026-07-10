@@ -83,14 +83,20 @@ export function HelpModal({ onClose }: HelpModalProps) {
           </P>
         </Section>
 
-        <Section title="Köşe Vergisi">
+        <Section title="Bölge Vergisi">
           <P>
-            İlk hamleden sonra bir rakibin köşesine de taş koyabilirsin — buna hiçbir ön koşul
-            yok, her zaman serbesttir. Ama bir hamlen bir rakip köşesinin içine düşerse ya da
-            dışarıdan sınırına bitişik olursa (köşenin içine girmen şart değil, kenarına değmesi
-            yeter), o hamleden kazandığın puanın 1/3'ü köşenin sahibine gider, 2/3'ü sende kalır.
-            Aynı hamle iki farklı rakip köşesiyle birden etkileşirse puan üç kişi arasında (sen ve
-            iki köşe sahibi) eşit paylaşılır — bu durumda herkese 1/3 düşer.
+            Her oyuncunun bölgesi 4×4'lük köşeyle sınırlı değildir: köşesinden başlayıp, o
+            oyuncunun kendi taşlarıyla ortogonal (yatay/dikey) olarak bağlı hücrelere doğru
+            oyun ilerledikçe genişler. Board üzerinde her oyuncunun bölgesinin güncel dış hattı
+            kendi rengiyle çizilir.
+          </P>
+          <P>
+            İlk hamleden sonra bir rakibin bölgesine de taş koyabilirsin — buna hiçbir ön koşul
+            yok, her zaman serbesttir. Ama bir hamlen bir rakip bölgesinin içine düşerse ya da
+            dışarıdan sınırına bitişik olursa (bölgenin içine girmen şart değil, kenarına
+            değmesi yeter), o hamleden kazandığın puanın 1/3'ü bölge sahibine gider, 2/3'ü sende
+            kalır. Aynı hamle iki farklı rakip bölgesiyle birden etkileşirse puan üç kişi
+            arasında (sen ve iki bölge sahibi) eşit paylaşılır — bu durumda herkese 1/3 düşer.
           </P>
         </Section>
 
