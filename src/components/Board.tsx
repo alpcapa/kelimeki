@@ -348,14 +348,16 @@ export function Board({
       >
         {cells}
 
-        {/* Her oyuncunun genişleyen bölgesinin dış hattı. */}
-        {territoryOutlines}
-
         {/* Merkezdeki x2 bonus bölgesinin dış hattı. */}
         {zoneOutline}
 
         {/* Tam ortadaki tek X3 hücresinin kendi çerçevesi. */}
         {centerOutline}
+
+        {/* Her oyuncunun genişleyen bölgesinin dış hattı — bonus bölgesi
+            çerçevesinin üzerinde çizilir, böylece bir oyuncunun bölgesi
+            bonus alanına ilerlediğinde sınır kendi renginde kalır. */}
+        {territoryOutlines}
 
         {/* En son oynanan hamlenin etrafındaki kalıcı sarı çerçeve. */}
         {lastMoveOutline}
