@@ -101,7 +101,7 @@ export function Setup({ onStart }: SetupProps) {
         <p className="text-muted text-xs font-mono mt-4">
           Çok farklı bir kelime oyunu sizlerle. Her oyuncunun köşesi onun
           kalesi gibidir. Oyuna köşenden başlayıp ilerlersin. Köşene giren ya
-          da sınırına değen olursa cezayı keser puanın yarısını alırsın. Haydi
+          da sınırına değen olursa cezayı keser puanının 1/3'ünü alırsın. Haydi
           sen de dene ve gör.
         </p>
         <button

@@ -126,7 +126,8 @@ export function findAIMove(
       return;
     }
     // Paylaşım sonrası YZ'ye kalacak gerçek puan (bkz. computeInvasionSplit).
-    const share = Math.round(score / (touchedIdx.size + 1));
+    const denom = touchedIdx.size === 1 ? 3 : touchedIdx.size + 1;
+    const share = Math.round(score / denom);
     const effective = score - share * touchedIdx.size;
     if (effective > bestAnyEffective) {
       bestAnyEffective = effective;

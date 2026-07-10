@@ -207,12 +207,14 @@ export function computeAllTerritories(board: Board, players: Player[]): Set<stri
 /**
  * Rakip bölge(ler)ine sınır vergisini hesaplar. Bu tur konan taşlardan biri
  * bir rakip bölgesinin içine düşüyorsa (girme) ya da dışarıdan sınırına
- * bitişikse (değme), kazanılan puan ikiye bölünür (yarısı bölge sahibine).
- * Bölge artık sabit 5x5 köşe değil, `computeTerritory` ile hesaplanan —
- * oyuncunun kendi taşlarıyla köşesinden genişlettiği— dinamik alandır.
- * Rakip bölgesine girmek için hiçbir ön koşul yok — her zaman serbest.
- * Aynı anda iki farklı rakip bölgesine giriliyor/değiliyorsa puan üç kişi
- * arasında (saldırgan + iki bölge sahibi) eşit paylaşılır. Yuvarlama farkı
+ * bitişikse (değme), kazanılan puandan bir pay bölge sahibine gider. Bölge
+ * artık sabit 5x5 köşe değil, `computeTerritory` ile hesaplanan — oyuncunun
+ * kendi taşlarıyla köşesinden genişlettiği— dinamik alandır. Rakip bölgesine
+ * girmek için hiçbir ön koşul yok — her zaman serbest.
+ * Tek bir rakip bölgesiyle etkileşiliyorsa pay eşit değildir: puanın 1/3'ü
+ * bölge sahibine, 2/3'ü saldırgana kalır. İki farklı rakip bölgesiyle birden
+ * etkileşiliyorsa puan üç kişi arasında (saldırgan + iki bölge sahibi) eşit
+ * paylaşılır — bu durumda herkese zaten 1/3 düşer. Yuvarlama farkı
  * saldırganda kalır, böylece toplam puan her zaman korunur.
  */
 export function computeInvasionSplit(
@@ -244,7 +246,8 @@ export function computeInvasionSplit(
     }
   }
   if (touchedIdx.size === 0) return { pts: basePts, shares: [] };
-  const share = Math.round(basePts / (touchedIdx.size + 1));
+  const denom = touchedIdx.size === 1 ? 3 : touchedIdx.size + 1;
+  const share = Math.round(basePts / denom);
   const shares = [...touchedIdx].map((index) => ({ index, amount: share }));
   const pts = basePts - share * touchedIdx.size;
   return { pts, shares };

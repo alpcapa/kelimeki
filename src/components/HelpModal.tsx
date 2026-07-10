@@ -88,9 +88,9 @@ export function HelpModal({ onClose }: HelpModalProps) {
             İlk hamleden sonra bir rakibin köşesine de taş koyabilirsin — buna hiçbir ön koşul
             yok, her zaman serbesttir. Ama bir hamlen bir rakip köşesinin içine düşerse ya da
             dışarıdan sınırına bitişik olursa (köşenin içine girmen şart değil, kenarına değmesi
-            yeter), o hamleden kazandığın puanın yarısı köşenin sahibine gider. Aynı hamle iki
-            farklı rakip köşesiyle birden etkileşirse puan üç kişi arasında (sen ve iki köşe
-            sahibi) eşit paylaşılır.
+            yeter), o hamleden kazandığın puanın 1/3'ü köşenin sahibine gider, 2/3'ü sende kalır.
+            Aynı hamle iki farklı rakip köşesiyle birden etkileşirse puan üç kişi arasında (sen ve
+            iki köşe sahibi) eşit paylaşılır — bu durumda herkese 1/3 düşer.
           </P>
         </Section>
 
