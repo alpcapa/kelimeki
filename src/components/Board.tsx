@@ -1,5 +1,6 @@
 // Harfik — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
 import {
+  BOARD_CENTER,
   BONUS_LABELS,
   BONUS_ZONE,
   CORNER,
@@ -321,6 +322,9 @@ export function Board({
   }
   const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone');
 
+  // Tam ortadaki tek X3 hücresinin kendi çerçevesi — turuncu zeminle uyumlu.
+  const centerOutline = buildOutline([BOARD_CENTER], '#9A3412', 'center-zone');
+
   // En son oynanan hamlenin etrafına kalıcı açık mavi çerçeve — özellikle YZ
   // oynayınca nereye oynadığı belli olsun diye.
   const lastMoveOutline = state.lastMoveCells.length > 0
@@ -349,6 +353,9 @@ export function Board({
 
         {/* Merkezdeki x2 bonus bölgesinin dış hattı. */}
         {zoneOutline}
+
+        {/* Tam ortadaki tek X3 hücresinin kendi çerçevesi. */}
+        {centerOutline}
 
         {/* En son oynanan hamlenin etrafındaki kalıcı sarı çerçeve. */}
         {lastMoveOutline}
