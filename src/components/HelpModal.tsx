@@ -176,11 +176,25 @@ export function HelpModal({ onClose }: HelpModalProps) {
           </P>
         </Section>
 
+        <Section title="Skor Kartı ve Puanlama">
+          <P>
+            Giriş yapmış kullanıcılar için her oyun sonucu Skor Kartı'na kaydedilir. Oyun içi
+            puanının yanında, sıralamana göre bir <strong>lig puanı</strong> de kazanırsın:
+            oyunu birinci bitirirsen <strong>+2</strong>, ikinci bitirirsen <strong>+1</strong>
+            puan; üçüncü ve dördüncü sıralar 0 puan getirir. Tam beraberlikte aynı sırayı
+            paylaşan oyuncuların hepsi o sıranın puanını alır.
+          </P>
+          <P>
+            Bu lig puanları 2 kişilik ve 4 kişilik oyunlar için ayrı ayrı toplanır; Skor
+            Kartı'ndaki sekmeler bu iki modun istatistiklerini ayrı ayrı, üstteki "Toplam Puan"
+            ise ikisinin toplamını gösterir.
+          </P>
+        </Section>
+
         <Section title="Puan Tablosu">
           <P>
-            Torbada toplam 100 taş bulunur (2 kişilik oyun). Aşağıdaki dökümde adetler bu
-            değere göredir; 4 kişilik oyunda köşe etkileşimi daha çabuk yaşansın diye torba
-            %20 daha büyük (toplam 115 taş) kurulur, oranlar aynı kalır.
+            Torbada oyuncu sayısından bağımsız olarak sabit toplam 100 taş bulunur. Aşağıdaki
+            döküm bu değere göredir.
           </P>
           <div className="flex flex-col gap-1 mt-0.5">
             <TileRow pts="1" tiles="A (×12)  E (×8)  İ (×7)  K (×7)  L (×7)  R (×6)  N (×5)  T (×5)" />
