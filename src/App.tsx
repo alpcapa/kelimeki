@@ -54,11 +54,9 @@ export default function App() {
   // Torba (kalan taşlar) penceresi.
   const [showTiles, setShowTiles] = useState(false);
 
-  // Hamle geçmişi penceresi.
+  // Oyun geçmişi penceresi (tüm oyuncuların hamleleri) — hem oynarken
+  // Board'daki linkten, hem oyun bitince GameOver ekranından açılabilir.
   const [showHistory, setShowHistory] = useState(false);
-
-  // Oyun sonu ekranındaki tüm oyunculara ait hamle geçmişi penceresi.
-  const [showAllHistory, setShowAllHistory] = useState(false);
 
   // Oyun sonu ekranı kapatıldı mı (X'e basıldı mı) — board'u görmek için.
   const [gameOverDismissed, setGameOverDismissed] = useState(false);
@@ -273,7 +271,6 @@ export default function App() {
   // asla gösterilmez, bunun yerine ilk insan oyuncuya düşülür.
   const rackPlayer = me.isAI ? (state.players.find((p) => !p.isAI) ?? me) : me;
   const rackColor = PLAYER_COLORS[rackPlayer.colorIndex];
-  const rackPlayerIndex = state.players.indexOf(rackPlayer);
 
   // Raftan bir taş ya da tahtaya bu tur konmuş bir taş sürüklenmeye başlanır.
   const beginDrag = (source: DragSource, e: React.PointerEvent) => {
@@ -677,15 +674,7 @@ export default function App() {
       )}
 
       {showHistory && (
-        <MoveHistoryModal
-          state={state}
-          playerIndex={rackPlayerIndex}
-          onClose={() => setShowHistory(false)}
-        />
-      )}
-
-      {showAllHistory && (
-        <MoveHistoryModal state={state} onClose={() => setShowAllHistory(false)} />
+        <MoveHistoryModal state={state} onClose={() => setShowHistory(false)} />
       )}
 
       {pendingWild && (
@@ -728,7 +717,7 @@ export default function App() {
         show={state.isGameOver && !gameOverDismissed}
         players={state.players}
         turnCount={state.turnCount}
-        onOpenHistory={() => setShowAllHistory(true)}
+        onOpenHistory={() => setShowHistory(true)}
         onClose={() => setGameOverDismissed(true)}
       />
     </div>
