@@ -49,7 +49,7 @@ export function UserMenu() {
       <>
         <button
           onClick={() => setModal('auth')}
-          className="font-mono text-[9px] uppercase tracking-[1px] px-3 py-1 rounded-md border bg-accent border-accent text-white font-bold leading-none active:scale-[0.97] transition-transform"
+          className="font-mono text-[9px] uppercase tracking-[1px] px-3 py-3 rounded-md border bg-accent border-accent text-white font-bold leading-none active:scale-[0.97] transition-transform"
         >
           Giriş
         </button>
