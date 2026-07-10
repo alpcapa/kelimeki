@@ -90,4 +90,5 @@ export interface PlayerStats {
   longest_word: string | null;
   first_places: number;
   second_places: number;
+  total_score: number;
 }
