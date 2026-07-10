@@ -1,4 +1,5 @@
 // Harfik — oyun sonu ekranı (çok oyunculu)
+import { Modal } from './Modal';
 import { PLAYER_COLORS } from '../game/constants';
 import type { Player } from '../game/types';
 import { trUpper } from '../utils/turkish';
@@ -22,67 +23,61 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
   const winColor = PLAYER_COLORS[top.p.colorIndex];
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-[18px] p-6 bg-[rgba(255,255,255,0.94)]">
-      <button
-        onClick={onClose}
-        aria-label="Kapat"
-        className="absolute top-4 right-4 text-muted hover:text-text text-xl leading-none w-9 h-9 flex items-center justify-center rounded-full active:scale-90 transition-transform"
-      >
-        ✕
-      </button>
-
-      <div
-        className="font-mono text-[30px] font-bold tracking-[2px] text-center"
-        style={{ color: tie ? '#B7791F' : winColor.base }}
-      >
-        {tie ? 'BERABERE' : `${trUpper(top.p.name)} KAZANDI`}
-      </div>
-
-      <div className="bg-panel border border-border rounded-[10px] px-7 py-5 text-center flex flex-col gap-2.5 min-w-[240px]">
-        <div className="flex justify-end items-center gap-4 text-[10px] uppercase tracking-wide text-muted">
-          <span className="w-8 text-right">Kalan</span>
-          <span className="w-10 text-right">Toplam</span>
+    <Modal title="Oyun Bitti" onClose={onClose}>
+      <div className="flex flex-col items-center gap-[18px]">
+        <div
+          className="font-mono text-[26px] font-bold tracking-[2px] text-center"
+          style={{ color: tie ? '#B7791F' : winColor.base }}
+        >
+          {tie ? 'BERABERE' : `${trUpper(top.p.name)} KAZANDI`}
         </div>
-        {ranked.map(({ p, i }, rank) => {
-          const col = PLAYER_COLORS[p.colorIndex];
-          const remaining = p.rack.reduce((s, t) => s + t.pts, 0);
-          return (
-            <div key={i} className="flex justify-between items-center gap-8 text-[15px]">
-              <span className="flex items-center gap-2">
-                <span
-                  className="w-3 h-3 rounded-sm"
-                  style={{ background: col.base }}
-                />
-                <span className="text-text">
-                  {rank + 1}. {p.name}
-                </span>
-              </span>
-              <span className="flex items-center gap-4">
-                <span className="w-8 text-right font-mono text-[13px] text-muted">
-                  {remaining > 0 ? `-${remaining}` : ''}
-                </span>
-                <span
-                  className="w-10 text-right font-mono text-[22px] font-bold"
-                  style={{ color: col.base }}
-                >
-                  {p.score}
-                </span>
-              </span>
-            </div>
-          );
-        })}
-        <div className="flex justify-between gap-8 text-[12px] border-t border-border pt-2 mt-1">
-          <span className="text-muted">Toplam hamle</span>
-          <span className="font-mono font-bold text-muted">{turnCount}</span>
-        </div>
-      </div>
 
-      <button
-        onClick={onOpenHistory}
-        className="text-[11px] font-mono font-bold uppercase tracking-[1px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity"
-      >
-        Oyun Geçmişi
-      </button>
-    </div>
+        <div className="bg-bg border border-border rounded-[10px] px-5 py-4 text-center flex flex-col gap-2.5 w-full">
+          <div className="flex justify-end items-center gap-4 text-[10px] uppercase tracking-wide text-muted">
+            <span className="w-8 text-right">Kalan</span>
+            <span className="w-10 text-right">Toplam</span>
+          </div>
+          {ranked.map(({ p, i }, rank) => {
+            const col = PLAYER_COLORS[p.colorIndex];
+            const remaining = p.rack.reduce((s, t) => s + t.pts, 0);
+            return (
+              <div key={i} className="flex justify-between items-center gap-8 text-[15px]">
+                <span className="flex items-center gap-2">
+                  <span
+                    className="w-3 h-3 rounded-sm"
+                    style={{ background: col.base }}
+                  />
+                  <span className="text-text">
+                    {rank + 1}. {p.name}
+                  </span>
+                </span>
+                <span className="flex items-center gap-4">
+                  <span className="w-8 text-right font-mono text-[13px] text-muted">
+                    {remaining > 0 ? `-${remaining}` : ''}
+                  </span>
+                  <span
+                    className="w-10 text-right font-mono text-[22px] font-bold"
+                    style={{ color: col.base }}
+                  >
+                    {p.score}
+                  </span>
+                </span>
+              </div>
+            );
+          })}
+          <div className="flex justify-between gap-8 text-[12px] border-t border-border pt-2 mt-1">
+            <span className="text-muted">Toplam hamle</span>
+            <span className="font-mono font-bold text-muted">{turnCount}</span>
+          </div>
+        </div>
+
+        <button
+          onClick={onOpenHistory}
+          className="text-[11px] font-mono font-bold uppercase tracking-[1px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity"
+        >
+          Oyun Geçmişi
+        </button>
+      </div>
+    </Modal>
   );
 }

@@ -484,7 +484,6 @@ export default function App() {
       <GameHeader
         state={state}
         onLogoClick={() => setShowExitConfirm(true)}
-        onNewGame={() => dispatch({ type: 'INIT' })}
       />
 
       <Board
@@ -537,13 +536,22 @@ export default function App() {
             />
           </div>
           {!state.swapMode && (
-            <button
-              disabled={!canAct || validating}
-              onClick={() => { void handlePlay(); }}
-              className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
-            >
-              {validating ? 'Kontrol…' : 'Oyna'}
-            </button>
+            state.isGameOver ? (
+              <button
+                onClick={() => dispatch({ type: 'INIT' })}
+                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform"
+              >
+                Yeni Oyun Aç
+              </button>
+            ) : (
+              <button
+                disabled={!canAct || validating}
+                onClick={() => { void handlePlay(); }}
+                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              >
+                {validating ? 'Kontrol…' : 'Oyna'}
+              </button>
+            )
           )}
         </div>
 
