@@ -90,5 +90,6 @@ export interface PlayerStats {
   longest_word: string | null;
   first_places: number;
   second_places: number;
+  /** Lig puanı: galibiyet 2, beraberlik 1, mağlubiyet 0 (oyun içi ham skorların toplamı değil). */
   total_score: number;
 }

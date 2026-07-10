@@ -4,7 +4,6 @@ import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
 import { useAuth } from '../hooks/useAuth';
 import { fetchPlayerStats } from '../lib/api';
-import type { PlayerStats } from '../lib/database.types';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
@@ -30,20 +29,27 @@ export function Setup({ onStart }: SetupProps) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
-  const [accountStats, setAccountStats] = useState<PlayerStats | null | undefined>(undefined);
+  // Toplam puan (isim yanında gösterilen) tüm oyun modlarının (2/4 kişilik)
+  // toplamıdır — seçili sekmeye göre değişmez.
+  const [accountTotalScore, setAccountTotalScore] = useState<number | undefined>(undefined);
   useEffect(() => {
     if (!user) {
-      setAccountStats(undefined);
+      setAccountTotalScore(undefined);
       return;
     }
     let cancelled = false;
-    fetchPlayerStats(count).then((s) => {
-      if (!cancelled) setAccountStats(s);
+    Promise.all([fetchPlayerStats(2), fetchPlayerStats(4)]).then(([s2, s4]) => {
+      if (cancelled) return;
+      if (!s2 && !s4) {
+        setAccountTotalScore(undefined);
+        return;
+      }
+      setAccountTotalScore((s2?.total_score ?? 0) + (s4?.total_score ?? 0));
     });
     return () => {
       cancelled = true;
     };
-  }, [user, count]);
+  }, [user]);
 
   const setName = (i: number, v: string) =>
     setNames((cur) => cur.map((n, idx) => (idx === i ? v : n)));
@@ -188,8 +194,8 @@ export function Setup({ onStart }: SetupProps) {
               {isAccount ? (
                 <span className="flex-1 min-w-0 font-sans text-sm font-bold text-text truncate">
                   {accountName}
-                  {accountStats && (
-                    <span className="font-mono font-normal text-muted"> ({accountStats.total_score})</span>
+                  {accountTotalScore !== undefined && (
+                    <span className="font-mono font-normal text-muted"> ({accountTotalScore})</span>
                   )}
                 </span>
               ) : (
