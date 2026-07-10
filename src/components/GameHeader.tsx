@@ -29,7 +29,7 @@ export function GameHeader({ state, onLogoClick, onNewGame }: GameHeaderProps) {
         {isGameOver && onNewGame && (
           <button
             onClick={onNewGame}
-            className="shrink-0 bg-accent text-white rounded-md px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[1px] font-sans active:scale-95 transition-transform"
+            className="shrink-0 bg-accent text-white rounded-md px-2.5 py-1 text-[9px] font-bold uppercase tracking-[1px] font-sans leading-none active:scale-95 transition-transform"
           >
             Yeni Oyun
           </button>
