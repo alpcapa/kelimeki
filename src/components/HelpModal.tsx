@@ -83,14 +83,28 @@ export function HelpModal({ onClose }: HelpModalProps) {
           </P>
         </Section>
 
-        <Section title="Köşe Vergisi">
+        <Section title="Bölge Vergisi">
           <P>
-            İlk hamleden sonra bir rakibin köşesine de taş koyabilirsin — buna hiçbir ön koşul
-            yok, her zaman serbesttir. Ama bir hamlen bir rakip köşesinin içine düşerse ya da
-            dışarıdan sınırına bitişik olursa (köşenin içine girmen şart değil, kenarına değmesi
-            yeter), o hamleden kazandığın puanın 1/3'ü köşenin sahibine gider, 2/3'ü sende kalır.
-            Aynı hamle iki farklı rakip köşesiyle birden etkileşirse puan üç kişi arasında (sen ve
-            iki köşe sahibi) eşit paylaşılır — bu durumda herkese 1/3 düşer.
+            Her oyuncunun bölgesi 4×4'lük köşeyle sınırlı değildir: köşesinden başlayıp, o
+            oyuncunun kendi taşlarıyla ortogonal (yatay/dikey) olarak bağlı hücrelere doğru
+            oyun ilerledikçe genişler. Board üzerinde her oyuncunun bölgesinin güncel dış hattı
+            kendi rengiyle çizilir.
+          </P>
+          <P>
+            İlk hamleden sonra bir rakibin bölgesine de taş koyabilirsin — buna hiçbir ön koşul
+            yok, her zaman serbesttir. Ama bir hamlen bir rakip bölgesinin içine düşerse ya da
+            dışarıdan sınırına bitişik olursa (bölgenin içine girmen şart değil, kenarına
+            değmesi yeter), o hamleden kazandığın puanın 1/3'ü bölge sahibine gider, 2/3'ü sende
+            kalır. Aynı hamle iki farklı rakip bölgesiyle birden etkileşirse puan üç kişi
+            arasında (sen ve iki bölge sahibi) eşit paylaşılır — bu durumda herkese 1/3 düşer.
+          </P>
+          <P>
+            Vergi ödeyerek rakip bölgesine koyduğun taş orada kalıcı olarak senindir: bölgeler
+            her hamleden sonra yeniden hesaplanır, bu yüzden o taş kendi taşlarınla kesintisiz
+            bağlıysa (köşenden oraya kadar uzanan bir zincir oluşturuyorsa) artık senin
+            bölgene dahil olur — rakibin bölgesi o noktada küçülür, seninki büyür. Sadece tek
+            başına, kendi zincirine bağlanmayan izole bir taş bırakırsan orası hâlâ rakibin
+            bölgesinde sayılır.
           </P>
         </Section>
 
@@ -176,11 +190,25 @@ export function HelpModal({ onClose }: HelpModalProps) {
           </P>
         </Section>
 
+        <Section title="Skor Kartı ve Puanlama">
+          <P>
+            Giriş yapmış kullanıcılar için her oyun sonucu Skor Kartı'na kaydedilir. Oyun içi
+            puanının yanında, sıralamana göre bir <strong>lig puanı</strong> de kazanırsın:
+            oyunu birinci bitirirsen <strong>+2</strong>, ikinci bitirirsen <strong>+1</strong>
+            puan; üçüncü ve dördüncü sıralar 0 puan getirir. Tam beraberlikte aynı sırayı
+            paylaşan oyuncuların hepsi o sıranın puanını alır.
+          </P>
+          <P>
+            Bu lig puanları 2 kişilik ve 4 kişilik oyunlar için ayrı ayrı toplanır; Skor
+            Kartı'ndaki sekmeler bu iki modun istatistiklerini ayrı ayrı, üstteki "Toplam Puan"
+            ise ikisinin toplamını gösterir.
+          </P>
+        </Section>
+
         <Section title="Puan Tablosu">
           <P>
-            Torbada toplam 100 taş bulunur (2 kişilik oyun). Aşağıdaki dökümde adetler bu
-            değere göredir; 4 kişilik oyunda köşe etkileşimi daha çabuk yaşansın diye torba
-            %20 daha büyük (toplam 115 taş) kurulur, oranlar aynı kalır.
+            Torbada oyuncu sayısından bağımsız olarak sabit toplam 100 taş bulunur. Aşağıdaki
+            döküm bu değere göredir.
           </P>
           <div className="flex flex-col gap-1 mt-0.5">
             <TileRow pts="1" tiles="A (×12)  E (×8)  İ (×7)  K (×7)  L (×7)  R (×6)  N (×5)  T (×5)" />

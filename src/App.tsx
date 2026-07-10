@@ -57,6 +57,15 @@ export default function App() {
   // Hamle geçmişi penceresi.
   const [showHistory, setShowHistory] = useState(false);
 
+  // Oyun sonu ekranındaki tüm oyunculara ait hamle geçmişi penceresi.
+  const [showAllHistory, setShowAllHistory] = useState(false);
+
+  // Oyun sonu ekranı kapatıldı mı (X'e basıldı mı) — board'u görmek için.
+  const [gameOverDismissed, setGameOverDismissed] = useState(false);
+  useEffect(() => {
+    if (state.isGameOver) setGameOverDismissed(false);
+  }, [state.isGameOver]);
+
   // Joker taş konurken hangi harfe dönüşeceğini seçme penceresi.
   const [pendingWild, setPendingWild] = useState<
     { r: number; c: number; rackIndex?: number } | null
@@ -465,6 +474,7 @@ export default function App() {
       <GameHeader
         state={state}
         onLogoClick={() => setShowExitConfirm(true)}
+        onNewGame={() => dispatch({ type: 'INIT' })}
       />
 
       <Board
@@ -656,9 +666,13 @@ export default function App() {
       {showHistory && (
         <MoveHistoryModal
           state={state}
-          humanIndex={rackPlayerIndex}
+          playerIndex={rackPlayerIndex}
           onClose={() => setShowHistory(false)}
         />
+      )}
+
+      {showAllHistory && (
+        <MoveHistoryModal state={state} onClose={() => setShowAllHistory(false)} />
       )}
 
       {pendingWild && (
@@ -698,10 +712,11 @@ export default function App() {
       )}
 
       <GameOver
-        show={state.isGameOver}
+        show={state.isGameOver && !gameOverDismissed}
         players={state.players}
         turnCount={state.turnCount}
-        onRestart={() => dispatch({ type: 'INIT' })}
+        onOpenHistory={() => setShowAllHistory(true)}
+        onClose={() => setGameOverDismissed(true)}
       />
     </div>
   );
