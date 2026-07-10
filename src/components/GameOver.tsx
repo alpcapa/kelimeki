@@ -30,8 +30,13 @@ export function GameOver({ show, players, turnCount, onRestart }: GameOverProps)
       </div>
 
       <div className="bg-panel border border-border rounded-[10px] px-7 py-5 text-center flex flex-col gap-2.5 min-w-[240px]">
+        <div className="flex justify-end items-center gap-4 text-[10px] uppercase tracking-wide text-muted">
+          <span className="w-8 text-right">Kalan</span>
+          <span className="w-10 text-right">Toplam</span>
+        </div>
         {ranked.map(({ p, i }, rank) => {
           const col = PLAYER_COLORS[p.colorIndex];
+          const remaining = p.rack.reduce((s, t) => s + t.pts, 0);
           return (
             <div key={i} className="flex justify-between items-center gap-8 text-[15px]">
               <span className="flex items-center gap-2">
@@ -43,11 +48,16 @@ export function GameOver({ show, players, turnCount, onRestart }: GameOverProps)
                   {rank + 1}. {p.name}
                 </span>
               </span>
-              <span
-                className="font-mono text-[22px] font-bold"
-                style={{ color: col.base }}
-              >
-                {p.score}
+              <span className="flex items-center gap-4">
+                <span className="w-8 text-right font-mono text-[13px] text-muted">
+                  {remaining > 0 ? `-${remaining}` : ''}
+                </span>
+                <span
+                  className="w-10 text-right font-mono text-[22px] font-bold"
+                  style={{ color: col.base }}
+                >
+                  {p.score}
+                </span>
               </span>
             </div>
           );

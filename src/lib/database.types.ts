@@ -90,4 +90,10 @@ export interface PlayerStats {
   longest_word: string | null;
   first_places: number;
   second_places: number;
+  /**
+   * Lig puanı (oyun içi ham skorların toplamı değil): 1.=2, 2.=1, 3./4.=0.
+   * Beraber bitirenler grubun en iyi sırasının puanını paylaşır (2 kişilik
+   * tam beraberlikte ikisi de rank=1 olur, ikisi de 2 alır).
+   */
+  total_score: number;
 }

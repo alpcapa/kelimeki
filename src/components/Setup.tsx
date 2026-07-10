@@ -1,8 +1,9 @@
 // Harfik — oyun kurulum ekranı: oyuncu sayısı (2/4), isimler ve YZ seçimi
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
 import { useAuth } from '../hooks/useAuth';
+import { fetchPlayerStats } from '../lib/api';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
@@ -27,6 +28,28 @@ export function Setup({ onStart }: SetupProps) {
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+
+  // Toplam puan (isim yanında gösterilen) tüm oyun modlarının (2/4 kişilik)
+  // toplamıdır — seçili sekmeye göre değişmez.
+  const [accountTotalScore, setAccountTotalScore] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (!user) {
+      setAccountTotalScore(undefined);
+      return;
+    }
+    let cancelled = false;
+    Promise.all([fetchPlayerStats(2), fetchPlayerStats(4)]).then(([s2, s4]) => {
+      if (cancelled) return;
+      if (!s2 && !s4) {
+        setAccountTotalScore(undefined);
+        return;
+      }
+      setAccountTotalScore((s2?.total_score ?? 0) + (s4?.total_score ?? 0));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const setName = (i: number, v: string) =>
     setNames((cur) => cur.map((n, idx) => (idx === i ? v : n)));
@@ -171,6 +194,9 @@ export function Setup({ onStart }: SetupProps) {
               {isAccount ? (
                 <span className="flex-1 min-w-0 font-sans text-sm font-bold text-text truncate">
                   {accountName}
+                  {accountTotalScore !== undefined && (
+                    <span className="font-mono font-normal text-muted"> ({accountTotalScore})</span>
+                  )}
                 </span>
               ) : (
                 <input
