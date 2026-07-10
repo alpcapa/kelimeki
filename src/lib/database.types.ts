@@ -90,6 +90,10 @@ export interface PlayerStats {
   longest_word: string | null;
   first_places: number;
   second_places: number;
-  /** Lig puanı: galibiyet 2, beraberlik 1, mağlubiyet 0 (oyun içi ham skorların toplamı değil). */
+  /**
+   * Lig puanı (oyun içi ham skorların toplamı değil): 1.=2, 2.=1, 3./4.=0.
+   * Beraber bitirenler grubun en iyi sırasının puanını paylaşır; istisna:
+   * 2 kişilik tam beraberlikte ikisi de 1 alır.
+   */
   total_score: number;
 }
