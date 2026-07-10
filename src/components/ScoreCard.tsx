@@ -41,6 +41,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     stats && stats.games_played > 0 ? `%${Math.round((n / stats.games_played) * 100)}` : '%0';
 
   const cells: { label: string; value: number | string; cls?: string; wide?: boolean }[] = [
+    { label: 'Kazanılan Puan', value: stats?.total_score ?? 0, cls: 'text-gold' },
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
     { label: 'Toplam Birincilik', value: stats?.first_places ?? 0, cls: 'text-gold' },
     { label: 'Toplam İkincilik', value: stats?.second_places ?? 0, cls: 'text-accent' },
