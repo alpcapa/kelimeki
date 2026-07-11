@@ -83,13 +83,21 @@ export async function fetchPlayerStats(playerCount: number): Promise<PlayerStats
   return (data as PlayerStats) ?? null;
 }
 
-/** Oturum açan oyuncunun belirli oyuncu sayısındaki tüm oyunlarını döner (en yeni önce). */
-export async function fetchMyGames(playerCount: number, limit = 50): Promise<GameHistoryEntry[]> {
-  if (!supabase) return [];
+/**
+ * Oturum açan oyuncunun belirli oyuncu sayısındaki oyunlarını sayfalı biçimde
+ * döner (en yeni önce), `GameHistoryModal`'ın kaydırdıkça yüklemesi (lazy
+ * load) için. `hasMore`, bir sonraki sayfanın olup olmadığını bildirir.
+ */
+export async function fetchMyGames(
+  playerCount: number,
+  offset: number,
+  limit = 20,
+): Promise<{ games: GameHistoryEntry[]; hasMore: boolean }> {
+  if (!supabase) return { games: [], hasMore: false };
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return [];
+  if (!user) return { games: [], hasMore: false };
 
   const { data, error } = await supabase
     .from('games')
@@ -97,12 +105,13 @@ export async function fetchMyGames(playerCount: number, limit = 50): Promise<Gam
     .eq('user_id', user.id)
     .eq('player_count', playerCount)
     .order('created_at', { ascending: false })
-    .limit(limit);
+    .range(offset, offset + limit); // limit+1 satır: sonraki sayfa var mı anlamak için
   if (error) {
     console.error('[Harfik] fetchMyGames hatası:', error.message);
-    return [];
+    return { games: [], hasMore: false };
   }
-  return (data as GameHistoryEntry[]) ?? [];
+  const rows = (data as GameHistoryEntry[]) ?? [];
+  return { games: rows.slice(0, limit), hasMore: rows.length > limit };
 }
 
 /** Oturum açan oyuncunun profilini döner. */

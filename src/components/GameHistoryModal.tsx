@@ -1,5 +1,5 @@
-// Harfik — oturum açan kullanıcının geçmiş tüm oyunlarının listesi
-import { useEffect, useState } from 'react';
+// Harfik — oturum açan kullanıcının geçmiş tüm oyunlarının listesi (lazy load)
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { fetchMyGames } from '../lib/api';
 import type { GameHistoryEntry, GamePlayerSnapshot } from '../lib/database.types';
@@ -8,6 +8,8 @@ interface GameHistoryModalProps {
   playerCount: number;
   onClose: () => void;
 }
+
+const PAGE_SIZE = 20;
 
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
@@ -29,23 +31,68 @@ function fallbackPlayers(entry: GameHistoryEntry): { known: GamePlayerSnapshot[]
 }
 
 export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps) {
-  const [games, setGames] = useState<GameHistoryEntry[] | null>(null);
+  const [games, setGames] = useState<GameHistoryEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  // Sekme (oyuncu sayısı) değişince listeyi baştan yükle.
   useEffect(() => {
-    setGames(null);
-    void fetchMyGames(playerCount).then(setGames);
+    let cancelled = false;
+    setLoading(true);
+    setGames([]);
+    setHasMore(true);
+    void fetchMyGames(playerCount, 0, PAGE_SIZE).then(({ games: page, hasMore: more }) => {
+      if (cancelled) return;
+      setGames(page);
+      setHasMore(more);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [playerCount]);
+
+  const loadMore = useCallback(() => {
+    setLoadingMore((already) => {
+      if (already) return already;
+      void fetchMyGames(playerCount, games.length, PAGE_SIZE).then(({ games: page, hasMore: more }) => {
+        setGames((cur) => [...cur, ...page]);
+        setHasMore(more);
+        setLoadingMore(false);
+      });
+      return true;
+    });
+  }, [playerCount, games.length]);
+
+  // Liste kaydırılıp en alttaki sentinel göründüğünde bir sonraki sayfayı yükler.
+  useEffect(() => {
+    if (!hasMore || loading) return;
+    const sentinel = sentinelRef.current;
+    const root = scrollRef.current;
+    if (!sentinel || !root) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMore();
+      },
+      { root, rootMargin: '80px' },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadMore]);
 
   return (
     <Modal title={`Tüm Oyunlar · ${playerCount} Oyunculu`} onClose={onClose}>
-      {games === null ? (
+      {loading ? (
         <p className="text-muted text-xs font-mono text-center py-4">Yükleniyor…</p>
       ) : games.length === 0 ? (
         <p className="text-muted text-[10px] font-mono text-center py-4">
           Bu kategoride henüz kayıtlı oyun yok.
         </p>
       ) : (
-        <div className="flex flex-col gap-2 max-h-[65vh] overflow-y-auto pr-1">
+        <div ref={scrollRef} className="flex flex-col gap-2 max-h-[65vh] overflow-y-auto pr-1">
           {games.map((entry) => {
             const hasSnapshot = entry.players && entry.players.length > 0;
             const fallback = hasSnapshot ? null : fallbackPlayers(entry);
@@ -92,6 +139,13 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
               </div>
             );
           })}
+          {hasMore && (
+            <div ref={sentinelRef} className="py-2 text-center">
+              <span className="text-muted text-[10px] font-mono">
+                {loadingMore ? 'Yükleniyor…' : ''}
+              </span>
+            </div>
+          )}
         </div>
       )}
     </Modal>
