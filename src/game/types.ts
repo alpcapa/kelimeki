@@ -135,6 +135,10 @@ export interface HistoryEntry {
   action?: 'pass' | 'exchange';
   /** `action` 'exchange' ise değiştirilen taş sayısı. */
   tileCount?: number;
+  /** Hamle, oluşan kelimelerden biriyle X2 bonus bölgesine yeni taşla değdi mi? */
+  x2?: boolean;
+  /** Hamle, tam ortadaki X3 hücresine yeni taşla değdi mi? */
+  x3?: boolean;
 }
 
 export interface ValidationResult {

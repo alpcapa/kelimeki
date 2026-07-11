@@ -58,8 +58,28 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                     </span>
                   </div>
                   {!e.action && (
-                    <span className="text-[13px] font-mono font-bold shrink-0 text-green">
-                      +{e.points}
+                    <span className="flex items-center gap-1 shrink-0">
+                      {e.x3 && (
+                        <span
+                          className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
+                          style={{ background: 'linear-gradient(135deg, #FDBA74, #F97316)', color: '#7C2D12' }}
+                          title="Üç kat kelime puanı"
+                        >
+                          ×3
+                        </span>
+                      )}
+                      {e.x2 && (
+                        <span
+                          className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
+                          style={{ background: 'linear-gradient(135deg, #FDE68A, #FBBF24)', color: '#7C2D12' }}
+                          title="İki kat kelime puanı"
+                        >
+                          ×2
+                        </span>
+                      )}
+                      <span className="text-[13px] font-mono font-bold text-green">
+                        +{e.points}
+                      </span>
                     </span>
                   )}
                 </div>
