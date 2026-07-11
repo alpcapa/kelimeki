@@ -134,6 +134,22 @@ export function validatePlacementStructural(
 }
 
 /**
+ * Bir ya da daha fazla geçersiz kelimeyi tek bir Türkçe hata mesajında
+ * birleştirir: tek kelimede "geçerli bir kelime değil", birden fazlasında
+ * hepsi listelenip "geçerli kelimeler değil" olur.
+ */
+export function formatInvalidWordsReason(words: string[]): string {
+  const quoted = words.map((w) => `"${w}"`);
+  const list =
+    quoted.length <= 1
+      ? quoted.join('')
+      : `${quoted.slice(0, -1).join(', ')} ve ${quoted[quoted.length - 1]}`;
+  return quoted.length > 1
+    ? `${list} geçerli kelimeler değil.`
+    : `${list} geçerli bir kelime değil.`;
+}
+
+/**
  * Oyuncunun bu turdaki yerleştirmesini doğrular: hizalama, bölge kuralları,
  * bağlantı ve yerel sözlük. Geçerliyse oluşan kelimeleri döndürür.
  */
@@ -148,10 +164,11 @@ export function validatePlacement(
   if (!structural.valid) return structural;
 
   const formed = getFormedWords(board, placed);
-  for (const { word } of formed) {
-    if (!WORD_SET.has(trLower(word))) {
-      return { valid: false, reason: `"${word}" geçerli bir kelime değil.` };
-    }
+  const invalidWords = Array.from(
+    new Set(formed.map((f) => f.word).filter((word) => !WORD_SET.has(trLower(word)))),
+  );
+  if (invalidWords.length > 0) {
+    return { valid: false, reason: formatInvalidWordsReason(invalidWords) };
   }
   return structural;
 }
