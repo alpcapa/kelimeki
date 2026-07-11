@@ -80,7 +80,7 @@ export function UserMenu() {
         </button>
 
         {open && (
-          <div className="absolute right-0 top-full mt-2 w-56 bg-panel border border-border rounded-xl shadow-lg overflow-hidden z-[160]">
+          <div className="absolute right-0 top-full mt-2 w-56 bg-panel border border-[#B8C2D1] rounded-xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] overflow-hidden z-[160]">
             <div className="flex items-center gap-2.5 px-3 py-3 border-b border-border">
               <Avatar url={profile?.avatar_url} name={name} size={36} />
               <div className="min-w-0">
