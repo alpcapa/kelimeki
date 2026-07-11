@@ -26,11 +26,13 @@ function Flag({ label, tone }: { label: string; tone: 'green' | 'red' }) {
 export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory;
   const total = entries.reduce((s, e) => s + e.points, 0);
-  const scoringMoveCount = entries.filter((e) => !e.action).length;
   // Vergi geliri satırı ayrı bir kart olarak gösterilmez: aynı hamle zaten
   // hamleyi yapanın kendi satırında (kelime + net puan + kaptırılan pay
-  // notu) tam olarak anlatılıyor, ikinci satır sadece tekrar olur.
+  // notu) tam olarak anlatılıyor, ikinci satır sadece tekrar olur. Aynı
+  // sebeple bu satırlar hamle sayısına da katılmaz — yoksa bir bölge
+  // vergisi paylaşımı tek hamleyi iki "hamle" gibi saydırır.
   const displayEntries = entries.filter((e) => e.invasionFrom === undefined);
+  const scoringMoveCount = displayEntries.filter((e) => !e.action).length;
 
   return (
     <Modal title="Oyun Geçmişi" onClose={onClose}>
@@ -67,7 +69,7 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                         className="w-2 h-2 rounded-sm shrink-0"
                         style={{ background: PLAYER_COLORS[player.colorIndex].base }}
                       />
-                      {player?.name ?? '?'} · {e.turn + 1}. tur
+                      {e.turn + 1}. {player?.name ?? '?'}
                     </span>
                     <span className="text-[12px] font-mono font-bold text-text truncate">
                       {label}
