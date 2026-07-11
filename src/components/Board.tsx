@@ -131,9 +131,6 @@ export function Board({
 
   const currentColor = PLAYER_COLORS[players[current]?.colorIndex ?? 0];
 
-  // En son oynanan hamlenin hücreleri — kabartma + ince halka ile vurgulanır.
-  const lastMoveSet = new Set(state.lastMoveCells.map(([r, c]) => key(r, c)));
-
   // Her oyuncunun bölgesi: kendi köşesi + oradan kendi taşlarıyla genişleyen
   // alan. Sabit 4×4 köşenin aksine hamle oynandıkça büyür.
   const territories = computeAllTerritories(board, players);
@@ -172,14 +169,7 @@ export function Board({
 
       if (boardTile) {
         classes.push(isLastWord ? 'bg-transparent cursor-pointer' : 'bg-transparent cursor-default');
-        content = (
-          <Tile
-            tile={boardTile}
-            variant="board"
-            color={colorOf(boardTile.owner)}
-            lastMove={lastMoveSet.has(k)}
-          />
-        );
+        content = <Tile tile={boardTile} variant="board" color={colorOf(boardTile.owner)} />;
       } else if (placedTile) {
         classes.push('bg-transparent');
         content = <Tile tile={placedTile} variant="placed" color={currentColor} />;
@@ -348,6 +338,12 @@ export function Board({
   // Tam ortadaki tek X3 hücresinin kendi çerçevesi — turuncu zeminle uyumlu.
   const centerOutline = buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', undefined, sameTerritoryOpen);
 
+  // En son oynanan hamlenin etrafına kalıcı açık mavi/turkuaz çerçeve —
+  // özellikle YZ oynayınca nereye oynadığı belli olsun diye.
+  const lastMoveOutline = state.lastMoveCells.length > 0
+    ? buildOutline(state.lastMoveCells, '#38BDF8', 'last')
+    : [];
+
   // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
   const moveOutline = moveStatus
     ? buildOutline(moveStatus.cells, moveStatus.valid ? '#1FA05C' : '#E0483A', 'move', moveStatus.score)
@@ -375,6 +371,9 @@ export function Board({
             çerçevesinin üzerinde çizilir, böylece bir oyuncunun bölgesi
             bonus alanına ilerlediğinde sınır kendi renginde kalır. */}
         {territoryOutlines}
+
+        {/* En son oynanan hamlenin etrafındaki kalıcı mavi/turkuaz çerçeve. */}
+        {lastMoveOutline}
 
         {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan:
             tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
