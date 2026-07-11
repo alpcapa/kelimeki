@@ -15,6 +15,13 @@ export interface Profile {
   updated_at: string;
 }
 
+/** Bir oyunun bitişindeki tek bir oyuncu satırı (final sıralamasında). */
+export interface GamePlayerSnapshot {
+  name: string;
+  score: number;
+  is_ai: boolean;
+}
+
 export interface Game {
   id: string;
   user_id: string | null;
@@ -34,6 +41,8 @@ export interface Game {
   move_points_sum: number | null;
   /** Oyuncu oyunu bitirmeden (logoya basıp) terk etti mi? */
   surrendered: boolean;
+  /** Final sıralamasına göre tüm oyuncular ve puanları. Eski kayıtlarda null. */
+  players: GamePlayerSnapshot[] | null;
   created_at: string;
 }
 
@@ -50,7 +59,14 @@ export type NewGame = Pick<
   longest_word?: string | null;
   move_points_sum?: number | null;
   surrendered?: boolean;
+  players?: GamePlayerSnapshot[];
 };
+
+/** Oyun geçmişi listesinde gösterilecek alanlar. */
+export type GameHistoryEntry = Pick<
+  Game,
+  'id' | 'created_at' | 'player_count' | 'players' | 'player_score' | 'ai_score' | 'rank'
+>;
 
 /** Bir kelimenin sözlük kaydı (word_meaning RPC çıktısı). */
 export interface WordMeaning {

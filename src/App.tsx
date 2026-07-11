@@ -164,6 +164,9 @@ export default function App() {
     // skoru bu sırada ilk kez göründüğü konum + 1'dir (eşit skorlar aynı sırayı paylaşır).
     const scoresDesc = state.players.map((p) => p.score).sort((a, b) => b - a);
     const rank = scoresDesc.indexOf(human.score) + 1;
+    const players = [...state.players]
+      .sort((a, b) => b.score - a.score)
+      .map((p) => ({ name: p.name, score: p.score, is_ai: p.isAI }));
     return {
       player_score: human.score,
       ai_score: bestOpponentScore,
@@ -178,6 +181,7 @@ export default function App() {
       longest_word: human.longestWord || null,
       move_points_sum: human.moveScoreSum || null,
       surrendered,
+      players,
     };
   };
 

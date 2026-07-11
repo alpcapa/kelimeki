@@ -4,6 +4,7 @@
 // döner, böylece oyun çevrimdışı da çalışır.
 import { supabase, isSupabaseConfigured } from './supabase';
 import type {
+  GameHistoryEntry,
   LeaderboardRow,
   MyLeaderboardRank,
   NewGame,
@@ -80,6 +81,28 @@ export async function fetchPlayerStats(playerCount: number): Promise<PlayerStats
     return null;
   }
   return (data as PlayerStats) ?? null;
+}
+
+/** Oturum açan oyuncunun belirli oyuncu sayısındaki tüm oyunlarını döner (en yeni önce). */
+export async function fetchMyGames(playerCount: number, limit = 50): Promise<GameHistoryEntry[]> {
+  if (!supabase) return [];
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('games')
+    .select('id, created_at, player_count, players, player_score, ai_score, rank')
+    .eq('user_id', user.id)
+    .eq('player_count', playerCount)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error('[Harfik] fetchMyGames hatası:', error.message);
+    return [];
+  }
+  return (data as GameHistoryEntry[]) ?? [];
 }
 
 /** Oturum açan oyuncunun profilini döner. */
