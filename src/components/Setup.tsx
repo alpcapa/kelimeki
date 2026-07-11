@@ -91,7 +91,7 @@ export function Setup({ onStart }: SetupProps) {
 
     {showWarningPopup && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-        <div className="w-full max-w-sm bg-panel rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
+        <div className="w-full max-w-sm bg-panel border border-border rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
           <p className="text-sm text-text font-sans leading-relaxed">
             Giriş yapmadan oynadığınız oyunların istatistikleri tutulmaz.
           </p>
