@@ -16,11 +16,16 @@ function formatDateTime(iso: string): string {
   return `${date} · ${time}`;
 }
 
-/** Eski kayıtlarda (players alanı yokken) elde bulunan tek verilerden yaklaşık bir sıralama üretir. */
-function fallbackPlayers(entry: GameHistoryEntry): GamePlayerSnapshot[] {
+/**
+ * Eski kayıtlarda (players alanı eklenmeden önce oynanmış oyunlarda) yalnızca
+ * kendi puanın ve en iyi rakibin puanı bilinir — diğer oyuncuların adı/puanı
+ * saklanmamıştır. Bilinen iki satırı döner; kalan oyuncu sayısını ayrıca verir.
+ */
+function fallbackPlayers(entry: GameHistoryEntry): { known: GamePlayerSnapshot[]; unknownCount: number } {
   const me: GamePlayerSnapshot = { name: 'Sen', score: entry.player_score, is_ai: false };
-  const opponent: GamePlayerSnapshot = { name: 'Rakip', score: entry.ai_score, is_ai: false };
-  return entry.player_score >= entry.ai_score ? [me, opponent] : [opponent, me];
+  const opponent: GamePlayerSnapshot = { name: 'En iyi rakip', score: entry.ai_score, is_ai: false };
+  const known = entry.player_score >= entry.ai_score ? [me, opponent] : [opponent, me];
+  return { known, unknownCount: Math.max(0, entry.player_count - 2) };
 }
 
 export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps) {
@@ -42,9 +47,10 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
       ) : (
         <div className="flex flex-col gap-2 max-h-[65vh] overflow-y-auto pr-1">
           {games.map((entry) => {
-            const players = entry.players && entry.players.length > 0
-              ? entry.players
-              : fallbackPlayers(entry);
+            const hasSnapshot = entry.players && entry.players.length > 0;
+            const fallback = hasSnapshot ? null : fallbackPlayers(entry);
+            const players = hasSnapshot ? entry.players! : fallback!.known;
+            const unknownCount = fallback?.unknownCount ?? 0;
             return (
               <div
                 key={entry.id}
@@ -77,6 +83,11 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                       </span>
                     </div>
                   ))}
+                  {unknownCount > 0 && (
+                    <div className="text-[10px] font-mono text-muted italic pt-0.5">
+                      +{unknownCount} diğer oyuncu (bu eski kayıtta bilinmiyor)
+                    </div>
+                  )}
                 </div>
               </div>
             );
