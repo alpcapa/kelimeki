@@ -27,10 +27,6 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory;
   const total = entries.reduce((s, e) => s + e.points, 0);
   const scoringMoveCount = entries.filter((e) => !e.action).length;
-  // Vergi geliri satırı ayrı bir kart olarak gösterilmez: aynı hamle zaten
-  // hamleyi yapanın kendi satırında (kelime + net puan + kaptırılan pay
-  // notu) tam olarak anlatılıyor, ikinci satır sadece tekrar olur.
-  const displayEntries = entries.filter((e) => e.invasionFrom === undefined);
 
   return (
     <Modal title="Oyun Geçmişi" onClose={onClose}>
@@ -39,15 +35,16 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
         <span className="font-bold text-accent text-[15px]">{total}</span> puan.
       </p>
 
-      {displayEntries.length === 0 ? (
+      {entries.length === 0 ? (
         <p className="text-[11px] font-mono text-muted text-center py-4">
           Henüz kazanılmış bir puan yok.
         </p>
       ) : (
         <div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
-          {[...displayEntries].reverse().map((e, i) => {
+          {[...entries].reverse().map((e, i) => {
             const player = state.players[e.player];
             const isInvasionLoss = !!e.lostShares && e.lostShares.length > 0;
+            const isInvasionGain = e.invasionFrom !== undefined;
             const label = e.action === 'pass'
               ? 'Pas geçti'
               : e.action === 'exchange'
@@ -75,6 +72,7 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                   </div>
                   {!e.action && (
                     <span className="flex items-center gap-1 shrink-0">
+                      {isInvasionGain && <Flag label="Vergi Geliri" tone="green" />}
                       {e.x3 && (
                         <span
                           className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
