@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Harfik — Türkçe kelime oyunu. Evrilen tahta, akıllı YZ rakip.",
+  "description": "Harfik — 2 ya da 4 kişilik, köşelerden başlayan stratejik Türkçe kelime oyunu.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
