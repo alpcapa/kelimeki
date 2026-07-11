@@ -110,9 +110,11 @@ export interface PlayerStats {
   first_places: number;
   second_places: number;
   /**
-   * Lig puanı (oyun içi ham skorların toplamı değil): 1.=2, 2.=1, 3./4.=0.
-   * Beraber bitirenler grubun en iyi sırasının puanını paylaşır (2 kişilik
-   * tam beraberlikte ikisi de rank=1 olur, ikisi de 2 alır). Teslim olunan
+   * Lig puanı (oyun içi ham skorların toplamı değil): 4 kişilikte 1.=2,
+   * 2.=1, 3./4.=0; 2 kişilikte sadece 1.=2, 2.=0 (tek rakipli oyunda ikinci
+   * olmak kaybetmekle aynı şey olduğundan puan getirmez). Beraber
+   * bitirenler grubun en iyi sırasının puanını paylaşır (2 kişilik tam
+   * beraberlikte ikisi de rank=1 olur, ikisi de 2 alır). Teslim olunan
    * oyunlar sıradan bağımsız olarak sabit -2 puan getirir.
    */
   total_score: number;
