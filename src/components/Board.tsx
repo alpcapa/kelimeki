@@ -346,7 +346,11 @@ export function Board({
   const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone', undefined, sameTerritoryOpen);
 
   // Tam ortadaki tek X3 hücresinin kendi çerçevesi — turuncu zeminle uyumlu.
-  const centerOutline = buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', undefined, sameTerritoryOpen);
+  // Hücreye bir taş oynandıktan sonra (artık oyuncunun rengiyle çizildiğinden)
+  // bu çerçeve kaldırılır.
+  const centerOutline = board[BOARD_CENTER[0]][BOARD_CENTER[1]]
+    ? []
+    : buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', undefined, sameTerritoryOpen);
 
   // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
   const moveOutline = moveStatus
