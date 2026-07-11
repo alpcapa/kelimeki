@@ -632,7 +632,7 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              Dikkat, kelimen rakip köşesine giriyor ya da sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
+              Dikkat, kelimen rakip bölgesine giriyor ya da sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
               {invasionConfirm
                 .map((inv, i) => (
                   <span key={i}>
