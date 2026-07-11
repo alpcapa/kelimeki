@@ -256,12 +256,14 @@ export function computeInvasionSplit(
 /**
  * Tek bir kelimenin puanını hesaplar. Tahtanın tam ortasındaki tek X3
  * hücresine bu turda yeni bir taş konursa kelime puanı üçe katlanır (klasik
- * bonus kare gibi — yalnızca yeni taşta). Aynı şekilde, kelimenin bu turda
- * yeni konan bir taşı merkezdeki 5×5 bonus bölgesine düşüyorsa puan ayrıca
- * ikiye katlanır — ama yalnızca o hücreye yeni taş konduğu turda. Önceden
- * tahtada duran bir taşla (o taş daha önceki bir turda oraya konmuş olsa
- * bile) sadece bağlantı kurmak x2 kazandırmaz; her bonus hücresi klasik
- * bonus kare gibi yalnızca bir kez, ilk kullanıldığı turda etkilidir.
+ * bonus kare gibi — yalnızca yeni taşta) — bu hücre aynı zamanda 5×5 X2
+ * bölgesinin içinde olsa da üstüne ayrıca X2 eklenmez, yalnızca X3 sayılır.
+ * Kelimenin bu turda yeni konan başka bir taşı (X3 hücresi dışında) merkezdeki
+ * 5×5 bonus bölgesine düşüyorsa puan X2 katlanır — ama yalnızca o hücreye
+ * yeni taş konduğu turda. Önceden tahtada duran bir taşla (o taş daha önceki
+ * bir turda oraya konmuş olsa bile) sadece bağlantı kurmak bonus kazandırmaz;
+ * her bonus hücresi klasik bonus kare gibi yalnızca bir kez, ilk kullanıldığı
+ * turda etkilidir.
  */
 function wordPoints(
   coords: [number, number][],
@@ -276,9 +278,10 @@ function wordPoints(
     const k = key(r, c);
     const newTile = placed[k];
     const pts = newTile?.pts ?? board[r][c]?.pts ?? 0;
-    if (newTile && bonuses[k] === 'tw') wordMult *= 3;
+    const isTw = bonuses[k] === 'tw';
+    if (newTile && isTw) wordMult *= 3;
     sum += pts;
-    if (newTile && inBonusZone(r, c)) touchesZone = true;
+    if (newTile && !isTw && inBonusZone(r, c)) touchesZone = true;
   }
   if (touchesZone) wordMult *= 2;
   return sum * wordMult;
@@ -288,7 +291,8 @@ function wordPoints(
  * Bu turda oynanan hamlenin (oluşan tüm kelimeler genelinde) X2 bonus
  * bölgesine ve/veya tam ortadaki X3 hücresine yeni taşla değip değmediğini
  * döner — `MoveHistoryModal`'da puanın yanına küçük bir rozet olarak
- * gösterilir.
+ * gösterilir. `wordPoints` ile aynı kural: X3 hücresi aynı zamanda X2
+ * bölgesinin içinde olsa da yalnızca X3 sayılır, üstüne X2 eklenmez.
  */
 export function calcMoveBonusFlags(
   board: Board,
@@ -301,8 +305,9 @@ export function calcMoveBonusFlags(
     for (const [r, c] of coords) {
       const k = key(r, c);
       if (!placed[k]) continue;
-      if (bonuses[k] === 'tw') x3 = true;
-      if (inBonusZone(r, c)) x2 = true;
+      const isTw = bonuses[k] === 'tw';
+      if (isTw) x3 = true;
+      else if (inBonusZone(r, c)) x2 = true;
     }
   }
   return { x2, x3 };
