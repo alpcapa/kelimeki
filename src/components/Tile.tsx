@@ -11,10 +11,12 @@ interface TileProps {
   /** Tahta/yerleştirme taşları için sahibinin rengi. */
   color?: PlayerColor;
   selected?: boolean;
+  /** En son oynanan hamlenin parçası mı — kabartma + ince halka ile vurgulanır. */
+  lastMove?: boolean;
   onClick?: () => void;
 }
 
-export function Tile({ tile, variant, color, selected = false, onClick }: TileProps) {
+export function Tile({ tile, variant, color, selected = false, lastMove = false, onClick }: TileProps) {
   const isRack = variant === 'rack';
   const raw = tileLetter(tile) || tile.letter;
   // Tahtaya konmuş joker (harfi seçilmiş olsa da) puan yerine yıldız gösterir;
@@ -55,6 +57,9 @@ export function Tile({ tile, variant, color, selected = false, onClick }: TilePr
         selected
           ? '!-translate-y-[7px] shadow-[0_8px_20px_rgba(163,130,0,0.6)]'
           : '',
+        lastMove && variant === 'board'
+          ? '!-translate-y-[2px] shadow-[0_0_0_2px_#38BDF8,0_5px_10px_rgba(15,23,42,0.35)]'
+          : '',
       ].join(' ')}
     >
       {/* Harf — büyük ve kalın (Nunito 800 + ince kontur). */}
@@ -73,7 +78,9 @@ export function Tile({ tile, variant, color, selected = false, onClick }: TilePr
           'absolute font-mono font-bold leading-none',
           isRack
             ? 'top-[3px] right-[4px] text-[10px] text-[#8B5E00]'
-            : 'top-[1px] right-[1.5px] text-[clamp(6px,1.6vw,10px)] text-accent',
+            : isPlacedJoker
+              ? 'top-[1px] right-[1.5px] text-[clamp(7px,1.9vw,12px)] text-accent'
+              : 'top-[1px] right-[1.5px] text-[clamp(6px,1.6vw,10px)] text-accent',
         ].join(' ')}
       >
         {isPlacedJoker ? '★' : tile.pts}
