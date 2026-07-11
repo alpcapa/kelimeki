@@ -78,7 +78,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
         </div>
         <div className="text-right shrink-0">
           <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
-            Toplam Puan
+            Lig Puanı
           </div>
           <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
         </div>

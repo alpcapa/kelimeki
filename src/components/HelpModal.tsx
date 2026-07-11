@@ -202,7 +202,7 @@ export function HelpModal({ onClose }: HelpModalProps) {
           </P>
           <P>
             Bu lig puanları 2 kişilik ve 4 kişilik oyunlar için ayrı ayrı toplanır; Skor
-            Kartı'ndaki sekmeler bu iki modun istatistiklerini ayrı ayrı, üstteki "Toplam Puan"
+            Kartı'ndaki sekmeler bu iki modun istatistiklerini ayrı ayrı, üstteki "Lig Puanı"
             ise ikisinin toplamını gösterir.
           </P>
         </Section>
