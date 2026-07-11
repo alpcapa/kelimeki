@@ -21,6 +21,10 @@ import './fonts/nunito-tile.css';
 
 import './index.css';
 
+import { setupPwaUpdates } from './lib/pwa';
+
+setupPwaUpdates();
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
