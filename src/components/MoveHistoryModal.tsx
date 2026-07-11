@@ -75,6 +75,7 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                   </div>
                   {!e.action && (
                     <span className="flex items-center gap-1 shrink-0">
+                      {isInvasionLoss && <Flag label="Sınır İhlali" tone="red" />}
                       {e.x3 && (
                         <span
                           className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
@@ -100,13 +101,10 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                   )}
                 </div>
                 {isInvasionLoss && (
-                  <span className="flex items-center gap-1.5">
-                    <Flag label="Sınır İhlali" tone="red" />
-                    <span className="text-[9px] font-mono text-red">
-                      {e.lostShares!
-                        .map((s) => `${s.amount} puanı ${state.players[s.to]?.name ?? '?'} kaptı`)
-                        .join(', ')}
-                    </span>
+                  <span className="text-[9px] font-mono text-red">
+                    {e.lostShares!
+                      .map((s) => `${s.amount} puanı ${state.players[s.to]?.name ?? '?'} kaptı`)
+                      .join(', ')}
                   </span>
                 )}
               </div>
