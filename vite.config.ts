@@ -12,7 +12,7 @@ export default defineConfig({
       manifest: {
         name: 'Harfik — Türkçe Kelime Oyunu',
         short_name: 'Harfik',
-        description: 'Harfik — 2 ya da 4 kişilik, köşelerden başlayan Türkçe kelime oyunu.',
+        description: 'Harfik — 2 ya da 4 kişilik, köşelerden başlayan stratejik Türkçe kelime oyunu.',
         theme_color: '#0F1C26',
         background_color: '#0F1C26',
         display: 'standalone',
