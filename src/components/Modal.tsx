@@ -15,7 +15,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[360px] bg-panel border border-border rounded-xl p-5 max-h-[85vh] overflow-y-auto"
+        className="w-full max-w-[360px] bg-panel border border-border rounded-xl shadow-2xl p-5 max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
