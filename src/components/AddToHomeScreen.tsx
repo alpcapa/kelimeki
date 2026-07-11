@@ -38,7 +38,7 @@ export function AddToHomeScreen() {
           to   { transform: translateY(0);    opacity: 1; }
         }
       `}</style>
-      <div className="w-full max-w-[460px] bg-panel border border-border rounded-2xl shadow-2xl px-4 py-3.5 flex items-center gap-3">
+      <div className="w-full max-w-[460px] bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] px-4 py-3.5 flex items-center gap-3">
         {/* iOS share icon */}
         <svg
           width="28" height="28" viewBox="0 0 28 28" fill="none"

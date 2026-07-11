@@ -1,5 +1,6 @@
 // Harfik — paylaşılan modal kabuğu
 import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   title: string;
@@ -8,13 +9,13 @@ interface ModalProps {
 }
 
 export function Modal({ title, onClose, children }: ModalProps) {
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-[rgba(6,10,13,0.45)]"
+      className="fixed inset-0 z-[150] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[360px] bg-panel border border-border rounded-xl p-5 max-h-[85vh] overflow-y-auto"
+        className="w-full max-w-[360px] bg-panel border border-[#B8C2D1] rounded-xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-5 max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -31,6 +32,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
