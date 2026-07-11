@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
+import { GameHistoryModal } from './GameHistoryModal';
 import { fetchPlayerStats } from '../lib/api';
 import type { PlayerStats } from '../lib/database.types';
 import { useAuth } from '../hooks/useAuth';
@@ -18,6 +19,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     Record<number, PlayerStats | null | undefined>
   >({ 2: undefined, 4: undefined });
   const [tab, setTab] = useState<(typeof TABS)[number]>(2);
+  const [showAllGames, setShowAllGames] = useState(false);
 
   useEffect(() => {
     for (const count of TABS) {
@@ -67,10 +69,10 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           )}
         </div>
         <div className="text-right shrink-0">
-          <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
           <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
             Toplam Puan
           </div>
+          <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
         </div>
       </div>
 
@@ -116,6 +118,19 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             ))}
           </div>
         </>
+      )}
+
+      <div className="text-center mt-4">
+        <button
+          onClick={() => setShowAllGames(true)}
+          className="text-[11px] font-mono font-bold uppercase tracking-[1px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity"
+        >
+          Tüm Oyunları Gör
+        </button>
+      </div>
+
+      {showAllGames && (
+        <GameHistoryModal playerCount={tab} onClose={() => setShowAllGames(false)} />
       )}
     </Modal>
   );

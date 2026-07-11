@@ -122,10 +122,10 @@ export function Setup({ onStart }: SetupProps) {
           <path d="M4 4 Q25 1 50 4 Q75 7 96 4" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" fill="none" />
         </svg>
         <p className="text-muted text-xs font-mono mt-4">
-          Çok farklı bir kelime oyunu sizlerle. Her oyuncunun köşesi onun
-          kalesi gibidir. Oyuna köşenden başlayıp ilerlersin. Köşene giren ya
-          da sınırına değen olursa cezayı keser puanının 1/3'ünü alırsın. Haydi
-          sen de dene ve gör.
+          Bu sıradan bir kelime oyunu değil. Bölgenden başlayıp, kelimelerle
+          topraklarını genişletirsin. Eğer rakibinin bölgesine girersen
+          kazandığın puandan ona pay verirsin. Bambaşka bir stratejik kelime
+          oyunu seni bekliyor.
         </p>
         <button
           onClick={() => setShowHelp(true)}

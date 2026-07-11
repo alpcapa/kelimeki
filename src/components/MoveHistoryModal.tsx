@@ -8,14 +8,31 @@ interface MoveHistoryModalProps {
   onClose: () => void;
 }
 
+/** Standart hamle dışı durumlar (sınır ihlali vb.) için küçük renkli rozet. */
+function Flag({ label, tone }: { label: string; tone: 'green' | 'red' }) {
+  return (
+    <span
+      className={`text-[8px] font-mono font-bold uppercase tracking-[0.5px] rounded px-1 py-[1px] border shrink-0 ${
+        tone === 'green'
+          ? 'text-green border-green/40 bg-green/10'
+          : 'text-red border-red/40 bg-red/10'
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
+
 export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory;
   const total = entries.reduce((s, e) => s + e.points, 0);
-  const scoringMoveCount = entries.filter((e) => !e.action).length;
   // Vergi geliri satırı ayrı bir kart olarak gösterilmez: aynı hamle zaten
   // hamleyi yapanın kendi satırında (kelime + net puan + kaptırılan pay
-  // notu) tam olarak anlatılıyor, ikinci satır sadece tekrar olur.
+  // notu) tam olarak anlatılıyor, ikinci satır sadece tekrar olur. Aynı
+  // sebeple bu satırlar hamle sayısına da katılmaz — yoksa bir bölge
+  // vergisi paylaşımı tek hamleyi iki "hamle" gibi saydırır.
   const displayEntries = entries.filter((e) => e.invasionFrom === undefined);
+  const scoringMoveCount = displayEntries.filter((e) => !e.action).length;
 
   return (
     <Modal title="Oyun Geçmişi" onClose={onClose}>
@@ -32,6 +49,7 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
         <div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto pr-1">
           {[...displayEntries].reverse().map((e, i) => {
             const player = state.players[e.player];
+            const isInvasionLoss = !!e.lostShares && e.lostShares.length > 0;
             const label = e.action === 'pass'
               ? 'Pas geçti'
               : e.action === 'exchange'
@@ -51,21 +69,42 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                         className="w-2 h-2 rounded-sm shrink-0"
                         style={{ background: PLAYER_COLORS[player.colorIndex].base }}
                       />
-                      {player?.name ?? '?'} · {e.turn + 1}. tur
+                      {e.turn + 1}. {player?.name ?? '?'}
                     </span>
                     <span className="text-[12px] font-mono font-bold text-text truncate">
                       {label}
                     </span>
                   </div>
                   {!e.action && (
-                    <span className="text-[13px] font-mono font-bold shrink-0 text-green">
-                      +{e.points}
+                    <span className="flex items-center gap-1 shrink-0">
+                      {isInvasionLoss && <Flag label="Sınır İhlali" tone="red" />}
+                      {e.x3 && (
+                        <span
+                          className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
+                          style={{ background: 'linear-gradient(135deg, #FDBA74, #F97316)', color: '#7C2D12' }}
+                          title="Üç kat kelime puanı"
+                        >
+                          ×3
+                        </span>
+                      )}
+                      {e.x2 && (
+                        <span
+                          className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
+                          style={{ background: 'linear-gradient(135deg, #FDE68A, #FBBF24)', color: '#7C2D12' }}
+                          title="İki kat kelime puanı"
+                        >
+                          ×2
+                        </span>
+                      )}
+                      <span className="text-[13px] font-mono font-bold text-green">
+                        +{e.points}
+                      </span>
                     </span>
                   )}
                 </div>
-                {e.lostShares && e.lostShares.length > 0 && (
+                {isInvasionLoss && (
                   <span className="text-[9px] font-mono text-red">
-                    {e.lostShares
+                    {e.lostShares!
                       .map((s) => `${s.amount} puanı ${state.players[s.to]?.name ?? '?'} kaptı`)
                       .join(', ')}
                   </span>

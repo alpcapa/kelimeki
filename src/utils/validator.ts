@@ -254,14 +254,16 @@ export function computeInvasionSplit(
 }
 
 /**
- * Tek bir kelimenin puanını hesaplar. Tahtanın tam ortasındaki tek X3
- * hücresine bu turda yeni bir taş konursa kelime puanı üçe katlanır (klasik
- * bonus kare gibi — yalnızca yeni taşta). Aynı şekilde, kelimenin bu turda
- * yeni konan bir taşı merkezdeki 5×5 bonus bölgesine düşüyorsa puan ayrıca
- * ikiye katlanır — ama yalnızca o hücreye yeni taş konduğu turda. Önceden
- * tahtada duran bir taşla (o taş daha önceki bir turda oraya konmuş olsa
- * bile) sadece bağlantı kurmak x2 kazandırmaz; her bonus hücresi klasik
- * bonus kare gibi yalnızca bir kez, ilk kullanıldığı turda etkilidir.
+ * Tek bir kelimenin puanını hesaplar. Kelimenin bu turda yeni konan
+ * taşlarından biri tahtanın tam ortasındaki tek X3 hücresindeyse, kelime
+ * puanı üçe katlanır — kelimenin başka bir yeni taşı ayrıca 5×5 X2 bölgesine
+ * düşse bile üstüne X2 eklenmez, X3 ve X2 hiçbir zaman aynı kelimede
+ * birleşmez. X3 hücresine değmeyen bir kelimenin yeni bir taşı 5×5 bonus
+ * bölgesine düşüyorsa puan X2 katlanır. Her iki durumda da yalnızca o hücreye
+ * bu turda yeni taş konduysa geçerlidir; önceden tahtada duran bir taşla
+ * (daha önceki bir turda oraya konmuş olsa bile) sadece bağlantı kurmak
+ * bonus kazandırmaz — her bonus hücresi klasik bonus kare gibi yalnızca bir
+ * kez, ilk kullanıldığı turda etkilidir.
  */
 function wordPoints(
   coords: [number, number][],
@@ -270,18 +272,49 @@ function wordPoints(
   bonuses: Record<string, BonusType>,
 ): number {
   let sum = 0;
-  let wordMult = 1;
+  let hasTw = false;
   let touchesZone = false;
   for (const [r, c] of coords) {
     const k = key(r, c);
     const newTile = placed[k];
     const pts = newTile?.pts ?? board[r][c]?.pts ?? 0;
-    if (newTile && bonuses[k] === 'tw') wordMult *= 3;
     sum += pts;
+    if (newTile && bonuses[k] === 'tw') hasTw = true;
     if (newTile && inBonusZone(r, c)) touchesZone = true;
   }
-  if (touchesZone) wordMult *= 2;
+  const wordMult = hasTw ? 3 : touchesZone ? 2 : 1;
   return sum * wordMult;
+}
+
+/**
+ * Bu turda oynanan hamlenin (oluşan tüm kelimeler genelinde) X2 bonus
+ * bölgesine ve/veya tam ortadaki X3 hücresine yeni taşla değip değmediğini
+ * döner — `MoveHistoryModal`'da puanın yanına küçük bir rozet olarak
+ * gösterilir. `wordPoints` ile aynı kural: bir kelime X3'e değdiyse o kelime
+ * için yalnızca X3 sayılır (aynı kelimede X2 ile birleşmez); farklı bir
+ * kelime (aynı hamlede) X3'e değmeden X2 bölgesine değdiyse o da ayrıca X2
+ * rozetini tetikler.
+ */
+export function calcMoveBonusFlags(
+  board: Board,
+  placed: Placed,
+  bonuses: Record<string, BonusType>,
+): { x2: boolean; x3: boolean } {
+  let x2 = false;
+  let x3 = false;
+  for (const { coords } of getFormedWords(board, placed)) {
+    let wordHasTw = false;
+    let wordTouchesZone = false;
+    for (const [r, c] of coords) {
+      const k = key(r, c);
+      if (!placed[k]) continue;
+      if (bonuses[k] === 'tw') wordHasTw = true;
+      if (inBonusZone(r, c)) wordTouchesZone = true;
+    }
+    if (wordHasTw) x3 = true;
+    else if (wordTouchesZone) x2 = true;
+  }
+  return { x2, x3 };
 }
 
 /**

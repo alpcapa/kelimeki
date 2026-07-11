@@ -23,7 +23,7 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
   const winColor = PLAYER_COLORS[top.p.colorIndex];
 
   return (
-    <Modal title="Oyun Bitti" onClose={onClose}>
+    <Modal title="" onClose={onClose}>
       <div className="flex flex-col items-center gap-[18px]">
         <div
           className="font-mono text-[26px] font-bold tracking-[2px] text-center"
