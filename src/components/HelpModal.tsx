@@ -193,14 +193,16 @@ export function HelpModal({ onClose }: HelpModalProps) {
         <Section title="Skor Kartı ve Puanlama">
           <P>
             Giriş yapmış kullanıcılar için her oyun sonucu Skor Kartı'na kaydedilir. Oyun içi
-            puanının yanında, sıralamana göre bir <strong>lig puanı</strong> de kazanırsın:
-            oyunu birinci bitirirsen <strong>+2</strong>, ikinci bitirirsen <strong>+1</strong>
-            puan; üçüncü ve dördüncü sıralar 0 puan getirir. Tam beraberlikte aynı sırayı
-            paylaşan oyuncuların hepsi o sıranın puanını alır.
+            puanının yanında, sıralamana göre bir <strong>lig puanı</strong> de kazanırsın.
+            4 kişilik oyunda birinci bitirirsen <strong>+2</strong>, ikinci bitirirsen{' '}
+            <strong>+1</strong> puan; üçüncü ve dördüncü sıralar 0 puan getirir. 2 kişilik
+            oyunda ise sadece birinci <strong>+2</strong> puan alır — ikinci 0 puan getirir,
+            çünkü tek rakibin olduğu bir oyunda ikinci olmak kaybetmekle aynı şeydir. Tam
+            beraberlikte aynı sırayı paylaşan oyuncuların hepsi o sıranın puanını alır.
           </P>
           <P>
             Bu lig puanları 2 kişilik ve 4 kişilik oyunlar için ayrı ayrı toplanır; Skor
-            Kartı'ndaki sekmeler bu iki modun istatistiklerini ayrı ayrı, üstteki "Toplam Puan"
+            Kartı'ndaki sekmeler bu iki modun istatistiklerini ayrı ayrı, üstteki "Lig Puanı"
             ise ikisinin toplamını gösterir.
           </P>
         </Section>

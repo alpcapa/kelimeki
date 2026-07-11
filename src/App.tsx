@@ -11,7 +11,7 @@ import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
-import { calcScore, computeInvasionSplit, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { getFormedWords, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
@@ -441,18 +441,13 @@ export default function App() {
       if (structural.valid && structural.words && structural.words.length > 0) {
         setValidating(true);
         let serverOk = true;
+        const invalidWords: string[] = [];
         try {
           for (const word of structural.words) {
             const result = await isValidWordRemote(trLower(word));
             if (result === false) {
-              dispatch({
-                type: 'SET_MESSAGE',
-                message: `"${word}" geçerli bir kelime değil.`,
-                messageType: 'err',
-              });
-              return;
-            }
-            if (result === null) {
+              invalidWords.push(word);
+            } else if (result === null) {
               // Sunucu hatası — yerel sözlüğe düş.
               serverOk = false;
               break;
@@ -462,6 +457,14 @@ export default function App() {
           setValidating(false);
         }
         if (serverOk) {
+          if (invalidWords.length > 0) {
+            dispatch({
+              type: 'SET_MESSAGE',
+              message: formatInvalidWordsReason(invalidWords),
+              messageType: 'err',
+            });
+            return;
+          }
           // Tüm kelimeler sunucuda onaylandı, yerel kontrol atla.
           pendingSkipWordCheck.current = true;
           if (invasion) { setInvasionConfirm(invasion); return; }

@@ -42,13 +42,21 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   const pct = (n: number) =>
     stats && stats.games_played > 0 ? `%${Math.round((n / stats.games_played) * 100)}` : '%0';
 
+  // 2 kişilik oyunda 2. olmak = kaybetmek (artık lig puanı getirmiyor), bu
+  // yüzden o sekmede "İkincilik" yerine "Kayıp" gösterilir; 4 kişilikte
+  // ikincilik hâlâ +1 puan getirdiğinden ödüllü stat olarak kalır.
+  const secondCellLabel = tab === 2 ? 'Toplam Kayıp' : 'Toplam İkincilik';
+  const secondRateLabel = tab === 2 ? 'Kayıp Oranı' : 'İkincilik Oranı';
+  const secondCellValue = tab === 2 ? (stats?.losses ?? 0) : (stats?.second_places ?? 0);
+  const secondCellCls = tab === 2 ? 'text-red' : 'text-accent';
+
   const cells: { label: string; value: number | string; cls?: string; wide?: boolean }[] = [
     { label: 'Kazanılan Puan', value: stats?.total_score ?? 0, cls: 'text-gold' },
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
     { label: 'Toplam Birincilik', value: stats?.first_places ?? 0, cls: 'text-gold' },
-    { label: 'Toplam İkincilik', value: stats?.second_places ?? 0, cls: 'text-accent' },
+    { label: secondCellLabel, value: secondCellValue, cls: secondCellCls },
     { label: 'Birincilik Oranı', value: pct(stats?.first_places ?? 0), cls: 'text-gold' },
-    { label: 'İkincilik Oranı', value: pct(stats?.second_places ?? 0), cls: 'text-accent' },
+    { label: secondRateLabel, value: pct(secondCellValue), cls: secondCellCls },
     { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
     { label: 'Beraberlik', value: stats?.ties ?? 0, cls: 'text-muted' },
     { label: 'Teslim Olunan', value: stats?.surrendered_count ?? 0, cls: 'text-red' },
@@ -70,7 +78,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
         </div>
         <div className="text-right shrink-0">
           <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
-            Toplam Puan
+            Lig Puanı
           </div>
           <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
         </div>
