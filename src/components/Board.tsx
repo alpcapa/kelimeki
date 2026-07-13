@@ -81,7 +81,7 @@ export function Board({
   onTilePointerUp,
   onTilePointerCancel,
 }: BoardProps) {
-  const { board, placed, bonuses, lastWords, players, current } = state;
+  const { board, placed, bonuses, players, current } = state;
 
   // Köşe bölgesi -> o köşenin sahibinin rengi (boş kareleri renklendirmek için).
   const cornerColor: (PlayerColor | undefined)[] = [
@@ -168,10 +168,10 @@ export function Board({
         'transition-[background,box-shadow,opacity] duration-300',
       ];
 
-      const isLastWord = !!lastWords[k];
-
       if (boardTile) {
-        classes.push(isLastWord ? 'bg-transparent cursor-pointer' : 'bg-transparent cursor-default');
+        // Tahtadaki her taş tıklanabilir — hangi hamlede oynandığına
+        // bakılmaksızın o hücreden geçen kelime(ler)in anlamı gösterilir.
+        classes.push('bg-transparent cursor-pointer');
         content = (
           <Tile
             tile={boardTile}

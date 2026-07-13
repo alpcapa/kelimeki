@@ -94,11 +94,6 @@ export interface GameState {
   message: string;
   messageType: '' | 'ok' | 'err' | 'warn';
   /**
-   * Son kabul edilen hamlede oluşan kelimeler (hücre → kelime + oynayan).
-   * Bu hücrelere tıklayınca kelimenin anlamı gösterilir.
-   */
-  lastWords: Record<CellKey, { word: string; by: Owner }>;
-  /**
    * En son oynanan hamledeki tüm hücreler (tahtada nerede oynandığını sarı
    * çerçeveyle göstermek için) — bir sonraki hamlede değişir.
    */

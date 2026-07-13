@@ -15,7 +15,6 @@ import {
   createEmptyBoard,
   getFormedWords,
   key,
-  type FormedWord,
 } from '../utils/board';
 import {
   calcMoveBonusFlags,
@@ -70,7 +69,6 @@ export function createInitialState(): GameState {
     isGameOver: false,
     message: '',
     messageType: '',
-    lastWords: {},
     lastMoveCells: [],
     moveHistory: [],
   };
@@ -118,7 +116,6 @@ function startGame(setup: PlayerSetup[]): GameState {
     isGameOver: false,
     message: `${players[0].name}, kendi köşenden bir kelime kur.`,
     messageType: '',
-    lastWords: {},
     lastMoveCells: [],
     moveHistory: [],
   };
@@ -132,27 +129,6 @@ export function isFirstMove(state: GameState): boolean {
     }
   }
   return true;
-}
-
-/**
- * Son hamlede oluşan kelimeleri `lastWords`'e yazar. Aynı oyuncunun önceki
- * kayıtları temizlenir.
- */
-function setLastWords(
-  prev: GameState['lastWords'],
-  formed: FormedWord[],
-  by: Owner,
-): GameState['lastWords'] {
-  const next = { ...prev };
-  for (const k of Object.keys(next)) {
-    if (next[k].by === by) delete next[k];
-  }
-  for (const fw of formed) {
-    for (const [r, c] of fw.coords) {
-      next[key(r, c)] = { word: fw.word, by };
-    }
-  }
-  return next;
 }
 
 /**
@@ -552,7 +528,6 @@ export function gameReducer(state: GameState, action: Action): GameState {
         players,
         consecutivePasses: 0,
         selectedTile: null,
-        lastWords: setLastWords(state.lastWords, formed, state.current),
         lastMoveCells: formed.flatMap((f) => f.coords),
         moveHistory: appendMoveHistory(
           state.moveHistory,
@@ -736,7 +711,6 @@ export function gameReducer(state: GameState, action: Action): GameState {
         bag,
         players,
         consecutivePasses: 0,
-        lastWords: setLastWords(state.lastWords, formed, state.current),
         lastMoveCells: formed.flatMap((f) => f.coords),
         moveHistory: appendMoveHistory(
           state.moveHistory,

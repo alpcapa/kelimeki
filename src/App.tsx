@@ -12,7 +12,7 @@ import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
-import { getFormedWords, key } from './utils/board';
+import { getFormedWords, getFullWordAt, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
@@ -438,23 +438,17 @@ export default function App() {
   };
 
   const handleCellClick = (r: number, c: number) => {
-    const k = key(r, c);
-    // Son oynanan kelimenin harfine tıklanırsa anlamını göster. Aynı hamlede
-    // oluşan tüm kelimeleri (tıklanan önce gelir) listele.
-    const lw = state.lastWords[k];
-    if (lw) {
-      const words = Object.values(state.lastWords)
-        .filter((w) => w.by === lw.by)
-        .map((w) => w.word);
-      // Tıklanan kelimeyi listeye birinci sıraya taşı.
-      const sorted = [lw.word, ...words.filter((w) => w !== lw.word)];
-      openMeaning(sorted);
+    // Tahtada duran bir taşa (hangi hamlede oynandığına bakılmaksızın)
+    // tıklanırsa, o hücreden geçen kelime(ler)in anlamı gösterilir.
+    if (state.board[r][c]) {
+      const words = [
+        getFullWordAt(state.board, {}, r, c, 0, 1),
+        getFullWordAt(state.board, {}, r, c, 1, 0),
+      ].filter((w) => w.length >= 2);
+      openMeaning(words);
       return;
     }
     if (state.isGameOver || me.isAI || state.swapMode) return;
-    // Bu tur konmuş bir taşın hücresi buraya hiç ulaşmaz — Board o hücreye
-    // onClick yerine sürükleme (basılı tut/bırak) olay dinleyicileri bağlar.
-    if (state.board[r][c]) return;
 
     const sel = state.selectedTile !== null ? me.rack[state.selectedTile] : null;
     if (sel && sel.letter === '?') {
