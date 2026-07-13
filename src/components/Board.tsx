@@ -246,22 +246,24 @@ export function Board({
     }
   }
 
-  // Bir mazgal (sur dişi) kenar şeridinin arka planı: dişin kendisi kenarın
-  // ORTASINDA, iki ucunda eşit boşlukla (%22 boşluk / %56 diş / %22 boşluk) —
-  // her hücrede tam olarak aynı konumda, simetrik. Kenarın ucuna yaslı bir
-  // diş (ör. %0-56 dolu) köşelerde bir tarafa yakın, diğer tarafa uzak
-  // kalıp köşe dolgusunu diş deseninden kopuk, izole bir nokta gibi
-  // gösteriyordu; ortalanmış diş bu asimetriyi ortadan kaldırır. Kalınlık
-  // düz çizgiyle hemen hemen aynı. Her hücre bu deseni kendi genişliğinde
-  // baştan çizdiğinden (tek periyot = bir hücre), bitişik hücrelerin
-  // şeritleri ek hizalama gerekmeden kesintisiz birleşir. Tam piksel (3px,
-  // 2.5px değil) kullanılır: kesirli yükseklik, şeridin `top:0` mı
-  // `bottom:0`'a mı sabitlendiğine göre farklı yuvarlanıp dış (üst/sol) ve
-  // iç (alt/sağ, genişleyen) kenarları görünürde asimetrik kalınlıkta
-  // gösteriyordu.
+  // Bir mazgal (sur dişi) kenar şeridinin arka planı: iki kısa diş, kenarın
+  // ortasında küçük bir boşlukla ayrılmış, iki ucunda da eşit boşlukla —
+  // her hücrede tam olarak aynı konumda, simetrik (boşluk/diş/boşluk/diş/
+  // boşluk). Tek uzun ortalanmış diş, iki hücre birleştiğinde tek bir kalın
+  // kütle gibi durup istenen "kale mazgalı" hissini vermiyordu; ortadaki
+  // kısa boşluk her dişi kendi mazgal parçası gibi ayırıyor. Kenarın ucuna
+  // yaslı bir diş de köşelerde bir tarafa yakın, diğer tarafa uzak kalıp
+  // köşe dolgusunu diş deseninden kopuk, izole bir nokta gibi gösteriyordu;
+  // simetrik desen bu asimetriyi de ortadan kaldırır. Kalınlık düz çizgiyle
+  // hemen hemen aynı. Her hücre bu deseni kendi genişliğinde baştan
+  // çizdiğinden (tek periyot = bir hücre), bitişik hücrelerin şeritleri ek
+  // hizalama gerekmeden kesintisiz birleşir. Tam piksel (3px, 2.5px değil)
+  // kullanılır: kesirli yükseklik, şeridin `top:0` mı `bottom:0`'a mı
+  // sabitlendiğine göre farklı yuvarlanıp dış (üst/sol) ve iç (alt/sağ,
+  // genişleyen) kenarları görünürde asimetrik kalınlıkta gösteriyordu.
   const CRENEL_THICKNESS = '3px';
   const crenelGradient = (color: string, axis: 'to right' | 'to bottom') =>
-    `linear-gradient(${axis}, transparent 0 22%, ${color} 22% 78%, transparent 78% 100%)`;
+    `linear-gradient(${axis}, transparent 0 18%, ${color} 18% 46%, transparent 46% 54%, ${color} 54% 82%, transparent 82% 100%)`;
 
   // Verilen hücre kümesini kapsayan TEK bir dış hat üretir (iç kesişim
   // hücrelerinde ayırıcı çizgi olmaz) — her hücrenin yalnızca kümenin
