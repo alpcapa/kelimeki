@@ -23,11 +23,17 @@ function Flag({ label, tone }: { label: string; tone: 'green' | 'red' }) {
   );
 }
 
-/** ×2/×3 kelime çarpanı rozeti — bir kelimenin parantez içi puanının hemen yanına konur. */
+/**
+ * ×2/×3 kelime çarpanı rozeti — bir kelimenin parantez içi puanının hemen
+ * yanına konur. Rozetin kendi boyu (18px), yanındaki 12px puan yazısının
+ * satır yüksekliğiyle (aynı satırdaki metin akışının gerçek yüksekliği)
+ * aynı hizada durması için sabitlenmiştir — rozet metni küçük kalır,
+ * sadece çerçevesi rakamla aynı boyda olur.
+ */
 function BonusBadge({ tier }: { tier: 2 | 3 }) {
   return (
     <span
-      className="text-[12px] font-mono font-bold leading-none rounded px-[2px] py-[1px]"
+      className="inline-flex items-center justify-center h-[18px] px-1 text-[8px] font-mono font-bold leading-none rounded"
       style={{
         background: tier === 3
           ? 'linear-gradient(135deg, #FDBA74, #F97316)'
