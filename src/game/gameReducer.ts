@@ -207,8 +207,10 @@ function appendMoveHistory(
   shares: { index: number; amount: number }[],
   bonus?: { x2: boolean; x3: boolean },
   finishJokerCount?: number,
+  wordScores?: { word: string; score: number }[],
 ): HistoryEntry[] {
   const actorEntry: HistoryEntry = { turn, player: actor, words, points: pts };
+  if (wordScores) actorEntry.wordScores = wordScores;
   if (bonus?.x2) actorEntry.x2 = true;
   if (bonus?.x3) actorEntry.x3 = true;
   if (finishJokerCount) actorEntry.finishJokerCount = finishJokerCount;
@@ -538,6 +540,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           shares,
           bonusFlags,
           finishBonus > 0 ? jokerCount : undefined,
+          wordScores,
         ),
         message: `${me.name}: +${pts} puan${bonusNote}${finishBonusNote} Kelimeler: ${check.words!.join(', ')}`,
         messageType: 'ok',
@@ -721,6 +724,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           aiShares,
           aiBonusFlags,
           aiFinishBonus > 0 ? aiJokerCount : undefined,
+          aiWordScores,
         ),
         message: `${me.name} "${move.word}" oynadı. +${aiPts} puan.${aiInvasionNote}${aiFinishBonusNote}`,
         messageType: 'ok',

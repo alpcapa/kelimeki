@@ -54,9 +54,11 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
               ? 'Pas geçti'
               : e.action === 'exchange'
                 ? `${e.tileCount} taş değiştirdi`
-                : e.words.length > 0
-                  ? e.words.join(', ')
-                  : '—';
+                : e.wordScores && e.wordScores.length > 0
+                  ? e.wordScores.map((w) => `${w.word} (${w.score})`).join(', ')
+                  : e.words.length > 0
+                    ? e.words.join(', ')
+                    : '—';
             return (
               <div
                 key={i}
