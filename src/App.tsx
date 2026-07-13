@@ -673,7 +673,7 @@ export default function App() {
                 ? 'Anasayfaya dönmek istediğinden emin misin?'
                 : user
                   ? 'Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.'
-                  : 'Bu oyundan çıkmak istediğine emin misin? Teslim olursun.'}
+                  : 'Bu oyundan çıkmak istediğine emin misin?'}
             </p>
             <div className="flex gap-2 mt-1">
               <button
