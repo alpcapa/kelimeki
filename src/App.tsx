@@ -671,7 +671,9 @@ export default function App() {
             <p className="text-sm text-text font-sans leading-relaxed">
               {state.isGameOver
                 ? 'Anasayfaya dönmek istediğinden emin misin?'
-                : 'Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.'}
+                : user
+                  ? 'Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.'
+                  : 'Bu oyundan çıkmak istediğine emin misin? Teslim olursun.'}
             </p>
             <div className="flex gap-2 mt-1">
               <button
