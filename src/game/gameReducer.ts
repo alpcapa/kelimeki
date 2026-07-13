@@ -208,7 +208,7 @@ function appendMoveHistory(
   shares: { index: number; amount: number }[],
   bonus?: { x2: boolean; x3: boolean },
   finishJokerCount?: number,
-  wordScores?: { word: string; score: number }[],
+  wordScores?: { word: string; score: number; x2: boolean; x3: boolean }[],
 ): HistoryEntry[] {
   const actorEntry: HistoryEntry = { turn, player: actor, words, points: pts };
   if (wordScores) actorEntry.wordScores = wordScores;
@@ -454,7 +454,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const bonusFlags = calcMoveBonusFlags(state.board, state.placed, state.bonuses);
       const formed = getFormedWords(state.board, state.placed);
       const wordScores = calcWordScores(state.board, state.placed, state.bonuses);
-      const wordRawScores = calcWordRawScores(state.board, state.placed);
+      const wordRawScores = calcWordRawScores(state.board, state.placed, state.bonuses);
       const bestWordThisMove = wordScores.reduce(
         (best, w) => (w.score > best.score ? w : best),
         { word: '', score: 0 },
@@ -644,7 +644,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const formed = getFormedWords(state.board, placedMap);
       const aiBonusFlags = calcMoveBonusFlags(state.board, placedMap, state.bonuses);
       const aiWordScores = calcWordScores(state.board, placedMap, state.bonuses);
-      const aiWordRawScores = calcWordRawScores(state.board, placedMap);
+      const aiWordRawScores = calcWordRawScores(state.board, placedMap, state.bonuses);
       const aiBestWordThisMove = aiWordScores.reduce(
         (best, w) => (w.score > best.score ? w : best),
         { word: '', score: 0 },

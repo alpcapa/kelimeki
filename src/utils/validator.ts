@@ -293,12 +293,16 @@ function wordRawPoints(coords: [number, number][], board: Board, placed: Placed)
   return sum;
 }
 
-function wordPoints(
+/**
+ * Bir kelimenin bu turda yeni konan taşlarından biri X3 (tam ortadaki tek
+ * hücre) ve/veya X2 (bonus bölgesi) hücresine değiyor mu? Bir kelime X3'e
+ * değdiyse yalnızca X3 sayılır (X2 ile birleşmez).
+ */
+function wordBonusFlags(
   coords: [number, number][],
-  board: Board,
   placed: Placed,
   bonuses: Record<string, BonusType>,
-): number {
+): { x2: boolean; x3: boolean } {
   let hasTw = false;
   let touchesZone = false;
   for (const [r, c] of coords) {
@@ -307,7 +311,17 @@ function wordPoints(
     if (newTile && bonuses[k] === 'tw') hasTw = true;
     if (newTile && inBonusZone(r, c)) touchesZone = true;
   }
-  const wordMult = hasTw ? 3 : touchesZone ? 2 : 1;
+  return { x2: !hasTw && touchesZone, x3: hasTw };
+}
+
+function wordPoints(
+  coords: [number, number][],
+  board: Board,
+  placed: Placed,
+  bonuses: Record<string, BonusType>,
+): number {
+  const { x2, x3 } = wordBonusFlags(coords, placed, bonuses);
+  const wordMult = x3 ? 3 : x2 ? 2 : 1;
   return wordRawPoints(coords, board, placed) * wordMult;
 }
 
@@ -328,16 +342,9 @@ export function calcMoveBonusFlags(
   let x2 = false;
   let x3 = false;
   for (const { coords } of getFormedWords(board, placed)) {
-    let wordHasTw = false;
-    let wordTouchesZone = false;
-    for (const [r, c] of coords) {
-      const k = key(r, c);
-      if (!placed[k]) continue;
-      if (bonuses[k] === 'tw') wordHasTw = true;
-      if (inBonusZone(r, c)) wordTouchesZone = true;
-    }
-    if (wordHasTw) x3 = true;
-    else if (wordTouchesZone) x2 = true;
+    const flags = wordBonusFlags(coords, placed, bonuses);
+    if (flags.x3) x3 = true;
+    else if (flags.x2) x2 = true;
   }
   return { x2, x3 };
 }
@@ -376,18 +383,19 @@ export function calcWordScores(
 }
 
 /**
- * Bu turda oluşan her kelimenin harf puanları toplamını, X2/X3 kelime
- * çarpanı UYGULANMADAN döner — Oyun Geçmişi'nde kelimenin yanında gösterilen
- * parantez içi değer budur (çarpan zaten hamlenin ×2/×3 rozetiyle ayrıca
- * gösteriliyor, kelime değeriyle karıştırılmaması için burada saf toplam
- * kullanılır).
+ * Bu turda oluşan her kelimenin harf puanları toplamını (X2/X3 kelime
+ * çarpanı UYGULANMADAN) ve o kelimenin hangi bonusa değdiğini döner — Oyun
+ * Geçmişi'nde kelimenin yanında hem parantez içi saf puan, hem de değdiği
+ * bonusun (×2/×3) rozeti bu bilgiyle gösterilir.
  */
 export function calcWordRawScores(
   board: Board,
   placed: Placed,
-): { word: string; score: number }[] {
+  bonuses: Record<string, BonusType>,
+): { word: string; score: number; x2: boolean; x3: boolean }[] {
   return getFormedWords(board, placed).map(({ word, coords }) => ({
     word,
     score: wordRawPoints(coords, board, placed),
+    ...wordBonusFlags(coords, placed, bonuses),
   }));
 }

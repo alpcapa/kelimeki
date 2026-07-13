@@ -23,6 +23,24 @@ function Flag({ label, tone }: { label: string; tone: 'green' | 'red' }) {
   );
 }
 
+/** ×2/×3 kelime çarpanı rozeti — bir kelimenin parantez içi puanının hemen yanına konur. */
+function BonusBadge({ tier }: { tier: 2 | 3 }) {
+  return (
+    <span
+      className="text-[7px] font-mono font-bold leading-none rounded px-[2px] py-[1px]"
+      style={{
+        background: tier === 3
+          ? 'linear-gradient(135deg, #FDBA74, #F97316)'
+          : 'linear-gradient(135deg, #FDE68A, #FBBF24)',
+        color: '#7C2D12',
+      }}
+      title={tier === 3 ? 'Üç kat kelime puanı' : 'İki kat kelime puanı'}
+    >
+      ×{tier}
+    </span>
+  );
+}
+
 export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory;
   const total = entries.reduce((s, e) => s + e.points, 0);
@@ -50,12 +68,13 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
           {[...displayEntries].reverse().map((e, i) => {
             const player = state.players[e.player];
             const isInvasionLoss = !!e.lostShares && e.lostShares.length > 0;
-            const label = e.action === 'pass'
+            const hasWordScores = !!e.wordScores && e.wordScores.length > 0;
+            const plainLabel = e.action === 'pass'
               ? 'Pas geçti'
               : e.action === 'exchange'
                 ? `${e.tileCount} taş değiştirdi`
-                : e.wordScores && e.wordScores.length > 0
-                  ? e.wordScores.map((w) => `${w.word} (${w.score})`).join(', ')
+                : hasWordScores
+                  ? null
                   : e.words.length > 0
                     ? e.words.join(', ')
                     : '—';
@@ -73,8 +92,17 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                       />
                       {e.turn + 1}. {player?.name ?? '?'}
                     </span>
-                    <span className="text-[12px] font-mono font-bold text-text truncate">
-                      {label}
+                    <span className="text-[12px] font-mono font-bold text-text flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                      {!hasWordScores
+                        ? plainLabel
+                        : e.wordScores!.map((w, wi) => (
+                            <span key={wi} className="inline-flex items-center gap-0.5">
+                              {w.word} ({w.score})
+                              {w.x3 && <BonusBadge tier={3} />}
+                              {w.x2 && <BonusBadge tier={2} />}
+                              {wi < e.wordScores!.length - 1 && <span className="text-muted">,</span>}
+                            </span>
+                          ))}
                     </span>
                   </div>
                   {!e.action && (
