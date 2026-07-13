@@ -367,7 +367,7 @@ export default function App() {
       if (dist < DRAG_THRESHOLD) return;
       d.moved = true;
     }
-    const { cellEl } = dropTargetsAt(e.clientX, e.clientY);
+    const { cellEl } = dropTargetsAt(e.clientX, e.clientY - DRAG_LIFT);
     let overKey: string | null = null;
     let overValid = false;
     if (cellEl?.dataset.cell) {
@@ -409,7 +409,7 @@ export default function App() {
       suppressClickRef.current = false;
     }, 0);
 
-    const { cellEl, rackEl } = dropTargetsAt(e.clientX, e.clientY);
+    const { cellEl, rackEl } = dropTargetsAt(e.clientX, e.clientY - DRAG_LIFT);
     if (cellEl?.dataset.cell) {
       const [r, c] = cellEl.dataset.cell.split(',').map(Number);
       if (isCellFreeFor(d.source, r, c)) {
