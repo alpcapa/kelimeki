@@ -304,9 +304,11 @@ export function Board({
       const right = isOpen(r, c + 1);
 
       if (crenellated) {
-        // Dört köşe türünden hangisi olursa olsun (diş deseni kenarın
-        // ucunda boşluğa denk gelse bile) gerçek dış köşeler daima dolu
-        // görünsün diye, o köşeye küçük bir dolgu kare eklenir.
+        // Diş deseni her kenarın uçlarında boşluk bırakır (gap-çizgi-gap-
+        // çizgi-gap); çizilen her kenarın iki ucuna da küçük bir dolgu kare
+        // ("nokta") eklenir — hem 90°'lik gerçek dönüş köşelerinde hem de
+        // düz bir kenarın hücreden hücreye geçtiği ara noktalarda. Böylece
+        // tüm sınır boyunca nokta-çizgi-nokta-çizgi deseni tutarlı kalır.
         const cap = (vert: 'top' | 'bottom', horiz: 'left' | 'right') => (
           <div
             key={`cap-${vert}-${horiz}`}
@@ -338,10 +340,10 @@ export function Board({
             {!right && (
               <div className="absolute inset-y-0 right-0" style={{ width: CRENEL_THICKNESS, background: crenelGradient(color, 'to bottom') }} />
             )}
-            {!top && !left && cap('top', 'left')}
-            {!top && !right && cap('top', 'right')}
-            {!bottom && !left && cap('bottom', 'left')}
-            {!bottom && !right && cap('bottom', 'right')}
+            {(!top || !left) && cap('top', 'left')}
+            {(!top || !right) && cap('top', 'right')}
+            {(!bottom || !left) && cap('bottom', 'left')}
+            {(!bottom || !right) && cap('bottom', 'right')}
           </div>
         );
       }
