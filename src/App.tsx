@@ -555,7 +555,7 @@ export default function App() {
             state.isGameOver ? (
               <button
                 onClick={() => dispatch({ type: 'INIT' })}
-                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform"
+                className="shrink-0 px-5 rounded-lg font-sans text-[15px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform"
               >
                 Yeni Oyun Aç
               </button>
