@@ -247,11 +247,15 @@ export function Board({
   }
 
   // Bir mazgal (sur dişi) kenar şeridinin arka planı: kenarın ilk %56'sı
-  // dolu (diş), kalanı boşluk (aralık) — kalınlık (2.5px) düz çizgiyle
-  // birebir aynı, yalnızca kenar ekseni boyunca kesiliyor. Her hücre bu
-  // deseni kendi genişliğinde baştan çizdiğinden (tek periyot = bir hücre),
-  // bitişik hücrelerin şeritleri ek hizalama gerekmeden kesintisiz birleşir.
-  const CRENEL_THICKNESS = '2.5px';
+  // dolu (diş), kalanı boşluk (aralık) — kalınlık düz çizgiyle hemen hemen
+  // aynı, yalnızca kenar ekseni boyunca kesiliyor. Her hücre bu deseni kendi
+  // genişliğinde baştan çizdiğinden (tek periyot = bir hücre), bitişik
+  // hücrelerin şeritleri ek hizalama gerekmeden kesintisiz birleşir. Tam
+  // piksel (3px, 2.5px değil) kullanılır: kesirli yükseklik, şeridin
+  // `top:0` mı `bottom:0`'a mı sabitlendiğine göre farklı yuvarlanıp dış
+  // (üst/sol) ve iç (alt/sağ, genişleyen) kenarları görünürde asimetrik
+  // kalınlıkta gösteriyordu.
+  const CRENEL_THICKNESS = '3px';
   const crenelGradient = (color: string, axis: 'to right' | 'to bottom') =>
     `linear-gradient(${axis}, ${color} 0 56%, transparent 56% 100%)`;
 
