@@ -104,7 +104,7 @@ export function Setup({ onStart }: SetupProps) {
             </button>
             <button
               onClick={() => { setShowWarningPopup(false); doStart(); }}
-              className="btn-raised-neutral flex-1 py-2.5 rounded-md border border-border text-muted text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-muted text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
             >
               Devam
             </button>

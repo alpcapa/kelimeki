@@ -704,7 +704,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setInvasionConfirm(null)}
-                className="btn-raised-neutral flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Vazgeç
               </button>
@@ -739,7 +739,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setShowExitConfirm(false)}
-                className="btn-raised-neutral flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Vazgeç
               </button>
