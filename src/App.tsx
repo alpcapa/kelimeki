@@ -12,7 +12,7 @@ import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
-import { getFormedWords, key } from './utils/board';
+import { getFormedWords, getFullWordAt, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
@@ -128,6 +128,60 @@ export default function App() {
     document.addEventListener('touchmove', preventScrollWhileDragging, { passive: false });
     return () => document.removeEventListener('touchmove', preventScrollWhileDragging);
   }, []);
+
+  // Oyun ekranında bir modal açık değilken tepeden aşağı çekme (mobil
+  // tarayıcının "aşağı çek → yenile/anasayfaya dön" hareketi) sayfayı
+  // yenilemek yerine logoya tıklamışçasına çıkış onayını açar — yoksa oyun
+  // durumu kaybolup kullanıcı habersizce anasayfaya düşüyordu.
+  const anyModalOpen =
+    !!meaning || showTiles || showHistory || !!pendingWild || showExitConfirm || !!invasionConfirm;
+  const anyModalOpenRef = useRef(anyModalOpen);
+  anyModalOpenRef.current = anyModalOpen;
+
+  useEffect(() => {
+    if (state.phase !== 'play') return;
+    let startY = 0;
+    let tracking = false;
+    let triggered = false;
+
+    const onTouchStart = (e: TouchEvent) => {
+      triggered = false;
+      if (dragRef.current || anyModalOpenRef.current) {
+        tracking = false;
+        return;
+      }
+      const scrollTop = document.scrollingElement?.scrollTop ?? 0;
+      tracking = scrollTop <= 0;
+      startY = e.touches[0].clientY;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!tracking || dragRef.current || anyModalOpenRef.current) return;
+      const deltaY = e.touches[0].clientY - startY;
+      if (deltaY <= 0) return;
+      e.preventDefault();
+      if (deltaY > 70) triggered = true;
+    };
+
+    const onTouchEnd = () => {
+      tracking = false;
+      if (triggered) {
+        triggered = false;
+        setShowExitConfirm(true);
+      }
+    };
+
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', onTouchEnd);
+    document.addEventListener('touchcancel', onTouchEnd);
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [state.phase]);
 
   const openMeaning = (words: string[]) => {
     const unique = [...new Set(words)];
@@ -313,7 +367,7 @@ export default function App() {
       if (dist < DRAG_THRESHOLD) return;
       d.moved = true;
     }
-    const { cellEl } = dropTargetsAt(e.clientX, e.clientY);
+    const { cellEl } = dropTargetsAt(e.clientX, e.clientY - DRAG_LIFT);
     let overKey: string | null = null;
     let overValid = false;
     if (cellEl?.dataset.cell) {
@@ -355,7 +409,7 @@ export default function App() {
       suppressClickRef.current = false;
     }, 0);
 
-    const { cellEl, rackEl } = dropTargetsAt(e.clientX, e.clientY);
+    const { cellEl, rackEl } = dropTargetsAt(e.clientX, e.clientY - DRAG_LIFT);
     if (cellEl?.dataset.cell) {
       const [r, c] = cellEl.dataset.cell.split(',').map(Number);
       if (isCellFreeFor(d.source, r, c)) {
@@ -384,23 +438,17 @@ export default function App() {
   };
 
   const handleCellClick = (r: number, c: number) => {
-    const k = key(r, c);
-    // Son oynanan kelimenin harfine tıklanırsa anlamını göster. Aynı hamlede
-    // oluşan tüm kelimeleri (tıklanan önce gelir) listele.
-    const lw = state.lastWords[k];
-    if (lw) {
-      const words = Object.values(state.lastWords)
-        .filter((w) => w.by === lw.by)
-        .map((w) => w.word);
-      // Tıklanan kelimeyi listeye birinci sıraya taşı.
-      const sorted = [lw.word, ...words.filter((w) => w !== lw.word)];
-      openMeaning(sorted);
+    // Tahtada duran bir taşa (hangi hamlede oynandığına bakılmaksızın)
+    // tıklanırsa, o hücreden geçen kelime(ler)in anlamı gösterilir.
+    if (state.board[r][c]) {
+      const words = [
+        getFullWordAt(state.board, {}, r, c, 0, 1),
+        getFullWordAt(state.board, {}, r, c, 1, 0),
+      ].filter((w) => w.length >= 2);
+      openMeaning(words);
       return;
     }
     if (state.isGameOver || me.isAI || state.swapMode) return;
-    // Bu tur konmuş bir taşın hücresi buraya hiç ulaşmaz — Board o hücreye
-    // onClick yerine sürükleme (basılı tut/bırak) olay dinleyicileri bağlar.
-    if (state.board[r][c]) return;
 
     const sel = state.selectedTile !== null ? me.rack[state.selectedTile] : null;
     if (sel && sel.letter === '?') {
