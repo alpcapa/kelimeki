@@ -86,6 +86,10 @@
   body {
     margin: 0;
     padding: 0;
+    /* Tepeden aşağı çekince tarayıcının sayfayı yenilemesini/anasayfaya
+       dönmesini engeller — bu hareket App.tsx'te JS ile yakalanıp oyun
+       sırasında logo tıklamasıyla aynı çıkış onayına yönlendirilir. */
+    overscroll-behavior-y: contain;
   }
 
   body {
