@@ -555,7 +555,7 @@ export default function App() {
             state.isGameOver ? (
               <button
                 onClick={() => dispatch({ type: 'INIT' })}
-                className="shrink-0 px-5 rounded-lg font-sans text-[15px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform"
+                className="shrink-0 px-5 rounded-lg font-sans text-[15px] font-bold uppercase tracking-[1.2px] bg-accent text-white shadow-[3px_3px_8px_rgba(15,61,170,0.45),-2px_-2px_6px_rgba(147,181,255,0.5),0_6px_14px_rgba(37,99,235,0.35)] active:scale-[0.97] active:shadow-[1px_1px_3px_rgba(15,61,170,0.45)] transition-[transform,box-shadow]"
               >
                 Yeni Oyun Aç
               </button>
@@ -563,7 +563,7 @@ export default function App() {
               <button
                 disabled={!canAct || validating}
                 onClick={() => { void handlePlay(); }}
-                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white shadow-[3px_3px_8px_rgba(15,61,170,0.45),-2px_-2px_6px_rgba(147,181,255,0.5),0_6px_14px_rgba(37,99,235,0.35)] active:scale-[0.97] active:shadow-[1px_1px_3px_rgba(15,61,170,0.45)] transition-[transform,box-shadow] disabled:opacity-35 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {validating ? 'Kontrol…' : 'Oyna'}
               </button>
