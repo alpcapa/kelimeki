@@ -97,9 +97,9 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                         ? plainLabel
                         : e.wordScores!.map((w, wi) => (
                             <span key={wi} className="inline-flex items-center gap-0.5">
-                              {w.word} ({w.score})
-                              {w.x3 && <BonusBadge tier={3} />}
-                              {w.x2 && <BonusBadge tier={2} />}
+                              {w.word} ({w.score}
+                              {(w.x2 || w.x3) && ' '}
+                              {w.x3 ? <BonusBadge tier={3} /> : w.x2 ? <BonusBadge tier={2} /> : null})
                               {wi < e.wordScores!.length - 1 && <span className="text-muted">,</span>}
                             </span>
                           ))}
@@ -108,24 +108,6 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                   {!e.action && (
                     <span className="flex items-center gap-1 shrink-0">
                       {isInvasionLoss && <Flag label="Sınır İhlali" tone="red" />}
-                      {e.x3 && (
-                        <span
-                          className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
-                          style={{ background: 'linear-gradient(135deg, #FDBA74, #F97316)', color: '#7C2D12' }}
-                          title="Üç kat kelime puanı"
-                        >
-                          ×3
-                        </span>
-                      )}
-                      {e.x2 && (
-                        <span
-                          className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
-                          style={{ background: 'linear-gradient(135deg, #FDE68A, #FBBF24)', color: '#7C2D12' }}
-                          title="İki kat kelime puanı"
-                        >
-                          ×2
-                        </span>
-                      )}
                       <span className="text-[13px] font-mono font-bold text-green">
                         +{e.points}
                       </span>

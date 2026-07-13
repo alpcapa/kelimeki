@@ -326,30 +326,6 @@ function wordPoints(
 }
 
 /**
- * Bu turda oynanan hamlenin (oluşan tüm kelimeler genelinde) X2 bonus
- * bölgesine ve/veya tam ortadaki X3 hücresine yeni taşla değip değmediğini
- * döner — `MoveHistoryModal`'da puanın yanına küçük bir rozet olarak
- * gösterilir. `wordPoints` ile aynı kural: bir kelime X3'e değdiyse o kelime
- * için yalnızca X3 sayılır (aynı kelimede X2 ile birleşmez); farklı bir
- * kelime (aynı hamlede) X3'e değmeden X2 bölgesine değdiyse o da ayrıca X2
- * rozetini tetikler.
- */
-export function calcMoveBonusFlags(
-  board: Board,
-  placed: Placed,
-  bonuses: Record<string, BonusType>,
-): { x2: boolean; x3: boolean } {
-  let x2 = false;
-  let x3 = false;
-  for (const { coords } of getFormedWords(board, placed)) {
-    const flags = wordBonusFlags(coords, placed, bonuses);
-    if (flags.x3) x3 = true;
-    else if (flags.x2) x2 = true;
-  }
-  return { x2, x3 };
-}
-
-/**
  * Bu turda oluşan tüm kelimelerin toplam puanını hesaplar. Bonuslar yalnızca
  * bu turda yeni konan taşlara uygulanır. Tüm raf kullanılırsa bingo bonusu.
  */
