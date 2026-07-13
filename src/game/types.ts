@@ -113,6 +113,13 @@ export interface HistoryEntry {
    * kendisi oynamamıştır, sadece bölgesine giren/değen hamlede geçen kelime.
    */
   words: string[];
+  /**
+   * `words` ile aynı sırada, her kelimenin harf puanları toplamı (X2/X3
+   * kelime çarpanı UYGULANMADAN) ve o kelimenin hangi bonusa değdiği — Oyun
+   * Geçmişi'nde kelimenin yanında parantez içindeki puan ve ×2/×3 rozeti
+   * bununla gösterilir.
+   */
+  wordScores?: { word: string; score: number; x2: boolean; x3: boolean }[];
   /** Bu satırda `player`in skoruna eklenen puan. */
   points: number;
   /**
@@ -130,10 +137,6 @@ export interface HistoryEntry {
   action?: 'pass' | 'exchange';
   /** `action` 'exchange' ise değiştirilen taş sayısı. */
   tileCount?: number;
-  /** Hamle, oluşan kelimelerden biriyle X2 bonus bölgesine yeni taşla değdi mi? */
-  x2?: boolean;
-  /** Hamle, tam ortadaki X3 hücresine yeni taşla değdi mi? */
-  x3?: boolean;
   /** Doluysa: bu hamle rafı + torbayı bitirdi ve bu kadar joker içeriyordu (jokerli bitiş bonusu). */
   finishJokerCount?: number;
 }

@@ -23,6 +23,32 @@ function Flag({ label, tone }: { label: string; tone: 'green' | 'red' }) {
   );
 }
 
+/**
+ * ×2/×3 kelime çarpanı rozeti — bir kelimenin parantez içi puanının hemen
+ * yanına konur. Yüksekliği (12px = h-3), yanındaki puan yazısıyla AYNI
+ * `leading-none` satırda olduğu için birebir eşleşir: `leading-none`
+ * (line-height:1) tarayıcıdan/fonttan bağımsız kesin bir değerdir — satır
+ * yüksekliğini tarayıcının "normal" varsayılanına (fonta göre değişir,
+ * Chrome/Safari farklı sonuç verebilir) bırakmak yerine burada açıkça
+ * sabitliyoruz, böylece her cihazda aynı sonucu verir.
+ */
+function BonusBadge({ tier }: { tier: 2 | 3 }) {
+  return (
+    <span
+      className="inline-flex items-center justify-center h-3 px-1 text-[10px] font-mono font-bold leading-none rounded"
+      style={{
+        background: tier === 3
+          ? 'linear-gradient(135deg, #FDBA74, #F97316)'
+          : 'linear-gradient(135deg, #FDE68A, #FBBF24)',
+        color: '#7C2D12',
+      }}
+      title={tier === 3 ? 'Üç kat kelime puanı' : 'İki kat kelime puanı'}
+    >
+      ×{tier}
+    </span>
+  );
+}
+
 export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory;
   const total = entries.reduce((s, e) => s + e.points, 0);
@@ -50,13 +76,16 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
           {[...displayEntries].reverse().map((e, i) => {
             const player = state.players[e.player];
             const isInvasionLoss = !!e.lostShares && e.lostShares.length > 0;
-            const label = e.action === 'pass'
+            const hasWordScores = !!e.wordScores && e.wordScores.length > 0;
+            const plainLabel = e.action === 'pass'
               ? 'Pas geçti'
               : e.action === 'exchange'
                 ? `${e.tileCount} taş değiştirdi`
-                : e.words.length > 0
-                  ? e.words.join(', ')
-                  : '—';
+                : hasWordScores
+                  ? null
+                  : e.words.length > 0
+                    ? e.words.join(', ')
+                    : '—';
             return (
               <div
                 key={i}
@@ -71,31 +100,22 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                       />
                       {e.turn + 1}. {player?.name ?? '?'}
                     </span>
-                    <span className="text-[12px] font-mono font-bold text-text truncate">
-                      {label}
+                    <span className="text-[12px] leading-none font-mono font-bold text-text flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                      {!hasWordScores
+                        ? plainLabel
+                        : e.wordScores!.map((w, wi) => (
+                            <span key={wi} className="inline-flex items-center gap-0.5">
+                              {w.word} ({w.score}
+                              {(w.x2 || w.x3) && ' '}
+                              {w.x3 ? <BonusBadge tier={3} /> : w.x2 ? <BonusBadge tier={2} /> : null})
+                              {wi < e.wordScores!.length - 1 && <span className="text-muted">,</span>}
+                            </span>
+                          ))}
                     </span>
                   </div>
                   {!e.action && (
                     <span className="flex items-center gap-1 shrink-0">
                       {isInvasionLoss && <Flag label="Sınır İhlali" tone="red" />}
-                      {e.x3 && (
-                        <span
-                          className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
-                          style={{ background: 'linear-gradient(135deg, #FDBA74, #F97316)', color: '#7C2D12' }}
-                          title="Üç kat kelime puanı"
-                        >
-                          ×3
-                        </span>
-                      )}
-                      {e.x2 && (
-                        <span
-                          className="text-[8px] font-mono font-bold leading-none rounded px-[3px] py-[2px]"
-                          style={{ background: 'linear-gradient(135deg, #FDE68A, #FBBF24)', color: '#7C2D12' }}
-                          title="İki kat kelime puanı"
-                        >
-                          ×2
-                        </span>
-                      )}
                       <span className="text-[13px] font-mono font-bold text-green">
                         +{e.points}
                       </span>

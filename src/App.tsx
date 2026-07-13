@@ -354,6 +354,24 @@ export default function App() {
     return { cellEl, rackEl };
   };
 
+  // Sürüklenen taş, parmağın DRAG_LIFT kadar üzerinde çizilir (görüşü
+  // engellemesin diye). Tahtanın en üst satırı ekranın üst kısmına (başlığa)
+  // yakınsa bu kaldırma, işaretçinin hedef noktasını tahtanın dışına
+  // (başlığın üzerine) taşıyabilir — özellikle bir oyuncunun ilk hamlede
+  // değmesi gereken köşe hücresi tam üst satırdaysa, bu hücreye asla
+  // bırakılamaz hale gelirdi. Kaldırılmış noktayı tahtanın üst kenarının
+  // altında tutmak için kırpılır; görsel taş ve bırakma hedefi hep aynı
+  // (kırpılmış) noktayı kullanır, ikisi asla ayrışmaz.
+  const liftedPoint = (clientY: number) => {
+    // En üst satırın (r=0) hücresi, kaldırılmış noktanın hâlâ bir
+    // `[data-cell]` içinde kalması için kullanılır — tahtanın kendi kap
+    // elemanının üst kenarı iç dolgu (padding) içerdiğinden, o kenara göre
+    // kırpmak noktayı hücre olmayan bir bölgeye düşürebilirdi.
+    const topRowEl = document.querySelector('[data-cell="0,0"]') as HTMLElement | null;
+    const minY = topRowEl ? topRowEl.getBoundingClientRect().top + 1 : -Infinity;
+    return Math.max(clientY - DRAG_LIFT, minY);
+  };
+
   const isCellFreeFor = (source: DragSource, r: number, c: number) => {
     if (source.kind === 'placed' && source.r === r && source.c === c) return false;
     return !state.board[r][c] && !state.placed[key(r, c)];
@@ -367,7 +385,8 @@ export default function App() {
       if (dist < DRAG_THRESHOLD) return;
       d.moved = true;
     }
-    const { cellEl } = dropTargetsAt(e.clientX, e.clientY - DRAG_LIFT);
+    const liftedY = liftedPoint(e.clientY);
+    const { cellEl } = dropTargetsAt(e.clientX, liftedY);
     let overKey: string | null = null;
     let overValid = false;
     if (cellEl?.dataset.cell) {
@@ -375,7 +394,7 @@ export default function App() {
       overKey = key(r, c);
       overValid = isCellFreeFor(d.source, r, c);
     }
-    setGhost({ x: e.clientX, y: e.clientY, source: d.source, overKey, overValid });
+    setGhost({ x: e.clientX, y: liftedY, source: d.source, overKey, overValid });
   };
 
   const endDrag = (e: React.PointerEvent) => {
@@ -409,7 +428,7 @@ export default function App() {
       suppressClickRef.current = false;
     }, 0);
 
-    const { cellEl, rackEl } = dropTargetsAt(e.clientX, e.clientY - DRAG_LIFT);
+    const { cellEl, rackEl } = dropTargetsAt(e.clientX, liftedPoint(e.clientY));
     if (cellEl?.dataset.cell) {
       const [r, c] = cellEl.dataset.cell.split(',').map(Number);
       if (isCellFreeFor(d.source, r, c)) {
@@ -777,7 +796,7 @@ export default function App() {
           className="fixed z-[300] pointer-events-none"
           style={{
             left: ghost.x,
-            top: ghost.y - DRAG_LIFT,
+            top: ghost.y,
             width: 46,
             height: 46,
             transform: 'translate(-50%, -50%) scale(1.1)',
