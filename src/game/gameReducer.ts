@@ -230,10 +230,12 @@ function appendMoveHistory(
   pts: number,
   shares: { index: number; amount: number }[],
   bonus?: { x2: boolean; x3: boolean },
+  finishJokerCount?: number,
 ): HistoryEntry[] {
   const actorEntry: HistoryEntry = { turn, player: actor, words, points: pts };
   if (bonus?.x2) actorEntry.x2 = true;
   if (bonus?.x3) actorEntry.x3 = true;
+  if (finishJokerCount) actorEntry.finishJokerCount = finishJokerCount;
   if (shares.length > 0) {
     actorEntry.lostShares = shares.map((s) => ({ to: s.index, amount: s.amount }));
   }
@@ -505,11 +507,14 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const rack = [...me.rack];
       rack.push(...drawTiles(bag, RACK_SIZE - rack.length));
 
-      // Bu hamle rafı + torbayı tamamen bitiriyorsa ve aralarında joker
-      // varsa, jokerli bitiş bonusu eklenir (köşe vergisine tabi değildir).
-      const jokerCount = Object.values(state.placed).filter((t) => t.wild).length;
+      // Bu hamle rafı + torbayı tamamen bitiriyorsa ve oynanan taşların
+      // TAMAMI jokerse, jokerli bitiş bonusu eklenir (köşe vergisine tabi
+      // değildir). Jokerle birlikte normal bir harf de oynandıysa bonus yok.
+      const placedTiles = Object.values(state.placed);
+      const jokerCount = placedTiles.filter((t) => t.wild).length;
+      const onlyJokers = placedTiles.length > 0 && jokerCount === placedTiles.length;
       const finishesGame = rack.length === 0 && bag.length === 0;
-      const finishBonus = finishesGame ? jokerFinishBonus(jokerCount) : 0;
+      const finishBonus = finishesGame && onlyJokers ? jokerFinishBonus(jokerCount) : 0;
       const finishBonusNote = finishBonus > 0 ? ` (jokerli bitiş bonusu +${finishBonus})` : '';
 
       const newLongestWord = formed.reduce(
@@ -557,6 +562,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           pts + finishBonus,
           shares,
           bonusFlags,
+          finishBonus > 0 ? jokerCount : undefined,
         ),
         message: `${me.name}: +${pts} puan${bonusNote}${finishBonusNote} Kelimeler: ${check.words!.join(', ')}`,
         messageType: 'ok',
@@ -675,11 +681,13 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const bag = [...state.bag];
       rack.push(...drawTiles(bag, RACK_SIZE - rack.length));
 
-      // Bu hamle rafı + torbayı tamamen bitiriyorsa ve aralarında joker
-      // varsa, jokerli bitiş bonusu eklenir (köşe vergisine tabi değildir).
+      // Bu hamle rafı + torbayı tamamen bitiriyorsa ve oynanan taşların
+      // TAMAMI jokerse, jokerli bitiş bonusu eklenir (köşe vergisine tabi
+      // değildir). Jokerle birlikte normal bir harf de oynandıysa bonus yok.
       const aiJokerCount = move.placements.filter((p) => p.tile.wild).length;
+      const aiOnlyJokers = move.placements.length > 0 && aiJokerCount === move.placements.length;
       const aiFinishesGame = rack.length === 0 && bag.length === 0;
-      const aiFinishBonus = aiFinishesGame ? jokerFinishBonus(aiJokerCount) : 0;
+      const aiFinishBonus = aiFinishesGame && aiOnlyJokers ? jokerFinishBonus(aiJokerCount) : 0;
 
       const aiLongestWord = formed.reduce(
         (best, fw) => (fw.word.length > best.length ? fw.word : best),
@@ -738,6 +746,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           aiPts + aiFinishBonus,
           aiShares,
           aiBonusFlags,
+          aiFinishBonus > 0 ? aiJokerCount : undefined,
         ),
         message: `${me.name} "${move.word}" oynadı. +${aiPts} puan.${aiInvasionNote}${aiFinishBonusNote}`,
         messageType: 'ok',

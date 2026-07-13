@@ -555,7 +555,7 @@ export default function App() {
             state.isGameOver ? (
               <button
                 onClick={() => dispatch({ type: 'INIT' })}
-                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform"
+                className="btn-raised shrink-0 px-5 rounded-lg font-sans text-[15px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97]"
               >
                 Yeni Oyun Aç
               </button>
@@ -563,7 +563,7 @@ export default function App() {
               <button
                 disabled={!canAct || validating}
                 onClick={() => { void handlePlay(); }}
-                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+                className="btn-raised shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] disabled:opacity-35 disabled:cursor-not-allowed"
               >
                 {validating ? 'Kontrol…' : 'Oyna'}
               </button>
@@ -576,14 +576,14 @@ export default function App() {
             <button
               disabled={!canAct || state.swapSelection.length === 0}
               onClick={() => dispatch({ type: 'CONFIRM_SWAP' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-gold text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-gold flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-gold text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Değiştir{state.swapSelection.length > 0 ? ` (${state.swapSelection.length})` : ''}
             </button>
             <button
               disabled={!canAct}
               onClick={() => dispatch({ type: 'TOGGLE_SWAP_MODE' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-muted border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-muted border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Vazgeç
             </button>
@@ -593,34 +593,34 @@ export default function App() {
             <button
               disabled={!canAct}
               onClick={handlePass}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Pas Geç
             </button>
             <button
               disabled={!canAct || state.bag.length === 0}
               onClick={() => dispatch({ type: 'TOGGLE_SWAP_MODE' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Değiştir
             </button>
             <button
               disabled={!canAct}
               onClick={() => dispatch({ type: 'SHUFFLE_RACK' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Karıştır
             </button>
             <button
               disabled={!canAct}
               onClick={() => dispatch({ type: 'RECALL_ALL' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Geri Al
             </button>
             <button
               onClick={() => setShowTiles(true)}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform"
             >
               Torba <span className="text-[13px] text-accent">{state.bag.length}</span>
             </button>
@@ -632,7 +632,7 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              Dikkat, kelimen rakip köşesine giriyor ya da sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
+              Dikkat, kelimen rakip bölgesine giriyor ya da sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
               {invasionConfirm
                 .map((inv, i) => (
                   <span key={i}>
@@ -650,13 +650,13 @@ export default function App() {
                   setInvasionConfirm(null);
                   dispatch({ type: 'PLAY', skipWordCheck: skip });
                 }}
-                className="flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Oyna
               </button>
               <button
                 onClick={() => setInvasionConfirm(null)}
-                className="flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised-neutral flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Vazgeç
               </button>
@@ -671,7 +671,9 @@ export default function App() {
             <p className="text-sm text-text font-sans leading-relaxed">
               {state.isGameOver
                 ? 'Anasayfaya dönmek istediğinden emin misin?'
-                : 'Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.'}
+                : user
+                  ? 'Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.'
+                  : 'Bu oyundan çıkmak istediğine emin misin?'}
             </p>
             <div className="flex gap-2 mt-1">
               <button
@@ -683,13 +685,13 @@ export default function App() {
                   }
                   dispatch({ type: 'ABANDON' });
                 }}
-                className="flex-1 py-2.5 rounded-md bg-red text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised-red flex-1 py-2.5 rounded-md bg-red text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Çık
               </button>
               <button
                 onClick={() => setShowExitConfirm(false)}
-                className="flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised-neutral flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Vazgeç
               </button>

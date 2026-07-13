@@ -139,6 +139,8 @@ export interface HistoryEntry {
   x2?: boolean;
   /** Hamle, tam ortadaki X3 hücresine yeni taşla değdi mi? */
   x3?: boolean;
+  /** Doluysa: bu hamle rafı + torbayı bitirdi ve bu kadar joker içeriyordu (jokerli bitiş bonusu). */
+  finishJokerCount?: number;
 }
 
 export interface ValidationResult {
