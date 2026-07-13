@@ -555,7 +555,7 @@ export default function App() {
             state.isGameOver ? (
               <button
                 onClick={() => dispatch({ type: 'INIT' })}
-                className="shrink-0 px-5 rounded-lg font-sans text-[15px] font-bold uppercase tracking-[1.2px] bg-accent text-white shadow-[3px_3px_8px_rgba(15,61,170,0.45),-2px_-2px_6px_rgba(147,181,255,0.5),0_6px_14px_rgba(37,99,235,0.35)] active:scale-[0.97] active:shadow-[1px_1px_3px_rgba(15,61,170,0.45)] transition-[transform,box-shadow]"
+                className="btn-raised shrink-0 px-5 rounded-lg font-sans text-[15px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97]"
               >
                 Yeni Oyun Aç
               </button>
@@ -563,7 +563,7 @@ export default function App() {
               <button
                 disabled={!canAct || validating}
                 onClick={() => { void handlePlay(); }}
-                className="shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white shadow-[3px_3px_8px_rgba(15,61,170,0.45),-2px_-2px_6px_rgba(147,181,255,0.5),0_6px_14px_rgba(37,99,235,0.35)] active:scale-[0.97] active:shadow-[1px_1px_3px_rgba(15,61,170,0.45)] transition-[transform,box-shadow] disabled:opacity-35 disabled:cursor-not-allowed disabled:shadow-none"
+                className="btn-raised shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] disabled:opacity-35 disabled:cursor-not-allowed"
               >
                 {validating ? 'Kontrol…' : 'Oyna'}
               </button>
@@ -576,14 +576,14 @@ export default function App() {
             <button
               disabled={!canAct || state.swapSelection.length === 0}
               onClick={() => dispatch({ type: 'CONFIRM_SWAP' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-gold text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-gold flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-gold text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Değiştir{state.swapSelection.length > 0 ? ` (${state.swapSelection.length})` : ''}
             </button>
             <button
               disabled={!canAct}
               onClick={() => dispatch({ type: 'TOGGLE_SWAP_MODE' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-muted border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-muted border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Vazgeç
             </button>
@@ -593,34 +593,34 @@ export default function App() {
             <button
               disabled={!canAct}
               onClick={handlePass}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Pas Geç
             </button>
             <button
               disabled={!canAct || state.bag.length === 0}
               onClick={() => dispatch({ type: 'TOGGLE_SWAP_MODE' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Değiştir
             </button>
             <button
               disabled={!canAct}
               onClick={() => dispatch({ type: 'SHUFFLE_RACK' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Karıştır
             </button>
             <button
               disabled={!canAct}
               onClick={() => dispatch({ type: 'RECALL_ALL' })}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
             >
               Geri Al
             </button>
             <button
               onClick={() => setShowTiles(true)}
-              className="flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform"
+              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform"
             >
               Torba <span className="text-[13px] text-accent">{state.bag.length}</span>
             </button>
@@ -650,13 +650,13 @@ export default function App() {
                   setInvasionConfirm(null);
                   dispatch({ type: 'PLAY', skipWordCheck: skip });
                 }}
-                className="flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Oyna
               </button>
               <button
                 onClick={() => setInvasionConfirm(null)}
-                className="flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised-neutral flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Vazgeç
               </button>
@@ -685,13 +685,13 @@ export default function App() {
                   }
                   dispatch({ type: 'ABANDON' });
                 }}
-                className="flex-1 py-2.5 rounded-md bg-red text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised-red flex-1 py-2.5 rounded-md bg-red text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Çık
               </button>
               <button
                 onClick={() => setShowExitConfirm(false)}
-                className="flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                className="btn-raised-neutral flex-1 py-2.5 rounded-md border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Vazgeç
               </button>

@@ -98,13 +98,13 @@ export function Setup({ onStart }: SetupProps) {
           <div className="flex gap-2 mt-1">
             <button
               onClick={() => { setShowWarningPopup(false); setShowAuthModal(true); }}
-              className="flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
             >
               Giriş Yap
             </button>
             <button
               onClick={() => { setShowWarningPopup(false); doStart(); }}
-              className="flex-1 py-2.5 rounded-md border border-border text-muted text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              className="btn-raised-neutral flex-1 py-2.5 rounded-md border border-border text-muted text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
             >
               Devam
             </button>
@@ -151,8 +151,8 @@ export function Setup({ onStart }: SetupProps) {
               className={[
                 'flex-1 py-3 rounded-md font-sans text-sm font-bold uppercase tracking-[1px] border transition-transform active:scale-[0.97]',
                 count === n
-                  ? 'bg-accent text-white border-accent'
-                  : 'bg-panel text-text border-border',
+                  ? 'btn-raised bg-accent text-white border-accent'
+                  : 'btn-raised-neutral bg-panel text-text border-border',
               ].join(' ')}
             >
               {n} Kişi
@@ -256,7 +256,7 @@ export function Setup({ onStart }: SetupProps) {
 
       <button
         onClick={handleStart}
-        className="py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-accent text-white active:scale-[0.97] transition-transform"
+        className="btn-raised py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-accent text-white active:scale-[0.97] transition-transform"
       >
         Oyunu Başlat
       </button>

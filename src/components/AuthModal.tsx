@@ -180,7 +180,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
         <button
           type="submit"
           disabled={busy}
-          className="bg-accent text-white rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
+          className="btn-raised bg-accent text-white rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
         >
           {busy
             ? '...'

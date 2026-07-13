@@ -17,7 +17,7 @@ export function WildcardModal({ onSelect, onClose }: WildcardModalProps) {
           <button
             key={letter}
             onClick={() => onSelect(letter)}
-            className="flex items-center justify-center h-11 rounded-md border border-tile-border bg-tile-bg font-tile font-extrabold text-[18px] text-tile-letter active:scale-90 transition-transform"
+            className="btn-raised-neutral flex items-center justify-center h-11 rounded-md border border-tile-border bg-tile-bg font-tile font-extrabold text-[18px] text-tile-letter active:scale-90 transition-transform"
           >
             {letter}
           </button>
