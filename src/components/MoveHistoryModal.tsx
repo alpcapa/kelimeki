@@ -25,15 +25,17 @@ function Flag({ label, tone }: { label: string; tone: 'green' | 'red' }) {
 
 /**
  * ×2/×3 kelime çarpanı rozeti — bir kelimenin parantez içi puanının hemen
- * yanına konur. Rozetin kendi boyu (18px), yanındaki 12px puan yazısının
- * satır yüksekliğiyle (aynı satırdaki metin akışının gerçek yüksekliği)
- * aynı hizada durması için sabitlenmiştir — rozet metni küçük kalır,
- * sadece çerçevesi rakamla aynı boyda olur.
+ * yanına konur. Sabit bir piksel yüksekliği YOK: üst öğedeki `items-stretch`
+ * sayesinde yükseklik otomatik olarak kardeşi olan puan metninin gerçek
+ * satır yüksekliğine geriliyor — böylece hangi fontun/tarayıcının ne kadar
+ * satır yüksekliği ürettiğinden bağımsız olarak rakamla her zaman birebir
+ * hizalı kalır (sabit bir piksel değeri tahmin edip her cihazda farklı
+ * sonuç vermesindense).
  */
 function BonusBadge({ tier }: { tier: 2 | 3 }) {
   return (
     <span
-      className="inline-flex items-center justify-center h-[18px] px-1 text-[10px] font-mono font-bold leading-none rounded"
+      className="inline-flex items-center justify-center px-1 text-[10px] font-mono font-bold leading-none rounded"
       style={{
         background: tier === 3
           ? 'linear-gradient(135deg, #FDBA74, #F97316)'
@@ -102,7 +104,7 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                       {!hasWordScores
                         ? plainLabel
                         : e.wordScores!.map((w, wi) => (
-                            <span key={wi} className="inline-flex items-center gap-0.5">
+                            <span key={wi} className="inline-flex items-stretch gap-0.5">
                               {w.word} ({w.score}
                               {(w.x2 || w.x3) && ' '}
                               {w.x3 ? <BonusBadge tier={3} /> : w.x2 ? <BonusBadge tier={2} /> : null})
