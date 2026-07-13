@@ -246,6 +246,15 @@ export function Board({
     }
   }
 
+  // Bir mazgal (sur dişi) kenar şeridinin arka planı: kenarın ilk %56'sı
+  // dolu (diş), kalanı boşluk (aralık) — kalınlık (2.5px) düz çizgiyle
+  // birebir aynı, yalnızca kenar ekseni boyunca kesiliyor. Her hücre bu
+  // deseni kendi genişliğinde baştan çizdiğinden (tek periyot = bir hücre),
+  // bitişik hücrelerin şeritleri ek hizalama gerekmeden kesintisiz birleşir.
+  const CRENEL_THICKNESS = '2.5px';
+  const crenelGradient = (color: string, axis: 'to right' | 'to bottom') =>
+    `linear-gradient(${axis}, ${color} 0 56%, transparent 56% 100%)`;
+
   // Verilen hücre kümesini kapsayan TEK bir dış hat üretir (iç kesişim
   // hücrelerinde ayırıcı çizgi olmaz) — her hücrenin yalnızca kümenin
   // dışına bakan kenarlarına çizgi eklenir. `badgeScore` verilirse en üst
@@ -253,14 +262,19 @@ export function Board({
   // dışına bakan bir kenarı da "kapalı" (çizgisiz) sayabilmek için — bonus
   // bölgesi/merkez çerçevesi, bir oyuncunun bölgesinin İÇİNDEN geçen kendi
   // kenarını bu şekilde bastırır, böylece oyuncunun genişleyen bölgesi
-  // içinde gereksiz bir amber çizgi kalmaz.
+  // içinde gereksiz bir amber çizgi kalmaz. `crenellated` verilirse düz
+  // çizgi yerine kale suru gibi dişli bir kenar çizilir (bölge sınırı için).
   const buildOutline = (
     cellsList: [number, number][],
     color: string,
     keyPrefix: string,
-    badgeScore?: number,
-    extraOpen?: (r: number, c: number, nr: number, nc: number) => boolean,
+    options: {
+      badgeScore?: number;
+      extraOpen?: (r: number, c: number, nr: number, nc: number) => boolean;
+      crenellated?: boolean;
+    } = {},
   ): React.ReactNode[] => {
+    const { badgeScore, extraOpen, crenellated } = options;
     const uniqueCells = [...new Map(cellsList.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
     const cellSet = new Set(uniqueCells.map(([r, c]) => key(r, c)));
     // Rozet en üst-soldaki hücreye konur (tahtaya konan taşın kendi puan
@@ -278,6 +292,50 @@ export function Board({
       const bottom = isOpen(r + 1, c);
       const left = isOpen(r, c - 1);
       const right = isOpen(r, c + 1);
+
+      if (crenellated) {
+        // Dört köşe türünden hangisi olursa olsun (diş deseni kenarın
+        // ucunda boşluğa denk gelse bile) gerçek dış köşeler daima dolu
+        // görünsün diye, o köşeye küçük bir dolgu kare eklenir.
+        const cap = (vert: 'top' | 'bottom', horiz: 'left' | 'right') => (
+          <div
+            key={`cap-${vert}-${horiz}`}
+            className="absolute"
+            style={{
+              [vert]: 0,
+              [horiz]: 0,
+              width: CRENEL_THICKNESS,
+              height: CRENEL_THICKNESS,
+              background: color,
+            }}
+          />
+        );
+        return (
+          <div
+            key={`${keyPrefix}-${r},${c}`}
+            className="pointer-events-none z-10"
+            style={{ gridRow: `${r + 1} / ${r + 2}`, gridColumn: `${c + 1} / ${c + 2}`, position: 'relative' }}
+          >
+            {!top && (
+              <div className="absolute inset-x-0 top-0" style={{ height: CRENEL_THICKNESS, background: crenelGradient(color, 'to right') }} />
+            )}
+            {!bottom && (
+              <div className="absolute inset-x-0 bottom-0" style={{ height: CRENEL_THICKNESS, background: crenelGradient(color, 'to right') }} />
+            )}
+            {!left && (
+              <div className="absolute inset-y-0 left-0" style={{ width: CRENEL_THICKNESS, background: crenelGradient(color, 'to bottom') }} />
+            )}
+            {!right && (
+              <div className="absolute inset-y-0 right-0" style={{ width: CRENEL_THICKNESS, background: crenelGradient(color, 'to bottom') }} />
+            )}
+            {!top && !left && cap('top', 'left')}
+            {!top && !right && cap('top', 'right')}
+            {!bottom && !left && cap('bottom', 'left')}
+            {!bottom && !right && cap('bottom', 'right')}
+          </div>
+        );
+      }
+
       const side = (occupied: boolean) => (occupied ? 'none' : `2.5px solid ${color}`);
       const radius = (a: boolean, b: boolean) => (!a && !b ? '5px' : '0');
       return (
@@ -323,7 +381,7 @@ export function Board({
       (k) => k.split(',').map(Number) as [number, number],
     );
     return territoryCells.length > 0
-      ? buildOutline(territoryCells, PLAYER_COLORS[p.colorIndex].base, `territory-${i}`)
+      ? buildOutline(territoryCells, PLAYER_COLORS[p.colorIndex].base, `territory-${i}`, { crenellated: true })
       : [];
   });
 
@@ -343,18 +401,18 @@ export function Board({
       zoneCells.push([r, c]);
     }
   }
-  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone', undefined, sameTerritoryOpen);
+  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone', { extraOpen: sameTerritoryOpen });
 
   // Tam ortadaki tek X3 hücresinin kendi çerçevesi — turuncu zeminle uyumlu.
   // Hücreye bir taş oynandıktan sonra (artık oyuncunun rengiyle çizildiğinden)
   // bu çerçeve kaldırılır.
   const centerOutline = board[BOARD_CENTER[0]][BOARD_CENTER[1]]
     ? []
-    : buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', undefined, sameTerritoryOpen);
+    : buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', { extraOpen: sameTerritoryOpen });
 
   // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
   const moveOutline = moveStatus
-    ? buildOutline(moveStatus.cells, moveStatus.valid ? '#1FA05C' : '#E0483A', 'move', moveStatus.score)
+    ? buildOutline(moveStatus.cells, moveStatus.valid ? '#1FA05C' : '#E0483A', 'move', { badgeScore: moveStatus.score })
     : [];
 
   return (
