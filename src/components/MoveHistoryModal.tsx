@@ -25,17 +25,17 @@ function Flag({ label, tone }: { label: string; tone: 'green' | 'red' }) {
 
 /**
  * ×2/×3 kelime çarpanı rozeti — bir kelimenin parantez içi puanının hemen
- * yanına konur. Sabit bir piksel yüksekliği YOK: üst öğedeki `items-stretch`
- * sayesinde yükseklik otomatik olarak kardeşi olan puan metninin gerçek
- * satır yüksekliğine geriliyor — böylece hangi fontun/tarayıcının ne kadar
- * satır yüksekliği ürettiğinden bağımsız olarak rakamla her zaman birebir
- * hizalı kalır (sabit bir piksel değeri tahmin edip her cihazda farklı
- * sonuç vermesindense).
+ * yanına konur. Yüksekliği (12px = h-3), yanındaki puan yazısıyla AYNI
+ * `leading-none` satırda olduğu için birebir eşleşir: `leading-none`
+ * (line-height:1) tarayıcıdan/fonttan bağımsız kesin bir değerdir — satır
+ * yüksekliğini tarayıcının "normal" varsayılanına (fonta göre değişir,
+ * Chrome/Safari farklı sonuç verebilir) bırakmak yerine burada açıkça
+ * sabitliyoruz, böylece her cihazda aynı sonucu verir.
  */
 function BonusBadge({ tier }: { tier: 2 | 3 }) {
   return (
     <span
-      className="inline-flex items-center justify-center px-1 text-[10px] font-mono font-bold leading-none rounded"
+      className="inline-flex items-center justify-center h-3 px-1 text-[10px] font-mono font-bold leading-none rounded"
       style={{
         background: tier === 3
           ? 'linear-gradient(135deg, #FDBA74, #F97316)'
@@ -100,11 +100,11 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                       />
                       {e.turn + 1}. {player?.name ?? '?'}
                     </span>
-                    <span className="text-[12px] font-mono font-bold text-text flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                    <span className="text-[12px] leading-none font-mono font-bold text-text flex flex-wrap items-center gap-x-1 gap-y-0.5">
                       {!hasWordScores
                         ? plainLabel
                         : e.wordScores!.map((w, wi) => (
-                            <span key={wi} className="inline-flex items-stretch gap-0.5">
+                            <span key={wi} className="inline-flex items-center gap-0.5">
                               {w.word} ({w.score}
                               {(w.x2 || w.x3) && ' '}
                               {w.x3 ? <BonusBadge tier={3} /> : w.x2 ? <BonusBadge tier={2} /> : null})
