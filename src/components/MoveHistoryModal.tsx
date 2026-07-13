@@ -1,6 +1,6 @@
 // Harfik — oyundaki tüm oyuncuların hamle/puan geçmişi
 import { Modal } from './Modal';
-import { PLAYER_COLORS } from '../game/constants';
+import { PLAYER_COLORS, jokerFinishBonus } from '../game/constants';
 import type { GameState } from '../game/types';
 
 interface MoveHistoryModalProps {
@@ -107,6 +107,12 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                     {e.lostShares!
                       .map((s) => `${s.amount} puanı ${state.players[s.to]?.name ?? '?'} kaptı`)
                       .join(', ')}
+                  </span>
+                )}
+                {!!e.finishJokerCount && (
+                  <span className="text-[9px] font-mono text-accent">
+                    {player?.name ?? '?'} {e.finishJokerCount} joker ile bitti, +
+                    {jokerFinishBonus(e.finishJokerCount)} puan aldı.
                   </span>
                 )}
               </div>

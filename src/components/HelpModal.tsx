@@ -165,7 +165,7 @@ export function HelpModal({ onClose }: HelpModalProps) {
           </P>
           <P>
             Rafını ve torbayı tamamen bitiren hamlende joker de oynadıysan ekstra bonus
-            kazanırsın: <strong>1 jokerle bitiş +50</strong>, <strong>2 jokerle bitiş +150</strong>.
+            kazanırsın: <strong>1 jokerle bitiş +25</strong>, <strong>2 jokerle bitiş +50</strong>.
           </P>
         </Section>
 

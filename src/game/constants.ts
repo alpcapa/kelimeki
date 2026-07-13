@@ -18,11 +18,11 @@ export const RACK_SIZE = 7;
 
 /**
  * Oyunu bitiren hamlede (raf + torba tamamen boşalırsa) oynanan taşlar
- * arasında joker varsa verilen ekstra bonus: 1 joker +50, 2 joker +150.
+ * arasında joker varsa verilen ekstra bonus: 1 joker +25, 2 joker +50.
  */
 export function jokerFinishBonus(jokerCount: number): number {
-  if (jokerCount >= 2) return 150;
-  if (jokerCount === 1) return 50;
+  if (jokerCount >= 2) return 50;
+  if (jokerCount === 1) return 25;
   return 0;
 }
 
