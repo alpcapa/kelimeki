@@ -19,6 +19,7 @@ import {
 import {
   calcMoveBonusFlags,
   calcScore,
+  calcWordRawScores,
   calcWordScores,
   computeInvasionSplit,
   validatePlacement,
@@ -453,6 +454,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const bonusFlags = calcMoveBonusFlags(state.board, state.placed, state.bonuses);
       const formed = getFormedWords(state.board, state.placed);
       const wordScores = calcWordScores(state.board, state.placed, state.bonuses);
+      const wordRawScores = calcWordRawScores(state.board, state.placed);
       const bestWordThisMove = wordScores.reduce(
         (best, w) => (w.score > best.score ? w : best),
         { word: '', score: 0 },
@@ -540,7 +542,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           shares,
           bonusFlags,
           finishBonus > 0 ? jokerCount : undefined,
-          wordScores,
+          wordRawScores,
         ),
         message: `${me.name}: +${pts} puan${bonusNote}${finishBonusNote} Kelimeler: ${check.words!.join(', ')}`,
         messageType: 'ok',
@@ -642,6 +644,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const formed = getFormedWords(state.board, placedMap);
       const aiBonusFlags = calcMoveBonusFlags(state.board, placedMap, state.bonuses);
       const aiWordScores = calcWordScores(state.board, placedMap, state.bonuses);
+      const aiWordRawScores = calcWordRawScores(state.board, placedMap);
       const aiBestWordThisMove = aiWordScores.reduce(
         (best, w) => (w.score > best.score ? w : best),
         { word: '', score: 0 },
@@ -724,7 +727,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           aiShares,
           aiBonusFlags,
           aiFinishBonus > 0 ? aiJokerCount : undefined,
-          aiWordScores,
+          aiWordRawScores,
         ),
         message: `${me.name} "${move.word}" oynadı. +${aiPts} puan.${aiInvasionNote}${aiFinishBonusNote}`,
         messageType: 'ok',

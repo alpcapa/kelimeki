@@ -114,9 +114,10 @@ export interface HistoryEntry {
    */
   words: string[];
   /**
-   * `words` ile aynı sırada, her kelimenin kendi (harf/kelime çarpanları
-   * dahil, köşe vergisi ve bingo bonusundan bağımsız) brüt puanı — Oyun
-   * Geçmişi'nde kelimenin yanında parantez içinde gösterilir.
+   * `words` ile aynı sırada, her kelimenin harf puanları toplamı — X2/X3
+   * kelime çarpanı UYGULANMADAN (çarpan hamlenin ×2/×3 rozetiyle ayrıca
+   * gösteriliyor). Oyun Geçmişi'nde kelimenin yanında parantez içinde
+   * gösterilir.
    */
   wordScores?: { word: string; score: number }[];
   /** Bu satırda `player`in skoruna eklenen puan. */

@@ -282,25 +282,33 @@ export function computeInvasionSplit(
  * bonus kazandırmaz — her bonus hücresi klasik bonus kare gibi yalnızca bir
  * kez, ilk kullanıldığı turda etkilidir.
  */
+/** Bir kelimenin harf puanları toplamı — X2/X3 kelime çarpanı uygulanmadan önce. */
+function wordRawPoints(coords: [number, number][], board: Board, placed: Placed): number {
+  let sum = 0;
+  for (const [r, c] of coords) {
+    const k = key(r, c);
+    const pts = placed[k]?.pts ?? board[r][c]?.pts ?? 0;
+    sum += pts;
+  }
+  return sum;
+}
+
 function wordPoints(
   coords: [number, number][],
   board: Board,
   placed: Placed,
   bonuses: Record<string, BonusType>,
 ): number {
-  let sum = 0;
   let hasTw = false;
   let touchesZone = false;
   for (const [r, c] of coords) {
     const k = key(r, c);
     const newTile = placed[k];
-    const pts = newTile?.pts ?? board[r][c]?.pts ?? 0;
-    sum += pts;
     if (newTile && bonuses[k] === 'tw') hasTw = true;
     if (newTile && inBonusZone(r, c)) touchesZone = true;
   }
   const wordMult = hasTw ? 3 : touchesZone ? 2 : 1;
-  return sum * wordMult;
+  return wordRawPoints(coords, board, placed) * wordMult;
 }
 
 /**
@@ -364,5 +372,22 @@ export function calcWordScores(
   return getFormedWords(board, placed).map(({ word, coords }) => ({
     word,
     score: wordPoints(coords, board, placed, bonuses),
+  }));
+}
+
+/**
+ * Bu turda oluşan her kelimenin harf puanları toplamını, X2/X3 kelime
+ * çarpanı UYGULANMADAN döner — Oyun Geçmişi'nde kelimenin yanında gösterilen
+ * parantez içi değer budur (çarpan zaten hamlenin ×2/×3 rozetiyle ayrıca
+ * gösteriliyor, kelime değeriyle karıştırılmaması için burada saf toplam
+ * kullanılır).
+ */
+export function calcWordRawScores(
+  board: Board,
+  placed: Placed,
+): { word: string; score: number }[] {
+  return getFormedWords(board, placed).map(({ word, coords }) => ({
+    word,
+    score: wordRawPoints(coords, board, placed),
   }));
 }
