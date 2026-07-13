@@ -27,7 +27,7 @@ function Flag({ label, tone }: { label: string; tone: 'green' | 'red' }) {
 function BonusBadge({ tier }: { tier: 2 | 3 }) {
   return (
     <span
-      className="text-[7px] font-mono font-bold leading-none rounded px-[2px] py-[1px]"
+      className="text-[12px] font-mono font-bold leading-none rounded px-[2px] py-[1px]"
       style={{
         background: tier === 3
           ? 'linear-gradient(135deg, #FDBA74, #F97316)'
