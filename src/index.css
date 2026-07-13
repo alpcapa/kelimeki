@@ -57,11 +57,11 @@
   }
 
   .btn-raised-red {
-    box-shadow: 3px 3px 8px rgba(153, 27, 27, 0.45), -2px -2px 6px rgba(252, 165, 165, 0.5), 0 6px 14px rgba(220, 38, 38, 0.35);
+    box-shadow: 3px 3px 8px rgba(163, 177, 198, 0.55), -2px -2px 6px rgba(255, 255, 255, 0.7), 0 6px 14px rgba(100, 116, 139, 0.35);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .btn-raised-red:active {
-    box-shadow: 1px 1px 3px rgba(153, 27, 27, 0.45);
+    box-shadow: 1px 1px 3px rgba(100, 116, 139, 0.5);
   }
 
   .btn-raised-gold {
