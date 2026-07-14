@@ -139,6 +139,8 @@ export interface HistoryEntry {
   tileCount?: number;
   /** Doluysa: bu hamle rafı + torbayı bitirdi ve bu kadar joker içeriyordu (jokerli bitiş bonusu). */
   finishJokerCount?: number;
+  /** Doluysa: bu hamlede rafın 7 harfi birden kullanıldı (bingo bonusu, `BINGO_BONUS`). */
+  bingo?: boolean;
 }
 
 export interface ValidationResult {

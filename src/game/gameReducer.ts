@@ -207,10 +207,12 @@ function appendMoveHistory(
   shares: { index: number; amount: number }[],
   finishJokerCount?: number,
   wordScores?: { word: string; score: number; x2: boolean; x3: boolean }[],
+  bingo?: boolean,
 ): HistoryEntry[] {
   const actorEntry: HistoryEntry = { turn, player: actor, words, points: pts };
   if (wordScores) actorEntry.wordScores = wordScores;
   if (finishJokerCount) actorEntry.finishJokerCount = finishJokerCount;
+  if (bingo) actorEntry.bingo = true;
   if (shares.length > 0) {
     actorEntry.lostShares = shares.map((s) => ({ to: s.index, amount: s.amount }));
   }
@@ -537,6 +539,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           shares,
           finishBonus > 0 ? jokerCount : undefined,
           wordRawScores,
+          placedTiles.length >= RACK_SIZE,
         ),
         message: `${me.name}: +${pts} puan${bonusNote}${finishBonusNote} Kelimeler: ${check.words!.join(', ')}`,
         messageType: 'ok',
@@ -720,6 +723,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
           aiShares,
           aiFinishBonus > 0 ? aiJokerCount : undefined,
           aiWordRawScores,
+          move.placements.length >= RACK_SIZE,
         ),
         message: `${me.name} "${move.word}" oynadı. +${aiPts} puan.${aiInvasionNote}${aiFinishBonusNote}`,
         messageType: 'ok',
