@@ -58,12 +58,11 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     { label: 'Birincilik Oranı', value: pct(stats?.first_places ?? 0), cls: 'text-gold' },
     { label: secondRateLabel, value: pct(secondCellValue), cls: secondCellCls },
     { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
-    { label: 'Beraberlik', value: stats?.ties ?? 0, cls: 'text-muted' },
     { label: 'Teslim Olunan', value: stats?.surrendered_count ?? 0, cls: 'text-red' },
     { label: 'Ortalama Hamle Puanı', value: stats?.avg_move_score ?? 0, cls: 'text-accent' },
+    { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
     { label: 'En Yüksek Kelime Puanı', value: stats?.best_word_score ?? 0, cls: 'text-text' },
     { label: 'En İyi Hamle Puanı', value: stats?.best_move_score ?? 0, cls: 'text-accent' },
-    { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
   ];
 
   return (
