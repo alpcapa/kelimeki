@@ -42,21 +42,29 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   const pct = (n: number) =>
     stats && stats.games_played > 0 ? `%${Math.round((n / stats.games_played) * 100)}` : '%0';
 
-  // 2 kişilik oyunda 2. olmak = kaybetmek (artık lig puanı getirmiyor), bu
-  // yüzden o sekmede "İkincilik" yerine "Kayıp" gösterilir; 4 kişilikte
-  // ikincilik hâlâ +1 puan getirdiğinden ödüllü stat olarak kalır.
-  const secondCellLabel = tab === 2 ? 'Toplam Kayıp' : 'Toplam İkincilik';
-  const secondRateLabel = tab === 2 ? 'Kayıp Oranı' : 'İkincilik Oranı';
-  const secondCellValue = tab === 2 ? (stats?.losses ?? 0) : (stats?.second_places ?? 0);
-  const secondCellCls = tab === 2 ? 'text-red' : 'text-accent';
+  // 4 kişilikte ikincilik hâlâ +1 puan getirdiğinden ödüllü bir stat olarak
+  // gösterilir; 2 kişilikte 2. olmak = kaybetmek olduğundan (artık lig puanı
+  // getirmiyor) bu stat hiç gösterilmez.
+  const secondCellValue = stats?.second_places ?? 0;
 
-  const cells: { label: string; value: number | string; cls?: string; wide?: boolean }[] = [
-    { label: 'Kazanılan Puan', value: stats?.total_score ?? 0, cls: 'text-gold' },
+  const cells: { label: string; value: number | string; rate?: string; cls?: string; wide?: boolean }[] = [
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
-    { label: 'Toplam Birincilik', value: stats?.first_places ?? 0, cls: 'text-gold' },
-    { label: secondCellLabel, value: secondCellValue, cls: secondCellCls },
-    { label: 'Birincilik Oranı', value: pct(stats?.first_places ?? 0), cls: 'text-gold' },
-    { label: secondRateLabel, value: pct(secondCellValue), cls: secondCellCls },
+    {
+      label: tab === 4 ? 'Birincilik' : 'Toplam Birincilik',
+      value: stats?.first_places ?? 0,
+      rate: pct(stats?.first_places ?? 0),
+      cls: 'text-gold',
+    },
+    ...(tab === 4
+      ? [
+          {
+            label: 'Toplam İkincilik',
+            value: secondCellValue,
+            rate: pct(secondCellValue),
+            cls: 'text-accent',
+          },
+        ]
+      : []),
     { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
     { label: 'Teslim Olunan', value: stats?.surrendered_count ?? 0, cls: 'text-red' },
     { label: 'Ortalama Hamle Puanı', value: stats?.avg_move_score ?? 0, cls: 'text-accent' },
@@ -95,7 +103,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
                 : 'border-border bg-bg text-muted'
             }`}
           >
-            {count} Oyunculu
+            {count} Oyuncu ({statsByCount[count]?.total_score ?? 0})
           </button>
         ))}
       </div>
@@ -109,7 +117,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
               Henüz {tab} oyunculu oyun kaydın yok.
             </p>
           )}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 grid-flow-row-dense gap-2">
             {cells.map((c) => (
               <div
                 key={c.label}
@@ -117,6 +125,9 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
               >
                 <div className={`font-mono text-xl font-bold ${c.cls ?? 'text-text'}`}>
                   {c.value}
+                  {c.rate && (
+                    <span className="ml-1 text-xs font-normal text-muted">({c.rate})</span>
+                  )}
                 </div>
                 <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono mt-0.5">
                   {c.label}
