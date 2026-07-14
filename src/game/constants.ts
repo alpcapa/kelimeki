@@ -18,14 +18,14 @@ export const RACK_SIZE = 7;
 
 /**
  * Oyunu bitiren hamlede (raf + torba tamamen boşalırsa) oynanan taşların
- * TAMAMI jokerse verilen ekstra bonus: 1 joker (tek taş) +50, 2 joker
- * (iki taş) +100. Hamlede joker dışında herhangi bir taş varsa (jokerle
+ * TAMAMI jokerse verilen ekstra bonus: 1 joker (tek taş) +25, 2 joker
+ * (iki taş) +50. Hamlede joker dışında herhangi bir taş varsa (jokerle
  * birlikte normal harf oynanmışsa) bonus uygulanmaz — bu yüzden çok nadir
  * gerçekleşir.
  */
 export function jokerFinishBonus(jokerCount: number): number {
-  if (jokerCount >= 2) return 100;
-  if (jokerCount === 1) return 50;
+  if (jokerCount >= 2) return 50;
+  if (jokerCount === 1) return 25;
   return 0;
 }
 

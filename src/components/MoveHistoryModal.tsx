@@ -44,6 +44,18 @@ function BingoBadge() {
   );
 }
 
+/** Jokerli bitiş bonusu rozeti — 1 joker ★, 2 joker ★★. */
+function StarBadge({ jokerCount }: { jokerCount: number }) {
+  return (
+    <span
+      className="text-[8px] font-mono font-bold uppercase tracking-[0.5px] rounded px-1 py-[1px] border shrink-0 text-accent border-accent/40 bg-accent/10"
+      title={`Jokerli bitiş bonusu +${jokerFinishBonus(jokerCount)}`}
+    >
+      {jokerCount >= 2 ? '★★' : '★'}
+    </span>
+  );
+}
+
 function BonusBadge({ tier }: { tier: 2 | 3 }) {
   return (
     <span
@@ -128,6 +140,7 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                   {!e.action && (
                     <span className="flex items-center gap-1 shrink-0">
                       {e.bingo && <BingoBadge />}
+                      {!!e.finishJokerCount && <StarBadge jokerCount={e.finishJokerCount} />}
                       {isInvasionLoss && <Flag label="Sınır İhlali" tone="red" />}
                       <span className="text-[13px] font-mono font-bold text-green">
                         +{e.points}
@@ -144,8 +157,8 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                 )}
                 {!!e.finishJokerCount && (
                   <span className="text-[9px] font-mono text-accent">
-                    {player?.name ?? '?'} {e.finishJokerCount} joker ile bitti, +
-                    {jokerFinishBonus(e.finishJokerCount)} puan aldı.
+                    {e.finishJokerCount >= 2 ? 'Çift' : 'Tek'} yıldız ile biterek +
+                    {jokerFinishBonus(e.finishJokerCount)} puan kazandı.
                   </span>
                 )}
                 {e.bingo && (
