@@ -11,7 +11,7 @@ interface TileProps {
   /** Tahta/yerleştirme taşları için sahibinin rengi. */
   color?: PlayerColor;
   selected?: boolean;
-  /** En son oynanan hamlenin parçası mı — kabartma + ince halka ile vurgulanır. */
+  /** En son oynanan hamlenin parçası mı — kabartma ile vurgulanır (halka Board'da tek parça çizilir). */
   lastMove?: boolean;
   onClick?: () => void;
 }
@@ -58,7 +58,7 @@ export function Tile({ tile, variant, color, selected = false, lastMove = false,
           ? '!-translate-y-[7px] shadow-[0_8px_20px_rgba(163,130,0,0.6)]'
           : '',
         lastMove && variant === 'board'
-          ? '!-translate-y-[2px] shadow-[0_0_0_2px_#D4FF3B,0_5px_10px_rgba(15,23,42,0.35)]'
+          ? '!-translate-y-[2px] shadow-[0_5px_10px_rgba(15,23,42,0.35)]'
           : '',
       ].join(' ')}
     >
