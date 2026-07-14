@@ -455,7 +455,11 @@ export function Board({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 shrink-0 pt-1 w-full">
+      {/* Board'un alt kenarındaki büyük, yumuşak gölge (`0 20px 60px`) bu satırın
+          arka planına kadar bulanık bir gri geçiş bırakıyordu — bağlantı soluk,
+          gölgenin "içinde" kalmış gibi görünüyordu. `bg-bg` bu satırı kendi düz,
+          net zeminine oturtarak öne çıkarır; ekstra üst boşluk da gölgeden ayırır. */}
+      <div className="relative z-10 flex items-center justify-between gap-2 shrink-0 pt-3 w-full bg-bg">
         <button
           onClick={onOpenHistory}
           className="text-[9px] font-mono font-bold uppercase tracking-[0.5px] text-accent underline underline-offset-2 shrink-0"
