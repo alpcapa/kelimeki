@@ -298,6 +298,11 @@ export function Board({
           style={{
             gridRow: `${r + 1} / ${r + 2}`,
             gridColumn: `${c + 1} / ${c + 2}`,
+            // Hücreler arasındaki 3px grid boşluğunu da kapsayacak şekilde
+            // kutuyu her yönde yarım boşluk kadar büyütür — komşu hücrelerin
+            // çerçeve kenarları böylece boşluğun ortasında birleşir, sınır
+            // kesik değil tek parça bir çizgi olarak görünür.
+            margin: '-1.5px',
             borderTop: side(top),
             borderBottom: side(bottom),
             borderLeft: side(left),
