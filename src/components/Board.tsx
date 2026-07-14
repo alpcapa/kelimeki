@@ -1,6 +1,5 @@
 // Harfik — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
 import {
-  BOARD_CENTER,
   BONUS_LABELS,
   BONUS_ZONE,
   CORNER,
@@ -321,31 +320,6 @@ export function Board({
     return buildOutline(territoryCells, PLAYER_COLORS[p.colorIndex].base, `territory-${i}`);
   });
 
-  // Bir bonus-bölgesi kenarını, iki tarafı da AYNI oyuncunun bölgesine
-  // aitse "açık" (çizgisiz) sayar — bir oyuncunun genişleyen bölgesi bonus
-  // alanına girip devam ettiğinde, amber çerçeve o iç bağlantıyı kesmesin.
-  const sameTerritoryOpen = (r: number, c: number, nr: number, nc: number) => {
-    const owner = territoryOwnerAt(r, c);
-    return owner >= 0 && owner === territoryOwnerAt(nr, nc);
-  };
-
-  // Merkezdeki x2 bonus bölgesinin tam dış hattı — altın/turuncu zeminle
-  // uyumlu koyu amber bir çerçeve.
-  const zoneCells: [number, number][] = [];
-  for (let r = BONUS_ZONE.r0; r <= BONUS_ZONE.r1; r++) {
-    for (let c = BONUS_ZONE.c0; c <= BONUS_ZONE.c1; c++) {
-      zoneCells.push([r, c]);
-    }
-  }
-  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone', sameTerritoryOpen);
-
-  // Tam ortadaki tek X3 hücresinin kendi çerçevesi — turuncu zeminle uyumlu.
-  // Hücreye bir taş oynandıktan sonra (artık oyuncunun rengiyle çizildiğinden)
-  // bu çerçeve kaldırılır.
-  const centerOutline = board[BOARD_CENTER[0]][BOARD_CENTER[1]]
-    ? null
-    : buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', sameTerritoryOpen);
-
   // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
   const moveColor = moveStatus ? (moveStatus.valid ? '#1FA05C' : '#E0483A') : undefined;
   const moveOutline = moveStatus ? buildOutline(moveStatus.cells, moveColor!, 'move') : null;
@@ -388,12 +362,6 @@ export function Board({
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             preserveAspectRatio="none"
           >
-            {/* Merkezdeki x2 bonus bölgesinin dış hattı. */}
-            {zoneOutline}
-
-            {/* Tam ortadaki tek X3 hücresinin kendi çerçevesi. */}
-            {centerOutline}
-
             {/* Her oyuncunun genişleyen bölgesinin dış hattı — bonus bölgesi
                 çerçevesinin üzerinde çizilir, böylece bir oyuncunun bölgesi
                 bonus alanına ilerlediğinde sınır kendi renginde kalır. */}
