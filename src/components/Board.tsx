@@ -1,6 +1,5 @@
 // Harfik — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
 import {
-  BOARD_CENTER,
   BONUS_LABELS,
   BONUS_ZONE,
   CORNER,
@@ -136,9 +135,20 @@ export function Board({
   const colorOf = (owner: number | undefined): PlayerColor | undefined =>
     owner === undefined ? undefined : PLAYER_COLORS[players[owner]?.colorIndex ?? 0];
 
+  // En son oynanan hamlenin taşlarını, bir çerçeve yerine hafifçe koyulaştırılmış
+  // tonuyla ayırt eder — çerçeve, bölge genişledikçe bölge dış hattıyla çakışıp
+  // kafa karıştırıcı kalıntılar bırakıyordu.
+  const darken = (hex: string, amount: number): string => {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = Math.round(((num >> 16) & 255) * (1 - amount));
+    const g = Math.round(((num >> 8) & 255) * (1 - amount));
+    const b = Math.round((num & 255) * (1 - amount));
+    return `#${[r, g, b].map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('')}`;
+  };
+
   const currentColor = PLAYER_COLORS[players[current]?.colorIndex ?? 0];
 
-  // En son oynanan hamlenin hücreleri — ince halka ile vurgulanır.
+  // En son oynanan hamlenin hücreleri — taş rengi koyulaştırılarak vurgulanır.
   const lastMoveSet = new Set(state.lastMoveCells.map(([r, c]) => key(r, c)));
 
   // Her oyuncunun bölgesi: kendi köşesi + oradan kendi taşlarıyla genişleyen
@@ -179,11 +189,17 @@ export function Board({
         // Tahtadaki her taş tıklanabilir — hangi hamlede oynandığına
         // bakılmaksızın o hücreden geçen kelime(ler)in anlamı gösterilir.
         classes.push('bg-transparent cursor-pointer');
+        const tileColor = colorOf(boardTile.owner);
+        const isLastMove = lastMoveSet.has(k);
         content = (
           <Tile
             tile={boardTile}
             variant="board"
-            color={colorOf(boardTile.owner)}
+            color={
+              isLastMove && tileColor
+                ? { ...tileColor, tint: darken(tileColor.tint, 0.14), base: darken(tileColor.base, 0.12) }
+                : tileColor
+            }
           />
         );
       } else if (placedTile) {
@@ -321,43 +337,10 @@ export function Board({
     return buildOutline(territoryCells, PLAYER_COLORS[p.colorIndex].base, `territory-${i}`);
   });
 
-  // Bir bonus-bölgesi kenarını, iki tarafı da AYNI oyuncunun bölgesine
-  // aitse "açık" (çizgisiz) sayar — bir oyuncunun genişleyen bölgesi bonus
-  // alanına girip devam ettiğinde, amber çerçeve o iç bağlantıyı kesmesin.
-  const sameTerritoryOpen = (r: number, c: number, nr: number, nc: number) => {
-    const owner = territoryOwnerAt(r, c);
-    return owner >= 0 && owner === territoryOwnerAt(nr, nc);
-  };
-
-  // Merkezdeki x2 bonus bölgesinin tam dış hattı — altın/turuncu zeminle
-  // uyumlu koyu amber bir çerçeve.
-  const zoneCells: [number, number][] = [];
-  for (let r = BONUS_ZONE.r0; r <= BONUS_ZONE.r1; r++) {
-    for (let c = BONUS_ZONE.c0; c <= BONUS_ZONE.c1; c++) {
-      zoneCells.push([r, c]);
-    }
-  }
-  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone', sameTerritoryOpen);
-
-  // Tam ortadaki tek X3 hücresinin kendi çerçevesi — turuncu zeminle uyumlu.
-  // Hücreye bir taş oynandıktan sonra (artık oyuncunun rengiyle çizildiğinden)
-  // bu çerçeve kaldırılır.
-  const centerOutline = board[BOARD_CENTER[0]][BOARD_CENTER[1]]
-    ? null
-    : buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', sameTerritoryOpen);
-
   // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
   const moveColor = moveStatus ? (moveStatus.valid ? '#1FA05C' : '#E0483A') : undefined;
   const moveOutline = moveStatus ? buildOutline(moveStatus.cells, moveColor!, 'move') : null;
   const moveBadge = moveStatus ? buildBadge(moveStatus.cells, moveStatus.score, moveColor!) : null;
-
-  // En son oynanan hamlenin tam dış hattı — tek parça, fosforik fıstık
-  // yeşili halka (hücreler arası boşlukta kesilmez).
-  const lastMoveOutline = buildOutline(
-    [...lastMoveSet].map((k) => k.split(',').map(Number) as [number, number]),
-    '#D4FF3B',
-    'last-move',
-  );
 
   return (
     <div className="w-full max-w-[680px] mx-auto px-3 pt-2 pb-3 flex flex-col items-center">
@@ -388,12 +371,6 @@ export function Board({
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             preserveAspectRatio="none"
           >
-            {/* Merkezdeki x2 bonus bölgesinin dış hattı. */}
-            {zoneOutline}
-
-            {/* Tam ortadaki tek X3 hücresinin kendi çerçevesi. */}
-            {centerOutline}
-
             {/* Her oyuncunun genişleyen bölgesinin dış hattı — bonus bölgesi
                 çerçevesinin üzerinde çizilir, böylece bir oyuncunun bölgesi
                 bonus alanına ilerlediğinde sınır kendi renginde kalır. */}
@@ -402,9 +379,6 @@ export function Board({
             {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı):
                 tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
             {moveOutline}
-
-            {/* En son oynanan hamlenin fosforik fıstık yeşili dış hattı. */}
-            {lastMoveOutline}
           </svg>
 
           {/* Anlık geçerlilik çerçevesinin puan rozeti. */}
