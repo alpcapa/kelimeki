@@ -522,7 +522,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         players,
         consecutivePasses: 0,
         selectedTile: null,
-        lastMoveCells: formed.flatMap((f) => f.coords),
+        lastMoveCells: placedCoords,
         moveHistory: appendMoveHistory(
           state.moveHistory,
           state.turnCount,
@@ -706,7 +706,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         bag,
         players,
         consecutivePasses: 0,
-        lastMoveCells: formed.flatMap((f) => f.coords),
+        lastMoveCells: aiCoords,
         moveHistory: appendMoveHistory(
           state.moveHistory,
           state.turnCount,
