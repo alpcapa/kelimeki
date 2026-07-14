@@ -138,7 +138,7 @@ export function Board({
 
   const currentColor = PLAYER_COLORS[players[current]?.colorIndex ?? 0];
 
-  // En son oynanan hamlenin hücreleri — kabartma + ince halka ile vurgulanır.
+  // En son oynanan hamlenin hücreleri — ince halka ile vurgulanır.
   const lastMoveSet = new Set(state.lastMoveCells.map(([r, c]) => key(r, c)));
 
   // Her oyuncunun bölgesi: kendi köşesi + oradan kendi taşlarıyla genişleyen
@@ -184,7 +184,6 @@ export function Board({
             tile={boardTile}
             variant="board"
             color={colorOf(boardTile.owner)}
-            lastMove={lastMoveSet.has(k)}
           />
         );
       } else if (placedTile) {
@@ -353,8 +352,7 @@ export function Board({
   const moveBadge = moveStatus ? buildBadge(moveStatus.cells, moveStatus.score, moveColor!) : null;
 
   // En son oynanan hamlenin tam dış hattı — tek parça, fosforik fıstık
-  // yeşili halka (Tile'daki kabartma/gölge ayrı kalır, sadece halka buraya
-  // taşındı — böylece hücreler arası boşlukta kesilmez).
+  // yeşili halka (hücreler arası boşlukta kesilmez).
   const lastMoveOutline = buildOutline(
     [...lastMoveSet].map((k) => k.split(',').map(Number) as [number, number]),
     '#D4FF3B',
