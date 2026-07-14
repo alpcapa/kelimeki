@@ -373,6 +373,11 @@ export function Board({
     ? buildOutline(moveStatus.cells, moveStatus.valid ? '#1FA05C' : '#E0483A', 'move', moveStatus.score)
     : [];
 
+  // En son oynanan hamlenin tam dış hattı — tek parça, fosforik fıstık
+  // yeşili halka (Tile'daki kabartma/gölge ayrı kalır, sadece halka buraya
+  // taşındı — böylece hücreler arası boşlukta kesilmez).
+  const lastMoveOutline = buildOutline([...lastMoveSet].map((k) => k.split(',').map(Number) as [number, number]), '#D4FF3B', 'last-move');
+
   return (
     <div className="w-full max-w-[680px] mx-auto px-3 pt-2 pb-3 flex flex-col items-center">
       <div
@@ -399,6 +404,9 @@ export function Board({
         {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan:
             tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
         {moveOutline}
+
+        {/* En son oynanan hamlenin fosforik fıstık yeşili dış hattı. */}
+        {lastMoveOutline}
 
         {/* Her oyuncunun 4×4 köşesine soluk numara filigranı. */}
         <div className="pointer-events-none absolute inset-1">
