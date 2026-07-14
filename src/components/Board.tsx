@@ -135,9 +135,20 @@ export function Board({
   const colorOf = (owner: number | undefined): PlayerColor | undefined =>
     owner === undefined ? undefined : PLAYER_COLORS[players[owner]?.colorIndex ?? 0];
 
+  // En son oynanan hamlenin taşlarını, bir çerçeve yerine hafifçe koyulaştırılmış
+  // tonuyla ayırt eder — çerçeve, bölge genişledikçe bölge dış hattıyla çakışıp
+  // kafa karıştırıcı kalıntılar bırakıyordu.
+  const darken = (hex: string, amount: number): string => {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = Math.round(((num >> 16) & 255) * (1 - amount));
+    const g = Math.round(((num >> 8) & 255) * (1 - amount));
+    const b = Math.round((num & 255) * (1 - amount));
+    return `#${[r, g, b].map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('')}`;
+  };
+
   const currentColor = PLAYER_COLORS[players[current]?.colorIndex ?? 0];
 
-  // En son oynanan hamlenin hücreleri — ince halka ile vurgulanır.
+  // En son oynanan hamlenin hücreleri — taş rengi koyulaştırılarak vurgulanır.
   const lastMoveSet = new Set(state.lastMoveCells.map(([r, c]) => key(r, c)));
 
   // Her oyuncunun bölgesi: kendi köşesi + oradan kendi taşlarıyla genişleyen
@@ -178,11 +189,17 @@ export function Board({
         // Tahtadaki her taş tıklanabilir — hangi hamlede oynandığına
         // bakılmaksızın o hücreden geçen kelime(ler)in anlamı gösterilir.
         classes.push('bg-transparent cursor-pointer');
+        const tileColor = colorOf(boardTile.owner);
+        const isLastMove = lastMoveSet.has(k);
         content = (
           <Tile
             tile={boardTile}
             variant="board"
-            color={colorOf(boardTile.owner)}
+            color={
+              isLastMove && tileColor
+                ? { ...tileColor, tint: darken(tileColor.tint, 0.14), base: darken(tileColor.base, 0.12) }
+                : tileColor
+            }
           />
         );
       } else if (placedTile) {
@@ -325,14 +342,6 @@ export function Board({
   const moveOutline = moveStatus ? buildOutline(moveStatus.cells, moveColor!, 'move') : null;
   const moveBadge = moveStatus ? buildBadge(moveStatus.cells, moveStatus.score, moveColor!) : null;
 
-  // En son oynanan hamlenin tam dış hattı — tek parça, fosforik fıstık
-  // yeşili halka (hücreler arası boşlukta kesilmez).
-  const lastMoveOutline = buildOutline(
-    [...lastMoveSet].map((k) => k.split(',').map(Number) as [number, number]),
-    '#D4FF3B',
-    'last-move',
-  );
-
   return (
     <div className="w-full max-w-[680px] mx-auto px-3 pt-2 pb-3 flex flex-col items-center">
       <div
@@ -370,9 +379,6 @@ export function Board({
             {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı):
                 tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
             {moveOutline}
-
-            {/* En son oynanan hamlenin fosforik fıstık yeşili dış hattı. */}
-            {lastMoveOutline}
           </svg>
 
           {/* Anlık geçerlilik çerçevesinin puan rozeti. */}
