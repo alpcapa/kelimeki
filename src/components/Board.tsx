@@ -466,7 +466,7 @@ export function Board({
       <div className="relative z-10 flex items-center justify-between gap-2 shrink-0 px-[10px] pb-[10px] pt-1 w-full">
         <button
           onClick={onOpenHistory}
-          className="text-[9px] font-mono font-bold uppercase tracking-[0.5px] text-accent shrink-0"
+          className="text-[10px] font-mono font-bold uppercase tracking-[0.5px] text-accent shrink-0"
         >
           Oyun Geçmişi
         </button>
