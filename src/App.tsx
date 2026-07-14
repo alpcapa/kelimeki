@@ -12,6 +12,7 @@ import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { rankPlayers } from './utils/ranking';
 import { getFormedWords, getFullWordAt, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
@@ -204,23 +205,35 @@ export default function App() {
     }
   };
 
-  // İnsan oyuncunun oyun sonu kaydını oluşturur — hem oyun normal bittiğinde
-  // hem de oyuncu bitmeden (logoya basıp) teslim olduğunda kullanılır.
+  // İnsan oyuncunun (her zaman 1. oyuncu — hesap sahibi) oyun sonu kaydını
+  // oluşturur — hem oyun normal bittiğinde hem de oyuncu bitmeden teslim
+  // olduğunda kullanılır. Sıralama, teslim olan oyuncuları puanlarından
+  // bağımsız olarak her zaman en sona koyan `rankPlayers`e göre yapılır —
+  // böylece kademeli teslimlerin sonunda tek kalan oyuncu, ayrılanların
+  // dondurulmuş puanı ne olursa olsun 1. sırayı alır.
   const buildGameRecord = (surrendered: boolean) => {
-    const human = state.players.find((p) => !p.isAI);
-    const opponents = state.players.filter((p) => p !== human);
-    if (!human || opponents.length === 0) return null;
+    const human = state.players[0];
+    if (!human || human.isAI) return null;
+    const opponents = state.players.slice(1);
+    if (opponents.length === 0) return null;
     const bestOpponentScore = Math.max(...opponents.map((p) => p.score));
+    const ranked = rankPlayers(state.players);
+    const humanEntry = ranked.find((r) => r.index === 0)!;
+    const rank = humanEntry.rank;
+    const tiedForFirst = ranked.filter((r) => r.rank === 1).length;
     const result: GameResult = surrendered
       ? 'lose'
-      : human.score > bestOpponentScore ? 'win' : human.score < bestOpponentScore ? 'lose' : 'tie';
-    // Bitiş sırası: tüm oyuncuların skorları büyükten küçüğe sıralanır, insanın
-    // skoru bu sırada ilk kez göründüğü konum + 1'dir (eşit skorlar aynı sırayı paylaşır).
-    const scoresDesc = state.players.map((p) => p.score).sort((a, b) => b - a);
-    const rank = scoresDesc.indexOf(human.score) + 1;
-    const players = [...state.players]
-      .sort((a, b) => b.score - a.score)
-      .map((p) => ({ name: p.name, score: p.score, is_ai: p.isAI }));
+      : rank > 1
+        ? 'lose'
+        : tiedForFirst > 1
+          ? 'tie'
+          : 'win';
+    const players = ranked.map((r) => ({
+      name: r.player.name,
+      score: r.player.score,
+      is_ai: r.player.isAI,
+      surrendered: r.player.surrendered,
+    }));
     return {
       player_score: human.score,
       ai_score: bestOpponentScore,
@@ -239,9 +252,12 @@ export default function App() {
     };
   };
 
-  // Oyun bitince giriş yapmış kullanıcının sonucunu kaydet (YZ'ye karşı oyunlar dahil).
+  // Oyun bitince giriş yapmış kullanıcının sonucunu kaydet (YZ'ye karşı oyunlar
+  // dahil). 1. oyuncu zaten teslim olarak ayrıldıysa kaydı o an tutulmuştur —
+  // burada tekrar kaydetmeyiz.
   useEffect(() => {
     if (!state.isGameOver || state.phase !== 'play') return;
+    if (state.players[0]?.surrendered) return;
     const record = buildGameRecord(false);
     if (record) void saveGame(record);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -557,6 +573,24 @@ export default function App() {
 
   const potentialScore = moveStatus?.score ?? 0;
 
+  // Logodaki "Çık" onayının kimi teslim edeceği: önce sırası gelen (hâlâ
+  // oyunda olan) insan oyuncu — hotseat'te herkes kendi sırasında teslim
+  // olabilsin diye. Sırası AI'daysa ya da o oyuncu zaten teslim olduysa,
+  // hesap sahibi (1. oyuncu, hâlâ oyundaysa) hedeflenir. İkisi de uygun
+  // değilse (ör. herkes zaten ayrıldı) artık teslim edilecek biri yok —
+  // buton yalnızca anasayfaya döner.
+  const exitTargetIndex = (() => {
+    const cur = state.players[state.current];
+    if (cur && !cur.isAI && !cur.surrendered) return state.current;
+    const p0 = state.players[0];
+    if (p0 && !p0.isAI && !p0.surrendered) return 0;
+    return null;
+  })();
+  const exitTargetPlayer = exitTargetIndex !== null ? state.players[exitTargetIndex] : null;
+  // Bu teslimden sonra en az 2 oyuncu hâlâ oyunda kalacaksa (yoksa oyun anında biter).
+  const othersWillContinue =
+    state.players.filter((p) => !p.surrendered).length - 1 > 1;
+
   const dragHiddenKey = ghost && ghost.source.kind === 'placed'
     ? key(ghost.source.r, ghost.source.c)
     : null;
@@ -736,21 +770,27 @@ export default function App() {
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
             <p className="text-sm text-text font-sans leading-relaxed">
-              {state.isGameOver
+              {state.isGameOver || !exitTargetPlayer
                 ? 'Anasayfaya dönmek istediğinden emin misin?'
-                : user
-                  ? 'Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.'
-                  : 'Bu oyundan çıkmak istediğine emin misin?'}
+                : exitTargetIndex === 0
+                  ? user
+                    ? `Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.${othersWillContinue ? ' Diğer oyuncular oyuna devam edebilir.' : ''}`
+                    : `Bu oyundan çıkmak istediğine emin misin?${othersWillContinue ? ' Diğer oyuncular oyuna devam edebilir.' : ''}`
+                  : `${exitTargetPlayer.name} teslim olmak istediğine emin misin?${othersWillContinue ? ' Oyuna diğer oyuncular devam edebilir.' : ''}`}
             </p>
             <div className="flex gap-2 mt-1">
               <button
                 onClick={() => {
                   setShowExitConfirm(false);
-                  if (!state.isGameOver) {
+                  if (state.isGameOver || exitTargetIndex === null) {
+                    dispatch({ type: 'ABANDON' });
+                    return;
+                  }
+                  if (exitTargetIndex === 0) {
                     const record = buildGameRecord(true);
                     if (record) void saveGame(record);
                   }
-                  dispatch({ type: 'ABANDON' });
+                  dispatch({ type: 'SURRENDER', index: exitTargetIndex });
                 }}
                 className="btn-raised-red flex-1 py-2.5 rounded-md bg-red text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >

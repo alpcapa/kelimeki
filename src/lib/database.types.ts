@@ -20,6 +20,8 @@ export interface GamePlayerSnapshot {
   name: string;
   score: number;
   is_ai: boolean;
+  /** Bu oyuncu oyunu bitirmeden teslim oldu mu (dolduysa; eski kayıtlarda yok). */
+  surrendered?: boolean;
 }
 
 export interface Game {
@@ -65,7 +67,14 @@ export type NewGame = Pick<
 /** Oyun geçmişi listesinde gösterilecek alanlar. */
 export type GameHistoryEntry = Pick<
   Game,
-  'id' | 'created_at' | 'player_count' | 'players' | 'player_score' | 'ai_score' | 'rank'
+  | 'id'
+  | 'created_at'
+  | 'player_count'
+  | 'players'
+  | 'player_score'
+  | 'ai_score'
+  | 'rank'
+  | 'surrendered'
 >;
 
 /** Bir kelimenin sözlük kaydı (word_meaning RPC çıktısı). */

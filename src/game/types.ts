@@ -36,6 +36,8 @@ export interface Player {
   colorIndex: number;
   /** Bu oyuncuyu yapay zekâ mı oynuyor? */
   isAI: boolean;
+  /** Oyuncu bitmeden (teslim olup) oyundan çıktı mı — artık sırası gelmez. */
+  surrendered: boolean;
   rack: Tile[];
   score: number;
   /**
@@ -133,8 +135,8 @@ export interface HistoryEntry {
    * sınırına değdiği için puanın bir kısmı o köşe sahiplerine kaptırıldı.
    */
   lostShares?: { to: Owner; amount: number }[];
-  /** Doluysa: bu satır bir kelime hamlesi değil, pas ya da taş değişimidir. */
-  action?: 'pass' | 'exchange';
+  /** Doluysa: bu satır bir kelime hamlesi değil, pas, taş değişimi ya da teslim olmadır. */
+  action?: 'pass' | 'exchange' | 'surrender';
   /** `action` 'exchange' ise değiştirilen taş sayısı. */
   tileCount?: number;
   /** Doluysa: bu hamle rafı + torbayı bitirdi ve bu kadar joker içeriyordu (jokerli bitiş bonusu). */

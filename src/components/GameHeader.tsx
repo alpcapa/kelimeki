@@ -40,13 +40,14 @@ export function GameHeader({ state, onLogoClick }: GameHeaderProps) {
               style={{
                 background: active ? col.tint : 'transparent',
                 boxShadow: active ? `inset 0 0 0 1.5px ${col.base}` : 'none',
+                opacity: p.surrendered ? 0.45 : 1,
               }}
             >
               <div
                 className="text-[8px] uppercase tracking-[1px] font-mono truncate max-w-[72px]"
-                style={{ color: col.base }}
+                style={{ color: col.base, textDecoration: p.surrendered ? 'line-through' : 'none' }}
               >
-                {label}
+                {p.surrendered ? 'Teslim' : label}
               </div>
               <div
                 className="font-mono text-lg font-bold leading-none"
