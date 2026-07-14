@@ -58,7 +58,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
     {
       label: 'Ortalama Hamle Puanı',
-      value: stats?.avg_move_score ?? 0,
+      value: Number(stats?.avg_move_score ?? 0).toFixed(2),
       cls: 'text-accent',
       place: 'row-start-2 col-start-1',
     },
