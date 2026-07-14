@@ -94,8 +94,8 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
         ]),
     { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
-    { label: 'En Yüksek Kelime Puanı', value: stats?.best_word_score ?? 0, cls: 'text-text' },
     { label: 'En İyi Hamle Puanı', value: stats?.best_move_score ?? 0, cls: 'text-accent' },
+    { label: 'En Yüksek Kelime Puanı', value: stats?.best_word_score ?? 0, cls: 'text-text' },
   ];
 
   return (
@@ -104,9 +104,6 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
         <Avatar url={profile?.avatar_url} name={name} size={44} />
         <div className="min-w-0 flex-1">
           <div className="text-base font-bold text-text truncate">{name}</div>
-          {user?.email && (
-            <div className="text-xs text-muted font-mono truncate">{user.email}</div>
-          )}
         </div>
         <div className="text-right shrink-0">
           <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
