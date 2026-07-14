@@ -1,6 +1,6 @@
 // Harfik — oyundaki tüm oyuncuların hamle/puan geçmişi
 import { Modal } from './Modal';
-import { PLAYER_COLORS, jokerFinishBonus } from '../game/constants';
+import { BINGO_BONUS, PLAYER_COLORS, jokerFinishBonus } from '../game/constants';
 import type { GameState } from '../game/types';
 
 interface MoveHistoryModalProps {
@@ -32,6 +32,18 @@ function Flag({ label, tone }: { label: string; tone: 'green' | 'red' }) {
  * Chrome/Safari farklı sonuç verebilir) bırakmak yerine burada açıkça
  * sabitliyoruz, böylece her cihazda aynı sonucu verir.
  */
+/** Rafın 7 harfinin birden kullanıldığı hamlede puanın soluna konan rozet. */
+function BingoBadge() {
+  return (
+    <span
+      className="text-[8px] font-mono font-bold uppercase tracking-[0.5px] rounded px-1 py-[1px] border shrink-0 text-gold border-gold/40 bg-gold/10"
+      title={`Bingo bonusu +${BINGO_BONUS}`}
+    >
+      Bingo
+    </span>
+  );
+}
+
 function BonusBadge({ tier }: { tier: 2 | 3 }) {
   return (
     <span
@@ -115,6 +127,7 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                   </div>
                   {!e.action && (
                     <span className="flex items-center gap-1 shrink-0">
+                      {e.bingo && <BingoBadge />}
                       {isInvasionLoss && <Flag label="Sınır İhlali" tone="red" />}
                       <span className="text-[13px] font-mono font-bold text-green">
                         +{e.points}
@@ -133,6 +146,11 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
                   <span className="text-[9px] font-mono text-accent">
                     {player?.name ?? '?'} {e.finishJokerCount} joker ile bitti, +
                     {jokerFinishBonus(e.finishJokerCount)} puan aldı.
+                  </span>
+                )}
+                {e.bingo && (
+                  <span className="text-[9px] font-mono text-gold">
+                    7 harfi birden koyup +{BINGO_BONUS} puan Bingo Bonus kazandı.
                   </span>
                 )}
               </div>

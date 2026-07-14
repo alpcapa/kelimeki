@@ -12,8 +12,15 @@ import {
 } from '../game/constants';
 import type { GameState, MoveStatus } from '../game/types';
 import { key } from '../utils/board';
+import { buildRoundedOutlinePath } from '../utils/outline';
 import { computeAllTerritories } from '../utils/validator';
 import { Tile } from './Tile';
+
+// Dış hat köşe yarıçapı (ızgara birimi) — köşe bloğundaki dışbükey köşelerle
+// aynı hissi versin diye, ama artık içbükey (genişleyen kolların dönüşleri)
+// köşeler de aynı yarıçapla yuvarlanıyor.
+const OUTLINE_RADIUS = 0.16;
+const OUTLINE_STROKE = 2.5;
 
 interface BoardProps {
   state: GameState;
@@ -131,7 +138,7 @@ export function Board({
 
   const currentColor = PLAYER_COLORS[players[current]?.colorIndex ?? 0];
 
-  // En son oynanan hamlenin hücreleri — kabartma + ince halka ile vurgulanır.
+  // En son oynanan hamlenin hücreleri — ince halka ile vurgulanır.
   const lastMoveSet = new Set(state.lastMoveCells.map(([r, c]) => key(r, c)));
 
   // Her oyuncunun bölgesi: kendi köşesi + oradan kendi taşlarıyla genişleyen
@@ -177,7 +184,6 @@ export function Board({
             tile={boardTile}
             variant="board"
             color={colorOf(boardTile.owner)}
-            lastMove={lastMoveSet.has(k)}
           />
         );
       } else if (placedTile) {
@@ -246,101 +252,73 @@ export function Board({
     }
   }
 
-  // Bir mazgal (sur dişi) kenar şeridinin arka planı: iki kısa diş, kenarın
-  // ortasında küçük bir boşlukla ayrılmış, iki ucunda da eşit boşlukla —
-  // her hücrede tam olarak aynı konumda, simetrik (boşluk/diş/boşluk/diş/
-  // boşluk). Tek uzun ortalanmış diş, iki hücre birleştiğinde tek bir kalın
-  // kütle gibi durup istenen "kale mazgalı" hissini vermiyordu; ortadaki
-  // kısa boşluk her dişi kendi mazgal parçası gibi ayırıyor. Kenarın ucuna
-  // yaslı bir diş de köşelerde bir tarafa yakın, diğer tarafa uzak kalıp
-  // köşe dolgusunu diş deseninden kopuk, izole bir nokta gibi gösteriyordu;
-  // simetrik desen bu asimetriyi de ortadan kaldırır. Kalınlık düz çizgiyle
-  // hemen hemen aynı. Her hücre bu deseni kendi genişliğinde baştan
-  // çizdiğinden (tek periyot = bir hücre), bitişik hücrelerin şeritleri ek
-  // Verilen hücre kümesini kapsayan TEK bir dış hat üretir (iç kesişim
-  // hücrelerinde ayırıcı çizgi olmaz) — her hücrenin yalnızca kümenin
-  // dışına bakan kenarlarına çizgi eklenir. `badgeScore` verilirse en üst
-  // sağdaki hücrenin köşesine puan rozeti eklenir. `extraOpen`, kümenin
-  // dışına bakan bir kenarı da "kapalı" (çizgisiz) sayabilmek için — bonus
-  // bölgesi/merkez çerçevesi, bir oyuncunun bölgesinin İÇİNDEN geçen kendi
-  // kenarını bu şekilde bastırır, böylece oyuncunun genişleyen bölgesi
-  // içinde gereksiz bir amber çizgi kalmaz.
+  // Verilen hücre kümesinin TEK, tamamen yuvarlatılmış (dışbükey VE
+  // içbükey köşeler dahil) dış hat SVG path'ini üretir — `buildRoundedOutlinePath`
+  // ızgara birimi cinsinden çalışır, burada sadece rengi/kalınlığı ekleyip
+  // bir <path> elemanına sarıyoruz. `extraOpen`, kümenin dışına bakan bir
+  // kenarı da "kapalı" (çizgisiz) sayabilmek için — bonus bölgesi/merkez
+  // çerçevesi, bir oyuncunun bölgesinin İÇİNDEN geçen kendi kenarını bu
+  // şekilde bastırır, böylece oyuncunun genişleyen bölgesi içinde gereksiz
+  // bir amber çizgi kalmaz.
   const buildOutline = (
     cellsList: [number, number][],
     color: string,
     keyPrefix: string,
-    badgeScore?: number,
     extraOpen?: (r: number, c: number, nr: number, nc: number) => boolean,
-  ): React.ReactNode[] => {
+  ): React.ReactNode => {
     const uniqueCells = [...new Map(cellsList.map(([r, c]) => [key(r, c), [r, c] as [number, number]])).values()];
-    const cellSet = new Set(uniqueCells.map(([r, c]) => key(r, c)));
-    // Rozet en üst-soldaki hücreye konur (tahtaya konan taşın kendi puan
-    // üst simgesiyle çakışmaması için sağ üst yerine sol üst köşede).
+    if (uniqueCells.length === 0) return null;
+    const d = buildRoundedOutlinePath(uniqueCells, OUTLINE_RADIUS, extraOpen);
+    if (!d) return null;
+    return (
+      <path
+        key={keyPrefix}
+        d={d}
+        fill="none"
+        stroke={color}
+        strokeWidth={OUTLINE_STROKE}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    );
+  };
+
+  // Bir hücre kümesinin en üst-soldaki hücresine puan rozeti konur
+  // (tahtaya konan taşın kendi puan üst simgesiyle çakışmaması için sağ üst
+  // yerine sol üst köşede).
+  const buildBadge = (cellsList: [number, number][], score: number, color: string): React.ReactNode => {
     let badge: [number, number] | null = null;
-    if (badgeScore !== undefined) {
-      for (const [r, c] of uniqueCells) {
-        if (!badge || r < badge[0] || (r === badge[0] && c < badge[1])) badge = [r, c];
-      }
+    for (const [r, c] of cellsList) {
+      if (!badge || r < badge[0] || (r === badge[0] && c < badge[1])) badge = [r, c];
     }
-    return uniqueCells.map(([r, c]) => {
-      const isOpen = (nr: number, nc: number) =>
-        cellSet.has(key(nr, nc)) || (extraOpen ? extraOpen(r, c, nr, nc) : false);
-      const top = isOpen(r - 1, c);
-      const bottom = isOpen(r + 1, c);
-      const left = isOpen(r, c - 1);
-      const right = isOpen(r, c + 1);
-      const side = (occupied: boolean) => (occupied ? 'none' : `2.5px solid ${color}`);
-      const radius = (a: boolean, b: boolean) => (!a && !b ? '5px' : '0');
-      return (
-        <div
-          key={`${keyPrefix}-${r},${c}`}
-          className="pointer-events-none z-10"
-          style={{
-            gridRow: `${r + 1} / ${r + 2}`,
-            gridColumn: `${c + 1} / ${c + 2}`,
-            // Hücreler arasındaki 3px grid boşluğunu da kapsayacak şekilde
-            // kutuyu her yönde yarım boşluk kadar büyütür — komşu hücrelerin
-            // çerçeve kenarları böylece boşluğun ortasında birleşir, sınır
-            // kesik değil tek parça bir çizgi olarak görünür.
-            margin: '-1.5px',
-            borderTop: side(top),
-            borderBottom: side(bottom),
-            borderLeft: side(left),
-            borderRight: side(right),
-            borderTopLeftRadius: radius(top, left),
-            borderTopRightRadius: radius(top, right),
-            borderBottomLeftRadius: radius(bottom, left),
-            borderBottomRightRadius: radius(bottom, right),
-            position: 'relative',
-          }}
-        >
-          {badge && badge[0] === r && badge[1] === c && (
-            <span
-              className="absolute -top-[9px] -left-[9px] flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
-              style={{
-                background: color,
-                fontSize: 'clamp(8px,2vw,11px)',
-                padding: '3px 6px',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
-              }}
-            >
-              +{badgeScore}
-            </span>
-          )}
-        </div>
-      );
-    });
+    if (!badge) return null;
+    const [r, c] = badge;
+    return (
+      <div
+        className="pointer-events-none absolute z-20 flex items-center justify-center rounded-full font-mono font-bold text-white leading-none whitespace-nowrap"
+        style={{
+          top: `${(r / SIZE) * 100}%`,
+          left: `${(c / SIZE) * 100}%`,
+          transform: 'translate(-35%, -35%)',
+          background: color,
+          fontSize: 'clamp(8px,2vw,11px)',
+          padding: '3px 6px',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
+        }}
+      >
+        +{score}
+      </div>
+    );
   };
 
   // Her oyuncunun bölgesinin dış hattı — köşeden taşlarla genişledikçe
   // sınır da ona göre büyür.
-  const territoryOutlines = players.flatMap((p, i) => {
+  const territoryOutlines = players.map((p, i) => {
     const territoryCells = [...territories[i]].map(
       (k) => k.split(',').map(Number) as [number, number],
     );
-    return territoryCells.length > 0
-      ? buildOutline(territoryCells, PLAYER_COLORS[p.colorIndex].base, `territory-${i}`)
-      : [];
+    return buildOutline(territoryCells, PLAYER_COLORS[p.colorIndex].base, `territory-${i}`);
   });
 
   // Bir bonus-bölgesi kenarını, iki tarafı da AYNI oyuncunun bölgesine
@@ -359,24 +337,27 @@ export function Board({
       zoneCells.push([r, c]);
     }
   }
-  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone', undefined, sameTerritoryOpen);
+  const zoneOutline = buildOutline(zoneCells, '#B45309', 'bonus-zone', sameTerritoryOpen);
 
   // Tam ortadaki tek X3 hücresinin kendi çerçevesi — turuncu zeminle uyumlu.
   // Hücreye bir taş oynandıktan sonra (artık oyuncunun rengiyle çizildiğinden)
   // bu çerçeve kaldırılır.
   const centerOutline = board[BOARD_CENTER[0]][BOARD_CENTER[1]]
-    ? []
-    : buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', undefined, sameTerritoryOpen);
+    ? null
+    : buildOutline([BOARD_CENTER], '#9A3412', 'center-zone', sameTerritoryOpen);
 
   // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
-  const moveOutline = moveStatus
-    ? buildOutline(moveStatus.cells, moveStatus.valid ? '#1FA05C' : '#E0483A', 'move', moveStatus.score)
-    : [];
+  const moveColor = moveStatus ? (moveStatus.valid ? '#1FA05C' : '#E0483A') : undefined;
+  const moveOutline = moveStatus ? buildOutline(moveStatus.cells, moveColor!, 'move') : null;
+  const moveBadge = moveStatus ? buildBadge(moveStatus.cells, moveStatus.score, moveColor!) : null;
 
   // En son oynanan hamlenin tam dış hattı — tek parça, fosforik fıstık
-  // yeşili halka (Tile'daki kabartma/gölge ayrı kalır, sadece halka buraya
-  // taşındı — böylece hücreler arası boşlukta kesilmez).
-  const lastMoveOutline = buildOutline([...lastMoveSet].map((k) => k.split(',').map(Number) as [number, number]), '#D4FF3B', 'last-move');
+  // yeşili halka (hücreler arası boşlukta kesilmez).
+  const lastMoveOutline = buildOutline(
+    [...lastMoveSet].map((k) => k.split(',').map(Number) as [number, number]),
+    '#D4FF3B',
+    'last-move',
+  );
 
   return (
     <div className="w-full max-w-[680px] mx-auto px-3 pt-2 pb-3 flex flex-col items-center">
@@ -390,23 +371,40 @@ export function Board({
       >
         {cells}
 
-        {/* Merkezdeki x2 bonus bölgesinin dış hattı. */}
-        {zoneOutline}
+        {/* Tüm bölge/bonus/hamle dış hatları tek bir SVG katmanında — ızgaranın
+            tam hücre alanını kaplayacak şekilde tek bir grid öğesi olarak
+            (satır/sütun 1'den sona) yerleştirilir, böylece her yolun köşeleri
+            (dışbükey VE içbükey) aynı yarıçapla pürüzsüz yuvarlanır. Puan
+            rozeti de aynı kutu içinde, aynı yüzde koordinatlarıyla hizalanır. */}
+        <div className="pointer-events-none z-10" style={{ gridRow: '1 / -1', gridColumn: '1 / -1', position: 'relative' }}>
+          <svg
+            className="block w-full h-full"
+            style={{ overflow: 'visible' }}
+            viewBox={`0 0 ${SIZE} ${SIZE}`}
+            preserveAspectRatio="none"
+          >
+            {/* Merkezdeki x2 bonus bölgesinin dış hattı. */}
+            {zoneOutline}
 
-        {/* Tam ortadaki tek X3 hücresinin kendi çerçevesi. */}
-        {centerOutline}
+            {/* Tam ortadaki tek X3 hücresinin kendi çerçevesi. */}
+            {centerOutline}
 
-        {/* Her oyuncunun genişleyen bölgesinin dış hattı — bonus bölgesi
-            çerçevesinin üzerinde çizilir, böylece bir oyuncunun bölgesi
-            bonus alanına ilerlediğinde sınır kendi renginde kalır. */}
-        {territoryOutlines}
+            {/* Her oyuncunun genişleyen bölgesinin dış hattı — bonus bölgesi
+                çerçevesinin üzerinde çizilir, böylece bir oyuncunun bölgesi
+                bonus alanına ilerlediğinde sınır kendi renginde kalır. */}
+            {territoryOutlines}
 
-        {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan:
-            tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
-        {moveOutline}
+            {/* Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı):
+                tüm kelimelerin hücrelerini kapsayan tek dış hat, iç kesişimde çizgi yok. */}
+            {moveOutline}
 
-        {/* En son oynanan hamlenin fosforik fıstık yeşili dış hattı. */}
-        {lastMoveOutline}
+            {/* En son oynanan hamlenin fosforik fıstık yeşili dış hattı. */}
+            {lastMoveOutline}
+          </svg>
+
+          {/* Anlık geçerlilik çerçevesinin puan rozeti. */}
+          {moveBadge}
+        </div>
 
         {/* Her oyuncunun 4×4 köşesine soluk numara filigranı. */}
         <div className="pointer-events-none absolute inset-1">
@@ -457,7 +455,11 @@ export function Board({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 shrink-0 pt-1 w-full">
+      {/* Board'un alt kenarındaki büyük, yumuşak gölge (`0 20px 60px`) bu satırın
+          arka planına kadar bulanık bir gri geçiş bırakıyordu — bağlantı soluk,
+          gölgenin "içinde" kalmış gibi görünüyordu. `bg-bg` bu satırı kendi düz,
+          net zeminine oturtarak öne çıkarır; ekstra üst boşluk da gölgeden ayırır. */}
+      <div className="relative z-10 flex items-center justify-between gap-2 shrink-0 pt-3 w-full bg-bg">
         <button
           onClick={onOpenHistory}
           className="text-[9px] font-mono font-bold uppercase tracking-[0.5px] text-accent underline underline-offset-2 shrink-0"
