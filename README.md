@@ -65,7 +65,7 @@ src/
 │   └── gameReducer.ts # useReducer ile oyun durum makinesi
 ├── data/
 │   ├── words.ts       # Türkçe kelime listesi (92.503 kelime, üretilmiş)
-│   ├── meanings.json  # kelime → anlamlar (tembel yüklenir, ~6 MB)
+│   ├── meanings.json  # kelime → anlamlar (tembel yüklenir, ~9 MB)
 │   ├── meanings.ts    # anlam yükleyici
 │   └── tiles.ts       # Türkçe harf dağılımı ve puanlar (100 taş)
 ├── utils/
