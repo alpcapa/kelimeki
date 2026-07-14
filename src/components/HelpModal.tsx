@@ -167,8 +167,8 @@ export function HelpModal({ onClose }: HelpModalProps) {
           <P>
             Rafını ve torbayı tamamen bitiren hamlen <strong>sadece</strong> joker(ler)den
             oluşuyorsa (tek taş olarak 1 joker ya da iki taş olarak 2 joker — başka hiçbir harf
-            olmadan) ekstra bonus kazanırsın: <strong>1 jokerle bitiş +50</strong>,{' '}
-            <strong>2 jokerle bitiş +100</strong>.
+            olmadan) ekstra bonus kazanırsın: <strong>1 jokerle bitiş +25</strong>,{' '}
+            <strong>2 jokerle bitiş +50</strong>.
           </P>
         </Section>
 
