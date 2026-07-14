@@ -50,7 +50,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   const cells: { label: string; value: number | string; rate?: string; cls?: string; wide?: boolean }[] = [
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
     {
-      label: tab === 4 ? 'Birincilik' : 'Toplam Birincilik',
+      label: 'Birincilik',
       value: stats?.first_places ?? 0,
       rate: pct(stats?.first_places ?? 0),
       cls: 'text-gold',
