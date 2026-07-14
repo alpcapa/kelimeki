@@ -58,7 +58,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     ...(tab === 4
       ? [
           {
-            label: 'Toplam İkincilik',
+            label: 'İkincilik',
             value: secondCellValue,
             rate: pct(secondCellValue),
             cls: 'text-accent',
@@ -125,10 +125,10 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
               >
                 <div className={`font-mono text-xl font-bold ${c.cls ?? 'text-text'}`}>
                   {c.value}
-                  {c.rate && (
-                    <span className="ml-1 text-xs font-normal text-muted">({c.rate})</span>
-                  )}
                 </div>
+                {c.rate && (
+                  <div className="font-mono text-xs text-muted mt-0.5">({c.rate})</div>
+                )}
                 <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono mt-0.5">
                   {c.label}
                 </div>
