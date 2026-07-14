@@ -132,22 +132,15 @@ export function isFirstMove(state: GameState): boolean {
 }
 
 /**
- * Kalan raf puanlarını her oyuncudan düşerek oyunu bitirir. Torba boşken
- * rafını tamamen bitiren oyuncu varsa (gerçek bitiriş), diğerlerinin elinde
- * kalan taşların toplam puanı ona eklenir.
+ * Kalan raf puanlarını her oyuncudan düşerek oyunu bitirir. Rafını
+ * tamamen bitiren oyuncuya diğerlerinin kalan taş puanları eklenmez —
+ * sadece kalan taşı olan oyuncuların puanından düşülür.
  */
 function endGame(state: GameState): GameState {
   const remaining = (p: Player) => p.rack.reduce((s, t) => s + t.pts, 0);
-  const finisher =
-    state.bag.length === 0 ? state.players.find((p) => p.rack.length === 0) : undefined;
-  const bonus = finisher
-    ? state.players
-        .filter((p) => p !== finisher)
-        .reduce((s, p) => s + remaining(p), 0)
-    : 0;
 
   const players = state.players.map((p) => {
-    const score = Math.max(0, p.score - remaining(p)) + (p === finisher ? bonus : 0);
+    const score = Math.max(0, p.score - remaining(p));
     return { ...p, score };
   });
   return {
