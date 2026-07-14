@@ -47,8 +47,21 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   // getirmiyor) bu stat hiç gösterilmez.
   const secondCellValue = stats?.second_places ?? 0;
 
-  const cells: { label: string; value: number | string; rate?: string; cls?: string; wide?: boolean }[] = [
+  const cells: {
+    label: string;
+    value: number | string;
+    rate?: string;
+    cls?: string;
+    wide?: boolean;
+    place?: string;
+  }[] = [
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
+    {
+      label: 'Ortalama Hamle Puanı',
+      value: stats?.avg_move_score ?? 0,
+      cls: 'text-accent',
+      place: 'row-start-2 col-start-1',
+    },
     {
       label: 'Birincilik',
       value: stats?.first_places ?? 0,
@@ -66,8 +79,12 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
         ]
       : []),
     { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
-    { label: 'Teslim Olunan', value: stats?.surrendered_count ?? 0, cls: 'text-red' },
-    { label: 'Ortalama Hamle Puanı', value: stats?.avg_move_score ?? 0, cls: 'text-accent' },
+    {
+      label: 'Teslim Olma',
+      value: stats?.surrendered_count ?? 0,
+      rate: pct(stats?.surrendered_count ?? 0),
+      cls: 'text-red',
+    },
     { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
     { label: 'En Yüksek Kelime Puanı', value: stats?.best_word_score ?? 0, cls: 'text-text' },
     { label: 'En İyi Hamle Puanı', value: stats?.best_move_score ?? 0, cls: 'text-accent' },
@@ -121,7 +138,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             {cells.map((c) => (
               <div
                 key={c.label}
-                className={`bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : ''}`}
+                className={`bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : ''} ${c.place ?? ''}`}
               >
                 <div className={`font-mono text-xl font-bold ${c.cls ?? 'text-text'}`}>
                   {c.value}
