@@ -139,7 +139,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
               Henüz {tab} oyunculu oyun kaydın yok.
             </p>
           )}
-          <div className="grid grid-cols-3 grid-flow-row-dense gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {cells.map((c) => (
               <div
                 key={c.label}
