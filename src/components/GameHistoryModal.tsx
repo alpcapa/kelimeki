@@ -21,13 +21,31 @@ function formatDateTime(iso: string): string {
 /**
  * Eski kayıtlarda (players alanı eklenmeden önce oynanmış oyunlarda) yalnızca
  * kendi puanın ve en iyi rakibin puanı bilinir — diğer oyuncuların adı/puanı
- * saklanmamıştır. Bilinen iki satırı döner; kalan oyuncu sayısını ayrıca verir.
+ * saklanmamıştır. Bilinen iki satırı döner; kalan oyuncu sayısını ve kendi
+ * satırının indeksini ayrıca verir.
  */
-function fallbackPlayers(entry: GameHistoryEntry): { known: GamePlayerSnapshot[]; unknownCount: number } {
+function fallbackPlayers(
+  entry: GameHistoryEntry,
+): { known: GamePlayerSnapshot[]; unknownCount: number; meIndex: number } {
   const me: GamePlayerSnapshot = { name: 'Sen', score: entry.player_score, is_ai: false };
   const opponent: GamePlayerSnapshot = { name: 'En iyi rakip', score: entry.ai_score, is_ai: false };
-  const known = entry.player_score >= entry.ai_score ? [me, opponent] : [opponent, me];
-  return { known, unknownCount: Math.max(0, entry.player_count - 2) };
+  const meFirst = entry.player_score >= entry.ai_score;
+  const known = meFirst ? [me, opponent] : [opponent, me];
+  return { known, unknownCount: Math.max(0, entry.player_count - 2), meIndex: meFirst ? 0 : 1 };
+}
+
+/**
+ * Final sıralaması (players) içinde oturum açan kullanıcının (hesap
+ * sahibinin) satırının indeksini bulur. `rank` alanı (1 = birinci) bu
+ * sıralamadaki pozisyonu doğrudan verir; eski kayıtlarda rank bilinmiyorsa
+ * puanı entry.player_score'a eşit olan ve YZ olmayan ilk satıra düşülür.
+ */
+function findMeIndex(entry: GameHistoryEntry, players: GamePlayerSnapshot[]): number {
+  if (entry.rank !== null && entry.rank >= 1 && entry.rank <= players.length) {
+    return entry.rank - 1;
+  }
+  const byScore = players.findIndex((p) => !p.is_ai && p.score === entry.player_score);
+  return byScore >= 0 ? byScore : 0;
 }
 
 export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps) {
@@ -98,6 +116,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
             const fallback = hasSnapshot ? null : fallbackPlayers(entry);
             const players = hasSnapshot ? entry.players! : fallback!.known;
             const unknownCount = fallback?.unknownCount ?? 0;
+            const meIndex = hasSnapshot ? findMeIndex(entry, players) : fallback!.meIndex;
             return (
               <div
                 key={entry.id}
@@ -113,10 +132,10 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                       className="flex items-center justify-between gap-2 text-[12px] font-mono"
                     >
                       <span className="flex items-center gap-1.5 min-w-0">
-                        <span className={`w-3 text-right ${i === 0 ? 'text-gold font-bold' : 'text-muted'}`}>
+                        <span className={`w-3 text-right ${i === meIndex ? 'text-gold font-bold' : 'text-muted'}`}>
                           {i + 1}.
                         </span>
-                        <span className={`truncate ${i === 0 ? 'text-text font-bold' : 'text-muted'}`}>
+                        <span className={`truncate ${i === meIndex ? 'text-text font-bold' : 'text-muted'}`}>
                           {p.name}
                         </span>
                         {p.is_ai && (
@@ -125,7 +144,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                           </span>
                         )}
                       </span>
-                      <span className={`font-bold shrink-0 ${i === 0 ? 'text-gold' : 'text-muted'}`}>
+                      <span className={`font-bold shrink-0 ${i === meIndex ? 'text-gold' : 'text-muted'}`}>
                         {p.score}
                       </span>
                     </div>
