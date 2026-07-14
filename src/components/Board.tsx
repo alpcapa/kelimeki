@@ -362,11 +362,16 @@ export function Board({
   return (
     <div className="w-full max-w-[680px] mx-auto px-3 pt-2 pb-3 flex flex-col items-center">
       <div
-        className="relative grid gap-[3px] bg-[#DDE4EE] rounded-[18px] p-[10px] w-full aspect-square"
+        className="relative w-full bg-[#DDE4EE] rounded-[18px]"
+        style={{
+          boxShadow: '8px 8px 20px rgba(163,177,198,0.7), -4px -4px 14px rgba(255,255,255,0.9), 0 20px 60px rgba(163,177,198,0.5)',
+        }}
+      >
+      <div
+        className="relative grid gap-[3px] p-[10px] w-full aspect-square"
         style={{
           gridTemplateColumns: `repeat(${SIZE}, 1fr)`,
           gridTemplateRows: `repeat(${SIZE}, 1fr)`,
-          boxShadow: '8px 8px 20px rgba(163,177,198,0.7), -4px -4px 14px rgba(255,255,255,0.9), 0 20px 60px rgba(163,177,198,0.5)',
         }}
       >
         {cells}
@@ -455,11 +460,10 @@ export function Board({
         </div>
       </div>
 
-      {/* Board'un alt kenarındaki büyük, yumuşak gölge (`0 20px 60px`) bu satırın
-          arka planına kadar bulanık bir gri geçiş bırakıyordu — bağlantı soluk,
-          gölgenin "içinde" kalmış gibi görünüyordu. `bg-bg` bu satırı kendi düz,
-          net zeminine oturtarak öne çıkarır; ekstra üst boşluk da gölgeden ayırır. */}
-      <div className="relative z-10 flex items-center justify-between gap-2 shrink-0 pt-3 w-full bg-bg">
+      {/* Alt bilgi şeridi (Oyun Geçmişi / X2-X3 açıklaması) — kartın kendi
+          zemini ve gölgesiyle bütünleşik bir alt bölüm; ayrı, asılı kalan
+          bir beyaz şerit değil. */}
+      <div className="relative z-10 flex items-center justify-between gap-2 shrink-0 px-[10px] pb-[10px] pt-1 w-full">
         <button
           onClick={onOpenHistory}
           className="text-[9px] font-mono font-bold uppercase tracking-[0.5px] text-accent underline underline-offset-2 shrink-0"
@@ -481,6 +485,7 @@ export function Board({
             </div>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );
