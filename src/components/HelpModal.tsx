@@ -1,5 +1,6 @@
 // Harfik — nasıl oynanır / kurallar sayfası
 import { Modal } from './Modal';
+import { BINGO_BONUS } from '../game/constants';
 
 interface HelpModalProps {
   onClose: () => void;
@@ -153,7 +154,7 @@ export function HelpModal({ onClose }: HelpModalProps) {
         <Section title="Bingo Bonusu">
           <P>
             Harf kutusundaki 7 taşın tamamını tek hamlede kullanırsan{' '}
-            <strong>+50 puan</strong> bonus kazanırsın.
+            <strong>+{BINGO_BONUS} puan</strong> bonus kazanırsın.
           </P>
         </Section>
 

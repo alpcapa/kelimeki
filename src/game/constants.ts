@@ -11,7 +11,7 @@ export const CORNER = 4;
 export const MAX_PASS_ROUNDS = 2;
 
 /** Tüm rafı kullanan hamleye verilen bonus puan. */
-export const BINGO_BONUS = 50;
+export const BINGO_BONUS = 25;
 
 /** Rafta tutulan taş sayısı. */
 export const RACK_SIZE = 7;
