@@ -79,3 +79,14 @@ Büyük/küçük harf dönüşümünde **mutlaka** `trUpper()` / `trLower()` (`s
 ## Supabase
 
 Env değişkenleri olmadan uygulama offline çalışır — `useAuth` içindeki `configured` flag'i `false` olur ve tüm hesap/lider tablosu özellikleri gizlenir. Lokal geliştirmede Supabase gerekmez.
+
+### Migration'lar — CI yok, elle uygulama
+
+Kullanıcı iPad üzerinden çalışıyor; `.github/workflows/supabase-migrations.yml` (main'e push'ta `supabase db push` çalıştırır) teoride var ama kullanıcının bunu tetikleyip sonucunu takip edecek bir CLI/CI erişimi yok. Bu yüzden **her yeni migration'ı Claude'un kendisi, Supabase MCP (`apply_migration`/`execute_sql`) ile doğrudan production'a uygulaması gerekiyor** — migration dosyasını repoya eklemek tek başına yeterli değil, kimse `db push`'un geçtiğini doğrulamıyor. Akış:
+
+1. Migration dosyasını normal şekilde `supabase/migrations/` altına yaz.
+2. SQL'i kullanıcıya açıkça göster (ne çalıştırılacağını gizleme).
+3. Supabase MCP ile aynı SQL'i doğrudan production'a uygula, sonra `execute_sql` ile canlıda doğrula (view/fonksiyon tanımını tekrar oku).
+4. Uyguladığını kullanıcıya açıkça söyle ("canlıya uyguladım, doğruladım" gibi) — sessizce dosya eklemekle yetinme.
+
+15 Temmuz 2026'da bu yüzden repo ile production'ın migration geçmişi (`supabase_migrations.schema_migrations`) birbirinden kopmuştu: geçmiş migration'lar CI yerine elle (muhtemelen `apply_migration` ile, kendi otomatik zaman damgasıyla) uygulanmış, dosya adlarındaki timestamp'lerle hiç eşleşmiyordu, `supabase db push` bu yüzden sürekli "Remote migration versions not found" hatasıyla fail ediyordu. Tüm dosyaların içeriği tek tek production'da doğrulanıp (`games.players` jsonb için eksik olan tek dosya da eklendi) kayıt tablosu repodaki 26 dosyayla birebir eşleşecek şekilde yeniden yazıldı. Yeni migration eklerken bu senkronu bozmamak için 1-4 adımlarını takip et.
