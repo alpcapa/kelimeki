@@ -58,14 +58,10 @@ export function Setup({ onStart }: SetupProps) {
       // Aynı cihazda birden fazla kişi oynama ihtimali göz ardı edilebilir
       // olduğundan diğer tüm oyuncular her zaman YZ'dir.
       if (i === 0) {
-        return { name: accountName || (names[0].trim() ? names[0].trim() : 'Oyuncu 1'), isAI: false };
+        return { name: accountName || (names[0].trim() ? names[0].trim() : 'Oyuncu (Bölge 1)'), isAI: false };
       }
       return {
-        name: names[i].trim()
-          ? names[i].trim()
-          : count === 2
-            ? 'Yapay Zeka'
-            : `Yapay Zeka ${i + 1}`,
+        name: names[i].trim() ? names[i].trim() : `Yapay Zeka (Bölge ${i + 1})`,
         isAI: true,
       };
     });
@@ -195,11 +191,7 @@ export function Setup({ onStart }: SetupProps) {
                   value={names[i]}
                   onChange={(e) => setName(i, e.target.value)}
                   placeholder={
-                    i === 0
-                      ? 'Oyuncu 1'
-                      : count === 2
-                        ? 'Yapay Zeka'
-                        : `Yapay Zeka ${i + 1}`
+                    i === 0 ? 'Oyuncu (Bölge 1)' : `Yapay Zeka (Bölge ${i + 1})`
                   }
                   maxLength={14}
                   className="flex-1 min-w-0 bg-transparent outline-none font-sans text-sm text-text placeholder:text-muted"
@@ -210,7 +202,7 @@ export function Setup({ onStart }: SetupProps) {
                 className="text-[9px] font-mono uppercase tracking-[1px] shrink-0 px-1"
                 style={{ color: col.base }}
               >
-                {i === 0 ? 'Sen' : 'YZ'}
+                {i === 0 ? 'Sen' : `YZ${i + 1}`}
               </span>
             </div>
           );
