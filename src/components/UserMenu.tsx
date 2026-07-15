@@ -101,11 +101,11 @@ export function UserMenu() {
                   }}
                   className="flex items-center gap-1 text-[10px] font-mono text-left truncate active:opacity-70 transition-opacity"
                 >
-                  {myRank && (
-                    <span className="text-muted truncate">
-                      #{myRank.rank} · {myRank.total_score.toLocaleString('tr-TR')} puan
-                    </span>
-                  )}
+                  <span className="text-muted truncate">
+                    {myRank
+                      ? `#${myRank.rank} · ${myRank.total_score.toLocaleString('tr-TR')} puan`
+                      : 'Sanal Lig'}
+                  </span>
                   <span className="w-3 h-3 rounded-full border border-accent text-accent flex items-center justify-center text-[8px] leading-none font-bold shrink-0">
                     ?
                   </span>
