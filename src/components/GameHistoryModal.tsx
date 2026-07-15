@@ -163,6 +163,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                       className="flex items-center justify-between gap-2 text-[12px] font-mono"
                     >
                       <span className="flex items-center gap-1.5 min-w-0">
+                        <span className="w-3 text-right text-muted shrink-0">{i + 1}.</span>
                         <PlayerBadge index={seatIndexFor(p, i, hasSnapshot)} size={14} />
                         <span className={`truncate ${i === meIndex ? 'text-text font-bold' : 'text-muted'}`}>
                           {i === meIndex ? myCurrentName : p.name}
