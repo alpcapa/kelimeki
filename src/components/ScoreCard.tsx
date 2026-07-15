@@ -171,7 +171,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             {cells.map((c) => (
               <div
                 key={c.label}
-                className={`bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : c.span2 ? 'col-span-2' : ''} ${c.place ?? ''}`}
+                className={`btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : c.span2 ? 'col-span-2' : ''} ${c.place ?? ''}`}
               >
                 <div className={`font-mono text-xl font-bold ${c.cls ?? 'text-text'}`}>
                   {c.value}
