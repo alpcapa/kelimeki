@@ -4,6 +4,7 @@ import { PLAYER_COLORS } from '../game/constants';
 import type { Player } from '../game/types';
 import { trUpper } from '../utils/turkish';
 import { rankPlayers } from '../utils/ranking';
+import { PlayerBadge } from './PlayerBadge';
 
 interface GameOverProps {
   show: boolean;
@@ -31,7 +32,7 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
           {tie ? 'BERABERE' : `${trUpper(top.player.name)} KAZANDI`}
         </div>
 
-        <div className="bg-bg border border-border rounded-[10px] px-5 py-4 text-center flex flex-col gap-2.5 w-full">
+        <div className="shadow-raised bg-bg border border-border rounded-[10px] px-5 py-4 text-center flex flex-col gap-2.5 w-full">
           <div className="flex justify-end items-center gap-4 text-[10px] uppercase tracking-wide text-muted">
             <span className="w-8 text-right">Kalan</span>
             <span className="w-10 text-right">Toplam</span>
@@ -42,10 +43,7 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
             return (
               <div key={i} className="flex justify-between items-center gap-8 text-[15px]">
                 <span className="flex items-center gap-2">
-                  <span
-                    className="w-3 h-3 rounded-sm"
-                    style={{ background: col.base }}
-                  />
+                  <PlayerBadge index={i} colorIndex={p.colorIndex} size={14} />
                   <span className="text-text">
                     {rank}. {p.name}
                     {p.surrendered && (
