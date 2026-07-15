@@ -50,6 +50,24 @@ function findMeIndex(entry: GameHistoryEntry, players: GamePlayerSnapshot[]): nu
   return byScore >= 0 ? byScore : 0;
 }
 
+/**
+ * Rozette gösterilecek renk/numara, final sıralamasındaki konumdan (rank)
+ * BAĞIMSIZ, oyuncunun sabit koltuk kimliğidir — 1. oyuncu her zaman mavi,
+ * her YZ her zaman aynı renk (Setup'taki gibi). `colorIndex` bu alan
+ * eklenmeden önceki kayıtlarda yok; o durumda varsayılan isimden
+ * ("Yapay Zeka N") tahmin edilir, insan oyuncu her zaman koltuk 0'dır.
+ * Gerçek oyun anlık görüntüsü değilse (çok eski kayıtların "Sen"/"En iyi
+ * rakip" yer tutucuları) tahmin güvenilir olmadığından listedeki konum
+ * kullanılır.
+ */
+function seatIndexFor(p: GamePlayerSnapshot, positionIndex: number, isSnapshot: boolean): number {
+  if (p.colorIndex !== undefined) return p.colorIndex;
+  if (!isSnapshot) return positionIndex;
+  if (!p.is_ai) return 0;
+  const m = /Yapay Zeka (\d+)/.exec(p.name);
+  return m ? Math.max(0, parseInt(m[1], 10) - 1) : positionIndex;
+}
+
 export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps) {
   const { user, profile } = useAuth();
   // Her oyunun `players` jsonb'si o oyun bittiği andaki ismi donmuş halde
@@ -125,7 +143,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
       ) : (
         <div ref={scrollRef} className="flex flex-col gap-2 max-h-[65vh] overflow-y-auto pr-1">
           {games.map((entry) => {
-            const hasSnapshot = entry.players && entry.players.length > 0;
+            const hasSnapshot = !!entry.players && entry.players.length > 0;
             const fallback = hasSnapshot ? null : fallbackPlayers(entry);
             const players = hasSnapshot ? entry.players! : fallback!.known;
             const unknownCount = fallback?.unknownCount ?? 0;
@@ -145,7 +163,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                       className="flex items-center justify-between gap-2 text-[12px] font-mono"
                     >
                       <span className="flex items-center gap-1.5 min-w-0">
-                        <PlayerBadge index={i} size={14} />
+                        <PlayerBadge index={seatIndexFor(p, i, hasSnapshot)} size={14} />
                         <span className={`truncate ${i === meIndex ? 'text-text font-bold' : 'text-muted'}`}>
                           {i === meIndex ? myCurrentName : p.name}
                         </span>
