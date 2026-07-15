@@ -153,7 +153,10 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
                 : 'btn-raised-neutral bg-panel text-text border-border',
             ].join(' ')}
           >
-            {count} Oyuncu ({statsByCount[count]?.total_score ?? 0})
+            {count} Oyuncu{' '}
+            <span className="text-[10px] font-normal normal-case">
+              ({statsByCount[count]?.total_score ?? 0} puan)
+            </span>
           </button>
         ))}
       </div>
