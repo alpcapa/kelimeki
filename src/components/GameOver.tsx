@@ -13,8 +13,12 @@ interface GameOverProps {
   onClose: () => void;
 }
 
-/** Varsayılan YZ isimlerindeki "(Bölge N)" ekini oyun sonu ekranında gizler. */
-const displayName = (name: string) => name.replace(/\s*\(Bölge \d+\)$/, '');
+/**
+ * Varsayılan YZ isimlerindeki "(Bölge N)" ekinden "Bölge" kelimesini
+ * kaldırır, numarayı korur — 4 kişilik oyunda birden fazla YZ birbirinden
+ * ayırt edilebilsin diye (örn. "Yapay Zeka (Bölge 2)" → "Yapay Zeka 2").
+ */
+const displayName = (name: string) => name.replace(/\s*\(Bölge (\d+)\)$/, ' $1');
 
 export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: GameOverProps) {
   if (!show) return null;
