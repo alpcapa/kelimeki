@@ -228,13 +228,23 @@ export default function App() {
   // bağımsız olarak her zaman en sona koyan `rankPlayers`e göre yapılır —
   // böylece kademeli teslimlerin sonunda tek kalan oyuncu, ayrılanların
   // dondurulmuş puanı ne olursa olsun 1. sırayı alır.
-  const buildGameRecord = (surrendered: boolean) => {
-    const human = state.players[0];
+  const buildGameRecord = (surrendered: boolean, surrenderingIndex?: number) => {
+    // Anlık kendi teslim olma akışında bu, SURRENDER dispatch edilmeden HEMEN
+    // önce (hâlâ eski state ile) çağrılır — o yüzden teslim olacak oyuncu
+    // burada elle surrendered:true/score:0 olarak işaretlenir, yoksa
+    // rankPlayers onu hâlâ aktifmiş gibi puanına göre sıralar.
+    const effectivePlayers =
+      surrenderingIndex != null
+        ? state.players.map((p, i) =>
+            i === surrenderingIndex ? { ...p, surrendered: true, score: 0 } : p,
+          )
+        : state.players;
+    const human = effectivePlayers[0];
     if (!human || human.isAI) return null;
-    const opponents = state.players.slice(1);
+    const opponents = effectivePlayers.slice(1);
     if (opponents.length === 0) return null;
     const bestOpponentScore = Math.max(...opponents.map((p) => p.score));
-    const ranked = rankPlayers(state.players);
+    const ranked = rankPlayers(effectivePlayers);
     const humanEntry = ranked.find((r) => r.index === 0)!;
     const rank = humanEntry.rank;
     const tiedForFirst = ranked.filter((r) => r.rank === 1).length;
@@ -802,7 +812,7 @@ export default function App() {
                     return;
                   }
                   if (exitTargetIndex === 0) {
-                    const record = buildGameRecord(true);
+                    const record = buildGameRecord(true, 0);
                     if (record) void saveGame(record);
                   }
                   dispatch({ type: 'SURRENDER', index: exitTargetIndex });

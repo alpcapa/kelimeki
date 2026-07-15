@@ -737,11 +737,22 @@ export function gameReducer(state: GameState, action: Action): GameState {
       // Sırası gelen oyuncu teslim olduysa, o turda tahtaya koyduğu geçici
       // taşları önce rafına geri al (yoksa taşlar oyundan tamamen kaybolur).
       const recalled = action.index === state.current ? recallAll(state) : state;
+
+      // Rafında kalan kullanılmamış taşlar torbaya geri döner (yoksa
+      // kalan oyuncular için o taşlar oyundan tamamen kaybolurdu). Puanı
+      // dondurulmaz, sıfırlanır — teslim olmak puanı korumaz.
+      const surrenderingPlayer = recalled.players[action.index];
+      const returnedTiles = surrenderingPlayer.rack.map((t) => ({
+        letter: t.wild ? '?' : t.letter,
+        pts: t.pts,
+      }));
+      const bag = shuffle([...recalled.bag, ...returnedTiles]);
       const players = recalled.players.map((p, i) =>
-        i === action.index ? { ...p, surrendered: true } : p,
+        i === action.index ? { ...p, surrendered: true, score: 0, rack: [] } : p,
       );
       const withSurrender: GameState = {
         ...recalled,
+        bag,
         players,
         moveHistory: [
           ...state.moveHistory,
