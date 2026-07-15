@@ -41,7 +41,6 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
               <span className="w-6">Sıra</span>
               <span className="flex-1">Oyuncu</span>
               <span className="w-12 text-right">Puan</span>
-              <span className="w-12 text-right">Galibiyet</span>
             </li>
             {rows.length === 0 ? (
               <li className="text-muted text-xs font-mono text-center py-4">
@@ -80,7 +79,6 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
                     <span className="w-12 text-right font-bold text-accent shrink-0">
                       {r.total_score?.toLocaleString('tr-TR') ?? '—'}
                     </span>
-                    <span className="w-12 text-right text-muted shrink-0">{r.wins}</span>
                   </li>
                 );
               })
@@ -100,7 +98,6 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
                 <span className="w-12 text-right font-bold text-accent shrink-0">
                   {myRank.total_score.toLocaleString('tr-TR')}
                 </span>
-                <span className="w-12 text-right text-muted shrink-0">—</span>
               </div>
             </>
           )}
