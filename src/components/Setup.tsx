@@ -7,6 +7,7 @@ import { fetchPlayerStats } from '../lib/api';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
+import { PlayerBadge } from './PlayerBadge';
 
 interface SetupProps {
   onStart: (players: PlayerSetup[]) => void;
@@ -160,7 +161,7 @@ export function Setup({ onStart }: SetupProps) {
           return (
             <div
               key={i}
-              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 border"
+              className="shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border"
               style={{ background: col.zone, borderColor: `${col.base}55` }}
             >
               {isAccount ? (
@@ -171,12 +172,7 @@ export function Setup({ onStart }: SetupProps) {
                   className="shrink-0"
                 />
               ) : (
-                <span
-                  className="w-4 h-4 rounded-sm shrink-0 flex items-center justify-center text-[9px] font-bold text-white"
-                  style={{ background: col.base }}
-                >
-                  {i + 1}
-                </span>
+                <PlayerBadge index={i} />
               )}
 
               {isAccount ? (

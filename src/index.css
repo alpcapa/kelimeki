@@ -74,6 +74,11 @@
   .btn-raised-gold:disabled {
     box-shadow: none;
   }
+
+  /* Statik nömorfik kabartma — buton olmayan kartlar/satırlar için (basma efekti yok). */
+  .shadow-raised {
+    box-shadow: 2px 2px 6px rgba(163, 177, 198, 0.5), -2px -2px 5px rgba(255, 255, 255, 0.85);
+  }
 }
 
 @layer base {

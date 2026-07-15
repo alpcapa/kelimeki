@@ -4,6 +4,7 @@ import { Modal } from './Modal';
 import { fetchMyGames } from '../lib/api';
 import type { GameHistoryEntry, GamePlayerSnapshot } from '../lib/database.types';
 import { useAuth } from '../hooks/useAuth';
+import { PlayerBadge } from './PlayerBadge';
 
 interface GameHistoryModalProps {
   playerCount: number;
@@ -132,7 +133,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
             return (
               <div
                 key={entry.id}
-                className="bg-bg border border-border rounded-md py-2 px-2.5 flex flex-col gap-1.5"
+                className="shadow-raised bg-bg border border-border rounded-md py-2 px-2.5 flex flex-col gap-1.5"
               >
                 <div className="text-[9px] font-mono text-muted uppercase tracking-[0.5px]">
                   {formatDateTime(entry.created_at)}
@@ -144,9 +145,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                       className="flex items-center justify-between gap-2 text-[12px] font-mono"
                     >
                       <span className="flex items-center gap-1.5 min-w-0">
-                        <span className={`w-3 text-right ${i === meIndex ? 'text-gold font-bold' : 'text-muted'}`}>
-                          {i + 1}.
-                        </span>
+                        <PlayerBadge index={i} size={14} />
                         <span className={`truncate ${i === meIndex ? 'text-text font-bold' : 'text-muted'}`}>
                           {i === meIndex ? myCurrentName : p.name}
                         </span>

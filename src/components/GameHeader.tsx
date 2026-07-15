@@ -36,7 +36,7 @@ export function GameHeader({ state, onLogoClick }: GameHeaderProps) {
           return (
             <div
               key={i}
-              className="text-center rounded-md px-2 py-0.5 transition-all"
+              className="shadow-raised text-center rounded-md px-2 py-0.5 transition-all"
               style={{
                 background: active ? col.tint : 'transparent',
                 boxShadow: active ? `inset 0 0 0 1.5px ${col.base}` : 'none',

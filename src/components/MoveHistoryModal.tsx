@@ -1,7 +1,8 @@
 // Harfik — oyundaki tüm oyuncuların hamle/puan geçmişi
 import { Modal } from './Modal';
-import { BINGO_BONUS, PLAYER_COLORS, jokerFinishBonus } from '../game/constants';
+import { BINGO_BONUS, jokerFinishBonus } from '../game/constants';
 import type { GameState } from '../game/types';
+import { PlayerBadge } from './PlayerBadge';
 
 interface MoveHistoryModalProps {
   state: GameState;
@@ -115,15 +116,12 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
             return (
               <div
                 key={i}
-                className="flex flex-col gap-0.5 py-1.5 px-2 rounded-md bg-bg border border-border"
+                className="shadow-raised flex flex-col gap-0.5 py-1.5 px-2 rounded-md bg-bg border border-border"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col min-w-0 gap-0.5">
                     <span className="text-[9px] font-mono text-muted uppercase tracking-[0.5px] flex items-center gap-1.5">
-                      <span
-                        className="w-2 h-2 rounded-sm shrink-0"
-                        style={{ background: PLAYER_COLORS[player.colorIndex].base }}
-                      />
+                      <PlayerBadge index={e.player} colorIndex={player.colorIndex} size={12} />
                       {e.turn + 1}. {player?.name ?? '?'}
                     </span>
                     <span className="text-[12px] leading-none font-mono font-bold text-text flex flex-wrap items-center gap-x-1 gap-y-0.5">
