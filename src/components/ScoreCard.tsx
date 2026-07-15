@@ -126,14 +126,19 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           aria-label="Sanal Lig sıralamasını göster"
           className="text-right shrink-0 active:opacity-70 transition-opacity"
         >
-          <div className="flex items-center justify-end gap-1 text-[10px] uppercase tracking-[1px] text-muted font-mono">
-            <span>Sanal Lig</span>
+          <div className="flex items-center justify-end gap-1 text-xs uppercase tracking-[1px] text-muted font-mono">
+            <span className="font-bold">Sanal Lig</span>
             <span className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold">
               ?
             </span>
           </div>
           <div className="font-mono text-xl font-bold text-gold">
-            {myRank && <span className="text-muted">#{myRank.rank} · </span>}
+            {myRank && (
+              <span className="text-sm font-normal text-muted">
+                #{myRank.rank}
+                <span className="mx-0.5">·</span>
+              </span>
+            )}
             {totalScore}
             <span className="text-xs font-normal text-muted"> puan</span>
           </div>
@@ -147,13 +152,16 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             type="button"
             onClick={() => setTab(count)}
             className={[
-              'flex-1 py-3 rounded-md font-sans text-sm font-bold uppercase tracking-[1px] border transition-transform active:scale-[0.97]',
+              'flex-1 py-2 rounded-md font-sans text-sm font-bold uppercase tracking-[1px] border transition-transform active:scale-[0.97] flex flex-col items-center',
               tab === count
                 ? 'btn-raised bg-accent text-white border-accent'
                 : 'btn-raised-neutral bg-panel text-text border-border',
             ].join(' ')}
           >
-            {count} Oyuncu ({statsByCount[count]?.total_score ?? 0})
+            <span className="leading-none">{count} Oyunculu</span>
+            <span className="text-[10px] font-normal normal-case leading-none mt-0.5">
+              ({statsByCount[count]?.total_score ?? 0} puan)
+            </span>
           </button>
         ))}
       </div>
