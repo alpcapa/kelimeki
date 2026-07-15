@@ -2,7 +2,6 @@
 import { Modal } from './Modal';
 import { BINGO_BONUS, jokerFinishBonus } from '../game/constants';
 import type { GameState } from '../game/types';
-import { PlayerBadge } from './PlayerBadge';
 
 interface MoveHistoryModalProps {
   state: GameState;
@@ -120,8 +119,7 @@ export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex flex-col min-w-0 gap-0.5">
-                    <span className="text-[9px] font-mono text-muted uppercase tracking-[0.5px] flex items-center gap-1.5">
-                      <PlayerBadge index={e.player} colorIndex={player.colorIndex} size={12} />
+                    <span className="text-[9px] font-mono text-muted uppercase tracking-[0.5px]">
                       {e.turn + 1}. {player?.name ?? '?'}
                     </span>
                     <span className="text-[12px] leading-none font-mono font-bold text-text flex flex-wrap items-center gap-x-1 gap-y-0.5">
