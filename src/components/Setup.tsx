@@ -160,7 +160,7 @@ export function Setup({ onStart }: SetupProps) {
           return (
             <div
               key={i}
-              className="flex items-center gap-2.5 rounded-md px-2.5 py-2 border"
+              className="shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border"
               style={{ background: col.zone, borderColor: `${col.base}55` }}
             >
               {isAccount ? (
