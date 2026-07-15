@@ -4,20 +4,28 @@
 // Yalnızca Supabase yapılandırıldığında görünür.
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { signOut } from '../lib/api';
+import { signOut, fetchMyLeaderboardRank } from '../lib/api';
+import type { MyLeaderboardRank } from '../lib/database.types';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { ScoreCard } from './ScoreCard';
 import { AccountSettingsModal } from './AccountSettingsModal';
 import { HelpModal } from './HelpModal';
+import { Leaderboard } from './Leaderboard';
 
-type ActiveModal = 'auth' | 'account' | 'score' | 'help' | null;
+type ActiveModal = 'auth' | 'account' | 'score' | 'help' | 'league' | null;
 
 export function UserMenu() {
   const { user, profile, configured, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const [modal, setModal] = useState<ActiveModal>(null);
+  const [myRank, setMyRank] = useState<MyLeaderboardRank | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchMyLeaderboardRank(user.id).then(setMyRank);
+  }, [user]);
 
   // Dışarı tıklayınca / Esc ile menüyü kapat.
   useEffect(() => {
@@ -85,11 +93,23 @@ export function UserMenu() {
               <Avatar url={profile?.avatar_url} name={name} size={36} />
               <div className="min-w-0">
                 <div className="text-sm font-bold text-text truncate">{name}</div>
-                {user?.email && (
-                  <div className="text-[10px] text-muted font-mono truncate">
-                    {user.email}
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModal('league');
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-1 text-[10px] font-mono text-left truncate active:opacity-70 transition-opacity"
+                >
+                  <span className="text-muted truncate">
+                    {myRank
+                      ? `#${myRank.rank} · ${myRank.total_score.toLocaleString('tr-TR')} puan`
+                      : 'Sanal Lig'}
+                  </span>
+                  <span className="w-3 h-3 rounded-full border border-accent text-accent flex items-center justify-center text-[8px] leading-none font-bold shrink-0">
+                    ?
+                  </span>
+                </button>
               </div>
             </div>
 
@@ -138,6 +158,7 @@ export function UserMenu() {
         <AccountSettingsModal onClose={() => setModal(null)} />
       )}
       {modal === 'score' && <ScoreCard onClose={() => setModal(null)} />}
+      {modal === 'league' && <Leaderboard onClose={() => setModal(null)} />}
       {modal === 'help' && (
         <HelpModal onClose={() => setModal(null)} />
       )}

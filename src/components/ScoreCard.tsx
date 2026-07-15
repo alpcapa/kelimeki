@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
 import { GameHistoryModal } from './GameHistoryModal';
-import { fetchPlayerStats } from '../lib/api';
-import type { PlayerStats } from '../lib/database.types';
+import { Leaderboard } from './Leaderboard';
+import { fetchPlayerStats, fetchMyLeaderboardRank } from '../lib/api';
+import type { PlayerStats, MyLeaderboardRank } from '../lib/database.types';
 import { useAuth } from '../hooks/useAuth';
 
 interface ScoreCardProps {
@@ -20,6 +21,8 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   >({ 2: undefined, 4: undefined });
   const [tab, setTab] = useState<(typeof TABS)[number]>(2);
   const [showAllGames, setShowAllGames] = useState(false);
+  const [showLeague, setShowLeague] = useState(false);
+  const [myRank, setMyRank] = useState<MyLeaderboardRank | null>(null);
 
   useEffect(() => {
     for (const count of TABS) {
@@ -28,6 +31,11 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
       );
     }
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchMyLeaderboardRank(user.id).then(setMyRank);
+  }, [user]);
 
   const name =
     profile?.username ||
@@ -105,12 +113,23 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
         <div className="min-w-0 flex-1">
           <div className="text-base font-bold text-text truncate">{name}</div>
         </div>
-        <div className="text-right shrink-0">
-          <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
-            Lig Puanı
+        <button
+          type="button"
+          onClick={() => setShowLeague(true)}
+          aria-label="Sanal Lig sıralamasını göster"
+          className="text-right shrink-0 active:opacity-70 transition-opacity"
+        >
+          <div className="flex items-center justify-end gap-1 text-[8px] uppercase tracking-[1px] text-muted font-mono">
+            <span>Sanal Lig</span>
+            <span className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold">
+              ?
+            </span>
           </div>
-          <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
-        </div>
+          <div className="font-mono text-xl font-bold text-gold">
+            {myRank && <span className="text-muted">#{myRank.rank} · </span>}
+            {totalScore}
+          </div>
+        </button>
       </div>
 
       <div className="mb-3 flex gap-2">
@@ -173,6 +192,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
       {showAllGames && (
         <GameHistoryModal playerCount={tab} onClose={() => setShowAllGames(false)} />
       )}
+      {showLeague && <Leaderboard onClose={() => setShowLeague(false)} />}
     </Modal>
   );
 }

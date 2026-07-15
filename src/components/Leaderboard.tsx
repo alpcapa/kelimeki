@@ -28,17 +28,19 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
   const meInTop = user && rows ? rows.some((r) => r.user_id === user.id) : false;
 
   return (
-    <Modal title="🏆 Lider Tablosu" onClose={onClose}>
+    <Modal title="🏆 Sanal Lig" onClose={onClose}>
+      <p className="text-[11px] text-muted font-mono text-center mb-3 leading-relaxed">
+        Sanal Lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır.
+      </p>
       {rows === null ? (
         <p className="text-muted text-xs font-mono text-center py-6">Yükleniyor…</p>
       ) : (
         <div className="flex flex-col gap-2">
           <ol className="flex flex-col gap-1">
             <li className="flex items-center text-[9px] uppercase tracking-[1px] text-muted font-mono px-2 pb-1 gap-1">
-              <span className="w-6">#</span>
+              <span className="w-6">Sıra</span>
               <span className="flex-1">Oyuncu</span>
-              <span className="w-12 text-right">Toplam</span>
-              <span className="w-12 text-right">Galibiyet</span>
+              <span className="w-12 text-right">Puan</span>
             </li>
             {rows.length === 0 ? (
               <li className="text-muted text-xs font-mono text-center py-4">
@@ -77,7 +79,6 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
                     <span className="w-12 text-right font-bold text-accent shrink-0">
                       {r.total_score?.toLocaleString('tr-TR') ?? '—'}
                     </span>
-                    <span className="w-12 text-right text-muted shrink-0">{r.wins}</span>
                   </li>
                 );
               })
@@ -97,7 +98,6 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
                 <span className="w-12 text-right font-bold text-accent shrink-0">
                   {myRank.total_score.toLocaleString('tr-TR')}
                 </span>
-                <span className="w-12 text-right text-muted shrink-0">—</span>
               </div>
             </>
           )}
