@@ -38,6 +38,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   }, [user]);
 
   const name =
+    profile?.display_name ||
     profile?.username ||
     [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() ||
     user?.email ||

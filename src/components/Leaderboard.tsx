@@ -50,6 +50,7 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
               rows.map((r, i) => {
                 const me = user && r.user_id === user.id;
                 const name =
+                  r.display_name ||
                   r.username ||
                   [r.first_name, r.last_name].filter(Boolean).join(' ').trim() ||
                   'Anonim';

@@ -46,6 +46,7 @@ export function UserMenu() {
   if (!configured) return null;
 
   const name =
+    profile?.display_name ||
     profile?.username ||
     [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() ||
     user?.email ||
