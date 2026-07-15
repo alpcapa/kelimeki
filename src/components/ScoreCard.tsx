@@ -118,7 +118,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           aria-label="Sanal Lig sıralamasını göster"
           className="text-right shrink-0 active:opacity-70 transition-opacity"
         >
-          <div className="flex items-center justify-end gap-1 text-[8px] uppercase tracking-[1px] text-muted font-mono">
+          <div className="flex items-center justify-end gap-1 text-[10px] uppercase tracking-[1px] text-muted font-mono">
             <span>Sanal Lig</span>
             <span className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold">
               ?
