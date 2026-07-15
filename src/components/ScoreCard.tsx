@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
 import { GameHistoryModal } from './GameHistoryModal';
+import { Leaderboard } from './Leaderboard';
 import { fetchPlayerStats } from '../lib/api';
 import type { PlayerStats } from '../lib/database.types';
 import { useAuth } from '../hooks/useAuth';
@@ -20,6 +21,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   >({ 2: undefined, 4: undefined });
   const [tab, setTab] = useState<(typeof TABS)[number]>(2);
   const [showAllGames, setShowAllGames] = useState(false);
+  const [showLeague, setShowLeague] = useState(false);
 
   useEffect(() => {
     for (const count of TABS) {
@@ -106,8 +108,16 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           <div className="text-base font-bold text-text truncate">{name}</div>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono">
-            Lig Puanı
+          <div className="flex items-center justify-end gap-1 text-[8px] uppercase tracking-[1px] text-muted font-mono">
+            <span>Sanal Lig</span>
+            <button
+              type="button"
+              onClick={() => setShowLeague(true)}
+              aria-label="Sanal Lig hakkında bilgi"
+              className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold active:scale-90 transition-transform"
+            >
+              i
+            </button>
           </div>
           <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
         </div>
@@ -173,6 +183,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
       {showAllGames && (
         <GameHistoryModal playerCount={tab} onClose={() => setShowAllGames(false)} />
       )}
+      {showLeague && <Leaderboard onClose={() => setShowLeague(false)} />}
     </Modal>
   );
 }
