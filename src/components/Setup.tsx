@@ -147,7 +147,7 @@ export function Setup({ onStart }: SetupProps) {
                   : 'btn-raised-neutral bg-panel text-text border-border',
               ].join(' ')}
             >
-              {n} Kişi
+              {n} Oyuncu
             </button>
           ))}
         </div>
