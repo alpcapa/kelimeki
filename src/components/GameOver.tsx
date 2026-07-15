@@ -3,6 +3,7 @@ import { Modal } from './Modal';
 import { PLAYER_COLORS } from '../game/constants';
 import type { Player } from '../game/types';
 import { trUpper } from '../utils/turkish';
+import { rankPlayers } from '../utils/ranking';
 
 interface GameOverProps {
   show: boolean;
@@ -15,12 +16,10 @@ interface GameOverProps {
 export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: GameOverProps) {
   if (!show) return null;
 
-  const ranked = players
-    .map((p, i) => ({ p, i }))
-    .sort((a, b) => b.p.score - a.p.score);
+  const ranked = rankPlayers(players);
   const top = ranked[0];
-  const tie = ranked.length > 1 && ranked[1].p.score === top.p.score;
-  const winColor = PLAYER_COLORS[top.p.colorIndex];
+  const tie = ranked.length > 1 && ranked[1].rank === top.rank;
+  const winColor = PLAYER_COLORS[top.player.colorIndex];
 
   return (
     <Modal title="" onClose={onClose}>
@@ -29,7 +28,7 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
           className="font-mono text-[26px] font-bold tracking-[2px] text-center"
           style={{ color: tie ? '#B7791F' : winColor.base }}
         >
-          {tie ? 'BERABERE' : `${trUpper(top.p.name)} KAZANDI`}
+          {tie ? 'BERABERE' : `${trUpper(top.player.name)} KAZANDI`}
         </div>
 
         <div className="bg-bg border border-border rounded-[10px] px-5 py-4 text-center flex flex-col gap-2.5 w-full">
@@ -37,7 +36,7 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
             <span className="w-8 text-right">Kalan</span>
             <span className="w-10 text-right">Toplam</span>
           </div>
-          {ranked.map(({ p, i }, rank) => {
+          {ranked.map(({ player: p, index: i, rank }) => {
             const col = PLAYER_COLORS[p.colorIndex];
             const remaining = p.rack.reduce((s, t) => s + t.pts, 0);
             return (
@@ -48,7 +47,12 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
                     style={{ background: col.base }}
                   />
                   <span className="text-text">
-                    {rank + 1}. {p.name}
+                    {rank}. {p.name}
+                    {p.surrendered && (
+                      <span className="ml-1.5 text-[9px] font-mono uppercase tracking-[0.5px] text-red">
+                        (Teslim Oldu)
+                      </span>
+                    )}
                   </span>
                 </span>
                 <span className="flex items-center gap-4">

@@ -49,7 +49,8 @@ export type Action =
   | { type: 'SET_MESSAGE'; message: string; messageType: GameState['messageType'] }
   | { type: 'PASS' }
   | { type: 'AI_PLAY' }
-  | { type: 'RENAME_PLAYER'; index: number; name: string };
+  | { type: 'RENAME_PLAYER'; index: number; name: string }
+  | { type: 'SURRENDER'; index: number };
 
 /** Kurulum (oyuncu seçimi) ekranıyla başlayan boş durum. */
 export function createInitialState(): GameState {
@@ -90,6 +91,7 @@ function startGame(setup: PlayerSetup[]): GameState {
     corners: corners[i],
     colorIndex: i % PLAYER_COLORS.length,
     isAI: s.isAI,
+    surrendered: false,
     rack: drawTiles(bag, RACK_SIZE),
     score: 0,
     bestMoveScore: 0,
@@ -152,12 +154,27 @@ function endGame(state: GameState): GameState {
   };
 }
 
+/** Teslim olmamış (hâlâ oynayan) oyuncu sayısı. */
+function activePlayerCount(players: Player[]): number {
+  return players.filter((p) => !p.surrendered).length;
+}
+
+/** `from`dan başlayarak dairesel biçimde bir sonraki teslim olmamış oyuncunun indeksi. */
+function nextActiveIndex(players: Player[], from: number): number {
+  const n = players.length;
+  for (let step = 1; step <= n; step++) {
+    const idx = (from + step) % n;
+    if (!players[idx].surrendered) return idx;
+  }
+  return from;
+}
+
 /**
  * Tur sayacını ilerletir; bir raf+torba tükendiyse oyunu bitirir; sırayı
- * sonraki oyuncuya geçirir.
+ * sonraki (teslim olmamış) oyuncuya geçirir.
  */
 function advanceTurn(state: GameState): GameState {
-  const next = (state.current + 1) % state.players.length;
+  const next = nextActiveIndex(state.players, state.current);
   const nextState: GameState = {
     ...state,
     turnCount: state.turnCount + 1,
@@ -167,8 +184,8 @@ function advanceTurn(state: GameState): GameState {
     swapSelection: [],
   };
 
-  // Bir oyuncunun rafı boşaldıysa ve torba bittiyse oyun biter.
-  const someoneEmpty = state.players.some((p) => p.rack.length === 0);
+  // Teslim olmamış bir oyuncunun rafı boşaldıysa ve torba bittiyse oyun biter.
+  const someoneEmpty = nextState.players.some((p) => !p.surrendered && p.rack.length === 0);
   if (someoneEmpty && nextState.bag.length === 0) {
     return endGame(nextState);
   }
@@ -554,8 +571,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
         message: `${state.players[state.current].name} pas geçti.`,
         messageType: 'warn',
       };
-      // Tüm oyuncular üst üste MAX_PASS_ROUNDS tur pas geçtiyse oyun biter.
-      if (consecutivePasses >= state.players.length * MAX_PASS_ROUNDS) {
+      // Tüm (teslim olmamış) oyuncular üst üste MAX_PASS_ROUNDS tur pas geçtiyse oyun biter.
+      if (consecutivePasses >= activePlayerCount(state.players) * MAX_PASS_ROUNDS) {
         return endGame(moved);
       }
       return advanceTurn(moved);
@@ -622,7 +639,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
             messageType: 'warn',
           };
         }
-        if (consecutivePasses >= state.players.length * MAX_PASS_ROUNDS) {
+        if (consecutivePasses >= activePlayerCount(state.players) * MAX_PASS_ROUNDS) {
           return endGame(moved);
         }
         return advanceTurn(moved);
@@ -730,6 +747,40 @@ export function gameReducer(state: GameState, action: Action): GameState {
         i === action.index ? { ...p, name: action.name } : p,
       );
       return { ...state, players };
+    }
+
+    case 'SURRENDER': {
+      if (state.phase !== 'play' || state.isGameOver) return state;
+      const target = state.players[action.index];
+      if (!target || target.surrendered) return state;
+
+      // Sırası gelen oyuncu teslim olduysa, o turda tahtaya koyduğu geçici
+      // taşları önce rafına geri al (yoksa taşlar oyundan tamamen kaybolur).
+      const recalled = action.index === state.current ? recallAll(state) : state;
+      const players = recalled.players.map((p, i) =>
+        i === action.index ? { ...p, surrendered: true } : p,
+      );
+      const withSurrender: GameState = {
+        ...recalled,
+        players,
+        moveHistory: [
+          ...state.moveHistory,
+          { turn: state.turnCount, player: action.index, words: [], points: 0, action: 'surrender' },
+        ],
+        message: `${target.name} teslim oldu.`,
+        messageType: 'warn',
+      };
+
+      // Yalnızca 1 oyuncu kalırsa oyun biter — o oyuncu kazanır.
+      if (activePlayerCount(players) <= 1) {
+        return endGame(withSurrender);
+      }
+      // Teslim olan sıradaki oyuncuysa, sırayı bir sonraki (teslim olmamış)
+      // oyuncuya geçir; değilse mevcut sıraya dokunma.
+      if (action.index === state.current) {
+        return advanceTurn(withSurrender);
+      }
+      return withSurrender;
     }
 
     default:

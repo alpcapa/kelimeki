@@ -122,8 +122,15 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                 key={entry.id}
                 className="bg-bg border border-border rounded-md py-2 px-2.5 flex flex-col gap-1.5"
               >
-                <div className="text-[9px] font-mono text-muted uppercase tracking-[0.5px]">
-                  {formatDateTime(entry.created_at)}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-[9px] font-mono text-muted uppercase tracking-[0.5px]">
+                    {formatDateTime(entry.created_at)}
+                  </div>
+                  {entry.surrendered && (
+                    <span className="text-[8px] font-mono font-bold uppercase tracking-[0.5px] text-red border border-red/40 bg-red/10 rounded px-1 py-[1px] shrink-0">
+                      Teslim Oldu
+                    </span>
+                  )}
                 </div>
                 <div className="flex flex-col gap-0.5">
                   {players.map((p, i) => (
@@ -141,6 +148,11 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                         {p.is_ai && (
                           <span className="text-[8px] text-muted border border-border rounded px-1 shrink-0">
                             YZ
+                          </span>
+                        )}
+                        {p.surrendered && (
+                          <span className="text-[8px] text-red border border-red/40 rounded px-1 shrink-0">
+                            Teslim
                           </span>
                         )}
                       </span>

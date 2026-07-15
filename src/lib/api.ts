@@ -101,7 +101,7 @@ export async function fetchMyGames(
 
   const { data, error } = await supabase
     .from('games')
-    .select('id, created_at, player_count, players, player_score, ai_score, rank')
+    .select('id, created_at, player_count, players, player_score, ai_score, rank, surrendered')
     .eq('user_id', user.id)
     .eq('player_count', playerCount)
     .order('created_at', { ascending: false })
