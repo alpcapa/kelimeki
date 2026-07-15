@@ -61,6 +61,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     rate?: string;
     cls?: string;
     wide?: boolean;
+    span2?: boolean;
     place?: string;
   }[] = [
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
@@ -107,6 +108,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
       value: stats?.longest_word ?? '—',
       cls: 'text-text',
       wide: tab !== 4,
+      span2: tab === 4,
     },
   ];
 
@@ -167,7 +169,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             {cells.map((c) => (
               <div
                 key={c.label}
-                className={`bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : ''} ${c.place ?? ''}`}
+                className={`bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : c.span2 ? 'col-span-2' : ''} ${c.place ?? ''}`}
               >
                 <div className={`font-mono text-xl font-bold ${c.cls ?? 'text-text'}`}>
                   {c.value}
