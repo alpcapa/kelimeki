@@ -11,8 +11,9 @@ import { AuthModal } from './AuthModal';
 import { ScoreCard } from './ScoreCard';
 import { AccountSettingsModal } from './AccountSettingsModal';
 import { HelpModal } from './HelpModal';
+import { Leaderboard } from './Leaderboard';
 
-type ActiveModal = 'auth' | 'account' | 'score' | 'help' | null;
+type ActiveModal = 'auth' | 'account' | 'score' | 'help' | 'league' | null;
 
 export function UserMenu() {
   const { user, profile, configured, loading } = useAuth();
@@ -92,7 +93,14 @@ export function UserMenu() {
               <Avatar url={profile?.avatar_url} name={name} size={36} />
               <div className="min-w-0">
                 <div className="text-sm font-bold text-text truncate">{name}</div>
-                <div className="flex items-center gap-1 text-[10px] font-mono truncate">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModal('league');
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-1 text-[10px] font-mono truncate underline underline-offset-2 active:opacity-70 transition-opacity"
+                >
                   <span className="text-accent font-bold uppercase tracking-[0.5px]">
                     Sanal Lig
                   </span>
@@ -101,7 +109,7 @@ export function UserMenu() {
                       · #{myRank.rank} · {myRank.total_score.toLocaleString('tr-TR')} puan
                     </span>
                   )}
-                </div>
+                </button>
               </div>
             </div>
 
@@ -150,6 +158,7 @@ export function UserMenu() {
         <AccountSettingsModal onClose={() => setModal(null)} />
       )}
       {modal === 'score' && <ScoreCard onClose={() => setModal(null)} />}
+      {modal === 'league' && <Leaderboard onClose={() => setModal(null)} />}
       {modal === 'help' && (
         <HelpModal onClose={() => setModal(null)} />
       )}
