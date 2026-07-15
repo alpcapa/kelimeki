@@ -21,6 +21,22 @@ function formatDateTime(iso: string): string {
 }
 
 /**
+ * Bir oyuncunun bu oyundan kazandığı Sanal Lig puanı — leaderboard/
+ * player_stats view'larıyla aynı formül: teslim → -2, 1. → +2, 2. (yalnızca
+ * 2 kişilik değilse) → +1, diğerleri 0.
+ */
+function leaguePoints(rank: number, playerCount: number, surrendered?: boolean): number {
+  if (surrendered) return -2;
+  if (rank === 1) return 2;
+  if (rank === 2 && playerCount !== 2) return 1;
+  return 0;
+}
+
+function formatLeaguePoints(points: number): string {
+  return points > 0 ? `+${points}` : points < 0 ? `${points}` : '-';
+}
+
+/**
  * Eski kayıtlarda (players alanı eklenmeden önce oynanmış oyunlarda) yalnızca
  * kendi puanın ve en iyi rakibin puanı bilinir — diğer oyuncuların adı/puanı
  * saklanmamıştır. Bilinen iki satırı döner; kalan oyuncu sayısını ve kendi
@@ -153,32 +169,48 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                 key={entry.id}
                 className="shadow-raised bg-bg border border-border rounded-md py-2 px-2.5 flex flex-col gap-1.5"
               >
-                <div className="text-[9px] font-mono text-muted uppercase tracking-[0.5px]">
-                  {formatDateTime(entry.created_at)}
+                <div className="flex items-center justify-between gap-2 text-[9px] font-mono text-muted uppercase tracking-[0.5px]">
+                  <span>{formatDateTime(entry.created_at)}</span>
+                  <span className="flex items-center gap-2 shrink-0">
+                    <span className="w-9 text-right">Puan</span>
+                    <span className="w-6 text-right">SL</span>
+                  </span>
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  {players.map((p, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between gap-2 text-[12px] font-mono"
-                    >
-                      <span className="flex items-center gap-1.5 min-w-0">
-                        <span className="w-3 text-right text-muted shrink-0">{i + 1}.</span>
-                        <PlayerBadge index={seatIndexFor(p, i, hasSnapshot)} size={14} />
-                        <span className={`truncate ${i === meIndex ? 'text-text font-bold' : 'text-muted'}`}>
-                          {i === meIndex ? myCurrentName : p.name}
-                        </span>
-                        {p.surrendered && (
-                          <span className="text-[8px] font-bold uppercase tracking-[0.5px] text-red border border-red/40 bg-red/10 rounded px-1 py-[1px] shrink-0">
-                            Teslim Oldu
+                  {players.map((p, i) => {
+                    const points = leaguePoints(i + 1, entry.player_count, p.surrendered);
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between gap-2 text-[12px] font-mono"
+                      >
+                        <span className="flex items-center gap-1.5 min-w-0">
+                          <span className="w-3 text-right text-muted shrink-0">{i + 1}.</span>
+                          <PlayerBadge index={seatIndexFor(p, i, hasSnapshot)} size={14} />
+                          <span className={`truncate ${i === meIndex ? 'text-text font-bold' : 'text-muted'}`}>
+                            {i === meIndex ? myCurrentName : p.name}
                           </span>
-                        )}
-                      </span>
-                      <span className={`font-bold shrink-0 ${i === meIndex ? 'text-gold' : 'text-muted'}`}>
-                        {p.score}
-                      </span>
-                    </div>
-                  ))}
+                          {p.surrendered && (
+                            <span className="text-[8px] font-bold uppercase tracking-[0.5px] text-red border border-red/40 bg-red/10 rounded px-1 py-[1px] shrink-0">
+                              Teslim Oldu
+                            </span>
+                          )}
+                        </span>
+                        <span className="flex items-center gap-2 shrink-0">
+                          <span
+                            className={`font-bold w-9 text-right ${i === meIndex ? 'text-gold' : 'text-muted'}`}
+                          >
+                            {p.score}
+                          </span>
+                          <span
+                            className={`font-bold w-6 text-right ${points > 0 ? 'text-green' : points < 0 ? 'text-red' : 'text-muted'}`}
+                          >
+                            {formatLeaguePoints(points)}
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })}
                   {unknownCount > 0 && (
                     <div className="text-[10px] font-mono text-muted italic pt-0.5">
                       +{unknownCount} diğer oyuncu (bu eski kayıtta bilinmiyor)
