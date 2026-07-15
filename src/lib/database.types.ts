@@ -38,7 +38,6 @@ export interface Game {
   best_word: string | null;
   best_move_score: number | null;
   best_word_score: number | null;
-  longest_word: string | null;
   /** Bu oyunda oynanan hamlelerin brüt puanları toplamı (ortalama hamle puanı için). */
   move_points_sum: number | null;
   /** Oyuncu oyunu bitirmeden (logoya basıp) terk etti mi? */
@@ -58,7 +57,6 @@ export type NewGame = Pick<
   best_word?: string | null;
   best_move_score?: number | null;
   best_word_score?: number | null;
-  longest_word?: string | null;
   move_points_sum?: number | null;
   surrendered?: boolean;
   players?: GamePlayerSnapshot[];
@@ -115,7 +113,6 @@ export interface PlayerStats {
   best_move_score: number | null;
   best_word_score: number | null;
   best_word: string | null;
-  longest_word: string | null;
   first_places: number;
   second_places: number;
   /**

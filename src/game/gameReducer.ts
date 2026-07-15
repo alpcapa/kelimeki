@@ -97,7 +97,6 @@ function startGame(setup: PlayerSetup[]): GameState {
     bestMoveScore: 0,
     bestWordScore: 0,
     bestWord: '',
-    longestWord: '',
     moveCount: 0,
     moveScoreSum: 0,
   }));
@@ -504,10 +503,6 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const finishBonus = finishesGame && onlyJokers ? jokerFinishBonus(jokerCount) : 0;
       const finishBonusNote = finishBonus > 0 ? ` (jokerli bitiş bonusu +${finishBonus})` : '';
 
-      const newLongestWord = formed.reduce(
-        (best, fw) => (fw.word.length > best.length ? fw.word : best),
-        me.longestWord,
-      );
       const isNewBestMove = basePts > me.bestMoveScore;
       const isNewBestWord = bestWordThisMove.score > me.bestWordScore;
       const players = state.players.map((p, i) => {
@@ -519,7 +514,6 @@ export function gameReducer(state: GameState, action: Action): GameState {
             bestMoveScore: isNewBestMove ? basePts : p.bestMoveScore,
             bestWordScore: isNewBestWord ? bestWordThisMove.score : p.bestWordScore,
             bestWord: isNewBestWord ? bestWordThisMove.word : p.bestWord,
-            longestWord: newLongestWord,
             moveCount: p.moveCount + 1,
             moveScoreSum: p.moveScoreSum + basePts,
           };
@@ -676,11 +670,6 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const aiFinishesGame = rack.length === 0 && bag.length === 0;
       const aiFinishBonus = aiFinishesGame && aiOnlyJokers ? jokerFinishBonus(aiJokerCount) : 0;
 
-      const aiLongestWord = formed.reduce(
-        (best, fw) => (fw.word.length > best.length ? fw.word : best),
-        me.longestWord,
-      );
-
       const aiCoords = move.placements.map((p) => [p.r, p.c] as [number, number]);
       const { pts: aiPts, shares: aiShares } = computeInvasionSplit(
         aiCoords,
@@ -701,7 +690,6 @@ export function gameReducer(state: GameState, action: Action): GameState {
             bestMoveScore: aiIsNewBestMove ? move.score : p.bestMoveScore,
             bestWordScore: aiIsNewBestWord ? aiBestWordThisMove.score : p.bestWordScore,
             bestWord: aiIsNewBestWord ? aiBestWordThisMove.word : p.bestWord,
-            longestWord: aiLongestWord,
             moveCount: p.moveCount + 1,
             moveScoreSum: p.moveScoreSum + move.score,
           };

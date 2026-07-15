@@ -49,8 +49,6 @@ export interface Player {
   bestWordScore: number;
   /** `bestWordScore` puanını üreten kelime. */
   bestWord: string;
-  /** Bu oyunda oluşturulan en uzun kelime. */
-  longestWord: string;
   /** Bu oyunda oynanan (geçilmemiş) hamle sayısı. */
   moveCount: number;
   /**

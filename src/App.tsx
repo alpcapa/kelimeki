@@ -262,7 +262,6 @@ export default function App() {
       best_move_score: human.bestMoveScore || null,
       best_word_score: human.bestWordScore || null,
       best_word: human.bestWord || null,
-      longest_word: human.longestWord || null,
       move_points_sum: human.moveScoreSum || null,
       surrendered,
       players,
