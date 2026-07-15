@@ -13,13 +13,6 @@ interface GameOverProps {
   onClose: () => void;
 }
 
-/**
- * Varsayılan YZ isimlerindeki "(Bölge N)" ekinden "Bölge" kelimesini
- * kaldırır, numarayı korur — 4 kişilik oyunda birden fazla YZ birbirinden
- * ayırt edilebilsin diye (örn. "Yapay Zeka (Bölge 2)" → "Yapay Zeka 2").
- */
-const displayName = (name: string) => name.replace(/\s*\(Bölge (\d+)\)$/, ' $1');
-
 export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: GameOverProps) {
   if (!show) return null;
 
@@ -35,7 +28,7 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
           className="font-mono text-[26px] font-bold tracking-[2px] text-center"
           style={{ color: tie ? '#B7791F' : winColor.base }}
         >
-          {tie ? 'BERABERE' : `${trUpper(displayName(top.player.name))} KAZANDI`}
+          {tie ? 'BERABERE' : `${trUpper(top.player.name)} KAZANDI`}
         </div>
 
         <div className="bg-bg border border-border rounded-[10px] px-5 py-4 text-center flex flex-col gap-2.5 w-full">
@@ -54,7 +47,7 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
                     style={{ background: col.base }}
                   />
                   <span className="text-text">
-                    {rank}. {displayName(p.name)}
+                    {rank}. {p.name}
                     {p.surrendered && (
                       <span className="ml-1.5 text-[9px] font-mono uppercase tracking-[0.5px] text-red">
                         (Teslim Oldu)

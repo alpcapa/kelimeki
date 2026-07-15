@@ -58,10 +58,10 @@ export function Setup({ onStart }: SetupProps) {
       // Aynı cihazda birden fazla kişi oynama ihtimali göz ardı edilebilir
       // olduğundan diğer tüm oyuncular her zaman YZ'dir.
       if (i === 0) {
-        return { name: accountName || (names[0].trim() ? names[0].trim() : 'Oyuncu (Bölge 1)'), isAI: false };
+        return { name: accountName || (names[0].trim() ? names[0].trim() : 'Oyuncu'), isAI: false };
       }
       return {
-        name: names[i].trim() ? names[i].trim() : `Yapay Zeka (Bölge ${i + 1})`,
+        name: names[i].trim() ? names[i].trim() : `Yapay Zeka ${i + 1}`,
         isAI: true,
       };
     });
