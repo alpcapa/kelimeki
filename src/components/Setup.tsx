@@ -22,8 +22,6 @@ export function Setup({ onStart }: SetupProps) {
 
   const [count, setCount] = useState<2 | 4>(2);
   const [names, setNames] = useState<string[]>(['', '', '', '']);
-  // 2. oyuncu varsayılan olarak YZ — klasik "YZ'ye karşı" deneyimi.
-  const [ai, setAi] = useState<boolean[]>([false, true, false, false]);
 
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -53,24 +51,18 @@ export function Setup({ onStart }: SetupProps) {
 
   const setName = (i: number, v: string) =>
     setNames((cur) => cur.map((n, idx) => (idx === i ? v : n)));
-  const setAiAt = (i: number, v: boolean) =>
-    setAi((cur) => cur.map((a, idx) => (idx === i ? v : a)));
 
   const doStart = () => {
     const list: PlayerSetup[] = Array.from({ length: count }, (_, i) => {
-      // 1. oyuncu giriş yapan kişidir (insan, hesap adıyla).
-      if (i === 0 && accountName) {
-        return { name: accountName, isAI: false };
+      // 1. oyuncu her zaman gerçek kişidir (giriş yapıldıysa hesap adıyla).
+      // Aynı cihazda birden fazla kişi oynama ihtimali göz ardı edilebilir
+      // olduğundan diğer tüm oyuncular her zaman YZ'dir.
+      if (i === 0) {
+        return { name: accountName || (names[0].trim() ? names[0].trim() : 'Oyuncu (Bölge 1)'), isAI: false };
       }
       return {
-        name: names[i].trim()
-          ? names[i].trim()
-          : ai[i]
-            ? count === 2
-              ? 'Yapay Zeka'
-              : `Yapay Zeka ${i + 1}`
-            : `Oyuncu ${i + 1}`,
-        isAI: ai[i],
+        name: names[i].trim() ? names[i].trim() : `Yapay Zeka (Bölge ${i + 1})`,
+        isAI: true,
       };
     });
     onStart(list);
@@ -143,11 +135,7 @@ export function Setup({ onStart }: SetupProps) {
           {([2, 4] as const).map((n) => (
             <button
               key={n}
-              onClick={() => {
-                setCount(n);
-                // Varsayılan: 1. oyuncu sen (kişi), kalan tüm oyuncular YZ.
-                setAi(Array.from({ length: 4 }, (_, idx) => idx > 0 && idx < n));
-              }}
+              onClick={() => setCount(n)}
               className={[
                 'flex-1 py-3 rounded-md font-sans text-sm font-bold uppercase tracking-[1px] border transition-transform active:scale-[0.97]',
                 count === n
@@ -155,7 +143,7 @@ export function Setup({ onStart }: SetupProps) {
                   : 'btn-raised-neutral bg-panel text-text border-border',
               ].join(' ')}
             >
-              {n} Kişi
+              {n} Oyuncu
             </button>
           ))}
         </div>
@@ -203,46 +191,19 @@ export function Setup({ onStart }: SetupProps) {
                   value={names[i]}
                   onChange={(e) => setName(i, e.target.value)}
                   placeholder={
-                    ai[i]
-                      ? count === 2
-                        ? 'Yapay Zeka'
-                        : `Yapay Zeka ${i + 1}`
-                      : `Oyuncu ${i + 1}`
+                    i === 0 ? 'Oyuncu (Bölge 1)' : `Yapay Zeka (Bölge ${i + 1})`
                   }
                   maxLength={14}
                   className="flex-1 min-w-0 bg-transparent outline-none font-sans text-sm text-text placeholder:text-muted"
                 />
               )}
 
-              {isAccount ? (
-                <span
-                  className="text-[9px] font-mono uppercase tracking-[1px] shrink-0 px-1"
-                  style={{ color: col.base }}
-                >
-                  Sen
-                </span>
-              ) : (
-                /* Kişi / YZ seçimi */
-                <div
-                  className="flex rounded-md overflow-hidden border shrink-0"
-                  style={{ borderColor: `${col.base}55` }}
-                >
-                  {([false, true] as const).map((v) => (
-                    <button
-                      key={String(v)}
-                      onClick={() => setAiAt(i, v)}
-                      className="px-2 py-1 text-[9px] font-mono uppercase tracking-[1px] transition-colors"
-                      style={
-                        ai[i] === v
-                          ? { background: col.base, color: '#fff' }
-                          : { background: 'transparent', color: col.base }
-                      }
-                    >
-                      {v ? 'YZ' : 'Kişi'}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <span
+                className="text-[9px] font-mono uppercase tracking-[1px] shrink-0 px-1"
+                style={{ color: col.base }}
+              >
+                {i === 0 ? 'Sen' : `YZ${i + 1}`}
+              </span>
             </div>
           );
         })}
