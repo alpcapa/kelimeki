@@ -126,14 +126,16 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           aria-label="Sanal Lig sıralamasını göster"
           className="text-right shrink-0 active:opacity-70 transition-opacity"
         >
-          <div className="flex items-center justify-end gap-1 text-[10px] uppercase tracking-[1px] text-muted font-mono">
-            <span>Sanal Lig</span>
+          <div className="flex items-center justify-end gap-1 text-xs uppercase tracking-[1px] text-muted font-mono">
+            <span className="font-bold">Sanal Lig</span>
             <span className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold">
               ?
             </span>
           </div>
           <div className="font-mono text-xl font-bold text-gold">
-            {myRank && <span className="text-muted">#{myRank.rank}·</span>}
+            {myRank && (
+              <span className="text-sm font-normal text-muted">#{myRank.rank}·</span>
+            )}
             {totalScore}
             <span className="text-xs font-normal text-muted"> puan</span>
           </div>
