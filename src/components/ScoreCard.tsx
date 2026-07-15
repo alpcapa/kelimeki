@@ -147,13 +147,13 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             type="button"
             onClick={() => setTab(count)}
             className={[
-              'flex-1 py-3 rounded-md font-sans text-sm font-bold uppercase tracking-[1px] border transition-transform active:scale-[0.97]',
+              'flex-1 py-2 rounded-md font-sans text-sm font-bold uppercase tracking-[1px] border transition-transform active:scale-[0.97] flex flex-col items-center gap-0.5',
               tab === count
                 ? 'btn-raised bg-accent text-white border-accent'
                 : 'btn-raised-neutral bg-panel text-text border-border',
             ].join(' ')}
           >
-            {count} Oyuncu{' '}
+            <span>{count} Oyuncu</span>
             <span className="text-[10px] font-normal normal-case">
               ({statsByCount[count]?.total_score ?? 0} puan)
             </span>
