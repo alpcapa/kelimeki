@@ -99,10 +99,13 @@ export function UserMenu() {
                     setModal('league');
                     setOpen(false);
                   }}
-                  className="flex items-center gap-1 text-[10px] font-mono truncate underline underline-offset-2 active:opacity-70 transition-opacity"
+                  className="flex items-center gap-1 text-[10px] font-mono truncate active:opacity-70 transition-opacity"
                 >
                   <span className="text-accent font-bold uppercase tracking-[0.5px]">
                     Sanal Lig
+                  </span>
+                  <span className="w-3 h-3 rounded-full border border-accent text-accent flex items-center justify-center text-[8px] leading-none font-bold shrink-0">
+                    i
                   </span>
                   {myRank && (
                     <span className="text-muted truncate">
