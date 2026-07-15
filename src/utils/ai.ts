@@ -136,8 +136,8 @@ export function findAIMove(
   };
 
   // Verilen köşeden, tahtadaki mevcut taşlardan bağımsız yeni bir kelimeyle
-  // başlayan tüm yerleşimleri dener (ilk hamle ya da henüz kullanılmamış
-  // ikinci köşeden başlama).
+  // başlayan tüm yerleşimleri dener (yalnızca ilk hamle — her oyuncunun tek
+  // köşesi olduğundan bu, o köşe hiç kullanılmamışken geçerli tek durumdur).
   const tryCornerStart = (homeCorner: number) => {
     const b = cornerBounds(homeCorner);
     const [homeR, homeC] = cornerCell(homeCorner);
@@ -249,9 +249,11 @@ export function findAIMove(
     }
   }
 
-  // Henüz kullanılmamış (taze) bir köşesi varsa, oradan da bağımsız bir
-  // kelimeyle başlayabilir — 2 köşeli oyunda ikinci köşe ilk köşeden
-  // bağımsız kullanılabilir olmalı.
+  // Her oyuncunun tek köşesi olduğundan (bkz. cornersFor, constants.ts) bu
+  // döngü pratikte hiç tetiklenmez — isFirstMove true iken zaten yukarıdaki
+  // dal çalışıyor, o hamleden sonra tek köşe artık "taze" olmaktan çıkıyor.
+  // `freshCorners` genel bir yardımcı olduğundan burada da bilgi amaçlı
+  // çağrılıyor; oyuncu başına birden fazla köşe atanırsa devreye girer.
   for (const homeCorner of freshCorners(board, corners, owner)) {
     tryCornerStart(homeCorner);
   }
