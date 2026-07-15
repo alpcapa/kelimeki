@@ -147,7 +147,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             type="button"
             onClick={() => setTab(count)}
             className={[
-              'flex-1 py-2 rounded-md font-sans text-sm font-bold uppercase tracking-[1px] border transition-transform active:scale-[0.97] flex flex-col items-center gap-0.5',
+              'flex-1 py-2 rounded-md font-sans text-sm font-bold uppercase tracking-[1px] border transition-transform active:scale-[0.97] flex flex-col items-center',
               tab === count
                 ? 'btn-raised bg-accent text-white border-accent'
                 : 'btn-raised-neutral bg-panel text-text border-border',
