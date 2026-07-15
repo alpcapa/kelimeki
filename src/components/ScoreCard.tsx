@@ -38,6 +38,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   }, [user]);
 
   const name =
+    profile?.display_name ||
     profile?.username ||
     [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() ||
     user?.email ||
@@ -61,6 +62,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
     rate?: string;
     cls?: string;
     wide?: boolean;
+    span2?: boolean;
     place?: string;
   }[] = [
     { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
@@ -101,9 +103,14 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           },
           { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
         ]),
-    { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
     { label: 'En İyi Hamle Puanı', value: stats?.best_move_score ?? 0, cls: 'text-accent' },
-    { label: 'En Yüksek Kelime Puanı', value: stats?.best_word_score ?? 0, cls: 'text-text' },
+    {
+      label: 'En Uzun Kelime',
+      value: stats?.longest_word ?? '—',
+      cls: 'text-text',
+      wide: tab !== 4,
+      span2: tab === 4,
+    },
   ];
 
   return (
@@ -119,7 +126,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           aria-label="Sanal Lig sıralamasını göster"
           className="text-right shrink-0 active:opacity-70 transition-opacity"
         >
-          <div className="flex items-center justify-end gap-1 text-[8px] uppercase tracking-[1px] text-muted font-mono">
+          <div className="flex items-center justify-end gap-1 text-[10px] uppercase tracking-[1px] text-muted font-mono">
             <span>Sanal Lig</span>
             <span className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold">
               ?
@@ -128,6 +135,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           <div className="font-mono text-xl font-bold text-gold">
             {myRank && <span className="text-muted">#{myRank.rank} · </span>}
             {totalScore}
+            <span className="text-xs font-normal text-muted"> puan</span>
           </div>
         </button>
       </div>
@@ -163,7 +171,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             {cells.map((c) => (
               <div
                 key={c.label}
-                className={`bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : ''} ${c.place ?? ''}`}
+                className={`btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : c.span2 ? 'col-span-2' : ''} ${c.place ?? ''}`}
               >
                 <div className={`font-mono text-xl font-bold ${c.cls ?? 'text-text'}`}>
                   {c.value}

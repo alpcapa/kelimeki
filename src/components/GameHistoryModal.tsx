@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { fetchMyGames } from '../lib/api';
 import type { GameHistoryEntry, GamePlayerSnapshot } from '../lib/database.types';
+import { useAuth } from '../hooks/useAuth';
 
 interface GameHistoryModalProps {
   playerCount: number;
@@ -49,6 +50,17 @@ function findMeIndex(entry: GameHistoryEntry, players: GamePlayerSnapshot[]): nu
 }
 
 export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps) {
+  const { user, profile } = useAuth();
+  // Her oyunun `players` jsonb'si o oyun bittiği andaki ismi donmuş halde
+  // tutar — takma adını sonradan değiştirsen eski kayıtlar güncellenmez.
+  // Kendi satırını (meIndex) burada donmuş isim yerine her zaman GÜNCEL
+  // takma adınla göstererek nickname'in geçmişte de tutarlı görünmesini
+  // sağlıyoruz; diğer oyuncuların isimleri hâlâ o anki hallerini gösterir.
+  const myCurrentName =
+    profile?.display_name ||
+    profile?.first_name ||
+    (user?.email ? user.email.split('@')[0] : null) ||
+    'Sen';
   const [games, setGames] = useState<GameHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -122,15 +134,8 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                 key={entry.id}
                 className="bg-bg border border-border rounded-md py-2 px-2.5 flex flex-col gap-1.5"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="text-[9px] font-mono text-muted uppercase tracking-[0.5px]">
-                    {formatDateTime(entry.created_at)}
-                  </div>
-                  {entry.surrendered && (
-                    <span className="text-[8px] font-mono font-bold uppercase tracking-[0.5px] text-red border border-red/40 bg-red/10 rounded px-1 py-[1px] shrink-0">
-                      Teslim Oldu
-                    </span>
-                  )}
+                <div className="text-[9px] font-mono text-muted uppercase tracking-[0.5px]">
+                  {formatDateTime(entry.created_at)}
                 </div>
                 <div className="flex flex-col gap-0.5">
                   {players.map((p, i) => (
@@ -143,16 +148,11 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                           {i + 1}.
                         </span>
                         <span className={`truncate ${i === meIndex ? 'text-text font-bold' : 'text-muted'}`}>
-                          {p.name}
+                          {i === meIndex ? myCurrentName : p.name}
                         </span>
-                        {p.is_ai && (
-                          <span className="text-[8px] text-muted border border-border rounded px-1 shrink-0">
-                            YZ
-                          </span>
-                        )}
                         {p.surrendered && (
-                          <span className="text-[8px] text-red border border-red/40 rounded px-1 shrink-0">
-                            Teslim
+                          <span className="text-[8px] font-bold uppercase tracking-[0.5px] text-red border border-red/40 bg-red/10 rounded px-1 py-[1px] shrink-0">
+                            Teslim Oldu
                           </span>
                         )}
                       </span>

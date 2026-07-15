@@ -190,10 +190,9 @@ export function Setup({ onStart }: SetupProps) {
                 <input
                   value={names[i]}
                   onChange={(e) => setName(i, e.target.value)}
-                  placeholder={
-                    i === 0 ? 'Oyuncu (Bölge 1)' : `Yapay Zeka (Bölge ${i + 1})`
-                  }
+                  placeholder={i === 0 ? 'Oyuncu' : `Yapay Zeka ${i + 1}`}
                   maxLength={14}
+                  autoComplete="off"
                   className="flex-1 min-w-0 bg-transparent outline-none font-sans text-sm text-text placeholder:text-muted"
                 />
               )}
