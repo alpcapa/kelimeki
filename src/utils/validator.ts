@@ -343,22 +343,6 @@ export function calcScore(
 }
 
 /**
- * Bu turda oluşan her kelimenin kendi puanını ayrı ayrı döner (bingo bonusu
- * hariç — o tek bir kelimeye değil hamlenin tamamına ait). "En yüksek kelime
- * puanı" istatistiği için, hamlenin toplam puanından bağımsız olarak.
- */
-export function calcWordScores(
-  board: Board,
-  placed: Placed,
-  bonuses: Record<string, BonusType>,
-): { word: string; score: number }[] {
-  return getFormedWords(board, placed).map(({ word, coords }) => ({
-    word,
-    score: wordPoints(coords, board, placed, bonuses),
-  }));
-}
-
-/**
  * Bu turda oluşan her kelimenin harf puanları toplamını (X2/X3 kelime
  * çarpanı UYGULANMADAN) ve o kelimenin hangi bonusa değdiğini döner — Oyun
  * Geçmişi'nde kelimenin yanında hem parantez içi saf puan, hem de değdiği

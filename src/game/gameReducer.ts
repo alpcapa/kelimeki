@@ -19,7 +19,6 @@ import {
 import {
   calcScore,
   calcWordRawScores,
-  calcWordScores,
   computeInvasionSplit,
   validatePlacement,
   validatePlacementStructural,
@@ -95,8 +94,7 @@ function startGame(setup: PlayerSetup[]): GameState {
     rack: drawTiles(bag, RACK_SIZE),
     score: 0,
     bestMoveScore: 0,
-    bestWordScore: 0,
-    bestWord: '',
+    longestWord: '',
     moveCount: 0,
     moveScoreSum: 0,
   }));
@@ -459,12 +457,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       }
       const basePts = calcScore(state.board, state.placed, state.bonuses);
       const formed = getFormedWords(state.board, state.placed);
-      const wordScores = calcWordScores(state.board, state.placed, state.bonuses);
       const wordRawScores = calcWordRawScores(state.board, state.placed, state.bonuses);
-      const bestWordThisMove = wordScores.reduce(
-        (best, w) => (w.score > best.score ? w : best),
-        { word: '', score: 0 },
-      );
 
       // Rakip köşe sınırına değme: kazanılan puan köşe sahip(ler)iyle paylaşılır.
       const placedCoords = Object.keys(state.placed).map(
@@ -503,8 +496,11 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const finishBonus = finishesGame && onlyJokers ? jokerFinishBonus(jokerCount) : 0;
       const finishBonusNote = finishBonus > 0 ? ` (jokerli bitiş bonusu +${finishBonus})` : '';
 
+      const newLongestWord = formed.reduce(
+        (best, fw) => (fw.word.length > best.length ? fw.word : best),
+        me.longestWord,
+      );
       const isNewBestMove = basePts > me.bestMoveScore;
-      const isNewBestWord = bestWordThisMove.score > me.bestWordScore;
       const players = state.players.map((p, i) => {
         if (i === state.current) {
           return {
@@ -512,8 +508,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
             rack,
             score: p.score + pts + finishBonus,
             bestMoveScore: isNewBestMove ? basePts : p.bestMoveScore,
-            bestWordScore: isNewBestWord ? bestWordThisMove.score : p.bestWordScore,
-            bestWord: isNewBestWord ? bestWordThisMove.word : p.bestWord,
+            longestWord: newLongestWord,
             moveCount: p.moveCount + 1,
             moveScoreSum: p.moveScoreSum + basePts,
           };
@@ -643,12 +638,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const placedMap: Record<string, Tile> = {};
       for (const p of move.placements) placedMap[key(p.r, p.c)] = p.tile;
       const formed = getFormedWords(state.board, placedMap);
-      const aiWordScores = calcWordScores(state.board, placedMap, state.bonuses);
       const aiWordRawScores = calcWordRawScores(state.board, placedMap, state.bonuses);
-      const aiBestWordThisMove = aiWordScores.reduce(
-        (best, w) => (w.score > best.score ? w : best),
-        { word: '', score: 0 },
-      );
 
       const board = state.board.map((row) => [...row]);
       const rack = [...me.rack];
@@ -679,8 +669,11 @@ export function gameReducer(state: GameState, action: Action): GameState {
         state.board,
       );
 
+      const aiLongestWord = formed.reduce(
+        (best, fw) => (fw.word.length > best.length ? fw.word : best),
+        me.longestWord,
+      );
       const aiIsNewBestMove = move.score > me.bestMoveScore;
-      const aiIsNewBestWord = aiBestWordThisMove.score > me.bestWordScore;
       const players = state.players.map((p, i) => {
         if (i === state.current) {
           return {
@@ -688,8 +681,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
             rack,
             score: p.score + aiPts + aiFinishBonus,
             bestMoveScore: aiIsNewBestMove ? move.score : p.bestMoveScore,
-            bestWordScore: aiIsNewBestWord ? aiBestWordThisMove.score : p.bestWordScore,
-            bestWord: aiIsNewBestWord ? aiBestWordThisMove.word : p.bestWord,
+            longestWord: aiLongestWord,
             moveCount: p.moveCount + 1,
             moveScoreSum: p.moveScoreSum + move.score,
           };
