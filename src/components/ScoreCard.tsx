@@ -107,20 +107,20 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
         <div className="min-w-0 flex-1">
           <div className="text-base font-bold text-text truncate">{name}</div>
         </div>
-        <div className="text-right shrink-0">
+        <button
+          type="button"
+          onClick={() => setShowLeague(true)}
+          aria-label="Sanal Lig sıralamasını göster"
+          className="text-right shrink-0 active:opacity-70 transition-opacity"
+        >
           <div className="flex items-center justify-end gap-1 text-[8px] uppercase tracking-[1px] text-muted font-mono">
             <span>Sanal Lig</span>
-            <button
-              type="button"
-              onClick={() => setShowLeague(true)}
-              aria-label="Sanal Lig hakkında bilgi"
-              className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold active:scale-90 transition-transform"
-            >
+            <span className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold">
               i
-            </button>
+            </span>
           </div>
           <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
-        </div>
+        </button>
       </div>
 
       <div className="mb-3 flex gap-2">
