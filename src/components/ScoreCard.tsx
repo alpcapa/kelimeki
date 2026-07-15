@@ -4,8 +4,8 @@ import { Modal } from './Modal';
 import { Avatar } from './Avatar';
 import { GameHistoryModal } from './GameHistoryModal';
 import { Leaderboard } from './Leaderboard';
-import { fetchPlayerStats } from '../lib/api';
-import type { PlayerStats } from '../lib/database.types';
+import { fetchPlayerStats, fetchMyLeaderboardRank } from '../lib/api';
+import type { PlayerStats, MyLeaderboardRank } from '../lib/database.types';
 import { useAuth } from '../hooks/useAuth';
 
 interface ScoreCardProps {
@@ -22,6 +22,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   const [tab, setTab] = useState<(typeof TABS)[number]>(2);
   const [showAllGames, setShowAllGames] = useState(false);
   const [showLeague, setShowLeague] = useState(false);
+  const [myRank, setMyRank] = useState<MyLeaderboardRank | null>(null);
 
   useEffect(() => {
     for (const count of TABS) {
@@ -30,6 +31,11 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
       );
     }
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchMyLeaderboardRank(user.id).then(setMyRank);
+  }, [user]);
 
   const name =
     profile?.username ||
@@ -119,7 +125,14 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
               ?
             </span>
           </div>
-          <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
+          <div className="font-mono text-xl font-bold text-gold">
+            {myRank && (
+              <span className="text-muted text-sm font-bold align-middle mr-1">
+                #{myRank.rank}
+              </span>
+            )}
+            {totalScore}
+          </div>
         </button>
       </div>
 
