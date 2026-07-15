@@ -260,6 +260,7 @@ export default function App() {
       score: r.player.score,
       is_ai: r.player.isAI,
       surrendered: r.player.surrendered,
+      colorIndex: r.player.colorIndex,
     }));
     return {
       player_score: human.score,

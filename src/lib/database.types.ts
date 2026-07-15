@@ -22,6 +22,13 @@ export interface GamePlayerSnapshot {
   is_ai: boolean;
   /** Bu oyuncu oyunu bitirmeden teslim oldu mu (dolduysa; eski kayıtlarda yok). */
   surrendered?: boolean;
+  /**
+   * Oyuncunun sabit koltuk/renk kimliği (PLAYER_COLORS indeksi) — final
+   * sıralamasındaki konumuyla (rank) KARIŞTIRILMAMALI. Bu alan eklenmeden
+   * önceki kayıtlarda yok; GameHistoryModal isimden ("Yapay Zeka N") tahmin
+   * eder.
+   */
+  colorIndex?: number;
 }
 
 export interface Game {
