@@ -116,7 +116,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           <div className="flex items-center justify-end gap-1 text-[8px] uppercase tracking-[1px] text-muted font-mono">
             <span>Sanal Lig</span>
             <span className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold">
-              i
+              ?
             </span>
           </div>
           <div className="font-mono text-xl font-bold text-gold">{totalScore}</div>
