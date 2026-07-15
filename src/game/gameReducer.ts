@@ -416,6 +416,11 @@ export function gameReducer(state: GameState, action: Action): GameState {
       const drawn = drawTiles(bag, returned.length);
       const rack = [...kept, ...drawn];
 
+      // Taş değiştirmek de tıpkı pas gibi puansız bir turdur ve torbadaki
+      // taşları azaltmaz — bu yüzden YZ'nin zorunlu değişimiyle aynı şekilde
+      // art-arda-pas sayacına dahil edilir (bkz. AI_PLAY). Aksi halde
+      // oyuncular sürekli taş değiştirerek oyunu hiç bitirmeyebilirdi.
+      const consecutivePasses = state.consecutivePasses + 1;
       const moved: GameState = {
         ...state,
         bag,
@@ -424,7 +429,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         selectedTile: null,
         swapMode: false,
         swapSelection: [],
-        consecutivePasses: 0,
+        consecutivePasses,
         moveHistory: [
           ...state.moveHistory,
           {
@@ -439,6 +444,9 @@ export function gameReducer(state: GameState, action: Action): GameState {
         message: `${me.name} ${returned.length} taş değiştirdi ve sırasını kullandı.`,
         messageType: 'warn',
       };
+      if (consecutivePasses >= activePlayerCount(state.players) * MAX_PASS_ROUNDS) {
+        return endGame(moved);
+      }
       return advanceTurn(moved);
     }
 

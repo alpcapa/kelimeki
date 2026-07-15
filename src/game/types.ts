@@ -30,7 +30,12 @@ export interface Placement {
 /** Yerel (aynı cihaz) oyuncu. */
 export interface Player {
   name: string;
-  /** Atanmış köşe bölgesi indeksleri (0..3) — 2 oyunculu oyunda iki köşe. */
+  /**
+   * Atanmış köşe bölgesi indeksleri (0..3). `cornersFor` (constants.ts) her
+   * oyuncuya her zaman tek bir köşe atar (2 oyunculuda 0/3, 4 oyunculuda
+   * 0/1/2/3); dizi tipi, oyuncu başına birden fazla köşe atanabilecek
+   * gelecekteki bir varyant için geneldir.
+   */
   corners: number[];
   /** Renk paleti indeksi (PLAYER_COLORS). */
   colorIndex: number;
