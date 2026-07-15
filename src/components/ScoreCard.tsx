@@ -102,7 +102,12 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
           { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
         ]),
     { label: 'En İyi Hamle Puanı', value: stats?.best_move_score ?? 0, cls: 'text-accent' },
-    { label: 'En Uzun Kelime', value: stats?.longest_word ?? '—', cls: 'text-text', wide: true },
+    {
+      label: 'En Uzun Kelime',
+      value: stats?.longest_word ?? '—',
+      cls: 'text-text',
+      wide: tab !== 4,
+    },
   ];
 
   return (
