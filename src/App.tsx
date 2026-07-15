@@ -13,6 +13,7 @@ import { WildcardModal } from './components/WildcardModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { rankPlayers } from './utils/ranking';
+import { loadGameState, saveGameState, clearGameState } from './utils/gameStorage';
 import { getFormedWords, getFullWordAt, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
@@ -44,7 +45,23 @@ const MESSAGE_COLORS: Record<string, string> = {
 
 export default function App() {
   const { user, profile } = useAuth();
-  const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
+  const [state, dispatch] = useReducer(
+    gameReducer,
+    undefined,
+    () => loadGameState() ?? createInitialState(),
+  );
+
+  // Devam eden oyunu (phase==='play', bitmemiş) her değişiklikte
+  // localStorage'a yaz — sekme/uygulama kapatılıp açılınca kaldığı yerden
+  // devam edilebilsin. Oyun bitince ya da kurulum ekranına dönülünce kayıt
+  // silinir.
+  useEffect(() => {
+    if (state.phase === 'play' && !state.isGameOver) {
+      saveGameState(state);
+    } else {
+      clearGameState();
+    }
+  }, [state]);
 
   // Oynanan kelime(ler)e tıklanınca gösterilen anlam penceresi. Bir hamlede
   // birden fazla kelime oluştuysa hepsi listelenir.
