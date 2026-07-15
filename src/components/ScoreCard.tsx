@@ -133,7 +133,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
             </span>
           </div>
           <div className="font-mono text-xl font-bold text-gold">
-            {myRank && <span className="text-muted">#{myRank.rank} · </span>}
+            {myRank && <span className="text-muted">#{myRank.rank}·</span>}
             {totalScore}
             <span className="text-xs font-normal text-muted"> puan</span>
           </div>
