@@ -204,12 +204,6 @@ export function Setup({ onStart }: SetupProps) {
         })}
       </div>
 
-      {!accountName && (
-        <p className="text-[11px] font-mono text-muted text-center leading-relaxed px-1">
-          Giriş yapmadan oynadığınız oyunların istatistikleri tutulmaz.
-        </p>
-      )}
-
       <button
         onClick={handleStart}
         className="btn-raised py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-accent text-white active:scale-[0.97] transition-transform"
