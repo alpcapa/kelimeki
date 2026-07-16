@@ -133,7 +133,7 @@ export function Setup({ onStart }: SetupProps) {
         </p>
         <button
           onClick={() => setShowHelp(true)}
-          className="mt-1 font-mono text-[10px] uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
+          className="mt-1 font-mono text-[10px] font-bold uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
         >
           Nasıl oynanır?
         </button>
