@@ -28,17 +28,17 @@ export function Setup({ onStart }: SetupProps) {
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-
-  // İlk açılışta Hızlı Başlangıç'ı popup gibi bir kez otomatik göster.
-  useEffect(() => {
-    if (!hasSeenQuickStart()) {
-      setShowHelp(true);
-    }
-  }, []);
+  // "Oyunu Başlat" tıklandığında Hızlı Başlangıç ilk kez gösterilecekse,
+  // kapatılınca oyunu başlatan akışa otomatik devam etmek için.
+  const [pendingStart, setPendingStart] = useState(false);
 
   const closeHelp = () => {
     markQuickStartSeen();
     setShowHelp(false);
+    if (pendingStart) {
+      setPendingStart(false);
+      proceedStart();
+    }
   };
 
   // Toplam puan (isim yanında gösterilen) tüm oyun modlarının (2/4 kişilik)
@@ -82,12 +82,21 @@ export function Setup({ onStart }: SetupProps) {
     onStart(list);
   };
 
-  const handleStart = () => {
+  const proceedStart = () => {
     if (!loading && !user) {
       setShowWarningPopup(true);
     } else {
       doStart();
     }
+  };
+
+  const handleStart = () => {
+    if (!hasSeenQuickStart()) {
+      setPendingStart(true);
+      setShowHelp(true);
+      return;
+    }
+    proceedStart();
   };
 
   return (
