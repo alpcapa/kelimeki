@@ -810,32 +810,26 @@ export default function App() {
             <p className="text-sm text-text font-sans leading-relaxed">
               {state.isGameOver || !exitTargetPlayer
                 ? 'Anasayfaya dönmek istediğinden emin misin?'
-                : exitTargetIndex === 0
-                  ? user
+                : !user
+                  ? 'Bu oyundan çıkmak istediğine emin misin?'
+                  : exitTargetIndex === 0
                     ? `Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.${othersWillContinue ? ' Diğer oyuncular oyuna devam edebilir.' : ''}`
-                    : `Bu oyundan çıkmak istediğine emin misin?${othersWillContinue ? ' Diğer oyuncular oyuna devam edebilir.' : ''}`
-                  : `${exitTargetPlayer.name} teslim olmak istediğine emin misin?${othersWillContinue ? ' Oyuna diğer oyuncular devam edebilir.' : ''}`}
+                    : `${exitTargetPlayer.name} teslim olmak istediğine emin misin?${othersWillContinue ? ' Oyuna diğer oyuncular devam edebilir.' : ''}`}
             </p>
             <div className="flex gap-2 mt-1">
               <button
                 onClick={() => {
                   setShowExitConfirm(false);
-                  if (state.isGameOver || exitTargetIndex === null) {
+                  // Giriş yapılmamışsa hiçbir oyun tipi için kayıt tutulmadığından
+                  // (kademeli teslim/oyun sonu ekranının anlamı olmadığından)
+                  // doğrudan kurulum ekranına dön — oyun kaç kişilik olursa olsun.
+                  if (state.isGameOver || exitTargetIndex === null || !user) {
                     dispatch({ type: 'ABANDON' });
                     return;
                   }
                   if (exitTargetIndex === 0) {
-                    if (user) {
-                      const record = buildGameRecord(true, 0);
-                      if (record) void saveGame(record);
-                    } else if (!othersWillContinue) {
-                      // Giriş yapılmamışsa hiçbir şey kaydedilmez ve kimse
-                      // devam edemeyecek (oyun zaten bitecek) — teslim/oyun
-                      // sonu seremonisine gerek yok, doğrudan kurulum
-                      // ekranına dön.
-                      dispatch({ type: 'ABANDON' });
-                      return;
-                    }
+                    const record = buildGameRecord(true, 0);
+                    if (record) void saveGame(record);
                   }
                   dispatch({ type: 'SURRENDER', index: exitTargetIndex });
                 }}
