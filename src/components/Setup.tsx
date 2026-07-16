@@ -1,4 +1,4 @@
-// Harfik — oyun kurulum ekranı: oyuncu sayısı (2/4), isimler ve YZ seçimi
+// Harfik — oyun kurulum ekranı: oyuncu sayısı (2/4) seçimi
 import { useEffect, useState } from 'react';
 import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
@@ -25,7 +25,6 @@ export function Setup({ onStart }: SetupProps) {
     (user?.email ? user.email.split('@')[0] : null);
 
   const [count, setCount] = useState<2 | 4>(2);
-  const [names, setNames] = useState<string[]>(['', '', '', '']);
 
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -60,21 +59,16 @@ export function Setup({ onStart }: SetupProps) {
     };
   }, [user]);
 
-  const setName = (i: number, v: string) =>
-    setNames((cur) => cur.map((n, idx) => (idx === i ? v : n)));
-
   const doStart = () => {
     const list: PlayerSetup[] = Array.from({ length: count }, (_, i) => {
-      // 1. oyuncu her zaman gerçek kişidir (giriş yapıldıysa hesap adıyla).
-      // Aynı cihazda birden fazla kişi oynama ihtimali göz ardı edilebilir
-      // olduğundan diğer tüm oyuncular her zaman YZ'dir.
+      // 1. oyuncu her zaman gerçek kişidir (giriş yapıldıysa hesap adıyla,
+      // yapılmadıysa Misafir olarak). Aynı cihazda birden fazla kişi oynama
+      // ihtimali göz ardı edilebilir olduğundan diğer tüm oyuncular her
+      // zaman YZ'dir.
       if (i === 0) {
-        return { name: accountName || (names[0].trim() ? names[0].trim() : 'Oyuncu'), isAI: false };
+        return { name: accountName || 'Misafir', isAI: false };
       }
-      return {
-        name: names[i].trim() ? names[i].trim() : `Yapay Zeka ${i + 1}`,
-        isAI: true,
-      };
+      return { name: `Yapay Zeka ${i + 1}`, isAI: true };
     });
     // Oyun ekranı açılınca Tutorial daha önce görülmediyse orada gösterilecek.
     onStart(list, !hasSeenQuickStart());
@@ -194,14 +188,9 @@ export function Setup({ onStart }: SetupProps) {
                   )}
                 </span>
               ) : (
-                <input
-                  value={names[i]}
-                  onChange={(e) => setName(i, e.target.value)}
-                  placeholder={i === 0 ? 'Oyuncu' : `Yapay Zeka ${i + 1}`}
-                  maxLength={14}
-                  autoComplete="off"
-                  className="flex-1 min-w-0 bg-transparent outline-none font-sans text-sm text-text placeholder:text-muted"
-                />
+                <span className="flex-1 min-w-0 font-sans text-sm font-bold text-text truncate">
+                  {i === 0 ? 'Misafir' : `Yapay Zeka ${i + 1}`}
+                </span>
               )}
 
               <span
