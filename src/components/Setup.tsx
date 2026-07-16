@@ -11,7 +11,9 @@ import { HelpModal } from './HelpModal';
 import { PlayerBadge } from './PlayerBadge';
 
 interface SetupProps {
-  onStart: (players: PlayerSetup[]) => void;
+  // showTutorial: oyun ekranı açıldığında Tutorial (HelpModal) daha önce
+  // görülmediyse gösterilsin mi — App.tsx bunu oyun ekranı render'ında kullanır.
+  onStart: (players: PlayerSetup[], showTutorial: boolean) => void;
 }
 
 export function Setup({ onStart }: SetupProps) {
@@ -28,17 +30,12 @@ export function Setup({ onStart }: SetupProps) {
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  // "Oyunu Başlat" tıklandığında Hızlı Başlangıç ilk kez gösterilecekse,
-  // kapatılınca oyunu başlatan akışa otomatik devam etmek için.
-  const [pendingStart, setPendingStart] = useState(false);
 
+  // "Nasıl oynanır?" linkinden elle açılırsa da Tutorial görülmüş sayılır —
+  // oyun başlayınca tekrar otomatik açılmasın diye.
   const closeHelp = () => {
     markQuickStartSeen();
     setShowHelp(false);
-    if (pendingStart) {
-      setPendingStart(false);
-      proceedStart();
-    }
   };
 
   // Toplam puan (isim yanında gösterilen) tüm oyun modlarının (2/4 kişilik)
@@ -79,24 +76,16 @@ export function Setup({ onStart }: SetupProps) {
         isAI: true,
       };
     });
-    onStart(list);
+    // Oyun ekranı açılınca Tutorial daha önce görülmediyse orada gösterilecek.
+    onStart(list, !hasSeenQuickStart());
   };
 
-  const proceedStart = () => {
+  const handleStart = () => {
     if (!loading && !user) {
       setShowWarningPopup(true);
     } else {
       doStart();
     }
-  };
-
-  const handleStart = () => {
-    if (!hasSeenQuickStart()) {
-      setPendingStart(true);
-      setShowHelp(true);
-      return;
-    }
-    proceedStart();
   };
 
   return (
@@ -108,7 +97,7 @@ export function Setup({ onStart }: SetupProps) {
       <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
         <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
           <p className="text-sm text-text font-sans leading-relaxed">
-            Giriş yapmadan oynadığınız oyunların istatistikleri tutulmaz.
+            Oyunların istatistiklerini tutmak ve Sanal Lig puanları için lütfen giriş yapın.
           </p>
           <div className="flex gap-2 mt-1">
             <button

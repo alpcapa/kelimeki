@@ -10,10 +10,12 @@ import { MeaningModal } from './components/MeaningModal';
 import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
+import { HelpModal } from './components/HelpModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { rankPlayers } from './utils/ranking';
 import { loadGameState, saveGameState, clearGameState } from './utils/gameStorage';
+import { markQuickStartSeen } from './utils/onboarding';
 import { getFormedWords, getFullWordAt, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
@@ -89,6 +91,10 @@ export default function App() {
 
   // Oyundan çıkış onay popup'ı.
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  // Setup ekranında "Oyunu Başlat" tıklandığında Tutorial ilk kez
+  // görülmemişse, oyun ekranı açılır açılmaz burada gösterilir.
+  const [showPostStartTutorial, setShowPostStartTutorial] = useState(false);
 
   // Rakip köşeye giriş onay popup'ı.
   const [invasionConfirm, setInvasionConfirm] = useState<
@@ -366,7 +372,12 @@ export default function App() {
         <div className="w-full max-w-[460px] flex items-center justify-end px-3.5 pt-3">
           <UserMenu />
         </div>
-        <Setup onStart={(players) => dispatch({ type: 'START', players })} />
+        <Setup
+          onStart={(players, showTutorial) => {
+            dispatch({ type: 'START', players });
+            if (showTutorial) setShowPostStartTutorial(true);
+          }}
+        />
         <AddToHomeScreen />
       </div>
     );
@@ -887,6 +898,15 @@ export default function App() {
 
       {showHistory && (
         <MoveHistoryModal state={state} onClose={() => setShowHistory(false)} />
+      )}
+
+      {showPostStartTutorial && (
+        <HelpModal
+          onClose={() => {
+            markQuickStartSeen();
+            setShowPostStartTutorial(false);
+          }}
+        />
       )}
     </div>
   );
