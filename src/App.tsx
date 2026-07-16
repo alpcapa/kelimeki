@@ -825,8 +825,17 @@ export default function App() {
                     return;
                   }
                   if (exitTargetIndex === 0) {
-                    const record = buildGameRecord(true, 0);
-                    if (record) void saveGame(record);
+                    if (user) {
+                      const record = buildGameRecord(true, 0);
+                      if (record) void saveGame(record);
+                    } else if (!othersWillContinue) {
+                      // Giriş yapılmamışsa hiçbir şey kaydedilmez ve kimse
+                      // devam edemeyecek (oyun zaten bitecek) — teslim/oyun
+                      // sonu seremonisine gerek yok, doğrudan kurulum
+                      // ekranına dön.
+                      dispatch({ type: 'ABANDON' });
+                      return;
+                    }
                   }
                   dispatch({ type: 'SURRENDER', index: exitTargetIndex });
                 }}
