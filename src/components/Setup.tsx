@@ -9,6 +9,8 @@ import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
 import { PlayerBadge } from './PlayerBadge';
+import { TermsModal } from './TermsModal';
+import { PrivacyModal } from './PrivacyModal';
 
 interface SetupProps {
   // showTutorial: oyun ekranı açıldığında Tutorial (HelpModal) daha önce
@@ -29,6 +31,8 @@ export function Setup({ onStart }: SetupProps) {
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   // "Nasıl oynanır?" linkinden elle açılırsa da Tutorial görülmüş sayılır —
   // oyun başlayınca tekrar otomatik açılmasın diye.
@@ -86,6 +90,8 @@ export function Setup({ onStart }: SetupProps) {
     <>
     {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     {showHelp && <HelpModal onClose={closeHelp} />}
+    {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+    {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
 
     {showWarningPopup && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
@@ -210,6 +216,16 @@ export function Setup({ onStart }: SetupProps) {
       >
         Oyunu Başlat
       </button>
+
+      <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-muted">
+        <button onClick={() => setShowTerms(true)} className="hover:underline active:opacity-70 transition-opacity">
+          Kullanım Koşulları
+        </button>
+        <span>·</span>
+        <button onClick={() => setShowPrivacy(true)} className="hover:underline active:opacity-70 transition-opacity">
+          Gizlilik Politikası
+        </button>
+      </div>
     </div>
     </>
   );
