@@ -295,9 +295,9 @@ export function HelpModal({ onClose, initialStep = 'quick' }: HelpModalProps) {
       headerLink={
         <button
           onClick={() => setStep(step === 'quick' ? 'detailed' : 'quick')}
-          className="self-start font-mono text-[10px] uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
+          className="self-start font-mono text-[10px] uppercase tracking-[1px] text-accent active:opacity-70 transition-opacity"
         >
-          {step === 'quick' ? 'Detaylı Kurallar →' : '← Hızlı Başlangıç'}
+          {step === 'quick' ? 'Detaylı Kurallar →' : 'Hızlı Başlangıç →'}
         </button>
       }
     >
