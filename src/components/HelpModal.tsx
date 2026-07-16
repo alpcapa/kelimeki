@@ -71,7 +71,7 @@ const QuickItem = ({ icon, children }: { icon: string; children: React.ReactNode
   </div>
 );
 
-function QuickStart({ onShowDetailed }: { onShowDetailed: () => void }) {
+function QuickStart() {
   return (
     <div className="flex flex-col gap-3.5">
       <QuickItem icon="🎯">
@@ -107,27 +107,13 @@ function QuickStart({ onShowDetailed }: { onShowDetailed: () => void }) {
         Raf + torba boşalınca ya da art arda 2 tur pas geçilince oyun biter; en yüksek puan
         kazanır.
       </QuickItem>
-
-      <button
-        onClick={onShowDetailed}
-        className="mt-1 self-start font-mono text-[10px] uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
-      >
-        Detaylı Kurallar →
-      </button>
     </div>
   );
 }
 
-function DetailedRules({ onBack }: { onBack: () => void }) {
+function DetailedRules() {
   return (
     <div className="flex flex-col gap-5">
-      <button
-        onClick={onBack}
-        className="self-start font-mono text-[10px] uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
-      >
-        ← Hızlı Başlangıç
-      </button>
-
       <Section title="Oyun Nedir?">
         <P>
           Bu, klasik kelime oyunlarından farklı, strateji odaklı bir kelime oyunudur. 2 veya 4
@@ -303,12 +289,19 @@ export function HelpModal({ onClose, initialStep = 'quick' }: HelpModalProps) {
   const [step, setStep] = useState<Step>(initialStep);
 
   return (
-    <Modal title={step === 'quick' ? 'Hızlı Başlangıç' : 'Detaylı Kurallar'} onClose={onClose}>
-      {step === 'quick' ? (
-        <QuickStart onShowDetailed={() => setStep('detailed')} />
-      ) : (
-        <DetailedRules onBack={() => setStep('quick')} />
-      )}
+    <Modal
+      title={step === 'quick' ? 'Hızlı Başlangıç' : 'Detaylı Kurallar'}
+      onClose={onClose}
+      headerLink={
+        <button
+          onClick={() => setStep(step === 'quick' ? 'detailed' : 'quick')}
+          className="self-start font-mono text-[10px] uppercase tracking-[1px] text-accent active:opacity-70 transition-opacity"
+        >
+          {step === 'quick' ? 'Detaylı Kurallar →' : 'Hızlı Başlangıç →'}
+        </button>
+      }
+    >
+      {step === 'quick' ? <QuickStart /> : <DetailedRules />}
     </Modal>
   );
 }

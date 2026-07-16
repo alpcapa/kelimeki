@@ -1,4 +1,4 @@
-// Harfik — oyun kurulum ekranı: oyuncu sayısı (2/4), isimler ve YZ seçimi
+// Harfik — oyun kurulum ekranı: oyuncu sayısı (2/4) seçimi
 import { useEffect, useState } from 'react';
 import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
@@ -9,9 +9,13 @@ import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
 import { PlayerBadge } from './PlayerBadge';
+import { TermsModal } from './TermsModal';
+import { PrivacyModal } from './PrivacyModal';
 
 interface SetupProps {
-  onStart: (players: PlayerSetup[]) => void;
+  // showTutorial: oyun ekranı açıldığında Tutorial (HelpModal) daha önce
+  // görülmediyse gösterilsin mi — App.tsx bunu oyun ekranı render'ında kullanır.
+  onStart: (players: PlayerSetup[], showTutorial: boolean) => void;
 }
 
 export function Setup({ onStart }: SetupProps) {
@@ -23,22 +27,18 @@ export function Setup({ onStart }: SetupProps) {
     (user?.email ? user.email.split('@')[0] : null);
 
   const [count, setCount] = useState<2 | 4>(2);
-  const [names, setNames] = useState<string[]>(['', '', '', '']);
 
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  // "Oyunu Başlat" tıklandığında Hızlı Başlangıç ilk kez gösterilecekse,
-  // kapatılınca oyunu başlatan akışa otomatik devam etmek için.
-  const [pendingStart, setPendingStart] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
+  // "Nasıl oynanır?" linkinden elle açılırsa da Tutorial görülmüş sayılır —
+  // oyun başlayınca tekrar otomatik açılmasın diye.
   const closeHelp = () => {
     markQuickStartSeen();
     setShowHelp(false);
-    if (pendingStart) {
-      setPendingStart(false);
-      proceedStart();
-    }
   };
 
   // Toplam puan (isim yanında gösterilen) tüm oyun modlarının (2/4 kişilik)
@@ -63,26 +63,22 @@ export function Setup({ onStart }: SetupProps) {
     };
   }, [user]);
 
-  const setName = (i: number, v: string) =>
-    setNames((cur) => cur.map((n, idx) => (idx === i ? v : n)));
-
   const doStart = () => {
     const list: PlayerSetup[] = Array.from({ length: count }, (_, i) => {
-      // 1. oyuncu her zaman gerçek kişidir (giriş yapıldıysa hesap adıyla).
-      // Aynı cihazda birden fazla kişi oynama ihtimali göz ardı edilebilir
-      // olduğundan diğer tüm oyuncular her zaman YZ'dir.
+      // 1. oyuncu her zaman gerçek kişidir (giriş yapıldıysa hesap adıyla,
+      // yapılmadıysa Misafir olarak). Aynı cihazda birden fazla kişi oynama
+      // ihtimali göz ardı edilebilir olduğundan diğer tüm oyuncular her
+      // zaman YZ'dir.
       if (i === 0) {
-        return { name: accountName || (names[0].trim() ? names[0].trim() : 'Oyuncu'), isAI: false };
+        return { name: accountName || 'Misafir', isAI: false };
       }
-      return {
-        name: names[i].trim() ? names[i].trim() : `Yapay Zeka ${i + 1}`,
-        isAI: true,
-      };
+      return { name: `Yapay Zeka ${i + 1}`, isAI: true };
     });
-    onStart(list);
+    // Oyun ekranı açılınca Tutorial daha önce görülmediyse orada gösterilecek.
+    onStart(list, !hasSeenQuickStart());
   };
 
-  const proceedStart = () => {
+  const handleStart = () => {
     if (!loading && !user) {
       setShowWarningPopup(true);
     } else {
@@ -90,25 +86,18 @@ export function Setup({ onStart }: SetupProps) {
     }
   };
 
-  const handleStart = () => {
-    if (!hasSeenQuickStart()) {
-      setPendingStart(true);
-      setShowHelp(true);
-      return;
-    }
-    proceedStart();
-  };
-
   return (
     <>
     {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     {showHelp && <HelpModal onClose={closeHelp} />}
+    {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+    {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
 
     {showWarningPopup && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
         <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
           <p className="text-sm text-text font-sans leading-relaxed">
-            Giriş yapmadan oynadığınız oyunların istatistikleri tutulmaz.
+            Oyunların istatistiklerini tutmak ve Sanal Lig puanları için lütfen giriş yapın.
           </p>
           <div className="flex gap-2 mt-1">
             <button
@@ -144,7 +133,7 @@ export function Setup({ onStart }: SetupProps) {
         </p>
         <button
           onClick={() => setShowHelp(true)}
-          className="mt-1 font-mono text-[10px] uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
+          className="mt-1 font-mono text-[12px] font-bold uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
         >
           Nasıl oynanır?
         </button>
@@ -205,14 +194,9 @@ export function Setup({ onStart }: SetupProps) {
                   )}
                 </span>
               ) : (
-                <input
-                  value={names[i]}
-                  onChange={(e) => setName(i, e.target.value)}
-                  placeholder={i === 0 ? 'Oyuncu' : `Yapay Zeka ${i + 1}`}
-                  maxLength={14}
-                  autoComplete="off"
-                  className="flex-1 min-w-0 bg-transparent outline-none font-sans text-sm text-text placeholder:text-muted"
-                />
+                <span className="flex-1 min-w-0 font-sans text-sm font-bold text-text truncate">
+                  {i === 0 ? 'Misafir' : `Yapay Zeka ${i + 1}`}
+                </span>
               )}
 
               <span
@@ -226,18 +210,22 @@ export function Setup({ onStart }: SetupProps) {
         })}
       </div>
 
-      {!accountName && (
-        <p className="text-[11px] font-mono text-muted text-center leading-relaxed px-1">
-          Giriş yapmadan oynadığınız oyunların istatistikleri tutulmaz.
-        </p>
-      )}
-
       <button
         onClick={handleStart}
         className="btn-raised py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-accent text-white active:scale-[0.97] transition-transform"
       >
         Oyunu Başlat
       </button>
+
+      <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-muted">
+        <button onClick={() => setShowTerms(true)} className="hover:underline active:opacity-70 transition-opacity">
+          Kullanım Koşulları
+        </button>
+        <span>·</span>
+        <button onClick={() => setShowPrivacy(true)} className="hover:underline active:opacity-70 transition-opacity">
+          Gizlilik Politikası
+        </button>
+      </div>
     </div>
     </>
   );
