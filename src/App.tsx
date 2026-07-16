@@ -158,7 +158,8 @@ export default function App() {
   // yenilemek yerine logoya tıklamışçasına çıkış onayını açar — yoksa oyun
   // durumu kaybolup kullanıcı habersizce anasayfaya düşüyordu.
   const anyModalOpen =
-    !!meaning || showTiles || showHistory || !!pendingWild || showExitConfirm || !!invasionConfirm;
+    !!meaning || showTiles || showHistory || !!pendingWild || showExitConfirm || !!invasionConfirm ||
+    showPostStartTutorial;
   const anyModalOpenRef = useRef(anyModalOpen);
   anyModalOpenRef.current = anyModalOpen;
 
