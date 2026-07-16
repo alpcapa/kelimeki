@@ -37,6 +37,28 @@ function formatLeaguePoints(points: number): string {
 }
 
 /**
+ * `players` zaten final sıralamasına göre (aktifler puana göre azalan,
+ * teslim olanlar en sonda) diziliymiş durumda — burada yalnızca eşit
+ * puanlı (ve aynı teslim durumundaki) bitişik oyunculara aynı sırayı
+ * vererek gerçek "rank"i (dizideki ham pozisyon değil) çıkarıyoruz.
+ * Aksi halde beraberlikte 2. sıradaki oyuncu, 1.yle aynı puanı almasına
+ * rağmen SL sütununda 0 gösteriyordu.
+ */
+function computeRanks(players: GamePlayerSnapshot[]): number[] {
+  let rank = 1;
+  let prevScore: number | null = null;
+  let prevSurrendered = false;
+  return players.map((p, i) => {
+    if (prevScore === null || p.score !== prevScore || !!p.surrendered !== prevSurrendered) {
+      rank = i + 1;
+    }
+    prevScore = p.score;
+    prevSurrendered = !!p.surrendered;
+    return rank;
+  });
+}
+
+/**
  * Eski kayıtlarda (players alanı eklenmeden önce oynanmış oyunlarda) yalnızca
  * kendi puanın ve en iyi rakibin puanı bilinir — diğer oyuncuların adı/puanı
  * saklanmamıştır. Bilinen iki satırı döner; kalan oyuncu sayısını ve kendi
@@ -164,6 +186,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
             const players = hasSnapshot ? entry.players! : fallback!.known;
             const unknownCount = fallback?.unknownCount ?? 0;
             const meIndex = hasSnapshot ? findMeIndex(entry, players) : fallback!.meIndex;
+            const ranks = computeRanks(players);
             return (
               <div
                 key={entry.id}
@@ -178,14 +201,14 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                 </div>
                 <div className="flex flex-col gap-0.5">
                   {players.map((p, i) => {
-                    const points = leaguePoints(i + 1, entry.player_count, p.surrendered);
+                    const points = leaguePoints(ranks[i], entry.player_count, p.surrendered);
                     return (
                       <div
                         key={i}
                         className="flex items-center justify-between gap-2 text-[12px] font-mono"
                       >
                         <span className="flex items-center gap-1.5 min-w-0">
-                          <span className="w-3 text-right text-muted shrink-0">{i + 1}.</span>
+                          <span className="w-3 text-right text-muted shrink-0">{ranks[i]}.</span>
                           <PlayerBadge index={seatIndexFor(p, i, hasSnapshot)} size={14} />
                           <span className={`truncate ${i === meIndex ? 'text-text font-bold' : 'text-muted'}`}>
                             {i === meIndex ? myCurrentName : p.name}
