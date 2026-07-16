@@ -4,6 +4,7 @@ import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
 import { useAuth } from '../hooks/useAuth';
 import { fetchPlayerStats } from '../lib/api';
+import { hasSeenQuickStart, markQuickStartSeen } from '../utils/onboarding';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
@@ -27,6 +28,18 @@ export function Setup({ onStart }: SetupProps) {
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+
+  // İlk açılışta Hızlı Başlangıç'ı popup gibi bir kez otomatik göster.
+  useEffect(() => {
+    if (!hasSeenQuickStart()) {
+      setShowHelp(true);
+    }
+  }, []);
+
+  const closeHelp = () => {
+    markQuickStartSeen();
+    setShowHelp(false);
+  };
 
   // Toplam puan (isim yanında gösterilen) tüm oyun modlarının (2/4 kişilik)
   // toplamıdır — seçili sekmeye göre değişmez.
@@ -80,7 +93,7 @@ export function Setup({ onStart }: SetupProps) {
   return (
     <>
     {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
-    {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+    {showHelp && <HelpModal onClose={closeHelp} />}
 
     {showWarningPopup && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
