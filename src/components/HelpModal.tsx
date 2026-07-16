@@ -167,7 +167,7 @@ function DetailedRules({ onBack }: { onBack: () => void }) {
 
       <Section title="Bölge Vergisi">
         <P>
-          Her oyuncunun bölgesi 4×4'lük köşesiyle başlar; köşesinden başlayıp, kelimeleri
+          Her oyuncunun bölgesi 4×4'lük köşeyle başlar; köşenden başlayıp, kelimeleri
           bağladıkça genişler. Board üzerinde her oyuncunun güncel bölgesi kalın çizgiyle
           belirlenir.
         </P>
@@ -249,7 +249,7 @@ function DetailedRules({ onBack }: { onBack: () => void }) {
         <P>
           Yalnızca Türkçe kelimeler geçerlidir ve sadece Türk Dil Kurumu (TDK) sözlüğünde yer
           alan kelimeler bulunur. TDK sözlüğünde olmayan ama bulmacalarda sık kullanılan bazı
-          eklemeler yapılmıştır.
+          ekleşimler yapılmıştır.
         </P>
       </Section>
 
