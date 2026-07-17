@@ -88,35 +88,33 @@ function QuickStart({ onDetailedClick }: { onDetailedClick: () => void }) {
         2 ya da 4 oyuncuyla, <strong>Yapay Zekâ</strong>'ya karşı oynanır.
       </QuickItem>
       <QuickItem icon="🏠">
-        Kendi köşenden başlarsın, tahtanın <strong>ortasına doğru</strong> ilerlersin.
+        Kendi bölgenden başlar, tahtanın <strong>ortasına doğru</strong> bölgeni
+        genişletirsin.
       </QuickItem>
       <QuickItem icon="🔗">
-        Yeni kelimeler tahtadaki mevcut harflere (rakiplerinki dahil) bağlanmalı.
-      </QuickItem>
-      <QuickItem icon="🗺️">
-        Bölgen, bağladığın kelimelerle büyür; kalın çizgiyle gösterilir.
+        Yeni kelimeler tahtadaki mevcut harflere (rakiplerinki dahil) bağlanmalıdır.
       </QuickItem>
       <QuickItem icon="💰">
-        Bir rakip bölgesine değen/giren hamle, kazandığın puanın <strong>1/3</strong>'ünü ona
-        verir.
+        Rakip bölgesine değen/giren hamlede, <strong>bölge vergisi</strong> ödersin.
       </QuickItem>
       <QuickItem icon="✨">
-        Ortadaki 5×5 alan puanı <strong>×2</strong>, tam merkez ise <strong>×3</strong> yapar
-        (sadece o kare ilk kullanıldığında).
+        Ortadaki 5×5 bonus bölgesi puanlarını <strong>ikiye</strong>, <strong>üçe</strong>{' '}
+        katlar.
       </QuickItem>
       <QuickItem icon="🎁">
-        7 taşını tek hamlede bitirirsen <strong>+{BINGO_BONUS} bonus</strong> (Bingo).
+        7 taşını tek hamlede koyarsan <strong>+{BINGO_BONUS} Bingo bonus</strong> kazanırsın.
       </QuickItem>
       <QuickItem icon="⭐">
-        Joker (<strong>?</strong>) istediğin harfe dönüşür, puan değeri 0'dır. Elindeki son taş(lar)
-        jokerse bitirişte <strong>+25/+50 bonus</strong> kazanırsın.
+        Joker (<span className="text-base leading-none align-middle">★</span>) istediğin
+        harfe dönüşür, puan değeri 0'dır. Elindeki son taş(lar)
+        jokerse ve onunla bitirirsen <strong>+25/+50 bonus</strong> kazanırsın.
       </QuickItem>
       <QuickItem icon="📖">
         Sadece <strong>TDK sözlüğündeki</strong> Türkçe kelimeler geçerlidir.
       </QuickItem>
       <QuickItem icon="🏁">
-        Raf + torba boşalınca ya da art arda 2 tur pas geçilince oyun biter; en yüksek puan
-        kazanır.
+        Harf kutunu bitirir ve torbada başka taş kalmazsa oyun biter. Art arda 2 tur pas
+        geçilince de oyun biter.
       </QuickItem>
       <button
         onClick={onDetailedClick}
