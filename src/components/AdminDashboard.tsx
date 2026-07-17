@@ -20,12 +20,11 @@ function fmtDate(iso: string | null) {
 }
 
 function memberName(m: AdminMember) {
-  return (
-    m.display_name ||
-    [m.first_name, m.last_name].filter(Boolean).join(' ').trim() ||
-    m.username ||
-    '—'
-  );
+  return [m.first_name, m.last_name].filter(Boolean).join(' ').trim() || m.username || '—';
+}
+
+function memberNickname(m: AdminMember) {
+  return m.display_name || '—';
 }
 
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
@@ -107,6 +106,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <thead>
                       <tr className="text-left text-muted border-b border-border">
                         <th className="py-2 pr-3 font-bold">İsim</th>
+                        <th className="py-2 pr-3 font-bold">Nickname</th>
                         <th className="py-2 pr-3 font-bold">E-posta</th>
                         <th className="py-2 pr-3 font-bold">Katılma</th>
                         <th className="py-2 pr-3 font-bold">Son Giriş</th>
@@ -117,6 +117,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       {members.map((m) => (
                         <tr key={m.id} className="border-b border-border/50">
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberName(m)}</td>
+                          <td className="py-2 pr-3 text-text whitespace-nowrap">{memberNickname(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{m.email ?? '—'}</td>
                           <td className="py-2 pr-3 text-muted whitespace-nowrap">{fmtDate(m.created_at)}</td>
                           <td className="py-2 pr-3 text-muted whitespace-nowrap">{fmtDate(m.last_sign_in_at)}</td>
