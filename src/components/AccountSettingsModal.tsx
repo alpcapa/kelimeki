@@ -65,6 +65,14 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
     e.preventDefault();
     setError(null);
     setInfo(null);
+    if (!firstName.trim()) {
+      setError('Ad zorunludur.');
+      return;
+    }
+    if (!lastName.trim()) {
+      setError('Soyad zorunludur.');
+      return;
+    }
     setBusy(true);
     const notes: string[] = [];
     try {
@@ -156,6 +164,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="Adın"
               autoComplete="given-name"
+              required
             />
           </div>
           <div className="flex-1">
@@ -166,6 +175,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
               onChange={(e) => setLastName(e.target.value)}
               placeholder="Soyadın"
               autoComplete="family-name"
+              required
             />
           </div>
         </div>
