@@ -69,7 +69,7 @@ begin
   return query
   select
     u.id,
-    u.email::text,
+    u.email,
     p.username,
     p.first_name,
     p.last_name,
@@ -104,30 +104,27 @@ begin
     raise exception 'Yetkisiz erişim.';
   end if;
 
-  -- OUT parametresi (player_count) tablo sütunlarıyla aynı adı taşıdığından,
-  -- PL/pgSQL belirsizlik hatası vermemesi için iç sorgularda "pcount" takma
-  -- adı kullanılır (bare "player_count" hiç geçmez).
   return query
   select
-    pc.pcount,
+    pc.player_count,
     coalesce(s.started, 0)  as started,
     coalesce(f.finished, 0) as finished
   from (
-    select gs.player_count as pcount from public.game_starts gs
+    select distinct player_count from public.game_starts
     union
-    select g.player_count as pcount from public.games g
+    select distinct player_count from public.games
   ) pc
   left join (
-    select gs.player_count as pcount, count(*) as started
-    from public.game_starts gs
-    group by gs.player_count
-  ) s on s.pcount = pc.pcount
+    select player_count, count(*) as started
+    from public.game_starts
+    group by player_count
+  ) s on s.player_count = pc.player_count
   left join (
-    select g.player_count as pcount, count(*) as finished
-    from public.games g
-    group by g.player_count
-  ) f on f.pcount = pc.pcount
-  order by pc.pcount;
+    select player_count, count(*) as finished
+    from public.games
+    group by player_count
+  ) f on f.player_count = pc.player_count
+  order by pc.player_count;
 end;
 $$;
 
