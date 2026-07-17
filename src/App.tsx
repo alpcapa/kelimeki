@@ -6,6 +6,7 @@ import { Rack } from './components/Rack';
 import { GameOver } from './components/GameOver';
 import { UserMenu } from './components/UserMenu';
 import { Setup } from './components/Setup';
+import { AddToHomeScreen } from './components/AddToHomeScreen';
 import { MeaningModal } from './components/MeaningModal';
 import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
@@ -24,7 +25,6 @@ import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, saveGame } from './lib/api';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
-import { AddToHomeScreen } from './components/AddToHomeScreen';
 
 const AI_THINK_MS = 1100;
 // Sürüklemenin "tıklama" değil gerçek bir sürükleme sayılması için gereken
