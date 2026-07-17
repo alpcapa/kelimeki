@@ -237,7 +237,7 @@ function DetailedRules() {
         <P>
           Oyun sonunda elinde kalan son taş joker ise ve onu yerleştirerek bitersen{' '}
           <strong>+25 yıldız bonus</strong> puan kazanırsın. 2 joker taş ile bitiş ise{' '}
-          <strong>+50 puan</strong> kazandırır. Becerebilirsen jokerini en son hamleye bırak,
+          <strong>+50 puan</strong> kazandırır. Becerebilirsen jokerlerini en sona taşa bırak,
           bonusu kap.
         </P>
       </Section>
