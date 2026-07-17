@@ -24,7 +24,6 @@ import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, saveGame } from './lib/api';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
-import { AddToHomeScreen } from './components/AddToHomeScreen';
 
 const AI_THINK_MS = 1100;
 // Sürüklemenin "tıklama" değil gerçek bir sürükleme sayılması için gereken
@@ -379,7 +378,6 @@ export default function App() {
             if (showTutorial) setShowPostStartTutorial(true);
           }}
         />
-        <AddToHomeScreen />
       </div>
     );
   }
