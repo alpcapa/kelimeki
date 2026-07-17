@@ -131,27 +131,21 @@ function QuickStart({ onDetailedClick }: { onDetailedClick: () => void }) {
 function DetailedRules() {
   return (
     <div className="flex flex-col gap-5">
-      <Section title="Oyun Nedir?">
+      <Section title="Nasıl Oynanır?">
         <P>
-          Bu, klasik kelime oyunlarından farklı, strateji odaklı bir kelime oyunudur. 2 veya 4
-          oyuncu ile, Yapay Zekâ'ya karşı oynanır. Her oyuncu kendi köşesinden başlayarak
-          tahtanın merkezine doğru ilerler ve kelimeler oluşturarak puan kazanır.
+          Harfik, Yapay Zekâ'ya karşı oynanan strateji odaklı bir kelime oyunudur. Her oyuncu
+          kendi köşesinden başlar. Kurduğu her kelimeyle puan toplar, bölgesini büyütür ve
+          tahtanın merkezine doğru ilerleyerek üstünlük kurmaya çalışır.
         </P>
         <P>
-          İlk hamleni mutlaka kendi bölgenin köşesinden yapmalısın. Bundan sonraki hamlelerini
-          ise tahtanın istediğin herhangi bir yerine yapabilirsin. Ancak önemli bir kural var:
-          Eğer yaptığın hamle başka bir oyuncunun bölgesine temas ederse, kazandığın puanın
-          üçte birini o oyuncuyla paylaşmak zorunda kalırsın.
-        </P>
-        <P>
-          Bu nedenle en iyi strateji, mümkün olduğunca kendi bölgeni büyütürken rakiplerinin
-          genişlemesini zorlaştıracak hamleler yapmaktır. Oyuncuların kontrol ettiği bölgeler
-          kalın çizgilerle gösterilir. Hamlen herhangi bir oyuncunun bölgesine temas etmiyorsa
-          puan paylaşımı olmaz ve kazandığın puanın tamamı sana kalır.
-        </P>
-        <P>
-          Her hamle hem kelime puanını hem de tahtadaki konumunu etkilediği için, oynamadan
-          önce tüm olasılıkları dikkatlice değerlendirmelisin.
+          İlk hamle bölgenin köşesinden başlar ama ondan sonraki hamleler tahtanın dilediğin
+          herhangi bir yerine yapılabilir. Ancak önemli bir kural var: Eğer yaptığın hamle
+          başka bir oyuncunun bölgesine temas ederse, kazandığın puanın üçte birini o
+          oyuncuyla paylaşırsın. Bu nedenle en iyi strateji, mümkün olduğunca kendi bölgeni
+          büyütürken rakiplerinin genişlemesini zorlaştıracak hamleler yapmaktır. Oyuncuların
+          kontrol ettiği bölgeler kalın çizgilerle gösterilir. Hamlen herhangi bir oyuncunun
+          bölgesine temas etmiyorsa puan paylaşımı olmaz ve kazandığın puanın tamamı sana
+          kalır.
         </P>
       </Section>
 
