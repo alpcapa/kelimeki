@@ -60,7 +60,14 @@ const TileRow = ({
     <span className="font-mono text-xs text-text leading-relaxed">
       {tiles.map(([letter, count], i) => (
         <span key={letter}>
-          <strong>{letter}</strong>(×{count})
+          <strong>
+            {letter === '★' ? (
+              <span className="text-base leading-none align-middle">★</span>
+            ) : (
+              letter
+            )}
+          </strong>
+          (×{count})
           {i < tiles.length - 1 ? '  ' : ''}
         </span>
       ))}
