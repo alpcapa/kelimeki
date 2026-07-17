@@ -102,8 +102,7 @@ function QuickStart({ onDetailedClick }: { onDetailedClick: () => void }) {
         katlar.
       </QuickItem>
       <QuickItem icon="🎁">
-        7 taşını tek hamlede koyarsan <strong>+{BINGO_BONUS} bonus</strong> (Bingo)
-        kazanırsın.
+        7 taşını tek hamlede koyarsan <strong>+{BINGO_BONUS} Bingo bonus</strong> kazanırsın.
       </QuickItem>
       <QuickItem icon="⭐">
         Joker (<span className="text-base leading-none align-middle">★</span>) istediğin
