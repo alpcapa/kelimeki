@@ -106,7 +106,7 @@ function QuickStart({ onDetailedClick }: { onDetailedClick: () => void }) {
         kazanırsın.
       </QuickItem>
       <QuickItem icon="⭐">
-        Joker (yıldız) istediğin harfe dönüşür, puan değeri 0'dır. Elindeki son taş(lar)
+        Joker (★) istediğin harfe dönüşür, puan değeri 0'dır. Elindeki son taş(lar)
         jokerse ve onunla bitirirsen <strong>+25/+50 bonus</strong> kazanırsın.
       </QuickItem>
       <QuickItem icon="📖">
