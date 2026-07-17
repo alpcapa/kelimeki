@@ -71,9 +71,9 @@ const QuickItem = ({ icon, children }: { icon: string; children: React.ReactNode
   </div>
 );
 
-function QuickStart() {
+function QuickStart({ onDetailedClick }: { onDetailedClick: () => void }) {
   return (
-    <div className="flex flex-col gap-3.5">
+    <div className="flex flex-col gap-2">
       <QuickItem icon="🎯">
         2 ya da 4 oyuncuyla, <strong>Yapay Zekâ</strong>'ya karşı oynanır.
       </QuickItem>
@@ -98,7 +98,8 @@ function QuickStart() {
         7 taşını tek hamlede bitirirsen <strong>+{BINGO_BONUS} bonus</strong> (Bingo).
       </QuickItem>
       <QuickItem icon="⭐">
-        Joker (<strong>?</strong>) istediğin harfe dönüşür, puan değeri 0'dır.
+        Joker (<strong>?</strong>) istediğin harfe dönüşür, puan değeri 0'dır. Elindeki son taş(lar)
+        jokerse bitirişte <strong>+25/+50 bonus</strong> kazanırsın.
       </QuickItem>
       <QuickItem icon="📖">
         Sadece <strong>TDK sözlüğündeki</strong> Türkçe kelimeler geçerlidir.
@@ -107,6 +108,12 @@ function QuickStart() {
         Raf + torba boşalınca ya da art arda 2 tur pas geçilince oyun biter; en yüksek puan
         kazanır.
       </QuickItem>
+      <button
+        onClick={onDetailedClick}
+        className="self-start mt-1 font-mono text-[10px] uppercase tracking-[1px] text-accent active:opacity-70 transition-opacity"
+      >
+        Detaylı Kurallar →
+      </button>
     </div>
   );
 }
@@ -301,7 +308,11 @@ export function HelpModal({ onClose, initialStep = 'quick' }: HelpModalProps) {
         </button>
       }
     >
-      {step === 'quick' ? <QuickStart /> : <DetailedRules />}
+      {step === 'quick' ? (
+        <QuickStart onDetailedClick={() => setStep('detailed')} />
+      ) : (
+        <DetailedRules />
+      )}
     </Modal>
   );
 }
