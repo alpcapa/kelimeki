@@ -252,9 +252,10 @@ function DetailedRules() {
 
       <Section title="Oyunun Sonu">
         <P>
-          Bir oyuncunun harf kutusu boşaldığında ve torbada taş kalmadığında oyun biter. Oyun
-          bittiğinde harf kutusunda taş kalan oyuncuların puanından o taşların toplam değeri
-          düşülür. Ancak bu puanlar bitiren oyuncuya eklenmez.
+          Bir oyuncu harf kutusundaki tüm harfleri yerleştirdiğinde ve torbada başka taş
+          kalmadığında oyun biter. Oyun bittiğinde harf kutusunda taş kalan oyuncuların
+          puanından o taşların toplam değeri düşülür. Ancak bu puanlar bitiren oyuncuya
+          eklenmez.
         </P>
         <P>
           Tüm oyuncular arka arkaya 2 tur boyunca pas geçerse de oyun sona erer. Bu durumda da
