@@ -88,11 +88,11 @@ function QuickStart({ onDetailedClick }: { onDetailedClick: () => void }) {
         2 ya da 4 oyuncuyla, <strong>Yapay Zekâ</strong>'ya karşı oynanır.
       </QuickItem>
       <QuickItem icon="🏠">
-        Kendi bölgenden başlarsın, tahtanın <strong>ortasına doğru</strong> bölgeni
+        Kendi bölgenden başlar, tahtanın <strong>ortasına doğru</strong> bölgeni
         genişletirsin.
       </QuickItem>
       <QuickItem icon="🔗">
-        Yeni kelimeler tahtadaki mevcut harflere (rakiplerinki dahil) bağlanmalı.
+        Yeni kelimeler tahtadaki mevcut harflere (rakiplerinki dahil) bağlanmalıdır.
       </QuickItem>
       <QuickItem icon="💰">
         Rakip bölgesine değen/giren hamlede, <strong>bölge vergisi</strong> ödersin.
@@ -102,11 +102,12 @@ function QuickStart({ onDetailedClick }: { onDetailedClick: () => void }) {
         katlar.
       </QuickItem>
       <QuickItem icon="🎁">
-        7 taşını tek hamlede bitirirsen <strong>+{BINGO_BONUS} bonus</strong> (Bingo).
+        7 taşını tek hamlede koyarsan <strong>+{BINGO_BONUS} bonus</strong> (Bingo)
+        kazanırsın.
       </QuickItem>
       <QuickItem icon="⭐">
-        Joker (<strong>?</strong>) istediğin harfe dönüşür, puan değeri 0'dır. Elindeki son taş(lar)
-        jokerse bitirişte <strong>+25/+50 bonus</strong> kazanırsın.
+        Joker (yıldız) istediğin harfe dönüşür, puan değeri 0'dır. Elindeki son taş(lar)
+        jokerse ve onunla bitirirsen <strong>+25/+50 bonus</strong> kazanırsın.
       </QuickItem>
       <QuickItem icon="📖">
         Sadece <strong>TDK sözlüğündeki</strong> Türkçe kelimeler geçerlidir.
