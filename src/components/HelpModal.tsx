@@ -246,7 +246,7 @@ function DetailedRules() {
         <P>
           Yalnızca Türkçe kelimeler geçerlidir ve sadece Türk Dil Kurumu (TDK) sözlüğünde yer
           alan kelimeler bulunur. TDK sözlüğünde olmayan ama bulmacalarda sık kullanılan bazı
-          ekleşimler yapılmıştır.
+          kelimeler eklenmiştir.
         </P>
       </Section>
 
