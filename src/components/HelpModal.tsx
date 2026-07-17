@@ -47,15 +47,25 @@ const Pill = ({
 const TileRow = ({
   pts,
   tiles,
+  note,
 }: {
   pts: number | string;
-  tiles: string;
+  tiles: [string, number][];
+  note?: string;
 }) => (
   <div className="flex items-start gap-2">
-    <span className="shrink-0 w-8 text-right font-mono text-xs font-bold text-accent">
-      {pts}
+    <span className="shrink-0 whitespace-nowrap text-left font-mono text-xs font-bold text-accent">
+      {pts} puan:
     </span>
-    <span className="font-mono text-xs text-text leading-relaxed">{tiles}</span>
+    <span className="font-mono text-xs text-text leading-relaxed">
+      {tiles.map(([letter, count], i) => (
+        <span key={letter}>
+          <strong>{letter}</strong>(×{count})
+          {i < tiles.length - 1 ? '  ' : ''}
+        </span>
+      ))}
+      {note}
+    </span>
   </div>
 );
 
@@ -277,15 +287,66 @@ function DetailedRules() {
           döküm bu değere göredir.
         </P>
         <div className="flex flex-col gap-1 mt-0.5">
-          <TileRow pts="1" tiles="A (×12)  E (×8)  İ (×7)  K (×7)  L (×7)  R (×6)  N (×5)  T (×5)" />
-          <TileRow pts="2" tiles="I (×4)  M (×4)  O (×3)  S (×3)  U (×3)" />
-          <TileRow pts="3" tiles="B (×2)  Ç (×2)  D (×2)  Ü (×2)  Y (×2)" />
-          <TileRow pts="4" tiles="C (×2)  Ş (×2)  Z (×2)" />
-          <TileRow pts="5" tiles="G (×1)  H (×1)  P (×1)" />
-          <TileRow pts="7" tiles="F (×1)  Ö (×1)  V (×1)" />
-          <TileRow pts="8" tiles="Ğ (×1)" />
-          <TileRow pts="10" tiles="J (×1)" />
-          <TileRow pts="0" tiles="? Joker (×2)" />
+          <TileRow
+            pts="1"
+            tiles={[
+              ['A', 12],
+              ['E', 8],
+              ['İ', 7],
+              ['K', 7],
+              ['L', 7],
+              ['R', 6],
+              ['N', 5],
+              ['T', 5],
+            ]}
+          />
+          <TileRow
+            pts="2"
+            tiles={[
+              ['I', 4],
+              ['M', 4],
+              ['O', 3],
+              ['S', 3],
+              ['U', 3],
+            ]}
+          />
+          <TileRow
+            pts="3"
+            tiles={[
+              ['B', 2],
+              ['Ç', 2],
+              ['D', 2],
+              ['Ü', 2],
+              ['Y', 2],
+            ]}
+          />
+          <TileRow
+            pts="4"
+            tiles={[
+              ['C', 2],
+              ['Ş', 2],
+              ['Z', 2],
+            ]}
+          />
+          <TileRow
+            pts="5"
+            tiles={[
+              ['G', 1],
+              ['H', 1],
+              ['P', 1],
+            ]}
+          />
+          <TileRow
+            pts="7"
+            tiles={[
+              ['F', 1],
+              ['Ö', 1],
+              ['V', 1],
+            ]}
+          />
+          <TileRow pts="8" tiles={[['Ğ', 1]]} />
+          <TileRow pts="10" tiles={[['J', 1]]} />
+          <TileRow pts="0" tiles={[['?', 2]]} note=" Joker" />
         </div>
       </Section>
     </div>
