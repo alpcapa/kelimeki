@@ -60,7 +60,14 @@ const TileRow = ({
     <span className="font-mono text-xs text-text leading-relaxed">
       {tiles.map(([letter, count], i) => (
         <span key={letter}>
-          <strong>{letter}</strong>(×{count})
+          <strong>
+            {letter === '★' ? (
+              <span className="text-base leading-none relative -top-[2px]">★</span>
+            ) : (
+              letter
+            )}
+          </strong>
+          (×{count})
           {i < tiles.length - 1 ? '  ' : ''}
         </span>
       ))}
@@ -339,7 +346,7 @@ function DetailedRules() {
           />
           <TileRow pts="8" tiles={[['Ğ', 1]]} />
           <TileRow pts="10" tiles={[['J', 1]]} />
-          <TileRow pts="0" tiles={[['?', 2]]} note=" Joker" />
+          <TileRow pts="0" tiles={[['★', 2]]} note=" Joker" />
         </div>
       </Section>
     </div>
