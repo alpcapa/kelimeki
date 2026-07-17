@@ -339,7 +339,7 @@ function DetailedRules() {
           />
           <TileRow pts="8" tiles={[['Ğ', 1]]} />
           <TileRow pts="10" tiles={[['J', 1]]} />
-          <TileRow pts="0" tiles={[['?', 2]]} note=" Joker" />
+          <TileRow pts="0" tiles={[['★', 2]]} note=" Joker" />
         </div>
       </Section>
     </div>
