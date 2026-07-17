@@ -29,7 +29,7 @@ export function AddToHomeScreen() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[60] flex justify-center px-3 pb-4 animate-slide-up"
+      className="fixed bottom-4 left-0 right-0 z-[60] flex justify-center px-3 pb-4 animate-slide-up"
       style={{ animation: 'slideUp 0.35s cubic-bezier(0.16,1,0.3,1) both' }}
     >
       <style>{`

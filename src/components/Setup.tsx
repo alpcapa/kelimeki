@@ -5,7 +5,6 @@ import type { PlayerSetup } from '../game/gameReducer';
 import { useAuth } from '../hooks/useAuth';
 import { fetchPlayerStats } from '../lib/api';
 import { hasSeenQuickStart, markQuickStartSeen } from '../utils/onboarding';
-import { AddToHomeScreen } from './AddToHomeScreen';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
@@ -229,8 +228,6 @@ export function Setup({ onStart }: SetupProps) {
         </button>
       </div>
     </div>
-
-    {count !== 4 && <AddToHomeScreen />}
     </>
   );
 }

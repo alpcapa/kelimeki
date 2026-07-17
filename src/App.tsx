@@ -6,6 +6,7 @@ import { Rack } from './components/Rack';
 import { GameOver } from './components/GameOver';
 import { UserMenu } from './components/UserMenu';
 import { Setup } from './components/Setup';
+import { AddToHomeScreen } from './components/AddToHomeScreen';
 import { MeaningModal } from './components/MeaningModal';
 import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
@@ -378,6 +379,7 @@ export default function App() {
             if (showTutorial) setShowPostStartTutorial(true);
           }}
         />
+        <AddToHomeScreen />
       </div>
     );
   }
