@@ -62,7 +62,7 @@ const TileRow = ({
         <span key={letter}>
           <strong>
             {letter === '★' ? (
-              <span className="text-base leading-none align-middle">★</span>
+              <span className="text-base leading-none relative -top-[2px]">★</span>
             ) : (
               letter
             )}
