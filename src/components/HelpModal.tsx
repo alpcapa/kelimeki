@@ -185,14 +185,13 @@ function DetailedRules() {
 
       <Section title="Bonus Bölgesi">
         <div className="flex flex-col gap-1.5 mt-0.5">
-          <Pill label="X2" color="#FBBF24" desc="En ortadaki 5×5 sarı alanda yapılan hamleler ikiye katlanır" />
-          <Pill label="X3" color="#F97316" desc="Tam merkezdeki tek kare: kelime puanı üçe katlanır" />
+          <Pill label="X2" color="#FBBF24" desc="En ortadaki 5×5 sarı alanda yapılan kelime puanı ikiye katlanır" />
+          <Pill label="X3" color="#F97316" desc="Tam merkezdeki tek karede yapılan kelime puanı üçe katlanır" />
         </div>
         <P>
           X2 ve X3 bonusları yalnızca o kare ilk kez kullanıldığında geçerlidir; daha önce
-          kullanılmış karelere yapılan bağlantılar bonus kazandırmaz. İki bonus hiçbir zaman
-          aynı kelimede birleşmez: bir kelime X3 hücresine değiyorsa tamamen ×3 sayılır, ayrıca
-          X2 eklenmez.
+          kullanılmış karelere yapılan bağlantılar bonus kazandırmaz. X2 bölgesi içinde olmasına
+          rağmen, X3 hücresi kullanıldığında ayrıca X2 eklenmez.
         </P>
       </Section>
 
