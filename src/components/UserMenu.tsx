@@ -12,8 +12,9 @@ import { ScoreCard } from './ScoreCard';
 import { AccountSettingsModal } from './AccountSettingsModal';
 import { HelpModal } from './HelpModal';
 import { Leaderboard } from './Leaderboard';
+import { AdminDashboard } from './AdminDashboard';
 
-type ActiveModal = 'auth' | 'account' | 'score' | 'help' | 'league' | null;
+type ActiveModal = 'auth' | 'account' | 'score' | 'help' | 'league' | 'admin' | null;
 
 export function UserMenu() {
   const { user, profile, configured, loading } = useAuth();
@@ -142,6 +143,18 @@ export function UserMenu() {
               <span aria-hidden>❓</span> Nasıl Oynanır?
             </button>
 
+            {profile?.is_admin && (
+              <button
+                className={`${item} border-t border-border`}
+                onClick={() => {
+                  setModal('admin');
+                  setOpen(false);
+                }}
+              >
+                <span aria-hidden>🛡️</span> Admin Paneli
+              </button>
+            )}
+
             <button
               className={`${item} border-t border-border hover:text-red`}
               onClick={async () => {
@@ -163,6 +176,7 @@ export function UserMenu() {
       {modal === 'help' && (
         <HelpModal onClose={() => setModal(null)} />
       )}
+      {modal === 'admin' && <AdminDashboard onClose={() => setModal(null)} />}
     </>
   );
 }

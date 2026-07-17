@@ -4,6 +4,8 @@
 // döner, böylece oyun çevrimdışı da çalışır.
 import { supabase, isSupabaseConfigured } from './supabase';
 import type {
+  AdminGameCounts,
+  AdminMember,
   GameHistoryEntry,
   LeaderboardRow,
   MyLeaderboardRank,
@@ -33,6 +35,26 @@ export async function saveGame(game: NewGame): Promise<string | null> {
     return null;
   }
   return data?.id ?? null;
+}
+
+/**
+ * Bir oyunun başladığını kaydeder (oturum açıksa). `games` tablosu yalnızca
+ * BİTEN oyunları tuttuğundan, admin panelindeki "başlatılan" sayacı bu ayrı
+ * kayda dayanır — hata sessizce yutulur, oyun akışını asla engellemez.
+ */
+export async function logGameStart(playerCount: number): Promise<void> {
+  if (!supabase) return;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { error } = await supabase
+    .from('game_starts')
+    .insert({ user_id: user.id, player_count: playerCount });
+  if (error) {
+    console.error('[Harfik] logGameStart hatası:', error.message);
+  }
 }
 
 /** Liderlik tablosunu döner (toplam puana göre ilk 10). */
@@ -181,6 +203,30 @@ export async function fetchMeaning(word: string): Promise<WordMeaning | null> {
     return { word: norm, pos: local.pos, meanings: local.meanings };
   }
   return null;
+}
+
+// ── Admin paneli ────────────────────────────────────────────────────────────
+
+/** Tüm kayıtlı kullanıcıları döner (yalnızca is_admin=true için, RPC içinde kontrol edilir). */
+export async function fetchAdminMembers(): Promise<AdminMember[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_list_members');
+  if (error) {
+    console.error('[Harfik] fetchAdminMembers hatası:', error.message);
+    return [];
+  }
+  return (data as AdminMember[]) ?? [];
+}
+
+/** Oyuncu sayısına göre başlatılan/biten oyun sayılarını döner (yalnızca admin). */
+export async function fetchAdminGameCounts(): Promise<AdminGameCounts[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_game_counts');
+  if (error) {
+    console.error('[Harfik] fetchAdminGameCounts hatası:', error.message);
+    return [];
+  }
+  return (data as AdminGameCounts[]) ?? [];
 }
 
 // ── Auth yardımcıları ───────────────────────────────────────────────────────

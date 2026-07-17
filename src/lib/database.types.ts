@@ -11,6 +11,7 @@ export interface Profile {
   display_name: string | null;
   avatar_url: string | null;
   agreed_to_terms: boolean;
+  is_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -130,4 +131,27 @@ export interface PlayerStats {
   total_score: number;
   /** Oyuncunun bitirmeden terk ettiği (teslim olduğu) oyun sayısı. */
   surrendered_count: number;
+}
+
+// ── Admin paneli ────────────────────────────────────────────────────────────
+
+/** admin_list_members RPC çıktısındaki tek satır (auth.users + profiles). */
+export interface AdminMember {
+  id: string;
+  email: string | null;
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  display_name: string | null;
+  is_admin: boolean;
+  created_at: string;
+  last_sign_in_at: string | null;
+  banned_until: string | null;
+}
+
+/** admin_game_counts RPC çıktısındaki tek satır (oyuncu sayısına göre). */
+export interface AdminGameCounts {
+  player_count: number;
+  started: number;
+  finished: number;
 }
