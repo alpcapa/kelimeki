@@ -169,17 +169,17 @@ function DetailedRules() {
           belirlenir.
         </P>
         <P>
-          İlk hamleden sonra rakibin bölgesine de taş koyabilirsin — buna hiçbir ön koşul yok,
-          her zaman serbesttir. Ancak yerleştirdiğin harflerden herhangi biri rakibin bölgesine
-          temas eder ya da içine yerleşirse, o hamleden kazandığın puanın 1/3'ü bölge sahibine
-          gider, 2/3'ü sende kalır. Aynı hamle iki farklı rakip bölgesiyle birden etkileşirse
-          puanın yarısı sende kalır, diğer yarısı rakipler arasında eşit paylaştırılır. 3 farklı
-          bölge temasında ise 1/3 sende kalır, 2/3 diğer 3 rakiple eşit paylaşılır.
+          İlk hamleden sonra rakibin bölgesine de taş koyabilirsin; ancak yerleştirdiğin
+          harflerden herhangi biri rakibin bölgesine temas eder ya da içine yerleşirse, o
+          hamleden kazandığın puanın 1/3'ü bölge sahibine gider, 2/3'ü sende kalır. Aynı hamle
+          iki farklı rakip bölgesiyle birden etkileşirse puanın yarısı sende kalır, diğer
+          yarısı rakipler arasında eşit paylaştırılır. 3 farklı bölge temasında ise 1/3 sende
+          kalır, 2/3 diğer 3 rakiple eşit paylaşılır.
         </P>
         <P>
           Rakip bölgesine temas eden ama senin bölgene dahil olmayan kelimeler sana vergi
           kazandırmaz. Ancak ilerleyen hamlelerde bu kelimeyi kendi bölgene bağlarsan artık
-          bölgene dahil olur ve bundan sonra o kelime üzerinden vergi kazanmaya başlarsın.
+          bölgene dahil olur ve bundan sonra o kelime üzerinden vergi kazanmaya başlayabilirsin.
         </P>
       </Section>
 
