@@ -228,11 +228,13 @@ export function computeAllTerritories(board: Board, players: Player[]): Set<stri
  * artık sabit 5x5 köşe değil, `computeTerritory` ile hesaplanan — oyuncunun
  * kendi taşlarıyla köşesinden genişlettiği— dinamik alandır. Rakip bölgesine
  * girmek için hiçbir ön koşul yok — her zaman serbest.
- * Tek bir rakip bölgesiyle etkileşiliyorsa pay eşit değildir: puanın 1/3'ü
- * bölge sahibine, 2/3'ü saldırgana kalır. İki farklı rakip bölgesiyle birden
- * etkileşiliyorsa puan üç kişi arasında (saldırgan + iki bölge sahibi) eşit
- * paylaşılır — bu durumda herkese zaten 1/3 düşer. Yuvarlama farkı
- * saldırganda kalır, böylece toplam puan her zaman korunur.
+ * Etkileşilen rakip bölge sayısına (n) göre saldırganın payı küçülür: n=1'de
+ * puanın 2/3'ü saldırgana kalır, kalan 1/3 tek bölge sahibine gider. n=2'de
+ * saldırgan yarısını (1/2) alır, kalan yarısı iki bölge sahibi arasında eşit
+ * paylaşılır (kişi başı 1/4). n=3'te saldırgan 1/3'ünü alır, kalan 2/3 üç
+ * bölge sahibi arasında eşit paylaşılır (kişi başı 2/9). Genel olarak her
+ * bölge sahibinin payı basePts*(n+1)/(6n)'dir. Yuvarlama farkı saldırganda
+ * kalır, böylece toplam puan her zaman korunur.
  */
 export function computeInvasionSplit(
   coords: [number, number][],
@@ -263,10 +265,10 @@ export function computeInvasionSplit(
     }
   }
   if (touchedIdx.size === 0) return { pts: basePts, shares: [] };
-  const denom = touchedIdx.size === 1 ? 3 : touchedIdx.size + 1;
-  const share = Math.round(basePts / denom);
+  const n = touchedIdx.size;
+  const share = Math.round((basePts * (n + 1)) / (6 * n));
   const shares = [...touchedIdx].map((index) => ({ index, amount: share }));
-  const pts = basePts - share * touchedIdx.size;
+  const pts = basePts - share * n;
   return { pts, shares };
 }
 
