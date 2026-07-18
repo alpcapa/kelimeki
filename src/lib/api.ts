@@ -283,6 +283,10 @@ export async function signUp(
 ) {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
   // sharedxp_pending_profile formatı trigger tarafından okunur (camelCase).
+  // display_name üst seviyede gönderilir çünkü trigger onu doğrudan
+  // raw_user_meta_data->>'display_name' olarak okuyor (e-posta doğrulaması
+  // açıkken signUp() session döndürmez, bu yüzden aşağıdaki update'e
+  // güvenilemez — nickname'in kaybolmaması için metadata'da baştan olmalı).
   const result = await supabase.auth.signUp({
     email,
     password,
@@ -293,16 +297,15 @@ export async function signUp(
           lastName,
           agreedToTerms: termsAccepted,
         },
+        ...(nickname ? { display_name: nickname } : {}),
       },
     },
   });
-  // Oturum hemen açıldıysa (e-posta doğrulaması kapalı) profili güncelle.
+  // Oturum hemen açıldıysa (e-posta doğrulaması kapalı) kabul zamanını yaz.
   if (!result.error && result.data.session) {
-    const patch: Record<string, unknown> = { agreed_to_terms: termsAccepted };
-    if (nickname) patch.display_name = nickname;
     await supabase
       .from('profiles')
-      .update(patch)
+      .update({ agreed_to_terms: termsAccepted })
       .eq('id', result.data.session.user.id);
   }
   return result;
