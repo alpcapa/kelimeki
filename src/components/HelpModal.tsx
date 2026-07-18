@@ -139,7 +139,7 @@ function DetailedRules() {
       <Section title="Nasıl Oynanır?">
         <P>
           Harfik, Yapay Zekâ'ya karşı oynanan strateji odaklı bir kelime oyunudur. Her oyuncu
-          kendi köşesinden başlar. Kurduğu her kelimeyle puan toplar, bölgesini büyütür ve
+          kendi köşesinden başlar; kurduğu her kelimeyle puan toplar, bölgesini büyütür ve
           tahtanın merkezine doğru ilerleyerek üstünlük kurmaya çalışır.
         </P>
         <P>
@@ -169,9 +169,9 @@ function DetailedRules() {
 
       <Section title="Bölge Vergisi">
         <P>
-          Her oyuncunun bölgesi 4×4'lük köşeyle başlar; köşenden başlayıp, kelimeleri
-          bağladıkça genişler. Board üzerinde her oyuncunun güncel bölgesi kalın çizgiyle
-          belirlenir.
+          Her oyuncu 4×4'lük kendi köşesinden başlar ve kelimeleri bağladıkça bölgesini
+          büyütür. Tahta üzerinde güncel bölgeler her oyuncunun kendi renginde kalın çizgiyle
+          belirlenmiştir.
         </P>
         <P>
           İlk hamleden sonra rakibin bölgesine de taş koyabilirsin; ancak yerleştirdiğin
