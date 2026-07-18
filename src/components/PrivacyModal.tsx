@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Modal } from './Modal';
+import { FeedbackModal } from './FeedbackModal';
 
 interface PrivacyModalProps {
   onClose: () => void;
@@ -18,7 +20,10 @@ const P = ({ children }: { children: React.ReactNode }) => (
 );
 
 export function PrivacyModal({ onClose }: PrivacyModalProps) {
+  const [showFeedback, setShowFeedback] = useState(false);
+
   return (
+    <>
     <Modal title="Gizlilik Politikası" onClose={onClose}>
       <div className="flex flex-col gap-5">
         <P>
@@ -82,10 +87,18 @@ export function PrivacyModal({ onClose }: PrivacyModalProps) {
         <Section title="7. İletişim">
           <P>
             Gizlilik talepleriniz için:{' '}
-            <span className="text-accent font-mono">destek@harfik.com</span>
+            <button
+              type="button"
+              onClick={() => setShowFeedback(true)}
+              className="text-accent font-mono hover:underline"
+            >
+              Görüş Bildir formu
+            </button>
           </P>
         </Section>
       </div>
     </Modal>
+    {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
+    </>
   );
 }
