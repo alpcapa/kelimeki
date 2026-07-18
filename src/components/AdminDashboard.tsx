@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { fetchAdminMembers, fetchAdminGameCounts } from '../lib/api';
 import type { AdminMember, AdminGameCounts } from '../lib/database.types';
+import { AdminPlayerDetail } from './AdminPlayerDetail';
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -33,6 +34,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [gameCounts, setGameCounts] = useState<AdminGameCounts[] | null>(null);
   const [gameSubTab, setGameSubTab] = useState<GameSubTab>('total');
   const [error, setError] = useState<string | null>(null);
+  const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
 
   useEffect(() => {
     fetchAdminMembers()
@@ -115,7 +117,11 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     </thead>
                     <tbody>
                       {members.map((m) => (
-                        <tr key={m.id} className="border-b border-border/50">
+                        <tr
+                          key={m.id}
+                          onClick={() => setSelectedMember(m)}
+                          className="border-b border-border/50 cursor-pointer hover:bg-bg/60 active:opacity-70"
+                        >
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberName(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberNickname(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{m.email ?? '—'}</td>
@@ -180,6 +186,10 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           )}
         </div>
       </div>
+
+      {selectedMember && (
+        <AdminPlayerDetail member={selectedMember} onClose={() => setSelectedMember(null)} />
+      )}
     </div>,
     document.body,
   );

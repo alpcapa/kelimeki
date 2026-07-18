@@ -84,18 +84,31 @@ export async function fetchMyLeaderboardRank(userId: string): Promise<MyLeaderbo
   return row ? { rank: Number(row.rank), total_score: Number(row.total_score) } : null;
 }
 
-/** Oturum açan oyuncunun belirli oyuncu sayısındaki istatistik özetini döner. */
-export async function fetchPlayerStats(playerCount: number): Promise<PlayerStats | null> {
+/**
+ * Belirli bir oyuncunun (varsayılan: oturum açan kullanıcı) belirli oyuncu
+ * sayısındaki istatistik özetini döner. `userId` verilirse (admin panelindeki
+ * oyuncu detay görünümü) o kullanıcının istatistiği döner — `player_stats`
+ * view'ı `games` tablosundaki herkese-açık select politikasını (leaderboard
+ * için) miras aldığından bu ekstra bir yetki gerektirmez.
+ */
+export async function fetchPlayerStats(
+  playerCount: number,
+  userId?: string,
+): Promise<PlayerStats | null> {
   if (!supabase) return null;
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  let uid = userId;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    uid = user.id;
+  }
 
   const { data, error } = await supabase
     .from('player_stats')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', uid)
     .eq('player_count', playerCount)
     .maybeSingle();
   if (error) {
@@ -106,25 +119,32 @@ export async function fetchPlayerStats(playerCount: number): Promise<PlayerStats
 }
 
 /**
- * Oturum açan oyuncunun belirli oyuncu sayısındaki oyunlarını sayfalı biçimde
- * döner (en yeni önce), `GameHistoryModal`'ın kaydırdıkça yüklemesi (lazy
- * load) için. `hasMore`, bir sonraki sayfanın olup olmadığını bildirir.
+ * Belirli bir oyuncunun (varsayılan: oturum açan kullanıcı) belirli oyuncu
+ * sayısındaki oyunlarını sayfalı biçimde döner (en yeni önce),
+ * `GameHistoryModal`'ın kaydırdıkça yüklemesi (lazy load) için. `hasMore`,
+ * bir sonraki sayfanın olup olmadığını bildirir. `userId` verilirse (admin
+ * panelindeki oyuncu detayı) o kullanıcının geçmişi döner.
  */
 export async function fetchMyGames(
   playerCount: number,
   offset: number,
   limit = 20,
+  userId?: string,
 ): Promise<{ games: GameHistoryEntry[]; hasMore: boolean }> {
   if (!supabase) return { games: [], hasMore: false };
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { games: [], hasMore: false };
+  let uid = userId;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { games: [], hasMore: false };
+    uid = user.id;
+  }
 
   const { data, error } = await supabase
     .from('games')
     .select('id, created_at, player_count, players, player_score, ai_score, rank, surrendered')
-    .eq('user_id', user.id)
+    .eq('user_id', uid)
     .eq('player_count', playerCount)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit); // limit+1 satır: sonraki sayfa var mı anlamak için
