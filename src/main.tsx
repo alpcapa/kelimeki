@@ -17,6 +17,8 @@ import '@fontsource/space-mono/latin-400.css';
 import '@fontsource/space-mono/latin-ext-400.css';
 import '@fontsource/space-mono/latin-700.css';
 import '@fontsource/space-mono/latin-ext-700.css';
+import '@fontsource/caveat/latin-700.css';
+import '@fontsource/caveat/latin-ext-700.css';
 import './fonts/nunito-tile.css';
 
 import './index.css';
