@@ -1,8 +1,13 @@
 // Harfik — admin paneli: üyeler ve oyun istatistikleri
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { fetchAdminMembers, fetchAdminGameCounts, fetchAdminDailyActivity } from '../lib/api';
-import type { AdminMember, AdminGameCounts, AdminDailyActivity } from '../lib/database.types';
+import { fetchAdminMembers, fetchAdminGameCounts, fetchAdminActivitySeries } from '../lib/api';
+import type {
+  AdminMember,
+  AdminGameCounts,
+  AdminActivityPoint,
+  AdminActivityGranularity,
+} from '../lib/database.types';
 import { AdminPlayerDetail } from './AdminPlayerDetail';
 import { GrowthChart } from './GrowthChart';
 
@@ -12,7 +17,11 @@ interface AdminDashboardProps {
 
 type Tab = 'members' | 'games' | 'growth';
 type GameSubTab = 'total' | 2 | 4;
-type DaysRange = 7 | 30 | 90;
+
+const PERIOD_OPTIONS: Record<AdminActivityGranularity, readonly number[]> = {
+  day: [7, 30, 90],
+  month: [6, 12, 24],
+};
 
 function fmtDate(iso: string | null) {
   if (!iso) return '—';
@@ -37,8 +46,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [gameSubTab, setGameSubTab] = useState<GameSubTab>('total');
   const [error, setError] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
-  const [dailyActivity, setDailyActivity] = useState<AdminDailyActivity[] | null>(null);
-  const [daysRange, setDaysRange] = useState<DaysRange>(30);
+  const [activity, setActivity] = useState<AdminActivityPoint[] | null>(null);
+  const [granularity, setGranularity] = useState<AdminActivityGranularity>('day');
+  const [period, setPeriod] = useState<number>(30);
 
   useEffect(() => {
     fetchAdminMembers()
@@ -50,11 +60,16 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   }, []);
 
   useEffect(() => {
-    setDailyActivity(null);
-    fetchAdminDailyActivity(daysRange)
-      .then(setDailyActivity)
+    setActivity(null);
+    fetchAdminActivitySeries(period, granularity)
+      .then(setActivity)
       .catch((e) => setError(String(e)));
-  }, [daysRange]);
+  }, [period, granularity]);
+
+  function selectGranularity(g: AdminActivityGranularity) {
+    setGranularity(g);
+    setPeriod(PERIOD_OPTIONS[g][1]);
+  }
 
   const tabBtn = (active: boolean) =>
     `flex-1 py-2.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] transition-colors ${
@@ -202,21 +217,28 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           {tab === 'growth' && (
             <>
               <div className="flex gap-1.5">
-                {([7, 30, 90] as const).map((d) => (
+                {(['day', 'month'] as const).map((g) => (
                   <button
-                    key={d}
-                    className={tabBtn(daysRange === d)}
-                    onClick={() => setDaysRange(d)}
+                    key={g}
+                    className={tabBtn(granularity === g)}
+                    onClick={() => selectGranularity(g)}
                   >
-                    Son {d} Gün
+                    {g === 'day' ? 'Günlük' : 'Aylık'}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1.5">
+                {PERIOD_OPTIONS[granularity].map((p) => (
+                  <button key={p} className={tabBtn(period === p)} onClick={() => setPeriod(p)}>
+                    Son {p} {granularity === 'day' ? 'Gün' : 'Ay'}
                   </button>
                 ))}
               </div>
 
-              {dailyActivity === null ? (
+              {activity === null ? (
                 <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
               ) : (
-                <GrowthChart data={dailyActivity} />
+                <GrowthChart data={activity} granularity={granularity} />
               )}
             </>
           )}

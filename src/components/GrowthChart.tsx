@@ -1,9 +1,10 @@
 // Harfik — admin paneli: günlük kayıt/oyun başlatma/oyun bitirme çizgi grafiği
 import { useMemo, useRef, useState } from 'react';
-import type { AdminDailyActivity } from '../lib/database.types';
+import type { AdminActivityGranularity, AdminActivityPoint } from '../lib/database.types';
 
 interface GrowthChartProps {
-  data: AdminDailyActivity[];
+  data: AdminActivityPoint[];
+  granularity: AdminActivityGranularity;
 }
 
 const SERIES = [
@@ -27,17 +28,21 @@ function niceCeil(n: number): number {
   return niceNorm * base;
 }
 
-function fmtShortDate(iso: string): string {
+function fmtShortDate(iso: string, granularity: AdminActivityGranularity): string {
   const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' });
+  return granularity === 'month'
+    ? d.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' })
+    : d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' });
 }
 
-function fmtFullDate(iso: string): string {
+function fmtFullDate(iso: string, granularity: AdminActivityGranularity): string {
   const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
+  return granularity === 'month'
+    ? d.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+    : d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-export function GrowthChart({ data }: GrowthChartProps) {
+export function GrowthChart({ data, granularity }: GrowthChartProps) {
   const [showTable, setShowTable] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -124,8 +129,8 @@ export function GrowthChart({ data }: GrowthChartProps) {
             </thead>
             <tbody>
               {[...data].reverse().map((row) => (
-                <tr key={row.day} className="border-b border-border/50">
-                  <td className="py-1.5 pr-3 text-text whitespace-nowrap">{fmtFullDate(row.day)}</td>
+                <tr key={row.bucket} className="border-b border-border/50">
+                  <td className="py-1.5 pr-3 text-text whitespace-nowrap">{fmtFullDate(row.bucket, granularity)}</td>
                   <td className="py-1.5 pr-3 text-text text-right">{row.signups}</td>
                   <td className="py-1.5 pr-3 text-text text-right">{row.game_starts}</td>
                   <td className="py-1.5 text-text text-right">{row.games_finished}</td>
@@ -160,15 +165,15 @@ export function GrowthChart({ data }: GrowthChartProps) {
             ))}
 
             <text x={PAD.left} y={H - 4} textAnchor="start" fontSize={9} fill="#8A93A2">
-              {fmtShortDate(data[0].day)}
+              {fmtShortDate(data[0].bucket, granularity)}
             </text>
             {n > 2 && (
               <text x={x(Math.floor((n - 1) / 2))} y={H - 4} textAnchor="middle" fontSize={9} fill="#8A93A2">
-                {fmtShortDate(data[Math.floor((n - 1) / 2)].day)}
+                {fmtShortDate(data[Math.floor((n - 1) / 2)].bucket, granularity)}
               </text>
             )}
             <text x={x(n - 1)} y={H - 4} textAnchor="end" fontSize={9} fill="#8A93A2">
-              {fmtShortDate(data[n - 1].day)}
+              {fmtShortDate(data[n - 1].bucket, granularity)}
             </text>
 
             {hoverIndex !== null && (
@@ -219,7 +224,7 @@ export function GrowthChart({ data }: GrowthChartProps) {
                 transform: hoverIndex === 0 ? 'translateX(0)' : hoverIndex === n - 1 ? 'translateX(-100%)' : 'translateX(-50%)',
               }}
             >
-              <div className="text-muted mb-1">{fmtFullDate(hover.day)}</div>
+              <div className="text-muted mb-1">{fmtFullDate(hover.bucket, granularity)}</div>
               {SERIES.map((s) => (
                 <div key={s.key} className="flex items-center gap-1.5">
                   <span className="inline-block w-2.5 h-[2px] rounded-full" style={{ background: s.color }} />

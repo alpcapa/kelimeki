@@ -156,10 +156,12 @@ export interface AdminGameCounts {
   finished: number;
 }
 
-/** admin_daily_activity RPC çıktısındaki tek gün (büyüme grafiği). */
-export interface AdminDailyActivity {
-  day: string;
+/** admin_activity_series RPC çıktısındaki tek kova (büyüme grafiği — günlük ya da aylık). */
+export interface AdminActivityPoint {
+  bucket: string;
   signups: number;
   game_starts: number;
   games_finished: number;
 }
+
+export type AdminActivityGranularity = 'day' | 'month';
