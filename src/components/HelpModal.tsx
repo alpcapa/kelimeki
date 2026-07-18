@@ -234,7 +234,7 @@ function DetailedRules() {
         </P>
       </Section>
 
-      <Section title="Joker (Yıldız) Taşı">
+      <Section title="Joker (★) Taşı">
         <P>
           Torbada 2 adet joker bulunur. Joker taşı oynandığında istediğin herhangi bir Türkçe
           harfe dönüşebilir ve puan değeri <strong>0</strong>'dır.
