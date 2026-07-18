@@ -1,6 +1,7 @@
 // Harfik — oyun bitiminde gösterilen "Görüş Bildir" formu
 import { useState } from 'react';
 import { Modal } from './Modal';
+import { AuthModal } from './AuthModal';
 import { submitFeedback } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -15,6 +16,7 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,16 +41,39 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
     'w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-text outline-none focus:border-accent transition-colors';
 
   return (
+    <>
     <Modal title="Görüş Bildir" onClose={onClose}>
       {sent ? (
         <div className="flex flex-col items-center gap-3 py-4 text-center">
           <p className="text-sm text-text">Teşekkürler, mesajın bize ulaştı.</p>
-          <button
-            onClick={onClose}
-            className="btn-raised bg-accent text-white rounded-md py-2.5 px-5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform"
-          >
-            Kapat
-          </button>
+          {!user && email.trim() ? (
+            <>
+              <p className="text-xs text-muted font-mono">
+                {email.trim()} ile üyeliğine devam etmek ister misin?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowSignup(true)}
+                  className="btn-raised bg-accent text-white rounded-md py-2.5 px-5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform"
+                >
+                  Evet
+                </button>
+                <button
+                  onClick={onClose}
+                  className="btn-raised-neutral bg-panel border border-border text-text rounded-md py-2.5 px-5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform"
+                >
+                  Hayır
+                </button>
+              </div>
+            </>
+          ) : (
+            <button
+              onClick={onClose}
+              className="btn-raised bg-accent text-white rounded-md py-2.5 px-5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform"
+            >
+              Kapat
+            </button>
+          )}
         </div>
       ) : (
         <form onSubmit={submit} className="flex flex-col gap-3">
@@ -92,5 +117,9 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
         </form>
       )}
     </Modal>
+    {showSignup && (
+      <AuthModal initialMode="signup" initialEmail={email.trim()} onClose={onClose} />
+    )}
+    </>
   );
 }
