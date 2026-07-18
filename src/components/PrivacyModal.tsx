@@ -84,10 +84,15 @@ export function PrivacyModal({ onClose }: PrivacyModalProps) {
           </P>
         </Section>
 
-        <Section title="6. Çerezler">
+        <Section title="6. Çerezler ve Yerel Depolama">
           <P>
-            Oturum yönetimi için zorunlu çerezler kullanılmaktadır. Analitik veya pazarlama
-            amaçlı çerez kullanılmamaktadır.
+            Harfik, HTTP çerezi (cookie) kullanmaz. Bunun yerine oturumunuzu açık tutmak, oyun
+            ilerlemenizi kaydetmek ve tercihlerinizi hatırlamak için tarayıcınızın yerel depolama
+            alanı (localStorage/sessionStorage) kullanılır; bu veriler cihazınızda tutulur ve
+            sunucularımıza otomatik gönderilmez. Analitik, reklam veya pazarlama amaçlı herhangi
+            bir çerez ya da izleme teknolojisi kullanılmamaktadır. Yazı tipleri de dahil tüm
+            statik içerikler kendi sunucularımızdan sağlanır; üçüncü taraf (ör. Google Fonts)
+            çağrısı yapılmaz.
           </P>
         </Section>
 
