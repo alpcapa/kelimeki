@@ -165,3 +165,13 @@ export interface AdminActivityPoint {
 }
 
 export type AdminActivityGranularity = 'day' | 'month';
+
+/** feedback tablosundaki tek satır (admin panelinden okunur). */
+export interface AdminFeedbackRow {
+  id: string;
+  user_id: string | null;
+  email: string | null;
+  message: string;
+  handled: boolean;
+  created_at: string;
+}

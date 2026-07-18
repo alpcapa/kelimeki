@@ -17,6 +17,10 @@ interface AuthContextValue {
   loading: boolean;
   /** Supabase anahtarları ayarlı mı? */
   configured: boolean;
+  /** Şifre sıfırlama bağlantısı tıklanıp bu sekmede recovery oturumu açıldı mı? */
+  passwordRecovery: boolean;
+  /** "Yeni şifre belirle" akışı tamamlanınca/kapatılınca çağrılır. */
+  clearPasswordRecovery: () => void;
   refreshProfile: () => Promise<void>;
 }
 
@@ -25,6 +29,8 @@ const AuthContext = createContext<AuthContextValue>({
   profile: null,
   loading: true,
   configured: false,
+  passwordRecovery: false,
+  clearPasswordRecovery: () => {},
   refreshProfile: async () => {},
 });
 
@@ -32,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   useEffect(() => {
     if (!supabase) {
@@ -42,8 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(data.session?.user ?? null);
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -74,6 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         loading,
         configured: isSupabaseConfigured,
+        passwordRecovery,
+        clearPasswordRecovery: () => setPasswordRecovery(false),
         refreshProfile,
       }}
     >
