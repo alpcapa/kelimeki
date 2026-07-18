@@ -65,7 +65,11 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
             required
             autoFocus
           />
-          {!user && (
+          {user ? (
+            <p className="text-[10px] text-muted font-mono">
+              Yanıt e-postan: <span className="text-text">{user.email}</span>
+            </p>
+          ) : (
             <input
               className={inputCls}
               type="email"
