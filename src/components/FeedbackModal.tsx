@@ -1,5 +1,5 @@
 // Harfik — oyun bitiminde gösterilen "Görüş Bildir" formu
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { AuthModal } from './AuthModal';
 import { submitFeedback } from '../lib/api';
@@ -9,14 +9,45 @@ interface FeedbackModalProps {
   onClose: () => void;
 }
 
+// Basit bot/spam koruması: sunucu tarafı doğrulaması olmadığı için (henüz
+// CAPTCHA/edge function yok) burada sadece naif botları caydıracak ucuz
+// önlemler var — hedefli bir saldırıyı durdurmaz, sadece maliyetsiz gürültüyü keser.
+const FEEDBACK_HISTORY_KEY = 'harfik:feedback-submissions';
+const FEEDBACK_WINDOW_MS = 10 * 60 * 1000;
+const FEEDBACK_MAX_PER_WINDOW = 3;
+const MIN_SUBMIT_MS = 1500;
+
+function recentSubmissionTimestamps(): number[] {
+  try {
+    const raw = localStorage.getItem(FEEDBACK_HISTORY_KEY);
+    const list = raw ? (JSON.parse(raw) as number[]) : [];
+    const cutoff = Date.now() - FEEDBACK_WINDOW_MS;
+    return list.filter((t) => typeof t === 'number' && t > cutoff);
+  } catch {
+    return [];
+  }
+}
+
+function recordSubmission(): void {
+  try {
+    const list = recentSubmissionTimestamps();
+    list.push(Date.now());
+    localStorage.setItem(FEEDBACK_HISTORY_KEY, JSON.stringify(list));
+  } catch {
+    // yoksay
+  }
+}
+
 export function FeedbackModal({ onClose }: FeedbackModalProps) {
   const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState(user?.email ?? '');
+  const [honeypot, setHoneypot] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+  const openedAt = useRef(Date.now());
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,9 +56,23 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
       setError('Mesaj boş olamaz.');
       return;
     }
+
+    // Honeypot dolu ya da form saniyeler içinde gönderildiyse büyük ihtimalle
+    // bot — hiçbir şey kaydetmeden "gönderildi" göster (botu bilgilendirme).
+    if (honeypot || Date.now() - openedAt.current < MIN_SUBMIT_MS) {
+      setSent(true);
+      return;
+    }
+
+    if (recentSubmissionTimestamps().length >= FEEDBACK_MAX_PER_WINDOW) {
+      setError('Çok fazla mesaj gönderdin, birkaç dakika sonra tekrar dene.');
+      return;
+    }
+
     setBusy(true);
     try {
       await submitFeedback(message, email);
+      recordSubmission();
       setSent(true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
@@ -77,6 +122,17 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
         </div>
       ) : (
         <form onSubmit={submit} className="flex flex-col gap-3">
+          {/* Honeypot: botlar bu alanı doldurur, insanlar görmez. */}
+          <input
+            type="text"
+            name="website"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="absolute -left-[9999px] w-px h-px opacity-0 pointer-events-none"
+          />
           <p className="text-xs text-muted font-mono">
             Öneri, hata bildirimi ya da her türlü görüşünü bize iletebilirsin.
           </p>
