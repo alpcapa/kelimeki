@@ -1,0 +1,206 @@
+// Harfik — admin paneli: seçili üyenin oyun bazlı istatistikleri (ScoreCard'ın salt-okunur admin görünümü)
+import { useEffect, useState } from 'react';
+import { Modal } from './Modal';
+import { Avatar } from './Avatar';
+import { GameHistoryModal } from './GameHistoryModal';
+import { fetchPlayerStats, fetchMyLeaderboardRank } from '../lib/api';
+import type { AdminMember, MyLeaderboardRank, PlayerStats } from '../lib/database.types';
+
+interface AdminPlayerDetailProps {
+  member: AdminMember;
+  onClose: () => void;
+}
+
+const TABS = [2, 4] as const;
+
+function memberDisplayName(m: AdminMember) {
+  return (
+    m.display_name ||
+    [m.first_name, m.last_name].filter(Boolean).join(' ').trim() ||
+    m.username ||
+    m.email ||
+    'Oyuncu'
+  );
+}
+
+export function AdminPlayerDetail({ member, onClose }: AdminPlayerDetailProps) {
+  const [statsByCount, setStatsByCount] = useState<
+    Record<number, PlayerStats | null | undefined>
+  >({ 2: undefined, 4: undefined });
+  const [tab, setTab] = useState<(typeof TABS)[number]>(2);
+  const [showAllGames, setShowAllGames] = useState(false);
+  const [rank, setRank] = useState<MyLeaderboardRank | null>(null);
+
+  useEffect(() => {
+    for (const count of TABS) {
+      fetchPlayerStats(count, member.id).then((s) =>
+        setStatsByCount((cur) => ({ ...cur, [count]: s })),
+      );
+    }
+    fetchMyLeaderboardRank(member.id).then(setRank);
+  }, [member.id]);
+
+  const name = memberDisplayName(member);
+  const stats = statsByCount[tab];
+  const totalScore = TABS.reduce((sum, count) => sum + (statsByCount[count]?.total_score ?? 0), 0);
+
+  const pct = (n: number) =>
+    stats && stats.games_played > 0 ? `%${Math.round((n / stats.games_played) * 100)}` : '%0';
+
+  const secondCellValue = stats?.second_places ?? 0;
+
+  const cells: {
+    label: string;
+    value: number | string;
+    rate?: string;
+    cls?: string;
+    wide?: boolean;
+    span2?: boolean;
+    place?: string;
+  }[] = [
+    { label: 'Toplam Oyun', value: stats?.games_played ?? 0 },
+    {
+      label: 'Ortalama Hamle Puanı',
+      value: Number(stats?.avg_move_score ?? 0).toFixed(2),
+      cls: 'text-accent',
+      place: 'row-start-2 col-start-1',
+    },
+    {
+      label: 'Birincilik',
+      value: stats?.first_places ?? 0,
+      rate: pct(stats?.first_places ?? 0),
+      cls: 'text-gold',
+    },
+    ...(tab === 4
+      ? [
+          {
+            label: 'İkincilik',
+            value: secondCellValue,
+            rate: pct(secondCellValue),
+            cls: 'text-accent',
+          },
+          { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
+          {
+            label: 'Teslim Olma',
+            value: stats?.surrendered_count ?? 0,
+            rate: pct(stats?.surrendered_count ?? 0),
+            cls: 'text-red',
+          },
+        ]
+      : [
+          {
+            label: 'Teslim Olma',
+            value: stats?.surrendered_count ?? 0,
+            rate: pct(stats?.surrendered_count ?? 0),
+            cls: 'text-red',
+          },
+          { label: 'En Yüksek Oyun Puanı', value: stats?.best_score ?? 0, cls: 'text-gold' },
+        ]),
+    { label: 'En İyi Hamle Puanı', value: stats?.best_move_score ?? 0, cls: 'text-accent' },
+    {
+      label: 'En Uzun Kelime',
+      value: stats?.longest_word ?? '—',
+      cls: 'text-text',
+      wide: tab !== 4,
+      span2: tab === 4,
+    },
+  ];
+
+  return (
+    <Modal title="Oyuncu Detayı" onClose={onClose}>
+      <div className="mb-4 flex items-center gap-3">
+        <Avatar name={name} size={44} />
+        <div className="min-w-0 flex-1">
+          <div className="text-base font-bold text-text truncate">{name}</div>
+          {member.email && (
+            <div className="text-[11px] font-mono text-muted truncate">{member.email}</div>
+          )}
+        </div>
+        <div className="text-right shrink-0">
+          <div className="text-xs uppercase tracking-[1px] text-muted font-mono font-bold">
+            Sanal Lig
+          </div>
+          <div className="font-mono text-xl font-bold text-gold">
+            {rank && (
+              <span className="text-sm font-normal text-muted">
+                #{rank.rank}
+                <span className="mx-0.5">·</span>
+              </span>
+            )}
+            {totalScore}
+            <span className="text-xs font-normal text-muted"> puan</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-3 flex gap-2">
+        {TABS.map((count) => (
+          <button
+            key={count}
+            type="button"
+            onClick={() => setTab(count)}
+            className={[
+              'flex-1 py-2 rounded-md font-sans text-sm font-bold uppercase tracking-[1px] border transition-transform active:scale-[0.97] flex flex-col items-center',
+              tab === count
+                ? 'btn-raised bg-accent text-white border-accent'
+                : 'btn-raised-neutral bg-panel text-text border-border',
+            ].join(' ')}
+          >
+            <span className="leading-none">{count} Oyunculu</span>
+            <span className="text-[10px] font-normal normal-case leading-none mt-0.5">
+              ({statsByCount[count]?.total_score ?? 0} puan)
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {stats === undefined ? (
+        <p className="text-muted text-xs font-mono text-center py-4">Yükleniyor…</p>
+      ) : (
+        <>
+          {!stats && (
+            <p className="text-muted text-[10px] font-mono text-center pb-2">
+              Bu oyuncunun {tab} oyunculu oyun kaydı yok.
+            </p>
+          )}
+          <div className="grid grid-cols-3 gap-2">
+            {cells.map((c) => (
+              <div
+                key={c.label}
+                className={`btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center ${c.wide ? 'col-span-3' : c.span2 ? 'col-span-2' : ''} ${c.place ?? ''}`}
+              >
+                <div className={`font-mono text-xl font-bold ${c.cls ?? 'text-text'}`}>
+                  {c.value}
+                </div>
+                {c.rate && (
+                  <div className="font-mono text-xs text-muted mt-0.5">({c.rate})</div>
+                )}
+                <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono mt-0.5">
+                  {c.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="text-center mt-4">
+        <button
+          onClick={() => setShowAllGames(true)}
+          className="text-[11px] font-mono font-bold uppercase tracking-[1px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity"
+        >
+          Tüm Oyunları Gör
+        </button>
+      </div>
+
+      {showAllGames && (
+        <GameHistoryModal
+          playerCount={tab}
+          userId={member.id}
+          title={`${name} · ${tab} Oyunculu`}
+          onClose={() => setShowAllGames(false)}
+        />
+      )}
+    </Modal>
+  );
+}

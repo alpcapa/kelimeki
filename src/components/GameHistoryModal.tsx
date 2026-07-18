@@ -9,6 +9,10 @@ import { PlayerBadge } from './PlayerBadge';
 interface GameHistoryModalProps {
   playerCount: number;
   onClose: () => void;
+  /** Verilirse (admin panelindeki oyuncu detayı) oturum sahibi yerine bu kullanıcının geçmişi gösterilir. */
+  userId?: string;
+  /** Verilirse varsayılan "Tüm Oyunlar · N Oyunculu" başlığının yerine geçer. */
+  title?: string;
 }
 
 const PAGE_SIZE = 20;
@@ -106,18 +110,21 @@ function seatIndexFor(p: GamePlayerSnapshot, positionIndex: number, isSnapshot: 
   return m ? Math.max(0, parseInt(m[1], 10) - 1) : positionIndex;
 }
 
-export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps) {
+export function GameHistoryModal({ playerCount, onClose, userId, title }: GameHistoryModalProps) {
   const { user, profile } = useAuth();
   // Her oyunun `players` jsonb'si o oyun bittiği andaki ismi donmuş halde
   // tutar — takma adını sonradan değiştirsen eski kayıtlar güncellenmez.
   // Kendi satırını (meIndex) burada donmuş isim yerine her zaman GÜNCEL
   // takma adınla göstererek nickname'in geçmişte de tutarlı görünmesini
   // sağlıyoruz; diğer oyuncuların isimleri hâlâ o anki hallerini gösterir.
-  const myCurrentName =
-    profile?.display_name ||
-    profile?.first_name ||
-    (user?.email ? user.email.split('@')[0] : null) ||
-    'Sen';
+  // Admin başka bir oyuncunun geçmişine bakıyorsa (userId verilmiş) bu
+  // geçersiz olur — admin'in kendi ismini o oyuncunun satırına koymamak için.
+  const myCurrentName = userId
+    ? null
+    : profile?.display_name ||
+      profile?.first_name ||
+      (user?.email ? user.email.split('@')[0] : null) ||
+      'Sen';
   const [games, setGames] = useState<GameHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -131,7 +138,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
     setLoading(true);
     setGames([]);
     setHasMore(true);
-    void fetchMyGames(playerCount, 0, PAGE_SIZE).then(({ games: page, hasMore: more }) => {
+    void fetchMyGames(playerCount, 0, PAGE_SIZE, userId).then(({ games: page, hasMore: more }) => {
       if (cancelled) return;
       setGames(page);
       setHasMore(more);
@@ -140,19 +147,19 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
     return () => {
       cancelled = true;
     };
-  }, [playerCount]);
+  }, [playerCount, userId]);
 
   const loadMore = useCallback(() => {
     setLoadingMore((already) => {
       if (already) return already;
-      void fetchMyGames(playerCount, games.length, PAGE_SIZE).then(({ games: page, hasMore: more }) => {
+      void fetchMyGames(playerCount, games.length, PAGE_SIZE, userId).then(({ games: page, hasMore: more }) => {
         setGames((cur) => [...cur, ...page]);
         setHasMore(more);
         setLoadingMore(false);
       });
       return true;
     });
-  }, [playerCount, games.length]);
+  }, [playerCount, games.length, userId]);
 
   // Liste kaydırılıp en alttaki sentinel göründüğünde bir sonraki sayfayı yükler.
   useEffect(() => {
@@ -171,7 +178,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
   }, [hasMore, loading, loadMore]);
 
   return (
-    <Modal title={`Tüm Oyunlar · ${playerCount} Oyunculu`} onClose={onClose}>
+    <Modal title={title ?? `Tüm Oyunlar · ${playerCount} Oyunculu`} onClose={onClose}>
       {loading ? (
         <p className="text-muted text-xs font-mono text-center py-4">Yükleniyor…</p>
       ) : games.length === 0 ? (
@@ -211,7 +218,7 @@ export function GameHistoryModal({ playerCount, onClose }: GameHistoryModalProps
                           <span className="w-3 text-right text-muted shrink-0">{ranks[i]}.</span>
                           <PlayerBadge index={seatIndexFor(p, i, hasSnapshot)} size={14} />
                           <span className={`truncate ${i === meIndex ? 'text-text font-bold' : 'text-muted'}`}>
-                            {i === meIndex ? myCurrentName : p.name}
+                            {i === meIndex && myCurrentName ? myCurrentName : p.name}
                           </span>
                           {p.surrendered && (
                             <span className="text-[8px] font-bold uppercase tracking-[0.5px] text-red border border-red/40 bg-red/10 rounded px-1 py-[1px] shrink-0">

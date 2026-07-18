@@ -1,15 +1,30 @@
 // Harfik — admin paneli: üyeler ve oyun istatistikleri
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { fetchAdminMembers, fetchAdminGameCounts } from '../lib/api';
-import type { AdminMember, AdminGameCounts } from '../lib/database.types';
+import { fetchAdminMembers, fetchAdminGameCounts, fetchAdminActivitySeries } from '../lib/api';
+import type {
+  AdminMember,
+  AdminGameCounts,
+  AdminActivityPoint,
+  AdminActivityGranularity,
+} from '../lib/database.types';
+import { AdminPlayerDetail } from './AdminPlayerDetail';
+import { GrowthChart } from './GrowthChart';
+import { trLower } from '../utils/turkish';
 
 interface AdminDashboardProps {
   onClose: () => void;
 }
 
-type Tab = 'members' | 'games';
+type Tab = 'members' | 'games' | 'growth';
 type GameSubTab = 'total' | 2 | 4;
+type MemberSortKey = 'name' | 'nickname' | 'email' | 'created_at' | 'last_sign_in_at' | 'is_admin';
+type SortDir = 'asc' | 'desc';
+
+const PERIOD_OPTIONS: Record<AdminActivityGranularity, readonly number[]> = {
+  day: [7, 30, 90],
+  month: [6, 12, 24],
+};
 
 function fmtDate(iso: string | null) {
   if (!iso) return '—';
@@ -27,12 +42,36 @@ function memberNickname(m: AdminMember) {
   return m.display_name || '—';
 }
 
+function memberSortValue(m: AdminMember, key: MemberSortKey): string | number {
+  switch (key) {
+    case 'name':
+      return trLower(memberName(m));
+    case 'nickname':
+      return trLower(memberNickname(m));
+    case 'email':
+      return trLower(m.email ?? '');
+    case 'created_at':
+      return m.created_at ? new Date(m.created_at).getTime() : 0;
+    case 'last_sign_in_at':
+      return m.last_sign_in_at ? new Date(m.last_sign_in_at).getTime() : 0;
+    case 'is_admin':
+      return m.is_admin ? 1 : 0;
+  }
+}
+
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [tab, setTab] = useState<Tab>('members');
   const [members, setMembers] = useState<AdminMember[] | null>(null);
   const [gameCounts, setGameCounts] = useState<AdminGameCounts[] | null>(null);
   const [gameSubTab, setGameSubTab] = useState<GameSubTab>('total');
   const [error, setError] = useState<string | null>(null);
+  const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
+  const [activity, setActivity] = useState<AdminActivityPoint[] | null>(null);
+  const [granularity, setGranularity] = useState<AdminActivityGranularity>('day');
+  const [period, setPeriod] = useState<number>(30);
+  const [memberSearch, setMemberSearch] = useState('');
+  const [sortKey, setSortKey] = useState<MemberSortKey>('created_at');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   useEffect(() => {
     fetchAdminMembers()
@@ -42,6 +81,59 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       .then(setGameCounts)
       .catch((e) => setError(String(e)));
   }, []);
+
+  useEffect(() => {
+    setActivity(null);
+    fetchAdminActivitySeries(period, granularity)
+      .then(setActivity)
+      .catch((e) => setError(String(e)));
+  }, [period, granularity]);
+
+  function selectGranularity(g: AdminActivityGranularity) {
+    setGranularity(g);
+    setPeriod(PERIOD_OPTIONS[g][1]);
+  }
+
+  function toggleSort(key: MemberSortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  }
+
+  const filteredMembers = useMemo(() => {
+    if (!members) return null;
+    const q = trLower(memberSearch.trim());
+    const filtered = q
+      ? members.filter(
+          (m) => trLower(memberName(m)).includes(q) || trLower(memberNickname(m)).includes(q),
+        )
+      : members;
+    return [...filtered].sort((a, b) => {
+      const av = memberSortValue(a, sortKey);
+      const bv = memberSortValue(b, sortKey);
+      const cmp =
+        typeof av === 'string' ? av.localeCompare(bv as string, 'tr') : (av as number) - (bv as number);
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [members, memberSearch, sortKey, sortDir]);
+
+  function SortHeader({ label, sortKeyFor, className }: { label: string; sortKeyFor: MemberSortKey; className?: string }) {
+    const active = sortKey === sortKeyFor;
+    return (
+      <th
+        onClick={() => toggleSort(sortKeyFor)}
+        className={`py-2 pr-3 font-bold cursor-pointer select-none hover:text-text transition-colors ${className ?? ''}`}
+      >
+        <span className="inline-flex items-center gap-1">
+          {label}
+          <span className={active ? 'text-accent' : 'text-border'}>{active && sortDir === 'desc' ? '▼' : '▲'}</span>
+        </span>
+      </th>
+    );
+  }
 
   const tabBtn = (active: boolean) =>
     `flex-1 py-2.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] transition-colors ${
@@ -86,6 +178,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             <button className={tabBtn(tab === 'games')} onClick={() => setTab('games')}>
               Oyunlar
             </button>
+            <button className={tabBtn(tab === 'growth')} onClick={() => setTab('growth')}>
+              Büyüme
+            </button>
           </div>
         </div>
 
@@ -94,28 +189,44 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
           {tab === 'members' && (
             <>
+              <input
+                type="text"
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="İsim ya da nickname ara…"
+                className="w-full bg-bg border border-border rounded-md px-3 py-2 text-[11px] font-mono text-text outline-none focus:border-accent transition-colors"
+              />
+
               {members === null ? (
                 <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
               ) : members.length === 0 ? (
                 <div className="text-xs font-mono text-muted text-center py-6">
                   Kayıtlı üye yok.
                 </div>
+              ) : filteredMembers && filteredMembers.length === 0 ? (
+                <div className="text-xs font-mono text-muted text-center py-6">
+                  Aramayla eşleşen üye yok.
+                </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-[11px] font-mono border-collapse">
                     <thead>
                       <tr className="text-left text-muted border-b border-border">
-                        <th className="py-2 pr-3 font-bold">İsim</th>
-                        <th className="py-2 pr-3 font-bold">Nickname</th>
-                        <th className="py-2 pr-3 font-bold">E-posta</th>
-                        <th className="py-2 pr-3 font-bold">Katılma</th>
-                        <th className="py-2 pr-3 font-bold">Son Giriş</th>
-                        <th className="py-2 font-bold">Rol</th>
+                        <SortHeader label="İsim" sortKeyFor="name" />
+                        <SortHeader label="Nickname" sortKeyFor="nickname" />
+                        <SortHeader label="E-posta" sortKeyFor="email" />
+                        <SortHeader label="Katılma" sortKeyFor="created_at" />
+                        <SortHeader label="Son Giriş" sortKeyFor="last_sign_in_at" />
+                        <SortHeader label="Rol" sortKeyFor="is_admin" className="pr-0" />
                       </tr>
                     </thead>
                     <tbody>
-                      {members.map((m) => (
-                        <tr key={m.id} className="border-b border-border/50">
+                      {filteredMembers?.map((m) => (
+                        <tr
+                          key={m.id}
+                          onClick={() => setSelectedMember(m)}
+                          className="border-b border-border/50 cursor-pointer hover:bg-bg/60 active:opacity-70"
+                        >
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberName(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberNickname(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{m.email ?? '—'}</td>
@@ -135,7 +246,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                 </div>
               )}
               <div className="text-[10px] font-mono text-muted text-right">
-                Toplam {members?.length ?? 0} üye
+                {memberSearch.trim() && members
+                  ? `${filteredMembers?.length ?? 0} / ${members.length} üye`
+                  : `Toplam ${members?.length ?? 0} üye`}
               </div>
             </>
           )}
@@ -178,8 +291,41 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
               )}
             </>
           )}
+
+          {tab === 'growth' && (
+            <>
+              <div className="flex gap-1.5">
+                {(['day', 'month'] as const).map((g) => (
+                  <button
+                    key={g}
+                    className={tabBtn(granularity === g)}
+                    onClick={() => selectGranularity(g)}
+                  >
+                    {g === 'day' ? 'Günlük' : 'Aylık'}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1.5">
+                {PERIOD_OPTIONS[granularity].map((p) => (
+                  <button key={p} className={tabBtn(period === p)} onClick={() => setPeriod(p)}>
+                    Son {p} {granularity === 'day' ? 'Gün' : 'Ay'}
+                  </button>
+                ))}
+              </div>
+
+              {activity === null ? (
+                <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+              ) : (
+                <GrowthChart data={activity} granularity={granularity} />
+              )}
+            </>
+          )}
         </div>
       </div>
+
+      {selectedMember && (
+        <AdminPlayerDetail member={selectedMember} onClose={() => setSelectedMember(null)} />
+      )}
     </div>,
     document.body,
   );
