@@ -12,6 +12,8 @@ import { RemainingTilesModal } from './components/RemainingTilesModal';
 import { MoveHistoryModal } from './components/MoveHistoryModal';
 import { WildcardModal } from './components/WildcardModal';
 import { HelpModal } from './components/HelpModal';
+import { FeedbackModal } from './components/FeedbackModal';
+import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { rankPlayers } from './utils/ranking';
@@ -46,7 +48,7 @@ const MESSAGE_COLORS: Record<string, string> = {
 };
 
 export default function App() {
-  const { user, profile } = useAuth();
+  const { user, profile, passwordRecovery, clearPasswordRecovery } = useAuth();
   const [state, dispatch] = useReducer(
     gameReducer,
     undefined,
@@ -77,6 +79,9 @@ export default function App() {
   // Oyun geçmişi penceresi (tüm oyuncuların hamleleri) — hem oynarken
   // Board'daki linkten, hem oyun bitince GameOver ekranından açılabilir.
   const [showHistory, setShowHistory] = useState(false);
+
+  // Oyun bitince GameOver ekranından açılabilen "Görüş Bildir" formu.
+  const [showFeedback, setShowFeedback] = useState(false);
 
   // Oyun sonu ekranı kapatıldı mı (X'e basıldı mı) — board'u görmek için.
   const [gameOverDismissed, setGameOverDismissed] = useState(false);
@@ -365,6 +370,17 @@ export default function App() {
     : moveStatus?.valid
       ? 'ok'
       : state.messageType;
+
+  // ── Şifre sıfırlama ────────────────────────────────────────────────────────
+  // Sıfırlama e-postasındaki bağlantı tıklanıp bu sekmede recovery oturumu
+  // açıldıysa, yeni şifre belirlenene kadar kurulum/oyun ekranlarının önüne geçer.
+  if (passwordRecovery) {
+    return (
+      <div className="min-h-[100dvh] w-full flex items-center justify-center">
+        <ResetPasswordModal onDone={clearPasswordRecovery} />
+      </div>
+    );
+  }
 
   // ── Kurulum ekranı ─────────────────────────────────────────────────────────
   if (state.phase === 'setup') {
@@ -898,11 +914,16 @@ export default function App() {
         players={state.players}
         turnCount={state.turnCount}
         onOpenHistory={() => setShowHistory(true)}
+        onOpenFeedback={() => setShowFeedback(true)}
         onClose={() => setGameOverDismissed(true)}
       />
 
       {showHistory && (
         <MoveHistoryModal state={state} onClose={() => setShowHistory(false)} />
+      )}
+
+      {showFeedback && (
+        <FeedbackModal onClose={() => setShowFeedback(false)} />
       )}
 
       {showPostStartTutorial && (

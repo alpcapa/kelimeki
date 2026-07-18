@@ -11,10 +11,11 @@ interface GameOverProps {
   players: Player[];
   turnCount: number;
   onOpenHistory: () => void;
+  onOpenFeedback: () => void;
   onClose: () => void;
 }
 
-export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: GameOverProps) {
+export function GameOver({ show, players, turnCount, onOpenHistory, onOpenFeedback, onClose }: GameOverProps) {
   if (!show) return null;
 
   const ranked = rankPlayers(players);
@@ -73,12 +74,20 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onClose }: G
           </div>
         </div>
 
-        <button
-          onClick={onOpenHistory}
-          className="text-[11px] font-mono font-bold uppercase tracking-[1px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity"
-        >
-          Oyun Geçmişi
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onOpenHistory}
+            className="text-[11px] font-mono font-bold uppercase tracking-[1px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity"
+          >
+            Oyun Geçmişi
+          </button>
+          <button
+            onClick={onOpenFeedback}
+            className="text-[11px] font-mono font-bold uppercase tracking-[1px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity"
+          >
+            Görüş Bildir
+          </button>
+        </div>
       </div>
     </Modal>
   );

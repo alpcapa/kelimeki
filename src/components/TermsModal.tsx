@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Modal } from './Modal';
+import { FeedbackModal } from './FeedbackModal';
 
 interface TermsModalProps {
   onClose: () => void;
@@ -18,7 +20,10 @@ const P = ({ children }: { children: React.ReactNode }) => (
 );
 
 export function TermsModal({ onClose }: TermsModalProps) {
+  const [showFeedback, setShowFeedback] = useState(false);
+
   return (
+    <>
     <Modal title="Kullanım Koşulları" onClose={onClose}>
       <div className="flex flex-col gap-5">
         <P>
@@ -77,10 +82,19 @@ export function TermsModal({ onClose }: TermsModalProps) {
 
         <Section title="7. İletişim">
           <P>
-            Sorularınız için: <span className="text-accent font-mono">destek@harfik.com</span>
+            Sorularınız için:{' '}
+            <button
+              type="button"
+              onClick={() => setShowFeedback(true)}
+              className="text-accent font-mono hover:underline"
+            >
+              Görüş Bildir formu
+            </button>
           </P>
         </Section>
       </div>
     </Modal>
+    {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
+    </>
   );
 }

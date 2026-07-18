@@ -6,6 +6,7 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import type {
   AdminActivityGranularity,
   AdminActivityPoint,
+  AdminFeedbackRow,
   AdminGameCounts,
   AdminMember,
   GameHistoryEntry,
@@ -271,6 +272,43 @@ export async function fetchAdminActivitySeries(
   return (data as AdminActivityPoint[]) ?? [];
 }
 
+/** Tüm geri bildirim mesajlarını döner (RLS: yalnızca is_admin=true okuyabilir). */
+export async function fetchAdminFeedback(): Promise<AdminFeedbackRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('feedback')
+    .select('id, user_id, email, message, handled, created_at')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('[Harfik] fetchAdminFeedback hatası:', error.message);
+    return [];
+  }
+  return (data as AdminFeedbackRow[]) ?? [];
+}
+
+/** Bir geri bildirim mesajını okundu/okunmadı işaretler (yalnızca admin). */
+export async function markFeedbackHandled(id: string, handled: boolean): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from('feedback').update({ handled }).eq('id', id);
+  if (error) console.error('[Harfik] markFeedbackHandled hatası:', error.message);
+}
+
+// ── Geri bildirim ───────────────────────────────────────────────────────────
+
+/** Kullanıcıdan gelen görüş/şikayet mesajını kaydeder (girişli ya da anonim). */
+export async function submitFeedback(message: string, email?: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { error } = await supabase.from('feedback').insert({
+    user_id: user?.id ?? null,
+    email: email?.trim() || user?.email || null,
+    message: message.trim(),
+  });
+  if (error) throw new Error(error.message);
+}
+
 // ── Auth yardımcıları ───────────────────────────────────────────────────────
 
 export async function signUp(
@@ -280,9 +318,14 @@ export async function signUp(
   lastName: string,
   nickname?: string,
   termsAccepted = false,
+  channel: 'direct' | 'form' = 'direct',
 ) {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
   // sharedxp_pending_profile formatı trigger tarafından okunur (camelCase).
+  // display_name üst seviyede gönderilir çünkü trigger onu doğrudan
+  // raw_user_meta_data->>'display_name' olarak okuyor (e-posta doğrulaması
+  // açıkken signUp() session döndürmez, bu yüzden aşağıdaki update'e
+  // güvenilemez — nickname'in kaybolmaması için metadata'da baştan olmalı).
   const result = await supabase.auth.signUp({
     email,
     password,
@@ -293,16 +336,16 @@ export async function signUp(
           lastName,
           agreedToTerms: termsAccepted,
         },
+        signup_channel: channel,
+        ...(nickname ? { display_name: nickname } : {}),
       },
     },
   });
-  // Oturum hemen açıldıysa (e-posta doğrulaması kapalı) profili güncelle.
+  // Oturum hemen açıldıysa (e-posta doğrulaması kapalı) kabul zamanını yaz.
   if (!result.error && result.data.session) {
-    const patch: Record<string, unknown> = { agreed_to_terms: termsAccepted };
-    if (nickname) patch.display_name = nickname;
     await supabase
       .from('profiles')
-      .update(patch)
+      .update({ agreed_to_terms: termsAccepted })
       .eq('id', result.data.session.user.id);
   }
   return result;
@@ -376,10 +419,22 @@ export async function updatePassword(oldPassword: string, newPassword: string) {
   return supabase.auth.updateUser({ password: newPassword });
 }
 
-/** Şifre sıfırlama e-postası gönderir. */
+/** Şifre sıfırlama e-postası gönderir. Bağlantı tıklanınca uygulamanın köküne döner. */
 export async function sendPasswordReset(email: string) {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
-  return supabase.auth.resetPasswordForEmail(email);
+  return supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin,
+  });
+}
+
+/**
+ * PASSWORD_RECOVERY oturumunda (sıfırlama e-postasındaki bağlantı tıklandıktan
+ * sonra) yeni şifreyi belirler — eski şifre gerekmez, oturum linkin kendisiyle
+ * zaten doğrulanmıştır.
+ */
+export async function setNewPassword(newPassword: string) {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  return supabase.auth.updateUser({ password: newPassword });
 }
 
 /**

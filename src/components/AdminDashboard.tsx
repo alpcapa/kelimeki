@@ -1,12 +1,19 @@
 // Harfik — admin paneli: üyeler ve oyun istatistikleri
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { fetchAdminMembers, fetchAdminGameCounts, fetchAdminActivitySeries } from '../lib/api';
+import {
+  fetchAdminMembers,
+  fetchAdminGameCounts,
+  fetchAdminActivitySeries,
+  fetchAdminFeedback,
+  markFeedbackHandled,
+} from '../lib/api';
 import type {
   AdminMember,
   AdminGameCounts,
   AdminActivityPoint,
   AdminActivityGranularity,
+  AdminFeedbackRow,
 } from '../lib/database.types';
 import { AdminPlayerDetail } from './AdminPlayerDetail';
 import { GrowthChart } from './GrowthChart';
@@ -16,9 +23,16 @@ interface AdminDashboardProps {
   onClose: () => void;
 }
 
-type Tab = 'members' | 'games' | 'growth';
+type Tab = 'members' | 'games' | 'growth' | 'feedback';
 type GameSubTab = 'total' | 2 | 4;
-type MemberSortKey = 'name' | 'nickname' | 'email' | 'created_at' | 'last_sign_in_at' | 'is_admin';
+type MemberSortKey =
+  | 'name'
+  | 'nickname'
+  | 'email'
+  | 'created_at'
+  | 'last_sign_in_at'
+  | 'is_admin'
+  | 'signup_channel';
 type SortDir = 'asc' | 'desc';
 
 const PERIOD_OPTIONS: Record<AdminActivityGranularity, readonly number[]> = {
@@ -42,6 +56,10 @@ function memberNickname(m: AdminMember) {
   return m.display_name || '—';
 }
 
+function memberChannelLabel(m: AdminMember) {
+  return m.signup_channel === 'form' ? 'Form' : 'Direkt';
+}
+
 function memberSortValue(m: AdminMember, key: MemberSortKey): string | number {
   switch (key) {
     case 'name':
@@ -56,6 +74,8 @@ function memberSortValue(m: AdminMember, key: MemberSortKey): string | number {
       return m.last_sign_in_at ? new Date(m.last_sign_in_at).getTime() : 0;
     case 'is_admin':
       return m.is_admin ? 1 : 0;
+    case 'signup_channel':
+      return trLower(memberChannelLabel(m));
   }
 }
 
@@ -72,6 +92,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [memberSearch, setMemberSearch] = useState('');
   const [sortKey, setSortKey] = useState<MemberSortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [feedback, setFeedback] = useState<AdminFeedbackRow[] | null>(null);
 
   useEffect(() => {
     fetchAdminMembers()
@@ -79,6 +100,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       .catch((e) => setError(String(e)));
     fetchAdminGameCounts()
       .then(setGameCounts)
+      .catch((e) => setError(String(e)));
+    fetchAdminFeedback()
+      .then(setFeedback)
       .catch((e) => setError(String(e)));
   }, []);
 
@@ -148,6 +172,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   };
   const activeCounts =
     gameSubTab === 'total' ? totals : gameSubTab === 2 ? counts2 : counts4;
+  const unhandledFeedbackCount = feedback?.filter((f) => !f.handled).length ?? 0;
+
+  function toggleFeedbackHandled(f: AdminFeedbackRow) {
+    const next = !f.handled;
+    setFeedback((prev) => prev?.map((x) => (x.id === f.id ? { ...x, handled: next } : x)) ?? prev);
+    void markFeedbackHandled(f.id, next);
+  }
 
   return createPortal(
     <div
@@ -180,6 +211,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </button>
             <button className={tabBtn(tab === 'growth')} onClick={() => setTab('growth')}>
               Büyüme
+            </button>
+            <button className={tabBtn(tab === 'feedback')} onClick={() => setTab('feedback')}>
+              Geri Bildirim{unhandledFeedbackCount > 0 ? ` (${unhandledFeedbackCount})` : ''}
             </button>
           </div>
         </div>
@@ -215,6 +249,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         <SortHeader label="İsim" sortKeyFor="name" />
                         <SortHeader label="Nickname" sortKeyFor="nickname" />
                         <SortHeader label="E-posta" sortKeyFor="email" />
+                        <SortHeader label="Kanal" sortKeyFor="signup_channel" />
                         <SortHeader label="Katılma" sortKeyFor="created_at" />
                         <SortHeader label="Son Giriş" sortKeyFor="last_sign_in_at" />
                         <SortHeader label="Rol" sortKeyFor="is_admin" className="pr-0" />
@@ -230,6 +265,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberName(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberNickname(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{m.email ?? '—'}</td>
+                          <td className="py-2 pr-3 text-muted whitespace-nowrap">{memberChannelLabel(m)}</td>
                           <td className="py-2 pr-3 text-muted whitespace-nowrap">{fmtDate(m.created_at)}</td>
                           <td className="py-2 pr-3 text-muted whitespace-nowrap">{fmtDate(m.last_sign_in_at)}</td>
                           <td className="py-2 whitespace-nowrap">
@@ -317,6 +353,48 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                 <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
               ) : (
                 <GrowthChart data={activity} granularity={granularity} />
+              )}
+            </>
+          )}
+
+          {tab === 'feedback' && (
+            <>
+              {feedback === null ? (
+                <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+              ) : feedback.length === 0 ? (
+                <div className="text-xs font-mono text-muted text-center py-6">
+                  Henüz geri bildirim yok.
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {feedback.map((f) => {
+                    const sender = f.user_id ? members?.find((m) => m.id === f.user_id) : null;
+                    const senderLabel = sender ? memberName(sender) : (f.email || 'Anonim');
+                    return (
+                      <div
+                        key={f.id}
+                        className={`bg-bg border border-border rounded-lg p-3 flex flex-col gap-1.5 ${
+                          f.handled ? 'opacity-60' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted">
+                          <span className="truncate">
+                            {senderLabel}
+                            {sender && f.email ? ` · ${f.email}` : ''}
+                          </span>
+                          <span className="shrink-0">{fmtDate(f.created_at)}</span>
+                        </div>
+                        <p className="text-xs text-text whitespace-pre-wrap">{f.message}</p>
+                        <button
+                          onClick={() => toggleFeedbackHandled(f)}
+                          className="self-start text-[10px] font-mono text-accent hover:underline"
+                        >
+                          {f.handled ? 'Okunmadı işaretle' : 'Okundu işaretle'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </>
           )}

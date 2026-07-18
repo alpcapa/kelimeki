@@ -8,14 +8,23 @@ import { useAuth } from '../hooks/useAuth';
 
 interface AuthModalProps {
   onClose: () => void;
+  initialMode?: Mode;
+  initialEmail?: string;
+  /** Bu kaydın hangi kanaldan geldiği (admin panelinde gösterilir). */
+  signupChannel?: 'direct' | 'form';
 }
 
 type Mode = 'login' | 'signup' | 'forgot';
 
-export function AuthModal({ onClose }: AuthModalProps) {
+export function AuthModal({
+  onClose,
+  initialMode = 'login',
+  initialEmail = '',
+  signupChannel = 'direct',
+}: AuthModalProps) {
   const { refreshProfile } = useAuth();
-  const [mode, setMode] = useState<Mode>('login');
-  const [email, setEmail] = useState('');
+  const [mode, setMode] = useState<Mode>(initialMode);
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -59,6 +68,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
           lastName.trim(),
           nickname.trim() || undefined,
           termsAccepted,
+          signupChannel,
         );
         if (error) throw error;
         if (data.session) {
