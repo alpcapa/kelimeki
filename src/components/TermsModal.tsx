@@ -28,14 +28,17 @@ export function TermsModal({ onClose }: TermsModalProps) {
       <div className="flex flex-col gap-5">
         <P>
           Harfik'e kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
-          Son güncelleme: Haziran 2026.
+          Son güncelleme: Temmuz 2026.
         </P>
 
-        <Section title="1. Hizmet Kapsamı">
+        <Section title="1. Hizmet Sağlayıcı ve Kapsam">
           <P>
-            Harfik, Türkçe kelimelerle oynanan çevrimiçi bir kelime oyunudur. Hizmet; oyun tahtası,
-            lider tablosu ve kullanıcı hesabı özelliklerini kapsar. Hizmet ücretsizdir ve herhangi
-            bir bildirimde bulunmaksızın değiştirilebilir ya da sonlandırılabilir.
+            Harfik, herhangi bir şirket ya da tüzel kişilik bulunmaksızın, bağımsız bir geliştirici
+            tarafından bireysel olarak geliştirilmekte ve işletilmektedir; faaliyet merkezi
+            Sarıyer, İstanbul'dur. Hizmet, Türkçe kelimelerle oynanan çevrimiçi bir kelime
+            oyunudur ve oyun tahtası, lider tablosu ve kullanıcı hesabı özelliklerini kapsar.
+            Hizmet ücretsizdir ve herhangi bir bildirimde bulunmaksızın değiştirilebilir ya da
+            sonlandırılabilir.
           </P>
         </Section>
 
