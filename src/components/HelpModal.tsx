@@ -237,7 +237,9 @@ function DetailedRules() {
       <Section
         title={
           <>
-            Joker (<span className="text-[16px] normal-case tracking-normal leading-none">★</span>) Taşı
+            Joker (
+            <span className="relative top-[-2px] text-[16px] normal-case tracking-normal leading-none">★</span>
+            ) Taşı
           </>
         }
       >
