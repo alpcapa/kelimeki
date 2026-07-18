@@ -144,6 +144,7 @@ export interface AdminMember {
   last_name: string | null;
   display_name: string | null;
   is_admin: boolean;
+  signup_channel: 'direct' | 'form';
   created_at: string;
   last_sign_in_at: string | null;
   banned_until: string | null;

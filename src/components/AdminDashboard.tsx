@@ -25,7 +25,14 @@ interface AdminDashboardProps {
 
 type Tab = 'members' | 'games' | 'growth' | 'feedback';
 type GameSubTab = 'total' | 2 | 4;
-type MemberSortKey = 'name' | 'nickname' | 'email' | 'created_at' | 'last_sign_in_at' | 'is_admin';
+type MemberSortKey =
+  | 'name'
+  | 'nickname'
+  | 'email'
+  | 'created_at'
+  | 'last_sign_in_at'
+  | 'is_admin'
+  | 'signup_channel';
 type SortDir = 'asc' | 'desc';
 
 const PERIOD_OPTIONS: Record<AdminActivityGranularity, readonly number[]> = {
@@ -49,6 +56,10 @@ function memberNickname(m: AdminMember) {
   return m.display_name || '—';
 }
 
+function memberChannelLabel(m: AdminMember) {
+  return m.signup_channel === 'form' ? 'Form' : 'Direkt';
+}
+
 function memberSortValue(m: AdminMember, key: MemberSortKey): string | number {
   switch (key) {
     case 'name':
@@ -63,6 +74,8 @@ function memberSortValue(m: AdminMember, key: MemberSortKey): string | number {
       return m.last_sign_in_at ? new Date(m.last_sign_in_at).getTime() : 0;
     case 'is_admin':
       return m.is_admin ? 1 : 0;
+    case 'signup_channel':
+      return trLower(memberChannelLabel(m));
   }
 }
 
@@ -236,6 +249,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         <SortHeader label="İsim" sortKeyFor="name" />
                         <SortHeader label="Nickname" sortKeyFor="nickname" />
                         <SortHeader label="E-posta" sortKeyFor="email" />
+                        <SortHeader label="Kanal" sortKeyFor="signup_channel" />
                         <SortHeader label="Katılma" sortKeyFor="created_at" />
                         <SortHeader label="Son Giriş" sortKeyFor="last_sign_in_at" />
                         <SortHeader label="Rol" sortKeyFor="is_admin" className="pr-0" />
@@ -251,6 +265,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberName(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberNickname(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{m.email ?? '—'}</td>
+                          <td className="py-2 pr-3 text-muted whitespace-nowrap">{memberChannelLabel(m)}</td>
                           <td className="py-2 pr-3 text-muted whitespace-nowrap">{fmtDate(m.created_at)}</td>
                           <td className="py-2 pr-3 text-muted whitespace-nowrap">{fmtDate(m.last_sign_in_at)}</td>
                           <td className="py-2 whitespace-nowrap">

@@ -318,6 +318,7 @@ export async function signUp(
   lastName: string,
   nickname?: string,
   termsAccepted = false,
+  channel: 'direct' | 'form' = 'direct',
 ) {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
   // sharedxp_pending_profile formatı trigger tarafından okunur (camelCase).
@@ -335,6 +336,7 @@ export async function signUp(
           lastName,
           agreedToTerms: termsAccepted,
         },
+        signup_channel: channel,
         ...(nickname ? { display_name: nickname } : {}),
       },
     },

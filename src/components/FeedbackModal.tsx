@@ -118,7 +118,12 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
       )}
     </Modal>
     {showSignup && (
-      <AuthModal initialMode="signup" initialEmail={email.trim()} onClose={onClose} />
+      <AuthModal
+        initialMode="signup"
+        initialEmail={email.trim()}
+        signupChannel="form"
+        onClose={onClose}
+      />
     )}
     </>
   );
