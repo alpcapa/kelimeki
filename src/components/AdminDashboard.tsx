@@ -1,16 +1,18 @@
 // Harfik — admin paneli: üyeler ve oyun istatistikleri
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { fetchAdminMembers, fetchAdminGameCounts } from '../lib/api';
-import type { AdminMember, AdminGameCounts } from '../lib/database.types';
+import { fetchAdminMembers, fetchAdminGameCounts, fetchAdminDailyActivity } from '../lib/api';
+import type { AdminMember, AdminGameCounts, AdminDailyActivity } from '../lib/database.types';
 import { AdminPlayerDetail } from './AdminPlayerDetail';
+import { GrowthChart } from './GrowthChart';
 
 interface AdminDashboardProps {
   onClose: () => void;
 }
 
-type Tab = 'members' | 'games';
+type Tab = 'members' | 'games' | 'growth';
 type GameSubTab = 'total' | 2 | 4;
+type DaysRange = 7 | 30 | 90;
 
 function fmtDate(iso: string | null) {
   if (!iso) return '—';
@@ -35,6 +37,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [gameSubTab, setGameSubTab] = useState<GameSubTab>('total');
   const [error, setError] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
+  const [dailyActivity, setDailyActivity] = useState<AdminDailyActivity[] | null>(null);
+  const [daysRange, setDaysRange] = useState<DaysRange>(30);
 
   useEffect(() => {
     fetchAdminMembers()
@@ -44,6 +48,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       .then(setGameCounts)
       .catch((e) => setError(String(e)));
   }, []);
+
+  useEffect(() => {
+    setDailyActivity(null);
+    fetchAdminDailyActivity(daysRange)
+      .then(setDailyActivity)
+      .catch((e) => setError(String(e)));
+  }, [daysRange]);
 
   const tabBtn = (active: boolean) =>
     `flex-1 py-2.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] transition-colors ${
@@ -87,6 +98,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </button>
             <button className={tabBtn(tab === 'games')} onClick={() => setTab('games')}>
               Oyunlar
+            </button>
+            <button className={tabBtn(tab === 'growth')} onClick={() => setTab('growth')}>
+              Büyüme
             </button>
           </div>
         </div>
@@ -181,6 +195,28 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     </div>
                   </div>
                 </div>
+              )}
+            </>
+          )}
+
+          {tab === 'growth' && (
+            <>
+              <div className="flex gap-1.5">
+                {([7, 30, 90] as const).map((d) => (
+                  <button
+                    key={d}
+                    className={tabBtn(daysRange === d)}
+                    onClick={() => setDaysRange(d)}
+                  >
+                    Son {d} Gün
+                  </button>
+                ))}
+              </div>
+
+              {dailyActivity === null ? (
+                <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+              ) : (
+                <GrowthChart data={dailyActivity} />
               )}
             </>
           )}

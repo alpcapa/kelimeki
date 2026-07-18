@@ -155,3 +155,11 @@ export interface AdminGameCounts {
   started: number;
   finished: number;
 }
+
+/** admin_daily_activity RPC çıktısındaki tek gün (büyüme grafiği). */
+export interface AdminDailyActivity {
+  day: string;
+  signups: number;
+  game_starts: number;
+  games_finished: number;
+}

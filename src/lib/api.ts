@@ -4,6 +4,7 @@
 // döner, böylece oyun çevrimdışı da çalışır.
 import { supabase, isSupabaseConfigured } from './supabase';
 import type {
+  AdminDailyActivity,
   AdminGameCounts,
   AdminMember,
   GameHistoryEntry,
@@ -247,6 +248,17 @@ export async function fetchAdminGameCounts(): Promise<AdminGameCounts[]> {
     return [];
   }
   return (data as AdminGameCounts[]) ?? [];
+}
+
+/** Son `days` gün için günlük kayıt/oyun başlatma/oyun bitirme sayılarını döner (yalnızca admin). */
+export async function fetchAdminDailyActivity(days: number): Promise<AdminDailyActivity[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_daily_activity', { p_days: days });
+  if (error) {
+    console.error('[Harfik] fetchAdminDailyActivity hatası:', error.message);
+    return [];
+  }
+  return (data as AdminDailyActivity[]) ?? [];
 }
 
 // ── Auth yardımcıları ───────────────────────────────────────────────────────
