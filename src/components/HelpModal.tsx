@@ -11,9 +11,9 @@ interface HelpModalProps {
 
 type Step = 'quick' | 'detailed';
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+const Section = ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
   <div className="flex flex-col gap-2">
-    <h3 className="font-mono text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1">
+    <h3 className="flex items-center font-mono text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1">
       {title}
     </h3>
     {children}
@@ -139,7 +139,7 @@ function DetailedRules() {
       <Section title="Nasıl Oynanır?">
         <P>
           Harfik, Yapay Zekâ'ya karşı oynanan strateji odaklı bir kelime oyunudur. Her oyuncu
-          kendi köşesinden başlar. Kurduğu her kelimeyle puan toplar, bölgesini büyütür ve
+          kendi köşesinden başlar; kurduğu her kelimeyle puan toplar, bölgesini büyütür ve
           tahtanın merkezine doğru ilerleyerek üstünlük kurmaya çalışır.
         </P>
         <P>
@@ -169,9 +169,9 @@ function DetailedRules() {
 
       <Section title="Bölge Vergisi">
         <P>
-          Her oyuncunun bölgesi 4×4'lük köşeyle başlar; köşenden başlayıp, kelimeleri
-          bağladıkça genişler. Board üzerinde her oyuncunun güncel bölgesi kalın çizgiyle
-          belirlenir.
+          Her oyuncu 4×4'lük kendi köşesinden başlar ve kelimeleri bağladıkça bölgesini
+          büyütür. Tahta üzerinde güncel bölgeler her oyuncunun kendi renginde kalın çizgiyle
+          belirlenmiştir.
         </P>
         <P>
           İlk hamleden sonra rakibin bölgesine de taş koyabilirsin; ancak yerleştirdiğin
@@ -234,7 +234,15 @@ function DetailedRules() {
         </P>
       </Section>
 
-      <Section title="Joker (Yıldız) Taşı">
+      <Section
+        title={
+          <>
+            Joker (
+            <span className="relative top-[-2px] text-[16px] normal-case tracking-normal leading-none">★</span>
+            ) Taşı
+          </>
+        }
+      >
         <P>
           Torbada 2 adet joker bulunur. Joker taşı oynandığında istediğin herhangi bir Türkçe
           harfe dönüşebilir ve puan değeri <strong>0</strong>'dır.
