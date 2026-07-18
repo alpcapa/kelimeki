@@ -158,6 +158,27 @@ export default function App() {
     return () => document.removeEventListener('touchmove', preventScrollWhileDragging);
   }, []);
 
+  // Ana ekrana eklenmiş (standalone) uygulamada bir taş sürüklenirken
+  // uygulama arka plana düşerse (bildirim, kontrol merkezi, ekran kilidi
+  // vb.) WebKit bazen `pointerup`/`pointercancel` olayını hiç göndermiyor —
+  // sürüklenen taşın hayalet görseli ekranda asılı kalıp arayüz kilitleniyor
+  // (oyun state'i etkilenmiyor, sadece görsel). Sayfa görünürlüğü/odağı
+  // değiştiğinde sürükleme hâlâ sürüyorsa burada elle temizleniyor.
+  useEffect(() => {
+    const clearStuckDrag = () => {
+      if (dragRef.current) {
+        dragRef.current = null;
+        setGhost(null);
+      }
+    };
+    document.addEventListener('visibilitychange', clearStuckDrag);
+    window.addEventListener('blur', clearStuckDrag);
+    return () => {
+      document.removeEventListener('visibilitychange', clearStuckDrag);
+      window.removeEventListener('blur', clearStuckDrag);
+    };
+  }, []);
+
   // Oyun ekranında bir modal açık değilken tepeden aşağı çekme (mobil
   // tarayıcının "aşağı çek → yenile/anasayfaya dön" hareketi) sayfayı
   // yenilemek yerine logoya tıklamışçasına çıkış onayını açar — yoksa oyun
