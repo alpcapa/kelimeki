@@ -59,6 +59,20 @@ export type NewGame = Pick<
   Game,
   'player_score' | 'ai_score' | 'result' | 'rank' | 'turn_count' | 'player_count'
 > & {
+  /**
+   * İstemci tarafında üretilen uuid. Offline kuyruklamada, bağlantı geri
+   * gelince aynı kaydın tekrar denenmesi durumunda sunucu tarafında
+   * yinelenmeyi (duplicate insert) engellemek için kullanılır — bkz.
+   * `saveGame` (lib/api.ts) ve `gameSync.ts`.
+   */
+  id?: string;
+  /**
+   * Oyunun gerçekten bittiği an (istemci saati, ISO 8601). Offline/misafir
+   * kuyruklamada kayıt sunucuya çok sonra ulaşabildiğinden, sunucunun
+   * `insert` anındaki `now()` varsayılanı yerine bu değer kullanılır — böylece
+   * oyun geçmişi gerçek oynanma sırasına göre görünür.
+   */
+  created_at?: string;
   user_id?: string | null;
   move_count?: number | null;
   best_move_score?: number | null;

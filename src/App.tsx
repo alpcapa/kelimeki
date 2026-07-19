@@ -24,7 +24,8 @@ import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
-import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, saveGame, logGameStart } from './lib/api';
+import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, logGameStart } from './lib/api';
+import { saveGameDurable, flushPendingGames } from './utils/gameSync';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
 
@@ -66,6 +67,17 @@ export default function App() {
       clearGameState();
     }
   }, [state]);
+
+  // Offline nedeniyle sunucuya kaydedilemeyip kuyruğa alınmış bitmiş oyun
+  // sonuçlarını (bkz. gameSync.ts) bağlantı geri gelir gelmez tekrar
+  // göndermeyi dener: açılışta, `online` olayında ve giriş durumu
+  // değiştiğinde (offline'da kullanılan eski oturum süresi dolup kullanıcı
+  // yeniden giriş yaptığında da).
+  useEffect(() => {
+    void flushPendingGames();
+    window.addEventListener('online', flushPendingGames);
+    return () => window.removeEventListener('online', flushPendingGames);
+  }, [user]);
 
   // Oynanan kelime(ler)e tıklanınca gösterilen anlam penceresi. Bir hamlede
   // birden fazla kelime oluştuysa hepsi listelenir.
@@ -296,6 +308,8 @@ export default function App() {
       colorIndex: r.player.colorIndex,
     }));
     return {
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
       player_score: human.score,
       ai_score: bestOpponentScore,
       result,
@@ -318,7 +332,7 @@ export default function App() {
     if (!state.isGameOver || state.phase !== 'play') return;
     if (state.players[0]?.surrendered) return;
     const record = buildGameRecord(false);
-    if (record) void saveGame(record);
+    if (record) void saveGameDurable(record);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);
 
@@ -867,7 +881,7 @@ export default function App() {
                   }
                   if (exitTargetIndex === 0) {
                     const record = buildGameRecord(true, 0);
-                    if (record) void saveGame(record);
+                    if (record) void saveGameDurable(record);
                   }
                   dispatch({ type: 'SURRENDER', index: exitTargetIndex });
                 }}
