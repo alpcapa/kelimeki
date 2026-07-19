@@ -111,7 +111,7 @@ export function GrowthChart<T extends { bucket: string }>({
       const value = valueOf(data[n - 1], s.key) ?? 0;
       return { ...s, value, rawY: y(value) };
     }).sort((a, b) => a.rawY - b.rawY);
-    const MIN_GAP = 13;
+    const MIN_GAP = 16;
     for (let i = 1; i < raw.length; i++) {
       if (raw[i].rawY - raw[i - 1].rawY < MIN_GAP) {
         raw[i].rawY = raw[i - 1].rawY + MIN_GAP;
@@ -221,21 +221,21 @@ export function GrowthChart<T extends { bucket: string }>({
                   stroke="#DCE2EA"
                   strokeWidth={1}
                 />
-                <text x={PAD.left - 6} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={9} fill="#8A93A2">
+                <text x={PAD.left - 6} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={11} fill="#8A93A2">
                   {formatValue(t)}
                 </text>
               </g>
             ))}
 
-            <text x={PAD.left} y={H - 4} textAnchor="start" fontSize={9} fill="#8A93A2">
+            <text x={PAD.left} y={H - 4} textAnchor="start" fontSize={10} fill="#8A93A2">
               {fmtShortDate(data[0].bucket, granularity)}
             </text>
             {n > 2 && (
-              <text x={x(Math.floor((n - 1) / 2))} y={H - 4} textAnchor="middle" fontSize={9} fill="#8A93A2">
+              <text x={x(Math.floor((n - 1) / 2))} y={H - 4} textAnchor="middle" fontSize={10} fill="#8A93A2">
                 {fmtShortDate(data[Math.floor((n - 1) / 2)].bucket, granularity)}
               </text>
             )}
-            <text x={x(n - 1)} y={H - 4} textAnchor="end" fontSize={9} fill="#8A93A2">
+            <text x={x(n - 1)} y={H - 4} textAnchor="end" fontSize={10} fill="#8A93A2">
               {fmtShortDate(data[n - 1].bucket, granularity)}
             </text>
 
@@ -271,7 +271,7 @@ export function GrowthChart<T extends { bucket: string }>({
                 {Math.abs(l.rawY - y(l.value)) > 0.5 && (
                   <line x1={x(n - 1) + 5} x2={x(n - 1) + 10} y1={y(l.value)} y2={l.rawY} stroke="#DCE2EA" strokeWidth={1} />
                 )}
-                <text x={x(n - 1) + 12} y={l.rawY} dominantBaseline="middle" fontSize={10} fontWeight={700} fill="#1B2430">
+                <text x={x(n - 1) + 12} y={l.rawY} dominantBaseline="middle" fontSize={13} fontWeight={700} fill="#1B2430">
                   {formatValue(l.value)}
                 </text>
               </g>
@@ -293,7 +293,7 @@ export function GrowthChart<T extends { bucket: string }>({
                 return (
                   <div key={s.key} className="flex items-center gap-1.5">
                     <span className="inline-block w-2.5 h-[2px] rounded-full" style={{ background: s.color }} />
-                    <span className="font-bold text-text">{v == null ? '—' : formatValue(v)}</span>
+                    <span className="font-bold text-text text-[12px]">{v == null ? '—' : formatValue(v)}</span>
                     <span className="text-muted">{s.label}</span>
                   </div>
                 );

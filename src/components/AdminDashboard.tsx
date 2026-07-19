@@ -65,6 +65,9 @@ const DURATION_SERIES: ChartSeriesDef[] = [
 const selectCls =
   'w-auto shrink-0 py-1.5 px-2 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] bg-panel text-text border border-border';
 
+/** GrowthChart'ın `controls` satırına konan bölüm başlığı — Tablo Görünümü linkiyle aynı hizada. */
+const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px] text-muted';
+
 /** Saniyeyi kısa bir Türkçe süre etiketine çevirir (grafik ekseni/tooltip/tablo için). */
 function formatDuration(totalSeconds: number): string {
   const s = Math.round(totalSeconds);
@@ -484,28 +487,20 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
                   ) : (
                     <>
-                      <div className="flex flex-col gap-1.5">
-                        <div className="text-[10px] font-mono font-bold uppercase tracking-[1px] text-muted">
-                          Oyun Sayısı
-                        </div>
-                        <GrowthChart
-                          data={gameActivity}
-                          granularity={gameGranularity}
-                          series={GAME_COUNT_SERIES}
-                          defaultActiveKeys={['game_starts', 'games_finished']}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <div className="text-[10px] font-mono font-bold uppercase tracking-[1px] text-muted">
-                          Ortalama Oyun Süresi
-                        </div>
-                        <GrowthChart
-                          data={gameActivity}
-                          granularity={gameGranularity}
-                          series={DURATION_SERIES}
-                          formatValue={formatDuration}
-                        />
-                      </div>
+                      <GrowthChart
+                        data={gameActivity}
+                        granularity={gameGranularity}
+                        series={GAME_COUNT_SERIES}
+                        defaultActiveKeys={['game_starts', 'games_finished']}
+                        controls={<span className={sectionTitleCls}>Oyun Sayısı</span>}
+                      />
+                      <GrowthChart
+                        data={gameActivity}
+                        granularity={gameGranularity}
+                        series={DURATION_SERIES}
+                        formatValue={formatDuration}
+                        controls={<span className={sectionTitleCls}>Ortalama Oyun Süresi</span>}
+                      />
                     </>
                   )}
                 </>
