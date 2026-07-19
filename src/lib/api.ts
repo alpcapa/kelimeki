@@ -308,18 +308,21 @@ export async function fetchAdminUserActivitySeries(
 /**
  * Son `periods` kova için oyun başlatma/bitirme sayılarını ve ortalama oyun
  * süresini döner (yalnızca admin — Büyüme > Oyun). `scope` Toplam/Kayıtlı/
- * Misafir kombosuna karşılık gelir.
+ * Misafir kombosuna, `playerCount` Toplam/2/4 kişilik kırılımına karşılık
+ * gelir (null = tüm oyuncu sayıları).
  */
 export async function fetchAdminGameActivitySeries(
   periods: number,
   granularity: AdminActivityGranularity,
   scope: AdminGameScope,
+  playerCount: number | null,
 ): Promise<AdminGameActivityPoint[]> {
   if (!supabase) return [];
   const { data, error } = await supabase.rpc('admin_game_activity_series', {
     p_periods: periods,
     p_granularity: granularity,
     p_scope: scope,
+    p_player_count: playerCount,
   });
   if (error) {
     console.error('[Harfik] fetchAdminGameActivitySeries hatası:', error.message);

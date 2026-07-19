@@ -130,6 +130,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [gameGranularity, setGameGranularity] = useState<AdminActivityGranularity>('day');
   const [gamePeriod, setGamePeriod] = useState<number>(30);
   const [gameScope, setGameScope] = useState<AdminGameScope>('total');
+  const [gamePlayerCount, setGamePlayerCount] = useState<GameSubTab>('total');
   const [memberSearch, setMemberSearch] = useState('');
   const [sortKey, setSortKey] = useState<MemberSortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -156,10 +157,15 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
   useEffect(() => {
     setGameActivity(null);
-    fetchAdminGameActivitySeries(gamePeriod, gameGranularity, gameScope)
+    fetchAdminGameActivitySeries(
+      gamePeriod,
+      gameGranularity,
+      gameScope,
+      gamePlayerCount === 'total' ? null : gamePlayerCount,
+    )
       .then(setGameActivity)
       .catch((e) => setError(String(e)));
-  }, [gamePeriod, gameGranularity, gameScope]);
+  }, [gamePeriod, gameGranularity, gameScope, gamePlayerCount]);
 
   function selectUserGranularity(g: AdminActivityGranularity) {
     setUserGranularity(g);
@@ -439,6 +445,17 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       <option value="total">Toplam</option>
                       <option value="registered">Kayıtlı</option>
                       <option value="guest">Misafir</option>
+                    </select>
+                    <select
+                      value={gamePlayerCount}
+                      onChange={(e) =>
+                        setGamePlayerCount(e.target.value === 'total' ? 'total' : (Number(e.target.value) as 2 | 4))
+                      }
+                      className={selectCls}
+                    >
+                      <option value="total">Toplam</option>
+                      <option value={2}>2 Kişilik</option>
+                      <option value={4}>4 Kişilik</option>
                     </select>
                     <select
                       value={gameGranularity}
