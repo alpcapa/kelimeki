@@ -71,6 +71,8 @@ export function createInitialState(): GameState {
     messageType: '',
     lastMoveCells: [],
     moveHistory: [],
+    startedAt: '',
+    multiSession: false,
   };
 }
 
@@ -117,6 +119,8 @@ function startGame(setup: PlayerSetup[]): GameState {
     messageType: '',
     lastMoveCells: [],
     moveHistory: [],
+    startedAt: new Date().toISOString(),
+    multiSession: false,
   };
 }
 

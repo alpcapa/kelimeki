@@ -24,7 +24,7 @@ import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
-import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, logGameStart } from './lib/api';
+import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, logGameStart, logGameFinish } from './lib/api';
 import { saveGameDurable, flushPendingGames } from './utils/gameSync';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
@@ -333,6 +333,20 @@ export default function App() {
     if (state.players[0]?.surrendered) return;
     const record = buildGameRecord(false);
     if (record) void saveGameDurable(record);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.isGameOver]);
+
+  // Oyun (bu cihazda, kim oynarsa oynasın) her bittiğinde büyüme grafiği
+  // için ayrı bir "bitirilen oyun" kaydı düşer (misafir dahil) — 1. oyuncu
+  // erken teslim olsa bile cihaz oyunu sonuna kadar oynanmış olabilir, bu
+  // yüzden yukarıdaki kişisel skor kaydından bağımsız çalışır.
+  useEffect(() => {
+    if (!state.isGameOver || state.phase !== 'play') return;
+    const durationSeconds = Math.max(
+      0,
+      Math.round((Date.now() - new Date(state.startedAt).getTime()) / 1000),
+    );
+    void logGameFinish(state.players.length, durationSeconds, state.multiSession);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);
 

@@ -171,15 +171,30 @@ export interface AdminGameCounts {
   finished: number;
 }
 
-/** admin_activity_series RPC çıktısındaki tek kova (büyüme grafiği — günlük ya da aylık). */
-export interface AdminActivityPoint {
+/** admin_user_activity_series RPC çıktısındaki tek kova (büyüme grafiği — kullanıcı büyümesi). */
+export interface AdminUserActivityPoint {
   bucket: string;
   signups: number;
-  game_starts: number;
-  games_finished: number;
 }
 
-export type AdminActivityGranularity = 'day' | 'month';
+/**
+ * admin_game_activity_series RPC çıktısındaki tek kova (büyüme grafiği —
+ * oyun büyümesi). avg_duration_* alanları o kovada hiç biten oyun yoksa
+ * null döner.
+ */
+export interface AdminGameActivityPoint {
+  bucket: string;
+  game_starts: number;
+  games_finished: number;
+  avg_duration_seconds: number | null;
+  avg_duration_same_session_seconds: number | null;
+  avg_duration_multi_session_seconds: number | null;
+}
+
+export type AdminActivityGranularity = 'day' | 'week' | 'month' | 'year';
+
+/** admin_game_activity_series'in p_scope parametresi: kayıtlı/misafir filtresi. */
+export type AdminGameActivityScope = 'total' | 'registered' | 'guest';
 
 /** feedback tablosundaki tek satır (admin panelinden okunur). */
 export interface AdminFeedbackRow {

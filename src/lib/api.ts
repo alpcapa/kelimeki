@@ -5,10 +5,12 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 import type {
   AdminActivityGranularity,
-  AdminActivityPoint,
   AdminFeedbackRow,
+  AdminGameActivityPoint,
+  AdminGameActivityScope,
   AdminGameCounts,
   AdminMember,
+  AdminUserActivityPoint,
   GameHistoryEntry,
   LeaderboardRow,
   MyLeaderboardRank,
@@ -52,7 +54,7 @@ export async function saveGame(game: NewGame): Promise<string | null> {
 }
 
 /**
- * Bir oyunun başladığını kaydeder (oturum açıksa). `games` tablosu yalnızca
+ * Bir oyunun başladığını kaydeder (misafir dahil). `games` tablosu yalnızca
  * BİTEN oyunları tuttuğundan, admin panelindeki "başlatılan" sayacı bu ayrı
  * kayda dayanır — hata sessizce yutulur, oyun akışını asla engellemez.
  */
@@ -61,13 +63,41 @@ export async function logGameStart(playerCount: number): Promise<void> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
 
   const { error } = await supabase
     .from('game_starts')
-    .insert({ user_id: user.id, player_count: playerCount });
+    .insert({ user_id: user?.id ?? null, player_count: playerCount });
   if (error) {
     console.error('[Harfik] logGameStart hatası:', error.message);
+  }
+}
+
+/**
+ * Bir oyunun bittiğini kaydeder (misafir dahil) — `game_finishes` tablosuna.
+ * `games`'ten farkı: yalnızca girişli kullanıcıların skor kaydını değil,
+ * her bitişi (misafir dahil) ve büyüme grafiğindeki süre istatistikleri için
+ * oyunun ne kadar sürdüğünü (`durationSeconds`) ve tarayıcı kapat-aç ile
+ * birden fazla oturuma yayılıp yayılmadığını (`multiSession`) tutar. Hata
+ * sessizce yutulur, oyun akışını asla engellemez.
+ */
+export async function logGameFinish(
+  playerCount: number,
+  durationSeconds: number,
+  multiSession: boolean,
+): Promise<void> {
+  if (!supabase) return;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { error } = await supabase.from('game_finishes').insert({
+    user_id: user?.id ?? null,
+    player_count: playerCount,
+    duration_seconds: durationSeconds,
+    multi_session: multiSession,
+  });
+  if (error) {
+    console.error('[Harfik] logGameFinish hatası:', error.message);
   }
 }
 
@@ -263,24 +293,46 @@ export async function fetchAdminGameCounts(): Promise<AdminGameCounts[]> {
   return (data as AdminGameCounts[]) ?? [];
 }
 
-/**
- * Son `periods` kova (günlük ya da aylık) için kayıt/oyun başlatma/oyun
- * bitirme sayılarını döner (yalnızca admin).
- */
-export async function fetchAdminActivitySeries(
+/** Son `periods` kova için yeni kayıt (signup) sayısını döner (yalnızca admin). */
+export async function fetchAdminUserActivitySeries(
   periods: number,
   granularity: AdminActivityGranularity,
-): Promise<AdminActivityPoint[]> {
+): Promise<AdminUserActivityPoint[]> {
   if (!supabase) return [];
-  const { data, error } = await supabase.rpc('admin_activity_series', {
+  const { data, error } = await supabase.rpc('admin_user_activity_series', {
     p_periods: periods,
     p_granularity: granularity,
   });
   if (error) {
-    console.error('[Harfik] fetchAdminActivitySeries hatası:', error.message);
+    console.error('[Harfik] fetchAdminUserActivitySeries hatası:', error.message);
     return [];
   }
-  return (data as AdminActivityPoint[]) ?? [];
+  return (data as AdminUserActivityPoint[]) ?? [];
+}
+
+/**
+ * Son `periods` kova için oyun başlatma/bitirme sayılarını ve ortalama oyun
+ * süresini döner (yalnızca admin). `scope` kayıtlı/misafir filtrelemesi,
+ * `playerCount` verilirse yalnızca o oyuncu sayısındaki oyunları sayar.
+ */
+export async function fetchAdminGameActivitySeries(
+  periods: number,
+  granularity: AdminActivityGranularity,
+  scope: AdminGameActivityScope = 'total',
+  playerCount?: number,
+): Promise<AdminGameActivityPoint[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_game_activity_series', {
+    p_periods: periods,
+    p_granularity: granularity,
+    p_scope: scope,
+    p_player_count: playerCount ?? null,
+  });
+  if (error) {
+    console.error('[Harfik] fetchAdminGameActivitySeries hatası:', error.message);
+    return [];
+  }
+  return (data as AdminGameActivityPoint[]) ?? [];
 }
 
 /** Tüm geri bildirim mesajlarını döner (RLS: yalnızca is_admin=true okuyabilir). */

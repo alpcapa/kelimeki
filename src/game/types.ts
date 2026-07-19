@@ -103,6 +103,14 @@ export interface GameState {
   lastMoveCells: [number, number][];
   /** Oyun boyunca tüm oyuncuların hamle/puan geçmişi (en yeni sonda). */
   moveHistory: HistoryEntry[];
+  /** Oyunun başladığı an (ISO) — bitişte oyun süresini hesaplamak için (bkz. gameStorage.ts). */
+  startedAt: string;
+  /**
+   * Oyun, tarayıcı sekmesi kapatılıp localStorage'dan geri yüklenerek en az
+   * bir kez devam ettirildi mi (bkz. gameStorage.ts `loadGameState`) —
+   * büyüme grafiğindeki tek-oturum/çok-oturum süre kırılımı için.
+   */
+  multiSession: boolean;
 }
 
 /** Hamle geçmişinde tek bir satır: bir oyuncunun aldığı puan ve kaynağı. */

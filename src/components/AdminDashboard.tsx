@@ -4,14 +4,17 @@ import { createPortal } from 'react-dom';
 import {
   fetchAdminMembers,
   fetchAdminGameCounts,
-  fetchAdminActivitySeries,
+  fetchAdminUserActivitySeries,
+  fetchAdminGameActivitySeries,
   fetchAdminFeedback,
   markFeedbackHandled,
 } from '../lib/api';
 import type {
   AdminMember,
   AdminGameCounts,
-  AdminActivityPoint,
+  AdminUserActivityPoint,
+  AdminGameActivityPoint,
+  AdminGameActivityScope,
   AdminActivityGranularity,
   AdminFeedbackRow,
 } from '../lib/database.types';
@@ -25,6 +28,8 @@ interface AdminDashboardProps {
 
 type Tab = 'members' | 'games' | 'growth' | 'feedback';
 type GameSubTab = 'total' | 2 | 4;
+type GrowthSubTab = 'users' | 'games';
+type GameCountFilter = 'total' | 2 | 4;
 type MemberSortKey =
   | 'name'
   | 'nickname'
@@ -37,8 +42,46 @@ type SortDir = 'asc' | 'desc';
 
 const PERIOD_OPTIONS: Record<AdminActivityGranularity, readonly number[]> = {
   day: [7, 30, 90],
+  week: [4, 8, 26],
   month: [6, 12, 24],
+  year: [1, 2, 3],
 };
+
+const GRANULARITY_LABEL: Record<AdminActivityGranularity, string> = {
+  day: 'Günlük',
+  week: 'Haftalık',
+  month: 'Aylık',
+  year: 'Yıllık',
+};
+
+const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
+  day: 'Gün',
+  week: 'Hafta',
+  month: 'Ay',
+  year: 'Yıl',
+};
+
+const SCOPE_LABEL: Record<AdminGameActivityScope, string> = {
+  total: 'Tümü',
+  registered: 'Kayıtlı',
+  guest: 'Misafir',
+};
+
+/** Saniyeyi "X dk Y sn" biçiminde döner; veri yoksa (null) "—". */
+function fmtDuration(seconds: number | null): string {
+  if (seconds == null || !Number.isFinite(seconds)) return '—';
+  const s = Math.round(seconds);
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return m > 0 ? `${m} dk ${r} sn` : `${r} sn`;
+}
+
+/** Null olmayan değerlerin ortalaması; hiçbiri yoksa null. */
+function avgOf(values: (number | null)[]): number | null {
+  const nums = values.filter((v): v is number => v != null);
+  if (nums.length === 0) return null;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+}
 
 function fmtDate(iso: string | null) {
   if (!iso) return '—';
@@ -86,9 +129,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [gameSubTab, setGameSubTab] = useState<GameSubTab>('total');
   const [error, setError] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
-  const [activity, setActivity] = useState<AdminActivityPoint[] | null>(null);
+  const [growthSubTab, setGrowthSubTab] = useState<GrowthSubTab>('users');
+  const [userActivity, setUserActivity] = useState<AdminUserActivityPoint[] | null>(null);
+  const [gameActivity, setGameActivity] = useState<AdminGameActivityPoint[] | null>(null);
   const [granularity, setGranularity] = useState<AdminActivityGranularity>('day');
   const [period, setPeriod] = useState<number>(30);
+  const [gameScope, setGameScope] = useState<AdminGameActivityScope>('total');
+  const [gamePlayerCount, setGamePlayerCount] = useState<GameCountFilter>('total');
   const [memberSearch, setMemberSearch] = useState('');
   const [sortKey, setSortKey] = useState<MemberSortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -107,11 +154,23 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   }, []);
 
   useEffect(() => {
-    setActivity(null);
-    fetchAdminActivitySeries(period, granularity)
-      .then(setActivity)
+    setUserActivity(null);
+    fetchAdminUserActivitySeries(period, granularity)
+      .then(setUserActivity)
       .catch((e) => setError(String(e)));
   }, [period, granularity]);
+
+  useEffect(() => {
+    setGameActivity(null);
+    fetchAdminGameActivitySeries(
+      period,
+      granularity,
+      gameScope,
+      gamePlayerCount === 'total' ? undefined : gamePlayerCount,
+    )
+      .then(setGameActivity)
+      .catch((e) => setError(String(e)));
+  }, [period, granularity, gameScope, gamePlayerCount]);
 
   function selectGranularity(g: AdminActivityGranularity) {
     setGranularity(g);
@@ -331,28 +390,101 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           {tab === 'growth' && (
             <>
               <div className="flex gap-1.5">
-                {(['day', 'month'] as const).map((g) => (
+                <button className={tabBtn(growthSubTab === 'users')} onClick={() => setGrowthSubTab('users')}>
+                  Kullanıcılar
+                </button>
+                <button className={tabBtn(growthSubTab === 'games')} onClick={() => setGrowthSubTab('games')}>
+                  Oyunlar
+                </button>
+              </div>
+
+              <div className="flex gap-1.5">
+                {(['day', 'week', 'month', 'year'] as const).map((g) => (
                   <button
                     key={g}
                     className={tabBtn(granularity === g)}
                     onClick={() => selectGranularity(g)}
                   >
-                    {g === 'day' ? 'Günlük' : 'Aylık'}
+                    {GRANULARITY_LABEL[g]}
                   </button>
                 ))}
               </div>
               <div className="flex gap-1.5">
                 {PERIOD_OPTIONS[granularity].map((p) => (
                   <button key={p} className={tabBtn(period === p)} onClick={() => setPeriod(p)}>
-                    Son {p} {granularity === 'day' ? 'Gün' : 'Ay'}
+                    Son {p} {PERIOD_UNIT_LABEL[granularity]}
                   </button>
                 ))}
               </div>
 
-              {activity === null ? (
-                <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+              {growthSubTab === 'users' ? (
+                userActivity === null ? (
+                  <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                ) : (
+                  <GrowthChart
+                    data={userActivity}
+                    granularity={granularity}
+                    series={[{ key: 'signups', label: 'Yeni Kayıt', color: '#2a78d6' }]}
+                  />
+                )
               ) : (
-                <GrowthChart data={activity} granularity={granularity} />
+                <>
+                  <div className="flex gap-1.5">
+                    {(['total', 'registered', 'guest'] as const).map((s) => (
+                      <button key={s} className={tabBtn(gameScope === s)} onClick={() => setGameScope(s)}>
+                        {SCOPE_LABEL[s]}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-1.5">
+                    {(['total', 2, 4] as const).map((p) => (
+                      <button key={p} className={tabBtn(gamePlayerCount === p)} onClick={() => setGamePlayerCount(p)}>
+                        {p === 'total' ? 'Tüm Oyunlar' : `${p} Kişilik`}
+                      </button>
+                    ))}
+                  </div>
+
+                  {gameActivity === null ? (
+                    <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                  ) : (
+                    <>
+                      <GrowthChart
+                        data={gameActivity}
+                        granularity={granularity}
+                        series={[
+                          { key: 'game_starts', label: 'Başlatılan Oyun', color: '#eda100' },
+                          { key: 'games_finished', label: 'Bitirilen Oyun', color: '#008300' },
+                        ]}
+                      />
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="bg-bg border border-border rounded-lg p-3 flex flex-col items-center gap-1">
+                          <div className="text-[9px] font-mono uppercase tracking-[0.5px] text-muted text-center">
+                            Ort. Süre
+                          </div>
+                          <div className="text-xs font-bold font-mono text-text">
+                            {fmtDuration(avgOf(gameActivity.map((r) => r.avg_duration_seconds)))}
+                          </div>
+                        </div>
+                        <div className="bg-bg border border-border rounded-lg p-3 flex flex-col items-center gap-1">
+                          <div className="text-[9px] font-mono uppercase tracking-[0.5px] text-muted text-center">
+                            Tek Oturum
+                          </div>
+                          <div className="text-xs font-bold font-mono text-text">
+                            {fmtDuration(avgOf(gameActivity.map((r) => r.avg_duration_same_session_seconds)))}
+                          </div>
+                        </div>
+                        <div className="bg-bg border border-border rounded-lg p-3 flex flex-col items-center gap-1">
+                          <div className="text-[9px] font-mono uppercase tracking-[0.5px] text-muted text-center">
+                            Çok Oturum
+                          </div>
+                          <div className="text-xs font-bold font-mono text-text">
+                            {fmtDuration(avgOf(gameActivity.map((r) => r.avg_duration_multi_session_seconds)))}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </>
               )}
             </>
           )}

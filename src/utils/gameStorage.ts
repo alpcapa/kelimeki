@@ -49,8 +49,12 @@ export function loadGameState(): GameState | null {
     ) {
       return null;
     }
-    // Bu alan eklenmeden önce kaydedilmiş bir state'te olmayabilir.
+    // Bu alanlar eklenmeden önce kaydedilmiş bir state'te olmayabilir.
     state.players = state.players.map((p) => ({ ...p, surrendered: p.surrendered ?? false }));
+    state.startedAt = state.startedAt || new Date().toISOString();
+    // Bu state localStorage'dan geri yüklendi — yani oyun en az bir tarayıcı
+    // sekmesi kapat-aç'ı atlattı, çok-oturumlu sayılır (bkz. types.ts).
+    state.multiSession = true;
     return state;
   } catch {
     return null;
