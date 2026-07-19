@@ -77,12 +77,19 @@ export async function logGameStart(playerCount: number): Promise<void> {
 }
 
 /**
- * Bir oyunun bittiğini ve ne kadar sürdüğünü kaydeder — giriş yapmış ya da
- * misafir, fark etmez. `game_starts` gibi tamamen anonim/sayaç amaçlıdır
- * (skor/kelime gibi kişisel veri yok); asıl skor kaydı hâlâ yalnızca giriş
- * yapmış kullanıcılar için `saveGame`/`games` tablosu üzerinden yürür.
+ * Bir oyunun bittiğini, ne kadar sürdüğünü ve tek/çok oturumlu olup
+ * olmadığını kaydeder — giriş yapmış ya da misafir, fark etmez.
+ * `game_starts` gibi tamamen anonim/sayaç amaçlıdır (skor/kelime gibi
+ * kişisel veri yok); asıl skor kaydı hâlâ yalnızca giriş yapmış kullanıcılar
+ * için `saveGame`/`games` tablosu üzerinden yürür. `multiSession`,
+ * `GameState.multiSession`'dan gelir — oyun bitmeden en az bir kez
+ * tarayıcı/uygulama kapatılıp devam ettirildiyse true.
  */
-export async function logGameFinish(playerCount: number, durationSeconds: number): Promise<void> {
+export async function logGameFinish(
+  playerCount: number,
+  durationSeconds: number,
+  multiSession: boolean,
+): Promise<void> {
   if (!supabase) return;
   const {
     data: { user },
@@ -90,7 +97,12 @@ export async function logGameFinish(playerCount: number, durationSeconds: number
 
   const { error } = await supabase
     .from('game_finishes')
-    .insert({ user_id: user?.id ?? null, player_count: playerCount, duration_seconds: durationSeconds });
+    .insert({
+      user_id: user?.id ?? null,
+      player_count: playerCount,
+      duration_seconds: durationSeconds,
+      multi_session: multiSession,
+    });
   if (error) {
     console.error('[Harfik] logGameFinish hatası:', error.message);
   }

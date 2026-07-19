@@ -59,7 +59,9 @@ const GAME_COUNT_SERIES: ChartSeriesDef[] = [
   { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
 ];
 const DURATION_SERIES: ChartSeriesDef[] = [
-  { key: 'avg_duration_seconds', label: 'Ortalama Süre', color: '#7c3aed' },
+  { key: 'avg_duration_seconds', label: 'Toplam', color: '#7c3aed' },
+  { key: 'avg_duration_same_session_seconds', label: 'Aynı Oturum', color: '#0891B2' },
+  { key: 'avg_duration_multi_session_seconds', label: 'Çok Oturumlu', color: '#DC2626' },
 ];
 
 const selectCls =
@@ -498,6 +500,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         data={gameActivity}
                         granularity={gameGranularity}
                         series={DURATION_SERIES}
+                        defaultActiveKeys={['avg_duration_seconds']}
                         formatValue={formatDuration}
                         controls={<span className={sectionTitleCls}>Ortalama Oyun Süresi</span>}
                       />

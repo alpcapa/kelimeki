@@ -342,7 +342,7 @@ export default function App() {
   useEffect(() => {
     if (!state.isGameOver || state.phase !== 'play') return;
     const durationSeconds = Math.max(0, Math.round((Date.now() - Date.parse(state.startedAt)) / 1000));
-    void logGameFinish(state.players.length, durationSeconds);
+    void logGameFinish(state.players.length, durationSeconds, state.multiSession);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);
 
