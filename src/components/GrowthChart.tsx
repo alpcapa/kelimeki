@@ -45,10 +45,29 @@ function fmtFullDate(iso: string, granularity: AdminActivityGranularity): string
 export function GrowthChart({ data, granularity }: GrowthChartProps) {
   const [showTable, setShowTable] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  // Legend'a tıklayarak açılıp kapatılabilen seriler — başlangıçta sadece
+  // "Yeni Kayıt" görünür, diğerleri tıklanınca eklenir/çıkarılır.
+  const [activeKeys, setActiveKeys] = useState<Set<(typeof SERIES)[number]['key']>>(
+    () => new Set(['signups']),
+  );
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
+  const activeSeries = SERIES.filter((s) => activeKeys.has(s.key));
+
+  function toggleSeries(key: (typeof SERIES)[number]['key']) {
+    setActiveKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
   const n = data.length;
-  const maxRaw = Math.max(1, ...data.flatMap((d) => [d.signups, d.game_starts, d.games_finished]));
+  const maxRaw = Math.max(
+    1,
+    ...data.flatMap((d) => activeSeries.map((s) => d[s.key])),
+  );
   const niceMax = niceCeil(maxRaw);
   const yTicks = niceMax <= 4 ? [0, niceMax] : [0, Math.round(niceMax / 2), niceMax];
 
@@ -57,18 +76,18 @@ export function GrowthChart({ data, granularity }: GrowthChartProps) {
 
   const paths = useMemo(
     () =>
-      SERIES.map((s) => ({
+      activeSeries.map((s) => ({
         ...s,
         d: data.map((row, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(row[s.key])}`).join(' '),
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data, niceMax],
+    [data, niceMax, activeKeys],
   );
 
   // Son noktadaki değer etiketlerini üst üste binmeyecek şekilde dikey olarak ayır.
   const endLabels = useMemo(() => {
     if (n === 0) return [];
-    const raw = SERIES.map((s) => {
+    const raw = activeSeries.map((s) => {
       const value = data[n - 1][s.key];
       return { ...s, value, rawY: y(value) };
     }).sort((a, b) => a.rawY - b.rawY);
@@ -80,7 +99,7 @@ export function GrowthChart({ data, granularity }: GrowthChartProps) {
     }
     return raw;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, niceMax]);
+  }, [data, niceMax, activeKeys]);
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
     const el = wrapRef.current;
@@ -98,12 +117,25 @@ export function GrowthChart({ data, granularity }: GrowthChartProps) {
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between flex-wrap gap-x-4 gap-y-1.5">
         <div className="flex items-center gap-3 flex-wrap">
-          {SERIES.map((s) => (
-            <span key={s.key} className="flex items-center gap-1.5 text-[10px] font-mono text-muted">
-              <span className="inline-block w-3 h-[2px] rounded-full" style={{ background: s.color }} />
-              {s.label}
-            </span>
-          ))}
+          {SERIES.map((s) => {
+            const active = activeKeys.has(s.key);
+            return (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => toggleSeries(s.key)}
+                className={`flex items-center gap-1.5 text-[10px] font-mono transition-opacity ${
+                  active ? 'text-text' : 'text-muted opacity-45'
+                }`}
+              >
+                <span
+                  className="inline-block w-3 h-[2px] rounded-full"
+                  style={{ background: active ? s.color : '#8A93A2' }}
+                />
+                {s.label}
+              </button>
+            );
+          })}
         </div>
         <button
           type="button"
@@ -191,7 +223,7 @@ export function GrowthChart({ data, granularity }: GrowthChartProps) {
               <path key={p.key} d={p.d} fill="none" stroke={p.color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
             ))}
 
-            {SERIES.map((s) => (
+            {activeSeries.map((s) => (
               <circle
                 key={s.key}
                 cx={x(n - 1)}
@@ -225,7 +257,7 @@ export function GrowthChart({ data, granularity }: GrowthChartProps) {
               }}
             >
               <div className="text-muted mb-1">{fmtFullDate(hover.bucket, granularity)}</div>
-              {SERIES.map((s) => (
+              {activeSeries.map((s) => (
                 <div key={s.key} className="flex items-center gap-1.5">
                   <span className="inline-block w-2.5 h-[2px] rounded-full" style={{ background: s.color }} />
                   <span className="font-bold text-text">{hover[s.key]}</span>

@@ -330,23 +330,26 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
           {tab === 'growth' && (
             <>
-              <div className="flex gap-1.5">
-                {(['day', 'month'] as const).map((g) => (
-                  <button
-                    key={g}
-                    className={tabBtn(granularity === g)}
-                    onClick={() => selectGranularity(g)}
-                  >
-                    {g === 'day' ? 'Günlük' : 'Aylık'}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-1.5">
-                {PERIOD_OPTIONS[granularity].map((p) => (
-                  <button key={p} className={tabBtn(period === p)} onClick={() => setPeriod(p)}>
-                    Son {p} {granularity === 'day' ? 'Gün' : 'Ay'}
-                  </button>
-                ))}
+              <div className="flex gap-2">
+                <select
+                  value={granularity}
+                  onChange={(e) => selectGranularity(e.target.value as AdminActivityGranularity)}
+                  className="flex-1 py-1.5 px-2 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] bg-panel text-text border border-border"
+                >
+                  <option value="day">Günlük</option>
+                  <option value="month">Aylık</option>
+                </select>
+                <select
+                  value={period}
+                  onChange={(e) => setPeriod(Number(e.target.value))}
+                  className="flex-1 py-1.5 px-2 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] bg-panel text-text border border-border"
+                >
+                  {PERIOD_OPTIONS[granularity].map((p) => (
+                    <option key={p} value={p}>
+                      Son {p} {granularity === 'day' ? 'Gün' : 'Ay'}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {activity === null ? (
