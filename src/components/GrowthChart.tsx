@@ -122,7 +122,7 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
         <button
           type="button"
           onClick={() => setShowTable((v) => !v)}
-          className="text-[10px] font-mono uppercase tracking-[0.5px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity shrink-0 ml-auto"
+          className="text-[9px] font-mono uppercase tracking-[0.5px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity shrink-0 ml-auto"
         >
           {showTable ? 'Grafik Görünümü' : 'Tablo Görünümü'}
         </button>
