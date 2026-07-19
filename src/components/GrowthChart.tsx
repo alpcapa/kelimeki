@@ -39,9 +39,9 @@ function fmtShortDate(iso: string, granularity: AdminActivityGranularity): strin
 
 function fmtFullDate(iso: string, granularity: AdminActivityGranularity): string {
   const d = new Date(iso + 'T00:00:00');
-  return granularity === 'month'
-    ? d.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
-    : d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
+  if (granularity === 'month') return d.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+  const full = d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
+  return granularity === 'week' ? `${full} haftası` : full;
 }
 
 export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
@@ -122,7 +122,7 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
         <button
           type="button"
           onClick={() => setShowTable((v) => !v)}
-          className="text-[10px] font-mono font-bold uppercase tracking-[0.5px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity shrink-0 ml-auto"
+          className="text-[10px] font-mono uppercase tracking-[0.5px] text-muted underline underline-offset-2 active:opacity-70 transition-opacity shrink-0 ml-auto"
         >
           {showTable ? 'Grafik Görünümü' : 'Tablo Görünümü'}
         </button>

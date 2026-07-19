@@ -37,7 +37,14 @@ type SortDir = 'asc' | 'desc';
 
 const PERIOD_OPTIONS: Record<AdminActivityGranularity, readonly number[]> = {
   day: [7, 30, 90],
+  week: [8, 12, 26],
   month: [6, 12, 24],
+};
+
+const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
+  day: 'Gün',
+  week: 'Hafta',
+  month: 'Ay',
 };
 
 function fmtDate(iso: string | null) {
@@ -344,6 +351,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         className="w-auto shrink-0 py-1.5 px-2 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] bg-panel text-text border border-border"
                       >
                         <option value="day">Günlük</option>
+                        <option value="week">Haftalık</option>
                         <option value="month">Aylık</option>
                       </select>
                       <select
@@ -353,7 +361,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       >
                         {PERIOD_OPTIONS[granularity].map((p) => (
                           <option key={p} value={p}>
-                            Son {p} {granularity === 'day' ? 'Gün' : 'Ay'}
+                            Son {p} {PERIOD_UNIT_LABEL[granularity]}
                           </option>
                         ))}
                       </select>

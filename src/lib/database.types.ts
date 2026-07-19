@@ -179,7 +179,7 @@ export interface AdminActivityPoint {
   games_finished: number;
 }
 
-export type AdminActivityGranularity = 'day' | 'month';
+export type AdminActivityGranularity = 'day' | 'week' | 'month';
 
 /** feedback tablosundaki tek satır (admin panelinden okunur). */
 export interface AdminFeedbackRow {
