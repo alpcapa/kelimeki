@@ -17,7 +17,7 @@ import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { rankPlayers } from './utils/ranking';
-import { loadGameState, saveGameState, clearGameState } from './utils/gameStorage';
+import { loadGameState, saveGameState, clearGameState, takePendingAbandonedGame } from './utils/gameStorage';
 import { markQuickStartSeen } from './utils/onboarding';
 import { getFormedWords, getFullWordAt, key } from './utils/board';
 import type { Tile as TileModel } from './game/types';
@@ -78,6 +78,18 @@ export default function App() {
     window.addEventListener('online', flushPendingGames);
     return () => window.removeEventListener('online', flushPendingGames);
   }, [user]);
+
+  // Yukarıdaki lazy init sırasında (loadGameState) 7 gün hareketsizlik
+  // yüzünden terk edilmiş sayılıp silinen bir oyun varsa, o kayıt burada
+  // (mount'ta, bir kez) sunucuya "tamamlanmadı" olarak bildirilir. Kuyruk
+  // read-then-clear olduğundan StrictMode'un dev'de effect'i iki kez
+  // çalıştırması zararsızdır — ikinci okuma boş döner.
+  useEffect(() => {
+    const pending = takePendingAbandonedGame();
+    if (pending) {
+      void logGameFinish(pending.playerCount, pending.durationSeconds, pending.multiSession, false);
+    }
+  }, []);
 
   // Oynanan kelime(ler)e tıklanınca gösterilen anlam penceresi. Bir hamlede
   // birden fazla kelime oluştuysa hepsi listelenir.
