@@ -5,12 +5,14 @@ import type { AdminActivityGranularity, AdminActivityPoint } from '../lib/databa
 interface GrowthChartProps {
   data: AdminActivityPoint[];
   granularity: AdminActivityGranularity;
+  /** Aralık/periyot seçim kontrolleri — tablo görünümü linkiyle aynı satırda gösterilir. */
+  controls?: React.ReactNode;
 }
 
 const SERIES = [
   { key: 'signups', label: 'Yeni Kayıt', color: '#2a78d6' },
-  { key: 'game_starts', label: 'Başlatılan Oyun', color: '#eda100' },
-  { key: 'games_finished', label: 'Bitirilen Oyun', color: '#008300' },
+  { key: 'game_starts', label: 'Başlatılan', color: '#eda100' },
+  { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
 ] as const;
 
 const W = 640;
@@ -42,7 +44,7 @@ function fmtFullDate(iso: string, granularity: AdminActivityGranularity): string
     : d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-export function GrowthChart({ data, granularity }: GrowthChartProps) {
+export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
   const [showTable, setShowTable] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   // Legend'a tıklayarak açılıp kapatılabilen seriler — başlangıçta sadece
@@ -115,28 +117,8 @@ export function GrowthChart({ data, granularity }: GrowthChartProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between flex-wrap gap-x-4 gap-y-1.5">
-        <div className="flex items-center gap-3 flex-wrap">
-          {SERIES.map((s) => {
-            const active = activeKeys.has(s.key);
-            return (
-              <button
-                key={s.key}
-                type="button"
-                onClick={() => toggleSeries(s.key)}
-                className={`flex items-center gap-1.5 text-[10px] font-mono transition-opacity ${
-                  active ? 'text-text' : 'text-muted opacity-45'
-                }`}
-              >
-                <span
-                  className="inline-block w-3 h-[2px] rounded-full"
-                  style={{ background: active ? s.color : '#8A93A2' }}
-                />
-                {s.label}
-              </button>
-            );
-          })}
-        </div>
+      <div className="flex items-center flex-wrap gap-x-2 gap-y-1.5">
+        {controls}
         <button
           type="button"
           onClick={() => setShowTable((v) => !v)}
@@ -144,6 +126,28 @@ export function GrowthChart({ data, granularity }: GrowthChartProps) {
         >
           {showTable ? 'Grafik Görünümü' : 'Tablo Görünümü'}
         </button>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap">
+        {SERIES.map((s) => {
+          const active = activeKeys.has(s.key);
+          return (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => toggleSeries(s.key)}
+              className={`flex items-center gap-1.5 text-[10px] font-mono transition-opacity ${
+                active ? 'text-text' : 'text-muted opacity-45'
+              }`}
+            >
+              <span
+                className="inline-block w-3 h-[2px] rounded-full"
+                style={{ background: active ? s.color : '#8A93A2' }}
+              />
+              {s.label}
+            </button>
+          );
+        })}
       </div>
 
       {n === 0 ? (
