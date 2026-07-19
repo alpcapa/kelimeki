@@ -1,4 +1,5 @@
 // Harfik — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
+import { useMemo } from 'react';
 import {
   BONUS_LABELS,
   BONUS_ZONE,
@@ -152,8 +153,15 @@ export function Board({
   const lastMoveSet = new Set(state.lastMoveCells.map(([r, c]) => key(r, c)));
 
   // Her oyuncunun bölgesi: kendi köşesi + oradan kendi taşlarıyla genişleyen
-  // alan. Sabit 4×4 köşenin aksine hamle oynandıkça büyür.
-  const territories = computeAllTerritories(board, players);
+  // alan. Sabit 4×4 köşenin aksine hamle oynandıkça büyür. `board`/`players`
+  // yalnızca bir hamle oynanınca değiştiğinden `useMemo` ile önbelleklenir —
+  // aksi halde bir taş sürüklenirken (her `pointermove`'da `Board` yeniden
+  // render olur, ama `board`/`players` aynı kalır) bu flood-fill her seferinde
+  // gereksiz yere tekrarlanıyordu.
+  const territories = useMemo(
+    () => computeAllTerritories(board, players),
+    [board, players],
+  );
   const territoryOwnerAt = (r: number, c: number): number => {
     const k = key(r, c);
     for (let i = 0; i < territories.length; i++) {
@@ -330,19 +338,35 @@ export function Board({
     );
   };
 
-  // Her oyuncunun bölgesinin dış hattı — köşeden taşlarla genişledikçe
-  // sınır da ona göre büyür.
-  const territoryOutlines = players.map((p, i) => {
-    const territoryCells = [...territories[i]].map(
-      (k) => k.split(',').map(Number) as [number, number],
-    );
-    return buildOutline(territoryCells, PLAYER_COLORS[p.colorIndex].base, `territory-${i}`);
-  });
+  // Her oyuncunun bölgesinin dış hattı — köşeden taşlarla genişledikçe sınır
+  // da ona göre büyür. Kenar izleme + yuvarlatma (`buildRoundedOutlinePath`)
+  // pahalı olduğundan `territories` değişmediği sürece (bir taş sürüklenirken
+  // olduğu gibi) tekrar hesaplanmaz.
+  const territoryOutlines = useMemo(
+    () =>
+      players.map((p, i) => {
+        const territoryCells = [...territories[i]].map(
+          (k) => k.split(',').map(Number) as [number, number],
+        );
+        return buildOutline(territoryCells, PLAYER_COLORS[p.colorIndex].base, `territory-${i}`);
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [territories, players],
+  );
 
-  // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan.
+  // Oyna'ya basmadan önce anlık geçerlilik çerçevesi (yeşil/kırmızı) + puan —
+  // aynı sebeple `moveStatus` değişmediği sürece yeniden hesaplanmaz.
   const moveColor = moveStatus ? (moveStatus.valid ? '#1FA05C' : '#E0483A') : undefined;
-  const moveOutline = moveStatus ? buildOutline(moveStatus.cells, moveColor!, 'move') : null;
-  const moveBadge = moveStatus ? buildBadge(moveStatus.cells, moveStatus.score, moveColor!) : null;
+  const moveOutline = useMemo(
+    () => (moveStatus ? buildOutline(moveStatus.cells, moveColor!, 'move') : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [moveStatus],
+  );
+  const moveBadge = useMemo(
+    () => (moveStatus ? buildBadge(moveStatus.cells, moveStatus.score, moveColor!) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [moveStatus],
+  );
 
   return (
     <div className="w-full max-w-[680px] mx-auto px-3 pt-2 pb-3 flex flex-col items-center">
