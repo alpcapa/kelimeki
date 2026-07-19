@@ -59,7 +59,7 @@ const GAME_COUNT_SERIES: ChartSeriesDef[] = [
   { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
 ];
 const DURATION_SERIES: ChartSeriesDef[] = [
-  { key: 'avg_duration_seconds', label: 'Toplam', color: '#7c3aed' },
+  { key: 'avg_duration_seconds', label: 'Genel', color: '#7c3aed' },
   { key: 'avg_duration_same_session_seconds', label: 'Aynı Oturum', color: '#0891B2' },
   { key: 'avg_duration_multi_session_seconds', label: 'Çok Oturumlu', color: '#DC2626' },
 ];
@@ -71,26 +71,29 @@ const selectCls =
 const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px] text-muted';
 
 /**
- * Saniyeyi kısa bir Türkçe süre etiketine çevirir (grafik ekseni/tooltip/tablo
- * için). Çok oturumlu oyunlarda başlangıç-bitiş arası gerçekte saatler,
- * günler hatta haftalar sürebildiğinden sn/dk/sa'nın ötesinde gün/hafta
- * kademeleri de var — yoksa örn. 3 günlük bir ara "72 sa" gibi okunaksız
- * gösterilirdi.
+ * Saniyeyi kısa bir süre etiketine çevirir (grafik ekseni/tooltip/tablo için).
+ * 1 saatin altı saat:dakika:saniye biçiminde saat gibi ("6:34"); üstü kısaltılmış
+ * birimlerle ("2s 15dk", "5g 18s") — çok oturumlu oyunlarda başlangıç-bitiş
+ * arası gerçekte saatler/günler/haftalar sürebildiğinden gün/hafta kademeleri
+ * de var, yoksa örn. 3 günlük bir ara "72s" gibi okunaksız gösterilirdi.
  */
 function formatDuration(totalSeconds: number): string {
   const s = Math.round(totalSeconds);
-  if (s < 60) return `${s} sn`;
-  const m = Math.round(s / 60);
-  if (m < 60) return `${m} dk`;
-  const h = Math.floor(m / 60);
-  const rm = m % 60;
-  if (h < 24) return rm ? `${h} sa ${rm} dk` : `${h} sa`;
+  if (s < 3600) {
+    const m = Math.floor(s / 60);
+    const rs = s % 60;
+    return `${m}:${String(rs).padStart(2, '0')}`;
+  }
+  const totalMin = Math.floor(s / 60);
+  const h = Math.floor(totalMin / 60);
+  const rm = totalMin % 60;
+  if (h < 24) return rm ? `${h}s ${rm}dk` : `${h}s`;
   const d = Math.floor(h / 24);
   const rh = h % 24;
-  if (d < 7) return rh ? `${d} gün ${rh} sa` : `${d} gün`;
+  if (d < 7) return rh ? `${d}g ${rh}s` : `${d}g`;
   const w = Math.floor(d / 7);
   const rd = d % 7;
-  return rd ? `${w} hafta ${rd} gün` : `${w} hafta`;
+  return rd ? `${w} hafta ${rd}g` : `${w} hafta`;
 }
 
 function fmtDate(iso: string | null) {
