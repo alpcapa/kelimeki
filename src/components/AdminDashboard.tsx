@@ -70,7 +70,13 @@ const selectCls =
 /** GrowthChart'ın `controls` satırına konan bölüm başlığı — Tablo Görünümü linkiyle aynı hizada. */
 const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px] text-muted';
 
-/** Saniyeyi kısa bir Türkçe süre etiketine çevirir (grafik ekseni/tooltip/tablo için). */
+/**
+ * Saniyeyi kısa bir Türkçe süre etiketine çevirir (grafik ekseni/tooltip/tablo
+ * için). Çok oturumlu oyunlarda başlangıç-bitiş arası gerçekte saatler,
+ * günler hatta haftalar sürebildiğinden sn/dk/sa'nın ötesinde gün/hafta
+ * kademeleri de var — yoksa örn. 3 günlük bir ara "72 sa" gibi okunaksız
+ * gösterilirdi.
+ */
 function formatDuration(totalSeconds: number): string {
   const s = Math.round(totalSeconds);
   if (s < 60) return `${s} sn`;
@@ -78,7 +84,13 @@ function formatDuration(totalSeconds: number): string {
   if (m < 60) return `${m} dk`;
   const h = Math.floor(m / 60);
   const rm = m % 60;
-  return rm ? `${h} sa ${rm} dk` : `${h} sa`;
+  if (h < 24) return rm ? `${h} sa ${rm} dk` : `${h} sa`;
+  const d = Math.floor(h / 24);
+  const rh = h % 24;
+  if (d < 7) return rh ? `${d} gün ${rh} sa` : `${d} gün`;
+  const w = Math.floor(d / 7);
+  const rd = d % 7;
+  return rd ? `${w} hafta ${rd} gün` : `${w} hafta`;
 }
 
 function fmtDate(iso: string | null) {

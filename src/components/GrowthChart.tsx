@@ -28,8 +28,9 @@ function valueOf<T>(row: T, key: string): number | null {
 
 const W = 640;
 const H = 240;
+// left/right burada minimum değer — uzun değer etiketleri (örn. "3 hafta 6 gün"
+// süre metinleri) kırpılmasın diye bileşen içinde içeriğe göre büyütülüyor.
 const PAD = { top: 16, right: 58, bottom: 24, left: 34 };
-const PLOT_W = W - PAD.left - PAD.right;
 const PLOT_H = H - PAD.top - PAD.bottom;
 
 function niceCeil(n: number): number {
@@ -91,7 +92,28 @@ export function GrowthChart<T extends { bucket: string }>({
   const niceMax = niceCeil(maxRaw);
   const yTicks = niceMax <= 4 ? [0, niceMax] : [0, Math.round(niceMax / 2), niceMax];
 
-  const x = (i: number) => PAD.left + (n <= 1 ? 0 : (i / (n - 1)) * PLOT_W);
+  // Y ekseni ve uç değer etiketleri say/sürebilir uzunlukta olabildiğinden
+  // (örn. "17" vs "3 hafta 6 gün"), kırpılmayı önlemek için kenar boşlukları
+  // en uzun etiketin genişliğine göre büyütülüyor.
+  const leftPad = useMemo(() => {
+    const maxLen = yTicks.reduce((m, t) => Math.max(m, formatValue(t).length), 1);
+    return Math.max(PAD.left, 14 + maxLen * 7.2);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [yTicks, formatValue]);
+
+  const rightPad = useMemo(() => {
+    if (n === 0) return PAD.right;
+    const maxLen = activeSeries.reduce(
+      (m, s) => Math.max(m, formatValue(valueOf(data[n - 1], s.key) ?? 0).length),
+      2,
+    );
+    return Math.max(PAD.right, 16 + maxLen * 7.2);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [n, activeSeries, data, formatValue]);
+
+  const plotW = W - leftPad - rightPad;
+
+  const x = (i: number) => leftPad + (n <= 1 ? 0 : (i / (n - 1)) * plotW);
   const y = (v: number) => PAD.top + PLOT_H - (v / niceMax) * PLOT_H;
 
   const paths = useMemo(
@@ -126,7 +148,7 @@ export function GrowthChart<T extends { bucket: string }>({
     if (!el || n === 0) return;
     const rect = el.getBoundingClientRect();
     const xInViewBox = ((e.clientX - rect.left) / rect.width) * W;
-    const idx = Math.round(((xInViewBox - PAD.left) / PLOT_W) * (n - 1));
+    const idx = Math.round(((xInViewBox - leftPad) / plotW) * (n - 1));
     setHoverIndex(Math.min(n - 1, Math.max(0, idx)));
   }
 
@@ -214,20 +236,20 @@ export function GrowthChart<T extends { bucket: string }>({
             {yTicks.map((t) => (
               <g key={t}>
                 <line
-                  x1={PAD.left}
-                  x2={W - PAD.right}
+                  x1={leftPad}
+                  x2={W - rightPad}
                   y1={y(t)}
                   y2={y(t)}
                   stroke="#DCE2EA"
                   strokeWidth={1}
                 />
-                <text x={PAD.left - 6} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill="#8A93A2">
+                <text x={leftPad - 6} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill="#8A93A2">
                   {formatValue(t)}
                 </text>
               </g>
             ))}
 
-            <text x={PAD.left} y={H - 4} textAnchor="start" fontSize={12} fill="#8A93A2">
+            <text x={leftPad} y={H - 4} textAnchor="start" fontSize={12} fill="#8A93A2">
               {fmtShortDate(data[0].bucket, granularity)}
             </text>
             {n > 2 && (
