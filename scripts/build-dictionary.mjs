@@ -39,6 +39,7 @@ import path from 'node:path';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { PROPER_NOUNS } from './proper-nouns.mjs';
+import { EXTRA_MEANINGS } from './extra-meanings.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -151,6 +152,18 @@ for await (const line of rl) {
 // GTS'te zaten varsa (gerçek TDK tanımı) dokunmuyoruz.
 for (const [word, meaning] of Object.entries(PROPER_NOUNS)) {
   if (!dict.has(word)) {
+    dict.set(word, { pos: null, meanings: [meaning] });
+  }
+}
+
+// TDK'de zaten var olan bazı kelimelere günlük dilde yaygın olan ek bir
+// anlam ekliyoruz (bkz. extra-meanings.mjs başlığı). PROPER_NOUNS'un
+// aksine burada "zaten varsa dokunma" kuralı uygulanmaz.
+for (const [word, meaning] of Object.entries(EXTRA_MEANINGS)) {
+  const existing = dict.get(word);
+  if (existing) {
+    if (!existing.meanings.includes(meaning)) existing.meanings.push(meaning);
+  } else {
     dict.set(word, { pos: null, meanings: [meaning] });
   }
 }
