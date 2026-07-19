@@ -66,6 +66,13 @@ export type NewGame = Pick<
    * `saveGame` (lib/api.ts) ve `gameSync.ts`.
    */
   id?: string;
+  /**
+   * Oyunun gerçekten bittiği an (istemci saati, ISO 8601). Offline/misafir
+   * kuyruklamada kayıt sunucuya çok sonra ulaşabildiğinden, sunucunun
+   * `insert` anındaki `now()` varsayılanı yerine bu değer kullanılır — böylece
+   * oyun geçmişi gerçek oynanma sırasına göre görünür.
+   */
+  created_at?: string;
   user_id?: string | null;
   move_count?: number | null;
   best_move_score?: number | null;

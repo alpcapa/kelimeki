@@ -309,6 +309,7 @@ export default function App() {
     }));
     return {
       id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
       player_score: human.score,
       ai_score: bestOpponentScore,
       result,
