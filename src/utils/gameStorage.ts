@@ -9,15 +9,33 @@ const STORAGE_KEY = 'harfik:game-state';
 // kayıtları sessizce geçersiz saymak için.
 const STORAGE_VERSION = 1;
 
+// Bir oyun bu kadar süre hiç kaydedilmeden (yani hiç hamle yapılmadan)
+// localStorage'da beklerse terk edilmiş sayılır: bir sonraki açılışta
+// silinir ve admin panelinin Büyüme > Oyun grafiğine "terk edilen" olarak
+// düşer. Süre son KAYIT anından itibaren sayılır (oyunun başladığı andan
+// değil) — yoksa gerçekten günler süren çok-oturumlu bir oyunu da hatalı
+// biçimde terk edilmiş sayardık.
+const ABANDON_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000;
+
+const PENDING_ABANDON_KEY = 'harfik:pending-abandoned-game';
+
 interface StoredPayload {
   version: number;
   state: GameState;
+  /** Bu kaydın en son yazıldığı an (epoch ms) — terk edilme süresini ölçmek için. */
+  savedAt?: number;
+}
+
+export interface PendingAbandonedGame {
+  playerCount: number;
+  durationSeconds: number;
+  multiSession: boolean;
 }
 
 /** Devam eden oyunu kaydeder. localStorage kapalı/dolu olabilir — sessizce yok sayılır. */
 export function saveGameState(state: GameState): void {
   try {
-    const payload: StoredPayload = { version: STORAGE_VERSION, state };
+    const payload: StoredPayload = { version: STORAGE_VERSION, state, savedAt: Date.now() };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {
     // yoksay
@@ -52,11 +70,51 @@ export function loadGameState(): GameState | null {
     // Bu alanlar eklenmeden önce kaydedilmiş bir state'te olmayabilir.
     state.players = state.players.map((p) => ({ ...p, surrendered: p.surrendered ?? false }));
     state.startedAt = state.startedAt || new Date().toISOString();
+
+    // savedAt eklenmeden önceki kayıtlarda bu alan yoktur — "az önce
+    // kaydedildi" varsayılır ki mevcut bir oyuncu deploy sonrası ilk açılışta
+    // hatalı biçimde terk edilmiş sayılmasın.
+    const savedAt = parsed.savedAt ?? Date.now();
+    if (Date.now() - savedAt > ABANDON_TIMEOUT_MS) {
+      queuePendingAbandonedGame({
+        playerCount: state.players.length,
+        durationSeconds: Math.max(0, Math.round((savedAt - Date.parse(state.startedAt)) / 1000)),
+        multiSession: state.multiSession,
+      });
+      clearGameState();
+      return null;
+    }
+
     // Buraya ulaşmak, uygulamanın (bu oyun bitmeden) yeniden başlatılıp
     // localStorage'dan kaldığı yerden devam ettiği anlamına gelir — bu oyun
     // artık "çok oturumlu" sayılır, geri dönüşü yoktur.
     state.multiSession = true;
     return state;
+  } catch {
+    return null;
+  }
+}
+
+function queuePendingAbandonedGame(record: PendingAbandonedGame): void {
+  try {
+    localStorage.setItem(PENDING_ABANDON_KEY, JSON.stringify(record));
+  } catch {
+    // yoksay
+  }
+}
+
+/**
+ * Bir önceki `loadGameState()` çağrısı 7 gün hareketsizlik yüzünden bir
+ * oyunu terk edilmiş sayıp sildiyse, o oyunun kaydı burada tek seferlik
+ * okunup temizlenir — çağıran (App.tsx) bunu `logGameFinish(..., completed:
+ * false)` ile sunucuya bildirir. Kuyruk boşsa null döner.
+ */
+export function takePendingAbandonedGame(): PendingAbandonedGame | null {
+  try {
+    const raw = localStorage.getItem(PENDING_ABANDON_KEY);
+    if (!raw) return null;
+    localStorage.removeItem(PENDING_ABANDON_KEY);
+    return JSON.parse(raw) as PendingAbandonedGame;
   } catch {
     return null;
   }

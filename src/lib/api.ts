@@ -83,12 +83,17 @@ export async function logGameStart(playerCount: number): Promise<void> {
  * kişisel veri yok); asıl skor kaydı hâlâ yalnızca giriş yapmış kullanıcılar
  * için `saveGame`/`games` tablosu üzerinden yürür. `multiSession`,
  * `GameState.multiSession`'dan gelir — oyun bitmeden en az bir kez
- * tarayıcı/uygulama kapatılıp devam ettirildiyse true.
+ * tarayıcı/uygulama kapatılıp devam ettirildiyse true. `completed=false`,
+ * oyunun normal biçimde bitmediğini, 7 gün hareketsizlik sonrası terk
+ * edilmiş sayılıp silindiğini belirtir (bkz. `gameStorage.ts`
+ * `takePendingAbandonedGame`) — admin panelinin Büyüme grafiği bu iki
+ * durumu ayrı gösterir.
  */
 export async function logGameFinish(
   playerCount: number,
   durationSeconds: number,
   multiSession: boolean,
+  completed = true,
 ): Promise<void> {
   if (!supabase) return;
   const {
@@ -102,6 +107,7 @@ export async function logGameFinish(
       player_count: playerCount,
       duration_seconds: durationSeconds,
       multi_session: multiSession,
+      completed,
     });
   if (error) {
     console.error('[Harfik] logGameFinish hatası:', error.message);

@@ -57,6 +57,7 @@ const USER_SERIES: ChartSeriesDef[] = [{ key: 'signups', label: 'Yeni Kayıt', c
 const GAME_COUNT_SERIES: ChartSeriesDef[] = [
   { key: 'game_starts', label: 'Başlatılan', color: '#eda100' },
   { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
+  { key: 'games_abandoned', label: 'Terk Edilen', color: '#DC2626' },
 ];
 const DURATION_SERIES: ChartSeriesDef[] = [
   { key: 'avg_duration_seconds', label: 'Genel', color: '#7c3aed' },
