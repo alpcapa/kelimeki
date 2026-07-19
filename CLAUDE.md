@@ -35,7 +35,7 @@ src/
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
   utils/        # Saf fonksiyonlar (validator, board, ai, bag)
-  data/         # Kelime listesi (92k+), harf dağılımı, kelime anlamları
+  data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   hooks/        # useAuth
 ```

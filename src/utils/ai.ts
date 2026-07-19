@@ -11,6 +11,15 @@ import { canSpell, calcScore, computeAllTerritories, freshCorners } from './vali
 import { trLower, trUpper } from './turkish';
 import { getFormedWords, key, tileLetter, type Board } from './board';
 
+// WORD_SET sabit olduğundan (oyun boyunca değişmez), rafa/tahtaya/oyuncuya
+// bağlı olmayan bu türetilmiş liste modül yüklenirken bir kez hesaplanır —
+// önceden her `findAIMove` çağrısında (her YZ hamlesinde) baştan
+// yeniden üretiliyordu, bu da tahtada çapa harfi arttıkça YZ'nin "düşünme"
+// süresini gereksiz yere uzatıyordu.
+const WORD_POOL: readonly string[] = [...WORD_SET]
+  .filter((w) => w.length >= 2 && w.length <= 7)
+  .map((w) => trUpper(w));
+
 /**
  * Verilen pozisyon/harf listesi için rafı tüketerek taşları üretir. Tam harf
  * yoksa joker ('?') kullanılır ve taş wild olarak işaretlenir. Raf yetmezse null.
@@ -51,19 +60,17 @@ export function findAIMove(
   players: Player[],
 ): AIMove | null {
   const rackLetters = rack.map((t) => t.letter);
-  const wordPool = [...WORD_SET]
-    .filter((w) => w.length >= 2 && w.length <= 7)
-    .map((w) => trUpper(w));
-  const candidates = wordPool.filter((w) => canSpell(w, rackLetters));
+  const candidates = WORD_POOL.filter((w) => canSpell(w, rackLetters));
 
   // Çapalı hamlelerde kelimenin bir harfi tahtada zaten var olabilir (çapa).
   // O harfi rafta aramaya gerek yok — rafa + çapa harfine göre gevşetilmiş
-  // aday listesi, harfe göre önbelleklenir.
+  // aday listesi, harfe göre önbelleklenir (bu çağrı için — rafın kendisi
+  // her hamlede değiştiğinden bu seviyedeki cache modül seviyesine taşınamaz).
   const anchoredCandidatesCache = new Map<string, string[]>();
   const candidatesForAnchor = (letter: string): string[] => {
     let cached = anchoredCandidatesCache.get(letter);
     if (!cached) {
-      cached = wordPool.filter(
+      cached = WORD_POOL.filter(
         (w) => w.includes(letter) && canSpell(w, [...rackLetters, letter]),
       );
       anchoredCandidatesCache.set(letter, cached);
