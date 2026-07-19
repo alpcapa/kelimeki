@@ -46,6 +46,7 @@ src/
 │   ├── UserMenu.tsx             # hesap menüsü (giriş / hesap ayarları / skor kartı)
 │   ├── HelpModal.tsx            # nasıl oynanır sayfası
 │   ├── AuthModal.tsx            # giriş / kayıt / şifre sıfırlama
+│   ├── ResetPasswordModal.tsx   # şifre sıfırlama e-postasındaki bağlantıdan sonra yeni şifre belirleme
 │   ├── AccountSettingsModal.tsx # profil düzenleme (avatar, kullanıcı adı)
 │   ├── ScoreCard.tsx            # oyuncu istatistikleri
 │   ├── GameHistoryModal.tsx     # geçmiş oyunların listesi
@@ -54,6 +55,10 @@ src/
 │   ├── MeaningModal.tsx         # kelime anlamı penceresi
 │   ├── RemainingTilesModal.tsx  # torbada kalan taşlar
 │   ├── WildcardModal.tsx        # joker taşı harf seçimi
+│   ├── FeedbackModal.tsx        # görüş/şikayet bildirme formu
+│   ├── AdminDashboard.tsx       # admin paneli: üyeler, oyunlar, büyüme grafiği, geri bildirim (yalnızca is_admin)
+│   ├── AdminPlayerDetail.tsx    # admin panelinden bir üyenin ScoreCard'ının salt-okunur görünümü
+│   ├── GrowthChart.tsx          # admin büyüme grafiği (generic zaman serisi çizgi grafiği)
 │   ├── PrivacyModal.tsx         # gizlilik politikası
 │   ├── TermsModal.tsx           # kullanım koşulları
 │   ├── Modal.tsx                # paylaşılan modal kabuğu
