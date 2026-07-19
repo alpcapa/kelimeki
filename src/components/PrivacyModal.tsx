@@ -89,10 +89,13 @@ export function PrivacyModal({ onClose }: PrivacyModalProps) {
             Harfik, HTTP çerezi (cookie) kullanmaz. Bunun yerine oturumunuzu açık tutmak, oyun
             ilerlemenizi kaydetmek ve tercihlerinizi hatırlamak için tarayıcınızın yerel depolama
             alanı (localStorage/sessionStorage) kullanılır; bu veriler cihazınızda tutulur ve
-            sunucularımıza otomatik gönderilmez. Analitik, reklam veya pazarlama amaçlı herhangi
-            bir çerez ya da izleme teknolojisi kullanılmamaktadır. Yazı tipleri de dahil tüm
-            statik içerikler kendi sunucularımızdan sağlanır; üçüncü taraf (ör. Google Fonts)
-            çağrısı yapılmaz.
+            sunucularımıza otomatik gönderilmez. İstisna: misafir (girişsiz) oynadığınız bir
+            oyunun sonucu, bağlantı yoksa ya da henüz hesabınız yoksa geçici olarak bu yerel
+            depoda bekletilir; aynı cihazda daha sonra giriş yapar ya da kayıt olursanız bu
+            bekleyen sonuçlar otomatik olarak hesabınıza aktarılıp sunucuya gönderilir. Analitik,
+            reklam veya pazarlama amaçlı herhangi bir çerez ya da izleme teknolojisi
+            kullanılmamaktadır. Yazı tipleri de dahil tüm statik içerikler kendi
+            sunucularımızdan sağlanır; üçüncü taraf (ör. Google Fonts) çağrısı yapılmaz.
           </P>
         </Section>
 
