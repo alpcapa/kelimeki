@@ -28,7 +28,7 @@ function valueOf<T>(row: T, key: string): number | null {
 
 const W = 640;
 const H = 240;
-const PAD = { top: 16, right: 58, bottom: 24, left: 30 };
+const PAD = { top: 16, right: 58, bottom: 24, left: 34 };
 const PLOT_W = W - PAD.left - PAD.right;
 const PLOT_H = H - PAD.top - PAD.bottom;
 
@@ -221,21 +221,21 @@ export function GrowthChart<T extends { bucket: string }>({
                   stroke="#DCE2EA"
                   strokeWidth={1}
                 />
-                <text x={PAD.left - 6} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={11} fill="#8A93A2">
+                <text x={PAD.left - 6} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill="#8A93A2">
                   {formatValue(t)}
                 </text>
               </g>
             ))}
 
-            <text x={PAD.left} y={H - 4} textAnchor="start" fontSize={10} fill="#8A93A2">
+            <text x={PAD.left} y={H - 4} textAnchor="start" fontSize={12} fill="#8A93A2">
               {fmtShortDate(data[0].bucket, granularity)}
             </text>
             {n > 2 && (
-              <text x={x(Math.floor((n - 1) / 2))} y={H - 4} textAnchor="middle" fontSize={10} fill="#8A93A2">
+              <text x={x(Math.floor((n - 1) / 2))} y={H - 4} textAnchor="middle" fontSize={12} fill="#8A93A2">
                 {fmtShortDate(data[Math.floor((n - 1) / 2)].bucket, granularity)}
               </text>
             )}
-            <text x={x(n - 1)} y={H - 4} textAnchor="end" fontSize={10} fill="#8A93A2">
+            <text x={x(n - 1)} y={H - 4} textAnchor="end" fontSize={12} fill="#8A93A2">
               {fmtShortDate(data[n - 1].bucket, granularity)}
             </text>
 
