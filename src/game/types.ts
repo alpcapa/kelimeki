@@ -71,6 +71,21 @@ export interface AIMove {
 export interface GameState {
   /** 'setup' = oyuncu kurulum ekranı, 'play' = oyun sürüyor. */
   phase: 'setup' | 'play';
+  /**
+   * Oyunun başladığı an (ISO) — 'setup' fazında boş dize. Oyun bitince
+   * admin panelindeki anonim süre telemetrisi (`logGameFinish`) için
+   * `Date.now() - Date.parse(startedAt)` ile süre hesaplanır.
+   */
+  startedAt: string;
+  /**
+   * Bu oyun, bitmeden önce en az bir kez tarayıcı/uygulama kapatılıp
+   * `localStorage`'dan devam ettirildi mi ("çok oturumlu")? Yeni başlayan bir
+   * oyunda false; `loadGameState` bir kayıt geri yüklerken bunu true'ya çevirir
+   * (bkz. `src/utils/gameStorage.ts`) — geri dönüşü yoktur, o oyun için kalıcıdır.
+   * Admin panelindeki ortalama süre grafiğinde Toplam/Aynı Oturum/Çok Oturumlu
+   * kırılımı için `logGameFinish`'e iletilir.
+   */
+  multiSession: boolean;
   /** SIZE x SIZE tahta; boş hücreler null. */
   board: (Tile | null)[][];
   /** Çekiliş torbası. */

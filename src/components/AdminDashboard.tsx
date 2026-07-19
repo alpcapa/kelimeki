@@ -4,19 +4,22 @@ import { createPortal } from 'react-dom';
 import {
   fetchAdminMembers,
   fetchAdminGameCounts,
-  fetchAdminActivitySeries,
+  fetchAdminUserActivitySeries,
+  fetchAdminGameActivitySeries,
   fetchAdminFeedback,
   markFeedbackHandled,
 } from '../lib/api';
 import type {
   AdminMember,
   AdminGameCounts,
-  AdminActivityPoint,
+  AdminUserActivityPoint,
+  AdminGameActivityPoint,
+  AdminGameScope,
   AdminActivityGranularity,
   AdminFeedbackRow,
 } from '../lib/database.types';
 import { AdminPlayerDetail } from './AdminPlayerDetail';
-import { GrowthChart } from './GrowthChart';
+import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
 import { trLower } from '../utils/turkish';
 
 interface AdminDashboardProps {
@@ -25,6 +28,7 @@ interface AdminDashboardProps {
 
 type Tab = 'members' | 'games' | 'growth' | 'feedback';
 type GameSubTab = 'total' | 2 | 4;
+type GrowthSubTab = 'user' | 'game';
 type MemberSortKey =
   | 'name'
   | 'nickname'
@@ -37,8 +41,73 @@ type SortDir = 'asc' | 'desc';
 
 const PERIOD_OPTIONS: Record<AdminActivityGranularity, readonly number[]> = {
   day: [7, 30, 90],
+  week: [8, 12, 26],
   month: [6, 12, 24],
+  year: [2, 3, 5],
 };
+
+const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
+  day: 'Gün',
+  week: 'Hafta',
+  month: 'Ay',
+  year: 'Yıl',
+};
+
+const USER_SERIES: ChartSeriesDef[] = [{ key: 'signups', label: 'Yeni Kayıt', color: '#2a78d6' }];
+const GAME_COUNT_SERIES: ChartSeriesDef[] = [
+  { key: 'game_starts', label: 'Başlatılan', color: '#eda100' },
+  { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
+];
+const DURATION_SERIES: ChartSeriesDef[] = [
+  { key: 'avg_duration_seconds', label: 'Genel', color: '#7c3aed' },
+  { key: 'avg_duration_same_session_seconds', label: 'Aynı Oturum', color: '#0891B2' },
+  { key: 'avg_duration_multi_session_seconds', label: 'Çok Oturumlu', color: '#DC2626' },
+];
+
+const selectCls =
+  'w-auto shrink-0 py-1.5 px-2 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] bg-panel text-text border border-border';
+
+/** GrowthChart'ın `controls` satırına konan bölüm başlığı — Tablo Görünümü linkiyle aynı hizada. */
+const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px] text-muted';
+
+/**
+ * Saniyeyi kısa bir süre etiketine çevirir (grafik ekseni/tooltip/tablo için).
+ * 1 saatin altı saat:dakika:saniye biçiminde saat gibi ("6:34"); üstü kısaltılmış
+ * birimlerle ("2s 15dk", "5g 18s", "3h 2g", "2a 1h", "1y 5a") — çok oturumlu
+ * oyunlarda başlangıç-bitiş arası gerçekte saatler/günler/haftalar hatta
+ * aylar/yıllar sürebildiğinden gün/hafta/ay/yıl kademeleri de var, yoksa örn.
+ * 3 günlük bir ara "72s" gibi okunaksız gösterilirdi. Ay/yıl kademeleri
+ * takvimsel değil yaklaşık (30/365 gün) — burada amaç kesin tarih farkı değil,
+ * okunaklı bir ortalama süre etiketi.
+ */
+function formatDuration(totalSeconds: number): string {
+  const s = Math.round(totalSeconds);
+  if (s < 3600) {
+    const m = Math.floor(s / 60);
+    const rs = s % 60;
+    return `${m}:${String(rs).padStart(2, '0')}`;
+  }
+  const totalMin = Math.floor(s / 60);
+  const h = Math.floor(totalMin / 60);
+  const rm = totalMin % 60;
+  if (h < 24) return rm ? `${h}s ${rm}dk` : `${h}s`;
+  const d = Math.floor(h / 24);
+  const rh = h % 24;
+  if (d < 7) return rh ? `${d}g ${rh}s` : `${d}g`;
+  if (d < 30) {
+    const w = Math.floor(d / 7);
+    const rd = d % 7;
+    return rd ? `${w}h ${rd}g` : `${w}h`;
+  }
+  if (d < 365) {
+    const mo = Math.floor(d / 30);
+    const rw = Math.floor((d % 30) / 7);
+    return rw ? `${mo}a ${rw}h` : `${mo}a`;
+  }
+  const y = Math.floor(d / 365);
+  const rmo = Math.floor((d % 365) / 30);
+  return rmo ? `${y}y ${rmo}a` : `${y}y`;
+}
 
 function fmtDate(iso: string | null) {
   if (!iso) return '—';
@@ -86,9 +155,15 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [gameSubTab, setGameSubTab] = useState<GameSubTab>('total');
   const [error, setError] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
-  const [activity, setActivity] = useState<AdminActivityPoint[] | null>(null);
-  const [granularity, setGranularity] = useState<AdminActivityGranularity>('day');
-  const [period, setPeriod] = useState<number>(30);
+  const [growthSubTab, setGrowthSubTab] = useState<GrowthSubTab>('user');
+  const [userActivity, setUserActivity] = useState<AdminUserActivityPoint[] | null>(null);
+  const [userGranularity, setUserGranularity] = useState<AdminActivityGranularity>('day');
+  const [userPeriod, setUserPeriod] = useState<number>(30);
+  const [gameActivity, setGameActivity] = useState<AdminGameActivityPoint[] | null>(null);
+  const [gameGranularity, setGameGranularity] = useState<AdminActivityGranularity>('day');
+  const [gamePeriod, setGamePeriod] = useState<number>(30);
+  const [gameScope, setGameScope] = useState<AdminGameScope>('total');
+  const [gamePlayerCount, setGamePlayerCount] = useState<GameSubTab>('total');
   const [memberSearch, setMemberSearch] = useState('');
   const [sortKey, setSortKey] = useState<MemberSortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -107,15 +182,32 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   }, []);
 
   useEffect(() => {
-    setActivity(null);
-    fetchAdminActivitySeries(period, granularity)
-      .then(setActivity)
+    setUserActivity(null);
+    fetchAdminUserActivitySeries(userPeriod, userGranularity)
+      .then(setUserActivity)
       .catch((e) => setError(String(e)));
-  }, [period, granularity]);
+  }, [userPeriod, userGranularity]);
 
-  function selectGranularity(g: AdminActivityGranularity) {
-    setGranularity(g);
-    setPeriod(PERIOD_OPTIONS[g][1]);
+  useEffect(() => {
+    setGameActivity(null);
+    fetchAdminGameActivitySeries(
+      gamePeriod,
+      gameGranularity,
+      gameScope,
+      gamePlayerCount === 'total' ? null : gamePlayerCount,
+    )
+      .then(setGameActivity)
+      .catch((e) => setError(String(e)));
+  }, [gamePeriod, gameGranularity, gameScope, gamePlayerCount]);
+
+  function selectUserGranularity(g: AdminActivityGranularity) {
+    setUserGranularity(g);
+    setUserPeriod(PERIOD_OPTIONS[g][1]);
+  }
+
+  function selectGameGranularity(g: AdminActivityGranularity) {
+    setGameGranularity(g);
+    setGamePeriod(PERIOD_OPTIONS[g][1]);
   }
 
   function toggleSort(key: MemberSortKey) {
@@ -331,28 +423,118 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           {tab === 'growth' && (
             <>
               <div className="flex gap-1.5">
-                {(['day', 'month'] as const).map((g) => (
-                  <button
-                    key={g}
-                    className={tabBtn(granularity === g)}
-                    onClick={() => selectGranularity(g)}
-                  >
-                    {g === 'day' ? 'Günlük' : 'Aylık'}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-1.5">
-                {PERIOD_OPTIONS[granularity].map((p) => (
-                  <button key={p} className={tabBtn(period === p)} onClick={() => setPeriod(p)}>
-                    Son {p} {granularity === 'day' ? 'Gün' : 'Ay'}
-                  </button>
-                ))}
+                <button className={tabBtn(growthSubTab === 'user')} onClick={() => setGrowthSubTab('user')}>
+                  Kullanıcı
+                </button>
+                <button className={tabBtn(growthSubTab === 'game')} onClick={() => setGrowthSubTab('game')}>
+                  Oyun
+                </button>
               </div>
 
-              {activity === null ? (
-                <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
-              ) : (
-                <GrowthChart data={activity} granularity={granularity} />
+              {growthSubTab === 'user' &&
+                (userActivity === null ? (
+                  <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                ) : (
+                  <GrowthChart
+                    data={userActivity}
+                    granularity={userGranularity}
+                    series={USER_SERIES}
+                    controls={
+                      <>
+                        <select
+                          value={userGranularity}
+                          onChange={(e) => selectUserGranularity(e.target.value as AdminActivityGranularity)}
+                          className={selectCls}
+                        >
+                          <option value="day">Günlük</option>
+                          <option value="week">Haftalık</option>
+                          <option value="month">Aylık</option>
+                          <option value="year">Yıllık</option>
+                        </select>
+                        <select
+                          value={userPeriod}
+                          onChange={(e) => setUserPeriod(Number(e.target.value))}
+                          className={selectCls}
+                        >
+                          {PERIOD_OPTIONS[userGranularity].map((p) => (
+                            <option key={p} value={p}>
+                              Son {p} {PERIOD_UNIT_LABEL[userGranularity]}
+                            </option>
+                          ))}
+                        </select>
+                      </>
+                    }
+                  />
+                ))}
+
+              {growthSubTab === 'game' && (
+                <>
+                  <div className="flex items-center flex-wrap gap-2">
+                    <select
+                      value={gameScope}
+                      onChange={(e) => setGameScope(e.target.value as AdminGameScope)}
+                      className={selectCls}
+                    >
+                      <option value="total">Toplam</option>
+                      <option value="registered">Kayıtlı</option>
+                      <option value="guest">Misafir</option>
+                    </select>
+                    <select
+                      value={gamePlayerCount}
+                      onChange={(e) =>
+                        setGamePlayerCount(e.target.value === 'total' ? 'total' : (Number(e.target.value) as 2 | 4))
+                      }
+                      className={selectCls}
+                    >
+                      <option value="total">Toplam</option>
+                      <option value={2}>2 Kişilik</option>
+                      <option value={4}>4 Kişilik</option>
+                    </select>
+                    <select
+                      value={gameGranularity}
+                      onChange={(e) => selectGameGranularity(e.target.value as AdminActivityGranularity)}
+                      className={selectCls}
+                    >
+                      <option value="day">Günlük</option>
+                      <option value="week">Haftalık</option>
+                      <option value="month">Aylık</option>
+                      <option value="year">Yıllık</option>
+                    </select>
+                    <select
+                      value={gamePeriod}
+                      onChange={(e) => setGamePeriod(Number(e.target.value))}
+                      className={selectCls}
+                    >
+                      {PERIOD_OPTIONS[gameGranularity].map((p) => (
+                        <option key={p} value={p}>
+                          Son {p} {PERIOD_UNIT_LABEL[gameGranularity]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {gameActivity === null ? (
+                    <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                  ) : (
+                    <>
+                      <GrowthChart
+                        data={gameActivity}
+                        granularity={gameGranularity}
+                        series={GAME_COUNT_SERIES}
+                        defaultActiveKeys={['game_starts', 'games_finished']}
+                        controls={<span className={sectionTitleCls}>Oyun Sayısı</span>}
+                      />
+                      <GrowthChart
+                        data={gameActivity}
+                        granularity={gameGranularity}
+                        series={DURATION_SERIES}
+                        defaultActiveKeys={['avg_duration_seconds']}
+                        formatValue={formatDuration}
+                        controls={<span className={sectionTitleCls}>Ortalama Oyun Süresi</span>}
+                      />
+                    </>
+                  )}
+                </>
               )}
             </>
           )}

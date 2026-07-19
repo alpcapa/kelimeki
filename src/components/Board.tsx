@@ -188,7 +188,9 @@ export function Board({
       if (boardTile) {
         // Tahtadaki her taş tıklanabilir — hangi hamlede oynandığına
         // bakılmaksızın o hücreden geçen kelime(ler)in anlamı gösterilir.
-        classes.push('bg-transparent cursor-pointer');
+        // `relative z-[5]`: köşe/bonus filigranları (z-index:auto) taşın
+        // ÜZERİNDE boyanmasın diye — taş her zaman kendi solid renginde görünmeli.
+        classes.push('relative z-[5] bg-transparent cursor-pointer');
         const tileColor = colorOf(boardTile.owner);
         const isLastMove = lastMoveSet.has(k);
         content = (
@@ -203,7 +205,7 @@ export function Board({
           />
         );
       } else if (placedTile) {
-        classes.push('bg-transparent');
+        classes.push('relative z-[5] bg-transparent');
         content = <Tile tile={placedTile} variant="placed" color={currentColor} />;
       } else if (inZone) {
         // Merkezdeki x2 bonus bölgesi — altın zemin, büyük "X2" filigranı
