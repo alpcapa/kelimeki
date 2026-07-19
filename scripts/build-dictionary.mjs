@@ -88,17 +88,17 @@ for await (const line of rl) {
     continue;
   }
 
-  // 4+ sözcüklü maddeler fiilen atasözü/tam cümledir (ör. "acele ile menzil
-  // alınmaz"); bunlar oynanabilir kelime kümesinden tamamen elenir.
+  // Çok sözcüklü maddeler (2+) TDK'de resmen ayrı yazılan deyim, atasözü ya
+  // da bileşik terimlerdir ("acele ile menzil alınmaz", "dulavrat otu",
+  // "bir de" gibi) — hiçbiri tek bir Türkçe kelime değildir, bu yüzden
+  // oynanabilir kelime kümesinden tamamen elenir.
   const rawMadde = (entry.madde || '').trim();
-  if (rawMadde.split(/\s+/).filter(Boolean).length >= 4) {
+  if (rawMadde.split(/\s+/).filter(Boolean).length >= 2) {
     dropped++;
     continue;
   }
 
-  // Çok sözcüklü maddeleri tek tokena birleştir: tüm boşlukları kaldır
-  // ("dulavrat otu" -> "dulavratotu").
-  const word = trLower(entry.madde || '').replace(/\s+/g, '');
+  const word = trLower(entry.madde || '');
   // Yalnızca oynanabilir harfler + 2–25 uzunluk.
   if (!word || word.length < 2 || word.length > 25) {
     dropped++;
