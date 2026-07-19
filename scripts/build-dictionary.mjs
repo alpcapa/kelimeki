@@ -39,6 +39,7 @@ import path from 'node:path';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { PROPER_NOUNS } from './proper-nouns.mjs';
+import { EXTRA_MEANINGS } from './extra-meanings.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -88,9 +89,17 @@ for await (const line of rl) {
     continue;
   }
 
-  // Çok sözcüklü maddeleri tek tokena birleştir: tüm boşlukları kaldır
-  // ("dulavrat otu" -> "dulavratotu").
-  const word = trLower(entry.madde || '').replace(/\s+/g, '');
+  // Çok sözcüklü maddeler (2+) TDK'de resmen ayrı yazılan deyim, atasözü ya
+  // da bileşik terimlerdir ("acele ile menzil alınmaz", "dulavrat otu",
+  // "bir de" gibi) — hiçbiri tek bir Türkçe kelime değildir, bu yüzden
+  // oynanabilir kelime kümesinden tamamen elenir.
+  const rawMadde = (entry.madde || '').trim();
+  if (rawMadde.split(/\s+/).filter(Boolean).length >= 2) {
+    dropped++;
+    continue;
+  }
+
+  const word = trLower(entry.madde || '');
   // Yalnızca oynanabilir harfler + 2–25 uzunluk.
   if (!word || word.length < 2 || word.length > 25) {
     dropped++;
@@ -143,6 +152,18 @@ for await (const line of rl) {
 // GTS'te zaten varsa (gerçek TDK tanımı) dokunmuyoruz.
 for (const [word, meaning] of Object.entries(PROPER_NOUNS)) {
   if (!dict.has(word)) {
+    dict.set(word, { pos: null, meanings: [meaning] });
+  }
+}
+
+// TDK'de zaten var olan bazı kelimelere günlük dilde yaygın olan ek bir
+// anlam ekliyoruz (bkz. extra-meanings.mjs başlığı). PROPER_NOUNS'un
+// aksine burada "zaten varsa dokunma" kuralı uygulanmaz.
+for (const [word, meaning] of Object.entries(EXTRA_MEANINGS)) {
+  const existing = dict.get(word);
+  if (existing) {
+    if (!existing.meanings.includes(meaning)) existing.meanings.push(meaning);
+  } else {
     dict.set(word, { pos: null, meanings: [meaning] });
   }
 }
