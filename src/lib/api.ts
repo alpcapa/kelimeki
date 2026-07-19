@@ -20,7 +20,17 @@ import type {
 import { getLocalMeaning } from '../data/meanings';
 import { trLower } from '../utils/turkish';
 
-/** Tamamlanan bir oyunu kaydeder (oturum açıksa). Eklenen kaydın id'sini döner. */
+/**
+ * Tamamlanan bir oyunu kaydeder (oturum açıksa). Eklenen kaydın id'sini döner.
+ *
+ * `game.id` verilmişse (bkz. `gameSync.ts`'deki offline kuyruk) bu, o kayıt
+ * için sabit/istemci tarafında üretilmiş bir uuid'dir: bağlantı kesikken
+ * yapılan bir deneme sunucuya ulaşmış ama cevabı istemciye dönmemiş olabilir
+ * — bu durumda kuyruk aynı kaydı `id` sabit kalacak şekilde tekrar dener.
+ * `games.id` birincil anahtar olduğundan ikinci deneme "23505" (unique
+ * violation) hatası alır; bu, "zaten kaydedildi" anlamına geldiğinden hata
+ * değil BAŞARI sayılır — aksi halde kayıt kuyrukta sonsuza dek kalır.
+ */
 export async function saveGame(game: NewGame): Promise<string | null> {
   if (!supabase) return null;
   const {
@@ -34,6 +44,7 @@ export async function saveGame(game: NewGame): Promise<string | null> {
     .select('id')
     .single();
   if (error) {
+    if (error.code === '23505' && game.id) return game.id;
     console.error('[Harfik] saveGame hatası:', error.message);
     return null;
   }
