@@ -73,10 +73,12 @@ const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px
 /**
  * Saniyeyi kısa bir süre etiketine çevirir (grafik ekseni/tooltip/tablo için).
  * 1 saatin altı saat:dakika:saniye biçiminde saat gibi ("6:34"); üstü kısaltılmış
- * birimlerle ("2s 15dk", "5g 18s", "3h 2g") — çok oturumlu oyunlarda
- * başlangıç-bitiş arası gerçekte saatler/günler/haftalar sürebildiğinden
- * gün/hafta kademeleri de var, yoksa örn. 3 günlük bir ara "72s" gibi
- * okunaksız gösterilirdi.
+ * birimlerle ("2s 15dk", "5g 18s", "3h 2g", "2a 1h", "1y 5a") — çok oturumlu
+ * oyunlarda başlangıç-bitiş arası gerçekte saatler/günler/haftalar hatta
+ * aylar/yıllar sürebildiğinden gün/hafta/ay/yıl kademeleri de var, yoksa örn.
+ * 3 günlük bir ara "72s" gibi okunaksız gösterilirdi. Ay/yıl kademeleri
+ * takvimsel değil yaklaşık (30/365 gün) — burada amaç kesin tarih farkı değil,
+ * okunaklı bir ortalama süre etiketi.
  */
 function formatDuration(totalSeconds: number): string {
   const s = Math.round(totalSeconds);
@@ -92,9 +94,19 @@ function formatDuration(totalSeconds: number): string {
   const d = Math.floor(h / 24);
   const rh = h % 24;
   if (d < 7) return rh ? `${d}g ${rh}s` : `${d}g`;
-  const w = Math.floor(d / 7);
-  const rd = d % 7;
-  return rd ? `${w}h ${rd}g` : `${w}h`;
+  if (d < 30) {
+    const w = Math.floor(d / 7);
+    const rd = d % 7;
+    return rd ? `${w}h ${rd}g` : `${w}h`;
+  }
+  if (d < 365) {
+    const mo = Math.floor(d / 30);
+    const rw = Math.floor((d % 30) / 7);
+    return rw ? `${mo}a ${rw}h` : `${mo}a`;
+  }
+  const y = Math.floor(d / 365);
+  const rmo = Math.floor((d % 365) / 30);
+  return rmo ? `${y}y ${rmo}a` : `${y}y`;
 }
 
 function fmtDate(iso: string | null) {
