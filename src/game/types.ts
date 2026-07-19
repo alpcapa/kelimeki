@@ -71,6 +71,12 @@ export interface AIMove {
 export interface GameState {
   /** 'setup' = oyuncu kurulum ekranı, 'play' = oyun sürüyor. */
   phase: 'setup' | 'play';
+  /**
+   * Oyunun başladığı an (ISO) — 'setup' fazında boş dize. Oyun bitince
+   * admin panelindeki anonim süre telemetrisi (`logGameFinish`) için
+   * `Date.now() - Date.parse(startedAt)` ile süre hesaplanır.
+   */
+  startedAt: string;
   /** SIZE x SIZE tahta; boş hücreler null. */
   board: (Tile | null)[][];
   /** Çekiliş torbası. */

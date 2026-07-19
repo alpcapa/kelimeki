@@ -4,19 +4,22 @@ import { createPortal } from 'react-dom';
 import {
   fetchAdminMembers,
   fetchAdminGameCounts,
-  fetchAdminActivitySeries,
+  fetchAdminUserActivitySeries,
+  fetchAdminGameActivitySeries,
   fetchAdminFeedback,
   markFeedbackHandled,
 } from '../lib/api';
 import type {
   AdminMember,
   AdminGameCounts,
-  AdminActivityPoint,
+  AdminUserActivityPoint,
+  AdminGameActivityPoint,
+  AdminGameScope,
   AdminActivityGranularity,
   AdminFeedbackRow,
 } from '../lib/database.types';
 import { AdminPlayerDetail } from './AdminPlayerDetail';
-import { GrowthChart } from './GrowthChart';
+import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
 import { trLower } from '../utils/turkish';
 
 interface AdminDashboardProps {
@@ -25,6 +28,7 @@ interface AdminDashboardProps {
 
 type Tab = 'members' | 'games' | 'growth' | 'feedback';
 type GameSubTab = 'total' | 2 | 4;
+type GrowthSubTab = 'user' | 'game';
 type MemberSortKey =
   | 'name'
   | 'nickname'
@@ -39,13 +43,38 @@ const PERIOD_OPTIONS: Record<AdminActivityGranularity, readonly number[]> = {
   day: [7, 30, 90],
   week: [8, 12, 26],
   month: [6, 12, 24],
+  year: [2, 3, 5],
 };
 
 const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
   day: 'Gün',
   week: 'Hafta',
   month: 'Ay',
+  year: 'Yıl',
 };
+
+const USER_SERIES: ChartSeriesDef[] = [{ key: 'signups', label: 'Yeni Kayıt', color: '#2a78d6' }];
+const GAME_COUNT_SERIES: ChartSeriesDef[] = [
+  { key: 'game_starts', label: 'Başlatılan', color: '#eda100' },
+  { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
+];
+const DURATION_SERIES: ChartSeriesDef[] = [
+  { key: 'avg_duration_seconds', label: 'Ortalama Süre', color: '#7c3aed' },
+];
+
+const selectCls =
+  'w-auto shrink-0 py-1.5 px-2 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] bg-panel text-text border border-border';
+
+/** Saniyeyi kısa bir Türkçe süre etiketine çevirir (grafik ekseni/tooltip/tablo için). */
+function formatDuration(totalSeconds: number): string {
+  const s = Math.round(totalSeconds);
+  if (s < 60) return `${s} sn`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m} dk`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return rm ? `${h} sa ${rm} dk` : `${h} sa`;
+}
 
 function fmtDate(iso: string | null) {
   if (!iso) return '—';
@@ -93,9 +122,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [gameSubTab, setGameSubTab] = useState<GameSubTab>('total');
   const [error, setError] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
-  const [activity, setActivity] = useState<AdminActivityPoint[] | null>(null);
-  const [granularity, setGranularity] = useState<AdminActivityGranularity>('day');
-  const [period, setPeriod] = useState<number>(30);
+  const [growthSubTab, setGrowthSubTab] = useState<GrowthSubTab>('user');
+  const [userActivity, setUserActivity] = useState<AdminUserActivityPoint[] | null>(null);
+  const [userGranularity, setUserGranularity] = useState<AdminActivityGranularity>('day');
+  const [userPeriod, setUserPeriod] = useState<number>(30);
+  const [gameActivity, setGameActivity] = useState<AdminGameActivityPoint[] | null>(null);
+  const [gameGranularity, setGameGranularity] = useState<AdminActivityGranularity>('day');
+  const [gamePeriod, setGamePeriod] = useState<number>(30);
+  const [gameScope, setGameScope] = useState<AdminGameScope>('total');
   const [memberSearch, setMemberSearch] = useState('');
   const [sortKey, setSortKey] = useState<MemberSortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -114,15 +148,27 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   }, []);
 
   useEffect(() => {
-    setActivity(null);
-    fetchAdminActivitySeries(period, granularity)
-      .then(setActivity)
+    setUserActivity(null);
+    fetchAdminUserActivitySeries(userPeriod, userGranularity)
+      .then(setUserActivity)
       .catch((e) => setError(String(e)));
-  }, [period, granularity]);
+  }, [userPeriod, userGranularity]);
 
-  function selectGranularity(g: AdminActivityGranularity) {
-    setGranularity(g);
-    setPeriod(PERIOD_OPTIONS[g][1]);
+  useEffect(() => {
+    setGameActivity(null);
+    fetchAdminGameActivitySeries(gamePeriod, gameGranularity, gameScope)
+      .then(setGameActivity)
+      .catch((e) => setError(String(e)));
+  }, [gamePeriod, gameGranularity, gameScope]);
+
+  function selectUserGranularity(g: AdminActivityGranularity) {
+    setUserGranularity(g);
+    setUserPeriod(PERIOD_OPTIONS[g][1]);
+  }
+
+  function selectGameGranularity(g: AdminActivityGranularity) {
+    setGameGranularity(g);
+    setGamePeriod(PERIOD_OPTIONS[g][1]);
   }
 
   function toggleSort(key: MemberSortKey) {
@@ -337,37 +383,115 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
           {tab === 'growth' && (
             <>
-              {activity === null ? (
-                <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
-              ) : (
-                <GrowthChart
-                  data={activity}
-                  granularity={granularity}
-                  controls={
+              <div className="flex gap-1.5">
+                <button className={tabBtn(growthSubTab === 'user')} onClick={() => setGrowthSubTab('user')}>
+                  Kullanıcı
+                </button>
+                <button className={tabBtn(growthSubTab === 'game')} onClick={() => setGrowthSubTab('game')}>
+                  Oyun
+                </button>
+              </div>
+
+              {growthSubTab === 'user' &&
+                (userActivity === null ? (
+                  <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                ) : (
+                  <GrowthChart
+                    data={userActivity}
+                    granularity={userGranularity}
+                    series={USER_SERIES}
+                    controls={
+                      <>
+                        <select
+                          value={userGranularity}
+                          onChange={(e) => selectUserGranularity(e.target.value as AdminActivityGranularity)}
+                          className={selectCls}
+                        >
+                          <option value="day">Günlük</option>
+                          <option value="week">Haftalık</option>
+                          <option value="month">Aylık</option>
+                          <option value="year">Yıllık</option>
+                        </select>
+                        <select
+                          value={userPeriod}
+                          onChange={(e) => setUserPeriod(Number(e.target.value))}
+                          className={selectCls}
+                        >
+                          {PERIOD_OPTIONS[userGranularity].map((p) => (
+                            <option key={p} value={p}>
+                              Son {p} {PERIOD_UNIT_LABEL[userGranularity]}
+                            </option>
+                          ))}
+                        </select>
+                      </>
+                    }
+                  />
+                ))}
+
+              {growthSubTab === 'game' && (
+                <>
+                  <div className="flex items-center flex-wrap gap-2">
+                    <select
+                      value={gameScope}
+                      onChange={(e) => setGameScope(e.target.value as AdminGameScope)}
+                      className={selectCls}
+                    >
+                      <option value="total">Toplam</option>
+                      <option value="registered">Kayıtlı</option>
+                      <option value="guest">Misafir</option>
+                    </select>
+                    <select
+                      value={gameGranularity}
+                      onChange={(e) => selectGameGranularity(e.target.value as AdminActivityGranularity)}
+                      className={selectCls}
+                    >
+                      <option value="day">Günlük</option>
+                      <option value="week">Haftalık</option>
+                      <option value="month">Aylık</option>
+                      <option value="year">Yıllık</option>
+                    </select>
+                    <select
+                      value={gamePeriod}
+                      onChange={(e) => setGamePeriod(Number(e.target.value))}
+                      className={selectCls}
+                    >
+                      {PERIOD_OPTIONS[gameGranularity].map((p) => (
+                        <option key={p} value={p}>
+                          Son {p} {PERIOD_UNIT_LABEL[gameGranularity]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {gameActivity === null ? (
+                    <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                  ) : (
                     <>
-                      <select
-                        value={granularity}
-                        onChange={(e) => selectGranularity(e.target.value as AdminActivityGranularity)}
-                        className="w-auto shrink-0 py-1.5 px-2 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] bg-panel text-text border border-border"
-                      >
-                        <option value="day">Günlük</option>
-                        <option value="week">Haftalık</option>
-                        <option value="month">Aylık</option>
-                      </select>
-                      <select
-                        value={period}
-                        onChange={(e) => setPeriod(Number(e.target.value))}
-                        className="w-auto shrink-0 py-1.5 px-2 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1px] bg-panel text-text border border-border"
-                      >
-                        {PERIOD_OPTIONS[granularity].map((p) => (
-                          <option key={p} value={p}>
-                            Son {p} {PERIOD_UNIT_LABEL[granularity]}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-[10px] font-mono font-bold uppercase tracking-[1px] text-muted">
+                          Oyun Sayısı
+                        </div>
+                        <GrowthChart
+                          data={gameActivity}
+                          granularity={gameGranularity}
+                          series={GAME_COUNT_SERIES}
+                          defaultActiveKeys={['game_starts', 'games_finished']}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-[10px] font-mono font-bold uppercase tracking-[1px] text-muted">
+                          Ortalama Oyun Süresi
+                        </div>
+                        <GrowthChart
+                          data={gameActivity}
+                          granularity={gameGranularity}
+                          series={DURATION_SERIES}
+                          formatValue={formatDuration}
+                        />
+                      </div>
                     </>
-                  }
-                />
+                  )}
+                </>
               )}
             </>
           )}

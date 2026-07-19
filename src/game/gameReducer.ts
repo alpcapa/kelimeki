@@ -55,6 +55,7 @@ export type Action =
 export function createInitialState(): GameState {
   return {
     phase: 'setup',
+    startedAt: '',
     board: createEmptyBoard(),
     bag: [],
     bonuses: {},
@@ -101,6 +102,7 @@ function startGame(setup: PlayerSetup[]): GameState {
 
   return {
     phase: 'play',
+    startedAt: new Date().toISOString(),
     board: createEmptyBoard(),
     bag,
     bonuses: buildInitialBonuses(),

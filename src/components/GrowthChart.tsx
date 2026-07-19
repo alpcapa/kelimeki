@@ -1,19 +1,30 @@
-// Harfik — admin paneli: günlük kayıt/oyun başlatma/oyun bitirme çizgi grafiği
+// Harfik — admin paneli: genel amaçlı zaman serisi çizgi grafiği (kullanıcı/oyun/süre)
 import { useMemo, useRef, useState } from 'react';
-import type { AdminActivityGranularity, AdminActivityPoint } from '../lib/database.types';
+import type { AdminActivityGranularity } from '../lib/database.types';
 
-interface GrowthChartProps {
-  data: AdminActivityPoint[];
-  granularity: AdminActivityGranularity;
-  /** Aralık/periyot seçim kontrolleri — tablo görünümü linkiyle aynı satırda gösterilir. */
-  controls?: React.ReactNode;
+export interface ChartSeriesDef {
+  key: string;
+  label: string;
+  color: string;
 }
 
-const SERIES = [
-  { key: 'signups', label: 'Yeni Kayıt', color: '#2a78d6' },
-  { key: 'game_starts', label: 'Başlatılan', color: '#eda100' },
-  { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
-] as const;
+interface GrowthChartProps<T extends { bucket: string }> {
+  data: T[];
+  granularity: AdminActivityGranularity;
+  series: ChartSeriesDef[];
+  /** Başlangıçta hangi seri(ler) görünsün — verilmezse ilk seri. */
+  defaultActiveKeys?: string[];
+  /** Aralık/periyot (+ varsa kombo) seçim kontrolleri — tablo görünümü linkiyle aynı satırda gösterilir. */
+  controls?: React.ReactNode;
+  /** Eksen/tooltip/tablo değerlerini biçimlendirir (örn. saniyeyi "dk" olarak) — verilmezse ham sayı. */
+  formatValue?: (v: number) => string;
+}
+
+/** Satırdan dinamik bir seri anahtarının değerini okur — T'nin tam alan kümesi statik olarak bilinmez. */
+function valueOf<T>(row: T, key: string): number | null {
+  const v = (row as Record<string, unknown>)[key];
+  return typeof v === 'number' ? v : null;
+}
 
 const W = 640;
 const H = 240;
@@ -32,6 +43,7 @@ function niceCeil(n: number): number {
 
 function fmtShortDate(iso: string, granularity: AdminActivityGranularity): string {
   const d = new Date(iso + 'T00:00:00');
+  if (granularity === 'year') return d.toLocaleDateString('tr-TR', { year: 'numeric' });
   return granularity === 'month'
     ? d.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' })
     : d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' });
@@ -39,24 +51,30 @@ function fmtShortDate(iso: string, granularity: AdminActivityGranularity): strin
 
 function fmtFullDate(iso: string, granularity: AdminActivityGranularity): string {
   const d = new Date(iso + 'T00:00:00');
+  if (granularity === 'year') return d.toLocaleDateString('tr-TR', { year: 'numeric' });
   if (granularity === 'month') return d.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
   const full = d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
   return granularity === 'week' ? `${full} haftası` : full;
 }
 
-export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
+export function GrowthChart<T extends { bucket: string }>({
+  data,
+  granularity,
+  series,
+  defaultActiveKeys,
+  controls,
+  formatValue = (v) => String(v),
+}: GrowthChartProps<T>) {
   const [showTable, setShowTable] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  // Legend'a tıklayarak açılıp kapatılabilen seriler — başlangıçta sadece
-  // "Yeni Kayıt" görünür, diğerleri tıklanınca eklenir/çıkarılır.
-  const [activeKeys, setActiveKeys] = useState<Set<(typeof SERIES)[number]['key']>>(
-    () => new Set(['signups']),
+  const [activeKeys, setActiveKeys] = useState<Set<string>>(
+    () => new Set(defaultActiveKeys ?? (series[0] ? [series[0].key] : [])),
   );
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
-  const activeSeries = SERIES.filter((s) => activeKeys.has(s.key));
+  const activeSeries = series.filter((s) => activeKeys.has(s.key));
 
-  function toggleSeries(key: (typeof SERIES)[number]['key']) {
+  function toggleSeries(key: string) {
     setActiveKeys((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
@@ -68,7 +86,7 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
   const n = data.length;
   const maxRaw = Math.max(
     1,
-    ...data.flatMap((d) => activeSeries.map((s) => d[s.key])),
+    ...data.flatMap((d) => activeSeries.map((s) => valueOf(d, s.key) ?? 0)),
   );
   const niceMax = niceCeil(maxRaw);
   const yTicks = niceMax <= 4 ? [0, niceMax] : [0, Math.round(niceMax / 2), niceMax];
@@ -80,7 +98,7 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
     () =>
       activeSeries.map((s) => ({
         ...s,
-        d: data.map((row, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(row[s.key])}`).join(' '),
+        d: data.map((row, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(valueOf(row, s.key) ?? 0)}`).join(' '),
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, niceMax, activeKeys],
@@ -90,7 +108,7 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
   const endLabels = useMemo(() => {
     if (n === 0) return [];
     const raw = activeSeries.map((s) => {
-      const value = data[n - 1][s.key];
+      const value = valueOf(data[n - 1], s.key) ?? 0;
       return { ...s, value, rawY: y(value) };
     }).sort((a, b) => a.rawY - b.rawY);
     const MIN_GAP = 13;
@@ -128,27 +146,29 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
         </button>
       </div>
 
-      <div className="flex items-center gap-3 flex-wrap">
-        {SERIES.map((s) => {
-          const active = activeKeys.has(s.key);
-          return (
-            <button
-              key={s.key}
-              type="button"
-              onClick={() => toggleSeries(s.key)}
-              className={`flex items-center gap-1.5 text-[10px] font-mono transition-opacity ${
-                active ? 'text-text' : 'text-muted opacity-45'
-              }`}
-            >
-              <span
-                className="inline-block w-3 h-[2px] rounded-full"
-                style={{ background: active ? s.color : '#8A93A2' }}
-              />
-              {s.label}
-            </button>
-          );
-        })}
-      </div>
+      {series.length > 1 && (
+        <div className="flex items-center gap-3 flex-wrap">
+          {series.map((s) => {
+            const active = activeKeys.has(s.key);
+            return (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => toggleSeries(s.key)}
+                className={`flex items-center gap-1.5 text-[10px] font-mono transition-opacity ${
+                  active ? 'text-text' : 'text-muted opacity-45'
+                }`}
+              >
+                <span
+                  className="inline-block w-3 h-[2px] rounded-full"
+                  style={{ background: active ? s.color : '#8A93A2' }}
+                />
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {n === 0 ? (
         <div className="text-xs font-mono text-muted text-center py-8">Bu aralıkta veri yok.</div>
@@ -158,18 +178,25 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
             <thead>
               <tr className="text-left text-muted border-b border-border sticky top-0 bg-panel">
                 <th className="py-1.5 pr-3 font-bold">Tarih</th>
-                <th className="py-1.5 pr-3 font-bold text-right">Yeni Kayıt</th>
-                <th className="py-1.5 pr-3 font-bold text-right">Başlatılan</th>
-                <th className="py-1.5 font-bold text-right">Bitirilen</th>
+                {series.map((s) => (
+                  <th key={s.key} className="py-1.5 pr-3 font-bold text-right last:pr-0">
+                    {s.label}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {[...data].reverse().map((row) => (
                 <tr key={row.bucket} className="border-b border-border/50">
                   <td className="py-1.5 pr-3 text-text whitespace-nowrap">{fmtFullDate(row.bucket, granularity)}</td>
-                  <td className="py-1.5 pr-3 text-text text-right">{row.signups}</td>
-                  <td className="py-1.5 pr-3 text-text text-right">{row.game_starts}</td>
-                  <td className="py-1.5 text-text text-right">{row.games_finished}</td>
+                  {series.map((s) => {
+                    const v = valueOf(row, s.key);
+                    return (
+                      <td key={s.key} className="py-1.5 pr-3 text-text text-right last:pr-0">
+                        {v == null ? '—' : formatValue(v)}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
@@ -195,7 +222,7 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
                   strokeWidth={1}
                 />
                 <text x={PAD.left - 6} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={9} fill="#8A93A2">
-                  {t}
+                  {formatValue(t)}
                 </text>
               </g>
             ))}
@@ -231,7 +258,7 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
               <circle
                 key={s.key}
                 cx={x(n - 1)}
-                cy={y(data[n - 1][s.key])}
+                cy={y(valueOf(data[n - 1], s.key) ?? 0)}
                 r={4}
                 fill={s.color}
                 stroke="#FFFFFF"
@@ -245,7 +272,7 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
                   <line x1={x(n - 1) + 5} x2={x(n - 1) + 10} y1={y(l.value)} y2={l.rawY} stroke="#DCE2EA" strokeWidth={1} />
                 )}
                 <text x={x(n - 1) + 12} y={l.rawY} dominantBaseline="middle" fontSize={10} fontWeight={700} fill="#1B2430">
-                  {l.value}
+                  {formatValue(l.value)}
                 </text>
               </g>
             ))}
@@ -261,13 +288,16 @@ export function GrowthChart({ data, granularity, controls }: GrowthChartProps) {
               }}
             >
               <div className="text-muted mb-1">{fmtFullDate(hover.bucket, granularity)}</div>
-              {activeSeries.map((s) => (
-                <div key={s.key} className="flex items-center gap-1.5">
-                  <span className="inline-block w-2.5 h-[2px] rounded-full" style={{ background: s.color }} />
-                  <span className="font-bold text-text">{hover[s.key]}</span>
-                  <span className="text-muted">{s.label}</span>
-                </div>
-              ))}
+              {activeSeries.map((s) => {
+                const v = valueOf(hover, s.key);
+                return (
+                  <div key={s.key} className="flex items-center gap-1.5">
+                    <span className="inline-block w-2.5 h-[2px] rounded-full" style={{ background: s.color }} />
+                    <span className="font-bold text-text">{v == null ? '—' : formatValue(v)}</span>
+                    <span className="text-muted">{s.label}</span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
