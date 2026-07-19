@@ -73,9 +73,10 @@ const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px
 /**
  * Saniyeyi kısa bir süre etiketine çevirir (grafik ekseni/tooltip/tablo için).
  * 1 saatin altı saat:dakika:saniye biçiminde saat gibi ("6:34"); üstü kısaltılmış
- * birimlerle ("2s 15dk", "5g 18s") — çok oturumlu oyunlarda başlangıç-bitiş
- * arası gerçekte saatler/günler/haftalar sürebildiğinden gün/hafta kademeleri
- * de var, yoksa örn. 3 günlük bir ara "72s" gibi okunaksız gösterilirdi.
+ * birimlerle ("2s 15dk", "5g 18s", "3h 2g") — çok oturumlu oyunlarda
+ * başlangıç-bitiş arası gerçekte saatler/günler/haftalar sürebildiğinden
+ * gün/hafta kademeleri de var, yoksa örn. 3 günlük bir ara "72s" gibi
+ * okunaksız gösterilirdi.
  */
 function formatDuration(totalSeconds: number): string {
   const s = Math.round(totalSeconds);
@@ -93,7 +94,7 @@ function formatDuration(totalSeconds: number): string {
   if (d < 7) return rh ? `${d}g ${rh}s` : `${d}g`;
   const w = Math.floor(d / 7);
   const rd = d % 7;
-  return rd ? `${w} hafta ${rd}g` : `${w} hafta`;
+  return rd ? `${w}h ${rd}g` : `${w}h`;
 }
 
 function fmtDate(iso: string | null) {
