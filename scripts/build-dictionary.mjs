@@ -88,6 +88,14 @@ for await (const line of rl) {
     continue;
   }
 
+  // 4+ sözcüklü maddeler fiilen atasözü/tam cümledir (ör. "acele ile menzil
+  // alınmaz"); bunlar oynanabilir kelime kümesinden tamamen elenir.
+  const rawMadde = (entry.madde || '').trim();
+  if (rawMadde.split(/\s+/).filter(Boolean).length >= 4) {
+    dropped++;
+    continue;
+  }
+
   // Çok sözcüklü maddeleri tek tokena birleştir: tüm boşlukları kaldır
   // ("dulavrat otu" -> "dulavratotu").
   const word = trLower(entry.madde || '').replace(/\s+/g, '');
