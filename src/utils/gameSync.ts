@@ -6,7 +6,9 @@
 // cihazda bir oturum belirdiğinde (bağlantı geri gelince ya da kullanıcı bu
 // cihazda giriş/kayıt yapınca) `flushPendingGames` ile gönderilir. Her kayıt
 // gerçek bitiş anını taşıyan bir `created_at` içerir, böylece günler sonra
-// senkronlansa bile oyun geçmişinde doğru kronolojik yere yerleşir.
+// senkronlansa bile oyun geçmişinde doğru kronolojik yere yerleşir. Bir
+// kayıt PENDING_EXPIRY_MS (7 gün) içinde talep edilmezse (bu cihazda giriş
+// olmazsa) kuyruktan sessizce düşer.
 import type { NewGame } from '../lib/database.types';
 import { saveGame } from '../lib/api';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -22,13 +24,26 @@ const LEGACY_PENDING_KEY = 'harfik:pending-games';
 // Hiç kayıt olmadan uzun süre oynayan bir misafirin kuyruğu sınırsız
 // büyümesin diye üst sınır — aşılırsa en eski kayıtlar düşürülür.
 const MAX_PENDING_GAMES = 300;
+// Bir misafir kaydı bu süre içinde bu cihazda giriş/kayıt olmazsa artık
+// talep edilmeyecek sayılır ve kuyruktan düşürülür — devam eden oyunun
+// (gameStorage.ts ABANDON_TIMEOUT_MS) 7 günlük terk edilme penceresiyle
+// aynı süre/gerekçe: veriyi süresiz saklamak yerine, misafirin bu cihazda
+// makul bir pencere içinde giriş yapmasını bekleriz.
+const PENDING_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
 function readQueue(): NewGame[] {
   try {
     const raw = localStorage.getItem(PENDING_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    const now = Date.now();
+    const fresh = parsed.filter((g) => {
+      const createdAt = Date.parse(g?.created_at);
+      return !Number.isFinite(createdAt) || now - createdAt <= PENDING_EXPIRY_MS;
+    });
+    if (fresh.length !== parsed.length) writeQueue(fresh);
+    return fresh;
   } catch {
     return [];
   }
@@ -93,8 +108,9 @@ function enqueue(game: NewGame): void {
  * her çağrıda dolu olmalı: `id` sunucuda olası çift kaydı `saveGame`'in
  * 23505 kısayoluyla engeller, `created_at` gerçek bitiş anını korur.
  *
- * Misafir (girişsiz) oynanan oyunlar da kuyruklanır — kişi ileride bu
- * cihazda giriş/kayıt yaparsa `flushPendingGames` hepsini o hesaba aktarır.
+ * Misafir (girişsiz) oynanan oyunlar da kuyruklanır — kişi 7 gün içinde bu
+ * cihazda giriş/kayıt yaparsa `flushPendingGames` hepsini o hesaba aktarır;
+ * 7 gün geçerse kayıt PENDING_EXPIRY_MS ile sessizce düşer.
  */
 export async function saveGameDurable(game: NewGame): Promise<void> {
   const ok = (await hasLocalSession()) && (await trySave(game));
