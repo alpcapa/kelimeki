@@ -55,8 +55,9 @@ const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
 
 const USER_SERIES: ChartSeriesDef[] = [{ key: 'signups', label: 'Yeni Kayıt', color: '#2a78d6' }];
 const GAME_COUNT_SERIES: ChartSeriesDef[] = [
-  { key: 'game_starts', label: 'Başlatılan', color: '#eda100' },
   { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
+  { key: 'games_finished_same_session', label: 'Bitirilen (Aynı Oturum)', color: '#0891B2' },
+  { key: 'games_finished_multi_session', label: 'Bitirilen (Çok Oturumlu)', color: '#7c3aed' },
   { key: 'games_abandoned', label: 'Terk Edilen', color: '#DC2626' },
 ];
 const DURATION_SERIES: ChartSeriesDef[] = [
@@ -511,7 +512,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         data={gameActivity}
                         granularity={gameGranularity}
                         series={GAME_COUNT_SERIES}
-                        defaultActiveKeys={['game_starts', 'games_finished']}
+                        defaultActiveKeys={['games_finished', 'games_abandoned']}
                         controls={<span className={sectionTitleCls}>Oyun Sayısı</span>}
                       />
                       <GrowthChart

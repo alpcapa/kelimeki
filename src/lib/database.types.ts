@@ -184,18 +184,22 @@ export type AdminGameScope = 'total' | 'registered' | 'guest';
 /**
  * admin_game_activity_series RPC çıktısındaki tek kova (Büyüme > Oyun grafiği).
  * `games_finished` yalnızca gerçekten tamamlanan (completed=true) oyunları
- * sayar; `games_abandoned` 7 gün hareketsizlik sonrası terk edilmiş sayılıp
- * silinen oyunları (bkz. `gameStorage.ts` ABANDON_TIMEOUT_MS) ayrı bir
- * seride tutar. avg_duration_* alanları da yalnızca tamamlanan oyunlar
- * üzerinden hesaplanır ve o kovada hiç biten oyun yoksa null döner (0
- * değil). same_session: hiç kapatılıp devam ettirilmemiş oyunlar;
- * multi_session: en az bir kez kapatılıp localStorage'dan devam
- * ettirilmiş oyunlar (bkz. `GameState.multiSession`).
+ * sayar (`games_finished_same_session`/`games_finished_multi_session` bu
+ * toplamın kırılımı); `games_abandoned` 7 gün hareketsizlik sonrası terk
+ * edilmiş sayılıp silinen oyunları (bkz. `gameStorage.ts`
+ * `ABANDON_TIMEOUT_MS`) ayrı bir seride tutar. avg_duration_* alanları da
+ * yalnızca tamamlanan oyunlar üzerinden hesaplanır ve o kovada hiç biten
+ * oyun yoksa null döner (0 değil). same_session: hiç kapatılıp devam
+ * ettirilmemiş oyunlar; multi_session: en az bir kez kapatılıp
+ * localStorage'dan devam ettirilmiş oyunlar (bkz. `GameState.multiSession`).
+ * "Başlatılan" (eski `game_starts`) hiçbir yerde ihtiyaç görülmediği için
+ * 20 Temmuz 2026'da tamamen kaldırıldı (tablo dahil).
  */
 export interface AdminGameActivityPoint {
   bucket: string;
-  game_starts: number;
   games_finished: number;
+  games_finished_same_session: number;
+  games_finished_multi_session: number;
   games_abandoned: number;
   avg_duration_seconds: number | null;
   avg_duration_same_session_seconds: number | null;
