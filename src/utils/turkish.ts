@@ -1,4 +1,4 @@
-// Harfik — Türkçe'ye duyarlı büyük/küçük harf dönüşümü
+// Kelimeki — Türkçe'ye duyarlı büyük/küçük harf dönüşümü
 // =====================================================================
 // Türk alfabesinde i/İ (noktalı) ile ı/I (noktasız) ayrı harflerdir.
 // JavaScript'in varsayılan yerel ayarlı `toUpperCase()`/`toLowerCase()`

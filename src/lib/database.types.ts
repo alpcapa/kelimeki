@@ -1,4 +1,4 @@
-// Harfik — Supabase şema tipleri (elle yazıldı; MCP erişimi açılınca
+// Kelimeki — Supabase şema tipleri (elle yazıldı; MCP erişimi açılınca
 // `generate_typescript_types` ile otomatik üretilebilir).
 
 export type GameResult = 'win' | 'lose' | 'tie';

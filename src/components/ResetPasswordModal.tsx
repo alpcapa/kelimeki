@@ -1,4 +1,4 @@
-// Harfik — şifre sıfırlama bağlantısı tıklanınca açılan "yeni şifre belirle" ekranı
+// Kelimeki — şifre sıfırlama bağlantısı tıklanınca açılan "yeni şifre belirle" ekranı
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { setNewPassword } from '../lib/api';

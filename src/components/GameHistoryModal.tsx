@@ -1,4 +1,4 @@
-// Harfik — oturum açan kullanıcının geçmiş tüm oyunlarının listesi (lazy load)
+// Kelimeki — oturum açan kullanıcının geçmiş tüm oyunlarının listesi (lazy load)
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { fetchMyGames } from '../lib/api';

@@ -1,4 +1,4 @@
-// Harfik — profil küçük resmi (fotoğraf ya da baş harf yedeği)
+// Kelimeki — profil küçük resmi (fotoğraf ya da baş harf yedeği)
 import { useState } from 'react';
 
 interface AvatarProps {

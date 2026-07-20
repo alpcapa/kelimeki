@@ -1,4 +1,4 @@
-// Harfik — oyun sonu ekranı (çok oyunculu)
+// Kelimeki — oyun sonu ekranı (çok oyunculu)
 import { Modal } from './Modal';
 import { PLAYER_COLORS } from '../game/constants';
 import type { Player } from '../game/types';

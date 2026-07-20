@@ -1,4 +1,4 @@
-// Harfik — bitmiş oyun kayıtları için offline/misafir kuyruğu.
+// Kelimeki — bitmiş oyun kayıtları için offline/misafir kuyruğu.
 //
 // `saveGame` (lib/api.ts) hemen gönderilemezse — çevrimdışıyken, ağ
 // hatasıyla, ya da hiç giriş yapılmamışken (misafir) — kayıt burada
@@ -11,7 +11,7 @@ import type { NewGame } from '../lib/database.types';
 import { saveGame } from '../lib/api';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
-const PENDING_KEY = 'harfik:pending-games';
+const PENDING_KEY = 'kelimeki:pending-games';
 // Hiç kayıt olmadan uzun süre oynayan bir misafirin kuyruğu sınırsız
 // büyümesin diye üst sınır — aşılırsa en eski kayıtlar düşürülür.
 const MAX_PENDING_GAMES = 300;

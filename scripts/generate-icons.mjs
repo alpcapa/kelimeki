@@ -56,7 +56,7 @@ const html = `<!DOCTYPE html>
 </head>
 <body>
 <div class="logo">
-  <div class="wordmark">harfik</div>
+  <div class="wordmark">kelimeki</div>
   <svg width="720" height="32" viewBox="0 0 720 32" fill="none">
     <path d="M16 16 Q180 4 360 16 Q540 28 704 16"
           stroke="#2563EB" stroke-width="10" stroke-linecap="round" fill="none"/>
@@ -65,7 +65,7 @@ const html = `<!DOCTYPE html>
 </body>
 </html>`;
 
-// Small canvas for favicon — shows just "h" with S-curve underline, same style.
+// Small canvas for favicon — shows just "k" with S-curve underline, same style.
 const FAVICON_RENDER = 256;
 const faviconHtml = `<!DOCTYPE html>
 <html>
@@ -104,7 +104,7 @@ const faviconHtml = `<!DOCTYPE html>
 </head>
 <body>
 <div class="logo">
-  <div class="letter">h</div>
+  <div class="letter">k</div>
   <svg width="160" height="14" viewBox="0 0 160 14" fill="none">
     <path d="M8 7 Q40 2 80 7 Q120 12 152 7"
           stroke="#2563EB" stroke-width="5" stroke-linecap="round" fill="none"/>
@@ -213,7 +213,7 @@ const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100
     font-size="90"
     font-weight="700"
     fill="#2563EB"
-    text-anchor="middle">h</text>
+    text-anchor="middle">k</text>
   <path
     d="M18 87 Q34 83 50 87 Q66 91 82 87"
     stroke="#2563EB"
@@ -244,7 +244,7 @@ const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
     font-size="360"
     font-weight="700"
     fill="#2563EB"
-    text-anchor="middle">h</text>
+    text-anchor="middle">k</text>
   <path
     d="M90 430 Q173 420 256 430 Q339 440 422 430"
     stroke="#2563EB"

@@ -1,4 +1,4 @@
-// Harfik — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
+// Kelimeki — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
 import { useMemo } from 'react';
 import {
   BONUS_LABELS,
@@ -14,6 +14,7 @@ import type { GameState, MoveStatus } from '../game/types';
 import { key } from '../utils/board';
 import { buildRoundedOutlinePath } from '../utils/outline';
 import { computeAllTerritories } from '../utils/validator';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { Tile } from './Tile';
 
 // Dış hat köşe yarıçapı (ızgara birimi) — köşe bloğundaki dışbükey köşelerle
@@ -88,6 +89,7 @@ export function Board({
   onTilePointerUp,
   onTilePointerCancel,
 }: BoardProps) {
+  const online = useOnlineStatus();
   const { board, placed, bonuses, players, current } = state;
 
   // Köşe bölgesi -> o köşenin sahibinin rengi (boş kareleri renklendirmek için).
@@ -471,6 +473,11 @@ export function Board({
           Oyun Geçmişi
         </button>
         <div className="flex gap-2 justify-end flex-wrap">
+          {!online && (
+            <div className="text-[8px] font-mono font-bold text-red flex items-center">
+              Çevrimdışı
+            </div>
+          )}
           {LEGEND.map((item) => (
             <div
               key={item.label}

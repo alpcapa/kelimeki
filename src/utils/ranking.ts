@@ -1,4 +1,4 @@
-// Harfik — oyun sonu / teslim olma sırasında oyuncuları sıralama mantığı
+// Kelimeki — oyun sonu / teslim olma sırasında oyuncuları sıralama mantığı
 //
 // Teslim olan oyuncular, ne kadar puanları olursa olsun her zaman teslim
 // olmamış (hâlâ oyunda olan) tüm oyunculardan sonra sıralanır — bir bölge

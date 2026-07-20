@@ -1,4 +1,4 @@
-// Harfik — admin paneli: seçili üyenin oyun bazlı istatistikleri (ScoreCard'ın salt-okunur admin görünümü)
+// Kelimeki — admin paneli: seçili üyenin oyun bazlı istatistikleri (ScoreCard'ın salt-okunur admin görünümü)
 import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';

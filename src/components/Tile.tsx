@@ -1,4 +1,4 @@
-// Harfik — tek harf bileşeni (rafta ya da tahtada)
+// Kelimeki — tek harf bileşeni (rafta ya da tahtada)
 import type { PlayerColor } from '../game/constants';
 import type { Tile as TileModel } from '../game/types';
 import { tileLetter } from '../utils/board';

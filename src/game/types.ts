@@ -1,4 +1,4 @@
-// Harfik — paylaşılan oyun tipleri
+// Kelimeki — paylaşılan oyun tipleri
 
 /** Bir taşı/hamleyi yapan oyuncunun indeksi (0..3). */
 export type Owner = number;

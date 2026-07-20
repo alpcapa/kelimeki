@@ -1,4 +1,4 @@
-// Harfik — oynanan kelime(ler)in sözlük anlamı açılır penceresi
+// Kelimeki — oynanan kelime(ler)in sözlük anlamı açılır penceresi
 import { Modal } from './Modal';
 import type { WordMeaning } from '../lib/database.types';
 import { trUpper } from '../utils/turkish';

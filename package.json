@@ -1,9 +1,9 @@
 {
-  "name": "harfik",
+  "name": "kelimeki",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Harfik — 2 ya da 4 kişilik, köşelerden başlayan stratejik Türkçe kelime oyunu.",
+  "description": "Kelimeki — 2 ya da 4 kişilik, köşelerden başlayan stratejik Türkçe kelime oyunu.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

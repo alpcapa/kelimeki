@@ -1,4 +1,4 @@
-// Harfik — giriş / kayıt ekranı
+// Kelimeki — giriş / kayıt ekranı
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { TermsModal } from './TermsModal';

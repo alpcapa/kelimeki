@@ -11,9 +11,9 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Harfik — Türkçe Kelime Oyunu',
-        short_name: 'Harfik',
-        description: 'Harfik — 2 ya da 4 kişilik, köşelerden başlayan stratejik Türkçe kelime oyunu.',
+        name: 'Kelimeki — Türkçe Kelime Oyunu',
+        short_name: 'Kelimeki',
+        description: 'Kelimeki — 2 ya da 4 kişilik, köşelerden başlayan stratejik Türkçe kelime oyunu.',
         theme_color: '#0F1C26',
         background_color: '#0F1C26',
         display: 'standalone',

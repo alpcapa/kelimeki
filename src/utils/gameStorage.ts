@@ -1,10 +1,10 @@
-// Harfik — devam eden oyunu (phase==='play') localStorage'a otomatik kaydeder.
+// Kelimeki — devam eden oyunu (phase==='play') localStorage'a otomatik kaydeder.
 // Tarayıcı/uygulama kapatılıp yeniden açıldığında kaldığı yerden devam
 // edilebilsin diye: aksi halde biri kaybetmek üzereyken sekmeyi kapatıp
 // "teslim ol"un -2 cezasından kaçabilirdi (bkz. proje notları).
 import type { GameState } from '../game/types';
 
-const STORAGE_KEY = 'harfik:game-state';
+const STORAGE_KEY = 'kelimeki:game-state';
 // Kaydedilen state'in şekli değişirse (yeni zorunlu alan vb.) eski
 // kayıtları sessizce geçersiz saymak için.
 const STORAGE_VERSION = 1;
@@ -17,7 +17,7 @@ const STORAGE_VERSION = 1;
 // biçimde terk edilmiş sayardık.
 const ABANDON_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000;
 
-const PENDING_ABANDON_KEY = 'harfik:pending-abandoned-game';
+const PENDING_ABANDON_KEY = 'kelimeki:pending-abandoned-game';
 
 interface StoredPayload {
   version: number;

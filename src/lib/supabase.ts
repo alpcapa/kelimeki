@@ -1,4 +1,4 @@
-// Harfik — Supabase istemcisi
+// Kelimeki — Supabase istemcisi
 //
 // Ortam değişkenleri ayarlı değilse istemci null olur ve oyun çevrimdışı
 // (yerel) çalışmaya devam eder. Anahtarları `.env` dosyasına ekleyin:
@@ -22,6 +22,6 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
 if (!isSupabaseConfigured && import.meta.env.DEV) {
   // Geliştirme sırasında uyarı; üretimde sessiz.
   console.info(
-    '[Harfik] Supabase yapılandırılmadı — çevrimiçi özellikler kapalı. .env ekleyin.',
+    '[Kelimeki] Supabase yapılandırılmadı — çevrimiçi özellikler kapalı. .env ekleyin.',
   );
 }

@@ -1,4 +1,4 @@
-// Harfik — oyun bitiminde gösterilen "Görüş Bildir" formu
+// Kelimeki — oyun bitiminde gösterilen "Görüş Bildir" formu
 import { useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { AuthModal } from './AuthModal';
@@ -12,7 +12,7 @@ interface FeedbackModalProps {
 // Basit bot/spam koruması: sunucu tarafı doğrulaması olmadığı için (henüz
 // CAPTCHA/edge function yok) burada sadece naif botları caydıracak ucuz
 // önlemler var — hedefli bir saldırıyı durdurmaz, sadece maliyetsiz gürültüyü keser.
-const FEEDBACK_HISTORY_KEY = 'harfik:feedback-submissions';
+const FEEDBACK_HISTORY_KEY = 'kelimeki:feedback-submissions';
 const FEEDBACK_WINDOW_MS = 10 * 60 * 1000;
 const FEEDBACK_MAX_PER_WINDOW = 3;
 const MIN_SUBMIT_MS = 1500;

@@ -1,4 +1,4 @@
-// Harfik — tahta yardımcıları (saf fonksiyonlar)
+// Kelimeki — tahta yardımcıları (saf fonksiyonlar)
 import { SIZE } from '../game/constants';
 import type { CellKey, Tile } from '../game/types';
 

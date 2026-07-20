@@ -1,4 +1,4 @@
-// Harfik — scripts/proper-nouns.mjs listesini mevcut sözlüğe uygular.
+// Kelimeki — scripts/proper-nouns.mjs listesini mevcut sözlüğe uygular.
 // =====================================================================
 // build-dictionary.mjs, GTS kaynağının (gts.json, ~100 MB) indirilmesini
 // gerektirir ve repoda tutulmaz. proper-nouns.mjs listesini güncelleyip
@@ -61,7 +61,7 @@ for (let i = 0; i < words.length; i += PER_LINE) {
   );
 }
 const wordsTs =
-  '// Harfik — Türkçe kelime listesi\n' +
+  '// Kelimeki — Türkçe kelime listesi\n' +
   '// TDK Güncel Türkçe Sözlük (12. baskı) kaynaklı oynanabilir maddeler.\n' +
   '// Kaynak: https://github.com/ogun/guncel-turkce-sozluk (MIT)\n' +
   '// ÜRETİLMİŞTİR — elle düzenlemeyin. Yeniden üretmek için:\n' +
@@ -98,7 +98,7 @@ function timestamp() {
 const addedSorted = added.slice().sort(collator.compare);
 const BATCH = 500;
 const out = [];
-out.push('-- Harfik — dünya ülkeleri, başkentleri, büyük şehirleri ve diller');
+out.push('-- Kelimeki — dünya ülkeleri, başkentleri, büyük şehirleri ve diller');
 out.push('-- Kaynak: scripts/proper-nouns.mjs (scripts/augment-dictionary.mjs ile üretildi).');
 out.push(`-- ${addedSorted.length} yeni madde.`);
 out.push('-- Tekrar çalıştırmaya güvenli (ON CONFLICT DO UPDATE).');
@@ -111,7 +111,7 @@ for (let i = 0; i < addedSorted.length; i += BATCH) {
     const d = dict.get(w);
     const meaningsJson = JSON.stringify(d.meanings);
     const posSql = d.pos ? sqlStr(d.pos) : 'null';
-    return `  (${sqlStr(w)}, char_length(${sqlStr(w)}), public.harfik_points(${sqlStr(
+    return `  (${sqlStr(w)}, char_length(${sqlStr(w)}), public.kelimeki_points(${sqlStr(
       w,
     )}), ${posSql}, ${sqlStr(meaningsJson)}::jsonb)`;
   });

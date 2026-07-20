@@ -1,4 +1,4 @@
-// Harfik — YZ rakip mantığı (çok oyunculu, köşe temelli)
+// Kelimeki — YZ rakip mantığı (çok oyunculu, köşe temelli)
 //
 // YZ, rafından heceleyebildiği kelimeler arasından, bölge kurallarına uyan
 // ve sözlükçe geçerli en yüksek puanlı hamleyi arar. İlk hamlesini kendi

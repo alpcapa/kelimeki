@@ -1,4 +1,4 @@
-// Harfik — Türkçe kelime listesi
+// Kelimeki — Türkçe kelime listesi
 // TDK Güncel Türkçe Sözlük (12. baskı) kaynaklı oynanabilir maddeler.
 // Kaynak: https://github.com/ogun/guncel-turkce-sozluk (MIT)
 // ÜRETİLMİŞTİR — elle düzenlemeyin. Yeniden üretmek için:

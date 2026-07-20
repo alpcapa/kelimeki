@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://harfik.com/sitemap.xml
+Sitemap: https://kelimeki.com/sitemap.xml

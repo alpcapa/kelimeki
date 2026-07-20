@@ -1,4 +1,4 @@
-// Harfik — skor kartı: oyuncu istatistikleri ve sıralamaya geçiş
+// Kelimeki — skor kartı: oyuncu istatistikleri ve sıralamaya geçiş
 import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
