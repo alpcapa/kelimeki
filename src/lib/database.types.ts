@@ -164,12 +164,6 @@ export interface AdminMember {
   banned_until: string | null;
 }
 
-/** admin_game_counts RPC çıktısındaki tek satır (oyuncu sayısına göre). */
-export interface AdminGameCounts {
-  player_count: number;
-  finished: number;
-}
-
 export type AdminActivityGranularity = 'day' | 'week' | 'month' | 'year';
 
 /** admin_user_activity_series RPC çıktısındaki tek kova (Büyüme > Kullanıcı grafiği). */

@@ -26,6 +26,7 @@ import { trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, logGameFinish } from './lib/api';
 import { saveGameDurable, flushPendingGames } from './utils/gameSync';
+import { flushPendingFeedback } from './utils/feedbackSync';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
 
@@ -78,6 +79,16 @@ export default function App() {
     window.addEventListener('online', flushPendingGames);
     return () => window.removeEventListener('online', flushPendingGames);
   }, [user]);
+
+  // Offline nedeniyle gönderilemeyip kuyruğa alınmış "Görüş Bildir" mesajlarını
+  // (bkz. feedbackSync.ts) bağlantı geri gelir gelmez tekrar dener. Oyun
+  // kayıtlarının aksine oturum durumuna bağlı değildir (anonim gönderim
+  // serbest), bu yüzden yalnızca açılışta ve `online` olayında çalışır.
+  useEffect(() => {
+    void flushPendingFeedback();
+    window.addEventListener('online', flushPendingFeedback);
+    return () => window.removeEventListener('online', flushPendingFeedback);
+  }, []);
 
   // Yukarıdaki lazy init sırasında (loadGameState) 7 gün hareketsizlik
   // yüzünden terk edilmiş sayılıp silinen bir oyun varsa, o kayıt burada

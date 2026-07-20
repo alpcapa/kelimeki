@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   fetchAdminMembers,
-  fetchAdminGameCounts,
   fetchAdminUserActivitySeries,
   fetchAdminGameActivitySeries,
   fetchAdminFeedback,
@@ -11,7 +10,6 @@ import {
 } from '../lib/api';
 import type {
   AdminMember,
-  AdminGameCounts,
   AdminUserActivityPoint,
   AdminGameActivityPoint,
   AdminGameScope,
@@ -26,7 +24,7 @@ interface AdminDashboardProps {
   onClose: () => void;
 }
 
-type Tab = 'members' | 'games' | 'growth' | 'feedback';
+type Tab = 'members' | 'growth' | 'feedback';
 type GameSubTab = 'total' | 2 | 4;
 type GrowthSubTab = 'user' | 'game';
 type MemberSortKey =
@@ -153,8 +151,6 @@ function memberSortValue(m: AdminMember, key: MemberSortKey): string | number {
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [tab, setTab] = useState<Tab>('members');
   const [members, setMembers] = useState<AdminMember[] | null>(null);
-  const [gameCounts, setGameCounts] = useState<AdminGameCounts[] | null>(null);
-  const [gameSubTab, setGameSubTab] = useState<GameSubTab>('total');
   const [error, setError] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
   const [growthSubTab, setGrowthSubTab] = useState<GrowthSubTab>('user');
@@ -174,9 +170,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   useEffect(() => {
     fetchAdminMembers()
       .then(setMembers)
-      .catch((e) => setError(String(e)));
-    fetchAdminGameCounts()
-      .then(setGameCounts)
       .catch((e) => setError(String(e)));
     fetchAdminFeedback()
       .then(setFeedback)
@@ -258,13 +251,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       active ? 'bg-accent text-white' : 'bg-panel text-muted border border-border'
     }`;
 
-  const counts2 = gameCounts?.find((g) => g.player_count === 2) ?? { finished: 0 };
-  const counts4 = gameCounts?.find((g) => g.player_count === 4) ?? { finished: 0 };
-  const totals = {
-    finished: (gameCounts ?? []).reduce((s, g) => s + g.finished, 0),
-  };
-  const activeCounts =
-    gameSubTab === 'total' ? totals : gameSubTab === 2 ? counts2 : counts4;
   const unhandledFeedbackCount = feedback?.filter((f) => !f.handled).length ?? 0;
 
   function toggleFeedbackHandled(f: AdminFeedbackRow) {
@@ -298,9 +284,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           <div className="flex gap-1.5">
             <button className={tabBtn(tab === 'members')} onClick={() => setTab('members')}>
               Üyeler
-            </button>
-            <button className={tabBtn(tab === 'games')} onClick={() => setTab('games')}>
-              Oyunlar
             </button>
             <button className={tabBtn(tab === 'growth')} onClick={() => setTab('growth')}>
               Büyüme
@@ -379,35 +362,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   ? `${filteredMembers?.length ?? 0} / ${members.length} üye`
                   : `Toplam ${members?.length ?? 0} üye`}
               </div>
-            </>
-          )}
-
-          {tab === 'games' && (
-            <>
-              <div className="flex gap-1.5">
-                {(['total', 2, 4] as const).map((t) => (
-                  <button
-                    key={t}
-                    className={tabBtn(gameSubTab === t)}
-                    onClick={() => setGameSubTab(t)}
-                  >
-                    {t === 'total' ? 'Toplam' : `${t} Kişilik`}
-                  </button>
-                ))}
-              </div>
-
-              {gameCounts === null ? (
-                <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
-              ) : (
-                <div className="bg-bg border border-border rounded-lg p-4 flex flex-col items-center gap-1">
-                  <div className="text-[10px] font-mono uppercase tracking-[1px] text-muted">
-                    Bitirilen
-                  </div>
-                  <div className="text-2xl font-bold font-mono text-text">
-                    {activeCounts.finished}
-                  </div>
-                </div>
-              )}
             </>
           )}
 
