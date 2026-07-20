@@ -93,6 +93,10 @@ Büyük/küçük harf dönüşümünde **mutlaka** `trUpper()` / `trLower()` (`s
 
 Env değişkenleri olmadan uygulama offline çalışır — `useAuth` içindeki `configured` flag'i `false` olur ve tüm hesap/lider tablosu özellikleri gizlenir. Lokal geliştirmede Supabase gerekmez.
 
+### Auth e-postaları — Brevo SMTP (Supabase'in varsayılan mailer'ı DEĞİL)
+
+Supabase Auth (kayıt onayı, şifre sıfırlama vb.) e-postaları artık **Brevo** üzerinden özel SMTP ile gönderiliyor — Supabase'in kendi varsayılan/paylaşımlı mail servisi çoktan terk edildi. Bir kullanıcı "e-posta gelmedi/spam'e düştü" derse **ilk şüpheli Supabase'in default mailer'ı OLMASIN** — o zaten devre dışı. Bunun yerine Brevo tarafına bak: gönderen domain'in SPF/DKIM/DMARC kaydı hâlâ geçerli mi, Brevo hesabında gönderim/kota limiti mi devrede, Brevo'nun kendi gönderim loglarında o adrese ne olmuş (kabul/ret/bounce). SMTP kimlik bilgileri koda değil doğrudan Supabase Dashboard'a (Authentication → Emails → SMTP Settings) girildiği için repoda hiçbir iz bırakmaz — bu yüzden bu not burada duruyor, koddan çıkarılamaz.
+
 ### Migration'lar — CI yok, elle uygulama
 
 Kullanıcı iPad üzerinden çalışıyor; `.github/workflows/supabase-migrations.yml` (main'e push'ta `supabase db push` çalıştırır) teoride var ama kullanıcının bunu tetikleyip sonucunu takip edecek bir CLI/CI erişimi yok. Bu yüzden **her yeni migration'ı Claude'un kendisi, Supabase MCP (`apply_migration`/`execute_sql`) ile doğrudan production'a uygulaması gerekiyor** — migration dosyasını repoya eklemek tek başına yeterli değil, kimse `db push`'un geçtiğini doğrulamıyor. Akış:
