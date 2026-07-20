@@ -20,6 +20,9 @@ import '@fontsource/space-mono/latin-700.css';
 import '@fontsource/space-mono/latin-ext-700.css';
 import '@fontsource/caveat/latin-700.css';
 import '@fontsource/caveat/latin-ext-700.css';
+// fontsource'un yukarıdaki swap importlarını optional ile geçersiz kılar
+// (bkz. dosya içi yorum) — logo font geçişindeki kaymayı önler.
+import './fonts/caveat-logo.css';
 import './fonts/nunito-tile.css';
 
 import './index.css';
