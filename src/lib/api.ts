@@ -7,7 +7,6 @@ import type {
   AdminActivityGranularity,
   AdminFeedbackRow,
   AdminGameActivityPoint,
-  AdminGameCounts,
   AdminGameScope,
   AdminMember,
   AdminUserActivityPoint,
@@ -270,17 +269,6 @@ export async function fetchAdminMembers(): Promise<AdminMember[]> {
     return [];
   }
   return (data as AdminMember[]) ?? [];
-}
-
-/** Oyuncu sayısına göre başlatılan/biten oyun sayılarını döner (yalnızca admin). */
-export async function fetchAdminGameCounts(): Promise<AdminGameCounts[]> {
-  if (!supabase) return [];
-  const { data, error } = await supabase.rpc('admin_game_counts');
-  if (error) {
-    console.error('[Kelimeki] fetchAdminGameCounts hatası:', error.message);
-    return [];
-  }
-  return (data as AdminGameCounts[]) ?? [];
 }
 
 /** Son `periods` kova için yeni kayıt sayısını döner (yalnızca admin — Büyüme > Kullanıcı). */
