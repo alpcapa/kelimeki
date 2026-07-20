@@ -17,11 +17,6 @@ export function inBounds(r: number, c: number): boolean {
   return r >= 0 && r < SIZE && c >= 0 && c < SIZE;
 }
 
-/** Tahtada hiç taş yoksa true. */
-export function isEmpty(board: Board): boolean {
-  return board.every((row) => row.every((cell) => !cell));
-}
-
 /** Bir taşın görünen harfini döndürür (joker ise seçilen harf). */
 export function tileLetter(tile: Tile): string {
   return tile.wild ? tile.wildLetter ?? '' : tile.letter;

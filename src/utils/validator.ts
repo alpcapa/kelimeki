@@ -1,5 +1,5 @@
 // Harfik — kelime doğrulama, bölge kuralları ve puanlama
-import { BINGO_BONUS, SIZE, cornerBounds, cornerCell, inBonusZone } from '../game/constants';
+import { BINGO_BONUS, RACK_SIZE, SIZE, cornerBounds, cornerCell, inBonusZone } from '../game/constants';
 import type { BonusType, Player, ValidationResult } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { trLower } from './turkish';
@@ -174,22 +174,25 @@ export function validatePlacement(
 }
 
 /**
- * Bir oyuncunun bölgesini hesaplar: kendi köşe kare(ler)i + oradan yalnızca
- * kendi taşları üzerinden ortogonal olarak bağlı tüm hücreler. Genişleme
- * sadece oyuncunun kendi bölgesinden mümkündür — bir hücre, oyuncunun
- * köşesine kendi taşlarıyla kesintisiz bağlıysa bölgeye katılır; boş
- * hücreler ya da başka bir oyuncunun taşları zinciri kesmez ama genişletmez.
+ * Bir oyuncunun köşesinden başlayıp yalnızca KENDİ taşları üzerinden
+ * ortogonal olarak bağlı hücreleri döner — gerçek "fetih" zinciri. Tabandaki
+ * (henüz kimse tarafından ele geçirilmemiş) köşe hücreleri DAHİL DEĞİL;
+ * onlar `computeAllTerritories`'te ayrıca ele alınır. Seed, köşe
+ * sınırlarındaki hücrelerin TAMAMI değil, yalnızca o hücrelerden gerçekten
+ * `owner`a ait olanlardır — boş bir hücre zinciri başlatamaz, sadece
+ * genişlemeyi kesmez.
  */
-export function computeTerritory(board: Board, ownCorners: number[], owner: number): Set<string> {
-  const territory = new Set<string>();
+function computeConqueredChain(board: Board, ownCorners: number[], owner: number): Set<string> {
+  const chain = new Set<string>();
   const stack: [number, number][] = [];
   for (const corner of ownCorners) {
     const b = cornerBounds(corner);
     for (let r = b.r0; r <= b.r1; r++) {
       for (let c = b.c0; c <= b.c1; c++) {
+        if (board[r][c]?.owner !== owner) continue;
         const k = key(r, c);
-        if (!territory.has(k)) {
-          territory.add(k);
+        if (!chain.has(k)) {
+          chain.add(k);
           stack.push([r, c]);
         }
       }
@@ -206,19 +209,69 @@ export function computeTerritory(board: Board, ownCorners: number[], owner: numb
     for (const [nr, nc] of neighbors) {
       if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
       const k = key(nr, nc);
-      if (territory.has(k)) continue;
+      if (chain.has(k)) continue;
       if (board[nr][nc]?.owner === owner) {
-        territory.add(k);
+        chain.add(k);
         stack.push([nr, nc]);
+      }
+    }
+  }
+  return chain;
+}
+
+/**
+ * Bir oyuncunun bölgesini hesaplar: kendi fetih zinciri (bkz.
+ * `computeConqueredChain`) + kendi köşe kare(ler)inden, BAŞKA bir oyuncunun
+ * zinciri tarafından ele geçirilmemiş olanlar. 16 karelik köşe bloğu hiçbir
+ * koşulda garanti/dokunulmaz değildir — yalnızca henüz kimse tarafından
+ * fethedilmemiş hücreler için taban/varsayılan sahiplik sağlar. Rakip,
+ * kendi köşesinden (ya da önce izole bıraktığı bir taşı sonradan zincirine
+ * bağlayarak) kesintisiz kendi taşlarıyla bu bloğun içine kadar ulaşırsa, o
+ * hücreler (teorik olarak blok tamamen de olsa) rakibe geçer — bir kale
+ * fethi gibi. Diğer oyuncuların zincirleri bilinmediğinden bu fonksiyon tek
+ * başına çağrıldığında (ör. dışarıdan) yalnızca yaklaşık bir sonuç verir; tam
+ * doğru sonuç için tüm oyuncuları birlikte çözen `computeAllTerritories`
+ * kullanılmalıdır.
+ */
+export function computeTerritory(board: Board, ownCorners: number[], owner: number): Set<string> {
+  const territory = new Set(computeConqueredChain(board, ownCorners, owner));
+  for (const corner of ownCorners) {
+    const b = cornerBounds(corner);
+    for (let r = b.r0; r <= b.r1; r++) {
+      for (let c = b.c0; c <= b.c1; c++) {
+        territory.add(key(r, c));
       }
     }
   }
   return territory;
 }
 
-/** Tüm oyuncuların bölgelerini (indekslerine göre) hesaplar. */
+/**
+ * Tüm oyuncuların bölgelerini (indekslerine göre) hesaplar. Önce her
+ * oyuncunun gerçek fetih zinciri ayrı ayrı hesaplanır; bir hücre bir
+ * zincirde olabilir en fazla TEK bir oyuncuya ait olduğundan (bir hücrede
+ * aynı anda tek taş durur) zincirler asla çakışmaz. Köşe bloklarındaki taban
+ * iddia da yalnızca başka HİÇBİR oyuncunun zincirine girmemiş hücreler için
+ * uygulanır — böylece bir rakibin köşenin içine kadar uzanan zinciri, o
+ * hücreleri asıl sahibinin bölgesinden gerçekten düşürür.
+ */
 export function computeAllTerritories(board: Board, players: Player[]): Set<string>[] {
-  return players.map((p, i) => computeTerritory(board, p.corners, i));
+  const chains = players.map((p, i) => computeConqueredChain(board, p.corners, i));
+  return players.map((p, i) => {
+    const territory = new Set(chains[i]);
+    for (const corner of p.corners) {
+      const b = cornerBounds(corner);
+      for (let r = b.r0; r <= b.r1; r++) {
+        for (let c = b.c0; c <= b.c1; c++) {
+          const k = key(r, c);
+          if (territory.has(k)) continue;
+          const capturedByOther = chains.some((chain, j) => j !== i && chain.has(k));
+          if (!capturedByOther) territory.add(k);
+        }
+      }
+    }
+    return territory;
+  });
 }
 
 /**
@@ -340,7 +393,7 @@ export function calcScore(
   for (const { coords } of getFormedWords(board, placed)) {
     total += wordPoints(coords, board, placed, bonuses);
   }
-  if (Object.keys(placed).length >= 7) total += BINGO_BONUS;
+  if (Object.keys(placed).length >= RACK_SIZE) total += BINGO_BONUS;
   return total;
 }
 
