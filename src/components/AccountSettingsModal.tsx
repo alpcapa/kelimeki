@@ -195,6 +195,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
           <label className={labelCls}>E-posta</label>
           <input
             className={inputCls}
+            name="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -208,6 +209,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
             <label className={labelCls}>Mevcut şifre</label>
             <input
               className={inputCls}
+              name="current-password"
               type="password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
@@ -219,6 +221,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
             <label className={labelCls}>Yeni şifre</label>
             <input
               className={inputCls}
+              name="new-password"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -231,6 +234,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
             <label className={labelCls}>Yeni şifre (tekrar)</label>
             <input
               className={inputCls}
+              name="new-password-confirm"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}

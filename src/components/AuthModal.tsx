@@ -101,6 +101,7 @@ export function AuthModal({
             <div className="flex gap-2">
               <input
                 className={inputCls}
+                name="given-name"
                 placeholder="Ad"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
@@ -109,6 +110,7 @@ export function AuthModal({
               />
               <input
                 className={inputCls}
+                name="family-name"
                 placeholder="Soyad"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
@@ -118,6 +120,7 @@ export function AuthModal({
             </div>
             <input
               className={inputCls}
+              name="nickname"
               placeholder="Takma isim (isteğe bağlı)"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
@@ -128,6 +131,7 @@ export function AuthModal({
 
         <input
           className={inputCls}
+          name="email"
           type="email"
           placeholder="E-posta"
           value={email}
@@ -139,6 +143,7 @@ export function AuthModal({
         {mode !== 'forgot' && (
           <input
             className={inputCls}
+            name={mode === 'login' ? 'current-password' : 'new-password'}
             type="password"
             placeholder="Şifre"
             value={password}
