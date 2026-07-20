@@ -136,9 +136,6 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
           <p className="text-xs text-muted font-mono">
             Öneri, hata bildirimi ya da her türlü görüşünü bize iletebilirsin.
           </p>
-          {/* autoFocus bilerek yok — iOS Safari'de modal açılırken programatik
-              focus() klavyeyi açmadan input'u "focus'lu" işaretliyor, sonraki
-              dokunuşlarda da klavye hiç çıkmıyor. */}
           <textarea
             className={`${inputCls} resize-none`}
             rows={4}
@@ -147,6 +144,7 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
             onChange={(e) => setMessage(e.target.value)}
             maxLength={2000}
             required
+            autoFocus
           />
           {user ? (
             <p className="text-[10px] text-muted font-mono">
