@@ -126,7 +126,6 @@ export function Setup({ onStart }: SetupProps) {
           <path d="M4 4 Q25 1 50 4 Q75 7 96 4" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" fill="none" />
         </svg>
         <p className="text-muted text-xs font-mono mt-4">
-          Bu sıradan bir kelime oyunu değil.
           Kelimeler kurarak bölgeni genişlet, rakiplerini kuşat. Ama dikkat et:
           Hamlen rakibinin bölgesine temas ederse, kazandığın puanın bir
           kısmını onunla paylaşmak zorunda kalırsın. Her hamle bir strateji,
