@@ -7,7 +7,12 @@
   display: none;
 }
 
-@media screen and (orientation: landscape) and (pointer: coarse) {
+/* max-width: 1024px — yalnızca telefon boyutundaki ekranları kapsar (en
+   geniş telefon: iPhone Pro Max yatayda ~932px). iPad'ler (en darı yatayda
+   ~1133px) bu eşiğin üstünde kalır ve hiç bloke edilmez — hem fiziksel
+   klavye kullanan hem kullanmayan iPad kullanıcıları yatay modda uygulamayı
+   sorunsuz kullanabilir; tahta da o genişlikte zaten sığıyor. */
+@media screen and (orientation: landscape) and (pointer: coarse) and (max-width: 1024px) {
   #root {
     display: none !important;
   }
