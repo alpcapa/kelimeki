@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { AuthProvider } from './hooks/useAuth';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Kendi sunucumuzdan servis edilen yazı tipleri (Google'a gidip gelmek yok).
 // Türkçe için yalnızca latin + latin-ext alt kümeleri yüklenir.
@@ -29,8 +30,10 @@ setupPwaUpdates();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );
