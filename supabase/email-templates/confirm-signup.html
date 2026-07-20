@@ -1,0 +1,50 @@
+<!--
+  Supabase Dashboard → Authentication → Emails → Templates → Confirm signup
+  Subject: E-posta adresini onayla — Kelimeki
+  Bu dosya sadece kaynak/referans olarak repoda tutulur; Supabase Auth
+  bunu otomatik okumaz, içeriği Dashboard'a elle yapıştırman gerekir.
+-->
+<body style="margin:0;padding:0;background-color:#F5F7FA;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F7FA;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background-color:#FFFFFF;border:1px solid #DCE2EA;border-radius:16px;overflow:hidden;">
+          <tr>
+            <td align="center" style="padding:32px 32px 8px 32px;">
+              <span style="font-size:22px;font-weight:700;color:#2563EB;letter-spacing:-0.02em;">Kelimeki</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 32px 8px 32px;">
+              <h1 style="margin:0 0 16px 0;font-size:20px;line-height:1.4;color:#1B2430;">E-posta adresini onayla</h1>
+              <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#1B2430;">
+                Kelimeki'ye hoş geldin! Kaydını tamamlamak için aşağıdaki butona tıklayarak e-posta adresini onayla.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:0 32px 32px 32px;">
+              <a href="{{ .ConfirmationURL }}" style="display:inline-block;background-color:#2563EB;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;">
+                E-postamı onayla
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 32px 32px;border-top:1px solid #DCE2EA;">
+              <p style="margin:24px 0 0 0;font-size:13px;line-height:1.6;color:#8A93A2;">
+                Bu isteği sen yapmadıysan bu e-postayı görmezden gelebilirsin — hesabın açılmayacaktır.
+              </p>
+            </td>
+          </tr>
+        </table>
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;">
+          <tr>
+            <td align="center" style="padding:20px 32px;">
+              <span style="font-size:12px;color:#8A93A2;">© Kelimeki · kelimeki.com</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
