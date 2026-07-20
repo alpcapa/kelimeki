@@ -24,7 +24,7 @@ import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
-import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, logGameStart, logGameFinish } from './lib/api';
+import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, logGameFinish } from './lib/api';
 import { saveGameDurable, flushPendingGames } from './utils/gameSync';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
@@ -449,7 +449,6 @@ export default function App() {
         <Setup
           onStart={(players, showTutorial) => {
             dispatch({ type: 'START', players });
-            void logGameStart(players.length);
             if (showTutorial) setShowPostStartTutorial(true);
           }}
         />

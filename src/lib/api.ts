@@ -54,34 +54,11 @@ export async function saveGame(game: NewGame): Promise<string | null> {
 }
 
 /**
- * Bir oyunun başladığını kaydeder — giriş yapmış ya da misafir, fark etmez.
- * `games` tablosu yalnızca BİTEN oyunları (ve yalnızca giriş yapmış
- * kullanıcıları) tuttuğundan, admin panelindeki "başlatılan" sayacı bu ayrı
- * kayda dayanır. Satır yalnızca oyuncu sayısını taşır — skor/kelime gibi
- * kişisel hiçbir veri içermediğinden misafirler için de (user_id null olarak)
- * gönderilmesi mahremiyeti ihlal etmez. Hata sessizce yutulur, oyun akışını
- * asla engellemez.
- */
-export async function logGameStart(playerCount: number): Promise<void> {
-  if (!supabase) return;
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { error } = await supabase
-    .from('game_starts')
-    .insert({ user_id: user?.id ?? null, player_count: playerCount });
-  if (error) {
-    console.error('[Kelimeki] logGameStart hatası:', error.message);
-  }
-}
-
-/**
  * Bir oyunun bittiğini, ne kadar sürdüğünü ve tek/çok oturumlu olup
- * olmadığını kaydeder — giriş yapmış ya da misafir, fark etmez.
- * `game_starts` gibi tamamen anonim/sayaç amaçlıdır (skor/kelime gibi
- * kişisel veri yok); asıl skor kaydı hâlâ yalnızca giriş yapmış kullanıcılar
- * için `saveGame`/`games` tablosu üzerinden yürür. `multiSession`,
+ * olmadığını kaydeder — giriş yapmış ya da misafir, fark etmez. Tamamen
+ * anonim/sayaç amaçlıdır (skor/kelime gibi kişisel veri yok); asıl skor
+ * kaydı hâlâ yalnızca giriş yapmış kullanıcılar için `saveGame`/`games`
+ * tablosu üzerinden yürür. `multiSession`,
  * `GameState.multiSession`'dan gelir — oyun bitmeden en az bir kez
  * tarayıcı/uygulama kapatılıp devam ettirildiyse true. `completed=false`,
  * oyunun normal biçimde bitmediğini, 7 gün hareketsizlik sonrası terk

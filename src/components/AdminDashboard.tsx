@@ -55,8 +55,9 @@ const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
 
 const USER_SERIES: ChartSeriesDef[] = [{ key: 'signups', label: 'Yeni Kayıt', color: '#2a78d6' }];
 const GAME_COUNT_SERIES: ChartSeriesDef[] = [
-  { key: 'game_starts', label: 'Başlatılan', color: '#eda100' },
   { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
+  { key: 'games_finished_same_session', label: 'Bitirilen (Aynı Oturum)', color: '#0891B2' },
+  { key: 'games_finished_multi_session', label: 'Bitirilen (Çok Oturumlu)', color: '#7c3aed' },
   { key: 'games_abandoned', label: 'Terk Edilen', color: '#DC2626' },
 ];
 const DURATION_SERIES: ChartSeriesDef[] = [
@@ -257,10 +258,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       active ? 'bg-accent text-white' : 'bg-panel text-muted border border-border'
     }`;
 
-  const counts2 = gameCounts?.find((g) => g.player_count === 2) ?? { started: 0, finished: 0 };
-  const counts4 = gameCounts?.find((g) => g.player_count === 4) ?? { started: 0, finished: 0 };
+  const counts2 = gameCounts?.find((g) => g.player_count === 2) ?? { finished: 0 };
+  const counts4 = gameCounts?.find((g) => g.player_count === 4) ?? { finished: 0 };
   const totals = {
-    started: (gameCounts ?? []).reduce((s, g) => s + g.started, 0),
     finished: (gameCounts ?? []).reduce((s, g) => s + g.finished, 0),
   };
   const activeCounts =
@@ -399,22 +399,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
               {gameCounts === null ? (
                 <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
               ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-bg border border-border rounded-lg p-4 flex flex-col items-center gap-1">
-                    <div className="text-[10px] font-mono uppercase tracking-[1px] text-muted">
-                      Başlatılan
-                    </div>
-                    <div className="text-2xl font-bold font-mono text-text">
-                      {activeCounts.started}
-                    </div>
+                <div className="bg-bg border border-border rounded-lg p-4 flex flex-col items-center gap-1">
+                  <div className="text-[10px] font-mono uppercase tracking-[1px] text-muted">
+                    Bitirilen
                   </div>
-                  <div className="bg-bg border border-border rounded-lg p-4 flex flex-col items-center gap-1">
-                    <div className="text-[10px] font-mono uppercase tracking-[1px] text-muted">
-                      Bitirilen
-                    </div>
-                    <div className="text-2xl font-bold font-mono text-text">
-                      {activeCounts.finished}
-                    </div>
+                  <div className="text-2xl font-bold font-mono text-text">
+                    {activeCounts.finished}
                   </div>
                 </div>
               )}
@@ -522,7 +512,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         data={gameActivity}
                         granularity={gameGranularity}
                         series={GAME_COUNT_SERIES}
-                        defaultActiveKeys={['game_starts', 'games_finished']}
+                        defaultActiveKeys={['games_finished', 'games_abandoned']}
                         controls={<span className={sectionTitleCls}>Oyun Sayısı</span>}
                       />
                       <GrowthChart
