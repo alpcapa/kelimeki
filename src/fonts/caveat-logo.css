@@ -1,0 +1,37 @@
+/* @fontsource/caveat'in latin-700.css / latin-ext-700.css dosyaları
+   font-display: swap kullanıyor. Caveat sadece üst logoda ("kelimeki")
+   kullanıldığından ve yedek (cursive) fontla belirgin farklı bir karakter
+   genişliğine sahip olduğundan, yavaş mobil bağlantılarda önce yedek
+   fontla çizilip font inince genişlik aniden değişiyor; bu da logo
+   kutusunun (içeriğe göre boyutlanan buton/başlık) anlık olarak sağa/sola
+   kaymasına ("ileri geri hareket") yol açıyordu.
+
+   Bu dosya aynı iki font dosyasını (bkz. @fontsource/caveat/latin-700.css
+   ve latin-ext-700.css — src birebir aynı) font-display: optional ile
+   BURADA TEK BAŞINA tanımlıyor; main.tsx fontsource'un swap import'larını
+   HİÇ yapmıyor. Önemli: "aynı unicode-range'i kapsayan iki @font-face'i
+   (biri swap, biri optional) birlikte import edip sonrakinin öncekini
+   kaskadda ezmesini beklemek" işe yaramıyor — Playwright ile ölçülünce
+   Chromium'un bu durumda SONRAKİ değil İLK tanımlanan @font-face'i
+   kullandığı görüldü (font seçim algoritması "son kural kazanır" kaskadına
+   uymuyor). Bu yüzden swap kuralı kaynakta hiç var olmamalı — sadece
+   override etmek yetmiyor, tamamen yerini alması gerekiyor. */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: optional;
+  src:
+    url('@fontsource/caveat/files/caveat-latin-700-normal.woff2') format('woff2'),
+    url('@fontsource/caveat/files/caveat-latin-700-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: optional;
+  src:
+    url('@fontsource/caveat/files/caveat-latin-ext-700-normal.woff2') format('woff2'),
+    url('@fontsource/caveat/files/caveat-latin-ext-700-normal.woff') format('woff');
+}
