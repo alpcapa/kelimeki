@@ -12,6 +12,13 @@ import { saveGame } from '../lib/api';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const PENDING_KEY = 'kelimeki:pending-games';
+// 20 Temmuz 2026 rebrand'inden (Harfik → Kelimeki) kalma eski anahtar. O gün
+// localStorage anahtarı taşınmadan yeniden adlandırıldığı için, rebrand
+// deploy'undan önce kuyruklanıp henüz flush edilmemiş misafir oyunları bu
+// anahtarın altında sessizce mahsur kaldı — flushPendingGames yeni anahtarı
+// okuduğundan bunları hiç görmüyordu. Aşağıdaki migrateLegacyQueue bunları
+// bir kereliğine yeni anahtara taşır.
+const LEGACY_PENDING_KEY = 'harfik:pending-games';
 // Hiç kayıt olmadan uzun süre oynayan bir misafirin kuyruğu sınırsız
 // büyümesin diye üst sınır — aşılırsa en eski kayıtlar düşürülür.
 const MAX_PENDING_GAMES = 300;
@@ -52,6 +59,25 @@ async function trySave(game: NewGame): Promise<boolean> {
   }
 }
 
+/** Eski `harfik:pending-games` anahtarında kalmış kayıtları yeni anahtara taşır. */
+function migrateLegacyQueue(): void {
+  try {
+    const raw = localStorage.getItem(LEGACY_PENDING_KEY);
+    if (!raw) return;
+    localStorage.removeItem(LEGACY_PENDING_KEY);
+    const legacy = JSON.parse(raw);
+    if (!Array.isArray(legacy) || legacy.length === 0) return;
+    const queue = readQueue();
+    const ids = new Set(queue.map((g) => g.id));
+    for (const game of legacy) {
+      if (!ids.has(game.id)) queue.push(game);
+    }
+    writeQueue(queue);
+  } catch {
+    // Eski kuyruk okunamadı/bozuk — kurtarılacak bir şey yok, sessizce geç.
+  }
+}
+
 function enqueue(game: NewGame): void {
   const queue = readQueue();
   if (queue.some((g) => g.id === game.id)) return;
@@ -84,6 +110,7 @@ let flushing = false;
  */
 export async function flushPendingGames(): Promise<void> {
   if (flushing) return;
+  migrateLegacyQueue();
   const queue = readQueue();
   if (queue.length === 0) return;
   if (!(await hasLocalSession())) return;
