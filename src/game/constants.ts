@@ -76,21 +76,6 @@ export function cornerBounds(corner: number): {
   };
 }
 
-/** Bir hücrenin hangi köşe bölgesinde olduğunu döndürür; merkez için -1. */
-export function regionOf(r: number, c: number): number {
-  for (let i = 0; i < 4; i++) {
-    const b = cornerBounds(i);
-    if (r >= b.r0 && r <= b.r1 && c >= b.c0 && c <= b.c1) return i;
-  }
-  return -1;
-}
-
-/** Verilen hücre, bu köşe bölgesinin içinde mi? */
-export function inCorner(corner: number, r: number, c: number): boolean {
-  const b = cornerBounds(corner);
-  return r >= b.r0 && r <= b.r1 && c >= b.c0 && c <= b.c1;
-}
-
 /**
  * Bir köşe bölgesinin en uç (tek) hücresi — oyuncunun ilk hamlesinde mutlaka
  * değmesi gereken başlangıç noktası. Görsel olarak burada bir "ev" işareti

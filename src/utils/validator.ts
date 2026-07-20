@@ -1,5 +1,5 @@
 // Harfik — kelime doğrulama, bölge kuralları ve puanlama
-import { BINGO_BONUS, SIZE, cornerBounds, cornerCell, inBonusZone } from '../game/constants';
+import { BINGO_BONUS, RACK_SIZE, SIZE, cornerBounds, cornerCell, inBonusZone } from '../game/constants';
 import type { BonusType, Player, ValidationResult } from '../game/types';
 import { WORD_SET } from '../data/words';
 import { trLower } from './turkish';
@@ -393,7 +393,7 @@ export function calcScore(
   for (const { coords } of getFormedWords(board, placed)) {
     total += wordPoints(coords, board, placed, bonuses);
   }
-  if (Object.keys(placed).length >= 7) total += BINGO_BONUS;
+  if (Object.keys(placed).length >= RACK_SIZE) total += BINGO_BONUS;
   return total;
 }
 

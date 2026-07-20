@@ -670,8 +670,12 @@ export default function App() {
     }
 
     // Supabase yoksa veya yapısal kontrol başarısızsa yerel doğrulama (reducer).
+    // Hamle zaten geçersizse (`moveStatus.valid` false) köşe-vergisi onayını
+    // hiç göstermeden doğrudan PLAY'e düş — reducer doğru hata mesajıyla
+    // reddedecek; aksi halde kullanıcı zaten reddedilecek bir hamle için
+    // gereksiz bir "rakip bölgesine giriyorsun" onayı görürdü.
     pendingSkipWordCheck.current = false;
-    if (invasion) { setInvasionConfirm(invasion); } else { dispatch({ type: 'PLAY' }); }
+    if (invasion && moveStatus?.valid) { setInvasionConfirm(invasion); } else { dispatch({ type: 'PLAY' }); }
   };
 
   // Pas, sırayı tümüyle harcadığı için onay ister.
