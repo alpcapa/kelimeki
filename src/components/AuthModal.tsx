@@ -207,15 +207,15 @@ export function AuthModal({
           <>
             <button
               onClick={() => switchMode('forgot')}
-              className="w-full text-center text-xs text-muted font-mono hover:text-accent transition-colors"
+              className="w-full text-center text-xs text-muted font-mono underline hover:text-accent transition-colors"
             >
               Şifremi unuttum
             </button>
             <button
               onClick={() => switchMode('signup')}
-              className="w-full text-center text-xs text-muted font-mono hover:text-accent transition-colors"
+              className="w-full text-center text-xs text-muted font-mono transition-colors"
             >
-              Hesabın yok mu? Kayıt ol
+              Hesabın yok mu? <span className="text-accent underline">Kayıt ol</span>
             </button>
           </>
         )}
