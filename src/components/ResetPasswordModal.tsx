@@ -51,7 +51,6 @@ export function ResetPasswordModal({ onDone }: ResetPasswordModalProps) {
             dokunuşlarda da klavye hiç çıkmıyor. */}
         <input
           className={inputCls}
-          name="new-password"
           type="password"
           placeholder="Yeni şifre"
           value={password}
@@ -62,7 +61,6 @@ export function ResetPasswordModal({ onDone }: ResetPasswordModalProps) {
         />
         <input
           className={inputCls}
-          name="new-password-confirm"
           type="password"
           placeholder="Yeni şifre (tekrar)"
           value={confirm}
