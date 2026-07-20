@@ -11,9 +11,9 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Kelimeki — Türkçe Kelime Oyunu',
+        name: 'Kelimeki — Ücretsiz Online Türkçe Kelime Oyunu',
         short_name: 'Kelimeki',
-        description: 'Kelimeki — 2 ya da 4 kişilik, köşelerden başlayan stratejik Türkçe kelime oyunu.',
+        description: 'Kelimeki, TDK sözlüğüne dayalı ücretsiz online Türkçe kelime oyunu. 2 ya da 4 kişilik, köşelerden başlayan stratejik Scrabble benzeri oyun.',
         theme_color: '#0F1C26',
         background_color: '#0F1C26',
         display: 'standalone',
