@@ -1,4 +1,4 @@
-// Türkçe harf dağılımı ve puanları — Harfik
+// Türkçe harf dağılımı ve puanları — Kelimeki
 // Toplam 100 taş (LexFront HTML prototipindeki TILE_DATA dağılımı).
 // '?' jokerdir: 0 puan, oynanırken bir harfe dönüşür.
 

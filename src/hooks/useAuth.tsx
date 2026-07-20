@@ -1,4 +1,4 @@
-// Harfik — kimlik doğrulama bağlamı (Supabase Auth)
+// Kelimeki — kimlik doğrulama bağlamı (Supabase Auth)
 import {
   createContext,
   useContext,

@@ -1,4 +1,4 @@
-// Harfik — joker taş oynanırken hangi harfe dönüşeceğini seçme penceresi
+// Kelimeki — joker taş oynanırken hangi harfe dönüşeceğini seçme penceresi
 import { Modal } from './Modal';
 import { TILE_DATA } from '../data/tiles';
 import { Tile } from './Tile';

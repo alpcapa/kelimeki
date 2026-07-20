@@ -27,16 +27,16 @@ export function PrivacyModal({ onClose }: PrivacyModalProps) {
     <Modal title="Gizlilik Politikası" onClose={onClose}>
       <div className="flex flex-col gap-5">
         <P>
-          Harfik olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
+          Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
           nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: Temmuz 2026.
         </P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
-            Harfik, herhangi bir şirket ya da tüzel kişilik bulunmaksızın, bağımsız bir geliştirici
+            Kelimeki, herhangi bir şirket ya da tüzel kişilik bulunmaksızın, bağımsız bir geliştirici
             tarafından bireysel olarak geliştirilmekte ve işletilmektedir; faaliyet merkezi
             Sarıyer, İstanbul'dur. 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") anlamında
-            veri sorumlusu bu bireysel geliştiricidir ve işbu politikada "Harfik" bu kapsamda
+            veri sorumlusu bu bireysel geliştiricidir ve işbu politikada "Kelimeki" bu kapsamda
             anılmaktadır. Talep ve başvurularınız için 8. bölümdeki iletişim kanalını
             kullanabilirsiniz.
           </P>
@@ -86,7 +86,7 @@ export function PrivacyModal({ onClose }: PrivacyModalProps) {
 
         <Section title="6. Çerezler ve Yerel Depolama">
           <P>
-            Harfik, HTTP çerezi (cookie) kullanmaz. Bunun yerine oturumunuzu açık tutmak, oyun
+            Kelimeki, HTTP çerezi (cookie) kullanmaz. Bunun yerine oturumunuzu açık tutmak, oyun
             ilerlemenizi kaydetmek ve tercihlerinizi hatırlamak için tarayıcınızın yerel depolama
             alanı (localStorage/sessionStorage) kullanılır; bu veriler cihazınızda tutulur ve
             sunucularımıza otomatik gönderilmez. İstisna: misafir (girişsiz) oynadığınız bir

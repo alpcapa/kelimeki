@@ -1,4 +1,4 @@
-// Harfik — liderlik tablosu
+// Kelimeki — liderlik tablosu
 import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';

@@ -1,4 +1,4 @@
-// Harfik — kelime doğrulama, bölge kuralları ve puanlama
+// Kelimeki — kelime doğrulama, bölge kuralları ve puanlama
 import { BINGO_BONUS, RACK_SIZE, SIZE, cornerBounds, cornerCell, inBonusZone } from '../game/constants';
 import type { BonusType, Player, ValidationResult } from '../game/types';
 import { WORD_SET } from '../data/words';

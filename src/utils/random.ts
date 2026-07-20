@@ -1,4 +1,4 @@
-// Harfik — rastgelelik yardımcıları
+// Kelimeki — rastgelelik yardımcıları
 
 /** Fisher–Yates karıştırma. Diziyi yerinde karıştırır ve döndürür. */
 export function shuffle<T>(a: T[]): T[] {

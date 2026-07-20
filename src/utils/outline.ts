@@ -1,4 +1,4 @@
-// Harfik — bir hücre kümesinin dış hattını (delikler ve `extraOpen` ile
+// Kelimeki — bir hücre kümesinin dış hattını (delikler ve `extraOpen` ile
 // bastırılan kenarlar dahil) TEK, tamamen yuvarlatılmış bir SVG path'ine
 // dönüştürür. Eski uygulama her hücreye ayrı ayrı CSS border+radius
 // veriyordu; bu yalnızca dışbükey (convex) köşeleri yuvarlıyordu — köşe

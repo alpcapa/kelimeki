@@ -1,4 +1,4 @@
-// Harfik — ana uygulama: kurulum, çok oyunculu sıra akışı ve düzen
+// Kelimeki — ana uygulama: kurulum, çok oyunculu sıra akışı ve düzen
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { GameHeader } from './components/GameHeader';
 import { Board } from './components/Board';

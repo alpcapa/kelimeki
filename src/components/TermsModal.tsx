@@ -27,13 +27,13 @@ export function TermsModal({ onClose }: TermsModalProps) {
     <Modal title="Kullanım Koşulları" onClose={onClose}>
       <div className="flex flex-col gap-5">
         <P>
-          Harfik'e kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
+          Kelimeki'ye kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
           Son güncelleme: Temmuz 2026.
         </P>
 
         <Section title="1. Hizmet Sağlayıcı ve Kapsam">
           <P>
-            Harfik, herhangi bir şirket ya da tüzel kişilik bulunmaksızın, bağımsız bir geliştirici
+            Kelimeki, herhangi bir şirket ya da tüzel kişilik bulunmaksızın, bağımsız bir geliştirici
             tarafından bireysel olarak geliştirilmekte ve işletilmektedir; faaliyet merkezi
             Sarıyer, İstanbul'dur. Hizmet, Türkçe kelimelerle oynanan çevrimiçi bir kelime
             oyunudur ve oyun tahtası, lider tablosu ve kullanıcı hesabı özelliklerini kapsar.
@@ -71,7 +71,7 @@ export function TermsModal({ onClose }: TermsModalProps) {
 
         <Section title="5. Sorumluluk Sınırlaması">
           <P>
-            Harfik, hizmet kesintileri, veri kayıpları veya üçüncü taraf hizmetlerinden
+            Kelimeki, hizmet kesintileri, veri kayıpları veya üçüncü taraf hizmetlerinden
             kaynaklanan zararlardan sorumlu değildir. Hizmet "olduğu gibi" sunulmaktadır.
           </P>
         </Section>

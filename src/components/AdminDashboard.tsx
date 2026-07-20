@@ -1,4 +1,4 @@
-// Harfik — admin paneli: üyeler ve oyun istatistikleri
+// Kelimeki — admin paneli: üyeler ve oyun istatistikleri
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {

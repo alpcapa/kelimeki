@@ -1,4 +1,4 @@
-// Harfik — admin paneli: genel amaçlı zaman serisi çizgi grafiği (kullanıcı/oyun/süre)
+// Kelimeki — admin paneli: genel amaçlı zaman serisi çizgi grafiği (kullanıcı/oyun/süre)
 import { useMemo, useRef, useState } from 'react';
 import type { AdminActivityGranularity } from '../lib/database.types';
 

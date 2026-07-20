@@ -1,4 +1,4 @@
-// Harfik — nasıl oynanır / kurallar sayfası. İki adım: kısa "Hızlı Başlangıç"
+// Kelimeki — nasıl oynanır / kurallar sayfası. İki adım: kısa "Hızlı Başlangıç"
 // (varsayılan) ve altındaki linkle açılan "Detaylı Kurallar".
 import { useState } from 'react';
 import { Modal } from './Modal';
@@ -138,7 +138,7 @@ function DetailedRules() {
     <div className="flex flex-col gap-5">
       <Section title="Nasıl Oynanır?">
         <P>
-          Harfik, Yapay Zekâ'ya karşı oynanan strateji odaklı bir kelime oyunudur. Her oyuncu
+          Kelimeki, Yapay Zekâ'ya karşı oynanan strateji odaklı bir kelime oyunudur. Her oyuncu
           kendi köşesinden başlar; kurduğu her kelimeyle puan toplar, bölgesini büyütür ve
           tahtanın merkezine doğru ilerleyerek üstünlük kurmaya çalışır.
         </P>

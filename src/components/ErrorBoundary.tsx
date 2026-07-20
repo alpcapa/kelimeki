@@ -1,4 +1,4 @@
-// Harfik — kök seviye crash yakalayıcı.
+// Kelimeki — kök seviye crash yakalayıcı.
 // React render hataları yalnızca class component'lerdeki
 // getDerivedStateFromError/componentDidCatch ile yakalanabilir, hook karşılığı yok.
 import { Component, type ErrorInfo, type ReactNode } from 'react';
@@ -20,7 +20,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('Harfik çöktü:', error, info.componentStack);
+    console.error('Kelimeki çöktü:', error, info.componentStack);
   }
 
   private reload = () => window.location.reload();
@@ -42,7 +42,7 @@ export class ErrorBoundary extends Component<Props, State> {
             Bir şeyler ters gitti
           </h2>
           <p className="text-sm text-muted leading-relaxed">
-            Harfik beklenmedik bir hatayla karşılaştı. Yeniden yüklemek genelde sorunu çözer.
+            Kelimeki beklenmedik bir hatayla karşılaştı. Yeniden yüklemek genelde sorunu çözer.
           </p>
           <button
             onClick={this.reload}

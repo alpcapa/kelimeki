@@ -1,4 +1,4 @@
-// Harfik — kalan (dışarıdaki) taşlar dökümü
+// Kelimeki — kalan (dışarıdaki) taşlar dökümü
 import { Modal } from './Modal';
 import { remainingTiles } from '../utils/bag';
 import type { GameState } from '../game/types';

@@ -1,4 +1,4 @@
-// Harfik — paylaşılan modal kabuğu
+// Kelimeki — paylaşılan modal kabuğu
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 

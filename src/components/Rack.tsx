@@ -1,4 +1,4 @@
-// Harfik — aktif oyuncunun harf rafı
+// Kelimeki — aktif oyuncunun harf rafı
 import type { PlayerColor } from '../game/constants';
 import type { Tile as TileModel } from '../game/types';
 import { Tile } from './Tile';

@@ -1,9 +1,9 @@
-// Harfik — Türkçe sözlük veri üretici
+// Kelimeki — Türkçe sözlük veri üretici
 // =====================================================================
 // Kaynak: TDK Güncel Türkçe Sözlük (12. baskı), MIT lisanslı açık veri:
 //   https://github.com/ogun/guncel-turkce-sozluk  (sozluk/v12/v12.gts.json.tar.gz)
 //
-// Bu betik, 99.236 maddelik NDJSON sözlük dökümünü alıp Harfik'in
+// Bu betik, 99.236 maddelik NDJSON sözlük dökümünü alıp Kelimeki'nin
 // oynanabilir kelime kümesine indirger ve şu çıktıları üretir.
 // Çok sözcüklü maddeler boşlukları kaldırılarak tek tokena birleştirilir
 // ("dulavrat otu" -> "dulavratotu"); ardından yalnızca Türk alfabesi
@@ -54,7 +54,7 @@ if (!fs.existsSync(SRC)) {
   process.exit(1);
 }
 
-// Harfik taşlarındaki Türk alfabesi (q, w, x ve şapkalı ünlüler yok).
+// Kelimeki taşlarındaki Türk alfabesi (q, w, x ve şapkalı ünlüler yok).
 const ALLOWED = new Set('abcçdefgğhıijklmnoöprsştuüvyz');
 
 // Türkçe küçük harfe çevirme (I→ı, İ→i kuralı).
@@ -183,7 +183,7 @@ for (let i = 0; i < words.length; i += PER_LINE) {
   );
 }
 const wordsTs =
-  '// Harfik — Türkçe kelime listesi\n' +
+  '// Kelimeki — Türkçe kelime listesi\n' +
   '// TDK Güncel Türkçe Sözlük (12. baskı) kaynaklı oynanabilir maddeler.\n' +
   '// Kaynak: https://github.com/ogun/guncel-turkce-sozluk (MIT)\n' +
   '// ÜRETİLMİŞTİR — elle düzenlemeyin. Yeniden üretmek için:\n' +
@@ -213,7 +213,7 @@ function sqlStr(s) {
 
 const BATCH = 500;
 const out = [];
-out.push('-- Harfik — TDK Güncel Türkçe Sözlük (12. baskı) seed');
+out.push('-- Kelimeki — TDK Güncel Türkçe Sözlük (12. baskı) seed');
 out.push('-- Kaynak: https://github.com/ogun/guncel-turkce-sozluk (MIT)');
 out.push(`-- ${words.length} oynanabilir madde, anlamlarıyla birlikte.`);
 out.push('-- Üretim: scripts/build-dictionary.mjs (elle düzenlemeyin).');
@@ -229,7 +229,7 @@ for (let i = 0; i < words.length; i += BATCH) {
     const d = dict.get(w);
     const meaningsJson = JSON.stringify(d.meanings);
     const posSql = d.pos ? sqlStr(d.pos) : 'null';
-    return `  (${sqlStr(w)}, char_length(${sqlStr(w)}), public.harfik_points(${sqlStr(
+    return `  (${sqlStr(w)}, char_length(${sqlStr(w)}), public.kelimeki_points(${sqlStr(
       w,
     )}), ${posSql}, ${sqlStr(meaningsJson)}::jsonb)`;
   });

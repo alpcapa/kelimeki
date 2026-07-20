@@ -1,4 +1,4 @@
-// Harfik — Setup'taki oyuncu sıra numarası karesiyle aynı: renkli kare + beyaz numara.
+// Kelimeki — Setup'taki oyuncu sıra numarası karesiyle aynı: renkli kare + beyaz numara.
 import { PLAYER_COLORS } from '../game/constants';
 
 interface PlayerBadgeProps {

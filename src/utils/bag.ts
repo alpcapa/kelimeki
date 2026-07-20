@@ -1,4 +1,4 @@
-// Harfik — taş torbası
+// Kelimeki — taş torbası
 import { TILE_DATA } from '../data/tiles';
 import type { Tile } from '../game/types';
 import { shuffle } from './random';

@@ -1,4 +1,4 @@
-// Harfik — dünya ülkeleri, başkentleri, büyük şehirleri ve diller
+// Kelimeki — dünya ülkeleri, başkentleri, büyük şehirleri ve diller
 // TDK Güncel Türkçe Sözlük (12. baskı) coğrafi/özel ad kapsamı eksik
 // olduğundan (ör. Atina, Paris, Türkiye gibi çoğu ülke/şehir adı yoktu) bu
 // listeyle tamamlanır. build-dictionary.mjs bu listeyi GTS verisiyle

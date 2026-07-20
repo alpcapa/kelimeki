@@ -1,4 +1,4 @@
-// Harfik — TDK'de zaten var olan bazı kelimelere günlük dilde yaygın olan
+// Kelimeki — TDK'de zaten var olan bazı kelimelere günlük dilde yaygın olan
 // ek bir anlam ekler (ör. "amerika" TDK'de yalnızca kıta anlamıyla geçer;
 // günlük dilde Amerika Birleşik Devletleri için de kullanıldığından bu
 // anlam burada eklenir). proper-nouns.mjs'in aksine burada amaç GTS'te

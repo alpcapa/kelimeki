@@ -1,4 +1,4 @@
-// Harfik — oyundaki tüm oyuncuların hamle/puan geçmişi
+// Kelimeki — oyundaki tüm oyuncuların hamle/puan geçmişi
 import { Modal } from './Modal';
 import { BINGO_BONUS, jokerFinishBonus } from '../game/constants';
 import type { GameState } from '../game/types';

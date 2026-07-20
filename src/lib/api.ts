@@ -1,4 +1,4 @@
-// Harfik — Supabase veri erişim katmanı
+// Kelimeki — Supabase veri erişim katmanı
 //
 // Tüm fonksiyonlar Supabase yapılandırılmamışsa güvenli biçimde boş/no-op
 // döner, böylece oyun çevrimdışı da çalışır.
@@ -47,7 +47,7 @@ export async function saveGame(game: NewGame): Promise<string | null> {
     .single();
   if (error) {
     if (error.code === '23505' && game.id) return game.id;
-    console.error('[Harfik] saveGame hatası:', error.message);
+    console.error('[Kelimeki] saveGame hatası:', error.message);
     return null;
   }
   return data?.id ?? null;
@@ -72,7 +72,7 @@ export async function logGameStart(playerCount: number): Promise<void> {
     .from('game_starts')
     .insert({ user_id: user?.id ?? null, player_count: playerCount });
   if (error) {
-    console.error('[Harfik] logGameStart hatası:', error.message);
+    console.error('[Kelimeki] logGameStart hatası:', error.message);
   }
 }
 
@@ -110,7 +110,7 @@ export async function logGameFinish(
       completed,
     });
   if (error) {
-    console.error('[Harfik] logGameFinish hatası:', error.message);
+    console.error('[Kelimeki] logGameFinish hatası:', error.message);
   }
 }
 
@@ -123,7 +123,7 @@ export async function fetchLeaderboard(limit = 10): Promise<LeaderboardRow[]> {
     .order('total_score', { ascending: false })
     .limit(limit);
   if (error) {
-    console.error('[Harfik] fetchLeaderboard hatası:', error.message);
+    console.error('[Kelimeki] fetchLeaderboard hatası:', error.message);
     return [];
   }
   return (data as LeaderboardRow[]) ?? [];
@@ -134,7 +134,7 @@ export async function fetchMyLeaderboardRank(userId: string): Promise<MyLeaderbo
   if (!supabase) return null;
   const { data, error } = await supabase.rpc('my_leaderboard_rank', { p_user_id: userId });
   if (error) {
-    console.error('[Harfik] fetchMyLeaderboardRank hatası:', error.message);
+    console.error('[Kelimeki] fetchMyLeaderboardRank hatası:', error.message);
     return null;
   }
   const row = Array.isArray(data) ? data[0] : null;
@@ -169,7 +169,7 @@ export async function fetchPlayerStats(
     .eq('player_count', playerCount)
     .maybeSingle();
   if (error) {
-    console.error('[Harfik] fetchPlayerStats hatası:', error.message);
+    console.error('[Kelimeki] fetchPlayerStats hatası:', error.message);
     return null;
   }
   return (data as PlayerStats) ?? null;
@@ -206,7 +206,7 @@ export async function fetchMyGames(
     .order('created_at', { ascending: false })
     .range(offset, offset + limit); // limit+1 satır: sonraki sayfa var mı anlamak için
   if (error) {
-    console.error('[Harfik] fetchMyGames hatası:', error.message);
+    console.error('[Kelimeki] fetchMyGames hatası:', error.message);
     return { games: [], hasMore: false };
   }
   const rows = (data as GameHistoryEntry[]) ?? [];
@@ -227,7 +227,7 @@ export async function fetchMyProfile(): Promise<Profile | null> {
     .eq('id', user.id)
     .maybeSingle();
   if (error) {
-    console.error('[Harfik] fetchMyProfile hatası:', error.message);
+    console.error('[Kelimeki] fetchMyProfile hatası:', error.message);
     return null;
   }
   return (data as Profile) ?? null;
@@ -243,7 +243,7 @@ export async function isValidWordRemote(word: string): Promise<boolean | null> {
     p_word: word,
   });
   if (error) {
-    console.error('[Harfik] isValidWordRemote hatası:', error.message);
+    console.error('[Kelimeki] isValidWordRemote hatası:', error.message);
     return null;
   }
   return Boolean(data);
@@ -262,7 +262,7 @@ export async function fetchMeaning(word: string): Promise<WordMeaning | null> {
       p_word: norm,
     });
     if (error) {
-      console.error('[Harfik] fetchMeaning hatası:', error.message);
+      console.error('[Kelimeki] fetchMeaning hatası:', error.message);
     } else if (Array.isArray(data) && data.length > 0) {
       const row = data[0] as WordMeaning;
       if (Array.isArray(row.meanings) && row.meanings.length > 0) {
@@ -289,7 +289,7 @@ export async function fetchAdminMembers(): Promise<AdminMember[]> {
   if (!supabase) return [];
   const { data, error } = await supabase.rpc('admin_list_members');
   if (error) {
-    console.error('[Harfik] fetchAdminMembers hatası:', error.message);
+    console.error('[Kelimeki] fetchAdminMembers hatası:', error.message);
     return [];
   }
   return (data as AdminMember[]) ?? [];
@@ -300,7 +300,7 @@ export async function fetchAdminGameCounts(): Promise<AdminGameCounts[]> {
   if (!supabase) return [];
   const { data, error } = await supabase.rpc('admin_game_counts');
   if (error) {
-    console.error('[Harfik] fetchAdminGameCounts hatası:', error.message);
+    console.error('[Kelimeki] fetchAdminGameCounts hatası:', error.message);
     return [];
   }
   return (data as AdminGameCounts[]) ?? [];
@@ -317,7 +317,7 @@ export async function fetchAdminUserActivitySeries(
     p_granularity: granularity,
   });
   if (error) {
-    console.error('[Harfik] fetchAdminUserActivitySeries hatası:', error.message);
+    console.error('[Kelimeki] fetchAdminUserActivitySeries hatası:', error.message);
     return [];
   }
   return (data as AdminUserActivityPoint[]) ?? [];
@@ -343,7 +343,7 @@ export async function fetchAdminGameActivitySeries(
     p_player_count: playerCount,
   });
   if (error) {
-    console.error('[Harfik] fetchAdminGameActivitySeries hatası:', error.message);
+    console.error('[Kelimeki] fetchAdminGameActivitySeries hatası:', error.message);
     return [];
   }
   return (data as AdminGameActivityPoint[]) ?? [];
@@ -357,7 +357,7 @@ export async function fetchAdminFeedback(): Promise<AdminFeedbackRow[]> {
     .select('id, user_id, email, message, handled, created_at')
     .order('created_at', { ascending: false });
   if (error) {
-    console.error('[Harfik] fetchAdminFeedback hatası:', error.message);
+    console.error('[Kelimeki] fetchAdminFeedback hatası:', error.message);
     return [];
   }
   return (data as AdminFeedbackRow[]) ?? [];
@@ -367,7 +367,7 @@ export async function fetchAdminFeedback(): Promise<AdminFeedbackRow[]> {
 export async function markFeedbackHandled(id: string, handled: boolean): Promise<void> {
   if (!supabase) return;
   const { error } = await supabase.from('feedback').update({ handled }).eq('id', id);
-  if (error) console.error('[Harfik] markFeedbackHandled hatası:', error.message);
+  if (error) console.error('[Kelimeki] markFeedbackHandled hatası:', error.message);
 }
 
 // ── Geri bildirim ───────────────────────────────────────────────────────────

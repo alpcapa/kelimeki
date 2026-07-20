@@ -1,4 +1,4 @@
-// Harfik — sağ üst köşedeki hesap menüsü.
+// Kelimeki — sağ üst köşedeki hesap menüsü.
 // Oturum yoksa "Giriş / Kayıt" düğmesi; oturum varsa profil küçük resmi ve
 // açılır menü (Hesap Ayarları, Skor Kartı, Çıkış) gösterir.
 // Yalnızca Supabase yapılandırıldığında görünür.

@@ -1,4 +1,4 @@
-// Harfik — sözlük anlamları (yerel, tembel yüklenen)
+// Kelimeki — sözlük anlamları (yerel, tembel yüklenen)
 //
 // meanings.json ~6 MB olduğundan ana paket içine gömülmez; `?url` ile
 // statik varlık olarak alınır ve ilk anlam sorgusunda fetch ile yüklenir.
@@ -30,7 +30,7 @@ async function loadAll(): Promise<MeaningMap> {
         return m;
       })
       .catch((err) => {
-        console.error('[Harfik] anlamlar yüklenemedi:', err);
+        console.error('[Kelimeki] anlamlar yüklenemedi:', err);
         loading = null;
         return {};
       });

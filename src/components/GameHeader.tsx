@@ -1,4 +1,4 @@
-// Harfik — başlık: skorlar ve hesap menüsü
+// Kelimeki — başlık: skorlar ve hesap menüsü
 import { PLAYER_COLORS } from '../game/constants';
 import type { GameState } from '../game/types';
 import { UserMenu } from './UserMenu';
@@ -18,7 +18,7 @@ export function GameHeader({ state, onLogoClick }: GameHeaderProps) {
         style={{ fontFamily: "'Caveat', cursive", fontSize: 28, fontWeight: 700, color: '#2563EB', letterSpacing: 3 }}
         aria-label="Oyundan çık"
       >
-        harfik
+        kelimeki
         <svg width="64" height="6" viewBox="0 0 64 6" fill="none">
           <path d="M2 3 Q16 1 32 3 Q48 5 62 3" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" fill="none" />
         </svg>

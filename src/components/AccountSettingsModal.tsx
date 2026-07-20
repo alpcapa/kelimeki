@@ -1,4 +1,4 @@
-// Harfik — hesap ayarları: profil fotoğrafı, kullanıcı adı, e-posta, şifre
+// Kelimeki — hesap ayarları: profil fotoğrafı, kullanıcı adı, e-posta, şifre
 import { useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';

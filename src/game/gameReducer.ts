@@ -1,4 +1,4 @@
-// Harfik — useReducer ile çok oyunculu (yerel) oyun durumu yönetimi
+// Kelimeki — useReducer ile çok oyunculu (yerel) oyun durumu yönetimi
 import {
   MAX_PASS_ROUNDS,
   PLAYER_COLORS,

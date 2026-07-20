@@ -1,4 +1,4 @@
-// Harfik — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
+// Kelimeki — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
 import { useMemo } from 'react';
 import {
   BONUS_LABELS,

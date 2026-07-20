@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const DISMISSED_KEY = 'harfik_a2hs_dismissed_session';
+const DISMISSED_KEY = 'kelimeki_a2hs_dismissed_session';
 
 function isStandalone() {
   return (

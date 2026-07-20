@@ -1,4 +1,4 @@
-// Harfik — tahta boyutu, bölgeler, oyuncu renkleri, bonus yerleşimi
+// Kelimeki — tahta boyutu, bölgeler, oyuncu renkleri, bonus yerleşimi
 import type { BonusType, CellKey } from './types';
 
 /** Tahta 13x13. */
