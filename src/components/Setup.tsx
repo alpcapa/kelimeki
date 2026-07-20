@@ -119,9 +119,9 @@ export function Setup({ onStart }: SetupProps) {
 
     <div className="w-full max-w-[460px] px-4 py-6 flex flex-col gap-5">
       <div className="text-center flex flex-col items-center gap-1 -mt-3">
-        <div style={{ fontFamily: "'Caveat', cursive", fontSize: 52, fontWeight: 700, color: '#2563EB', letterSpacing: 4, lineHeight: 1 }}>
+        <h1 style={{ fontFamily: "'Caveat', cursive", fontSize: 52, fontWeight: 700, color: '#2563EB', letterSpacing: 4, lineHeight: 1, margin: 0 }}>
           kelimeki
-        </div>
+        </h1>
         <svg width="100" height="8" viewBox="0 0 100 8" fill="none">
           <path d="M4 4 Q25 1 50 4 Q75 7 96 4" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" fill="none" />
         </svg>
