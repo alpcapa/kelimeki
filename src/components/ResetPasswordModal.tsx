@@ -46,9 +46,6 @@ export function ResetPasswordModal({ onDone }: ResetPasswordModalProps) {
         <p className="text-xs text-muted font-mono">
           Hesabın için yeni bir şifre belirle.
         </p>
-        {/* autoFocus bilerek yok — iOS Safari'de modal açılırken programatik
-            focus() klavyeyi açmadan input'u "focus'lu" işaretliyor, sonraki
-            dokunuşlarda da klavye hiç çıkmıyor. */}
         <input
           className={inputCls}
           type="password"
@@ -58,6 +55,7 @@ export function ResetPasswordModal({ onDone }: ResetPasswordModalProps) {
           required
           minLength={6}
           autoComplete="new-password"
+          autoFocus
         />
         <input
           className={inputCls}
