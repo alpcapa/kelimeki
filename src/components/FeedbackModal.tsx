@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { AuthModal } from './AuthModal';
-import { submitFeedback } from '../lib/api';
+import { submitFeedbackDurable } from '../utils/feedbackSync';
 import { useAuth } from '../hooks/useAuth';
 
 interface FeedbackModalProps {
@@ -71,7 +71,7 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
 
     setBusy(true);
     try {
-      await submitFeedback(message, email);
+      await submitFeedbackDurable(message, email);
       recordSubmission();
       setSent(true);
     } catch (err) {
