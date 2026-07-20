@@ -167,7 +167,6 @@ export interface AdminMember {
 /** admin_game_counts RPC çıktısındaki tek satır (oyuncu sayısına göre). */
 export interface AdminGameCounts {
   player_count: number;
-  started: number;
   finished: number;
 }
 
