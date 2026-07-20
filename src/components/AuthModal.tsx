@@ -224,7 +224,7 @@ export function AuthModal({
             onClick={() => switchMode('login')}
             className="w-full text-center text-xs text-muted font-mono hover:text-accent transition-colors"
           >
-            Zaten hesabın var mı? Giriş yap
+            Zaten hesabın var mı? <span className="text-accent underline">Giriş yap</span>
           </button>
         )}
         {mode === 'forgot' && (
