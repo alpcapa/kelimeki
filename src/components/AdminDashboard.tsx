@@ -7,6 +7,7 @@ import {
   fetchAdminGameActivitySeries,
   fetchAdminFeedback,
   markFeedbackHandled,
+  deleteFeedback,
 } from '../lib/api';
 import type {
   AdminMember,
@@ -257,6 +258,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     const next = !f.handled;
     setFeedback((prev) => prev?.map((x) => (x.id === f.id ? { ...x, handled: next } : x)) ?? prev);
     void markFeedbackHandled(f.id, next);
+  }
+
+  function removeFeedback(f: AdminFeedbackRow) {
+    if (!window.confirm('Bu geri bildirimi silmek istediğine emin misin?')) return;
+    setFeedback((prev) => prev?.filter((x) => x.id !== f.id) ?? prev);
+    deleteFeedback(f.id).catch((e) => setError(String(e)));
   }
 
   return createPortal(
@@ -512,12 +519,28 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                           <span className="shrink-0">{fmtDate(f.created_at)}</span>
                         </div>
                         <p className="text-xs text-text whitespace-pre-wrap">{f.message}</p>
-                        <button
-                          onClick={() => toggleFeedbackHandled(f)}
-                          className="self-start text-[10px] font-mono text-accent hover:underline"
-                        >
-                          {f.handled ? 'Okunmadı işaretle' : 'Okundu işaretle'}
-                        </button>
+                        <div className="flex items-center justify-between gap-2">
+                          <button
+                            onClick={() => toggleFeedbackHandled(f)}
+                            className="text-[10px] font-mono text-accent hover:underline"
+                          >
+                            {f.handled ? 'Okunmadı işaretle' : 'Okundu işaretle'}
+                          </button>
+                          <button
+                            onClick={() => removeFeedback(f)}
+                            aria-label="Sil"
+                            title="Sil"
+                            className="shrink-0 text-muted hover:text-red transition-colors"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                              <path d="M10 11v6" />
+                              <path d="M14 11v6" />
+                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

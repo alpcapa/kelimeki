@@ -1,0 +1,20 @@
+-- Kelimeki — 20260720064708_security_hardening.sql, public.is_admin()
+-- fonksiyonundan EXECUTE iznini anon/authenticated'den kaldırmıştı. Ama
+-- feedback tablosunun RLS politikaları (feedback_select_admin,
+-- feedback_update_admin) doğrudan public.is_admin() çağırıyor. RLS
+-- politika ifadeleri sorguyu yapan rol (authenticated) altında
+-- değerlendirilir; is_admin() SECURITY DEFINER olsa da bu, yalnızca
+-- fonksiyon GÖVDESİNİN hangi yetkiyle çalışacağını belirler — çağıran
+-- rolün fonksiyonu çağırabilmesi için ayrıca EXECUTE izni gerekir.
+--
+-- Sonuç: revoke'dan bu yana admin panelindeki "Geri Bildirim" sekmesi
+-- (fetchAdminFeedback) ve markFeedbackHandled, "permission denied for
+-- function is_admin" hatasıyla sessizce boş/başarısız dönüyordu — geri
+-- bildirimler aslında `feedback` tablosuna kaydediliyordu (insert politikası
+-- is_admin() çağırmıyor, etkilenmedi), sadece admin onları göremiyordu.
+--
+-- Diğer tüm admin_* fonksiyonlar SECURITY DEFINER olup postgres sahipliğinde
+-- çalıştığından ve is_admin()'i kendi gövdeleri içinden (owner yetkisiyle)
+-- çağırdığından bu revoke'dan etkilenmedi — yalnızca feedback tablosunun
+-- RLS'i doğrudan etkilendi.
+grant execute on function public.is_admin () to authenticated;

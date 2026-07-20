@@ -335,6 +335,13 @@ export async function markFeedbackHandled(id: string, handled: boolean): Promise
   if (error) console.error('[Kelimeki] markFeedbackHandled hatası:', error.message);
 }
 
+/** Bir geri bildirim mesajını siler (yalnızca admin). */
+export async function deleteFeedback(id: string): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from('feedback').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
 // ── Geri bildirim ───────────────────────────────────────────────────────────
 
 /** Kullanıcıdan gelen görüş/şikayet mesajını kaydeder (girişli ya da anonim). */
