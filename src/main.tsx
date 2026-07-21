@@ -19,14 +19,9 @@ import '@fontsource/space-mono/latin-ext-400.css';
 import '@fontsource/space-mono/latin-700.css';
 import '@fontsource/space-mono/latin-ext-700.css';
 // Caveat, @fontsource/caveat/latin(-ext)-700.css yerine kendi
-// font-face'imizden (font-display: optional, bkz. dosya içi yorum)
-// yükleniyor — logodaki font geçişinin (swap) mobilde yarattığı kaymayı
-// önlemek için. Not: aynı unicode-range'i kapsayan iki @font-face rule'ü
-// (biri swap, biri optional) aynı anda import edip "sonraki override eder"
-// varsayımıyla ikisini birden tutmak İŞE YARAMIYOR — Chromium bu durumda
-// kaskaddaki SONRAKİ değil, İLK tanımlanan @font-face'i kullanıyor (font
-// seçim algoritması normal CSS "son kural kazanır" kaskadına uymuyor).
-// Bu yüzden fontsource'un swap import'ları burada hiç yer almıyor.
+// font-face'imizden (public/fonts/caveat-700.woff2, sabit/hash'siz yol —
+// index.html'deki <link rel="preload"> ile eşleşmesi için) yükleniyor;
+// bkz. dosya içi yorum.
 import './fonts/caveat-logo.css';
 import './fonts/nunito-tile.css';
 

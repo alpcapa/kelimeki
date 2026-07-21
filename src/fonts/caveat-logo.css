@@ -1,37 +1,27 @@
-/* @fontsource/caveat'in latin-700.css / latin-ext-700.css dosyaları
-   font-display: swap kullanıyor. Caveat sadece üst logoda ("kelimeki")
-   kullanıldığından ve yedek (cursive) fontla belirgin farklı bir karakter
-   genişliğine sahip olduğundan, yavaş mobil bağlantılarda önce yedek
-   fontla çizilip font inince genişlik aniden değişiyor; bu da logo
-   kutusunun (içeriğe göre boyutlanan buton/başlık) anlık olarak sağa/sola
-   kaymasına ("ileri geri hareket") yol açıyordu.
+/* Caveat, uygulamada yalnızca üst logoda ("kelimeki", GameHeader ve Setup)
+   düz Latin karakterlerle kullanılıyor — bu yüzden @fontsource/caveat'in
+   latin-ext dosyasına hiç ihtiyaç yok, tek bir latin dosyası yeterli.
 
-   Bu dosya aynı iki font dosyasını (bkz. @fontsource/caveat/latin-700.css
-   ve latin-ext-700.css — src birebir aynı) font-display: optional ile
-   BURADA TEK BAŞINA tanımlıyor; main.tsx fontsource'un swap import'larını
-   HİÇ yapmıyor. Önemli: "aynı unicode-range'i kapsayan iki @font-face'i
-   (biri swap, biri optional) birlikte import edip sonrakinin öncekini
-   kaskadda ezmesini beklemek" işe yaramıyor — Playwright ile ölçülünce
-   Chromium'un bu durumda SONRAKİ değil İLK tanımlanan @font-face'i
-   kullandığı görüldü (font seçim algoritması "son kural kazanır" kaskadına
-   uymuyor). Bu yüzden swap kuralı kaynakta hiç var olmamalı — sadece
-   override etmek yetmiyor, tamamen yerini alması gerekiyor. */
+   Font, @fontsource/caveat paketinden değil public/fonts/caveat-700.woff2
+   üzerinden sabit (hash'lenmemiş) bir yoldan servis ediliyor — bunun
+   sebebi index.html'deki <link rel="preload"> ile aynı URL'yi
+   paylaşabilmek: Vite'ın normalde ürettiği content-hash'li dosya adı
+   build'den build'e değiştiğinden statik bir preload linkiyle eşleşmez.
+
+   font-display: swap kullanılıyor (optional DEĞİL): daha önce optional
+   denenmişti ama optional'ın çok kısa (~100ms) bekleme süresi mobil
+   ağlarda (özellikle ~1.2MB'lık JS bundle'ıyla aynı anda indirilirken)
+   neredeyse hiç yetmiyor — font o sürede gelmezse tarayıcı o sayfa
+   görüntüleme boyunca kalıcı olarak yedek (cursive) fonta düşüp bir daha
+   asla Caveat'a geçmiyor, yani logo çoğu soğuk yüklemede tamamen yanlış
+   fontla (marka dışı) görünüyordu. swap + preload kombinasyonu hem
+   fontun er ya da geç mutlaka doğru şekilde yüklenmesini garantiliyor
+   hem de preload sayesinde pratikte swap'ın görünür olma ihtimalini
+   düşürüyor. */
 @font-face {
   font-family: 'Caveat';
   font-style: normal;
   font-weight: 700;
-  font-display: optional;
-  src:
-    url('@fontsource/caveat/files/caveat-latin-700-normal.woff2') format('woff2'),
-    url('@fontsource/caveat/files/caveat-latin-700-normal.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'Caveat';
-  font-style: normal;
-  font-weight: 700;
-  font-display: optional;
-  src:
-    url('@fontsource/caveat/files/caveat-latin-ext-700-normal.woff2') format('woff2'),
-    url('@fontsource/caveat/files/caveat-latin-ext-700-normal.woff') format('woff');
+  font-display: swap;
+  src: url('/fonts/caveat-700.woff2') format('woff2');
 }
