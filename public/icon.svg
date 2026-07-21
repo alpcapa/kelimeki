@@ -11,16 +11,17 @@
   </defs>
   <rect width="512" height="512" fill="#ffffff"/>
   <text
-    x="256" y="392"
+    x="256" y="292"
     font-family="Caveat, cursive"
-    font-size="360"
+    font-size="148.0"
     font-weight="700"
+    letter-spacing="11.4"
     fill="#2563EB"
-    text-anchor="middle">k</text>
+    text-anchor="middle">kelimeki</text>
   <path
-    d="M90 430 Q173 420 256 430 Q339 440 422 430"
+    d="M125.1 314.0 Q184.8 305.5 256.0 314.0 Q327.1 322.5 386.9 314.0"
     stroke="#2563EB"
-    stroke-width="14"
+    stroke-width="7.1"
     stroke-linecap="round"
     fill="none"/>
 </svg>
