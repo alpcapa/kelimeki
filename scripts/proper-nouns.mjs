@@ -1,4 +1,5 @@
-// Kelimeki — dünya ülkeleri, başkentleri, büyük şehirleri ve diller
+// Kelimeki — dünya ülkeleri, başkentleri, büyük şehirleri, diller ve TDK'de
+// eksik olan diğer özel adlar (ör. mitolojik tanrı adları).
 // TDK Güncel Türkçe Sözlük (12. baskı) coğrafi/özel ad kapsamı eksik
 // olduğundan (ör. Atina, Paris, Türkiye gibi çoğu ülke/şehir adı yoktu) bu
 // listeyle tamamlanır. build-dictionary.mjs bu listeyi GTS verisiyle
@@ -373,6 +374,7 @@ export const PROPER_NOUNS = {
   "priştine": "Kosova'nın başkenti.",
   "pusan": "Güney Kore'de bir şehir.",
   "pyongyang": "Kuzey Kore'nin başkenti.",
+  "ra": "Mısır mitolojisinde güneş tanrısı.",
   "rabat": "Fas'ın başkenti.",
   "ramallah": "Filistin'in başkenti.",
   "reykjavik": "İzlanda'nın başkenti.",
