@@ -200,6 +200,9 @@ export interface AdminGameActivityPoint {
   avg_duration_multi_session_seconds: number | null;
 }
 
+/** "Görüş Bildir" formunun hangi bağlamdan gönderildiği. */
+export type FeedbackSource = 'game_end' | 'general';
+
 /** feedback tablosundaki tek satır (admin panelinden okunur). */
 export interface AdminFeedbackRow {
   id: string;
@@ -208,4 +211,5 @@ export interface AdminFeedbackRow {
   message: string;
   handled: boolean;
   created_at: string;
+  source: FeedbackSource;
 }

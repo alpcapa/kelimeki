@@ -4,9 +4,11 @@ import { Modal } from './Modal';
 import { AuthModal } from './AuthModal';
 import { submitFeedbackDurable } from '../utils/feedbackSync';
 import { useAuth } from '../hooks/useAuth';
+import type { FeedbackSource } from '../lib/database.types';
 
 interface FeedbackModalProps {
   onClose: () => void;
+  source: FeedbackSource;
 }
 
 // Basit bot/spam koruması: sunucu tarafı doğrulaması olmadığı için (henüz
@@ -38,7 +40,7 @@ function recordSubmission(): void {
   }
 }
 
-export function FeedbackModal({ onClose }: FeedbackModalProps) {
+export function FeedbackModal({ onClose, source }: FeedbackModalProps) {
   const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState(user?.email ?? '');
@@ -71,7 +73,7 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
 
     setBusy(true);
     try {
-      await submitFeedbackDurable(message, email);
+      await submitFeedbackDurable(message, email, source);
       recordSubmission();
       setSent(true);
     } catch (err) {

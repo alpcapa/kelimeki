@@ -28,6 +28,7 @@ interface AdminDashboardProps {
 type Tab = 'members' | 'growth' | 'feedback';
 type GameSubTab = 'total' | 2 | 4;
 type GrowthSubTab = 'user' | 'game';
+type FeedbackSubTab = 'game_end' | 'general';
 type MemberSortKey =
   | 'name'
   | 'nickname'
@@ -167,6 +168,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [sortKey, setSortKey] = useState<MemberSortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [feedback, setFeedback] = useState<AdminFeedbackRow[] | null>(null);
+  const [feedbackSubTab, setFeedbackSubTab] = useState<FeedbackSubTab>('game_end');
 
   useEffect(() => {
     fetchAdminMembers()
@@ -253,6 +255,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     }`;
 
   const unhandledFeedbackCount = feedback?.filter((f) => !f.handled).length ?? 0;
+  const unhandledGameEndCount = feedback?.filter((f) => !f.handled && f.source === 'game_end').length ?? 0;
+  const unhandledGeneralCount = feedback?.filter((f) => !f.handled && f.source === 'general').length ?? 0;
+  const feedbackByTab = useMemo(
+    () => feedback?.filter((f) => f.source === feedbackSubTab) ?? [],
+    [feedback, feedbackSubTab],
+  );
 
   function toggleFeedbackHandled(f: AdminFeedbackRow) {
     const next = !f.handled;
@@ -493,15 +501,24 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
           {tab === 'feedback' && (
             <>
+              <div className="flex gap-1.5">
+                <button className={tabBtn(feedbackSubTab === 'game_end')} onClick={() => setFeedbackSubTab('game_end')}>
+                  Oyun Sonu{unhandledGameEndCount > 0 ? ` (${unhandledGameEndCount})` : ''}
+                </button>
+                <button className={tabBtn(feedbackSubTab === 'general')} onClick={() => setFeedbackSubTab('general')}>
+                  Genel{unhandledGeneralCount > 0 ? ` (${unhandledGeneralCount})` : ''}
+                </button>
+              </div>
+
               {feedback === null ? (
                 <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
-              ) : feedback.length === 0 ? (
+              ) : feedbackByTab.length === 0 ? (
                 <div className="text-xs font-mono text-muted text-center py-6">
                   Henüz geri bildirim yok.
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
-                  {feedback.map((f) => {
+                  {feedbackByTab.map((f) => {
                     const sender = f.user_id ? members?.find((m) => m.id === f.user_id) : null;
                     const senderLabel = sender ? memberName(sender) : (f.email || 'Anonim');
                     return (
