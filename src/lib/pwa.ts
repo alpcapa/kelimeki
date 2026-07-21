@@ -13,10 +13,23 @@ import { loadGameState } from '../utils/gameStorage';
 // aşağı çekme hareketinin tetiklediği visibilitychange/pageshow olaylarında)
 // devam eden bir oyunu habersizce kesintiye uğratıyordu. Bunun yerine
 // güncellemeyi yalnızca ortada bitmemiş bir oyun yokken (loadGameState null
-// dönüyorsa) uyguluyoruz; oyun sürerken hazır bekleyen güncelleme, oyun
-// bitip bir sonraki kontrolde devreye girer.
+// dönüyorsa) ve bu sayfa bir auth-redirect (ör. şifre sıfırlama) ile
+// açılmamışsa uyguluyoruz; hazır bekleyen güncelleme, o durum ortadan
+// kalkınca (oyun biter/sayfa normal şekilde tekrar açılır) bir sonraki
+// kontrolde devreye girer.
 export function setupPwaUpdates(): void {
   if (!('serviceWorker' in navigator)) return;
+
+  // Şifre sıfırlama/magic link gibi implicit-akış bağlantıları access_token'ı
+  // URL hash'inde taşır; Supabase istemcisi bunu işleyip PASSWORD_RECOVERY
+  // olayını tetikledikten sonra hash'i temizler. Bu satır sayfa yüklenir
+  // yüklenmez, o işlemden önce senkron olarak okunur. Böyle bir bağlantıyla
+  // açılmışsa bu sayfa görüntülemesi boyunca güncellemeyi otomatik
+  // uygulamıyoruz — aksi halde, tam Supabase oturumu/PASSWORD_RECOVERY'yi
+  // işleyip "yeni şifre belirle" ekranını gösterdiği sırada gelen "yeni sürüm
+  // hazır" reload'u sayfayı sıfırlıyor, kullanıcı ekranı bir anlığına görüp
+  // hemen normal girişe düşüyordu.
+  const isAuthRedirect = window.location.hash.includes('access_token=');
 
   let registration: ServiceWorkerRegistration | undefined;
   let applyUpdate: (() => void) | null = null;
@@ -33,7 +46,7 @@ export function setupPwaUpdates(): void {
   });
 
   const tryApplyUpdate = () => {
-    if (!applyUpdate || loadGameState()) return;
+    if (!applyUpdate || isAuthRedirect || loadGameState()) return;
     const apply = applyUpdate;
     applyUpdate = null;
     apply();
