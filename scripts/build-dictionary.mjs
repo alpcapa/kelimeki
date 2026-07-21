@@ -40,6 +40,7 @@ import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { PROPER_NOUNS } from './proper-nouns.mjs';
 import { EXTRA_MEANINGS } from './extra-meanings.mjs';
+import { PROTECTED_WORDS } from './protected-words.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -176,6 +177,16 @@ for (const [word, meaning] of Object.entries(EXTRA_MEANINGS)) {
     if (!existing.meanings.includes(meaning)) existing.meanings.push(meaning);
   } else {
     dict.set(word, { pos: null, meanings: [meaning] });
+  }
+}
+
+// Upstream GTS zaman içinde madde kaldırabiliyor/değiştirebiliyor (bkz.
+// protected-words.mjs başlığı — 21 Temmuz 2026'da 159 kelimede tespit edildi).
+// GTS'te artık bulunmayan bu kelimeleri burada saklanan verilerle geri
+// ekliyoruz; GTS'te zaten varsa (güncel TDK verisi) dokunmuyoruz.
+for (const [word, entry] of Object.entries(PROTECTED_WORDS)) {
+  if (!dict.has(word)) {
+    dict.set(word, { pos: entry.pos, meanings: entry.meanings });
   }
 }
 
