@@ -747,7 +747,7 @@ export default function App() {
 
       <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
         <div
-          className={`text-[11px] font-mono text-center min-h-[15px] py-0.5 ${
+          className={`text-[11px] font-mono font-bold text-center min-h-[15px] py-0.5 ${
             MESSAGE_COLORS[liveMessageType]
           }`}
         >
