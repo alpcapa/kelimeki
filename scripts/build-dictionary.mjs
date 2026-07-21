@@ -5,10 +5,10 @@
 //
 // Bu betik, 99.236 maddelik NDJSON sözlük dökümünü alıp Kelimeki'nin
 // oynanabilir kelime kümesine indirger ve şu çıktıları üretir.
-// Çok sözcüklü maddeler boşlukları kaldırılarak tek tokena birleştirilir
-// ("dulavrat otu" -> "dulavratotu"); ardından yalnızca Türk alfabesi
-// harfleri içeren, 2–25 harfli tokenlar tutulur (noktalama/şapkalı ünlü
-// içeren atasözü vb. maddeler birleştirme sonrası da elenir).
+// Çok sözcüklü maddeler ("dulavrat otu", "bir de" gibi deyim/atasözleri)
+// tamamen elenir; şapkalı ünlüler (â, î, û) taş harfine indirgenir (â→a,
+// î→i, û→ü — bkz. stripCircumflex); ardından yalnızca Türk alfabesi
+// harfleri içeren, 2–25 harfli tokenlar tutulur.
 //
 // TDK'nin coğrafi/özel ad kapsamı eksiktir (Atina, Paris, Türkiye gibi çoğu
 // ülke/başkent/dil adı GTS'te yok); bu eksik dünya ülkeleri, başkentleri,
@@ -40,6 +40,7 @@ import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { PROPER_NOUNS } from './proper-nouns.mjs';
 import { EXTRA_MEANINGS } from './extra-meanings.mjs';
+import { PROTECTED_WORDS } from './protected-words.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -60,6 +61,17 @@ const ALLOWED = new Set('abcçdefgğhıijklmnoöprsştuüvyz');
 // Türkçe küçük harfe çevirme (I→ı, İ→i kuralı).
 function trLower(s) {
   return s.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
+}
+
+// Şapkalı ünlüler (â, î, û) Türk alfabesinde ayrı bir harf değildir — TDK'nin
+// bazı Arapça/Farsça kökenli maddelerde uzunluk/incelik belirtmek için
+// kullandığı bir yazım işaretidir; günlük kullanımda ve kelimeki taşlarında
+// karşılığı yoktur. Oyunda oynanabilir olmaları için taş harfine indirgenir
+// (â→a, î→i, û→ü). Bu, aynı yazılışa düşen farklı TDK maddelerinin (ör.
+// "hâlâ"/"hala") anlamlarının tek girişte birleşmesine yol açabilir — sözlük
+// zaten homograflar için bu birleştirmeyi yapıyor (aşağıdaki dict.get(word) ile).
+function stripCircumflex(s) {
+  return s.replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'ü');
 }
 
 const dict = new Map(); // kelime -> { pos, meanings: string[] }
@@ -99,7 +111,7 @@ for await (const line of rl) {
     continue;
   }
 
-  const word = trLower(entry.madde || '');
+  const word = stripCircumflex(trLower(entry.madde || ''));
   // Yalnızca oynanabilir harfler + 2–25 uzunluk.
   if (!word || word.length < 2 || word.length > 25) {
     dropped++;
@@ -165,6 +177,16 @@ for (const [word, meaning] of Object.entries(EXTRA_MEANINGS)) {
     if (!existing.meanings.includes(meaning)) existing.meanings.push(meaning);
   } else {
     dict.set(word, { pos: null, meanings: [meaning] });
+  }
+}
+
+// Upstream GTS zaman içinde madde kaldırabiliyor/değiştirebiliyor (bkz.
+// protected-words.mjs başlığı — 21 Temmuz 2026'da 159 kelimede tespit edildi).
+// GTS'te artık bulunmayan bu kelimeleri burada saklanan verilerle geri
+// ekliyoruz; GTS'te zaten varsa (güncel TDK verisi) dokunmuyoruz.
+for (const [word, entry] of Object.entries(PROTECTED_WORDS)) {
+  if (!dict.has(word)) {
+    dict.set(word, { pos: entry.pos, meanings: entry.meanings });
   }
 }
 

@@ -87,7 +87,7 @@ export function FeedbackModal({ onClose }: FeedbackModalProps) {
 
   return (
     <>
-    <Modal title="Görüş Bildir" onClose={onClose}>
+    <Modal title="Görüşleriniz Bizim İçin Önemli" onClose={onClose}>
       {sent ? (
         <div className="flex flex-col items-center gap-3 py-4 text-center">
           <p className="text-sm text-text">Teşekkürler, mesajın bize ulaştı.</p>
