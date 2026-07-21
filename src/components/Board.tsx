@@ -330,8 +330,8 @@ export function Board({
           left: `${(c / SIZE) * 100}%`,
           transform: 'translate(-35%, -35%)',
           background: color,
-          fontSize: 'clamp(8px,2vw,11px)',
-          padding: '3px 6px',
+          fontSize: 'clamp(13px,3.4vw,19px)',
+          padding: '4px 9px',
           boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
         }}
       >
