@@ -12,57 +12,90 @@ const fontPath = join(__dirname, '../node_modules/@fontsource/caveat/files/cavea
 const fontB64 = readFileSync(fontPath).toString('base64');
 const fontDataUri = `data:font/woff2;base64,${fontB64}`;
 
-// The logo HTML exactly mirrors Setup.tsx at a scale that fills a square canvas.
-// We render at 2× (1024px) then downsample for crisp edges.
-const RENDER = 1024;
+// ── App icon: board watermark + "kelimeki" wordmark, as pure SVG ───────────
+// icon.svg is the single source of truth for icon-512/192/apple-touch-icon —
+// they're all rasterized from it (below) so they can never drift apart the
+// way they did before 2026-07-21 (the PNGs carried a watermark, but this
+// script still generated an unrelated single-"k" icon.svg with no watermark
+// at all — re-running it would have silently wiped the watermark out).
+//
+// Text/path layout below (x/y/font-size/letter-spacing/path d) is the exact,
+// already-verified-centred layout from that session — kept as constants
+// instead of re-deriving via screenshot-trim-and-centre.
+const ICON_IMAGE_X = 16.0;
+const ICON_IMAGE_Y = 18.0;
+const ICON_IMAGE_WIDTH = 480;
+const ICON_IMAGE_HEIGHT = 476.0;
+const ICON_TEXT_X = 256;
+const ICON_TEXT_Y = 292;
+const ICON_FONT_SIZE = 148.0;
+const ICON_LETTER_SPACING = 11.4;
+const ICON_PATH_D = 'M125.1 314.0 Q184.8 305.5 256.0 314.0 Q327.1 322.5 386.9 314.0';
+const ICON_PATH_STROKE_WIDTH = 7.1;
 
+// scripts/assets/icon-watermark-source.png is the raw per-pixel-alpha board
+// tile watermark (same source image as Setup.tsx's background wash), alpha
+// un-boosted (max ~8%, tuned for a large background area — at real icon
+// sizes that's indistinguishable from a blank white icon). We boost it here
+// so it actually reads at 60-180px. 4.5x (tried 2026-07-21) made the bottom
+// of the gradient too heavy/dark; 3.2x keeps the top subtle while making the
+// bottom clearly legible without competing with the wordmark.
+const ICON_WATERMARK_BOOST = 3.2;
+
+const watermarkSourcePath = join(__dirname, 'assets/icon-watermark-source.png');
+const watermarkSourceSharp = sharp(watermarkSourcePath).ensureAlpha();
+const { data: wmRaw, info: wmInfo } = await watermarkSourceSharp
+  .raw()
+  .toBuffer({ resolveWithObject: true });
+for (let i = 3; i < wmRaw.length; i += 4) {
+  wmRaw[i] = Math.min(255, Math.round(wmRaw[i] * ICON_WATERMARK_BOOST));
+}
+const watermarkBoostedPng = await sharp(wmRaw, {
+  raw: { width: wmInfo.width, height: wmInfo.height, channels: 4 },
+})
+  .png()
+  .toBuffer();
+const watermarkDataUri = `data:image/png;base64,${watermarkBoostedPng.toString('base64')}`;
+
+const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      @font-face {
+        font-family: 'Caveat';
+        font-style: normal;
+        font-weight: 700;
+        src: url('${fontDataUri}') format('woff2');
+      }
+    </style>
+  </defs>
+  <rect width="512" height="512" fill="#ffffff"/>
+  <image href="${watermarkDataUri}" x="${ICON_IMAGE_X}" y="${ICON_IMAGE_Y}" width="${ICON_IMAGE_WIDTH}" height="${ICON_IMAGE_HEIGHT}" preserveAspectRatio="xMidYMid slice"/>
+  <text
+    x="${ICON_TEXT_X}" y="${ICON_TEXT_Y}"
+    font-family="Caveat, cursive"
+    font-size="${ICON_FONT_SIZE}"
+    font-weight="700"
+    letter-spacing="${ICON_LETTER_SPACING}"
+    fill="#2563EB"
+    text-anchor="middle">kelimeki</text>
+  <path
+    d="${ICON_PATH_D}"
+    stroke="#2563EB"
+    stroke-width="${ICON_PATH_STROKE_WIDTH}"
+    stroke-linecap="round"
+    fill="none"/>
+</svg>`;
+
+writeFileSync(join(__dirname, '../public/icon.svg'), iconSvg);
+console.log('✓ icon.svg (watermark + wordmark, single source for PNG icons)');
+
+// Rasterize icon.svg itself for icon-512/192/apple-touch-icon so they can
+// never drift from it — render at 2× (1024px) then downsample for crisp edges.
+const RENDER = 1024;
 const html = `<!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8"/>
-<style>
-  @font-face {
-    font-family: 'Caveat';
-    font-style: normal;
-    font-weight: 700;
-    src: url('${fontDataUri}') format('woff2');
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    width: ${RENDER}px;
-    height: ${RENDER}px;
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .logo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  .wordmark {
-    font-family: 'Caveat', cursive;
-    font-size: 310px;
-    font-weight: 700;
-    color: #2563EB;
-    letter-spacing: 16px;
-    line-height: 1;
-    /* nudge right to visually compensate for letter-spacing on last char */
-    padding-left: 16px;
-  }
-</style>
-</head>
-<body>
-<div class="logo">
-  <div class="wordmark">kelimeki</div>
-  <svg width="720" height="32" viewBox="0 0 720 32" fill="none">
-    <path d="M16 16 Q180 4 360 16 Q540 28 704 16"
-          stroke="#2563EB" stroke-width="10" stroke-linecap="round" fill="none"/>
-  </svg>
-</div>
-</body>
+<head><meta charset="UTF-8"/><style>* { margin:0; padding:0; } body { width:${RENDER}px; height:${RENDER}px; } svg { width:${RENDER}px; height:${RENDER}px; display:block; }</style></head>
+<body>${iconSvg}</body>
 </html>`;
 
 // Small canvas for favicon — shows just "k" with S-curve underline, same style.
@@ -115,14 +148,14 @@ const faviconHtml = `<!DOCTYPE html>
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 
-// ── Full logo → app icons ───────────────────────────────────────────────────
+// ── icon.svg (watermark + wordmark, already laid out/centred) → app icons ──
 const page = await browser.newPage();
 await page.setViewportSize({ width: RENDER, height: RENDER });
 await page.setContent(html, { waitUntil: 'networkidle' });
 await page.waitForTimeout(200);
 const screenshot = await page.screenshot({ type: 'png' });
 
-// ── "h" logo → favicon ─────────────────────────────────────────────────────
+// ── "k" logo → favicon ─────────────────────────────────────────────────────
 const faviconPage = await browser.newPage();
 await faviconPage.setViewportSize({ width: FAVICON_RENDER, height: FAVICON_RENDER });
 await faviconPage.setContent(faviconHtml, { waitUntil: 'networkidle' });
@@ -131,27 +164,6 @@ const faviconScreenshot = await faviconPage.screenshot({ type: 'png' });
 
 await browser.close();
 
-// Trim the white canvas to the exact content bounds, then extend with
-// equal padding on all four sides so the logo is perfectly centred.
-const ICON_PADDING = 56; // px padding at 512px output
-
-const trimmedPng = await sharp(screenshot)
-  .trim({ background: '#ffffff', threshold: 10 })
-  .png()
-  .toBuffer();
-
-const { width: tw, height: th } = await sharp(trimmedPng).metadata();
-const inner = Math.max(tw, th);
-const canvas = inner + ICON_PADDING * 2;
-const left = Math.round((canvas - tw) / 2);
-const top  = Math.round((canvas - th) / 2);
-
-const centred = await sharp(trimmedPng)
-  .extend({ top, bottom: canvas - th - top, left, right: canvas - tw - left,
-            background: { r: 255, g: 255, b: 255, alpha: 1 } })
-  .png()
-  .toBuffer();
-
 const targets = [
   { size: 512, name: 'icon-512.png' },
   { size: 192, name: 'icon-192.png' },
@@ -159,7 +171,7 @@ const targets = [
 ];
 
 for (const { size, name } of targets) {
-  await sharp(centred)
+  await sharp(screenshot)
     .resize(size, size, { kernel: 'lanczos3' })
     .png()
     .toFile(join(__dirname, '../public', name));
@@ -224,34 +236,3 @@ const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100
 
 writeFileSync(join(__dirname, '../public/favicon.svg'), faviconSvg);
 console.log('✓ favicon.svg (with embedded Caveat font)');
-
-// Also update icon.svg to match (used as the source SVG reference).
-const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <style>
-      @font-face {
-        font-family: 'Caveat';
-        font-style: normal;
-        font-weight: 700;
-        src: url('${fontDataUri}') format('woff2');
-      }
-    </style>
-  </defs>
-  <rect width="512" height="512" fill="#ffffff"/>
-  <text
-    x="256" y="392"
-    font-family="Caveat, cursive"
-    font-size="360"
-    font-weight="700"
-    fill="#2563EB"
-    text-anchor="middle">k</text>
-  <path
-    d="M90 430 Q173 420 256 430 Q339 440 422 430"
-    stroke="#2563EB"
-    stroke-width="14"
-    stroke-linecap="round"
-    fill="none"/>
-</svg>`;
-
-writeFileSync(join(__dirname, '../public/icon.svg'), iconSvg);
-console.log('✓ icon.svg (updated S-curve weight and position)');
