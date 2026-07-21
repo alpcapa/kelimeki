@@ -117,7 +117,15 @@ export function Setup({ onStart }: SetupProps) {
       </div>
     )}
 
-    <div className="w-full max-w-[460px] px-4 py-6 flex flex-col gap-5">
+    <div
+      className="w-full max-w-[460px] px-4 py-6 flex flex-col gap-5"
+      style={{
+        backgroundImage: "url('/setup-bg-watermark.png')",
+        backgroundSize: '480px auto',
+        backgroundPosition: 'center 76px',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
       <div className="text-center flex flex-col items-center gap-1 -mt-3">
         <h1 style={{ fontFamily: "'Caveat', cursive", fontSize: 52, fontWeight: 700, color: '#2563EB', letterSpacing: 4, lineHeight: 1, margin: 0 }}>
           kelimeki

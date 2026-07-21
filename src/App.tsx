@@ -453,15 +453,7 @@ export default function App() {
   // ── Kurulum ekranı ─────────────────────────────────────────────────────────
   if (state.phase === 'setup') {
     return (
-      <div
-        className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden"
-        style={{
-          backgroundImage: "url('/setup-bg-watermark.png')",
-          backgroundSize: '480px auto',
-          backgroundPosition: 'center 88px',
-          backgroundRepeat: 'no-repeat',
-        }}
-      >
+      <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
         <div className="w-full max-w-[460px] flex items-center justify-end px-3.5 pt-3">
           <UserMenu />
         </div>
