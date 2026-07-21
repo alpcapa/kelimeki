@@ -1,5 +1,6 @@
 // Kelimeki — oyun kurulum ekranı: oyuncu sayısı (2/4) seçimi
 import { useEffect, useState } from 'react';
+import { SETUP_BG_WATERMARK_URL } from '../assets/setupBgWatermark';
 import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
 import { useAuth } from '../hooks/useAuth';
@@ -19,12 +20,15 @@ interface SetupProps {
 }
 
 export function Setup({ onStart }: SetupProps) {
-  const { user, profile, loading } = useAuth();
-  // Oturum açıldıysa 1. oyuncu her zaman hesap sahibidir.
+  const { user, profile, loading, profileLoading } = useAuth();
+  // Oturum açıldıysa 1. oyuncu her zaman hesap sahibidir. Profil henüz
+  // çekilmediyse (profileLoading) e-posta önekine düşmüyoruz — aksi halde
+  // sayfa her açılışta profil gelene kadar bir anlık yanlış/geçici bir isim
+  // (ör. "alp.capa") gösterip hemen gerçek takma adla değişiyordu.
   const accountName =
     profile?.display_name ||
     profile?.first_name ||
-    (user?.email ? user.email.split('@')[0] : null);
+    (user?.email && !profileLoading ? user.email.split('@')[0] : null);
 
   const [count, setCount] = useState<2 | 4>(2);
 
@@ -120,7 +124,7 @@ export function Setup({ onStart }: SetupProps) {
     <div
       className="w-full max-w-[460px] px-4 py-6 flex flex-col gap-5"
       style={{
-        backgroundImage: "url('/setup-bg-watermark.webp')",
+        backgroundImage: `url('${SETUP_BG_WATERMARK_URL}')`,
         backgroundSize: '480px auto',
         backgroundPosition: 'center 76px',
         backgroundRepeat: 'no-repeat',

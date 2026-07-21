@@ -50,7 +50,7 @@ const MESSAGE_COLORS: Record<string, string> = {
 };
 
 export default function App() {
-  const { user, profile, passwordRecovery, clearPasswordRecovery } = useAuth();
+  const { user, profile, profileLoading, passwordRecovery, clearPasswordRecovery } = useAuth();
   const [state, dispatch] = useReducer(
     gameReducer,
     undefined,
@@ -375,13 +375,13 @@ export default function App() {
     const accountName =
       profile?.display_name ||
       profile?.first_name ||
-      (user?.email ? user.email.split('@')[0] : null);
+      (user?.email && !profileLoading ? user.email.split('@')[0] : null);
     if (!accountName) return;
     const p0 = state.players[0];
     if (p0 && !p0.isAI && p0.name !== accountName) {
       dispatch({ type: 'RENAME_PLAYER', index: 0, name: accountName });
     }
-  }, [user, profile, state.phase]);
+  }, [user, profile, profileLoading, state.phase]);
 
   // YZ sırası: kısa bir düşünme gecikmesiyle otomatik oyna.
   const aiTurn =
