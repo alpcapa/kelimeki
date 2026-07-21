@@ -6,6 +6,10 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- Logo fontu (Caveat) mümkün olduğunca erken indirilsin diye önden
+         yükleniyor — src/fonts/caveat-logo.css'teki @font-face ile aynı
+         sabit yolu (hash'siz) kullanıyor, yoksa preload boşa gider. -->
+    <link rel="preload" href="/fonts/caveat-700.woff2" as="font" type="font/woff2" crossorigin />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
