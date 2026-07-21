@@ -111,7 +111,7 @@ function seatIndexFor(p: GamePlayerSnapshot, positionIndex: number, isSnapshot: 
 }
 
 export function GameHistoryModal({ playerCount, onClose, userId, title }: GameHistoryModalProps) {
-  const { user, profile } = useAuth();
+  const { user, profile, profileLoading } = useAuth();
   // Her oyunun `players` jsonb'si o oyun bittiği andaki ismi donmuş halde
   // tutar — takma adını sonradan değiştirsen eski kayıtlar güncellenmez.
   // Kendi satırını (meIndex) burada donmuş isim yerine her zaman GÜNCEL
@@ -123,7 +123,7 @@ export function GameHistoryModal({ playerCount, onClose, userId, title }: GameHi
     ? null
     : profile?.display_name ||
       profile?.first_name ||
-      (user?.email ? user.email.split('@')[0] : null) ||
+      (user?.email && !profileLoading ? user.email.split('@')[0] : null) ||
       'Sen';
   const [games, setGames] = useState<GameHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);

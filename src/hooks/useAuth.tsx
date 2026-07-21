@@ -15,6 +15,11 @@ interface AuthContextValue {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  /** user set ama profili henüz (ilk kez) çekilmedi — display_name/first_name
+   *  henüz güvenilir değil, bu sırada e-posta gibi geçici yer tutuculara
+   *  düşülmemeli (aksi halde profil gelene kadar bir anlık yanlış isim
+   *  görünür). */
+  profileLoading: boolean;
   /** Supabase anahtarları ayarlı mı? */
   configured: boolean;
   /** Şifre sıfırlama bağlantısı tıklanıp bu sekmede recovery oturumu açıldı mı? */
@@ -28,6 +33,7 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   profile: null,
   loading: true,
+  profileLoading: true,
   configured: false,
   passwordRecovery: false,
   clearPasswordRecovery: () => {},
@@ -38,38 +44,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   useEffect(() => {
     if (!supabase) {
       setLoading(false);
+      setProfileLoading(false);
       return;
     }
+
+    // `user` state'ini set eden yer ile profil çekimini başlatan yer ayrı
+    // efektler olursa, arada `user` dolu ama `profileLoading` henüz eski
+    // (false) değerinde olan bir render anı oluşur — tam o anda Setup vb.
+    // ekranlar profil yokmuş gibi e-posta öneki gibi geçici bir isme düşer.
+    // Bunu önlemek için ikisini burada, aynı callback içinde (aynı state
+    // batch'inde) birlikte güncelliyoruz.
+    let currentUserId: string | null = null;
+    const applyUser = (u: User | null) => {
+      setUser(u);
+      if (u?.id === currentUserId) return;
+      currentUserId = u?.id ?? null;
+      if (u) {
+        setProfileLoading(true);
+        fetchMyProfile().then((p) => {
+          if (currentUserId === u.id) {
+            setProfile(p);
+            setProfileLoading(false);
+          }
+        });
+      } else {
+        setProfile(null);
+        setProfileLoading(false);
+      }
+    };
+
     supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
+      applyUser(data.session?.user ?? null);
       setLoading(false);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
+      applyUser(session?.user ?? null);
       if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
-
-  // Kullanıcı değişince profilini çek.
-  useEffect(() => {
-    let active = true;
-    if (user) {
-      fetchMyProfile().then((p) => {
-        if (active) setProfile(p);
-      });
-    } else {
-      setProfile(null);
-    }
-    return () => {
-      active = false;
-    };
-  }, [user]);
 
   const refreshProfile = async () => {
     if (user) setProfile(await fetchMyProfile());
@@ -81,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         profile,
         loading,
+        profileLoading,
         configured: isSupabaseConfigured,
         passwordRecovery,
         clearPasswordRecovery: () => setPasswordRecovery(false),
