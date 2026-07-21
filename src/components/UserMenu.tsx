@@ -17,7 +17,7 @@ import { AdminDashboard } from './AdminDashboard';
 type ActiveModal = 'auth' | 'account' | 'score' | 'help' | 'league' | 'admin' | null;
 
 export function UserMenu() {
-  const { user, profile, configured, loading } = useAuth();
+  const { user, profile, configured, loading, profileLoading } = useAuth();
   const [open, setOpen] = useState(false);
   const [modal, setModal] = useState<ActiveModal>(null);
   const [myRank, setMyRank] = useState<MyLeaderboardRank | null>(null);
@@ -46,12 +46,16 @@ export function UserMenu() {
 
   if (!configured) return null;
 
+  // Profil henüz (ilk kez) çekilmediyse e-postaya düşmüyoruz — aksi halde
+  // profil gelene kadar bir anlık e-posta bazlı baş harflere (ör. "AC")
+  // düşüp hemen gerçek takma adın baş harfleriyle (ör. "AL") değişiyordu.
   const name =
     profile?.display_name ||
     profile?.username ||
     [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() ||
-    user?.email ||
+    (user?.email && !profileLoading ? user.email : null) ||
     'Hesabım';
+  const identityLoading = loading || (!!user && profileLoading);
 
   // ── Oturum yok: Giriş / Kayıt düğmesi ──────────────────────────────────────
   if (!loading && !user) {
@@ -80,7 +84,7 @@ export function UserMenu() {
           aria-expanded={open}
           className="rounded-full active:scale-95 transition-transform ring-offset-2 focus:outline-none"
         >
-          {loading ? (
+          {identityLoading ? (
             <span className="w-8 h-8 rounded-full bg-panel border border-border flex items-center justify-center text-muted text-[10px] font-mono">
               …
             </span>

@@ -29,6 +29,14 @@ export function Setup({ onStart }: SetupProps) {
     profile?.display_name ||
     profile?.first_name ||
     (user?.email && !profileLoading ? user.email.split('@')[0] : null);
+  // Oturum var ama profil henüz gelmediyse (profileLoading) accountName
+  // hâlâ null'dur — bu durumda 1. oyuncu satırını "Misafir" olarak
+  // göstermek de yanlış: oturum açık biri için bir anlığına "Misafir" yazıp
+  // hemen gerçek takma adla değişmek, tıpkı eski e-posta önekine düşme
+  // hatası gibi kafa karıştırıcı bir kimlik değişimi izlenimi veriyordu.
+  // Bu yüzden bu ara durumu ayrı, nötr bir "yükleniyor" hâli olarak ele
+  // alıyoruz.
+  const accountPending = !!user && !accountName;
 
   const [count, setCount] = useState<2 | 4>(2);
 
@@ -181,6 +189,7 @@ export function Setup({ onStart }: SetupProps) {
           const col = PLAYER_COLORS[i];
           // 1. oyuncu giriş yapan hesaptır: kilitli isim + avatar, YZ olamaz.
           const isAccount = i === 0 && !!accountName;
+          const isPending = i === 0 && accountPending;
           return (
             <div
               key={i}
@@ -194,6 +203,8 @@ export function Setup({ onStart }: SetupProps) {
                   size={20}
                   className="shrink-0"
                 />
+              ) : isPending ? (
+                <span className="w-5 h-5 rounded-full bg-panel border border-border shrink-0 animate-pulse" />
               ) : (
                 <PlayerBadge index={i} />
               )}
@@ -204,6 +215,10 @@ export function Setup({ onStart }: SetupProps) {
                   {accountTotalScore !== undefined && (
                     <span className="font-mono font-normal text-muted"> ({accountTotalScore})</span>
                   )}
+                </span>
+              ) : isPending ? (
+                <span className="flex-1 min-w-0 font-sans text-sm font-bold text-muted truncate animate-pulse">
+                  Yükleniyor…
                 </span>
               ) : (
                 <span className="flex-1 min-w-0 font-sans text-sm font-bold text-text truncate">
