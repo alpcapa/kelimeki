@@ -1,5 +1,6 @@
 // Kelimeki — oyun kurulum ekranı: oyuncu sayısı (2/4) seçimi
 import { useEffect, useState } from 'react';
+import { SETUP_BG_WATERMARK_URL } from '../assets/setupBgWatermark';
 import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
 import { useAuth } from '../hooks/useAuth';
@@ -123,7 +124,7 @@ export function Setup({ onStart }: SetupProps) {
     <div
       className="w-full max-w-[460px] px-4 py-6 flex flex-col gap-5"
       style={{
-        backgroundImage: "url('/setup-bg-watermark.webp')",
+        backgroundImage: `url('${SETUP_BG_WATERMARK_URL}')`,
         backgroundSize: '480px auto',
         backgroundPosition: 'center 76px',
         backgroundRepeat: 'no-repeat',
