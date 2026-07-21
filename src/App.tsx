@@ -458,7 +458,7 @@ export default function App() {
         style={{
           backgroundImage: "url('/setup-bg-watermark.png')",
           backgroundSize: '480px auto',
-          backgroundPosition: 'center 95px',
+          backgroundPosition: 'center 88px',
           backgroundRepeat: 'no-repeat',
         }}
       >
