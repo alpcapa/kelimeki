@@ -19,9 +19,8 @@ import '@fontsource/space-mono/latin-ext-400.css';
 import '@fontsource/space-mono/latin-700.css';
 import '@fontsource/space-mono/latin-ext-700.css';
 // Caveat, @fontsource/caveat/latin(-ext)-700.css yerine kendi
-// font-face'imizden (public/fonts/caveat-700.woff2, sabit/hash'siz yol —
-// index.html'deki <link rel="preload"> ile eşleşmesi için) yükleniyor;
-// bkz. dosya içi yorum.
+// font-face'imizden (base64 gömülü, ayrı ağ isteği yok — bkz. dosya içi
+// yorum) yükleniyor.
 import './fonts/caveat-logo.css';
 import './fonts/nunito-tile.css';
 
