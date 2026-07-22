@@ -5,10 +5,12 @@
 // kayıtlarının aksine (bkz. gameSync.ts) bir oturum beklemez: anonim geri
 // bildirim RLS tarafından zaten serbest (`feedback_insert_any`).
 import { submitFeedback } from '../lib/api';
+import type { FeedbackSource } from '../lib/database.types';
 
 interface PendingFeedback {
   message: string;
   email: string | null;
+  source: FeedbackSource;
   created_at: string;
 }
 
@@ -32,7 +34,9 @@ function readQueue(): PendingFeedback[] {
       return !Number.isFinite(createdAt) || now - createdAt <= PENDING_EXPIRY_MS;
     });
     if (fresh.length !== parsed.length) writeQueue(fresh);
-    return fresh;
+    // Rebrand öncesi kuyruklanmış eski kayıtlarda `source` yoktu — o zaman
+    // tek form (oyun sonu) vardı, bu yüzden geriye dönük varsayılan 'game_end'.
+    return fresh.map((f) => ({ ...f, source: f.source ?? 'game_end' }));
   } catch {
     return [];
   }
@@ -57,7 +61,7 @@ function enqueue(item: PendingFeedback): void {
 async function trySubmit(item: PendingFeedback): Promise<boolean> {
   if (!navigator.onLine) return false;
   try {
-    await submitFeedback(item.message, item.email ?? undefined);
+    await submitFeedback(item.message, item.email ?? undefined, item.source);
     return true;
   } catch {
     return false;
@@ -69,10 +73,15 @@ async function trySubmit(item: PendingFeedback): Promise<boolean> {
  * (offline, ağ hatası, Supabase yapılandırılmamış) bağlantı geri gelince
  * tekrar denenmek üzere kuyruğa eklenir — kullanıcı mesajını asla kaybetmez.
  */
-export async function submitFeedbackDurable(message: string, email?: string): Promise<void> {
+export async function submitFeedbackDurable(
+  message: string,
+  email: string | undefined,
+  source: FeedbackSource,
+): Promise<void> {
   const item: PendingFeedback = {
     message,
     email: email?.trim() || null,
+    source,
     created_at: new Date().toISOString(),
   };
   const ok = await trySubmit(item);
