@@ -132,7 +132,7 @@ export function PrivacyModal({ onClose }: PrivacyModalProps) {
         </Section>
       </div>
     </Modal>
-    {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
+    {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} source="general" />}
     </>
   );
 }
