@@ -256,8 +256,17 @@ export function computeTerritory(board: Board, ownCorners: number[], owner: numb
  * hücreleri asıl sahibinin bölgesinden gerçekten düşürür.
  */
 export function computeAllTerritories(board: Board, players: Player[]): Set<string>[] {
-  const chains = players.map((p, i) => computeConqueredChain(board, p.corners, i));
+  // Teslim olmuş bir oyuncunun zinciri boş sayılır — hem kendi bölgesi
+  // (aşağıda erken dönüş) hem de daha önce başkasından fethettiği hücreler
+  // artık kimseyi "yakalamıyor", bu yüzden o hücreler orijinal sahibinin
+  // taban iddiasına geri döner. Sonuç: teslim olan oyuncunun tüm bölgesi
+  // (kendi köşesi dahil) doğal/sahipsiz alana dönüşür — kimse ona bölge
+  // vergisi ödemez, dış hat çizgisi de kalkar (bkz. Board.tsx).
+  const chains = players.map((p, i) =>
+    p.surrendered ? new Set<string>() : computeConqueredChain(board, p.corners, i),
+  );
   return players.map((p, i) => {
+    if (p.surrendered) return new Set<string>();
     const territory = new Set(chains[i]);
     for (const corner of p.corners) {
       const b = cornerBounds(corner);
