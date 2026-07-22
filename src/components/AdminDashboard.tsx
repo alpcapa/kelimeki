@@ -486,14 +486,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         data={gameActivity}
                         granularity={gameGranularity}
                         series={GAME_COUNT_SERIES}
-                        defaultActiveKeys={['games_finished', 'games_abandoned']}
+                        defaultActiveKeys={['games_finished_same_session']}
                         controls={<span className={sectionTitleCls}>Oyun Sayısı</span>}
                       />
                       <GrowthChart
                         data={gameActivity}
                         granularity={gameGranularity}
                         series={DURATION_SERIES}
-                        defaultActiveKeys={['avg_duration_seconds']}
+                        defaultActiveKeys={['avg_duration_same_session_seconds']}
                         formatValue={formatDuration}
                         controls={<span className={sectionTitleCls}>Ortalama Oyun Süresi</span>}
                       />
