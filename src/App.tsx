@@ -944,7 +944,7 @@ export default function App() {
                 : !user || (exitTargetIndex === 0 && !gameStarted)
                   ? 'Bu oyundan çıkmak istediğine emin misin?'
                   : exitTargetIndex === 0
-                    ? `Emin misin? Teslim olursan oyun bu şekilde kaydedilir ve Sanal Lig puanından 2 puan düşülür.${othersWillContinue ? ' Diğer oyuncular oyuna devam edebilir.' : ''}`
+                    ? 'Emin misin? Teslim olursan oyun bu şekilde kaydedilir ve Sanal Lig puanından 2 puan düşülür.'
                     : `${exitTargetPlayer.name} teslim olmak istediğine emin misin?${othersWillContinue ? ' Oyuna diğer oyuncular devam edebilir.' : ''}`}
             </p>
             <div className="flex gap-2 mt-1">
