@@ -64,13 +64,19 @@ export async function saveGame(game: NewGame): Promise<string | null> {
  * oyunun normal biçimde bitmediğini, 7 gün hareketsizlik sonrası terk
  * edilmiş sayılıp silindiğini belirtir (bkz. `gameStorage.ts`
  * `takePendingAbandonedGame`) — admin panelinin Büyüme grafiği bu iki
- * durumu ayrı gösterir.
+ * durumu ayrı gösterir. `endedBySurrender`, `GameState.endReason ===
+ * 'surrender'`'dan gelir — bir/birden fazla oyuncunun teslim olmasıyla
+ * aktif oyuncu sayısı 1'e düşüp oyunun aniden bitmesi; bu tür oyunlar
+ * `completed=true` olsa da "Bitirilen" sayısına/ortalama süresine değil
+ * ayrı bir "Teslim" serisine dahil edilir (teslim genelde saniyeler içinde
+ * geldiğinden gerçek oyun süresini yansıtmaz).
  */
 export async function logGameFinish(
   playerCount: number,
   durationSeconds: number,
   multiSession: boolean,
   completed = true,
+  endedBySurrender = false,
 ): Promise<void> {
   if (!supabase) return;
   const {
@@ -85,6 +91,7 @@ export async function logGameFinish(
       duration_seconds: durationSeconds,
       multi_session: multiSession,
       completed,
+      ended_by_surrender: endedBySurrender,
     });
   if (error) {
     console.error('[Kelimeki] logGameFinish hatası:', error.message);

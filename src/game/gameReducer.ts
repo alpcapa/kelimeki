@@ -57,6 +57,7 @@ export function createInitialState(): GameState {
     phase: 'setup',
     startedAt: '',
     multiSession: false,
+    endReason: 'normal',
     board: createEmptyBoard(),
     bag: [],
     bonuses: {},
@@ -105,6 +106,7 @@ function startGame(setup: PlayerSetup[]): GameState {
     phase: 'play',
     startedAt: new Date().toISOString(),
     multiSession: false,
+    endReason: 'normal',
     board: createEmptyBoard(),
     bag,
     bonuses: buildInitialBonuses(),
@@ -139,7 +141,7 @@ export function isFirstMove(state: GameState): boolean {
  * tamamen bitiren oyuncuya diğerlerinin kalan taş puanları eklenmez —
  * sadece kalan taşı olan oyuncuların puanından düşülür.
  */
-function endGame(state: GameState): GameState {
+function endGame(state: GameState, reason: GameState['endReason'] = 'normal'): GameState {
   const remaining = (p: Player) => p.rack.reduce((s, t) => s + t.pts, 0);
 
   const players = state.players.map((p) => {
@@ -150,6 +152,7 @@ function endGame(state: GameState): GameState {
     ...state,
     players,
     isGameOver: true,
+    endReason: reason,
     message: 'Oyun bitti.',
     messageType: '',
   };
@@ -776,7 +779,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
 
       // Yalnızca 1 oyuncu kalırsa oyun biter — o oyuncu kazanır.
       if (activePlayerCount(players) <= 1) {
-        return endGame(withSurrender);
+        return endGame(withSurrender, 'surrender');
       }
       // Teslim olan sıradaki oyuncuysa, sırayı bir sonraki (teslim olmamış)
       // oyuncuya geçir; değilse mevcut sıraya dokunma.
