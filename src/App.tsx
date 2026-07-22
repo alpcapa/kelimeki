@@ -217,61 +217,6 @@ export default function App() {
     };
   }, []);
 
-  // Oyun ekranında bir modal açık değilken tepeden aşağı çekme (mobil
-  // tarayıcının "aşağı çek → yenile/anasayfaya dön" hareketi) sayfayı
-  // yenilemek yerine logoya tıklamışçasına çıkış onayını açar — yoksa oyun
-  // durumu kaybolup kullanıcı habersizce anasayfaya düşüyordu.
-  const anyModalOpen =
-    !!meaning || showTiles || showHistory || !!pendingWild || showExitConfirm || !!invasionConfirm ||
-    showPassConfirm || showPostStartTutorial;
-  const anyModalOpenRef = useRef(anyModalOpen);
-  anyModalOpenRef.current = anyModalOpen;
-
-  useEffect(() => {
-    if (state.phase !== 'play') return;
-    let startY = 0;
-    let tracking = false;
-    let triggered = false;
-
-    const onTouchStart = (e: TouchEvent) => {
-      triggered = false;
-      if (dragRef.current || anyModalOpenRef.current) {
-        tracking = false;
-        return;
-      }
-      const scrollTop = document.getElementById('root')?.scrollTop ?? 0;
-      tracking = scrollTop <= 0;
-      startY = e.touches[0].clientY;
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!tracking || dragRef.current || anyModalOpenRef.current) return;
-      const deltaY = e.touches[0].clientY - startY;
-      if (deltaY <= 0) return;
-      e.preventDefault();
-      if (deltaY > 70) triggered = true;
-    };
-
-    const onTouchEnd = () => {
-      tracking = false;
-      if (triggered) {
-        triggered = false;
-        setShowExitConfirm(true);
-      }
-    };
-
-    document.addEventListener('touchstart', onTouchStart, { passive: true });
-    document.addEventListener('touchmove', onTouchMove, { passive: false });
-    document.addEventListener('touchend', onTouchEnd);
-    document.addEventListener('touchcancel', onTouchEnd);
-    return () => {
-      document.removeEventListener('touchstart', onTouchStart);
-      document.removeEventListener('touchmove', onTouchMove);
-      document.removeEventListener('touchend', onTouchEnd);
-      document.removeEventListener('touchcancel', onTouchEnd);
-    };
-  }, [state.phase]);
-
   const openMeaning = (words: string[]) => {
     const unique = [...new Set(words)];
     if (unique.length === 0) return;
