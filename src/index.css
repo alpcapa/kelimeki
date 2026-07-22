@@ -96,26 +96,45 @@
   body {
     margin: 0;
     padding: 0;
-    /* Tepeden aşağı çekince tarayıcının sayfayı yenilemesini/anasayfaya
-       dönmesini engeller — bu hareket App.tsx'te JS ile yakalanıp oyun
+    /* html/body'nin kendisi hiçbir zaman kaydırılamaz/zıplayamaz hale
+       getirilir (position: fixed + overflow: hidden) — asıl kaydırma
+       #root içine taşınır (aşağıda). Bunun tek nedeni: iOS'ta (özellikle
+       ana ekrana eklenmiş standalone modda) tepeden sert bir aşağı çekiş,
+       `overscroll-behavior` desteklenmese/yetersiz kalsa bile belge
+       seviyesinde bir "zıplama" olmadığı sürece tarayıcının sayfayı
+       yenilemesine/anasayfaya dönmesine yol açamıyor. Bu çekiş hareketi
+       App.tsx'te JS ile #root'un scrollTop'ı üzerinden yakalanıp oyun
        sırasında logo tıklamasıyla aynı çıkış onayına yönlendirilir. */
-    overscroll-behavior-y: contain;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   body {
+    position: fixed;
+    inset: 0;
     background: theme('colors.bg');
     color: theme('colors.text');
     font-family: theme('fontFamily.sans');
-    min-height: 100dvh;
     /* Mobil: dokunmayla istemsiz kaydırma/zoom'u engelle. */
     touch-action: manipulation;
-    overflow-x: hidden;
   }
 
   #root {
-    min-height: 100dvh;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+
+  /* #root artık sabit yükseklikte (viewport) bir flex konteyner — flex-shrink
+     varsayılanı (1) olmasa, içeriği viewport'tan uzun sayfalar (ör. 4
+     oyunculu kurulum ekranı) doğal yüksekliğine değil #root'un boyuna
+     sıkıştırılır, taşan kısım kaydırılamadan kırpılırdı. */
+  #root > * {
+    flex-shrink: 0;
   }
 }
