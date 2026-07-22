@@ -512,12 +512,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted">
-                          <span className="truncate flex items-center gap-1.5">
+                          <span className="truncate min-w-0 flex-1">
                             {senderLabel}
                             {sender && f.email ? ` · ${f.email}` : ''}
-                            <span className="shrink-0 px-1.5 py-0.5 rounded bg-panel border border-border text-[9px] uppercase tracking-[0.5px]">
-                              {f.source === 'game_end' ? 'Oyun Sonu' : 'Genel'}
-                            </span>
+                          </span>
+                          <span className="shrink-0 px-1.5 py-0.5 rounded bg-panel border border-border text-[9px] uppercase tracking-[0.5px]">
+                            {f.source === 'game_end' ? 'Oyun Sonu' : 'Genel'}
                           </span>
                           <span className="shrink-0">{fmtDate(f.created_at)}</span>
                         </div>
