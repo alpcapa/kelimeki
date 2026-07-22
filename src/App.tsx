@@ -239,7 +239,7 @@ export default function App() {
         tracking = false;
         return;
       }
-      const scrollTop = document.scrollingElement?.scrollTop ?? 0;
+      const scrollTop = document.getElementById('root')?.scrollTop ?? 0;
       tracking = scrollTop <= 0;
       startY = e.touches[0].clientY;
     };
