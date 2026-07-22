@@ -169,6 +169,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [feedback, setFeedback] = useState<AdminFeedbackRow[] | null>(null);
   const [feedbackSourceFilter, setFeedbackSourceFilter] = useState<'all' | FeedbackSource>('all');
+  const [feedbackToDelete, setFeedbackToDelete] = useState<AdminFeedbackRow | null>(null);
 
   useEffect(() => {
     fetchAdminMembers()
@@ -269,8 +270,10 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     void markFeedbackHandled(f.id, next);
   }
 
-  function removeFeedback(f: AdminFeedbackRow) {
-    if (!window.confirm('Bu geri bildirimi silmek istediğine emin misin?')) return;
+  function confirmRemoveFeedback() {
+    const f = feedbackToDelete;
+    if (!f) return;
+    setFeedbackToDelete(null);
     setFeedback((prev) => prev?.filter((x) => x.id !== f.id) ?? prev);
     deleteFeedback(f.id).catch((e) => setError(String(e)));
   }
@@ -553,7 +556,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                             {f.handled ? 'Okunmadı işaretle' : 'Okundu işaretle'}
                           </button>
                           <button
-                            onClick={() => removeFeedback(f)}
+                            onClick={() => setFeedbackToDelete(f)}
                             aria-label="Sil"
                             title="Sil"
                             className="shrink-0 text-muted hover:text-red transition-colors"
@@ -579,6 +582,34 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
       {selectedMember && (
         <AdminPlayerDetail member={selectedMember} onClose={() => setSelectedMember(null)} />
+      )}
+
+      {feedbackToDelete && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center px-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
+            <p className="text-base font-bold text-text font-sans">Dikkat!</p>
+            <p className="text-sm text-text font-sans leading-relaxed">
+              Bu geri bildirimi silmek istediğine emin misin?
+            </p>
+            <div className="flex gap-2 mt-1">
+              <button
+                onClick={confirmRemoveFeedback}
+                className="btn-raised-red flex-1 py-2.5 rounded-md bg-red text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              >
+                Sil
+              </button>
+              <button
+                onClick={() => setFeedbackToDelete(null)}
+                className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              >
+                Vazgeç
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>,
     document.body,
