@@ -16,6 +16,7 @@ import type {
   AdminGameScope,
   AdminActivityGranularity,
   AdminFeedbackRow,
+  FeedbackSource,
 } from '../lib/database.types';
 import { AdminPlayerDetail } from './AdminPlayerDetail';
 import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
@@ -167,6 +168,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [sortKey, setSortKey] = useState<MemberSortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [feedback, setFeedback] = useState<AdminFeedbackRow[] | null>(null);
+  const [feedbackSourceFilter, setFeedbackSourceFilter] = useState<'all' | FeedbackSource>('all');
 
   useEffect(() => {
     fetchAdminMembers()
@@ -253,6 +255,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     }`;
 
   const unhandledFeedbackCount = feedback?.filter((f) => !f.handled).length ?? 0;
+  const filteredFeedback = useMemo(
+    () =>
+      feedbackSourceFilter === 'all'
+        ? feedback
+        : feedback?.filter((f) => f.source === feedbackSourceFilter) ?? null,
+    [feedback, feedbackSourceFilter],
+  );
 
   function toggleFeedbackHandled(f: AdminFeedbackRow) {
     const next = !f.handled;
@@ -493,15 +502,29 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
           {tab === 'feedback' && (
             <>
+              <select
+                value={feedbackSourceFilter}
+                onChange={(e) => setFeedbackSourceFilter(e.target.value as 'all' | FeedbackSource)}
+                className={selectCls}
+              >
+                <option value="all">Tüm</option>
+                <option value="game_end">Oyun Sonu</option>
+                <option value="general">Genel</option>
+              </select>
+
               {feedback === null ? (
                 <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
               ) : feedback.length === 0 ? (
                 <div className="text-xs font-mono text-muted text-center py-6">
                   Henüz geri bildirim yok.
                 </div>
+              ) : filteredFeedback && filteredFeedback.length === 0 ? (
+                <div className="text-xs font-mono text-muted text-center py-6">
+                  Bu kategoride geri bildirim yok.
+                </div>
               ) : (
                 <div className="flex flex-col gap-2">
-                  {feedback.map((f) => {
+                  {filteredFeedback?.map((f) => {
                     const sender = f.user_id ? members?.find((m) => m.id === f.user_id) : null;
                     const senderLabel = sender ? memberName(sender) : (f.email || 'Anonim');
                     return (
