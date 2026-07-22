@@ -843,9 +843,7 @@ export default function App() {
             <p className="text-base font-bold text-text font-sans">Sınır İhlali!</p>
             <p className="text-sm text-text font-sans leading-relaxed">
               Bu hamleden kazanacağın{' '}
-              <strong className="text-green">
-                {potentialScore - invasionConfirm.reduce((sum, inv) => sum + inv.ownerPts, 0)}
-              </strong>{' '}
+              <strong className="text-green">{potentialScore}</strong>{' '}
               puanın{' '}
               {invasionConfirm.map((inv, i) => (
                 <span key={i}>
