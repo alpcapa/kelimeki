@@ -887,16 +887,21 @@ export default function App() {
       {invasionConfirm && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
+            <p className="text-base font-bold text-text font-sans">Sınır İhlali!</p>
             <p className="text-sm text-text font-sans leading-relaxed">
-              Dikkat, kelimen rakip bölgesine giriyor ya da sınırına değiyor. Bu hamleden kazanacağın {potentialScore} puanın{' '}
-              {invasionConfirm
-                .map((inv, i) => (
-                  <span key={i}>
-                    <strong>{inv.ownerPts} puanını</strong> <strong>{inv.ownerName}</strong>
-                    {i < invasionConfirm.length - 1 ? ', ' : ' '}
-                  </span>
-                ))}
-              kapacak. Devam etmek istiyor musun?
+              Bu hamleden kazanacağın{' '}
+              <strong className="text-green">
+                {potentialScore - invasionConfirm.reduce((sum, inv) => sum + inv.ownerPts, 0)}
+              </strong>{' '}
+              puanın{' '}
+              {invasionConfirm.map((inv, i) => (
+                <span key={i}>
+                  <strong className="text-red">{inv.ownerPts}</strong> puanı{' '}
+                  <strong>{inv.ownerName}</strong> kullanıcısına
+                  {i < invasionConfirm.length - 1 ? ', ' : ' '}
+                </span>
+              ))}
+              vergi olarak gidecek.
             </p>
             <div className="flex gap-2 mt-1">
               <button
@@ -908,7 +913,7 @@ export default function App() {
                 }}
                 className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
-                Oyna
+                Devam
               </button>
               <button
                 onClick={() => setInvasionConfirm(null)}
