@@ -725,12 +725,17 @@ export default function App() {
   // cevap vermemişken) logodan çıkmak, girişsiz kullanıcının çıkışıyla
   // aynı şekilde puansız/kayıtsız olmalı — henüz gerçek bir oyun olmadı.
   const gameStarted = state.turnCount >= 2;
-  // Çıkış onay popup'ının başlığı — yalnızca hesap sahibinin oyun başladıktan
-  // sonraki teslim olma durumunda bir başlık gösterilir.
+  // Çıkış onay popup'ının başlığı. Hotseat dalı (insan olmayan hesap sahibi
+  // dışında bir oyuncunun teslim olması) şu an hiç tetiklenmediğinden
+  // (bkz. Setup.tsx — 1. oyuncu dışında herkes her zaman YZ) başlıksız bırakıldı.
   const exitDialogTitle =
-    !state.isGameOver && exitTargetPlayer && user && exitTargetIndex === 0 && gameStarted
-      ? 'Teslim Oluyorsun!'
-      : null;
+    state.isGameOver || !exitTargetPlayer
+      ? 'Oyun Bitti!'
+      : !user || (exitTargetIndex === 0 && !gameStarted)
+        ? 'Çıkış!'
+        : exitTargetIndex === 0
+          ? 'Teslim Oluyorsun!'
+          : null;
 
   const dragHiddenKey = ghost && ghost.source.kind === 'placed'
     ? key(ghost.source.r, ghost.source.c)
