@@ -143,7 +143,7 @@ export function Setup({ onStart }: SetupProps) {
           <span style={{ fontFamily: "'Caveat', cursive", fontSize: 52, fontWeight: 700, color: '#2563EB', letterSpacing: 4, lineHeight: 1 }}>
             kelimeki
           </span>
-          <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+          <span className="sr-only">
             Ücretsiz Online Stratejik Türkçe Kelime Bulmaca Oyunu
           </span>
         </h1>
