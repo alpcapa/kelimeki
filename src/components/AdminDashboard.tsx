@@ -53,12 +53,16 @@ const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
   year: 'Yıl',
 };
 
-const USER_SERIES: ChartSeriesDef[] = [{ key: 'signups', label: 'Yeni Kayıt', color: '#2a78d6' }];
+const USER_SERIES: ChartSeriesDef[] = [
+  { key: 'signups', label: 'Kayıtlı', color: '#2a78d6' },
+  { key: 'guest_visits', label: 'Ziyaret', color: '#D97706' },
+];
 const GAME_COUNT_SERIES: ChartSeriesDef[] = [
   { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
   { key: 'games_finished_same_session', label: 'Bitirilen (Aynı Oturum)', color: '#0891B2' },
   { key: 'games_finished_multi_session', label: 'Bitirilen (Çok Oturumlu)', color: '#7c3aed' },
-  { key: 'games_abandoned', label: 'Terk Edilen', color: '#DC2626' },
+  { key: 'games_surrendered', label: 'Teslim', color: '#D97706' },
+  { key: 'games_abandoned', label: 'Terk', color: '#DC2626' },
 ];
 const DURATION_SERIES: ChartSeriesDef[] = [
   { key: 'avg_duration_seconds', label: 'Genel', color: '#7c3aed' },
@@ -403,6 +407,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     data={userActivity}
                     granularity={userGranularity}
                     series={USER_SERIES}
+                    defaultActiveKeys={['signups']}
                     controls={
                       <>
                         <select
@@ -485,14 +490,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         data={gameActivity}
                         granularity={gameGranularity}
                         series={GAME_COUNT_SERIES}
-                        defaultActiveKeys={['games_finished', 'games_abandoned']}
+                        defaultActiveKeys={['games_finished_same_session']}
                         controls={<span className={sectionTitleCls}>Oyun Sayısı</span>}
                       />
                       <GrowthChart
                         data={gameActivity}
                         granularity={gameGranularity}
                         series={DURATION_SERIES}
-                        defaultActiveKeys={['avg_duration_seconds']}
+                        defaultActiveKeys={['avg_duration_same_session_seconds']}
                         formatValue={formatDuration}
                         controls={<span className={sectionTitleCls}>Ortalama Oyun Süresi</span>}
                       />

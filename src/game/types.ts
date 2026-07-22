@@ -86,6 +86,17 @@ export interface GameState {
    * kırılımı için `logGameFinish`'e iletilir.
    */
   multiSession: boolean;
+  /**
+   * Oyun bittiyse (`isGameOver`) hangi yoldan bittiği — 'normal': bag+raf
+   * boşalarak ya da pas turuyla gerçekten sonuna kadar oynandı; 'surrender':
+   * bir/birden fazla oyuncunun teslim olmasıyla aktif oyuncu sayısı 1'e
+   * düştüğü için aniden bitti (bkz. `endGame`, `gameReducer.ts`). Admin
+   * panelindeki anonim süre telemetrisi (`logGameFinish`) bunu
+   * `ended_by_surrender` olarak iletir — teslimle biten oyunlar genelde
+   * saniyeler içinde geldiğinden "Bitirilen" ortalama süresine karışmaması
+   * için ayrı sayılır.
+   */
+  endReason: 'normal' | 'surrender';
   /** SIZE x SIZE tahta; boş hücreler null. */
   board: (Tile | null)[][];
   /** Çekiliş torbası. */

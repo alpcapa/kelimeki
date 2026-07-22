@@ -64,13 +64,19 @@ export async function saveGame(game: NewGame): Promise<string | null> {
  * oyunun normal biçimde bitmediğini, 7 gün hareketsizlik sonrası terk
  * edilmiş sayılıp silindiğini belirtir (bkz. `gameStorage.ts`
  * `takePendingAbandonedGame`) — admin panelinin Büyüme grafiği bu iki
- * durumu ayrı gösterir.
+ * durumu ayrı gösterir. `endedBySurrender`, `GameState.endReason ===
+ * 'surrender'`'dan gelir — bir/birden fazla oyuncunun teslim olmasıyla
+ * aktif oyuncu sayısı 1'e düşüp oyunun aniden bitmesi; bu tür oyunlar
+ * `completed=true` olsa da "Bitirilen" sayısına/ortalama süresine değil
+ * ayrı bir "Teslim" serisine dahil edilir (teslim genelde saniyeler içinde
+ * geldiğinden gerçek oyun süresini yansıtmaz).
  */
 export async function logGameFinish(
   playerCount: number,
   durationSeconds: number,
   multiSession: boolean,
   completed = true,
+  endedBySurrender = false,
 ): Promise<void> {
   if (!supabase) return;
   const {
@@ -85,9 +91,27 @@ export async function logGameFinish(
       duration_seconds: durationSeconds,
       multi_session: multiSession,
       completed,
+      ended_by_surrender: endedBySurrender,
     });
   if (error) {
     console.error('[Kelimeki] logGameFinish hatası:', error.message);
+  }
+}
+
+/**
+ * Misafir (girişsiz) bir ziyareti anonim olarak kaydeder — admin panelinin
+ * Büyüme > Kullanıcı grafiğindeki "Ziyaret" serisi için (bkz.
+ * `src/utils/visitTracking.ts`). `anonId`, cihazda `localStorage`'da
+ * saklanan rastgele bir uuid'dir; hiçbir kişisel veri taşımaz. Çağıran
+ * (App.tsx) yalnızca oturum açık DEĞİLKEN ve günde bir kez çağırır — sunucu
+ * tarafı da yalnızca `anon` rolünden (girişsiz) insert'e izin verir
+ * (`guest_visits_insert_anon` RLS politikası).
+ */
+export async function logGuestVisit(anonId: string): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from('guest_visits').insert({ anon_id: anonId });
+  if (error) {
+    console.error('[Kelimeki] logGuestVisit hatası:', error.message);
   }
 }
 
