@@ -49,7 +49,7 @@ export function GameOver({ show, players, turnCount, onOpenHistory, onOpenFeedba
                     {rank}. {p.name}
                     {p.surrendered && (
                       <span className="ml-1.5 text-[9px] font-mono uppercase tracking-[0.5px] text-red">
-                        (Teslim Oldu)
+                        (Teslim)
                       </span>
                     )}
                   </span>

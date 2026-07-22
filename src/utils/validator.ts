@@ -175,12 +175,18 @@ export function validatePlacement(
 
 /**
  * Bir oyuncunun köşesinden başlayıp yalnızca KENDİ taşları üzerinden
- * ortogonal olarak bağlı hücreleri döner — gerçek "fetih" zinciri. Tabandaki
- * (henüz kimse tarafından ele geçirilmemiş) köşe hücreleri DAHİL DEĞİL;
- * onlar `computeAllTerritories`'te ayrıca ele alınır. Seed, köşe
- * sınırlarındaki hücrelerin TAMAMI değil, yalnızca o hücrelerden gerçekten
- * `owner`a ait olanlardır — boş bir hücre zinciri başlatamaz, sadece
- * genişlemeyi kesmez.
+ * ortogonal olarak bağlı hücreleri döner — gerçek "fetih" zinciri. Seed,
+ * köşe sınırları içindeki hücrelerin TAMAMIDIR — ister `owner`a ait bir taş
+ * taşısın ister boş olsun; sadece BAŞKA bir oyuncuya ait bir taş taşıyan
+ * köşe hücreleri seed'in dışında kalır (bir kale fethi tarafından ele
+ * geçirilmiş olabilirler, bkz. `computeAllTerritories`). Böylece 4×4 köşe
+ * bloğunun henüz kimse tarafından ele geçirilmemiş kısmı baştan itibaren
+ * "geçit" gibi davranır: bloğun herhangi bir kenarına bitişik yeni bir taş,
+ * o taş `owner`a aitse zincire hemen dahil olur — köşenin tam ucundaki
+ * başlangıç hücresinden fiilen taş taş ilerlemiş olmaya gerek yoktur.
+ * Bloğun DIŞINDAKİ genişleme ise hâlâ yalnızca gerçek, bağlı `owner` taşları
+ * üzerinden ilerler — boş bir dış hücre zinciri taşımaz, sadece genişlemeyi
+ * kesmez.
  */
 function computeConqueredChain(board: Board, ownCorners: number[], owner: number): Set<string> {
   const chain = new Set<string>();
@@ -189,7 +195,8 @@ function computeConqueredChain(board: Board, ownCorners: number[], owner: number
     const b = cornerBounds(corner);
     for (let r = b.r0; r <= b.r1; r++) {
       for (let c = b.c0; c <= b.c1; c++) {
-        if (board[r][c]?.owner !== owner) continue;
+        const cell = board[r][c];
+        if (cell && cell.owner !== owner) continue;
         const k = key(r, c);
         if (!chain.has(k)) {
           chain.add(k);

@@ -73,9 +73,7 @@ export function Tile({ tile, variant, color, selected = false, onClick }: TilePr
           'absolute font-mono font-bold leading-none',
           isRack
             ? 'top-[3px] right-[4px] text-[10px] text-[#8B5E00]'
-            : isPlacedJoker
-              ? 'top-[1px] right-[1.5px] text-[clamp(9px,2.3vw,15px)] text-accent'
-              : 'top-[1px] right-[1.5px] text-[clamp(6px,1.6vw,10px)] text-accent',
+            : 'top-[1px] right-[1.5px] text-[clamp(6px,1.6vw,10px)] text-accent',
         ].join(' ')}
       >
         {isPlacedJoker ? '★' : tile.pts}
