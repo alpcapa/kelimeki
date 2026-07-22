@@ -993,7 +993,7 @@ export default function App() {
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
             <p className="text-base font-bold text-text font-sans">Pas Geçiyorsun!</p>
             <p className="text-sm text-text font-sans leading-relaxed">
-              Pas geçmek istediğinden emin misin? Sıran diğer oyuncuya geçecek.
+              Pas geçmek istediğinden emin misin? Sıran diğer oyuncuya geçer.
             </p>
             <div className="flex gap-2 mt-1">
               <button
