@@ -997,7 +997,7 @@ export default function App() {
       )}
 
       {showFeedback && (
-        <FeedbackModal onClose={() => setShowFeedback(false)} source="game_end" />
+        <FeedbackModal onClose={() => setShowFeedback(false)} />
       )}
 
       {showPostStartTutorial && (

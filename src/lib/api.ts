@@ -10,7 +10,6 @@ import type {
   AdminGameScope,
   AdminMember,
   AdminUserActivityPoint,
-  FeedbackSource,
   GameHistoryEntry,
   LeaderboardRow,
   MyLeaderboardRank,
@@ -320,7 +319,7 @@ export async function fetchAdminFeedback(): Promise<AdminFeedbackRow[]> {
   if (!supabase) return [];
   const { data, error } = await supabase
     .from('feedback')
-    .select('id, user_id, email, message, handled, created_at, source')
+    .select('id, user_id, email, message, handled, created_at')
     .order('created_at', { ascending: false });
   if (error) {
     console.error('[Kelimeki] fetchAdminFeedback hatası:', error.message);
@@ -346,11 +345,7 @@ export async function deleteFeedback(id: string): Promise<void> {
 // ── Geri bildirim ───────────────────────────────────────────────────────────
 
 /** Kullanıcıdan gelen görüş/şikayet mesajını kaydeder (girişli ya da anonim). */
-export async function submitFeedback(
-  message: string,
-  email: string | undefined,
-  source: FeedbackSource,
-): Promise<void> {
+export async function submitFeedback(message: string, email?: string): Promise<void> {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
   const {
     data: { user },
@@ -359,7 +354,6 @@ export async function submitFeedback(
     user_id: user?.id ?? null,
     email: email?.trim() || user?.email || null,
     message: message.trim(),
-    source,
   });
   if (error) throw new Error(error.message);
 }

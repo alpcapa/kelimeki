@@ -97,7 +97,7 @@ export function TermsModal({ onClose }: TermsModalProps) {
         </Section>
       </div>
     </Modal>
-    {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} source="general" />}
+    {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
     </>
   );
 }
