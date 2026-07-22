@@ -728,6 +728,12 @@ export default function App() {
   // cevap vermemişken) logodan çıkmak, girişsiz kullanıcının çıkışıyla
   // aynı şekilde puansız/kayıtsız olmalı — henüz gerçek bir oyun olmadı.
   const gameStarted = state.turnCount >= 2;
+  // Çıkış onay popup'ının başlığı — yalnızca hesap sahibinin oyun başladıktan
+  // sonraki teslim olma durumunda bir başlık gösterilir.
+  const exitDialogTitle =
+    !state.isGameOver && exitTargetPlayer && user && exitTargetIndex === 0 && gameStarted
+      ? 'Teslim Oluyorsun!'
+      : null;
 
   const dragHiddenKey = ghost && ghost.source.kind === 'placed'
     ? key(ghost.source.r, ghost.source.c)
@@ -929,13 +935,16 @@ export default function App() {
       {showExitConfirm && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
+            {exitDialogTitle && (
+              <p className="text-base font-bold text-text font-sans">{exitDialogTitle}</p>
+            )}
             <p className="text-sm text-text font-sans leading-relaxed">
               {state.isGameOver || !exitTargetPlayer
                 ? 'Anasayfaya dönmek istediğinden emin misin?'
                 : !user || (exitTargetIndex === 0 && !gameStarted)
                   ? 'Bu oyundan çıkmak istediğine emin misin?'
                   : exitTargetIndex === 0
-                    ? `Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.${othersWillContinue ? ' Diğer oyuncular oyuna devam edebilir.' : ''}`
+                    ? `Emin misin? Teslim olursan oyun bu şekilde kaydedilir ve Sanal Lig puanından 2 puan düşülür.${othersWillContinue ? ' Diğer oyuncular oyuna devam edebilir.' : ''}`
                     : `${exitTargetPlayer.name} teslim olmak istediğine emin misin?${othersWillContinue ? ' Oyuna diğer oyuncular devam edebilir.' : ''}`}
             </p>
             <div className="flex gap-2 mt-1">
