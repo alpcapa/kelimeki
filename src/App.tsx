@@ -913,7 +913,7 @@ export default function App() {
                 }}
                 className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
-                Devam
+                Oyna
               </button>
               <button
                 onClick={() => setInvasionConfirm(null)}
