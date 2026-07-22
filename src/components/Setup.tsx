@@ -144,7 +144,7 @@ export function Setup({ onStart }: SetupProps) {
             kelimeki
           </span>
           <span className="sr-only">
-            Ücretsiz Online Stratejik Türkçe Kelime Bulmaca Oyunu
+            Ücretsiz Online Türkçe Stratejik Kelime Bulmaca Oyunu
           </span>
         </h1>
         <svg width="100" height="8" viewBox="0 0 100 8" fill="none">
