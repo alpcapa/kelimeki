@@ -6,18 +6,21 @@ import { UserMenu } from './UserMenu';
 interface GameHeaderProps {
   state: GameState;
   onLogoClick?: () => void;
+  /** true iken çıkış devre dışı — ör. teslim olup YZ'leri izlerken oyundan
+   *  çıkılamaz, oyunun bitmesi beklenmek zorunda. */
+  exitDisabled?: boolean;
 }
 
-export function GameHeader({ state, onLogoClick }: GameHeaderProps) {
+export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps) {
   const { players, current } = state;
   return (
     <header className="w-full max-w-[680px] flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border">
       <button
         onClick={onLogoClick}
-        className="shrink-0 flex flex-col items-center leading-none active:opacity-70 transition-opacity"
+        disabled={exitDisabled}
+        className="shrink-0 flex flex-col items-center leading-none active:opacity-70 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed disabled:active:opacity-40"
         style={{ fontFamily: "'Caveat', cursive", fontSize: 28, fontWeight: 700, color: '#2563EB', letterSpacing: 3 }}
-        aria-label="Oyundan çık"
-      >
+        aria-label="Oyundan çık">
         kelimeki
         <svg width="64" height="6" viewBox="0 0 64 6" fill="none">
           <path d="M2 3 Q16 1 32 3 Q48 5 62 3" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" fill="none" />

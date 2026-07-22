@@ -739,6 +739,7 @@ export default function App() {
       <GameHeader
         state={state}
         onLogoClick={() => setShowExitConfirm(true)}
+        exitDisabled={spectating}
       />
 
       <Board
