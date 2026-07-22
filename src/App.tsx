@@ -24,9 +24,10 @@ import type { Tile as TileModel } from './game/types';
 import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
 import { PLAYER_COLORS } from './game/constants';
-import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, logGameFinish } from './lib/api';
+import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, logGameFinish, logGuestVisit } from './lib/api';
 import { saveGameDurable, flushPendingGames } from './utils/gameSync';
 import { flushPendingFeedback } from './utils/feedbackSync';
+import { getOrCreateAnonId, visitAlreadyLoggedToday, markVisitLoggedToday } from './utils/visitTracking';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
 
@@ -50,12 +51,26 @@ const MESSAGE_COLORS: Record<string, string> = {
 };
 
 export default function App() {
-  const { user, profile, profileLoading, passwordRecovery, clearPasswordRecovery } = useAuth();
+  const { user, profile, profileLoading, loading: authLoading, passwordRecovery, clearPasswordRecovery } = useAuth();
   const [state, dispatch] = useReducer(
     gameReducer,
     undefined,
     () => loadGameState() ?? createInitialState(),
   );
+
+  // Misafir (girişsiz) ziyaretleri admin panelinin Büyüme > Kullanıcı
+  // grafiğindeki "Ziyaret" serisi için günde bir kez anonim olarak
+  // bildirir (bkz. src/utils/visitTracking.ts). Oturum durumu netleşmeden
+  // (authLoading sırasında) göndermiyoruz — yoksa az sonra girişli olduğu
+  // anlaşılacak bir kullanıcı da yanlışlıkla misafir sayılabilir.
+  useEffect(() => {
+    if (!isSupabaseConfigured || authLoading || user) return;
+    if (visitAlreadyLoggedToday()) return;
+    const anonId = getOrCreateAnonId();
+    if (!anonId) return;
+    markVisitLoggedToday();
+    void logGuestVisit(anonId);
+  }, [authLoading, user]);
 
   // Devam eden oyunu (phase==='play', bitmemiş) her değişiklikte
   // localStorage'a yaz — sekme/uygulama kapatılıp açılınca kaldığı yerden

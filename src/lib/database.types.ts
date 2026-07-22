@@ -166,10 +166,18 @@ export interface AdminMember {
 
 export type AdminActivityGranularity = 'day' | 'week' | 'month' | 'year';
 
-/** admin_user_activity_series RPC çıktısındaki tek kova (Büyüme > Kullanıcı grafiği). */
+/**
+ * admin_user_activity_series RPC çıktısındaki tek kova (Büyüme > Kullanıcı
+ * grafiği). `signups`, o kovada oluşturulan yeni hesap sayısı (`auth.users`).
+ * `guest_visits`, misafir (girişsiz) tarayıcıların o kovadaki DISTINCT anonim
+ * kimlik sayısı (`guest_visits` tablosu, bkz. `src/utils/visitTracking.ts`)
+ * — kayıt olmadan gelip bakan/oynayan benzersiz ziyaretçi sayısına kaba bir
+ * yaklaşık (aynı kişi farklı cihaz/gizli sekme kullanırsa ayrı sayılır).
+ */
 export interface AdminUserActivityPoint {
   bucket: string;
   signups: number;
+  guest_visits: number;
 }
 
 /** admin_game_activity_series'in p_scope parametresi: Toplam/Kayıtlı/Misafir kombosu. */

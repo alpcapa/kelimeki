@@ -98,6 +98,23 @@ export async function logGameFinish(
   }
 }
 
+/**
+ * Misafir (girişsiz) bir ziyareti anonim olarak kaydeder — admin panelinin
+ * Büyüme > Kullanıcı grafiğindeki "Ziyaret" serisi için (bkz.
+ * `src/utils/visitTracking.ts`). `anonId`, cihazda `localStorage`'da
+ * saklanan rastgele bir uuid'dir; hiçbir kişisel veri taşımaz. Çağıran
+ * (App.tsx) yalnızca oturum açık DEĞİLKEN ve günde bir kez çağırır — sunucu
+ * tarafı da yalnızca `anon` rolünden (girişsiz) insert'e izin verir
+ * (`guest_visits_insert_anon` RLS politikası).
+ */
+export async function logGuestVisit(anonId: string): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from('guest_visits').insert({ anon_id: anonId });
+  if (error) {
+    console.error('[Kelimeki] logGuestVisit hatası:', error.message);
+  }
+}
+
 /** Liderlik tablosunu döner (toplam puana göre ilk 10). */
 export async function fetchLeaderboard(limit = 10): Promise<LeaderboardRow[]> {
   if (!supabase) return [];

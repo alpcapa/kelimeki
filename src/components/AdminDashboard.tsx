@@ -53,7 +53,10 @@ const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
   year: 'Yıl',
 };
 
-const USER_SERIES: ChartSeriesDef[] = [{ key: 'signups', label: 'Yeni Kayıt', color: '#2a78d6' }];
+const USER_SERIES: ChartSeriesDef[] = [
+  { key: 'signups', label: 'Kayıtlı', color: '#2a78d6' },
+  { key: 'guest_visits', label: 'Ziyaret', color: '#D97706' },
+];
 const GAME_COUNT_SERIES: ChartSeriesDef[] = [
   { key: 'games_finished', label: 'Bitirilen', color: '#008300' },
   { key: 'games_finished_same_session', label: 'Bitirilen (Aynı Oturum)', color: '#0891B2' },
@@ -404,6 +407,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     data={userActivity}
                     granularity={userGranularity}
                     series={USER_SERIES}
+                    defaultActiveKeys={['signups']}
                     controls={
                       <>
                         <select
