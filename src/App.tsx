@@ -716,6 +716,13 @@ export default function App() {
   // Bu teslimden sonra en az 2 oyuncu hâlâ oyunda kalacaksa (yoksa oyun anında biter).
   const othersWillContinue =
     state.players.filter((p) => !p.surrendered).length - 1 > 1;
+  // Oyun "başlamış" sayılır: hesap sahibi (her zaman ilk hamleyi yapan 0.
+  // oyuncu) ilk hamlesini yapmış VE bir sonraki oyuncu (genelde YZ) buna
+  // cevap vermiş — yani en az 2 yarım-hamle oynanmış. Bundan önce (hiç
+  // hamle yokken ya da hesap sahibi ilk hamlesini yapıp karşı taraf henüz
+  // cevap vermemişken) logodan çıkmak, girişsiz kullanıcının çıkışıyla
+  // aynı şekilde puansız/kayıtsız olmalı — henüz gerçek bir oyun olmadı.
+  const gameStarted = state.turnCount >= 2;
 
   const dragHiddenKey = ghost && ghost.source.kind === 'placed'
     ? key(ghost.source.r, ghost.source.c)
@@ -898,7 +905,7 @@ export default function App() {
             <p className="text-sm text-text font-sans leading-relaxed">
               {state.isGameOver || !exitTargetPlayer
                 ? 'Anasayfaya dönmek istediğinden emin misin?'
-                : !user
+                : !user || (exitTargetIndex === 0 && !gameStarted)
                   ? 'Bu oyundan çıkmak istediğine emin misin?'
                   : exitTargetIndex === 0
                     ? `Bu oyundan çıkmak istediğine emin misin? Teslim olursun, oyun bu şekilde kaydedilir ve puanından 2 puan düşülür.${othersWillContinue ? ' Diğer oyuncular oyuna devam edebilir.' : ''}`
@@ -911,7 +918,14 @@ export default function App() {
                   // Giriş yapılmamışsa hiçbir oyun tipi için kayıt tutulmadığından
                   // (kademeli teslim/oyun sonu ekranının anlamı olmadığından)
                   // doğrudan kurulum ekranına dön — oyun kaç kişilik olursa olsun.
-                  if (state.isGameOver || exitTargetIndex === null || !user) {
+                  // Aynı şekilde, hesap sahibi henüz gerçek bir hamle alışverişi
+                  // olmadan (bkz. gameStarted) çıkarsa da ceza/kayıt yok.
+                  if (
+                    state.isGameOver ||
+                    exitTargetIndex === null ||
+                    !user ||
+                    (exitTargetIndex === 0 && !gameStarted)
+                  ) {
                     dispatch({ type: 'ABANDON' });
                     return;
                   }
