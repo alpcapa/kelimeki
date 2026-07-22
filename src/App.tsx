@@ -132,6 +132,9 @@ export default function App() {
   // Oyundan çıkış onay popup'ı.
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
+  // Pas geçme onay popup'ı.
+  const [showPassConfirm, setShowPassConfirm] = useState(false);
+
   // Setup ekranında "Oyunu Başlat" tıklandığında Tutorial ilk kez
   // görülmemişse, oyun ekranı açılır açılmaz burada gösterilir.
   const [showPostStartTutorial, setShowPostStartTutorial] = useState(false);
@@ -220,7 +223,7 @@ export default function App() {
   // durumu kaybolup kullanıcı habersizce anasayfaya düşüyordu.
   const anyModalOpen =
     !!meaning || showTiles || showHistory || !!pendingWild || showExitConfirm || !!invasionConfirm ||
-    showPostStartTutorial;
+    showPassConfirm || showPostStartTutorial;
   const anyModalOpenRef = useRef(anyModalOpen);
   anyModalOpenRef.current = anyModalOpen;
 
@@ -694,13 +697,7 @@ export default function App() {
   };
 
   // Pas, sırayı tümüyle harcadığı için onay ister.
-  const handlePass = () => {
-    const placed = Object.keys(state.placed).length > 0;
-    const msg = placed
-      ? 'Pas geçilsin mi? Tahtaya koyduğun taşlar rafa geri alınır ve sıran geçer.'
-      : 'Pas geçmek istediğine emin misin? Sıran karşı tarafa geçer.';
-    if (window.confirm(msg)) dispatch({ type: 'PASS' });
-  };
+  const handlePass = () => setShowPassConfirm(true);
 
   const potentialScore = moveStatus?.score ?? 0;
 
@@ -977,6 +974,34 @@ export default function App() {
               </button>
               <button
                 onClick={() => setShowExitConfirm(false)}
+                className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              >
+                Vazgeç
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPassConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+          <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
+            <p className="text-base font-bold text-text font-sans">Pas Geçiyorsun!</p>
+            <p className="text-sm text-text font-sans leading-relaxed">
+              Pas geçmek istediğinden emin misin? Sıran diğer oyuncuya geçecek.
+            </p>
+            <div className="flex gap-2 mt-1">
+              <button
+                onClick={() => {
+                  setShowPassConfirm(false);
+                  dispatch({ type: 'PASS' });
+                }}
+                className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              >
+                Pas Geç
+              </button>
+              <button
+                onClick={() => setShowPassConfirm(false)}
                 className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
               >
                 Vazgeç
