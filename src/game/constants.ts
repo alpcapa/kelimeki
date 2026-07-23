@@ -50,7 +50,15 @@ export interface PlayerColor {
 }
 
 export const PLAYER_COLORS: PlayerColor[] = [
-  { base: '#0891B2', tint: '#A9E4EF', zone: '#E7F6FA', text: '#063542' }, // camgöbeği
+  // camgöbeği text'i eskiden #063542'ydi (HSL L=14%) — diğer üç rengin
+  // text'i L=%18-33 aralığındayken bu belirgin biçimde daha karanlıktı,
+  // bu yüzden (tam da düşük tonlu bir mavi-yeşil hue'da) siyahtan ayırt
+  // edilemiyordu; kontrast rengi ("Misafir hâlâ siyah duruyor" olarak
+  // bildirildi) DEĞİL, algısal karanlıktı — text-on-tint kontrastı zaten
+  // 9.4:1 ile diğerlerinden yüksekti. #0A6076 (L=25%, aynı hue/doygunluk)
+  // net biçimde camgöbeği okunuyor, kontrast hâlâ WCAG AA'nın üstünde
+  // (tint üzerinde 5.1:1, zone üzerinde 6.4:1).
+  { base: '#0891B2', tint: '#A9E4EF', zone: '#E7F6FA', text: '#0A6076' }, // camgöbeği
   { base: '#DC2626', tint: '#FBDADA', zone: '#FDEFEF', text: '#7A1414' }, // kırmızı
   { base: '#16A34A', tint: '#D6F3E1', zone: '#EDFAF1', text: '#0B5128' }, // yeşil
   { base: '#7C3AED', tint: '#DCC8FC', zone: '#F3ECFE', text: '#4A1A90' }, // mor
