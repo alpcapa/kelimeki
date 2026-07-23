@@ -22,6 +22,17 @@ export function useModalA11y(
   const idRef = useRef<symbol>();
   if (!idRef.current) idRef.current = Symbol('modal');
 
+  // onClose çoğu çağrı yerinde satır-içi bir fonksiyon (ör. `() =>
+  // setX(false)`) olduğundan üst bileşen her render olduğunda referansı
+  // değişir. Bunu asıl mount/unmount efektinin bağımlılığına koyarsak,
+  // ebeveyn her render olduğunda yığından çıkip tekrar girer — üstte başka
+  // bir dialog açıkken bu, bu dialogu yanlışlıkla yığının tepesine geri
+  // taşıyabilir. Bu yüzden en güncel değerler ayrı bir ref'te tutulup
+  // yalnızca tuş basıldığı anda okunuyor; yığına giriş/çıkış sadece
+  // `active` değiştiğinde olur.
+  const latest = useRef({ onClose, closeOnEscape });
+  latest.current = { onClose, closeOnEscape };
+
   useEffect(() => {
     if (!active) return;
     const id = idRef.current!;
@@ -38,6 +49,7 @@ export function useModalA11y(
     const onKeyDown = (e: KeyboardEvent) => {
       if (stack[stack.length - 1] !== id) return;
       if (e.key === 'Escape') {
+        const { onClose, closeOnEscape } = latest.current;
         if (closeOnEscape && onClose) {
           e.preventDefault();
           onClose();
@@ -64,7 +76,7 @@ export function useModalA11y(
       stack = stack.filter((s) => s !== id);
       previouslyFocused?.focus?.();
     };
-  }, [active, onClose, closeOnEscape]);
+  }, [active]);
 
   return containerRef;
 }
