@@ -12,6 +12,7 @@
 // değil ama yönlü bir sinyal.
 const ANON_ID_KEY = 'kelimeki:anon-id';
 const LAST_VISIT_KEY = 'kelimeki:anon-visit-date';
+const UTM_SOURCE_KEY = 'kelimeki:utm-source';
 
 /** Bu cihaz için kalıcı, rastgele bir kimlik döner — yoksa üretip saklar. */
 export function getOrCreateAnonId(): string | null {
@@ -43,5 +44,34 @@ export function markVisitLoggedToday(): void {
     localStorage.setItem(LAST_VISIT_KEY, today);
   } catch {
     // yoksay
+  }
+}
+
+/**
+ * Sayfa yüklenirken URL'deki `?ref=` parametresini (ör. `?ref=tiktok`) okuyup
+ * cihazda kalıcı olarak saklar — sosyal medya/tanıtım linklerinin hangi
+ * kanaldan geldiğini `logGuestVisit`'e etiketleyebilmek için. İlk temas
+ * (first-touch) modeli: cihazda zaten bir kaynak kayıtlıysa üzerine
+ * yazılmaz, böylece kullanıcı sonradan farklı bir linkle gelse bile onu
+ * buraya ilk getiren kanal saklı kalır. `?ref=` hiç olmadan gelinen
+ * ziyaretler kaynaksız (null) sayılır.
+ */
+export function captureUtmSource(): void {
+  try {
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    if (ref && !localStorage.getItem(UTM_SOURCE_KEY)) {
+      localStorage.setItem(UTM_SOURCE_KEY, ref.trim().toLowerCase().slice(0, 40));
+    }
+  } catch {
+    // yoksay
+  }
+}
+
+/** Cihaz için önceden kaydedilmiş kaynak etiketini döner, yoksa null. */
+export function getStoredUtmSource(): string | null {
+  try {
+    return localStorage.getItem(UTM_SOURCE_KEY);
+  } catch {
+    return null;
   }
 }

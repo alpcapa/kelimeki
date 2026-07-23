@@ -8,6 +8,7 @@ import type {
   AdminFeedbackRow,
   AdminGameActivityPoint,
   AdminGameScope,
+  AdminGuestSourceRow,
   AdminMember,
   AdminUserActivityPoint,
   FeedbackSource,
@@ -105,11 +106,14 @@ export async function logGameFinish(
  * saklanan rastgele bir uuid'dir; hiçbir kişisel veri taşımaz. Çağıran
  * (App.tsx) yalnızca oturum açık DEĞİLKEN ve günde bir kez çağırır — sunucu
  * tarafı da yalnızca `anon` rolünden (girişsiz) insert'e izin verir
- * (`guest_visits_insert_anon` RLS politikası).
+ * (`guest_visits_insert_anon` RLS politikası). `utmSource`, cihazda ilk
+ * temas (first-touch) olarak saklanan `?ref=` etiketidir (bkz.
+ * `captureUtmSource`/`getStoredUtmSource`) — `?ref=` ile hiç gelinmemişse
+ * `null` gönderilir ve admin RPC'sinde "direkt" olarak sayılır.
  */
-export async function logGuestVisit(anonId: string): Promise<void> {
+export async function logGuestVisit(anonId: string, utmSource: string | null): Promise<void> {
   if (!supabase) return;
-  const { error } = await supabase.from('guest_visits').insert({ anon_id: anonId });
+  const { error } = await supabase.from('guest_visits').insert({ anon_id: anonId, utm_source: utmSource });
   if (error) {
     console.error('[Kelimeki] logGuestVisit hatası:', error.message);
   }
@@ -337,6 +341,21 @@ export async function fetchAdminGameActivitySeries(
     return [];
   }
   return (data as AdminGameActivityPoint[]) ?? [];
+}
+
+/**
+ * Son `days` gün içinde kaynak (`?ref=` etiketi) başına benzersiz misafir
+ * ziyaretçi sayısını döner (yalnızca admin — Büyüme > Kullanıcı). `?ref=`
+ * ile hiç gelinmemiş ziyaretler "direkt" olarak gruplanır.
+ */
+export async function fetchAdminGuestSourceBreakdown(days = 30): Promise<AdminGuestSourceRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_guest_source_breakdown', { p_days: days });
+  if (error) {
+    console.error('[Kelimeki] fetchAdminGuestSourceBreakdown hatası:', error.message);
+    return [];
+  }
+  return (data as AdminGuestSourceRow[]) ?? [];
 }
 
 /** Tüm geri bildirim mesajlarını döner (RLS: yalnızca is_admin=true okuyabilir). */
