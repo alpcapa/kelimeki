@@ -25,6 +25,10 @@ npm run dev     # Geliştirme sunucusu
 - Her feature/fix ayrı branch → PR → main'e merge
 - Main'e merge = Vercel otomatik deploy tetiklenir
 
+## Belgeleri Güncel Tutma
+
+Anlamlı bir değişiklik yapıldığında (yeni dosya/component/util/hook, klasör yapısı değişikliği, sözlük kelime sayısı gibi somut rakamlar, migration/akış değişikliği vb.) **standart olarak** hem bu dosyayı (`CLAUDE.md`) hem de `README.md`'yi kontrol et ve gerekiyorsa aynı PR'da güncelle — özellikle "Klasör Yapısı" (burada) ve "Proje Yapısı" (`README.md`) ağaçları, ve `README.md`'deki kelime sayısı gibi rakamlar zamanla koddan kopabiliyor (23 Temmuz 2026'da fark edildi: README hâlâ eski **92.503** kelime rakamını taşıyordu, gerçek liste sonradan yapılan çok-sözcüklü madde temizlikleriyle ~64 bine düşmüştü; ayrıca `ErrorBoundary`/`PlayerBadge`/`useModalA11y`/`useOnlineStatus`/`gameStorage`/`gameSync`/`feedbackSync`/`onboarding`/`ranking`/`visitTracking` gibi dosyalar hiç listeye girmemişti). Bu bir "fırsat bulunca yapılır" işi değil — migration senkron kontrolü (aşağıda, "Migration'lar" bölümü) gibi asıl işin bir parçası say.
+
 ## Klasör Yapısı
 
 ```
@@ -34,10 +38,10 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, ai, bag)
+  utils/        # Saf fonksiyonlar (validator, board, ai, bag, gameStorage, gameSync, feedbackSync, visitTracking, ranking, onboarding...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları
   lib/          # Supabase istemcisi ve API sarmalayıcısı
-  hooks/        # useAuth
+  hooks/        # useAuth, useModalA11y, useOnlineStatus
 ```
 
 ## Kritik Sabitler (src/game/constants.ts)
@@ -117,6 +121,7 @@ Kullanıcı iPad üzerinden çalışıyor; `.github/workflows/supabase-migration
 2. SQL'i kullanıcıya açıkça göster (ne çalıştırılacağını gizleme).
 3. Supabase MCP ile aynı SQL'i doğrudan production'a uygula, sonra `execute_sql` ile canlıda doğrula (view/fonksiyon tanımını tekrar oku).
 4. Uyguladığını kullanıcıya açıkça söyle ("canlıya uyguladım, doğruladım" gibi) — sessizce dosya eklemekle yetinme.
+5. **Her migration'da zorunlu:** `list_migrations` çağırıp `apply_migration`'ın döndürdüğü gerçek versiyon numarasını dosya adındaki zaman damgasıyla karşılaştır — session'ın dosyayı yazdığı an ile sunucuda uygulandığı an birkaç saniye/dakika farklı olabiliyor. Eşleşmiyorsa dosyayı `git mv` ile gerçek versiyona yeniden adlandır ve bunu da commit'e dahil et. Bunu "genelde iyi fikir" değil, adım 1-4 kadar zorunlu bir adım say — 23 Temmuz 2026'da tam bu yüzden ayrı bir PR (#141) açmak gerekti çünkü ilk PR bu kontrol yapılmadan merge edilmişti.
 
 15 Temmuz 2026'da bu yüzden repo ile production'ın migration geçmişi (`supabase_migrations.schema_migrations`) birbirinden kopmuştu: geçmiş migration'lar CI yerine elle (muhtemelen `apply_migration` ile, kendi otomatik zaman damgasıyla) uygulanmış, dosya adlarındaki timestamp'lerle hiç eşleşmiyordu, `supabase db push` bu yüzden sürekli "Remote migration versions not found" hatasıyla fail ediyordu. Tüm dosyaların içeriği tek tek production'da doğrulanıp (`games.players` jsonb için eksik olan tek dosya da eklendi) kayıt tablosu repodaki 26 dosyayla birebir eşleşecek şekilde yeniden yazıldı. Yeni migration eklerken bu senkronu bozmamak için 1-4 adımlarını takip et.
 

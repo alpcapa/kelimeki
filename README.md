@@ -9,7 +9,7 @@
 - **Genişleyen bölge** — Bir oyuncunun bölgesi 4×4 köşeyle sınırlı değil; köşesinden başlayıp yalnızca kendi taşlarıyla ortogonal olarak bağlı hücrelere doğru genişler, her hamleden sonra yeniden hesaplanır. Rakip bölgesine vergi ödeyerek konan bir taş, kendi zincirine bağlıysa artık oynayanın bölgesine geçer.
 - **Bölge vergisi** — Bir hamle rakip bölgesinin içine düşerse (girme) ya da dışarıdan sınırına bitişik olursa (değme), hamlenin puanının 1/3'ü bölge sahibine aktarılır, 2/3'ü oynayanda kalır (iki farklı bölgeyle birden etkileşirse üç kişi eşit paylaşır: herkese 1/3). Hamle öncesinde onay penceresi gösterilir.
 - **Akıllı YZ** — Rafından heceleyebildiği, sözlükçe geçerli en yüksek puanlı hamleyi arar; çapraz kelimeleri de doğrular.
-- **Tam sözlük** — TDK Güncel Türkçe Sözlük (12. baskı) kaynaklı **92.503 oynanabilir kelime**, anlamlarıyla birlikte.
+- **Tam sözlük** — TDK Güncel Türkçe Sözlük (12. baskı) kaynaklı **~63 bin oynanabilir kelime**, anlamlarıyla birlikte.
 - **Türkçe alfabe** — Ç, Ğ, İ, Ö, Ş, Ü dahil tam harf dağılımı ve puanlar. Joker (`?`) desteklenir. Torba, oyuncu sayısından bağımsız olarak sabit 100 taş.
 - **Bingo bonusu** — 7 taşın tamamını tek hamlede kullanınca +25 puan.
 - **Dokunmatik** — Mobil öncelikli düzen; harf seç → kareye dokun → **Oyna**.
@@ -63,6 +63,8 @@ src/
 │   ├── TermsModal.tsx           # kullanım koşulları
 │   ├── Modal.tsx                # paylaşılan modal kabuğu
 │   ├── Avatar.tsx               # profil fotoğrafı bileşeni
+│   ├── PlayerBadge.tsx          # renkli oyuncu sıra/koltuk rozeti
+│   ├── ErrorBoundary.tsx        # kök seviye React crash yakalayıcı
 │   └── AddToHomeScreen.tsx      # PWA ana ekrana ekle
 ├── game/
 │   ├── types.ts       # GameState, Player, Tile tipleri
@@ -74,15 +76,23 @@ src/
 │   ├── meanings.ts    # anlam yükleyici
 │   └── tiles.ts       # Türkçe harf dağılımı ve puanlar (100 taş)
 ├── utils/
-│   ├── validator.ts   # kelime doğrulama, bölge kuralları, puanlama
-│   ├── ai.ts          # YZ oyuncu mantığı
-│   ├── board.ts       # tahta yardımcıları (kelime bulma, hücre key)
-│   ├── bag.ts         # taş torbası (buildBag, drawTiles)
-│   ├── outline.ts     # bölge/bonus dış hat SVG path üretimi
-│   ├── turkish.ts     # trUpper / trLower (i/İ, ı/I dönüşümü)
-│   └── random.ts      # karıştırma
+│   ├── validator.ts    # kelime doğrulama, bölge kuralları, puanlama
+│   ├── ai.ts           # YZ oyuncu mantığı
+│   ├── board.ts        # tahta yardımcıları (kelime bulma, hücre key)
+│   ├── bag.ts          # taş torbası (buildBag, drawTiles)
+│   ├── outline.ts      # bölge/bonus dış hat SVG path üretimi
+│   ├── turkish.ts      # trUpper / trLower (i/İ, ı/I dönüşümü)
+│   ├── random.ts       # karıştırma
+│   ├── ranking.ts      # oyun sonu sıralama (teslim olanlar en sona)
+│   ├── gameStorage.ts  # devam eden oyunun localStorage kalıcılığı + terk temizliği
+│   ├── gameSync.ts      # bitmiş oyunlar için çevrimdışı/misafir kuyruğu
+│   ├── feedbackSync.ts # geri bildirim formu için çevrimdışı kuyruk
+│   ├── onboarding.ts   # ilk açılış hızlı başlangıç ipucu bayrağı
+│   └── visitTracking.ts # anonim misafir ziyaret kimliği, cihaz/standalone tespiti, UTM kaynağı
 ├── hooks/
-│   └── useAuth.tsx    # Supabase auth context
+│   ├── useAuth.tsx        # Supabase auth context
+│   ├── useModalA11y.ts    # modal odak hapsi, Escape, dialog yığını
+│   └── useOnlineStatus.ts # çevrimiçi/çevrimdışı durumu izler
 └── lib/
     ├── supabase.ts        # Supabase istemcisi
     ├── api.ts             # saveGame, fetchLeaderboard, auth, fetchMeaning
@@ -110,6 +120,8 @@ supabase link --project-ref xvqlizifakkkoqahaxsg
 supabase db push
 ```
 
+> Bu depoda CI ile otomatik migration akışı yok; production'a uygulama şu an Claude Code oturumları tarafından Supabase MCP (`apply_migration`) ile elle yapılıyor — detay ve senkron kuralları için `CLAUDE.md`'ye bakın.
+
 **İstemci yapılandırması** — `.env.example` dosyasını `.env` olarak kopyalayıp doldurun:
 
 ```bash
@@ -120,7 +132,7 @@ VITE_SUPABASE_ANON_KEY=sb_publishable_...   # Project Settings → API
 ## Sözlük Verisi
 
 Kelimeler ve anlamları **TDK Güncel Türkçe Sözlük (12. baskı)** kaynaklıdır;
-[ogun/guncel-turkce-sozluk](https://github.com/ogun/guncel-turkce-sozluk) (MIT lisansı) üzerinden alınmıştır. Ham dökümdeki çok sözcüklü maddeler birleştirilir ("dulavrat otu" → "dulavratotu"); ardından yalnızca Türk alfabesi harfleri içeren 2–25 harfli tokenlar tutularak **92.503 oynanabilir kelimeye** süzülür. TDK'de eksik olan başlıca dünya ülkesi/başkent/dil adları `scripts/proper-nouns.mjs` ile ayrıca eklenir.
+[ogun/guncel-turkce-sozluk](https://github.com/ogun/guncel-turkce-sozluk) (MIT lisansı) üzerinden alınmıştır. Ham dökümdeki çok sözcüklü maddeler birleştirilir ("dulavrat otu" → "dulavratotu"); ardından yalnızca Türk alfabesi harfleri içeren 2–25 harfli tokenlar tutularak süzülür. Çok sözcüklü atasözü/deyim/özel isim gibi oynanamayacak maddeler sonradan ayrıca temizlenmiştir (bkz. `supabase/migrations/2026071913*_remove_*`), bu yüzden güncel liste ilk süzülen haliyle aynı değildir — **~63 bin oynanabilir kelime**. TDK'de eksik olan başlıca dünya ülkesi/başkent/dil adları `scripts/proper-nouns.mjs` ile ayrıca eklenir.
 
 Üretilen dosyaları yeniden oluşturmak için:
 
