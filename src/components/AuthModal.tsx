@@ -32,6 +32,7 @@ export function AuthModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [infoTone, setInfoTone] = useState<'gold' | 'red'>('gold');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -56,6 +57,7 @@ export function AuthModal({
       } else if (mode === 'forgot') {
         const { error } = await sendPasswordReset(email);
         if (error) throw error;
+        setInfoTone('gold');
         setInfo('Şifre sıfırlama bağlantısı e-postana gönderildi.');
       } else {
         if (!firstName.trim()) throw new Error('Ad zorunludur.');
@@ -75,8 +77,9 @@ export function AuthModal({
           await refreshProfile();
           onClose();
         } else {
-          setInfo('Hesap oluşturuldu. E-postanı doğrulayıp giriş yap.');
           switchMode('login');
+          setInfoTone('red');
+          setInfo('Hesap oluşturuldu. E-postanı doğrulayıp giriş yap.');
         }
       }
     } catch (err) {
@@ -185,7 +188,11 @@ export function AuthModal({
         )}
 
         {error && <p className="text-red text-xs font-mono">{error}</p>}
-        {info && <p className="text-gold text-xs font-mono">{info}</p>}
+        {info && (
+          <p className={`${infoTone === 'red' ? 'text-red' : 'text-gold'} text-xs font-mono`}>
+            {info}
+          </p>
+        )}
 
         <button
           type="submit"
