@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Uygulama yalnızca açık tema için tasarlandı — bu olmadan Android
+   Chrome'un otomatik karanlık tema özelliği sayfayı zorla karartabiliyor
+   (bkz. index.html'deki color-scheme meta etiketi, aynı gerekçe). */
+:root {
+  color-scheme: light;
+}
+
 /* Portrait-only lock for touch devices */
 #landscape-block {
   display: none;
