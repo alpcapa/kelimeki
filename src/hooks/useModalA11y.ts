@@ -6,17 +6,29 @@ import { useEffect, useRef, type RefObject } from 'react';
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+// Modaller iç içe açılabiliyor (ör. AuthModal üstünde TermsModal, ScoreCard
+// üstünde GameHistoryModal) — bu durumda yalnızca en son açılan (en üstteki)
+// dialog Escape/Tab'ı yakalamalı, yoksa aynı tuşa iki dialog birden tepki
+// verip Escape'te üsttekiyle birlikte alttaki de kapanır. Modül seviyesinde
+// tutulan bu yığın, aktif dialogları mount sırasına göre izler.
+let stack: symbol[] = [];
+
 export function useModalA11y(
   active: boolean,
   onClose?: () => void,
   closeOnEscape = true,
 ): RefObject<HTMLDivElement> {
   const containerRef = useRef<HTMLDivElement>(null);
+  const idRef = useRef<symbol>();
+  if (!idRef.current) idRef.current = Symbol('modal');
 
   useEffect(() => {
     if (!active) return;
+    const id = idRef.current!;
     const container = containerRef.current;
     const previouslyFocused = document.activeElement as HTMLElement | null;
+
+    stack.push(id);
 
     if (container && !container.contains(document.activeElement)) {
       const first = container.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
@@ -24,6 +36,7 @@ export function useModalA11y(
     }
 
     const onKeyDown = (e: KeyboardEvent) => {
+      if (stack[stack.length - 1] !== id) return;
       if (e.key === 'Escape') {
         if (closeOnEscape && onClose) {
           e.preventDefault();
@@ -48,6 +61,7 @@ export function useModalA11y(
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      stack = stack.filter((s) => s !== id);
       previouslyFocused?.focus?.();
     };
   }, [active, onClose, closeOnEscape]);

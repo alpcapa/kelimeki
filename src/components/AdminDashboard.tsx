@@ -176,10 +176,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [feedbackSourceFilter, setFeedbackSourceFilter] = useState<'all' | FeedbackSource>('all');
   const [feedbackToDelete, setFeedbackToDelete] = useState<AdminFeedbackRow | null>(null);
 
-  // feedbackToDelete açıkken üstteki onay kutusu tek odak hapsi/Escape sahibi
-  // olsun diye panelin kendi tuzağı geçici olarak devre dışı kalır — aksi
-  // halde ikisi de aynı anda dinleyip Escape panelin tamamını kapatırdı.
-  const panelRef = useModalA11y(!feedbackToDelete, onClose);
+  const panelRef = useModalA11y(true, onClose);
   const feedbackDeleteRef = useModalA11y(!!feedbackToDelete, () => setFeedbackToDelete(null));
 
   useEffect(() => {
