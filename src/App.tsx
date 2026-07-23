@@ -27,7 +27,13 @@ import { PLAYER_COLORS } from './game/constants';
 import { fetchMeaning, isValidWordRemote, isSupabaseConfigured, logGameFinish, logGuestVisit } from './lib/api';
 import { saveGameDurable, flushPendingGames } from './utils/gameSync';
 import { flushPendingFeedback } from './utils/feedbackSync';
-import { getOrCreateAnonId, visitAlreadyLoggedToday, markVisitLoggedToday } from './utils/visitTracking';
+import {
+  getOrCreateAnonId,
+  visitAlreadyLoggedToday,
+  markVisitLoggedToday,
+  captureUtmSource,
+  getStoredUtmSource,
+} from './utils/visitTracking';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
 import { useModalA11y } from './hooks/useModalA11y';
@@ -59,6 +65,14 @@ export default function App() {
     () => loadGameState() ?? createInitialState(),
   );
 
+  // Sosyal medya/tanıtım linklerindeki ?ref= parametresini (varsa) cihaza
+  // ilk temas olarak kaydeder — oturum durumundan bağımsız, sayfa her
+  // yüklendiğinde çalışmalı ki paylaşılan linkle gelen biri daha auth
+  // durumu netleşmeden kaynağını kaybetmesin.
+  useEffect(() => {
+    captureUtmSource();
+  }, []);
+
   // Misafir (girişsiz) ziyaretleri admin panelinin Büyüme > Kullanıcı
   // grafiğindeki "Ziyaret" serisi için günde bir kez anonim olarak
   // bildirir (bkz. src/utils/visitTracking.ts). Oturum durumu netleşmeden
@@ -70,7 +84,7 @@ export default function App() {
     const anonId = getOrCreateAnonId();
     if (!anonId) return;
     markVisitLoggedToday();
-    void logGuestVisit(anonId);
+    void logGuestVisit(anonId, getStoredUtmSource());
   }, [authLoading, user]);
 
   // Devam eden oyunu (phase==='play', bitmemiş) her değişiklikte

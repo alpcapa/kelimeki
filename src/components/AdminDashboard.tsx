@@ -5,6 +5,7 @@ import {
   fetchAdminMembers,
   fetchAdminUserActivitySeries,
   fetchAdminGameActivitySeries,
+  fetchAdminGuestSourceBreakdown,
   fetchAdminFeedback,
   markFeedbackHandled,
   deleteFeedback,
@@ -14,6 +15,7 @@ import type {
   AdminUserActivityPoint,
   AdminGameActivityPoint,
   AdminGameScope,
+  AdminGuestSourceRow,
   AdminActivityGranularity,
   AdminFeedbackRow,
   FeedbackSource,
@@ -164,6 +166,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [userActivity, setUserActivity] = useState<AdminUserActivityPoint[] | null>(null);
   const [userGranularity, setUserGranularity] = useState<AdminActivityGranularity>('day');
   const [userPeriod, setUserPeriod] = useState<number>(30);
+  const [guestSources, setGuestSources] = useState<AdminGuestSourceRow[] | null>(null);
+  const [guestSourceDays, setGuestSourceDays] = useState<number>(30);
   const [gameActivity, setGameActivity] = useState<AdminGameActivityPoint[] | null>(null);
   const [gameGranularity, setGameGranularity] = useState<AdminActivityGranularity>('day');
   const [gamePeriod, setGamePeriod] = useState<number>(30);
@@ -194,6 +198,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       .then(setUserActivity)
       .catch((e) => setError(String(e)));
   }, [userPeriod, userGranularity]);
+
+  useEffect(() => {
+    setGuestSources(null);
+    fetchAdminGuestSourceBreakdown(guestSourceDays)
+      .then(setGuestSources)
+      .catch((e) => setError(String(e)));
+  }, [guestSourceDays]);
 
   useEffect(() => {
     setGameActivity(null);
@@ -444,6 +455,49 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     }
                   />
                 ))}
+
+              {growthSubTab === 'user' && (
+                <div className="flex flex-col gap-2 pt-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={sectionTitleCls}>Ziyaretçi Kaynağı</span>
+                    <select
+                      value={guestSourceDays}
+                      onChange={(e) => setGuestSourceDays(Number(e.target.value))}
+                      className={selectCls}
+                    >
+                      {[7, 30, 90].map((d) => (
+                        <option key={d} value={d}>
+                          Son {d} Gün
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {guestSources === null ? (
+                    <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                  ) : guestSources.length === 0 ? (
+                    <div className="text-xs font-mono text-muted text-center py-6">Bu aralıkta misafir ziyareti yok.</div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[11px] font-mono border-collapse">
+                        <thead>
+                          <tr className="text-left text-muted border-b border-border">
+                            <th className="py-1.5 pr-3 font-bold uppercase tracking-[1px]">Kaynak</th>
+                            <th className="py-1.5 font-bold uppercase tracking-[1px]">Ziyaretçi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {guestSources.map((row) => (
+                            <tr key={row.source} className="border-b border-border/50">
+                              <td className="py-1.5 pr-3 text-text whitespace-nowrap">{row.source}</td>
+                              <td className="py-1.5 text-muted whitespace-nowrap">{row.visitors}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {growthSubTab === 'game' && (
                 <>

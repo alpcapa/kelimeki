@@ -180,6 +180,18 @@ export interface AdminUserActivityPoint {
   guest_visits: number;
 }
 
+/**
+ * admin_guest_source_breakdown RPC çıktısındaki tek satır (Büyüme >
+ * Kullanıcı) — son N gün içinde bir `?ref=` kaynağından (bkz.
+ * `src/utils/visitTracking.ts`) kaç benzersiz misafir ziyaretçi geldiğini
+ * gösterir. `?ref=` ile hiç gelinmemiş ziyaretler `source: 'direkt'` olarak
+ * gruplanır.
+ */
+export interface AdminGuestSourceRow {
+  source: string;
+  visitors: number;
+}
+
 /** admin_game_activity_series'in p_scope parametresi: Toplam/Kayıtlı/Misafir kombosu. */
 export type AdminGameScope = 'total' | 'registered' | 'guest';
 
