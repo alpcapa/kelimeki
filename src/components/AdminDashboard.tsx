@@ -57,7 +57,7 @@ const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
 };
 
 const USER_SERIES: ChartSeriesDef[] = [
-  { key: 'signups', label: 'Kayıtlı', color: '#2a78d6' },
+  { key: 'signups', label: 'Yeni Üye', color: '#2a78d6' },
   { key: 'guest_visits', label: 'Ziyaret', color: '#D97706' },
 ];
 const GAME_COUNT_SERIES: ChartSeriesDef[] = [
