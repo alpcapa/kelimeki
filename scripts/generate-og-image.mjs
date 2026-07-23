@@ -40,6 +40,20 @@ const W = 1200;
 const H = 630;
 const SCALE = 2;
 
+// HomeMark ile aynı ev ikonu (src/components/Board.tsx) — köşenin en uç
+// hücresine (oyuncunun zorunlu başlangıç noktası) çizilir.
+function homeIcon(base) {
+  return `<svg class="home" viewBox="0 0 24 24" fill="${base}"><path d="M12 2.5 1.5 11h3V21h6v-6h3v6h6V11h3L12 2.5Z"/></svg>`;
+}
+
+// homeIndex: 4×4 gridde (0..15, satır*4+sütun) ev işaretinin konacağı hücre —
+// her köşenin kendi dış ucu (cornerCell, src/game/constants.ts ile aynı mantık).
+function cornerCells(zone, base, homeIndex) {
+  return Array.from({ length: 16 }, (_, i) =>
+    `<div class="cell" style="background:${zone}">${i === homeIndex ? homeIcon(base) : ''}</div>`,
+  ).join('');
+}
+
 const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -67,9 +81,13 @@ const html = `<!DOCTYPE html>
     display: flex; align-items: center; justify-content: center;
   }
   .corner {
-    position: absolute; width: 84px; height: 84px; border-radius: 20px;
-    border-width: 3.5px; border-style: solid;
+    position: absolute; width: 116px; height: 116px; border-radius: 18px;
+    border-width: 3.5px; border-style: solid; background: #fff;
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr);
+    gap: 3px; padding: 6px; box-sizing: border-box;
   }
+  .corner .cell { border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .corner .home { width: 65%; height: 65%; opacity: 0.85; }
   .content { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .wordmark {
     font-family: 'Caveat', cursive; font-size: 108px; font-weight: 700;
@@ -100,18 +118,18 @@ const html = `<!DOCTYPE html>
 </style>
 </head>
 <body>
-  <div class="corner" style="top:34px; left:34px; background:${CORNERS[0].zone}; border-color:${CORNERS[0].base};"></div>
-  <div class="corner" style="top:34px; right:34px; background:${CORNERS[1].zone}; border-color:${CORNERS[1].base};"></div>
-  <div class="corner" style="bottom:34px; left:34px; background:${CORNERS[2].zone}; border-color:${CORNERS[2].base};"></div>
-  <div class="corner" style="bottom:34px; right:34px; background:${CORNERS[3].zone}; border-color:${CORNERS[3].base};"></div>
+  <div class="corner" style="top:28px; left:28px; border-color:${CORNERS[0].base};">${cornerCells(CORNERS[0].zone, CORNERS[0].base, 0)}</div>
+  <div class="corner" style="top:28px; right:28px; border-color:${CORNERS[1].base};">${cornerCells(CORNERS[1].zone, CORNERS[1].base, 3)}</div>
+  <div class="corner" style="bottom:28px; left:28px; border-color:${CORNERS[2].base};">${cornerCells(CORNERS[2].zone, CORNERS[2].base, 12)}</div>
+  <div class="corner" style="bottom:28px; right:28px; border-color:${CORNERS[3].base};">${cornerCells(CORNERS[3].zone, CORNERS[3].base, 15)}</div>
 
   <div class="content">
     <div class="wordmark">kelimeki</div>
     <svg width="220" height="14" viewBox="0 0 220 14" fill="none">
       <path d="M8 7 Q55 1 110 7 Q165 13 212 7" stroke="#2563EB" stroke-width="3.5" stroke-linecap="round" fill="none"/>
     </svg>
-    <h1>Türkçe Kelime Oyunu</h1>
-    <p>2 ya da 4 kişilik, köşelerden başlayan stratejik kelime oyunu</p>
+    <h1>Stratejik Türkçe Kelime Oyunu</h1>
+    <p>2 ya da 4 oyuncuyla, yapay zekaya karşı oynanan stratejik kelime oyunu</p>
     <div class="tiles">
       ${TILES.map((t) => `<div class="tile"><span class="letter">${t.l}</span><span class="pts">${t.p}</span></div>`).join('\n      ')}
     </div>
