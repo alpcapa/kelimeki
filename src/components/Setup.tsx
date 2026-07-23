@@ -70,7 +70,7 @@ export function Setup({ onStart }: SetupProps) {
   // "Kopyalandı" geri bildirimi gösterir.
   const handleShare = async () => {
     const url = `${window.location.origin}/?ref=arkadas`;
-    const text = 'Kelimeki — ücretsiz Türkçe kelime oyunu. Gel birlikte oynayalım!';
+    const text = 'Kelimeki — ücretsiz Türkçe kelime oyunu. Hemen ücretsiz dene!';
     if (navigator.share) {
       try {
         await navigator.share({ title: 'Kelimeki', text, url });
