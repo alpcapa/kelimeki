@@ -46,11 +46,22 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
               ? 'YZ'
               : `YZ ${i + 1}`
             : p.name;
+          // Sabit genişlik — içerik/tarayıcı font metriğine göre BÜYÜMEZ,
+          // taşan isim (sadece insan/hesap kutusunda olur, YZ etiketleri
+          // hep sabit "YZ N") `truncate` ile sondan kırpılır. Ölçülmüş
+          // gerçek içerik genişlikleri: "999" skor ~33px (YZ kutusunda en
+          // geniş öğe, "YZ 2" etiketinden bile geniş), "MİSAFİR" ~41px.
+          // YZ_BOX_WIDTH bunun üstüne pay bırakıyor (33+padding+güvenlik
+          // payı); PLAYER_BOX_WIDTH kasıtlı olarak daha geniş, hem
+          // "biraz daha büyük" görünsün hem de kısa isimler (Misafir gibi)
+          // kutuya sıkışık değil rahat otursun.
+          const boxWidth = p.isAI ? 56 : 84;
           return (
             <div
               key={i}
               className="shrink-0 shadow-raised text-center rounded-md px-2 py-0.5 transition-all"
               style={{
+                width: boxWidth,
                 // Board'daki bölge renklendirmesiyle birebir aynı eşleme:
                 // iç dolgu = zone.tint, sınır çizgisi = base (bkz. Board.tsx
                 // territory hücre dolgusu ve buildOutline çağrısı). Sıra
@@ -62,7 +73,7 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
               }}
             >
               <div
-                className="text-[8px] uppercase tracking-[1px] font-mono truncate max-w-[72px]"
+                className="text-[8px] uppercase tracking-[1px] font-mono truncate"
                 style={{
                   color: col.base,
                   textDecoration: p.surrendered ? 'line-through' : 'none',
