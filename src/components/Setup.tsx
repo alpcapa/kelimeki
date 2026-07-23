@@ -253,7 +253,7 @@ export function Setup({ onStart }: SetupProps) {
             <div
               key={i}
               className="shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border"
-              style={{ background: col.zone, borderColor: `${col.base}55` }}
+              style={{ background: col.tint, borderColor: col.base }}
             >
               {isAccount ? (
                 <Avatar
@@ -287,7 +287,7 @@ export function Setup({ onStart }: SetupProps) {
 
               <span
                 className="text-[9px] font-mono uppercase tracking-[1px] shrink-0 px-1"
-                style={{ color: col.text }}
+                style={{ color: col.base }}
               >
                 {i === 0 ? 'Sen' : `YZ${i + 1}`}
               </span>
