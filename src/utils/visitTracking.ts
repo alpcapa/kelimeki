@@ -75,3 +75,37 @@ export function getStoredUtmSource(): string | null {
     return null;
   }
 }
+
+/**
+ * Ziyaretin mobil mi masaüstü mü olduğunu kaba biçimde ayırt eder —
+ * dokunmatik/kalın işaretçi (`pointer: coarse`) mobil/tablet cihazlarda
+ * doğru, fare kullanan masaüstünde yanlış döner. Tam kesin değildir (ör.
+ * dokunmatik ekranlı bir dizüstü mobil sayılabilir) ama admin panelindeki
+ * "Cihaz" dökümü için yeterli bir sinyal.
+ */
+export function getDeviceType(): 'mobile' | 'desktop' {
+  try {
+    return window.matchMedia('(pointer: coarse)').matches ? 'mobile' : 'desktop';
+  } catch {
+    return 'desktop';
+  }
+}
+
+/**
+ * Sayfa şu anda ana ekrana eklenip bağımsız (standalone) modda mı açık,
+ * yoksa normal bir tarayıcı sekmesinde mi çalışıyor. iOS Safari
+ * `navigator.standalone`, diğerleri `display-mode: standalone` media
+ * query'siyle raporlar. `AddToHomeScreen` banner'ının gösterilip
+ * gösterilmeyeceğine karar vermek ve misafir ziyaretlerine bu bilgiyi
+ * etiketlemek (`logGuestVisit`) için ortak kullanılır.
+ */
+export function isStandaloneDisplay(): boolean {
+  try {
+    return (
+      ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone === true) ||
+      window.matchMedia('(display-mode: standalone)').matches
+    );
+  } catch {
+    return false;
+  }
+}

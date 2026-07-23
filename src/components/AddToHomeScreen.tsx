@@ -1,19 +1,13 @@
 import { useEffect, useState } from 'react';
+import { isStandaloneDisplay } from '../utils/visitTracking';
 
 const DISMISSED_KEY = 'kelimeki_a2hs_dismissed_session';
-
-function isStandalone() {
-  return (
-    ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone === true) ||
-    window.matchMedia('(display-mode: standalone)').matches
-  );
-}
 
 export function AddToHomeScreen() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (isStandalone()) return;
+    if (isStandaloneDisplay()) return;
     if (sessionStorage.getItem(DISMISSED_KEY)) return;
     // Short delay so the banner doesn't flash on first paint.
     const t = setTimeout(() => setVisible(true), 1200);

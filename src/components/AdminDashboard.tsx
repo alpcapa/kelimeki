@@ -6,6 +6,8 @@ import {
   fetchAdminUserActivitySeries,
   fetchAdminGameActivitySeries,
   fetchAdminGuestSourceBreakdown,
+  fetchAdminGuestDeviceBreakdown,
+  fetchAdminGuestStandaloneBreakdown,
   fetchAdminFeedback,
   markFeedbackHandled,
   deleteFeedback,
@@ -16,6 +18,8 @@ import type {
   AdminGameActivityPoint,
   AdminGameScope,
   AdminGuestSourceRow,
+  AdminGuestDeviceRow,
+  AdminGuestStandaloneRow,
   AdminActivityGranularity,
   AdminFeedbackRow,
   FeedbackSource,
@@ -88,6 +92,62 @@ const selectCls =
 
 /** GrowthChart'ın `controls` satırına konan bölüm başlığı — Tablo Görünümü linkiyle aynı hizada. */
 const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px] text-muted';
+
+/**
+ * Büyüme > Kullanıcı altındaki "Kaynak/Cihaz/Ana Ekrana Ekleme" gibi tek
+ * boyutlu ziyaretçi dökümlerini (satır başına {label, visitors}) ortak bir
+ * tablo olarak çizer — üçü de aynı yükleniyor/boş/toplam mantığını paylaşır.
+ */
+function GuestBreakdownTable<T extends { visitors: number }>({
+  columnLabel,
+  emptyLabel,
+  rows,
+  getKey,
+  getLabel,
+}: {
+  columnLabel: string;
+  emptyLabel: string;
+  rows: T[] | null;
+  getKey: (row: T) => string;
+  getLabel: (row: T) => string;
+}) {
+  if (rows === null) {
+    return <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>;
+  }
+  if (rows.length === 0) {
+    return <div className="text-xs font-mono text-muted text-center py-6">{emptyLabel}</div>;
+  }
+  const totalVisitors = rows.reduce((sum, row) => sum + row.visitors, 0);
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-auto text-[11px] font-mono border-collapse">
+        <thead>
+          <tr className="text-left text-muted border-b border-border">
+            <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">{columnLabel}</th>
+            <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Ziyaretçi</th>
+            <th className="py-1.5 font-bold uppercase tracking-[1px] text-center">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={getKey(row)} className="border-b border-border/50">
+              <td className="py-1.5 pr-8 text-text whitespace-nowrap">{getLabel(row)}</td>
+              <td className="py-1.5 pr-8 text-muted whitespace-nowrap text-center">{row.visitors}</td>
+              <td className="py-1.5 text-muted whitespace-nowrap text-center">
+                {totalVisitors > 0 ? ((row.visitors / totalVisitors) * 100).toFixed(2) : '0.00'}%
+              </td>
+            </tr>
+          ))}
+          <tr className="border-b border-border/50">
+            <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
+            <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{totalVisitors}</td>
+            <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">100.00%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 /**
  * Saniyeyi kısa bir süre etiketine çevirir (grafik ekseni/tooltip/tablo için).
@@ -177,6 +237,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [userGranularity, setUserGranularity] = useState<AdminActivityGranularity>('day');
   const [userPeriod, setUserPeriod] = useState<number>(30);
   const [guestSources, setGuestSources] = useState<AdminGuestSourceRow[] | null>(null);
+  const [guestDevices, setGuestDevices] = useState<AdminGuestDeviceRow[] | null>(null);
+  const [guestStandalone, setGuestStandalone] = useState<AdminGuestStandaloneRow[] | null>(null);
   const [gameActivity, setGameActivity] = useState<AdminGameActivityPoint[] | null>(null);
   const [gameGranularity, setGameGranularity] = useState<AdminActivityGranularity>('day');
   const [gamePeriod, setGamePeriod] = useState<number>(30);
@@ -212,6 +274,20 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setGuestSources(null);
     fetchAdminGuestSourceBreakdown(userPeriod * GRANULARITY_TO_DAYS[userGranularity])
       .then(setGuestSources)
+      .catch((e) => setError(String(e)));
+  }, [userPeriod, userGranularity]);
+
+  useEffect(() => {
+    setGuestDevices(null);
+    fetchAdminGuestDeviceBreakdown(userPeriod * GRANULARITY_TO_DAYS[userGranularity])
+      .then(setGuestDevices)
+      .catch((e) => setError(String(e)));
+  }, [userPeriod, userGranularity]);
+
+  useEffect(() => {
+    setGuestStandalone(null);
+    fetchAdminGuestStandaloneBreakdown(userPeriod * GRANULARITY_TO_DAYS[userGranularity])
+      .then(setGuestStandalone)
       .catch((e) => setError(String(e)));
   }, [userPeriod, userGranularity]);
 
@@ -466,52 +542,45 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                 ))}
 
               {growthSubTab === 'user' && (
-                <div className="flex flex-col gap-2 pt-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-5 pt-2">
+                  <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Ziyaretçi Kaynağı (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
                     </span>
+                    <GuestBreakdownTable
+                      columnLabel="Kaynak"
+                      emptyLabel="Bu aralıkta misafir ziyareti yok."
+                      rows={guestSources}
+                      getKey={(row) => row.source}
+                      getLabel={(row) => row.source}
+                    />
                   </div>
-                  {guestSources === null ? (
-                    <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
-                  ) : guestSources.length === 0 ? (
-                    <div className="text-xs font-mono text-muted text-center py-6">Bu aralıkta misafir ziyareti yok.</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-auto text-[11px] font-mono border-collapse">
-                        <thead>
-                          <tr className="text-left text-muted border-b border-border">
-                            <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Kaynak</th>
-                            <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Ziyaretçi</th>
-                            <th className="py-1.5 font-bold uppercase tracking-[1px] text-center">%</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(() => {
-                            const totalVisitors = guestSources.reduce((sum, row) => sum + row.visitors, 0);
-                            return (
-                              <>
-                                {guestSources.map((row) => (
-                                  <tr key={row.source} className="border-b border-border/50">
-                                    <td className="py-1.5 pr-8 text-text whitespace-nowrap">{row.source}</td>
-                                    <td className="py-1.5 pr-8 text-muted whitespace-nowrap text-center">{row.visitors}</td>
-                                    <td className="py-1.5 text-muted whitespace-nowrap text-center">
-                                      {totalVisitors > 0 ? ((row.visitors / totalVisitors) * 100).toFixed(2) : '0.00'}%
-                                    </td>
-                                  </tr>
-                                ))}
-                                <tr className="border-b border-border/50">
-                                  <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
-                                  <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{totalVisitors}</td>
-                                  <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">100.00%</td>
-                                </tr>
-                              </>
-                            );
-                          })()}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Cihaz (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <GuestBreakdownTable
+                      columnLabel="Cihaz"
+                      emptyLabel="Bu aralıkta misafir ziyareti yok."
+                      rows={guestDevices}
+                      getKey={(row) => row.device_type}
+                      getLabel={(row) =>
+                        row.device_type === 'mobile' ? 'Mobil' : row.device_type === 'desktop' ? 'Masaüstü' : 'Bilinmiyor'
+                      }
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Ana Ekrana Ekleme (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <GuestBreakdownTable
+                      columnLabel="Durum"
+                      emptyLabel="Bu aralıkta misafir ziyareti yok."
+                      rows={guestStandalone}
+                      getKey={(row) => String(row.is_standalone)}
+                      getLabel={(row) => (row.is_standalone ? 'App' : 'Browser')}
+                    />
+                  </div>
                 </div>
               )}
 
