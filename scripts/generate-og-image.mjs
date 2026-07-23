@@ -40,6 +40,10 @@ const W = 1200;
 const H = 630;
 const SCALE = 2;
 
+function cornerCells(zone) {
+  return `<div class="cell" style="background:${zone}"></div>`.repeat(16);
+}
+
 const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -67,9 +71,12 @@ const html = `<!DOCTYPE html>
     display: flex; align-items: center; justify-content: center;
   }
   .corner {
-    position: absolute; width: 84px; height: 84px; border-radius: 20px;
-    border-width: 3.5px; border-style: solid;
+    position: absolute; width: 116px; height: 116px; border-radius: 18px;
+    border-width: 3.5px; border-style: solid; background: #fff;
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr);
+    gap: 3px; padding: 6px; box-sizing: border-box;
   }
+  .corner .cell { border-radius: 4px; }
   .content { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .wordmark {
     font-family: 'Caveat', cursive; font-size: 108px; font-weight: 700;
@@ -100,10 +107,10 @@ const html = `<!DOCTYPE html>
 </style>
 </head>
 <body>
-  <div class="corner" style="top:34px; left:34px; background:${CORNERS[0].zone}; border-color:${CORNERS[0].base};"></div>
-  <div class="corner" style="top:34px; right:34px; background:${CORNERS[1].zone}; border-color:${CORNERS[1].base};"></div>
-  <div class="corner" style="bottom:34px; left:34px; background:${CORNERS[2].zone}; border-color:${CORNERS[2].base};"></div>
-  <div class="corner" style="bottom:34px; right:34px; background:${CORNERS[3].zone}; border-color:${CORNERS[3].base};"></div>
+  <div class="corner" style="top:28px; left:28px; border-color:${CORNERS[0].base};">${cornerCells(CORNERS[0].zone)}</div>
+  <div class="corner" style="top:28px; right:28px; border-color:${CORNERS[1].base};">${cornerCells(CORNERS[1].zone)}</div>
+  <div class="corner" style="bottom:28px; left:28px; border-color:${CORNERS[2].base};">${cornerCells(CORNERS[2].zone)}</div>
+  <div class="corner" style="bottom:28px; right:28px; border-color:${CORNERS[3].base};">${cornerCells(CORNERS[3].zone)}</div>
 
   <div class="content">
     <div class="wordmark">kelimeki</div>
