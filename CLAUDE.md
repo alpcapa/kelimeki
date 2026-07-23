@@ -25,6 +25,10 @@ npm run dev     # Geliştirme sunucusu
 - Her feature/fix ayrı branch → PR → main'e merge
 - Main'e merge = Vercel otomatik deploy tetiklenir
 
+## Belgeleri Güncel Tutma
+
+Anlamlı bir değişiklik yapıldığında (yeni dosya/component/util/hook, klasör yapısı değişikliği, sözlük kelime sayısı gibi somut rakamlar, migration/akış değişikliği vb.) **standart olarak** hem bu dosyayı (`CLAUDE.md`) hem de `README.md`'yi kontrol et ve gerekiyorsa aynı PR'da güncelle — özellikle "Klasör Yapısı" (burada) ve "Proje Yapısı" (`README.md`) ağaçları, ve `README.md`'deki kelime sayısı gibi rakamlar zamanla koddan kopabiliyor (23 Temmuz 2026'da fark edildi: README hâlâ eski **92.503** kelime rakamını taşıyordu, gerçek liste sonradan yapılan çok-sözcüklü madde temizlikleriyle ~64 bine düşmüştü; ayrıca `ErrorBoundary`/`PlayerBadge`/`useModalA11y`/`useOnlineStatus`/`gameStorage`/`gameSync`/`feedbackSync`/`onboarding`/`ranking`/`visitTracking` gibi dosyalar hiç listeye girmemişti). Bu bir "fırsat bulunca yapılır" işi değil — migration senkron kontrolü (aşağıda, "Migration'lar" bölümü) gibi asıl işin bir parçası say.
+
 ## Klasör Yapısı
 
 ```
@@ -34,10 +38,10 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, ai, bag)
+  utils/        # Saf fonksiyonlar (validator, board, ai, bag, gameStorage, gameSync, feedbackSync, visitTracking, ranking, onboarding...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları
   lib/          # Supabase istemcisi ve API sarmalayıcısı
-  hooks/        # useAuth
+  hooks/        # useAuth, useModalA11y, useOnlineStatus
 ```
 
 ## Kritik Sabitler (src/game/constants.ts)
