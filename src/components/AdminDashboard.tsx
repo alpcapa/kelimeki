@@ -578,7 +578,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       emptyLabel="Bu aralıkta misafir ziyareti yok."
                       rows={guestStandalone}
                       getKey={(row) => String(row.is_standalone)}
-                      getLabel={(row) => (row.is_standalone ? 'Ana Ekrana Eklenmiş' : 'Tarayıcıda')}
+                      getLabel={(row) => (row.is_standalone ? 'App' : 'Browser')}
                     />
                   </div>
                 </div>
