@@ -38,24 +38,26 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
               key={i}
               className="shadow-raised text-center rounded-md px-2 py-0.5 transition-all"
               style={{
-                background: active ? col.tint : 'transparent',
-                boxShadow: active ? `inset 0 0 0 1.5px ${col.base}` : 'none',
+                // Board'daki bölge renklendirmesiyle birebir aynı eşleme:
+                // iç dolgu = zone.tint, sınır çizgisi = base (bkz. Board.tsx
+                // territory hücre dolgusu ve buildOutline çağrısı). Sıra
+                // kimdeyse onu ayırt etmek için tek fark çerçeve kalınlığı —
+                // renk her oyuncuda aynı mantıkla (kendi base'i) belirleniyor.
+                background: col.tint,
+                boxShadow: `inset 0 0 0 ${active ? 2.5 : 1.5}px ${col.base}`,
                 opacity: p.surrendered ? 0.45 : 1,
               }}
             >
               <div
                 className="text-[8px] uppercase tracking-[1px] font-mono truncate max-w-[72px]"
                 style={{
-                  color: active ? col.text : col.base,
+                  color: col.base,
                   textDecoration: p.surrendered ? 'line-through' : 'none',
                 }}
               >
                 {p.surrendered ? 'Teslim' : label}
               </div>
-              <div
-                className="font-mono text-lg font-bold leading-none"
-                style={{ color: active ? col.text : col.base }}
-              >
+              <div className="font-mono text-lg font-bold leading-none" style={{ color: col.base }}>
                 {p.score}
               </div>
             </div>
