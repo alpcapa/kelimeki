@@ -192,6 +192,29 @@ export interface AdminGuestSourceRow {
   visitors: number;
 }
 
+/**
+ * admin_guest_device_breakdown RPC çıktısındaki tek satır (Büyüme >
+ * Kullanıcı) — son N gün içinde bir cihaz tipinden (`getDeviceType`, bkz.
+ * `src/utils/visitTracking.ts`) kaç benzersiz misafir ziyaretçi geldiğini
+ * gösterir.
+ */
+export interface AdminGuestDeviceRow {
+  device_type: string;
+  visitors: number;
+}
+
+/**
+ * admin_guest_standalone_breakdown RPC çıktısındaki tek satır (Büyüme >
+ * Kullanıcı) — son N gün içinde ana ekrana eklenip bağımsız (standalone)
+ * modda mı, yoksa normal tarayıcıda mı gelindiğine göre kaç benzersiz
+ * misafir ziyaretçi olduğunu gösterir (bkz. `isStandaloneDisplay`,
+ * `src/utils/visitTracking.ts`).
+ */
+export interface AdminGuestStandaloneRow {
+  is_standalone: boolean;
+  visitors: number;
+}
+
 /** admin_game_activity_series'in p_scope parametresi: Toplam/Kayıtlı/Misafir kombosu. */
 export type AdminGameScope = 'total' | 'registered' | 'guest';
 

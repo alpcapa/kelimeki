@@ -9,6 +9,8 @@ import type {
   AdminGameActivityPoint,
   AdminGameScope,
   AdminGuestSourceRow,
+  AdminGuestDeviceRow,
+  AdminGuestStandaloneRow,
   AdminMember,
   AdminUserActivityPoint,
   FeedbackSource,
@@ -109,11 +111,21 @@ export async function logGameFinish(
  * (`guest_visits_insert_anon` RLS politikası). `utmSource`, cihazda ilk
  * temas (first-touch) olarak saklanan `?ref=` etiketidir (bkz.
  * `captureUtmSource`/`getStoredUtmSource`) — `?ref=` ile hiç gelinmemişse
- * `null` gönderilir ve admin RPC'sinde "direkt" olarak sayılır.
+ * `null` gönderilir ve admin RPC'sinde "direkt" olarak sayılır. `deviceType`
+ * ve `isStandalone`, `src/utils/visitTracking.ts`'teki `getDeviceType`/
+ * `isStandaloneDisplay`'den gelir — admin panelindeki ayrı "Cihaz" ve "Ana
+ * Ekrana Ekleme" dökümleri için.
  */
-export async function logGuestVisit(anonId: string, utmSource: string | null): Promise<void> {
+export async function logGuestVisit(
+  anonId: string,
+  utmSource: string | null,
+  deviceType: 'mobile' | 'desktop',
+  isStandalone: boolean,
+): Promise<void> {
   if (!supabase) return;
-  const { error } = await supabase.from('guest_visits').insert({ anon_id: anonId, utm_source: utmSource });
+  const { error } = await supabase
+    .from('guest_visits')
+    .insert({ anon_id: anonId, utm_source: utmSource, device_type: deviceType, is_standalone: isStandalone });
   if (error) {
     console.error('[Kelimeki] logGuestVisit hatası:', error.message);
   }
@@ -356,6 +368,35 @@ export async function fetchAdminGuestSourceBreakdown(days = 30): Promise<AdminGu
     return [];
   }
   return (data as AdminGuestSourceRow[]) ?? [];
+}
+
+/**
+ * Son `days` gün içinde cihaz tipi (mobil/masaüstü) başına benzersiz
+ * misafir ziyaretçi sayısını döner (yalnızca admin — Büyüme > Kullanıcı).
+ */
+export async function fetchAdminGuestDeviceBreakdown(days = 30): Promise<AdminGuestDeviceRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_guest_device_breakdown', { p_days: days });
+  if (error) {
+    console.error('[Kelimeki] fetchAdminGuestDeviceBreakdown hatası:', error.message);
+    return [];
+  }
+  return (data as AdminGuestDeviceRow[]) ?? [];
+}
+
+/**
+ * Son `days` gün içinde ana ekrana eklenip eklenmediğine (standalone) göre
+ * benzersiz misafir ziyaretçi sayısını döner (yalnızca admin — Büyüme >
+ * Kullanıcı).
+ */
+export async function fetchAdminGuestStandaloneBreakdown(days = 30): Promise<AdminGuestStandaloneRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_guest_standalone_breakdown', { p_days: days });
+  if (error) {
+    console.error('[Kelimeki] fetchAdminGuestStandaloneBreakdown hatası:', error.message);
+    return [];
+  }
+  return (data as AdminGuestStandaloneRow[]) ?? [];
 }
 
 /** Tüm geri bildirim mesajlarını döner (RLS: yalnızca is_admin=true okuyabilir). */

@@ -33,6 +33,8 @@ import {
   markVisitLoggedToday,
   captureUtmSource,
   getStoredUtmSource,
+  getDeviceType,
+  isStandaloneDisplay,
 } from './utils/visitTracking';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
@@ -84,7 +86,7 @@ export default function App() {
     const anonId = getOrCreateAnonId();
     if (!anonId) return;
     markVisitLoggedToday();
-    void logGuestVisit(anonId, getStoredUtmSource());
+    void logGuestVisit(anonId, getStoredUtmSource(), getDeviceType(), isStandaloneDisplay());
   }, [authLoading, user]);
 
   // Devam eden oyunu (phase==='play', bitmemiş) her değişiklikte
