@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
 import { GameHistoryModal } from './GameHistoryModal';
+import { Leaderboard } from './Leaderboard';
 import { fetchPlayerStats, fetchMyLeaderboardRank } from '../lib/api';
 import type { AdminMember, MyLeaderboardRank, PlayerStats } from '../lib/database.types';
 
@@ -29,6 +30,7 @@ export function AdminPlayerDetail({ member, onClose }: AdminPlayerDetailProps) {
   >({ 2: undefined, 4: undefined });
   const [tab, setTab] = useState<(typeof TABS)[number]>(2);
   const [showAllGames, setShowAllGames] = useState(false);
+  const [showLeague, setShowLeague] = useState(false);
   const [rank, setRank] = useState<MyLeaderboardRank | null>(null);
 
   useEffect(() => {
@@ -116,9 +118,17 @@ export function AdminPlayerDetail({ member, onClose }: AdminPlayerDetailProps) {
             <div className="text-[11px] font-mono text-muted truncate">{member.email}</div>
           )}
         </div>
-        <div className="text-right shrink-0">
-          <div className="text-xs uppercase tracking-[1px] text-muted font-mono font-bold">
-            Sanal Lig
+        <button
+          type="button"
+          onClick={() => setShowLeague(true)}
+          aria-label="Sanal Lig sıralamasını göster"
+          className="text-right shrink-0 active:opacity-70 transition-opacity"
+        >
+          <div className="flex items-center justify-end gap-1 text-xs uppercase tracking-[1px] text-muted font-mono">
+            <span className="font-bold">Sanal Lig</span>
+            <span className="w-3.5 h-3.5 rounded-full border border-muted text-muted flex items-center justify-center text-[9px] leading-none font-bold">
+              ?
+            </span>
           </div>
           <div className="font-mono text-xl font-bold text-gold">
             {rank && (
@@ -130,7 +140,7 @@ export function AdminPlayerDetail({ member, onClose }: AdminPlayerDetailProps) {
             {totalScore}
             <span className="text-xs font-normal text-muted"> puan</span>
           </div>
-        </div>
+        </button>
       </div>
 
       <div className="mb-3 flex gap-2">
@@ -201,6 +211,7 @@ export function AdminPlayerDetail({ member, onClose }: AdminPlayerDetailProps) {
           onClose={() => setShowAllGames(false)}
         />
       )}
+      {showLeague && <Leaderboard onClose={() => setShowLeague(false)} />}
     </Modal>
   );
 }
