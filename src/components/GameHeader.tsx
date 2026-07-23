@@ -30,8 +30,14 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
           sığmadığında bu şerit header'ı sağa doğru taşırırdı. overflow-x
           + no-scrollbar: sığmazsa (nadir durum) header 2. satıra taşıp
           kutu boylarını bozmak yerine şerit görünmez biçimde yatay
-          kaydırılır — kutu boyutları/header yüksekliği hep sabit kalır. */}
-      <div className="flex gap-2 items-center justify-end min-w-0 overflow-x-auto no-scrollbar">
+          kaydırılır — kutu boyutları/header yüksekliği hep sabit kalır.
+          justify-end KULLANMA: taşan bir flex konteynerde justify-content:
+          flex-end, taşan içeriği scrollWidth'e hiç yansımayan, kaydırarak
+          bile ulaşılamayan bir şekilde kırpıyor (test edilip doğrulandı —
+          çocuklar konteynerin 201px genişliğine karşı 15-308px aralığına
+          yayılıyor ama scrollWidth yine de 201 dönüyor). justify-start
+          (varsayılan) ile taşma her zaman erişilebilir kalıyor. */}
+      <div className="flex gap-2 items-center min-w-0 overflow-x-auto no-scrollbar">
         {players.map((p, i) => {
           const col = PLAYER_COLORS[p.colorIndex];
           const active = i === current;
