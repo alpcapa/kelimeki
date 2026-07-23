@@ -113,6 +113,22 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  html {
+    /* iOS Safari (ve eski Android WebKit tarayıcılar), dar sütunlardaki
+       küçük metni okunabilirlik için otomatik büyütür ("font boosting") —
+       bu satır olmadan. Bu, tasarım zamanında hesaba katılmayan bir
+       genişleme: GameHeader'daki skor kutusu etiketi gibi bilinçli olarak
+       küçük tutulan (8px) metinler, gerçek bir iPhone'da masaüstü
+       Chromium'da test edilenden daha geniş render olup kutuyu daha erken
+       doldurabiliyordu (23 Temmuz 2026'da kullanıcı fotoğrafıyla fark
+       edildi — "MİSAFİR" kutuyu neredeyse kenara kadar dolduruyordu,
+       oysa masaüstünde aynı 7 karakter bariz boşluk bırakıyordu).
+       100%'e sabitlemek bu otomatik büyütmeyi kapatır, tüm cihazlarda
+       CSS'te yazılan boyutta render eder. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   html,
   body {
     margin: 0;
