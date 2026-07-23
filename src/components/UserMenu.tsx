@@ -16,6 +16,16 @@ import { AdminDashboard } from './AdminDashboard';
 
 type ActiveModal = 'auth' | 'account' | 'score' | 'help' | 'league' | 'admin' | null;
 
+// GameHeader'daki skor kutularıyla aynı akıcı ölçek (bkz. GameHeader.tsx'teki
+// PLAYER_BOX_WIDTH vb. yorumu, 465'in neden 430 değil seçildiğine dair
+// not dahil) — Giriş butonu header'da onlarla aynı satırda olduğundan
+// aynı 375px→465px geçişiyle küçülüp büyümesi gerekiyor. Bu bileşen
+// Setup ekranında da tek başına kullanıldığından (App.tsx) oradaki
+// görünümü de hafifçe etkiler — orada kalabalık olmadığından zararsız.
+const GIRIS_FONT_SIZE = 'clamp(8px, calc(-4.5px + 3.33vw), 11px)';
+const GIRIS_PADDING_X = 'clamp(6px, calc(-2.33px + 2.22vw), 8px)';
+const GIRIS_PADDING_Y = 'clamp(8.7px, calc(-5.05px + 3.67vw), 12px)';
+
 export function UserMenu() {
   const { user, profile, configured, loading, profileLoading } = useAuth();
   const [open, setOpen] = useState(false);
@@ -63,7 +73,14 @@ export function UserMenu() {
       <>
         <button
           onClick={() => setModal('auth')}
-          className="shrink-0 btn-raised font-mono text-[11px] uppercase tracking-[0.5px] px-2 py-3 rounded-md border bg-accent border-accent text-white font-bold leading-none active:scale-[0.97] transition-transform"
+          className="shrink-0 btn-raised font-mono uppercase tracking-[0.5px] rounded-md border bg-accent border-accent text-white font-bold leading-none active:scale-[0.97] transition-transform"
+          style={{
+            fontSize: GIRIS_FONT_SIZE,
+            paddingLeft: GIRIS_PADDING_X,
+            paddingRight: GIRIS_PADDING_X,
+            paddingTop: GIRIS_PADDING_Y,
+            paddingBottom: GIRIS_PADDING_Y,
+          }}
         >
           Giriş
         </button>

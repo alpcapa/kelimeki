@@ -4,6 +4,29 @@ import type { GameState } from '../game/types';
 import { LogoMark } from './LogoMark';
 import { UserMenu } from './UserMenu';
 
+// Skor kutuları akıcı/duyarlı: dar ekranlarda küçülüp genişte tam boya
+// çıkar, böylece 4 oyunculu + Giriş butonu neredeyse hiçbir zaman
+// kaydırmaya ihtiyaç duymaz (eskiden sabit 84/56px'ti — bkz. git geçmişi).
+// Her `clamp(min, calc(A + Bvw), max)` 375px'te (kullanıcıya onaylatılan
+// örnek görselin baz alındığı genişlik) min'e, 465px'te max'e ulaşacak
+// şekilde hesaplanmıştır. 465 kasıtlı olarak geniş tutuldu: ilk denemede
+// 430 kullanılmıştı ama ölçünce içeriğin büyüme hızının (vw başına),
+// header'da gerçekten açılan boş alanın büyüme hızından daha yüksek
+// olduğu görüldü — yani 375-430 arasında açık kapanıp sonra tekrar
+// açılıyordu. 465 bu eğimi gerçek açılan alanın eğiminin altında tutuyor,
+// açık bir daha açılmıyor (375px ve üstünde ölçülüp doğrulandı). 375px'in
+// altında (nadir/çok küçük telefonlar) clamp() min'in altına inmez, orada
+// bir miktar kaydırma gerekebilir (kabul edildi, bkz. git geçmişi).
+// Tailwind class'ı değil inline style kullanılıyor çünkü clamp()/calc()
+// içindeki virgüller Tailwind'in arbitrary-value söz dizimiyle iyi
+// geçinmiyor.
+const PLAYER_BOX_WIDTH = 'clamp(61px, calc(-34.83px + 25.56vw), 84px)';
+const YZ_BOX_WIDTH = 'clamp(41px, calc(-21.5px + 16.67vw), 56px)';
+const LABEL_FONT_SIZE = 'clamp(6px, calc(-2.33px + 2.22vw), 8px)';
+const SCORE_FONT_SIZE = 'clamp(13px, calc(-7.83px + 5.56vw), 18px)';
+const BOX_PADDING_X = 'clamp(6px, calc(-2.33px + 2.22vw), 8px)';
+const BOX_GAP = 'clamp(6px, calc(-2.33px + 2.22vw), 8px)';
+
 interface GameHeaderProps {
   state: GameState;
   onLogoClick?: () => void;
@@ -24,20 +47,23 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
         <LogoMark height={28} />
       </button>
 
-      {/* min-w-0: flex öğesi doğal içerik genişliğinin altına küçülemiyor
-          olması varsayılan flexbox davranışı — bu olmadan, 4 oyunculu +
-          uzun bir oyuncu adı + Giriş butonu aynı anda dar bir ekrana
-          sığmadığında bu şerit header'ı sağa doğru taşırırdı. overflow-x
-          + no-scrollbar: sığmazsa (nadir durum) header 2. satıra taşıp
-          kutu boylarını bozmak yerine şerit görünmez biçimde yatay
-          kaydırılır — kutu boyutları/header yüksekliği hep sabit kalır.
+      {/* Akıcı boyutlandırma 375px'te (bkz. yukarı) neredeyse tam sığdırsa
+          da (logo/header dolgusu küçülmediğinden birkaç px'lik açık
+          kalabiliyor) ve 375px altındaki nadir/çok küçük telefonlarda
+          clamp() taban değerin altına inmediğinden orada kaydırma hâlâ
+          gerekebilir (kabul edildi). Bu uç durum için
+          min-w-0 + overflow-x-auto + no-scrollbar hâlâ güvenlik ağı
+          olarak duruyor: sığmazsa header 2. satıra taşıp kutuları
+          bozmak yerine şerit görünmez biçimde yatay kaydırılır.
           justify-end KULLANMA: taşan bir flex konteynerde justify-content:
           flex-end, taşan içeriği scrollWidth'e hiç yansımayan, kaydırarak
-          bile ulaşılamayan bir şekilde kırpıyor (test edilip doğrulandı —
-          çocuklar konteynerin 201px genişliğine karşı 15-308px aralığına
-          yayılıyor ama scrollWidth yine de 201 dönüyor). justify-start
-          (varsayılan) ile taşma her zaman erişilebilir kalıyor. */}
-      <div className="flex gap-2 items-center min-w-0 overflow-x-auto no-scrollbar">
+          bile ulaşılamayan bir şekilde kırpıyor (test edilip doğrulandı).
+          justify-start (varsayılan) ile taşma her zaman erişilebilir kalır
+          ve en önemli kutu (0. oyuncu/hesap sahibi) her zaman görünür. */}
+      <div
+        className="flex items-center min-w-0 overflow-x-auto no-scrollbar"
+        style={{ gap: BOX_GAP }}
+      >
         {players.map((p, i) => {
           const col = PLAYER_COLORS[p.colorIndex];
           const active = i === current;
@@ -46,22 +72,14 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
               ? 'YZ'
               : `YZ ${i + 1}`
             : p.name;
-          // Sabit genişlik — içerik/tarayıcı font metriğine göre BÜYÜMEZ,
-          // taşan isim (sadece insan/hesap kutusunda olur, YZ etiketleri
-          // hep sabit "YZ N") `truncate` ile sondan kırpılır. Ölçülmüş
-          // gerçek içerik genişlikleri: "999" skor ~33px (YZ kutusunda en
-          // geniş öğe, "YZ 2" etiketinden bile geniş), "MİSAFİR" ~41px.
-          // YZ_BOX_WIDTH bunun üstüne pay bırakıyor (33+padding+güvenlik
-          // payı); PLAYER_BOX_WIDTH kasıtlı olarak daha geniş, hem
-          // "biraz daha büyük" görünsün hem de kısa isimler (Misafir gibi)
-          // kutuya sıkışık değil rahat otursun.
-          const boxWidth = p.isAI ? 56 : 84;
           return (
             <div
               key={i}
-              className="shrink-0 shadow-raised text-center rounded-md px-2 py-0.5 transition-all"
+              className="shrink-0 shadow-raised text-center rounded-md py-0.5 transition-all"
               style={{
-                width: boxWidth,
+                width: p.isAI ? YZ_BOX_WIDTH : PLAYER_BOX_WIDTH,
+                paddingLeft: BOX_PADDING_X,
+                paddingRight: BOX_PADDING_X,
                 // Board'daki bölge renklendirmesiyle birebir aynı eşleme:
                 // iç dolgu = zone.tint, sınır çizgisi = base (bkz. Board.tsx
                 // territory hücre dolgusu ve buildOutline çağrısı). Sıra
@@ -73,15 +91,19 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
               }}
             >
               <div
-                className="text-[8px] uppercase tracking-[1px] font-mono truncate"
+                className="uppercase tracking-[1px] font-mono truncate"
                 style={{
+                  fontSize: LABEL_FONT_SIZE,
                   color: col.base,
                   textDecoration: p.surrendered ? 'line-through' : 'none',
                 }}
               >
                 {p.surrendered ? 'Teslim' : label}
               </div>
-              <div className="font-mono text-lg font-bold leading-none" style={{ color: col.base }}>
+              <div
+                className="font-mono font-bold leading-none"
+                style={{ fontSize: SCORE_FONT_SIZE, color: col.base }}
+              >
                 {p.score}
               </div>
             </div>
