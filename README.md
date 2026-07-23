@@ -43,6 +43,7 @@ src/
 │   ├── GameHeader.tsx           # skor, sıra göstergesi
 │   ├── GameOver.tsx             # oyun sonu ekranı
 │   ├── Setup.tsx                # oyun başlangıç / oyuncu kurulum ekranı
+│   ├── LogoMark.tsx             # "kelimeki" logosu — statik SVG path (üretilmiş, bkz. scripts/generate-logo-paths.mjs), font bağımsız
 │   ├── UserMenu.tsx             # hesap menüsü (giriş / hesap ayarları / skor kartı)
 │   ├── HelpModal.tsx            # nasıl oynanır sayfası
 │   ├── AuthModal.tsx            # giriş / kayıt / şifre sıfırlama
@@ -71,7 +72,7 @@ src/
 │   ├── constants.ts   # tahta sabitleri, köşe hesapları, bonus konumları
 │   └── gameReducer.ts # useReducer ile oyun durum makinesi
 ├── data/
-│   ├── words.ts       # Türkçe kelime listesi (92.503 kelime, üretilmiş)
+│   ├── words.ts       # Türkçe kelime listesi (~63 bin kelime, üretilmiş)
 │   ├── meanings.json  # kelime → anlamlar (tembel yüklenir, ~9 MB)
 │   ├── meanings.ts    # anlam yükleyici
 │   └── tiles.ts       # Türkçe harf dağılımı ve puanlar (100 taş)
