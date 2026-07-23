@@ -18,11 +18,15 @@ export const TEXT_Y = 300;
 export const CANVAS_WIDTH = 1400;
 export const CANVAS_HEIGHT = 400;
 export const UNDERLINE_Y = 330;
-export const UNDERLINE_WIDTH = 640;
+// Not exported past this point — only used below to derive the values
+// consumers actually need (UNDERLINE_OFFSET_X, UNDERLINE_PATH_LOCAL,
+// underlinePathAbsolute()). Keep it that way; a name gets `export` only
+// once something outside this file actually imports it.
+const UNDERLINE_WIDTH = 640;
 // Control/end points of the underline swash, in local space (before
 // centering under the text via UNDERLINE_OFFSET_X below).
-export const UNDERLINE_POINTS_X = [20, 160, 320, 480, 620];
-export const UNDERLINE_POINTS_Y = [30, 10, 30, 50, 30];
+const UNDERLINE_POINTS_X = [20, 160, 320, 480, 620];
+const UNDERLINE_POINTS_Y = [30, 10, 30, 50, 30];
 export const UNDERLINE_STROKE_WIDTH = 20;
 
 export const UNDERLINE_OFFSET_X = (CANVAS_WIDTH - UNDERLINE_WIDTH) / 2;
