@@ -6,14 +6,19 @@
    23 Temmuz 2026'dan önce bu, her ağırlık+altküme burada base64 data URI
    olarak CSS'e gömülerek çözülmüştü; 4 fontun toplamı PageSpeed'de
    render-blocking CSS olarak işaretlenince gerçek .woff2 dosyalarına
-   (`./files/`) + font-display: swap'a geçildi — burada da kabul edilen
-   küçük bir FOUT riski (Caveat'in aksine yedek font sans-serif olduğundan
-   daha az fark ediliyor; Caveat aynı gün tamamen statik SVG path'lere
-   [LogoMark.tsx] geçirilerek riskten çıkarıldı). latin + latin-ext ikisi de
+   (`./files/`) + font-display: swap'a geçildi. latin + latin-ext ikisi de
    ayrı @font-face olarak kalıyor (fontsource'un kendisi de unicode-range
    vermiyor — tarayıcı gerekli glif hangi dosyadaysa onu kullanıyor;
    Ş/Ğ/İ gibi Türkçe karakterler latin-ext'te); artık her dosya yalnızca
-   sayfada gerçekten o glif kullanıldığında ayrıca indiriliyor. */
+   sayfada gerçekten o glif kullanıldığında ayrıca indiriliyor.
+
+   Ağırlık 700 (Setup ekranındaki kalın buton etiketleri — tam olarak
+   kullanıcının FOUT bildirdiği yer, ilk boyamada görünen) `public/fonts/`'a
+   taşınıp index.html'den preload edildi — LogoMark.tsx'teki Caveat
+   düzeltmesiyle aynı kök sebep, ama burada değişken/canlı metin
+   render edildiğinden statik SVG path'lere çevrilemez; preload en iyi
+   pratik çözüm. Diğer ağırlıklar (400/500/600) daha az kritik yollarda
+   kullanıldığından şimdilik eski ./files/ + swap-only yolunda bırakıldı. */
 @font-face {
   font-family: 'Space Grotesk';
   font-style: normal;
@@ -67,7 +72,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('./files/space-grotesk-700-normal-latin.woff2') format('woff2');
+  src: url('/fonts/space-grotesk-700-normal-latin.woff2') format('woff2');
 }
 
 @font-face {
@@ -75,6 +80,6 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('./files/space-grotesk-700-normal-latin-ext.woff2') format('woff2');
+  src: url('/fonts/space-grotesk-700-normal-latin-ext.woff2') format('woff2');
 }
 

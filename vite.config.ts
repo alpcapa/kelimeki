@@ -9,7 +9,15 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,
-      includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: [
+        'favicon.svg',
+        'favicon.ico',
+        'apple-touch-icon.png',
+        'fonts/space-mono-400-normal-latin.woff2',
+        'fonts/space-mono-400-normal-latin-ext.woff2',
+        'fonts/space-grotesk-700-normal-latin.woff2',
+        'fonts/space-grotesk-700-normal-latin-ext.woff2',
+      ],
       manifest: {
         name: 'Kelimeki — Ücretsiz Online Türkçe Kelime Oyunu',
         short_name: 'Kelimeki',

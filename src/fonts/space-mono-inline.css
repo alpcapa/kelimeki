@@ -5,16 +5,23 @@
    23 Temmuz 2026'dan önce bu her ağırlık+altküme burada base64 data URI
    olarak gömülerek çözülmüştü; 4 fontun toplamı PageSpeed'de
    render-blocking CSS olarak işaretlenince gerçek .woff2 dosyalarına
-   (`./files/`) + font-display: swap'a geçildi — burada da kabul edilen
-   küçük bir FOUT riski (Caveat'in aksine yedek font sans-serif olduğundan
-   daha az fark ediliyor; Caveat aynı gün tamamen statik SVG path'lere
-   [LogoMark.tsx] geçirilerek riskten çıkarıldı). */
+   (`./files/`) + font-display: swap'a geçildi.
+
+   Ağırlık 400 (bu paragrafın kendisi de dahil, Setup ekranında logonun
+   hemen altında, ilk boyamada görünen açıklama metni) `public/fonts/`'a
+   taşınıp index.html'den preload edildi — LogoMark.tsx'teki Caveat
+   düzeltmesiyle aynı gün yaşanan aynı kök sebep, ama burada değişken/canlı
+   metin (skorlar, kullanıcı adları) render edildiğinden Caveat gibi statik
+   SVG path'lere çevrilemez; preload en iyi pratik çözüm. Diğer ağırlık
+   (700) daha az kritik yollarda kullanıldığından şimdilik eski
+   ./files/ + swap-only yolunda bırakıldı — aynı sorun orada da
+   tekrarlanırsa aynı preload deseni uygulanmalı. */
 @font-face {
   font-family: 'Space Mono';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('./files/space-mono-400-normal-latin.woff2') format('woff2');
+  src: url('/fonts/space-mono-400-normal-latin.woff2') format('woff2');
 }
 
 @font-face {
@@ -22,7 +29,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('./files/space-mono-400-normal-latin-ext.woff2') format('woff2');
+  src: url('/fonts/space-mono-400-normal-latin-ext.woff2') format('woff2');
 }
 
 @font-face {
