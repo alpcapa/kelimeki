@@ -481,8 +481,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       <table className="w-auto text-[11px] font-mono border-collapse">
                         <thead>
                           <tr className="text-left text-muted border-b border-border">
-                            <th className="py-1.5 pr-3 font-bold uppercase tracking-[1px]">Kaynak</th>
-                            <th className="py-1.5 pr-3 font-bold uppercase tracking-[1px] text-center">Ziyaretçi</th>
+                            <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Kaynak</th>
+                            <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Ziyaretçi</th>
                             <th className="py-1.5 font-bold uppercase tracking-[1px] text-center">%</th>
                           </tr>
                         </thead>
@@ -493,16 +493,16 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                               <>
                                 {guestSources.map((row) => (
                                   <tr key={row.source} className="border-b border-border/50">
-                                    <td className="py-1.5 pr-3 text-text whitespace-nowrap">{row.source}</td>
-                                    <td className="py-1.5 pr-3 text-muted whitespace-nowrap text-center">{row.visitors}</td>
+                                    <td className="py-1.5 pr-8 text-text whitespace-nowrap">{row.source}</td>
+                                    <td className="py-1.5 pr-8 text-muted whitespace-nowrap text-center">{row.visitors}</td>
                                     <td className="py-1.5 text-muted whitespace-nowrap text-center">
                                       {totalVisitors > 0 ? ((row.visitors / totalVisitors) * 100).toFixed(2) : '0.00'}%
                                     </td>
                                   </tr>
                                 ))}
                                 <tr className="border-b border-border/50">
-                                  <td className="py-1.5 pr-3 text-text font-bold whitespace-nowrap">TOPLAM</td>
-                                  <td className="py-1.5 pr-3 text-text font-bold whitespace-nowrap text-center">{totalVisitors}</td>
+                                  <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
+                                  <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{totalVisitors}</td>
                                   <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">100.00%</td>
                                 </tr>
                               </>
