@@ -4,6 +4,7 @@ import { SETUP_BG_WATERMARK_URL } from '../assets/setupBgWatermark';
 import { PLAYER_COLORS } from '../game/constants';
 import type { PlayerSetup } from '../game/gameReducer';
 import { useAuth } from '../hooks/useAuth';
+import { useModalA11y } from '../hooks/useModalA11y';
 import { fetchPlayerStats } from '../lib/api';
 import { hasSeenQuickStart, markQuickStartSeen } from '../utils/onboarding';
 import { Avatar } from './Avatar';
@@ -45,6 +46,13 @@ export function Setup({ onStart }: SetupProps) {
   const [showHelp, setShowHelp] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+
+  // "Giriş Yap" / "Devam" ikisi de anlamlı birer karar, gerçek bir "vazgeç"
+  // değil — bu yüzden Escape/X, oyunu misafir olarak başlatmadan ("Devam"
+  // gibi) ya da giriş ekranını açmadan ("Giriş Yap" gibi) sadece popup'ı
+  // kapatıp kullanıcıyı kurulum ekranında bırakır.
+  const closeWarningPopup = () => setShowWarningPopup(false);
+  const warningPopupRef = useModalA11y(showWarningPopup, closeWarningPopup);
 
   // "Nasıl oynanır?" linkinden elle açılırsa da Tutorial görülmüş sayılır —
   // oyun başlayınca tekrar otomatik açılmasın diye.
@@ -107,8 +115,22 @@ export function Setup({ onStart }: SetupProps) {
 
     {showWarningPopup && (
       <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-        <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
-          <p className="text-sm text-text font-sans leading-relaxed">
+        <div
+          ref={warningPopupRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Giriş uyarısı"
+          tabIndex={-1}
+          className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none relative"
+        >
+          <button
+            onClick={closeWarningPopup}
+            aria-label="Kapat"
+            className="absolute top-3 right-3 text-muted hover:text-text text-lg leading-none w-7 h-7 flex items-center justify-center rounded active:scale-90 transition-transform"
+          >
+            ✕
+          </button>
+          <p className="text-sm text-text font-sans leading-relaxed pr-6">
             Oyunların istatistiklerini tutmak ve Sanal Lig puanları için lütfen giriş yapın.
           </p>
           <div className="flex gap-2 mt-1">

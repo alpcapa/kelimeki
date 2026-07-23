@@ -21,6 +21,7 @@ import type {
 import { AdminPlayerDetail } from './AdminPlayerDetail';
 import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
 import { trLower } from '../utils/turkish';
+import { useModalA11y } from '../hooks/useModalA11y';
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -175,6 +176,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [feedbackSourceFilter, setFeedbackSourceFilter] = useState<'all' | FeedbackSource>('all');
   const [feedbackToDelete, setFeedbackToDelete] = useState<AdminFeedbackRow | null>(null);
 
+  const panelRef = useModalA11y(true, onClose);
+  const feedbackDeleteRef = useModalA11y(!!feedbackToDelete, () => setFeedbackToDelete(null));
+
   useEffect(() => {
     fetchAdminMembers()
       .then(setMembers)
@@ -288,7 +292,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[640px] bg-panel border border-[#B8C2D1] rounded-xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] max-h-[85vh] flex flex-col overflow-hidden"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Admin Paneli"
+        tabIndex={-1}
+        className="w-full max-w-[640px] bg-panel border border-[#B8C2D1] rounded-xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] max-h-[85vh] flex flex-col overflow-hidden outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="shrink-0 flex flex-col gap-3 px-5 pt-5 pb-4 border-b border-border">
@@ -594,7 +603,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           className="fixed inset-0 z-[200] flex items-center justify-center px-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
+          <div
+            ref={feedbackDeleteRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Geri bildirim silme onayı"
+            tabIndex={-1}
+            className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none"
+          >
             <p className="text-base font-bold text-text font-sans">Dikkat!</p>
             <p className="text-sm text-text font-sans leading-relaxed">
               Bu geri bildirimi silmek istediğine emin misin?
