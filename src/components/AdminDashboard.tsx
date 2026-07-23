@@ -56,8 +56,18 @@ const PERIOD_UNIT_LABEL: Record<AdminActivityGranularity, string> = {
   year: 'Yıl',
 };
 
+/** Ziyaretçi Kaynağı tablosunu Kullanıcı grafiğiyle aynı aralığa bağlamak için — grafiğin
+ * granülerlik + periyodunu (ör. "Son 12 Hafta") admin_guest_source_breakdown'ın beklediği
+ * gün sayısına çevirir. Hafta/ay/yıl için takvimsel değil yaklaşık bir gün karşılığı kullanılır. */
+const GRANULARITY_TO_DAYS: Record<AdminActivityGranularity, number> = {
+  day: 1,
+  week: 7,
+  month: 30,
+  year: 365,
+};
+
 const USER_SERIES: ChartSeriesDef[] = [
-  { key: 'signups', label: 'Kayıtlı', color: '#2a78d6' },
+  { key: 'signups', label: 'Yeni Üye', color: '#2a78d6' },
   { key: 'guest_visits', label: 'Ziyaret', color: '#D97706' },
 ];
 const GAME_COUNT_SERIES: ChartSeriesDef[] = [
@@ -167,7 +177,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [userGranularity, setUserGranularity] = useState<AdminActivityGranularity>('day');
   const [userPeriod, setUserPeriod] = useState<number>(30);
   const [guestSources, setGuestSources] = useState<AdminGuestSourceRow[] | null>(null);
-  const [guestSourceDays, setGuestSourceDays] = useState<number>(30);
   const [gameActivity, setGameActivity] = useState<AdminGameActivityPoint[] | null>(null);
   const [gameGranularity, setGameGranularity] = useState<AdminActivityGranularity>('day');
   const [gamePeriod, setGamePeriod] = useState<number>(30);
@@ -201,10 +210,10 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
   useEffect(() => {
     setGuestSources(null);
-    fetchAdminGuestSourceBreakdown(guestSourceDays)
+    fetchAdminGuestSourceBreakdown(userPeriod * GRANULARITY_TO_DAYS[userGranularity])
       .then(setGuestSources)
       .catch((e) => setError(String(e)));
-  }, [guestSourceDays]);
+  }, [userPeriod, userGranularity]);
 
   useEffect(() => {
     setGameActivity(null);
@@ -458,19 +467,10 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
               {growthSubTab === 'user' && (
                 <div className="flex flex-col gap-2 pt-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={sectionTitleCls}>Ziyaretçi Kaynağı</span>
-                    <select
-                      value={guestSourceDays}
-                      onChange={(e) => setGuestSourceDays(Number(e.target.value))}
-                      className={selectCls}
-                    >
-                      {[7, 30, 90].map((d) => (
-                        <option key={d} value={d}>
-                          Son {d} Gün
-                        </option>
-                      ))}
-                    </select>
+                  <div className="flex items-center gap-2">
+                    <span className={sectionTitleCls}>
+                      Ziyaretçi Kaynağı (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
                   </div>
                   {guestSources === null ? (
                     <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
@@ -478,20 +478,36 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <div className="text-xs font-mono text-muted text-center py-6">Bu aralıkta misafir ziyareti yok.</div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-[11px] font-mono border-collapse">
+                      <table className="w-auto text-[11px] font-mono border-collapse">
                         <thead>
                           <tr className="text-left text-muted border-b border-border">
-                            <th className="py-1.5 pr-3 font-bold uppercase tracking-[1px]">Kaynak</th>
-                            <th className="py-1.5 font-bold uppercase tracking-[1px]">Ziyaretçi</th>
+                            <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Kaynak</th>
+                            <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Ziyaretçi</th>
+                            <th className="py-1.5 font-bold uppercase tracking-[1px] text-center">%</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {guestSources.map((row) => (
-                            <tr key={row.source} className="border-b border-border/50">
-                              <td className="py-1.5 pr-3 text-text whitespace-nowrap">{row.source}</td>
-                              <td className="py-1.5 text-muted whitespace-nowrap">{row.visitors}</td>
-                            </tr>
-                          ))}
+                          {(() => {
+                            const totalVisitors = guestSources.reduce((sum, row) => sum + row.visitors, 0);
+                            return (
+                              <>
+                                {guestSources.map((row) => (
+                                  <tr key={row.source} className="border-b border-border/50">
+                                    <td className="py-1.5 pr-8 text-text whitespace-nowrap">{row.source}</td>
+                                    <td className="py-1.5 pr-8 text-muted whitespace-nowrap text-center">{row.visitors}</td>
+                                    <td className="py-1.5 text-muted whitespace-nowrap text-center">
+                                      {totalVisitors > 0 ? ((row.visitors / totalVisitors) * 100).toFixed(2) : '0.00'}%
+                                    </td>
+                                  </tr>
+                                ))}
+                                <tr className="border-b border-border/50">
+                                  <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
+                                  <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{totalVisitors}</td>
+                                  <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">100.00%</td>
+                                </tr>
+                              </>
+                            );
+                          })()}
                         </tbody>
                       </table>
                     </div>
