@@ -9,16 +9,25 @@
    bunu doğrudan render-blocking kaynak olarak işaretledi (~1.35sn tahmini
    kayıp) — "ekstra gecikme yaratmıyor" varsayımı, tüm fontları içeren CSS
    büyüklüğü bu noktaya gelince geçerliliğini yitirdi. Bu yüzden gerçek
-   .woff2 dosyalarına (`./files/`) dönüldü: CSS artık küçük ve
-   render'ı bloklamıyor, font-display: swap ile yedek fontla anlık ilk
-   boyama yapılıp gerçek font ayrı/paralel bir istekle geldiğinde
-   sıçranıyor. Kabul edilen bedel: küçük bir FOUT riski — ama bu, 251KB'lık
-   bloklayan CSS'in maliyetinden çok daha ucuz. */
+   .woff2 dosyalarına dönüldü: CSS artık küçük ve render'ı bloklamıyor.
+
+   Aynı gün içinde bu ilk düzeltme kendi sorununu ortaya çıkardı: logo
+   her açılışta önce yedek fonta ("cursive" — Caveat'ten görsel olarak çok
+   uzak, kalın/köşeli bir sistem fontu), sonra gerçek Caveat'e sıçrıyordu
+   (belirgin bir FOUT). Diğer üç fontun (Nunito/Space Grotesk/Space Mono)
+   yedekleri de sans-serif olduğundan sıçrama nispeten az fark ediliyor,
+   ama Caveat bir el yazısı fontu olduğundan "başka bir fonta dönüşüp geri
+   gelme" burada çok belirgindi. Çözüm: dosya `public/fonts/`'a taşınıp
+   (Vite'ın hash'lediği `assets/` çıktısı yerine sabit/öngörülebilir bir
+   yol) index.html'e `<link rel="preload" as="font">` eklendi — bu, CSS'i
+   bloklamadan tarayıcının bu küçük (~50KB) dosyayı sayfa ayrıştırmasıyla
+   PARALEL ve yüksek öncelikle indirmesini sağlıyor, böylece ilk boyamadan
+   önce hazır olma ihtimali çok yükseliyor ve font-display: swap'ın
+   sıçraması pratikte neredeyse hiç görünmüyor. */
 @font-face {
   font-family: 'Caveat';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('./files/caveat-700-normal-latin.woff2') format('woff2');
+  src: url('/fonts/caveat-700-normal-latin.woff2') format('woff2');
 }
-

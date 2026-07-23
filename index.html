@@ -6,6 +6,11 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- Logo fontu (Caveat) ilk boyamada hemen görünür ve yedek fontu
+         ("cursive") çok belirgin biçimde değiştiriyor — preload, bu küçük
+         dosyanın CSS'ten bağımsız olarak hemen indirilmesini sağlayıp
+         görünür font sıçramasını (bkz. src/fonts/caveat-logo.css) önler. -->
+    <link rel="preload" href="/fonts/caveat-700-normal-latin.woff2" as="font" type="font/woff2" crossorigin />
     <!-- Supabase isteklerinin (guest_visits vb.) DNS/TLS kurulumunu erkenden başlatır — kritik istek zincirindeki gecikmeyi azaltır -->
     <link rel="preconnect" href="https://xvqlizifakkkoqahaxsg.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://xvqlizifakkkoqahaxsg.supabase.co" />
