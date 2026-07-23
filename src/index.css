@@ -91,6 +91,20 @@
   .shadow-raised {
     box-shadow: 2px 2px 6px rgba(163, 177, 198, 0.5), -2px -2px 5px rgba(255, 255, 255, 0.85);
   }
+
+  /* GameHeader'daki skor kutuları şeridi gibi, taşarsa kaydırılabilir ama
+     hep TEK satırda kalması gereken şeritler için — görünür bir kaydırma
+     çubuğu olmadan (4 oyunculu + uzun bir oyuncu adı + Giriş butonu aynı
+     anda dar bir ekrana sığmayabilir; bu durumda header'ın 2. satıra
+     taşıp kutu boylarını/header yüksekliğini bozması yerine şerit yatay
+     kaydırılır). */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {

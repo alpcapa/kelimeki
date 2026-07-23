@@ -63,7 +63,7 @@ export function UserMenu() {
       <>
         <button
           onClick={() => setModal('auth')}
-          className="btn-raised font-mono text-[11px] uppercase tracking-[0.5px] px-2 py-3 rounded-md border bg-accent border-accent text-white font-bold leading-none active:scale-[0.97] transition-transform"
+          className="shrink-0 btn-raised font-mono text-[11px] uppercase tracking-[0.5px] px-2 py-3 rounded-md border bg-accent border-accent text-white font-bold leading-none active:scale-[0.97] transition-transform"
         >
           Giriş
         </button>
@@ -77,7 +77,7 @@ export function UserMenu() {
 
   return (
     <>
-      <div className="relative" ref={wrapRef}>
+      <div className="relative shrink-0" ref={wrapRef}>
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label="Hesap menüsü"

@@ -24,7 +24,14 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
         <LogoMark height={28} />
       </button>
 
-      <div className="flex gap-2 items-center flex-wrap justify-end">
+      {/* min-w-0: flex öğesi doğal içerik genişliğinin altına küçülemiyor
+          olması varsayılan flexbox davranışı — bu olmadan, 4 oyunculu +
+          uzun bir oyuncu adı + Giriş butonu aynı anda dar bir ekrana
+          sığmadığında bu şerit header'ı sağa doğru taşırırdı. overflow-x
+          + no-scrollbar: sığmazsa (nadir durum) header 2. satıra taşıp
+          kutu boylarını bozmak yerine şerit görünmez biçimde yatay
+          kaydırılır — kutu boyutları/header yüksekliği hep sabit kalır. */}
+      <div className="flex gap-2 items-center justify-end min-w-0 overflow-x-auto no-scrollbar">
         {players.map((p, i) => {
           const col = PLAYER_COLORS[p.colorIndex];
           const active = i === current;
@@ -36,7 +43,7 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
           return (
             <div
               key={i}
-              className="shadow-raised text-center rounded-md px-2 py-0.5 transition-all"
+              className="shrink-0 shadow-raised text-center rounded-md px-2 py-0.5 transition-all"
               style={{
                 // Board'daki bölge renklendirmesiyle birebir aynı eşleme:
                 // iç dolgu = zone.tint, sınır çizgisi = base (bkz. Board.tsx
