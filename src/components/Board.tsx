@@ -413,8 +413,15 @@ export function Board({
           {moveBadge}
         </div>
 
-        {/* Her oyuncunun 4×4 köşesine soluk numara filigranı. */}
-        <div className="pointer-events-none absolute inset-1">
+        {/* Her oyuncunun 4×4 köşesine soluk numara filigranı. `inset` burada
+            ebeveyn grid'in kendi `p-[10px]` dolgusuyla BİREBİR eşleşmeli —
+            absolute konumlanan bir grid öğesinin containing block'u
+            padding box'tır (içerik kutusu değil), yani `inset-1` (4px) ile
+            gerçek hücre alanının başladığı 10px arasındaki fark, üst
+            köşelerde filigranı hücre alanının üstüne, alt köşelerde
+            altına kaydırıyordu (ölçüldü: üstte -3.3px, altta +2.9px —
+            toplam ~6px, tam da 10-4 farkı). */}
+        <div className="pointer-events-none absolute inset-[10px]">
           {[0, 1, 2, 3].map((i) => {
             const col = cornerColor[i];
             const num = cornerNumber[i];
@@ -443,8 +450,10 @@ export function Board({
           })}
         </div>
 
-        {/* Merkezdeki x2 bonus bölgesinin arkasına yazılan büyük "X2" filigranı. */}
-        <div className="pointer-events-none absolute inset-1">
+        {/* Merkezdeki x2 bonus bölgesinin arkasına yazılan büyük "X2" filigranı.
+            inset-[10px]: yukarıdaki köşe filigranı notuyla aynı sebep — grid'in
+            kendi p-[10px] dolgusuyla eşleşmesi gerekiyor. */}
+        <div className="pointer-events-none absolute inset-[10px]">
           <div
             className="absolute flex items-center justify-center font-mono font-bold leading-none"
             style={{
@@ -468,7 +477,7 @@ export function Board({
       <div className="relative z-10 flex items-center justify-between gap-2 shrink-0 px-[10px] pb-[10px] pt-1 w-full">
         <button
           onClick={onOpenHistory}
-          className="text-[13px] font-mono font-bold uppercase tracking-[0.5px] text-accent shrink-0"
+          className="text-[13px] font-mono font-bold tracking-[0.5px] text-accent shrink-0"
         >
           Oyun Geçmişi
         </button>

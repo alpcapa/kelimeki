@@ -10,6 +10,7 @@ import { hasSeenQuickStart, markQuickStartSeen } from '../utils/onboarding';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
+import { LogoMark } from './LogoMark';
 import { PlayerBadge } from './PlayerBadge';
 import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PrivacyModal';
@@ -189,16 +190,11 @@ export function Setup({ onStart }: SetupProps) {
     >
       <div className="text-center flex flex-col items-center gap-1 -mt-3">
         <h1 className="flex flex-col items-center gap-1" style={{ margin: 0 }}>
-          <span style={{ fontFamily: "'Caveat', cursive", fontSize: 52, fontWeight: 700, color: '#2563EB', letterSpacing: 4, lineHeight: 1 }}>
-            kelimeki
-          </span>
+          <LogoMark height={52} />
           <span className="sr-only">
-            Ücretsiz Online Türkçe Stratejik Kelime Bulmaca Oyunu
+            Kelimeki — Ücretsiz Online Türkçe Stratejik Kelime Bulmaca Oyunu
           </span>
         </h1>
-        <svg width="100" height="8" viewBox="0 0 100 8" fill="none">
-          <path d="M4 4 Q25 1 50 4 Q75 7 96 4" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-        </svg>
         <p className="text-muted text-xs font-mono mt-4">
           Kelimeler kurarak bölgeni genişlet, rakiplerini kuşat. Ama dikkat et:
           Hamlen rakibinin bölgesine temas ederse, kazandığın puanın bir
@@ -257,7 +253,7 @@ export function Setup({ onStart }: SetupProps) {
             <div
               key={i}
               className="shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border"
-              style={{ background: col.zone, borderColor: `${col.base}55` }}
+              style={{ background: col.tint, borderColor: col.base }}
             >
               {isAccount ? (
                 <Avatar
@@ -291,7 +287,7 @@ export function Setup({ onStart }: SetupProps) {
 
               <span
                 className="text-[9px] font-mono uppercase tracking-[1px] shrink-0 px-1"
-                style={{ color: col.text }}
+                style={{ color: col.base }}
               >
                 {i === 0 ? 'Sen' : `YZ${i + 1}`}
               </span>

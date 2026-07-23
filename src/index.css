@@ -91,12 +91,42 @@
   .shadow-raised {
     box-shadow: 2px 2px 6px rgba(163, 177, 198, 0.5), -2px -2px 5px rgba(255, 255, 255, 0.85);
   }
+
+  /* GameHeader'daki skor kutuları şeridi gibi, taşarsa kaydırılabilir ama
+     hep TEK satırda kalması gereken şeritler için — görünür bir kaydırma
+     çubuğu olmadan (4 oyunculu + uzun bir oyuncu adı + Giriş butonu aynı
+     anda dar bir ekrana sığmayabilir; bu durumda header'ın 2. satıra
+     taşıp kutu boylarını/header yüksekliğini bozması yerine şerit yatay
+     kaydırılır). */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {
   * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    /* iOS Safari (ve eski Android WebKit tarayıcılar), dar sütunlardaki
+       küçük metni okunabilirlik için otomatik büyütür ("font boosting") —
+       bu satır olmadan. Bu, tasarım zamanında hesaba katılmayan bir
+       genişleme: GameHeader'daki skor kutusu etiketi gibi bilinçli olarak
+       küçük tutulan (8px) metinler, gerçek bir iPhone'da masaüstü
+       Chromium'da test edilenden daha geniş render olup kutuyu daha erken
+       doldurabiliyordu (23 Temmuz 2026'da kullanıcı fotoğrafıyla fark
+       edildi — "MİSAFİR" kutuyu neredeyse kenara kadar dolduruyordu,
+       oysa masaüstünde aynı 7 karakter bariz boşluk bırakıyordu).
+       100%'e sabitlemek bu otomatik büyütmeyi kapatır, tüm cihazlarda
+       CSS'te yazılan boyutta render eder. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   html,
