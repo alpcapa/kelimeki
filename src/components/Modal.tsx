@@ -1,6 +1,7 @@
 // Kelimeki — paylaşılan modal kabuğu
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useModalA11y } from '../hooks/useModalA11y';
 
 interface ModalProps {
   title: string;
@@ -12,19 +13,26 @@ interface ModalProps {
 }
 
 export function Modal({ title, onClose, children, headerLink }: ModalProps) {
+  const containerRef = useModalA11y(true, onClose);
+  const titleId = useId();
   return createPortal(
     <div
       className="fixed inset-0 z-[150] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[360px] bg-panel border border-[#B8C2D1] rounded-xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] max-h-[85vh] flex flex-col overflow-hidden"
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="w-full max-w-[360px] bg-panel border border-[#B8C2D1] rounded-xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] max-h-[85vh] flex flex-col overflow-hidden outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="shrink-0 flex flex-col gap-2 px-5 pt-5 pb-4 border-b border-border">
           {headerLink}
           <div className="flex items-center justify-between">
-            <h2 className="font-mono text-sm font-bold tracking-[1.5px] uppercase text-accent">
+            <h2 id={titleId} className="font-mono text-sm font-bold tracking-[1.5px] uppercase text-accent">
               {title}
             </h2>
             <button

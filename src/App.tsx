@@ -30,6 +30,7 @@ import { flushPendingFeedback } from './utils/feedbackSync';
 import { getOrCreateAnonId, visitAlreadyLoggedToday, markVisitLoggedToday } from './utils/visitTracking';
 import type { GameResult, WordMeaning } from './lib/database.types';
 import { useAuth } from './hooks/useAuth';
+import { useModalA11y } from './hooks/useModalA11y';
 
 const AI_THINK_MS = 1100;
 // Sürüklemenin "tıklama" değil gerçek bir sürükleme sayılması için gereken
@@ -158,6 +159,13 @@ export default function App() {
   const [invasionConfirm, setInvasionConfirm] = useState<
     { ownerName: string; ownerPts: number }[] | null
   >(null);
+
+  // Bu üç dahili onay popup'ı Modal.tsx'i kullanmıyor (kendi basit
+  // işaretlemeleri var) ama aynı odak hapsi/Escape/geri-dönüş davranışını
+  // paylaşıyor.
+  const exitConfirmRef = useModalA11y(showExitConfirm, () => setShowExitConfirm(false));
+  const passConfirmRef = useModalA11y(showPassConfirm, () => setShowPassConfirm(false));
+  const invasionConfirmRef = useModalA11y(!!invasionConfirm, () => setInvasionConfirm(null));
 
   // Sunucu kelime doğrulaması sırasında true — butonu devre dışı bırakır.
   const [validating, setValidating] = useState(false);
@@ -420,12 +428,14 @@ export default function App() {
         <div className="w-full max-w-[460px] flex items-center justify-end px-3.5 pt-3">
           <UserMenu />
         </div>
-        <Setup
-          onStart={(players, showTutorial) => {
-            dispatch({ type: 'START', players });
-            if (showTutorial) setShowPostStartTutorial(true);
-          }}
-        />
+        <main className="w-full flex flex-col items-center">
+          <Setup
+            onStart={(players, showTutorial) => {
+              dispatch({ type: 'START', players });
+              if (showTutorial) setShowPostStartTutorial(true);
+            }}
+          />
+        </main>
         <AddToHomeScreen />
       </div>
     );
@@ -710,6 +720,7 @@ export default function App() {
         exitDisabled={spectating}
       />
 
+      <main className="w-full flex flex-col items-center">
       <Board
         state={state}
         onCellClick={handleCellClick}
@@ -851,10 +862,18 @@ export default function App() {
           </>
         )}
       </div>
+      </main>
 
       {invasionConfirm && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-          <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
+          <div
+            ref={invasionConfirmRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Sınır ihlali onayı"
+            tabIndex={-1}
+            className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none"
+          >
             <p className="text-base font-bold text-text font-sans">Sınır İhlali!</p>
             <p className="text-sm text-text font-sans leading-relaxed">
               Bu hamleden kazanacağın{' '}
@@ -894,7 +913,14 @@ export default function App() {
 
       {showExitConfirm && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-          <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
+          <div
+            ref={exitConfirmRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Çıkış onayı"
+            tabIndex={-1}
+            className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none"
+          >
             {exitDialogTitle && (
               <p className="text-base font-bold text-text font-sans">{exitDialogTitle}</p>
             )}
@@ -948,7 +974,14 @@ export default function App() {
 
       {showPassConfirm && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-          <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4">
+          <div
+            ref={passConfirmRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pas geçme onayı"
+            tabIndex={-1}
+            className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none"
+          >
             <p className="text-base font-bold text-text font-sans">Pas Geçiyorsun!</p>
             <p className="text-sm text-text font-sans leading-relaxed">
               Pas geçmek istediğinden emin misin? Sıran diğer oyuncuya geçer.
