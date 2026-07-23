@@ -46,6 +46,7 @@ export function Setup({ onStart }: SetupProps) {
   const [showHelp, setShowHelp] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   // "Giriş Yap" / "Devam" ikisi de anlamlı birer karar, gerçek bir "vazgeç"
   // değil — bu yüzden Escape/X, oyunu misafir olarak başlatmadan ("Devam"
@@ -59,6 +60,32 @@ export function Setup({ onStart }: SetupProps) {
   const closeHelp = () => {
     markQuickStartSeen();
     setShowHelp(false);
+  };
+
+  // Arkadaşa paylaşılan link ?ref=arkadas taşır — admin panelindeki
+  // "Ziyaretçi Kaynağı" dökümünde (bkz. src/utils/visitTracking.ts,
+  // admin_guest_source_breakdown) diğer sosyal kaynaklardan ayrı bir satır
+  // olarak görünür. Mobilde native paylaşım sayfası varsa onu kullanır;
+  // yoksa (çoğu masaüstü tarayıcı) linki panoya kopyalayıp kısa bir
+  // "Kopyalandı" geri bildirimi gösterir.
+  const handleShare = async () => {
+    const url = `${window.location.origin}/?ref=arkadas`;
+    const text = 'Kelimeki — ücretsiz Türkçe kelime oyunu. Gel birlikte oynayalım!';
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Kelimeki', text, url });
+      } catch {
+        // kullanıcı paylaşım sayfasını iptal etti — yoksay
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      // panoya erişim yoksa sessizce yoksay
+    }
   };
 
   // Toplam puan (isim yanında gösterilen) tüm oyun modlarının (2/4 kişilik)
@@ -178,12 +205,21 @@ export function Setup({ onStart }: SetupProps) {
           kısmını onunla paylaşmak zorunda kalırsın. Her hamle bir strateji,
           her kelime bir mücadele.
         </p>
-        <button
-          onClick={() => setShowHelp(true)}
-          className="mt-1 font-mono text-[11px] font-bold uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
-        >
-          Nasıl oynanır?
-        </button>
+        <div className="mt-1 flex items-center gap-2">
+          <button
+            onClick={() => setShowHelp(true)}
+            className="font-mono text-[11px] font-bold uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
+          >
+            Nasıl oynanır?
+          </button>
+          <span className="text-muted text-[11px]" aria-hidden="true">·</span>
+          <button
+            onClick={handleShare}
+            className="font-mono text-[11px] font-bold uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
+          >
+            {shareCopied ? 'Link kopyalandı!' : 'Arkadaşınla Paylaş'}
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
