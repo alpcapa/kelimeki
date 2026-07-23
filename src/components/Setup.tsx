@@ -205,19 +205,19 @@ export function Setup({ onStart }: SetupProps) {
           kısmını onunla paylaşmak zorunda kalırsın. Her hamle bir strateji,
           her kelime bir mücadele.
         </p>
-        <div className="mt-1 flex items-center gap-2">
+        <div className="mt-3 flex items-center gap-2">
           <button
             onClick={() => setShowHelp(true)}
-            className="font-mono text-[11px] font-bold uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
+            className="font-mono text-[11px] font-bold text-accent hover:underline active:opacity-70 transition-opacity"
           >
             Nasıl oynanır?
           </button>
           <span className="text-muted text-[11px]" aria-hidden="true">·</span>
           <button
             onClick={handleShare}
-            className="font-mono text-[11px] font-bold uppercase tracking-[1px] text-accent hover:underline active:opacity-70 transition-opacity"
+            className="font-mono text-[11px] font-bold text-accent hover:underline active:opacity-70 transition-opacity"
           >
-            {shareCopied ? 'Link kopyalandı!' : 'Arkadaşınla Paylaş'}
+            {shareCopied ? 'Link kopyalandı!' : 'Arkadaşınla paylaş'}
           </button>
         </div>
       </div>
