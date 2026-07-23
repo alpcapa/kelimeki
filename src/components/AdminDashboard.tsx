@@ -467,10 +467,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
               {growthSubTab === 'user' && (
                 <div className="flex flex-col gap-2 pt-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={sectionTitleCls}>Ziyaretçi Kaynağı</span>
+                  <div className="flex items-center gap-2">
                     <span className={sectionTitleCls}>
-                      Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]}
+                      Ziyaretçi Kaynağı (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
                     </span>
                   </div>
                   {guestSources === null ? (
@@ -479,7 +478,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <div className="text-xs font-mono text-muted text-center py-6">Bu aralıkta misafir ziyareti yok.</div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-[11px] font-mono border-collapse">
+                      <table className="w-auto text-[11px] font-mono border-collapse">
                         <thead>
                           <tr className="text-left text-muted border-b border-border">
                             <th className="py-1.5 pr-3 font-bold uppercase tracking-[1px]">Kaynak</th>
