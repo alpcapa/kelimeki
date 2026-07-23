@@ -15,6 +15,14 @@ interface AccountSettingsModalProps {
   onClose: () => void;
 }
 
+// Setup.tsx'teki accountName önceliği display_name || first_name || e-posta
+// öneki olduğundan, oyunda görünen 1. oyuncu ismini asıl belirleyen bu
+// ikisi (soyad değil). GameHeader'daki skor kutusu zaten ~15 karakterlik
+// genişlikte kesiyor (max-w-[72px], 8px Space Mono) — 20, buna makul bir
+// pay bırakırken header'ın yatay kaydırma fallback'ine (bkz. GameHeader.tsx)
+// gerçekçi kullanımda hiç ihtiyaç duyulmamasını sağlıyor.
+const NAME_MAX_LENGTH = 20;
+
 export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
   const { user, profile, refreshProfile } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -164,6 +172,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="Adın"
               autoComplete="given-name"
+              maxLength={NAME_MAX_LENGTH}
               required
             />
           </div>
@@ -188,6 +197,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
             onChange={(e) => setNickname(e.target.value)}
             placeholder="Girilmezse oyunda sadece adın görünür"
             autoComplete="nickname"
+            maxLength={NAME_MAX_LENGTH}
           />
         </div>
 
