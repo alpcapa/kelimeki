@@ -8,7 +8,7 @@ export default {
         panel: '#F5F7FA',
         border: '#DCE2EA',
         text: '#1B2430',
-        muted: '#8A93A2',
+        muted: '#5A6673',
         accent: '#2563EB',
         gold: '#B7791F',
         green: '#16A34A',

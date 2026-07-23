@@ -233,7 +233,7 @@ export function Setup({ onStart }: SetupProps) {
 
               <span
                 className="text-[9px] font-mono uppercase tracking-[1px] shrink-0 px-1"
-                style={{ color: col.base }}
+                style={{ color: col.text }}
               >
                 {i === 0 ? 'Sen' : `YZ${i + 1}`}
               </span>
