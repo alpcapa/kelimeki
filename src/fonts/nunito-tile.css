@@ -1,8 +1,12 @@
 /* Taş harfi fontu (Board'daki oyun taşları). 23 Temmuz 2026'dan önce
-   burada da (Space Grotesk/Space Mono/Caveat gibi) @fontsource/nunito
-   base64 data URI olarak gömülüydü; 4 fontun toplamı PageSpeed'de
-   render-blocking CSS olarak işaretlenince (bkz. caveat-logo.css'teki not)
-   gerçek .woff2 dosyalarına (`./files/`) + font-display: swap'a geçildi.
+   burada da (Space Grotesk/Space Mono/eski Caveat logo fontu gibi)
+   @fontsource/nunito base64 data URI olarak gömülüydü; 4 fontun toplamı
+   PageSpeed'de render-blocking CSS olarak işaretlenince gerçek .woff2
+   dosyalarına (`./files/`) + font-display: swap'a geçildi — kabul edilen
+   bedel küçük bir FOUT riski (logodaki Caveat'in aksine burada yedek
+   font de sans-serif olduğundan sıçrama az fark ediliyor; Caveat ise
+   aynı gün önce preload'a, sonra tamamen statik SVG path'lere
+   [LogoMark.tsx] geçirilerek bu riskten tümüyle çıkarıldı).
 
    unicode-range'ler bilerek korundu: @fontsource/nunito'nun latin-800.css
    / latin-ext-800.css dosyaları bunu vermiyor, bu da tarayıcının Ş/Ğ/İ

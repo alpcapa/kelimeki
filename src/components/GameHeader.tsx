@@ -1,6 +1,7 @@
 // Kelimeki — başlık: skorlar ve hesap menüsü
 import { PLAYER_COLORS } from '../game/constants';
 import type { GameState } from '../game/types';
+import { LogoMark } from './LogoMark';
 import { UserMenu } from './UserMenu';
 
 interface GameHeaderProps {
@@ -19,12 +20,8 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
         onClick={onLogoClick}
         disabled={exitDisabled}
         className="shrink-0 flex flex-col items-center leading-none active:opacity-70 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed disabled:active:opacity-40"
-        style={{ fontFamily: "'Caveat', cursive", fontSize: 28, fontWeight: 700, color: '#2563EB', letterSpacing: 3 }}
         aria-label="Oyundan çık">
-        kelimeki
-        <svg width="64" height="6" viewBox="0 0 64 6" fill="none">
-          <path d="M2 3 Q16 1 32 3 Q48 5 62 3" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" fill="none" />
-        </svg>
+        <LogoMark height={28} />
       </button>
 
       <div className="flex gap-2 items-center flex-wrap justify-end">

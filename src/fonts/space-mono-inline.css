@@ -1,11 +1,14 @@
 /* Space Mono (skorlar, oyuncu etiketleri, tüm mono-spacing UI metni) —
-   Space Grotesk ve Caveat'ta yaşanan aynı FOUT/kayma sorunu burada da
-   vardı (kullanıcı Setup ekranındaki açıklama paragrafında fark etti,
-   ama font-mono uygulama genelinde kullanılıyor). 23 Temmuz 2026'dan önce
-   bu her ağırlık+altküme burada base64 data URI olarak gömülerek
-   çözülmüştü; 4 fontun toplamı PageSpeed'de render-blocking CSS olarak
-   işaretlenince (bkz. caveat-logo.css'teki not) gerçek .woff2 dosyalarına
-   (`./files/`) + font-display: swap'a geçildi. */
+   Space Grotesk ve eski Caveat logo fontunda yaşanan aynı FOUT/kayma
+   sorunu burada da vardı (kullanıcı Setup ekranındaki açıklama
+   paragrafında fark etti, ama font-mono uygulama genelinde kullanılıyor).
+   23 Temmuz 2026'dan önce bu her ağırlık+altküme burada base64 data URI
+   olarak gömülerek çözülmüştü; 4 fontun toplamı PageSpeed'de
+   render-blocking CSS olarak işaretlenince gerçek .woff2 dosyalarına
+   (`./files/`) + font-display: swap'a geçildi — burada da kabul edilen
+   küçük bir FOUT riski (Caveat'in aksine yedek font sans-serif olduğundan
+   daha az fark ediliyor; Caveat aynı gün tamamen statik SVG path'lere
+   [LogoMark.tsx] geçirilerek riskten çıkarıldı). */
 @font-face {
   font-family: 'Space Mono';
   font-style: normal;

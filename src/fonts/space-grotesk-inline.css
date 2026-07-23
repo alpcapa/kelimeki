@@ -1,12 +1,15 @@
 /* Space Grotesk (butonlar, başlıklar, tüm sans-serif UI metni için
-   kullanılan ana font) — logoda (Caveat) yaşanan aynı FOUT/kayma sorunu
-   burada da vardı: kullanıcı "2 OYUNCULU"/"4 OYUNCULU"/"OYUNU BAŞLAT" gibi
-   kalın buton etiketlerinin ilk açılışta kısaca yedek fontla gösterilip
-   Space Grotesk'e sıçradığını bildirdi. 23 Temmuz 2026'dan önce bu, her
-   ağırlık+altküme burada base64 data URI olarak CSS'e gömülerek
-   çözülmüştü; 4 fontun toplamı PageSpeed'de render-blocking CSS olarak
-   işaretlenince (bkz. caveat-logo.css'teki not) gerçek .woff2 dosyalarına
-   (`./files/`) + font-display: swap'a geçildi. latin + latin-ext ikisi de
+   kullanılan ana font) — logoda (eski Caveat web fontu) yaşanan aynı
+   FOUT/kayma sorunu burada da vardı: kullanıcı "2 OYUNCULU"/"4
+   OYUNCULU"/"OYUNU BAŞLAT" gibi kalın buton etiketlerinin ilk açılışta
+   kısaca yedek fontla gösterilip Space Grotesk'e sıçradığını bildirdi.
+   23 Temmuz 2026'dan önce bu, her ağırlık+altküme burada base64 data URI
+   olarak CSS'e gömülerek çözülmüştü; 4 fontun toplamı PageSpeed'de
+   render-blocking CSS olarak işaretlenince gerçek .woff2 dosyalarına
+   (`./files/`) + font-display: swap'a geçildi — burada da kabul edilen
+   küçük bir FOUT riski (Caveat'in aksine yedek font sans-serif olduğundan
+   daha az fark ediliyor; Caveat aynı gün tamamen statik SVG path'lere
+   [LogoMark.tsx] geçirilerek riskten çıkarıldı). latin + latin-ext ikisi de
    ayrı @font-face olarak kalıyor (fontsource'un kendisi de unicode-range
    vermiyor — tarayıcı gerekli glif hangi dosyadaysa onu kullanıyor;
    Ş/Ğ/İ gibi Türkçe karakterler latin-ext'te); artık her dosya yalnızca
