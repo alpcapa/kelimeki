@@ -5,20 +5,29 @@
 // köşesinden başlatır; sonra mevcut taşları çapa alarak yeni kelimeler kurar.
 import { SIZE, cornerBounds, cornerCell } from '../game/constants';
 import type { AIMove, BonusType, Placement, Player, Tile } from '../game/types';
-import { WORD_SET } from '../data/words';
+import { getWordSet } from '../data/wordSetLoader';
 import { letterPoints } from '../data/tiles';
 import { canSpell, calcScore, computeAllTerritories, freshCorners } from './validator';
 import { trLower, trUpper } from './turkish';
 import { getFormedWords, key, tileLetter, type Board } from './board';
 
 // WORD_SET sabit olduğundan (oyun boyunca değişmez), rafa/tahtaya/oyuncuya
-// bağlı olmayan bu türetilmiş liste modül yüklenirken bir kez hesaplanır —
-// önceden her `findAIMove` çağrısında (her YZ hamlesinde) baştan
-// yeniden üretiliyordu, bu da tahtada çapa harfi arttıkça YZ'nin "düşünme"
-// süresini gereksiz yere uzatıyordu.
-const WORD_POOL: readonly string[] = [...WORD_SET]
-  .filter((w) => w.length >= 2 && w.length <= 7)
-  .map((w) => trUpper(w));
+// bağlı olmayan bu türetilmiş liste ilk `findAIMove` çağrısında bir kez
+// hesaplanıp önbelleğe alınır — önceden her çağrıda baştan yeniden
+// üretiliyordu, bu da tahtada çapa harfi arttıkça YZ'nin "düşünme"
+// süresini gereksiz yere uzatıyordu. Modül yüklenirken DEĞİL ilk
+// kullanımda hesaplanmasının sebebi, WORD_SET'in artık ayrı bir chunk'tan
+// (bkz. wordSetLoader.ts) geldiği ve modül değerlendirme anında henüz
+// yüklenmemiş olabilmesidir.
+let wordPool: readonly string[] | undefined;
+function getWordPool(): readonly string[] {
+  if (!wordPool) {
+    wordPool = [...getWordSet()]
+      .filter((w) => w.length >= 2 && w.length <= 7)
+      .map((w) => trUpper(w));
+  }
+  return wordPool;
+}
 
 /**
  * Verilen pozisyon/harf listesi için rafı tüketerek taşları üretir. Tam harf
@@ -60,7 +69,8 @@ export function findAIMove(
   players: Player[],
 ): AIMove | null {
   const rackLetters = rack.map((t) => t.letter);
-  const candidates = WORD_POOL.filter((w) => canSpell(w, rackLetters));
+  const wordPool = getWordPool();
+  const candidates = wordPool.filter((w) => canSpell(w, rackLetters));
 
   // Çapalı hamlelerde kelimenin bir harfi tahtada zaten var olabilir (çapa).
   // O harfi rafta aramaya gerek yok — rafa + çapa harfine göre gevşetilmiş
@@ -70,7 +80,7 @@ export function findAIMove(
   const candidatesForAnchor = (letter: string): string[] => {
     let cached = anchoredCandidatesCache.get(letter);
     if (!cached) {
-      cached = WORD_POOL.filter(
+      cached = wordPool.filter(
         (w) => w.includes(letter) && canSpell(w, [...rackLetters, letter]),
       );
       anchoredCandidatesCache.set(letter, cached);
@@ -99,7 +109,7 @@ export function findAIMove(
     for (const p of placements) placed[key(p.r, p.c)] = p.tile;
     // Oluşan tüm kelimeler (çapraz dahil) sözlükte olmalı.
     for (const fw of getFormedWords(board, placed)) {
-      if (!WORD_SET.has(trLower(fw.word))) return;
+      if (!getWordSet().has(trLower(fw.word))) return;
     }
     // Yeni taşlardan biri bir rakip bölgesinin içine düşüyorsa (girme) ya da
     // dışarıdan sınırına bitişikse (değme), o bölgeyle puan paylaşılır.

@@ -15,6 +15,7 @@ import { HelpModal } from './components/HelpModal';
 import { FeedbackModal } from './components/FeedbackModal';
 import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
+import { preloadWordSet, isWordSetReady } from './data/wordSetLoader';
 import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { rankPlayers } from './utils/ranking';
 import { loadGameState, saveGameState, clearGameState, takePendingAbandonedGame } from './utils/gameStorage';
@@ -66,6 +67,16 @@ export default function App() {
     undefined,
     () => loadGameState() ?? createInitialState(),
   );
+
+  // Kelime listesi main.tsx'te tetiklenen ayrı chunk'tan yükleniyor —
+  // hazır olana kadar hamle doğrulama/YZ turu tetiklenmemeli (bkz.
+  // wordSetLoader.ts). Setup ekranında kuruluma harcanan birkaç saniye
+  // içinde neredeyse her zaman zaten tamamlanmış olur.
+  const [wordsReady, setWordsReady] = useState(isWordSetReady());
+  useEffect(() => {
+    if (wordsReady) return;
+    preloadWordSet().then(() => setWordsReady(true));
+  }, [wordsReady]);
 
   // Sosyal medya/tanıtım linklerindeki ?ref= parametresini (varsa) cihaza
   // ilk temas olarak kaydeder — oturum durumundan bağımsız, sayfa her
@@ -376,17 +387,17 @@ export default function App() {
     !state.isGameOver &&
     !!state.players[state.current]?.isAI;
   useEffect(() => {
-    if (!aiTurn) return;
+    if (!aiTurn || !wordsReady) return;
     const t = setTimeout(() => dispatch({ type: 'AI_PLAY' }), AI_THINK_MS);
     return () => clearTimeout(t);
-  }, [aiTurn, state.current, state.turnCount]);
+  }, [aiTurn, wordsReady, state.current, state.turnCount]);
 
   // Oyna'ya basmadan önce, tahtaya konan taşların anlık geçerlilik/puan
   // çerçevesi (yeşil/kırmızı). Yerel sözlükle kontrol edilir; sunucu
   // doğrulaması yalnızca Oyna'ya basınca (handlePlay) çalışır.
   const moveStatus = useMemo(() => {
     const placedKeys = Object.keys(state.placed);
-    if (placedKeys.length === 0) return null;
+    if (placedKeys.length === 0 || !wordsReady) return null;
     const current = state.players[state.current];
     if (!current) return null;
 
@@ -411,7 +422,7 @@ export default function App() {
       score: calcScore(state.board, state.placed, state.bonuses),
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.placed, state.board, state.players, state.current]);
+  }, [state.placed, state.board, state.players, state.current, wordsReady]);
 
   // Oyna'ya basmadan önce, geçersiz bir hamle varsa sebebini canlı olarak
   // alttaki mesaj alanında göster — oyuncu Oyna'ya basmadan neden geçersiz
@@ -613,6 +624,7 @@ export default function App() {
   const canAct = !state.isGameOver && !me.isAI;
 
   const handlePlay = async () => {
+    if (!wordsReady) return;
     // Rakip köşeye giriş tespiti.
     const placedCoords = Object.keys(state.placed).map(
       (k) => k.split(',').map(Number) as [number, number],
@@ -810,11 +822,11 @@ export default function App() {
                   </button>
                 ) : (
                   <button
-                    disabled={!canAct || validating}
+                    disabled={!canAct || validating || !wordsReady}
                     onClick={() => { void handlePlay(); }}
                     className="btn-raised shrink-0 px-5 rounded-lg font-sans text-[12px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97] disabled:opacity-35 disabled:cursor-not-allowed"
                   >
-                    {validating ? 'Kontrol…' : 'Oyna'}
+                    {!wordsReady ? 'Yükleniyor…' : validating ? 'Kontrol…' : 'Oyna'}
                   </button>
                 )
               )}

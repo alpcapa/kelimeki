@@ -23,8 +23,13 @@ import './fonts/nunito-tile.css';
 import './index.css';
 
 import { setupPwaUpdates } from './lib/pwa';
+import { preloadWordSet } from './data/wordSetLoader';
 
 setupPwaUpdates();
+
+// Kelime listesini (~63k kelime) ayrı bir chunk olarak arka planda
+// hemen indirmeye başlar — ilk render'ı bloklamaz (bkz. wordSetLoader.ts).
+void preloadWordSet();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

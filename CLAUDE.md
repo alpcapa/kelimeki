@@ -39,7 +39,7 @@ src/
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
   utils/        # Saf fonksiyonlar (validator, board, ai, bag, gameStorage, gameSync, feedbackSync, visitTracking, ranking, onboarding...)
-  data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları
+  data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   hooks/        # useAuth, useModalA11y, useOnlineStatus
 ```
@@ -91,6 +91,15 @@ Tüm fontlar (`src/fonts/*.css`, `main.tsx`'te import edilir) kendi sunucumuzdan
 - **Logo (Caveat)** — tamamen kaldırıldı, statik SVG path'lere çevrildi (bkz. `LogoMark`, yukarıdaki "Bileşen Notları").
 - **Space Grotesk 700 / Space Mono 400** — Setup ekranında ilk boyamada görünen kalın buton etiketleri ve açıklama paragrafı bu ağırlıkları kullanır; kullanıcı buradaki FOUT'u bizzat bildirdi. `public/fonts/`'a taşınıp `index.html`'den `<link rel="preload">` ile öncelikli indirilir (bkz. ilgili `src/fonts/space-grotesk-inline.css`/`space-mono-inline.css` dosyalarındaki notlar). Bunlar canlı/değişken metin (skor, kullanıcı adı) render ettiğinden logodaki gibi statik path'e çevrilemez — preload en iyi pratik çözüm, garantili değil.
 - **Diğer ağırlıklar (Space Grotesk 400/500/600, Space Mono 700) ve Nunito (taş harfi fontu)** — henüz raporlanmadığından ve kritik ilk-boyama yolunda olmadığından dokunulmadı, hâlâ eski `./files/` + yalnızca-swap yolunda. Aynı şikayet başka bir ağırlıkta/yerde görülürse aynı desen uygulanmalı: dosyayı `public/fonts/`'a taşı, `index.html`'e `<link rel="preload">` ekle, `vite.config.ts`'teki `includeAssets`'e ekle (PWA precache için).
+
+## Kelime Listesi Code-Splitting'i
+
+`src/data/words.ts` (~63k kelime, ~860 KB kaynak) 24 Temmuz 2026'ya kadar `validator.ts` ve `ai.ts` tarafından **statik** `import` ile çekiliyordu — `vite.config.ts`'te `manualChunks` olmadığından bu, PageSpeed'in mobilde ölçtüğü ana JS paketine (~395 KiB transfer, 102 KiB'ı "unused") gömülüyor, Setup ekranı daha render olmadan indirilip parse ediliyordu. Artık `src/data/wordSetLoader.ts` üzerinden ayrı bir chunk (`words-*.js`) olarak dinamik `import()` ile geliyor:
+
+- `main.tsx`, `preloadWordSet()`'i uygulama daha render olmadan (fire-and-forget) tetikler — ana JS paketi bu veriyi beklemeden çalışır, indirme arka planda paralel sürer.
+- `validator.ts`/`ai.ts` artık `WORD_SET`'i doğrudan import etmiyor, `getWordSet()` (henüz yüklenmediyse fırlatan) üzerinden okuyor — `ai.ts`'teki `WORD_POOL` da modül yüklenirken değil ilk `findAIMove` çağrısında lazy hesaplanıp önbelleğe alınıyor (`getWordPool()`).
+- `gameReducer.ts` senkron bir `useReducer` reducer'ı olduğundan (await edemez), gerçek hamle doğrulama (`App.tsx`'teki canlı `moveStatus`), "Oyna" (`handlePlay`) ve YZ turu efekti `wordsReady` bayrağıyla korunuyor — kelime listesi hazır olmadan bu üçü tetiklenmiyor. Setup ekranındaki "Oyunu Başlat" da aynı şekilde `isWordSetReady()`'e kadar "Hazırlanıyor…" gösterip devre dışı kalıyor. Pratikte Setup'ta oyuncu kurulumuna harcanan birkaç saniye içinde chunk zaten yüklenmiş oluyor; bu bayraklar sadece güvenlik ağı (ör. kaydedilmiş bir oyunun YZ sırasında doğrudan açılması gibi Setup'ı atlayan senaryolar için).
+- `words-*.js`, VitePWA'nın varsayılan `generateSW` precache listesine otomatik dahil oluyor (diğer JS parçaları gibi) — offline oynanabilirlik bozulmuyor, sadece ilk ziyarette (ya da SW güncellemesinde) bir kez ayrıca indiriliyor.
 
 ## Admin Paneli
 
