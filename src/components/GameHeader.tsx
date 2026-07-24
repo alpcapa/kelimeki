@@ -76,54 +76,63 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
           flex-end, taşan içeriği scrollWidth'e hiç yansımayan, kaydırarak
           bile ulaşılamayan bir şekilde kırpıyor (test edilip doğrulandı).
           justify-start (varsayılan) ile taşma her zaman erişilebilir kalır
-          ve en önemli kutu (0. oyuncu/hesap sahibi) her zaman görünür. */}
-      <div
-        className="flex items-center min-w-0 overflow-x-auto no-scrollbar"
-        style={{ gap: BOX_GAP }}
-      >
-        {players.map((p, i) => {
-          const col = PLAYER_COLORS[p.colorIndex];
-          const active = i === current;
-          const label = p.isAI ? `YZ ${i + 1}` : p.name;
-          return (
-            <div
-              key={i}
-              className="shrink-0 shadow-raised text-center rounded-md transition-all"
-              style={{
-                width: p.isAI ? YZ_BOX_WIDTH : PLAYER_BOX_WIDTH,
-                paddingLeft: BOX_PADDING_X,
-                paddingRight: BOX_PADDING_X,
-                paddingTop: BOX_PADDING_Y,
-                paddingBottom: BOX_PADDING_Y,
-                // Board'daki bölge renklendirmesiyle birebir aynı eşleme:
-                // iç dolgu = zone.tint, sınır çizgisi = base (bkz. Board.tsx
-                // territory hücre dolgusu ve buildOutline çağrısı). Sıra
-                // kimdeyse onu ayırt etmek için tek fark çerçeve kalınlığı —
-                // renk her oyuncuda aynı mantıkla (kendi base'i) belirleniyor.
-                background: col.tint,
-                boxShadow: `inset 0 0 0 ${active ? 2.5 : 1.5}px ${col.base}`,
-                opacity: p.surrendered ? 0.45 : 1,
-              }}
-            >
+          ve en önemli kutu (0. oyuncu/hesap sahibi) her zaman görünür.
+          UserMenu bu kabın DIŞINDA (bkz. aşağı): overflow-x-auto,
+          overflow-y'yi (CSS'in "visible" olmayan bir eksene sahip
+          konteynerlerde diğer ekseni de 'auto' sayma kuralı yüzünden)
+          fiilen 'auto' kılıp içindeki her şeyi dikeyde de kırpıyor —
+          hesap menüsü dropdown'ı (top-full ile aşağı taşan, absolute
+          konumlu) bu kabın içindeyken tamamen görünmez kırpılıyordu
+          (tıklanınca açılıyordu ama hiç görünmüyordu, bkz. proje geçmişi). */}
+      <div className="flex items-center min-w-0 gap-2">
+        <div
+          className="flex items-center min-w-0 overflow-x-auto no-scrollbar"
+          style={{ gap: BOX_GAP }}
+        >
+          {players.map((p, i) => {
+            const col = PLAYER_COLORS[p.colorIndex];
+            const active = i === current;
+            const label = p.isAI ? `YZ ${i + 1}` : p.name;
+            return (
               <div
-                className="uppercase tracking-[1px] font-mono font-bold truncate"
+                key={i}
+                className="shrink-0 shadow-raised text-center rounded-md transition-all"
                 style={{
-                  fontSize: LABEL_FONT_SIZE,
-                  color: col.base,
-                  textDecoration: p.surrendered ? 'line-through' : 'none',
+                  width: p.isAI ? YZ_BOX_WIDTH : PLAYER_BOX_WIDTH,
+                  paddingLeft: BOX_PADDING_X,
+                  paddingRight: BOX_PADDING_X,
+                  paddingTop: BOX_PADDING_Y,
+                  paddingBottom: BOX_PADDING_Y,
+                  // Board'daki bölge renklendirmesiyle birebir aynı eşleme:
+                  // iç dolgu = zone.tint, sınır çizgisi = base (bkz. Board.tsx
+                  // territory hücre dolgusu ve buildOutline çağrısı). Sıra
+                  // kimdeyse onu ayırt etmek için tek fark çerçeve kalınlığı —
+                  // renk her oyuncuda aynı mantıkla (kendi base'i) belirleniyor.
+                  background: col.tint,
+                  boxShadow: `inset 0 0 0 ${active ? 2.5 : 1.5}px ${col.base}`,
+                  opacity: p.surrendered ? 0.45 : 1,
                 }}
               >
-                {p.surrendered ? 'Teslim' : label}
+                <div
+                  className="uppercase tracking-[1px] font-mono font-bold truncate"
+                  style={{
+                    fontSize: LABEL_FONT_SIZE,
+                    color: col.base,
+                    textDecoration: p.surrendered ? 'line-through' : 'none',
+                  }}
+                >
+                  {p.surrendered ? 'Teslim' : label}
+                </div>
+                <div
+                  className="font-mono font-bold leading-none"
+                  style={{ fontSize: SCORE_FONT_SIZE, color: col.base }}
+                >
+                  {p.score}
+                </div>
               </div>
-              <div
-                className="font-mono font-bold leading-none"
-                style={{ fontSize: SCORE_FONT_SIZE, color: col.base }}
-              >
-                {p.score}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
 
         <UserMenu />
       </div>
