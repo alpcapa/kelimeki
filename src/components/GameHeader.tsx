@@ -84,11 +84,7 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
         {players.map((p, i) => {
           const col = PLAYER_COLORS[p.colorIndex];
           const active = i === current;
-          const label = p.isAI
-            ? players.length === 2
-              ? 'YZ'
-              : `YZ ${i + 1}`
-            : p.name;
+          const label = p.isAI ? `YZ ${i + 1}` : p.name;
           return (
             <div
               key={i}
