@@ -26,6 +26,16 @@ const LABEL_FONT_SIZE = 'clamp(6px, calc(-2.33px + 2.22vw), 8px)';
 const SCORE_FONT_SIZE = 'clamp(13px, calc(-7.83px + 5.56vw), 18px)';
 const BOX_PADDING_X = 'clamp(6px, calc(-2.33px + 2.22vw), 8px)';
 const BOX_GAP = 'clamp(6px, calc(-2.33px + 2.22vw), 8px)';
+// Sabit py-0.5 (2px) kullanıldığında kutu, Giriş butonundan (UserMenu.tsx —
+// kendi 1px kenarlığı + akıcı GIRIS_PADDING_Y'si var) 375px'te ~1.4px,
+// 465px'te ~3px daha kısa kalıyordu (24 Temmuz 2026'da kullanıcı fotoğrafıyla
+// fark edildi). Etiket satırının (leading-none OLMAYAN, puan satırının
+// aksine) satır yüksekliği font boyutunun 1.5 katı olduğundan fark viewport
+// büyüdükçe açılıyor. Bu akıcı dolgu, 375px ve 465px'te Giriş'in tam
+// yüksekliğini (2px kenarlık + kendi dolgusu + yazı boyutu) verecek şekilde
+// geri hesaplandı — aynı iki uç noktayı (375/465) kullanan diğer clamp'lerle
+// tutarlı.
+const BOX_PADDING_Y = 'clamp(2.7px, calc(-0.63px + 0.89vw), 3.5px)';
 
 interface GameHeaderProps {
   state: GameState;
@@ -75,11 +85,13 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
           return (
             <div
               key={i}
-              className="shrink-0 shadow-raised text-center rounded-md py-0.5 transition-all"
+              className="shrink-0 shadow-raised text-center rounded-md transition-all"
               style={{
                 width: p.isAI ? YZ_BOX_WIDTH : PLAYER_BOX_WIDTH,
                 paddingLeft: BOX_PADDING_X,
                 paddingRight: BOX_PADDING_X,
+                paddingTop: BOX_PADDING_Y,
+                paddingBottom: BOX_PADDING_Y,
                 // Board'daki bölge renklendirmesiyle birebir aynı eşleme:
                 // iç dolgu = zone.tint, sınır çizgisi = base (bkz. Board.tsx
                 // territory hücre dolgusu ve buildOutline çağrısı). Sıra
