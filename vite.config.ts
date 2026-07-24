@@ -9,12 +9,6 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,
-      workbox: {
-        // Yatırımcı sayfası (public/kelimeki-yatirimci-2026.html) tek seferlik,
-        // paylaşılan bir statik dosya — oyunu oynayan kullanıcıların service worker
-        // önbelleğine gereksiz ~800KB eklenmesin diye precache'den hariç tutuluyor.
-        globIgnores: ['**/kelimeki-yatirimci-2026.html'],
-      },
       includeAssets: [
         'favicon.svg',
         'favicon.ico',
