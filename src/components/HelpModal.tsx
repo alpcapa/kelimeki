@@ -182,7 +182,7 @@ function DetailedRules() {
           kalır, 2/3 diğer 3 rakiple eşit paylaşılır.
         </P>
         <P>
-          Rakip bölgesine temas eden ama senin bölgene dahil olmayan kelimeler sana vergi
+          Rakip bölgesine temas eden ama senin bölgene bağlı olmayan kelimeler sana vergi
           kazandırmaz. Ancak ilerleyen hamlelerde bu kelimeyi kendi bölgene bağlarsan artık
           bölgene dahil olur ve bundan sonra o kelime üzerinden vergi kazanmaya başlayabilirsin.
         </P>
