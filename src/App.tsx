@@ -1085,10 +1085,7 @@ export default function App() {
         turnCount={state.turnCount}
         onOpenHistory={() => setShowHistory(true)}
         onOpenFeedback={() => setShowFeedback(true)}
-        onClose={() => {
-          setGameOverDismissed(true);
-          setShowFeedback(true);
-        }}
+        onClose={() => setGameOverDismissed(true)}
       />
 
       {showHistory && (
