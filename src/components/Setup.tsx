@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { fetchPlayerStats } from '../lib/api';
 import { hasSeenQuickStart, markQuickStartSeen } from '../utils/onboarding';
+import { preloadWordSet, isWordSetReady } from '../data/wordSetLoader';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
 import { HelpModal } from './HelpModal';
@@ -41,6 +42,16 @@ export function Setup({ onStart }: SetupProps) {
   const accountPending = !!user && !accountName;
 
   const [count, setCount] = useState<2 | 4>(2);
+
+  // Kelime listesi main.tsx'te tetiklenen ayrı chunk'tan yükleniyor —
+  // "Oyunu Başlat" hazır olana kadar devre dışı bırakılır (bkz.
+  // wordSetLoader.ts). Kurulumda oyuncu sayısı seçilirken geçen birkaç
+  // saniye içinde neredeyse her zaman zaten tamamlanmış olur.
+  const [wordsReady, setWordsReady] = useState(isWordSetReady());
+  useEffect(() => {
+    if (wordsReady) return;
+    preloadWordSet().then(() => setWordsReady(true));
+  }, [wordsReady]);
 
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -298,9 +309,10 @@ export function Setup({ onStart }: SetupProps) {
 
       <button
         onClick={handleStart}
-        className="btn-raised py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-accent text-white active:scale-[0.97] transition-transform"
+        disabled={!wordsReady}
+        className="btn-raised py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
       >
-        Oyunu Başlat
+        {wordsReady ? 'Oyunu Başlat' : 'Hazırlanıyor…'}
       </button>
 
       <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-muted">

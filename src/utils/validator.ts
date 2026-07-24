@@ -1,7 +1,7 @@
 // Kelimeki — kelime doğrulama, bölge kuralları ve puanlama
 import { BINGO_BONUS, RACK_SIZE, SIZE, cornerBounds, cornerCell, inBonusZone } from '../game/constants';
 import type { BonusType, Player, ValidationResult } from '../game/types';
-import { WORD_SET } from '../data/words';
+import { getWordSet } from '../data/wordSetLoader';
 import { trLower } from './turkish';
 import {
   getFormedWords,
@@ -165,7 +165,7 @@ export function validatePlacement(
 
   const formed = getFormedWords(board, placed);
   const invalidWords = Array.from(
-    new Set(formed.map((f) => f.word).filter((word) => !WORD_SET.has(trLower(word)))),
+    new Set(formed.map((f) => f.word).filter((word) => !getWordSet().has(trLower(word)))),
   );
   if (invalidWords.length > 0) {
     return { valid: false, reason: formatInvalidWordsReason(invalidWords) };

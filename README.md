@@ -72,10 +72,11 @@ src/
 │   ├── constants.ts   # tahta sabitleri, köşe hesapları, bonus konumları
 │   └── gameReducer.ts # useReducer ile oyun durum makinesi
 ├── data/
-│   ├── words.ts       # Türkçe kelime listesi (~63 bin kelime, üretilmiş)
-│   ├── meanings.json  # kelime → anlamlar (tembel yüklenir, ~9 MB)
-│   ├── meanings.ts    # anlam yükleyici
-│   └── tiles.ts       # Türkçe harf dağılımı ve puanlar (100 taş)
+│   ├── words.ts          # Türkçe kelime listesi (~63 bin kelime, üretilmiş)
+│   ├── wordSetLoader.ts  # words.ts'i ayrı bir chunk olarak lazy-load eder
+│   ├── meanings.json     # kelime → anlamlar (tembel yüklenir, ~9 MB)
+│   ├── meanings.ts       # anlam yükleyici
+│   └── tiles.ts          # Türkçe harf dağılımı ve puanlar (100 taş)
 ├── utils/
 │   ├── validator.ts    # kelime doğrulama, bölge kuralları, puanlama
 │   ├── ai.ts           # YZ oyuncu mantığı

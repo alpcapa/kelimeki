@@ -11,22 +11,29 @@ export const LOGO_COLOR = '#2563EB';
 export const LOGO_UNDERLINE_STROKE_WIDTH = 20;
 
 interface LogoMarkProps {
-  height: number;
+  /** Sabit piksel (ör. 52) ya da akıcı bir CSS boyutu (ör. clamp(...) —
+   *  GameHeader'daki skor kutuları/Giriş butonuyla aynı sistemde büyür). */
+  height: number | string;
   color?: string;
   className?: string;
 }
 
 export function LogoMark({ height, color = LOGO_COLOR, className }: LogoMarkProps) {
   const [, , vbWidth, vbHeight] = LOGO_VIEW_BOX.split(' ').map(Number);
-  const width = (height * vbWidth) / vbHeight;
+  // Akıcı (string) yükseklikte SVG width/height attribute'ları yerine CSS
+  // height + aspect-ratio kullanılır — clamp()/calc() bir SVG length
+  // attribute'u olarak değil ancak CSS özelliği olarak geçerlidir.
+  const isFluid = typeof height === 'string';
+  const width = isFluid ? undefined : (height * vbWidth) / vbHeight;
   return (
     <svg
-      width={width}
-      height={height}
+      width={isFluid ? undefined : width}
+      height={isFluid ? undefined : height}
       viewBox={LOGO_VIEW_BOX}
       fill="none"
       aria-hidden="true"
       className={className}
+      style={isFluid ? { height, width: 'auto', aspectRatio: vbWidth + ' / ' + vbHeight } : undefined}
     >
       <path d={LOGO_TEXT_PATH} fill={color} />
       <path
