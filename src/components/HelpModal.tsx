@@ -174,12 +174,6 @@ function DetailedRules() {
           belirlenmiştir.
         </P>
         <P>
-          4×4'lük köşe bloğunun henüz kimse tarafından ele geçirilmemiş kareleri (üzerinde hiç
-          taş olmasa bile) baştan itibaren senindir — bu yüzden bloğun herhangi bir kenarına
-          kendi renginde bitişik bir taş koyduğunda bölgen oraya kadar hemen büyür; köşenin tam
-          ucundaki başlangıç karesinden taş taş ilerlemiş olmana gerek yok.
-        </P>
-        <P>
           İlk hamleden sonra rakibin bölgesine de taş koyabilirsin; ancak yerleştirdiğin
           harflerden herhangi biri rakibin bölgesine temas eder ya da içine yerleşirse, o
           hamleden kazandığın puanın 1/3'ü bölge sahibine gider, 2/3'ü sende kalır. Aynı hamle
@@ -188,7 +182,7 @@ function DetailedRules() {
           kalır, 2/3 diğer 3 rakiple eşit paylaşılır.
         </P>
         <P>
-          Rakip bölgesine temas eden ama senin bölgene dahil olmayan kelimeler sana vergi
+          Rakip bölgesine temas eden ama senin bölgene bağlı olmayan kelimeler sana vergi
           kazandırmaz. Ancak ilerleyen hamlelerde bu kelimeyi kendi bölgene bağlarsan artık
           bölgene dahil olur ve bundan sonra o kelime üzerinden vergi kazanmaya başlayabilirsin.
         </P>
