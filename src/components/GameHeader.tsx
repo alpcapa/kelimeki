@@ -36,6 +36,13 @@ const BOX_GAP = 'clamp(6px, calc(-2.33px + 2.22vw), 8px)';
 // geri hesaplandı — aynı iki uç noktayı (375/465) kullanan diğer clamp'lerle
 // tutarlı.
 const BOX_PADDING_Y = 'clamp(2.7px, calc(-0.63px + 0.89vw), 3.5px)';
+// Logo eskiden sabit 28px'ti — skor kutuları/Giriş 465px'te 37px'e kadar
+// büyürken o hep aynı kaldığından geniş ekranlarda orantısı bozulup küçük
+// kalıyordu (24 Temmuz 2026'da fark edildi). Aynı 375/465 uç noktalarını
+// kullanan bir clamp'e bağlandı; LogoMark artık string bir height alınca
+// (bkz. LogoMark.tsx/generate-logo-paths.mjs) SVG width/height attribute'u
+// yerine CSS height + aspect-ratio kullanıyor.
+const LOGO_HEIGHT = 'clamp(28px, calc(-5.33px + 8.89vw), 36px)';
 
 interface GameHeaderProps {
   state: GameState;
@@ -54,7 +61,7 @@ export function GameHeader({ state, onLogoClick, exitDisabled }: GameHeaderProps
         disabled={exitDisabled}
         className="shrink-0 flex flex-col items-center leading-none active:opacity-70 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed disabled:active:opacity-40"
         aria-label="Oyundan çık">
-        <LogoMark height={28} />
+        <LogoMark height={LOGO_HEIGHT} />
       </button>
 
       {/* Akıcı boyutlandırma 375px'te (bkz. yukarı) neredeyse tam sığdırsa
