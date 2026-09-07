@@ -2266,21 +2266,25 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   await expect(page.getByText('6 × 2 = 12 puan!')).toBeVisible();
   await expect(page.getByText('TANITIM · 4/4')).toBeVisible({ timeout: 20_000 });
 
-  // 4. sahne — rakibin sınırına değme (SAP): gerçek oyundaki onay penceresi.
+  // 4. sahne — merkez X3 + rakibin sınırına değme (SES): iki taş üç kelime
+  // birden kuruyor (SES ×3 · AS ×3 · NE ×2) ve hamle vergi ödüyor.
+  await expect(page.locator('[data-coach]')).toContainText('Ortadaki kare üç katı!');
   await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(2);
-  await page.locator('[data-cell="6,9"]').click();
-  await page.locator('[data-cell="6,10"]').click();
+  await page.locator('[data-cell="6,6"]').click();
+  await page.locator('[data-cell="6,7"]').click();
   await oyna.click();
   const onay = page.getByLabel('Sınır ihlali onayı');
   await expect(onay).toBeVisible();
-  await expect(onay).toContainText('8');
-  await expect(onay).toContainText('3');
+  // Vergi ÖNCESİ puan ve rakibe giden pay — ikisi de motordan geliyor.
+  await expect(onay).toContainText('28');
+  await expect(onay).toContainText('9');
   await onay.getByRole('button', { name: 'Oyna', exact: true }).click();
 
   // Kapanış kartı → gerçek oyun.
   const bitis = page.getByLabel('Tanıtım tamamlandı');
   await expect(bitis).toBeVisible({ timeout: 20_000 });
   await expect(bitis).toContainText('Hazırsın!');
+  await expect(bitis).toContainText('bingo');
   await bitis.getByRole('button', { name: 'Gerçek oyuna başla' }).click();
 
   // Gerçek oyun ekranı: tanıtımda olmayan kontroller burada var.

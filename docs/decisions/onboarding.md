@@ -38,7 +38,7 @@ yapsın ki gerçek simülasyon olsun"*.
 | 1 | **BÜYÜ** `0,0→0,3` +12 | ev karesi zorunlu başlangıç | **KUYU** `9,12↓12,12` +8 | 12–8 |
 | 2 | **ÜZENGİ** `0,3↓5,3` +15 | bölge kendi taşlarıyla büyür | **TABAK** `9,8→9,12` +7 | 27–15 |
 | 3 | **İNSAN** `5,3→5,7` +12 (6×2) | merkezde puan iki katı | **SAAT** `6,8↑9,8` +10 (5×2) | 39–25 |
-| 4 | **SAP** `6,8→6,10` +5 (3'ü rakibe) | değmek yetiyor, vergi var | **NAR** `5,4↓7,4` +4 (2'si bize) | 46–32 |
+| 4 | **SES** `6,6→6,7` +19 (9'u rakibe) | merkez karesi ×3 **ve** sınıra değmenin bedeli | **NAR** `5,4↓7,4` +4 (2'si bize) | 60–38 |
 
 Sıranın "merkez önce, vergi sonra" olmasının teknik sebebi: oyuncunun
 zinciri sol üst köşeden aşağı ilerliyor, yani önce ortadaki altın bölgeye
@@ -47,15 +47,29 @@ sırada senaryo tahtayı "ileri sarmak" (birkaç hamleyi atlayıp tahtayı
 doldurmak) zorunda kalıyordu — kullanıcının düzeltmesi bu ihtiyacı da
 ortadan kaldırdı.
 
+**4. sahne iki dersi TEK hamlede veriyor** (kullanıcı kararı, 7 Eylül 2026:
+*"4. slaytta hem X3 alsın hem de sınır ihlali yapsın"*). Geometri buna zaten
+uygundu: merkez karesi `6,6` ile rakibin `SAAT` sütunu `6,8` arasında tek boş
+kare var. İki taş (S ve E) üç kelime birden kuruyor —
+
+- `SES` = S(6,6) + E(6,7) + **rakibin** S(6,8) → X3 karesine yeni taş: **×3**
+- `AS` = A(5,6) üstte + S(6,6) → aynı X3 hücresi, o da **×3**
+- `NE` = N(5,7) üstte + E(6,7) → altın bölgede: **×2**
+
+vergi öncesi 28 puan, 9'u rakibe. Yani oyuncu tek hamlede hem merkezin
+gerçek gücünü hem de bedelini görüyor; üstelik kelimesini rakibin taşına
+ekleyerek kuruyor. Balon X3'ü söylüyor, vergiyi gerçek oyundaki
+`Sınır İhlali!` penceresi anlatıyor — tek cümle bütçesi böyle korunuyor.
+
 **Rakibin cevapları iki dersi bedavaya tekrar ediyor:** 3. cevabında (SAAT)
 rakip de merkeze girip ×2 alıyor, 4. cevabında (NAR) OYUNCUNUN sınırına
 değip ona 2 puan ödüyor — verginin iki yönlü olduğu tek cümle harcamadan
-görünüyor. 4. sahnede oyuncunun kendi hamlesi rakibin **taşına ekleme**
-yaparak kuruluyor (SAAT'in S'si), yani "rakibin harfine de bağlanabilirsin"
-kuralı da senaryodan düşüyor.
+görünüyor.
 
-**Bitmeyen ders — X3:** kapanış kartı *"Ortadaki kare üç katı — onu gerçek
-oyunda dene."* diyor ve cevabı VERMİYOR. Tanıtımın işi merak bırakmak.
+**Bitmeyen ders — bingo:** X3 artık 4. sahnede öğretildiğinden kapanış
+kartının kancası değişti: *"7 taşını tek hamlede oynarsan +25 bingo bonusu
+var — gerçek oyunda dene."* Geriye bilerek öğretilmeyen iki şey kalıyor
+(bingo ve joker); tanıtımın işi her şeyi anlatmak değil, merak bırakmak.
 
 ## Mimari — motor değişmedi
 
@@ -104,7 +118,7 @@ Tanıtım gerçek `gameReducer` ile oynanır (puanı, geçerliliği, vergiyi,
 
 ## Doğrulama — `npm run verify-tutorial-script`
 
-Tanıtım ekranda PUAN yazıyor ("6 × 2 = 12", "8 puanın 3'ü rakibe gitti").
+Tanıtım ekranda PUAN yazıyor ("6 × 2 = 12", "28 puanın 9'u rakibe gitti").
 Bu sayılar elle yazıldığından motordaki bir kural değişikliği onları
 sessizce bayatlatabilirdi. Betik senaryoyu gerçek motorda oynatıp şunları
 kilitler: hedef kareler boş, gereken harf rafta (torba sırası!), hamle
@@ -120,8 +134,11 @@ tahtasındaki her yatay/dikey dizilimin sözlükte olması. CI'da koşuyor.
    döndürür. Çarpanın tek dürüst kaynağı `calcWordRawScores`'un
    `x2`/`x3` bayrakları.
 2. Rakibin son hamlesi (NAR) de merkez bölgeye düşüyor, yani o da ×2
-   alıyor. Beklenti artık veriden türüyor: `TutorialMove.raw` YALNIZCA
-   çarpan alan hamlelerde dolu.
+   alıyor. Beklenti artık veriden türüyor: `TutorialMove.bonus` hangi
+   çarpanın beklendiğini AÇIKÇA beyan eder (yoksa hiçbir kelime çarpan
+   almamalı), `raw` ise yalnızca ekranda "6 × 2 = 12" gibi bir cümle yazan
+   ve TEK kelime kuran hamlelerde dolu — 4. sahne üç kelime kurup iki farklı
+   çarpan aldığından orada "raw × n" diye tek bir cümle kurulamıyor.
 
 ## Duman testi ve StrictMode dersi
 

@@ -49,12 +49,20 @@ export interface TutorialMove {
   /** Bu hamlenin KARŞI tarafa aktardığı bölge vergisi payı (yoksa 0). */
   tax: number;
   /**
-   * Kelimenin ÇARPANSIZ harf toplamı — YALNIZCA merkez bölgeye düşen (yani
-   * ×2 alan) hamlelerde dolu, başka hiçbir yerde. Bu alan iki iş birden
-   * yapıyor: ekrandaki "6 × 2 = 12" cümlesi buradan kuruluyor (metin ile
-   * motor tek kaynaktan besleniyor) VE doğrulayıcı için "bu hamle çarpan
-   * ALMALI" beyanıdır — `raw * 2 === points + tax` eşitliği kilitlenir
-   * (`points` vergi düşülmüş hâlidir, çarpan vergiden ÖNCE uygulanır).
+   * Bu hamlenin ALMASI BEKLENEN kelime çarpanı. Doğrulayıcı bunu kelime
+   * başına dönen `x2`/`x3` bayraklarıyla karşılaştırır; beyan yoksa HİÇBİR
+   * kelime çarpan almamalıdır. (Yani hem çarpanın kaçırılması hem de
+   * beklenmedik yerde çıkması hata sayılır.)
+   */
+  bonus?: 'x2' | 'x3';
+  /**
+   * Kelimenin ÇARPANSIZ harf toplamı — YALNIZCA ekranda "6 × 2 = 12" gibi
+   * bir cümle yazan hamlelerde dolu. Metin ile motor tek kaynaktan
+   * beslensin diye: doğrulayıcı `raw * 2 === points + tax` eşitliğini
+   * kilitler (`points` vergi düşülmüş hâlidir, çarpan vergiden ÖNCE
+   * uygulanır). ⚠ Tek kelime kuran hamlelerde anlamlı: bir hamle birden
+   * çok kelime kurup bunlar FARKLI çarpan alabildiğinden (4. sahne: ×3 ve
+   * ×2 yan yana) orada bu alan bilerek boş.
    */
   raw?: number;
 }
@@ -67,7 +75,7 @@ export interface TutorialReply extends TutorialMove {
 
 /** Bir sahne: oyuncunun hamlesi + rakibin cevabı. */
 export interface TutorialStep {
-  id: 'ev' | 'buyume' | 'merkez' | 'vergi';
+  id: 'ev' | 'buyume' | 'merkez' | 'x3vergi';
   /** Balondaki TEK cümle (en fazla 6 kelime — metin bütçesi). */
   say: string;
   /**
@@ -168,6 +176,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         { r: 5, c: 7, letter: 'N' },
       ],
       points: 12,
+      bonus: 'x2',
       raw: 6,
       tax: 0,
     },
@@ -180,29 +189,37 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         { r: 8, c: 8, letter: 'A' },
       ],
       points: 10,
+      bonus: 'x2',
       raw: 5,
       tax: 0,
       note: 'Rakip de merkeze girdi ve o da ikiye katladı: +10.',
     },
   },
   {
-    id: 'vergi',
-    say: 'Rakibin sınırına değdin.',
-    bubble: { r: 6, c: 10 },
+    id: 'x3vergi',
+    // Kullanıcı kararı (7 Eylül 2026): *"4. slaytta hem X3 alsın hem de
+    // sınır ihlali yapsın"*. Geometri buna zaten uygundu — merkez karesi
+    // (6,6) ile rakibin SAAT sütunu (6,8) arasında TEK boş kare var.
+    // İki taş (S ve E) üç kelime birden kuruyor:
+    //   SES = S(6,6) + E(6,7) + rakibin S(6,8)  → X3 karesine yeni taş: ×3
+    //   AS  = A(5,6) üstte + S(6,6)             → o da ×3 (aynı X3 hücresi)
+    //   NE  = N(5,7) üstte + E(6,7)             → altın bölgede: ×2
+    // ve (6,7) rakibin taşına komşu olduğu için hamle vergi ödüyor.
+    // ⚠ `raw` YOK: üç kelime İKİ FARKLI çarpan aldığından "raw × n" diye
+    // tek bir cümle kurulamaz (bkz. `TutorialMove.raw`).
+    say: 'Ortadaki kare üç katı!',
+    bubble: { r: 6, c: 6 },
     move: {
-      // Rakibin SAAT'inin S'sine ekleniyor — "rakibin harfine de
-      // bağlanabilirsin" kuralı burada bedava öğreniliyor. Konan iki taş
-      // altın bölgenin DIŞINDA (sütun 9-10), yani bu sahne çarpan almıyor:
-      // ders karışmasın.
-      word: 'SAP',
+      word: 'SES',
       cells: [
-        { r: 6, c: 9, letter: 'A' },
-        { r: 6, c: 10, letter: 'P' },
+        { r: 6, c: 6, letter: 'S' },
+        { r: 6, c: 7, letter: 'E' },
       ],
-      points: 5,
-      tax: 3,
+      points: 19,
+      bonus: 'x3',
+      tax: 9,
     },
-    done: '8 puanın 3’ü rakibe gitti: +5.',
+    done: '28 puanın 9’u rakibe gitti: +19.',
     reply: {
       word: 'NAR',
       cells: [
@@ -212,6 +229,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
       // Rakibin bu son hamlesi altın bölgeye düşüyor (6,4 · 7,4), yani o da
       // ×2 alıyor: 3 → 6, sonra 2'si vergi olarak OYUNCUYA geçiyor.
       points: 4,
+      bonus: 'x2',
       raw: 3,
       tax: 2,
       note: 'Şimdi tersi oldu: rakip senin sınırına değdi, 2 puanı sana geçti.',
@@ -219,10 +237,14 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Kapanış sahnesinin metni — X3'ü bilerek CEVAPSIZ bırakır. */
+/**
+ * Kapanış. X3 artık 4. sahnede öğretildiğinden kanca değişti: geriye
+ * bilerek ÖĞRETİLMEYEN iki şey kaldı (bingo ve joker); biri merak olarak
+ * bırakılıyor — tanıtımın işi her şeyi anlatmak değil.
+ */
 export const TUTORIAL_FINISH_TITLE = 'Hazırsın!';
 export const TUTORIAL_FINISH_TEXT =
-  'Ortadaki kare üç katı — onu gerçek oyunda dene.';
+  '7 taşını tek hamlede oynarsan +25 bingo bonusu var — gerçek oyunda dene.';
 
 /**
  * Rafların TAM olarak hangi sırayla dolacağı. `drawTiles` torbanın SONUNDAN
@@ -244,8 +266,8 @@ const DRAW_ORDER: string[] = [
   'N', 'S', 'A', 'N', 'K',
   // Rakip — SAAT'in S, A, A'sı + bir dolgu
   'S', 'A', 'A', 'R',
-  // Sen — SAP'ın A ve P'si + iki dolgu
-  'A', 'P', 'E', 'M',
+  // Sen — SES'in S ve E'si + iki dolgu
+  'S', 'E', 'M', 'R',
   // Rakip — NAR'ın A'sı (R rafta) + iki dolgu
   'A', 'K', 'L',
 ];

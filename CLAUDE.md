@@ -83,8 +83,9 @@ Projenin geri kalanının çok büyük bölümü (Canlı oyun, mesajlaşma, e-po
 
 İlk oyunda artık Hızlı Başlangıç PENCERESİ açılmıyor; onun yerine raylı,
 60 saniyelik bir mini oyun geliyor (`TutorialGame` + `utils/tutorialScript.ts`).
-Dört sahne: ev karesi → bölgenin büyümesi → merkezde ×2 → rakibin sınırına
-değme (vergi); her hamleden sonra rakip de oynuyor. Pencere SİLİNMEDİ —
+Dört sahne: ev karesi → bölgenin büyümesi → merkezde ×2 → merkez karesinde
+×3 + sınıra değme vergisi (dördüncüsü iki dersi tek hamlede verir); her
+hamleden sonra rakip de oynuyor. Pencere SİLİNMEDİ —
 kendiliğinden açılmıyor, "Yardım" linkinden ve `/nasil-oynanir/`ten erişilir.
 
 Her yerde geçerli üç kural:

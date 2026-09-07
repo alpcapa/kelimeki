@@ -1245,7 +1245,7 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
 - [ ] **Rakip oynuyor:** Her hamlenden sonra kırmızı taşlar tek tek
       diziliyor ve skoru artıyor; tahta o sırada dokunuşa cevap vermiyor.
 - [ ] **Sayılar doğru okunuyor:** 3. sahnede "6 × 2 = 12 puan!",
-      4. sahnede onay penceresinde 8 ve 3 yazıyor.
+      4. sahnede onay penceresinde 28 ve 9 yazıyor (X3 + vergi aynı hamlede).
 - [ ] **Atla:** Herhangi bir sahnede "ATLA →" gerçek oyunu başlatıyor ve
       tanıtım bir daha KENDİLİĞİNDEN açılmıyor (uygulamayı kapatıp aç).
 - [ ] **Yalıtım — en önemlisi:** Tanıtımı bitir, sonra gerçek oyunu

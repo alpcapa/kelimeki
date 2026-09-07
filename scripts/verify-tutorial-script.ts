@@ -53,9 +53,6 @@ function ok(mesaj: string): void {
  * `oynayan` = hamleyi yapan koltuk, `karsi` = öteki koltuk.
  */
 function hamleOynat(state: GameState, move: TutorialMove, etiket: string): GameState {
-  // Çarpan beklentisi VERİDEN gelir: `raw` yalnızca merkez bölgeye düşen
-  // hamlelerde doludur (bkz. `TutorialMove.raw`).
-  const carpanBekleniyor = move.raw !== undefined;
   const oynayan = state.current;
   const karsi = 1 - oynayan;
   const oncekiSkor = state.players.map((p) => p.score);
@@ -88,18 +85,25 @@ function hamleOynat(state: GameState, move: TutorialMove, etiket: string): GameS
     bildir(`${etiket}: ${move.cells.length} taş konacaktı, ${Object.keys(s.placed).length} kondu`);
   }
 
-  // ── 4. Çarpan var mı ───────────────────────────────────────────────────
+  // ── 4. Çarpan beyanı tutuyor mu ────────────────────────────────────────
   // ⚠ `calcScore(..., {})` ile karşılaştırmak İŞE YARAMAZ: `bonuses` haritası
   // yalnızca tam ortadaki X3 karesini taşır, 5×5'lik ×2 bölgesi ise
   // `inBonusZone`'dan gelir — iki çağrı da aynı sayıyı döndürür. Çarpanın
   // tek dürüst kaynağı kelime başına dönen `x2`/`x3` bayrakları.
   const hamSkorlar = calcWordRawScores(s.board, s.placed, s.bonuses);
-  const carpanVar = hamSkorlar.some((w) => w.x2 || w.x3);
-  if (carpanVar !== carpanBekleniyor) {
-    bildir(
-      `${etiket}: çarpan beklentisi tutmadı (beklenen ${carpanBekleniyor ? 'VAR' : 'YOK'}, ` +
-        `gerçek ${carpanVar ? 'VAR' : 'YOK'})`,
-    );
+  const x3Var = hamSkorlar.some((w) => w.x3);
+  const x2Var = hamSkorlar.some((w) => w.x2);
+  if (move.bonus === 'x3' && !x3Var) {
+    bildir(`${etiket}: X3 bekleniyordu, hiçbir kelime merkez kareye değmemiş`);
+  }
+  if (move.bonus === 'x2' && !x2Var) {
+    bildir(`${etiket}: ×2 bekleniyordu, hiçbir kelime altın bölgeye düşmemiş`);
+  }
+  if (move.bonus === 'x2' && x3Var) {
+    bildir(`${etiket}: ×2 bekleniyordu ama kelime X3 karesine değmiş`);
+  }
+  if (move.bonus === undefined && (x2Var || x3Var)) {
+    bildir(`${etiket}: çarpan BEKLENMİYORDU ama hamle çarpan aldı (x2:${x2Var} x3:${x3Var})`);
   }
   // Hamlenin vergi ÖNCESİ puanı: `points + tax`. Çarpanlı sahnelerde bu
   // sayının "raw × 2" olduğu da kilitleniyor — ekranda o cümle yazıyor.
@@ -114,6 +118,10 @@ function hamleOynat(state: GameState, move: TutorialMove, etiket: string): GameS
     }
     if (move.raw * 2 !== vergiOncesi) {
       bildir(`${etiket}: "${move.raw} × 2" cümlesi hamlenin puanıyla tutmuyor`);
+    }
+    if (hamSkorlar.length !== 1) {
+      // `raw × 2` cümlesi ancak TEK kelime kuran bir hamlede dürüst olur.
+      bildir(`${etiket}: "raw × 2" beyanı ${hamSkorlar.length} kelimeli hamlede kullanılamaz`);
     }
   }
 
@@ -164,6 +172,14 @@ for (const step of TUTORIAL_STEPS) {
   // Rakibin 3. cevabı (SAAT) ve 4. cevabı (NAR) bilerek merkezi kullanıyor:
   // merkez dersi oyuncuya iki kez daha, cümle harcamadan tekrar eder.
   state = hamleOynat(state, step.reply, `${step.id} · rakip · ${step.reply.word}`);
+  // Sahnenin ÖĞRETTİĞİ şey gerçekten oluyor mu — senaryo kaydığında sessizce
+  // "dersi olmayan bir sahne" kalmasın diye.
+  if (step.id === 'x3vergi' && (step.move.bonus !== 'x3' || step.move.tax === 0)) {
+    bildir('x3vergi sahnesi hem X3 hem vergi İÇERMELİ (kullanıcı kararı, 7 Eylül 2026)');
+  }
+  if (step.id === 'merkez' && step.move.tax !== 0) {
+    bildir('merkez sahnesi vergi ÖDEMEMELİ — iki ders tek hamlede karışmasın');
+  }
   if (hata === 0) ok(`${step.move.word} +${step.move.points} · ${step.reply.word} +${step.reply.points}`);
 }
 
