@@ -109,17 +109,19 @@ test('Zorluk: Kolay seçilip 2 kişilik oyun başlar, YZ hamle yapar, seviye kay
   await donenKullanici(page);
   await page.goto('/');
 
-  // Seçici bir radyogrup; varsayılan Normal işaretli, Zor Faz 5'e kadar YOK.
+  // Seçici bir radyogrup; varsayılan Normal işaretli; Zor Faz 5'le (7 Eylül
+  // 2026) listeye girdi — üç seviye de görünmeli.
   const zorluk = page.getByRole('radiogroup', { name: 'Zorluk' });
   await expect(zorluk.getByRole('radio', { name: 'Normal' })).toHaveAttribute('aria-checked', 'true');
-  await expect(zorluk.getByRole('radio', { name: 'Zor' })).toHaveCount(0);
-  // Seçili seviyenin açıklaması + puanı (2 kişilik → yalnızca birincilik).
-  // Tam metinler portun ai_level_parity_test'iyle aynı — iki taraf ayrışırsa
-  // biri burada, öteki orada düşer.
-  await expect(page.getByText('Orta-iyi seviye bir oyuncuyum, sıradan oyunculardan biraz daha iyiyim diyorsanız burası size göre. Bu seviyede birincilik 2 puan kazandırır.')).toBeVisible();
+  await expect(zorluk.getByRole('radio', { name: 'Zor' })).toHaveCount(1);
+  // Seçili seviyenin açıklaması + puanı (birincilik ve ikincilik; misafir
+  // olduğundan "(Puan takibi üyelik gerektirir)" eki). Tam metinler portun
+  // ai_level_parity_test'iyle aynı — iki taraf ayrışırsa biri burada, öteki
+  // orada düşer.
+  await expect(page.getByText('Orta-iyi seviye bir oyuncuyum, sıradan oyunculardan biraz daha iyiyim diyorsanız burası size göre. Bu seviyede birincilik 2 k-lig puanı kazandırır, ikincilik puan kazandırmaz (Puan takibi üyelik gerektirir).')).toBeVisible();
   await zorluk.getByRole('radio', { name: 'Kolay' }).click();
   await expect(zorluk.getByRole('radio', { name: 'Kolay' })).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByText('Çok iyi değilim, daha yeni yeni alışıyorum, karşımda o kadar zor bir rakip istemiyorum diyorsanız doğru yerdesiniz. Bu seviyede birincilik 1 puan kazandırır.')).toBeVisible();
+  await expect(page.getByText('Çok iyi değilim, daha yeni yeni alışıyorum, karşımda o kadar zor bir rakip istemiyorum diyorsanız doğru yerdesiniz. Bu seviyede birincilik 1 k-lig puanı kazandırır, ikincilik puan kazandırmaz (Puan takibi üyelik gerektirir).')).toBeVisible();
 
   await page.getByText('OYUNU BAŞLAT').click();
   const devamButton = page
@@ -145,6 +147,46 @@ test('Zorluk: Kolay seçilip 2 kişilik oyun başlar, YZ hamle yapar, seviye kay
 
   // turnCount artık 2 → kayıt yazıldı; seviye state'e girmiş olmalı.
   await expect.poll(() => kayitliSeviye(page)).toBe('kolay');
+});
+
+// ROADMAP #23 Faz 5 (7 Eylül 2026) — Zor = GENİŞ arama (paralel diziş + çok
+// çapalı kelime, `AI_LEVEL_SEARCH.zor`). Motor golden/parite kapılarıyla
+// kanıtlı; bu test yalnızca tarayıcıda uçtan uca koştuğunu (Zor seçilir, YZ
+// geniş aramayla hamle yapar, seviye kayda 'zor' yazılır) ve düşünme
+// süresinin insan ölçeğinde kaldığını (20 sn tavanı) gösterir.
+test('Zorluk: Zor seçilip oyun başlar, YZ geniş aramayla hamle yapar, seviye kayda yazılır', async ({
+  page,
+}) => {
+  page.on('dialog', (dialog) => dialog.accept());
+  await donenKullanici(page);
+  await page.goto('/');
+
+  const zorluk = page.getByRole('radiogroup', { name: 'Zorluk' });
+  await zorluk.getByRole('radio', { name: 'Zor' }).click();
+  await expect(zorluk.getByRole('radio', { name: 'Zor' })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByText('Çok iyi oyuncuyum, genelde %80+ kazanırım diyorsanız bunu denemelisiniz. Bu seviyede birincilik 4 k-lig puanı kazandırıyor, ikincilik puan kazandırmaz (Puan takibi üyelik gerektirir). Bol şans!')).toBeVisible();
+
+  await page.getByText('OYUNU BAŞLAT').click();
+  const devamButton = page
+    .getByLabel('Giriş uyarısı')
+    .getByRole('button', { name: 'Oyna', exact: true });
+  if (await devamButton.isVisible().catch(() => false)) {
+    await devamButton.click();
+  }
+  const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
+  if (await quickstartHeading.isVisible().catch(() => false)) {
+    await page.locator('button[aria-label="Kapat"]').last().click();
+  }
+
+  const pasGecButton = page.getByRole('main').getByRole('button', { name: 'Pas Geç' });
+  await expect(pasGecButton).toBeEnabled();
+  await pasGecButton.click();
+  await page.getByLabel('Pas geçme onayı').getByRole('button', { name: 'Pas Geç' }).click();
+  await expect(pasGecButton).toBeDisabled();
+  await expect(pasGecButton).toBeEnabled({ timeout: 20_000 });
+  await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
+
+  await expect.poll(() => kayitliSeviye(page)).toBe('zor');
 });
 
 test('Zorluk: Normal (varsayılan) kayda aiLevel YAZMAZ — eski kayıt sözleşmesi', async ({ page }) => {

@@ -793,10 +793,15 @@ export function Setup({
                 puanın bir kısmını onunla paylaşmak zorunda kalırsın. Her hamle
                 bir strateji, her kelime bir mücadele.
               </p>
-              <div className="mt-3 flex items-center gap-2">
+              {/* 7 Eylül 2026 (kullanıcı: "alt ve üstündeki fazla boşlukları
+                makul hale getir"): `mt-3` + 48px'lik dokunma hedefi paragraf
+                ile "OYUN TİPİ" arasına ~30px'lik iki boş bant açıyordu. Hedef
+                32px'e, üst marj 4px'e indi — port ikizi (`setup_screen.dart`,
+                SizedBox 8 + TapTarget minHeight 32) aynı ölçülerde. */}
+              <div className="mt-1 flex items-center gap-2">
                 <button
                   onClick={() => setShowHelp(true)}
-                  className="flex items-center min-h-[48px] font-mono text-[11px] font-bold text-accent hover:underline active:opacity-70 transition-opacity"
+                  className="flex items-center min-h-[32px] font-mono text-[11px] font-bold text-accent hover:underline active:opacity-70 transition-opacity"
                 >
                   Nasıl oynanır?
                 </button>
@@ -1039,11 +1044,12 @@ export function Setup({
                 ))}
               </div>
               {/* Her seviyenin altında kullanıcıya hitap eden bir açıklama +
-                o seviyenin k-lig puanı; 4 kişilikte ikincilik de yazılır.
-                Metin `aiLevelDescription`ta (leaguePoints'ten türetilir),
-                port ikizi aynı şablon. */}
+                o seviyenin k-lig puanı (birincilik ve ikincilik); misafirde
+                "(Puan takibi üyelik gerektirir)" eki. Metin
+                `aiLevelDescription`ta (leaguePoints'ten türetilir), port
+                ikizi aynı şablon. */}
               <p className="text-[11px] text-muted font-mono leading-relaxed">
-                {aiLevelDescription(level, count)}
+                {aiLevelDescription(level, count, !!user)}
               </p>
             </div>
 

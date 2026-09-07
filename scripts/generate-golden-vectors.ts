@@ -22,7 +22,7 @@ import {
   type Action,
 } from '../src/game/gameReducer';
 import type { AiLevel, GameState, HistoryEntry, Player, Tile } from '../src/game/types';
-import { AI_LEVEL_TOP_N } from '../src/game/constants';
+import { AI_LEVEL_SEARCH, AI_LEVEL_TOP_N } from '../src/game/constants';
 import { setRandomSource } from '../src/utils/random';
 import { findAIMove } from '../src/utils/ai';
 import { calcScore, calcWordRawScores, computeAllTerritories } from '../src/utils/validator';
@@ -755,9 +755,15 @@ function invasionFormulaVectors(): void {
   console.log('invasion_formula: 3×1501 değer');
 }
 
-/** YZ seviye kadranı: web `AI_LEVEL_TOP_N` ↔ Dart `aiLevelTopN` kilidi. */
+/**
+ * YZ seviye kadranları: web `AI_LEVEL_TOP_N` ↔ Dart `aiLevelTopN` ve web
+ * `AI_LEVEL_SEARCH` ↔ Dart `aiLevelSearch` kilidi (Faz 5: Zor = geniş arama).
+ */
 function aiLevelVectors(): void {
-  writeFileSync(join(GOLDENS, 'ai_level.json'), JSON.stringify({ topN: AI_LEVEL_TOP_N }));
+  writeFileSync(
+    join(GOLDENS, 'ai_level.json'),
+    JSON.stringify({ topN: AI_LEVEL_TOP_N, search: AI_LEVEL_SEARCH }),
+  );
   console.log(`ai_level: ${Object.keys(AI_LEVEL_TOP_N).length} seviye`);
 }
 
@@ -906,6 +912,10 @@ async function main(): Promise<void> {
   // Kolay (N=4): iki YZ de en iyi 4'ten tohumlu seçer — `pickTopMove`ün
   // rastgelelik sözleşmesini ve Dart'ın sıralı ekleme paritesini kanıtlar.
   aiScenario('reducer_ai2_kolay', 2026, 2, undefined, 'kolay');
+  // Zor (geniş arama, N=1): iki YZ de paralel diziş + çok çapalı kelime arar
+  // — Dart `find_move.dart`in geniş arama döngü SIRASINI (kanca/çapa, yön,
+  // aday, idx) birebir izlediğini kanıtlar; rastgele değer tüketmez.
+  aiScenario('reducer_ai2_zor', 4242, 2, undefined, 'zor');
   humanScenario();
   craftedFinishScenario();
   craftedBingoScenario();

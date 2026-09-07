@@ -16,19 +16,19 @@ export const AI_LEVEL_LABEL: Record<AiLevel, string> = {
 };
 
 /**
- * Setup'ta SEÇİLEBİLİR seviyeler, ekran sırasıyla. `zor` bilerek YOK: Zor
- * motoru Faz 5'te geliyor ve o güne kadar Normal'le aynı oynardı — seçici
- * "Zor" sunup Normal'i oynatmak (üstelik +4 k-lig vererek) ürün yalanı
- * olurdu. Faz 5 kapanınca buraya `'zor'` eklenir, başka bir şey değişmez.
+ * Setup'ta SEÇİLEBİLİR seviyeler, ekran sırasıyla. `zor` Faz 5'e (7 Eylül
+ * 2026) kadar listede YOKTU: motoru gelmeden "Zor" sunup Normal'i oynatmak
+ * (üstelik +4 k-lig vererek) ürün yalanı olurdu. Geniş arama motoru
+ * (`AI_LEVEL_SEARCH.zor`) YZ↔YZ kapısını (%70) geçince açıldı; port
+ * `selectableAiLevels` ile aynı PR'da (`ai_level_parity_test`).
  */
-export const SELECTABLE_AI_LEVELS: readonly AiLevel[] = ['kolay', 'normal'];
+export const SELECTABLE_AI_LEVELS: readonly AiLevel[] = ['kolay', 'normal', 'zor'];
 
 /**
  * Seçicinin altındaki açıklamanın İLK cümlesi — seviye kime göre, kullanıcıya
  * hitapla (kullanıcı kararı, 6 Eylül 2026: *"bilimsel iş yapmıyoruz"* — YZ'nin
  * nasıl zayıflatıldığı ürün metnine GİRMEZ). Portun `aiLevelPitch`i ile
- * birebir (`ai_level_parity_test.dart`). Zor'un metni Faz 5 açılana kadar
- * hiç gösterilmez ama burada hazır durur.
+ * birebir (`ai_level_parity_test.dart`).
  */
 export const AI_LEVEL_PITCH: Record<AiLevel, string> = {
   kolay:
@@ -48,22 +48,24 @@ const AI_LEVEL_VERB: Record<AiLevel, string> = {
 /**
  * Setup'ta seçili seviyenin altında çıkan açıklama: hitap cümlesi + o
  * seviyenin k-lig puanı. Sayılar `leaguePoints`ten türetilir (tablo TEK
- * kaynak — 23.0; metin tabloyla ayrışamaz). 2 kişilikte yalnızca birincilik,
- * 4 kişilikte ikincilik de yazılır (ikincilik 0 ise "puan kazandırmaz").
- * Portun `aiLevelDescription`ı aynı şablon; parite testi altı bileşimi de
- * tam metinle kilitler.
+ * kaynak — 23.0; metin tabloyla ayrışamaz). Her bileşimde birincilik VE
+ * ikincilik yazılır (7 Eylül 2026, kullanıcı isteği; ikincilik 0 ise "puan
+ * kazandırmaz"), puanın adı "k-lig puanı". Girişsiz kullanıcıda (`signedIn`
+ * false) cümlenin sonuna "(Puan takibi üyelik gerektirir)" eklenir — puan
+ * yalnızca üyelikle kaydedilir, misafir bunu seçerken bilsin. Portun
+ * `aiLevelDescription`ı aynı şablon; parite testi tüm bileşimleri tam
+ * metinle kilitler.
  */
-export function aiLevelDescription(level: AiLevel, playerCount: number): string {
+export function aiLevelDescription(level: AiLevel, playerCount: number, signedIn: boolean): string {
   const birinci = leaguePoints(1, playerCount, false, level);
   const ikinci = leaguePoints(2, playerCount, false, level);
   const fiil = AI_LEVEL_VERB[level];
   const puan =
-    playerCount === 2
-      ? `birincilik ${birinci} puan ${fiil}`
-      : ikinci === 0
-        ? `birincilik ${birinci} puan ${fiil}, ikincilik puan kazandırmaz`
-        : `birincilik ${birinci}, ikincilik ${ikinci} puan ${fiil}`;
-  return `${AI_LEVEL_PITCH[level]} Bu seviyede ${puan}.${level === 'zor' ? ' Bol şans!' : ''}`;
+    ikinci === 0
+      ? `birincilik ${birinci} k-lig puanı ${fiil}, ikincilik puan kazandırmaz`
+      : `birincilik ${birinci}, ikincilik ${ikinci} k-lig puanı ${fiil}`;
+  const uyelik = signedIn ? '' : ' (Puan takibi üyelik gerektirir)';
+  return `${AI_LEVEL_PITCH[level]} Bu seviyede ${puan}${uyelik}.${level === 'zor' ? ' Bol şans!' : ''}`;
 }
 
 /**

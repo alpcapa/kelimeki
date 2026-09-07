@@ -109,9 +109,11 @@ void testTerritory() {
   }
 }
 
-/// YZ seviye kadranı: `aiLevelTopN` ↔ web `AI_LEVEL_TOP_N` (golden
-/// `ai_level.json`). Kolay'ın DAVRANIŞI ayrıca `reducer_ai2_kolay`
-/// senaryosuyla kanıtlanır; bu test yalnızca üçlünün ayrışmadığını kilitler.
+/// YZ seviye kadranları: `aiLevelTopN` ↔ web `AI_LEVEL_TOP_N` ve
+/// `aiLevelSearch` ↔ web `AI_LEVEL_SEARCH` (golden `ai_level.json`). Kolay'ın
+/// ve Zor'un DAVRANIŞI ayrıca `reducer_ai2_kolay` / `reducer_ai2_zor`
+/// senaryolarıyla kanıtlanır; bu test yalnızca sabitlerin ayrışmadığını
+/// kilitler.
 void testAiLevel() {
   final g = loadGolden('ai_level');
   final topN = (g['topN'] as Map).cast<String, Object?>();
@@ -122,6 +124,15 @@ void testAiLevel() {
   }
   check(topN.length == AiLevel.values.length,
       () => 'ai_level.topN: ${topN.length} seviye, Dart ${AiLevel.values.length}');
+  final search = (g['search'] as Map).cast<String, Object?>();
+  for (final level in AiLevel.values) {
+    final expected = (search[level.json] as Map).cast<String, Object?>();
+    final got = aiLevelSearch[level]!;
+    check(expected['wide'] == got.wide && expected['maxWordLen'] == got.maxWordLen,
+        () => 'ai_level.search[${level.json}]: Dart wide=${got.wide}/maxWordLen=${got.maxWordLen} != $expected');
+  }
+  check(search.length == AiLevel.values.length,
+      () => 'ai_level.search: ${search.length} seviye, Dart ${AiLevel.values.length}');
 }
 
 void testInvasionFormula() {
@@ -316,6 +327,7 @@ void main() {
   for (final name in [
     'reducer_ai2',
     'reducer_ai2_kolay',
+    'reducer_ai2_zor',
     'reducer_ai4',
     'reducer_human2',
     'reducer_crafted_finish',

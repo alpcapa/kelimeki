@@ -21,11 +21,32 @@ const int rackSize = 7;
 
 /// YZ seviyesi → "en iyi N hamleden rastgele biri" kadranı.
 /// (TS: AI_LEVEL_TOP_N — golden `ai_level.json` üçlüyü kilitler.) Kolay = 4
-/// Faz 0'ın 200 oyunluk ölçümü; Zor Faz 5'e kadar Normal (N=1).
+/// Faz 0'ın 200 oyunluk ölçümü; Zor da N=1 — gücü aramanın genişliğinden
+/// gelir ([aiLevelSearch]).
 const Map<AiLevel, int> aiLevelTopN = {
   AiLevel.kolay: 4,
   AiLevel.normal: 1,
   AiLevel.zor: 1,
+};
+
+/// YZ aramasının genişliği (TS: AiSearch, `src/game/constants.ts`).
+class AiSearch {
+  /// Paralel diziş + çok çapalı kelime aransın mı (Zor).
+  final bool wide;
+
+  /// Kelime havuzunun üst sınırı (harf).
+  final int maxWordLen;
+  const AiSearch({required this.wide, required this.maxWordLen});
+}
+
+/// YZ seviyesi → arama genişliği (TS: AI_LEVEL_SEARCH — golden `ai_level.json`
+/// kilitler; ROADMAP #23 Faz 5). Normal/Kolay dar arama (tek çapa, havuz 2-7);
+/// Zor GENİŞ arama: kanca hücresinden paralel diziş + çok çapalı kelime,
+/// havuz 2-8. Ölçüm ve gerekçe TS sabitinin yorumunda.
+const Map<AiLevel, AiSearch> aiLevelSearch = {
+  AiLevel.kolay: AiSearch(wide: false, maxWordLen: 7),
+  AiLevel.normal: AiSearch(wide: false, maxWordLen: 7),
+  AiLevel.zor: AiSearch(wide: true, maxWordLen: 8),
 };
 
 /// Renk paleti uzunluğu (TS: PLAYER_COLORS.length) — startGame'deki

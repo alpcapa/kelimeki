@@ -3,7 +3,7 @@
 // YZ, rafından heceleyebildiği kelimeler arasından, bölge kurallarına uyan
 // ve sözlükçe geçerli en yüksek puanlı hamleyi arar. İlk hamlesini kendi
 // köşesinden başlatır; sonra mevcut taşları çapa alarak yeni kelimeler kurar.
-import { AI_LEVEL_TOP_N, SIZE, cornerCell } from '../game/constants';
+import { AI_LEVEL_SEARCH, AI_LEVEL_TOP_N, SIZE, cornerCell, type AiSearch } from '../game/constants';
 import type { AIMove, AiLevel, BonusType, Placement, Player, Tile } from '../game/types';
 import { getWordSet } from '../data/wordSetLoader';
 import { letterPoints } from '../data/tiles';
@@ -20,14 +20,19 @@ import { getFormedWords, key, tileLetter, type Board } from './board';
 // kullanımda hesaplanmasının sebebi, WORD_SET'in artık ayrı bir chunk'tan
 // (bkz. wordSetLoader.ts) geldiği ve modül değerlendirme anında henüz
 // yüklenmemiş olabilmesidir.
-let wordPool: readonly string[] | undefined;
-function getWordPool(): readonly string[] {
-  if (!wordPool) {
-    wordPool = [...getWordSet()]
-      .filter((w) => w.length >= 2 && w.length <= 7)
+//
+// Havuz üst sınırına (`AiSearch.maxWordLen`) göre ayrı önbellek: Normal/Kolay
+// 7, Zor 8 (bkz. constants.ts, AI_LEVEL_SEARCH).
+const wordPools = new Map<number, readonly string[]>();
+function getWordPool(maxLen: number): readonly string[] {
+  let pool = wordPools.get(maxLen);
+  if (!pool) {
+    pool = [...getWordSet()]
+      .filter((w) => w.length >= 2 && w.length <= maxLen)
       .map((w) => trUpper(w));
+    wordPools.set(maxLen, pool);
   }
-  return wordPool;
+  return pool;
 }
 
 /**
@@ -87,6 +92,14 @@ function insertBounded(list: Ranked[], item: Ranked, n: number): void {
  * en az bir hamle varsa liste YALNIZCA onlardan oluşur; yoksa vergili
  * hamlelerden, YZ'ye paylaşım sonrası kalacak puana göre sıralı. Rastgele
  * değer TÜKETMEZ — seçim `pickTopMove`/`findAIMove`'un işi.
+ *
+ * `search` aramanın GENİŞLİĞİ (ROADMAP #23 Faz 5): Normal/Kolay yalnızca
+ * tahtadaki tek bir taştan (çapa) geçen hattı dener; Zor (`wide`) ayrıca
+ * (1) bir taşa komşu boş "kanca" hücresinden başlayan PARALEL dizişleri —
+ * tüm taşlar yeni, bağlantı çapraz kelimelerle — ve (2) aynı hattaki birden
+ * çok tahta taşından geçen kelimeleri dener. Bu iki sınıf Normal'in hiç
+ * görmediği hamleler; kural her zaman izin veriyordu (validatePlacement:
+ * "konan taşlardan biri mevcut bir taşa komşu" yeter).
  */
 export function findAIMoves(
   board: Board,
@@ -97,12 +110,13 @@ export function findAIMoves(
   isFirstMove: boolean,
   players: Player[],
   n: number,
+  search: AiSearch = AI_LEVEL_SEARCH.normal,
 ): AIMove[] {
   const rackLetters = rack.map((t) => t.letter);
   // Yerel değişken bilerek `pool` adını taşıyor — modül seviyesindeki
-  // `wordPool` önbelleğiyle (yukarı) aynı adı taşımak okunabilirliği
+  // `wordPools` önbelleğiyle (yukarı) aynı adı taşımak okunabilirliği
   // düşürüyordu (fonksiyonel bir hata yoktu, isim gölgelemesiydi).
-  const pool = getWordPool();
+  const pool = getWordPool(search.maxWordLen);
   // tryCornerStart dışında hiç kullanılmıyor — bu da yalnızca isFirstMove
   // (ya da nadir freshCorners) dallarında tetikleniyor. Her normal hamlede
   // onbinlerce kelimeyi boşuna filtrelememek için tembel/önbellekli hesap.
@@ -126,6 +140,26 @@ export function findAIMoves(
         (w) => w.includes(letter) && canSpell(w, [...rackLetters, letter]),
       );
       anchoredCandidatesCache.set(letter, cached);
+    }
+    return cached;
+  };
+
+  // Geniş arama: hat (satır/sütun) başına aday süzgeci — raf + o hattaki
+  // TÜM tahta harfleri (kapsayıcı bir ön eleme; kesin eşleşmeyi tryPlace ve
+  // consider doğrular). Çok çapalı kelimeler ancak böyle adaya girer; en
+  // fazla 26 hat, her biri bu çağrı için bir kez süzülür.
+  const lineCandidatesCache = new Map<string, string[]>();
+  const candidatesForLine = (horiz: boolean, index: number): string[] => {
+    const cacheKey = (horiz ? 'r' : 'c') + index;
+    let cached = lineCandidatesCache.get(cacheKey);
+    if (!cached) {
+      const avail = [...rackLetters];
+      for (let i = 0; i < SIZE; i++) {
+        const t = horiz ? board[index][i] : board[i][index];
+        if (t) avail.push(tileLetter(t));
+      }
+      cached = pool.filter((w) => w.length <= avail.length && canSpell(w, avail));
+      lineCandidatesCache.set(cacheKey, cached);
     }
     return cached;
   };
@@ -307,11 +341,46 @@ export function findAIMoves(
     );
   };
 
+  // Kanca hücresi: boş ve dört komşusundan en az biri dolu.
+  const hasNeighbor = (r: number, c: number): boolean =>
+    (r > 0 && !!board[r - 1][c]) ||
+    (r < SIZE - 1 && !!board[r + 1][c]) ||
+    (c > 0 && !!board[r][c - 1]) ||
+    (c < SIZE - 1 && !!board[r][c + 1]);
+
+  // ⚠ Döngü SIRASI davranışın parçası (consider eşit puanda İLK bulunanı
+  // tutar) — Dart `find_move.dart` ve Edge kopyası birebir aynı sırayı izler.
+  // Geniş aramada aynı yerleşim birden çok kanca/çapadan yeniden üretilebilir;
+  // n=1'de zararsız (ilk bulunan kalır), n>1'de liste aynı hamleyi iki kez
+  // taşıyabilir — Zor N=1 olduğundan bilerek ayıklanmıyor.
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       const anchorTile = board[r][c];
-      if (!anchorTile) continue;
+      if (!anchorTile) {
+        // Geniş arama — kanca hücresi: W[idx] buraya (yeni taş) gelir, hattaki
+        // mevcut taşlar tryPlace'te eşleşmek zorunda (paralel diziş).
+        if (!search.wide || !hasNeighbor(r, c)) continue;
+        for (const horiz of [true, false]) {
+          for (const W of candidatesForLine(horiz, horiz ? r : c)) {
+            for (let idx = 0; idx < W.length; idx++) tryPlace(W, r, c, idx, horiz);
+          }
+        }
+        continue;
+      }
       const anchor = tileLetter(anchorTile);
+      if (search.wide) {
+        // Geniş arama — çapa: aday süzgeci hattın harfleriyle (çok çapa).
+        for (const horiz of [true, false]) {
+          for (const W of candidatesForLine(horiz, horiz ? r : c)) {
+            let idx = W.indexOf(anchor);
+            while (idx >= 0) {
+              tryPlace(W, r, c, idx, horiz);
+              idx = W.indexOf(anchor, idx + 1);
+            }
+          }
+        }
+        continue;
+      }
       for (const W of candidatesForAnchor(anchor)) {
         let idx = W.indexOf(anchor);
         while (idx >= 0) {
@@ -356,9 +425,10 @@ export function pickTopMove(list: AIMove[]): AIMove | null {
 
 /**
  * Sırası gelen YZ oyuncusu için oynanacak hamle (yoksa null → pas/değişim).
- * `level` kadranı `AI_LEVEL_TOP_N` üzerinden N'e çevrilir: Normal = en iyi
- * hamle (bugüne kadarki davranış), Kolay = en iyi 4'ten rastgele biri, Zor =
- * Faz 5'e kadar Normal. Seviye kuralı `pickTopMove`'un sözleşmesinde.
+ * `level` iki kadrana çevrilir: `AI_LEVEL_TOP_N` (Normal = en iyi hamle,
+ * Kolay = en iyi 4'ten rastgele biri, Zor = en iyi hamle) ve `AI_LEVEL_SEARCH`
+ * (Zor geniş arar, bkz. findAIMoves). Rastgelelik `pickTopMove`'un
+ * sözleşmesinde — Zor da Normal gibi hiç rastgele değer tüketmez.
  */
 export function findAIMove(
   board: Board,
@@ -371,6 +441,9 @@ export function findAIMove(
   level: AiLevel = 'normal',
 ): AIMove | null {
   return pickTopMove(
-    findAIMoves(board, rack, bonuses, owner, corners, isFirstMove, players, AI_LEVEL_TOP_N[level]),
+    findAIMoves(
+      board, rack, bonuses, owner, corners, isFirstMove, players,
+      AI_LEVEL_TOP_N[level], AI_LEVEL_SEARCH[level],
+    ),
   );
 }
