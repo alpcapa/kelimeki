@@ -91,14 +91,15 @@ void main() {
     expect(aiLevelDescription(AiLevel.zor, 4, signedIn: true),
         '$zor Bu seviyede birincilik 4, ikincilik 2 k-lig puanı kazandırıyor. '
         'Bol şans!');
-    // Girişsiz: ek cümlenin sonunda, noktadan önce (web smoke testi misafir
-    // olduğundan tam bu metinleri okuyor).
+    // Girişsiz: not AYRI, noktadan SONRA (kullanıcı isteği 7 Eylül 2026 —
+    // "nokta cümlenin sonunda olmalı"); Zor'da "Bol şans!" en sonda. Web
+    // smoke testi misafir olduğundan tam bu metinleri okuyor.
     expect(aiLevelDescription(AiLevel.normal, 2, signedIn: false),
         '$normal Bu seviyede birincilik 2 k-lig puanı kazandırır, ikincilik '
-        'puan kazandırmaz (Puan takibi üyelik gerektirir).');
+        'puan kazandırmaz. (Puan takibi üyelik gerektirir)');
     expect(aiLevelDescription(AiLevel.zor, 4, signedIn: false),
-        '$zor Bu seviyede birincilik 4, ikincilik 2 k-lig puanı kazandırıyor '
-        '(Puan takibi üyelik gerektirir). Bol şans!');
+        '$zor Bu seviyede birincilik 4, ikincilik 2 k-lig puanı kazandırıyor. '
+        '(Puan takibi üyelik gerektirir) Bol şans!');
   });
 
   test('HelpModal zorluk paragrafı iki tarafta da var (aynı cümle başı ve '

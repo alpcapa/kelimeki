@@ -224,9 +224,11 @@ bileşimlerini ve HelpModal'ın zorluk paragrafını kilitler.
 - Rakip rafına bakan yol YOK (kullanıcı kararı, §3).
 - Seçici altı açıklama `aiLevelDescription(level, count, signedIn)`: her
   bileşimde birincilik + ikincilik ("k-lig puanı"; ikincilik 0 ise "puan
-  kazandırmaz"), girişsizde "(Puan takibi üyelik gerektirir)" eki
-  (7 Eylül 2026). Sayılar `leaguePoints`ten türetilir, metin tabloyla
-  ayrışamaz.
+  kazandırmaz"), girişsizde puan cümlesinin ARDINDAN ayrı bir not:
+  "(Puan takibi üyelik gerektirir)" — nokta CÜMLENİN sonunda, parantezin
+  önünde; Zor'un "Bol şans!"ı en sonda (7 Eylül 2026, iki turda). Sayılar
+  `leaguePoints`ten türetilir, metin tabloyla ayrışamaz. Tam metinler
+  `ai_level_parity_test.dart`te kilitli.
 
 ## 8. Performans (Node, hamle başına, 12'şer oyun)
 

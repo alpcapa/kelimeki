@@ -797,8 +797,18 @@ export function Setup({
                 makul hale getir"): `mt-3` + 48px'lik dokunma hedefi paragraf
                 ile "OYUN TİPİ" arasına ~30px'lik iki boş bant açıyordu. Hedef
                 32px'e, üst marj 4px'e indi — port ikizi (`setup_screen.dart`,
-                SizedBox 8 + TapTarget minHeight 32) aynı ölçülerde. */}
-              <div className="mt-1 flex items-center gap-2">
+                SizedBox 8 + TapTarget minHeight 32) aynı ölçülerde.
+
+                `-mb-3` aynı gün, ikinci turda (kullanıcı: "Oyun tipi ile
+                nasıl oynanır arasındaki fazla boşluğu da al, metinle nasıl
+                oynanır arası kadar olsun"): ALTTAKİ boşluk kabın kendi
+                `gap-5`i (20px) + dokunma hedefinin alt yarısı (~8px) = ~28px
+                idi, ÜSTTEKİ ise `gap-1` + `mt-1` + üst yarı = ~16px. −12px
+                ikisini eşitler. Marj yalnızca misafir dalında, yani GİRİŞLİ
+                kullanıcının logo→"OYUN TİPİ" arası hâlâ tam 20px (o değer
+                Chromium'da ölçülmüş bir değişmez, bkz. yukarı). Port ikizi:
+                bloğun ardındaki SizedBox misafirde 8, girişlide 20. */}
+              <div className="mt-1 -mb-3 flex items-center gap-2">
                 <button
                   onClick={() => setShowHelp(true)}
                   className="flex items-center min-h-[32px] font-mono text-[11px] font-bold text-accent hover:underline active:opacity-70 transition-opacity"

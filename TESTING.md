@@ -814,9 +814,11 @@ gerekiyor).
       Normal: "birincilik 2, ikincilik 1 k-lig puanı kazandırır", Zor:
       "birincilik 4, ikincilik 2 k-lig puanı kazandırıyor. Bol şans!" (7
       Eylül 2026: her bileşimde ikincilik de yazılır). **Girişsiz** açınca
-      cümlenin sonunda "(Puan takibi üyelik gerektirir)" eki var, girişli
+      cümlenin ardında, AYRI bir not olarak "(Puan takibi üyelik gerektirir)"
+      var (nokta parantezin ÖNÜNDE; Zor'da "Bol şans!" en sonda), girişli
       hesapta YOK. Aynı turda misafir Setup'ında "Nasıl oynanır?" linkinin
-      üstü/altı daraltıldı (48→32px hedef, 12→4px üst marj). Oyunu başlat, Setup'a
+      üstü/altı daraltıldı ve EŞİTLENDİ: paragraf→link ve link→"Oyun Tipi"
+      arası ikisi de 16px (48→32px hedef, üst marj 12→4px, alt `-mb-3`). Oyunu başlat, Setup'a
       dönüp "Devam Edenler"e bak: kartta avatarların hemen SAĞINDA küçük YEŞİL
       `Kolay` rozeti (Normal oyun kartında TURUNCU `Normal`; 6 Eylül gece
       kuralı: Kolay yeşil · Normal turuncu · Zor kırmızı, YZ oyununda her
