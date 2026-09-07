@@ -6,6 +6,28 @@
 // `.spec.ts` DEĞİL: `testMatch` bu dosyayı toplamaz.
 import { expect, type Page } from '@playwright/test';
 
+/**
+ * İlk oyunda artık Hızlı Başlangıç PENCERESİ değil, raylı tanıtım EKRANI
+ * açılıyor (7 Eylül 2026, `TutorialGame`). Testlerin çoğu GERÇEK oyunu
+ * ölçtüğünden tanıtımı atlıyor; tanıtımın kendisini oynayan test
+ * `smoke.spec.ts`te ayrı duruyor.
+ *
+ * Eski pencerenin kapatılması da burada kaldı: pencere silinmedi, yalnızca
+ * kendiliğinden açılmıyor (Yardım linkinden hâlâ açılabiliyor) — kayıttan
+ * devam eden akışlar bu satıra hiç uğramıyor ama uğrarsa takılmasınlar.
+ */
+export async function tanitimiAtla(page: Page): Promise<void> {
+  const atla = page.getByRole('button', { name: 'ATLA →' });
+  await atla.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
+  if (await atla.isVisible().catch(() => false)) {
+    await atla.click();
+  }
+  const hizli = page.getByRole('heading', { name: /hızlı başlangıç/i });
+  if (await hizli.isVisible().catch(() => false)) {
+    await page.locator('button[aria-label="Kapat"]').last().click();
+  }
+}
+
 /** Oyun bitmesine TEK pas kalmış bir kayıt — üretim reducer'ıyla kuruluyor
  *  (elle yazılmış fikstür şemadan sessizce kopar; `jokerliKayit`in dersi).
  *  2 oyuncu × MAX_PASS_ROUNDS(2) = 4 ardışık pas oyunu bitirir, yani 3'ten
@@ -47,10 +69,7 @@ export async function bitirmeModali(page: Page): Promise<void> {
   );
   await page.goto('/');
   await page.getByRole('button', { name: /SIRA SENDE/i }).click();
-  const hizli = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await hizli.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
   await page.getByRole('button', { name: 'Pas Geç' }).click();
   // Onay penceresindeki ikinci "Pas Geç".
   await page.getByRole('button', { name: 'Pas Geç' }).last().click();

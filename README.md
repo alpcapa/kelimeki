@@ -39,6 +39,7 @@ npm run verify-cloud-save-mirror # bulut kaydının çevrimdışı karar mantı�
 npm run verify-fetch-my-games    # oyun geçmişi: ağ hatası ↔ boş liste ayrımı
 npm run verify-live-games-load    # canlı oyun listesi: düşen istek sessizce tekrarlanır
 npm run verify-shared-realtime    # canlı oyun aboneliği: üç çağıran → tek Realtime kanalı
+npm run verify-tutorial-script   # "oynayarak öğren" tanıtımı: senaryo gerçek motorda oynatılır (ekrandaki puanlar dahil)
 npm run verify-demo-board        # karşılama katmanındaki tanıtım tahtası sözlüğe karşı doğrulanır
 npm run verify-remaining-tiles   # "Kalan Taşlar" dökümü ↔ oyun sonu raf düşümü
 npm run verify-swap-invariants   # taş değiştirme: taslak taşlar yok olmuyor + senkron seçimi düşürüyor
@@ -96,7 +97,8 @@ src/
 │   ├── Setup.tsx                # oyun başlangıç / oyuncu kurulum ekranı
 │   ├── LogoMark.tsx             # "kelimeki" logosu — statik SVG path (üretilmiş, bkz. scripts/generate-logo-paths.mjs), font bağımsız
 │   ├── UserMenu.tsx             # hesap menüsü (giriş / hesap ayarları / skor kartı)
-│   ├── HelpModal.tsx            # nasıl oynanır sayfası
+│   ├── TutorialGame.tsx         # ilk oyunda açılan "oynayarak öğren" tanıtımı — raylı, 4 sahne, gerçek motorla oynanır (kendi useReducer'ı; kayıt/telemetri/k-lig ÇALIŞMAZ)
+│   ├── HelpModal.tsx            # nasıl oynanır sayfası (artık kendiliğinden AÇILMIYOR — tanıtım onun yerini aldı; Yardım linkinden ve /nasil-oynanir/ten erişilir)
 │   ├── AuthModal.tsx            # giriş / kayıt / şifre sıfırlama
 │   ├── ResetPasswordModal.tsx   # şifre sıfırlama e-postasındaki bağlantıdan sonra yeni şifre belirleme
 │   ├── AccountSettingsModal.tsx # profil düzenleme (avatar, kullanıcı adı) + "Hesabımı Sil" girişi
@@ -173,7 +175,8 @@ src/
 │   ├── cloudSaveMirror.ts # girişli kullanıcının devam eden oyunu için offline ayna/önbellek/silme kuyruğu (write-behind) + saf karar fonksiyonları
 │   ├── gameSync.ts      # bitmiş oyunlar için çevrimdışı/misafir kuyruğu
 │   ├── feedbackSync.ts # geri bildirim formu için çevrimdışı kuyruk
-│   ├── onboarding.ts   # ilk açılış hızlı başlangıç ipucu bayrağı
+│   ├── onboarding.ts   # ilk açılış / tanıtım / zoom balonu bayrakları
+│   ├── tutorialScript.ts # tanıtımın senaryosu: 4 sahne + rakibin 4 cevabı, senaryolu torba/raf, beklenen puanlar (npm run verify-tutorial-script kilitler)
 │   ├── visitTracking.ts # anonim misafir ziyaret kimliği, cihaz/standalone tespiti, UTM kaynağı
 │   ├── platform.ts     # bu istemcinin platformu ('web') — telemetri, tek kaynak
 │   ├── offlineNotice.ts # sunucuya ulaşılamadığında gösterilen metinler + ağ hatası tespiti (Flutter portuyla testli olarak senkron)

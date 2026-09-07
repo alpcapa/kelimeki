@@ -42,6 +42,7 @@ import {
 } from './utils/cloudSaveMirror';
 import { buildGameRecord } from './utils/gameRecord';
 import { markQuickStartSeen } from './utils/onboarding';
+import { TutorialGame } from './components/TutorialGame';
 import { swallowNextClick } from './utils/ghostClick';
 import { useBoardZoom } from './hooks/useBoardZoom';
 import { getFormedWords, getFullWordAt, key } from './utils/board';
@@ -809,6 +810,15 @@ export default function App() {
   // Setup ekranında "Oyunu Başlat" tıklandığında Tutorial ilk kez
   // görülmemişse, oyun ekranı açılır açılmaz burada gösterilir.
   const [showPostStartTutorial, setShowPostStartTutorial] = useState(false);
+  /**
+   * "Oynayarak öğren" tanıtımı (7 Eylül 2026) — ilk oyunda Hızlı Başlangıç
+   * PENCERESİ yerine 60 saniyelik raylı bir mini oyun açılır. Burada
+   * bekletilen kadro, tanıtım bitince (ya da atlanınca) GERÇEK oyunu
+   * başlatmak için kullanılır: `startLocalGame` ancak o an çağrılır, yani
+   * tanıtım hiçbir yere kaydedilmez ve huniye "başlayan oyun" olarak
+   * girmez (bkz. `TutorialGame`).
+   */
+  const [tutorial, setTutorial] = useState<{ players: PlayerSetup[]; aiLevel?: AiLevel } | null>(null);
 
   /**
    * YEREL (YZ) bir oyunun BAŞLATILMASI — `START` dispatch eden İKİ yer de
@@ -1265,6 +1275,28 @@ export default function App() {
     return <OnlineGameScreen game={onlineGame} myUserId={user.id} onBack={() => setOnlineGame(null)} />;
   }
 
+  // ── Tanıtım ekranı ("Oynayarak öğren") ────────────────────────────────────
+  // Kurulum/oyun ağacının önüne geçer: tanıtımın kendi `useReducer`'ı var ve
+  // App'in oyun state'ine hiç dokunmaz (yalıtım — bkz. `TutorialGame`).
+  // Bitirmek ve atlamak AYNI şeyi yapar: tanıtım görülmüş sayılır ve gerçek
+  // oyun başlar. Fark yalnızca ilk gerçek oyundaki bağlamsal ipuçlarında
+  // olacak (Faz 2).
+  if (tutorial) {
+    const baslat = () => {
+      markQuickStartSeen();
+      const kadro = tutorial;
+      setTutorial(null);
+      startLocalGame(kadro.players, kadro.aiLevel);
+    };
+    return (
+      <TutorialGame
+        playerName={tutorial.players[0]?.name ?? ''}
+        onFinish={baslat}
+        onSkip={baslat}
+      />
+    );
+  }
+
   // ── Kurulum ekranı ─────────────────────────────────────────────────────────
   if (state.phase === 'setup') {
     // Yalnızca GİRİŞSİZ (misafir) kullanıcıya gösterilir — bkz. aşağıdaki
@@ -1333,8 +1365,13 @@ export default function App() {
             cloudSaves={user ? cloudSaves : null}
             onResumeCloudSave={handleResumeCloudSave}
             onStart={(players, showTutorial, aiLevel) => {
+              // İlk oyun: önce tanıtım. Gerçek oyun tanıtım kapanınca
+              // başlar — `startLocalGame` burada ÇAĞRILMAZ.
+              if (showTutorial) {
+                setTutorial({ players, aiLevel });
+                return;
+              }
               startLocalGame(players, aiLevel);
-              if (showTutorial) setShowPostStartTutorial(true);
             }}
           />
         </main>

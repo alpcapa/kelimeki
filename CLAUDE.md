@@ -39,6 +39,7 @@ npm run simulate-ai-levels       # YZ↔YZ kadran ölçümü (ROADMAP #23): üre
 npm run generate-initial-main-view-golden # Giriş sekmesi kuralı: web→port davranış golden'ı (CI tazeliği zorluyor)
 npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz)
 npm run verify-shared-realtime    # Canlı oyun aboneliği: üç çağıran → TEK Realtime kanalı (sunucu maliyeti çarpanı)
+npm run verify-tutorial-script   # "Oynayarak öğren" tanıtımı: senaryo GERÇEK motorda oynatılır (ekrandaki puanlar dahil)
 npm run verify-demo-board        # Karşılama katmanındaki tanıtım tahtası sözlüğe karşı doğrulanır
 npm run verify-remaining-tiles   # "Kalan Taşlar" dökümü ↔ oyun sonu raf düşümü değişmezi
 npm run check-doc-size           # doküman boyutu bütçesi (bkz. "Doküman Boyutu Bütçesi")
@@ -76,7 +77,29 @@ düzeyinde istiyor — `describe` içinde kullanılamıyor). Ortak kurulum
 
 **`npm run test` neyi kapsıyor, neyi kapsamıyor:** `tests/smoke.spec.ts` kapsamlı bir test paketi DEĞİL — "uygulama açılıyor, 2 kişilik bir oyun başlatılabiliyor, YZ hamle yapıyor, bilinmeyen bir path SPA fallback'iyle açılıyor" düzeyinde bir kritik-yol kontrolü. Buraya kadar hatasız gelmek reducer/YZ/skor/bölge hesaplama zincirinin ucuna kadar çalıştığı ve `ErrorBoundary`'nin devreye girmediği anlamına geliyor.
 
-Projenin geri kalanının çok büyük bölümü (Canlı oyun, mesajlaşma, e-posta bildirimleri, admin paneli) **yapısı gereği otomatik test edilemiyor**: iki ayrı gerçek oturum, gerçek gelen kutusu ve gerçek Supabase Auth gerektiriyor. Bunlar için elle koşulan kontrol listesi ayrı bir dosyada: **`TESTING.md`** (admin paneli kontrolleri **`docs/testing-admin.md`**'de). Yeni bir Canlı oyun/mesajlaşma/e-posta özelliği eklendiğinde o listeyi de güncelle — `CLAUDE.md`/`README.md` senkron kontrolüyle aynı refleks.
+Projenin geri kalanının çok büyük bölümü (Canlı oyun, mesajlaşma, e-posta bildirimleri, admin paneli) **yapısı gereği otomatik test edilemiyor**: iki ayrı gerçek oturum, gerçek gelen kutusu ve gerçek Supabase Auth gerektiriyor. Bunlar için elle koşulan kontrol listesi ayrı bir dosyada: **`TESTING.md`** (admin paneli kontrolleri **`docs/testing-admin.md`**'de, tarihli regresyon turları **`docs/testing-turlari.md`**'de). Yeni bir Canlı oyun/mesajlaşma/e-posta özelliği eklendiğinde o listeyi de güncelle — `CLAUDE.md`/`README.md` senkron kontrolüyle aynı refleks.
+
+## İlk Oyun: Tanıtım Ekranı (7 Eylül 2026)
+
+İlk oyunda artık Hızlı Başlangıç PENCERESİ açılmıyor; onun yerine raylı,
+60 saniyelik bir mini oyun geliyor (`TutorialGame` + `utils/tutorialScript.ts`).
+Dört sahne: ev karesi → bölgenin büyümesi → merkezde ×2 → rakibin sınırına
+değme (vergi); her hamleden sonra rakip de oynuyor. Pencere SİLİNMEDİ —
+kendiliğinden açılmıyor, "Yardım" linkinden ve `/nasil-oynanir/`ten erişilir.
+
+Her yerde geçerli üç kural:
+
+1. **Tanıtım motora dokunmaz.** Yeni reducer action'ı ya da yeni
+   `GameState` alanı YOK; senaryo mevcut `PLACE_TILE`/`PLAY` ile sürülür.
+   Motorun dört kopyası olduğu için bu bilinçli bir sınır (bkz. etki
+   analizi tablosu).
+2. **Tanıtım bir "oyun" DEĞİLDİR.** Kendi `useReducer`'ı var; kayıt,
+   bulut kaydı, `logGameStart`, `games` satırı, k-lig, istatistik ve
+   terk-edilme cezası ÇALIŞMAZ. Gerçek oyun tanıtım kapanınca başlar.
+3. **Senaryoyu değiştiren `npm run verify-tutorial-script` koşar.**
+   Ekranda puan yazıyor; koordinat/kelime/puan elle doğrulanmaz.
+
+Ayrıntı, ölçümler ve kalan fazlar: `docs/decisions/onboarding.md`.
 
 ## Çalışma İlkesi: Önce Etki Analizi, Sonra Doküman Senkronu
 
@@ -124,6 +147,7 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | Migration | Canlıya uygula + doğrula + `list_migrations` ile dosya adını eşleştir |
 | Migration bir kolonu **nullable** yapıyor (ya da FK'yi `cascade`→`set null` çeviriyor) | `database.types.ts` **ve** portun `fromJson`'ı — bu bir SÖZLEŞME değişikliği (bkz. `docs/decisions/account-deletion.md` → "SET NULL'ın bedeli") |
 | Yeni kullanıcı verisi ya da görünürlük değişikliği | `TermsModal`/`PrivacyModal` |
+| Tanıtım senaryosu (`src/utils/tutorialScript.ts`) ya da motorun puan/vergi/çarpan kuralı | `npm run verify-tutorial-script` (CI'da) — tanıtım EKRANDA puan yazıyor, kural değişince metin sessizce bayatlar. Faz 4'te port ikizi de |
 | `App.tsx`'teki joker/mesaj/raf desenleri | `OnlineGameScreen.tsx` (ikisi deseni paylaşıyor) |
 | `Setup.tsx`'in "devam eden oyun" kartı | `LiveGamesTab.tsx`'in aktif oyun kartı — ikisi AYNI düzeni paylaşıyor ve kullanıcı onları iki sekmede yan yana görüyor (2 Eylül 2026: biri düzeltilip öteki unutuldu, kart ayrıştı; port ikizi `ui/devam_eden_govde.dart`) |
 | Bir Dart↔Kotlin/Swift MethodChannel adı ya da bildirim kanalı kimliği | Parite testi (`notification_*_parity_test.dart`) — derleyici görmez, uyuşmazlık SESSİZ arızadır |
@@ -367,37 +391,10 @@ düzenleme betiğinin `open(p, 'w')` satırıyla sıfırlandı, "bütçe içinde
 sayıldı ve BOŞ hâliyle `main`'e girdi (PR #475; #476 geri aldı). Ders,
 betik yazana: bir dosyayı yazma modunda AÇMADAN önce içeriğini oku.
 
-**26 Ağustos 2026 — uyarı bandı TAMAMEN boşaltıldı** (kullanıcı: *"md
-bölünme işini hallet"*). Beş dosya da kendi kuralına göre bölündü ve
-`npm run check-doc-size` artık tek uyarı vermiyor:
-
-| Dosya | Önce → Sonra | Nasıl |
-|---|---|---|
-| `CLAUDE.md` (auto) | 82 → **59 KB** | `## Supabase`'in tarihli anlatıları → `docs/decisions/supabase-ops.md`; kural/tablo burada kaldı |
-| `docs/decisions/components.md` | 183 → **62 KB** | üç cilt: `-account` (59) · `-score` (64) · kendisi (62) |
-| `mobile/docs/parca-log.md` | 151 → **12 KB** | Parça 110-138 donduruldu (`parca-log-110-138.md`, FROZEN listesinde) |
-| `mobile/TESTING.md` | 141 → **109 KB** | Arkadaşlar + Canlı oyun → `mobile/docs/testing-arkadaslar-canli.md` |
-| `TESTING.md` | 124 → **83 KB** | Admin kontrolleri (9.7-9.15) → `docs/testing-admin.md` |
-
-**3 Eylül 2026 — `mobile/TESTING.md` yeniden uyarı bandına girdi** (121 KB)
-ve aynı kuralla ikinci kez bölündü: tarihli etkileşim/görünüm turları (bölüm
-14-25, sürükleme eşiği · dokunma hedefleri · yazı boyutu · akıcılık · zoom)
-→ `mobile/docs/testing-ux-turlari.md`, dosya **93 KB**'a indi. Kesme noktası
-yine içeriğin türü: her sürüm baştan koşulan ÖZELLİK listesi ↔ belirli bir
-Parça'nın gerilemediğini doğrulayan TARİHLİ tur. Dosyanın bölüm
-numaralarının 14'ten yeniden başlaması bu ayrımın zaten var olduğunun
-kanıtıydı.
-
-**4 Eylül 2026 — `mobile/CLAUDE.md` uyarı bandındaydı (80 KB), aynı
-kuralla bölündü.** Dosyanın en büyük tek bloğu "Klasör Yapısı" ağacıydı:
-**24,5 KB, dosyanın %30'u**, ve içeriğinin çoğu dosya başına tarihli
-gerekçe/uyarı — yani her turda değil, O DOSYAYA dokunurken gereken bilgi.
-Açıklamalı ağaç `mobile/docs/klasor-yapisi.md`'ye taşındı (satırlar
-değiştirilmeden), yerine yalnızca KLASÖR düzeyinde bir özet + ağaçtan çıkan
-iki kural (üretilmiş dosyalar listesi, elle senkron web↔port çiftleri)
-kaldı; dosya **60 KB**'a indi. `auto` sınıfının kesme noktası bir kez daha
-"kural ↔ dosya başına ayrıntı" oldu — kök `CLAUDE.md`'nin kendi 26 Ağustos
-bölmesindeki ayrımın aynısı.
+**Bölme günlüğü — hangi dosya ne zaman, hangi kuralla bölündü:**
+`docs/decisions/doc-size-history.md` (26 Ağustos'ta beş dosyanın birden
+boşaltılması, 3 Eylül `mobile/TESTING.md`, 4 Eylül `mobile/CLAUDE.md`,
+7 Eylül `TESTING.md`). Örnekler oradan okunur; buradaki kural yeter.
 
 **Her kesme noktası boyut değil, İÇERİĞİN TÜRÜ:** kural ↔ anlatı, tek
 oturum ↔ iki oturum, normal kullanıcı ↔ admin. Hiçbir satır
@@ -455,6 +452,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 
 | Konu | Dosya |
 |---|---|
+| Onboarding — "Oynayarak öğren" tanıtımı (senaryo, raylar, yalıtım, doğrulayıcı, kalan fazlar) | `docs/decisions/onboarding.md` |
 | Karşılama katmanı (`/`, landing/) — statik SEO sayfası, kapı script'i, tanıtım tahtası | `docs/decisions/landing-page.md` |
 | Bileşen post-mortem'leri — **hesap/kimlik** (RemainingTilesModal, GameOver, CountBadge, UserMenu, RelationIcons, AuthModal, AccountSettingsModal, avatar) | `docs/decisions/components-account.md` |
 | Bileşen post-mortem'leri — **skor/k-lig** (ScoreCard, k-lig rebrand'i, Leaderboard) | `docs/decisions/components-score.md` |
@@ -479,6 +477,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | Supabase işletimi: Brevo SMTP/teslimat geçmişi, SPF-DKIM-DMARC'ın gerçek hâli, migration geçmişinin kopması, dal temizliği, Edge Function deploy tuzakları | `docs/decisions/supabase-ops.md` |
 | Sonraya bırakılan ürün fikirleri (karar verildi, henüz yapılmadı) | `docs/decisions/product-backlog.md` |
 | ROADMAP arşivi — kapanmış maddeler, fazlar ve sürüm turları (grep'lenir, baştan sona okunmaz) | `docs/decisions/roadmap-arsiv.md` |
+| Doküman boyutu — bölme günlüğü (hangi dosya ne zaman, hangi kuralla bölündü) | `docs/decisions/doc-size-history.md` |
 
 **Yeni bir dated not eklerken:** eğer not, kod tabanında HER YERDE geçerli
 bir kural/değişmez tarif ediyorsa (Türkçe harf kuralı, migration disiplini,
@@ -515,7 +514,7 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, ghostClick, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, aiLevel, scoreLine, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, ghostClick, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, aiLevel, tutorialScript, scoreLine, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan
