@@ -1255,9 +1255,10 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
       (hata mesajı çıkmıyor, taş konmuyor).
 - [ ] **Geri alma:** Konan taşa dokunmak onu rafa geri gönderiyor, kare
       yeniden işaretli hâle geliyor.
-- [ ] **Balon okunabiliyor:** Dört sahnenin de balonu tahtanın İÇİNDE
-      kalıyor (taşmıyor), yazı %200 ölçekte de kırpılmıyor
-      (iOS: Ayarlar → Ekran → Metin Boyutu en büyük).
+- [ ] **Balon okunabiliyor VE hedefi örtmüyor:** Dört sahnenin de balonu
+      tahtanın İÇİNDE kalıyor, yazı %200 ölçekte kırpılmıyor (iOS: Ayarlar →
+      Ekran → Metin Boyutu en büyük) ve "şuraya koy" denen kesikli kareler
+      balonun altında KALMIYOR.
 - [ ] **Rakip oynuyor:** Her hamlenden sonra kırmızı taşlar tek tek
       diziliyor ve skoru artıyor; tahta o sırada dokunuşa cevap vermiyor.
 - [ ] **Sayılar doğru okunuyor:** 3. sahnede "6 × 2 = 12 puan!",

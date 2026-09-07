@@ -82,6 +82,12 @@ export interface TutorialStep {
    * Balonun işaret ettiği kare. YÖN YOK: balon "Buradan başla" ile aynı
    * kuralı izler — karenin yanında, tahtanın içine doğru uzar (sütun < 6.5
    * ise sağa, değilse sola). Kenar karelerinde taşmayan tek yerleşim bu.
+   *
+   * ⚠ Balon, HEDEF KARELERİ ÖRTMEMELİ: oyuncuya "şuraya koy" derken oranın
+   * üstünü kapatmak tam ters etki yapar (7 Eylül 2026'da 3. sahnede oldu —
+   * metin uzayınca balon üç hedefin üstüne oturdu). Bu yüzden çapa,
+   * hedeflerin bulunduğu satırın DIŞINDA (bir üstü ya da altı) seçilir;
+   * `verify-tutorial-script` örtüşmeyi ayrıca kontrol eder.
    */
   bubble: { r: number; c: number };
   move: TutorialMove;
@@ -136,7 +142,9 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'buyume',
     say: 'Kelime kurdukça sınırın büyür.',
-    bubble: { r: 5, c: 2 },
+    // Hedefler sütun 3'te; balon çapanın SAĞINDAN başladığı için (5,3)
+    // çapası hiçbirini örtmez ((5,2) örtüyordu).
+    bubble: { r: 5, c: 3 },
     move: {
       word: 'ÜZENGİ',
       cells: [
@@ -165,8 +173,16 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: 'merkez',
-    say: 'Burada puan iki katı.',
-    bubble: { r: 5, c: 6 },
+    // Metin kullanıcı kararı (7 Eylül 2026, ikinci cihaz turu): "burada puan
+    // iki katı" ALTIN bölgenin neresi olduğunu söylemiyordu — oyuncu balonun
+    // işaret ettiği tek kareyi sanabilir. Yeni cümle bölgeyi RENGİYLE
+    // adlandırıyor. (Kullanıcının yazdığı cümledeki iyelik eki düzeltildi:
+    // "kelime puanını 2 katını" → "kelime puanının 2 katını".)
+    say: 'Sarı bölge içinde kelime puanının 2 katını alırsın',
+    // Çapa hedef satırın (5) bir ÜSTÜNDE ve altın bölgenin sol üst
+    // köşesinde: balon sağa doğru boş bölge karelerinin üstüne uzuyor,
+    // dolayısıyla ne hedefleri ne de yeni konan taşları örtüyor.
+    bubble: { r: 4, c: 4 },
     move: {
       word: 'İNSAN',
       cells: [
@@ -217,7 +233,10 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     // ⚠ `raw` YOK: üç kelime İKİ FARKLI çarpan aldığından "raw × n" diye
     // tek bir cümle kurulamaz (bkz. `TutorialMove.raw`).
     say: 'Ortadaki kare üç katı!',
-    bubble: { r: 6, c: 6 },
+    // Çapa hedef satırın (6) bir ALTINDA: kuyruk X3 karesinin tam altına
+    // düşüyor, balon ise boş satırın üstünde duruyor. (6,6) çapası
+    // hedeflerden (6,7)'yi örtüyordu.
+    bubble: { r: 7, c: 6 },
     move: {
       word: 'FES',
       cells: [

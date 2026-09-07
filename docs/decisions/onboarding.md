@@ -115,6 +115,24 @@ temizlemiş ya da yeni bir cihazdan gelen eski bir MİSAFİR oyuncu "yeni"
 görünür ve tanıtımı bir kez daha görür. Girişli kullanıcıda bu delik hesap
 yaşıyla kapalı.
 
+### Balon hedef kareleri ÖRTMEZ — üçüncü tur dersi
+
+3. sahnenin cümlesi kullanıcı isteğiyle uzayınca (*"burada puan iki katı"*
+→ *"Sarı bölge içinde kelime puanının 2 katını alırsın"*) balon genişledi ve
+**"şuraya koy" dediği üç kareyi kapattı**. Ders genel: balon çapasının
+yanından tahtanın içine doğru uzuyor, yani aynı satırda ve o yöndeki her
+hedef onun altında kalıyor.
+
+Kural: **çapa, hedeflerin satırının DIŞINDA** seçilir (bir üstü ya da altı) —
+ya da aynı satırda ama hedefleri kapsamayan bir sütunda. Şimdiki çapalar:
+1. sahne `(1,1)` · 2. sahne `(5,3)` (hedefler sütun 3'te, balon 4'ten
+başlıyor) · 3. sahne `(4,4)` (hedef satırın üstü, altın bölgenin köşesi) ·
+4. sahne `(7,6)` (hedef satırın altı, kuyruk X3'ün tam altında).
+
+`verify-tutorial-script` bu örtüşmeyi artık hesaplıyor ve kapının duyarlı
+olduğu kanıtlandı: eski çapa geri konunca betik
+`balon (5,4) hedef kareleri örtüyor — (5,5), (5,6), (5,7)` diyerek düşüyor.
+
 ## Mimari — motor değişmedi
 
 Tanıtım gerçek `gameReducer` ile oynanır (puanı, geçerliliği, vergiyi,
@@ -173,7 +191,7 @@ değiştirme / joker yok, 4. sahnede gerçek `Sınır İhlali!` penceresi çıka
 
 | Balon | Nerede | Ne zaman |
 |---|---|---|
-| Dersin cümlesi ("Ortadaki kare üç katı!") | tahtada, hedef karenin yanında | oyuncunun sırası, hamle **tamamlanana kadar** |
+| Dersin cümlesi ("Ortadaki kare üç katı!") | tahtada, hedef satırın bir üstünde/altında | oyuncunun sırası, hamle **tamamlanana kadar** |
 | `Şimdi FES kelimesini taşı` | rafın üstünde | harf kaldığı sürece |
 | `Hamleni tamamlamak için OYNA'ya bas` | OYNA butonunun üstünde | hamle tamamlanınca |
 | `Rakip hamlesini yaptı` | tahtada, rakibin oynadığı karenin yanında | rakip oynadıktan **sonra**, 2,6 sn |

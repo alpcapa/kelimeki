@@ -24,6 +24,9 @@
 //   7. KAPI: tanıtım kimlere gösteriliyor (`shouldShowTutorial`). Kullanıcı
 //      isteği net — "sadece yeni gelenlere bir kere, mevcut oynamış kişilere
 //      gösterilmeyecek" — ve bu karar TEK bir bayrağa bakmıyor; tablo aşağıda.
+//   9. BALON YERİ: sahnenin balonu hedef kareleri örtmüyor mu (uzun bir
+//      metin balonu genişletip "şuraya koy" denen kareleri kapatabiliyor —
+//      7 Eylül 2026'da 3. sahnede oldu).
 //   8. RAF DÜZENİ: sahnenin harfleri oyuncunun rafında YAN YANA ve kelime
 //      sırasında duruyor mu. Kullanıcı isteği (cihaz testi): "Rafta taşıması
 //      gereken taşları yanyana koy ve highlight et." Ekran bu bitişik bloğu
@@ -177,6 +180,23 @@ for (const step of TUTORIAL_STEPS) {
   console.log(`Sahne "${step.id}"`);
   // Balon oyuncunun sırasındayken çizilir; sıra gerçekten oyuncuda mı?
   if (state.current !== 0) bildir(`${step.id}: sıra oyuncuda değil`);
+
+  // ── 9. Balon hedef kareleri örtmüyor mu ────────────────────────────────
+  // Balon çapasının YANINDAN, tahtanın içine doğru uzar (sütun < 6.5 ise
+  // sağa, değilse sola — `Board.coach`). Yani aynı SATIRDA ve o yönde kalan
+  // her hedef kare balonun altında kalır: oyuncuya "şuraya koy" derken
+  // oranın üstünü kapatmak tam ters etki yapar.
+  const { r: br, c: bc } = step.bubble;
+  const sagaUzuyor = bc < SIZE / 2;
+  const ortulen = step.move.cells.filter(
+    (h) => h.r === br && (sagaUzuyor ? h.c > bc : h.c < bc),
+  );
+  if (ortulen.length > 0) {
+    bildir(
+      `${step.id}: balon (${br},${bc}) hedef kareleri örtüyor — ` +
+        ortulen.map((h) => `(${h.r},${h.c})`).join(', '),
+    );
+  }
 
   // ── 8. Sahnenin harfleri rafta yan yana ve sırayla mı ───────────────────
   const rafHarfleri = state.players[0].rack.map((t) => t.letter);
