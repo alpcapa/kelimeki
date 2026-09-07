@@ -1276,7 +1276,9 @@ listesi kök `TESTING.md` bölüm 10.
       web'in aynı listesi kök `TESTING.md` §10).** Girişli hesapla Yapay
       Zeka sekmesi → "+ Yeni" → `OYUNCU SAYISI`nın ALTINDA **ZORLUK**
       satırı: `KOLAY` · `NORMAL` · `ZOR` (Zor Faz 5'le, 7 Eylül 2026'da
-      girdi — web ile aynı PR), Normal seçili (Faz
+      girdi — web ile aynı PR; **1.0.8 turunda ZOR'la bir oyun oyna:** YZ
+      hamleleri gözle görülür takılma olmadan gelmeli, şeritte ve oyun
+      sonunda KIRMIZI `Zor`, birincilik k-lig **+4**), Normal seçili (Faz
       5'e kadar). Seçicinin altında seçili seviyenin açıklaması, web ile
       BİREBİR: Normal'de "Orta-iyi seviye bir oyuncuyum… birincilik 2 k-lig
       puanı kazandırır, ikincilik puan kazandırmaz.", KOLAY'a dokununca "Çok
