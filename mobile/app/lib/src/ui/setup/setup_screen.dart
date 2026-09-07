@@ -118,9 +118,9 @@ class _SetupScreenState extends State<SetupScreen>
   /// ZORLUK (ROADMAP #23 Faz 4 — web `Setup.tsx`in `level` state'i): varsayılan
   /// Normal (bugünkü motor), her yeni oyun formu açılışında Normal'e döner;
   /// misafirde de var (misafir de YZ'ye karşı oynuyor: kaydı/puanı yok ama
-  /// seçim yine anlamlı). Zor, Faz 5'e kadar seçenek listesinde YOK
-  /// (`selectableAiLevels`). Oyun BAŞINDA kilitlenir, 4 kişilikte üç YZ'ye
-  /// birden uygulanır.
+  /// seçim yine anlamlı). Seçenek listesi `selectableAiLevels` (üçü de; Zor
+  /// Faz 5'le, 7 Eylül 2026'da girdi). Oyun BAŞINDA kilitlenir, 4 kişilikte
+  /// üç YZ'ye birden uygulanır. Tasarım kaydı: docs/decisions/ai-levels.md.
   AiLevel _level = AiLevel.normal;
 
   /// Web `mainView` ('local' | 'live') — OYUN TİPİ sekmeleri. Canlı sekme
@@ -1784,8 +1784,8 @@ class _SetupScreenState extends State<SetupScreen>
         // / `LiveGamesTab._subTabBtn`: 11px, dikey 10 dolgu) — kullanıcı
         // kararı (6 Eylül 2026 gece), web `Setup.tsx` aynı sınıf dizesine
         // geçti. Terminoloji TEK: "Zorluk: Kolay · Normal · Zor" (23.4).
-        // Zor Faz 5'e kadar gösterilmez — her buton `Expanded`, üçüncüsü
-        // gelince yerleşim kendiliğinden üçe bölünür (web `flex-1`).
+        // Üç buton da `Expanded` (web `flex-1`); Zor Faz 5'le (7 Eylül 2026)
+        // girdi.
         const _SectionLabel('ZORLUK'),
         const SizedBox(height: 8),
         Row(

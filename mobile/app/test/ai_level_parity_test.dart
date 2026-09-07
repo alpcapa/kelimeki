@@ -39,7 +39,7 @@ void main() {
   });
 
   test('SELECTABLE_AI_LEVELS ↔ selectableAiLevels: aynı küme, aynı sıra '
-      '(Zor Faz 5\'e kadar ikisinde de YOK)', () {
+      '(Kolay · Normal · Zor — Zor Faz 5\'le ikisine birden girdi)', () {
     final m = RegExp(r'SELECTABLE_AI_LEVELS[^=]*=\s*\[([^\]]*)\]').firstMatch(web);
     expect(m, isNotNull);
     final webList = RegExp(r"'(\w+)'")
