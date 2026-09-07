@@ -65,6 +65,9 @@ const FROZEN = {
   // 26 Ağustos 2026: aktif cilt 151 KB'a çıkınca Parça 110-138 donduruldu.
   // Tavan bugünkü boyutun biraz üstünde — tek kural BÜYÜMEMESİ.
   'mobile/docs/parca-log-110-138.md': 150 * KB,
+  // 7 Eylül 2026: aktif cilt 200 KB'a (reference uyarı bandı) çıkınca
+  // Parça 139-174 donduruldu.
+  'mobile/docs/parca-log-139-174.md': 135 * KB,
 };
 
 // Yalnızca GREP'lenen başvuru dokümanları. Kural DOSYA ADINA değil, dosyanın

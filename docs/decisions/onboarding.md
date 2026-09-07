@@ -392,3 +392,167 @@ düzeltildi.
 gerçek parmakla sürükleme hissi, yalıtım). APK `main`'e merge + `mobile/**`
 ile üretilir; "portta canlı mı" sorusunun cevabı Setup'taki `Derleme` sha'sı.
 
+## Tarayıcı turu — karşılama penceresi + balon düzeltmesi (7 Eylül 2026 akşamı)
+
+Kullanıcı Faz 4'ün Pages derlemesini tarayıcıda denedi ve üç şey bildirdi.
+İkisi hataydı, biri eksik bir ürün adımı.
+
+### 1. Balon yazısı sola yapışıyordu (PORT HATASI, ölçüldü)
+
+*"Balon yazıları en sola yapışık geliyor. Özellikle 'rakip hamlesini yaptı'
+oku kelime üstünde ama yazı board'un soluna yapışık."*
+
+**Kök sebep bir Flutter değişmezi:** `Stack`, konumsuz çocuğuna **gevşek**
+kısıt verir. Gevşek kısıtta `Column`un çapraz ekseni "en geniş çocuk" kadar
+olur — yani balonun kendi genişliğine büzülür ve `crossAxisAlignment`
+görünür hiçbir iş yapmaz; kutu `Stack`in varsayılan `topStart` hizasına,
+yani SOLA düşer. Kuyruk kendi `Positioned`ı ile doğru yerde durduğundan
+hata tam olarak "ok doğru, yazı solda" diye görünüyordu.
+
+Düzeltme tek satır: `Column`u `SizedBox(width: double.infinity)` ile sar —
+sonsuz genişlik `Stack`in maxWidth'ine kırpılır, `Column` tam genişlik olur,
+hiza uygulanır. **Web'de bu hata YOKTU** (flex kabı zaten tam genişlik).
+
+⚠ Bu, Faz 4'te zoom balonunun geometrisi genelleştirilirken girmişti: eski
+`_zoomHintBubble` `Column`u doğrudan `Positioned(left:0,right:0)` içindeydi
+(TIGHT genişlik → hiza çalışıyordu); ortak `_coachBubble` onu bir `Stack`in
+içine aldı ve kısıt sessizce gevşedi. **Ders:** bir widget'ı `Stack`e
+taşımak, çocuğun kısıtlarını değiştirir — hizalama o taşımada sessizce ölür.
+
+Regresyon kilidi `tutorial_game_test.dart` → "balon hizası": orta banttaki
+balonun merkezi tahtanın merkezine 2 px'ten yakın olmalı, kenar sütundaki
+balon sağ yarıda kalmalı ve kuyruk balonun yatay aralığının İÇİNDE olmalı.
+Duyarlılığı kanıtlandı — düzeltme geri alınınca sapma **156 px** ölçüldü.
+
+### 2. Oyuncu kendini gerçek oyunda sanıyordu (EKSİK ADIM)
+
+*"İnsanlar setup'dan hemen oynaya basınca kendisini oyunda sanıyor. Girer
+girmez 'BÜYÜ kelimesini taşı' deyince oyunun öyle olduğunu düşünebilir ve
+kafası karışabilir."*
+
+Tanıtım ekranı gerçek oyun ekranına birebir benziyor (aynı tahta, aynı raf,
+aynı başlık) — "burası bir tur" bilgisini ekranın kendisi taşımıyordu; sahne
+sayacı (`TANITIM · 1/4`) küçük ve üstte. Artık tanıtım AÇILIRKEN tek bir
+karşılama penceresi çıkıyor (kullanıcının yazdığı metin):
+
+| | |
+|---|---|
+| Başlık | **Kelimeki Tanıtım Turu** |
+| Metin | *Yaklaşık 1 dk sürecek ve size oyunu gösterecek kısa tanıtım turuna hoş geldiniz.* |
+| Buton | **Devam** |
+
+⚠ Metinde tek düzeltme: `hoşgeldiniz` → **`hoş geldiniz`** (TDK ayrı yazar;
+3. sahnenin iyelik ekiyle aynı refleks).
+
+**Pencere kapının parçası DEĞİL:** `shouldShowTutorial` değişmedi, pencere
+tanıtım zaten gösterilmeye karar verildikten sonra çıkar ve kendi bayrağı
+yoktur — tanıtım "bir kere" gösterildiğinden pencere de bir kere görünür.
+İki platformda da aynı kabuk (384 px onay kartı) ve aynı metin;
+`tutorial_parity_test` üçünü birden kilitler.
+
+### 3. Balon tipografisi
+
+*"Balon fontlarını da biraz büyütelim. Tek satır uzun olanları 2 satıra
+bölelim."* Punto ve genişlik kapağı BİRLİKTE ayarlandı — kapak
+daraltılmasa büyüyen punto balonu ekran boyunca uzatır, punto büyütülmese
+kapak cümleyi gereksiz kırar:
+
+| Balon | Punto | Genişlik kapağı |
+|---|---|---|
+| tahta (`coach`) | `clamp(9,2.4vw,13)` → **`clamp(11,3.2vw,16)`** | %96 → **%72** |
+| raf / OYNA | aynı | 72vw → **58vw** |
+
+Raf balonu ayrıca ORTALANDI (kullanıcı: *"Hepsinin ortalı ve yerinde olması
+lazım"*): cümle rafın tamamı hakkında ve satırın ortası rafın üstüne düşüyor.
+OYNA balonu sağda KALDI — o gerçekten sağdaki butonu işaret ediyor. Tahta
+balonunun üçte-bir kuralı (sol/orta/sağ) korundu: kenar sütunlarda kuyruk
+ancak öyle balonun altında kalıyor (çapa 12'de ölçüldü).
+
+⚠ Balon artık iki satıra kırıldığından `verify-tutorial-script`in örtüşme
+kontrolü İKİ değil **ÜÇ** komşu satıra bakıyor; dört sahne de geçiyor
+(hedefler her sahnede yalnızca çapa satırında).
+
+### 4. İkinci tur — okun hedefi ve kalan iki balon (aynı akşam)
+
+Kullanıcı web önizlemesini denedi: *"Her şey ok, sadece 'Hamleni tamamlamak
+için Oyna' balon yazısının oku Oyna butonunu göstermiyor. Bir de gerçek
+oyuna geçince çıkan zoom mesaj fontunu da diğer balonlar kadar büyüt.
+Buradan başla balon yazısını da aynı şekilde."*
+
+**Ok neden kaymıştı — Tailwind sınıf sırası (WEB'E ÖZGÜ tuzak):** `Balon`
+kabı zaten `items-center` taşıyordu, çağıran ise `items-end` ekliyordu.
+Tailwind'de hangisinin kazandığını **sınıf dizesindeki sıra değil, üretilen
+CSS'teki sıra** belirler — `items-end` sessizce yutuluyor, kuyruk balonun
+ORTASINDA kalıp rafın ortasını gösteriyordu. Hiza artık `style` ile
+veriliyor (`hiza: 'sol' | 'orta' | 'sag'` prop'u) ve kuyruk kenardan 12 px
+içeride (portun `_Balon`ıyla aynı; tam köşedeki üçgen yuvarlatılmış kenarın
+dışına taşmış görünüyor).
+
+**Ders:** aynı özelliği hem kap sınıfında hem çağıranın sınıfında vermek,
+CSS sırası belirsiz olduğu için "çalışıyor gibi görünüp sessizce ters
+dönen" bir yapı kurar. Bir düzen kararı iki yerden geliyorsa satır içi
+stile taşı.
+
+Kilit ölçüyor: `smoke.spec.ts` kuyruğun (`[data-balon-kuyruk]`) yatay
+merkezinin OYNA butonunun x aralığında kaldığını iddia ediyor; hizayı
+bozunca test düşüyor (kanıtlandı).
+
+**Kalan iki balon da aynı puntoya çekildi** — zoom ipucu ve "Buradan
+başla" artık `clamp(11,3.2vw,16)`. Yani ekrandaki ÜÇ balon tek ölçüde;
+`tutorial_parity_test` bunu değişmez olarak kilitliyor (`Board.tsx`teki
+balon clamp'lerinin hepsi aynı olmalı — filigranlar tabanlarına göre
+ayrılıyor).
+
+### 5. Metin turu — vergi notu ve 2. sahnenin cümlesi (aynı akşam)
+
+Kullanıcı iki cümle değiştirdi:
+
+| Yer | Önce | Sonra |
+|---|---|---|
+| Vergi penceresinin alt notu | *Rakibin bölgesine girmen gerekmiyor — sınırına değmek yetiyor.* | **Rakibin bölgesine değen veya giren bir hamle yaparsan vergisini ödersin.** |
+| 2. sahnenin balonu | *Kelime kurdukça sınırın büyür.* | **Kelime kurdukça bölgeni büyütürsün.** |
+| 2. sahnenin sonuç satırı | *+15 puan — sınırın köşenin dışına taştı.* | **+15 puan — bölgen köşenin dışına taştı.** |
+
+İkisi de terimi `sınır`dan `bölge`ye çekiyor — tanıtımın öğrettiği ad
+`bölge` (verginin adı da "bölge vergisi", bkz. kök `CLAUDE.md` →
+"Terminoloji"). Yeni not, projenin başka iki yüzeyindeki cümleyle de
+aynı kalıba oturdu (`Landing.tsx` ve `intro_screen.dart`: *"rakibin
+bölgesine değen/giren hamle yapabilirsin; ama vergisini ödersin"*).
+
+⚠ Kullanıcının yazdığı iyelik biçimi (`bölgeni`) geçişli bir fiil ister:
+`büyür` → **`büyütürsün`**. (`bölgeni büyür` dilbilgisi olarak tökezlerdi.)
+
+Sonuç satırı aynı turda çekildi (kullanıcı onayı): balon "bölge" derken
+hemen ardından gelen satırın "sınır" demesi TEK sahnede iki terim olurdu —
+tam da kök `CLAUDE.md`'nin "Terminoloji" notunun uyardığı şey.
+
+⚠ Parite testinin bu nota bakan iddiası CÜMLENİN İLK KELİMELERİNE
+çapalıydı; metin değişince ayrıştırıcı sessizce kırılırdı. Artık port
+sabitinin web dosyasında GEÇTİĞİ doğrulanıyor (boşluklar normalize) — yani
+metin bundan sonra serbestçe değişebilir, parite yine kilitli kalır.
+
+### 6. Raf balonu mesaj şeridinin üstüne taşındı (aynı akşam)
+
+Kullanıcı: *"zaten orada 'kelimeyi taşı' balonu duruyor ve mesajlar
+görünmüyor… kaydırsak iyi olur"*.
+
+Balon rafın hemen üstüne (`bottom-full`) çapalıydı — orası da mesaj
+şeridinin durduğu yer. Örtülen metin çoğunlukla balonun kendisiyle aynı
+bilgiydi ("Harfi raftan al, işaretli kareye koy."), yani zarar küçüktü; ama
+üst üste binmenin kendisi hatalı görünüyor.
+
+**Çözüm yapıda, sayıda değil:** `relative` (portta `Stack`) artık raf
+satırında değil, **mesaj şeridini de kapsayan** bir sarmalayıcıda. Balon
+yine `bottom-full` ile onun üstüne taşıyor, dolayısıyla şeridin üstüne
+değil tahtanın alt kenarına doğru çıkıyor. Sabit bir "36 px yukarı kaydır"
+denmedi: şerit `min-h-[30px]` ile büyüyebilir, magic number bir gün
+sessizce yanlış olurdu.
+
+Portta dolgular birleşti — eski `(12,4,12,0)` + `(12,6,12,12)` yerine
+`(12,4,12,12)` + aradaki 6 px `SizedBox`; boşluklar birebir aynı kaldı.
+
+Kilit ÖLÇÜYOR, iki tarafta da: web `smoke.spec.ts` balon kutusunun alt
+kenarının mesaj şeridinin üst kenarını geçmediğini, port
+`tutorial_game_test` aynısını `getRect` ile iddia ediyor. Duyarlılık
+kanıtlandı (balon eski yerine konunca port testi 565 > 545 ile düştü).
+

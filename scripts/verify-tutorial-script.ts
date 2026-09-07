@@ -187,7 +187,11 @@ for (const step of TUTORIAL_STEPS) {
   // sarabildiğinden komşu İKİ satırı kapatabilir: oyuncuya "şuraya koy"
   // derken oranın üstünü kapatmak tam ters etki yapar.
   const { r: br, c: bc, yon } = step.bubble;
-  const kapali = yon === 'ust' ? [br - 1, br - 2] : [br + 1, br + 2];
+  // Balon ÜÇ komşu satıra kadar kapatabilir (7 Eylül 2026 akşamı punto
+  // büyüdü ve uzun cümleler iki satıra kırılıyor — kutu yükseldi). Kontrol
+  // buna göre GENİŞLETİLDİ: dar tutmak, örtüşmeyi gözden kaçırmak demek.
+  const kapali =
+    yon === 'ust' ? [br - 1, br - 2, br - 3] : [br + 1, br + 2, br + 3];
   const ortulen = step.move.cells.filter((h) => kapali.includes(h.r));
   if (ortulen.length > 0) {
     bildir(

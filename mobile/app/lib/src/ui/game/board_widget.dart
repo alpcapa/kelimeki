@@ -716,7 +716,7 @@ class BoardWidget extends StatelessWidget {
         yon: coach.yon,
         text: coach.text,
         screenWidth: screenWidth,
-        maxWidthFactor: 0.96,
+        maxWidthFactor: 0.72,
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       );
 
@@ -775,20 +775,37 @@ class BoardWidget extends StatelessWidget {
               fontFamily: 'SpaceGrotesk',
               fontWeight: FontWeight.bold,
               height: 1.25,
-              fontSize: fluidSize(screenWidth, 9, 0, 2.4, 13),
+              // Punto + genişlik BİRLİKTE (web `Board.tsx` ile aynı sayılar,
+              // 7 Eylül 2026 akşamı): kapak daraltılmasa büyüyen punto balonu
+              // tahta boyunca uzatırdı; uzun cümleler artık iki satıra kırılıyor.
+              fontSize: fluidSize(screenWidth, 11, 0, 3.2, 16),
             ),
           ),
         );
         // Kuyruk: işaret edilen karenin TAM ortasında. Balon bir Column'da
         // kendi hizasına otururken kuyruk sütuna göre AYRI konumlanıyor —
         // web'deki `position: absolute; left: calc(...)` eşleniği.
+        //
+        // ⚠ `SizedBox(width: double.infinity)` ŞART, süs değil (7 Eylül 2026
+        // akşamı, kullanıcı tarayıcıda bildirdi: *"yazı board'un soluna
+        // yapışık"*). `Stack` konumsuz çocuğuna GEVŞEK kısıt verir; gevşek
+        // kısıtta `Column`un çapraz ekseni EN GENİŞ ÇOCUK kadar olur, yani
+        // balon genişliğine büzülür ve `crossAxisAlignment` görünür hiçbir iş
+        // yapmaz — kutu Stack'in varsayılan `topStart` hizasına, yani SOLA
+        // düşerdi. Kuyruk doğru yerdeydi (kendi `Positioned`ı var), bu yüzden
+        // hata "ok kelimenin üstünde ama yazı solda" diye görünüyordu.
+        // Sonsuz genişlik Stack'in maxWidth'ine kırpılır → Column tam
+        // genişlik → hiza gerçekten uygulanır.
         final govde = Stack(
           clipBehavior: Clip.none,
           children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: align,
-              children: [bubble],
+            SizedBox(
+              width: double.infinity,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: align,
+                children: [bubble],
+              ),
             ),
             // Kuyruk Stack'in kendi kenarına asılı: `ust`te balonun altında
             // (Column'un altı = Stack'in altı), `alt`ta üstünde.
@@ -865,7 +882,9 @@ class BoardWidget extends StatelessWidget {
                   fontFamily: 'SpaceGrotesk',
                   fontWeight: FontWeight.bold,
                   height: 1,
-                  fontSize: fluidSize(screenWidth, 9, 0, 2.4, 13),
+                  // Zoom ve tanıtım balonlarıyla AYNI punto (7 Eylül 2026
+                  // akşamı, kullanıcı isteği; web `Board.tsx` ile aynı sayı).
+                  fontSize: fluidSize(screenWidth, 11, 0, 3.2, 16),
                 ),
               ),
             ),

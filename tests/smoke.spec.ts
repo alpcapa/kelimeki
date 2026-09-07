@@ -2235,6 +2235,15 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
     await devamButton.click();
   }
 
+  // Karşılama penceresi (7 Eylül 2026 akşamı, kullanıcı isteği): tanıtım
+  // AÇILIR AÇILMAZ ne olduğunu söyler — oyuncu kendini gerçek oyunda
+  // sanmasın. "Devam" ile kapanır ve tanıtım başlar.
+  const karsilama = page.getByRole('dialog', { name: 'Kelimeki Tanıtım Turu' });
+  await expect(karsilama).toBeVisible();
+  await expect(karsilama).toContainText('Yaklaşık 1 dk');
+  await karsilama.getByRole('button', { name: 'Devam', exact: true }).click();
+  await expect(karsilama).toBeHidden();
+
   // Tanıtım ekranı: sahne sayacı + ilk sahnenin balonu.
   await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
   await expect(page.locator('[data-coach]')).toContainText('Kendi köşenden başla.');
@@ -2263,6 +2272,23 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
     // (7 Eylül 2026, kullanıcı: iki balon aynı anda duruyordu).
     await expect(page.getByText("Hamleni tamamlamak için OYNA'ya bas")).toBeVisible();
     await expect(page.locator('[data-coach]')).toHaveCount(0);
+    // ⚠ Balonun OKU gerçekten OYNA butonunu göstermeli (7 Eylül 2026 akşamı,
+    // kullanıcı bildirdi: göstermiyordu). Kök sebep Tailwind sınıf sırasıydı
+    // — kap `items-center` taşırken çağıranın `items-end`i sessizce
+    // yutuluyordu, kuyruk balonun ortasında kalıp rafı işaret ediyordu.
+    // Hiza artık satır içi stil; bu ölçüm geri alınmayı yakalar.
+    const kuyruk = (await page.locator('[data-balon="sag"] [data-balon-kuyruk]')
+      .boundingBox())!;
+    const oynaKutu = (await oyna.boundingBox())!;
+    const kuyrukMerkez = kuyruk.x + kuyruk.width / 2;
+    expect(kuyrukMerkez).toBeGreaterThanOrEqual(oynaKutu.x);
+    expect(kuyrukMerkez).toBeLessThanOrEqual(oynaKutu.x + oynaKutu.width);
+    // ⚠ Balon MESAJ ŞERİDİNİ ÖRTMEZ (7 Eylül 2026 akşamı, kullanıcı:
+    // *"zaten orada balon duruyor ve mesajlar görünmüyor"*). Balon artık
+    // şeridi de kapsayan sarmalayıcının ÜSTÜNDE; kutular çakışmamalı.
+    const balonKutu = (await page.locator('[data-balon="sag"]').boundingBox())!;
+    const mesajKutu = (await page.locator('[data-mesaj]').boundingBox())!;
+    expect(balonKutu.y + balonKutu.height).toBeLessThanOrEqual(mesajKutu.y + 1);
     await oyna.click();
   };
 
@@ -2385,6 +2411,7 @@ test.describe('tanıtım sürükleme', () => {
     if (await devamButton.isVisible().catch(() => false)) {
       await devamButton.click();
     }
+    await page.getByRole('button', { name: 'Devam', exact: true }).click();
     await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
 
     const vurgulu = page.locator('[data-rack-tile] div[style*="outline"]').first();

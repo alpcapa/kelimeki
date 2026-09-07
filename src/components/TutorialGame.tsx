@@ -40,6 +40,9 @@ import { isWordSetReady, preloadWordSet } from '../data/wordSetLoader';
 import {
   TUTORIAL_FINISH_TEXT,
   TUTORIAL_FINISH_TITLE,
+  TUTORIAL_INTRO_BUTTON,
+  TUTORIAL_INTRO_TEXT,
+  TUTORIAL_INTRO_TITLE,
   TUTORIAL_STEPS,
   createTutorialState,
 } from '../utils/tutorialScript';
@@ -69,29 +72,68 @@ const SONUC_OKUMA = 1400;
  */
 const RAKIP_OKUMA = 2000;
 
-/** Tanıtım balonu — mavi kutu + aşağı bakan kuyruk (tahtadaki balonun eşi). */
-function Balon({ text, className }: { text: string; className: string }) {
+/**
+ * Tanıtım balonu — mavi kutu + aşağı bakan kuyruk (tahtadaki balonun eşi).
+ *
+ * ⚠ HİZA `style` ile veriliyor, Tailwind SINIFIYLA DEĞİL (7 Eylül 2026
+ * akşamı, kullanıcı: *"'Hamleni tamamlamak için Oyna' balon yazısının oku
+ * Oyna butonunu göstermiyor"*). Sebep bu depoya özgü bir tuzak: kap zaten
+ * `items-center` taşıyordu ve çağıran `items-end` ekliyordu — Tailwind'de
+ * hangisinin kazandığını SINIF DİZESİNDEKİ sıra değil, üretilen CSS'teki
+ * sıra belirler, yani `items-end` sessizce yutuluyor ve kuyruk balonun
+ * ORTASINDA kalıyordu (OYNA butonunu değil rafın ortasını işaret ediyordu).
+ * Satır içi stil bu belirsizliği tamamen kaldırır.
+ *
+ * Kuyruk ayrıca kenardan 12 px içeride duruyor (portun `_Balon`ıyla aynı):
+ * tam köşeye oturan bir üçgen yuvarlatılmış kenarın dışına taşmış görünür.
+ */
+function Balon({
+  text,
+  className,
+  hiza,
+}: {
+  text: string;
+  className: string;
+  /** Balonun ve kuyruğun yatay hizası — kuyruk neyi işaret ediyorsa o. */
+  hiza: 'sol' | 'orta' | 'sag';
+}) {
+  const alignItems = hiza === 'sol' ? 'flex-start' : hiza === 'sag' ? 'flex-end' : 'center';
+  const kuyrukKenar =
+    hiza === 'sol' ? { marginLeft: 12 } : hiza === 'sag' ? { marginRight: 12 } : {};
   return (
-    <div className={`pointer-events-none absolute z-30 flex flex-col items-center ${className}`}>
+    <div
+      data-balon={hiza}
+      className={`pointer-events-none absolute z-30 flex flex-col ${className}`}
+      style={{ alignItems }}
+    >
       <div
         className="font-bold leading-snug text-center rounded-[9px] text-white"
         style={{
+          // Punto ve genişlik BİRLİKTE ayarlandı (7 Eylül 2026 akşamı,
+          // kullanıcı: *"Balon fontlarını da biraz büyütelim. Tek satır uzun
+          // olanları 2 satıra bölelim."*). Genişlik kapağı daraltılmasa büyüyen
+          // punto balonu ekran boyunca UZATIRDI; 58vw uzun cümleleri iki satıra
+          // kırıyor, kısa olanlar tek satır kalıyor.
           background: '#2563EB',
-          fontSize: 'clamp(9px, 2.4vw, 13px)',
+          fontSize: 'clamp(11px, 3.2vw, 16px)',
           padding: '7px 10px',
-          maxWidth: '72vw',
+          maxWidth: '58vw',
           boxShadow: '0 2px 6px rgba(15,23,42,0.28)',
         }}
       >
         {text}
       </div>
       <span
+        // Testin ölçtüğü öğe: kuyruk GERÇEKTEN neyi gösteriyor
+        // (`smoke.spec.ts` → OYNA butonunun x aralığı).
+        data-balon-kuyruk=""
         style={{
           width: 0,
           height: 0,
           borderLeft: '5px solid transparent',
           borderRight: '5px solid transparent',
           borderTop: '6px solid #2563EB',
+          ...kuyrukKenar,
         }}
       />
     </div>
@@ -118,6 +160,9 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
   // 'bitti' = hamle oynandı, balon 2,6 sn "Rakip hamlesini yaptı" der.
   const [rakipEvre, setRakipEvre] = useState<'yok' | 'diziyor' | 'bitti'>('yok');
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Karşılama penceresi — tanıtım AÇILIRKEN, ilk sahneden önce (bkz.
+  // `TUTORIAL_INTRO_TITLE`). Kapanınca bir daha açılmaz.
+  const [introOpen, setIntroOpen] = useState(true);
   const [note, setNote] = useState<string | null>(null);
   const [wordsReady, setWordsReady] = useState(isWordSetReady());
 
@@ -406,6 +451,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
     };
   }, [state.placed, state.board, state.players, state.current, state.bonuses, wordsReady]);
 
+  const introRef = useModalA11y(introOpen, () => setIntroOpen(false));
   const confirmRef = useModalA11y(confirmOpen, () => setConfirmOpen(false));
   const finishRef = useModalA11y(mode === 'bitti', onFinish);
 
@@ -475,28 +521,47 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
           dragOverValid={ghost ? hedefUygun(dragOverKey, ghost.tile.letter) : false}
         />
 
-        <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
-          <div
-            className={`text-[11px] font-mono font-bold text-center min-h-[30px] py-0.5 flex items-center justify-center ${MESSAGE_COLORS[mesajRengi]}`}
-          >
-            {mesaj}
-          </div>
-
-          {/* `relative`: iki balon (raf ve OYNA) bu satıra göre konumlanıyor. */}
-          <div className="relative flex gap-1.5 items-stretch">
+        <div className="w-full max-w-[680px] px-3 pb-3 pt-1">
+          {/* ⚠ `relative` BURADA, raf satırında DEĞİL (7 Eylül 2026 akşamı,
+              kullanıcı: *"zaten orada 'kelimeyi taşı' balonu duruyor ve
+              mesajlar görünmüyor… kaydırsak iyi olur"*). Balonlar
+              `bottom-full` ile bu sarmalayıcının üstüne çıkıyor ve
+              sarmalayıcı MESAJ ŞERİDİNİ DE kapsadığından balon artık şeridi
+              örtmüyor — tahtanın alt kenarına doğru taşıyor.
+              Sarmalayıcı raf satırıyla AYNI genişlikte: OYNA balonunun
+              `right-1`i butonun sağ kenarına göre hesaplanıyor. */}
+          <div className="relative flex flex-col gap-1.5">
+            {/* Raf balonu SATIRIN ORTASINDA (7 Eylül 2026 akşamı, kullanıcı:
+                *"Hepsinin ortalı ve yerinde olması lazım"*). Önceden sola
+                yaslıydı ve rafın sol ucunu işaret ediyordu — oysa cümle
+                rafın TAMAMI hakkında; satırın ortası rafın üstüne düşüyor
+                (raf `flex-1`, buton ~90px). OYNA balonu sağda KALIYOR:
+                o gerçekten sağdaki butonu işaret ediyor. */}
             {mode === 'oyna' && !hazir && (
               <Balon
                 text={`Şimdi ${step.move.word} kelimesini taşı`}
-                className="left-1 bottom-full mb-1 items-start"
+                className="left-0 right-0 bottom-full mb-1"
+                hiza="orta"
               />
             )}
+            {/* Kuyruk OYNA butonunu işaret ETMEK ZORUNDA: balon sağa yaslı
+                ve kap butonun sağ kenarına (`right-1`) çapalı. */}
             {hazir && (
               <Balon
                 text="Hamleni tamamlamak için OYNA'ya bas"
-                className="right-1 bottom-full mb-1 items-end"
+                className="right-1 bottom-full mb-1"
+                hiza="sag"
               />
             )}
 
+            <div
+              data-mesaj=""
+              className={`text-[11px] font-mono font-bold text-center min-h-[30px] py-0.5 flex items-center justify-center ${MESSAGE_COLORS[mesajRengi]}`}
+            >
+              {mesaj}
+            </div>
+
+            <div className="flex gap-1.5 items-stretch">
             <div className="flex-1 min-w-0">
               {/* Raf HER ZAMAN oyuncunun (rakip oynarken bile) — App'teki
                   `rackPlayer` ile aynı kural. */}
@@ -526,6 +591,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
             >
               {!wordsReady ? 'Yükleniyor…' : 'Oyna'}
             </button>
+            </div>
           </div>
         </div>
       </main>
@@ -561,7 +627,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
               <strong>{state.players[1].name}</strong> kullanıcısına vergi olarak gidecek.
             </p>
             <p className="text-xs text-muted font-sans leading-relaxed">
-              Rakibin bölgesine girmen gerekmiyor — sınırına değmek yetiyor.
+              Rakibin bölgesine değen veya giren bir hamle yaparsan vergisini ödersin.
             </p>
             <div className="flex gap-2 mt-1">
               <button
@@ -577,6 +643,31 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
                 Vazgeç
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Karşılama penceresi: tanıtımın ne olduğunu ve ne kadar süreceğini
+          ilk saniyede söyler — kullanıcı isteği (7 Eylül 2026 akşamı).
+          Kapanış kartıyla AYNI kabuk (384px onay kartı). */}
+      {introOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+          <div
+            ref={introRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={TUTORIAL_INTRO_TITLE}
+            tabIndex={-1}
+            className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-3 outline-none"
+          >
+            <p className="text-lg font-bold text-text font-sans">{TUTORIAL_INTRO_TITLE}</p>
+            <p className="text-sm text-text font-sans leading-relaxed">{TUTORIAL_INTRO_TEXT}</p>
+            <button
+              onClick={() => setIntroOpen(false)}
+              className="btn-raised mt-1 py-3 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+            >
+              {TUTORIAL_INTRO_BUTTON}
+            </button>
           </div>
         </div>
       )}

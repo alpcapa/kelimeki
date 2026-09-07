@@ -145,7 +145,11 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: 'buyume',
-    say: 'Kelime kurdukça sınırın büyür.',
+    // 7 Eylül 2026 akşamı, kullanıcı: bu cümlede "sınır" yerine "bölge"
+    // — tanıtımın öğrettiği terim `bölge` (vergi de "bölge vergisi").
+    // Kullanıcının yazdığı iyelik biçimi (`bölgeni`) geçişli fiil ister:
+    // "büyür" → "büyütürsün".
+    say: 'Kelime kurdukça bölgeni büyütürsün.',
     // Kelime DİKEY (sütun 3, satır 1-5): balon üstte olsaydı kendi
     // hedeflerinin üstüne otururdu. Bu yüzden en alttaki hedefin ALTINDA,
     // kuyruk yukarı — kapattığı satırlar (6-7) boş.
@@ -162,7 +166,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
       points: 15,
       tax: 0,
     },
-    done: '+15 puan — sınırın köşenin dışına taştı.',
+    done: '+15 puan — bölgen köşenin dışına taştı.',
     reply: {
       word: 'TABAK',
       cells: [
@@ -268,6 +272,27 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     },
   },
 ];
+
+/**
+ * Tanıtım AÇILIRKEN çıkan karşılama penceresi (metin kullanıcı kararı,
+ * 7 Eylül 2026 akşamı — cihaz/tarayıcı turu).
+ *
+ * NEDEN VAR: kullanıcı *"insanlar setup'dan hemen oyna'ya basınca kendisini
+ * oyunda sanıyor. Girer girmez 'BÜYÜ kelimesini taşı' deyince oyunun öyle
+ * olduğunu düşünebilir ve kafası karışabilir"* dedi. Tanıtım ekranı gerçek
+ * oyun ekranına birebir benziyor (aynı tahta, aynı raf, aynı başlık), yani
+ * "burası bir tur" bilgisini ekranın KENDİSİ taşımıyordu — sahne sayacı
+ * (TANITIM · 1/4) küçük ve üstte. Pencere o bilgiyi ilk saniyede veriyor:
+ * ne olduğu, ne kadar süreceği, ve tek bir "Devam".
+ *
+ * ⚠ Pencere kapının BİR PARÇASI DEĞİL — tanıtım zaten gösterilmeye karar
+ * verildikten sonra çıkar (`shouldShowTutorial` değişmedi) ve kendi bayrağı
+ * YOKTUR: tanıtım "bir kere" gösterildiğinden pencere de bir kere görünür.
+ */
+export const TUTORIAL_INTRO_TITLE = 'Kelimeki Tanıtım Turu';
+export const TUTORIAL_INTRO_TEXT =
+  'Yaklaşık 1 dk sürecek ve size oyunu gösterecek kısa tanıtım turuna hoş geldiniz.';
+export const TUTORIAL_INTRO_BUTTON = 'Devam';
 
 /**
  * Kapanış (metin kullanıcı kararı, 7 Eylül 2026). Önceki hâli bingo

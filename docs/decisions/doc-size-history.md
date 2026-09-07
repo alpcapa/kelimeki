@@ -59,3 +59,14 @@ kaldı: Space Mono 700 yanlış teşhis dersi → `components.md`; teslim sonras
 izleme dalının silinmesi → `roadmap-arsiv.md`. Kesme noktası içeriğin
 TÜRÜ (vaka anlatısı ↔ her yerde geçerli kural), satırlar değişmedi.
 
+## 7 Eylül 2026 (gece) — `mobile/docs/parca-log.md`: cilt donduruldu (139-174)
+
+Tanıtımın tarayıcı turu (Parça 195) yazılınca aktif cilt 200 KB'a çıkıp
+`reference` uyarı bandına girdi. `reference` sınıfının kuralı **bölmek
+değil**: (1) bayat anlatıyı buda, (2) hâlâ büyükse bir CİLT dondur. Anlatı
+buda­nabilir değildi (her giriş bir ölçümün kaydı), o yüzden ikinci adım:
+Parça 139-174 `parca-log-139-174.md`ye dondu, aktif cilt 200 → 79 KB.
+Kesim parça sınırından; hiçbir satır değişmedi. `check-doc-size.mjs`in
+`FROZEN` listesine tavanıyla (135 KB) eklendi — arşive yanlışlıkla yazmanın
+tek yakalayıcısı o. Cilt haritası `mobile/CLAUDE.md`de dört → beş oldu.
+

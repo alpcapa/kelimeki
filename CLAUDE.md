@@ -85,7 +85,10 @@ Projenin geri kalanının çok büyük bölümü (Canlı oyun, mesajlaşma, e-po
 60 saniyelik bir mini oyun geliyor (`TutorialGame` + `utils/tutorialScript.ts`).
 Dört sahne: ev karesi → bölgenin büyümesi → merkezde ×2 → merkez karesinde
 ×3 + sınıra değme vergisi (dördüncüsü iki dersi tek hamlede verir); her
-hamleden sonra rakip de oynuyor. Pencere SİLİNMEDİ —
+hamleden sonra rakip de oynuyor. Tanıtım AÇILIRKEN tek bir karşılama
+penceresi çıkar (*"Kelimeki Tanıtım Turu"* + Devam) — oyuncu kendini gerçek
+oyunda sanmasın diye (7 Eylül 2026 akşamı, kullanıcı isteği); pencere
+kapının parçası DEĞİL, kendi bayrağı yok. Pencere SİLİNMEDİ —
 kendiliğinden açılmıyor, "Yardım" linkinden ve `/nasil-oynanir/`ten erişilir.
 
 Her yerde geçerli dört kural:

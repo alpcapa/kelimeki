@@ -63,7 +63,7 @@ const String kTutorialHarfiAlText = 'Harfi raftan al, işaretli kareye koy.';
 const String kTutorialOynaBalonuText = 'Hamleni tamamlamak için OYNA\'ya bas';
 String kTutorialTasiBalonuText(String word) => 'Şimdi $word kelimesini taşı';
 const String kTutorialInvasionNote =
-    'Rakibin bölgesine girmen gerekmiyor — sınırına değmek yetiyor.';
+    'Rakibin bölgesine değen veya giren bir hamle yaparsan vergisini ödersin.';
 
 enum _Mode { oyna, bekle, bitti }
 
@@ -147,7 +147,37 @@ class _TutorialGameState extends State<TutorialGame> {
     super.initState();
     _alive = true;
     _controller.addListener(_onState);
+    // Karşılama penceresi — ilk sahneden ÖNCE (bkz. `tutorialIntroTitle`).
+    // `initState`te `showDialog` çağrılamaz (ağaç henüz kurulmadı), ilk
+    // kareden sonra açılıyor.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_showIntro());
+    });
   }
+
+  /// Tanıtımın ne olduğunu ve ne kadar süreceğini söyleyen tek pencere.
+  /// Kapanış kartıyla AYNI kabuk; kapatmanın her yolu (buton, bariyer, geri
+  /// tuşu) tanıtımı başlatır — pencerenin kendi bayrağı YOK, tanıtım zaten
+  /// "bir kere" gösteriliyor.
+  Future<void> _showIntro() => showDialog<void>(
+        context: context,
+        builder: (context) => KDialogCard(
+          title: const Text(tutorialIntroTitle,
+              style: TextStyle(
+                  fontSize: 18,
+                  height: 28 / 18,
+                  fontWeight: FontWeight.bold,
+                  color: kText)),
+          content: const Text(tutorialIntroText, style: kDialogBodyStyle),
+          actions: [
+            kDialogButton(
+              label: tutorialIntroButton,
+              variant: NeoButtonVariant.accent,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
 
   void _onState() {
     if (mounted) setState(() {});
@@ -314,8 +344,7 @@ class _TutorialGameState extends State<TutorialGame> {
     if (d == null) return;
     // Bırakma kararının eşiği hayalet eşiğinden AYRI ve daha geniş
     // (`kTapSlopOnRelease`): titreyen parmak taşı kaybetmesin.
-    if (!d.moved ||
-        (e.position - d.start).distance < kTapSlopOnRelease) {
+    if (!d.moved || (e.position - d.start).distance < kTapSlopOnRelease) {
       if (_mode == _Mode.oyna) {
         _controller.dispatch(SelectTileAction(d.index));
       }
@@ -325,8 +354,8 @@ class _TutorialGameState extends State<TutorialGame> {
     final cell = _cellAtGlobal(lifted);
     final k = cell == null ? null : cellKey(cell.$1, cell.$2);
     if (!_hedefUygun(k, d.tile.letter)) return; // yanlış kare: rafa döner
-    _controller.dispatch(
-        PlaceTileAction(r: cell!.$1, c: cell.$2, rackIndex: d.index));
+    _controller
+        .dispatch(PlaceTileAction(r: cell!.$1, c: cell.$2, rackIndex: d.index));
   }
 
   void _resetDrag() {
@@ -377,7 +406,8 @@ class _TutorialGameState extends State<TutorialGame> {
         unawaited(_showFinish());
         return;
       }
-      _controller.dispatch(PlaceTileAction(r: cell.r, c: cell.c, rackIndex: idx));
+      _controller
+          .dispatch(PlaceTileAction(r: cell.r, c: cell.c, rackIndex: idx));
       await _bekle(kTutorialRakipTasArasi);
       if (!_alive) return;
     }
@@ -527,8 +557,8 @@ class _TutorialGameState extends State<TutorialGame> {
     final strideY = (grid.size.height + gap) / boardSize;
     final tl = stack
         .globalToLocal(grid.localToGlobal(Offset(c * strideX, r * strideY)));
-    final br = stack.globalToLocal(grid.localToGlobal(Offset(
-        c * strideX + (strideX - gap), r * strideY + (strideY - gap))));
+    final br = stack.globalToLocal(grid.localToGlobal(
+        Offset(c * strideX + (strideX - gap), r * strideY + (strideY - gap))));
     return Positioned(
       left: tl.dx,
       top: tl.dy,
@@ -675,81 +705,101 @@ class _TutorialGameState extends State<TutorialGame> {
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-                              child: ConstrainedBox(
-                                key: const ValueKey('tutorial-message'),
-                                constraints:
-                                    const BoxConstraints(minHeight: 30),
-                                child: Center(
-                                  child: Text(
-                                    mesaj,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontFamily: 'SpaceMono',
-                                      fontWeight: FontWeight.bold,
-                                      color: mesajRengi,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
-                              // İki balon (raf ve OYNA) bu satıra göre
-                              // konumlanıyor — satırın ÜSTÜNE taşarlar.
+                              // ⚠ Mesaj şeridi ve raf satırı TEK Stack'in
+                              // içinde (7 Eylül 2026 akşamı, kullanıcı:
+                              // *"zaten orada 'kelimeyi taşı' balonu duruyor
+                              // ve mesajlar görünmüyor… kaydırsak iyi
+                              // olur"*). Balonlar Stack'in ÜSTÜNE taştığı
+                              // için, Stack şeridi de kapsayınca balon
+                              // şeridin üstünü örtmüyor. Dolgular birleşti:
+                              // eski (12,4,12,0) + (12,6,12,12) → (12,4,12,12)
+                              // + aradaki 6 px `SizedBox` (boşluk aynen aynı).
+                              padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
                               child: Stack(
                                 clipBehavior: Clip.none,
                                 children: [
-                                  IntrinsicHeight(
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        Expanded(
-                                          child: RackWidget(
-                                            tiles: me.rack,
-                                            selectedTile: state.selectedTile,
-                                            onSelect: (i) {
-                                              if (_mode == _Mode.oyna &&
-                                                  vurgulu.contains(i)) {
-                                                _controller.dispatch(
-                                                    SelectTileAction(i));
-                                              }
-                                            },
-                                            title: me.name,
-                                            color: playerColors[
-                                                me.colorIndex %
-                                                    playerColors.length],
-                                            highlight: vurgulu,
-                                            dragHiddenIndex: _hiddenIndex,
-                                            onTilePointerDown:
-                                                _mode == _Mode.oyna
-                                                    ? _onRackPointerDown
-                                                    : null,
-                                            onTilePointerMove:
-                                                _onRackPointerMove,
-                                            onTilePointerUp: _onRackPointerUp,
-                                            onTilePointerCancel: _resetDrag,
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ConstrainedBox(
+                                        key: const ValueKey('tutorial-message'),
+                                        constraints:
+                                            const BoxConstraints(minHeight: 30),
+                                        child: Center(
+                                          child: Text(
+                                            mesaj,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontFamily: 'SpaceMono',
+                                              fontWeight: FontWeight.bold,
+                                              color: mesajRengi,
+                                            ),
                                           ),
                                         ),
-                                        const SizedBox(width: 6),
-                                        NeoButton(
-                                          label: 'OYNA',
-                                          variant: NeoButtonVariant.accent,
-                                          fontSize: 12,
-                                          letterSpacing: 1.2,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                          onPressed:
-                                              hazir ? _handlePlay : null,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      IntrinsicHeight(
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Expanded(
+                                              child: RackWidget(
+                                                tiles: me.rack,
+                                                selectedTile:
+                                                    state.selectedTile,
+                                                onSelect: (i) {
+                                                  if (_mode == _Mode.oyna &&
+                                                      vurgulu.contains(i)) {
+                                                    _controller.dispatch(
+                                                        SelectTileAction(i));
+                                                  }
+                                                },
+                                                title: me.name,
+                                                color: playerColors[
+                                                    me.colorIndex %
+                                                        playerColors.length],
+                                                highlight: vurgulu,
+                                                dragHiddenIndex: _hiddenIndex,
+                                                onTilePointerDown:
+                                                    _mode == _Mode.oyna
+                                                        ? _onRackPointerDown
+                                                        : null,
+                                                onTilePointerMove:
+                                                    _onRackPointerMove,
+                                                onTilePointerUp:
+                                                    _onRackPointerUp,
+                                                onTilePointerCancel: _resetDrag,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            NeoButton(
+                                              label: 'OYNA',
+                                              variant: NeoButtonVariant.accent,
+                                              fontSize: 12,
+                                              letterSpacing: 1.2,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20),
+                                              onPressed:
+                                                  hazir ? _handlePlay : null,
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
+                                  // Raf balonu SATIRIN ORTASINDA (7 Eylül 2026
+                                  // akşamı, kullanıcı: *"Hepsinin ortalı ve
+                                  // yerinde olması lazım"*) — cümle rafın
+                                  // TAMAMI hakkında, satırın ortası da rafın
+                                  // üstüne düşüyor. OYNA balonu sağda kalıyor:
+                                  // o gerçekten sağdaki butonu işaret ediyor.
                                   if (_mode == _Mode.oyna && !hazir)
                                     Positioned(
-                                      left: 4,
+                                      left: 0,
+                                      right: 0,
                                       top: -4,
                                       child: FractionalTranslation(
                                         translation: const Offset(0, -1),
@@ -757,12 +807,13 @@ class _TutorialGameState extends State<TutorialGame> {
                                           text: kTutorialTasiBalonuText(
                                               step.move.word),
                                           screenWidth: screenWidth,
-                                          align: CrossAxisAlignment.start,
+                                          align: CrossAxisAlignment.center,
                                         ),
                                       ),
                                     ),
                                   if (hazir)
                                     Positioned(
+                                      left: 0,
                                       right: 4,
                                       top: -4,
                                       child: FractionalTranslation(
@@ -821,7 +872,10 @@ class _Balon extends StatelessWidget {
         crossAxisAlignment: align,
         children: [
           Container(
-            constraints: BoxConstraints(maxWidth: screenWidth * 0.72),
+            // Genişlik kapağı 0.72 → 0.58 ve punto 9-13 → 11-16 (web
+            // `TutorialGame.tsx` ile aynı sayılar): uzun cümleler iki satıra
+            // kırılıyor, kısa olanlar tek satır kalıyor.
+            constraints: BoxConstraints(maxWidth: screenWidth * 0.58),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
               color: kAccent,
@@ -841,7 +895,7 @@ class _Balon extends StatelessWidget {
                 fontFamily: 'SpaceGrotesk',
                 fontWeight: FontWeight.bold,
                 height: 1.25,
-                fontSize: fluidSize(screenWidth, 9, 0, 2.4, 13),
+                fontSize: fluidSize(screenWidth, 11, 0, 3.2, 16),
               ),
             ),
           ),

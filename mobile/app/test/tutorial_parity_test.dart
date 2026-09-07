@@ -25,6 +25,8 @@ import 'support/web_source.dart';
 /// alan adlarını ve kesme işaretlerini içerebiliyor, ayrıştırıcı onları
 /// görmemeli. (Dize içinde `//` geçen bir metin yok; olursa bu satır önce
 /// güncellenmeli.)
+String _norm(String s) => s.replaceAll(RegExp(r'\s+'), ' ').trim();
+
 String _stripComments(String src) => src.replaceAll(RegExp(r'//[^\n]*'), '');
 
 List<(int, int, String)> _cells(String block) => [
@@ -118,6 +120,102 @@ void main() {
     expect(tutorialStartRacks, webRacks);
   });
 
+  test('karşılama penceresi: başlık · metin · buton birebir', () {
+    expect(tutorialIntroTitle,
+        pick(scriptTs, RegExp(r"TUTORIAL_INTRO_TITLE = '([^']*)'"), 'INTRO_TITLE'));
+    final textStmt = pick(
+        scriptTs,
+        RegExp(r'TUTORIAL_INTRO_TEXT =([\s\S]*?);', multiLine: true),
+        'INTRO_TEXT');
+    expect(tutorialIntroText,
+        RegExp(r"'([^']*)'").allMatches(textStmt).map((m) => m.group(1)!).join());
+    expect(tutorialIntroButton,
+        pick(scriptTs, RegExp(r"TUTORIAL_INTRO_BUTTON = '([^']*)'"), 'INTRO_BUTTON'));
+    // Pencere GERÇEKTEN çiziliyor mu (sabit tanımlanıp kullanılmamış olmasın).
+    expect(gameTsx.contains('TUTORIAL_INTRO_TITLE'), isTrue);
+    expect(gameTsx.contains('TUTORIAL_INTRO_BUTTON'), isTrue);
+  });
+
+  test('balon tipografisi: punto ve genişlik kapağı iki tarafta AYNI', () {
+    // 7 Eylül 2026 akşamı, kullanıcı: *"Balon fontlarını da biraz
+    // büyütelim. Tek satır uzun olanları 2 satıra bölelim."* İkisi BİRLİKTE
+    // ayarlanır: kapak daraltılmasa büyüyen punto balonu uzatır, punto
+    // büyütülmese kapak cümleyi gereksiz kırar. Bu test ikisinin de iki
+    // platformda aynı sayı olduğunu kilitler.
+    final boardTsx = readRepoFile('src/components/Board.tsx');
+    final dartBoard =
+        readRepoFile('mobile/app/lib/src/ui/game/board_widget.dart');
+    final dartTutorial =
+        readRepoFile('mobile/app/lib/src/ui/tutorial/tutorial_game.dart');
+
+    // Web `clamp(min, Nvw, max)` ↔ Dart `fluidSize(w, min, 0, N, max)`.
+    // `pick` tek grup döndürdüğünden üç sayı ayrı ayrı okunuyor; eşleşme
+    // yoksa test DÜŞER (web'in stili yeniden yazıldıysa ayrıştırıcı da
+    // güncellenmeli — sessizce yeşil kalmasın).
+    String clampParcasi(String src, int grup, String ne) {
+      final m = RegExp(r"fontSize: 'clamp\((\d+)px, ([\d.]+)vw, (\d+)px\)'")
+          .firstMatch(src);
+      expect(m, isNotNull, reason: '$ne bulunamadı — ayrıştırıcıyı güncelle');
+      return m!.group(grup)!;
+    }
+
+    for (final (webSrc, dartSrc, ad) in [
+      (boardTsx.substring(boardTsx.indexOf('data-coach')), dartBoard,
+          'tahta balonu'),
+      (gameTsx.substring(gameTsx.indexOf('function Balon')), dartTutorial,
+          'raf balonu'),
+    ]) {
+      final min = clampParcasi(webSrc, 1, '$ad web punto min');
+      final vw = clampParcasi(webSrc, 2, '$ad web punto vw');
+      final max = clampParcasi(webSrc, 3, '$ad web punto max');
+      expect(
+          dartSrc.contains('fluidSize(screenWidth, $min, 0, $vw, $max)'), isTrue,
+          reason: '$ad puntosu ayrıştı: web clamp($min, ${vw}vw, $max), '
+              'port `fluidSize(screenWidth, $min, 0, $vw, $max)` yazmıyor');
+    }
+
+    // Genişlik kapakları: web yüzde/vw, port oran.
+    expect(
+        pick(boardTsx.substring(boardTsx.indexOf('data-coach')),
+            RegExp(r"maxWidth: '(\d+)%'"), 'tahta balonu web genişlik kapağı'),
+        '72');
+    expect(dartBoard.contains('maxWidthFactor: 0.72'), isTrue,
+        reason: 'tahta balonunun genişlik kapağı ayrıştı (web %72)');
+    expect(
+        pick(gameTsx.substring(gameTsx.indexOf('function Balon')),
+            RegExp(r"maxWidth: '(\d+)vw'"), 'raf balonu web genişlik kapağı'),
+        '58');
+    expect(dartTutorial.contains('screenWidth * 0.58'), isTrue,
+        reason: 'raf balonunun genişlik kapağı ayrıştı (web 58vw)');
+
+    // ÜÇ BALON TEK ÖLÇÜDE (7 Eylül 2026 akşamı, kullanıcı: *"zoom mesaj
+    // fontunu da diğer balonlar kadar büyüt. Buradan başla balon yazısını da
+    // aynı şekilde."*): tanıtım balonu · zoom ipucu · "Buradan başla".
+    // `Board.tsx`teki HER balon puntosu aynı clamp olmalı; biri unutulursa
+    // ekranda gözle fark edilir ama hiçbir test yakalamazdı.
+    // Filigranlar (köşe numarası, X2) da `clamp` kullanıyor ama onlar balon
+    // DEĞİL — 80/32vw/220 gibi dev değerler. Balonları tabanına göre ayırıyoruz.
+    final boardClamps = RegExp(r"fontSize: 'clamp\((\d+)px, ([\d.]+)vw, (\d+)px\)'")
+        .allMatches(boardTsx)
+        .where((m) => int.parse(m.group(1)!) <= 20)
+        .map((m) => '${m.group(1)}/${m.group(2)}/${m.group(3)}')
+        .toList();
+    expect(boardClamps.length, 3,
+        reason: 'Board.tsx uc balon puntosu tasimali (tanitim, zoom, '
+            '"Buradan basla"); sayi degistiyse bu testi de guncelle');
+    expect(boardClamps.toSet(), {'11/3.2/16'},
+        reason: 'üç balonun puntosu AYNI olmalı, ayrışmış: $boardClamps');
+    expect(
+        RegExp(r'fluidSize\(screenWidth, 11, 0, 3\.2, 16\)')
+            .allMatches(dartBoard)
+            .length,
+        2,
+        reason: 'port tarafında iki balon (ortak `_coachBubble` + '
+            '"Buradan başla") aynı puntoyu kullanmalı');
+    expect(dartBoard.contains('fluidSize(screenWidth, 9, 0, 2.4, 13)'), isFalse,
+        reason: 'eski (küçük) balon puntosu portta kalmış');
+  });
+
   test('ekran: süreler ve balon/mesaj metinleri TutorialGame.tsx ile birebir', () {
     expect(kTutorialRakipTasArasi,
         int.parse(pick(gameTsx, RegExp(r'RAKIP_TAS_ARASI = (\d+);'), 'RAKIP_TAS_ARASI')));
@@ -138,9 +236,13 @@ void main() {
         tasi.replaceAll(r'${step.move.word}', 'BÜYÜ'));
     expect(kTutorialOynaBalonuText,
         pick(gameTsx, RegExp(r'text="(Hamleni tamamlamak[^"]*)"'), 'OYNA balonu'));
-    expect(kTutorialInvasionNote,
-        pick(gameTsx, RegExp(r'>\s*(Rakibin bölgesine girmen[^<]*?)\s*<'),
-            'vergi penceresi notu'));
+    // Vergi penceresinin tek satırlık notu. Cümlenin İLK KELİMELERİNE
+    // çapalamak yerine (metin değişince ayrıştırıcı sessizce kırılırdı)
+    // port sabitinin web dosyasında GEÇTİĞİ doğrulanıyor; boşluklar
+    // normalize ediliyor ki JSX satır sarması testi düşürmesin.
+    expect(_norm(gameTsx).contains(_norm(kTutorialInvasionNote)), isTrue,
+        reason: 'vergi penceresi notu web ile ayrıştı — port: '
+            '"$kTutorialInvasionNote"');
     // Kapanış butonu: web `uppercase` sınıfıyla büyütüyor, port etiketi
     // büyük harfle yazıyor — Türkçe büyütmeyle aynı olmalı.
     final btn = pick(gameTsx, RegExp(r'>\s*(Gerçek oyuna başla)\s*<'), 'kapanış butonu');
