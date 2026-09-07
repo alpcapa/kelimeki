@@ -58,23 +58,21 @@ export interface HardOptions {
    */
   exchangeBelow: number;
   /**
-   * Tek katlı ileri bakış: sıradaki rakibin en iyi cevabının ham puanı bu
-   * yüzde ağırlıkla düşülür (100 = birebir). 0 = kapalı. Rakip rafı
-   * `opponentRacks[i]`den okunur (DENEYSEL — "rafa bakan" üst sınır ölçümü).
+   * Tek katlı ileri bakış: sıradaki rakibin GENEL bir rafla (`GENERIC_REPLY_
+   * LETTERS`) bulabileceği en iyi cevabın ham puanı bu yüzde ağırlıkla
+   * düşülür (100 = birebir). 0 = kapalı. Rakibin gerçek rafına ASLA
+   * bakılmaz (kullanıcı kararı, 7 Eylül 2026: rafa bakmak hiledir) — bu
+   * yalnızca "hamlem hangi sıcak noktaları açtı" sorusunu ölçer.
    */
   replyWeight: number;
   /**
-   * İleri bakış için rakip rafları (oyuncu indeksine göre). Verilmezse rakip
-   * için GENEL bir raf (`GENERIC_REPLY_RACK`) varsayılır — rafa bakmayan,
-   * yalnızca "hamlem hangi sıcak noktaları açtı" sorusunu ölçen dürüst sürüm.
+   * Geniş arama: (1) boş "kanca" hücrelerinden (bir taşa komşu) başlayan
+   * paralel dizişler — tüm taşlar yeni, bağlantı çapraz kelimelerle; (2)
+   * aynı hattaki BİRDEN ÇOK tahta taşından geçen uzun kelimeler (aday
+   * süzgeci raf + hattın harfleriyle). Normal yalnızca tek bir çapadan geçen
+   * hattı dener; bu iki sınıf onun hiç görmediği hamleler (bingo dahil).
    */
-  opponentRacks?: Tile[][];
-  /**
-   * Oyun sonu çözücü: torba BOŞKEN rakip rafları (torba boşken raf zaten
-   * çıkarsanabilir: tüm taşlar − tahta − kendi raf, yani bakmak değil) ile
-   * `ENDGAME_DEPTH` katlı minimax. Verilmezse kapalı.
-   */
-  endgameRacks?: Tile[][];
+  wideSearch: boolean;
   /** Torbada kalan taş — 0'da kalıntı = kalan taşların puanı (oyun sonu düşümü). */
   bagCount: number;
 }
@@ -90,68 +88,6 @@ const LOOKAHEAD_WIDTH = 8;
 
 /** Rafa bakmayan ileri bakışta rakibe varsayılan raf (sık harfler + joker). */
 const GENERIC_REPLY_LETTERS = ['A', 'E', 'İ', 'K', 'L', 'R', '?'];
-
-/** Oyun sonu çözücünün derinliği (kat) ve kat başına aday sayısı. */
-const ENDGAME_DEPTH = 3;
-const ENDGAME_WIDTH = 6;
-
-/** Raftaki taşların toplam puanı (oyun sonu düşümü). */
-function rackPoints(rack: Tile[]): number {
-  let pts = 0;
-  for (const t of rack) pts += t.pts;
-  return pts;
-}
-
-/** Hamle sonrası raf: oynanan taşlar (joker → '?') düşülür. */
-function rackAfter(rack: Tile[], placements: Placement[]): Tile[] {
-  const left = [...rack];
-  for (const p of placements) {
-    const L = p.tile.wild ? '?' : p.tile.letter;
-    const i = left.findIndex((t) => t.letter === L);
-    if (i >= 0) left.splice(i, 1);
-  }
-  return left;
-}
-
-/**
- * Torba boşken iki kişilik farkı (hamle sırası gelenin bakışıyla, puan)
- * derinlik sınırlı minimax ile değerlendirir. Rafını bitiren oyunu bitirir:
- * kendi kalıntısı 0, rakibin kalıntısı rakipten düşer (kurallar). Hamle yoksa
- * pas; art arda iki pas oyunu bitirir. Yaprakta: kalıntı farkı.
- */
-function endgameValue(
-  board: Board,
-  racks: Tile[][],
-  mover: number,
-  other: number,
-  bonuses: Record<string, BonusType>,
-  players: Player[],
-  depth: number,
-  passed: boolean,
-): number {
-  const myRack = racks[mover];
-  const oppRack = racks[other];
-  if (depth === 0 || myRack.length === 0) return rackPoints(oppRack) - rackPoints(myRack);
-  const moves = findAIMoves(
-    board, myRack, bonuses, mover, players[mover].corners, hasNoTiles(board, mover), players, ENDGAME_WIDTH,
-  );
-  // Pas: rakip oynar; o da pas geçerse oyun biter.
-  let best = passed
-    ? rackPoints(oppRack) - rackPoints(myRack)
-    : -endgameValue(board, racks, other, mover, bonuses, players, depth - 1, true);
-  for (const m of moves) {
-    const nb = board.map((row) => [...row]);
-    for (const p of m.placements) nb[p.r][p.c] = p.tile;
-    const left = rackAfter(myRack, m.placements);
-    const nextRacks = [...racks];
-    nextRacks[mover] = left;
-    let v: number;
-    if (left.length === 0) v = m.score + rackPoints(oppRack);
-    else v = m.score - endgameValue(nb, nextRacks, other, mover, bonuses, players, depth - 1, false);
-    if (v > best) best = v;
-  }
-  return best;
-}
 
 /** Sıradaki (teslim olmamış) rakip — reducer'ın `nextActiveIndex`iyle aynı. */
 function nextOpponent(players: Player[], from: number): number {
@@ -324,7 +260,6 @@ export function findAIMoves(
   let width = n;
   if (hard && hard.territoryWeight > 0) width = Math.max(width, TERRITORY_RERANK_WIDTH);
   if (hard && hard.replyWeight > 0) width = Math.max(width, LOOKAHEAD_WIDTH);
-  if (hard && hard.endgameRacks && hard.bagCount === 0) width = Math.max(width, ENDGAME_WIDTH);
   // tryCornerStart dışında hiç kullanılmıyor — bu da yalnızca isFirstMove
   // (ya da nadir freshCorners) dallarında tetikleniyor. Her normal hamlede
   // onbinlerce kelimeyi boşuna filtrelememek için tembel/önbellekli hesap.
@@ -348,6 +283,25 @@ export function findAIMoves(
         (w) => w.includes(letter) && canSpell(w, [...rackLetters, letter]),
       );
       anchoredCandidatesCache.set(letter, cached);
+    }
+    return cached;
+  };
+
+  // Geniş arama: hat (satır/sütun) başına aday süzgeci — raf + o hattaki
+  // tahta harfleri. Çok çapalı uzun kelimeler ancak böyle adaya girer.
+  const lineCandidatesCache = new Map<string, string[]>();
+  const candidatesForLine = (horiz: boolean, index: number): string[] => {
+    const cacheKey = (horiz ? 'r' : 'c') + index;
+    let cached = lineCandidatesCache.get(cacheKey);
+    if (!cached) {
+      const lineLetters: string[] = [];
+      for (let i = 0; i < SIZE; i++) {
+        const t = horiz ? board[index][i] : board[i][index];
+        if (t) lineLetters.push(tileLetter(t));
+      }
+      const avail = [...rackLetters, ...lineLetters];
+      cached = pool.filter((w) => w.length <= avail.length && canSpell(w, avail));
+      lineCandidatesCache.set(cacheKey, cached);
     }
     return cached;
   };
@@ -433,33 +387,10 @@ export function findAIMoves(
       hard && hard.territoryWeight > 0
         ? rerankByTerritory(list, board, players, owner, territories, hard.territoryWeight, n)
         : list;
-    if (hard && hard.endgameRacks && hard.bagCount === 0 && players.length === 2) {
-      const opp = nextOpponent(players, owner);
-      const racks = hard.endgameRacks;
-      if (opp !== owner && racks[opp] && racks[owner]) {
-        const out: Ranked[] = [];
-        for (const item of ranked.slice(0, ENDGAME_WIDTH)) {
-          const nb = board.map((row) => [...row]);
-          for (const p of item.move.placements) nb[p.r][p.c] = p.tile;
-          const left = rackAfter(racks[owner], item.move.placements);
-          const nextRacks = [...racks];
-          nextRacks[owner] = left;
-          const v =
-            left.length === 0
-              ? item.move.score + rackPoints(racks[opp])
-              : item.move.score -
-                endgameValue(nb, nextRacks, opp, owner, bonuses, players, ENDGAME_DEPTH - 1, false);
-          insertBounded(out, { move: item.move, rank: v * RANK_SCALE }, n);
-        }
-        return out.map((x) => x.move);
-      }
-    }
     if (hard && hard.replyWeight > 0) {
       const opp = nextOpponent(players, owner);
-      const oppRack: Tile[] | undefined = hard.opponentRacks
-        ? hard.opponentRacks[opp]
-        : GENERIC_REPLY_LETTERS.map((L) => ({ letter: L, pts: letterPoints(L), owner: opp }));
-      if (opp !== owner && oppRack) {
+      const oppRack: Tile[] = GENERIC_REPLY_LETTERS.map((L) => ({ letter: L, pts: letterPoints(L), owner: opp }));
+      if (opp !== owner) {
         const out: Ranked[] = [];
         for (const item of ranked.slice(0, LOOKAHEAD_WIDTH)) {
           const nb = board.map((row) => [...row]);
@@ -601,11 +532,41 @@ export function findAIMoves(
     );
   };
 
+  const wide = hard !== undefined && hard.wideSearch;
+  const hasNeighbor = (r: number, c: number): boolean =>
+    (r > 0 && !!board[r - 1][c]) ||
+    (r < SIZE - 1 && !!board[r + 1][c]) ||
+    (c > 0 && !!board[r][c - 1]) ||
+    (c < SIZE - 1 && !!board[r][c + 1]);
+
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       const anchorTile = board[r][c];
-      if (!anchorTile) continue;
+      if (!anchorTile) {
+        // Geniş arama: boş kanca hücresi — tüm taşlar yeni, bağlantı
+        // komşuluktan (paralel diziş). Hat içindeki mevcut taşlar tryPlace'te
+        // eşleşmek zorunda.
+        if (!wide || !hasNeighbor(r, c)) continue;
+        for (const horiz of [true, false]) {
+          for (const W of candidatesForLine(horiz, horiz ? r : c)) {
+            for (let idx = 0; idx < W.length; idx++) tryPlace(W, r, c, idx, horiz);
+          }
+        }
+        continue;
+      }
       const anchor = tileLetter(anchorTile);
+      if (wide) {
+        for (const horiz of [true, false]) {
+          for (const W of candidatesForLine(horiz, horiz ? r : c)) {
+            let idx = W.indexOf(anchor);
+            while (idx >= 0) {
+              tryPlace(W, r, c, idx, horiz);
+              idx = W.indexOf(anchor, idx + 1);
+            }
+          }
+        }
+        continue;
+      }
       for (const W of candidatesForAnchor(anchor)) {
         let idx = W.indexOf(anchor);
         while (idx >= 0) {
