@@ -202,7 +202,7 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
 ⚠ **DURUM (7 Eylül 2026): paket 1.0.8 (569) = `f4de936` Play'e GÖNDERİLDİ,
-saat 13:42, kapalı test (Alpha), durum "In review".** Cihaz turu 566'da
+Console saatiyle 13:28, kapalı test (Alpha), durum "In review".** Cihaz turu 566'da
 koşuldu (kullanıcı: *"test tamam, sorunsuz"*), iki kozmetik düzeltme (#479)
 sonrası paket 569'a tazelendi ve o yüklendi. **Yayın görülünce yapılacaklar:**
 kütükte 1.0.7 pasife + "İnceleme süresi" satırı, aşağıdaki "binecekler"
