@@ -1278,11 +1278,16 @@ listesi kök `TESTING.md` bölüm 10.
       satırı: `KOLAY` · `NORMAL` · `ZOR` (Zor Faz 5'le, 7 Eylül 2026'da
       girdi — web ile aynı PR), Normal seçili (Faz
       5'e kadar). Seçicinin altında seçili seviyenin açıklaması, web ile
-      BİREBİR: Normal'de "Orta-iyi seviye bir oyuncuyum… birincilik 2 puan
-      kazandırır.", KOLAY'a dokununca "Çok iyi değilim… birincilik 1 puan
-      kazandırır."; 4 OYUNCULU'ya geçince cümleye ikincilik eklenir (Kolay:
-      "ikincilik puan kazandırmaz", Normal: "birincilik 2, ikincilik 1 puan
-      kazandırır"). Oyunu başlat, "← Geri" ile Setup'a dön: "DEVAM
+      BİREBİR: Normal'de "Orta-iyi seviye bir oyuncuyum… birincilik 2 k-lig
+      puanı kazandırır, ikincilik puan kazandırmaz.", KOLAY'a dokununca "Çok
+      iyi değilim… birincilik 1 k-lig puanı kazandırır, ikincilik puan
+      kazandırmaz."; 4 OYUNCULU'ya geçince Normal: "birincilik 2, ikincilik 1
+      k-lig puanı kazandırır" (7 Eylül 2026: her bileşimde ikincilik de
+      yazılır). **Girişsiz** açınca cümlenin sonunda "(Puan takibi üyelik
+      gerektirir)" eki var, girişli hesapta YOK (`ai_level_parity_test`
+      kilitliyor). Misafir Setup'ında "Nasıl oynanır? · Tanıtım" satırının
+      üstü/altı web ile birlikte daraltıldı (SizedBox 16→8, hedef 48→32).
+      Oyunu başlat, "← Geri" ile Setup'a dön: "DEVAM
       EDEN OYUNLAR" kartında avatarların hemen SAĞINDA küçük YEŞİL `Kolay` rozeti
       (Normal oyun kartında TURUNCU `Normal`; kural: Kolay yeşil · Normal
       turuncu · Zor kırmızı, YZ oyununda her seviyede; Canlı kartında HİÇ

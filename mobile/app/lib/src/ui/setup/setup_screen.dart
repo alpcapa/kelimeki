@@ -1194,8 +1194,11 @@ class _SetupScreenState extends State<SetupScreen>
                               color: _muted,
                             ),
                           ),
-                          // Web: `gap-1` (4px) + link satırının `mt-3`ü (12px).
-                          const SizedBox(height: 16),
+                          // Web: `gap-1` (4px) + link satırının `mt-1`i (4px).
+                          // 7 Eylül 2026: 16→8 ve link hedefi 48→32 (web ile
+                          // birlikte; kullanıcı: "fazla boşlukları makul hale
+                          // getir").
+                          const SizedBox(height: 8),
                           // Web Setup'taki "Nasıl oynanır?" · <ikinci link>
                           // satırı — ikisi de font-mono/11px/kalın/accent
                           // linkler.
@@ -1800,7 +1803,8 @@ class _SetupScreenState extends State<SetupScreen>
         // web `text-[11px] text-muted font-mono leading-relaxed` — misafir
         // formundaki "7 gün saklanır" paragrafıyla aynı.
         Text(
-          aiLevelDescription(_level, _count),
+          aiLevelDescription(_level, _count,
+              signedIn: widget.services.auth.user != null),
           style: const TextStyle(
             fontFamily: 'SpaceMono',
             fontSize: 11,
@@ -1965,6 +1969,9 @@ class _InlineLink extends StatelessWidget {
   Widget build(BuildContext context) {
     return TapTarget(
       onTap: onTap,
+      // Web `min-h-[32px]` (7 Eylül 2026) — 48 paragraf ile "OYUN TİPİ"
+      // arasına iki boş bant açıyordu.
+      minHeight: 32,
       child: Text(
         text,
         style: const TextStyle(

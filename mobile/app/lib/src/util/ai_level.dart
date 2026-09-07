@@ -56,20 +56,21 @@ const Map<AiLevel, String> _aiLevelVerb = {
 /// ikincilik de yazılır (ikincilik 0 ise "puan kazandırmaz"). Web
 /// `aiLevelDescription` ile aynı şablon; parite testi altı bileşimi tam
 /// metinle kilitler.
-String aiLevelDescription(AiLevel level, int playerCount) {
+///
+/// Her bileşimde birincilik VE ikincilik yazılır (7 Eylül 2026, kullanıcı
+/// isteği; ikincilik 0 ise "puan kazandırmaz"), puanın adı "k-lig puanı".
+/// Girişsizde ([signedIn] false) cümlenin sonuna "(Puan takibi üyelik
+/// gerektirir)" eklenir — web `aiLevelDescription(level, count, signedIn)`.
+String aiLevelDescription(AiLevel level, int playerCount, {required bool signedIn}) {
   final birinci = leaguePoints(1, playerCount, aiLevel: level);
   final ikinci = leaguePoints(2, playerCount, aiLevel: level);
   final fiil = _aiLevelVerb[level]!;
-  final String puan;
-  if (playerCount == 2) {
-    puan = 'birincilik $birinci puan $fiil';
-  } else if (ikinci == 0) {
-    puan = 'birincilik $birinci puan $fiil, ikincilik puan kazandırmaz';
-  } else {
-    puan = 'birincilik $birinci, ikincilik $ikinci puan $fiil';
-  }
+  final puan = ikinci == 0
+      ? 'birincilik $birinci k-lig puanı $fiil, ikincilik puan kazandırmaz'
+      : 'birincilik $birinci, ikincilik $ikinci k-lig puanı $fiil';
+  final uyelik = signedIn ? '' : ' (Puan takibi üyelik gerektirir)';
   final sans = level == AiLevel.zor ? ' Bol şans!' : '';
-  return '${aiLevelPitch[level]} Bu seviyede $puan.$sans';
+  return '${aiLevelPitch[level]} Bu seviyede $puan$uyelik.$sans';
 }
 
 /// Rozette gösterilecek seviye (6 Eylül 2026, kullanıcı kararı — Kolay

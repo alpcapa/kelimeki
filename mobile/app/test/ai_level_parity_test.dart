@@ -73,20 +73,32 @@ void main() {
         'daha iyiyim diyorsanız burası size göre.';
     const zor = 'Çok iyi oyuncuyum, genelde %80+ kazanırım diyorsanız bunu '
         'denemelisiniz.';
-    expect(aiLevelDescription(AiLevel.kolay, 2),
-        '$kolay Bu seviyede birincilik 1 puan kazandırır.');
-    expect(aiLevelDescription(AiLevel.kolay, 4),
-        '$kolay Bu seviyede birincilik 1 puan kazandırır, ikincilik puan '
-        'kazandırmaz.');
-    expect(aiLevelDescription(AiLevel.normal, 2),
-        '$normal Bu seviyede birincilik 2 puan kazandırır.');
-    expect(aiLevelDescription(AiLevel.normal, 4),
-        '$normal Bu seviyede birincilik 2, ikincilik 1 puan kazandırır.');
-    expect(aiLevelDescription(AiLevel.zor, 2),
-        '$zor Bu seviyede birincilik 4 puan kazandırıyor. Bol şans!');
-    expect(aiLevelDescription(AiLevel.zor, 4),
-        '$zor Bu seviyede birincilik 4, ikincilik 2 puan kazandırıyor. '
+    expect(aiLevelDescription(AiLevel.kolay, 2, signedIn: true),
+        '$kolay Bu seviyede birincilik 1 k-lig puanı kazandırır, ikincilik '
+        'puan kazandırmaz.');
+    expect(aiLevelDescription(AiLevel.kolay, 4, signedIn: true),
+        '$kolay Bu seviyede birincilik 1 k-lig puanı kazandırır, ikincilik '
+        'puan kazandırmaz.');
+    expect(aiLevelDescription(AiLevel.normal, 2, signedIn: true),
+        '$normal Bu seviyede birincilik 2 k-lig puanı kazandırır, ikincilik '
+        'puan kazandırmaz.');
+    expect(aiLevelDescription(AiLevel.normal, 4, signedIn: true),
+        '$normal Bu seviyede birincilik 2, ikincilik 1 k-lig puanı '
+        'kazandırır.');
+    expect(aiLevelDescription(AiLevel.zor, 2, signedIn: true),
+        '$zor Bu seviyede birincilik 4 k-lig puanı kazandırıyor, ikincilik '
+        'puan kazandırmaz. Bol şans!');
+    expect(aiLevelDescription(AiLevel.zor, 4, signedIn: true),
+        '$zor Bu seviyede birincilik 4, ikincilik 2 k-lig puanı kazandırıyor. '
         'Bol şans!');
+    // Girişsiz: ek cümlenin sonunda, noktadan önce (web smoke testi misafir
+    // olduğundan tam bu metinleri okuyor).
+    expect(aiLevelDescription(AiLevel.normal, 2, signedIn: false),
+        '$normal Bu seviyede birincilik 2 k-lig puanı kazandırır, ikincilik '
+        'puan kazandırmaz (Puan takibi üyelik gerektirir).');
+    expect(aiLevelDescription(AiLevel.zor, 4, signedIn: false),
+        '$zor Bu seviyede birincilik 4, ikincilik 2 k-lig puanı kazandırıyor '
+        '(Puan takibi üyelik gerektirir). Bol şans!');
   });
 
   test('HelpModal zorluk paragrafı iki tarafta da var (aynı cümle başı ve '

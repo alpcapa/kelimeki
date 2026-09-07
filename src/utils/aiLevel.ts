@@ -48,22 +48,24 @@ const AI_LEVEL_VERB: Record<AiLevel, string> = {
 /**
  * Setup'ta seçili seviyenin altında çıkan açıklama: hitap cümlesi + o
  * seviyenin k-lig puanı. Sayılar `leaguePoints`ten türetilir (tablo TEK
- * kaynak — 23.0; metin tabloyla ayrışamaz). 2 kişilikte yalnızca birincilik,
- * 4 kişilikte ikincilik de yazılır (ikincilik 0 ise "puan kazandırmaz").
- * Portun `aiLevelDescription`ı aynı şablon; parite testi altı bileşimi de
- * tam metinle kilitler.
+ * kaynak — 23.0; metin tabloyla ayrışamaz). Her bileşimde birincilik VE
+ * ikincilik yazılır (7 Eylül 2026, kullanıcı isteği; ikincilik 0 ise "puan
+ * kazandırmaz"), puanın adı "k-lig puanı". Girişsiz kullanıcıda (`signedIn`
+ * false) cümlenin sonuna "(Puan takibi üyelik gerektirir)" eklenir — puan
+ * yalnızca üyelikle kaydedilir, misafir bunu seçerken bilsin. Portun
+ * `aiLevelDescription`ı aynı şablon; parite testi tüm bileşimleri tam
+ * metinle kilitler.
  */
-export function aiLevelDescription(level: AiLevel, playerCount: number): string {
+export function aiLevelDescription(level: AiLevel, playerCount: number, signedIn: boolean): string {
   const birinci = leaguePoints(1, playerCount, false, level);
   const ikinci = leaguePoints(2, playerCount, false, level);
   const fiil = AI_LEVEL_VERB[level];
   const puan =
-    playerCount === 2
-      ? `birincilik ${birinci} puan ${fiil}`
-      : ikinci === 0
-        ? `birincilik ${birinci} puan ${fiil}, ikincilik puan kazandırmaz`
-        : `birincilik ${birinci}, ikincilik ${ikinci} puan ${fiil}`;
-  return `${AI_LEVEL_PITCH[level]} Bu seviyede ${puan}.${level === 'zor' ? ' Bol şans!' : ''}`;
+    ikinci === 0
+      ? `birincilik ${birinci} k-lig puanı ${fiil}, ikincilik puan kazandırmaz`
+      : `birincilik ${birinci}, ikincilik ${ikinci} k-lig puanı ${fiil}`;
+  const uyelik = signedIn ? '' : ' (Puan takibi üyelik gerektirir)';
+  return `${AI_LEVEL_PITCH[level]} Bu seviyede ${puan}${uyelik}.${level === 'zor' ? ' Bol şans!' : ''}`;
 }
 
 /**
