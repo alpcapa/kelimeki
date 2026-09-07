@@ -13,6 +13,7 @@ class FlagsStore {
 
   static const _seenIntro = 'seen_intro';
   static const _seenQuickstart = 'seen_quickstart';
+  static const _seenTutorial = 'seen_tutorial';
   static const _seenChatIntro = 'seen_chat_intro';
   static const _zoomHintShown = 'zoom_hint_shown';
   static const _zoomTried = 'zoom_tried';
@@ -28,8 +29,21 @@ class FlagsStore {
   bool get seenIntro => prefs.getBool(_seenIntro) ?? false;
   Future<void> markIntroSeen() => prefs.setBool(_seenIntro, true);
 
+  /// SALT OKUNUR MİRAS (7 Eylül 2026, Onboarding Faz 4) — web'in
+  /// `kelimeki:seen-quickstart` anahtarının karşılığı. Portta bu bayrağı
+  /// YAZAN hiç olmadı (Hızlı Başlangıç penceresi portta ilk oyunda
+  /// kendiliğinden açılmıyordu), yani burada her zaman `false` döner; kapı
+  /// yine de okuyor ki `shouldShowTutorial`ın dört sinyali web ile birebir
+  /// aynı kalsın. Yazıcısı bilerek KALDIRILDI — yardım sayfasını okumak
+  /// tanıtımı TÜKETMEZ (web ile aynı karar).
   bool get seenQuickstart => prefs.getBool(_seenQuickstart) ?? false;
-  Future<void> markQuickstartSeen() => prefs.setBool(_seenQuickstart, true);
+
+  /// "Oynayarak öğren" tanıtımı bu cihazda gösterildi mi — web
+  /// `kelimeki:tutorial-seen`. İşaret tanıtım AÇILIRKEN konur, bitince
+  /// değil (zoom balonundaki kural): yarıda kapatılan bir tanıtım sonsuz
+  /// döngüye dönüşmez. Kapı kararı `util/onboarding.dart`ta.
+  bool get seenTutorial => prefs.getBool(_seenTutorial) ?? false;
+  Future<void> markTutorialSeen() => prefs.setBool(_seenTutorial, true);
 
   bool get seenChatIntro => prefs.getBool(_seenChatIntro) ?? false;
   Future<void> markChatIntroSeen() => prefs.setBool(_seenChatIntro, true);

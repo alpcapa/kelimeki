@@ -373,9 +373,13 @@ void main() {
       'src/components/OnlineGameScreen.tsx',
       'src/components/TutorialGame.tsx',
     ];
+    // 7 Eylül 2026 (Onboarding Faz 4) — PORT DA TEKİLLEŞTİ: değerler
+    // `drag_feel.dart`ta, ÜÇ Dart ekranı da oradan besleniyor.
+    const dartConstFile = 'mobile/app/lib/src/ui/game/drag_feel.dart';
     const dartFiles = [
       'mobile/app/lib/src/ui/game/game_screen.dart',
       'mobile/app/lib/src/ui/live/online_game_screen.dart',
+      'mobile/app/lib/src/ui/tutorial/tutorial_game.dart',
     ];
 
     final ortak = readRepoFile(webConstFile);
@@ -402,18 +406,38 @@ void main() {
               'değer yalnızca $webConstFile içinde olmalı');
     }
 
+    final dOrtak = readRepoFile(dartConstFile);
+    expect(
+        pick(dOrtak, RegExp(r'const double kDragThresholdMouse = ([\d.]+);'),
+            '$dartConstFile kDragThresholdMouse'),
+        '6');
+    expect(
+        pick(dOrtak, RegExp(r'const double kDragThresholdTouch = ([\d.]+);'),
+            '$dartConstFile kDragThresholdTouch'),
+        '10');
+    // Öteki iki "his" sabiti de web ile aynı sayı (aynı dosyalarda).
+    for (final (webAd, dartAd) in [
+      ('TAP_SLOP_ON_RELEASE', 'kTapSlopOnRelease'),
+      ('DRAG_LIFT', 'kDragLift'),
+    ]) {
+      expect(
+          pick(dOrtak, RegExp('const double $dartAd = ([\\d.]+);'), dartAd),
+          pick(ortak, RegExp('export const $webAd = ([\\d.]+);'), webAd),
+          reason: '$dartAd ↔ $webAd ayrıştı');
+    }
+
     for (final f in dartFiles) {
       final src = readRepoFile(f);
-      expect(pick(src, RegExp(r'_dragThresholdMouse = ([\d.]+);'),
-              '$f _dragThresholdMouse'),
-          '6');
-      expect(pick(src, RegExp(r'_dragThresholdTouch = ([\d.]+);'),
-              '$f _dragThresholdTouch'),
-          '10');
       expect(
-          pick(src, RegExp(r'distance < (_dragThresholdFor\(e\.kind\))\) return;'),
+          pick(src, RegExp(r'distance < (dragThresholdFor\(e\.kind\))\) return;'),
               '$f eşik karşılaştırması pointer türüne bağlı değil'),
-          '_dragThresholdFor(e.kind)');
+          'dragThresholdFor(e.kind)');
+      // Yerel kopya YASAK: değer yalnızca ortak dosyada yaşamalı.
+      expect(src.contains('_dragThreshold'), isFalse,
+          reason: '$f sürükleme eşiğinin YEREL kopyasını yazmış — '
+              'değer yalnızca $dartConstFile içinde olmalı');
+      expect(src.contains('_dragLift'), isFalse,
+          reason: '$f kaldırma payının YEREL kopyasını yazmış');
     }
   });
 

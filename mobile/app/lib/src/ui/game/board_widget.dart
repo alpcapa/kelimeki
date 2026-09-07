@@ -18,6 +18,7 @@ import 'fluid.dart';
 import 'neo_box.dart';
 import 'outline.dart';
 import 'player_colors.dart';
+import 'pulse_ring.dart';
 import 'tile_widget.dart';
 import '../ai_level_badge.dart';
 import '../tap_target.dart';
@@ -139,8 +140,31 @@ class MoveOverlay {
       {required this.valid, required this.cells, required this.score});
 }
 
+/// Tanıtımın tahtadaki balonu (web `Board.coach`): bir kareyi işaret eden
+/// tek cümle. `yon` = `ust` (balon karenin ÜSTÜNDE, kuyruk aşağı) ya da
+/// `alt` (ALTINDA, kuyruk yukarı). Verilirse "Buradan başla" balonu
+/// bastırılır — ekranda aynı anda TEK balon.
+class BoardCoach {
+  final int r;
+  final int c;
+  final String text;
+  final String yon;
+  const BoardCoach(
+      {required this.r, required this.c, required this.text, required this.yon});
+}
+
 class BoardWidget extends StatelessWidget {
   final GameState state;
+
+  /// Tanıtım rayı (web `Board.targets`): bu sahnenin hedef kareleri —
+  /// boşken kesikli mavi çerçeve + nabız. Ekran katmanının bırakma
+  /// hedefi vurgusu (yeşil/kırmızı kesikli, ayrı overlay) bunun ÜSTÜNE
+  /// çizilir: elindeki taşın nereye düşeceği o an daha acil bir soru.
+  final Set<String>? targets;
+
+  /// Tanıtım balonu (web `Board.coach`). Sürükleme başlayınca kaybolur
+  /// (`dragListenable`), "Buradan başla"yı bastırır.
+  final BoardCoach? coach;
 
   /// Dokunuşun GLOBAL noktası da veriliyor — ekran katmanı taslak
   /// sürerken ıskalanan dokunuşu en yakın taslak taşına yönlendirirken
@@ -401,6 +425,8 @@ class BoardWidget extends StatelessWidget {
     this.dragListenable,
     this.gridKey,
     this.zoomHint = false,
+    this.targets,
+    this.coach,
     this.zoom,
     this.viewportKey,
     this.onBoardPointerDown,
@@ -591,6 +617,21 @@ class BoardWidget extends StatelessWidget {
                             ),
                     ),
                   ),
+                // Tanıtım balonu — zoom balonuyla AYNI geometri
+                // (`_coachBubble`), yalnızca çapa/yön/metin farklı.
+                if (coach != null)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: dragListenable == null
+                          ? _coachLayer(coach!, screenWidth)
+                          : ValueListenableBuilder<Object?>(
+                              valueListenable: dragListenable!,
+                              builder: (context, drag, _) => drag != null
+                                  ? const SizedBox.shrink()
+                                  : _coachLayer(coach!, screenWidth),
+                            ),
+                    ),
+                  ),
                 if (startHint != null)
                       Positioned.fill(
                         child: IgnorePointer(
@@ -623,6 +664,8 @@ class BoardWidget extends StatelessWidget {
   /// widget ağacının içinde de garanti oluyor.
   (int, int, PlayerColor, bool)? _startHintFor(List<Player> players) {
     if (compact) return null;
+    // Tanıtım kendi balonunu çiziyorsa ikinci bir balon çıkmaz (web `coach`).
+    if (coach != null) return null;
     // Taş rafta SEÇİLİ (dokunup kaldırıldı) — sürükleme dalı ayrı, aşağıdaki
     // `dragListenable`da. Kullanıcı isteği (26 Ağustos 2026): "taşı
     // kaldırdığı anda yok olsun"; ilk sürüm yalnızca taş KONUNCA gizliyordu.
@@ -645,66 +688,134 @@ class BoardWidget extends StatelessWidget {
   /// (3) hedefi ev karesi değil merkez, çünkü ipucu "herhangi bir boş kare"
   /// hakkında ve merkez her düzende görünür.
   ///
-  /// Konum yine HÜCRE GEOMETRİSİYLE (yüzdeyle DEĞİL) — `_startHint`teki
-  /// aynı `stride = (en + gap)/13` formülü.
+  /// Geometri `_coachBubble`ta (tanıtım balonuyla ORTAK — 7 Eylül 2026,
+  /// Onboarding Faz 4: üçüncü bir balon geometrisi yazmak yerine bu
+  /// genelleştirildi). Merkez sütun (6) "orta" hizasına düştüğünden balon
+  /// eskisi gibi yatayda ortalanır, kuyruk merkez kareye bakar.
   Widget _zoomHintBubble(double screenWidth) {
+    const merkez = boardSize ~/ 2; // 6 — X3 karesi
+    return _coachBubble(
+      r: merkez,
+      c: merkez,
+      yon: 'ust',
+      text: 'Boş kareye veya çerçevesine çift tıklama tahtayı '
+          'büyütür. Hemen dene!',
+      screenWidth: screenWidth,
+      maxWidthFactor: 0.78,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+    );
+  }
+
+  /// Tanıtım balonu katmanı (web `Board.coach`): balon tahtanın neredeyse
+  /// tam genişliğini kullanabilir (`maxWidth: 96%`), yatay hiza çapanın
+  /// sütununa göre — sol üçte bir → sola yaslı, sağ üçte bir → sağa yaslı,
+  /// orta → ortalı; kuyruk her zaman çapanın sütununda.
+  Widget _coachLayer(BoardCoach coach, double screenWidth) => _coachBubble(
+        r: coach.r,
+        c: coach.c,
+        yon: coach.yon,
+        text: coach.text,
+        screenWidth: screenWidth,
+        maxWidthFactor: 0.96,
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      );
+
+  /// Bir kareyi işaret eden mavi balon — zoom balonunun ve tanıtım
+  /// balonunun ORTAK geometrisi (web `Board.tsx`in `coach` bloğu):
+  ///   `ust` → balonun ALT kenarı karenin üst kenarının 6 px üstünde,
+  ///           kuyruk aşağı bakar;
+  ///   `alt` → balonun ÜST kenarı karenin alt kenarının 6 px altında,
+  ///           kuyruk yukarı bakar (0. satırda üstte yer yok).
+  /// Konum HÜCRE GEOMETRİSİYLE (yüzdeyle DEĞİL) — `_startHint`teki aynı
+  /// `stride = (en + gap)/13` formülü; balonun yüksekliği önceden
+  /// bilinmediğinden (`ust`te) `FractionalTranslation(-1)` ile yukarı
+  /// çekiliyor.
+  Widget _coachBubble({
+    required int r,
+    required int c,
+    required String yon,
+    required String text,
+    required double screenWidth,
+    required double maxWidthFactor,
+    required EdgeInsets padding,
+  }) {
     return LayoutBuilder(
       builder: (context, constraints) {
         const gap = 3.0;
-        const merkez = boardSize ~/ 2; // 6 — X3 karesi
-        // Yalnızca DİKEY stride gerekiyor: balon yatayda ortalanıyor
-        // (`left: 0, right: 0`), tek bir hücreye yaslanmıyor.
+        final strideX = (constraints.maxWidth + gap) / boardSize;
         final strideY = (constraints.maxHeight + gap) / boardSize;
+        final cellH = strideY - gap;
+        final ust = yon != 'alt';
+        // Yatay hiza: sol üçte bir → sola, sağ üçte bir → sağa, orta → ortaya
+        // (web: `coach.c <= 3 ? flex-start : coach.c >= SIZE-4 ? flex-end :
+        // center`). Kuyruk her hâlde balonun altında/üstünde kalıyor.
+        final align = c <= 3
+            ? CrossAxisAlignment.start
+            : c >= boardSize - 4
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.center;
+        final tailX = c * strideX + (strideX - gap) / 2;
+        final bubble = Container(
+          constraints:
+              BoxConstraints(maxWidth: constraints.maxWidth * maxWidthFactor),
+          padding: padding,
+          decoration: BoxDecoration(
+            color: kAccent,
+            borderRadius: BorderRadius.circular(9),
+            boxShadow: const [
+              BoxShadow(
+                  color: Color(0x470F172A), offset: Offset(0, 2), blurRadius: 6),
+            ],
+          ),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'SpaceGrotesk',
+              fontWeight: FontWeight.bold,
+              height: 1.25,
+              fontSize: fluidSize(screenWidth, 9, 0, 2.4, 13),
+            ),
+          ),
+        );
+        // Kuyruk: işaret edilen karenin TAM ortasında. Balon bir Column'da
+        // kendi hizasına otururken kuyruk sütuna göre AYRI konumlanıyor —
+        // web'deki `position: absolute; left: calc(...)` eşleniği.
+        final govde = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: align,
+              children: [bubble],
+            ),
+            // Kuyruk Stack'in kendi kenarına asılı: `ust`te balonun altında
+            // (Column'un altı = Stack'in altı), `alt`ta üstünde.
+            Positioned(
+              left: tailX - 5,
+              top: ust ? null : -6,
+              bottom: ust ? -6 : null,
+              child: CustomPaint(
+                size: const Size(10, 6),
+                painter: _HintTailVPainter(kAccent, down: ust),
+              ),
+            ),
+          ],
+        );
         return Stack(
           children: [
             Positioned(
-              // Merkez karenin ÜST kenarı; balon kendi yüksekliği kadar
-              // yukarı çekiliyor (punto akışkan, yükseklik önceden bilinmez).
-              top: merkez * strideY,
+              // `ust`: karenin üst kenarının 6 px üstü, balon kendi
+              // yüksekliği kadar yukarı; `alt`: karenin alt kenarının 6 px
+              // altı, balon aşağı doğru akar.
+              top: ust ? r * strideY - 6 : r * strideY + cellH + 6,
               left: 0,
               right: 0,
-              child: FractionalTranslation(
-                translation: const Offset(0, -1),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      constraints: BoxConstraints(
-                          maxWidth: constraints.maxWidth * 0.78),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: kAccent,
-                        borderRadius: BorderRadius.circular(9),
-                        boxShadow: const [
-                          BoxShadow(
-                              color: Color(0x470F172A),
-                              offset: Offset(0, 2),
-                              blurRadius: 6),
-                        ],
-                      ),
-                      child: Text(
-                        'Boş kareye veya çerçevesine çift tıklama tahtayı '
-                        'büyütür. Hemen dene!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'SpaceGrotesk',
-                          fontWeight: FontWeight.bold,
-                          height: 1.25,
-                          fontSize: fluidSize(screenWidth, 9, 0, 2.4, 13),
-                        ),
-                      ),
-                    ),
-                    // Kuyruk: merkez kareye bakan küçük üçgen.
-                    CustomPaint(
-                      size: const Size(10, 6),
-                      painter: const _HintTailDownPainter(kAccent),
-                    ),
-                  ],
-                ),
-              ),
+              child: ust
+                  ? FractionalTranslation(
+                      translation: const Offset(0, -1), child: govde)
+                  : govde,
             ),
           ],
         );
@@ -1203,6 +1314,25 @@ class BoardWidget extends StatelessWidget {
     Widget body =
         cellBox != null ? cellBox(content) : SizedBox.expand(child: content);
 
+    // Tanıtım rayı: bu sahnenin hedef karesi, boşken kesikli mavi çerçeve +
+    // nabız (web `targets`: `outline: 2px dashed #2563EB` + tile-pulse).
+    if (targets != null &&
+        targets!.contains(k) &&
+        boardTile == null &&
+        placedTile == null) {
+      body = Stack(
+        fit: StackFit.expand,
+        children: [
+          body,
+          IgnorePointer(
+            child: PulseOpacity(
+              child: CustomPaint(painter: DashedBorderPainter(kAccent)),
+            ),
+          ),
+        ],
+      );
+    }
+
     // Bırakma hedefi vurgusu (kesikli yeşil/kırmızı çerçeve) artık BURADA
     // çizilmiyor — ekran katmanının hover overlay'i (`_hoverHighlight`,
     // `DashedBorderPainter`'ı yeniden kullanıyor) hücrenin üstüne ayrı bir
@@ -1691,25 +1821,34 @@ class _HelpIconPainter extends CustomPainter {
 }
 
 /// "Buradan başla" balonunun ev karesine bakan kuyruğu.
-/// Aşağı bakan kuyruk (zoom tanıtım balonu) — `_HintTailPainter`ın dikey
-/// eşi; ayrı bir sınıf, çünkü o yataydaki iki yönü parametreliyor ve üçüncü
-/// bir yön eklemek onun okunurluğunu bozardı.
-class _HintTailDownPainter extends CustomPainter {
+/// Dikey kuyruk (zoom + tanıtım balonları) — `_HintTailPainter`ın dikey
+/// eşi; ayrı bir sınıf, çünkü o yataydaki iki yönü parametreliyor ve buraya
+/// bir üçüncüyü eklemek onun okunurluğunu bozardı. `down` ise uç aşağıda
+/// (balon karenin ÜSTÜNDE), değilse uç yukarıda (balon karenin ALTINDA).
+class _HintTailVPainter extends CustomPainter {
   final Color color;
-  const _HintTailDownPainter(this.color);
+  final bool down;
+  const _HintTailVPainter(this.color, {required this.down});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width / 2, size.height)
-      ..close();
+    final path = down
+        ? (Path()
+          ..moveTo(0, 0)
+          ..lineTo(size.width, 0)
+          ..lineTo(size.width / 2, size.height)
+          ..close())
+        : (Path()
+          ..moveTo(0, size.height)
+          ..lineTo(size.width, size.height)
+          ..lineTo(size.width / 2, 0)
+          ..close());
     canvas.drawPath(path, Paint()..color = color);
   }
 
   @override
-  bool shouldRepaint(_HintTailDownPainter old) => old.color != color;
+  bool shouldRepaint(_HintTailVPainter old) =>
+      old.color != color || old.down != down;
 }
 
 class _HintTailPainter extends CustomPainter {

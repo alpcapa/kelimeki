@@ -47,6 +47,9 @@ import '../../data/friends_api.dart'
     show inviteAcceptErrorText, inviteAcceptKaliciRet;
 import '../friends/friends_modal.dart' show showFriendInfoDialog;
 import '../../game/game_controller.dart';
+import '../../storage/flags_store.dart';
+import '../../util/onboarding.dart';
+import '../tutorial/tutorial_game.dart';
 import '../../game/local_game_repo.dart';
 import '../../storage/local_save_store.dart' show abandonTimeout;
 import '../../util/away_return.dart';
@@ -983,12 +986,75 @@ class _SetupScreenState extends State<SetupScreen>
     }
   }
 
+  /// Tanıtım bu açılışta gösterilsin mi — web `Setup.tsx`in
+  /// `shouldShowTutorial({...})` çağrısının eşi (Onboarding Faz 4). Dört
+  /// sinyal: cihaz bayrağı (tanıtım) · cihaz bayrağı (eski pencere, salt
+  /// okunur) · devam eden oyun (girişlide bulut listesi, misafirde yerel
+  /// kayıt — web ile aynı ayrım) · hesap yaşı (Supabase oturumunun
+  /// `createdAt`i; web profil satırının `created_at`ini okuyor, ikisi de
+  /// hesabın açılış anı). Depo YOKSA gösterilmez — web'de localStorage
+  /// kapalıyken `hasSeenTutorial` `true` döner, aynı "varsayılan gösterme"
+  /// tarafı.
+  Future<bool> _tanitimGosterilsinMi() async {
+    final storage = widget.services.storage;
+    if (storage == null) return false;
+    final FlagsStore flags;
+    try {
+      flags = (await storage).flags;
+    } catch (_) {
+      return false;
+    }
+    final user = widget.services.auth.user;
+    return shouldShowTutorial(TutorialGateInput(
+      seenTutorial: flags.seenTutorial,
+      seenLegacyQuickStart: flags.seenQuickstart,
+      hasPlayed: user != null
+          ? (_cloudSaves?.length ?? 0) > 0
+          : _savedState != null,
+      accountCreatedAt: user?.createdAt,
+    ));
+  }
+
+  /// Tanıtımı kendi rotasında açar; bitirmek ve atlamak AYNI şeyi yapar
+  /// (rota kapanır, çağıran gerçek oyunu başlatır). "Gösterildi" işareti
+  /// tanıtım AÇILIRKEN konur, bitince değil — kullanıcı isteği "bir kere"
+  /// ve yarıda kapatılan tanıtım sonsuz döngüye dönüşmemeli.
+  Future<void> _runTutorial(String me, SetWordSource words) async {
+    final storage = widget.services.storage;
+    if (storage != null) {
+      try {
+        await (await storage).flags.markTutorialSeen();
+      } catch (_) {
+        // Bayrak yazılamadıysa tanıtım yine açılır; bir sonraki açılışta
+        // kapı yeniden karar verir.
+      }
+    }
+    if (!mounted) return;
+    await Navigator.of(context).push(MaterialPageRoute(
+      settings: const RouteSettings(name: 'tutorial'),
+      builder: (ctx) => TutorialGame(
+        playerName: me,
+        words: words,
+        auth: widget.services.auth,
+        onFinish: () => Navigator.of(ctx).pop(),
+        onSkip: () => Navigator.of(ctx).pop(),
+      ),
+    ));
+  }
+
   Future<void> _startNewGame(SetWordSource words) async {
-    final controller = GameController(words: words);
     // Web doStart paritesi: 1. oyuncu her zaman gerçek kişi — oturum
     // açıksa hesap sahibi (accountName), değilse misafir; diğerleri
     // "Yapay Zeka N" adıyla YZ.
     final me = widget.services.auth.accountName ?? guestPlayerName;
+    // İlk oyun: ÖNCE tanıtım (web `App.onStart`: `startLocalGame` tanıtım
+    // kapanmadan ÇAĞRILMAZ). Tanıtım bir oyun değildir — controller,
+    // kayıt oturumu ve `game_starts` sayacı ancak buradan sonra kurulur.
+    if (await _tanitimGosterilsinMi()) {
+      await _runTutorial(me, words);
+      if (!mounted) return;
+    }
+    final controller = GameController(words: words);
     controller.dispatch(StartAction(
       [
         PlayerSetup(name: me, isAI: false),

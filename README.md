@@ -259,6 +259,10 @@ mobile/                    # Flutter (iOS+Android) portu — ayrıntı: mobile/C
     ├── lib/src/ui/intro/  # ilk açılış tanıtımı; demo_board_data.dart ÜRETİLMİŞ
     │                      # (kaynak src/landing/demoBoard.ts —
     │                      # npm run generate-demo-board-dart)
+    ├── lib/src/ui/tutorial/ # ilk OYUNDA açılan "oynayarak öğren" tanıtımı —
+    │                      # web TutorialGame/tutorialScript'in ikizi; senaryo
+    │                      # ve metinler web kaynağından test/tutorial_parity_test
+    │                      # ile kilitli, senaryo Dart motorunda oynatılıyor
     └── assets/fonts/      # Space Grotesk / Space Mono / Nunito (web'le aynı aileler)
                            # + MPLUSRounded1c-ExtraBold-subset.ttf — YALNIZCA k-lig
                            # rütbe rozetinin harfi; ÜRETİLMİŞ (alt kümelenmiş),

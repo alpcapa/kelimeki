@@ -200,7 +200,18 @@ mobile/
                              # dialog_shell (KDialogCard — 384px onay/uyarı
                              # kartı; İKİSİ AYRI, web'de de öyle),
                              # neo_box/neo_button, player_badge,
-                             # player_avatar_row, action_sheet, count_badge
+                             # player_avatar_row, action_sheet, count_badge,
+                             # drag_feel (sürükleme HİSSİ — üç ekranın ortak
+                             # sabitleri, web dragFeel.ts ikizi), pulse_ring
+                             # (Tailwind tile-pulse eşleniği — tanıtımın
+                             # hedef kareleri/vurgulu raf taşları)
+      ui/tutorial/           # ilk OYUNDA açılan "oynayarak öğren" tanıtımı
+                             # (Onboarding Faz 4, 7 Eylül 2026): tutorial_script
+                             # (senaryo — web tutorialScript.ts ikizi, parite
+                             # testi web kaynağını okur) + tutorial_game (ekran —
+                             # kendi GameController'ı; kayıt/bulut/telemetri/
+                             # k-lig ÇALIŞMAZ, motora action eklenmedi). Kapı
+                             # util/onboarding.dart, açan yer setup_screen.
       ui/score/              # skor kartı, k-lig, oyuncu kartı, oyun geçmişi,
                              # score_box_row (paylaşılan görselin üst şeridi)
       ui/rank/               # k-lig rütbe/ödül katmanı (Parça 61-62):

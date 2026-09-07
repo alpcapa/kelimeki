@@ -115,11 +115,13 @@ void main() {
             'sessizce ayrışır, Parça 54\'te tam bu oldu):\n${offenders.join('\n')}');
   });
 
-  test('tahtanın hamle renkleri token DEĞİL, yalnızca üç yerde', () {
+  test('tahtanın hamle renkleri token DEĞİL, yalnızca dört yerde', () {
     // `Board.tsx` `#1FA05C`/`#E0483A`'yı BİLİNÇLİ olarak sabit yazıyor —
     // token yeşili/kırmızısı değiller. Meşru kullanım: tahtanın dış hattı +
-    // puan rozeti (board_widget) ve iki oyun ekranının sürükleme çerçevesi.
-    // Buraya bir dördüncüsü eklenirse büyük ihtimalle token'la karıştırılmış
+    // puan rozeti (board_widget) ve ÜÇ oyun ekranının sürükleme çerçevesi
+    // (yerel, Canlı ve — 7 Eylül 2026'dan beri, Onboarding Faz 4 — tanıtım;
+    // web `TutorialGame.tsx` de aynı iki rengi bırakma hedefinde kullanıyor).
+    // Buraya bir beşincisi eklenirse büyük ihtimalle token'la karıştırılmış
     // bir sapmadır (denetimde bulunan hatanın ta kendisi).
     expect(kMoveValid.toARGB32(), 0xFF1FA05C);
     expect(kMoveInvalid.toARGB32(), 0xFFE0483A);
@@ -137,6 +139,7 @@ void main() {
       'board_widget.dart',
       'game_screen.dart',
       'online_game_screen.dart',
+      'tutorial_game.dart',
     });
   });
 }
