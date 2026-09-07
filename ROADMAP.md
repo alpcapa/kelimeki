@@ -201,49 +201,26 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **DURUM (7 Eylül 2026): paket 1.0.8 (569) = `f4de936` Play'e GÖNDERİLDİ,
-Console saatiyle 13:28, kapalı test (Alpha), durum "In review".** Cihaz turu 566'da
-koşuldu (kullanıcı: *"test tamam, sorunsuz"*), iki kozmetik düzeltme (#479)
-sonrası paket 569'a tazelendi ve o yüklendi. **Yayın görülünce yapılacaklar:**
-kütükte 1.0.7 pasife + "İnceleme süresi" satırı, aşağıdaki "binecekler"
-listesi sıfırlanır, "Kapalı testteki paket" 1.0.8 (569) olur, tur arşive
-taşınır (`mobile/docs/surumler.md` → "Bir sürüm yüklendiğinde ne yapılır"). Sürüm adı 6 Eylül'de
-iki dosyada birden 1.0.7 → **1.0.8** yapıldı (`pubspec.yaml` + `env.dart`,
-`app_version_parity_test` ikisini kilitliyor); `versionCode` = CI koşu
-numarası **569** (#479'un merge'i; aradaki doküman-only merge'ler yeni
-derleme tetiklemez). `.aab` SHA-256 ve manifest doğrulaması kütükte
-(`mobile/docs/surumler.md` → "1.0.8 (569)"). Paketi kullanıcı ELLE
-yükleyecek — bu satır "gönderildi" demek DEĞİL. Gönderim tamamlandığında sırayla: kütüğe satır
-(`mobile/docs/surumler.md` → "Bir sürüm yüklendiğinde ne yapılır"), aşağıdaki
-liste sıfırlanır, "Kapalı testteki paket" satırı 1.0.8 + koşu numarası +
-merge commit'i olur, tur arşive taşınır.
+⚠ **DURUM (7 Eylül 2026): 1.0.8 (569) = `f4de936` kapalı testte YAYINDA
+(gönderim 13:28, yayın ≤ 13:57). Liste SIFIRLANDI — `main`'de olup mağazada
+olmayan MOBİL iş şu an YOK.** Turun kaydı (paket, içerik tablosu, dersler):
+`docs/decisions/roadmap-arsiv.md` → "1.0.8 sürüm turu"; paket künyesi ve
+sürüm notları `mobile/docs/surumler.md` → "1.0.8 (569)".
 
-⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — 1.0.8 adı Play'e
-yüklenene kadar `main`'e giren her mobil iş bu paketi de değiştirir (1.0.4/467
-dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin derleme sha'sını
-`main`'in başıyla karşılaştır.
+⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
+adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
+değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
+derleme sha'sını `main`'in başıyla karşılaştır.
 
-**Kapalı testteki paket:** 1.0.7 (545) = commit `78383eb` (#461),
-6 Eylül 2026'da yayınlandı.
+**Kapalı testteki paket:** 1.0.8 (569) = commit `f4de936` (#479),
+7 Eylül 2026'da yayınlandı.
 
-**O paketten beri porta dokunan işler — 1.0.8'in içeriği** (komut koşuldu:
-`git log --first-parent 78383eb..origin/main -- mobile/app/lib
-mobile/kelimeki_core/lib`, üç commit, tek konu):
+**O paketten beri porta dokunan işler — sıradaki sürümün içeriği:** şu an
+**YOK**. Yeni bir satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
-| `fb5eb51` (#469) — ROADMAP #23 Faz 2 | `kelimeki_core` motoru: `findAIMoves` + `pickTopMove` + `aiLevelTopN`, `GameState.aiLevel` codec'i | Motorun Dart kopyası değişti. Normal bayt-eş (golden sıfır fark), kullanıcı fark görmez — ama pakete GİRDİ. ⚠ Önceki tablo bu satırı SAYMIYORDU (yalnızca Faz 3-4 vardı); 6 Eylül akşamı komut koşulunca çıktı — "listeye güvenme" kuralının bir örneği daha |
-| `a47c3d2` (#470) — ROADMAP #23 Faz 3 | `league_points.dart` imzasına `aiLevel` | k-lig formülü üç kopya; port yarısı web ile aynı PR'da değişti, çağıranlar Faz 4'e kaldı |
-| `42db22b` (#471) — ROADMAP #23 Faz 4 | ZORLUK seçici (Setup) · Kolay/Zor rozeti üç kart + devam eden kartı · `games.ai_level` yazma/okuma · rövanş seviyeyi taşır · yardım paragrafı | Faz 3'ün port ikizi; sahadaki 1.0.7 Kolay satırını +2 GÖSTERİYOR (sunucu doğru sayıyor) — bu sürüme binince düzelir |
-| `5a540cb` (#472) — sürüm 1.0.8 | yalnız sürüm adı (`pubspec.yaml` + `env.dart`) | — |
-| `7a7bc26` (#473) — açıklama metinleri | Seçicinin altındaki metin her seviyede, kullanıcıya hitapla + puan — `ai_level.dart` + `setup_screen.dart` | Ürün metni |
-| `df26f46` (#474) — rozet üç renk + puan satırı | Kolay yeşil · Normal turuncu · Zor kırmızı; tahta şeridinde rozet; devam eden/son oynanan kartlarında puan avatarın altında (`AvatarScoreRow`) | Görünüm |
-| `dd55ae0` (#475) — ROADMAP #23 **Faz 5** | Zor motoru = GENİŞ arama (`find_move.dart` + `aiLevelSearch`), `reducer_ai2_zor` golden'ı; seçicide **Zor** açık; açıklama metninde ikincilik + misafir notu; "Nasıl oynanır?" boşlukları | Zor bu sürümle cihaza çıkar; Normal bayt-eş |
-| `f4de936` (#479) — cihaz turunun iki notu | Misafir Setup'ında link altı boşluğu 16px'e (üstteki ile eşit); açıklama metninde nokta cümlenin sonunda, üyelik notu ayrı | Kozmetik; paketi 569'a tazeledi |
-
-Kullanıcıya görünen: **Yapay Zeka oyununda Zorluk (Kolay · Normal · Zor),
-üç renkli seviye rozeti, seviyeye göre k-lig puanı, kart altı puan
-satırı.** Sürüm notu taslağı (486/500 karakter) kütükte, 1.0.8 bölümünde.
+| — | — | — |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
@@ -269,7 +246,7 @@ Console erişimi YOK. 6 Eylül 2026'da iki yanlış hüküm kuruldu (uydurma bir
 gerçekleşmesi imkânsız bir ayırt etme yöntemi). Kayıt:
 `docs/decisions/roadmap-arsiv.md` → "1.0.7 sürüm turu".
 
-**Test penceresi:** 6 Eylül itibarıyla **11. gün**, 14. gün ≈ 10 Eylül.
+**Test penceresi:** 7 Eylül itibarıyla **12. gün**, 14. gün ≈ 10 Eylül.
 "Kalan günlere ne konsun" tartışması KAPANDI: seviyeli YZ (#23 Faz 0-4) aynı
 gün bitti ve bu sürüme biniyor. Başvuru için hâlâ açık iki iş kod değil:
 `Preview questions`'ı okuyup cevap hazırlamak + tester'lardan YAZILI geri
@@ -277,23 +254,18 @@ bildirim (bkz. "Sayaç" bölümü).
 
 **Göndermeden önce, sırayla:**
 
-1. ✅ **Sürüm adı artırıldı — İKİ dosya birden** (bu PR): `mobile/app/pubspec.yaml`
-   (`version:`) **ve** `mobile/app/lib/src/config/env.dart` (`appVersion`).
-   Derleme numarası (`versionCode`) ELLE VERİLMEZ — CI `--build-number` ile
+1. **Sürüm adını artır — İKİ dosya birden:** `mobile/app/pubspec.yaml`
+   (`version:`) **ve** `mobile/app/lib/src/config/env.dart` (`appVersion`);
+   `app_version_parity_test` ikisini kilitliyor. Derleme numarası
+   (`versionCode`) ELLE VERİLMEZ — CI `--build-number` ile
    `github.run_number`ı basıyor, yani her koşu Play için yeni ve artan.
-2. **Cihaz turu — bu sürümün tek konusu:** `mobile/TESTING.md` §13'teki
-   **"Seviyeye göre puan"** maddesi (ZORLUK satırı `KOLAY · NORMAL · ZOR`;
-   seçili seviyenin açıklaması + puanı, misafirde üyelik notu; devam eden
-   kartında yeşil `Kolay` / kırmızı `Zor` rozeti; oyun sonunda rozet + k-lig
-   Kolay **+1** / Zor **+4**; Son Oynadıklarım / Tüm Oyunlarım / Favoriler'de
-   aynı) ve **bir Zor oyunu**: YZ'nin düşünme süresi insan ölçeğinde kalmalı
-   (Node'da hamle başına ort. 84 ms, en kötü 384 ms — cihazda birkaç katı
-   beklenir), tahta şeridinde kırmızı `Zor`. Ardından #23.5'in Faz 4 kanıtı:
-   **aynı hesap, iki cihaz** — portta Kolay/Zor seçilip bitirilen oyun web'de
-   aynı puanla görünüyor ve tersi. Bir de `mobile/docs/testing-bildirimler.md`
-   §7'nin "güncelleme VARKEN" dalı: 1.0.7 kuruluyken 1.0.8 yayınlanınca Play
-   In-App Update penceresi çıkmalı — bu dal 1.0.6→1.0.7 geçişinde koşulmadı
-   (kayıt yok), bu tur ikinci fırsat.
+2. **Cihaz turu — yukarıdaki içerik tablosunun kapsadığı maddeler:**
+   `mobile/TESTING.md`'nin ilgili bölümleri + o sürüme özgü yeni davranış.
+   Sürümler arası geçişte `mobile/docs/testing-bildirimler.md` §7'nin
+   "güncelleme VARKEN" dalı da denenebilir (Play In-App Update penceresi) —
+   ⚠ bu dal YALNIZCA Play'den kurulmuş pakette çalışır, yan yüklenen APK'da
+   sessizce devre dışıdır; 1.0.6→1.0.7 ve 1.0.7→1.0.8 geçişlerinde
+   koşulmadı, kayıt hâlâ yok.
 3. **Test ettiğin paketin TAZE olduğunu doğrula:** Setup'taki
    `Derleme <sha>` satırı `main`'in başıyla (bu PR'ın merge commit'i) aynı
    olmalı. Appetize'da Android ve iOS AYRI zamanlarda tazeleniyor (bkz.

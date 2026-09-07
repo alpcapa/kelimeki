@@ -21,6 +21,7 @@
 
 | Ne | Kapanış |
 |---|---|
+| 1.0.8 sürüm turu — seviyeli YZ'nin tamamı (Kolay · Normal · Zor), kapalı testte yayında | 7 Eylül 2026 |
 | Madde 23 · Faz 2 — motor: `findAIMoves`/`pickTopMove`/`AI_LEVEL_TOP_N` üç kopyada, `GameState.aiLevel`, golden sıfır fark + `reducer_ai2_kolay` | 6 Eylül 2026 |
 | Madde 23 · Faz 1 — sunucu: `games.ai_level` + k-lig formülü TEK SQL fonksiyonu (`league_points_for`), `verify-league-points` | 6 Eylül 2026 |
 | Madde 23 · Faz 0 — YZ seviye kadranının ölçüm aleti (`simulate-ai-levels`), Kolay N=4 | 6 Eylül 2026 |
@@ -664,6 +665,53 @@ hiçbir halka atlanamaz): `npm run augment-dictionary` → migration'ı canlıya
 uygula + `list_migrations` ile dosya adını eşleştir → `npm run
 generate-golden-vectors` + `dart run test/run_all.dart` → `npm run
 generate-meanings-db` → `README.md`'deki kelime sayısı.
+
+---
+
+## 1.0.8 sürüm turu — ✅ **SAHADA** (7 Eylül 2026)
+
+Kapalı test (Alpha) kanalına gönderildi ve yayınlandı. **Kapalı testteki
+paket artık `1.0.8 (569)` = commit `f4de936`** (`versionCode` = CI koşu
+numarası; `.aab` 63.264.188 bayt, SHA-256 `49483fad…ac9c`, 7 Eylül 09:52
+UTC). Gönderim 13:28, yayın ≤ 13:57 (Console saatleri; **≤ 29 dk**).
+Künye, sürüm notları ve önceki derlemeler: `mobile/docs/surumler.md` →
+"1.0.8 (569)".
+
+**Paketin içeriği** — 1.0.7 (`78383eb`) paketinden beri porta dokunan işler
+(komut koşuldu: `git log --first-parent 78383eb..f4de936 -- mobile/app/lib
+mobile/kelimeki_core/lib mobile/app/pubspec.yaml`, sekiz commit, tek konu):
+
+| Commit / PR | Ne |
+|---|---|
+| `fb5eb51` (#469) — #23 Faz 2 | `kelimeki_core` motoru: `findAIMoves` + `pickTopMove` + `aiLevelTopN`, `GameState.aiLevel` codec'i. Normal bayt-eş (golden sıfır fark) |
+| `a47c3d2` (#470) — #23 Faz 3 | `league_points.dart` imzasına `aiLevel` (web ürün yüzüyle aynı PR) |
+| `42db22b` (#471) — #23 Faz 4 | ZORLUK seçici · rozet üç kart + devam eden kartı · `games.ai_level` · rövanş · yardım paragrafı |
+| `5a540cb` (#472) | Sürüm 1.0.8 — yalnız sürüm adı (`pubspec.yaml` + `env.dart`) |
+| `7a7bc26` (#473) | Seçici altı açıklama: her seviyede, kullanıcıya hitapla + puan |
+| `df26f46` (#474) | Rozet üç renk (Kolay yeşil · Normal turuncu · Zor kırmızı), tahta şeridinde rozet, kart altı hizalı puan satırı |
+| `dd55ae0` (#475) — #23 **Faz 5** | **Zor motoru = GENİŞ arama** (`find_move.dart` + `aiLevelSearch`, `reducer_ai2_zor` golden'ı); seçicide Zor açık |
+| `f4de936` (#479) | Cihaz turunun iki notu: misafir Setup boşluk eşitlemesi, açıklama metninde noktanın yeri |
+
+Kullanıcıya görünen: **Yapay Zeka oyununda Zorluk (Kolay · Normal · Zor),
+üç renkli seviye rozeti, seviyeye göre k-lig puanı (+1 / +2 / +4), kart altı
+puan satırı.** Zor'un motoru YZ↔YZ ölçümünde Normal'i %70-72 yeniyor
+(tasarım kaydı: `docs/decisions/ai-levels.md`).
+
+### Turun üç dersi
+
+1. **Paket sürüm adıyla değil KOŞU NUMARASIYLA anılır.** 1.0.8 adı 6 Eylül
+   akşamı kondu ama paket dört kez yeniden derlendi (553 → 555 → 562 → 566 →
+   569); kütükteki künye her seferinde bayatladı. Cihaz turu 566'da koşuldu,
+   Play'e giden 569 oldu — aradaki fark iki kozmetik düzeltmeydi ve bu
+   BİLEREK kabul edildi, kütüğe de öyle yazıldı.
+2. **Doküman-only merge derleme tetiklemez** (`mobile/**.md` hariç
+   tutuluyor), yani kütüğü güncellemek paketi bayatlatmıyor. Bu turda üç
+   doküman PR'ı (#476, #477, #480) art arda merge edildi ve `mobile-latest`
+   kımıldamadı.
+3. **Bir düzenleme betiği dosyayı okumadan yazma modunda AÇMAZ.** Faz 5
+   PR'ında (#475) `ROADMAP.md` tam olarak böyle sıfırlandı, CI yeşil kaldı
+   (bütçe yalnızca "çok büyüdü"yü ölçüyordu) ve BOŞ hâliyle `main`'e girdi.
+   #476 dosyayı geri getirdi ve `check-doc-size`'a alt sınır kapısı ekledi.
 
 ---
 
