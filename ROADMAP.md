@@ -201,13 +201,14 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **DURUM (7 Eylül 2026): sürüm turu BAŞLADI — paket 1.0.8 (566) =
-`dd55ae0` hazır, cihaz turu + Play gönderimi bekliyor.** Sürüm adı 6 Eylül'de
+⚠ **DURUM (7 Eylül 2026): cihaz turu GEÇTİ, paket 1.0.8 (569) = `f4de936`
+Play gönderimi bekliyor.** Tur 566'da koşuldu (kullanıcı: *"test tamam,
+sorunsuz"*), iki kozmetik düzeltme (#479) sonrası paket 569'a tazelendi. Sürüm adı 6 Eylül'de
 iki dosyada birden 1.0.7 → **1.0.8** yapıldı (`pubspec.yaml` + `env.dart`,
 `app_version_parity_test` ikisini kilitliyor); `versionCode` = CI koşu
-numarası **566** (#475'in merge'i; sonraki #476 yalnızca doküman, yeni
-derleme yok). `.aab` SHA-256 ve manifest doğrulaması kütükte
-(`mobile/docs/surumler.md` → "1.0.8 (566)"). Paketi kullanıcı ELLE
+numarası **569** (#479'un merge'i; aradaki doküman-only merge'ler yeni
+derleme tetiklemez). `.aab` SHA-256 ve manifest doğrulaması kütükte
+(`mobile/docs/surumler.md` → "1.0.8 (569)"). Paketi kullanıcı ELLE
 yükleyecek — bu satır "gönderildi" demek DEĞİL. Gönderim tamamlandığında sırayla: kütüğe satır
 (`mobile/docs/surumler.md` → "Bir sürüm yüklendiğinde ne yapılır"), aşağıdaki
 liste sıfırlanır, "Kapalı testteki paket" satırı 1.0.8 + koşu numarası +
@@ -234,6 +235,7 @@ mobile/kelimeki_core/lib`, üç commit, tek konu):
 | `7a7bc26` (#473) — açıklama metinleri | Seçicinin altındaki metin her seviyede, kullanıcıya hitapla + puan — `ai_level.dart` + `setup_screen.dart` | Ürün metni |
 | `df26f46` (#474) — rozet üç renk + puan satırı | Kolay yeşil · Normal turuncu · Zor kırmızı; tahta şeridinde rozet; devam eden/son oynanan kartlarında puan avatarın altında (`AvatarScoreRow`) | Görünüm |
 | `dd55ae0` (#475) — ROADMAP #23 **Faz 5** | Zor motoru = GENİŞ arama (`find_move.dart` + `aiLevelSearch`), `reducer_ai2_zor` golden'ı; seçicide **Zor** açık; açıklama metninde ikincilik + misafir notu; "Nasıl oynanır?" boşlukları | Zor bu sürümle cihaza çıkar; Normal bayt-eş |
+| `f4de936` (#479) — cihaz turunun iki notu | Misafir Setup'ında link altı boşluğu 16px'e (üstteki ile eşit); açıklama metninde nokta cümlenin sonunda, üyelik notu ayrı | Kozmetik; paketi 569'a tazeledi |
 
 Kullanıcıya görünen: **Yapay Zeka oyununda Zorluk (Kolay · Normal · Zor),
 üç renkli seviye rozeti, seviyeye göre k-lig puanı, kart altı puan

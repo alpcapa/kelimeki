@@ -53,7 +53,7 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | ✅ **kapalı testte YAYINDA** (Alpha) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
-| **1.0.8** | **566** | `dd55ae0` | 6 Eyl 2026 (`5a540cb`) | **henüz yüklenmedi** | ⏳ **PAKET HAZIR (7 Eyl 07:27 UTC), cihaz turu + gönderim bekliyor** | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
+| **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **henüz yüklenmedi** | ⏳ **PAKET HAZIR (7 Eyl 07:27 UTC), cihaz turu + gönderim bekliyor** | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
 
 ⚠ **1.0.0/1.0.1'in `versionCode`'u hâlâ ölçülmedi** (Console'un paket
 listesi ekran görüntüsünde 435'te kesiliyordu). Ama gönderim ↔ SÜRÜM ADI
@@ -111,11 +111,14 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
-## 1.0.8 (566) — PAKET HAZIR, Play'e YÜKLENMEDİ (sürüm turu 7 Eyl 2026'da başladı)
+## 1.0.8 (569) — PAKET HAZIR, Play'e YÜKLENMEDİ (sürüm turu 7 Eyl 2026'da başladı)
 
 **Durum:** `pubspec.yaml` + `env.dart` 1.0.7 → 1.0.8 (#472, 6 Eyl akşamı).
-Sürüm adı aynı kaldı ama paket o günden beri ÜÇ kez yeniden derlendi
-(#473 → 555, #474 → 562, #475 → **566**); Play'e gidecek olan sonuncusu.
+Sürüm adı aynı kaldı ama paket o günden beri DÖRT kez yeniden derlendi
+(#473 → 555, #474 → 562, #475 → 566, #479 → **569**); Play'e gidecek olan
+sonuncusu. 566 cihazda test edildi ve temiz çıktı (kullanıcı: *"test tamam,
+sorunsuz"*); 569 onun üstüne yalnızca iki KOZMETİK düzeltme koyuyor
+(misafir Setup boşluğu, açıklama metninde noktanın yeri).
 **Bu satırı dolduracak son şey gönderim saati** (Console → Submission
 activity) — yükleme anında yazılır.
 
@@ -145,18 +148,23 @@ Düzeltmeler
 • Web'de başlatılan Kolay oyunun puanı geçmişte doğru (+1) görünür.
 ```
 
-**Derlenen paket — Play'e GİDECEK olan:** koşu **566**, `dd55ae0`
-(#475'in merge commit'i), `.aab` **63.262.794 bayt**, SHA-256
-`20b55edb9753fef8b6000707905a3f48591775d93eacadea47ea9a9160b3450e`
-(7 Eyl 2026 07:27 UTC; `mobile-latest`ten indirilip boyut + SHA-256 + manifest
-`versionName 1.0.8` doğrulandı; `versionCode` CI'ın `--build-number`ı = koşu
-566, paketten ayrıca okunmadı). #476 (ROADMAP geri
-yükleme) yalnızca doküman, yeni derleme tetiklemedi — `mobile-latest`
-hâlâ bu paket. ⚠ `main`'e giren bir sonraki MOBİL iş bunu üzerine yazar;
-yüklemeden önce koşu numarasını yeniden oku.
+**Derlenen paket — Play'e GİDECEK olan:** koşu **569**, `f4de936`
+(#479'un merge commit'i), `.aab` **63.264.188 bayt**, SHA-256
+`49483fadb12a97269efb262f9064182e28bf1f111ace4417f2ac35b84cc0ac9c`
+(7 Eyl 2026 ~09:58 UTC). `mobile-latest`ten indirilip doğrulandı: boyut,
+SHA-256 ve paketin manifesti (`versionName 1.0.8`, `versionCode 569`).
+Aynı koşunun `.apk`si 64.265.961 bayt, SHA-256
+`17984b2f341a3e00891f97f3392e85ae127444c9b18fe262ecb62ccfb2a54d9e`,
+içindeki derleme kimliği `f4de936` (Setup teşhis satırı bunu gösterir).
+⚠ `main`'e giren bir sonraki MOBİL iş bu paketi üzerine yazar; yüklemeden
+önce koşu numarasını yeniden oku (doküman-only merge'ler tetiklemez).
 
 <details><summary>Önceki derlemeler (aynı sürüm adı, artık bayat)</summary>
 
+- koşu **566**, `dd55ae0` (#475), 63.262.794 bayt, SHA-256
+  `20b55edb9753fef8b6000707905a3f48591775d93eacadea47ea9a9160b3450e`
+  (7 Eyl 07:27 UTC) — CİHAZDA TEST EDİLEN paket, temiz çıktı; 569'dan tek
+  farkı iki kozmetik düzeltmenin yokluğu.
 - koşu **553**, `5a540cb` (#472), 63.239.362 bayt, SHA-256
   `a3dac1ee0628151c9a7e9c23a24ccb7f60df71036b1de1df039e182d9b59c586`
   (6 Eyl 18:51 UTC) — Zor yok, açıklama metinleri eski.
@@ -171,8 +179,13 @@ YZ'nin düşünme süresi insan ölçeğinde, oyun sonu +4) + aynı hesapla iki
 cihazda puan eşleşmesi + `mobile/docs/testing-bildirimler.md` §7'nin
 "güncelleme VARKEN" dalı (1.0.7 kuruluyken 1.0.8 yayınlanınca In-App
 Update penceresi). Kullanıcı kuralı *"apk ile test edip sorunsuz olduğundan
-emin olmadan aab yapılmayacak"*. Setup'taki `Derleme dd55ae0` satırı
+emin olmadan aab yapılmayacak"*. Setup'taki `Derleme f4de936` satırı
 görünmeli.
+
+**Cihaz turu 566'da KOŞULDU ve temiz çıktı** (7 Eyl 2026, kullanıcı: *"test
+tamam, sorunsuz"*). 569 yalnızca iki kozmetik düzeltme ekliyor; misafir
+Setup ekranına bir bakış ikisini birden doğrular (link üstü/altı eşit
+boşluk, açıklamada nokta parantezin önünde).
 
 ---
 
@@ -566,9 +579,9 @@ action'ının kaldırılması.
 
 </details>
 
-### 1.0.8 — 7 mobil commit
+### 1.0.8 — 8 mobil commit
 
-*Pencere: 6 Eyl (derleme `78383eb` sonrası) → `dd55ae0` (7 Eyl). Komut:
+*Pencere: 6 Eyl (derleme `78383eb` sonrası) → `f4de936` (7 Eyl). Komut:
 `git log --first-parent 78383eb..dd55ae0 -- mobile/app/lib
 mobile/kelimeki_core/lib mobile/app/pubspec.yaml`*
 
@@ -593,6 +606,7 @@ yardım ekranına zorluk paragrafı. Normal'de hiçbir şey değişmedi
 | `7a7bc26` | 06.09.2026 | Zorluk seçicisinin açıklaması: her seviyede, kullanıcıya hitapla, puanı leaguePoints'ten | web + port |
 | `df26f46` | 07.09.2026 | Zorluk rozeti üç renk + tahta şeridi + seçici stili; kart altı hizalı puan satırı | web + port |
 | `dd55ae0` | 07.09.2026 | ROADMAP #23 Faz 5: Zor motoru = geniş arama, seçici web+portta açık; seviye açıklamasında ikincilik + misafir notu; "Nasıl oynanır?" boşlukları | web + port |
+| `f4de936` | 07.09.2026 | Misafir Setup boşluk eşitlemesi (link altı 16px) + açıklama metninde nokta cümlenin sonunda | web + port |
 
 </details>
 
