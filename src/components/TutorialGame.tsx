@@ -30,6 +30,12 @@ import { getFormedWords, key } from '../utils/board';
 import { calcScore, validatePlacement } from '../utils/validator';
 import { isFirstMove } from '../game/gameReducer';
 import { swallowNextClick } from '../utils/ghostClick';
+import {
+  GHOST_TILE_STYLE,
+  TAP_SLOP_ON_RELEASE,
+  dragThresholdFor,
+  liftedPoint,
+} from '../utils/dragFeel';
 import { isWordSetReady, preloadWordSet } from '../data/wordSetLoader';
 import {
   TUTORIAL_FINISH_TEXT,
@@ -56,13 +62,12 @@ const RAKIP_TAS_ARASI = 260;
 const SONUC_OKUMA = 1400;
 /**
  * Rakip oynadıktan SONRA "Rakip hamlesini yaptı" balonunun ekranda kalma
- * süresi (ms). 1800 → 2600: kullanıcı cihazda *"çok hızlı gidiyor"* dedi
- * (7 Eylül 2026). Balon artık taş dizilirken DEĞİL, hamle bittikten sonra
- * çıkıyor — dizilme ~1 sn sürüyor ve o sırada göz zaten taşları izliyor.
+ * süresi (ms). Balon taş dizilirken DEĞİL, hamle bittikten sonra çıkıyor —
+ * dizilme ~1 sn sürüyor ve o sırada göz zaten taşları izliyor. Süre iki
+ * turda kullanıcıyla ayarlandı (7 Eylül 2026): 1800 *"çok hızlı gidiyor"*,
+ * 2600 fazla → **2000**.
  */
-const RAKIP_OKUMA = 2600;
-/** Sürüklemenin "tık" değil "taşıma" sayılması için gereken piksel. */
-const SURUKLEME_ESIGI = 6;
+const RAKIP_OKUMA = 2000;
 
 /** Tanıtım balonu — mavi kutu + aşağı bakan kuyruk (tahtadaki balonun eşi). */
 function Balon({ text, className }: { text: string; className: string }) {
@@ -221,9 +226,10 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
   // ── Sürükleme (raftan tahtaya) ───────────────────────────────────────────
   // App/OnlineGameScreen'deki jestin SADELEŞTİRİLMİŞ eşi: taslak taşı geri
   // sürükleme, ıskalama kurtarma, zoom ve joker YOK — tanıtımda bunların
-  // hiçbiri kullanılmıyor. Ortak bir kancaya çıkarmak iki CANLI oyun
-  // ekranının en hassas kodunu (dokunmatik jest) elden geçirmek demekti;
-  // tanıtım için o riski almadık (bkz. docs/decisions/onboarding.md).
+  // hiçbiri kullanılmıyor. Jestin MANTIĞI böyle sade, ama HİSSİ birebir
+  // aynı: eşikler, kaldırma payı ve hayaletin görseli `utils/dragFeel.ts`ten
+  // geliyor (kullanıcı: *"taşlar gerçek oyundaki gibi çok akıcı değil"* —
+  // 7 Eylül 2026; fark tam olarak bu dört ayardı).
   const [ghost, setGhost] = useState<{ x: number; y: number; index: number; tile: TileModel } | null>(
     null,
   );
@@ -259,10 +265,17 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
   const onRackPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const d = dragRef.current;
     if (!d) return;
-    if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < SURUKLEME_ESIGI) return;
-    d.moved = true;
-    setGhost({ x: e.clientX, y: e.clientY, index: d.index, tile: d.tile });
-    setDragOverKey(hucreAt(e.clientX, e.clientY));
+    if (!d.moved) {
+      // Eşik parmakta 10, farede 6 — tek sayı ikisine birden uymuyor
+      // (ölçüm `dragFeel.ts`te).
+      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) < dragThresholdFor(e.pointerType)) return;
+      d.moved = true;
+    }
+    // Taş parmağın 30 px ÜZERİNDE çizilir ve hedef DE aynı noktadan
+    // hesaplanır — görsel ile bırakma noktası asla ayrışmaz.
+    const kaldirilmis = liftedPoint(e.clientY);
+    setGhost({ x: e.clientX, y: kaldirilmis, index: d.index, tile: d.tile });
+    setDragOverKey(hucreAt(e.clientX, kaldirilmis));
   };
 
   const onRackPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -271,13 +284,17 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
     setGhost(null);
     setDragOverKey(null);
     if (!d) return;
-    if (!d.moved) {
-      // Hareketsiz dokunuş = seçim (gerçek oyundaki davranışın aynısı:
+    // Bırakma kararının eşiği hayalet eşiğinden AYRI ve daha geniş (24 px):
+    // parmak titremesi yüzünden "sürükleme" sayılan dokunuşlar sessizce
+    // kayboluyordu — gerçek oyunda iki kez bildirilmiş bir hata
+    // (bkz. `TAP_SLOP_ON_RELEASE`).
+    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) < TAP_SLOP_ON_RELEASE) {
+      // Yerinde dokunuş = seçim (gerçek oyundaki davranışın aynısı:
       // `draggable` rafta `onClick` bağlanmadığından seçimi bu dal yapar).
       dispatch({ type: 'SELECT_TILE', index: d.index });
       return;
     }
-    const k = hucreAt(e.clientX, e.clientY);
+    const k = hucreAt(e.clientX, liftedPoint(e.clientY));
     if (!hedefUygun(k, d.tile.letter)) return; // yanlış kare: taş rafa döner
     const [r, c] = k!.split(',').map(Number);
     dispatch({ type: 'PLACE_TILE', r, c, rackIndex: d.index });
@@ -514,13 +531,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
         <div
           data-tutorial-ghost=""
           className="pointer-events-none fixed z-[300]"
-          style={{
-            left: ghost.x,
-            top: ghost.y,
-            width: 46,
-            height: 46,
-            transform: 'translate(-50%, -50%)',
-          }}
+          style={{ left: ghost.x, top: ghost.y, ...GHOST_TILE_STYLE }}
         >
           <Tile tile={ghost.tile} variant="rack" />
         </div>

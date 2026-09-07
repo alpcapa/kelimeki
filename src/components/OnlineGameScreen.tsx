@@ -79,6 +79,12 @@ import { HelpModal } from './HelpModal';
 import type { GameState, HistoryEntry, Tile as TileModel } from '../game/types';
 import type { OnlineGame, OnlineGameMessageRow, OnlineGameSlot, OnlineMoveRow, WordMeaning } from '../lib/database.types';
 import { reportClientError } from '../utils/errorReporting';
+import {
+  GHOST_TILE_STYLE,
+  TAP_SLOP_ON_RELEASE,
+  dragThresholdFor,
+  liftedPoint,
+} from '../utils/dragFeel';
 
 interface OnlineGameScreenProps {
   game: OnlineGame;
@@ -93,18 +99,8 @@ const MESSAGE_COLORS: Record<string, string> = {
   '': 'text-muted',
 };
 
-// App.tsx'teki eşik/kaldırma değerleriyle BİREBİR aynı — gerekçe orada
-// (fare 6, parmak/kalem 10; tek eşik dokunmatikte sessiz kayıp üretiyordu).
-const DRAG_THRESHOLD_MOUSE = 6;
-const DRAG_THRESHOLD_TOUCH = 10;
-const dragThresholdFor = (pointerType: string) =>
-  pointerType === 'mouse' ? DRAG_THRESHOLD_MOUSE : DRAG_THRESHOLD_TOUCH;
-
-/// BIRAKMA anındaki karar eşiği — `src/App.tsx` ile aynı sayı ve aynı
-/// gerekçe (ölçümler orada yazılı): 10 px hayaleti göstermek için doğru ama
-/// bırakma kararı için fazla dar, parmak o kadarını istemeden aşıyor.
-const TAP_SLOP_ON_RELEASE = 24;
-const DRAG_LIFT = 30;
+// Sürükleme jestinin "hissi" ORTAK: `src/utils/dragFeel.ts` (App ve
+// TutorialGame ile aynı sayılar; ölçümler o dosyada).
 
 /**
  * `promise` bir süre içinde sonuçlanmazsa reddeden bir sarmalayıcı — asıl
@@ -729,11 +725,6 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
     return { cellEl, rackEl };
   };
 
-  const liftedPoint = (clientY: number) => {
-    const topRowEl = document.querySelector('[data-cell="0,0"]') as HTMLElement | null;
-    const minY = topRowEl ? topRowEl.getBoundingClientRect().top + 1 : -Infinity;
-    return Math.max(clientY - DRAG_LIFT, minY);
-  };
 
   const isCellFreeFor = (source: DragSource, r: number, c: number) => {
     if (source.kind === 'placed' && source.r === r && source.c === c) return false;
@@ -1827,10 +1818,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
           style={{
             left: ghost.x,
             top: ghost.y,
-            width: 46,
-            height: 46,
-            transform: 'translate(-50%, -50%) scale(1.1)',
-            filter: 'drop-shadow(0 10px 16px rgba(0,0,0,0.35))',
+            ...GHOST_TILE_STYLE,
           }}
         >
           <TileComponent

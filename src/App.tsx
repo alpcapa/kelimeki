@@ -86,43 +86,18 @@ import type { LocalGameSave, OnlineGame, WordMeaning } from './lib/database.type
 import { OnlineGameScreen } from './components/OnlineGameScreen';
 import { useAuth } from './hooks/useAuth';
 import { useModalA11y } from './hooks/useModalA11y';
+import {
+  GHOST_TILE_STYLE,
+  TAP_SLOP_ON_RELEASE,
+  dragThresholdFor,
+  liftedPoint,
+} from './utils/dragFeel';
 import { useAppIconBadge } from './hooks/useAppIconBadge';
 
 const AI_THINK_MS = 1100;
-// Sürüklemenin "tıklama" değil gerçek bir sürükleme sayılması için gereken
-// minimum işaretçi hareketi (piksel). FARE ile PARMAK aynı değeri
-// KULLANAMAZ: 22 Ağustos 2026'da ölçüldü — 6px'lik tek eşik altında, parmak
-// 6px oynayan bir dokunuş "sürükleme" sayılıp aynı hücrede bittiğinden
-// HİÇBİR ŞEY yapmıyordu (raf taşı seçilmiyor, konmuş taş geri alınmıyor,
-// joker penceresi açılmıyor) — kullanıcıya "dokunuşum işlemedi" olarak
-// görünen sessiz bir kayıp. Platform normları 6'nın üstünde: Android/Chrome
-// touch slop 8px, iOS ~10pt, Flutter kTouchSlop 18. Fare tarafı bilerek
-// DEĞİŞMEDİ (imleç titremez, 6px orada doğru his).
-const DRAG_THRESHOLD_MOUSE = 6;
-const DRAG_THRESHOLD_TOUCH = 10;
-/** Jestin kaynağına göre eşik — fare 6, parmak/kalem 10. */
-const dragThresholdFor = (pointerType: string) =>
-  pointerType === 'mouse' ? DRAG_THRESHOLD_MOUSE : DRAG_THRESHOLD_TOUCH;
-
-/// BIRAKMA anındaki karar eşiği — yukarıdaki hayalet eşiğinden AYRI.
-///
-/// NEDEN VAR (27 Ağustos 2026, kullanıcı uygulamada İKİNCİ kez bildirdi:
-/// *"Hâlâ tahtaya koyulan taşı her zaman alamıyorum. 1-2 denemeden sonra
-/// alabiliyorum."*): 10 px (Android touch slop) hayaleti GÖSTERMEK için
-/// doğru bir sınır ama BIRAKMA kararı için fazla dar — parmak o kadarını
-/// istemeden aşıyor ve dokunuş sürükleme sayılıp sessizce kayboluyordu.
-///
-/// Portta ölçüldü (taslak taşa dokunup bırakma): 6 px kayma → geri alındı;
-/// **12 px ve 20 px kayma → HİÇBİR ŞEY olmadı**. Raf tarafı da aynı:
-/// titreşimli dokunuşta taş seçilemiyordu bile.
-///
-/// 24, tahta hücresinin (~26 px) hemen altında: bir hücreden az giden bir
-/// jest zaten bir hedef ifade edemiyor.
-const TAP_SLOP_ON_RELEASE = 24;
-
-// Sürüklenen taşın görseli, parmağın altında kalıp görüşü engellememesi için
-// işaretçinin bu kadar üzerinde çizilir.
-const DRAG_LIFT = 30;
+// Sürükleme jestinin "hissi" (eşikler, kaldırma payı, hayalet görseli)
+// ORTAK: `src/utils/dragFeel.ts` — App, OnlineGameScreen ve TutorialGame
+// aynı sayıları kullanır. Ölçümler ve gerekçeler o dosyada.
 
 type DragSource =
   | { kind: 'rack'; index: number; tile: TileModel }
@@ -1429,23 +1404,6 @@ export default function App() {
     return { cellEl, rackEl };
   };
 
-  // Sürüklenen taş, parmağın DRAG_LIFT kadar üzerinde çizilir (görüşü
-  // engellemesin diye). Tahtanın en üst satırı ekranın üst kısmına (başlığa)
-  // yakınsa bu kaldırma, işaretçinin hedef noktasını tahtanın dışına
-  // (başlığın üzerine) taşıyabilir — özellikle bir oyuncunun ilk hamlede
-  // değmesi gereken köşe hücresi tam üst satırdaysa, bu hücreye asla
-  // bırakılamaz hale gelirdi. Kaldırılmış noktayı tahtanın üst kenarının
-  // altında tutmak için kırpılır; görsel taş ve bırakma hedefi hep aynı
-  // (kırpılmış) noktayı kullanır, ikisi asla ayrışmaz.
-  const liftedPoint = (clientY: number) => {
-    // En üst satırın (r=0) hücresi, kaldırılmış noktanın hâlâ bir
-    // `[data-cell]` içinde kalması için kullanılır — tahtanın kendi kap
-    // elemanının üst kenarı iç dolgu (padding) içerdiğinden, o kenara göre
-    // kırpmak noktayı hücre olmayan bir bölgeye düşürebilirdi.
-    const topRowEl = document.querySelector('[data-cell="0,0"]') as HTMLElement | null;
-    const minY = topRowEl ? topRowEl.getBoundingClientRect().top + 1 : -Infinity;
-    return Math.max(clientY - DRAG_LIFT, minY);
-  };
 
   const isCellFreeFor = (source: DragSource, r: number, c: number) => {
     if (source.kind === 'placed' && source.r === r && source.c === c) return false;
@@ -2119,10 +2077,7 @@ export default function App() {
           style={{
             left: ghost.x,
             top: ghost.y,
-            width: 46,
-            height: 46,
-            transform: 'translate(-50%, -50%) scale(1.1)',
-            filter: 'drop-shadow(0 10px 16px rgba(0,0,0,0.35))',
+            ...GHOST_TILE_STYLE,
           }}
         >
           <Tile

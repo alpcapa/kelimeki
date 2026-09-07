@@ -185,18 +185,34 @@ değiştirme / joker yok, 4. sahnede gerçek `Sınır İhlali!` penceresi çıka
    balonu artık hamle tamamlanınca susuyor; söz sırası OYNA balonunun.
 2. *"Rakip hamlesini yapıyor balonu çok hızlı gidiyor."* — balon taşlar
    dizilirken çıkıyordu (~1 sn) ve okunmuyordu. Artık hamle BİTTİKTEN
-   sonra, geçmiş zamanla ve **2,6 saniye** duruyor; dizilme sırasında
+   sonra, geçmiş zamanla ve **2 saniye** duruyor; dizilme sırasında
    yalnızca mesaj şeridi "Rakip oynuyor…" diyor (göz zaten inen taşlarda).
-   Bedeli: tanıtım sahne başına ~0,8 sn uzadı (duman testi 21,8 → 29,2 sn).
+   Süre iki turda ayarlandı: 1,8 sn *"çok hızlı"*, 2,6 sn fazla → **2,0 sn**.
 
-### Sürükleme neden SADELEŞTİRİLMİŞ bir kopya
+### Sürükleme: MANTIK sade, HİS ortak
 
-`App.tsx` ve `OnlineGameScreen.tsx` bu jesti zaten ayrı ayrı taşıyor (~170
-satır: taslak taşı geri sürükleme, ıskalama kurtarma, zoom, joker). Ortak
-bir kancaya çıkarmak doğru olurdu ama iki CANLI oyun ekranının en hassas
-kodunu elden geçirmek demekti — tanıtım için o risk alınmadı. `TutorialGame`
-yalnızca ihtiyacı olanı içeriyor (raftan tahtaya, tek yön) ve bunu açıkça
-belgeliyor. Ortak kancaya çıkarma işi ayrı bir PR'ın konusu.
+`App.tsx` ve `OnlineGameScreen.tsx` bu jesti ayrı ayrı taşıyor (~170 satır:
+taslak taşı geri sürükleme, ıskalama kurtarma, zoom, joker). Tamamını ortak
+bir kancaya çıkarmak iki CANLI ekranın en hassas kodunu elden geçirmek
+demekti — o risk alınmadı; `TutorialGame` yalnızca ihtiyacı olanı içeriyor
+(raftan tahtaya, tek yön).
+
+Ama kullanıcı ikinci turda *"taşlar gerçek oyundaki gibi çok akıcı değil"*
+dedi ve fark ölçülünce ortaya **dört ayar** çıktı — hiçbiri mantıkta,
+hepsi HİSTE:
+
+| Ayar | Ne yapıyor |
+|---|---|
+| `DRAG_LIFT = 30` | taş parmağın 30 px ÜZERİNDE çizilir (parmak taşı örtmesin) — **ve hedef de aynı noktadan hesaplanır**, görsel ile bırakma noktası ayrışmaz |
+| `liftedPoint` | kaldırılmış nokta tahtanın üst satırının altında kalacak şekilde kırpılır; yoksa ilk satırdaki ev karesine hiç bırakılamazdı |
+| `dragThresholdFor` | hayalet eşiği farede 6, parmakta 10 px |
+| `TAP_SLOP_ON_RELEASE = 24` | bırakma anında bu kadar kaymayan jest DOKUNUŞ sayılır (titreyen parmak taşı kaybetmesin) |
+
+Bunlar `App` ile `OnlineGameScreen`te zaten İKİ KOPYAYDI; tanıtım üçüncüsünü
+gerektireceği için **`src/utils/dragFeel.ts`e çıkarıldı** ve üç ekran da
+oradan besleniyor (hayaletin görseli — `scale(1.1)` + gölge — dahil). Yani
+bu tur bir kopyayı çoğaltmak yerine mevcut ikisini de tekilleştirdi. Ölçüm
+gerekçeleri (hangi şikâyet, hangi tarih) o dosyada.
 
 ⚠ **Hayalet tık:** sürükleme bir tahta hücresinde bittiğinde tarayıcı compat
 `click` üretir ve o hücrede ARTIK TAŞ VARDIR — `handleCellClick` onu anında

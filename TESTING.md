@@ -1243,10 +1243,14 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
 - [ ] **Dört balon, aynı anda TEK balon:** dersin cümlesi (tahtada) →
       hamle tamamlanınca KAYBOLUYOR ve yerini "Hamleni tamamlamak için
       OYNA'ya bas" alıyor · "Şimdi … kelimesini taşı" (rafın üstünde) ·
-      rakip oynadıktan sonra "Rakip hamlesini yaptı" ~2,5 sn duruyor
+      rakip oynadıktan sonra "Rakip hamlesini yaptı" ~2 sn duruyor
       (okumaya yetiyor mu?).
 - [ ] **Sürükleme sonrası taş YERİNDE kalıyor** (hayalet tık): bıraktıktan
       hemen sonra taş kendiliğinden rafa dönmüyor.
+- [ ] **Sürükleme hissi gerçek oyunla AYNI:** taş parmağın biraz üstünde
+      duruyor (parmak taşı örtmüyor), hafif büyük ve gölgeli; titreyen bir
+      dokunuş taşı kaybettirmiyor. Aynı jesti gerçek bir oyunda tekrarla,
+      fark hissediliyor mu?
 - [ ] **Ray gerçekten yönlendiriyor:** İşaretsiz kareye dokunmak SESSİZ
       (hata mesajı çıkmıyor, taş konmuyor).
 - [ ] **Geri alma:** Konan taşa dokunmak onu rafa geri gönderiyor, kare

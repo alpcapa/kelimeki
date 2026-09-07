@@ -176,6 +176,7 @@ src/
 │   ├── gameSync.ts      # bitmiş oyunlar için çevrimdışı/misafir kuyruğu
 │   ├── feedbackSync.ts # geri bildirim formu için çevrimdışı kuyruk
 │   ├── onboarding.ts   # ilk açılış / tanıtım / zoom balonu bayrakları
+│   ├── dragFeel.ts     # sürükleme jestinin "hissi" (eşikler, parmağın üstünde kaldırma, hayalet görseli) — App + OnlineGameScreen + TutorialGame ortak
 │   ├── tutorialScript.ts # tanıtımın senaryosu: 4 sahne + rakibin 4 cevabı, senaryolu torba/raf, beklenen puanlar (npm run verify-tutorial-script kilitler)
 │   ├── visitTracking.ts # anonim misafir ziyaret kimliği, cihaz/standalone tespiti, UTM kaynağı
 │   ├── platform.ts     # bu istemcinin platformu ('web') — telemetri, tek kaynak
