@@ -41,7 +41,7 @@ import {
   unqueueCloudSaveDelete,
 } from './utils/cloudSaveMirror';
 import { buildGameRecord } from './utils/gameRecord';
-import { markQuickStartSeen } from './utils/onboarding';
+import { markTutorialSeen } from './utils/onboarding';
 import { TutorialGame } from './components/TutorialGame';
 import { swallowNextClick } from './utils/ghostClick';
 import { useBoardZoom } from './hooks/useBoardZoom';
@@ -1283,7 +1283,6 @@ export default function App() {
   // olacak (Faz 2).
   if (tutorial) {
     const baslat = () => {
-      markQuickStartSeen();
       const kadro = tutorial;
       setTutorial(null);
       startLocalGame(kadro.players, kadro.aiLevel);
@@ -1368,6 +1367,11 @@ export default function App() {
               // İlk oyun: önce tanıtım. Gerçek oyun tanıtım kapanınca
               // başlar — `startLocalGame` burada ÇAĞRILMAZ.
               if (showTutorial) {
+                // "Gösterildi" işareti tanıtım AÇILIRKEN konur, bitince
+                // değil (zoom balonundaki kuralın aynısı): kullanıcı isteği
+                // "bir kere gösterilecek" ve yarıda kapatılan bir tanıtım
+                // sonsuz döngüye dönüşmemeli.
+                markTutorialSeen();
                 setTutorial({ players, aiLevel });
                 return;
               }
@@ -1813,9 +1817,9 @@ export default function App() {
         // kullanıcı isteği). Yerel oyun her zaman YZ oyunu → her seviyede
         // (Normal dahil); OnlineGameScreen bu prop'u GEÇİRMEZ.
         aiLevel={aiLevelOf(state.aiLevel)}
-        // Aynı HelpModal'ı Tutorial da kullanıyor; kapanışta
-        // `markQuickStartSeen()` çağrıldığından elle açmak da "görüldü"
-        // sayılır — Setup'ın "Nasıl oynanır?" linkiyle aynı kural.
+        // Tahtanın alt şeridindeki "Yardım" linki — kuralları ELLE okumak.
+        // Bunu okumak tanıtımı tüketmez (7 Eylül 2026; Setup'ın "Nasıl
+        // oynanır?" linkiyle aynı kural, bkz. `utils/onboarding.ts`).
         onOpenHelp={() => setShowPostStartTutorial(true)}
         dragHiddenKey={dragHiddenKey}
         tileLifted={ghost !== null}
@@ -2160,12 +2164,7 @@ export default function App() {
       )}
 
       {showPostStartTutorial && (
-        <HelpModal
-          onClose={() => {
-            markQuickStartSeen();
-            setShowPostStartTutorial(false);
-          }}
-        />
+        <HelpModal onClose={() => setShowPostStartTutorial(false)} />
       )}
       <LandscapeHint />
       {/* k-lig kutlama banner'ı — oyun SÜRERKEN bastırılır (odak çalmasın),

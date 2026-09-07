@@ -21,6 +21,9 @@
 //   5. Tanıtım ortasında oyun BİTMİYOR (torba/raf tükenmiyor).
 //   6. Bitiş tahtasındaki ≥2 uzunluktaki HER yatay/dikey dizilim sözlükte —
 //      kesişimlerin ürettiği "kaza kelimeleri" gözle kaçırılır.
+//   7. KAPI: tanıtım kimlere gösteriliyor (`shouldShowTutorial`). Kullanıcı
+//      isteği net — "sadece yeni gelenlere bir kere, mevcut oynamış kişilere
+//      gösterilmeyecek" — ve bu karar TEK bir bayrağa bakmıyor; tablo aşağıda.
 import { WORD_LIST } from '../src/data/words';
 import { preloadWordSet } from '../src/data/wordSetLoader';
 import { TILE_DATA, letterPoints } from '../src/data/tiles';
@@ -35,6 +38,7 @@ import {
   createTutorialState,
   type TutorialMove,
 } from '../src/utils/tutorialScript';
+import { TUTORIAL_LAUNCH_AT, shouldShowTutorial } from '../src/utils/onboarding';
 
 const SOZLUK = new Set(WORD_LIST.map((w) => trLower(w)));
 let hata = 0;
@@ -215,6 +219,54 @@ if (state.players[0].score !== beklenenSen) {
 }
 if (state.players[1].score !== beklenenRakip) {
   bildir(`bitiş skoru (rakip): beklenen ${beklenenRakip}, gerçek ${state.players[1].score}`);
+}
+
+// ── 7. Kapı: tanıtım kime gösteriliyor ───────────────────────────────────
+// Varsayılan bilerek GÖSTERME tarafında: mevcut bir oyuncuyu tanıtıma
+// sokmak, yeni bir oyuncunun tanıtımı kaçırmasından daha kötü.
+const TEMIZ = {
+  seenTutorial: false,
+  seenLegacyQuickStart: false,
+  hasPlayed: false,
+  accountCreatedAt: null as string | null,
+};
+const ESKI_HESAP = '2026-08-01T10:00:00.000Z';
+const YENI_HESAP = new Date(Date.parse(TUTORIAL_LAUNCH_AT) + 3_600_000).toISOString();
+
+const kapiVakalari: { ad: string; girdi: typeof TEMIZ; beklenen: boolean }[] = [
+  { ad: 'yeni misafir — tertemiz cihaz', girdi: { ...TEMIZ }, beklenen: true },
+  { ad: 'tanıtımı zaten görmüş cihaz', girdi: { ...TEMIZ, seenTutorial: true }, beklenen: false },
+  {
+    ad: 'eski Hızlı Başlangıç’ı görmüş cihaz (mevcut oyuncu)',
+    girdi: { ...TEMIZ, seenLegacyQuickStart: true },
+    beklenen: false,
+  },
+  { ad: 'misafir — devam eden yerel oyunu var', girdi: { ...TEMIZ, hasPlayed: true }, beklenen: false },
+  {
+    ad: 'girişli — hesap tanıtımdan ESKİ, cihaz tertemiz (cihaz değiştirmiş)',
+    girdi: { ...TEMIZ, accountCreatedAt: ESKI_HESAP },
+    beklenen: false,
+  },
+  {
+    ad: 'girişli — hesap tanıtımdan YENİ, cihaz tertemiz',
+    girdi: { ...TEMIZ, accountCreatedAt: YENI_HESAP },
+    beklenen: true,
+  },
+  {
+    ad: 'girişli — okunamayan hesap tarihi (varsayılan: gösterme)',
+    girdi: { ...TEMIZ, accountCreatedAt: 'bozuk-tarih' },
+    beklenen: false,
+  },
+];
+
+console.log('\nKapı — tanıtım kime gösteriliyor');
+for (const vaka of kapiVakalari) {
+  const sonuc = shouldShowTutorial(vaka.girdi);
+  if (sonuc !== vaka.beklenen) {
+    bildir(`kapı "${vaka.ad}": beklenen ${vaka.beklenen}, gerçek ${sonuc}`);
+  } else {
+    ok(`${sonuc ? 'GÖSTER' : 'gösterme'} — ${vaka.ad}`);
+  }
 }
 
 console.log(`\nTahtadaki kelimeler: ${bulunan.join(', ')}`);

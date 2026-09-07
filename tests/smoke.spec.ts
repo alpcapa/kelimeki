@@ -2266,8 +2266,8 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   await expect(page.getByText('6 × 2 = 12 puan!')).toBeVisible();
   await expect(page.getByText('TANITIM · 4/4')).toBeVisible({ timeout: 20_000 });
 
-  // 4. sahne — merkez X3 + rakibin sınırına değme (SES): iki taş üç kelime
-  // birden kuruyor (SES ×3 · AS ×3 · NE ×2) ve hamle vergi ödüyor.
+  // 4. sahne — merkez X3 + rakibin sınırına değme (FES): iki taş üç kelime
+  // birden kuruyor (FES ×3 · AF ×3 · NE ×2) ve hamle vergi ödüyor.
   await expect(page.locator('[data-coach]')).toContainText('Ortadaki kare üç katı!');
   await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(2);
   await page.locator('[data-cell="6,6"]').click();
@@ -2276,8 +2276,8 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   const onay = page.getByLabel('Sınır ihlali onayı');
   await expect(onay).toBeVisible();
   // Vergi ÖNCESİ puan ve rakibe giden pay — ikisi de motordan geliyor.
-  await expect(onay).toContainText('28');
-  await expect(onay).toContainText('9');
+  await expect(onay).toContainText('58');
+  await expect(onay).toContainText('19');
   await onay.getByRole('button', { name: 'Oyna', exact: true }).click();
 
   // Kapanış kartı → gerçek oyun.
@@ -2290,5 +2290,43 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   // Gerçek oyun ekranı: tanıtımda olmayan kontroller burada var.
   await expect(page.getByRole('main').getByRole('button', { name: 'Pas Geç' })).toBeVisible();
   await expect(page.getByText('TANITIM ·')).toHaveCount(0);
+  await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
+});
+
+// Kapı (7 Eylül 2026, kullanıcı isteği): tanıtım YALNIZCA yeni gelene, bir
+// kere. Yukarıdaki test "yeni gelen" yolunu oynuyor; bu test tersini
+// kanıtlıyor — daha önce oynamış bir cihazda tanıtım HİÇ açılmamalı ve
+// "OYUNU BAŞLAT" doğrudan gerçek oyuna girmeli.
+//
+// ⚠ Kapının tamamı dört sinyale birden bakıyor (cihaz bayrakları + devam
+// eden oyun + hesap yaşı); tablosu `npm run verify-tutorial-script`te saf
+// fonksiyon olarak koşuyor. Burada tarayıcıdaki UÇ davranış ölçülüyor.
+test('Tanıtım kapısı: daha önce oynamış cihazda tanıtım açılmaz', async ({ page }) => {
+  page.on('dialog', (dialog) => dialog.accept());
+  await donenKullanici(page);
+  // 7 Eylül 2026 öncesi sürümlerin yazdığı miras bayrak = "bu cihazda
+  // zaten oynanmış". Mevcut oyuncunun tam olarak taşıdığı iz.
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('kelimeki:seen-quickstart', '1');
+    } catch {
+      // depolama kapalıysa kapı zaten "gösterme" tarafında
+    }
+  });
+  await page.goto('/');
+
+  await page.getByText('OYUNU BAŞLAT').click();
+  const devamButton = page
+    .getByLabel('Giriş uyarısı')
+    .getByRole('button', { name: 'Oyna', exact: true });
+  if (await devamButton.isVisible().catch(() => false)) {
+    await devamButton.click();
+  }
+
+  // Doğrudan gerçek oyun: tanıtımın sayacı/atla butonu YOK, oyun
+  // kontrolleri VAR.
+  await expect(page.getByRole('main').getByRole('button', { name: 'Pas Geç' })).toBeVisible();
+  await expect(page.getByText('TANITIM ·')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'ATLA →' })).toHaveCount(0);
   await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
 });

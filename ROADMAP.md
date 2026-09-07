@@ -927,7 +927,9 @@ desen kurdu — mağaza görselleri de aynı yoldan üretilmeli, yoksa vitrin il
 
 **Faz 1 YAPILDI** (bu PR): senaryo (`src/utils/tutorialScript.ts`),
 doğrulayıcı (`npm run verify-tutorial-script`, CI'da), tanıtım ekranı
-(`TutorialGame.tsx`), `Board`'a iki opsiyonel prop, duman testi. İlk oyunda
+(`TutorialGame.tsx`), `Board`'a iki opsiyonel prop, **kapı**
+(`shouldShowTutorial` — yalnızca yeni gelene, bir kere; mevcut oyuncuya
+asla) ve iki duman testi. İlk oyunda
 Hızlı Başlangıç penceresi yerine dört sahnelik raylı mini oyun açılıyor;
 her hamleden sonra rakip oynuyor. Tasarım/gerekçe/ölçümler:
 `docs/decisions/onboarding.md`.

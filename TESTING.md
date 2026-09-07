@@ -1245,9 +1245,19 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
 - [ ] **Rakip oynuyor:** Her hamlenden sonra kırmızı taşlar tek tek
       diziliyor ve skoru artıyor; tahta o sırada dokunuşa cevap vermiyor.
 - [ ] **Sayılar doğru okunuyor:** 3. sahnede "6 × 2 = 12 puan!",
-      4. sahnede onay penceresinde 28 ve 9 yazıyor (X3 + vergi aynı hamlede).
+      4. sahnede onay penceresinde 58 ve 19 yazıyor (X3 + vergi aynı hamlede).
 - [ ] **Atla:** Herhangi bir sahnede "ATLA →" gerçek oyunu başlatıyor ve
       tanıtım bir daha KENDİLİĞİNDEN açılmıyor (uygulamayı kapatıp aç).
+- [ ] **Mevcut oyuncuya ÇIKMIYOR (kapının asıl işi):** Daha önce oynamış
+      gerçek bir hesapla gir ve yeni bir YZ oyunu başlat — tanıtım
+      AÇILMAMALI. Aynısını cihazını hiç kullanmadığın bir tarayıcıda da
+      dene (gizli sekme + giriş): hesap tanıtımdan eski olduğu için yine
+      açılmamalı.
+- [ ] **Yardım tanıtımı yemiyor:** Tertemiz bir profilde önce Setup'taki
+      "Nasıl oynanır?"ı aç-kapat, SONRA oyunu başlat — tanıtım yine de
+      açılmalı.
+- [ ] **Yarıda kapatma:** Tanıtımın ortasında sayfayı yenile ve yeni bir
+      oyun başlat — tanıtım TEKRAR açılmamalı ("bir kere" kuralı).
 - [ ] **Yalıtım — en önemlisi:** Tanıtımı bitir, sonra gerçek oyunu
       OYNAMADAN Setup'a dön. Hesap menüsünde/istatistiklerde tanıtım bir
       oyun olarak GÖRÜNMEMELİ; "Devam Eden Oyun" kartı çıkmamalı; k-lig

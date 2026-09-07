@@ -88,7 +88,7 @@ Dört sahne: ev karesi → bölgenin büyümesi → merkezde ×2 → merkez kare
 hamleden sonra rakip de oynuyor. Pencere SİLİNMEDİ —
 kendiliğinden açılmıyor, "Yardım" linkinden ve `/nasil-oynanir/`ten erişilir.
 
-Her yerde geçerli üç kural:
+Her yerde geçerli dört kural:
 
 1. **Tanıtım motora dokunmaz.** Yeni reducer action'ı ya da yeni
    `GameState` alanı YOK; senaryo mevcut `PLACE_TILE`/`PLAY` ile sürülür.
@@ -99,6 +99,13 @@ Her yerde geçerli üç kural:
    terk-edilme cezası ÇALIŞMAZ. Gerçek oyun tanıtım kapanınca başlar.
 3. **Senaryoyu değiştiren `npm run verify-tutorial-script` koşar.**
    Ekranda puan yazıyor; koordinat/kelime/puan elle doğrulanmaz.
+4. **Kapı tek bayrağa bakmaz.** *"Sadece yeni gelenlere bir kere; mevcut
+   oynamış kişilere gösterilmeyecek"* (kullanıcı isteği) — karar saf bir
+   fonksiyonda (`shouldShowTutorial`, `utils/onboarding.ts`) ve dört
+   sinyali birden okur: iki cihaz bayrağı · devam eden oyun · **hesap
+   yaşı** (cihaz değiştireni ve yalnızca Canlı oynayanı yakalayan satır).
+   Varsayılan GÖSTERME tarafında; "bir kere" = işaret tanıtım AÇILIRKEN
+   konur; yardım sayfasını okumak tanıtımı TÜKETMEZ.
 
 Ayrıntı, ölçümler ve kalan fazlar: `docs/decisions/onboarding.md`.
 

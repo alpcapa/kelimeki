@@ -200,26 +200,35 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     // Kullanıcı kararı (7 Eylül 2026): *"4. slaytta hem X3 alsın hem de
     // sınır ihlali yapsın"*. Geometri buna zaten uygundu — merkez karesi
     // (6,6) ile rakibin SAAT sütunu (6,8) arasında TEK boş kare var.
-    // İki taş (S ve E) üç kelime birden kuruyor:
-    //   SES = S(6,6) + E(6,7) + rakibin S(6,8)  → X3 karesine yeni taş: ×3
-    //   AS  = A(5,6) üstte + S(6,6)             → o da ×3 (aynı X3 hücresi)
+    // İki taş (F ve E) üç kelime birden kuruyor:
+    //   FES = F(6,6) + E(6,7) + rakibin S(6,8)  → X3 karesine yeni taş: ×3
+    //   AF  = A(5,6) üstte + F(6,6)             → o da ×3 (aynı X3 hücresi)
     //   NE  = N(5,7) üstte + E(6,7)             → altın bölgede: ×2
     // ve (6,7) rakibin taşına komşu olduğu için hamle vergi ödüyor.
+    //
+    // ⚠ Harf kullanıcı kararı (7 Eylül 2026): merkeze S değil **F** (7 puan,
+    // torbadaki tek F) — X3'ün gerçek gücü ancak pahalı bir harfle görünür
+    // hâle geliyor. Kelime rakibin kendi taşıyla bitiyor, yani hamle onun
+    // sınırına DEĞİYOR ve `Sınır İhlali!` penceresi çıkıyor. (Rakibin
+    // bölgesinin İÇİNE bir taş koymak buradan mümkün değil: bölge = kendi
+    // taşları + sağ alttaki 4×4 blok, ikisi de merkezden bir hamle uzakta
+    // değil. Motor ikisini zaten aynı vergiyle cezalandırıyor — "giren ya da
+    // değen".)
     // ⚠ `raw` YOK: üç kelime İKİ FARKLI çarpan aldığından "raw × n" diye
     // tek bir cümle kurulamaz (bkz. `TutorialMove.raw`).
     say: 'Ortadaki kare üç katı!',
     bubble: { r: 6, c: 6 },
     move: {
-      word: 'SES',
+      word: 'FES',
       cells: [
-        { r: 6, c: 6, letter: 'S' },
+        { r: 6, c: 6, letter: 'F' },
         { r: 6, c: 7, letter: 'E' },
       ],
-      points: 19,
+      points: 39,
       bonus: 'x3',
-      tax: 9,
+      tax: 19,
     },
-    done: '28 puanın 9’u rakibe gitti: +19.',
+    done: '58 puanın 19’u rakibe gitti: +39.',
     reply: {
       word: 'NAR',
       cells: [
@@ -266,8 +275,8 @@ const DRAW_ORDER: string[] = [
   'N', 'S', 'A', 'N', 'K',
   // Rakip — SAAT'in S, A, A'sı + bir dolgu
   'S', 'A', 'A', 'R',
-  // Sen — SES'in S ve E'si + iki dolgu
-  'S', 'E', 'M', 'R',
+  // Sen — FES'in F ve E'si + iki dolgu (F torbadaki TEK F)
+  'F', 'E', 'M', 'R',
   // Rakip — NAR'ın A'sı (R rafta) + iki dolgu
   'A', 'K', 'L',
 ];

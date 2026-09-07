@@ -38,7 +38,7 @@ yapsın ki gerçek simülasyon olsun"*.
 | 1 | **BÜYÜ** `0,0→0,3` +12 | ev karesi zorunlu başlangıç | **KUYU** `9,12↓12,12` +8 | 12–8 |
 | 2 | **ÜZENGİ** `0,3↓5,3` +15 | bölge kendi taşlarıyla büyür | **TABAK** `9,8→9,12` +7 | 27–15 |
 | 3 | **İNSAN** `5,3→5,7` +12 (6×2) | merkezde puan iki katı | **SAAT** `6,8↑9,8` +10 (5×2) | 39–25 |
-| 4 | **SES** `6,6→6,7` +19 (9'u rakibe) | merkez karesi ×3 **ve** sınıra değmenin bedeli | **NAR** `5,4↓7,4` +4 (2'si bize) | 60–38 |
+| 4 | **FES** `6,6→6,7` +39 (19'u rakibe) | merkez karesi ×3 **ve** sınıra değmenin bedeli | **NAR** `5,4↓7,4` +4 (2'si bize) | 80–48 |
 
 Sıranın "merkez önce, vergi sonra" olmasının teknik sebebi: oyuncunun
 zinciri sol üst köşeden aşağı ilerliyor, yani önce ortadaki altın bölgeye
@@ -50,13 +50,15 @@ ortadan kaldırdı.
 **4. sahne iki dersi TEK hamlede veriyor** (kullanıcı kararı, 7 Eylül 2026:
 *"4. slaytta hem X3 alsın hem de sınır ihlali yapsın"*). Geometri buna zaten
 uygundu: merkez karesi `6,6` ile rakibin `SAAT` sütunu `6,8` arasında tek boş
-kare var. İki taş (S ve E) üç kelime birden kuruyor —
+kare var. İki taş (F ve E) üç kelime birden kuruyor —
 
-- `SES` = S(6,6) + E(6,7) + **rakibin** S(6,8) → X3 karesine yeni taş: **×3**
-- `AS` = A(5,6) üstte + S(6,6) → aynı X3 hücresi, o da **×3**
+- `FES` = F(6,6) + E(6,7) + **rakibin** S(6,8) → X3 karesine yeni taş: **×3**
+- `AF` = A(5,6) üstte + F(6,6) → aynı X3 hücresi, o da **×3**
 - `NE` = N(5,7) üstte + E(6,7) → altın bölgede: **×2**
 
-vergi öncesi 28 puan, 9'u rakibe. Yani oyuncu tek hamlede hem merkezin
+vergi öncesi 58 puan, 19'u rakibe. Merkeze konan harf kullanıcı kararıyla
+**F** (7 puan, torbadaki tek F): X3'ün gerçek gücü ancak pahalı bir harfle
+görünür oluyor. Yani oyuncu tek hamlede hem merkezin
 gerçek gücünü hem de bedelini görüyor; üstelik kelimesini rakibin taşına
 ekleyerek kuruyor. Balon X3'ü söylüyor, vergiyi gerçek oyundaki
 `Sınır İhlali!` penceresi anlatıyor — tek cümle bütçesi böyle korunuyor.
@@ -70,6 +72,48 @@ görünüyor.
 kartının kancası değişti: *"7 taşını tek hamlede oynarsan +25 bingo bonusu
 var — gerçek oyunda dene."* Geriye bilerek öğretilmeyen iki şey kalıyor
 (bingo ve joker); tanıtımın işi her şeyi anlatmak değil, merak bırakmak.
+
+## Kapı — kime gösteriliyor (7 Eylül 2026, kullanıcı isteği)
+
+Kullanıcının sözleri: *"Bu kurguyu web'de başlatıyoruz. Sadece yeni gelenlere
+bir kere gösterilecek. Mevcut gelmiş ve oynamış kişilere gösterilmeyecek. Şu
+anda çıkan hızlı başlangıcın yerini alacak."*
+
+Karar saf bir fonksiyonda: `shouldShowTutorial` (`utils/onboarding.ts`), dört
+sinyal birden okunuyor. **Tek bir cihaz bayrağı YETMİYOR** — eski bayrak
+(`kelimeki:seen-quickstart`) yalnızca "bu cihazda eski pencere görüldü" der;
+cihaz değiştiren ya da bugüne kadar sadece Canlı oyun oynamış bir kullanıcı
+o bayrağı taşımaz ve tanıtıma sokulurdu.
+
+| Sinyal | Nereden | Ne diyor |
+|---|---|---|
+| `seenTutorial` | `kelimeki:tutorial-seen` | tanıtım bu cihazda gösterildi |
+| `seenLegacyQuickStart` | `kelimeki:seen-quickstart` (**salt okunur miras**) | bu cihazda eski pencere görüldü = zaten oynanmış |
+| `hasPlayed` | girişlide bulut kaydı, misafirde yerel kayıt | devam eden oyunu var |
+| `accountCreatedAt` | `profile.created_at` | hesap tanıtımdan eskiyse mevcut oyuncu |
+
+Herhangi biri "bu kişi yeni değil" derse gösterilmez; **varsayılan bilerek
+gösterme tarafında** (depolama kapalıysa, tarih okunamıyorsa da öyle):
+mevcut bir oyuncuyu tanıtıma sokmak, yeni bir oyuncunun tanıtımı
+kaçırmasından daha kötü. Tablonun tamamı
+`npm run verify-tutorial-script`'te yedi vakayla koşuyor, tarayıcıdaki uç
+davranış ise duman testinde ("daha önce oynamış cihazda tanıtım açılmaz").
+
+**"Bir kere" ne demek:** işaret tanıtım AÇILIRKEN konuyor, bitince değil —
+zoom balonundaki kuralın aynısı. Yarıda kapatılan bir tanıtım böylece
+sonsuz döngüye dönüşmüyor.
+
+⚠ **İki bayrak neden ayrıldı:** eskiden "Nasıl oynanır?"ı elle açıp kapatmak
+da quickstart'ı "görüldü" sayıyordu (pencere bir daha kendiliğinden
+açılmasın diye). Bu davranış KALDIRILDI: kuralları okumak tanıtımı
+tüketmez — yoksa oynamadan önce yardıma bakan yeni kullanıcı tanıtımı hiç
+göremezdi. `markQuickStartSeen` artık hiç yazılmıyor; eski bayrak yalnızca
+"mevcut oyuncu" sinyali olarak okunuyor.
+
+⚠ **Bilinen sınır:** misafirde cihaz dışına bakacak bir şey yok. Tarayıcısını
+temizlemiş ya da yeni bir cihazdan gelen eski bir MİSAFİR oyuncu "yeni"
+görünür ve tanıtımı bir kez daha görür. Girişli kullanıcıda bu delik hesap
+yaşıyla kapalı.
 
 ## Mimari — motor değişmedi
 
@@ -118,7 +162,7 @@ Tanıtım gerçek `gameReducer` ile oynanır (puanı, geçerliliği, vergiyi,
 
 ## Doğrulama — `npm run verify-tutorial-script`
 
-Tanıtım ekranda PUAN yazıyor ("6 × 2 = 12", "28 puanın 9'u rakibe gitti").
+Tanıtım ekranda PUAN yazıyor ("6 × 2 = 12", "58 puanın 19'u rakibe gitti").
 Bu sayılar elle yazıldığından motordaki bir kural değişikliği onları
 sessizce bayatlatabilirdi. Betik senaryoyu gerçek motorda oynatıp şunları
 kilitler: hedef kareler boş, gereken harf rafta (torba sırası!), hamle

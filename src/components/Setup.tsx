@@ -8,7 +8,7 @@ import { AiLevelBadge } from "./AiLevelBadge";
 import { useAuth } from "../hooks/useAuth";
 import { useModalA11y } from "../hooks/useModalA11y";
 import { subscribeMyOnlineGames } from "../lib/api";
-import { hasSeenQuickStart, markQuickStartSeen } from "../utils/onboarding";
+import { hasSeenQuickStart, hasSeenTutorial, shouldShowTutorial } from "../utils/onboarding";
 import { ABANDON_TIMEOUT_MS, type SavedGame } from "../utils/gameStorage";
 import {
   decideInitialMainView,
@@ -578,10 +578,13 @@ export function Setup({
   const closeWarningPopup = () => setShowWarningPopup(false);
   const warningPopupRef = useModalA11y(showWarningPopup, closeWarningPopup);
 
-  // "Nasıl oynanır?" linkinden elle açılırsa da Tutorial görülmüş sayılır —
-  // oyun başlayınca tekrar otomatik açılmasın diye.
+  // ⚠ Yardım penceresini kapatmak tanıtımı TÜKETMEZ (7 Eylül 2026'da
+  // değişti). Eskiden burada `markQuickStartSeen()` çağrılıyordu: pencere
+  // ilk oyunda KENDİLİĞİNDEN açıldığı için, elle okuyanı bir daha rahatsız
+  // etmemek mantıklıydı. Artık ilk oyunda açılan şey raylı TANITIM; kuralları
+  // okumuş olmak onu oynamışlıkla aynı şey değil — aksi hâlde oynamadan önce
+  // "Nasıl oynanır?"a bakan yeni kullanıcı tanıtımı hiç göremezdi.
   const closeHelp = () => {
-    markQuickStartSeen();
     setShowHelp(false);
   };
 
@@ -654,8 +657,27 @@ export function Setup({
       }
       return { name: `Yapay Zeka ${i + 1}`, isAI: true };
     });
-    // Oyun ekranı açılınca Tutorial daha önce görülmediyse orada gösterilecek.
-    onStart(list, !hasSeenQuickStart(), level);
+    // Tanıtım kapısı (7 Eylül 2026, kullanıcı isteği: "sadece yeni gelenlere
+    // bir kere; mevcut gelmiş ve oynamış kişilere gösterilmeyecek"). Karar
+    // saf bir fonksiyonda (`shouldShowTutorial`) ve dört sinyali birden
+    // okuyor — tek bir cihaz bayrağı YETMİYOR:
+    //   • cihaz bayrakları: tanıtım gösterildi mi + eski pencere görüldü mü,
+    //   • devam eden oyun: girişlide bulut kaydı, misafirde yerel kayıt,
+    //   • hesap yaşı: tanıtımdan eski bir hesap = mevcut oyuncu (cihazı yeni
+    //     olsa bile — cihaz değiştiren ya da yalnızca Canlı oyun oynamış
+    //     kullanıcı bu satır olmadan "yeni" görünürdü).
+    // `cloudSaves` henüz yüklenmemişse (null) bu sinyal sessizce "yok" der;
+    // girişli kullanıcıda asıl koruma zaten hesap yaşı.
+    onStart(
+      list,
+      shouldShowTutorial({
+        seenTutorial: hasSeenTutorial(),
+        seenLegacyQuickStart: hasSeenQuickStart(),
+        hasPlayed: user ? (cloudSaves?.length ?? 0) > 0 : savedGame !== null,
+        accountCreatedAt: profile?.created_at ?? null,
+      }),
+      level,
+    );
   };
 
   const handleStart = () => {
