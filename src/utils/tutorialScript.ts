@@ -79,17 +79,19 @@ export interface TutorialStep {
   /** Balondaki TEK cümle (en fazla 6 kelime — metin bütçesi). */
   say: string;
   /**
-   * Balonun işaret ettiği kare. YÖN YOK: balon "Buradan başla" ile aynı
-   * kuralı izler — karenin yanında, tahtanın içine doğru uzar (sütun < 6.5
-   * ise sağa, değilse sola). Kenar karelerinde taşmayan tek yerleşim bu.
+   * Balonun işaret ettiği kare ve balonun o kareye göre yönü — kullanıcı
+   * isteği (7 Eylül 2026): *"Balonu üste koyup oku aşağıda verebilirsin."*
+   *   `ust` = balon karenin ÜSTÜNDE, kuyruk aşağı bakar (varsayılan tercih),
+   *   `alt` = balon karenin ALTINDA, kuyruk yukarı bakar — üstte yer
+   *           yoksa (0. satır) ya da üstteki satırlarda HEDEF kareler
+   *           varsa kullanılır.
    *
-   * ⚠ Balon, HEDEF KARELERİ ÖRTMEMELİ: oyuncuya "şuraya koy" derken oranın
-   * üstünü kapatmak tam ters etki yapar (7 Eylül 2026'da 3. sahnede oldu —
-   * metin uzayınca balon üç hedefin üstüne oturdu). Bu yüzden çapa,
-   * hedeflerin bulunduğu satırın DIŞINDA (bir üstü ya da altı) seçilir;
-   * `verify-tutorial-script` örtüşmeyi ayrıca kontrol eder.
+   * ⚠ Balon çapanın 1-2 satır üstünü/altını KAPATIR ve oyuncuya "şuraya
+   * koy" derken oranın üstünü kapatmak tam ters etki yapar (7 Eylül
+   * 2026'da yaşandı: metin uzayınca balon üç hedefin üstüne oturdu).
+   * `verify-tutorial-script` her sahnede örtüşmeyi hesaplıyor.
    */
-  bubble: { r: number; c: number };
+  bubble: { r: number; c: number; yon: 'ust' | 'alt' };
   move: TutorialMove;
   /** Hamle oynandıktan sonra mesaj şeridinde yazan kısa sonuç. */
   done: string;
@@ -113,7 +115,9 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'ev',
     say: 'Kendi köşenden başla.',
-    bubble: { r: 1, c: 1 },
+    // Hedefler tahtanın EN ÜST satırında; üstte balona yer yok → balon
+    // altta, kuyruk yukarı. Kapattığı satırlar (1-2) o an boş.
+    bubble: { r: 0, c: 1, yon: 'alt' },
     move: {
       word: 'BÜYÜ',
       cells: [
@@ -142,9 +146,10 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'buyume',
     say: 'Kelime kurdukça sınırın büyür.',
-    // Hedefler sütun 3'te; balon çapanın SAĞINDAN başladığı için (5,3)
-    // çapası hiçbirini örtmez ((5,2) örtüyordu).
-    bubble: { r: 5, c: 3 },
+    // Kelime DİKEY (sütun 3, satır 1-5): balon üstte olsaydı kendi
+    // hedeflerinin üstüne otururdu. Bu yüzden en alttaki hedefin ALTINDA,
+    // kuyruk yukarı — kapattığı satırlar (6-7) boş.
+    bubble: { r: 5, c: 3, yon: 'alt' },
     move: {
       word: 'ÜZENGİ',
       cells: [
@@ -179,10 +184,9 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     // adlandırıyor. (Kullanıcının yazdığı cümledeki iyelik eki düzeltildi:
     // "kelime puanını 2 katını" → "kelime puanının 2 katını".)
     say: 'Sarı bölge içinde kelime puanının 2 katını alırsın',
-    // Çapa hedef satırın (5) bir ÜSTÜNDE ve altın bölgenin sol üst
-    // köşesinde: balon sağa doğru boş bölge karelerinin üstüne uzuyor,
-    // dolayısıyla ne hedefleri ne de yeni konan taşları örtüyor.
-    bubble: { r: 4, c: 4 },
+    // Kuyruk ilk hedefin (5,4) üstünde; balon 3-4. satırların üstünde
+    // duruyor (o satırlar boş).
+    bubble: { r: 5, c: 4, yon: 'ust' },
     move: {
       word: 'İNSAN',
       cells: [
@@ -233,10 +237,10 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     // ⚠ `raw` YOK: üç kelime İKİ FARKLI çarpan aldığından "raw × n" diye
     // tek bir cümle kurulamaz (bkz. `TutorialMove.raw`).
     say: 'Ortadaki kare üç katı!',
-    // Çapa hedef satırın (6) bir ALTINDA: kuyruk X3 karesinin tam altına
-    // düşüyor, balon ise boş satırın üstünde duruyor. (6,6) çapası
-    // hedeflerden (6,7)'yi örtüyordu.
-    bubble: { r: 7, c: 6 },
+    // Kuyruk doğrudan X3 karesini gösteriyor; balon 4-5. satırların
+    // üstünde (5. satırda İNSAN'ın taşları var ama onlar KONMUŞ taşlar,
+    // hedef değil).
+    bubble: { r: 6, c: 6, yon: 'ust' },
     move: {
       word: 'FES',
       cells: [

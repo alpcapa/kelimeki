@@ -115,23 +115,33 @@ temizlemiş ya da yeni bir cihazdan gelen eski bir MİSAFİR oyuncu "yeni"
 görünür ve tanıtımı bir kez daha görür. Girişli kullanıcıda bu delik hesap
 yaşıyla kapalı.
 
-### Balon hedef kareleri ÖRTMEZ — üçüncü tur dersi
+### Balonun yerleşimi — DİKEY, ve hedefleri örtmez
 
 3. sahnenin cümlesi kullanıcı isteğiyle uzayınca (*"burada puan iki katı"*
 → *"Sarı bölge içinde kelime puanının 2 katını alırsın"*) balon genişledi ve
-**"şuraya koy" dediği üç kareyi kapattı**. Ders genel: balon çapasının
-yanından tahtanın içine doğru uzuyor, yani aynı satırda ve o yöndeki her
-hedef onun altında kalıyor.
+**"şuraya koy" dediği üç kareyi kapattı** — çünkü ilk yerleşim "Buradan
+başla"nınkiyle aynıydı: balon karenin YANINDA, tahtanın içine doğru.
 
-Kural: **çapa, hedeflerin satırının DIŞINDA** seçilir (bir üstü ya da altı) —
-ya da aynı satırda ama hedefleri kapsamayan bir sütunda. Şimdiki çapalar:
-1. sahne `(1,1)` · 2. sahne `(5,3)` (hedefler sütun 3'te, balon 4'ten
-başlıyor) · 3. sahne `(4,4)` (hedef satırın üstü, altın bölgenin köşesi) ·
-4. sahne `(7,6)` (hedef satırın altı, kuyruk X3'ün tam altında).
+Kullanıcı yerleşimi de söyledi: *"Balonu üste koyup oku aşağıda
+verebilirsin."* Artık balon işaret ettiği karenin **üstünde** (`yon: 'ust'`),
+kuyruk aşağı bakıyor; üstte yer yoksa **altında** (`yon: 'alt'`), kuyruk
+yukarı. Balon tahtanın neredeyse tam genişliğini kullanabildiği için uzun
+cümle tek satıra sığıyor, yatay hizalama da çapanın sütununa göre seçiliyor
+(sol üçte bir → sola yaslı, sağ üçte bir → sağa yaslı, orta → ortalı), yani
+kuyruk her zaman balonun altında kalıyor — ölçmeye gerek yok.
 
-`verify-tutorial-script` bu örtüşmeyi artık hesaplıyor ve kapının duyarlı
-olduğu kanıtlandı: eski çapa geri konunca betik
-`balon (5,4) hedef kareleri örtüyor — (5,5), (5,6), (5,7)` diyerek düşüyor.
+| Sahne | Çapa | Yön | Neden |
+|---|---|---|---|
+| 1 BÜYÜ | `(0,1)` | alt | hedefler en üst satırda, üstte yer yok |
+| 2 ÜZENGİ | `(5,3)` | alt | kelime DİKEY; üstteki balon kendi hedeflerinin üstüne otururdu |
+| 3 İNSAN | `(5,4)` | üst | kuyruk ilk hedefi gösteriyor, balon boş 3-4. satırların üstünde |
+| 4 FES | `(6,6)` | üst | kuyruk doğrudan X3 karesinde |
+
+⚠ Balon komşu **iki** satırı kapatabilir (iki satıra sarabildiği için).
+`verify-tutorial-script` hem bu örtüşmeyi hem "0. satırda `ust` olmaz"
+kuralını kontrol ediyor; kapının duyarlı olduğu kanıtlandı — eski çapa geri
+konunca betik `balon (5,4) hedef kareleri örtüyor — (5,5), (5,6), (5,7)`
+diyerek düşmüştü.
 
 ## Mimari — motor değişmedi
 

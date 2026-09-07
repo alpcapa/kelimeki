@@ -182,20 +182,25 @@ for (const step of TUTORIAL_STEPS) {
   if (state.current !== 0) bildir(`${step.id}: sıra oyuncuda değil`);
 
   // ── 9. Balon hedef kareleri örtmüyor mu ────────────────────────────────
-  // Balon çapasının YANINDAN, tahtanın içine doğru uzar (sütun < 6.5 ise
-  // sağa, değilse sola — `Board.coach`). Yani aynı SATIRDA ve o yönde kalan
-  // her hedef kare balonun altında kalır: oyuncuya "şuraya koy" derken
-  // oranın üstünü kapatmak tam ters etki yapar.
-  const { r: br, c: bc } = step.bubble;
-  const sagaUzuyor = bc < SIZE / 2;
-  const ortulen = step.move.cells.filter(
-    (h) => h.r === br && (sagaUzuyor ? h.c > bc : h.c < bc),
-  );
+  // Balon çapanın ÜSTÜNDE ('ust') ya da ALTINDA ('alt') durur ve tahtanın
+  // neredeyse tam genişliğini kullanır (bkz. `Board.coach`). İki satıra
+  // sarabildiğinden komşu İKİ satırı kapatabilir: oyuncuya "şuraya koy"
+  // derken oranın üstünü kapatmak tam ters etki yapar.
+  const { r: br, c: bc, yon } = step.bubble;
+  const kapali = yon === 'ust' ? [br - 1, br - 2] : [br + 1, br + 2];
+  const ortulen = step.move.cells.filter((h) => kapali.includes(h.r));
   if (ortulen.length > 0) {
     bildir(
-      `${step.id}: balon (${br},${bc}) hedef kareleri örtüyor — ` +
+      `${step.id}: balon (${br},${bc}, ${yon}) hedef kareleri örtüyor — ` +
         ortulen.map((h) => `(${h.r},${h.c})`).join(', '),
     );
+  }
+  // Üstte yer yoksa balon tahtadan taşar (0. satırın üstü ekran dışı).
+  if (yon === 'ust' && br === 0) {
+    bildir(`${step.id}: 0. satırda 'ust' balon tahtadan taşar — 'alt' olmalı`);
+  }
+  if (bc < 0 || bc >= SIZE || br < 0 || br >= SIZE) {
+    bildir(`${step.id}: balon çapası tahtanın dışında (${br},${bc})`);
   }
 
   // ── 8. Sahnenin harfleri rafta yan yana ve sırayla mı ───────────────────

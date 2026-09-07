@@ -424,10 +424,14 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
       ? {
           r: step.reply.cells[0].r,
           c: step.reply.cells[0].c,
+          // Rakibin bütün cevapları 6. satır ve altında; balon her zaman
+          // ÜSTTE duruyor ve kapattığı satırlarda hedef kare olmuyor
+          // (o sırada zaten oyuncunun sırası değil).
+          yon: 'ust' as const,
           text: 'Rakip hamlesini yaptı',
         }
       : mode === 'oyna' && !hazir
-        ? { r: step.bubble.r, c: step.bubble.c, text: step.say }
+        ? { ...step.bubble, text: step.say }
         : null;
 
   const mesaj =
