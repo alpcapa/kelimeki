@@ -202,11 +202,11 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **DURUM (7 Eylül 2026): 1.0.8 (569) = `f4de936` kapalı testte YAYINDA
-(gönderim 13:28, yayın ≤ 13:57). Liste SIFIRLANDI — `main`'de olup mağazada
-olmayan MOBİL iş şu an YOK.** Turun kaydı (paket, içerik tablosu, dersler):
-`docs/decisions/roadmap-arsiv.md` → "1.0.8 sürüm turu"; paket künyesi ve
-sürüm notları `mobile/docs/surumler.md` → "1.0.8 (569)".
+⚠ **DURUM (7 Eylül 2026 akşamı): sıradaki paket **1.0.9** hazırlanıyor —
+sürüm adı `main`'de artırıldı (pubspec + `env.dart`), içerik aşağıdaki
+tabloda. Mağazada hâlâ 1.0.8 (569) var.** Bir önceki turun kaydı:
+`docs/decisions/roadmap-arsiv.md` → "1.0.8 sürüm turu"; paket künyeleri
+`mobile/docs/surumler.md`.
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
@@ -216,12 +216,17 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 **Kapalı testteki paket:** 1.0.8 (569) = commit `f4de936` (#479),
 7 Eylül 2026'da yayınlandı.
 
-**O paketten beri porta dokunan işler — sıradaki sürümün içeriği:** şu an
-**YOK**. Yeni bir satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
+**O paketten beri porta dokunan işler — 1.0.9'un içeriği** (komut koşuldu:
+`git log --oneline f4de936..origin/main -- mobile/app mobile/kelimeki_core`):
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
-| — | — | — |
+| `4f5d31f` (#484) | **Onboarding Faz 4** — "oynayarak öğren" tanıtımının port ikizi: `ui/tutorial/` (senaryo + ekran), kapı (`util/onboarding.dart` + `FlagsStore.seenTutorial`), `BoardWidget.targets`/`coach`, `RackWidget.highlight`, sürükleme hissi ortak dosyaya (`ui/game/drag_feel.dart`) | Portun İLK OYUN akışı değişti: Setup'tan başlatılan ilk oyun artık tanıtımla açılıyor |
+| `e2b6cfe` (#485) | Tanıtımın cihaz/tarayıcı turu: karşılama penceresi ("Kelimeki Tanıtım Turu"), balon HİZA hatası (Stack gevşek kısıt), punto 11-16 + iki satır kırılması, OYNA okunun butonu göstermesi, raf balonunun mesaj şeridinin üstüne taşınması, "bölge" terimi | Aynı ekranın görünümü/metni; ayrıca `board_widget`/`rack_widget` ortak widget'ları |
+
+⚠ `c235b25` (#483, Faz 1) da komutun çıktısında görünüyor ama **pakete
+girmez**: `mobile/` altında yalnızca bir TEST dosyasına (`layout_parity_test`)
+dokundu, uygulama davranışı web'de kaldı.
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
