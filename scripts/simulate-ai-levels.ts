@@ -39,18 +39,60 @@ import { performance } from 'node:perf_hooks';
 import type { GameState } from '../src/game/types';
 import { gameReducer, createInitialState, isFirstMove, type Action } from '../src/game/gameReducer';
 import { preloadWordSet } from '../src/data/wordSetLoader';
-import { findAIMoves, pickTopMove } from '../src/utils/ai';
+import { findAIMoves, pickTopMove, type HardOptions } from '../src/utils/ai';
 import { setRandomSource } from '../src/utils/random';
+
+// ── Motor ekseni (Faz 5) ─────────────────────────────────────────────────────
+// `--motor ad[+ad...]` — adlar aşağıdaki ön ayarlardan, `+` ile bileşim
+// (`havuz8+kalinti`). Motor koltuğu N=1 ile `findAIMoves(..., hard)` oynar;
+// `bagCount` her hamlede durumdan doldurulur. Virgülle birden çok motor.
+const HARD_BASE: Omit<HardOptions, 'bagCount'> = {
+  maxWordLen: 7,
+  jokerPenalty: 0,
+  leaveWeight: 0,
+  territoryWeight: 0,
+  netDiff: false,
+  exchangeBelow: 0,
+};
+const PRESETS: Record<string, Partial<Omit<HardOptions, 'bagCount'>>> = {
+  havuz8: { maxWordLen: 8 },
+  havuz9: { maxWordLen: 9 },
+  joker5: { jokerPenalty: 5 },
+  joker10: { jokerPenalty: 10 },
+  joker15: { jokerPenalty: 15 },
+  kalinti: { leaveWeight: 100 },
+  kalinti50: { leaveWeight: 50 },
+  kalinti200: { leaveWeight: 200 },
+  bolge50: { territoryWeight: 50 },
+  bolge100: { territoryWeight: 100 },
+  bolge200: { territoryWeight: 200 },
+  net: { netDiff: true },
+  degis6: { exchangeBelow: 6 },
+  degis10: { exchangeBelow: 10 },
+  degis14: { exchangeBelow: 14 },
+};
+
+function parseMotor(spec: string): Omit<HardOptions, 'bagCount'> {
+  let opts = { ...HARD_BASE };
+  for (const part of spec.split('+')) {
+    const preset = PRESETS[part.trim()];
+    if (!preset) throw new Error(`bilinmeyen motor: ${part} (bilinenler: ${Object.keys(PRESETS).join(', ')})`);
+    opts = { ...opts, ...preset };
+  }
+  return opts;
+}
 
 // ── Argümanlar ───────────────────────────────────────────────────────────────
 interface Args {
   games: number;
   ns: number[];
+  motors: string[];
   seed: number;
 }
 
 function parseArgs(argv: string[]): Args {
-  const a: Args = { games: 100, ns: [1, 2, 3, 5], seed: 1 };
+  const a: Args = { games: 100, ns: [], motors: [], seed: 1 };
+  let nsGiven = false;
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
     const val = argv[i + 1];
@@ -65,6 +107,10 @@ function parseArgs(argv: string[]): Args {
         break;
       case '--n':
         a.ns = need().split(',').map((s) => Number(s.trim())).filter((n) => n >= 1);
+        nsGiven = true;
+        break;
+      case '--motor':
+        a.motors = need().split(',').map((s) => s.trim()).filter(Boolean);
         break;
       case '--tohum':
         a.seed = Number(need());
@@ -74,7 +120,9 @@ function parseArgs(argv: string[]): Args {
     }
   }
   if (!Number.isFinite(a.games) || a.games < 1) throw new Error('--oyun ≥ 1 olmalı');
-  if (a.ns.length === 0) throw new Error('--n en az bir N ister');
+  if (!nsGiven && a.motors.length === 0) a.ns = [1, 2, 3, 5];
+  if (nsGiven && a.ns.length === 0) throw new Error('--n en az bir N ister');
+  for (const m of a.motors) parseMotor(m);
   return a;
 }
 
@@ -100,7 +148,11 @@ interface GameResult {
   topNSeat: 0 | 1;
 }
 
-function playOne(n: number, seed: number, topNSeat: 0 | 1): GameResult {
+/** Koltuk seçicisi: N (top-N) ya da motor adı (Zor adayı). */
+type Seat = { n: number; hard?: Omit<HardOptions, 'bagCount'>; label: string };
+
+function playOne(seatCfg: Seat, seed: number, topNSeat: 0 | 1): GameResult {
+  const n = seatCfg.n;
   const rng = mulberry32(seed);
   setRandomSource(rng);
   let state: GameState = createInitialState();
@@ -112,7 +164,7 @@ function playOne(n: number, seed: number, topNSeat: 0 | 1): GameResult {
     { name: 'Normal', isAI: true },
   ];
   // top-N koltuğu insan gibi sürülür (TOGGLE_SWAP_MODE isAI'yi reddediyor).
-  setups[topNSeat] = { name: `Top${n}`, isAI: false };
+  setups[topNSeat] = { name: seatCfg.label, isAI: false };
   d({ type: 'START', players: setups });
 
   let guard = 0;
@@ -124,8 +176,9 @@ function playOne(n: number, seed: number, topNSeat: 0 | 1): GameResult {
     const me = state.players[state.current];
     const first = isFirstMove(state);
     // Üretimin kendi liste + seçim çifti (Kolay = N=4 ile birebir aynı yol).
+    const hard = seatCfg.hard ? { ...seatCfg.hard, bagCount: state.bag.length } : undefined;
     const move = pickTopMove(
-      findAIMoves(state.board, me.rack, state.bonuses, state.current, me.corners, first, state.players, n),
+      findAIMoves(state.board, me.rack, state.bonuses, state.current, me.corners, first, state.players, n, hard),
     );
     if (!move) {
       if (state.bag.length > 0) {
@@ -188,16 +241,21 @@ const fmt1 = (x: number) => x.toFixed(1).replace('.', ',');
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   await preloadWordSet();
+  const seats: Seat[] = [
+    ...args.ns.map((n) => ({ n, label: `Top${n}` })),
+    ...args.motors.map((m) => ({ n: 1, hard: parseMotor(m), label: m })),
+  ];
   console.log(
-    `YZ↔YZ koşumu — N ∈ {${args.ns.join(', ')}}, N başına ${args.games} oyun, temel tohum ${args.seed}`,
+    `YZ↔YZ koşumu — koltuklar {${seats.map((s) => s.label).join(', ')}}, koltuk başına ${args.games} oyun, temel tohum ${args.seed}`,
   );
   console.log('Üretim motoru (N=1) reducer AI_PLAY ile; top-N motoru üretimin findAIMoves + pickTopMove çiftiyle oynar.\n');
 
   const rows: string[] = [];
-  rows.push('| N | Top-N kazanma | %95 GA | Berabere | Ort. Normal | Ort. Top-N | Top-N ort. hamle puanı | Oyun |');
+  rows.push('| Koltuk | Kazanma | %95 GA | Berabere | Ort. Normal | Ort. koltuk | Koltuk ort. hamle puanı | Oyun |');
   rows.push('|---|---|---|---|---|---|---|---|');
 
-  for (const n of args.ns) {
+  for (const seat of seats) {
+    const n = seat.n;
     const t0 = performance.now();
     let wins = 0;
     let draws = 0;
@@ -208,11 +266,11 @@ async function main(): Promise<void> {
     let winsAsFirst = 0;
     let firstGames = 0;
     for (let g = 0; g < args.games; g++) {
-      const seat: 0 | 1 = g % 2 === 0 ? 1 : 0;
-      const r = playOne(n, args.seed + g, seat);
+      const seatIdx: 0 | 1 = g % 2 === 0 ? 1 : 0;
+      const r = playOne(seat, args.seed + g, seatIdx);
       if (r.topN > r.prod) wins++;
       else if (r.topN === r.prod) draws++;
-      if (seat === 0) {
+      if (seatIdx === 0) {
         firstGames++;
         if (r.topN > r.prod) winsAsFirst++;
       }
@@ -225,11 +283,11 @@ async function main(): Promise<void> {
     const [lo, hi] = wilson(wins, decided);
     const secs = ((performance.now() - t0) / 1000).toFixed(0);
     console.log(
-      `N=${n}: ${wins}/${decided} galibiyet (${pct(wins / decided)}; GA ${pct(lo)}–${pct(hi)}), ` +
+      `${seat.label}: ${wins}/${decided} galibiyet (${pct(wins / decided)}; GA ${pct(lo)}–${pct(hi)}), ` +
         `${draws} berabere · ilk koltukta ${winsAsFirst}/${firstGames}, ikincide ${wins - winsAsFirst}/${args.games - firstGames} · ${secs} sn`,
     );
     rows.push(
-      `| ${n}${n === 1 ? ' (bugünkü)' : ''} | ${pct(wins / decided)} | ${pct(lo)}–${pct(hi)} | ${draws} | ` +
+      `| ${seat.label}${seat.label === 'Top1' ? ' (bugünkü)' : ''} | ${pct(wins / decided)} | ${pct(lo)}–${pct(hi)} | ${draws} | ` +
         `${Math.round(sumProd / args.games)} | ${Math.round(sumTop / args.games)} | ${fmt1(moveScore / Math.max(1, moves))} | ${args.games} |`,
     );
   }
