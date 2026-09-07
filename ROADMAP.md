@@ -202,9 +202,10 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **DURUM (7 Eylül 2026 akşamı): sıradaki paket **1.0.9** hazırlanıyor —
-sürüm adı `main`'de artırıldı (pubspec + `env.dart`), içerik aşağıdaki
-tabloda. Mağazada hâlâ 1.0.8 (569) var.** Bir önceki turun kaydı:
+⚠ **DURUM (7 Eylül 2026 akşamı): 1.0.9 (581) = `1abde38` PAKETİ HAZIR —
+derlendi, `mobile-latest`e yüklendi, Play'e yüklenmeyi bekliyor. Mağazada
+hâlâ 1.0.8 (569) var.** Künye ve kalan adımlar:
+`mobile/docs/surumler.md` → "1.0.9". Bir önceki turun kaydı:
 `docs/decisions/roadmap-arsiv.md` → "1.0.8 sürüm turu"; paket künyeleri
 `mobile/docs/surumler.md`.
 
