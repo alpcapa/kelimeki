@@ -164,8 +164,8 @@ void main() {
   });
 
   testWidgets(
-      'ZORLUK (ROADMAP #23 Faz 4): OYUNCU SAYISI\'nın altında Kolay/Normal, '
-      'varsayılan Normal, Zor YOK, seçili seviyenin açıklaması ve puanı',
+      'ZORLUK (ROADMAP #23 Faz 4-5): OYUNCU SAYISI\'nın altında Kolay/Normal/'
+      'Zor, varsayılan Normal, seçili seviyenin açıklaması ve puanı',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 950));
     await pumpSetup(tester, services());
@@ -173,8 +173,8 @@ void main() {
     expect(find.text('ZORLUK'), findsOneWidget);
     expect(find.text('KOLAY'), findsOneWidget);
     expect(find.text('NORMAL'), findsOneWidget);
-    // Zor Faz 5'e kadar seçici DIŞINDA (web `SELECTABLE_AI_LEVELS`).
-    expect(find.text('ZOR'), findsNothing);
+    // Zor Faz 5'le (7 Eylül 2026) seçiciye girdi (web `SELECTABLE_AI_LEVELS`).
+    expect(find.text('ZOR'), findsOneWidget);
     // Sıra web ile aynı: başlıklar OYUNCU SAYISI → ZORLUK → OYUNCULAR.
     final ySayi = tester.getTopLeft(find.text('OYUNCU SAYISI')).dy;
     final yZorluk = tester.getTopLeft(find.text('ZORLUK')).dy;
@@ -183,24 +183,39 @@ void main() {
     expect(yOyuncular, greaterThan(yZorluk));
 
     // Her seviyenin altında açıklama var; varsayılan Normal, 2 kişilik →
-    // yalnızca birincilik puanı. Tam metinler `ai_level_parity_test`te.
+    // birincilik + "ikincilik puan kazandırmaz"; bu test MİSAFİR (services()
+    // girişsiz) → "(Puan takibi üyelik gerektirir)" eki. Tam metinler
+    // `ai_level_parity_test`te.
     expect(find.textContaining('Orta-iyi seviye'), findsOneWidget);
-    expect(find.textContaining('birincilik 2 puan kazandırır.'), findsOneWidget);
-    expect(find.textContaining('ikincilik'), findsNothing);
+    expect(
+        find.textContaining('birincilik 2 k-lig puanı kazandırır, ikincilik '
+            'puan kazandırmaz (Puan takibi üyelik gerektirir).'),
+        findsOneWidget);
     await tester.tap(find.text('KOLAY'));
     await tester.pump();
     expect(find.textContaining('Çok iyi değilim'), findsOneWidget);
-    expect(find.textContaining('birincilik 1 puan kazandırır.'), findsOneWidget);
+    expect(find.textContaining('birincilik 1 k-lig puanı kazandırır'),
+        findsOneWidget);
     expect(find.textContaining('Orta-iyi seviye'), findsNothing);
-    // 4 kişilik → ikincilik de yazılır (Kolay'da 0 → "puan kazandırmaz").
+    // 4 kişilik → Kolay'da ikincilik 0 → "puan kazandırmaz" kalır; Normal'de
+    // "birincilik 2, ikincilik 1".
     await tester.tap(find.text('4 OYUNCULU'));
     await tester.pump();
     expect(find.textContaining('ikincilik puan kazandırmaz'), findsOneWidget);
     await tester.tap(find.text('NORMAL'));
     await tester.pump();
-    expect(find.textContaining('birincilik 2, ikincilik 1 puan kazandırır.'),
+    expect(
+        find.textContaining('birincilik 2, ikincilik 1 k-lig puanı kazandırır '
+            '(Puan takibi üyelik gerektirir).'),
         findsOneWidget);
     expect(find.textContaining('Çok iyi değilim'), findsNothing);
+    await tester.tap(find.text('ZOR'));
+    await tester.pump();
+    expect(find.textContaining('Çok iyi oyuncuyum'), findsOneWidget);
+    expect(
+        find.textContaining('birincilik 4, ikincilik 2 k-lig puanı '
+            'kazandırıyor (Puan takibi üyelik gerektirir). Bol şans!'),
+        findsOneWidget);
   });
 
   testWidgets(
@@ -412,8 +427,12 @@ void main() {
       // Önce gerçek bir yarım oyun kaydet (turnCount>=2, sıra misafirde).
       storage = await openTestStorage();
       final repo = LocalGameRepo(storage);
-      final c =
-          GameController(words: words, autoPlayAi: false, nowIso: () => '');
+      // Tohumlu RNG (7 Eylül 2026): tohumsuz rafla YZ nadiren ilk hamlede
+      // kelime bulamayıp DEĞİŞİM yapıyor, skoru 0 kalıyor ve aşağıdaki "tek
+      // bir 0" beklentisi CI'da rastgele düşüyordu (PR #475'te bir kez).
+      // Testin konusu düzen, YZ'nin hamlesi değil — raf sabitlendi.
+      final c = GameController(
+          words: words, autoPlayAi: false, nowIso: () => '', rng: Mulberry32(7));
       final session = repo.attach(c);
       c.dispatch(StartAction(const [
         PlayerSetup(name: guestPlayerName, isAI: false),
@@ -667,11 +686,14 @@ void main() {
     // kutunun ortasında duruyor, yani boşluğun üstüne kutunun üst yarısı
     // (17px) ekleniyor. Aradaki 16px'lik AYIRICI değişmedi — değişen,
     // metnin kendi kutusu içindeki yeri. İki platform BİRLİKTE büyüdü.
+    // ⚠ 7 EYLÜL 2026 — 33 → 16 (kullanıcı: "fazla boşlukları makul hale
+    // getir"): ayırıcı 16 → 8 (web `mt-3` → `mt-1`) ve hedef 48 → 32 (web
+    // `min-h-[32px]`), yani 8 + (32-16)/2 = 16. Yine iki platform birlikte.
     final logo = tester.getRect(find.byType(LogoMark).first);
     final para = tester.getRect(find.textContaining('Kelimeler kurarak'));
     final link = tester.getRect(find.text('Nasıl oynanır?'));
     expect(para.top - logo.bottom, closeTo(20, 1.5));
-    expect(link.top - para.bottom, closeTo(33, 1.5));
+    expect(link.top - para.bottom, closeTo(16, 1.5));
 
     // Web `text-xs` = 12px/16px satır → 4 satırlık paragraf 64px.
     final paraText = tester.widget<Text>(find.textContaining('Kelimeler kurarak'));
@@ -1014,8 +1036,12 @@ void main() {
     await tester.runAsync(() async {
       storage = await openTestStorage();
       final repo = LocalGameRepo(storage);
-      final c =
-          GameController(words: words, autoPlayAi: false, nowIso: () => '');
+      // Tohumlu RNG (7 Eylül 2026): tohumsuz rafla YZ nadiren ilk hamlede
+      // kelime bulamayıp DEĞİŞİM yapıyor, skoru 0 kalıyor ve aşağıdaki "tek
+      // bir 0" beklentisi CI'da rastgele düşüyordu (PR #475'te bir kez).
+      // Testin konusu düzen, YZ'nin hamlesi değil — raf sabitlendi.
+      final c = GameController(
+          words: words, autoPlayAi: false, nowIso: () => '', rng: Mulberry32(7));
       final session = repo.attach(c);
       c.dispatch(StartAction(const [
         PlayerSetup(name: guestPlayerName, isAI: false),
