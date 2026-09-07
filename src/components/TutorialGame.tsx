@@ -521,15 +521,16 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
           dragOverValid={ghost ? hedefUygun(dragOverKey, ghost.tile.letter) : false}
         />
 
-        <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
-          <div
-            className={`text-[11px] font-mono font-bold text-center min-h-[30px] py-0.5 flex items-center justify-center ${MESSAGE_COLORS[mesajRengi]}`}
-          >
-            {mesaj}
-          </div>
-
-          {/* `relative`: iki balon (raf ve OYNA) bu satıra göre konumlanıyor. */}
-          <div className="relative flex gap-1.5 items-stretch">
+        <div className="w-full max-w-[680px] px-3 pb-3 pt-1">
+          {/* ⚠ `relative` BURADA, raf satırında DEĞİL (7 Eylül 2026 akşamı,
+              kullanıcı: *"zaten orada 'kelimeyi taşı' balonu duruyor ve
+              mesajlar görünmüyor… kaydırsak iyi olur"*). Balonlar
+              `bottom-full` ile bu sarmalayıcının üstüne çıkıyor ve
+              sarmalayıcı MESAJ ŞERİDİNİ DE kapsadığından balon artık şeridi
+              örtmüyor — tahtanın alt kenarına doğru taşıyor.
+              Sarmalayıcı raf satırıyla AYNI genişlikte: OYNA balonunun
+              `right-1`i butonun sağ kenarına göre hesaplanıyor. */}
+          <div className="relative flex flex-col gap-1.5">
             {/* Raf balonu SATIRIN ORTASINDA (7 Eylül 2026 akşamı, kullanıcı:
                 *"Hepsinin ortalı ve yerinde olması lazım"*). Önceden sola
                 yaslıydı ve rafın sol ucunu işaret ediyordu — oysa cümle
@@ -553,6 +554,14 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
               />
             )}
 
+            <div
+              data-mesaj=""
+              className={`text-[11px] font-mono font-bold text-center min-h-[30px] py-0.5 flex items-center justify-center ${MESSAGE_COLORS[mesajRengi]}`}
+            >
+              {mesaj}
+            </div>
+
+            <div className="flex gap-1.5 items-stretch">
             <div className="flex-1 min-w-0">
               {/* Raf HER ZAMAN oyuncunun (rakip oynarken bile) — App'teki
                   `rackPlayer` ile aynı kural. */}
@@ -582,6 +591,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
             >
               {!wordsReady ? 'Yükleniyor…' : 'Oyna'}
             </button>
+            </div>
           </div>
         </div>
       </main>

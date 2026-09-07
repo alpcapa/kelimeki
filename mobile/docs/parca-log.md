@@ -91,6 +91,16 @@
        SONUÇ satırı da çekildi (`+15 puan — bölgen köşenin dışına taştı.`):
        balon "bölge" derken bir sonraki satırın "sınır" demesi tek sahnede
        iki terim olurdu.
+     - **DÖRDÜNCÜ TUR (aynı akşam):** raf balonu mesaj şeridinin üstüne
+       biniyordu (*"mesajlar görünmüyor… kaydırsak iyi olur"*). Çözüm
+       yapıda: `Stack`/`relative` artık raf satırında değil, MESAJ ŞERİDİNİ
+       DE kapsayan sarmalayıcıda — balon `bottom-full` ile ikisinin birden
+       üstüne taşıyor. Sabit bir "şu kadar yukarı kaydır" YAZILMADI (şerit
+       `min-h` ile büyüyebilir; magic number bir gün sessizce yanlış olur).
+       Portta dolgular birleşti: (12,4,12,0) + (12,6,12,12) → (12,4,12,12)
+       + 6 px `SizedBox`, boşluklar birebir aynı. Kilit iki tarafta da
+       ÖLÇÜYOR (kutular çakışmamalı); port testi balon eski yerine konunca
+       565 > 545 ile düştü.
      - **Doğrulama sınırı:** cihazda koşulmadı; punto/satır kırılması ve
        balonun hedefi örtmemesi gözle `mobile/TESTING.md` §1.9'da.
 

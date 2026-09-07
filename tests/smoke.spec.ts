@@ -2283,6 +2283,12 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
     const kuyrukMerkez = kuyruk.x + kuyruk.width / 2;
     expect(kuyrukMerkez).toBeGreaterThanOrEqual(oynaKutu.x);
     expect(kuyrukMerkez).toBeLessThanOrEqual(oynaKutu.x + oynaKutu.width);
+    // ⚠ Balon MESAJ ŞERİDİNİ ÖRTMEZ (7 Eylül 2026 akşamı, kullanıcı:
+    // *"zaten orada balon duruyor ve mesajlar görünmüyor"*). Balon artık
+    // şeridi de kapsayan sarmalayıcının ÜSTÜNDE; kutular çakışmamalı.
+    const balonKutu = (await page.locator('[data-balon="sag"]').boundingBox())!;
+    const mesajKutu = (await page.locator('[data-mesaj]').boundingBox())!;
+    expect(balonKutu.y + balonKutu.height).toBeLessThanOrEqual(mesajKutu.y + 1);
     await oyna.click();
   };
 

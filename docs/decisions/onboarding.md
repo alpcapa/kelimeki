@@ -531,3 +531,28 @@ tam da kök `CLAUDE.md`'nin "Terminoloji" notunun uyardığı şey.
 sabitinin web dosyasında GEÇTİĞİ doğrulanıyor (boşluklar normalize) — yani
 metin bundan sonra serbestçe değişebilir, parite yine kilitli kalır.
 
+### 6. Raf balonu mesaj şeridinin üstüne taşındı (aynı akşam)
+
+Kullanıcı: *"zaten orada 'kelimeyi taşı' balonu duruyor ve mesajlar
+görünmüyor… kaydırsak iyi olur"*.
+
+Balon rafın hemen üstüne (`bottom-full`) çapalıydı — orası da mesaj
+şeridinin durduğu yer. Örtülen metin çoğunlukla balonun kendisiyle aynı
+bilgiydi ("Harfi raftan al, işaretli kareye koy."), yani zarar küçüktü; ama
+üst üste binmenin kendisi hatalı görünüyor.
+
+**Çözüm yapıda, sayıda değil:** `relative` (portta `Stack`) artık raf
+satırında değil, **mesaj şeridini de kapsayan** bir sarmalayıcıda. Balon
+yine `bottom-full` ile onun üstüne taşıyor, dolayısıyla şeridin üstüne
+değil tahtanın alt kenarına doğru çıkıyor. Sabit bir "36 px yukarı kaydır"
+denmedi: şerit `min-h-[30px]` ile büyüyebilir, magic number bir gün
+sessizce yanlış olurdu.
+
+Portta dolgular birleşti — eski `(12,4,12,0)` + `(12,6,12,12)` yerine
+`(12,4,12,12)` + aradaki 6 px `SizedBox`; boşluklar birebir aynı kaldı.
+
+Kilit ÖLÇÜYOR, iki tarafta da: web `smoke.spec.ts` balon kutusunun alt
+kenarının mesaj şeridinin üst kenarını geçmediğini, port
+`tutorial_game_test` aynısını `getRect` ile iddia ediyor. Duyarlılık
+kanıtlandı (balon eski yerine konunca port testi 565 > 545 ile düştü).
+

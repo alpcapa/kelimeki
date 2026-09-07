@@ -240,6 +240,24 @@ void main() {
     expect(rackHighlight(0), findsOneWidget);
   });
 
+  // 7 Eylül 2026 akşamı, kullanıcı: *"zaten orada 'kelimeyi taşı' balonu
+  // duruyor ve mesajlar görünmüyor… kaydırsak iyi olur"*. Balon rafın hemen
+  // üstüne, yani mesaj şeridinin durduğu yere biniyordu. Artık şerit ve raf
+  // TEK Stack'in içinde; balon ikisinin birden üstüne taşıyor.
+  testWidgets('raf balonu mesaj şeridini ÖRTMEZ (ikisi de görünür)',
+      (tester) async {
+    await setPhoneViewSize(tester, const Size(420, 900));
+    await pumpTutorial(tester);
+
+    final balon = tester.getRect(
+        find.text(kTutorialTasiBalonuText(tutorialSteps.first.move.word)));
+    final serit = tester.getRect(mesaj());
+    expect(balon.bottom, lessThanOrEqualTo(serit.top + 1),
+        reason: 'balon şeridin ÜSTÜNDE bitmeli (kutular çakışmamalı)');
+    // Şeridin kendi metni de gerçekten görünür durumda.
+    expect(find.text(kTutorialHarfiAlText), findsOneWidget);
+  });
+
   testWidgets('ray: hedef dışı kare ve harf seçmeden kareye dokunuş SESSİZ',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));

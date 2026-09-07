@@ -433,6 +433,10 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
 - [ ] **OYNA balonunun oku BUTONU gösteriyor:** hamle tamamlanınca çıkan
       "Hamleni tamamlamak için OYNA'ya bas" balonunun kuyruğu rafın
       ortasını değil OYNA butonunu işaret ediyor.
+- [ ] **Balon mesaj şeridini örtmüyor:** taşları dizerken hem "Şimdi …
+      kelimesini taşı" balonu hem altındaki mesaj şeridi ("Harfi raftan al,
+      işaretli kareye koy.") AYNI ANDA okunabiliyor; balon şeridin üstünde
+      duruyor (7 Eylül 2026 akşamı, dördüncü tur).
 - [ ] **Punto ve satır kırılması:** balon yazısı eskisinden belirgin BÜYÜK;
       uzun cümleler ("Sarı bölge içinde…", "Hamleni tamamlamak için…") tek
       satırda ekranı baştan başa kesmiyor, İKİ satıra kırılıyor. Balon yine
