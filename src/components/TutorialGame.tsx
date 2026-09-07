@@ -617,7 +617,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
               <strong>{state.players[1].name}</strong> kullanıcısına vergi olarak gidecek.
             </p>
             <p className="text-xs text-muted font-sans leading-relaxed">
-              Rakibin bölgesine girmen gerekmiyor — sınırına değmek yetiyor.
+              Rakibin bölgesine değen veya giren bir hamle yaparsan vergisini ödersin.
             </p>
             <div className="flex gap-2 mt-1">
               <button

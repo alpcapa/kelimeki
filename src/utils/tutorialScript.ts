@@ -145,7 +145,11 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: 'buyume',
-    say: 'Kelime kurdukça sınırın büyür.',
+    // 7 Eylül 2026 akşamı, kullanıcı: bu cümlede "sınır" yerine "bölge"
+    // — tanıtımın öğrettiği terim `bölge` (vergi de "bölge vergisi").
+    // Kullanıcının yazdığı iyelik biçimi (`bölgeni`) geçişli fiil ister:
+    // "büyür" → "büyütürsün".
+    say: 'Kelime kurdukça bölgeni büyütürsün.',
     // Kelime DİKEY (sütun 3, satır 1-5): balon üstte olsaydı kendi
     // hedeflerinin üstüne otururdu. Bu yüzden en alttaki hedefin ALTINDA,
     // kuyruk yukarı — kapattığı satırlar (6-7) boş.

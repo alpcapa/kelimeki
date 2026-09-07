@@ -79,6 +79,15 @@
        Ayrıca zoom ipucu ve "Buradan başla" balonları da aynı puntoya
        (`clamp(11,3.2vw,16)`) çekildi — ekrandaki ÜÇ balon tek ölçüde,
        `tutorial_parity_test` bunu değişmez olarak kilitliyor.
+     - **ÜÇÜNCÜ TUR — metin (aynı akşam):** vergi penceresinin notu
+       *"Rakibin bölgesine değen veya giren bir hamle yaparsan vergisini
+       ödersin."*, 2. sahnenin balonu *"Kelime kurdukça bölgeni
+       büyütürsün."* — ikisi de terimi `sınır`dan `bölge`ye çekiyor
+       (`Landing.tsx`/`intro_screen.dart`teki cümleyle aynı kalıp).
+       Kullanıcının `bölgeni` biçimi geçişli fiil istediğinden `büyür` →
+       `büyütürsün`. Parite testinin nota bakan iddiası cümlenin İLK
+       KELİMELERİNE çapalıydı (metin değişince sessizce kırılırdı); artık
+       port sabitinin web dosyasında geçtiğini doğruluyor.
      - **Doğrulama sınırı:** cihazda koşulmadı; punto/satır kırılması ve
        balonun hedefi örtmemesi gözle `mobile/TESTING.md` §1.9'da.
 

@@ -503,3 +503,26 @@ başla" artık `clamp(11,3.2vw,16)`. Yani ekrandaki ÜÇ balon tek ölçüde;
 balon clamp'lerinin hepsi aynı olmalı — filigranlar tabanlarına göre
 ayrılıyor).
 
+### 5. Metin turu — vergi notu ve 2. sahnenin cümlesi (aynı akşam)
+
+Kullanıcı iki cümle değiştirdi:
+
+| Yer | Önce | Sonra |
+|---|---|---|
+| Vergi penceresinin alt notu | *Rakibin bölgesine girmen gerekmiyor — sınırına değmek yetiyor.* | **Rakibin bölgesine değen veya giren bir hamle yaparsan vergisini ödersin.** |
+| 2. sahnenin balonu | *Kelime kurdukça sınırın büyür.* | **Kelime kurdukça bölgeni büyütürsün.** |
+
+İkisi de terimi `sınır`dan `bölge`ye çekiyor — tanıtımın öğrettiği ad
+`bölge` (verginin adı da "bölge vergisi", bkz. kök `CLAUDE.md` →
+"Terminoloji"). Yeni not, projenin başka iki yüzeyindeki cümleyle de
+aynı kalıba oturdu (`Landing.tsx` ve `intro_screen.dart`: *"rakibin
+bölgesine değen/giren hamle yapabilirsin; ama vergisini ödersin"*).
+
+⚠ Kullanıcının yazdığı iyelik biçimi (`bölgeni`) geçişli bir fiil ister:
+`büyür` → **`büyütürsün`**. (`bölgeni büyür` dilbilgisi olarak tökezlerdi.)
+
+⚠ Parite testinin bu nota bakan iddiası CÜMLENİN İLK KELİMELERİNE
+çapalıydı; metin değişince ayrıştırıcı sessizce kırılırdı. Artık port
+sabitinin web dosyasında GEÇTİĞİ doğrulanıyor (boşluklar normalize) — yani
+metin bundan sonra serbestçe değişebilir, parite yine kilitli kalır.
+

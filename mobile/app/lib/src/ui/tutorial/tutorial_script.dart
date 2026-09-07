@@ -127,7 +127,7 @@ const List<TutorialStep> tutorialSteps = [
   ),
   TutorialStep(
     id: 'buyume',
-    say: 'Kelime kurdukça sınırın büyür.',
+    say: 'Kelime kurdukça bölgeni büyütürsün.',
     bubble: TutorialBubble(5, 3, 'alt'),
     move: TutorialMove(
       word: 'ÜZENGİ',

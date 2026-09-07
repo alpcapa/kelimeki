@@ -25,6 +25,8 @@ import 'support/web_source.dart';
 /// alan adlarını ve kesme işaretlerini içerebiliyor, ayrıştırıcı onları
 /// görmemeli. (Dize içinde `//` geçen bir metin yok; olursa bu satır önce
 /// güncellenmeli.)
+String _norm(String s) => s.replaceAll(RegExp(r'\s+'), ' ').trim();
+
 String _stripComments(String src) => src.replaceAll(RegExp(r'//[^\n]*'), '');
 
 List<(int, int, String)> _cells(String block) => [
@@ -234,9 +236,13 @@ void main() {
         tasi.replaceAll(r'${step.move.word}', 'BÜYÜ'));
     expect(kTutorialOynaBalonuText,
         pick(gameTsx, RegExp(r'text="(Hamleni tamamlamak[^"]*)"'), 'OYNA balonu'));
-    expect(kTutorialInvasionNote,
-        pick(gameTsx, RegExp(r'>\s*(Rakibin bölgesine girmen[^<]*?)\s*<'),
-            'vergi penceresi notu'));
+    // Vergi penceresinin tek satırlık notu. Cümlenin İLK KELİMELERİNE
+    // çapalamak yerine (metin değişince ayrıştırıcı sessizce kırılırdı)
+    // port sabitinin web dosyasında GEÇTİĞİ doğrulanıyor; boşluklar
+    // normalize ediliyor ki JSX satır sarması testi düşürmesin.
+    expect(_norm(gameTsx).contains(_norm(kTutorialInvasionNote)), isTrue,
+        reason: 'vergi penceresi notu web ile ayrıştı — port: '
+            '"$kTutorialInvasionNote"');
     // Kapanış butonu: web `uppercase` sınıfıyla büyütüyor, port etiketi
     // büyük harfle yazıyor — Türkçe büyütmeyle aynı olmalı.
     final btn = pick(gameTsx, RegExp(r'>\s*(Gerçek oyuna başla)\s*<'), 'kapanış butonu');

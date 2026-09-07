@@ -63,7 +63,7 @@ const String kTutorialHarfiAlText = 'Harfi raftan al, işaretli kareye koy.';
 const String kTutorialOynaBalonuText = 'Hamleni tamamlamak için OYNA\'ya bas';
 String kTutorialTasiBalonuText(String word) => 'Şimdi $word kelimesini taşı';
 const String kTutorialInvasionNote =
-    'Rakibin bölgesine girmen gerekmiyor — sınırına değmek yetiyor.';
+    'Rakibin bölgesine değen veya giren bir hamle yaparsan vergisini ödersin.';
 
 enum _Mode { oyna, bekle, bitti }
 
