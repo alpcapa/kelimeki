@@ -54,8 +54,13 @@ const MESSAGE_COLORS: Record<string, string> = {
 const RAKIP_TAS_ARASI = 260;
 /** Oyuncunun hamlesi oynandıktan sonra sonucu okuma payı (ms). */
 const SONUC_OKUMA = 1400;
-/** Rakibin cevabı oynandıktan sonra notu okuma payı (ms). */
-const RAKIP_OKUMA = 1800;
+/**
+ * Rakip oynadıktan SONRA "Rakip hamlesini yaptı" balonunun ekranda kalma
+ * süresi (ms). 1800 → 2600: kullanıcı cihazda *"çok hızlı gidiyor"* dedi
+ * (7 Eylül 2026). Balon artık taş dizilirken DEĞİL, hamle bittikten sonra
+ * çıkıyor — dizilme ~1 sn sürüyor ve o sırada göz zaten taşları izliyor.
+ */
+const RAKIP_OKUMA = 2600;
 /** Sürüklemenin "tık" değil "taşıma" sayılması için gereken piksel. */
 const SURUKLEME_ESIGI = 6;
 
@@ -103,10 +108,10 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
   // 'oyna' = sıra oyuncuda, raylar açık · 'bekle' = hamle/rakip animasyonu
   // sürüyor, tahta kilitli · 'bitti' = kapanış kartı.
   const [mode, setMode] = useState<'oyna' | 'bekle' | 'bitti'>('oyna');
-  // 'bekle' modunun İKİNCİ yarısı: rakip fiilen taş diziyor. Balon ancak o
-  // an çıkmalı — kendi hamlemizin sonucunu okurken "rakibin sırası" demek
-  // yanlış olurdu.
-  const [rakipOynuyor, setRakipOynuyor] = useState(false);
+  // Rakip sırasının evresi. 'diziyor' = taşlar tek tek iniyor (balon YOK,
+  // göz zaten taşları izliyor; mesaj şeridi "Rakip oynuyor…" diyor),
+  // 'bitti' = hamle oynandı, balon 2,6 sn "Rakip hamlesini yaptı" der.
+  const [rakipEvre, setRakipEvre] = useState<'yok' | 'diziyor' | 'bitti'>('yok');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [wordsReady, setWordsReady] = useState(isWordSetReady());
@@ -315,7 +320,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
     if (!alive.current) return;
 
     setNote(null);
-    setRakipOynuyor(true);
+    setRakipEvre('diziyor');
     for (const cell of step.reply.cells) {
       const s = stateRef.current;
       const idx = s.players[s.current].rack.findIndex((t) => t.letter === cell.letter);
@@ -323,7 +328,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
         // Senaryo bozulduysa (olmaması gereken durum — doğrulayıcı bunu
         // koşumda yakalıyor) oyuncuyu kilitli bir tahtada bırakmaktansa
         // tanıtımı bitiriyoruz.
-        setRakipOynuyor(false);
+        setRakipEvre('yok');
         setMode('bitti');
         return;
       }
@@ -332,11 +337,12 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
       if (!alive.current) return;
     }
     dispatch({ type: 'PLAY' });
-    setRakipOynuyor(false);
+    setRakipEvre('bitti');
     setNote(step.reply.note);
     await bekle(RAKIP_OKUMA);
     if (!alive.current) return;
 
+    setRakipEvre('yok');
     setNote(null);
     if (stepIndex + 1 < TUTORIAL_STEPS.length) {
       setStepIndex(stepIndex + 1);
@@ -386,21 +392,34 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
   const confirmRef = useModalA11y(confirmOpen, () => setConfirmOpen(false));
   const finishRef = useModalA11y(mode === 'bitti', onFinish);
 
-  // Tahtadaki balon: oyuncunun sırasında DERSİ, rakibin sırasında sıranın
-  // kimde olduğunu söyler. Aynı anda tek balon (Board `coach` verilince
-  // "Buradan başla" da bastırılıyor).
-  const tahtaBalonu = rakipOynuyor
-    ? {
-        r: step.reply.cells[0].r,
-        c: step.reply.cells[0].c,
-        text: 'Rakibin sırası, hamlesini yapıyor',
-      }
-    : mode === 'oyna'
-      ? { r: step.bubble.r, c: step.bubble.c, text: step.say }
-      : null;
+  /**
+   * Tahtadaki balon. Aynı anda EKRANDA TEK balon olsun diye sıra şu:
+   *   1. rakip oynadıysa → "Rakip hamlesini yaptı" (oynadığı karenin yanında),
+   *   2. oyuncunun sırası ve hamle HENÜZ TAMAMLANMADIYSA → dersin cümlesi,
+   *   3. hamle tamamlandıysa → HİÇBİRİ; söz sırası OYNA balonunun.
+   *
+   * (3) kullanıcı isteği (7 Eylül 2026, cihaz testi): *"BÜYÜ tahtaya
+   * koyulduktan sonra OYNA balonu çıkınca 'Kendi köşenden başla' balonu
+   * kaybolmalı."* İki balon aynı anda duruyordu.
+   */
+  const tahtaBalonu =
+    rakipEvre === 'bitti'
+      ? {
+          r: step.reply.cells[0].r,
+          c: step.reply.cells[0].c,
+          text: 'Rakip hamlesini yaptı',
+        }
+      : mode === 'oyna' && !hazir
+        ? { r: step.bubble.r, c: step.bubble.c, text: step.say }
+        : null;
 
   const mesaj =
-    note ?? (mode === 'oyna' && !hazir ? 'Harfi raftan al, işaretli kareye koy.' : '');
+    note ??
+    (rakipEvre === 'diziyor'
+      ? 'Rakip oynuyor…'
+      : mode === 'oyna' && !hazir
+        ? 'Harfi raftan al, işaretli kareye koy.'
+        : '');
   const mesajRengi = note ? 'ok' : '';
 
   return (

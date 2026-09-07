@@ -173,10 +173,21 @@ değiştirme / joker yok, 4. sahnede gerçek `Sınır İhlali!` penceresi çıka
 
 | Balon | Nerede | Ne zaman |
 |---|---|---|
-| Dersin cümlesi ("Ortadaki kare üç katı!") | tahtada, hedef karenin yanında | oyuncunun sırası |
+| Dersin cümlesi ("Ortadaki kare üç katı!") | tahtada, hedef karenin yanında | oyuncunun sırası, hamle **tamamlanana kadar** |
 | `Şimdi FES kelimesini taşı` | rafın üstünde | harf kaldığı sürece |
 | `Hamleni tamamlamak için OYNA'ya bas` | OYNA butonunun üstünde | hamle tamamlanınca |
-| `Rakibin sırası, hamlesini yapıyor` | tahtada, rakibin oynadığı karenin yanında | rakip taş dizerken |
+| `Rakip hamlesini yaptı` | tahtada, rakibin oynadığı karenin yanında | rakip oynadıktan **sonra**, 2,6 sn |
+
+**İkinci cihaz turunun iki düzeltmesi** (7 Eylül 2026, kullanıcı):
+
+1. *"BÜYÜ tahtaya koyulduktan sonra OYNA balonu çıkınca 'Kendi köşenden
+   başla' balonu kaybolmalı."* — iki balon aynı anda duruyordu. Tahta
+   balonu artık hamle tamamlanınca susuyor; söz sırası OYNA balonunun.
+2. *"Rakip hamlesini yapıyor balonu çok hızlı gidiyor."* — balon taşlar
+   dizilirken çıkıyordu (~1 sn) ve okunmuyordu. Artık hamle BİTTİKTEN
+   sonra, geçmiş zamanla ve **2,6 saniye** duruyor; dizilme sırasında
+   yalnızca mesaj şeridi "Rakip oynuyor…" diyor (göz zaten inen taşlarda).
+   Bedeli: tanıtım sahne başına ~0,8 sn uzadı (duman testi 21,8 → 29,2 sn).
 
 ### Sürükleme neden SADELEŞTİRİLMİŞ bir kopya
 

@@ -2259,6 +2259,10 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
       await page.locator(`[data-cell="${r},${c}"]`).click();
     }
     await expect(oyna).toBeEnabled();
+    // Hamle tamamlanınca söz sırası OYNA balonunun: dersin balonu KAYBOLUR
+    // (7 Eylül 2026, kullanıcı: iki balon aynı anda duruyordu).
+    await expect(page.getByText("Hamleni tamamlamak için OYNA'ya bas")).toBeVisible();
+    await expect(page.locator('[data-coach]')).toHaveCount(0);
     await oyna.click();
   };
 
@@ -2276,8 +2280,9 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   // 1. sahne — ev karesinden ilk kelime (BÜYÜ).
   await sahneOyna([[0, 0], [0, 1], [0, 2], [0, 3]]);
   await expect(page.getByText('İlk kelimen: +12 puan.')).toBeVisible();
-  // Rakip taşlarını dizerken sıranın kimde olduğu balonda yazıyor.
-  await expect(page.getByText('Rakibin sırası, hamlesini yapıyor')).toBeVisible({ timeout: 20_000 });
+  // Rakip oynadıktan SONRA balon çıkıyor ve 2,6 sn kalıyor (kullanıcı:
+  // dizilirken çıkan balon "çok hızlı gidiyor"du).
+  await expect(page.getByText('Rakip hamlesini yaptı')).toBeVisible({ timeout: 20_000 });
   await expect(page.getByText('TANITIM · 2/4')).toBeVisible({ timeout: 20_000 });
 
   // 2. sahne — bölge büyümesi (ÜZENGİ).
@@ -2298,8 +2303,9 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   await page.locator('[data-cell="6,6"]').click();
   await vurguluTas.first().click();
   await page.locator('[data-cell="6,7"]').click();
-  // Hamle tamamlanınca OYNA'yı işaret eden balon çıkar.
+  // Hamle tamamlanınca OYNA'yı işaret eden balon çıkar, dersinki kaybolur.
   await expect(page.getByText("Hamleni tamamlamak için OYNA'ya bas")).toBeVisible();
+  await expect(page.locator('[data-coach]')).toHaveCount(0);
   await oyna.click();
   const onay = page.getByLabel('Sınır ihlali onayı');
   await expect(onay).toBeVisible();

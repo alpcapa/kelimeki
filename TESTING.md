@@ -1240,9 +1240,11 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
 - [ ] **Raf vurgusu doğru taşta:** O sahnenin harfleri rafta yan yana ve
       mavi halkayla işaretli; ilk vurgulu taş her zaman SIRADAKİ harf
       (özellikle 3. sahnede rafta iki "A" varken).
-- [ ] **Dört balon:** dersin cümlesi (tahtada) · "Şimdi … kelimesini taşı"
-      (rafın üstünde) · "Hamleni tamamlamak için OYNA'ya bas" (butonun
-      üstünde) · "Rakibin sırası, hamlesini yapıyor" (rakip oynarken).
+- [ ] **Dört balon, aynı anda TEK balon:** dersin cümlesi (tahtada) →
+      hamle tamamlanınca KAYBOLUYOR ve yerini "Hamleni tamamlamak için
+      OYNA'ya bas" alıyor · "Şimdi … kelimesini taşı" (rafın üstünde) ·
+      rakip oynadıktan sonra "Rakip hamlesini yaptı" ~2,5 sn duruyor
+      (okumaya yetiyor mu?).
 - [ ] **Sürükleme sonrası taş YERİNDE kalıyor** (hayalet tık): bıraktıktan
       hemen sonra taş kendiliğinden rafa dönmüyor.
 - [ ] **Ray gerçekten yönlendiriyor:** İşaretsiz kareye dokunmak SESSİZ
