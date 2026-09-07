@@ -113,6 +113,26 @@ const rows = walk(ROOT)
 const dusenler = rows.filter((r) => r.size > r.sinir);
 const uyarilar = rows.filter((r) => r.size <= r.sinir && r.size > r.uyar);
 
+// ── Alt sınır: BOŞALMIŞ doküman (7 Eylül 2026) ────────────────────────────
+// Bütçe yalnızca "çok büyüdü"yü ölçüyordu. O gün ROADMAP.md bir düzenleme
+// betiğinin `open(p, 'w')` satırıyla 0 bayta indi, commit'lendi, CI (bu
+// betik dahil) yeşil kaldı ve dosya BOŞ hâliyle main'e girdi — "0 KB bütçe
+// içinde"dir. Kural: hiçbir .md 0 bayt olamaz; baştan sona okunan büyük
+// dosyaların da bir TABANI var — altına düşmek "bölündü" değil "silindi"
+// demektir (bölme her zaman bir üst kural/indeksle birlikte yapılır ve
+// dosya ana hatlarını korur).
+const TABAN = {
+  'ROADMAP.md': 40 * KB,
+  'CLAUDE.md': 30 * KB,
+  'mobile/CLAUDE.md': 30 * KB,
+  'README.md': 8 * KB,
+  'TESTING.md': 30 * KB,
+  'mobile/TESTING.md': 30 * KB,
+};
+const bosalanlar = rows.filter(
+  (r) => r.size === 0 || (r.rel in TABAN && r.size < TABAN[r.rel]),
+);
+
 console.log('\nDoküman boyutu bütçesi\n');
 for (const r of rows.slice(0, 12)) {
   const durum = r.size > r.sinir ? 'SINIR AŞILDI' : r.size > r.uyar ? 'uyarı' : '';
@@ -130,6 +150,20 @@ if (uyarilar.length) {
       : 'bir sonraki dokunuşta böl';
     console.log(`  • ${r.rel} — ${kb(r.size)} / ${kb(r.sinir)} [${r.sinif}] → ${ne}`);
   }
+}
+
+if (bosalanlar.length) {
+  console.log('\nBOŞALMIŞ DOKÜMAN:\n');
+  for (const r of bosalanlar) {
+    const taban = r.rel in TABAN ? ` (taban ${kb(TABAN[r.rel])})` : ' (0 bayt)';
+    console.log(`  ✗ ${r.rel} — ${kb(r.size)}${taban}`);
+  }
+  console.log(
+    '    Bir doküman büyüyerek değil KÜÇÜLEREK bozuldu: içerik silinmiş ya da\n' +
+      '    yazan betik dosyayı okumadan önce yazma modunda açmış olabilir\n' +
+      '    (7 Eylül 2026, ROADMAP.md). `git show <önceki>:<dosya>` ile geri al.\n',
+  );
+  process.exit(1);
 }
 
 if (dusenler.length) {

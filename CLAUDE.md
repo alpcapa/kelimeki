@@ -360,6 +360,13 @@ değiştiğinde. `npm install` ve derleme YOK (saniyeler) — bu repoda
 çarpmadan önce hareket etme fırsatıdır; biriktirilirse kontrolün anlamı
 kalmaz.
 
+⚠ **Alt sınır da var (7 Eylül 2026):** betik artık 0 baytlık her `.md`'yi ve
+tabanının altına düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki
+`CLAUDE`, `README`, iki `TESTING`) da düşürür. Sebep: ROADMAP.md bir
+düzenleme betiğinin `open(p, 'w')` satırıyla sıfırlandı, "bütçe içinde"
+sayıldı ve BOŞ hâliyle `main`'e girdi (PR #475; #476 geri aldı). Ders,
+betik yazana: bir dosyayı yazma modunda AÇMADAN önce içeriğini oku.
+
 **26 Ağustos 2026 — uyarı bandı TAMAMEN boşaltıldı** (kullanıcı: *"md
 bölünme işini hallet"*). Beş dosya da kendi kuralına göre bölündü ve
 `npm run check-doc-size` artık tek uyarı vermiyor:
