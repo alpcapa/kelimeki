@@ -53,6 +53,7 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
+| **1.0.9** | *(CI koşu no — merge sonrası doldurulacak)* | *(merge commit'i)* | 7 Eyl 2026 akşamı (`main`) | **henüz yüklenmedi** | 🔧 hazırlanıyor | "Oynayarak öğren" tanıtımının PORT ikizi (Onboarding Faz 4) + tanıtımın cihaz/tarayıcı turu düzeltmeleri. Aşağı bkz. |
 | **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **7 Eyl 2026, 13:28** (Console) | ✅ **kapalı testte YAYINDA** (Alpha; ≤ 13:57'de "Published") | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
 
 ⚠ **1.0.0/1.0.1'in `versionCode`'u hâlâ ölçülmedi** (Console'un paket
@@ -111,6 +112,49 @@ buradaki satır sayısı bilerek tutmuyor.
 
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
+
+## 1.0.9 — 🔧 HAZIRLANIYOR (7 Eyl 2026 akşamı)
+
+**Durum:** `pubspec.yaml` + `env.dart` 1.0.8 → 1.0.9. `versionCode` HENÜZ
+YOK — CI'ın koşu numarası, yani sürüm adını taşıyan commit `main`'e
+girdikten sonraki "Mobil derleme" koşumundan okunur (bkz. yukarıdaki
+"`versionCode` nereden geliyor").
+
+**İçerik — tek konu, Onboarding Faz 4 ve ardından gelen tur:** ilk oyunu
+açan kullanıcı artık Hızlı Başlangıç penceresi yerine **"oynayarak öğren"
+tanıtımını** görüyor (dört sahne, ~60 sn, her hamleden sonra rakip de
+oynuyor). Web'de 7 Eylül sabahı yayınlanmıştı; bu paket onun PORT ikizini
+getiriyor. Kullanıcıya görünen:
+
+- Tanıtım AÇILIRKEN karşılama penceresi ("Kelimeki Tanıtım Turu" + Devam) —
+  oyuncu kendini gerçek oyunda sanmasın diye.
+- Raylı dört sahne: ev karesi → bölgenin büyümesi → merkezde ×2 → merkez
+  karesinde ×3 + bölge vergisi (gerçek "Sınır İhlali!" penceresiyle).
+- Rafta o sahnenin harfleri yan yana vurgulu; taş dokunarak ya da
+  sürüklenerek konuyor (sürükleme HİSSİ gerçek oyunla aynı —
+  `ui/game/drag_feel.dart` üç ekranın ortak kaynağı).
+- Kapı: tanıtım YALNIZCA yeni gelene, bir kere (dört sinyal —
+  `util/onboarding.dart`). Mevcut oyuncuya, devam eden oyunu olana ve hesabı
+  tanıtımdan eski olana AÇILMAZ.
+- Tanıtım bir "oyun" DEĞİL: kayıt, bulut kaydı, `games` satırı, k-lig,
+  istatistik ve terk-edilme cezası çalışmaz.
+- Balon tipografisi büyüdü (`clamp(11,3.2vw,16)`) ve uzun cümleler iki
+  satıra kırılıyor; aynı punto zoom ipucu ve "Buradan başla" balonlarında da
+  geçerli — yani GERÇEK OYUNDA da görünür bir değişiklik.
+
+**Cihazda doğrulanan (7 Eyl akşamı, Appetize):** kullanıcı tanıtımın
+tamamını Appetize'da koştu — *"Appetize herşey ok"*. Öncesinde web
+önizlemesinde üç tur düzeltme yapıldı (balon hizası, okun hedefi, balonun
+mesaj şeridini örtmesi, metinler).
+
+⚠ **APK turu:** kullanıcı kuralı *"apk ile test edip sorunsuz olduğundan
+emin olmadan aab yapılmayacak"* — bu turda kullanıcı APK yerine
+**Appetize**'ı yeterli gördü (*"apk denemesine gerek yok bence"*), karar
+kayda geçti.
+
+**Kalan adımlar:** merge → CI koşu numarasını oku (`versionCode`) →
+`.aab`yi `mobile-latest`ten indir → Play Console'a kapalı teste yükle →
+gönderim saatini ve durumu bu kütüğe yaz.
 
 ## 1.0.8 (569) — ✅ YAYINDA (kapalı test/Alpha, 7 Eyl 2026)
 
@@ -594,6 +638,22 @@ action'ının kaldırılması.
 | `78383eb` | 06.09.2026 | Sürüm 1.0.7 — kapalı teste gönderilecek paket (yalnız sürüm adı) | yalnız port |
 
 </details>
+
+### 1.0.9 — 2 mobil commit (+ sürüm adı)
+
+*Pencere: `f4de936` (1.0.8'in paketi) → `main`. Komut:
+`git log --oneline f4de936..origin/main -- mobile/app mobile/kelimeki_core`*
+
+**Yenilik — tek konu:** "oynayarak öğren" tanıtımının port ikizi ve onun
+cihaz/tarayıcı turu. Ayrıntı yukarıda, "1.0.9" bölümünde.
+
+| sha | Tarih | Ne | Kapsam |
+|---|---|---|---|
+| `4f5d31f` | 07.09.2026 | Onboarding Faz 4 — tanıtımın port ikizi: `ui/tutorial/` (senaryo + ekran), kapı (`util/onboarding.dart`, `FlagsStore.seenTutorial`), `BoardWidget.targets`/`coach`, `RackWidget.highlight`, `ui/game/drag_feel.dart` (üç ekranın ortak sürükleme hissi) | web + port |
+| `e2b6cfe` | 07.09.2026 | Tanıtımın tarayıcı turu: karşılama penceresi, balon hiza hatası (Stack gevşek kısıt), punto/iki satır, OYNA okunun hedefi, raf balonunun şeridi örtmemesi, "bölge" terimi | web + port |
+
+⚠ `c235b25` (#483, Faz 1) komutun çıktısında görünür ama pakete GİRMEZ:
+`mobile/` altında yalnızca bir test dosyasına dokundu.
 
 ### 1.0.8 — 8 mobil commit
 
