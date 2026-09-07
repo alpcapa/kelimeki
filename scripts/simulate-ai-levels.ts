@@ -77,6 +77,7 @@ const PRESETS: Record<string, Partial<Omit<HardOptions, 'bagCount'>>> = {
   ileriG100: { replyWeight: 100 },
   // Geniş arama: paralel diziş + çok çapalı uzun kelime. genis8 havuzu 8'de
   // tutar (yalnızca paralel dizişin etkisi), genis13 tahta genişliğine açar.
+  genis7: { wideSearch: true },
   genis8: { wideSearch: true, maxWordLen: 8 },
   genis13: { wideSearch: true, maxWordLen: 13 },
 };
