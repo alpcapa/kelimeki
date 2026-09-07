@@ -311,8 +311,8 @@ mobile/
                              # WEB DOSYASINI OKUYARAK kilitliyor, biri değişip
                              # öteki kalırsa test paketi düşer
       util/ai_level.dart     # YZ zorluğunun ÜRÜN yüzü (web `aiLevel.ts` ikizi):
-                             # etiketler, Setup'ta seçilebilir liste (Zor Faz 5'e
-                             # kadar YOK), seviye açıklamaları (`aiLevelPitch` +
+                             # etiketler, Setup'ta seçilebilir liste (üçü de;
+                             # Zor Faz 5'le girdi), seviye açıklamaları (`aiLevelPitch` +
                              # `aiLevelDescription`; puan cümlesi `leaguePoints`ten
                              # türetilir, 4 kişilikte ikincilik dahil), rozet metni
                              # (Normal → null) — `ai_level_parity_test` web

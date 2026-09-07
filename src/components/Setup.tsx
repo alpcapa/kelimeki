@@ -1019,8 +1019,8 @@ export function Setup({
               sınıf dizesi oradakiyle BİREBİR, biri değişirse öteki de.
               Terminoloji TEK: "Zorluk: Kolay · Normal · Zor" (23.4). Seviye
               oyun BAŞINDA kilitlenir; 4 kişilikte üç YZ'ye birden uygulanır.
-              Zor Faz 5'e kadar gösterilmez — iki buton da `flex-1`, üçüncüsü
-              gelince yerleşim kendiliğinden üçe bölünür. */}
+              Üç buton da `flex-1` (Zor Faz 5'le, 7 Eylül 2026'da girdi;
+              tasarım kaydı docs/decisions/ai-levels.md). */}
             <div className="flex flex-col gap-2">
               <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
                 Zorluk
