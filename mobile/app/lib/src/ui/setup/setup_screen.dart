@@ -1240,7 +1240,14 @@ class _SetupScreenState extends State<SetupScreen>
                         // TAM 20.00px (kapsayıcının kendi `gap-5`i). Buraya
                         // TELAFİ EDİCİ bir marj EKLEMEDİK — çocukları kaldırmak
                         // otomatik olarak bu değeri veriyor, elle ayarlanmadı.
-                        const SizedBox(height: 20),
+                        //
+                        // MİSAFİRDE 8 (7 Eylül 2026, kullanıcı: "Oyun tipi ile
+                        // nasıl oynanır arasındaki fazla boşluğu da al"): link
+                        // satırı 32px'lik bir dokunma hedefi, metnin altında
+                        // ~8px daha var; 20 + 8 = 28 iken üstteki ayırıcı 16
+                        // idi. 8 + 8 = 16 ile ikisi eşitlendi. Web ikizi aynı
+                        // farkı `-mb-3` ile veriyor (yalnızca misafir dalında).
+                        SizedBox(height: auth.user == null ? 8 : 20),
                         const _SectionLabel('OYUN TİPİ'),
                         const SizedBox(height: 8),
                         Row(

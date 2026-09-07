@@ -51,8 +51,11 @@ const AI_LEVEL_VERB: Record<AiLevel, string> = {
  * kaynak — 23.0; metin tabloyla ayrışamaz). Her bileşimde birincilik VE
  * ikincilik yazılır (7 Eylül 2026, kullanıcı isteği; ikincilik 0 ise "puan
  * kazandırmaz"), puanın adı "k-lig puanı". Girişsiz kullanıcıda (`signedIn`
- * false) cümlenin sonuna "(Puan takibi üyelik gerektirir)" eklenir — puan
- * yalnızca üyelikle kaydedilir, misafir bunu seçerken bilsin. Portun
+ * false) puan cümlesinin ARDINDAN, ayrı bir not olarak "(Puan takibi üyelik
+ * gerektirir)" gelir — puan yalnızca üyelikle kaydedilir, misafir bunu
+ * seçerken bilsin. ⚠ Nokta CÜMLENİN sonunda, parantezin önünde (kullanıcı
+ * isteği, 7 Eylül 2026 ikinci tur); Zor'un "Bol şans!"ı en sonda kalır.
+ * Portun
  * `aiLevelDescription`ı aynı şablon; parite testi tüm bileşimleri tam
  * metinle kilitler.
  */
@@ -65,7 +68,7 @@ export function aiLevelDescription(level: AiLevel, playerCount: number, signedIn
       ? `birincilik ${birinci} k-lig puanı ${fiil}, ikincilik puan kazandırmaz`
       : `birincilik ${birinci}, ikincilik ${ikinci} k-lig puanı ${fiil}`;
   const uyelik = signedIn ? '' : ' (Puan takibi üyelik gerektirir)';
-  return `${AI_LEVEL_PITCH[level]} Bu seviyede ${puan}${uyelik}.${level === 'zor' ? ' Bol şans!' : ''}`;
+  return `${AI_LEVEL_PITCH[level]} Bu seviyede ${puan}.${uyelik}${level === 'zor' ? ' Bol şans!' : ''}`;
 }
 
 /**

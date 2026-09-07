@@ -1278,17 +1278,20 @@ listesi kök `TESTING.md` bölüm 10.
       satırı: `KOLAY` · `NORMAL` · `ZOR` (Zor Faz 5'le, 7 Eylül 2026'da
       girdi — web ile aynı PR; **1.0.8 turunda ZOR'la bir oyun oyna:** YZ
       hamleleri gözle görülür takılma olmadan gelmeli, şeritte ve oyun
-      sonunda KIRMIZI `Zor`, birincilik k-lig **+4**), Normal seçili (Faz
-      5'e kadar). Seçicinin altında seçili seviyenin açıklaması, web ile
+      sonunda KIRMIZI `Zor`, birincilik k-lig **+4**), varsayılan NORMAL
+      seçili. Seçicinin altında seçili seviyenin açıklaması, web ile
       BİREBİR: Normal'de "Orta-iyi seviye bir oyuncuyum… birincilik 2 k-lig
       puanı kazandırır, ikincilik puan kazandırmaz.", KOLAY'a dokununca "Çok
       iyi değilim… birincilik 1 k-lig puanı kazandırır, ikincilik puan
       kazandırmaz."; 4 OYUNCULU'ya geçince Normal: "birincilik 2, ikincilik 1
       k-lig puanı kazandırır" (7 Eylül 2026: her bileşimde ikincilik de
-      yazılır). **Girişsiz** açınca cümlenin sonunda "(Puan takibi üyelik
-      gerektirir)" eki var, girişli hesapta YOK (`ai_level_parity_test`
+      yazılır). **Girişsiz** açınca puan cümlesinin ardında AYRI bir not var:
+      "(Puan takibi üyelik gerektirir)" — nokta parantezin ÖNÜNDE, Zor'da
+      "Bol şans!" en sonda; girişli hesapta not YOK (`ai_level_parity_test`
       kilitliyor). Misafir Setup'ında "Nasıl oynanır? · Tanıtım" satırının
-      üstü/altı web ile birlikte daraltıldı (SizedBox 16→8, hedef 48→32).
+      üstü/altı web ile birlikte daraltıldı ve EŞİTLENDİ: paragraf→link ve
+      link→"OYUN TİPİ" arası ikisi de 16px (SizedBox 16→8 üstte, 20→8
+      altta; dokunma hedefi 48→32).
       Oyunu başlat, "← Geri" ile Setup'a dön: "DEVAM
       EDEN OYUNLAR" kartında avatarların hemen SAĞINDA küçük YEŞİL `Kolay` rozeti
       (Normal oyun kartında TURUNCU `Normal`; kural: Kolay yeşil · Normal

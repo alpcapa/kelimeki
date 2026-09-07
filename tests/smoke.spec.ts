@@ -118,10 +118,10 @@ test('Zorluk: Kolay seçilip 2 kişilik oyun başlar, YZ hamle yapar, seviye kay
   // olduğundan "(Puan takibi üyelik gerektirir)" eki). Tam metinler portun
   // ai_level_parity_test'iyle aynı — iki taraf ayrışırsa biri burada, öteki
   // orada düşer.
-  await expect(page.getByText('Orta-iyi seviye bir oyuncuyum, sıradan oyunculardan biraz daha iyiyim diyorsanız burası size göre. Bu seviyede birincilik 2 k-lig puanı kazandırır, ikincilik puan kazandırmaz (Puan takibi üyelik gerektirir).')).toBeVisible();
+  await expect(page.getByText('Orta-iyi seviye bir oyuncuyum, sıradan oyunculardan biraz daha iyiyim diyorsanız burası size göre. Bu seviyede birincilik 2 k-lig puanı kazandırır, ikincilik puan kazandırmaz. (Puan takibi üyelik gerektirir)')).toBeVisible();
   await zorluk.getByRole('radio', { name: 'Kolay' }).click();
   await expect(zorluk.getByRole('radio', { name: 'Kolay' })).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByText('Çok iyi değilim, daha yeni yeni alışıyorum, karşımda o kadar zor bir rakip istemiyorum diyorsanız doğru yerdesiniz. Bu seviyede birincilik 1 k-lig puanı kazandırır, ikincilik puan kazandırmaz (Puan takibi üyelik gerektirir).')).toBeVisible();
+  await expect(page.getByText('Çok iyi değilim, daha yeni yeni alışıyorum, karşımda o kadar zor bir rakip istemiyorum diyorsanız doğru yerdesiniz. Bu seviyede birincilik 1 k-lig puanı kazandırır, ikincilik puan kazandırmaz. (Puan takibi üyelik gerektirir)')).toBeVisible();
 
   await page.getByText('OYUNU BAŞLAT').click();
   const devamButton = page
@@ -164,7 +164,7 @@ test('Zorluk: Zor seçilip oyun başlar, YZ geniş aramayla hamle yapar, seviye 
   const zorluk = page.getByRole('radiogroup', { name: 'Zorluk' });
   await zorluk.getByRole('radio', { name: 'Zor' }).click();
   await expect(zorluk.getByRole('radio', { name: 'Zor' })).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByText('Çok iyi oyuncuyum, genelde %80+ kazanırım diyorsanız bunu denemelisiniz. Bu seviyede birincilik 4 k-lig puanı kazandırıyor, ikincilik puan kazandırmaz (Puan takibi üyelik gerektirir). Bol şans!')).toBeVisible();
+  await expect(page.getByText('Çok iyi oyuncuyum, genelde %80+ kazanırım diyorsanız bunu denemelisiniz. Bu seviyede birincilik 4 k-lig puanı kazandırıyor, ikincilik puan kazandırmaz. (Puan takibi üyelik gerektirir) Bol şans!')).toBeVisible();
 
   await page.getByText('OYUNU BAŞLAT').click();
   const devamButton = page

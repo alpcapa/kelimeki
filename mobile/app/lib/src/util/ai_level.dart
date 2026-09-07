@@ -59,8 +59,9 @@ const Map<AiLevel, String> _aiLevelVerb = {
 ///
 /// Her bileşimde birincilik VE ikincilik yazılır (7 Eylül 2026, kullanıcı
 /// isteği; ikincilik 0 ise "puan kazandırmaz"), puanın adı "k-lig puanı".
-/// Girişsizde ([signedIn] false) cümlenin sonuna "(Puan takibi üyelik
-/// gerektirir)" eklenir — web `aiLevelDescription(level, count, signedIn)`.
+/// Girişsizde ([signedIn] false) puan cümlesinin ARDINDAN, ayrı bir not
+/// olarak "(Puan takibi üyelik gerektirir)" gelir; nokta CÜMLENİN sonunda,
+/// parantezin önünde — web `aiLevelDescription(level, count, signedIn)`.
 String aiLevelDescription(AiLevel level, int playerCount, {required bool signedIn}) {
   final birinci = leaguePoints(1, playerCount, aiLevel: level);
   final ikinci = leaguePoints(2, playerCount, aiLevel: level);
@@ -70,7 +71,7 @@ String aiLevelDescription(AiLevel level, int playerCount, {required bool signedI
       : 'birincilik $birinci, ikincilik $ikinci k-lig puanı $fiil';
   final uyelik = signedIn ? '' : ' (Puan takibi üyelik gerektirir)';
   final sans = level == AiLevel.zor ? ' Bol şans!' : '';
-  return '${aiLevelPitch[level]} Bu seviyede $puan$uyelik.$sans';
+  return '${aiLevelPitch[level]} Bu seviyede $puan.$uyelik$sans';
 }
 
 /// Rozette gösterilecek seviye (6 Eylül 2026, kullanıcı kararı — Kolay

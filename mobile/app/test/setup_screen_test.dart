@@ -189,7 +189,7 @@ void main() {
     expect(find.textContaining('Orta-iyi seviye'), findsOneWidget);
     expect(
         find.textContaining('birincilik 2 k-lig puanı kazandırır, ikincilik '
-            'puan kazandırmaz (Puan takibi üyelik gerektirir).'),
+            'puan kazandırmaz. (Puan takibi üyelik gerektirir)'),
         findsOneWidget);
     await tester.tap(find.text('KOLAY'));
     await tester.pump();
@@ -205,8 +205,8 @@ void main() {
     await tester.tap(find.text('NORMAL'));
     await tester.pump();
     expect(
-        find.textContaining('birincilik 2, ikincilik 1 k-lig puanı kazandırır '
-            '(Puan takibi üyelik gerektirir).'),
+        find.textContaining('birincilik 2, ikincilik 1 k-lig puanı kazandırır. '
+            '(Puan takibi üyelik gerektirir)'),
         findsOneWidget);
     expect(find.textContaining('Çok iyi değilim'), findsNothing);
     await tester.tap(find.text('ZOR'));
@@ -214,7 +214,7 @@ void main() {
     expect(find.textContaining('Çok iyi oyuncuyum'), findsOneWidget);
     expect(
         find.textContaining('birincilik 4, ikincilik 2 k-lig puanı '
-            'kazandırıyor (Puan takibi üyelik gerektirir). Bol şans!'),
+            'kazandırıyor. (Puan takibi üyelik gerektirir) Bol şans!'),
         findsOneWidget);
   });
 
@@ -694,6 +694,13 @@ void main() {
     final link = tester.getRect(find.text('Nasıl oynanır?'));
     expect(para.top - logo.bottom, closeTo(20, 1.5));
     expect(link.top - para.bottom, closeTo(16, 1.5));
+    // 7 EYLÜL 2026, ikinci tur (kullanıcı: "Oyun tipi ile nasıl oynanır
+    // arasındaki fazla boşluğu da al, metinle nasıl oynanır arası kadar
+    // olsun"): link ALTI da 16 — web `-mb-3`, port `SizedBox(8)` (ikisi de
+    // yalnızca misafir dalında; girişlide logo→"OYUN TİPİ" hâlâ 20, aşağıdaki
+    // ayrı test onu kilitliyor). Üstteki ile AYNI sayı olması testin konusu.
+    final oyunTipi = tester.getRect(find.text('OYUN TİPİ'));
+    expect(oyunTipi.top - link.bottom, closeTo(16, 1.5));
 
     // Web `text-xs` = 12px/16px satır → 4 satırlık paragraf 64px.
     final paraText = tester.widget<Text>(find.textContaining('Kelimeler kurarak'));
