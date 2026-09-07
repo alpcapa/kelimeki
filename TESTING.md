@@ -1234,9 +1234,19 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
 - [ ] **Süre:** Kronometreyle ölç — dört sahne + kapanış **60-90 sn**
       içinde bitmeli. Uzunsa: sahne 2'nin kelimesi (ÜZENGİ, 5 taş) bir
       taş kısaltılabilir, ya da rakip animasyonu (260 ms) düşürülebilir.
-- [ ] **Ray gerçekten yönlendiriyor:** İşaretli kareye dokunmak doğru harfi
-      getiriyor; işaretsiz kareye dokunmak SESSİZ (hata mesajı çıkmıyor,
-      taş konmuyor).
+- [ ] **Taş raftan geliyor:** Boş kareye dokunmak TEK BAŞINA taş getirmiyor.
+      Harfi raftan seçip kareye dokunmak koyuyor; harfi kareye **sürüklemek**
+      de koyuyor (parmağın altında taşın kopyası gidiyor).
+- [ ] **Raf vurgusu doğru taşta:** O sahnenin harfleri rafta yan yana ve
+      mavi halkayla işaretli; ilk vurgulu taş her zaman SIRADAKİ harf
+      (özellikle 3. sahnede rafta iki "A" varken).
+- [ ] **Dört balon:** dersin cümlesi (tahtada) · "Şimdi … kelimesini taşı"
+      (rafın üstünde) · "Hamleni tamamlamak için OYNA'ya bas" (butonun
+      üstünde) · "Rakibin sırası, hamlesini yapıyor" (rakip oynarken).
+- [ ] **Sürükleme sonrası taş YERİNDE kalıyor** (hayalet tık): bıraktıktan
+      hemen sonra taş kendiliğinden rafa dönmüyor.
+- [ ] **Ray gerçekten yönlendiriyor:** İşaretsiz kareye dokunmak SESSİZ
+      (hata mesajı çıkmıyor, taş konmuyor).
 - [ ] **Geri alma:** Konan taşa dokunmak onu rafa geri gönderiyor, kare
       yeniden işaretli hâle geliyor.
 - [ ] **Balon okunabiliyor:** Dört sahnenin de balonu tahtanın İÇİNDE

@@ -9,17 +9,27 @@
 // DÖRT kopyası var (src, Dart portu, Edge `_game/`, SQL aynası) ve tanıtım
 // bir UI işidir, motor işi değil (bkz. `src/utils/tutorialScript.ts`).
 //
-// RAYLAR: oyuncu yalnızca o sahnenin işaretli karelerine taş koyabilir;
-// işaretli kareye dokunmak DOĞRU harfi raftan otomatik getirir (tek dokunuş
-// ≈ 1 sn — 60 saniyelik bütçe ancak böyle tutuyor). Konan taşa tekrar
-// dokunmak geri alır. Hedef dışı kareler sessizce reddedilir: tanıtımda
-// "yanlış yaptım" duygusu olmamalı.
+// ⚠ ETKİLEŞİM MODELİ CİHAZ TESTİNDEN SONRA DEĞİŞTİ (7 Eylül 2026, kullanıcı):
+// *"Ekrana dokunup taşların gelmesi gerçekçi değil. Rafta taşıması gereken
+// taşları yanyana koy ve highlight et, ayrıca oraya balon koyup 'şimdi BÜYÜ
+// kelimesini taşı' yaz."* İlk sürümde işaretli kareye dokunmak doğru harfi
+// raftan KENDİLİĞİNDEN getiriyordu — hızlıydı ama oyuncu gerçek oyundaki
+// jesti hiç öğrenmiyordu. Artık taş elle alınıyor:
+//   • raftaki harfe dokun → seçilir, sonra işaretli kareye dokun, VEYA
+//   • harfi işaretli kareye sürükle (gerçek oyundaki jestin aynısı).
+// Boş kareye dokunmak tek başına HİÇBİR ŞEY yapmaz.
+//
+// RAYLAR: yalnızca o sahnenin harfleri seçilebilir/sürüklenebilir ve yalnızca
+// o sahnenin kareleri taş kabul eder. Yanlış kare sessizce reddedilir —
+// tanıtımda "yanlış yaptım" duygusu olmamalı. Konan taşa dokunmak geri alır.
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { PLAYER_COLORS } from '../game/constants';
 import { gameReducer } from '../game/gameReducer';
+import type { Tile as TileModel } from '../game/types';
 import { getFormedWords, key } from '../utils/board';
 import { calcScore, validatePlacement } from '../utils/validator';
 import { isFirstMove } from '../game/gameReducer';
+import { swallowNextClick } from '../utils/ghostClick';
 import { isWordSetReady, preloadWordSet } from '../data/wordSetLoader';
 import {
   TUTORIAL_FINISH_TEXT,
@@ -31,6 +41,7 @@ import { useModalA11y } from '../hooks/useModalA11y';
 import { Board } from './Board';
 import { GameHeader } from './GameHeader';
 import { Rack } from './Rack';
+import { Tile } from './Tile';
 
 const MESSAGE_COLORS: Record<string, string> = {
   ok: 'text-green',
@@ -45,6 +56,37 @@ const RAKIP_TAS_ARASI = 260;
 const SONUC_OKUMA = 1400;
 /** Rakibin cevabı oynandıktan sonra notu okuma payı (ms). */
 const RAKIP_OKUMA = 1800;
+/** Sürüklemenin "tık" değil "taşıma" sayılması için gereken piksel. */
+const SURUKLEME_ESIGI = 6;
+
+/** Tanıtım balonu — mavi kutu + aşağı bakan kuyruk (tahtadaki balonun eşi). */
+function Balon({ text, className }: { text: string; className: string }) {
+  return (
+    <div className={`pointer-events-none absolute z-30 flex flex-col items-center ${className}`}>
+      <div
+        className="font-bold leading-snug text-center rounded-[9px] text-white"
+        style={{
+          background: '#2563EB',
+          fontSize: 'clamp(9px, 2.4vw, 13px)',
+          padding: '7px 10px',
+          maxWidth: '72vw',
+          boxShadow: '0 2px 6px rgba(15,23,42,0.28)',
+        }}
+      >
+        {text}
+      </div>
+      <span
+        style={{
+          width: 0,
+          height: 0,
+          borderLeft: '5px solid transparent',
+          borderRight: '5px solid transparent',
+          borderTop: '6px solid #2563EB',
+        }}
+      />
+    </div>
+  );
+}
 
 interface TutorialGameProps {
   /** Skor kutusunda ve rafta görünen ad (hesap adı ya da "Sen"). */
@@ -61,11 +103,16 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
   // 'oyna' = sıra oyuncuda, raylar açık · 'bekle' = hamle/rakip animasyonu
   // sürüyor, tahta kilitli · 'bitti' = kapanış kartı.
   const [mode, setMode] = useState<'oyna' | 'bekle' | 'bitti'>('oyna');
+  // 'bekle' modunun İKİNCİ yarısı: rakip fiilen taş diziyor. Balon ancak o
+  // an çıkmalı — kendi hamlemizin sonucunu okurken "rakibin sırası" demek
+  // yanlış olurdu.
+  const [rakipOynuyor, setRakipOynuyor] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [wordsReady, setWordsReady] = useState(isWordSetReady());
 
   const step = TUTORIAL_STEPS[stepIndex];
+  const me = state.players[0];
 
   // Zamanlayıcılarla sürülen rakip animasyonu, ekran kapanırken durmalı.
   const timers = useRef<number[]>([]);
@@ -92,8 +139,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
 
   // Motor kelime listesini tembel yüklenen chunk'tan okuyor: hazır değilken
   // `PLAY` fırlatır (bkz. `wordSetLoader`). Setup'tan gelen normal akışta
-  // liste çoktan yüklü olur, yine de tanıtım kendi kapısını kuruyor —
-  // "Nasıl oynanır?"tan doğrudan açılabildiği için.
+  // liste çoktan yüklü olur, yine de tanıtım kendi kapısını kuruyor.
   useEffect(() => {
     if (wordsReady) return;
     let iptal = false;
@@ -115,16 +161,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
       timers.current.push(id);
     });
 
-  /** Verilen harfi AKTİF oyuncunun rafından bulup tahtaya koyar. */
-  const koy = (r: number, c: number, letter: string): boolean => {
-    const s = stateRef.current;
-    const idx = s.players[s.current].rack.findIndex((t) => t.letter === letter);
-    if (idx < 0) return false;
-    dispatch({ type: 'PLACE_TILE', r, c, rackIndex: idx });
-    return true;
-  };
-
-  // ── Oyuncunun sırası ─────────────────────────────────────────────────────
+  // ── Bu sahnede ne kaldı ──────────────────────────────────────────────────
   const kalanHedefler = useMemo(() => {
     if (mode !== 'oyna') return [];
     return step.move.cells.filter((cell) => !state.placed[key(cell.r, cell.c)]);
@@ -136,6 +173,122 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
   );
   const hazir = mode === 'oyna' && kalanHedefler.length === 0;
 
+  /**
+   * Rafta işaretlenecek taşlar: bu sahnede daha oynanmamış harflerin raf
+   * indeksleri, KELİME SIRASINDA.
+   *
+   * ⚠ Harfleri tek tek aramak YETMEZ ve bu bir varsayım değil, ölçülmüş bir
+   * hata (7 Eylül 2026, cihaz testinden sonraki ilk koşum): 3. sahnede raf
+   * `A T N S A N K` ve hedef harfler `N S A N`. Harf harf eşleyen bir arama
+   * üçüncü hedef için raftaki İLK "A"yı (indeks 0, önceki sahneden kalan
+   * artık taş) işaretliyordu; oyuncu "sıradaki" sanıp onu seçince kare
+   * harfi kabul etmiyor ve tanıtım kilitleniyordu.
+   *
+   * Doğrusu senaryonun kendi garantisini kullanmak: kalan harfler rafta
+   * YAN YANA ve kelime sırasında durur (torba sırası elle yazılı; kullanıcı
+   * isteği "yanyana koy ve highlight et"). Bu yüzden bitişik blok aranıyor —
+   * `verify-tutorial-script` her sahnede bu bloğun var olduğunu kilitliyor.
+   */
+  const vurgulu = useMemo(() => {
+    if (mode !== 'oyna' || kalanHedefler.length === 0) return [];
+    const harfler = kalanHedefler.map((h) => h.letter);
+    for (let bas = 0; bas + harfler.length <= me.rack.length; bas++) {
+      if (harfler.every((l, i) => me.rack[bas + i].letter === l)) {
+        return harfler.map((_, i) => bas + i);
+      }
+    }
+    // Bitişik blok yoksa senaryo bozulmuş demektir; tanıtım yine de
+    // kilitlenmesin diye harf harf eşleşmeye düşülüyor.
+    const kullanildi = new Set<number>();
+    const out: number[] = [];
+    for (const hedef of kalanHedefler) {
+      const idx = me.rack.findIndex((t, i) => t.letter === hedef.letter && !kullanildi.has(i));
+      if (idx >= 0) {
+        kullanildi.add(idx);
+        out.push(idx);
+      }
+    }
+    return out;
+  }, [mode, kalanHedefler, me.rack]);
+
+  const vurguluSet = useMemo(() => new Set(vurgulu), [vurgulu]);
+
+  // ── Sürükleme (raftan tahtaya) ───────────────────────────────────────────
+  // App/OnlineGameScreen'deki jestin SADELEŞTİRİLMİŞ eşi: taslak taşı geri
+  // sürükleme, ıskalama kurtarma, zoom ve joker YOK — tanıtımda bunların
+  // hiçbiri kullanılmıyor. Ortak bir kancaya çıkarmak iki CANLI oyun
+  // ekranının en hassas kodunu (dokunmatik jest) elden geçirmek demekti;
+  // tanıtım için o riski almadık (bkz. docs/decisions/onboarding.md).
+  const [ghost, setGhost] = useState<{ x: number; y: number; index: number; tile: TileModel } | null>(
+    null,
+  );
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const dragRef = useRef<{ index: number; tile: TileModel; x: number; y: number; moved: boolean } | null>(
+    null,
+  );
+
+  /** İşaretçinin altındaki tahta hücresi ("r,c") — yoksa null. */
+  const hucreAt = (x: number, y: number): string | null => {
+    const el = document.elementFromPoint(x, y);
+    const cell = el?.closest('[data-cell]') as HTMLElement | null;
+    return cell?.getAttribute('data-cell') ?? null;
+  };
+
+  /** Bu hücre, seçili/sürüklenen harf için geçerli bir hedef mi? */
+  const hedefUygun = (k: string | null, letter: string): boolean => {
+    if (!k) return false;
+    const [r, c] = k.split(',').map(Number);
+    return kalanHedefler.some((h) => h.r === r && h.c === c && h.letter === letter);
+  };
+
+  const onRackPointerDown = (i: number, e: React.PointerEvent<HTMLDivElement>) => {
+    if (mode !== 'oyna' || !vurguluSet.has(i)) return;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Nadir: pointerId geçersiz olabilir — yakalama olmadan da çalışır.
+    }
+    dragRef.current = { index: i, tile: me.rack[i], x: e.clientX, y: e.clientY, moved: false };
+  };
+
+  const onRackPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < SURUKLEME_ESIGI) return;
+    d.moved = true;
+    setGhost({ x: e.clientX, y: e.clientY, index: d.index, tile: d.tile });
+    setDragOverKey(hucreAt(e.clientX, e.clientY));
+  };
+
+  const onRackPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    dragRef.current = null;
+    setGhost(null);
+    setDragOverKey(null);
+    if (!d) return;
+    if (!d.moved) {
+      // Hareketsiz dokunuş = seçim (gerçek oyundaki davranışın aynısı:
+      // `draggable` rafta `onClick` bağlanmadığından seçimi bu dal yapar).
+      dispatch({ type: 'SELECT_TILE', index: d.index });
+      return;
+    }
+    const k = hucreAt(e.clientX, e.clientY);
+    if (!hedefUygun(k, d.tile.letter)) return; // yanlış kare: taş rafa döner
+    const [r, c] = k!.split(',').map(Number);
+    dispatch({ type: 'PLACE_TILE', r, c, rackIndex: d.index });
+    // ⚠ Jestin ardından gelen compat `click` bu hücreye düşer ve orada artık
+    // TAŞ vardır → `handleCellClick` onu anında geri alırdı (bu depodaki
+    // "hayalet tık" sınıfının ta kendisi, bkz. utils/ghostClick.ts).
+    swallowNextClick();
+  };
+
+  const onRackPointerCancel = () => {
+    dragRef.current = null;
+    setGhost(null);
+    setDragOverKey(null);
+  };
+
+  // ── Dokunarak yerleştirme (seç → kareye dokun) ───────────────────────────
   const handleCellClick = (r: number, c: number) => {
     if (mode !== 'oyna') return;
     const k = key(r, c);
@@ -143,10 +296,13 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
       dispatch({ type: 'RECALL_CELL', r, c });
       return;
     }
-    const hedef = step.move.cells.find((cell) => cell.r === r && cell.c === c);
-    // Hedef dışı kare: sessizce yoksayılır (ray). Hata mesajı YOK.
-    if (!hedef) return;
-    koy(r, c, hedef.letter);
+    const hedef = kalanHedefler.find((cell) => cell.r === r && cell.c === c);
+    if (!hedef) return; // hedef dışı kare: sessizce yoksayılır (ray)
+    const sec = state.selectedTile;
+    // Harf seçilmeden kareye dokunmak taş GETİRMEZ (kullanıcı isteği): taş
+    // her zaman raftan gelir. Yönlendirme raf balonunda zaten yazıyor.
+    if (sec === null || me.rack[sec]?.letter !== hedef.letter) return;
+    dispatch({ type: 'PLACE_TILE', r, c, rackIndex: sec });
   };
 
   /** Hamleyi oynatır, rakibin cevabını dizer, sonraki sahneye geçer. */
@@ -159,18 +315,24 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
     if (!alive.current) return;
 
     setNote(null);
+    setRakipOynuyor(true);
     for (const cell of step.reply.cells) {
-      if (!koy(cell.r, cell.c, cell.letter)) {
+      const s = stateRef.current;
+      const idx = s.players[s.current].rack.findIndex((t) => t.letter === cell.letter);
+      if (idx < 0) {
         // Senaryo bozulduysa (olmaması gereken durum — doğrulayıcı bunu
         // koşumda yakalıyor) oyuncuyu kilitli bir tahtada bırakmaktansa
         // tanıtımı bitiriyoruz.
+        setRakipOynuyor(false);
         setMode('bitti');
         return;
       }
+      dispatch({ type: 'PLACE_TILE', r: cell.r, c: cell.c, rackIndex: idx });
       await bekle(RAKIP_TAS_ARASI);
       if (!alive.current) return;
     }
     dispatch({ type: 'PLAY' });
+    setRakipOynuyor(false);
     setNote(step.reply.note);
     await bekle(RAKIP_OKUMA);
     if (!alive.current) return;
@@ -224,9 +386,22 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
   const confirmRef = useModalA11y(confirmOpen, () => setConfirmOpen(false));
   const finishRef = useModalA11y(mode === 'bitti', onFinish);
 
-  const mesaj = note ?? (mode === 'oyna' ? step.say : '');
+  // Tahtadaki balon: oyuncunun sırasında DERSİ, rakibin sırasında sıranın
+  // kimde olduğunu söyler. Aynı anda tek balon (Board `coach` verilince
+  // "Buradan başla" da bastırılıyor).
+  const tahtaBalonu = rakipOynuyor
+    ? {
+        r: step.reply.cells[0].r,
+        c: step.reply.cells[0].c,
+        text: 'Rakibin sırası, hamlesini yapıyor',
+      }
+    : mode === 'oyna'
+      ? { r: step.bubble.r, c: step.bubble.c, text: step.say }
+      : null;
+
+  const mesaj =
+    note ?? (mode === 'oyna' && !hazir ? 'Harfi raftan al, işaretli kareye koy.' : '');
   const mesajRengi = note ? 'ok' : '';
-  const me = state.players[0];
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
@@ -254,7 +429,10 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
           onOpenHistory={() => {}}
           hideFooter
           targets={mode === 'oyna' ? targets : null}
-          coach={mode === 'oyna' ? { r: step.bubble.r, c: step.bubble.c, text: step.say } : null}
+          coach={tahtaBalonu}
+          tileLifted={ghost !== null}
+          dragOverKey={dragOverKey}
+          dragOverValid={ghost ? hedefUygun(dragOverKey, ghost.tile.letter) : false}
         />
 
         <div className="w-full max-w-[680px] px-3 pb-3 pt-1 flex flex-col gap-1.5">
@@ -264,17 +442,41 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
             {mesaj}
           </div>
 
-          <div className="flex gap-1.5 items-stretch">
+          {/* `relative`: iki balon (raf ve OYNA) bu satıra göre konumlanıyor. */}
+          <div className="relative flex gap-1.5 items-stretch">
+            {mode === 'oyna' && !hazir && (
+              <Balon
+                text={`Şimdi ${step.move.word} kelimesini taşı`}
+                className="left-1 bottom-full mb-1 items-start"
+              />
+            )}
+            {hazir && (
+              <Balon
+                text="Hamleni tamamlamak için OYNA'ya bas"
+                className="right-1 bottom-full mb-1 items-end"
+              />
+            )}
+
             <div className="flex-1 min-w-0">
               {/* Raf HER ZAMAN oyuncunun (rakip oynarken bile) — App'teki
-                  `rackPlayer` ile aynı kural: sıra karşıdayken kendi
-                  taşlarını görmeye devam edersin. */}
+                  `rackPlayer` ile aynı kural. */}
               <Rack
                 tiles={me.rack}
-                selectedTile={null}
-                onSelect={() => {}}
+                selectedTile={state.selectedTile}
+                onSelect={(i) => {
+                  if (mode === 'oyna' && vurguluSet.has(i)) {
+                    dispatch({ type: 'SELECT_TILE', index: i });
+                  }
+                }}
                 title={me.name}
                 color={PLAYER_COLORS[me.colorIndex]}
+                draggable={mode === 'oyna'}
+                highlight={vurgulu}
+                dragHiddenIndex={ghost?.index ?? null}
+                onTilePointerDown={onRackPointerDown}
+                onTilePointerMove={onRackPointerMove}
+                onTilePointerUp={onRackPointerUp}
+                onTilePointerCancel={onRackPointerCancel}
               />
             </div>
             <button
@@ -287,6 +489,23 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
           </div>
         </div>
       </main>
+
+      {/* Sürüklenen taşın parmağın altındaki kopyası. */}
+      {ghost && (
+        <div
+          data-tutorial-ghost=""
+          className="pointer-events-none fixed z-[300]"
+          style={{
+            left: ghost.x,
+            top: ghost.y,
+            width: 46,
+            height: 46,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          <Tile tile={ghost.tile} variant="rack" />
+        </div>
+      )}
 
       {/* Vergi sahnesi — gerçek oyundaki onay penceresinin aynısı, üstüne
           tanıtımın tek satırlık açıklaması. */}

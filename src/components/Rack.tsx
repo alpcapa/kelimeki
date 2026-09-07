@@ -17,6 +17,14 @@ interface RackProps {
   swapSelection?: number[];
   /** Raftaki taşların sürüklenerek tahtaya konabilmesi mümkün mü? */
   draggable?: boolean;
+  /**
+   * Tanıtımın rayı: bu turda oynanacak harflerin indeksleri. Verilen taşlar
+   * mavi bir halkayla işaretlenir — kullanıcı isteği (7 Eylül 2026, cihaz
+   * testi): *"Rafta taşıması gereken taşları yanyana koy ve highlight et."*
+   * Yalnızca GÖRSEL; hangi taşın seçilebileceğine çağıran karar verir.
+   * Verilmezse (normal oyun) hiçbir şey değişmez.
+   */
+  highlight?: number[];
   /** Şu an sürüklenmekte olan raf taşının indeksi — o slot boşmuş gibi çizilir. */
   dragHiddenIndex?: number | null;
   onTilePointerDown?: (index: number, e: React.PointerEvent<HTMLDivElement>) => void;
@@ -34,6 +42,7 @@ export function Rack({
   swapMode = false,
   swapSelection = [],
   draggable = false,
+  highlight,
   dragHiddenIndex = null,
   onTilePointerDown,
   onTilePointerMove,
@@ -121,8 +130,16 @@ export function Rack({
               onPointerCancel={isDraggable ? onTilePointerCancel : undefined}
             >
               <div
-                className="h-[46px]"
-                style={{ opacity: dragHiddenIndex === i ? 0 : 1 }}
+                className={`h-[46px] ${highlight?.includes(i) ? 'rounded-[9px] animate-tile-pulse' : ''}`}
+                style={{
+                  opacity: dragHiddenIndex === i ? 0 : 1,
+                  // Halka taşın KENDİ kutusunu büyütmez (outline, border değil):
+                  // raf ızgarası 7 hücreye bölünmüş, 2 px'lik bir kenarlık
+                  // taşları kaydırırdı.
+                  ...(highlight?.includes(i)
+                    ? { outline: '2px solid #2563EB', outlineOffset: '1px', borderRadius: '9px' }
+                    : null),
+                }}
               >
                 <Tile
                   tile={tile}

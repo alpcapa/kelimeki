@@ -2240,21 +2240,44 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   await expect(page.locator('[data-coach]')).toContainText('Kendi köşenden başla.');
 
   const oyna = page.getByRole('main').getByRole('button', { name: 'Oyna', exact: true });
-  /** Sahnenin işaretli karelerine sırayla dokunup "Oyna"ya basar. */
+  // Rafta o sahnenin harfleri mavi halkayla işaretli (7 Eylül 2026, cihaz
+  // testi sonrası): taş artık kareye dokununca KENDİLİĞİNDEN gelmiyor,
+  // oyuncu onu raftan alıyor.
+  const vurguluTas = page.locator('[data-rack-tile] div[style*="outline"]');
+
+  /** Harfleri raftan alıp işaretli karelere koyar, sonra "Oyna"ya basar. */
   const sahneOyna = async (hucreler: [number, number][]) => {
-    // Ray: hedef kareler kesikli çerçeveyle işaretli, sayıları da doğru.
+    // Ray: hedef kareler kesikli çerçeveyle işaretli, rafta da tam o kadar
+    // harf vurgulu.
     await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(hucreler.length);
+    await expect(vurguluTas).toHaveCount(hucreler.length);
     await expect(oyna).toBeDisabled();
     for (const [r, c] of hucreler) {
+      // Vurgulular yan yana ve kelime sırasında (senaryonun garantisi,
+      // `verify-tutorial-script` kilitliyor) — hep ilki sıradaki harftir.
+      await vurguluTas.first().click();
       await page.locator(`[data-cell="${r},${c}"]`).click();
     }
     await expect(oyna).toBeEnabled();
     await oyna.click();
   };
 
+  // Raf balonu kullanıcının istediği cümleyi taşıyor.
+  await expect(page.getByText('Şimdi BÜYÜ kelimesini taşı')).toBeVisible();
+
+  // ⚠ ASIL İDDİA (cihaz testinden gelen şikâyet): harf SEÇİLMEDEN kareye
+  // dokunmak taş getirmez. Öncesinde tahtaya dokunmak taşı kendiliğinden
+  // koyuyordu ve kullanıcı bunu "gerçekçi değil" diye bildirdi.
+  await page.locator('[data-cell="0,0"]').click();
+  await expect(oyna).toBeDisabled();
+  // Hiçbir taş konmadı: dört hedef de hâlâ işaretli (konan taş işareti siler).
+  await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(4);
+
   // 1. sahne — ev karesinden ilk kelime (BÜYÜ).
   await sahneOyna([[0, 0], [0, 1], [0, 2], [0, 3]]);
   await expect(page.getByText('İlk kelimen: +12 puan.')).toBeVisible();
+  // Rakip taşlarını dizerken sıranın kimde olduğu balonda yazıyor.
+  await expect(page.getByText('Rakibin sırası, hamlesini yapıyor')).toBeVisible({ timeout: 20_000 });
   await expect(page.getByText('TANITIM · 2/4')).toBeVisible({ timeout: 20_000 });
 
   // 2. sahne — bölge büyümesi (ÜZENGİ).
@@ -2270,8 +2293,13 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   // birden kuruyor (FES ×3 · AF ×3 · NE ×2) ve hamle vergi ödüyor.
   await expect(page.locator('[data-coach]')).toContainText('Ortadaki kare üç katı!');
   await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(2);
+  await expect(vurguluTas).toHaveCount(2);
+  await vurguluTas.first().click();
   await page.locator('[data-cell="6,6"]').click();
+  await vurguluTas.first().click();
   await page.locator('[data-cell="6,7"]').click();
+  // Hamle tamamlanınca OYNA'yı işaret eden balon çıkar.
+  await expect(page.getByText("Hamleni tamamlamak için OYNA'ya bas")).toBeVisible();
   await oyna.click();
   const onay = page.getByLabel('Sınır ihlali onayı');
   await expect(onay).toBeVisible();
@@ -2329,4 +2357,47 @@ test('Tanıtım kapısı: daha önce oynamış cihazda tanıtım açılmaz', asy
   await expect(page.getByText('TANITIM ·')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'ATLA →' })).toHaveCount(0);
   await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
+});
+
+// Sürükleme (7 Eylül 2026, cihaz testi sonrası): tanıtımda taş artık raftan
+// alınıyor ve GERÇEK oyundaki jestle tahtaya taşınabiliyor. Telefon
+// ölçüsünde koşuyor — masaüstü 720 px'te raf ile tahtanın üst satırı aynı
+// anda ekrana sığmıyor (ölçüldü: bırakma noktası eksi y'ye düşüyor).
+test.describe('tanıtım sürükleme', () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
+
+  test('Vurgulu harf raftan tahtaya SÜRÜKLENEBİLİR', async ({ page }) => {
+    page.on('dialog', (dialog) => dialog.accept());
+    await donenKullanici(page);
+    await page.goto('/');
+    await page.getByText('OYUNU BAŞLAT').click();
+    const devamButton = page
+      .getByLabel('Giriş uyarısı')
+      .getByRole('button', { name: 'Oyna', exact: true });
+    if (await devamButton.isVisible().catch(() => false)) {
+      await devamButton.click();
+    }
+    await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
+
+    const vurgulu = page.locator('[data-rack-tile] div[style*="outline"]').first();
+    await vurgulu.scrollIntoViewIfNeeded();
+    const kaynak = (await vurgulu.boundingBox())!;
+    const hedef = (await page.locator('[data-cell="0,0"]').boundingBox())!;
+
+    await page.mouse.move(kaynak.x + kaynak.width / 2, kaynak.y + kaynak.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(hedef.x + hedef.width / 2, hedef.y + hedef.height / 2, { steps: 8 });
+    // Parmağın altındaki kopya: jest gerçekten "taşıyor" gibi görünmeli.
+    await expect(page.locator('[data-tutorial-ghost]')).toHaveCount(1);
+    await page.mouse.up();
+
+    // Taş kondu: dört hedeften biri işaretini kaybetti.
+    await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(3);
+    await expect(page.locator('[data-tutorial-ghost]')).toHaveCount(0);
+    // ⚠ Jestin ardından gelen compat click taşı GERİ ALMAMALI (hayalet tık
+    // sınıfı — `swallowNextClick`). 350 ms, zoom testlerindeki payla aynı.
+    await page.waitForTimeout(350);
+    await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(3);
+    await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
+  });
 });

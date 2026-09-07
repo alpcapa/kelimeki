@@ -24,6 +24,12 @@
 //   7. KAPI: tanıtım kimlere gösteriliyor (`shouldShowTutorial`). Kullanıcı
 //      isteği net — "sadece yeni gelenlere bir kere, mevcut oynamış kişilere
 //      gösterilmeyecek" — ve bu karar TEK bir bayrağa bakmıyor; tablo aşağıda.
+//   8. RAF DÜZENİ: sahnenin harfleri oyuncunun rafında YAN YANA ve kelime
+//      sırasında duruyor mu. Kullanıcı isteği (cihaz testi): "Rafta taşıması
+//      gereken taşları yanyana koy ve highlight et." Ekran bu bitişik bloğu
+//      arıyor; blok dağılırsa vurgu yanlış taşa düşer ve tanıtım kilitlenir
+//      (7 Eylül 2026'da tam bu oldu: rafta iki "A" varken üçüncü hedef için
+//      baştaki artık "A" işaretlendi).
 import { WORD_LIST } from '../src/data/words';
 import { preloadWordSet } from '../src/data/wordSetLoader';
 import { TILE_DATA, letterPoints } from '../src/data/tiles';
@@ -171,6 +177,20 @@ for (const step of TUTORIAL_STEPS) {
   console.log(`Sahne "${step.id}"`);
   // Balon oyuncunun sırasındayken çizilir; sıra gerçekten oyuncuda mı?
   if (state.current !== 0) bildir(`${step.id}: sıra oyuncuda değil`);
+
+  // ── 8. Sahnenin harfleri rafta yan yana ve sırayla mı ───────────────────
+  const rafHarfleri = state.players[0].rack.map((t) => t.letter);
+  const gereken = step.move.cells.map((c) => c.letter);
+  const bitisik = rafHarfleri.some((_, bas) =>
+    bas + gereken.length <= rafHarfleri.length &&
+    gereken.every((l, i) => rafHarfleri[bas + i] === l),
+  );
+  if (!bitisik) {
+    bildir(
+      `${step.id}: "${gereken.join('')}" rafta yan yana ve sırayla DEĞİL ` +
+        `(raf: ${rafHarfleri.join('')}) — ekrandaki vurgu yanlış taşa düşer`,
+    );
+  }
   state = hamleOynat(state, step.move, `${step.id} · ${step.move.word}`);
   if (state.current !== 1) bildir(`${step.id}: rakibe sıra geçmedi`);
   // Rakibin 3. cevabı (SAAT) ve 4. cevabı (NAR) bilerek merkezi kullanıyor:

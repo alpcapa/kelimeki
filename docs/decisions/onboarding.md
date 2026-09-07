@@ -149,16 +149,61 @@ Tanıtım gerçek `gameReducer` ile oynanır (puanı, geçerliliği, vergiyi,
   başla"nın aynısı — karenin yanında, tahtanın içine doğru; kenar
   karelerinde taşmayan tek düzen bu.
 
-## Raylar — oyuncu kaybolamaz ama gerçekten oynar
+## Etkileşim — cihaz testi modeli DEĞİŞTİRDİ (7 Eylül 2026)
 
-- İşaretli kareye dokunmak DOĞRU harfi raftan otomatik getirir (tek dokunuş
-  ≈ 1 sn). 15 taşlık senaryo 60 saniyelik bütçeye ancak böyle sığıyor.
-- Konan taşa tekrar dokunmak geri alır (`RECALL_CELL`).
-- Hedef dışı kareler **sessizce** reddedilir — hata mesajı yok, tanıtımda
-  "yanlış yaptım" duygusu olmamalı.
-- Pas / taş değiştirme / joker tanıtımda YOK; ilk 60 saniyenin konusu değil.
-- 4. sahnede gerçek oyundaki `Sınır İhlali!` onay penceresi çıkar (üstüne
-  tanıtımın tek satırlık açıklaması) — oyuncu o pencereye de alışsın diye.
+İlk sürümde işaretli kareye dokunmak doğru harfi raftan KENDİLİĞİNDEN
+getiriyordu. Hızlıydı (tek dokunuş ≈ 1 sn) ama kullanıcı cihazda deneyip
+şunu bildirdi: *"Ekrana dokunup taşların gelmesi gerçekçi değil. Rafta
+taşıması gereken taşları yanyana koy ve highlight et, ayrıca oraya balon
+koyup 'şimdi BÜYÜ kelimesini taşı' yaz."* Haklı bir itiraz: oyuncu tanıtımı
+bitirdiğinde gerçek oyunun jestini hiç öğrenmemiş oluyordu.
+
+Şimdi taş **elle** alınıyor, iki yoldan da:
+
+- raftaki harfe dokun → seçilir, sonra işaretli kareye dokun, **ya da**
+- harfi işaretli kareye **sürükle** (gerçek oyundaki jestin aynısı; parmağın
+  altında taşın kopyası gider).
+
+Boş kareye dokunmak tek başına HİÇBİR ŞEY yapmaz. Öteki raylar duruyor:
+konan taşa dokunmak geri alır, hedef dışı kareler sessizce reddedilir
+(hata mesajı yok — tanıtımda "yanlış yaptım" duygusu olmamalı), pas / taş
+değiştirme / joker yok, 4. sahnede gerçek `Sınır İhlali!` penceresi çıkar.
+
+**Dört balon, dört farklı iş:**
+
+| Balon | Nerede | Ne zaman |
+|---|---|---|
+| Dersin cümlesi ("Ortadaki kare üç katı!") | tahtada, hedef karenin yanında | oyuncunun sırası |
+| `Şimdi FES kelimesini taşı` | rafın üstünde | harf kaldığı sürece |
+| `Hamleni tamamlamak için OYNA'ya bas` | OYNA butonunun üstünde | hamle tamamlanınca |
+| `Rakibin sırası, hamlesini yapıyor` | tahtada, rakibin oynadığı karenin yanında | rakip taş dizerken |
+
+### Sürükleme neden SADELEŞTİRİLMİŞ bir kopya
+
+`App.tsx` ve `OnlineGameScreen.tsx` bu jesti zaten ayrı ayrı taşıyor (~170
+satır: taslak taşı geri sürükleme, ıskalama kurtarma, zoom, joker). Ortak
+bir kancaya çıkarmak doğru olurdu ama iki CANLI oyun ekranının en hassas
+kodunu elden geçirmek demekti — tanıtım için o risk alınmadı. `TutorialGame`
+yalnızca ihtiyacı olanı içeriyor (raftan tahtaya, tek yön) ve bunu açıkça
+belgeliyor. Ortak kancaya çıkarma işi ayrı bir PR'ın konusu.
+
+⚠ **Hayalet tık:** sürükleme bir tahta hücresinde bittiğinde tarayıcı compat
+`click` üretir ve o hücrede ARTIK TAŞ VARDIR — `handleCellClick` onu anında
+geri alırdı. `swallowNextClick()` (bkz. `utils/ghostClick.ts`) bu yüzden
+bırakmanın hemen ardından çağrılıyor; duman testi 350 ms sonra taşın hâlâ
+yerinde olduğunu doğruluyor.
+
+### Vurgu bitişik bloğa bağlı — ölçülmüş bir hata
+
+Rafta işaretlenecek taşları "hedef harfleri tek tek ara" diye bulmak
+YETMİYOR. 3. sahnede raf `A T N S A N K`, gereken harfler `N S A N`: harf
+harf eşleyen arama üçüncü hedef için raftaki İLK `A`yı (indeks 0, önceki
+sahneden kalan artık taş) işaretliyordu. Oyuncu onu "sıradaki" sanıp
+seçiyor, kare kabul etmiyor ve tanıtım kilitleniyordu — ilk koşumda tam bu
+oldu. Doğrusu senaryonun kendi garantisini kullanmak: gereken harfler rafta
+**yan yana ve kelime sırasında** durur (torba sırası elle yazılı), ekran o
+bitişik bloğu arar. `verify-tutorial-script` bu bloğun her sahnede var
+olduğunu artık ayrıca kilitliyor.
 
 ## Doğrulama — `npm run verify-tutorial-script`
 
