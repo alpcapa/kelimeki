@@ -511,6 +511,7 @@ Kullanıcı iki cümle değiştirdi:
 |---|---|---|
 | Vergi penceresinin alt notu | *Rakibin bölgesine girmen gerekmiyor — sınırına değmek yetiyor.* | **Rakibin bölgesine değen veya giren bir hamle yaparsan vergisini ödersin.** |
 | 2. sahnenin balonu | *Kelime kurdukça sınırın büyür.* | **Kelime kurdukça bölgeni büyütürsün.** |
+| 2. sahnenin sonuç satırı | *+15 puan — sınırın köşenin dışına taştı.* | **+15 puan — bölgen köşenin dışına taştı.** |
 
 İkisi de terimi `sınır`dan `bölge`ye çekiyor — tanıtımın öğrettiği ad
 `bölge` (verginin adı da "bölge vergisi", bkz. kök `CLAUDE.md` →
@@ -520,6 +521,10 @@ bölgesine değen/giren hamle yapabilirsin; ama vergisini ödersin"*).
 
 ⚠ Kullanıcının yazdığı iyelik biçimi (`bölgeni`) geçişli bir fiil ister:
 `büyür` → **`büyütürsün`**. (`bölgeni büyür` dilbilgisi olarak tökezlerdi.)
+
+Sonuç satırı aynı turda çekildi (kullanıcı onayı): balon "bölge" derken
+hemen ardından gelen satırın "sınır" demesi TEK sahnede iki terim olurdu —
+tam da kök `CLAUDE.md`'nin "Terminoloji" notunun uyardığı şey.
 
 ⚠ Parite testinin bu nota bakan iddiası CÜMLENİN İLK KELİMELERİNE
 çapalıydı; metin değişince ayrıştırıcı sessizce kırılırdı. Artık port

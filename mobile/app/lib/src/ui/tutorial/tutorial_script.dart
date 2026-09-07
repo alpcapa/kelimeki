@@ -141,7 +141,7 @@ const List<TutorialStep> tutorialSteps = [
       points: 15,
       tax: 0,
     ),
-    done: '+15 puan — sınırın köşenin dışına taştı.',
+    done: '+15 puan — bölgen köşenin dışına taştı.',
     reply: TutorialReply(
       word: 'TABAK',
       cells: [

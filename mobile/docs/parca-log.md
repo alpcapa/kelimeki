@@ -87,7 +87,10 @@
        Kullanıcının `bölgeni` biçimi geçişli fiil istediğinden `büyür` →
        `büyütürsün`. Parite testinin nota bakan iddiası cümlenin İLK
        KELİMELERİNE çapalıydı (metin değişince sessizce kırılırdı); artık
-       port sabitinin web dosyasında geçtiğini doğruluyor.
+       port sabitinin web dosyasında geçtiğini doğruluyor. Aynı sahnenin
+       SONUÇ satırı da çekildi (`+15 puan — bölgen köşenin dışına taştı.`):
+       balon "bölge" derken bir sonraki satırın "sınır" demesi tek sahnede
+       iki terim olurdu.
      - **Doğrulama sınırı:** cihazda koşulmadı; punto/satır kırılması ve
        balonun hedefi örtmemesi gözle `mobile/TESTING.md` §1.9'da.
 
