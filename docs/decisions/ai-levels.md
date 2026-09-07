@@ -186,6 +186,13 @@ CI'da). ⚠ `leaguePoints`in `level`ine JS varsayılanı VERME — betik ariteyi
 | Dart (port) | `mobile/kelimeki_core/lib/src/ai/find_move.dart`, `constants.dart` (`aiLevelTopN`, `aiLevelSearch`) | golden'lar: `reducer_ai2` (Normal), `reducer_ai2_kolay` (tohumlu Kolay), `reducer_ai2_zor` (geniş arama döngü SIRASI), `ai_level.json` (`topN` + `search` sabitleri) — `dart run test/run_all.dart` |
 | Edge | `supabase/functions/_game/ai.ts`, `_game/constants.ts` (`play-ai-turn`) | `npm run verify-edge-engine-parity`: sabit eşitliği + Normal 30 pozisyon + tohumlu Kolay 40 adım + Zor 37 adım (Normal'den sapma sayılır, 0 çıkarsa parametre kayboluyor demektir). Deploy: `verify_jwt` mevcut değerini (true) OKU ve aynen geçir |
 
+⚠ Sürüm turu sırasında `mobile/**` altına (yorum bile olsa) dokunan her
+merge `mobile-build`i tetikler ve `mobile-latest`teki paketi üzerine yazar;
+Play'e yüklenmemiş bir paket varsa kütükteki koşu numarası/SHA-256 bayatlar.
+Portun bayat "Zor Faz 5'e kadar yok" yorumları (`setup_screen.dart` ×2,
+`ai_level_parity_test.dart` test adı) bu yüzden 1.0.8 yüklenene kadar
+BİLEREK bırakıldı (7 Eylül 2026) — ilk mobil PR'da temizle.
+
 Değişiklik disiplini: web motoru değişirse `npm run generate-golden-vectors`
 → **önce Normal golden'ları git diff boş** (bayt-eşlik kanıtı), sonra yeni
 fixture; Dart aynı PR'da; Edge kopyası elle eşitlenir (gövde `diff` ile
