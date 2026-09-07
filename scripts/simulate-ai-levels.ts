@@ -53,7 +53,11 @@ const HARD_BASE: Omit<HardOptions, 'bagCount'> = {
   territoryWeight: 0,
   netDiff: false,
   exchangeBelow: 0,
+  replyWeight: 0,
 };
+/** Rakibin GERÇEK rafını gören ön ayarlar (yalnızca üst sınır ölçümü). */
+const PEEK_PRESETS = new Set(['ileri50', 'ileri100']);
+
 const PRESETS: Record<string, Partial<Omit<HardOptions, 'bagCount'>>> = {
   havuz8: { maxWordLen: 8 },
   havuz9: { maxWordLen: 9 },
@@ -70,6 +74,12 @@ const PRESETS: Record<string, Partial<Omit<HardOptions, 'bagCount'>>> = {
   degis6: { exchangeBelow: 6 },
   degis10: { exchangeBelow: 10 },
   degis14: { exchangeBelow: 14 },
+  // Rakibin rafına BAKAN ileri bakış — yalnızca üst sınır ölçümü.
+  ileri50: { replyWeight: 50 },
+  ileri100: { replyWeight: 100 },
+  // Rafa BAKMAYAN ileri bakış: rakip için genel raf varsayılır.
+  ileriG50: { replyWeight: 50 },
+  ileriG100: { replyWeight: 100 },
 };
 
 function parseMotor(spec: string): Omit<HardOptions, 'bagCount'> {
@@ -149,7 +159,7 @@ interface GameResult {
 }
 
 /** Koltuk seçicisi: N (top-N) ya da motor adı (Zor adayı). */
-type Seat = { n: number; hard?: Omit<HardOptions, 'bagCount'>; label: string };
+type Seat = { n: number; hard?: Omit<HardOptions, 'bagCount'>; label: string; peek?: boolean };
 
 function playOne(seatCfg: Seat, seed: number, topNSeat: 0 | 1): GameResult {
   const n = seatCfg.n;
@@ -176,7 +186,13 @@ function playOne(seatCfg: Seat, seed: number, topNSeat: 0 | 1): GameResult {
     const me = state.players[state.current];
     const first = isFirstMove(state);
     // Üretimin kendi liste + seçim çifti (Kolay = N=4 ile birebir aynı yol).
-    const hard = seatCfg.hard ? { ...seatCfg.hard, bagCount: state.bag.length } : undefined;
+    const hard = seatCfg.hard
+      ? {
+          ...seatCfg.hard,
+          bagCount: state.bag.length,
+          ...(seatCfg.peek ? { opponentRacks: state.players.map((p) => p.rack) } : {}),
+        }
+      : undefined;
     const move = pickTopMove(
       findAIMoves(state.board, me.rack, state.bonuses, state.current, me.corners, first, state.players, n, hard),
     );
@@ -243,7 +259,12 @@ async function main(): Promise<void> {
   await preloadWordSet();
   const seats: Seat[] = [
     ...args.ns.map((n) => ({ n, label: `Top${n}` })),
-    ...args.motors.map((m) => ({ n: 1, hard: parseMotor(m), label: m })),
+    ...args.motors.map((m) => ({
+      n: 1,
+      hard: parseMotor(m),
+      label: m,
+      peek: m.split('+').some((part) => PEEK_PRESETS.has(part.trim())),
+    })),
   ];
   console.log(
     `YZ↔YZ koşumu — koltuklar {${seats.map((s) => s.label).join(', ')}}, koltuk başına ${args.games} oyun, temel tohum ${args.seed}`,

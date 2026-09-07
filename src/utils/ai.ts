@@ -57,6 +57,18 @@ export interface HardOptions {
    * 0 = kapalı.
    */
   exchangeBelow: number;
+  /**
+   * Tek katlı ileri bakış: sıradaki rakibin en iyi cevabının ham puanı bu
+   * yüzde ağırlıkla düşülür (100 = birebir). 0 = kapalı. Rakip rafı
+   * `opponentRacks[i]`den okunur (DENEYSEL — "rafa bakan" üst sınır ölçümü).
+   */
+  replyWeight: number;
+  /**
+   * İleri bakış için rakip rafları (oyuncu indeksine göre). Verilmezse rakip
+   * için GENEL bir raf (`GENERIC_REPLY_RACK`) varsayılır — rafa bakmayan,
+   * yalnızca "hamlem hangi sıcak noktaları açtı" sorusunu ölçen dürüst sürüm.
+   */
+  opponentRacks?: Tile[][];
   /** Torbada kalan taş — 0'da kalıntı = kalan taşların puanı (oyun sonu düşümü). */
   bagCount: number;
 }
@@ -66,6 +78,28 @@ const RANK_SCALE = 100;
 
 /** Bölge yeniden sıralamasına giren aday sayısı. */
 const TERRITORY_RERANK_WIDTH = 10;
+
+/** İleri bakışa giren aday sayısı (her biri tam bir rakip araması). */
+const LOOKAHEAD_WIDTH = 8;
+
+/** Rafa bakmayan ileri bakışta rakibe varsayılan raf (sık harfler + joker). */
+const GENERIC_REPLY_LETTERS = ['A', 'E', 'İ', 'K', 'L', 'R', '?'];
+
+/** Sıradaki (teslim olmamış) rakip — reducer'ın `nextActiveIndex`iyle aynı. */
+function nextOpponent(players: Player[], from: number): number {
+  let i = from;
+  for (let step = 0; step < players.length; step++) {
+    i = (i + 1) % players.length;
+    if (!players[i].surrendered) return i;
+  }
+  return from;
+}
+
+/** Oyuncunun tahtada hiç taşı yoksa ilk hamlesi (reducer `isFirstMove`). */
+function hasNoTiles(board: Board, owner: number): boolean {
+  for (const row of board) for (const t of row) if (t && t.owner === owner) return false;
+  return true;
+}
 
 const VOWELS = new Set(['A', 'E', 'I', 'İ', 'O', 'Ö', 'U', 'Ü']);
 
@@ -328,6 +362,29 @@ export function findAIMoves(
       hard && hard.territoryWeight > 0
         ? rerankByTerritory(list, board, players, owner, territories, hard.territoryWeight, n)
         : list;
+    if (hard && hard.replyWeight > 0) {
+      const opp = nextOpponent(players, owner);
+      const oppRack: Tile[] | undefined = hard.opponentRacks
+        ? hard.opponentRacks[opp]
+        : GENERIC_REPLY_LETTERS.map((L) => ({ letter: L, pts: letterPoints(L), owner: opp }));
+      if (opp !== owner && oppRack) {
+        const out: Ranked[] = [];
+        for (const item of ranked.slice(0, LOOKAHEAD_WIDTH)) {
+          const nb = board.map((row) => [...row]);
+          for (const p of item.move.placements) nb[p.r][p.c] = p.tile;
+          const reply = findAIMoves(
+            nb, oppRack, bonuses, opp, players[opp].corners, hasNoTiles(nb, opp), players, 1,
+          );
+          const replyScore = reply.length > 0 ? reply[0].score : 0;
+          insertBounded(
+            out,
+            { move: item.move, rank: item.rank - Math.trunc((hard.replyWeight * replyScore * RANK_SCALE) / 100) },
+            n,
+          );
+        }
+        return out.map((x) => x.move);
+      }
+    }
     if (
       hard &&
       hard.exchangeBelow > 0 &&
