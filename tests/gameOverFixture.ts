@@ -17,6 +17,14 @@ import { expect, type Page } from '@playwright/test';
  * devam eden akışlar bu satıra hiç uğramıyor ama uğrarsa takılmasınlar.
  */
 export async function tanitimiAtla(page: Page): Promise<void> {
+  // Tanıtım artık bir KARŞILAMA PENCERESİYLE açılıyor (7 Eylül 2026 akşamı)
+  // ve pencere "ATLA →"nın üstünde duruyor — önce o kapatılmalı, yoksa
+  // tıklama perdeye düşer.
+  const devam = page.getByRole('button', { name: 'Devam', exact: true });
+  await devam.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
+  if (await devam.isVisible().catch(() => false)) {
+    await devam.click();
+  }
   const atla = page.getByRole('button', { name: 'ATLA →' });
   await atla.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
   if (await atla.isVisible().catch(() => false)) {

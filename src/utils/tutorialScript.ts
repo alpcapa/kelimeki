@@ -270,6 +270,27 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /**
+ * Tanıtım AÇILIRKEN çıkan karşılama penceresi (metin kullanıcı kararı,
+ * 7 Eylül 2026 akşamı — cihaz/tarayıcı turu).
+ *
+ * NEDEN VAR: kullanıcı *"insanlar setup'dan hemen oyna'ya basınca kendisini
+ * oyunda sanıyor. Girer girmez 'BÜYÜ kelimesini taşı' deyince oyunun öyle
+ * olduğunu düşünebilir ve kafası karışabilir"* dedi. Tanıtım ekranı gerçek
+ * oyun ekranına birebir benziyor (aynı tahta, aynı raf, aynı başlık), yani
+ * "burası bir tur" bilgisini ekranın KENDİSİ taşımıyordu — sahne sayacı
+ * (TANITIM · 1/4) küçük ve üstte. Pencere o bilgiyi ilk saniyede veriyor:
+ * ne olduğu, ne kadar süreceği, ve tek bir "Devam".
+ *
+ * ⚠ Pencere kapının BİR PARÇASI DEĞİL — tanıtım zaten gösterilmeye karar
+ * verildikten sonra çıkar (`shouldShowTutorial` değişmedi) ve kendi bayrağı
+ * YOKTUR: tanıtım "bir kere" gösterildiğinden pencere de bir kere görünür.
+ */
+export const TUTORIAL_INTRO_TITLE = 'Kelimeki Tanıtım Turu';
+export const TUTORIAL_INTRO_TEXT =
+  'Yaklaşık 1 dk sürecek ve size oyunu gösterecek kısa tanıtım turuna hoş geldiniz.';
+export const TUTORIAL_INTRO_BUTTON = 'Devam';
+
+/**
  * Kapanış (metin kullanıcı kararı, 7 Eylül 2026). Önceki hâli bingo
  * bonusunu tanıtıyordu; oysa bingo tanıtımda HİÇ yaşanmayan bir mekanikti —
  * kapanış kartı, oyuncunun az önce dört sahnede öğrendiklerini tek

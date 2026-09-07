@@ -217,6 +217,20 @@ const List<TutorialStep> tutorialSteps = [
   ),
 ];
 
+/// Tanıtım AÇILIRKEN çıkan karşılama penceresi (metin kullanıcı kararı,
+/// 7 Eylül 2026 akşamı) — web `TUTORIAL_INTRO_*` ile birebir.
+///
+/// NEDEN VAR: tanıtım ekranı gerçek oyun ekranına birebir benziyor (aynı
+/// tahta, aynı raf, aynı başlık), yani "burası bir tur" bilgisini ekranın
+/// KENDİSİ taşımıyordu; kullanıcı *"Setup'dan hemen oynaya basınca kendini
+/// oyunda sanıyor"* dedi. Pencere kapının parçası DEĞİL — tanıtım zaten
+/// gösterilmeye karar verildikten sonra çıkar ve kendi bayrağı yoktur.
+const String tutorialIntroTitle = 'Kelimeki Tanıtım Turu';
+const String tutorialIntroText =
+    'Yaklaşık 1 dk sürecek ve size oyunu gösterecek kısa tanıtım turuna '
+    'hoş geldiniz.';
+const String tutorialIntroButton = 'Devam';
+
 /// Kapanış kartı (metin kullanıcı kararı, 7 Eylül 2026).
 const String tutorialFinishTitle = 'Hazırsın!';
 const String tutorialFinishText =

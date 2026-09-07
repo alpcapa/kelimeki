@@ -118,6 +118,75 @@ void main() {
     expect(tutorialStartRacks, webRacks);
   });
 
+  test('karşılama penceresi: başlık · metin · buton birebir', () {
+    expect(tutorialIntroTitle,
+        pick(scriptTs, RegExp(r"TUTORIAL_INTRO_TITLE = '([^']*)'"), 'INTRO_TITLE'));
+    final textStmt = pick(
+        scriptTs,
+        RegExp(r'TUTORIAL_INTRO_TEXT =([\s\S]*?);', multiLine: true),
+        'INTRO_TEXT');
+    expect(tutorialIntroText,
+        RegExp(r"'([^']*)'").allMatches(textStmt).map((m) => m.group(1)!).join());
+    expect(tutorialIntroButton,
+        pick(scriptTs, RegExp(r"TUTORIAL_INTRO_BUTTON = '([^']*)'"), 'INTRO_BUTTON'));
+    // Pencere GERÇEKTEN çiziliyor mu (sabit tanımlanıp kullanılmamış olmasın).
+    expect(gameTsx.contains('TUTORIAL_INTRO_TITLE'), isTrue);
+    expect(gameTsx.contains('TUTORIAL_INTRO_BUTTON'), isTrue);
+  });
+
+  test('balon tipografisi: punto ve genişlik kapağı iki tarafta AYNI', () {
+    // 7 Eylül 2026 akşamı, kullanıcı: *"Balon fontlarını da biraz
+    // büyütelim. Tek satır uzun olanları 2 satıra bölelim."* İkisi BİRLİKTE
+    // ayarlanır: kapak daraltılmasa büyüyen punto balonu uzatır, punto
+    // büyütülmese kapak cümleyi gereksiz kırar. Bu test ikisinin de iki
+    // platformda aynı sayı olduğunu kilitler.
+    final boardTsx = readRepoFile('src/components/Board.tsx');
+    final dartBoard =
+        readRepoFile('mobile/app/lib/src/ui/game/board_widget.dart');
+    final dartTutorial =
+        readRepoFile('mobile/app/lib/src/ui/tutorial/tutorial_game.dart');
+
+    // Web `clamp(min, Nvw, max)` ↔ Dart `fluidSize(w, min, 0, N, max)`.
+    // `pick` tek grup döndürdüğünden üç sayı ayrı ayrı okunuyor; eşleşme
+    // yoksa test DÜŞER (web'in stili yeniden yazıldıysa ayrıştırıcı da
+    // güncellenmeli — sessizce yeşil kalmasın).
+    String clampParcasi(String src, int grup, String ne) {
+      final m = RegExp(r"fontSize: 'clamp\((\d+)px, ([\d.]+)vw, (\d+)px\)'")
+          .firstMatch(src);
+      expect(m, isNotNull, reason: '$ne bulunamadı — ayrıştırıcıyı güncelle');
+      return m!.group(grup)!;
+    }
+
+    for (final (webSrc, dartSrc, ad) in [
+      (boardTsx.substring(boardTsx.indexOf('data-coach')), dartBoard,
+          'tahta balonu'),
+      (gameTsx.substring(gameTsx.indexOf('function Balon')), dartTutorial,
+          'raf balonu'),
+    ]) {
+      final min = clampParcasi(webSrc, 1, '$ad web punto min');
+      final vw = clampParcasi(webSrc, 2, '$ad web punto vw');
+      final max = clampParcasi(webSrc, 3, '$ad web punto max');
+      expect(
+          dartSrc.contains('fluidSize(screenWidth, $min, 0, $vw, $max)'), isTrue,
+          reason: '$ad puntosu ayrıştı: web clamp($min, ${vw}vw, $max), '
+              'port `fluidSize(screenWidth, $min, 0, $vw, $max)` yazmıyor');
+    }
+
+    // Genişlik kapakları: web yüzde/vw, port oran.
+    expect(
+        pick(boardTsx.substring(boardTsx.indexOf('data-coach')),
+            RegExp(r"maxWidth: '(\d+)%'"), 'tahta balonu web genişlik kapağı'),
+        '72');
+    expect(dartBoard.contains('maxWidthFactor: 0.72'), isTrue,
+        reason: 'tahta balonunun genişlik kapağı ayrıştı (web %72)');
+    expect(
+        pick(gameTsx.substring(gameTsx.indexOf('function Balon')),
+            RegExp(r"maxWidth: '(\d+)vw'"), 'raf balonu web genişlik kapağı'),
+        '58');
+    expect(dartTutorial.contains('screenWidth * 0.58'), isTrue,
+        reason: 'raf balonunun genişlik kapağı ayrıştı (web 58vw)');
+  });
+
   test('ekran: süreler ve balon/mesaj metinleri TutorialGame.tsx ile birebir', () {
     expect(kTutorialRakipTasArasi,
         int.parse(pick(gameTsx, RegExp(r'RAKIP_TAS_ARASI = (\d+);'), 'RAKIP_TAS_ARASI')));

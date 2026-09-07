@@ -408,8 +408,13 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
 
 - [ ] **Kendiliğinden açılıyor:** Hiç oyun oynanmamış cihazda misafir olarak
       "OYUNU BAŞLAT" → giriş uyarısında "OYNA" → Hızlı Başlangıç değil,
-      tanıtım EKRANI ("TANITIM · 1/4"). Setup teşhis satırındaki `Derleme`
+      **"Kelimeki Tanıtım Turu"** karşılama penceresi; "Devam" → tanıtım
+      EKRANI ("TANITIM · 1/4"). Setup teşhis satırındaki `Derleme`
       sha'sı bu PR'ın merge commit'iyle eşleşmeli — eşleşmiyorsa APK bayat.
+- [ ] **Karşılama penceresi (7 Eylül 2026 akşamı):** metin *"Yaklaşık 1 dk
+      sürecek…"*, tek buton "Devam". Pencere kapanmadan tahtaya
+      dokunulamıyor; kapatınca bir daha ÇIKMIYOR (tanıtımı bitir/atla,
+      uygulamayı kapat-aç → tanıtım da pencere de yok).
 - [ ] **Süre:** Kronometreyle — dört sahne + kapanış **60-90 sn**.
 - [ ] **Taş raftan geliyor:** Boş kareye dokunmak TEK BAŞINA taş getirmiyor.
       Vurgulu harfe dokunup kareye dokunmak koyuyor; harfi kareye
@@ -417,6 +422,15 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
 - [ ] **Raf vurgusu doğru taşta:** Sahnenin harfleri rafta yan yana, mavi
       nabızlı halkayla; ilk vurgulu taş her zaman SIRADAKİ harf (özellikle
       3. sahnede rafta iki "A" varken). Halka taşları kaydırmıyor.
+- [ ] **Balonlar ORTALI ve yerinde (7 Eylül 2026 akşamı düzeltildi):** hiçbir
+      balonun yazısı tahtanın sol kenarına YAPIŞIK değil. Özellikle rakip
+      oynadıktan sonra çıkan "Rakip hamlesini yaptı" balonu — 1. sahnede
+      rakip sağ kenarda (sütun 12) oynuyor, balon SAĞ yarıda ve ok balonun
+      altında olmalı. 3. ve 4. sahnenin balonları ortada.
+- [ ] **Punto ve satır kırılması:** balon yazısı eskisinden belirgin BÜYÜK;
+      uzun cümleler ("Sarı bölge içinde…", "Hamleni tamamlamak için…") tek
+      satırda ekranı baştan başa kesmiyor, İKİ satıra kırılıyor. Balon yine
+      de hedef kesikli kareleri ÖRTMÜYOR.
 - [ ] **Aynı anda TEK balon:** dersin cümlesi (tahtada) → hamle tamamlanınca
       KAYBOLUYOR, yerini "Hamleni tamamlamak için OYNA'ya bas" alıyor ·
       "Şimdi … kelimesini taşı" (rafın üstünde) · rakip oynadıktan sonra

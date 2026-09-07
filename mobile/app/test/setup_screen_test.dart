@@ -32,6 +32,8 @@ import 'package:kelimeki/src/ui/auth/account_button.dart';
 import 'package:kelimeki/src/ui/game/logo_mark.dart';
 import 'package:kelimeki/src/ui/game/game_screen.dart';
 import 'package:kelimeki/src/ui/tutorial/tutorial_game.dart';
+import 'package:kelimeki/src/ui/tutorial/tutorial_script.dart'
+    show tutorialIntroButton, tutorialIntroTitle;
 import 'package:kelimeki/src/ui/intro/intro_screen.dart';
 import 'package:kelimeki/src/ui/live/live_games_tab.dart';
 import 'package:kelimeki/src/ui/setup/setup_screen.dart';
@@ -1248,6 +1250,12 @@ void tanitimKapisiTestleri() {
       // kayıyor); `pumpAndSettle` KULLANILAMAZ — raf/tahta vurgusunun nabız
       // animasyonu sonsuz tekrar ediyor, asla "settle" olmaz.
       await tester.pump(const Duration(milliseconds: 400));
+      // Karşılama penceresi "ATLA →"nın ÜSTÜNDE duruyor (7 Eylül 2026
+      // akşamı) — kapatılmadan tahtaya dokunulamaz.
+      expect(find.text(tutorialIntroTitle), findsOneWidget);
+      await tester.tap(find.text(tutorialIntroButton));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump();
       await tester.tap(find.text('ATLA →'));
       await gorunmesiniBekle(tester, find.byType(GameScreen));
       // Pop geçişi + rotanın kaldırıldığı sonraki kare.

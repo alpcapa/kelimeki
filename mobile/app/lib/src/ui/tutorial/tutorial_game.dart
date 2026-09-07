@@ -147,7 +147,37 @@ class _TutorialGameState extends State<TutorialGame> {
     super.initState();
     _alive = true;
     _controller.addListener(_onState);
+    // Karşılama penceresi — ilk sahneden ÖNCE (bkz. `tutorialIntroTitle`).
+    // `initState`te `showDialog` çağrılamaz (ağaç henüz kurulmadı), ilk
+    // kareden sonra açılıyor.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_showIntro());
+    });
   }
+
+  /// Tanıtımın ne olduğunu ve ne kadar süreceğini söyleyen tek pencere.
+  /// Kapanış kartıyla AYNI kabuk; kapatmanın her yolu (buton, bariyer, geri
+  /// tuşu) tanıtımı başlatır — pencerenin kendi bayrağı YOK, tanıtım zaten
+  /// "bir kere" gösteriliyor.
+  Future<void> _showIntro() => showDialog<void>(
+        context: context,
+        builder: (context) => KDialogCard(
+          title: const Text(tutorialIntroTitle,
+              style: TextStyle(
+                  fontSize: 18,
+                  height: 28 / 18,
+                  fontWeight: FontWeight.bold,
+                  color: kText)),
+          content: const Text(tutorialIntroText, style: kDialogBodyStyle),
+          actions: [
+            kDialogButton(
+              label: tutorialIntroButton,
+              variant: NeoButtonVariant.accent,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
 
   void _onState() {
     if (mounted) setState(() {});
@@ -747,9 +777,16 @@ class _TutorialGameState extends State<TutorialGame> {
                                       ],
                                     ),
                                   ),
+                                  // Raf balonu SATIRIN ORTASINDA (7 Eylül 2026
+                                  // akşamı, kullanıcı: *"Hepsinin ortalı ve
+                                  // yerinde olması lazım"*) — cümle rafın
+                                  // TAMAMI hakkında, satırın ortası da rafın
+                                  // üstüne düşüyor. OYNA balonu sağda kalıyor:
+                                  // o gerçekten sağdaki butonu işaret ediyor.
                                   if (_mode == _Mode.oyna && !hazir)
                                     Positioned(
-                                      left: 4,
+                                      left: 0,
+                                      right: 0,
                                       top: -4,
                                       child: FractionalTranslation(
                                         translation: const Offset(0, -1),
@@ -757,12 +794,13 @@ class _TutorialGameState extends State<TutorialGame> {
                                           text: kTutorialTasiBalonuText(
                                               step.move.word),
                                           screenWidth: screenWidth,
-                                          align: CrossAxisAlignment.start,
+                                          align: CrossAxisAlignment.center,
                                         ),
                                       ),
                                     ),
                                   if (hazir)
                                     Positioned(
+                                      left: 0,
                                       right: 4,
                                       top: -4,
                                       child: FractionalTranslation(
@@ -821,7 +859,10 @@ class _Balon extends StatelessWidget {
         crossAxisAlignment: align,
         children: [
           Container(
-            constraints: BoxConstraints(maxWidth: screenWidth * 0.72),
+            // Genişlik kapağı 0.72 → 0.58 ve punto 9-13 → 11-16 (web
+            // `TutorialGame.tsx` ile aynı sayılar): uzun cümleler iki satıra
+            // kırılıyor, kısa olanlar tek satır kalıyor.
+            constraints: BoxConstraints(maxWidth: screenWidth * 0.58),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
               color: kAccent,
@@ -841,7 +882,7 @@ class _Balon extends StatelessWidget {
                 fontFamily: 'SpaceGrotesk',
                 fontWeight: FontWeight.bold,
                 height: 1.25,
-                fontSize: fluidSize(screenWidth, 9, 0, 2.4, 13),
+                fontSize: fluidSize(screenWidth, 11, 0, 3.2, 16),
               ),
             ),
           ),

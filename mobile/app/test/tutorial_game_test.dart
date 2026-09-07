@@ -7,6 +7,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kelimeki/src/ui/game/board_widget.dart'
+    show BoardCoach, BoardWidget;
 import 'package:kelimeki/src/ui/game/dialog_shell.dart' show KDialogCard;
 import 'package:kelimeki/src/ui/game/drag_feel.dart';
 import 'package:kelimeki/src/ui/game/game_screen.dart' show GameScreen;
@@ -29,6 +31,9 @@ Finder cellTile(int r, int c) =>
     find.descendant(of: boardCell(r, c), matching: find.byType(TileWidget));
 Finder mesaj() => find.byKey(const ValueKey('tutorial-message'));
 
+/// 1. sahne — hiza testinde balonun metnini bulmak için.
+final TutorialStep _step0 = tutorialSteps.first;
+
 /// Raftaki vurgulu taşlardan İLKİ — sıradaki harf (senaryo bloğu kelime
 /// sırasında, yani ilk vurgu her zaman sıradaki hedefin harfi).
 int ilkVurguluIndeks(WidgetTester tester) {
@@ -36,6 +41,17 @@ int ilkVurguluIndeks(WidgetTester tester) {
     if (tester.any(rackHighlight(i))) return i;
   }
   fail('rafta vurgulu taş yok');
+}
+
+/// Karşılama penceresini kapatır — tanıtım artık onunla açılıyor
+/// (7 Eylül 2026 akşamı). `pumpAndSettle` KULLANILAMAZ: raf/hedef
+/// vurgusunun nabız animasyonu sonsuz tekrar ediyor, asla "settle" olmaz.
+Future<void> karsilamayiGec(WidgetTester tester) async {
+  expect(find.text(tutorialIntroTitle), findsOneWidget);
+  await tester.tap(find.text(tutorialIntroButton));
+  await tester.pump(const Duration(milliseconds: 400));
+  await tester.pump();
+  expect(find.text(tutorialIntroTitle), findsNothing);
 }
 
 Future<({bool finished, bool skipped})> pumpTutorial(WidgetTester tester,
@@ -51,6 +67,7 @@ Future<({bool finished, bool skipped})> pumpTutorial(WidgetTester tester,
     ),
   ));
   await tester.pump();
+  await karsilamayiGec(tester);
   return (finished: finished, skipped: skipped);
 }
 
@@ -108,6 +125,12 @@ void main() {
       ),
     ));
     await tester.pump();
+
+    // Karşılama penceresi ilk sahneden ÖNCE çıkar; kapanmadan tahta
+    // kullanılamaz.
+    expect(find.text(tutorialIntroTitle), findsOneWidget);
+    expect(find.textContaining('Yaklaşık 1 dk'), findsOneWidget);
+    await karsilamayiGec(tester);
 
     expect(find.text('TANITIM · 1/4'), findsOneWidget);
     expect(find.text('ATLA →'), findsOneWidget);
@@ -248,6 +271,86 @@ void main() {
     expect(rackTile(6), findsNothing);
   });
 
+  // 7 Eylül 2026 akşamı — kullanıcı tarayıcıda bildirdi: *"Balon yazıları en
+  // sola yapışık geliyor. Özellikle 'rakip hamlesini yaptı' oku kelime
+  // üstünde ama yazı board'un soluna yapışık."*
+  //
+  // KÖK SEBEP: balon `Stack`in konumsuz çocuğuydu; `Stack` gevşek kısıt
+  // verdiğinden `Column`un çapraz ekseni EN GENİŞ ÇOCUK kadar kalıyor ve
+  // `crossAxisAlignment` görünür hiçbir iş yapmıyordu — kutu Stack'in
+  // varsayılan `topStart`ına, yani SOLA düşüyordu. Kuyruk kendi
+  // `Positioned`ıyla doğru yerdeydi, hata bu yüzden "ok doğru, yazı solda"
+  // diye görünüyordu.
+  //
+  // Bu test GERİ ALINMAYI yakalar ve gözle değil ÖLÇEREK: balonun yatay
+  // merkezi kuyruğun (çapa karesinin) merkezine yakın olmalı; tahtanın sol
+  // kenarına yapışmış bir kutu bu iddiayı geçemez.
+  testWidgets('balon hizası: orta sütunda ORTALI, kenar sütunda o kenarda '
+      '— kuyruk her hâlde balonun altında', (tester) async {
+    await setPhoneViewSize(tester, const Size(420, 900));
+    await pumpTutorial(tester);
+
+    Future<Rect> balonKutusu() async {
+      final f = find.descendant(
+          of: find.byType(BoardWidget), matching: find.text(_step0.say));
+      expect(f, findsOneWidget);
+      return tester.getRect(f);
+    }
+
+    final tahta = tester.getRect(find.byType(BoardWidget));
+    // 1. sahnenin çapası (0,1) — SOL üçte bir → balon sola yaslı ama
+    // tahtanın içinde; asıl kanıt aşağıdaki orta-sütun vakası.
+    final ilk = await balonKutusu();
+    expect(ilk.left, greaterThanOrEqualTo(tahta.left - 1));
+
+    // Sahne 3'ün çapası (5,4) ORTA banttadır → balon ortalı olmalı.
+    // Oraya kadar oynamak yerine `BoardWidget`i doğrudan o balonla çiziyoruz:
+    // ölçülen şey balonun GEOMETRİSİ, senaryo değil.
+    await tester.pumpWidget(MaterialApp(
+      theme: kelimekiTheme(),
+      home: Scaffold(
+        body: BoardWidget(
+          state: createTutorialState('Sen'),
+          coach: const BoardCoach(r: 5, c: 4, text: 'Orta sütun', yon: 'ust'),
+          hideFooter: true,
+        ),
+      ),
+    ));
+    await tester.pump();
+    final orta = tester.getRect(find.text('Orta sütun'));
+    final tahta2 = tester.getRect(find.byType(BoardWidget));
+    expect((orta.center.dx - tahta2.center.dx).abs(), lessThan(2),
+        reason: 'orta banttaki balon tahtaya göre ORTALI olmalı — '
+            'sola yapışıksa hiza uygulanmıyor demektir');
+
+    // Kenar sütun (12): balon SAĞA yaslanır ve kuyruk (çapa) hâlâ balonun
+    // yatay aralığında kalır — "rakip hamlesini yaptı" balonunun vakası.
+    await tester.pumpWidget(MaterialApp(
+      theme: kelimekiTheme(),
+      home: Scaffold(
+        body: BoardWidget(
+          state: createTutorialState('Sen'),
+          coach: const BoardCoach(
+              r: 9, c: 12, text: 'Rakip hamlesini yaptı', yon: 'ust'),
+          hideFooter: true,
+        ),
+      ),
+    ));
+    await tester.pump();
+    final kenar = tester.getRect(find.text('Rakip hamlesini yaptı'));
+    final tahta3 = tester.getRect(find.byType(BoardWidget));
+    expect(kenar.center.dx, greaterThan(tahta3.center.dx),
+        reason: '12. sütundaki balon sağ yarıda olmalı (sola yapışık DEĞİL)');
+    // Kuyruğun x'i: ızgara 13 hücre + 12×3px boşluk, çapa 12 → sağ uçta.
+    // Balonun yatay aralığı kuyruğu KAPSAMALI, yoksa ok balonun dışında kalır.
+    final izgara = tester.getRect(find.byType(GridView));
+    const gap = 3.0;
+    final strideX = (izgara.width + gap) / boardSize;
+    final kuyrukX = izgara.left + 12 * strideX + (strideX - gap) / 2;
+    expect(kuyrukX, greaterThanOrEqualTo(kenar.left));
+    expect(kuyrukX, lessThanOrEqualTo(kenar.right));
+  });
+
   testWidgets('ATLA → onSkip; oyun bittiğinde GameScreen açılmaz (yalıtım)',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
@@ -262,6 +365,7 @@ void main() {
       ),
     ));
     await tester.pump();
+    await karsilamayiGec(tester);
     expect(find.text('Ironman'), findsWidgets); // raf başlığı + skor kutusu
     await tester.tap(find.text('ATLA →'));
     await tester.pump();

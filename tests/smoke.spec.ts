@@ -2235,6 +2235,15 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
     await devamButton.click();
   }
 
+  // Karşılama penceresi (7 Eylül 2026 akşamı, kullanıcı isteği): tanıtım
+  // AÇILIR AÇILMAZ ne olduğunu söyler — oyuncu kendini gerçek oyunda
+  // sanmasın. "Devam" ile kapanır ve tanıtım başlar.
+  const karsilama = page.getByRole('dialog', { name: 'Kelimeki Tanıtım Turu' });
+  await expect(karsilama).toBeVisible();
+  await expect(karsilama).toContainText('Yaklaşık 1 dk');
+  await karsilama.getByRole('button', { name: 'Devam', exact: true }).click();
+  await expect(karsilama).toBeHidden();
+
   // Tanıtım ekranı: sahne sayacı + ilk sahnenin balonu.
   await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
   await expect(page.locator('[data-coach]')).toContainText('Kendi köşenden başla.');
@@ -2385,6 +2394,7 @@ test.describe('tanıtım sürükleme', () => {
     if (await devamButton.isVisible().catch(() => false)) {
       await devamButton.click();
     }
+    await page.getByRole('button', { name: 'Devam', exact: true }).click();
     await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
 
     const vurgulu = page.locator('[data-rack-tile] div[style*="outline"]').first();
