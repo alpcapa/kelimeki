@@ -68,10 +68,15 @@ rakip de merkeze girip ×2 alıyor, 4. cevabında (NAR) OYUNCUNUN sınırına
 değip ona 2 puan ödüyor — verginin iki yönlü olduğu tek cümle harcamadan
 görünüyor.
 
-**Bitmeyen ders — bingo:** X3 artık 4. sahnede öğretildiğinden kapanış
-kartının kancası değişti: *"7 taşını tek hamlede oynarsan +25 bingo bonusu
-var — gerçek oyunda dene."* Geriye bilerek öğretilmeyen iki şey kalıyor
-(bingo ve joker); tanıtımın işi her şeyi anlatmak değil, merak bırakmak.
+**Kapanış — dersi stratejiye bağlar** (kullanıcı kararı, 7 Eylül 2026):
+*"Koyduğun kelime kadar nereye koyduğun da çok önemli. Hem bölgeni büyüterek
+daha çok vergi topla, hem de rakibin hareket alanını daraltarak büyümesini
+engelle."* Bir ara burada bingo bonusu tanıtılıyordu; ama bingo tanıtımda
+HİÇ yaşanmayan bir mekanikti — kapanış, oyuncunun az önce dört sahnede
+yaşadıklarını tek cümlede birleştirdiğinde daha çok iş görüyor. İki yarısı
+da senaryoda yaşandı: bölge büyümesi 2. sahnede, verginin İKİ YÖNÜ 4.
+sahnede (oyuncu ödedi, rakip de ona ödedi). Joker ve bingo bilerek
+öğretilmeden kalıyor — tanıtımın işi her şeyi anlatmak değil.
 
 ## Kapı — kime gösteriliyor (7 Eylül 2026, kullanıcı isteği)
 

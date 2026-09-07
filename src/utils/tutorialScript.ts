@@ -270,13 +270,18 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /**
- * Kapanış. X3 artık 4. sahnede öğretildiğinden kanca değişti: geriye
- * bilerek ÖĞRETİLMEYEN iki şey kaldı (bingo ve joker); biri merak olarak
- * bırakılıyor — tanıtımın işi her şeyi anlatmak değil.
+ * Kapanış (metin kullanıcı kararı, 7 Eylül 2026). Önceki hâli bingo
+ * bonusunu tanıtıyordu; oysa bingo tanıtımda HİÇ yaşanmayan bir mekanikti —
+ * kapanış kartı, oyuncunun az önce dört sahnede öğrendiklerini tek
+ * STRATEJİYE bağladığında daha çok iş görüyor: bölgeni büyütmek (topladığın
+ * vergi artar) ve rakibin alanını daraltmak (onun büyümesi durur). İkisi de
+ * senaryoda yaşandı — rakip 4. cevabında oyuncuya vergi ödedi.
  */
 export const TUTORIAL_FINISH_TITLE = 'Hazırsın!';
 export const TUTORIAL_FINISH_TEXT =
-  '7 taşını tek hamlede oynarsan +25 bingo bonusu var — gerçek oyunda dene.';
+  'Koyduğun kelime kadar nereye koyduğun da çok önemli. Hem bölgeni ' +
+  'büyüterek daha çok vergi topla, hem de rakibin hareket alanını ' +
+  'daraltarak büyümesini engelle.';
 
 /**
  * Rafların TAM olarak hangi sırayla dolacağı. `drawTiles` torbanın SONUNDAN

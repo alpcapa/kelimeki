@@ -2318,7 +2318,9 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   const bitis = page.getByLabel('Tanıtım tamamlandı');
   await expect(bitis).toBeVisible({ timeout: 20_000 });
   await expect(bitis).toContainText('Hazırsın!');
-  await expect(bitis).toContainText('bingo');
+  // Kapanış, dört sahnenin dersini tek stratejiye bağlıyor (bingo değil).
+  await expect(bitis).toContainText('nereye koyduğun');
+  await expect(bitis).toContainText('rakibin hareket alanını');
   await bitis.getByRole('button', { name: 'Gerçek oyuna başla' }).click();
 
   // Gerçek oyun ekranı: tanıtımda olmayan kontroller burada var.
