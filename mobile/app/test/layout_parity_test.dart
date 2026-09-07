@@ -358,29 +358,48 @@ void main() {
   test('sürükleme eşiği: fare/parmak ayrımı iki tarafta da AYNI', () {
     // 22 Ağustos 2026 — tek eşik (6px) dokunmatikte sessiz kayıp üretiyordu:
     // parmak 6px oynayan bir dokunuş "sürükleme" sayılıp aynı hücrede
-    // bittiğinden hiçbir şey olmuyordu. Değerler ELLE SENKRON (web kanonik)
-    // ve DÖRT dosyada birden yaşıyor — biri unutulursa iki ekran ya da iki
-    // platform sessizce ayrışır, bu test tam onu yakalıyor.
-    const webFiles = ['src/App.tsx', 'src/components/OnlineGameScreen.tsx'];
+    // bittiğinden hiçbir şey olmuyordu. Değerler ELLE SENKRON (web kanonik);
+    // biri unutulursa iki ekran ya da iki platform sessizce ayrışır.
+    //
+    // ⚠ 7 Eylül 2026 — WEB TARAFI TEKİLLEŞTİ: sabitler `App.tsx` ve
+    // `OnlineGameScreen.tsx`te iki kopyaydı, tanıtım ekranı üçüncüsünü
+    // gerektirince `src/utils/dragFeel.ts`e çıkarıldı. Test buna göre
+    // GÜÇLENDİ: değer TEK kaynakta okunuyor, ÜÇ ekranın da o değeri pointer
+    // TÜRÜNE göre kullandığı ayrıca aranıyor, ve hiçbir ekranın yerel kopya
+    // yazmadığı kontrol ediliyor (kopya geri gelirse bu test düşer).
+    const webConstFile = 'src/utils/dragFeel.ts';
+    const webUsers = [
+      'src/App.tsx',
+      'src/components/OnlineGameScreen.tsx',
+      'src/components/TutorialGame.tsx',
+    ];
     const dartFiles = [
       'mobile/app/lib/src/ui/game/game_screen.dart',
       'mobile/app/lib/src/ui/live/online_game_screen.dart',
     ];
 
-    for (final f in webFiles) {
+    final ortak = readRepoFile(webConstFile);
+    expect(
+        pick(ortak, RegExp(r'export const DRAG_THRESHOLD_MOUSE = ([\d.]+);'),
+            '$webConstFile DRAG_THRESHOLD_MOUSE'),
+        '6');
+    expect(
+        pick(ortak, RegExp(r'export const DRAG_THRESHOLD_TOUCH = ([\d.]+);'),
+            '$webConstFile DRAG_THRESHOLD_TOUCH'),
+        '10');
+
+    for (final f in webUsers) {
       final src = readRepoFile(f);
-      expect(pick(src, RegExp(r'const DRAG_THRESHOLD_MOUSE = ([\d.]+);'),
-              '$f DRAG_THRESHOLD_MOUSE'),
-          '6');
-      expect(pick(src, RegExp(r'const DRAG_THRESHOLD_TOUCH = ([\d.]+);'),
-              '$f DRAG_THRESHOLD_TOUCH'),
-          '10');
       // Eşik SABİTİ doğru olsa bile kullanılmıyorsa değeri yok: hangi eşiğin
       // seçileceği pointer TÜRÜNE bağlı olmak zorunda.
       expect(
-          pick(src, RegExp(r'if \(dist < (dragThresholdFor\(e\.pointerType\))\) return;'),
+          pick(src, RegExp(r'< (dragThresholdFor\(e\.pointerType\))\) return;'),
               '$f eşik karşılaştırması pointerType\'a bağlı değil'),
           'dragThresholdFor(e.pointerType)');
+      // Yerel kopya YASAK: değer yalnızca ortak dosyada yaşamalı.
+      expect(src.contains('const DRAG_THRESHOLD_'), isFalse,
+          reason: '$f sürükleme eşiğinin YEREL kopyasını yazmış — '
+              'değer yalnızca $webConstFile içinde olmalı');
     }
 
     for (final f in dartFiles) {

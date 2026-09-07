@@ -1,5 +1,6 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { tanitimiAtla } from './gameOverFixture';
 
 // Kelimeki — kritik yol duman testleri. Amaç kapsamlı bir test paketi değil,
 // "uygulama açılıyor, bir oyun başlatılabiliyor, YZ hamle yapabiliyor"
@@ -52,10 +53,7 @@ test('Setup ekranı açılır, 2 kişilik oyun başlar, YZ hamle yapar', async (
   // aria-label="Kapat" başka bir yerde de var (AddToHomeScreen banner'ı),
   // o yüzden yalnızca bu modal gerçekten açıksa ve onun içindeki kapat
   // butonunu (son eklenen portal — .last()) hedefleyerek kapatıyoruz.
-  const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstartHeading.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
 
   // `exact: true` ŞART: Playwright'ın `name` eşleşmesi varsayılan olarak
   // büyük/küçük harf duyarsız ALT DİZE arıyor, ve 14 Ağustos 2026'dan beri
@@ -130,10 +128,7 @@ test('Zorluk: Kolay seçilip 2 kişilik oyun başlar, YZ hamle yapar, seviye kay
   if (await devamButton.isVisible().catch(() => false)) {
     await devamButton.click();
   }
-  const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstartHeading.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
 
   const pasGecButton = page.getByRole('main').getByRole('button', { name: 'Pas Geç' });
   await expect(pasGecButton).toBeEnabled();
@@ -173,10 +168,7 @@ test('Zorluk: Zor seçilip oyun başlar, YZ geniş aramayla hamle yapar, seviye 
   if (await devamButton.isVisible().catch(() => false)) {
     await devamButton.click();
   }
-  const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstartHeading.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
 
   const pasGecButton = page.getByRole('main').getByRole('button', { name: 'Pas Geç' });
   await expect(pasGecButton).toBeEnabled();
@@ -200,10 +192,7 @@ test('Zorluk: Normal (varsayılan) kayda aiLevel YAZMAZ — eski kayıt sözleş
   if (await devamButton.isVisible().catch(() => false)) {
     await devamButton.click();
   }
-  const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstartHeading.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
   const pasGecButton = page.getByRole('main').getByRole('button', { name: 'Pas Geç' });
   await expect(pasGecButton).toBeEnabled();
   await pasGecButton.click();
@@ -246,10 +235,7 @@ test('Öne dönüşte bağlantı durumu yeniden okunur (kaçırılan offline ola
     .getByLabel('Giriş uyarısı')
     .getByRole('button', { name: 'Oyna', exact: true });
   if (await devamButton.isVisible().catch(() => false)) await devamButton.click();
-  const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstartHeading.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
   await expect(page.getByRole('button', { name: 'Oyna', exact: true })).toBeVisible();
 
   const offlineLabel = page.getByText('Çevrimdışı', { exact: true });
@@ -293,10 +279,7 @@ test('Kısa bağlantı kesintisi (ağ değişimi) çevrimdışı uyarısı ÜRET
     .getByLabel('Giriş uyarısı')
     .getByRole('button', { name: 'Oyna', exact: true });
   if (await devamButton.isVisible().catch(() => false)) await devamButton.click();
-  const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstartHeading.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
   await expect(page.getByRole('button', { name: 'Oyna', exact: true })).toBeVisible();
 
   const offlineLabel = page.getByText('Çevrimdışı', { exact: true });
@@ -665,10 +648,7 @@ test('Oyun ekranında logonun altında "← Geri" var ve Setup\'a döndürür', 
   if (await devamButton.isVisible().catch(() => false)) {
     await devamButton.click();
   }
-  const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstartHeading.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
 
   // Oyun ekranındayız: tahta çizildi.
   await expect(page.getByRole('button', { name: 'Oyna', exact: true })).toBeVisible();
@@ -760,10 +740,7 @@ test.describe('dokunmatik jestler', () => {
     }, await jokerliKayit());
     await page.goto('/');
     await page.getByRole('button', { name: /SIRA SENDE/i }).click();
-    const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
-    if (await quickstartHeading.isVisible().catch(() => false)) {
-      await page.locator('button[aria-label="Kapat"]').last().click();
-    }
+    await tanitimiAtla(page);
   }
 
   test('Konmuş jokere dokunmak pencereyi açar, harfi KENDİLİĞİNDEN değiştirmez', async ({
@@ -889,10 +866,7 @@ test.describe('dokunmatik jestler', () => {
     await page.getByText('OYUNU BAŞLAT').click();
     const devam = page.getByLabel('Giriş uyarısı').getByRole('button', { name: 'Oyna', exact: true });
     if (await devam.isVisible().catch(() => false)) await devam.click();
-    const qs = page.getByRole('heading', { name: /hızlı başlangıç/i });
-    if (await qs.isVisible().catch(() => false)) {
-      await page.locator('button[aria-label="Kapat"]').last().click();
-    }
+    await tanitimiAtla(page);
     await expect(page.getByRole('main').getByRole('button', { name: 'Pas Geç' })).toBeEnabled();
 
     const dolu = async (sel: string) =>
@@ -942,10 +916,7 @@ test.describe('dokunmatik jestler', () => {
     await page.getByText('OYUNU BAŞLAT').click();
     const devam = page.getByLabel('Giriş uyarısı').getByRole('button', { name: 'Oyna', exact: true });
     if (await devam.isVisible().catch(() => false)) await devam.click();
-    const qs = page.getByRole('heading', { name: /hızlı başlangıç/i });
-    if (await qs.isVisible().catch(() => false)) {
-      await page.locator('button[aria-label="Kapat"]').last().click();
-    }
+    await tanitimiAtla(page);
     await expect(page.getByRole('main').getByRole('button', { name: 'Pas Geç' })).toBeEnabled();
 
     const rafSayisi = () => page.locator('[data-rack-tile]').count();
@@ -993,10 +964,7 @@ test.describe('dokunmatik jestler', () => {
     await page.getByText('OYUNU BAŞLAT').click();
     const devam = page.getByLabel('Giriş uyarısı').getByRole('button', { name: 'Oyna', exact: true });
     if (await devam.isVisible().catch(() => false)) await devam.click();
-    const qs = page.getByRole('heading', { name: /hızlı başlangıç/i });
-    if (await qs.isVisible().catch(() => false)) {
-      await page.locator('button[aria-label="Kapat"]').last().click();
-    }
+    await tanitimiAtla(page);
     await expect(page.getByRole('main').getByRole('button', { name: 'Pas Geç' })).toBeEnabled();
 
     const dolu = async (sel: string) =>
@@ -1389,10 +1357,7 @@ test('"Buradan başla" balonu boş tahtada ev karesinin yanında; taş KALDIRILI
   await page.getByText('OYUNU BAŞLAT').click();
   const devam = page.getByLabel('Giriş uyarısı').getByRole('button', { name: 'Oyna' });
   if (await devam.isVisible().catch(() => false)) await devam.click();
-  const quickstart = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstart.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
 
   const balon = page.locator('[data-start-hint]');
   await expect(balon).toBeVisible();
@@ -1450,10 +1415,7 @@ test('hiç başlamamış oyun İZ BIRAKMAZ, başlamış oyun kaydedilir', async 
   await page.getByText('OYUNU BAŞLAT').click();
   const devam = page.getByLabel('Giriş uyarısı').getByRole('button', { name: 'Oyna', exact: true });
   if (await devam.isVisible().catch(() => false)) await devam.click();
-  const quickstart = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstart.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
   await expect(page.getByRole('main').getByRole('button', { name: 'Pas Geç' })).toBeEnabled();
 
   const kayit = () =>
@@ -1561,10 +1523,7 @@ test('dokunma hedefleri: modal ✕ görsel kutusunun dışından da kapanır, ra
   await page.getByText('OYUNU BAŞLAT').click();
   const devam = page.getByLabel('Giriş uyarısı').getByRole('button', { name: 'Oyna', exact: true });
   if (await devam.isVisible().catch(() => false)) await devam.click();
-  const quickstart = page.getByRole('heading', { name: /hızlı başlangıç/i });
-  if (await quickstart.isVisible().catch(() => false)) {
-    await page.locator('button[aria-label="Kapat"]').last().click();
-  }
+  await tanitimiAtla(page);
   await expect(page.getByRole('main').getByRole('button', { name: 'Pas Geç' })).toBeEnabled();
 
   // ── Raf taşı ────────────────────────────────────────────────────────────
@@ -1656,10 +1615,7 @@ test.describe('tahta zoom', () => {
     }, await kayit());
     await page.goto('/');
     await page.getByRole('button', { name: /SIRA SENDE/i }).click();
-    const quickstartHeading = page.getByRole('heading', { name: /hızlı başlangıç/i });
-    if (await quickstartHeading.isVisible().catch(() => false)) {
-      await page.locator('button[aria-label="Kapat"]').last().click();
-    }
+    await tanitimiAtla(page);
     await expect(page.locator('[data-board-grid]')).toBeVisible();
   }
 
@@ -2252,5 +2208,204 @@ test.describe('tahta zoom', () => {
     // bu test hiçbir şey kanıtlamazdı.
     const rozet = (await page.locator('[data-board-badge-layer] > div > div').boundingBox())!;
     expect(rozet.x).toBeLessThan(b.x);
+  });
+});
+
+// ── "Oynayarak öğren" tanıtımı (7 Eylül 2026, kullanıcı isteği) ────────────
+// İlk oyunda Hızlı Başlangıç PENCERESİ yerine raylı bir mini oyun açılıyor.
+// Senaryonun kendisi (koordinatlar, kelimeler, puanlar) `npm run
+// verify-tutorial-script` ile motorda kilitli; bu test TARAYICIDA uçtan uca
+// koştuğunu gösterir: raylar tıklanabiliyor, dört sahne ilerliyor, vergi
+// onayı çıkıyor, kapanış gerçek oyuna devrediyor.
+//
+// ⚠ Ekranda yazan puanlar da iddia ediliyor (+12, "6 × 2 = 12") — tanıtımın
+// tek gerçek riski yanlış SAYI göstermek; doğrulayıcı senaryoyu Node'da,
+// bu test aynı sayıların DOM'a düştüğünü ölçüyor.
+test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başlar', async ({ page }) => {
+  test.setTimeout(120_000);
+  page.on('dialog', (dialog) => dialog.accept());
+  await donenKullanici(page);
+  await page.goto('/');
+
+  await page.getByText('OYUNU BAŞLAT').click();
+  const devamButton = page
+    .getByLabel('Giriş uyarısı')
+    .getByRole('button', { name: 'Oyna', exact: true });
+  if (await devamButton.isVisible().catch(() => false)) {
+    await devamButton.click();
+  }
+
+  // Tanıtım ekranı: sahne sayacı + ilk sahnenin balonu.
+  await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
+  await expect(page.locator('[data-coach]')).toContainText('Kendi köşenden başla.');
+
+  const oyna = page.getByRole('main').getByRole('button', { name: 'Oyna', exact: true });
+  // Rafta o sahnenin harfleri mavi halkayla işaretli (7 Eylül 2026, cihaz
+  // testi sonrası): taş artık kareye dokununca KENDİLİĞİNDEN gelmiyor,
+  // oyuncu onu raftan alıyor.
+  const vurguluTas = page.locator('[data-rack-tile] div[style*="outline"]');
+
+  /** Harfleri raftan alıp işaretli karelere koyar, sonra "Oyna"ya basar. */
+  const sahneOyna = async (hucreler: [number, number][]) => {
+    // Ray: hedef kareler kesikli çerçeveyle işaretli, rafta da tam o kadar
+    // harf vurgulu.
+    await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(hucreler.length);
+    await expect(vurguluTas).toHaveCount(hucreler.length);
+    await expect(oyna).toBeDisabled();
+    for (const [r, c] of hucreler) {
+      // Vurgulular yan yana ve kelime sırasında (senaryonun garantisi,
+      // `verify-tutorial-script` kilitliyor) — hep ilki sıradaki harftir.
+      await vurguluTas.first().click();
+      await page.locator(`[data-cell="${r},${c}"]`).click();
+    }
+    await expect(oyna).toBeEnabled();
+    // Hamle tamamlanınca söz sırası OYNA balonunun: dersin balonu KAYBOLUR
+    // (7 Eylül 2026, kullanıcı: iki balon aynı anda duruyordu).
+    await expect(page.getByText("Hamleni tamamlamak için OYNA'ya bas")).toBeVisible();
+    await expect(page.locator('[data-coach]')).toHaveCount(0);
+    await oyna.click();
+  };
+
+  // Raf balonu kullanıcının istediği cümleyi taşıyor.
+  await expect(page.getByText('Şimdi BÜYÜ kelimesini taşı')).toBeVisible();
+
+  // ⚠ ASIL İDDİA (cihaz testinden gelen şikâyet): harf SEÇİLMEDEN kareye
+  // dokunmak taş getirmez. Öncesinde tahtaya dokunmak taşı kendiliğinden
+  // koyuyordu ve kullanıcı bunu "gerçekçi değil" diye bildirdi.
+  await page.locator('[data-cell="0,0"]').click();
+  await expect(oyna).toBeDisabled();
+  // Hiçbir taş konmadı: dört hedef de hâlâ işaretli (konan taş işareti siler).
+  await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(4);
+
+  // 1. sahne — ev karesinden ilk kelime (BÜYÜ).
+  await sahneOyna([[0, 0], [0, 1], [0, 2], [0, 3]]);
+  await expect(page.getByText('İlk kelimen: +12 puan.')).toBeVisible();
+  // Rakip oynadıktan SONRA balon çıkıyor ve 2,6 sn kalıyor (kullanıcı:
+  // dizilirken çıkan balon "çok hızlı gidiyor"du).
+  await expect(page.getByText('Rakip hamlesini yaptı')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText('TANITIM · 2/4')).toBeVisible({ timeout: 20_000 });
+
+  // 2. sahne — bölge büyümesi (ÜZENGİ).
+  await sahneOyna([[1, 3], [2, 3], [3, 3], [4, 3], [5, 3]]);
+  await expect(page.getByText('TANITIM · 3/4')).toBeVisible({ timeout: 20_000 });
+
+  // 3. sahne — merkez çarpanı (İNSAN). Ekrandaki sayı motordan geliyor.
+  await sahneOyna([[5, 4], [5, 5], [5, 6], [5, 7]]);
+  await expect(page.getByText('6 × 2 = 12 puan!')).toBeVisible();
+  await expect(page.getByText('TANITIM · 4/4')).toBeVisible({ timeout: 20_000 });
+
+  // 4. sahne — merkez X3 + rakibin sınırına değme (FES): iki taş üç kelime
+  // birden kuruyor (FES ×3 · AF ×3 · NE ×2) ve hamle vergi ödüyor.
+  await expect(page.locator('[data-coach]')).toContainText('Ortadaki kare üç katı!');
+  await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(2);
+  await expect(vurguluTas).toHaveCount(2);
+  await vurguluTas.first().click();
+  await page.locator('[data-cell="6,6"]').click();
+  await vurguluTas.first().click();
+  await page.locator('[data-cell="6,7"]').click();
+  // Hamle tamamlanınca OYNA'yı işaret eden balon çıkar, dersinki kaybolur.
+  await expect(page.getByText("Hamleni tamamlamak için OYNA'ya bas")).toBeVisible();
+  await expect(page.locator('[data-coach]')).toHaveCount(0);
+  await oyna.click();
+  const onay = page.getByLabel('Sınır ihlali onayı');
+  await expect(onay).toBeVisible();
+  // Vergi ÖNCESİ puan ve rakibe giden pay — ikisi de motordan geliyor.
+  await expect(onay).toContainText('58');
+  await expect(onay).toContainText('19');
+  await onay.getByRole('button', { name: 'Oyna', exact: true }).click();
+
+  // Kapanış kartı → gerçek oyun.
+  const bitis = page.getByLabel('Tanıtım tamamlandı');
+  await expect(bitis).toBeVisible({ timeout: 20_000 });
+  await expect(bitis).toContainText('Hazırsın!');
+  // Kapanış, dört sahnenin dersini tek stratejiye bağlıyor (bingo değil).
+  await expect(bitis).toContainText('nereye koyduğun');
+  await expect(bitis).toContainText('rakibin hareket alanını');
+  await bitis.getByRole('button', { name: 'Gerçek oyuna başla' }).click();
+
+  // Gerçek oyun ekranı: tanıtımda olmayan kontroller burada var.
+  await expect(page.getByRole('main').getByRole('button', { name: 'Pas Geç' })).toBeVisible();
+  await expect(page.getByText('TANITIM ·')).toHaveCount(0);
+  await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
+});
+
+// Kapı (7 Eylül 2026, kullanıcı isteği): tanıtım YALNIZCA yeni gelene, bir
+// kere. Yukarıdaki test "yeni gelen" yolunu oynuyor; bu test tersini
+// kanıtlıyor — daha önce oynamış bir cihazda tanıtım HİÇ açılmamalı ve
+// "OYUNU BAŞLAT" doğrudan gerçek oyuna girmeli.
+//
+// ⚠ Kapının tamamı dört sinyale birden bakıyor (cihaz bayrakları + devam
+// eden oyun + hesap yaşı); tablosu `npm run verify-tutorial-script`te saf
+// fonksiyon olarak koşuyor. Burada tarayıcıdaki UÇ davranış ölçülüyor.
+test('Tanıtım kapısı: daha önce oynamış cihazda tanıtım açılmaz', async ({ page }) => {
+  page.on('dialog', (dialog) => dialog.accept());
+  await donenKullanici(page);
+  // 7 Eylül 2026 öncesi sürümlerin yazdığı miras bayrak = "bu cihazda
+  // zaten oynanmış". Mevcut oyuncunun tam olarak taşıdığı iz.
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('kelimeki:seen-quickstart', '1');
+    } catch {
+      // depolama kapalıysa kapı zaten "gösterme" tarafında
+    }
+  });
+  await page.goto('/');
+
+  await page.getByText('OYUNU BAŞLAT').click();
+  const devamButton = page
+    .getByLabel('Giriş uyarısı')
+    .getByRole('button', { name: 'Oyna', exact: true });
+  if (await devamButton.isVisible().catch(() => false)) {
+    await devamButton.click();
+  }
+
+  // Doğrudan gerçek oyun: tanıtımın sayacı/atla butonu YOK, oyun
+  // kontrolleri VAR.
+  await expect(page.getByRole('main').getByRole('button', { name: 'Pas Geç' })).toBeVisible();
+  await expect(page.getByText('TANITIM ·')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'ATLA →' })).toHaveCount(0);
+  await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
+});
+
+// Sürükleme (7 Eylül 2026, cihaz testi sonrası): tanıtımda taş artık raftan
+// alınıyor ve GERÇEK oyundaki jestle tahtaya taşınabiliyor. Telefon
+// ölçüsünde koşuyor — masaüstü 720 px'te raf ile tahtanın üst satırı aynı
+// anda ekrana sığmıyor (ölçüldü: bırakma noktası eksi y'ye düşüyor).
+test.describe('tanıtım sürükleme', () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
+
+  test('Vurgulu harf raftan tahtaya SÜRÜKLENEBİLİR', async ({ page }) => {
+    page.on('dialog', (dialog) => dialog.accept());
+    await donenKullanici(page);
+    await page.goto('/');
+    await page.getByText('OYUNU BAŞLAT').click();
+    const devamButton = page
+      .getByLabel('Giriş uyarısı')
+      .getByRole('button', { name: 'Oyna', exact: true });
+    if (await devamButton.isVisible().catch(() => false)) {
+      await devamButton.click();
+    }
+    await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
+
+    const vurgulu = page.locator('[data-rack-tile] div[style*="outline"]').first();
+    await vurgulu.scrollIntoViewIfNeeded();
+    const kaynak = (await vurgulu.boundingBox())!;
+    const hedef = (await page.locator('[data-cell="0,0"]').boundingBox())!;
+
+    await page.mouse.move(kaynak.x + kaynak.width / 2, kaynak.y + kaynak.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(hedef.x + hedef.width / 2, hedef.y + hedef.height / 2, { steps: 8 });
+    // Parmağın altındaki kopya: jest gerçekten "taşıyor" gibi görünmeli.
+    await expect(page.locator('[data-tutorial-ghost]')).toHaveCount(1);
+    await page.mouse.up();
+
+    // Taş kondu: dört hedeften biri işaretini kaybetti.
+    await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(3);
+    await expect(page.locator('[data-tutorial-ghost]')).toHaveCount(0);
+    // ⚠ Jestin ardından gelen compat click taşı GERİ ALMAMALI (hayalet tık
+    // sınıfı — `swallowNextClick`). 350 ms, zoom testlerindeki payla aynı.
+    await page.waitForTimeout(350);
+    await expect(page.locator('[data-cell][style*="dashed"]')).toHaveCount(3);
+    await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
   });
 });

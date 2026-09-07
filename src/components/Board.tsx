@@ -90,6 +90,23 @@ interface BoardProps {
   hideFooter?: boolean;
   /** Taşları küçük/puan göstermeden çizer — salt-okunur önizlemelerde (bkz. `GameBoardPreview`). */
   compact?: boolean;
+  /**
+   * Tanıtım (`TutorialGame`) modunda vurgulanacak HEDEF kareler ("r,c"
+   * anahtarları). Oyuncunun bu sahnede dokunacağı boş kareler kesikli mavi
+   * bir çerçeveyle işaretlenir — tanıtımın "rayı" görsel olarak burada.
+   * Verilmezse (normal oyun, önizlemeler) hiçbir şey değişmez.
+   */
+  targets?: ReadonlySet<string> | null;
+  /**
+   * Tanıtım balonu: bir kareyi işaret eden TEK cümle. "Buradan başla"
+   * balonuyla AYNI yerleşimi kullanır (karenin yanında, tahtanın içine
+   * doğru) — orada kanıtlanmış bir düzen, kenar karelerinde taşmıyor.
+   *
+   * ⚠ Verilirse "Buradan başla" balonu BASTIRILIR: ekranda aynı anda tek
+   * balon olmalı (tanıtımın kendi kuralı; ilk sahne zaten ev karesini
+   * işaret ettiğinden ikisi üst üste binerdi).
+   */
+  coach?: { r: number; c: number; text: string; yon: 'ust' | 'alt' } | null;
   /** Tahta yakınlaştırması (1 Eylül 2026 — port ile AYNI davranış, bkz.
       `src/utils/boardZoom.ts`). VERİLMEZSE ağaç eskisiyle birebir aynı
       çizilir: transform `none`, kırpma yok — salt-okunur önizlemeler ve
@@ -191,6 +208,8 @@ export function Board({
   onTilePointerCancel,
   hideFooter = false,
   compact = false,
+  targets = null,
+  coach = null,
   zoom = ZOOM_OFF,
   viewportRef,
   zoomHint = false,
@@ -256,6 +275,8 @@ export function Board({
   // da uzun aradan sonra dönen oyuncuyu ipuçsuz bırakırdı.
   const startHint = useMemo(() => {
     if (compact) return null;
+    // Tanıtım kendi balonunu çiziyorsa ikinci bir balon çıkmaz (bkz. `coach`).
+    if (coach) return null;
     // Taş HAVADA (sürükleniyor) ya da rafta SEÇİLİ: oyuncu taşı KALDIRDIĞI
     // anda ipucu görevini bitirmiştir — balon bırakma hedefinin yanında
     // dikkat dağıtır (kullanıcı isteği, 26 Ağustos 2026: "taşı kaldırdığı
@@ -278,7 +299,7 @@ export function Board({
     // dışarı taşardı.)
     const toRight = hc < SIZE / 2;
     return { hr, hc, col, toRight };
-  }, [compact, placed, board, players, current, tileLifted, state.selectedTile]);
+  }, [compact, coach, placed, board, players, current, tileLifted, state.selectedTile]);
 
   // Merkezdeki x2 bonus bölgesinin tahtaya oranı ve konumu — köşe numarası
   // filigranıyla aynı mantıkla, tek büyük bir "X2" o bölgenin arkasına yazılır.
@@ -425,6 +446,18 @@ export function Board({
       // Bu turda yerleştirilmiş (henüz oynanmamış) bir taş, tıklama yerine
       // sürükleme jestiyle (basılı tut → hareket ettir → bırak) yönetilir.
       const hasPending = !!rawPlacedTile;
+
+      // Tanıtım rayı: bu sahnenin hedef karesi, boşken kesikli çerçeveyle
+      // işaretlenir. `animate-tile-pulse` zaten tailwind.config'de tanımlı
+      // (nefes alan mavi halka) — yeni bir animasyon eklenmiyor.
+      if (targets && targets.has(k) && !boardTile && !placedTile) {
+        classes.push('animate-tile-pulse');
+        style = {
+          ...style,
+          outline: '2px dashed #2563EB',
+          outlineOffset: '-2px',
+        };
+      }
 
       if (dragOverKey === k) {
         style = {
@@ -750,6 +783,69 @@ export function Board({
               >
                 Buradan başla
               </span>
+            </div>
+          </div>
+        )}
+
+        {/* Tanıtım balonu — kullanıcı isteği (7 Eylül 2026): *"Balonu üste
+            koyup oku aşağıda verebilirsin."* Yani balon işaret ettiği
+            karenin ÜSTÜNDE (ya da yer yoksa altında) durur, kuyruk dikey
+            olarak kareyi gösterir. Önceki yerleşim "Buradan başla" gibi
+            karenin YANINDAYDI; uzun cümleler orada tahtanın yarısına
+            sıkışıp dört satıra bölünüyordu.
+
+            Yatay hizalama çapanın sütununa göre seçiliyor (sol üçte bir →
+            sola yaslı, sağ üçte bir → sağa yaslı, orta → ortalı): balon
+            böylece tahtadan TAŞMIYOR ve kuyruk her zaman balonun altında
+            kalıyor — ölçmeye gerek kalmadan.
+
+            ⚠ Balon çapanın 1-2 satır üstünü/altını KAPATIR; hangi sahnenin
+            hangi yönü kullandığı senaryoda yazılı ve `verify-tutorial-script`
+            hedef karelerin örtülmediğini kontrol ediyor. */}
+        {coach && !tileLifted && (
+          <div className="pointer-events-none absolute inset-[10px] z-20">
+            <div
+              data-coach=""
+              className="absolute left-0 right-0 flex flex-col"
+              style={{
+                top:
+                  coach.yon === 'alt'
+                    ? `calc(${CELL_W} * ${coach.r + 1} + ${coach.r * GRID_GAP}px + 6px)`
+                    : `calc(${CELL_W} * ${coach.r} + ${coach.r * GRID_GAP}px - 6px)`,
+                transform: coach.yon === 'alt' ? undefined : 'translateY(-100%)',
+                alignItems:
+                  coach.c <= 3 ? 'flex-start' : coach.c >= SIZE - 4 ? 'flex-end' : 'center',
+              }}
+            >
+              <span
+                className="font-bold leading-snug rounded-[9px] text-white text-center"
+                style={{
+                  background: '#2563EB',
+                  fontSize: 'clamp(9px, 2.4vw, 13px)',
+                  padding: '6px 9px',
+                  maxWidth: '96%',
+                  boxShadow: '0 2px 6px rgba(15,23,42,0.28)',
+                }}
+              >
+                {coach.text}
+              </span>
+              {/* Kuyruk: işaret edilen karenin TAM ortasında, balonun
+                  altında (ya da 'alt' yönünde üstünde). */}
+              <span
+                style={{
+                  position: 'absolute',
+                  left: `calc(${CELL_W} * ${coach.c + 0.5} + ${coach.c * GRID_GAP}px)`,
+                  transform: 'translateX(-50%)',
+                  ...(coach.yon === 'alt' ? { bottom: '100%' } : { top: '100%' }),
+                  width: 0,
+                  height: 0,
+                  borderLeft: '5px solid transparent',
+                  borderRight: '5px solid transparent',
+                  ...(coach.yon === 'alt'
+                    ? { borderBottom: '6px solid #2563EB' }
+                    : { borderTop: '6px solid #2563EB' }),
+                }}
+              />
             </div>
           </div>
         )}

@@ -1,0 +1,385 @@
+// Kelimeki — "Oynayarak öğren" tanıtımının senaryosu (7 Eylül 2026)
+//
+// NEDEN VAR: ilk oyunda açılan Hızlı Başlangıç penceresi 9 maddelik bir
+// METİNDİ ve kapatmanın bedeli tek dokunuştu — okumayan oyuncu tahtaya
+// bakınca ne yapacağını bilmiyordu. Aynı ders bu depoda bir kez daha
+// alınmıştı: "Buradan başla" balonu (26 Ağustos 2026) tam da kapalı testte
+// insanların KURALI değil İLK HAMLEYİ bulamadığı görüldüğü için eklendi.
+// Bu dosya o metnin yerine geçen 60 saniyelik mini oyunun senaryosudur.
+//
+// ⚠ TASARIM KISITI — MOTOR DEĞİŞMEZ: tanıtım `gameReducer`'ın kendisiyle
+// oynanır (puanı, geçerliliği, bölge vergisini, merkez çarpanını hesaplayan
+// aynı kod), ama yeni bir action ya da yeni bir `GameState` alanı EKLENMEDEN.
+// Sebebi bu depoya özgü: motorun DÖRT kopyası var (src, Dart portu, Edge
+// `_game/`, SQL aynası) ve motora dokunan her değişiklik dördünü birden
+// bakım işine çeviriyor. Tanıtım bir UI işidir, motor işi değil.
+//
+// ⚠ SENARYO ELLE YAZILIR AMA ELLE DOĞRULANMAZ: koordinatlar, kelimeler ve
+// EKRANDA YAZAN PUANLAR `npm run verify-tutorial-script` ile gerçek motorda
+// oynatılarak kilitlenir. Buradaki bir sayıyı değiştirmek isteyen önce o
+// betiği koşsun — yanlış puan gösteren bir tanıtım, hiç tanıtım olmamasından
+// kötüdür (oyuncu kuralı yanlış öğrenir).
+import { PLAYER_COLORS, RACK_SIZE, buildInitialBonuses, cornersFor } from '../game/constants';
+import type { GameState, Player, Tile } from '../game/types';
+import { TILE_DATA } from '../data/tiles';
+import { createEmptyBoard } from './board';
+
+/** Tanıtımdaki rakibin adı — ekranda ve mesajlarda geçer. */
+export const TUTORIAL_OPPONENT_NAME = 'Rakip';
+
+/** Girişsiz oyuncu için tanıtımda kullanılan ad. */
+export const TUTORIAL_PLAYER_NAME = 'Sen';
+
+/** Tek bir taşın konacağı yer. */
+export interface TutorialPlacement {
+  r: number;
+  c: number;
+  /** Raftan seçilecek harf — indeks DEĞİL: raf her hamlede kayıyor. */
+  letter: string;
+}
+
+/** Bir hamle (oyuncunun ya da rakibin). */
+export interface TutorialMove {
+  /** Kurulan ana kelime — metinlerde ve doğrulayıcıda kullanılır. */
+  word: string;
+  /** Bu turda konan taşlar (tahtadaki mevcut harfler listede YOKTUR). */
+  cells: TutorialPlacement[];
+  /** Oynayanın skoruna EKLENEN puan: çarpan uygulanmış, vergi düşülmüş. */
+  points: number;
+  /** Bu hamlenin KARŞI tarafa aktardığı bölge vergisi payı (yoksa 0). */
+  tax: number;
+  /**
+   * Bu hamlenin ALMASI BEKLENEN kelime çarpanı. Doğrulayıcı bunu kelime
+   * başına dönen `x2`/`x3` bayraklarıyla karşılaştırır; beyan yoksa HİÇBİR
+   * kelime çarpan almamalıdır. (Yani hem çarpanın kaçırılması hem de
+   * beklenmedik yerde çıkması hata sayılır.)
+   */
+  bonus?: 'x2' | 'x3';
+  /**
+   * Kelimenin ÇARPANSIZ harf toplamı — YALNIZCA ekranda "6 × 2 = 12" gibi
+   * bir cümle yazan hamlelerde dolu. Metin ile motor tek kaynaktan
+   * beslensin diye: doğrulayıcı `raw * 2 === points + tax` eşitliğini
+   * kilitler (`points` vergi düşülmüş hâlidir, çarpan vergiden ÖNCE
+   * uygulanır). ⚠ Tek kelime kuran hamlelerde anlamlı: bir hamle birden
+   * çok kelime kurup bunlar FARKLI çarpan alabildiğinden (4. sahne: ×3 ve
+   * ×2 yan yana) orada bu alan bilerek boş.
+   */
+  raw?: number;
+}
+
+/** Rakibin cevabı — hamle + tanıtımın kırmızı şeridinde yazan not. */
+export interface TutorialReply extends TutorialMove {
+  /** Rakip oynarken mesaj şeridinde görünen tek cümle. */
+  note: string;
+}
+
+/** Bir sahne: oyuncunun hamlesi + rakibin cevabı. */
+export interface TutorialStep {
+  id: 'ev' | 'buyume' | 'merkez' | 'x3vergi';
+  /** Balondaki TEK cümle (en fazla 6 kelime — metin bütçesi). */
+  say: string;
+  /**
+   * Balonun işaret ettiği kare ve balonun o kareye göre yönü — kullanıcı
+   * isteği (7 Eylül 2026): *"Balonu üste koyup oku aşağıda verebilirsin."*
+   *   `ust` = balon karenin ÜSTÜNDE, kuyruk aşağı bakar (varsayılan tercih),
+   *   `alt` = balon karenin ALTINDA, kuyruk yukarı bakar — üstte yer
+   *           yoksa (0. satır) ya da üstteki satırlarda HEDEF kareler
+   *           varsa kullanılır.
+   *
+   * ⚠ Balon çapanın 1-2 satır üstünü/altını KAPATIR ve oyuncuya "şuraya
+   * koy" derken oranın üstünü kapatmak tam ters etki yapar (7 Eylül
+   * 2026'da yaşandı: metin uzayınca balon üç hedefin üstüne oturdu).
+   * `verify-tutorial-script` her sahnede örtüşmeyi hesaplıyor.
+   */
+  bubble: { r: number; c: number; yon: 'ust' | 'alt' };
+  move: TutorialMove;
+  /** Hamle oynandıktan sonra mesaj şeridinde yazan kısa sonuç. */
+  done: string;
+  reply: TutorialReply;
+}
+
+/**
+ * Sahneler. Sıra kullanıcı kararıdır (7 Eylül 2026): ev → sınır → MERKEZ →
+ * rakip teması. Merkez dersi vergiden ÖNCE geliyor çünkü oyuncunun zinciri
+ * yukarıdan aşağı ilerliyor: önce ortadaki altın bölgeye varıyor, rakibin
+ * kırmızı sınırına ancak ondan sonra komşu oluyor. Ters sırada senaryo
+ * tahtayı "ileri sarmak" zorunda kalıyordu.
+ *
+ * Her hamleden sonra rakip GERÇEKTEN oynar (aynı reducer, kendi rafından) —
+ * yine kullanıcı kararı: "gerçek simülasyon olsun". Bunun iki bedava
+ * kazancı var: rakip 3. hamlesinde merkezi kullanıp ×2 alır (merkez dersi
+ * tek cümle harcamadan tekrar eder) ve 4. hamlesinde OYUNCUNUN sınırına
+ * değip ona vergi öder (verginin iki yönlü olduğu görünür).
+ */
+export const TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    id: 'ev',
+    say: 'Kendi köşenden başla.',
+    // Hedefler tahtanın EN ÜST satırında; üstte balona yer yok → balon
+    // altta, kuyruk yukarı. Kapattığı satırlar (1-2) o an boş.
+    bubble: { r: 0, c: 1, yon: 'alt' },
+    move: {
+      word: 'BÜYÜ',
+      cells: [
+        { r: 0, c: 0, letter: 'B' },
+        { r: 0, c: 1, letter: 'Ü' },
+        { r: 0, c: 2, letter: 'Y' },
+        { r: 0, c: 3, letter: 'Ü' },
+      ],
+      points: 12,
+      tax: 0,
+    },
+    done: 'İlk kelimen: +12 puan.',
+    reply: {
+      word: 'KUYU',
+      cells: [
+        { r: 9, c: 12, letter: 'K' },
+        { r: 10, c: 12, letter: 'U' },
+        { r: 11, c: 12, letter: 'Y' },
+        { r: 12, c: 12, letter: 'U' },
+      ],
+      points: 8,
+      tax: 0,
+      note: 'Rakip de kendi ev karesinden başladı: +8.',
+    },
+  },
+  {
+    id: 'buyume',
+    say: 'Kelime kurdukça sınırın büyür.',
+    // Kelime DİKEY (sütun 3, satır 1-5): balon üstte olsaydı kendi
+    // hedeflerinin üstüne otururdu. Bu yüzden en alttaki hedefin ALTINDA,
+    // kuyruk yukarı — kapattığı satırlar (6-7) boş.
+    bubble: { r: 5, c: 3, yon: 'alt' },
+    move: {
+      word: 'ÜZENGİ',
+      cells: [
+        { r: 1, c: 3, letter: 'Z' },
+        { r: 2, c: 3, letter: 'E' },
+        { r: 3, c: 3, letter: 'N' },
+        { r: 4, c: 3, letter: 'G' },
+        { r: 5, c: 3, letter: 'İ' },
+      ],
+      points: 15,
+      tax: 0,
+    },
+    done: '+15 puan — sınırın köşenin dışına taştı.',
+    reply: {
+      word: 'TABAK',
+      cells: [
+        { r: 9, c: 8, letter: 'T' },
+        { r: 9, c: 9, letter: 'A' },
+        { r: 9, c: 10, letter: 'B' },
+        { r: 9, c: 11, letter: 'A' },
+      ],
+      points: 7,
+      tax: 0,
+      note: 'Rakip merkeze doğru ilerliyor: +7.',
+    },
+  },
+  {
+    id: 'merkez',
+    // Metin kullanıcı kararı (7 Eylül 2026, ikinci cihaz turu): "burada puan
+    // iki katı" ALTIN bölgenin neresi olduğunu söylemiyordu — oyuncu balonun
+    // işaret ettiği tek kareyi sanabilir. Yeni cümle bölgeyi RENGİYLE
+    // adlandırıyor. (Kullanıcının yazdığı cümledeki iyelik eki düzeltildi:
+    // "kelime puanını 2 katını" → "kelime puanının 2 katını".)
+    say: 'Sarı bölge içinde kelime puanının 2 katını alırsın',
+    // Kuyruk ilk hedefin (5,4) üstünde; balon 3-4. satırların üstünde
+    // duruyor (o satırlar boş).
+    bubble: { r: 5, c: 4, yon: 'ust' },
+    move: {
+      word: 'İNSAN',
+      cells: [
+        { r: 5, c: 4, letter: 'N' },
+        { r: 5, c: 5, letter: 'S' },
+        { r: 5, c: 6, letter: 'A' },
+        { r: 5, c: 7, letter: 'N' },
+      ],
+      points: 12,
+      bonus: 'x2',
+      raw: 6,
+      tax: 0,
+    },
+    done: '6 × 2 = 12 puan!',
+    reply: {
+      word: 'SAAT',
+      cells: [
+        { r: 6, c: 8, letter: 'S' },
+        { r: 7, c: 8, letter: 'A' },
+        { r: 8, c: 8, letter: 'A' },
+      ],
+      points: 10,
+      bonus: 'x2',
+      raw: 5,
+      tax: 0,
+      note: 'Rakip de merkeze girdi ve o da ikiye katladı: +10.',
+    },
+  },
+  {
+    id: 'x3vergi',
+    // Kullanıcı kararı (7 Eylül 2026): *"4. slaytta hem X3 alsın hem de
+    // sınır ihlali yapsın"*. Geometri buna zaten uygundu — merkez karesi
+    // (6,6) ile rakibin SAAT sütunu (6,8) arasında TEK boş kare var.
+    // İki taş (F ve E) üç kelime birden kuruyor:
+    //   FES = F(6,6) + E(6,7) + rakibin S(6,8)  → X3 karesine yeni taş: ×3
+    //   AF  = A(5,6) üstte + F(6,6)             → o da ×3 (aynı X3 hücresi)
+    //   NE  = N(5,7) üstte + E(6,7)             → altın bölgede: ×2
+    // ve (6,7) rakibin taşına komşu olduğu için hamle vergi ödüyor.
+    //
+    // ⚠ Harf kullanıcı kararı (7 Eylül 2026): merkeze S değil **F** (7 puan,
+    // torbadaki tek F) — X3'ün gerçek gücü ancak pahalı bir harfle görünür
+    // hâle geliyor. Kelime rakibin kendi taşıyla bitiyor, yani hamle onun
+    // sınırına DEĞİYOR ve `Sınır İhlali!` penceresi çıkıyor. (Rakibin
+    // bölgesinin İÇİNE bir taş koymak buradan mümkün değil: bölge = kendi
+    // taşları + sağ alttaki 4×4 blok, ikisi de merkezden bir hamle uzakta
+    // değil. Motor ikisini zaten aynı vergiyle cezalandırıyor — "giren ya da
+    // değen".)
+    // ⚠ `raw` YOK: üç kelime İKİ FARKLI çarpan aldığından "raw × n" diye
+    // tek bir cümle kurulamaz (bkz. `TutorialMove.raw`).
+    say: 'Ortadaki kare üç katı!',
+    // Kuyruk doğrudan X3 karesini gösteriyor; balon 4-5. satırların
+    // üstünde (5. satırda İNSAN'ın taşları var ama onlar KONMUŞ taşlar,
+    // hedef değil).
+    bubble: { r: 6, c: 6, yon: 'ust' },
+    move: {
+      word: 'FES',
+      cells: [
+        { r: 6, c: 6, letter: 'F' },
+        { r: 6, c: 7, letter: 'E' },
+      ],
+      points: 39,
+      bonus: 'x3',
+      tax: 19,
+    },
+    done: '58 puanın 19’u rakibe gitti: +39.',
+    reply: {
+      word: 'NAR',
+      cells: [
+        { r: 6, c: 4, letter: 'A' },
+        { r: 7, c: 4, letter: 'R' },
+      ],
+      // Rakibin bu son hamlesi altın bölgeye düşüyor (6,4 · 7,4), yani o da
+      // ×2 alıyor: 3 → 6, sonra 2'si vergi olarak OYUNCUYA geçiyor.
+      points: 4,
+      bonus: 'x2',
+      raw: 3,
+      tax: 2,
+      note: 'Şimdi tersi oldu: rakip senin sınırına değdi, 2 puanı sana geçti.',
+    },
+  },
+];
+
+/**
+ * Kapanış (metin kullanıcı kararı, 7 Eylül 2026). Önceki hâli bingo
+ * bonusunu tanıtıyordu; oysa bingo tanıtımda HİÇ yaşanmayan bir mekanikti —
+ * kapanış kartı, oyuncunun az önce dört sahnede öğrendiklerini tek
+ * STRATEJİYE bağladığında daha çok iş görüyor: bölgeni büyütmek (topladığın
+ * vergi artar) ve rakibin alanını daraltmak (onun büyümesi durur). İkisi de
+ * senaryoda yaşandı — rakip 4. cevabında oyuncuya vergi ödedi.
+ */
+export const TUTORIAL_FINISH_TITLE = 'Hazırsın!';
+export const TUTORIAL_FINISH_TEXT =
+  'Koyduğun kelime kadar nereye koyduğun da çok önemli. Hem bölgeni ' +
+  'büyüterek daha çok vergi topla, hem de rakibin hareket alanını ' +
+  'daraltarak büyümesini engelle.';
+
+/**
+ * Rafların TAM olarak hangi sırayla dolacağı. `drawTiles` torbanın SONUNDAN
+ * çeker (`pop`), yani buradaki sıra "çekilme sırası"dır ve torba kurulurken
+ * tersine çevrilir.
+ *
+ * ⚠ Bu liste senaryonun sessiz ön koşuludur: bir sahnenin harfi rafta yoksa
+ * tanıtım oyuncunun elinde kilitlenir. `verify-tutorial-script` her sahnede
+ * gereken harfin rafta bulunduğunu ayrıca kontrol eder.
+ *
+ * Sıra (çeken → adet): Sen 4, Rakip 4, Sen 5, Rakip 4, Sen 4, Rakip 3.
+ */
+const DRAW_ORDER: string[] = [
+  // Sen — ÜZENGİ'nin G ve İ'si (Z, E, N zaten rafta) + iki dolgu
+  'G', 'İ', 'A', 'T',
+  // Rakip — TABAK'ın ikinci A'sı + üç dolgu
+  'A', 'E', 'L', 'M',
+  // Sen — İNSAN'ın N, S, A, N'ı + bir dolgu
+  'N', 'S', 'A', 'N', 'K',
+  // Rakip — SAAT'in S, A, A'sı + bir dolgu
+  'S', 'A', 'A', 'R',
+  // Sen — FES'in F ve E'si + iki dolgu (F torbadaki TEK F)
+  'F', 'E', 'M', 'R',
+  // Rakip — NAR'ın A'sı (R rafta) + iki dolgu
+  'A', 'K', 'L',
+];
+
+/**
+ * Torbanın DİBİNDE bekleyen, hiç çekilmeyen taşlar. Boş bir torba + boşalan
+ * bir raf `endGame`'i tetikler (bkz. `applyPlacement` → `finishesGame`);
+ * tanıtım oyunun sonuna gelmeden bitmeli, bu yüzden torba hep dolu kalır.
+ */
+const BAG_FILLER: string[] = ['E', 'L', 'M', 'R', 'T', 'K', 'A', 'N', 'O', 'S'];
+
+/** Başlangıç rafları — senaryodaki ilk hamlelerin harfleri. */
+const START_RACKS: string[][] = [
+  ['B', 'Ü', 'Y', 'Ü', 'Z', 'E', 'N'],
+  ['K', 'U', 'Y', 'U', 'T', 'A', 'B'],
+];
+
+function tile(letter: string): Tile {
+  return { letter, pts: TILE_DATA[letter]?.pts ?? 0 };
+}
+
+/**
+ * Tanıtımın başlangıç durumu — `startGame`'in (gameReducer) yaptığının
+ * senaryolu eşdeğeri: aynı alanlar, ama torba ve raflar RASTGELE DEĞİL.
+ *
+ * `START` action'ı kullanılmıyor çünkü o torbayı karıştırır; bunun yerine
+ * durum doğrudan kurulup `TutorialGame` kendi `useReducer`'ına başlangıç
+ * değeri olarak verir. Reducer'a yeni bir action eklemek motorun dört
+ * kopyasını birden ilgilendirirdi (bkz. dosya başı).
+ */
+export function createTutorialState(playerName: string): GameState {
+  const corners = cornersFor(2);
+  const names = [playerName.trim() || TUTORIAL_PLAYER_NAME, TUTORIAL_OPPONENT_NAME];
+  const players: Player[] = names.map((name, i) => ({
+    name,
+    corners: corners[i],
+    colorIndex: i % PLAYER_COLORS.length,
+    // Rakip `isAI` DEĞİL: bayrak yalnızca "YZ araması bu koltuğu oynasın"
+    // demek olurdu ve tanıtımda arama yok — hamleleri senaryoda yazılı.
+    // (`TutorialGame` zaten App'in YZ effect'ini hiç çalıştırmıyor.)
+    isAI: false,
+    surrendered: false,
+    rack: START_RACKS[i].map(tile),
+    score: 0,
+    bestMoveScore: 0,
+    bestWordScore: 0,
+    longestWord: '',
+    moveCount: 0,
+    moveScoreSum: 0,
+  }));
+
+  return {
+    phase: 'play',
+    startedAt: new Date().toISOString(),
+    multiSession: false,
+    endReason: 'normal',
+    board: createEmptyBoard(),
+    // Çekilme sırası tersine: `drawTiles` sondan `pop` ediyor.
+    bag: [...BAG_FILLER, ...[...DRAW_ORDER].reverse()].map(tile),
+    bonuses: buildInitialBonuses(),
+    placed: {},
+    players,
+    current: 0,
+    selectedTile: null,
+    swapMode: false,
+    swapSelection: [],
+    turnCount: 0,
+    consecutivePasses: 0,
+    isGameOver: false,
+    message: '',
+    messageType: '',
+    lastMoveCells: [],
+    moveHistory: [],
+  };
+}
+
+/** Raf en fazla bu kadar taş taşır — senaryo kurulurken sağlaması yapılır. */
+export const TUTORIAL_RACK_SIZE = RACK_SIZE;

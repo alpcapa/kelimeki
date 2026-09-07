@@ -1,7 +1,30 @@
-// Kelimeki — ilk açılışta Hızlı Başlangıç popup'ının yalnızca bir kez gösterilmesi için.
+// Kelimeki — ilk oyunda gösterilen tanıtımın kapısı.
+//
+// 7 Eylül 2026'ya kadar burada tek bir bayrak vardı: ilk oyunda açılan Hızlı
+// Başlangıç PENCERESİ görüldü mü. Pencerenin yerini "Oynayarak öğren"
+// tanıtımı alınca (bkz. `tutorialScript.ts`) bayrak İKİYE ayrıldı, çünkü
+// ikisi artık farklı soruları cevaplıyor:
+//
+//   `kelimeki:seen-quickstart`  → SALT OKUNUR MİRAS. Yalnızca 7 Eylül 2026
+//     öncesi sürümler YAZDI. Bugün tek işi "bu cihaz eski pencereyi görmüş,
+//     yani burada zaten oynanmış" demek — yani MEVCUT oyuncuyu tanımak.
+//   `kelimeki:tutorial-seen`    → tanıtım gösterildi mi (bir kez).
+//
+// ⚠ Eski davranışta "Nasıl oynanır?"ı elle açıp kapatmak da quickstart'ı
+// "görüldü" sayıyordu (pencere bir daha kendiliğinden açılmasın diye). Bu
+// artık YAPILMIYOR: yardım sayfasını okumak tanıtımı TÜKETMEZ — yoksa
+// oynamadan önce yardıma bakan yeni kullanıcı tanıtımı hiç göremezdi.
 const STORAGE_KEY = 'kelimeki:seen-quickstart';
+const TUTORIAL_SEEN_KEY = 'kelimeki:tutorial-seen';
 
-/** localStorage kapalı/erişilemez olabilir — bu durumda tekrar tekrar açılmasın diye "görüldü" varsayılır. */
+/**
+ * Bu cihaz 7 Eylül 2026 öncesindeki Hızlı Başlangıç penceresini gördü mü —
+ * yani burada daha önce bir oyun başlatıldı mı. Artık YAZILMIYOR, yalnızca
+ * "mevcut oyuncu" sinyali olarak okunuyor.
+ *
+ * localStorage kapalı/erişilemez olabilir; o durumda `true` dönüyoruz —
+ * kapının varsayılanı "gösterme" tarafında olmalı (bkz. `shouldShowTutorial`).
+ */
 export function hasSeenQuickStart(): boolean {
   try {
     return localStorage.getItem(STORAGE_KEY) === '1';
@@ -10,12 +33,72 @@ export function hasSeenQuickStart(): boolean {
   }
 }
 
-export function markQuickStartSeen(): void {
+/** Tanıtım bu cihazda gösterildi mi. */
+export function hasSeenTutorial(): boolean {
   try {
-    localStorage.setItem(STORAGE_KEY, '1');
+    return localStorage.getItem(TUTORIAL_SEEN_KEY) === '1';
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * "Gösterildi" işareti. Zoom balonundaki kuralın aynısı: gösterim, ekrana
+ * GELMEKTİR — nasıl kapandığı (bitirildi mi, atlandı mı, yarıda kapatıldı mı)
+ * sayacı etkilemez. Böylece tanıtım gerçekten "bir kere" gösterilir ve
+ * yarıda kesilen bir tanıtım sonsuz döngüye dönüşmez.
+ */
+export function markTutorialSeen(): void {
+  try {
+    localStorage.setItem(TUTORIAL_SEEN_KEY, '1');
   } catch {
     // yoksay
   }
+}
+
+/**
+ * Tanıtımın web'de yayına girdiği an. Bu andan ÖNCE açılmış bir hesap =
+ * MEVCUT oyuncu → tanıtım gösterilmez, cihazı yeni olsa bile.
+ *
+ * Kullanıcı isteği (7 Eylül 2026): *"Sadece yeni gelenlere bir kere
+ * gösterilecek. Mevcut gelmiş ve oynamış kişilere gösterilmeyecek."*
+ */
+export const TUTORIAL_LAUNCH_AT = '2026-09-07T00:00:00.000Z';
+
+/** `shouldShowTutorial`ın okuduğu sinyaller — hepsi çağıranda hazır. */
+export interface TutorialGateInput {
+  /** Tanıtım bu cihazda zaten gösterildi mi (`hasSeenTutorial`). */
+  seenTutorial: boolean;
+  /** Cihaz eski Hızlı Başlangıç penceresini gördü mü (`hasSeenQuickStart`). */
+  seenLegacyQuickStart: boolean;
+  /** Bu cihazda/hesapta devam eden bir oyun var mı — "zaten oynamış" sinyali. */
+  hasPlayed: boolean;
+  /** Girişli kullanıcının hesap açılış zamanı (ISO); misafirde `null`. */
+  accountCreatedAt: string | null;
+}
+
+/**
+ * Tanıtım bu açılışta gösterilsin mi? Saf fonksiyon — dört sinyalin HEPSİ
+ * "hayır" derse gösterilir; herhangi biri "bu kişi yeni değil" derse
+ * gösterilmez. Kapının varsayılanı bilerek GÖSTERME tarafında: mevcut bir
+ * oyuncuyu tanıtıma sokmak, yeni bir oyuncunun tanıtımı kaçırmasından daha
+ * kötü (kullanıcı kararı, 7 Eylül 2026).
+ *
+ * ⚠ SINIR — misafirde cihaz dışına bakacak bir şey YOK: tarayıcısını
+ * temizlemiş ya da yeni bir cihazdan gelen eski bir MİSAFİR oyuncu "yeni"
+ * görünür ve tanıtımı bir kez daha görür. Girişli kullanıcıda bu delik
+ * `accountCreatedAt` ile kapalı (hesap tanıtımdan eskiyse gösterilmez).
+ */
+export function shouldShowTutorial(input: TutorialGateInput): boolean {
+  if (input.seenTutorial) return false;
+  if (input.seenLegacyQuickStart) return false;
+  if (input.hasPlayed) return false;
+  if (input.accountCreatedAt !== null) {
+    const acilis = Date.parse(input.accountCreatedAt);
+    // Okunamayan bir tarihte de gösterme: kapının varsayılanı bu yönde.
+    if (Number.isNaN(acilis) || acilis < Date.parse(TUTORIAL_LAUNCH_AT)) return false;
+  }
+  return true;
 }
 
 // Oyun İçi Mesajlaşma — Faz 1: Canlı oyun ekranındaki "Mesajlaşma" butonuna

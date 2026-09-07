@@ -113,6 +113,13 @@ jobs:
       # Playwright'a gerek yok, saniyeler sürüyor — lint'in hemen yanında.
       - run: npm run verify-remaining-tiles
 
+      # "Oynayarak öğren" tanıtımının senaryosu (7 Eylül 2026): koordinatlar,
+      # kelimeler ve EKRANDA YAZAN PUANLAR gerçek motorda oynatılarak
+      # doğrulanır. Bu adım olmadan motordaki bir kural değişikliği (çarpan,
+      # vergi formülü, sözlük) tanıtımın metnini SESSİZCE bayatlatırdı —
+      # yanlış puan gösteren bir tanıtım, hiç tanıtım olmamasından kötü.
+      - run: npm run verify-tutorial-script
+
       # Taş değiştirme değişmezleri (5 Eylül 2026 hata avı geçişi #24/#25):
       # CONFIRM_SWAP taslak taşları yok etmemeli, ve rafı yeniden sıralayan
       # bir senkron indeks tabanlı `swapSelection`ı düşürmeli. Golden
