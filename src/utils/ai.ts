@@ -253,7 +253,9 @@ export function findAIMoves(
   // düşürüyordu (fonksiyonel bir hata yoktu, isim gölgelemesiydi).
   const pool = getWordPool(hard ? hard.maxWordLen : NORMAL_MAX_WORD_LEN);
   // Bölge yeniden sıralaması açıksa arama daha geniş bir liste tutar.
-  const width = hard && hard.territoryWeight > 0 ? Math.max(n, TERRITORY_RERANK_WIDTH) : n;
+  let width = n;
+  if (hard && hard.territoryWeight > 0) width = Math.max(width, TERRITORY_RERANK_WIDTH);
+  if (hard && hard.replyWeight > 0) width = Math.max(width, LOOKAHEAD_WIDTH);
   // tryCornerStart dışında hiç kullanılmıyor — bu da yalnızca isFirstMove
   // (ya da nadir freshCorners) dallarında tetikleniyor. Her normal hamlede
   // onbinlerce kelimeyi boşuna filtrelememek için tembel/önbellekli hesap.
