@@ -3,7 +3,7 @@
 // YZ, rafından heceleyebildiği kelimeler arasından, bölge kurallarına uyan
 // ve sözlükçe geçerli en yüksek puanlı hamleyi arar. İlk hamlesini kendi
 // köşesinden başlatır; sonra mevcut taşları çapa alarak yeni kelimeler kurar.
-import { AI_LEVEL_TOP_N, RACK_SIZE, SIZE, cornerCell } from '../game/constants';
+import { AI_LEVEL_SEARCH, AI_LEVEL_TOP_N, SIZE, cornerCell, type AiSearch } from '../game/constants';
 import type { AIMove, AiLevel, BonusType, Placement, Player, Tile } from '../game/types';
 import { getWordSet } from '../data/wordSetLoader';
 import { letterPoints } from '../data/tiles';
@@ -20,6 +20,9 @@ import { getFormedWords, key, tileLetter, type Board } from './board';
 // kullanımda hesaplanmasının sebebi, WORD_SET'in artık ayrı bir chunk'tan
 // (bkz. wordSetLoader.ts) geldiği ve modül değerlendirme anında henüz
 // yüklenmemiş olabilmesidir.
+//
+// Havuz üst sınırına (`AiSearch.maxWordLen`) göre ayrı önbellek: Normal/Kolay
+// 7, Zor 8 (bkz. constants.ts, AI_LEVEL_SEARCH).
 const wordPools = new Map<number, readonly string[]>();
 function getWordPool(maxLen: number): readonly string[] {
   let pool = wordPools.get(maxLen);
@@ -30,156 +33,6 @@ function getWordPool(maxLen: number): readonly string[] {
     wordPools.set(maxLen, pool);
   }
   return pool;
-}
-
-/** Normal/Kolay'ın kelime havuzu üst sınırı (harf). */
-const NORMAL_MAX_WORD_LEN = 7;
-
-/**
- * DENEYSEL — Zor motoru adayları (ROADMAP #23 Faz 5). `findAIMoves`'a
- * verilmezse davranış Normal'le bayt-eş; ölçüm aleti (`simulate-ai-levels`)
- * adayları tek tek ve bileşim hâlinde bu seçeneklerle koşturur.
- */
-export interface HardOptions {
-  /** Kelime havuzu üst sınırı (Normal 7; 8 = çapa + tam raf = bingo yolu). */
-  maxWordLen: number;
-  /** Kullanılan joker başına sıralama cezası (puan). 0 = kapalı. */
-  jokerPenalty: number;
-  /** Raf-kalıntı değerinin yüzde ağırlığı (100 = tablo aynen). 0 = kapalı. */
-  leaveWeight: number;
-  /** Bölge farkı (kendi kazanç + rakip kaybı) hücre başına santipuan. 0 = kapalı. */
-  territoryWeight: number;
-  /** Vergili hamleleri, rakibe giden payı da düşerek güvenlilerle birlikte sırala. */
-  netDiff: boolean;
-  /**
-   * Gönüllü değişim: en iyi hamlenin ham puanı bu eşiğin ALTINDAYSA ve torbada
-   * en az bir raf dolusu taş varsa liste boş döner (çağıran rafı değiştirir).
-   * 0 = kapalı.
-   */
-  exchangeBelow: number;
-  /**
-   * Tek katlı ileri bakış: sıradaki rakibin GENEL bir rafla (`GENERIC_REPLY_
-   * LETTERS`) bulabileceği en iyi cevabın ham puanı bu yüzde ağırlıkla
-   * düşülür (100 = birebir). 0 = kapalı. Rakibin gerçek rafına ASLA
-   * bakılmaz (kullanıcı kararı, 7 Eylül 2026: rafa bakmak hiledir) — bu
-   * yalnızca "hamlem hangi sıcak noktaları açtı" sorusunu ölçer.
-   */
-  replyWeight: number;
-  /**
-   * Geniş arama: (1) boş "kanca" hücrelerinden (bir taşa komşu) başlayan
-   * paralel dizişler — tüm taşlar yeni, bağlantı çapraz kelimelerle; (2)
-   * aynı hattaki BİRDEN ÇOK tahta taşından geçen uzun kelimeler (aday
-   * süzgeci raf + hattın harfleriyle). Normal yalnızca tek bir çapadan geçen
-   * hattı dener; bu iki sınıf onun hiç görmediği hamleler (bingo dahil).
-   */
-  wideSearch: boolean;
-  /** Torbada kalan taş — 0'da kalıntı = kalan taşların puanı (oyun sonu düşümü). */
-  bagCount: number;
-}
-
-/** Sıralama anahtarı santipuan: `score * RANK_SCALE + düzeltmeler`. */
-const RANK_SCALE = 100;
-
-/** Bölge yeniden sıralamasına giren aday sayısı. */
-const TERRITORY_RERANK_WIDTH = 10;
-
-/** İleri bakışa giren aday sayısı (her biri tam bir rakip araması). */
-const LOOKAHEAD_WIDTH = 8;
-
-/** Rafa bakmayan ileri bakışta rakibe varsayılan raf (sık harfler + joker). */
-const GENERIC_REPLY_LETTERS = ['A', 'E', 'İ', 'K', 'L', 'R', '?'];
-
-/** Sıradaki (teslim olmamış) rakip — reducer'ın `nextActiveIndex`iyle aynı. */
-function nextOpponent(players: Player[], from: number): number {
-  let i = from;
-  for (let step = 0; step < players.length; step++) {
-    i = (i + 1) % players.length;
-    if (!players[i].surrendered) return i;
-  }
-  return from;
-}
-
-/** Oyuncunun tahtada hiç taşı yoksa ilk hamlesi (reducer `isFirstMove`). */
-function hasNoTiles(board: Board, owner: number): boolean {
-  for (const row of board) for (const t of row) if (t && t.owner === owner) return false;
-  return true;
-}
-
-const VOWELS = new Set(['A', 'E', 'I', 'İ', 'O', 'Ö', 'U', 'Ü']);
-
-/** Rafta KALAN harfin santipuan değeri (oynanabilirlik sezgiseli). */
-const LEAVE_VALUE: Record<string, number> = {
-  A: 100, E: 150, İ: 100, I: 0, K: 100, L: 100, N: 100, R: 150, T: 50, M: 50, S: 50,
-  D: 0, U: 0, O: 0, Y: 0, B: 0, Ç: -50, Ş: -50, Ü: -50, Z: -100, C: -100, P: -100,
-  G: -150, H: -100, F: -200, V: -200, Ö: -200, Ğ: -300, J: -300, '?': 0,
-};
-
-/** Hamleden sonra rafta kalan harflerin değeri (santipuan, tam sayı). */
-function leaveValue(leave: string[], bagCount: number): number {
-  if (bagCount === 0) {
-    let pts = 0;
-    for (const L of leave) pts += letterPoints(L);
-    return -pts * RANK_SCALE;
-  }
-  let v = 0;
-  const seen = new Map<string, number>();
-  let vowels = 0;
-  let consonants = 0;
-  for (const L of leave) {
-    v += LEAVE_VALUE[L] ?? 0;
-    const c = (seen.get(L) ?? 0) + 1;
-    seen.set(L, c);
-    if (c === 2) v -= 150;
-    else if (c > 2) v -= 300;
-    if (L === '?') continue;
-    if (VOWELS.has(L)) vowels++;
-    else consonants++;
-  }
-  const imbalance = Math.abs(vowels - consonants);
-  if (imbalance > 1) v -= (imbalance - 1) * 100;
-  if (vowels === 0 && leave.length >= 3) v -= 200;
-  return v;
-}
-
-/** Zor düzeltmesi: joker cezası + raf-kalıntı (santipuan). */
-function hardAdjust(placements: Placement[], rackLetters: string[], hard: HardOptions): number {
-  const leave = [...rackLetters];
-  let wilds = 0;
-  for (const p of placements) {
-    const L = p.tile.wild ? '?' : p.tile.letter;
-    if (p.tile.wild) wilds++;
-    const i = leave.indexOf(L);
-    if (i >= 0) leave.splice(i, 1);
-  }
-  let adj = -hard.jokerPenalty * wilds * RANK_SCALE;
-  if (hard.leaveWeight > 0) {
-    adj += Math.trunc((hard.leaveWeight * leaveValue(leave, hard.bagCount)) / 100);
-  }
-  return adj;
-}
-
-/** Bölge farkına göre yeniden sıralar (deterministik, `insertBounded` ile). */
-function rerankByTerritory(
-  list: Ranked[],
-  board: Board,
-  players: Player[],
-  owner: number,
-  territories: Set<string>[],
-  weight: number,
-  n: number,
-): Ranked[] {
-  const out: Ranked[] = [];
-  for (const item of list) {
-    const nb = board.map((row) => [...row]);
-    for (const p of item.move.placements) nb[p.r][p.c] = p.tile;
-    const t = computeAllTerritories(nb, players);
-    let delta = t[owner].size - territories[owner].size;
-    for (let i = 0; i < players.length; i++) {
-      if (i !== owner) delta += territories[i].size - t[i].size;
-    }
-    insertBounded(out, { move: item.move, rank: item.rank + weight * delta }, n);
-  }
-  return out;
 }
 
 /**
@@ -239,6 +92,14 @@ function insertBounded(list: Ranked[], item: Ranked, n: number): void {
  * en az bir hamle varsa liste YALNIZCA onlardan oluşur; yoksa vergili
  * hamlelerden, YZ'ye paylaşım sonrası kalacak puana göre sıralı. Rastgele
  * değer TÜKETMEZ — seçim `pickTopMove`/`findAIMove`'un işi.
+ *
+ * `search` aramanın GENİŞLİĞİ (ROADMAP #23 Faz 5): Normal/Kolay yalnızca
+ * tahtadaki tek bir taştan (çapa) geçen hattı dener; Zor (`wide`) ayrıca
+ * (1) bir taşa komşu boş "kanca" hücresinden başlayan PARALEL dizişleri —
+ * tüm taşlar yeni, bağlantı çapraz kelimelerle — ve (2) aynı hattaki birden
+ * çok tahta taşından geçen kelimeleri dener. Bu iki sınıf Normal'in hiç
+ * görmediği hamleler; kural her zaman izin veriyordu (validatePlacement:
+ * "konan taşlardan biri mevcut bir taşa komşu" yeter).
  */
 export function findAIMoves(
   board: Board,
@@ -249,17 +110,13 @@ export function findAIMoves(
   isFirstMove: boolean,
   players: Player[],
   n: number,
-  hard?: HardOptions,
+  search: AiSearch = AI_LEVEL_SEARCH.normal,
 ): AIMove[] {
   const rackLetters = rack.map((t) => t.letter);
   // Yerel değişken bilerek `pool` adını taşıyor — modül seviyesindeki
   // `wordPools` önbelleğiyle (yukarı) aynı adı taşımak okunabilirliği
   // düşürüyordu (fonksiyonel bir hata yoktu, isim gölgelemesiydi).
-  const pool = getWordPool(hard ? hard.maxWordLen : NORMAL_MAX_WORD_LEN);
-  // Bölge yeniden sıralaması açıksa arama daha geniş bir liste tutar.
-  let width = n;
-  if (hard && hard.territoryWeight > 0) width = Math.max(width, TERRITORY_RERANK_WIDTH);
-  if (hard && hard.replyWeight > 0) width = Math.max(width, LOOKAHEAD_WIDTH);
+  const pool = getWordPool(search.maxWordLen);
   // tryCornerStart dışında hiç kullanılmıyor — bu da yalnızca isFirstMove
   // (ya da nadir freshCorners) dallarında tetikleniyor. Her normal hamlede
   // onbinlerce kelimeyi boşuna filtrelememek için tembel/önbellekli hesap.
@@ -288,18 +145,19 @@ export function findAIMoves(
   };
 
   // Geniş arama: hat (satır/sütun) başına aday süzgeci — raf + o hattaki
-  // tahta harfleri. Çok çapalı uzun kelimeler ancak böyle adaya girer.
+  // TÜM tahta harfleri (kapsayıcı bir ön eleme; kesin eşleşmeyi tryPlace ve
+  // consider doğrular). Çok çapalı kelimeler ancak böyle adaya girer; en
+  // fazla 26 hat, her biri bu çağrı için bir kez süzülür.
   const lineCandidatesCache = new Map<string, string[]>();
   const candidatesForLine = (horiz: boolean, index: number): string[] => {
     const cacheKey = (horiz ? 'r' : 'c') + index;
     let cached = lineCandidatesCache.get(cacheKey);
     if (!cached) {
-      const lineLetters: string[] = [];
+      const avail = [...rackLetters];
       for (let i = 0; i < SIZE; i++) {
         const t = horiz ? board[index][i] : board[i][index];
-        if (t) lineLetters.push(tileLetter(t));
+        if (t) avail.push(tileLetter(t));
       }
-      const avail = [...rackLetters, ...lineLetters];
       cached = pool.filter((w) => w.length <= avail.length && canSpell(w, avail));
       lineCandidatesCache.set(cacheKey, cached);
     }
@@ -353,11 +211,9 @@ export function findAIMoves(
     }
     const score = calcScore(board, placed, bonuses);
     const move: AIMove = { word, score, placements };
-    const adj = hard ? hardAdjust(placements, rackLetters, hard) : 0;
     if (touchedIdx.size === 0) {
-      const rank = score * RANK_SCALE + adj;
-      insertBounded(safe, { move, rank }, width);
-      insertBounded(any, { move, rank }, width);
+      insertBounded(safe, { move, rank: score }, n);
+      insertBounded(any, { move, rank: score }, n);
       return;
     }
     // Paylaşım sonrası YZ'ye kalacak gerçek puan — validator.ts'teki
@@ -371,54 +227,7 @@ export function findAIMoves(
     // az kazançlı sanmasına yol açıyordu.
     const k = touchedIdx.size;
     const share = Math.round((score * (k + 1)) / (6 * k));
-    if (hard && hard.netDiff) {
-      // Net fark: kendi kaybı + rakibe giden pay birlikte düşülür, hamle
-      // güvenlilerle aynı listede yarışır.
-      const rank = (score - 2 * share * k) * RANK_SCALE + adj;
-      insertBounded(safe, { move, rank }, width);
-      insertBounded(any, { move, rank }, width);
-      return;
-    }
-    insertBounded(any, { move, rank: (score - share * k) * RANK_SCALE + adj }, width);
-  };
-
-  const finish = (list: Ranked[]): AIMove[] => {
-    const ranked =
-      hard && hard.territoryWeight > 0
-        ? rerankByTerritory(list, board, players, owner, territories, hard.territoryWeight, n)
-        : list;
-    if (hard && hard.replyWeight > 0) {
-      const opp = nextOpponent(players, owner);
-      const oppRack: Tile[] = GENERIC_REPLY_LETTERS.map((L) => ({ letter: L, pts: letterPoints(L), owner: opp }));
-      if (opp !== owner) {
-        const out: Ranked[] = [];
-        for (const item of ranked.slice(0, LOOKAHEAD_WIDTH)) {
-          const nb = board.map((row) => [...row]);
-          for (const p of item.move.placements) nb[p.r][p.c] = p.tile;
-          const reply = findAIMoves(
-            nb, oppRack, bonuses, opp, players[opp].corners, hasNoTiles(nb, opp), players, 1,
-          );
-          const replyScore = reply.length > 0 ? reply[0].score : 0;
-          insertBounded(
-            out,
-            { move: item.move, rank: item.rank - Math.trunc((hard.replyWeight * replyScore * RANK_SCALE) / 100) },
-            n,
-          );
-        }
-        return out.map((x) => x.move);
-      }
-    }
-    if (
-      hard &&
-      hard.exchangeBelow > 0 &&
-      !isFirstMove &&
-      hard.bagCount >= RACK_SIZE &&
-      ranked.length > 0 &&
-      ranked[0].move.score < hard.exchangeBelow
-    ) {
-      return [];
-    }
-    return ranked.slice(0, n).map((x) => x.move);
+    insertBounded(any, { move, rank: score - share * k }, n);
   };
 
   // Verilen köşeden, tahtadaki mevcut taşlardan bağımsız yeni bir kelimeyle
@@ -476,7 +285,7 @@ export function findAIMoves(
   // ── İlk hamle: kendi köşelerinden birinden başla ────────────────────────────
   if (isFirstMove) {
     for (const homeCorner of corners) tryCornerStart(homeCorner);
-    return finish(safe);
+    return safe.map((x) => x.move);
   }
 
   // ── Çapalı hamleler: tahtadaki her taşı eksen alarak dene ────────────────────
@@ -532,21 +341,25 @@ export function findAIMoves(
     );
   };
 
-  const wide = hard !== undefined && hard.wideSearch;
+  // Kanca hücresi: boş ve dört komşusundan en az biri dolu.
   const hasNeighbor = (r: number, c: number): boolean =>
     (r > 0 && !!board[r - 1][c]) ||
     (r < SIZE - 1 && !!board[r + 1][c]) ||
     (c > 0 && !!board[r][c - 1]) ||
     (c < SIZE - 1 && !!board[r][c + 1]);
 
+  // ⚠ Döngü SIRASI davranışın parçası (consider eşit puanda İLK bulunanı
+  // tutar) — Dart `find_move.dart` ve Edge kopyası birebir aynı sırayı izler.
+  // Geniş aramada aynı yerleşim birden çok kanca/çapadan yeniden üretilebilir;
+  // n=1'de zararsız (ilk bulunan kalır), n>1'de liste aynı hamleyi iki kez
+  // taşıyabilir — Zor N=1 olduğundan bilerek ayıklanmıyor.
   for (let r = 0; r < SIZE; r++) {
     for (let c = 0; c < SIZE; c++) {
       const anchorTile = board[r][c];
       if (!anchorTile) {
-        // Geniş arama: boş kanca hücresi — tüm taşlar yeni, bağlantı
-        // komşuluktan (paralel diziş). Hat içindeki mevcut taşlar tryPlace'te
-        // eşleşmek zorunda.
-        if (!wide || !hasNeighbor(r, c)) continue;
+        // Geniş arama — kanca hücresi: W[idx] buraya (yeni taş) gelir, hattaki
+        // mevcut taşlar tryPlace'te eşleşmek zorunda (paralel diziş).
+        if (!search.wide || !hasNeighbor(r, c)) continue;
         for (const horiz of [true, false]) {
           for (const W of candidatesForLine(horiz, horiz ? r : c)) {
             for (let idx = 0; idx < W.length; idx++) tryPlace(W, r, c, idx, horiz);
@@ -555,7 +368,8 @@ export function findAIMoves(
         continue;
       }
       const anchor = tileLetter(anchorTile);
-      if (wide) {
+      if (search.wide) {
+        // Geniş arama — çapa: aday süzgeci hattın harfleriyle (çok çapa).
         for (const horiz of [true, false]) {
           for (const W of candidatesForLine(horiz, horiz ? r : c)) {
             let idx = W.indexOf(anchor);
@@ -592,7 +406,7 @@ export function findAIMoves(
   // Yalnızca hiç güvenli hamle yoksa (mecburen) rakip köşeye girilir/sınırına
   // değilir — bu durumda da paylaşım sonrası kendisine kalacak puana göre
   // sıralı seçenekler kullanılır.
-  return finish(safe.length > 0 ? safe : any);
+  return (safe.length > 0 ? safe : any).map((x) => x.move);
 }
 
 /**
@@ -611,9 +425,10 @@ export function pickTopMove(list: AIMove[]): AIMove | null {
 
 /**
  * Sırası gelen YZ oyuncusu için oynanacak hamle (yoksa null → pas/değişim).
- * `level` kadranı `AI_LEVEL_TOP_N` üzerinden N'e çevrilir: Normal = en iyi
- * hamle (bugüne kadarki davranış), Kolay = en iyi 4'ten rastgele biri, Zor =
- * Faz 5'e kadar Normal. Seviye kuralı `pickTopMove`'un sözleşmesinde.
+ * `level` iki kadrana çevrilir: `AI_LEVEL_TOP_N` (Normal = en iyi hamle,
+ * Kolay = en iyi 4'ten rastgele biri, Zor = en iyi hamle) ve `AI_LEVEL_SEARCH`
+ * (Zor geniş arar, bkz. findAIMoves). Rastgelelik `pickTopMove`'un
+ * sözleşmesinde — Zor da Normal gibi hiç rastgele değer tüketmez.
  */
 export function findAIMove(
   board: Board,
@@ -626,6 +441,9 @@ export function findAIMove(
   level: AiLevel = 'normal',
 ): AIMove | null {
   return pickTopMove(
-    findAIMoves(board, rack, bonuses, owner, corners, isFirstMove, players, AI_LEVEL_TOP_N[level]),
+    findAIMoves(
+      board, rack, bonuses, owner, corners, isFirstMove, players,
+      AI_LEVEL_TOP_N[level], AI_LEVEL_SEARCH[level],
+    ),
   );
 }

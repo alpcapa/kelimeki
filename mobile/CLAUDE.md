@@ -943,7 +943,13 @@ bağlı değil.)
     `codec.dart`ın `if (s.aiLevel != null)` sözleşmesi); eski fixture'lar bu
     sayede Faz 2'de bayt-eş kaldı.
   - `ai_level.json` — `AI_LEVEL_TOP_N` ↔ `aiLevelTopN` (Kolay 4 · Normal 1 ·
-    Zor 1) kilidi; üçüncü kopya (Edge) `verify-edge-engine-parity`de.
+    Zor 1) ve `AI_LEVEL_SEARCH` ↔ `aiLevelSearch` (Zor: `wide` + havuz 8)
+    kilidi; üçüncü kopya (Edge) `verify-edge-engine-parity`de.
+  - `reducer_ai2_zor.json` — Zor (Faz 5, 7 Eylül 2026): iki YZ de GENİŞ
+    aramayla oynar (kanca hücresinden paralel diziş + çok çapalı kelime).
+    Rastgele değer tüketmez; fixture'ın kilitlediği şey `find_move.dart`in
+    geniş arama döngü SIRASI (kanca/çapa → yön → aday → idx) — TS'ten bir
+    adım sapsa eşit puanlı adaylar farklı seçilir ve fixture düşer.
   - `reducer_human2.json` — insan aksiyonlarının tamamı: seçim toggle'ı,
     yerleştir/geri al, TÜM doğrulama hataları (hizasız/boşluklu/köşesiz/
     sözlükte olmayan kelime), gerçek kelime oynama, karıştır, yeniden

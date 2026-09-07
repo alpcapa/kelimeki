@@ -16,20 +16,17 @@ import '../rules/board.dart';
 import '../rules/validator.dart';
 import '../text/turkish.dart';
 
-// WordSource başına bir kez hesaplanan 2-7 harfli büyük-harf havuzu
-// (TS'teki modül-seviyesi wordPool önbelleğinin eşleniği).
-final Expando<List<String>> _poolCache = Expando<List<String>>();
+// WordSource başına, havuz üst sınırına (AiSearch.maxWordLen) göre bir kez
+// hesaplanan büyük-harf havuzu (TS'teki modül-seviyesi `wordPools`
+// önbelleğinin eşleniği): Normal/Kolay 7, Zor 8.
+final Expando<Map<int, List<String>>> _poolCache = Expando<Map<int, List<String>>>();
 
-List<String> _getWordPool(WordSource words) {
-  var pool = _poolCache[words];
-  if (pool == null) {
-    pool = [
-      for (final w in words.pool)
-        if (w.length >= 2 && w.length <= 7) trUpper(w),
-    ];
-    _poolCache[words] = pool;
-  }
-  return pool;
+List<String> _getWordPool(WordSource words, int maxLen) {
+  final pools = _poolCache[words] ??= <int, List<String>>{};
+  return pools[maxLen] ??= [
+    for (final w in words.pool)
+      if (w.length >= 2 && w.length <= maxLen) trUpper(w),
+  ];
 }
 
 /// Pozisyon/harf listesi için rafı tüketerek taşları üretir; tam harf yoksa
@@ -79,6 +76,12 @@ void _insertBounded(List<_Ranked> list, _Ranked item, int n) {
 /// liste → pas/değişim). Vergisiz hamle varsa liste YALNIZCA onlardan oluşur;
 /// yoksa vergili hamlelerden, YZ'ye kalacak puana göre. Rastgele değer
 /// TÜKETMEZ — seçim [pickTopMove]/[findAIMove]'un işi. (TS: findAIMoves)
+///
+/// [search] aramanın genişliği (ROADMAP #23 Faz 5): Normal/Kolay yalnızca tek
+/// bir çapadan geçen hattı dener; Zor (`wide`) ayrıca bir taşa komşu boş
+/// "kanca" hücresinden başlayan PARALEL dizişleri ve aynı hattaki birden çok
+/// taştan geçen kelimeleri dener. Döngü sırası TS ile BİREBİR (eşit puanda
+/// ilk bulunan kazanır) — `reducer_ai2_zor` golden'ı bunu kilitler.
 List<AIMove> findAIMoves(
   Board board,
   List<Tile> rack,
@@ -88,10 +91,11 @@ List<AIMove> findAIMoves(
   bool isFirstMove,
   List<Player> players,
   WordSource words,
-  int n,
-) {
+  int n, {
+  AiSearch search = const AiSearch(wide: false, maxWordLen: 7),
+}) {
   final rackLetters = [for (final t in rack) t.letter];
-  final pool = _getWordPool(words);
+  final pool = _getWordPool(words, search.maxWordLen);
 
   List<String>? candidatesCache;
   List<String> candidates() {
@@ -111,6 +115,28 @@ List<AIMove> findAIMoves(
           if (w.contains(letter) && canSpell(w, [...rackLetters, letter])) w,
       ];
       anchoredCandidatesCache[letter] = cached;
+    }
+    return cached;
+  }
+
+  // Geniş arama: hat (satır/sütun) başına aday süzgeci — raf + o hattaki TÜM
+  // tahta harfleri (kapsayıcı ön eleme; kesin eşleşmeyi tryPlace/consider
+  // doğrular). TS `candidatesForLine` ile aynı.
+  final lineCandidatesCache = <String, List<String>>{};
+  List<String> candidatesForLine(bool horiz, int index) {
+    final cacheKey = '${horiz ? 'r' : 'c'}$index';
+    var cached = lineCandidatesCache[cacheKey];
+    if (cached == null) {
+      final avail = [...rackLetters];
+      for (var i = 0; i < boardSize; i++) {
+        final t = horiz ? board[index][i] : board[i][index];
+        if (t != null) avail.add(tileLetter(t));
+      }
+      cached = [
+        for (final w in pool)
+          if (w.length <= avail.length && canSpell(w, avail)) w,
+      ];
+      lineCandidatesCache[cacheKey] = cached;
     }
     return cached;
   }
@@ -269,11 +295,46 @@ List<AIMove> findAIMoves(
     );
   }
 
+  // Kanca hücresi: boş ve dört komşusundan en az biri dolu (TS hasNeighbor).
+  bool hasNeighbor(int r, int c) =>
+      (r > 0 && board[r - 1][c] != null) ||
+      (r < boardSize - 1 && board[r + 1][c] != null) ||
+      (c > 0 && board[r][c - 1] != null) ||
+      (c < boardSize - 1 && board[r][c + 1] != null);
+
+  // ⚠ Döngü SIRASI davranışın parçası — TS `findAIMoves` ile adım adım aynı.
+  // Geniş aramada aynı yerleşim birden çok kanca/çapadan yeniden üretilebilir;
+  // n=1'de zararsız (ilk bulunan kalır), Zor N=1 olduğundan ayıklanmıyor.
   for (var r = 0; r < boardSize; r++) {
     for (var c = 0; c < boardSize; c++) {
       final anchorTile = board[r][c];
-      if (anchorTile == null) continue;
+      if (anchorTile == null) {
+        // Geniş arama — kanca hücresi: W[idx] buraya (yeni taş) gelir, hattaki
+        // mevcut taşlar tryPlace'te eşleşmek zorunda (paralel diziş).
+        if (!search.wide || !hasNeighbor(r, c)) continue;
+        for (final horiz in [true, false]) {
+          for (final W in candidatesForLine(horiz, horiz ? r : c)) {
+            for (var idx = 0; idx < W.length; idx++) {
+              tryPlace(W, r, c, idx, horiz);
+            }
+          }
+        }
+        continue;
+      }
       final anchor = tileLetter(anchorTile);
+      if (search.wide) {
+        // Geniş arama — çapa: aday süzgeci hattın harfleriyle (çok çapa).
+        for (final horiz in [true, false]) {
+          for (final W in candidatesForLine(horiz, horiz ? r : c)) {
+            var idx = W.indexOf(anchor);
+            while (idx >= 0) {
+              tryPlace(W, r, c, idx, horiz);
+              idx = W.indexOf(anchor, idx + 1);
+            }
+          }
+        }
+        continue;
+      }
       for (final W in candidatesForAnchor(anchor)) {
         var idx = W.indexOf(anchor);
         while (idx >= 0) {
@@ -303,8 +364,8 @@ AIMove? pickTopMove(List<AIMove> list, Rng rng) {
 }
 
 /// Sırası gelen YZ oyuncusu için oynanacak hamle (yoksa null → pas/değişim).
-/// [level] `aiLevelTopN` üzerinden N'e çevrilir; Normal (N=1) hiç rastgele
-/// değer tüketmez (TS: findAIMove).
+/// [level] `aiLevelTopN` (N) ve `aiLevelSearch` (arama genişliği) kadranlarına
+/// çevrilir; Normal ve Zor (N=1) hiç rastgele değer tüketmez (TS: findAIMove).
 AIMove? findAIMove(
   Board board,
   List<Tile> rack,
@@ -319,6 +380,7 @@ AIMove? findAIMove(
 }) =>
     pickTopMove(
       findAIMoves(board, rack, bonuses, owner, corners, isFirstMove, players,
-          words, aiLevelTopN[level]!),
+          words, aiLevelTopN[level]!,
+          search: aiLevelSearch[level]!),
       rng,
     );

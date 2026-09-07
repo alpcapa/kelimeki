@@ -22,6 +22,23 @@ export const RACK_SIZE = 7;
  */
 export const AI_LEVEL_TOP_N: Record<AiLevel, number> = { kolay: 4, normal: 1, zor: 1 };
 
+/** YZ aramasının genişliği — src/game/constants.ts'teki AiSearch'ün kopyası. */
+export interface AiSearch {
+  wide: boolean;
+  maxWordLen: number;
+}
+
+/**
+ * YZ seviyesi → arama genişliği — src/game/constants.ts'teki AI_LEVEL_SEARCH'ün
+ * kopyası (`verify-edge-engine-parity` eşitliği kilitler). `play-ai-turn` hep
+ * Normal verir; Zor dalı canlıda ÇAĞRILMAZ, yalnızca kopya eş tutulur.
+ */
+export const AI_LEVEL_SEARCH: Record<AiLevel, AiSearch> = {
+  kolay: { wide: false, maxWordLen: 7 },
+  normal: { wide: false, maxWordLen: 7 },
+  zor: { wide: true, maxWordLen: 8 },
+};
+
 /** Köşe indeksinin satır/sütun aralığını döndürür. */
 export function cornerBounds(corner: number): {
   r0: number;

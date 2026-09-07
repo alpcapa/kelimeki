@@ -20,17 +20,16 @@ const Map<AiLevel, String> aiLevelLabel = {
 };
 
 /// Setup'ta SEÇİLEBİLİR seviyeler, ekran sırasıyla (web
-/// `SELECTABLE_AI_LEVELS`). `zor` bilerek YOK: Zor motoru Faz 5'te geliyor
-/// ve o güne kadar Normal'le aynı oynardı — seçici "Zor" sunup Normal'i
-/// oynatmak (üstelik +4 k-lig vererek) ürün yalanı olurdu. Faz 5 kapanınca
-/// web ile AYNI PR'da buraya `AiLevel.zor` eklenir, başka bir şey değişmez.
-const List<AiLevel> selectableAiLevels = [AiLevel.kolay, AiLevel.normal];
+/// `SELECTABLE_AI_LEVELS`; parite testi aynı küme + sırayı kilitler). `zor`
+/// Faz 5'e (7 Eylül 2026) kadar YOKTU — motoru gelmeden "Zor" sunup Normal'i
+/// oynatmak ürün yalanı olurdu; geniş arama motoru (`aiLevelSearch`) ile
+/// web'le aynı PR'da açıldı.
+const List<AiLevel> selectableAiLevels = [AiLevel.kolay, AiLevel.normal, AiLevel.zor];
 
 /// Seçicinin altındaki açıklamanın İLK cümlesi — seviye kime göre,
 /// kullanıcıya hitapla (web `AI_LEVEL_PITCH`, parite testi birebir
 /// karşılaştırıyor). Kullanıcı kararı (6 Eylül 2026): YZ'nin nasıl
-/// zayıflatıldığı ürün metnine GİRMEZ. Zor'un metni Faz 5'e kadar
-/// gösterilmez ama hazır durur.
+/// zayıflatıldığı ürün metnine GİRMEZ.
 const Map<AiLevel, String> aiLevelPitch = {
   AiLevel.kolay:
       'Çok iyi değilim, daha yeni yeni alışıyorum, karşımda o kadar zor bir '

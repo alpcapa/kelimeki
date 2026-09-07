@@ -805,8 +805,8 @@ gerekiyor).
 
 - [ ] **Seviyeye göre puan — Kolay (6 Eylül 2026, ROADMAP #23 Faz 3).**
       Girişli hesapla Yapay Zeka sekmesi → "+ Yeni Yapay Zeka Oyunu Aç" →
-      "Oyuncu sayısı"nın ALTINDA **Zorluk** satırı: `Kolay` · `Normal`,
-      Normal seçili; `Zor` GÖRÜNMEMELİ (Faz 5'e kadar). Seçicinin altında
+      "Oyuncu sayısı"nın ALTINDA **Zorluk** satırı: `Kolay` · `Normal` ·
+      `Zor` (Zor Faz 5'le, 7 Eylül 2026'da girdi), Normal seçili. Seçicinin altında
       seçili seviyenin açıklaması: Normal'de "Orta-iyi seviye bir
       oyuncuyum… birincilik 2 puan kazandırır.", Kolay'ı seçince "Çok iyi
       değilim… birincilik 1 puan kazandırır."; 4 Oyunculu'ya geçince cümleye

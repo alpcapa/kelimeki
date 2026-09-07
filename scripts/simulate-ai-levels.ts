@@ -35,61 +35,30 @@
 // Koşum (repo kökünden):
 //   npm run simulate-ai-levels                       # N ∈ {1,2,3,5}, 100 oyun, tohum 1
 //   npm run simulate-ai-levels -- --oyun 200 --n 2,3,4 --tohum 42
+//   npm run simulate-ai-levels -- --oyun 200 --motor zor   # Zor motoru (Faz 5 kapısı: ≥%70)
 import { performance } from 'node:perf_hooks';
 import type { GameState } from '../src/game/types';
 import { gameReducer, createInitialState, isFirstMove, type Action } from '../src/game/gameReducer';
 import { preloadWordSet } from '../src/data/wordSetLoader';
-import { findAIMoves, pickTopMove, type HardOptions } from '../src/utils/ai';
+import { findAIMoves, pickTopMove } from '../src/utils/ai';
+import { AI_LEVEL_SEARCH, type AiSearch } from '../src/game/constants';
 import { setRandomSource } from '../src/utils/random';
 
 // ── Motor ekseni (Faz 5) ─────────────────────────────────────────────────────
-// `--motor ad[+ad...]` — adlar aşağıdaki ön ayarlardan, `+` ile bileşim
-// (`havuz8+kalinti`). Motor koltuğu N=1 ile `findAIMoves(..., hard)` oynar;
-// `bagCount` her hamlede durumdan doldurulur. Virgülle birden çok motor.
-const HARD_BASE: Omit<HardOptions, 'bagCount'> = {
-  maxWordLen: 7,
-  jokerPenalty: 0,
-  leaveWeight: 0,
-  territoryWeight: 0,
-  netDiff: false,
-  exchangeBelow: 0,
-  replyWeight: 0,
-  wideSearch: false,
-};
-const PRESETS: Record<string, Partial<Omit<HardOptions, 'bagCount'>>> = {
-  havuz8: { maxWordLen: 8 },
-  havuz9: { maxWordLen: 9 },
-  joker5: { jokerPenalty: 5 },
-  joker10: { jokerPenalty: 10 },
-  joker15: { jokerPenalty: 15 },
-  kalinti: { leaveWeight: 100 },
-  kalinti50: { leaveWeight: 50 },
-  kalinti200: { leaveWeight: 200 },
-  bolge50: { territoryWeight: 50 },
-  bolge100: { territoryWeight: 100 },
-  bolge200: { territoryWeight: 200 },
-  net: { netDiff: true },
-  degis6: { exchangeBelow: 6 },
-  degis10: { exchangeBelow: 10 },
-  degis14: { exchangeBelow: 14 },
-  // Rafa BAKMAYAN ileri bakış: rakip için genel raf varsayılır.
-  ileriG50: { replyWeight: 50 },
-  ileriG100: { replyWeight: 100 },
-  // Geniş arama: paralel diziş + çok çapalı uzun kelime. genis8 havuzu 8'de
-  // tutar (yalnızca paralel dizişin etkisi), genis13 tahta genişliğine açar.
-  genis7: { wideSearch: true },
-  genis8: { wideSearch: true, maxWordLen: 8 },
-  genis13: { wideSearch: true, maxWordLen: 13 },
+// `--motor ad[,ad...]` — koltuk N=1 ile `findAIMoves(..., search)` oynar; `zor`
+// üretimin `AI_LEVEL_SEARCH.zor`u, `genisN` geniş aramanın havuz-N çeşitleri
+// (kadran ayarı için). Faz 5 ölçüm tablosu (7 Eylül 2026) ROADMAP 23.6'da.
+const PRESETS: Record<string, AiSearch> = {
+  zor: AI_LEVEL_SEARCH.zor,
+  genis7: { wide: true, maxWordLen: 7 },
+  genis8: { wide: true, maxWordLen: 8 },
+  genis13: { wide: true, maxWordLen: 13 },
 };
 
-function parseMotor(spec: string): Omit<HardOptions, 'bagCount'> {
-  let opts = { ...HARD_BASE };
-  for (const part of spec.split('+')) {
-    const preset = PRESETS[part.trim()];
-    if (!preset) throw new Error(`bilinmeyen motor: ${part} (bilinenler: ${Object.keys(PRESETS).join(', ')})`);
-    opts = { ...opts, ...preset };
-  }
-  return opts;
+function parseMotor(name: string): AiSearch {
+  const preset = PRESETS[name];
+  if (!preset) throw new Error(`bilinmeyen motor: ${name} (bilinenler: ${Object.keys(PRESETS).join(', ')})`);
+  return preset;
 }
 
 // ── Argümanlar ───────────────────────────────────────────────────────────────
@@ -158,8 +127,8 @@ interface GameResult {
   topNSeat: 0 | 1;
 }
 
-/** Koltuk seçicisi: N (top-N) ya da motor adı (Zor adayı). */
-type Seat = { n: number; hard?: Omit<HardOptions, 'bagCount'>; label: string };
+/** Koltuk seçicisi: N (top-N, dar arama) ya da motor adı (arama genişliği). */
+type Seat = { n: number; search?: AiSearch; label: string };
 
 function playOne(seatCfg: Seat, seed: number, topNSeat: 0 | 1): GameResult {
   const n = seatCfg.n;
@@ -186,9 +155,11 @@ function playOne(seatCfg: Seat, seed: number, topNSeat: 0 | 1): GameResult {
     const me = state.players[state.current];
     const first = isFirstMove(state);
     // Üretimin kendi liste + seçim çifti (Kolay = N=4 ile birebir aynı yol).
-    const hard = seatCfg.hard ? { ...seatCfg.hard, bagCount: state.bag.length } : undefined;
     const move = pickTopMove(
-      findAIMoves(state.board, me.rack, state.bonuses, state.current, me.corners, first, state.players, n, hard),
+      findAIMoves(
+        state.board, me.rack, state.bonuses, state.current, me.corners, first, state.players, n,
+        seatCfg.search ?? AI_LEVEL_SEARCH.normal,
+      ),
     );
     if (!move) {
       if (state.bag.length > 0) {
@@ -253,7 +224,7 @@ async function main(): Promise<void> {
   await preloadWordSet();
   const seats: Seat[] = [
     ...args.ns.map((n) => ({ n, label: `Top${n}` })),
-    ...args.motors.map((m) => ({ n: 1, hard: parseMotor(m), label: m })),
+    ...args.motors.map((m) => ({ n: 1, search: parseMotor(m), label: m })),
   ];
   console.log(
     `YZ↔YZ koşumu — koltuklar {${seats.map((s) => s.label).join(', ')}}, koltuk başına ${args.games} oyun, temel tohum ${args.seed}`,

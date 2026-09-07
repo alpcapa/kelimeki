@@ -1275,7 +1275,8 @@ listesi kök `TESTING.md` bölüm 10.
 - [ ] **Seviyeye göre puan — Kolay (6 Eylül 2026, ROADMAP #23 Faz 4;
       web'in aynı listesi kök `TESTING.md` §10).** Girişli hesapla Yapay
       Zeka sekmesi → "+ Yeni" → `OYUNCU SAYISI`nın ALTINDA **ZORLUK**
-      satırı: `KOLAY` · `NORMAL`, Normal seçili; `ZOR` GÖRÜNMEMELİ (Faz
+      satırı: `KOLAY` · `NORMAL` · `ZOR` (Zor Faz 5'le, 7 Eylül 2026'da
+      girdi — web ile aynı PR), Normal seçili (Faz
       5'e kadar). Seçicinin altında seçili seviyenin açıklaması, web ile
       BİREBİR: Normal'de "Orta-iyi seviye bir oyuncuyum… birincilik 2 puan
       kazandırır.", KOLAY'a dokununca "Çok iyi değilim… birincilik 1 puan

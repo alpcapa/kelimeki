@@ -35,7 +35,12 @@ import {
 } from '../src/utils/validator';
 import { findAIMove as webAI } from '../src/utils/ai';
 import { createEmptyBoard } from '../src/utils/board';
-import { AI_LEVEL_TOP_N as webTopN, buildInitialBonuses, cornersFor } from '../src/game/constants';
+import {
+  AI_LEVEL_SEARCH as webSearch,
+  AI_LEVEL_TOP_N as webTopN,
+  buildInitialBonuses,
+  cornersFor,
+} from '../src/game/constants';
 import { letterPoints } from '../src/data/tiles';
 import { preloadWordSet, getWordSet } from '../src/data/wordSetLoader';
 import { gameReducer, createInitialState, type Action } from '../src/game/gameReducer';
@@ -48,7 +53,10 @@ import {
   calcScore as edgeScore,
 } from '../supabase/functions/_game/validator.ts';
 import { findAIMove as edgeAI } from '../supabase/functions/_game/ai.ts';
-import { AI_LEVEL_TOP_N as edgeTopN } from '../supabase/functions/_game/constants.ts';
+import {
+  AI_LEVEL_SEARCH as edgeSearch,
+  AI_LEVEL_TOP_N as edgeTopN,
+} from '../supabase/functions/_game/constants.ts';
 import { setRandomSource as edgeSetRandomSource } from '../supabase/functions/_game/random.ts';
 import { loadWordSet } from '../supabase/functions/_game/wordSet.ts';
 
@@ -245,6 +253,11 @@ async function main(): Promise<void> {
     JSON.stringify(webTopN) === JSON.stringify(edgeTopN),
     `web ${JSON.stringify(webTopN)} ↔ edge ${JSON.stringify(edgeTopN)}`,
   );
+  check(
+    'AI_LEVEL_SEARCH (kolay/normal/zor) web ↔ edge aynı',
+    JSON.stringify(webSearch) === JSON.stringify(edgeSearch),
+    `web ${JSON.stringify(webSearch)} ↔ edge ${JSON.stringify(edgeSearch)}`,
+  );
 
   // ── 7. Kolay seviyesi — aynı tohumla iki motor aynı hamleyi seçer mi ────────
   // B kararında (ROADMAP 23.2) Canlı YZ Normal kalıyor, yani bu dal canlıda
@@ -295,6 +308,48 @@ async function main(): Promise<void> {
     check(`YZ Kolay (N=${webTopN.kolay}): ${sorulan} pozisyonda aynı tohumla aynı seçim`, ayrisan === 0);
     check(
       `YZ Kolay, Normal'den gerçekten sapıyor (${normaldenFarkli}/${sorulan} adım)`,
+      normaldenFarkli > 0,
+    );
+  }
+
+  // ── 8. Zor seviyesi — geniş arama iki kopyada aynı hamleyi bulur mu ─────────
+  // Zor (Faz 5) rastgele değer tüketmez; gücü aramanın genişliğinden gelir
+  // (kanca hücresinden paralel diziş + çok çapalı kelime). Kopyanın döngü
+  // SIRASI ayrışırsa eşit puanlı adaylar farklı seçilir — burada yakalanır.
+  // Ayrıca Zor'un Normal'den gerçekten SAPTIĞI adım sayılır.
+  {
+    let s: GameState = gameReducer(createInitialState(), {
+      type: 'START',
+      players: [{ name: 'A', isAI: true }, { name: 'B', isAI: true }],
+    } as Action);
+    let ayrisan = 0;
+    let sorulan = 0;
+    let normaldenFarkli = 0;
+    for (let adim = 0; adim < 40 && !s.isGameOver; adim++) {
+      const me = s.players[s.current];
+      const firstMove = !s.board.some((row) => row.some((t) => t && t.owner === s.current));
+      const w = webAI(s.board, me.rack, s.bonuses, s.current, me.corners, firstMove, s.players, 'zor');
+      const e = edgeAI(s.board, me.rack, s.bonuses, s.current, me.corners, firstMove, s.players, 'zor');
+      const n = webAI(s.board, me.rack, s.bonuses, s.current, me.corners, firstMove, s.players);
+      sorulan++;
+      if (w?.word !== e?.word || JSON.stringify(w?.placements) !== JSON.stringify(e?.placements)) {
+        ayrisan++;
+        if (ayrisan === 1) {
+          check(
+            `YZ Zor hamlesi (adım ${adim})`,
+            false,
+            `web ${w ? `"${w.word}" ${w.score}p` : 'yok'} ↔ edge ${e ? `"${e.word}" ${e.score}p` : 'yok'}`,
+          );
+        }
+      }
+      if (w?.word !== n?.word || JSON.stringify(w?.placements) !== JSON.stringify(n?.placements)) {
+        normaldenFarkli++;
+      }
+      s = gameReducer(s, { type: 'AI_PLAY' });
+    }
+    check(`YZ Zor (geniş arama): ${sorulan} pozisyonda aynı hamle`, ayrisan === 0);
+    check(
+      `YZ Zor, Normal'den gerçekten sapıyor (${normaldenFarkli}/${sorulan} adım)`,
       normaldenFarkli > 0,
     );
   }

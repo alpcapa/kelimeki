@@ -1,7 +1,7 @@
 // YZ zorluğunun ÜRÜN yüzü — web ↔ port paritesi (ROADMAP #23 Faz 4).
 //
 // NEDEN VAR: etiketler (`Kolay`/`Normal`/`Zor`), Setup'ta seçilebilir liste
-// (Zor Faz 5'e kadar YOK), seviye açıklamaları ve HelpModal'ın zorluk paragrafı
+// (Zor Faz 5'le, 7 Eylül 2026'da girdi), seviye açıklamaları ve HelpModal'ın zorluk paragrafı
 // web'de `src/utils/aiLevel.ts` + `Setup.tsx` + `HelpModal.tsx`te, portta
 // `util/ai_level.dart` + `help_modal.dart`ta ELLE senkron duruyor —
 // derleyici görmez. Faz 5 Zor'u açtığında iki liste birlikte değişmeli;

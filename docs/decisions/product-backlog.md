@@ -113,7 +113,8 @@ bölümün kendi tarihli notuna taşınır.
   dokunulmuyor; Kolay'da YZ ~%30, Zor'da YZ ~%70 kazanacak** (YZ'nin insana
   karşı oranı — bugünkü ~%51 sıfır çizgisi). Yani yukarıdaki "Zor=1,
   Normal=3, Kolay=10" başlangıç eşlemesi GEÇERSİZ: bugünkü motor Zor değil
-  Normal; Zor için daha güçlü bir motor gerekiyor (plan Faz 5). Bu madde
+  Normal; Zor için daha güçlü bir motor gerekiyor (plan Faz 5 — 7 Eylül
+  2026'da geldi: GENİŞ arama, ölçüm tablosu ROADMAP 23.6'da). Bu madde
   plan kapanana kadar burada kalır.
 
   **Zorluk algoritmasının kendisi (hangi seviye = hangi N) BİLEREK

@@ -16,19 +16,19 @@ export const AI_LEVEL_LABEL: Record<AiLevel, string> = {
 };
 
 /**
- * Setup'ta SEÇİLEBİLİR seviyeler, ekran sırasıyla. `zor` bilerek YOK: Zor
- * motoru Faz 5'te geliyor ve o güne kadar Normal'le aynı oynardı — seçici
- * "Zor" sunup Normal'i oynatmak (üstelik +4 k-lig vererek) ürün yalanı
- * olurdu. Faz 5 kapanınca buraya `'zor'` eklenir, başka bir şey değişmez.
+ * Setup'ta SEÇİLEBİLİR seviyeler, ekran sırasıyla. `zor` Faz 5'e (7 Eylül
+ * 2026) kadar listede YOKTU: motoru gelmeden "Zor" sunup Normal'i oynatmak
+ * (üstelik +4 k-lig vererek) ürün yalanı olurdu. Geniş arama motoru
+ * (`AI_LEVEL_SEARCH.zor`) YZ↔YZ kapısını (%70) geçince açıldı; port
+ * `selectableAiLevels` ile aynı PR'da (`ai_level_parity_test`).
  */
-export const SELECTABLE_AI_LEVELS: readonly AiLevel[] = ['kolay', 'normal'];
+export const SELECTABLE_AI_LEVELS: readonly AiLevel[] = ['kolay', 'normal', 'zor'];
 
 /**
  * Seçicinin altındaki açıklamanın İLK cümlesi — seviye kime göre, kullanıcıya
  * hitapla (kullanıcı kararı, 6 Eylül 2026: *"bilimsel iş yapmıyoruz"* — YZ'nin
  * nasıl zayıflatıldığı ürün metnine GİRMEZ). Portun `aiLevelPitch`i ile
- * birebir (`ai_level_parity_test.dart`). Zor'un metni Faz 5 açılana kadar
- * hiç gösterilmez ama burada hazır durur.
+ * birebir (`ai_level_parity_test.dart`).
  */
 export const AI_LEVEL_PITCH: Record<AiLevel, string> = {
   kolay:
