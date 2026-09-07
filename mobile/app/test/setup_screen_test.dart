@@ -31,6 +31,7 @@ import 'package:kelimeki/src/ui/game/count_badge.dart';
 import 'package:kelimeki/src/ui/auth/account_button.dart';
 import 'package:kelimeki/src/ui/game/logo_mark.dart';
 import 'package:kelimeki/src/ui/game/game_screen.dart';
+import 'package:kelimeki/src/ui/tutorial/tutorial_game.dart';
 import 'package:kelimeki/src/ui/intro/intro_screen.dart';
 import 'package:kelimeki/src/ui/live/live_games_tab.dart';
 import 'package:kelimeki/src/ui/setup/setup_screen.dart';
@@ -39,6 +40,7 @@ import 'package:kelimeki/src/ui/game/player_avatar_row.dart';
 import 'package:kelimeki/src/ui/text_scale.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show User;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'support/fake_online_gateway.dart';
@@ -115,6 +117,7 @@ Future<void> pumpSetup(WidgetTester tester, AppServices s) async {
 }
 
 void main() {
+  tanitimKapisiTestleri();
   TestWidgetsFlutterBinding.ensureInitialized();
   sqfliteFfiInit();
 
@@ -1180,5 +1183,140 @@ void main() {
             '${enTavan.toStringAsFixed(1)} px, yani beklenenden çok daraldı');
 
     await tester.runAsync(() => storage.close());
+  });
+}
+
+// ── Tanıtım kapısı (Onboarding Faz 4, 7 Eylül 2026) ────────────────────────
+// Web `Setup.onStart(..., showTutorial)` paritesi: tertemiz bir depoda ilk
+// "OYUNU BAŞLAT" tanıtım EKRANINI açar (GameScreen'i değil); bitirmek ve
+// atlamak gerçek oyunu başlatır; işaret tanıtım AÇILIRKEN konur. Depo yoksa
+// (bu dosyanın öteki testleri) kapı KAPALI — o testler değişmedi.
+// ⚠ `testWidgets` İÇİNDE `tester.runAsync` ile açılır — sqflite'ın gerçek
+// I/O'su sahte zaman bölgesinde çözülmez (mobile/CLAUDE.md etki analizi
+// taraması: "await newRepo( testWidgets içinde çıkarsa runAsync").
+// Yol `inMemoryDatabasePath` DEĞİL, test başına geçici dosya: ffi fabrikası
+// aynı yolu tek örnek (singleInstance) olarak açıyor, bir testin kapatmadan
+// bıraktığı kayıt bir sonrakinde "DEVAM EDEN OYUN" olarak çıkıyordu (test
+// sırasına bağlı sessiz kaçak).
+Future<AppStorage> openStorageWith(Map<String, Object> prefs) async {
+  SharedPreferences.setMockInitialValues(prefs);
+  final dir = Directory.systemTemp.createTempSync('kelimeki-tanitim-');
+  return AppStorage.open(
+    factory: databaseFactoryFfi,
+    path: '${dir.path}/test.db',
+    prefs: await SharedPreferences.getInstance(),
+  );
+}
+
+/// Depolama zinciri (loadSave/drain, kayıt oturumu) GERÇEK async —
+/// `pumpAndSettle` çözmez; runAsync köprüsünden bekleyip yeniden çiz
+/// (bu dosyanın "devam eden oyun" testiyle aynı desen).
+Future<void> gorunmesiniBekle(WidgetTester tester, Finder f) async {
+  for (var i = 0; i < 100 && !tester.any(f); i++) {
+    await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)));
+    await tester.pump();
+  }
+  expect(f, findsOneWidget);
+}
+
+Future<void> formuBekle(WidgetTester tester) =>
+    gorunmesiniBekle(tester, find.text('OYUNU BAŞLAT'));
+
+void tanitimKapisiTestleri() {
+  group('tanıtım kapısı', () {
+    testWidgets('tertemiz depoda misafir: OYUNU BAŞLAT → tanıtım; ATLA → '
+        'gerçek oyun; bayrak AÇILIRKEN yazıldı', (tester) async {
+      await setPhoneViewSize(tester, const Size(420, 900));
+      final storage = (await tester.runAsync(() => openStorageWith({})))!;
+      await pumpSetup(tester, services(storage: Future.value(storage)));
+      await formuBekle(tester);
+
+      await tester.tap(find.text('OYUNU BAŞLAT'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OYNA')); // misafir uyarısı
+      await gorunmesiniBekle(tester, find.byType(TutorialGame));
+
+      expect(find.byType(GameScreen), findsNothing);
+      expect(find.text('TANITIM · 1/4'), findsOneWidget);
+      expect(storage.flags.seenTutorial, isTrue,
+          reason: '"bir kere" — işaret tanıtım açılırken konur');
+      final t = tester.widget<TutorialGame>(find.byType(TutorialGame));
+      expect(t.playerName, guestPlayerName);
+
+      // Rota geçişi bitmeden "ATLA →" hit-test'e girmiyor (sayfa hâlâ
+      // kayıyor); `pumpAndSettle` KULLANILAMAZ — raf/tahta vurgusunun nabız
+      // animasyonu sonsuz tekrar ediyor, asla "settle" olmaz.
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.text('ATLA →'));
+      await gorunmesiniBekle(tester, find.byType(GameScreen));
+      // Pop geçişi + rotanın kaldırıldığı sonraki kare.
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump();
+      expect(find.byType(TutorialGame), findsNothing);
+      final screen = tester.widget<GameScreen>(find.byType(GameScreen));
+      expect(screen.controller.state.players[1].isAI, isTrue);
+      await tester.runAsync(() => storage.close());
+    });
+
+    testWidgets('tanıtımı görmüş depoda doğrudan GameScreen', (tester) async {
+      await setPhoneViewSize(tester, const Size(420, 900));
+      final storage =
+          (await tester.runAsync(() => openStorageWith({'seen_tutorial': true})))!;
+      await pumpSetup(tester, services(storage: Future.value(storage)));
+      await formuBekle(tester);
+      await tester.tap(find.text('OYUNU BAŞLAT'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OYNA'));
+      await gorunmesiniBekle(tester, find.byType(GameScreen));
+      expect(find.byType(TutorialGame), findsNothing);
+      await tester.runAsync(() => storage.close());
+    });
+
+    testWidgets('girişli — hesap tanıtımdan ESKİ: tertemiz depoda bile '
+        'tanıtım açılmaz (kapının asıl işi)', (tester) async {
+      await setPhoneViewSize(tester, const Size(420, 900));
+      final storage = (await tester.runAsync(() => openStorageWith({})))!;
+      // `fakeUser` 2026-01-01'de açılmış — TUTORIAL_LAUNCH_AT'ten eski.
+      await pumpSetup(
+          tester,
+          services(
+              storage: Future.value(storage),
+              auth: AuthService.fake(user: fakeUser('me'))));
+      await formuBekle(tester);
+      await tester.tap(find.text('OYUNU BAŞLAT'));
+      await gorunmesiniBekle(tester, find.byType(GameScreen));
+      expect(find.byType(TutorialGame), findsNothing);
+      expect(storage.flags.seenTutorial, isFalse);
+      await tester.runAsync(() => storage.close());
+    });
+
+    testWidgets('girişli — hesap tanıtımdan YENİ: tanıtım açılır, hesap adıyla',
+        (tester) async {
+      await setPhoneViewSize(tester, const Size(420, 900));
+      final storage = (await tester.runAsync(() => openStorageWith({})))!;
+      final user = User(
+        id: 'yeni',
+        appMetadata: const {},
+        userMetadata: const {},
+        aud: 'authenticated',
+        createdAt: '2026-09-08T09:00:00.000Z',
+        email: 'yeni@ornek.com',
+      );
+      await pumpSetup(
+          tester,
+          services(
+              storage: Future.value(storage),
+              auth: AuthService.fake(
+                  user: user,
+                  profile: const KProfile(id: 'yeni', displayName: 'Yeni'))));
+      await formuBekle(tester);
+      await tester.tap(find.text('OYUNU BAŞLAT'));
+      await gorunmesiniBekle(tester, find.byType(TutorialGame));
+      final t = tester.widget<TutorialGame>(find.byType(TutorialGame));
+      expect(t.playerName, 'Yeni');
+      await tester.runAsync(() => storage.close());
+    });
   });
 }

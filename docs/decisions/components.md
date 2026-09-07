@@ -137,3 +137,11 @@
 **Denetimin doğru yolu — tek komut:** `git diff --name-status origin/main..<port-dalı> -- . ':!mobile'`. Bu, port dalındaki mobil-DIŞI her farkı listeler. Çıkanları üçe ayır: (a) kullanıcıya görünen web düzeltmesi → **hemen main'e ayrı bir PR ile**, (b) port altyapısı (`scripts/generate-golden-vectors.ts`, `generate-meanings-db.mjs`, `random.ts`'in `setRandomSource` kancası, `mobile-build.yml`, `package.json` script girdileri) → port merge'iyle gelsin, (c) doküman. **(b)'yi erken taşıma:** `generate-klig-paths.mjs`/`generate-logo-paths.mjs`'in port sürümü Dart dosyalarına da yazıyor, `mobile/` olmayan bir `main`'de çalıştırılırsa hata verir.
 
 **Kalıcı önlem:** `mobile/CLAUDE.md`'nin "Parça Bitirme Kontrol Listesi"nin 1. maddesi `git status`ta `mobile/` dışı dosya arıyordu ama yalnızca **doküman senkronu** istiyordu — "web değişikliğini `main`'e TESLİM et" adımı yoktu. Delik orada kapatıldı.
+
+## Space Mono 700 — yanlış teşhis (1 Ağustos 2026)
+
+> 7 Eylül 2026'da kök `CLAUDE.md`nin "Font Yükleme Stratejisi" bölümünden
+> taşındı (doküman boyutu bütçesi — uyarı bandı). Metin değişmedi.
+
+**1 Ağustos 2026 — Space Mono 700 örneği, yanlış teşhisin nasıl zaman kaybettirdiğine dair bir ders:** Kullanıcı, YZ'nin skor kutusunun (dar kutu, `font-mono font-bold`) her hamleden kısa bir süre sonra "1…" diye kırpılıp kendiliğinden düzeldiğini bildirdiğinde, önce `GameHeader.tsx`'teki kutu genişliği/`border` hesaplarında (bkz. "Bileşen Notları" → `GameHeader` skor kutuları, madde 3) bir hata arandı ve gerçek de bir hata bulunup (`border`→`outline`) düzeltildi — ama kullanıcı PR Preview'da (her açılış TAZE bir sayfa, önbelleksiz font) sorunun AYNEN devam ettiğini bildirince asıl kök sebebin bu maddede zaten TANIMLANMIŞ olan (o zamana kadar "henüz raporlanmadı" diye bırakılmış) Space Mono 700'ün preload edilmemesi olduğu anlaşıldı — sayfa önce geniş bir fallback monospace'le boyanıp gerçek (dar) font `swap` ile geldiğinde yeniden akıyordu, dar YZ kutusunda bu ara an tam kenardan taşıp kırpılmaya yol açıyordu. **Ders:** "kısa süre görünüp kendiliğinden düzeliyor" tarifi güçlü bir FOUT/font-swap sinyali — bu proje zaten aynı belirtiyi Caveat/Space Grotesk'te yaşamıştı, yeni bir yerde görülünce önce BU listeye (henüz preload edilmemiş ağırlıklar) bakılmalı, layout/CSS box-model hesaplarına dalmadan önce.
+

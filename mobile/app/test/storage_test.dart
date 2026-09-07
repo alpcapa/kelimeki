@@ -171,9 +171,13 @@ void main() {
       final id1 = await storage.flags.anonId();
       final id2 = await storage.flags.anonId();
       expect(id1, id2);
+      // Eski Hızlı Başlangıç bayrağı SALT OKUNUR miras (yazıcısı yok);
+      // tanıtımın kendi bayrağı ayrı (Onboarding Faz 4).
       expect(storage.flags.seenQuickstart, isFalse);
-      await storage.flags.markQuickstartSeen();
-      expect(storage.flags.seenQuickstart, isTrue);
+      expect(storage.flags.seenTutorial, isFalse);
+      await storage.flags.markTutorialSeen();
+      expect(storage.flags.seenTutorial, isTrue);
+      expect(storage.flags.seenQuickstart, isFalse);
       await storage.flags.captureUtmSource('tiktok');
       await storage.flags.captureUtmSource('instagram'); // yok sayılır
       expect(storage.flags.utmSource, 'tiktok');

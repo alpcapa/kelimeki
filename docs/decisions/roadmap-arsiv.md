@@ -2605,3 +2605,23 @@ ekran seviyeyi hiç geçirmiyor). (2) Rozet tahtanın alt şeridinde de,
 şeridin 48px/`TapTarget` sayımına girmez. (3) Zorluk seçici butonları
 Arkadaşınla sekmesinin alt-sekme pilleriyle aynı (11px, `py-2.5`), büyük
 "Oyuncu sayısı" butonu gibi değil. Port: Parça 191.
+
+## Teslim sonrası izleme dalı — SİLİNDİ (5 Eylül 2026)
+
+> 7 Eylül 2026'da kök `CLAUDE.md`nin "Oyun Mekaniği Özeti" bölümünden
+> taşındı (doküman boyutu bütçesi — uyarı bandı). Metin değişmedi.
+
+- **Teslim sonrası izleme (4 kişilik) — 5 Eylül 2026'da SİLİNDİ:** `App.tsx`
+bir `spectating = rackPlayer.surrendered && !state.isGameOver` dalı
+taşıyordu (raf/aksiyon butonları yerine "Teslim oldun — oyunu izliyorsun"
+bandı + `GameHeader`'ın `exitDisabled` prop'uyla kilitli çıkış). 29 Temmuz
+2026'da logo onaysız Setup'a dönmeye başlayınca `SURRENDER`'ı UI'dan
+tetikleyen tek yol kalkmış, dal ERİŞİLEMEZ olmuş ama "ileride lazım olur"
+diye bırakılmıştı. Temizlik geçişinde ölçüldü: `SURRENDER` `src/` içinde
+hiçbir yerden dispatch edilmiyor ve **Flutter portu bu bandı hiç
+portlamamış** — yani kod ölü OLMAKLA KALMIYOR, web↔port paritesini de
+bozuyordu. Dal kaldırıldı (geri gerekirse git geçmişinde). Reducer'ın
+`SURRENDER` case'i DURUYOR: kavram geçerli, port da taşıyor ve
+`buildGameRecord`'un `surrendered`/`surrenderingIndex` yolu 7 günlük
+terk-edilme akışında CANLI kullanılıyor — kaldırılan yalnızca ona bağlı UI.
+

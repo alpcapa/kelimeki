@@ -397,6 +397,64 @@ Bu bölüm anahtarsız da koşulabilir; sunucuyla ilgisi yok.
       native build (TestFlight/Appetize) bu ağ bağımlılığını hiç
       taşımaz, kesin doğrulama orada yapılmalı.
 
+## 1.9 Tanıtım — ilk oyun ("Oynayarak öğren", Onboarding Faz 4, 7 Eylül 2026)
+
+Web'in `TESTING.md` §13.5'inin port eşi. Senaryo (koordinat/kelime/puan)
+`tutorial_script_test.dart` ile, web ↔ port metin/sayı paritesi
+`tutorial_parity_test.dart` ile, ekranın uçtan uca koşumu
+`tutorial_game_test.dart` ile kapalı. Buradaki maddeler otomatik testin
+göremediği şeyler: SÜRE, okunabilirlik ve gerçek parmak. **Uygulama verisi
+silinmiş** (tertemiz kurulum) bir cihazla koş.
+
+- [ ] **Kendiliğinden açılıyor:** Hiç oyun oynanmamış cihazda misafir olarak
+      "OYUNU BAŞLAT" → giriş uyarısında "OYNA" → Hızlı Başlangıç değil,
+      tanıtım EKRANI ("TANITIM · 1/4"). Setup teşhis satırındaki `Derleme`
+      sha'sı bu PR'ın merge commit'iyle eşleşmeli — eşleşmiyorsa APK bayat.
+- [ ] **Süre:** Kronometreyle — dört sahne + kapanış **60-90 sn**.
+- [ ] **Taş raftan geliyor:** Boş kareye dokunmak TEK BAŞINA taş getirmiyor.
+      Vurgulu harfe dokunup kareye dokunmak koyuyor; harfi kareye
+      **sürüklemek** de koyuyor (parmağın 30 px üstünde, hafif büyük).
+- [ ] **Raf vurgusu doğru taşta:** Sahnenin harfleri rafta yan yana, mavi
+      nabızlı halkayla; ilk vurgulu taş her zaman SIRADAKİ harf (özellikle
+      3. sahnede rafta iki "A" varken). Halka taşları kaydırmıyor.
+- [ ] **Aynı anda TEK balon:** dersin cümlesi (tahtada) → hamle tamamlanınca
+      KAYBOLUYOR, yerini "Hamleni tamamlamak için OYNA'ya bas" alıyor ·
+      "Şimdi … kelimesini taşı" (rafın üstünde) · rakip oynadıktan sonra
+      "Rakip hamlesini yaptı" ~2 sn · "Buradan başla" balonu HİÇ çıkmıyor ·
+      zoom balonu da çıkmıyor (tanıtımda zoom yok).
+- [ ] **Balon okunabiliyor VE hedefi örtmüyor:** dört sahnenin balonu
+      tahtanın içinde, sistem yazı ölçeği en büyükken kırpılmıyor, "şuraya
+      koy" denen kesikli kareler balonun altında KALMIYOR (2. sahnede balon
+      ÜZENGİ'nin altında, kuyruk yukarı).
+- [ ] **Ray gerçekten yönlendiriyor:** işaretsiz kareye dokunmak SESSİZ;
+      vurgusuz taşa dokunmak seçmiyor; konan taşa dokunmak geri alıyor ve
+      kare yeniden işaretleniyor; yanlış kareye sürüklenen taş rafa dönüyor.
+- [ ] **Rakip oynuyor:** her hamleden sonra kırmızı taşlar tek tek
+      diziliyor (260 ms), skor artıyor, tahta o sırada dokunuşa kapalı.
+- [ ] **Sayılar doğru:** 3. sahnede "6 × 2 = 12 puan!", 4. sahnede OYNA →
+      "Sınır İhlali!" penceresinde 58 ve 19 + tek satırlık açıklama;
+      "VAZGEÇ" tahtayı bozmuyor, tekrar OYNA çalışıyor.
+- [ ] **Sürükleme hissi gerçek oyunla AYNI:** aynı jesti ardından açılan
+      gerçek oyunda tekrarla — eşik/kaldırma/ölçek farkı hissedilmemeli
+      (üçü de `drag_feel.dart`tan).
+- [ ] **Atla:** herhangi bir sahnede "ATLA →" (ya da başlıktaki logo)
+      gerçek oyunu açıyor; uygulamayı kapatıp aç, yeni oyun → tanıtım
+      TEKRAR açılmıyor ("bir kere", işaret açılırken konuyor).
+- [ ] **Mevcut oyuncuya ÇIKMIYOR (kapının asıl işi):** daha önce oynamış
+      gerçek bir hesapla gir (hesap 7 Eylül 2026'dan eski) ve yeni YZ
+      oyunu başlat — tanıtım AÇILMAMALI, tertemiz cihazda bile. Devam eden
+      yerel/bulut oyunu olan misafir/hesap için de aynı.
+- [ ] **Yardım tanıtımı yemiyor:** tertemiz kurulumda önce Setup'taki
+      "Nasıl oynanır?"ı aç-kapat, SONRA oyunu başlat — tanıtım yine açılmalı.
+- [ ] **Yalıtım — en önemlisi:** tanıtımı bitir, gerçek oyunu OYNAMADAN
+      Setup'a dön (logo). "Devam Eden Oyun" kartı ÇIKMAMALI; hesap
+      menüsünde/istatistiklerde tanıtım bir oyun olarak GÖRÜNMEMELİ; k-lig
+      puanı değişmemeli; admin hunisinde "Başlayan" sayısı tanıtımla
+      artmamalı (`game_starts` ancak gerçek oyun açılınca). Girişli hesapla
+      da tekrarla — `local_game_saves`e tanıtımdan satır düşmemeli.
+- [ ] **Yarıda çıkış:** tanıtımın ortasında uygulamayı kapat, yeniden aç —
+      kayıt/ceza izi yok, Setup normal açılıyor, tanıtım tekrar çıkmıyor.
+
 ## 2. Hesap (auth)
 
 - [ ] **Hesap menüsünün görünümü web'le birebir (9 Ağustos 2026, Parça 30).**

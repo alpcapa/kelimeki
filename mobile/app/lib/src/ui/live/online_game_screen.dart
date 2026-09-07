@@ -35,7 +35,6 @@
 import 'dart:async';
 
 import 'package:clock/clock.dart';
-import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
 
@@ -57,6 +56,7 @@ import '../feedback/feedback_modal.dart';
 import '../game/board_widget.dart';
 import '../game/board_zoom.dart';
 import '../game/dialog_shell.dart';
+import '../game/drag_feel.dart';
 import '../game/game_header.dart';
 import '../game/game_over_modal.dart';
 import '../game/help_modal.dart';
@@ -290,19 +290,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
 
   // ── Sürükle-bırak (game_screen.dart ile bilinçli aynı; bkz. dosya başı —
   // performans düzeltmesi de dahil, 8 Ağustos 2026, mobile/CLAUDE.md Parça 23)
-  static const double _dragLift = 30;
-  // Sürükleme eşiği — web'deki DRAG_THRESHOLD_MOUSE/DRAG_THRESHOLD_TOUCH ile
-  // BİREBİR aynı (gerekçe: `src/App.tsx`). Fare ile parmak aynı değeri
-  // kullanamaz; 6px'lik tek eşik altında hafif titreyen bir dokunuş
-  // "sürükleme" sayılıp sessizce hiçbir şey yapmıyordu.
-  static const double _dragThresholdMouse = 6; // web DRAG_THRESHOLD_MOUSE
-  static const double _dragThresholdTouch = 10; // web DRAG_THRESHOLD_TOUCH
-
-  /// Bırakma anındaki karar eşiği — `game_screen.dart` ile aynı sayı ve
-  /// aynı gerekçe (orada yazılı).
-  static const double _tapSlopOnRelease = 24;
-  static double _dragThresholdFor(PointerDeviceKind kind) =>
-      kind == PointerDeviceKind.mouse ? _dragThresholdMouse : _dragThresholdTouch;
+  // Jestin HİSSİ `drag_feel.dart`ta (üç ekranın ortak kaynağı, 7 Eylül 2026);
+  // mantık burada, `game_screen.dart` ile bilinçli ayrı.
   final GlobalKey _gridKey = GlobalKey();
   final GlobalKey _rackKey = GlobalKey();
   final GlobalKey _stackKey = GlobalKey();
@@ -1242,7 +1231,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   double _liftedY(double y) {
     // Görünür kare varsa ONUN üstüne kırp (zoom — bkz. game_screen.dart).
     final box = _boxOf(_viewportKey) ?? _boxOf(_gridKey);
-    final lifted = y - _dragLift;
+    final lifted = y - kDragLift;
     if (box == null) return lifted;
     final top = box.localToGlobal(Offset.zero).dy;
     return lifted < top + 1 ? top + 1 : lifted;
@@ -1302,13 +1291,13 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   void _boardPointerMove(PointerMoveEvent e) {
     final down = _boardTapDown;
     if (down != null &&
-        (e.position - down).distance >= _dragThresholdFor(e.kind)) {
+        (e.position - down).distance >= dragThresholdFor(e.kind)) {
       _boardTapDown = null;
     }
     final p = _panRef;
     if (p == null) return;
     if (!p.moved) {
-      if ((e.position - p.start).distance < _dragThresholdFor(e.kind)) return;
+      if ((e.position - p.start).distance < dragThresholdFor(e.kind)) return;
       p.moved = true;
     }
     final grid = _boxOf(_gridKey);
@@ -1380,7 +1369,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     final d = _dragRef;
     if (d == null) return;
     if (!d.moved) {
-      if ((e.position - d.start).distance < _dragThresholdFor(e.kind)) return;
+      if ((e.position - d.start).distance < dragThresholdFor(e.kind)) return;
       d.moved = true;
       // Eşik İLK kez aşıldı — kaynak artık "sürükleniyor" sayılır ve
       // gizlenir (game_screen.dart ile aynı düzeltme — bkz. orada).
@@ -1426,7 +1415,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     final s = d.source;
     final rafinUstunde = s is _RackSource && _rackContains(e.position);
     if (rafinUstunde ||
-        (e.position - d.start).distance < _tapSlopOnRelease) {
+        (e.position - d.start).distance < kTapSlopOnRelease) {
       await _dokunusOlarakIsle(s, e.position);
       return;
     }
@@ -1493,14 +1482,14 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     final local = box == null ? g.global : box.globalToLocal(g.global);
     final isRack = g.source is _RackSource;
     return Positioned(
-      left: local.dx - 23,
-      top: local.dy - 23,
+      left: local.dx - kGhostTileSize / 2,
+      top: local.dy - kGhostTileSize / 2,
       child: IgnorePointer(
         child: Transform.scale(
-          scale: 1.1,
+          scale: kGhostTileScale,
           child: SizedBox(
-            width: 46,
-            height: 46,
+            width: kGhostTileSize,
+            height: kGhostTileSize,
             child: TileWidget(
               tile: g.source.tile,
               variant: isRack ? TileVariant.rack : TileVariant.placed,

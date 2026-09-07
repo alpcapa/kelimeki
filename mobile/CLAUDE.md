@@ -373,6 +373,17 @@ ikisi için de "ikisi deseni paylaşıyor, biri değişirse diğeri de" diyor).
 Bu dosyalardan birinde sürükleme/joker/mesaj davranışı değişirse ÖTEKİ de
 aynı PR'da güncellenmeli; hiçbir derleyici/test bunu yakalamaz.
 
+**7 Eylül 2026'dan beri ÜÇÜNCÜ bir ekran daha var — ama yalnızca "his"
+ortak:** `ui/tutorial/tutorial_game.dart` (Onboarding Faz 4) aynı sürükleme
+jestinin SADELEŞTİRİLMİŞ eşini taşıyor (raftan tahtaya, tek yön; taslak
+geri sürükleme/ıskalama kurtarma/zoom/joker YOK). Sürüklemenin HİSSİ
+(fare/parmak eşiği, bırakma eşiği, kaldırma payı, hayalet ölçüsü) artık
+üç ekranın da okuduğu `ui/game/drag_feel.dart`ta — web'in aynı gün
+yaptığı `src/utils/dragFeel.ts` tekilleştirmesinin ikizi;
+`layout_parity_test.dart` değeri TEK Dart kaynağından okuyor ve yerel
+kopyayı yasaklıyor. Jestin MANTIĞI ise hâlâ ekran başına: bir ekranda
+mantık değişirse yukarıdaki kural üç ekran için geçerli.
+
 **Grep'e giren ama testlerin ASLA yakalayamayacağı bir değişmez — özel
 `Canvas` çizimi iki motorda ayrışabilir:** `flutter test` native Skia ile
 render eder, web derlemesi ise CanvasKit ile — ikisi her zaman aynı sonucu
@@ -519,12 +530,12 @@ mobile/
       storage/             # SQLite + prefs (app_database/app_storage/…)
       ui/                  # ekranlar + widget'lar: app.dart, theme, tokens,
                            # auth/ intro/ game/ live/ score/ rank/ chat/
-                           # setup/ friends/ feedback/ push/ + paylaşılan
+                           # setup/ friends/ feedback/ push/ tutorial/ + paylaşılan
                            # kabuklar (KModal/KDialogCard/NeoBox/KIconButton)
       util/                # saf yardımcılar: deep_link, push_rules, semver,
                            # share_board + web ikizleri (game_list_order,
                            # recent_game_avatars, head_to_head, score_line, platform,
-                           # away_return, ai_level)
+                           # away_return, ai_level, onboarding)
     test/                  # util + controller (golden replay) + widget testleri
                            # + support/ (paylaşılan test altyapısı)
     android/ ios/          # flutter create çıktısı + elle değişiklikler

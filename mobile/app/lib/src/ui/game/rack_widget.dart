@@ -9,7 +9,9 @@ import 'package:kelimeki_core/kelimeki_core.dart' show Tile;
 
 import 'neo_box.dart';
 import 'player_colors.dart';
+import 'pulse_ring.dart';
 import 'tile_widget.dart';
+import '../tokens.dart';
 
 class RackWidget extends StatelessWidget {
   final List<Tile> tiles;
@@ -30,6 +32,12 @@ class RackWidget extends StatelessWidget {
   final void Function(PointerUpEvent e)? onTilePointerUp;
   final VoidCallback? onTilePointerCancel;
 
+  /// Tanıtımın vurguladığı raf indeksleri (web `Rack.highlight`, 7 Eylül
+  /// 2026, kullanıcı: *"rafta taşıması gereken taşları yanyana koy ve
+  /// highlight et"*): mavi halka (outline — taşın KENDİ kutusunu
+  /// büyütmez, raf ızgarası 7 hücreye bölünmüş) + nabız.
+  final List<int> highlight;
+
   const RackWidget({
     super.key,
     required this.tiles,
@@ -44,6 +52,7 @@ class RackWidget extends StatelessWidget {
     this.onTilePointerMove,
     this.onTilePointerUp,
     this.onTilePointerCancel,
+    this.highlight = const [],
   });
 
   @override
@@ -159,11 +168,39 @@ class RackWidget extends StatelessWidget {
           height: 46,
           child: Opacity(
             opacity: dragHiddenIndex == i ? 0 : 1,
-            child: TileWidget(
-              tile: tiles[i],
-              variant: TileVariant.rack,
-              selected:
-                  swapMode ? swapSelection.contains(i) : selectedTile == i,
+            // Stack'in boyutunu TAŞ veriyor (konumsuz tek çocuk); halka ona
+            // göre dışa taşıyor — taşın genişliği/konumu değişmiyor.
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                TileWidget(
+                  tile: tiles[i],
+                  variant: TileVariant.rack,
+                  selected: swapMode
+                      ? swapSelection.contains(i)
+                      : selectedTile == i,
+                ),
+                // Halka kutunun DIŞINDA (web `outline: 2px solid` +
+                // `outline-offset: 1px`): 1 px boşluk + 2 px çizgi.
+                if (highlight.contains(i))
+                  Positioned.fill(
+                    left: -3,
+                    top: -3,
+                    right: -3,
+                    bottom: -3,
+                    child: IgnorePointer(
+                      child: PulseOpacity(
+                        child: DecoratedBox(
+                          key: ValueKey('rack-highlight-$i'),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: kAccent, width: 2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

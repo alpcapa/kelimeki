@@ -9,7 +9,6 @@
 // anlamını gösterir (meanings deposu verilmişse).
 import 'dart:async' show unawaited;
 import 'package:clock/clock.dart';
-import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
 
@@ -28,6 +27,7 @@ import '../../game/move_status.dart';
 import 'board_widget.dart';
 import 'board_zoom.dart';
 import 'dialog_shell.dart';
+import 'drag_feel.dart';
 import 'game_header.dart';
 import 'game_over_modal.dart';
 import 'help_modal.dart';
@@ -165,22 +165,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   bool _gameOverShown = false;
 
   // ── Sürükle-bırak (web App.tsx beginDrag/moveDrag/endDrag portu) ──────
-  static const double _dragLift = 30; // web DRAG_LIFT
-  // Sürükleme eşiği — web'deki DRAG_THRESHOLD_MOUSE/DRAG_THRESHOLD_TOUCH ile
-  // BİREBİR aynı (gerekçe: `src/App.tsx`). Fare ile parmak aynı değeri
-  // kullanamaz; 6px'lik tek eşik altında hafif titreyen bir dokunuş
-  // "sürükleme" sayılıp sessizce hiçbir şey yapmıyordu.
-  static const double _dragThresholdMouse = 6; // web DRAG_THRESHOLD_MOUSE
-  static const double _dragThresholdTouch = 10; // web DRAG_THRESHOLD_TOUCH
-
-  /// BIRAKMA anındaki karar eşiği — hayalet eşiğinden (yukarıdaki 10 px)
-  /// AYRI. Jest bu mesafeden az gittiyse bırakma değil dokunuş sayılır.
-  /// 24, tahta hücresinin (26 px) hemen altında: bir hücreden az giden bir
-  /// jest zaten bir hedef ifade edemiyor. Gerekçe ve ölçümler
-  /// `_endTileDrag`in içinde.
-  static const double _tapSlopOnRelease = 24;
-  static double _dragThresholdFor(PointerDeviceKind kind) =>
-      kind == PointerDeviceKind.mouse ? _dragThresholdMouse : _dragThresholdTouch;
+  // Jestin HİSSİ (kaldırma payı, fare/parmak eşiği, bırakma eşiği, hayalet
+  // ölçüsü) `drag_feel.dart`ta — üç ekranın ortak tek kaynağı (7 Eylül 2026;
+  // web `src/utils/dragFeel.ts` ile aynı gün, aynı gerekçe). Jestin MANTIĞI
+  // (taslak taşı geri sürükleme, ıskalama kurtarma, zoom, joker) bu ekranın
+  // kendi işi ve `online_game_screen.dart` ile bilinçli olarak ayrı ayrı
+  // taşınıyor.
   final GlobalKey _gridKey = GlobalKey();
   final GlobalKey _rackKey = GlobalKey();
   final GlobalKey _stackKey = GlobalKey();
@@ -659,7 +649,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     // Görünür kare varsa ONUN üstüne kırp: zoom'luyken sanal ızgaranın üstü
     // (grid.localToGlobal) görünür alanın DIŞINA çıkabilir.
     final box = _boxOf(_viewportKey) ?? _boxOf(_gridKey);
-    final lifted = y - _dragLift;
+    final lifted = y - kDragLift;
     if (box == null) return lifted;
     final top = box.localToGlobal(Offset.zero).dy;
     return lifted < top + 1 ? top + 1 : lifted;
@@ -737,13 +727,13 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void _boardPointerMove(PointerMoveEvent e) {
     final down = _boardTapDown;
     if (down != null &&
-        (e.position - down).distance >= _dragThresholdFor(e.kind)) {
+        (e.position - down).distance >= dragThresholdFor(e.kind)) {
       _boardTapDown = null; // hareket etti: dokunuş adayı düştü
     }
     final p = _panRef;
     if (p == null) return;
     if (!p.moved) {
-      if ((e.position - p.start).distance < _dragThresholdFor(e.kind)) return;
+      if ((e.position - p.start).distance < dragThresholdFor(e.kind)) return;
       p.moved = true;
     }
     final grid = _boxOf(_gridKey);
@@ -826,7 +816,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final d = _dragRef;
     if (d == null) return;
     if (!d.moved) {
-      if ((e.position - d.start).distance < _dragThresholdFor(e.kind)) return;
+      if ((e.position - d.start).distance < dragThresholdFor(e.kind)) return;
       d.moved = true;
       // Eşik İLK kez aşıldı — kaynak artık "sürükleniyor" sayılır ve
       // gizlenir (web'in aynı anki davranışı). Sürükleme başına yalnızca BİR
@@ -918,7 +908,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final s = d.source;
     final gittigiMesafe = (e.position - d.start).distance;
     final rafinUstunde = s is _RackSource && _rackContains(e.position);
-    if (rafinUstunde || gittigiMesafe < _tapSlopOnRelease) {
+    if (rafinUstunde || gittigiMesafe < kTapSlopOnRelease) {
       await _dokunusOlarakIsle(s, e.position);
       return;
     }
@@ -968,17 +958,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final local = box == null ? g.global : box.globalToLocal(g.global);
     final isRack = g.source is _RackSource;
     return Positioned(
-      left: local.dx - 23,
-      top: local.dy - 23,
+      left: local.dx - kGhostTileSize / 2,
+      top: local.dy - kGhostTileSize / 2,
       child: IgnorePointer(
         child: Transform.scale(
-          scale: 1.1,
+          scale: kGhostTileScale,
           // Ek gölge YOK (kullanıcı web karşılaştırması): sürüklenen taş
           // yalnızca kendi taş görünümünü taşır, hedef kesikli çerçeveyle
           // gösterilir.
           child: SizedBox(
-            width: 46,
-            height: 46,
+            width: kGhostTileSize,
+            height: kGhostTileSize,
             child: TileWidget(
               tile: g.source.tile,
               variant: isRack ? TileVariant.rack : TileVariant.placed,

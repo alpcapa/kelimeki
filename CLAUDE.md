@@ -107,6 +107,18 @@ Her yerde geçerli dört kural:
    Varsayılan GÖSTERME tarafında; "bir kere" = işaret tanıtım AÇILIRKEN
    konur; yardım sayfasını okumak tanıtımı TÜKETMEZ.
 
+**Port ikizi (Faz 4, 7 Eylül 2026 — Parça 194):** `mobile/app/lib/src/ui/
+tutorial/` (`tutorial_script.dart` + `tutorial_game.dart`), kapı
+`util/onboarding.dart` + `FlagsStore.seenTutorial`, açan yer
+`setup_screen.dart`. Web TEK doğruluk kaynağı: `tutorial_parity_test.dart`
+`src/utils/tutorialScript.ts` + `TutorialGame.tsx` + `utils/onboarding.ts`i
+OKUYUP metin/sayı/koordinat/süre/tarih karşılaştırır (bulamazsa düşer);
+`tutorial_script_test.dart` senaryoyu Dart motorunda oynatır. Yani
+senaryoyu/metni değiştiren `npm run verify-tutorial-script` + mobil
+testleri (web CI'ın `parite` işi) ikisini birden geçirmek zorunda; port
+dosyaları AYNI PR'da güncellenir. `TUTORIAL_LAUNCH_AT` iki platformda AYNI
+(anlamı "web yayınından önce hesap açan = mevcut oyuncu").
+
 Ayrıntı, ölçümler ve kalan fazlar: `docs/decisions/onboarding.md`.
 
 ## Çalışma İlkesi: Önce Etki Analizi, Sonra Doküman Senkronu
@@ -155,7 +167,7 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | Migration | Canlıya uygula + doğrula + `list_migrations` ile dosya adını eşleştir |
 | Migration bir kolonu **nullable** yapıyor (ya da FK'yi `cascade`→`set null` çeviriyor) | `database.types.ts` **ve** portun `fromJson`'ı — bu bir SÖZLEŞME değişikliği (bkz. `docs/decisions/account-deletion.md` → "SET NULL'ın bedeli") |
 | Yeni kullanıcı verisi ya da görünürlük değişikliği | `TermsModal`/`PrivacyModal` |
-| Tanıtım senaryosu (`src/utils/tutorialScript.ts`) ya da motorun puan/vergi/çarpan kuralı | `npm run verify-tutorial-script` (CI'da) — tanıtım EKRANDA puan yazıyor, kural değişince metin sessizce bayatlar. Faz 4'te port ikizi de |
+| Tanıtım senaryosu (`src/utils/tutorialScript.ts`), `TutorialGame.tsx`in metin/süreleri, `utils/onboarding.ts`in kapısı ya da motorun puan/vergi/çarpan kuralı | `npm run verify-tutorial-script` (CI'da) — tanıtım EKRANDA puan yazıyor, kural değişince metin sessizce bayatlar. **Port ikizi AYNI PR'da:** `mobile/app/lib/src/ui/tutorial/*` + `util/onboarding.dart`; `tutorial_parity_test.dart` web kaynağını okur (metin/sayı ayrışırsa web CI'ın `parite` işi düşer), `tutorial_script_test.dart` senaryoyu Dart motorunda oynatır |
 | `App.tsx`'teki joker/mesaj/raf desenleri | `OnlineGameScreen.tsx` (ikisi deseni paylaşıyor) |
 | `Setup.tsx`'in "devam eden oyun" kartı | `LiveGamesTab.tsx`'in aktif oyun kartı — ikisi AYNI düzeni paylaşıyor ve kullanıcı onları iki sekmede yan yana görüyor (2 Eylül 2026: biri düzeltilip öteki unutuldu, kart ayrıştı; port ikizi `ui/devam_eden_govde.dart`) |
 | Bir Dart↔Kotlin/Swift MethodChannel adı ya da bildirim kanalı kimliği | Parite testi (`notification_*_parity_test.dart`) — derleyici görmez, uyuşmazlık SESSİZ arızadır |
@@ -591,18 +603,10 @@ mobile/         # Flutter portu — kelimeki_core (saf Dart motor) + üretilmiş
 - **Torba:** Oyuncu sayısından bağımsız olarak sabit 100 taş (Türkçe dağılım, `src/data/tiles.ts`). Not: bir ara tüm modlarda 186'ya çıkarılmıştı, ama simülasyon torbanın gerçek bitirişini (rafını torba boşken tamamen bitirme + rakip puanlarını kapma) neredeyse imkânsız kıldığını gösterdi (4 oyunculuda 0/10), bu yüzden 100'e geri dönüldü. Bölge artık statik 5×5 değil dinamik/genişleyen olduğundan (bkz. yukarı), 4 oyunculu oyunlarda köşe sınırıyla etkileşim için torbayı büyütmeye (eski `BAG_SCALE_BY_PLAYER_COUNT` denemesi) gerek kalmadı; kaldırıldı.
 - **Teslim olma (kademeli):** Bir oyuncu teslim olduğunda (`Player.surrendered`, `SURRENDER` action, `src/game/gameReducer.ts`) oyun tümüyle bitmez — o oyuncu sırayı devretmeden çekilir, kalan oyuncular (YZ ve/veya diğer hotseat oyuncuları) oynamaya devam eder; sıra rotasyonu ve pas-turu sayacı yalnızca teslim olmamış oyuncuları sayar (`nextActiveIndex`/`activePlayerCount`). Teslim olan oyuncunun puanı dondurulmaz, **sıfırlanır** (`score: 0`) ve rafında kalan kullanılmamış taşlar torbaya geri karıştırılır (`shuffle`) — böylece o taşlar kalan oyuncular için tamamen kaybolmaz. Oyun yalnızca teslim sonrası aktif oyuncu sayısı 1'e düşünce biter: 2 kişilik oyunda tek teslim bunu anında tetikler; 4 kişilikte sırasıyla 3 → 2 → (üçüncü teslimde) 1 aktif oyuncuya iner ve o son kalan oyuncu kazanır — sıralama, teslim olanları puanlarından bağımsız olarak her zaman en sona koyan `rankPlayers` (`src/utils/ranking.ts`) ile hesaplanır ve hem `GameOver` hem `buildGameRecord`'un (`App.tsx`) skor kaydı bunu kullanır. **29 Temmuz 2026'da logo davranışı değişti — artık manuel/anlık bir teslim yolu yok:** Öncesinde logoya tıklamak bir "Çık" onay modalı açıyor, sırası gelen hâlâ oyundaki insan oyuncuyu (hotseat'te herkes kendi sırasında teslim olabilsin diye) ya da yoksa hesap sahibini (1. oyuncu) hedefleyip `SURRENDER` dispatch ediyordu — Canlı oyundaki 48 saatlik zaman aşımı modeli (bkz. "Canlı Oyun — Faz 3.6") YZ tarafına da uygulanınca (kullanıcı isteği) bu modal tamamen kaldırıldı: logo artık HER DURUMDA (onay sorulmadan, kimin sırası olduğuna bakılmadan) doğrudan Setup'a döner (`handleLogoClick`, `App.tsx`, bkz. aşağıdaki "Devam eden oyunun kalıcılığı"). Setup'taki Yapay Zeka sekmesinde çalışan mevcut kurulumda zaten yalnızca 1. oyuncu (hesap sahibi) insan olabildiğinden (diğerleri her zaman YZ), bu modalın hotseat dalı ("başka bir insan oyuncuyu teslim et, diğerleri devam etsin") pratikte hiç tetiklenmiyordu — kaybı yok. `SURRENDER` action'ının kendisi (`gameReducer.ts`) ve yukarıda anlatılan kademeli teslim mekaniği (puan sıfırlama, raf→torba, `rankPlayers` sıralaması) hâlâ duruyor, ama artık local oyunda hesap sahibi için bunu tetikleyen TEK yol aşağıdaki 7 günlük terk edilme kuralı (`takePendingAbandonedGame`, gecikmeli -2 ceza) — anlık bir "Çık" kararı artık mümkün değil. `games.players` jsonb'sindeki her satırda hâlâ `surrendered` alanı var; `GameHistoryModal` yalnızca teslim olan oyuncunun kendi satırında (genel/üst köşede değil) "Teslim Oldu" rozeti gösterir.
 - **Teslim sonrası izleme (4 kişilik) — 5 Eylül 2026'da SİLİNDİ:** `App.tsx`
-  bir `spectating = rackPlayer.surrendered && !state.isGameOver` dalı
-  taşıyordu (raf/aksiyon butonları yerine "Teslim oldun — oyunu izliyorsun"
-  bandı + `GameHeader`'ın `exitDisabled` prop'uyla kilitli çıkış). 29 Temmuz
-  2026'da logo onaysız Setup'a dönmeye başlayınca `SURRENDER`'ı UI'dan
-  tetikleyen tek yol kalkmış, dal ERİŞİLEMEZ olmuş ama "ileride lazım olur"
-  diye bırakılmıştı. Temizlik geçişinde ölçüldü: `SURRENDER` `src/` içinde
-  hiçbir yerden dispatch edilmiyor ve **Flutter portu bu bandı hiç
-  portlamamış** — yani kod ölü OLMAKLA KALMIYOR, web↔port paritesini de
-  bozuyordu. Dal kaldırıldı (geri gerekirse git geçmişinde). Reducer'ın
-  `SURRENDER` case'i DURUYOR: kavram geçerli, port da taşıyor ve
-  `buildGameRecord`'un `surrendered`/`surrenderingIndex` yolu 7 günlük
-  terk-edilme akışında CANLI kullanılıyor — kaldırılan yalnızca ona bağlı UI.
+  erişilemez bir "teslim oldun — izliyorsun" dalı taşıyordu, port hiç
+  taşımamıştı (parite de bozuktu). Dal kaldırıldı; reducer'ın `SURRENDER`
+  case'i DURUYOR (7 günlük terk-edilme akışı canlı kullanıyor). Kayıt:
+  `docs/decisions/roadmap-arsiv.md` → "Teslim sonrası izleme dalı".
 - **Teslim olanın bölgesi doğal alana döner:** Bir oyuncu teslim olduğunda bölgesi (`computeAllTerritories`, `src/utils/validator.ts`) — hem kendi köşesi hem daha önce fethettiği hücreler dahil — o oyuncu için boş `Set` olarak hesaplanır: kimseye ait olmayan, sahipsiz/"doğal" alana döner. Sonuç: Board'daki kalın dış hat çizgisi kalkar (`buildOutline`, `src/components/Board.tsx` aynı fonksiyonu tüketir), ve o bölgeye giren/sınırına değen kimse artık bölge vergisi ödemez (`computeInvasionSplit` de aynı `computeAllTerritories`'i kullandığından otomatik yansır). YZ'nin hamle değerlendirmesi de (`src/utils/ai.ts`) aynı fonksiyonu çağırdığından, YZ'ler teslim olmuş oyuncunun eski bölgesini serbestçe (paylaşımsız) kullanır.
 - **Devam eden oyunun kalıcılığı, 7 günlük terk-edilme cezası ve offline
   kuyruğu:** kendi dosyasına taşındı —
@@ -615,7 +619,11 @@ Tüm fontlar (`src/fonts/*.css`, `main.tsx`'te import edilir) kendi sunucumuzdan
 
 - **Logo (Caveat)** — tamamen kaldırıldı, statik SVG path'lere çevrildi (bkz. `LogoMark`, yukarıdaki "Bileşen Notları").
 - **Space Grotesk 700 / Space Mono 400 / Space Mono 700** — Setup ekranında ilk boyamada görünen kalın buton etiketleri/açıklama paragrafı (700/400) ve `GameHeader`'daki skor kutuları (700) bu ağırlıkları kullanır; kullanıcı ikisindeki FOUT'u da ayrı ayrı bizzat bildirdi. `public/fonts/`'a taşınıp `index.html`'den `<link rel="preload">` ile öncelikli indirilir (bkz. ilgili `src/fonts/space-grotesk-inline.css`/`space-mono-inline.css` dosyalarındaki notlar). Bunlar canlı/değişken metin (skor, kullanıcı adı) render ettiğinden logodaki gibi statik path'e çevrilemez — preload en iyi pratik çözüm, garantili değil.
-  **1 Ağustos 2026 — Space Mono 700 örneği, yanlış teşhisin nasıl zaman kaybettirdiğine dair bir ders:** Kullanıcı, YZ'nin skor kutusunun (dar kutu, `font-mono font-bold`) her hamleden kısa bir süre sonra "1…" diye kırpılıp kendiliğinden düzeldiğini bildirdiğinde, önce `GameHeader.tsx`'teki kutu genişliği/`border` hesaplarında (bkz. "Bileşen Notları" → `GameHeader` skor kutuları, madde 3) bir hata arandı ve gerçek de bir hata bulunup (`border`→`outline`) düzeltildi — ama kullanıcı PR Preview'da (her açılış TAZE bir sayfa, önbelleksiz font) sorunun AYNEN devam ettiğini bildirince asıl kök sebebin bu maddede zaten TANIMLANMIŞ olan (o zamana kadar "henüz raporlanmadı" diye bırakılmış) Space Mono 700'ün preload edilmemesi olduğu anlaşıldı — sayfa önce geniş bir fallback monospace'le boyanıp gerçek (dar) font `swap` ile geldiğinde yeniden akıyordu, dar YZ kutusunda bu ara an tam kenardan taşıp kırpılmaya yol açıyordu. **Ders:** "kısa süre görünüp kendiliğinden düzeliyor" tarifi güçlü bir FOUT/font-swap sinyali — bu proje zaten aynı belirtiyi Caveat/Space Grotesk'te yaşamıştı, yeni bir yerde görülünce önce BU listeye (henüz preload edilmemiş ağırlıklar) bakılmalı, layout/CSS box-model hesaplarına dalmadan önce.
+  **1 Ağustos 2026 — Space Mono 700 örneği (yanlış teşhis dersi):**
+  "kısa süre görünüp kendiliğinden düzeliyor" tarifi güçlü bir FOUT sinyali;
+  yeni bir yerde görülünce önce BU listeye (preload edilmemiş ağırlıklar)
+  bak, layout/CSS hesaplarına dalmadan önce. Vaka kaydı:
+  `docs/decisions/components.md` → "Space Mono 700 — yanlış teşhis".
 - **Diğer ağırlıklar (Space Grotesk 400/500/600) ve Nunito (taş harfi fontu)** — henüz raporlanmadığından ve kritik ilk-boyama yolunda olmadığından dokunulmadı, hâlâ eski `./files/` + yalnızca-swap yolunda. Aynı şikayet başka bir ağırlıkta/yerde görülürse aynı desen uygulanmalı: dosyayı `public/fonts/`'a taşı, `index.html`'e `<link rel="preload">` ekle, `vite.config.ts`'teki `includeAssets`'e ekle (PWA precache için).
 
 ## Form Input'ları — iOS Safari Zoom Kuralı

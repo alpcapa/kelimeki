@@ -20,6 +20,75 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 194 — "Oynayarak öğren" tanıtımının port ikizi (Onboarding
+     Faz 4, 7 Eylül 2026; web `TutorialGame.tsx` + `tutorialScript.ts` +
+     `utils/onboarding.ts`in portu):** kullanıcı APK'yı indirip tanıtımı
+     göremedi — hata değildi, port kodu hiç taşımıyordu (web Faz 1 aynı gün
+     canlıya çıkmıştı, PR #483).
+     - **Ne yapıldı:** `ui/tutorial/tutorial_script.dart` (dört sahne, torba
+       sırası, başlangıç durumu — `StartAction`sız, DOĞRUDAN kurulup
+       `GameController.restore` ile yüklenir; motora action/alan EKLENMEDİ),
+       `ui/tutorial/tutorial_game.dart` (ekran: raylar, senaryolu rakip,
+       vergi onayı, kapanış kartı; kendi controller'ı — `GameSession`/
+       `CloudGameSession`/`logStart`/k-lig ÇALIŞMAZ), `util/onboarding.dart`
+       (`shouldShowTutorial`, dört sinyal, `tutorialLaunchAt` web ile AYNI
+       tarih — port için yeniden tarihlenmedi, bilinçli), `FlagsStore.
+       seenTutorial`/`markTutorialSeen` (eski `seenQuickstart` salt okunur
+       miras; yazıcısı kaldırıldı — portta zaten hiç yazılmıyordu),
+       `BoardWidget.targets`/`coach` + `RackWidget.highlight`, Setup'ta kapı
+       (`_tanitimGosterilsinMi` → `_runTutorial`; işaret AÇILIRKEN konur).
+     - **Zoom balonu geometrisi GENELLEŞTİRİLDİ, üçüncü geometri yazılmadı:**
+       `_zoomHintBubble` artık `_coachBubble`ı çağırıyor (çapa 6,6 · `ust`
+       · %78 · 10/7 dolgu); tanıtım balonu aynı fonksiyonu %96 ve 9/6 ile.
+       Kuyruk çapanın sütununda, yatay hiza sütuna göre (sol/sağ üçte bir →
+       yaslı, orta → ortalı) — web `Board.tsx`in `coach` bloğu.
+     - **Sürükleme hissi tekilleşti (devir notu tuzak 5):** sabitler
+       `game_screen`+`online_game_screen`de İKİ kopyaydı; tanıtım üçüncüyü
+       gerektirince `ui/game/drag_feel.dart`a çıkarıldı (web `dragFeel.ts`
+       ile aynı gün, aynı gerekçe). Hayalet ölçüsü/ölçeği de oradan.
+       `layout_parity_test` değeri tek Dart kaynağından okuyor, üç ekranda
+       `dragThresholdFor(e.kind)` kullanımını arıyor, yerel kopyayı
+       yasaklıyor; `kTapSlopOnRelease`/`kDragLift` web ile sayı sayı eşit.
+     - **Torba yönü DOĞRULANDI (tuzak 2):** `bag.dart` `removeLast` ile
+       çeker (web `pop`) — torba `[dolgu…, çekilme sırası TERS]` kuruluyor;
+       `tutorial_script_test` ilk dört çekilişi `tutorialDrawOrder` ile
+       karşılaştırıyor.
+     - **Hesap yaşı sinyali:** web `profile.created_at` okuyor; portta
+       `KProfile` bu alanı taşımıyor ve profil önbelleği de yok — Supabase
+       oturumunun `User.createdAt`i kullanıldı (aynı an: profil satırı
+       kayıtta açılıyor). Profil sonradan açılmışsa port daha "eski" görür
+       → GÖSTERMEZ; kapının varsayılan yönü, kabul edildi.
+     - **Testler:** `tutorial_script_test` (senaryo GERÇEK motorda — web
+       `verify-tutorial-script`in dokuz kontrolü + kapı tablosunun yedi
+       vakası + torba yönü), `tutorial_parity_test` (web KAYNAĞINI okur:
+       dört sahnenin id/say/bubble/hamle/done/not'u, kapanış, adlar,
+       DRAW_ORDER/BAG_FILLER/START_RACKS, üç süre, beş balon/mesaj metni,
+       vergi notu, kapı tarihi, TutorialGateInput alan sayısı — bulamazsa
+       DÜŞER), `tutorial_game_test` (dört sahne dokunarak: puan metinleri,
+       vergi penceresinde 58/19, kapanış → `onFinish`; sürükleme: taş
+       parmağın 30 px üstünden iner, yanlış kare rafa döner, vurgusuz taş
+       sürüklenemez, konan taşa dokunuş geri alır; raylar sessiz; ATLA),
+       `setup_screen_test` (+4: tertemiz depoda misafir → tanıtım + bayrak
+       açılırken; görmüş depo → doğrudan oyun; eski hesap → açılmaz; yeni
+       hesap → hesap adıyla açılır). Depo YOKSA kapı kapalı — öteki Setup
+       testleri değişmedi.
+     - **Bulunan ders (testte):** vurgusuz raf taşına dokunmak SEÇİMİ
+       DEĞİŞTİRMEZ (pointerDown erken döner) — yani önceki seçim durur ve
+       hedef kareye o iner. Web'de de böyle (`onSelect` vurgusuzu yok
+       sayar); ilk test iddiası bunu "kare kabul etmez" sanıp düştü, iddia
+       davranışa çekildi (davranış doğru: ray "yanlış taşı seçtirmez",
+       "seçimi silmez").
+     - **Doğrulama sınırı:** cihazda koşulmadı — süre (60-90 sn hedefi),
+       balonun %200 yazı ölçeğinde kırpılmaması ve gerçek parmakla
+       sürükleme hissi `mobile/TESTING.md` §1.9'da. Web'in duman testi
+       hayalet tık için 350 ms bekliyor; Flutter'da compat click YOK,
+       tanıtımda `swallowNextClick` eşi de yok (gerekmiyor).
+     - **`mobile/` DIŞINDA da dosya değişti:** kök `CLAUDE.md` ("İlk Oyun"
+       + etki tablosu), `README.md`, `ROADMAP.md` §24 (Faz 4 kapandı),
+       `docs/decisions/onboarding.md` (Faz 4 kaydı). Web kaynak kodu
+       DEĞİŞMEDİ; parite testi `src/**` okuduğu için `web-ci.yml`in mevcut
+       `paths` listesi zaten kapsıyor.
+
    - ✅ **Parça 193 — puan satırı AVATAR HİZASINA oturdu + yardım metninin
      zorluk cümlesi (6 Eylül 2026, kullanıcı iki bildirim; web + port aynı
      PR):** *"Puanlar avatarların tam altına gelmiyor. Özellikle 4 kişilik

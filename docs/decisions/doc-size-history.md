@@ -48,3 +48,14 @@ listesi (1-13) ↔ belirli bir düzeltmenin gerilemediğini doğrulayan TARİHL�
 turlar (14+). Turlar `docs/testing-turlari.md`'ye taşındı, dosya **88 KB**'a
 indi. Aynı turda kök `CLAUDE.md` de 81 KB ile uyarı bandına girmişti; bu
 dosya (bölme günlüğü) o yüzden ayrıldı.
+
+## 7 Eylül 2026 (akşam) — `CLAUDE.md` uyarı bandından çıkarıldı
+
+Onboarding Faz 4'ün port notu ("İlk Oyun: Tanıtım Ekranı" bölümü) dosyayı
+81 KB'a, yani `auto` sınıfının 80 KB'lık uyarı bandına soktu. Kural "bir
+sonraki dokunuşta böl" — aynı dokunuşta iki tarihli vaka anlatısı kendi
+konusunun karar dosyasına taşındı, yerlerinde tek satırlık kural + işaretçi
+kaldı: Space Mono 700 yanlış teşhis dersi → `components.md`; teslim sonrası
+izleme dalının silinmesi → `roadmap-arsiv.md`. Kesme noktası içeriğin
+TÜRÜ (vaka anlatısı ↔ her yerde geçerli kural), satırlar değişmedi.
+

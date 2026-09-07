@@ -944,10 +944,11 @@ her hamleden sonra rakip oynuyor. Tasarım/gerekçe/ölçümler:
   desenine birebir (`shouldShowZoomHint`).
 - **Faz 3 · tekrar izleme (web, küçük).** `HelpModal`'ın başına "Tanıtımı
   oyna (60 sn)"; Setup'ta da aynı giriş.
-- **Faz 4 · port ikizi (Flutter, ~1 PR + sürüm turu).** Aynı senaryo, aynı
-  metinler; parite testi web kaynağından okusun (`ai_level_parity_test`
-  deseni). Web'de canlı olan bir şey portta yokken arada bir sürüm boyu
-  ayrışma olacak — kabul edildi.
+- **Faz 4 · port ikizi — YAPILDI (7 Eylül 2026, Parça 194).** Aynı
+  senaryo, aynı metinler; `tutorial_parity_test.dart` web kaynağından
+  okuyor, `tutorial_script_test.dart` senaryoyu Dart motorunda oynatıyor.
+  Sürüm turu bekliyor: APK `main`'e merge + `mobile/**` ile üretilir,
+  cihaz kontrol listesi `mobile/TESTING.md` §1.9.
 - **Faz 5 · ölçüm (sunucu, isteğe bağlı).** Tanıtım başladı/bitti/atlandı +
   hangi sahnede bırakıldı; admin panelinde tek kart. Bu olmadan "işe
   yaradı mı" sorusunun cevabı YOK.

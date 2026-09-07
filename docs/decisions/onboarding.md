@@ -318,7 +318,77 @@ Faz 1 (senaryo + doğrulayıcı + ekran) bu PR'da. Sırada:
   (öncelik: Sınır İhlali penceresi › zoom balonu › onboarding ipucu).
   Bayraklar `utils/onboarding.ts`'e, zoom balonunun desenine birebir.
 - **Faz 3 — tekrar izleme:** `HelpModal`'ın başına "Tanıtımı oyna (60 sn)".
-- **Faz 4 — port ikizi:** Flutter'da aynı senaryo, aynı metinler; parite
-  testi web kaynağından okuyacak. Ayrı sürüm turu.
+- **Faz 4 — port ikizi: YAPILDI** (7 Eylül 2026, aşağıdaki bölüm).
 - **Faz 5 — ölçüm (isteğe bağlı):** tanıtım başladı/bitti/atlandı + hangi
   sahnede bırakıldı; admin panelinde tek kart. Sunucu tarafı, anında canlı.
+
+## Faz 4 — port ikizi (7 Eylül 2026, Parça 194)
+
+Kullanıcı APK'yı indirip tanıtımı göremedi; hata değildi, port kodu hiç
+taşımıyordu. Web TEK doğruluk kaynağı olarak kaldı; port ona karşı
+kilitlendi.
+
+**Ne nerede:** `mobile/app/lib/src/ui/tutorial/tutorial_script.dart`
+(senaryo — `TUTORIAL_STEPS`/`DRAW_ORDER`/`BAG_FILLER`/`START_RACKS`/
+`createTutorialState`in birebir eşi), `tutorial_game.dart` (ekran),
+`util/onboarding.dart` (`shouldShowTutorial`, `tutorialLaunchAt`),
+`FlagsStore.seenTutorial`/`markTutorialSeen` (eski `seenQuickstart` salt
+okunur miras — portta zaten hiç yazılmamıştı), `BoardWidget.targets`/
+`coach`, `RackWidget.highlight`, Setup'ta kapı (`_tanitimGosterilsinMi` →
+`_runTutorial`).
+
+**Dört kural portta da geçerli ve kanıtlı:**
+
+1. *Motora dokunmaz* — `kelimeki_core`a action/alan eklenmedi; başlangıç
+   durumu doğrudan kurulup `GameController.restore` ile yükleniyor,
+   `autoPlayAi: false` (rakip zaten `isAI` değil).
+2. *Oyun değildir* — `GameSession`/`CloudGameSession` kurulmuyor, `logStart`
+   çağrılmıyor, `games` satırı açılmıyor; gerçek oyun ve `game_starts`
+   sayacı ancak tanıtım rotası kapanınca kuruluyor.
+3. *Senaryo doğrulanır* — `tutorial_script_test.dart` web betiğinin dokuz
+   kontrolünü Dart motorunda koşuyor (+ torba yönü + kapı tablosu).
+4. *Kapı dört sinyale bakar* — aynı saf fonksiyon; `hasPlayed` girişlide
+   bulut listesi, misafirde yerel kayıt (web ile aynı ayrım); depo yoksa
+   gösterilmez (web'de localStorage kapalıyken aynı yön).
+
+**Üç yargı çağrısı:**
+
+- **Hesap yaşı `User.createdAt`ten.** Web `profile.created_at` okuyor;
+  portta `KProfile` bu alanı taşımıyor, profil önbelleği de yok. Supabase
+  oturumunun `createdAt`i hesabın açılış anı — profil satırı kayıtta
+  açıldığından ikisi aynı an. Sonradan açılmış bir profil portu daha "eski"
+  gösterir → GÖSTERMEZ; kapının varsayılan yönü, kabul edildi.
+- **`TUTORIAL_LAUNCH_AT` yeniden tarihlenmedi.** Anlamı "web yayınından
+  önce hesap açan = mevcut oyuncu"; ayrı bir tarih iki platformun farklı
+  kişilere göstermesi demek olurdu. Parite testi tarihi web'den okuyor.
+- **Sürükleme hissi tekilleşti.** `game_screen`/`online_game_screen`deki
+  iki kopya + tanıtımın üçüncüsü → `ui/game/drag_feel.dart` (web'in aynı
+  gün yaptığı `dragFeel.ts`in ikizi). `layout_parity_test` artık değeri tek
+  Dart kaynağından okuyor, üç ekranda pointer türüne bağlı kullanımı arıyor
+  ve yerel kopyayı yasaklıyor; `TAP_SLOP_ON_RELEASE`/`DRAG_LIFT` de web ile
+  sayı sayı karşılaştırılıyor.
+
+**Balon geometrisi genelleştirildi, üçüncüsü yazılmadı:** `BoardWidget`in
+zoom balonu (`_zoomHintBubble`) artık `_coachBubble`ı çağırıyor; tanıtım
+balonu aynı fonksiyonu farklı çapa/yön/genişlikle. Web'deki üç kural
+korundu: `ust`/`alt` yön, kuyruk çapanın sütununda, yatay hiza sütuna göre
+(sol/sağ üçte bir → yaslı, orta → ortalı). Hedefleri örtmeme kontrolü
+`tutorial_script_test`te (web'in #9'u).
+
+**Parite testi ne okuyor (`tutorial_parity_test.dart`):** dört sahnenin
+id/say/bubble/hamle(kelime, taşlar, puan, vergi, çarpan, raw)/done/rakip
+notu · kapanış başlığı+metni · iki ad · DRAW_ORDER/BAG_FILLER/START_RACKS ·
+üç süre (260/1400/2000) · beş balon/mesaj metni + vergi penceresi notu +
+kapanış butonu · `TUTORIAL_LAUNCH_AT` · `TutorialGateInput` alan sayısı.
+Yorumlar ayrıştırmadan önce atılıyor (`points`/`raw` yorumda da geçiyor).
+Bulamazsa DÜŞER — `web_source.dart` deseni.
+
+**Testte bulunan ders:** vurgusuz raf taşına dokunmak SEÇİMİ DEĞİŞTİRMEZ
+(web'de `onSelect` de yok sayıyor), yani önceki seçim durur ve hedef kareye
+o iner. İlk iddia "kare kabul etmez"di, düştü; davranış doğru, iddia
+düzeltildi.
+
+**Cihazda ölçülecek:** `mobile/TESTING.md` §1.9 (süre, yazı ölçeği,
+gerçek parmakla sürükleme hissi, yalıtım). APK `main`'e merge + `mobile/**`
+ile üretilir; "portta canlı mı" sorusunun cevabı Setup'taki `Derleme` sha'sı.
+
