@@ -52,8 +52,8 @@ yolu budur.
 | 1.0.4 | **467** | — | 31 Ağu 2026 (`72278c3`) | **1 Eyl, 10:25** | yayınlandı → pasif | Faz 6'nın istemci yarısı + Faz 7'nin iki çökmesi + hata hız sınırı |
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
-| **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | ✅ **kapalı testte YAYINDA** (Alpha) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
-| **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **henüz yüklenmedi** | ⏳ **PAKET HAZIR (7 Eyl 07:27 UTC), cihaz turu + gönderim bekliyor** | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
+| **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | ✅ **kapalı testte YAYINDA** (Alpha) — 1.0.8 incelemeden geçince pasife düşer | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
+| **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **7 Eyl 2026, 13:28** (Console) | ⏳ **GÖNDERİLDİ — "In review"** (Alpha; yayın saati henüz ölçülmedi) | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
 
 ⚠ **1.0.0/1.0.1'in `versionCode`'u hâlâ ölçülmedi** (Console'un paket
 listesi ekran görüntüsünde 435'te kesiliyordu). Ama gönderim ↔ SÜRÜM ADI
@@ -90,6 +90,7 @@ bölümü) — "ölçüldü" işaretli üç satır Console'dan doğrudan okundu,
 
 | # | Gönderim | Kapsam | Durum | Sürüm (çıkarım) |
 |---|---|---|---|---|
+| 13 | 7 Eyl 2026, 13:28 | Closed testing - Alpha | ⏳ **In review** | **1.0.8 (569)** — ölçüldü |
 | 12 | 4 Eyl 2026, 15:53 | Closed testing - Alpha | ✅ **Published** | **1.0.6 (525)** — ölçüldü |
 | 11 | 2 Eyl 2026, 17:24 | Closed testing - Alpha | Published | 1.0.5 (501) |
 | 10 | 1 Eyl 2026, 13:27 | Closed testing - Alpha | Published | 1.0.4 (467) |
@@ -111,7 +112,7 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
-## 1.0.8 (569) — PAKET HAZIR, Play'e YÜKLENMEDİ (sürüm turu 7 Eyl 2026'da başladı)
+## 1.0.8 (569) — GÖNDERİLDİ 7 Eyl 2026, 13:28 · "In review"
 
 **Durum:** `pubspec.yaml` + `env.dart` 1.0.7 → 1.0.8 (#472, 6 Eyl akşamı).
 Sürüm adı aynı kaldı ama paket o günden beri DÖRT kez yeniden derlendi
@@ -119,8 +120,17 @@ Sürüm adı aynı kaldı ama paket o günden beri DÖRT kez yeniden derlendi
 sonuncusu. 566 cihazda test edildi ve temiz çıktı (kullanıcı: *"test tamam,
 sorunsuz"*); 569 onun üstüne yalnızca iki KOZMETİK düzeltme koyuyor
 (misafir Setup boşluğu, açıklama metninde noktanın yeri).
-**Bu satırı dolduracak son şey gönderim saati** (Console → Submission
-activity) — yükleme anında yazılır.
+**Gönderim:** 7 Eyl 2026, **13:28** — Console'un kendi kaydı ("Submitted
+1:28 pm", Submission activity), kapalı test (Alpha). Durum o an **In
+review**. ⚠ İlk bildirilen saat 13:42'ydi (yükleme akışının bittiği an);
+kütüğe CONSOLE'un yazdığı saat girer, çünkü "İnceleme süresi" tablosundaki
+öteki satırlar da Console saatleriyle ölçüldü ve karışık kaynak o tabloyu
+karşılaştırılamaz hâle getirir. ⚠ **Yayın saati HENÜZ ÖLÇÜLMEDİ** —
+"Published" görüldüğünde hem aşağıdaki "İnceleme süresi" tablosuna satır
+eklenmeli hem 1.0.7 pasife çekilmeli hem de ROADMAP'teki tur arşive
+taşınmalı. Geçmiş kapalı test incelemeleri 10-34 dakika sürdü; "Published"
+rozeti kanala GİRDİĞİNİ söyler, cihaza indiğini DEĞİL (bkz.
+`build-and-distribution-log.md` → "Kapalı test").
 
 **İçerik:** ROADMAP #23'ün TAMAMI (Faz 2-5) — yedi port commit'i, aşağıda
 "1.0.8 — 7 mobil commit". Kullanıcıya görünen: Yapay Zeka oyununda
@@ -637,6 +647,7 @@ yardım ekranına zorluk paragrafı. Normal'de hiçbir şey değişmedi
 | 1.0.2 (435) | 30 Ağu 15:29 | 15:39 | **10 dk** | Console |
 | 1.0.5 (501) | 2 Eyl 17:24 | ~17:58 | **~34 dk** | Console (gönderim) + release satırının "Last updated"ı |
 | 1.0.6 (525) | 4 Eyl 15:53 | ≤ 16:22 | **≤ 29 dk** | Console (gönderim) + 16:22'de "Published" görüldü |
+| 1.0.8 (569) | 7 Eyl 13:28 | ⏳ ölçülecek | — | Console (gönderim); yayın anı görülünce doldur |
 
 ⚠ **DÜZELTME (4 Eylül 2026):** bu bölüm daha önce 1.0.5 için **"≈23 dakika
 (~14:40 → ~15:03)"** diyordu. O rakam Console'dan değil kullanıcının

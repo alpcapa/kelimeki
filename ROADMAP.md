@@ -201,9 +201,13 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **DURUM (7 Eylül 2026): cihaz turu GEÇTİ, paket 1.0.8 (569) = `f4de936`
-Play gönderimi bekliyor.** Tur 566'da koşuldu (kullanıcı: *"test tamam,
-sorunsuz"*), iki kozmetik düzeltme (#479) sonrası paket 569'a tazelendi. Sürüm adı 6 Eylül'de
+⚠ **DURUM (7 Eylül 2026): paket 1.0.8 (569) = `f4de936` Play'e GÖNDERİLDİ,
+Console saatiyle 13:28, kapalı test (Alpha), durum "In review".** Cihaz turu 566'da
+koşuldu (kullanıcı: *"test tamam, sorunsuz"*), iki kozmetik düzeltme (#479)
+sonrası paket 569'a tazelendi ve o yüklendi. **Yayın görülünce yapılacaklar:**
+kütükte 1.0.7 pasife + "İnceleme süresi" satırı, aşağıdaki "binecekler"
+listesi sıfırlanır, "Kapalı testteki paket" 1.0.8 (569) olur, tur arşive
+taşınır (`mobile/docs/surumler.md` → "Bir sürüm yüklendiğinde ne yapılır"). Sürüm adı 6 Eylül'de
 iki dosyada birden 1.0.7 → **1.0.8** yapıldı (`pubspec.yaml` + `env.dart`,
 `app_version_parity_test` ikisini kilitliyor); `versionCode` = CI koşu
 numarası **569** (#479'un merge'i; aradaki doküman-only merge'ler yeni
