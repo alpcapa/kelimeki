@@ -2272,6 +2272,17 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
     // (7 Eylül 2026, kullanıcı: iki balon aynı anda duruyordu).
     await expect(page.getByText("Hamleni tamamlamak için OYNA'ya bas")).toBeVisible();
     await expect(page.locator('[data-coach]')).toHaveCount(0);
+    // ⚠ Balonun OKU gerçekten OYNA butonunu göstermeli (7 Eylül 2026 akşamı,
+    // kullanıcı bildirdi: göstermiyordu). Kök sebep Tailwind sınıf sırasıydı
+    // — kap `items-center` taşırken çağıranın `items-end`i sessizce
+    // yutuluyordu, kuyruk balonun ortasında kalıp rafı işaret ediyordu.
+    // Hiza artık satır içi stil; bu ölçüm geri alınmayı yakalar.
+    const kuyruk = (await page.locator('[data-balon="sag"] [data-balon-kuyruk]')
+      .boundingBox())!;
+    const oynaKutu = (await oyna.boundingBox())!;
+    const kuyrukMerkez = kuyruk.x + kuyruk.width / 2;
+    expect(kuyrukMerkez).toBeGreaterThanOrEqual(oynaKutu.x);
+    expect(kuyrukMerkez).toBeLessThanOrEqual(oynaKutu.x + oynaKutu.width);
     await oyna.click();
   };
 

@@ -427,6 +427,12 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
       oynadıktan sonra çıkan "Rakip hamlesini yaptı" balonu — 1. sahnede
       rakip sağ kenarda (sütun 12) oynuyor, balon SAĞ yarıda ve ok balonun
       altında olmalı. 3. ve 4. sahnenin balonları ortada.
+- [ ] **Üç balon TEK ölçüde:** tanıtım balonu, gerçek oyundaki zoom ipucu
+      ("Boş kareye… çift tıklama") ve "Buradan başla" aynı büyüklükte
+      okunuyor (7 Eylül 2026 akşamı, ikinci tur).
+- [ ] **OYNA balonunun oku BUTONU gösteriyor:** hamle tamamlanınca çıkan
+      "Hamleni tamamlamak için OYNA'ya bas" balonunun kuyruğu rafın
+      ortasını değil OYNA butonunu işaret ediyor.
 - [ ] **Punto ve satır kırılması:** balon yazısı eskisinden belirgin BÜYÜK;
       uzun cümleler ("Sarı bölge içinde…", "Hamleni tamamlamak için…") tek
       satırda ekranı baştan başa kesmiyor, İKİ satıra kırılıyor. Balon yine

@@ -72,10 +72,40 @@ const SONUC_OKUMA = 1400;
  */
 const RAKIP_OKUMA = 2000;
 
-/** Tanıtım balonu — mavi kutu + aşağı bakan kuyruk (tahtadaki balonun eşi). */
-function Balon({ text, className }: { text: string; className: string }) {
+/**
+ * Tanıtım balonu — mavi kutu + aşağı bakan kuyruk (tahtadaki balonun eşi).
+ *
+ * ⚠ HİZA `style` ile veriliyor, Tailwind SINIFIYLA DEĞİL (7 Eylül 2026
+ * akşamı, kullanıcı: *"'Hamleni tamamlamak için Oyna' balon yazısının oku
+ * Oyna butonunu göstermiyor"*). Sebep bu depoya özgü bir tuzak: kap zaten
+ * `items-center` taşıyordu ve çağıran `items-end` ekliyordu — Tailwind'de
+ * hangisinin kazandığını SINIF DİZESİNDEKİ sıra değil, üretilen CSS'teki
+ * sıra belirler, yani `items-end` sessizce yutuluyor ve kuyruk balonun
+ * ORTASINDA kalıyordu (OYNA butonunu değil rafın ortasını işaret ediyordu).
+ * Satır içi stil bu belirsizliği tamamen kaldırır.
+ *
+ * Kuyruk ayrıca kenardan 12 px içeride duruyor (portun `_Balon`ıyla aynı):
+ * tam köşeye oturan bir üçgen yuvarlatılmış kenarın dışına taşmış görünür.
+ */
+function Balon({
+  text,
+  className,
+  hiza,
+}: {
+  text: string;
+  className: string;
+  /** Balonun ve kuyruğun yatay hizası — kuyruk neyi işaret ediyorsa o. */
+  hiza: 'sol' | 'orta' | 'sag';
+}) {
+  const alignItems = hiza === 'sol' ? 'flex-start' : hiza === 'sag' ? 'flex-end' : 'center';
+  const kuyrukKenar =
+    hiza === 'sol' ? { marginLeft: 12 } : hiza === 'sag' ? { marginRight: 12 } : {};
   return (
-    <div className={`pointer-events-none absolute z-30 flex flex-col items-center ${className}`}>
+    <div
+      data-balon={hiza}
+      className={`pointer-events-none absolute z-30 flex flex-col ${className}`}
+      style={{ alignItems }}
+    >
       <div
         className="font-bold leading-snug text-center rounded-[9px] text-white"
         style={{
@@ -94,12 +124,16 @@ function Balon({ text, className }: { text: string; className: string }) {
         {text}
       </div>
       <span
+        // Testin ölçtüğü öğe: kuyruk GERÇEKTEN neyi gösteriyor
+        // (`smoke.spec.ts` → OYNA butonunun x aralığı).
+        data-balon-kuyruk=""
         style={{
           width: 0,
           height: 0,
           borderLeft: '5px solid transparent',
           borderRight: '5px solid transparent',
           borderTop: '6px solid #2563EB',
+          ...kuyrukKenar,
         }}
       />
     </div>
@@ -505,13 +539,17 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
             {mode === 'oyna' && !hazir && (
               <Balon
                 text={`Şimdi ${step.move.word} kelimesini taşı`}
-                className="left-0 right-0 bottom-full mb-1 items-center"
+                className="left-0 right-0 bottom-full mb-1"
+                hiza="orta"
               />
             )}
+            {/* Kuyruk OYNA butonunu işaret ETMEK ZORUNDA: balon sağa yaslı
+                ve kap butonun sağ kenarına (`right-1`) çapalı. */}
             {hazir && (
               <Balon
                 text="Hamleni tamamlamak için OYNA'ya bas"
-                className="right-1 bottom-full mb-1 items-end"
+                className="right-1 bottom-full mb-1"
+                hiza="sag"
               />
             )}
 

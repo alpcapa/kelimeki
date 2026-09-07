@@ -185,6 +185,33 @@ void main() {
         '58');
     expect(dartTutorial.contains('screenWidth * 0.58'), isTrue,
         reason: 'raf balonunun genişlik kapağı ayrıştı (web 58vw)');
+
+    // ÜÇ BALON TEK ÖLÇÜDE (7 Eylül 2026 akşamı, kullanıcı: *"zoom mesaj
+    // fontunu da diğer balonlar kadar büyüt. Buradan başla balon yazısını da
+    // aynı şekilde."*): tanıtım balonu · zoom ipucu · "Buradan başla".
+    // `Board.tsx`teki HER balon puntosu aynı clamp olmalı; biri unutulursa
+    // ekranda gözle fark edilir ama hiçbir test yakalamazdı.
+    // Filigranlar (köşe numarası, X2) da `clamp` kullanıyor ama onlar balon
+    // DEĞİL — 80/32vw/220 gibi dev değerler. Balonları tabanına göre ayırıyoruz.
+    final boardClamps = RegExp(r"fontSize: 'clamp\((\d+)px, ([\d.]+)vw, (\d+)px\)'")
+        .allMatches(boardTsx)
+        .where((m) => int.parse(m.group(1)!) <= 20)
+        .map((m) => '${m.group(1)}/${m.group(2)}/${m.group(3)}')
+        .toList();
+    expect(boardClamps.length, 3,
+        reason: 'Board.tsx uc balon puntosu tasimali (tanitim, zoom, '
+            '"Buradan basla"); sayi degistiyse bu testi de guncelle');
+    expect(boardClamps.toSet(), {'11/3.2/16'},
+        reason: 'üç balonun puntosu AYNI olmalı, ayrışmış: $boardClamps');
+    expect(
+        RegExp(r'fluidSize\(screenWidth, 11, 0, 3\.2, 16\)')
+            .allMatches(dartBoard)
+            .length,
+        2,
+        reason: 'port tarafında iki balon (ortak `_coachBubble` + '
+            '"Buradan başla") aynı puntoyu kullanmalı');
+    expect(dartBoard.contains('fluidSize(screenWidth, 9, 0, 2.4, 13)'), isFalse,
+        reason: 'eski (küçük) balon puntosu portta kalmış');
   });
 
   test('ekran: süreler ve balon/mesaj metinleri TutorialGame.tsx ile birebir', () {

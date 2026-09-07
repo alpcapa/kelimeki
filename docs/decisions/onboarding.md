@@ -472,3 +472,34 @@ ancak öyle balonun altında kalıyor (çapa 12'de ölçüldü).
 kontrolü İKİ değil **ÜÇ** komşu satıra bakıyor; dört sahne de geçiyor
 (hedefler her sahnede yalnızca çapa satırında).
 
+### 4. İkinci tur — okun hedefi ve kalan iki balon (aynı akşam)
+
+Kullanıcı web önizlemesini denedi: *"Her şey ok, sadece 'Hamleni tamamlamak
+için Oyna' balon yazısının oku Oyna butonunu göstermiyor. Bir de gerçek
+oyuna geçince çıkan zoom mesaj fontunu da diğer balonlar kadar büyüt.
+Buradan başla balon yazısını da aynı şekilde."*
+
+**Ok neden kaymıştı — Tailwind sınıf sırası (WEB'E ÖZGÜ tuzak):** `Balon`
+kabı zaten `items-center` taşıyordu, çağıran ise `items-end` ekliyordu.
+Tailwind'de hangisinin kazandığını **sınıf dizesindeki sıra değil, üretilen
+CSS'teki sıra** belirler — `items-end` sessizce yutuluyor, kuyruk balonun
+ORTASINDA kalıp rafın ortasını gösteriyordu. Hiza artık `style` ile
+veriliyor (`hiza: 'sol' | 'orta' | 'sag'` prop'u) ve kuyruk kenardan 12 px
+içeride (portun `_Balon`ıyla aynı; tam köşedeki üçgen yuvarlatılmış kenarın
+dışına taşmış görünüyor).
+
+**Ders:** aynı özelliği hem kap sınıfında hem çağıranın sınıfında vermek,
+CSS sırası belirsiz olduğu için "çalışıyor gibi görünüp sessizce ters
+dönen" bir yapı kurar. Bir düzen kararı iki yerden geliyorsa satır içi
+stile taşı.
+
+Kilit ölçüyor: `smoke.spec.ts` kuyruğun (`[data-balon-kuyruk]`) yatay
+merkezinin OYNA butonunun x aralığında kaldığını iddia ediyor; hizayı
+bozunca test düşüyor (kanıtlandı).
+
+**Kalan iki balon da aynı puntoya çekildi** — zoom ipucu ve "Buradan
+başla" artık `clamp(11,3.2vw,16)`. Yani ekrandaki ÜÇ balon tek ölçüde;
+`tutorial_parity_test` bunu değişmez olarak kilitliyor (`Board.tsx`teki
+balon clamp'lerinin hepsi aynı olmalı — filigranlar tabanlarına göre
+ayrılıyor).
+

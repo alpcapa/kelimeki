@@ -66,6 +66,19 @@
        + tüm testler pencereyi geçiyor, `setup_screen_test` kapı testi de.
        Web: `smoke.spec.ts` + `gameOverFixture.tanitimiAtla` pencereyi
        kapatıyor (71/71 yeşil).
+     - **İKİNCİ TUR (aynı akşam, kullanıcı web önizlemesini denedi):**
+       *"Oyna balonunun oku Oyna butonunu göstermiyor"* — WEB'E ÖZGÜ tuzak:
+       `Balon` kabı `items-center`, çağıran `items-end` veriyordu; Tailwind'de
+       kazananı sınıf dizesi DEĞİL üretilen CSS sırası belirler, yani
+       `items-end` sessizce yutulup kuyruk balonun ortasında kalıyordu. Hiza
+       artık `style` (prop: `hiza`), kuyruk kenardan 12 px içeride (portun
+       `_Balon`ıyla aynı). **Ders: bir düzen kararı hem kabın sınıfından hem
+       çağıranın sınıfından geliyorsa satır içi stile taşı.** Kilit ölçüyor:
+       `smoke.spec.ts` kuyruğun merkezinin OYNA butonunun x aralığında
+       kaldığını iddia ediyor; hiza bozulunca düşüyor (kanıtlandı).
+       Ayrıca zoom ipucu ve "Buradan başla" balonları da aynı puntoya
+       (`clamp(11,3.2vw,16)`) çekildi — ekrandaki ÜÇ balon tek ölçüde,
+       `tutorial_parity_test` bunu değişmez olarak kilitliyor.
      - **Doğrulama sınırı:** cihazda koşulmadı; punto/satır kırılması ve
        balonun hedefi örtmemesi gözle `mobile/TESTING.md` §1.9'da.
 

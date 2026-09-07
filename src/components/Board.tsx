@@ -715,7 +715,10 @@ export function Board({
                 style={{
                   maxWidth: '78%',
                   background: '#2563EB',
-                  fontSize: 'clamp(9px, 2.4vw, 13px)',
+                  // Punto tanıtım balonlarıyla AYNI (7 Eylül 2026 akşamı,
+                  // kullanıcı: *"zoom mesaj fontunu da diğer balonlar kadar
+                  // büyüt"*) — üç balon tek ölçüde okunuyor.
+                  fontSize: 'clamp(11px, 3.2vw, 16px)',
                   padding: '7px 10px',
                   boxShadow: '0 2px 6px rgba(15,23,42,0.28)',
                 }}
@@ -776,7 +779,9 @@ export function Board({
                 style={{
                   background: startHint.col.base,
                   color: '#FFFFFF',
-                  fontSize: 'clamp(9px, 2.4vw, 13px)',
+                  // Zoom ve tanıtım balonlarıyla AYNI punto (7 Eylül 2026
+                  // akşamı, kullanıcı isteği).
+                  fontSize: 'clamp(11px, 3.2vw, 16px)',
                   padding: '5px 8px',
                   boxShadow: '0 2px 6px rgba(15,23,42,0.28)',
                 }}

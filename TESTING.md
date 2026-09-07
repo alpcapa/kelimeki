@@ -1262,6 +1262,10 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
       akşamı):** hiçbir balon sol kenara yapışık değil; "Rakip hamlesini
       yaptı" 1. sahnede SAĞ yarıda (rakip sütun 12'de oynuyor); raf balonu
       rafın ortasında, OYNA balonu sağda.
+- [ ] **Üç balon TEK ölçüde + OYNA okunun hedefi:** tanıtım balonu, zoom
+      ipucu ve "Buradan başla" aynı büyüklükte; "Hamleni tamamlamak için
+      OYNA'ya bas" balonunun kuyruğu OYNA butonunun üstünde (7 Eylül 2026
+      akşamı, ikinci tur — önce rafın ortasını gösteriyordu).
 - [ ] **Balon okunabiliyor VE hedefi örtmüyor:** Dört sahnenin de balonu
       tahtanın İÇİNDE kalıyor, yazı %200 ölçekte kırpılmıyor (iOS: Ayarlar →
       Ekran → Metin Boyutu en büyük) ve "şuraya koy" denen kesikli kareler

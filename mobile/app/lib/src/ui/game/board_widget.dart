@@ -882,7 +882,9 @@ class BoardWidget extends StatelessWidget {
                   fontFamily: 'SpaceGrotesk',
                   fontWeight: FontWeight.bold,
                   height: 1,
-                  fontSize: fluidSize(screenWidth, 9, 0, 2.4, 13),
+                  // Zoom ve tanıtım balonlarıyla AYNI punto (7 Eylül 2026
+                  // akşamı, kullanıcı isteği; web `Board.tsx` ile aynı sayı).
+                  fontSize: fluidSize(screenWidth, 11, 0, 3.2, 16),
                 ),
               ),
             ),
