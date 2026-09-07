@@ -69,6 +69,12 @@ export interface HardOptions {
    * yalnızca "hamlem hangi sıcak noktaları açtı" sorusunu ölçen dürüst sürüm.
    */
   opponentRacks?: Tile[][];
+  /**
+   * Oyun sonu çözücü: torba BOŞKEN rakip rafları (torba boşken raf zaten
+   * çıkarsanabilir: tüm taşlar − tahta − kendi raf, yani bakmak değil) ile
+   * `ENDGAME_DEPTH` katlı minimax. Verilmezse kapalı.
+   */
+  endgameRacks?: Tile[][];
   /** Torbada kalan taş — 0'da kalıntı = kalan taşların puanı (oyun sonu düşümü). */
   bagCount: number;
 }
@@ -84,6 +90,68 @@ const LOOKAHEAD_WIDTH = 8;
 
 /** Rafa bakmayan ileri bakışta rakibe varsayılan raf (sık harfler + joker). */
 const GENERIC_REPLY_LETTERS = ['A', 'E', 'İ', 'K', 'L', 'R', '?'];
+
+/** Oyun sonu çözücünün derinliği (kat) ve kat başına aday sayısı. */
+const ENDGAME_DEPTH = 3;
+const ENDGAME_WIDTH = 6;
+
+/** Raftaki taşların toplam puanı (oyun sonu düşümü). */
+function rackPoints(rack: Tile[]): number {
+  let pts = 0;
+  for (const t of rack) pts += t.pts;
+  return pts;
+}
+
+/** Hamle sonrası raf: oynanan taşlar (joker → '?') düşülür. */
+function rackAfter(rack: Tile[], placements: Placement[]): Tile[] {
+  const left = [...rack];
+  for (const p of placements) {
+    const L = p.tile.wild ? '?' : p.tile.letter;
+    const i = left.findIndex((t) => t.letter === L);
+    if (i >= 0) left.splice(i, 1);
+  }
+  return left;
+}
+
+/**
+ * Torba boşken iki kişilik farkı (hamle sırası gelenin bakışıyla, puan)
+ * derinlik sınırlı minimax ile değerlendirir. Rafını bitiren oyunu bitirir:
+ * kendi kalıntısı 0, rakibin kalıntısı rakipten düşer (kurallar). Hamle yoksa
+ * pas; art arda iki pas oyunu bitirir. Yaprakta: kalıntı farkı.
+ */
+function endgameValue(
+  board: Board,
+  racks: Tile[][],
+  mover: number,
+  other: number,
+  bonuses: Record<string, BonusType>,
+  players: Player[],
+  depth: number,
+  passed: boolean,
+): number {
+  const myRack = racks[mover];
+  const oppRack = racks[other];
+  if (depth === 0 || myRack.length === 0) return rackPoints(oppRack) - rackPoints(myRack);
+  const moves = findAIMoves(
+    board, myRack, bonuses, mover, players[mover].corners, hasNoTiles(board, mover), players, ENDGAME_WIDTH,
+  );
+  // Pas: rakip oynar; o da pas geçerse oyun biter.
+  let best = passed
+    ? rackPoints(oppRack) - rackPoints(myRack)
+    : -endgameValue(board, racks, other, mover, bonuses, players, depth - 1, true);
+  for (const m of moves) {
+    const nb = board.map((row) => [...row]);
+    for (const p of m.placements) nb[p.r][p.c] = p.tile;
+    const left = rackAfter(myRack, m.placements);
+    const nextRacks = [...racks];
+    nextRacks[mover] = left;
+    let v: number;
+    if (left.length === 0) v = m.score + rackPoints(oppRack);
+    else v = m.score - endgameValue(nb, nextRacks, other, mover, bonuses, players, depth - 1, false);
+    if (v > best) best = v;
+  }
+  return best;
+}
 
 /** Sıradaki (teslim olmamış) rakip — reducer'ın `nextActiveIndex`iyle aynı. */
 function nextOpponent(players: Player[], from: number): number {
@@ -256,6 +324,7 @@ export function findAIMoves(
   let width = n;
   if (hard && hard.territoryWeight > 0) width = Math.max(width, TERRITORY_RERANK_WIDTH);
   if (hard && hard.replyWeight > 0) width = Math.max(width, LOOKAHEAD_WIDTH);
+  if (hard && hard.endgameRacks && hard.bagCount === 0) width = Math.max(width, ENDGAME_WIDTH);
   // tryCornerStart dışında hiç kullanılmıyor — bu da yalnızca isFirstMove
   // (ya da nadir freshCorners) dallarında tetikleniyor. Her normal hamlede
   // onbinlerce kelimeyi boşuna filtrelememek için tembel/önbellekli hesap.
@@ -364,6 +433,27 @@ export function findAIMoves(
       hard && hard.territoryWeight > 0
         ? rerankByTerritory(list, board, players, owner, territories, hard.territoryWeight, n)
         : list;
+    if (hard && hard.endgameRacks && hard.bagCount === 0 && players.length === 2) {
+      const opp = nextOpponent(players, owner);
+      const racks = hard.endgameRacks;
+      if (opp !== owner && racks[opp] && racks[owner]) {
+        const out: Ranked[] = [];
+        for (const item of ranked.slice(0, ENDGAME_WIDTH)) {
+          const nb = board.map((row) => [...row]);
+          for (const p of item.move.placements) nb[p.r][p.c] = p.tile;
+          const left = rackAfter(racks[owner], item.move.placements);
+          const nextRacks = [...racks];
+          nextRacks[owner] = left;
+          const v =
+            left.length === 0
+              ? item.move.score + rackPoints(racks[opp])
+              : item.move.score -
+                endgameValue(nb, nextRacks, opp, owner, bonuses, players, ENDGAME_DEPTH - 1, false);
+          insertBounded(out, { move: item.move, rank: v * RANK_SCALE }, n);
+        }
+        return out.map((x) => x.move);
+      }
+    }
     if (hard && hard.replyWeight > 0) {
       const opp = nextOpponent(players, owner);
       const oppRack: Tile[] | undefined = hard.opponentRacks

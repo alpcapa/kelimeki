@@ -57,6 +57,8 @@ const HARD_BASE: Omit<HardOptions, 'bagCount'> = {
 };
 /** Rakibin GERÇEK rafını gören ön ayarlar (yalnızca üst sınır ölçümü). */
 const PEEK_PRESETS = new Set(['ileri50', 'ileri100']);
+/** Torba boşken rakip rafını (çıkarsanabilir) çözücüye veren ön ayarlar. */
+const ENDGAME_PRESETS = new Set(['sonoyun']);
 
 const PRESETS: Record<string, Partial<Omit<HardOptions, 'bagCount'>>> = {
   havuz8: { maxWordLen: 8 },
@@ -80,6 +82,8 @@ const PRESETS: Record<string, Partial<Omit<HardOptions, 'bagCount'>>> = {
   // Rafa BAKMAYAN ileri bakış: rakip için genel raf varsayılır.
   ileriG50: { replyWeight: 50 },
   ileriG100: { replyWeight: 100 },
+  // Oyun sonu çözücü (torba boşken minimax) — seçenek değil bayrak; raflar koşumda verilir.
+  sonoyun: {},
 };
 
 function parseMotor(spec: string): Omit<HardOptions, 'bagCount'> {
@@ -159,7 +163,7 @@ interface GameResult {
 }
 
 /** Koltuk seçicisi: N (top-N) ya da motor adı (Zor adayı). */
-type Seat = { n: number; hard?: Omit<HardOptions, 'bagCount'>; label: string; peek?: boolean };
+type Seat = { n: number; hard?: Omit<HardOptions, 'bagCount'>; label: string; peek?: boolean; endgame?: boolean };
 
 function playOne(seatCfg: Seat, seed: number, topNSeat: 0 | 1): GameResult {
   const n = seatCfg.n;
@@ -191,6 +195,9 @@ function playOne(seatCfg: Seat, seed: number, topNSeat: 0 | 1): GameResult {
           ...seatCfg.hard,
           bagCount: state.bag.length,
           ...(seatCfg.peek ? { opponentRacks: state.players.map((p) => p.rack) } : {}),
+          ...(seatCfg.endgame && state.bag.length === 0
+            ? { endgameRacks: state.players.map((p) => p.rack) }
+            : {}),
         }
       : undefined;
     const move = pickTopMove(
@@ -264,6 +271,7 @@ async function main(): Promise<void> {
       hard: parseMotor(m),
       label: m,
       peek: m.split('+').some((part) => PEEK_PRESETS.has(part.trim())),
+      endgame: m.split('+').some((part) => ENDGAME_PRESETS.has(part.trim())),
     })),
   ];
   console.log(
