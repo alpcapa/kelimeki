@@ -227,12 +227,9 @@ Kategori: **Games → Word** (Play'de de Games → Word).
 
 ## 7. Henüz DOLDURULMAMIŞ — açık işler
 
-- **Ekran görüntüleri.** Apple hem büyük iPhone hem (uygulama iPad'i
-  desteklediği için) **13" iPad** seti istiyor. Play'de bunlar gerçek
-  cihazdan alınmıştı; burada cihaz YOK. Kaynak CI'nın ürettiği simülatör
-  derlemesi (`kelimeki-ios-simulator.zip`) ya da Appetize olacak.
-  ⚠ **Simülatör penceresinden Apple'ın istediği tam piksel ölçüsünde kare
-  almanın yolu ÖLÇÜLMEDİ.** Tur açılırken bakılacak; çözülmüş sayma.
+- **Ekran görüntüleri.** ✅ **YOL BULUNDU ve ÖLÇÜLDÜ** (8 Eylül 2026) —
+  ayrıntı §13. Kalan iş üretim değil, KOMPOZİSYON (hangi ekranlar, çerçeve,
+  başlık metinleri).
 - **App Privacy.** Play'in Data safety'sinin eşi ve büyük ölçüde ondan
   türer (`play-store/console-formlari.md` §3.8 — o bölüm "en dikkatli iş"
   diye işaretli, eşleme oradan yapılacak).
@@ -400,3 +397,65 @@ yok. Bu, Apple'ın muafiyet kapsamına giriyor.
 
 ⚠ **Bu bir BEYAN, kod tercihi değil** — `Info.plist`'e yazmak Apple'a
 verilen resmî cevabı sabitler. Kullanıcı onayı olmadan eklenmedi.
+
+
+---
+
+## 13. Ekran görüntüleri — simülatöre GEREK YOK (8 Eylül 2026, ölçüldü)
+
+**Gereksinim (Apple, 2026):** iPhone için **tek bir set** (6.5" ya da 6.9")
+ve iPad için **13"** yeterli. Verilmeyen boyutlar için Apple mevcut setten
+ölçekliyor.
+
+| Cihaz sınıfı | Piksel | dpr | Mantıksal |
+|---|---|---|---|
+| iPhone 6.9" | **1320×2868** | 3.0 | 440×956 |
+| iPad 13" | **2064×2752** | 2.0 | 1032×1376 |
+
+### Karar: `flutter test` ile üretilecek, simülatörle DEĞİL
+
+İlk plan CI'nın macOS runner'ında simülatör açıp `xcrun simctl io booted
+screenshot` çekmekti. **Gerek yok** — Flutter'ın widget test ortamı
+istenen piksel ölçüsünde gerçek ekranı çizip PNG'ye döküyor ve bu **Linux'ta,
+bu depoda, saniyeler içinde** koşuyor.
+
+**Gereken her parça ZATEN VARDI:**
+
+| Parça | Nerede |
+|---|---|
+| PNG dökümü (`RenderRepaintBoundary.toImage`) | `test/board_render_test.dart` → `capturePng` |
+| Gerçek fontlar (yoksa kutu-font'a düşer) | `test/support/test_fonts.dart` → `loadAppFonts` |
+| Tam piksel ölçüsü ayarı | `test/support/test_view.dart` → `setPhoneViewSize` |
+| Gerçek ekranları sahte uçlarla mount etme | `test/support/fake_*.dart` |
+
+### ÖLÇÜM (sonda koşuldu, sonra silindi)
+
+- Boş bir Scaffold: `1320×2868` ve `2064×2752` **tam** çıktı, ~1 sn.
+- **Gerçek `BoardWidget`** (`reducer_ai2` golden'ının son tahtası) iPhone
+  6.9" ölçüsünde **taşmasız** çizildi (459 KB PNG): gerçek taşlar, Türkçe
+  harfler, bölge dış hatları, X2/X3 filigranları, nömorfik gölgeler.
+  `tester.takeException()` null.
+- Fontlar GERÇEK çizildi (Space Grotesk) — test ortamının sessizce Ahem'e
+  düşme riski görsel olarak elendi.
+
+### Sınırlar (dürüstçe)
+
+- Çizim **test ortamının Skia'sı**; iOS bugün Impeller kullanıyor. İnce
+  farklar olabilir. Apple ekran görüntüsünün cihazla piksel-eş olmasını
+  ŞART KOŞMUYOR (içeriğin uygulamayı doğru temsil etmesini şart koşuyor),
+  yani bu bir engel değil — ama "cihazda birebir böyle görünecek" diye
+  iddia edilmez.
+- **Durum çubuğu yok.** Apple zorunlu tutmuyor.
+- Bu turda çizilen `BoardWidget` KOLAY vakaydı. `SetupScreen`/`GameScreen`
+  gibi tam ekranlar depolama + sözlük + sahte uçlar istiyor — altyapı
+  `setup_screen_test.dart`'ta hazır ama her ekran için kurulum gerekiyor.
+
+### Kalan iş: KOMPOZİSYON
+
+Üretim çözüldü; karar verilecekler:
+1. Hangi ekranlar? (öneri: tahta · Setup/kurulum · skor kartı · Canlı oyun
+   listesi · tanıtım turu — Play'de 7 kare vardı)
+2. Çerçeve/başlık metni konacak mı, yoksa düz ekran mı?
+3. Üretici nereye? `board_render_test.dart`ın deseni idiomatik: **iddia eden
+   bir test AYNI ZAMANDA PNG yazıyor** — yani mağaza kareleri bayatlarsa
+   test düşer.
