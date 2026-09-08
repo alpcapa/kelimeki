@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- APNs ortamı. `production` SEÇİLDİ çünkü bu depodan çıkan TEK imzalı
+	     derleme türü TestFlight/App Store; ikisi de production APNs'e
+	     bağlanır. Değer imzalama profilinin ortamıyla EŞLEŞMEK ZORUNDA.
+	     ⚠ Bir gün Mac'te development profiliyle Debug derlemesi yapılırsa
+	     imzalama "provisioning profile doesn't match entitlements" der;
+	     çözüm o gün Debug için ikinci bir entitlements dosyası açmaktır.
+	     Bugün Mac YOK, o yüzden tek dosya yeterli ve sade.
+	     Ayrıntı: marketing/app-store/console-formlari.md -->
+	<key>aps-environment</key>
+	<string>production</string>
+
+	<!-- Universal Links. Web yarısı CANLIDA ve ölçüldü (8 Eylül 2026):
+	     https://kelimeki.com/.well-known/apple-app-site-association
+	     → 200, Content-Type: application/json, appID
+	     8277D85FY9.com.kelimeki.kelimeki, kapsam "/*".
+	     Kapsam Android App Links ile BİLEREK aynı (AndroidManifest'in
+	     autoVerify intent-filter'ında da android:path kısıtı yok); ikisi
+	     ayrışırsa aynı link iki platformda farklı davranır, SESSİZ arıza.
+	     ⚠ Doğrulama yalnızca TestFlight/mağaza İMZALI derlemede sınanabilir;
+	     CI'nın imzasız çıktısı bunu GÖSTERMEZ (App Links'in Android'de
+	     öğrenilen dersinin aynısı). -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:kelimeki.com</string>
+	</array>
+</dict>
+</plist>
