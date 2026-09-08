@@ -95,7 +95,7 @@ her şey o pencerenin içinde ya da yanında duruyor.
 | **İsteğe bağlı** | #5 k-lig grafiği · #9 admin filtre · #14 tembel liste | ⬜ hiçbiri yolu tıkamıyor · **#10 hata hız sınırı ✅** ve **#11 platform filtresi ✅ YAPILDI** (31 Ağustos 2026) |
 | **Yapıldı** | #6 taranabilir `/nasil-oynanir/` sayfası | ✅ 31 Ağustos 2026 |
 | **Play Store'a girdikten sonra** | **#17 Google ile giriş** — sunucu → web → mobil; migration BLOKER (OAuth bugün `handle_new_user`'da patlar) | ⏳ ERTELENDİ — acelesi yok, çalışan kimlik akışına şimdi dokunulmuyor (2 Eylül, kullanıcı). ⚠ Sayaçla İLİŞKİSİ YOK; o bağ aynı gün koptu, gerekçe #17'de |
-| **iOS/APNs** | Apple Developer üyeliğine bloke; iş "APNs anahtarını yükle + Push capability" kadar | 🔒 |
+| **iOS/App Store** | 🔓 **BLOKE KALKTI** (8 Eylül 2026 — Apple Developer hesabı açıldı). Fazlı plan: **#24 FAZ C**. Kalan iş APNs'ten İBARET DEĞİL: Mac'siz imzalama/TestFlight zinciri, entitlements, Associated Domains ve mağaza vitrini de bu fazın parçası | ⬜ |
 
 ⚠ **"Console (elle)" satırı 31 Ağustos'a kadar BAYAT kaldı** — dört maddesi
 de aslında 25-26 Ağustos'ta bitmişti ve bu tablo onları hâlâ "kullanıcıda"
@@ -125,9 +125,14 @@ aynı gün yukarıdaki özet tablo ✅ diyordu (kaydın iki yerde durması).
 arşivde "Faz 6".
 **#15 — uygulama öne gelince bildirim panelini temizle** → ✅ **KOD TAMAM**
 (31 Ağustos 2026), sıradaki mobil sürümle çıkar. Ayrıntı arşivde: "Faz 6".
-**iOS/APNs** Apple Developer üyeliğine takılı; tasarım bilerek FCM üzerinden
-yazıldığı için iOS günü gelince kalan iş "APNs anahtarını Firebase'e yükle +
-Push capability ekle" — ikinci bir gönderici YAZILMAYACAK.
+**iOS/App Store** → 🔓 **artık bloke DEĞİL** (8 Eylül 2026, Apple Developer
+hesabı açıldı); fazlı plan **#24 FAZ C**. Push tasarımı bilerek FCM üzerinden
+yazıldığı için **ikinci bir gönderici YAZILMAYACAK** — bu karar duruyor ve
+sunucu tarafı ölçülünce zaten iOS-hazır çıktı (`apns-collapse-id` yazılmış,
+`push_tokens.platform` `'ios'` kabul ediyor; kanıtlar #24.0'da). ⚠ Bu satır
+uzun süre kalan işi *"APNs anahtarını yükle + Push capability"* kadar
+gösterdi; ölçüm daha büyük çıktı (imzalama zinciri, entitlements, AASA,
+vitrin) — tahmin, kaynak okunarak düzeltildi.
 
 ## Sürüm sıralaması, force update ve davetliler (27 Ağustos 2026)
 
@@ -856,7 +861,8 @@ Sırası önemli olan tek bağ: **#4, #2'den SONRA** (hesap silme kaskadı
    Dördü de bitmişti — kayıt onayı 28 Ağustos'ta https'e geçti, intent
    filtreleri Parça 87/158'de zaten yazılmıştı, yönlendirmeyi Faz 3 ekledi.
    Açık kalan TEK parça **iOS Associated Domains**, o da bu maddenin değil
-   aşağıdaki **iOS/APNs** bloğunun (Apple Developer üyeliği).
+   **#24 FAZ C**'in (24.4). 8 Eylül 2026'da bloke kalktı; dosyanın içeriği
+   Apple **Team ID**'sine bağlı, o gelmeden yazılamaz.
 4. **0.C — App content formları** (aşağı).
 5. ~~Test hesaplarının silinmesi~~ — **madde KALDIRILDI** (26 Ağustos 2026,
    kullanıcı kararı: *"gerekirse daha sonra hesabımı silden ben yaparım,
@@ -1549,3 +1555,186 @@ motor" kararı (23.2 B) sessizce bozulur.
 **Saha ölçümü Faz 5'in parçası, sonrası değil:** `admin_ai_balance`
 seviye kırılımı iki hafta (Kolay ~%30 · Normal ~%51 · Zor ~%70 YZ kazanma);
 sapma varsa kadran ayarlanır, motor yeniden yazılmaz (23.3).
+
+---
+
+## 24. FAZ C — App Store yayını — **PLAN** (8 Eylül 2026)
+
+**Durum:** kullanıcı Apple Developer hesabını açtı. Bu, bugüne kadar altı
+ayrı yerde *"🔒 Apple Developer üyeliğine bloke"* diye kayıtlı olan işleri
+birden açıyor. Bu bölüm onların **hangi sırayla** yapılacağını söyler —
+`0. FAZ B`nin (Google Play) App Store ikizi.
+
+⚠ **Play'in sayacının burada karşılığı YOK.** Faz B'nin takvimini "12
+tester × 14 gün" belirliyordu; Apple'da böyle bir bekleme yok. Buradaki
+takvimi belirleyen tek şey **App Review** (reddedilirse tur başa döner).
+TestFlight'ın *iç* test kanalı incelemesiz; *dış* kanal ayrı bir Beta App
+Review istiyor. *(Apple dokümanından; bu depoda ÖLÇÜLMEDİ.)*
+
+⚠ **Hesap tipi (Bireysel ↔ Kuruluş) SORULDU, cevaplanmadı.** Mağazada
+görünen satıcı adını ve bazı Console formlarını değiştiriyor; 24.5'in
+cevap kâğıdı yazılırken bilinmesi gerekiyor. Faz B'nin karşılığı kayda
+geçmişti (*Personal account*, Account ID `5939732949280610022`) — bunun da
+geçsin.
+
+### 24.0 — Neyin HAZIR olduğu (8 Eylül 2026'da depodan ölçüldü)
+
+Beklenenden fazlası hazır; özellikle **sunucu tarafı push tamamen
+iOS-hazır**, çünkü tasarım baştan FCM üzerinden yazıldı:
+
+| Hazır olan | Kanıt |
+|---|---|
+| Bundle id `com.kelimeki.kelimeki` (Android'le AYNI), deployment target iOS 13 | `ios/Runner.xcodeproj/project.pbxproj:385,363` |
+| CI'da macOS runner'lı `ios` işi — `--no-codesign` cihaz + Appetize simülatör derlemesi | `.github/workflows/mobile-build.yml:369` |
+| `push_tokens.platform` **`'ios'` değerini zaten kabul ediyor**, `register_push_token` doğruluyor | `20260828114349_push_tokens_and_preference.sql:39` · `20260831093203_...:60` |
+| Çakıştırma etiketinin iOS yarısı **yazılmış**: `apns-collapse-id` | `supabase/functions/_shared/push.ts:310` (`npm run verify-push-payload` kilitliyor) |
+| Admin hata panelinde platform filtresi (#11) | ✅ 31 Ağustos 2026 |
+| Sürüm kapısı iOS anahtarını okuyor | `config/version_gate.dart:35` → `Platform.isIOS ? 'ios' : 'android'` |
+| `Info.plist`'te `kelimeki://` şeması + iPad yönelimleri | `ios/Runner/Info.plist:30,83` |
+
+### 24.1 — SENDE: hesap & kimlik (Console işi, kod yok)
+
+Bunlar bitmeden 24.2 ve 24.3 test EDİLEMEZ.
+
+1. Üyeliğin aktifleştiğini doğrula (satın alma → aktivasyon Apple'da 24-48
+   saat sürebiliyor).
+2. **Team ID'yi not et.** 24.4'ün `apple-app-site-association` dosyası buna
+   bağlı ve **ben üretemem** — Membership sayfasında yazıyor.
+3. Identifiers → App ID `com.kelimeki.kelimeki`; capability olarak **Push
+   Notifications** ve **Associated Domains** işaretlensin.
+4. Keys → **APNs Authentication Key** (`.p8`) üret.
+5. Keys → **App Store Connect API Key** (rol: Admin ya da App Manager) —
+   `.p8` + **Key ID** + **Issuer ID**. CI'ın Mac'siz imzalama yolu bu.
+6. App Store Connect → yeni uygulama: ad **Kelimeki**, birincil dil
+   **Türkçe**, SKU, bundle id yukarıdaki.
+
+⚠ **5 ve 6 burada İLK KEZ yazılmıyor** — `mobile/docs/test-ortamlari.md`
+→ *"TestFlight kurulumu"* onları 25 Ağustos 2026'da adım adım yazmıştı.
+O dosya kaynak, burası indeks.
+
+⚠ **İki `.p8` KARIŞTIRILMAZ:** biri APNs (→ Firebase Console'a yüklenir),
+biri App Store Connect API (→ GitHub secret'ı olur). İkisi de **yalnızca
+bir kez indirilebilir**; kaybolursa iptal edip yenisi üretilir.
+
+### 24.2 — BENDE: Mac'siz imzalama + TestFlight (CI)
+
+**Kısıt, `mobile-build.yml`in kendi notundan:** *"geliştirici iPad'den
+çalışıyor; elinde ne Mac ne Android cihaz var"* (satır 461). Yani imzalama
+ve yükleme **tamamen CI'dan** yürümek zorunda — Xcode'da elle "Archive"
+seçeneği YOK. Android'de `.aab` için kurulan desenin aynısı:
+
+**KAYNAK BU BÖLÜM DEĞİL:** işletim adımları `mobile/docs/test-ortamlari.md`
+→ *"TestFlight kurulumu"*'nda zaten yazılı (25 Ağustos 2026) ve orası daha
+ayrıntılı. Burada yalnızca indeks duruyor — karar oradan okunur.
+
+- `mobile-build.yml`'e `ios` işinin yanına imzalı `.ipa` adımı: App Store
+  Connect API anahtarıyla headless sertifika + App Store profili, sonra
+  `upload_to_testflight`.
+- Secret'lar: `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`,
+  `APP_STORE_CONNECT_KEY_P8`, `MATCH_PASSWORD`.
+- ⚠ **`fastlane match` + AYRI BİR ÖZEL DEPO zorunlu, tercih değil:** Apple
+  hesap başına dağıtım sertifikası sayısını sınırlıyor, yani her koşuda
+  yenisini üretmek ÇALIŞMAZ — sertifika/profil şifreli olarak kalıcı bir
+  depoda saklanmalı (gerekçenin tamamı `test-ortamlari.md`'de).
+- **Secret yoksa adım sessizce atlanır** — `ANDROID_KEYSTORE_BASE64`'ün
+  kuralı; mevcut Appetize/imzasız akışlar bozulmaz.
+- ⚠ **Bu iş ancak gerçek anahtarla doğrulanabilir.** Yazıldığı an "çalışıyor"
+  denemez; kanıt, TestFlight'ta beliren derlemedir (Faz B'de `.aab`'nin
+  parmak izini CI log'undan geri okumakla aynı refleks).
+- ⚠ **`mobile-build.yml`in başlığındaki iki yorum BAYAT ve bilerek
+  düzeltilmedi** (satır 42-48 *"TestFlight… o iş üyelik geldiğinde
+  eklenecek"*, satır 462 *"Apple Developer üyeliği (TestFlight) askıda"*).
+  Sebep: o dosyaya dokunmak `paths` listesi gereği **tam bir macOS+Android
+  derlemesi tetikliyor** ve deponun *"yalnızca doküman değişikliği
+  ücretsizdir"* ilkesini bir yorum için bozmak anlamsız. **Düzeltme 24.2'nin
+  kendi PR'ında yapılır** — imzalama adımı zaten o dosyaya giriyor.
+
+### 24.3 — SENDE + BENDE: APNs / push
+
+ROADMAP bunu bugüne kadar *"APNs anahtarını Firebase'e yükle + Push
+capability ekle"* kadar kısa yazıyordu; ölçünce istemci tarafında üç dosya
+daha çıktı.
+
+| Kim | İş |
+|---|---|
+| Sen | Firebase Console → projeye **iOS uygulaması** ekle (`com.kelimeki.kelimeki`) → `GoogleService-Info.plist` indir |
+| Sen | 24.1'in APNs `.p8`'ini Firebase → Cloud Messaging → APNs Authentication Key olarak yükle |
+| Ben | `GoogleService-Info.plist` → `ios/Runner/` (Android'in `google-services.json`'ı repoda; **aynı kararı izle**, ayrı bir tartışma açma) |
+| Ben | `ios/Runner/Runner.entitlements` — dosya bugün **hiç yok**; `aps-environment` + `Info.plist`'e `UIBackgroundModes: remote-notification` |
+| Ben | `AppDelegate.swift`'e bildirim paneli kanalı |
+
+**Kanal adı ve metot BUGÜNDEN belli, uydurulmayacak** —
+`data/notification_shade.dart:52,56` Kotlin tarafıyla birebir aynı olmak
+zorunda diyor ve iOS için ne yapılacağını da yazmış: kanal
+`kelimeki/bildirimler`, metot `hepsiniTemizle`, iOS karşılığı
+`removeAllDeliveredNotifications()`. **Dart tarafı DEĞİŞMEZ.** Parite testi
+(`test/notification_shade_parity_test.dart`) bugün Kotlin'i okuyor; iOS
+yarısı eklenince Swift'i de okumalı — yoksa uyuşmazlık SESSİZ arıza
+(çağrı `MissingPluginException` fırlatır ve yutulur).
+
+⚠ **iOS rozeti bugün hiç ARTMAZ ve bu ayrı bir karar.** Rozet
+`aps.badge`den geliyor, sunucu onu **hiç göndermiyor**
+(`notification_shade.dart:26`). Yani "paneli temizle" işi iOS'ta rozet
+değil yalnızca bildirim satırlarını hedefler. Sunucuya `badge` eklenip
+eklenmeyeceği bu fazın parçası DEĞİL — açılırsa `_shared/push.ts` +
+`verify-push-payload` birlikte değişir.
+
+### 24.4 — BENDE: Universal Links (Associated Domains)
+
+**ROADMAP 0.B/3'ün açık kalan TEK parçası buydu** (satır 858).
+
+- `public/.well-known/apple-app-site-association` — `assetlinks.json`'ın
+  iOS ikizi, aynı klasörde. İçeriği `<TeamID>.com.kelimeki.kelimeki`, yani
+  **24.1/2 olmadan yazılamaz**.
+- `Runner.entitlements` → `applinks:kelimeki.com`.
+- ⚠ Dosya **uzantısız** servis edilmeli, `Content-Type: application/json`
+  ve yönlendirmesiz. `assetlinks.json` aynı yoldan çalışıyor, yani Vercel
+  tarafında sürpriz beklenmiyor — ama yayından sonra `curl` ile OKU
+  (deploy doğrulamasının aynı kuralı).
+- ⚠ App Links'in Android'deki dersi burada da geçerli: doğrulama yalnızca
+  **mağaza/TestFlight imzalı** derlemede sınanabilir, CI'nın imzasız
+  çıktısında değil (`mobile/docs/sonraya-birakilanlar.md`).
+
+### 24.5 — SENDE + BENDE: mağaza vitrini
+
+- **Ben:** `marketing/app-store/console-formlari.md` — Play'in cevap
+  kâğıdının iOS ikizi. **App Privacy**, Play'in Data safety'sinin eşi ve
+  büyük ölçüde ondan türer (`marketing/play-store/console-formlari.md` §3).
+  Kategori **Games → Word**, destek URL `kelimeki.com`, gizlilik URL
+  `kelimeki.com/gizlilik/`, hesap silme `kelimeki.com/hesap-silme/`.
+- **Ekran görüntüleri — cihaz yokluğu burada ısırıyor.** Apple hem büyük
+  iPhone hem (uygulama iPad'i desteklediği için) **13" iPad** seti istiyor.
+  Play'de bunlar gerçek cihazdan alınmıştı; burada kaynak CI'nın zaten
+  ürettiği **simülatör derlemesi** (`kelimeki-ios-simulator.zip`) ya da
+  Appetize. Çözülmemiş: simülatör penceresinden Apple'ın istediği tam
+  piksel ölçüsünde kare almanın yolu — **ölçülmedi, tur açılırken bak.**
+- ⚠ **App Store 4.8 kapısı bugün KAPALI ve öyle kalsın:** uygulamada
+  üçüncü taraf girişi YOK, o yüzden "Apple ile giriş" de zorunlu değil.
+  #17 (Google ile giriş) iOS'a girdiği gün ikisi **birlikte** gider —
+  gerekçe #17 → "Apple neden bu maddede YOK".
+- ⚠ **`in_app_update` Android'e özgü**, iOS'ta karşılığı yok
+  (`mobile/CLAUDE.md`). Yani iOS'ta elimizdeki TEK fren sürüm kapısı
+  (`app_config.mobile_min_supported_version`) — `version_gate.dart` `'ios'`
+  anahtarını zaten okuyor, ama o anahtarın satırı **doldurulmalı**.
+
+### 24.6 — Gönderim & inceleme
+
+TestFlight'ta çalışan bir derleme + 24.5'in formları tamamlanınca gönderim.
+Faz B'nin dersi burada da geçerli: **bir işin kaydı iki yerde durursa biri
+kapanırken öteki kapanmıyor** — bu tablo bir İNDEKS, kararların kaynağı
+`marketing/app-store/console-formlari.md` olacak.
+
+### Sıra ve bağımlılıklar
+
+```
+24.1 (sende, Console)
+  ├─→ 24.2 (imzalama/TestFlight)  ─┐
+  ├─→ 24.3 (APNs)                  ├─→ 24.6 (gönderim)
+  ├─→ 24.4 (Universal Links)      ─┤
+  └─→ 24.5 (vitrin) ───────────────┘
+```
+
+**24.1 tek gerçek kilit.** 24.5'in cevap kâğıdı ondan bağımsız yazılabilir
+(hesap tipi hariç); 24.2/24.3/24.4 anahtarlar ve Team ID gelmeden
+YAZILABİLİR ama DOĞRULANAMAZ — ve bu depoda "yazıldı" ile "çalışıyor"
+arasındaki farkın bedeli defalarca ödendi.
