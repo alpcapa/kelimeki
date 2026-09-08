@@ -412,12 +412,32 @@ ve iPad için **13"** yeterli. Verilmeyen boyutlar için Apple mevcut setten
 | iPhone 6.9" | **1320×2868** | 3.0 | 440×956 |
 | iPad 13" | **2064×2752** | 2.0 | 1032×1376 |
 
-### Karar: `flutter test` ile üretilecek, simülatörle DEĞİL
+### ⚠ DÜZELTME (aynı gün): kaynak SİMÜLATÖR olacak, widget testi DEĞİL
 
-İlk plan CI'nın macOS runner'ında simülatör açıp `xcrun simctl io booted
-screenshot` çekmekti. **Gerek yok** — Flutter'ın widget test ortamı
-istenen piksel ölçüsünde gerçek ekranı çizip PNG'ye döküyor ve bu **Linux'ta,
-bu depoda, saniyeler içinde** koşuyor.
+**Önce "widget testinden üretelim, simülatöre gerek yok" sonucuna varıldı ve
+bu YANLIŞTI** — `marketing/play-store/metin.md`'deki yazılı karar
+okunmadan. O dosya diyor ki:
+
+> *"Neden emülatör/Appetize/web değil: mağazaya giden görüntülerin
+> uygulamanın gerçek görüntüsü olması gerekiyor; farklı bir yüzeyden alınan
+> görsel **yanıltıcı ekran görüntüsü** olarak değerlendirilebilir."*
+
+Widget testinden çizilen kare de "farklı bir yüzey": aynı Dart ağacı, ama
+iOS çalışma zamanı değil (test ortamı Skia, iOS Impeller; iOS kabuğu yok).
+Play için reddedilen gerekçe App Store için de geçerli.
+
+**Doğru kaynak: iOS SİMÜLATÖRÜ.** Play'in itirazı emülatöre değil *farklı
+runtime*'a: simülatör **gerçek iOS**'u ve gerçek uygulama ikilisini
+koşturuyor, üstelik Xcode'un kendi akışı bu — App Store gönderimlerinde
+yerleşik ve kabul gören yol. CI'ın macOS runner'ı zaten simülatör derlemesi
+üretiyor (`kelimeki-ios-simulator.zip`); eklenecek adım
+`xcrun simctl boot` + `io booted screenshot`.
+
+**Widget testi yolu ÇÖPE GİTMİYOR** — iç doğrulama aracı olarak değerli
+(bir düzenin belirli bir cihaz ölçüsünde taşıp taşmadığını saniyede
+gösteriyor). Yalnızca MAĞAZAYA giden kare olamaz.
+
+### Ölçüm yine de geçerli: piksel boru hattı çalışıyor
 
 **Gereken her parça ZATEN VARDI:**
 
@@ -450,12 +470,42 @@ bu depoda, saniyeler içinde** koşuyor.
   gibi tam ekranlar depolama + sözlük + sahte uçlar istiyor — altyapı
   `setup_screen_test.dart`'ta hazır ama her ekran için kurulum gerekiyor.
 
-### Kalan iş: KOMPOZİSYON
+### Çekim listesi: Android'in AYNISI (kullanıcı kararı, 8 Eylül 2026)
 
-Üretim çözüldü; karar verilecekler:
-1. Hangi ekranlar? (öneri: tahta · Setup/kurulum · skor kartı · Canlı oyun
-   listesi · tanıtım turu — Play'de 7 kare vardı)
-2. Çerçeve/başlık metni konacak mı, yoksa düz ekran mı?
-3. Üretici nereye? `board_render_test.dart`ın deseni idiomatik: **iddia eden
-   bir test AYNI ZAMANDA PNG yazıyor** — yani mağaza kareleri bayatlarsa
-   test düşer.
+**Liste `marketing/play-store/metin.md` → "Çekim listesi — tek tek"de.**
+Buraya KOPYALANMIYOR; tek kaynak orası. Altı zorunlu + bir isteğe bağlı:
+
+1. Oyun ekranı, oyunun ortası *(en önemli kare)*
+2. Geçerli bir hamle kurulmuşken (yeşil dış hat + puan rozeti)
+3. Kurulum ekranı, "Arkadaşınla" sekmesi
+4. Skor kartı
+5. Kelime anlamı (TDK penceresi)
+6. Nasıl Oynanır
+7. *(isteğe bağlı)* k-lig sıralaması
+
+**Gizlilik kuralları da aynen geçerli** (o dosyada yazılı): test hesabıyla
+çek (`T1`/`T2`), e-posta geçen ekran yok, gerçek yazışma yok, gerçek
+arkadaş adı/avatarı yok.
+
+### ⚠ İKİ FARK — Android setini olduğu gibi kullanmak MÜMKÜN DEĞİL
+
+**1. Dosyalar yeniden çekilecek.** Play'e giden 7 kare `1080×2072` ve
+**Android arayüzü**. App Store `1320×2868` (iPhone 6.9") istiyor ve
+görüntünün iOS uygulaması olması gerekiyor. "Aynı set" = aynı EKRANLAR,
+aynı dosyalar değil.
+
+**2. Kırpma kuralı TERS DÖNÜYOR.** Play'de kırpma **zorunluydu** (ham
+`1080×2400` = 1:2.22, Play'in 2:1 tavanını aşıyordu). App Store ise **tam
+piksel ölçüsü** istiyor — simülatörün ham karesi zaten doğru ölçüde, ve
+**kırpmak onu GEÇERSİZ yapar.** Play refleksiyle durum çubuğunu kırpma.
+
+**3. iPad seti Android'de YOKTU.** App Store, uygulama iPad'i desteklediği
+için **13" (2064×2752)** seti de istiyor. Aynı ekranların iPad simülatöründe
+ikinci kez çekilmesi gerekiyor — Play turunda karşılığı olmayan yeni bir iş.
+
+### Kalan iş
+
+- CI'ın `ios` işine simülatör açıp kare çeken adım (`simctl`)
+- Ekranlara gezinmenin nasıl sürüleceği (`integration_test` altyapısı depoda
+  YOK, sıfırdan kurulacak)
+- iPad seti için ikinci cihaz
