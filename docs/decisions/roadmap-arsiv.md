@@ -21,6 +21,7 @@
 
 | Ne | Kapanış |
 |---|---|
+| 1.0.9 sürüm turu — "oynayarak öğren" tanıtımının port ikizi, kapalı testte yayında | 8 Eylül 2026 |
 | 1.0.8 sürüm turu — seviyeli YZ'nin tamamı (Kolay · Normal · Zor), kapalı testte yayında | 7 Eylül 2026 |
 | Madde 23 · Faz 2 — motor: `findAIMoves`/`pickTopMove`/`AI_LEVEL_TOP_N` üç kopyada, `GameState.aiLevel`, golden sıfır fark + `reducer_ai2_kolay` | 6 Eylül 2026 |
 | Madde 23 · Faz 1 — sunucu: `games.ai_level` + k-lig formülü TEK SQL fonksiyonu (`league_points_for`), `verify-league-points` | 6 Eylül 2026 |
@@ -667,6 +668,43 @@ generate-golden-vectors` + `dart run test/run_all.dart` → `npm run
 generate-meanings-db` → `README.md`'deki kelime sayısı.
 
 ---
+
+## 1.0.9 sürüm turu — ✅ **SAHADA** (8 Eylül 2026)
+
+**Paket:** 1.0.9 (**581**) = `1abde38` (#486). Gönderim **8 Eyl 08:41**,
+yayın **≤ 09:10** (kapalı test/Alpha) — inceleme ≤ 29 dk. Künye, sürüm
+notları ve `.aab` kimliği: `mobile/docs/surumler.md` → "1.0.9 (581)".
+
+**İçerik — tek konu, Onboarding Faz 4 ve ardından gelen üç tur:**
+
+| Commit / PR | Ne |
+|---|---|
+| `4f5d31f` (#484) | Tanıtımın PORT ikizi: `ui/tutorial/` (senaryo + ekran), kapı (`util/onboarding.dart` + `FlagsStore.seenTutorial`), `BoardWidget.targets`/`coach`, `RackWidget.highlight`, sürükleme hissi ortak dosyaya (`ui/game/drag_feel.dart` — üç ekranın tek kaynağı) |
+| `e2b6cfe` (#485) | Cihaz/tarayıcı turu: karşılama penceresi, balon HİZA hatası, punto 11-16 + iki satır, OYNA okunun hedefi, raf balonunun mesaj şeridini örtmemesi, "bölge" terimi |
+| `1abde38` (#486) | Sürüm adı 1.0.9 (pubspec + `env.dart`) |
+
+⚠ `c235b25` (#483, web Faz 1) komut çıktısında görünüyordu ama pakete
+GİRMEDİ: `mobile/` altında yalnızca bir test dosyasına dokunmuştu. Tablo
+bu ayrımı yazmasa "üç commit girdi" diye kaydedilecekti.
+
+**Turun dersleri:**
+
+1. **Bir widget'ı `Stack`e taşımak çocuğun KISITLARINI değiştirir.** Faz
+   4'te zoom balonunun geometrisi ortaklaştırılırken `Column` bir `Stack`in
+   içine girdi; `Stack` konumsuz çocuğuna GEVŞEK kısıt verdiğinden
+   `crossAxisAlignment` sessizce işlevsizleşti ve balon sola yapıştı.
+   Testler yeşildi, hatayı kullanıcı tarayıcıda gördü. Regresyon kilidi
+   artık ÖLÇÜYOR (merkez sapması < 2 px; hatalı hâlde 156 px).
+2. **Tailwind'de aynı özelliği hem kapta hem çağıranda vermek belirsizdir**
+   — kazananı sınıf dizesi değil üretilen CSS sırası belirler. `items-end`
+   sessizce yutulup OYNA balonunun oku yanlış yeri gösterdi; düzeltme
+   satır içi stile taşımak oldu.
+3. **APK turu bu sürümde ATLANDI** (kullanıcı kararı: *"apk denemesine
+   gerek yok bence, Appetize yeter"*). Yerleşik kural APK turunu şart
+   koşuyordu; karar sessizce uygulanmayıp kütüğe yazıldı.
+4. **Sürüm turu prosedürü işledi:** içerik tablosu "listeye güvenme, komutu
+   koş" kuralıyla çıkarıldı ve komut bir web-only commit'i de listeleyip
+   ayıklanmasını gerektirdi — tablo elle yazılsaydı yanlış olurdu.
 
 ## 1.0.8 sürüm turu — ✅ **SAHADA** (7 Eylül 2026)
 
