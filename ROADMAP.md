@@ -1571,11 +1571,32 @@ takvimi belirleyen tek şey **App Review** (reddedilirse tur başa döner).
 TestFlight'ın *iç* test kanalı incelemesiz; *dış* kanal ayrı bir Beta App
 Review istiyor. *(Apple dokümanından; bu depoda ÖLÇÜLMEDİ.)*
 
-⚠ **Hesap tipi (Bireysel ↔ Kuruluş) SORULDU, cevaplanmadı.** Mağazada
-görünen satıcı adını ve bazı Console formlarını değiştiriyor; 24.5'in
-cevap kâğıdı yazılırken bilinmesi gerekiyor. Faz B'nin karşılığı kayda
-geçmişti (*Personal account*, Account ID `5939732949280610022`) — bunun da
-geçsin.
+**Hesap kimliği (8 Eylül 2026, kullanıcı bildirdi + ekran görüntüsü):**
+**Bireysel** (Individual), ad **Alp Reşat Çapa**, Apple ID
+**`destek@kelimeki.com`**. Ödeme yapıldı; hesap o gün **`(Pending)`**
+durumunda ve sayfa *"Your purchase may take up to 48 hours to process"*
+diyor. Play tarafının karşılığı da kişiseldi (*Personal account*,
+Account ID `5939732949280610022`), yani iki mağazada tutarlı.
+
+⚠ **Bireysel hesabın geri alınamaz sonucu:** App Store'da satıcı olarak
+**kişinin yasal adı** görünür ve sonradan değiştirilemez. 24.5'in cevap
+kâğıdı bunu veri olarak alır, yeniden sormaz.
+
+⚠ **`destek@kelimeki.com` artık kritik bir kutu:** üyelik yenileme,
+sözleşme değişikliği ve App Review yazışmaları oraya düşüyor. Adres Zoho'da
+(bkz. `docs/decisions/support-email.md`) ve o kutuya erişimi kaybetmek
+geliştirici hesabına erişimi kaybetmek demek. Aynı sebeple Apple ID'nin
+2FA'sındaki güvenilir numara/cihaz kalıcı olmalı.
+
+⚠ **`(Pending)` iken hiçbir 24.1 adımı yapılamaz** — Team ID, Identifiers
+ve Keys ekranları üyelik aktifleşmeden açılmıyor. Ekrandaki *"complete
+your purchase now"* banner'ı hem "ödeme yapılmadı" hem "işleniyor"
+durumunda göründüğünden **tek başına kanıt değil**; ayrım Apple'ın
+makbuzuyla yapılır (`destek@` kutusu ya da `reportaproblem.apple.com`).
+Apple bireysel kayıtlarda ayrıca **kimlik taraması** isteyebiliyor ve bunu
+web'den değil iPad/iPhone'daki *Apple Developer* uygulamasından yaptırıyor
+— 48 saat dolup hâlâ Pending ise ilk bakılacak yer orası. *(Apple'ın
+süreci; bu depoda ÖLÇÜLMEDİ.)*
 
 ### 24.0 — Neyin HAZIR olduğu (8 Eylül 2026'da depodan ölçüldü)
 
