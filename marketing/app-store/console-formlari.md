@@ -251,3 +251,152 @@ Kategori: **Games → Word** (Play'de de Games → Word).
 | APNs'te iki ortam satırı var | **Production** kritik (TestFlight/App Store oraya bağlanır); yalnız development doluyken bildirim **hatasız** düşmez |
 | App ID capability'leri Save'siz kaydedilmiyor | İşaretleyip sayfadan çıkmak sessizce kaybettirir; hata çok sonra, imzalama sırasında *"profile doesn't include entitlement"* diye çıkar |
 | Firebase'in **"Flutter"** akışı | KULLANILMADI — `firebase_options.dart` üretip Android tarafını da yeniden yazar. Bu depo yapılandırmayı iki platformda da NATIVE dosyadan okuyor (`push_init.dart`) |
+
+---
+
+## 9. Mağaza metinleri — App Store'un alan sınırlarına göre (8 Eylül 2026)
+
+⚠ **Play'in metni OLDUĞU GİBİ kullanılamaz.** App Store'un alanları farklı:
+`Subtitle` (30) ve `Keywords` (100) Play'de YOK; Play'in `Kısa açıklama`sı
+(80) burada YOK. Uzunluklar aşağıda **ölçüldü** — Apple da Play gibi taşan
+metni sessizce keser.
+
+| Alan | Sınır | Ölçülen | Değer |
+|---|---|---|---|
+| **Name** | 30 | **29** | `Kelimeki: Türkçe Kelime Oyunu` |
+| **Subtitle** | 30 | **25** | `Bölgeni büyüt, tahtayı al` |
+| **Keywords** | 100 | **93** | aşağı |
+| **Promotional text** | 170 | **162** | aşağı |
+| **Copyright** | — | 19 | `2026 Alp Reşat Çapa` |
+
+⚠ **Uygulama kaydı `Kelimeki` adıyla açıldı.** Yukarıdaki 29 karakterlik ad
+Play'le hizalı ve aramada daha iyi; App Information'dan **ilk gönderimden
+önce** değiştirilebilir. Değiştirilmezse de sorun değil, ama Play ile
+ayrışır.
+
+### Keywords
+
+```
+sözcük,harf,bulmaca,zeka,strateji,sözlük,TDK,arkadaş,çevrimdışı,yapay,tahta,anlam,bingo,joker
+```
+
+⚠ **Virgülden sonra BOŞLUK YOK** — boşluk 100 karakterlik bütçeden yer yer.
+⚠ **Name ve Subtitle'daki kelimeler TEKRARLANMAZ** — Apple onları zaten
+indeksliyor, tekrar bütçe israfı. Bu yüzden elendi: *kelime · türkçe · oyun ·
+bölge · büyüt · tahtayı*.
+
+### Promotional text (sürüm yayınlamadan değiştirilebilir)
+
+```
+Türkçe için sıfırdan tasarlanmış bir kelime oyunu. Kelime kur, bölgeni büyüt, rakibinin alanına girerken vergiyi göze al. Ücretsiz, reklamsız, çevrimdışı oynanır.
+```
+
+### Description
+
+**Play'in tam açıklaması AYNEN kullanılabilir** (`marketing/play-store/
+metin.md` → "Tam açıklama"): 4000 karakter sınırı iki mağazada da aynı ve
+metin başka bir platformdan söz etmiyor. Buraya KOPYALANMIYOR — tek kaynak
+o dosya, ikiye bölünürse biri bayatlar.
+
+### Sabit alanlar
+
+| Alan | Değer |
+|---|---|
+| Support URL | `https://kelimeki.com` |
+| Marketing URL | `https://kelimeki.com` |
+| Privacy Policy URL | `https://kelimeki.com/gizlilik/` |
+| Category | Games → **Word** (ikincil: Games → Puzzle, isteğe bağlı) |
+| Price | **Free** |
+| License Agreement | Apple'ın standart EULA'sı (özel sözleşme YOK) |
+
+---
+
+## 10. App Privacy — Play'in Data safety'sinden eşleme
+
+Kaynak: `marketing/play-store/console-formlari.md` §3.8. Apple **iki fazla
+soru** soruyor, ikisi de Play'de yok:
+
+### Soru 1 — "Used for Tracking?" → **HER SATIRDA HAYIR**
+
+Apple'ın "tracking" tanımı dar: veriyi **üçüncü tarafın** verisiyle
+eşleştirip hedefli reklam yapmak ya da veri simsarına satmak. Kelimeki'de
+reklam ağı, reklam SDK'sı ve veri satışı YOK.
+
+⚠ **Sonuç: App Tracking Transparency (ATT) izni GEREKMİYOR** — yani
+`NSUserTrackingUsageDescription` ve `AppTrackingTransparency` çerçevesi
+eklenmeyecek. Bir gün reklam/attribution SDK'sı girerse bu satır değişir ve
+ATT ile birlikte gelir.
+
+### Soru 2 — "Linked to the User?"
+
+**Burada Play'in düz beyanının göstermediği bir avantaj var** (migration'lar
+okundu, 8 Eylül 2026): telemetri tabloları **bilerek `user_id` taşımıyor**.
+
+| Tablo | Kanıt |
+|---|---|
+| `client_errors` | *"BİLEREK user_id TAŞIMAZ"* (`20260821084652_client_errors.sql`) |
+| `device_visits` | *"BİLEREK user_id YOK, hesapla asla eşleştirilmez"* (`20260824064031_...`) |
+| `game_starts` | *"TABLODA `user_id` YOK ve bu BİLİNÇLİ bir gizlilik kararı"* (`20260821080322_...`) |
+
+Yani teşhis ve analitik verisi **Not Linked to You** olarak beyan edilir.
+
+### Eşleme tablosu
+
+| Apple veri türü | Ne | Linked | Amaç |
+|---|---|---|---|
+| Contact Info → **Name** | Ad, soyad | **Linked** | App Functionality |
+| Contact Info → **Email Address** | E-posta | **Linked** | App Functionality · Developer's Advertising or Marketing *(yalnız onay verildiyse)* |
+| Identifiers → **User ID** | Takma isim, hesap kimliği | **Linked** | App Functionality |
+| Identifiers → **Device ID** | `anon_id` · FCM token · Firebase App instance ID | **Not Linked** (`anon_id`, `device_visits`) / **Linked** (FCM token — `push_tokens.user_id` var) | App Functionality · Analytics |
+| User Content → **Photos or Videos** | Profil fotoğrafı | **Linked** | App Functionality |
+| User Content → **Other User Content** | Canlı oyun sohbeti · "Görüş Bildir" · şikayet nedenleri | **Linked** | App Functionality |
+| Usage Data → **Product Interaction** | Oyun istatistikleri, arkadaşlık bağlantıları (`games`) | **Linked** | App Functionality · Analytics |
+| Usage Data → **Product Interaction** | Ziyaret/oyun başlangıç olayları (`device_visits`, `game_starts`) | **Not Linked** | Analytics |
+| Diagnostics → **Crash Data** | Hata mesajı + teknik iz (`client_errors`) | **Not Linked** | Analytics |
+| Diagnostics → **Other Diagnostic Data** | Sürüm, platform, OS, cihaz modeli | **Not Linked** | Analytics |
+| Other Data → **Other Data Types** | Cinsiyet, doğum tarihi *(isteğe bağlı)* | **Linked** | Analytics |
+
+⚠ **Play'in "Paylaşılıyor: Hayır" gerekçesi burada da geçerli** ve 24 Ağustos
+2026'da kullanıcı tarafından onaylanmıştı: Supabase/Brevo/Vercel/Firebase
+bizim adımıza işleyen **hizmet sağlayıcı**; takma isim/fotoğraf/sohbet ise
+kullanıcının kendi başlattığı görünürlük. **Bu denge bozulursa** (veriyi
+kendi amacı için kullanan bir üçüncü tarafa geçilirse) hem burası hem Play
+beyanı hem `PrivacyModal` birlikte değişir.
+
+---
+
+## 11. App Review Information — **demo hesap ZORUNLU**
+
+Kelimeki giriş gerektiriyor (Canlı oyun, k-lig, geçmiş). Apple incelemeciye
+**çalışan bir hesap** verilmesini şart koşuyor; verilmezse *"giriş
+yapamadık"* diye reddedilir — yaygın bir ret sebebi.
+
+**Gerekenler:** kullanıcı adı + şifre + (varsa) notlar.
+
+⚠ **Hesap KALICI olmalı ve şifresi DEĞİŞMEMELİ** — her güncelleme
+incelemesinde yeniden kullanılıyor.
+
+⚠ **Karar verilmedi:** Play'in test hesapları (`T2`, `Ironman`) var ve ikisi
+de `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK İKİ HESAP"
+kaydında. Apple için bunlardan biri mi kullanılacak, ayrı bir hesap mı
+açılacak — **kullanıcı kararı bekliyor.**
+
+⚠ **Not alanına şunu yazmak faydalı:** uygulamanın hesapsız da (yapay zekaya
+karşı) oynanabildiği, girişin yalnızca Canlı oyun/k-lig için gerektiği.
+İncelemecinin "neden giriş istiyor" sorusunu baştan kapatır.
+
+---
+
+## 12. Export Compliance — `Info.plist`'e YAZILMALI
+
+**Bugünkü durum: `ITSAppUsesNonExemptEncryption` `Info.plist`'te YOK**
+(8 Eylül 2026'da ölçüldü). Sonuç: TestFlight'a yüklenen **her** derlemede
+Apple şifreleme sorusunu tekrar sorar ve cevap verilene kadar paket
+dağıtılamaz.
+
+**Doğru cevap `false`:** Kelimeki yalnızca standart HTTPS/TLS kullanıyor
+(Supabase, Firebase, Brevo uçlarının tamamı) — kendi şifreleme algoritması
+yok. Bu, Apple'ın muafiyet kapsamına giriyor.
+
+⚠ **Bu bir BEYAN, kod tercihi değil** — `Info.plist`'e yazmak Apple'a
+verilen resmî cevabı sabitler. Kullanıcı onayı olmadan eklenmedi.
