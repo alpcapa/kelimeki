@@ -227,6 +227,7 @@ satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
 | `80f3769` (#488) | Onboarding Faz 2·3·5 — bağlamsal ipuçları (`vergi`/`carpan`/`bolge`), tanıtımı tekrar oynama, `tutorial_events` ölçümü | Port ikizi aynı PR'da: `util/onboarding.dart` (ipucu kararı + sayaç), `storage/flags_store.dart`, `ui/game/game_screen.dart` (balon), `ui/game/help_modal.dart` + `ui/setup/setup_screen.dart` (tekrar oynama), `ui/tutorial/*`, `data/games_api.dart` (olay yazımı), `ui/auth/legal_modals.dart` (gizlilik metni "beş kayıt") |
+| #490 (FAZ C) | iOS Firebase yapılandırması — `GoogleService-Info.plist` + Xcode kaydı | `ios/Runner/GoogleService-Info.plist` (YENİ), `ios/Runner.xcodeproj/project.pbxproj` (dört girdi), `lib/src/data/push_init.dart` (bayat yorum). ⚠ **Android'i ETKİLEMEZ** ve **iOS'ta da davranış DEĞİŞMEZ**: `Firebase.initializeApp()` artık iOS'ta başarılı oluyor ama APNs kaydı `aps-environment` entitlement'ı istiyor, o henüz yok → `getToken()` fırlatır ve `PushRepo` yutar. Yani bu satır sıradaki Android sürümüne **hiçbir şey** taşımıyor; tabloda olmasının sebebi `mobile/app/` altına dokunmuş olması |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
@@ -1692,7 +1693,7 @@ daha çıktı.
 | Sen | Firebase Console → projeye **iOS uygulaması** ekle (`com.kelimeki.kelimeki`) → `GoogleService-Info.plist` indir |
 | Sen | 24.1'in APNs `.p8`'ini Firebase → Cloud Messaging → APNs Authentication Key olarak yükle |
 | — | ✅ **APNs anahtarı ÜRETİLDİ** (8 Eylül 2026): **Key ID `RL4JLXL389`**, ad *Kelimeki APNs*, Team Scoped (All Topics) + Sandbox & Production. Firebase'e yüklenmesi gereken üçlü: bu Key ID + Team ID `8277D85FY9` + `.p8` |
-| Ben | `GoogleService-Info.plist` → `ios/Runner/` (Android'in `google-services.json`'ı repoda; **aynı kararı izle**, ayrı bir tartışma açma) |
+| Ben | ✅ **YAPILDI (8 Eylül 2026)** — `ios/Runner/GoogleService-Info.plist`. Aynı Firebase projesi doğrulandı (`kelimeki` / `791040026998`, bundle id eşleşiyor). Android'in `google-services.json`'ı da repoda, aynı karar. ⚠ **Klasöre atmak YETMEZ:** `project.pbxproj`'a dört yerden kaydedildi (PBXFileReference · PBXBuildFile · Runner grubu · **Runner hedefinin Resources fazı**). Sonuncusu olmadan dosya pakete GİRMEZ ve `Firebase.initializeApp()` cihazda sessizce başarısız olur. ⚠ Firebase Console'un **"Flutter"** akışı KULLANILMADI — o akış `firebase_options.dart` üretip Android tarafını da yeniden yazar; bu depo yapılandırmayı iki platformda da NATIVE dosyadan okuyor |
 | Ben | `ios/Runner/Runner.entitlements` — dosya bugün **hiç yok**; `aps-environment` + `Info.plist`'e `UIBackgroundModes: remote-notification` |
 | Ben | `AppDelegate.swift`'e bildirim paneli kanalı |
 
