@@ -366,7 +366,9 @@ ilgilendiren iki kanca:
   girmez, Play App Signing'e kaydolma zorunluluğu ve `assetlinks.json`'a
   HANGİ parmak izinin gireceği): `mobile/CLAUDE.md` → "Play Store İmzalama
   ve `.aab`". Play Console'a girilecek formların cevap kağıdı (Data safety
-  eşlemesi dahil): `marketing/play-store/console-formlari.md`.
+  eşlemesi dahil): `marketing/play-store/console-formlari.md`; **iOS ikizi**
+  (App Store Connect formları, DSA trader kararı, gönderim kapıları):
+  `marketing/app-store/console-formlari.md`.
 - **`src/utils/random.ts`'teki `setRandomSource()`** yalnızca bu fixture
   üreticisi için var — üretim kodu hiç çağırmaz, davranış değişmedi
   (varsayılan `Math.random`).

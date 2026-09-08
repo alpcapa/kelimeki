@@ -42,6 +42,17 @@
 		</array>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<!-- ABD ihracat mevzuatı (EAR) beyanı. `false` = "hiç şifreleme yok"
+		     DEĞİL; "yalnızca MUAF şifreleme var" demek: işletim sisteminin
+		     standart HTTPS/TLS'i. Kelimeki'nin tüm trafiği Supabase/Firebase/
+		     Brevo uçlarına HTTPS ile gidiyor, kendi kripto algoritması yok,
+		     yerel veri özel bir şifreyle saklanmıyor.
+		     Bu anahtar OLMADAN Apple soruyu HER yüklemede tekrar sorar ve paket
+		     cevaplanana kadar "Missing Compliance"ta bekler, testçilere
+		     dağıtılmaz. Kullanıcı onayı: 8 Eylül 2026.
+		     Ayrıntı: marketing/app-store/console-formlari.md § 12. -->
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<!-- Hesap Ayarları'ndaki profil fotoğrafı değiştirme (image_picker,

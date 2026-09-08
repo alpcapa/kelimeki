@@ -11,7 +11,7 @@ Bu dosyada dört bölüm var (hepsi `mobile/TESTING.md`den olduğu gibi taşınd
 
 - Web derlemesi (ücretsiz tarayıcı test ortamı)
 - FAZ B — cihaza özel tur (iOS + Android)
-- TestFlight kurulumu (Apple Developer üyeliği geldiğinde)
+- TestFlight kurulumu (**üyelik 8 Eylül 2026'da GELDİ** — artık koşulabilir)
 - Üyelik OLMADAN test (Appetize.io — tarayıcı emülatörü)
 
 ---
@@ -32,9 +32,12 @@ değişiklikte kendiliğinden güncellenir (`.github/workflows/mobile-build.yml`
 edilmiş koddur.
 Süre limiti yok, kurulum yok, iPad Safari'de doğrudan açılır.
 
-**Neden var:** geliştiricinin elinde ne Mac ne Android cihaz var; Apple
-Developer üyeliği askıda (TestFlight yok) ve Appetize'ın ücretsiz katmanı
-3 dakikayla sınırlı. Flutter'ın web hedefi **aynı Dart kodunu aynı çizim
+**Neden var:** geliştiricinin elinde ne Mac ne Android cihaz var; Appetize'ın
+ücretsiz katmanı 3 dakikayla sınırlı. ⚠ Bu cümle 8 Eylül 2026'ya kadar bir
+üçüncü gerekçe daha sayıyordu (*"Apple Developer üyeliği askıda (TestFlight
+yok)"*) — **o gerekçe düştü**, üyelik alındı. Kalan ikisi duruyor, yani web
+derlemesi ortadan kalkmıyor: TestFlight kurulsa bile Mac yokluğu ve
+Appetize'ın süre sınırı değişmedi. Flutter'ın web hedefi **aynı Dart kodunu aynı çizim
 motoruyla** (CanvasKit) koşturuyor — yani yukarıdaki listenin büyük
 bölümü burada gerçekten koşulabilir.
 
@@ -336,9 +339,11 @@ platform-özgü sandığın şey çoğu zaman iki tarafta da var.
 
 ---
 
-## TestFlight kurulumu (Apple Developer üyeliği geldiğinde)
+## TestFlight kurulumu (üyelik **GELDİ** — 8 Eylül 2026)
 
 Bu bölüm bir kontrol listesi değil, **tek seferlik kurulum** notu.
+**Bu dosya KAYNAK, `ROADMAP.md` → #24 FAZ C indeks** — adımlar burada,
+fazların sırası ve bağımlılıkları orada.
 
 1. **App Store Connect'te uygulama kaydı.** appstoreconnect.apple.com →
    Uygulamalar → yeni. Bundle ID: `com.kelimeki.kelimeki` (Xcode
@@ -404,5 +409,8 @@ Artefaktlar (`kelimeki-apk`, `kelimeki-ios-simulator`) hâlâ üretiliyor —
 gerçek bir Android cihaza kurmak istersen APK'yı oradan da indirebilirsin.
 
 Üyelik yalnızca gerçek cihaza kurulum (TestFlight) ve App Store yayını
-için gerekli.
+için gerekli — ve **8 Eylül 2026'da alındı**. Appetize akışı bundan
+ETKİLENMİYOR: simülatör derlemesi hâlâ imzasız ve hâlâ ücretsiz, yani
+TestFlight geldi diye bu yol kapanmıyor (hızlı görsel doğrulama için hâlâ
+en ucuz yüzey).
 

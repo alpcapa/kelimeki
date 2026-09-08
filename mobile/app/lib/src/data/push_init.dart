@@ -20,8 +20,20 @@ import 'package:flutter/foundation.dart';
 ///
 /// Android'de yapılandırma `google-services.json`dan Gradle eklentisi
 /// aracılığıyla geliyor, yani `initializeApp`e seçenek vermeye gerek yok.
-/// iOS günü gelince `GoogleService-Info.plist` eklenecek — o zamana kadar
-/// iOS'ta da sessizce başarısız olup kapalı kalır.
+///
+/// **iOS (8 Eylül 2026):** `Runner/GoogleService-Info.plist` EKLENDİ (Apple
+/// Developer üyeliği alındı, bkz. `ROADMAP.md` → #24 FAZ C), yani bu çağrı
+/// artık iOS'ta da BAŞARILI oluyor. Ama push HÂLÂ ÇALIŞMAZ: APNs kaydı
+/// `aps-environment` entitlement'ı istiyor ve `Runner.entitlements` henüz
+/// yok. Belirti sessiz — `getToken()` fırlatır, `PushRepo` yutar ve loglar,
+/// yani uygulama normal açılır, yalnızca token yazılmaz. Entitlements
+/// imzalama zinciriyle (24.2) aynı PR'da gelecek; öncesinde iOS'ta bildirim
+/// beklenmemeli.
+///
+/// ⚠ `initializeApp`e yine seçenek VERİLMİYOR: yapılandırma iki platformda
+/// da NATIVE dosyadan okunuyor. `firebase_options.dart` üretilirse (Firebase
+/// Console'un "Flutter" akışı bunu yapıyor) Android tarafı da yeniden yazılır
+/// — o akış bilerek kullanılmadı.
 Future<bool> initFirebase() async {
   if (kIsWeb) return false;
   if (defaultTargetPlatform != TargetPlatform.android &&

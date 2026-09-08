@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["8277D85FY9.com.kelimeki.kelimeki"],
+        "components": [
+          {
+            "/": "/*",
+            "comment": "TUM kelimeki.com yollari. Kapsam, Android App Links ile BILEREK ayni: AndroidManifest.xml'deki autoVerify intent-filter'inda da android:path kisiti yok. Ikisi ayrisirsa ayni link iki platformda farkli davranir ve bu SESSIZ bir arizadir."
+          }
+        ]
+      }
+    ]
+  }
+}
