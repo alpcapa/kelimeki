@@ -1,0 +1,5 @@
+# Uygulama kimliği. Team ID gizli DEĞİL — her iOS uygulamasının
+# apple-app-site-association dosyasında zaten yayınlanıyor
+# (bkz. public/.well-known/apple-app-site-association).
+app_identifier("com.kelimeki.kelimeki")
+team_id("8277D85FY9")

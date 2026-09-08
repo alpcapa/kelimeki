@@ -1,0 +1,17 @@
+# fastlane match — sertifika/profil deposu.
+#
+# ⚠ AYRI BİR PRIVATE REPO ZORUNLU, tercih değil: Apple hesap başına dağıtım
+# sertifikası sayısını sınırlıyor, yani her CI koşusunda yenisini üretmek
+# ÇALIŞMAZ. Sertifika bir kez üretilip şifreli olarak kalıcı saklanmalı.
+# Gerekçenin tamamı: mobile/docs/test-ortamlari.md → "TestFlight kurulumu".
+#
+# git_url ortamdan geliyor çünkü içinde erişim token'ı var (MATCH_GIT_TOKEN).
+# Bu depo PUBLIC — token'lı bir URL buraya YAZILAMAZ.
+git_url(ENV.fetch("MATCH_GIT_URL"))
+storage_mode("git")
+
+# Yalnızca App Store dağıtımı. `development` üretilmiyor çünkü bu depodan
+# çıkan tek imzalı derleme türü TestFlight/App Store; Runner.entitlements de
+# buna göre `aps-environment: production` diyor.
+type("appstore")
+app_identifier(["com.kelimeki.kelimeki"])

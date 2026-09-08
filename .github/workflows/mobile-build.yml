@@ -39,7 +39,10 @@
 # neyi test ettiğini bilemez. Bu yüzden PR'da yalnızca DERLEME koşuyor;
 # release/Appetize adımları ve Pages işi atlanıyor.
 #
-# İMZALAMA/TESTFLIGHT: burada YOK ve iOS'u test etmek için GEREKMİYOR.
+# İMZALAMA/TESTFLIGHT: 8 Eylül 2026'da EKLENDİ (FAZ C 24.2) — aşağıdaki
+# "TestFlight" adımı. Aşağıdaki iki paragraf üyelik ALINMADAN ÖNCEKİ durumu
+# anlatıyor ve hâlâ doğru: imzasız iki derleme DURUYOR, Appetize akışı
+# bozulmadı, ve iOS'u tarayıcıda test etmek için hâlâ üyelik gerekmiyor.
 # iOS işi iki çıktı üretiyor, ikisi de imzasız: (a) `--no-codesign` cihaz
 # derlemesi — yalnızca "derleniyor mu" kanıtı; (b) SİMÜLATÖR `.app`'i —
 # Appetize.io'ya yüklenip tarayıcıda çalıştırılabiliyor. Apple Developer
@@ -398,7 +401,11 @@ jobs:
         working-directory: mobile/app
         run: |
           flutter pub get
+          # `--build-number`: TestFlight aynı numarayı İKİNCİ kez kabul etmiyor
+          # ("bundle version must be higher"). Android'in `.aab` adımı da aynı
+          # sayacı kullanıyor, yani iki mağazadaki numaralar hizalı kalıyor.
           flutter build ios --release --no-codesign \
+            "--build-number=${{ github.run_number }}" \
             "--dart-define=BUILD_SHA=${{ steps.stamp.outputs.sha }}" \
             "--dart-define=BUILD_TIME=${{ steps.stamp.outputs.time }}" \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
@@ -455,12 +462,71 @@ jobs:
             -d "{\"url\":\"https://github.com/${{ github.repository }}/releases/download/mobile-latest/kelimeki-ios-simulator.zip\",\"platform\":\"ios\",\"note\":\"CI otomatik — ${{ github.sha }}\"}" \
             https://api.appetize.io/v1/apps/onpdavcakhztlouyedivwrcrdi)
           echo "$resp" | jq '{publicKey, appURL}'
+      # ⚠ SIRA BİLİNÇLİ: bu adım Appetize'dan SONRA. Önce konulmuştu ve
+      # yanlıştı — imzalama düşerse sonraki adımlar ATLANIR ve bugün çalışan
+      # (doğrulanmış) simülatör + Appetize akışı imzalama yüzünden bozulurdu.
+      # Yeni ve doğrulanmamış bir adım, çalışan bir adımı asla rehin almamalı.
+      # ---- TestFlight: imzalı .ipa (FAZ C 24.2) -----------------------------
+      # ⚠ BU ADIM HENÜZ HİÇ KOŞMADI. App Store Connect API anahtarı Apple'ın
+      # indirme ucundaki bir arıza yüzünden alınamadı (bkz.
+      # marketing/app-store/console-formlari.md § 3). Secret'lar gelene kadar
+      # adım kendini atlıyor — yani bugün hiçbir şeyi değiştirmiyor, mevcut
+      # imzasız derlemeler ve Appetize akışı olduğu gibi duruyor.
+      #
+      # KORUMA DESENİ Android'in `.aab` adımının aynısı: `secrets` bağlamı
+      # adım düzeyinde `if:`te KULLANILAMAZ (GitHub'ın bağlam tablosunda yok),
+      # bu yüzden kontrol script'in İÇİNDE.
+      #
+      # ⚠ YALNIZCA `main` ve elle tetikleme. Her dal push'unda TestFlight'a
+      # yüklemek hem build numarası yakar hem testçilere çöp paket gönderir.
+      #
+      # ⚠ `flutter build ios` YUKARIDA koştu ve fastlane onun ÜSTÜNE arşiv
+      # alıyor — `--dart-define`larla gömülen derleme kimliği ve Supabase
+      # anahtarları oradan geliyor. Sıra değişirse imzalı pakette teşhis
+      # satırı boş çıkar (`Derleme yerel`) ve sunucuya hiç bağlanmaz.
+      - name: TestFlight'a yükle (imzalı .ipa)
+        if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+        working-directory: mobile/app
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_TOKEN: ${{ secrets.MATCH_GIT_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APP_STORE_CONNECT_KEY_P8:-}" ]; then
+            echo "APP_STORE_CONNECT_KEY_P8 secret'ı yok — TestFlight adımı atlanıyor."
+            exit 0
+          fi
+          if [ -z "${MATCH_GIT_TOKEN:-}" ] || [ -z "${MATCH_PASSWORD:-}" ]; then
+            echo "::error::API anahtarı var ama MATCH_GIT_TOKEN/MATCH_PASSWORD yok — imzalama yapılamaz."
+            exit 1
+          fi
+          # Sertifika deposunun URL'i token TAŞIYOR, bu yüzden repoda değil
+          # burada kuruluyor (depo PUBLIC). `match` onu Matchfile'dan okuyor.
+          export MATCH_GIT_URL="https://x-access-token:${MATCH_GIT_TOKEN}@github.com/alpcapa/kelimeki-certificates.git"
+          # CI'da anahtarlık: match sertifikayı geçici bir keychain'e kurar.
+          export MATCH_KEYCHAIN_NAME="kelimeki-ci"
+          export MATCH_KEYCHAIN_PASSWORD="${MATCH_PASSWORD}"
+          export FASTLANE_SKIP_UPDATE_CHECK=1
+          export FASTLANE_HIDE_CHANGELOG=1
+          bundle install --quiet
+          bundle exec fastlane ios beta
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() && hashFiles('mobile/app/build/ios/ipa/*.ipa') != '' }}
+        with:
+          name: kelimeki-ipa
+          path: mobile/app/build/ios/ipa/*.ipa
+          if-no-files-found: ignore
 
   # Web derlemesi — ÜRÜN HEDEFİ DEĞİL, TEST ORTAMI.
   #
   # NEDEN VAR: geliştirici iPad'den çalışıyor; elinde ne Mac ne Android cihaz
-  # var. Apple Developer üyeliği (TestFlight) askıda, tarayıcı içi emülatör
-  # (Appetize) ücretsiz katmanda 3 dakikayla sınırlı. Flutter'ın web hedefi
+  # var. Tarayıcı içi emülatör (Appetize) ücretsiz katmanda 3 dakikayla
+  # sınırlı. (⚠ Bu cümle 8 Eylül 2026'ya kadar üçüncü bir gerekçe daha
+  # sayıyordu — "Apple Developer üyeliği askıda" — o gerekçe DÜŞTÜ, üyelik
+  # alındı. Kalan ikisi duruyor: Mac yok, Appetize süreli.) Flutter'ın web hedefi
   # aynı Dart kodunu aynı çizim motoruyla (CanvasKit) koşturuyor — yani
   # yerleşim/font/gölge/oyun akışı doğrulaması ücretsiz ve süresiz yapılabilir.
   # Bu iş her mobil push'ta GitHub Pages'e deploy eder, adres sabit kalır.
