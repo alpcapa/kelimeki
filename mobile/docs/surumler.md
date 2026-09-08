@@ -53,8 +53,8 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
-| **1.0.9** | *(CI koşu no — merge sonrası doldurulacak)* | *(merge commit'i)* | 7 Eyl 2026 akşamı (`main`) | **henüz yüklenmedi** | 🔧 hazırlanıyor | "Oynayarak öğren" tanıtımının PORT ikizi (Onboarding Faz 4) + tanıtımın cihaz/tarayıcı turu düzeltmeleri. Aşağı bkz. |
-| **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **7 Eyl 2026, 13:28** (Console) | ✅ **kapalı testte YAYINDA** (Alpha; ≤ 13:57'de "Published") | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
+| **1.0.9** | **581** | `1abde38` | 7 Eyl 2026 akşamı (`main`) | **8 Eyl 2026, 08:41** (Console) | ✅ **kapalı testte YAYINDA** (Alpha; ≤ 09:10'da "Published") | "Oynayarak öğren" tanıtımının PORT ikizi (Onboarding Faz 4) + tanıtımın cihaz/tarayıcı turu düzeltmeleri. Aşağı bkz. |
+| **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **7 Eyl 2026, 13:28** (Console) | yayınlandı → **pasif** (8 Eyl, 1.0.9 devraldı) | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
 
 ⚠ **1.0.0/1.0.1'in `versionCode`'u hâlâ ölçülmedi** (Console'un paket
 listesi ekran görüntüsünde 435'te kesiliyordu). Ama gönderim ↔ SÜRÜM ADI
@@ -91,6 +91,7 @@ bölümü) — "ölçüldü" işaretli üç satır Console'dan doğrudan okundu,
 
 | # | Gönderim | Kapsam | Durum | Sürüm (çıkarım) |
 |---|---|---|---|---|
+| 14 | 8 Eyl 2026, 08:41 | Closed testing - Alpha | ✅ **Published** | **1.0.9 (581)** — ölçüldü |
 | 13 | 7 Eyl 2026, 13:28 | Closed testing - Alpha | ✅ **Published** | **1.0.8 (569)** — ölçüldü |
 | 12 | 4 Eyl 2026, 15:53 | Closed testing - Alpha | ✅ **Published** | **1.0.6 (525)** — ölçüldü |
 | 11 | 2 Eyl 2026, 17:24 | Closed testing - Alpha | Published | 1.0.5 (501) |
@@ -113,12 +114,24 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
-## 1.0.9 — 🔧 HAZIRLANIYOR (7 Eyl 2026 akşamı)
+## 1.0.9 (581) — ✅ YAYINDA (kapalı test/Alpha, 8 Eyl 2026)
 
-**Durum:** `pubspec.yaml` + `env.dart` 1.0.8 → 1.0.9. `versionCode` HENÜZ
-YOK — CI'ın koşu numarası, yani sürüm adını taşıyan commit `main`'e
-girdikten sonraki "Mobil derleme" koşumundan okunur (bkz. yukarıdaki
-"`versionCode` nereden geliyor").
+**Durum:** `pubspec.yaml` + `env.dart` 1.0.8 → 1.0.9 (#486, 7 Eyl akşamı).
+Paket 7 Eyl gecesi derlendi, **8 Eyl 2026 saat 08:41'de** kapalı teste
+(Alpha) gönderildi — Console'un kendi kaydı — ve **09:10'dan önce
+"Published"** oldu (kullanıcı o an bildirdi; Console'un kendi yayın saati
+OKUNMADI, bu yüzden inceleme süresi "≤ 29 dk").
+
+| | |
+|---|---|
+| `versionCode` | **581** (koşu 34164451695 — `--build-number=github.run_number`) |
+| Commit | **`1abde38`** (#486'nın merge commit'i) |
+| Derleme | 7 Eyl 2026, 21:48 → 21:57 UTC; `.aab` adımı 21:55-21:57 |
+| Cihazda görünen | Setup teşhis satırı: `Derleme 1abde38` |
+
+⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır.** Play'e yüklemeden
+önce indirdiğin paketin `versionCode`'unun **581** olduğunu doğrula; `main`'e
+giren bir sonraki mobil iş bu etiketi değiştirir (1.0.4/467 dersi).
 
 **İçerik — tek konu, Onboarding Faz 4 ve ardından gelen tur:** ilk oyunu
 açan kullanıcı artık Hızlı Başlangıç penceresi yerine **"oynayarak öğren"
@@ -152,9 +165,39 @@ emin olmadan aab yapılmayacak"* — bu turda kullanıcı APK yerine
 **Appetize**'ı yeterli gördü (*"apk denemesine gerek yok bence"*), karar
 kayda geçti.
 
-**Kalan adımlar:** merge → CI koşu numarasını oku (`versionCode`) →
-`.aab`yi `mobile-latest`ten indir → Play Console'a kapalı teste yükle →
-gönderim saatini ve durumu bu kütüğe yaz.
+**Sürüm adı (Console):** `1.0.9 (581)`
+
+**Sürüm notları — TASLAK (`tr-TR`, 348/500 karakter):**
+
+```
+Yenilikler
+• Oyuna ilk kez başlayanlar için kısa bir tanıtım turu: dört sahnede kendi köşenden başlamayı, bölgeni büyütmeyi, ortadaki puan çarpanlarını ve bölge vergisini oynayarak öğreniyorsun (yaklaşık 1 dakika).
+• Tur yalnızca yeni gelenlere bir kez açılır, "Atla" ile geçilebilir.
+• Oyun içindeki ipucu balonları büyüdü, yazıları daha okunaklı.
+```
+
+⚠ "Düzeltmeler" başlığı YOK: bu paketteki düzeltmelerin hepsi tanıtımın
+KENDİ turlarında bulundu ve hiç sahaya çıkmamıştı — mevcut bir testçinin
+"düzeldi" diye tanıyacağı bir şey değil. Testçiye görünen tek eski-davranış
+değişikliği balon puntosu, o da "Yenilikler"in son maddesinde.
+
+**Derlenen paket — Play'e GİDECEK olan:** koşu **581**, `1abde38`
+(#486'nın merge commit'i), `.aab` **63.418.306 bayt**, SHA-256
+`e7f37832c91f74f0e920e8c46244420f781ac6ecc0879f995155c5f65dfbd671`
+(7 Eyl 2026, 21:57 UTC — `mobile-latest`e yüklenme anı).
+İndirme: `https://github.com/alpcapa/kelimeki/releases/download/mobile-latest/kelimeki.aab`
+
+⚠ **"Published" ≠ testçinin telefonunda.** Kanala girdi demektir; dağıtım
+kademeli. Cihazda doğrularken önce Setup'ın **`Derleme 1abde38`** satırına
+bak. İnmiyorsa çare beklemek DEĞİL: testçi opt-in linkine tekrar gir
+(`https://play.google.com/apps/testing/com.kelimeki.kelimeki`), sonra Play
+Store önbelleği, sonra Internal testing kanalı (bkz.
+`build-and-distribution-log.md` → "ÇARE").
+
+**Tur kapandı:** "İnceleme süresi" tablosuna satır eklendi, 1.0.8 pasife
+çekildi, ROADMAP'teki tur `docs/decisions/roadmap-arsiv.md` → "1.0.9 sürüm
+turu"na taşındı. ⚠ Kalan TEK ölçüm cihazda: testçinin telefonunda
+`Derleme 1abde38` göründü mü (kanala girmek ≠ cihaza inmek).
 
 ## 1.0.8 (569) — ✅ YAYINDA (kapalı test/Alpha, 7 Eyl 2026)
 
@@ -714,6 +757,7 @@ yardım ekranına zorluk paragrafı. Normal'de hiçbir şey değişmedi
 | 1.0.5 (501) | 2 Eyl 17:24 | ~17:58 | **~34 dk** | Console (gönderim) + release satırının "Last updated"ı |
 | 1.0.6 (525) | 4 Eyl 15:53 | ≤ 16:22 | **≤ 29 dk** | Console (gönderim) + 16:22'de "Published" görüldü |
 | 1.0.8 (569) | 7 Eyl 13:28 | ≤ 13:57 | **≤ 29 dk** | Console (gönderim) + 13:57'de "Published" bildirildi (Console'un yayın saati okunmadı) |
+| 1.0.9 (581) | 8 Eyl 08:41 | ≤ 09:10 | **≤ 29 dk** | Console (gönderim) + 09:10'da "Published" bildirildi (Console'un yayın saati okunmadı) |
 
 ⚠ **DÜZELTME (4 Eylül 2026):** bu bölüm daha önce 1.0.5 için **"≈23 dakika
 (~14:40 → ~15:03)"** diyordu. O rakam Console'dan değil kullanıcının
