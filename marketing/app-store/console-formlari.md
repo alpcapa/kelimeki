@@ -173,11 +173,52 @@ Yani sıradaki ad **`Kelimeki CI 3`**.
 | | Team Keys | Individual Key |
 |---|---|---|
 | Hata metni | `An error has occurred. Try again later.` | `We were unable to supply you with a key. **Wait a minute, then try again.**` |
-| Başarısız denemeden sonra | **Download linki KAYBOLUYOR**, anahtar yanıyor | **Download linki DURUYOR** — tekrar denemek bedava |
+| Başarısız denemeden sonra | Download linki kayboluyor, anahtar yanıyor | **AYNISI** (aşağı bkz.) |
+| Yenilenebilir mi | Hayır — her deneme listede ölü bir kayıt bırakıyor | **Evet** — revoke → yeni üret (aynı anda tek anahtar) |
 
-Yani bu yolda deneme maliyeti YOK: anahtar sağlam, yalnızca indirme ucu
-tıkalı. **Plan: aralıklarla `Download API Key`'e basmak.** ⚠ `Revoke`'a
-DOKUNMA.
+⚠ **DÜZELTME (8 Eylül 2026, aynı gün):** Bu tablo bir süre *"Individual
+Key'de Download linki DURUYOR, tekrar denemek bedava"* diyordu. **YANLIŞTI.**
+İddia ilk ekran görüntüsüne dayanıyordu — link o an gerçekten duruyordu — ama
+sonraki denemelerde o da kayboldu. Doğrusu: **iki uçta da başarısız indirme
+anahtarı TÜKETİYOR.** Tek gerçek fark yenilenebilirlik: bireysel anahtar
+revoke edilip yenisi üretilebiliyor, Team Keys'te ölü kayıtlar birikiyor.
+
+**Yakılan anahtarlar:** üç Team Key (ilki `7ARZF96LAK`, üçü de revoke) +
+bireysel `25Z8S0CFZFPA` → yerine `18QBEN3T2RY4` üretildi, onun da linki
+kayboldu.
+
+**Plan artık "aralıklarla dene" DEĞİL:** dört başarısız denemeden ve ~7
+saatten sonra bu bir geçici hata değil. **Apple Developer Support vakası
+açılacak** (aşağıdaki metin hazır). ⚠ Vaka açıkken `18QBEN3T2RY4`'ü
+**revoke etme** — destek ekibi anahtarın durumuna bakacak.
+
+### Support vakası — yapıştırılabilir metin
+
+`developer.apple.com/contact` → *App Store Connect* / *Membership and Account*
+
+```
+I cannot download any App Store Connect API key. Every attempt fails,
+across two different endpoints, over several hours.
+
+Account: Individual, Team ID 8277D85FY9
+Browser: Safari on iPadOS
+
+1) Team Keys (Users and Access > Integrations > App Store Connect API)
+   Created three keys. Each time the "Download API Key" dialog returned:
+     "An error has occurred. Try again later."
+   After each failed attempt the Download link disappeared and the key was
+   marked as downloaded, making it permanently unusable. First key ID was
+   7ARZF96LAK. All three have been revoked.
+
+2) Individual API Key (account profile > Edit Profile)
+   Same failure, with a different message:
+     "We were unable to supply you with a key. Wait a minute, then try again."
+   Key 25Z8S0CFZFPA failed and was replaced by 18QBEN3T2RY4, which is
+   currently active but whose Download link has also disappeared.
+
+I have never successfully downloaded a .p8 file. Membership is active and
+paid. Please advise, or issue a key I can actually download.
+```
 
 **Nerede üretiliyor:** `Individual Keys` sekmesi yalnızca listeliyor.
 Üretim yeri: sağ üstteki hesap adı → **Edit Profile** → *Individual API Key*.
