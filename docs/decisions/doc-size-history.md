@@ -70,3 +70,34 @@ Kesim parça sınırından; hiçbir satır değişmedi. `check-doc-size.mjs`in
 `FROZEN` listesine tavanıyla (135 KB) eklendi — arşive yanlışlıkla yazmanın
 tek yakalayıcısı o. Cilt haritası `mobile/CLAUDE.md`de dört → beş oldu.
 
+
+## Kuralın kendi tarihçesi — kök `CLAUDE.md`'den taşınan gerekçeler (8 Eylül 2026)
+
+Aşağıdaki üç anlatı 8 Eylül 2026'da kök `CLAUDE.md`'den buraya alındı: dosya
+79.939 bayttı (uyarı eşiği 80.000) ve tek satırlık bir kural eklemek onu
+banda soktu — yani kuralın kendi tarihçesi, kuralın konusu olan dosyayı
+sınıra dayamıştı. Kurallar orada kaldı, gerekçeler burada.
+
+**`reference` sınıfı neden eklendi (29 Ağustos 2026).** Kullanıcı sordu:
+*"Büyüyen md dosyalarını bölme işini tüm md'lerde yapıyor muyuz? Gerek var
+mı?"* Ölçüldü: repoda 43 `.md`, 2.3 MB. Eski `active` bütçesi ÖDENMEYEN bir
+maliyeti vekaleten ölçüyordu — o dosyalar isteğe bağlı ve çoğunlukla grep'le
+okunuyor. **Bölmenin ise gerçek bedeli var ve bu repo onu ödedi:**
+`docs/decisions/` 22 dosyaya çıktı ve doğru dosyayı bulmak için kök
+`CLAUDE.md`'de bir indeks tablosu gerekli hâle geldi (koddaki eski atıflar
+bölünmeyle kırıldı). Kural kaldırılmadı, **daraltıldı**: bölme refleksi
+artık yalnızca baştan sona okunan dosyalar için.
+
+**Alt sınırın vakası (7 Eylül 2026).** `ROADMAP.md` bir düzenleme betiğinin
+`open(p, 'w')` satırıyla sıfırlandı, "bütçe içinde" sayıldı ve BOŞ hâliyle
+`main`'e girdi (PR #475; #476 geri aldı). Betiğe alt sınır bu yüzden eklendi.
+
+**25 Ağustos 2026 — `docs/decisions/live-game-and-friends.md`** tam "ilk
+dokunuşta böl" kuralı gereği bölündü: 156 KB'lık dosya `friends.md` /
+`live-game.md` / `online-game-screen.md` olarak üçe ayrıldı, üçü de 64 KB'ın
+altında. Dosya "bir gün" değil, ilk dokunuşta bölündü.
+
+**Kural yazılırken kök `CLAUDE.md`'nin kendisi 111 KB'a çıkmıştı** — kuralı
+yazmak, kuralın konusu olan dosyayı büyüttü. Öngörülen çare hemen uygulandı:
+en büyük tek konu bloğu (yerel oyun kalıcılığı, 35 KB)
+`docs/decisions/local-game-persistence.md`'ye taşındı, dosya 76 KB'a indi.

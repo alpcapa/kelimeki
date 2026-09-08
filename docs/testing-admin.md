@@ -474,3 +474,58 @@ Admin paneli oturum + admin rolü istediğinden otomatik test EDİLEMİYOR.
       bozulmamalı) ve `Okundu işaretle` / `Yanıtla` / silme aynen çalışmalı.
 - [ ] **Üyeler tablosundaki isim kolonu DEĞİŞMEDİ** — orada 150px kapak ve
       `title` bilinçli (sabit kolon dar ekranda tüm alanı yemesin diye).
+
+## 9.16. Admin — "Tanıtım Turu" kartı (8 Eylül 2026, Onboarding Faz 5)
+
+Büyüme > Kullanıcı → **Kaynak Hunisi'nin hemen ALTINDA**. Kartın kararları
+(neden ayrı bir tablo, neden iki satır, neden oran cihaz üzerinden)
+`docs/decisions/admin-panel.md` → "Tanıtım Turu kartı"nda; burası yalnızca
+kontrol listesi. **Kullanıcı tarafındaki tur** (balonlar, tekrar oynama,
+ATLA) kök `TESTING.md` §13.6'da — önce onu koş, sonra buraya bak: kartın
+sayıları o turun ÇIKTISI.
+
+- [ ] **Kart yerinde ve başlığı aralığı yazıyor:** "Tanıtım Turu (Son 30
+      gün)" gibi — üstteki dönem seçicisi (gün/hafta/ay) DEĞİŞTİRİLİNCE
+      başlık ve sayılar birlikte değişmeli (Kaynak Hunisi ile aynı seçiciye
+      bağlı).
+- [ ] **En fazla İKİ satır: `Otomatik` ve `Tekrar`.** Ham `auto`/`replay`
+      değerleri ekranda GÖRÜNMEMELİ. Hiç tekrar izleyen yoksa `Tekrar`
+      satırı hiç olmayabilir — bu normal, boş satır çizilmemeli.
+- [ ] **Sayı çifti doğru okunuyor:** `Başlatan`/`Bitiren` sütunundaki büyük
+      sayı BENZERSİZ CİHAZ, parantezdeki soluk sayı ADET. Parantezdeki sayı
+      hiçbir zaman büyük sayıdan KÜÇÜK olamaz. Tanıtımı aynı cihazda iki kez
+      açınca yalnızca parantez artmalı.
+- [ ] **`Bitirme` oranı cihaz üzerinden:** `Bitiren cihaz / Başlatan cihaz`.
+      Aynı cihazda iki kez açıp bir kez bitirince oran DÜŞMEMELİ (adet payda
+      olsaydı düşerdi).
+- [ ] **`Başlatan` 0 ise oran `—`, `%0` DEĞİL** ("0% ≠ bilgi yok" kuralı,
+      Kaynak Hunisi ile aynı).
+- [ ] **Bırakılan sahne dökümü:** ATLA ile 1. sahnede çıkıp yeniden açıp 3.
+      sahnede çıktıktan sonra satırın altında *"bırakılan sahne: 1. (1) · 3.
+      (1)"* görünmeli — sahne numarasına göre ARTAN sırada.
+- [ ] **`Atlayan` ile döküm toplamı EŞİT OLMAYABİLİR** ve bu bir hata değil:
+      sahne yazmayan bir istemcinin satırı `Atlayan`a girer, döküme girmez.
+      Ters yön hata: döküm toplamı `Atlayan`ı AŞMAMALI.
+- [ ] **Boş aralık "Bu aralıkta veri yok." demeli** — sıfırlarla dolu bir
+      tablo DEĞİL. Yüklenirken "Yükleniyor…"; ikisinde de `?` rozeti çizili
+      kalmalı.
+- [ ] **`?` popup'ı (`tanitim-turu`)** başlığı "Tanıtım Turu" olmalı ve iki
+      şeyi açıkça söylemeli: benzersiz cihaz ↔ adet ayrımı, ve iki kaynağın
+      neden ayrı satır olduğu.
+- [ ] **Tanıtım Kaynak Hunisi'ni KİRLETMİYOR.** Bir tanıtım turu oyna → üstteki
+      Kaynak Hunisi'nin "Başlayan" sütunu DEĞİŞMEMELİ (tanıtım bilerek bir
+      "oyun" değil: `game_starts` yazılmıyor, `games` satırı açılmıyor).
+      Kart artıp huni artıyorsa yalıtım kırılmış demektir.
+- [ ] **Kartın CSV düğmesi YOK** — bilinçli (tablo en çok iki satır). Çıkmışsa
+      `SourceFunnelTable`'ın kipi yanlışlıkla buraya kopyalanmış demektir.
+- [ ] **Gizlilik: hesap kimliği hiçbir yerde görünmemeli.** `tutorial_events`
+      satırında `user_id` YOK (bilerek); kartta ad/e-posta/kullanıcı kırılımı
+      çıkıyorsa bu `game_starts` ile ortak olan gizlilik kararının ihlalidir.
+- [ ] **Admin olmayan hesap hiçbir şey göremiyor:** `admin_tutorial_funnel`
+      admin dışına kapalı ve `tutorial_events` tablosunun SELECT politikası
+      hiç YOK (yazma anon + authenticated'a açık, okuma kimseye) — normal bir
+      hesapla tabloyu okumaya çalışınca boş dönmeli.
+- [ ] **MOBİLDE:** port `anon_id` GÖNDERMİYOR — telefondan tanıtımı açıp
+      bitirince yalnızca parantezdeki ADET artmalı, BENZERSİZ CİHAZ sayısı
+      DEĞİL. (Port damgalamayı eklerse bu madde ve `admin-panel.md`'deki not
+      birlikte güncellenir.)

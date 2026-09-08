@@ -202,8 +202,9 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
 ⚠ **DURUM (8 Eylül 2026): 1.0.9 (581) = `1abde38` kapalı testte YAYINDA
-(gönderim 08:41, yayın ≤ 09:10). Liste SIFIRLANDI — `main`'de olup mağazada
-olmayan MOBİL iş şu an YOK.** Turun kaydı (paket, içerik tablosu, dersler):
+(gönderim 08:41, yayın ≤ 09:10). Liste aynı gün SIFIRLANDI, ama AYNI GÜN
+yeniden doldu — onboarding Faz 2·3·5 (#488) porta dokundu, aşağıdaki tabloya
+bak.** Turun kaydı (paket, içerik tablosu, dersler):
 `docs/decisions/roadmap-arsiv.md` → "1.0.9 sürüm turu"; paket künyesi ve
 sürüm notları `mobile/docs/surumler.md` → "1.0.9 (581)".
 
@@ -215,22 +216,26 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 **Kapalı testteki paket:** 1.0.9 (581) = commit `1abde38` (#486),
 8 Eylül 2026'da yayınlandı.
 
-**O paketten beri porta dokunan işler — sıradaki sürümün içeriği:** şu an
-**YOK**. Yeni bir satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
+**O paketten beri porta dokunan işler — sıradaki sürümün içeriği.** Yeni bir
+satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
-| — | — | — |
+| `80f3769` (#488) | Onboarding Faz 2·3·5 — bağlamsal ipuçları (`vergi`/`carpan`/`bolge`), tanıtımı tekrar oynama, `tutorial_events` ölçümü | Port ikizi aynı PR'da: `util/onboarding.dart` (ipucu kararı + sayaç), `storage/flags_store.dart`, `ui/game/game_screen.dart` (balon), `ui/game/help_modal.dart` + `ui/setup/setup_screen.dart` (tekrar oynama), `ui/tutorial/*`, `data/games_api.dart` (olay yazımı), `ui/auth/legal_modals.dart` (gizlilik metni "beş kayıt") |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
 web canlı, CI derlemesi hazır, ama Play'e giden hiçbir otomatik yol YOK
 (gönderim elle).
 
-⚠ **Listeye GÜVENME, komutu koş.** Bu tablo ÜÇ kez eksik yakalandı: bir kez
+⚠ **Listeye GÜVENME, komutu koş.** Bu tablo DÖRT kez eksik yakalandı: bir kez
 bölümü yazan PR kendi diff'ini saymamıştı (4 Eylül), bir kez porta dokunan
 iki commit hiç eklenmemişti (5 Eylül — `#452` ve `#457`), bir kez de Faz 2'nin
-motor commit'i (6 Eylül — yukarıdaki ilk satır). İkincisinin bedeli
+motor commit'i (6 Eylül). **Dördüncüsü #488** (8 Eylül): PR ROADMAP'e dokundu
+(madde 24'ü arşive taşıdı) ama bu tabloyu boş bıraktı — üstelik 14 dosyayla
+porta dokunuyordu. Yani "kendi PR'ını da say" uyarısı, o uyarıyı taşıyan
+bölümün kendisinde bir kez daha atlandı; tablo aynı gün yayınlanan bir
+sürümün ardından "YOK" derken doldu. İkincisinin bedeli
 ölçüldü: eksik liste yüzünden sürüm bir gün gecikti, üstelik eksiklerden biri
 gerçek bir hata düzeltmesiydi. Refleks:
 
