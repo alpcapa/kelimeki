@@ -192,7 +192,27 @@ saatten sonra bu bir geçici hata değil. **Apple Developer Support vakası
 açılacak** (aşağıdaki metin hazır). ⚠ Vaka açıkken `18QBEN3T2RY4`'ü
 **revoke etme** — destek ekibi anahtarın durumuna bakacak.
 
-### Support vakası — yapıştırılabilir metin
+### ✅ VAKA AÇILDI — 9 Eylül 2026, 00:15 (UTC+3)
+
+`developer.apple.com/contact` → **App Store Connect Users and Roles**
+(on alt konu arasında API anahtarlarının konsolda gerçekten durduğu yer
+orası: *Users and Access → Integrations*). Form "başka bir kullanıcıyı"
+soran kalıpta; kendi bilgilerimizle dolduruldu — *User's Apple Account:*
+`destek@kelimeki.com`, *User's role:* `Account Holder, Admin`.
+
+**Cevap beklenirken YAPILMAYACAKLAR:**
+- ⚠ **`18QBEN3T2RY4` REVOKE EDİLMEYECEK** — vakada "inceleyebilesiniz diye
+  bilerek silmedim" yazıyor. Silmek destek ekibinin elindeki tek canlı
+  kaydı yok eder ve standart *"revoke edip tekrar dene"* cevabını davet eder.
+- ⚠ **Yeni anahtar üretilmeyecek.** Dört deneme yeterli kanıt; her deneme
+  tabloyu karıştırır.
+- ⚠ **Mükerrer vaka açılmayacak.**
+
+**Cevap gelince:** anahtar indirilirse üç secret girilir
+(`APP_STORE_CONNECT_KEY_ID` · `_ISSUER_ID` · `_KEY_P8`) ve 24.2'nin iş
+akışı kendiliğinden devreye girer — kodda değişiklik gerekmiyor.
+
+### Support vakası — gönderilen metin
 
 `developer.apple.com/contact` → *App Store Connect* / *Membership and Account*
 
