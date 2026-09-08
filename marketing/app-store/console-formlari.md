@@ -162,9 +162,49 @@ Yani sıradaki ad **`Kelimeki CI 3`**.
   biter bitmez dosyayı **Dosyalar → İndirilenler**'de gözle doğrula. Mümkünse
   bilgisayardan dene — bu depo iPad Safari'nin dosya indirme/yükleme
   davranışıyla daha önce günlerce uğraşmıştı (Appetize `.apk` vakası).
-- **Üçüncü kez de hata verirse** tarayıcı değil Apple tarafı demektir;
-  Developer Support vakası. Tıkanmaz: 24.2'nin iş akışı anahtar olmadan da
-  yazılabilir (secret yoksa adım sessizce atlanır).
+- **Üçüncü kez de hata verdi** (8 Eylül 2026) — tarayıcı değil Apple tarafı.
+
+### ✅ ÇÖZÜM YOLU: `Team Keys` değil **`Individual Keys`**
+
+Üç Team Key yakıldıktan sonra `Users and Access → Integrations →
+**Individual Keys**` denendi. **Anahtar üretildi: Key ID `25Z8S0CFZFPA`.**
+İndirme orada da hata verdi — ama **iki kritik fark var:**
+
+| | Team Keys | Individual Key |
+|---|---|---|
+| Hata metni | `An error has occurred. Try again later.` | `We were unable to supply you with a key. **Wait a minute, then try again.**` |
+| Başarısız denemeden sonra | **Download linki KAYBOLUYOR**, anahtar yanıyor | **Download linki DURUYOR** — tekrar denemek bedava |
+
+Yani bu yolda deneme maliyeti YOK: anahtar sağlam, yalnızca indirme ucu
+tıkalı. **Plan: aralıklarla `Download API Key`'e basmak.** ⚠ `Revoke`'a
+DOKUNMA.
+
+**Nerede üretiliyor:** `Individual Keys` sekmesi yalnızca listeliyor.
+Üretim yeri: sağ üstteki hesap adı → **Edit Profile** → *Individual API Key*.
+
+### Team key'e dönmeye GEREK YOK
+
+Fark, anahtarın kime bağlı olduğu: team key ekipte kalır, individual key
+kişiye bağlıdır ve kişi ekipten ayrılırsa iptal olur. Bu hesap **tek
+kişilik bireysel** — ayrılacak kimse yok, kullanıcı hesabın kendisi. Yetki
+de aynı: individual key kişinin yetkisini taşıyor, kullanıcı da Account
+Holder. **Yani `25Z8S0CFZFPA` indiği an CI'ın ihtiyacı karşılanmış olur;**
+Team Keys'e dönmek ancak hesaba ileride başka biri eklenirse anlam kazanır.
+
+### Teşhis: arıza App Store Connect'in GENELİNDE
+
+İki farklı uç (Team Keys + Individual Key), aynı sonuç. Support vakası
+açılırsa bu ikisi birlikte yazılmalı — tek uca özgü olmadığının kanıtı.
+Yakılan üç Team Key'in ID'si de vakayı hızlandırır (`7ARZF96LAK` + ikisi).
+
+**Hiçbiri işi tıkamıyor:** 24.2'nin iş akışı anahtar olmadan yazılabilir
+(secret yoksa adım sessizce atlanır, Android'in `.aab` deseni).
+
+⚠ **Yedek yol, KISMİ:** TestFlight'a paket yüklemek için API anahtarı
+yerine **uygulamaya özel şifre** (appleid.apple.com → Sign-In and Security)
+kullanılabiliyor. Yüklemeyi çözer, **sertifika/profil otomasyonunu
+çözmez** — 2FA yüzünden CI'da kırılgan (`FASTLANE_SESSION` süreli).
+Apple'ın arızası uzarsa bakılacak, ilk tercih değil.
 
 **Bu YALNIZCA 24.2'yi (imzalama + TestFlight) tıkıyor.** Vitrin, yaş
 derecesi, App Privacy, trader beyanı — hepsi bundan bağımsız ilerler.
