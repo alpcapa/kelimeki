@@ -144,11 +144,27 @@ again later."* dedi. İkinci denemeden sonra satırdaki **Download** linki
 KAYBOLDU ve `LAST USED` doldu — yani Apple anahtarı indirilmiş sayıyor,
 `.p8` elde YOK.
 
-**Sonuç: bu anahtar KULLANILAMAZ.** Yapılacak: eskisini **revoke** et,
-yenisini üret (`Kelimeki CI 2`, Admin), indir.
-- Issuer ID **değişmez** (hesabın kimliği, anahtarın değil)
-- Yeni **Key ID** secret'a girilecek
-- Kullanılamayan anahtarı listede bırakma — hangisinin canlı olduğu karışır
+**İKİ anahtar yakıldı, ikisi de kullanılamaz:**
+
+| Ad | Key ID | Durum |
+|---|---|---|
+| `Kelimeki CI` | `7ARZF96LAK` | `.p8` inmedi, Download linki kayboldu |
+| `Kelimeki CI 2` | *(kayda geçmedi)* | aynı hata |
+
+Yani sıradaki ad **`Kelimeki CI 3`**.
+
+- **İKİSİNİ DE revoke et** — bu satır bir süre yalnızca birinden söz
+  ediyordu; elinde `.p8`'i olmayan Admin anahtarları listede birikirse
+  hangisinin canlı olduğu karışır.
+- Issuer ID **değişmez** (hesabın kimliği, anahtarın değil).
+- Yeni **Key ID** secret'a girilecek.
+- İndirme yolunu sağlamlaştır: Safari'de *Request Desktop Website*, indirme
+  biter bitmez dosyayı **Dosyalar → İndirilenler**'de gözle doğrula. Mümkünse
+  bilgisayardan dene — bu depo iPad Safari'nin dosya indirme/yükleme
+  davranışıyla daha önce günlerce uğraşmıştı (Appetize `.apk` vakası).
+- **Üçüncü kez de hata verirse** tarayıcı değil Apple tarafı demektir;
+  Developer Support vakası. Tıkanmaz: 24.2'nin iş akışı anahtar olmadan da
+  yazılabilir (secret yoksa adım sessizce atlanır).
 
 **Bu YALNIZCA 24.2'yi (imzalama + TestFlight) tıkıyor.** Vitrin, yaş
 derecesi, App Privacy, trader beyanı — hepsi bundan bağımsız ilerler.
