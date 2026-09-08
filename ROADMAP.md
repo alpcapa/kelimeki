@@ -1573,10 +1573,16 @@ Review istiyor. *(Apple dokümanından; bu depoda ÖLÇÜLMEDİ.)*
 
 **Hesap kimliği (8 Eylül 2026, kullanıcı bildirdi + ekran görüntüsü):**
 **Bireysel** (Individual), ad **Alp Reşat Çapa**, Apple ID
-**`destek@kelimeki.com`**. Ödeme yapıldı; hesap o gün **`(Pending)`**
-durumunda ve sayfa *"Your purchase may take up to 48 hours to process"*
-diyor. Play tarafının karşılığı da kişiseldi (*Personal account*,
-Account ID `5939732949280610022`), yani iki mağazada tutarlı.
+**`destek@kelimeki.com`**. Play tarafının karşılığı da kişiseldi
+(*Personal account*, Account ID `5939732949280610022`), yani iki mağazada
+tutarlı.
+
+✅ **ÜYELİK AKTİF** — aynı gün 14:48'de `(Pending)` düştü (ekran
+görüntüsüyle doğrulandı: *Program resources* açıldı, yani **App Store
+Connect · Certificates, IDs & Profiles · Membership details** erişilebilir).
+Ödeme→aktivasyon **~12 dakika** sürdü; Apple'ın vaat ettiği 48 saatlik
+tavan bu turda hiç kullanılmadı. Kimlik taraması İSTENMEDİ.
+**24.1 artık koşulabilir.**
 
 ⚠ **Bireysel hesabın geri alınamaz sonucu:** App Store'da satıcı olarak
 **kişinin yasal adı** görünür ve sonradan değiştirilemez. 24.5'in cevap
@@ -1588,15 +1594,16 @@ sözleşme değişikliği ve App Review yazışmaları oraya düşüyor. Adres Z
 geliştirici hesabına erişimi kaybetmek demek. Aynı sebeple Apple ID'nin
 2FA'sındaki güvenilir numara/cihaz kalıcı olmalı.
 
-⚠ **`(Pending)` iken hiçbir 24.1 adımı yapılamaz** — Team ID, Identifiers
-ve Keys ekranları üyelik aktifleşmeden açılmıyor. Ekrandaki *"complete
-your purchase now"* banner'ı hem "ödeme yapılmadı" hem "işleniyor"
-durumunda göründüğünden **tek başına kanıt değil**; ayrım Apple'ın
-makbuzuyla yapılır (`destek@` kutusu ya da `reportaproblem.apple.com`).
-Apple bireysel kayıtlarda ayrıca **kimlik taraması** isteyebiliyor ve bunu
-web'den değil iPad/iPhone'daki *Apple Developer* uygulamasından yaptırıyor
-— 48 saat dolup hâlâ Pending ise ilk bakılacak yer orası. *(Apple'ın
-süreci; bu depoda ÖLÇÜLMEDİ.)*
+⚠ **`(Pending)` iken hiçbir 24.1 adımı yapılamaz** (bu tur ~12 dakika
+sürdü, ama kayda geçsin): Team ID, Identifiers ve Keys ekranları üyelik
+aktifleşmeden açılmıyor. Pending sayfasındaki *"complete your purchase
+now"* banner'ı hem "ödeme yapılmadı" hem "işleniyor" durumunda göründüğü
+için **tek başına kanıt değil** — ayrım Apple'ın makbuzuyla yapılır
+(`destek@` kutusu ya da `reportaproblem.apple.com`). Apple bireysel
+kayıtlarda ayrıca kimlik taraması isteyebiliyor ve bunu web'den değil
+iPad/iPhone'daki *Apple Developer* uygulamasından yaptırıyor; **bu turda
+istenmedi**, ama uzun süre Pending kalan bir hesapta ilk bakılacak yer
+orası. *(Apple'ın süreci; bu depoda ÖLÇÜLMEDİ.)*
 
 ### 24.0 — Neyin HAZIR olduğu (8 Eylül 2026'da depodan ölçüldü)
 
@@ -1623,6 +1630,10 @@ Bunlar bitmeden 24.2 ve 24.3 test EDİLEMEZ.
    bağlı ve **ben üretemem** — Membership sayfasında yazıyor.
 3. Identifiers → App ID `com.kelimeki.kelimeki`; capability olarak **Push
    Notifications** ve **Associated Domains** işaretlensin.
+   ⚠ Bundle ID tipi **Explicit** olmalı — *Wildcard* App ID push
+   DESTEKLEMEZ ve sonradan değiştirilemez.
+   ⚠ Bu adım **5'i kilitliyor**: App Store Connect'in "New App" formunda
+   bundle ID bir AÇILIR LİSTE, burada kayıtlı olmayan görünmez.
 4. Keys → **APNs Authentication Key** (`.p8`) üret.
 5. Keys → **App Store Connect API Key** (rol: Admin ya da App Manager) —
    `.p8` + **Key ID** + **Issuer ID**. CI'ın Mac'siz imzalama yolu bu.
