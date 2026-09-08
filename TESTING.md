@@ -1330,7 +1330,8 @@ yazılması. **Temiz bir profille** koş.
       Büyüme > Kullanıcı → **"Tanıtım Turu"** kartına bak: `Otomatik` ve
       `Tekrar` satırları ayrı; başlatan/bitiren sayıları arttı; "ATLA" ile
       çıktıysan satırın altındaki **bırakılan sahne** dökümünde o sahne
-      görünüyor.
+      görünüyor. Kartın kendi kontrol listesi (oran/adet ayrımı, boş aralık,
+      yalıtım, yetki) admin dosyasında: `docs/testing-admin.md` §9.16.
 
 ## 14+ — Tarihli turlar → `docs/testing-turlari.md`
 

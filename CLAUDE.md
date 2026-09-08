@@ -187,6 +187,7 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | Canlı oyun / mesajlaşma / e-posta özelliği | `TESTING.md` (elle koşulan liste) |
 | Bir sayacı/rozeti besleyen alan (`PendingLiveGameCounts` gibi) | Rozet zincirinin HER seviyesi: alt sekme → üst sekme → uygulama ikonu (`useAppIconBadge`) → giriş varsayılanı (`decideInitialMainView`). Yeni alan bunlara GİRMELİ Mİ, ayrıca karar ver — "bekleyen iş" ile "haber" aynı şey değil (3 Eylül 2026) |
 | `mobile/app/` — sunucuya/platforma dokunan bir şey | `mobile/TESTING.md` (cihazda koşulan ÖZELLİK listesi; arkadaşlık/Canlı oyun için `mobile/docs/testing-arkadaslar-canli.md`, tarihli etkileşim/görünüm turları için `mobile/docs/testing-ux-turlari.md`) |
+| `mobile/app/` ya da `mobile/kelimeki_core/` altında HERHANGİ bir dosya | `ROADMAP.md` → "Sıradaki sürüme binecekler" tablosuna bir satır — **kendi PR'ını da say**; bu tablo DÖRT kez eksik yakalandı ve bir kez sürümü bir gün geciktirdi. Refleks: `git log --oneline <mağazadaki-paketin-commiti>..origin/main -- mobile/app mobile/kelimeki_core` |
 | Migration | Canlıya uygula + doğrula + `list_migrations` ile dosya adını eşleştir |
 | Migration bir kolonu **nullable** yapıyor (ya da FK'yi `cascade`→`set null` çeviriyor) | `database.types.ts` **ve** portun `fromJson`'ı — bu bir SÖZLEŞME değişikliği (bkz. `docs/decisions/account-deletion.md` → "SET NULL'ın bedeli") |
 | Yeni kullanıcı verisi ya da görünürlük değişikliği | `TermsModal`/`PrivacyModal` |
@@ -407,17 +408,10 @@ dosyasını ölçüp üç sınıfa ayırır — çünkü maliyetleri farklı:
   (`FROZEN` listesi, örnek `mobile/docs/parca-log*.md`).
 - **frozen** → arşive yazılmış demektir; girişi AKTİF cilde taşı.
 
-⚠ **`reference` sınıfı 29 Ağustos 2026'da eklendi** (kullanıcı sorusu:
-*"Büyüyen md dosyalarını bölme işini tüm md'lerde yapıyor muyuz? Gerek
-var mı?"*). Ölçüldü: repoda 43 `.md`, 2.3 MB. Eski `active` bütçesi
-ÖDENMEYEN bir maliyeti vekaleten ölçüyordu — o dosyalar isteğe bağlı ve
-çoğunlukla grep'le okunuyor. **Bölmenin ise gerçek bedeli var ve bu repo
-onu ödedi:** `docs/decisions/` 22 dosyaya çıktı ve doğru dosyayı bulmak
-için yukarıdaki indeks tablosu gerekli hâle geldi (koddaki eski atıflar
-bölünmeyle kırıldı). Kural kaldırılmadı, **daraltıldı**: bölme refleksi
-artık yalnızca baştan sona okunan dosyalar için. Bir dosya uyarı bandına
-girdiğinde ilk soru *"nasıl bölerim"* DEĞİL, ***"bunu baştan sona okuyan
-var mı?"***
+⚠ **Bölme refleksi yalnızca baştan sona OKUNAN dosyalar için** — bir dosya
+uyarı bandına girdiğinde ilk soru *"nasıl bölerim"* DEĞİL, ***"bunu baştan
+sona okuyan var mı?"*** (`reference` sınıfının 29 Ağustos 2026'da neden
+eklendiği, bölmenin bu repoda ödenmiş bedeli: bölme günlüğü).
 
 **CI'da koşuyor:** `.github/workflows/docs-size.yml`, yalnızca `**/*.md`
 değiştiğinde. `npm install` ve derleme YOK (saniyeler) — bu repoda
@@ -427,12 +421,11 @@ değiştiğinde. `npm install` ve derleme YOK (saniyeler) — bu repoda
 çarpmadan önce hareket etme fırsatıdır; biriktirilirse kontrolün anlamı
 kalmaz.
 
-⚠ **Alt sınır da var (7 Eylül 2026):** betik artık 0 baytlık her `.md`'yi ve
+⚠ **Alt sınır da var (7 Eylül 2026):** betik 0 baytlık her `.md`'yi ve
 tabanının altına düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki
-`CLAUDE`, `README`, iki `TESTING`) da düşürür. Sebep: ROADMAP.md bir
-düzenleme betiğinin `open(p, 'w')` satırıyla sıfırlandı, "bütçe içinde"
-sayıldı ve BOŞ hâliyle `main`'e girdi (PR #475; #476 geri aldı). Ders,
-betik yazana: bir dosyayı yazma modunda AÇMADAN önce içeriğini oku.
+`CLAUDE`, `README`, iki `TESTING`) da düşürür — bir dosyanın BOŞALMASI da
+bir arıza. Ders, betik yazana: bir dosyayı yazma modunda AÇMADAN önce
+içeriğini oku (vaka: bölme günlüğü).
 
 **Bölme günlüğü — hangi dosya ne zaman, hangi kuralla bölündü:**
 `docs/decisions/doc-size-history.md` (26 Ağustos'ta beş dosyanın birden
@@ -441,17 +434,7 @@ boşaltılması, 3 Eylül `mobile/TESTING.md`, 4 Eylül `mobile/CLAUDE.md`,
 
 **Her kesme noktası boyut değil, İÇERİĞİN TÜRÜ:** kural ↔ anlatı, tek
 oturum ↔ iki oturum, normal kullanıcı ↔ admin. Hiçbir satır
-değiştirilmedi, bölüm numaraları korundu — atıflar kırılmasın diye.
-(`docs/decisions/live-game-and-friends.md` 25 Ağustos 2026'da tam bu kural
-gereği bölündü — 156 KB'lık dosya `friends.md` / `live-game.md` /
-`online-game-screen.md` olarak üçe ayrıldı, üçü de 64 KB'ın altında. Kural
-işledi: dosya "bir gün" değil, ilk dokunuşta bölündü.)
-
-**Bu dosya (`CLAUDE.md`) da kuralı yazarken 111 KB'a çıkıp uyarı bandına
-girmişti** — kuralı yazmak, kuralın konusu olan dosyayı büyüttü. Öngörülen
-çare hemen uygulandı: en büyük tek konu bloğu (yerel oyun kalıcılığı, 35 KB)
-`docs/decisions/local-game-persistence.md`'ye taşındı, dosya 76 KB'a indi.
-Bu, "active" sınıfı için beklenen davranışın örneği: sınıra çarpmadan böl.
+değiştirilmez, bölüm numaraları korunur — atıflar kırılmasın diye.
 
 ## Oturum Hijyeni — yeni oturum ÖNERİSİ ajanın işi (3 Eylül 2026)
 
