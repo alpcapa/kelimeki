@@ -441,7 +441,7 @@ sayı üç yerde yaşıyor.
 
 | Adım | Durum |
 |---|---|
-| Android developer verification | ✅ (kayıt sırasında tamamlanmış) — **31 Ağustos 2026'da Console'dan bizzat doğrulandı**: Android developer verification → *Package names* sekmesinde `com.kelimeki.kelimeki` **Registered**, 3 anahtar, son güncelleme 25 Ağustos; *Identity* sekmesinde ad/adres dolu. ⚠ Play'in 15 Temmuz duyurusu: **30 Eylül 2026**'ya kadar kayıtlı olmayan uygulamalar Play'den kaldırılacak — bizde kayıt tamam |
+| Android developer verification | ✅ (kayıt sırasında tamamlanmış) — **31 Ağustos 2026'da Console'dan bizzat doğrulandı**: Android developer verification → *Package names* sekmesinde `com.kelimeki.kelimeki` **Registered**, 3 anahtar, son güncelleme 25 Ağustos; *Identity* sekmesinde ad/adres dolu. **8 Eylül 2026'da yeniden bakıldı:** paket sayfasında durum hâlâ **Registered** ve üç parmak izinin üçü de **Verified** (`B4:88:80:09…`, `01:94:66:F5…`, `2B:7D:26:11…`) — sonuncusu `assetlinks.json` + `tests/smoke.spec.ts`'teki sabitle birebir aynı (§6.6), sapma yok. ⚠ Play'in 15 Temmuz duyurusu: **30 Eylül 2026**'ya kadar kayıtlı olmayan uygulamalar Play'den kaldırılacak — bizde kayıt tamam |
 | Uygulama oluşturuldu | ✅ Game · Free · tr-TR |
 | `.aab` yüklendi | ✅ 349 (1.0.0) · Play App Signing'e KAYDOLUNDU |
 | Store listing (metin + ikon + feature graphic + 7 ekran görüntüsü) | ✅ |
