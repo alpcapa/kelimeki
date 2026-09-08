@@ -238,6 +238,23 @@ const String tutorialFinishText =
     'büyüterek daha çok vergi topla, hem de rakibin hareket alanını '
     'daraltarak büyümesini engelle.';
 
+/// Kapanış butonunun etiketi — tanıtımın NEREDEN açıldığına göre iki farklı
+/// söz veriyor (Onboarding Faz 3, 8 Eylül 2026):
+///   `auto`   → kapı ilk oyunda açtı; kapanışta gerçek oyun BAŞLAR.
+///   `replay` → kullanıcı "Nasıl oynanır?"dan kendi başlattı; kapanışta
+///              hiçbir oyun başlamaz, geldiği ekrana DÖNER.
+///
+/// ⚠ Web'de de etiketler `tutorialScript.ts`te (JSX'in içinde değil):
+/// koşullu hâle gelince parite testinin regex'i kırılırdı. Port etiketleri
+/// BÜYÜK harfli, çünkü web `uppercase` sınıfıyla büyütüyor — parite testi
+/// `trUpper` ile karşılaştırıyor.
+const String tutorialFinishButton = 'GERÇEK OYUNA BAŞLA';
+const String tutorialReplayFinishButton = 'KAPAT';
+
+/// "Nasıl oynanır?" penceresinin en başındaki tekrar-izleme butonu (Faz 3).
+/// Süre etikette yazılı: asıl itiraz "okumaya vaktim yok"tu.
+const String tutorialReplayCta = 'Tanıtım turunu oyna (1 dk)';
+
 /// Rafların TAM olarak hangi sırayla dolacağı — "çekilme sırası".
 /// `drawTiles` torbanın SONUNDAN çeker (`removeLast`, web `pop`), bu yüzden
 /// torba kurulurken tersine çevrilir (aşağıda, `createTutorialState`).

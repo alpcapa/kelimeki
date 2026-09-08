@@ -30,6 +30,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
 
+import '../../data/games_api.dart';
 import '../../data/auth_service.dart';
 import '../../game/game_controller.dart';
 import '../../game/move_status.dart';
@@ -104,6 +105,19 @@ class TutorialGame extends StatefulWidget {
   /// Başlıktaki hesap kontrolü için; verilmezse çizilmez (testler).
   final AuthService? auth;
 
+  /// Tanıtım NEREDEN açıldı (Onboarding Faz 3 + 5, 8 Eylül 2026):
+  ///   'auto'   → ilk oyunda kapı açtı (`shouldShowTutorial`),
+  ///   'replay' → kullanıcı "Nasıl oynanır?"dan kendi başlattı.
+  /// Kapanış butonunun sözünü ve telemetrinin `source` alanını belirler —
+  /// web `TutorialGameProps.source` ile birebir.
+  final String source;
+
+  /// Telemetri ucu (`tutorial_events`); verilmezse hiçbir şey yazılmaz
+  /// (testler ve Supabase'siz açılış). Web'de `TutorialGame` API'yi
+  /// doğrudan çağırıyor; portta `GamesApi` bir `Future` olduğundan
+  /// çağıranın hazır nesnesi geçiliyor — akış aynı, bağlanma noktası farklı.
+  final Future<GamesRepo>? games;
+
   const TutorialGame({
     super.key,
     required this.playerName,
@@ -111,6 +125,8 @@ class TutorialGame extends StatefulWidget {
     required this.onFinish,
     required this.onSkip,
     this.auth,
+    this.source = 'auto',
+    this.games,
   });
 
   @override
@@ -146,6 +162,7 @@ class _TutorialGameState extends State<TutorialGame> {
   void initState() {
     super.initState();
     _alive = true;
+    _olayYaz('start');
     _controller.addListener(_onState);
     // Karşılama penceresi — ilk sahneden ÖNCE (bkz. `tutorialIntroTitle`).
     // `initState`te `showDialog` çağrılamaz (ağaç henüz kurulmadı), ilk
@@ -153,6 +170,27 @@ class _TutorialGameState extends State<TutorialGame> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) unawaited(_showIntro());
     });
+  }
+
+  // ── Telemetri (Onboarding Faz 5) ───────────────────────────────────────
+  // Tanıtımın KENDİ ölçümü; oyun telemetrisi (`logStart`, `games` satırı)
+  // hâlâ ÇALIŞMIYOR — tanıtım bir "oyun" değil. Üç olay: ekrana geldi ·
+  // dört sahne bitti · atlandı (hangi sahnede). Her olay en çok bir kez.
+  final Set<String> _telemetri = {};
+
+  void _olayYaz(String event, [int? step]) {
+    if (!_telemetri.add(event)) return;
+    final g = widget.games;
+    if (g == null) return;
+    unawaited(g.then((api) =>
+        api.logTutorial(event: event, source: widget.source, step: step)));
+  }
+
+  /// "ATLA →" (ve başlıktaki logo) — önce ölçülür, sonra çağırana devredilir.
+  void _atla() {
+    // Sahne numarası ekrandaki "TANITIM · n/4" sayacıyla AYNI (1'den başlar).
+    _olayYaz('skip', (_stepIndex + 1).clamp(1, tutorialSteps.length));
+    widget.onSkip();
   }
 
   /// Tanıtımın ne olduğunu ve ne kadar süreceğini söyleyen tek pencere.
@@ -499,6 +537,7 @@ class _TutorialGameState extends State<TutorialGame> {
   /// Kapanış kartı. Kapatmanın HER yolu (buton, bariyer, geri tuşu) gerçek
   /// oyunu başlatır — web'de `useModalA11y(mode === 'bitti', onFinish)`.
   Future<void> _showFinish() async {
+    _olayYaz('finish');
     await showDialog<void>(
       context: context,
       builder: (context) => KDialogCard(
@@ -511,7 +550,9 @@ class _TutorialGameState extends State<TutorialGame> {
         content: const Text(tutorialFinishText, style: kDialogBodyStyle),
         actions: [
           kDialogButton(
-            label: 'GERÇEK OYUNA BAŞLA',
+            label: widget.source == 'replay'
+                ? tutorialReplayFinishButton
+                : tutorialFinishButton,
             variant: NeoButtonVariant.accent,
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -629,7 +670,7 @@ class _TutorialGameState extends State<TutorialGame> {
                     child: GameHeader(
                       state: state,
                       auth: widget.auth,
-                      onLogoTap: widget.onSkip,
+                      onLogoTap: _atla,
                     ),
                   ),
                 ),
@@ -654,7 +695,7 @@ class _TutorialGameState extends State<TutorialGame> {
                           ),
                           TapTarget(
                             minHeight: 44,
-                            onTap: widget.onSkip,
+                            onTap: _atla,
                             child: const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 4),
                               child: Text(

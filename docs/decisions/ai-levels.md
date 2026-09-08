@@ -269,3 +269,10 @@ sabitleri, `reducer_ai2_kolay`/`_zor` davranışı) + Edge paritesi + deploy.
 `findAIMoves`+`pickTopMove` çiftiyle oynar (kopya YOK); Normal koltuğu
 reducer'ın `AI_PLAY`'idir. 200 oyunun altı karar için anlamsız (10 oyunun
 GA'sı %31–83). Süre: dar arama ~1 sn/oyun, geniş ~2 sn/oyun.
+
+## Köşe açılışı asimetrisi (17 Ağustos 2026)
+
+> Kök `CLAUDE.md`'nin "Oyun Mekaniği Özeti" bölümünden buraya taşındı
+> (8 Eylül 2026, doküman boyutu bütçesi) — tek satırı bile değişmedi.
+
+**17 Ağustos 2026 — YZ bu kuralın YALNIZCA BİR YÖNÜNÜ kullanıyordu; sağ-alttaki YZ her oyuna 29 puan geride başlıyordu (kullanıcı bildirdi: "sağ alttaki YZ genelde hep sonuncu oluyor"):** `tryCornerStart` (`src/utils/ai.ts`) kelimeyi HER ZAMAN ev karesinden BAŞLATIP sağa/aşağı uzatıyordu. Bu, kuralın kendisinden gelen bir kısıt DEĞİL — doğrulama (`validatePlacement`, `src/utils/validator.ts:105`) yalnızca "konan hücrelerden biri ev karesi olsun" diyor, yön ya da "blokta başla" şartı yok; nitekim `tryPlace` (çapalı hamleler) baştan beri `idx` döngüsüyle iki yöne de uzatıyordu, yani tutarsızlık YZ'nin kendi içindeydi. **Sonuç köşeye göre asimetrikti ve ÖLÇÜLDÜ** (üretim `findAIMove`, raf `A B A R T M A`): köşe 0/1/2 → `7 taş "ABARTMA" 35 puan`, köşe 3 → `4 taş "ABAT" 6 puan`. 2 kişilik oyunda YZ HER ZAMAN köşe 3'tedir (`cornersFor`), yani bu her oyunda tekrarlanan bir açılış handikabıydı. **Düzeltme:** `tryCornerStart` artık kelimenin HANGİ harfinin eve denk geleceğini (`idx`) tek tek deniyor, kelime evden geriye ve ileriye uzayabiliyor. Düzeltmeden sonra dört köşe de `7 taş / 35 puan`; köşe 3 `12,6 … 12,12` oynuyor, yani merkeze doğru büyüyor. **Dart portu (`mobile/kelimeki_core/lib/src/ai/find_move.dart`) AYNI PR'da birebir güncellendi — döngü SIRASI da dahil:** `consider` eşit puanda İLK bulunanı tuttuğundan (strict `>`) sıra değişirse iki motor farklı hamle seçer ve parite sessizce kırılır. Golden vector'lar yeniden üretildi (bkz. o dosyanın fixture envanteri).

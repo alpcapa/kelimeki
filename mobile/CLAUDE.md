@@ -384,6 +384,16 @@ yaptığı `src/utils/dragFeel.ts` tekilleştirmesinin ikizi;
 kopyayı yasaklıyor. Jestin MANTIĞI ise hâlâ ekran başına: bir ekranda
 mantık değişirse yukarıdaki kural üç ekran için geçerli.
 
+**Onboarding Faz 2·3·5 (8 Eylül 2026) — üç dosya web'e karşı kilitli:**
+`util/onboarding.dart`ın bağlamsal ipuçları (`pickOnboardingHint`, metinler,
+sıra, tavan) `tutorial_parity_test.dart` tarafından `src/utils/onboarding.ts`
+ile SATIR SATIR karşılaştırılıyor; `tutorial_script.dart`ın kapanış/tekrar
+buton etiketleri (`tutorialFinishButton` · `tutorialReplayFinishButton` ·
+`tutorialReplayCta`) `src/utils/tutorialScript.ts`ten okunuyor. İpucu balonu
+`BoardWidget.coach` slotunu kullanıyor (ikinci bir geometri YOK), ölçüm
+`GamesRepo.logTutorial` → `tutorial_events`. Biri webde değişirse port AYNI
+PR'da değişmek zorunda — testler bunu düşürerek söyler.
+
 **Grep'e giren ama testlerin ASLA yakalayamayacağı bir değişmez — özel
 `Canvas` çizimi iki motorda ayrışabilir:** `flutter test` native Skia ile
 render eder, web derlemesi ise CanvasKit ile — ikisi her zaman aynı sonucu

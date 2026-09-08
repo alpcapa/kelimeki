@@ -7,13 +7,14 @@
 // kuralları, local_game_repo.dart) — ekran yalnızca oynatır. Parça parça
 // Tahtadaki onaylanmış bir taşa dokunmak, o hücreden geçen kelimelerin
 // anlamını gösterir (meanings deposu verilmişse).
-import 'dart:async' show unawaited;
+import 'dart:async' show Timer, unawaited;
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
 
 import '../../data/auth_service.dart';
 import '../../util/ai_level.dart';
+import '../../util/onboarding.dart';
 import '../../storage/app_storage.dart';
 import '../../data/chat_api.dart';
 import '../../data/feedback_api.dart';
@@ -164,6 +165,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   /// (web gameOverDismissed'in eşleniği — kapatınca tahta görünür kalır).
   bool _gameOverShown = false;
 
+  // ── Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) ────────────────
+  // Tanıtımı ATLAYAN ya da hiç göremeyen oyuncu üç mekaniği burada, GERÇEK
+  // oyunda ve mekanik yaşandığı anda öğrenir. Balon tahtanın kendi `coach`
+  // slotunu kullanıyor (tanıtımın çizdiği balonun aynısı) — ikinci bir
+  // geometri yazılmadı. Web ikizi: `App.tsx`'in `hint`/`hintCoach` çifti.
+  BoardCoach? _hintCoach;
+  Timer? _hintTimer;
+
+  /// İşlenmiş `moveHistory` uzunluğu — yalnızca YENİ satırlara bakılır.
+  int _hintHistoryLen = 0;
+
   // ── Sürükle-bırak (web App.tsx beginDrag/moveDrag/endDrag portu) ──────
   // Jestin HİSSİ (kaldırma payı, fare/parmak eşiği, bırakma eşiği, hayalet
   // ölçüsü) `drag_feel.dart`ta — üç ekranın ortak tek kaynağı (7 Eylül 2026;
@@ -260,6 +272,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _hintHistoryLen = controller.state.moveHistory.length;
+    controller.addListener(_ipucuKontrol);
     unawaited(_zoomHintKarariVer());
     // `ModalRoute` yalnızca ilk kare SONRASI okunabilir (initState'te
     // context henüz ağaca bağlı değil).
@@ -297,6 +311,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     // Geçiş yarıda kesilirse (kullanıcı hemen geri döndü) dinleyici asılı
     // kalmasın — route animasyonu bu State'ten uzun yaşıyor.
     _routeAnim?.removeStatusListener(_onRouteAnim);
+    controller.removeListener(_ipucuKontrol);
+    _hintTimer?.cancel();
     _dragNotifier.dispose();
     _zoom.dispose();
     super.dispose();
@@ -514,6 +530,134 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     return true;
   }
 
+
+  /// Hamleden sonra bağlamsal ipucu gösterilsin mi (Onboarding Faz 2).
+  /// `controller`ın her bildiriminde koşar; yalnızca `moveHistory`ye YENİ
+  /// düşen gerçek bir kelime hamlesi ilgilendiriyor.
+  void _ipucuKontrol() {
+    final s = controller.state;
+    if (s.phase != GamePhase.play) {
+      _hintHistoryLen = s.moveHistory.length;
+      return;
+    }
+    if (s.moveHistory.length < _hintHistoryLen) {
+      // Geçmiş KISALDI: yeni oyun/rövanş aynı controller üzerinde başladı.
+      // Senkronlanmazsa sayaç eski uzunlukta takılır ve ipucu bir daha hiç
+      // çıkmaz (web'de `slice` sonrası koşulsuz atama bunu kendiliğinden
+      // yapıyor; burada açıkça yazılıyor).
+      _hintHistoryLen = s.moveHistory.length;
+      return;
+    }
+    if (s.moveHistory.length <= _hintHistoryLen) {
+      // Taslak değişimi/geri alma da bildirim üretiyor; balon o an kalksın
+      // (web'deki `hasDraft` effect'inin eşleniği).
+      if (s.placed.isNotEmpty && _hintCoach != null) {
+        _hintTimer?.cancel();
+        setState(() => _hintCoach = null);
+      }
+      return;
+    }
+    final yeni = s.moveHistory.sublist(_hintHistoryLen);
+    _hintHistoryLen = s.moveHistory.length;
+    // Vergi satırları (`invasionFrom`) ve pas/değişim/teslim satırları hamle
+    // DEĞİL; ipucu yalnızca gerçek bir kelime hamlesinden doğar.
+    HistoryEntry? move;
+    for (final e in yeni) {
+      if (e.action == null && e.invasionFrom == null && e.words.isNotEmpty) {
+        move = e;
+        break;
+      }
+    }
+    if (move == null) return;
+    if (move.player < 0 || move.player >= s.players.length) return;
+    final oynayan = s.players[move.player];
+    // YZ'nin hamlesi kullanıcıya bir şey ÖĞRETMİYOR: cümleler ikinci tekil
+    // ("değdin", "bölgen") ve oyuncunun kendi eylemini anlatıyor.
+    if (oynayan.isAI) return;
+    unawaited(_ipucuGoster(s, move, oynayan));
+  }
+
+  Future<void> _ipucuGoster(
+    GameState s,
+    HistoryEntry move,
+    Player oynayan,
+  ) async {
+    final storageFuture = widget.storage;
+    if (storageFuture == null) return;
+    final storage = await storageFuture;
+    if (!mounted) return;
+    final flags = storage.flags;
+
+    // Bölge, hamleden SONRAKİ tahtadan yeniden hesaplanıyor (motorun kendi
+    // fonksiyonu — ikinci bir "bölge büyüdü mü" kuralı yazılmadı).
+    final bolgeler = computeAllTerritories(s.board, s.players);
+    final bolge = move.player < bolgeler.length
+        ? bolgeler[move.player]
+        : <String>{};
+    final bloklar = [for (final k in oynayan.corners) cornerBounds(k)];
+    bool blokIcinde(int r, int c) => bloklar
+        .any((b) => r >= b.r0 && r <= b.r1 && c >= b.c0 && c <= b.c1);
+    List<int>? disarida;
+    for (final k in bolge) {
+      final parts = k.split(',');
+      final r = int.parse(parts[0]);
+      final c = int.parse(parts[1]);
+      if (blokIcinde(r, c)) continue;
+      disarida = [r, c];
+      break;
+    }
+
+    final secilen = pickOnboardingHint(
+      OnboardingHintInput(
+        paidTax: (move.lostShares ?? const []).isNotEmpty,
+        gotMultiplier:
+            (move.wordScores ?? const []).any((w) => w.x2 || w.x3),
+        territoryOutsideCorner: disarida != null,
+      ),
+      flags.onboardingHintShownCounts,
+    );
+    if (secilen == null) return;
+
+    // Çapa: cümlenin ANLATTIĞI kare. Çarpanda bonus bölgesine düşen taş,
+    // bölge ipucunda köşe bloğunun dışına taşan hücre; ikisi de yoksa
+    // (vergi) hamlenin ilk karesi.
+    List<int>? capa;
+    for (final cell in s.lastMoveCells) {
+      // `Cell` bir kayıt tipi (`(int, int)`), indeksle okunmaz.
+      final r = cell.$1;
+      final c = cell.$2;
+      if (secilen == OnboardingHintId.carpan && inBonusZone(r, c)) {
+        capa = [r, c];
+        break;
+      }
+      if (secilen == OnboardingHintId.bolge && !blokIcinde(r, c)) {
+        capa = [r, c];
+        break;
+      }
+    }
+    capa ??= secilen == OnboardingHintId.bolge ? disarida : null;
+    if (capa == null && s.lastMoveCells.isNotEmpty) {
+      capa = [s.lastMoveCells.first.$1, s.lastMoveCells.first.$2];
+    }
+    if (capa == null) return;
+
+    await flags.bumpOnboardingHintShown(secilen);
+    if (!mounted) return;
+    _hintTimer?.cancel();
+    setState(() {
+      _hintCoach = BoardCoach(
+        r: capa![0],
+        c: capa[1],
+        text: onboardingHintTexts[secilen]!,
+        // Balon işaret ettiği karenin ÜSTÜNDE durur; 0. satırda üstte yer
+        // yoktur (tanıtımın 1. sahnesindeki kuralın aynısı).
+        yon: capa[0] == 0 ? 'alt' : 'ust',
+      );
+    });
+    _hintTimer = Timer(onboardingHintDuration, () {
+      if (mounted) setState(() => _hintCoach = null);
+    });
+  }
 
   /// Balon gösterilsin mi — kararı `FlagsStore` veriyor (tek kaynak, web
   /// `onboarding.ts` ile aynı kural: denenmişse asla, denenmemişse en çok
@@ -1252,7 +1396,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                               ),
                                         onCellTap: _handleCellTap,
                                         gridKey: _gridKey,
-                                        zoomHint: _zoomHint,
+                                        // ÖNCELİK — ekranda aynı anda TEK
+                                        // balon (web App.tsx'teki aynı
+                                        // gerekçe): zoom balonu DENENENE
+                                        // KADAR duruyor, yani ipucuna sıra
+                                        // hiç gelmezdi. İpucu geçici (4 sn),
+                                        // zoom balonu sonra geri gelir.
+                                        coach: _hintCoach,
+                                        zoomHint: _zoomHint && _hintCoach == null,
                                         zoom: _zoom,
                                         viewportKey: _viewportKey,
                                         onBoardPointerDown: _boardPointerDown,

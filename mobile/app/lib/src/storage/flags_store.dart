@@ -5,6 +5,7 @@
 // isim alanında.
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../util/onboarding.dart';
 import '../util/uuid.dart';
 
 class FlagsStore {
@@ -65,6 +66,23 @@ class FlagsStore {
 
   /// Balon gösterilsin mi? Tek karar noktası — iki ekran da bunu sorar.
   bool get shouldShowZoomHint => !zoomTried && zoomHintShown < 2;
+
+  /// Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) — ipucu BAŞINA bir
+  /// sayaç. Web ikizi `kelimeki:hint-shown:<id>`; kural zoom balonununkiyle
+  /// aynı: "gösterim" balonun EKRANA GELMESİDİR, nasıl kapandığı sayacı
+  /// etkilemez. Biri tavana çarpınca ötekiler SUSMAZ — üçü farklı mekaniği
+  /// anlatıyor ve oyuncu ikisini bir oyunda, üçüncüsünü haftalar sonra
+  /// yaşayabilir. Karar `util/onboarding.dart`taki saf fonksiyonda.
+  static String _hintKey(OnboardingHintId id) => 'hint_shown_${id.name}';
+
+  int hintShown(OnboardingHintId id) => prefs.getInt(_hintKey(id)) ?? 0;
+
+  Map<OnboardingHintId, int> get onboardingHintShownCounts => {
+        for (final id in OnboardingHintId.values) id: hintShown(id),
+      };
+
+  Future<void> bumpOnboardingHintShown(OnboardingHintId id) =>
+      prefs.setInt(_hintKey(id), hintShown(id) + 1);
 
   /// Anonim ziyaretçi kimliği — ilk erişimde bir kez üretilir, sonra sabit
   /// (web visitTracking.ts anon-id davranışı).

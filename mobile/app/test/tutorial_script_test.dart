@@ -287,4 +287,79 @@ void main() {
             accountCreatedAt: '2026-09-08T10:00:00.123456+00:00')),
         isTrue);
   });
+
+  // ── 10. Bağlamsal ipuçları (Onboarding Faz 2) ──────────────────────────
+  // Web `verify-tutorial-script`in aynı numaralı bölümünün eşi. En kolay
+  // kaçırılan iki kural: (a) aynı hamlede birden fazla ipucu hak edilirse
+  // SIRA sabittir (ekranda tek balon), (b) tavana çarpan bir ipucu
+  // ötekileri SUSTURMAZ.
+  test('bağlamsal ipuçları: sıra sabit, tavan ipucu BAŞINA', () {
+    const yok = OnboardingHintInput(
+        paidTax: false, gotMultiplier: false, territoryOutsideCorner: false);
+    const hepsi = OnboardingHintInput(
+        paidTax: true, gotMultiplier: true, territoryOutsideCorner: true);
+    const sifir = <OnboardingHintId, int>{
+      OnboardingHintId.vergi: 0,
+      OnboardingHintId.carpan: 0,
+      OnboardingHintId.bolge: 0,
+    };
+    final vakalar = <(String, OnboardingHintInput, Map<OnboardingHintId, int>,
+        OnboardingHintId?)>[
+      ('mekanik yaşanmadı', yok, sifir, null),
+      (
+        'yalnızca vergi ödendi',
+        const OnboardingHintInput(
+            paidTax: true,
+            gotMultiplier: false,
+            territoryOutsideCorner: false),
+        sifir,
+        OnboardingHintId.vergi
+      ),
+      (
+        'yalnızca çarpan alındı',
+        const OnboardingHintInput(
+            paidTax: false,
+            gotMultiplier: true,
+            territoryOutsideCorner: false),
+        sifir,
+        OnboardingHintId.carpan
+      ),
+      (
+        'yalnızca bölge büyüdü',
+        const OnboardingHintInput(
+            paidTax: false,
+            gotMultiplier: false,
+            territoryOutsideCorner: true),
+        sifir,
+        OnboardingHintId.bolge
+      ),
+      // Tanıtımın 4. sahnesi TAM OLARAK böyle: hem ×3 hem vergi.
+      ('üçü birden — sıra sabit, vergi kazanır', hepsi, sifir,
+          OnboardingHintId.vergi),
+      (
+        'vergi tavanda — sıradaki hak edilmiş ipucu gösterilir',
+        hepsi,
+        {...sifir, OnboardingHintId.vergi: onboardingHintMaxShows},
+        OnboardingHintId.carpan
+      ),
+      (
+        'hepsi tavanda — hiçbiri gösterilmez',
+        hepsi,
+        {
+          for (final id in OnboardingHintId.values) id: onboardingHintMaxShows
+        },
+        null
+      ),
+    ];
+    for (final (ad, girdi, sayac, beklenen) in vakalar) {
+      expect(pickOnboardingHint(girdi, sayac), beklenen, reason: 'ipucu "$ad"');
+    }
+    // Metinler TEK cümle ve terim `bölge` (bkz. kök CLAUDE.md → Terminoloji).
+    for (final id in OnboardingHintId.values) {
+      final metin = onboardingHintTexts[id]!;
+      expect('.'.allMatches(metin).length, 1, reason: '$id tek cümle olmalı');
+      expect(metin.toLowerCase().contains('sınır'), isFalse,
+          reason: '$id "sınır" diyor — verginin/alanın adı "bölge"');
+    }
+  });
 }

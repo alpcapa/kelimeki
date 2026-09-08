@@ -7,10 +7,24 @@ import { BINGO_BONUS } from '../game/constants';
 // `_award_league_rewards` ve portun `league_rank.dart`'ıyla elle senkron).
 // Eşik/ödül değişirse bu ekran kendiliğinden takip eder.
 import { RANK_TIERS } from '../utils/leagueRank';
+// Buton etiketi `tutorialScript.ts`te: port ikizi (`help_modal.dart`) aynı
+// metni kullanıyor ve `tutorial_parity_test.dart` ikisini oradan kilitliyor.
+import { TUTORIAL_REPLAY_CTA } from '../utils/tutorialScript';
 
 interface HelpModalProps {
   onClose: () => void;
   initialStep?: 'quick' | 'detailed';
+  /**
+   * Tanıtım turunu TEKRAR oynatır (Onboarding Faz 3, 8 Eylül 2026). Verilirse
+   * "Hızlı Başlangıç"ın en başında bir buton çıkar; verilmezse hiç çıkmaz.
+   *
+   * NEDEN OPSİYONEL: bu pencere BEŞ yerden açılıyor (Setup, hesap menüsü, iki
+   * oyun ekranı, statik `/nasil-oynanir/`) ve tanıtım yalnızca oyun DIŞINDA
+   * güvenle açılabilir — `TutorialGame` tam ekrandır ve süren bir oyunun
+   * (ya da Canlı bir oyunun) üstüne binmesi kullanıcıyı tahtasından koparır.
+   * Bu yüzden karar çağıranda: bugün yalnızca Setup ekranı veriyor.
+   */
+  onReplayTutorial?: () => void;
 }
 
 type Step = 'quick' | 'detailed';
@@ -449,7 +463,7 @@ export function DetailedRules() {
   );
 }
 
-export function HelpModal({ onClose, initialStep = 'quick' }: HelpModalProps) {
+export function HelpModal({ onClose, initialStep = 'quick', onReplayTutorial }: HelpModalProps) {
   const [step, setStep] = useState<Step>(initialStep);
 
   return (
@@ -470,6 +484,19 @@ export function HelpModal({ onClose, initialStep = 'quick' }: HelpModalProps) {
         </button>
       }
     >
+      {/* Tanıtımı tekrar oynat — pencerenin EN BAŞINDA (Onboarding Faz 3):
+          kuralları okumak yerine oynayarak öğrenmek isteyen için, metnin
+          altına gömülmüş bir link değil ilk görülen şey. Yalnızca "Hızlı
+          Başlangıç" adımında: "Detaylı Kurallar" bir referans metni, oraya
+          bakan kişi zaten okumayı seçmiştir. */}
+      {step === 'quick' && onReplayTutorial && (
+        <button
+          onClick={onReplayTutorial}
+          className="btn-raised w-full py-3 mb-1 rounded-md bg-accent text-white font-sans text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+        >
+          {TUTORIAL_REPLAY_CTA}
+        </button>
+      )}
       {step === 'quick' ? (
         <QuickStart onDetailedClick={() => setStep('detailed')} />
       ) : (

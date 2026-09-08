@@ -24,7 +24,7 @@ import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import type { PlayerSetup } from './game/gameReducer';
 import { preloadWordSet, isWordSetReady } from './data/wordSetLoader';
-import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { calcScore, computeAllTerritories, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { loadGameState, saveGameState, clearGameState, takePendingAbandonedGame, ABANDON_TIMEOUT_MS } from './utils/gameStorage';
 import type { SavedGame } from './utils/gameStorage';
 import type { MirroredSave, ServerRowLike } from './utils/cloudSaveMirror';
@@ -41,7 +41,15 @@ import {
   unqueueCloudSaveDelete,
 } from './utils/cloudSaveMirror';
 import { buildGameRecord } from './utils/gameRecord';
-import { markTutorialSeen } from './utils/onboarding';
+import {
+  ONBOARDING_HINT_MS,
+  ONBOARDING_HINT_TEXTS,
+  bumpOnboardingHintShown,
+  markTutorialSeen,
+  onboardingHintShownCounts,
+  pickOnboardingHint,
+  type OnboardingHintId,
+} from './utils/onboarding';
 import { TutorialGame } from './components/TutorialGame';
 import { swallowNextClick } from './utils/ghostClick';
 import { useBoardZoom } from './hooks/useBoardZoom';
@@ -51,7 +59,7 @@ import type { AiLevel, GameState, Tile as TileModel } from './game/types';
 import { aiLevelOf } from './utils/aiLevel';
 import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
-import { PLAYER_COLORS, SIZE } from './game/constants';
+import { PLAYER_COLORS, SIZE, cornerBounds, inBonusZone } from './game/constants';
 import {
   fetchMeaning,
   isValidWordRemote,
@@ -793,7 +801,17 @@ export default function App() {
    * tanıtım hiçbir yere kaydedilmez ve huniye "başlayan oyun" olarak
    * girmez (bkz. `TutorialGame`).
    */
-  const [tutorial, setTutorial] = useState<{ players: PlayerSetup[]; aiLevel?: AiLevel } | null>(null);
+  const [tutorial, setTutorial] = useState<
+    { players: PlayerSetup[]; aiLevel?: AiLevel } | { replay: true } | null
+  >(null);
+  /**
+   * Tekrar izlemede (Faz 3) kadro yok, yani skor kutusundaki ad Setup'tan
+   * gelemiyor. Hesap adı okunur; misafirde boş kalır ve `createTutorialState`
+   * kendi varsayılanına ("Sen") düşer — `RENAME_PLAYER` effect'iyle aynı
+   * ad çözümü, ikinci bir kural yazılmadı.
+   */
+  const tutorialReplayName =
+    profile?.display_name || profile?.first_name || (user?.email ? user.email.split('@')[0] : '') || '';
 
   /**
    * YEREL (YZ) bir oyunun BAŞLATILMASI — `START` dispatch eden İKİ yer de
@@ -1022,6 +1040,112 @@ export default function App() {
     () => dragRef.current !== null,
     state.phase !== 'setup',
   );
+
+  // ── Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) ────────────────────
+  // Tanıtımı ATLAYAN ya da hiç göremeyen oyuncu üç mekaniği burada, GERÇEK
+  // oyunda ve mekanik yaşandığı anda öğrenir (bkz. `utils/onboarding.ts`).
+  // Balon tahtanın kendi `coach` prop'unu kullanıyor — tanıtımın çizdiği
+  // balonun aynısı, ikinci bir geometri yazılmadı.
+  const [hint, setHint] = useState<{ id: OnboardingHintId; r: number; c: number } | null>(null);
+  // İşlenmiş `moveHistory` uzunluğu. Ref, çünkü karar bir YAN ETKİ (sayaç
+  // artıyor) ve StrictMode'un çift çalıştırması ikinci turda boş dilim
+  // görmeli — `useBoardZoom`taki `hintDecided` ile aynı sınıf koruma.
+  const hintHistoryRef = useRef(0);
+  // Oyuna YENİ girildi mi. ⚠ Bu bayrak olmadan KAYITTAN DEVAM bir ipucu
+  // uydururdu: `RESUME_SAVED` fazı ve geçmişi AYNI ANDA değiştiriyor, yani
+  // effect ilk koşumunda "az önce oynanmış" sanacağı DOLU bir geçmiş görürdü.
+  const hintArmedRef = useRef(false);
+  useEffect(() => {
+    if (state.phase !== 'play') {
+      hintArmedRef.current = false;
+      hintHistoryRef.current = state.moveHistory.length;
+      setHint(null);
+      return;
+    }
+    if (!hintArmedRef.current) {
+      hintArmedRef.current = true;
+      hintHistoryRef.current = state.moveHistory.length;
+      return;
+    }
+    const yeni = state.moveHistory.slice(hintHistoryRef.current);
+    hintHistoryRef.current = state.moveHistory.length;
+    // Vergi satırları (`invasionFrom`) ve pas/değişim/teslim satırları hamle
+    // DEĞİL; ipucu yalnızca gerçek bir kelime hamlesinden doğar.
+    const move = yeni.find((e) => !e.action && !e.invasionFrom && e.words.length > 0);
+    if (!move) return;
+    const oynayan = state.players[move.player];
+    // YZ'nin hamlesi kullanıcıya bir şey ÖĞRETMİYOR: cümleler ikinci tekil
+    // ("değdin", "bölgen") ve oyuncunun kendi eylemini anlatıyor.
+    if (!oynayan || oynayan.isAI) return;
+    // Bölge, hamleden SONRAKİ tahtadan yeniden hesaplanıyor (motorun kendi
+    // fonksiyonu — ikinci bir "bölge büyüdü mü" kuralı yazılmadı).
+    const bolgeler = computeAllTerritories(state.board, state.players);
+    const bolge = bolgeler[move.player] ?? new Set<string>();
+    const bloklar = (oynayan.corners ?? []).map((k) => cornerBounds(k));
+    let disarida: { r: number; c: number } | null = null;
+    for (const k of bolge) {
+      const [r, c] = k.split(',').map(Number);
+      if (bloklar.some((b) => r >= b.r0 && r <= b.r1 && c >= b.c0 && c <= b.c1)) continue;
+      disarida = { r, c };
+      break;
+    }
+    const secilen = pickOnboardingHint(
+      {
+        paidTax: !!move.lostShares?.length,
+        gotMultiplier: !!move.wordScores?.some((w) => w.x2 || w.x3),
+        territoryOutsideCorner: disarida !== null,
+      },
+      onboardingHintShownCounts(),
+    );
+    if (!secilen) return;
+    // Çapa: cümlenin ANLATTIĞI kareyi göstermeli. Çarpanda bonus bölgesine
+    // düşen taş, bölge ipucunda köşe bloğunun dışına taşan hücre; ikisi de
+    // yoksa (vergi) hamlenin ilk karesi.
+    const hamleKareleri = state.lastMoveCells.map(([r, c]) => ({ r, c }));
+    const capa =
+      (secilen === 'carpan' ? hamleKareleri.find((h) => inBonusZone(h.r, h.c)) : null) ??
+      (secilen === 'bolge'
+        ? hamleKareleri.find((h) => !bloklar.some((b) => h.r >= b.r0 && h.r <= b.r1 && h.c >= b.c0 && h.c <= b.c1)) ?? disarida
+        : null) ??
+      hamleKareleri[0];
+    if (!capa) return;
+    bumpOnboardingHintShown(secilen);
+    setHint({ id: secilen, r: capa.r, c: capa.c });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.moveHistory.length, state.phase]);
+
+  // Balon kendi kendine kapanır; oyuncu yeni bir taş koyduysa daha erken.
+  useEffect(() => {
+    if (!hint) return;
+    const t = setTimeout(() => setHint(null), ONBOARDING_HINT_MS);
+    return () => clearTimeout(t);
+  }, [hint]);
+  const hasDraft = Object.keys(state.placed).length > 0;
+  useEffect(() => {
+    if (hasDraft) setHint(null);
+  }, [hasDraft]);
+
+  // ÖNCELİK — ekranda aynı anda TEK balon (Onboarding Faz 2):
+  // Sınır İhlali penceresi › onboarding ipucu › zoom balonu.
+  //
+  // ⚠ Planın yazılı sırası "zoom balonu › onboarding ipucu"ydu ve
+  // uygulanamadı, çünkü ÖLÇÜLDÜ: zoom balonu bir kez gösterilmeye karar
+  // verilince oyun BOYUNCA duruyor — `useBoardZoom`'daki `hint` yalnızca
+  // çift dokunuş DENENİRSE kapanıyor, başka hiçbir yerde. Yazılı sıra
+  // uygulansaydı ipuçları tam da hedef kitlesinde (ilk iki oyun açılışı)
+  // HİÇ görünmezdi. İpucu geçici (4 sn) ve oyuncunun AZ ÖNCE yaptığı şeyi
+  // anlatıyor; zoom balonu o pencereden sonra geri geliyor.
+  const hintCoach =
+    !invasionConfirm && hint
+      ? {
+          r: hint.r,
+          c: hint.c,
+          text: ONBOARDING_HINT_TEXTS[hint.id],
+          // Balon işaret ettiği karenin ÜSTÜNDE durur; 0. satırda üstte yer
+          // yoktur (tanıtımın 1. sahnesindeki kuralın aynısı).
+          yon: (hint.r === 0 ? 'alt' : 'ust') as 'ust' | 'alt',
+        }
+      : null;
   const dragRef = useRef<{
     source: DragSource;
     startX: number;
@@ -1254,19 +1378,28 @@ export default function App() {
   // Kurulum/oyun ağacının önüne geçer: tanıtımın kendi `useReducer`'ı var ve
   // App'in oyun state'ine hiç dokunmaz (yalıtım — bkz. `TutorialGame`).
   // Bitirmek ve atlamak AYNI şeyi yapar: tanıtım görülmüş sayılır ve gerçek
-  // oyun başlar. Fark yalnızca ilk gerçek oyundaki bağlamsal ipuçlarında
-  // olacak (Faz 2).
+  // oyun başlar (atlayanı ilk gerçek oyununda bağlamsal ipuçları karşılar —
+  // Faz 2, yukarıdaki `hint` bloğu).
   if (tutorial) {
-    const baslat = () => {
-      const kadro = tutorial;
+    // TEKRAR İZLEME (Faz 3): kadro YOK, dolayısıyla kapanışta hiçbir oyun
+    // başlamaz — kullanıcı "Nasıl oynanır?"ı açtığı ekrana geri döner. Bu
+    // yüzden iki dal ayrı: kadrolu tanıtımın kapanışı bir oyunu BAŞLATIR.
+    const tekrar = 'replay' in tutorial;
+    const kapat = () => {
+      if (tekrar) {
+        setTutorial(null);
+        return;
+      }
+      const kadro = tutorial as { players: PlayerSetup[]; aiLevel?: AiLevel };
       setTutorial(null);
       startLocalGame(kadro.players, kadro.aiLevel);
     };
     return (
       <TutorialGame
-        playerName={tutorial.players[0]?.name ?? ''}
-        onFinish={baslat}
-        onSkip={baslat}
+        playerName={tekrar ? tutorialReplayName : (tutorial as { players: PlayerSetup[] }).players[0]?.name ?? ''}
+        onFinish={kapat}
+        onSkip={kapat}
+        source={tekrar ? 'replay' : 'auto'}
       />
     );
   }
@@ -1338,6 +1471,13 @@ export default function App() {
             onResumeGame={handleResumeSavedGame}
             cloudSaves={user ? cloudSaves : null}
             onResumeCloudSave={handleResumeCloudSave}
+            /* Tekrar izleme (Faz 3): kadro YOK — kapanışta oyun başlamaz,
+               bu ekrana geri dönülür. "Görüldü" işareti burada da konur:
+               yardımı OKUMAK tanıtımı tüketmez, ama OYNAMAK tüketir. */
+            onReplayTutorial={() => {
+              markTutorialSeen();
+              setTutorial({ replay: true });
+            }}
             onStart={(players, showTutorial, aiLevel) => {
               // İlk oyun: önce tanıtım. Gerçek oyun tanıtım kapanınca
               // başlar — `startLocalGame` burada ÇAĞRILMAZ.
@@ -1789,7 +1929,8 @@ export default function App() {
         onTilePointerMove={moveDrag}
         onTilePointerUp={endDrag}
         onTilePointerCancel={cancelDrag}
-        zoomHint={boardZoom.hint}
+        coach={hintCoach}
+        zoomHint={boardZoom.hint && !hint}
         zoom={boardZoom.zoom}
         viewportRef={boardZoom.viewportRef}
         onBoardPointerDown={boardZoom.onPointerDown}

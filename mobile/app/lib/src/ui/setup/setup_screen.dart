@@ -1019,7 +1019,8 @@ class _SetupScreenState extends State<SetupScreen>
   /// (rota kapanır, çağıran gerçek oyunu başlatır). "Gösterildi" işareti
   /// tanıtım AÇILIRKEN konur, bitince değil — kullanıcı isteği "bir kere"
   /// ve yarıda kapatılan tanıtım sonsuz döngüye dönüşmemeli.
-  Future<void> _runTutorial(String me, SetWordSource words) async {
+  Future<void> _runTutorial(String me, SetWordSource words,
+      {String source = 'auto'}) async {
     final storage = widget.services.storage;
     if (storage != null) {
       try {
@@ -1036,10 +1037,33 @@ class _SetupScreenState extends State<SetupScreen>
         playerName: me,
         words: words,
         auth: widget.services.auth,
+        source: source,
+        games: widget.services.games,
         onFinish: () => Navigator.of(ctx).pop(),
         onSkip: () => Navigator.of(ctx).pop(),
       ),
     ));
+  }
+
+  /// "Nasıl oynanır?" penceresindeki "Tanıtım turunu oyna" (Onboarding
+  /// Faz 3). Kadro YOK: rota kapanınca hiçbir oyun başlamaz, bu ekrana
+  /// dönülür. "Görüldü" işareti burada da konur (`_runTutorial`) — yardımı
+  /// OKUMAK tanıtımı tüketmez, ama OYNAMAK tüketir (web ile aynı karar).
+  Future<void> _replayTutorial() async {
+    final SetWordSource words;
+    try {
+      words = await widget.services.dictionary;
+    } catch (_) {
+      // Sözlük yüklenemediyse sessizce vazgeç — kullanıcı "Nasıl oynanır?"
+      // penceresini zaten kapatmış olur, kuralları okumaya devam edebilir.
+      return;
+    }
+    if (!mounted) return;
+    await _runTutorial(
+      widget.services.auth.accountName ?? guestPlayerName,
+      words,
+      source: 'replay',
+    );
   }
 
   Future<void> _startNewGame(SetWordSource words) async {
@@ -1275,7 +1299,13 @@ class _SetupScreenState extends State<SetupScreen>
                               children: [
                                 _InlineLink(
                                   'Nasıl oynanır?',
-                                  onTap: () => showHelpModal(context),
+                                  onTap: () => showHelpModal(
+                                    context,
+                                    onReplayTutorial: () {
+                                      Navigator.of(context).pop();
+                                      unawaited(_replayTutorial());
+                                    },
+                                  ),
                                 ),
                                 // Web'de ayraç `gap-2` (8+8) ile ayrılmış bir
                                 // `·`; buradaki boşluklu ' · ' ölçülerek aynı

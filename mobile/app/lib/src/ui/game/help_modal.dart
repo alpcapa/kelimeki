@@ -9,7 +9,9 @@ import 'package:flutter/material.dart';
 import '../text_scale.dart';
 import 'package:kelimeki_core/kelimeki_core.dart' show bingoBonus, trUpper;
 
+import '../tutorial/tutorial_script.dart' show tutorialReplayCta;
 import 'modal_shell.dart';
+import 'neo_button.dart';
 import '../rank/league_rank.dart';
 import '../tap_target.dart';
 import '../tokens.dart';
@@ -21,16 +23,29 @@ const Color _border = kBorder;
 enum HelpStep { quick, detailed }
 
 Future<void> showHelpModal(BuildContext context,
-    {HelpStep initial = HelpStep.quick}) {
+    {HelpStep initial = HelpStep.quick, VoidCallback? onReplayTutorial}) {
   return showDialog<void>(
     context: context,
-    builder: (context) => HelpModal(initial: initial),
+    builder: (context) =>
+        HelpModal(initial: initial, onReplayTutorial: onReplayTutorial),
   );
 }
 
 class HelpModal extends StatefulWidget {
   final HelpStep initial;
-  const HelpModal({super.key, this.initial = HelpStep.quick});
+
+  /// Tanıtım turunu TEKRAR oynatır (Onboarding Faz 3, 8 Eylül 2026) — web
+  /// `HelpModalProps.onReplayTutorial` ikizi. Verilirse "Hızlı Başlangıç"ın
+  /// EN BAŞINDA bir buton çıkar; verilmezse hiç çıkmaz.
+  ///
+  /// NEDEN OPSİYONEL: bu pencere ÜÇ yerden açılıyor (Setup, hesap menüsü,
+  /// iki oyun ekranı) ve tanıtım yalnızca oyun DIŞINDA güvenle açılabilir —
+  /// tam ekran bir tanıtım süren oyunun üstüne binerdi. Karar çağıranda:
+  /// bugün yalnızca Setup ekranı veriyor (web ile aynı kapsam).
+  final VoidCallback? onReplayTutorial;
+
+  const HelpModal(
+      {super.key, this.initial = HelpStep.quick, this.onReplayTutorial});
 
   @override
   State<HelpModal> createState() => _HelpModalState();
@@ -51,7 +66,10 @@ class _HelpModalState extends State<HelpModal> {
         label: quick ? 'Detaylı Kurallar →' : 'Hızlı Başlangıç →',
         onTap: _toggle,
       ),
-      child: quick ? _QuickStart(onDetailed: _toggle) : const _DetailedRules(),
+      child: quick
+          ? _QuickStart(
+              onDetailed: _toggle, onReplayTutorial: widget.onReplayTutorial)
+          : const _DetailedRules(),
     );
   }
 }
@@ -355,7 +373,8 @@ class _QuickItem extends StatelessWidget {
 
 class _QuickStart extends StatelessWidget {
   final VoidCallback onDetailed;
-  const _QuickStart({required this.onDetailed});
+  final VoidCallback? onReplayTutorial;
+  const _QuickStart({required this.onDetailed, this.onReplayTutorial});
 
   @override
   Widget build(BuildContext context) {
@@ -363,6 +382,21 @@ class _QuickStart extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Tanıtımı tekrar oynat — pencerenin EN BAŞINDA (Onboarding Faz 3):
+        // kuralları okumak yerine oynayarak öğrenmek isteyen için, metnin
+        // altına gömülmüş bir link değil ilk görülen şey. Yalnızca "Hızlı
+        // Başlangıç" adımında; "Detaylı Kurallar" bir referans metni.
+        if (onReplayTutorial != null) ...[
+          SizedBox(
+            width: double.infinity,
+            child: NeoButton(
+              label: tutorialReplayCta,
+              variant: NeoButtonVariant.accent,
+              onPressed: onReplayTutorial,
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         const _QuickItem(
           icon: '🎯',
           text: '2 ya da 4 oyuncuyla, **Yapay Zeka**\'ya veya arkadaşlarına '

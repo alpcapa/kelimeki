@@ -308,19 +308,11 @@ bloklarının yerine geçti. Pencere silinmedi: kendiliğinden açılmıyor, ama
 tahtanın alt şeridindeki "Yardım" linkinden ve statik `/nasil-oynanir/`
 sayfasından hâlâ erişiliyor.
 
-## Kalan fazlar
+## Fazlar — hepsi kapandı
 
-Faz 1 (senaryo + doğrulayıcı + ekran) bu PR'da. Sırada:
-
-- **Faz 2 — bağlamsal ipuçları:** atlayan da ilk gerçek oyununda aynı dört
-  şeyi öğrensin. Üç ipucu (sınırın büyüdü · puanı paylaşıyorsun · burada
-  iki katı), her biri tek cümle, tavan 2 gösterim, aynı anda tek balon
-  (öncelik: Sınır İhlali penceresi › zoom balonu › onboarding ipucu).
-  Bayraklar `utils/onboarding.ts`'e, zoom balonunun desenine birebir.
-- **Faz 3 — tekrar izleme:** `HelpModal`'ın başına "Tanıtımı oyna (60 sn)".
-- **Faz 4 — port ikizi: YAPILDI** (7 Eylül 2026, aşağıdaki bölüm).
-- **Faz 5 — ölçüm (isteğe bağlı):** tanıtım başladı/bitti/atlandı + hangi
-  sahnede bırakıldı; admin panelinde tek kart. Sunucu tarafı, anında canlı.
+Faz 1 (senaryo + doğrulayıcı + ekran) ilk PR'da, Faz 4 (port ikizi) 7 Eylül
+2026'da, **Faz 2 · 3 · 5** 8 Eylül 2026'da. Aşağıdaki üç bölüm son turun
+kaydı.
 
 ## Faz 4 — port ikizi (7 Eylül 2026, Parça 194)
 
@@ -556,3 +548,143 @@ kenarının mesaj şeridinin üst kenarını geçmediğini, port
 `tutorial_game_test` aynısını `getRect` ile iddia ediyor. Duyarlılık
 kanıtlandı (balon eski yerine konunca port testi 565 > 545 ile düştü).
 
+
+## Faz 2 — bağlamsal ipuçları (8 Eylül 2026)
+
+Tanıtım yalnızca YENİ gelene ve yalnızca BİR KEZ açılıyor, üstelik her
+sahnesinde "ATLA →" duruyor. Atlayan — ya da kapının hiç göstermediği mevcut
+oyuncu — Kelimeki'yi ayıran mekanikleri hiç öğrenmeden oynuyordu. İpuçları o
+boşluğu GERÇEK oyunda, mekanik YAŞANDIĞI anda kapatıyor.
+
+| id | Ne zaman | Cümle |
+|---|---|---|
+| `vergi` | hamle bir rakip bölgesine vergi ödedi (`lostShares` dolu) | *Rakibin bölgesine değdin — bu yüzden puanının bir kısmı ona gitti.* |
+| `carpan` | kurulan kelimelerden biri ×2/×3 aldı (`wordScores`) | *Sarı bölgede kelime puanı 2 katı, tam ortadaki karede 3 katı olur.* |
+| `bolge` | hamleden SONRA bölge kendi 4×4 köşe bloğunun dışına taşıyor | *Bölgen büyüdü — kendi taşlarınla ilerledikçe köşenin dışına taşar.* |
+
+**Terim `bölge`, `sınır` değil.** Plandaki adlar (*"sınırın büyüdü"*) 7 Eylül
+akşamının metin turunda tanıtımın kendisinde zaten düzeltilmişti (`sınırın
+büyür` → `bölgeni büyütürsün`); üç ipucu o dille aynı hizada. Doğrulayıcı
+metinlerde `sınır` geçmesini AYRICA yasaklıyor — kural yorumda kalsa bir
+sonraki cümle yine "sınır" derdi.
+
+**Karar saf bir fonksiyonda:** `pickOnboardingHint(input, shown)`
+(`utils/onboarding.ts` ↔ `util/onboarding.dart`). Sayaçlar çağıranda
+(cihaz-yerel, ipucu BAŞINA tavan 2) — böylece tablo `verify-tutorial-script`
+ve `tutorial_script_test.dart`ta depolamaya hiç dokunmadan koşuyor. İki kural
+kolay kaçırılıyor ve ikisi de kilitli:
+
+1. **Sıra sabit:** `vergi › carpan › bolge`. Aynı hamlede üçü birden hak
+   edilebilir (tanıtımın 4. sahnesi tam olarak öyleydi: hem ×3 hem vergi),
+   ama ekranda aynı anda TEK balon olur. Sıra "en şaşırtıcı önce": `vergi`
+   sorulmadan cevaplanmazsa oyuncu puan kaybını bir HATA sanır; `bolge` ise
+   tahtada zaten görünüyor (dış hat çizgisi büyüyor).
+2. **Tavana çarpan bir ipucu ötekileri SUSTURMAZ** — üçü farklı mekaniği
+   anlatıyor ve oyuncu ikisini bir oyunda, üçüncüsünü haftalar sonra
+   yaşayabilir.
+
+**Çizim ikinci bir geometri yazmıyor:** balon `Board`un mevcut `coach`
+prop'u (tanıtımın çizdiği balonun aynısı). Çapa cümlenin ANLATTIĞI kare —
+çarpanda bonus bölgesine düşen taş, bölgede köşe bloğunun dışına taşan
+hücre, vergide hamlenin ilk karesi. Yön `ust`, 0. satırda `alt` (tanıtımın
+1. sahnesindeki kuralın aynısı).
+
+⚠ **Planın yazılı önceliği UYGULANAMADI — ölçüldü.** Plan *"Sınır İhlali
+penceresi › zoom balonu › onboarding ipucu"* diyordu. Ama zoom balonu bir kez
+gösterilmeye karar verilince **oyun BOYUNCA duruyor**: `useBoardZoom`'daki
+`hint` yalnızca çift dokunuş DENENİRSE kapanıyor, başka hiçbir yerde
+(portta `_zoomHint` aynı). Yazılı sıra uygulansaydı ipuçları tam da hedef
+kitlesinde — ilk iki oyun açılışında, yani zoom'u henüz denememiş kişide —
+HİÇ görünmezdi. Sıra ters çevrildi: **Sınır İhlali penceresi › onboarding
+ipucu › zoom balonu**. Bedeli küçük ve geçici: ipucu 4 saniye duruyor, zoom
+balonu o pencereden sonra geri geliyor.
+
+**Süre neden 4 sn:** tanıtımın "Rakip hamlesini yaptı" balonu 2 sn duruyor
+ama orada söylenen şey bir OLAY; burada bir KURAL anlatılıyor ve cümle iki
+satır. YZ 1,1 sn sonra oynamaya başladığından balon rakibin hamlesiyle
+çakışıyor — kabul edildi: balon oyuncunun KENDİ karesini işaret ediyor, YZ
+başka yere oynuyor.
+
+**Kapsam bugün yalnızca YEREL (YZ) oyun.** Canlı oyun ekranı aynı `Board`u
+kullanıyor ve prop hazır, ama hamle akışı sunucudan geliyor (`moveRows`) —
+ayrı bir tetikleme yolu demek. Tanıtım da yalnızca ilk YEREL oyunda açıldığı
+için ipuçlarının kitlesi zaten orada; Canlı'ya genişletmek ayrı bir iş.
+
+**Tarayıcı testi YOK, bilerek:** ipucu ancak birkaç hamle sonra (bölge köşe
+bloğunu aşınca, merkeze varınca) doğabiliyor; bunu duman testinde kurmak
+uydurma bir kayıt fixture'ı gerektirirdi. Karar saf fonksiyonda ve iki
+platformda yedişer vakayla kilitli; ekrandaki hâli elle koşuluyor
+(`TESTING.md` §13.6, `mobile/TESTING.md` §1.9).
+
+## Faz 3 — tanıtımı tekrar oynama (8 Eylül 2026)
+
+"Nasıl oynanır?" penceresinin **en başında** bir buton:
+**Tanıtım turunu oyna (1 dk)** (`TUTORIAL_REPLAY_CTA`). Süre etikette yazılı,
+çünkü asıl itiraz "okumaya vaktim yok"tu — bir dakikadan kısa olduğunu
+görmeden kimse başlatmaz; karşılama penceresindeki *"Yaklaşık 1 dk"* ile aynı
+vaat. Metnin altına gömülü bir link değil, ilk görülen şey: kuralları OKUMAK
+yerine oynayarak öğrenmek isteyen için pencerenin tepesi doğru yer.
+
+**Yalnızca "Hızlı Başlangıç" adımında** — "Detaylı Kurallar" bir referans
+metni, oraya bakan kişi zaten okumayı seçmiştir.
+
+**Yalnızca SETUP'tan açılan pencerede.** Aynı `HelpModal` beş yerden açılıyor
+(Setup, hesap menüsü, iki oyun ekranı, statik `/nasil-oynanir/`) ve tanıtım
+tam ekran: süren bir oyunun (hele Canlı bir oyunun) üstüne binmesi oyuncuyu
+tahtasından koparırdı. Bu yüzden `onReplayTutorial` OPSİYONEL bir prop
+(`HelpModal` ↔ `help_modal.dart`) — verilmezse buton hiç çıkmaz, kararı
+çağıran veriyor.
+
+**Kapanışta gerçek oyun BAŞLAMAZ.** Tekrar modunda kadro yok:
+`setTutorial({ replay: true })` → `startLocalGame` hiç çağrılmıyor, kullanıcı
+Setup'a dönüyor. Kapanış butonunun sözü de değişiyor —
+`TUTORIAL_FINISH_BUTTON` (*Gerçek oyuna başla*) ↔
+`TUTORIAL_REPLAY_FINISH_BUTTON` (*Kapat*). Duman testi tam bunu kilitliyor
+("oyun BAŞLAMAZ": Setup görünür, "Pas Geç" yok).
+
+⚠ **Etiketler JSX'ten `tutorialScript.ts`e taşındı.** Parite testi kapanış
+butonunu `TutorialGame.tsx`ten regex'le söküyordu (`>Gerçek oyuna başla<`);
+metin koşullu hâle gelince o desen kırılırdı. İkisi de artık senaryo
+dosyasında ve parite testi oradan okuyor — port ikizi `tutorial_script.dart`
+(etiketler portta BÜYÜK harfli, web `uppercase` sınıfıyla büyüttüğü için
+karşılaştırma `trUpper` ile).
+
+**Oynamak tanıtımı TÜKETİR.** Tekrar başlatmak da `markTutorialSeen()`
+çağırıyor. Bu, "yardımı okumak tanıtımı tüketmez" kuralıyla çelişmiyor —
+oradaki ayrım OKUMAK ↔ OYNAMAK; tanıtımı Help'ten oynayan biri onu görmüştür.
+
+## Faz 5 — ölçüm (8 Eylül 2026)
+
+Tanıtımın varlık gerekçesi ölçülebilir bir iddiaydı (*"çoğu kişi okumuyor,
+sıkılıp çıkıyor"*) ve o iddianın doğrulanacağı hiçbir sayı yoktu: tanıtım
+bilerek bir "oyun" sayılmadığından (`logGameStart` çağrılmaz, `games` satırı
+açılmaz) huninin hiçbir adımında görünmüyordu.
+
+**`tutorial_events`** (migration `20260908062707_tutorial_events_funnel`,
+canlıya uygulandı ve doğrulandı): `event` (`start`/`finish`/`skip`) ·
+`step` (yalnızca `skip`te, ekrandaki "TANITIM · n/4" ile aynı numara) ·
+`source` (`auto`/`replay`) · `platform` · `app_version` · `anon_id`.
+
+⚠ **`user_id` YOK ve tabloda böyle bir kolon da yok** — `game_starts`taki
+aynı gizlilik kararı: `PrivacyModal` bölüm 6 anonim cihaz kodu için
+"hesabınızla ASLA eşleştirilmez" diyor, ikisini aynı satıra koymak tam
+olarak o eşleştirmeyi yapardı. RLS: iki istemci rolüne de INSERT, SELECT
+politikası YOK (tabloyu yalnızca security definer admin RPC'si okur).
+
+**Admin kartı:** Büyüme > Kullanıcı → "Tanıtım Turu", Kaynak Hunisi'nin
+hemen altında. `auto` ve `replay` AYRI satırlar — kendi isteğiyle izleyen
+tanım gereği daha meraklıdır, tek satırda toplansalar `auto` kitlesinin
+gerçek terk oranı yukarı çekilirdi. `starters`/`finishers` BENZERSİZ CİHAZ,
+parantezdeki `starts`/`finishes` ADET (bir cihaz tanıtımı iki kez açabilir);
+oran cihaz üzerinden hesaplanıyor. Satırın altındaki **sahne dökümü**
+(`skip_steps`, jsonb) kartın asıl sorusunu cevaplıyor: tanıtım BAŞTA mı
+kaybediyor (metin/hız) yoksa SONDA mı (uzun geliyor).
+
+**Portta `anon_id` null gidiyor** — web'in `visitTracking.ts` damgası porta
+hiç girmedi (`game_starts`ta da öyle). Yani port satırları ADET'te sayılır,
+BENZERSİZ CİHAZ'da sayılmaz; `AdminTutorialFunnelRow` bunu açıkça yazıyor.
+
+**Olay yazımı fire-and-forget ve her olay en çok bir kez** (`telemetriRef` /
+`_telemetri`): StrictMode dev'de effect iki kez koştuğundan tek açılış iki
+`start` satırı yazardı — `useBoardZoom`'daki `hintDecided` ile aynı sınıf
+koruma.
