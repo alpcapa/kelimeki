@@ -479,6 +479,31 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
 - [ ] **Yarıda çıkış:** tanıtımın ortasında uygulamayı kapat, yeniden aç —
       kayıt/ceza izi yok, Setup normal açılıyor, tanıtım tekrar çıkmıyor.
 
+## 1.9.1 Tanıtımın devamı — ipuçları ve tekrar oynama (Onboarding Faz 2·3, 8 Eylül 2026)
+
+Web'in `TESTING.md` §13.6'sının port eşi. Karar tabloları
+`tutorial_script_test.dart` (ipucu sırası/tavanı) ve
+`tutorial_parity_test.dart` (metin/sıra web ile birebir) ile kapalı;
+buradakiler ekranın gerçek bir oyundaki hâli.
+
+- [ ] **Üç ipucu, gerçek oyunda:** Bölgeni köşe bloğunun DIŞINA taşıyan ·
+      sarı bölgeye taş koyan · rakip bölgesine değen birer hamle yap;
+      her birinden sonra ilgili tek cümlelik mavi balon o karenin üstünde
+      ~4 sn kalmalı. Cümleler webdekiyle BİREBİR aynı olmalı.
+- [ ] **Aynı anda tek balon:** Vergi ödeyen hamlede önce **Sınır İhlali!**
+      penceresi, kapandıktan SONRA balon. İpucu görünürken merkezdeki zoom
+      balonu gizlenmeli, sonra geri gelmeli.
+- [ ] **Tavan 2:** Aynı ipucu üçüncü kez hak edildiğinde çıkmamalı.
+- [ ] **Tekrar oynama:** Setup → "Nasıl oynanır?" → pencerenin EN BAŞINDA
+      **"Tanıtım turunu oyna (1 dk)"**. Bas → tanıtım açılıyor; bitir →
+      kapanış butonu **"KAPAT"** ve gerçek oyun BAŞLAMIYOR, Setup'a dönüyor.
+- [ ] **Buton yalnızca Setup'ta:** Oyun içindeki "Yardım" ve hesap
+      menüsünden açılan aynı pencerede bu buton OLMAMALI.
+- [ ] **Ölçüm (Faz 5):** Turdan sonra admin panelinde "Tanıtım Turu"
+      kartında `platform` ayrımı olmadan da olsa sayılar artmalı (portun
+      satırları `anon_id` taşımaz, yani ADET'te sayılır, BENZERSİZ
+      CİHAZ'da sayılmaz — bu beklenen).
+
 ## 2. Hesap (auth)
 
 - [ ] **Hesap menüsünün görünümü web'le birebir (9 Ağustos 2026, Parça 30).**

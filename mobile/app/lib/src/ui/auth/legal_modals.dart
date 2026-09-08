@@ -264,7 +264,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 31 Ağustos 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 8 Eylül 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -439,7 +439,12 @@ class PrivacyModal extends StatelessWidget {
               'FARKLI cihazın oyunu tamamladığını sayabiliyoruz. Girişliyken '
               'bu kayıt hesabınıza bağlı tutulduğundan anonim kod ORAYA HİÇ '
               'YAZILMAZ (ikisi aynı kayıtta asla bulunmaz; bunu sunucu da '
-              'zorunlu kılar). Bu dört kaydın hiçbirinde anonim kod ile hesap '
+              'zorunlu kılar). (5) Oyunu tanıtan kısa turu açtığınızda, '
+              'bitirdiğinizde ya da atladığınızda: turun hangi adımında '
+              'ayrıldığınız, turu kendinizin mi başlattığı ve platform '
+              'bilgisi anonim kodla birlikte kaydedilir; böylece tanıtımın '
+              'işe yarayıp yaramadığını ölçebiliyoruz. '
+              'Bu beş kaydın hiçbirinde anonim kod ile hesap '
               'kimliğiniz BİR ARADA YER ALMAZ: girişli olsanız bile bu '
               'veriler hiçbir üçüncü tarafla paylaşılmaz ve hesabınızla asla '
               'eşleştirilmez. Yazı '

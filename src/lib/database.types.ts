@@ -1235,3 +1235,35 @@ export interface AdminFeedbackRow {
   subject: string | null;
   related_to: string | null;
 }
+
+/**
+ * `admin_tutorial_funnel` RPC çıktısındaki tek satır — tanıtım turunun
+ * (Onboarding Faz 5, 8 Eylül 2026) ölçümü, KAYNAK başına bir satır.
+ *
+ * NEDEN KAYNAK BAŞINA: `auto` (ilk oyunda kapı açtı) ile `replay`
+ * ("Nasıl oynanır?" penceresinden kullanıcı kendi başlattı) aynı satıra
+ * karışırsa bitirme oranı yanlış okunur — kendi isteğiyle tekrar izleyen
+ * biri tanım gereği daha meraklıdır ve `auto` kitlesinin gerçek terk
+ * oranını yukarı çeker.
+ *
+ * `starts`/`finishes` ADET, `starters`/`finishers` BENZERSİZ CİHAZ sayar —
+ * `AdminSourceFunnelRow`'daki aynı ayrım ve aynı gerekçe. `anon_id`
+ * okunamayan (depolaması kapalı) bir istemcinin satırı adette sayılır,
+ * benzersizde sayılmaz.
+ */
+export interface AdminTutorialFunnelRow {
+  /** 'auto' | 'replay' — sunucu `check` kısıtıyla bu ikisiyle sınırlı. */
+  source: string;
+  starts: number;
+  starters: number;
+  finishes: number;
+  finishers: number;
+  skips: number;
+  /**
+   * Hangi sahnede kaç kişi "Atla"ya bastı — `{"1": 4, "3": 1}`. Kartın asıl
+   * sorusu bu: tanıtım BAŞTA mı kaybediyor (metin/hız sorunu) yoksa SONDA mı
+   * (uzun geliyor). Sahne yazmayan eski/yabancı bir istemcinin satırı
+   * `skips`e girer ama buraya girmez, yani toplamları eşit OLMAYABİLİR.
+   */
+  skip_steps: Record<string, number>;
+}

@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 31 Ağustos 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 8 Eylül 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
@@ -228,7 +228,11 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             girişsiz (misafir) oynuyorsanız — oyunun süresi, oyuncu sayısı ve varsa kaynak
             etiketiyle birlikte; böylece kaç FARKLI cihazın oyunu tamamladığını sayabiliyoruz.
             Girişliyken bu kayıt hesabınıza bağlı tutulduğundan anonim kod ORAYA HİÇ YAZILMAZ
-            (ikisi aynı kayıtta asla bulunmaz; bunu sunucu da zorunlu kılar). Bu dört kaydın
+            (ikisi aynı kayıtta asla bulunmaz; bunu sunucu da zorunlu kılar). (5) Oyunu
+            tanıtan kısa turu açtığınızda, bitirdiğinizde ya da atladığınızda: turun hangi
+            adımında ayrıldığınız, turu kendinizin mi başlattığı ve platform bilgisi anonim
+            kodla birlikte kaydedilir; böylece tanıtımın işe yarayıp yaramadığını
+            ölçebiliyoruz. Bu beş kaydın
             hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA YER ALMAZ: girişli
             olsanız bile bu veriler hiçbir üçüncü tarafla paylaşılmaz ve hesabınızla asla
             eşleştirilmez. Yazı tipleri de dahil tüm statik

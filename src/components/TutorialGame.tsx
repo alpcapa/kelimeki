@@ -38,14 +38,18 @@ import {
 } from '../utils/dragFeel';
 import { isWordSetReady, preloadWordSet } from '../data/wordSetLoader';
 import {
+  TUTORIAL_FINISH_BUTTON,
   TUTORIAL_FINISH_TEXT,
   TUTORIAL_FINISH_TITLE,
   TUTORIAL_INTRO_BUTTON,
   TUTORIAL_INTRO_TEXT,
   TUTORIAL_INTRO_TITLE,
+  TUTORIAL_REPLAY_FINISH_BUTTON,
   TUTORIAL_STEPS,
   createTutorialState,
 } from '../utils/tutorialScript';
+import { logTutorialEvent } from '../lib/api';
+import { getOrCreateAnonId } from '../utils/visitTracking';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { Board } from './Board';
 import { GameHeader } from './GameHeader';
@@ -143,13 +147,27 @@ function Balon({
 interface TutorialGameProps {
   /** Skor kutusunda ve rafta görünen ad (hesap adı ya da "Sen"). */
   playerName: string;
-  /** Tanıtım tamamlandı — çağıran gerçek oyunu başlatır. */
+  /**
+   * Tanıtım tamamlandı. `source: 'auto'`da çağıran GERÇEK OYUNU başlatır;
+   * `'replay'`de hiçbir oyun başlamaz, çağıran geldiği ekrana döner.
+   */
   onFinish: () => void;
-  /** "Atla" — çağıran gerçek oyunu başlatır, ipuçları devrede kalır. */
+  /** "Atla" — `onFinish` ile aynı hedef, ama sahne yarıda bırakılmış olur. */
   onSkip: () => void;
+  /**
+   * Tanıtım NEREDEN açıldı (Onboarding Faz 3 + 5, 8 Eylül 2026):
+   *   'auto'   → ilk oyunda kapı açtı (`shouldShowTutorial`),
+   *   'replay' → kullanıcı "Nasıl oynanır?" penceresinden kendi başlattı.
+   *
+   * İki iş yapıyor: kapanış butonunun sözünü (`TUTORIAL_FINISH_BUTTON` ↔
+   * `TUTORIAL_REPLAY_FINISH_BUTTON`) ve telemetrinin `source` alanını
+   * belirliyor — ikisi aynı satırda tutulmasa `auto` kitlesinin gerçek terk
+   * oranı meraklı tekrar izleyenlerle karışırdı (bkz. `AdminTutorialFunnelRow`).
+   */
+  source?: 'auto' | 'replay';
 }
 
-export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps) {
+export function TutorialGame({ playerName, onFinish, onSkip, source = 'auto' }: TutorialGameProps) {
   const [state, dispatch] = useReducer(gameReducer, playerName, createTutorialState);
   const [stepIndex, setStepIndex] = useState(0);
   // 'oyna' = sıra oyuncuda, raylar açık · 'bekle' = hamle/rakip animasyonu
@@ -191,6 +209,38 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
       timers.current = [];
     };
   }, []);
+
+  // ── Telemetri (Onboarding Faz 5) ─────────────────────────────────────────
+  // Tanıtımın KENDİ ölçümü; oyun telemetrisi (`logGameStart`, `games`) hâlâ
+  // ÇALIŞMIYOR — tanıtım bir "oyun" değil (bkz. dosya başı). Üç olay:
+  // ekrana geldi · dört sahne bitti · atlandı (hangi sahnede).
+  //
+  // ⚠ `sentRef`: StrictMode dev'de effect iki kez çalışır ve tek açılış İKİ
+  // 'start' satırı yazardı — `useBoardZoom`'daki `hintDecided` ile aynı
+  // sınıf koruma. Fire-and-forget: hata tanıtımı etkilemez.
+  const telemetriRef = useRef<Record<string, boolean>>({});
+  const olayYaz = (event: 'start' | 'finish' | 'skip', step: number | null = null) => {
+    if (telemetriRef.current[event]) return;
+    telemetriRef.current[event] = true;
+    void logTutorialEvent(event, source, getOrCreateAnonId(), step);
+  };
+  useEffect(() => {
+    olayYaz('start');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    // Kapanış kartı açıldı = tanıtım tamamlandı. (Senaryo bozulursa açılan
+    // acil çıkış dalı da buraya düşer — doğrulayıcı o dalı zaten imkânsız
+    // kılıyor, ölçümü ikiye bölmeye değmez.)
+    if (mode === 'bitti') olayYaz('finish');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+  /** "Atla" — önce ölçülür, sonra çağırana devredilir. */
+  const atla = () => {
+    // Sahne numarası ekrandaki "TANITIM · n/4" sayacıyla AYNI (1'den başlar).
+    olayYaz('skip', Math.min(stepIndex + 1, TUTORIAL_STEPS.length));
+    onSkip();
+  };
 
   // Motor kelime listesini tembel yüklenen chunk'tan okuyor: hazır değilken
   // `PLAY` fırlatır (bkz. `wordSetLoader`). Setup'tan gelen normal akışta
@@ -491,7 +541,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
-      <GameHeader state={state} onLogoClick={onSkip} />
+      <GameHeader state={state} onLogoClick={atla} />
 
       {/* Sahne sayacı + her sahnede duran "Atla". Kullanıcı kararı: tanıtım
           zorunlu değil, ama atlayan da ilk gerçek oyununda ipuçlarını görür. */}
@@ -500,7 +550,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
           TANITIM · {Math.min(stepIndex + 1, TUTORIAL_STEPS.length)}/{TUTORIAL_STEPS.length}
         </span>
         <button
-          onClick={onSkip}
+          onClick={atla}
           className="font-mono text-[10px] tracking-[1.5px] text-accent min-h-[44px] px-1 active:opacity-70 transition-opacity"
         >
           ATLA →
@@ -688,7 +738,7 @@ export function TutorialGame({ playerName, onFinish, onSkip }: TutorialGameProps
               onClick={onFinish}
               className="btn-raised mt-1 py-3 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
             >
-              Gerçek oyuna başla
+              {source === 'replay' ? TUTORIAL_REPLAY_FINISH_BUTTON : TUTORIAL_FINISH_BUTTON}
             </button>
           </div>
         </div>

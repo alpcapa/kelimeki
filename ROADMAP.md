@@ -92,7 +92,6 @@ her şey o pencerenin içinde ya da yanında duruyor.
 | **Karar verilmiş, yapılmamış** | — | ✅ Kova BOŞ: **#3** hatırlatma, **#8** iPad paylaşımı (3 Eylül cihazda doğrulandı) ve **#16** kart düzeni kapandı; üçü de arşivde |
 | **Ertelendi** | #2 zorunlu güncelleme | ✅ **KAPANDI/ARŞİVDE** (2 Eylül 2026, kullanıcı: *"Artık app'de güncelleme çıkıyor, bunu görünce zaten yapar"*). ⚠ Sürüm kapısı DURUYOR ve artık KULLANILABİLİR — acil fren olarak `app_config.mobile_min_supported_version` |
 | **Seviyeli YZ** | **#23** Kolay/Normal/Zor + seviyeye göre k-lig puanı — 5 faz (sunucu → motor → web → port → Zor motoru) | ⬜ **Faz 0-5 kod ✅ (Faz 5 = Zor motoru, 7 Eylül 2026: GENİŞ arama, YZ↔YZ %70/%72 — web'de canlı, portta 1.0.8 sürümüyle); kalan: Faz 5 SAHA ölçümü** (`admin_ai_balance` seviye kırılımı iki hafta: Kolay ~%30 · Normal ~%51 · Zor ~%70). Faz 0 ölçtü: **Kolay = N=4** (200 oyun/N; N=3 %36, N=4 %33, N=5 %22 — backlog notu) |
-| **Onboarding** | **#24** "Oynayarak öğren" tanıtımı — Faz 1 (senaryo + doğrulayıcı + ekran) ✅ web'de; kalan: bağlamsal ipuçları, tekrar izleme, port ikizi, ölçüm |
 | **İsteğe bağlı** | #5 k-lig grafiği · #9 admin filtre · #14 tembel liste | ⬜ hiçbiri yolu tıkamıyor · **#10 hata hız sınırı ✅** ve **#11 platform filtresi ✅ YAPILDI** (31 Ağustos 2026) |
 | **Yapıldı** | #6 taranabilir `/nasil-oynanir/` sayfası | ✅ 31 Ağustos 2026 |
 | **Play Store'a girdikten sonra** | **#17 Google ile giriş** — sunucu → web → mobil; migration BLOKER (OAuth bugün `handle_new_user`'da patlar) | ⏳ ERTELENDİ — acelesi yok, çalışan kimlik akışına şimdi dokunulmuyor (2 Eylül, kullanıcı). ⚠ Sayaçla İLİŞKİSİ YOK; o bağ aynı gün koptu, gerekçe #17'de |
@@ -922,42 +921,6 @@ desen kurdu — mağaza görselleri de aynı yoldan üretilmeli, yoksa vitrin il
 ürün sessizce ayrışır. **Tuzak:** o betiklerde Tailwind sınıfı çalışmaz
 (`content` yalnızca `index.html` + `src/**` tarar), yalnızca inline `style`.
 
-
-## 24. Onboarding — "Oynayarak öğren" tanıtımı (7 Eylül 2026)
-
-**Faz 1 YAPILDI** (bu PR): senaryo (`src/utils/tutorialScript.ts`),
-doğrulayıcı (`npm run verify-tutorial-script`, CI'da), tanıtım ekranı
-(`TutorialGame.tsx`), `Board`'a iki opsiyonel prop, **kapı**
-(`shouldShowTutorial` — yalnızca yeni gelene, bir kere; mevcut oyuncuya
-asla) ve iki duman testi. İlk oyunda
-Hızlı Başlangıç penceresi yerine dört sahnelik raylı mini oyun açılıyor;
-her hamleden sonra rakip oynuyor. Tasarım/gerekçe/ölçümler:
-`docs/decisions/onboarding.md`.
-
-**Kalan fazlar — sıra bu:**
-
-- **Faz 2 · bağlamsal ipuçları (web, ~1 PR).** Atlayan da ilk gerçek
-  oyununda aynı dersleri görsün: üç ipucu (sınırın büyüdü · puanı
-  paylaşıyorsun · burada iki katı), her biri tek cümle, tavan 2 gösterim,
-  aynı anda TEK balon (öncelik: Sınır İhlali penceresi › zoom balonu ›
-  onboarding ipucu). Bayraklar `utils/onboarding.ts`'e, zoom balonunun
-  desenine birebir (`shouldShowZoomHint`).
-- **Faz 3 · tekrar izleme (web, küçük).** `HelpModal`'ın başına "Tanıtımı
-  oyna (60 sn)"; Setup'ta da aynı giriş.
-- **Faz 4 · port ikizi — YAPILDI (7 Eylül 2026, Parça 194).** Aynı
-  senaryo, aynı metinler; `tutorial_parity_test.dart` web kaynağından
-  okuyor, `tutorial_script_test.dart` senaryoyu Dart motorunda oynatıyor.
-  Sürüm turu bekliyor: APK `main`'e merge + `mobile/**` ile üretilir,
-  cihaz kontrol listesi `mobile/TESTING.md` §1.9.
-- **Faz 5 · ölçüm (sunucu, isteğe bağlı).** Tanıtım başladı/bitti/atlandı +
-  hangi sahnede bırakıldı; admin panelinde tek kart. Bu olmadan "işe
-  yaradı mı" sorusunun cevabı YOK.
-
-**Ölçülmemiş, cihazda ölçülecek:** gerçek süre (hedef 60-90 sn; kontrol
-listesi `TESTING.md` §13.5) ve tanıtımı bitirenlerin ilk gerçek oyunu
-tamamlama oranı.
-
----
 
 ## 5. k-lig puan grafiği — **İSTEĞE BAĞLI**
 

@@ -1293,6 +1293,45 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
 - [ ] **Yarıda çıkış:** Tanıtımın ortasında uygulamayı kapat, yeniden aç —
       hiçbir kayıt/ceza izi olmamalı, Setup normal açılmalı.
 
+## 13.6 Tanıtımın devamı — ipuçları, tekrar oynama, ölçüm (8 Eylül 2026)
+
+Faz 2·3·5. Karar tabloları `npm run verify-tutorial-script`te (ipucu sırası
+ve tavanı) ve `tests/smoke.spec.ts`te (tekrar oynama gerçek oyun BAŞLATMIYOR)
+kapalı; buradaki maddeler otomatik testin göremediği şeyler — balonun
+gerçek bir oyunda doğru anda/yerde çıkması ve sunucu satırlarının gerçekten
+yazılması. **Temiz bir profille** koş.
+
+- [ ] **`bolge` ipucu:** Yeni bir YZ oyununda kendi köşenden başlayıp
+      bölgeni 4×4 köşe bloğunun DIŞINA taşıyan bir hamle yap — hamleden
+      hemen sonra *"Bölgen büyüdü — …"* balonu, bloğun dışına taşan karenin
+      ÜSTÜNDE çıkmalı ve ~4 sn sonra kendiliğinden kaybolmalı.
+- [ ] **`carpan` ipucu:** Sarı bölgeye (5×5 merkez) yeni taş koyan bir
+      kelime kur — *"Sarı bölgede kelime puanı 2 katı…"* balonu, o karenin
+      üstünde.
+- [ ] **`vergi` ipucu:** Rakip bölgesine değen bir hamle yap. Önce gerçek
+      **Sınır İhlali!** penceresi çıkmalı; onaylayınca (pencere kapandıktan
+      SONRA) *"Rakibin bölgesine değdin — …"* balonu gelmeli. **İkisi asla
+      aynı anda ekranda olmamalı.**
+- [ ] **Aynı hamlede iki mekanik → TEK balon:** Hem çarpan alan hem vergi
+      ödeyen bir hamlede yalnızca `vergi` cümlesi çıkmalı.
+- [ ] **Tavan 2:** Aynı ipucunu üçüncü kez hak eden bir hamlede balon artık
+      ÇIKMAMALI (öteki iki ipucu hâlâ çalışıyor olmalı).
+- [ ] **Zoom balonuyla çakışma:** İpucu görünürken merkezdeki *"Boş kareye
+      … çift tıklama"* balonu gizlenmeli, ipucu kaybolunca geri gelmeli.
+- [ ] **Taslak balonu susturuyor:** Balon dururken rafa/tahtaya yeni bir taş
+      koy — balon anında kaybolmalı.
+- [ ] **Tekrar oynama (Faz 3):** Setup → "Nasıl oynanır?" → penceresinin EN
+      BAŞINDA **"Tanıtım turunu oyna (1 dk)"**. Bas → tanıtım açılıyor;
+      bitir → kapanış butonu **"Kapat"** diyor ve **gerçek oyun BAŞLAMIYOR**,
+      Setup'a dönülüyor.
+- [ ] **Buton yalnızca Setup'ta:** Aynı pencereyi bir oyun İÇİNDEYKEN
+      ("Yardım" linki) ve hesap menüsünden aç — orada bu buton OLMAMALI.
+- [ ] **Ölçüm (Faz 5, admin):** Yukarıdaki turdan sonra admin panelinde
+      Büyüme > Kullanıcı → **"Tanıtım Turu"** kartına bak: `Otomatik` ve
+      `Tekrar` satırları ayrı; başlatan/bitiren sayıları arttı; "ATLA" ile
+      çıktıysan satırın altındaki **bırakılan sahne** dökümünde o sahne
+      görünüyor.
+
 ## 14+ — Tarihli turlar → `docs/testing-turlari.md`
 
 Belirli bir düzeltmenin gerilemediğini doğrulayan tarihli turlar (14'ten

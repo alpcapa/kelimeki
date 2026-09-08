@@ -245,11 +245,56 @@ void main() {
             '"$kTutorialInvasionNote"');
     // Kapanış butonu: web `uppercase` sınıfıyla büyütüyor, port etiketi
     // büyük harfle yazıyor — Türkçe büyütmeyle aynı olmalı.
-    final btn = pick(gameTsx, RegExp(r'>\s*(Gerçek oyuna başla)\s*<'), 'kapanış butonu');
-    expect(trUpper(btn), 'GERÇEK OYUNA BAŞLA');
+    //
+    // ⚠ Etiketler 8 Eylül 2026'da JSX'ten `tutorialScript.ts`e taşındı
+    // (Faz 3: tanıtım "tekrar" modunda başka bir söz veriyor, koşullu bir
+    // JSX metnini regex'le sökmek kırılgandı). Kaynak dosya da o yüzden
+    // `gameTsx` değil `scriptTs`.
+    expect(
+        trUpper(pick(scriptTs, RegExp(r"TUTORIAL_FINISH_BUTTON = '([^']+)'"),
+            'kapanış butonu')),
+        tutorialFinishButton);
+    expect(
+        trUpper(pick(scriptTs,
+            RegExp(r"TUTORIAL_REPLAY_FINISH_BUTTON = '([^']+)'"),
+            'tekrar modunun kapanış butonu')),
+        tutorialReplayFinishButton);
+    expect(
+        pick(scriptTs, RegExp(r"TUTORIAL_REPLAY_CTA = '([^']+)'"),
+            'tekrar oynat butonu'),
+        tutorialReplayCta);
     // Sahne sayacı ve Atla
     expect(gameTsx.contains('TANITIM · '), isTrue);
     expect(gameTsx.contains('ATLA →'), isTrue);
+  });
+
+  // ── Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) ────────────────
+  // Üç metin, sıraları ve tavan web'de `utils/onboarding.ts`te, portta
+  // `util/onboarding.dart`ta ELLE senkron. Metin webde değişip burada
+  // unutulursa iki platform aynı oyunda FARKLI cümle gösterirdi.
+  test('bağlamsal ipuçları: metin · sıra · tavan web ile birebir', () {
+    expect(
+        int.parse(pick(onboardingTs,
+            RegExp(r'ONBOARDING_HINT_MAX_SHOWS = (\d+)'), 'tavan')),
+        onboardingHintMaxShows);
+    expect(
+        int.parse(
+            pick(onboardingTs, RegExp(r'ONBOARDING_HINT_MS = (\d+)'), 'süre')),
+        onboardingHintDuration.inMilliseconds);
+    // Sıra DAVRANIŞIN parçası: aynı hamlede birden fazla ipucu hak
+    // edilirse ilk hak edilen gösterilir.
+    final sira = pick(onboardingTs,
+        RegExp(r'ONBOARDING_HINT_ORDER[^=]*=\s*\[([^\]]*)\]'), 'sıra');
+    expect([
+      for (final m in RegExp(r"'(\w+)'").allMatches(sira)) m.group(1)
+    ], [
+      for (final id in onboardingHintOrder) id.name
+    ]);
+    for (final id in OnboardingHintId.values) {
+      expect(
+          pick(onboardingTs, RegExp("${id.name}: '([^']*)'"), '${id.name} metni'),
+          onboardingHintTexts[id]);
+    }
   });
 
   test('kapı tarihi: TUTORIAL_LAUNCH_AT port için yeniden tarihlenmedi', () {

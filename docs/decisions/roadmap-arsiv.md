@@ -21,6 +21,7 @@
 
 | Ne | Kapanış |
 |---|---|
+| Madde 24 · Onboarding — "Oynayarak öğren" tanıtımı, BEŞ fazın tamamı (senaryo · bağlamsal ipuçları · tekrar izleme · port ikizi · ölçüm) | 8 Eylül 2026 |
 | 1.0.9 sürüm turu — "oynayarak öğren" tanıtımının port ikizi, kapalı testte yayında | 8 Eylül 2026 |
 | 1.0.8 sürüm turu — seviyeli YZ'nin tamamı (Kolay · Normal · Zor), kapalı testte yayında | 7 Eylül 2026 |
 | Madde 23 · Faz 2 — motor: `findAIMoves`/`pickTopMove`/`AI_LEVEL_TOP_N` üç kopyada, `GameState.aiLevel`, golden sıfır fark + `reducer_ai2_kolay` | 6 Eylül 2026 |
@@ -2662,4 +2663,62 @@ bozuyordu. Dal kaldırıldı (geri gerekirse git geçmişinde). Reducer'ın
 `SURRENDER` case'i DURUYOR: kavram geçerli, port da taşıyor ve
 `buildGameRecord`'un `surrendered`/`surrenderingIndex` yolu 7 günlük
 terk-edilme akışında CANLI kullanılıyor — kaldırılan yalnızca ona bağlı UI.
+
+## 24. Onboarding — "Oynayarak öğren" tanıtımı (7 Eylül 2026)
+
+**Faz 1 YAPILDI** (bu PR): senaryo (`src/utils/tutorialScript.ts`),
+doğrulayıcı (`npm run verify-tutorial-script`, CI'da), tanıtım ekranı
+(`TutorialGame.tsx`), `Board`'a iki opsiyonel prop, **kapı**
+(`shouldShowTutorial` — yalnızca yeni gelene, bir kere; mevcut oyuncuya
+asla) ve iki duman testi. İlk oyunda
+Hızlı Başlangıç penceresi yerine dört sahnelik raylı mini oyun açılıyor;
+her hamleden sonra rakip oynuyor. Tasarım/gerekçe/ölçümler:
+`docs/decisions/onboarding.md`.
+
+**Kalan fazlar — sıra bu:**
+
+- **Faz 2 · bağlamsal ipuçları (web, ~1 PR).** Atlayan da ilk gerçek
+  oyununda aynı dersleri görsün: üç ipucu (sınırın büyüdü · puanı
+  paylaşıyorsun · burada iki katı), her biri tek cümle, tavan 2 gösterim,
+  aynı anda TEK balon (öncelik: Sınır İhlali penceresi › zoom balonu ›
+  onboarding ipucu). Bayraklar `utils/onboarding.ts`'e, zoom balonunun
+  desenine birebir (`shouldShowZoomHint`).
+- **Faz 3 · tekrar izleme (web, küçük).** `HelpModal`'ın başına "Tanıtımı
+  oyna (60 sn)"; Setup'ta da aynı giriş.
+- **Faz 4 · port ikizi — YAPILDI (7 Eylül 2026, Parça 194).** Aynı
+  senaryo, aynı metinler; `tutorial_parity_test.dart` web kaynağından
+  okuyor, `tutorial_script_test.dart` senaryoyu Dart motorunda oynatıyor.
+  Sürüm turu bekliyor: APK `main`'e merge + `mobile/**` ile üretilir,
+  cihaz kontrol listesi `mobile/TESTING.md` §1.9.
+- **Faz 5 · ölçüm (sunucu, isteğe bağlı).** Tanıtım başladı/bitti/atlandı +
+  hangi sahnede bırakıldı; admin panelinde tek kart. Bu olmadan "işe
+  yaradı mı" sorusunun cevabı YOK.
+
+**Ölçülmemiş, cihazda ölçülecek:** gerçek süre (hedef 60-90 sn; kontrol
+listesi `TESTING.md` §13.5) ve tanıtımı bitirenlerin ilk gerçek oyunu
+tamamlama oranı.
+
+### Kapanış — Faz 2 · 3 · 5 (8 Eylül 2026)
+
+Madde 24'ün tamamı kapandı; kalan üç faz tek PR'da geldi.
+
+- **Faz 2 · bağlamsal ipuçları.** `pickOnboardingHint` (saf fonksiyon,
+  `utils/onboarding.ts` ↔ `util/onboarding.dart`) + üç cihaz-yerel sayaç;
+  balon iki oyun ekranının değil TAHTANIN mevcut `coach` slotunu kullanıyor
+  (ikinci bir geometri yazılmadı). ⚠ Planın yazılı önceliği ("zoom balonu ›
+  onboarding ipucu") UYGULANAMADI ve gerekçesi ölçüldü — zoom balonu
+  denenene kadar oyun boyunca duruyor, yani ipucu tam da hedef kitlesinde
+  (ilk iki oyun açılışı) hiç görünmezdi; sıra ters çevrildi, ipucu geçici
+  (4 sn) ve zoom balonu sonra geri geliyor.
+- **Faz 3 · tekrar izleme.** `HelpModal`'ın en başında "Tanıtım turunu oyna
+  (1 dk)" — yalnızca SETUP'tan açılan pencerede (tam ekran tanıtım süren bir
+  oyunun üstüne binmemeli). Kapanışta gerçek oyun BAŞLAMAZ.
+- **Faz 5 · ölçüm.** `tutorial_events` tablosu + `admin_tutorial_funnel`
+  RPC'si (canlıya uygulandı) + admin panelinde "Tanıtım Turu" kartı;
+  `auto`/`replay` ayrı satırlar. Terk noktası (hangi sahnede "ATLA")
+  artık veriden okunuyor — tanıtımın varlık gerekçesi ilk kez ölçülebilir.
+
+Ayrıntı, metinler ve tuzaklar: `docs/decisions/onboarding.md`.
+
+---
 

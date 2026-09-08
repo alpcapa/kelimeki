@@ -47,7 +47,16 @@ import {
   createTutorialState,
   type TutorialMove,
 } from '../src/utils/tutorialScript';
-import { TUTORIAL_LAUNCH_AT, shouldShowTutorial } from '../src/utils/onboarding';
+import {
+  ONBOARDING_HINT_MAX_SHOWS,
+  ONBOARDING_HINT_ORDER,
+  ONBOARDING_HINT_TEXTS,
+  TUTORIAL_LAUNCH_AT,
+  pickOnboardingHint,
+  shouldShowTutorial,
+  type OnboardingHintId,
+  type OnboardingHintInput,
+} from '../src/utils/onboarding';
 
 const SOZLUK = new Set(WORD_LIST.map((w) => trLower(w)));
 let hata = 0;
@@ -315,6 +324,84 @@ for (const vaka of kapiVakalari) {
     bildir(`kapı "${vaka.ad}": beklenen ${vaka.beklenen}, gerçek ${sonuc}`);
   } else {
     ok(`${sonuc ? 'GÖSTER' : 'gösterme'} — ${vaka.ad}`);
+  }
+}
+
+// ── 10. Bağlamsal ipuçları (Onboarding Faz 2) ────────────────────────────
+// Kapının tablosuyla aynı gerekçe: karar SAF bir fonksiyonda ve üç sayaç
+// birden okunuyor. En kolay kaçırılan iki kural burada kilitleniyor —
+// (a) aynı hamlede birden fazla ipucu hak edilirse SIRA sabittir (ekranda
+// aynı anda tek balon olabilir), (b) tavana çarpan bir ipucu ötekileri
+// SUSTURMAZ, sıradaki hak edilmiş ipucu gösterilir.
+const IPUCU_YOK = { paidTax: false, gotMultiplier: false, territoryOutsideCorner: false };
+const SIFIR: Record<OnboardingHintId, number> = { vergi: 0, carpan: 0, bolge: 0 };
+const TAVAN = ONBOARDING_HINT_MAX_SHOWS;
+
+const ipucuVakalari: {
+  ad: string;
+  girdi: OnboardingHintInput;
+  sayac: Record<OnboardingHintId, number>;
+  beklenen: OnboardingHintId | null;
+}[] = [
+  { ad: 'mekanik yaşanmadı', girdi: IPUCU_YOK, sayac: SIFIR, beklenen: null },
+  {
+    ad: 'yalnızca vergi ödendi',
+    girdi: { ...IPUCU_YOK, paidTax: true },
+    sayac: SIFIR,
+    beklenen: 'vergi',
+  },
+  {
+    ad: 'yalnızca çarpan alındı',
+    girdi: { ...IPUCU_YOK, gotMultiplier: true },
+    sayac: SIFIR,
+    beklenen: 'carpan',
+  },
+  {
+    ad: 'yalnızca bölge büyüdü',
+    girdi: { ...IPUCU_YOK, territoryOutsideCorner: true },
+    sayac: SIFIR,
+    beklenen: 'bolge',
+  },
+  {
+    // Tanıtımın 4. sahnesi TAM OLARAK böyle: hem ×3 hem vergi.
+    ad: 'üçü birden — sıra sabit, vergi kazanır',
+    girdi: { paidTax: true, gotMultiplier: true, territoryOutsideCorner: true },
+    sayac: SIFIR,
+    beklenen: 'vergi',
+  },
+  {
+    ad: 'vergi tavanda — sıradaki hak edilmiş ipucu gösterilir',
+    girdi: { paidTax: true, gotMultiplier: true, territoryOutsideCorner: true },
+    sayac: { ...SIFIR, vergi: TAVAN },
+    beklenen: 'carpan',
+  },
+  {
+    ad: 'hepsi tavanda — hiçbiri gösterilmez',
+    girdi: { paidTax: true, gotMultiplier: true, territoryOutsideCorner: true },
+    sayac: { vergi: TAVAN, carpan: TAVAN, bolge: TAVAN },
+    beklenen: null,
+  },
+];
+
+console.log('\nBağlamsal ipuçları — hangi hamlede hangi balon');
+for (const vaka of ipucuVakalari) {
+  const sonuc = pickOnboardingHint(vaka.girdi, vaka.sayac);
+  if (sonuc !== vaka.beklenen) {
+    bildir(`ipucu "${vaka.ad}": beklenen ${vaka.beklenen ?? 'yok'}, gerçek ${sonuc ?? 'yok'}`);
+  } else {
+    ok(`${sonuc ?? 'balon yok'} — ${vaka.ad}`);
+  }
+}
+
+// Metinler TEK cümle olmalı (tanıtımın "tek cümle bütçesi" kuralı) ve
+// terim `sınır` DEĞİL `bölge` (bkz. kök CLAUDE.md → "Terminoloji").
+for (const id of ONBOARDING_HINT_ORDER) {
+  const metin = ONBOARDING_HINT_TEXTS[id];
+  if ((metin.match(/[.!?]/g) ?? []).length !== 1 || !metin.trim().endsWith('.')) {
+    bildir(`ipucu metni "${id}" tek cümle değil: ${metin}`);
+  }
+  if (/sınır/i.test(metin)) {
+    bildir(`ipucu metni "${id}" "sınır" diyor — verginin/alanın adı "bölge": ${metin}`);
   }
 }
 

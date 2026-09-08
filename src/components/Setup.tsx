@@ -285,6 +285,16 @@ interface SetupProps {
   // formun üstünde ayrıca gösterilir.
   cloudSaves: LocalGameSave[] | null;
   onResumeCloudSave: (save: LocalGameSave) => void;
+  /**
+   * "Nasıl oynanır?" penceresindeki "Tanıtım turunu oyna" (Onboarding Faz 3,
+   * 8 Eylül 2026). App.tsx tanıtımı TEKRAR modunda açar: kapanışta hiçbir
+   * oyun başlamaz, buraya geri dönülür.
+   *
+   * Yalnızca BU pencereye veriliyor — aynı `HelpModal` hesap menüsünden ve
+   * iki oyun ekranından da açılıyor ve orada tam ekran bir tanıtım süren
+   * oyunun üstüne binerdi (bkz. `HelpModalProps.onReplayTutorial`).
+   */
+  onReplayTutorial: () => void;
 }
 
 export function Setup({
@@ -296,6 +306,7 @@ export function Setup({
   onResumeGame,
   cloudSaves,
   onResumeCloudSave,
+  onReplayTutorial,
 }: SetupProps) {
   const { user, profile, loading, profileLoading } = useAuth();
   // 1. koltuktaki hesap sahibinin rütbe mührü. Puan `leaderboard`
@@ -717,7 +728,15 @@ export function Setup({
   return (
     <>
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
-      {showHelp && <HelpModal onClose={closeHelp} />}
+      {showHelp && (
+        <HelpModal
+          onClose={closeHelp}
+          onReplayTutorial={() => {
+            setShowHelp(false);
+            onReplayTutorial();
+          }}
+        />
+      )}
       {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
 

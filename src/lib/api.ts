@@ -39,6 +39,7 @@ import type {
   AdminAppVersionRow,
   AdminPushVersionRow,
   AdminClientErrorRow,
+  AdminTutorialFunnelRow,
   AdminSourceFunnelRow,
   AdminDeviceBreakdownRow,
   AdminGuestDeviceRow,
@@ -2437,6 +2438,65 @@ export async function fetchAdminClientErrors(
     throw new Error(error.message);
   }
   return (data as AdminClientErrorRow[]) ?? [];
+}
+
+/**
+ * Tanıtım turunun anonim ölçümü (Onboarding Faz 5, 8 Eylül 2026) —
+ * `tutorial_events` tablosu, admin panelindeki "Tanıtım Turu" kartı için.
+ *
+ * NEDEN AYRI BİR TABLO: tanıtım bilerek bir "oyun" SAYILMIYOR (bkz.
+ * `TutorialGame` — `logGameStart` çağrılmaz, `games` satırı açılmaz, k-lig/
+ * istatistik etkilenmez), yani huninin hiçbir adımında görünmüyordu. Tanıtımın
+ * varlık gerekçesi ölçülebilir bir iddiaydı (*"çoğu kişi okumuyor, sıkılıp
+ * çıkıyor"*) ve o iddianın doğrulanacağı tek sayı bu: açanların yüzde kaçı
+ * BİTİRİYOR, atlayanlar HANGİ sahnede bırakıyor.
+ *
+ * ⚠ `userId` GÖNDERİLMEZ ve tabloda böyle bir kolon YOK — `logGameStart`'taki
+ * aynı gizlilik kararı (`PrivacyModal` bölüm 6: anonim cihaz kodu hesapla
+ * eşleştirilmez).
+ *
+ * Fire-and-forget: telemetri hatası tanıtımı ASLA etkilemez.
+ *
+ * @param step Yalnızca `'skip'`te dolu — hangi sahnede bırakıldı (1'den
+ *   başlar, ekrandaki "TANITIM · 1/4" sayacıyla aynı numara).
+ */
+export async function logTutorialEvent(
+  event: 'start' | 'finish' | 'skip',
+  source: 'auto' | 'replay',
+  anonId: string | null,
+  step: number | null = null,
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from('tutorial_events').insert({
+    anon_id: anonId,
+    event,
+    step,
+    source,
+    // `logGameStart` ile aynı sözleşme: web'de `app_version` BİLEREK null
+    // (web'in sürümü derleme sha'sıyla zaten tekil), platform ise her zaman
+    // yazılır — port satırlarını web'inkilerden ayıran tek alan.
+    platform: CLIENT_PLATFORM,
+    app_version: null,
+  });
+  if (error) {
+    console.error('[Kelimeki] logTutorialEvent hatası:', error.message);
+  }
+}
+
+/**
+ * Tanıtım hunisi: son `days` gün içinde kaynak (`auto`/`replay`) başına
+ * başlatan → bitiren → atlayan (yalnızca admin — Büyüme > Kullanıcı).
+ * Sözleşme: `AdminTutorialFunnelRow`.
+ */
+export async function fetchAdminTutorialFunnel(days = 30): Promise<AdminTutorialFunnelRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_tutorial_funnel', { p_days: days });
+  if (error) {
+    // Admin panelindeki .catch(setError) zinciri buna güveniyor — hatayı
+    // yutup boş dizi dönmek gerçek bir RPC/izin hatasını gizlerdi.
+    throw new Error(error.message);
+  }
+  return (data as AdminTutorialFunnelRow[]) ?? [];
 }
 
 /**

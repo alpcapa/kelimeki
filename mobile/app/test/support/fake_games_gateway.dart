@@ -46,6 +46,18 @@ class FakeGamesGateway implements GamesGateway {
     starts.add({'player_count': playerCount});
   }
 
+  /// Tanıtım turu olayları (Onboarding Faz 5) — testte sayılabilsin diye.
+  final List<Map<String, Object?>> tutorialEvents = [];
+
+  @override
+  Future<void> logTutorialEvent({
+    required String event,
+    required String source,
+    int? step,
+  }) async {
+    tutorialEvents.add({'event': event, 'source': source, 'step': step});
+  }
+
   @override
   Future<void> logGameFinish({
     required String? userId,

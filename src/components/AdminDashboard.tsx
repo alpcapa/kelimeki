@@ -14,6 +14,7 @@ import {
   fetchAdminRetentionCohorts,
   fetchAdminActivationStats,
   fetchAdminSourceFunnel,
+  fetchAdminTutorialFunnel,
   fetchAdminDeviceBreakdown,
   fetchAdminAppVersionBreakdown,
   fetchAdminPushVersionBreakdown,
@@ -43,6 +44,7 @@ import type {
   AdminRetentionCell,
   AdminActivationStats,
   AdminSourceFunnelRow,
+  AdminTutorialFunnelRow,
   AdminAppVersionRow,
   AdminPushVersionRow,
   AdminDeviceBreakdownRow,
@@ -304,6 +306,30 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <br />
         Hücre tonu yalnızca ikincil bir işaret; oran her hücrede sayıyla da yazıyor. CSV yüzde
         değil HAM SAYI indirir (yuvarlama kaybı olmasın diye — payda "Üye" sütununda).
+      </>
+    ),
+  },
+  'tanitim-turu': {
+    title: 'Tanıtım Turu',
+    body: (
+      <>
+        <b>Oynayarak öğren</b> tanıtımının hunisi (Onboarding Faz 5).{' '}
+        <b>Başlatan</b>/<b>Bitiren</b> = tanıtımı açan/dört sahneyi tamamlayan{' '}
+        <b>benzersiz cihaz</b>; parantezdeki sayı ADETTİR (bir cihaz tanıtımı iki kez
+        açabilir). <b>Atlayan</b> = "ATLA →" ile çıkan hamle sayısı, altındaki döküm hangi
+        sahnede bırakıldığını söyler.
+        <br />
+        <br />
+        <b>İki kaynak neden ayrı:</b> <b>otomatik</b> = ilk oyunda kapı açtı;{' '}
+        <b>tekrar</b> = kullanıcı "Nasıl oynanır?" penceresinden kendi başlattı. Kendi
+        isteğiyle izleyen tanım gereği daha meraklıdır — tek satırda toplansalar otomatik
+        kitlesinin gerçek terk oranı yukarı çekilirdi.
+        <br />
+        <br />
+        <b>Neden ayrı bir tablo:</b> tanıtım bilerek bir "oyun" SAYILMIYOR (huniye girmez,
+        istatistik/k-lig kirletmez), yani Kaynak Hunisi'nin hiçbir adımında görünmez.
+        <b>Sahne dökümü</b> asıl soruyu cevaplar: tanıtım BAŞTA mı kaybediyor (metin/hız)
+        yoksa SONDA mı (uzun geliyor).
       </>
     ),
   },
@@ -846,6 +872,81 @@ function GuestBreakdownTable<T extends { visitors: number }>({
  * aynı karar: yuvarlama kaybı olmaz, yüzde zaten yeniden hesaplanabilir.
  * `starters`/`member_games`/`players` tabloda hiç ayrı sütun değil, CSV'de var.
  */
+/**
+ * Tanıtım turu hunisi (Onboarding Faz 5, 8 Eylül 2026) — kaynak başına bir
+ * satır. Kasten KÜÇÜK: `SourceFunnelTable`'ın yüzde kipi/CSV'si burada yok,
+ * çünkü tablo en çok iki satır ve altı sayı taşıyor.
+ */
+function TutorialFunnelTable({
+  rows,
+  infoHint,
+}: {
+  rows: AdminTutorialFunnelRow[] | null;
+  infoHint?: ReactNode;
+}) {
+  // Boş/yüklenirken de `?` çizilir (öteki tablolarla aynı gerekçe).
+  if (rows === null || rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta veri yok.'}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-1.5">
+      {infoHint && <div className="self-end">{infoHint}</div>}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs font-mono">
+          <thead>
+            <tr className="text-muted border-b border-border">
+              <th className="text-left py-1 pr-2 font-normal">Kaynak</th>
+              <th className="text-right py-1 px-2 font-normal">Başlatan</th>
+              <th className="text-right py-1 px-2 font-normal">Bitiren</th>
+              <th className="text-right py-1 px-2 font-normal">Bitirme</th>
+              <th className="text-right py-1 pl-2 font-normal">Atlayan</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              // Oran CİHAZ üzerinden: adet payda olsaydı iki kez açıp bir kez
+              // bitiren cihaz oranı yapay olarak düşürürdü.
+              const oran = row.starters > 0 ? Math.round((row.finishers / row.starters) * 100) : null;
+              const sahneler = Object.entries(row.skip_steps ?? {}).sort(
+                (a, b) => Number(a[0]) - Number(b[0]),
+              );
+              return (
+                <tr key={row.source} className="border-b border-border/50 align-top">
+                  <td className="text-left py-1 pr-2 text-text">
+                    {row.source === 'replay' ? 'Tekrar' : 'Otomatik'}
+                    {sahneler.length > 0 && (
+                      <div className="text-[10px] text-muted leading-tight pt-0.5">
+                        bırakılan sahne: {sahneler.map(([k, n]) => `${k}. (${n})`).join(' · ')}
+                      </div>
+                    )}
+                  </td>
+                  <td className="text-right py-1 px-2 text-text">
+                    {row.starters} <span className="text-muted">({row.starts})</span>
+                  </td>
+                  <td className="text-right py-1 px-2 text-text">
+                    {row.finishers} <span className="text-muted">({row.finishes})</span>
+                  </td>
+                  <td className="text-right py-1 px-2 text-text">
+                    {oran === null ? '—' : `%${oran}`}
+                  </td>
+                  <td className="text-right py-1 pl-2 text-text">{row.skips}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function SourceFunnelTable({
   rows,
   infoHint,
@@ -1413,6 +1514,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [userGranularity, setUserGranularity] = useState<AdminActivityGranularity>('day');
   const [userPeriod, setUserPeriod] = useState<number>(30);
   const [sourceFunnel, setSourceFunnel] = useState<AdminSourceFunnelRow[] | null>(null);
+  const [tutorialFunnel, setTutorialFunnel] = useState<AdminTutorialFunnelRow[] | null>(null);
   const [deviceBreakdown, setDeviceBreakdown] = useState<AdminDeviceBreakdownRow[] | null>(null);
   const [appVersions, setAppVersions] = useState<AdminAppVersionRow[] | null>(null);
   const [pushVersions, setPushVersions] = useState<AdminPushVersionRow[] | null>(null);
@@ -1583,6 +1685,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     Promise.all([
       fetchAdminUserActivitySeries(userPeriod, userGranularity).then(setUserActivity),
       fetchAdminSourceFunnel(days).then(setSourceFunnel),
+      fetchAdminTutorialFunnel(days).then(setTutorialFunnel),
       fetchAdminDeviceBreakdown(days).then(setDeviceBreakdown),
       fetchAdminAppVersionBreakdown(days).then(setAppVersions),
       fetchAdminPushVersionBreakdown(days).then(setPushVersions),
@@ -2487,6 +2590,15 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <SourceFunnelTable
                       rows={sourceFunnel}
                       infoHint={<InfoHint id="kaynak-hunisi" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Tanıtım Turu (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <TutorialFunnelTable
+                      rows={tutorialFunnel}
+                      infoHint={<InfoHint id="tanitim-turu" onOpen={setHint} />}
                     />
                   </div>
                   <div className="flex flex-col gap-2">

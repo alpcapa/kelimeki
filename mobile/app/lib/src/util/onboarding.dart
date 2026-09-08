@@ -64,3 +64,79 @@ bool shouldShowTutorial(TutorialGateInput input) {
   }
   return true;
 }
+
+// ── Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) ─────────────────────
+// Web ikizi: `src/utils/onboarding.ts` (aynı adlar, aynı sıra, aynı metinler).
+// `tutorial_parity_test.dart` metinleri ve sırayı web kaynağından okuyup
+// karşılaştırıyor — biri değişirse öteki AYNI PR'da değişmek zorunda.
+//
+// NEDEN VAR: tanıtım yalnızca YENİ gelene ve yalnızca BİR KEZ açılıyor,
+// üstelik her sahnesinde "ATLA →" duruyor. Atlayan — ya da hiç göremeyen —
+// oyuncu üç mekaniği hiç öğrenmeden oynuyordu; bu ipuçları o boşluğu GERÇEK
+// oyunda, mekanik YAŞANDIĞI anda kapatır.
+//
+// Desen zoom balonunun birebir aynısı: cihaz yerel sayaç, ipucu BAŞINA tavan,
+// "gösterim" balonun EKRANA GELMESİDİR, depolama yoksa varsayılan GÖSTERME
+// tarafında (`FlagsStore` yoksa ekran hiç sormaz).
+enum OnboardingHintId { vergi, carpan, bolge }
+
+/// Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA).
+const int onboardingHintMaxShows = 2;
+
+/// Balonun ekranda kalma süresi — web `ONBOARDING_HINT_MS`.
+const Duration onboardingHintDuration = Duration(milliseconds: 4000);
+
+/// Aynı hamlede birden fazla ipucu hak edilebilir; ekranda AYNI ANDA TEK
+/// BALON olduğundan sıra sabit: en şaşırtıcı olan önce (web ile birebir).
+const List<OnboardingHintId> onboardingHintOrder = [
+  OnboardingHintId.vergi,
+  OnboardingHintId.carpan,
+  OnboardingHintId.bolge,
+];
+
+/// ⚠ Terim `bölge`, `sınır` DEĞİL (bkz. kök CLAUDE.md → "Terminoloji").
+const Map<OnboardingHintId, String> onboardingHintTexts = {
+  OnboardingHintId.vergi:
+      'Rakibin bölgesine değdin — bu yüzden puanının bir kısmı ona gitti.',
+  OnboardingHintId.carpan:
+      'Sarı bölgede kelime puanı 2 katı, tam ortadaki karede 3 katı olur.',
+  OnboardingHintId.bolge:
+      'Bölgen büyüdü — kendi taşlarınla ilerledikçe köşenin dışına taşar.',
+};
+
+/// Bir hamlenin HANGİ mekanikleri yaşattığı — çağıran motordan türetir.
+class OnboardingHintInput {
+  /// Bu hamlede bir ya da daha fazla rakip bölgesine vergi ödendi mi.
+  final bool paidTax;
+
+  /// Bu hamlede kurulan kelimelerden biri ×2 ya da ×3 aldı mı.
+  final bool gotMultiplier;
+
+  /// Hamleden SONRA oyuncunun bölgesi kendi 4×4 köşe bloğunun DIŞINA taşıyor mu.
+  final bool territoryOutsideCorner;
+
+  const OnboardingHintInput({
+    required this.paidTax,
+    required this.gotMultiplier,
+    required this.territoryOutsideCorner,
+  });
+}
+
+/// Bu hamlede hangi ipucu gösterilsin? Saf fonksiyon — sayaçlar çağırandan
+/// (`FlagsStore`) geliyor. `null` = gösterilecek ipucu yok.
+OnboardingHintId? pickOnboardingHint(
+  OnboardingHintInput input,
+  Map<OnboardingHintId, int> shown,
+) {
+  final hakEdilen = <OnboardingHintId, bool>{
+    OnboardingHintId.vergi: input.paidTax,
+    OnboardingHintId.carpan: input.gotMultiplier,
+    OnboardingHintId.bolge: input.territoryOutsideCorner,
+  };
+  for (final id in onboardingHintOrder) {
+    if ((hakEdilen[id] ?? false) && (shown[id] ?? 0) < onboardingHintMaxShows) {
+      return id;
+    }
+  }
+  return null;
+}

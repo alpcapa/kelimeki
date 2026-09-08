@@ -212,3 +212,116 @@ export function markZoomTried(): void {
 }
 
 export const SEEN_INTRO_KEY = 'kelimeki:seen-intro';
+
+// ── Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) ─────────────────────
+//
+// NEDEN VAR: tanıtım ("Oynayarak öğren") yalnızca YENİ gelene ve yalnızca BİR
+// KEZ açılıyor, üstelik her sahnesinde "Atla" duruyor. Atlayan — ya da hiç
+// göremeyen (mevcut cihaz bayrağı taşıyan, bkz. `shouldShowTutorial`) —
+// oyuncu, Kelimeki'yi klasik kelime oyunlarından ayıran üç mekaniği hiç
+// öğrenmeden oynuyordu. Bu ipuçları o boşluğu GERÇEK oyunda, mekanik
+// YAŞANDIĞI anda kapatır: oyuncu hamlesini yapar, hemen ardından ne olduğunu
+// tek cümlede okur.
+//
+// Desen zoom balonunun BİREBİR aynısı (1 Eylül 2026) ve bilerek öyle: cihaz
+// yerel sayaç, tavan `ONBOARDING_HINT_MAX_SHOWS`, "gösterim" balonun EKRANA
+// GELMESİDİR (nasıl kapandığı sayacı etkilemez), depolama kapalıysa varsayılan
+// GÖSTERME tarafında. Her ipucunun kendi sayacı var — biri tavana çarpınca
+// ötekiler susmaz, çünkü üçü farklı mekaniği anlatıyor ve oyuncu ikisini bir
+// oyunda, üçüncüsünü haftalar sonra yaşayabilir.
+export type OnboardingHintId = 'vergi' | 'carpan' | 'bolge';
+
+/** Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA). */
+export const ONBOARDING_HINT_MAX_SHOWS = 2;
+
+/** Balonun ekranda kalma süresi (ms) — tanıtımdaki `RAKIP_OKUMA`nın iki katı:
+ *  orada cümle "Rakip hamlesini yaptı", burada bir KURAL anlatılıyor. */
+export const ONBOARDING_HINT_MS = 4000;
+
+/**
+ * İpucu metinleri — her biri TEK cümle (kullanıcı kararı, 7 Eylül 2026:
+ * tanıtımın "tek cümle bütçesi" burada da geçerli).
+ *
+ * ⚠ Terim `bölge`, `sınır` DEĞİL (bkz. kök `CLAUDE.md` → "Terminoloji"):
+ * `sınır ihlali` EYLEMİN adı, `bölge vergisi` BEDELİN adı. Tanıtımın 2.
+ * sahnesi de aynı turda `sınırın büyür` → `bölgeni büyütürsün` diye
+ * düzeltilmişti; üç ipucu o dille aynı hizada.
+ */
+export const ONBOARDING_HINT_TEXTS: Record<OnboardingHintId, string> = {
+  vergi: 'Rakibin bölgesine değdin — bu yüzden puanının bir kısmı ona gitti.',
+  carpan: 'Sarı bölgede kelime puanı 2 katı, tam ortadaki karede 3 katı olur.',
+  bolge: 'Bölgen büyüdü — kendi taşlarınla ilerledikçe köşenin dışına taşar.',
+};
+
+/**
+ * Aynı hamlede birden fazla ipucu hak edilebilir (4. tanıtım sahnesi tam
+ * olarak böyleydi: hem ×3 hem vergi). Ekranda AYNI ANDA TEK BALON olacağından
+ * sıra sabit ve bu sırayla: en şaşırtıcı olan önce.
+ *
+ *   vergi  → "puanım neden eksildi?" — sorulmadan cevaplanmazsa oyuncu bunu
+ *            bir hata sanır (kayıtlı gerçek şikâyet sınıfı).
+ *   carpan → puan zaten büyüdü; cümle o büyümenin ADINI koyar.
+ *   bolge  → tahtada zaten GÖRÜNÜYOR (dış hat çizgisi büyüyor), yani en az
+ *            açıklamaya muhtaç olan.
+ */
+export const ONBOARDING_HINT_ORDER: readonly OnboardingHintId[] = ['vergi', 'carpan', 'bolge'];
+
+function hintKey(id: OnboardingHintId): string {
+  return `kelimeki:hint-shown:${id}`;
+}
+
+function hintShown(id: OnboardingHintId): number {
+  try {
+    return Number(localStorage.getItem(hintKey(id)) ?? '0') || 0;
+  } catch {
+    // Depolama kapalıysa "tavana ulaşıldı" varsayılır — zoom balonuyla aynı
+    // ilke: aynı cümleyi her hamlede göstermek, hiç göstermemekten kötü.
+    return ONBOARDING_HINT_MAX_SHOWS;
+  }
+}
+
+/** Üç sayacın tamamı — `pickOnboardingHint`e verilecek saf girdi. */
+export function onboardingHintShownCounts(): Record<OnboardingHintId, number> {
+  return { vergi: hintShown('vergi'), carpan: hintShown('carpan'), bolge: hintShown('bolge') };
+}
+
+/** Gösterime KARAR VERİLDİĞİNDE çağrılır (zoom balonundaki kuralın aynısı). */
+export function bumpOnboardingHintShown(id: OnboardingHintId): void {
+  try {
+    localStorage.setItem(hintKey(id), String(hintShown(id) + 1));
+  } catch {
+    // yoksay
+  }
+}
+
+/** Bir hamlenin HANGİ mekanikleri yaşattığı — çağıran motordan türetir. */
+export interface OnboardingHintInput {
+  /** Bu hamlede bir ya da daha fazla rakip bölgesine vergi ödendi mi. */
+  paidTax: boolean;
+  /** Bu hamlede kurulan kelimelerden biri ×2 ya da ×3 aldı mı. */
+  gotMultiplier: boolean;
+  /** Hamleden SONRA oyuncunun bölgesi kendi 4×4 köşe bloğunun DIŞINA taşıyor mu. */
+  territoryOutsideCorner: boolean;
+}
+
+/**
+ * Bu hamlede hangi ipucu gösterilsin? Saf fonksiyon — sayaçlar çağırandan
+ * geliyor (depolama erişimi burada YOK, `verify-tutorial-script` tabloyu
+ * doğrudan koşabilsin diye).
+ *
+ * `null` = gösterilecek ipucu yok (mekanik yaşanmadı ya da hepsi tavanda).
+ */
+export function pickOnboardingHint(
+  input: OnboardingHintInput,
+  shown: Record<OnboardingHintId, number>,
+): OnboardingHintId | null {
+  const hakEdilen: Record<OnboardingHintId, boolean> = {
+    vergi: input.paidTax,
+    carpan: input.gotMultiplier,
+    bolge: input.territoryOutsideCorner,
+  };
+  for (const id of ONBOARDING_HINT_ORDER) {
+    if (hakEdilen[id] && (shown[id] ?? 0) < ONBOARDING_HINT_MAX_SHOWS) return id;
+  }
+  return null;
+}

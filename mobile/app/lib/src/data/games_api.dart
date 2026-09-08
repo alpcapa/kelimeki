@@ -228,6 +228,21 @@ abstract class GamesGateway {
   Future<({String id, bool alreadyExisted})> insertGame(
       Map<String, Object?> row, String userId);
 
+  /// Tanıtım turunun anonim ölçümü (`tutorial_events`) — web
+  /// `logTutorialEvent` paritesi (Onboarding Faz 5, 8 Eylül 2026).
+  /// Admin panelindeki "Tanıtım Turu" kartını besler.
+  ///
+  /// ⚠ `game_starts` ile aynı gizlilik kararı: `user_id` YOK, tabloda da
+  /// böyle bir kolon yok. `anon_id` portta HENÜZ null (web'in
+  /// `visitTracking.ts` damgası porta hiç girmedi) — satır ADET'te sayılır,
+  /// BENZERSİZ CİHAZ'da sayılmaz; kart bunu `AdminTutorialFunnelRow`'da
+  /// açıkça yazıyor.
+  Future<void> logTutorialEvent({
+    required String event,
+    required String source,
+    int? step,
+  });
+
   /// Anonim BAŞLANGIÇ telemetrisi (`game_starts`) — web `logGameStart`
   /// paritesi (ROADMAP #9, 21 Ağustos 2026). Admin panelindeki Kaynak
   /// Hunisi'nin "Başlayan" adımını besler.
@@ -360,6 +375,22 @@ class SupabaseGamesGateway implements GamesGateway {
       }
       rethrow;
     }
+  }
+
+  @override
+  Future<void> logTutorialEvent({
+    required String event,
+    required String source,
+    int? step,
+  }) async {
+    await client.from('tutorial_events').insert({
+      'anon_id': null,
+      'event': event,
+      'step': step,
+      'source': source,
+      'platform': currentPlatform,
+      'app_version': appVersion,
+    });
   }
 
   @override
@@ -867,6 +898,20 @@ class GamesRepo {
       await gateway.logGameStart(playerCount: playerCount);
     } catch (e) {
       debugPrint('[Kelimeki] logGameStart hatası: $e');
+    }
+  }
+
+  /// Tanıtım turu olayı (`tutorial_events`) — `logStart` ile aynı
+  /// best-effort duruş: hata yalnızca loglanır, tanıtımı ASLA etkilemez.
+  Future<void> logTutorial({
+    required String event,
+    required String source,
+    int? step,
+  }) async {
+    try {
+      await gateway.logTutorialEvent(event: event, source: source, step: step);
+    } catch (e) {
+      debugPrint('[Kelimeki] logTutorialEvent hatası: $e');
     }
   }
 

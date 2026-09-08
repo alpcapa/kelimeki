@@ -2393,6 +2393,44 @@ test('Tanıtım kapısı: daha önce oynamış cihazda tanıtım açılmaz', asy
   await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
 });
 
+// Tanıtımı TEKRAR oynatma (Onboarding Faz 3, 8 Eylül 2026): "Nasıl oynanır?"
+// penceresinin en başındaki buton tanıtımı açar ve — kritik fark — kapanışta
+// GERÇEK OYUN BAŞLAMAZ, Setup'a dönülür. Kadro yok, `startLocalGame`
+// çağrılmıyor; bu testin asıl kilitlediği şey o.
+//
+// ⚠ Cihaz "daha önce oynamış" işaretiyle geliyor (miras quickstart bayrağı):
+// böylece kapının kendiliğinden açtığı tanıtımla karışmaz — burada AÇILAN
+// tanıtımın tek sebebi kullanıcının butona basması olabilir.
+test('Faz 3: "Nasıl oynanır?" penceresinden tanıtım tekrar oynanır, oyun BAŞLAMAZ', async ({
+  page,
+}) => {
+  page.on('dialog', (dialog) => dialog.accept());
+  await donenKullanici(page);
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('kelimeki:seen-quickstart', '1');
+    } catch {
+      // depolama kapalıysa kapı zaten "gösterme" tarafında
+    }
+  });
+  await page.goto('/');
+
+  await page.getByText('Nasıl oynanır?').click();
+  const tekrar = page.getByRole('button', { name: 'Tanıtım turunu oyna (1 dk)' });
+  await expect(tekrar).toBeVisible();
+  await tekrar.click();
+
+  // Tanıtım açıldı: karşılama penceresi + sahne sayacı.
+  await page.getByRole('button', { name: 'Devam', exact: true }).click();
+  await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
+
+  // Atla → Setup'a DÖNER (gerçek oyun başlamaz: "Pas Geç" yok, tahta yok).
+  await page.getByRole('button', { name: 'ATLA →' }).click();
+  await expect(page.getByText('OYUNU BAŞLAT')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Pas Geç' })).toHaveCount(0);
+  await expect(page.getByText('Bir şeyler ters gitti')).toHaveCount(0);
+});
+
 // Sürükleme (7 Eylül 2026, cihaz testi sonrası): tanıtımda taş artık raftan
 // alınıyor ve GERÇEK oyundaki jestle tahtaya taşınabiliyor. Telefon
 // ölçüsünde koşuyor — masaüstü 720 px'te raf ile tahtanın üst satırı aynı

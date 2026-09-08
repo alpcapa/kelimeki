@@ -388,3 +388,38 @@ girer `finishers`a girmez. Pratikte sapma yaratmıyor — port `utm_source`u da
 null gönderdiğinden o satırlar zaten 'bilinmiyor' kaynağında toplanıyor ve
 reklam kampanyalarının baktığı satırlarda yalnızca web var. Port damgalamayı
 eklerse burası da güncellenmeli.
+
+## Tanıtım Turu kartı (Onboarding Faz 5, 8 Eylül 2026)
+
+Büyüme > Kullanıcı → Kaynak Hunisi'nin hemen altında. Kaynak
+(`admin_tutorial_funnel`, `tutorial_events`) başına bir satır.
+
+**Neden ayrı bir kart:** tanıtım bilerek bir "oyun" SAYILMIYOR —
+`logGameStart` çağrılmıyor, `games` satırı açılmıyor, k-lig/istatistik
+etkilenmiyor (bkz. `docs/decisions/onboarding.md`). Bunun bedeli, tanıtımın
+Kaynak Hunisi'nin hiçbir adımında görünmemesiydi: özelliğin varlık gerekçesi
+ölçülebilir bir iddiaydı (*"çoğu kişi okumuyor, sıkılıp çıkıyor"*) ve o
+iddianın doğrulanacağı tek sayı yoktu.
+
+**İki satır, bilerek ayrı:** `Otomatik` = kapı ilk oyunda açtı; `Tekrar` =
+kullanıcı "Nasıl oynanır?" penceresinden kendi başlattı. Kendi isteğiyle
+izleyen tanım gereği daha meraklıdır — tek satırda toplansalar `auto`
+kitlesinin gerçek terk oranı yukarı çekilirdi.
+
+**Sayı çifti `Kaynak Hunisi`'ndeki ayrımın aynısı:** `Başlatan`/`Bitiren`
+BENZERSİZ CİHAZ, parantez içindeki ADET. Oran (`Bitirme`) CİHAZ üzerinden
+hesaplanıyor — adet payda olsaydı tanıtımı iki kez açıp bir kez bitiren
+cihaz oranı yapay olarak düşürürdü. `Başlatan` sıfırsa oran `—` (aynı
+"0% ≠ bilgi yok" kuralı).
+
+**Kartın asıl cevabı satırın altındaki sahne dökümü** (`skip_steps`, jsonb):
+*bırakılan sahne: 1. (4) · 3. (1)*. "Atlayan var" bilgisi tek başına ne
+yapılacağını söylemez; BAŞTA kaybediyorsa sorun metin/hız, SONDA
+kaybediyorsa tanıtım uzun.
+
+**Port `anon_id` göndermiyor** (`game_starts`taki aynı durum): port satırları
+ADET'te sayılır, BENZERSİZ CİHAZ'da sayılmaz. `AdminTutorialFunnelRow` bunu
+açıkça yazıyor; port damgalamayı eklerse burası da güncellenmeli.
+
+⚠ `skips` ile döküm toplamı EŞİT OLMAYABİLİR: sahne yazmayan bir istemcinin
+satırı `skips`e girer, döküme girmez.

@@ -309,6 +309,30 @@ export const TUTORIAL_FINISH_TEXT =
   'daraltarak büyümesini engelle.';
 
 /**
+ * Kapanış butonunun etiketi — tanıtımın NEREDEN açıldığına göre iki farklı
+ * söz veriyor (Onboarding Faz 3, 8 Eylül 2026):
+ *
+ *   `auto`   → kapı ilk oyunda açtı; kapanışta gerçek oyun BAŞLAR.
+ *   `replay` → kullanıcı "Nasıl oynanır?" penceresinden kendi başlattı;
+ *              kapanışta hiçbir oyun başlamaz, geldiği ekrana DÖNER.
+ *
+ * ⚠ Etiketler bu dosyada, `TutorialGame.tsx`te değil: iki platform da
+ * buradan okuyor ve `tutorial_parity_test.dart` ikisini tek kaynaktan
+ * karşılaştırıyor (eskiden metin JSX'in içinde gömülüydü ve parite testi
+ * onu regex'le söküyordu — koşullu hâle gelince o desen kırılırdı).
+ */
+/**
+ * "Nasıl oynanır?" penceresinin en başındaki tekrar-izleme butonu (Faz 3).
+ * Süre etikette yazılı, çünkü asıl itiraz "okumaya vaktim yok"tu — tanıtımın
+ * bir dakikadan kısa olduğunu görmeden kimse başlatmaz. Karşılama
+ * penceresindeki *"Yaklaşık 1 dk"* ile aynı vaat.
+ */
+export const TUTORIAL_REPLAY_CTA = 'Tanıtım turunu oyna (1 dk)';
+
+export const TUTORIAL_FINISH_BUTTON = 'Gerçek oyuna başla';
+export const TUTORIAL_REPLAY_FINISH_BUTTON = 'Kapat';
+
+/**
  * Rafların TAM olarak hangi sırayla dolacağı. `drawTiles` torbanın SONUNDAN
  * çeker (`pop`), yani buradaki sıra "çekilme sırası"dır ve torba kurulurken
  * tersine çevrilir.

@@ -97,7 +97,7 @@ src/
 │   ├── Setup.tsx                # oyun başlangıç / oyuncu kurulum ekranı
 │   ├── LogoMark.tsx             # "kelimeki" logosu — statik SVG path (üretilmiş, bkz. scripts/generate-logo-paths.mjs), font bağımsız
 │   ├── UserMenu.tsx             # hesap menüsü (giriş / hesap ayarları / skor kartı)
-│   ├── TutorialGame.tsx         # ilk oyunda açılan "oynayarak öğren" tanıtımı — raylı, 4 sahne, gerçek motorla oynanır (kendi useReducer'ı; kayıt/telemetri/k-lig ÇALIŞMAZ)
+│   ├── TutorialGame.tsx         # ilk oyunda açılan "oynayarak öğren" tanıtımı — raylı, 4 sahne, gerçek motorla oynanır (kendi useReducer'ı; kayıt/telemetri/k-lig ÇALIŞMAZ). "Nasıl oynanır?" penceresinden TEKRAR de oynanır (o modda kapanışta oyun başlamaz)
 │   ├── HelpModal.tsx            # nasıl oynanır sayfası (artık kendiliğinden AÇILMIYOR — tanıtım onun yerini aldı; Yardım linkinden ve /nasil-oynanir/ten erişilir)
 │   ├── AuthModal.tsx            # giriş / kayıt / şifre sıfırlama
 │   ├── ResetPasswordModal.tsx   # şifre sıfırlama e-postasındaki bağlantıdan sonra yeni şifre belirleme
@@ -124,7 +124,7 @@ src/
 │   ├── RemainingTilesModal.tsx  # torbada kalan taşlar
 │   ├── WildcardModal.tsx        # joker taşı harf seçimi
 │   ├── FeedbackModal.tsx        # görüş/şikayet bildirme formu
-│   ├── AdminDashboard.tsx       # admin paneli: üyeler, oyunlar, büyüme (aktif oyuncu/aktivasyon/retention/kaynak hunisi/YZ dengesi), geri bildirim + şikayetler (yalnızca is_admin); metrik tanımları "?" rozetlerinin açtığı popup'ta
+│   ├── AdminDashboard.tsx       # admin paneli: üyeler, oyunlar, büyüme (aktif oyuncu/aktivasyon/retention/kaynak hunisi/tanıtım turu/YZ dengesi), geri bildirim + şikayetler (yalnızca is_admin); metrik tanımları "?" rozetlerinin açtığı popup'ta
 │   ├── MemberMessageModal.tsx   # admin panelinden bir üyeye serbest metinli mesaj gönderme compose modalı
 │   ├── AdminChatTranscriptModal.tsx # admin paneli Şikayetler sekmesi: bitmiş bir Canlı oyunun tam sohbet dökümü
 │   ├── PlayerScoreCard.tsx      # bir oyuncunun ScoreCard'ının salt-okunur görünümü (admin panelinden ve k-lig'den açılır)
@@ -175,7 +175,7 @@ src/
 │   ├── cloudSaveMirror.ts # girişli kullanıcının devam eden oyunu için offline ayna/önbellek/silme kuyruğu (write-behind) + saf karar fonksiyonları
 │   ├── gameSync.ts      # bitmiş oyunlar için çevrimdışı/misafir kuyruğu
 │   ├── feedbackSync.ts # geri bildirim formu için çevrimdışı kuyruk
-│   ├── onboarding.ts   # ilk açılış / tanıtım / zoom balonu bayrakları
+│   ├── onboarding.ts   # ilk açılış / tanıtım / zoom balonu bayrakları + bağlamsal ipuçlarının kararı (pickOnboardingHint)
 │   ├── dragFeel.ts     # sürükleme jestinin "hissi" (eşikler, parmağın üstünde kaldırma, hayalet görseli) — App + OnlineGameScreen + TutorialGame ortak
 │   ├── tutorialScript.ts # tanıtımın senaryosu: 4 sahne + rakibin 4 cevabı, senaryolu torba/raf, beklenen puanlar (npm run verify-tutorial-script kilitler)
 │   ├── visitTracking.ts # anonim misafir ziyaret kimliği, cihaz/standalone tespiti, UTM kaynağı
