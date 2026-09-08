@@ -1,0 +1,253 @@
+# App Store Connect — form cevap kağıdı ve adım sırası (8 Eylül 2026)
+
+Bu dosya **App Store Connect'e elle girilecek her formun cevabını** taşıyor.
+`marketing/play-store/console-formlari.md`'nin iOS ikizi ve aynı disipline
+tabidir: Console'da tıklarken cevap burada hazır olsun, ikinci kez
+araştırılmasın.
+
+**Yaşayan bir kayıt, anlık görüntü DEĞİL.** Yeni bir veri toplayan özellik
+ya da görünürlük değişikliği geldiğinde `TermsModal`/`PrivacyModal` ile
+birlikte burası da güncellenir.
+
+⚠ **ROADMAP `#24 FAZ C` bir İNDEKS, kaynak burası.** Bir kova kapandığında
+karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
+özet tablo altı gün bayat kaldı.
+
+---
+
+## 0. Bugüne kadar BİTENLER (8 Eylül 2026)
+
+| | Ne | Durum |
+|---|---|---|
+| Üyelik | Apple Developer Program, **Bireysel** | ✅ aynı gün aktif (ödeme→aktivasyon ~12 dk) |
+| Team ID | `8277D85FY9` | ✅ |
+| App ID | `com.kelimeki.kelimeki`, **Explicit** + Push Notifications + Associated Domains | ✅ |
+| APNs anahtarı | Key ID `RL4JLXL389`, Team Scoped (All Topics), Sandbox & Production | ✅ Firebase'de iki satır da dolu |
+| Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
+| Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
+| App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ⚠ üretildi ama `.p8` İNDİRİLEMEDİ (aşağı) |
+| DSA trader status | — | ⬜ **BEKLİYOR, gönderim kapısı** (aşağı) |
+
+**Paid Apps Agreement İMZALANMAYACAK.** `New` durumunda kalır; uygulama
+ücretsiz, uygulama içi satın alma yok. Console'un *"update your legal
+entity information prior to signing the Paid Apps Agreement"* uyarısı
+yalnızca onu ilgilendiriyor, bizi değil.
+
+---
+
+## 1. Hesap kimliği
+
+| Alan | Değer |
+|---|---|
+| Program | Apple Developer Program |
+| Enrolled as | **Individual** |
+| Ad | Alp Reşat Çapa |
+| Apple ID | `destek@kelimeki.com` |
+| Team ID | `8277D85FY9` |
+| Yenileme | 9 Eylül 2027, auto-renew açık |
+
+⚠ **Bireysel hesabın geri alınamaz sonucu:** App Store'da satıcı olarak
+**kişinin yasal adı** görünür ve değiştirilemez. Play tarafı da kişiseldi
+(*Personal account*), yani iki mağazada tutarlı.
+
+⚠ **`destek@kelimeki.com` kritik bir kutu:** üyelik yenileme, sözleşme
+değişikliği ve App Review yazışmaları oraya düşüyor. Adres Zoho'da
+(`docs/decisions/support-email.md`); o kutuya erişimi kaybetmek geliştirici
+hesabına erişimi kaybetmek demek. Apple ID'nin 2FA'sındaki güvenilir
+numara/cihaz da kalıcı olmalı.
+
+---
+
+## 2. DSA trader status — **KARAR VERİLDİ, UYGULANMADI**
+
+**Durum: beyan HENÜZ YAPILMADI.** 8 Eylül 2026'da pencere açıldı ve
+bilinçli olarak **Cancel** edildi.
+
+### Karar: **trader olarak beyan edilecek** (AB dağıtımı korunacak)
+
+Ama **bugünkü telefon numarasıyla değil.** Sıra şu:
+
+1. Yedek hat aktifleştirilecek (kullanıcı, 9 Eylül 2026'da deneyecek)
+2. Business → Agreements → Compliance → **"I'm a trader under the DSA"**
+3. Üç alan girilecek: **adres · telefon · e-posta**
+4. Apple doğrulayacak → AB dağıtımı açılacak
+
+### Neden kişisel numarayla başlanmadı
+
+Trader bilgileri App Store ürün sayfasında **herkese görünür** olur
+(Apple: *"verify and display trader contact information"*). Konsolda
+sonradan değiştirilebiliyor — **ama yayınlanmış bilgi dünyadan geri
+alınamaz**: kazıyıcılar, arama motorları, arşivler. Kişisel cep numarasını
+birkaç hafta açıkta bırakmanın bedeli kalıcı.
+
+**Ve acelesi yoktu:** trader beyanı yalnızca **gönderimden önce** gerekli.
+8 Eylül itibarıyla uygulama `Prepare for Submission`, vitrin yok, TestFlight
+zinciri yok. Beyanı o gün yapmanın kazandırdığı hiçbir şey yoktu.
+
+**İkinci sebep:** Apple bilgiyi doğruluyor. Doğrulama numaraya kod
+gönderiyorsa (muhtemel, doğrulanmadı) kişisel numarayla beyan edip sonra
+değiştirmek doğrulamayı **iki kez** yapmak olurdu; yedek hat zaten aktif
+olmadan doğrulanamaz.
+
+### Alanlara ne girilecek
+
+| Alan | Değer | Not |
+|---|---|---|
+| E-posta | `destek@kelimeki.com` | **Bedava** — zaten sitede, Play listelemesinde ve uygulamada yazılı; yeni maruziyet yok |
+| Telefon | *yedek hat* | Aktifleştirilecek; kişisel numara KULLANILMAYACAK |
+| Adres | *belirlenecek* | Ev adresi zorunlu DEĞİL — bu alan üyelikteki adresten ayrı (*"won't impact the contact details for your Apple accounts or memberships"*). Posta kutusu / sanal ofis olur, ama Apple doğruladığı için gerçek olmalı |
+
+### ⚠ GÖNDERİM KAPISI
+
+**Trader beyanı + doğrulaması tamamlanmadan uygulama incelemeye
+gönderilemez.** Bu bir "unutma listesi" maddesi değil, gönderim öncesi
+kontrol listesinin maddesi.
+
+### Play tarafı aynı beyanı bekliyor
+
+DSA aynı şeyi Google Play'den de istiyor. Kelimeki Play'de kapalı testte
+olduğu için henüz tetiklenmemiş olabilir; üretime çıkınca gelecek. Depoda
+Play tarafında trader beyanı kaydı **yok**. **İki mağazada AYNI bilgi
+beyan edilmeli** — farklı bilgi vermek açıklaması zor bir tutarsızlık.
+
+### Kaynaklar
+
+- [Manage EU DSA trader requirements — App Store Connect Help](https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements/)
+- [Apps without trader status will be removed from the App Store in the EU](https://developer.apple.com/news/?id=einwn76m)
+
+Beyan değiştirilebilir: Business → Agreements → Compliance →
+*Complete Compliance Requirements*; uygulama başına açıp kapatma da var.
+
+---
+
+## 3. App Store Connect API anahtarı — **`.p8` İNDİRİLEMEDİ**
+
+| Alan | Değer |
+|---|---|
+| Name | `Kelimeki CI` |
+| Key ID | `7ARZF96LAK` |
+| Access | **Admin** |
+| Issuer ID | GitHub secret'ında (bu dosyaya YAZILMADI, aşağı bkz.) |
+
+**Access neden Admin:** yalnızca TestFlight'a paket yüklemek için *App
+Manager* yeterdi. Ama bu anahtar imzalama sertifikası ve provisioning
+profile de üretecek (Mac yok, fastlane API üzerinden yapacak) ve Console
+açıkça uyarıyor: *"Keys don't expire, but **can't be modified** to access
+more services once created."* Rol sonradan yükseltilemediğine ve tek
+kişilik bireysel hesapta Admin ↔ App Manager güvenlik farkı olmadığına
+göre yanlış tahminin bedeli (yeni anahtar + secret rotasyonu) gereksiz.
+
+### ⚠ ÇÖZÜLMEMİŞ: indirme iki kez hata verdi
+
+8 Eylül 2026: **Download API Key** penceresi *"An error has occurred. Try
+again later."* dedi. İkinci denemeden sonra satırdaki **Download** linki
+KAYBOLDU ve `LAST USED` doldu — yani Apple anahtarı indirilmiş sayıyor,
+`.p8` elde YOK.
+
+**Sonuç: bu anahtar KULLANILAMAZ.** Yapılacak: eskisini **revoke** et,
+yenisini üret (`Kelimeki CI 2`, Admin), indir.
+- Issuer ID **değişmez** (hesabın kimliği, anahtarın değil)
+- Yeni **Key ID** secret'a girilecek
+- Kullanılamayan anahtarı listede bırakma — hangisinin canlı olduğu karışır
+
+**Bu YALNIZCA 24.2'yi (imzalama + TestFlight) tıkıyor.** Vitrin, yaş
+derecesi, App Privacy, trader beyanı — hepsi bundan bağımsız ilerler.
+
+### ⚠ Değerler bu dosyaya YAZILMAZ
+
+`Key ID + Issuer ID + .p8` üçlüsü App Store Connect'e **Admin** erişimi
+demek ve **depo public** (`alpcapa/kelimeki`). Üçü de GitHub secret'ında
+yaşar:
+
+| Secret | İçerik |
+|---|---|
+| `APP_STORE_CONNECT_KEY_ID` | Key ID |
+| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID |
+| `APP_STORE_CONNECT_KEY_P8` | `.p8`'in tam içeriği (BEGIN/END satırları dahil) |
+
+⚠ **APNs Key ID ile karıştırma:** o (`RL4JLXL389`) ROADMAP'e YAZILDI ve
+doğrusu bu — her push JWT'sinin `kid` başlığında zaten herkese gidiyor,
+özel anahtar olmadan işe yaramıyor, ve hangi anahtarın canlı olduğunu
+bilmek operasyonel bir ihtiyaç (yanlışını iptal etmek canlıda push'u
+düşürür). App Store Connect anahtarının böyle bir kamusallığı YOK.
+
+---
+
+## 4. Uygulama kaydı — girilen değerler
+
+| Alan | Değer |
+|---|---|
+| Platform | iOS |
+| Name | `Kelimeki` |
+| Primary Language | **Turkish** |
+| Bundle ID | `com.kelimeki.kelimeki` |
+| SKU | `kelimeki-ios` |
+| User Access | Full Access |
+
+⚠ Bundle ID formda bir **açılır liste** — Developer portalında Identifiers'a
+kaydedilmemiş bir id orada görünmez. Kayıt sırası: Identifiers → sonra App
+Store Connect.
+
+---
+
+## 5. Yaş derecesi — Play'in IARC cevapları TEKRAR KULLANILIR
+
+App Store Connect *"Review New Social Media Questions on Age Ratings"*
+diye uyarıyor ve bu uygulamayı gerçekten ilgilendiriyor: Canlı oyunda
+oyun içi mesajlaşma var.
+
+**Cevaplar `marketing/play-store/console-formlari.md` §3.5'te ölçülmüş
+hâliyle duruyor** — burada TEKRARLANMIYOR, oradan okunur. Özet:
+
+- Kullanıcılar birbiriyle etkileşebiliyor / içerik paylaşabiliyor → **EVET**
+- Kişisel bilgi paylaşımı → **Evet** (serbest metin sohbet, takma ad, profil fotoğrafı)
+- Küfür/kaba dil (uygulamanın kendi ürettiği) → **Hayır** (sözlük TDK tabanlı)
+
+**Play'de sonuç: en düşük bant** (PEGI 3 · USK 0 · ESRB Everyone · IARC 3+).
+ROADMAP *"sohbet yaş derecesini yükseltir"* diye öngörmüştü, **ölçüm bunu
+doğrulamadı** — sohbete ancak kabul edilmiş arkadaşlar arasında
+erişilebildiği için. Apple'da da aynı dürüst beyan yapılacak; **sohbeti
+beyan etmemek askıya alma sebebi**, beyan etmek olmadı.
+
+---
+
+## 6. Sabit URL'ler (formlarda tekrar tekrar sorulur)
+
+| Ne | Adres |
+|---|---|
+| Destek | `https://kelimeki.com` |
+| Gizlilik politikası | `https://kelimeki.com/gizlilik/` |
+| Kullanım koşulları | `https://kelimeki.com/kullanim-kosullari/` |
+| Hesap silme | `https://kelimeki.com/hesap-silme/` |
+| Destek e-postası | `destek@kelimeki.com` |
+
+Kategori: **Games → Word** (Play'de de Games → Word).
+
+---
+
+## 7. Henüz DOLDURULMAMIŞ — açık işler
+
+- **Ekran görüntüleri.** Apple hem büyük iPhone hem (uygulama iPad'i
+  desteklediği için) **13" iPad** seti istiyor. Play'de bunlar gerçek
+  cihazdan alınmıştı; burada cihaz YOK. Kaynak CI'nın ürettiği simülatör
+  derlemesi (`kelimeki-ios-simulator.zip`) ya da Appetize olacak.
+  ⚠ **Simülatör penceresinden Apple'ın istediği tam piksel ölçüsünde kare
+  almanın yolu ÖLÇÜLMEDİ.** Tur açılırken bakılacak; çözülmüş sayma.
+- **App Privacy.** Play'in Data safety'sinin eşi ve büyük ölçüde ondan
+  türer (`play-store/console-formlari.md` §3.8 — o bölüm "en dikkatli iş"
+  diye işaretli, eşleme oradan yapılacak).
+- **Açıklama / anahtar kelimeler / promosyon metni.**
+  `marketing/play-store/metin.md` başlangıç noktası, ama App Store'un alan
+  sınırları farklı.
+
+---
+
+## 8. Bilinen tuzaklar (hepsi 8 Eylül 2026'da yaşandı)
+
+| Tuzak | Ders |
+|---|---|
+| `.p8` dosyaları KARIŞIYOR | APNs anahtarı (→ Firebase) ile App Store Connect API anahtarı (→ GitHub secret) ayrı dosyalar; ikisi de **bir kez** indirilir. `GoogleService-Info.plist` ise bir üçüncüsü ve gizli DEĞİL (repoda) |
+| APNs ekranı dişli menüsünde YOK | Firebase: dişli → **General** → sekme şeridinden **Cloud Messaging**. Firebase bu bölümü birkaç kez taşıdı |
+| APNs'te iki ortam satırı var | **Production** kritik (TestFlight/App Store oraya bağlanır); yalnız development doluyken bildirim **hatasız** düşmez |
+| App ID capability'leri Save'siz kaydedilmiyor | İşaretleyip sayfadan çıkmak sessizce kaybettirir; hata çok sonra, imzalama sırasında *"profile doesn't include entitlement"* diye çıkar |
+| Firebase'in **"Flutter"** akışı | KULLANILMADI — `firebase_options.dart` üretip Android tarafını da yeniden yazar. Bu depo yapılandırmayı iki platformda da NATIVE dosyadan okuyor (`push_init.dart`) |
