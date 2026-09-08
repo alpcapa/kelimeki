@@ -197,8 +197,12 @@ Team Keys'e dönmek ancak hesaba ileride başka biri eklenirse anlam kazanır.
 açılırsa bu ikisi birlikte yazılmalı — tek uca özgü olmadığının kanıtı.
 Yakılan üç Team Key'in ID'si de vakayı hızlandırır (`7ARZF96LAK` + ikisi).
 
-**Hiçbiri işi tıkamıyor:** 24.2'nin iş akışı anahtar olmadan yazılabilir
-(secret yoksa adım sessizce atlanır, Android'in `.aab` deseni).
+**Hiçbiri işi tıkamadı — 24.2 YAZILDI** (8 Eylül 2026): `mobile-build.yml`'in
+`ios` işine TestFlight adımı + `mobile/app/fastlane/` + `Gemfile`. Secret
+yoksa adım kendini atlıyor, yani anahtar gelmeden de merge edilebilir.
+⚠ **Ama HİÇ KOŞMADI** — "yazıldı" ile "çalışıyor" arasındaki fark burada
+gerçek; ilk koşu bir doğrulama turu olacak. Kurulum adımlarının kaynağı
+`mobile/docs/test-ortamlari.md` → "TestFlight kurulumu".
 
 ⚠ **Yedek yol, KISMİ:** TestFlight'a paket yüklemek için API anahtarı
 yerine **uygulamaya özel şifre** (appleid.apple.com → Sign-In and Security)

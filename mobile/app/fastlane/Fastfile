@@ -1,0 +1,51 @@
+# İmzalı .ipa üretimi + TestFlight yüklemesi (FAZ C 24.2).
+#
+# ⚠ BU DOSYA HENÜZ HİÇ KOŞMADI. App Store Connect API anahtarı Apple'ın
+# indirme ucundaki bir arıza yüzünden alınamadı (üç Team Key yakıldı, bkz.
+# marketing/app-store/console-formlari.md § 3). Yani "yazıldı" ile
+# "çalışıyor" arasındaki fark burada GERÇEK — ilk koşu bir doğrulama
+# turudur, rutin bir yayın değil.
+#
+# Mac YOK (geliştirici iPad'den çalışıyor). Sertifika ve profil bu yüzden
+# elle değil `match` ile, App Store Connect API üzerinden üretiliyor.
+
+default_platform(:ios)
+
+platform :ios do
+  desc "İmzalı .ipa üret ve TestFlight'a yükle"
+  lane :beta do
+    # API anahtarı ortamdan; hiçbiri repoda durmuyor (depo PUBLIC).
+    anahtar = app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: ENV.fetch("APP_STORE_CONNECT_KEY_P8"),
+      is_key_content_base64: false,
+      in_house: false
+    )
+
+    # Sertifika + profil. readonly:false ÇÜNKÜ ilk koşuda henüz hiçbir şey
+    # yok — match'in üretip depoya yazması gerekiyor. Sonraki koşular aynı
+    # sertifikayı yeniden kullanır (Apple'ın sayı sınırı bu yüzden var).
+    match(type: "appstore", api_key: anahtar, readonly: false)
+
+    # ⚠ `flutter build ios` BU LANE'DEN ÖNCE, iş akışında koşuyor.
+    # Sebep: `--dart-define` ile verilen derleme kimliği ve Supabase
+    # anahtarları orada geçiliyor (bkz. mobile-build.yml → "iOS derle").
+    # Burada yalnızca Xcode arşivi alınıp imzalanıyor.
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "../build/ios/ipa",
+      clean: false
+    )
+
+    # skip_waiting_for_build_processing: Apple'ın işleme süresi 10-40 dk
+    # arasında değişiyor ve CI'ı orada beklemek macOS runner dakikası yakar.
+    # Paket yüklendi mi sorusu App Store Connect'ten okunur.
+    upload_to_testflight(
+      api_key: anahtar,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end

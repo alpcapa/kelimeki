@@ -1,4 +1,8 @@
-// Bildirim paneli kanalı — Dart ↔ Kotlin paritesi (ROADMAP #15).
+// Bildirim paneli kanalı — Dart ↔ Kotlin ↔ **Swift** paritesi (ROADMAP #15).
+//
+// ⚠ 8 Eylül 2026'da ÜÇÜNCÜ dil eklendi (FAZ C 24.3): iOS ucu
+// `AppDelegate.swift`e yazıldı. Test o güne kadar yalnızca Kotlin'i
+// okuyordu; Swift tarafı yanlış bir adla yazılsa hiçbir şey düşmezdi.
 //
 // NEDEN VAR: kanal adı ve metot adı iki ayrı dilde, iki ayrı repo bölümünde
 // ELLE yazılı. Uyuşmazlık SESSİZ bir arıza üretir ve bu, bu depoda en pahalı
@@ -35,17 +39,22 @@ void main() {
   const kotlinYol =
       'mobile/app/android/app/src/main/kotlin/com/kelimeki/kelimeki/MainActivity.kt';
   const dartYol = 'mobile/app/lib/src/data/notification_shade.dart';
+  const swiftYol = 'mobile/app/ios/Runner/AppDelegate.swift';
 
   late String kotlin;
   late String dart;
+  late String swift;
 
   setUpAll(() {
     final k = _repo(kotlinYol);
     final d = _repo(dartYol);
+    final s = _repo(swiftYol);
     expect(k.existsSync(), isTrue, reason: '$kotlinYol bulunamadı');
     expect(d.existsSync(), isTrue, reason: '$dartYol bulunamadı');
+    expect(s.existsSync(), isTrue, reason: '$swiftYol bulunamadı');
     kotlin = _yorumsuz(k.readAsStringSync());
     dart = _yorumsuz(d.readAsStringSync());
+    swift = _yorumsuz(s.readAsStringSync());
   });
 
   test('kanal adı Dart ile Kotlin\'de BİREBİR aynı', () {
@@ -77,5 +86,42 @@ void main() {
     // rozet yine temizlenmezdi.
     expect(kotlin, contains('cancelAll()'),
         reason: 'MainActivity bildirimleri kaldırmıyor');
+  });
+
+  // ── iOS ucu (8 Eylül 2026'da eklendi) ───────────────────────────────────
+  // Kotlin dalıyla BİREBİR aynı üç kontrol. Swift bu test çatısından
+  // koşturulamaz, o yüzden burada da KAYNAK taraması yapılıyor — yorumlar
+  // sökülerek, çünkü bu dosyanın doküman yorumları kanal adını ve
+  // `removeAllDeliveredNotifications` dizesini zaten içeriyor ve yorumdan
+  // beslenen bir kontrol yalan söyler (31 Ağustos 2026'da Kotlin tarafında
+  // tam bu hata yaşandı, bkz. `_yorumsuz`).
+
+  test('kanal adı Dart ile Swift\'te BİREBİR aynı', () {
+    final dartAd =
+        RegExp(r"MethodChannel\('([^']+)'\)").firstMatch(dart)?.group(1);
+    final swiftAd =
+        RegExp(r'FlutterMethodChannel\(\s*name:\s*"([^"]+)"').firstMatch(swift)?.group(1);
+
+    expect(dartAd, isNotNull, reason: 'Dart tarafında MethodChannel(...) bulunamadı');
+    expect(swiftAd, isNotNull,
+        reason: 'Swift tarafında FlutterMethodChannel(name:) bulunamadı');
+    expect(dartAd, swiftAd,
+        reason: 'Kanal adı uyuşmuyor — çağrı sessizce düşer, panel temizlenmez');
+  });
+
+  test('metot adı Dart ile Swift\'te BİREBİR aynı', () {
+    final dartMetot =
+        RegExp(r"metot\s*=\s*'([^']+)'").firstMatch(dart)?.group(1);
+    expect(dartMetot, isNotNull, reason: 'Dart tarafında metot sabiti bulunamadı');
+    // Swift: switch cagri.method { case "<metot>": ... }
+    expect(swift, contains('case "$dartMetot":'),
+        reason:
+            'Swift `switch` dalı "$dartMetot" adını tanımıyor — çağrı FlutterMethodNotImplemented\'e düşer');
+  });
+
+  test('Swift gerçekten removeAllDeliveredNotifications() çağırıyor', () {
+    // Ada değil İŞE bakan kontrol — Kotlin dalındaki `cancelAll()` eşi.
+    expect(swift, contains('removeAllDeliveredNotifications()'),
+        reason: 'AppDelegate bildirimleri kaldırmıyor');
   });
 }

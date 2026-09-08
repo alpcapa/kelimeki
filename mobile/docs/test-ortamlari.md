@@ -352,19 +352,49 @@ fazların sırası ve bağımlılıkları orada.
    Entegrasyonlar → App Store Connect API → anahtar üret ("App Manager"
    rolü). `.p8` dosyası **yalnızca bir kez** indirilir. Üç değer gerekli:
    Key ID, Issuer ID, `.p8` içeriği.
-3. **GitHub deposu sırları** (Settings → Secrets → Actions):
-   `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`,
-   `APP_STORE_CONNECT_KEY_P8`, ayrıca imzalama için `MATCH_PASSWORD` ve
-   sertifika deposu erişimi (aşağı bkz.).
+3. **GitHub deposu sırları** (Settings → Secrets → Actions) — BEŞ tane:
+
+   | Secret | Ne |
+   |---|---|
+   | `APP_STORE_CONNECT_KEY_ID` | API anahtarının Key ID'si |
+   | `APP_STORE_CONNECT_ISSUER_ID` | hesabın Issuer ID'si (anahtar değişse de aynı kalır) |
+   | `APP_STORE_CONNECT_KEY_P8` | `.p8`'in TAM içeriği (BEGIN/END satırları dahil) |
+   | `MATCH_PASSWORD` | sertifikaları şifreleyen parola — **kaybolursa depodaki sertifikalar açılamaz** |
+   | `MATCH_GIT_TOKEN` | `kelimeki-certificates` deposuna yazma izni olan fine-grained token |
+
+   ⚠ **`MATCH_GIT_TOKEN` 1 yılda DOLUYOR** (8 Eylül 2026'da üretildi → ~8
+   Eylül 2027). Dolduğu gün iOS derlemesi *"repository not found"* diye
+   düşer ve sebebi anlaşılmaz — token'ın süresi hata metninde geçmiyor.
+   Yenileme: aynı izinlerle (yalnızca `kelimeki-certificates`, Contents:
+   Read and write) yeni token üret, secret'ı güncelle.
 4. **İmzalama.** Mac'in olmadığından sertifikayı elle üretemezsin;
    `fastlane match` sertifika + profili CI'da üretip **ayrı bir özel
    depoda** şifreli saklar (ilk çalıştırma üretir, sonrakiler tekrar
    kullanır). Apple hesap başına dağıtım sertifikası sayısı sınırlı
    olduğundan her çalıştırmada yenisini üretmek ÇALIŞMAZ — kalıcı depo
    şart.
-5. **Workflow'a yükleme işi eklenir** (`.github/workflows/mobile-build.yml`
-   içindeki `ios` işinin devamı): imzalı `.ipa` derle → TestFlight'a
-   yükle.
+5. ✅ **Workflow'a yükleme işi EKLENDİ** (8 Eylül 2026, FAZ C 24.2) —
+   `mobile-build.yml` → `ios` işinin sonundaki *"TestFlight'a yükle (imzalı
+   .ipa)"* adımı + `mobile/app/fastlane/` (Appfile · Matchfile · Fastfile)
+   + `mobile/app/Gemfile`.
+   - **Secret yoksa adım kendini atlıyor** (Android'in `.aab` desenі) —
+     yani bugün hiçbir şeyi değiştirmiyor.
+   - **Yalnızca `main` ve elle tetikleme.** Her dal push'unda yüklemek build
+     numarası yakar ve testçilere çöp paket gönderir.
+   - ⚠ **Adım Appetize'dan SONRA, bilinçli.** Önce konulmuştu ve yanlıştı:
+     imzalama düşerse sonraki adımlar atlanır ve bugün çalışan (doğrulanmış)
+     simülatör + Appetize akışı imzalama yüzünden bozulurdu. Yeni ve
+     doğrulanmamış bir adım, çalışan bir adımı rehin almamalı.
+   - ⚠ **`flutter build ios` fastlane'den ÖNCE koşuyor ve sıra ÖNEMLİ:**
+     `--dart-define`larla gömülen derleme kimliği ve Supabase anahtarları
+     oradan geliyor. Ters çevrilirse imzalı pakette teşhis satırı `Derleme
+     yerel` çıkar ve uygulama sunucuya hiç bağlanmaz.
+   - ⚠ **`--build-number` eklendi** (`github.run_number`): TestFlight aynı
+     numarayı ikinci kez kabul etmiyor. Android'in `.aab` adımı da aynı
+     sayacı kullanıyor, iki mağazanın numaraları hizalı.
+   - ⚠ **HENÜZ HİÇ KOŞMADI.** App Store Connect API anahtarı Apple'ın
+     indirme ucundaki arıza yüzünden alınamadı. İlk koşu bir DOĞRULAMA
+     turudur, rutin yayın değil.
 6. **iPad'de test.** TestFlight uygulamasını App Store'dan kur, davet
    maili gelince "Kabul Et" → Kelimeki gerçek bir uygulama olarak açılır.
    Yukarıdaki bölümler bundan sonra koşulabilir.

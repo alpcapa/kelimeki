@@ -1,0 +1,9 @@
+# fastlane — iOS imzalama ve TestFlight yüklemesi (FAZ C 24.2).
+#
+# NEDEN SÜRÜM SABİTLİ: fastlane sık sürüm çıkarıyor ve `match`in şifreleme
+# biçimi geçmişte kırılmıştı. Sabitlenmezse bir gün derleme, DEĞİŞMEMİŞ bir
+# depoda sebepsiz düşer — bu depoda en pahalı arıza sınıfı (bkz. KGP uyarısı,
+# mobile/docs/sonraya-birakilanlar.md).
+source "https://rubygems.org"
+
+gem "fastlane", "~> 2.228"

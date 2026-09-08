@@ -55,6 +55,16 @@
 		<false/>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
+		<!-- Uygulama kapalı/arka plandayken gelen push'un Dart tarafına
+		     ulaşabilmesi için. Bu anahtar olmadan iOS sessiz/veri taşıyan
+		     bildirimleri uygulamaya HİÇ teslim etmez; kullanıcıya banner
+		     görünür ama firebase_messaging'in arka plan işleyicisi çalışmaz.
+		     Android'de karşılığı yok (orada FCM servisi her durumda uyanır).
+		     Entitlements ile birlikte gelir: Runner/Runner.entitlements. -->
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>remote-notification</string>
+		</array>
 		<!-- Hesap Ayarları'ndaki profil fotoğrafı değiştirme (image_picker,
 		     yalnızca galeri — kamera izni BİLİNÇLİ istenmiyor, bkz.
 		     mobile/CLAUDE.md). -->
