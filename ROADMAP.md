@@ -1711,21 +1711,52 @@ değil yalnızca bildirim satırlarını hedefler. Sunucuya `badge` eklenip
 eklenmeyeceği bu fazın parçası DEĞİL — açılırsa `_shared/push.ts` +
 `verify-push-payload` birlikte değişir.
 
-### 24.4 — BENDE: Universal Links (Associated Domains)
+### 24.4 — Universal Links (Associated Domains) — **WEB YARISI ✅**
 
 **ROADMAP 0.B/3'ün açık kalan TEK parçası buydu** (satır 858).
 
-- `public/.well-known/apple-app-site-association` — `assetlinks.json`'ın
-  iOS ikizi, aynı klasörde. İçeriği `<TeamID>.com.kelimeki.kelimeki`, yani
-  **24.1/2 olmadan yazılamaz**.
-- `Runner.entitlements` → `applinks:kelimeki.com`.
-- ⚠ Dosya **uzantısız** servis edilmeli, `Content-Type: application/json`
-  ve yönlendirmesiz. `assetlinks.json` aynı yoldan çalışıyor, yani Vercel
-  tarafında sürpriz beklenmiyor — ama yayından sonra `curl` ile OKU
-  (deploy doğrulamasının aynı kuralı).
+**Team ID: `8277D85FY9`** (8 Eylül 2026, Membership details'ten okundu —
+gizli değil, uygulama kimliğinin parçası).
+
+✅ **Web yarısı YAZILDI** (8 Eylül 2026):
+`public/.well-known/apple-app-site-association`, tek `appID`
+`8277D85FY9.com.kelimeki.kelimeki`.
+
+**Kapsam Android'le BİLEREK aynı: `/*`, yani tüm `kelimeki.com` yolları.**
+`AndroidManifest.xml`'deki `autoVerify` intent-filter'ında da `android:path`
+kısıtı yok. İkisi ayrışırsa aynı link iki platformda farklı davranır ve bu
+**sessiz** bir arızadır — kapsamı daraltmak isteyen iki tarafı BİRLİKTE
+daraltmalı.
+
+⚠ **Vercel'de `Content-Type` ELLE verilmek zorunda ve bu iOS'a özgü.**
+Apple dosyayı **uzantısız** istiyor, Vercel ise Content-Type'ı uzantıdan
+türetiyor — yani dosya varsayılan olarak `application/json` etiketlenmez ve
+Apple'ın CDN'i doğrulamayı reddedebilir. `vercel.json` → `headers`'a açık
+bir kural eklendi. `assetlinks.json`'ın böyle bir derdi YOK (`.json`
+uzantısı var; canlıda ölçüldü: `content-type: application/json`), o yüzden
+bu tuzak Android turunda hiç görülmedi.
+⚠ `vercel.json`'a **şema dışı anahtar YAZILMAZ** — gerekçe yorumu olarak
+bir `comment` alanı denendi ve geri alındı; Vercel `vercel.json`'ı şemaya
+göre doğruluyor, bilinmeyen anahtar deploy'u kırabilir.
+
+**Ölçüldü (derlemeden sonra):** dosya `dist/.well-known/`e kopyalanıyor ve
+service worker precache'ine **girmiyor** (`globPatterns` varsayılanı
+uzantıya bakıyor, uzantısız dosya eşleşmiyor) — yani SW araya girmiyor.
+
+**KALAN — iOS yarısı, 24.3 ile AYNI PR'da:**
+- `ios/Runner/Runner.entitlements` (dosya bugün hiç yok) →
+  `com.apple.developer.associated-domains` = `applinks:kelimeki.com`
+- `project.pbxproj` → `CODE_SIGN_ENTITLEMENTS` bu dosyayı göstermeli
 - ⚠ App Links'in Android'deki dersi burada da geçerli: doğrulama yalnızca
-  **mağaza/TestFlight imzalı** derlemede sınanabilir, CI'nın imzasız
+  **TestFlight/mağaza imzalı** derlemede sınanabilir, CI'nın imzasız
   çıktısında değil (`mobile/docs/sonraya-birakilanlar.md`).
+
+⚠ **Yayından sonra `curl` ile OKU** (deploy doğrulamasının aynı kuralı):
+```
+curl -sI https://kelimeki.com/.well-known/apple-app-site-association | grep -i content-type
+```
+`application/json` dönmüyorsa Apple doğrulaması yapılmadan iOS yarısına
+geçme — entitlements doğru olsa bile link uygulamayı açmaz.
 
 ### 24.5 — SENDE + BENDE: mağaza vitrini
 
