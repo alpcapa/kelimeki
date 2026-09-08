@@ -162,6 +162,28 @@ emin olmadan aab yapılmayacak"* — bu turda kullanıcı APK yerine
 **Appetize**'ı yeterli gördü (*"apk denemesine gerek yok bence"*), karar
 kayda geçti.
 
+**Sürüm adı (Console):** `1.0.9 (581)`
+
+**Sürüm notları — TASLAK (`tr-TR`, 348/500 karakter):**
+
+```
+Yenilikler
+• Oyuna ilk kez başlayanlar için kısa bir tanıtım turu: dört sahnede kendi köşenden başlamayı, bölgeni büyütmeyi, ortadaki puan çarpanlarını ve bölge vergisini oynayarak öğreniyorsun (yaklaşık 1 dakika).
+• Tur yalnızca yeni gelenlere bir kez açılır, "Atla" ile geçilebilir.
+• Oyun içindeki ipucu balonları büyüdü, yazıları daha okunaklı.
+```
+
+⚠ "Düzeltmeler" başlığı YOK: bu paketteki düzeltmelerin hepsi tanıtımın
+KENDİ turlarında bulundu ve hiç sahaya çıkmamıştı — mevcut bir testçinin
+"düzeldi" diye tanıyacağı bir şey değil. Testçiye görünen tek eski-davranış
+değişikliği balon puntosu, o da "Yenilikler"in son maddesinde.
+
+**Derlenen paket — Play'e GİDECEK olan:** koşu **581**, `1abde38`
+(#486'nın merge commit'i), `.aab` **63.418.306 bayt**, SHA-256
+`e7f37832c91f74f0e920e8c46244420f781ac6ecc0879f995155c5f65dfbd671`
+(7 Eyl 2026, 21:57 UTC — `mobile-latest`e yüklenme anı).
+İndirme: `https://github.com/alpcapa/kelimeki/releases/download/mobile-latest/kelimeki.aab`
+
 **Kalan adımlar:** `.aab`yi `mobile-latest`ten indir → Play Console → kapalı
 test (Alpha) → yükle → gönderim saatini (Console'un kendi kaydı) ve durumu
 bu kütüğe yaz; yayınlandığında 1.0.8'i pasife çek, "İnceleme süresi"
