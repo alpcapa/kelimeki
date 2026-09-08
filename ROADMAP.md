@@ -1691,9 +1691,26 @@ daha çıktı.
 |---|---|
 | Sen | Firebase Console → projeye **iOS uygulaması** ekle (`com.kelimeki.kelimeki`) → `GoogleService-Info.plist` indir |
 | Sen | 24.1'in APNs `.p8`'ini Firebase → Cloud Messaging → APNs Authentication Key olarak yükle |
+| — | ✅ **APNs anahtarı ÜRETİLDİ** (8 Eylül 2026): **Key ID `RL4JLXL389`**, ad *Kelimeki APNs*, Team Scoped (All Topics) + Sandbox & Production. Firebase'e yüklenmesi gereken üçlü: bu Key ID + Team ID `8277D85FY9` + `.p8` |
 | Ben | `GoogleService-Info.plist` → `ios/Runner/` (Android'in `google-services.json`'ı repoda; **aynı kararı izle**, ayrı bir tartışma açma) |
 | Ben | `ios/Runner/Runner.entitlements` — dosya bugün **hiç yok**; `aps-environment` + `Info.plist`'e `UIBackgroundModes: remote-notification` |
 | Ben | `AppDelegate.swift`'e bildirim paneli kanalı |
+
+⚠ **`.p8` DOSYALARI DEPOYA GİRMEZ — depo PUBLIC** (8 Eylül 2026'da
+doğrulandı: `alpcapa/kelimeki`, `visibility: public`). Burada yalnızca
+**Key ID** ve **Team ID** kayıtlı; ikisi de gizli değil (Team ID her iOS
+uygulamasının AASA'sında zaten yayınlanıyor, APNs Key ID her push JWT'sinin
+`kid` başlığında gidiyor) ve özel anahtar olmadan işe yaramıyorlar.
+Kaydedilmelerinin sebebi operasyonel: hesapta birkaç anahtar birikince
+"Firebase hangisini kullanıyor" sorusunun cevabı olmazsa **yanlış anahtar
+iptal edilip canlıda push düşer**.
+
+⚠ **APNs anahtarının iki ayarı sessiz arıza üretir** (bu turda seçildi,
+kayda geçsin): *Environment* **Sandbox & Production** olmalı — TestFlight
+ve App Store derlemeleri Production'a, Xcode'dan çıkan geliştirme
+derlemeleri Sandbox'a bağlanır; tek ortam seçilirse öteki tarafta bildirim
+**hata vermeden** gelmez. *Type* **Team Scoped (All Topics)** — kısıtlı bir
+anahtar, sonradan eklenen bir bundle ID'de aynı şekilde sessizce çalışmaz.
 
 **Kanal adı ve metot BUGÜNDEN belli, uydurulmayacak** —
 `data/notification_shade.dart:52,56` Kotlin tarafıyla birebir aynı olmak
