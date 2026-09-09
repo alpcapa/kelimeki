@@ -285,7 +285,41 @@ soran kalıpta; kendi bilgilerimizle dolduruldu — *User's Apple Account:*
   tabloyu karıştırır.
 - ⚠ **Mükerrer vaka açılmayacak.**
 
-### ⏳ DURUM — 9 Eylül 2026 akşamı: Support'tan HÂLÂ YANIT YOK
+### ✅ ÇÖZÜLDÜ — 9 Eylül 2026 akşamı: `.p8` bir **Mac'ten** indirildi
+
+**Anahtar elde.** Kullanıcı aynı hesapla, eşinin **macOS** makinesinden
+denedi ve indirme İLK SEFERDE başarılı oldu. Support hiç yanıt vermeden
+çözüldü.
+
+**ÖLÇÜM — arıza istemci/platform tarafındaydı, Apple'ın sunucusunda değil:**
+
+| Ortam | Sonuç |
+|---|---|
+| iPadOS Safari (normal) | ✗ (defalarca) |
+| iPadOS Safari (özel sekme) | ✗ |
+| **macOS** | ✅ **ilk denemede** |
+
+⚠ **Ama "iPad hiç indiremezdi" diye YAZILAMAZ:** aradan saatler geçti,
+Apple'ın sessizce düzeltmiş olma ihtimali elenemez. Elimizdeki tek kesin
+şey yukarıdaki tablo. **Yine de karar için yeterliydi ve doğru öneriyi
+işaret etti:** "iPad'de Chrome dene" DEĞİL, "gerçekten farklı bir platform
+dene". iPad'de tüm tarayıcılar WebKit kullandığından Chrome aynı motoru
+koşturacaktı; macOS hem farklı motor/sürüm hem farklı indirme yığını.
+
+**Sıradaki iki temizlik adımı (kullanıcıda):**
+1. **Support vakasını kapat** — çözüldüğünü yaz. Aksi halde günler sonra
+   bir geri arama gelir ve kimse neden arandığını hatırlamaz.
+2. Vaka kapandıktan sonra **artık kullanılmayan bireysel anahtarı revoke
+   et** — "inceleyebilesiniz diye bıraktım" gerekçesi düştü. Altı Team Key
+   zaten revoke.
+3. ⚠ **`.p8`'in Mac'teki kopyasını SİL.** Başkasının makinesi ve dosya
+   İndirilenler'de duruyor; anahtar Admin erişimi taşıyor.
+
+⚠ **Anahtar bir kez sohbetten geçti.** Rotasyon artık ucuz (çalışan bir
+indirme yolu var: aynı Mac), yani hesabın hijyeni önemsenirse ileride yeni
+bir anahtar üretip bunu revoke etmek tek adımlık iş.
+
+### Önceki durum kaydı — Support'tan yanıt yoktu
 
 ⚠ **Bu satır bir kez "Support yanıt verdi" diye yazıldı ve YANLIŞTI**
 (aynı akşam düzeltildi). Sebep tam da aşağıda uyarısı yazılı olan şey:

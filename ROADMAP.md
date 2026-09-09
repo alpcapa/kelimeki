@@ -1263,11 +1263,13 @@ yani gönderim kapısı HÂLÂ AÇIK. ⚠ Bu satır bir kez *"kapandı"* diye
 yazıldı ve aynı gün düzeltildi: sözlü bildirim değil, **Console'un kendi
 STATUS alanı** kanıttır (gerekçe `console-formlari.md` §2).
 
-**Sırayı tıkayan iki şey, ikisi de bizim DIŞIMIZDA:**
-1. **API anahtarı** — indirilemiyor. 9 Eylül akşamı: **Support'tan hâlâ
-   yanıt yok** (~18 saat), Apple sistem durumu YEŞİL, **altı Team Key
-   yandı** (üçü o gün), incognito dahil her deneme başarısız. Sıradaki adım
-   vakayı telefon geri aramasına yükseltmek. 24.2'yi, yani imzalı paketin TestFlight'a çıkmasını
+**Sırayı tıkayan şeyler (9 Eylül akşamı itibarıyla BİRİ DÜŞTÜ):**
+1. ✅ **API anahtarı ALINDI (9 Eylül 2026 akşamı)** — bir **Mac'ten**, ilk
+   denemede. iPadOS'ta (özel sekme dahil) defalarca başarısız olmuştu;
+   ölçüm arızanın istemci/platform tarafında olduğunu gösteriyor, Apple'ın
+   sunucusunda değil. Support hiç yanıt vermeden çözüldü. Kalan iş
+   **secret'ların girilmesi** ve 24.2'nin İLK KOŞUSU — yani bir doğrulama
+   turu (`console-formlari.md` §3). 24.2'yi, yani imzalı paketin TestFlight'a çıkmasını
    tıkıyor. ⚠ Ama anahtar **imzalama için zorunlu değil, OTOMASYON için
    zorunlu** — `openssl` CSR + elle sertifika/profil + uygulamaya özel şifre
    ile anahtarsız bir zincir kurulabilir (kayıt `console-formlari.md` §3).
