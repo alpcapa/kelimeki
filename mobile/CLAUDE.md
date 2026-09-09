@@ -550,9 +550,14 @@ mobile/
     test/                  # util + controller (golden replay) + widget testleri
                            # + support/ (paylaşılan test altyapısı)
     integration_test/      # ⚠ `flutter test` BUNU TOPLAMAZ — GERÇEK iOS
-    test_driver/           # simülatöründe koşan mağaza ekran görüntüsü boru
-                           # hattı (App Store 24.5). Yalnızca `flutter drive`
-                           # ile, .github/workflows/ios-screenshots.yml'de
+    test_driver/           # simülatöründe koşan İKİ hedef: mağaza ekran
+                           # görüntüleri (App Store 24.5) + iPad MANZARA
+                           # ölçümü (ROADMAP §25). Ortak sahne (sahte
+                           # oturum/servisler, tohumlu tahta)
+                           # integration_test/support/sahne.dart'ta —
+                           # "temsili kare" kuralları orada yaşıyor, ikinci
+                           # bir kopya açma. Yalnızca `flutter drive` ile,
+                           # .github/workflows/ios-screenshots.yml'de
     android/ ios/          # flutter create çıktısı + elle değişiklikler
   kelimeki_core/           # SAF Dart motor paketi — Flutter bağımlılığı YOK
     lib/src/               # constants · model · engine · rules · ai · data ·

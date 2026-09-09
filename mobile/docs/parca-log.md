@@ -25,6 +25,50 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 196 — iPad MANZARA ölçümü CI'a bindirildi (9 Eylül 2026;
+     ROADMAP §25):** Apple bundle'ı 90474 ile reddedince `Info.plist`
+     iPad için DÖRT yönelimi bildirmek zorunda kaldı (#501), yani uygulama
+     iPad'de artık döndürülebilir ve `main.dart`in portre kilidi orada
+     FİİLEN ÖLÜ. §25 *"ÖLÇ — cihazda"* diyordu; cihaz yok, ama 24.5'in kare
+     boru hattı zaten GERÇEK bir `iPad Pro 13"` simülatörü koşturuyordu —
+     ölçüm oraya bindirildi.
+     - **Ne eklendi:** `integration_test/ipad_landscape_test.dart` (beş
+       ekran: oyun · kurulum · skor kartı · yardım · dar pencere, + portreye
+       dönüş) ve `ios-screenshots.yml`e ikinci bir iş (`ipad-manzara`).
+     - ⚠ **Bilerek KAPI DEĞİL, ölçü aleti.** Manzaraya özgü düzen henüz YOK;
+       "taşma varsa kırmızı" diyen bir test ölçüm turunun İLK adımında kendi
+       bulgusuyla düşerdi ve bulgu okunmadan iş kırmızıya dönerdi. Bulgular
+       log'a `[MANZARA]` önekiyle yazılıp koşu ÖZETİNE kopyalanıyor (artefakt
+       indirmek kimlik doğrulaması istiyor, ajan indiremiyor — §13'ün aynı
+       kısıtı). İş yalnızca ALTYAPI arızasında düşer: cihaz dönmedi
+       (`expect` + `_bekle`) ya da kare manzara ölçüsünde (2752×2064)
+       çıkmadı (`sips`).
+     - **Dönüşün kanıtı ÇİFT:** testin kendi `expect`i `view.physicalSize`in
+       genişliğinin yüksekliği geçmesini bekliyor, iş akışının `sips` adımı
+       da kareyi portrenin TERSİ ölçüde arıyor. ⚠ `setPreferredOrientations`
+       senkron bir atama değil, platform İSTEĞİ — beklemeden ölçmek kareyi
+       dönüşün ORTASINDA yakalar; `_bekle` 12 sn tavanla yokluyor.
+     - **Sahne ORTAK dosyaya çıkarıldı** (`integration_test/support/
+       sahne.dart`): sahte oturum, sahte istatistik ucu, Setup'ın sahte
+       servisleri, tohumlu tahta, `settle`. Kopyalanmadı çünkü orada
+       yaşayan şey kurallar: gerçek isim/e-posta/avatar kareye giremez ve
+       `supabase == null` iken ekran *"offline mod"* yazıp ÜSTÜNDE canlı
+       oyun listeliyor (gerçekte oluşmayan bir ekran). İkinci bir kopya
+       bunları sessizce ayrıştırırdı. `store_screenshots_test.dart` 302
+       satır küçüldü; taşınan kod BİREBİR aynı, yalnızca `_` önekleri
+       düştü.
+     - **Ön ölçüm (Linux, widget ağacı — Skia, iOS kabuğu YOK):** oyun ·
+       kurulum · yardım × portre (1032×1376) · manzara (1376×1032) · dar
+       pencere (430×1032) = dokuz kombinasyon, **taşma/hata SIFIR**. Yani
+       manzara kırılmıyor. Asıl bulgu başka: uygulama `max-w-680` kolonuyla
+       çizildiğinden 13" iPad'de manzarada genişliğin ~%50'si boş, portrede
+       ise altta ~%25 boş — manzara bugün portreden daha KÖTÜ değil.
+     - ⚠ **Doğrulama sınırı:** `integration_test/` altındaki bir dosya
+       Linux'ta koşturulamıyor — `flutter test <dosya>` bile *"No supported
+       devices"* diyor. Yani bu turun yerel kanıtı yalnızca `dart analyze`
+       + yukarıdaki widget ağacı ön ölçümü; dönüşün gerçekten çalıştığı
+       ancak CI koşusuyla bilinir.
+
    - ✅ **Parça 195 — tanıtımın tarayıcı turu: karşılama penceresi + balon
      hizası/tipografisi (7 Eylül 2026 akşamı; web + port AYNI PR):**
      kullanıcı Pages derlemesini denedi, üç madde bildirdi.

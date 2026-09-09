@@ -11,6 +11,14 @@
 # ÇIKTI: her cihaz için PNG'ler, artefakt olarak. **Repoya COMMIT EDİLMEZ** —
 # mağaza görüntüleri üretilmiş dosyalardır ve `build/` gitignore'da.
 #
+# İKİNCİ İŞ — `manzara` (9 Eylül 2026, ROADMAP §25): aynı simülatör boru
+# hattı, farklı amaç. Apple bundle'ı 90474 ile reddedince iPad DÖRT yönelimi
+# birden bildirmek zorunda kaldı, yani uygulama iPad'de artık döndürülebilir
+# ve manzara HİÇ bakılmamış bir yüzey. §25 *"ÖLÇ — cihazda"* diyor; elde
+# cihaz yok, ama bu iş akışı zaten GERÇEK bir iPad Pro 13" simülatörü
+# koşturuyor — ölçüm oraya bindirildi. Kareler mağazaya GİTMEZ, teşhis
+# içindir; bulgular koşu log'undaki `[MANZARA]` satırlarında.
+#
 # ⚠ Kare KIRPILMAZ. Play turunda ham kare Play'in 2:1 tavanını aştığı için
 # kırpmak ZORUNLUYDU; App Store TAM piksel ölçüsü istiyor ve kırpmak kareyi
 # geçersiz yapar. Aşağıdaki ölçüm adımı bunu her koşuda kanıtlıyor.
@@ -119,6 +127,91 @@ jobs:
             echo "- \`$(basename "$png")\` → ${w}×${h}" >> "$GITHUB_STEP_SUMMARY"
             if [ "$w" != "${{ matrix.genislik }}" ] || [ "$h" != "${{ matrix.yukseklik }}" ]; then
               echo "::error::$(basename "$png") ${w}×${h} — beklenen ${{ matrix.genislik }}×${{ matrix.yukseklik }}"
+              hatali=1
+            fi
+          done
+          exit $hatali
+
+  # ⚠ AYRI BİR İŞ, matrise EKLENMEDİ: beklenen piksel ölçüsü portrenin TERSİ
+  # (2752×2064) ve hedef dosya başka. Matrise sıkıştırmak iki farklı işi tek
+  # satırda gizlerdi; burada "kare üretimi" ile "manzara ölçümü" ayrı ayrı
+  # yeşil/kırmızı olabiliyor.
+  manzara:
+    name: ipad-manzara
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Simülatörü seç ve başlat
+        id: sim
+        run: |
+          set -euo pipefail
+          udid=""
+          IFS='|' read -ra adaylar <<< 'iPad Pro 13-inch (M5)|iPad Pro 13-inch (M4)|iPad Pro (12.9-inch)'
+          for ad in "${adaylar[@]}"; do
+            udid=$(xcrun simctl list devices available \
+              | grep -F "$ad (" | head -1 \
+              | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/' || true)
+            if [ -n "$udid" ]; then echo "seçilen simülatör: $ad ($udid)"; break; fi
+          done
+          if [ -z "$udid" ]; then
+            echo "::error::Aday iPad simülatörlerinin hiçbiri yok"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      # Bu turun ASIL ÇIKTISI kareler değil, log'daki `[MANZARA]` satırları:
+      # her ekran için mantıksal ölçü, taşma/hata ve tahta/raf/buton
+      # kutularının ekranın içinde kalıp kalmadığı. `tee` ile ayıklanıp
+      # koşu özetine de yazılıyor — artefakt indirmeden okunabilsin diye.
+      - name: Manzarayı ölç
+        working-directory: mobile/app
+        run: |
+          set -euo pipefail
+          flutter pub get
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/ipad_landscape_test.dart \
+            -d "${{ steps.sim.outputs.udid }}" 2>&1 | tee /tmp/manzara.log
+
+      - name: Bulguları özete yaz
+        if: ${{ always() }}
+        run: |
+          {
+            echo '### iPad manzara ölçümü'
+            echo '```'
+            grep -F '[MANZARA]' /tmp/manzara.log || echo '(bulgu satırı yok — sürüş adımı düşmüş olabilir)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: kelimeki-ipad-manzara
+          path: mobile/app/build/screenshots/*.png
+          if-no-files-found: warn
+
+      # Ölçüm adımı burada İKİ şeyi birden kanıtlıyor: kare üretildi VE cihaz
+      # gerçekten döndü (manzara ölçüsü portrenin tersi). Testin kendi
+      # `expect`i de dönüşü kontrol ediyor, bu onun bağımsız ikinci kanıtı.
+      - name: Piksel ölçüsünü doğrula (manzara = portrenin tersi)
+        working-directory: mobile/app
+        run: |
+          set -euo pipefail
+          hatali=0
+          for png in build/screenshots/*.png; do
+            w=$(sips -g pixelWidth  "$png" | awk '/pixelWidth/{print $2}')
+            h=$(sips -g pixelHeight "$png" | awk '/pixelHeight/{print $2}')
+            echo "- \`$(basename "$png")\` → ${w}×${h}" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$w" != "2752" ] || [ "$h" != "2064" ]; then
+              echo "::error::$(basename "$png") ${w}×${h} — beklenen 2752×2064 (manzara)"
               hatali=1
             fi
           done

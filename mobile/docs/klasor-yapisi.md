@@ -351,6 +351,29 @@ mobile/
                              # "A Timer is still pending" ile düşer. Kendi
                              # kopyanı yazma — üç kopya tam bu yüzden tek
                              # kaynağa indi (Parça 168)
+    integration_test/        # ⚠ `flutter test` BUNU TOPLAMAZ ve `flutter test
+                             # <dosya>` da koşturamaz ("No supported devices")
+                             # — yalnızca `flutter drive` ile, GERÇEK bir iOS
+                             # simülatöründe koşar. İKİ hedef var:
+      store_screenshots_test.dart # mağaza kareleri (App Store 24.5): 6 kare,
+                             # iki cihaz ölçüsünde. Kare Apple'ın istediği
+                             # TAM pikselde çıkmalı, KIRPILMAZ
+      ipad_landscape_test.dart # iPad MANZARA ölçümü (ROADMAP §25). Bir KAPI
+                             # DEĞİL ölçü aleti: bulgular log'a `[MANZARA]`
+                             # önekiyle yazılır, iş yalnızca ALTYAPI
+                             # arızasında düşer (cihaz dönmedi/kare yok) —
+                             # çünkü manzaraya özgü düzen henüz YOK ve
+                             # "taşma varsa kırmızı" diyen bir test ölçüm
+                             # turunun ilk adımında kendi bulgusuyla düşerdi
+      support/sahne.dart     # İKİ hedefin ORTAK sahnesi: sahte oturum/
+                             # servisler, tohumlu tahta, `settle`. ⚠ Kopyalama
+                             # — "temsili kare" kuralları (gerçek isim/
+                             # e-posta/avatar YOK; `supabase == null` iken
+                             # ekran "offline mod" yazıp üstünde canlı oyun
+                             # listeliyor) burada yaşıyor; ikinci bir kopya
+                             # onları sessizce ayrıştırır
+    test_driver/integration_test.dart # `flutter drive` sürücüsü — PNG'yi
+                             # DİSKE o yazıyor (`onScreenshot`)
   kelimeki_core/             # saf Dart motor paketi (Flutter bağımlılığı YOK)
     pubspec.yaml             # SIFIR bağımlılık (bilinçli — offline pub get)
     lib/kelimeki_core.dart   # tek barrel export = genel API

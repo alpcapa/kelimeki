@@ -1601,17 +1601,38 @@ birden bildirmek zorunda. `Info.plist` buna göre güncellendi.
 **Portta manzara için ayrı bir düzen YOK** — web'deki `LandscapeHint`in
 karşılığı hiç port edilmedi.
 
-Yani bu, hiç bakılmamış bir yüzey. iPad'de TestFlight derlemesiyle:
+Yani bu, hiç bakılmamış bir yüzey.
+
+⚠ **Maddelerin bir bölümü 9 Eylül 2026'dan beri CI'da ÖLÇÜLÜYOR** —
+`.github/workflows/ios-screenshots.yml` → `ipad-manzara` işi, gerçek bir
+`iPad Pro 13"` simülatöründe (`integration_test/ipad_landscape_test.dart`).
+Bulgular koşu özetinde ve log'da `[MANZARA]` önekiyle; kareler artefakt.
+**Elle koşmadan önce o koşuya bak** — aşağıdaki "CI" işaretli maddeler için
+cihaz turu bir DOĞRULAMA, keşif değil. ⚠ CI işi bir KAPI değil ölçü aleti:
+yalnızca cihaz dönmediğinde ya da kare manzara ölçüsünde çıkmadığında düşer,
+bir taşma bulursa DÜŞMEZ — bulguyu yazar.
+
+iPad'de TestFlight derlemesiyle:
 
 - [ ] Uygulamayı **yan çevir** — açılıyor mu, çöküyor mu?
+      *(CI: dönüşün kendisi ölçülüyor — kare manzara ölçüsünde çıkmazsa iş
+      düşer. Cihazda bakılacak olan dönüşün HİSSİ: animasyon, sıçrama.)*
 - [ ] **Oyun ekranı:** tahta sığıyor mu, raf ve butonlar erişilebilir mi,
-      taşma (sarı-siyah şerit) var mı?
-- [ ] **Setup ekranı:** liste ve formlar okunabilir mi?
+      taşma (sarı-siyah şerit) var mı? *(CI: `[MANZARA] oyun ekranı`
+      satırı tahta/raf/`OYNA`/`PAS GEÇ` kutularını ve taşma durumunu
+      veriyor.)*
+- [ ] **Setup ekranı:** liste ve formlar okunabilir mi? *(CI: kare +
+      `OYUNU BAŞLAT` kutusu.)*
 - [ ] **Modallar** (Skor Kartı, Nasıl Oynanır, kelime anlamı): dikey alan
       daralınca kesiliyor mu? (`KModal`ın gövdesi kaydırılabilir, ama
       klavye açıkken daralma vakası kayıtlı — bkz. `mobile/CLAUDE.md`)
+      *(CI: Skor Kartı + Nasıl Oynanır kareleri var; **klavye açık hâli
+      YOK** — o yalnızca cihazda görülür ve kayıtlı vaka tam orada.)*
 - [ ] **Split View / Slide Over:** üçte bir genişlikte düzen ne oluyor?
-- [ ] Portreye geri dönünce her şey eski hâline dönüyor mu?
+      *(CI: yalnızca ONUN ÜRETTİĞİ dar pencere ölçülüyor — gerçek Split
+      View jesti, ikinci uygulama ve sürüklenebilir ayraç cihazda.)*
+- [ ] Portreye geri dönünce her şey eski hâline dönüyor mu? *(CI:
+      `[MANZARA] portreye dönüş` satırı.)*
 
 ⚠ **Bulgular kötüyse üç seçenek var ve üçü de kararlıdır:** (a) manzara
 için düzen eklemek, (b) `TARGETED_DEVICE_FAMILY`yi `"1"`e çekip iPad

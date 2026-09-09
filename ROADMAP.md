@@ -231,7 +231,8 @@ satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
 | #492 (FAZ C) | iOS entitlements + bildirim paneli kanalı + Mac'siz imzalama zinciri | `ios/Runner/Runner.entitlements` (YENİ), `ios/Runner/Info.plist`, `ios/Runner/AppDelegate.swift`, `ios/Runner.xcodeproj/project.pbxproj`, `Gemfile` + `fastlane/*` (YENİ), `test/notification_shade_parity_test.dart`. ⚠ **Android'i ETKİLEMEZ** — dokunulan her şey `ios/` altında ya da yalnızca CI'da koşan imzalama zinciri. ⚠ Bu satır 9 Eylül 2026'da **geriye dönük** eklendi: #492 kendi PR'ında tabloya yazılmamıştı ve refleks komutuyla (`git log 1abde38..origin/main -- mobile/app`) yakalandı — kuralın BEŞİNCİ kaçırılışı |
 | #497 (FAZ C 24.5) | Mağaza ekran görüntüsü boru hattı — `integration_test/` + `test_driver/` | `pubspec.yaml` (`integration_test` **dev** bağımlılığı), `integration_test/store_screenshots_test.dart` (YENİ), `test_driver/integration_test.dart` (YENİ). ⚠ **Sıradaki sürüme HİÇBİR ŞEY taşımıyor**: dev bağımlılığı mağazaya giden ikiliye girmez, `flutter test` `integration_test/`i toplamaz ve yeni kod yalnızca `flutter drive` ile koşar. Tabloda olmasının sebebi `mobile/app/` altına dokunmuş olması |
 | #498 · #499 · #500 (FAZ C 24.2) | TestFlight zincirinin ilk gerçek koşuları — `setup_ci`, `build_app` yolları, elle imzalama | Yalnızca `fastlane/Fastfile` (+ `mobile-build.yml`). ⚠ **Sıradaki sürüme hiçbir şey taşımıyor** — fastlane yalnızca CI'da koşuyor, uygulama ikilisine girmiyor. Tabloda olmasının sebebi `mobile/app/` altına dokunmuş olması |
-| Bu PR (FAZ C 24.2) | iPad yönelimleri — Apple'ın 90474 reddi | ⚠ **BU SATIR SÜRÜME GERÇEKTEN BİNİYOR:** `ios/Runner/Info.plist` → `UISupportedInterfaceOrientations~ipad` dörde çıktı, yani **uygulama iPad'de döndürülebilir hâle geliyor** ve portta manzara düzeni YOK. Android'i ETKİLEMEZ (dosya `ios/` altında). Cihaz kontrolü: `mobile/TESTING.md` §26 |
+| Bu PR (§25) | iPad manzara ÖLÇÜM işi + çekim sahnesinin ortak dosyaya çıkarılması | `integration_test/ipad_landscape_test.dart` (YENİ), `integration_test/support/sahne.dart` (YENİ — mevcut kare dosyasından TAŞINDI, davranış aynı), `integration_test/store_screenshots_test.dart` (artık ortak sahneyi kullanıyor). ⚠ **Sıradaki sürüme HİÇBİR ŞEY taşımıyor** — `integration_test/` mağazaya giden ikiliye girmez ve `flutter test` onu toplamaz; yalnızca `flutter drive` ile CI'da koşar. Tabloda olmasının sebebi #497'nin aynısı: `mobile/app/` altına dokunmuş olması |
+| #501 (FAZ C 24.2) | iPad yönelimleri — Apple'ın 90474 reddi | ⚠ **BU SATIR SÜRÜME GERÇEKTEN BİNİYOR:** `ios/Runner/Info.plist` → `UISupportedInterfaceOrientations~ipad` dörde çıktı, yani **uygulama iPad'de döndürülebilir hâle geliyor** ve portta manzara düzeni YOK. Android'i ETKİLEMEZ (dosya `ios/` altında). Cihaz kontrolü: `mobile/TESTING.md` §26 |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
@@ -1269,9 +1270,31 @@ web'in `LandscapeHint` bileşeninin karşılığı hiç port edilmedi, manzaraya
 
 **Sıra:**
 
-1. **ÖLÇ — cihazda.** `mobile/TESTING.md` §26: oyun ekranı (tahta sığıyor
-   mu, raf/butonlar erişilebilir mi, taşma var mı), Setup, modallar,
-   Split View, portreye dönüş. Ölçmeden tasarım yapılmayacak.
+1. **ÖLÇ.** İki kaynak, ikisi de gerekli:
+   - **CI — otomatik, 9 Eylül 2026'da kuruldu.**
+     `.github/workflows/ios-screenshots.yml` → **`ipad-manzara`** işi:
+     24.5'in kare boru hattı zaten GERÇEK bir `iPad Pro 13"` simülatörü
+     koşturuyordu, ölçüm oraya bindirildi
+     (`integration_test/ipad_landscape_test.dart`). Cihazı gerçekten
+     döndürür (`SystemChrome.setPreferredOrientations`), beş ekranı çizer
+     ve her biri için mantıksal ölçü · taşma/hata · tahta/raf/buton
+     kutularının ekranın içinde kalıp kalmadığını log'a `[MANZARA]`
+     önekiyle yazar; kareler artefakt olur. ⚠ Bu iş bir KAPI DEĞİL — bugün
+     manzara düzeni YOK, yani "taşma varsa kırmızı" diyen bir test ölçüm
+     turunun ilk adımında kendi bulgusuyla düşerdi. Yalnızca ALTYAPI
+     arızasında düşer: cihaz dönmediyse ya da kare manzara ölçüsünde
+     (2752×2064) çıkmadıysa.
+   - **Cihazda — hâlâ SENDE.** `mobile/TESTING.md` §26. Simülatörün
+     gösteremediği üç şey var: gerçek Split View/Slide Over jesti, dönüş
+     ANINDAKİ his (animasyon, sıçrama) ve klavye açıkken daralan modal.
+   ⚠ **Ön ölçüm (9 Eylül 2026, Linux'ta widget ağacıyla — Skia, iOS kabuğu
+   YOK):** oyun ekranı · kurulum · yardım penceresi, portre (1032×1376) ·
+   manzara (1376×1032) · dar pencere (430×1032) — **dokuz kombinasyonun
+   dokuzunda da taşma/hata YOK.** Yani manzara *kırılmıyor*; asıl bulgu
+   şu: uygulama `max-w-680` kolonuyla çizildiğinden 13" iPad'de manzarada
+   genişliğin ~%50'si BOŞ kalıyor, portrede ise altta ~%25 boşluk var —
+   yani manzara bugün portreden daha KÖTÜ değil. Kararı bu ön ölçüm değil
+   CI'ın gerçek iOS kareleri verecek.
 2. **Karar ver.** Üç yol: (a) manzaraya özgü düzen — 13" iPad'de yatay
    tahta + yan panel bu oyun için muhtemelen EN İYİ deneyim, (b) mevcut
    düzenin manzarada da yeterli olduğunu ölçüp bırakmak, (c) geçici olarak

@@ -1366,6 +1366,22 @@ on iki PNG'nin on ikisi de piksel ölçümünü geçti (`1320×2868` / `2064×27
 Yani mağazaya giden kareler **bugün hazır** — üretimi değil, yalnızca
 kompozisyon kararı bekliyor.
 
+### ⚙️ Sahne ORTAK dosyaya çıkarıldı — 9 Eylül 2026
+
+Aynı boru hattına ikinci bir hedef bindi (`ipad_landscape_test.dart`, iPad
+manzara ölçümü — `ROADMAP.md` §25), o yüzden çekim sahnesi
+`integration_test/support/sahne.dart`'a taşındı: sahte oturum, sahte
+istatistik ucu, Setup'ın sahte servisleri, tohumlu tahta, `settle`.
+
+⚠ **Kopyalanmadı, TAŞINDI — ve gerekçe bu bölümün kendisi.** O dosyada
+yaşayan şey kod değil KURAL: gerçek isim/e-posta/avatar kareye giremez
+(Play turunun gizlilik kuralı) ve `services.supabase == null` iken ekran
+*"offline mod"* yazıp ÜSTÜNDE canlı oyun listeliyor — gerçekte hiç oluşmayan,
+yani Apple'ın yasakladığı türden bir kare. İkinci bir çekim dosyası bunları
+kopyalasaydı iki kopya sessizce ayrışır ve kural yalnızca birinde geçerli
+kalırdı. `store_screenshots_test.dart` 302 satır küçüldü; taşınan kod birebir
+aynı (yalnızca `_` önekleri düştü), kareler DEĞİŞMEDİ.
+
 ### Kalan iş
 
 Zorunlu altı karenin **altısı da üretiliyor ve doğrulandı.** Kalan tek şey
