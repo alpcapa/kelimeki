@@ -550,7 +550,27 @@ fatal: unable to access 'https://github.com/alpcapa/kelimeki-certificates.git/':
        The requested URL returned error: 403
 ```
 
-Yani sorun Apple'da değil, **`MATCH_GIT_TOKEN`'da**. Bakılacak üç şey:
+Yani sorun Apple'da değil, **`MATCH_GIT_TOKEN`'da**.
+
+✅ **KÖK SEBEP BULUNDU (9 Eylül 2026, token sayfasından okundu):** token
+(`kelimeki-match`) oluşturulmuş ama **kapsamı BOŞ kalmış** — sayfa iki
+yerde birden şunu diyordu:
+
+> *Repository access:* **"This token does not have access to any repositories."**
+> *Repository permissions:* **"This token does not have any repository permissions."**
+
+Fine-grained token'larda depo seçimi ve izinler AYRI AYRI seçilir; ikisi de
+boş bırakılırsa token hiçbir şeye erişemez ve git 403 verir. Düzeltme:
+*Access on \<hesap\>* → **Edit** → *Only select repositories* →
+`kelimeki-certificates`; *Repository permissions* → **Contents: Read and
+write** (`Metadata: Read-only` kendiliğinden eklenir).
+
+⚠ **"Regenerate token"a BASMA** — izin düzenlemek token DEĞERİNİ
+değiştirmez, yani `MATCH_GIT_TOKEN` secret'ına dokunmak gerekmez.
+Regenerate edilirse değer değişir ve secret da güncellenmek zorunda kalır.
+
+Aşağıdaki liste, kök sebep bulunmadan önce hangi üç şeye bakıldığının
+kaydı (bir dahaki sefere aynı sırayla bakılır):
 
 | Olasılık | Kontrol |
 |---|---|
