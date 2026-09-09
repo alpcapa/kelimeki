@@ -517,6 +517,34 @@ yaşar:
 | `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID — **anahtara değil HESABA ait**, tüm anahtarlarda aynı. Yeri: Users and Access → Integrations, anahtar listesinin ÜSTÜ |
 | `APP_STORE_CONNECT_KEY_P8` | `.p8`'in tam içeriği (BEGIN/END satırları dahil) |
 
+### 24.2 KURULUM DURUMU — neyin YAPILDIĞI (değerler değil, DURUM)
+
+⚠ **Bu bölüm 9 Eylül 2026'da, bir eksiklik yüzünden eklendi.** Dokümanlar
+neyin GEREKTİĞİNİ yazıyordu (`test-ortamlari.md` → secret listesi,
+`Matchfile` → depo adı) ama neyin YAPILDIĞINI hiçbir yer tutmuyordu. Sonuç:
+kullanıcıya bir gün önce birlikte hallettiğimiz bir şey (`kelimeki-
+certificates` deposu açıldı mı) tekrar soruldu. **Değerler gizli, DURUM
+değil** — durum kaydı olmayınca her oturum aynı soruları baştan sorar.
+
+| Parça | Durum |
+|---|---|
+| `alpcapa/kelimeki-certificates` (private, boş) | ✅ **8 Eylül 2026'da açıldı** |
+| `MATCH_GIT_TOKEN` (fine-grained, yalnız o depo, Contents: R/W) | ✅ 8 Eylül 2026 |
+| `MATCH_PASSWORD` | ✅ 8 Eylül 2026 — ⚠ ilk başarılı koşudan SONRA sabittir |
+| `APP_STORE_CONNECT_KEY_ID` | ✅ 9 Eylül 2026 |
+| `APP_STORE_CONNECT_KEY_P8` | ✅ 9 Eylül 2026 |
+| `APP_STORE_CONNECT_ISSUER_ID` | ✅ 9 Eylül 2026 (üçünün en son gireni — aşağı bkz.) |
+| **İlk koşu (doğrulama turu)** | ⬜ **BEKLİYOR** |
+
+**Kurulum tamam; kalan tek şey zincirin İLK KEZ koşması.** Tetikleme:
+`main`'e push `.github/workflows/mobile-build.yml` yolunu da kapsıyor, yani
+o dosyaya dokunan bir merge koşuyu KENDİLİĞİNDEN başlatır — ayrıca
+`workflow_dispatch` gerekmez (`ios: true`).
+
+⚠ **Bu satırlar bir şey değiştiğinde GÜNCELLENİR.** Bir secret döndürülür,
+depo taşınır ya da match sıfırlanırsa buraya yazılır; aksi halde bölüm
+sessizce bayatlar ve yukarıdaki hatanın aynısı tekrarlanır.
+
 ⚠ **`ISSUER_ID` unutulmaya en müsait olanı — 9 Eylül 2026'da gerçekten
 unutuldu.** Öteki üçü girilmiş, o girilmemişti; secret listesi yalnızca
 ADLARI gösterdiğinden eksiklik ancak listeye bakılınca görüldü (alfabetik
