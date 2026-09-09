@@ -513,9 +513,22 @@ yaşar:
 
 | Secret | İçerik |
 |---|---|
-| `APP_STORE_CONNECT_KEY_ID` | Key ID |
-| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID |
+| `APP_STORE_CONNECT_KEY_ID` | Key ID (`.p8` dosya adındaki `AuthKey_XXXXXXXXXX` kısmı) |
+| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID — **anahtara değil HESABA ait**, tüm anahtarlarda aynı. Yeri: Users and Access → Integrations, anahtar listesinin ÜSTÜ |
 | `APP_STORE_CONNECT_KEY_P8` | `.p8`'in tam içeriği (BEGIN/END satırları dahil) |
+
+⚠ **`ISSUER_ID` unutulmaya en müsait olanı — 9 Eylül 2026'da gerçekten
+unutuldu.** Öteki üçü girilmiş, o girilmemişti; secret listesi yalnızca
+ADLARI gösterdiğinden eksiklik ancak listeye bakılınca görüldü (alfabetik
+sırada `ISSUER` `KEY`'den ÖNCE gelir — orada yoksa yoktur). Sebebi anlaşılır:
+ötekiler dosyadan/kullanıcıdan gelirken bu, Console'da BAŞKA bir yerde
+duruyor.
+
+⚠ **İş akışı artık bunu kendi söylüyor.** `KEY_P8` adımın "yapılandırıldı
+mı" sentineli; yanındaki ikisi eksikse adım yine koşuyordu ve fastlane'in
+`ENV.fetch`i ham bir Ruby `KeyError`'ı ile düşüyordu — log'da sebebi
+görünmezdi. 9 Eylül 2026'da koruma üçünü de tek tek kontrol edecek şekilde
+genişletildi ve hata mesajı Issuer ID'nin NEREDE olduğunu da yazıyor.
 
 ⚠ **APNs Key ID ile karıştırma:** o (`RL4JLXL389`) ROADMAP'e YAZILDI ve
 doğrusu bu — her push JWT'sinin `kid` başlığında zaten herkese gidiyor,
