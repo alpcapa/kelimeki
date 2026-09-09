@@ -724,6 +724,26 @@ bu yüzden ölçümü kendisi yapıyor: her PNG'nin piksel ölçüsü `sips` ile
 okunup Apple'ın istediği ölçüyle karşılaştırılıyor, tutmazsa iş DÜŞÜYOR
 (artefakt yine de yükleniyor, elde inceleyecek dosya kalsın diye).
 
+### ✅ DOĞRULANDI — run #1, 9 Eylül 2026 (iPhone yarısı)
+
+**iPhone 6.9" işi baştan sona geçti** ve bununla birlikte zincirin her
+halkası kanıtlandı: `flutter drive` simülatörde koştu, `integration_test`
+gerçek iOS çalışma zamanında ekranı çizdi, `takeScreenshot` sürücüye ulaştı,
+sürücü PNG'yi diske yazdı ve **ölçüm adımı geçti** — yani kare Apple'ın
+istediği **tam `1320×2868`**. Artefakt gerçek: `kelimeki-store-
+screenshots-iphone-6.9`, 1,6 MB. Seçilen cihaz `iPhone 17 Pro Max`.
+
+⚠ **Ölçüm adımı burada bir SÜS DEĞİL:** iş ancak `sips` iki boyutu da
+doğrularsa yeşile dönüyor, yani "kare üretildi" ile "kare KULLANILABİLİR"
+aynı koşuda ayrışıyor. Yanlış ölçüde bir PNG sessizce mağazaya gitmez.
+
+**iPad yarısı aynı koşuda düştü — ve kapı doğru çalıştı.** Sabit bir cihaz
+adı yerine aday listesi kullanıldığı için hata *"device not found"* diye geç
+ve okunmaz değil, **40 saniyede** net bir mesajla ("aday simülatörlerin
+hiçbiri yok") ve mevcut simülatör dökümüyle geldi. Ölçüm: runner'da iPad
+**M4 değil M5** duruyor (`iPad Pro 13-inch (M5)`). Liste düzeltildi;
+Xcode sürümü ilerledikçe ad yine kayacağı için tek ad değil LİSTE tutuluyor.
+
 ### Kalan iş
 
 - **İlk koşunun doğrulanması** — kare gerçekten `1320×2868` / `2064×2752`
