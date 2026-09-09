@@ -1264,10 +1264,13 @@ yazıldı ve aynı gün düzeltildi: sözlü bildirim değil, **Console'un kendi
 STATUS alanı** kanıttır (gerekçe `console-formlari.md` §2).
 
 **Sırayı tıkayan iki şey, ikisi de bizim DIŞIMIZDA:**
-1. **API anahtarı** — indirilemiyor (Support vakası açık, 9 Eylül 15:50
-   itibarıyla yanıt yok). 24.2'yi, yani imzalı paketin TestFlight'a
-   çıkmasını tıkıyor; gönderim bir paket olmadan yapılamadığı için kritik
-   yol buna bağlı.
+1. **API anahtarı** — indirilemiyor. 9 Eylül akşamı: Support yanıt verdi,
+   arıza SÜRÜYOR; **altı Team Key yandı** (üçü o gün), incognito dahil her
+   deneme başarısız. 24.2'yi, yani imzalı paketin TestFlight'a çıkmasını
+   tıkıyor. ⚠ Ama anahtar **imzalama için zorunlu değil, OTOMASYON için
+   zorunlu** — `openssl` CSR + elle sertifika/profil + uygulamaya özel şifre
+   ile anahtarsız bir zincir kurulabilir (kayıt `console-formlari.md` §3).
+   Arıza uzarsa gönderim buna çevrilir.
 2. **DSA doğrulaması** — Apple inceliyor; bitmeden inceleme talebi
    gönderilemez.
 

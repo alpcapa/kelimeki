@@ -285,7 +285,77 @@ soran kalıpta; kendi bilgilerimizle dolduruldu — *User's Apple Account:*
   tabloyu karıştırır.
 - ⚠ **Mükerrer vaka açılmayacak.**
 
-### ⏳ DURUM — 9 Eylül 2026, 15:50 (UTC+3): **yanıt YOK**
+### ⏳ DURUM — 9 Eylül 2026 akşamı: Support YANIT VERDİ, arıza SÜRÜYOR
+
+**Altı Team Key yandı, hepsi revoke** (Console'dan okundu, 17:26):
+
+| Ad | Key ID | Revoke |
+|---|---|---|
+| Kelimeki CI 5 | `55F9XUK348` | 9 Eylül |
+| Kelimeki CI 4 | `YQVJZCH5UF` | 9 Eylül |
+| Kelimeki CI 3 | `6H2WY5JZ7W` | 9 Eylül |
+| Kelimeki CI 3 | `FDMW75TR54` | 8 Eylül |
+| Kelimeki CI 2 | `45AH6AD7U4` | 8 Eylül |
+| Kelimeki CI | `7ARZF96LAK` | 8 Eylül |
+
+⚠ Bu bölüm bir süre *"üç Team Key yakıldı"* diyordu — sayı ikiye katlandı.
+Gizli değil: özel anahtar olmadan bir Key ID işe yaramıyor ve hepsi zaten
+revoke; kaydedilmelerinin sebebi Support'un vakayı izleyebilmesi.
+
+**Yeni denemeler (kullanıcı, 9 Eylül):** birkaç kez, **incognito dahil** —
+hepsi başarısız.
+
+⚠ **"API Access Request Approved" maili bugünkü yanıt DEĞİL.** Zoho'daki o
+mail **8 Eylül** tarihli, yani üyelik günündeki ilk erişim onayı. Arıza
+ondan sonra başladı; ikisini karıştırmak *"erişim onaylandı, o hâlde
+çalışıyor olmalı"* diye yanlış bir sonuca götürür.
+
+### ⚠ "Başka tarayıcı dene" — iPad'de bu GERÇEK bir değişiklik değil
+
+Genel arama sonuçları Chrome önermeye eğilimli, ama **iPadOS'ta tüm
+tarayıcılar WebKit kullanmak zorunda** — iPad'deki Chrome, Safari'nin
+motoru + farklı bir kabuktur. (AB'de DMA sonrası alternatif motor istisnası
+var; Türkiye kapsam dışı.) *(Platform kuralı; bu depoda ÖLÇÜLMEDİ.)*
+
+Yani öneri masaüstü için yazılmış. Tamamen değersiz de değil: indirme/dosya
+kaydetme katmanı farklı bir uygulama sandbox'ı, o yüzden hata "dosyayı
+kaydet" adımındaysa değişebilir. Hata sunucu tarafındaysa değişmez.
+
+### ✅ ÖNCE BEDAVA TEŞHİS — anahtar yakmadan
+
+Her deneme bir anahtar yaktığından, sıradaki adım yeni bir anahtar DEĞİL:
+
+> **Portaldan başka bir şey indir** — mevcut bir provisioning profile,
+> bir sertifika, herhangi bir dosya.
+
+| Sonuç | Anlamı | Sıradaki adım |
+|---|---|---|
+| İniyor | Sorun indirme katmanında değil, **anahtar üretmeye özgü** | Tarayıcı değiştirmek işe yaramaz; bekle ya da yolu değiştir (aşağı) |
+| İnmiyor | Sorun tarayıcı/indirme tarafında | Gerçekten FARKLI bir cihaz (masaüstünde gerçek Chrome/Firefox — farklı motor VE farklı indirme yığını) |
+
+Ayrıca `developer.apple.com/system-status` sayfasına bakılmalı (App Store
+Connect · Certificates, Identifiers & Profiles satırları). ⚠ **Ajan bu
+sayfayı okuyamıyor** — `developer.apple.com` 302 ile `www.apple.com`'a
+yönlendiriyor ve oraya egress proxy izin vermiyor (9 Eylül 2026'da denendi).
+
+### 🔑 API anahtarı İMZALAMA için zorunlu DEĞİL — otomasyon için zorunlu
+
+Arıza uzarsa 24.2 anahtarsız da kurulabilir. Zincir:
+
+1. `openssl` ile özel anahtar + **CSR** üret (herhangi bir yerde, Mac
+   gerekmez).
+2. CSR'ı portala yükle → **dağıtım sertifikası** indir (`.cer`).
+3. Özel anahtarla birleştirip `.p12` yap → GitHub secret.
+4. Provisioning profile'ı portaldan **elle** indir → secret.
+5. TestFlight'a yükleme: **uygulamaya özel şifre** (`appleid.apple.com` →
+   Sign-In and Security).
+
+**Bedeli:** `fastlane match`in otomatiği gider — profil yılda bir, sertifika
+üç yılda bir ELLE yenilenir. **Kazancı:** gönderim Apple'ın bu arızasına
+bağlı kalmaz. ⚠ Bu yol YAZILMADI, yalnızca kayda geçti; seçilirse
+`Fastfile`ın `match` satırı ve iş akışının secret listesi değişir.
+
+### Önceki durum kaydı — 9 Eylül 2026, 15:50: yanıt YOK
 
 Vaka açılalı ~15,5 saat (Çarşamba, iş günü). **Anahtar `18QBEN3T2RY4`
 revoke EDİLMEDİ** — vakadaki söz tutuldu, destek ekibinin bakacağı canlı
