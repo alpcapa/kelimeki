@@ -285,7 +285,17 @@ soran kalıpta; kendi bilgilerimizle dolduruldu — *User's Apple Account:*
   tabloyu karıştırır.
 - ⚠ **Mükerrer vaka açılmayacak.**
 
-### ⏳ DURUM — 9 Eylül 2026 akşamı: Support YANIT VERDİ, arıza SÜRÜYOR
+### ⏳ DURUM — 9 Eylül 2026 akşamı: Support'tan HÂLÂ YANIT YOK
+
+⚠ **Bu satır bir kez "Support yanıt verdi" diye yazıldı ve YANLIŞTI**
+(aynı akşam düzeltildi). Sebep tam da aşağıda uyarısı yazılı olan şey:
+gelen kutusundaki *"App Store Connect API Access Request Approved"* maili
+yanıt sanıldı; o mail **8 Eylül** tarihli, üyelik günündeki ilk erişim
+onayı. **Vaka açılalı ~18 saat, hiçbir dönüş yok.**
+
+Ders, deponun kendi refleksinin bir başka biçimi: bir kutudaki maili
+"yanıt" saymadan önce **TARİHİNE** bak — konu başlığı doğru göründüğünde
+tarih okunmuyor.
 
 **Altı Team Key yandı, hepsi revoke** (Console'dan okundu, 17:26):
 
@@ -340,11 +350,16 @@ olası. **Ama ELEMİYOR** — durum sayfasının çözünürlüğü kaba, anahta
 ucunun (`/iris/v1/subscriptionKeys`) kendi satırı yok; bildirilmemiş bir
 hata yeşil bir tabloyla bir arada durabilir.
 
-**Pratik sonucu: BEKLEMEK artık daha zayıf bir strateji.** Altı anahtar,
-iki ayrı uç, ~24 saat, birden çok tarayıcı bağlamı (incognito dahil) ve
-ilan edilmiş bir arıza YOK. Geriye iki ciddi seçenek kalıyor: aşağıdaki
-bedava teşhis, ve anahtarsız zincir. Vakayı **telefon geri aramasına
-yükseltme** eşiği (11 Eylül) de bu yüzden daha erken çekilebilir.
+**Pratik sonucu: BEKLEMEK artık zayıf bir strateji.** Altı anahtar, iki
+ayrı uç, ~24 saat, birden çok tarayıcı bağlamı (incognito dahil), ilan
+edilmiş bir arıza YOK **ve yazılı vakadan 18 saatte dönüş yok.**
+
+⚠ **11 Eylül eşiği ÖNE ÇEKİLDİ.** O eşik *"yazılı vaka birkaç iş günü
+sürebilir"* varsayımıyla konmuştu; yeşil durum tablosu o varsayımı
+desteklemiyor (ortada bekleyecek ilan edilmiş bir arıza yok). Sıradaki
+adım **vakayı telefon geri aramasına yükseltmek** —
+`developer.apple.com/contact` üzerinden arama talebi. Mükerrer vaka DEĞİL,
+mevcut vakanın yükseltilmesi.
 
 ⚠ **Ajan durum sayfasını okuyamıyor** — `developer.apple.com` 302 ile
 `www.apple.com`'a yönlendiriyor ve oraya egress proxy izin vermiyor
