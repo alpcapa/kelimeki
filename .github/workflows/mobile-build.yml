@@ -373,7 +373,15 @@ jobs:
 
   ios:
     name: iOS (imzasız)
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios }}
+    # ⚠ `!cancelled()` ŞART, süs değil: iş `needs: android` taşıyor ve
+    # GitHub Actions'ta BAĞIMLILIĞI ATLANAN İŞ DE ATLANIR. Bu olmadan
+    # `workflow_dispatch` ile `android: false` + `ios: true` seçmek iOS'u da
+    # sessizce atlıyordu — 9 Eylül 2026'da yaşandı (koşu #605: üç iş de
+    # `skipped`, hiçbir hata yok, sebep log'da GÖRÜNMÜYOR). `always()`
+    # DEĞİL: koşu iptal edildiğinde iOS'un yine de başlamasını istemiyoruz.
+    # Android DÜŞERSE iOS yine koşar ve bu doğru — `needs` yalnızca
+    # `gh release create` çakışmasını önlemek için var (aşağı bkz.).
+    if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.ios) }}
     runs-on: macos-latest
     permissions:
       contents: write
