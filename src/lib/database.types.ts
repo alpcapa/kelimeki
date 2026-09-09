@@ -1202,11 +1202,27 @@ export interface AdminRetentionCell {
  *
  * `median_hours_to_first_game`, yalnızca aktive olmuş üyeler üzerinden hesaplanır
  * (hiç oynamayanlar medyanı sonsuza çekmesin diye) ve hiç aktivasyon yoksa null'dır.
+ *
+ * ⚠ **Medyan bu dağılımda TEK BAŞINA yanıltıcı** (9 Eylül 2026, kullanıcı
+ * *"ilk oyuna medyan süre hep 2,3 saat"* diye sordu): dağılım çift tepeli —
+ * insanlar ya kaydolur olmaz oynuyor ya da günler sonra dönüyor. Ortada gerçek
+ * gözlem YOK, `percentile_cont` da çift sayıda gözlemde ortadaki İKİ değeri
+ * interpolasyonla ortalıyor, yani sayı o boşluğa düşüyor (o gün canlıda: 15.
+ * değer 0,87 sa · 16. değer 3,68 sa → 2,3 sa; hiç kimse 2,3 saat sürmemişti) ve
+ * ancak yeni bir aktivasyon o aralığa denk gelirse kıpırdıyor. Bu yüzden kutuda
+ * artık `activated_within_1h` duruyor; medyan dağılım satırında kaldı.
+ *
+ * **İki sayım ailesi karışmasın:** `activated_within_1h` ⊂ `activated_same_day`
+ * KÜMÜLATİF (huni); `activated_same_day` + `activated_within_3_days` +
+ * `activated_later` ise AYRIK ve toplamı `activated_users`.
  */
 export interface AdminActivationStats {
   total_users: number;
   activated_users: number;
   never_activated: number;
+  /** İlk oyununu kaydından sonraki 1 SAAT içinde bitiren üye sayısı (kümülatif). */
+  activated_within_1h: number;
+  /** İlk oyununu 24 SAAT içinde bitiren üye sayısı — takvim günü değil (kümülatif). */
   activated_same_day: number;
   activated_within_3_days: number;
   activated_later: number;

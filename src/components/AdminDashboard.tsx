@@ -285,6 +285,16 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         arkadaşlık isteği gönderen biri aktif oyuncu SAYILIR ama aktive SAYILMAZ.
         <br />
         <br />
+        <b>İlk Saatte / 24 Saatte</b> kutuları kayıttan sonra geçen süreyi ölçer, takvim gününü
+        değil, ve iç içedir (ilk saatte aktive olan 24 saatte de sayılır). Alttaki dağılım satırı
+        ise ayrık: üçünün toplamı aktive üye sayısını verir.
+        <br />
+        <br />
+        <b>Medyan neden kutuda değil:</b> dağılım çift tepeli — insanlar ya kaydolur olmaz oynuyor
+        ya da günler sonra dönüyor. Ortada gerçek gözlem olmadığından medyan aradaki boşluğa
+        düşüyor ve kimsenin yaşamadığı bir süreyi gösterebiliyor; asıl sinyal ilk saatteki sayı.
+        <br />
+        <br />
         Süre negatif çıkabilir ve bu bir hata değil: misafirken bitirilen bir oyun kişi sonradan
         üye olunca hesabına işleniyor ve oyunun gerçek bitiş anı hesaptan eski olabiliyor — sıfıra
         kırpılıyor.
@@ -2542,12 +2552,19 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                           Hiç Oyun Bitirmemiş
                         </div>
                       </div>
+                      {/* Bu iki kutu bir HUNİ okuyor (1 sa ⊂ 24 sa), alttaki
+                          dağılım satırı ise ayrık kovaları. Buradaki kutu 9
+                          Eylül 2026'da "İlk Oyuna Medyan Süre"den çevrildi:
+                          medyan bu çift tepeli dağılımda gözlem OLMAYAN bir
+                          boşluğa düşüyordu (gerekçe `AdminActivationStats`);
+                          gözlenmiş bir sayı ürünün sorusunu daha dürüst
+                          yanıtlıyor — "kaydolduğu oturumda oynadı mı". */}
                       <div className="btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center">
                         <div className="font-mono text-xl font-bold text-text">
-                          {activation === null ? '…' : formatHours(activation.median_hours_to_first_game)}
+                          {activation === null ? '…' : activation.activated_within_1h}
                         </div>
                         <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono mt-0.5">
-                          İlk Oyuna Medyan Süre
+                          İlk Saatte Aktive
                         </div>
                       </div>
                       <div className="btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center">
@@ -2555,7 +2572,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                           {activation === null ? '…' : activation.activated_same_day}
                         </div>
                         <div className="text-[8px] uppercase tracking-[1px] text-muted font-mono mt-0.5">
-                          Aynı Gün Aktive
+                          24 Saatte Aktive
                         </div>
                       </div>
                     </div>
@@ -2568,8 +2585,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         seçmek (bkz. "Sıra: {isim}" ve k-lig eşik metinleri). */}
                     {activation !== null && (
                       <p className={captionCls}>
-                        İlk oyununu bitirme dağılımı — aynı gün: {activation.activated_same_day} · 1-3
-                        gün: {activation.activated_within_3_days} · sonra: {activation.activated_later}
+                        İlk oyununu bitirme dağılımı — 24 saatte: {activation.activated_same_day} · 1-3
+                        gün: {activation.activated_within_3_days} · sonra: {activation.activated_later} ·
+                        medyan: {formatHours(activation.median_hours_to_first_game)}
                       </p>
                     )}
                   </div>
