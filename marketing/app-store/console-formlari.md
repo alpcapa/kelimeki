@@ -993,9 +993,16 @@ gösteriyordu; üç oyuna ve İKİ farklı sıra durumuna çıkarıldı ("SIRA S
 yeşil ↔ "SIRA RAKİPTE" kırmızı), ekranın ne işe yaradığı tek bakışta
 anlaşılsın diye.
 
+✅ **Run #4 (9 Eylül 2026) tamamen yeşil — 6/6 kare, İKİ cihazda da
+doğrulandı.** Artefaktlar `iphone-6.9` **5,33 MB** + `ipad-13` **5,46 MB**;
+on iki PNG'nin on ikisi de piksel ölçümünü geçti (`1320×2868` / `2064×2752`).
+Yani mağazaya giden kareler **bugün hazır** — üretimi değil, yalnızca
+kompozisyon kararı bekliyor.
+
 ### Kalan iş
 
-Zorunlu altı karenin **altısı da üretiliyor.** Kalan tek şey bir KARAR:
+Zorunlu altı karenin **altısı da üretiliyor ve doğrulandı.** Kalan tek şey
+bir KARAR:
 
 - **Kompozisyon:** çerçeve/başlık metni eklenip eklenmeyeceği (Apple ham
   kareyi de kabul ediyor). Oyun ekranı karelerinde (01/02) altta ~%20 boş
