@@ -26,7 +26,7 @@ karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
 | Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
 | Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
 | App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ⚠ üretildi ama `.p8` İNDİRİLEMEDİ (aşağı) |
-| DSA trader status | Yedek hat ✅ **hazır** (9 Eylül 2026) | ⬜ **BEYAN YAPILMADI** — açık kalan tek alan **adres**; gönderim kapısı (§2) |
+| DSA trader status | Üç alan da ✅ hazır (9 Eylül 2026) | ⬜ **BEYAN YAPILMADI** — teknik engel kalmadı, Console'da `Compliance` bölümü; gönderim kapısı (§2) |
 
 **Paid Apps Agreement İMZALANMAYACAK.** `New` durumunda kalır; uygulama
 ücretsiz, uygulama içi satın alma yok. Console'un *"update your legal
@@ -73,9 +73,14 @@ Ama **bugünkü telefon numarasıyla değil.** Sıra şu:
 3. Üç alan girilecek: **adres · telefon · e-posta**
 4. Apple doğrulayacak → AB dağıtımı açılacak
 
-⚠ **Kalan TEK açık alan: ADRES** (9 Eylül 2026). E-posta ve telefon
-hazır; beyan bu alan kararlaşmadan yapılamaz, çünkü form üçünü birden
-istiyor ve girilen bilgi ürün sayfasında **yayınlanıyor**.
+✅ **ÜÇ ALANIN ÜÇÜ DE HAZIR** (9 Eylül 2026): e-posta `destek@kelimeki.com`,
+telefon yedek hat, adres kullanıcıda kararlaştırıldı. **Beyanın önünde
+teknik bir engel kalmadı** — sıradaki adım Console'da tek oturumluk bir iş.
+
+⚠ **Adres ürün sayfasında yayınlanacak ve geri alınamaz** (§2'nin başındaki
+gerekçe). Kullanıcı bunu bilerek karar verdi; bu satır kararı tekrar açmak
+için değil, ileride *"bu neden açıkta"* diye sorulduğunda cevabı olsun diye
+duruyor.
 
 ### Neden kişisel numarayla başlanmadı
 
@@ -100,7 +105,7 @@ olmadan doğrulanamaz.
 |---|---|---|
 | E-posta | `destek@kelimeki.com` | **Bedava** — zaten sitede, Play listelemesinde ve uygulamada yazılı; yeni maruziyet yok |
 | Telefon | *yedek hat* | ✅ **hazır** (9 Eylül 2026); kişisel numara KULLANILMADI |
-| Adres | *belirlenecek* | ⬜ **AÇIK KALAN TEK ALAN.** Ev adresi zorunlu DEĞİL — bu alan üyelikteki adresten ayrı (*"won't impact the contact details for your Apple accounts or memberships"*). Posta kutusu / sanal ofis olur, ama Apple doğruladığı için gerçek olmalı |
+| Adres | *kullanıcıda kayıtlı* | ✅ **KARARLAŞTIRILDI** (9 Eylül 2026). ⚠ Değeri bu dosyaya YAZILMIYOR — telefonun kuralının aynısı, depo public. Ev adresi zorunlu DEĞİL — bu alan üyelikteki adresten ayrı (*"won't impact the contact details for your Apple accounts or memberships"*). Posta kutusu / sanal ofis olur, ama Apple doğruladığı için gerçek olmalı |
 
 ### Adres — üç aday (9 Eylül 2026, karar kullanıcıda)
 
@@ -119,6 +124,25 @@ adres uydurulamaz.
 kabul ettiği yalnızca denenerek görülür. Telefonun dersini tekrarlamamak
 için sıra şu olmalı: adres seçilir → beyan **bir kez** yapılır. Yarım
 bilgiyle beyan edip sonra düzeltmek doğrulamayı ikinci kez tetikler.
+
+### ⚠ "Edit Legal Entity" uyarısı bizi TIKAMIYOR (9 Eylül 2026, ölçüldü)
+
+Business → Agreements sayfasında şu banner duruyor ve trader beyanını
+arayan kişiyi yanlış yere çekiyor:
+
+> *"To offer apps or other in-app purchases, you must update your legal
+> entity information **prior to signing the Paid Apps Agreement**."*
+
+**Şart, cümlenin kendi sonunda kapsanıyor: Paid Apps Agreement.** Bizim
+kararımız onu hiç imzalamamak (§0) — uygulama ücretsiz, IAP yok, satır
+`New` kalacak. Aynı tablodaki belirleyici satır zaten yeşil: **Free Apps
+Agreement → `Active`, Sep 8 2026 – Sep 8 2027.** Ücretsiz dağıtımı kapatan
+agreement odur.
+
+⚠ **Yani "Edit Legal Entity" tıklanacak link DEĞİL.** Trader beyanı AYNI
+sayfanın altındaki **`Compliance`** bölümünde:
+*Compliance → Complete Compliance Requirements → "I'm a trader under the
+DSA"* → adres · telefon · e-posta.
 
 ### ⚠ GÖNDERİM KAPISI
 
