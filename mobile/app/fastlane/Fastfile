@@ -49,12 +49,32 @@ platform :ios do
     # Sebep: `--dart-define` ile verilen derleme kimliği ve Supabase
     # anahtarları orada geçiliyor (bkz. mobile-build.yml → "iOS derle").
     # Burada yalnızca Xcode arşivi alınıp imzalanıyor.
+    # ⚠ YOLLAR `mobile/app`e GÖRE — `mobile/app/ios`a değil (9 Eylül 2026,
+    # koşu #608'de ölçüldü). Fastlane, `fastlane/` klasörünü İÇEREN dizine
+    # geçiyor; burada o dizin `mobile/app`. Flutter projelerinin çoğunda
+    # `fastlane/` `ios/`un altında durur ve o yüzden örneklerde yol
+    # `"Runner.xcworkspace"` diye geçer — bu depoda `fastlane/` bir üst
+    # dizinde, dolayısıyla `ios/` öneki ŞART.
+    #   önce: workspace "Runner.xcworkspace"  → .../mobile/app/Runner.xcworkspace  ✗
+    #   sonra: workspace "ios/Runner.xcworkspace"                                   ✓
+    # Aynı hata `output_directory`de TERS yöndeydi: `"../build/..."`
+    # `mobile/build`e çıkıyordu, oysa iş akışının artefakt adımı `.ipa`yı
+    # `mobile/app/build/ios/ipa`da arıyor.
     build_app(
-      workspace: "Runner.xcworkspace",
+      workspace: "ios/Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
-      output_directory: "../build/ios/ipa",
-      clean: false
+      output_directory: "build/ios/ipa",
+      clean: false,
+      # `match` profili kurdu ve eşlemeyi `MATCH_PROVISIONING_PROFILE_MAPPING`e
+      # yazdı; burada AÇIKÇA tekrarlamak gym'in otomatik okumasına
+      # güvenmemek demek — imzalama hatası bu zincirin en pahalı turu
+      # (her deneme bir macOS koşusu).
+      export_options: {
+        provisioningProfiles: {
+          "com.kelimeki.kelimeki" => "match AppStore com.kelimeki.kelimeki"
+        }
+      }
     )
 
     # skip_waiting_for_build_processing: Apple'ın işleme süresi 10-40 dk

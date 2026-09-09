@@ -614,6 +614,33 @@ ayarlar. İş akışındaki elle export'lar **kaldırıldı** — dursalardı
 setup_ci'nin anahtarlığını ezip aynı hatayı geri getirirlerdi.
 ⚠ `MATCH_PASSWORD` AYRI bir şey (depo şifreleme parolası) ve duruyor.
 
+#### Üçüncü koşu (#608) — `match` GEÇTİ, `build_app` yol hatasında düştü
+
+```
+| 1 | default_platform          | 0 |
+| 2 | setup_ci                  | 0 |
+| 3 | app_store_connect_api_key | 0 |
+| 4 | match                     | 8 |   ← 💥 YOK
+MATCH_PROVISIONING_PROFILE_MAPPING | {"com.kelimeki.kelimeki" => "match AppStore …"}
+```
+
+✅ **Sertifika üretildi ve depoya yazıldı.** `setup_ci` doğru düzeltmeydi;
+zincirin git/şifre/Apple/anahtarlık dörtlüsü artık tamamen kanıtlı.
+
+❌ Yeni durak `build_app`: `Workspace file not found at path
+'…/mobile/app/Runner.xcworkspace'`.
+
+**Kök sebep — fastlane yolları NEREYE göre çözüyor:** `fastlane/` klasörünü
+İÇEREN dizine, yani burada `mobile/app`e. Flutter örneklerinin çoğunda
+`fastlane/` `ios/`un altında durur ve yol `"Runner.xcworkspace"` diye
+yazılır; bu depoda `fastlane/` bir üst dizinde olduğu için **`ios/` öneki
+şart**. Aynı hata `output_directory`de TERS yöndeydi (`"../build/…"` →
+`mobile/build`, oysa artefakt adımı `mobile/app/build/ios/ipa`ya bakıyor).
+
+Aynı turda `export_options.provisioningProfiles` de AÇIKÇA yazıldı — `match`
+eşlemeyi ortama koyuyor ve gym onu genelde kendi okuyor, ama bu zincirde her
+deneme bir macOS koşusu; imzalama turunu tahmine bırakmamak daha ucuz.
+
 ✅ **Adım sırası kararı DOĞRULANDI.** TestFlight adımı bilerek Appetize'dan
 SONRA konmuştu (*"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla
 rehin almamalı"*). Bu koşuda tam olarak öyle oldu: cihaz derlemesi,
