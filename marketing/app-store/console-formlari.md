@@ -755,6 +755,21 @@ yükledim"* ayrı iddialar, ve ikincisi CI'ın yeşilinden GÖRÜNMÜYOR. Kanıt
 yine ürünün kendi künyesinden okundu — web'de `curl … | grep
 kelimeki-build`in iOS'taki karşılığı TestFlight'ın BUILD sütunu.
 
+**Düzeltmenin ilk koşusu — #616 (9 Eylül 2026):** iş akışı dosyası `paths`
+listesinde olduğu için merge kendiliğinden tam boru hattını tetikledi, yani
+düzeltme gerçek bir yüklemeyle sınandı. Sonuç:
+
+- **Kontrol GEÇTİ, ve boşuna geçmedi:** `grep` bir şey bulamasa `okunan` boş
+  kalır ve karşılaştırma düşerdi; geçmesi dosyanın gerçekten `616` dediği
+  anlamına geliyor.
+- `build_app` 200 sn → `Runner.ipa` (27 MB), `upload_to_testflight` 90 sn →
+  *"Successfully uploaded the new binary to App Store Connect"*.
+
+⚠ **Kesin kanıt hâlâ TestFlight'ın BUILD sütunu.** Kontrol, fastlane'in
+OKUYACAĞI dosyayı doğruluyor; "arşiv o dosyadan besleniyor" ise teşhisin
+çıkarımı. İkisi ancak App Store Connect'te **1.0.9 (616)** görüldüğünde
+birleşir — bu depoda kanıt her zaman ürünün kendi künyesinden okunur.
+
 #### Beşinci koşu (#612) — **imzalı `.ipa` ÜRETİLDİ**, Apple bundle'ı reddetti
 
 ```
