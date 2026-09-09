@@ -675,13 +675,21 @@ bir sabitten geliyor (üç yerde birden kullanılıyorlar).
 `success` döndü — #612'de aynı adım reddedilirken `exit 1` vermişti, yani
 bu bir "sessizce atlandı" değil, gerçek bir yükleme.
 
-**Paketin künyesi:** sürüm **1.0.9**, **build 614** (`--build-number` =
-koşu numarası; TestFlight aynı numarayı ikinci kez kabul etmiyor, bu yüzden
-koşu numarasına bağlı).
+**Paketin künyesi:** sürüm **1.0.9**, **build 1** — ⚠ *bu cümle önce
+"build 614" diyordu ve YANLIŞTI; kullanıcının TestFlight ekran görüntüsü
+düzeltti (aşağıdaki post-mortem).* Tasarım gereği `--build-number` = koşu
+numarasıdır (TestFlight aynı numarayı ikinci kez kabul etmiyor), ama o
+bayrak arşive ULAŞMAMIŞTI.
 
 Böylece 24.2'nin — *"Mac'siz imzalama + TestFlight"* — **iddiası kanıtlandı:**
 geliştiricinin elinde Mac yokken, tamamen CI'dan, imzalı bir iOS paketi
 üretilip App Store Connect'e yüklenebiliyor.
+
+✅ **TESTFLIGHT'TA GÖRÜLDÜ (9 Eylül 2026, kullanıcının ekran
+görüntüsü):** App Store Connect → Kelimeki → TestFlight → iOS Builds →
+**1.0.9**, tek derleme, durum **"Ready to Submit"**, "Expires in 90 days".
+Yani Apple işlemeyi bitirdi ve paketi kabul etti — 24.2 artık gerçekten
+uçtan uca doğrulanmış.
 
 ⚠ **"Yüklendi" ≠ "TestFlight'ta hazır".** İş akışı
 `skip_waiting_for_build_processing: true` ile koşuyor (macOS runner dakikası
@@ -706,6 +714,46 @@ bu depoda "yeşil ≠ canlıda" kuralının iOS'taki karşılığı.
 **Altı koşu, sekiz ayrı arıza.** Hiçbiri ötekini maskelemedi çünkü her tur
 bir öncekinden daha ileri gitti — adım sırası kararının (TestFlight en
 sonda) asıl kazancı bu oldu.
+
+#### ⚠ Post-mortem: yeşil koşu YANLIŞ numarayı yükledi (#614, 9 Eylül 2026)
+
+**Belirti:** TestFlight'ta derleme göründü ama BUILD sütunu **1** yazıyordu,
+614 değil. CI yeşildi, fastlane `success` demişti, artefakt gerçekti — hata
+hiçbir log satırında GÖRÜNMÜYORDU.
+
+**Kök sebep, tek cümle:** `flutter build ios` her koşuşunda
+`ios/Flutter/Generated.xcconfig`i **sıfırdan yazıyor**, ve iş akışı o komutu
+İKİ KEZ çağırıyor:
+
+| Adım | Bayrak | Yazdığı `FLUTTER_BUILD_NUMBER` |
+|---|---|---|
+| "iOS derle" (release, cihaz) | `--build-number=614` | 614 |
+| "iOS simülatör derlemesi" (Appetize) | *(yok)* | **1** ← `pubspec.yaml`ın `1.0.9+1`'i |
+| fastlane `build_app` | — | dosyadan okur → **1** arşivlenir |
+
+`Info.plist`in `CFBundleVersion`ı `$(FLUTTER_BUILD_NUMBER)`, yani numarayı
+belirleyen şey pubspec de, ilk komut da değil — **fastlane'den önceki SON
+`flutter build`**. Simülatör adımı bilerek Appetize'dan önce duruyor
+(yukarıdaki sıra kararı) ve tam bu yüzden en son yazan o oldu.
+
+**Neden pahalı bir hata:** TestFlight aynı build numarasını İKİNCİ kez kabul
+etmiyor. Her koşu `1` yükleseydi, ikinci yükleme *"bundle version must be
+higher"* ile reddedilirdi — yani zincir bir kez çalışıp bir daha hiç
+çalışmayan bir tesisat olurdu. Bugünkü tek yükleme için zarar yok (`615 > 1`).
+
+**Düzeltme, iki katman:**
+
+1. Simülatör derlemesi de aynı `--build-number`ı alıyor — iki komut aynı
+   dosyayı yazdığı sürece hangisinin son yazdığı önemsizleşiyor.
+2. **fastlane'e girmeden ÖNCE dosya okunup doğrulanıyor** (`::error::` +
+   `exit 1`). Katman 1 tek başına yeterdi ama bu hatanın sınıfı "sessiz":
+   ileride araya üçüncü bir `flutter build` girerse yine kimse fark etmez.
+   Kontrol o sınıfı gürültülü yapıyor.
+
+**Ders (bu depoda tekrarlayan bir desen):** *"yükledim"* ile *"doğru şeyi
+yükledim"* ayrı iddialar, ve ikincisi CI'ın yeşilinden GÖRÜNMÜYOR. Kanıt
+yine ürünün kendi künyesinden okundu — web'de `curl … | grep
+kelimeki-build`in iOS'taki karşılığı TestFlight'ın BUILD sütunu.
 
 #### Beşinci koşu (#612) — **imzalı `.ipa` ÜRETİLDİ**, Apple bundle'ı reddetti
 
