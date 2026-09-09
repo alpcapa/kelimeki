@@ -82,6 +82,12 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   # Testlerde SQLite'ı masaüstü VM'de koşturur (cihaz/emülatör gerekmez).
   sqflite_common_ffi: ^2.3.6
+  # Mağaza ekran görüntüleri (FAZ C 24.5) — GERÇEK iOS simülatöründe koşan
+  # tek test paketi. `flutter test` bunu TOPLAMAZ (yalnızca test/ altına
+  # bakar); yalnızca `flutter drive` ile, ios-screenshots.yml iş akışında
+  # koşar. dev bağımlılığı olduğu için mağazaya giden ikiliye GİRMEZ.
+  integration_test:
+    sdk: flutter
   # Uygulama ikonu/splash ÜRETİCİLERİ — yalnızca `dart run
   # flutter_launcher_icons`/`flutter_native_splash:create` çalıştırılırken
   # kullanılır, derlenmiş uygulamaya hiç girmez. Kaynak görseller

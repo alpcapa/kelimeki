@@ -690,9 +690,48 @@ piksel ölçüsü** istiyor — simülatörün ham karesi zaten doğru ölçüde
 için **13" (2064×2752)** seti de istiyor. Aynı ekranların iPad simülatöründe
 ikinci kez çekilmesi gerekiyor — Play turunda karşılığı olmayan yeni bir iş.
 
+### ⚙️ BORU HATTI KURULDU — 9 Eylül 2026 (⚠ HENÜZ KOŞMADI)
+
+8 Eylül'ün "kalan iş" listesindeki üç maddenin üçü de yazıldı:
+
+| Parça | Nerede |
+|---|---|
+| Kare üreten test | `mobile/app/integration_test/store_screenshots_test.dart` |
+| Kareyi diske yazan sürücü | `mobile/app/test_driver/integration_test.dart` |
+| Simülatörü açıp süren CI | `.github/workflows/ios-screenshots.yml` (iPhone 6.9" + iPad 13", matris) |
+
+**Tahta fixture'ı DEPOYA GİRMİYOR.** Oyunun ortasındaki tahta, gerçek motorla
+ve tohumlu rastgelelikle (`Mulberry32`) **koşma anında** üretiliyor — golden
+JSON'u asset olarak paketlemek onu mağazaya giden uygulama ikilisine de
+sokardı. Tohum/hamle sayısı (`11` / `12`) rastgele değil, Linux'ta motor
+koşturularak **seçildi**: 43 taş, skor 114–76 (çekişmeli, oyuncu önde),
+tahtada bir joker, merkezdeki X2/X3 kullanılmış ve oyuncunun rafı `KAOEMLE`
+— yani ekranda gerçekten oynanabilir bir el duruyor. Taranan yedi tohum
+içinde üçünü birden sağlayan tek aday buydu (kimisinde raf tamamen ünlüydü,
+kimisinde oyuncu eziliyordu — mağaza karesi olamazdı).
+
+**Neden `mobile-build.yml`'e EKLENMEDİ:** o dosyanın `paths` listesi her
+dokunuşta tam bir macOS+Android derlemesi tetikliyor, ve deponun yazılı
+kuralı *"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla rehin
+almamalı"*. Ekran görüntüsü ayda bir gereken bir iş; kendi iş akışında
+duruyor ve **hiçbir secret'a ihtiyacı yok** (kareler sahte servislerle
+çiziliyor, ağa çıkılmıyor).
+
+⚠ **"YAZILDI" ≠ "ÇALIŞIYOR" — bu depoda bu farkın bedeli defalarca ödendi.**
+Boru hattı Linux'ta doğrulanamaz (macOS+simülatör ister); analiz temiz ve
+mevcut testler yeşil, ama **ilk CI koşusu bir DOĞRULAMA turudur.** İş akışı
+bu yüzden ölçümü kendisi yapıyor: her PNG'nin piksel ölçüsü `sips` ile
+okunup Apple'ın istediği ölçüyle karşılaştırılıyor, tutmazsa iş DÜŞÜYOR
+(artefakt yine de yükleniyor, elde inceleyecek dosya kalsın diye).
+
 ### Kalan iş
 
-- CI'ın `ios` işine simülatör açıp kare çeken adım (`simctl`)
-- Ekranlara gezinmenin nasıl sürüleceği (`integration_test` altyapısı depoda
-  YOK, sıfırdan kurulacak)
-- iPad seti için ikinci cihaz
+- **İlk koşunun doğrulanması** — kare gerçekten `1320×2868` / `2064×2752`
+  çıkıyor mu (iş akışının ölçüm adımı cevaplayacak)
+- **Kalan beş kare.** Bugün yalnızca 1. kare (oyun ekranı, oyunun ortası —
+  listenin *en önemli* karesi) üretiliyor. 2-6 aynı desenle eklenecek;
+  Kurulum/Skor Kartı gibi ekranlar depolama + sahte uç kurulumu istiyor
+  (altyapı `test/support/fake_*.dart`'ta hazır, her ekran için kurulum
+  gerekiyor)
+- **Kompozisyon:** çerçeve/başlık metni eklenip eklenmeyeceği (Apple ham
+  kareyi de kabul ediyor)

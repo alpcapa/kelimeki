@@ -69,6 +69,13 @@ kırmızıya döndü. **Mobil testlere `mobile/` dışından yeni bir dosya
 okutursan** o yolun `web-ci.yml`in `paths` listesinde karşılığı olduğundan
 emin ol.
 
+⚠ **Üçüncü bir mobil iş akışı var ve o BİLEREK ayrı duruyor:**
+`.github/workflows/ios-screenshots.yml` (9 Eylül 2026) mağaza ekran
+görüntülerini GERÇEK iOS simülatöründe üretir (`mobile/app/integration_test/`
++ `test_driver/`). `mobile-build.yml`'e eklenmedi çünkü o dosyanın `paths`
+listesi her dokunuşta tam bir macOS+Android derlemesi tetikliyor. Karar ve
+ölçümler: `marketing/app-store/console-formlari.md` §13.
+
 `tests/` altında üç spec var: `smoke.spec.ts` (kritik yol) ve
 `text-scale.spec.ts` + `text-scale-normal.spec.ts` (yazı ölçeği; ikisi ayrı
 dosya çünkü `--blink-settings` `launchOptions`ta ve Playwright onu DOSYA
