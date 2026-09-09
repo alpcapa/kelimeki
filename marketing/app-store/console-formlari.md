@@ -534,7 +534,41 @@ değil** — durum kaydı olmayınca her oturum aynı soruları baştan sorar.
 | `APP_STORE_CONNECT_KEY_ID` | ✅ 9 Eylül 2026 |
 | `APP_STORE_CONNECT_KEY_P8` | ✅ 9 Eylül 2026 |
 | `APP_STORE_CONNECT_ISSUER_ID` | ✅ 9 Eylül 2026 (üçünün en son gireni — aşağı bkz.) |
-| **İlk koşu (doğrulama turu)** | ⬜ **BEKLİYOR** |
+| **İlk koşu (doğrulama turu)** | ⚠ **KOŞTU (9 Eylül 2026, `main` #604) — `match`te düştü**, aşağı bkz. |
+
+#### İlk koşunun sonucu — Apple tarafı ÇALIŞIYOR, git tarafı tıkalı
+
+**Kanıtlanan:** fastlane özetinde `app_store_connect_api_key` adımı
+**BAŞARILI**. Yani `.p8` + Key ID + Issuer ID üçlüsü doğru ve Apple onları
+kabul etti — günün asıl belirsizliği kapandı.
+
+**Düşen:** `match`in İLK işi, sertifika deposunu klonlamak:
+
+```
+remote: Write access to repository not granted.
+fatal: unable to access 'https://github.com/alpcapa/kelimeki-certificates.git/':
+       The requested URL returned error: 403
+```
+
+Yani sorun Apple'da değil, **`MATCH_GIT_TOKEN`'da**. Bakılacak üç şey:
+
+| Olasılık | Kontrol |
+|---|---|
+| Token'ın **depo seçimi** `kelimeki-certificates`i içermiyor | Fine-grained token → *Repository access* → o depo AÇIKÇA seçili mi (yalnızca `kelimeki` seçiliyse bu hatayı verir) |
+| İzin **Read-only** | *Permissions* → **Contents: Read and write** (match yazacak) |
+| Token süresi dolmuş / depo adı farklı | Token'ın expiry'si; depo adı birebir `kelimeki-certificates` mi |
+
+⚠ **Hata mesajı YANILTICI: 403 "write access" bir KLONLAMA sırasında
+çıkıyor.** Klonlamak okuma iznine yeter; GitHub, token'ın o depoya hiç
+erişimi olmadığında da (ve depo yokken de) bu mesajı üretiyor — yani
+"yazma iznini aç" ile "depoyu göremiyor" aynı hataya düşüyor. Bu yüzden
+kontrol listesi yalnızca izne değil, **depo seçimine ve adına** da bakıyor.
+
+✅ **Adım sırası kararı DOĞRULANDI.** TestFlight adımı bilerek Appetize'dan
+SONRA konmuştu (*"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla
+rehin almamalı"*). Bu koşuda tam olarak öyle oldu: cihaz derlemesi,
+simülatör derlemesi, prerelease yüklemesi ve Appetize'ın dördü de GEÇTİ;
+yalnızca 10. adım düştü.
 
 **Kurulum tamam; kalan tek şey zincirin İLK KEZ koşması.** Tetikleme:
 `main`'e push `.github/workflows/mobile-build.yml` yolunu da kapsıyor, yani
