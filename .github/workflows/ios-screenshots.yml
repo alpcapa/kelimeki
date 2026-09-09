@@ -36,12 +36,16 @@ jobs:
         include:
           # Apple 2026: iPhone için TEK set (6.5" ya da 6.9") + iPad 13"
           # yeterli; verilmeyen boyutlar bu setlerden ölçekleniyor.
+          # `iPhone 17 Pro Max` run #1'de runner'da BULUNDU (ölçüldü).
           - ad: iphone-6.9
             adaylar: 'iPhone 17 Pro Max|iPhone 16 Pro Max'
             genislik: 1320
             yukseklik: 2868
+          # ⚠ Aday listesi 9 Eylül 2026'da run #1'de ÖLÇÜLDÜ: runner'da M4
+          # değil **M5** duruyor (`iPad Pro 13-inch (M5)`). Xcode sürümü
+          # ilerledikçe ad yine kayacak — liste bu yüzden var, tek ad değil.
           - ad: ipad-13
-            adaylar: 'iPad Pro 13-inch (M4)|iPad Pro (12.9-inch)'
+            adaylar: 'iPad Pro 13-inch (M5)|iPad Pro 13-inch (M4)|iPad Pro (12.9-inch)'
             genislik: 2064
             yukseklik: 2752
     steps:

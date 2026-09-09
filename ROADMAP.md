@@ -1498,8 +1498,15 @@ geçme — entitlements doğru olsa bile link uygulamayı açmaz.
   gerekçe #17 → "Apple neden bu maddede YOK".
 - ⚠ **`in_app_update` Android'e özgü**, iOS'ta karşılığı yok
   (`mobile/CLAUDE.md`). Yani iOS'ta elimizdeki TEK fren sürüm kapısı
-  (`app_config.mobile_min_supported_version`) — `version_gate.dart` `'ios'`
-  anahtarını zaten okuyor, ama o anahtarın satırı **doldurulmalı**.
+  (`app_config.mobile_min_supported_version`).
+  ✅ **9 Eylül 2026'da CANLIDAN ölçüldü: anahtar EKSİK DEĞİL** —
+  satır `{"ios":"0.0.0","android":"0.0.0"}`. Bu bölüm *"o anahtarın satırı
+  doldurulmalı"* diyordu; yanlıştı, `version_gate.dart`in okuduğu `'ios'`
+  anahtarı zaten yazılı. **`0.0.0` bugün DOĞRU değer** (fail-open: kapı
+  kapalı, zorunlu güncelleme yok) çünkü henüz yayınlanmış bir iOS sürümü
+  yok. Gerçek iş şu: ilk TestFlight/App Store sürümünden SONRA bu satır
+  iOS'ta tek fren olduğu için bilinçli yükseltilmeli — Android'deki gibi
+  bir mağaza diyaloğu devreye girmiyor.
 
 ### 24.6 — Gönderim & inceleme
 
