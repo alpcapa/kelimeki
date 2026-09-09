@@ -810,15 +810,38 @@ oynadı. +22 puan."*), raf `KAOEMLE` ve "TORBA 43".
    metni eklensin mi"* sorusunu somutlaştırıyor: **başlık metni için doğal
    bir yer var.** Alternatif, kareyi olduğu gibi bırakmak (Apple ham kareyi
    kabul ediyor).
-2. **Başlıkta `GİRİŞ` butonu görünüyor**, yani oturum açılmamış hâl. Play
-   turunun kuralı *"test hesabıyla çek"* diyordu. Ağa çıkmadan çözülebilir:
-   `AuthService.fake(user:, profile:)` sahte bir oturum kabul ediyor, yani
-   başlıkta `GİRİŞ` yerine avatar/kullanıcı adı çizdirilebilir — secret ya
-   da gerçek hesap gerekmeden. Karar: kare girişli mi görünsün, misafir mi?
+2. ✅ **ÇÖZÜLDÜ — kareler GİRİŞLİ çekiliyor** (9 Eylül 2026). Önce
+   başlıkta `GİRİŞ` butonu duruyordu (misafir hâli); Play turunun yazılı
+   kuralı *"test hesabıyla çek"* dediği için girişli hâl seçildi. Ağa
+   çıkmadan çözüldü: `AuthService.fake(user:, profile:)` sahte oturum kabul
+   ediyor, başlıkta avatar (`IR`) çiziliyor — secret ya da gerçek hesap
+   gerekmiyor, iş akışı hâlâ ağa hiç çıkmıyor.
+   ⚠ **`test/account_button_test.dart`in sahte kullanıcısı KOPYALANMADI:**
+   o yardımcı geliştiricinin kişisel e-postasını taşıyor ve Play'in çekim
+   kuralı *"e-posta geçen ekran yok"* diyor. Mağaza kimliğinin `email`i
+   bilerek boş.
+
+### 2. kare eklendi — 9 Eylül 2026
+
+`02-kurulmus-hamle`: oyuncunun rafından tahtaya kurulmuş ama henüz
+onaylanmamış bir hamle — yeşil dış hat, **+14** puan rozeti, *"Oyna tuşuyla
+kelimeyi onayla."* mesajı ve öne çıkan `OYNA` butonu.
+
+⚠ **Hamle elle KODLANMIYOR**, motorun kendi arama fonksiyonundan
+seçiliyor — ama *"en yüksek puan"* kuralıyla DEĞİL. Ölçüm: en yüksek puanlı
+aday `LAM` (16 puan, **2 taş**) çıkıyor ve mağaza karesinde mekaniği
+anlatmıyor. Seçim kuralı bu yüzden **en çok taş kullanan** aday (eşitlikte
+puan, sonra `trCompare`): `ALKIM` — 4 taş, dikey, mevcut bir `I` taşının
+ÜSTÜNDEN geçiyor, yani hem kelimeyi hem kancalama kuralını gösteriyor.
+
+⚠ **Tuzak (ölçüldü):** raf her yerleştirmede KÜÇÜLÜYOR (`_placeTile`
+indeksi çıkarıyor), yani raf indeksleri önceden hesaplanamaz. İlk denemede
+4 yerleştirmeden yalnızca 3'ü tuttu ve son taş **sessizce** düştü — hata
+yok, eksik kare. Her adımda güncel raftan bakılıyor.
 
 ### Kalan iş
 
-- **Kalan beş kare.** Bugün yalnızca 1. kare (oyun ekranı, oyunun ortası —
+- **Kalan dört kare.** Bugün yalnızca 1. kare (oyun ekranı, oyunun ortası —
   listenin *en önemli* karesi) üretiliyor. 2-6 aynı desenle eklenecek;
   Kurulum/Skor Kartı gibi ekranlar depolama + sahte uç kurulumu istiyor
   (altyapı `test/support/fake_*.dart`'ta hazır, her ekran için kurulum

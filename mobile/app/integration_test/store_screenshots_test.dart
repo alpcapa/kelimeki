@@ -28,6 +28,7 @@ import 'package:kelimeki/src/game/game_controller.dart';
 import 'package:kelimeki/src/ui/game/game_screen.dart';
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show User;
 
 /// Tahtayı dolduran tohum ve hamle sayısı — Linux'ta motoru koşturarak
 /// SEÇİLDİ (9 Eylül 2026), rastgele değil. Ölçülen sonuç: 43 taş, skor
@@ -43,6 +44,88 @@ const int _kMoves = 12;
 /// giremez (Play turunun yazılı gizlilik kuralı); `Ironman` bu depoda
 /// zaten bilinen bir test kimliği.
 const String _kPlayerName = 'Ironman';
+
+/// Kareler GİRİŞLİ çekilir — Play turunun yazılı kuralı *"test hesabıyla
+/// çek"* diyor, ve misafir hâlde başlıkta `GİRİŞ` butonu duruyor. Sahte
+/// oturum bunu ağa çıkmadan çözüyor: başlıkta avatar/ad çizilir, hiçbir
+/// secret ya da gerçek hesap gerekmez.
+///
+/// ⚠ `email` BİLEREK BOŞ. `test/account_button_test.dart`in yardımcısı
+/// geliştiricinin kişisel adresini taşıyor; o kimlik buraya kopyalanamaz —
+/// Play'in çekim kuralı *"e-posta geçen ekran yok"* diyor.
+AuthService _screenshotAuth() => AuthService.fake(
+      user: User(
+        id: 'u-kelimeki-store',
+        appMetadata: const {},
+        userMetadata: const {},
+        aud: 'authenticated',
+        createdAt: '2026-01-01T00:00:00Z',
+      ),
+      profile: const KProfile(id: 'u-kelimeki-store', displayName: _kPlayerName),
+    );
+
+/// Oyuncunun rafından TAHTAYA kurulmuş ama henüz onaylanmamış bir hamle
+/// bırakır — 2. karenin konusu bu (yeşil dış hat + puan rozeti).
+///
+/// Hamle elle KODLANMIYOR, motorun kendi arama fonksiyonundan seçiliyor:
+/// önce geniş arama adayları alınır, sonra **en çok taş kullanan** aday
+/// (eşitlikte yüksek puan, sonra `trCompare`) seçilir. Sebep: en yüksek
+/// puanlı hamle çoğu zaman 2 taşlık sıkışık bir hamle oluyor ve mağaza
+/// karesinde mekaniği ANLATMIYOR; 4 taşlık, mevcut bir taşın üstünden geçen
+/// dikey bir kelime hem kuralı hem yeşil dış hattı gösteriyor.
+void _stageBestMove(GameController controller) {
+  final s = controller.state;
+  final me = s.players[0];
+  final adaylar = findAIMoves(s.board, me.rack, s.bonuses, 0, me.corners,
+      isFirstMove(s), s.players, _words, 40,
+      search: const AiSearch(wide: true, maxWordLen: 8));
+  if (adaylar.isEmpty) return;
+  final sirali = [...adaylar]..sort((a, b) {
+      final t = b.placements.length.compareTo(a.placements.length);
+      if (t != 0) return t;
+      final p = b.score.compareTo(a.score);
+      if (p != 0) return p;
+      return trCompare(a.word, b.word);
+    });
+  for (final p in sirali.first.placements) {
+    // ⚠ Raf her yerleştirmede KÜÇÜLÜYOR (`_placeTile` indeksi çıkarıyor),
+    // yani indeksler önceden hesaplanamaz — her adımda GÜNCEL raftan
+    // bakılmalı. Önceden hesaplanınca son taş sessizce düşüyordu (ölçüldü).
+    final rack = controller.state.players[0].rack;
+    var idx = rack.indexWhere((t) => !t.wild && t.letter == p.tile.letter);
+    if (idx < 0) idx = rack.indexWhere((t) => t.letter == '?');
+    if (idx < 0) return;
+    controller.dispatch(PlaceTileAction(
+      r: p.r,
+      c: p.c,
+      rackIndex: idx,
+      wildLetter: rack[idx].letter == '?' ? p.tile.letter : null,
+    ));
+  }
+}
+
+/// Kareleri çeken ekranların ortak kurulumu.
+GameController _oyunKontrolcusu() {
+  final controller = GameController(
+    words: _words,
+    autoPlayAi: false, // kare sabit kalsın; YZ araya girip tahtayı değiştirmesin
+    nowIso: () => '',
+    rng: Mulberry32(_kSeed),
+  );
+  controller.dispatch(ResumeSavedAction(_midGameState()));
+  return controller;
+}
+
+Widget _oyunEkrani(GameController controller) => MaterialApp(
+      theme: kelimekiTheme(),
+      // `storage` VERİLMİYOR: zoom tanıtım balonu yalnızca o varken çıkıyor
+      // ve mağaza karesinde bir öğretici balonu istemiyoruz.
+      home: GameScreen(
+        controller: controller,
+        words: _words,
+        auth: _screenshotAuth(),
+      ),
+    );
 
 late SetWordSource _words;
 
@@ -90,27 +173,22 @@ void main() {
   });
 
   testWidgets('01 — oyun ekranı, oyunun ortası', (tester) async {
-    final controller = GameController(
-      words: _words,
-      autoPlayAi: false, // kare sabit kalsın; YZ araya girip tahtayı değiştirmesin
-      nowIso: () => '',
-      rng: Mulberry32(_kSeed),
-    );
-    controller.dispatch(ResumeSavedAction(_midGameState()));
-
-    await tester.pumpWidget(MaterialApp(
-      theme: kelimekiTheme(),
-      // `storage` VERİLMİYOR: zoom tanıtım balonu yalnızca o varken çıkıyor
-      // ve mağaza karesinde bir öğretici balonu istemiyoruz.
-      home: GameScreen(
-        controller: controller,
-        words: _words,
-        auth: AuthService.fake(),
-      ),
-    ));
+    final controller = _oyunKontrolcusu();
+    await tester.pumpWidget(_oyunEkrani(controller));
     await _settle(tester);
 
     await binding.takeScreenshot('01-oyun-ekrani');
+    controller.dispose();
+  });
+
+  testWidgets('02 — kurulmuş hamle (yeşil dış hat + puan rozeti)',
+      (tester) async {
+    final controller = _oyunKontrolcusu();
+    _stageBestMove(controller);
+    await tester.pumpWidget(_oyunEkrani(controller));
+    await _settle(tester);
+
+    await binding.takeScreenshot('02-kurulmus-hamle');
     controller.dispose();
   });
 }
