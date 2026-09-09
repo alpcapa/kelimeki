@@ -839,6 +839,10 @@ indeksi çıkarıyor), yani raf indeksleri önceden hesaplanamaz. İlk denemede
 4 yerleştirmeden yalnızca 3'ü tuttu ve son taş **sessizce** düştü — hata
 yok, eksik kare. Her adımda güncel raftan bakılıyor.
 
+✅ **Run #3 (9 Eylül 2026) tamamen yeşil:** iki cihaz × iki kare, dördünün
+de piksel ölçümü geçti. Artefaktlar `iphone-6.9` 3,21 MB + `ipad-13`
+3,41 MB (bir önceki turun ~iki katı — iki kare de üretildiğinin ölçüsü).
+
 ### Kalan iş
 
 - **Kalan dört kare.** Bugün yalnızca 1. kare (oyun ekranı, oyunun ortası —
