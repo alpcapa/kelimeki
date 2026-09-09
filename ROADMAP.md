@@ -1294,7 +1294,7 @@ yaşandı ve özet tablo altı gün bayat kaldı.)
 | Faz | Durum |
 |---|---|
 | **24.1** Hesap & kimlik | ✅ üyelik aktif · Team ID `8277D85FY9` · App ID + capability'ler · APNs anahtarı `RL4JLXL389` · uygulama kaydı · Free Apps Agreement · **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) · ⬜ **API anahtarı İNDİRİLEMEDİ** (Apple arızası) |
-| **24.2** Mac'siz imzalama + TestFlight | ⚠ **İLK KEZ KOŞTU** (9 Eyl, `main` #604). ✅ Apple tarafı doğrulandı — `app_store_connect_api_key` GEÇTİ (`.p8`+Key ID+Issuer ID doğru). ⬜ `match` sertifika deposunu klonlayamadı: **`MATCH_GIT_TOKEN` 403**. Ayrıntı ve kontrol listesi `console-formlari.md` §3 |
+| **24.2** Mac'siz imzalama + TestFlight | ✅ **DOĞRULANDI** (9 Eyl, koşu #614): zincir baştan sona koştu, **1.0.9 (614)** App Store Connect'e YÜKLENDİ. Altı koşu, sekiz ayrı arıza; teşhis zinciri `console-formlari.md` §3'te. ⚠ *Yüklendi ≠ TestFlight'ta hazır* — Apple'ın işlemesi 10-40 dk |
 | **24.3** APNs / push | ✅ Firebase (prod+dev) · `GoogleService-Info.plist` · `Runner.entitlements` · `AppDelegate` bildirim kanalı. ⚠ `aps-environment` değeri CI'da doğrulanamaz |
 | **24.4** Universal Links | ✅ web yarısı **CANLIDA ölçüldü** (`200` + `application/json`) · ✅ iOS yarısı yazıldı · ⚠ doğrulama TestFlight ister |
 | **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ✅ **ekran görüntüsü boru hattı ÇALIŞIYOR** — 9 Eyl, run #1 ile CI'da DOĞRULANDI: iPhone 6.9" karesi **tam 1320×2868**, artefakt 1,6 MB. iPad yarısı da run #2'de DOĞRULANDI (`2064×2752`) · ✅ **6/6 kare, iki cihazda da CI'da DOĞRULANDI** (9 Eyl, run #4: on iki PNG'nin on ikisi tam ölçüde) — açık kalan tek şey kompozisyon kararı (başlık metni/çerçeve) |

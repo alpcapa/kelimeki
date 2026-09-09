@@ -669,6 +669,44 @@ kopyasında değiştirip bırakmak doğru sınır.
 değiştirdiğinde sessizce ayrışırdı. Paket kimliği ve takım kimliği de tek
 bir sabitten geliyor (üç yerde birden kullanılıyorlar).
 
+### ✅ 24.2 DOĞRULANDI — koşu #614, 9 Eylül 2026: paket Apple'a YÜKLENDİ
+
+**Zincir baştan sona koştu.** `upload_to_testflight` 6 dakika sürüp
+`success` döndü — #612'de aynı adım reddedilirken `exit 1` vermişti, yani
+bu bir "sessizce atlandı" değil, gerçek bir yükleme.
+
+**Paketin künyesi:** sürüm **1.0.9**, **build 614** (`--build-number` =
+koşu numarası; TestFlight aynı numarayı ikinci kez kabul etmiyor, bu yüzden
+koşu numarasına bağlı).
+
+Böylece 24.2'nin — *"Mac'siz imzalama + TestFlight"* — **iddiası kanıtlandı:**
+geliştiricinin elinde Mac yokken, tamamen CI'dan, imzalı bir iOS paketi
+üretilip App Store Connect'e yüklenebiliyor.
+
+⚠ **"Yüklendi" ≠ "TestFlight'ta hazır".** İş akışı
+`skip_waiting_for_build_processing: true` ile koşuyor (macOS runner dakikası
+yakmamak için, bilinçli); Apple'ın işlemesi 10-40 dakika sürüyor. **Kanıt
+CI'ın yeşili değil, App Store Connect → TestFlight'ta beliren derleme** —
+bu depoda "yeşil ≠ canlıda" kuralının iOS'taki karşılığı.
+
+**Zincirin tamamı, tek tek kanıtlanmış hâliyle:**
+
+| Halka | Hangi koşuda kanıtlandı |
+|---|---|
+| Sertifika deposuna git erişimi | #606 (token kapsamı düzeltildikten sonra) |
+| Depo şifresinin çözülmesi (`MATCH_PASSWORD`) | #606 |
+| App Store Connect kimlik doğrulaması | #606 |
+| Anahtarlık (`setup_ci`) | #608 |
+| Sertifika + profil üretimi → depoya yazma | #608 |
+| `build_app` yolları | #610 → #612 |
+| İmzalama (`update_code_signing_settings`) | #612 (27 MB `.ipa`) |
+| Apple bundle doğrulaması (iPad yönelimleri) | #614 |
+| **`upload_to_testflight`** | **#614** ✅ |
+
+**Altı koşu, sekiz ayrı arıza.** Hiçbiri ötekini maskelemedi çünkü her tur
+bir öncekinden daha ileri gitti — adım sırası kararının (TestFlight en
+sonda) asıl kazancı bu oldu.
+
 #### Beşinci koşu (#612) — **imzalı `.ipa` ÜRETİLDİ**, Apple bundle'ı reddetti
 
 ```
