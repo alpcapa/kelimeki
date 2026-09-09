@@ -1584,6 +1584,11 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
 
 ## 26. iPad'de MANZARA (9 Eylül 2026 — App Store'un dayattığı yeni yüzey)
 
+🔴 **ÖNCELİK: iPad birinci sınıf yüzey.** Kullanıcı kararı, sözleri
+birebir: *"Ipad olmazsa olmaz. Bu oyunun en iyi oynandığı yer orası."*
+Yani aşağıdaki maddeler "çökmüyorsa geçti" diye okunmaz — sorulacak soru
+**"iyi mi?"**. Ölçüm sonrası karar `ROADMAP.md` §25'te.
+
 ⚠ **Bu madde bir özellik isteğinden değil, Apple'ın REDDİNDEN doğdu.**
 İmzalı `.ipa` üretildi ve yüklemede reddedildi (90474): iPad'i destekleyen
 bir uygulama `UISupportedInterfaceOrientations~ipad` altında DÖRT yönelimi

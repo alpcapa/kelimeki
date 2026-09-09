@@ -1243,6 +1243,47 @@ değişir (web · Dart · Edge) ve `verify-edge-engine-parity` ayrışmayı yaka
 | 5 | ✅ kod (7 Eylül 2026, PR #475): Zor = geniş arama, YZ↔YZ Normal'e karşı **%70** (tohum 1, GA %63-75) ve **%72** (tohum 1000, GA %66-78); Normal golden'ları git diff boş; `reducer_ai2_zor` + `ai_level.json` Dart'ta yeşil (6883 kontrol); `verify-edge-engine-parity` `AI_LEVEL_SEARCH` kilidi + Zor adımıyla yeşil; `play-ai-turn` yeniden deploy edildi (`verify_jwt=true` korundu); seçici web+portta açık, `ai_level_parity_test` + smoke Zor testi yeşil; web canlıda `dd55ae0`. **KALAN:** sahada iki hafta — Kolay ~%30 / Zor ~%70 YZ kazanma bandında |
 
 
+## 25. iPad MANZARA düzeni — **AÇILDI** (9 Eylül 2026)
+
+**Kullanıcı kararı, sözleri birebir:** *"Ipad olmazsa olmaz. Bu oyunun en
+iyi oynandığı yer orası."*
+
+Bu, iPad'in konumunu değiştiriyor: "desteklenen ikinci cihaz" değil,
+**birinci sınıf yüzey**. Dolayısıyla manzara sorusu da değişiyor —
+*"kırılıyor mu?"* değil, ***"iyi mi?"***
+
+**Nasıl açıldı:** App Store yüklemesi bundle'ı reddetti (90474) — iPad'i
+destekleyen bir uygulama `UISupportedInterfaceOrientations~ipad` altında
+DÖRT yönelimi bildirmek zorunda. `Info.plist` düzeltildi (#501) ve bunun
+sonucu şu: **uygulama iPad'de artık döndürülebilir.**
+
+⚠ **`main.dart`in portre kilidi iPad'de FİİLEN ÖLÜ.**
+`setPreferredOrientations([portraitUp])` iPhone'da tutuyor, ama çoklu göreve
+açık bir iPad uygulamasında iOS onu yok sayıyor; `UIRequiresFullScreen` ile
+kapatmak da modern SDK'larda güvenilir değil. Yani manzara artık bir
+"ihtimal" değil, kullanıcının bir saniyede ulaşacağı hâl.
+
+⚠ **Portta manzara için HİÇBİR ŞEY yok** (kaynak taramasıyla doğrulandı):
+web'in `LandscapeHint` bileşeninin karşılığı hiç port edilmedi, manzaraya
+özgü bir düzen de yok.
+
+**Sıra:**
+
+1. **ÖLÇ — cihazda.** `mobile/TESTING.md` §26: oyun ekranı (tahta sığıyor
+   mu, raf/butonlar erişilebilir mi, taşma var mı), Setup, modallar,
+   Split View, portreye dönüş. Ölçmeden tasarım yapılmayacak.
+2. **Karar ver.** Üç yol: (a) manzaraya özgü düzen — 13" iPad'de yatay
+   tahta + yan panel bu oyun için muhtemelen EN İYİ deneyim, (b) mevcut
+   düzenin manzarada da yeterli olduğunu ölçüp bırakmak, (c) geçici olarak
+   `LandscapeHint` portu.
+3. ⚠ **iPad desteğini bırakmak SEÇENEK DEĞİL** — kullanıcı kararı yukarıda.
+   `TARGETED_DEVICE_FAMILY = "1,2"` kalıyor.
+
+**Neden ROADMAP'te:** bu bir gönderim kapısı DEĞİL (Apple bundle'ı yönelimler
+bildirildiği an kabul ediyor), ama iPad birinci sınıf yüzeyse App Store'da
+"en iyi oynandığı yer" olarak sunulan cihazda ölçülmemiş bir düzen bırakmak
+kabul edilebilir değil.
+
 ## 24. FAZ C — App Store yayını — **YÜRÜYOR** (8 Eylül 2026)
 
 **Bu bölüm bir İNDEKS. Kaynak: `marketing/app-store/console-formlari.md`** —
@@ -1253,7 +1294,7 @@ yaşandı ve özet tablo altı gün bayat kaldı.)
 | Faz | Durum |
 |---|---|
 | **24.1** Hesap & kimlik | ✅ üyelik aktif · Team ID `8277D85FY9` · App ID + capability'ler · APNs anahtarı `RL4JLXL389` · uygulama kaydı · Free Apps Agreement · **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) · ⬜ **API anahtarı İNDİRİLEMEDİ** (Apple arızası) |
-| **24.2** Mac'siz imzalama + TestFlight | ⚠ **İLK KEZ KOŞTU** (9 Eyl, `main` #604). ✅ Apple tarafı doğrulandı — `app_store_connect_api_key` GEÇTİ (`.p8`+Key ID+Issuer ID doğru). ⬜ `match` sertifika deposunu klonlayamadı: **`MATCH_GIT_TOKEN` 403**. Ayrıntı ve kontrol listesi `console-formlari.md` §3 |
+| **24.2** Mac'siz imzalama + TestFlight | ✅ **UÇTAN UCA DOĞRULANDI** (9 Eyl, koşu #614): zincir baştan sona koştu ve paket App Store Connect → TestFlight'ta **"Ready to Submit"** olarak GÖRÜLDÜ. Altı koşu, sekiz ayrı arıza; teşhis zinciri `console-formlari.md` §3'te. ⚠ Dokuzuncu arıza yeşil koşudan SONRA bulundu: paket **1.0.9 (1)** olarak yüklendi, 614 olarak değil — araya giren bayraksız `flutter build ios` `Generated.xcconfig`i eziyordu. TestFlight aynı numarayı ikinci kez almadığı için düzeltildi (bayrak + fastlane öncesi doğrulama); post-mortem `console-formlari.md` §3 |
 | **24.3** APNs / push | ✅ Firebase (prod+dev) · `GoogleService-Info.plist` · `Runner.entitlements` · `AppDelegate` bildirim kanalı. ⚠ `aps-environment` değeri CI'da doğrulanamaz |
 | **24.4** Universal Links | ✅ web yarısı **CANLIDA ölçüldü** (`200` + `application/json`) · ✅ iOS yarısı yazıldı · ⚠ doğrulama TestFlight ister |
 | **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ✅ **ekran görüntüsü boru hattı ÇALIŞIYOR** — 9 Eyl, run #1 ile CI'da DOĞRULANDI: iPhone 6.9" karesi **tam 1320×2868**, artefakt 1,6 MB. iPad yarısı da run #2'de DOĞRULANDI (`2064×2752`) · ✅ **6/6 kare, iki cihazda da CI'da DOĞRULANDI** (9 Eyl, run #4: on iki PNG'nin on ikisi tam ölçüde) — açık kalan tek şey kompozisyon kararı (başlık metni/çerçeve) |

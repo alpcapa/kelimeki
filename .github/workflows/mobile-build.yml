@@ -431,7 +431,17 @@ jobs:
       - name: iOS simülatör derlemesi (Appetize için)
         working-directory: mobile/app
         run: |
+          # ⚠ `--build-number` BURADA DA ŞART, süs değil (9 Eylül 2026'da
+          # ölçüldü). `flutter build ios` her koşuşunda
+          # `ios/Flutter/Generated.xcconfig`i YENİDEN YAZIYOR ve bayrak
+          # verilmezse `pubspec.yaml`ın varsayılanına (`1.0.9+1` → `1`)
+          # düşüyor. Bu adım release derlemesinden SONRA koştuğu için 614'ü
+          # eziyordu; fastlane sonra o dosyayı okuyarak arşiv aldı ve
+          # TestFlight'a `1.0.9 (1)` yüklendi — CI yeşildi, numara yanlıştı.
+          # Numarayı tüketen tek yüzey TestFlight; simülatör paketi
+          # umursamıyor, yani hizalamanın bedeli yok.
           flutter build ios --simulator --debug \
+            "--build-number=${{ github.run_number }}" \
             "--dart-define=BUILD_SHA=${{ steps.stamp.outputs.sha }}" \
             "--dart-define=BUILD_TIME=${{ steps.stamp.outputs.time }}" \
             --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
@@ -494,6 +504,12 @@ jobs:
       # alıyor — `--dart-define`larla gömülen derleme kimliği ve Supabase
       # anahtarları oradan geliyor. Sıra değişirse imzalı pakette teşhis
       # satırı boş çıkar (`Derleme yerel`) ve sunucuya hiç bağlanmaz.
+      #
+      # ⚠ "YUKARIDA" = SON `flutter build ios`, ilki değil. O komut
+      # `Generated.xcconfig`i her seferinde sıfırdan yazıyor, yani bu
+      # adımdan önceki EN SON çağrının bayrakları geçerli. Aradaki simülatör
+      # derlemesi bu yüzden aynı `--build-number`ı taşımak zorunda; aşağıdaki
+      # kontrol de o dosyayı fastlane'e girmeden okuyup doğruluyor.
       - name: TestFlight'a yükle (imzalı .ipa)
         if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
         working-directory: mobile/app
@@ -535,6 +551,23 @@ jobs:
           # "Could not locate the provided keychain" ile düştü (koşu #606,
           # 9 Eylül 2026). Buraya tekrar bir keychain değişkeni EKLEME —
           # setup_ci'nin kendi anahtarlığını ezer ve hata geri gelir.
+          # ⚠ FASTLANE'İN ARŞİVLEYECEĞİ NUMARAYI BURADA OKU — "yükledim"
+          # ile "doğru numarayı yükledim" ayrı şeyler ve ikincisi CI'ın
+          # yeşilinden GÖRÜNMÜYOR. `Info.plist`'in `CFBundleVersion`ı
+          # `$(FLUTTER_BUILD_NUMBER)` ve o değişken bu dosyadan geliyor;
+          # dosyayı en son yazan `flutter build` kazanıyor. 9 Eylül 2026'da
+          # koşu #614 tam burada sessizce yanlış çıktı: simülatör derlemesi
+          # bayraksızdı, numara `1`e düştü ve TestFlight'a `1.0.9 (1)`
+          # yüklendi. TestFlight aynı numarayı İKİNCİ kez kabul etmediği
+          # için bu, bir sonraki yüklemeyi yakan türden bir sessiz hata.
+          xc=ios/Flutter/Generated.xcconfig
+          okunan=$(grep '^FLUTTER_BUILD_NUMBER=' "$xc" | cut -d= -f2)
+          beklenen="${{ github.run_number }}"
+          echo "Arşivlenecek derleme numarası: $okunan (beklenen: $beklenen)"
+          if [ "$okunan" != "$beklenen" ]; then
+            echo "::error::$xc içindeki FLUTTER_BUILD_NUMBER=$okunan, beklenen $beklenen. Aradaki bir 'flutter build' adımı --build-number bayrağı olmadan koşmuş olmalı — o adıma bayrağı ekle."
+            exit 1
+          fi
           export FASTLANE_SKIP_UPDATE_CHECK=1
           export FASTLANE_HIDE_CHANGELOG=1
           bundle install --quiet
