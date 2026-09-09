@@ -584,6 +584,36 @@ erişimi olmadığında da (ve depo yokken de) bu mesajı üretiyor — yani
 "yazma iznini aç" ile "depoyu göremiyor" aynı hataya düşüyor. Bu yüzden
 kontrol listesi yalnızca izne değil, **depo seçimine ve adına** da bakıyor.
 
+#### İkinci koşu (#606) — dört adım daha ilerledi, anahtarlıkta düştü
+
+Token'ın kapsamı düzeltildikten sonra `match` şunları GEÇTİ:
+
+```
+Cloning remote git repo...                              ✅ token düzeltmesi tuttu
+Checking out branch master...                           ✅
+🔓 Successfully decrypted certificates repo             ✅ MATCH_PASSWORD doğru
+Creating authorization token for App Store Connect API  ✅ Apple kimliği yine tamam
+Couldn't find a valid code signing identity... creating one for you now
+[!] Could not locate the provided keychain. Tried: …/kelimeki-ci …
+```
+
+**Kök sebep:** iş akışı `MATCH_KEYCHAIN_NAME="kelimeki-ci"` diyordu ama o
+anahtarlığı **kimse oluşturmuyordu** — taze bir macOS runner'ında öyle bir
+keychain yok. `match` sertifikayı bir anahtarlığa kurmak zorunda ve orada
+düştü.
+
+⚠ **Hata GEÇ çıkıyor ve bu yanıltıcı:** git klonlama, şifre çözme ve Apple
+kimlik doğrulamasının ÜÇÜ DE geçtikten sonra patlıyor. Yani "match düştü"
+demek "kimlik bilgileri yanlış" demek değil; log'da hangi satıra kadar
+gelindiğine bakmak şart.
+
+**Düzeltme:** `Fastfile`'ın başına **`setup_ci`** — fastlane'in tam bu iş
+için yazdığı action: geçici anahtarlığı oluşturur, açar, varsayılan yapar,
+kilit zaman aşımını kaldırır ve `MATCH_KEYCHAIN_NAME`/`_PASSWORD`i kendisi
+ayarlar. İş akışındaki elle export'lar **kaldırıldı** — dursalardı
+setup_ci'nin anahtarlığını ezip aynı hatayı geri getirirlerdi.
+⚠ `MATCH_PASSWORD` AYRI bir şey (depo şifreleme parolası) ve duruyor.
+
 ✅ **Adım sırası kararı DOĞRULANDI.** TestFlight adımı bilerek Appetize'dan
 SONRA konmuştu (*"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla
 rehin almamalı"*). Bu koşuda tam olarak öyle oldu: cihaz derlemesi,
