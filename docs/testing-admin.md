@@ -25,6 +25,11 @@ tarayıcıda görülebilecek olanlar. **Admin hesabı gerekiyor.**
       Ziyaret"in altında sırasıyla **Aktif Oyuncu** grafiği, **Aktivasyon**
       (4 kutu), **Retention** tablosu görünmeli. Hiçbiri "Yükleniyor…"da
       asılı kalmamalı.
+- [ ] **Aktivasyonun 3. ve 4. kutusu bir HUNİ okumalı** (9 Eylül 2026): "İlk
+      Saatte Aktive" ≤ "24 Saatte Aktive" ≤ aktive üye sayısı. İlki ikincisini
+      GEÇİYORSA sayım hatası vardır. Dağılım satırındaki üçlü ise AYRIK:
+      24 saatte + 1-3 gün + sonra = aktive üye sayısı. Kutuda artık medyan
+      YOK — çift tepeli dağılımda gözlem olmayan bir boşluğa düşüyordu.
 - [ ] **Aktif Oyuncu grafiği iki seri gösteriyor** ("Aktif Oyuncu (28 gün)"
       mavi, "Dönem İçi Aktif" amber) ve legend'dan tek tek açılıp
       kapanabiliyor. Tanım artık altta paragraf DEĞİL: "CSV İndir"in solundaki
@@ -306,8 +311,9 @@ açıklama değil veri.
       derken `?` hâlâ orada olmalı — "bu grafik neyi sayıyor?" sorusu tam da
       o anda sorulur. (CSV'nin kaybolması BEKLENEN: indirilecek satır yok.)
 - [ ] **Aktivasyonun dağılım satırı EKRANDA kalmalı** ("İlk oyununu bitirme
-      dağılımı — aynı gün: N · 1-3 gün: N · sonra: N"). Bu veri, popup'a
-      taşınMAMALI; popup yalnızca "Aktive = …" tanımını anlatmalı.
+      dağılımı — 24 saatte: N · 1-3 gün: N · sonra: N · medyan: N"). Bu veri,
+      popup'a taşınMAMALI; popup yalnızca tanımları anlatmalı. Medyan 9 Eylül
+      2026'da kutudan BU satıra indi (gerekçesi 9.7'de).
 - [ ] **Uzun metin taşmıyor.** "Kaynak Hunisi" popup'ı en uzunu — telefonda
       kart ekrana sığmalı, sığmıyorsa kartın KENDİSİ kaydırılabilmeli (panel
       değil).
