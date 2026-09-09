@@ -1244,7 +1244,7 @@ değişir (web · Dart · Edge) ve `verify-edge-engine-parity` ayrışmayı yaka
 | 5 | ✅ kod (7 Eylül 2026, PR #475): Zor = geniş arama, YZ↔YZ Normal'e karşı **%70** (tohum 1, GA %63-75) ve **%72** (tohum 1000, GA %66-78); Normal golden'ları git diff boş; `reducer_ai2_zor` + `ai_level.json` Dart'ta yeşil (6883 kontrol); `verify-edge-engine-parity` `AI_LEVEL_SEARCH` kilidi + Zor adımıyla yeşil; `play-ai-turn` yeniden deploy edildi (`verify_jwt=true` korundu); seçici web+portta açık, `ai_level_parity_test` + smoke Zor testi yeşil; web canlıda `dd55ae0`. **KALAN:** sahada iki hafta — Kolay ~%30 / Zor ~%70 YZ kazanma bandında |
 
 
-## 25. iPad MANZARA düzeni — **AÇILDI** (9 Eylül 2026)
+## 25. iPad MANZARA düzeni — **KARAR VERİLDİ: düzen değişmiyor** (9 Eylül 2026)
 
 **Kullanıcı kararı, sözleri birebir:** *"Ipad olmazsa olmaz. Bu oyunun en
 iyi oynandığı yer orası."*
@@ -1312,10 +1312,24 @@ web'in `LandscapeHint` bileşeninin karşılığı hiç port edilmedi, manzaraya
    genişliğin ~%50'si BOŞ kalıyor, portrede ise altta ~%25 boşluk var —
    yani manzara bugün portreden daha KÖTÜ değil. Kararı bu ön ölçüm değil
    CI'ın gerçek iOS kareleri verecek.
-2. **Karar ver.** Üç yol: (a) manzaraya özgü düzen — 13" iPad'de yatay
-   tahta + yan panel bu oyun için muhtemelen EN İYİ deneyim, (b) mevcut
-   düzenin manzarada da yeterli olduğunu ölçüp bırakmak, (c) geçici olarak
-   `LandscapeHint` portu.
+2. ✅ **KARAR VERİLDİ — (b): mevcut düzen kalıyor** (9 Eylül 2026,
+   kullanıcı; sözleri birebir): *"Eğer Apple açısından sıkıntı yoksa bazı
+   ekran tiplerinde alt kısımda boşluk kalması ok. Sonuçta her ekran
+   tipine göre ekran design etmek çok maliyetli bir iş olur ve riskli
+   olur."*
+   Elenen iki yol: (a) manzaraya özgü düzen — maliyet/risk gerekçesiyle,
+   (c) `LandscapeHint` portu — manzara kırılmadığı için uyarılacak bir şey
+   yok, uyarı yalnızca çalışan bir ekranı kapatırdı.
+   **Kararın koşulu ÖLÇÜLDÜ (Apple'ın yazılı kuralı, aynı gün okundu):**
+   bugünkü **2.4.1** yalnızca *"iPhone apps should run on iPad whenever
+   possible"* diyor — letterboxing/"ekranı tam kullan"/"büyütülmüş iPhone
+   uygulaması" diye bir yasak metni YOK; **2.3.3** ekran görüntüsünden
+   yalnızca *"uygulamayı kullanımda göstersin"* istiyor. Bu turda Apple'dan
+   gelen tek sert kapı **90474**'tü (dört yönelim bildirimi) ve kapandı.
+   ⚠ **Ölçülemeyen taraf:** App Review'ın İNSAN yorumu. Bu depoda
+   kanıtlanabilecek şey yazılı kuraldır, inceleyicinin takdiri değil.
+   **Sonucu:** bu madde artık bir TASARIM işi değil, bir **gerileme
+   kontrolü** — sorulacak soru *"iyi mi?"* değil, tekrar *"kırılmıyor mu?"*.
 3. ⚠ **iPad desteğini bırakmak SEÇENEK DEĞİL** — kullanıcı kararı yukarıda.
    `TARGETED_DEVICE_FAMILY = "1,2"` kalıyor.
 

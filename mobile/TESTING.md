@@ -1586,8 +1586,18 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
 
 🔴 **ÖNCELİK: iPad birinci sınıf yüzey.** Kullanıcı kararı, sözleri
 birebir: *"Ipad olmazsa olmaz. Bu oyunun en iyi oynandığı yer orası."*
-Yani aşağıdaki maddeler "çökmüyorsa geçti" diye okunmaz — sorulacak soru
-**"iyi mi?"**. Ölçüm sonrası karar `ROADMAP.md` §25'te.
+
+✅ **DÜZEN KARARI VERİLDİ (9 Eylül 2026) — mevcut düzen kalıyor**
+(`ROADMAP.md` §25). Kullanıcı, sözleri birebir: *"Eğer Apple açısından
+sıkıntı yoksa bazı ekran tiplerinde alt kısımda boşluk kalması ok. Sonuçta
+her ekran tipine göre ekran design etmek çok maliyetli bir iş olur ve riskli
+olur."* Apple tarafı ölçüldü: 2.4.1'de letterboxing/"ekranı tam kullan"
+yasağı YOK, tek sert kapı olan 90474 kapandı.
+
+⚠ **Bu, aşağıdaki listenin OKUNUŞUNU değiştiriyor:** soru artık *"iyi mi?"*
+değil, **"kırılmıyor mu?"**. Kenar/alt boşluğu bir BULGU DEĞİL — bilinçli
+kabul. Bulgu sayılacak olanlar: taşma (sarı-siyah şerit), erişilemeyen
+buton/raf, kesilen modal, dönüşte bozulan durum.
 
 ⚠ **Bu madde bir özellik isteğinden değil, Apple'ın REDDİNDEN doğdu.**
 İmzalı `.ipa` üretildi ve yüklemede reddedildi (90474): iPad'i destekleyen
