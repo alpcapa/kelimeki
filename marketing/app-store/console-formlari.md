@@ -669,6 +669,42 @@ kopyasında değiştirip bırakmak doğru sınır.
 değiştirdiğinde sessizce ayrışırdı. Paket kimliği ve takım kimliği de tek
 bir sabitten geliyor (üç yerde birden kullanılıyorlar).
 
+#### Beşinci koşu (#612) — **imzalı `.ipa` ÜRETİLDİ**, Apple bundle'ı reddetti
+
+```
+| 4 | match                        | 3   |
+| 5 | update_code_signing_settings | 0   |
+| 6 | build_app                    | 118 |  ← GEÇTİ
+| 💥 | upload_to_testflight        | 68  |
+```
+
+✅ **İmzalama çözüldü.** `kelimeki-ipa` artefaktı gerçek: **27 MB**. Yani
+Mac'siz imzalama zincirinin TAMAMI çalışıyor — sertifika, profil, arşiv,
+imza. Bu, 24.2'nin asıl iddiasıydı.
+
+❌ Kalan tek şey yükleme ve reddeden **Apple'ın kendisi** (tesisat değil):
+
+```
+Invalid bundle … you need to include all of the "Portrait,
+PortraitUpsideDown, LandscapeLeft, LandscapeRight" orientations
+to support iPad multitasking. (90474)
+```
+
+**Düzeltme:** `Info.plist` → `UISupportedInterfaceOrientations~ipad` dörde
+çıkarıldı. iPhone listesi portre kaldı (kural yalnızca iPad için).
+
+⚠ **BU BİR ÜRÜN SONUCU DOĞURUYOR, sadece tesisat değil:** uygulama iPad'de
+artık **döndürülebilir**. `main.dart`in portre kilidi iPhone'da tutuyor ama
+çoklu göreve açık bir iPad uygulamasında iOS onu yok sayıyor
+(`UIRequiresFullScreen` modern SDK'larda güvenilir değil), ve **portta
+manzara için ayrı bir düzen YOK** — web'deki `LandscapeHint` hiç port
+edilmemiş. Hiç bakılmamış bir yüzey; cihaz kontrol listesi
+`mobile/TESTING.md` §26'ya yazıldı.
+
+⚠ **iPad desteğini bırakmak seçenek DEĞİLDİ:** `TARGETED_DEVICE_FAMILY`yi
+`"1"`e çekmek kuralı da düşürürdü, ama mağaza vitrininde iPad 13" seti var
+(bugün üretildi) ve o da çöpe giderdi.
+
 ✅ **Adım sırası kararı DOĞRULANDI.** TestFlight adımı bilerek Appetize'dan
 SONRA konmuştu (*"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla
 rehin almamalı"*). Bu koşuda tam olarak öyle oldu: cihaz derlemesi,

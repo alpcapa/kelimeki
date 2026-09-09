@@ -101,10 +101,25 @@
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
 		</array>
+		<!-- ⚠ DÖRDÜ DE BİLDİRİLMEK ZORUNDA — Apple'ın kuralı, tercih değil.
+		     9 Eylül 2026, koşu #612: imzalı .ipa üretildi ve Apple YÜKLEMEDE
+		     reddetti (90474): "you need to include all of the … orientations
+		     to support iPad multitasking". `TARGETED_DEVICE_FAMILY = "1,2"`
+		     olduğu sürece (iPad destekleniyor, mağaza vitrininde iPad seti
+		     de var) bu liste kısaltılamaz.
+		     ⚠ SONUCU: uygulama iPad'de DÖNDÜRÜLEBİLİR olur. `main.dart`in
+		     `setPreferredOrientations([portraitUp])` kilidi iPhone'da
+		     tutuyor, ama çoklu göreve açık bir iPad uygulamasında iOS o
+		     kilidi yok sayıyor — `UIRequiresFullScreen` ile kapatmak da
+		     modern SDK'larda güvenilir değil. Portta manzara için ayrı bir
+		     düzen YOK; cihazda görülmesi gereken bir madde olarak
+		     mobile/TESTING.md'ye yazıldı. -->
 		<key>UISupportedInterfaceOrientations~ipad</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
 			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>

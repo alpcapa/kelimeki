@@ -1582,6 +1582,38 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
       çıkmalı; geri al → normal açılmalı. (Sürüm sabiti bu kapının girdisi;
       parite testi tam bunu koruyor.)
 
+## 26. iPad'de MANZARA (9 Eylül 2026 — App Store'un dayattığı yeni yüzey)
+
+⚠ **Bu madde bir özellik isteğinden değil, Apple'ın REDDİNDEN doğdu.**
+İmzalı `.ipa` üretildi ve yüklemede reddedildi (90474): iPad'i destekleyen
+bir uygulama `UISupportedInterfaceOrientations~ipad` altında DÖRT yönelimi
+birden bildirmek zorunda. `Info.plist` buna göre güncellendi.
+
+**Sonucu:** uygulama iPad'de artık **döndürülebilir**. `main.dart`in
+`setPreferredOrientations([portraitUp])` kilidi iPhone'da tutuyor, ama
+çoklu göreve açık bir iPad uygulamasında iOS o kilidi yok sayıyor
+(`UIRequiresFullScreen` ile kapatmak modern SDK'larda güvenilir değil).
+**Portta manzara için ayrı bir düzen YOK** — web'deki `LandscapeHint`in
+karşılığı hiç port edilmedi.
+
+Yani bu, hiç bakılmamış bir yüzey. iPad'de TestFlight derlemesiyle:
+
+- [ ] Uygulamayı **yan çevir** — açılıyor mu, çöküyor mu?
+- [ ] **Oyun ekranı:** tahta sığıyor mu, raf ve butonlar erişilebilir mi,
+      taşma (sarı-siyah şerit) var mı?
+- [ ] **Setup ekranı:** liste ve formlar okunabilir mi?
+- [ ] **Modallar** (Skor Kartı, Nasıl Oynanır, kelime anlamı): dikey alan
+      daralınca kesiliyor mu? (`KModal`ın gövdesi kaydırılabilir, ama
+      klavye açıkken daralma vakası kayıtlı — bkz. `mobile/CLAUDE.md`)
+- [ ] **Split View / Slide Over:** üçte bir genişlikte düzen ne oluyor?
+- [ ] Portreye geri dönünce her şey eski hâline dönüyor mu?
+
+⚠ **Bulgular kötüyse üç seçenek var ve üçü de kararlıdır:** (a) manzara
+için düzen eklemek, (b) `TARGETED_DEVICE_FAMILY`yi `"1"`e çekip iPad
+desteğini bırakmak (ama mağaza vitrininde iPad seti var, o da düşer),
+(c) manzarada bilgilendirici bir ekran göstermek (web'in `LandscapeHint`
+deseninin portu). Karar ölçümden SONRA verilir.
+
 ## 24. Push bildirimleri + derin bağlantılar → `mobile/docs/testing-bildirimler.md`
 
 Bildirim izni akışı, `push_tokens` yaşam döngüsü, bildirimin düşmesi/dokunma
