@@ -641,6 +641,34 @@ Aynı turda `export_options.provisioningProfiles` de AÇIKÇA yazıldı — `mat
 eşlemeyi ortama koyuyor ve gym onu genelde kendi okuyor, ama bu zincirde her
 deneme bir macOS koşusu; imzalama turunu tahmine bırakmamak daha ucuz.
 
+#### Dördüncü koşu (#610) — yollar düzeldi, imzalama kaldı
+
+`build_app` bu sefer gerçekten koştu (66 sn) ve `xcodebuild` şunu dedi:
+
+```
+ios/Runner.xcodeproj: error: Signing for "Runner" requires a development team.
+```
+
+**Kök sebep:** depodaki proje `flutter create` çıktısı olduğu gibi duruyor —
+`CODE_SIGN_STYLE = Automatic` ve **hiçbir yerde `DEVELOPMENT_TEAM` yok**
+(depodan doğrulandı). `match` ise ELLE imzalama için profil kuruyor; ikisi
+birbirini bulamıyor.
+
+**Düzeltme:** `build_app`ten önce `update_code_signing_settings` — projeyi
+KOŞMA ANINDA elle imzalamaya çeviriyor (takım kimliği, profil adı,
+`Apple Distribution` kimliği).
+
+⚠ **Değişiklik repoya COMMIT EDİLMİYOR, bilinçli:** `project.pbxproj`a takım
+kimliği yazmak yerel derlemeleri ve `flutter build ios --no-codesign`
+adımını da bağlar, oysa imzalama YALNIZCA bu lane'in derdi. CI'ın geçici
+kopyasında değiştirip bırakmak doğru sınır.
+
+⚠ **Profil adı ELLE YAZILMIYOR:** `match` kurduğu profili
+`MATCH_PROVISIONING_PROFILE_MAPPING`e koyuyor ve adlandırma kuralı onun;
+`Fastfile` oradan okuyor. Elle yazılsaydı match bir gün adlandırmayı
+değiştirdiğinde sessizce ayrışırdı. Paket kimliği ve takım kimliği de tek
+bir sabitten geliyor (üç yerde birden kullanılıyorlar).
+
 ✅ **Adım sırası kararı DOĞRULANDI.** TestFlight adımı bilerek Appetize'dan
 SONRA konmuştu (*"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla
 rehin almamalı"*). Bu koşuda tam olarak öyle oldu: cihaz derlemesi,

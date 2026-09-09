@@ -11,6 +11,12 @@
 
 default_platform(:ios)
 
+# Tek kaynak — üç yerde birden kullanılıyor (imzalama ayarı, export_options,
+# profil eşlemesi). Takım kimliği gizli DEĞİL: `Appfile`da da duruyor ve her
+# iOS uygulamasının `apple-app-site-association` dosyasında yayınlanıyor.
+PAKET_KIMLIGI = "com.kelimeki.kelimeki"
+TAKIM_ID = "8277D85FY9"
+
 platform :ios do
   desc "İmzalı .ipa üret ve TestFlight'a yükle"
   lane :beta do
@@ -45,10 +51,38 @@ platform :ios do
     # sertifikayı yeniden kullanır (Apple'ın sayı sınırı bu yüzden var).
     match(type: "appstore", api_key: anahtar, readonly: false)
 
+    # Profil adını ELLE YAZMIYORUZ: `match` kurduğu profili
+    # `MATCH_PROVISIONING_PROFILE_MAPPING`e koyuyor ve adlandırma kuralı
+    # onun; buradan okumak ikisinin sessizce ayrışmasını engelliyor.
+    profil_adi =
+      lane_context[SharedValues::MATCH_PROVISIONING_PROFILE_MAPPING][PAKET_KIMLIGI]
+
     # ⚠ `flutter build ios` BU LANE'DEN ÖNCE, iş akışında koşuyor.
     # Sebep: `--dart-define` ile verilen derleme kimliği ve Supabase
     # anahtarları orada geçiliyor (bkz. mobile-build.yml → "iOS derle").
     # Burada yalnızca Xcode arşivi alınıp imzalanıyor.
+    # ⚠ FLUTTER PROJESİ OTOMATİK İMZALAMAYLA GELİYOR — `match` ise ELLE
+    # imzalama için profil kuruyor; ikisi birbirini bulamıyor. Koşu #610'da
+    # ölçüldü:
+    #   ios/Runner.xcodeproj: error: Signing for "Runner" requires a
+    #   development team.
+    # Depodaki proje `CODE_SIGN_STYLE = Automatic` ve HİÇBİR yerde
+    # `DEVELOPMENT_TEAM` yok (`flutter create` çıktısı, olduğu gibi duruyor).
+    #
+    # Bu action projeyi KOŞMA ANINDA elle imzalamaya çeviriyor. Değişiklik
+    # CI'ın geçici kopyasında kalıyor, repoya COMMIT EDİLMİYOR — bilinçli:
+    # `project.pbxproj`a takım kimliği yazmak yerel/`flutter build ios`
+    # akışlarını da bağlar, oysa imzalama YALNIZCA bu lane'in derdi.
+    update_code_signing_settings(
+      path: "ios/Runner.xcodeproj",
+      targets: ["Runner"],
+      use_automatic_signing: false,
+      team_id: TAKIM_ID,
+      bundle_identifier: PAKET_KIMLIGI,
+      profile_name: profil_adi,
+      code_sign_identity: "Apple Distribution"
+    )
+
     # ⚠ YOLLAR `mobile/app`e GÖRE — `mobile/app/ios`a değil (9 Eylül 2026,
     # koşu #608'de ölçüldü). Fastlane, `fastlane/` klasörünü İÇEREN dizine
     # geçiyor; burada o dizin `mobile/app`. Flutter projelerinin çoğunda
@@ -71,9 +105,7 @@ platform :ios do
       # güvenmemek demek — imzalama hatası bu zincirin en pahalı turu
       # (her deneme bir macOS koşusu).
       export_options: {
-        provisioningProfiles: {
-          "com.kelimeki.kelimeki" => "match AppStore com.kelimeki.kelimeki"
-        }
+        provisioningProfiles: { PAKET_KIMLIGI => profil_adi }
       }
     )
 
