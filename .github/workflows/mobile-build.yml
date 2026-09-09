@@ -47,7 +47,9 @@
 # derlemesi — yalnızca "derleniyor mu" kanıtı; (b) SİMÜLATÖR `.app`'i —
 # Appetize.io'ya yüklenip tarayıcıda çalıştırılabiliyor. Apple Developer
 # üyeliği yalnızca GERÇEK CİHAZA kurulum (TestFlight/App Store) için
-# gerekli; o iş üyelik geldiğinde eklenecek (bkz. mobile/TESTING.md,
+# gerekli; o adım 8 Eylül 2026'da EKLENDİ (yukarı bkz.) — bu cümle bir
+# süre "üyelik geldiğinde eklenecek" diyordu ve 9 Eylül'de düzeltildi
+# (bkz. mobile/TESTING.md,
 # "TestFlight kurulumu").
 #
 # APPETIZE'A OTOMATİK YÜKLEME (7 Ağustos 2026): her Android/iOS derlemesi
@@ -498,6 +500,19 @@ jobs:
           if [ -z "${APP_STORE_CONNECT_KEY_P8:-}" ]; then
             echo "APP_STORE_CONNECT_KEY_P8 secret'ı yok — TestFlight adımı atlanıyor."
             exit 0
+          fi
+          # ⚠ `KEY_P8` bu adımın "yapılandırıldı mı" SENTİNELİ; yanındaki iki
+          # değer eksikse adım yine de koşar ve fastlane'in `ENV.fetch`i ham
+          # bir Ruby `KeyError`'ı ile düşer — log'da sebebi görünmez.
+          # 9 Eylül 2026'da gerçekten yaşandı: `ISSUER_ID` secret listesine
+          # hiç girmemişti (öteki üçü vardı) ve eksikliği ancak listeye
+          # bakınca anlaşıldı. Bu yüzden ÜÇÜ DE tek tek kontrol ediliyor.
+          eksik=""
+          [ -z "${APP_STORE_CONNECT_KEY_ID:-}" ] && eksik="$eksik APP_STORE_CONNECT_KEY_ID"
+          [ -z "${APP_STORE_CONNECT_ISSUER_ID:-}" ] && eksik="$eksik APP_STORE_CONNECT_ISSUER_ID"
+          if [ -n "$eksik" ]; then
+            echo "::error::App Store Connect anahtarı EKSİK yapılandırılmış — yok:$eksik (KEY_P8 var). Issuer ID: App Store Connect → Users and Access → Integrations, anahtar listesinin ÜSTÜNDE."
+            exit 1
           fi
           if [ -z "${MATCH_GIT_TOKEN:-}" ] || [ -z "${MATCH_PASSWORD:-}" ]; then
             echo "::error::API anahtarı var ama MATCH_GIT_TOKEN/MATCH_PASSWORD yok — imzalama yapılamaz."

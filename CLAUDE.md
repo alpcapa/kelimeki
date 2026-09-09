@@ -69,6 +69,13 @@ kırmızıya döndü. **Mobil testlere `mobile/` dışından yeni bir dosya
 okutursan** o yolun `web-ci.yml`in `paths` listesinde karşılığı olduğundan
 emin ol.
 
+⚠ **Üçüncü bir mobil iş akışı var ve o BİLEREK ayrı duruyor:**
+`.github/workflows/ios-screenshots.yml` (9 Eylül 2026) mağaza ekran
+görüntülerini GERÇEK iOS simülatöründe üretir (`mobile/app/integration_test/`
++ `test_driver/`). `mobile-build.yml`'e eklenmedi çünkü o dosyanın `paths`
+listesi her dokunuşta tam bir macOS+Android derlemesi tetikliyor. Karar ve
+ölçümler: `marketing/app-store/console-formlari.md` §13.
+
 `tests/` altında üç spec var: `smoke.spec.ts` (kritik yol) ve
 `text-scale.spec.ts` + `text-scale-normal.spec.ts` (yazı ölçeği; ikisi ayrı
 dosya çünkü `--blink-settings` `launchOptions`ta ve Playwright onu DOSYA
@@ -188,6 +195,7 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | Bir sayacı/rozeti besleyen alan (`PendingLiveGameCounts` gibi) | Rozet zincirinin HER seviyesi: alt sekme → üst sekme → uygulama ikonu (`useAppIconBadge`) → giriş varsayılanı (`decideInitialMainView`). Yeni alan bunlara GİRMELİ Mİ, ayrıca karar ver — "bekleyen iş" ile "haber" aynı şey değil (3 Eylül 2026) |
 | `mobile/app/` — sunucuya/platforma dokunan bir şey | `mobile/TESTING.md` (cihazda koşulan ÖZELLİK listesi; arkadaşlık/Canlı oyun için `mobile/docs/testing-arkadaslar-canli.md`, tarihli etkileşim/görünüm turları için `mobile/docs/testing-ux-turlari.md`) |
 | `mobile/app/` ya da `mobile/kelimeki_core/` altında HERHANGİ bir dosya | `ROADMAP.md` → "Sıradaki sürüme binecekler" tablosuna bir satır — **kendi PR'ını da say**; bu tablo DÖRT kez eksik yakalandı ve bir kez sürümü bir gün geciktirdi. Refleks: `git log --oneline <mağazadaki-paketin-commiti>..origin/main -- mobile/app mobile/kelimeki_core` |
+| Konsol/CI KURULUMU (secret girildi, depo açıldı, token üretildi, sözleşme imzalandı) | İlgili `console-formlari.md`'nin **durum tablosu**. Dokümanlar neyin GEREKTİĞİNİ yazar; neyin YAPILDIĞINI yazan bir yer yoksa her oturum aynı soruyu baştan sorar (9 Eylül 2026'da yaşandı: bir gün önce açılmış depo kullanıcıya tekrar soruldu). Değerler gizli, **durum değil** |
 | Migration | Canlıya uygula + doğrula + `list_migrations` ile dosya adını eşleştir |
 | Migration bir kolonu **nullable** yapıyor (ya da FK'yi `cascade`→`set null` çeviriyor) | `database.types.ts` **ve** portun `fromJson`'ı — bu bir SÖZLEŞME değişikliği (bkz. `docs/decisions/account-deletion.md` → "SET NULL'ın bedeli") |
 | Yeni kullanıcı verisi ya da görünürlük değişikliği | `TermsModal`/`PrivacyModal` |

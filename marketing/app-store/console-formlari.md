@@ -26,7 +26,7 @@ karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
 | Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
 | Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
 | App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ⚠ üretildi ama `.p8` İNDİRİLEMEDİ (aşağı) |
-| DSA trader status | — | ⬜ **BEKLİYOR, gönderim kapısı** (aşağı) |
+| DSA trader status | Beyan ✅ (9 Eylül 2026) · doğrulama ⏳ | ⚠ **`In Review`** — Apple doğruluyor, gönderim kapısı HÂLÂ AÇIK (§2) |
 
 **Paid Apps Agreement İMZALANMAYACAK.** `New` durumunda kalır; uygulama
 ücretsiz, uygulama içi satın alma yok. Console'un *"update your legal
@@ -58,19 +58,48 @@ numara/cihaz da kalıcı olmalı.
 
 ---
 
-## 2. DSA trader status — **KARAR VERİLDİ, UYGULANMADI**
+## 2. DSA trader status — **BEYAN YAPILDI, DOĞRULAMA SÜRÜYOR**
 
-**Durum: beyan HENÜZ YAPILMADI.** 8 Eylül 2026'da pencere açıldı ve
-bilinçli olarak **Cancel** edildi.
+**Durum (9 Eylül 2026, Console'dan OKUNDU):**
+Business → Agreements → **Compliance** → `Digital Services Act` ·
+27 Countries or Regions · Last Updated `Sep 9, 2026` · Status **`In Review`**.
+
+Yani **beyan tamamlandı, Apple doğruluyor.** ⏳ **Gönderim kapısı HÂLÂ
+AÇIK** — kapanması Apple'ın incelemeyi bitirmesine bağlı ve o bizde değil.
+
+⚠ **İKİ ADIM AYRI, ve bu satır bir kez YANLIŞ yazıldı (aynı gün
+düzeltildi).** Beyanı yapmak yetmiyor; Apple ayrıca doğruluyor.
+Kayıt önce *"ikisi de bitti"* diye yazılmıştı — kullanıcının sözlü
+bildirimine dayanarak. **Console'un kendi STATUS alanı `In Review`
+diyordu.** Ders, deponun `curl`la sha okuma refleksinin aynısı, başka bir
+yüzeyde: **bir kapının kapandığını söyleyen tek kanıt, o kapının kendi
+durum alanıdır** — sözlü bildirim değil, ekran görüntüsündeki satır.
+
+**Aşağısı SÜREÇ KAYDIDIR** — neden bir gün beklendiği, hangi bilginin neden
+seçildiği. Karar geriye dönük tartışılmıyor; ileride *"bu bilgi neden
+açıkta"* sorulduğunda cevabı burada.
+
+**Öncesi:** 8 Eylül 2026'da pencere açıldı ve bilinçli olarak **Cancel**
+edildi.
 
 ### Karar: **trader olarak beyan edilecek** (AB dağıtımı korunacak)
 
 Ama **bugünkü telefon numarasıyla değil.** Sıra şu:
 
-1. Yedek hat aktifleştirilecek (kullanıcı, 9 Eylül 2026'da deneyecek)
+1. ✅ **Yedek hat hazır** (kullanıcı bildirdi, 9 Eylül 2026) — beyanı
+   bekleten iki şeyden biri düştü
 2. Business → Agreements → Compliance → **"I'm a trader under the DSA"**
 3. Üç alan girilecek: **adres · telefon · e-posta**
 4. Apple doğrulayacak → AB dağıtımı açılacak
+
+✅ **ÜÇ ALANIN ÜÇÜ DE HAZIR** (9 Eylül 2026): e-posta `destek@kelimeki.com`,
+telefon yedek hat, adres kullanıcıda kararlaştırıldı. **Beyanın önünde
+teknik bir engel kalmadı** — sıradaki adım Console'da tek oturumluk bir iş.
+
+⚠ **Adres ürün sayfasında yayınlanacak ve geri alınamaz** (§2'nin başındaki
+gerekçe). Kullanıcı bunu bilerek karar verdi; bu satır kararı tekrar açmak
+için değil, ileride *"bu neden açıkta"* diye sorulduğunda cevabı olsun diye
+duruyor.
 
 ### Neden kişisel numarayla başlanmadı
 
@@ -94,21 +123,69 @@ olmadan doğrulanamaz.
 | Alan | Değer | Not |
 |---|---|---|
 | E-posta | `destek@kelimeki.com` | **Bedava** — zaten sitede, Play listelemesinde ve uygulamada yazılı; yeni maruziyet yok |
-| Telefon | *yedek hat* | Aktifleştirilecek; kişisel numara KULLANILMAYACAK |
-| Adres | *belirlenecek* | Ev adresi zorunlu DEĞİL — bu alan üyelikteki adresten ayrı (*"won't impact the contact details for your Apple accounts or memberships"*). Posta kutusu / sanal ofis olur, ama Apple doğruladığı için gerçek olmalı |
+| Telefon | *yedek hat* | ✅ **hazır** (9 Eylül 2026); kişisel numara KULLANILMADI |
+| Adres | *kullanıcıda kayıtlı* | ✅ **KARARLAŞTIRILDI** (9 Eylül 2026). ⚠ Değeri bu dosyaya YAZILMIYOR — telefonun kuralının aynısı, depo public. Ev adresi zorunlu DEĞİL — bu alan üyelikteki adresten ayrı (*"won't impact the contact details for your Apple accounts or memberships"*). Posta kutusu / sanal ofis olur, ama Apple doğruladığı için gerçek olmalı |
 
-### ⚠ GÖNDERİM KAPISI
+### Adres — üç aday (9 Eylül 2026, karar kullanıcıda)
 
-**Trader beyanı + doğrulaması tamamlanmadan uygulama incelemeye
-gönderilemez.** Bu bir "unutma listesi" maddesi değil, gönderim öncesi
-kontrol listesinin maddesi.
+Telefonun gerekçesi burada BİREBİR geçerli: girilen adres ürün sayfasında
+herkese görünür ve **yayınlanan bilgi geri alınamaz**. Ama telefondan bir
+farkı var — Apple adresi doğruluyor, yani "gerçek ama bana ait olmayan" bir
+adres uydurulamaz.
 
-### Play tarafı aynı beyanı bekliyor
+| Aday | Artı | Eksi |
+|---|---|---|
+| **Ev adresi** | Bedava, anında, doğrulaması kesin geçer | Kalıcı olarak açıkta; telefonda kaçınılan şeyin aynısı |
+| **PTT posta kutusu** | Ucuz, gerçek ve doğrulanabilir bir posta adresi | Kurulumu şubede; Apple'ın posta kutusu adresini kabul edip etmediği **ÖLÇÜLMEDİ** |
+| **Sanal ofis / işletme adresi** | Ticari amaç için tasarlanmış, kabul edilme olasılığı en yüksek | Aylık ücret; ücretsiz bir oyun için orantısız olabilir |
+
+⚠ **Hiçbiri bu depoda ölçülmedi** — Apple'ın hangi adres türünü doğrulamada
+kabul ettiği yalnızca denenerek görülür. Telefonun dersini tekrarlamamak
+için sıra şu olmalı: adres seçilir → beyan **bir kez** yapılır. Yarım
+bilgiyle beyan edip sonra düzeltmek doğrulamayı ikinci kez tetikler.
+
+### ⚠ "Edit Legal Entity" uyarısı bizi TIKAMIYOR (9 Eylül 2026, ölçüldü)
+
+Business → Agreements sayfasında şu banner duruyor ve trader beyanını
+arayan kişiyi yanlış yere çekiyor:
+
+> *"To offer apps or other in-app purchases, you must update your legal
+> entity information **prior to signing the Paid Apps Agreement**."*
+
+**Şart, cümlenin kendi sonunda kapsanıyor: Paid Apps Agreement.** Bizim
+kararımız onu hiç imzalamamak (§0) — uygulama ücretsiz, IAP yok, satır
+`New` kalacak. Aynı tablodaki belirleyici satır zaten yeşil: **Free Apps
+Agreement → `Active`, Sep 8 2026 – Sep 8 2027.** Ücretsiz dağıtımı kapatan
+agreement odur.
+
+⚠ **Yani "Edit Legal Entity" tıklanacak link DEĞİL.** Trader beyanı AYNI
+sayfanın altındaki **`Compliance`** bölümünde:
+*Compliance → Complete Compliance Requirements → "I'm a trader under the
+DSA"* → adres · telefon · e-posta.
+
+### ⏳ GÖNDERİM KAPISI — HÂLÂ AÇIK
+
+Kural: **"Trader beyanı + DOĞRULAMASI tamamlanmadan uygulama incelemeye
+gönderilemez."** 9 Eylül 2026 itibarıyla beyan ✅, doğrulama `In Review`.
+Yani madde gönderim öncesi kontrol listesinde DURUYOR.
+
+**Ne zaman düşer:** Compliance tablosundaki `Digital Services Act`
+satırının STATUS'ü `In Review` olmaktan çıkınca. Kontrol yeri sabit:
+Business → Agreements → Compliance. *(Apple'ın inceleme süresi bu depoda
+ÖLÇÜLMEDİ.)*
+
+### ⚠ Play tarafı aynı beyanı BEKLİYOR — ve artık bir referans var
 
 DSA aynı şeyi Google Play'den de istiyor. Kelimeki Play'de kapalı testte
-olduğu için henüz tetiklenmemiş olabilir; üretime çıkınca gelecek. Depoda
-Play tarafında trader beyanı kaydı **yok**. **İki mağazada AYNI bilgi
-beyan edilmeli** — farklı bilgi vermek açıklaması zor bir tutarsızlık.
+olduğu için henüz tetiklenmemiş olabilir; **üretime çıkınca gelecek.**
+Depoda Play tarafında trader beyanı kaydı **yok**.
+
+**İki mağazada AYNI bilgi beyan edilmeli** — farklı bilgi vermek açıklaması
+zor bir tutarsızlık. Apple tarafı 9 Eylül 2026'da dolduruldu, yani
+**kanonik üçlü artık orada**: Play'in formu geldiğinde bilgi yeniden karar
+verilmez, App Store Connect'ten okunup birebir kopyalanır. (Apple'ın
+doğrulaması sürerken de bu geçerli — kopyalanacak olan GİRİLEN bilgi,
+doğrulamanın sonucu değil.)
 
 ### Kaynaklar
 
@@ -208,6 +285,160 @@ soran kalıpta; kendi bilgilerimizle dolduruldu — *User's Apple Account:*
   tabloyu karıştırır.
 - ⚠ **Mükerrer vaka açılmayacak.**
 
+### ✅ ÇÖZÜLDÜ — 9 Eylül 2026 akşamı: `.p8` bir **Mac'ten** indirildi
+
+**Anahtar elde.** Kullanıcı aynı hesapla, eşinin **macOS** makinesinden
+denedi ve indirme İLK SEFERDE başarılı oldu. Support hiç yanıt vermeden
+çözüldü.
+
+**ÖLÇÜM — arıza istemci/platform tarafındaydı, Apple'ın sunucusunda değil:**
+
+| Ortam | Sonuç |
+|---|---|
+| iPadOS Safari (normal) | ✗ (defalarca) |
+| iPadOS Safari (özel sekme) | ✗ |
+| **macOS** | ✅ **ilk denemede** |
+
+⚠ **Ama "iPad hiç indiremezdi" diye YAZILAMAZ:** aradan saatler geçti,
+Apple'ın sessizce düzeltmiş olma ihtimali elenemez. Elimizdeki tek kesin
+şey yukarıdaki tablo. **Yine de karar için yeterliydi ve doğru öneriyi
+işaret etti:** "iPad'de Chrome dene" DEĞİL, "gerçekten farklı bir platform
+dene". iPad'de tüm tarayıcılar WebKit kullandığından Chrome aynı motoru
+koşturacaktı; macOS hem farklı motor/sürüm hem farklı indirme yığını.
+
+**Sıradaki iki temizlik adımı (kullanıcıda):**
+1. **Support vakasını kapat** — çözüldüğünü yaz. Aksi halde günler sonra
+   bir geri arama gelir ve kimse neden arandığını hatırlamaz.
+2. Vaka kapandıktan sonra **artık kullanılmayan bireysel anahtarı revoke
+   et** — "inceleyebilesiniz diye bıraktım" gerekçesi düştü. Altı Team Key
+   zaten revoke.
+3. ⚠ **`.p8`'in Mac'teki kopyasını SİL.** Başkasının makinesi ve dosya
+   İndirilenler'de duruyor; anahtar Admin erişimi taşıyor.
+
+⚠ **Anahtar bir kez sohbetten geçti.** Rotasyon artık ucuz (çalışan bir
+indirme yolu var: aynı Mac), yani hesabın hijyeni önemsenirse ileride yeni
+bir anahtar üretip bunu revoke etmek tek adımlık iş.
+
+### Önceki durum kaydı — Support'tan yanıt yoktu
+
+⚠ **Bu satır bir kez "Support yanıt verdi" diye yazıldı ve YANLIŞTI**
+(aynı akşam düzeltildi). Sebep tam da aşağıda uyarısı yazılı olan şey:
+gelen kutusundaki *"App Store Connect API Access Request Approved"* maili
+yanıt sanıldı; o mail **8 Eylül** tarihli, üyelik günündeki ilk erişim
+onayı. **Vaka açılalı ~18 saat, hiçbir dönüş yok.**
+
+Ders, deponun kendi refleksinin bir başka biçimi: bir kutudaki maili
+"yanıt" saymadan önce **TARİHİNE** bak — konu başlığı doğru göründüğünde
+tarih okunmuyor.
+
+**Altı Team Key yandı, hepsi revoke** (Console'dan okundu, 17:26):
+
+| Ad | Key ID | Revoke |
+|---|---|---|
+| Kelimeki CI 5 | `55F9XUK348` | 9 Eylül |
+| Kelimeki CI 4 | `YQVJZCH5UF` | 9 Eylül |
+| Kelimeki CI 3 | `6H2WY5JZ7W` | 9 Eylül |
+| Kelimeki CI 3 | `FDMW75TR54` | 8 Eylül |
+| Kelimeki CI 2 | `45AH6AD7U4` | 8 Eylül |
+| Kelimeki CI | `7ARZF96LAK` | 8 Eylül |
+
+⚠ Bu bölüm bir süre *"üç Team Key yakıldı"* diyordu — sayı ikiye katlandı.
+Gizli değil: özel anahtar olmadan bir Key ID işe yaramıyor ve hepsi zaten
+revoke; kaydedilmelerinin sebebi Support'un vakayı izleyebilmesi.
+
+**Yeni denemeler (kullanıcı, 9 Eylül):** birkaç kez, **incognito dahil** —
+hepsi başarısız.
+
+⚠ **"API Access Request Approved" maili bugünkü yanıt DEĞİL.** Zoho'daki o
+mail **8 Eylül** tarihli, yani üyelik günündeki ilk erişim onayı. Arıza
+ondan sonra başladı; ikisini karıştırmak *"erişim onaylandı, o hâlde
+çalışıyor olmalı"* diye yanlış bir sonuca götürür.
+
+### ⚠ "Başka tarayıcı dene" — iPad'de bu GERÇEK bir değişiklik değil
+
+Genel arama sonuçları Chrome önermeye eğilimli, ama **iPadOS'ta tüm
+tarayıcılar WebKit kullanmak zorunda** — iPad'deki Chrome, Safari'nin
+motoru + farklı bir kabuktur. (AB'de DMA sonrası alternatif motor istisnası
+var; Türkiye kapsam dışı.) *(Platform kuralı; bu depoda ÖLÇÜLMEDİ.)*
+
+Yani öneri masaüstü için yazılmış. Tamamen değersiz de değil: indirme/dosya
+kaydetme katmanı farklı bir uygulama sandbox'ı, o yüzden hata "dosyayı
+kaydet" adımındaysa değişebilir. Hata sunucu tarafındaysa değişmez.
+
+### ✅ ÖNCE BEDAVA TEŞHİS — anahtar yakmadan
+
+Her deneme bir anahtar yaktığından, sıradaki adım yeni bir anahtar DEĞİL:
+
+> **Portaldan başka bir şey indir** — mevcut bir provisioning profile,
+> bir sertifika, herhangi bir dosya.
+
+| Sonuç | Anlamı | Sıradaki adım |
+|---|---|---|
+| İniyor | Sorun indirme katmanında değil, **anahtar üretmeye özgü** | Tarayıcı değiştirmek işe yaramaz; bekle ya da yolu değiştir (aşağı) |
+| İnmiyor | Sorun tarayıcı/indirme tarafında | Gerçekten FARKLI bir cihaz (masaüstünde gerçek Chrome/Firefox — farklı motor VE farklı indirme yığını) |
+
+⚠ **SİSTEM DURUMU YEŞİL — kullanıcı baktı, 9 Eylül 2026.** Bu, bir
+teoriyi ZAYIFLATIYOR: Google'ın önerdiği *"Apple'ın anahtar üretim
+sunucusunda geçici arıza, birkaç saat bekle"* açıklaması artık daha az
+olası. **Ama ELEMİYOR** — durum sayfasının çözünürlüğü kaba, anahtar üretme
+ucunun (`/iris/v1/subscriptionKeys`) kendi satırı yok; bildirilmemiş bir
+hata yeşil bir tabloyla bir arada durabilir.
+
+**Pratik sonucu: BEKLEMEK artık zayıf bir strateji.** Altı anahtar, iki
+ayrı uç, ~24 saat, birden çok tarayıcı bağlamı (incognito dahil), ilan
+edilmiş bir arıza YOK **ve yazılı vakadan 18 saatte dönüş yok.**
+
+⚠ **11 Eylül eşiği ÖNE ÇEKİLDİ.** O eşik *"yazılı vaka birkaç iş günü
+sürebilir"* varsayımıyla konmuştu; yeşil durum tablosu o varsayımı
+desteklemiyor (ortada bekleyecek ilan edilmiş bir arıza yok). Sıradaki
+adım **vakayı telefon geri aramasına yükseltmek** —
+`developer.apple.com/contact` üzerinden arama talebi. Mükerrer vaka DEĞİL,
+mevcut vakanın yükseltilmesi.
+
+⚠ **Ajan durum sayfasını okuyamıyor** — `developer.apple.com` 302 ile
+`www.apple.com`'a yönlendiriyor ve oraya egress proxy izin vermiyor
+(9 Eylül 2026'da denendi). Bu satırın kaynağı kullanıcı gözlemi.
+
+### 🔑 API anahtarı İMZALAMA için zorunlu DEĞİL — otomasyon için zorunlu
+
+Arıza uzarsa 24.2 anahtarsız da kurulabilir. Zincir:
+
+1. `openssl` ile özel anahtar + **CSR** üret (herhangi bir yerde, Mac
+   gerekmez).
+2. CSR'ı portala yükle → **dağıtım sertifikası** indir (`.cer`).
+3. Özel anahtarla birleştirip `.p12` yap → GitHub secret.
+4. Provisioning profile'ı portaldan **elle** indir → secret.
+5. TestFlight'a yükleme: **uygulamaya özel şifre** (`appleid.apple.com` →
+   Sign-In and Security).
+
+**Bedeli:** `fastlane match`in otomatiği gider — profil yılda bir, sertifika
+üç yılda bir ELLE yenilenir. **Kazancı:** gönderim Apple'ın bu arızasına
+bağlı kalmaz. ⚠ Bu yol YAZILMADI, yalnızca kayda geçti; seçilirse
+`Fastfile`ın `match` satırı ve iş akışının secret listesi değişir.
+
+### Önceki durum kaydı — 9 Eylül 2026, 15:50: yanıt YOK
+
+Vaka açılalı ~15,5 saat (Çarşamba, iş günü). **Anahtar `18QBEN3T2RY4`
+revoke EDİLMEDİ** — vakadaki söz tutuldu, destek ekibinin bakacağı canlı
+kayıt duruyor.
+
+**Karar: bekleniyor, kurcalanmıyor.** Gerekçe, yukarıdaki üç yasağın
+aynısı — ama artık bir de sayıya dayanıyor: dört başarısız indirme, iki
+ayrı uç. Beşinci deneme yeni bilgi üretmez, yalnızca destek ekibinin
+baktığı tabloyu bozar.
+
+**Eşik — 11 Eylül 2026 (Cuma) sonu.** O güne kadar yanıt gelmezse sıradaki
+adım yeni bir vaka DEĞİL, mevcut vakayı **telefon geri aramasına**
+yükseltmek: `developer.apple.com/contact` üzerinden arama talebi.
+*(Apple'ın kendi kanalı; bu depoda ÖLÇÜLMEDİ — yazılı vakanın tipik yanıt
+süresi de ölçülmedi, eşik tahmin değil bir karar noktası olarak konuldu.)*
+
+⚠ **Bu bekleyiş hiçbir işi durdurmuyor.** Tıkanan tek şey 24.2'nin
+DOĞRULANMASI (TestFlight'a ilk paket). 24.5'in ekran görüntüleri, trader
+beyanı, vitrin metinleri ve App Privacy bundan tamamen bağımsız yürüyor —
+"anahtar gelene kadar bekleyelim" demek, gelmediğinde hiçbir şeyin
+ilerlememiş olması demektir.
+
 **Cevap gelince:** anahtar indirilirse üç secret girilir
 (`APP_STORE_CONNECT_KEY_ID` · `_ISSUER_ID` · `_KEY_P8`) ve 24.2'nin iş
 akışı kendiliğinden devreye girer — kodda değişiklik gerekmiyor.
@@ -282,9 +513,50 @@ yaşar:
 
 | Secret | İçerik |
 |---|---|
-| `APP_STORE_CONNECT_KEY_ID` | Key ID |
-| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID |
+| `APP_STORE_CONNECT_KEY_ID` | Key ID (`.p8` dosya adındaki `AuthKey_XXXXXXXXXX` kısmı) |
+| `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID — **anahtara değil HESABA ait**, tüm anahtarlarda aynı. Yeri: Users and Access → Integrations, anahtar listesinin ÜSTÜ |
 | `APP_STORE_CONNECT_KEY_P8` | `.p8`'in tam içeriği (BEGIN/END satırları dahil) |
+
+### 24.2 KURULUM DURUMU — neyin YAPILDIĞI (değerler değil, DURUM)
+
+⚠ **Bu bölüm 9 Eylül 2026'da, bir eksiklik yüzünden eklendi.** Dokümanlar
+neyin GEREKTİĞİNİ yazıyordu (`test-ortamlari.md` → secret listesi,
+`Matchfile` → depo adı) ama neyin YAPILDIĞINI hiçbir yer tutmuyordu. Sonuç:
+kullanıcıya bir gün önce birlikte hallettiğimiz bir şey (`kelimeki-
+certificates` deposu açıldı mı) tekrar soruldu. **Değerler gizli, DURUM
+değil** — durum kaydı olmayınca her oturum aynı soruları baştan sorar.
+
+| Parça | Durum |
+|---|---|
+| `alpcapa/kelimeki-certificates` (private, boş) | ✅ **8 Eylül 2026'da açıldı** |
+| `MATCH_GIT_TOKEN` (fine-grained, yalnız o depo, Contents: R/W) | ✅ 8 Eylül 2026 |
+| `MATCH_PASSWORD` | ✅ 8 Eylül 2026 — ⚠ ilk başarılı koşudan SONRA sabittir |
+| `APP_STORE_CONNECT_KEY_ID` | ✅ 9 Eylül 2026 |
+| `APP_STORE_CONNECT_KEY_P8` | ✅ 9 Eylül 2026 |
+| `APP_STORE_CONNECT_ISSUER_ID` | ✅ 9 Eylül 2026 (üçünün en son gireni — aşağı bkz.) |
+| **İlk koşu (doğrulama turu)** | ⬜ **BEKLİYOR** |
+
+**Kurulum tamam; kalan tek şey zincirin İLK KEZ koşması.** Tetikleme:
+`main`'e push `.github/workflows/mobile-build.yml` yolunu da kapsıyor, yani
+o dosyaya dokunan bir merge koşuyu KENDİLİĞİNDEN başlatır — ayrıca
+`workflow_dispatch` gerekmez (`ios: true`).
+
+⚠ **Bu satırlar bir şey değiştiğinde GÜNCELLENİR.** Bir secret döndürülür,
+depo taşınır ya da match sıfırlanırsa buraya yazılır; aksi halde bölüm
+sessizce bayatlar ve yukarıdaki hatanın aynısı tekrarlanır.
+
+⚠ **`ISSUER_ID` unutulmaya en müsait olanı — 9 Eylül 2026'da gerçekten
+unutuldu.** Öteki üçü girilmiş, o girilmemişti; secret listesi yalnızca
+ADLARI gösterdiğinden eksiklik ancak listeye bakılınca görüldü (alfabetik
+sırada `ISSUER` `KEY`'den ÖNCE gelir — orada yoksa yoktur). Sebebi anlaşılır:
+ötekiler dosyadan/kullanıcıdan gelirken bu, Console'da BAŞKA bir yerde
+duruyor.
+
+⚠ **İş akışı artık bunu kendi söylüyor.** `KEY_P8` adımın "yapılandırıldı
+mı" sentineli; yanındaki ikisi eksikse adım yine koşuyordu ve fastlane'in
+`ENV.fetch`i ham bir Ruby `KeyError`'ı ile düşüyordu — log'da sebebi
+görünmezdi. 9 Eylül 2026'da koruma üçünü de tek tek kontrol edecek şekilde
+genişletildi ve hata mesajı Issuer ID'nin NEREDE olduğunu da yazıyor.
 
 ⚠ **APNs Key ID ile karıştırma:** o (`RL4JLXL389`) ROADMAP'e YAZILDI ve
 doğrusu bu — her push JWT'sinin `kid` başlığında zaten herkese gidiyor,
@@ -346,17 +618,21 @@ Kategori: **Games → Word** (Play'de de Games → Word).
 
 ---
 
-## 7. Henüz DOLDURULMAMIŞ — açık işler
+## 7. Açık işler — 9 Eylül 2026'da tazelendi
 
-- **Ekran görüntüleri.** ✅ **YOL BULUNDU ve ÖLÇÜLDÜ** (8 Eylül 2026) —
-  ayrıntı §13. Kalan iş üretim değil, KOMPOZİSYON (hangi ekranlar, çerçeve,
-  başlık metinleri).
-- **App Privacy.** Play'in Data safety'sinin eşi ve büyük ölçüde ondan
-  türer (`play-store/console-formlari.md` §3.8 — o bölüm "en dikkatli iş"
-  diye işaretli, eşleme oradan yapılacak).
-- **Açıklama / anahtar kelimeler / promosyon metni.**
-  `marketing/play-store/metin.md` başlangıç noktası, ama App Store'un alan
-  sınırları farklı.
+⚠ **Bu bölüm 8 Eylül'de yazıldığı hâliyle BAYATLAMIŞTI:** "App Privacy" ve
+"açıklama/anahtar kelimeler" hâlâ açık iş diye duruyordu, oysa ikisi de aynı
+gün §10 ve §9'a YAZILMIŞTI. Dosyanın kendi kuralı ("kaynak burası") tam da
+bu yüzden var — özet liste, kaynağın kendi içinde bile bayatlayabiliyor.
+
+| Açık iş | Kimde | Notu |
+|---|---|---|
+| **Ekran görüntüleri** | Ben | Yol bulundu ve ölçüldü (§13); kalan iş üretim hattı + kompozisyon |
+| **Trader adresi** | Sen | Beyanın açık kalan TEK alanı (§2). Gönderim kapısı |
+| **API anahtarı `.p8`** | Apple | Support vakası açık (§3); yalnızca 24.2'yi tıkıyor |
+
+**Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
+§5 · demo hesap → §11 · Export Compliance → §12.
 
 ---
 
@@ -494,10 +770,20 @@ yapamadık"* diye reddedilir — yaygın bir ret sebebi.
 ⚠ **Hesap KALICI olmalı ve şifresi DEĞİŞMEMELİ** — her güncelleme
 incelemesinde yeniden kullanılıyor.
 
-⚠ **Karar verilmedi:** Play'in test hesapları (`T2`, `Ironman`) var ve ikisi
-de `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK İKİ HESAP"
-kaydında. Apple için bunlardan biri mi kullanılacak, ayrı bir hesap mı
-açılacak — **kullanıcı kararı bekliyor.**
+✅ **KARAR: `T2` (`kelimekitest2`)** — Play'in incelemesine verilen hesabın
+aynısı, 24 Ağustos 2026'da seçilmişti ve App Store için de o geçerli
+(ROADMAP 24.5 böyle kayıtlı). ⚠ Bu satır 8 Eylül'de *"karar verilmedi"*
+diyordu; ROADMAP güncellenirken burası unutulmuştu — **9 Eylül 2026'da
+düzeltildi.**
+
+**Neden `T1` DEĞİL:** e-postası geliştiricinin kişisel adresi (aynı gerekçe
+ekran görüntüsü çekim kurallarında da geçerli). `T2`'nin durumu üretim
+veritabanından ölçülmüştü: doğrulanmış, dondurulmamış, 3 arkadaş, 1 aktif
+Canlı oyun, 11 bitmiş oyun — yani incelemecinin göreceği dört ekran da boş
+değil.
+
+⚠ İki hesap da `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK
+İKİ HESAP" kaydında; şifresinin değişmemesi kuralı oradan da bağlayıcı.
 
 ⚠ **Not alanına şunu yazmak faydalı:** uygulamanın hesapsız da (yapay zekaya
 karşı) oynanabildiği, girişin yalnızca Canlı oyun/k-lig için gerektiği.
@@ -507,17 +793,23 @@ karşı) oynanabildiği, girişin yalnızca Canlı oyun/k-lig için gerektiği.
 
 ## 12. Export Compliance — `Info.plist`'e YAZILMALI
 
-**Bugünkü durum: `ITSAppUsesNonExemptEncryption` `Info.plist`'te YOK**
-(8 Eylül 2026'da ölçüldü). Sonuç: TestFlight'a yüklenen **her** derlemede
-Apple şifreleme sorusunu tekrar sorar ve cevap verilene kadar paket
-dağıtılamaz.
+✅ **YAPILDI** — `ios/Runner/Info.plist` → `ITSAppUsesNonExemptEncryption`
+= `<false/>`. **#490 ile girdi**, yani bu bölüm yazıldığı ANDAN itibaren
+bayattı: aynı PR hem anahtarı plist'e koydu hem burada *"YOK, kullanıcı
+onayı olmadan eklenmedi"* yazdı. **9 Eylül 2026'da depodan yeniden ölçülüp
+düzeltildi** (`Info.plist:54`).
 
-**Doğru cevap `false`:** Kelimeki yalnızca standart HTTPS/TLS kullanıyor
+**Cevap neden `false`:** Kelimeki yalnızca standart HTTPS/TLS kullanıyor
 (Supabase, Firebase, Brevo uçlarının tamamı) — kendi şifreleme algoritması
-yok. Bu, Apple'ın muafiyet kapsamına giriyor.
+yok, Apple'ın muafiyet kapsamına giriyor.
 
-⚠ **Bu bir BEYAN, kod tercihi değil** — `Info.plist`'e yazmak Apple'a
-verilen resmî cevabı sabitler. Kullanıcı onayı olmadan eklenmedi.
+**Kazancı:** anahtar plist'te olduğu için TestFlight'a yüklenen her
+derlemede Apple şifreleme sorusunu TEKRAR SORMAZ; cevap pakete gömülü
+gelir ve dağıtım beklemez.
+
+⚠ **Bu bir BEYAN, kod tercihi değil.** Bir gün uygulamaya standart TLS
+dışında şifreleme girerse (kendi algoritması, özel anahtar saklama)
+bu satır YENİDEN değerlendirilmeli — yanlış beyan bir uyum ihlalidir.
 
 
 ---
@@ -624,9 +916,172 @@ piksel ölçüsü** istiyor — simülatörün ham karesi zaten doğru ölçüde
 için **13" (2064×2752)** seti de istiyor. Aynı ekranların iPad simülatöründe
 ikinci kez çekilmesi gerekiyor — Play turunda karşılığı olmayan yeni bir iş.
 
+### ⚙️ BORU HATTI KURULDU — 9 Eylül 2026 (⚠ HENÜZ KOŞMADI)
+
+8 Eylül'ün "kalan iş" listesindeki üç maddenin üçü de yazıldı:
+
+| Parça | Nerede |
+|---|---|
+| Kare üreten test | `mobile/app/integration_test/store_screenshots_test.dart` |
+| Kareyi diske yazan sürücü | `mobile/app/test_driver/integration_test.dart` |
+| Simülatörü açıp süren CI | `.github/workflows/ios-screenshots.yml` (iPhone 6.9" + iPad 13", matris) |
+
+**Tahta fixture'ı DEPOYA GİRMİYOR.** Oyunun ortasındaki tahta, gerçek motorla
+ve tohumlu rastgelelikle (`Mulberry32`) **koşma anında** üretiliyor — golden
+JSON'u asset olarak paketlemek onu mağazaya giden uygulama ikilisine de
+sokardı. Tohum/hamle sayısı (`11` / `12`) rastgele değil, Linux'ta motor
+koşturularak **seçildi**: 43 taş, skor 114–76 (çekişmeli, oyuncu önde),
+tahtada bir joker, merkezdeki X2/X3 kullanılmış ve oyuncunun rafı `KAOEMLE`
+— yani ekranda gerçekten oynanabilir bir el duruyor. Taranan yedi tohum
+içinde üçünü birden sağlayan tek aday buydu (kimisinde raf tamamen ünlüydü,
+kimisinde oyuncu eziliyordu — mağaza karesi olamazdı).
+
+**Neden `mobile-build.yml`'e EKLENMEDİ:** o dosyanın `paths` listesi her
+dokunuşta tam bir macOS+Android derlemesi tetikliyor, ve deponun yazılı
+kuralı *"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla rehin
+almamalı"*. Ekran görüntüsü ayda bir gereken bir iş; kendi iş akışında
+duruyor ve **hiçbir secret'a ihtiyacı yok** (kareler sahte servislerle
+çiziliyor, ağa çıkılmıyor).
+
+⚠ **"YAZILDI" ≠ "ÇALIŞIYOR" — bu depoda bu farkın bedeli defalarca ödendi.**
+Boru hattı Linux'ta doğrulanamaz (macOS+simülatör ister); analiz temiz ve
+mevcut testler yeşil, ama **ilk CI koşusu bir DOĞRULAMA turudur.** İş akışı
+bu yüzden ölçümü kendisi yapıyor: her PNG'nin piksel ölçüsü `sips` ile
+okunup Apple'ın istediği ölçüyle karşılaştırılıyor, tutmazsa iş DÜŞÜYOR
+(artefakt yine de yükleniyor, elde inceleyecek dosya kalsın diye).
+
+### ✅ DOĞRULANDI — run #1, 9 Eylül 2026 (iPhone yarısı)
+
+**iPhone 6.9" işi baştan sona geçti** ve bununla birlikte zincirin her
+halkası kanıtlandı: `flutter drive` simülatörde koştu, `integration_test`
+gerçek iOS çalışma zamanında ekranı çizdi, `takeScreenshot` sürücüye ulaştı,
+sürücü PNG'yi diske yazdı ve **ölçüm adımı geçti** — yani kare Apple'ın
+istediği **tam `1320×2868`**. Artefakt gerçek: `kelimeki-store-
+screenshots-iphone-6.9`, 1,6 MB. Seçilen cihaz `iPhone 17 Pro Max`.
+
+⚠ **Ölçüm adımı burada bir SÜS DEĞİL:** iş ancak `sips` iki boyutu da
+doğrularsa yeşile dönüyor, yani "kare üretildi" ile "kare KULLANILABİLİR"
+aynı koşuda ayrışıyor. Yanlış ölçüde bir PNG sessizce mağazaya gitmez.
+
+✅ **iPad yarısı da DOĞRULANDI — run #2:** iki iş de yeşil, artefaktlar
+`iphone-6.9` 1,6 MB + `ipad-13` 1,77 MB, ikisinin de ölçüm adımı geçti —
+yani `2064×2752` de tam tutuyor. **Boru hattının tamamı çalışıyor.**
+
+**iPad yarısı run #1'de düşmüştü — ve kapı doğru çalıştı.** Sabit bir cihaz
+adı yerine aday listesi kullanıldığı için hata *"device not found"* diye geç
+ve okunmaz değil, **40 saniyede** net bir mesajla ("aday simülatörlerin
+hiçbiri yok") ve mevcut simülatör dökümüyle geldi. Ölçüm: runner'da iPad
+**M4 değil M5** duruyor (`iPad Pro 13-inch (M5)`). Liste düzeltildi;
+Xcode sürümü ilerledikçe ad yine kayacağı için tek ad değil LİSTE tutuluyor.
+
+### Kompozisyon bulguları — 9 Eylül 2026, kare GÖZLE incelendi
+
+CI artefaktı indirmek kimlik doğrulaması istiyor (ajan indiremiyor), ama
+aynı ekran aynı tohumla YEREL olarak da çizdirildi — §13'ün başında elenen
+widget-testi yolu tam da bunun için *"iç doğrulama aracı olarak değerli"*
+diye saklanmıştı. Önizleme mağaza karesi DEĞİL (Skia ≠ Impeller, iOS kabuğu
+yok), ama kompozisyon sorularını cevaplıyor.
+
+**İyi olanlar:** taşma yok (`takeException()` null), fontlar gerçek çizildi,
+iki bölgenin dış hattı da net (oyuncu camgöbeği / YZ kırmızı), merkezdeki
+X2 filigranı ve sarı bonus bölgesi görünüyor, jokerin **kırmızı `0`**'ı
+tahtada okunuyor, mesaj satırı oyunu canlı gösteriyor (*"Yapay Zeka 'KEFE'
+oynadı. +22 puan."*), raf `KAOEMLE` ve "TORBA 43".
+
+**⬜ KARAR GEREKTİREN İKİ ŞEY:**
+
+1. **Karenin alt ~%20'si BOŞ.** Butonların altında geniş bir beyaz alan
+   kalıyor. Bu bir hata değil — uygulama uzun bir telefonda gerçekten böyle
+   görünüyor — ama mağaza karesinde ölü alan. Bu, §13'ün *"çerçeve/başlık
+   metni eklensin mi"* sorusunu somutlaştırıyor: **başlık metni için doğal
+   bir yer var.** Alternatif, kareyi olduğu gibi bırakmak (Apple ham kareyi
+   kabul ediyor).
+2. ✅ **ÇÖZÜLDÜ — kareler GİRİŞLİ çekiliyor** (9 Eylül 2026). Önce
+   başlıkta `GİRİŞ` butonu duruyordu (misafir hâli); Play turunun yazılı
+   kuralı *"test hesabıyla çek"* dediği için girişli hâl seçildi. Ağa
+   çıkmadan çözüldü: `AuthService.fake(user:, profile:)` sahte oturum kabul
+   ediyor, başlıkta avatar (`IR`) çiziliyor — secret ya da gerçek hesap
+   gerekmiyor, iş akışı hâlâ ağa hiç çıkmıyor.
+   ⚠ **`test/account_button_test.dart`in sahte kullanıcısı KOPYALANMADI:**
+   o yardımcı geliştiricinin kişisel e-postasını taşıyor ve Play'in çekim
+   kuralı *"e-posta geçen ekran yok"* diyor. Mağaza kimliğinin `email`i
+   bilerek boş.
+
+### 2. kare eklendi — 9 Eylül 2026
+
+`02-kurulmus-hamle`: oyuncunun rafından tahtaya kurulmuş ama henüz
+onaylanmamış bir hamle — yeşil dış hat, **+14** puan rozeti, *"Oyna tuşuyla
+kelimeyi onayla."* mesajı ve öne çıkan `OYNA` butonu.
+
+⚠ **Hamle elle KODLANMIYOR**, motorun kendi arama fonksiyonundan
+seçiliyor — ama *"en yüksek puan"* kuralıyla DEĞİL. Ölçüm: en yüksek puanlı
+aday `LAM` (16 puan, **2 taş**) çıkıyor ve mağaza karesinde mekaniği
+anlatmıyor. Seçim kuralı bu yüzden **en çok taş kullanan** aday (eşitlikte
+puan, sonra `trCompare`): `ALKIM` — 4 taş, dikey, mevcut bir `I` taşının
+ÜSTÜNDEN geçiyor, yani hem kelimeyi hem kancalama kuralını gösteriyor.
+
+⚠ **Tuzak (ölçüldü):** raf her yerleştirmede KÜÇÜLÜYOR (`_placeTile`
+indeksi çıkarıyor), yani raf indeksleri önceden hesaplanamaz. İlk denemede
+4 yerleştirmeden yalnızca 3'ü tuttu ve son taş **sessizce** düştü — hata
+yok, eksik kare. Her adımda güncel raftan bakılıyor.
+
+✅ **Run #3 (9 Eylül 2026) tamamen yeşil:** iki cihaz × iki kare, dördünün
+de piksel ölçümü geçti. Artefaktlar `iphone-6.9` 3,21 MB + `ipad-13`
+3,41 MB (bir önceki turun ~iki katı — iki kare de üretildiğinin ölçüsü).
+
+### Kalan dört kare eklendi — 9 Eylül 2026 (6/6)
+
+| Kare | Ne gösteriyor |
+|---|---|
+| `03-arkadasinla` | Kurulum → "Arkadaşınla": üç canlı oyun, iki farklı sıra durumu |
+| `04-skor-karti` | Skor kartı: k-lig sırası, sekmeler, oyuncu + oyun istatistikleri |
+| `05-kelime-anlami` | Tahtanın üstünde TDK anlam penceresi (`SAZ`) |
+| `06-nasil-oynanir` | Kurallar penceresi (ekrandaki başlığı **"Hızlı Başlangıç"**) |
+
+**Anlam metni UYDURULMUYOR** — `meanings.db`'den, üretimdeki yolun ta
+kendisiyle okunuyor. Widget testleri bunu hiç deneyememişti (`MeaningStore`
+gerçek sqflite async'i kullanıyor ve testin sahte zaman bölgesinde
+çözülmüyor); `integration_test` gerçek cihazda koştuğu için `runAsync` ile
+mümkün oldu. Kelime `SAZ`: tahtada gerçekten duruyor (oyuncunun köşe
+açılışı) ve birden çok anlamı var, yani pencere tek satırlık değil.
+
+⚠ **`_SahteSupabase` — bir kare "temsili" değilse mağazaya giremez.**
+Setup'ın teşhis satırı üretimde HER ZAMAN görünüyor (bilinçli karar) ve
+`services.supabase == null` iken *"offline mod"* yazıyor. İlk çekimde kare
+şunu gösteriyordu: **üstte üç CANLI oyun, altta "offline mod".** Böyle bir
+ekran gerçekte hiç oluşmaz — yani kare uygulamayı yanlış temsil ederdi, ki
+Apple'ın yasakladığı tam olarak bu. Gerçek bir `SupabaseClient` kurmak
+denendi ve ELENDİ: bir `HttpClient` + bekleyen zamanlayıcı yaratıyor
+(ölçüldü, testi düşürdü) ve iş akışının *"ağa çıkma"* önermesini bozardı.
+Çözüm, `noSuchMethod` ile boş bir stub: `services.supabase` üretimde TEK
+yerde okunuyor (sadece o etiket), yani nesnenin üzerine hiçbir çağrı
+düşmüyor.
+
+⚠ **Kareyi ÇİZDİRMEK sahte verideki bir hatayı yakaladı:** skor kartında
+"Teslim olma" kutusu 1 verilmesine rağmen `0` gösteriyordu — anahtar adı
+`surrendered_games` yazılmıştı, doğrusu `surrendered_count`. Alan sessizce
+0'a düşüyordu; hiçbir test bunu göremezdi çünkü test yok, kare var. Ders:
+sahte veriyi yazmak yetmiyor, **çizdirip okumak** gerekiyor.
+
+⚠ **Liste tek satırken özelliği ANLATMIYORDU.** İlk kurgu tek aktif oyun
+gösteriyordu; üç oyuna ve İKİ farklı sıra durumuna çıkarıldı ("SIRA SENDE"
+yeşil ↔ "SIRA RAKİPTE" kırmızı), ekranın ne işe yaradığı tek bakışta
+anlaşılsın diye.
+
+✅ **Run #4 (9 Eylül 2026) tamamen yeşil — 6/6 kare, İKİ cihazda da
+doğrulandı.** Artefaktlar `iphone-6.9` **5,33 MB** + `ipad-13` **5,46 MB**;
+on iki PNG'nin on ikisi de piksel ölçümünü geçti (`1320×2868` / `2064×2752`).
+Yani mağazaya giden kareler **bugün hazır** — üretimi değil, yalnızca
+kompozisyon kararı bekliyor.
+
 ### Kalan iş
 
-- CI'ın `ios` işine simülatör açıp kare çeken adım (`simctl`)
-- Ekranlara gezinmenin nasıl sürüleceği (`integration_test` altyapısı depoda
-  YOK, sıfırdan kurulacak)
-- iPad seti için ikinci cihaz
+Zorunlu altı karenin **altısı da üretiliyor ve doğrulandı.** Kalan tek şey
+bir KARAR:
+
+- **Kompozisyon:** çerçeve/başlık metni eklenip eklenmeyeceği (Apple ham
+  kareyi de kabul ediyor). Oyun ekranı karelerinde (01/02) altta ~%20 boş
+  alan var ve başlık için doğal bir yer; modal kareleri (04/05/06) zaten
+  dolu. Karar tek tek değil, altı kare birlikte görülerek verilmeli.
+- **İsteğe bağlı 7. kare** (k-lig sıralaması) — çekim listesinde
+  "opsiyonel" işaretli, henüz yapılmadı.

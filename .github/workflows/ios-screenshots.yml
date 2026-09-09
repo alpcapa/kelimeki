@@ -1,0 +1,125 @@
+# Mağaza ekran görüntüleri — App Store FAZ C 24.5.
+#
+# NEDEN AYRI BİR İŞ AKIŞI (mobile-build.yml'e EKLENMEDİ):
+#   1. `mobile-build.yml`'in `paths` listesine dokunmak her seferinde tam bir
+#      macOS + Android derlemesi tetikliyor; ekran görüntüsü ayda bir gereken
+#      bir iş, her push'ta değil.
+#   2. Deponun yazılı kuralı: *"Yeni ve doğrulanmamış bir adım, çalışan bir
+#      adımı asla rehin almamalı."* Bu boru hattı ilk koşusunda doğrulanacak;
+#      düşerse Appetize/simülatör/TestFlight akışlarını yanına almamalı.
+#
+# ÇIKTI: her cihaz için PNG'ler, artefakt olarak. **Repoya COMMIT EDİLMEZ** —
+# mağaza görüntüleri üretilmiş dosyalardır ve `build/` gitignore'da.
+#
+# ⚠ Kare KIRPILMAZ. Play turunda ham kare Play'in 2:1 tavanını aştığı için
+# kırpmak ZORUNLUYDU; App Store TAM piksel ölçüsü istiyor ve kırpmak kareyi
+# geçersiz yapar. Aşağıdaki ölçüm adımı bunu her koşuda kanıtlıyor.
+name: iOS mağaza ekran görüntüleri
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'mobile/app/integration_test/**'
+      - 'mobile/app/test_driver/**'
+      - '.github/workflows/ios-screenshots.yml'
+
+jobs:
+  kareler:
+    name: ${{ matrix.ad }}
+    runs-on: macos-latest
+    # Bir cihaz düşerse öteki yine de kare üretsin — teşhis için ikisi de
+    # değerli (ölçü farkı yalnızca karşılaştırınca anlaşılıyor).
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Apple 2026: iPhone için TEK set (6.5" ya da 6.9") + iPad 13"
+          # yeterli; verilmeyen boyutlar bu setlerden ölçekleniyor.
+          # `iPhone 17 Pro Max` run #1'de runner'da BULUNDU (ölçüldü).
+          - ad: iphone-6.9
+            adaylar: 'iPhone 17 Pro Max|iPhone 16 Pro Max'
+            genislik: 1320
+            yukseklik: 2868
+          # ⚠ Aday listesi 9 Eylül 2026'da run #1'de ÖLÇÜLDÜ: runner'da M4
+          # değil **M5** duruyor (`iPad Pro 13-inch (M5)`). Xcode sürümü
+          # ilerledikçe ad yine kayacak — liste bu yüzden var, tek ad değil.
+          - ad: ipad-13
+            adaylar: 'iPad Pro 13-inch (M5)|iPad Pro 13-inch (M4)|iPad Pro (12.9-inch)'
+            genislik: 2064
+            yukseklik: 2752
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # Runner'ın Xcode sürümü simülatör adlarını değiştiriyor; ad sabit
+      # yazılırsa iş "device not found" ile düşer ve sebebi log'dan
+      # anlaşılmaz. Aday listesinden İLK bulunanı seçip UDID'yi taşıyoruz.
+      - name: Simülatörü seç ve başlat
+        id: sim
+        run: |
+          set -euo pipefail
+          xcrun simctl list devices available
+          udid=""
+          IFS='|' read -ra adaylar <<< "${{ matrix.adaylar }}"
+          for ad in "${adaylar[@]}"; do
+            udid=$(xcrun simctl list devices available \
+              | grep -F "$ad (" | head -1 \
+              | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/' || true)
+            if [ -n "$udid" ]; then echo "seçilen simülatör: $ad ($udid)"; break; fi
+          done
+          if [ -z "$udid" ]; then
+            echo "::error::Aday simülatörlerin hiçbiri yok: ${{ matrix.adaylar }}"
+            exit 1
+          fi
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      # `flutter drive`: uygulama simülatörde GERÇEK iOS çalışma zamanında
+      # koşar, kareyi sürücü (test_driver/integration_test.dart) diske yazar.
+      # Supabase `--dart-define`ları BİLEREK verilmiyor — kareler sahte
+      # servislerle çiziliyor, hiçbir ağ ucuna bağlanılmıyor ve bu yüzden bu
+      # iş akışının HİÇBİR secret'a ihtiyacı yok.
+      - name: Kareleri üret
+        working-directory: mobile/app
+        run: |
+          set -euo pipefail
+          flutter pub get
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/store_screenshots_test.dart \
+            -d "${{ steps.sim.outputs.udid }}"
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: kelimeki-store-screenshots-${{ matrix.ad }}
+          path: mobile/app/build/screenshots/*.png
+          # `error` DEĞİL: `always()` ile koştuğu için, sürüş adımı kare
+          # üretmeden düşerse bu adım da kırmızıya döner ve asıl hatayı
+          # log'da gölgeler. Eksik kare zaten aşağıdaki ölçüm adımının işi.
+          if-no-files-found: warn
+
+      # ÖLÇÜM — bu iş akışının asıl iddiası bu: kare Apple'ın istediği TAM
+      # piksel ölçüsünde çıkıyor mu? Çıkmıyorsa kare kullanılamaz, o yüzden
+      # iş DÜŞER. Artefakt yukarıda `always()` ile zaten yüklendi, yani
+      # düşen koşuda da elde inceleyecek bir dosya var.
+      - name: Piksel ölçüsünü doğrula
+        working-directory: mobile/app
+        run: |
+          set -euo pipefail
+          hatali=0
+          for png in build/screenshots/*.png; do
+            w=$(sips -g pixelWidth  "$png" | awk '/pixelWidth/{print $2}')
+            h=$(sips -g pixelHeight "$png" | awk '/pixelHeight/{print $2}')
+            echo "- \`$(basename "$png")\` → ${w}×${h}" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$w" != "${{ matrix.genislik }}" ] || [ "$h" != "${{ matrix.yukseklik }}" ]; then
+              echo "::error::$(basename "$png") ${w}×${h} — beklenen ${{ matrix.genislik }}×${{ matrix.yukseklik }}"
+              hatali=1
+            fi
+          done
+          exit $hatali

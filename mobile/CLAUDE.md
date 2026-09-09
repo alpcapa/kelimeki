@@ -549,6 +549,10 @@ mobile/
                            # away_return, ai_level, onboarding)
     test/                  # util + controller (golden replay) + widget testleri
                            # + support/ (paylaşılan test altyapısı)
+    integration_test/      # ⚠ `flutter test` BUNU TOPLAMAZ — GERÇEK iOS
+    test_driver/           # simülatöründe koşan mağaza ekran görüntüsü boru
+                           # hattı (App Store 24.5). Yalnızca `flutter drive`
+                           # ile, .github/workflows/ios-screenshots.yml'de
     android/ ios/          # flutter create çıktısı + elle değişiklikler
   kelimeki_core/           # SAF Dart motor paketi — Flutter bağımlılığı YOK
     lib/src/               # constants · model · engine · rules · ai · data ·

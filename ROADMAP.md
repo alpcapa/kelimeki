@@ -228,6 +228,8 @@ satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
 |---|---|---|
 | `80f3769` (#488) | Onboarding Faz 2·3·5 — bağlamsal ipuçları (`vergi`/`carpan`/`bolge`), tanıtımı tekrar oynama, `tutorial_events` ölçümü | Port ikizi aynı PR'da: `util/onboarding.dart` (ipucu kararı + sayaç), `storage/flags_store.dart`, `ui/game/game_screen.dart` (balon), `ui/game/help_modal.dart` + `ui/setup/setup_screen.dart` (tekrar oynama), `ui/tutorial/*`, `data/games_api.dart` (olay yazımı), `ui/auth/legal_modals.dart` (gizlilik metni "beş kayıt") |
 | #490 (FAZ C) | iOS Firebase yapılandırması — `GoogleService-Info.plist` + Xcode kaydı | `ios/Runner/GoogleService-Info.plist` (YENİ), `ios/Runner.xcodeproj/project.pbxproj` (dört girdi), `lib/src/data/push_init.dart` (bayat yorum). ⚠ **Android'i ETKİLEMEZ** ve **iOS'ta da davranış DEĞİŞMEZ**: `Firebase.initializeApp()` artık iOS'ta başarılı oluyor ama APNs kaydı `aps-environment` entitlement'ı istiyor, o henüz yok → `getToken()` fırlatır ve `PushRepo` yutar. Yani bu satır sıradaki Android sürümüne **hiçbir şey** taşımıyor; tabloda olmasının sebebi `mobile/app/` altına dokunmuş olması |
+| #492 (FAZ C) | iOS entitlements + bildirim paneli kanalı + Mac'siz imzalama zinciri | `ios/Runner/Runner.entitlements` (YENİ), `ios/Runner/Info.plist`, `ios/Runner/AppDelegate.swift`, `ios/Runner.xcodeproj/project.pbxproj`, `Gemfile` + `fastlane/*` (YENİ), `test/notification_shade_parity_test.dart`. ⚠ **Android'i ETKİLEMEZ** — dokunulan her şey `ios/` altında ya da yalnızca CI'da koşan imzalama zinciri. ⚠ Bu satır 9 Eylül 2026'da **geriye dönük** eklendi: #492 kendi PR'ında tabloya yazılmamıştı ve refleks komutuyla (`git log 1abde38..origin/main -- mobile/app`) yakalandı — kuralın BEŞİNCİ kaçırılışı |
+| Bu PR (FAZ C 24.5) | Mağaza ekran görüntüsü boru hattı — `integration_test/` + `test_driver/` | `pubspec.yaml` (`integration_test` **dev** bağımlılığı), `integration_test/store_screenshots_test.dart` (YENİ), `test_driver/integration_test.dart` (YENİ). ⚠ **Sıradaki sürüme HİÇBİR ŞEY taşımıyor**: dev bağımlılığı mağazaya giden ikiliye girmez, `flutter test` `integration_test/`i toplamaz ve yeni kod yalnızca `flutter drive` ile koşar. Tabloda olmasının sebebi `mobile/app/` altına dokunmuş olması |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
@@ -1248,16 +1250,34 @@ yaşandı ve özet tablo altı gün bayat kaldı.)
 
 | Faz | Durum |
 |---|---|
-| **24.1** Hesap & kimlik | ✅ üyelik aktif · Team ID `8277D85FY9` · App ID + capability'ler · APNs anahtarı `RL4JLXL389` · uygulama kaydı · Free Apps Agreement · ⬜ **API anahtarı İNDİRİLEMEDİ** (Apple arızası) |
+| **24.1** Hesap & kimlik | ✅ üyelik aktif · Team ID `8277D85FY9` · App ID + capability'ler · APNs anahtarı `RL4JLXL389` · uygulama kaydı · Free Apps Agreement · **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) · ⬜ **API anahtarı İNDİRİLEMEDİ** (Apple arızası) |
 | **24.2** Mac'siz imzalama + TestFlight | ⚠ **YAZILDI, HİÇ KOŞMADI** — `fastlane/` + `Gemfile` + `mobile-build.yml`'in TestFlight adımı. Secret yoksa kendini atlıyor. İlk koşu bir DOĞRULAMA turu |
 | **24.3** APNs / push | ✅ Firebase (prod+dev) · `GoogleService-Info.plist` · `Runner.entitlements` · `AppDelegate` bildirim kanalı. ⚠ `aps-environment` değeri CI'da doğrulanamaz |
 | **24.4** Universal Links | ✅ web yarısı **CANLIDA ölçüldü** (`200` + `application/json`) · ✅ iOS yarısı yazıldı · ⚠ doğrulama TestFlight ister |
-| **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ⬜ **ekran görüntüleri** (simülatör yolu, kompozisyon açık) |
-| **24.6** Gönderim | ⬜ ⚠ **KAPI: DSA trader beyanı + doğrulaması** olmadan inceleme yok |
+| **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ✅ **ekran görüntüsü boru hattı ÇALIŞIYOR** — 9 Eyl, run #1 ile CI'da DOĞRULANDI: iPhone 6.9" karesi **tam 1320×2868**, artefakt 1,6 MB. iPad yarısı da run #2'de DOĞRULANDI (`2064×2752`) · ✅ **6/6 kare, iki cihazda da CI'da DOĞRULANDI** (9 Eyl, run #4: on iki PNG'nin on ikisi tam ölçüde) — açık kalan tek şey kompozisyon kararı (başlık metni/çerçeve) |
+| **24.6** Gönderim | ⬜ ⏳ **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) — kapı hâlâ açık. Kalan: doğrulama + paket (24.2) + ekran görüntüleri (24.5) |
 
-**Sırayı tıkayan iki şey, ikisi de Apple/kullanıcı tarafında:** API
-anahtarının indirilememesi (24.2'yi doğrulayamıyoruz) ve trader beyanı
-(yedek telefon hattı bekleniyor).
+⏳ **TRADER: beyan ✅, doğrulama SÜRÜYOR (9 Eylül 2026).** Console'un
+Compliance tablosu `Digital Services Act · 27 ülke · In Review` diyor —
+yani gönderim kapısı HÂLÂ AÇIK. ⚠ Bu satır bir kez *"kapandı"* diye
+yazıldı ve aynı gün düzeltildi: sözlü bildirim değil, **Console'un kendi
+STATUS alanı** kanıttır (gerekçe `console-formlari.md` §2).
+
+**Sırayı tıkayan şeyler (9 Eylül akşamı itibarıyla BİRİ DÜŞTÜ):**
+1. ✅ **API anahtarı ALINDI (9 Eylül 2026 akşamı)** — bir **Mac'ten**, ilk
+   denemede. iPadOS'ta (özel sekme dahil) defalarca başarısız olmuştu;
+   ölçüm arızanın istemci/platform tarafında olduğunu gösteriyor, Apple'ın
+   sunucusunda değil. Support hiç yanıt vermeden çözüldü. Kalan iş
+   **secret'ların girilmesi** ve 24.2'nin İLK KOŞUSU — yani bir doğrulama
+   turu (`console-formlari.md` §3). 24.2'yi, yani imzalı paketin TestFlight'a çıkmasını
+   tıkıyor. ⚠ Ama anahtar **imzalama için zorunlu değil, OTOMASYON için
+   zorunlu** — `openssl` CSR + elle sertifika/profil + uygulamaya özel şifre
+   ile anahtarsız bir zincir kurulabilir (kayıt `console-formlari.md` §3).
+   Arıza uzarsa gönderim buna çevrilir.
+2. **DSA doğrulaması** — Apple inceliyor; bitmeden inceleme talebi
+   gönderilemez.
+
+Bizde kalan iş yalnızca 24.5'in kalan dört karesi.
 
 **Durum:** kullanıcı Apple Developer hesabını açtı. Bu, bugüne kadar altı
 ayrı yerde *"🔒 Apple Developer üyeliğine bloke"* diye kayıtlı olan işleri
@@ -1494,8 +1514,15 @@ geçme — entitlements doğru olsa bile link uygulamayı açmaz.
   gerekçe #17 → "Apple neden bu maddede YOK".
 - ⚠ **`in_app_update` Android'e özgü**, iOS'ta karşılığı yok
   (`mobile/CLAUDE.md`). Yani iOS'ta elimizdeki TEK fren sürüm kapısı
-  (`app_config.mobile_min_supported_version`) — `version_gate.dart` `'ios'`
-  anahtarını zaten okuyor, ama o anahtarın satırı **doldurulmalı**.
+  (`app_config.mobile_min_supported_version`).
+  ✅ **9 Eylül 2026'da CANLIDAN ölçüldü: anahtar EKSİK DEĞİL** —
+  satır `{"ios":"0.0.0","android":"0.0.0"}`. Bu bölüm *"o anahtarın satırı
+  doldurulmalı"* diyordu; yanlıştı, `version_gate.dart`in okuduğu `'ios'`
+  anahtarı zaten yazılı. **`0.0.0` bugün DOĞRU değer** (fail-open: kapı
+  kapalı, zorunlu güncelleme yok) çünkü henüz yayınlanmış bir iOS sürümü
+  yok. Gerçek iş şu: ilk TestFlight/App Store sürümünden SONRA bu satır
+  iOS'ta tek fren olduğu için bilinçli yükseltilmeli — Android'deki gibi
+  bir mağaza diyaloğu devreye girmiyor.
 
 ### 24.6 — Gönderim & inceleme
 
