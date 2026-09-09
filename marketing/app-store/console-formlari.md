@@ -333,10 +333,22 @@ Her deneme bir anahtar yaktığından, sıradaki adım yeni bir anahtar DEĞİL:
 | İniyor | Sorun indirme katmanında değil, **anahtar üretmeye özgü** | Tarayıcı değiştirmek işe yaramaz; bekle ya da yolu değiştir (aşağı) |
 | İnmiyor | Sorun tarayıcı/indirme tarafında | Gerçekten FARKLI bir cihaz (masaüstünde gerçek Chrome/Firefox — farklı motor VE farklı indirme yığını) |
 
-Ayrıca `developer.apple.com/system-status` sayfasına bakılmalı (App Store
-Connect · Certificates, Identifiers & Profiles satırları). ⚠ **Ajan bu
-sayfayı okuyamıyor** — `developer.apple.com` 302 ile `www.apple.com`'a
-yönlendiriyor ve oraya egress proxy izin vermiyor (9 Eylül 2026'da denendi).
+⚠ **SİSTEM DURUMU YEŞİL — kullanıcı baktı, 9 Eylül 2026.** Bu, bir
+teoriyi ZAYIFLATIYOR: Google'ın önerdiği *"Apple'ın anahtar üretim
+sunucusunda geçici arıza, birkaç saat bekle"* açıklaması artık daha az
+olası. **Ama ELEMİYOR** — durum sayfasının çözünürlüğü kaba, anahtar üretme
+ucunun (`/iris/v1/subscriptionKeys`) kendi satırı yok; bildirilmemiş bir
+hata yeşil bir tabloyla bir arada durabilir.
+
+**Pratik sonucu: BEKLEMEK artık daha zayıf bir strateji.** Altı anahtar,
+iki ayrı uç, ~24 saat, birden çok tarayıcı bağlamı (incognito dahil) ve
+ilan edilmiş bir arıza YOK. Geriye iki ciddi seçenek kalıyor: aşağıdaki
+bedava teşhis, ve anahtarsız zincir. Vakayı **telefon geri aramasına
+yükseltme** eşiği (11 Eylül) de bu yüzden daha erken çekilebilir.
+
+⚠ **Ajan durum sayfasını okuyamıyor** — `developer.apple.com` 302 ile
+`www.apple.com`'a yönlendiriyor ve oraya egress proxy izin vermiyor
+(9 Eylül 2026'da denendi). Bu satırın kaynağı kullanıcı gözlemi.
 
 ### 🔑 API anahtarı İMZALAMA için zorunlu DEĞİL — otomasyon için zorunlu
 
