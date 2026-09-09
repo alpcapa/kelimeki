@@ -765,10 +765,24 @@ düzeltme gerçek bir yüklemeyle sınandı. Sonuç:
 - `build_app` 200 sn → `Runner.ipa` (27 MB), `upload_to_testflight` 90 sn →
   *"Successfully uploaded the new binary to App Store Connect"*.
 
-⚠ **Kesin kanıt hâlâ TestFlight'ın BUILD sütunu.** Kontrol, fastlane'in
-OKUYACAĞI dosyayı doğruluyor; "arşiv o dosyadan besleniyor" ise teşhisin
-çıkarımı. İkisi ancak App Store Connect'te **1.0.9 (616)** görüldüğünde
-birleşir — bu depoda kanıt her zaman ürünün kendi künyesinden okunur.
+✅ **KESİN KANIT ALINDI (9 Eylül 2026 22:09, kullanıcının ekran
+görüntüsü):** App Store Connect → TestFlight → iOS Builds:
+
+| Version & Build | Status | Date created |
+|---|---|---|
+| **1.0.9 (616)** | ✅ Complete | Sep 9, 2026 10:03 PM |
+| 1.0.9 (1) | ✅ Complete | Sep 9, 2026 8:54 PM |
+
+Version 1.0.9 altında iki derleme yan yana duruyor (**616** ve **1**),
+ikisi de `Ready to Submit`. Yani teşhis doğruydu ve düzeltme arşive kadar
+ulaştı: numarayı belirleyen şey gerçekten fastlane'den önceki SON `flutter
+build`di, ve iki `flutter build` hizalanınca doğru numara pakete girdi.
+Numara yakma riski kapandı — bundan sonra her koşu kendi numarasını taşıyor.
+
+⚠ Kontrolün ne kanıtladığını yine de karıştırma: o, fastlane'in OKUYACAĞI
+dosyayı doğrular. "Arşiv o dosyadan besleniyor" halkasını kanıtlayan tek
+şey bu tablodur — bu depoda kanıt her zaman ürünün kendi künyesinden
+okunur (web'de `curl … | grep kelimeki-build`in iOS karşılığı).
 
 #### Beşinci koşu (#612) — **imzalı `.ipa` ÜRETİLDİ**, Apple bundle'ı reddetti
 
