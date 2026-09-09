@@ -26,7 +26,7 @@ karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
 | Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
 | Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
 | App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ⚠ üretildi ama `.p8` İNDİRİLEMEDİ (aşağı) |
-| DSA trader status | Üç alan da ✅ hazır (9 Eylül 2026) | ⬜ **BEYAN YAPILMADI** — teknik engel kalmadı, Console'da `Compliance` bölümü; gönderim kapısı (§2) |
+| DSA trader status | Beyan + **doğrulama** | ✅ **TAMAM (9 Eylül 2026)** — gönderim kapısı KAPANDI (§2) |
 
 **Paid Apps Agreement İMZALANMAYACAK.** `New` durumunda kalır; uygulama
 ücretsiz, uygulama içi satın alma yok. Console'un *"update your legal
@@ -58,10 +58,22 @@ numara/cihaz da kalıcı olmalı.
 
 ---
 
-## 2. DSA trader status — **KARAR VERİLDİ, UYGULANMADI**
+## 2. DSA trader status — ✅ **TAMAMLANDI (9 Eylül 2026)**
 
-**Durum: beyan HENÜZ YAPILMADI.** 8 Eylül 2026'da pencere açıldı ve
-bilinçli olarak **Cancel** edildi.
+**Beyan yapıldı ve Apple'ın DOĞRULAMASI da bitti** (kullanıcı bildirdi,
+9 Eylül 2026). **Gönderim kapısı kapandı** — 24.6'nın önündeki en sert
+engel buydu ve artık yok.
+
+⚠ **İki adım AYRI ve ikisi de bitti sayılmalı:** beyanı yapmak yetmiyor,
+Apple ayrıca doğruluyor; bu tur ikisini de aynı gün kapattı. Bir sonraki
+okuyucu için: bu satır *"beyan edildi"* değil *"doğrulandı"* diyor.
+
+**Aşağısı SÜREÇ KAYDIDIR** — neden bir gün beklendiği, hangi bilginin neden
+seçildiği. Karar geriye dönük tartışılmıyor; ileride *"bu bilgi neden
+açıkta"* sorulduğunda cevabı burada.
+
+**Öncesi:** 8 Eylül 2026'da pencere açıldı ve bilinçli olarak **Cancel**
+edildi.
 
 ### Karar: **trader olarak beyan edilecek** (AB dağıtımı korunacak)
 
@@ -144,18 +156,22 @@ sayfanın altındaki **`Compliance`** bölümünde:
 *Compliance → Complete Compliance Requirements → "I'm a trader under the
 DSA"* → adres · telefon · e-posta.
 
-### ⚠ GÖNDERİM KAPISI
+### ✅ GÖNDERİM KAPISI — KAPANDI
 
-**Trader beyanı + doğrulaması tamamlanmadan uygulama incelemeye
-gönderilemez.** Bu bir "unutma listesi" maddesi değil, gönderim öncesi
-kontrol listesinin maddesi.
+Kural şuydu: *"Trader beyanı + doğrulaması tamamlanmadan uygulama incelemeye
+gönderilemez."* 9 Eylül 2026'da ikisi de tamamlandı, yani bu madde artık
+gönderim öncesi kontrol listesinden DÜŞTÜ.
 
-### Play tarafı aynı beyanı bekliyor
+### ⚠ Play tarafı aynı beyanı BEKLİYOR — ve artık bir referans var
 
 DSA aynı şeyi Google Play'den de istiyor. Kelimeki Play'de kapalı testte
-olduğu için henüz tetiklenmemiş olabilir; üretime çıkınca gelecek. Depoda
-Play tarafında trader beyanı kaydı **yok**. **İki mağazada AYNI bilgi
-beyan edilmeli** — farklı bilgi vermek açıklaması zor bir tutarsızlık.
+olduğu için henüz tetiklenmemiş olabilir; **üretime çıkınca gelecek.**
+Depoda Play tarafında trader beyanı kaydı **yok**.
+
+**İki mağazada AYNI bilgi beyan edilmeli** — farklı bilgi vermek açıklaması
+zor bir tutarsızlık. Apple tarafı 9 Eylül 2026'da doldurulup doğrulandığına
+göre **kanonik üçlü artık orada**: Play'in formu geldiğinde bilgi yeniden
+karar verilmez, App Store Connect'ten okunup birebir kopyalanır.
 
 ### Kaynaklar
 
