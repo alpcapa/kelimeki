@@ -857,12 +857,52 @@ yok, eksik kare. Her adımda güncel raftan bakılıyor.
 de piksel ölçümü geçti. Artefaktlar `iphone-6.9` 3,21 MB + `ipad-13`
 3,41 MB (bir önceki turun ~iki katı — iki kare de üretildiğinin ölçüsü).
 
+### Kalan dört kare eklendi — 9 Eylül 2026 (6/6)
+
+| Kare | Ne gösteriyor |
+|---|---|
+| `03-arkadasinla` | Kurulum → "Arkadaşınla": üç canlı oyun, iki farklı sıra durumu |
+| `04-skor-karti` | Skor kartı: k-lig sırası, sekmeler, oyuncu + oyun istatistikleri |
+| `05-kelime-anlami` | Tahtanın üstünde TDK anlam penceresi (`SAZ`) |
+| `06-nasil-oynanir` | Kurallar penceresi (ekrandaki başlığı **"Hızlı Başlangıç"**) |
+
+**Anlam metni UYDURULMUYOR** — `meanings.db`'den, üretimdeki yolun ta
+kendisiyle okunuyor. Widget testleri bunu hiç deneyememişti (`MeaningStore`
+gerçek sqflite async'i kullanıyor ve testin sahte zaman bölgesinde
+çözülmüyor); `integration_test` gerçek cihazda koştuğu için `runAsync` ile
+mümkün oldu. Kelime `SAZ`: tahtada gerçekten duruyor (oyuncunun köşe
+açılışı) ve birden çok anlamı var, yani pencere tek satırlık değil.
+
+⚠ **`_SahteSupabase` — bir kare "temsili" değilse mağazaya giremez.**
+Setup'ın teşhis satırı üretimde HER ZAMAN görünüyor (bilinçli karar) ve
+`services.supabase == null` iken *"offline mod"* yazıyor. İlk çekimde kare
+şunu gösteriyordu: **üstte üç CANLI oyun, altta "offline mod".** Böyle bir
+ekran gerçekte hiç oluşmaz — yani kare uygulamayı yanlış temsil ederdi, ki
+Apple'ın yasakladığı tam olarak bu. Gerçek bir `SupabaseClient` kurmak
+denendi ve ELENDİ: bir `HttpClient` + bekleyen zamanlayıcı yaratıyor
+(ölçüldü, testi düşürdü) ve iş akışının *"ağa çıkma"* önermesini bozardı.
+Çözüm, `noSuchMethod` ile boş bir stub: `services.supabase` üretimde TEK
+yerde okunuyor (sadece o etiket), yani nesnenin üzerine hiçbir çağrı
+düşmüyor.
+
+⚠ **Kareyi ÇİZDİRMEK sahte verideki bir hatayı yakaladı:** skor kartında
+"Teslim olma" kutusu 1 verilmesine rağmen `0` gösteriyordu — anahtar adı
+`surrendered_games` yazılmıştı, doğrusu `surrendered_count`. Alan sessizce
+0'a düşüyordu; hiçbir test bunu göremezdi çünkü test yok, kare var. Ders:
+sahte veriyi yazmak yetmiyor, **çizdirip okumak** gerekiyor.
+
+⚠ **Liste tek satırken özelliği ANLATMIYORDU.** İlk kurgu tek aktif oyun
+gösteriyordu; üç oyuna ve İKİ farklı sıra durumuna çıkarıldı ("SIRA SENDE"
+yeşil ↔ "SIRA RAKİPTE" kırmızı), ekranın ne işe yaradığı tek bakışta
+anlaşılsın diye.
+
 ### Kalan iş
 
-- **Kalan dört kare.** Bugün yalnızca 1. kare (oyun ekranı, oyunun ortası —
-  listenin *en önemli* karesi) üretiliyor. 2-6 aynı desenle eklenecek;
-  Kurulum/Skor Kartı gibi ekranlar depolama + sahte uç kurulumu istiyor
-  (altyapı `test/support/fake_*.dart`'ta hazır, her ekran için kurulum
-  gerekiyor)
+Zorunlu altı karenin **altısı da üretiliyor.** Kalan tek şey bir KARAR:
+
 - **Kompozisyon:** çerçeve/başlık metni eklenip eklenmeyeceği (Apple ham
-  kareyi de kabul ediyor)
+  kareyi de kabul ediyor). Oyun ekranı karelerinde (01/02) altta ~%20 boş
+  alan var ve başlık için doğal bir yer; modal kareleri (04/05/06) zaten
+  dolu. Karar tek tek değil, altı kare birlikte görülerek verilmeli.
+- **İsteğe bağlı 7. kare** (k-lig sıralaması) — çekim listesinde
+  "opsiyonel" işaretli, henüz yapılmadı.

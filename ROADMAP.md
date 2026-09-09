@@ -1254,7 +1254,7 @@ yaşandı ve özet tablo altı gün bayat kaldı.)
 | **24.2** Mac'siz imzalama + TestFlight | ⚠ **YAZILDI, HİÇ KOŞMADI** — `fastlane/` + `Gemfile` + `mobile-build.yml`'in TestFlight adımı. Secret yoksa kendini atlıyor. İlk koşu bir DOĞRULAMA turu |
 | **24.3** APNs / push | ✅ Firebase (prod+dev) · `GoogleService-Info.plist` · `Runner.entitlements` · `AppDelegate` bildirim kanalı. ⚠ `aps-environment` değeri CI'da doğrulanamaz |
 | **24.4** Universal Links | ✅ web yarısı **CANLIDA ölçüldü** (`200` + `application/json`) · ✅ iOS yarısı yazıldı · ⚠ doğrulama TestFlight ister |
-| **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ✅ **ekran görüntüsü boru hattı ÇALIŞIYOR** — 9 Eyl, run #1 ile CI'da DOĞRULANDI: iPhone 6.9" karesi **tam 1320×2868**, artefakt 1,6 MB. iPad yarısı da run #2'de DOĞRULANDI (`2064×2752`) · ⬜ bugün **2/6 kare** (girişli hâl ✅ çözüldü; açık kalan tek kompozisyon sorusu alt %20 boş alan) |
+| **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ✅ **ekran görüntüsü boru hattı ÇALIŞIYOR** — 9 Eyl, run #1 ile CI'da DOĞRULANDI: iPhone 6.9" karesi **tam 1320×2868**, artefakt 1,6 MB. iPad yarısı da run #2'de DOĞRULANDI (`2064×2752`) · ✅ **6/6 kare** (9 Eyl) — açık kalan tek kompozisyon sorusu başlık metni/çerçeve |
 | **24.6** Gönderim | ⬜ ⏳ **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) — kapı hâlâ açık. Kalan: doğrulama + paket (24.2) + ekran görüntüleri (24.5) |
 
 ⏳ **TRADER: beyan ✅, doğrulama SÜRÜYOR (9 Eylül 2026).** Console'un
