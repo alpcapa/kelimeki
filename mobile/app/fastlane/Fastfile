@@ -14,6 +14,23 @@ default_platform(:ios)
 platform :ios do
   desc "İmzalı .ipa üret ve TestFlight'a yükle"
   lane :beta do
+    # ⚠ ŞART, süs değil (9 Eylül 2026'da koşu #606 bunu kanıtladı):
+    # `match` sertifikayı bir ANAHTARLIĞA kuruyor ve taze bir macOS
+    # runner'ında öyle bir anahtarlık YOK. Öncesinde iş akışı elle
+    # `MATCH_KEYCHAIN_NAME=kelimeki-ci` diyordu ama o anahtarlığı KİMSE
+    # oluşturmuyordu; `match` "Could not locate the provided keychain"
+    # diyerek düştü — üstelik git klonlamayı, şifre çözmeyi ve Apple
+    # kimlik doğrulamasını GEÇTİKTEN sonra, yani hata çok geç çıkıyordu.
+    #
+    # `setup_ci` fastlane'in bu iş için yazılmış action'ı: geçici bir
+    # anahtarlık oluşturur, açar, varsayılan yapar, kilit zaman aşımını
+    # kaldırır ve `MATCH_KEYCHAIN_NAME`/`MATCH_KEYCHAIN_PASSWORD`i KENDİSİ
+    # ayarlar. Bu yüzden iş akışındaki elle export'lar KALDIRILDI —
+    # dursalardı setup_ci'nin anahtarlığını ezip aynı hatayı geri
+    # getirirlerdi. (`MATCH_PASSWORD` AYRI bir şey: o, depo şifreleme
+    # parolası, duruyor.)
+    setup_ci
+
     # API anahtarı ortamdan; hiçbiri repoda durmuyor (depo PUBLIC).
     anahtar = app_store_connect_api_key(
       key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),

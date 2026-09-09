@@ -373,7 +373,15 @@ jobs:
 
   ios:
     name: iOS (imzasız)
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios }}
+    # ⚠ `!cancelled()` ŞART, süs değil: iş `needs: android` taşıyor ve
+    # GitHub Actions'ta BAĞIMLILIĞI ATLANAN İŞ DE ATLANIR. Bu olmadan
+    # `workflow_dispatch` ile `android: false` + `ios: true` seçmek iOS'u da
+    # sessizce atlıyordu — 9 Eylül 2026'da yaşandı (koşu #605: üç iş de
+    # `skipped`, hiçbir hata yok, sebep log'da GÖRÜNMÜYOR). `always()`
+    # DEĞİL: koşu iptal edildiğinde iOS'un yine de başlamasını istemiyoruz.
+    # Android DÜŞERSE iOS yine koşar ve bu doğru — `needs` yalnızca
+    # `gh release create` çakışmasını önlemek için var (aşağı bkz.).
+    if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.ios) }}
     runs-on: macos-latest
     permissions:
       contents: write
@@ -521,9 +529,12 @@ jobs:
           # Sertifika deposunun URL'i token TAŞIYOR, bu yüzden repoda değil
           # burada kuruluyor (depo PUBLIC). `match` onu Matchfile'dan okuyor.
           export MATCH_GIT_URL="https://x-access-token:${MATCH_GIT_TOKEN}@github.com/alpcapa/kelimeki-certificates.git"
-          # CI'da anahtarlık: match sertifikayı geçici bir keychain'e kurar.
-          export MATCH_KEYCHAIN_NAME="kelimeki-ci"
-          export MATCH_KEYCHAIN_PASSWORD="${MATCH_PASSWORD}"
+          # ⚠ ANAHTARLIK BURADA AYARLANMIYOR — `Fastfile`'daki `setup_ci`
+          # yapıyor. Burada bir zamanlar `MATCH_KEYCHAIN_NAME=kelimeki-ci`
+          # yazıyordu ve o anahtarlığı KİMSE OLUŞTURMUYORDU; match
+          # "Could not locate the provided keychain" ile düştü (koşu #606,
+          # 9 Eylül 2026). Buraya tekrar bir keychain değişkeni EKLEME —
+          # setup_ci'nin kendi anahtarlığını ezer ve hata geri gelir.
           export FASTLANE_SKIP_UPDATE_CHECK=1
           export FASTLANE_HIDE_CHANGELOG=1
           bundle install --quiet

@@ -534,7 +534,91 @@ değil** — durum kaydı olmayınca her oturum aynı soruları baştan sorar.
 | `APP_STORE_CONNECT_KEY_ID` | ✅ 9 Eylül 2026 |
 | `APP_STORE_CONNECT_KEY_P8` | ✅ 9 Eylül 2026 |
 | `APP_STORE_CONNECT_ISSUER_ID` | ✅ 9 Eylül 2026 (üçünün en son gireni — aşağı bkz.) |
-| **İlk koşu (doğrulama turu)** | ⬜ **BEKLİYOR** |
+| **İlk koşu (doğrulama turu)** | ⚠ **KOŞTU (9 Eylül 2026, `main` #604) — `match`te düştü**, aşağı bkz. |
+
+#### İlk koşunun sonucu — Apple tarafı ÇALIŞIYOR, git tarafı tıkalı
+
+**Kanıtlanan:** fastlane özetinde `app_store_connect_api_key` adımı
+**BAŞARILI**. Yani `.p8` + Key ID + Issuer ID üçlüsü doğru ve Apple onları
+kabul etti — günün asıl belirsizliği kapandı.
+
+**Düşen:** `match`in İLK işi, sertifika deposunu klonlamak:
+
+```
+remote: Write access to repository not granted.
+fatal: unable to access 'https://github.com/alpcapa/kelimeki-certificates.git/':
+       The requested URL returned error: 403
+```
+
+Yani sorun Apple'da değil, **`MATCH_GIT_TOKEN`'da**.
+
+✅ **KÖK SEBEP BULUNDU (9 Eylül 2026, token sayfasından okundu):** token
+(`kelimeki-match`) oluşturulmuş ama **kapsamı BOŞ kalmış** — sayfa iki
+yerde birden şunu diyordu:
+
+> *Repository access:* **"This token does not have access to any repositories."**
+> *Repository permissions:* **"This token does not have any repository permissions."**
+
+Fine-grained token'larda depo seçimi ve izinler AYRI AYRI seçilir; ikisi de
+boş bırakılırsa token hiçbir şeye erişemez ve git 403 verir. Düzeltme:
+*Access on \<hesap\>* → **Edit** → *Only select repositories* →
+`kelimeki-certificates`; *Repository permissions* → **Contents: Read and
+write** (`Metadata: Read-only` kendiliğinden eklenir).
+
+⚠ **"Regenerate token"a BASMA** — izin düzenlemek token DEĞERİNİ
+değiştirmez, yani `MATCH_GIT_TOKEN` secret'ına dokunmak gerekmez.
+Regenerate edilirse değer değişir ve secret da güncellenmek zorunda kalır.
+
+Aşağıdaki liste, kök sebep bulunmadan önce hangi üç şeye bakıldığının
+kaydı (bir dahaki sefere aynı sırayla bakılır):
+
+| Olasılık | Kontrol |
+|---|---|
+| Token'ın **depo seçimi** `kelimeki-certificates`i içermiyor | Fine-grained token → *Repository access* → o depo AÇIKÇA seçili mi (yalnızca `kelimeki` seçiliyse bu hatayı verir) |
+| İzin **Read-only** | *Permissions* → **Contents: Read and write** (match yazacak) |
+| Token süresi dolmuş / depo adı farklı | Token'ın expiry'si; depo adı birebir `kelimeki-certificates` mi |
+
+⚠ **Hata mesajı YANILTICI: 403 "write access" bir KLONLAMA sırasında
+çıkıyor.** Klonlamak okuma iznine yeter; GitHub, token'ın o depoya hiç
+erişimi olmadığında da (ve depo yokken de) bu mesajı üretiyor — yani
+"yazma iznini aç" ile "depoyu göremiyor" aynı hataya düşüyor. Bu yüzden
+kontrol listesi yalnızca izne değil, **depo seçimine ve adına** da bakıyor.
+
+#### İkinci koşu (#606) — dört adım daha ilerledi, anahtarlıkta düştü
+
+Token'ın kapsamı düzeltildikten sonra `match` şunları GEÇTİ:
+
+```
+Cloning remote git repo...                              ✅ token düzeltmesi tuttu
+Checking out branch master...                           ✅
+🔓 Successfully decrypted certificates repo             ✅ MATCH_PASSWORD doğru
+Creating authorization token for App Store Connect API  ✅ Apple kimliği yine tamam
+Couldn't find a valid code signing identity... creating one for you now
+[!] Could not locate the provided keychain. Tried: …/kelimeki-ci …
+```
+
+**Kök sebep:** iş akışı `MATCH_KEYCHAIN_NAME="kelimeki-ci"` diyordu ama o
+anahtarlığı **kimse oluşturmuyordu** — taze bir macOS runner'ında öyle bir
+keychain yok. `match` sertifikayı bir anahtarlığa kurmak zorunda ve orada
+düştü.
+
+⚠ **Hata GEÇ çıkıyor ve bu yanıltıcı:** git klonlama, şifre çözme ve Apple
+kimlik doğrulamasının ÜÇÜ DE geçtikten sonra patlıyor. Yani "match düştü"
+demek "kimlik bilgileri yanlış" demek değil; log'da hangi satıra kadar
+gelindiğine bakmak şart.
+
+**Düzeltme:** `Fastfile`'ın başına **`setup_ci`** — fastlane'in tam bu iş
+için yazdığı action: geçici anahtarlığı oluşturur, açar, varsayılan yapar,
+kilit zaman aşımını kaldırır ve `MATCH_KEYCHAIN_NAME`/`_PASSWORD`i kendisi
+ayarlar. İş akışındaki elle export'lar **kaldırıldı** — dursalardı
+setup_ci'nin anahtarlığını ezip aynı hatayı geri getirirlerdi.
+⚠ `MATCH_PASSWORD` AYRI bir şey (depo şifreleme parolası) ve duruyor.
+
+✅ **Adım sırası kararı DOĞRULANDI.** TestFlight adımı bilerek Appetize'dan
+SONRA konmuştu (*"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla
+rehin almamalı"*). Bu koşuda tam olarak öyle oldu: cihaz derlemesi,
+simülatör derlemesi, prerelease yüklemesi ve Appetize'ın dördü de GEÇTİ;
+yalnızca 10. adım düştü.
 
 **Kurulum tamam; kalan tek şey zincirin İLK KEZ koşması.** Tetikleme:
 `main`'e push `.github/workflows/mobile-build.yml` yolunu da kapsıyor, yani
