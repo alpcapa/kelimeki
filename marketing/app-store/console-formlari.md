@@ -701,9 +701,11 @@ manzara için ayrı bir düzen YOK** — web'deki `LandscapeHint` hiç port
 edilmemiş. Hiç bakılmamış bir yüzey; cihaz kontrol listesi
 `mobile/TESTING.md` §26'ya yazıldı.
 
-⚠ **iPad desteğini bırakmak seçenek DEĞİLDİ:** `TARGETED_DEVICE_FAMILY`yi
-`"1"`e çekmek kuralı da düşürürdü, ama mağaza vitrininde iPad 13" seti var
-(bugün üretildi) ve o da çöpe giderdi.
+⚠ **iPad desteğini bırakmak seçenek DEĞİL** — ve bu artık yalnızca mağaza
+vitrini gerekçesi değil, **kullanıcı kararı** (9 Eylül 2026, sözleri
+birebir): *"Ipad olmazsa olmaz. Bu oyunun en iyi oynandığı yer orası."*
+`TARGETED_DEVICE_FAMILY = "1,2"` kalıyor; manzara düzeni ROADMAP §25 olarak
+açıldı ve ölçümden sonra karara bağlanacak.
 
 ✅ **Adım sırası kararı DOĞRULANDI.** TestFlight adımı bilerek Appetize'dan
 SONRA konmuştu (*"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla
