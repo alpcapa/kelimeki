@@ -737,17 +737,47 @@ screenshots-iphone-6.9`, 1,6 MB. Seçilen cihaz `iPhone 17 Pro Max`.
 doğrularsa yeşile dönüyor, yani "kare üretildi" ile "kare KULLANILABİLİR"
 aynı koşuda ayrışıyor. Yanlış ölçüde bir PNG sessizce mağazaya gitmez.
 
-**iPad yarısı aynı koşuda düştü — ve kapı doğru çalıştı.** Sabit bir cihaz
+✅ **iPad yarısı da DOĞRULANDI — run #2:** iki iş de yeşil, artefaktlar
+`iphone-6.9` 1,6 MB + `ipad-13` 1,77 MB, ikisinin de ölçüm adımı geçti —
+yani `2064×2752` de tam tutuyor. **Boru hattının tamamı çalışıyor.**
+
+**iPad yarısı run #1'de düşmüştü — ve kapı doğru çalıştı.** Sabit bir cihaz
 adı yerine aday listesi kullanıldığı için hata *"device not found"* diye geç
 ve okunmaz değil, **40 saniyede** net bir mesajla ("aday simülatörlerin
 hiçbiri yok") ve mevcut simülatör dökümüyle geldi. Ölçüm: runner'da iPad
 **M4 değil M5** duruyor (`iPad Pro 13-inch (M5)`). Liste düzeltildi;
 Xcode sürümü ilerledikçe ad yine kayacağı için tek ad değil LİSTE tutuluyor.
 
+### Kompozisyon bulguları — 9 Eylül 2026, kare GÖZLE incelendi
+
+CI artefaktı indirmek kimlik doğrulaması istiyor (ajan indiremiyor), ama
+aynı ekran aynı tohumla YEREL olarak da çizdirildi — §13'ün başında elenen
+widget-testi yolu tam da bunun için *"iç doğrulama aracı olarak değerli"*
+diye saklanmıştı. Önizleme mağaza karesi DEĞİL (Skia ≠ Impeller, iOS kabuğu
+yok), ama kompozisyon sorularını cevaplıyor.
+
+**İyi olanlar:** taşma yok (`takeException()` null), fontlar gerçek çizildi,
+iki bölgenin dış hattı da net (oyuncu camgöbeği / YZ kırmızı), merkezdeki
+X2 filigranı ve sarı bonus bölgesi görünüyor, jokerin **kırmızı `0`**'ı
+tahtada okunuyor, mesaj satırı oyunu canlı gösteriyor (*"Yapay Zeka 'KEFE'
+oynadı. +22 puan."*), raf `KAOEMLE` ve "TORBA 43".
+
+**⬜ KARAR GEREKTİREN İKİ ŞEY:**
+
+1. **Karenin alt ~%20'si BOŞ.** Butonların altında geniş bir beyaz alan
+   kalıyor. Bu bir hata değil — uygulama uzun bir telefonda gerçekten böyle
+   görünüyor — ama mağaza karesinde ölü alan. Bu, §13'ün *"çerçeve/başlık
+   metni eklensin mi"* sorusunu somutlaştırıyor: **başlık metni için doğal
+   bir yer var.** Alternatif, kareyi olduğu gibi bırakmak (Apple ham kareyi
+   kabul ediyor).
+2. **Başlıkta `GİRİŞ` butonu görünüyor**, yani oturum açılmamış hâl. Play
+   turunun kuralı *"test hesabıyla çek"* diyordu. Ağa çıkmadan çözülebilir:
+   `AuthService.fake(user:, profile:)` sahte bir oturum kabul ediyor, yani
+   başlıkta `GİRİŞ` yerine avatar/kullanıcı adı çizdirilebilir — secret ya
+   da gerçek hesap gerekmeden. Karar: kare girişli mi görünsün, misafir mi?
+
 ### Kalan iş
 
-- **İlk koşunun doğrulanması** — kare gerçekten `1320×2868` / `2064×2752`
-  çıkıyor mu (iş akışının ölçüm adımı cevaplayacak)
 - **Kalan beş kare.** Bugün yalnızca 1. kare (oyun ekranı, oyunun ortası —
   listenin *en önemli* karesi) üretiliyor. 2-6 aynı desenle eklenecek;
   Kurulum/Skor Kartı gibi ekranlar depolama + sahte uç kurulumu istiyor
