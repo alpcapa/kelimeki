@@ -1253,11 +1253,13 @@ yaşandı ve özet tablo altı gün bayat kaldı.)
 | **24.3** APNs / push | ✅ Firebase (prod+dev) · `GoogleService-Info.plist` · `Runner.entitlements` · `AppDelegate` bildirim kanalı. ⚠ `aps-environment` değeri CI'da doğrulanamaz |
 | **24.4** Universal Links | ✅ web yarısı **CANLIDA ölçüldü** (`200` + `application/json`) · ✅ iOS yarısı yazıldı · ⚠ doğrulama TestFlight ister |
 | **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ⬜ **ekran görüntüleri** (simülatör yolu, kompozisyon açık) |
-| **24.6** Gönderim | ⬜ ⚠ **KAPI: DSA trader beyanı + doğrulaması** olmadan inceleme yok |
+| **24.6** Gönderim | ⬜ ⚠ **KAPI: DSA trader beyanı + doğrulaması** olmadan inceleme yok. Telefon ✅ (9 Eyl), kalan alan **adres** |
 
 **Sırayı tıkayan iki şey, ikisi de Apple/kullanıcı tarafında:** API
-anahtarının indirilememesi (24.2'yi doğrulayamıyoruz) ve trader beyanı
-(yedek telefon hattı bekleniyor).
+anahtarının indirilememesi (24.2'yi doğrulayamıyoruz — Support vakası
+açık, **9 Eylül 15:50 itibarıyla yanıt yok**) ve trader beyanı. ⚠ **9
+Eylül 2026: yedek telefon hattı HAZIR** — beyanın açık kalan tek alanı
+**adres** (üç aday ve gerekçeleri `console-formlari.md` §2'de).
 
 **Durum:** kullanıcı Apple Developer hesabını açtı. Bu, bugüne kadar altı
 ayrı yerde *"🔒 Apple Developer üyeliğine bloke"* diye kayıtlı olan işleri

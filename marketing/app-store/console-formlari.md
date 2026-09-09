@@ -26,7 +26,7 @@ karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
 | Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
 | Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
 | App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ⚠ üretildi ama `.p8` İNDİRİLEMEDİ (aşağı) |
-| DSA trader status | — | ⬜ **BEKLİYOR, gönderim kapısı** (aşağı) |
+| DSA trader status | Yedek hat ✅ **hazır** (9 Eylül 2026) | ⬜ **BEYAN YAPILMADI** — açık kalan tek alan **adres**; gönderim kapısı (§2) |
 
 **Paid Apps Agreement İMZALANMAYACAK.** `New` durumunda kalır; uygulama
 ücretsiz, uygulama içi satın alma yok. Console'un *"update your legal
@@ -67,10 +67,15 @@ bilinçli olarak **Cancel** edildi.
 
 Ama **bugünkü telefon numarasıyla değil.** Sıra şu:
 
-1. Yedek hat aktifleştirilecek (kullanıcı, 9 Eylül 2026'da deneyecek)
+1. ✅ **Yedek hat hazır** (kullanıcı bildirdi, 9 Eylül 2026) — beyanı
+   bekleten iki şeyden biri düştü
 2. Business → Agreements → Compliance → **"I'm a trader under the DSA"**
 3. Üç alan girilecek: **adres · telefon · e-posta**
 4. Apple doğrulayacak → AB dağıtımı açılacak
+
+⚠ **Kalan TEK açık alan: ADRES** (9 Eylül 2026). E-posta ve telefon
+hazır; beyan bu alan kararlaşmadan yapılamaz, çünkü form üçünü birden
+istiyor ve girilen bilgi ürün sayfasında **yayınlanıyor**.
 
 ### Neden kişisel numarayla başlanmadı
 
@@ -94,8 +99,26 @@ olmadan doğrulanamaz.
 | Alan | Değer | Not |
 |---|---|---|
 | E-posta | `destek@kelimeki.com` | **Bedava** — zaten sitede, Play listelemesinde ve uygulamada yazılı; yeni maruziyet yok |
-| Telefon | *yedek hat* | Aktifleştirilecek; kişisel numara KULLANILMAYACAK |
-| Adres | *belirlenecek* | Ev adresi zorunlu DEĞİL — bu alan üyelikteki adresten ayrı (*"won't impact the contact details for your Apple accounts or memberships"*). Posta kutusu / sanal ofis olur, ama Apple doğruladığı için gerçek olmalı |
+| Telefon | *yedek hat* | ✅ **hazır** (9 Eylül 2026); kişisel numara KULLANILMADI |
+| Adres | *belirlenecek* | ⬜ **AÇIK KALAN TEK ALAN.** Ev adresi zorunlu DEĞİL — bu alan üyelikteki adresten ayrı (*"won't impact the contact details for your Apple accounts or memberships"*). Posta kutusu / sanal ofis olur, ama Apple doğruladığı için gerçek olmalı |
+
+### Adres — üç aday (9 Eylül 2026, karar kullanıcıda)
+
+Telefonun gerekçesi burada BİREBİR geçerli: girilen adres ürün sayfasında
+herkese görünür ve **yayınlanan bilgi geri alınamaz**. Ama telefondan bir
+farkı var — Apple adresi doğruluyor, yani "gerçek ama bana ait olmayan" bir
+adres uydurulamaz.
+
+| Aday | Artı | Eksi |
+|---|---|---|
+| **Ev adresi** | Bedava, anında, doğrulaması kesin geçer | Kalıcı olarak açıkta; telefonda kaçınılan şeyin aynısı |
+| **PTT posta kutusu** | Ucuz, gerçek ve doğrulanabilir bir posta adresi | Kurulumu şubede; Apple'ın posta kutusu adresini kabul edip etmediği **ÖLÇÜLMEDİ** |
+| **Sanal ofis / işletme adresi** | Ticari amaç için tasarlanmış, kabul edilme olasılığı en yüksek | Aylık ücret; ücretsiz bir oyun için orantısız olabilir |
+
+⚠ **Hiçbiri bu depoda ölçülmedi** — Apple'ın hangi adres türünü doğrulamada
+kabul ettiği yalnızca denenerek görülür. Telefonun dersini tekrarlamamak
+için sıra şu olmalı: adres seçilir → beyan **bir kez** yapılır. Yarım
+bilgiyle beyan edip sonra düzeltmek doğrulamayı ikinci kez tetikler.
 
 ### ⚠ GÖNDERİM KAPISI
 
@@ -207,6 +230,29 @@ soran kalıpta; kendi bilgilerimizle dolduruldu — *User's Apple Account:*
 - ⚠ **Yeni anahtar üretilmeyecek.** Dört deneme yeterli kanıt; her deneme
   tabloyu karıştırır.
 - ⚠ **Mükerrer vaka açılmayacak.**
+
+### ⏳ DURUM — 9 Eylül 2026, 15:50 (UTC+3): **yanıt YOK**
+
+Vaka açılalı ~15,5 saat (Çarşamba, iş günü). **Anahtar `18QBEN3T2RY4`
+revoke EDİLMEDİ** — vakadaki söz tutuldu, destek ekibinin bakacağı canlı
+kayıt duruyor.
+
+**Karar: bekleniyor, kurcalanmıyor.** Gerekçe, yukarıdaki üç yasağın
+aynısı — ama artık bir de sayıya dayanıyor: dört başarısız indirme, iki
+ayrı uç. Beşinci deneme yeni bilgi üretmez, yalnızca destek ekibinin
+baktığı tabloyu bozar.
+
+**Eşik — 11 Eylül 2026 (Cuma) sonu.** O güne kadar yanıt gelmezse sıradaki
+adım yeni bir vaka DEĞİL, mevcut vakayı **telefon geri aramasına**
+yükseltmek: `developer.apple.com/contact` üzerinden arama talebi.
+*(Apple'ın kendi kanalı; bu depoda ÖLÇÜLMEDİ — yazılı vakanın tipik yanıt
+süresi de ölçülmedi, eşik tahmin değil bir karar noktası olarak konuldu.)*
+
+⚠ **Bu bekleyiş hiçbir işi durdurmuyor.** Tıkanan tek şey 24.2'nin
+DOĞRULANMASI (TestFlight'a ilk paket). 24.5'in ekran görüntüleri, trader
+beyanı, vitrin metinleri ve App Privacy bundan tamamen bağımsız yürüyor —
+"anahtar gelene kadar bekleyelim" demek, gelmediğinde hiçbir şeyin
+ilerlememiş olması demektir.
 
 **Cevap gelince:** anahtar indirilirse üç secret girilir
 (`APP_STORE_CONNECT_KEY_ID` · `_ISSUER_ID` · `_KEY_P8`) ve 24.2'nin iş
@@ -346,17 +392,21 @@ Kategori: **Games → Word** (Play'de de Games → Word).
 
 ---
 
-## 7. Henüz DOLDURULMAMIŞ — açık işler
+## 7. Açık işler — 9 Eylül 2026'da tazelendi
 
-- **Ekran görüntüleri.** ✅ **YOL BULUNDU ve ÖLÇÜLDÜ** (8 Eylül 2026) —
-  ayrıntı §13. Kalan iş üretim değil, KOMPOZİSYON (hangi ekranlar, çerçeve,
-  başlık metinleri).
-- **App Privacy.** Play'in Data safety'sinin eşi ve büyük ölçüde ondan
-  türer (`play-store/console-formlari.md` §3.8 — o bölüm "en dikkatli iş"
-  diye işaretli, eşleme oradan yapılacak).
-- **Açıklama / anahtar kelimeler / promosyon metni.**
-  `marketing/play-store/metin.md` başlangıç noktası, ama App Store'un alan
-  sınırları farklı.
+⚠ **Bu bölüm 8 Eylül'de yazıldığı hâliyle BAYATLAMIŞTI:** "App Privacy" ve
+"açıklama/anahtar kelimeler" hâlâ açık iş diye duruyordu, oysa ikisi de aynı
+gün §10 ve §9'a YAZILMIŞTI. Dosyanın kendi kuralı ("kaynak burası") tam da
+bu yüzden var — özet liste, kaynağın kendi içinde bile bayatlayabiliyor.
+
+| Açık iş | Kimde | Notu |
+|---|---|---|
+| **Ekran görüntüleri** | Ben | Yol bulundu ve ölçüldü (§13); kalan iş üretim hattı + kompozisyon |
+| **Trader adresi** | Sen | Beyanın açık kalan TEK alanı (§2). Gönderim kapısı |
+| **API anahtarı `.p8`** | Apple | Support vakası açık (§3); yalnızca 24.2'yi tıkıyor |
+
+**Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
+§5 · demo hesap → §11 · Export Compliance → §12.
 
 ---
 
@@ -494,10 +544,20 @@ yapamadık"* diye reddedilir — yaygın bir ret sebebi.
 ⚠ **Hesap KALICI olmalı ve şifresi DEĞİŞMEMELİ** — her güncelleme
 incelemesinde yeniden kullanılıyor.
 
-⚠ **Karar verilmedi:** Play'in test hesapları (`T2`, `Ironman`) var ve ikisi
-de `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK İKİ HESAP"
-kaydında. Apple için bunlardan biri mi kullanılacak, ayrı bir hesap mı
-açılacak — **kullanıcı kararı bekliyor.**
+✅ **KARAR: `T2` (`kelimekitest2`)** — Play'in incelemesine verilen hesabın
+aynısı, 24 Ağustos 2026'da seçilmişti ve App Store için de o geçerli
+(ROADMAP 24.5 böyle kayıtlı). ⚠ Bu satır 8 Eylül'de *"karar verilmedi"*
+diyordu; ROADMAP güncellenirken burası unutulmuştu — **9 Eylül 2026'da
+düzeltildi.**
+
+**Neden `T1` DEĞİL:** e-postası geliştiricinin kişisel adresi (aynı gerekçe
+ekran görüntüsü çekim kurallarında da geçerli). `T2`'nin durumu üretim
+veritabanından ölçülmüştü: doğrulanmış, dondurulmamış, 3 arkadaş, 1 aktif
+Canlı oyun, 11 bitmiş oyun — yani incelemecinin göreceği dört ekran da boş
+değil.
+
+⚠ İki hesap da `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK
+İKİ HESAP" kaydında; şifresinin değişmemesi kuralı oradan da bağlayıcı.
 
 ⚠ **Not alanına şunu yazmak faydalı:** uygulamanın hesapsız da (yapay zekaya
 karşı) oynanabildiği, girişin yalnızca Canlı oyun/k-lig için gerektiği.
@@ -507,17 +567,23 @@ karşı) oynanabildiği, girişin yalnızca Canlı oyun/k-lig için gerektiği.
 
 ## 12. Export Compliance — `Info.plist`'e YAZILMALI
 
-**Bugünkü durum: `ITSAppUsesNonExemptEncryption` `Info.plist`'te YOK**
-(8 Eylül 2026'da ölçüldü). Sonuç: TestFlight'a yüklenen **her** derlemede
-Apple şifreleme sorusunu tekrar sorar ve cevap verilene kadar paket
-dağıtılamaz.
+✅ **YAPILDI** — `ios/Runner/Info.plist` → `ITSAppUsesNonExemptEncryption`
+= `<false/>`. **#490 ile girdi**, yani bu bölüm yazıldığı ANDAN itibaren
+bayattı: aynı PR hem anahtarı plist'e koydu hem burada *"YOK, kullanıcı
+onayı olmadan eklenmedi"* yazdı. **9 Eylül 2026'da depodan yeniden ölçülüp
+düzeltildi** (`Info.plist:54`).
 
-**Doğru cevap `false`:** Kelimeki yalnızca standart HTTPS/TLS kullanıyor
+**Cevap neden `false`:** Kelimeki yalnızca standart HTTPS/TLS kullanıyor
 (Supabase, Firebase, Brevo uçlarının tamamı) — kendi şifreleme algoritması
-yok. Bu, Apple'ın muafiyet kapsamına giriyor.
+yok, Apple'ın muafiyet kapsamına giriyor.
 
-⚠ **Bu bir BEYAN, kod tercihi değil** — `Info.plist`'e yazmak Apple'a
-verilen resmî cevabı sabitler. Kullanıcı onayı olmadan eklenmedi.
+**Kazancı:** anahtar plist'te olduğu için TestFlight'a yüklenen her
+derlemede Apple şifreleme sorusunu TEKRAR SORMAZ; cevap pakete gömülü
+gelir ve dağıtım beklemez.
+
+⚠ **Bu bir BEYAN, kod tercihi değil.** Bir gün uygulamaya standart TLS
+dışında şifreleme girerse (kendi algoritması, özel anahtar saklama)
+bu satır YENİDEN değerlendirilmeli — yanlış beyan bir uyum ihlalidir.
 
 
 ---
