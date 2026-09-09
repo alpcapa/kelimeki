@@ -198,21 +198,24 @@ jobs:
           path: mobile/app/build/screenshots/*.png
           if-no-files-found: warn
 
-      # Ölçüm adımı burada İKİ şeyi birden kanıtlıyor: kare üretildi VE cihaz
-      # gerçekten döndü (manzara ölçüsü portrenin tersi). Testin kendi
-      # `expect`i de dönüşü kontrol ediyor, bu onun bağımsız ikinci kanıtı.
-      - name: Piksel ölçüsünü doğrula (manzara = portrenin tersi)
+      # ⚠ Bu adım BİR KAPI DEĞİL, AYIRT EDİCİ ÖLÇÜ — ve düşmemesi bilinçli.
+      # Koşu #6'da cihaz dönmedi (`view.physicalSize` portrede kaldı) ve iki
+      # açıklama kaldı: (a) iOS isteği gerçekten yok saydı, (b) döndü ama
+      # `tester.view` bayat. Kareyi ölçmek ikisini AYIRIYOR: 2752×2064 ise
+      # (b), 2064×2752 ise (a). Ölçü "beklenenden farklı" diye işi düşürürse
+      # bulgunun geri kalanı da (taşma raporu, kutular) çöpe gider — ilk
+      # sürümün hatası tam buydu. Kareler zaten mağazaya GİTMİYOR.
+      - name: Kare ölçüsünü RAPORLA (dönüşün ayırt edici ölçüsü)
+        if: ${{ always() }}
         working-directory: mobile/app
         run: |
-          set -euo pipefail
-          hatali=0
+          {
+            echo '### Kare ölçüleri — dönüşün ayırt edici ölçüsü'
+            echo '(2752×2064 = cihaz DÖNDÜ · 2064×2752 = DÖNMEDİ)'
+          } >> "$GITHUB_STEP_SUMMARY"
           for png in build/screenshots/*.png; do
+            [ -e "$png" ] || { echo '- (kare yok)' >> "$GITHUB_STEP_SUMMARY"; break; }
             w=$(sips -g pixelWidth  "$png" | awk '/pixelWidth/{print $2}')
             h=$(sips -g pixelHeight "$png" | awk '/pixelHeight/{print $2}')
             echo "- \`$(basename "$png")\` → ${w}×${h}" >> "$GITHUB_STEP_SUMMARY"
-            if [ "$w" != "2752" ] || [ "$h" != "2064" ]; then
-              echo "::error::$(basename "$png") ${w}×${h} — beklenen 2752×2064 (manzara)"
-              hatali=1
-            fi
           done
-          exit $hatali

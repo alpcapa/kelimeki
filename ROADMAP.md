@@ -1284,6 +1284,23 @@ web'in `LandscapeHint` bileşeninin karşılığı hiç port edilmedi, manzaraya
      turunun ilk adımında kendi bulgusuyla düşerdi. Yalnızca ALTYAPI
      arızasında düşer: cihaz dönmediyse ya da kare manzara ölçüsünde
      (2752×2064) çıkmadıysa.
+   ⚠ **KOŞU #6'NIN BULGUSU (9 Eylül 2026): cihaz DÖNMEDİ.**
+     `SystemChrome.setPreferredOrientations([landscapeLeft, landscapeRight])`
+     istendi, `view.physicalSize` altı testin altısında da portrede
+     (`2064×2752`) kaldı. Bu, §25'in kendi notunun TERS yönü: not zaten
+     *"çoklu göreve açık bir iPad uygulamasında iOS `portraitUp` kilidini
+     yok sayıyor"* diyordu — kural iki yönlüyse ekranı döndürebilen tek
+     şey CİHAZIN fiziksel yönelimi demektir ve simülatörde bunun CLI
+     karşılığı YOK. ⚠ Ama bu HENÜZ KANITLANMADI: ikinci bir açıklama var
+     (dönüş oldu, `tester.view` bayat gösterdi). Ayırt edici ölçü KARE —
+     dönüş olduysa PNG 2752×2064, olmadıysa 2064×2752 çıkar; iş buna göre
+     yeniden kuruldu (dönüş artık RAPORLANIYOR, zorunlu değil) ve sonuç
+     bir sonraki koşuda okunacak.
+     ⚠ **Ölçüm turunun kendi dersi:** ilk sürüm dönüşü bir `expect` ile
+     zorunlu kılmıştı ve altı test de o satırda düştü — yani "beklediğim
+     olmadı" bulgusu, bulgunun GERİ KALANINI (kareler, taşma raporu,
+     kutular) da beraberinde götürdü. Bir ölçü aletinin düşme koşulu,
+     ölçtüğü şey OLMAYABİLİR diye kurulmaz.
    - **Cihazda — hâlâ SENDE.** `mobile/TESTING.md` §26. Simülatörün
      gösteremediği üç şey var: gerçek Split View/Slide Over jesti, dönüş
      ANINDAKİ his (animasyon, sıçrama) ve klavye açıkken daralan modal.
