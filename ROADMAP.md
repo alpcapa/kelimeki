@@ -1250,22 +1250,28 @@ yaşandı ve özet tablo altı gün bayat kaldı.)
 
 | Faz | Durum |
 |---|---|
-| **24.1** Hesap & kimlik | ✅ üyelik aktif · Team ID `8277D85FY9` · App ID + capability'ler · APNs anahtarı `RL4JLXL389` · uygulama kaydı · Free Apps Agreement · **DSA trader ✅ (9 Eyl)** · ⬜ **API anahtarı İNDİRİLEMEDİ** (Apple arızası — kalan TEK engel) |
+| **24.1** Hesap & kimlik | ✅ üyelik aktif · Team ID `8277D85FY9` · App ID + capability'ler · APNs anahtarı `RL4JLXL389` · uygulama kaydı · Free Apps Agreement · **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) · ⬜ **API anahtarı İNDİRİLEMEDİ** (Apple arızası) |
 | **24.2** Mac'siz imzalama + TestFlight | ⚠ **YAZILDI, HİÇ KOŞMADI** — `fastlane/` + `Gemfile` + `mobile-build.yml`'in TestFlight adımı. Secret yoksa kendini atlıyor. İlk koşu bir DOĞRULAMA turu |
 | **24.3** APNs / push | ✅ Firebase (prod+dev) · `GoogleService-Info.plist` · `Runner.entitlements` · `AppDelegate` bildirim kanalı. ⚠ `aps-environment` değeri CI'da doğrulanamaz |
 | **24.4** Universal Links | ✅ web yarısı **CANLIDA ölçüldü** (`200` + `application/json`) · ✅ iOS yarısı yazıldı · ⚠ doğrulama TestFlight ister |
 | **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ✅ **ekran görüntüsü boru hattı ÇALIŞIYOR** — 9 Eyl, run #1 ile CI'da DOĞRULANDI: iPhone 6.9" karesi **tam 1320×2868**, artefakt 1,6 MB. iPad yarısı da run #2'de DOĞRULANDI (`2064×2752`) · ⬜ bugün **2/6 kare** (girişli hâl ✅ çözüldü; açık kalan tek kompozisyon sorusu alt %20 boş alan) |
-| **24.6** Gönderim | ⬜ ✅ **DSA trader kapısı KAPANDI** (9 Eyl: beyan + doğrulama tamam). Kalan: paket (24.2, Apple'a bağlı) + ekran görüntüleri (24.5) |
+| **24.6** Gönderim | ⬜ ⏳ **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) — kapı hâlâ açık. Kalan: doğrulama + paket (24.2) + ekran görüntüleri (24.5) |
 
-✅ **TRADER KAPISI KAPANDI (9 Eylül 2026):** beyan yapıldı ve Apple'ın
-doğrulaması bitti. Gönderimin önündeki en sert engel buydu.
+⏳ **TRADER: beyan ✅, doğrulama SÜRÜYOR (9 Eylül 2026).** Console'un
+Compliance tablosu `Digital Services Act · 27 ülke · In Review` diyor —
+yani gönderim kapısı HÂLÂ AÇIK. ⚠ Bu satır bir kez *"kapandı"* diye
+yazıldı ve aynı gün düzeltildi: sözlü bildirim değil, **Console'un kendi
+STATUS alanı** kanıttır (gerekçe `console-formlari.md` §2).
 
-**Sırayı tıkayan TEK şey kaldı ve o Apple'da:** App Store Connect API
-anahtarının indirilememesi (Support vakası açık, 9 Eylül 15:50 itibarıyla
-yanıt yok). Bu 24.2'yi — yani imzalı paketin TestFlight'a çıkmasını —
-tıkıyor, ve gönderim bir paket olmadan yapılamadığı için artık **kritik
-yolun tamamı ona bağlı**. Bizde kalan iş yalnızca 24.5'in kalan beş
-karesi.
+**Sırayı tıkayan iki şey, ikisi de bizim DIŞIMIZDA:**
+1. **API anahtarı** — indirilemiyor (Support vakası açık, 9 Eylül 15:50
+   itibarıyla yanıt yok). 24.2'yi, yani imzalı paketin TestFlight'a
+   çıkmasını tıkıyor; gönderim bir paket olmadan yapılamadığı için kritik
+   yol buna bağlı.
+2. **DSA doğrulaması** — Apple inceliyor; bitmeden inceleme talebi
+   gönderilemez.
+
+Bizde kalan iş yalnızca 24.5'in kalan dört karesi.
 
 **Durum:** kullanıcı Apple Developer hesabını açtı. Bu, bugüne kadar altı
 ayrı yerde *"🔒 Apple Developer üyeliğine bloke"* diye kayıtlı olan işleri

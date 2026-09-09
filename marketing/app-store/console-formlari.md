@@ -26,7 +26,7 @@ karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
 | Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
 | Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
 | App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ⚠ üretildi ama `.p8` İNDİRİLEMEDİ (aşağı) |
-| DSA trader status | Beyan + **doğrulama** | ✅ **TAMAM (9 Eylül 2026)** — gönderim kapısı KAPANDI (§2) |
+| DSA trader status | Beyan ✅ (9 Eylül 2026) · doğrulama ⏳ | ⚠ **`In Review`** — Apple doğruluyor, gönderim kapısı HÂLÂ AÇIK (§2) |
 
 **Paid Apps Agreement İMZALANMAYACAK.** `New` durumunda kalır; uygulama
 ücretsiz, uygulama içi satın alma yok. Console'un *"update your legal
@@ -58,15 +58,22 @@ numara/cihaz da kalıcı olmalı.
 
 ---
 
-## 2. DSA trader status — ✅ **TAMAMLANDI (9 Eylül 2026)**
+## 2. DSA trader status — **BEYAN YAPILDI, DOĞRULAMA SÜRÜYOR**
 
-**Beyan yapıldı ve Apple'ın DOĞRULAMASI da bitti** (kullanıcı bildirdi,
-9 Eylül 2026). **Gönderim kapısı kapandı** — 24.6'nın önündeki en sert
-engel buydu ve artık yok.
+**Durum (9 Eylül 2026, Console'dan OKUNDU):**
+Business → Agreements → **Compliance** → `Digital Services Act` ·
+27 Countries or Regions · Last Updated `Sep 9, 2026` · Status **`In Review`**.
 
-⚠ **İki adım AYRI ve ikisi de bitti sayılmalı:** beyanı yapmak yetmiyor,
-Apple ayrıca doğruluyor; bu tur ikisini de aynı gün kapattı. Bir sonraki
-okuyucu için: bu satır *"beyan edildi"* değil *"doğrulandı"* diyor.
+Yani **beyan tamamlandı, Apple doğruluyor.** ⏳ **Gönderim kapısı HÂLÂ
+AÇIK** — kapanması Apple'ın incelemeyi bitirmesine bağlı ve o bizde değil.
+
+⚠ **İKİ ADIM AYRI, ve bu satır bir kez YANLIŞ yazıldı (aynı gün
+düzeltildi).** Beyanı yapmak yetmiyor; Apple ayrıca doğruluyor.
+Kayıt önce *"ikisi de bitti"* diye yazılmıştı — kullanıcının sözlü
+bildirimine dayanarak. **Console'un kendi STATUS alanı `In Review`
+diyordu.** Ders, deponun `curl`la sha okuma refleksinin aynısı, başka bir
+yüzeyde: **bir kapının kapandığını söyleyen tek kanıt, o kapının kendi
+durum alanıdır** — sözlü bildirim değil, ekran görüntüsündeki satır.
 
 **Aşağısı SÜREÇ KAYDIDIR** — neden bir gün beklendiği, hangi bilginin neden
 seçildiği. Karar geriye dönük tartışılmıyor; ileride *"bu bilgi neden
@@ -156,11 +163,16 @@ sayfanın altındaki **`Compliance`** bölümünde:
 *Compliance → Complete Compliance Requirements → "I'm a trader under the
 DSA"* → adres · telefon · e-posta.
 
-### ✅ GÖNDERİM KAPISI — KAPANDI
+### ⏳ GÖNDERİM KAPISI — HÂLÂ AÇIK
 
-Kural şuydu: *"Trader beyanı + doğrulaması tamamlanmadan uygulama incelemeye
-gönderilemez."* 9 Eylül 2026'da ikisi de tamamlandı, yani bu madde artık
-gönderim öncesi kontrol listesinden DÜŞTÜ.
+Kural: **"Trader beyanı + DOĞRULAMASI tamamlanmadan uygulama incelemeye
+gönderilemez."** 9 Eylül 2026 itibarıyla beyan ✅, doğrulama `In Review`.
+Yani madde gönderim öncesi kontrol listesinde DURUYOR.
+
+**Ne zaman düşer:** Compliance tablosundaki `Digital Services Act`
+satırının STATUS'ü `In Review` olmaktan çıkınca. Kontrol yeri sabit:
+Business → Agreements → Compliance. *(Apple'ın inceleme süresi bu depoda
+ÖLÇÜLMEDİ.)*
 
 ### ⚠ Play tarafı aynı beyanı BEKLİYOR — ve artık bir referans var
 
@@ -169,9 +181,11 @@ olduğu için henüz tetiklenmemiş olabilir; **üretime çıkınca gelecek.**
 Depoda Play tarafında trader beyanı kaydı **yok**.
 
 **İki mağazada AYNI bilgi beyan edilmeli** — farklı bilgi vermek açıklaması
-zor bir tutarsızlık. Apple tarafı 9 Eylül 2026'da doldurulup doğrulandığına
-göre **kanonik üçlü artık orada**: Play'in formu geldiğinde bilgi yeniden
-karar verilmez, App Store Connect'ten okunup birebir kopyalanır.
+zor bir tutarsızlık. Apple tarafı 9 Eylül 2026'da dolduruldu, yani
+**kanonik üçlü artık orada**: Play'in formu geldiğinde bilgi yeniden karar
+verilmez, App Store Connect'ten okunup birebir kopyalanır. (Apple'ın
+doğrulaması sürerken de bu geçerli — kopyalanacak olan GİRİLEN bilgi,
+doğrulamanın sonucu değil.)
 
 ### Kaynaklar
 
