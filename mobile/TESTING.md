@@ -531,6 +531,16 @@ buradakiler ekranın gerçek bir oyundaki hâli.
       butonun hiç zemin vurgusu yok, yalnızca basınca hafif küçülüyor —
       portta dairesel bir vurgu OLMASI bilinçli bir fark, kare köşe ise
       hata.
+- [ ] **`OYUNU BAŞLAT` ekranın altına YAPIŞIK (10 Eylül 2026).** Setup'ta
+      yeni oyun formundayken buton, içerik ne kadar uzun olursa olsun
+      **kaydırmadan** görünmeli ve sayfa kaydırılırken yerinde kalmalı;
+      girişli kullanıcının "+ Yeni" formunda yanında `VAZGEÇ` de olmalı.
+      Sona kadar kaydırınca "Neden Ücretsiz Üye Olmalıyım?" kutusunun altı
+      çubuğun ARKASINDA kalmamalı. ⚠ Çubuk yalnızca form görünürken çıkar:
+      "Arkadaşınla" sekmesinde, "Devam Eden Oyun(lar)" görünümünde ve girişli
+      kullanıcının liste görünümünde OLMAMALI. *(Otomatik kapı 375/393 pt ×
+      1,0/1,3'ü ölçüyor; cihazda bakılacak şey Display Zoom açıkken de aynı
+      davranması.)*
 - [ ] **Misafir üyelik kutusu.** Setup ekranını misafir (girişsiz) olarak
       aç — hem boş kurulum formunun altında hem (bir oyun yarıda bırakılıp
       "Devam Eden Oyun" görünümüne düşünce) o görünümün altında "Neden

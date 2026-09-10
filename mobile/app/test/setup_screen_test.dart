@@ -131,6 +131,47 @@ void main() {
         .where((w) => w.isNotEmpty));
   });
 
+  // 10 Eylül 2026, kullanıcı iPhone'da (TestFlight) bildirdi: *"setup
+  // tarafında oyna butonu ekran dışında kalıyor"*. ÖLÇÜLDÜ (gerçek güvenli
+  // alan paylarıyla — üst 59, alt 34): 375 pt genişlikte VARSAYILAN yazı
+  // boyutunda bile buton 769–786'ya düşüyordu, görünür alt sınır 778; 393
+  // pt'de ×1,0 kurtuluyor ama ×1,3'te ikisi de düşüyordu. 375 pt gerçek bir
+  // hedef: iPhone SE/mini ve Display Zoom açık HER iPhone.
+  //
+  // Çözüm buton satırını kaydırılan gövdeden çıkarıp ekranın altına
+  // yapıştırmak oldu; bu test onu KAYDIRMADAN, ilk karede ölçüyor.
+  for (final (genislik, yukseklik, olcek) in const [
+    (375.0, 812.0, 1.0),
+    (375.0, 812.0, kMaxTextScale),
+    (393.0, 852.0, kMaxTextScale),
+  ]) {
+    testWidgets(
+        'OYUNU BAŞLAT ilk karede GÖRÜNÜR — ${genislik.toInt()} pt @$olcek '
+        '(yapışık çubuk)', (tester) async {
+      const guvenli = EdgeInsets.only(top: 59, bottom: 34);
+      await setPhoneViewSize(tester, Size(genislik, yukseklik));
+      await tester.pumpWidget(MaterialApp(
+        theme: kelimekiTheme(),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(olcek),
+            padding: guvenli,
+            viewPadding: guvenli,
+          ),
+          child: child!,
+        ),
+        home: SetupScreen(services: services()),
+      ));
+      await tester.pumpAndSettle();
+
+      final r = tester.getRect(find.text('OYUNU BAŞLAT'));
+      expect(r.bottom, lessThanOrEqualTo(yukseklik - guvenli.bottom),
+          reason: 'buton alt gösterge payının üstünde kalmalı: '
+              '${r.bottom} > ${yukseklik - guvenli.bottom}');
+      expect(r.top, greaterThan(0));
+    });
+  }
+
   testWidgets('form: 2/4 seçimi kadroyu değiştirir, ekran görüntüsü',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
@@ -384,13 +425,23 @@ void main() {
     // kanıt (aradakiler aynı listeden geliyor, tek tek tekrar etmeye gerek yok).
     expect(find.text('Arkadaşlarınla çoklu canlı oyun oynama'), findsOneWidget);
     expect(find.text('Arkadaş ekleyip listende tutma'), findsOneWidget);
-    // Kutu, üstündeki OYUNU BAŞLAT butonuna yapışık durmamalı — web'in dıştaki
-    // flex kapsayıcısının (`gap-5`) verdiği 20px boşluğu karşılayan SizedBox
-    // eskiden bu tek geçişte eksikti (kullanıcı web derlemesinde bizzat buldu).
-    final buttonBottom = tester.getBottomLeft(find.text('OYUNU BAŞLAT')).dy;
-    final boxTop =
-        tester.getTopLeft(find.text('Neden Ücretsiz Üye Olmalıyım?')).dy;
-    expect(boxTop - buttonBottom, greaterThan(15));
+    // ⚠ BU İDDİA 10 EYLÜL 2026'DA DEĞİŞTİ. Eskiden ölçtüğü şey "kutu
+    // üstündeki OYUNU BAŞLAT'a yapışık durmasın" (web'in `gap-5`i, bir
+    // dönem eksikti). Buton artık ekranın altına YAPIŞIK, yani kutu onun
+    // ÜSTÜNDE ve iki öğe arasındaki mesafe kaydırma konumuna göre değişiyor
+    // — o karşılaştırma anlamını yitirdi. Yerine yapışık çubuğun getirdiği
+    // YENİ değişmez ölçülüyor: **çubuk, kaydırılan içeriğin sonunu kalıcı
+    // olarak gizlememeli.** Sona kadar kaydırıldığında kutunun tamamı
+    // çubuğun üstünde kalmalı.
+    await tester.scrollUntilVisible(
+        find.text('Arkadaş ekleyip listende tutma'), 200);
+    await tester.pumpAndSettle();
+    final cubukUst = tester.getTopLeft(find.byKey(const Key('baslat-cubugu'))).dy;
+    final kutuAlt =
+        tester.getBottomLeft(find.text('Arkadaş ekleyip listende tutma')).dy;
+    expect(kutuAlt, lessThan(cubukUst),
+        reason: 'yapışık çubuk içeriğin sonunu gizlememeli: '
+            'kutu altı $kutuAlt, çubuk üstü $cubukUst');
 
     // Zorluk açıklaması her seviyede göründüğünden (6 Eylül 2026) kutu 900
     // px'lik ekranın altına taşıyor; görünmeyen düğmeye dokunuş ulaşmaz.

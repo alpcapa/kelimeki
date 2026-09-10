@@ -242,7 +242,10 @@ satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
 | Bu PR (arşiv §25) | iPad düzen kapısı — `test/ipad_layout_test.dart` (YENİ, 9 test) | Yalnızca bir TEST dosyası. ⚠ **Sıradaki sürüme HİÇBİR ŞEY taşımıyor** — `test/` mağazaya giden ikiliye girmez ve uygulama kodu değişmedi (§25'in kararı zaten *"düzen değişmiyor"*). Tabloda olmasının sebebi #497'nin aynısı: `mobile/app/` altına dokunmuş olması. ⚠ Aynı PR'da denenen `integration_test` yolu GERİ ALINDI (simülatör döndürülemiyor — `UISceneErrorDomain 101`), `store_screenshots_test.dart` bayt bayt eski hâlinde |
 | Bu PR (10 Eyl) | "Kalan Taşlar" penceresi `myIndex` -1'de ÇÖKÜYORDU | ⚠ **SÜRÜME BİNİYOR:** `ui/game/remaining_tiles_modal.dart` — `players[-1]` Dart'ta RangeError atıyor, web'de aynı satır `?.rack ?? []` olduğu için hata YALNIZCA porttaydı. Canlı ekranın `_mySlot`'u koltuk bulamazsa -1 döner (o ekran altı yerde eliyor, modal elemiyordu). Regresyon: `game_screen_test.dart` → *"myIndex -1 iken ÇÖKMEZ"*, duyarlılığı düzeltme geri alınarak kanıtlandı. ⚠ Kullanıcının bildirdiği "elimdeki taş torbada görünüyor" şikâyeti BU DEĞİL — o ayrıca araştırıldı ve üretilemedi (kayıt: `docs/decisions/components-account.md`) |
 | #501 (FAZ C 24.2) | iPad yönelimleri — Apple'ın 90474 reddi | ⚠ **BU SATIR SÜRÜME GERÇEKTEN BİNİYOR:** `ios/Runner/Info.plist` → `UISupportedInterfaceOrientations~ipad` dörde çıktı, yani **uygulama iPad'de döndürülebilir hâle geliyor** ve portta manzara düzeni YOK. Android'i ETKİLEMEZ (dosya `ios/` altında). Cihaz kontrolü: `mobile/TESTING.md` §26 |
-| Bu PR (10 Eyl, kozmetik) | Arkadaşlar modalı "davet" diline geçti: sekmeler "Arkadaşlarım" → **Arkadaşlar**, "İstekler" → **Davetler**; sekmenin İÇİ de (buton etiketleri, onay diyaloğu başlıkları/metinleri, sonuç mesajları) *istek* → *davet* | ⚠ **SÜRÜME BİNİYOR:** `ui/friends/friends_modal.dart` **ve** `ui/score/player_score_card_modal.dart` — kartın ilişki simgesi aynı diyalogları açtığından ikisi birlikte çevrildi (kullanıcı isteği, 10 Eylül 2026). Metinler web ile BİREBİR. Yalnızca GÖRÜNEN METİN: sekme kimlikleri (`FriendsTab.requests`), RPC adları ve veri dili değişmedi; e-posta/push metinleri (Edge Function) bilerek kapsam dışı. `test/friends_test.dart` etiketi büyük harfle arıyor (`DAVETLER`) ve sonuç mesajlarını metinle eşliyor |
+| #512 (10 Eyl, kozmetik) | Arkadaşlar modalı "davet" diline geçti: sekmeler "Arkadaşlarım" → **Arkadaşlar**, "İstekler" → **Davetler**; sekmenin İÇİ de (buton etiketleri, onay diyaloğu başlıkları/metinleri, sonuç mesajları) *istek* → *davet* | ⚠ **SÜRÜME BİNİYOR:** `ui/friends/friends_modal.dart` **ve** `ui/score/player_score_card_modal.dart` — kartın ilişki simgesi aynı diyalogları açtığından ikisi birlikte çevrildi (kullanıcı isteği, 10 Eylül 2026). Metinler web ile BİREBİR. Yalnızca GÖRÜNEN METİN: sekme kimlikleri (`FriendsTab.requests`), RPC adları ve veri dili değişmedi; e-posta/push metinleri (Edge Function) bilerek kapsam dışı. `test/friends_test.dart` etiketi büyük harfle arıyor (`DAVETLER`) ve sonuç mesajlarını metinle eşliyor |
+| Bu PR (10 Eyl gece) | Hiç oynanmamış YZ oyunu artık portta da HİÇ kalıcılaştırılmıyor (`turnCount<2` kapısı autosave'in ÖNÜNE geçti) | ⚠ **SÜRÜME BİNİYOR:** `data/cloud_save_repo.dart` + `game/local_game_repo.dart`. İlk TestFlight turunda cihazda görüldü: hamle yapılmamış oyun "Devam Eden Oyunlar"da belirip kayboluyordu. Web bu kapıyı 31 Ağustos 2026'da koymuştu, port ikizi o gün güncellenmemişti — `end()`teki eşik yalnızca TEMİZ çıkışı kapsıyor, iOS uygulamayı öldürünce satır bulutta (yani web dahil her cihazda) hayalet kalıyordu. Sekiz test eski davranışı kodluyordu, üçü yeni sözleşmeye çevrildi; `dart analyze` temiz, **830 test yeşil**. Kayıt: `docs/decisions/local-game-persistence.md` + Parça 197 |
+| Bu PR (10 Eyl gece) | Tanıtım 1. slayt: X2/X3 rozetleri dar ekranda SARMIYOR, sığdırılıyor | ⚠ **SÜRÜME BİNİYOR:** `ui/intro/intro_screen.dart` — iPhone'da bildirildi. Ölçüldü (gerçek fontlar): **375 pt genişlikte varsayılan yazı boyutunda bile** sarıyordu (390/393 pt sarmıyor; 393 pt ×1,15'te sarıyor). 375 pt gerçek bir hedef: iPhone SE/mini + Display Zoom açık her iPhone. Sarma taşma üretmediğinden hiçbir test görmemişti — `intro_screen_test` artık 375 pt ve ×1,3 de ölçüyor |
+| Bu PR (10 Eyl gece) | Setup'ın `OYUNU BAŞLAT`/`VAZGEÇ` satırı ekranın altına YAPIŞIK + **sürüm 1.1.0** | ⚠ **SÜRÜME BİNİYOR:** `ui/setup/setup_screen.dart` (+ `config/env.dart` · `pubspec.yaml`). Ölçüldü (gerçek güvenli alan payı): 375 pt ×1,0'da buton 769–786, görünür sınır 778 → **varsayılan ayarlarla kesik**; 393 pt ×1,3'te de kesik. Kullanıcı kararı: eşik oyunu değil, sınıfı kapatan çözüm. Kapı: `setup_screen_test` üç bileşimi ilk karede ölçüyor |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
@@ -1276,19 +1279,20 @@ yani gönderim kapısı HÂLÂ AÇIK. ⚠ Bu satır bir kez *"kapandı"* diye
 yazıldı ve aynı gün düzeltildi: sözlü bildirim değil, **Console'un kendi
 STATUS alanı** kanıttır (gerekçe `console-formlari.md` §2).
 
-**Sırayı tıkayan şeyler (10 Eylül 2026'da tazelendi — 1. madde TAMAMEN
-düştü, yerine cihaz turunun kapısı geldi):**
-0. ⬜ **TestFlight iç test grubu YOK — cihaz turunun TEK kapısı.**
-   `1.0.9 (616)` App Store Connect'te *"Ready to Submit"* duruyor ama
-   `INTERNAL TESTING` altında hiç grup olmadığından **hiçbir cihaza
-   gitmiyor** (10 Eylül 2026, kullanıcının ekran görüntüsü:
-   INVITES/INSTALLS/SESSIONS üç sütun da `–`). Bu tek adım 24.3'ün
-   (`aps-environment`), 24.4'ün (Universal Links iOS yarısı) ve
-   `mobile/TESTING.md` §26'nın (iPad manzarası) ⚠'larını birden açıyor —
-   üçü de CI'da doğrulanamıyor, üçü de yalnızca gerçek cihazda görülüyor.
-   ⚠ *"Ready to Submit"* bir engel DEĞİL: o durum DIŞ dağıtımı anlatır, iç
-   testçi için Beta App Review yok. Adımlar:
-   `mobile/docs/test-ortamlari.md` → TestFlight kurulumu, adım 6.
+**Sırayı tıkayan şeyler (10 Eylül 2026 GECE tazelendi — ÜÇ maddenin ÜÇÜ de
+düştü; bu listede artık tıkayan bir şey YOK):**
+0. ✅ **TestFlight iç test grubu KURULDU ve uygulama iPad'de ÇALIŞTI**
+   (10 Eylül 2026 akşamı). `İç Test` grubu · 2 testçi · dağıtılan derleme
+   **`1.0.9 (620)`**; cihazda Setup teşhis satırı `Derleme 46664f6`
+   gösterdi. Cihaz turu koşuldu ve **temiz geçti** (manzara/düzen/taşma
+   yok); tek bulgu hiç oynanmamış YZ oyununun bulut kaydıydı → düzeltildi
+   (aşağıdaki sürüm tablosuna bak). Böylece 24.3 (`aps-environment`), 24.4
+   (Universal Links iOS yarısı) ve `mobile/TESTING.md` §26 artık
+   koşulabilir durumda. ⚠ *"Ready to Submit"* bir engel DEĞİLDİ: o durum
+   DIŞ dağıtımı anlatır, iç testçi için Beta App Review yok — ölçüldü.
+   Kurulumun tuzakları (ekip daveti ≠ testçi daveti, "Redeem" ekranı bir
+   kod istemiyor, tester statüsü teşhis aracı değil):
+   `console-formlari.md` §14.
 1. ✅ **API anahtarı ALINDI (9 Eylül 2026 akşamı)** — bir **Mac'ten**, ilk
    denemede. iPadOS'ta (özel sekme dahil) defalarca başarısız olmuştu;
    ölçüm arızanın istemci/platform tarafında olduğunu gösteriyor, Apple'ın
@@ -1299,8 +1303,11 @@ düştü, yerine cihaz turunun kapısı geldi):**
    zorunlu** — `openssl` CSR + elle sertifika/profil + uygulamaya özel şifre
    ile anahtarsız bir zincir kurulabilir (kayıt `console-formlari.md` §3).
    Arıza uzarsa gönderim buna çevrilir.
-2. **DSA doğrulaması** — Apple inceliyor; bitmeden inceleme talebi
-   gönderilemez.
+2. ✅ **DSA doğrulaması BİTTİ (10 Eylül 2026, 22:21).** Apple'ın
+   e-postası: *"We successfully verified your trader contact information…
+   Your information is now live on the App Store in the European Union."*
+   Beyan 9 Eylül → doğrulama 10 Eylül, yani **~1 gün** (ölçüldü, tek
+   ölçüm). Gönderim kapısı DÜŞTÜ — kayıt `console-formlari.md` §2.
 
 Bizde kalan iş yalnızca 24.5'in **kompozisyon kararı** (altı karenin de
 üretimi doğrulandı; başlık/çerçeve eklenecek mi) + isteğe bağlı 7. kare.

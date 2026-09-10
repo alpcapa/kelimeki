@@ -1,7 +1,8 @@
 // Kalıcılık üst katmanı (LocalGameRepo/GameSession) testleri — gerçek SQLite
 // (ffi, in-memory) + gerçek GameController. Web davranış paritesi:
-// autosave her hamlede, oyun bitince slot silinir, turnCount<2 çıkışı iz
-// bırakmaz, 7 günlük terk → drain olayı verir, GamesRepo yalnızca
+// autosave GERÇEKTEN başlamış (turnCount>=2) oyunun her hamlesinde yazar —
+// hiç oynanmamış oyun HİÇ yazılmaz (10 Eylül 2026 kapısı) —, oyun bitince
+// slot silinir, 7 günlük terk → drain olayı verir, GamesRepo yalnızca
 // turnCount>=2 için -2 cezalı teslim kaydı üretir (misafirde kuyruğa).
 import 'dart:convert';
 import 'dart:io';
@@ -108,7 +109,7 @@ void main() {
     await storage.close();
   });
 
-  test('7 günlük terk: misafirin cezası kuyruğa girer, <2 iz bırakmaz',
+  test('7 günlük terk: misafirin cezası kuyruğa girer, <2 HİÇ YAZILMAZ',
       () async {
     final storage = await openTestStorage();
     final repo = LocalGameRepo(storage);
@@ -152,25 +153,26 @@ void main() {
     expect(gamesGw.inserted.single['surrendered'], isTrue);
     expect(await storage.queue.count(finishedGameKind), 0);
 
-    // İkinci tur: hiç oynanmamış (turnCount 0) kayıt — açık uçlu çıkışla
-    // değil uygulama kapanmasıyla kalmış gibi elle yaz.
+    // İkinci tur: hiç oynanmamış (turnCount 0) oyun, uygulama ÖLDÜRÜLMÜŞ
+    // gibi — `end()` hiç çağrılmıyor. 10 Eylül 2026'ya kadar autosave onu
+    // YAZIYORDU: `end()`teki eşik yalnızca temiz çıkışı kapsadığından bu
+    // yolda slot doluyor, 7 gün sonra (cezasız ama) bir terk olayına
+    // dönüşüyordu — kullanıcı bunun bulut ikizini cihazda gördü. Artık
+    // HİÇ yazılmıyor, yani telafiye gerek kalmıyor.
     final c2 = newController();
     final s2 = repo.attach(c2);
     c2.dispatch(StartAction(const [
       PlayerSetup(name: 'Sen', isAI: false),
       PlayerSetup(name: '', isAI: true),
     ]));
-    s2.detach(); // end() ÇAĞRILMAZ — kill senaryosu, autosave kalır
+    s2.detach(); // end() ÇAĞRILMAZ — kill senaryosu
     await Future<void>.delayed(Duration.zero);
-    expect(await repo.hasSave(), isTrue);
+    expect(await repo.hasSave(), isFalse,
+        reason: 'hiç oynanmamış oyun kill yolunda da iz bırakmamalı');
     clock += const Duration(days: 8).inMilliseconds;
     expect(await repo.loadSave(), isNull);
-    final events2 = await repo.drainAbandonedGames();
-    expect(events2, hasLength(1)); // olay üretilir...
-    for (final e in events2) {
-      await games.recordAbandoned(e.state, endedAtMs: e.savedAtMs);
-    }
-    // ...ama turnCount<2 olduğundan ne ceza ne telemetri (web eşiği).
+    expect(await repo.drainAbandonedGames(), isEmpty,
+        reason: 'yazılmayan kayıt terk olayı da üretemez');
     expect(gamesGw.inserted, hasLength(1)); // hâlâ yalnızca ilk oyun
     expect(await storage.queue.count(finishedGameKind), 0);
     await storage.close();
@@ -187,12 +189,13 @@ void main() {
       PlayerSetup(name: '', isAI: true),
     ]));
     c.dispatch(const PassAction());
+    c.dispatch(const AiPlayAction()); // autosave eşiği (turnCount>=2)
     s.detach(); // kill — end() yok
     await Future<void>.delayed(Duration.zero);
 
     final loaded = await repo.loadSave();
     expect(loaded, isNotNull);
-    expect(loaded!.turnCount, 1);
+    expect(loaded!.turnCount, 2);
     await storage.close();
   });
 

@@ -563,19 +563,39 @@ class _TahtaBolumu extends StatelessWidget {
                 // sığmadığında alta sarar.
                 //
                 // Boşluklar web'den birebir: gap-x-4 = 16, gap-y-1.5 = 6.
-                const Wrap(
-                  alignment: WrapAlignment.center,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 16,
-                  runSpacing: 6,
-                  children: [
-                    _Rozet(
-                        renk: Color(0xFFFDE68A),
-                        metin: 'X2 — Kelime puanının 2 katı'),
-                    _Rozet(
-                        renk: Color(0xFFF97316),
-                        metin: 'X3 — Kelime puanının 3 katı'),
-                  ],
+                // ⚠ SARMAK YERİNE SIĞDIR (10 Eylül 2026, iPhone'da
+                // bildirildi: *"X2/X3 legend'lar 2 satıra çıktığı için yazı
+                // alta kaymış"*). Yukarıdaki ölçüm 420 px'de yapılmıştı ve
+                // orada iki rozet yan yana sığıyor; **375 pt genişlikte
+                // (iPhone SE/mini ya da Display Zoom açık bir iPhone)
+                // varsayılan yazı boyutunda BİLE sığmıyor** — ölçüldü:
+                // 375 → alt alta · 390/393 → yan yana. Sarma taşma DEĞİL,
+                // hata da basmaz; bedeli slaydın altındaki cümlenin
+                // katlamanın altına itilmesi (kullanıcı onu "kesik" görür).
+                //
+                // `Wrap`ı olduğu gibi bırakıp `FittedBox`a sarmak ikisini de
+                // çözüyor: sınırsız genişlik kısıtı altında `Wrap` doğal
+                // haliyle TEK satır kurar, `scaleDown` da sığmıyorsa TÜM
+                // satırı küçültür (sığıyorsa hiç dokunmaz). Küçültme yazı
+                // ölçeğini yenmez, yalnızca telafi eder: ×1,3'te 375 pt'de
+                // ölçek ~0,76 çıkıyor, yani efektif punto 11×1,3×0,76 ≈ 11 —
+                // bugünkü ×1,0 render'ının altına DÜŞMÜYOR.
+                const FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 16,
+                    runSpacing: 6,
+                    children: [
+                      _Rozet(
+                          renk: Color(0xFFFDE68A),
+                          metin: 'X2 — Kelime puanının 2 katı'),
+                      _Rozet(
+                          renk: Color(0xFFF97316),
+                          metin: 'X3 — Kelime puanının 3 katı'),
+                    ],
+                  ),
                 ),
                 // Legend → açıklama 12 → 8.
                 const SizedBox(height: 8),

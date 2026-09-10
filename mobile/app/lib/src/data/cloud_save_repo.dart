@@ -587,11 +587,12 @@ class CloudSaveRepo {
 /// Bir GameController'ı sunucu kalıcılığına bağlar — misafir tarafındaki
 /// `GameSession`'ın bulut eşleniği (web autosave effect'inin girişli dalı):
 ///
-/// - Autosave: oyun `play` fazında ve bitmemişken her değişimde, 600ms
-///   debounce ile (web'le aynı süre/gerekçe — taş seçmek dahil her dispatch
-///   ağ isteği atmasın). Satır id'si İLK değişimde tembelce üretilir (web
-///   activeSaveIdRef), sunucudan devam edilen oyunda `resumeSaveId` ile
-///   dışarıdan verilir ki aynı satır güncellenmeye devam etsin.
+/// - Autosave: oyun `play` fazında, bitmemişken **ve `turnCount >= 2` iken**
+///   her değişimde, 600ms debounce ile (web'le aynı süre/gerekçe — taş
+///   seçmek dahil her dispatch ağ isteği atmasın). Satır id'si İLK yazılan
+///   değişimde tembelce üretilir (web activeSaveIdRef), sunucudan devam
+///   edilen oyunda `resumeSaveId` ile dışarıdan verilir ki aynı satır
+///   güncellenmeye devam etsin.
 /// - Oyun bitince satır silinir, bekleyen debounce iptal edilir (gecikmeli
 ///   bir upsert silinen satırı diriltmesin — web'in aynı sıralaması).
 /// - Bilinçli çıkışta (`end`): turnCount<2 ise satır İZ BIRAKMADAN silinir
@@ -631,6 +632,18 @@ class CloudGameSession {
     if (_detached) return;
     final s = controller.state;
     if (s.phase == GamePhase.play && !s.isGameOver) {
+      // ⚠ HENÜZ BAŞLAMAMIŞ OYUN (turnCount<2) HİÇ YAZILMAZ — web App.tsx'in
+      // 31 Ağustos 2026 kapısının eşi. Öncesinde bu kapı yalnızca `end()`te
+      // vardı, yani telafi ediciydi: temiz çıkışta satır siliniyordu ama
+      // BAŞKA her çıkış (iOS'un uygulamayı arka planda öldürmesi, çökme,
+      // ekranı kapatmadan uygulamadan çıkma) bulutta hayalet bir "Devam Eden
+      // Oyun" bırakıyordu — üstelik `local_game_saves` cihazlar arası
+      // olduğundan web dahil HER yüzeyde. Cihazda görüldü (10 Eylül 2026,
+      // TestFlight 1.0.9/620): tanıtımdan sonra başlayan, hiç hamle
+      // yapılmamış oyun listede belirip Setup'a dönünce kayboluyordu.
+      // Yazmamak telafiyi gereksiz kılar; satır id'si de web'deki gibi ancak
+      // ilk GERÇEK değişimde üretilir.
+      if (s.turnCount < 2) return;
       _saveId ??= uuidV4();
       _pending = s;
       _timer?.cancel();

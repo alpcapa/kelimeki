@@ -2,9 +2,14 @@
 // autosave/terk akışlarının Flutter eşleniği. Depolama mekaniği
 // LocalSaveStore'da; BU katman politika:
 //
-// - Otomatik kayıt: oyun `play` fazında ve bitmemişken HER state değişiminde
-//   (web'in localStorage autosave'i). turnCount eşiği YOK — web'de de
-//   autosave koşulsuz yazar; eşik yalnızca ÇIKIŞTA iz bırakma kararında.
+// - Otomatik kayıt: oyun `play` fazında, bitmemişken ve `turnCount >= 2`
+//   iken HER state değişiminde (web'in localStorage autosave'i).
+//   ⚠ Bu satır 10 Eylül 2026'ya kadar *"turnCount eşiği YOK — web'de de
+//   autosave koşulsuz yazar"* diyordu; o cümle web'in 31 Ağustos 2026'dan
+//   ÖNCEKİ hâlini tarif ediyordu ve port o gün güncellenmedi. Web artık
+//   hiç oynanmamış oyunu HİÇ yazmıyor (App.tsx: `if (state.turnCount < 2)
+//   return;`), çünkü eşiği yalnızca çıkışta uygulamak telafi edicidir:
+//   başka her çıkış yolu hayalet bir "Devam Eden Oyun" bırakır.
 // - Oyun bitince slot silinir (web: isGameOver → clearGameState).
 // - Bilinçli çıkışta (logo) `turnCount < 2` ise slot İZ BIRAKMADAN silinir
 //   (web handleLogoClick'in aynı eşiği/gerekçesi: hiç oynanmamış oyun ne
@@ -109,6 +114,10 @@ class GameSession {
     if (_detached) return;
     final s = controller.state;
     if (s.phase == GamePhase.play && !s.isGameOver) {
+      // Hiç oynanmamış oyun yazılmaz (yukarıdaki not) — misafirin tek slotu
+      // da böylece korunur: gerçek bir kaydı olan misafir yeni bir oyun açıp
+      // hiç oynamadan çıkarsa eski kaydı EZİLMEZ (web'in aynı yan faydası).
+      if (s.turnCount < 2) return;
       _queue.enqueue(() => _saves.save(guestSaveSlot, s));
     } else if (s.isGameOver) {
       _queue.enqueue(() => _saves.clear(guestSaveSlot));

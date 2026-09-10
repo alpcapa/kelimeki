@@ -1171,6 +1171,14 @@ class _SetupScreenState extends State<SetupScreen>
       stats: widget.services.stats,
       child: Scaffold(
         backgroundColor: Colors.white,
+        // Oturum/profil değişimi çubuğun görünürlüğünü de etkiliyor (girişli
+        // kullanıcıda form yalnızca "+ Yeni"yle açılıyor), o yüzden gövdedeki
+        // ile aynı dinleyici burada da gerekli — Scaffold'un bu slotu ayrı
+        // bir alt ağaç.
+        bottomNavigationBar: ListenableBuilder(
+          listenable: auth,
+          builder: (context, _) => _baslatCubugu(),
+        ),
         body: SafeArea(
           // Oturum/profil değişince (giriş, çıkış, profil gelmesi) tüm ekran
           // tazelenir — web'de useAuth context'inin yeniden render etmesiyle
@@ -1405,21 +1413,22 @@ class _SetupScreenState extends State<SetupScreen>
                                     style: const TextStyle(color: kRed));
                               }
                               final words = snap.data;
+                              final durum = _formDurumu();
                               // Girişli kullanıcı: liste varsayılan görünüm, form
                               // yalnızca "+ Yeni" ile açılır (web creatingLocal).
                               if (auth.user != null &&
                                   widget.services.cloudSaves != null) {
-                                return _creatingLocal
-                                    ? _buildNewGameForm(words, showCancel: true)
+                                return durum.form
+                                    ? _buildNewGameForm(words)
                                     : _buildCloudListView(words);
                               }
                               if (!_saveChecked) {
                                 return const _SectionLabel(
                                     'KAYITLAR KONTROL EDİLİYOR…');
                               }
-                              return _savedState != null
-                                  ? _buildSavedGameView(words)
-                                  : _buildNewGameForm(words);
+                              return durum.form
+                                  ? _buildNewGameForm(words)
+                                  : _buildSavedGameView(words);
                             },
                           ),
                         const SizedBox(height: 20),
@@ -1860,7 +1869,109 @@ class _SetupScreenState extends State<SetupScreen>
     );
   }
 
-  Widget _buildNewGameForm(SetWordSource? words, {bool showCancel = false}) {
+  /// Yerel (YZ) sekmesinde ŞU AN yeni oyun formu mu görünüyor, ve o formda
+  /// "VAZGEÇ" butonu var mı? Karar İKİ yerde okunuyor — gövde (hangi görünüm
+  /// çizilecek) ve ekranın altına yapışık başlat çubuğu (çizilecek mi) —, bu
+  /// yüzden TEK kaynak burası. İkisi ayrı ayrı yazılsaydı bir sonraki görünüm
+  /// eklendiğinde sessizce ayrışırlardı: çubuk formu olmayan bir görünümün
+  /// üstünde asılı kalır ya da formda hiç çıkmazdı.
+  ({bool form, bool cancel}) _formDurumu() {
+    if (_liveView) return (form: false, cancel: false);
+    final auth = widget.services.auth;
+    // Girişli kullanıcı: liste varsayılan, form yalnızca "+ Yeni" ile açılır
+    // (web `creatingLocal`) — o yüzden VAZGEÇ yalnızca bu dalda var.
+    if (auth.user != null && widget.services.cloudSaves != null) {
+      return (form: _creatingLocal, cancel: true);
+    }
+    if (!_saveChecked) return (form: false, cancel: false);
+    return (form: _savedState == null, cancel: false);
+  }
+
+  /// Ekranın altına YAPIŞIK başlat çubuğu. Kaydırılan gövdenin DIŞINDA
+  /// durur, yani içerik ne kadar uzarsa uzasın birincil eylem hep görünür
+  /// (gerekçe ve ölçümler `_buildNewGameForm`in başındaki notta).
+  Widget _baslatCubugu() {
+    final durum = _formDurumu();
+    if (!durum.form) return const SizedBox.shrink();
+    return DecoratedBox(
+      // Testler çubuğun ÜST kenarını ölçüyor (kaydırılan içerik onun altında
+      // kalıcı olarak gizlenmemeli) — metinden değil bu anahtardan bulsunlar.
+      key: const Key('baslat-cubugu'),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: _border)),
+      ),
+      // `top: false` — üst güvenli alan gövdenin işi; burada yalnızca alt
+      // gösterge payı eklenmeli.
+      child: SafeArea(
+        top: false,
+        // ⚠ `heightFactor: 1` ŞART: `Center` gevşek kısıt altında izin
+        // verilen TÜM yüksekliği kaplar — `bottomNavigationBar` slotunda
+        // kısıt ekranın tamamı olduğundan çubuk bütün ekranı yiyip gövdeyi
+        // eziyordu (testler yakaladı: dokunuşlar formu değil çubuğu
+        // buluyordu). `heightFactor: 1` onu çocuğunun boyuna oturtur.
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            // Gövdedeki 460 + yatay 16 ile AYNI ölçü: buton kaydırılan
+            // formun altında duruyormuş gibi hizalı kalsın.
+            constraints: const BoxConstraints(maxWidth: 460),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              child: FutureBuilder<SetWordSource>(
+                future: widget.services.dictionary,
+                builder: (context, snap) {
+                  final words = snap.data;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          // Web: `btn-raised bg-accent ... disabled:opacity-35`
+                          // — NeoButton disabled durumu birebir aynı görünüm.
+                          child: NeoButton(
+                            label: words == null
+                                ? 'HAZIRLANIYOR…'
+                                : 'OYUNU BAŞLAT',
+                            variant: NeoButtonVariant.accent,
+                            fontSize: 14,
+                            letterSpacing: 2,
+                            onPressed:
+                                words == null ? null : () => _handleStart(words),
+                          ),
+                        ),
+                      ),
+                      // Yalnızca girişli kullanıcının "+ Yeni" ile açtığı
+                      // formda — web'in creatingLocal "Vazgeç" butonu (Devam
+                      // Eden Oyunlar listesine döner); misafirde form tek yol.
+                      if (durum.cancel) ...[
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: NeoButton(
+                              label: 'VAZGEÇ',
+                              variant: NeoButtonVariant.neutral,
+                              fontSize: 14,
+                              letterSpacing: 2,
+                              onPressed: () =>
+                                  setState(() => _creatingLocal = false),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewGameForm(SetWordSource? words) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1929,48 +2040,23 @@ class _SetupScreenState extends State<SetupScreen>
                 _rankScores.tierOf(widget.services.auth.user?.id),
           ),
         ],
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: 48,
-                // Web: `btn-raised bg-accent ... disabled:opacity-35` —
-                // NeoButton disabled durumu birebir aynı görünümü verir.
-                child: NeoButton(
-                  label: words == null ? 'HAZIRLANIYOR…' : 'OYUNU BAŞLAT',
-                  variant: NeoButtonVariant.accent,
-                  fontSize: 14,
-                  letterSpacing: 2,
-                  onPressed: words == null ? null : () => _handleStart(words),
-                ),
-              ),
-            ),
-            // Yalnızca girişli kullanıcının "+ Yeni" ile açtığı formda —
-            // web'in creatingLocal "Vazgeç" butonu (Devam Eden Oyunlar
-            // listesine döner); misafirde form tek yol, hiç çizilmez.
-            if (showCancel) ...[
-              const SizedBox(width: 8),
-              Expanded(
-                child: SizedBox(
-                  height: 48,
-                  child: NeoButton(
-                    label: 'VAZGEÇ',
-                    variant: NeoButtonVariant.neutral,
-                    fontSize: 14,
-                    letterSpacing: 2,
-                    onPressed: () => setState(() => _creatingLocal = false),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        // Web'de bu kutu ile üstündeki buton satırı arasında dıştaki flex
-        // kapsayıcının (`gap-5`, 20px) verdiği boşluk var — Flutter'da diğer
-        // TÜM bölüm geçişlerinde bu 20px elle SizedBox'la taşınmıştı, yalnızca
-        // bu son geçiş unutulmuştu (kutu butona "yapışık" duruyordu, kullanıcı
-        // web derlemesinde bizzat bulup bildirdi).
+        // ⚠ "OYUNU BAŞLAT" ARTIK BURADA DEĞİL, EKRANIN ALTINA YAPIŞIK
+        // (10 Eylül 2026, kullanıcı isteği — iPhone'da bildirdi: *"setup
+        // tarafında oyna butonu ekran dışında kalıyor"*). Gerçek güvenli
+        // alan paylarıyla ÖLÇÜLDÜ (üst 59 · alt 34): 375 pt genişlikte
+        // **varsayılan yazı boyutunda bile** buton 769–786'ya düşüyordu,
+        // görünür alt sınır 778 — yani birincil eylem ilk ekranda kesikti.
+        // 393 pt'de ×1,0 kurtuluyordu ama ×1,3'te ikisi de düşüyordu.
+        //
+        // Alternatif ("dar ekranda ZORLUK açıklamasını gizle") bilerek
+        // ELENDİ: bir eşik oyunu ve bir sonraki uzayan içerikte aynı hata
+        // geri gelir. Yapışık çubuk sorunu SINIF olarak kapatıyor — her
+        // genişlikte, her yazı ölçeğinde, misafir/girişli ve 2/4 kişilik
+        // varyantların hepsinde.
+        //
+        // ⚠ Web'den bilinçli AYRIŞMA: orada buton akışın içinde (sayfa
+        // kaydırması doğal). Portta ekran yüksekliği sabit ve alt gösterge
+        // payı da yiyor.
         const SizedBox(height: 20),
         // Web: `!user && <MembershipPerksBox .../>` — bu fonksiyon hem
         // misafirin boş formunda (showCancel:false) hem girişli kullanıcının

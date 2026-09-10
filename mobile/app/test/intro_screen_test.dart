@@ -29,6 +29,7 @@ import 'package:kelimeki/src/ui/intro/intro_screen.dart';
 import 'package:kelimeki/src/ui/rank/league_rank.dart';
 import 'package:kelimeki/src/ui/rank/rank_seal.dart';
 import 'package:kelimeki/src/ui/setup/setup_screen.dart';
+import 'package:kelimeki/src/ui/text_scale.dart';
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/util/online_status.dart';
 import 'support/test_fonts.dart';
@@ -390,25 +391,53 @@ void main() {
     //
     // METİN VARLIĞI YETMEZ: iki rozetin de EKRANDA olduğunu ölçen mevcut
     // assertion, ikisi alt alta dururken de yeşildi — bu yüzden ölçülen
-    // şey KONUM. Web'de eşik ~349px (ölçüldü: 320'de sarıyor, 360'ta yan
-    // yana); portta metin sütunu 16+16 dolgu yediğinden eşik ~380px, yani
-    // çok dar telefonlarda ALT ALTA düşmesi doğru davranış — bu test
-    // yaygın bir boyda (420) yan yana durduğunu güvence altına alıyor.
-    testWidgets('1. slayt: X2/X3 legend\'i YAN YANA (web gibi)',
-        (tester) async {
-      await setPhoneViewSize(tester, const Size(420, 900));
-      await tester.pumpWidget(MaterialApp(
-        theme: kelimekiTheme(),
-        home: IntroScreen(onDone: () {}),
-      ));
+    // şey KONUM.
+    //
+    // ⚠ BU TEST 10 EYLÜL 2026'YA KADAR TEK BİR BOYDA (420×900) KOŞUYORDU
+    // ve yorumu *"çok dar telefonlarda ALT ALTA düşmesi doğru davranış"*
+    // diyordu. Kullanıcı iPhone'da tam o "doğru davranış"ı bir hata olarak
+    // bildirdi: sarma taşma üretmiyor ama slaydın altındaki cümleyi
+    // katlamanın altına itiyor, yani cümle EKRANDA KESİK görünüyor.
+    // Ölçüldü (gerçek fontlar): 375 pt'de varsayılan yazı boyutunda BİLE
+    // sarıyordu · 390/393 pt'de sarmıyordu · 393 pt'de ×1,15'te sarıyordu.
+    // 375 pt gerçek bir hedef: iPhone SE/mini, ve Display Zoom açık her
+    // iPhone. Çözüm `FittedBox(scaleDown)` — sığmıyorsa satırı KÜÇÜLTÜR,
+    // sarmaz. Bu yüzden test artık DAR ekranı ve TAVANDAKİ yazı ölçeğini
+    // de ölçüyor.
+    for (final (genislik, olcek) in const [
+      (420.0, 1.0),
+      (375.0, 1.0),
+      (375.0, kMaxTextScale),
+    ]) {
+      testWidgets(
+          '1. slayt: X2/X3 legend\'i YAN YANA (web gibi) — '
+          '${genislik.toInt()} pt @$olcek', (tester) async {
+        await setPhoneViewSize(tester, Size(genislik, 900));
+        await tester.pumpWidget(MaterialApp(
+          theme: kelimekiTheme(),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(olcek)),
+            child: child!,
+          ),
+          home: IntroScreen(onDone: () {}),
+        ));
 
-      final x2 = tester.getRect(find.text('X2 — Kelime puanının 2 katı'));
-      final x3 = tester.getRect(find.text('X3 — Kelime puanının 3 katı'));
-      expect(x2.top, x3.top,
-          reason: 'aynı satırda olmalı; üstleri ${x2.top} ve ${x3.top}');
-      expect(x3.left, greaterThan(x2.right),
-          reason: 'X3, X2\'nin SAĞINDA olmalı (üst üste binmemeli)');
-    });
+        final x2 = tester.getRect(find.text('X2 — Kelime puanının 2 katı'));
+        final x3 = tester.getRect(find.text('X3 — Kelime puanının 3 katı'));
+        expect(x2.top, x3.top,
+            reason: 'aynı satırda olmalı; üstleri ${x2.top} ve ${x3.top}');
+        expect(x3.left, greaterThan(x2.right),
+            reason: 'X3, X2\'nin SAĞINDA olmalı (üst üste binmemeli)');
+        // Küçültme bugünkü ×1,0 render'ının ALTINA inmemeli: ölçek 1,3 iken
+        // scaleDown ~0,76 uyguluyor, çarpım ≈ 1,0. Rozet metninin ekrandaki
+        // yüksekliği bu yüzden ×1,0'daki kadar kalmalı (±%15 tolerans).
+        if (olcek > 1.0) {
+          expect(x2.height, greaterThan(10.0),
+              reason: 'küçültme okunaksız hale getirmemeli: ${x2.height}');
+        }
+      });
+    }
   });
 
   group('kapı (_HomeGate)', () {

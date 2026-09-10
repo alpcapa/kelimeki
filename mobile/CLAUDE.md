@@ -779,6 +779,21 @@ ve `SIRA` → `SIR`/`A`. Envanter de o üçünü hiç içermiyordu — bu yüzde
 takım yeşil kaldı. Envantere `letterSpacing` alanı da o gün eklendi:
 öncesinde modellenmiyordu ve sütunları olduğundan DAR sanıyordu.
 
+⚠ **DÖRDÜNCÜ değişken: EKRAN GENİŞLİĞİ — ve 375 pt egzotik değil (10 Eylül
+2026).** Yukarıdaki üç sınıf hep "yazı ölçeği" ekseninde yazıldı; kullanıcı
+iPhone'da iki hata bildirdi ve **ikisi de varsayılan yazı boyutundaydı**.
+Ölçüldü: tanıtımın X2/X3 rozetleri 375 pt'de ×1,0'da bile alt alta düşüyor
+(390/393'te düşmüyor), Setup'ın `OYUNU BAŞLAT`ı 375 pt ×1,0'da görünür alt
+sınırın altında kalıyor. **375 pt'ye düşen cihazlar:** iPhone SE/mini **ve
+Display Zoom açık HER iPhone** (o ayar metni değil tüm arayüzü büyütür, yani
+uygulamaya daha DAR bir ekran verir — kullanıcı bunu "fontlar büyük
+görünüyor" diye tarif eder).
+
+**Kural:** düzen ölçen bir test yazarken tek bir boy YETMEZ; en az bir DAR
+(375×812) bileşim ve `kMaxTextScale` koş. Ve **güvenli alan payını modelle**
+(üst ~59 · alt ~34): payı olmayan bir ölçüm "görünür" derken cihazda kesik
+olabilir — bu iki hatanın testlerden kaçmasının sebebi tam olarak buydu.
+
 **Tavan 1,3** (kullanıcı kararı). Ölçüldü: taşma sayısı ölçek 1,0'da 0 ·
 1,3'te 10 · 2,0'da 73 — hasar 1,3'ten sonra patlıyor. 1,0'a kilitlemek
 erişilebilirlik açısından savunulamazdı. Tam envanter:

@@ -43,6 +43,36 @@ kaydı olan misafir yeni bir oyun başlatıp hiç oynamadan çıkarsa, yeni oyun
 için artık ulaşılamaz, ama düzeltmeden önce yazılmış eski kayıtlar
 sürdürülüp terk edilince onları temizliyor.
 
+### ⚠ PORT İKİZİ AYNI KAPIYI 10 GÜN GEÇ ALDI (10 Eylül 2026)
+
+Bu kural web'e 31 Ağustos'ta kondu; Flutter portu o gün **güncellenmedi** ve
+`turnCount<2` eşiğini yalnızca `end()`te (temiz çıkış) uygulamaya devam etti
+— yani tam olarak web'in terk ettiği *telafi edici* tasarım. Kod yorumu da
+bayat gerçeği taşıyordu: *"turnCount eşiği YOK — web'de de autosave koşulsuz
+yazar"*.
+
+**İlk TestFlight turunda kullanıcı gördü** (1.0.9/620, `Derleme 46664f6`):
+tanıtımdan sonra başlayan ve hiç hamle yapılmamış oyun "Devam Eden
+Oyunlar"da belirip, Setup'a dönülünce kayboluyordu — yazma (autosave) ile
+silme (`end()`) arasındaki pencere. Sessiz olan taraf daha önemliydi: iOS
+uygulamayı arka planda öldürdüğünde `end()` hiç çalışmaz ve satır
+`local_game_saves`te kalır; tablo cihazlar arası olduğundan hayalet satır
+**web dahil her yüzeyde** 7 gün görünür. Ceza tarafı sağlamdı (süpürme
+`turnCount<2`'ye -2 uygulamıyor), yani bedeli puan değil güven.
+
+Düzeltme portun iki oturumuna da aynı kapıyı koydu
+(`cloud_save_repo.dart` · `local_game_repo.dart`); `end()`'in silme dalı
+düzeltmeden ÖNCE yazılmış satırlar için duruyor. Sekiz mevcut test eski
+davranışı kodluyordu ve düştü — yeni iddialar `detach()` (kill) yolunu da
+kapsıyor. Ayrıntı: `mobile/docs/parca-log.md` → Parça 197.
+
+**DERS (bu dosyanın ikinci kez öğrettiği şey):** bir kuralı web'de
+değiştirmek, port ikizinde AYNI PR'da değiştirmeyi gerektirir — kök
+`CLAUDE.md`'nin etki analizi tablosu bunu zaten söylüyor, ama burada
+kaçırılan şey daha incesiydi: port yazıldığında kural HENÜZ o hâlde değildi.
+Yani "port yazılırken doğruydu" bir savunma değil; **bir kuralı
+değiştirirken onu KOPYALAMIŞ olan yerleri de ara.**
+
 **Regresyon testi:** `tests/smoke.spec.ts` → *"hiç başlamamış oyun İZ
 BIRAKMAZ, başlamış oyun kaydedilir"*. İKİ iddiayı birlikte ölçüyor — yalnızca
 birincisi olsaydı kaydı tamamen kapatan bir "düzeltme" de testi geçerdi.
