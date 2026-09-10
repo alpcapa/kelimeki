@@ -26,7 +26,7 @@ karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
 | Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
 | Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
 | App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ✅ `.p8` **9 Eylül 2026 akşamı bir Mac'ten indirildi** ve üç secret girildi; zincir #614/#616'da uçtan uca koştu (§3) |
-| DSA trader status | Beyan ✅ (9 Eylül 2026) · doğrulama ⏳ | ⚠ **`In Review`** — Apple doğruluyor, gönderim kapısı HÂLÂ AÇIK (§2) |
+| DSA trader status | Beyan ✅ (9 Eylül 2026) · **doğrulama ✅ (10 Eylül 2026, 22:21)** | ✅ Apple doğruladı, bilgi AB'de App Store'da yayında — **gönderim kapısı DÜŞTÜ** (§2) |
 
 **Paid Apps Agreement İMZALANMAYACAK.** `New` durumunda kalır; uygulama
 ücretsiz, uygulama içi satın alma yok. Console'un *"update your legal
@@ -58,7 +58,22 @@ numara/cihaz da kalıcı olmalı.
 
 ---
 
-## 2. DSA trader status — **BEYAN YAPILDI, DOĞRULAMA SÜRÜYOR**
+## 2. DSA trader status — ✅ **DOĞRULANDI (10 Eylül 2026)**
+
+✅ **KAPANDI — Apple doğrulamayı bitirdi.** `destek@kelimeki.com`'a düşen
+e-posta (10 Eylül 2026, 22:21 · `appstoreconnect-noreply@apple.com` ·
+*"Your trader contact information was verified"*): *"We successfully
+verified your trader contact information for the Digital Services Act
+compliance. Your information is now live on the App Store in the European
+Union."* Yani beyan bilgileri AB'de App Store'da **yayında**, ve aşağıdaki
+gönderim kapısı **düştü**. Doğrulama süresi ölçüldü: beyan 9 Eylül →
+doğrulama 10 Eylül, **~1 gün**.
+
+⚠ Durum alanını da teyit etmek isteyen için kontrol yeri değişmedi:
+Business → Agreements → **Compliance** → `Digital Services Act`.
+
+**Aşağısı doğrulama ÖNCESİNİN kaydı** (beyanın nasıl/neden öyle
+doldurulduğu, bir gün beklenmesinin gerekçesi):
 
 **Durum (9 Eylül 2026, Console'dan OKUNDU):**
 Business → Agreements → **Compliance** → `Digital Services Act` ·
@@ -163,16 +178,14 @@ sayfanın altındaki **`Compliance`** bölümünde:
 *Compliance → Complete Compliance Requirements → "I'm a trader under the
 DSA"* → adres · telefon · e-posta.
 
-### ⏳ GÖNDERİM KAPISI — HÂLÂ AÇIK
+### ✅ GÖNDERİM KAPISI — DÜŞTÜ (10 Eylül 2026)
 
 Kural: **"Trader beyanı + DOĞRULAMASI tamamlanmadan uygulama incelemeye
-gönderilemez."** 9 Eylül 2026 itibarıyla beyan ✅, doğrulama `In Review`.
-Yani madde gönderim öncesi kontrol listesinde DURUYOR.
+gönderilemez."** Beyan 9 Eylül ✅, doğrulama **10 Eylül 22:21 ✅** (yukarıdaki
+e-posta). Madde gönderim öncesi kontrol listesinden ÇIKTI.
 
-**Ne zaman düşer:** Compliance tablosundaki `Digital Services Act`
-satırının STATUS'ü `In Review` olmaktan çıkınca. Kontrol yeri sabit:
-Business → Agreements → Compliance. *(Apple'ın inceleme süresi bu depoda
-ÖLÇÜLMEDİ.)*
+Apple'ın inceleme süresi artık ÖLÇÜLDÜ: **~1 gün** (9 Eylül beyan → 10 Eylül
+doğrulama). Tek ölçüm, garanti değil.
 
 ### ⚠ Play tarafı aynı beyanı BEKLİYOR — ve artık bir referans var
 
@@ -924,18 +937,21 @@ bu yüzden var — özet liste, kaynağın kendi içinde bile bayatlayabiliyor.
 24.2 uçtan uca doğrulanmıştı. Bu tablo **iki kez** kaynağın kendi içinde
 bayatladı; bir kova kapandığında aynı turda buraya da dokun.
 
+⚠ **10 Eylül 2026 akşamı ÜÇÜNCÜ tazeleme:** iki satır birden kapandı
+(TestFlight iç test grubu · trader doğrulaması). Bu tablo artık **üç kez**
+kaynağın kendi içinde bayatladı — bir kova kapandığında aynı turda buraya
+da dokun.
+
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **TestFlight iç test grubu** | Sen | Derleme `1.0.9 (616)` App Store Connect'te hazır ama `INTERNAL TESTING` altında **grup yok** → hiçbir cihaza gitmiyor. Cihaz turunu (iPad manzarası · push · Universal Links) tıkayan TEK şey bu. Adımlar: `mobile/docs/test-ortamlari.md` → TestFlight kurulumu, adım 6 |
 | **Ekran görüntüleri** | Ben | 6/6 kare CI'da üretiliyor ve ölçüldü (§13); kalan tek şey **kompozisyon kararı** (başlık/çerçeve) + isteğe bağlı 7. kare |
-| **Trader adresi** | Sen | Beyanın açık kalan TEK alanı (§2). Gönderim kapısı |
 
 **Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
 §5 · demo hesap → §11 · Export Compliance → §12 · **API anahtarı `.p8` →
 §3 (9 Eylül 2026, Mac'ten indirildi)** · **imzalama + TestFlight yüklemesi
-→ §3, koşu #614/#616**.
-
----
+→ §3, koşu #614/#616** · **DSA trader beyanı + DOĞRULAMASI → §2 (10 Eylül
+2026, 22:21 — gönderim kapısı düştü)** · **TestFlight iç test grubu →
+§14 (10 Eylül 2026, uygulama iPad'de kuruldu ve çalıştı)**.
 
 ## 8. Bilinen tuzaklar (hepsi 8 Eylül 2026'da yaşandı)
 
@@ -1425,3 +1441,51 @@ bir KARAR:
   dolu. Karar tek tek değil, altı kare birlikte görülerek verilmeli.
 - **İsteğe bağlı 7. kare** (k-lig sıralaması) — çekim listesinde
   "opsiyonel" işaretli, henüz yapılmadı.
+
+---
+
+## 14. TestFlight iç test — ✅ KURULDU VE CİHAZDA ÇALIŞTI (10 Eylül 2026)
+
+**Durum:** `INTERNAL TESTING` → grup **`İç Test`** · 2 testçi · derleme
+**`1.0.9 (620)`** dağıtıldı. iPad'e kuruldu, açıldı, Setup teşhis satırı
+`Derleme 46664f6` (= `main`'in o günkü başı) gösterdi. Yani ROADMAP §24
+FAZ C'nin "cihaz turunun TEK kapısı" maddesi kapandı; 24.3 (push), 24.4
+(Universal Links) ve `mobile/TESTING.md` §26 (iPad manzarası) artık
+koşulabilir.
+
+⚠ **BİR SÜRÜM YÜKLEMEK GEREKMEDİ:** `mobile-build.yml` `main`'e her
+push'ta TestFlight'a yüklüyor, yani orada 616'nın yanında 618 ve 620 de
+duruyordu. Gruba **en yenisini** ekle; doküman "616" diyorsa bayattır.
+
+### ⚠ İKİ AYRI DAVET E-POSTASI VAR — karıştırmak bir akşam yedi
+
+| E-posta | Konusu | Götürdüğü yer |
+|---|---|---|
+| **Ekip daveti** | *"…invited to join … on App Store Connect"* | Tarayıcıda ASC girişi. Bir kez kullanılır |
+| **Testçi daveti** | TestFlight'tan, *"… has invited you to test Kelimeki"*, içinde **View in TestFlight** | TestFlight **uygulamasını** açar — kurulumu başlatan TEK bağlantı |
+
+10 Eylül akşamı tıkanma tam buradaydı: ekip daveti tekrar tekrar tıklandı,
+her seferinde ASC'ye götürdü; TestFlight uygulaması ise boş "Redeem"
+ekranında kaldı. **O ekran bir kod İSTEMİYOR** — uygulama listesi boşken
+gösterdiği varsayılan ekran o; `testflight.apple.com/join/...` kodu
+yalnızca DIŞ testin herkese açık linkinde vardır ve bizde dış test yok.
+Çözüm: testçi davetindeki **View in TestFlight**'a cihazdan dokunmak.
+
+### Konsoldaki tester statüsü teşhis ARACI DEĞİL
+
+Ölçüldü: `destek@` satırı `Invited`, ikinci testçi `No Builds Available`
+görünüyordu ve ikisi de kurulumu engellemiyordu. Statü sütunu kurulumun
+SONUCUNU yansıtır, sebebini değil — `Installed`a kurulumdan sonra döner.
+Ayrıca elenen üç şüpheli (hepsi yanlış çıktı, tekrar denemeye değmez):
+uygulama erişimi (`All Apps` idi), rol (`Marketing` → `App Manager`
+değiştirildi, fark etmedi), cihazın mağaza hesabı (doğruydu).
+
+### İç testçi = ekipteki kişi; arkadaşlar için yol AYRI
+
+İç testçi olmak App Store Connect'te bir rol gerektiriyor (Users and
+Access). Ekipten olmayan birine göndermenin yolu **External Testing**
+grubu + Beta App Review + isteğe bağlı herkese açık link — bu depoda
+henüz kurulmadı. Bir derlemenin sayfasındaki *"Individual Testers"* kutusu
+DIŞ testçi eklemez, yalnızca ekipteki bir kişiyi tek bir derlemeye bağlar.
+
+---

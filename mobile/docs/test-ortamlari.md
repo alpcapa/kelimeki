@@ -405,27 +405,37 @@ fazların sırası ve bağımlılıkları orada.
      `flutter build`**. Düzeltildi ve **#616 ile kanıtlandı: TestFlight'ta
      `1.0.9 (616)` · Complete**. Post-mortem:
      `marketing/app-store/console-formlari.md` §3.
-6. ⬜ **İÇ TEST GRUBU — sıradaki adım, `SENDE` (10 Eylül 2026).**
-   Derleme App Store Connect'te duruyor ama **hiçbir cihaza gitmiyor**:
-   TestFlight → sol sütun → `INTERNAL TESTING` altında **grup YOK**
-   (10 Eylül 2026, kullanıcının ekran görüntüsü: `1.0.9 (616)` ve
-   `1.0.9 (1)` için INVITES/INSTALLS/SESSIONS sütunları boş — `–`).
-   Adımlar: `INTERNAL TESTING` yanındaki **+** → gruba ad ver → **tester
-   olarak kendini ekle** (iç testçi = App Store Connect ekibinde rolü olan
-   kişi; davet `destek@kelimeki.com` kutusuna düşer) → gruba **616**
-   derlemesini ekle.
-   - ⚠ **`Ready to Submit` bir engel DEĞİL.** O durum *dış* dağıtımı
-     (App Store incelemesi / dış test) anlatır; **iç testçiler için Beta
-     App Review yoktur**, derleme grup oluşturulur oluşturulmaz kurulabilir.
-     *(Apple'ın süreci; bu depoda ÖLÇÜLMEDİ.)*
-   - ⚠ **Kurulacak derleme `616`.** Aynı sürümün altında duran `1`, yukarıda
-     anlatılan build-numarası arızasının paketi — teşhisi kolaylaştırmak
-     için grubun dışında bırak (istersen `Expire Build` ile süresini
-     doldur), yoksa TestFlight uygulamasında iki `1.0.9` yan yana görünür.
-   - ✅ **Export Compliance kapısı geçildi:** iki derleme de *"Missing
-     Compliance"* uyarısı almadan doğrudan `Ready to Submit`'e geçti, yani
-     `Info.plist`teki `ITSAppUsesNonExemptEncryption` okundu
-     (`console-formlari.md` §12'nin cihazdaki kanıtı).
+6. ✅ **İÇ TEST GRUBU KURULDU — ve uygulama iPad'de ÇALIŞTI (10 Eylül
+   2026 akşamı).** `INTERNAL TESTING` → **`İç Test`** grubu · 2 testçi ·
+   dağıtılan derleme **`1.0.9 (620)`**. Cihazda Setup teşhis satırı
+   `Derleme 46664f6` gösterdi (= o günkü `main` başı), yani zincir uçtan
+   uca çalışıyor.
+   - ⚠ **Gruba en YENİ derlemeyi ekle, dokümandaki numarayı değil.**
+     `mobile-build.yml` `main`'e her push'ta yüklediğinden 616'nın yanında
+     618 ve 620 de duruyordu; bu satır "616" derken zaten bayatlamıştı.
+   - ⚠ **İKİ AYRI DAVET E-POSTASI VAR ve karıştırmak bir akşam yedi.**
+     *"…invited to join … on App Store Connect"* = **ekip daveti**, tarayıcıda
+     ASC'ye götürür ve bir kez kullanılır. Kurulumu başlatan tek şey
+     **testçi daveti**: TestFlight'tan gelir, içinde **View in TestFlight**
+     düğmesi vardır ve uygulamayı açar.
+   - ⚠ **TestFlight'ın "Redeem" ekranı bir kod İSTEMİYOR** — uygulama
+     listesi boşken gösterdiği varsayılan ekran o. `testflight.apple.com/
+     join/...` kodu yalnızca DIŞ testin herkese açık linkinde olur; iç
+     testçi kod girmez.
+   - ⚠ **Konsoldaki tester statüsü teşhis aracı DEĞİL** (`Invited` /
+     `No Builds Available`): kurulumun SONUCUNU yansıtır, sebebini değil.
+     Boşuna elenen üç şüpheli: uygulama erişimi (`All Apps` idi), rol
+     (`Marketing` → `App Manager`, fark etmedi), cihazın mağaza hesabı
+     (doğruydu).
+   - **İç testçi = App Store Connect'te rolü olan kişi.** Ekipten olmayan
+     birine (arkadaş) göndermenin yolu External Testing grubu + Beta App
+     Review + isteğe bağlı herkese açık link; bir derlemenin sayfasındaki
+     *"Individual Testers"* kutusu bunu YAPMAZ.
+   - ✅ **Export Compliance kapısı geçildi:** derlemeler *"Missing
+     Compliance"* uyarısı almadan doğrudan `Ready to Submit`'e geçti
+     (`console-formlari.md` §12'nin cihazdaki kanıtı). Ve *"Ready to
+     Submit"* iç dağıtımı ENGELLEMEDİ — ölçüldü.
+   - Tam durum kaydı: `marketing/app-store/console-formlari.md` §14.
 7. **iPad'de test.** TestFlight uygulamasını App Store'dan kur, davet
    maili gelince "Kabul Et" → Kelimeki gerçek bir uygulama olarak açılır.
    Yukarıdaki bölümler bundan sonra koşulabilir. **İlk turda koşulacak üç

@@ -106,13 +106,23 @@ Future<AppStorage> openTestStorage() async {
 GameController newController() =>
     GameController(words: words, autoPlayAi: false, nowIso: () => '');
 
+/// GERÇEKTEN başlamış (turnCount>=2) bir oyun state'i. Eşik önemli: autosave
+/// hiç oynanmamış oyunu artık HİÇ yazmıyor (10 Eylül 2026 kapısı), yani
+/// yalnızca `StartAction` atan bir yardımcı "devam eden oyun" üretmez.
 GameState newPlayState({String name = 'Misafir'}) {
   final c = newController();
   c.dispatch(StartAction([
     PlayerSetup(name: name, isAI: false),
     const PlayerSetup(name: 'Yapay Zeka 2', isAI: true),
   ]));
+  playTwoTurns(c);
   return c.state;
+}
+
+/// Oyunu autosave eşiğinin (turnCount>=2) üstüne çıkarır.
+void playTwoTurns(GameController c) {
+  c.dispatch(const PassAction());
+  c.dispatch(const AiPlayAction());
 }
 
 void main() {
@@ -222,6 +232,7 @@ void main() {
       PlayerSetup(name: 'Ironman', isAI: false),
       PlayerSetup(name: 'Yapay Zeka 2', isAI: true),
     ]));
+    playTwoTurns(controller); // autosave eşiği (turnCount>=2)
     // Art arda iki değişiklik — debounce dolmadan TEK upsert'e birleşmeli.
     controller.dispatch(const SelectTileAction(0));
     await Future<void>.delayed(const Duration(milliseconds: 60));
@@ -247,6 +258,7 @@ void main() {
       PlayerSetup(name: 'Ironman', isAI: false),
       PlayerSetup(name: 'Yapay Zeka 2', isAI: true),
     ]));
+    playTwoTurns(controller); // autosave eşiği (turnCount>=2)
     await Future<void>.delayed(Duration.zero);
     await repo.idle;
     expect(gw.rows.length, 1);
@@ -257,7 +269,14 @@ void main() {
     expect(session.saveId, isNull);
   });
 
-  test('end(): turnCount<2 iz bırakmaz — bekleyen upsert de iptal', () async {
+  test('turnCount<2: autosave SUNUCUYA HİÇ YAZMAZ — end() çağrılmasa bile',
+      () async {
+    // 10 Eylül 2026, TestFlight 1.0.9 (620), kullanıcı cihazda gördü:
+    // tanıtımdan sonra başlayan ve hiç hamle yapılmamış oyun "Devam Eden
+    // Oyunlar"da belirip Setup'a dönünce kayboluyordu. Sebep: autosave onu
+    // YAZIYORDU, `end()` de telafi olarak siliyordu. Telafi yalnızca TEMİZ
+    // çıkışı kapsar; iOS uygulamayı arka planda öldürürse satır bulutta —
+    // yani web dahil her cihazda — hayalet olarak kalırdı.
     final (repo, gw) = newRepo();
     final controller = newController();
     final session = CloudGameSession(controller, repo, 'user-1',
@@ -266,9 +285,37 @@ void main() {
       PlayerSetup(name: 'Ironman', isAI: false),
       PlayerSetup(name: 'Yapay Zeka 2', isAI: true),
     ]));
+    controller.dispatch(const SelectTileAction(0)); // oyalanma da yazdırmaz
     await Future<void>.delayed(Duration.zero);
     await repo.idle;
-    expect(gw.rows.length, 1); // autosave yazdı
+    expect(gw.upsertCalls, 0, reason: 'hiç oynanmamış oyun yazılmamalı');
+    expect(gw.rows, isEmpty);
+    expect(session.saveId, isNull, reason: 'satır id\'si bile üretilmemeli');
+
+    // ⚠ end() DEĞİL detach(): uygulamanın öldürülmesi/çökmesi yolu. Eski
+    // tasarımda iz tam da burada kalıyordu.
+    session.detach();
+    await repo.idle;
+    expect(gw.rows, isEmpty);
+  });
+
+  test('end(): turnCount<2 iz bırakmaz (eski satırlar için telafi DURUYOR)',
+      () async {
+    // Kapı yazmayı engelliyor, ama düzeltmeden ÖNCE yazılmış satırlar için
+    // `end()`in silme dalı hâlâ gerekli — burada `resumeSaveId` ile böyle
+    // bir satırdan devam ediliyormuş gibi kuruluyor.
+    final (repo, gw) = newRepo();
+    await repo.upsert('eski-1', 'user-1', newPlayState());
+    expect(gw.rows.length, 1);
+    final controller = newController();
+    final session = CloudGameSession(controller, repo, 'user-1',
+        resumeSaveId: 'eski-1', debounce: Duration.zero);
+    controller.dispatch(const StartAction([
+      PlayerSetup(name: 'Ironman', isAI: false),
+      PlayerSetup(name: 'Yapay Zeka 2', isAI: true),
+    ]));
+    await Future<void>.delayed(Duration.zero);
+    await repo.idle;
     await session.end(); // turnCount 0 — web handleLogoClick kuralı
     expect(gw.rows, isEmpty);
   });

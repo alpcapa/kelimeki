@@ -528,8 +528,12 @@ void main() {
     await drainRealIo(tester);
   });
 
-  testWidgets('yeni oyun turnCount<2 iken terk edilirse listede iz bırakmaz',
+  testWidgets('yeni oyun turnCount<2: SUNUCUYA HİÇ YAZILMAZ, listede iz yok',
       (tester) async {
+    // Kullanıcının 10 Eylül 2026'da cihazda gördüğü davranışın kapısı:
+    // hiç hamle yapılmamış oyun "Devam Eden Oyunlar"da BELİRİP sonra
+    // kayboluyordu (autosave yazıyor, çıkışta siliniyordu). Artık hiç
+    // yazılmıyor — satır ekranda bir an bile görünmez.
     final gw = MemGateway();
     await pumpSetup(tester, gw);
 
@@ -538,8 +542,8 @@ void main() {
     await tester.tap(find.text('OYUNU BAŞLAT'));
     await tester.pumpAndSettle();
     expect(find.text('OYNA'), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 700)); // autosave yazdı
-    expect(gw.rows.length, 1);
+    await tester.pump(const Duration(milliseconds: 700)); // debounce doldu
+    expect(gw.rows, isEmpty, reason: 'autosave hiç oynanmamış oyunu yazmamalı');
 
     // Hiç hamle yapmadan çık (web handleLogoClick turnCount<2 kuralı).
     await tester.tap(find.byType(LogoMark));
