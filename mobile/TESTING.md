@@ -1586,8 +1586,18 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
 
 🔴 **ÖNCELİK: iPad birinci sınıf yüzey.** Kullanıcı kararı, sözleri
 birebir: *"Ipad olmazsa olmaz. Bu oyunun en iyi oynandığı yer orası."*
-Yani aşağıdaki maddeler "çökmüyorsa geçti" diye okunmaz — sorulacak soru
-**"iyi mi?"**. Ölçüm sonrası karar `ROADMAP.md` §25'te.
+
+✅ **DÜZEN KARARI VERİLDİ (9 Eylül 2026) — mevcut düzen kalıyor**
+(`docs/decisions/roadmap-arsiv.md` → §25). Kullanıcı, sözleri birebir: *"Eğer Apple açısından
+sıkıntı yoksa bazı ekran tiplerinde alt kısımda boşluk kalması ok. Sonuçta
+her ekran tipine göre ekran design etmek çok maliyetli bir iş olur ve riskli
+olur."* Apple tarafı ölçüldü: 2.4.1'de letterboxing/"ekranı tam kullan"
+yasağı YOK, tek sert kapı olan 90474 kapandı.
+
+⚠ **Bu, aşağıdaki listenin OKUNUŞUNU değiştiriyor:** soru artık *"iyi mi?"*
+değil, **"kırılmıyor mu?"**. Kenar/alt boşluğu bir BULGU DEĞİL — bilinçli
+kabul. Bulgu sayılacak olanlar: taşma (sarı-siyah şerit), erişilemeyen
+buton/raf, kesilen modal, dönüşte bozulan durum.
 
 ⚠ **Bu madde bir özellik isteğinden değil, Apple'ın REDDİNDEN doğdu.**
 İmzalı `.ipa` üretildi ve yüklemede reddedildi (90474): iPad'i destekleyen
@@ -1601,17 +1611,43 @@ birden bildirmek zorunda. `Info.plist` buna göre güncellendi.
 **Portta manzara için ayrı bir düzen YOK** — web'deki `LandscapeHint`in
 karşılığı hiç port edilmedi.
 
-Yani bu, hiç bakılmamış bir yüzey. iPad'de TestFlight derlemesiyle:
+Yani bu, hiç bakılmamış bir yüzey.
+
+⚠ **Taşma/erişilebilirlik yarısı ARTIK OTOMATİK** (10 Eylül 2026):
+`mobile/app/test/ipad_layout_test.dart` üç ölçüde (portre 1032×1376 ·
+manzara 1376×1032 · Split View 458×1032) taşmayı, tahta/rafın ekranın
+içinde kalmasını ve `OYNA`/`PAS GEÇ`/`OYUNU BAŞLAT` erişilebilirliğini
+kilitliyor — her push'ta, saniyeler içinde. **Aşağıdaki "otomatik" işaretli
+maddeler için cihaz turu bir DOĞRULAMA, keşif değil.**
+
+⚠ **Gerçek simülatörde ölçüm DENENDİ ve ELENDİ:** iPad simülatörü
+döndürülemiyor, sebebi iOS'un kendi hatası — `UISceneErrorDomain Code=101
+"The current windowing mode does not allow for programmatic changes to
+interface orientation."` Yani çoklu göreve açık bir iPad uygulamasında
+`setPreferredOrientations` iki yönde de geçersiz. **Cihazda gerçek dönüşü
+görebilecek tek yer SENSİN** (kayıt: `docs/decisions/roadmap-arsiv.md` → §25).
+
+iPad'de TestFlight derlemesiyle:iPad'de TestFlight derlemesiyle:
 
 - [ ] Uygulamayı **yan çevir** — açılıyor mu, çöküyor mu?
+      *(otomatik DEĞİL — programatik dönüş imkânsız, bu madde tamamen
+      cihazda: açılıyor mu, dönüşün hissi nasıl.)*
 - [ ] **Oyun ekranı:** tahta sığıyor mu, raf ve butonlar erişilebilir mi,
-      taşma (sarı-siyah şerit) var mı?
-- [ ] **Setup ekranı:** liste ve formlar okunabilir mi?
+      taşma (sarı-siyah şerit) var mı? *(otomatik: üç ölçüde de
+      kilitli.)*
+- [ ] **Setup ekranı:** liste ve formlar okunabilir mi? *(otomatik:
+      taşma + `OYUNU BAŞLAT` erişilebilirliği.)*
 - [ ] **Modallar** (Skor Kartı, Nasıl Oynanır, kelime anlamı): dikey alan
       daralınca kesiliyor mu? (`KModal`ın gövdesi kaydırılabilir, ama
       klavye açıkken daralma vakası kayıtlı — bkz. `mobile/CLAUDE.md`)
+      *(otomatik: yalnızca "Nasıl Oynanır" ve yalnızca taşma. **Klavye
+      açık hâli YOK** — o yalnızca cihazda görülür ve kayıtlı vaka tam
+      orada.)*
 - [ ] **Split View / Slide Over:** üçte bir genişlikte düzen ne oluyor?
-- [ ] Portreye geri dönünce her şey eski hâline dönüyor mu?
+      *(otomatik: yalnızca onun ÜRETTİĞİ ölçü (458×1032) — gerçek Split
+      View jesti, ikinci uygulama ve sürüklenebilir ayraç cihazda.)*
+- [ ] Portreye geri dönünce her şey eski hâline dönüyor mu? *(otomatik
+      DEĞİL — dönüşün kendisi programatik olarak tetiklenemiyor.)*
 
 ⚠ **Bulgular kötüyse üç seçenek var ve üçü de kararlıdır:** (a) manzara
 için düzen eklemek, (b) `TARGETED_DEVICE_FAMILY`yi `"1"`e çekip iPad

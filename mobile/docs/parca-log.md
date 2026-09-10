@@ -25,6 +25,56 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 196 — iPad MANZARA: ölçüldü, karar verildi, kapı Linux'a
+     indi (9-10 Eylül 2026; arşiv §25):** Apple bundle'ı 90474 ile
+     reddedince `Info.plist` iPad için DÖRT yönelimi bildirmek zorunda kaldı
+     (#501), yani uygulama iPad'de artık döndürülebilir ve `main.dart`in
+     portre kilidi orada FİİLEN ÖLÜ. Manzara hiç bakılmamış bir yüzeydi.
+     - **DENENDİ ve ELENDİ — gerçek simülatörde ölçüm.** 24.5'in kare boru
+       hattı zaten gerçek bir `iPad Pro 13"` simülatörü koşturduğu için
+       ölçüm oraya bindirildi (`ios-screenshots.yml`e ikinci iş +
+       `integration_test/ipad_landscape_test.dart`). **Simülatör DÖNMEDİ**
+       ve sebebini iOS'un kendisi söyledi:
+       `UISceneErrorDomain Code=101 "The current windowing mode does not
+       allow for programmatic changes to interface orientation."`
+       Yani çoklu göreve açık bir iPad uygulamasında
+       `setPreferredOrientations` **İKİ YÖNDE DE** geçersiz — §25 bunun
+       yalnızca portre yönünü yazıyordu, artık iki yönü de kanıtlı ve
+       ALINTILANABİLİR bir hata koduyla.
+     - **Sonucu: iş SİLİNDİ.** Manzara metriklerini kurabilen tek şey
+       `tester.view.physicalSize` override'ı, o da platformdan bağımsız —
+       yani 14 dakikalık bir macOS işi hiçbir şey eklemiyordu. Kapı
+       `mobile/app/test/ipad_layout_test.dart`e indi: 9 test, **4 saniye**,
+       her push'ta koşuyor. Çekim sahnesinin ortak dosyaya çıkarılması da
+       geri alındı — ikinci tüketici kalmayınca soyutlama gereksizdi;
+       `store_screenshots_test.dart` bayt bayt eski (yeşil) hâline döndü.
+     - ⚠ **İKİ TURLUK DERS — bir ölçü aleti kendi bulgusuyla düşmemeli.**
+       İlk sürüm dönüşü bir `expect` ile zorunlu kılmıştı: koşu #6'da altı
+       testin altısı da o satırda düştü ve bulgunun GERİ KALANINI (kareler,
+       taşma raporu, kutu ölçüleri) beraberinde götürdü. Dönüş raporlamaya
+       çevrilince (koşu #7) ölçüm baştan sona koştu ve iOS'un hata satırı
+       ancak o zaman görüldü.
+     - **KARAR (kullanıcı, arşiv §25): manzaraya özgü düzen YAPILMAYACAK.**
+       Sözleri birebir: *"Eğer Apple açısından sıkıntı yoksa bazı ekran
+       tiplerinde alt kısımda boşluk kalması ok. Sonuçta her ekran tipine
+       göre ekran design etmek çok maliyetli bir iş olur ve riskli olur."*
+       Koşulu varsayılmadı, Apple'ın yazılı kuralı okundu: 2.4.1 bugün
+       yalnızca *"iPhone apps should run on iPad whenever possible"* diyor,
+       letterboxing/"ekranı tam kullan" yasağı YOK; 2.3.3 ekran
+       görüntüsünden yalnızca "kullanımda göstersin" istiyor.
+     - **Kapının ne SORDUĞU karardan türüyor:** *"iyi mi?"* değil
+       *"kırılmıyor mu?"*. Boşluk ölçülmez (bilinçli kabul); ölçülen üç şey
+       taşma · tahta/raf ekranın içinde · `OYNA`/`PAS GEÇ`/`OYUNU BAŞLAT`
+       erişilebilir. Üç ölçü: portre 1032×1376 · manzara 1376×1032 · Split
+       View 458×1032. **Duyarlılığı kanıtlandı** (dar pencere geçici olarak
+       200×320'ye çekildi: hem tahta hem `OYUNU BAŞLAT` yakalandı).
+     - ⚠ **Yan gözlem — kare boru hattında İLK takılma:** koşu #7'de
+       `iphone-6.9` işi "Kareleri üret" adımında ~6 saat asılı kalıp
+       GitHub'ın iş tavanına takıldı (koşu "cancelled" göründü). Aynı dosya
+       koşu #6'da geçmişti ve `ipad-13` bu koşuda da geçti — yani altyapı
+       takılması, kod değil. Tekrarlarsa bir zaman aşımı (`timeout-minutes`)
+       eklenmeli; tek vakada eklenmedi.
+
    - ✅ **Parça 195 — tanıtımın tarayıcı turu: karşılama penceresi + balon
      hizası/tipografisi (7 Eylül 2026 akşamı; web + port AYNI PR):**
      kullanıcı Pages derlemesini denedi, üç madde bildirdi.

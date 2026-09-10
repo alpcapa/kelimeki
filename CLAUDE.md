@@ -75,6 +75,12 @@ görüntülerini GERÇEK iOS simülatöründe üretir (`mobile/app/integration_t
 + `test_driver/`). `mobile-build.yml`'e eklenmedi çünkü o dosyanın `paths`
 listesi her dokunuşta tam bir macOS+Android derlemesi tetikliyor. Karar ve
 ölçümler: `marketing/app-store/console-formlari.md` §13.
+⚠ **Bu iş akışına bir "yönelim/manzara ölçümü" işi EKLEME** — denendi ve
+elendi (10 Eylül 2026): simülatör döndürülemiyor, iOS'un kendi hatası
+`UISceneErrorDomain Code=101`. Çoklu göreve açık bir iPad uygulamasında
+`setPreferredOrientations` iki yönde de geçersiz; ölçümü kuran tek şey
+`tester.view.physicalSize`, o da platformdan bağımsız →
+`mobile/app/test/ipad_layout_test.dart` (Linux, saniyeler).
 
 `tests/` altında üç spec var: `smoke.spec.ts` (kritik yol) ve
 `text-scale.spec.ts` + `text-scale-normal.spec.ts` (yazı ölçeği; ikisi ayrı
@@ -256,15 +262,12 @@ tuzağı da bu depo tek turda yaşadı:**
 `git cherry` de tek başına YETMEZ: yama-kimliği eşitliği arar, sonradan
 farklı bağlamda yeniden inen bir değişikliği "yok" işaretler.
 
-⚠ **Dal SİLMEYİ ajan yapamaz — iki kapı da kapalı (4 Eylül 2026'da ölçüldü).**
-`git push --delete` → **403** (oturumun git kimliği yalnızca kendi tahsisli
-dalına yazabiliyor), GitHub MCP'de ref silen araç YOK, ve
-`branch-cleanup.yml`i **dispatch etmek de 403** (`Resource not accessible by
-integration` — App'in `actions: write`i yok). Yani doğru davranış: dalları
-silmeye çalışmak ya da "ben hallederim" demek değil, kullanıcıya şu adımı
-vermek — **Actions → "Dal temizliği" → Run workflow**, önce `dry_run` AÇIK,
-liste doğrulanınca KAPALI ile tekrar. O gün bir oturum önce "tetikleyebilirim"
-diye söz verip yanıldı; vaat etmeden ÖNCE dene.
+⚠ **Dal SİLMEYİ ajan yapamaz — üç kapı da kapalı** (4 Eylül 2026'da
+ölçüldü): `git push --delete` 403, GitHub MCP'de ref silen araç yok,
+`branch-cleanup.yml`i dispatch etmek de 403 (App'in `actions: write`i yok).
+Doğru davranış "ben hallederim" demek değil, kullanıcıya adımı vermek:
+**Actions → "Dal temizliği" → Run workflow**, önce `dry_run` AÇIK, liste
+doğrulanınca KAPALI ile tekrar. ⚠ Vaat etmeden ÖNCE dene.
 
 ## Belgeleri Güncel Tutma
 
@@ -298,18 +301,16 @@ Mobilde GÖRÜNÜR karşılığı Setup teşhis satırındaki `Derleme a1b2c3d �
 (`mobile/app/lib/src/config/env.dart`, CI `--dart-define` ile veriyor).
 **Bir düzeltmenin kullanıcıda görüneceğini söylemeden önce o sha'yı iste
 ya da ekran görüntüsünden oku** — eşleşmiyorsa tartışılacak bir hata yok,
-deploy bekleniyor demektir. **2 Eylül 2026'da ölçüldü: `curl` ARTIK ÇIKIYOR** (ajan vekili üzerinden) ve
-bu, deploy doğrulamasının en kesin yolu:
+deploy bekleniyor demektir. **Web'de sha'yı ajan KENDİ okur** (2 Eylül
+2026'da ölçüldü, ajan vekili üzerinden) — deploy doğrulamasının en kesin
+yolu, kullanıcıdan ekran görüntüsü beklemeye gerek YOK:
 ```
 curl -s https://kelimeki.com/ | grep kelimeki-build
 kelimeki-build" content="ea0a1c8"
 ```
-Yani derleme sha'sı için artık kullanıcıdan ekran görüntüsü beklemeye gerek
-YOK — `main`'in başıyla karşılaştır, yeter. (Bu, 25 Ağustos'ta yazılan
-"`curl`/`bash` çıkamıyor" tespitini geçersiz kılıyor; `WebFetch` de çalışıyor
-ama içeriği markdown'a çevirdiğinden `<meta>` etiketlerini GÖSTERMEZ — sha
-okumak için `curl` şart.) Flutter/Pages yüzeyi için kanıtlanmadı. Ayrıntı (bu oturumun gözlem sınırı, merge
-sonrası dal hijyeni, PR'da CI koşmazsa ne yapılacağı):
+⚠ `WebFetch` bunu YAPAMAZ (içeriği markdown'a çevirir, `<meta>` etiketini
+göstermez) ve Flutter/Pages yüzeyi için kanıtlanmadı. Ayrıntı (bu oturumun
+gözlem sınırı, merge sonrası dal hijyeni, PR'da CI koşmazsa ne yapılacağı):
 `mobile/CLAUDE.md` → "Deploy Doğrulaması".
 
 ⚠ **`main`'e merge YAYIN GARANTİSİ DEĞİL — Vercel bir commit'i sessizce
@@ -736,8 +737,6 @@ fikirlerin unutulmaması için bir bekleme listesi, kod DEĞİL. Bir madde
 uygulanınca buradan silinip ilgili bölümün kendi tarihli notuna taşınmalı
 (kök `CLAUDE.md`'nin genel "değişiklik = tarihli not" disipliniyle aynı).
 
-Şu an bekleyen madde YOK. (Arkadaş ekle simgesi, Çıkış Yap ikonu ve hesap
-menüsü tooltip'i 9 Ağustos 2026'da; "Tüm Oyunlarım"daki hamle geçmişi ikonu
-12 Ağustos 2026'da; oyun geçmişinin ağ-hatası mesajı 14 Ağustos 2026'da
-uygulandı — kayıtları `UserMenu`, `Leaderboard`/`PlayerScoreCard` ve
-`GameHistoryModal`/"Skor Kartı" bölümlerindeki tarihli notlara taşındı.)
+Şu an bekleyen madde YOK — Ağustos 2026'da gelen dört madde uygulandı ve
+kayıtları `docs/decisions/components*.md`'deki kendi tarihli notlarına
+taşındı (9 Eylül 2026'da bu bölümden budandı, `auto` sınıfı bütçesi).

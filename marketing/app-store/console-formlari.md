@@ -819,8 +819,10 @@ edilmemiş. Hiç bakılmamış bir yüzey; cihaz kontrol listesi
 ⚠ **iPad desteğini bırakmak seçenek DEĞİL** — ve bu artık yalnızca mağaza
 vitrini gerekçesi değil, **kullanıcı kararı** (9 Eylül 2026, sözleri
 birebir): *"Ipad olmazsa olmaz. Bu oyunun en iyi oynandığı yer orası."*
-`TARGETED_DEVICE_FAMILY = "1,2"` kalıyor; manzara düzeni ROADMAP §25 olarak
-açıldı ve ölçümden sonra karara bağlanacak.
+`TARGETED_DEVICE_FAMILY = "1,2"` kalıyor. ✅ Manzara düzeni 10 Eylül
+2026'da karara bağlandı — **değişmiyor**, kenar/alt boşluğu bilinçli kabul
+(Apple'ın yazılı kuralı okundu: 2.4.1'de letterboxing yasağı yok).
+Kayıt: `docs/decisions/roadmap-arsiv.md` → §25.
 
 ✅ **Adım sırası kararı DOĞRULANDI.** TestFlight adımı bilerek Appetize'dan
 SONRA konmuştu (*"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla
@@ -1365,6 +1367,26 @@ doğrulandı.** Artefaktlar `iphone-6.9` **5,33 MB** + `ipad-13` **5,46 MB**;
 on iki PNG'nin on ikisi de piksel ölçümünü geçti (`1320×2868` / `2064×2752`).
 Yani mağazaya giden kareler **bugün hazır** — üretimi değil, yalnızca
 kompozisyon kararı bekliyor.
+
+### ⚙️ Boru hattı gözlemleri — 9-10 Eylül 2026
+
+**1. Bu boru hattına YÖNELİM ölçümü bindirilemez (denendi, elendi).** Aynı
+simülatöre ikinci bir hedef (iPad manzara ölçümü) eklendi ve geri alındı:
+simülatör DÖNDÜRÜLEMİYOR, sebebini iOS'un kendisi yazdı —
+`UISceneErrorDomain Code=101 "The current windowing mode does not allow for
+programmatic changes to interface orientation."` Çoklu göreve açık bir iPad
+uygulamasında `setPreferredOrientations` iki yönde de geçersiz. **Kareler
+için sonucu şu: bu hattan yalnızca PORTRE kare alınabilir** — Apple zaten
+iPad seti için portre istiyor, yani vitrin etkilenmiyor. Kayıt:
+`docs/decisions/roadmap-arsiv.md` → §25.
+
+**2. İLK takılma gözlendi (koşu #7).** `iphone-6.9` işi "Kareleri üret"
+adımında **~6 saat** asılı kaldı ve GitHub'ın iş tavanına takıldı; koşu
+dışarıdan *"cancelled"* göründü. Aynı dosya koşu #6'da geçmişti ve `ipad-13`
+bu koşuda da geçti — yani **altyapı takılması, kod değil.** ⚠ Tekrarlarsa
+işe bir `timeout-minutes` eklenmeli (tek vakada eklenmedi); ayrıca *"koşu
+iptal oldu"* ile *"iş düştü"* ayrımını hatırla — ikisi ekran görüntüsünde
+aynı görünüyor.
 
 ### Kalan iş
 

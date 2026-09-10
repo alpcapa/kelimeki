@@ -231,7 +231,8 @@ satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
 | #492 (FAZ C) | iOS entitlements + bildirim paneli kanalı + Mac'siz imzalama zinciri | `ios/Runner/Runner.entitlements` (YENİ), `ios/Runner/Info.plist`, `ios/Runner/AppDelegate.swift`, `ios/Runner.xcodeproj/project.pbxproj`, `Gemfile` + `fastlane/*` (YENİ), `test/notification_shade_parity_test.dart`. ⚠ **Android'i ETKİLEMEZ** — dokunulan her şey `ios/` altında ya da yalnızca CI'da koşan imzalama zinciri. ⚠ Bu satır 9 Eylül 2026'da **geriye dönük** eklendi: #492 kendi PR'ında tabloya yazılmamıştı ve refleks komutuyla (`git log 1abde38..origin/main -- mobile/app`) yakalandı — kuralın BEŞİNCİ kaçırılışı |
 | #497 (FAZ C 24.5) | Mağaza ekran görüntüsü boru hattı — `integration_test/` + `test_driver/` | `pubspec.yaml` (`integration_test` **dev** bağımlılığı), `integration_test/store_screenshots_test.dart` (YENİ), `test_driver/integration_test.dart` (YENİ). ⚠ **Sıradaki sürüme HİÇBİR ŞEY taşımıyor**: dev bağımlılığı mağazaya giden ikiliye girmez, `flutter test` `integration_test/`i toplamaz ve yeni kod yalnızca `flutter drive` ile koşar. Tabloda olmasının sebebi `mobile/app/` altına dokunmuş olması |
 | #498 · #499 · #500 (FAZ C 24.2) | TestFlight zincirinin ilk gerçek koşuları — `setup_ci`, `build_app` yolları, elle imzalama | Yalnızca `fastlane/Fastfile` (+ `mobile-build.yml`). ⚠ **Sıradaki sürüme hiçbir şey taşımıyor** — fastlane yalnızca CI'da koşuyor, uygulama ikilisine girmiyor. Tabloda olmasının sebebi `mobile/app/` altına dokunmuş olması |
-| Bu PR (FAZ C 24.2) | iPad yönelimleri — Apple'ın 90474 reddi | ⚠ **BU SATIR SÜRÜME GERÇEKTEN BİNİYOR:** `ios/Runner/Info.plist` → `UISupportedInterfaceOrientations~ipad` dörde çıktı, yani **uygulama iPad'de döndürülebilir hâle geliyor** ve portta manzara düzeni YOK. Android'i ETKİLEMEZ (dosya `ios/` altında). Cihaz kontrolü: `mobile/TESTING.md` §26 |
+| Bu PR (arşiv §25) | iPad düzen kapısı — `test/ipad_layout_test.dart` (YENİ, 9 test) | Yalnızca bir TEST dosyası. ⚠ **Sıradaki sürüme HİÇBİR ŞEY taşımıyor** — `test/` mağazaya giden ikiliye girmez ve uygulama kodu değişmedi (§25'in kararı zaten *"düzen değişmiyor"*). Tabloda olmasının sebebi #497'nin aynısı: `mobile/app/` altına dokunmuş olması. ⚠ Aynı PR'da denenen `integration_test` yolu GERİ ALINDI (simülatör döndürülemiyor — `UISceneErrorDomain 101`), `store_screenshots_test.dart` bayt bayt eski hâlinde |
+| #501 (FAZ C 24.2) | iPad yönelimleri — Apple'ın 90474 reddi | ⚠ **BU SATIR SÜRÜME GERÇEKTEN BİNİYOR:** `ios/Runner/Info.plist` → `UISupportedInterfaceOrientations~ipad` dörde çıktı, yani **uygulama iPad'de döndürülebilir hâle geliyor** ve portta manzara düzeni YOK. Android'i ETKİLEMEZ (dosya `ios/` altında). Cihaz kontrolü: `mobile/TESTING.md` §26 |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
@@ -1242,47 +1243,6 @@ değişir (web · Dart · Edge) ve `verify-edge-engine-parity` ayrışmayı yaka
 | 4 | ✅ kod (6 Eylül 2026): ZORLUK seçici + üç kartta seviyeli puan/rozet + devam eden kartı rozeti, `ai_level` kayıt/liste/Favoriler, `ai_level_parity_test` (web etiket/liste/açıklama/yardım paragrafı ↔ port), `flutter analyze` temiz. **Cihaz kanıtı sürüm turunda:** portta Kolay seçilip bitirilen oyun web'de aynı puanla görünüyor ve tersi (aynı hesap, iki cihaz) — `mobile/TESTING.md` §13 |
 | 5 | ✅ kod (7 Eylül 2026, PR #475): Zor = geniş arama, YZ↔YZ Normal'e karşı **%70** (tohum 1, GA %63-75) ve **%72** (tohum 1000, GA %66-78); Normal golden'ları git diff boş; `reducer_ai2_zor` + `ai_level.json` Dart'ta yeşil (6883 kontrol); `verify-edge-engine-parity` `AI_LEVEL_SEARCH` kilidi + Zor adımıyla yeşil; `play-ai-turn` yeniden deploy edildi (`verify_jwt=true` korundu); seçici web+portta açık, `ai_level_parity_test` + smoke Zor testi yeşil; web canlıda `dd55ae0`. **KALAN:** sahada iki hafta — Kolay ~%30 / Zor ~%70 YZ kazanma bandında |
 
-
-## 25. iPad MANZARA düzeni — **AÇILDI** (9 Eylül 2026)
-
-**Kullanıcı kararı, sözleri birebir:** *"Ipad olmazsa olmaz. Bu oyunun en
-iyi oynandığı yer orası."*
-
-Bu, iPad'in konumunu değiştiriyor: "desteklenen ikinci cihaz" değil,
-**birinci sınıf yüzey**. Dolayısıyla manzara sorusu da değişiyor —
-*"kırılıyor mu?"* değil, ***"iyi mi?"***
-
-**Nasıl açıldı:** App Store yüklemesi bundle'ı reddetti (90474) — iPad'i
-destekleyen bir uygulama `UISupportedInterfaceOrientations~ipad` altında
-DÖRT yönelimi bildirmek zorunda. `Info.plist` düzeltildi (#501) ve bunun
-sonucu şu: **uygulama iPad'de artık döndürülebilir.**
-
-⚠ **`main.dart`in portre kilidi iPad'de FİİLEN ÖLÜ.**
-`setPreferredOrientations([portraitUp])` iPhone'da tutuyor, ama çoklu göreve
-açık bir iPad uygulamasında iOS onu yok sayıyor; `UIRequiresFullScreen` ile
-kapatmak da modern SDK'larda güvenilir değil. Yani manzara artık bir
-"ihtimal" değil, kullanıcının bir saniyede ulaşacağı hâl.
-
-⚠ **Portta manzara için HİÇBİR ŞEY yok** (kaynak taramasıyla doğrulandı):
-web'in `LandscapeHint` bileşeninin karşılığı hiç port edilmedi, manzaraya
-özgü bir düzen de yok.
-
-**Sıra:**
-
-1. **ÖLÇ — cihazda.** `mobile/TESTING.md` §26: oyun ekranı (tahta sığıyor
-   mu, raf/butonlar erişilebilir mi, taşma var mı), Setup, modallar,
-   Split View, portreye dönüş. Ölçmeden tasarım yapılmayacak.
-2. **Karar ver.** Üç yol: (a) manzaraya özgü düzen — 13" iPad'de yatay
-   tahta + yan panel bu oyun için muhtemelen EN İYİ deneyim, (b) mevcut
-   düzenin manzarada da yeterli olduğunu ölçüp bırakmak, (c) geçici olarak
-   `LandscapeHint` portu.
-3. ⚠ **iPad desteğini bırakmak SEÇENEK DEĞİL** — kullanıcı kararı yukarıda.
-   `TARGETED_DEVICE_FAMILY = "1,2"` kalıyor.
-
-**Neden ROADMAP'te:** bu bir gönderim kapısı DEĞİL (Apple bundle'ı yönelimler
-bildirildiği an kabul ediyor), ama iPad birinci sınıf yüzeyse App Store'da
-"en iyi oynandığı yer" olarak sunulan cihazda ölçülmemiş bir düzen bırakmak
-kabul edilebilir değil.
 
 ## 24. FAZ C — App Store yayını — **YÜRÜYOR** (8 Eylül 2026)
 

@@ -11,6 +11,18 @@
 # ÇIKTI: her cihaz için PNG'ler, artefakt olarak. **Repoya COMMIT EDİLMEZ** —
 # mağaza görüntüleri üretilmiş dosyalardır ve `build/` gitignore'da.
 #
+# ⚠ BURAYA BİR "MANZARA ÖLÇÜMÜ" İŞİ EKLEME — denendi ve ELENDİ (10 Eylül
+# 2026; kayıt: docs/decisions/roadmap-arsiv.md → §25). Fikir makuldü: iPad manzarası hiç bakılmamış bir
+# yüzeydi ve bu iş akışı zaten gerçek bir iPad Pro 13" simülatörü
+# koşturuyor. Ama simülatör DÖNDÜRÜLEMİYOR — iOS'un kendi hatası:
+#   UISceneErrorDomain Code=101 "The current windowing mode does not allow
+#   for programmatic changes to interface orientation."
+# Yani `SystemChrome.setPreferredOrientations` çoklu göreve açık bir iPad
+# uygulamasında iki yönde de geçersiz (§25 bunun portre yönünü zaten
+# yazıyordu). Manzara metriklerini kuran tek şey `tester.view.physicalSize`
+# override'ı — o da platformdan BAĞIMSIZ, yani ölçüm Linux'ta ücretsiz
+# koşuyor: `mobile/app/test/ipad_layout_test.dart`.
+#
 # ⚠ Kare KIRPILMAZ. Play turunda ham kare Play'in 2:1 tavanını aştığı için
 # kırpmak ZORUNLUYDU; App Store TAM piksel ölçüsü istiyor ve kırpmak kareyi
 # geçersiz yapar. Aşağıdaki ölçüm adımı bunu her koşuda kanıtlıyor.
