@@ -25,6 +25,44 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 198 — DAR EKRAN (375 pt) GERÇEK BİR HEDEF: tanıtım
+     rozetleri ve Setup'ın birincil butonu (10 Eylül 2026, iPhone/TestFlight):**
+     Kullanıcı iki şey bildirdi — *"tanıtım ilk slaytta X2/X3 legend'lar 2
+     satıra çıktığı için yazı alta kaymış"* ve *"setup tarafında oyna butonu
+     ekran dışında kalıyor"*. İlk hipotez ("sistem yazı boyutu büyütülmüş")
+     ekran görüntüleriyle ÇÜRÜDÜ: hem iPhone hem iPad varsayılan Dynamic
+     Type'taydı.
+
+     **Ölçüm teşhisi verdi** (gerçek fontlarla widget testi): rozetler
+     375 pt'de ×1,0'da bile alt alta düşüyor, 390/393 pt'de düşmüyor;
+     393 pt'de ×1,15'te düşüyor. Setup'ta gerçek güvenli alan paylarıyla
+     (üst 59 · alt 34) `OYUNU BAŞLAT` 375 pt ×1,0'da 769–786 → görünür alt
+     sınır 778, yani **varsayılan ayarlarla kesik**. Yani kırılmanın kaynağı
+     yazı ölçeği değil GENİŞLİK; 375 pt de egzotik değil: iPhone SE/mini ve
+     **Display Zoom açık her iPhone** oraya düşüyor.
+
+     **İki düzeltme:** (1) rozetlerin `Wrap`ı `FittedBox(scaleDown)` içine
+     alındı — sarmak yerine satırı küçültüyor, küçültme ×1,3'te ~0,76 olup
+     çarpım bugünkü ×1,0 render'ına eşit çıkıyor, yani okunaklılık
+     düşmüyor. (2) `OYUNU BAŞLAT`/`VAZGEÇ` satırı kaydırılan gövdeden
+     çıkarılıp `Scaffold.bottomNavigationBar`a yapıştırıldı (kullanıcı
+     kararı: *"A yap"*). Elenen alternatif: dar ekranda ZORLUK açıklamasını
+     gizlemek — bir eşik oyunu, bir sonraki uzayan içerikte hata geri gelir.
+
+     ⚠ **İki tuzak yaşandı:** (a) `Center` gevşek kısıt altında TÜM
+     yüksekliği kaplıyor — çubuk bütün ekranı yiyip gövdeyi ezdi, testler
+     dokunuşların çubuğa düşmesiyle yakaladı; çözüm `heightFactor: 1`.
+     (b) Buton taşınınca "kutu butona yapışmasın" iddiası anlamını
+     yitirdi (kutu artık butonun ÜSTÜNDE) — iddia SİLİNMEDİ, yapışık
+     çubuğun kendi değişmezine çevrildi: *çubuk kaydırılan içeriğin sonunu
+     kalıcı olarak gizlememeli*.
+
+     **Görmeyen testlerin sebebi tek bir sayıydı:** ikisi de tek bir boyda
+     koşuyordu (420×900/950) ve güvenli alan payı hiç modellenmemişti.
+     Artık `intro_screen_test` 375@1,0 · 375@1,3'ü, `setup_screen_test`
+     375@1,0 · 375@1,3 · 393@1,3'ü gerçek çentik/gösterge paylarıyla
+     ölçüyor. Doğrulama: `dart analyze` temiz, **835 test yeşil**.
+
    - ✅ **Parça 197 — HİÇ OYNANMAMIŞ OYUN ARTIK PORTTA DA HİÇ
      YAZILMIYOR (10 Eylül 2026; ilk TestFlight turunda kullanıcı gördü):**
      Cihaz turu (1.0.9/620, `Derleme 46664f6`) temiz geçti; tek gözlem şuydu:
