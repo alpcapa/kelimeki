@@ -48,7 +48,7 @@ class LiveGameCreateForm extends StatefulWidget {
   final Future<GamesRepo>? games;
   final FeedbackRepo? feedback;
 
-  /// "Arkadaşlarım" satırındaki moderasyon (sessize alma/şikayet) ikonu için
+  /// "Arkadaşlar" satırındaki moderasyon (sessize alma/şikayet) ikonu için
   /// — bu ekrandan açılan FriendsModal, hesap menüsünden açılanla AYNI
   /// görünmek zorunda; geçilmezse aynı satır orada ikonlu burada ikonsuz
   /// olurdu.

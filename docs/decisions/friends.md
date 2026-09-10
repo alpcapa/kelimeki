@@ -8,6 +8,26 @@
 > `live-game.md` (Canlı oyun Faz 2-3.6, sunucu tarafı), `online-game-screen.md`
 > (`OnlineGameScreen.tsx` — canlı oyun ekranının UI kararları).
 
+## Sekme adları: "Arkadaşlarım" → **Arkadaşlar**, "İstekler" → **Davetler** (10 Eylül 2026)
+
+Kullanıcı isteği, kozmetik. `FriendsModal.tsx` ↔ `friends_modal.dart` aynı
+PR'da; boş durum metni de birlikte gitti (*"Bekleyen istek yok."* →
+*"Bekleyen davet yok."*), çünkü o cümle sekmenin adını tekrar ediyor. Aynı
+sebeple "Ara & Ekle"nin *"hepsi zaten arkadaşın — 'Arkadaşlarım' sekmesine
+bak"* ipucu da yeni ada çevrildi: bir metin sekmeyi ADIYLA işaret ediyorsa
+etiketle birlikte değişmek zorunda.
+
+⚠ **Değişen yalnızca ETİKET.** Sekme kimliği (`Tab`/`FriendsTab.requests`),
+RPC adları (`list_incoming_friend_requests`), tablo/kolon adları ve veri
+dili ("bekleyen istek") olduğu gibi duruyor — bunlar sunucu sözleşmesi.
+Yani bu dosyadaki (ve `docs/decisions/*` içindeki) daha ESKİ notlarda geçen
+"Arkadaşlarım"/"İstekler" adları tarihsel: o gün ekranda o yazıyordu.
+
+Kapı: `mobile/app/test/friends_test.dart` etiketi BÜYÜK harfle arıyor
+(`find.text('DAVETLER')` — iki platformda da sekme yazısı `uppercase`), yani
+port etiketi geri kayarsa test düşer. Web'de aynı güvence yok; oradaki tek
+kaynak `FriendsModal.tsx`.
+
 ## "Ara & Ekle" iki hatası: yutulan kaydırma + mükerrer üye (27 Ağustos 2026)
 
 Kullanıcı bildirdi: *"Arkadaşlar - Ara&Ekle'de scroll down bir yerde

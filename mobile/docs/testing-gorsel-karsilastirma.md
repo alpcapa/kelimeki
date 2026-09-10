@@ -155,7 +155,7 @@ hesapla açıp yan yana koyarak koş.
 - [ ] **Setup'ın en altı.** "Kullanım Koşulları · Gizlilik Politikası"
       görünmeli ve ikisi de ilgili modalı açmalı. (Altındaki `Sürüm … ·
       depo ok` teşhis satırı BİLİNÇLİ olarak yalnızca app'te var.)
-- [ ] **Arkadaşlar modalı.** Üç sekmenin (Arkadaşlarım/İstekler/Ara &
+- [ ] **Arkadaşlar modalı.** Üç sekmenin (Arkadaşlar/Davetler/Ara &
       Ekle) puntosu ve "Arkadaşını Davet Et"in altındaki küçük butonların
       boyu web'le aynı olmalı.
 

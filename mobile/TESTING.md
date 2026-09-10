@@ -1292,7 +1292,7 @@ listesi kök `TESTING.md` bölüm 10.
       satırın puntosuna göre boyutlanmış olmalı: hesap menüsünün başlığı
       (18px) · Skor Kartı'ndaki kendi ismin (20px) · başka bir oyuncunun
       kartı (20px) · Setup'ta 1. koltuktaki hesap adı (18px) · Arkadaşlar
-      modalının ÜÇ sekmesi de (18px — "Arkadaşlarım", "İstekler",
+      modalının ÜÇ sekmesi de (18px — "Arkadaşlar", "Davetler",
       "Ara & Ekle") · "+ Yeni Canlı Oyun" arkadaş seçici (18px) · Oyun
       davetleri kartındaki katılımcı isimleri (16px). **Skor kartlarında
       artık İKİ mühür var** — başlıktaki 34px'lik tıklanabilir mühür VE

@@ -1,9 +1,9 @@
 // Arkadaşlar modalı — src/components/FriendsModal.tsx portu: üç sekme
-// (Arkadaşlarım / İstekler / Ara & Ekle) + kalıcı davet linkini sistem
+// (Arkadaşlar / Davetler / Ara & Ekle) + kalıcı davet linkini sistem
 // paylaş sayfasıyla gönderme.
 //
 // Web'den taşınan davranışlar:
-// - Varsayılan sekme: bekleyen istek varsa "İstekler" (appliedDefaultTabRef
+// - Varsayılan sekme: bekleyen istek varsa "Davetler" (appliedDefaultTabRef
 //   deseni — çağıran initialTab belirttiyse o niyet ezilmez).
 // - Arama 350ms debounce + en az 2 karakter; kutu boşken "Tüm Üyeler"
 //   sayfalı listesi (20'şer), HER yeni sayfadan sonra TÜM birikmiş liste
@@ -105,7 +105,7 @@ class FriendsModal extends StatefulWidget {
   /// çizilmez — "çalışmayan kontrol koymuyoruz" deseni.
   final ChatRepo? chat;
 
-  /// null: varsayılan-sekme kuralı çalışır (bekleyen istek → İstekler).
+  /// null: varsayılan-sekme kuralı çalışır (bekleyen istek → Davetler).
   /// Açıkça verilirse (web `initialTab`) o niyet ezilmez.
   final FriendsTab? initialTab;
 
@@ -155,7 +155,7 @@ class _FriendsModalState extends State<FriendsModal> {
   /// overflow-y-auto`'su bu yüzden orada sorun çıkarmıyor) parmağını listeye
   /// koyan kullanıcı dış gövdeyi HİÇ kaydıramıyordu: 60 sürüklemeden sonra
   /// dış offset ölçülen değeriyle 0.0'dı. Çözüm iç kaydırılabiliri tamamen
-  /// KALDIRMAK — liste artık "Arkadaşlarım"/"İstekler" gibi düz bir Column
+  /// KALDIRMAK — liste artık "Arkadaşlar"/"Davetler" gibi düz bir Column
   /// ve modalda tek bir kaydırılabilir var.
   final _bodyScroll = ScrollController();
 
@@ -211,7 +211,7 @@ class _FriendsModalState extends State<FriendsModal> {
         } else {
           _requests ??= const [];
         }
-        // Varsayılan sekme: bekleyen istek varsa "İstekler" — yalnızca
+        // Varsayılan sekme: bekleyen istek varsa "Davetler" — yalnızca
         // GERÇEK sunucu verisiyle ve bir kez (web hasFreshGames dersi:
         // karar bayat/boş veriyle verilirse kalıcı yanlış kalır).
         if (!_appliedDefaultTab && r != null) {
@@ -295,7 +295,7 @@ class _FriendsModalState extends State<FriendsModal> {
   }
 
   /// "Ara & Ekle" listeleri zaten arkadaş olunanları GÖSTERMEZ (kullanıcı
-  /// isteği, 11 Ağustos 2026) — onlar "Arkadaşlarım" sekmesinde. Eleme
+  /// isteği, 11 Ağustos 2026) — onlar "Arkadaşlar" sekmesinde. Eleme
   /// fetch'te değil RENDER'da: (1) `_allUsers.length` sayfalama offset'i
   /// olduğundan diziden atmak sayfaları kaydırıp üye atlatırdı; (2) satır
   /// ekrandayken arkadaş olunursa `_patchRelation` ilişkiyi accepted yapar
@@ -427,8 +427,8 @@ class _FriendsModalState extends State<FriendsModal> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Row(children: [
-              _tabBtn(FriendsTab.friends, 'Arkadaşlarım'),
-              _tabBtn(FriendsTab.requests, 'İstekler',
+              _tabBtn(FriendsTab.friends, 'Arkadaşlar'),
+              _tabBtn(FriendsTab.requests, 'Davetler',
                   badge: _requests?.length ?? 0),
               _tabBtn(FriendsTab.search, 'Ara & Ekle'),
             ]),
@@ -530,7 +530,7 @@ class _FriendsModalState extends State<FriendsModal> {
       );
 
   /// Sessize aldığım/şikayet ettiğim kişiler → kaynak oyun id'si.
-  /// "Arkadaşlarım" satırındaki 🚫/🚩 ikonunu besliyor.
+  /// "Arkadaşlar" satırındaki 🚫/🚩 ikonunu besliyor.
   Map<String, String> _modMuted = const {};
   Map<String, String> _modReported = const {};
 
@@ -598,7 +598,7 @@ class _FriendsModalState extends State<FriendsModal> {
   Widget _requestsList() {
     final requests = _requests;
     if (requests == null) return _loading();
-    if (requests.isEmpty) return _emptyText('Bekleyen istek yok.');
+    if (requests.isEmpty) return _emptyText('Bekleyen davet yok.');
     // ⚠ BÜYÜK YAZI ÖLÇEĞİNDE SATIR İKİYE BÖLÜNÜR (28 Ağustos 2026, kullanıcı
     // cihazda bildirdi: *"arkadaşlık davetinde davetin kimden geldiği
     // görünmüyor"* — ekran görüntüsünde avatar ve rütbe mührü duruyor, isim
@@ -611,7 +611,7 @@ class _FriendsModalState extends State<FriendsModal> {
     // `CARD_HEADER` düzeltmesinin (23 Ağustos 2026) taşıdığı ilke bu. Eşik
     // aşılınca isim kendi satırını alıyor, butonlar altta sağa yaslanıyor.
     //
-    // YALNIZCA BU LİSTE bölünüyor: "Arkadaşlarım" ve "Ara & Ekle"
+    // YALNIZCA BU LİSTE bölünüyor: "Arkadaşlar" ve "Ara & Ekle"
     // satırlarının aksiyonu 44 px'lik SABİT ikon butonları, metin değil —
     // onlar ölçekle büyümediğinden ismi de ezmiyorlar. Gereksiz yere
     // bölmek o iki listeyi çirkinleştirirdi.
@@ -675,7 +675,7 @@ class _FriendsModalState extends State<FriendsModal> {
                       ? "Kimse bulunamadı — Kelimeki'de değilse "
                           'yukarıdaki davet linkini gönderebilirsin.'
                       : 'Bulunanların hepsi zaten arkadaşın — '
-                          '"Arkadaşlarım" sekmesine bak.')
+                          '"Arkadaşlar" sekmesine bak.')
                   : Column(
                       children: [
                         for (final u in _visibleResults) _candidateRow(u)
@@ -726,7 +726,7 @@ class _FriendsModalState extends State<FriendsModal> {
   /// yapmaz. `accepted` dalı pratikte ULAŞILAMAZ (bu satır yalnızca
   /// "Ara & Ekle" listelerinde çiziliyor ve orası arkadaşları eliyor, bkz.
   /// `_notFriend`) — savunma amaçlı duruyor: silinirse bir gün eleme
-  /// atlanınca arkadaşa "ekle" ikonu gösterilirdi. "Arkadaşlarım" sekmesi
+  /// atlanınca arkadaşa "ekle" ikonu gösterilirdi. "Arkadaşlar" sekmesi
   /// bu satırı kullanmaz, kendi çıkarma butonu var.
   Widget _candidateRow(FriendCandidate u) {
     final (Widget ikon, String etiket, VoidCallback aksiyon) =
@@ -766,9 +766,9 @@ class _FriendsModalState extends State<FriendsModal> {
     );
   }
 
-  /// Avatar+isim: dokununca o kişinin skor kartı. "Arkadaşlarım"da baştan
+  /// Avatar+isim: dokununca o kişinin skor kartı. "Arkadaşlar"da baştan
   /// beri vardı, ÜÇ listede de olmalı (kullanıcı isteği, 11 Ağustos 2026) —
-  /// hele "İstekler"de, isteği yanıtlamadan önce kimin gönderdiğine bakmak
+  /// hele "Davetler"de, isteği yanıtlamadan önce kimin gönderdiğine bakmak
   /// tam da orada gerekiyor. Kart kapanınca ilişki yeniden okunuyor: kullanıcı
   /// kartın İÇİNDEN arkadaş ekleyip çıkabildiğinden (`PlayerScoreCardModal`'ın
   /// kendi simgesi) arkadaki satırın ikonu yoksa bayat kalırdı.
@@ -938,7 +938,7 @@ class _FriendsModalState extends State<FriendsModal> {
     setState(() => _busyId = u.id);
     try {
       await widget.friends.removeOrCancel(u.id);
-      // Listedeki ikon anında person_add'e dönsün + Arkadaşlarım tazelensin.
+      // Listedeki ikon anında person_add'e dönsün + Arkadaşlar tazelensin.
       _patchRelation(u.id, null);
       _reloadFriends();
       if (mounted) {
