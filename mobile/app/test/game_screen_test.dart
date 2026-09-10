@@ -709,6 +709,24 @@ void main() {
   });
 
   testWidgets(
+      'Kalan Taşlar: myIndex -1 iken ÇÖKMEZ (canlı ekranın _mySlot\'u koltuk '
+      'bulamazsa -1 döner; players[-1] Dart\'ta RangeError atıyordu)',
+      (tester) async {
+    await setPhoneViewSize(tester, const Size(420, 900));
+    final controller = await pumpGame(tester, GlobalKey());
+
+    await tester.pumpWidget(MaterialApp(
+      home: RemainingTilesModal(state: controller.state, myIndex: -1),
+    ));
+    await tester.pumpAndSettle();
+
+    // Koltuğu olmayan için "bende" diye düşülecek taş YOK: 100 − tahta 0 = 100.
+    expect(tester.takeException(), isNull);
+    expect(find.text('KALAN TAŞLAR'), findsOneWidget);
+    expect(find.textContaining('100'), findsOneWidget);
+  });
+
+  testWidgets(
       'Kalan Taşlar KModal kabuğunda: 360px kart + web h-12 (48px) hücre '
       '(Parça 50: ham Dialog iPad\'de kartı ekrana yayıp taşları '
       'devleştiriyordu)', (tester) async {

@@ -302,6 +302,27 @@ sarmalayıcı zinciri, sınıflar, kararlar) okumaktır. Ancak ondan sonra
    izole ölçüm "fark yok" deyip beni yanlış sonuca götürdü (bkz. o
    parçanın notu).
 
+### ⚠ JS'in bağışladığını Dart AFFETMEZ — negatif/taşan indeks (10 Eylül 2026)
+
+Web'den port edilen bir satırın **aynı görünüp farklı davrandığı** bir sınıf
+var ve derleyici de testler de görmez: JavaScript'te `dizi[-1]` sessizce
+`undefined` verir, Dart'ta **RangeError atar**.
+
+Vaka: `RemainingTilesModal`. Web'de satır `state.players[myIndex]?.rack ?? []`
+— `myIndex` -1 olunca boş rafa düşüyor. Port ikizi bunu
+`myIndex < state.players.length ? ... : []` diye yazmıştı; üst sınırı
+koruyor, ALT sınırı korumuyordu. `myIndex` gerçekten -1 olabiliyor: canlı
+ekranın `_mySlot`'u `slots.indexWhere` sonucudur ve o ekran bunu **altı ayrı
+yerde** `if (_mySlot < 0)` ile eliyor — modal elemiyordu, yani "Kalan Taşlar"
+penceresi koltuksuz bir çağıranda AÇILIRKEN ÇÖKERDİ.
+
+**Kural:** web'de `?.` ya da `?? []` gören her satırda, portta indeksin
+NEGATİF olabilirliğini ayrıca sor. Bir üst-sınır kontrolü (`< length`)
+alt sınırı ima ETMEZ. Kaynakta `indexWhere`/`indexOf` varsa -1 mümkündür.
+
+Regresyon: `game_screen_test.dart` → *"myIndex -1 iken ÇÖKMEZ"*; testin
+duyarlılığı düzeltme geri alınarak kanıtlandı (düzeltmesiz DÜŞÜYOR).
+
 ## Etki Analizi (ZORUNLU — her parçanın İLK adımı)
 
 Bu, kök `CLAUDE.md`'deki **"Çalışma İlkesi: Önce Etki Analizi, Sonra
@@ -338,6 +359,7 @@ grep -rn "local_game_saves" app/lib/                        # yalnız cloud_save
 grep -rln "\.from('" app/lib/                               # Supabase yalnız veri katmanında
 grep -rn "await newRepo(" app/test/*_test.dart              # testWidgets İÇİNDE çıkarsa newRepoForWidget'a çevir (runAsync)
 grep -rn "Path.combine\|PathOperation" app/lib/             # CanvasKit'te PathOps GÜVENİLMEZ (bkz. Parça 18) — evenOdd kullan
+grep -rn "\.players\[" app/lib/                             # negatif indeks: JS `undefined` verir, Dart RangeError ATAR (aşağı)
 grep -rn "Color(0xFF" app/lib/src/ui/ | grep -v tokens.dart # renk paleti TEK kaynaktan: ui/tokens.dart (bkz. Parça 54)
 grep -rn "MaskFilter" app/lib/ --include=*.dart -l | grep -v neo_box  # gölge çizimi TEK yerden (bkz. Parça 144)
 grep -rn "shareOriginFrom(context)" app/lib/                # iPad ankrajı: DÜĞMENİN kutusu şart, State.context ekranın TAMAMI olur ve paylaşım iPad'de ASILI KALIR (bkz. Parça 181)

@@ -11,6 +11,34 @@
 > ⚠ Bir bileşen atfı ararken önce hangi cilde ait olduğuna bak; `grep` üç
 > dosyada birden çalıştırılabilir.
 
+- **`RemainingTilesModal` — 10 Eylül 2026: iki ayrı iş, biri düzeltildi biri ÜRETİLEMEDİ.**
+  Bir testçi (karakafa, Android 1.0.9) şunu bildirdi: *"Elimde Ö vardı, torbaya
+  bastım, Ö soluk değildi — dışarıda bir tane daha varmış gibi."* İddia
+  ölçüldü ve **doğrulanamadı**; aramanın kaydı, çünkü tekrarlanırsa buradan
+  devam edilmeli:
+  - Onun O ANKİ canlı oyununun gerçek verisiyle (tahta 46 taş, rafı
+    `T E T İ A N S`) döküm HEM web'in TypeScript'iyle HEM cihazda koşan
+    **Dart motoruyla** yeniden hesaplandı: toplam **47** = torba 40 + rakip
+    rafı 7, ve elinde tuttuğu son **İ** dökümde **0** → **SOLUK**. Yani
+    "elindeki hariç" kuralı tam olarak çalışıyor.
+  - **16 aktif canlı oyunun hepsinde** tahta+raflar+torba = **100** (fiziksel
+    tutarlılık, dökümün doğru olmasının ön koşulu — bkz. aşağıdaki not).
+  - Harf dağılımı web ↔ port **birebir aynı** (otomatik karşılaştırıldı;
+    `Ö` = 7 puan, **1 adet**). Parite ayrışması yok.
+  - `_mySlot` doğru koltuğu gösteriyor (`slots[1]` = `players[1]`), slots
+    dizisi sunucuda `order by elem.ord` ile sırasını koruyor.
+  - Yerel (YZ) oyun kaydı YOK, yalnızca Android'den canlı oynuyor.
+  **Kapatmak için gereken:** pencere açıkken rafının da göründüğü tek kare
+  (ya da art arda iki kare) + hangi oyun + YZ mi/canlı mı. Kullanıcı bir
+  sonraki tekrarında görüntü isteyecek.
+
+  **Aynı aramada GERÇEK bir kusur bulundu ve düzeltildi (port-only):**
+  modal `myIndex`'i negatife karşı korumuyordu (`players[-1]` Dart'ta
+  RangeError). Web'de aynı satır `players[myIndex]?.rack ?? []` olduğundan
+  JS sessizce boş rafa düşüyor — yani hata YALNIZCA portta vardı ve
+  şikâyetle ilgisi yok. Sınıfın genel kaydı: `mobile/CLAUDE.md` → *"JS'in
+  bağışladığını Dart AFFETMEZ"*.
+
 - **`RemainingTilesModal` / "Kalan Taşlar" (TORBA)** (`src/components/RemainingTilesModal.tsx` + `remainingTiles`, `src/utils/bag.ts`) — alt şeritteki `TORBA N` düğmesinin açtığı döküm: "tahtada olmayan ve sende bulunmayan taşlar (torba + rakipler)". Hesap `dağılım − tahta − kendi rafım − bekleyen taşlar`; **doğru sonuç vermesi state'in fiziksel olarak tutarlı olmasına bağlı** (100 taşın tamamı ya tahtada, ya bir rafta, ya torbada) — bir test fixture'ı kurarken torbayı boşaltıp dağılımın kalanını hiçbir yere koymamak dökümü anlamsız kılar (doğrulama betiği ilk yazımında tam bu hataya düştü: 3 taş beklenirken 94 çıktı).
   **BULUNAN HATA (18 Ağustos 2026, kullanıcı bildirdi) — bekleyen taşlar rakibin eline yazılıyordu:** Kullanıcı torba boşken, son hamlesini onaylamadan önce YZ'nin elinde kalan taşları sayıp **10 puan** buldu; bitiş kartında **-7** gördü. Kart DOĞRUYDU (`endGame`, `gameReducer.ts` — rakibin gerçek rafını toplar), yanlış olan DÖKÜMDÜ. Kök sebep bir kova boşluğu: `PLACE_TILE` taşı raftan ÇIKARIP `state.placed`e koyuyor, `state.board`a ancak `PLAY` onayı yazıyor; `remainingTiles` yalnızca `board` ve `myRack`i düştüğünden o aradaki taşlar hiçbir kovada görünmeyip "dışarıda" — yani rakibin elinde — sayılıyordu. Fark tam olarak masadaki bekleyen taşların puanı kadardı (10 − 7 = 3).
   **Düzeltme:** `remainingTiles(board, myRack, placedTiles = [])` üçüncü bir parametre alıyor, modal `Object.values(state.placed)` geçiyor. **Jokerde de doğru:** `tileKey` bir jokeri her zaman `'?'`e çözdüğünden, `A`ya çevrilip masaya konan bir joker dökümdeki `A` sayısını artırmıyor (düzeltmeden önce hem fazladan bir joker hem fazladan bir `A` görünüyordu).
