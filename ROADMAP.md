@@ -1624,6 +1624,25 @@ rengini/oranını değiştirmeyi yasaklıyor. Bu depo logosunu SVG path'e
 yan yana** göster, her rozetin kendi "clear space" kuralına uy; minimum
 ölçüleri ezberden değil kendi güncel kılavuz sayfalarından oku.
 
+⚠ **ÖLÇÜLDÜ (10 Eylül 2026, kullanıcı denedi): Apple rozeti yayına
+girmeden ALINAMIYOR.** Kılavuz sayfasındaki hafif yol olan **App Store
+Marketing Tools**, rozeti vermeden önce uygulamayı **arattırıyor**;
+Kelimeki App Store'da olmadığı için o akış ilerlemiyor. Yani bu madde
+yalnızca "link 404" yüzünden değil, **rozet dosyası da elde edilemediği
+için** bekliyor. Aynı sayfadaki `Download (All Versions)` bağlantısı
+çalışıyor ama **336 MB** (her dil × her stil × her boyut) — yayın
+gecikirse yedek yol budur, arşivden yalnızca Türkçe siyah dosya alınır,
+gerisi repoya GİRMEZ.
+
+⚠ **Apple'ın "Preferred Badges" kuralları — yerleşimi BAĞLAR** (aynı
+sayfadan, 10 Eylül 2026):
+
+| Kural | Bizde karşılığı |
+|---|---|
+| Başka platform rozetleriyle aynı düzendeyse **siyah** rozet kullanılır | Play rozetiyle yan yana duracağımız için siyah şart |
+| Rozeti çevreleyen **gri kenarlık artwork'ün parçasıdır**, değiştirilmez | Kırpma/yeniden çerçeveleme yok |
+| *"Place the App Store badge first in the lineup"* | **App Store SOLDA, Google Play SAĞDA** — bu, ilk önerilen sıralamayı tersine çevirdi |
+
 ### Efor
 
 Yarım gün (testler + doküman senkronu dahil). Hiçbir şeye bağımlı değil —
