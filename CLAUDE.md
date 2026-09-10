@@ -264,7 +264,9 @@ farklı bağlamda yeniden inen bir değişikliği "yok" işaretler.
 
 ⚠ **Dal SİLMEYİ ajan yapamaz — üç kapı da kapalı** (4 Eylül 2026'da
 ölçüldü): `git push --delete` 403, GitHub MCP'de ref silen araç yok,
-`branch-cleanup.yml`i dispatch etmek de 403 (App'in `actions: write`i yok).
+`branch-cleanup.yml`i dispatch etmek de 403 (App'in `actions: write`i yok —
+10 Eylül 2026'da ölçüldü: bu HER `workflow_dispatch` için geçerli,
+`ios-screenshots.yml` de 403 verdi).
 Doğru davranış "ben hallederim" demek değil, kullanıcıya adımı vermek:
 **Actions → "Dal temizliği" → Run workflow**, önce `dry_run` AÇIK, liste
 doğrulanınca KAPALI ile tekrar. ⚠ Vaat etmeden ÖNCE dene.
