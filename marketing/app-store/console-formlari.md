@@ -25,7 +25,7 @@ karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
 | APNs anahtarı | Key ID `RL4JLXL389`, Team Scoped (All Topics), Sandbox & Production | ✅ Firebase'de iki satır da dolu |
 | Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
 | Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
-| App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ⚠ üretildi ama `.p8` İNDİRİLEMEDİ (aşağı) |
+| App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ✅ `.p8` **9 Eylül 2026 akşamı bir Mac'ten indirildi** ve üç secret girildi; zincir #614/#616'da uçtan uca koştu (§3) |
 | DSA trader status | Beyan ✅ (9 Eylül 2026) · doğrulama ⏳ | ⚠ **`In Review`** — Apple doğruluyor, gönderim kapısı HÂLÂ AÇIK (§2) |
 
 **Paid Apps Agreement İMZALANMAYACAK.** `New` durumunda kalır; uygulama
@@ -534,7 +534,7 @@ değil** — durum kaydı olmayınca her oturum aynı soruları baştan sorar.
 | `APP_STORE_CONNECT_KEY_ID` | ✅ 9 Eylül 2026 |
 | `APP_STORE_CONNECT_KEY_P8` | ✅ 9 Eylül 2026 |
 | `APP_STORE_CONNECT_ISSUER_ID` | ✅ 9 Eylül 2026 (üçünün en son gireni — aşağı bkz.) |
-| **İlk koşu (doğrulama turu)** | ⚠ **KOŞTU (9 Eylül 2026, `main` #604) — `match`te düştü**, aşağı bkz. |
+| **İlk koşu (doğrulama turu)** | ✅ **TAMAMLANDI** — #604 `match`te düştü (aşağı bkz.), zincir #614'te bitti, doğru build numarası #616'da kanıtlandı: TestFlight'ta `1.0.9 (616)` · Complete |
 
 #### İlk koşunun sonucu — Apple tarafı ÇALIŞIYOR, git tarafı tıkalı
 
@@ -919,14 +919,21 @@ Kategori: **Games → Word** (Play'de de Games → Word).
 gün §10 ve §9'a YAZILMIŞTI. Dosyanın kendi kuralı ("kaynak burası") tam da
 bu yüzden var — özet liste, kaynağın kendi içinde bile bayatlayabiliyor.
 
+⚠ **10 Eylül 2026'da yine tazelendi** — aynı sebeple: `.p8` satırı hâlâ
+*"Apple'da, vaka açık"* diyordu, oysa anahtar 9 Eylül akşamı alınmış ve
+24.2 uçtan uca doğrulanmıştı. Bu tablo **iki kez** kaynağın kendi içinde
+bayatladı; bir kova kapandığında aynı turda buraya da dokun.
+
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **Ekran görüntüleri** | Ben | Yol bulundu ve ölçüldü (§13); kalan iş üretim hattı + kompozisyon |
+| **TestFlight iç test grubu** | Sen | Derleme `1.0.9 (616)` App Store Connect'te hazır ama `INTERNAL TESTING` altında **grup yok** → hiçbir cihaza gitmiyor. Cihaz turunu (iPad manzarası · push · Universal Links) tıkayan TEK şey bu. Adımlar: `mobile/docs/test-ortamlari.md` → TestFlight kurulumu, adım 6 |
+| **Ekran görüntüleri** | Ben | 6/6 kare CI'da üretiliyor ve ölçüldü (§13); kalan tek şey **kompozisyon kararı** (başlık/çerçeve) + isteğe bağlı 7. kare |
 | **Trader adresi** | Sen | Beyanın açık kalan TEK alanı (§2). Gönderim kapısı |
-| **API anahtarı `.p8`** | Apple | Support vakası açık (§3); yalnızca 24.2'yi tıkıyor |
 
 **Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
-§5 · demo hesap → §11 · Export Compliance → §12.
+§5 · demo hesap → §11 · Export Compliance → §12 · **API anahtarı `.p8` →
+§3 (9 Eylül 2026, Mac'ten indirildi)** · **imzalama + TestFlight yüklemesi
+→ §3, koşu #614/#616**.
 
 ---
 

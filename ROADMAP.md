@@ -1253,10 +1253,10 @@ yaşandı ve özet tablo altı gün bayat kaldı.)
 
 | Faz | Durum |
 |---|---|
-| **24.1** Hesap & kimlik | ✅ üyelik aktif · Team ID `8277D85FY9` · App ID + capability'ler · APNs anahtarı `RL4JLXL389` · uygulama kaydı · Free Apps Agreement · **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) · ⬜ **API anahtarı İNDİRİLEMEDİ** (Apple arızası) |
+| **24.1** Hesap & kimlik | ✅ üyelik aktif · Team ID `8277D85FY9` · App ID + capability'ler · APNs anahtarı `RL4JLXL389` · uygulama kaydı · Free Apps Agreement · **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) · ✅ **API anahtarı `.p8` ALINDI** (9 Eyl akşamı, bir Mac'ten — §3) |
 | **24.2** Mac'siz imzalama + TestFlight | ✅ **UÇTAN UCA DOĞRULANDI** (9 Eyl, koşu #614): zincir baştan sona koştu ve paket App Store Connect → TestFlight'ta **"Ready to Submit"** olarak GÖRÜLDÜ. Altı koşu, sekiz ayrı arıza; teşhis zinciri `console-formlari.md` §3'te. ⚠ Dokuzuncu arıza yeşil koşudan SONRA bulundu: paket **1.0.9 (1)** olarak yüklendi, 614 olarak değil — araya giren bayraksız `flutter build ios` `Generated.xcconfig`i eziyordu. Düzeltildi (bayrak + fastlane öncesi doğrulama) ve **koşu #616 ile kanıtlandı: TestFlight'ta `1.0.9 (616)` · Complete**; post-mortem `console-formlari.md` §3 |
-| **24.3** APNs / push | ✅ Firebase (prod+dev) · `GoogleService-Info.plist` · `Runner.entitlements` · `AppDelegate` bildirim kanalı. ⚠ `aps-environment` değeri CI'da doğrulanamaz |
-| **24.4** Universal Links | ✅ web yarısı **CANLIDA ölçüldü** (`200` + `application/json`) · ✅ iOS yarısı yazıldı · ⚠ doğrulama TestFlight ister |
+| **24.3** APNs / push | ✅ Firebase (prod+dev) · `GoogleService-Info.plist` · `Runner.entitlements` · `AppDelegate` bildirim kanalı. ⚠ `aps-environment` değeri CI'da doğrulanamaz — **kapı: TestFlight iç test grubu** (aşağı, madde 0) |
+| **24.4** Universal Links | ✅ web yarısı **CANLIDA ölçüldü** (`200` + `application/json`) · ✅ iOS yarısı yazıldı · ⚠ doğrulama TestFlight ister — **kapı: iç test grubu** (aşağı, madde 0) |
 | **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ✅ **ekran görüntüsü boru hattı ÇALIŞIYOR** — 9 Eyl, run #1 ile CI'da DOĞRULANDI: iPhone 6.9" karesi **tam 1320×2868**, artefakt 1,6 MB. iPad yarısı da run #2'de DOĞRULANDI (`2064×2752`) · ✅ **6/6 kare, iki cihazda da CI'da DOĞRULANDI** (9 Eyl, run #4: on iki PNG'nin on ikisi tam ölçüde) — açık kalan tek şey kompozisyon kararı (başlık metni/çerçeve) |
 | **24.6** Gönderim | ⬜ ⏳ **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) — kapı hâlâ açık. Kalan: doğrulama + paket (24.2) + ekran görüntüleri (24.5) |
 
@@ -1266,21 +1266,34 @@ yani gönderim kapısı HÂLÂ AÇIK. ⚠ Bu satır bir kez *"kapandı"* diye
 yazıldı ve aynı gün düzeltildi: sözlü bildirim değil, **Console'un kendi
 STATUS alanı** kanıttır (gerekçe `console-formlari.md` §2).
 
-**Sırayı tıkayan şeyler (9 Eylül akşamı itibarıyla BİRİ DÜŞTÜ):**
+**Sırayı tıkayan şeyler (10 Eylül 2026'da tazelendi — 1. madde TAMAMEN
+düştü, yerine cihaz turunun kapısı geldi):**
+0. ⬜ **TestFlight iç test grubu YOK — cihaz turunun TEK kapısı.**
+   `1.0.9 (616)` App Store Connect'te *"Ready to Submit"* duruyor ama
+   `INTERNAL TESTING` altında hiç grup olmadığından **hiçbir cihaza
+   gitmiyor** (10 Eylül 2026, kullanıcının ekran görüntüsü:
+   INVITES/INSTALLS/SESSIONS üç sütun da `–`). Bu tek adım 24.3'ün
+   (`aps-environment`), 24.4'ün (Universal Links iOS yarısı) ve
+   `mobile/TESTING.md` §26'nın (iPad manzarası) ⚠'larını birden açıyor —
+   üçü de CI'da doğrulanamıyor, üçü de yalnızca gerçek cihazda görülüyor.
+   ⚠ *"Ready to Submit"* bir engel DEĞİL: o durum DIŞ dağıtımı anlatır, iç
+   testçi için Beta App Review yok. Adımlar:
+   `mobile/docs/test-ortamlari.md` → TestFlight kurulumu, adım 6.
 1. ✅ **API anahtarı ALINDI (9 Eylül 2026 akşamı)** — bir **Mac'ten**, ilk
    denemede. iPadOS'ta (özel sekme dahil) defalarca başarısız olmuştu;
    ölçüm arızanın istemci/platform tarafında olduğunu gösteriyor, Apple'ın
-   sunucusunda değil. Support hiç yanıt vermeden çözüldü. Kalan iş
-   **secret'ların girilmesi** ve 24.2'nin İLK KOŞUSU — yani bir doğrulama
-   turu (`console-formlari.md` §3). 24.2'yi, yani imzalı paketin TestFlight'a çıkmasını
-   tıkıyor. ⚠ Ama anahtar **imzalama için zorunlu değil, OTOMASYON için
+   sunucusunda değil. Support hiç yanıt vermeden çözüldü. ✅ **Ardından
+   secret'lar girildi ve 24.2 uçtan uca doğrulandı** (#614 zinciri
+   bitirdi, #616 doğru build numarasını kanıtladı) — yani bu madde artık
+   hiçbir şeyi tıkamıyor. ⚠ Ama anahtar **imzalama için zorunlu değil, OTOMASYON için
    zorunlu** — `openssl` CSR + elle sertifika/profil + uygulamaya özel şifre
    ile anahtarsız bir zincir kurulabilir (kayıt `console-formlari.md` §3).
    Arıza uzarsa gönderim buna çevrilir.
 2. **DSA doğrulaması** — Apple inceliyor; bitmeden inceleme talebi
    gönderilemez.
 
-Bizde kalan iş yalnızca 24.5'in kalan dört karesi.
+Bizde kalan iş yalnızca 24.5'in **kompozisyon kararı** (altı karenin de
+üretimi doğrulandı; başlık/çerçeve eklenecek mi) + isteğe bağlı 7. kare.
 
 **Durum:** kullanıcı Apple Developer hesabını açtı. Bu, bugüne kadar altı
 ayrı yerde *"🔒 Apple Developer üyeliğine bloke"* diye kayıtlı olan işleri

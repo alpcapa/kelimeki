@@ -1627,7 +1627,12 @@ interface orientation."` Yani çoklu göreve açık bir iPad uygulamasında
 `setPreferredOrientations` iki yönde de geçersiz. **Cihazda gerçek dönüşü
 görebilecek tek yer SENSİN** (kayıt: `docs/decisions/roadmap-arsiv.md` → §25).
 
-iPad'de TestFlight derlemesiyle:iPad'de TestFlight derlemesiyle:
+⬜ **KAPI (10 Eylül 2026): derleme henüz hiçbir cihazda YOK.** `1.0.9 (616)`
+App Store Connect'te *"Ready to Submit"* duruyor ama `INTERNAL TESTING`
+altında grup olmadığından kurulamıyor. Bu tur o grup açılınca koşulur —
+adımlar `mobile/docs/test-ortamlari.md` → TestFlight kurulumu, adım 6.
+
+iPad'de TestFlight derlemesiyle:
 
 - [ ] Uygulamayı **yan çevir** — açılıyor mu, çöküyor mu?
       *(otomatik DEĞİL — programatik dönüş imkânsız, bu madde tamamen
