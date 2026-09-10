@@ -47,7 +47,7 @@
 - [ ] **Ara & Ekle.** Boş kutuda "Tüm Üyeler" listesi kaydırdıkça
       20'şer büyümeli; 2+ karakterle arama çalışmalı; **kişi-ekle ikonuna**
       dokun → onay ("… arkadaş olarak eklemek istiyor musun?") → "Arkadaşlık
-      isteğiniz iletilmiştir." → satırdaki ikon **kum saatine** dönmeli
+      davetiniz iletilmiştir." → satırdaki ikon **kum saatine** dönmeli
       (karşı hesapta istek görünmeli); karşılıklı istek senaryosu: karşı
       taraf sana zaten istek göndermişse mesaj "Arkadaş oldunuz." olmalı
       (sunucu trigger'ı) ve e-posta GİTMEMELİ.
@@ -117,8 +117,8 @@
       ekranda bile — özellikle iPad'de kontrol et) küçük/kompakt kalmalı,
       ekranın TAMAMINA yayılmamalı. Her işlemin (Gönder/Çıkar/Kabul Et/
       İptal Et) SONRASINDA bir "Tamam" sonuç mesajı çıkmalı: "Arkadaşlık
-      isteğiniz iletilmiştir." / "Arkadaşlıktan çıkarıldı." / "Arkadaş
-      oldunuz." / "Arkadaşlık isteği iptal edildi." (karşılıklı anlık kabul
+      davetiniz iletilmiştir." / "Arkadaşlıktan çıkarıldı." / "Arkadaş
+      oldunuz." / "Arkadaşlık daveti iptal edildi." (karşılıklı anlık kabul
       durumunda "{isim} ile artık arkadaşsınız." — bu mobile özgü, web'de
       karşılığı yok, bilinçli).
 - [ ] **Ağ hatasında SAHTE başarı YOK (13 Ağustos 2026, Parça 89).**

@@ -361,7 +361,7 @@ void main() {
       await tester.tap(find.text('EKLE'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
-      expect(find.text('Arkadaşlık isteğiniz iletilmiştir.'), findsOneWidget);
+      expect(find.text('Arkadaşlık davetiniz iletilmiştir.'), findsOneWidget);
       await tester.tap(find.text('TAMAM'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
@@ -596,7 +596,7 @@ void main() {
 
       // Eskiden KOŞULSUZ "İstek reddedildi." gösteriliyordu — hata yutulup
       // kullanıcıya GERÇEKLEŞMEMİŞ bir sonuç bildiriliyordu.
-      expect(find.text('İstek reddedildi.'), findsNothing);
+      expect(find.text('Davet reddedildi.'), findsNothing);
       expect(find.text('İşlem başarısız oldu.'), findsOneWidget);
     });
 
@@ -959,7 +959,7 @@ void main() {
       await tester.pumpAndSettle();
       // regresyon: gönderince web'in "Arkadaşlık isteğiniz iletilmiştir."
       // sonucu görünmeliydi, önceden HİÇBİR ŞEY çıkmıyordu.
-      expect(find.text('Arkadaşlık isteğiniz iletilmiştir.'), findsOneWidget);
+      expect(find.text('Arkadaşlık davetiniz iletilmiştir.'), findsOneWidget);
     });
   });
 

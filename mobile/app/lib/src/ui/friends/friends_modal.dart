@@ -738,12 +738,12 @@ class _FriendsModalState extends State<FriendsModal> {
         ),
       FriendRelation.pendingOutgoing => (
           const PersonPendingIcon(color: _muted),
-          'İstek gönderildi — iptal et',
+          'Davet gönderildi — iptal et',
           () => _confirmThenCancel(u),
         ),
       FriendRelation.pendingIncoming => (
           const Icon(Icons.how_to_reg, size: 20, color: _accent),
-          'Arkadaşlık isteğini kabul et',
+          'Arkadaşlık davetini kabul et',
           () => _confirmThenAdd(u),
         ),
       null => (
@@ -893,9 +893,9 @@ class _FriendsModalState extends State<FriendsModal> {
     final incoming = u.relation == FriendRelation.pendingIncoming;
     final ok = await confirmFriendAction(
       context,
-      title: incoming ? 'Arkadaşlık İsteği' : 'Arkadaş Ekle',
+      title: incoming ? 'Arkadaşlık Daveti' : 'Arkadaş Ekle',
       message: incoming
-          ? '${u.name} oyuncusu sana arkadaşlık isteği gönderdi. '
+          ? '${u.name} oyuncusu sana arkadaşlık daveti gönderdi. '
               'Kabul etmek istiyor musun?'
           : '${u.name} oyuncusunu arkadaş olarak eklemek istiyor musun?',
       confirmLabel: incoming ? 'Kabul Et' : 'Ekle',
@@ -915,7 +915,7 @@ class _FriendsModalState extends State<FriendsModal> {
       message = switch (result) {
         FriendRelation.accepted => 'Arkadaş oldunuz.',
         null => kFriendActionFailed,
-        _ => 'Arkadaşlık isteğiniz iletilmiştir.',
+        _ => 'Arkadaşlık davetiniz iletilmiştir.',
       };
     }
     if (!mounted) return;
@@ -977,24 +977,24 @@ class _FriendsModalState extends State<FriendsModal> {
   Future<void> _confirmThenReject(IncomingFriendRequest r) async {
     final ok = await confirmFriendAction(
       context,
-      title: 'İsteği Reddet',
+      title: 'Daveti Reddet',
       message:
-          '${r.name} oyuncusunun arkadaşlık isteğini reddetmek mi istiyorsunuz?',
+          '${r.name} oyuncusunun arkadaşlık davetini reddetmek mi istiyorsunuz?',
       confirmLabel: 'Reddet',
     );
     if (!ok || !mounted) return;
     final done = await _handleRespond(r.requesterId, accept: false);
     if (mounted) {
       await showFriendInfoDialog(
-          context, done ? 'İstek reddedildi.' : kFriendActionFailed);
+          context, done ? 'Davet reddedildi.' : kFriendActionFailed);
     }
   }
 
   Future<void> _confirmThenCancel(FriendCandidate u) async {
     final ok = await confirmFriendAction(
       context,
-      title: 'İsteği İptal Et',
-      message: '${u.name} oyuncusuna gönderdiğin arkadaşlık isteğini iptal '
+      title: 'Daveti İptal Et',
+      message: '${u.name} oyuncusuna gönderdiğin arkadaşlık davetini iptal '
           'etmek istiyor musun?',
       confirmLabel: 'İptal Et',
     );
@@ -1004,7 +1004,7 @@ class _FriendsModalState extends State<FriendsModal> {
       await widget.friends.removeOrCancel(u.id);
       _patchRelation(u.id, null);
       if (mounted) {
-        await showFriendInfoDialog(context, 'Arkadaşlık isteği iptal edildi.');
+        await showFriendInfoDialog(context, 'Arkadaşlık daveti iptal edildi.');
       }
     } catch (e) {
       debugPrint('[Kelimeki] istek iptal hatası: $e');

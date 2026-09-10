@@ -191,8 +191,8 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
           }
         case FriendRelation.pendingOutgoing:
           final ok = await confirmFriendAction(context,
-              title: 'İsteği İptal Et',
-              message: '$name oyuncusuna gönderdiğin arkadaşlık isteğini '
+              title: 'Daveti İptal Et',
+              message: '$name oyuncusuna gönderdiğin arkadaşlık davetini '
                   'iptal etmek istiyor musun?',
               confirmLabel: 'İptal Et');
           if (!ok || !mounted) return;
@@ -200,7 +200,7 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
           if (mounted) {
             setState(() => _relation = null);
             await showFriendInfoDialog(
-                context, 'Arkadaşlık isteği iptal edildi.');
+                context, 'Arkadaşlık daveti iptal edildi.');
           }
         case FriendRelation.pendingIncoming:
           // Metinler web `friendDialogCopy` ile BİREBİR — aynı gün
@@ -208,8 +208,8 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
           // uygulama içinde de tek bir dil kaldı (bu iki dal daha önce
           // web'den sessizce ayrışmıştı).
           final ok = await confirmFriendAction(context,
-              title: 'Arkadaşlık İsteği',
-              message: '$name oyuncusu sana arkadaşlık isteği gönderdi. '
+              title: 'Arkadaşlık Daveti',
+              message: '$name oyuncusu sana arkadaşlık daveti gönderdi. '
                   'Kabul etmek istiyor musun?',
               confirmLabel: 'Kabul Et');
           if (!ok || !mounted) return;
@@ -231,7 +231,7 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
                 context,
                 r == FriendRelation.accepted
                     ? '$name ile artık arkadaşsınız.'
-                    : 'Arkadaşlık isteğiniz iletilmiştir.');
+                    : 'Arkadaşlık davetiniz iletilmiştir.');
           }
       }
     } catch (e) {

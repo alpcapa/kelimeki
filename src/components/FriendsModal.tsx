@@ -404,7 +404,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     try {
       await respondFriendRequest(requesterId, false);
       reloadRequests();
-      setRejectResultMsg('İstek reddedildi.');
+      setRejectResultMsg('Davet reddedildi.');
     } catch (err) {
       console.error('[Kelimeki] istek reddetme hatası:', err);
     } finally {
@@ -424,7 +424,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
       // Karşı taraftan zaten bekleyen bir istek varsa sunucu trigger'ı
       // ilişkiyi anında 'accepted' yapar — mesaj bunu yansıtmalı.
       setAddResultMsg(
-        status === 'accepted' ? 'Arkadaş oldunuz.' : 'Arkadaşlık isteğiniz iletilmiştir.',
+        status === 'accepted' ? 'Arkadaş oldunuz.' : 'Arkadaşlık davetiniz iletilmiştir.',
       );
     }
     setConfirmAdd(null);
@@ -437,7 +437,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     try {
       await removeFriend(id); // gönderilen isteği iptal et
       patchRelation(id, null);
-      setCancelResultMsg('Arkadaşlık isteği iptal edildi.');
+      setCancelResultMsg('Arkadaşlık daveti iptal edildi.');
     } catch (err) {
       console.error('[Kelimeki] istek iptal hatası:', err);
     } finally {
@@ -491,9 +491,9 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
       u.relation === 'accepted'
         ? { label: 'Arkadaşlıktan çıkar', color: 'text-red', icon: <PersonRemoveIcon />, act: () => setConfirmRemove({ friend_id: u.id, name: u.name }) }
         : u.relation === 'pending_outgoing'
-          ? { label: 'İstek gönderildi — iptal et', color: 'text-muted', icon: <PersonPendingIcon />, act: () => setConfirmCancel(u) }
+          ? { label: 'Davet gönderildi — iptal et', color: 'text-muted', icon: <PersonPendingIcon />, act: () => setConfirmCancel(u) }
           : u.relation === 'pending_incoming'
-            ? { label: 'Arkadaşlık isteğini kabul et', color: 'text-accent', icon: <HowToRegIcon />, act: () => setConfirmAdd(u) }
+            ? { label: 'Arkadaşlık davetini kabul et', color: 'text-accent', icon: <HowToRegIcon />, act: () => setConfirmAdd(u) }
             : { label: 'Arkadaş ekle', color: 'text-accent', icon: <PersonAddIcon />, act: () => setConfirmAdd(u) };
     return (
       <button
@@ -792,9 +792,9 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
       {confirmReject && (
         <ConfirmDialog
           dialogRef={confirmRejectRef}
-          ariaLabel="İsteği Reddet"
-          title="İsteği Reddet"
-          message={`${confirmReject.name} oyuncusunun arkadaşlık isteğini reddetmek mi istiyorsunuz?`}
+          ariaLabel="Daveti Reddet"
+          title="Daveti Reddet"
+          message={`${confirmReject.name} oyuncusunun arkadaşlık davetini reddetmek mi istiyorsunuz?`}
           confirmLabel="Reddet"
           busy={busyId === confirmReject.requester_id}
           onConfirm={handleConfirmReject}
@@ -808,11 +808,11 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
       {confirmAdd && (
         <ConfirmDialog
           dialogRef={confirmAddRef}
-          ariaLabel={confirmAdd.relation === 'pending_incoming' ? 'Arkadaşlık İsteği' : 'Arkadaş Ekle'}
-          title={confirmAdd.relation === 'pending_incoming' ? 'Arkadaşlık İsteği' : 'Arkadaş Ekle'}
+          ariaLabel={confirmAdd.relation === 'pending_incoming' ? 'Arkadaşlık Daveti' : 'Arkadaş Ekle'}
+          title={confirmAdd.relation === 'pending_incoming' ? 'Arkadaşlık Daveti' : 'Arkadaş Ekle'}
           message={
             confirmAdd.relation === 'pending_incoming'
-              ? `${confirmAdd.name} oyuncusu sana arkadaşlık isteği gönderdi. Kabul etmek istiyor musun?`
+              ? `${confirmAdd.name} oyuncusu sana arkadaşlık daveti gönderdi. Kabul etmek istiyor musun?`
               : `${confirmAdd.name} oyuncusunu arkadaş olarak eklemek istiyor musun?`
           }
           confirmLabel={confirmAdd.relation === 'pending_incoming' ? 'Kabul Et' : 'Ekle'}
@@ -828,9 +828,9 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
       {confirmCancel && (
         <ConfirmDialog
           dialogRef={confirmCancelRef}
-          ariaLabel="İsteği İptal Et"
-          title="İsteği İptal Et"
-          message={`${confirmCancel.name} oyuncusuna gönderdiğin arkadaşlık isteğini iptal etmek istiyor musun?`}
+          ariaLabel="Daveti İptal Et"
+          title="Daveti İptal Et"
+          message={`${confirmCancel.name} oyuncusuna gönderdiğin arkadaşlık davetini iptal etmek istiyor musun?`}
           confirmLabel="İptal Et"
           busy={busyId === confirmCancel.id}
           onConfirm={handleConfirmCancel}
