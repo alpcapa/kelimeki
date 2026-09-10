@@ -1395,6 +1395,25 @@ işe bir `timeout-minutes` eklenmeli (tek vakada eklenmedi); ayrıca *"koşu
 iptal oldu"* ile *"iş düştü"* ayrımını hatırla — ikisi ekran görüntüsünde
 aynı görünüyor.
 
+### 📦 TAZE KARELER HAZIR — koşu #9, 10 Eylül 2026 (yeniden koşturma GEREKMEZ)
+
+`main`'in başındaki `2015ab6` üzerinde koştu ve **yeşil** (05:43→05:54 UTC,
+~12 dk). Kendiliğinden tetiklendi: #505 bu iş akışı dosyasına dokundu ve
+`on: push: paths:` listesinde o dosyanın kendisi de var.
+
+| | |
+|---|---|
+| Koşu | https://github.com/alpcapa/kelimeki/actions/runs/34442189100 |
+| Artefaktlar | `kelimeki-store-screenshots-iphone-6.9` (5,3 MB) · `kelimeki-store-screenshots-ipad-13` (5,5 MB) |
+| Geçerlilik | **9 Aralık 2026**'ya kadar |
+
+⚠ **Ajan bu iş akışını TETİKLEYEMEZ** (10 Eylül 2026'da denendi):
+`workflow_dispatch` 403 döndü — GitHub App'in `actions: write` izni yok.
+Elle koşu: **Actions → "iOS mağaza ekran görüntüleri" → Run workflow**. Ama
+önce yukarıdaki koşuya bak: uygulama kodu değişmediyse kareler zaten taze.
+⚠ Ajan artefaktı İNDİREMEZ de (MCP'de indirme aracı yok) — kompozisyon
+kararı için PNG'lerin sohbete eklenmesi gerekiyor.
+
 ### Kalan iş
 
 Zorunlu altı karenin **altısı da üretiliyor ve doğrulandı.** Kalan tek şey
