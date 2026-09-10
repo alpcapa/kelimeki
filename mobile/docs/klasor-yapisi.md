@@ -335,6 +335,12 @@ mobile/
                              # yalnızca galeri) — enjekte edilebilir PickAvatarFn
     android/ ios/            # flutter create çıktısı + elle değişiklikler (aşağı bkz.)
     test/                    # util, controller (golden replay!), widget duman testleri
+      ipad_layout_test.dart  # iPad DÜZEN KAPISI (arşiv §25): portre ·
+                             # manzara · Split View 1/3 ölçülerinde taşma
+                             # yok + tahta/raf/butonlar ekranın içinde.
+                             # ⚠ Boşluk ÖLÇMEZ — kenar/alt boşluğu bilinçli
+                             # kabul (kullanıcı kararı); soru "iyi mi" değil
+                             # "kırılmıyor mu"
       support/vector_parity.dart # web SVG path'i ↔ portun Path()..lineTo
                              # zinciri: ikisini kanonik çizim listesine
                              # indiren ORTAK ayrıştırıcı. İki parite testi
@@ -354,24 +360,14 @@ mobile/
     integration_test/        # ⚠ `flutter test` BUNU TOPLAMAZ ve `flutter test
                              # <dosya>` da koşturamaz ("No supported devices")
                              # — yalnızca `flutter drive` ile, GERÇEK bir iOS
-                             # simülatöründe koşar. İKİ hedef var:
+                             # simülatöründe koşar
       store_screenshots_test.dart # mağaza kareleri (App Store 24.5): 6 kare,
                              # iki cihaz ölçüsünde. Kare Apple'ın istediği
-                             # TAM pikselde çıkmalı, KIRPILMAZ
-      ipad_landscape_test.dart # iPad MANZARA ölçümü (ROADMAP §25). Bir KAPI
-                             # DEĞİL ölçü aleti: bulgular log'a `[MANZARA]`
-                             # önekiyle yazılır, iş yalnızca ALTYAPI
-                             # arızasında düşer (cihaz dönmedi/kare yok) —
-                             # çünkü manzaraya özgü düzen henüz YOK ve
-                             # "taşma varsa kırmızı" diyen bir test ölçüm
-                             # turunun ilk adımında kendi bulgusuyla düşerdi
-      support/sahne.dart     # İKİ hedefin ORTAK sahnesi: sahte oturum/
-                             # servisler, tohumlu tahta, `settle`. ⚠ Kopyalama
-                             # — "temsili kare" kuralları (gerçek isim/
-                             # e-posta/avatar YOK; `supabase == null` iken
-                             # ekran "offline mod" yazıp üstünde canlı oyun
-                             # listeliyor) burada yaşıyor; ikinci bir kopya
-                             # onları sessizce ayrıştırır
+                             # TAM pikselde çıkmalı, KIRPILMAZ.
+                             # ⚠ Buraya YÖNELİM/manzara ölçümü EKLEME —
+                             # simülatör döndürülemiyor (iOS:
+                             # UISceneErrorDomain 101), denendi ve elendi
+                             # (Parça 196); kapı test/ipad_layout_test.dart
     test_driver/integration_test.dart # `flutter drive` sürücüsü — PNG'yi
                              # DİSKE o yazıyor (`onScreenshot`)
   kelimeki_core/             # saf Dart motor paketi (Flutter bağımlılığı YOK)

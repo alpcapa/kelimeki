@@ -17,6 +17,98 @@
 > değil, kendi 8. satırındaki kuralı (*"bir madde bitince buradan SİLİNİR"*)
 > uygulamadığı için gelmişti.
 
+## 25. iPad MANZARA düzeni — **KAPANDI** (9-10 Eylül 2026)
+
+**Kullanıcı kararı, sözleri birebir:** *"Ipad olmazsa olmaz. Bu oyunun en
+iyi oynandığı yer orası."*
+
+Bu, iPad'in konumunu değiştiriyor: "desteklenen ikinci cihaz" değil,
+**birinci sınıf yüzey**. Dolayısıyla manzara sorusu da değişiyor —
+*"kırılıyor mu?"* değil, ***"iyi mi?"***
+
+**Nasıl açıldı:** App Store yüklemesi bundle'ı reddetti (90474) — iPad'i
+destekleyen bir uygulama `UISupportedInterfaceOrientations~ipad` altında
+DÖRT yönelimi bildirmek zorunda. `Info.plist` düzeltildi (#501) ve bunun
+sonucu şu: **uygulama iPad'de artık döndürülebilir.**
+
+⚠ **`main.dart`in portre kilidi iPad'de FİİLEN ÖLÜ.**
+`setPreferredOrientations([portraitUp])` iPhone'da tutuyor, ama çoklu göreve
+açık bir iPad uygulamasında iOS onu yok sayıyor; `UIRequiresFullScreen` ile
+kapatmak da modern SDK'larda güvenilir değil. Yani manzara artık bir
+"ihtimal" değil, kullanıcının bir saniyede ulaşacağı hâl.
+
+⚠ **Portta manzara için HİÇBİR ŞEY yok** (kaynak taramasıyla doğrulandı):
+web'in `LandscapeHint` bileşeninin karşılığı hiç port edilmedi, manzaraya
+özgü bir düzen de yok.
+
+**Sıra (hepsi tamamlandı):**
+
+1. ✅ **ÖLÇÜLDÜ — ve ölçümün kendisi bir yolu ELEDİ.**
+   - **Ön ölçüm (9 Eylül, Linux widget ağacı):** oyun · kurulum · yardım ×
+     portre (1032×1376) · manzara (1376×1032) · dar pencere (458×1032) =
+     dokuz kombinasyonda **taşma SIFIR**. Manzara kırılmıyor. Asıl bulgu
+     başka: uygulama `max-w-680` kolonuyla çizildiğinden 13" iPad'de
+     manzarada genişliğin ~%50'si, portrede altta ~%25'i boş kalıyor — yani
+     manzara portreden daha KÖTÜ değil, ikisi de "telefon düzeni büyük
+     ekranda".
+   - ⚠ **GERÇEK SİMÜLATÖRDE ÖLÇÜM DENENDİ ve ELENDİ.** 24.5'in kare boru
+     hattı zaten gerçek bir `iPad Pro 13"` simülatörü koşturduğu için ölçüm
+     oraya bindirildi (`ios-screenshots.yml`e ikinci iş). **Simülatör
+     DÖNMEDİ** ve sebebini iOS'un kendisi yazdı:
+     ```
+     UISceneErrorDomain Code=101 "The current windowing mode does not
+     allow for programmatic changes to interface orientation."
+     ```
+     Yani çoklu göreve açık bir iPad uygulamasında
+     `SystemChrome.setPreferredOrientations` **İKİ YÖNDE DE** geçersiz —
+     bu bölüm bunun yalnızca portre yönünü yazıyordu, artık iki yönü de
+     alıntılanabilir bir hata koduyla kanıtlı. **Sonuç: iş silindi.**
+     Manzara metriklerini kurabilen tek şey `tester.view.physicalSize`
+     override'ı ve o platformdan bağımsız, yani 14 dakikalık macOS işi
+     hiçbir şey eklemiyordu.
+   - ⚠ **İKİ TURLUK DERS:** ilk sürüm dönüşü bir `expect` ile zorunlu
+     kılmıştı; koşu #6'da altı testin altısı o satırda düştü ve bulgunun
+     GERİ KALANINI (kareler, taşma raporu, kutular) beraberinde götürdü.
+     Dönüş raporlamaya çevrilince (koşu #7) ölçüm baştan sona koştu ve
+     iOS'un hata satırı ancak o zaman görüldü. **Bir ölçü aletinin düşme
+     koşulu, ölçtüğü şey OLMAYABİLİR diye kurulmaz.**
+   - **Cihazda kalan yarım — SENDE.** `mobile/TESTING.md` §26: gerçek
+     dönüşün hissi, gerçek Split View/Slide Over jesti, klavye açıkken
+     daralan modal. Bunlar tanım gereği otomatikleştirilemiyor.
+
+2. ✅ **KARAR VERİLDİ — (b): mevcut düzen kalıyor** (9 Eylül 2026,
+   kullanıcı; sözleri birebir): *"Eğer Apple açısından sıkıntı yoksa bazı
+   ekran tiplerinde alt kısımda boşluk kalması ok. Sonuçta her ekran
+   tipine göre ekran design etmek çok maliyetli bir iş olur ve riskli
+   olur."*
+   Elenen iki yol: (a) manzaraya özgü düzen — maliyet/risk gerekçesiyle,
+   (c) `LandscapeHint` portu — manzara kırılmadığı için uyarılacak bir şey
+   yok, uyarı yalnızca çalışan bir ekranı kapatırdı.
+   **Kararın koşulu ÖLÇÜLDÜ (Apple'ın yazılı kuralı, aynı gün okundu):**
+   bugünkü **2.4.1** yalnızca *"iPhone apps should run on iPad whenever
+   possible"* diyor — letterboxing/"ekranı tam kullan"/"büyütülmüş iPhone
+   uygulaması" diye bir yasak metni YOK; **2.3.3** ekran görüntüsünden
+   yalnızca *"uygulamayı kullanımda göstersin"* istiyor. Bu turda Apple'dan
+   gelen tek sert kapı **90474**'tü (dört yönelim bildirimi) ve kapandı.
+   ⚠ **Ölçülemeyen taraf:** App Review'ın İNSAN yorumu. Bu depoda
+   kanıtlanabilecek şey yazılı kuraldır, inceleyicinin takdiri değil.
+   **Sonucu:** bu madde artık bir TASARIM işi değil, bir **gerileme
+   kontrolü** — sorulacak soru *"iyi mi?"* değil, tekrar *"kırılmıyor mu?"*.
+3. ⚠ **iPad desteğini bırakmak SEÇENEK DEĞİL** — kullanıcı kararı yukarıda.
+   `TARGETED_DEVICE_FAMILY = "1,2"` kalıyor.
+4. ✅ **GERİLEME KAPISI KURULDU** — `mobile/app/test/ipad_layout_test.dart`
+   (10 Eylül 2026). Üç ölçüde (portre · manzara · Split View 1/3) taşma
+   yok + tahta/raf ekranın içinde + `OYNA`/`PAS GEÇ`/`OYUNU BAŞLAT`
+   erişilebilir; 9 test, ~4 saniye, her push'ta. **Boşluk ÖLÇÜLMEZ** —
+   kararın kendisi bunu bilinçli kabul yaptı. Duyarlılığı kanıtlandı: dar
+   pencere geçici olarak 200×320'ye çekilince hem tahta hem `OYUNU BAŞLAT`
+   yakalandı.
+
+**Neden ROADMAP'te:** bu bir gönderim kapısı DEĞİL (Apple bundle'ı yönelimler
+bildirildiği an kabul ediyor), ama iPad birinci sınıf yüzeyse App Store'da
+"en iyi oynandığı yer" olarak sunulan cihazda ölçülmemiş bir düzen bırakmak
+kabul edilebilir değil.
+
 ## İçindekiler
 
 | Ne | Kapanış |

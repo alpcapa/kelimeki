@@ -819,8 +819,10 @@ edilmemiş. Hiç bakılmamış bir yüzey; cihaz kontrol listesi
 ⚠ **iPad desteğini bırakmak seçenek DEĞİL** — ve bu artık yalnızca mağaza
 vitrini gerekçesi değil, **kullanıcı kararı** (9 Eylül 2026, sözleri
 birebir): *"Ipad olmazsa olmaz. Bu oyunun en iyi oynandığı yer orası."*
-`TARGETED_DEVICE_FAMILY = "1,2"` kalıyor; manzara düzeni ROADMAP §25 olarak
-açıldı ve ölçümden sonra karara bağlanacak.
+`TARGETED_DEVICE_FAMILY = "1,2"` kalıyor. ✅ Manzara düzeni 10 Eylül
+2026'da karara bağlandı — **değişmiyor**, kenar/alt boşluğu bilinçli kabul
+(Apple'ın yazılı kuralı okundu: 2.4.1'de letterboxing yasağı yok).
+Kayıt: `docs/decisions/roadmap-arsiv.md` → §25.
 
 ✅ **Adım sırası kararı DOĞRULANDI.** TestFlight adımı bilerek Appetize'dan
 SONRA konmuştu (*"yeni ve doğrulanmamış bir adım, çalışan bir adımı asla
@@ -1366,21 +1368,25 @@ on iki PNG'nin on ikisi de piksel ölçümünü geçti (`1320×2868` / `2064×27
 Yani mağazaya giden kareler **bugün hazır** — üretimi değil, yalnızca
 kompozisyon kararı bekliyor.
 
-### ⚙️ Sahne ORTAK dosyaya çıkarıldı — 9 Eylül 2026
+### ⚙️ Boru hattı gözlemleri — 9-10 Eylül 2026
 
-Aynı boru hattına ikinci bir hedef bindi (`ipad_landscape_test.dart`, iPad
-manzara ölçümü — `ROADMAP.md` §25), o yüzden çekim sahnesi
-`integration_test/support/sahne.dart`'a taşındı: sahte oturum, sahte
-istatistik ucu, Setup'ın sahte servisleri, tohumlu tahta, `settle`.
+**1. Bu boru hattına YÖNELİM ölçümü bindirilemez (denendi, elendi).** Aynı
+simülatöre ikinci bir hedef (iPad manzara ölçümü) eklendi ve geri alındı:
+simülatör DÖNDÜRÜLEMİYOR, sebebini iOS'un kendisi yazdı —
+`UISceneErrorDomain Code=101 "The current windowing mode does not allow for
+programmatic changes to interface orientation."` Çoklu göreve açık bir iPad
+uygulamasında `setPreferredOrientations` iki yönde de geçersiz. **Kareler
+için sonucu şu: bu hattan yalnızca PORTRE kare alınabilir** — Apple zaten
+iPad seti için portre istiyor, yani vitrin etkilenmiyor. Kayıt:
+`docs/decisions/roadmap-arsiv.md` → §25.
 
-⚠ **Kopyalanmadı, TAŞINDI — ve gerekçe bu bölümün kendisi.** O dosyada
-yaşayan şey kod değil KURAL: gerçek isim/e-posta/avatar kareye giremez
-(Play turunun gizlilik kuralı) ve `services.supabase == null` iken ekran
-*"offline mod"* yazıp ÜSTÜNDE canlı oyun listeliyor — gerçekte hiç oluşmayan,
-yani Apple'ın yasakladığı türden bir kare. İkinci bir çekim dosyası bunları
-kopyalasaydı iki kopya sessizce ayrışır ve kural yalnızca birinde geçerli
-kalırdı. `store_screenshots_test.dart` 302 satır küçüldü; taşınan kod birebir
-aynı (yalnızca `_` önekleri düştü), kareler DEĞİŞMEDİ.
+**2. İLK takılma gözlendi (koşu #7).** `iphone-6.9` işi "Kareleri üret"
+adımında **~6 saat** asılı kaldı ve GitHub'ın iş tavanına takıldı; koşu
+dışarıdan *"cancelled"* göründü. Aynı dosya koşu #6'da geçmişti ve `ipad-13`
+bu koşuda da geçti — yani **altyapı takılması, kod değil.** ⚠ Tekrarlarsa
+işe bir `timeout-minutes` eklenmeli (tek vakada eklenmedi); ayrıca *"koşu
+iptal oldu"* ile *"iş düştü"* ayrımını hatırla — ikisi ekran görüntüsünde
+aynı görünüyor.
 
 ### Kalan iş
 

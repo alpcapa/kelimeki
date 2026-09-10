@@ -70,14 +70,17 @@ okutursan** o yolun `web-ci.yml`in `paths` listesinde karşılığı olduğundan
 emin ol.
 
 ⚠ **Üçüncü bir mobil iş akışı var ve o BİLEREK ayrı duruyor:**
-`.github/workflows/ios-screenshots.yml` (9 Eylül 2026) GERÇEK iOS
-simülatöründe İKİ iş koşturur (`mobile/app/integration_test/` +
-`test_driver/`): **`kareler`** mağaza karelerini üretir (24.5), **`ipad-
-manzara`** iPad manzarasını ÖLÇER (§25) — ikincisi bir kapı değil ölçü
-aleti, bulduğu taşmayı log'a yazar ama yalnızca altyapı arızasında düşer.
-`mobile-build.yml`'e eklenmedi çünkü o dosyanın `paths` listesi her
-dokunuşta tam bir macOS+Android derlemesi tetikliyor. Kaynak:
-`marketing/app-store/console-formlari.md` §13 · `ROADMAP.md` §25.
+`.github/workflows/ios-screenshots.yml` (9 Eylül 2026) mağaza ekran
+görüntülerini GERÇEK iOS simülatöründe üretir (`mobile/app/integration_test/`
++ `test_driver/`). `mobile-build.yml`'e eklenmedi çünkü o dosyanın `paths`
+listesi her dokunuşta tam bir macOS+Android derlemesi tetikliyor. Karar ve
+ölçümler: `marketing/app-store/console-formlari.md` §13.
+⚠ **Bu iş akışına bir "yönelim/manzara ölçümü" işi EKLEME** — denendi ve
+elendi (10 Eylül 2026): simülatör döndürülemiyor, iOS'un kendi hatası
+`UISceneErrorDomain Code=101`. Çoklu göreve açık bir iPad uygulamasında
+`setPreferredOrientations` iki yönde de geçersiz; ölçümü kuran tek şey
+`tester.view.physicalSize`, o da platformdan bağımsız →
+`mobile/app/test/ipad_layout_test.dart` (Linux, saniyeler).
 
 `tests/` altında üç spec var: `smoke.spec.ts` (kritik yol) ve
 `text-scale.spec.ts` + `text-scale-normal.spec.ts` (yazı ölçeği; ikisi ayrı
@@ -259,15 +262,12 @@ tuzağı da bu depo tek turda yaşadı:**
 `git cherry` de tek başına YETMEZ: yama-kimliği eşitliği arar, sonradan
 farklı bağlamda yeniden inen bir değişikliği "yok" işaretler.
 
-⚠ **Dal SİLMEYİ ajan yapamaz — iki kapı da kapalı (4 Eylül 2026'da ölçüldü).**
-`git push --delete` → **403** (oturumun git kimliği yalnızca kendi tahsisli
-dalına yazabiliyor), GitHub MCP'de ref silen araç YOK, ve
-`branch-cleanup.yml`i **dispatch etmek de 403** (`Resource not accessible by
-integration` — App'in `actions: write`i yok). Yani doğru davranış: dalları
-silmeye çalışmak ya da "ben hallederim" demek değil, kullanıcıya şu adımı
-vermek — **Actions → "Dal temizliği" → Run workflow**, önce `dry_run` AÇIK,
-liste doğrulanınca KAPALI ile tekrar. O gün bir oturum önce "tetikleyebilirim"
-diye söz verip yanıldı; vaat etmeden ÖNCE dene.
+⚠ **Dal SİLMEYİ ajan yapamaz — üç kapı da kapalı** (4 Eylül 2026'da
+ölçüldü): `git push --delete` 403, GitHub MCP'de ref silen araç yok,
+`branch-cleanup.yml`i dispatch etmek de 403 (App'in `actions: write`i yok).
+Doğru davranış "ben hallederim" demek değil, kullanıcıya adımı vermek:
+**Actions → "Dal temizliği" → Run workflow**, önce `dry_run` AÇIK, liste
+doğrulanınca KAPALI ile tekrar. ⚠ Vaat etmeden ÖNCE dene.
 
 ## Belgeleri Güncel Tutma
 

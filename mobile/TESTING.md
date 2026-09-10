@@ -1588,7 +1588,7 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
 birebir: *"Ipad olmazsa olmaz. Bu oyunun en iyi oynandığı yer orası."*
 
 ✅ **DÜZEN KARARI VERİLDİ (9 Eylül 2026) — mevcut düzen kalıyor**
-(`ROADMAP.md` §25). Kullanıcı, sözleri birebir: *"Eğer Apple açısından
+(`docs/decisions/roadmap-arsiv.md` → §25). Kullanıcı, sözleri birebir: *"Eğer Apple açısından
 sıkıntı yoksa bazı ekran tiplerinde alt kısımda boşluk kalması ok. Sonuçta
 her ekran tipine göre ekran design etmek çok maliyetli bir iş olur ve riskli
 olur."* Apple tarafı ölçüldü: 2.4.1'de letterboxing/"ekranı tam kullan"
@@ -1613,36 +1613,41 @@ karşılığı hiç port edilmedi.
 
 Yani bu, hiç bakılmamış bir yüzey.
 
-⚠ **Maddelerin bir bölümü 9 Eylül 2026'dan beri CI'da ÖLÇÜLÜYOR** —
-`.github/workflows/ios-screenshots.yml` → `ipad-manzara` işi, gerçek bir
-`iPad Pro 13"` simülatöründe (`integration_test/ipad_landscape_test.dart`).
-Bulgular koşu özetinde ve log'da `[MANZARA]` önekiyle; kareler artefakt.
-**Elle koşmadan önce o koşuya bak** — aşağıdaki "CI" işaretli maddeler için
-cihaz turu bir DOĞRULAMA, keşif değil. ⚠ CI işi bir KAPI değil ölçü aleti:
-yalnızca cihaz dönmediğinde ya da kare manzara ölçüsünde çıkmadığında düşer,
-bir taşma bulursa DÜŞMEZ — bulguyu yazar.
+⚠ **Taşma/erişilebilirlik yarısı ARTIK OTOMATİK** (10 Eylül 2026):
+`mobile/app/test/ipad_layout_test.dart` üç ölçüde (portre 1032×1376 ·
+manzara 1376×1032 · Split View 458×1032) taşmayı, tahta/rafın ekranın
+içinde kalmasını ve `OYNA`/`PAS GEÇ`/`OYUNU BAŞLAT` erişilebilirliğini
+kilitliyor — her push'ta, saniyeler içinde. **Aşağıdaki "otomatik" işaretli
+maddeler için cihaz turu bir DOĞRULAMA, keşif değil.**
 
-iPad'de TestFlight derlemesiyle:
+⚠ **Gerçek simülatörde ölçüm DENENDİ ve ELENDİ:** iPad simülatörü
+döndürülemiyor, sebebi iOS'un kendi hatası — `UISceneErrorDomain Code=101
+"The current windowing mode does not allow for programmatic changes to
+interface orientation."` Yani çoklu göreve açık bir iPad uygulamasında
+`setPreferredOrientations` iki yönde de geçersiz. **Cihazda gerçek dönüşü
+görebilecek tek yer SENSİN** (kayıt: `docs/decisions/roadmap-arsiv.md` → §25).
+
+iPad'de TestFlight derlemesiyle:iPad'de TestFlight derlemesiyle:
 
 - [ ] Uygulamayı **yan çevir** — açılıyor mu, çöküyor mu?
-      *(CI: dönüşün kendisi ölçülüyor — kare manzara ölçüsünde çıkmazsa iş
-      düşer. Cihazda bakılacak olan dönüşün HİSSİ: animasyon, sıçrama.)*
+      *(otomatik DEĞİL — programatik dönüş imkânsız, bu madde tamamen
+      cihazda: açılıyor mu, dönüşün hissi nasıl.)*
 - [ ] **Oyun ekranı:** tahta sığıyor mu, raf ve butonlar erişilebilir mi,
-      taşma (sarı-siyah şerit) var mı? *(CI: `[MANZARA] oyun ekranı`
-      satırı tahta/raf/`OYNA`/`PAS GEÇ` kutularını ve taşma durumunu
-      veriyor.)*
-- [ ] **Setup ekranı:** liste ve formlar okunabilir mi? *(CI: kare +
-      `OYUNU BAŞLAT` kutusu.)*
+      taşma (sarı-siyah şerit) var mı? *(otomatik: üç ölçüde de
+      kilitli.)*
+- [ ] **Setup ekranı:** liste ve formlar okunabilir mi? *(otomatik:
+      taşma + `OYUNU BAŞLAT` erişilebilirliği.)*
 - [ ] **Modallar** (Skor Kartı, Nasıl Oynanır, kelime anlamı): dikey alan
       daralınca kesiliyor mu? (`KModal`ın gövdesi kaydırılabilir, ama
       klavye açıkken daralma vakası kayıtlı — bkz. `mobile/CLAUDE.md`)
-      *(CI: Skor Kartı + Nasıl Oynanır kareleri var; **klavye açık hâli
-      YOK** — o yalnızca cihazda görülür ve kayıtlı vaka tam orada.)*
+      *(otomatik: yalnızca "Nasıl Oynanır" ve yalnızca taşma. **Klavye
+      açık hâli YOK** — o yalnızca cihazda görülür ve kayıtlı vaka tam
+      orada.)*
 - [ ] **Split View / Slide Over:** üçte bir genişlikte düzen ne oluyor?
-      *(CI: yalnızca ONUN ÜRETTİĞİ dar pencere ölçülüyor — gerçek Split
+      *(otomatik: yalnızca onun ÜRETTİĞİ ölçü (458×1032) — gerçek Split
       View jesti, ikinci uygulama ve sürüklenebilir ayraç cihazda.)*
-- [ ] Portreye geri dönünce her şey eski hâline dönüyor mu? *(CI:
-      `[MANZARA] portreye dönüş` satırı.)*
+- [ ] Portreye geri dönünce her şey eski hâline dönüyor mu? *(otomatik
+      DEĞİL — dönüşün kendisi programatik olarak tetiklenemiyor.)*
 
 ⚠ **Bulgular kötüyse üç seçenek var ve üçü de kararlıdır:** (a) manzara
 için düzen eklemek, (b) `TARGETED_DEVICE_FAMILY`yi `"1"`e çekip iPad

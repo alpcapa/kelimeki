@@ -11,13 +11,17 @@
 # ÇIKTI: her cihaz için PNG'ler, artefakt olarak. **Repoya COMMIT EDİLMEZ** —
 # mağaza görüntüleri üretilmiş dosyalardır ve `build/` gitignore'da.
 #
-# İKİNCİ İŞ — `manzara` (9 Eylül 2026, ROADMAP §25): aynı simülatör boru
-# hattı, farklı amaç. Apple bundle'ı 90474 ile reddedince iPad DÖRT yönelimi
-# birden bildirmek zorunda kaldı, yani uygulama iPad'de artık döndürülebilir
-# ve manzara HİÇ bakılmamış bir yüzey. §25 *"ÖLÇ — cihazda"* diyor; elde
-# cihaz yok, ama bu iş akışı zaten GERÇEK bir iPad Pro 13" simülatörü
-# koşturuyor — ölçüm oraya bindirildi. Kareler mağazaya GİTMEZ, teşhis
-# içindir; bulgular koşu log'undaki `[MANZARA]` satırlarında.
+# ⚠ BURAYA BİR "MANZARA ÖLÇÜMÜ" İŞİ EKLEME — denendi ve ELENDİ (10 Eylül
+# 2026; kayıt: docs/decisions/roadmap-arsiv.md → §25). Fikir makuldü: iPad manzarası hiç bakılmamış bir
+# yüzeydi ve bu iş akışı zaten gerçek bir iPad Pro 13" simülatörü
+# koşturuyor. Ama simülatör DÖNDÜRÜLEMİYOR — iOS'un kendi hatası:
+#   UISceneErrorDomain Code=101 "The current windowing mode does not allow
+#   for programmatic changes to interface orientation."
+# Yani `SystemChrome.setPreferredOrientations` çoklu göreve açık bir iPad
+# uygulamasında iki yönde de geçersiz (§25 bunun portre yönünü zaten
+# yazıyordu). Manzara metriklerini kuran tek şey `tester.view.physicalSize`
+# override'ı — o da platformdan BAĞIMSIZ, yani ölçüm Linux'ta ücretsiz
+# koşuyor: `mobile/app/test/ipad_layout_test.dart`.
 #
 # ⚠ Kare KIRPILMAZ. Play turunda ham kare Play'in 2:1 tavanını aştığı için
 # kırpmak ZORUNLUYDU; App Store TAM piksel ölçüsü istiyor ve kırpmak kareyi
@@ -131,91 +135,3 @@ jobs:
             fi
           done
           exit $hatali
-
-  # ⚠ AYRI BİR İŞ, matrise EKLENMEDİ: beklenen piksel ölçüsü portrenin TERSİ
-  # (2752×2064) ve hedef dosya başka. Matrise sıkıştırmak iki farklı işi tek
-  # satırda gizlerdi; burada "kare üretimi" ile "manzara ölçümü" ayrı ayrı
-  # yeşil/kırmızı olabiliyor.
-  manzara:
-    name: ipad-manzara
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Simülatörü seç ve başlat
-        id: sim
-        run: |
-          set -euo pipefail
-          udid=""
-          IFS='|' read -ra adaylar <<< 'iPad Pro 13-inch (M5)|iPad Pro 13-inch (M4)|iPad Pro (12.9-inch)'
-          for ad in "${adaylar[@]}"; do
-            udid=$(xcrun simctl list devices available \
-              | grep -F "$ad (" | head -1 \
-              | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/' || true)
-            if [ -n "$udid" ]; then echo "seçilen simülatör: $ad ($udid)"; break; fi
-          done
-          if [ -z "$udid" ]; then
-            echo "::error::Aday iPad simülatörlerinin hiçbiri yok"
-            xcrun simctl list devices available
-            exit 1
-          fi
-          xcrun simctl boot "$udid"
-          xcrun simctl bootstatus "$udid" -b
-          echo "udid=$udid" >> "$GITHUB_OUTPUT"
-
-      # Bu turun ASIL ÇIKTISI kareler değil, log'daki `[MANZARA]` satırları:
-      # her ekran için mantıksal ölçü, taşma/hata ve tahta/raf/buton
-      # kutularının ekranın içinde kalıp kalmadığı. `tee` ile ayıklanıp
-      # koşu özetine de yazılıyor — artefakt indirmeden okunabilsin diye.
-      - name: Manzarayı ölç
-        working-directory: mobile/app
-        run: |
-          set -euo pipefail
-          flutter pub get
-          flutter drive \
-            --driver=test_driver/integration_test.dart \
-            --target=integration_test/ipad_landscape_test.dart \
-            -d "${{ steps.sim.outputs.udid }}" 2>&1 | tee /tmp/manzara.log
-
-      - name: Bulguları özete yaz
-        if: ${{ always() }}
-        run: |
-          {
-            echo '### iPad manzara ölçümü'
-            echo '```'
-            grep -F '[MANZARA]' /tmp/manzara.log || echo '(bulgu satırı yok — sürüş adımı düşmüş olabilir)'
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - uses: actions/upload-artifact@v7
-        if: ${{ always() }}
-        with:
-          name: kelimeki-ipad-manzara
-          path: mobile/app/build/screenshots/*.png
-          if-no-files-found: warn
-
-      # ⚠ Bu adım BİR KAPI DEĞİL, AYIRT EDİCİ ÖLÇÜ — ve düşmemesi bilinçli.
-      # Koşu #6'da cihaz dönmedi (`view.physicalSize` portrede kaldı) ve iki
-      # açıklama kaldı: (a) iOS isteği gerçekten yok saydı, (b) döndü ama
-      # `tester.view` bayat. Kareyi ölçmek ikisini AYIRIYOR: 2752×2064 ise
-      # (b), 2064×2752 ise (a). Ölçü "beklenenden farklı" diye işi düşürürse
-      # bulgunun geri kalanı da (taşma raporu, kutular) çöpe gider — ilk
-      # sürümün hatası tam buydu. Kareler zaten mağazaya GİTMİYOR.
-      - name: Kare ölçüsünü RAPORLA (dönüşün ayırt edici ölçüsü)
-        if: ${{ always() }}
-        working-directory: mobile/app
-        run: |
-          {
-            echo '### Kare ölçüleri — dönüşün ayırt edici ölçüsü'
-            echo '(2752×2064 = cihaz DÖNDÜ · 2064×2752 = DÖNMEDİ)'
-          } >> "$GITHUB_STEP_SUMMARY"
-          for png in build/screenshots/*.png; do
-            [ -e "$png" ] || { echo '- (kare yok)' >> "$GITHUB_STEP_SUMMARY"; break; }
-            w=$(sips -g pixelWidth  "$png" | awk '/pixelWidth/{print $2}')
-            h=$(sips -g pixelHeight "$png" | awk '/pixelHeight/{print $2}')
-            echo "- \`$(basename "$png")\` → ${w}×${h}" >> "$GITHUB_STEP_SUMMARY"
-          done
