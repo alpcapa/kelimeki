@@ -388,7 +388,7 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       bundan etkilenmemeli (bağımsız). Aynı kişi tekrar raporlanabilmeli.
 - [ ] **Oyun BİTTİKTEN sonra geri alma (14 Ağustos 2026).** Şikayet ettiğin
       kişiyle oyun bitsin (ya da listeden düşsün). Hesap menüsü → Arkadaşlar →
-      "Arkadaşlarım": o kişinin satırında, "arkadaşlıktan çıkar" ikonunun
+      "Arkadaşlar": o kişinin satırında, "arkadaşlıktan çıkar" ikonunun
       **SOLUNDA** 🚩 (yalnızca sessize aldıysan 🚫) çıkmalı; dokununca
       "Kişi Ayarları" paneli açılmalı ve oradan şikayet geri çekilip/sessizden
       çıkılabilmeli. Panel kapanınca ikon **HEMEN** kaybolmalı.
@@ -549,7 +549,7 @@ tek turda, gerçekten bekleyen bir iş varken kontrol et.
       göstermeli — üçü asla ayrışmamalı.
 - [ ] **Diğer rozetler.** `UserMenu` → "Arkadaşlar" (bekleyen istek), Setup →
       "Yapay Zeka ile"/"Arkadaşınla" ve bunların alt sekmeleri, `FriendsModal`
-      → "İstekler". Hepsi sağ üst köşede yuvarlak rozet olmalı; başlığa
+      → "Davetler". Hepsi sağ üst köşede yuvarlak rozet olmalı; başlığa
       gömülü " (N)" biçiminde bir sayı **hiçbir yerde kalmamalı**.
 - [ ] **Eski noktalar da artık sayı gösteriyor (16 Ağustos 2026).** Board
       footer'ındaki "Mesajlaşma" ve `UserMenu` avatarı — ikisi de sayısız
@@ -578,14 +578,14 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       varsayılanı bir kez yanlış uygulayıp kalıcılaştırıyordu — 5 Ağustos
       2026. Aynısı hesap değiştirmeden, sadece "Yapay Zeka ile"ye gidip
       dönerek de üretilebilir.)
-- [ ] **Arkadaşlar penceresi.** Bekleyen istek varsa "İstekler" açık gelmeli.
+- [ ] **Arkadaşlar penceresi.** Bekleyen istek varsa "Davetler" açık gelmeli.
       Ama "+ Yeni Canlı Oyun" içindeki "arkadaş eklemek için tıkla"
       bağlantısından açılınca **"Ara & Ekle"de kalmalı** — o açık bir niyet,
       ezilmemeli.
 - [ ] **Arkadaşlık ikonları (11 Ağustos 2026).** Satır aksiyonları metin
       değil ikon: kişi-ekle (mavi) · kum saati (gri, dokun → iptal) ·
       kişi-onay (mavi, gelen isteği kabul) · adam- (kırmızı, çıkar —
-      yalnızca "Arkadaşlarım"da). **Dördü de önce onay sorar**, hiçbiri
+      yalnızca "Arkadaşlar"da). **Dördü de önce onay sorar**, hiçbiri
       dokunulduğu an iş yapmaz; onayı iptal edince karşı hesapta hiçbir şey
       olmamalı. "Ara & Ekle" (arama + Tüm Üyeler) **zaten arkadaş olunanları
       HİÇ göstermez** — orada kırmızı adam- görünmemeli; bir gelen isteği
@@ -625,7 +625,7 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       satırdaki değil. Harflerin boyutu ve aralığı değişmemeli; konmuş bir
       jokeri düzenlerken "Geri Al" butonu tam eski yerinde olmalı.
 - [ ] **Kişiye tıklamak skor kartını açar — ÜÇ sekmede de (11 Ağustos
-      2026).** "Arkadaşlarım", "İstekler" ve "Ara & Ekle" (arama + Tüm
+      2026).** "Arkadaşlar", "Davetler" ve "Ara & Ekle" (arama + Tüm
       Üyeler) satırlarında **avatara/isme** tıkla → o kişinin skor kartı
       açılmalı. Aksiyon ikonu bundan ayrışık: ikona tıklamak kartı DEĞİL
       onay diyaloğunu açmalı. Kartın kendi arkadaşlık simgesinden bir işlem
@@ -916,7 +916,7 @@ gerekiyor).
       puntosuna göre boyutlanmış olmalı: hesap (avatar) menüsünün başlığı
       (18px) · Skor Kartı'ndaki kendi ismin (20px) · başka bir oyuncunun
       kartı (20px) · Setup'ta 1. koltuktaki hesap adı (18px) · Arkadaşlar
-      penceresinin ÜÇ sekmesi de (18px — "Arkadaşlarım", "İstekler",
+      penceresinin ÜÇ sekmesi de (18px — "Arkadaşlar", "Davetler",
       "Ara & Ekle") · "+ Yeni Canlı Oyun"daki arkadaş seçici (18px) · Oyun
       davetleri kartındaki katılımcı isimleri (16px). **Skor kartlarında
       artık İKİ mühür var** — başlıktaki 34px'lik tıklanabilir mühür VE

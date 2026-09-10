@@ -795,8 +795,8 @@ erişilebilirlik açısından savunulamazdı. Tam envanter:
    1,0'da 77,6 px · 1,3'te 53,2 px · 2,0'da **0,0 px** idi.
 3. **Satırda tek esnek öğe + yanında METİN butonu = sınıf 2 riski.** İkon
    butonları (sabit 44-48 px) ölçekle büyümediğinden bu riski taşımaz —
-   bu yüzden "Arkadaşlarım"/"Ara & Ekle" satırları bilerek bölünmedi,
-   yalnızca "İstekler" bölündü. Eşik: `buyukOlcek(context)`.
+   bu yüzden "Arkadaşlar"/"Ara & Ekle" satırları bilerek bölünmedi,
+   yalnızca "Davetler" bölündü. Eşik: `buyukOlcek(context)`.
 4. **İki grubu `spaceBetween` ile yan yana koyan bir şerit `Row` DEĞİL
    `Wrap` olmalı** — iki grup da `shrink-0` olduğunda `Row` sığmadığı anda
    taşar. Tahtanın alt şeridi böyle düzeldi.

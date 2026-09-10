@@ -113,9 +113,9 @@ function friendIconFor(relation: FriendRelation | null) {
     case 'accepted':
       return { icon: <HowToRegIcon />, color: 'text-green', label: 'Arkadaşlıktan çıkar' };
     case 'pending_outgoing':
-      return { icon: <PersonPendingIcon />, color: 'text-muted', label: 'İstek gönderildi — iptal et' };
+      return { icon: <PersonPendingIcon />, color: 'text-muted', label: 'Davet gönderildi — iptal et' };
     case 'pending_incoming':
-      return { icon: <HowToRegIcon />, color: 'text-accent', label: 'Arkadaşlık isteğini kabul et' };
+      return { icon: <HowToRegIcon />, color: 'text-accent', label: 'Arkadaşlık davetini kabul et' };
     default:
       return { icon: <PersonAddIcon />, color: 'text-accent', label: 'Arkadaş ekle' };
   }
@@ -131,14 +131,14 @@ function friendDialogCopy(relation: FriendRelation | null, name: string) {
       };
     case 'pending_outgoing':
       return {
-        title: 'İsteği İptal Et',
-        message: `${name} oyuncusuna gönderdiğin arkadaşlık isteğini iptal etmek istiyor musun?`,
+        title: 'Daveti İptal Et',
+        message: `${name} oyuncusuna gönderdiğin arkadaşlık davetini iptal etmek istiyor musun?`,
         action: 'İptal Et',
       };
     case 'pending_incoming':
       return {
-        title: 'Arkadaşlık İsteği',
-        message: `${name} oyuncusu sana arkadaşlık isteği gönderdi. Kabul etmek istiyor musun?`,
+        title: 'Arkadaşlık Daveti',
+        message: `${name} oyuncusu sana arkadaşlık daveti gönderdi. Kabul etmek istiyor musun?`,
         action: 'Kabul Et',
       };
     default:
@@ -336,13 +336,13 @@ export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCar
         resultMsg = 'Arkadaşlıktan çıkarıldı.';
       } else if (relation === 'pending_outgoing') {
         await removeFriend(member.id); // gönderilen isteği iptal et
-        resultMsg = 'Arkadaşlık isteği iptal edildi.';
+        resultMsg = 'Arkadaşlık daveti iptal edildi.';
       } else if (relation === 'pending_incoming') {
         await respondFriendRequest(member.id, true); // kabul et
         resultMsg = 'Arkadaş oldunuz.';
       } else {
         await sendFriendRequest(member.id);
-        resultMsg = 'Arkadaşlık isteğiniz iletilmiştir.';
+        resultMsg = 'Arkadaşlık davetiniz iletilmiştir.';
       }
       setRelation(await fetchFriendRelation(member.id));
       setFriendResultMsg(resultMsg);

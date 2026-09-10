@@ -1651,7 +1651,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   // baştan beri "Büyüme" ile açılıyordu, yani okunmamış bir geri bildirim/
   // şikayet varken bile admin'i önce grafiklere düşürüyordu (kullanıcı
   // isteği, 4 Ağustos 2026). `LiveGamesTab` (bekleyen davet varsa "Oyun
-  // Davetleri") ve `FriendsModal` (bekleyen istek varsa "İstekler") ile
+  // Davetleri") ve `FriendsModal` (bekleyen istek varsa "Davetler") ile
   // BİREBİR aynı desen ve gerekçe: bekleyen iş her zaman ön plana çıkmalı.
   //
   // Alt sekme de aynı mantığı izliyor: gelen kutusunda bekleyen yoksa ama

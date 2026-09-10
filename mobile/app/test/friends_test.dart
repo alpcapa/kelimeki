@@ -293,7 +293,7 @@ void main() {
     }
 
     testWidgets(
-        'varsayılan sekme: bekleyen istek varsa İstekler + rozet; kabul akışı',
+        'varsayılan sekme: bekleyen istek varsa Davetler + rozet; kabul akışı',
         (tester) async {
       final gw = FakeFriendsGateway()
         ..requestRows = [
@@ -301,7 +301,7 @@ void main() {
         ];
       await pumpModal(tester, gateway: gw);
 
-      // Bekleyen istek → İstekler sekmesi açık gelir (web deseni).
+      // Bekleyen istek → Davetler sekmesi açık gelir (web deseni).
       expect(find.text('Esiner'), findsOneWidget);
       expect(find.text('KABUL ET'), findsOneWidget);
       expect(find.text('1'), findsOneWidget); // CountBadge
@@ -318,7 +318,7 @@ void main() {
           {'requester_id': 'r1', 'name': 'Esiner', 'avatar_url': null},
         ];
       await pumpModal(tester, gateway: gw, initialTab: FriendsTab.friends);
-      // İstek beklese de "Arkadaşlarım" açık (boş durum metni görünür).
+      // İstek beklese de "Arkadaşlar" açık (boş durum metni görünür).
       expect(find.textContaining('Henüz arkadaşın yok'), findsOneWidget);
     });
 
@@ -344,7 +344,7 @@ void main() {
       // 11 Ağustos 2026: satır aksiyonları metin değil ikon (bkz.
       // RelationIcons.tsx / _relationIconButton). Aynı gün ikinci karar:
       // zaten arkadaş olanlar ("Ali") bu listede HİÇ görünmez — onlar
-      // "Arkadaşlarım" sekmesinde.
+      // "Arkadaşlar" sekmesinde.
       expect(find.text('Ali'), findsNothing);
       expect(find.byIcon(Icons.person_remove), findsNothing);
       expect(find.text('Bobola'), findsOneWidget);
@@ -361,7 +361,7 @@ void main() {
       await tester.tap(find.text('EKLE'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
-      expect(find.text('Arkadaşlık isteğiniz iletilmiştir.'), findsOneWidget);
+      expect(find.text('Arkadaşlık davetiniz iletilmiştir.'), findsOneWidget);
       await tester.tap(find.text('TAMAM'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
@@ -404,7 +404,7 @@ void main() {
       await tester.tap(find.text('TAMAM'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
-      // Artık arkadaş → "Ara & Ekle" listesinden düşer (Arkadaşlarım'da).
+      // Artık arkadaş → "Ara & Ekle" listesinden düşer (Arkadaşlar'da).
       expect(find.text('Esiner'), findsNothing);
     });
 
@@ -452,15 +452,15 @@ void main() {
       await pumpModal(tester,
           gateway: gw, initialTab: FriendsTab.friends, withStats: true);
 
-      // 1) Arkadaşlarım (baştan beri vardı — regresyon güvencesi)
+      // 1) Arkadaşlar (baştan beri vardı — regresyon güvencesi)
       await tester.tap(find.text('Bobola'));
       await tester.pumpAndSettle();
       expect(find.byType(PlayerScoreCardModal), findsOneWidget);
       await tester.tap(find.byTooltip('Kapat').last);
       await tester.pumpAndSettle();
 
-      // 2) İstekler — isteği yanıtlamadan önce kime bakıyoruz?
-      await tester.tap(find.text('İSTEKLER'));
+      // 2) Davetler — isteği yanıtlamadan önce kime bakıyoruz?
+      await tester.tap(find.text('DAVETLER'));
       await tester.pump();
       await tester.tap(find.text('Esiner'));
       await tester.pumpAndSettle();
@@ -549,7 +549,7 @@ void main() {
       });
     });
 
-    testWidgets('Arkadaşlarım: çıkar ikonu → onay → silme + sonuç diyaloğu',
+    testWidgets('Arkadaşlar: çıkar ikonu → onay → silme + sonuç diyaloğu',
         (tester) async {
       final gw = FakeFriendsGateway()
         ..friendsRows = [
@@ -596,7 +596,7 @@ void main() {
 
       // Eskiden KOŞULSUZ "İstek reddedildi." gösteriliyordu — hata yutulup
       // kullanıcıya GERÇEKLEŞMEMİŞ bir sonuç bildiriliyordu.
-      expect(find.text('İstek reddedildi.'), findsNothing);
+      expect(find.text('Davet reddedildi.'), findsNothing);
       expect(find.text('İşlem başarısız oldu.'), findsOneWidget);
     });
 
@@ -605,7 +605,7 @@ void main() {
     // almanın tek giriş noktası o kişiyle AKTİF bir oyunun sohbet ayarlarıydı
     // — oyun bitince ulaşılamıyordu. İkon o kısayolu açıyor.
     testWidgets(
-        'Arkadaşlarım: yalnızca moderasyon durumu OLAN satırda ikon çıkar',
+        'Arkadaşlar: yalnızca moderasyon durumu OLAN satırda ikon çıkar',
         (tester) async {
       final gw = FakeFriendsGateway()
         ..friendsRows = [
@@ -959,7 +959,7 @@ void main() {
       await tester.pumpAndSettle();
       // regresyon: gönderince web'in "Arkadaşlık isteğiniz iletilmiştir."
       // sonucu görünmeliydi, önceden HİÇBİR ŞEY çıkmıyordu.
-      expect(find.text('Arkadaşlık isteğiniz iletilmiştir.'), findsOneWidget);
+      expect(find.text('Arkadaşlık davetiniz iletilmiştir.'), findsOneWidget);
     });
   });
 

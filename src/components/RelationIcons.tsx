@@ -1,7 +1,7 @@
 /**
  * Kelimeki — arkadaşlık ilişkisi ikonları (11 Ağustos 2026).
  *
- * `FriendsModal`'ın iki sekmesindeki ("Ara & Ekle", "Arkadaşlarım") metin
+ * `FriendsModal`'ın iki sekmesindeki ("Ara & Ekle", "Arkadaşlar") metin
  * butonları (Ekle / İstek Gönderildi / Kabul Et / Arkadaşsınız / Çıkar) ve
  * `PlayerScoreCard`'daki simge, tek bir ikon diline indirildi. Kural: **ikon,
  * DOKUNUŞUN NE YAPACAĞINI söyler, ilişkinin adını değil.** Bu yüzden

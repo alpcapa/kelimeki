@@ -8,6 +8,45 @@
 > `live-game.md` (Canlı oyun Faz 2-3.6, sunucu tarafı), `online-game-screen.md`
 > (`OnlineGameScreen.tsx` — canlı oyun ekranının UI kararları).
 
+## Sekme adları: "Arkadaşlarım" → **Arkadaşlar**, "İstekler" → **Davetler** (10 Eylül 2026)
+
+Kullanıcı isteği, kozmetik. `FriendsModal.tsx` ↔ `friends_modal.dart` aynı
+PR'da; boş durum metni de birlikte gitti (*"Bekleyen istek yok."* →
+*"Bekleyen davet yok."*), çünkü o cümle sekmenin adını tekrar ediyor. Aynı
+sebeple "Ara & Ekle"nin *"hepsi zaten arkadaşın — 'Arkadaşlarım' sekmesine
+bak"* ipucu da yeni ada çevrildi: bir metin sekmeyi ADIYLA işaret ediyorsa
+etiketle birlikte değişmek zorunda.
+
+**Aynı gün, ikinci tur — sekmenin İÇİNDEKİ dil de "davet" oldu** (kullanıcı
+isteği): `İstek gönderildi — iptal et` · `Arkadaşlık isteğini kabul et` ·
+`İsteği Reddet` / `İsteği İptal Et` başlıkları · `Arkadaşlık İsteği`
+diyaloğu · sonuç mesajları (`İstek reddedildi.` · `Arkadaşlık isteğiniz
+iletilmiştir.` · `Arkadaşlık isteği iptal edildi.`) → hepsi *davet*.
+`PlayerScoreCard` **aynı PR'da** gitti: kartın ilişki simgesi bu diyalogların
+BİREBİR aynısını açıyor (`friendIconFor` ↔ `friendDialogCopy` ↔ portun
+`player_score_card_modal.dart`'ı), yani biri çevrilip öteki bırakılsaydı
+kullanıcı aynı işlemi iki adla görürdü.
+
+⚠ **KAPSAM DIŞI bırakılanlar — bilinçli:** e-posta ve push metinleri
+(`notify-friend-request*`, Edge Function + şablon), Kullanım Koşulları /
+Gizlilik metinleri, hesap silme kapsam listesi, e-posta bildirim onayı
+(`AccountSettingsModal`) ve admin panelinin ölçüm etiketleri (`Gönderilen
+İstek` · `Bekleyen İstek`). İlk ikisi hukuki/sunucu metni, sonuncusu veri
+dili. Yani bugün push bildirimi hâlâ *"Yeni arkadaşlık isteği"* diyor,
+uygulama *"Arkadaşlık Daveti"*; çevrilecekse ayrı bir tur (Edge Function
+deploy'u gerektirir).
+
+⚠ **Değişen yalnızca ETİKET.** Sekme kimliği (`Tab`/`FriendsTab.requests`),
+RPC adları (`list_incoming_friend_requests`), tablo/kolon adları ve veri
+dili ("bekleyen istek") olduğu gibi duruyor — bunlar sunucu sözleşmesi.
+Yani bu dosyadaki (ve `docs/decisions/*` içindeki) daha ESKİ notlarda geçen
+"Arkadaşlarım"/"İstekler" adları tarihsel: o gün ekranda o yazıyordu.
+
+Kapı: `mobile/app/test/friends_test.dart` etiketi BÜYÜK harfle arıyor
+(`find.text('DAVETLER')` — iki platformda da sekme yazısı `uppercase`), yani
+port etiketi geri kayarsa test düşer. Web'de aynı güvence yok; oradaki tek
+kaynak `FriendsModal.tsx`.
+
 ## "Ara & Ekle" iki hatası: yutulan kaydırma + mükerrer üye (27 Ağustos 2026)
 
 Kullanıcı bildirdi: *"Arkadaşlar - Ara&Ekle'de scroll down bir yerde

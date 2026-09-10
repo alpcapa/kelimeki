@@ -29,8 +29,8 @@
       gösteren rozet** (16 Ağustos 2026'ya kadar sayısız bir noktaydı)
       çıkmalı (tazelenme: uygulamayı yeniden açınca ya da modalı açıp
       kapatınca — Realtime bilinçli yok, web'de de yok).
-- [ ] **Varsayılan sekme.** Bekleyen istek varken modal "İstekler"
-      sekmesiyle açılmalı; Kabul Et → kişi "Arkadaşlarım"a düşmeli,
+- [ ] **Varsayılan sekme.** Bekleyen istek varken modal "Davetler"
+      sekmesiyle açılmalı; Kabul Et → kişi "Arkadaşlar"a düşmeli,
       web tarafında da arkadaş görünmeli.
 - [ ] **Ara & Ekle — liste SONUNA KADAR kaydırılabiliyor (27 Ağustos 2026,
       kullanıcı bildirdi).** Klavye açıkken (kutu `autofocus`, yani modal
@@ -47,7 +47,7 @@
 - [ ] **Ara & Ekle.** Boş kutuda "Tüm Üyeler" listesi kaydırdıkça
       20'şer büyümeli; 2+ karakterle arama çalışmalı; **kişi-ekle ikonuna**
       dokun → onay ("… arkadaş olarak eklemek istiyor musun?") → "Arkadaşlık
-      isteğiniz iletilmiştir." → satırdaki ikon **kum saatine** dönmeli
+      davetiniz iletilmiştir." → satırdaki ikon **kum saatine** dönmeli
       (karşı hesapta istek görünmeli); karşılıklı istek senaryosu: karşı
       taraf sana zaten istek göndermişse mesaj "Arkadaş oldunuz." olmalı
       (sunucu trigger'ı) ve e-posta GİTMEMELİ.
@@ -60,9 +60,9 @@
 - [ ] **Ara & Ekle arkadaşları GÖSTERMEZ (aynı gün, kullanıcı isteği).**
       Zaten arkadaş olduğun biri ne aramada ne "Tüm Üyeler" listesinde
       çıkmalı — kırmızı "adam-" ikonu bu iki listede HİÇ görünmemeli
-      (arkadaş çıkarma yalnızca "Arkadaşlarım" sekmesinde ve skor kartında).
+      (arkadaş çıkarma yalnızca "Arkadaşlar" sekmesinde ve skor kartında).
       Bir gelen isteği buradan kabul edince satır listeden düşmeli ("Arkadaş
-      oldunuz." mesajından sonra "Arkadaşlarım"da görünmeli). Aramada
+      oldunuz." mesajından sonra "Arkadaşlar"da görünmeli). Aramada
       bulunanların HEPSİ arkadaşsa "Bulunanların hepsi zaten arkadaşın"
       metni çıkmalı; "Tüm Üyeler"de bir sayfanın tamamı arkadaş çıksa bile
       liste boş kalmamalı, sonraki sayfa kendiliğinden gelmeli.
@@ -117,8 +117,8 @@
       ekranda bile — özellikle iPad'de kontrol et) küçük/kompakt kalmalı,
       ekranın TAMAMINA yayılmamalı. Her işlemin (Gönder/Çıkar/Kabul Et/
       İptal Et) SONRASINDA bir "Tamam" sonuç mesajı çıkmalı: "Arkadaşlık
-      isteğiniz iletilmiştir." / "Arkadaşlıktan çıkarıldı." / "Arkadaş
-      oldunuz." / "Arkadaşlık isteği iptal edildi." (karşılıklı anlık kabul
+      davetiniz iletilmiştir." / "Arkadaşlıktan çıkarıldı." / "Arkadaş
+      oldunuz." / "Arkadaşlık daveti iptal edildi." (karşılıklı anlık kabul
       durumunda "{isim} ile artık arkadaşsınız." — bu mobile özgü, web'de
       karşılığı yok, bilinçli).
 - [ ] **Ağ hatasında SAHTE başarı YOK (13 Ağustos 2026, Parça 89).**
@@ -129,7 +129,7 @@
       iletilmiştir." gösteriliyordu — hiçbiri gerçekleşmemişken. Uçak
       modunu kapatıp tekrar dene: normal sonuç mesajları dönmeli.
 - [ ] **Kişiye dokunmak skor kartını açar — ÜÇ sekmede de (11 Ağustos
-      2026, Parça 53).** "Arkadaşlarım", "İstekler" ve "Ara & Ekle"
+      2026, Parça 53).** "Arkadaşlar", "Davetler" ve "Ara & Ekle"
       (hem arama sonucu hem "Tüm Üyeler") satırlarında **avatara/isme**
       dokun → o kişinin skor kartı açılmalı. Aksiyon ikonu bundan
       AYRIŞIK olmalı: ikona dokunmak kartı DEĞİL onay diyaloğunu
@@ -139,7 +139,7 @@
 - [ ] **Moderasyonu arkadaş satırından geri alma (14 Ağustos 2026, Parça
       91).** Ön koşul: bir Canlı oyunda karşı tarafı sessize al ya da
       şikayet et (bölüm 11), sonra o oyun **bitsin** (ya da listeden
-      düşsün). Arkadaşlar → "Arkadaşlarım": o kişinin satırında,
+      düşsün). Arkadaşlar → "Arkadaşlar": o kişinin satırında,
       "arkadaşlıktan çıkar" ikonunun **SOLUNDA** 🚩 (yalnızca sessize
       aldıysan 🚫) çıkmalı. Dokun → "Kişi Ayarları" paneli; oradan
       "Şikayeti Geri Çek" / "Sessizden Çıkar" → **onay adımı** → sonuç
