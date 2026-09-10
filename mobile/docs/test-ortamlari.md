@@ -405,29 +405,52 @@ fazların sırası ve bağımlılıkları orada.
      `flutter build`**. Düzeltildi ve **#616 ile kanıtlandı: TestFlight'ta
      `1.0.9 (616)` · Complete**. Post-mortem:
      `marketing/app-store/console-formlari.md` §3.
-6. ⬜ **İÇ TEST GRUBU — sıradaki adım, `SENDE` (10 Eylül 2026).**
-   Derleme App Store Connect'te duruyor ama **hiçbir cihaza gitmiyor**:
-   TestFlight → sol sütun → `INTERNAL TESTING` altında **grup YOK**
-   (10 Eylül 2026, kullanıcının ekran görüntüsü: `1.0.9 (616)` ve
-   `1.0.9 (1)` için INVITES/INSTALLS/SESSIONS sütunları boş — `–`).
-   Adımlar: `INTERNAL TESTING` yanındaki **+** → gruba ad ver → **tester
-   olarak kendini ekle** (iç testçi = App Store Connect ekibinde rolü olan
-   kişi; davet `destek@kelimeki.com` kutusuna düşer) → gruba **616**
-   derlemesini ekle.
+6. ✅ **İÇ TEST GRUBU KURULDU (10 Eylül 2026, kullanıcının ekran
+   görüntüleri).** `INTERNAL TESTING` altında grup var, içinde **4 derleme**
+   ve dağıtılan sürüm `1.0.9 (620)`. Bu adım KAPANDI — ⚠ ama paket hâlâ
+   cihaza inmedi; tıkayan şey artık grup değil TESTÇİ tarafı (aşağıda 6a).
    - ⚠ **`Ready to Submit` bir engel DEĞİL.** O durum *dış* dağıtımı
      (App Store incelemesi / dış test) anlatır; **iç testçiler için Beta
      App Review yoktur**, derleme grup oluşturulur oluşturulmaz kurulabilir.
      *(Apple'ın süreci; bu depoda ÖLÇÜLMEDİ.)*
-   - ⚠ **Kurulacak derleme `616`.** Aynı sürümün altında duran `1`, yukarıda
-     anlatılan build-numarası arızasının paketi — teşhisi kolaylaştırmak
-     için grubun dışında bırak (istersen `Expire Build` ile süresini
-     doldur), yoksa TestFlight uygulamasında iki `1.0.9` yan yana görünür.
    - ✅ **Export Compliance kapısı geçildi:** iki derleme de *"Missing
      Compliance"* uyarısı almadan doğrudan `Ready to Submit`'e geçti, yani
      `Info.plist`teki `ITSAppUsesNonExemptEncryption` okundu
      (`console-formlari.md` §12'nin cihazdaki kanıtı).
-7. **iPad'de test.** TestFlight uygulamasını App Store'dan kur, davet
-   maili gelince "Kabul Et" → Kelimeki gerçek bir uygulama olarak açılır.
+6a. ⬜ **DAVET CİHAZA ULAŞMIYOR — AÇIK ARIZA, `SENDE` (10 Eylül 2026).**
+   Doğrulananlar: grup + 4 derleme + `1.0.9 (620)` grupta ✅ ·
+   `alp.capa@hotmail.com` ekipte ve **All Apps** erişimli ✅ · iPad'in
+   mağaza hesabı da AYNI adres ✅. Buna rağmen **TestFlight testçi daveti
+   e-postası HİÇ gelmedi** ve TestFlight uygulaması boş bir *"Redeem"*
+   ekranı gösteriyor. Rol `Marketing` → `App Manager` yapıldı, **fark
+   etmedi** — beklenen sonuç, iki rol de iç testçi olabiliyor.
+   - **En güçlü ipucu: iç testçinin o e-postaya İHTİYACI YOK.** TestFlight,
+     girişli Apple ID ekipte VE grupta ise uygulamayı davet linki olmadan
+     listeler. Boş `Redeem` ekranı = *TestFlight o Apple ID için sıfır
+     uygulama görüyor* demek; yani şüphe postada değil, **kimlikte ya da
+     grup üyeliğinde**. E-postanın gelmemesi bu yüzden ayrı bir arıza
+     olabilir (aşağıdaki 1. madde).
+   - Sırayla bakılacak üç şey:
+     1. **`Users and Access` satırı `Pending` (sarı) mı?** Ekip daveti
+        kabul edilmemişse o Apple ID henüz ekipte DEĞİLDİR. ⚠ Ekip daveti
+        ile TestFlight testçi daveti **AYRI iki e-postadır**; ikisi de
+        gelmiyorsa şüphe App Store Connect'te değil **kutuda** (hotmail
+        Junk klasörü + engellenen gönderenler).
+     2. **Grubun `Testers` sekmesinde o satır İŞARETLİ mi?** Ekipte olmak
+        gruba üye olmak DEĞİLDİR; grup üyeliği ayrı bir kutucuktur.
+     3. **TestFlight hangi hesapla girişli?** TestFlight iCloud'u değil
+        **Ayarlar → Medya ve Satın Alımlar** hesabını kullanır. Ortada iki
+        aday adres var — `destek@kelimeki.com` (hesap sahibi) ve
+        `alp.capa@hotmail.com` (sonradan eklenen ekip üyesi, iPad'in
+        mevcut mağaza hesabı); **girişli adres, grubun testçi
+        listesindekiyle BİREBİR aynı olmalı.**
+   - **Kaldığımız adım:** Ayarlar → Medya ve Satın Alımlar → Sign Out →
+     testçi adresiyle (planlanan: `destek@kelimeki.com`) gir → TestFlight'ı
+     kapat-aç. Belirmezse ucuz ikinci hamle: testçiyi gruptan çıkarıp
+     yeniden eklemek — daveti yeniden tetikler.
+7. **iPad'de test.** TestFlight uygulamasını App Store'dan kur; iç testçide
+   uygulama **davet maili beklemeden** listede belirir (mail gelirse "Kabul
+   Et" de aynı yere çıkarır) → Kelimeki gerçek bir uygulama olarak açılır.
    Yukarıdaki bölümler bundan sonra koşulabilir. **İlk turda koşulacak üç
    şey, üçü de yalnızca burada görülebilir:** `mobile/TESTING.md` §26
    (iPad'de MANZARA — dönüş cihazda, simülatörde imkânsız),

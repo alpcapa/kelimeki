@@ -926,7 +926,7 @@ bayatladı; bir kova kapandığında aynı turda buraya da dokun.
 
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **TestFlight iç test grubu** | Sen | Derleme `1.0.9 (616)` App Store Connect'te hazır ama `INTERNAL TESTING` altında **grup yok** → hiçbir cihaza gitmiyor. Cihaz turunu (iPad manzarası · push · Universal Links) tıkayan TEK şey bu. Adımlar: `mobile/docs/test-ortamlari.md` → TestFlight kurulumu, adım 6 |
+| **TestFlight daveti cihaza inmiyor** | Sen | ⚠ Grup KURULDU (10 Eylül 2026: 4 derleme, `1.0.9 (620)` grupta, testçi ekipte + All Apps) — **tıkayan şey artık grup değil**: davet e-postası hiç gelmiyor ve TestFlight boş *"Redeem"* ekranı veriyor. Cihaz turunu (iPad manzarası · push · Universal Links) tıkayan TEK şey bu. Teşhis sırası ve kaldığımız adım: `mobile/docs/test-ortamlari.md` → TestFlight kurulumu, adım **6a** |
 | **Ekran görüntüleri** | Ben | 6/6 kare CI'da üretiliyor ve ölçüldü (§13); kalan tek şey **kompozisyon kararı** (başlık/çerçeve) + isteğe bağlı 7. kare |
 | **Trader adresi** | Sen | Beyanın açık kalan TEK alanı (§2). Gönderim kapısı |
 
