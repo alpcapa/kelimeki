@@ -129,10 +129,23 @@ Play'e yükleme YAPILMADI — o adım Console'da elle yapılıyor.
 | Cihazda görünen | Setup teşhis satırı: **`Derleme a4c809b`** |
 | `.aab` | <https://github.com/alpcapa/kelimeki/releases/download/mobile-latest/kelimeki.aab> · **63.439.370 bayt** · SHA-256 `f33540f6…81db1` |
 | `.apk` (yan yükleme/Appetize) | aynı etiket, `kelimeki.apk` · 64.397.049 bayt · SHA-256 `aad56e64…3c39` |
+| iOS simülatör paketi (Appetize) | aynı etiket, `kelimeki-ios-simulator.zip` · 61.250.971 bayt · SHA-256 `69f9fb1f…c419` · 21:27:50'de tazelendi |
+| **TestFlight** | ✅ yükleme adımı **21:27:52 → 21:31:23** (3 dk 31 sn) yeşil — beklenen paket **1.1.0 (627)** |
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır.** Yüklemeden önce
 indirdiğin paketin `versionCode`'unun **627** olduğunu doğrula; `main`'e
 girecek bir sonraki mobil iş bu etiketi değiştirir (1.0.4/467 dersi).
+
+⚠ **"TestFlight adımı yeşil" ≠ "TestFlight'ta hazır".** İş akışı
+`skip_waiting_for_build_processing: true` ile koşuyor (macOS runner
+dakikası, bilinçli); Apple'ın işlemesi 10-40 dk. Kanıt CI'ın yeşili değil,
+**App Store Connect'te beliren derleme** — 1.0.9 turunun aynı dersi.
+
+**Koşu 627'nin dört işi de yeşil** (Analiz+testler 21:17 · Android 21:23 ·
+Pages 21:16 · iOS 21:31). Yani Appetize'ın HER İKİ uygulaması da bu turda
+tazelendi — Android 21:23:10, iOS 21:27:52. (Normalde ikisi ayrı zamanlarda
+tazelenir ve arada bakan "iOS bayat" tuzağına düşer; bu turda ikisi de
+tamam.)
 
 ⚠ **`main`'in başı bu paketin sha'sı DEĞİL.** #515 (yalnızca `ROADMAP.md`)
 merge edildiğinden `main` = `ac93500`, ama o commit `mobile-build`in `paths`
@@ -175,8 +188,7 @@ bildirimi, kelimeki.com bağlantısının uygulamada açılması.
 
 ### Sabah kontrol listesi (yükleme adımları)
 
-1. **Appetize (Android) — taze.** Koşu 627 Android işini 21:23'te bitirip
-   yükledi. Bak: yapışık `OYUNU BAŞLAT` · tanıtımda tek satır rozet ·
+1. **Appetize — İKİSİ DE taze** (Android 21:23:10 · iOS 21:27:52). Bak: yapışık `OYUNU BAŞLAT` · tanıtımda tek satır rozet ·
    Ayarlar → Ekran → **Ekran boyutu**'nu büyütüp ikisini tekrar. Teşhis
    satırı `Derleme a4c809b` demeli.
 2. **TestFlight (iPhone/iPad).** Beklenen paket **1.1.0 (627)**. TestFlight
