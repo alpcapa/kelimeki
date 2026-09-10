@@ -1570,3 +1570,62 @@ kapanırken öteki kapanmıyor** — bu tablo bir İNDEKS, kararların kaynağı
 (hesap tipi hariç); 24.2/24.3/24.4 anahtarlar ve Team ID gelmeden
 YAZILABİLİR ama DOĞRULANAMAZ — ve bu depoda "yazıldı" ile "çalışıyor"
 arasındaki farkın bedeli defalarca ödendi.
+
+---
+
+## 26. Web'den mağazalara yönlendirme — **BEKLİYOR: mağaza linkleri canlı değil** (10 Eylül 2026)
+
+Kullanıcı isteği: *"web'de çıkan 'Add to homescreen' sadece web'de kalmalı.
+Android ve iOS'dan gelenleri Store'lara yönlendirmek gerekecek. Bir de
+Setup'ın alt kısmına App Store ve Google Play butonları koymamız lazım."*
+
+**Tamamı WEB işi** (`src/`) — mobil pakete binmez, `main`'e merge olur olmaz
+Vercel'den canlıya çıkar. Yani bir sürüm turu BEKLEMEZ.
+
+### Neden bugün yapılmadı — bilinçli erteleme
+
+İki mağaza linkinin **ikisi de bugün 404**: Play'in production başvurusu
+10 Eylül 15:26'da gönderildi (inceleme ≤7 gün) ve production sürümü olmadan
+vitrin adresi 404 veriyor (`marketing/play-store/console-formlari.md` §7'nin
+ölçümü); App Store ise henüz gönderilmedi (24.6 açık). Rozetleri şimdi
+koymak kullanıcıyı 404'e göndermek olurdu.
+
+⚠ **İKİ TUR OLACAK, tek seferde bitmez:** Play muhtemelen bir hafta içinde,
+App Store haftalar sonra açılıyor. Önce Android yarısı, sonra Apple'ınki.
+
+### Tetikleyici
+
+Play production onayı (e-posta `destek@kelimeki.com`'a düşecek) → Android
+yarısı. App Store yayını → Apple yarısı.
+
+### Yapılacaklar
+
+| Parça | Not |
+|---|---|
+| Mağaza URL'leri tek bir sabit dosyasında | `null` = "henüz yayında değil" → o rozet/dal HİÇ render edilmez. Tek satır değiştirip merge etmek yeter |
+| `Setup.tsx` footer'ına rozet satırı | Hukuki linklerin (`Kullanım Koşulları · Gizlilik Politikası · Paylaş`) ÜSTÜNE, ortalanmış kendi satırı |
+| `AddToHomeScreen.tsx` platforma göre dallansın | **Asıl iş burada.** Bugün `detectPlatform()` zaten `ios`/`android`/`other` ayırıyor ama üçü de aynı PWA talimatına düşüyor. Mağaza yayındaysa o platform mağazaya, değilse bugünkü PWA şeridine düşmeli — hiçbir aşamada boş ekran olmamalı |
+| iOS Smart App Banner | `<meta name="apple-itunes-app" content="app-id=…">` — tek satır, ama App Store onayı + **sayısal App ID** ister |
+| Manifest `related_applications` + `prefer_related_applications` | ⚠ **ÖLÇMEDEN AÇMA.** Chrome'un PWA kurulumunu Play'e yönlendirmesinin standart yolu, ama masaüstü kurulumunu da bastırıp bastırmadığı bu depoda ÖLÇÜLMEDİ — açılırsa masaüstündeki çalışan davranış sessizce kaybedilebilir |
+| Doküman senkronu | `docs/decisions/components.md` → `AddToHomeScreen` notu |
+
+### Rozet görselleri — ÇİZİLMEZ, resmî dosya indirilir
+
+Apple ve Google rozetleri **tescilli marka**; ikisi de yeniden çizmeyi,
+rengini/oranını değiştirmeyi yasaklıyor. Bu depo logosunu SVG path'e
+çeviriyor diye bunlar da öyle sanılmasın.
+
+- Apple → `https://developer.apple.com/app-store/marketing/guidelines/`
+  (10 Eylül 2026'da doğrulandı, `200`)
+- Google → Play badge generator, `https://play.google.com/intl/en_us/badges/`
+  ⚠ bu adres oturumun ağ politikası yüzünden DOĞRULANAMADI
+
+**Türkçe sürümlerini al** (uygulama Türkçe-only), ikisini **aynı yükseklikte
+yan yana** göster, her rozetin kendi "clear space" kuralına uy; minimum
+ölçüleri ezberden değil kendi güncel kılavuz sayfalarından oku.
+
+### Efor
+
+Yarım gün (testler + doküman senkronu dahil). Hiçbir şeye bağımlı değil —
+onay geldiği gün oturulup bitirilir. ⚠ Bu tahmin bir SÖZ değil: bu dosyanın
+kendi dersi, eski #7'nin *"tek satır"* sanılıp ölçünce no-op çıkmasıydı.
