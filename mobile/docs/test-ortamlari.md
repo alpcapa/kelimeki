@@ -348,10 +348,13 @@ fazların sırası ve bağımlılıkları orada.
 1. **App Store Connect'te uygulama kaydı.** appstoreconnect.apple.com →
    Uygulamalar → yeni. Bundle ID: `com.kelimeki.kelimeki` (Xcode
    projesinde zaten bu; Android `applicationId` de aynı).
-2. **App Store Connect API anahtarı.** Kullanıcılar ve Erişim →
-   Entegrasyonlar → App Store Connect API → anahtar üret ("App Manager"
-   rolü). `.p8` dosyası **yalnızca bir kez** indirilir. Üç değer gerekli:
-   Key ID, Issuer ID, `.p8` içeriği.
+2. ✅ **App Store Connect API anahtarı — ALINDI (9 Eylül 2026).**
+   Kullanıcılar ve Erişim → Entegrasyonlar → App Store Connect API →
+   anahtar üret. `.p8` dosyası **yalnızca bir kez** indirilir. Üç değer
+   gerekli: Key ID, Issuer ID, `.p8` içeriği.
+   - ⚠ **`Team Keys` değil `Individual Keys`** ve indirme iPadOS'ta
+     defalarca düştü; anahtar sonunda bir **Mac'ten** ilk denemede indi.
+     Ölçüm ve teşhis zinciri: `marketing/app-store/console-formlari.md` §3.
 3. **GitHub deposu sırları** (Settings → Secrets → Actions) — BEŞ tane:
 
    | Secret | Ne |
@@ -392,12 +395,45 @@ fazların sırası ve bağımlılıkları orada.
    - ⚠ **`--build-number` eklendi** (`github.run_number`): TestFlight aynı
      numarayı ikinci kez kabul etmiyor. Android'in `.aab` adımı da aynı
      sayacı kullanıyor, iki mağazanın numaraları hizalı.
-   - ⚠ **HENÜZ HİÇ KOŞMADI.** App Store Connect API anahtarı Apple'ın
-     indirme ucundaki arıza yüzünden alınamadı. İlk koşu bir DOĞRULAMA
-     turudur, rutin yayın değil.
-6. **iPad'de test.** TestFlight uygulamasını App Store'dan kur, davet
+   - ✅ **KOŞTU VE UÇTAN UCA DOĞRULANDI (9 Eylül 2026).** Altı koşu,
+     sekiz ayrı arıza; zincir #614'te tamamlandı ve paket TestFlight'ta
+     göründü. ⚠ Dokuzuncu arıza yeşil koşudan SONRA bulundu: paket
+     `1.0.9 (1)` olarak yüklenmişti, 614 olarak değil — araya giren
+     **bayraksız `flutter build ios`** (simülatör adımı)
+     `Generated.xcconfig`i eziyor ve build numarasını belirleyen şey
+     pubspec de ilk komut da değil, **fastlane'den önceki SON
+     `flutter build`**. Düzeltildi ve **#616 ile kanıtlandı: TestFlight'ta
+     `1.0.9 (616)` · Complete**. Post-mortem:
+     `marketing/app-store/console-formlari.md` §3.
+6. ⬜ **İÇ TEST GRUBU — sıradaki adım, `SENDE` (10 Eylül 2026).**
+   Derleme App Store Connect'te duruyor ama **hiçbir cihaza gitmiyor**:
+   TestFlight → sol sütun → `INTERNAL TESTING` altında **grup YOK**
+   (10 Eylül 2026, kullanıcının ekran görüntüsü: `1.0.9 (616)` ve
+   `1.0.9 (1)` için INVITES/INSTALLS/SESSIONS sütunları boş — `–`).
+   Adımlar: `INTERNAL TESTING` yanındaki **+** → gruba ad ver → **tester
+   olarak kendini ekle** (iç testçi = App Store Connect ekibinde rolü olan
+   kişi; davet `destek@kelimeki.com` kutusuna düşer) → gruba **616**
+   derlemesini ekle.
+   - ⚠ **`Ready to Submit` bir engel DEĞİL.** O durum *dış* dağıtımı
+     (App Store incelemesi / dış test) anlatır; **iç testçiler için Beta
+     App Review yoktur**, derleme grup oluşturulur oluşturulmaz kurulabilir.
+     *(Apple'ın süreci; bu depoda ÖLÇÜLMEDİ.)*
+   - ⚠ **Kurulacak derleme `616`.** Aynı sürümün altında duran `1`, yukarıda
+     anlatılan build-numarası arızasının paketi — teşhisi kolaylaştırmak
+     için grubun dışında bırak (istersen `Expire Build` ile süresini
+     doldur), yoksa TestFlight uygulamasında iki `1.0.9` yan yana görünür.
+   - ✅ **Export Compliance kapısı geçildi:** iki derleme de *"Missing
+     Compliance"* uyarısı almadan doğrudan `Ready to Submit`'e geçti, yani
+     `Info.plist`teki `ITSAppUsesNonExemptEncryption` okundu
+     (`console-formlari.md` §12'nin cihazdaki kanıtı).
+7. **iPad'de test.** TestFlight uygulamasını App Store'dan kur, davet
    maili gelince "Kabul Et" → Kelimeki gerçek bir uygulama olarak açılır.
-   Yukarıdaki bölümler bundan sonra koşulabilir.
+   Yukarıdaki bölümler bundan sonra koşulabilir. **İlk turda koşulacak üç
+   şey, üçü de yalnızca burada görülebilir:** `mobile/TESTING.md` §26
+   (iPad'de MANZARA — dönüş cihazda, simülatörde imkânsız),
+   `mobile/docs/testing-bildirimler.md` (push izni + `aps-environment`,
+   CI'da doğrulanamıyor) ve Universal Links'in iOS yarısı (ROADMAP 24.4 —
+   web yarısı canlıda ölçüldü, iOS yarısı TestFlight bekliyor).
 
 ## Üyelik OLMADAN test (Appetize.io — tarayıcı emülatörü)
 
