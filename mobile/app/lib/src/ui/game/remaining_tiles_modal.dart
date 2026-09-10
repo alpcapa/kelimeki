@@ -25,8 +25,17 @@ class RemainingTilesModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myRack =
-        myIndex < state.players.length ? state.players[myIndex].rack : <Tile>[];
+    // ⚠ `myIndex` NEGATİF olabilir: canlı ekranın `_mySlot`'u, çağıran o
+    // oyunda bir koltuk tutmuyorsa -1 döner (`slots.indexWhere`). O ekran
+    // bunu ALTI ayrı yerde `if (_mySlot < 0)` ile eliyor, burası elemiyordu
+    // ve `players[-1]` Dart'ta RangeError atardı — pencere açılırken çökme.
+    // Web'de aynı satır `players[myIndex]?.rack ?? []` olduğundan JS sessizce
+    // `undefined` verip boş rafa düşüyor, yani hata YALNIZCA portta vardı
+    // (10 Eylül 2026). Koltuğu olmayan için doğru davranış boş raf: hiçbir
+    // taş "bende" sayılmaz, döküm tahtada olmayan HER şeyi gösterir.
+    final myRack = myIndex >= 0 && myIndex < state.players.length
+        ? state.players[myIndex].rack
+        : <Tile>[];
     // Bekleyen (bu turda konmuş, henüz onaylanmamış) taşlar da ÇIKARILMALI —
     // raftan çıkmış ama tahtaya yazılmamış olduklarından, verilmezse rakibin
     // elinde sayılırlar (bkz. `remainingTiles` notu).
