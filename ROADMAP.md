@@ -76,14 +76,17 @@ sunucu tarafında olduğu için sürüm beklemiyor.
 
 ### Kalan işlerin tamamı — tek bakışta (2 Eylül 2026'da güncellendi)
 
-⚠ **Asıl bloker kod DEĞİL.** Play production'a başvurmak için kişisel
-hesaplarda **12 tester'ın 14 gün kesintisiz kayıtlı** kalması gerekiyor;
-sayaç kapalı testle işliyor ve o bitene kadar yayın açılamıyor. Aşağıdaki
-her şey o pencerenin içinde ya da yanında duruyor.
+✅ **O BLOKER DÜŞTÜ (10 Eylül 2026, 15:26).** Aylardır sırayı belirleyen
+şey koda değil takvime bağlıydı: kişisel hesaplarda **12 tester × 14 gün
+kesintisiz**. Sayaç doldu, kartın üç şartı da çizildi ve **production
+başvurusu gönderildi**; Console *"7 gün ya da daha az"* diyor ve sonucu
+`destek@kelimeki.com`'a yazacak. Cevaplar, ölçümler ve soruların tam metni:
+`marketing/play-store/console-formlari.md` §7 — **ret gelirse oradan devam
+edilir, sıfırdan yazılmaz.**
 
 | Kova | Ne | Durum |
 |---|---|---|
-| **Sayaç** | 12 tester × 14 gün | ⏳ işliyor, aksiyon yok · ⚠ karttaki **12**'nin gerçek adet mi şartın tavanı mı olduğu ÖLÇÜLMEDİ (2 Eylül, kullanıcı itirazı — aşağıda) · *Android developer verification* ✅ **BİTTİ** (Console'dan doğrulandı 31 Ağustos: `com.kelimeki.kelimeki` Registered, 3 anahtar, Identity dolu) |
+| **Sayaç** | 12 tester × 14 gün | ✅ **DOLDU — başvuru gönderildi 10 Eyl 2026, 15:26; inceleme ≤7 gün, sonuç e-postayla** · ⚠ karttaki **12**'nin gerçek adet mi şartın tavanı mı olduğu ÖLÇÜLMEDİ (2 Eylül, kullanıcı itirazı — aşağıda) · *Android developer verification* ✅ **BİTTİ** (Console'dan doğrulandı 31 Ağustos: `com.kelimeki.kelimeki` Registered, 3 anahtar, Identity dolu) |
 | **Console (elle)** | — | ✅ **KAPANDI** (bu satır 31 Ağustos'a kadar bayat kaldı; ayrıntı aşağıda) |
 | **1.0.4'e binecek kod** | Faz 6 istemci yarısı (rozet sıfırlama + sürüm damgası) · Faz 7 (iki çökme) · **+ #10 hata hız sınırı** (1 Eylül'de eklendi) | ✅ **1.0.4 (467) Play'e YÜKLENDİ, incelemede** (1 Eylül 2026) |
 | **1.0.5'e binen kod** | Tahta zoom'u (+2 APK turu) · zoom tanıtım balonu · yazı ölçeği (sınıf 3+2) · mesaj kutusu etiketi · **cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar)** | ✅ **TUR KAPANDI** — `1.0.5 (501) — 4a0a29b` kapalı testte yayında (~15:03) ve üç işin cihaz doğrulaması da alındı (2 Eylül, kullanıcı). Ayrıntı: arşiv → "1.0.5 SÜRÜM TURU" |
@@ -153,6 +156,11 @@ parite testiyle zorlanıyor) ve ekranda `market://` + web yedeği var. Yani
 acil bir fren gerekirse eşiği yükseltmek YETER.
 
 ### Sayaç — nerede okunur, 14. gün ne zaman
+
+✅ **KAPANDI 10 Eylül 2026** — sayaç doldu, başvuru gönderildi (15:26).
+Aşağısı bir sonraki uygulama/hesap için işletim bilgisi olarak duruyor.
+⚠ Tahmin TUTTU: bu bölüm *"14. gün ~10 Eylül"* diyordu ve kart tam o gün
+açıldı.
 
 ⚠ Bu bir MADDE değil, açık pencerenin işletim bilgisi. *"Davetlilere
 hatırlatma"* maddesi 2 Eylül 2026'da KAPANDI (kullanıcı: *"Hep ben

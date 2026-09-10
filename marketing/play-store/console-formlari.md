@@ -728,6 +728,73 @@ kabul et ve tarihi kartın kendi metninden takip et.)
 etikettir, paket değişince güncellenmez (ayrıntı: `ROADMAP.md` → "Sürüm
 sıralaması" §3).
 
+### ✅ SAYAÇ DOLDU, BAŞVURU GÖNDERİLDİ — 10 Eylül 2026, 15:26
+
+Kart üç şartı da çizili gösterdi ve `Apply for production` butonu AKTİF oldu
+(09:35'te görüldü). Başvuru aynı gün **15:26**'da gönderildi; Console'un
+kendi yazdığı: *"We're reviewing your application form. We'll email the
+account owner with an update. **This usually takes 7 days or less**, but may
+occasionally take longer."* — yani sonuç `destek@kelimeki.com` kutusuna
+düşecek (§8), Console'da bir bildirim beklenmemeli.
+
+⚠ **Form ÜÇ sayfa, dokuz soru ve her serbest metin alanı 300 KARAKTER**
+(kelime değil). Bu ölçü önceden bilinmediği için ilk hazırlanan cevaplar
+üç katı uzunluktaydı ve baştan yazıldı. Yeniden başvuru gerekirse
+aşağıdaki metinler sınırın altındadır.
+
+⚠ **`Preview questions` hiç açılmadı** — sorular ancak `Apply`'a basınca
+görüldü. Bir sonraki uygulamada kartı görür görmez o linki aç.
+
+#### Verilen cevaplar (ret gelirse buradan devam edilir)
+
+**Sayfa 1 — About your closed test**
+
+| Soru | Cevap |
+|---|---|
+| How did you recruit users for your closed test? | *Friends, family and acquaintances who play word games - no paid provider. Google does not email testers, so I invited 56 people one by one over WhatsApp with the opt-in link and followed up personally. 12+ opted in and stayed enrolled for the full 14 days.* (256) |
+| How easy was it to recruit testers? | **Difficult** — gerekçe veri: 12 opt-in için 56 davet |
+| Describe the engagement you received | *24 testers played 641 games. All features were used: solo games against the AI, 38 friend matches (1,294 moves), 76 in-game chat messages and 21 friend requests. Usage matched real play - multi-day async matches, not one-off launches.* (234) |
+| Summary of the feedback + how collected | *Collected through an in-app feedback form (8 messages), our support inbox destek@kelimeki.com (set as the track feedback address) and WhatsApp messages from testers. Themes: positive reception of the core game, requests for missing Turkish words, and praise for the new AI difficulty levels.* (291) |
+
+**Sayfa 2 — About your game**
+
+| Soru | Cevap |
+|---|---|
+| Who is the intended audience? | *Turkish-speaking word game players, 13+, matching the target audience we declared in App content. Mostly adults who already play Scrabble-style or daily word games and want one built for Turkish. Not directed at children. No ads and no in-app purchases.* (253) — ⚠ bilerek §3.6'nın beyanıyla AYNI (13+, çocuklara yönelik değil); iki beyan çelişmemeli |
+| Describe what makes your game stand out | *It is not a Scrabble clone. On a 13x13 board each player owns a corner and grows a territory with their own tiles; playing into a rival's territory hands part of your score to them - a territory tax. So every move is two decisions: points, and ground. Turkish dictionary from TDK.* (280) |
+| Installs expected in first year | **0 - 10K** — tek dil, ağırlıklı tek ülke, reklam bütçesi yok, o gün 52 kayıtlı üye. `I don't know` daha güvenli görünüyor ama zayıf cevap; yardım metni bu bölümün uygunluğu ETKİLEMEDİĞİNİ zaten yazıyor |
+
+**Sayfa 3 — Production readiness**
+
+| Soru | Cevap |
+|---|---|
+| What changes did you make based on the closed test? | *Nine updates (1.0.1-1.0.9). A tester using large system text read a score of 241 as 24/1, so we rebuilt text scaling. We also added double-tap board zoom for small screens, fixed a tile-swap bug that lost placed tiles, fixed crashes caught by our telemetry, and added AI difficulty levels.* (289) |
+| How did you decide it is ready for production? | *Bug reports stopped: by the end of the test feedback was about words and difficulty, not defects. Telemetry is monitored daily and the only events still logged are transient backend timeouts, handled in-app, not crashes. 641 games over 14 days on real devices confirmed it.* (273) |
+
+#### Cevapların dayandığı ÖLÇÜMLER (canlı veritabanı, 27 Ağu → 10 Eyl 2026)
+
+Uydurulmadı; başvuru günü tek tek sorgulandı. Ret gelip yeniden yazılması
+gerekirse aynı sorgular tekrarlanmalı, bu sayılar KOPYALANMAMALI:
+
+| Ne | Değer |
+|---|---|
+| Oyun | **641** · oynayan **24** kişi |
+| Canlı oyun | **38** masa · **1.294** hamle |
+| Sohbet mesajı | **76** |
+| Arkadaş isteği | **21** |
+| Uygulama içi geri bildirim | **8** |
+| Android istemci hatası | **14** — ⚠ 1 Eylül'den sonrakilerin HİÇBİRİ çökme değil: üçü sunucudan dönen `504 Gateway Timeout`, biri süresi dolmuş oturum jetonu. "Çökme yok" iddiası buna dayanıyor |
+
+⚠ **Açık uç — "eksik kelime" bildirimi doğrulanmadı.** Bir testçi 28
+Ağustos'ta `ıs · kanola · sü`, 29'unda `refil` eksik dedi. **Dördü de
+sözlükte VAR** — hem `src/data/words.ts`te hem `1.0.9`'un paketindeki
+`words_tr.txt`te, üstelik o tarihte de vardı (10 Eylül 2026'da ölçüldü).
+Yani ya testçi yanlış hatırladı ya da kelime doğrulamasında gerçek bir hata
+var. 7 Eylül'deki **`regl` ise gerçekten YOK** ve eklenmedi. Production'a
+çıkmadan bakılmalı.
+
+---
+
 **Tester'a gönderilecek metin (taslak):**
 
 > Kelimeki'nin kapalı testine davetlisin. İki adım:
