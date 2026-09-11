@@ -933,7 +933,39 @@ takıma koymaz, yani kapı ya yavaş ya hiç olmazdı. Test İKİ yönü de öl�
 boşuna kesmek olurdu), 21. saniyede `null`. Duyarlılık kanıtlandı:
 `.timeout` kaldırılınca test DÜŞTÜ.
 
-### ⚠ Kalan denetim — kapatılmadı, ÖLÇÜLDÜ
+### Kalan denetim — kullanıcı sorusu üzerine AYNI TURDA kapatıldı (kısmen)
+
+Kullanıcı sordu: *"Neden diğer yerleri ayrı turda kapıyoruz? Devamlı yeni
+sürüm mü çıkacağız, tek seferde hepsini göndersek olmuyor mu? Riskli mi?"*
+Haklı olduğu yer: **sürüm derdi yok** — 1.1.0 henüz mağazaya gitmedi, yani
+şimdi merge edilen her şey aynı sürüme biniyor. Ama "hepsi" derken çağrılar
+İKİ SINIFA ayrılıyor ve biri gerçekten riskli.
+
+**Kapatıldı (okuma ya da doğası gereği idempotent):**
+`listMine` · `turns` · `deadlines` (Canlı sekmeleri — kullanıcı arkasında
+bekliyor) · `checkTurnTimeout`/`checkInviteExpiry` (süpürme; zaten
+`catchError`lıydı ama ⚠ `catchError` asılı isteği YAKALAMAZ, tavansız bir
+süpürme listenin tazelenmesini sonsuza kadar bekletirdi) ·
+`unseenFinishedGames` · `markFinishesSeen`.
+
+⚠ **KAPATILMADI ve bu bilinçli — `create` ve `respondInvite`.** Bu ikisi
+MUTASYON ve **idempotency anahtarları YOK** (`create_online_game(int, jsonb)`
+— imzada anahtar yok). Bir zaman aşımı, sunucuda BAŞARIYLA tamamlanmış bir
+isteği "hata" diye gösterir; kullanıcı tekrar dener ve **iki oyun açılır**.
+Yani tavan eklemek burada bu sayfanın en üstündeki hatanın (sahte "Sıra
+sende değil.") tıpatıp aynısını, üstelik daha kötü bir sonuçla üretirdi:
+orada hamle zaten işlenmişti, burada ikinci bir KAYIT doğar.
+
+**Sırası şu:** önce `create_online_game`e bir idempotency anahtarı
+(`submit_move`'un `p_move_id`'siyle aynı desen), SONRA tavan. Tersi
+yapılamaz.
+
+`finishedGameSlots` de kapatılmadı: çağıranının zaman aşımını nasıl ele
+aldığı okunmadı; ölçmeden tavan eklemek bu sayfanın kendi dersine aykırı.
+
+`submitMove` zaten tavanlı sayılır — `OnlineApi._send` 15 sn taşıyor.
+
+### ⚠ İlk turda yazılan denetim notu (arşiv)
 
 Aynı gün `OnlineGamesRepo`'nun tüm gateway çağrıları tarandı: **16 çağrıdan
 yalnızca 3'ünde tavan vardı** (üçü de arka plan). Bu tur yalnızca ilk

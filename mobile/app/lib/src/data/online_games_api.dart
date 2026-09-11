@@ -623,11 +623,15 @@ class OnlineGamesRepo {
 
       // Süpürme hataları listeyi düşürmez — bir sonraki açılış tekrar dener.
       await Future.wait([
+        // ⚠ Tavan + `catchError` BİRLİKTE: `catchError` yalnızca REDDEDİLEN
+        // isteği yakalar, asılı kalanı değil — tavansız bir süpürme çağrısı
+        // listenin tazelenmesini (aşağıdaki `_fetchWithRetry`) sonsuza
+        // kadar bekletirdi.
         for (final id in expiredTurns)
-          gateway.checkTurnTimeout(id).catchError(
+          gateway.checkTurnTimeout(id).timeout(_callTimeout).catchError(
               (Object e) => debugPrint('[Kelimeki] turn timeout: $e')),
         for (final id in expiredInvites)
-          gateway.checkInviteExpiry(id).catchError(
+          gateway.checkInviteExpiry(id).timeout(_callTimeout).catchError(
               (Object e) => debugPrint('[Kelimeki] invite expiry: $e')),
       ]);
       snapshot = await _fetchWithRetry();
@@ -665,7 +669,13 @@ class OnlineGamesRepo {
   }
 
   Future<OnlineGamesSnapshot> _fetchOnce() async {
-    final rows = await gateway.listMine();
+    // Tavan, `loadGame` ile AYNI gerekçe: bu çağrının arkasında kullanıcı
+    // Canlı sekmelerinde BEKLİYOR. Zaman aşımı `TimeoutException` fırlatıyor,
+    // `isNetworkError` onu tanıyor (metin kalıbı `timeoutexception`), yani
+    // `_fetchWithRetry`in mevcut yeniden deneme dalına düşüyor ve tükenince
+    // `load()`un catch'i "bağlantı yok" durumunu kuruyor — yeni bir hata
+    // yolu açılmadı.
+    final rows = await gateway.listMine().timeout(_callTimeout);
     final games = [for (final r in rows) OnlineGame.fromJson(r)];
     final activeIds = [
       for (final g in games)
@@ -675,7 +685,8 @@ class OnlineGamesRepo {
       return OnlineGamesSnapshot(games, const {}, const {});
     }
     final results = await Future.wait(
-        [gateway.turns(activeIds), gateway.deadlines(activeIds)]);
+            [gateway.turns(activeIds), gateway.deadlines(activeIds)])
+        .timeout(_callTimeout);
     final turns = <String, int>{
       for (final r in results[0])
         r['online_game_id'] as String: (r['current'] as num).toInt(),
@@ -842,7 +853,7 @@ class OnlineGamesRepo {
     // bilinen rozeti korur (bkz. alanın notu).
     List<String>? unseen;
     try {
-      unseen = await gateway.unseenFinishedGames();
+      unseen = await gateway.unseenFinishedGames().timeout(_callTimeout);
     } catch (_) {
       unseen = null;
     }
@@ -860,7 +871,9 @@ class OnlineGamesRepo {
   /// gelip "kayboldu sonra döndü" diye tuhaf görünür).
   Future<bool> markFinishesSeen({String? onlineGameId}) async {
     try {
-      await gateway.markFinishesSeen(onlineGameId: onlineGameId);
+      await gateway
+          .markFinishesSeen(onlineGameId: onlineGameId)
+          .timeout(_callTimeout);
       return true;
     } catch (_) {
       return false;

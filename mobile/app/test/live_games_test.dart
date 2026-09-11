@@ -583,6 +583,15 @@ void main() {
       await pumpTab(tester, s);
       expect(find.text(kOfflineNoConnection), findsOneWidget);
       expect(find.text('Yükleniyor…'), findsNothing);
+      // ⚠ Asılı istek artık 20 sn'lik tavanın altında (11 Eylül 2026), yani
+      // widget ağacı dağıtılırken bekleyen bir zamanlayıcı kalıyor ve
+      // `flutter_test` bunu hata sayıyor. Tavanı geçirmek testin iddiasını
+      // DEĞİŞTİRMİYOR — iddia zaten "mesaj ağ cevabı BEKLENMEDEN çıkar" ve
+      // o expect'ler yukarıda, tavandan ÖNCE ölçüldü.
+      // ⚠ 21 sn YETMEZ: tavan `TimeoutException` fırlatıyor, `isNetworkError`
+      // onu tanıyor ve `_fetchWithRetry` yeniden deniyor — yani asılı uçla
+      // zincir birkaç tur sürüyor. Sahte zamanda ilerletmek bedava.
+      await tester.pump(const Duration(minutes: 5));
     });
 
     // 21 Ağustos 2026: bağlantı ÇALIŞIRKEN yükleme düşerse "İnternet
