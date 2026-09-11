@@ -84,12 +84,33 @@ on:
       # `**.md` GitHub'ın kendi dokümanındaki idiom (`**.js` örneği) ve alt
       # dizin gerektirmez, yani `mobile/CLAUDE.md` de kapsanır.
       - '!mobile/**.md'
+      #
+      # ⚠ `.md` YETMEDİ — VEKİL DEĞİL, YER ÖLÇÜLÜYOR (11 Eylül 2026).
+      # Yukarıdaki kural "doküman" yerine `.md` UZANTISINI ölçüyordu; sürüm
+      # kütüğünün CSV'leri (`mobile/docs/surumler/*.csv`) o vekilin dışında
+      # kaldı ve iki kez tam macOS+Android derlemesi başlattı (`8b08166`,
+      # `c7ac2e9`). İkisi de SÜRÜM TURUNDA oldu — tesadüf değil: depo kuralı
+      # gereği bir paket yüklenince kütük + CSV birlikte güncelleniyor, yani
+      # arıza tam da derleme numarasının önem kazandığı anda tetikleniyor.
+      # Bedeli: ~24 dk CI, yanan bir TestFlight derleme numarası ve
+      # `mobile-latest`teki `.aab`nin ezilmesi (11 Eylül'de Play'e gidecek
+      # paket 654'ten 656'ya kaydı).
+      #
+      # Çözüm uzantıyı değil YERİ ölçmek: `mobile/docs/` altı derlemenin
+      # girdisi DEĞİL — ölçüldü, workflow'un kendisi de `fastlane` ve
+      # `mobile/scripts` de oradan hiçbir dosya okumuyor (yalnızca yorum
+      # satırlarında atıf var). ⚠ Bu yüzden bu satır "gereken derleme
+      # koşmadı" arızası ÜRETEMEZ: kod `mobile/docs/` altında olamaz.
+      # Karışık PR (`.dart` + `.csv`) yine KOŞAR — yukarıdaki
+      # son-eşleşen-kazanır semantiği aynen geçerli.
+      - '!mobile/docs/**'
       - '.github/workflows/mobile-build.yml'
   pull_request:
     branches: [main]
     paths:
       - 'mobile/**'
       - '!mobile/**.md'  # push ile AYNI — yukarıdaki gerekçeye bkz.
+      - '!mobile/docs/**'  # push ile AYNI
       - '.github/workflows/mobile-build.yml'
   workflow_dispatch:
     inputs:
