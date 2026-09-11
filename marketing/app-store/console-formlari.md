@@ -944,14 +944,17 @@ da dokun.
 
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **Ekran görüntüleri** | Ben | 6/6 kare CI'da üretiliyor ve ölçüldü (§13); kalan tek şey **kompozisyon kararı** (başlık/çerçeve) + isteğe bağlı 7. kare |
+| **Karelerin Console'a YÜKLENMESİ** | Sende | Kareler hazır ve doğrulandı (§13, koşu `7d6361e`); artefaktı indirip 6.9" + iPad 13" slotlarına yüklemek elle — ajan indiremiyor |
+| **Gönderim** | Sende | §13 ve §15 kapandıktan sonra 24.6'nın önünde başka kapı YOK |
 
 **Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
 §5 · demo hesap → §11 · Export Compliance → §12 · **API anahtarı `.p8` →
 §3 (9 Eylül 2026, Mac'ten indirildi)** · **imzalama + TestFlight yüklemesi
 → §3, koşu #614/#616** · **DSA trader beyanı + DOĞRULAMASI → §2 (10 Eylül
 2026, 22:21 — gönderim kapısı düştü)** · **TestFlight iç test grubu →
-§14 (10 Eylül 2026, uygulama iPad'de kuruldu ve çalıştı)**.
+§14 (10 Eylül 2026, uygulama iPad'de kuruldu ve çalıştı)** · **ekran
+görüntüleri (kompozisyon + 7. kare + alfa) → §13 (11 Eylül 2026)** ·
+**sürüm kaydı `1.1.0` + derleme iliştirme → §15 (11 Eylül 2026)**.
 
 ## 8. Bilinen tuzaklar (hepsi 8 Eylül 2026'da yaşandı)
 
@@ -1629,3 +1632,41 @@ henüz kurulmadı. Bir derlemenin sayfasındaki *"Individual Testers"* kutusu
 DIŞ testçi eklemez, yalnızca ekipteki bir kişiyi tek bir derlemeye bağlar.
 
 ---
+
+---
+
+## 15. Sürüm kaydı ↔ derleme eşleşmesi (11 Eylül 2026)
+
+**Belirti:** Apps listesinde uygulama **jenerik ızgara ikonuyla** görünüyordu.
+
+**Yanlış ilk hipotez elendi:** ekran görüntüleriyle (24.5) ilgisi YOK —
+Connect o küçük resmi vitrin karelerinden değil, **derlemenin içindeki
+1024×1024 pazarlama ikonundan** okuyor. İkili de sağlamdı; depodan üç ölçüm:
+
+| Kontrol | Sonuç |
+|---|---|
+| `Icon-App-1024x1024@1x.png` | tam `1024×1024`, **colortype 2 (RGB, alfa YOK)** — Apple'ın alfa yasağına uygun |
+| `Contents.json` | `idiom: ios-marketing` girdisi var, dosya adı eşleşiyor (25 görsel tam) |
+| `project.pbxproj` | üç yapılandırmada da `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` |
+
+**Gerçek sebep — sürüm numaraları tutmuyordu.** Connect'teki App Store
+sürüm kaydı **`1.0`**'dı; yüklenen paketler ise `1.0.9` ve bundan sonrası
+`1.1.0` (iş akışı `--build-name` geçirmiyor, ad `pubspec.yaml`'dan geliyor
+ve o bugün `1.1.0+1`). Yani **kısa sürüm dizesi `1.0` olan bir derleme hiç
+yoktu ve olmayacaktı**; sürüme derleme iliştirilemediği için Connect'in
+gösterecek bir ikonu da yoktu.
+
+✅ **ÇÖZÜLDÜ (11 Eylül 2026, kullanıcı):** sürüm kaydı `1.1.0` yapıldı ve
+derleme iliştirildi.
+
+⚠ **Sürüm turunda bunu hatırla:** `pubspec.yaml`'ın sürüm adı ile
+Console'daki App Store sürüm kaydı AYNI olmak zorunda. Play tarafında böyle
+bir eşleşme yok (`versionCode` yeterli), yani bu Android refleksiyle
+kaçırılacak bir adım — ve belirtisi "ikon çıkmıyor" gibi tamamen alakasız
+görünüyor.
+
+⚠ **Yeni arayüzde "App Store" sekmesinin adı `Distribution`.** Sürüm
+numarası sayfanın en altındaki **General App Information** bölümünde
+düzenlenir (başlıktaki "Version 1.0" yazısı o alandan beslenir,
+düzenlenebilir değil); derleme aynı sayfadaki **Build** bölümünden `+` ile
+iliştirilir.
