@@ -36,6 +36,11 @@ class FakeOnlineGamesGateway implements OnlineGamesGateway {
   List<Map<String, Object?>> moveRows = [];
 
   final submitted = <Map<String, Object?>>[];
+
+  /// Her `submitMove` denemesinin `moveId`'si — DÜŞENLER DAHİL. İdempotency
+  /// anahtarının denemeler arasında korunduğunu ancak düşen çağrının id'sini
+  /// de görerek kanıtlayabiliriz (11 Eylül 2026 vakası).
+  final submitAttempts = <String?>[];
   final aiTriggers = <String>[];
 
   /// `set_online_game_platform` çağrıları — (gameId, platform).
@@ -112,8 +117,10 @@ class FakeOnlineGamesGateway implements OnlineGamesGateway {
   }
 
   @override
-  Future<List<Map<String, Object?>>> turns(List<String> gameIds) async =>
-      [for (final r in turnRows) if (gameIds.contains(r['online_game_id'])) r];
+  Future<List<Map<String, Object?>>> turns(List<String> gameIds) async => [
+        for (final r in turnRows)
+          if (gameIds.contains(r['online_game_id'])) r
+      ];
 
   @override
   Future<List<Map<String, Object?>>> deadlines(List<String> gameIds) async => [
@@ -139,7 +146,7 @@ class FakeOnlineGamesGateway implements OnlineGamesGateway {
 
   @override
   Future<List<Map<String, Object?>>?> finishedGameSlots(
-      String onlineGameId) async =>
+          String onlineGameId) async =>
       finishedSlots[onlineGameId];
 
   /// Bitişi görülmemiş oyunlar — testler tek tek doldurabilsin diye alan.
@@ -250,10 +257,16 @@ class FakeOnlineGamesGateway implements OnlineGamesGateway {
     List<Map<String, Object?>>? wordScores,
     int basePoints = 0,
     List<Map<String, Object?>> lostShares = const [],
+    String? moveId,
   }) async {
     final f = submitFailWith;
+    // ⚠ BAŞARISIZ denemeyi de kaydet: idempotency anahtarının denemeler
+    // arasında KORUNDUĞUNU ancak düşen çağrının id'sini de görerek
+    // kanıtlayabiliriz (11 Eylül 2026 vakası).
+    submitAttempts.add(moveId);
     if (f != null) throw f;
     submitted.add({
+      'moveId': moveId,
       'gameId': gameId,
       'action': action,
       'placements': placements,
@@ -363,8 +376,7 @@ class FakeChatGateway implements ChatGateway {
   }
 
   @override
-  Future<void> report(
-      String gameId, String targetUserId, String reason) async {
+  Future<void> report(String gameId, String targetUserId, String reason) async {
     final f = reportFailWith;
     if (f != null) throw f;
     reportedCalls.add((gameId, targetUserId, reason));
@@ -488,7 +500,9 @@ Map<String, Object?> gameRow({
             else
               slotHuman(createdBy, name: 'Esiner', relation: 'accepted'),
             slotHuman(myId,
-                name: 'Ironman', relation: 'self', inviteStatus: myInviteStatus),
+                name: 'Ironman',
+                relation: 'self',
+                inviteStatus: myInviteStatus),
           ],
       'created_at': createdAt ?? DateTime.now().toUtc().toIso8601String(),
       'my_role': myRole,

@@ -309,7 +309,7 @@ Faz 2 yazıldığında burada "gerçek zamanlı senkron oynanış yok, Faz 3'ün
 
 - **`init_online_game_state(p_game_id)`** — bir oyun `active` olduğu an (`respond_to_game_invite`/`create_online_game` içinden `perform` ile çağrılır, client'a hiç açık değil) tahtayı kurar: **torba sunucu tarafında karıştırılır** (`order by random()`, `src/data/tiles.ts` ile birebir aynı 100 taşlık dağılım) — client'ın "rastgele" dağıtımına güvenilmiyor, aksi halde biri kendi rafını lehine kurabilirdi. Her koltuğa `RACK_SIZE=7` taş dağıtır, boş 13×13 tahta + tek X3 hücresini (`buildInitialBonuses`) ve `cornersFor`/`PLAYER_COLORS` kuralına göre `players` dizisini kurar. İdempotent (state zaten varsa no-op).
 - **`get_my_online_rack(p_game_id)`** — çağıranın **kendi** rafını döner (`online_game_secrets`'i okuyabilen tek client yolu) — kendi koltuğunu `online_games.slots`'tan bulup yalnızca o indeksin rafını döner, başkasınınkini asla.
-- **`submit_move(p_game_id, p_action, p_placements, p_exchange_letters, p_words, p_word_scores, p_base_points, p_lost_shares, p_move_id)`** — `'play'|'pass'|'exchange'` (`'surrender'` bilinçli olarak kapsam dışı, aşağıya bkz.). **`p_move_id` (5 Ağustos 2026, `submit_move_move_id_idempotency` migration'ı — Flutter portu hazırlığı):** opsiyonel, istemci üretimli hamle UUID'si; aynı UUID'yle gelen yeniden deneme (mobil ağda yanıtı kaybolan istek) hamle zaten işlenmişse hiçbir şey yapmadan başarı döner — öncesinde böyle bir retry sahte bir 'Sıra sende değil.' reddi alırdı. Web istemcisi bu parametreyi GÖNDERMİYOR (null → dedup atlanır, davranış değişmedi); eski imza drop+create ile değiştirildiğinden (overload/300-ambiguous riski) grant'ler migration içinde yeniden kuruldu. Ayrıntı/doğrulama: `mobile/CLAUDE.md`, "Backend Hazırlığı". Sunucunun gerçekten doğruladığı/hesapladığı şeyler:
+- **`submit_move(p_game_id, p_action, p_placements, p_exchange_letters, p_words, p_word_scores, p_base_points, p_lost_shares, p_move_id)`** — `'play'|'pass'|'exchange'` (`'surrender'` bilinçli olarak kapsam dışı, aşağıya bkz.). **`p_move_id` (5 Ağustos 2026, `submit_move_move_id_idempotency` migration'ı — Flutter portu hazırlığı):** opsiyonel, istemci üretimli hamle UUID'si; aynı UUID'yle gelen yeniden deneme (mobil ağda yanıtı kaybolan istek) hamle zaten işlenmişse hiçbir şey yapmadan başarı döner — öncesinde böyle bir retry sahte bir 'Sıra sende değil.' reddi alırdı. **11 Eylül 2026'da İKİ İSTEMCİ DE gönderiyor** — bu cümle *"web göndermiyor"* diyordu ve o gün değişti (aşağıdaki vaka). ⚠ **Parametreyi göndermek YETMİYOR: anahtar ÇAĞIRANDA, hamleye bağlı tutulmalı.** Mobil parametreyi baştan beri gönderiyordu ama id'yi sarmalayıcının İÇİNDE üretiyordu; kullanıcının elle tekrar denemesi taze bir UUID ile gidip yine sahte ret alıyordu. Bugün anahtar iki tarafta da ekranda: `_moveIdFor` (port) ↔ `moveIdFor` (web), `(action|turnCount|payload)` ile anahtarlanıp başarıda temizleniyor; eski imza drop+create ile değiştirildiğinden (overload/300-ambiguous riski) grant'ler migration içinde yeniden kuruldu. Ayrıntı/doğrulama: `mobile/CLAUDE.md`, "Backend Hazırlığı". Sunucunun gerçekten doğruladığı/hesapladığı şeyler:
   - **Sıra kontrolü** — yalnızca `online_game_states.current` koltuğundaki kişinin kendi `auth.uid()`'i hamle gönderebilir (`for update` kilidiyle eşzamanlı çift gönderim de engellenir).
   - **Taş sahipliği** — play/exchange'de belirtilen her taş, oyuncunun sunucudaki gizli rafında harf bazlı (joker `'?'` anahtarıyla) bir multiset eşleştirmesiyle gerçekten var mı kontrol edilip oradan düşülür; rafta olmayan bir taş oynanmaya/değiştirilmeye çalışılırsa reddedilir.
   - **Tahtaya yazılan puan** (`pts`) client'ın gönderdiği değil, eşleşen rafta gerçekten kayıtlı taşın kendi puanı — biri "bu joker aslında yüksek puanlı bir harfmiş" diyemez.
@@ -824,3 +824,160 @@ bu hata için tek başına yeniden açılmadı.
 **Ders (bu dosyadaki en pahalı satır):** bir bileşene hook eklerken yerini
 "ilgili kodun yanına" değil **tüm erken dalların üstüne** koy. Bu bileşende
 üç dal var ve ikisi kullanıcının her gün bastığı butonlar.
+
+## Sahte "Sıra sende değil." — hamle oynanmıştı (11 Eylül 2026)
+
+Kullanıcı iPhone'da bildirdi: taşları koydu, OYNA'ya bastı, ekranda
+`PostgrestException(message: Sıra sende değil., code: P0001, details: Bad
+Request…)` gördü. Geri dönünce **hamlenin oynanmış olduğunu** ve oyunun
+bekleyenlerde olmadığını gördü.
+
+**Canlıdan doğrulandı:** `online_game_moves`'ta o hamlenin **TEK** satırı
+vardı (oyun `5ad3bc04…`, tur 28, +12 puan, 14:20:48Z). Yani ilk gönderim
+sunucuya ULAŞMIŞTI; çifte hamle yoktu.
+
+### İki ayrı kusur, tek semptom
+
+**1. İdempotency anahtarı çağırana açık değildi.** Sunucu tarafı doğruydu
+ve hâlâ doğru: `p_move_id` kontrolü *"Sıra sende değil."* kontrolünden
+**ÖNCE** duruyor (canlı tanımda satır 80 ↔ 107), yani aynı id ile gelen
+ikinci çağrı sessizce başarı döner. Ama id `OnlineApi`'nin İÇİNDE
+üretiliyordu ve zincirin üst katmanları (`OnlineGamesGateway.submitMove`,
+impl, `OnlineGamesRepo.submitMove`) `moveId` taşımıyordu. Sonuç: sarmalayıcı
+kendi taşıma-hatası tekrarlarında id'yi koruyordu, ama **kullanıcının elle
+tekrar denemesi** — ki hata görünce doğal refleks budur — taze bir UUID ile
+gidiyordu. Sunucu bunu YENİ bir hamle sanıyor, sıra çoktan geçtiği için
+reddediyordu. **Sahte ret buradan çıkıyordu.**
+
+Düzeltme: `moveId` zincirin üç halkasına da eklendi ve ekran onu HAMLEYE
+BAĞLI tutuyor (`_moveIdFor('play|<turnCount>|<placements>')`), başarıda
+temizliyor. Aynısı `pass` ve `exchange` için de yapıldı — üçü de aynı
+kusuru taşıyordu.
+
+⚠ **Başarıda TEMİZLEMEK kuralın ikinci yarısı.** Temizlenmezse bir sonraki
+tur aynı id'yi taşır ve sunucu onu "zaten işledim" sayıp hamleyi SESSİZCE
+yutar — düzeltmenin ters yöndeki hatası bu olurdu. İki testten ikincisi
+tam bunu ölçüyor.
+
+**2. Ham exception dökümü kullanıcının ekranındaydı.** `_errorText`
+`e.toString()` basıyordu ve `PostgrestException.toString()` TÜM alanları
+yazıyor. Web ikizi bunu ZATEN soyuyordu (`api.ts` → `new Error(error.message)`),
+yani webde ekranda yalnızca `Sıra sende değil.` çıkıyor. Bu bir tasarım
+kararı değil, **paritenin sessiz ayrışmasıydı**: `online-game-screen.md`'nin
+kararı *"sunucunun kendi MESAJI olduğu gibi kalsın"* diyor, "exception
+dökümü basılsın" demiyor.
+
+Düzeltme UI'da DEĞİL veri katmanında: `OnlineApi` artık `PostgrestException`ı
+`ServerRejection(message, code)` olarak yeniden fırlatıyor ve onun
+`toString()`i yalnızca mesajı veriyor. Sebep katman sınırı — `PostgrestException`
+bir Supabase tipi ve bu depoda Supabase veri katmanında kalıyor; UI'ın o tipi
+tanıması gerekseydi sınır delinirdi.
+
+### Kapılar (üçü de duyarlılığı KANITLANARAK eklendi)
+
+| Kapı | Nerede | Duyarlılık kanıtı |
+|---|---|---|
+| Tekrar AYNI id ile gider | `online_game_screen_test` | `_moveIdFor` yerine `uuidV4()` → DÜŞTÜ |
+| Başarıdan sonra id YENİLENİR | `online_game_screen_test` | (ters yön; temizleme silinirse düşer) |
+| `ServerRejection.toString()` yalnız mesaj | `online_api_test` | `PostgrestException` dönseydi `contains('P0001')` düşerdi |
+
+⚠ **Sahte gateway BAŞARISIZ denemeyi de kaydetmek zorunda**
+(`submitAttempts`) — yalnızca başarılı çağrıları kaydeden bir sahte, iki
+denemenin id'sinin aynı olduğunu GÖSTEREMEZ.
+
+### Web aynı PR'da düzeltildi
+
+Web `p_move_id`'yi hiç göndermiyordu; `ROADMAP` bunu zaten açık borç olarak
+yazmıştı (*"tek satırlık bir UUID … yapısal olarak imkânsız kılardı"*).
+Artık gönderiyor ve anahtarı port ile AYNI kuralla tutuyor
+(`moveIdRef` + `moveIdFor`, `useState` değil `useRef` — değer hiçbir şey
+çizmiyor).
+
+## Sonsuz "Yükleniyor…" — `catch` yetmez, TAVAN gerekiyor (11 Eylül 2026)
+
+Kullanıcı iPhone'da bildirdi: *"bekleyen oyuna tıklayınca bu ekran uzun süre
+asılı kalıyor. Sanıyorum internet yavaş veya çekmiyor."* Teşhis tarifini
+doğruladı ama sebebi tamamlıyor.
+
+**Bu semptom 14 Ağustos 2026'da bir kez düzeltilmişti** — o tur sorun
+"hata yakalanmıyordu" idi (`getMyOnlineRack` fırlıyor, `Promise.all`
+reddediyor, `setLoadFailed` satırına hiç ulaşılmıyordu). Çözüm üç çağrıyı
+tek try/catch'e almaktı ve doğruydu.
+
+⚠ **Ama bu turun sebebi FARKLI: hata hiç DOĞMUYOR.** Yavaş/asılı bir
+bağlantıda istek ne çözülür ne reddedilir. `try/catch` yalnızca REDDEDİLEN
+bir isteği yakalar; hiç bitmeyen bir isteği yakalayacak tek şey bir
+**zaman aşımı**dır.
+
+**En can sıkıcı yanı: tavan İKİ TARAFTA DA ZATEN VARDI.**
+
+| | Yardımcı | Uygulandığı yerler |
+|---|---|---|
+| Port | `_callTimeout` (20 sn) | `triggerAiTurn` · `checkTurnTimeout` · `setPlatform` |
+| Web | `withTimeout` (20 sn) | `triggerAiTurn` · `checkOnlineGameTurnTimeout` |
+
+Üçü de **arka plan** çağrısı. Kullanıcının arkasında BEKLEDİĞİ çağrıya —
+ekranın ilk yüklemesine — hiçbirinde uygulanmamıştı. Port bu boşluğu web'den
+sadakatle kopyalamış.
+
+**Düzeltme:** ilk yükleme iki tarafta da tavanın altına alındı
+(`loadGame`'in `Future.wait`i `.timeout(_callTimeout)`; web'in `Promise.all`i
+`withTimeout(..., 20000)`). Zaman aşımı mevcut catch'e düşüyor → `null` →
+**"Tekrar Dene" paneli** + zaten kurulu otomatik yeniden deneme. Yani yeni
+bir hata yolu açılmadı, var olan yola bir kapı eklendi.
+
+**Kapı:** `live_games_test.dart` → *"20 sn sonra null döner"*. `fakeAsync`
+ŞART — gerçek zamanla test 20 saniye sürerdi ve kimse 20 saniyelik bir testi
+takıma koymaz, yani kapı ya yavaş ya hiç olmazdı. Test İKİ yönü de ölçüyor:
+19. saniyede HENÜZ dönmemeli (erken dönmek yavaş ama çalışan bir bağlantıyı
+boşuna kesmek olurdu), 21. saniyede `null`. Duyarlılık kanıtlandı:
+`.timeout` kaldırılınca test DÜŞTÜ.
+
+### Kalan denetim — kullanıcı sorusu üzerine AYNI TURDA kapatıldı (kısmen)
+
+Kullanıcı sordu: *"Neden diğer yerleri ayrı turda kapıyoruz? Devamlı yeni
+sürüm mü çıkacağız, tek seferde hepsini göndersek olmuyor mu? Riskli mi?"*
+Haklı olduğu yer: **sürüm derdi yok** — 1.1.0 henüz mağazaya gitmedi, yani
+şimdi merge edilen her şey aynı sürüme biniyor. Ama "hepsi" derken çağrılar
+İKİ SINIFA ayrılıyor ve biri gerçekten riskli.
+
+**Kapatıldı (okuma ya da doğası gereği idempotent):**
+`listMine` · `turns` · `deadlines` (Canlı sekmeleri — kullanıcı arkasında
+bekliyor) · `checkTurnTimeout`/`checkInviteExpiry` (süpürme; zaten
+`catchError`lıydı ama ⚠ `catchError` asılı isteği YAKALAMAZ, tavansız bir
+süpürme listenin tazelenmesini sonsuza kadar bekletirdi) ·
+`unseenFinishedGames` · `markFinishesSeen`.
+
+⚠ **KAPATILMADI ve bu bilinçli — `create` ve `respondInvite`.** Bu ikisi
+MUTASYON ve **idempotency anahtarları YOK** (`create_online_game(int, jsonb)`
+— imzada anahtar yok). Bir zaman aşımı, sunucuda BAŞARIYLA tamamlanmış bir
+isteği "hata" diye gösterir; kullanıcı tekrar dener ve **iki oyun açılır**.
+Yani tavan eklemek burada bu sayfanın en üstündeki hatanın (sahte "Sıra
+sende değil.") tıpatıp aynısını, üstelik daha kötü bir sonuçla üretirdi:
+orada hamle zaten işlenmişti, burada ikinci bir KAYIT doğar.
+
+**Sırası şu:** önce `create_online_game`e bir idempotency anahtarı
+(`submit_move`'un `p_move_id`'siyle aynı desen), SONRA tavan. Tersi
+yapılamaz.
+
+`finishedGameSlots` de kapatılmadı: çağıranının zaman aşımını nasıl ele
+aldığı okunmadı; ölçmeden tavan eklemek bu sayfanın kendi dersine aykırı.
+
+`submitMove` zaten tavanlı sayılır — `OnlineApi._send` 15 sn taşıyor.
+
+### ⚠ İlk turda yazılan denetim notu (arşiv)
+
+Aynı gün `OnlineGamesRepo`'nun tüm gateway çağrıları tarandı: **16 çağrıdan
+yalnızca 3'ünde tavan vardı** (üçü de arka plan). Bu tur yalnızca ilk
+yükleme kapatıldı — kullanıcının bildirdiği yüzey oydu ve web ikizi de
+aynı yerde değişti, yani parite korundu.
+
+Tavansız kalan ve bir insanın arkasında bekleyebileceği çağrılar:
+`listMine`/`turns`/`deadlines` (Canlı sekmeleri — kendi yeniden deneme
+sarmalayıcısı VAR, o yüzden davranışı farklı), `create`, `respondInvite`.
+`submitMove` tavanlı sayılır: `OnlineApi._send` 15 sn taşıyor.
+
+**Yeni bir çağrı eklerken sorulacak tek soru:** *kullanıcı bunun arkasında
+BEKLİYOR mu?* Bekliyorsa tavan şart — ve tavanı eklemek yetmez, çağıranın
+zaman aşımını "sunucuya ulaşılamadı" olarak ele aldığından emin ol.
+

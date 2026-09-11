@@ -25,6 +25,96 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 202 — Sonsuz "Yükleniyor…": `catch` yetmez, TAVAN gerekiyor
+     (11 Eylül 2026):** Kullanıcı iPhone'da bildirdi — *"bekleyen oyuna
+     tıklayınca bu ekran uzun süre asılı kalıyor. Sanıyorum internet yavaş
+     veya çekmiyor."* Teşhis tarifini doğruladı ama sebebi tamamlıyor.
+     **Bu semptom 14 Ağustos 2026'da bir kez düzeltilmişti** — o tur sorun
+     "hata YAKALANMIYORDU" idi (rack çağrısı fırlıyor, `Promise.all`
+     reddediyor, `setLoadFailed` satırına ulaşılmıyordu). Bu turun sebebi
+     FARKLI: **hata hiç DOĞMUYOR.** Yavaş/asılı bağlantıda istek ne
+     çözülür ne reddedilir; `try/catch` yalnızca REDDEDİLEN isteği yakalar,
+     hiç bitmeyeni yakalayacak tek şey bir zaman aşımıdır.
+     ⚠ **En can sıkıcı yanı: tavan İKİ TARAFTA DA ZATEN VARDI** — portta
+     `_callTimeout` (20 sn), web'de `withTimeout` (20 sn). Ama yalnızca
+     ARKA PLAN çağrılarına uygulanmıştı (`triggerAiTurn`,
+     `checkTurnTimeout`, `setPlatform`); kullanıcının arkasında BEKLEDİĞİ
+     ilk yüklemeye uygulanmamıştı. Port bu boşluğu web'den sadakatle
+     kopyalamış.
+     **Düzeltme:** ilk yükleme iki tarafta da tavanın altına alındı
+     (`loadGame`in `Future.wait`i `.timeout(_callTimeout)`, web'in
+     `Promise.all`i `withTimeout(..., 20000)`). Zaman aşımı MEVCUT catch'e
+     düşüyor → `null` → "Tekrar Dene" paneli + zaten kurulu otomatik
+     yeniden deneme; yani yeni bir hata yolu açılmadı, var olana kapı
+     eklendi.
+     **Kapı:** `live_games_test.dart` → *"20 sn sonra null döner"*.
+     ⚠ `fakeAsync` ŞART — gerçek zamanla test 20 saniye sürerdi ve kimse
+     20 saniyelik bir testi takıma koymaz, yani kapı ya yavaş ya hiç
+     olmazdı. Test İKİ yönü de ölçüyor: 19. sn'de HENÜZ dönmemeli (erken
+     dönmek yavaş ama çalışan bir bağlantıyı boşuna kesmek olurdu), 21.
+     sn'de `null`. Duyarlılık kanıtlandı: `.timeout` kaldırılınca DÜŞTÜ.
+     ⚠ **Kalan denetim kapatılmadı, ÖLÇÜLDÜ:** `OnlineGamesRepo`'nun 16
+     gateway çağrısından yalnızca 3'ünde tavan vardı. Bu tur yalnızca ilk
+     yükleme kapatıldı (bildirilen yüzey oydu ve web ikizi de aynı yerde
+     değişti, parite korundu); tavansız kalanların listesi
+     `docs/decisions/live-game.md` → "Sonsuz 'Yükleniyor…'".
+     **Doğrulama:** `dart analyze` temiz · **844 test yeşil** ·
+     `npm run lint` temiz. **Doğrulama sınırı:** gerçek yavaş ağ cihazda
+     denenmedi — `TESTING.md`'ye elle madde eklendi.
+
+   - ✅ **Parça 201 — Sahte "Sıra sende değil.": hamle işlenmişti, ekranda
+     hata vardı (11 Eylül 2026):** Kullanıcı iPhone'da bildirdi — taşları
+     koydu, OYNA'ya bastı, ekranda ham
+     `PostgrestException(message: Sıra sende değil., code: P0001, details:
+     Bad Request…)` gördü; geri dönünce **hamlenin oynanmış olduğunu**
+     gördü.
+     **İlk adım kural gereği CANLIYDI, kod değil.** `online_game_moves`
+     sorgulandı: hamlenin **TEK** satırı vardı (oyun `5ad3bc04…`, tur 28,
+     +12 puan, 14:20:48Z) — yani ilk gönderim ulaşmıştı, çifte hamle yoktu.
+     Semptom "sunucu reddetti" değil, "istemci başarıyı hata sandı".
+     Sonra `submit_move`'un CANLI tanımı (`pg_proc.prosrc`) okundu:
+     idempotency kontrolü `p_move_id` ile ve *"Sıra sende değil."*'den ÖNCE
+     duruyor (satır 80 ↔ 107). **Sunucu suçsuz** — demek ki ikinci çağrı
+     FARKLI bir id taşımış.
+     **İki kusur.** (1) *Anahtar çağırana açık değildi:*
+     `OnlineApi.submitMove` id'yi kendi içinde üretiyordu ve `moveId`
+     zincirin üst halkalarında (`OnlineGamesGateway` · impl ·
+     `OnlineGamesRepo`) HİÇ yoktu. Sarmalayıcının kendi taşıma-hatası
+     tekrarları id'yi koruyordu; **kullanıcının elle tekrar denemesi**
+     korumuyordu — yani koruma tam da gereken anda devre dışıydı.
+     (2) *Ham exception dökümü ekrandaydı:* `_errorText` → `e.toString()`.
+     Web ikizi bunu ZATEN soyuyordu (`api.ts` → `new Error(error.message)`),
+     yani sessiz bir parite ayrışmasıydı; karar kaydı "sunucunun MESAJI
+     olduğu gibi kalsın" diyor, "exception dökümü basılsın" demiyor.
+     **Düzeltme.** `moveId` zincirin üç halkasına eklendi; ekran onu
+     **hamleye bağlı** tutuyor (`_moveIdFor('play|<turnCount>|<placements>')`)
+     ve **başarıda temizliyor** — `pass`/`exchange` de aynı kusuru
+     taşıyordu, üçü birden düzeltildi. `PostgrestException` →
+     `ServerRejection(message, code)` dönüşümü **veri katmanında**, UI'da
+     DEĞİL: `PostgrestException` bir Supabase tipi ve bu depoda Supabase
+     veri katmanında kalıyor.
+     ⚠ **Temizleme kuralın İKİNCİ yarısı:** anahtar başarıdan sonra
+     sıfırlanmazsa bir sonraki tur aynı id'yi taşır ve sunucu hamleyi
+     "zaten işledim" deyip SESSİZCE yutar. Düzeltmenin ters yöndeki hatası
+     bu olurdu; ikinci test tam bunu ölçüyor.
+     **Üç kapı, üçü de duyarlılığı KANITLANARAK:** tekrar aynı id ile gider
+     (`_moveIdFor` → `uuidV4()` yapıldı, test DÜŞTÜ, geri alındı) ·
+     başarıdan sonra id yenilenir (ters yön) · `ServerRejection.toString()`
+     yalnız mesaj (`contains('P0001')` negatif iddiası).
+     ⚠ **Sahte gateway BAŞARISIZ denemeyi de kaydetmek zorunda kaldı**
+     (`submitAttempts`): yalnızca başarılı çağrıları kaydeden bir sahte, iki
+     denemenin id'sinin aynı olduğunu yapısal olarak gösteremez — Parça
+     86'nın dersinin tekrarı.
+     **Web AYNI PR'da:** `p_move_id`'yi hiç göndermiyordu (ROADMAP'te açık
+     borç); artık gönderiyor ve anahtarı port ile AYNI kuralla tutuyor
+     (`moveIdRef` + `moveIdFor`; `useState` DEĞİL `useRef` — değer hiçbir
+     şey çizmiyor).
+     **Doğrulama:** `dart analyze` temiz · **843 test yeşil** ·
+     `npm run lint` temiz. **Doğrulama sınırı:** gerçek ağ koşullarında
+     (yanıtı kaybolan istek) uçtan uca denenmedi; cihaz maddesi
+     `mobile/docs/testing-arkadaslar-canli.md`'de hâlâ işaretsiz.
+     Kayıt: `docs/decisions/live-game.md` → "Sahte 'Sıra sende değil.'".
+
    - ✅ **Parça 200 — Mağaza kareleri: pencereler artık OYUN EKRANININ
      ÜSTÜNDE + kareler CI'dan ÖNCE yerelde görülebiliyor (11 Eylül 2026,
      App Store FAZ C 24.5):** Kullanıcı Parça 199'un taze setine gözle

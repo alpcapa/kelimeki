@@ -221,6 +221,38 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
   // (App.tsx'teki `refreshCloudSavesRef` deseni).
   const refreshRef = useRef<() => void>(() => {});
   const [busy, setBusy] = useState(false);
+  /**
+   * Bekleyen gönderimin idempotency anahtarı ve hangi hamleye ait olduğu —
+   * portun `_moveIdFor`/`_moveIdTemizle` ikizi (11 Eylül 2026).
+   *
+   * NEDEN: sunucunun `submit_move`'u aynı `move_id` ile gelen ikinci çağrıyı
+   * sessizce başarı sayar ve bunu "Sıra sende değil." kontrolünden ÖNCE
+   * yapar. Anahtar HER denemede yeniden üretilirse koruma hiç çalışmaz:
+   * yanıtı kaybolan bir hamlenin ikinci denemesi sunucuya YENİ bir hamle
+   * gibi görünür ve sıra çoktan geçtiğinden **sahte "Sıra sende değil."**
+   * döner — kullanıcı hamlesinin oynandığını ancak geri dönünce anlar.
+   * Mobilde tam bu yaşandı ve `ROADMAP` bunu web için de açık borç olarak
+   * yazmıştı ("tek satırlık bir UUID … yapısal olarak imkânsız kılardı").
+   *
+   * ⚠ `useRef` — `useState` DEĞİL: bu değer hiçbir şey ÇİZMİYOR, yalnızca
+   * denemeler arasında taşınıyor. State olsaydı her gönderim gereksiz bir
+   * yeniden render tetiklerdi.
+   *
+   * ⚠ Anahtar hamleye BAĞLI: aynı hamle tekrar gönderilirse aynı id,
+   * hamle DEĞİŞİRSE yeni id (o gerçekten yeni bir hamledir). Başarıda
+   * temizlenir — temizlenmezse bir sonraki tur aynı id'yi taşır ve sunucu
+   * onu "zaten işledim" sayıp hamleyi SESSİZCE yutar.
+   */
+  const moveIdRef = useRef<{ key: string; id: string } | null>(null);
+  const moveIdFor = (key: string) => {
+    if (moveIdRef.current?.key !== key) {
+      moveIdRef.current = { key, id: crypto.randomUUID() };
+    }
+    return moveIdRef.current.id;
+  };
+  const clearMoveId = () => {
+    moveIdRef.current = null;
+  };
   const [validating, setValidating] = useState(false);
   /**
    * SON gönderim denememin sonucu — `state.message`'tan AYRI tutuluyor
@@ -442,11 +474,25 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       let myRack: TileModel[] = [];
       let rows: OnlineMoveRow[] = [];
       try {
-        [publicState, myRack, rows] = await Promise.all([
-          fetchOnlineGameState(game.id),
-          getMyOnlineRack(game.id),
-          fetchOnlineGameMoves(game.id),
-        ]);
+        // ⚠ `withTimeout` ŞART, `catch` tek başına YETMEZ (11 Eylül 2026):
+        // aşağıdaki catch yalnızca REDDEDİLEN bir isteği yakalar. Yavaş/
+        // asılı bir bağlantıda `Promise.all` ne çözülür ne reddedilir ve
+        // ekran sonsuz "Yükleniyor…"da kalır. Kullanıcı bunu portta
+        // bildirdi; web AYNI deliği taşıyordu — `withTimeout` bu dosyada
+        // vardı ama yalnızca iki ARKA PLAN çağrısında (triggerAiTurn,
+        // checkOnlineGameTurnTimeout) kullanılıyordu, yani kullanıcının
+        // arkasında BEKLEDİĞİ çağrıda yoktu.
+        //
+        // Zaman aşımı reddediyor → catch → `publicState = null` →
+        // "Tekrar Dene" paneli + zaten kurulu olan otomatik yeniden deneme.
+        [publicState, myRack, rows] = await withTimeout(
+          Promise.all([
+            fetchOnlineGameState(game.id),
+            getMyOnlineRack(game.id),
+            fetchOnlineGameMoves(game.id),
+          ]),
+          20000,
+        );
       } catch (err) {
         console.error('[Kelimeki] Canlı oyun durumu alınamadı:', err);
         publicState = null;
@@ -1195,7 +1241,15 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
           wordScores,
           basePoints: basePts,
           lostShares: shares.map((s) => ({ to: s.index, amount: s.amount })),
+          // Anahtar TURU ve TAŞLARI birlikte kodluyor: aynı hamlenin ikinci
+          // denemesi aynı id'yi taşır, değiştirilen hamle yeni id alır.
+          moveId: moveIdFor(
+            `play|${state.turnCount}|${placements
+              .map((p) => `${p.r},${p.c},${p.letter},${p.wildLetter ?? ''}`)
+              .join(';')}`,
+          ),
         });
+        clearMoveId();
       } catch (err) {
         // Ağ katmanı hatası → ne olduğunu anlatan metin; sunucunun KENDİ
         // reddi ("Sıra sende değil." gibi) olduğu gibi gösterilir.
@@ -1226,7 +1280,11 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
     if (!canAct || busy) return;
     setBusy(true);
     try {
-      await submitMove(game.id, { action: 'pass' });
+      await submitMove(game.id, {
+        action: 'pass',
+        moveId: moveIdFor(`pass|${state.turnCount}`),
+      });
+      clearMoveId();
     } catch (err) {
       setSubmitError(
         isNetworkError(err)
@@ -1273,7 +1331,12 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
     const letters = state.swapSelection.map((i) => me.rack[i].letter);
     setBusy(true);
     try {
-      await submitMove(game.id, { action: 'exchange', exchangeLetters: letters });
+      await submitMove(game.id, {
+        action: 'exchange',
+        exchangeLetters: letters,
+        moveId: moveIdFor(`exchange|${state.turnCount}|${letters.join('')}`),
+      });
+      clearMoveId();
       dispatch({ type: 'TOGGLE_SWAP_MODE' });
     } catch (err) {
       setSubmitError(
