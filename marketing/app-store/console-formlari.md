@@ -2049,3 +2049,43 @@ nişanıyla ayrıca giderildi — yani seçilen çerçeveleme + temiz mesaj sat�
 **Set artık SEKİZ kare:** `01 · 02 · 03 · 04 · 06 · 07 · 08 · 09`
 (`KARE_SAYISI: 8`). Apple 6.9" için tavan 10.
 
+### 🔴 RÜTBE MÜHRÜ ÇIKMADI — altıncı "kapılar içeriği göremez" vakası (11 Eylül 2026)
+
+Kullanıcı 08 ve 09'u Console'a yükledi ve **08'de mührün hiç olmadığını**
+gördü: pencerenin üst kısmı bomboş beyaz, oysa orada büyük mavi kurdele
+olmalı. (Ekran görüntüsündeki küçük önizleme büyütülerek doğrulandı.)
+
+**Kök sebep:** `RankInfoModal`ın **1000 ms'lik giriş animasyonu** var ve
+rütbe mührü SON fazda. `pencereyiBekle` pencerenin VAR OLDUĞUNU doğruluyordu,
+**çizilmiş olduğunu değil**; ardından gelen `settle()` yalnızca 800 ms
+ilerletiyordu. Kare animasyonun ortasında çekiliyordu.
+
+⚠⚠ **ÖNİZLEME BU SINIFI YAPISAL OLARAK GÖREMEZDİ.** `flutter test` altında
+`MediaQuery.disableAnimations` **TRUE** geliyor: modal anında son karesine
+atlıyor ve mühür her zaman tam çizilmiş görünüyor. Gerçek simülatörde
+(`integration_test`) animasyon gerçekten koşuyor. Yani "önce yerelde bak"
+süreci — ki bu turun en değerli kazanımıydı — **animasyon zamanlamasına
+kör**. Ölçüldü: mühür bölgesinde beyaz olmayan piksel sayısı beklemeli
+23.370, beklemesiz 23.639 — yani yerelde iki hâl AYNI.
+
+**İki düzeltme birden:**
+
+1. **`animasyonBitsin`** — pencere bulunduktan sonra *zamanlanmış kare
+   kalmayana* kadar ilerletiliyor (tavan 5 sn). Sabit bir süre yazmak aynı
+   hatayı bir sonraki pencerede tekrarlardı. ⚠ `pumpAndSettle` BİLEREK
+   kullanılmadı: sonsuz bir animasyon varsa o fırlatır. **Tavana çarpmak
+   artık koşuyu DÜŞÜRÜYOR** — kare animasyonun ortasında sessizce
+   çekilemesin diye.
+2. **Önizlemede animasyonlar AÇIK** — `bantli` artık
+   `disableAnimations: false` veriyor, böylece iki yol aynı zemine oturuyor.
+
+⚠ **Bu düzeltme YERELDE KANITLANAMAZ** (yukarıdaki ölçüm): kanıt bir
+sonraki CI koşusundaki 08. karedir. Bu, önizlemenin dürüst sınırı —
+kompozisyonu kanıtlar, ZAMANLAMAYI kanıtlamaz.
+
+**Altı vakanın ortak dersi:** şekil kapıları (sayı · ölçü · alfa · bant)
+içeriği göremez; içerik kapıları (`pencereyiBekle` · `zoomKapisi` ·
+`animasyonBitsin`) tek tek, hep bir arıza YAŞANDIKTAN sonra eklendi. Yeni
+bir kare eklerken sıra şu: *ekranda olması gereken neyse onu `find` ile
+iddia et, sonra animasyonun bittiğini bekle.*
+
