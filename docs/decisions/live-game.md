@@ -1,5 +1,49 @@
 # Canlı Oyun (Faz 2 → 3.6) — Karar Kaydı
 
+## Kadro kuralı BİLEREK tek yönlü: davetliler birbiriyle arkadaş OLMAK ZORUNDA DEĞİL (11 Eylül 2026)
+
+Kullanıcı teyit için sordu, cevap ölçüldü ve karar **bugünkü davranışın
+korunması** oldu. Bunu buraya yazmamızın sebebi şu: ileride bir oturum
+bunu bir güvenlik/gizlilik açığı sanıp "düzeltmeye" kalkabilir.
+
+`create_online_game`in arkadaşlık kontrolü **yalnızca kuran kişiyle her
+koltuk arasında**:
+
+```sql
+if v_slot_user <> v_uid and not exists (
+  select 1 from public.friend_requests fr
+  where fr.status = 'accepted'
+    and ((fr.user_id = v_uid and fr.friend_id = v_slot_user)
+      or (fr.user_id = v_slot_user and fr.friend_id = v_uid))
+) then
+  raise exception 'Yalnızca arkadaşlarını davet edebilirsin.';
+```
+
+Davetlilerin BİRBİRİYLE arkadaş olup olmadığına bakılmaz. Yani A, kendi
+arkadaşları B ve C'yi aynı 4 kişilik oyuna çağırabilir; B ile C birbirini
+hiç tanımıyor olabilir.
+
+**Bunun iki sonucu var ve ikisi de KASITLI** (kullanıcının sözleri:
+*"oyun içinde üstteki puan kutusuna basıp kişinin skor kartını görebilir,
+istersen arkadaş ol ikonuna basabilir. Bu network'ü genişletmek için
+düşündüğüm bir şeydi"*):
+
+1. **Sohbet oyun bazlı, arkadaşlık bazlı değil** — `online_game_messages`
+   politikaları `is_online_game_participant(...)` diyor, yani B ile C aynı
+   oyundayken yazışabilir.
+2. **Skor kartı açılabilir** (başlıktaki puan kutusuna dokunarak) ve
+   oradaki ilişki simgesiyle **arkadaşlık isteği gönderilebilir** — ağın
+   büyüme yolu tam olarak budur.
+
+**Elenen iki alternatif** (istenirse diye yazılı, ama bugün İSTENMİYOR):
+sohbeti arkadaşlıkla sınırlamak (B ↔ C yazışamaz), ya da 4 kişilik oyunda
+herkesin herkesle arkadaş olmasını şart koşmak — ikincisi "arkadaşını
+tanıştırma" senaryosunu tamamen kapatır.
+
+**Kötüye kullanım tarafı boş değil:** sessize alma ve şikayet KİŞİ bazlı ve
+oyunlar arası taşınıyor (bkz. `chat-moderation.md` → Faz 2), yani tanımadığı
+biri rahatsız ederse kullanıcı onu tek dokunuşla susturabiliyor.
+
 ## Bekleyen oyun sıralaması: sıra sende → son oynanan (31 Ağustos 2026)
 
 Kullanıcı isteği: *"Bekleyen oyunlar sıralamada son oynanan her zaman en

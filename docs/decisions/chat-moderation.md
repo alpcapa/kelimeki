@@ -2,6 +2,13 @@
 
 > docs/decisions/'e taşındı (context split, 24 Ağustos 2026). Kaynak: Faz 1 (mesajlaşma) + Faz 2 (sessize alma/raporlama) bölümleri.
 
+⚠ **Sohbetin kapısı OYUN, arkadaşlık DEĞİL — ve bu bilinçli (11 Eylül
+2026).** `online_game_messages` politikaları `is_online_game_participant`
+kullanıyor; 4 kişilik bir oyunda birbiriyle arkadaş OLMAYAN iki davetli de
+yazışabilir. Bunu daraltmadan önce gerekçeyi oku: `live-game.md` → "Kadro
+kuralı BİLEREK tek yönlü". Ağın büyüme yolu bu; koruma tarafı sessize
+alma/şikayetin kişi bazlı olması.
+
 ## Oyun İçi Mesajlaşma — Faz 1 (yalnızca Canlı oyunlar)
 
 31 Temmuz 2026'da eklendi (`online_game_messages`/`finish_online_game_records_messages` migration'ları). Kullanıcı Canlı (gerçek çok kullanıcılı) oyunlarda oyuncuların birbirine grup mesajı atabilmesini istedi — mesaj tüm katılımcıların ekranında popup olarak görünür, oyun bittikten sonra da kalıcı bir kayıt olarak erişilebilir kalır (ileride uygunsuz paylaşım kontrolü için). **Bilinçli olarak yalnızca Canlı oyunlarda** — Yapay Zeka'ya karşı yerel oyunlarda (Setup'ın "Yapay Zeka ile" sekmesi) her zaman tek bir insan oyuncu (hesap sahibi) olduğundan "gruba mesaj" kavramı anlamsız; o ekranda Board footer'ındaki "Mesajlaşma" butonu hiç görünmez.
