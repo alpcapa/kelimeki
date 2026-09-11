@@ -1,0 +1,8 @@
+Sıra (bizim),Tarih (UTC),Kapsam,Sonuç,Build,Not,Kaynak
+6,—,App Store incelemesi,⏳ HENÜZ GÖNDERİLMEDİ,—,"Uygulama App Store Connect'te `Prepare for Submission`; vitrin/ekran görüntüleri (24.5) ve gönderim kapıları açık. İç test TestFlight'tan yürüyor, DIŞ test (External Testing + Beta App Review) da henüz kurulmadı.",console-formlari.md §2 · §14
+5,2026-09-10 21:31,TestFlight (iç test),✅ Yüklendi,1.1.0 (627),`upload_to_testflight` 21:27:52→21:31:23 yeşil. ⚠ ""Adım yeşil"" ≠ ""TestFlight'ta hazır"" — `skip_waiting_for_build_processing: true`; Apple'ın işlemesi 10-40 dk.,Actions koşu 627 (ölçüldü)
+4,2026-09-10 13:32,TestFlight (iç test),✅ Yüklendi,1.0.9 (620),Gruba EN YENİ build eklendi — o an TestFlight'ta 616 ve 618 de duruyordu. Bir sürüm yüklemek GEREKMEDİ.,Actions + App Store Connect (ölçüldü)
+3,2026-09-10 05:43,TestFlight,✅ Yüklendi,1.0.9 (618),Dağıtılmadı.,Actions (ölçüldü)
+2,2026-09-09 18:35,TestFlight,✅ Yüklendi — Complete,1.0.9 (616),Doğru build numarasının kanıtı.,App Store Connect (ölçüldü)
+1,2026-09-09 17:30,TestFlight,✅ Yüklendi (numara yanlış),1.0.9 (1),Mac'siz imzalama zincirinin iddiası burada kanıtlandı: Mac olmadan imzalı bir iOS paketi Apple'a yüklendi.,fastlane özeti (ölçüldü)
+0,2026-09-09 17:08,TestFlight (deneme),❌ APPLE REDDETTİ,— (koşu #612),"`Invalid bundle … you need to include all of the ""Portrait, PortraitUpsideDown, LandscapeLeft, LandscapeRight"" orientations to support iPad multitasking. (90474)` — `Info.plist` → `UISupportedInterfaceOrientations~ipad` dörde çıkarıldı. Ürün sonucu: uygulama iPad'de artık DÖNDÜRÜLEBİLİR.",fastlane logu (ölçüldü)

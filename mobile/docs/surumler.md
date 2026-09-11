@@ -1,8 +1,18 @@
-# Sürüm Kütüğü — Play'e yüklenen her paket
+# Sürüm Kütüğü — mağazalara giden her paket (Play + TestFlight)
 
 **Bu dosya KANONİK kaydıdır:** hangi sürüm, hangi `versionCode`, hangi
 commit'ten, ne zaman yüklendi ve şu an ne durumda. "Yayında olan paket
 hangisi?" sorusunun tek cevap yeri burasıdır.
+
+📊 **Tablo hâli — `mobile/docs/surumler/` (CSV, ANDROID + iOS AYRI):**
+`surumler-android.csv` · `gonderimler-android.csv` · `surumler-ios.csv` ·
+`gonderimler-ios.csv` · `degisiklikler.csv` (her commit hangi Android
+paketine ve hangi iOS build'ine girdi). Anlatı burada kalır, satırlar
+orada; **bir paket yüklendiğinde İKİSİ birden güncellenir** (kullanıcı
+isteği, 11 Eylül 2026). ⚠ Çelişkide BU dosya doğrudur.
+⚠ iOS'un kendi kütüğü bu dosyada YOK, yalnız CSV'de — TestFlight'a
+`main`'e her push'ta yükleniyor, yani build'ler burada anlatılacak kadar
+"sürüm" değil (ayrıntı: `marketing/app-store/console-formlari.md` §14).
 
 **Neden ayrı bir dosya (4 Eylül 2026, kullanıcı isteği):** kütük daha önce
 `build-and-distribution-log.md`in içinde, "Play Store İmzalama" bölümünün
@@ -53,8 +63,8 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
-| **1.1.0** | **627** | `a4c809b` | 10 Eyl 2026 (`a4c809b`, #514) | ⏳ **yüklenmedi** — paket hazır, Play'e yükleme SENDE | ⏳ hazır | İlk TestFlight turunun bulguları + onboarding Faz 2·3·5 + "Davetler" adlandırması. Aşağı bkz. |
-| **1.0.9** | **581** | `1abde38` | 7 Eyl 2026 akşamı (`main`) | **8 Eyl 2026, 08:41** (Console) | ✅ **kapalı testte YAYINDA** (Alpha; ≤ 09:10'da "Published") | "Oynayarak öğren" tanıtımının PORT ikizi (Onboarding Faz 4) + tanıtımın cihaz/tarayıcı turu düzeltmeleri. Aşağı bkz. |
+| **1.1.0** | **627** | `a4c809b` | 10 Eyl 2026 (`a4c809b`, #514) | **11 Eyl 2026, 08:01** (Console) | ✅ **kapalı testte YAYINDA** (Alpha; ≤ 08:33'te "Published") | İlk TestFlight turunun bulguları + onboarding Faz 2·3·5 + "Davetler" adlandırması. Aşağı bkz. |
+| **1.0.9** | **581** | `1abde38` | 7 Eyl 2026 akşamı (`main`) | **8 Eyl 2026, 08:41** (Console) | yayınlandı → **pasif** (11 Eyl, 1.1.0 devraldı) | "Oynayarak öğren" tanıtımının PORT ikizi (Onboarding Faz 4) + tanıtımın cihaz/tarayıcı turu düzeltmeleri. Aşağı bkz. |
 | **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **7 Eyl 2026, 13:28** (Console) | yayınlandı → **pasif** (8 Eyl, 1.0.9 devraldı) | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
 
 ⚠ **1.0.0/1.0.1'in `versionCode`'u hâlâ ölçülmedi** (Console'un paket
@@ -92,6 +102,7 @@ bölümü) — "ölçüldü" işaretli üç satır Console'dan doğrudan okundu,
 
 | # | Gönderim | Kapsam | Durum | Sürüm (çıkarım) |
 |---|---|---|---|---|
+| 15 | **11 Eyl 2026, 08:01** | Closed testing - Alpha | ✅ **Published** | **1.1.0 (627)** — ölçüldü |
 | 14 | 8 Eyl 2026, 08:41 | Closed testing - Alpha | ✅ **Published** | **1.0.9 (581)** — ölçüldü |
 | 13 | 7 Eyl 2026, 13:28 | Closed testing - Alpha | ✅ **Published** | **1.0.8 (569)** — ölçüldü |
 | 12 | 4 Eyl 2026, 15:53 | Closed testing - Alpha | ✅ **Published** | **1.0.6 (525)** — ölçüldü |
@@ -115,11 +126,19 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
-## 1.1.0 (627) — ⏳ PAKET HAZIR, YÜKLEME BEKLİYOR (10 Eyl 2026 gecesi)
+## 1.1.0 (627) — ✅ YAYINDA (kapalı test/Alpha, 11 Eyl 2026)
 
 **Durum:** `pubspec.yaml` + `env.dart` 1.0.9 → **1.1.0** (#514, 10 Eyl
-gecesi). Paket `main`'e merge'in ardından koşu **627**'de derlendi;
-Play'e yükleme YAPILMADI — o adım Console'da elle yapılıyor.
+gecesi). Paket `main`'e merge'in ardından koşu **627**'de derlendi ve
+**11 Eyl 2026 saat 08:01'de** kapalı teste (Alpha) gönderildi ve
+**08:33'ten önce "Published"** oldu (kullanıcı o an bildirdi; Console'un
+kendi yayın saati OKUNMADI, bu yüzden inceleme süresi "≤ 32 dk").
+
+⚠ **"Published" ≠ testçinin telefonunda.** Console yayınlanmış gösterirken
+cihazdaki paket saatlerce bir önceki olabiliyor — bu depoda ölçülmüş bir
+tuzak (`build-and-distribution-log.md` → "Kapalı test: Published ≠
+testçinin telefonunda"). Cihazda kanıt tek: Setup'ın `Derleme a4c809b`
+satırı.
 
 | | |
 |---|---|
@@ -874,6 +893,13 @@ yardım ekranına zorluk paragrafı. Normal'de hiçbir şey değişmedi
    grep'leme, `--name-only` kullan (bkz. 1.0.6 → #426 vakası).
 5. **Sürüm turunu `ROADMAP.md`'de kapat**, kapanınca arşive taşı — bu dosya
    turu değil PAKETİ tutar.
+6. **CSV kütüğünü de güncelle** (`mobile/docs/surumler/`) — Play'e yükleme
+   `surumler-android.csv` + `gonderimler-android.csv`'ye, TestFlight'a
+   yükleme `surumler-ios.csv` + `gonderimler-ios.csv`'ye, commit dökümü
+   `degisiklikler.csv`'ye. ⚠ iOS satırı `main`'e HER push'ta doğuyor;
+   gruba dağıtılmayan build'ler de yazılır, yoksa "616 mı 620 mi" sorusu
+   her turda yeniden sorulur. Sütun sözlüğü ve süzgeç komutları o
+   klasörün `README.md`'sinde.
 
 ## İnceleme süresi
 
@@ -884,6 +910,7 @@ yardım ekranına zorluk paragrafı. Normal'de hiçbir şey değişmedi
 | 1.0.6 (525) | 4 Eyl 15:53 | ≤ 16:22 | **≤ 29 dk** | Console (gönderim) + 16:22'de "Published" görüldü |
 | 1.0.8 (569) | 7 Eyl 13:28 | ≤ 13:57 | **≤ 29 dk** | Console (gönderim) + 13:57'de "Published" bildirildi (Console'un yayın saati okunmadı) |
 | 1.0.9 (581) | 8 Eyl 08:41 | ≤ 09:10 | **≤ 29 dk** | Console (gönderim) + 09:10'da "Published" bildirildi (Console'un yayın saati okunmadı) |
+| **1.1.0 (627)** | 11 Eyl 08:01 | ≤ 08:33 | **≤ 32 dk** | Console (gönderim) + 08:33'te "Published" bildirildi (Console'un yayın saati okunmadı) |
 
 ⚠ **DÜZELTME (4 Eylül 2026):** bu bölüm daha önce 1.0.5 için **"≈23 dakika
 (~14:40 → ~15:03)"** diyordu. O rakam Console'dan değil kullanıcının
