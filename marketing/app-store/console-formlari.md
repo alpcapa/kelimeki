@@ -1461,11 +1461,25 @@ yalnızca ölçüyle doğrulamak yetmiyor; **kareye BAKAN biri olmadan mağaza
 görseli onaylanamaz.** Ajan bakamıyor, o yüzden her yeni sette kullanıcının
 en az bir kareyi açması akışın zorunlu adımı.
 
-### 📦 KARELER — yeniden üretiliyor (11 Eylül 2026)
+### 📦 TAZE KARELER HAZIR — `9c91adb`, 11 Eylül 2026
 
-⚠ **Önceki setlerin HEPSİ çöp** (debug bandı). Aşağıdaki tabloyu bir sonraki
-yeşil koşunun künyesiyle GÜNCELLE; o koşu bandı kapatan düzeltmeyi ve
-`_kareCek` kapısını içeriyor.
+**Mağazaya gidecek set BU.** Koşu
+https://github.com/alpcapa/kelimeki/actions/runs/34589392557 — yeşil.
+Dört kapı da geçti: **7 kare** · tam piksel ölçüsü · **alfa yok** ·
+**debug bandı yok**. Kompozisyon bindirmeli şerit.
+
+| Artefakt | Boyut |
+|---|---|
+| `kelimeki-store-screenshots-iphone-6.9` | 2.415.873 bayt |
+| `kelimeki-store-screenshots-ipad-13` | 2.015.385 bayt |
+
+Geçerlilik **10 Aralık 2026**.
+
+✅ **GÖZLE DOĞRULANDI (kullanıcı, 11 Eylül 2026):** 04 · 05 · 06 açıldı —
+debug bandı yok, şerit okunur, pencerelerin altı kesilmiyor. ⚠ **07 (k-lig)
+bu turda gözle bakılmadı** — yüklemeden önce ona da bir bakılmalı.
+
+⚠ **Önceki setlerin HEPSİ çöp** (debug bandı).
 
 | Çöpe giden set | Neden |
 |---|---|
@@ -1515,11 +1529,26 @@ sıralaması) eklenecek.** Böylece §13'ün açık kalan tek maddesi kapandı.
    Şerit önce `Column` ile uygulamanın ALTINA konuyordu: oyun ekranının boş
    alt alanı yerinde kalıyor, şerit onun altına biniyordu — yani ölü alan
    değerlenmiyordu, kare uzuyordu. Kullanıcı kareye GÖZLE bakınca görüldü.
-   Şerit artık `Stack` ile uygulamanın ÜSTÜNE biniyor (kullanıcı kararı) ve
-   boşluğu gerçekten dolduruyor. ⚠ Bedeli: uygulamanın alt ~%7'si örtülüyor
-   — oyun ekranında sorun değil, ama **modal karelerinde (04/05/06)
-   pencerenin alt kenarına denk gelebilir**, yani her yeni sette o üç kare
-   gözle kontrol edilmeli.
+   Şerit artık `Stack` ile uygulamanın ÜSTÜNE biniyor (kullanıcı kararı).
+
+   ⚠ **AMA "boşluğu doldurur" da DOĞRU DEĞİL — ölçüldü (11 Eylül 2026,
+   gerçek karelerden):** modal dikey olarak ORTALANMIŞ, yani kartın altında
+   kalan pay şeritten büyük olabiliyor. Şerit 203px (%7,1); 04'te kartın alt
+   payı 479px, dolayısıyla **276px (%9,6) beyaz kalıyor**; 06'da 147px
+   (%5,1); 05'te hiç kalmıyor çünkü karartma tüm ekranı kaplıyor. Bindirme
+   yine de kazanç: `Column`da şerit boşluğun ALTINA ekleniyordu, şimdi
+   İÇİNDE.
+
+   **Kullanıcı kararı: kalan boşluk KABUL EDİLDİ** (11 Eylül 2026). Gerekçe:
+   şerit bir başlıktır, dolgu değil; yedi karede AYNI kalınlıkta olması seti
+   "set" yapan şey. Elenen iki alternatif: şeridi kalınlaştırmak (01/02'de
+   oyun ekranının butonlarını örtmeye başlıyor) ve modalı yukarı kaydırmak
+   (uygulamada pencere ortalı — kare birebir görüntü olmaktan çıkardı).
+
+   ⚠ **Bindirmenin asıl riski ÖLÇÜLDÜ ve GERÇEKLEŞMEDİ:** 04/05/06'da şerit
+   pencerenin alt kenarına değmiyor (en yakını 06, 147px açık). Yine de her
+   yeni sette modal kareleri gözle kontrol edilmeli — modal düzeni
+   değişirse bu pay kapanabilir.
 3. Kareler **sürüme kilitli**: onaylandıktan sonra değiştirmek yeni bir
    gönderim ister (promotional text gibi serbest DEĞİL), yani ilk turda
    doğru olmak zorunda.
