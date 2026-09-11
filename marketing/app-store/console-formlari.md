@@ -1656,8 +1656,16 @@ ve o bugün `1.1.0+1`). Yani **kısa sürüm dizesi `1.0` olan bir derleme hiç
 yoktu ve olmayacaktı**; sürüme derleme iliştirilemediği için Connect'in
 gösterecek bir ikonu da yoktu.
 
-✅ **ÇÖZÜLDÜ (11 Eylül 2026, kullanıcı):** sürüm kaydı `1.1.0` yapıldı ve
-derleme iliştirildi.
+✅ **ÇÖZÜLDÜ VE DOĞRULANDI (11 Eylül 2026, 12:08 — ekran görüntüsü).**
+Sürüm kaydı `1.1.0` yapıldı, derleme iliştirildi; Apps listesinde **ikon
+göründü** (jenerik ızgara gitti, yerine uygulamanın kendi ikonu) ve satır
+artık `iOS 1.1.0 Prepare for Submission` diyor. Yani teşhis doğruydu: ikon
+derlemeden geliyor, sürüm kaydı eşleşmeden derleme iliştirilemiyor.
+
+⚠ **İkonun GÖRÜNMESİ bu teşhisin kanıtı, ama tek başına bir ölçüt olarak da
+değerli:** "sürüme derleme bağlı mı" sorusunun Apps listesinden okunabilen
+görsel karşılığı bu. Bir sonraki sürüm turunda ızgara geri gelirse ilk
+bakılacak yer yine buradaki eşleşmedir.
 
 ⚠ **Sürüm turunda bunu hatırla:** `pubspec.yaml`'ın sürüm adı ile
 Console'daki App Store sürüm kaydı AYNI olmak zorunda. Play tarafında böyle
