@@ -100,7 +100,25 @@ class SetupScreen extends StatefulWidget {
   /// desen. Verilmezse gerçek `shareBoard` (sistem paylaş sayfası) kullanılır.
   final ShareBoardFn? share;
 
-  const SetupScreen({super.key, required this.services, this.share});
+  /// Alttaki teşhis satırı (`Derleme … · Sürüm … · Sözlük … · depo …`)
+  /// çizilsin mi. **Üretimde HER ZAMAN true** — satır bilinçli olarak
+  /// kalıcı (bkz. `mobile/CLAUDE.md` → "Derleme kimliği": bir düzeltmenin
+  /// cihazda gerçekten çalıştığını kanıtlayan tek yer orası).
+  ///
+  /// `false` verilen TEK yer mağaza ekran görüntüsü boru hattı
+  /// (`integration_test/store_frames.dart`, kullanıcı isteği 11 Eylül
+  /// 2026): sha/sürüm/kelime sayısı App Store vitrininde okunacak bir bilgi
+  /// değil, ve karenin altını gereksiz teknik metinle dolduruyordu.
+  /// ⚠ Bir ürün anahtarı DEĞİL — kullanıcıya açılan bir ayar yok, varsayılan
+  /// dışına çıkan başka çağıran da olmamalı.
+  final bool showDiagnostics;
+
+  const SetupScreen({
+    super.key,
+    required this.services,
+    this.share,
+    this.showDiagnostics = true,
+  });
 
   @override
   State<SetupScreen> createState() => _SetupScreenState();
@@ -1008,9 +1026,8 @@ class _SetupScreenState extends State<SetupScreen>
     return shouldShowTutorial(TutorialGateInput(
       seenTutorial: flags.seenTutorial,
       seenLegacyQuickStart: flags.seenQuickstart,
-      hasPlayed: user != null
-          ? (_cloudSaves?.length ?? 0) > 0
-          : _savedState != null,
+      hasPlayed:
+          user != null ? (_cloudSaves?.length ?? 0) > 0 : _savedState != null,
       accountCreatedAt: user?.createdAt,
     ));
   }
@@ -1139,8 +1156,8 @@ class _SetupScreenState extends State<SetupScreen>
     var state = save.state;
     if (user != null && cloud != null) {
       try {
-        final fresher = await cloud.newerPendingState(
-            save.id, user.id, save.updatedAtMs);
+        final fresher =
+            await cloud.newerPendingState(save.id, user.id, save.updatedAtMs);
         if (fresher != null) state = fresher;
       } catch (e) {
         // Depo okunamadıysa elimizdekiyle devam — oyunu açmayı engelleme.
@@ -1536,44 +1553,46 @@ class _SetupScreenState extends State<SetupScreen>
                             color: _muted,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        // Teşhis alt satırı (iskelet HomeScreen'in durum
-                        // panelinden kalan tek iz — cihazda ilk açılış doğrulaması
-                        // için faydalı, göze batmayan tek satır).
-                        FutureBuilder<SetWordSource>(
-                          future: widget.services.dictionary,
-                          builder: (context, snap) => Text(
-                            [
-                              // Derleme kimliği SÜRÜMDEN ÖNCE geliyor:
-                              // ekran görüntüsünde ilk okunan şey "hangi
-                              // kod çalışıyor" olmalı (bkz. env.dart,
-                              // `buildSha`'nın varlık gerekçesi).
-                              'Derleme $buildLabel',
-                              'Sürüm $appVersion',
-                              snap.hasData
-                                  ? 'Sözlük: ${snap.data!.length} kelime'
-                                  : 'Sözlük: yükleniyor…',
-                              widget.services.supabase != null
-                                  ? 'sunucu bağlı'
-                                  : 'offline mod',
-                              _diagStorage,
-                              // -1 = sayaç OKUNAMADI (depo erişilemedi).
-                              // "bekleyen 0" ile karıştırılmamalı: ilk
-                              // sürümde ikisi de 0 görünüyordu ve cihazda
-                              // "ayna gerçekten boş mu?" sorusu
-                              // yanıtlanamıyordu (16 Ağustos 2026).
-                              if (_diagPendingMirrors < 0) 'bekleyen ?',
-                              if (_diagPendingMirrors > 0)
-                                'bekleyen $_diagPendingMirrors',
-                            ].join(' · '),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontFamily: 'SpaceMono',
-                              fontSize: 9,
-                              color: Color(0xFF8A93A2),
+                        if (widget.showDiagnostics) ...[
+                          const SizedBox(height: 12),
+                          // Teşhis alt satırı (iskelet HomeScreen'in durum
+                          // panelinden kalan tek iz — cihazda ilk açılış doğrulaması
+                          // için faydalı, göze batmayan tek satır).
+                          FutureBuilder<SetWordSource>(
+                            future: widget.services.dictionary,
+                            builder: (context, snap) => Text(
+                              [
+                                // Derleme kimliği SÜRÜMDEN ÖNCE geliyor:
+                                // ekran görüntüsünde ilk okunan şey "hangi
+                                // kod çalışıyor" olmalı (bkz. env.dart,
+                                // `buildSha`'nın varlık gerekçesi).
+                                'Derleme $buildLabel',
+                                'Sürüm $appVersion',
+                                snap.hasData
+                                    ? 'Sözlük: ${snap.data!.length} kelime'
+                                    : 'Sözlük: yükleniyor…',
+                                widget.services.supabase != null
+                                    ? 'sunucu bağlı'
+                                    : 'offline mod',
+                                _diagStorage,
+                                // -1 = sayaç OKUNAMADI (depo erişilemedi).
+                                // "bekleyen 0" ile karıştırılmamalı: ilk
+                                // sürümde ikisi de 0 görünüyordu ve cihazda
+                                // "ayna gerçekten boş mu?" sorusu
+                                // yanıtlanamıyordu (16 Ağustos 2026).
+                                if (_diagPendingMirrors < 0) 'bekleyen ?',
+                                if (_diagPendingMirrors > 0)
+                                  'bekleyen $_diagPendingMirrors',
+                              ].join(' · '),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontFamily: 'SpaceMono',
+                                fontSize: 9,
+                                color: Color(0xFF8A93A2),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -1936,8 +1955,9 @@ class _SetupScreenState extends State<SetupScreen>
                             variant: NeoButtonVariant.accent,
                             fontSize: 14,
                             letterSpacing: 2,
-                            onPressed:
-                                words == null ? null : () => _handleStart(words),
+                            onPressed: words == null
+                                ? null
+                                : () => _handleStart(words),
                           ),
                         ),
                       ),
@@ -2036,8 +2056,7 @@ class _SetupScreenState extends State<SetupScreen>
             accountName: widget.services.auth.accountName,
             accountAvatarUrl: widget.services.auth.profile?.avatarUrl,
             accountPending: widget.services.auth.accountPending,
-            accountRankTier:
-                _rankScores.tierOf(widget.services.auth.user?.id),
+            accountRankTier: _rankScores.tierOf(widget.services.auth.user?.id),
           ),
         ],
         // ⚠ "OYUNU BAŞLAT" ARTIK BURADA DEĞİL, EKRANIN ALTINA YAPIŞIK
@@ -2392,8 +2411,7 @@ class _SavedGameRow extends StatelessWidget {
           // Koşul YOK: yerel kayıt her zaman hesap sahibinin sırasında
           // duruyor (Canlı kartının aksine, orası "SIRA RAKİPTE" de olabilir).
           durum: Text.rich(
-            TextSpan(
-                text: 'SIRA SENDE', children: [turnTriangleSpan(kGreen)]),
+            TextSpan(text: 'SIRA SENDE', children: [turnTriangleSpan(kGreen)]),
             style: devamEdenDurumStil(kGreen),
           ),
           sure: Text(

@@ -577,7 +577,14 @@ mobile/
                            # ile, .github/workflows/ios-screenshots.yml'de.
                            # ⚠ Buraya YÖNELİM ölçümü ekleme: simülatör
                            # döndürülemiyor (UISceneErrorDomain 101), kapı
-                           # test/ipad_layout_test.dart'ta (Parça 196)
+                           # test/ipad_layout_test.dart'ta (Parça 196).
+                           # Sahne kurulumu integration_test/store_frames.dart'ta
+                           # ve onu test/store_frames_preview_test.dart da
+                           # kullanır → `npm run preview-store-frames` aynı yedi
+                           # kareyi LİNUX'ta, İKİ cihaz ölçüsünde birden
+                           # (~14 sn) çizer (yalnızca GÖZ İÇİN;
+                           # mağazaya giden set hep CI'ınki). ⚠ Önizlemede
+                           # Material Icons ve sqflite YOK — ✕ kutu (□) çıkar.
     android/ ios/          # flutter create çıktısı + elle değişiklikler
   kelimeki_core/           # SAF Dart motor paketi — Flutter bağımlılığı YOK
     lib/src/               # constants · model · engine · rules · ai · data ·

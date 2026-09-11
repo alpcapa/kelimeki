@@ -1674,11 +1674,90 @@ RGB'sini ortaya çıkarırdı.
 İlki olmasaydı her denemede bir macOS koşusu beklenirdi; ikincisi olmasaydı
 dönüşümün gerçekten uygulandığına dair kanıt olmazdı.
 
+### 🖼 MODAL KARELERİ ARTIK OYUN EKRANININ ÜSTÜNDE (11 Eylül 2026)
+
+**Kullanıcı taze seti gözle inceledi ve reddetti:** *"Tüm modal ekranları
+(skor kart, k-lig tablosu, vb) normal ekran görüntüsünde olmalı. Yani
+arka planda oyun açıkken mesela. Böyle sadece onları koymak çok iyi ve
+anlamlı değil."*
+
+Sorun: 04 (skor kartı), 06 (nasıl oynanır) ve 07 (k-lig) pencereyi **boş
+bir `Scaffold` üstünde** çiziyordu — mağaza karesi bir pencereyi bağlamsız
+gösteriyordu, arkasında oyun yoktu. 05 (kelime anlamı) baştan beri doğruydu
+(oyun ekranından gerçek bir taşa dokunarak açılıyordu).
+
+**Düzeltme:** üçü de artık oyun ekranını kurup pencereyi ÜRETİMİN kendi
+yardımcısıyla onun üstünde açıyor — `showScoreCard` · `showHelpModal` ·
+`showLeaderboard`, `navKey.currentContext!` üzerinden. Yani karartma, arka
+plandaki tahta, skor kutuları ve raf gerçek; kare uygulamanın gerçek bir
+anını gösteriyor.
+
+⚠ **Yan kazanç:** karartma tüm ekranı kapladığından bu üç karede alttaki
+ölü alan da beyaz kalmıyor (yukarıdaki "%9,6 beyaz" ölçümü bu değişiklikle
+konu dışı kaldı). Ölü alan yalnızca pencere AÇILMAYAN karelerde (01 · 02 ·
+03) duruyor ve orada uygulamanın gerçek hâli.
+
+### 🔍 YEREL ÖNİZLEME — CI turu artık zorunlu değil (11 Eylül 2026)
+
+Kullanıcı isteği, birebir: *"Bu görselleri önce resim olarak yap bana
+göster ondan sonra ok ise üretime gönderelim. Böyle kaç defa git gel oldu.
+Canım sıkıldı artık."*
+
+Gerekçe ölçülü: her kompozisyon düzeltmesi bir macOS koşusu (~14 dk) +
+artefakt indirme + gözle bakma turu istiyordu; DEBUG bandı, alfa ve
+"pencere boşlukta" arızalarının üçü de bu turlarla bulundu.
+
+**`npm run preview-store-frames`** (kök dizinden) aynı yedi kareyi
+**Linux'ta, `flutter test` içinde, ~14 saniyede** üretir →
+`mobile/app/build/frame-preview/*.png` (repoya girmez, `build/`
+gitignore'da).
+
+⚠ **İKİ cihaz ölçüsünde de çizer** — CI matrisinin birebir karşılığı
+(iPhone 6.9" `1320×2868` · iPad Pro 13" `2064×2752`, ikincisi `ipad/` alt
+klasörüne). Tek ölçü YETMEZDİ: iPad düzeni gerçekten farklı akıyor (daha
+geniş, daha kısa) ve şerit oranı bile iPad'de ayrı bir yükseklik tavanı
+gerektirmişti. Alt komutlar: `preview-store-frames:iphone` /
+`:ipad` (`KARE_CIHAZ` ortam değişkeni).
+
+| | CI (`ios-screenshots.yml`) | Yerel önizleme |
+|---|---|---|
+| Nerede | macOS + gerçek iOS simülatörü | Linux, `flutter test` |
+| Süre | ~14 dk | ~7 sn |
+| Çıktı | **mağazaya giden set** | yalnızca GÖZ İÇİN |
+| Kurulum | `store_frames.dart` | **AYNI** `store_frames.dart` |
+
+⚠ **Önizleme mağaza karesi DEĞİL** — iki bilinen fark var ve ikisi de
+önizlemeye özgü:
+
+1. **Material Icons yüklenmiyor** → ✕ kapatma tuşu ve madde imleri boş
+   kutu (□) çıkar. Gerçek simülatörde düzgün.
+2. **`sqflite` yok** → 05'in anlam metni önizlemede elle verilmiş bir
+   `MeaningEntry`'den gelir (CI'da gerçek `meanings.db`'den).
+
+Bu yüzden kapı DEĞİŞMEDİ: mağazaya giden set hâlâ CI'ın ürettiğidir ve
+hâlâ bir insan gözüyle açılmak zorundadır (DEBUG bandı dersi). Önizlemenin
+işi **kompozisyonu** (hangi ekran, ne görünüyor, şerit nereye biniyor)
+CI'dan ÖNCE karara bağlamak.
+
+**Ortak kurulum tek dosyada:** `integration_test/store_frames.dart` — sahne
+kurma (`midGameState`, `oyunKontrolcusu`, `oyunEkrani`, `kurulumEkrani`),
+başlık tablosu (`kBasliklar`), şerit (`bantli`) ve sahte servisler orada.
+CI testi (`store_screenshots_test.dart`) ve önizleme
+(`test/store_frames_preview_test.dart`) ikisi de onu `import` eder — yani
+**ikisi aynı kareyi çizer**, ayrışamazlar. Önizleme `KARE_ONIZLEME=1`
+kapısının arkasında: normal `flutter test` koşusunda atlanır (CI'da PNG
+üretmenin anlamı yok).
+
 ### Kalan iş
 
 Kod tarafında kalan iş YOK. Kareler bir sonraki `ios-screenshots.yml`
 koşusunda başlıklı, yedi kare ve **alfasız** üretilir; **artefaktı indirip
 Console'a yüklemek elle** (ajan indiremiyor — yukarıdaki uyarı).
+
+⚠ **`9c91adb` seti de artık bayat** (11 Eylül 2026): 04/06/07 pencereyi
+boşlukta gösteriyordu ve 02 iki kişilikti. Mağazaya gidecek set, modal
+düzeltmesinden SONRAKİ koşunun çıktısıdır — kompozisyon yerel önizlemeyle
+onaylandı, ama yüklenecek dosyalar CI'ınkiler.
 
 ---
 

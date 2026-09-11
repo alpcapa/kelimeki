@@ -1378,4 +1378,25 @@ void tanitimKapisiTestleri() {
       await tester.runAsync(() => storage.close());
     });
   });
+
+  // Teşhis satırı — mağaza karesi için kapatılabilir oldu (11 Eylül 2026).
+  // ⚠ Bu bayrağın ters yönü (varsayılan AÇIK) ayrı bir testle zaten kilitli:
+  // *"teşhis satırı DERLEME kimliğini gösterir"*. İkisi birlikte, bayrağın
+  // yanlışlıkla varsayılan olarak kapanmasını da yakalar — o satır bir
+  // düzeltmenin cihaza gerçekten indiğini kanıtlayan tek yer
+  // (bkz. mobile/CLAUDE.md → "Derleme kimliği").
+  group('teşhis satırı', () {
+    testWidgets('showDiagnostics: false ile çizilmez (mağaza karesi)',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        theme: kelimekiTheme(),
+        navigatorObservers: [kRouteObserver],
+        home: SetupScreen(services: services(), showDiagnostics: false),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Derleme '), findsNothing);
+      // Üstündeki telif satırı DURUYOR — kapatılan yalnızca teşhis.
+      expect(find.text('© Kelimeki'), findsOneWidget);
+    });
+  });
 }
