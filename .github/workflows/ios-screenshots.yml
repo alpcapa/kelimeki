@@ -145,7 +145,14 @@ jobs:
           for png in build/screenshots/*.png; do
             w=$(sips -g pixelWidth  "$png" | awk '/pixelWidth/{print $2}')
             h=$(sips -g pixelHeight "$png" | awk '/pixelHeight/{print $2}')
-            echo "- \`$(basename "$png")\` → ${w}×${h}" >> "$GITHUB_STEP_SUMMARY"
+            # ⚠ Alfa ÖLÇÜLÜYOR ama koşuyu DÜŞÜRMÜYOR (11 Eylül 2026). App
+            # Store Connect ekran görüntüsünde saydamlık kabul etmiyor
+            # ("flattened" istiyor) ve Flutter'ın ekran görüntüsü yolu RGBA
+            # üretiyor OLABİLİR — bu depoda hiç ölçülmedi. Önce ölçüm: bir
+            # sonraki koşunun özeti cevabı yazsın, düzeltme (varsa) ona göre
+            # gelsin. Yüklemeyi ASC reddederse ilk bakılacak satır bu.
+            a=$(sips -g hasAlpha "$png" | awk '/hasAlpha/{print $2}')
+            echo "- \`$(basename "$png")\` → ${w}×${h} · alfa: ${a:-?}" >> "$GITHUB_STEP_SUMMARY"
             if [ "$w" != "${{ matrix.genislik }}" ] || [ "$h" != "${{ matrix.yukseklik }}" ]; then
               echo "::error::$(basename "$png") ${w}×${h} — beklenen ${{ matrix.genislik }}×${{ matrix.yukseklik }}"
               hatali=1
