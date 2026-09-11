@@ -1487,6 +1487,19 @@ GERÇEK bir kapı olduğunu gösterdi.
 `workflow_dispatch` 403 döndü — GitHub App'in `actions: write` izni yok.
 Elle koşu: **Actions → "iOS mağaza ekran görüntüleri" → Run workflow**.
 
+⚠ **İKİNCİ tetikleme tuzağı — dal OLUŞTURAN push koşu başlatmıyor**
+(11 Eylül 2026'da ölçüldü). Bir PR merge edilince GitHub dalı kendiliğinden
+siliyor; sonraki `git push -u` o dalı YENİDEN OLUŞTURUYOR ve bu push'ta
+`on: push: paths:` filtresi eşleşmiyor (karşılaştırılacak önceki commit
+yok). Ölçüm: `integration_test/` değişmiş olmasına rağmen o sha için koşu
+sayısı **0**. `pull_request` de kurtarmıyor — bu iş akışında öyle bir
+tetikleyici YOK.
+
+**Çözüm:** dal artık VAR olduğuna göre ikinci bir commit push etmek normal
+bir push olayı üretir ve filtre çalışır. (Boş commit ATMA — deponun kuralı;
+gerçek bir değişiklikle birleştir.) Alternatif: kullanıcı Actions'tan elle
+koşturur.
+
 ### ✅ KOMPOZİSYON KARARI — başlıklı set + 7. kare (11 Eylül 2026)
 
 Kullanıcı kararı: **kareler BAŞLIKLI çıkacak** ve **7. kare (k-lig
