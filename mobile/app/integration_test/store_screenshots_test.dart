@@ -18,6 +18,8 @@ import 'package:integration_test/integration_test.dart';
 import 'package:kelimeki/src/data/dictionary_loader.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/ui/game/help_modal.dart';
+import 'package:kelimeki/src/ui/rank/league_rank.dart';
+import 'package:kelimeki/src/ui/rank/rank_info_modal.dart';
 import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
 import 'package:kelimeki/src/ui/score/score_card_modal.dart';
 
@@ -131,6 +133,32 @@ void main() {
         tester, find.byType(LeaderboardModal), '07-klig-siralamasi');
 
     await kareCek(binding, tester, '07-klig-siralamasi');
+    controller.dispose();
+  });
+
+  // 8. kare (11 Eylül 2026, kullanıcı: *"rütbelerden hiç bahsetmiyoruz"*).
+  // 07 SIRALAMAYI gösteriyor, bu ÖDÜL MERDİVENİNİ — ikisi farklı vaat.
+  //
+  // ⚠ Sayılar 04 ve 07 ile TUTARLI: 57 puan → `Meraklı` (eşik 50), bir
+  // sonraki `Oyuncu` 100'de, yani ilerleme çubuğu yarı dolu görünüyor —
+  // "yükselecek yer var" mesajı karenin kendisinden çıkıyor. `bonusPoints`
+  // 5 = Meraklı'nın ödülü, yani kazanılmış tek eşik ödülü.
+  //
+  // ⚠ 05 numarası KULLANILMADI (kelime anlamı karesinin geçmişine bağlı).
+  testWidgets('08 — rütbeler (oyun ekranının üstünde)', (tester) async {
+    final controller = oyunKontrolcusu();
+    await tester.pumpWidget(oyunEkrani(controller, '08-rutbeler'));
+    await settle(tester);
+
+    unawaited(showRankInfo(
+      navKey.currentContext!,
+      tier: tierFor(57),
+      totalScore: 57,
+      bonusPoints: 5,
+    ));
+    await pencereyiBekle(tester, find.byType(RankInfoModal), '08-rutbeler');
+
+    await kareCek(binding, tester, '08-rutbeler');
     controller.dispose();
   });
 }

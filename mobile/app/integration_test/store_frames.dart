@@ -122,6 +122,7 @@ const Map<String, String> kBasliklar = {
   '04-skor-karti': 'İstatistiklerini takip et',
   '06-nasil-oynanir': 'Kuralları üç dakikada öğren',
   '07-klig-siralamasi': "k-lig'de sıranı yükselt",
+  '08-rutbeler': 'Rütbe atladıkça ödül kazan',
 };
 
 /// Punto ekran GENİŞLİĞİNE oranlı — sabit bir punto verilseydi iPad

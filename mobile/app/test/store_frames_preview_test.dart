@@ -28,6 +28,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/ui/game/help_modal.dart';
+import 'package:kelimeki/src/ui/rank/league_rank.dart';
+import 'package:kelimeki/src/ui/rank/rank_info_modal.dart';
 import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
 import 'package:kelimeki/src/ui/score/score_card_modal.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
@@ -164,6 +166,16 @@ void main() {
         auth: screenshotAuth(), stats: StatsRepo(SahteStatsGateway()));
     await pencereyiBekle(t, find.byType(LeaderboardModal), '07-klig');
     await _yaz(t, '07-klig-siralamasi');
+    c.dispose();
+  });
+
+  testWidgets('08 rütbeler', (t) async {
+    final c = oyunKontrolcusu();
+    await _ciz(t, oyunEkrani(c, '08-rutbeler'));
+    showRankInfo(navKey.currentContext!,
+        tier: tierFor(57), totalScore: 57, bonusPoints: 5);
+    await pencereyiBekle(t, find.byType(RankInfoModal), '08-rutbeler');
+    await _yaz(t, '08-rutbeler');
     c.dispose();
   });
 }

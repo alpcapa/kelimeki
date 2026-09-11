@@ -39,7 +39,7 @@ on:
 env:
   # `store_screenshots_test.dart`teki `testWidgets` sayısı. Kare eklenir/
   # çıkarılırsa BURASI DA değişmeli — ölçüm adımı bu sayıya bakıyor.
-  KARE_SAYISI: 6
+  KARE_SAYISI: 7
 
 jobs:
   kareler:
