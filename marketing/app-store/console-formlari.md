@@ -999,7 +999,7 @@ dokun** — yoksa bir sonraki oturum yine baştan sorar.
 | **Pricing and Availability** | ⬜ | Free + tüm ülkeler (§9) |
 | Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ⬜ | §9 |
 | Ekran görüntüleri | ✅ yüklendi (11 Eyl, 8/10 · 8/10) | §13 |
-| Derleme iliştirme | ✅ **656** (11 Eyl) | §15 |
+| Derleme iliştirme | ✅ **656** (11 Eyl) | §15. ⚠ Play'e **659** gidiyor (koşu #659, `7bccbf7`) — kodu 656 ile birebir aynı, yani iki mağaza farklı NUMARADA ama aynı uygulamada; hizayı isteyen buradan 659'u seçer. Ölçüm: `mobile/docs/surumler.md` → 1.1.0 satırı |
 | **Gönderim** | ⬜ YAPILMADI | Yukarıdaki açık iş satırı |
 
 **Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
@@ -1138,6 +1138,26 @@ Yani teşhis ve analitik verisi **Not Linked to You** olarak beyan edilir.
 | Diagnostics → **Crash Data** | Hata mesajı + teknik iz (`client_errors`) | **Not Linked** | Analytics |
 | Diagnostics → **Other Diagnostic Data** | Sürüm, platform, OS, cihaz modeli | **Not Linked** | Analytics |
 | Other Data → **Other Data Types** | Cinsiyet, doğum tarihi *(isteğe bağlı)* | **Linked** | Analytics |
+
+⚠ **İki satır "bölünmüş" — Console'a girilecek cevap `Linked`** (11 Eylül
+2026 gecesi, form doldurulmadan ÖNCE ayrıştırıldı). Tablodaki `Device ID` ve
+`Product Interaction` iki satır işgal ediyor çünkü verinin İKİ kökeni var;
+ASC ise (bilgimiz dahilinde) her veri türü için TEK bir *"Is this data linked
+to the user's identity?"* cevabı alıyor, yani aynı türü iki farklı cevapla
+beyan etme yolu yok. **Bu Console'dan ÖLÇÜLMEDİ** — formu dolduran ekranda
+aksini görürse (aynı tür ikinci kez eklenebiliyorsa) tablodaki iki satır
+AYNEN girilir ve buraya "ölçüldü" yazılır. Ölçülene kadar geçerli cevap:
+
+| Tür | Tablodaki iki köken | **Console'a girilecek** |
+|---|---|---|
+| Identifiers → **Device ID** | `anon_id`/`device_visits` (not linked) · FCM token (`push_tokens.user_id` VAR → linked) | **Linked** · `App Functionality` + `Analytics` |
+| Usage Data → **Product Interaction** | `games` istatistikleri (linked) · `device_visits`/`game_starts` (not linked) | **Linked** · `App Functionality` + `Analytics` |
+
+Gerekçe: türün toplanan örneklerinden biri bile kimlikle ilişkiliyse tür
+linked'dir — "Not Linked" demek `push_tokens`ın `user_id` taşıdığını
+gizlerdi. Ters yön (fazladan linked saymak) yalnızca bize maliyet yazar,
+kullanıcıya değil; güvenli taraf burası. ⚠ Kalan **yedi** tür tek kökenli,
+tablodaki cevap doğrudan girilir.
 
 ⚠ **Play'in "Paylaşılıyor: Hayır" gerekçesi burada da geçerli** ve 24 Ağustos
 2026'da kullanıcı tarafından onaylanmıştı: Supabase/Brevo/Vercel/Firebase
