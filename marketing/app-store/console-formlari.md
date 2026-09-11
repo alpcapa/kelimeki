@@ -944,14 +944,17 @@ da dokun.
 
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **Ekran görüntüleri** | Ben | 6/6 kare CI'da üretiliyor ve ölçüldü (§13); kalan tek şey **kompozisyon kararı** (başlık/çerçeve) + isteğe bağlı 7. kare |
+| **Karelerin Console'a YÜKLENMESİ** | Sende | Kareler hazır ve doğrulandı (§13, koşu `7d6361e`); artefaktı indirip 6.9" + iPad 13" slotlarına yüklemek elle — ajan indiremiyor |
+| **Gönderim** | Sende | §13 ve §15 kapandıktan sonra 24.6'nın önünde başka kapı YOK |
 
 **Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
 §5 · demo hesap → §11 · Export Compliance → §12 · **API anahtarı `.p8` →
 §3 (9 Eylül 2026, Mac'ten indirildi)** · **imzalama + TestFlight yüklemesi
 → §3, koşu #614/#616** · **DSA trader beyanı + DOĞRULAMASI → §2 (10 Eylül
 2026, 22:21 — gönderim kapısı düştü)** · **TestFlight iç test grubu →
-§14 (10 Eylül 2026, uygulama iPad'de kuruldu ve çalıştı)**.
+§14 (10 Eylül 2026, uygulama iPad'de kuruldu ve çalıştı)** · **ekran
+görüntüleri (kompozisyon + 7. kare + alfa) → §13 (11 Eylül 2026)** ·
+**sürüm kaydı `1.1.0` + derleme iliştirme → §15 (11 Eylül 2026)**.
 
 ## 8. Bilinen tuzaklar (hepsi 8 Eylül 2026'da yaşandı)
 
@@ -1217,6 +1220,24 @@ Buraya KOPYALANMIYOR; tek kaynak orası. Altı zorunlu + bir isteğe bağlı:
 çek (`T1`/`T2`), e-posta geçen ekran yok, gerçek yazışma yok, gerçek
 arkadaş adı/avatarı yok.
 
+⚠ **Dördüncü kural, aynı ailenin üyesi: BAŞKA BİR ÜRÜNÜN ADI da geçemez.**
+4. karenin sahte verisinde "en uzun kelime" bir dönem **`KELİMELİK`**
+yazıyordu — Kelimelik rakip bir Türkçe kelime oyununun adı, yani vitrin
+karesi rakibin markasını *"en uzun kelimem"* diye gösteriyordu (kullanıcı
+yakaladı, 11 Eylül 2026; kareler Console'a henüz yüklenmemişti, `ÇALIŞKAN`
+ile değiştirildi). Sahte veri uydururken elenecekler listesi artık üç
+başlıklı: **gerçek kişi/e-posta · gerçek arkadaş adı · başka bir marka.**
+⚠ Sözcük havuzunu "kelime oyunu" çağrışımından seçmek tam da bu tuzağa
+götürüyor — nötr bir sıfat/isim seç.
+
+⚠ **Aynı tarama karelerdeki oyuncu adını da eledi.** Ad `Ironman`'di ve İKİ
+kuralı birden çiğniyordu: *"Iron Man"* başkasının tescilli markası **ve**
+`Ironman` bu projede gerçek bir hesabın takma adı (`ROADMAP.md`: *"hiçbir
+koşulda silinmez"*). Kullanıcı kararı: **`Ege`** (11 Eylül 2026). Ad
+karelerde üç yerde görünüyordu — başlıktaki avatar, 04'ün skor kartı,
+07'nin vurgulu k-lig satırı. ⚠ `test/` altındaki birim testleri hâlâ
+`Ironman` kullanıyor ve BİLEREK dokunulmadı: onlar mağazaya gitmiyor.
+
 ### ⚠ İKİ FARK — Android setini olduğu gibi kullanmak MÜMKÜN DEĞİL
 
 **1. Dosyalar yeniden çekilecek.** Play'e giden 7 kare `1080×2072` ve
@@ -1317,7 +1338,7 @@ oynadı. +22 puan."*), raf `KAOEMLE` ve "TORBA 43".
    başlıkta `GİRİŞ` butonu duruyordu (misafir hâli); Play turunun yazılı
    kuralı *"test hesabıyla çek"* dediği için girişli hâl seçildi. Ağa
    çıkmadan çözüldü: `AuthService.fake(user:, profile:)` sahte oturum kabul
-   ediyor, başlıkta avatar (`IR`) çiziliyor — secret ya da gerçek hesap
+   ediyor, başlıkta avatar (baş harf) çiziliyor — secret ya da gerçek hesap
    gerekmiyor, iş akışı hâlâ ağa hiç çıkmıyor.
    ⚠ **`test/account_button_test.dart`in sahte kullanıcısı KOPYALANMADI:**
    o yardımcı geliştiricinin kişisel e-postasını taşıyor ve Play'in çekim
@@ -1411,36 +1432,158 @@ işe bir `timeout-minutes` eklenmeli (tek vakada eklenmedi); ayrıca *"koşu
 iptal oldu"* ile *"iş düştü"* ayrımını hatırla — ikisi ekran görüntüsünde
 aynı görünüyor.
 
-### 📦 TAZE KARELER HAZIR — koşu #9, 10 Eylül 2026 (yeniden koşturma GEREKMEZ)
+### 📦 TAZE KARELER HAZIR — `7d6361e`, 11 Eylül 2026 (yeniden koşturma GEREKMEZ)
 
-`main`'in başındaki `2015ab6` üzerinde koştu ve **yeşil** (05:43→05:54 UTC,
-~12 dk). Kendiliğinden tetiklendi: #505 bu iş akışı dosyasına dokundu ve
-`on: push: paths:` listesinde o dosyanın kendisi de var.
+**Mağazaya gidecek set BU — ve o güne kadarki BÜTÜN setler çöp.** Başlıklı
+kompozisyonun, 7. karenin ve alfa düzeltmesinin birlikte koştuğu ilk tur;
+`claude/dal-yok-acik-pr-yok-qd4uin` dalında **yeşil** (08:43→09:01 UTC).
+Üç kapı da aynı adımda geçti: `KARE_SAYISI` sayımı · piksel ölçüsü ·
+`hasAlpha = no` (yedi karenin yedisi, iki cihazda).
 
 | | |
 |---|---|
-| Koşu | https://github.com/alpcapa/kelimeki/actions/runs/34442189100 |
-| Artefaktlar | `kelimeki-store-screenshots-iphone-6.9` (5,3 MB) · `kelimeki-store-screenshots-ipad-13` (5,5 MB) |
-| Geçerlilik | **9 Aralık 2026**'ya kadar |
+| Koşu | https://github.com/alpcapa/kelimeki/actions/runs/34580565810 |
+| Artefaktlar | `kelimeki-store-screenshots-iphone-6.9` (**2,47 MB**) · `kelimeki-store-screenshots-ipad-13` (**2,03 MB**) |
+| Geçerlilik | **10 Aralık 2026**'ya kadar |
+
+⚠ **Boyut YARIYA DÜŞTÜ (5,77/5,83 → 2,47/2,03) ve bu bir kayıp DEĞİL.** İki
+sebep: alfa kanalı gitti (baytın dörtte biri) ve kare artık `image`
+paketinin PNG kodlayıcısından çıkıyor (Flutter'ınkinden daha iyi
+sıkıştırıyor). PNG kayıpsız — piksel verisi birebir aynı, `png_flatten_test`
+renk korunumunu ayrıca ölçüyor.
+
+**Çöpe giden setler** (hepsi en az bir sebeple kullanılamaz):
+
+| Koşu | Set | Neden |
+|---|---|---|
+| #9 · `2015ab6` | 6 kare, başlıksız | başlık yok · alfalı |
+| #10 · `538ecc4` | 7 kare, başlıklı | `KELİMELİK` · `Ironman` · alfalı |
+| `49182b0` | 7 kare | `Ironman` · alfalı |
+| `bb12fe7` | 7 kare | alfalı |
 
 ⚠ **Ajan bu iş akışını TETİKLEYEMEZ** (10 Eylül 2026'da denendi):
 `workflow_dispatch` 403 döndü — GitHub App'in `actions: write` izni yok.
 Elle koşu: **Actions → "iOS mağaza ekran görüntüleri" → Run workflow**. Ama
-önce yukarıdaki koşuya bak: uygulama kodu değişmediyse kareler zaten taze.
-⚠ Ajan artefaktı İNDİREMEZ de (MCP'de indirme aracı yok) — kompozisyon
-kararı için PNG'lerin sohbete eklenmesi gerekiyor.
+önce yukarıdaki koşuya bak: `integration_test/` değişmediyse kareler zaten
+taze (bu iş akışı o yola her dokunuşta kendiliğinden koşuyor — dalda da).
+
+⚠ **Ajan artefaktı İNDİREMEZ — İKİ kapı birden kapalı** (11 Eylül 2026'da
+ölçüldü). (1) GitHub MCP'de indirme aracı yok. (2) API'nin indirme ucu
+`productionresultssa*.blob.core.windows.net`e yönlendiriyor ve oturumun
+çıkış vekili o hedefi reddediyor (`connect_rejected`) — yani **`curl` de
+çözmüyor**, denemeye değmez. Kareleri GÖRMEK gerekiyorsa PNG'lerin sohbete
+eklenmesi gerekiyor.
+
+### ✅ KOMPOZİSYON KARARI — başlıklı set + 7. kare (11 Eylül 2026)
+
+Kullanıcı kararı: **kareler BAŞLIKLI çıkacak** ve **7. kare (k-lig
+sıralaması) eklenecek.** Böylece §13'ün açık kalan tek maddesi kapandı.
+
+**Neden başlıklı** (üç ölçüme dayanıyor, tercihe değil):
+
+1. App Store kareleri önce **küçük küçük, yan yana** gösteriyor; o boyutta
+   başlıksız bir tahta karesi *"bir oyun tahtası"*ndan fazlasını anlatmıyor.
+2. 01/02'nin **alt ~%20'si zaten boş** (9 Eylül'de gözle ölçüldü) — şerit
+   için hazır yer var, kare kaybı yok.
+3. Kareler **sürüme kilitli**: onaylandıktan sonra değiştirmek yeni bir
+   gönderim ister (promotional text gibi serbest DEĞİL), yani ilk turda
+   doğru olmak zorunda.
+
+**Başlıklar** (kaynak: `store_screenshots_test.dart` → `_kBasliklar`; bu
+tablo oradan KOPYA, ikisi ayrışırsa kaynak odur):
+
+| Kare | Başlık |
+|---|---|
+| `01-oyun-ekrani` | Köşenden başla, bölgeni büyüt |
+| `02-kurulmus-hamle` | Kelimeni kur, puanını gör |
+| `03-arkadasinla` | Arkadaşınla sırayla oyna |
+| `04-skor-karti` | İstatistiklerini takip et |
+| `05-kelime-anlami` | Kelimenin anlamı bir dokunuş |
+| `06-nasil-oynanir` | Kuralları üç dakikada öğren |
+| `07-klig-siralamasi` | k-lig'de sıranı yükselt |
+
+⚠ **Son işlem (ImageMagick/`sharp`) YOK.** Şerit Flutter ağacının İÇİNDE,
+`MaterialApp.builder` ile çiziliyor: uygulama `Expanded` içinde biraz daha
+kısa bir görünüm alanında GERÇEKTEN çiziliyor, hiçbir içerik örtülmüyor.
+Sonuç kare yine cihazın fiziksel pikselinde (`1320×2868` / `2064×2752`),
+yani ölçüm adımı değişmeden geçiyor ve CI'a yeni bir araç/bağımlılık
+girmiyor. `builder` Navigator'ın ÜSTÜNÜ sardığından 05'in anlam penceresi
+gibi dialog kareleri de kendiliğinden şeridin üstünde kalıyor.
+
+**Ölçüm — şerit oranları (11 Eylül 2026, gerçek `SpaceGrotesk-Bold` ile):**
+
+| | punto | şerit | en uzun başlık |
+|---|---|---|---|
+| iPhone 6.9" (440×956 mantıksal) | 24,2 | 67,8 = yüksekliğin **%7,1**'i | %90 (tek satır) |
+| iPad 13" (1032×1376) | 44,0 | 123,3 = **%9,0** | %71 (tek satır) |
+
+⚠ **Yalnızca genişliğe oranlamak YETMİYOR.** İlk kural `punto = genişlik ×
+%5,5`ti; iPad karesi iPhone'a göre çok daha geniş ama aynı oranda uzun
+DEĞİL, yani şerit iPad'de yüksekliğin **%11,6**'sına çıkıyordu. Bir yükseklik
+tavanı eklendi (`punto ≤ yükseklik × %3,2`) ve ikisi de %7-9 bandına indi.
+Yedi başlığın yedisi de bu puntoda tek satıra sığıyor — `FittedBox`
+`scaleDown` yine de duruyor, ama devreye girmiyor.
+
+**7. kare** (`07-klig-siralamasi`): `LeaderboardModal`, sahte ama tutarlı bir
+k-lig listesiyle. Oyuncunun satırı **4.** sırada — birinci olsaydı kare
+*"yükselinecek bir yer"* anlatmazdı, listenin dışında olsaydı vurgulu satır
+hiç görünmez, yerine alttaki kesikli *"senin sıran"* kısayolu çıkardı.
+Sayılar öteki uçlarla tutarlı (sıra 4, puan 57, OHP 21,40 — aynı üçlü
+`myLeaderboardRank` ve `playerStats`ta da var, 04. kare onları gösteriyor).
+⚠ `avatar_url` her satırda **null**: dolu olsa `KAvatar` ağa çıkardı, bu iş
+akışının tüm önermesi ise *"ağa hiç çıkma"*.
+
+### ⚠ EKSİK KARE ARTIK KOŞUYU DÜŞÜRÜYOR (11 Eylül 2026)
+
+7. kare eklenirken bir boşluk bulundu: ölçüm adımı `build/screenshots/*.png`
+üzerinde dönüyordu, yani **üretilmeyen bir kare hiç bakılmadan geçiyordu** —
+bir `testWidgets` düşerse `flutter drive` o kareyi yazmaz ve koşu YEŞİL
+kalırdı. (Adımın kendi yorumu *"eksik kare zaten bu adımın işi"* diyordu;
+değildi.) `ios-screenshots.yml`e `KARE_SAYISI` eklendi ve ölçümden ÖNCE
+sayım yapılıyor. ⚠ Kare eklenir/çıkarılırsa o sayı da değişmeli.
+
+### Slot doğrulaması — 6.9" var (11 Eylül 2026, kullanıcı Console'dan ölçtü)
+
+Sürüm sayfasında ilk görünen kutu `iPhone 6.5" Display` olduğu için bir an
+boru hattının ölçüsü (6.9" = `1320×2868`) yanlış sanıldı. **Media Manager'da
+6.9" slotu var ve kareler oraya giriyor** — ölçü değişikliği GEREKMİYOR.
+Sayfanın kendi açıklaması da bunu söylüyor: verilen kareler öteki ekran
+boyutları için ölçekleniyor.
+
+### 🔴 ALFA KANALI — kareler yüklenemeyecekti (11 Eylül 2026, ölçüldü)
+
+**App Store Connect ekran görüntüsünde saydamlık kabul etmiyor** ("flattened"
+istiyor). İş akışına eklenen `sips -g hasAlpha` ölçümü koşu **34578979721**'de
+şunu dedi: **yedi karenin yedisi de `hasAlpha: yes`.** Yani kareler ölçü
+olarak doğru olmalarına rağmen yüklenemezdi ve arıza ancak **Console'da,
+yükleme anında** — zincirin en sonunda — görünecekti.
+
+Sebep: Flutter'ın ekran görüntüsü yolu RGBA üretiyor. Uygulamanın hatası
+değil, boru hattının.
+
+**Düzeltme sürücüde:** `mobile/app/test_driver/png_flatten.dart` kareyi opak
+beyaz bir zemine kompozit edip RGB olarak yazıyor. ⚠ `sips` bu işi
+YAPAMIYOR — alfa kanalını kaldıran bir seçeneği yok, JPEG'e gidip dönmek de
+metni bozardı; sürücü zaten PNG baytlarını elinde tuttuğu için en ucuz yer
+orası ve CI'a yeni bir araç girmiyor. Alfa "siliniyor" değil
+**birleştiriliyor**: kanalı düpedüz atmak yarı saydam bir pikselin ham
+RGB'sini ortaya çıkarırdı.
+
+**Kapı İKİ katmanlı, bilerek:**
+
+| Katman | Nerede | Ne kanıtlıyor | Maliyet |
+|---|---|---|---|
+| `test/png_flatten_test.dart` | Linux, `flutter test` | dönüşümün kendisi (RGBA→RGB, yarı saydam→zemin, alfasız kare yeniden kodlanmaz) | saniyeler |
+| `hasAlpha != no` → `::error` | macOS, iş akışı | GERÇEK çıktının alfasızlığı | bir koşu (~14 dk) |
+
+İlki olmasaydı her denemede bir macOS koşusu beklenirdi; ikincisi olmasaydı
+dönüşümün gerçekten uygulandığına dair kanıt olmazdı.
 
 ### Kalan iş
 
-Zorunlu altı karenin **altısı da üretiliyor ve doğrulandı.** Kalan tek şey
-bir KARAR:
-
-- **Kompozisyon:** çerçeve/başlık metni eklenip eklenmeyeceği (Apple ham
-  kareyi de kabul ediyor). Oyun ekranı karelerinde (01/02) altta ~%20 boş
-  alan var ve başlık için doğal bir yer; modal kareleri (04/05/06) zaten
-  dolu. Karar tek tek değil, altı kare birlikte görülerek verilmeli.
-- **İsteğe bağlı 7. kare** (k-lig sıralaması) — çekim listesinde
-  "opsiyonel" işaretli, henüz yapılmadı.
+Kod tarafında kalan iş YOK. Kareler bir sonraki `ios-screenshots.yml`
+koşusunda başlıklı, yedi kare ve **alfasız** üretilir; **artefaktı indirip
+Console'a yüklemek elle** (ajan indiremiyor — yukarıdaki uyarı).
 
 ---
 
@@ -1489,3 +1632,49 @@ henüz kurulmadı. Bir derlemenin sayfasındaki *"Individual Testers"* kutusu
 DIŞ testçi eklemez, yalnızca ekipteki bir kişiyi tek bir derlemeye bağlar.
 
 ---
+
+---
+
+## 15. Sürüm kaydı ↔ derleme eşleşmesi (11 Eylül 2026)
+
+**Belirti:** Apps listesinde uygulama **jenerik ızgara ikonuyla** görünüyordu.
+
+**Yanlış ilk hipotez elendi:** ekran görüntüleriyle (24.5) ilgisi YOK —
+Connect o küçük resmi vitrin karelerinden değil, **derlemenin içindeki
+1024×1024 pazarlama ikonundan** okuyor. İkili de sağlamdı; depodan üç ölçüm:
+
+| Kontrol | Sonuç |
+|---|---|
+| `Icon-App-1024x1024@1x.png` | tam `1024×1024`, **colortype 2 (RGB, alfa YOK)** — Apple'ın alfa yasağına uygun |
+| `Contents.json` | `idiom: ios-marketing` girdisi var, dosya adı eşleşiyor (25 görsel tam) |
+| `project.pbxproj` | üç yapılandırmada da `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon` |
+
+**Gerçek sebep — sürüm numaraları tutmuyordu.** Connect'teki App Store
+sürüm kaydı **`1.0`**'dı; yüklenen paketler ise `1.0.9` ve bundan sonrası
+`1.1.0` (iş akışı `--build-name` geçirmiyor, ad `pubspec.yaml`'dan geliyor
+ve o bugün `1.1.0+1`). Yani **kısa sürüm dizesi `1.0` olan bir derleme hiç
+yoktu ve olmayacaktı**; sürüme derleme iliştirilemediği için Connect'in
+gösterecek bir ikonu da yoktu.
+
+✅ **ÇÖZÜLDÜ VE DOĞRULANDI (11 Eylül 2026, 12:08 — ekran görüntüsü).**
+Sürüm kaydı `1.1.0` yapıldı, derleme iliştirildi; Apps listesinde **ikon
+göründü** (jenerik ızgara gitti, yerine uygulamanın kendi ikonu) ve satır
+artık `iOS 1.1.0 Prepare for Submission` diyor. Yani teşhis doğruydu: ikon
+derlemeden geliyor, sürüm kaydı eşleşmeden derleme iliştirilemiyor.
+
+⚠ **İkonun GÖRÜNMESİ bu teşhisin kanıtı, ama tek başına bir ölçüt olarak da
+değerli:** "sürüme derleme bağlı mı" sorusunun Apps listesinden okunabilen
+görsel karşılığı bu. Bir sonraki sürüm turunda ızgara geri gelirse ilk
+bakılacak yer yine buradaki eşleşmedir.
+
+⚠ **Sürüm turunda bunu hatırla:** `pubspec.yaml`'ın sürüm adı ile
+Console'daki App Store sürüm kaydı AYNI olmak zorunda. Play tarafında böyle
+bir eşleşme yok (`versionCode` yeterli), yani bu Android refleksiyle
+kaçırılacak bir adım — ve belirtisi "ikon çıkmıyor" gibi tamamen alakasız
+görünüyor.
+
+⚠ **Yeni arayüzde "App Store" sekmesinin adı `Distribution`.** Sürüm
+numarası sayfanın en altındaki **General App Information** bölümünde
+düzenlenir (başlıktaki "Version 1.0" yazısı o alandan beslenir,
+düzenlenebilir değil); derleme aynı sayfadaki **Build** bölümünden `+` ile
+iliştirilir.

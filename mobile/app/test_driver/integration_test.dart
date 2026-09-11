@@ -9,6 +9,8 @@ import 'dart:io';
 
 import 'package:integration_test/integration_test_driver_extended.dart';
 
+import 'png_flatten.dart';
+
 Future<void> main() async {
   await integrationDriver(
     onScreenshot: (
@@ -18,8 +20,14 @@ Future<void> main() async {
     ]) async {
       final file = File('build/screenshots/$name.png');
       file.parent.createSync(recursive: true);
-      file.writeAsBytesSync(bytes);
-      stdout.writeln('kare yazıldı: ${file.path} (${bytes.length} bayt)');
+      // ⚠ ALFASIZ YAZILIYOR — App Store Connect saydamlık kabul etmiyor ve
+      // Flutter'ın ekran görüntüsü yolu RGBA üretiyor (ölçüldü, bkz.
+      // png_flatten.dart). İş akışı çıktının alfasız olduğunu ayrıca
+      // doğruluyor.
+      final duz = duzlestirPng(bytes);
+      file.writeAsBytesSync(duz);
+      stdout.writeln('kare yazıldı: ${file.path} '
+          '(${bytes.length} → ${duz.length} bayt, alfasız)');
       return true;
     },
   );

@@ -25,6 +25,53 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 199 — Mağaza kareleri: başlık şeridi, 7. kare ve ALFA
+     ARIZASI (11 Eylül 2026, App Store FAZ C 24.5):** Kompozisyon kararı
+     verildi (kullanıcı): kareler **başlıklı** çıkıyor ve **7. kare**
+     (k-lig sıralaması) eklendi. Şerit `MaterialApp.builder` ile Flutter
+     ağacının İÇİNDE çiziliyor — uygulama `Expanded` altında biraz daha
+     kısa bir görünüm alanında gerçekten render ediliyor, hiçbir içerik
+     örtülmüyor ve hiçbir arayüz öğesi taklit edilmiyor. Böylece son işlem
+     (ImageMagick/`sharp`) gerekmiyor, kare yine cihazın fiziksel
+     pikselinde çıkıyor ve iş akışının ölçüm adımı değişmeden geçiyor.
+     `builder` Navigator'ın üstünü sardığı için dialog kareleri (05'in
+     anlam penceresi) da kendiliğinden şeridin üstünde kalıyor.
+     **Ölçüm:** yalnızca genişliğe oranlanan punto iPad'de şeridi
+     yüksekliğin %11,6'sına çıkarıyordu (iPad iPhone'a göre çok daha geniş
+     ama aynı oranda uzun değil); yükseklik tavanıyla iPhone %7,1 / iPad
+     %9,0 ve yedi başlığın yedisi tek satıra sığıyor (gerçek
+     `SpaceGrotesk-Bold` metrikleriyle ölçüldü).
+     **ASIL BULGU — alfa.** İş akışına eklenen `sips -g hasAlpha` ölçümü
+     yedi karenin yedisinde de `yes` dedi: Flutter'ın ekran görüntüsü yolu
+     RGBA üretiyor, App Store Connect ise ekran görüntüsünde saydamlık
+     kabul etmiyor. Yani kareler ölçü olarak doğru olmalarına rağmen
+     YÜKLENEMEZDİ ve arıza ancak Console'da, zincirin en sonunda
+     görünecekti. Düzeltme sürücüde: `test_driver/png_flatten.dart` kareyi
+     opak beyaz zemine kompozit edip RGB olarak yazıyor (`sips` alfa
+     kanalını kaldıramıyor; JPEG'e gidip dönmek metni bozardı). Kapı İKİ
+     katmanlı: `test/png_flatten_test.dart` dönüşümü Linux'ta saniyeler
+     içinde, iş akışındaki `hasAlpha != no` ise gerçek çıktıyı macOS'ta
+     doğruluyor.
+     **İki içerik düzeltmesi (ikisi de kullanıcı yakaladı):** 4. karenin
+     "en uzun kelime"si `KELİMELİK`ti — rakip bir Türkçe kelime oyununun
+     adı, vitrinde *"en uzun kelimem"* diye duruyordu (→ `ÇALIŞKAN`); ve
+     karelerdeki oyuncu adı `Ironman`dı — hem başkasının tescilli markası
+     hem bu projede gerçek bir hesabın takma adı (→ `Ege`). Ders kayda
+     geçti: sahte veri uydururken elenecekler listesi ÜÇ başlıklı —
+     gerçek kişi/e-posta · gerçek arkadaş adı · **başka bir marka**.
+     Sözcüğü "kelime oyunu" çağrışımından seçmek tam da bu tuzağa
+     götürüyor.
+     **Üçüncü boşluk:** ölçüm adımı `build/screenshots/*.png` üzerinde
+     dönüyordu, yani üretilmeyen bir kare hiç bakılmadan geçiyordu — bir
+     `testWidgets` düşse koşu YEŞİL kalırdı (adımın kendi yorumu bunun
+     kapsandığını iddia ediyordu). `KARE_SAYISI` ile önce sayım yapılıyor.
+     **Doğrulama:** `flutter analyze` temiz, **838 test** yeşil,
+     `ios-screenshots.yml` koşusu yeşil. **Doğrulama sınırı:** karelerin
+     KOMPOZİSYONU gözle görülmedi — ajan artefaktı indiremiyor (MCP'de araç
+     yok; API'nin indirme ucu `blob.core.windows.net`e yönlendiriyor ve
+     oturumun çıkış vekili onu reddediyor). Şerit oranları sayıyla
+     doğrulandı, göze nasıl göründüğü kullanıcının onayında.
+
    - ✅ **Parça 198 — DAR EKRAN (375 pt) GERÇEK BİR HEDEF: tanıtım
      rozetleri ve Setup'ın birincil butonu (10 Eylül 2026, iPhone/TestFlight):**
      Kullanıcı iki şey bildirdi — *"tanıtım ilk slaytta X2/X3 legend'lar 2

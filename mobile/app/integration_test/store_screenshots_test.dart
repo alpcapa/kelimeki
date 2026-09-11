@@ -40,7 +40,9 @@ import 'package:kelimeki/src/ui/game/meaning_modal.dart';
 import 'package:kelimeki/src/ui/route_observer.dart';
 import 'package:kelimeki/src/ui/score/score_card_modal.dart';
 import 'package:kelimeki/src/ui/setup/setup_screen.dart';
+import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
 import 'package:kelimeki/src/ui/theme.dart';
+import 'package:kelimeki/src/ui/tokens.dart';
 import 'package:kelimeki/src/util/online_status.dart';
 
 // Sahte uçlar TEK KAYNAKTAN: widget testlerinin zaten kullandığı dosya.
@@ -61,9 +63,134 @@ const int _kSeed = 11;
 const int _kMoves = 12;
 
 /// Ekranda görünen ad. Gerçek bir kişinin adı ya da e-postası KARE'ye
-/// giremez (Play turunun yazılı gizlilik kuralı); `Ironman` bu depoda
-/// zaten bilinen bir test kimliği.
-const String _kPlayerName = 'Ironman';
+/// giremez (Play turunun yazılı gizlilik kuralı).
+///
+/// ⚠ Bu ad bir dönem **`Ironman`**'di ve iki kuralı birden çiğniyordu
+/// (kullanıcı kararı, 11 Eylül 2026): (1) *"Iron Man"* başkasının tescilli
+/// markası — `KELİMELİK` vakasıyla AYNI sınıf, bkz. `_SahteStatsGateway`;
+/// (2) `Ironman` bu projede **gerçek bir hesabın** takma adı (`ROADMAP.md`:
+/// *"hiçbir koşulda silinmez"*), yani gizlilik kuralının da kapsamında.
+/// Yerine nötr bir ad. ⚠ `test/` altındaki birim testleri BİLEREK
+/// dokunulmadı — onlar mağazaya gitmiyor.
+const String _kPlayerName = 'Ege';
+
+/// ── Başlık şeridi (mağaza kompozisyonu, 11 Eylül 2026) ──────────────────
+///
+/// KARAR: kareler **başlıklı** çıkıyor (kullanıcı, 11 Eylül 2026). Gerekçe
+/// `marketing/app-store/console-formlari.md` §13'te: App Store kareleri önce
+/// küçük küçük yan yana gösteriyor ve başlıksız bir tahta karesi o boyutta
+/// "bir oyun tahtası"ndan fazlasını anlatmıyor. Üstelik kareler **sürüme
+/// kilitli** — onaylandıktan sonra değiştirmek yeni bir gönderim ister,
+/// yani ilk turda doğru olmak zorunda (promotional text gibi serbest değil).
+///
+/// ⚠ Şerit uygulamanın ÜSTÜNE binmiyor, ALTINA konuyor: uygulama `Expanded`
+/// içinde, biraz daha kısa bir görünüm alanında GERÇEKTEN çiziliyor —
+/// hiçbir içerik örtülmüyor, hiçbir arayüz öğesi taklit edilmiyor (düz
+/// zemin + tek satır metin). §13'ün *"kare gerçek uygulama görüntüsü
+/// olmalı"* kuralı bu yüzden korunuyor.
+///
+/// ⚠ **Son işlem (ImageMagick/`sharp`) YOK ve olmamalı.** Şerit Flutter
+/// ağacının içinde çizildiğinden kare yine cihazın fiziksel pikselinde
+/// çıkıyor (1320×2868 / 2064×2752) ve `ios-screenshots.yml`in piksel ölçüm
+/// adımı DEĞİŞMEDEN geçiyor; CI'a yeni bir araç/bağımlılık girmiyor.
+const Map<String, String> _kBasliklar = {
+  '01-oyun-ekrani': 'Köşenden başla, bölgeni büyüt',
+  '02-kurulmus-hamle': 'Kelimeni kur, puanını gör',
+  '03-arkadasinla': 'Arkadaşınla sırayla oyna',
+  '04-skor-karti': 'İstatistiklerini takip et',
+  '05-kelime-anlami': 'Kelimenin anlamı bir dokunuş',
+  '06-nasil-oynanir': 'Kuralları üç dakikada öğren',
+  '07-klig-siralamasi': "k-lig'de sıranı yükselt",
+};
+
+/// Punto ekran GENİŞLİĞİNE oranlı — sabit bir punto verilseydi iPad
+/// karesinde yarı boyda kalırdı. iPhone 6.9" mantıksal 440 geniş (×3 =
+/// 1320), iPad 13" 1032 (×2 = 2064).
+const double _kBantPuntoOran = 0.055;
+
+/// ⚠ Yükseklik TAVANI — yalnızca genişliğe oranlamak yetmiyor (ölçüldü,
+/// 11 Eylül 2026): iPad karesi iPhone'a göre çok daha geniş ama aynı oranda
+/// uzun değil (1032×1376 ↔ 440×956), yani %5,5'lik punto şeridi iPad'de
+/// yüksekliğin **%11,6**'sına çıkarıyordu. Tavanla ikisi de ~%7-9 bandında
+/// kalıyor: iPhone 24,2 punto (şerit yüksekliğin %7,1'i) · iPad 44,0
+/// (%8,9). Kare başına ölçüm: `_kBasliklar`ın en uzunu bu puntoda
+/// kullanılabilir genişliğin %90'ı (iPhone) / %71'i (iPad), yani hiçbir
+/// başlık `scaleDown` ile küçülmüyor — hepsi tek satır.
+const double _kBantPuntoYukseklikTavani = 0.032;
+
+/// Şerit yüksekliği = punto × bu. 2,8 tek satırlık başlığa üstten/alttan
+/// yaklaşık birer satır boşluk bırakıyor; iPhone karesinde şerit, 01/02'de
+/// zaten boş duran alt ~%20'nin içinde kalıyor.
+const double _kBantYukseklikCarpani = 2.8;
+
+/// `MaterialApp.builder`a takılan sarmalayıcı. `builder` Navigator'ın ÜSTÜNÜ
+/// sardığından pencereler de (05'in anlam penceresi) şeridin üstünde kalır —
+/// her kare için ayrı bir düzen kurmaya gerek yok.
+TransitionBuilder _bantli(String kareAdi) {
+  final baslik = _kBasliklar[kareAdi];
+  if (baslik == null) throw StateError('$kareAdi icin baslik tanimli degil');
+  return (context, child) => _BaslikSeridi(baslik: baslik, child: child!);
+}
+
+class _BaslikSeridi extends StatelessWidget {
+  const _BaslikSeridi({required this.baslik, required this.child});
+
+  final String baslik;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final olcu = MediaQuery.sizeOf(context);
+    final genislik = olcu.width;
+    final punto = (genislik * _kBantPuntoOran)
+        .clamp(0.0, olcu.height * _kBantPuntoYukseklikTavani);
+    return Column(
+      children: [
+        // ⚠ `removeBottom`: uygulama ALT güvenli alan boşluğunu (home
+        // göstergesi) ayırmaya devam ederse içerikle şerit arasında ölü bir
+        // bant kalır — o boşluğun savunduğu alan artık ekranın dibinde değil.
+        Expanded(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeBottom: true,
+            child: child,
+          ),
+        ),
+        Material(
+          color: kText,
+          child: SizedBox(
+            width: double.infinity,
+            height: punto * _kBantYukseklikCarpani,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: genislik * 0.06),
+                // ⚠ `scaleDown`: başlık uzarsa KIRPILMASIN, küçülsün. Kare
+                // sessizce yarım bir cümleyle mağazaya gitmesin diye.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    baslik,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      // ⚠ Aile AÇIKÇA veriliyor: şerit Scaffold'un dışında
+                      // ve `MaterialApp.builder` seviyesinde `DefaultTextStyle`
+                      // temanın değil, WidgetsApp'in hata stili.
+                      fontFamily: 'SpaceGrotesk',
+                      fontWeight: FontWeight.w700,
+                      fontSize: punto,
+                      letterSpacing: -0.5,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 /// Kareler GİRİŞLİ çekilir — Play turunun yazılı kuralı *"test hesabıyla
 /// çek"* diyor, ve misafir hâlde başlıkta `GİRİŞ` butonu duruyor. Sahte
@@ -136,8 +263,9 @@ GameController _oyunKontrolcusu() {
   return controller;
 }
 
-Widget _oyunEkrani(GameController controller) => MaterialApp(
+Widget _oyunEkrani(GameController controller, String kareAdi) => MaterialApp(
       theme: kelimekiTheme(),
+      builder: _bantli(kareAdi),
       // `storage` VERİLMİYOR: zoom tanıtım balonu yalnızca o varken çıkıyor
       // ve mağaza karesinde bir öğretici balonu istemiyoruz.
       home: GameScreen(
@@ -203,7 +331,7 @@ void main() {
 
   testWidgets('01 — oyun ekranı, oyunun ortası', (tester) async {
     final controller = _oyunKontrolcusu();
-    await tester.pumpWidget(_oyunEkrani(controller));
+    await tester.pumpWidget(_oyunEkrani(controller, '01-oyun-ekrani'));
     await _settle(tester);
 
     await binding.takeScreenshot('01-oyun-ekrani');
@@ -214,7 +342,7 @@ void main() {
       (tester) async {
     final controller = _oyunKontrolcusu();
     _stageBestMove(controller);
-    await tester.pumpWidget(_oyunEkrani(controller));
+    await tester.pumpWidget(_oyunEkrani(controller, '02-kurulmus-hamle'));
     await _settle(tester);
 
     await binding.takeScreenshot('02-kurulmus-hamle');
@@ -226,6 +354,7 @@ void main() {
     // "bir ekrandan dönüldü" tazelemesi `RouteAware.didPopNext`ten geliyor.
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
+      builder: _bantli('03-arkadasinla'),
       navigatorObservers: [kRouteObserver],
       home: SetupScreen(services: _setupServisleri()),
     ));
@@ -241,6 +370,7 @@ void main() {
   testWidgets('04 — skor kartı', (tester) async {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
+      builder: _bantli('04-skor-karti'),
       home: Scaffold(
         body: ScoreCardModal(
           auth: _screenshotAuth(),
@@ -267,6 +397,7 @@ void main() {
     final controller = _oyunKontrolcusu();
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
+      builder: _bantli('05-kelime-anlami'),
       navigatorKey: _navKey,
       home: GameScreen(
         controller: controller,
@@ -292,17 +423,47 @@ void main() {
   testWidgets('06 — nasıl oynanır', (tester) async {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
+      builder: _bantli('06-nasil-oynanir'),
       home: const HelpModal(),
     ));
     await _settle(tester);
 
     await binding.takeScreenshot('06-nasil-oynanir');
   });
+
+  // 7. kare çekim listesinde "opsiyonel" işaretliydi; 11 Eylül 2026'da
+  // kullanıcı eklenmesine karar verdi. Gerekçe: k-lig oyunun ayırt edici
+  // tarafı ve ilk altı karenin hiçbirinde GÖRÜNMÜYOR (04'te yalnızca kendi
+  // sıran bir satır olarak geçiyor, yarışmanın kendisi değil).
+  testWidgets('07 — k-lig sıralaması', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: kelimekiTheme(),
+      builder: _bantli('07-klig-siralamasi'),
+      home: Scaffold(
+        body: LeaderboardModal(
+          auth: _screenshotAuth(),
+          stats: StatsRepo(_SahteStatsGateway()),
+        ),
+      ),
+    ));
+    await _settle(tester);
+
+    await binding.takeScreenshot('07-klig-siralamasi');
+  });
 }
 
 /// Skor kartının sahte ucu. Rakamlar UYDURMA ama TUTARLI: mağaza karesinde
 /// gerçek bir hesabın istatistiği gösterilemez (Play turunun gizlilik
 /// kuralı) ve boş bir kart da özelliği anlatmaz.
+///
+/// ⚠ **Sahte veri RAKİP BİR ÜRÜNÜN ADINI TAŞIYAMAZ.** `longest` bir dönem
+/// `KELİMELİK` yazıyordu — Kelimelik rakip bir Türkçe kelime oyununun adı
+/// ve kare onu "en uzun kelimem" diye mağaza vitrininde gösteriyordu
+/// (kullanıcı yakaladı, 11 Eylül 2026; kareler henüz Console'a
+/// yüklenmemişti). Gizlilik kuralının kardeşi bir kural: sahte veri
+/// seçerken **gerçek bir kişi adı** kadar **başka bir markanın adı** da
+/// elenir. Yerine `ÇALIŞKAN` — sözlükte var (`src/data/words.ts`) ve
+/// 8 harf, yani rafın 7 taşı + bir çapayla kurallara uygun.
 class _SahteStatsGateway implements StatsGateway {
   static Map<String, Object?> _satir({
     int games = 34,
@@ -315,7 +476,7 @@ class _SahteStatsGateway implements StatsGateway {
     int bestMove = 63,
     int bestWord = 48,
     double avgMove = 21.4,
-    String longest = 'KELİMELİK',
+    String longest = 'ÇALIŞKAN',
     int total = 57,
   }) =>
       {
@@ -341,12 +502,51 @@ class _SahteStatsGateway implements StatsGateway {
         _ => _satir(games: 8, local: 6, online: 2, first: 4, second: 3, total: 13),
       };
 
+  /// 7. karenin k-lig listesi. İsimler UYDURMA — Play turunun yazılı
+  /// gizlilik kuralı gerçek oyuncu adını/avatarını kareye sokmuyor — ve
+  /// 03. karedeki adlarla AYNI kümeden seçildi, iki kare yan yana
+  /// görüldüğünde tutarlı bir dünya anlatsın diye.
+  ///
+  /// ⚠ `avatar_url` HER SATIRDA null: dolu olsa `KAvatar` ağa çıkardı, bu
+  /// iş akışının tüm önermesi ise *"ağa hiç çıkma"*. Null'da baş harfler
+  /// çiziliyor, yani liste yine dolu görünüyor.
+  ///
+  /// ⚠ Oyuncunun kendi satırı **4.** sırada. Birinci olsaydı kare
+  /// "yükselinecek bir yer" anlatmazdı; listenin dışında olsaydı vurgulu
+  /// satır hiç görünmez, yerine alttaki kesikli "senin sıran" kısayolu
+  /// çıkardı. Sayılar `myLeaderboardRank` ve `playerStats` ile TUTARLI
+  /// (sıra 4, puan 57, OHP 21.40) — üç uç aynı karede yan yana okunuyor.
+  static const List<(int, String, String, int, double)> _lig = [
+    (1, 'u-esiner', 'Esiner', 76, 24.82),
+    (2, 'u-kaptan', 'Kaptan', 68, 23.10),
+    (3, 'u-zeynep', 'Zeynep', 61, 22.45),
+    (4, 'u-kelimeki-store', _kPlayerName, 57, 21.40),
+    (5, 'u-murekkep', 'Mürekkep', 54, 20.98),
+    (6, 'u-harfci', 'Harfçi', 49, 20.11),
+    (7, 'u-bilgehan', 'Bilgehan', 45, 19.76),
+    (8, 'u-sozcuk', 'Sözcük', 40, 19.02),
+    (9, 'u-anadolu', 'Anadolu', 38, 18.44),
+    (10, 'u-deniz', 'Deniz', 33, 17.85),
+  ];
+
   @override
-  Future<List<Map<String, Object?>>> leaderboard(int limit, int offset) async => const [];
+  Future<List<Map<String, Object?>>> leaderboard(int limit, int offset) async =>
+      [
+        for (final (sira, id, ad, puan, ohp) in _lig.skip(offset).take(limit))
+          {
+            'sira': sira,
+            'user_id': id,
+            'display_name': ad,
+            'first_name': null,
+            'avatar_url': null,
+            'total_score': puan,
+            'avg_move_score': ohp,
+          }
+      ];
 
   @override
   Future<Map<String, Object?>?> myLeaderboardRank(String userId) async =>
-      const {'rank': 4, 'total_score': 57};
+      const {'rank': 4, 'total_score': 57, 'avg_move_score': 21.40};
 
   @override
   Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async => const [];

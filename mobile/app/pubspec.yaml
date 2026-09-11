@@ -88,6 +88,13 @@ dev_dependencies:
   # koşar. dev bağımlılığı olduğu için mağazaya giden ikiliye GİRMEZ.
   integration_test:
     sdk: flutter
+  # `test_driver/png_flatten.dart` import ediyor — mağaza karelerinden alfa
+  # kanalını kaldırmak için (App Store Connect saydamlık kabul etmiyor).
+  # ⚠ Paket flutter_launcher_icons üzerinden TRANSİTİF olarak zaten
+  # geliyordu; deponun yazılı kuralı "import ediyorsan BİLDİR" (kök
+  # CLAUDE.md → "Bağımlılık Sınıfı"). dev: yalnızca `flutter drive` ve
+  # `flutter test` yollarında kullanılıyor, mağazaya giden ikiliye girmez.
+  image: ^4.8.0
   # Uygulama ikonu/splash ÜRETİCİLERİ — yalnızca `dart run
   # flutter_launcher_icons`/`flutter_native_splash:create` çalıştırılırken
   # kullanılır, derlenmiş uygulamaya hiç girmez. Kaynak görseller
