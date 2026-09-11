@@ -179,6 +179,7 @@ src/
 │   ├── dragFeel.ts     # sürükleme jestinin "hissi" (eşikler, parmağın üstünde kaldırma, hayalet görseli) — App + OnlineGameScreen + TutorialGame ortak
 │   ├── tutorialScript.ts # tanıtımın senaryosu: 4 sahne + rakibin 4 cevabı, senaryolu torba/raf, beklenen puanlar (npm run verify-tutorial-script kilitler)
 │   ├── visitTracking.ts # anonim misafir ziyaret kimliği, cihaz/standalone tespiti, UTM kaynağı
+│   ├── deviceLabels.ts # admin cihaz tablolarının saf etiketleyicileri: model KODUNDAN marka (SM- → Samsung), platform ve OS sürümü etiketleri (npm run verify-device-labels kilitler)
 │   ├── platform.ts     # bu istemcinin platformu ('web') — telemetri, tek kaynak
 │   ├── offlineNotice.ts # sunucuya ulaşılamadığında gösterilen metinler + ağ hatası tespiti (Flutter portuyla testli olarak senkron)
 │   ├── shareBoardImage.ts # bir DOM düğümünü (tahta önizlemesi) paylaşılabilir PNG'ye çevirir (html-to-image)

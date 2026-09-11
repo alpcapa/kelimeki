@@ -424,3 +424,76 @@ açıkça yazıyor; port damgalamayı eklerse burası da güncellenmeli.
 
 ⚠ `skips` ile döküm toplamı EŞİT OLMAYABİLİR: sahne yazmayan bir istemcinin
 satırı `skips`e girer, döküme girmez.
+
+---
+
+## Cihaz Markası / Modeli / İşletim Sistemi tabloları (11 Eylül 2026)
+
+Kullanıcı isteği, sözleri birebir: *"Admin kurulu cihaz da görebiliyor
+muyuz? Iphone 17, 14, Samsung, vb. Onun için ayrı bir tablo mesela."*
+
+**Yeni veri TOPLANMADI — biriken veri okunur hâle getirildi.**
+`device_visits.device_model` ve `os_version` 24 Ağustos 2026'dan beri
+yazılıyordu ve o migration'ın kendi yorumu ikisini de *"şimdilik hiçbir
+admin ekranında gösterilmiyor"* diye işaretlemişti. Bu tur yalnızca iki
+okuma RPC'si (`admin_device_model_breakdown`, `admin_os_version_breakdown`)
+ve üç tablo ekledi. Yeni bir veri sınıfı toplanmadığı için
+`TermsModal`/`PrivacyModal` ve mağaza beyanları **değişmedi** — toplansaydı
+değişmeleri ZORUNLU olurdu.
+
+### Önce ölçüldü, sonra yazıldı
+
+Migration'ın kendi yorumu *"Android'de sık sık null (User-Agent reduction)"*
+diyordu; doğruysa tablo baştan anlamsız olurdu. Canlıdan ölçüldü (son 90
+gün, benzersiz ziyaretçi):
+
+| | |
+|---|---|
+| Android modeli dolu | **546/613 ≈ %89** — korkulan olmamış |
+| Farklı model kodu | **174** |
+| Samsung (`SM-` öneki) | **428** (Android'in %78'i) |
+| iOS modeli | yalnızca `iPhone`/`iPad` — tarayıcı gerçek modeli vermiyor |
+| Masaüstü modeli | her zaman null |
+| OS sürümü | çok temiz: Android 16 → 273 · Android 13 → 64 · iOS 18.7 → 28 |
+
+### Kod → pazarlama adı çevirisi BİLEREK yok
+
+Tabloda duran değer `SM-A176B`, `24116RACCG` gibi bir iç model kodu.
+"Galaxy A17" çevirisi elle bakımı gereken, her yeni cihazla bayatlayan bir
+eşleme tablosu isterdi. Çevrilen tek şey **marka** (`src/utils/deviceLabels.ts`
+→ `deviceBrand`), o da önekten: `SM-` → Samsung, `CLT-`/`JNY-` → Huawei,
+sayıyla başlayanlar → Xiaomi. **Tanınmayan kod `Diğer`e düşer** — uydurma
+bir marka atanmaz. Ham kod kendi tablosunda duruyor, yani hiçbir bilgi
+gizlenmiyor.
+
+⚠ Önek listesi "kapsamlı" DEĞİL, GÖRÜLENE dayanıyor. Kapısı
+`npm run verify-device-labels` ve oradaki vakaların tamamı canlıdan çekilmiş
+GERÇEK kodlar — uydurulmadı. Yeni bir kural eklenirken oraya da vaka
+eklenir.
+
+### Marka toplamı neden doğru
+
+Satırlar (cihaz tipi × model) başına benzersiz ziyaretçi sayıyor; markaya
+toplamak, aynı cihaz iki satırda görünürse şişerdi. Ölçüldü: model başına
+benzersizlerin toplamı **788**, gerçek benzersiz **788**, birden fazla model
+dizesi taşıyan cihaz **0**. Bir gün ayrışırsa belirtisi görünür: marka
+tablosunun toplamı "Cihaz" tablosununkini AŞAR.
+
+### Yan bulgu — `iOS 10.15.7` bir iOS sürümü değil
+
+"İşletim Sistemi" tablosu bir sınıflandırma hatasını da görünür kıldı:
+`device_type='ios'` satırlarının 24'ünde `os_version = 10.15.7`, yani
+macOS'un dondurulmuş sürüm dizesi. Masaüstü User-Agent'ı veren cihazlar
+(iPad'in "Masaüstü site" modu, Mac) iOS kovasına düşüyor. **Düzeltilmedi**
+— `getDeviceType`ı değiştirmek geçmiş verinin anlamını da kaydırırdı ve
+kimse bu ayrımı bugüne kadar sormadı; tablo hatayı gizlemek yerine
+gösteriyor (etiket platformu HER ZAMAN yazıyor, bu yüzden).
+
+### Aşama 2 — gerçek cihaz modeli (YAPILMADI)
+
+*"iPhone 17 ↔ iPhone 14"* ayrımı **web'den çıkmaz**: Safari'nin
+User-Agent'ı yalnızca `iPhone` diyor. Ancak kurulu uygulamadan ölçülebilir
+(`device_info_plus` → iOS `utsname.machine`). Karar ve bedelleri
+`docs/decisions/product-backlog.md`'de; App Store gönderimi kapıdayken
+YAPILMADI, çünkü yeni veri sınıfı App Privacy/Data safety beyanlarını
+yeniden açardı.

@@ -955,6 +955,32 @@ export interface AdminDeviceBreakdownRow {
 }
 
 /**
+ * `admin_device_model_breakdown` RPC çıktısındaki tek satır (Büyüme >
+ * Kullanıcı → "Cihaz Markası" ve "Cihaz Modeli" tabloları).
+ *
+ * `device_model` NULL olabilir: masaüstünde tarayıcı hiç vermiyor, iOS'ta
+ * yalnızca `iPhone`/`iPad` genel kategorisi geliyor, Android'de de bir
+ * kısım tarayıcı User-Agent reduction yüzünden yazmıyor (canlıdan ölçüldü,
+ * 11 Eylül 2026: Android'de %89 dolu).
+ */
+export interface AdminDeviceModelRow {
+  device_type: string;
+  device_model: string | null;
+  visitors: number;
+}
+
+/**
+ * `admin_os_version_breakdown` RPC çıktısındaki tek satır (Büyüme >
+ * Kullanıcı → "İşletim Sistemi" tablosu). `os_version` ayrıştırılamazsa
+ * null.
+ */
+export interface AdminOsVersionRow {
+  device_type: string;
+  os_version: string | null;
+  visitors: number;
+}
+
+/**
  * admin_platform_breakdown RPC çıktısındaki tek satır (Büyüme > Kullanıcı) —
  * son N günde biten oyunların hangi İSTEMCİDEN oynandığı.
  *

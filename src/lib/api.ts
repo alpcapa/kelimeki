@@ -42,6 +42,8 @@ import type {
   AdminTutorialFunnelRow,
   AdminSourceFunnelRow,
   AdminDeviceBreakdownRow,
+  AdminDeviceModelRow,
+  AdminOsVersionRow,
   AdminGuestDeviceRow,
   AdminGuestStandaloneRow,
   AdminMember,
@@ -2552,6 +2554,46 @@ export async function fetchAdminDeviceBreakdown(days = 30): Promise<AdminDeviceB
     throw new Error(error.message);
   }
   return (data as AdminDeviceBreakdownRow[]) ?? [];
+}
+
+/**
+ * Son `days` günde cihaz MODELİ başına benzersiz ziyaretçi (yalnızca admin
+ * — Büyüme > Kullanıcı, "Cihaz Markası" + "Cihaz Modeli" tabloları).
+ *
+ * 11 Eylül 2026'da eklendi. `device_visits.device_model` 24 Ağustos
+ * 2026'dan beri YAZILIYORDU ama hiçbir ekranda gösterilmiyordu — yani bu
+ * fonksiyon yeni veri toplamıyor, biriken veriyi okunur hâle getiriyor.
+ *
+ * Dönen `device_model` ham üretici kodudur (`SM-A176B`); markaya
+ * `deviceBrand` (`src/utils/deviceBrand.ts`) çeviriyor. Model kodunun
+ * pazarlama adına (ör. "Galaxy A17") çevrilmesi BİLEREK yapılmıyor: elle
+ * bakımı gereken, her yeni cihazla bayatlayan bir tablo olurdu.
+ */
+export async function fetchAdminDeviceModelBreakdown(days = 30): Promise<AdminDeviceModelRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_device_model_breakdown', { p_days: days });
+  if (error) {
+    throw new Error(error.message);
+  }
+  return (data as AdminDeviceModelRow[]) ?? [];
+}
+
+/**
+ * Son `days` günde işletim sistemi SÜRÜMÜ başına benzersiz ziyaretçi
+ * (yalnızca admin — Büyüme > Kullanıcı, "İşletim Sistemi" tablosu).
+ *
+ * ⚠ `device_type` ile birlikte okunmalı: aynı sürüm dizesi iki ayrı
+ * platformda farklı şey demek (canlıda ölçüldü — `ios` + `10.15.7`
+ * satırları aslında masaüstü User-Agent'ı veren cihazlar, o dize macOS'un
+ * dondurulmuş sürümü).
+ */
+export async function fetchAdminOsVersionBreakdown(days = 30): Promise<AdminOsVersionRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_os_version_breakdown', { p_days: days });
+  if (error) {
+    throw new Error(error.message);
+  }
+  return (data as AdminOsVersionRow[]) ?? [];
 }
 
 /**
