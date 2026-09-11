@@ -1,5 +1,5 @@
 Sıra (bizim),Tarih (UTC),Kapsam,Sonuç,Build,Not,Kaynak
-6,—,App Store incelemesi,⏳ HENÜZ GÖNDERİLMEDİ,—,"Uygulama App Store Connect'te `Prepare for Submission`; vitrin/ekran görüntüleri (24.5) ve gönderim kapıları açık. İç test TestFlight'tan yürüyor, DIŞ test (External Testing + Beta App Review) da henüz kurulmadı.",console-formlari.md §2 · §14
+6,2026-09-11 16:08,App Store incelemesi,⏳ GÖNDERİLDİ — inceleme bekleniyor,1.1.0 (654),"**İLK App Store gönderimi.** Sekiz ekran görüntüsü iki cihaz ailesine de yüklendi (iPhone 6.9\" + iPad 13\", 8/10). Build ÖNCE 629 idi (eski, düzeltmesiz) — kırmızı ⊖ ile çıkarılıp 654 seçildi, yani gönderilen pakette iki Canlı oyun düzeltmesi VAR. DIŞ test (External Testing + Beta App Review) hâlâ kurulmadı.",console-formlari.md §13 · §14 · kullanıcı bildirdi
 5,2026-09-10 21:31,TestFlight (iç test),✅ Yüklendi,1.1.0 (627),`upload_to_testflight` 21:27:52→21:31:23 yeşil. ⚠ ""Adım yeşil"" ≠ ""TestFlight'ta hazır"" — `skip_waiting_for_build_processing: true`; Apple'ın işlemesi 10-40 dk.,Actions koşu 627 (ölçüldü)
 4,2026-09-10 13:32,TestFlight (iç test),✅ Yüklendi,1.0.9 (620),Gruba EN YENİ build eklendi — o an TestFlight'ta 616 ve 618 de duruyordu. Bir sürüm yüklemek GEREKMEDİ.,Actions + App Store Connect (ölçüldü)
 3,2026-09-10 05:43,TestFlight,✅ Yüklendi,1.0.9 (618),Dağıtılmadı.,Actions (ölçüldü)

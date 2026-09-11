@@ -2079,10 +2079,21 @@ Geçerlilik **10 Aralık 2026**.
 kompozisyon arızasını görememişti. iPad'de 06'nın penceresiz çıkması bu
 sayede bir daha sessizce geçemez.
 
-**Yükleme durumu (11 Eylül 2026, gün sonu):** **yedi kare İKİ tarafa da
-yüklendi** (iPhone 6.9" + iPad 13"): `01 · 02 · 03 · 04 · 06 · 07 · 09`.
-**Eksik olan tek kare 08 (rütbeler)** — mühürsüz çıktığı için bekletiliyor
-(aşağıdaki vaka).
+**✅ YÜKLEME TAMAM (11 Eylül 2026, 19:04):** **sekiz karenin sekizi de İKİ
+tarafa yüklendi** — iPhone 6.9" **8/10** ve iPad 13" **8/10** (Console'dan
+ölçüldü). Set: `01 · 02 · 03 · 04 · 06 · 07 · 08 · 09`. Rütbe mührü son
+koşuda (#29, `c22b757`) doğru çıktı ve kullanıcı gözle doğruladı — yani
+`animasyonBitsin` kapısı işe yaradı.
+
+⚠ 6.5" iPhone ve 11" iPad kendi setlerini İSTEMİYOR: ikisi de büyük
+kardeşinin setini kullanıyor ("Using 6.9\" Display" / iPad 13").
+
+**Kaynak artefakt:** koşu #29 →
+`kelimeki-store-screenshots-iphone-6.9` (3.801.314 bayt) ·
+`kelimeki-store-screenshots-ipad-13` (3.552.186 bayt).
+
+⚠ **Sıradaki turda bu kareler YENİDEN üretilirse tekrar yüklenmeleri
+gerekir** — Console'daki dosyalar artefaktın kopyası, bağlantılı değil.
 
 ### 🔴 RÜTBE MÜHRÜ ÇIKMADI — altıncı "kapılar içeriği göremez" vakası (11 Eylül 2026)
 
