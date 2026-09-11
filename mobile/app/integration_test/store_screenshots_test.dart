@@ -95,7 +95,7 @@ void main() {
       auth: screenshotAuth(),
       stats: StatsRepo(SahteStatsGateway()),
     ));
-    await settle(tester);
+    await pencereyiBekle(tester, find.byType(ScoreCardModal), '04-skor-karti');
 
     await kareCek(binding, tester, '04-skor-karti');
     controller.dispose();
@@ -120,19 +120,23 @@ void main() {
       (_) async => kayit,
       const [kMeaningWord],
     ));
-    await settle(tester);
+    await pencereyiBekle(tester, find.byType(MeaningModal), '05-kelime-anlami');
 
     await kareCek(binding, tester, '05-kelime-anlami');
     controller.dispose();
   });
 
+  // ⚠ 11 Eylül 2026: bu kare iPad koşusunda pencere AÇILMADAN çekildi ve
+  // 01'in aynısı oldu (iPhone'da sorunsuzdu). Sabit sayıda `pump` cihazdan
+  // cihaza güvenilir değil — dördü de artık `pencereyiBekle` ile pencere
+  // GÖRÜNENE KADAR bekliyor ve göremezse koşu DÜŞÜYOR.
   testWidgets('06 — nasıl oynanır (oyun ekranının üstünde)', (tester) async {
     final controller = oyunKontrolcusu();
     await tester.pumpWidget(oyunEkrani(controller, '06-nasil-oynanir'));
     await settle(tester);
 
     unawaited(showHelpModal(navKey.currentContext!));
-    await settle(tester);
+    await pencereyiBekle(tester, find.byType(HelpModal), '06-nasil-oynanir');
 
     await kareCek(binding, tester, '06-nasil-oynanir');
     controller.dispose();
@@ -151,7 +155,8 @@ void main() {
       auth: screenshotAuth(),
       stats: StatsRepo(SahteStatsGateway()),
     ));
-    await settle(tester);
+    await pencereyiBekle(
+        tester, find.byType(LeaderboardModal), '07-klig-siralamasi');
 
     await kareCek(binding, tester, '07-klig-siralamasi');
     controller.dispose();

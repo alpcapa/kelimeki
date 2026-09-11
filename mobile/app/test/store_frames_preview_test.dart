@@ -48,7 +48,8 @@ final bool _ipad = Platform.environment['KARE_CIHAZ'] == 'ipad';
 final Size _kEkran = _ipad ? const Size(1032, 1376) : const Size(440, 956);
 final double _kPiksel = _ipad ? 2.0 : 3.0;
 
-final String _kCikti = _ipad ? 'build/frame-preview/ipad' : 'build/frame-preview';
+final String _kCikti =
+    _ipad ? 'build/frame-preview/ipad' : 'build/frame-preview';
 
 final _kok = GlobalKey();
 
@@ -111,7 +112,8 @@ void main() {
   setUp(() {
     // Mağaza karesiyle aynı görünüm alanı.
     // ignore: deprecated_member_use
-    final view = TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
+    final view =
+        TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
     view.physicalSize = _kEkran * _kPiksel;
     view.devicePixelRatio = _kPiksel;
   });
@@ -143,7 +145,7 @@ void main() {
     await _ciz(t, oyunEkrani(c, '04-skor-karti'));
     showScoreCard(navKey.currentContext!,
         auth: screenshotAuth(), stats: StatsRepo(SahteStatsGateway()));
-    await settle(t);
+    await pencereyiBekle(t, find.byType(ScoreCardModal), '04-skor-karti');
     await _yaz(t, '04-skor-karti');
     c.dispose();
   });
@@ -161,7 +163,7 @@ void main() {
     await _ciz(t, oyunEkrani(c, '05-kelime-anlami'));
     showMeaningModal(
         navKey.currentContext!, (_) async => kayit, const [kMeaningWord]);
-    await settle(t);
+    await pencereyiBekle(t, find.byType(MeaningModal), '05-kelime-anlami');
     await _yaz(t, '05-kelime-anlami');
     c.dispose();
   });
@@ -170,7 +172,7 @@ void main() {
     final c = oyunKontrolcusu();
     await _ciz(t, oyunEkrani(c, '06-nasil-oynanir'));
     showHelpModal(navKey.currentContext!);
-    await settle(t);
+    await pencereyiBekle(t, find.byType(HelpModal), '06-nasil-oynanir');
     await _yaz(t, '06-nasil-oynanir');
     c.dispose();
   });
@@ -180,7 +182,7 @@ void main() {
     await _ciz(t, oyunEkrani(c, '07-klig-siralamasi'));
     showLeaderboard(navKey.currentContext!,
         auth: screenshotAuth(), stats: StatsRepo(SahteStatsGateway()));
-    await settle(t);
+    await pencereyiBekle(t, find.byType(LeaderboardModal), '07-klig');
     await _yaz(t, '07-klig-siralamasi');
     c.dispose();
   });

@@ -1908,3 +1908,35 @@ kuralı değişmedi; değişen, o gözün CI'ı beklememesi.
 Şekil kapıları (sayı · ölçü · alfa · bant) içeriği GÖREMEZ — DEBUG bandı
 dersi tam olarak buydu.
 
+### 🔴 iPAD'DE 06. KARE PENCERESİZ ÇIKTI — beşinci "kapılar içeriği göremez" vakası (11 Eylül 2026)
+
+Kullanıcı artefaktı indirip baktı: **iPad setinde `06-nasil-oynanir.png`,
+`01-oyun-ekrani.png` ile aynıydı.** Şerit doğruydu ("Kuralları üç dakikada
+öğren"), ama yardım penceresi hiç açılmamıştı — altta çıplak oyun ekranı.
+**iPhone setinde aynı kare sorunsuzdu.**
+
+**Dört kapı da yeşil kaldı** (7 kare · `2064×2752` · alfa yok · debug bandı
+yok), çünkü üçü de dosyanın ŞEKLİNE bakıyor. Bu, aynı dersin BEŞİNCİ tekrarı
+(öncekiler: DEBUG bandı · alfa kanalı · pencerelerin boşlukta durması ·
+01-02'nin aynı olması). Ortak kök: **bir mağaza görselini yalnızca insan gözü
+ya da İÇERİĞE bakan bir iddia doğrulayabilir.**
+
+**Kök sebep:** kare `settle()`nin SABİT üç `pump`ından sonra çekiliyordu.
+Pencere açılış animasyonu o üç karede bitmezse kare arka planı yakalıyor ve
+bu cihazdan cihaza değişiyor — iPhone'da yetti, iPad'de yetmedi.
+
+**Düzeltme — kapı, çözümün kendisi:** `pencereyiBekle()`
+(`integration_test/store_frames.dart`) pencere BULUNANA kadar pump ediyor
+(tavan 10 sn), sonra oturması için `settle()`. Bulamazsa `expect` düşer, yani
+**koşu kırmızıya döner**; kare artık sessizce yanlış çıkamaz. Dördü de
+(04 · 05 · 06 · 07) bu kapıdan geçiyor, önizleme testi de aynısını kullanıyor.
+
+⚠ **Kapının duyarlılığı KANITLANDI:** `showHelpModal` çağrısı geçici olarak
+silinip koşuldu → test düştü (*"pencere 10 sn içinde ekrana gelmedi"*),
+sonra geri alındı. Bir kapıyı "eklendi" diye yazmadan önce onu düşürmeyi
+dene — yoksa yalnızca yeşil bir satır eklenmiş olur.
+
+⚠ **Ders, bir sonraki kare eklenirken:** bir karede EKRANDA OLMASI GEREKEN
+bir şey varsa (pencere, sekme, rozet), onu `find` ile İDDİA ET. Sabit sayıda
+`pump` bir zamanlama VARSAYIMIDIR ve bu boru hattında iki kez yanlış çıktı.
+

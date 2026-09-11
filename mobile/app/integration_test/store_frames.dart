@@ -57,7 +57,8 @@ import 'package:kelimeki/src/util/online_status.dart';
 // `sqflite_common_ffi` (masaüstü) çekiyor ve burası GERÇEK CİHAZDA koşuyor.
 import '../test/support/fake_online_gateway.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show SupabaseClient, User;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show SupabaseClient, User;
 
 /// Tahtayı dolduran tohum ve hamle sayısı — Linux'ta motoru koşturarak
 /// SEÇİLDİ (9 Eylül 2026), rastgele değil. Ölçülen sonuç: 43 taş, skor
@@ -298,7 +299,8 @@ void stageBestMove(GameController controller) {
 GameController oyunKontrolcusu({int oyuncu = 2}) {
   final controller = GameController(
     words: words,
-    autoPlayAi: false, // kare sabit kalsın; YZ araya girip tahtayı değiştirmesin
+    autoPlayAi:
+        false, // kare sabit kalsın; YZ araya girip tahtayı değiştirmesin
     nowIso: () => '',
     rng: Mulberry32(oyuncu == 4 ? kSeed4 : kSeed),
   );
@@ -402,6 +404,42 @@ Future<void> kareCek(
   await binding.takeScreenshot(ad);
 }
 
+/// Açılan pencereyi EKRANDA GÖRÜNENE KADAR bekler ve göremezse DÜŞER.
+///
+/// NEDEN VAR (11 Eylül 2026 — dördüncü "şekil kapıları içeriği göremez"
+/// vakası): iPad koşusunda 06. kare yardım penceresi AÇILMADAN çekildi ve
+/// kare 01'in aynısı oldu. Dört kapı da (kare sayısı · piksel ölçüsü ·
+/// alfa · debug bandı) yeşil kaldı, çünkü üçü de dosyanın ŞEKLİNE bakıyor;
+/// arızayı ancak KULLANICI artefaktı indirip PNG'lere bakınca gördü. Aynı
+/// tur iPhone'da sorunsuzdu, yani sabit sayıda `pump` cihazdan cihaza
+/// güvenilir değil.
+///
+/// ⚠ `settle()`nin sabit üç `pump`ı YETMİYOR — burada pencere BULUNANA
+/// kadar pump ediliyor, sonra oturması için birkaç kare daha. Bulunamazsa
+/// `expect` düşer: kare artık SESSİZCE yanlış çıkamaz, koşu kırmızıya döner.
+Future<void> pencereyiBekle(
+  WidgetTester tester,
+  Finder pencere,
+  String ad, {
+  Duration tavan = const Duration(seconds: 10),
+}) async {
+  final adim = const Duration(milliseconds: 100);
+  var gecen = Duration.zero;
+  while (gecen < tavan) {
+    await tester.pump(adim);
+    gecen += adim;
+    if (pencere.evaluate().isNotEmpty) break;
+  }
+  expect(
+    pencere,
+    findsOneWidget,
+    reason: '$ad: pencere ${tavan.inSeconds} sn içinde ekrana gelmedi — '
+        'kare arka plandaki ekranın kopyası olurdu. Mağaza karesine giremez.',
+  );
+  // Açılış animasyonu (fade/scale) bitsin: bulunmak ≠ tam opak çizilmek.
+  await settle(tester);
+}
+
 /// Sabit sayıda kare çizer. `pumpAndSettle` BİLEREK kullanılmıyor: ekranda
 /// süren bir animasyon varsa (nömorfik geçişler, balonlar) sonsuza kadar
 /// bekler ve koşu sessizce zaman aşımına düşer.
@@ -410,7 +448,6 @@ Future<void> settle(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 400));
   await tester.pump(const Duration(milliseconds: 400));
 }
-
 
 /// Skor kartının sahte ucu. Rakamlar UYDURMA ama TUTARLI: mağaza karesinde
 /// gerçek bir hesabın istatistiği gösterilemez (Play turunun gizlilik
@@ -455,11 +492,13 @@ class SahteStatsGateway implements StatsGateway {
       };
 
   @override
-  Future<Map<String, Object?>?> playerStats(String userId, int? playerCount) async =>
+  Future<Map<String, Object?>?> playerStats(
+          String userId, int? playerCount) async =>
       switch (playerCount) {
         null => _satir(),
         2 => _satir(games: 26, local: 15, online: 11, first: 15, total: 44),
-        _ => _satir(games: 8, local: 6, online: 2, first: 4, second: 3, total: 13),
+        _ =>
+          _satir(games: 8, local: 6, online: 2, first: 4, second: 3, total: 13),
       };
 
   /// 7. karenin k-lig listesi. İsimler UYDURMA — Play turunun yazılı
@@ -509,7 +548,8 @@ class SahteStatsGateway implements StatsGateway {
       const {'rank': 4, 'total_score': 57, 'avg_move_score': 21.40};
 
   @override
-  Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async => const [];
+  Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async =>
+      const [];
 
   @override
   Future<Map<String, Object?>?> profileAgeGender(String userId) async => null;
