@@ -1492,9 +1492,15 @@ yalnızca ölçüyle doğrulamak yetmiyor; **kareye BAKAN biri olmadan mağaza
 görseli onaylanamaz.** Ajan bakamıyor, o yüzden her yeni sette kullanıcının
 en az bir kareyi açması akışın zorunlu adımı.
 
-### 📦 TAZE KARELER HAZIR — `9c91adb`, 11 Eylül 2026
+### 📦 (BAYAT) KARELER — `9c91adb`, 11 Eylül 2026
 
-**Mağazaya gidecek set BU.** Koşu
+⚠ **BU SET ARTIK MAĞAZAYA GİTMİYOR.** Aşağıdaki dört kapıyı geçmişti ama
+kompozisyonu kullanıcı reddetti (pencereler boşlukta, siyah şerit, 03'te üç
+satırlık liste, teşhis satırı). Yerine geçen set: *"MAĞAZAYA GİDEN SET"*
+başlığı (aşağıda, `017e2de`). Blok SİLİNMEDİ — dört kapının o turdaki
+ölçümü ve gözle doğrulama kaydı burada duruyor.
+
+Koşu
 https://github.com/alpcapa/kelimeki/actions/runs/34589392557 — yeşil.
 Dört kapı da geçti: **7 kare** · tam piksel ölçüsü · **alfa yok** ·
 **debug bandı yok**. Kompozisyon bindirmeli şerit.
@@ -1544,6 +1550,19 @@ tetikleyici YOK.
 bir push olayı üretir ve filtre çalışır. (Boş commit ATMA — deponun kuralı;
 gerçek bir değişiklikle birleştir.) Alternatif: kullanıcı Actions'tan elle
 koşturur.
+
+⚠⚠ **KARŞI ÖLÇÜM — aynı gün, aynı iş akışı, TERS sonuç (11 Eylül 2026).**
+Yukarıdaki nottan birkaç saat sonra `claude/dal-yok-acik-pr-yok-qd4uin`
+dalını OLUŞTURAN push **koşuyu tetikledi** (koşu #21,
+`017e2de`, iki iş de yeşil). Yani kural *"dal oluşturan push asla
+tetiklemez"* DEĞİL — iki ölçüm de gerçek, davranış güvenilmez.
+
+**Nota dokunulmadı, iki yön de burada dursun diye yazıldı.** Pratik sonuç
+değişmiyor, yalnızca teşhis sırası değişiyor: **push'tan sonra koşu
+listesini OKU** (`list_workflow_runs`, o sha için satır var mı). Varsa iş
+bitti; yoksa yukarıdaki çözüm (ikinci gerçek commit ya da elle koşu).
+"Tetiklemez" diye varsayıp ikinci bir commit uydurmak da, "tetikler" diye
+varsayıp beklemek de yanlış — ikisi de ÖLÇÜLEREK ayrılır.
 
 ### ✅ KOMPOZİSYON KARARI — başlıklı set + 7. kare (11 Eylül 2026)
 
@@ -1722,7 +1741,7 @@ gerektirmişti. Alt komutlar: `preview-store-frames:iphone` /
 | | CI (`ios-screenshots.yml`) | Yerel önizleme |
 |---|---|---|
 | Nerede | macOS + gerçek iOS simülatörü | Linux, `flutter test` |
-| Süre | ~14 dk | ~7 sn |
+| Süre | ~14 dk | ~14 sn (iki cihaz) |
 | Çıktı | **mağazaya giden set** | yalnızca GÖZ İÇİN |
 | Kurulum | `store_frames.dart` | **AYNI** `store_frames.dart` |
 
@@ -1852,3 +1871,181 @@ numarası sayfanın en altındaki **General App Information** bölümünde
 düzenlenir (başlıktaki "Version 1.0" yazısı o alandan beslenir,
 düzenlenebilir değil); derleme aynı sayfadaki **Build** bölümünden `+` ile
 iliştirilir.
+
+### 📦 MAĞAZAYA GİDEN SET — `017e2de`, 11 Eylül 2026 (koşu #21)
+
+Koşu https://github.com/alpcapa/kelimeki/actions/runs/34600529235 — iki iş
+de yeşil (`iphone-6.9`, `ipad-13`). PR #523 merge edildi (`8708896`).
+
+**Dört kapı da geçti, ölçümler işin kendi logundan:**
+
+| Kapı | iPhone 6.9" | iPad Pro 13" |
+|---|---|---|
+| Kare sayısı (`KARE_SAYISI: 7`) | 7 ✅ | 7 ✅ |
+| Piksel ölçüsü | 7/7 `1320×2868` ✅ | 7/7 `2064×2752` ✅ |
+| Alfa kanalı | 7/7 `alfa: no` ✅ | 7/7 `alfa: no` ✅ |
+| Debug bandı (`CheckedModeBanner` iddiası) | yok ✅ | yok ✅ |
+
+| Artefakt | Boyut |
+|---|---|
+| `kelimeki-store-screenshots-iphone-6.9` | 2.753.871 bayt |
+| `kelimeki-store-screenshots-ipad-13` | 2.808.574 bayt |
+
+Geçerlilik **10 Aralık 2026**.
+
+**Bu setin öncekinden farkı** (hepsi kullanıcının önizlemeye bakıp verdiği
+kararlar): 04 · 06 · 07 pencereyi oyun ekranının üstünde açıyor · şerit
+zemini `kAccent` (uygulamanın mavisi, beyaz yazı) · 02 dört kişilik oyun ·
+03'te 4 "SIRA SENDE" + 3 "SIRA RAKİPTE" · 03'te teşhis satırı yok
+(`showDiagnostics: false`, üründe DURUYOR).
+
+⚠ **Kompozisyon bu kez CI'dan ÖNCE onaylandı** — yedi kare iki cihaz
+ölçüsünde yerelde çizilip kullanıcıya gösterildi, onay alındıktan sonra
+pushlandı. §13'ün "bir mağaza görseli insan gözü olmadan onaylanamaz"
+kuralı değişmedi; değişen, o gözün CI'ı beklememesi.
+
+⚠ **Yükleme öncesi son adım hâlâ insan:** artefaktı aç, yedi kareye de bak.
+Şekil kapıları (sayı · ölçü · alfa · bant) içeriği GÖREMEZ — DEBUG bandı
+dersi tam olarak buydu.
+
+### 🔴 iPAD'DE 06. KARE PENCERESİZ ÇIKTI — beşinci "kapılar içeriği göremez" vakası (11 Eylül 2026)
+
+Kullanıcı artefaktı indirip baktı: **iPad setinde `06-nasil-oynanir.png`,
+`01-oyun-ekrani.png` ile aynıydı.** Şerit doğruydu ("Kuralları üç dakikada
+öğren"), ama yardım penceresi hiç açılmamıştı — altta çıplak oyun ekranı.
+**iPhone setinde aynı kare sorunsuzdu.**
+
+**Dört kapı da yeşil kaldı** (7 kare · `2064×2752` · alfa yok · debug bandı
+yok), çünkü üçü de dosyanın ŞEKLİNE bakıyor. Bu, aynı dersin BEŞİNCİ tekrarı
+(öncekiler: DEBUG bandı · alfa kanalı · pencerelerin boşlukta durması ·
+01-02'nin aynı olması). Ortak kök: **bir mağaza görselini yalnızca insan gözü
+ya da İÇERİĞE bakan bir iddia doğrulayabilir.**
+
+**Kök sebep:** kare `settle()`nin SABİT üç `pump`ından sonra çekiliyordu.
+Pencere açılış animasyonu o üç karede bitmezse kare arka planı yakalıyor ve
+bu cihazdan cihaza değişiyor — iPhone'da yetti, iPad'de yetmedi.
+
+**Düzeltme — kapı, çözümün kendisi:** `pencereyiBekle()`
+(`integration_test/store_frames.dart`) pencere BULUNANA kadar pump ediyor
+(tavan 10 sn), sonra oturması için `settle()`. Bulamazsa `expect` düşer, yani
+**koşu kırmızıya döner**; kare artık sessizce yanlış çıkamaz. Dördü de
+(04 · 05 · 06 · 07) bu kapıdan geçiyor, önizleme testi de aynısını kullanıyor.
+
+⚠ **Kapının duyarlılığı KANITLANDI:** `showHelpModal` çağrısı geçici olarak
+silinip koşuldu → test düştü (*"pencere 10 sn içinde ekrana gelmedi"*),
+sonra geri alındı. Bir kapıyı "eklendi" diye yazmadan önce onu düşürmeyi
+dene — yoksa yalnızca yeşil bir satır eklenmiş olur.
+
+⚠ **Ders, bir sonraki kare eklenirken:** bir karede EKRANDA OLMASI GEREKEN
+bir şey varsa (pencere, sekme, rozet), onu `find` ile İDDİA ET. Sabit sayıda
+`pump` bir zamanlama VARSAYIMIDIR ve bu boru hattında iki kez yanlış çıktı.
+
+### ✂️ 05 (kelime anlamı) SETTEN ÇIKTI — altı kare (11 Eylül 2026)
+
+Kullanıcı iPhone setini Console'a yükledi ve **kelime anlamı karesini
+almadı**: *"çok anlamlı değil"*. Doğru karar — o pencere tek bir TDK
+tanımını gösteriyor, yani vitrinde oyunun ayırt edici tarafını değil
+sıradan bir sözlük kutusunu anlatıyordu.
+
+**Boru hattı da 6'ya indirildi** (yalnız Console'da atlanmadı): testten,
+önizlemeden, başlık tablosundan ve `KARE_SAYISI` kapısından çıkarıldı.
+Gerekçe: üretilmeye devam etse her koşu kimsenin kullanmadığı bir kareyi
+çizip ölçerdi ve **"7 kare" kapısı mağazadaki 6 ile çelişirdi** — bir kapı
+yanlış sayıyı bekliyorsa artık kapı değildir.
+
+⚠ **Numaralar DEĞİŞMEDİ — set `01 · 02 · 03 · 04 · 06 · 07`, arada boşluk
+var.** Bilinçli: bu dosyadaki onlarca not kareleri numarasıyla anıyor
+(*"06 iPad'de penceresiz çıktı"*, *"02 konu değiştirdi"*), yeniden
+numaralamak o atıfların hepsini sessizce yanlışlardı — `ROADMAP.md`'nin
+"başlığı/numarayı değiştirme, atıflar kırılır" kuralının aynısı. Mağazadaki
+sıra dosya adından değil YÜKLEME sırasından geldiği için boşluğun işlevsel
+bir maliyeti yok.
+
+**Geri almak tek commit:** `store_screenshots_test.dart` + önizlemedeki
+`05` testi, `kBasliklar`daki satır, `kMeaningWord` ve `KARE_SAYISI: 7`.
+Anlam penceresinin KENDİSİ üründe duruyor — çıkan yalnızca mağaza karesi.
+
+#### ✅ KAPANDI: 7. kare **rütbeler** oldu (11 Eylül 2026, aynı gün)
+
+Kullanıcı aday listesine baktı ve seçti: *"Evet rütbelerden hiç
+bahsetmiyoruz. Bence o olabilir."* → **`08-rutbeler`** (numara `05` değil;
+gerekçe aşağıda). Önizleme iki cihazda çizilip gösterildi, onaylandı
+(*"Ok'dir"*), sonra pushlandı — süreç kuralı bu turda baştan sona işledi.
+
+**Kare ne gösteriyor:** `RankInfoModal`, oyun ekranının üstünde. 57 puan →
+**Meraklı** (eşik 50), sıradaki **Oyuncu** 100'de; ilerleme çubuğu yarı
+dolu, altında ödül rakamları (`+5` / `+10`). Sayılar 04 ve 07 ile TUTARLI
+seçildi — daha gösterişli bir mühür için yüksek bir rütbe konabilirdi ama
+aynı sahte oyuncu 07'de 57 puanla 4. sırada görünüyor; uydurma dünyanın
+tutarlılığı gösterişten önce gelir.
+
+⚠ **Karenin sınırı:** pencere merdivenin TAMAMINI göstermiyor (üründe de
+göstermiyor) — mevcut rütbe + sıradaki + ödül var, dokuz kademenin listesi
+yok. Yani kare *"rütbe sistemi var ve ilerliyor"* diyor, *"şu dokuz rütbe
+var"* demiyor.
+
+**ZOOM elendi** (kullanıcı: *"bir de zoom var ama onu görsel olarak
+anlatmak zor"*). Doğru: zoom bir JEST, tek kare hareketi gösteremez;
+yakınlaştırılmış tahtanın görüntüsü 01 ile karışır. Anlatılabilir tek yolu
+"önce/sonra" bölünmüş bir kare olurdu, o da mağaza karesini infografiğe
+çevirirdi.
+
+**Aday listesi AŞAĞIDA DURUYOR** — bir sonraki boş slot için (Apple 6.9"da
+10 kareye izin veriyor) hâlâ geçerli; seçilen satır rütbelerdi.
+
+#### (arşiv) Slot açıkken yazılan aday listesi
+
+*"Düşünüp başka hangi özelliği 7. kare olarak ekleyebiliriz diye bakacağım
+daha sonra."* Yani altı kare bir son durum DEĞİL, geçici bir durak — slot
+boş duruyor. (Apple 6.9" için 10 kareye kadar izin veriyor, yani tavan
+sorun değil.)
+
+**Bugünkü altı karenin ANLATMADIĞI şeyler** — aday ararken buradan bakılsın:
+
+| Anlatılmayan | Neden aday |
+|---|---|
+| **Oyun sonu / kazanma** (`GameOver` + k-lig puanı) | Vitrinde hiç "kazandım" anı yok; oyunun ödül döngüsü görünmüyor |
+| **Oynayarak öğren tanıtımı** (`TutorialGame`) | *"60 saniyede öğren"* vaadi — indirme kararına doğrudan konuşur |
+| **Oyun içi mesajlaşma** | Canlı oyunun sosyal tarafı; 03 yalnızca listeyi gösteriyor |
+| **YZ zorluk seçimi** (Kolay · Normal · Zor) | Tek kelimelik farklılaşma, kurulum ekranında zaten var |
+| **Rütbe mührü / k-lig ödülleri** (`RankInfoModal`) | 07 sıralamayı gösteriyor ama ÖDÜLÜ göstermiyor |
+
+⚠ **Yeni kare eklerken:** numara olarak **`05`i KULLANMA** — o ad kelime
+anlamı karesinin geçmişine bağlı ve bu dosyadaki notlarda öyle geçiyor.
+Sıradaki boş numara **`08`**. Eklenince `KARE_SAYISI` da 7'ye çıkar
+(kapı sayıyı sabit bekliyor) ve kare `pencereyiBekle` kapısından geçmek
+zorunda.
+
+#### 🔍 9. kare: ZOOM — elenmişti, geri alındı (11 Eylül 2026)
+
+Kullanıcı: *"10 kare hakkımız varsa zoom'u da koysaydık keşke"*. İlk turda
+şu gerekçeyle elenmişti: zoom bir JEST, tek kare hareketi gösteremez.
+Gerekçe hâlâ doğru ama **eksikti** — jesti anlatmak gerekmiyor, SONUCUNU
+göstermek yetiyor. Kare gerçek bir çift dokunuşla 2× büyümüş tahtayı
+gösteriyor; harfler iri olduğundan 01 ile karışmıyor.
+
+**Jest GERÇEK, sahnelenmiş değil:** `tester.tapAt` ×2, üretim yolundan
+(`board_zoom.dart`in 300 ms / 40 px çift penceresi). Sahte bir "zoom'lu
+görünüm" çizilmedi.
+
+⚠ **Nişan noktası bir hücrenin İÇİ DEĞİL, iki hücre ARASINDAKİ ızgara
+sınırı** (`kBoardPad + k*adım`). Ölçüldü: hücre kutusuna inen dokunuş, harf
+seçili olmadığından ekrana *"Önce bir harf seç."* yazdırıyor ve mağaza
+karesinde gerçek oyun mesajının ("Yapay Zeka …oynadı. +22 puan.") yerini
+alıyordu. Boşluğa inen dokunuş `_pointHitsCellBox` false döndüğü için hücre
+işleyicisine hiç gitmiyor, çift yine sayılıyor.
+
+⚠ **Kapısı `pencereyiBekle` DEĞİL** — aranacak bir pencere yok. `zoomKapisi`
+zoom matrisinin ölçeğini okuyor (`kBoardZoomScale` = 2.0): jest tutmazsa
+kare sessizce **01'in kopyası** olurdu, yani iPad'de 06'nın başına gelen
+şeyin aynısı. Duyarlılık kanıtlandı: ikinci dokunuş silinip koşuldu → test
+düştü (*"tahta yakınlaşmamış (bulunan ölçekler: [1.0, 1.0])"*).
+
+**Varyant seçimi kullanıcıda:** üç odak noktası ayrı ayrı çizilip
+gönderildi (boş alan · harf kümesi · kart çerçevesi), kullanıcı **harf
+kümesini** seçti. Sonra uyarı metni sorunu yukarıdaki ızgara-sınırı
+nişanıyla ayrıca giderildi — yani seçilen çerçeveleme + temiz mesaj satırı.
+
+**Set artık SEKİZ kare:** `01 · 02 · 03 · 04 · 06 · 07 · 08 · 09`
+(`KARE_SAYISI: 8`). Apple 6.9" için tavan 10.
+

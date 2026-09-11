@@ -26,10 +26,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kelimeki/src/data/meaning_entry.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/ui/game/help_modal.dart';
-import 'package:kelimeki/src/ui/game/meaning_modal.dart';
+import 'package:kelimeki/src/ui/game/board_widget.dart';
+import 'package:kelimeki/src/ui/rank/league_rank.dart';
+import 'package:kelimeki/src/ui/rank/rank_info_modal.dart';
 import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
 import 'package:kelimeki/src/ui/score/score_card_modal.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
@@ -48,7 +49,8 @@ final bool _ipad = Platform.environment['KARE_CIHAZ'] == 'ipad';
 final Size _kEkran = _ipad ? const Size(1032, 1376) : const Size(440, 956);
 final double _kPiksel = _ipad ? 2.0 : 3.0;
 
-final String _kCikti = _ipad ? 'build/frame-preview/ipad' : 'build/frame-preview';
+final String _kCikti =
+    _ipad ? 'build/frame-preview/ipad' : 'build/frame-preview';
 
 final _kok = GlobalKey();
 
@@ -111,7 +113,8 @@ void main() {
   setUp(() {
     // Mağaza karesiyle aynı görünüm alanı.
     // ignore: deprecated_member_use
-    final view = TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
+    final view =
+        TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
     view.physicalSize = _kEkran * _kPiksel;
     view.devicePixelRatio = _kPiksel;
   });
@@ -143,26 +146,8 @@ void main() {
     await _ciz(t, oyunEkrani(c, '04-skor-karti'));
     showScoreCard(navKey.currentContext!,
         auth: screenshotAuth(), stats: StatsRepo(SahteStatsGateway()));
-    await settle(t);
+    await pencereyiBekle(t, find.byType(ScoreCardModal), '04-skor-karti');
     await _yaz(t, '04-skor-karti');
-    c.dispose();
-  });
-
-  testWidgets('05 kelime anlamı', (t) async {
-    // ⚠ Önizlemede anlam SABİT: `meanings.db` sqflite istiyor ve widget
-    // testinde çözülmüyor (gerçek kare onu asset'ten okuyor — tek fark bu).
-    const kayit = MeaningEntry(pos: 'a.', meanings: [
-      'Genellikle su kıyılarında, bataklık yerlerde yetişen ince, açık sarı renkli kamış',
-      'Bu kamıştan yapılmış',
-      '→ çalgı',
-      'Türk halk müziğinde bağlama, cura, tar vb. mızraplı çalgıların genel adı',
-    ]);
-    final c = oyunKontrolcusu();
-    await _ciz(t, oyunEkrani(c, '05-kelime-anlami'));
-    showMeaningModal(
-        navKey.currentContext!, (_) async => kayit, const [kMeaningWord]);
-    await settle(t);
-    await _yaz(t, '05-kelime-anlami');
     c.dispose();
   });
 
@@ -170,7 +155,7 @@ void main() {
     final c = oyunKontrolcusu();
     await _ciz(t, oyunEkrani(c, '06-nasil-oynanir'));
     showHelpModal(navKey.currentContext!);
-    await settle(t);
+    await pencereyiBekle(t, find.byType(HelpModal), '06-nasil-oynanir');
     await _yaz(t, '06-nasil-oynanir');
     c.dispose();
   });
@@ -180,8 +165,45 @@ void main() {
     await _ciz(t, oyunEkrani(c, '07-klig-siralamasi'));
     showLeaderboard(navKey.currentContext!,
         auth: screenshotAuth(), stats: StatsRepo(SahteStatsGateway()));
-    await settle(t);
+    await pencereyiBekle(t, find.byType(LeaderboardModal), '07-klig');
     await _yaz(t, '07-klig-siralamasi');
+    c.dispose();
+  });
+
+  testWidgets('08 rütbeler', (t) async {
+    final c = oyunKontrolcusu();
+    await _ciz(t, oyunEkrani(c, '08-rutbeler'));
+    showRankInfo(navKey.currentContext!,
+        tier: tierFor(57), totalScore: 57, bonusPoints: 5);
+    await pencereyiBekle(t, find.byType(RankInfoModal), '08-rutbeler');
+    await _yaz(t, '08-rutbeler');
+    c.dispose();
+  });
+
+  testWidgets('09 zoom', (t) async {
+    final c = oyunKontrolcusu();
+    await _ciz(t, oyunEkrani(c, '09-zoom'));
+    final tahta = t.getRect(find.byType(BoardWidget));
+    // ⚠ Nişan noktası bir hücrenin İÇİ DEĞİL, iki hücre ARASINDAKİ ızgara
+    // sınırı (kBoardPad + k*adım). Sebep ölçüldü: hücre kutusuna inen
+    // dokunuş, harf seçili olmadığı için ekrana *"Önce bir harf seç."*
+    // yazdırıyor ve mağaza karesinde gerçek oyun mesajının ("Yapay Zeka
+    // …oynadı") yerini alıyordu. Boşluğa/çerçeveye inen dokunuş ise
+    // `_pointHitsCellBox` false döndüğünden hücre işleyicisine hiç
+    // gitmiyor — çift yine sayılıyor (game_screen.dart: "boşluğa/çerçeveye
+    // inen TAHTA dokunuşudur").
+    final ic = tahta.width - 2 * kBoardPad;
+    final adim = ic / 13;
+    final nokta = Offset(
+      tahta.left + kBoardPad + 5 * adim,
+      tahta.top + kBoardPad + 8 * adim,
+    );
+    await t.tapAt(nokta);
+    await t.pump(const Duration(milliseconds: 80));
+    await t.tapAt(nokta);
+    await settle(t);
+    zoomKapisi(t, '09-zoom');
+    await _yaz(t, '09-zoom');
     c.dispose();
   });
 }

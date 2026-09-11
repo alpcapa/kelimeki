@@ -16,11 +16,11 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:kelimeki/src/data/dictionary_loader.dart';
-import 'package:kelimeki/src/data/meaning_entry.dart';
-import 'package:kelimeki/src/data/meaning_store.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/ui/game/help_modal.dart';
-import 'package:kelimeki/src/ui/game/meaning_modal.dart';
+import 'package:kelimeki/src/ui/game/board_widget.dart';
+import 'package:kelimeki/src/ui/rank/league_rank.dart';
+import 'package:kelimeki/src/ui/rank/rank_info_modal.dart';
 import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
 import 'package:kelimeki/src/ui/score/score_card_modal.dart';
 
@@ -95,44 +95,23 @@ void main() {
       auth: screenshotAuth(),
       stats: StatsRepo(SahteStatsGateway()),
     ));
-    await settle(tester);
+    await pencereyiBekle(tester, find.byType(ScoreCardModal), '04-skor-karti');
 
     await kareCek(binding, tester, '04-skor-karti');
     controller.dispose();
   });
 
-  testWidgets('05 — kelime anlamı (TDK penceresi)', (tester) async {
-    // Anlam GERÇEK asset'ten okunuyor (`meanings.db`), metin UYDURULMUYOR.
-    // ⚠ `runAsync` ŞART: `MeaningStore` gerçek sqflite async'i kullanıyor ve
-    // testin sahte zaman bölgesinde çözülmüyor.
-    final store = MeaningStore(bundle: rootBundle);
-    MeaningEntry? kayit;
-    await tester.runAsync(() async {
-      kayit = await store.lookup(kMeaningWord);
-    });
-
-    final controller = oyunKontrolcusu();
-    await tester.pumpWidget(oyunEkrani(controller, '05-kelime-anlami'));
-    await settle(tester);
-
-    unawaited(showMeaningModal(
-      navKey.currentContext!,
-      (_) async => kayit,
-      const [kMeaningWord],
-    ));
-    await settle(tester);
-
-    await kareCek(binding, tester, '05-kelime-anlami');
-    controller.dispose();
-  });
-
+  // ⚠ 11 Eylül 2026: bu kare iPad koşusunda pencere AÇILMADAN çekildi ve
+  // 01'in aynısı oldu (iPhone'da sorunsuzdu). Sabit sayıda `pump` cihazdan
+  // cihaza güvenilir değil — dördü de artık `pencereyiBekle` ile pencere
+  // GÖRÜNENE KADAR bekliyor ve göremezse koşu DÜŞÜYOR.
   testWidgets('06 — nasıl oynanır (oyun ekranının üstünde)', (tester) async {
     final controller = oyunKontrolcusu();
     await tester.pumpWidget(oyunEkrani(controller, '06-nasil-oynanir'));
     await settle(tester);
 
     unawaited(showHelpModal(navKey.currentContext!));
-    await settle(tester);
+    await pencereyiBekle(tester, find.byType(HelpModal), '06-nasil-oynanir');
 
     await kareCek(binding, tester, '06-nasil-oynanir');
     controller.dispose();
@@ -151,9 +130,75 @@ void main() {
       auth: screenshotAuth(),
       stats: StatsRepo(SahteStatsGateway()),
     ));
-    await settle(tester);
+    await pencereyiBekle(
+        tester, find.byType(LeaderboardModal), '07-klig-siralamasi');
 
     await kareCek(binding, tester, '07-klig-siralamasi');
+    controller.dispose();
+  });
+
+  // 8. kare (11 Eylül 2026, kullanıcı: *"rütbelerden hiç bahsetmiyoruz"*).
+  // 07 SIRALAMAYI gösteriyor, bu ÖDÜL MERDİVENİNİ — ikisi farklı vaat.
+  //
+  // ⚠ Sayılar 04 ve 07 ile TUTARLI: 57 puan → `Meraklı` (eşik 50), bir
+  // sonraki `Oyuncu` 100'de, yani ilerleme çubuğu yarı dolu görünüyor —
+  // "yükselecek yer var" mesajı karenin kendisinden çıkıyor. `bonusPoints`
+  // 5 = Meraklı'nın ödülü, yani kazanılmış tek eşik ödülü.
+  //
+  // ⚠ 05 numarası KULLANILMADI (kelime anlamı karesinin geçmişine bağlı).
+  testWidgets('08 — rütbeler (oyun ekranının üstünde)', (tester) async {
+    final controller = oyunKontrolcusu();
+    await tester.pumpWidget(oyunEkrani(controller, '08-rutbeler'));
+    await settle(tester);
+
+    unawaited(showRankInfo(
+      navKey.currentContext!,
+      tier: tierFor(57),
+      totalScore: 57,
+      bonusPoints: 5,
+    ));
+    await pencereyiBekle(tester, find.byType(RankInfoModal), '08-rutbeler');
+
+    await kareCek(binding, tester, '08-rutbeler');
+    controller.dispose();
+  });
+
+  // 9. kare (11 Eylül 2026, kullanıcı: *"10 kare hakkımız varsa zoom'u da
+  // koysaydık keşke"*). İlk turda elenmişti — zoom bir JEST ve tek kare
+  // hareketi gösteremez. Çözüm jesti ANLATMAK değil SONUCUNU göstermek:
+  // kare, gerçek çift dokunuşla 2× büyümüş tahtayı gösteriyor; harfler
+  // iri ve okunaklı olduğundan 01 ile karışmıyor.
+  //
+  // ⚠ Bu karenin kapısı `pencereyiBekle` DEĞİL (aranacak pencere yok) —
+  // `zoomKapisi` zoom matrisinin ölçeğini okuyor. Jest tutmazsa kare
+  // sessizce 01'in kopyası olurdu; iPad'de 06'nın başına gelen şeyin
+  // aynısı.
+  testWidgets('09 — zoom (çift dokunuşla büyümüş tahta)', (tester) async {
+    final controller = oyunKontrolcusu();
+    await tester.pumpWidget(oyunEkrani(controller, '09-zoom'));
+    await settle(tester);
+    final tahta = tester.getRect(find.byType(BoardWidget));
+    // ⚠ Nişan noktası bir hücrenin İÇİ DEĞİL, iki hücre ARASINDAKİ ızgara
+    // sınırı (kBoardPad + k*adım). Sebep ölçüldü: hücre kutusuna inen
+    // dokunuş, harf seçili olmadığı için ekrana *"Önce bir harf seç."*
+    // yazdırıyor ve mağaza karesinde gerçek oyun mesajının ("Yapay Zeka
+    // …oynadı") yerini alıyordu. Boşluğa/çerçeveye inen dokunuş ise
+    // `_pointHitsCellBox` false döndüğünden hücre işleyicisine hiç
+    // gitmiyor — çift yine sayılıyor (game_screen.dart: "boşluğa/çerçeveye
+    // inen TAHTA dokunuşudur").
+    final ic = tahta.width - 2 * kBoardPad;
+    final adim = ic / 13;
+    final nokta = Offset(
+      tahta.left + kBoardPad + 5 * adim,
+      tahta.top + kBoardPad + 8 * adim,
+    );
+    await tester.tapAt(nokta);
+    await tester.pump(const Duration(milliseconds: 80));
+    await tester.tapAt(nokta);
+    await settle(tester);
+    zoomKapisi(tester, '09-zoom');
+
+    await kareCek(binding, tester, '09-zoom');
     controller.dispose();
   });
 }
