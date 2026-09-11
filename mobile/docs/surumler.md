@@ -1,8 +1,18 @@
-# Sürüm Kütüğü — Play'e yüklenen her paket
+# Sürüm Kütüğü — mağazalara giden her paket (Play + TestFlight)
 
 **Bu dosya KANONİK kaydıdır:** hangi sürüm, hangi `versionCode`, hangi
 commit'ten, ne zaman yüklendi ve şu an ne durumda. "Yayında olan paket
 hangisi?" sorusunun tek cevap yeri burasıdır.
+
+📊 **Tablo hâli — `mobile/docs/surumler/` (CSV, ANDROID + iOS AYRI):**
+`surumler-android.csv` · `gonderimler-android.csv` · `surumler-ios.csv` ·
+`gonderimler-ios.csv` · `degisiklikler.csv` (her commit hangi Android
+paketine ve hangi iOS build'ine girdi). Anlatı burada kalır, satırlar
+orada; **bir paket yüklendiğinde İKİSİ birden güncellenir** (kullanıcı
+isteği, 11 Eylül 2026). ⚠ Çelişkide BU dosya doğrudur.
+⚠ iOS'un kendi kütüğü bu dosyada YOK, yalnız CSV'de — TestFlight'a
+`main`'e her push'ta yükleniyor, yani build'ler burada anlatılacak kadar
+"sürüm" değil (ayrıntı: `marketing/app-store/console-formlari.md` §14).
 
 **Neden ayrı bir dosya (4 Eylül 2026, kullanıcı isteği):** kütük daha önce
 `build-and-distribution-log.md`in içinde, "Play Store İmzalama" bölümünün
@@ -883,6 +893,13 @@ yardım ekranına zorluk paragrafı. Normal'de hiçbir şey değişmedi
    grep'leme, `--name-only` kullan (bkz. 1.0.6 → #426 vakası).
 5. **Sürüm turunu `ROADMAP.md`'de kapat**, kapanınca arşive taşı — bu dosya
    turu değil PAKETİ tutar.
+6. **CSV kütüğünü de güncelle** (`mobile/docs/surumler/`) — Play'e yükleme
+   `surumler-android.csv` + `gonderimler-android.csv`'ye, TestFlight'a
+   yükleme `surumler-ios.csv` + `gonderimler-ios.csv`'ye, commit dökümü
+   `degisiklikler.csv`'ye. ⚠ iOS satırı `main`'e HER push'ta doğuyor;
+   gruba dağıtılmayan build'ler de yazılır, yoksa "616 mı 620 mi" sorusu
+   her turda yeniden sorulur. Sütun sözlüğü ve süzgeç komutları o
+   klasörün `README.md`'sinde.
 
 ## İnceleme süresi
 

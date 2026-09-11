@@ -514,7 +514,7 @@ Bütçeyi `npm run check-doc-size` ölçüyor, sınıra gelince yeni cilt açıl
 |---|---|
 | **Klasör yapısı — açıklamalı TAM ağaç** (dosya başına gerekçe/uyarı). Bu dosyadaki özet yalnızca klasör düzeyinde | `mobile/docs/klasor-yapisi.md` |
 | Backend hazırlığı (submit_move idempotency, 5 Ağustos 2026) + Depolama katmanı + Flutter iskeleti + uygulama ikonu/splash + MembershipPerksBox + ilk doğrulama durumu (5 Ağustos 2026) | `mobile/docs/setup-log.md` |
-| **SÜRÜM KÜTÜĞÜ — Play'e yüklenen her paket** (sürüm · versionCode · sha · tarih · durum · sürüm notları). "Hangi paket yayında?" sorusunun TEK cevap yeri | `mobile/docs/surumler.md` |
+| **SÜRÜM KÜTÜĞÜ — mağazalara giden her paket** (sürüm · versionCode/build · sha · tarih · durum · sürüm notları). "Hangi paket yayında?" sorusunun TEK cevap yeri. **Tablo hâli ve iOS'un kendi kütüğü ayrı: `mobile/docs/surumler/*.csv`** — Play'e ya da TestFlight'a bir paket gidince İKİSİ birden güncellenir | `mobile/docs/surumler.md` |
 | Web derlemesi (test ortamı), Appetize, Play Store imzalama/.aab, karşılama katmanının web'e özgü ayrışması | `mobile/docs/build-and-distribution-log.md` |
 | **Web ↔ Uygulama Arasındaki Kabul Edilmiş Farklar — Parça günlüğü** (BEŞ cilt, yukarıdaki tabloya bak) | `mobile/docs/parca-log.md` + `-139-174` + `-110-138` + `-49-109` + `-1-48` |
 | FAZ A1 — cihaz testi tur durumu | `mobile/docs/cihaz-testi-log.md` |
