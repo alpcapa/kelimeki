@@ -1965,3 +1965,26 @@ bir maliyeti yok.
 `05` testi, `kBasliklar`daki satır, `kMeaningWord` ve `KARE_SAYISI: 7`.
 Anlam penceresinin KENDİSİ üründe duruyor — çıkan yalnızca mağaza karesi.
 
+#### ⏳ AÇIK: 7. kare yeniden doldurulacak (kullanıcı, 11 Eylül 2026)
+
+*"Düşünüp başka hangi özelliği 7. kare olarak ekleyebiliriz diye bakacağım
+daha sonra."* Yani altı kare bir son durum DEĞİL, geçici bir durak — slot
+boş duruyor. (Apple 6.9" için 10 kareye kadar izin veriyor, yani tavan
+sorun değil.)
+
+**Bugünkü altı karenin ANLATMADIĞI şeyler** — aday ararken buradan bakılsın:
+
+| Anlatılmayan | Neden aday |
+|---|---|
+| **Oyun sonu / kazanma** (`GameOver` + k-lig puanı) | Vitrinde hiç "kazandım" anı yok; oyunun ödül döngüsü görünmüyor |
+| **Oynayarak öğren tanıtımı** (`TutorialGame`) | *"60 saniyede öğren"* vaadi — indirme kararına doğrudan konuşur |
+| **Oyun içi mesajlaşma** | Canlı oyunun sosyal tarafı; 03 yalnızca listeyi gösteriyor |
+| **YZ zorluk seçimi** (Kolay · Normal · Zor) | Tek kelimelik farklılaşma, kurulum ekranında zaten var |
+| **Rütbe mührü / k-lig ödülleri** (`RankInfoModal`) | 07 sıralamayı gösteriyor ama ÖDÜLÜ göstermiyor |
+
+⚠ **Yeni kare eklerken:** numara olarak **`05`i KULLANMA** — o ad kelime
+anlamı karesinin geçmişine bağlı ve bu dosyadaki notlarda öyle geçiyor.
+Sıradaki boş numara **`08`**. Eklenince `KARE_SAYISI` da 7'ye çıkar
+(kapı sayıyı sabit bekliyor) ve kare `pencereyiBekle` kapısından geçmek
+zorunda.
+
