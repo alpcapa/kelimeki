@@ -163,26 +163,26 @@ cihazda, aynı ayarlarla (Dynamic Type varsayılan, ekran 375 pt sınıfı).
 yalnızca 627'de var, 620'de yoktu. Yani `Derleme a4c809b` satırını ayrıca
 okumaya gerek kalmadan doğru paket kurulmuş oluyor.
 
-⏳ **Üçüncü bulgu (hiç oynanmamış oyunun hayalet kaydı) henüz cihazda
-doğrulanmadı** — doğrulaması: yeni bir YZ oyunu aç, HİÇ hamle yapmadan
-logoya basıp çık; "Devam Eden Oyunlar"da ne satır kalmalı ne de bir an
-belirip kaybolmalı.
+✅ **Üçüncü bulgu da doğrulandı** (11 Eyl 2026, kullanıcı: *"kontrol
+ettim, iz kalmıyor"*): yeni bir YZ oyunu açılıp hiç hamle yapmadan
+çıkılınca "Devam Eden Oyunlar"da ne satır kalıyor ne de bir an belirip
+kayboluyor. Yani ilk TestFlight turunun ÜÇ bulgusu da cihazda kapandı.
 
 ### Play sürüm notları — OLDUĞU GİBİ yapıştırılabilir (TR)
 
+⚠ **Play'in sürüm notu alanı dil başına 500 karakter.** Aşağıdaki metin
+**498 karakter** — ölçüldü, olduğu gibi yapıştırılabilir. Uzatırsan
+Console kabul etmez; satır eklerken yeniden say.
+
+**Sürüm adı (Release name):** `1.1.0 (627)`
+
 ```
-• Yeni başlayanlar için oyun içi ipuçları: bölge vergisi, çarpanlar ve
-  bölgenin büyümesi artık tam yaşandığı anda tek cümleyle anlatılıyor.
-• Tanıtım turunu "Nasıl oynanır?" penceresinden dilediğin zaman tekrar
-  oynayabilirsin.
-• Arkadaşlar penceresi sadeleşti: sekmeler artık "Arkadaşlar" ve
-  "Davetler".
-• Dar ekranlı telefonlarda "Oyunu Başlat" düğmesi artık her zaman görünür.
-• Tanıtım ekranındaki X2/X3 açıklamaları dar ekranlarda da tek satırda.
-• "Kalan Taşlar" penceresinin bazı canlı oyunlarda açılırken çökmesi
-  giderildi.
-• Hiç hamle yapmadan çıktığın yapay zekâ oyunları artık "Devam Eden
-  Oyunlar" listesinde görünmüyor.
+• Yeni başlayanlara oyun içi ipuçları: bölge vergisi, çarpanlar ve bölgenin büyümesi tam yaşandığı anda anlatılıyor.
+• Tanıtım turunu "Nasıl oynanır?" penceresinden tekrar oynayabilirsin.
+• Arkadaşlar penceresinde sekmeler artık "Arkadaşlar" ve "Davetler".
+• Dar ekranlı telefonlarda "Oyunu Başlat" düğmesi hep görünür; tanıtımdaki X2/X3 açıklaması tek satırda.
+• "Kalan Taşlar" penceresinin bazı oyunlarda çökmesi giderildi.
+• Hiç hamle yapmadan çıktığın yapay zekâ oyunları listede iz bırakmıyor.
 ```
 
 ### TestFlight "What to Test" — 1.1.0 (627)
