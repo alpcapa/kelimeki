@@ -903,6 +903,36 @@ hâliyle duruyor** — burada TEKRARLANMIYOR, oradan okunur. Özet:
 - Kişisel bilgi paylaşımı → **Evet** (serbest metin sohbet, takma ad, profil fotoğrafı)
 - Küfür/kaba dil (uygulamanın kendi ürettiği) → **Hayır** (sözlük TDK tabanlı)
 
+**✅ APPLE'DA GİRİLDİ (11 Eylül 2026) — sonuç `4+`.** Apple'ın anketi artık
+YEDİ adımlı ve Play'inkinden farklı bölünmüş; verilen cevaplar:
+
+| Adım | Cevap |
+|---|---|
+| 1 · In-App Controls | Parental Controls **No** · Age Assurance **No** |
+| 1 · Capabilities | Unrestricted Web Access **No** · **User-Generated Content `No`** · Social Media **No** · Social Media Disabled Under 13 **No** · **Messaging and Chat `YES`** · Advertising **No** |
+| 2 · Mature Themes | üçü de **None** |
+| 3 · Medical or Wellness | **None** / **No** |
+| 4 · Sexuality or Nudity | üçü de **None** |
+| 5 · Violence | dördü de **None** |
+| 6 · Chance-Based Activities | Simulated Gambling **None** · **Contests `Infrequent`** · Gambling **No** · Loot Boxes **No** |
+| 7 | Override **Not Applicable** · Age Suitability URL boş |
+
+⚠ **UGC `No` + Messaging `YES` bir yorum kararı.** Apple bu ikisini ayırmış:
+UGC *"içeriğin GENİŞ dağıtımı"*, Messaging *"doğrudan iletişim"*. Kelimeki'de
+sohbet ve tahta yalnızca iki oyuncu arasında; akış/duvar/keşfet yok. Karşı
+okuma (takma ad + profil fotoğrafı k-lig listesinde görünüyor) UGC'ye de
+`Yes` dedirtebilirdi — tehlikeli yön BEYAN ETMEMEK ve o taraf `Messaging`
+ile zaten kapalı.
+
+⚠ **`Contests` neden `Infrequent`:** Apple'ın tanımı *"sıralama/ödül için
+yarışma"* diyor, k-lig tam olarak bu (lider tablosu + eşik ödülleri). Gerçek
+bir ödül (para/eşya/çekiliş) olmadığı için `Frequent` değil; `None` ise tek
+riskli seçenekti.
+
+⚠ **Apple otomatik iki ülke kısıtı ekledi:** *"Due to local laws, this app
+will not be sold in: **Afghanistan, Morocco**"*. Anket sonucu, hata değil;
+gönderimi engellemiyor. "Neden Fas'ta yok?" sorusunun cevabı budur.
+
 **Play'de sonuç: en düşük bant** (PEGI 3 · USK 0 · ESRB Everyone · IARC 3+).
 ROADMAP *"sohbet yaş derecesini yükseltir"* diye öngörmüştü, **ölçüm bunu
 doğrulamadı** — sohbete ancak kabul edilmiş arkadaşlar arasında
@@ -950,6 +980,28 @@ da dokun.
 |---|---|---|
 | **Gönderim** | Sende | ⚠ **11 Eyl 23:02 — HENÜZ YAPILMADI, bir kez yanlış kaydedildi.** ASC → History gönderim satırı İÇERMİYOR (tek kayıt `Prepare for Submission · 8 Eyl`), sürüm hâlâ o durumda. **`Add for Review` gönderim DEĞİL** — ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadan sürüm incelemeye girmez; **kayıt kuralı: History'de SATIR görülmeden "gönderildi" yazma.** Kalan kapı metadata: Description · Keywords · Support/Marketing URL · Copyright · Promotional text (§9) + App Review Information demo hesabı (§11) + yayın seçeneği. İliştirilen build 629 → 654 → **656** (kodu 654 ile birebir aynı) |
 
+### Console'a NE GİRİLDİ — durum tablosu (11 Eylül 2026, 23:45)
+
+⚠ **Bu tablo "ne GEREKİYOR"u değil "ne YAPILDI"yı yazar.** Dosyanın geri
+kalanı cevap kağıdıdır; bir cevabın Console'a girilip girilmediği başka
+hiçbir yerde yazmıyordu ve 11 Eylül akşamı *"sol menüdeki sayfalar dolu
+mu?"* sorusu baştan soruldu. **Bir sayfayı doldurduğun turda buraya da
+dokun** — yoksa bir sonraki oturum yine baştan sorar.
+
+| Console sayfası | Durum | Not |
+|---|---|---|
+| App Information — Name · Subtitle · Category · License | ✅ girildi (11 Eyl) | Subtitle'ın GERÇEK değeri §9'da |
+| App Information — **Content Rights** | ✅ **Yes** (11 Eyl, kullanıcı kararı) | Gerekçe §9 |
+| App Information — **Age Ratings** | ✅ girildi → **4+** (11 Eyl) | Cevaplar §5 |
+| App Information — Encryption · DSA etiketleri · Vietnam · Medical · Server Notifications · Shared Secret | — gerekmiyor | Sırasıyla: §12 (`Info.plist`), fiziksel ürün etiketi, VN lisansı yok, Games kategorisi + anket NONE, IAP yok |
+| **App Review Information** (demo hesap · iletişim · notlar) | ✅ girildi (11 Eyl) | §11 |
+| **App Privacy** | ⏳ SÜRÜYOR — `Name` türü bitti, **dokuz tür kaldı** | Eşleme §10. ⚠ Sonunda **Publish** şart, Save yayımlamıyor |
+| **Pricing and Availability** | ⬜ | Free + tüm ülkeler (§9) |
+| Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ⬜ | §9 |
+| Ekran görüntüleri | ✅ yüklendi (11 Eyl, 8/10 · 8/10) | §13 |
+| Derleme iliştirme | ✅ **656** (11 Eyl) | §15 |
+| **Gönderim** | ⬜ YAPILMADI | Yukarıdaki açık iş satırı |
+
 **Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
 §5 · demo hesap → §11 · Export Compliance → §12 · **API anahtarı `.p8` →
 §3 (9 Eylül 2026, Mac'ten indirildi)** · **imzalama + TestFlight yüklemesi
@@ -982,7 +1034,7 @@ metni sessizce keser.
 | Alan | Sınır | Ölçülen | Değer |
 |---|---|---|---|
 | **Name** | 30 | **29** | `Kelimeki: Türkçe Kelime Oyunu` |
-| **Subtitle** | 30 | **25** | `Bölgeni büyüt, tahtayı al` |
+| **Subtitle** | 30 | **30** | `Bölgeni büyüt, tahtaya hükmet.` ⚠ 11 Eyl 2026'da Console'a GİRİLEN değer bu; tasarım sırasında yazılan `Bölgeni büyüt, tahtayı al` (25) artık geçersiz |
 | **Keywords** | 100 | **93** | aşağı |
 | **Promotional text** | 170 | **162** | aşağı |
 | **Copyright** | — | 19 | `2026 Alp Reşat Çapa` |
@@ -1026,6 +1078,19 @@ o dosya, ikiye bölünürse biri bayatlar.
 | Category | Games → **Word** (ikincil: Games → Puzzle, isteğe bağlı) |
 | Price | **Free** |
 | License Agreement | Apple'ın standart EULA'sı (özel sözleşme YOK) |
+| **Content Rights** | **Yes — üçüncü taraf içerik var** (11 Eylül 2026, kullanıcı kararı) |
+
+⚠ **Content Rights'ın gerekçesi ve sınırı.** Apple *"uygulaman üçüncü tarafa
+ait içerik barındırıyor/gösteriyor mu"* diye soruyor ve "evet" o içeriği
+kullanma hakkına sahip olduğun BEYANINI da içeriyor. Kelime LİSTESİ sorun
+değil (sözcük listesi başlı başına telif konusu sayılmaz), ama **anlamlar**
+(`src/data/meanings.json`, TDK'nın Güncel Türkçe Sözlük'ünden üretiliyor)
+uygulama içinde gösteriliyor ve mağaza açıklaması da bunu yazıyor ("TDK
+sözlüğüne dayalı"). Dürüst okuma bu yüzden `Yes` oldu. **Bu bir hukuki
+inceleme DEĞİL** — TDK'nın kullanım koşullarının bu yeniden kullanıma izin
+verip vermediği bu depoda hiç ölçülmedi; bir gün sorulursa başlanacak yer
+`docs/decisions/dictionary.md` ve GTS kaynağının koşullarıdır.
+
 
 ---
 
