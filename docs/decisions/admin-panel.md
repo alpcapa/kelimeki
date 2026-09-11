@@ -456,6 +456,31 @@ gün, benzersiz ziyaretçi):
 | Masaüstü modeli | her zaman null |
 | OS sürümü | çok temiz: Android 16 → 273 · Android 13 → 64 · iOS 18.7 → 28 |
 
+### İki tablo TEK tabloya indi (11 Eylül 2026)
+
+İlk sürümde "Cihaz Markası" ve "Cihaz Modeli" AYRI iki tabloydu. Kullanıcı
+aynı gün: *"Cihazlara minik aşağı ok koy, tıklayınca açılsın ve model
+kırılımını göstersin. Böyle çok uzun ve gereksiz detay oluyor. İstenirse
+bakılsın."*
+
+Haklı bir ölçüye dayanıyordu: canlıda **174 farklı model kodu** var, yani
+ikinci tablo tek başına sayfanın en uzun bloğuydu ve çoğu satır 1 ziyaretçi
+taşıyordu.
+
+Artık tek tablo: **marka satırı + minik ok**, tıklayınca o markanın modelleri
+altında açılıyor. Varsayılan KAPALI.
+
+⚠ **Katlamak GİZLEMEK değil:** CSV marka ve modeli birlikte, DÜZ olarak
+indiriyor — ekran kısaldı, veri kısalmadı.
+
+⚠ **Yüzdeler açılan satırlarda da GENEL toplamın payı**, markanın değil.
+Markanın payı olsaydı açık satırların yüzdeleri kapalı satırlarınkiyle
+kıyaslanamazdı.
+
+⚠ **`useState` erken `return`ün ÜSTÜNDE** — altına inseydi boş/yüklenen
+durumda hook atlanır ve React #300 patlardı (`npm run verify-hook-order`
+bu deponun kapısı, aynı PR'da koşuldu).
+
 ### Kod → pazarlama adı çevirisi BİLEREK yok
 
 Tabloda duran değer `SM-A176B`, `24116RACCG` gibi bir iç model kodu.

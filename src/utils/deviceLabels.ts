@@ -87,8 +87,22 @@ export function deviceBrand(
   return 'Diğer';
 }
 
+/** Bir marka satırı ve altında açılacak model kırılımı. */
+export interface BrandGroup {
+  brand: DeviceBrand;
+  visitors: number;
+  /** O markanın model satırları, çoktan aza sıralı. */
+  models: Array<{ deviceType: string | null; deviceModel: string | null; visitors: number }>;
+}
+
 /**
- * Bir satır kümesini markaya göre toplar; büyükten küçüğe sıralı döner.
+ * Satırları markaya göre gruplar; her grup KENDİ model kırılımını taşır.
+ *
+ * ⚠ **Neden tek bir ağaç, iki ayrı tablo değil (11 Eylül 2026, kullanıcı
+ * isteği):** admin panelinde "Cihaz Markası" ve "Cihaz Modeli" ayrı ayrı
+ * duruyordu; 174 farklı model kodu sayfayı gereksiz uzatıyordu. Kullanıcı:
+ * *"Böyle çok uzun ve gereksiz detay oluyor. İstenirse bakılsın."* Artık
+ * tek tablo: marka satırı, isteyen açıp modelleri görüyor.
  *
  * ⚠ **Toplama neden doğru:** satırlar (cihaz tipi × model) başına BENZERSİZ
  * ziyaretçi sayıyor, yani aynı cihaz iki satırda görünürse toplam şişer.
@@ -99,26 +113,33 @@ export function deviceBrand(
  */
 export function brandBreakdown(
   rows: ReadonlyArray<{ device_type: string | null; device_model: string | null; visitors: number }>,
-): Array<{ brand: DeviceBrand; visitors: number }> {
-  const toplam = new Map<DeviceBrand, number>();
+): BrandGroup[] {
+  const gruplar = new Map<DeviceBrand, BrandGroup>();
   for (const r of rows) {
     const b = deviceBrand(r.device_type, r.device_model);
-    toplam.set(b, (toplam.get(b) ?? 0) + r.visitors);
+    const g = gruplar.get(b) ?? { brand: b, visitors: 0, models: [] };
+    g.visitors += r.visitors;
+    g.models.push({
+      deviceType: r.device_type,
+      deviceModel: r.device_model,
+      visitors: r.visitors,
+    });
+    gruplar.set(b, g);
   }
-  return [...toplam.entries()]
-    .map(([brand, visitors]) => ({ brand, visitors }))
+  for (const g of gruplar.values()) {
+    g.models.sort(
+      (a, b) =>
+        b.visitors - a.visitors ||
+        trCompare(a.deviceModel ?? '', b.deviceModel ?? ''),
+    );
+  }
+  return [...gruplar.values()].sort(
     // ⚠ `trCompare` — düz `localeCompare` locale'siz çağrılırsa ş/ğ/ı
     // yanlış sıralanır (deponun her yerde geçerli Türkçe kuralı).
-    .sort((a, b) => b.visitors - a.visitors || trCompare(a.brand, b.brand));
+    (a, b) => b.visitors - a.visitors || trCompare(a.brand, b.brand),
+  );
 }
 
-/**
- * `device_visits.device_type` → ekranda görünen platform adı.
- *
- * ⚠ TEK KAYNAK: aynı eşleme 24 Ağustos 2026'dan beri "Cihaz" tablosunun
- * `getLabel`inde satır içi duruyordu; model/OS tabloları eklenince üç kopya
- * olacaktı. Yeni bir platform değeri (`app-web` gibi) buraya eklenir.
- */
 export function platformLabel(deviceType: string | null): string {
   switch (deviceType) {
     case 'ios':

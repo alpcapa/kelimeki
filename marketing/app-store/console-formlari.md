@@ -1208,8 +1208,9 @@ gösteriyor). Yalnızca MAĞAZAYA giden kare olamaz.
 **Liste `marketing/play-store/metin.md` → "Çekim listesi — tek tek"de.**
 Buraya KOPYALANMIYOR; tek kaynak orası. Altı zorunlu + bir isteğe bağlı:
 
-1. Oyun ekranı, oyunun ortası *(en önemli kare)*
-2. Geçerli bir hamle kurulmuşken (yeşil dış hat + puan rozeti)
+1. Oyun ekranı, oyunun ortası — **2 kişilik** *(en önemli kare)*
+2. ~~Geçerli bir hamle kurulmuşken~~ → **4 KİŞİLİK oyun** + kurulmuş hamle
+   (11 Eylül 2026'da değişti, aşağı bkz.)
 3. Kurulum ekranı, "Arkadaşınla" sekmesi
 4. Skor kartı
 5. Kelime anlamı (TDK penceresi)
@@ -1345,7 +1346,37 @@ oynadı. +22 puan."*), raf `KAOEMLE` ve "TORBA 43".
    kuralı *"e-posta geçen ekran yok"* diyor. Mağaza kimliğinin `email`i
    bilerek boş.
 
-### 2. kare eklendi — 9 Eylül 2026
+### 2. kare KONU DEĞİŞTİRDİ — 4 kişilik oyun (11 Eylül 2026)
+
+⚠ **Kullanıcı kareleri yan yana görünce yakaladı:** *"1 ve 2 neredeyse
+aynı... ilk slayt 2, ikinci slayt 4 kişilik oyun örneği göstermeli. 4
+kişilik oyun bize özel ve başka hiçbir kelime oyununda yok."*
+
+Haklıydı: ikisi de AYNI 2 kişilik tahtaydı, tek fark kurulmuş hamleydi —
+yani iki kare tek bir şeyi anlatıyordu ve ürünün en ayırt edici özelliği
+(4 kişilik oyun) sette HİÇ görünmüyordu.
+
+Kare artık **`02-dort-kisilik`**: dört skor kutusu, tahtada dört ayrı bölge.
+⚠ **Kurulmuş hamle KORUNDU** — yeşil dış hat + puan rozeti kareyi canlı
+tutuyor ve dört bölge anlatısıyla yarışmıyor (biri tahtanın rengi, öteki tek
+bir kelimenin çerçevesi). Yani konu değişirken hiçbir şey kaybedilmedi.
+
+**Tohum yine ELLE SEÇİLMEDİ**, motor koşturularak ölçüldü — 1. kareyle AYNI
+ölçütler: dört bölge de büyümüş · oyuncu ezilmiyor · raf oynanabilir · tahta
+dolu · skorlar çekişmeli. 60 tohum × 2 hamle sayısı tarandı, beş aday geçti,
+**tohum 12 / 20 hamle** seçildi:
+
+| | |
+|---|---|
+| Taş | 71 |
+| Skorlar | **72-68-61-77** (fark 16 — çekişmeli) |
+| Bölgeler | **30/24/24/27** — dördü de net okunuyor, oyuncununki en büyük |
+| Raf | `UAAKLŞI` — 4 ünlü + 3 sessiz, yani ekranda oynanabilir bir el var |
+
+⚠ Elenen aday **26**: skorlar 73-73-73-77'de eşitleniyordu ve karede
+**uydurma** duruyordu.
+
+### (arşiv) 2. karenin ÖNCEKİ hâli — kurulmuş hamle, 9 Eylül 2026
 
 `02-kurulmus-hamle`: oyuncunun rafından tahtaya kurulmuş ama henüz
 onaylanmamış bir hamle — yeşil dış hat, **+14** puan rozeti, *"Oyna tuşuyla
@@ -1461,11 +1492,25 @@ yalnızca ölçüyle doğrulamak yetmiyor; **kareye BAKAN biri olmadan mağaza
 görseli onaylanamaz.** Ajan bakamıyor, o yüzden her yeni sette kullanıcının
 en az bir kareyi açması akışın zorunlu adımı.
 
-### 📦 KARELER — yeniden üretiliyor (11 Eylül 2026)
+### 📦 TAZE KARELER HAZIR — `9c91adb`, 11 Eylül 2026
 
-⚠ **Önceki setlerin HEPSİ çöp** (debug bandı). Aşağıdaki tabloyu bir sonraki
-yeşil koşunun künyesiyle GÜNCELLE; o koşu bandı kapatan düzeltmeyi ve
-`_kareCek` kapısını içeriyor.
+**Mağazaya gidecek set BU.** Koşu
+https://github.com/alpcapa/kelimeki/actions/runs/34589392557 — yeşil.
+Dört kapı da geçti: **7 kare** · tam piksel ölçüsü · **alfa yok** ·
+**debug bandı yok**. Kompozisyon bindirmeli şerit.
+
+| Artefakt | Boyut |
+|---|---|
+| `kelimeki-store-screenshots-iphone-6.9` | 2.415.873 bayt |
+| `kelimeki-store-screenshots-ipad-13` | 2.015.385 bayt |
+
+Geçerlilik **10 Aralık 2026**.
+
+✅ **GÖZLE DOĞRULANDI (kullanıcı, 11 Eylül 2026):** 04 · 05 · 06 açıldı —
+debug bandı yok, şerit okunur, pencerelerin altı kesilmiyor. ⚠ **07 (k-lig)
+bu turda gözle bakılmadı** — yüklemeden önce ona da bir bakılmalı.
+
+⚠ **Önceki setlerin HEPSİ çöp** (debug bandı).
 
 | Çöpe giden set | Neden |
 |---|---|
@@ -1511,6 +1556,30 @@ sıralaması) eklenecek.** Böylece §13'ün açık kalan tek maddesi kapandı.
    başlıksız bir tahta karesi *"bir oyun tahtası"*ndan fazlasını anlatmıyor.
 2. 01/02'nin **alt ~%20'si zaten boş** (9 Eylül'de gözle ölçüldü) — şerit
    için hazır yer var, kare kaybı yok.
+   ⚠ **Bu gerekçe ilk uygulamada BOŞA ÇIKTI ve düzeltildi (11 Eylül 2026).**
+   Şerit önce `Column` ile uygulamanın ALTINA konuyordu: oyun ekranının boş
+   alt alanı yerinde kalıyor, şerit onun altına biniyordu — yani ölü alan
+   değerlenmiyordu, kare uzuyordu. Kullanıcı kareye GÖZLE bakınca görüldü.
+   Şerit artık `Stack` ile uygulamanın ÜSTÜNE biniyor (kullanıcı kararı).
+
+   ⚠ **AMA "boşluğu doldurur" da DOĞRU DEĞİL — ölçüldü (11 Eylül 2026,
+   gerçek karelerden):** modal dikey olarak ORTALANMIŞ, yani kartın altında
+   kalan pay şeritten büyük olabiliyor. Şerit 203px (%7,1); 04'te kartın alt
+   payı 479px, dolayısıyla **276px (%9,6) beyaz kalıyor**; 06'da 147px
+   (%5,1); 05'te hiç kalmıyor çünkü karartma tüm ekranı kaplıyor. Bindirme
+   yine de kazanç: `Column`da şerit boşluğun ALTINA ekleniyordu, şimdi
+   İÇİNDE.
+
+   **Kullanıcı kararı: kalan boşluk KABUL EDİLDİ** (11 Eylül 2026). Gerekçe:
+   şerit bir başlıktır, dolgu değil; yedi karede AYNI kalınlıkta olması seti
+   "set" yapan şey. Elenen iki alternatif: şeridi kalınlaştırmak (01/02'de
+   oyun ekranının butonlarını örtmeye başlıyor) ve modalı yukarı kaydırmak
+   (uygulamada pencere ortalı — kare birebir görüntü olmaktan çıkardı).
+
+   ⚠ **Bindirmenin asıl riski ÖLÇÜLDÜ ve GERÇEKLEŞMEDİ:** 04/05/06'da şerit
+   pencerenin alt kenarına değmiyor (en yakını 06, 147px açık). Yine de her
+   yeni sette modal kareleri gözle kontrol edilmeli — modal düzeni
+   değişirse bu pay kapanabilir.
 3. Kareler **sürüme kilitli**: onaylandıktan sonra değiştirmek yeni bir
    gönderim ister (promotional text gibi serbest DEĞİL), yani ilk turda
    doğru olmak zorunda.
@@ -1521,7 +1590,7 @@ tablo oradan KOPYA, ikisi ayrışırsa kaynak odur):
 | Kare | Başlık |
 |---|---|
 | `01-oyun-ekrani` | Köşenden başla, bölgeni büyüt |
-| `02-kurulmus-hamle` | Kelimeni kur, puanını gör |
+| `02-dort-kisilik` | Dört oyuncu, dört bölge |
 | `03-arkadasinla` | Arkadaşınla sırayla oyna |
 | `04-skor-karti` | İstatistiklerini takip et |
 | `05-kelime-anlami` | Kelimenin anlamı bir dokunuş |
