@@ -136,7 +136,8 @@ class OnlineGame {
       );
 
   /// Web `mySlotIndex` — çağıranın kendi koltuğu (`relation=='self'`).
-  int get mySlotIndex => slots.indexWhere((s) => !s.isAi && s.relation == 'self');
+  int get mySlotIndex =>
+      slots.indexWhere((s) => !s.isAi && s.relation == 'self');
 
   /// Kurucunun koltuğu — kurucu hesabını sildiyse (`createdBy == null`)
   /// null döner. `userId == createdBy` karşılaştırması NULL GÜVENLİ
@@ -254,8 +255,7 @@ List<HistoryEntry> buildMoveHistory(List<OnlineMoveRow> rows) {
       words: row.words,
       points: row.points,
       wordScores: row.wordScores,
-      finishJokerCount:
-          row.finishJokerCount != 0 ? row.finishJokerCount : null,
+      finishJokerCount: row.finishJokerCount != 0 ? row.finishJokerCount : null,
       bingo: row.bingo,
       action: row.action != 'play' ? row.action : null,
       tileCount: row.action == 'exchange' ? row.tileCount : null,
@@ -336,6 +336,18 @@ abstract class OnlineGamesGateway {
   /// Web `setOnlineGamePlatform` ile aynı sözleşme.
   Future<void> setPlatform(String gameId, String platform);
 
+  /// [moveId] — idempotency anahtarı (`submit_move`'un `p_move_id`'si).
+  ///
+  /// ⚠ **ÇAĞIRAN VERMEK ZORUNDA, yoksa koruma çalışmaz.** Sunucu aynı
+  /// `move_id` ile gelen ikinci çağrıyı sessizce başarı sayar ve bunu
+  /// "Sıra sende değil." kontrolünden ÖNCE yapar. Ama id burada üretilirse
+  /// her deneme TAZE bir UUID alır ve kullanıcının ikinci "OYNA" basışı
+  /// sunucuya YENİ bir hamle gibi görünür → sıra çoktan geçtiğinden
+  /// **sahte "Sıra sende değil."**. 11 Eylül 2026'da kullanıcı bunu
+  /// iPhone'da yaşadı: hamle işlenmişti, ekranda hata vardı.
+  ///
+  /// `OnlineApi`'nin kendi taşıma-hatası yeniden denemesi zaten aynı id'yi
+  /// koruyordu; eksik olan KULLANICININ elle tekrarıydı.
   Future<void> submitMove({
     required String gameId,
     required String action,
@@ -345,6 +357,7 @@ abstract class OnlineGamesGateway {
     List<Map<String, Object?>>? wordScores,
     int basePoints,
     List<Map<String, Object?>> lostShares,
+    String? moveId,
   });
 
   /// Yalnızca BU oyunun `online_game_states` satırını dinler.
@@ -496,8 +509,8 @@ class SupabaseOnlineGamesGateway implements OnlineGamesGateway {
       }));
 
   @override
-  Future<List<Map<String, Object?>>> moves(String gameId) async => _rows(
-      await client
+  Future<List<Map<String, Object?>>> moves(String gameId) async =>
+      _rows(await client
           .from('online_game_moves')
           .select()
           .eq('online_game_id', gameId)
@@ -525,6 +538,7 @@ class SupabaseOnlineGamesGateway implements OnlineGamesGateway {
     List<Map<String, Object?>>? wordScores,
     int basePoints = 0,
     List<Map<String, Object?>> lostShares = const [],
+    String? moveId,
   }) =>
       // Mobil ağ dayanıklılığı burada: OnlineApi her çağrıya bir `p_move_id`
       // koyar ve taşıma hatalarında AYNI id ile yeniden dener (çifte hamle
@@ -538,6 +552,7 @@ class SupabaseOnlineGamesGateway implements OnlineGamesGateway {
         wordScores: wordScores,
         basePoints: basePoints,
         lostShares: lostShares,
+        moveId: moveId,
       );
 
   @override
@@ -679,8 +694,8 @@ class OnlineGamesRepo {
   /// Web `createOnlineGame`: RPC + davetlilere e-posta (fire-and-forget).
   /// Hatalar FIRLATILIR (form gösterir).
   Future<String> create(int playerCount, List<NewGameSlot> slots) async {
-    final id = await gateway.create(
-        playerCount, [for (final s in slots) s.toJson()]);
+    final id =
+        await gateway.create(playerCount, [for (final s in slots) s.toJson()]);
     gateway.notifyGameInvite(id).catchError(
         (Object e) => debugPrint('[Kelimeki] notifyGameInvite hatası: $e'));
     return id;
@@ -768,6 +783,7 @@ class OnlineGamesRepo {
     List<Map<String, Object?>>? wordScores,
     int basePoints = 0,
     List<Map<String, Object?>> lostShares = const [],
+    String? moveId,
   }) =>
       gateway.submitMove(
         gameId: gameId,
@@ -778,6 +794,7 @@ class OnlineGamesRepo {
         wordScores: wordScores,
         basePoints: basePoints,
         lostShares: lostShares,
+        moveId: moveId,
       );
 
   void Function() subscribeGame(String gameId, void Function() onChange) =>
@@ -1038,8 +1055,7 @@ RemainingLabel remainingInviteLabel(String createdAt, int nowMs) {
 /// kullanıcı isteği). Çağıran zaten `trUpper`dan geçiriyor — idempotent;
 /// web tarafında ise CSS `uppercase`in Türkçe i→İ duyarlılığına
 /// güvenilmesin diye böyle yazıldı, iki taraf aynı dizeyi taşısın.
-String onlineStatusLabel(OnlineGame g, {bool? isMyTurn}) =>
-    switch (g.status) {
+String onlineStatusLabel(OnlineGame g, {bool? isMyTurn}) => switch (g.status) {
       OnlineGameStatus.active =>
         // ⚠ Ok (`>`) bu dizede DEĞİL — ayrı ve daha BÜYÜK bir span olarak
         // çiziliyor (`kTurnArrow*`, `live_games_tab.dart`); gerekçe orada.

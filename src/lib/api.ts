@@ -1677,6 +1677,17 @@ export interface SubmitMovePayload {
   wordScores?: { word: string; score: number; x2: boolean; x3: boolean }[];
   basePoints?: number;
   lostShares?: { to: number; amount: number }[];
+  /**
+   * İdempotency anahtarı (`submit_move`'un `p_move_id`'si). AYNI id ile
+   * gelen ikinci çağrıyı sunucu sessizce başarı sayar ve bunu "Sıra sende
+   * değil." kontrolünden ÖNCE yapar.
+   *
+   * ⚠ Çağıran VERMEK ZORUNDA ve aynı hamlenin tekrarında AYNISINI
+   * vermeli — burada üretilseydi her deneme taze bir UUID alır ve koruma
+   * hiç çalışmazdı. 11 Eylül 2026'da mobilde tam bu yaşandı: hamle
+   * işlenmişti, kullanıcı ekranda "Sıra sende değil." gördü.
+   */
+  moveId?: string;
 }
 
 /**
@@ -1696,6 +1707,7 @@ export async function submitMove(gameId: string, payload: SubmitMovePayload): Pr
     p_word_scores: payload.wordScores ?? null,
     p_base_points: payload.basePoints ?? 0,
     p_lost_shares: payload.lostShares ?? [],
+    p_move_id: payload.moveId ?? null,
   });
   if (error) throw new Error(error.message);
 }
