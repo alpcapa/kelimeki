@@ -2016,3 +2016,36 @@ Sıradaki boş numara **`08`**. Eklenince `KARE_SAYISI` da 7'ye çıkar
 (kapı sayıyı sabit bekliyor) ve kare `pencereyiBekle` kapısından geçmek
 zorunda.
 
+#### 🔍 9. kare: ZOOM — elenmişti, geri alındı (11 Eylül 2026)
+
+Kullanıcı: *"10 kare hakkımız varsa zoom'u da koysaydık keşke"*. İlk turda
+şu gerekçeyle elenmişti: zoom bir JEST, tek kare hareketi gösteremez.
+Gerekçe hâlâ doğru ama **eksikti** — jesti anlatmak gerekmiyor, SONUCUNU
+göstermek yetiyor. Kare gerçek bir çift dokunuşla 2× büyümüş tahtayı
+gösteriyor; harfler iri olduğundan 01 ile karışmıyor.
+
+**Jest GERÇEK, sahnelenmiş değil:** `tester.tapAt` ×2, üretim yolundan
+(`board_zoom.dart`in 300 ms / 40 px çift penceresi). Sahte bir "zoom'lu
+görünüm" çizilmedi.
+
+⚠ **Nişan noktası bir hücrenin İÇİ DEĞİL, iki hücre ARASINDAKİ ızgara
+sınırı** (`kBoardPad + k*adım`). Ölçüldü: hücre kutusuna inen dokunuş, harf
+seçili olmadığından ekrana *"Önce bir harf seç."* yazdırıyor ve mağaza
+karesinde gerçek oyun mesajının ("Yapay Zeka …oynadı. +22 puan.") yerini
+alıyordu. Boşluğa inen dokunuş `_pointHitsCellBox` false döndüğü için hücre
+işleyicisine hiç gitmiyor, çift yine sayılıyor.
+
+⚠ **Kapısı `pencereyiBekle` DEĞİL** — aranacak bir pencere yok. `zoomKapisi`
+zoom matrisinin ölçeğini okuyor (`kBoardZoomScale` = 2.0): jest tutmazsa
+kare sessizce **01'in kopyası** olurdu, yani iPad'de 06'nın başına gelen
+şeyin aynısı. Duyarlılık kanıtlandı: ikinci dokunuş silinip koşuldu → test
+düştü (*"tahta yakınlaşmamış (bulunan ölçekler: [1.0, 1.0])"*).
+
+**Varyant seçimi kullanıcıda:** üç odak noktası ayrı ayrı çizilip
+gönderildi (boş alan · harf kümesi · kart çerçevesi), kullanıcı **harf
+kümesini** seçti. Sonra uyarı metni sorunu yukarıdaki ızgara-sınırı
+nişanıyla ayrıca giderildi — yani seçilen çerçeveleme + temiz mesaj satırı.
+
+**Set artık SEKİZ kare:** `01 · 02 · 03 · 04 · 06 · 07 · 08 · 09`
+(`KARE_SAYISI: 8`). Apple 6.9" için tavan 10.
+

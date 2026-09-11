@@ -45,6 +45,8 @@ import 'package:kelimeki/src/data/meaning_store.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/game/game_controller.dart';
+import 'package:kelimeki/src/ui/game/board_widget.dart';
+import 'package:kelimeki/src/ui/game/board_zoom.dart';
 import 'package:kelimeki/src/ui/game/game_screen.dart';
 import 'package:kelimeki/src/ui/route_observer.dart';
 import 'package:kelimeki/src/ui/setup/setup_screen.dart';
@@ -123,6 +125,7 @@ const Map<String, String> kBasliklar = {
   '06-nasil-oynanir': 'Kuralları üç dakikada öğren',
   '07-klig-siralamasi': "k-lig'de sıranı yükselt",
   '08-rutbeler': 'Rütbe atladıkça ödül kazan',
+  '09-zoom': 'Çift dokunuşla tahtayı büyüt',
 };
 
 /// Punto ekran GENİŞLİĞİNE oranlı — sabit bir punto verilseydi iPad
@@ -433,6 +436,34 @@ Future<void> pencereyiBekle(
   );
   // Açılış animasyonu (fade/scale) bitsin: bulunmak ≠ tam opak çizilmek.
   await settle(tester);
+}
+
+/// Tahtanın GERÇEKTEN yakınlaştığını doğrular — 09. karenin kapısı.
+///
+/// NEDEN VAR: 09 bir JESTİN sonucunu gösteriyor (boş çerçeveye çift
+/// dokunuş). Jest tutmazsa kare sessizce 01'in aynısı olur — yani tam
+/// olarak iPad'de 06'nın başına gelen şey. `pencereyiBekle` bir pencere
+/// arıyor, burada aranacak pencere YOK; onun yerine zoom matrisinin
+/// ölçeği okunuyor.
+///
+/// ⚠ Zoom kapalıyken `BoardWidget` matrisi `null` geçiyor ve o `Transform`
+/// hiç kurulmuyor (`board_widget.dart` → `katmanla`), yani "2.0 ölçekli bir
+/// Transform var mı" sorusu zoom'un açık olmasıyla birebir örtüşüyor.
+void zoomKapisi(WidgetTester tester, String ad) {
+  final olcekler = tester
+      .widgetList<Transform>(find.descendant(
+        of: find.byType(BoardWidget),
+        matching: find.byType(Transform),
+      ))
+      .map((t) => t.transform.getMaxScaleOnAxis())
+      .toList();
+  expect(
+    olcekler.any((o) => (o - kBoardZoomScale).abs() < 0.01),
+    isTrue,
+    reason: '$ad: tahta yakınlaşmamış (bulunan ölçekler: $olcekler) — '
+        'çift dokunuş çifte sayılmadı ve kare 01\'in kopyası olurdu. '
+        'Mağaza karesine giremez.',
+  );
 }
 
 /// Sabit sayıda kare çizer. `pumpAndSettle` BİLEREK kullanılmıyor: ekranda

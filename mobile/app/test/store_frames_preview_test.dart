@@ -28,6 +28,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/ui/game/help_modal.dart';
+import 'package:kelimeki/src/ui/game/board_widget.dart';
 import 'package:kelimeki/src/ui/rank/league_rank.dart';
 import 'package:kelimeki/src/ui/rank/rank_info_modal.dart';
 import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
@@ -176,6 +177,33 @@ void main() {
         tier: tierFor(57), totalScore: 57, bonusPoints: 5);
     await pencereyiBekle(t, find.byType(RankInfoModal), '08-rutbeler');
     await _yaz(t, '08-rutbeler');
+    c.dispose();
+  });
+
+  testWidgets('09 zoom', (t) async {
+    final c = oyunKontrolcusu();
+    await _ciz(t, oyunEkrani(c, '09-zoom'));
+    final tahta = t.getRect(find.byType(BoardWidget));
+    // ⚠ Nişan noktası bir hücrenin İÇİ DEĞİL, iki hücre ARASINDAKİ ızgara
+    // sınırı (kBoardPad + k*adım). Sebep ölçüldü: hücre kutusuna inen
+    // dokunuş, harf seçili olmadığı için ekrana *"Önce bir harf seç."*
+    // yazdırıyor ve mağaza karesinde gerçek oyun mesajının ("Yapay Zeka
+    // …oynadı") yerini alıyordu. Boşluğa/çerçeveye inen dokunuş ise
+    // `_pointHitsCellBox` false döndüğünden hücre işleyicisine hiç
+    // gitmiyor — çift yine sayılıyor (game_screen.dart: "boşluğa/çerçeveye
+    // inen TAHTA dokunuşudur").
+    final ic = tahta.width - 2 * kBoardPad;
+    final adim = ic / 13;
+    final nokta = Offset(
+      tahta.left + kBoardPad + 5 * adim,
+      tahta.top + kBoardPad + 8 * adim,
+    );
+    await t.tapAt(nokta);
+    await t.pump(const Duration(milliseconds: 80));
+    await t.tapAt(nokta);
+    await settle(t);
+    zoomKapisi(t, '09-zoom');
+    await _yaz(t, '09-zoom');
     c.dispose();
   });
 }

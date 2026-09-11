@@ -18,6 +18,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:kelimeki/src/data/dictionary_loader.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/ui/game/help_modal.dart';
+import 'package:kelimeki/src/ui/game/board_widget.dart';
 import 'package:kelimeki/src/ui/rank/league_rank.dart';
 import 'package:kelimeki/src/ui/rank/rank_info_modal.dart';
 import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
@@ -159,6 +160,45 @@ void main() {
     await pencereyiBekle(tester, find.byType(RankInfoModal), '08-rutbeler');
 
     await kareCek(binding, tester, '08-rutbeler');
+    controller.dispose();
+  });
+
+  // 9. kare (11 Eylül 2026, kullanıcı: *"10 kare hakkımız varsa zoom'u da
+  // koysaydık keşke"*). İlk turda elenmişti — zoom bir JEST ve tek kare
+  // hareketi gösteremez. Çözüm jesti ANLATMAK değil SONUCUNU göstermek:
+  // kare, gerçek çift dokunuşla 2× büyümüş tahtayı gösteriyor; harfler
+  // iri ve okunaklı olduğundan 01 ile karışmıyor.
+  //
+  // ⚠ Bu karenin kapısı `pencereyiBekle` DEĞİL (aranacak pencere yok) —
+  // `zoomKapisi` zoom matrisinin ölçeğini okuyor. Jest tutmazsa kare
+  // sessizce 01'in kopyası olurdu; iPad'de 06'nın başına gelen şeyin
+  // aynısı.
+  testWidgets('09 — zoom (çift dokunuşla büyümüş tahta)', (tester) async {
+    final controller = oyunKontrolcusu();
+    await tester.pumpWidget(oyunEkrani(controller, '09-zoom'));
+    await settle(tester);
+    final tahta = tester.getRect(find.byType(BoardWidget));
+    // ⚠ Nişan noktası bir hücrenin İÇİ DEĞİL, iki hücre ARASINDAKİ ızgara
+    // sınırı (kBoardPad + k*adım). Sebep ölçüldü: hücre kutusuna inen
+    // dokunuş, harf seçili olmadığı için ekrana *"Önce bir harf seç."*
+    // yazdırıyor ve mağaza karesinde gerçek oyun mesajının ("Yapay Zeka
+    // …oynadı") yerini alıyordu. Boşluğa/çerçeveye inen dokunuş ise
+    // `_pointHitsCellBox` false döndüğünden hücre işleyicisine hiç
+    // gitmiyor — çift yine sayılıyor (game_screen.dart: "boşluğa/çerçeveye
+    // inen TAHTA dokunuşudur").
+    final ic = tahta.width - 2 * kBoardPad;
+    final adim = ic / 13;
+    final nokta = Offset(
+      tahta.left + kBoardPad + 5 * adim,
+      tahta.top + kBoardPad + 8 * adim,
+    );
+    await tester.tapAt(nokta);
+    await tester.pump(const Duration(milliseconds: 80));
+    await tester.tapAt(nokta);
+    await settle(tester);
+    zoomKapisi(tester, '09-zoom');
+
+    await kareCek(binding, tester, '09-zoom');
     controller.dispose();
   });
 }
