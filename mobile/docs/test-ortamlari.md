@@ -436,8 +436,16 @@ fazların sırası ve bağımlılıkları orada.
      (`console-formlari.md` §12'nin cihazdaki kanıtı). Ve *"Ready to
      Submit"* iç dağıtımı ENGELLEMEDİ — ölçüldü.
    - Tam durum kaydı: `marketing/app-store/console-formlari.md` §14.
-7. **iPad'de test.** TestFlight uygulamasını App Store'dan kur, davet
-   maili gelince "Kabul Et" → Kelimeki gerçek bir uygulama olarak açılır.
+7. **iPad'de test.** TestFlight uygulamasını App Store'dan kur, sonra
+   **testçi davetindeki `View in TestFlight` düğmesine CİHAZDAN dokun** →
+   Kelimeki gerçek bir uygulama olarak açılır. ⚠ Bu cümle 10 Eylül 2026'ya
+   kadar *"davet maili gelince 'Kabul Et'"* diyordu ve bir akşam yedi:
+   tıklanan e-posta **ekip daveti**ydi, o da her seferinde tarayıcıda App
+   Store Connect'e götürüyordu. İki davet AYRI e-postadır (yukarıdaki 6.
+   adım) ve kurulumu başlatan tek şey TestFlight'tan gelenin içindeki o
+   düğmedir. ⚠ *"İç testçi zaten ekipte, uygulamayı davetsiz de görür"*
+   diye bir kısayol ARAMA — o gün denendi, TestFlight boş `Redeem`
+   ekranında kaldı.
    Yukarıdaki bölümler bundan sonra koşulabilir. **İlk turda koşulacak üç
    şey, üçü de yalnızca burada görülebilir:** `mobile/TESTING.md` §26
    (iPad'de MANZARA — dönüş cihazda, simülatörde imkânsız),
