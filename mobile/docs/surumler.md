@@ -152,6 +152,22 @@ merge edildiğinden `main` = `ac93500`, ama o commit `mobile-build`in `paths`
 filtresine takılmadı → yeni derleme YOK. Doğru karşılaştırma **`a4c809b`**;
 bunu bilmeden bakan "paket bayat" diye yanlış teşhis koyar.
 
+### ✅ CİHAZDA DOĞRULANDI — iPhone, 11 Eyl 2026
+
+Kullanıcı TestFlight'tan kurup baktı: *"tanıtım 1. slayt legend'lar
+sabitlenmiş. OYNA butonu setup'da alta sabitlenmiş ve iyi olmuş."* Yani
+10 Eylül akşamı bildirilen iki düzen hatası da kapandı — üstelik aynı
+cihazda, aynı ayarlarla (Dynamic Type varsayılan, ekran 375 pt sınıfı).
+
+⚠ Bu gözlem aynı zamanda **paketin taze olduğunun kanıtı**: iki düzeltme de
+yalnızca 627'de var, 620'de yoktu. Yani `Derleme a4c809b` satırını ayrıca
+okumaya gerek kalmadan doğru paket kurulmuş oluyor.
+
+⏳ **Üçüncü bulgu (hiç oynanmamış oyunun hayalet kaydı) henüz cihazda
+doğrulanmadı** — doğrulaması: yeni bir YZ oyunu aç, HİÇ hamle yapmadan
+logoya basıp çık; "Devam Eden Oyunlar"da ne satır kalmalı ne de bir an
+belirip kaybolmalı.
+
 ### Play sürüm notları — OLDUĞU GİBİ yapıştırılabilir (TR)
 
 ```
