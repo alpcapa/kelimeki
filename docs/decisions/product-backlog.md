@@ -336,6 +336,38 @@ bölümün kendi tarihli notuna taşınır.
   ölçüm boşluğu da reklam harcamasından ÖNCE kapatılmalı.
 
 
+## Gerçek cihaz modeli — uygulamadan (11 Eylül 2026, Aşama 2)
+
+Kullanıcı *"iPhone 17, 14, Samsung"* kırılımı istedi. **Aşama 1 yapıldı**
+(admin panelinde Marka/Model/İşletim Sistemi tabloları — bkz.
+`docs/decisions/admin-panel.md`), ama Apple tarafı orada eksik kalıyor ve
+bu bir eksiklik değil bir SINIR: **Safari'nin User-Agent'ı yalnızca
+`iPhone` diyor**, model numarasını hiç vermiyor. Yani iPhone 17 ↔ 14 ayrımı
+web verisinden ÇIKMAZ.
+
+Çıktığı tek yer kurulu uygulama: `device_info_plus` → iOS'ta
+`utsname.machine` (`iPhoneNN,M`), Android'de `manufacturer` + `model`.
+
+**Neden bugün yapılmadı (zamanlama):** App Store gönderimi kapıdaydı ve bu
+YENİ bir veri sınıfı toplamak demek — App Privacy (§10) ve Play Data safety
+cevapları yeniden açılır, `TermsModal`/`PrivacyModal` güncellenmek zorunda
+kalır (deponun yazılı kuralı), gönderim gecikirdi. Kullanıcı kararı: Aşama 1
+şimdi, Aşama 2 yayından sonra.
+
+**Yapılırken bilinmesi gerekenler:**
+
+- ⚠ **`iPhoneNN,M` okunabilir DEĞİL ve numara pazarlama adıyla
+  ÖRTÜŞMÜYOR** — nesil numarası kayıyor. Yani ham kodu göstermek "iPhone 17"
+  sorusunu cevaplamaz; elle bakımı gereken bir eşleme tablosu gerekir ve o
+  tablo her yeni cihazla bayatlar. Aşama 1'de Android kodları için tam bu
+  sebeple çeviri YAPILMADI (yalnızca marka önekten okundu) — aynı karar
+  burada da verilmeli, yoksa bakım borcu doğar.
+- İstemci değişikliği olduğundan veri ancak bir sonraki paket mağazaya
+  çıkıp KURULDUKTAN sonra akmaya başlar; ilk haftalar kısmi kalır.
+- Sunucu tarafı hazır: `device_visits` şeması zaten `device_model` taşıyor,
+  yeni bir sütun/tablo gerekmiyor. Ama portun bugün `device_visits`e HİÇ
+  yazmadığı unutulmamalı — yazan tek yer web (`src/main.tsx` + `App.tsx`).
+
 ## ✅ KAPANDI — Tahta çiziminin önbelleğe alınması (26 Ağustos 2026)
 
 Bu madde **yapıldı** ve tam da burada tarif edilen çözümle: her ayırt edici

@@ -16,6 +16,8 @@ import {
   fetchAdminSourceFunnel,
   fetchAdminTutorialFunnel,
   fetchAdminDeviceBreakdown,
+  fetchAdminDeviceModelBreakdown,
+  fetchAdminOsVersionBreakdown,
   fetchAdminAppVersionBreakdown,
   fetchAdminPushVersionBreakdown,
   fetchAdminClientErrors,
@@ -48,6 +50,8 @@ import type {
   AdminAppVersionRow,
   AdminPushVersionRow,
   AdminDeviceBreakdownRow,
+  AdminDeviceModelRow,
+  AdminOsVersionRow,
   AdminActivityGranularity,
   AdminFeedbackRow,
   AdminChatReportRow,
@@ -60,6 +64,12 @@ import { AdminChatTranscriptModal } from './AdminChatTranscriptModal';
 import { CountBadge } from './CountBadge';
 import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
 import { trLower } from '../utils/turkish';
+import {
+  brandBreakdown,
+  deviceModelLabel,
+  osVersionLabel,
+  platformLabel,
+} from '../utils/deviceLabels';
 import { GENDER_OPTIONS, isoToTrDate } from '../utils/profileFields';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { downloadCsv } from '../utils/csvExport';
@@ -462,6 +472,44 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         içeriyor, yalnız kurulu uygulamayı değil ("Sürüm Dağılımı" tablosu o soruyu yanıtlıyor).
         24 Ağustos 2026'dan ÖNCEki misafir-only ölçüm (eski "Cihaz" tablosu) veritabanında
         duruyor ama artık çizilmiyor.
+      </>
+    ),
+  },
+  'cihaz-markasi': {
+    title: 'Cihaz Markası',
+    body: (
+      <>
+        "Cihaz" tablosunun bir alt kırılımı: aynı ziyaretçiler, bu kez <b>üreticiye</b> göre.
+        Marka, tarayıcının bildirdiği model KODUNDAN önekle okunuyor (<code>SM-</code> →
+        Samsung); tanınmayan kod <b>Diğer</b>'e düşer — uydurma bir marka atanmaz.{' '}
+        <b>Apple satırı her zaman "iPhone/iPad" düzeyinde</b>: Safari gerçek modeli
+        (iPhone 17 ↔ 14) hiç vermiyor, o ayrım ancak kurulu uygulamadan ölçülebilir.{' '}
+        <b>Bilinmiyor</b> ≈ masaüstü (hiçbir tarayıcı model vermiyor) + modeli gizleyen
+        Android tarayıcıları.
+      </>
+    ),
+  },
+  'cihaz-modeli': {
+    title: 'Cihaz Modeli',
+    body: (
+      <>
+        Ham üretici model kodu, hiçbir yorum katmadan. Kod → pazarlama adı çevirisi
+        (<code>SM-A176B</code> → "Galaxy A17") <b>bilerek yapılmıyor</b>: elle bakımı gereken,
+        her yeni cihazla bayatlayan bir tablo olurdu. Marka için üstteki tabloya bak.{' '}
+        Sayılar <b>benzersiz ziyaretçi</b>; bir cihaz tek model dizesi taşıdığından bu tablonun
+        toplamı "Cihaz" tablosununkiyle eşleşir (11 Eylül 2026'da ölçüldü: 788 = 788).
+      </>
+    ),
+  },
+  'isletim-sistemi': {
+    title: 'İşletim Sistemi',
+    body: (
+      <>
+        Platform + sürüm kırılımı — "kaç kişi hâlâ eski Android'de?" sorusunun cevabı.{' '}
+        <b>Sürüm dizesi platformdan bağımsız okunmaz:</b> canlıda <code>iOS 10.15.7</code>{' '}
+        satırları var ve bu bir iOS sürümü DEĞİL, macOS'un dondurulmuş sürüm dizesi — masaüstü
+        User-Agent'ı veren cihazlar (iPad'in "Masaüstü site" modu, Mac) iOS kovasına düşüyor.
+        Yani bu tablo aynı zamanda o sınıflandırma hatasının görünür olduğu yer.
       </>
     ),
   },
@@ -1526,6 +1574,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [sourceFunnel, setSourceFunnel] = useState<AdminSourceFunnelRow[] | null>(null);
   const [tutorialFunnel, setTutorialFunnel] = useState<AdminTutorialFunnelRow[] | null>(null);
   const [deviceBreakdown, setDeviceBreakdown] = useState<AdminDeviceBreakdownRow[] | null>(null);
+  const [deviceModels, setDeviceModels] = useState<AdminDeviceModelRow[] | null>(null);
+  const [osVersions, setOsVersions] = useState<AdminOsVersionRow[] | null>(null);
   const [appVersions, setAppVersions] = useState<AdminAppVersionRow[] | null>(null);
   const [pushVersions, setPushVersions] = useState<AdminPushVersionRow[] | null>(null);
   const [friendActivity, setFriendActivity] = useState<AdminFriendActivityPoint[] | null>(null);
@@ -1697,6 +1747,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       fetchAdminSourceFunnel(days).then(setSourceFunnel),
       fetchAdminTutorialFunnel(days).then(setTutorialFunnel),
       fetchAdminDeviceBreakdown(days).then(setDeviceBreakdown),
+      fetchAdminDeviceModelBreakdown(days).then(setDeviceModels),
+      fetchAdminOsVersionBreakdown(days).then(setOsVersions),
       fetchAdminAppVersionBreakdown(days).then(setAppVersions),
       fetchAdminPushVersionBreakdown(days).then(setPushVersions),
       fetchAdminFriendActivitySeries(userPeriod, userGranularity).then(setFriendActivity),
@@ -2628,17 +2680,51 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       emptyLabel="Bu aralıkta ziyaret yok."
                       rows={deviceBreakdown}
                       getKey={(row) => row.device_type}
-                      getLabel={(row) =>
-                        row.device_type === 'ios'
-                          ? 'iOS'
-                          : row.device_type === 'android'
-                            ? 'Android'
-                            : row.device_type === 'desktop'
-                              ? 'Masaüstü'
-                              : 'Bilinmiyor'
-                      }
+                      getLabel={(row) => platformLabel(row.device_type)}
                       csvBaseName="kelimeki-cihaz"
                       infoHint={<InfoHint id="cihaz" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Cihaz Markası (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <GuestBreakdownTable
+                      columnLabel="Marka"
+                      emptyLabel="Bu aralıkta ziyaret yok."
+                      rows={deviceModels && brandBreakdown(deviceModels)}
+                      getKey={(row) => row.brand}
+                      getLabel={(row) => row.brand}
+                      csvBaseName="kelimeki-cihaz-markasi"
+                      infoHint={<InfoHint id="cihaz-markasi" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Cihaz Modeli (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <GuestBreakdownTable
+                      columnLabel="Model"
+                      emptyLabel="Bu aralıkta ziyaret yok."
+                      rows={deviceModels}
+                      getKey={(row) => `${row.device_type}|${row.device_model ?? ''}`}
+                      getLabel={(row) => deviceModelLabel(row.device_type, row.device_model)}
+                      csvBaseName="kelimeki-cihaz-modeli"
+                      infoHint={<InfoHint id="cihaz-modeli" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      İşletim Sistemi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <GuestBreakdownTable
+                      columnLabel="Sürüm"
+                      emptyLabel="Bu aralıkta ziyaret yok."
+                      rows={osVersions}
+                      getKey={(row) => `${row.device_type}|${row.os_version ?? ''}`}
+                      getLabel={(row) => osVersionLabel(row.device_type, row.os_version)}
+                      csvBaseName="kelimeki-isletim-sistemi"
+                      infoHint={<InfoHint id="isletim-sistemi" onOpen={setHint} />}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
