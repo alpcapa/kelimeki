@@ -101,3 +101,42 @@ altında. Dosya "bir gün" değil, ilk dokunuşta bölündü.
 yazmak, kuralın konusu olan dosyayı büyüttü. Öngörülen çare hemen uygulandı:
 en büyük tek konu bloğu (yerel oyun kalıcılığı, 35 KB)
 `docs/decisions/local-game-persistence.md`'ye taşındı, dosya 76 KB'a indi.
+
+---
+
+## 11 Eylül 2026 — `CLAUDE.md` (80.049 → 74.7 KB), `auto` uyarı bandı
+
+**Tetikleyen:** admin cihaz tabloları PR'ı (#520) dosyaya iki satır ekledi
+(komut listesi + utils ağacı) ve dosya **79.910 → 80.049 bayta** çıkarak
+`auto` sınıfının uyarı eşiğini (80.000) 49 baytla aştı. Kuralın kendisi:
+*"Uyarı bandındaki dosyayı bir sonraki dokunuşunda böl."*
+
+**Kesme ölçütü BOYUT DEĞİL TÜR.** `auto` sınıfının betikte yazılı öğüdü
+zaten bunu söylüyor: *"tarihli 'neden böyle' anlatılarını ilgili
+docs/decisions/*.md'ye taşı; burada yalnızca her yerde geçerli kural/
+değişmez kalsın."* Ölçüm bunu doğruladı: "Oyun Mekaniği Özeti" tek başına
+dosyanın **%31'iydi** (25.163 bayt) ve içindeki en büyük maddeler kuralın
+kendisiyle vaka anlatısını bir arada taşıyordu.
+
+**Taşınanlar (anlatı) ↔ kalanlar (kural):**
+
+| Anlatı | Nereye | Kökte kalan |
+|---|---|---|
+| "İletken hücre" vakası: kullanıcının yakaladığı tutarsızlık, "üye olmaz" kararının gerekçesi, iki geçişli uygulama, `territory.json`ın duyarlılık kanıtı | `game-rules.md` (YENİ) | kuralın kendisi + istisnanın sınırı |
+| Zor motorunun ölçümü (%70/%72), elenen dokuz sezgisel, düşünme süresi, Faz 3/4 ürün yüzeyi, seçici altı açıklama gerekçesi | `ai-levels.md` | sözleşmeler: Normal yazılmaz, üç kopya, parite kapıları, `leaguePoints` aritesi, terminoloji |
+| Vergi terminolojisi tarihçesi (uydurulan üçüncü terim, üç ölü varyantın temizliği) | `game-rules.md` | iki terimin AYRIMI + "üçüncüsünü üretme" kuralı |
+| Logo'nun "Çık" modalının kaldırılması, hotseat dalının neden hiç tetiklenmediği | `game-rules.md` | logo artık teslim etmez + tek tetikleyici 7 günlük kural |
+| Vercel'in atladığı commit: #447 vakası, kurtarma ölçümü, ajanın gözlem sınırı | `supabase-ops.md` | "merge ≠ canlıda, tek kanıt sha" + kurtarma adımı ve bedeli |
+
+**Sonuç:** 80.049 → **74.659 bayt** (−%6,7), uyarı bandının ~5 KB altında.
+
+⚠ **Bu bölmede "hiçbir satır değişmez" kuralı UYGULANAMAZ ve bu bilinçli.**
+O kural bölüm SINIRINDAN kesilen dosyalar için (`TESTING.md` →
+`testing-admin.md` gibi); burada kesme bir maddenin İÇİNDEN geçiyor, yani
+kalan kural cümlesi yeniden yazılmak zorunda. Taşınan anlatı birebir
+korundu, kalan kural kısaltıldı ve her birine karar kaydına atıf konuldu.
+
+⚠ **Denenmedi ve bilerek denenmedi:** "Komutlar" (7,5 KB) ve "Çalışma
+İlkesi" (7,6 KB) bölümleri büyük ama TAMAMI kural/indeks — taşınacak anlatı
+yok, bölmek yalnızca atıfları kırardı.
+

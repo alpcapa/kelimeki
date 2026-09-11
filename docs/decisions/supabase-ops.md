@@ -184,3 +184,29 @@ public, anon, authenticated`. Trigger'ı bozmaz, çünkü **EXECUTE izni
 `create trigger` anında kontrol edilir, ateşlenirken değil**; bu depoda
 ölçüldü (`feedback_rate_limit_check` 22 Temmuz'da aynı şekilde kapatıldı ve
 sonrasında 18 geri bildirim satırı o trigger'dan geçerek girdi).
+
+---
+
+## Vercel'in atladığı commit (4 Eylül 2026, ölçüldü)
+
+Kök `CLAUDE.md`'den taşındı (11 Eylül 2026, `auto` sınıfı bütçesi); kural
+orada, vaka burada.
+
+#447 merge edildi, GitHub Actions `7312eb8` için koştu ve yeşildi, ama
+Vercel'in dağıtım listesinde o commit için **hiç satır yoktu**; üretim 30+
+dakika bir önceki commit'te (`a940626`) kaldı ve site eski kodu servis
+etmeye devam etti. Hata mesajı yok, düşen bir iş yok.
+
+**Kurtarma yapıldı:** dalın Preview'ı Production'a yükseltildi. Squash
+merge'te dal başının AĞACI `main`'inkiyle birebir aynıdır — bu turda
+doğrulandı: iki commit de `f49deda…` ağacını gösteriyordu, yani doğru kod
+anında canlıya çıktı.
+
+**Bedeli ölçüldü:** sayfa sonrasında DALIN sha'sını bildirdi (`395778d`),
+`main`'in başını değil.
+
+**Ajanın gözlem sınırı:** bu oturumun Vercel erişimi yalnızca BAŞKA bir
+projeyi görüyordu (`list_deployments` → 403 / listede yalnızca `sharedxp`),
+yani panel kullanıcıda. Ajanın yapabildiği tek şey siteyi `curl`lamak — o da
+zaten kesin olan kanıt.
+

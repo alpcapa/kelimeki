@@ -276,3 +276,52 @@ GA'sı %31–83). Süre: dar arama ~1 sn/oyun, geniş ~2 sn/oyun.
 > (8 Eylül 2026, doküman boyutu bütçesi) — tek satırı bile değişmedi.
 
 **17 Ağustos 2026 — YZ bu kuralın YALNIZCA BİR YÖNÜNÜ kullanıyordu; sağ-alttaki YZ her oyuna 29 puan geride başlıyordu (kullanıcı bildirdi: "sağ alttaki YZ genelde hep sonuncu oluyor"):** `tryCornerStart` (`src/utils/ai.ts`) kelimeyi HER ZAMAN ev karesinden BAŞLATIP sağa/aşağı uzatıyordu. Bu, kuralın kendisinden gelen bir kısıt DEĞİL — doğrulama (`validatePlacement`, `src/utils/validator.ts:105`) yalnızca "konan hücrelerden biri ev karesi olsun" diyor, yön ya da "blokta başla" şartı yok; nitekim `tryPlace` (çapalı hamleler) baştan beri `idx` döngüsüyle iki yöne de uzatıyordu, yani tutarsızlık YZ'nin kendi içindeydi. **Sonuç köşeye göre asimetrikti ve ÖLÇÜLDÜ** (üretim `findAIMove`, raf `A B A R T M A`): köşe 0/1/2 → `7 taş "ABARTMA" 35 puan`, köşe 3 → `4 taş "ABAT" 6 puan`. 2 kişilik oyunda YZ HER ZAMAN köşe 3'tedir (`cornersFor`), yani bu her oyunda tekrarlanan bir açılış handikabıydı. **Düzeltme:** `tryCornerStart` artık kelimenin HANGİ harfinin eve denk geleceğini (`idx`) tek tek deniyor, kelime evden geriye ve ileriye uzayabiliyor. Düzeltmeden sonra dört köşe de `7 taş / 35 puan`; köşe 3 `12,6 … 12,12` oynuyor, yani merkeze doğru büyüyor. **Dart portu (`mobile/kelimeki_core/lib/src/ai/find_move.dart`) AYNI PR'da birebir güncellendi — döngü SIRASI da dahil:** `consider` eşit puanda İLK bulunanı tuttuğundan (strict `>`) sıra değişirse iki motor farklı hamle seçer ve parite sessizce kırılır. Golden vector'lar yeniden üretildi (bkz. o dosyanın fixture envanteri).
+
+---
+
+## Kök `CLAUDE.md`'den taşınan ölçümler ve faz anlatısı (11 Eylül 2026)
+
+`CLAUDE.md` `auto` sınıfının uyarı bandına girdiği için "YZ seviyesi"
+maddesinin ÖLÇÜM ve TARİHÇE kısmı buraya alındı; orada yalnızca sözleşme/
+değişmez kaldı. Metinler birebir.
+
+### Zor motorunun ölçümü (Faz 5, 7 Eylül 2026)
+
+Ölçüm (`npm run simulate-ai-levels -- --oyun 200 --motor zor`, koltuk
+değişimli): Zor Normal'i **%70** (tohum 1) / **%72** (tohum 1000) yeniyor;
+ROADMAP 23.2'nin dört adayı ve beş ek sezgisel (raf-kalıntı, joker cezası,
+bölge, net fark, gönüllü değişim, genel raflı ileri bakış) tek tek ve geniş
+aramanın ÜSTÜNE denendi, hiçbiri ölçülebilir katkı vermedi — tablo ROADMAP
+23.6'da.
+
+Düşünme süresi: Node'da hamle başına ~100 ms (Normal'in ~2×).
+
+### Ürün yüzeyi — Faz 3 (6 Eylül 2026)
+
+Setup'ın YZ formunda "Oyuncu sayısı"nın altında **Zorluk** radyogrubu
+(`SELECTABLE_AI_LEVELS`, `src/utils/aiLevel.ts` — Zor Faz 5'le listeye
+girdi), `App.startLocalGame` yalnızca Kolay/Zor'u payload'a koyar, rövanş
+`state.aiLevel`i taşır.
+
+Rozet tahtanın alt şeridinde de (`Board.aiLevel`, "Hamleler"in yanı,
+Canlı'daki "· Mesajlaşma"nın yeri; dokunulamaz, şeridin beş öğe sayımına
+GİRMEZ). Zorluk seçici butonları Arkadaşınla alt-sekmelerinin
+(`LiveGamesTab`) sınıf dizesiyle aynı, "Oyuncu sayısı"nın büyük butonu
+değil. Rozet renkleri kullanıcı kararı (6 Eylül 2026 gece).
+
+"YZ oyunu mu" kararının çağırana bırakılması: kartlarda `online_game_id`,
+paylaşım sayfasında kadroda YZ, oyun ekranında App.tsx ↔ OnlineGameScreen.
+
+### Port ikizi — Faz 4 (6 Eylül 2026)
+
+`mobile/app/lib/src/util/ai_level.dart` + `ui/ai_level_badge.dart`, aynı
+sözleşme (Normal yazılmaz; `NewGameRecord.ai_level` yalnızca doluysa).
+Zor açılırken iki liste AYNI PR'da.
+
+### Seçici altı açıklama (6 Eylül 2026 akşamı)
+
+Kullanıcı: *"bilimsel iş yapmıyoruz"*. Her seviyede kullanıcıya hitap eden
+bir cümle (`AI_LEVEL_PITCH`) + `leaguePoints`ten türetilen puan cümlesi
+(4 kişilikte ikincilik dahil) — `aiLevelDescription(level, count)`, port
+`aiLevelDescription`; **YZ'nin nasıl zayıflatıldığı ürün metnine GİRMEZ**,
+Zor'un metni bugünden hazır.
