@@ -1217,6 +1217,16 @@ Buraya KOPYALANMIYOR; tek kaynak orası. Altı zorunlu + bir isteğe bağlı:
 çek (`T1`/`T2`), e-posta geçen ekran yok, gerçek yazışma yok, gerçek
 arkadaş adı/avatarı yok.
 
+⚠ **Dördüncü kural, aynı ailenin üyesi: BAŞKA BİR ÜRÜNÜN ADI da geçemez.**
+4. karenin sahte verisinde "en uzun kelime" bir dönem **`KELİMELİK`**
+yazıyordu — Kelimelik rakip bir Türkçe kelime oyununun adı, yani vitrin
+karesi rakibin markasını *"en uzun kelimem"* diye gösteriyordu (kullanıcı
+yakaladı, 11 Eylül 2026; kareler Console'a henüz yüklenmemişti, `ÇALIŞKAN`
+ile değiştirildi). Sahte veri uydururken elenecekler listesi artık üç
+başlıklı: **gerçek kişi/e-posta · gerçek arkadaş adı · başka bir marka.**
+⚠ Sözcük havuzunu "kelime oyunu" çağrışımından seçmek tam da bu tuzağa
+götürüyor — nötr bir sıfat/isim seç.
+
 ### ⚠ İKİ FARK — Android setini olduğu gibi kullanmak MÜMKÜN DEĞİL
 
 **1. Dosyalar yeniden çekilecek.** Play'e giden 7 kare `1080×2072` ve

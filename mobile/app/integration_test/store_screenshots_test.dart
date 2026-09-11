@@ -448,6 +448,15 @@ void main() {
 /// Skor kartının sahte ucu. Rakamlar UYDURMA ama TUTARLI: mağaza karesinde
 /// gerçek bir hesabın istatistiği gösterilemez (Play turunun gizlilik
 /// kuralı) ve boş bir kart da özelliği anlatmaz.
+///
+/// ⚠ **Sahte veri RAKİP BİR ÜRÜNÜN ADINI TAŞIYAMAZ.** `longest` bir dönem
+/// `KELİMELİK` yazıyordu — Kelimelik rakip bir Türkçe kelime oyununun adı
+/// ve kare onu "en uzun kelimem" diye mağaza vitrininde gösteriyordu
+/// (kullanıcı yakaladı, 11 Eylül 2026; kareler henüz Console'a
+/// yüklenmemişti). Gizlilik kuralının kardeşi bir kural: sahte veri
+/// seçerken **gerçek bir kişi adı** kadar **başka bir markanın adı** da
+/// elenir. Yerine `ÇALIŞKAN` — sözlükte var (`src/data/words.ts`) ve
+/// 8 harf, yani rafın 7 taşı + bir çapayla kurallara uygun.
 class _SahteStatsGateway implements StatsGateway {
   static Map<String, Object?> _satir({
     int games = 34,
@@ -460,7 +469,7 @@ class _SahteStatsGateway implements StatsGateway {
     int bestMove = 63,
     int bestWord = 48,
     double avgMove = 21.4,
-    String longest = 'KELİMELİK',
+    String longest = 'ÇALIŞKAN',
     int total = 57,
   }) =>
       {
