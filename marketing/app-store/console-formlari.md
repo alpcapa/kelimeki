@@ -978,7 +978,7 @@ da dokun.
 
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **Gönderim** | Sende | ⚠ **11 Eyl 23:02 — HENÜZ YAPILMADI, bir kez yanlış kaydedildi.** ASC → History gönderim satırı İÇERMİYOR (tek kayıt `Prepare for Submission · 8 Eyl`), sürüm hâlâ o durumda. **`Add for Review` gönderim DEĞİL** — ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadan sürüm incelemeye girmez; **kayıt kuralı: History'de SATIR görülmeden "gönderildi" yazma.** Kalan kapı metadata: Description · Keywords · Support/Marketing URL · Copyright · Promotional text (§9) + App Review Information demo hesabı (§11) + yayın seçeneği. İliştirilen build 629 → 654 → **656** (kodu 654 ile birebir aynı) |
+| **Gönderim** | Sende | ⚠ **11 Eyl 23:02 — HENÜZ YAPILMADI, bir kez yanlış kaydedildi.** ASC → History gönderim satırı İÇERMİYOR (tek kayıt `Prepare for Submission · 8 Eyl`), sürüm hâlâ o durumda. **`Add for Review` gönderim DEĞİL** — ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadan sürüm incelemeye girmez; **kayıt kuralı: History'de SATIR görülmeden "gönderildi" yazma.** Kalan kapı metadata: Description · Keywords · Support/Marketing URL · Copyright · Promotional text (§9) + App Review Information demo hesabı (§11) + yayın seçeneği. İliştirilen build 629 → 654 → 656 → **659** (11 Eyl gecesi; dördünün de kodu birebir aynı, `mobile/app/lib` altında tek satır fark yok) |
 
 ### Console'a NE GİRİLDİ — durum tablosu (11 Eylül 2026, 23:45)
 
@@ -999,7 +999,7 @@ dokun** — yoksa bir sonraki oturum yine baştan sorar.
 | **Pricing and Availability** | ⬜ | Free + tüm ülkeler (§9) |
 | Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ⬜ | §9 |
 | Ekran görüntüleri | ✅ yüklendi (11 Eyl, 8/10 · 8/10) | §13 |
-| Derleme iliştirme | ✅ **656** (11 Eyl) | §15 |
+| Derleme iliştirme | ✅ **659** (11 Eyl gecesi; 629 → 654 → 656 → 659) | §15. Kullanıcı kararı: *"sürümler aynı olsun istiyorum"* — Play'e gidecek `.aab` de **659**, iki mağaza TEK numarada. Dört paketin kodu birebir aynı. Ölçüm: `mobile/docs/surumler.md` → 1.1.0 satırı + `surumler-ios.csv` |
 | **Gönderim** | ⬜ YAPILMADI | Yukarıdaki açık iş satırı |
 
 **Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
@@ -1138,6 +1138,26 @@ Yani teşhis ve analitik verisi **Not Linked to You** olarak beyan edilir.
 | Diagnostics → **Crash Data** | Hata mesajı + teknik iz (`client_errors`) | **Not Linked** | Analytics |
 | Diagnostics → **Other Diagnostic Data** | Sürüm, platform, OS, cihaz modeli | **Not Linked** | Analytics |
 | Other Data → **Other Data Types** | Cinsiyet, doğum tarihi *(isteğe bağlı)* | **Linked** | Analytics |
+
+⚠ **İki satır "bölünmüş" — Console'a girilecek cevap `Linked`** (11 Eylül
+2026 gecesi, form doldurulmadan ÖNCE ayrıştırıldı). Tablodaki `Device ID` ve
+`Product Interaction` iki satır işgal ediyor çünkü verinin İKİ kökeni var;
+ASC ise (bilgimiz dahilinde) her veri türü için TEK bir *"Is this data linked
+to the user's identity?"* cevabı alıyor, yani aynı türü iki farklı cevapla
+beyan etme yolu yok. **Bu Console'dan ÖLÇÜLMEDİ** — formu dolduran ekranda
+aksini görürse (aynı tür ikinci kez eklenebiliyorsa) tablodaki iki satır
+AYNEN girilir ve buraya "ölçüldü" yazılır. Ölçülene kadar geçerli cevap:
+
+| Tür | Tablodaki iki köken | **Console'a girilecek** |
+|---|---|---|
+| Identifiers → **Device ID** | `anon_id`/`device_visits` (not linked) · FCM token (`push_tokens.user_id` VAR → linked) | **Linked** · `App Functionality` + `Analytics` |
+| Usage Data → **Product Interaction** | `games` istatistikleri (linked) · `device_visits`/`game_starts` (not linked) | **Linked** · `App Functionality` + `Analytics` |
+
+Gerekçe: türün toplanan örneklerinden biri bile kimlikle ilişkiliyse tür
+linked'dir — "Not Linked" demek `push_tokens`ın `user_id` taşıdığını
+gizlerdi. Ters yön (fazladan linked saymak) yalnızca bize maliyet yazar,
+kullanıcıya değil; güvenli taraf burası. ⚠ Kalan **yedi** tür tek kökenli,
+tablodaki cevap doğrudan girilir.
 
 ⚠ **Play'in "Paylaşılıyor: Hayır" gerekçesi burada da geçerli** ve 24 Ağustos
 2026'da kullanıcı tarafından onaylanmıştı: Supabase/Brevo/Vercel/Firebase
