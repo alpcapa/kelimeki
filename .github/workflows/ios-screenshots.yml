@@ -152,7 +152,12 @@ jobs:
             # sonraki koşunun özeti cevabı yazsın, düzeltme (varsa) ona göre
             # gelsin. Yüklemeyi ASC reddederse ilk bakılacak satır bu.
             a=$(sips -g hasAlpha "$png" | awk '/hasAlpha/{print $2}')
-            echo "- \`$(basename "$png")\` → ${w}×${h} · alfa: ${a:-?}" >> "$GITHUB_STEP_SUMMARY"
+            satir="\`$(basename "$png")\` → ${w}×${h} · alfa: ${a:-?}"
+            # ⚠ İKİ yere birden: `$GITHUB_STEP_SUMMARY` yalnızca web
+            # arayüzünde okunuyor, iş LOG'unda görünmüyor. Ölçümün API'den
+            # de okunabilmesi için stdout'a da basılıyor.
+            echo "ÖLÇÜM: $satir"
+            echo "- $satir" >> "$GITHUB_STEP_SUMMARY"
             if [ "$w" != "${{ matrix.genislik }}" ] || [ "$h" != "${{ matrix.yukseklik }}" ]; then
               echo "::error::$(basename "$png") ${w}×${h} — beklenen ${{ matrix.genislik }}×${{ matrix.yukseklik }}"
               hatali=1
