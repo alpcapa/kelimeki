@@ -1492,9 +1492,15 @@ yalnızca ölçüyle doğrulamak yetmiyor; **kareye BAKAN biri olmadan mağaza
 görseli onaylanamaz.** Ajan bakamıyor, o yüzden her yeni sette kullanıcının
 en az bir kareyi açması akışın zorunlu adımı.
 
-### 📦 TAZE KARELER HAZIR — `9c91adb`, 11 Eylül 2026
+### 📦 (BAYAT) KARELER — `9c91adb`, 11 Eylül 2026
 
-**Mağazaya gidecek set BU.** Koşu
+⚠ **BU SET ARTIK MAĞAZAYA GİTMİYOR.** Aşağıdaki dört kapıyı geçmişti ama
+kompozisyonu kullanıcı reddetti (pencereler boşlukta, siyah şerit, 03'te üç
+satırlık liste, teşhis satırı). Yerine geçen set: *"MAĞAZAYA GİDEN SET"*
+başlığı (aşağıda, `017e2de`). Blok SİLİNMEDİ — dört kapının o turdaki
+ölçümü ve gözle doğrulama kaydı burada duruyor.
+
+Koşu
 https://github.com/alpcapa/kelimeki/actions/runs/34589392557 — yeşil.
 Dört kapı da geçti: **7 kare** · tam piksel ölçüsü · **alfa yok** ·
 **debug bandı yok**. Kompozisyon bindirmeli şerit.
@@ -1544,6 +1550,19 @@ tetikleyici YOK.
 bir push olayı üretir ve filtre çalışır. (Boş commit ATMA — deponun kuralı;
 gerçek bir değişiklikle birleştir.) Alternatif: kullanıcı Actions'tan elle
 koşturur.
+
+⚠⚠ **KARŞI ÖLÇÜM — aynı gün, aynı iş akışı, TERS sonuç (11 Eylül 2026).**
+Yukarıdaki nottan birkaç saat sonra `claude/dal-yok-acik-pr-yok-qd4uin`
+dalını OLUŞTURAN push **koşuyu tetikledi** (koşu #21,
+`017e2de`, iki iş de yeşil). Yani kural *"dal oluşturan push asla
+tetiklemez"* DEĞİL — iki ölçüm de gerçek, davranış güvenilmez.
+
+**Nota dokunulmadı, iki yön de burada dursun diye yazıldı.** Pratik sonuç
+değişmiyor, yalnızca teşhis sırası değişiyor: **push'tan sonra koşu
+listesini OKU** (`list_workflow_runs`, o sha için satır var mı). Varsa iş
+bitti; yoksa yukarıdaki çözüm (ikinci gerçek commit ya da elle koşu).
+"Tetiklemez" diye varsayıp ikinci bir commit uydurmak da, "tetikler" diye
+varsayıp beklemek de yanlış — ikisi de ÖLÇÜLEREK ayrılır.
 
 ### ✅ KOMPOZİSYON KARARI — başlıklı set + 7. kare (11 Eylül 2026)
 
@@ -1722,7 +1741,7 @@ gerektirmişti. Alt komutlar: `preview-store-frames:iphone` /
 | | CI (`ios-screenshots.yml`) | Yerel önizleme |
 |---|---|---|
 | Nerede | macOS + gerçek iOS simülatörü | Linux, `flutter test` |
-| Süre | ~14 dk | ~7 sn |
+| Süre | ~14 dk | ~14 sn (iki cihaz) |
 | Çıktı | **mağazaya giden set** | yalnızca GÖZ İÇİN |
 | Kurulum | `store_frames.dart` | **AYNI** `store_frames.dart` |
 
@@ -1852,3 +1871,40 @@ numarası sayfanın en altındaki **General App Information** bölümünde
 düzenlenir (başlıktaki "Version 1.0" yazısı o alandan beslenir,
 düzenlenebilir değil); derleme aynı sayfadaki **Build** bölümünden `+` ile
 iliştirilir.
+
+### 📦 MAĞAZAYA GİDEN SET — `017e2de`, 11 Eylül 2026 (koşu #21)
+
+Koşu https://github.com/alpcapa/kelimeki/actions/runs/34600529235 — iki iş
+de yeşil (`iphone-6.9`, `ipad-13`). PR #523 merge edildi (`8708896`).
+
+**Dört kapı da geçti, ölçümler işin kendi logundan:**
+
+| Kapı | iPhone 6.9" | iPad Pro 13" |
+|---|---|---|
+| Kare sayısı (`KARE_SAYISI: 7`) | 7 ✅ | 7 ✅ |
+| Piksel ölçüsü | 7/7 `1320×2868` ✅ | 7/7 `2064×2752` ✅ |
+| Alfa kanalı | 7/7 `alfa: no` ✅ | 7/7 `alfa: no` ✅ |
+| Debug bandı (`CheckedModeBanner` iddiası) | yok ✅ | yok ✅ |
+
+| Artefakt | Boyut |
+|---|---|
+| `kelimeki-store-screenshots-iphone-6.9` | 2.753.871 bayt |
+| `kelimeki-store-screenshots-ipad-13` | 2.808.574 bayt |
+
+Geçerlilik **10 Aralık 2026**.
+
+**Bu setin öncekinden farkı** (hepsi kullanıcının önizlemeye bakıp verdiği
+kararlar): 04 · 06 · 07 pencereyi oyun ekranının üstünde açıyor · şerit
+zemini `kAccent` (uygulamanın mavisi, beyaz yazı) · 02 dört kişilik oyun ·
+03'te 4 "SIRA SENDE" + 3 "SIRA RAKİPTE" · 03'te teşhis satırı yok
+(`showDiagnostics: false`, üründe DURUYOR).
+
+⚠ **Kompozisyon bu kez CI'dan ÖNCE onaylandı** — yedi kare iki cihaz
+ölçüsünde yerelde çizilip kullanıcıya gösterildi, onay alındıktan sonra
+pushlandı. §13'ün "bir mağaza görseli insan gözü olmadan onaylanamaz"
+kuralı değişmedi; değişen, o gözün CI'ı beklememesi.
+
+⚠ **Yükleme öncesi son adım hâlâ insan:** artefaktı aç, yedi kareye de bak.
+Şekil kapıları (sayı · ölçü · alfa · bant) içeriği GÖREMEZ — DEBUG bandı
+dersi tam olarak buydu.
+
