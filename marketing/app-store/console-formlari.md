@@ -937,6 +937,10 @@ bu yüzden var — özet liste, kaynağın kendi içinde bile bayatlayabiliyor.
 24.2 uçtan uca doğrulanmıştı. Bu tablo **iki kez** kaynağın kendi içinde
 bayatladı; bir kova kapandığında aynı turda buraya da dokun.
 
+⚠ **11 Eylül 2026 akşamı DÖRDÜNCÜ tazeleme:** kareler yüklendi (satır kapandı)
+ve "Gönderim" satırı gerçek duruma çekildi — bir oturum gönderimi YAPILMIŞ
+sanıp kütüğe öyle yazmıştı, ASC History'si tersini gösterdi.
+
 ⚠ **10 Eylül 2026 akşamı ÜÇÜNCÜ tazeleme:** iki satır birden kapandı
 (TestFlight iç test grubu · trader doğrulaması). Bu tablo artık **üç kez**
 kaynağın kendi içinde bayatladı — bir kova kapandığında aynı turda buraya
@@ -944,8 +948,7 @@ da dokun.
 
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **Karelerin Console'a YÜKLENMESİ** | Sende | Kareler hazır ve doğrulandı (§13, koşu `7d6361e`); artefaktı indirip 6.9" + iPad 13" slotlarına yüklemek elle — ajan indiremiyor |
-| **Gönderim** | Sende | §13 ve §15 kapandıktan sonra 24.6'nın önünde başka kapı YOK |
+| **Gönderim** | Sende | ⚠ **11 Eyl 23:02 — HENÜZ YAPILMADI, bir kez yanlış kaydedildi.** ASC → History gönderim satırı İÇERMİYOR (tek kayıt `Prepare for Submission · 8 Eyl`), sürüm hâlâ o durumda. **`Add for Review` gönderim DEĞİL** — ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadan sürüm incelemeye girmez; **kayıt kuralı: History'de SATIR görülmeden "gönderildi" yazma.** Kalan kapı metadata: Description · Keywords · Support/Marketing URL · Copyright · Promotional text (§9) + App Review Information demo hesabı (§11) + yayın seçeneği. İliştirilen build 629 → 654 → **656** (kodu 654 ile birebir aynı) |
 
 **Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
 §5 · demo hesap → §11 · Export Compliance → §12 · **API anahtarı `.p8` →
@@ -953,7 +956,8 @@ da dokun.
 → §3, koşu #614/#616** · **DSA trader beyanı + DOĞRULAMASI → §2 (10 Eylül
 2026, 22:21 — gönderim kapısı düştü)** · **TestFlight iç test grubu →
 §14 (10 Eylül 2026, uygulama iPad'de kuruldu ve çalıştı)** · **ekran
-görüntüleri (kompozisyon + 7. kare + alfa) → §13 (11 Eylül 2026)** ·
+görüntüleri: kompozisyon + 7. kare + alfa + Console'a YÜKLENMESİ → §13
+(11 Eylül 2026; iPhone 6.9" 8/10 · iPad 13" 8/10)** ·
 **sürüm kaydı `1.1.0` + derleme iliştirme → §15 (11 Eylül 2026)**.
 
 ## 8. Bilinen tuzaklar (hepsi 8 Eylül 2026'da yaşandı)
