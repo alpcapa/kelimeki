@@ -16,11 +16,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:kelimeki/src/data/dictionary_loader.dart';
-import 'package:kelimeki/src/data/meaning_entry.dart';
-import 'package:kelimeki/src/data/meaning_store.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/ui/game/help_modal.dart';
-import 'package:kelimeki/src/ui/game/meaning_modal.dart';
 import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
 import 'package:kelimeki/src/ui/score/score_card_modal.dart';
 
@@ -98,31 +95,6 @@ void main() {
     await pencereyiBekle(tester, find.byType(ScoreCardModal), '04-skor-karti');
 
     await kareCek(binding, tester, '04-skor-karti');
-    controller.dispose();
-  });
-
-  testWidgets('05 — kelime anlamı (TDK penceresi)', (tester) async {
-    // Anlam GERÇEK asset'ten okunuyor (`meanings.db`), metin UYDURULMUYOR.
-    // ⚠ `runAsync` ŞART: `MeaningStore` gerçek sqflite async'i kullanıyor ve
-    // testin sahte zaman bölgesinde çözülmüyor.
-    final store = MeaningStore(bundle: rootBundle);
-    MeaningEntry? kayit;
-    await tester.runAsync(() async {
-      kayit = await store.lookup(kMeaningWord);
-    });
-
-    final controller = oyunKontrolcusu();
-    await tester.pumpWidget(oyunEkrani(controller, '05-kelime-anlami'));
-    await settle(tester);
-
-    unawaited(showMeaningModal(
-      navKey.currentContext!,
-      (_) async => kayit,
-      const [kMeaningWord],
-    ));
-    await pencereyiBekle(tester, find.byType(MeaningModal), '05-kelime-anlami');
-
-    await kareCek(binding, tester, '05-kelime-anlami');
     controller.dispose();
   });
 

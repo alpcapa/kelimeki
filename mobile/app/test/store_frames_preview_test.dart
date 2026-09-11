@@ -26,10 +26,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kelimeki/src/data/meaning_entry.dart';
 import 'package:kelimeki/src/data/stats_api.dart';
 import 'package:kelimeki/src/ui/game/help_modal.dart';
-import 'package:kelimeki/src/ui/game/meaning_modal.dart';
 import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
 import 'package:kelimeki/src/ui/score/score_card_modal.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
@@ -147,24 +145,6 @@ void main() {
         auth: screenshotAuth(), stats: StatsRepo(SahteStatsGateway()));
     await pencereyiBekle(t, find.byType(ScoreCardModal), '04-skor-karti');
     await _yaz(t, '04-skor-karti');
-    c.dispose();
-  });
-
-  testWidgets('05 kelime anlamı', (t) async {
-    // ⚠ Önizlemede anlam SABİT: `meanings.db` sqflite istiyor ve widget
-    // testinde çözülmüyor (gerçek kare onu asset'ten okuyor — tek fark bu).
-    const kayit = MeaningEntry(pos: 'a.', meanings: [
-      'Genellikle su kıyılarında, bataklık yerlerde yetişen ince, açık sarı renkli kamış',
-      'Bu kamıştan yapılmış',
-      '→ çalgı',
-      'Türk halk müziğinde bağlama, cura, tar vb. mızraplı çalgıların genel adı',
-    ]);
-    final c = oyunKontrolcusu();
-    await _ciz(t, oyunEkrani(c, '05-kelime-anlami'));
-    showMeaningModal(
-        navKey.currentContext!, (_) async => kayit, const [kMeaningWord]);
-    await pencereyiBekle(t, find.byType(MeaningModal), '05-kelime-anlami');
-    await _yaz(t, '05-kelime-anlami');
     c.dispose();
   });
 

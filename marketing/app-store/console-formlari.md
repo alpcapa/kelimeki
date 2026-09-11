@@ -1940,3 +1940,28 @@ dene — yoksa yalnızca yeşil bir satır eklenmiş olur.
 bir şey varsa (pencere, sekme, rozet), onu `find` ile İDDİA ET. Sabit sayıda
 `pump` bir zamanlama VARSAYIMIDIR ve bu boru hattında iki kez yanlış çıktı.
 
+### ✂️ 05 (kelime anlamı) SETTEN ÇIKTI — altı kare (11 Eylül 2026)
+
+Kullanıcı iPhone setini Console'a yükledi ve **kelime anlamı karesini
+almadı**: *"çok anlamlı değil"*. Doğru karar — o pencere tek bir TDK
+tanımını gösteriyor, yani vitrinde oyunun ayırt edici tarafını değil
+sıradan bir sözlük kutusunu anlatıyordu.
+
+**Boru hattı da 6'ya indirildi** (yalnız Console'da atlanmadı): testten,
+önizlemeden, başlık tablosundan ve `KARE_SAYISI` kapısından çıkarıldı.
+Gerekçe: üretilmeye devam etse her koşu kimsenin kullanmadığı bir kareyi
+çizip ölçerdi ve **"7 kare" kapısı mağazadaki 6 ile çelişirdi** — bir kapı
+yanlış sayıyı bekliyorsa artık kapı değildir.
+
+⚠ **Numaralar DEĞİŞMEDİ — set `01 · 02 · 03 · 04 · 06 · 07`, arada boşluk
+var.** Bilinçli: bu dosyadaki onlarca not kareleri numarasıyla anıyor
+(*"06 iPad'de penceresiz çıktı"*, *"02 konu değiştirdi"*), yeniden
+numaralamak o atıfların hepsini sessizce yanlışlardı — `ROADMAP.md`'nin
+"başlığı/numarayı değiştirme, atıflar kırılır" kuralının aynısı. Mağazadaki
+sıra dosya adından değil YÜKLEME sırasından geldiği için boşluğun işlevsel
+bir maliyeti yok.
+
+**Geri almak tek commit:** `store_screenshots_test.dart` + önizlemedeki
+`05` testi, `kBasliklar`daki satır, `kMeaningWord` ve `KARE_SAYISI: 7`.
+Anlam penceresinin KENDİSİ üründe duruyor — çıkan yalnızca mağaza karesi.
+

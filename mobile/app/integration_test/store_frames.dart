@@ -120,7 +120,6 @@ const Map<String, String> kBasliklar = {
   '02-dort-kisilik': 'Dört oyuncu, dört bölge',
   '03-arkadasinla': 'Arkadaşınla sırayla oyna',
   '04-skor-karti': 'İstatistiklerini takip et',
-  '05-kelime-anlami': 'Kelimenin anlamı bir dokunuş',
   '06-nasil-oynanir': 'Kuralları üç dakikada öğren',
   '07-klig-siralamasi': "k-lig'de sıranı yükselt",
 };
@@ -311,11 +310,6 @@ GameController oyunKontrolcusu({int oyuncu = 2}) {
 /// Sözlük — `setUpAll`te bir kez yüklenir (cihazda asset'ten, önizlemede
 /// dosyadan).
 late SetWordSource words;
-
-/// 5. karenin kelimesi. Tahtada GERÇEKTEN duruyor (oyuncunun köşe açılışı)
-/// ve `meanings.db`'de birden çok anlamı var — yani pencere tek satırlık
-/// değil, özelliği anlatan bir liste gösteriyor.
-const String kMeaningWord = 'SAZ';
 
 /// Pencereler ÜRETİM yolundan (bir dialog olarak) açılıyor; o yollar bir
 /// `BuildContext` istiyor.
