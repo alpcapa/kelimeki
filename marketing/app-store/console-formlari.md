@@ -1411,24 +1411,39 @@ işe bir `timeout-minutes` eklenmeli (tek vakada eklenmedi); ayrıca *"koşu
 iptal oldu"* ile *"iş düştü"* ayrımını hatırla — ikisi ekran görüntüsünde
 aynı görünüyor.
 
-### 📦 TAZE KARELER HAZIR — koşu #9, 10 Eylül 2026 (yeniden koşturma GEREKMEZ)
+### 📦 TAZE KARELER HAZIR — koşu #10, 11 Eylül 2026 (yeniden koşturma GEREKMEZ)
 
-`main`'in başındaki `2015ab6` üzerinde koştu ve **yeşil** (05:43→05:54 UTC,
-~12 dk). Kendiliğinden tetiklendi: #505 bu iş akışı dosyasına dokundu ve
-`on: push: paths:` listesinde o dosyanın kendisi de var.
+**Mağazaya gidecek set BU.** Başlıklı kompozisyonun ve 7. karenin ilk
+gerçek koşusu; `claude/dal-yok-acik-pr-yok-qd4uin` dalının `538ecc4`
+commit'i üzerinde koştu ve **yeşil** (07:10→07:25 UTC, ~14 dk). Yedi
+karenin de üretildiği ve tam ölçüde çıktığı `KARE_SAYISI` sayımı + piksel
+ölçümüyle kanıtlandı (ikisi de aynı adımda, ikisi de iki cihazda).
 
 | | |
 |---|---|
-| Koşu | https://github.com/alpcapa/kelimeki/actions/runs/34442189100 |
-| Artefaktlar | `kelimeki-store-screenshots-iphone-6.9` (5,3 MB) · `kelimeki-store-screenshots-ipad-13` (5,5 MB) |
-| Geçerlilik | **9 Aralık 2026**'ya kadar |
+| Koşu | https://github.com/alpcapa/kelimeki/actions/runs/34573189948 |
+| Artefaktlar | `kelimeki-store-screenshots-iphone-6.9` (**5,77 MB**) · `kelimeki-store-screenshots-ipad-13` (**5,83 MB**) |
+| Geçerlilik | **10 Aralık 2026**'ya kadar |
+
+⚠ Boyut 6 karelik sete göre ~0,4 MB büyüdü (5,33/5,46 → 5,77/5,83) — 7.
+karenin gerçekten üretildiğinin ikinci, bağımsız ölçüsü.
+
+**Önceki set** (6 kare, başlıksız): koşu #9, `2015ab6`,
+https://github.com/alpcapa/kelimeki/actions/runs/34442189100 — artık
+kullanılmıyor, kayıt için duruyor.
 
 ⚠ **Ajan bu iş akışını TETİKLEYEMEZ** (10 Eylül 2026'da denendi):
 `workflow_dispatch` 403 döndü — GitHub App'in `actions: write` izni yok.
 Elle koşu: **Actions → "iOS mağaza ekran görüntüleri" → Run workflow**. Ama
-önce yukarıdaki koşuya bak: uygulama kodu değişmediyse kareler zaten taze.
-⚠ Ajan artefaktı İNDİREMEZ de (MCP'de indirme aracı yok) — kompozisyon
-kararı için PNG'lerin sohbete eklenmesi gerekiyor.
+önce yukarıdaki koşuya bak: `integration_test/` değişmediyse kareler zaten
+taze (bu iş akışı o yola her dokunuşta kendiliğinden koşuyor — dalda da).
+
+⚠ **Ajan artefaktı İNDİREMEZ — İKİ kapı birden kapalı** (11 Eylül 2026'da
+ölçüldü). (1) GitHub MCP'de indirme aracı yok. (2) API'nin indirme ucu
+`productionresultssa*.blob.core.windows.net`e yönlendiriyor ve oturumun
+çıkış vekili o hedefi reddediyor (`connect_rejected`) — yani **`curl` de
+çözmüyor**, denemeye değmez. Kareleri GÖRMEK gerekiyorsa PNG'lerin sohbete
+eklenmesi gerekiyor.
 
 ### ✅ KOMPOZİSYON KARARI — başlıklı set + 7. kare (11 Eylül 2026)
 
