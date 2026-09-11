@@ -53,6 +53,7 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
+| **1.1.0** | **627** | `a4c809b` | 10 Eyl 2026 (`a4c809b`, #514) | ⏳ **yüklenmedi** — paket hazır, Play'e yükleme SENDE | ⏳ hazır | İlk TestFlight turunun bulguları + onboarding Faz 2·3·5 + "Davetler" adlandırması. Aşağı bkz. |
 | **1.0.9** | **581** | `1abde38` | 7 Eyl 2026 akşamı (`main`) | **8 Eyl 2026, 08:41** (Console) | ✅ **kapalı testte YAYINDA** (Alpha; ≤ 09:10'da "Published") | "Oynayarak öğren" tanıtımının PORT ikizi (Onboarding Faz 4) + tanıtımın cihaz/tarayıcı turu düzeltmeleri. Aşağı bkz. |
 | **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **7 Eyl 2026, 13:28** (Console) | yayınlandı → **pasif** (8 Eyl, 1.0.9 devraldı) | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
 
@@ -113,6 +114,109 @@ buradaki satır sayısı bilerek tutmuyor.
 
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
+
+## 1.1.0 (627) — ⏳ PAKET HAZIR, YÜKLEME BEKLİYOR (10 Eyl 2026 gecesi)
+
+**Durum:** `pubspec.yaml` + `env.dart` 1.0.9 → **1.1.0** (#514, 10 Eyl
+gecesi). Paket `main`'e merge'in ardından koşu **627**'de derlendi;
+Play'e yükleme YAPILMADI — o adım Console'da elle yapılıyor.
+
+| | |
+|---|---|
+| `versionCode` | **627** (koşu 34531097809 — `--build-number=github.run_number`) |
+| Commit | **`a4c809b`** (#514'ün merge commit'i) |
+| Derleme | 10 Eyl 2026, 21:15 → 21:23 UTC; `.aab` adımı 21:21-21:23 |
+| Cihazda görünen | Setup teşhis satırı: **`Derleme a4c809b`** |
+| `.aab` | <https://github.com/alpcapa/kelimeki/releases/download/mobile-latest/kelimeki.aab> · **63.439.370 bayt** · SHA-256 `f33540f6…81db1` |
+| `.apk` (yan yükleme/Appetize) | aynı etiket, `kelimeki.apk` · 64.397.049 bayt · SHA-256 `aad56e64…3c39` |
+| iOS simülatör paketi (Appetize) | aynı etiket, `kelimeki-ios-simulator.zip` · 61.250.971 bayt · SHA-256 `69f9fb1f…c419` · 21:27:50'de tazelendi |
+| **TestFlight** | ✅ yükleme adımı **21:27:52 → 21:31:23** (3 dk 31 sn) yeşil — beklenen paket **1.1.0 (627)** |
+
+⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır.** Yüklemeden önce
+indirdiğin paketin `versionCode`'unun **627** olduğunu doğrula; `main`'e
+girecek bir sonraki mobil iş bu etiketi değiştirir (1.0.4/467 dersi).
+
+⚠ **"TestFlight adımı yeşil" ≠ "TestFlight'ta hazır".** İş akışı
+`skip_waiting_for_build_processing: true` ile koşuyor (macOS runner
+dakikası, bilinçli); Apple'ın işlemesi 10-40 dk. Kanıt CI'ın yeşili değil,
+**App Store Connect'te beliren derleme** — 1.0.9 turunun aynı dersi.
+
+**Koşu 627'nin dört işi de yeşil** (Analiz+testler 21:17 · Android 21:23 ·
+Pages 21:16 · iOS 21:31). Yani Appetize'ın HER İKİ uygulaması da bu turda
+tazelendi — Android 21:23:10, iOS 21:27:52. (Normalde ikisi ayrı zamanlarda
+tazelenir ve arada bakan "iOS bayat" tuzağına düşer; bu turda ikisi de
+tamam.)
+
+⚠ **`main`'in başı bu paketin sha'sı DEĞİL.** #515 (yalnızca `ROADMAP.md`)
+merge edildiğinden `main` = `ac93500`, ama o commit `mobile-build`in `paths`
+filtresine takılmadı → yeni derleme YOK. Doğru karşılaştırma **`a4c809b`**;
+bunu bilmeden bakan "paket bayat" diye yanlış teşhis koyar.
+
+### ✅ CİHAZDA DOĞRULANDI — iPhone, 11 Eyl 2026
+
+Kullanıcı TestFlight'tan kurup baktı: *"tanıtım 1. slayt legend'lar
+sabitlenmiş. OYNA butonu setup'da alta sabitlenmiş ve iyi olmuş."* Yani
+10 Eylül akşamı bildirilen iki düzen hatası da kapandı — üstelik aynı
+cihazda, aynı ayarlarla (Dynamic Type varsayılan, ekran 375 pt sınıfı).
+
+⚠ Bu gözlem aynı zamanda **paketin taze olduğunun kanıtı**: iki düzeltme de
+yalnızca 627'de var, 620'de yoktu. Yani `Derleme a4c809b` satırını ayrıca
+okumaya gerek kalmadan doğru paket kurulmuş oluyor.
+
+✅ **Üçüncü bulgu da doğrulandı** (11 Eyl 2026, kullanıcı: *"kontrol
+ettim, iz kalmıyor"*): yeni bir YZ oyunu açılıp hiç hamle yapmadan
+çıkılınca "Devam Eden Oyunlar"da ne satır kalıyor ne de bir an belirip
+kayboluyor. Yani ilk TestFlight turunun ÜÇ bulgusu da cihazda kapandı.
+
+### Play sürüm notları — OLDUĞU GİBİ yapıştırılabilir (TR)
+
+⚠ **Play'in sürüm notu alanı dil başına 500 karakter.** Aşağıdaki metin
+**498 karakter** — ölçüldü, olduğu gibi yapıştırılabilir. Uzatırsan
+Console kabul etmez; satır eklerken yeniden say.
+
+**Sürüm adı (Release name):** `1.1.0 (627)`
+
+```
+• Yeni başlayanlara oyun içi ipuçları: bölge vergisi, çarpanlar ve bölgenin büyümesi tam yaşandığı anda anlatılıyor.
+• Tanıtım turunu "Nasıl oynanır?" penceresinden tekrar oynayabilirsin.
+• Arkadaşlar penceresinde sekmeler artık "Arkadaşlar" ve "Davetler".
+• Dar ekranlı telefonlarda "Oyunu Başlat" düğmesi hep görünür; tanıtımdaki X2/X3 açıklaması tek satırda.
+• "Kalan Taşlar" penceresinin bazı oyunlarda çökmesi giderildi.
+• Hiç hamle yapmadan çıktığın yapay zekâ oyunları listede iz bırakmıyor.
+```
+
+### TestFlight "What to Test" — 1.1.0 (627)
+
+```
+Bu sürümün odağı ilk TestFlight turunda bulunan üç sorun:
+
+1) Setup'ta "OYUNU BAŞLAT" artık ekranın altına yapışık — dar ekranlı
+   telefonda (ya da Display Zoom açıkken) kaydırmadan görünmeli, sayfa
+   kayarken yerinde kalmalı. "Arkadaşınla" sekmesinde ise HİÇ olmamalı.
+2) Tanıtımın ilk slaydında X2/X3 açıklamaları tek satırda durmalı,
+   alttaki cümle kesilmemeli.
+3) Yeni bir yapay zekâ oyunu açıp hiç hamle yapmadan geri çık: "Devam
+   Eden Oyunlar" listesinde iz kalmamalı (belirip kaybolan satır da yok).
+
+Ayrıca: iPad'i yatay çevir (düzen kırılmamalı), bildirim izni ve sıra
+bildirimi, kelimeki.com bağlantısının uygulamada açılması.
+```
+
+### Sabah kontrol listesi (yükleme adımları)
+
+1. **Appetize — İKİSİ DE taze** (Android 21:23:10 · iOS 21:27:52). Bak: yapışık `OYUNU BAŞLAT` · tanıtımda tek satır rozet ·
+   Ayarlar → Ekran → **Ekran boyutu**'nu büyütüp ikisini tekrar. Teşhis
+   satırı `Derleme a4c809b` demeli.
+2. **TestFlight (iPhone/iPad).** Beklenen paket **1.1.0 (627)**. TestFlight
+   otomatik güncelleme açıksa kendi iner; hemen istiyorsan TestFlight →
+   Kelimeki → UPDATE. Uygulamayı açmak güncellemeyi TETİKLEMEZ (In-App
+   Update yalnızca Android + yalnızca Play'den kurulan pakette).
+3. **Play Console → Kapalı test (Alpha) → Yeni sürüm oluştur** → yukarıdaki
+   `.aab`yi yükle → `versionCode` **627** mü, doğrula → sürüm notlarını
+   yapıştır → gönder.
+4. **Yükleme yapıldıktan sonra bu dosyayı güncelle** (aşağıdaki "Bir sürüm
+   yüklendiğinde ne yapılır" listesi): kütükteki durumu "yüklendi/yayında"
+   yap, 1.0.9'u pasife çek, gönderim saatini ve inceleme süresini yaz.
 
 ## 1.0.9 (581) — ✅ YAYINDA (kapalı test/Alpha, 8 Eyl 2026)
 
@@ -681,6 +785,28 @@ action'ının kaldırılması.
 | `78383eb` | 06.09.2026 | Sürüm 1.0.7 — kapalı teste gönderilecek paket (yalnız sürüm adı) | yalnız port |
 
 </details>
+
+### 1.1.0 — 12 mobil commit (4'ü Android ikilisine giriyor)
+
+*Pencere: `1abde38` (1.0.9'un paketi) → `a4c809b`. Komut:
+`git log --oneline --first-parent 1abde38..a4c809b -- mobile/app mobile/kelimeki_core`*
+
+⚠ **12 commit'in yalnızca DÖRDÜ `lib/` altına dokunuyor**, yani Android
+paketinin içeriği bu dört satır. Geri kalanı `ios/` altında (Android'i
+etkilemez), CI/fastlane'de (ikiliye girmez) ya da yalnızca `test/`te.
+Sınıflandırma `git show --name-only` ile satır satır yapıldı — `--stat`
+çıktısını grep'lemek yanıltır (1.0.6 → #426 vakası).
+
+| sha | Ne | Pakete girer mi |
+|---|---|---|
+| `80f3769` | Onboarding Faz 2·3·5: bağlamsal ipuçları (vergi/çarpan/bölge), tanıtımı tekrar oynama, `tutorial_events` ölçümü | ✅ 9 dosya `lib/` |
+| `46664f6` | "Kalan Taşlar" penceresi `myIndex` -1'de çöküyordu (port-only) | ✅ 1 dosya |
+| `bc18730` | Arkadaşlar modalı "davet" diline geçti (sekmeler + içerideki metinler) | ✅ 3 dosya |
+| `a4c809b` | İlk TestFlight turunun üç bulgusu: hiç oynanmamış oyunun bulut kaydı · tanıtım rozetleri · yapışık `OYUNU BAŞLAT` (+ sürüm 1.1.0) | ✅ 5 dosya |
+| `61b278a` | iOS Firebase yapılandırması (`GoogleService-Info.plist`) | ⛔ yalnızca `ios/` + bir yorum |
+| `9e65b7b` · `a0dc9dc` | iOS entitlements, bildirim kanalı, `Info.plist` iPad yönelimleri | ⛔ `ios/` (TestFlight'a girer, Play'e girmez) |
+| `ef28e7b` · `1df055e` · `1755311` · `ecbbbaa` | Mac'siz imzalama zinciri + mağaza ekran görüntüsü boru hattı | ⛔ yalnızca CI/fastlane |
+| `2015ab6` | iPad düzen kapısı (`ipad_layout_test.dart`) | ⛔ yalnızca `test/` |
 
 ### 1.0.9 — 2 mobil commit (+ sürüm adı)
 
