@@ -474,11 +474,25 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       let myRack: TileModel[] = [];
       let rows: OnlineMoveRow[] = [];
       try {
-        [publicState, myRack, rows] = await Promise.all([
-          fetchOnlineGameState(game.id),
-          getMyOnlineRack(game.id),
-          fetchOnlineGameMoves(game.id),
-        ]);
+        // ⚠ `withTimeout` ŞART, `catch` tek başına YETMEZ (11 Eylül 2026):
+        // aşağıdaki catch yalnızca REDDEDİLEN bir isteği yakalar. Yavaş/
+        // asılı bir bağlantıda `Promise.all` ne çözülür ne reddedilir ve
+        // ekran sonsuz "Yükleniyor…"da kalır. Kullanıcı bunu portta
+        // bildirdi; web AYNI deliği taşıyordu — `withTimeout` bu dosyada
+        // vardı ama yalnızca iki ARKA PLAN çağrısında (triggerAiTurn,
+        // checkOnlineGameTurnTimeout) kullanılıyordu, yani kullanıcının
+        // arkasında BEKLEDİĞİ çağrıda yoktu.
+        //
+        // Zaman aşımı reddediyor → catch → `publicState = null` →
+        // "Tekrar Dene" paneli + zaten kurulu olan otomatik yeniden deneme.
+        [publicState, myRack, rows] = await withTimeout(
+          Promise.all([
+            fetchOnlineGameState(game.id),
+            getMyOnlineRack(game.id),
+            fetchOnlineGameMoves(game.id),
+          ]),
+          20000,
+        );
       } catch (err) {
         console.error('[Kelimeki] Canlı oyun durumu alınamadı:', err);
         publicState = null;

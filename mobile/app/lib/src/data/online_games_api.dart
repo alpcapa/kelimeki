@@ -724,11 +724,23 @@ class OnlineGamesRepo {
   /// (liste tarafındaki `load()` ile aynı sözleşme).
   Future<OnlineGameSnapshot?> loadGame(String gameId) async {
     try {
+      // ⚠ `timeout` ŞART, `catch` tek başına YETMEZ (11 Eylül 2026,
+      // kullanıcı iPhone'da bildirdi): aşağıdaki try/catch yalnızca
+      // REDDEDİLEN bir isteği yakalar. Yavaş/asılı bir bağlantıda istek
+      // ne çözülür ne reddedilir; `Future.wait` sonsuza kadar bekler ve
+      // ekran sonsuz **"Yükleniyor…"**da kalır — 14 Ağustos 2026'da
+      // düzeltilen semptomun aynısı, ama farklı sebeple (o tur "hata
+      // yakalanmıyordu", bu tur "hata hiç doğmuyor").
+      //
+      // Tavan zaten bu dosyada vardı (`_callTimeout`) ama yalnızca ÜÇ arka
+      // plan çağrısına uygulanmıştı; kullanıcının arkasında BEKLEDİĞİ
+      // çağrıya uygulanmamıştı. Zaman aşımı `TimeoutException` fırlatıp
+      // aşağıdaki catch'e düşüyor → `null` → ekran "Tekrar Dene" paneli.
       final results = await Future.wait([
         gateway.gameState(gameId),
         gateway.myRack(gameId),
         gateway.moves(gameId),
-      ]);
+      ]).timeout(_callTimeout);
       final stateRow = results[0] as Map<String, Object?>?;
       if (stateRow == null) return null; // state henüz kurulmamış
       return OnlineGameSnapshot(
@@ -751,6 +763,13 @@ class OnlineGamesRepo {
   /// 20 saniyelik tavan, web `withTimeout` ile aynı gerekçe: çağıranın
   /// "devam ediyor" bayrağı çok geç dönen bir istekte sonsuza dek askıda
   /// kalmasın (istek iptal edilmez, yalnızca bekleme kesilir).
+  ///
+  /// ⚠ **Yeni bir çağrı eklerken sor: kullanıcı bunun arkasında BEKLİYOR
+  /// mu?** Bekliyorsa tavan ŞART. 11 Eylül 2026'da `loadGame` bu tavanı
+  /// taşımıyordu ve yavaş bağlantıda ekran sonsuz "Yükleniyor…"da kalıyordu;
+  /// o gün ölçüldü ki repo'nun 16 gateway çağrısından yalnızca 3'ünde tavan
+  /// vardı ve üçü de ARKA PLAN çağrısıydı. Kalanların denetimi:
+  /// `docs/decisions/live-game.md` → "Sonsuz Yükleniyor…".
   static const Duration _callTimeout = Duration(seconds: 20);
 
   Future<void> triggerAiTurn(String gameId) =>

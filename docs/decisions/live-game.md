@@ -893,3 +893,59 @@ Artık gönderiyor ve anahtarı port ile AYNI kuralla tutuyor
 (`moveIdRef` + `moveIdFor`, `useState` değil `useRef` — değer hiçbir şey
 çizmiyor).
 
+## Sonsuz "Yükleniyor…" — `catch` yetmez, TAVAN gerekiyor (11 Eylül 2026)
+
+Kullanıcı iPhone'da bildirdi: *"bekleyen oyuna tıklayınca bu ekran uzun süre
+asılı kalıyor. Sanıyorum internet yavaş veya çekmiyor."* Teşhis tarifini
+doğruladı ama sebebi tamamlıyor.
+
+**Bu semptom 14 Ağustos 2026'da bir kez düzeltilmişti** — o tur sorun
+"hata yakalanmıyordu" idi (`getMyOnlineRack` fırlıyor, `Promise.all`
+reddediyor, `setLoadFailed` satırına hiç ulaşılmıyordu). Çözüm üç çağrıyı
+tek try/catch'e almaktı ve doğruydu.
+
+⚠ **Ama bu turun sebebi FARKLI: hata hiç DOĞMUYOR.** Yavaş/asılı bir
+bağlantıda istek ne çözülür ne reddedilir. `try/catch` yalnızca REDDEDİLEN
+bir isteği yakalar; hiç bitmeyen bir isteği yakalayacak tek şey bir
+**zaman aşımı**dır.
+
+**En can sıkıcı yanı: tavan İKİ TARAFTA DA ZATEN VARDI.**
+
+| | Yardımcı | Uygulandığı yerler |
+|---|---|---|
+| Port | `_callTimeout` (20 sn) | `triggerAiTurn` · `checkTurnTimeout` · `setPlatform` |
+| Web | `withTimeout` (20 sn) | `triggerAiTurn` · `checkOnlineGameTurnTimeout` |
+
+Üçü de **arka plan** çağrısı. Kullanıcının arkasında BEKLEDİĞİ çağrıya —
+ekranın ilk yüklemesine — hiçbirinde uygulanmamıştı. Port bu boşluğu web'den
+sadakatle kopyalamış.
+
+**Düzeltme:** ilk yükleme iki tarafta da tavanın altına alındı
+(`loadGame`'in `Future.wait`i `.timeout(_callTimeout)`; web'in `Promise.all`i
+`withTimeout(..., 20000)`). Zaman aşımı mevcut catch'e düşüyor → `null` →
+**"Tekrar Dene" paneli** + zaten kurulu otomatik yeniden deneme. Yani yeni
+bir hata yolu açılmadı, var olan yola bir kapı eklendi.
+
+**Kapı:** `live_games_test.dart` → *"20 sn sonra null döner"*. `fakeAsync`
+ŞART — gerçek zamanla test 20 saniye sürerdi ve kimse 20 saniyelik bir testi
+takıma koymaz, yani kapı ya yavaş ya hiç olmazdı. Test İKİ yönü de ölçüyor:
+19. saniyede HENÜZ dönmemeli (erken dönmek yavaş ama çalışan bir bağlantıyı
+boşuna kesmek olurdu), 21. saniyede `null`. Duyarlılık kanıtlandı:
+`.timeout` kaldırılınca test DÜŞTÜ.
+
+### ⚠ Kalan denetim — kapatılmadı, ÖLÇÜLDÜ
+
+Aynı gün `OnlineGamesRepo`'nun tüm gateway çağrıları tarandı: **16 çağrıdan
+yalnızca 3'ünde tavan vardı** (üçü de arka plan). Bu tur yalnızca ilk
+yükleme kapatıldı — kullanıcının bildirdiği yüzey oydu ve web ikizi de
+aynı yerde değişti, yani parite korundu.
+
+Tavansız kalan ve bir insanın arkasında bekleyebileceği çağrılar:
+`listMine`/`turns`/`deadlines` (Canlı sekmeleri — kendi yeniden deneme
+sarmalayıcısı VAR, o yüzden davranışı farklı), `create`, `respondInvite`.
+`submitMove` tavanlı sayılır: `OnlineApi._send` 15 sn taşıyor.
+
+**Yeni bir çağrı eklerken sorulacak tek soru:** *kullanıcı bunun arkasında
+BEKLİYOR mu?* Bekliyorsa tavan şart — ve tavanı eklemek yetmez, çağıranın
+zaman aşımını "sunucuya ulaşılamadı" olarak ele aldığından emin ol.
+

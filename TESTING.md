@@ -1363,5 +1363,11 @@ ama **gerçek ağ koşulunu** (yanıtı kaybolan istek) kanıtlayamaz.
       işledim" sayıp yutardı — düzeltmenin ters yöndeki riski.)
 - [ ] Aynı üçü **PAS GEÇ** ve **DEĞİŞTİR** için de geçerli.
 
-Kayıt: `docs/decisions/live-game.md` → "Sahte 'Sıra sende değil.'".
+- [ ] **Yavaş/zayıf ağda bir Canlı oyuna gir.** Listeden bekleyen bir oyuna
+      dokun. Beklenen: ya ekran açılır, ya **en geç ~20 sn içinde**
+      "Tekrar Dene" paneli çıkar. **OLMAMASI gereken:** dakikalarca
+      `Yükleniyor…` yazısında asılı kalmak.
+
+Kayıt: `docs/decisions/live-game.md` → "Sahte 'Sıra sende değil.'" ve
+"Sonsuz 'Yükleniyor…'".
 

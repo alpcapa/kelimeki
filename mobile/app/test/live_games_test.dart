@@ -5,9 +5,11 @@
 // (varsayılan alt sekme, Kabul → FriendSuggestModal, durum/kalan süre
 // etiketleri) ve LiveGameCreateForm kuralları (2/4, YZ onayı, sentTo).
 // Gerçek RPC'ler/Realtime cihazda doğrulanacak (mobile/TESTING.md).
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -56,6 +58,7 @@ class _FakeNetworkError implements Exception {
 }
 
 void main() {
+  sonsuzYukleniyorTestleri();
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(loadAppFonts);
 
@@ -125,9 +128,14 @@ void main() {
         'c': '2026-09-01T09:00:00Z', // sıra bende, daha uzak
         'd': '2026-09-01T07:00:00Z', // sıra rakipte, en eski
       };
-      expect(
-          [for (final g in activeBucket(games, turns, deadlines: deadlines)) g.id],
-          ['b', 'c', 'a', 'd'],
+      expect([
+        for (final g in activeBucket(games, turns, deadlines: deadlines)) g.id
+      ], [
+        'b',
+        'c',
+        'a',
+        'd'
+      ],
           reason: 'sıra bende: b(08:00) → c(09:00) ARTAN · '
               'sıra rakipte: a(10:00) → d(07:00) AZALAN. '
               'İki grubu aynı yöne çevirmek isteklerden BİRİNİ bozar.');
@@ -136,8 +144,7 @@ void main() {
           ['b', 'c', 'a', 'd']);
     });
 
-    test('activeBucket: deadline BİLİNMEYEN oyun grubunun EN SONUNA düşer',
-        () {
+    test('activeBucket: deadline BİLİNMEYEN oyun grubunun EN SONUNA düşer', () {
       // ⚠ Sessiz tuzağın negatif eşi: null eskiden 0 sayılıyordu ve bu
       // yalnızca AZALAN sıralamada zararsızdı. "Sıra bende" grubu 3 Eylül'de
       // ARTANA çevrilince 0, "en yakın teslim" sanılıp EN ÜSTE çıkardı.
@@ -150,9 +157,12 @@ void main() {
         'bilinmiyor': null,
         'yakin': '2026-09-01T08:00:00Z',
       };
-      expect(
-          [for (final g in activeBucket(games, turns, deadlines: deadlines)) g.id],
-          ['yakin', 'bilinmiyor']);
+      expect([
+        for (final g in activeBucket(games, turns, deadlines: deadlines)) g.id
+      ], [
+        'yakin',
+        'bilinmiyor'
+      ]);
     });
 
     test('acceptedWaitingBucket: kabul ettim ama oyun hâlâ pending', () {
@@ -164,7 +174,9 @@ void main() {
             status: 'pending',
             myInviteStatus: 'accepted')),
         game(gameRow(
-            id: 'g2', myId: 'me', status: 'active',
+            id: 'g2',
+            myId: 'me',
+            status: 'active',
             myInviteStatus: 'accepted')),
       ];
       expect([for (final g in acceptedWaitingBucket(games)) g.id], ['g1']);
@@ -379,8 +391,7 @@ void main() {
 
     test(
         'pendingCounts: bekleyen davet + sırası bende olan aktif oyun toplamı '
-        '(web fetchPendingLiveGameCounts) — Setup rozetinin kaynağı',
-        () async {
+        '(web fetchPendingLiveGameCounts) — Setup rozetinin kaynağı', () async {
       final gw = FakeOnlineGamesGateway()
         ..rows = [
           gameRow(
@@ -420,19 +431,19 @@ void main() {
       PendingLiveGameCounts say(int davet, int sira, int aktif) =>
           PendingLiveGameCounts(davet, sira, aktif);
 
-      expect(decideInitialMainView(say(0, 1, 3), const []),
-          InitialMainView.live);
+      expect(
+          decideInitialMainView(say(0, 1, 3), const []), InitialMainView.live);
       expect(decideInitialMainView(say(1, 0, 0), const [1, 2]),
           InitialMainView.live,
           reason: 'bekleyen davet, YZ oyunu olsa bile');
-      expect(decideInitialMainView(say(0, 0, 6), const []),
-          InitialMainView.live,
+      expect(
+          decideInitialMainView(say(0, 0, 6), const []), InitialMainView.live,
           reason: 'YZ boş + Canlı oyun var → sıra bende olmasa bile');
-      expect(decideInitialMainView(say(0, 0, 6), const [1]),
-          InitialMainView.local,
+      expect(
+          decideInitialMainView(say(0, 0, 6), const [1]), InitialMainView.local,
           reason: 'YZ oyunu VAR → sekme kaçırılmaz');
-      expect(decideInitialMainView(say(0, 0, 0), const []),
-          InitialMainView.local);
+      expect(
+          decideInitialMainView(say(0, 0, 0), const []), InitialMainView.local);
 
       // Eksik veri: karar ERTELENİR (local DEĞİL) — aksi halde tek seferlik
       // karar yanıp kullanıcı kalıcı olarak yanlış sekmede kalırdı.
@@ -465,15 +476,12 @@ void main() {
       expect(await OnlineGamesRepo(gw, nowMs: () => nowMs).load(), isNull);
       await Future<void>.delayed(const Duration(milliseconds: 20));
       expect(sink.sent, hasLength(1));
-      expect(sink.sent.single['message'],
-          contains('online_games_repo.load'));
+      expect(sink.sent.single['message'], contains('online_games_repo.load'));
 
       sink.sent.clear();
-      final agGw = FakeOnlineGamesGateway()
-        ..failWith = _FakeNetworkError();
+      final agGw = FakeOnlineGamesGateway()..failWith = _FakeNetworkError();
       expect(
-          await OnlineGamesRepo(agGw,
-                  nowMs: () => nowMs, delay: (_) async {})
+          await OnlineGamesRepo(agGw, nowMs: () => nowMs, delay: (_) async {})
               .load(),
           isNull);
       await Future<void>.delayed(const Duration(milliseconds: 20));
@@ -508,7 +516,6 @@ void main() {
       // etiketi ALMAMALI.
       expect(participantLabel(silinmis.slots.first, silinmis), 'Bekliyor');
     });
-
   });
 
   // ── Widget testleri ───────────────────────────────────────────────────────
@@ -550,7 +557,8 @@ void main() {
         ));
     if (boundaryKey != null) {
       body = RepaintBoundary(
-          key: boundaryKey, child: ColoredBox(color: Colors.white, child: body));
+          key: boundaryKey,
+          child: ColoredBox(color: Colors.white, child: body));
     }
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
@@ -659,8 +667,8 @@ void main() {
               createdAt: iso(DateTime.now().toUtc()),
               slots: [
                 slotHuman('esiner', name: 'Esiner', relation: 'accepted'),
-                slotHuman('u-tab1', name: 'Ironman', relation: 'self',
-                    inviteStatus: 'pending'),
+                slotHuman('u-tab1',
+                    name: 'Ironman', relation: 'self', inviteStatus: 'pending'),
                 slotHuman('bobola', name: 'Bobola', inviteStatus: 'accepted'),
                 slotAi,
               ]),
@@ -719,8 +727,8 @@ void main() {
             createdAt: iso(DateTime.now().toUtc()),
             slots: [
               slotHuman('esiner', name: 'Esiner', relation: 'accepted'),
-              slotHuman('u-tab2', name: 'Ironman', relation: 'self',
-                  inviteStatus: 'pending'),
+              slotHuman('u-tab2',
+                  name: 'Ironman', relation: 'self', inviteStatus: 'pending'),
               // Henüz arkadaş değil → öneri adayı.
               slotHuman('bobola', name: 'Bobola', inviteStatus: 'accepted'),
               slotAi,
@@ -828,8 +836,7 @@ void main() {
     // sayıyı depoya sokmak olurdu (kök `CLAUDE.md`, kural 4).
     testWidgets(
         'Devam Edenler kartı: durum satırda kalır, puan satırı avatarların '
-        'altında, süre onun ALTINA iner ("X açtı" yok)',
-        (tester) async {
+        'altında, süre onun ALTINA iner ("X açtı" yok)', (tester) async {
       final deadline =
           DateTime.now().toUtc().add(const Duration(hours: 30, minutes: 5));
       final gw = FakeOnlineGamesGateway()
@@ -910,7 +917,8 @@ void main() {
       expect(satirdaTavan, isTrue,
           reason: 'ölçek ${kMaxTextScale}te de durum satırda KALMALI');
       expect(altaNormal, isTrue,
-          reason: 'süre sol alana (avatar + puan) biniyor — bildirilen hata bu');
+          reason:
+              'süre sol alana (avatar + puan) biniyor — bildirilen hata bu');
       expect(altaTavan, isTrue,
           reason: 'süre tavanda da sol alanın altında olmalı');
 
@@ -922,12 +930,13 @@ void main() {
 
   group('LiveGameCreateForm', () {
     Future<
-        ({
-          FakeOnlineGamesGateway gw,
-          List<bool> created,
-          List<bool> cancelled
-        })> pumpForm(WidgetTester tester,
-        {List<Map<String, Object?>>? friendsRows}) async {
+            ({
+              FakeOnlineGamesGateway gw,
+              List<bool> created,
+              List<bool> cancelled
+            })>
+        pumpForm(WidgetTester tester,
+            {List<Map<String, Object?>>? friendsRows}) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       final gw = FakeOnlineGamesGateway();
       final fgw = FakeFriendsGateway(currentUserId: 'me')
@@ -987,10 +996,9 @@ void main() {
         {'type': 'human', 'user_id': 'me'},
         {'type': 'human', 'user_id': 'f2'},
       ]);
-      expect(fakeAnalytics.names,
-          ['live_game_form_opened', 'live_game_created']);
-      expect(fakeAnalytics.events.last.$2,
-          {'player_count': 2, 'with_ai': 0});
+      expect(
+          fakeAnalytics.names, ['live_game_form_opened', 'live_game_created']);
+      expect(fakeAnalytics.events.last.$2, {'player_count': 2, 'with_ai': 0});
       expect(find.text('Davetiniz gönderilmiştir.'), findsOneWidget);
       expect(find.textContaining('Esiner yanıt verince'), findsOneWidget);
       await tester.tap(find.text('TAMAM'));
@@ -1232,4 +1240,44 @@ void main() {
       expect(await OnlineGamesRepo(gw).markFinishesSeen(), isFalse);
     });
   });
+}
+
+/// Sonsuz "Yükleniyor…" — 11 Eylül 2026, kullanıcı iPhone'da bildirdi.
+///
+/// `loadGame`in try/catch'i yalnızca REDDEDİLEN isteği yakalar; yavaş/asılı
+/// bir bağlantıda istek ne çözülür ne reddedilir ve ekran sonsuza kadar
+/// bekler. Tavan (`_callTimeout`) dosyada VARDI ama yalnızca üç arka plan
+/// çağrısına uygulanmıştı.
+///
+/// ⚠ `fakeAsync` ŞART: gerçek zamanla bu test 20 saniye sürerdi ve kimse
+/// 20 saniyelik bir testi takıma koymaz — yani kapı ya yavaş ya da hiç
+/// olmazdı.
+void sonsuzYukleniyorTestleri() {
+  group('loadGame — asılı istek', () {
+    test('20 sn sonra null döner (ekran "Tekrar Dene"ye düşebilsin)', () {
+      fakeAsync((async) {
+        final gw = AsiliGateway();
+        final repo = OnlineGamesRepo(gw);
+        Object? sonuc = 'henüz-yok';
+        repo.loadGame('g1').then((v) => sonuc = v);
+
+        async.elapse(const Duration(seconds: 19));
+        expect(sonuc, 'henüz-yok',
+            reason: 'tavandan ÖNCE dönmemeli — erken dönmek, yavaş ama '
+                'çalışan bir bağlantıyı boşuna kesmek olurdu');
+
+        async.elapse(const Duration(seconds: 2));
+        expect(sonuc, isNull,
+            reason: 'tavan dolunca null: çağıran bunu "sunucuya ulaşılamadı" '
+                'sayıp ekrana "Tekrar Dene" panelini koyuyor');
+      });
+    });
+  });
+}
+
+/// Hiçbir zaman çözülmeyen bir uç — "yavaş internet"in testteki karşılığı.
+class AsiliGateway extends FakeOnlineGamesGateway {
+  @override
+  Future<Map<String, Object?>?> gameState(String gameId) =>
+      Completer<Map<String, Object?>?>().future;
 }
