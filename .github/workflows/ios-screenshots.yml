@@ -145,12 +145,14 @@ jobs:
           for png in build/screenshots/*.png; do
             w=$(sips -g pixelWidth  "$png" | awk '/pixelWidth/{print $2}')
             h=$(sips -g pixelHeight "$png" | awk '/pixelHeight/{print $2}')
-            # ⚠ Alfa ÖLÇÜLÜYOR ama koşuyu DÜŞÜRMÜYOR (11 Eylül 2026). App
-            # Store Connect ekran görüntüsünde saydamlık kabul etmiyor
-            # ("flattened" istiyor) ve Flutter'ın ekran görüntüsü yolu RGBA
-            # üretiyor OLABİLİR — bu depoda hiç ölçülmedi. Önce ölçüm: bir
-            # sonraki koşunun özeti cevabı yazsın, düzeltme (varsa) ona göre
-            # gelsin. Yüklemeyi ASC reddederse ilk bakılacak satır bu.
+            # ⚠ ALFA KAPISI (11 Eylül 2026). App Store Connect ekran
+            # görüntüsünde saydamlık kabul etmiyor ("flattened" istiyor) ve
+            # ÖLÇÜLDÜ ki Flutter'ın ekran görüntüsü yolu RGBA üretiyor:
+            # koşu 34578979721'de yedi karenin yedisi de `hasAlpha: yes`
+            # dedi. Düzeltme sürücüde (`test_driver/png_flatten.dart`);
+            # burası onun GERÇEK çıktı üzerinde tutulduğunu doğruluyor.
+            # Kapı olmasaydı arıza ancak Console'da, yükleme anında
+            # görünürdü — zincirin en sonunda.
             a=$(sips -g hasAlpha "$png" | awk '/hasAlpha/{print $2}')
             satir="\`$(basename "$png")\` → ${w}×${h} · alfa: ${a:-?}"
             # ⚠ İKİ yere birden: `$GITHUB_STEP_SUMMARY` yalnızca web
@@ -160,6 +162,10 @@ jobs:
             echo "- $satir" >> "$GITHUB_STEP_SUMMARY"
             if [ "$w" != "${{ matrix.genislik }}" ] || [ "$h" != "${{ matrix.yukseklik }}" ]; then
               echo "::error::$(basename "$png") ${w}×${h} — beklenen ${{ matrix.genislik }}×${{ matrix.yukseklik }}"
+              hatali=1
+            fi
+            if [ "$a" != "no" ]; then
+              echo "::error::$(basename "$png") alfa kanalı taşıyor (hasAlpha=$a) — App Store Connect bunu reddeder. Bkz. test_driver/png_flatten.dart"
               hatali=1
             fi
           done

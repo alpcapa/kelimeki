@@ -370,6 +370,14 @@ mobile/
                              # (Parça 196); kapı test/ipad_layout_test.dart
     test_driver/integration_test.dart # `flutter drive` sürücüsü — PNG'yi
                              # DİSKE o yazıyor (`onScreenshot`)
+    test_driver/png_flatten.dart # kareden ALFA kanalını kaldırır (App Store
+                             # Connect saydamlık kabul etmiyor; Flutter'ın
+                             # ekran görüntüsü yolu RGBA üretiyor — ölçüldü,
+                             # 11 Eylül 2026). ⚠ Sürücüden AYRI dosya:
+                             # sürücü `flutter_driver` çekiyor ve
+                             # `flutter test` altında import edilemiyor —
+                             # ayrı durunca test/png_flatten_test.dart
+                             # Linux'ta ücretsiz doğruluyor
   kelimeki_core/             # saf Dart motor paketi (Flutter bağımlılığı YOK)
     pubspec.yaml             # SIFIR bağımlılık (bilinçli — offline pub get)
     lib/kelimeki_core.dart   # tek barrel export = genel API

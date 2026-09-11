@@ -1539,10 +1539,39 @@ boru hattının ölçüsü (6.9" = `1320×2868`) yanlış sanıldı. **Media Man
 Sayfanın kendi açıklaması da bunu söylüyor: verilen kareler öteki ekran
 boyutları için ölçekleniyor.
 
+### 🔴 ALFA KANALI — kareler yüklenemeyecekti (11 Eylül 2026, ölçüldü)
+
+**App Store Connect ekran görüntüsünde saydamlık kabul etmiyor** ("flattened"
+istiyor). İş akışına eklenen `sips -g hasAlpha` ölçümü koşu **34578979721**'de
+şunu dedi: **yedi karenin yedisi de `hasAlpha: yes`.** Yani kareler ölçü
+olarak doğru olmalarına rağmen yüklenemezdi ve arıza ancak **Console'da,
+yükleme anında** — zincirin en sonunda — görünecekti.
+
+Sebep: Flutter'ın ekran görüntüsü yolu RGBA üretiyor. Uygulamanın hatası
+değil, boru hattının.
+
+**Düzeltme sürücüde:** `mobile/app/test_driver/png_flatten.dart` kareyi opak
+beyaz bir zemine kompozit edip RGB olarak yazıyor. ⚠ `sips` bu işi
+YAPAMIYOR — alfa kanalını kaldıran bir seçeneği yok, JPEG'e gidip dönmek de
+metni bozardı; sürücü zaten PNG baytlarını elinde tuttuğu için en ucuz yer
+orası ve CI'a yeni bir araç girmiyor. Alfa "siliniyor" değil
+**birleştiriliyor**: kanalı düpedüz atmak yarı saydam bir pikselin ham
+RGB'sini ortaya çıkarırdı.
+
+**Kapı İKİ katmanlı, bilerek:**
+
+| Katman | Nerede | Ne kanıtlıyor | Maliyet |
+|---|---|---|---|
+| `test/png_flatten_test.dart` | Linux, `flutter test` | dönüşümün kendisi (RGBA→RGB, yarı saydam→zemin, alfasız kare yeniden kodlanmaz) | saniyeler |
+| `hasAlpha != no` → `::error` | macOS, iş akışı | GERÇEK çıktının alfasızlığı | bir koşu (~14 dk) |
+
+İlki olmasaydı her denemede bir macOS koşusu beklenirdi; ikincisi olmasaydı
+dönüşümün gerçekten uygulandığına dair kanıt olmazdı.
+
 ### Kalan iş
 
 Kod tarafında kalan iş YOK. Kareler bir sonraki `ios-screenshots.yml`
-koşusunda başlıklı ve yedi kare olarak üretilir; **artefaktı indirip
+koşusunda başlıklı, yedi kare ve **alfasız** üretilir; **artefaktı indirip
 Console'a yüklemek elle** (ajan indiremiyor — yukarıdaki uyarı).
 
 ---
