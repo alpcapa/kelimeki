@@ -1,5 +1,5 @@
 // Kelimeki — admin paneli: üyeler ve oyun istatistikleri
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
   fetchAdminMembers,
@@ -69,6 +69,7 @@ import {
   deviceModelLabel,
   osVersionLabel,
   platformLabel,
+  type BrandGroup,
 } from '../utils/deviceLabels';
 import { GENDER_OPTIONS, isoToTrDate } from '../utils/profileFields';
 import { useModalA11y } from '../hooks/useModalA11y';
@@ -482,22 +483,16 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         "Cihaz" tablosunun bir alt kırılımı: aynı ziyaretçiler, bu kez <b>üreticiye</b> göre.
         Marka, tarayıcının bildirdiği model KODUNDAN önekle okunuyor (<code>SM-</code> →
         Samsung); tanınmayan kod <b>Diğer</b>'e düşer — uydurma bir marka atanmaz.{' '}
+        <b>Satıra tıkla, model kırılımı açılır</b> — ham üretici kodu (<code>SM-A176B</code>)
+        olduğu gibi, hiçbir yorum katılmadan. Kod → pazarlama adı çevirisi ("Galaxy A17")
+        bilerek YAPILMIYOR: elle bakımı gereken, her yeni cihazla bayatlayan bir tablo
+        olurdu. Canlıda 174 farklı model kodu var, o yüzden varsayılan KAPALI.{' '}
         <b>Apple satırı her zaman "iPhone/iPad" düzeyinde</b>: Safari gerçek modeli
         (iPhone 17 ↔ 14) hiç vermiyor, o ayrım ancak kurulu uygulamadan ölçülebilir.{' '}
         <b>Bilinmiyor</b> ≈ masaüstü (hiçbir tarayıcı model vermiyor) + modeli gizleyen
-        Android tarayıcıları.
-      </>
-    ),
-  },
-  'cihaz-modeli': {
-    title: 'Cihaz Modeli',
-    body: (
-      <>
-        Ham üretici model kodu, hiçbir yorum katmadan. Kod → pazarlama adı çevirisi
-        (<code>SM-A176B</code> → "Galaxy A17") <b>bilerek yapılmıyor</b>: elle bakımı gereken,
-        her yeni cihazla bayatlayan bir tablo olurdu. Marka için üstteki tabloya bak.{' '}
-        Sayılar <b>benzersiz ziyaretçi</b>; bir cihaz tek model dizesi taşıdığından bu tablonun
-        toplamı "Cihaz" tablosununkiyle eşleşir (11 Eylül 2026'da ölçüldü: 788 = 788).
+        Android tarayıcıları. Sayılar <b>benzersiz ziyaretçi</b>; yüzdeler açılan
+        satırlarda da GENEL toplamın payı, markanın değil. CSV marka ve modeli birlikte,
+        düz olarak indirir.
       </>
     ),
   },
@@ -839,6 +834,154 @@ function GuestBreakdownTable<T extends { visitors: number }>({
             <tr className="border-b border-border/50">
               <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
               <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{totalVisitors}</td>
+              <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">100.00%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Cihaz markası — satır AÇILINCA o markanın model kırılımını gösterir.
+ *
+ * ⚠ **Neden tek tablo (11 Eylül 2026, kullanıcı isteği):** "Cihaz Markası"
+ * ve "Cihaz Modeli" ayrı ayrı duruyordu ve canlıda **174 farklı model kodu**
+ * var — sayfa gereksiz uzuyordu. Kullanıcı: *"Cihazlara minik aşağı ok koy,
+ * tıklayınca açılsın ve model kırılımını göstersin. Böyle çok uzun ve
+ * gereksiz detay oluyor. İstenirse bakılsın."* Varsayılan KAPALI.
+ *
+ * ⚠ `useState` erken `return`'ün ÜSTÜNDE — altına inerse boş/yüklenen
+ * durumda hook atlanır ve React #300 patlar (`npm run verify-hook-order`
+ * bu deponun kapısı).
+ *
+ * ⚠ Yüzdeler HER ZAMAN genel toplamın payı: alt satırlar da markanın değil
+ * TOPLAMIN yüzdesini gösteriyor, yoksa açılan satırların yüzdeleri kapalı
+ * satırlarınkiyle kıyaslanamaz hale gelirdi.
+ */
+function DeviceBrandTable({
+  rows,
+  infoHint,
+}: {
+  rows: BrandGroup[] | null;
+  infoHint?: ReactNode;
+}) {
+  const [acik, setAcik] = useState<ReadonlySet<string>>(() => new Set());
+
+  // Boş/yüklenirken de `?` çizilir — GuestBreakdownTable ile aynı gerekçe.
+  if (rows === null || rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta ziyaret yok.'}
+        </div>
+      </div>
+    );
+  }
+
+  // ⚠ Yerel `const`a alınıyor: `handleExportCsv` bir fonksiyon bildirimi ve
+  // TS, erken `return`ün daraltmasını kapanışın içine taşımıyor.
+  const gruplar = rows;
+  const toplam = gruplar.reduce((sum, r) => sum + r.visitors, 0);
+  const yuzde = (n: number) => (toplam > 0 ? ((n / toplam) * 100).toFixed(2) : '0.00');
+
+  function toggle(brand: string) {
+    setAcik((onceki) => {
+      const y = new Set(onceki);
+      if (y.has(brand)) y.delete(brand);
+      else y.add(brand);
+      return y;
+    });
+  }
+
+  // CSV marka VE modeli birlikte, DÜZ olarak verir — tabloyu katlamak
+  // veriyi gizlemek değil, ekranı kısaltmak içindi.
+  function handleExportCsv() {
+    downloadCsv(
+      csvFilename('kelimeki-cihaz-marka-model'),
+      ['Marka', 'Model', 'Ziyaretçi', '%'],
+      [
+        ...gruplar.flatMap((g) => [
+          [g.brand, '(marka toplamı)', g.visitors, yuzde(g.visitors)],
+          ...g.models.map((m) => [
+            g.brand,
+            deviceModelLabel(m.deviceType, m.deviceModel),
+            m.visitors,
+            yuzde(m.visitors),
+          ]),
+        ]),
+        ['TOPLAM', '', toplam, '100.00'],
+      ],
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-end gap-2">
+        {infoHint}
+        <button type="button" onClick={handleExportCsv} className={csvLinkCls}>
+          CSV İndir
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-auto text-[11px] font-mono border-collapse">
+          <thead>
+            <tr className="text-left text-muted border-b border-border">
+              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Marka</th>
+              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Ziyaretçi</th>
+              <th className="py-1.5 font-bold uppercase tracking-[1px] text-center">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {gruplar.map((g) => {
+              const open = acik.has(g.brand);
+              return (
+                <Fragment key={g.brand}>
+                  <tr className="border-b border-border/50">
+                    <td className="py-1.5 pr-8 text-text whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => toggle(g.brand)}
+                        aria-expanded={open}
+                        aria-label={`${g.brand} — model kırılımını ${open ? 'kapat' : 'aç'}`}
+                        className="tap-expand relative inline-flex items-center gap-1.5 active:opacity-70 transition-opacity"
+                      >
+                        {/* Ok DÖNÜYOR, iki ayrı ikon değil — açık/kapalı
+                            aynı öğenin iki hâli olduğunda göz takip ediyor. */}
+                        <svg
+                          viewBox="0 0 10 6"
+                          className={`w-[8px] h-[5px] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+                          aria-hidden="true"
+                        >
+                          <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        {g.brand}
+                      </button>
+                    </td>
+                    <td className="py-1.5 pr-8 text-muted whitespace-nowrap text-center">{g.visitors}</td>
+                    <td className="py-1.5 text-muted whitespace-nowrap text-center">{yuzde(g.visitors)}%</td>
+                  </tr>
+                  {open &&
+                    g.models.map((m) => (
+                      <tr
+                        key={`${g.brand}|${m.deviceType}|${m.deviceModel ?? ''}`}
+                        className="border-b border-border/50 bg-panel/40"
+                      >
+                        <td className="py-1 pr-8 pl-5 text-muted whitespace-nowrap">
+                          {deviceModelLabel(m.deviceType, m.deviceModel)}
+                        </td>
+                        <td className="py-1 pr-8 text-muted whitespace-nowrap text-center">{m.visitors}</td>
+                        <td className="py-1 text-muted whitespace-nowrap text-center">{yuzde(m.visitors)}%</td>
+                      </tr>
+                    ))}
+                </Fragment>
+              );
+            })}
+            <tr className="border-b border-border/50">
+              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
+              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{toplam}</td>
               <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">100.00%</td>
             </tr>
           </tbody>
@@ -2689,28 +2832,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <span className={sectionTitleCls}>
                       Cihaz Markası (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
                     </span>
-                    <GuestBreakdownTable
-                      columnLabel="Marka"
-                      emptyLabel="Bu aralıkta ziyaret yok."
+                    <DeviceBrandTable
                       rows={deviceModels && brandBreakdown(deviceModels)}
-                      getKey={(row) => row.brand}
-                      getLabel={(row) => row.brand}
-                      csvBaseName="kelimeki-cihaz-markasi"
                       infoHint={<InfoHint id="cihaz-markasi" onOpen={setHint} />}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <span className={sectionTitleCls}>
-                      Cihaz Modeli (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                    </span>
-                    <GuestBreakdownTable
-                      columnLabel="Model"
-                      emptyLabel="Bu aralıkta ziyaret yok."
-                      rows={deviceModels}
-                      getKey={(row) => `${row.device_type}|${row.device_model ?? ''}`}
-                      getLabel={(row) => deviceModelLabel(row.device_type, row.device_model)}
-                      csvBaseName="kelimeki-cihaz-modeli"
-                      infoHint={<InfoHint id="cihaz-modeli" onOpen={setHint} />}
                     />
                   </div>
                   <div className="flex flex-col gap-2">

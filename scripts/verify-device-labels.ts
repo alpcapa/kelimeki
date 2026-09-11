@@ -73,7 +73,7 @@ check('yanıltıcı macOS dizesi platformuyla birlikte görünür',
 check('sürümsüz satır', osVersionLabel('android', null) === 'Android · sürüm yok');
 check('platformLabel bilinmeyen değer', platformLabel('app-web') === 'Bilinmiyor');
 
-console.log('Marka toplamı — ziyaretçi sayıları KORUNUR');
+console.log('Marka gruplaması — sayılar korunur, modeller altta');
 {
   // Canlıdaki gerçek dağılımın küçük bir kesiti.
   const rows = [
@@ -93,6 +93,19 @@ console.log('Marka toplamı — ziyaretçi sayıları KORUNUR');
   check('Samsung satırları toplanır (47+46=93)', samsung?.visitors === 93,
     `gelen=${samsung?.visitors}`);
   check('Diğer ayrı satır', b.find((r) => r.brand === 'Diğer')?.visitors === 1);
+
+  // Açılır kırılım — marka satırının ALTINDA duran modeller.
+  check('Samsung altında İKİ model var', samsung?.models.length === 2,
+    `gelen=${samsung?.models.length}`);
+  check('modeller çoktan aza sıralı',
+    samsung?.models[0].deviceModel === 'SM-A176B' &&
+      samsung?.models[1].deviceModel === 'SM-A346E',
+    samsung?.models.map((m) => m.deviceModel).join(','));
+  check('alt satırların toplamı marka satırına EŞİT',
+    (samsung?.models.reduce((a, m) => a + m.visitors, 0) ?? 0) === samsung?.visitors);
+  const bilinmiyor = b.find((r) => r.brand === 'Bilinmiyor');
+  check('modelsiz satır da kırılımda görünür (gizlenmiyor)',
+    bilinmiyor?.models.length === 1 && bilinmiyor?.models[0].deviceModel === null);
 }
 
 console.log(failures === 0 ? '\nTÜMÜ GEÇTİ' : `\n${failures} BAŞARISIZ`);
