@@ -53,7 +53,7 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
-| **1.1.0** | **627** | `a4c809b` | 10 Eyl 2026 (`a4c809b`, #514) | ⏳ **yüklenmedi** — paket hazır, Play'e yükleme SENDE | ⏳ hazır | İlk TestFlight turunun bulguları + onboarding Faz 2·3·5 + "Davetler" adlandırması. Aşağı bkz. |
+| **1.1.0** | **627** | `a4c809b` | 10 Eyl 2026 (`a4c809b`, #514) | **11 Eyl 2026, 08:01** (Console) | ⏳ **incelemede** | İlk TestFlight turunun bulguları + onboarding Faz 2·3·5 + "Davetler" adlandırması. Aşağı bkz. |
 | **1.0.9** | **581** | `1abde38` | 7 Eyl 2026 akşamı (`main`) | **8 Eyl 2026, 08:41** (Console) | ✅ **kapalı testte YAYINDA** (Alpha; ≤ 09:10'da "Published") | "Oynayarak öğren" tanıtımının PORT ikizi (Onboarding Faz 4) + tanıtımın cihaz/tarayıcı turu düzeltmeleri. Aşağı bkz. |
 | **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **7 Eyl 2026, 13:28** (Console) | yayınlandı → **pasif** (8 Eyl, 1.0.9 devraldı) | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
 
@@ -92,6 +92,7 @@ bölümü) — "ölçüldü" işaretli üç satır Console'dan doğrudan okundu,
 
 | # | Gönderim | Kapsam | Durum | Sürüm (çıkarım) |
 |---|---|---|---|---|
+| 15 | **11 Eyl 2026, 08:01** | Closed testing - Alpha | ⏳ **In review** | **1.1.0 (627)** — ölçüldü |
 | 14 | 8 Eyl 2026, 08:41 | Closed testing - Alpha | ✅ **Published** | **1.0.9 (581)** — ölçüldü |
 | 13 | 7 Eyl 2026, 13:28 | Closed testing - Alpha | ✅ **Published** | **1.0.8 (569)** — ölçüldü |
 | 12 | 4 Eyl 2026, 15:53 | Closed testing - Alpha | ✅ **Published** | **1.0.6 (525)** — ölçüldü |
@@ -115,11 +116,18 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
-## 1.1.0 (627) — ⏳ PAKET HAZIR, YÜKLEME BEKLİYOR (10 Eyl 2026 gecesi)
+## 1.1.0 (627) — ⏳ İNCELEMEDE (kapalı test/Alpha, 11 Eyl 2026 08:01)
 
 **Durum:** `pubspec.yaml` + `env.dart` 1.0.9 → **1.1.0** (#514, 10 Eyl
-gecesi). Paket `main`'e merge'in ardından koşu **627**'de derlendi;
-Play'e yükleme YAPILMADI — o adım Console'da elle yapılıyor.
+gecesi). Paket `main`'e merge'in ardından koşu **627**'de derlendi ve
+**11 Eyl 2026 saat 08:01'de** kapalı teste (Alpha) gönderildi — kullanıcı
+bildirdi, Console `In review`. Yayınlandığında bu başlık ✅'e çevrilecek,
+1.0.9 pasife alınacak ve inceleme süresi aşağıdaki tabloya yazılacak.
+
+⚠ **1.0.9 hâlâ YAYINDA** — 1.1.0 `In review` durumunda olduğu sürece
+testçinin telefonundaki paket 581'dir. "Yüklendi" ile "testçide" arasındaki
+fark bu depoda ölçülmüş bir tuzak (`build-and-distribution-log.md` →
+"Published ≠ testçinin telefonunda").
 
 | | |
 |---|---|
