@@ -1227,6 +1227,14 @@ başlıklı: **gerçek kişi/e-posta · gerçek arkadaş adı · başka bir mark
 ⚠ Sözcük havuzunu "kelime oyunu" çağrışımından seçmek tam da bu tuzağa
 götürüyor — nötr bir sıfat/isim seç.
 
+⚠ **Aynı tarama karelerdeki oyuncu adını da eledi.** Ad `Ironman`'di ve İKİ
+kuralı birden çiğniyordu: *"Iron Man"* başkasının tescilli markası **ve**
+`Ironman` bu projede gerçek bir hesabın takma adı (`ROADMAP.md`: *"hiçbir
+koşulda silinmez"*). Kullanıcı kararı: **`Ege`** (11 Eylül 2026). Ad
+karelerde üç yerde görünüyordu — başlıktaki avatar, 04'ün skor kartı,
+07'nin vurgulu k-lig satırı. ⚠ `test/` altındaki birim testleri hâlâ
+`Ironman` kullanıyor ve BİLEREK dokunulmadı: onlar mağazaya gitmiyor.
+
 ### ⚠ İKİ FARK — Android setini olduğu gibi kullanmak MÜMKÜN DEĞİL
 
 **1. Dosyalar yeniden çekilecek.** Play'e giden 7 kare `1080×2072` ve
@@ -1327,7 +1335,7 @@ oynadı. +22 puan."*), raf `KAOEMLE` ve "TORBA 43".
    başlıkta `GİRİŞ` butonu duruyordu (misafir hâli); Play turunun yazılı
    kuralı *"test hesabıyla çek"* dediği için girişli hâl seçildi. Ağa
    çıkmadan çözüldü: `AuthService.fake(user:, profile:)` sahte oturum kabul
-   ediyor, başlıkta avatar (`IR`) çiziliyor — secret ya da gerçek hesap
+   ediyor, başlıkta avatar (baş harf) çiziliyor — secret ya da gerçek hesap
    gerekmiyor, iş akışı hâlâ ağa hiç çıkmıyor.
    ⚠ **`test/account_button_test.dart`in sahte kullanıcısı KOPYALANMADI:**
    o yardımcı geliştiricinin kişisel e-postasını taşıyor ve Play'in çekim

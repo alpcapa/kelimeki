@@ -63,9 +63,16 @@ const int _kSeed = 11;
 const int _kMoves = 12;
 
 /// Ekranda görünen ad. Gerçek bir kişinin adı ya da e-postası KARE'ye
-/// giremez (Play turunun yazılı gizlilik kuralı); `Ironman` bu depoda
-/// zaten bilinen bir test kimliği.
-const String _kPlayerName = 'Ironman';
+/// giremez (Play turunun yazılı gizlilik kuralı).
+///
+/// ⚠ Bu ad bir dönem **`Ironman`**'di ve iki kuralı birden çiğniyordu
+/// (kullanıcı kararı, 11 Eylül 2026): (1) *"Iron Man"* başkasının tescilli
+/// markası — `KELİMELİK` vakasıyla AYNI sınıf, bkz. `_SahteStatsGateway`;
+/// (2) `Ironman` bu projede **gerçek bir hesabın** takma adı (`ROADMAP.md`:
+/// *"hiçbir koşulda silinmez"*), yani gizlilik kuralının da kapsamında.
+/// Yerine nötr bir ad. ⚠ `test/` altındaki birim testleri BİLEREK
+/// dokunulmadı — onlar mağazaya gitmiyor.
+const String _kPlayerName = 'Ege';
 
 /// ── Başlık şeridi (mağaza kompozisyonu, 11 Eylül 2026) ──────────────────
 ///
