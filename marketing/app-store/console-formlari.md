@@ -2049,6 +2049,41 @@ nişanıyla ayrıca giderildi — yani seçilen çerçeveleme + temiz mesaj sat�
 **Set artık SEKİZ kare:** `01 · 02 · 03 · 04 · 06 · 07 · 08 · 09`
 (`KARE_SAYISI: 8`). Apple 6.9" için tavan 10.
 
+### 📦 MAĞAZAYA GİDEN SET — `7b0d158`, koşu #26 (11 Eylül 2026, SEKİZ kare)
+
+Koşu https://github.com/alpcapa/kelimeki/actions/runs/34608610658 — iki iş de
+yeşil. PR #524 merge edildi (`9b4a793`). **Bir önceki kayıt (#21, yedi kare)
+artık bayat** — o set 05'i içeriyordu ve 08/09 yoktu.
+
+**Set:** `01 · 02 · 03 · 04 · 06 · 07 · 08 · 09` (05 bilerek yok, numara
+boşluğunun gerekçesi yukarıda).
+
+| Kapı | iPhone 6.9" | iPad Pro 13" |
+|---|---|---|
+| Kare sayısı (`KARE_SAYISI: 8`) | 8 ✅ | 8 ✅ |
+| Piksel ölçüsü | 8/8 `1320×2868` ✅ | 8/8 `2064×2752` ✅ |
+| Alfa kanalı | 8/8 `alfa: no` ✅ | 8/8 `alfa: no` ✅ |
+| Debug bandı | yok ✅ | yok ✅ |
+| **Pencere açıldı mı** (`pencereyiBekle`) | ✅ | ✅ |
+| **Tahta yakınlaştı mı** (`zoomKapisi`) | ✅ | ✅ |
+
+| Artefakt | Boyut |
+|---|---|
+| `kelimeki-store-screenshots-iphone-6.9` | 3.568.965 bayt |
+| `kelimeki-store-screenshots-ipad-13` | 3.434.972 bayt |
+
+Geçerlilik **10 Aralık 2026**.
+
+⚠ **Son iki kapı bu turda ilk kez koştu ve ikisi de İÇERİĞE bakıyor** —
+önceki dört kapı yalnızca dosyanın ŞEKLİNE bakıyordu ve beş ayrı
+kompozisyon arızasını görememişti. iPad'de 06'nın penceresiz çıkması bu
+sayede bir daha sessizce geçemez.
+
+**Yükleme durumu (11 Eylül 2026, gün sonu):** **yedi kare İKİ tarafa da
+yüklendi** (iPhone 6.9" + iPad 13"): `01 · 02 · 03 · 04 · 06 · 07 · 09`.
+**Eksik olan tek kare 08 (rütbeler)** — mühürsüz çıktığı için bekletiliyor
+(aşağıdaki vaka).
+
 ### 🔴 RÜTBE MÜHRÜ ÇIKMADI — altıncı "kapılar içeriği göremez" vakası (11 Eylül 2026)
 
 Kullanıcı 08 ve 09'u Console'a yükledi ve **08'de mührün hiç olmadığını**

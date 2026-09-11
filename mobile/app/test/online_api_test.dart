@@ -13,6 +13,7 @@
 // ALTINDAKİ iletimi kanıtlamaz.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/online_api.dart';
+import 'package:kelimeki/src/util/offline_notice.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 void main() {
@@ -37,24 +38,48 @@ void main() {
     expect(ids[1], ids[0]);
   });
 
-  test('PostgrestException sunucunun KESİN kararı — retry YOK, aynen fırlar',
-      () async {
+  test(
+      'sunucu reddi KESİN karar — retry YOK, ServerRejection olarak yüzeye '
+      'çıkar ve toString() YALNIZCA mesajı verir', () async {
     var calls = 0;
     final api = OnlineApi.withRpc((_) async {
       calls++;
-      throw PostgrestException(message: 'Sıra sende değil.');
+      throw PostgrestException(
+          message: 'Sıra sende değil.', code: 'P0001', details: 'Bad Request');
     });
 
     await expectLater(
       api.submitMove(gameId: 'g1', action: 'pass'),
-      throwsA(isA<PostgrestException>()),
+      throwsA(isA<ServerRejection>()),
     );
     // Kural reddini tekrar denemek anlamsız (ve sunucuyu boşuna yorar).
     expect(calls, 1);
+
+    // ⚠ ASIL İDDİA (11 Eylül 2026 vakası): kullanıcının ekranında
+    // `_errorText` bu nesnenin `toString()`ini gösteriyor. Ham
+    // `PostgrestException.toString()` TÜM alanları basıyordu ve kullanıcı
+    // iPhone'da *"PostgrestException(message: …, code: P0001, details: Bad
+    // Request…)"* gördü. Burada hem mesajın DOĞRU hem de gürültünün YOK
+    // olduğu ölçülüyor — ikincisi olmadan test düzeltmeye duyarsız kalırdı.
+    Object? yakalanan;
+    try {
+      await api.submitMove(gameId: 'g1', action: 'pass');
+    } catch (e) {
+      yakalanan = e;
+    }
+    expect(yakalanan.toString(), 'Sıra sende değil.');
+    expect(yakalanan.toString(), isNot(contains('PostgrestException')));
+    expect(yakalanan.toString(), isNot(contains('P0001')));
+    expect((yakalanan! as ServerRejection).code, 'P0001');
   });
 
-  test('taşıma hatası maxAttempts boyunca sürerse hata yüzeye çıkar',
-      () async {
+  test('sunucu reddi AĞ hatası sanılmaz (isNetworkError false)', () {
+    // `_errorText` önce `isNetworkError`a bakıyor; Türkçe bir iş kuralı
+    // mesajı oraya takılsaydı kullanıcı "bağlantı yok" yazısı görürdü.
+    expect(isNetworkError(const ServerRejection('Sıra sende değil.')), isFalse);
+  });
+
+  test('taşıma hatası maxAttempts boyunca sürerse hata yüzeye çıkar', () async {
     var calls = 0;
     final api = OnlineApi.withRpc((_) async {
       calls++;
@@ -75,8 +100,7 @@ void main() {
       ids.add(params['p_move_id']);
     });
 
-    await api.submitMove(
-        gameId: 'g1', action: 'pass', moveId: 'sabit-move-id');
+    await api.submitMove(gameId: 'g1', action: 'pass', moveId: 'sabit-move-id');
 
     expect(ids, ['sabit-move-id']);
   });

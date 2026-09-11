@@ -1340,3 +1340,34 @@ sonrası: "← Geri", giriş varsayılanı, joker dokunmatik, hukuki sayfalar,
 dokunma hedefleri, bölge kuralı, davet sayfası, hesap silme, `destek@`
 ayrımı ve devamı) ayrı dosyaya taşındı — 7 Eylül 2026, doküman boyutu
 bütçesi. Bölüm numaraları korundu.
+
+## Canlı oyun — sahte "Sıra sende değil." (11 Eylül 2026'da düzeltildi)
+
+Bu maddenin kaynağı gerçek bir saha hatası: hamle sunucuda İŞLENMİŞKEN
+ekranda `Sıra sende değil.` çıkıyordu. Düzeltme idempotency anahtarını
+hamleye bağlı tutuyor; otomatik testler anahtarın korunduğunu kanıtlıyor
+ama **gerçek ağ koşulunu** (yanıtı kaybolan istek) kanıtlayamaz.
+
+- [ ] **Zayıf/kesintili ağda hamle gönder.** Sırası sendeyken taşları koy,
+      `OYNA`ya bas ve gönderim sürerken bağlantıyı kes/aç (uçak modunu
+      kısa süre aç-kapa). Beklenen: ya hamle geçer, ya "bağlantı yok"
+      mesajı çıkar. **ÇIKMAMASI gereken:** `Sıra sende değil.`
+- [ ] **Hata gördükten sonra TEKRAR dene.** Herhangi bir sebeple gönderim
+      hatası aldıysan aynı taşlarla `OYNA`ya tekrar bas. Beklenen: hamle
+      geçer (sunucu aynı anahtarı "zaten işledim" der). ⚠ Ekranda ham
+      `PostgrestException(...)` dizesi ASLA görünmemeli — yalnızca Türkçe
+      cümle.
+- [ ] **Aynı turda ikinci bir hamle SESSİZCE yutulmamalı.** Bir hamle
+      oynadıktan sonra sıra sana tekrar geldiğinde normal oyna: hamle
+      işlenmeli. (Anahtar başarıda temizlenmezse sunucu bunu "zaten
+      işledim" sayıp yutardı — düzeltmenin ters yöndeki riski.)
+- [ ] Aynı üçü **PAS GEÇ** ve **DEĞİŞTİR** için de geçerli.
+
+- [ ] **Yavaş/zayıf ağda bir Canlı oyuna gir.** Listeden bekleyen bir oyuna
+      dokun. Beklenen: ya ekran açılır, ya **en geç ~20 sn içinde**
+      "Tekrar Dene" paneli çıkar. **OLMAMASI gereken:** dakikalarca
+      `Yükleniyor…` yazısında asılı kalmak.
+
+Kayıt: `docs/decisions/live-game.md` → "Sahte 'Sıra sende değil.'" ve
+"Sonsuz 'Yükleniyor…'".
+

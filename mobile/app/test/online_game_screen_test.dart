@@ -163,7 +163,9 @@ void main() {
         myRole: 'invitee',
       ));
       final slots = rematchSlots(g.slots, 'me');
-      expect([for (final s in slots) s.toJson()], [
+      expect([
+        for (final s in slots) s.toJson()
+      ], [
         {'type': 'human', 'user_id': 'me'},
         {'type': 'human', 'user_id': 'esiner'},
       ]);
@@ -182,7 +184,9 @@ void main() {
           slotAi,
         ],
       ));
-      expect([for (final s in rematchSlots(g.slots, 'me')) s.toJson()], [
+      expect([
+        for (final s in rematchSlots(g.slots, 'me')) s.toJson()
+      ], [
         {'type': 'human', 'user_id': 'me'},
         {'type': 'human', 'user_id': 'a'},
         {'type': 'human', 'user_id': 'b'},
@@ -547,7 +551,9 @@ void main() {
       gw.submitFailWith = Exception('ClientException: Failed to fetch');
       await tester.tap(find.text('PAS GEÇ'));
       await tester.pumpAndSettle();
-      await tester.tap(find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
+      await tester.tap(find.descendant(
+          of: find.byType(KDialogCard),
+          matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
       await tester.pumpAndSettle();
       expect(find.text(kOfflineMoveNotice), findsOneWidget);
       expect(find.textContaining('Failed to fetch'), findsNothing);
@@ -555,9 +561,74 @@ void main() {
       gw.submitFailWith = Exception('Sıra sende değil.');
       await tester.tap(find.text('PAS GEÇ'));
       await tester.pumpAndSettle();
-      await tester.tap(find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
+      await tester.tap(find.descendant(
+          of: find.byType(KDialogCard),
+          matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
       await tester.pumpAndSettle();
       expect(find.textContaining('Sıra sende değil.'), findsOneWidget);
+      await unmount(tester);
+    });
+
+    // ⚠ SAHTE "Sıra sende değil." — 11 Eylül 2026, kullanıcı iPhone'da
+    // yaşadı: taşları koydu, OYNA'ya bastı, ekranda hata gördü, GERİ
+    // dönünce hamlenin ASLINDA OYNANDIĞINI gördü. Canlıdan doğrulandı:
+    // sunucuda hamlenin TEK satırı vardı, yani ilk gönderim ulaşmıştı.
+    //
+    // Mekanizma: sunucunun idempotency kontrolü doğru yerde duruyor (turn
+    // kontrolünden ÖNCE), ama anahtar `OnlineApi`nin İÇİNDE üretiliyordu ve
+    // dışarı hiç açılmıyordu. Kullanıcı hatayı görüp tekrar denediğinde
+    // gönderim TAZE bir UUID ile gidiyor, sunucu bunu YENİ bir hamle sanıyor
+    // ve sıra çoktan geçtiği için reddediyordu.
+    //
+    // Negatif eş: `_moveIdFor` yerine her çağrıda `uuidV4()` üretilirse
+    // DÜŞER (id'ler ayrışır).
+    testWidgets('aynı hamlenin İKİNCİ denemesi AYNI moveId ile gider',
+        (tester) async {
+      final gw = await pumpScreen(tester, current: 0);
+
+      Future<void> pasDene() async {
+        await tester.tap(find.text('PAS GEÇ'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.descendant(
+            of: find.byType(KDialogCard),
+            matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
+        await tester.pumpAndSettle();
+      }
+
+      gw.submitFailWith = Exception('Sıra sende değil.');
+      await pasDene();
+      gw.submitFailWith = null;
+      await pasDene();
+
+      expect(gw.submitAttempts, hasLength(2));
+      expect(gw.submitAttempts[0], isNotNull);
+      expect(gw.submitAttempts[1], gw.submitAttempts[0],
+          reason: 'ikinci deneme yeni bir UUID taşırsa sunucunun idempotency '
+              'kontrolü devreye giremez ve sahte "Sıra sende değil." geri '
+              'gelir');
+      await unmount(tester);
+    });
+
+    // Başarıdan SONRA anahtar TEMİZLENMELİ, yoksa bir sonraki tur aynı
+    // id'yi taşır ve sunucu onu "zaten işledim" sayıp hamleyi SESSİZCE
+    // yutar — düzeltmenin ters yöndeki hatası bu olurdu.
+    testWidgets('başarılı gönderimden sonra moveId YENİLENİR', (tester) async {
+      final gw = await pumpScreen(tester, current: 0);
+
+      Future<void> pasDene() async {
+        await tester.tap(find.text('PAS GEÇ'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.descendant(
+            of: find.byType(KDialogCard),
+            matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
+        await tester.pumpAndSettle();
+      }
+
+      await pasDene();
+      await pasDene();
+
+      expect(gw.submitAttempts, hasLength(2));
+      expect(gw.submitAttempts[1], isNot(gw.submitAttempts[0]));
       await unmount(tester);
     });
 
@@ -755,7 +826,9 @@ void main() {
         expect(outsideGhostFinder(), findsNothing,
             reason: 'Hayalet taş havada asılı kaldı.');
         // Kaynak taş gizli kalmamalı: rafta 7 taş da görünür olmalı.
-        expect(find.descendant(of: find.byType(RackWidget), matching: find.byType(TileWidget)),
+        expect(
+            find.descendant(
+                of: find.byType(RackWidget), matching: find.byType(TileWidget)),
             findsNWidgets(7));
         await unmount(tester);
       });
@@ -779,8 +852,7 @@ void main() {
 
       // Uygulama arka plana alındı — cihazda bu anda PointerUp bir daha
       // hiç gelmeyebiliyor; web'in visibilitychange/blur neti bunu temizler.
-      tester.binding
-          .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       await tester.pump();
 
       expect(scrollPhysics(), isNull,
@@ -805,7 +877,9 @@ void main() {
 
       await tester.tap(find.text('PAS GEÇ'));
       await tester.pumpAndSettle();
-      await tester.tap(find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
+      await tester.tap(find.descendant(
+          of: find.byType(KDialogCard),
+          matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
       await tester.pumpAndSettle();
       expect(gw.submitted.single['action'], 'pass');
       await unmount(tester);
@@ -817,7 +891,9 @@ void main() {
 
       await tester.tap(find.text('PAS GEÇ'));
       await tester.pumpAndSettle();
-      await tester.tap(find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
+      await tester.tap(find.descendant(
+          of: find.byType(KDialogCard),
+          matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
       await tester.pumpAndSettle();
       expect(find.textContaining('Sıra sende değil.'), findsOneWidget);
       await unmount(tester);
@@ -893,8 +969,8 @@ void main() {
 
       await tester.tap(find.byTooltip('Kapat'));
       await tester.pumpAndSettle();
-      expect(find.text(trUpper('Görüşleriniz Bizim İçin Önemli')),
-          findsOneWidget);
+      expect(
+          find.text(trUpper('Görüşleriniz Bizim İçin Önemli')), findsOneWidget);
 
       // Formu da kapat ki dispose'da bekleyen bir route kalmasın.
       await tester.tap(find.byTooltip('Kapat'));
@@ -967,7 +1043,9 @@ void main() {
 
       await tester.tap(find.text('TEKRAR OYNA'));
       await tester.pumpAndSettle();
-      await tester.tap(find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
+      await tester.tap(find.descendant(
+          of: find.byType(KDialogCard),
+          matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
       await tester.pumpAndSettle();
 
       expect(gw.createdCounts, [2]);
@@ -997,7 +1075,9 @@ void main() {
 
       await tester.tap(find.text('TEKRAR OYNA'));
       await tester.pumpAndSettle();
-      await tester.tap(find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
+      await tester.tap(find.descendant(
+          of: find.byType(KDialogCard),
+          matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
       await tester.pumpAndSettle();
 
       expect(find.text('Yalnızca arkadaşlarını davet edebilirsin.'),
@@ -1015,13 +1095,16 @@ void main() {
 
     testWidgets(
         'boş taslakta OYNA/GERİ AL AKTİF ve OYNA "Harf yerleştirilmedi." der '
-        '(web: disabled={!canAct} — placed.isEmpty koşulu YOK)', (tester) async {
+        '(web: disabled={!canAct} — placed.isEmpty koşulu YOK)',
+        (tester) async {
       final gw = await pumpScreen(tester, current: 0);
 
       // Hiç taş yerleştirilmemişken ikisi de tıklanabilir olmalı: butonu
       // kapatmak, motorun bu durum için ürettiği mesajı ulaşılamaz kılıyordu.
       expect(
-        tester.widget<NeoButton>(find.widgetWithText(NeoButton, 'OYNA')).onPressed,
+        tester
+            .widget<NeoButton>(find.widgetWithText(NeoButton, 'OYNA'))
+            .onPressed,
         isNotNull,
       );
       expect(

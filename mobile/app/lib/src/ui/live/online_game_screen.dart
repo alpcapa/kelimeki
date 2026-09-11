@@ -76,6 +76,7 @@ import '../loading_note.dart';
 import '../tokens.dart';
 import '../game/invasion_confirm.dart';
 import '../../util/offline_notice.dart';
+import '../../util/uuid.dart';
 import '../../util/online_status.dart';
 import '../../data/error_reporter.dart';
 
@@ -901,7 +902,13 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
         lostShares: [
           for (final s in split.shares) {'to': s.index, 'amount': s.amount}
         ],
+        // Anahtar TURU ve TAŞLARI birlikte kodluyor: aynı hamlenin ikinci
+        // denemesi aynı id'yi taşır, değiştirilen hamle yeni id alır.
+        moveId: _moveIdFor('play|${state.turnCount}|'
+            '${placements.map((p) => '${p['r']},${p['c']},${p['letter']},'
+                '${p['wildLetter'] ?? ''}').join(';')}'),
       );
+      _moveIdTemizle();
     } catch (e) {
       if (mounted) setState(() => _submitError = _errorText(e));
     } finally {
@@ -914,14 +921,19 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     final ok = await showKConfirm(
       context,
       title: 'Pas Geçiyorsun!',
-      message: 'Pas geçmek istediğinden emin misin? Sıran diğer oyuncuya geçer.',
+      message:
+          'Pas geçmek istediğinden emin misin? Sıran diğer oyuncuya geçer.',
       confirmLabel: 'PAS GEÇ',
     );
     if (!ok || !mounted) return;
     setState(() => _busy = true);
     try {
-      await widget.onlineGames
-          .submitMove(gameId: widget.game.id, action: 'pass');
+      await widget.onlineGames.submitMove(
+        gameId: widget.game.id,
+        action: 'pass',
+        moveId: _moveIdFor('pass|${state.turnCount}'),
+      );
+      _moveIdTemizle();
     } catch (e) {
       if (mounted) setState(() => _submitError = _errorText(e));
     } finally {
@@ -937,8 +949,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     if (_busy) return;
     final names = [
       for (final s in widget.game.slots)
-        if (!s.isAi && s.userId != widget.myUserId)
-          s.name ?? 'Bir arkadaşın'
+        if (!s.isAi && s.userId != widget.myUserId) s.name ?? 'Bir arkadaşın'
     ];
     final withAi = widget.game.slots.any((s) => s.isAi);
     // Kabul butonu SOLDA (Parça 25 kuralı) — showKConfirm bunu garanti eder.
@@ -1000,7 +1011,9 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
         gameId: widget.game.id,
         action: 'exchange',
         exchangeLetters: letters,
+        moveId: _moveIdFor('exchange|${state.turnCount}|${letters.join()}'),
       );
+      _moveIdTemizle();
       // Başarılı gönderimde swap modundan çık — sunucu senkronu zaten
       // rafı yenileyecek (web aynı sırayı izliyor).
       if (mounted) _controller.dispatch(const ToggleSwapModeAction());
@@ -1016,8 +1029,41 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   /// `util/offline_notice.dart`, web ile aynı ayrım).
   String _errorText(Object e) {
     if (isNetworkError(e)) return kOfflineMoveNotice;
+    // ⚠ Sunucunun kendi reddi buraya `ServerRejection` olarak geliyor ve
+    // `toString()`i YALNIZCA mesajı veriyor (bkz. `data/online_api.dart`).
+    // 11 Eylül 2026'ya kadar ham `PostgrestException` dökümü ekrana
+    // düşüyordu: *"PostgrestException(message: Sıra sende değil., code:
+    // P0001, details: Bad Request…)"* — kullanıcı iPhone'da gördü.
     final msg = e.toString();
     return msg.isEmpty ? 'Hamle gönderilemedi.' : msg;
+  }
+
+  /// Bekleyen gönderimin idempotency anahtarı ve hangi hamleye ait olduğu.
+  ///
+  /// NEDEN VAR (11 Eylül 2026): kullanıcı taşları koyup OYNA'ya bastı,
+  /// ekranda "Sıra sende değil." gördü, ama hamle SUNUCUDA İŞLENMİŞTİ.
+  /// Sunucunun idempotency kontrolü doğru yerde duruyor (turn kontrolünden
+  /// ÖNCE), ama her gönderim taze bir UUID ürettiğinden ikinci deneme
+  /// sunucuya YENİ bir hamle gibi görünüyordu → sıra çoktan geçtiği için
+  /// sahte ret.
+  ///
+  /// ⚠ Anahtar hamleye BAĞLI: aynı taşlar yeniden gönderilirse aynı id
+  /// (sunucu "zaten işledim" der), oyuncu taşları DEĞİŞTİRİRSE yeni id
+  /// (o gerçekten yeni bir hamledir). Başarıda temizlenir.
+  String? _moveId;
+  String? _moveKey;
+
+  String _moveIdFor(String key) {
+    if (_moveKey != key) {
+      _moveKey = key;
+      _moveId = uuidV4();
+    }
+    return _moveId!;
+  }
+
+  void _moveIdTemizle() {
+    _moveKey = null;
+    _moveId = null;
   }
 
   void _openPlayerCard(int index) {
@@ -1060,7 +1106,6 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     }
   }
 
-
   /// **Iskalanan dokunuşu kurtarır** — taslak sürerken oynanmış bir taşa
   /// dokunulduğunda, komşusundaki taslak taşını hedef sayar.
   ///
@@ -1087,6 +1132,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       if (rr < 0 || rr >= boardSize || cc < 0 || cc >= boardSize) return;
       if (state.placed[cellKey(rr, cc)] != null) adaylar.add((rr, cc));
     }
+
     ekle(r - 1, c);
     ekle(r + 1, c);
     ekle(r, c - 1);
@@ -1133,17 +1179,21 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       if (state.placed.isNotEmpty) {
         final hedef = _nearbyDraftCell(r, c, global);
         if (hedef != null) {
-          await _tapPlacedTile(hedef.$1, hedef.$2,
-              state.placed[cellKey(hedef.$1, hedef.$2)]!);
+          await _tapPlacedTile(
+              hedef.$1, hedef.$2, state.placed[cellKey(hedef.$1, hedef.$2)]!);
         }
         return;
       }
       final store = widget.meanings;
       if (store == null) return;
-      await showMeaningModal(context, store.lookup, isUnavailable: () => store.unavailable, [
-        fullWordAt(state.board, const {}, r, c, 0, 1),
-        fullWordAt(state.board, const {}, r, c, 1, 0),
-      ]);
+      await showMeaningModal(
+          context,
+          store.lookup,
+          isUnavailable: () => store.unavailable,
+          [
+            fullWordAt(state.board, const {}, r, c, 0, 1),
+            fullWordAt(state.board, const {}, r, c, 1, 0),
+          ]);
       return;
     }
     final placedTile = state.placed[k];
@@ -1414,8 +1464,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     // dokunuş sessizce kayboluyordu.
     final s = d.source;
     final rafinUstunde = s is _RackSource && _rackContains(e.position);
-    if (rafinUstunde ||
-        (e.position - d.start).distance < kTapSlopOnRelease) {
+    if (rafinUstunde || (e.position - d.start).distance < kTapSlopOnRelease) {
       await _dokunusOlarakIsle(s, e.position);
       return;
     }
@@ -1520,10 +1569,10 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     final strideY = (grid.size.height + gap) / boardSize;
     // Köşeler ızgaranın YEREL uzayından `localToGlobal` ile — zoom
     // transformu ne olursa olsun doğru (game_screen.dart'taki aynı düzeltme).
-    final tl = stack.globalToLocal(
-        grid.localToGlobal(Offset(c * strideX, r * strideY)));
-    final br = stack.globalToLocal(grid.localToGlobal(Offset(
-        c * strideX + (strideX - gap), r * strideY + (strideY - gap))));
+    final tl = stack
+        .globalToLocal(grid.localToGlobal(Offset(c * strideX, r * strideY)));
+    final br = stack.globalToLocal(grid.localToGlobal(
+        Offset(c * strideX + (strideX - gap), r * strideY + (strideY - gap))));
     return Positioned(
       left: tl.dx,
       top: tl.dy,
@@ -1707,458 +1756,487 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           stats: widget.stats,
           suppress: !state.isGameOver,
           child: Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: Stack(
-              key: _stackKey,
-              children: [
-                // game_screen.dart'taki aynı 680px kart sınırı (bkz. orada,
-                // "web'in tamamı max-w-[680px]" notu) — geniş/yatay ekranda
-                // tahtanın/rafın gölgesi kenardan kırpılmasın diye.
-                // ⚡ REPAINT SINIRI (26 Ağustos 2026 — kapalı testin ilk
-                // gerçek kullanıcıları bildirdi: *"taşları sürerken ağır
-                // çekim, akıcı değil, takılmalar oluyor. Web'de çok hızlı"*).
-                //
-                // Parça 23 sürüklemede REBUILD'i durdurmuştu (hayalet taş
-                // `_dragNotifier` üzerinden kendi küçük alt ağacını
-                // güncelliyor, `BoardWidget.build()` tetiklenmiyor) — ve o
-                // testle kilitli. Ama REPAINT durmuyordu: hayalet, tahtayla
-                // AYNI katmanda duran bir kardeş; hareket ettiği her karede
-                // Flutter bu `Stack`in tamamını yeniden BOYUYOR.
-                //
-                // Bu tahtada boyamanın bedeli olağanüstü: 169 hücrenin
-                // ikişer `MaskFilter.blur`lu iç gölgesi + kartın 20/14/60'lık
-                // üçlüsü ≈ **340 bulanıklaştırma**. Bu sayı zaten bu dosyada
-                // yazılıydı (`_ready` notu) ama yalnızca AÇILIŞ karesi için
-                // çözülmüştü ("Yükleniyor…" ile hareketli karelerin dışına
-                // taşınarak); sürükleme sırasında aynı bedel HER KARE
-                // ödeniyordu.
-                //
-                // `RepaintBoundary` tahtayı kendi katmanına alıyor: sürükleme
-                // boyunca içerik değişmediğinden bir kez boyanıp doku olarak
-                // yeniden kullanılıyor, hayalet üstünde süzülüyor.
-                //
-                // ⚠ Mevcut `BoardWidget.build()` sayacı bunu GÖREMEZ —
-                // `build` ile `paint` ayrı şeyler; sayaç 1 derken cihaz
-                // saniyede 340 blur çiziyordu. Yeni test paint sayıyor.
-                RepaintBoundary(
-                  child: Column(
-                    children: [
-                      // Web'de `min-h-[100dvh] flex flex-col` sayfanın TAMAMI akıyor
-                      // ve 680'lik sınır her bölümün KENDİ üzerinde (GameHeader.tsx,
-                      // Board.tsx, App.tsx'in alt container'ı) — yani hiçbir yerde
-                      // 680 genişliğinde bir KIRPMA kabı yok. Port bir dönem 680'i
-                      // her şeyi saran tek bir kaba koymuştu; kaydırma görünümü o
-                      // kap kadar (680) dar olduğundan tahtanın ~30px taşan gölgesi
-                      // kırpılıyor ve gölge bıçak gibi kesiliyordu (kullanıcı iPad'de
-                      // web ile yan yana koyup bildirdi, 9 Ağustos 2026 — Parça 40).
-                      // Artık web'in deseni birebir: kaydırma görünümü TAM GENİŞLİK,
-                      // 680 sınırı header'ın ve içerik sütununun kendi üzerinde.
-                      Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 680),
-                          child: GameHeader(
-                            state: state,
-                            auth: widget.auth,
-                            stats: widget.stats,
-                            games: widget.games,
-                            feedback: widget.feedback,
-                            friends: widget.friends,
-                            chat: widget.chat,
-                            // Logo yalnızca listeye döner — oyunu BİTİRMEZ.
-                            onLogoTap: () => Navigator.of(context).pop(),
-                            onPlayerTap:
-                                widget.stats == null ? null : _openPlayerCard,
+            backgroundColor: Colors.white,
+            body: SafeArea(
+              child: Stack(
+                key: _stackKey,
+                children: [
+                  // game_screen.dart'taki aynı 680px kart sınırı (bkz. orada,
+                  // "web'in tamamı max-w-[680px]" notu) — geniş/yatay ekranda
+                  // tahtanın/rafın gölgesi kenardan kırpılmasın diye.
+                  // ⚡ REPAINT SINIRI (26 Ağustos 2026 — kapalı testin ilk
+                  // gerçek kullanıcıları bildirdi: *"taşları sürerken ağır
+                  // çekim, akıcı değil, takılmalar oluyor. Web'de çok hızlı"*).
+                  //
+                  // Parça 23 sürüklemede REBUILD'i durdurmuştu (hayalet taş
+                  // `_dragNotifier` üzerinden kendi küçük alt ağacını
+                  // güncelliyor, `BoardWidget.build()` tetiklenmiyor) — ve o
+                  // testle kilitli. Ama REPAINT durmuyordu: hayalet, tahtayla
+                  // AYNI katmanda duran bir kardeş; hareket ettiği her karede
+                  // Flutter bu `Stack`in tamamını yeniden BOYUYOR.
+                  //
+                  // Bu tahtada boyamanın bedeli olağanüstü: 169 hücrenin
+                  // ikişer `MaskFilter.blur`lu iç gölgesi + kartın 20/14/60'lık
+                  // üçlüsü ≈ **340 bulanıklaştırma**. Bu sayı zaten bu dosyada
+                  // yazılıydı (`_ready` notu) ama yalnızca AÇILIŞ karesi için
+                  // çözülmüştü ("Yükleniyor…" ile hareketli karelerin dışına
+                  // taşınarak); sürükleme sırasında aynı bedel HER KARE
+                  // ödeniyordu.
+                  //
+                  // `RepaintBoundary` tahtayı kendi katmanına alıyor: sürükleme
+                  // boyunca içerik değişmediğinden bir kez boyanıp doku olarak
+                  // yeniden kullanılıyor, hayalet üstünde süzülüyor.
+                  //
+                  // ⚠ Mevcut `BoardWidget.build()` sayacı bunu GÖREMEZ —
+                  // `build` ile `paint` ayrı şeyler; sayaç 1 derken cihaz
+                  // saniyede 340 blur çiziyordu. Yeni test paint sayıyor.
+                  RepaintBoundary(
+                    child: Column(
+                      children: [
+                        // Web'de `min-h-[100dvh] flex flex-col` sayfanın TAMAMI akıyor
+                        // ve 680'lik sınır her bölümün KENDİ üzerinde (GameHeader.tsx,
+                        // Board.tsx, App.tsx'in alt container'ı) — yani hiçbir yerde
+                        // 680 genişliğinde bir KIRPMA kabı yok. Port bir dönem 680'i
+                        // her şeyi saran tek bir kaba koymuştu; kaydırma görünümü o
+                        // kap kadar (680) dar olduğundan tahtanın ~30px taşan gölgesi
+                        // kırpılıyor ve gölge bıçak gibi kesiliyordu (kullanıcı iPad'de
+                        // web ile yan yana koyup bildirdi, 9 Ağustos 2026 — Parça 40).
+                        // Artık web'in deseni birebir: kaydırma görünümü TAM GENİŞLİK,
+                        // 680 sınırı header'ın ve içerik sütununun kendi üzerinde.
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 680),
+                            child: GameHeader(
+                              state: state,
+                              auth: widget.auth,
+                              stats: widget.stats,
+                              games: widget.games,
+                              feedback: widget.feedback,
+                              friends: widget.friends,
+                              chat: widget.chat,
+                              // Logo yalnızca listeye döner — oyunu BİTİRMEZ.
+                              onLogoTap: () => Navigator.of(context).pop(),
+                              onPlayerTap:
+                                  widget.stats == null ? null : _openPlayerCard,
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          // Aktif bir taş sürüklemesi varken kaydırma kilitleniyor
-                          // — game_screen.dart'taki aynı düzeltme (bkz. orada,
-                          // "Listener jest arenasına katılmıyor" notu).
-                          physics: ((_dragRef?.enabled ?? false) ||
-                                  _panRef != null)
-                              ? const NeverScrollableScrollPhysics()
-                              : null,
-                          // İçerik sütunu web'in her bölümdeki
-                          // `max-w-[680px] mx-auto`sı gibi BURADA sınırlanıyor
-                          // — kaydırma görünümünün KENDİSİ tam genişlik kalmalı
-                          // ki tahtanın taşan gölgesi kırpılmasın (Parça 40).
-                          child: Center(
-                            child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 680),
-                                child: Column(
-                                  children: [
-                                    Padding(
-                                      // Web `Board.tsx`'in dış sarmalayıcısı:
-                                      // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
-                                      // taşımıştı, alttaki 12px hiç yoktu.
-                                      padding:
-                                          const EdgeInsets.fromLTRB(12, 6, 12, 12),
-                                      child: BoardWidget(
-                                        state: state,
-                                        // "Buradan başla" balonu, taş
-                                        // KALDIRILDIĞI anda kaybolsun diye
-                                        // sürükleme sinyalini alıyor. Bool
-                                        // bir prop olsaydı sürüklemenin
-                                        // başında/sonunda tüm ekranı
-                                        // setState'lemek gerekirdi; böyle
-                                        // yalnızca balon katmanı dinliyor
-                                        // (Parça 23'ün kuralı korunuyor).
-                                        dragListenable: _dragNotifier,
-                                        moveOverlay: moveStatus == null
-                                            ? null
-                                            : MoveOverlay(
-                                                valid: moveStatus.valid,
-                                                cells: moveStatus.cells,
-                                                score: moveStatus.score,
-                                              ),
-                                        onCellTap: _handleCellTap,
-                                        gridKey: _gridKey,
-                                        zoomHint: _zoomHint,
-          zoom: _zoom,
-                                        viewportKey: _viewportKey,
-                                        onBoardPointerDown: _boardPointerDown,
-                                        onBoardPointerMove: _boardPointerMove,
-                                        onBoardPointerUp: _boardPointerUp,
-                                        onBoardPointerCancel: _endBoardPan,
-                                        onOpenHistory: () => showMoveHistoryModal(
-                                            context, _historyState),
-                                        onOpenHelp: () => showHelpModal(context),
-                                        onOpenMessaging: widget.chat == null
-                                            ? null
-                                            : _openMessaging,
-                                        unreadMessageCount:
-                                            _chatState.unreadCount,
-                                        onlineStatus: widget.onlineStatus,
-                                        dragHiddenKey: _hiddenSource
-                                                is _PlacedSource
-                                            ? cellKey(
-                                                (_hiddenSource as _PlacedSource)
-                                                    .r,
-                                                (_hiddenSource as _PlacedSource)
-                                                    .c)
-                                            : null,
-                                        onTilePointerDown: (r, c, e) {
-                                          final t = state.placed[cellKey(r, c)];
-                                          if (t != null) {
-                                            _beginTileDrag(
-                                                _PlacedSource(r, c, t), e);
-                                          }
-                                        },
-                                        onTilePointerMove: _moveTileDrag,
-                                        onTilePointerUp: _endTileDrag,
-                                        onTilePointerCancel: _cancelTileDrag,
-                                      ),
-                                    ),
-                                    // Web: <main> içinde Board'dan hemen sonra mesaj
-                                    // bloğu geliyor ve tek boşluk onun `pt-1`i (4px,
-                                    // aşağıdaki Padding'de) — yani BURADA ek boşluk
-                                    // YOK. Parça 16'da buraya 56px konmuştu ("tahta
-                                    // gölgesi raf kartının opak zemini tarafından
-                                    // eziliyor" gerekçesiyle); ama web de aynı
-                                    // yapıya sahip ve orada sorun yok — gerçek kök
-                                    // sebep Parça 17'de bulundu (max-width 680 hiç
-                                    // uygulanmamış, tahta kenardan kenara gerilip
-                                    // gölgeye yer kalmıyordu). O düzeltmeden sonra
-                                    // bu 56px yalnızca web'den sapan görünür bir
-                                    // boşluk olarak kaldı (kullanıcı 9 Ağustos
-                                    // 2026'da bildirdi).
-                                    // Sıra bende değil VE henüz taş koymadıysam
-                                    // banner (kimin sırası olduğu net kalsın); taş
-                                    // koyunca yerini normal mesaj satırına bırakır.
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(12, 4, 12, 0),
-
-                                      child: (!_canAct &&
-                                              !state.isGameOver &&
-                                              moveStatus == null)
-                                          ? _TurnBanner(
-                                              isAiTurn: _isAiTurn,
-                                              name: _currentName)
-                                          : SizedBox(
-                                              key: const ValueKey('message-line'),
-                                              height: 30,
-                                              child: Center(
-                                                child: Text(
-                                                  liveMessage,
-                                                  maxLines: 2,
-                                                  textAlign: TextAlign.center,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontFamily: 'SpaceMono',
-                                                    fontWeight: FontWeight.bold,
-                                                    color:
-                                                        _messageColor(liveKind),
-                                                  ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            // Aktif bir taş sürüklemesi varken kaydırma kilitleniyor
+                            // — game_screen.dart'taki aynı düzeltme (bkz. orada,
+                            // "Listener jest arenasına katılmıyor" notu).
+                            physics: ((_dragRef?.enabled ?? false) ||
+                                    _panRef != null)
+                                ? const NeverScrollableScrollPhysics()
+                                : null,
+                            // İçerik sütunu web'in her bölümdeki
+                            // `max-w-[680px] mx-auto`sı gibi BURADA sınırlanıyor
+                            // — kaydırma görünümünün KENDİSİ tam genişlik kalmalı
+                            // ki tahtanın taşan gölgesi kırpılmasın (Parça 40).
+                            child: Center(
+                              child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 680),
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        // Web `Board.tsx`'in dış sarmalayıcısı:
+                                        // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
+                                        // taşımıştı, alttaki 12px hiç yoktu.
+                                        padding: const EdgeInsets.fromLTRB(
+                                            12, 6, 12, 12),
+                                        child: BoardWidget(
+                                          state: state,
+                                          // "Buradan başla" balonu, taş
+                                          // KALDIRILDIĞI anda kaybolsun diye
+                                          // sürükleme sinyalini alıyor. Bool
+                                          // bir prop olsaydı sürüklemenin
+                                          // başında/sonunda tüm ekranı
+                                          // setState'lemek gerekirdi; böyle
+                                          // yalnızca balon katmanı dinliyor
+                                          // (Parça 23'ün kuralı korunuyor).
+                                          dragListenable: _dragNotifier,
+                                          moveOverlay: moveStatus == null
+                                              ? null
+                                              : MoveOverlay(
+                                                  valid: moveStatus.valid,
+                                                  cells: moveStatus.cells,
+                                                  score: moveStatus.score,
                                                 ),
-                                              ),
-                                            ),
-                                    ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(12, 6, 12, 0),
-                                      child: IntrinsicHeight(
-                                        child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.stretch,
-                                              children: [
-                                                Expanded(
-                                                  child: KeyedSubtree(
-                                                    key: _rackKey,
-                                                    child: RackWidget(
-                                                      tiles: me.rack,
-                                                      selectedTile:
-                                                          state.selectedTile,
-                                                      onSelect: (i) {
-                                                        if (state.swapMode) {
-                                                          if (!_canAct) return;
-                                                          _controller.dispatch(
-                                                              ToggleSwapTileAction(
-                                                                  i));
-                                                        } else {
-                                                          if (!_canEdit) return;
-                                                          _controller.dispatch(
-                                                              SelectTileAction(i));
-                                                        }
-                                                      },
-                                                      title: me.name,
-                                                      color: _colorOf(_mySlot),
-                                                      swapMode: state.swapMode,
-                                                      swapSelection:
-                                                          state.swapSelection,
-                                                      dragHiddenIndex:
-                                                          _hiddenSource is _RackSource
-                                                              ? (_hiddenSource
-                                                                      as _RackSource)
-                                                                  .index
-                                                              : null,
-                                                      onTilePointerDown: (i, e) {
-                                                        // ⚠ game_screen.dart'takiyle AYNI
-                                                        // yarış ve aynı gerekçe (26 Ağustos
-                                                        // 2026 saha çökmesi). Burada risk
-                                                        // DAHA YÜKSEK: yerel oyunda rafı
-                                                        // yalnızca sen kısaltırsın, Canlı
-                                                        // oyunda sunucudan gelen realtime
-                                                        // güncelleme parmağın altında
-                                                        // kısaltabilir.
-                                                        if (i < 0 ||
-                                                            i >= me.rack.length) {
-                                                          return;
-                                                        }
-                                                        _beginTileDrag(
-                                                            _RackSource(i, me.rack[i]), e);
-                                                      },
-                                                      onTilePointerMove:
-                                                          _moveTileDrag,
-                                                      onTilePointerUp: _endTileDrag,
-                                                      onTilePointerCancel:
-                                                          _cancelTileDrag,
-                                                    ),
-                                                  ),
-                                                ),
-                                                if (!state.swapMode) ...[
-                                                  const SizedBox(width: 6),
-                                                  state.isGameOver
-                                                      // Web (OnlineGameScreen.tsx
-                                                      // ~1018): tek satır,
-                                                      // `text-[15px]` + `px-5` —
-                                                      // OYNA'dan (12px) belirgin
-                                                      // BÜYÜK olması bilinçli, raf
-                                                      // (`flex-1 min-w-0`) buna
-                                                      // göre daralıyor. Port
-                                                      // `\n` ile iki satıra bölüp
-                                                      // 12px'te bırakmıştı.
-                                                      ? NeoButton(
-                                                          label: 'TEKRAR OYNA',
-                                                          variant:
-                                                              NeoButtonVariant.accent,
-                                                          fontSize: 15,
-                                                          letterSpacing: 1.2,
-                                                          padding: const EdgeInsets
-                                                              .symmetric(
-                                                              horizontal: 20),
-                                                          onPressed: _handleRematch,
-                                                        )
-                                                      : NeoButton(
-                                                          label: _busy
-                                                              ? 'GÖNDERİLİYOR…'
-                                                              : 'OYNA',
-                                                          variant:
-                                                              NeoButtonVariant.accent,
-                                                          fontSize:
-                                                              12, // web text-[12px]
-                                                          letterSpacing: 1.2,
-                                                          padding: const EdgeInsets
-                                                              .symmetric(
-                                                              horizontal: 20),
-                                                          // Boş taslakta da aktif —
-                                                          // gerekçe game_screen.dart'ın
-                                                          // aynı satırında (kardeş
-                                                          // ekran çifti).
-                                                          onPressed: _canAct && !_busy
-                                                              ? _handlePlay
-                                                              : null,
-                                                        ),
-                                                ],
-                                              ],
+                                          onCellTap: _handleCellTap,
+                                          gridKey: _gridKey,
+                                          zoomHint: _zoomHint,
+                                          zoom: _zoom,
+                                          viewportKey: _viewportKey,
+                                          onBoardPointerDown: _boardPointerDown,
+                                          onBoardPointerMove: _boardPointerMove,
+                                          onBoardPointerUp: _boardPointerUp,
+                                          onBoardPointerCancel: _endBoardPan,
+                                          onOpenHistory: () =>
+                                              showMoveHistoryModal(
+                                                  context, _historyState),
+                                          onOpenHelp: () =>
+                                              showHelpModal(context),
+                                          onOpenMessaging: widget.chat == null
+                                              ? null
+                                              : _openMessaging,
+                                          unreadMessageCount:
+                                              _chatState.unreadCount,
+                                          onlineStatus: widget.onlineStatus,
+                                          dragHiddenKey:
+                                              _hiddenSource is _PlacedSource
+                                                  ? cellKey(
+                                                      (_hiddenSource
+                                                              as _PlacedSource)
+                                                          .r,
+                                                      (_hiddenSource
+                                                              as _PlacedSource)
+                                                          .c)
+                                                  : null,
+                                          onTilePointerDown: (r, c, e) {
+                                            final t =
+                                                state.placed[cellKey(r, c)];
+                                            if (t != null) {
+                                              _beginTileDrag(
+                                                  _PlacedSource(r, c, t), e);
+                                            }
+                                          },
+                                          onTilePointerMove: _moveTileDrag,
+                                          onTilePointerUp: _endTileDrag,
+                                          onTilePointerCancel: _cancelTileDrag,
                                         ),
                                       ),
-                                    ),
-                                    Padding(
-                                      // Üst boşluk 8→24: raf kartının kendi gölgesi
-                                      // game_screen.dart ile AYNI sebeple (bkz. orada).
-                                      padding: const EdgeInsets.fromLTRB(
-                                          12, 6, 12, 12),
-                                      child: state.swapMode
-                                          ? Row(children: [
-                                              Expanded(
-                                                child: NeoButton(
-                                                  letterSpacing: 1.2,
-                                                  lineHeight: 1.5,
-                                                  label: state.swapSelection
-                                                          .isNotEmpty
-                                                      ? 'DEĞİŞTİR (${state.swapSelection.length})'
-                                                      : 'DEĞİŞTİR',
-                                                  variant: NeoButtonVariant.gold,
-                                                  onPressed: _canAct &&
-                                                          !_busy &&
-                                                          state.swapSelection
-                                                              .isNotEmpty
-                                                      ? _handleConfirmSwap
-                                                      : null,
+                                      // Web: <main> içinde Board'dan hemen sonra mesaj
+                                      // bloğu geliyor ve tek boşluk onun `pt-1`i (4px,
+                                      // aşağıdaki Padding'de) — yani BURADA ek boşluk
+                                      // YOK. Parça 16'da buraya 56px konmuştu ("tahta
+                                      // gölgesi raf kartının opak zemini tarafından
+                                      // eziliyor" gerekçesiyle); ama web de aynı
+                                      // yapıya sahip ve orada sorun yok — gerçek kök
+                                      // sebep Parça 17'de bulundu (max-width 680 hiç
+                                      // uygulanmamış, tahta kenardan kenara gerilip
+                                      // gölgeye yer kalmıyordu). O düzeltmeden sonra
+                                      // bu 56px yalnızca web'den sapan görünür bir
+                                      // boşluk olarak kaldı (kullanıcı 9 Ağustos
+                                      // 2026'da bildirdi).
+                                      // Sıra bende değil VE henüz taş koymadıysam
+                                      // banner (kimin sırası olduğu net kalsın); taş
+                                      // koyunca yerini normal mesaj satırına bırakır.
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            12, 4, 12, 0),
+                                        child: (!_canAct &&
+                                                !state.isGameOver &&
+                                                moveStatus == null)
+                                            ? _TurnBanner(
+                                                isAiTurn: _isAiTurn,
+                                                name: _currentName)
+                                            : SizedBox(
+                                                key: const ValueKey(
+                                                    'message-line'),
+                                                height: 30,
+                                                child: Center(
+                                                  child: Text(
+                                                    liveMessage,
+                                                    maxLines: 2,
+                                                    textAlign: TextAlign.center,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      fontFamily: 'SpaceMono',
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: _messageColor(
+                                                          liveKind),
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
-                                              const SizedBox(width: 6),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            12, 6, 12, 0),
+                                        child: IntrinsicHeight(
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
                                               Expanded(
-                                                child: NeoButton(
-                                                  letterSpacing: 1.2,
-                                                  lineHeight: 1.5,
-                                                  label: 'VAZGEÇ',
-                                                  onPressed: _canAct
-                                                      ? () => _controller.dispatch(
-                                                          const ToggleSwapModeAction())
-                                                      : null,
+                                                child: KeyedSubtree(
+                                                  key: _rackKey,
+                                                  child: RackWidget(
+                                                    tiles: me.rack,
+                                                    selectedTile:
+                                                        state.selectedTile,
+                                                    onSelect: (i) {
+                                                      if (state.swapMode) {
+                                                        if (!_canAct) return;
+                                                        _controller.dispatch(
+                                                            ToggleSwapTileAction(
+                                                                i));
+                                                      } else {
+                                                        if (!_canEdit) return;
+                                                        _controller.dispatch(
+                                                            SelectTileAction(
+                                                                i));
+                                                      }
+                                                    },
+                                                    title: me.name,
+                                                    color: _colorOf(_mySlot),
+                                                    swapMode: state.swapMode,
+                                                    swapSelection:
+                                                        state.swapSelection,
+                                                    dragHiddenIndex: _hiddenSource
+                                                            is _RackSource
+                                                        ? (_hiddenSource
+                                                                as _RackSource)
+                                                            .index
+                                                        : null,
+                                                    onTilePointerDown: (i, e) {
+                                                      // ⚠ game_screen.dart'takiyle AYNI
+                                                      // yarış ve aynı gerekçe (26 Ağustos
+                                                      // 2026 saha çökmesi). Burada risk
+                                                      // DAHA YÜKSEK: yerel oyunda rafı
+                                                      // yalnızca sen kısaltırsın, Canlı
+                                                      // oyunda sunucudan gelen realtime
+                                                      // güncelleme parmağın altında
+                                                      // kısaltabilir.
+                                                      if (i < 0 ||
+                                                          i >= me.rack.length) {
+                                                        return;
+                                                      }
+                                                      _beginTileDrag(
+                                                          _RackSource(
+                                                              i, me.rack[i]),
+                                                          e);
+                                                    },
+                                                    onTilePointerMove:
+                                                        _moveTileDrag,
+                                                    onTilePointerUp:
+                                                        _endTileDrag,
+                                                    onTilePointerCancel:
+                                                        _cancelTileDrag,
+                                                  ),
                                                 ),
                                               ),
-                                            ])
-                                          // IntrinsicHeight + stretch: game_screen.dart ile AYNI sebep — web'in
-                                          // flex satırı butonları EN UZUNA (TORBA'nın 13px sayacı) eşitliyor,
-                                          // Flutter Row varsayılanı `center` bunu yapmıyor (bkz. orada).
-                                          : IntrinsicHeight(
-                                              child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.stretch,
-                                              children: [
-                                              Expanded(
-                                                child: NeoButton(
-                                                  letterSpacing: 1.2,
-                                                  lineHeight: 1.5,
-                                                  label: 'PAS GEÇ',
-                                                  onPressed: _canAct && !_busy
-                                                      ? _handlePass
-                                                      : null,
+                                              if (!state.swapMode) ...[
+                                                const SizedBox(width: 6),
+                                                state.isGameOver
+                                                    // Web (OnlineGameScreen.tsx
+                                                    // ~1018): tek satır,
+                                                    // `text-[15px]` + `px-5` —
+                                                    // OYNA'dan (12px) belirgin
+                                                    // BÜYÜK olması bilinçli, raf
+                                                    // (`flex-1 min-w-0`) buna
+                                                    // göre daralıyor. Port
+                                                    // `\n` ile iki satıra bölüp
+                                                    // 12px'te bırakmıştı.
+                                                    ? NeoButton(
+                                                        label: 'TEKRAR OYNA',
+                                                        variant:
+                                                            NeoButtonVariant
+                                                                .accent,
+                                                        fontSize: 15,
+                                                        letterSpacing: 1.2,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 20),
+                                                        onPressed:
+                                                            _handleRematch,
+                                                      )
+                                                    : NeoButton(
+                                                        label: _busy
+                                                            ? 'GÖNDERİLİYOR…'
+                                                            : 'OYNA',
+                                                        variant:
+                                                            NeoButtonVariant
+                                                                .accent,
+                                                        fontSize:
+                                                            12, // web text-[12px]
+                                                        letterSpacing: 1.2,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 20),
+                                                        // Boş taslakta da aktif —
+                                                        // gerekçe game_screen.dart'ın
+                                                        // aynı satırında (kardeş
+                                                        // ekran çifti).
+                                                        onPressed:
+                                                            _canAct && !_busy
+                                                                ? _handlePlay
+                                                                : null,
+                                                      ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        // Üst boşluk 8→24: raf kartının kendi gölgesi
+                                        // game_screen.dart ile AYNI sebeple (bkz. orada).
+                                        padding: const EdgeInsets.fromLTRB(
+                                            12, 6, 12, 12),
+                                        child: state.swapMode
+                                            ? Row(children: [
+                                                Expanded(
+                                                  child: NeoButton(
+                                                    letterSpacing: 1.2,
+                                                    lineHeight: 1.5,
+                                                    label: state.swapSelection
+                                                            .isNotEmpty
+                                                        ? 'DEĞİŞTİR (${state.swapSelection.length})'
+                                                        : 'DEĞİŞTİR',
+                                                    variant:
+                                                        NeoButtonVariant.gold,
+                                                    onPressed: _canAct &&
+                                                            !_busy &&
+                                                            state.swapSelection
+                                                                .isNotEmpty
+                                                        ? _handleConfirmSwap
+                                                        : null,
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: NeoButton(
-                                                  letterSpacing: 1.2,
-                                                  lineHeight: 1.5,
-                                                  label: 'DEĞİŞTİR',
-                                                  onPressed: _canAct &&
-                                                          state.bag.isNotEmpty
-                                                      ? () => _controller.dispatch(
-                                                          const ToggleSwapModeAction())
-                                                      : null,
+                                                const SizedBox(width: 6),
+                                                Expanded(
+                                                  child: NeoButton(
+                                                    letterSpacing: 1.2,
+                                                    lineHeight: 1.5,
+                                                    label: 'VAZGEÇ',
+                                                    onPressed: _canAct
+                                                        ? () => _controller
+                                                            .dispatch(
+                                                                const ToggleSwapModeAction())
+                                                        : null,
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: NeoButton(
-                                                  letterSpacing: 1.2,
-                                                  lineHeight: 1.5,
-                                                  label: 'KARIŞTIR',
-                                                  onPressed: _canEdit
-                                                      ? () => _controller.dispatch(
-                                                          const ShuffleRackAction())
-                                                      : null,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: NeoButton(
-                                                  letterSpacing: 1.2,
-                                                  lineHeight: 1.5,
-                                                  label: 'GERİ AL',
-                                                  // Boş taslakta da aktif (web
-                                                  // `disabled={!canAct}`).
-                                                  onPressed: _canEdit
-                                                      ? () => _controller.dispatch(
-                                                          const RecallAllAction())
-                                                      : null,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: NeoButton(
-                                                  letterSpacing: 1.2,
-                                                  lineHeight: 1.5,
-                                                  label:
-                                                      'TORBA ${state.bag.length}',
-                                                  // Web App.tsx ~1360 (bkz.
-                                                  // game_screen.dart'taki aynı
-                                                  // NeoButton çağrısı — ikisi de
-                                                  // AYNI PR'da güncellenmeli).
-                                                  richLabel: [
-                                                    const TextSpan(
-                                                        text: 'TORBA '),
-                                                    TextSpan(
-                                                      text: '${state.bag.length}',
-                                                      style: const TextStyle(
-                                                        fontSize: 13,
-                                                        color: kAccent,
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                              ])
+                                            // IntrinsicHeight + stretch: game_screen.dart ile AYNI sebep — web'in
+                                            // flex satırı butonları EN UZUNA (TORBA'nın 13px sayacı) eşitliyor,
+                                            // Flutter Row varsayılanı `center` bunu yapmıyor (bkz. orada).
+                                            : IntrinsicHeight(
+                                                child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .stretch,
+                                                    children: [
+                                                    Expanded(
+                                                      child: NeoButton(
+                                                        letterSpacing: 1.2,
+                                                        lineHeight: 1.5,
+                                                        label: 'PAS GEÇ',
+                                                        onPressed:
+                                                            _canAct && !_busy
+                                                                ? _handlePass
+                                                                : null,
                                                       ),
                                                     ),
-                                                  ],
-                                                  onPressed: () =>
-                                                      showRemainingTilesModal(
-                                                          context,
-                                                          state,
-                                                          _mySlot),
-                                                ),
-                                              ),
-                                            ])),
-                                    ),
-                                  ],
-                                )),
+                                                    const SizedBox(width: 6),
+                                                    Expanded(
+                                                      child: NeoButton(
+                                                        letterSpacing: 1.2,
+                                                        lineHeight: 1.5,
+                                                        label: 'DEĞİŞTİR',
+                                                        onPressed: _canAct &&
+                                                                state.bag
+                                                                    .isNotEmpty
+                                                            ? () => _controller
+                                                                .dispatch(
+                                                                    const ToggleSwapModeAction())
+                                                            : null,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Expanded(
+                                                      child: NeoButton(
+                                                        letterSpacing: 1.2,
+                                                        lineHeight: 1.5,
+                                                        label: 'KARIŞTIR',
+                                                        onPressed: _canEdit
+                                                            ? () => _controller
+                                                                .dispatch(
+                                                                    const ShuffleRackAction())
+                                                            : null,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Expanded(
+                                                      child: NeoButton(
+                                                        letterSpacing: 1.2,
+                                                        lineHeight: 1.5,
+                                                        label: 'GERİ AL',
+                                                        // Boş taslakta da aktif (web
+                                                        // `disabled={!canAct}`).
+                                                        onPressed: _canEdit
+                                                            ? () => _controller
+                                                                .dispatch(
+                                                                    const RecallAllAction())
+                                                            : null,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Expanded(
+                                                      child: NeoButton(
+                                                        letterSpacing: 1.2,
+                                                        lineHeight: 1.5,
+                                                        label:
+                                                            'TORBA ${state.bag.length}',
+                                                        // Web App.tsx ~1360 (bkz.
+                                                        // game_screen.dart'taki aynı
+                                                        // NeoButton çağrısı — ikisi de
+                                                        // AYNI PR'da güncellenmeli).
+                                                        richLabel: [
+                                                          const TextSpan(
+                                                              text: 'TORBA '),
+                                                          TextSpan(
+                                                            text:
+                                                                '${state.bag.length}',
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 13,
+                                                              color: kAccent,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                        onPressed: () =>
+                                                            showRemainingTilesModal(
+                                                                context,
+                                                                state,
+                                                                _mySlot),
+                                                      ),
+                                                    ),
+                                                  ])),
+                                      ),
+                                    ],
+                                  )),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                // game_screen.dart ile birebir aynı overlay deseni (bkz.
-                // orada) — `_dragNotifier`'ı dinleyen tek, koşulsuz duran
-                // ValueListenableBuilder.
-                ValueListenableBuilder<_Ghost?>(
-                  valueListenable: _dragNotifier,
-                  builder: (context, ghost, _) {
-                    if (ghost == null) return const SizedBox.shrink();
-                    return Stack(children: [
-                      _hoverHighlight(ghost),
-                      _buildGhost(ghost),
-                    ]);
-                  },
-                ),
-              ],
+                  // game_screen.dart ile birebir aynı overlay deseni (bkz.
+                  // orada) — `_dragNotifier`'ı dinleyen tek, koşulsuz duran
+                  // ValueListenableBuilder.
+                  ValueListenableBuilder<_Ghost?>(
+                    valueListenable: _dragNotifier,
+                    builder: (context, ghost, _) {
+                      if (ghost == null) return const SizedBox.shrink();
+                      return Stack(children: [
+                        _hoverHighlight(ghost),
+                        _buildGhost(ghost),
+                      ]);
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
           ),
         );
       },

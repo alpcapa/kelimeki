@@ -8,6 +8,32 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../util/uuid.dart';
 
+/// Sunucunun İŞ KURALI reddi — "Sıra sende değil.", "Oyun zaten bitti." gibi.
+///
+/// NEDEN VAR (11 Eylül 2026): `PostgrestException.toString()` TÜM alanları
+/// basıyor ve bu dize kullanıcının ekranına düşüyordu —
+/// *"PostgrestException(message: Sıra sende değil., code: P0001, details:
+/// Bad Request, hint: null)"*. Kullanıcı bunu iPhone'da gördü.
+///
+/// ⚠ Düzeltme UI'da DEĞİL burada: `PostgrestException` bir Supabase tipi ve
+/// bu depoda Supabase veri katmanında kalıyor. UI'ın o tipi tanıması
+/// gerekseydi katman sınırı delinirdi; onun yerine sunucu reddi burada
+/// mesajına soyuluyor ve `toString()` yalnızca mesajı veriyor. Böylece
+/// ekranın mevcut `_errorText`i (ve web ikizinin `err.message`'ı) aynı
+/// sonucu üretiyor — parite ayrışması kapandı.
+///
+/// ⚠ Ağ hatası DEĞİL: `isNetworkError` metin kalıplarına bakıyor ve Türkçe
+/// bir iş kuralı mesajı o kalıpların hiçbirine denk gelmiyor, yani bu tip
+/// "bağlantı yok" diye maskelenmez.
+class ServerRejection implements Exception {
+  final String message;
+  final String? code;
+  const ServerRejection(this.message, {this.code});
+
+  @override
+  String toString() => message;
+}
+
 /// `client.rpc` çağrısının test kancası — bkz. `OnlineApi.withRpc`.
 typedef SubmitMoveRpc = Future<void> Function(Map<String, Object?> params);
 
@@ -78,8 +104,11 @@ class OnlineApi {
           'p_move_id': id,
         });
         return;
-      } on PostgrestException {
-        rethrow; // sunucu kararı — yeniden deneme anlamsız/yanlış
+      } on PostgrestException catch (e) {
+        // Sunucu kararı — yeniden deneme anlamsız/yanlış. Ham exception
+        // dökümü ekrana düşmesin diye mesajına soyuluyor (bkz.
+        // `ServerRejection`).
+        throw ServerRejection(e.message, code: e.code);
       } catch (_) {
         if (attempt >= maxAttempts) rethrow;
         // 400ms, 800ms — kısa üstel bekleme; id aynı kaldığından güvenli.
