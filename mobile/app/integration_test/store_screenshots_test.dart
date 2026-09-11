@@ -62,6 +62,20 @@ import 'package:supabase_flutter/supabase_flutter.dart' show SupabaseClient, Use
 const int _kSeed = 11;
 const int _kMoves = 12;
 
+/// 2. karenin (4 KİŞİLİK oyun) tohumu ve hamle sayısı — bu da Linux'ta
+/// motoru koşturarak SEÇİLDİ (11 Eylül 2026), 1. kareyle AYNI ölçütlerle:
+/// dört bölgenin de büyümüş olması · oyuncunun EZİLMEMESİ · rafın
+/// OYNANABİLİR olması · tahtanın dolu görünmesi · skorların çekişmeli
+/// olması. 60 tohum × 2 hamle sayısı tarandı, beş aday geçti; bu seçildi.
+///
+/// Ölçülen sonuç: 71 taş, skorlar **72-68-61-77** (fark 16, çekişmeli),
+/// bölgeler **30/24/24/27** (dördü de net okunuyor, oyuncununki en büyük),
+/// raf `UAAKLŞI` — 4 ünlü + 3 sessiz, yani ekranda oynanabilir bir el var.
+/// ⚠ Elenen aday `26`: skorlar 73-73-73-77'de eşitleniyordu ve karede
+/// UYDURMA duruyordu.
+const int _kSeed4 = 12;
+const int _kMoves4 = 20;
+
 /// Ekranda görünen ad. Gerçek bir kişinin adı ya da e-postası KARE'ye
 /// giremez (Play turunun yazılı gizlilik kuralı).
 ///
@@ -95,7 +109,7 @@ const String _kPlayerName = 'Ege';
 /// adımı DEĞİŞMEDEN geçiyor; CI'a yeni bir araç/bağımlılık girmiyor.
 const Map<String, String> _kBasliklar = {
   '01-oyun-ekrani': 'Köşenden başla, bölgeni büyüt',
-  '02-kurulmus-hamle': 'Kelimeni kur, puanını gör',
+  '02-dort-kisilik': 'Dört oyuncu, dört bölge',
   '03-arkadasinla': 'Arkadaşınla sırayla oyna',
   '04-skor-karti': 'İstatistiklerini takip et',
   '05-kelime-anlami': 'Kelimenin anlamı bir dokunuş',
@@ -270,14 +284,14 @@ void _stageBestMove(GameController controller) {
 }
 
 /// Kareleri çeken ekranların ortak kurulumu.
-GameController _oyunKontrolcusu() {
+GameController _oyunKontrolcusu({int oyuncu = 2}) {
   final controller = GameController(
     words: _words,
     autoPlayAi: false, // kare sabit kalsın; YZ araya girip tahtayı değiştirmesin
     nowIso: () => '',
-    rng: Mulberry32(_kSeed),
+    rng: Mulberry32(oyuncu == 4 ? _kSeed4 : _kSeed),
   );
-  controller.dispatch(ResumeSavedAction(_midGameState()));
+  controller.dispatch(ResumeSavedAction(_midGameState(oyuncu: oyuncu)));
   return controller;
 }
 
@@ -313,26 +327,36 @@ final _navKey = GlobalKey<NavigatorState>();
 
 /// Oyunun ortasındaki tahtayı GERÇEK motorla üretir.
 ///
-/// İki YZ oynatılır (reducer yalnızca sırası gelen oyuncu YZ ise hamle
-/// yapıyor — `_aiPlay`), sonra 0. koltuk sunum için insana çevrilir. Böylece
-/// tahta motorun kendi kurallarıyla oluşmuş, kurallara uygun ve tekrar
-/// üretilebilir olur; elle "güzel" bir tahta uydurulmuş olmaz.
-GameState _midGameState() {
-  final engine =
-      GameEngine(words: _words, rng: Mulberry32(_kSeed), nowIso: () => '');
+/// Tüm koltuklar YZ olarak oynatılır (reducer yalnızca sırası gelen oyuncu
+/// YZ ise hamle yapıyor — `_aiPlay`), sonra 0. koltuk sunum için insana
+/// çevrilir. Böylece tahta motorun kendi kurallarıyla oluşmuş, kurallara
+/// uygun ve tekrar üretilebilir olur; elle "güzel" bir tahta uydurulmuş
+/// olmaz.
+///
+/// [oyuncu] 2 ya da 4 — 1. kare 2 kişilik, 2. kare 4 kişilik oyunu
+/// gösteriyor (kullanıcı kararı, 11 Eylül 2026: *"4 kişilik oyun bize özel
+/// ve başka hiçbir kelime oyununda yok"*). Öncesinde iki kare de 2 kişilikti
+/// ve neredeyse aynı görünüyordu.
+GameState _midGameState({int oyuncu = 2, int? tohum, int? hamle}) {
+  assert(oyuncu == 2 || oyuncu == 4, 'oyun 2 ya da 4 kişilik');
+  final engine = GameEngine(
+    words: _words,
+    rng: Mulberry32(tohum ?? (oyuncu == 4 ? _kSeed4 : _kSeed)),
+    nowIso: () => '',
+  );
   var s = engine.reduce(
     createInitialState(),
-    const StartAction([
-      PlayerSetup(name: '', isAI: true),
-      PlayerSetup(name: '', isAI: true),
+    StartAction([
+      for (var i = 0; i < oyuncu; i++) const PlayerSetup(name: '', isAI: true),
     ]),
   );
-  for (var i = 0; i < _kMoves && !s.isGameOver; i++) {
+  final tavan = hamle ?? (oyuncu == 4 ? _kMoves4 : _kMoves);
+  for (var i = 0; i < tavan && !s.isGameOver; i++) {
     s = engine.reduce(s, const AiPlayAction());
   }
   return s.copyWith(players: [
     s.players[0].copyWith(name: _kPlayerName, isAI: false),
-    s.players[1],
+    ...s.players.skip(1),
   ]);
 }
 
@@ -388,14 +412,24 @@ void main() {
     controller.dispose();
   });
 
-  testWidgets('02 — kurulmuş hamle (yeşil dış hat + puan rozeti)',
+  // 2. kare 11 Eylül 2026'da KONU DEĞİŞTİRDİ. Öncesinde 1. karenin
+  // neredeyse aynısıydı (aynı 2 kişilik tahta, tek farkı kurulmuş hamle) ve
+  // kullanıcı bunu yakaladı: *"1 ve 2 neredeyse aynı... 4 kişilik oyun bize
+  // özel ve başka hiçbir kelime oyununda yok"*. Kare artık DÖRT KİŞİLİK
+  // oyunu gösteriyor — başlıkta dört skor kutusu, tahtada dört ayrı bölge.
+  //
+  // ⚠ Kurulmuş hamle KORUNDU: yeşil dış hat + puan rozeti kareyi canlı
+  // tutuyor ve dört bölge anlatısıyla yarışmıyor (biri tahtanın rengi, öteki
+  // tek bir kelimenin çerçevesi). Yani konu değişirken hiçbir şey
+  // kaybedilmedi.
+  testWidgets('02 — dört kişilik oyun (dört bölge + kurulmuş hamle)',
       (tester) async {
-    final controller = _oyunKontrolcusu();
+    final controller = _oyunKontrolcusu(oyuncu: 4);
     _stageBestMove(controller);
-    await tester.pumpWidget(_oyunEkrani(controller, '02-kurulmus-hamle'));
+    await tester.pumpWidget(_oyunEkrani(controller, '02-dort-kisilik'));
     await _settle(tester);
 
-    await _kareCek(binding, tester, '02-kurulmus-hamle');
+    await _kareCek(binding, tester, '02-dort-kisilik');
     controller.dispose();
   });
 

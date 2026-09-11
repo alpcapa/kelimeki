@@ -1208,8 +1208,9 @@ gösteriyor). Yalnızca MAĞAZAYA giden kare olamaz.
 **Liste `marketing/play-store/metin.md` → "Çekim listesi — tek tek"de.**
 Buraya KOPYALANMIYOR; tek kaynak orası. Altı zorunlu + bir isteğe bağlı:
 
-1. Oyun ekranı, oyunun ortası *(en önemli kare)*
-2. Geçerli bir hamle kurulmuşken (yeşil dış hat + puan rozeti)
+1. Oyun ekranı, oyunun ortası — **2 kişilik** *(en önemli kare)*
+2. ~~Geçerli bir hamle kurulmuşken~~ → **4 KİŞİLİK oyun** + kurulmuş hamle
+   (11 Eylül 2026'da değişti, aşağı bkz.)
 3. Kurulum ekranı, "Arkadaşınla" sekmesi
 4. Skor kartı
 5. Kelime anlamı (TDK penceresi)
@@ -1345,7 +1346,37 @@ oynadı. +22 puan."*), raf `KAOEMLE` ve "TORBA 43".
    kuralı *"e-posta geçen ekran yok"* diyor. Mağaza kimliğinin `email`i
    bilerek boş.
 
-### 2. kare eklendi — 9 Eylül 2026
+### 2. kare KONU DEĞİŞTİRDİ — 4 kişilik oyun (11 Eylül 2026)
+
+⚠ **Kullanıcı kareleri yan yana görünce yakaladı:** *"1 ve 2 neredeyse
+aynı... ilk slayt 2, ikinci slayt 4 kişilik oyun örneği göstermeli. 4
+kişilik oyun bize özel ve başka hiçbir kelime oyununda yok."*
+
+Haklıydı: ikisi de AYNI 2 kişilik tahtaydı, tek fark kurulmuş hamleydi —
+yani iki kare tek bir şeyi anlatıyordu ve ürünün en ayırt edici özelliği
+(4 kişilik oyun) sette HİÇ görünmüyordu.
+
+Kare artık **`02-dort-kisilik`**: dört skor kutusu, tahtada dört ayrı bölge.
+⚠ **Kurulmuş hamle KORUNDU** — yeşil dış hat + puan rozeti kareyi canlı
+tutuyor ve dört bölge anlatısıyla yarışmıyor (biri tahtanın rengi, öteki tek
+bir kelimenin çerçevesi). Yani konu değişirken hiçbir şey kaybedilmedi.
+
+**Tohum yine ELLE SEÇİLMEDİ**, motor koşturularak ölçüldü — 1. kareyle AYNI
+ölçütler: dört bölge de büyümüş · oyuncu ezilmiyor · raf oynanabilir · tahta
+dolu · skorlar çekişmeli. 60 tohum × 2 hamle sayısı tarandı, beş aday geçti,
+**tohum 12 / 20 hamle** seçildi:
+
+| | |
+|---|---|
+| Taş | 71 |
+| Skorlar | **72-68-61-77** (fark 16 — çekişmeli) |
+| Bölgeler | **30/24/24/27** — dördü de net okunuyor, oyuncununki en büyük |
+| Raf | `UAAKLŞI` — 4 ünlü + 3 sessiz, yani ekranda oynanabilir bir el var |
+
+⚠ Elenen aday **26**: skorlar 73-73-73-77'de eşitleniyordu ve karede
+**uydurma** duruyordu.
+
+### (arşiv) 2. karenin ÖNCEKİ hâli — kurulmuş hamle, 9 Eylül 2026
 
 `02-kurulmus-hamle`: oyuncunun rafından tahtaya kurulmuş ama henüz
 onaylanmamış bir hamle — yeşil dış hat, **+14** puan rozeti, *"Oyna tuşuyla
@@ -1559,7 +1590,7 @@ tablo oradan KOPYA, ikisi ayrışırsa kaynak odur):
 | Kare | Başlık |
 |---|---|
 | `01-oyun-ekrani` | Köşenden başla, bölgeni büyüt |
-| `02-kurulmus-hamle` | Kelimeni kur, puanını gör |
+| `02-dort-kisilik` | Dört oyuncu, dört bölge |
 | `03-arkadasinla` | Arkadaşınla sırayla oyna |
 | `04-skor-karti` | İstatistiklerini takip et |
 | `05-kelime-anlami` | Kelimenin anlamı bir dokunuş |
