@@ -1432,47 +1432,60 @@ işe bir `timeout-minutes` eklenmeli (tek vakada eklenmedi); ayrıca *"koşu
 iptal oldu"* ile *"iş düştü"* ayrımını hatırla — ikisi ekran görüntüsünde
 aynı görünüyor.
 
-### 📦 TAZE KARELER HAZIR — `7d6361e`, 11 Eylül 2026 (yeniden koşturma GEREKMEZ)
+### 🔴 DEBUG BANDI — bugüne kadarki BÜTÜN kareler geçersiz (11 Eylül 2026)
 
-**Mağazaya gidecek set BU — ve o güne kadarki BÜTÜN setler çöp.** Başlıklı
-kompozisyonun, 7. karenin ve alfa düzeltmesinin birlikte koştuğu ilk tur;
-`claude/dal-yok-acik-pr-yok-qd4uin` dalında **yeşil** (08:43→09:01 UTC).
-Üç kapı da aynı adımda geçti: `KARE_SAYISI` sayımı · piksel ölçüsü ·
-`hasAlpha = no` (yedi karenin yedisi, iki cihazda).
+**Kullanıcı artefaktı indirip PNG'ye baktı ve sağ üst köşede kırmızı bir
+`DEBUG` şeridi gördü.** Şerit Flutter'ın kendi işareti: `flutter drive`
+uygulamayı **debug modda** derliyor ve `MaterialApp` o modda
+`debugShowCheckedModeBanner`ı varsayılan `true` kabul edip bandı çiziyor.
+Depoda bu bayrak hiçbir yerde kapatılmamıştı.
 
-| | |
+**Kapsam: yedi karenin yedisi, bugüne kadarki HER koşu.** Üretim
+derlemesinde bant görünmez (debug'a özgü), yani uygulamanın hatası değil —
+yalnızca bu boru hattının.
+
+⚠ **Neden hiçbir kapı yakalamadı:** kare sayımı, piksel ölçüsü ve alfa
+kontrolü üçü de dosyanın **ŞEKLİNE** bakıyor, **İÇERİĞİNE** değil. Ajan da
+artefaktı indiremediği için (iki kapı kapalı, §"TAZE KARELER") kareyi hiç
+GÖREMEDİ. Arızayı bulan tek şey bir insanın PNG'ye bakması oldu.
+
+**Düzeltme:** `debugShowCheckedModeBanner: false` altı `MaterialApp`ta da.
+**Kapı:** her kare artık tek bir `_kareCek` yardımcısından geçiyor ve o
+yardımcı kareyi yazmadan ÖNCE `CheckedModeBanner`ın ağaçta OLMADIĞINI iddia
+ediyor. Duyarlılığı ölçüldü: bayrak açıkken widget ağaçta (iddia düşer),
+kapalıyken yok. ⚠ Yeni bir kare eklerken `binding.takeScreenshot`i DOĞRUDAN
+çağırma — iddia atlanır.
+
+**Ders (bu dosyaya yazılan asıl şey):** bir üretim hattının çıktısını
+yalnızca ölçüyle doğrulamak yetmiyor; **kareye BAKAN biri olmadan mağaza
+görseli onaylanamaz.** Ajan bakamıyor, o yüzden her yeni sette kullanıcının
+en az bir kareyi açması akışın zorunlu adımı.
+
+### 📦 KARELER — yeniden üretiliyor (11 Eylül 2026)
+
+⚠ **Önceki setlerin HEPSİ çöp** (debug bandı). Aşağıdaki tabloyu bir sonraki
+yeşil koşunun künyesiyle GÜNCELLE; o koşu bandı kapatan düzeltmeyi ve
+`_kareCek` kapısını içeriyor.
+
+| Çöpe giden set | Neden |
 |---|---|
-| Koşu | https://github.com/alpcapa/kelimeki/actions/runs/34580565810 |
-| Artefaktlar | `kelimeki-store-screenshots-iphone-6.9` (**2,47 MB**) · `kelimeki-store-screenshots-ipad-13` (**2,03 MB**) |
-| Geçerlilik | **10 Aralık 2026**'ya kadar |
-
-⚠ **Boyut YARIYA DÜŞTÜ (5,77/5,83 → 2,47/2,03) ve bu bir kayıp DEĞİL.** İki
-sebep: alfa kanalı gitti (baytın dörtte biri) ve kare artık `image`
-paketinin PNG kodlayıcısından çıkıyor (Flutter'ınkinden daha iyi
-sıkıştırıyor). PNG kayıpsız — piksel verisi birebir aynı, `png_flatten_test`
-renk korunumunu ayrıca ölçüyor.
-
-**Çöpe giden setler** (hepsi en az bir sebeple kullanılamaz):
-
-| Koşu | Set | Neden |
-|---|---|---|
-| #9 · `2015ab6` | 6 kare, başlıksız | başlık yok · alfalı |
-| #10 · `538ecc4` | 7 kare, başlıklı | `KELİMELİK` · `Ironman` · alfalı |
-| `49182b0` | 7 kare | `Ironman` · alfalı |
-| `bb12fe7` | 7 kare | alfalı |
-
-⚠ **Ajan bu iş akışını TETİKLEYEMEZ** (10 Eylül 2026'da denendi):
-`workflow_dispatch` 403 döndü — GitHub App'in `actions: write` izni yok.
-Elle koşu: **Actions → "iOS mağaza ekran görüntüleri" → Run workflow**. Ama
-önce yukarıdaki koşuya bak: `integration_test/` değişmediyse kareler zaten
-taze (bu iş akışı o yola her dokunuşta kendiliğinden koşuyor — dalda da).
+| #9 · `2015ab6` (6 kare) | başlık yok · alfa · **debug bandı** |
+| #10 · `538ecc4` | `KELİMELİK` · `Ironman` · alfa · **debug bandı** |
+| `49182b0` | `Ironman` · alfa · **debug bandı** |
+| `bb12fe7` | alfa · **debug bandı** |
+| `7d6361e` / `6382820` (main) | **debug bandı** |
 
 ⚠ **Ajan artefaktı İNDİREMEZ — İKİ kapı birden kapalı** (11 Eylül 2026'da
 ölçüldü). (1) GitHub MCP'de indirme aracı yok. (2) API'nin indirme ucu
 `productionresultssa*.blob.core.windows.net`e yönlendiriyor ve oturumun
 çıkış vekili o hedefi reddediyor (`connect_rejected`) — yani **`curl` de
 çözmüyor**, denemeye değmez. Kareleri GÖRMEK gerekiyorsa PNG'lerin sohbete
-eklenmesi gerekiyor.
+eklenmesi gerekiyor; debug bandı vakası bunun neden bir formalite değil
+GERÇEK bir kapı olduğunu gösterdi.
+
+⚠ **Ajan bu iş akışını TETİKLEYEMEZ** (10 Eylül 2026'da denendi):
+`workflow_dispatch` 403 döndü — GitHub App'in `actions: write` izni yok.
+Elle koşu: **Actions → "iOS mağaza ekran görüntüleri" → Run workflow**.
 
 ### ✅ KOMPOZİSYON KARARI — başlıklı set + 7. kare (11 Eylül 2026)
 

@@ -265,6 +265,13 @@ GameController _oyunKontrolcusu() {
 
 Widget _oyunEkrani(GameController controller, String kareAdi) => MaterialApp(
       theme: kelimekiTheme(),
+      // ⚠ DEBUG BANDI: `flutter drive` DEBUG modda derliyor ve MaterialApp o
+      // modda sağ üst köşeye kırmızı "DEBUG" şeridi çiziyor. Üretim
+      // derlemesinde görünmez, ama mağaza karesi buradan çıkıyor —
+      // kullanıcı yakaladı (11 Eylül 2026), yedi karenin yedisi de
+      // şeridi taşıyordu. Kapısı: `_kareCek` her karede bandın YOKLUĞUNU
+      // iddia ediyor.
+      debugShowCheckedModeBanner: false,
       builder: _bantli(kareAdi),
       // `storage` VERİLMİYOR: zoom tanıtım balonu yalnızca o varken çıkıyor
       // ve mağaza karesinde bir öğretici balonu istemiyoruz.
@@ -311,6 +318,31 @@ GameState _midGameState() {
   ]);
 }
 
+/// Kareyi diske yazar — ÖNCE debug bandının olmadığını İDDİA EDER.
+///
+/// NEDEN BİR İDDİA (11 Eylül 2026): `flutter drive` debug modda derliyor,
+/// yani `MaterialApp` varsayılan olarak sağ üst köşeye kırmızı bir "DEBUG"
+/// şeridi çiziyor. Yedi karenin yedisi de bu şeritle üretildi ve arıza
+/// ancak KULLANICI artefaktı indirip PNG'ye baktığında görüldü — ne piksel
+/// ölçümü, ne alfa kapısı, ne de kare sayımı bunu görebilirdi (üçü de
+/// dosyanın ŞEKLİNE bakıyor, İÇERİĞİNE değil).
+///
+/// ⚠ Bu yüzden her kare TEK bu fonksiyondan geçiyor: yeni bir kare eklerken
+/// `binding.takeScreenshot`i doğrudan çağırma, iddia atlanır.
+Future<void> _kareCek(
+  IntegrationTestWidgetsFlutterBinding binding,
+  WidgetTester tester,
+  String ad,
+) async {
+  expect(
+    find.byType(CheckedModeBanner),
+    findsNothing,
+    reason: '$ad: debug bandı açık — MaterialApp\'te '
+        'debugShowCheckedModeBanner: false eksik. Mağaza karesine giremez.',
+  );
+  await binding.takeScreenshot(ad);
+}
+
 /// Sabit sayıda kare çizer. `pumpAndSettle` BİLEREK kullanılmıyor: ekranda
 /// süren bir animasyon varsa (nömorfik geçişler, balonlar) sonsuza kadar
 /// bekler ve koşu sessizce zaman aşımına düşer.
@@ -334,7 +366,7 @@ void main() {
     await tester.pumpWidget(_oyunEkrani(controller, '01-oyun-ekrani'));
     await _settle(tester);
 
-    await binding.takeScreenshot('01-oyun-ekrani');
+    await _kareCek(binding, tester, '01-oyun-ekrani');
     controller.dispose();
   });
 
@@ -345,7 +377,7 @@ void main() {
     await tester.pumpWidget(_oyunEkrani(controller, '02-kurulmus-hamle'));
     await _settle(tester);
 
-    await binding.takeScreenshot('02-kurulmus-hamle');
+    await _kareCek(binding, tester, '02-kurulmus-hamle');
     controller.dispose();
   });
 
@@ -354,6 +386,13 @@ void main() {
     // "bir ekrandan dönüldü" tazelemesi `RouteAware.didPopNext`ten geliyor.
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
+      // ⚠ DEBUG BANDI: `flutter drive` DEBUG modda derliyor ve MaterialApp o
+      // modda sağ üst köşeye kırmızı "DEBUG" şeridi çiziyor. Üretim
+      // derlemesinde görünmez, ama mağaza karesi buradan çıkıyor —
+      // kullanıcı yakaladı (11 Eylül 2026), yedi karenin yedisi de
+      // şeridi taşıyordu. Kapısı: `_kareCek` her karede bandın YOKLUĞUNU
+      // iddia ediyor.
+      debugShowCheckedModeBanner: false,
       builder: _bantli('03-arkadasinla'),
       navigatorObservers: [kRouteObserver],
       home: SetupScreen(services: _setupServisleri()),
@@ -364,12 +403,19 @@ void main() {
     await tester.tap(find.text('ARKADAŞINLA'));
     await _settle(tester);
 
-    await binding.takeScreenshot('03-arkadasinla');
+    await _kareCek(binding, tester, '03-arkadasinla');
   });
 
   testWidgets('04 — skor kartı', (tester) async {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
+      // ⚠ DEBUG BANDI: `flutter drive` DEBUG modda derliyor ve MaterialApp o
+      // modda sağ üst köşeye kırmızı "DEBUG" şeridi çiziyor. Üretim
+      // derlemesinde görünmez, ama mağaza karesi buradan çıkıyor —
+      // kullanıcı yakaladı (11 Eylül 2026), yedi karenin yedisi de
+      // şeridi taşıyordu. Kapısı: `_kareCek` her karede bandın YOKLUĞUNU
+      // iddia ediyor.
+      debugShowCheckedModeBanner: false,
       builder: _bantli('04-skor-karti'),
       home: Scaffold(
         body: ScoreCardModal(
@@ -380,7 +426,7 @@ void main() {
     ));
     await _settle(tester);
 
-    await binding.takeScreenshot('04-skor-karti');
+    await _kareCek(binding, tester, '04-skor-karti');
   });
 
   testWidgets('05 — kelime anlamı (TDK penceresi)', (tester) async {
@@ -397,6 +443,13 @@ void main() {
     final controller = _oyunKontrolcusu();
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
+      // ⚠ DEBUG BANDI: `flutter drive` DEBUG modda derliyor ve MaterialApp o
+      // modda sağ üst köşeye kırmızı "DEBUG" şeridi çiziyor. Üretim
+      // derlemesinde görünmez, ama mağaza karesi buradan çıkıyor —
+      // kullanıcı yakaladı (11 Eylül 2026), yedi karenin yedisi de
+      // şeridi taşıyordu. Kapısı: `_kareCek` her karede bandın YOKLUĞUNU
+      // iddia ediyor.
+      debugShowCheckedModeBanner: false,
       builder: _bantli('05-kelime-anlami'),
       navigatorKey: _navKey,
       home: GameScreen(
@@ -416,19 +469,26 @@ void main() {
     ));
     await _settle(tester);
 
-    await binding.takeScreenshot('05-kelime-anlami');
+    await _kareCek(binding, tester, '05-kelime-anlami');
     controller.dispose();
   });
 
   testWidgets('06 — nasıl oynanır', (tester) async {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
+      // ⚠ DEBUG BANDI: `flutter drive` DEBUG modda derliyor ve MaterialApp o
+      // modda sağ üst köşeye kırmızı "DEBUG" şeridi çiziyor. Üretim
+      // derlemesinde görünmez, ama mağaza karesi buradan çıkıyor —
+      // kullanıcı yakaladı (11 Eylül 2026), yedi karenin yedisi de
+      // şeridi taşıyordu. Kapısı: `_kareCek` her karede bandın YOKLUĞUNU
+      // iddia ediyor.
+      debugShowCheckedModeBanner: false,
       builder: _bantli('06-nasil-oynanir'),
       home: const HelpModal(),
     ));
     await _settle(tester);
 
-    await binding.takeScreenshot('06-nasil-oynanir');
+    await _kareCek(binding, tester, '06-nasil-oynanir');
   });
 
   // 7. kare çekim listesinde "opsiyonel" işaretliydi; 11 Eylül 2026'da
@@ -438,6 +498,13 @@ void main() {
   testWidgets('07 — k-lig sıralaması', (tester) async {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
+      // ⚠ DEBUG BANDI: `flutter drive` DEBUG modda derliyor ve MaterialApp o
+      // modda sağ üst köşeye kırmızı "DEBUG" şeridi çiziyor. Üretim
+      // derlemesinde görünmez, ama mağaza karesi buradan çıkıyor —
+      // kullanıcı yakaladı (11 Eylül 2026), yedi karenin yedisi de
+      // şeridi taşıyordu. Kapısı: `_kareCek` her karede bandın YOKLUĞUNU
+      // iddia ediyor.
+      debugShowCheckedModeBanner: false,
       builder: _bantli('07-klig-siralamasi'),
       home: Scaffold(
         body: LeaderboardModal(
@@ -448,7 +515,7 @@ void main() {
     ));
     await _settle(tester);
 
-    await binding.takeScreenshot('07-klig-siralamasi');
+    await _kareCek(binding, tester, '07-klig-siralamasi');
   });
 }
 
