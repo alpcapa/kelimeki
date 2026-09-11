@@ -1965,7 +1965,35 @@ bir maliyeti yok.
 `05` testi, `kBasliklar`daki satır, `kMeaningWord` ve `KARE_SAYISI: 7`.
 Anlam penceresinin KENDİSİ üründe duruyor — çıkan yalnızca mağaza karesi.
 
-#### ⏳ AÇIK: 7. kare yeniden doldurulacak (kullanıcı, 11 Eylül 2026)
+#### ✅ KAPANDI: 7. kare **rütbeler** oldu (11 Eylül 2026, aynı gün)
+
+Kullanıcı aday listesine baktı ve seçti: *"Evet rütbelerden hiç
+bahsetmiyoruz. Bence o olabilir."* → **`08-rutbeler`** (numara `05` değil;
+gerekçe aşağıda). Önizleme iki cihazda çizilip gösterildi, onaylandı
+(*"Ok'dir"*), sonra pushlandı — süreç kuralı bu turda baştan sona işledi.
+
+**Kare ne gösteriyor:** `RankInfoModal`, oyun ekranının üstünde. 57 puan →
+**Meraklı** (eşik 50), sıradaki **Oyuncu** 100'de; ilerleme çubuğu yarı
+dolu, altında ödül rakamları (`+5` / `+10`). Sayılar 04 ve 07 ile TUTARLI
+seçildi — daha gösterişli bir mühür için yüksek bir rütbe konabilirdi ama
+aynı sahte oyuncu 07'de 57 puanla 4. sırada görünüyor; uydurma dünyanın
+tutarlılığı gösterişten önce gelir.
+
+⚠ **Karenin sınırı:** pencere merdivenin TAMAMINI göstermiyor (üründe de
+göstermiyor) — mevcut rütbe + sıradaki + ödül var, dokuz kademenin listesi
+yok. Yani kare *"rütbe sistemi var ve ilerliyor"* diyor, *"şu dokuz rütbe
+var"* demiyor.
+
+**ZOOM elendi** (kullanıcı: *"bir de zoom var ama onu görsel olarak
+anlatmak zor"*). Doğru: zoom bir JEST, tek kare hareketi gösteremez;
+yakınlaştırılmış tahtanın görüntüsü 01 ile karışır. Anlatılabilir tek yolu
+"önce/sonra" bölünmüş bir kare olurdu, o da mağaza karesini infografiğe
+çevirirdi.
+
+**Aday listesi AŞAĞIDA DURUYOR** — bir sonraki boş slot için (Apple 6.9"da
+10 kareye izin veriyor) hâlâ geçerli; seçilen satır rütbelerdi.
+
+#### (arşiv) Slot açıkken yazılan aday listesi
 
 *"Düşünüp başka hangi özelliği 7. kare olarak ekleyebiliriz diye bakacağım
 daha sonra."* Yani altı kare bir son durum DEĞİL, geçici bir durak — slot
