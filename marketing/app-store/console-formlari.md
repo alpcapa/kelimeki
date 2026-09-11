@@ -1511,6 +1511,15 @@ sıralaması) eklenecek.** Böylece §13'ün açık kalan tek maddesi kapandı.
    başlıksız bir tahta karesi *"bir oyun tahtası"*ndan fazlasını anlatmıyor.
 2. 01/02'nin **alt ~%20'si zaten boş** (9 Eylül'de gözle ölçüldü) — şerit
    için hazır yer var, kare kaybı yok.
+   ⚠ **Bu gerekçe ilk uygulamada BOŞA ÇIKTI ve düzeltildi (11 Eylül 2026).**
+   Şerit önce `Column` ile uygulamanın ALTINA konuyordu: oyun ekranının boş
+   alt alanı yerinde kalıyor, şerit onun altına biniyordu — yani ölü alan
+   değerlenmiyordu, kare uzuyordu. Kullanıcı kareye GÖZLE bakınca görüldü.
+   Şerit artık `Stack` ile uygulamanın ÜSTÜNE biniyor (kullanıcı kararı) ve
+   boşluğu gerçekten dolduruyor. ⚠ Bedeli: uygulamanın alt ~%7'si örtülüyor
+   — oyun ekranında sorun değil, ama **modal karelerinde (04/05/06)
+   pencerenin alt kenarına denk gelebilir**, yani her yeni sette o üç kare
+   gözle kontrol edilmeli.
 3. Kareler **sürüme kilitli**: onaylandıktan sonra değiştirmek yeni bir
    gönderim ister (promotional text gibi serbest DEĞİL), yani ilk turda
    doğru olmak zorunda.

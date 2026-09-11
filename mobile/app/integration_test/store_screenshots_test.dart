@@ -144,50 +144,68 @@ class _BaslikSeridi extends StatelessWidget {
     final genislik = olcu.width;
     final punto = (genislik * _kBantPuntoOran)
         .clamp(0.0, olcu.height * _kBantPuntoYukseklikTavani);
-    return Column(
+    return Stack(
       children: [
-        // ⚠ `removeBottom`: uygulama ALT güvenli alan boşluğunu (home
-        // göstergesi) ayırmaya devam ederse içerikle şerit arasında ölü bir
-        // bant kalır — o boşluğun savunduğu alan artık ekranın dibinde değil.
-        Expanded(
-          child: MediaQuery.removePadding(
-            context: context,
-            removeBottom: true,
-            child: child,
-          ),
+        Positioned.fill(child: child),
+        // ⚠ ŞERİT UYGULAMANIN ÜSTÜNE BİNİYOR, ALTINA EKLENMİYOR
+        // (kullanıcı kararı, 11 Eylül 2026). İlk uygulama `Column`du:
+        // uygulama `Expanded`ta, şerit altında. Kullanıcı kareyi GÖZLE
+        // inceleyince ortaya çıktı ki o düzen kararın gerekçesini
+        // BOŞA ÇIKARIYOR — oyun ekranının alt boşluğu yerinde duruyor,
+        // şerit onun ALTINA biniyordu, yani ölü alan değerlenmiyordu.
+        // Bindirme o boşluğu gerçekten dolduruyor.
+        //
+        // ⚠ Bedeli: uygulamanın alt ~%7'sini ÖRTÜYOR. Oyun ekranında
+        // (01/02) orası zaten boş; modal karelerinde (04/05/06) pencerenin
+        // alt kenarına denk gelebilir — bu yüzden yeni bir kare eklendiğinde
+        // ya da modal düzeni değiştiğinde kareye GÖZLE bakmak şart
+        // (§13'ün "kareye bakan bir insan olmadan onaylanamaz" dersi).
+        //
+        // ⚠ `removePadding` ARTIK YOK: `Column`da uygulamanın alt güvenli
+        // alan payı içerikle şerit arasında ölü bir bant bırakıyordu.
+        // Bindirmede tersi geçerli — o pay içeriği şeridin altına
+        // girmekten KORUYOR, yani kalması gerekiyor.
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: _bant(context, genislik, punto),
         ),
-        Material(
-          color: kText,
-          child: SizedBox(
-            width: double.infinity,
-            height: punto * _kBantYukseklikCarpani,
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: genislik * 0.06),
-                // ⚠ `scaleDown`: başlık uzarsa KIRPILMASIN, küçülsün. Kare
-                // sessizce yarım bir cümleyle mağazaya gitmesin diye.
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    baslik,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      // ⚠ Aile AÇIKÇA veriliyor: şerit Scaffold'un dışında
-                      // ve `MaterialApp.builder` seviyesinde `DefaultTextStyle`
-                      // temanın değil, WidgetsApp'in hata stili.
-                      fontFamily: 'SpaceGrotesk',
-                      fontWeight: FontWeight.w700,
-                      fontSize: punto,
-                      letterSpacing: -0.5,
-                      color: Colors.white,
-                    ),
-                  ),
+      ],
+    );
+  }
+
+  Widget _bant(BuildContext context, double genislik, double punto) {
+    return Material(
+      color: kText,
+      child: SizedBox(
+        width: double.infinity,
+        height: punto * _kBantYukseklikCarpani,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: genislik * 0.06),
+            // ⚠ `scaleDown`: başlık uzarsa KIRPILMASIN, küçülsün. Kare
+            // sessizce yarım bir cümleyle mağazaya gitmesin diye.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                baslik,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  // ⚠ Aile AÇIKÇA veriliyor: şerit Scaffold'un dışında
+                  // ve `MaterialApp.builder` seviyesinde `DefaultTextStyle`
+                  // temanın değil, WidgetsApp'in hata stili.
+                  fontFamily: 'SpaceGrotesk',
+                  fontWeight: FontWeight.w700,
+                  fontSize: punto,
+                  letterSpacing: -0.5,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }
