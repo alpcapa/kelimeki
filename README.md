@@ -54,6 +54,7 @@ npm run generate-icons       # favicon / app icon (public/) — og-image DEĞİL
 npm run generate-og-image    # public/og-image.png (sosyal paylaşım kartı)
 npm run generate-play-assets # Play mağaza ikonu + öne çıkan görsel
 npm run generate-store-header # marketing/store/ — mağaza başlık görseli (4096×2304, ≤1 MB)
+npm run preview-store-frames  # App Store karelerinin YEREL önizlemesi (iPhone + iPad, ~14 sn, Linux) — mağazaya giden set yine CI'ın
 npm run generate-golden-vectors  # Flutter portu parite fixture'ları (motor değişince ZORUNLU)
 npm run generate-meanings-db     # meanings.json → portun SQLite asset'i
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ TS

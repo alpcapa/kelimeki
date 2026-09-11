@@ -57,6 +57,7 @@ npm run generate-icons           # favicon / app icon (public/) — og-image DE�
 npm run generate-og-image        # public/og-image.png (sosyal paylaşım kartı)
 npm run generate-play-assets     # Play mağaza ikonu (512) + öne çıkan görsel (1024×500)
 npm run generate-store-header    # marketing/store/ — mağaza başlık görseli (4096×2304, ≤1 MB)
+npm run preview-store-frames     # App Store karelerinin YEREL önizlemesi (iPhone + iPad, ~14 sn, Linux) — mağazaya giden set yine CI'ın
 # Öteki pazarlama üreticileri (generate-reel, generate-fb-cover) bu listede
 # DEĞİL, kendi kararlarıyla birlikte docs/decisions/marketing-assets.md'de.
 ```

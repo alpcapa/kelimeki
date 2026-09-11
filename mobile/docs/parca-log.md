@@ -25,6 +25,42 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 200 — Mağaza kareleri: pencereler artık OYUN EKRANININ
+     ÜSTÜNDE + kareler CI'dan ÖNCE yerelde görülebiliyor (11 Eylül 2026,
+     App Store FAZ C 24.5):** Kullanıcı Parça 199'un taze setine gözle
+     baktı ve reddetti: *"Tüm modal ekranları (skor kart, k-lig tablosu,
+     vb) normal ekran görüntüsünde olmalı. Yani arka planda oyun açıkken
+     mesela."* 04 (skor kartı), 06 (nasıl oynanır) ve 07 (k-lig) pencereyi
+     **boş bir `Scaffold` üstünde** çiziyordu — mağaza karesi bağlamsız bir
+     pencere gösteriyordu. Üçü de artık oyun ekranını kurup pencereyi
+     ÜRETİMİN kendi yardımcısıyla (`showScoreCard` · `showHelpModal` ·
+     `showLeaderboard`) onun üstünde açıyor; 05 baştan beri böyleydi.
+     ⚠ Yan kazanç ölçüldü: karartma tüm ekranı kapladığından bu üç karede
+     Parça 199'un *"%9,6 beyaz kalıyor"* ölçümü konu dışı kaldı — ölü alan
+     yalnızca pencere açılmayan karelerde (01 · 02 · 03) duruyor ve orada
+     uygulamanın gerçek hâli.
+     **İkinci ve asıl iş — geri besleme turu kısaldı.** Kullanıcı isteği
+     birebir: *"Bu görselleri önce resim olarak yap bana göster ondan sonra
+     ok ise üretime gönderelim. Böyle kaç defa git gel oldu. Canım sıkıldı
+     artık."* Gerekçe ölçülü: DEBUG bandı, alfa kanalı ve "pencere boşlukta"
+     arızalarının ÜÇÜ de ancak bir macOS koşusu (~14 dk) + artefakt indirme
+     + insan gözü turuyla bulunmuştu, üstelik ajan artefaktı indiremiyor.
+     Ortak sahne kurulumu `integration_test/store_frames.dart`'a çıkarıldı
+     (⚠ `_test.dart` DEĞİL — koşucu toplamasın diye) ve
+     `test/store_frames_preview_test.dart` onu import ederek AYNI yedi
+     kareyi **Linux'ta `flutter test` içinde ~7 saniyede** çiziyor
+     (`npm run preview-store-frames` → `build/frame-preview/*.png`, repoya
+     girmez). İki dosya aynı kurulumu paylaştığı için ayrışamazlar.
+     ⚠ **Önizleme mağaza karesi DEĞİL, iki bilinen fark var:** Material
+     Icons yüklenmiyor (✕ ve madde imleri boş kutu □ çıkar) ve `sqflite`
+     yok (05'in anlam metni elle verilmiş bir `MeaningEntry`'den gelir).
+     Bu yüzden kapı DEĞİŞMEDİ — mağazaya giden set hâlâ CI'ınki ve hâlâ bir
+     insan gözüyle açılmak zorunda (Parça 199'un DEBUG bandı dersi).
+     Önizlemenin işi yalnızca **kompozisyonu** CI'dan önce karara bağlamak.
+     Kapı: `KARE_ONIZLEME=1` ortam değişkeni — normal `flutter test`
+     koşusunda test atlanıyor (CI'da PNG üretmenin anlamı yok, ölçüldü).
+     Kayıt: `marketing/app-store/console-formlari.md` §13.
+
    - ✅ **Parça 199 — Mağaza kareleri: başlık şeridi, 7. kare ve ALFA
      ARIZASI (11 Eylül 2026, App Store FAZ C 24.5):** Kompozisyon kararı
      verildi (kullanıcı): kareler **başlıklı** çıkıyor ve **7. kare**

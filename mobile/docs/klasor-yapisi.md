@@ -361,9 +361,20 @@ mobile/
                              # <dosya>` da koşturamaz ("No supported devices")
                              # — yalnızca `flutter drive` ile, GERÇEK bir iOS
                              # simülatöründe koşar
-      store_screenshots_test.dart # mağaza kareleri (App Store 24.5): 6 kare,
+      store_frames.dart      # ORTAK sahne kurulumu: sahte servisler,
+                             # midGameState (2 ve 4 kişilik tohumlar),
+                             # oyun/kurulum ekranı, başlık tablosu
+                             # (kBasliklar) ve bindirmeli şerit (bantli).
+                             # ⚠ `_test.dart` DEĞİL — koşucu onu toplamaz;
+                             # hem CI testi hem test/store_frames_preview_test
+                             # bunu import eder, yani ikisi AYNI kareyi çizer
+      store_screenshots_test.dart # mağaza kareleri (App Store 24.5): 7 kare,
                              # iki cihaz ölçüsünde. Kare Apple'ın istediği
                              # TAM pikselde çıkmalı, KIRPILMAZ.
+                             # 04/06/07 pencereyi ÜRETİMİN showScoreCard/
+                             # showHelpModal/showLeaderboard'uyla oyun
+                             # ekranının ÜSTÜNDE açar (kullanıcı isteği,
+                             # 11 Eylül 2026) — boş Scaffold üstünde DEĞİL.
                              # ⚠ Buraya YÖNELİM/manzara ölçümü EKLEME —
                              # simülatör döndürülemiyor (iOS:
                              # UISceneErrorDomain 101), denendi ve elendi
@@ -378,6 +389,17 @@ mobile/
                              # `flutter test` altında import edilemiyor —
                              # ayrı durunca test/png_flatten_test.dart
                              # Linux'ta ücretsiz doğruluyor
+    test/store_frames_preview_test.dart # aynı yedi karenin YEREL önizlemesi
+                             # (`npm run preview-store-frames`, ~14 sn, Linux)
+                             # — İKİ cihaz ölçüsünde de, tıpkı CI matrisi
+                             # gibi: KARE_CIHAZ=ipad ikinci seti yazar.
+                             # Kapı: KARE_ONIZLEME=1 — normal `flutter test`
+                             # koşusunda atlanır. Çıktı build/frame-preview/
+                             # (iPad alt klasörde),
+                             # repoya girmez. ⚠ MAĞAZA KARESİ DEĞİL: Material
+                             # Icons yüklenmiyor (✕ → □) ve sqflite yok (05'in
+                             # anlamı elle verilir). İşi kompozisyonu CI'dan
+                             # ÖNCE karara bağlamak
   kelimeki_core/             # saf Dart motor paketi (Flutter bağımlılığı YOK)
     pubspec.yaml             # SIFIR bağımlılık (bilinçli — offline pub get)
     lib/kelimeki_core.dart   # tek barrel export = genel API
