@@ -36,6 +36,11 @@ on:
       - 'mobile/app/test_driver/**'
       - '.github/workflows/ios-screenshots.yml'
 
+env:
+  # `store_screenshots_test.dart`teki `testWidgets` sayısı. Kare eklenir/
+  # çıkarılırsa BURASI DA değişmeli — ölçüm adımı bu sayıya bakıyor.
+  KARE_SAYISI: 7
+
 jobs:
   kareler:
     name: ${{ matrix.ad }}
@@ -124,6 +129,18 @@ jobs:
         working-directory: mobile/app
         run: |
           set -euo pipefail
+          # ⚠ ÖNCE SAYIM. Bu adımın yorumu bir dönem *"eksik kare zaten bu
+          # adımın işi"* diyordu ama DEĞİLDİ: döngü `*.png`yi geziyor, yani
+          # üretilmeyen bir kare hiç bakılmadan geçiyordu. Bir `testWidgets`
+          # düşerse `flutter drive` o kareyi yazmaz; sayım olmayınca koşu
+          # yeşil kalır ve eksik set mağazaya gider (7. kare eklenirken
+          # görüldü, 11 Eylül 2026).
+          bulunan=$(ls build/screenshots/*.png 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$bulunan" != "$KARE_SAYISI" ]; then
+            echo "::error::$bulunan kare üretildi, beklenen $KARE_SAYISI — sürüş adımının log'unda düşen bir testWidgets var."
+            ls -l build/screenshots/ || true
+            exit 1
+          fi
           hatali=0
           for png in build/screenshots/*.png; do
             w=$(sips -g pixelWidth  "$png" | awk '/pixelWidth/{print $2}')

@@ -1430,17 +1430,87 @@ Elle koşu: **Actions → "iOS mağaza ekran görüntüleri" → Run workflow**.
 ⚠ Ajan artefaktı İNDİREMEZ de (MCP'de indirme aracı yok) — kompozisyon
 kararı için PNG'lerin sohbete eklenmesi gerekiyor.
 
+### ✅ KOMPOZİSYON KARARI — başlıklı set + 7. kare (11 Eylül 2026)
+
+Kullanıcı kararı: **kareler BAŞLIKLI çıkacak** ve **7. kare (k-lig
+sıralaması) eklenecek.** Böylece §13'ün açık kalan tek maddesi kapandı.
+
+**Neden başlıklı** (üç ölçüme dayanıyor, tercihe değil):
+
+1. App Store kareleri önce **küçük küçük, yan yana** gösteriyor; o boyutta
+   başlıksız bir tahta karesi *"bir oyun tahtası"*ndan fazlasını anlatmıyor.
+2. 01/02'nin **alt ~%20'si zaten boş** (9 Eylül'de gözle ölçüldü) — şerit
+   için hazır yer var, kare kaybı yok.
+3. Kareler **sürüme kilitli**: onaylandıktan sonra değiştirmek yeni bir
+   gönderim ister (promotional text gibi serbest DEĞİL), yani ilk turda
+   doğru olmak zorunda.
+
+**Başlıklar** (kaynak: `store_screenshots_test.dart` → `_kBasliklar`; bu
+tablo oradan KOPYA, ikisi ayrışırsa kaynak odur):
+
+| Kare | Başlık |
+|---|---|
+| `01-oyun-ekrani` | Köşenden başla, bölgeni büyüt |
+| `02-kurulmus-hamle` | Kelimeni kur, puanını gör |
+| `03-arkadasinla` | Arkadaşınla sırayla oyna |
+| `04-skor-karti` | İstatistiklerini takip et |
+| `05-kelime-anlami` | Kelimenin anlamı bir dokunuş |
+| `06-nasil-oynanir` | Kuralları üç dakikada öğren |
+| `07-klig-siralamasi` | k-lig'de sıranı yükselt |
+
+⚠ **Son işlem (ImageMagick/`sharp`) YOK.** Şerit Flutter ağacının İÇİNDE,
+`MaterialApp.builder` ile çiziliyor: uygulama `Expanded` içinde biraz daha
+kısa bir görünüm alanında GERÇEKTEN çiziliyor, hiçbir içerik örtülmüyor.
+Sonuç kare yine cihazın fiziksel pikselinde (`1320×2868` / `2064×2752`),
+yani ölçüm adımı değişmeden geçiyor ve CI'a yeni bir araç/bağımlılık
+girmiyor. `builder` Navigator'ın ÜSTÜNÜ sardığından 05'in anlam penceresi
+gibi dialog kareleri de kendiliğinden şeridin üstünde kalıyor.
+
+**Ölçüm — şerit oranları (11 Eylül 2026, gerçek `SpaceGrotesk-Bold` ile):**
+
+| | punto | şerit | en uzun başlık |
+|---|---|---|---|
+| iPhone 6.9" (440×956 mantıksal) | 24,2 | 67,8 = yüksekliğin **%7,1**'i | %90 (tek satır) |
+| iPad 13" (1032×1376) | 44,0 | 123,3 = **%9,0** | %71 (tek satır) |
+
+⚠ **Yalnızca genişliğe oranlamak YETMİYOR.** İlk kural `punto = genişlik ×
+%5,5`ti; iPad karesi iPhone'a göre çok daha geniş ama aynı oranda uzun
+DEĞİL, yani şerit iPad'de yüksekliğin **%11,6**'sına çıkıyordu. Bir yükseklik
+tavanı eklendi (`punto ≤ yükseklik × %3,2`) ve ikisi de %7-9 bandına indi.
+Yedi başlığın yedisi de bu puntoda tek satıra sığıyor — `FittedBox`
+`scaleDown` yine de duruyor, ama devreye girmiyor.
+
+**7. kare** (`07-klig-siralamasi`): `LeaderboardModal`, sahte ama tutarlı bir
+k-lig listesiyle. Oyuncunun satırı **4.** sırada — birinci olsaydı kare
+*"yükselinecek bir yer"* anlatmazdı, listenin dışında olsaydı vurgulu satır
+hiç görünmez, yerine alttaki kesikli *"senin sıran"* kısayolu çıkardı.
+Sayılar öteki uçlarla tutarlı (sıra 4, puan 57, OHP 21,40 — aynı üçlü
+`myLeaderboardRank` ve `playerStats`ta da var, 04. kare onları gösteriyor).
+⚠ `avatar_url` her satırda **null**: dolu olsa `KAvatar` ağa çıkardı, bu iş
+akışının tüm önermesi ise *"ağa hiç çıkma"*.
+
+### ⚠ EKSİK KARE ARTIK KOŞUYU DÜŞÜRÜYOR (11 Eylül 2026)
+
+7. kare eklenirken bir boşluk bulundu: ölçüm adımı `build/screenshots/*.png`
+üzerinde dönüyordu, yani **üretilmeyen bir kare hiç bakılmadan geçiyordu** —
+bir `testWidgets` düşerse `flutter drive` o kareyi yazmaz ve koşu YEŞİL
+kalırdı. (Adımın kendi yorumu *"eksik kare zaten bu adımın işi"* diyordu;
+değildi.) `ios-screenshots.yml`e `KARE_SAYISI` eklendi ve ölçümden ÖNCE
+sayım yapılıyor. ⚠ Kare eklenir/çıkarılırsa o sayı da değişmeli.
+
+### Slot doğrulaması — 6.9" var (11 Eylül 2026, kullanıcı Console'dan ölçtü)
+
+Sürüm sayfasında ilk görünen kutu `iPhone 6.5" Display` olduğu için bir an
+boru hattının ölçüsü (6.9" = `1320×2868`) yanlış sanıldı. **Media Manager'da
+6.9" slotu var ve kareler oraya giriyor** — ölçü değişikliği GEREKMİYOR.
+Sayfanın kendi açıklaması da bunu söylüyor: verilen kareler öteki ekran
+boyutları için ölçekleniyor.
+
 ### Kalan iş
 
-Zorunlu altı karenin **altısı da üretiliyor ve doğrulandı.** Kalan tek şey
-bir KARAR:
-
-- **Kompozisyon:** çerçeve/başlık metni eklenip eklenmeyeceği (Apple ham
-  kareyi de kabul ediyor). Oyun ekranı karelerinde (01/02) altta ~%20 boş
-  alan var ve başlık için doğal bir yer; modal kareleri (04/05/06) zaten
-  dolu. Karar tek tek değil, altı kare birlikte görülerek verilmeli.
-- **İsteğe bağlı 7. kare** (k-lig sıralaması) — çekim listesinde
-  "opsiyonel" işaretli, henüz yapılmadı.
+Kod tarafında kalan iş YOK. Kareler bir sonraki `ios-screenshots.yml`
+koşusunda başlıklı ve yedi kare olarak üretilir; **artefaktı indirip
+Console'a yüklemek elle** (ajan indiremiyor — yukarıdaki uyarı).
 
 ---
 
