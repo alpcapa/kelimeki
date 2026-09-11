@@ -171,7 +171,21 @@ class BaslikSeridi extends StatelessWidget {
         .clamp(0.0, olcu.height * kBantPuntoYukseklikTavani);
     return Stack(
       children: [
-        Positioned.fill(child: child),
+        // ⚠ `disableAnimations: false` AÇIKÇA veriliyor (11 Eylül 2026):
+        // `flutter test` altında bu bayrak TRUE geliyor ve giriş animasyonu
+        // olan pencereler ANINDA son karesine atlıyor. Gerçek simülatörde
+        // animasyon gerçekten koşuyor — yani önizleme "animasyon bitmiş"
+        // hâli çizerken CI "animasyon sürüyor" hâlini çekebiliyordu ve
+        // ÖNİZLEME BU SINIFI YAPISAL OLARAK GÖREMİYORDU. Vaka:
+        // `RankInfoModal`ın 1000 ms'lik animasyonu — rütbe mührü son fazda
+        // ve mağazaya giden karede HİÇ çıkmamıştı (kullanıcı Console'da
+        // gördü). Bu satırın tek işi iki yolu aynı zemine oturtmak.
+        Positioned.fill(
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: false),
+            child: child,
+          ),
+        ),
         // ⚠ ŞERİT UYGULAMANIN ÜSTÜNE BİNİYOR, ALTINA EKLENMİYOR
         // (kullanıcı kararı, 11 Eylül 2026). İlk uygulama `Column`du:
         // uygulama `Expanded`ta, şerit altında. Kullanıcı kareyi GÖZLE
@@ -434,8 +448,43 @@ Future<void> pencereyiBekle(
     reason: '$ad: pencere ${tavan.inSeconds} sn içinde ekrana gelmedi — '
         'kare arka plandaki ekranın kopyası olurdu. Mağaza karesine giremez.',
   );
-  // Açılış animasyonu (fade/scale) bitsin: bulunmak ≠ tam opak çizilmek.
-  await settle(tester);
+  // ⚠ Bulunmak ≠ ÇİZİLMİŞ olmak. `settle()`nin sabit üç `pump`ı 800 ms
+  // ilerletiyor; `RankInfoModal`ın giriş animasyonu **1000 ms** ve rütbe
+  // mührü SON fazda — mağazaya giden karede mühür bu yüzden hiç yoktu.
+  //
+  // Sabit bir süre yazmak aynı hatayı bir sonraki pencerede tekrarlardı;
+  // onun yerine ZAMANLANMIŞ KARE KALMAYANA kadar bekleniyor.
+  await animasyonBitsin(tester);
+}
+
+/// Ekranda zamanlanmış kare kalmayana kadar ilerletir — yani süren tüm
+/// animasyonlar bitene kadar.
+///
+/// ⚠ `pumpAndSettle` BİLEREK kullanılmıyor: sonsuz bir animasyon varsa
+/// (nömorfik geçişler, balonlar) o fırlatır ve koşuyu düşürür. Buradaki
+/// tavan sessizce durur — kare yine çekilir, yalnızca "animasyon bitti"
+/// garantisi verilmez.
+Future<void> animasyonBitsin(
+  WidgetTester tester, {
+  Duration tavan = const Duration(seconds: 5),
+}) async {
+  const adim = Duration(milliseconds: 100);
+  var gecen = Duration.zero;
+  while (tester.binding.hasScheduledFrame && gecen < tavan) {
+    await tester.pump(adim);
+    gecen += adim;
+  }
+  // ⚠ Tavana ÇARPMAK bir arızadır, sessiz geçilmez: ekranda bitmeyen bir
+  // animasyon varsa kare onun ORTASINDA çekilir ve bu tam olarak mühürsüz
+  // rütbe karesinin sebebiydi. Koşu düşsün ki kare sessizce yanlış çıkmasın.
+  expect(
+    tester.binding.hasScheduledFrame,
+    isFalse,
+    reason: 'ekrandaki animasyon ${tavan.inSeconds} sn içinde bitmedi — kare '
+        'animasyonun ORTASINDA çekilirdi (rütbe mührünün hiç çıkmaması bu '
+        'sınıftandı). Sonsuz bir animasyon eklendiyse kareyi ondan yalıt.',
+  );
+  await tester.pump();
 }
 
 /// Tahtanın GERÇEKTEN yakınlaştığını doğrular — 09. karenin kapısı.
