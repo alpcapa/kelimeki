@@ -1429,26 +1429,34 @@ işe bir `timeout-minutes` eklenmeli (tek vakada eklenmedi); ayrıca *"koşu
 iptal oldu"* ile *"iş düştü"* ayrımını hatırla — ikisi ekran görüntüsünde
 aynı görünüyor.
 
-### 📦 TAZE KARELER HAZIR — koşu #10, 11 Eylül 2026 (yeniden koşturma GEREKMEZ)
+### 📦 TAZE KARELER HAZIR — `7d6361e`, 11 Eylül 2026 (yeniden koşturma GEREKMEZ)
 
-**Mağazaya gidecek set BU.** Başlıklı kompozisyonun ve 7. karenin ilk
-gerçek koşusu; `claude/dal-yok-acik-pr-yok-qd4uin` dalının `538ecc4`
-commit'i üzerinde koştu ve **yeşil** (07:10→07:25 UTC, ~14 dk). Yedi
-karenin de üretildiği ve tam ölçüde çıktığı `KARE_SAYISI` sayımı + piksel
-ölçümüyle kanıtlandı (ikisi de aynı adımda, ikisi de iki cihazda).
+**Mağazaya gidecek set BU — ve o güne kadarki BÜTÜN setler çöp.** Başlıklı
+kompozisyonun, 7. karenin ve alfa düzeltmesinin birlikte koştuğu ilk tur;
+`claude/dal-yok-acik-pr-yok-qd4uin` dalında **yeşil** (08:43→09:01 UTC).
+Üç kapı da aynı adımda geçti: `KARE_SAYISI` sayımı · piksel ölçüsü ·
+`hasAlpha = no` (yedi karenin yedisi, iki cihazda).
 
 | | |
 |---|---|
-| Koşu | https://github.com/alpcapa/kelimeki/actions/runs/34573189948 |
-| Artefaktlar | `kelimeki-store-screenshots-iphone-6.9` (**5,77 MB**) · `kelimeki-store-screenshots-ipad-13` (**5,83 MB**) |
+| Koşu | https://github.com/alpcapa/kelimeki/actions/runs/34580565810 |
+| Artefaktlar | `kelimeki-store-screenshots-iphone-6.9` (**2,47 MB**) · `kelimeki-store-screenshots-ipad-13` (**2,03 MB**) |
 | Geçerlilik | **10 Aralık 2026**'ya kadar |
 
-⚠ Boyut 6 karelik sete göre ~0,4 MB büyüdü (5,33/5,46 → 5,77/5,83) — 7.
-karenin gerçekten üretildiğinin ikinci, bağımsız ölçüsü.
+⚠ **Boyut YARIYA DÜŞTÜ (5,77/5,83 → 2,47/2,03) ve bu bir kayıp DEĞİL.** İki
+sebep: alfa kanalı gitti (baytın dörtte biri) ve kare artık `image`
+paketinin PNG kodlayıcısından çıkıyor (Flutter'ınkinden daha iyi
+sıkıştırıyor). PNG kayıpsız — piksel verisi birebir aynı, `png_flatten_test`
+renk korunumunu ayrıca ölçüyor.
 
-**Önceki set** (6 kare, başlıksız): koşu #9, `2015ab6`,
-https://github.com/alpcapa/kelimeki/actions/runs/34442189100 — artık
-kullanılmıyor, kayıt için duruyor.
+**Çöpe giden setler** (hepsi en az bir sebeple kullanılamaz):
+
+| Koşu | Set | Neden |
+|---|---|---|
+| #9 · `2015ab6` | 6 kare, başlıksız | başlık yok · alfalı |
+| #10 · `538ecc4` | 7 kare, başlıklı | `KELİMELİK` · `Ironman` · alfalı |
+| `49182b0` | 7 kare | `Ironman` · alfalı |
+| `bb12fe7` | 7 kare | alfalı |
 
 ⚠ **Ajan bu iş akışını TETİKLEYEMEZ** (10 Eylül 2026'da denendi):
 `workflow_dispatch` 403 döndü — GitHub App'in `actions: write` izni yok.
