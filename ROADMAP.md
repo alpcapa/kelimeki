@@ -1641,8 +1641,13 @@ yapılır.
 ### Tetikleyici
 
 **Yayınlanmış** bir Play production sürümü (vitrin adresi 404 vermeyi
-bıraktığında — `curl` ile ÖLÇ, varsayma) → Android yarısı. App Store
-yayını → Apple yarısı.
+bıraktığında — ÖLÇ, varsayma) → Android yarısı. App Store yayını → Apple
+yarısı.
+
+⚠ **Play vitrinini ajan ölçemez** (13 Eyl 2026): oturumun ağ politikası
+`play.google.com`'a `CONNECT` 403 veriyor, `kelimeki.com` ise 200 —
+yani engel siteye özel. Bu maddenin Android yarısını açan bilgi
+KULLANICIDAN gelir; "curl ile bakarım" diye söz verme.
 
 ⚠ Bu satır 13 Eylül 2026'da düzeltildi; önce *"Play production onayı
 (e-posta `destek@kelimeki.com`'a düşecek) → Android yarısı"* diyordu.

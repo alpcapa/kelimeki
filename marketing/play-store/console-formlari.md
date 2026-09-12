@@ -888,7 +888,7 @@ Play App Signing'e **yeniden kaydolunmaz** — 25 Ağustos'ta kaydolundu
 
 | İş | Not |
 |---|---|
-| **Vitrini ÖLÇ** | `curl -sI 'https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki'` — 404 bitmişse vitrin canlı. Bu, `ROADMAP.md` §26'nın (mağaza rozetleri) Android yarısının GERÇEK tetikleyicisi; onay e-postası değil |
+| **Vitrini ÖLÇ** | `curl -sI 'https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki'` — 404 bitmişse vitrin canlı. Bu, `ROADMAP.md` §26'nın (mağaza rozetleri) Android yarısının GERÇEK tetikleyicisi; onay e-postası değil. ⚠ **Bu ölçümü AJAN YAPAMAZ** (13 Eyl 2026'da denendi): oturumun ağ politikası `play.google.com`'a `CONNECT` 403 veriyor. Siteye özel — aynı anda `kelimeki.com` 200 dönüyor, yani web derleme kimliği ölçümü ("Deploy Doğrulaması") çalışmaya devam ediyor. **Play vitrinine yalnızca kullanıcı bakabilir** |
 | **Kapalı test** | Kapatmaya gerek yok. Bir kullanıcı hem testere hem production'a uygunsa Play en yüksek `versionCode`u sunar — yani 665 production'a çıkınca testerlar da onu alır |
 | **Sürüm senkronu** | `mobile/docs/surumler.md` → "1.1.0 (665)" bölümü YAYINDA'ya çekilir, 659 pasife |
 
