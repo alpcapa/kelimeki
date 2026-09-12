@@ -81,7 +81,12 @@ bool shouldShowTutorial(TutorialGateInput input) {
 enum OnboardingHintId { vergi, carpan, bolge }
 
 /// Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA).
-const int onboardingHintMaxShows = 2;
+///
+/// ⚠ **2 → 1 (12 Eylül 2026, kullanıcı kararı):** üç ipucu × tavan 2 =
+/// oyuncunun görebileceği 6 balondu ve bu ilk oyunda fazlaydı; artık üçü de
+/// bir kez (en fazla 3). Web ikizi `ONBOARDING_HINT_MAX_SHOWS` — değer
+/// `tutorial_parity_test.dart` ile kilitli.
+const int onboardingHintMaxShows = 1;
 
 /// Balonun ekranda kalma süresi — web `ONBOARDING_HINT_MS`.
 const Duration onboardingHintDuration = Duration(milliseconds: 4000);

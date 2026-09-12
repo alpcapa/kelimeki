@@ -143,7 +143,9 @@ dosyaları AYNI PR'da güncellenir. `TUTORIAL_LAUNCH_AT` iki platformda AYNI
 - **Bağlamsal ipuçları (Faz 2).** Atlayanın da öğrenmesi için, GERÇEK oyunda
   mekanik yaşandığı anda çıkan tek cümlelik balon: `vergi` · `carpan` ·
   `bolge`. Karar saf fonksiyonda (`pickOnboardingHint`, `utils/onboarding.ts`
-  ↔ `util/onboarding.dart`), sayaç cihaz-yerel ve ipucu BAŞINA tavan 2, çizim
+  ↔ `util/onboarding.dart`), sayaç cihaz-yerel ve ipucu BAŞINA tavan **1**
+  (12 Eylül 2026'da 2'den indi — üç ipucu × 2 = 6 balon ilk oyunda fazlaydı;
+  kullanıcı kararı), çizim
   `Board`un mevcut `coach` prop'u. **Sıra sabittir** (`vergi › carpan ›
   bolge`) — ekranda aynı anda TEK balon; öncelik `Sınır İhlali penceresi ›
   ipucu › zoom balonu` (zoom balonu oyun boyunca durduğundan yazılı plan

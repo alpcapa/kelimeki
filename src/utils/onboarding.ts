@@ -231,8 +231,17 @@ export const SEEN_INTRO_KEY = 'kelimeki:seen-intro';
 // oyunda, üçüncüsünü haftalar sonra yaşayabilir.
 export type OnboardingHintId = 'vergi' | 'carpan' | 'bolge';
 
-/** Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA). */
-export const ONBOARDING_HINT_MAX_SHOWS = 2;
+/**
+ * Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA).
+ *
+ * ⚠ **2 → 1 (12 Eylül 2026, kullanıcı kararı):** *"İlk defa oynayan kişiye
+ * oyun sırasında çıkan max 6 gösterim iyi bir deneyim değil. Onu her bir
+ * mesaj için 1 kere olacak şekilde düzelteceğiz."* Üç ipucu × tavan 2 =
+ * oyuncunun görebileceği **6 balon**du; artık üçü de bir kez, yani en fazla
+ * **3**. Tavanın ipucu BAŞINA olması DEĞİŞMEDİ — üçü farklı mekaniği
+ * anlatıyor ve biri susunca ötekiler susmaz.
+ */
+export const ONBOARDING_HINT_MAX_SHOWS = 1;
 
 /** Balonun ekranda kalma süresi (ms) — tanıtımdaki `RAKIP_OKUMA`nın iki katı:
  *  orada cümle "Rakip hamlesini yaptı", burada bir KURAL anlatılıyor. */

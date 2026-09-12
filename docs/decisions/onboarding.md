@@ -570,7 +570,8 @@ sonraki cümle yine "sınır" derdi.
 
 **Karar saf bir fonksiyonda:** `pickOnboardingHint(input, shown)`
 (`utils/onboarding.ts` ↔ `util/onboarding.dart`). Sayaçlar çağıranda
-(cihaz-yerel, ipucu BAŞINA tavan 2) — böylece tablo `verify-tutorial-script`
+(cihaz-yerel, ipucu BAŞINA tavan 1 — 12 Eylül 2026'da 2'den indi, aşağı
+bkz.) — böylece tablo `verify-tutorial-script`
 ve `tutorial_script_test.dart`ta depolamaya hiç dokunmadan koşuyor. İki kural
 kolay kaçırılıyor ve ikisi de kilitli:
 
@@ -582,6 +583,27 @@ kolay kaçırılıyor ve ikisi de kilitli:
 2. **Tavana çarpan bir ipucu ötekileri SUSTURMAZ** — üçü farklı mekaniği
    anlatıyor ve oyuncu ikisini bir oyunda, üçüncüsünü haftalar sonra
    yaşayabilir.
+
+### Tavan 2 → 1 (12 Eylül 2026, kullanıcı kararı)
+
+Sözleri birebir: *"İlk defa oynayan kişiye oyun sırasında çıkan max 6
+gösterim iyi bir deneyim değil. Onu her bir mesaj için 1 kere olacak şekilde
+düzelteceğiz."*
+
+**Aritmetik neden burada kaçtı:** tavan "ipucu BAŞINA" diye tasarlandı ve
+yukarıdaki 2. kural (biri susunca ötekiler susmaz) tek başına doğru. Ama
+üçünün TOPLAMI hiç hesaplanmadı: 3 ipucu × 2 gösterim = **6 balon**, üstelik
+hepsi ilk birkaç oyunda, yani tam da oyuncunun oyunu öğrenmeye çalıştığı
+anda. Ders: bir tavan "öğe başına" konurken **öğe SAYISIYLA çarpılıp** son
+kullanıcının göreceği toplam da yazılmalı.
+
+Değişen tek şey sabitin değeri (`ONBOARDING_HINT_MAX_SHOWS` ↔
+`onboardingHintMaxShows`, ikisi de `1`). **Tasarım DEĞİŞMEDİ:** tavan hâlâ
+ipucu başına, sıra hâlâ `vergi › carpan › bolge`, karar hâlâ aynı saf
+fonksiyonda. Doğrulayıcı ve testler tavanı sabitten okuduğu için (hard-code
+edilmiş `2` yok) vaka tablosu olduğu gibi geçerli kaldı —
+`npm run verify-tutorial-script` yeşil, `tutorial_parity_test.dart` iki
+tarafın değerini karşılaştırmaya devam ediyor.
 
 **Çizim ikinci bir geometri yazmıyor:** balon `Board`un mevcut `coach`
 prop'u (tanıtımın çizdiği balonun aynısı). Çapa cümlenin ANLATTIĞI kare —
