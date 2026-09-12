@@ -52,6 +52,32 @@ sessizce, hiçbir hata vermeden. Tam olarak böyle oldu: 654 → 656 → 659.
 **Pencere açıkken mobil merge etme**; kaçınılmazsa ikisini birden yeni
 numaraya çek (ASC'de build'i değiştir + yeni `.aab`yi yükle).
 
+### 🧊 KOD DONDU — 665 sürüm paketi (12 Eylül 2026 akşamı, kullanıcı kararı)
+
+Sözleri: *"Bundan sonraki düzeltmeler yapılacak bir şey kalmadı. Tabi acil
+bug vb çıkmazsa."* Yani **665 mağazaya giden pakettir**; `main`'e mobil bir
+iş girmediği sürece yukarıdaki "aradaki pencere" riski de kapanır.
+
+- **Mobil merge YOK** — acil bir hata dışında. Acil bir düzeltme girerse
+  kural aynen işler: yeni numara ASC'ye iliştirilir **ve** `.aab` Play'e
+  yüklenir; ikisi ayrı bırakılmaz.
+- **Web işleri serbest** (`src/`, `docs/`, `marketing/`) — mobil paketi
+  etkilemiyor, `mobile-latest`i ezmiyor.
+
+### 🚦 YAYIN SIRASI — Apple beklemez (12 Eylül 2026, kullanıcı kararı)
+
+Sözleri: *"Apple önce gelirse direkt yayına alırız. Beklemeye gerek yok."*
+
+Yani `Manually release` seçilmiş olması bir BEKLEME kararı değil, bir
+KONTROL kararı: onay e-postası gelir gelmez `Release This Version` basılır,
+Play'in production kapısı beklenmez. **İki mağaza farklı günlerde
+açılabilir** ve bu kabul edilmiş durumdur — senkron kuralı SÜRÜM
+NUMARASI hakkında, yayın TARİHİ hakkında değil.
+
+⚠ Bunun tek görünür sonucu: mağaza rozetleri/linkleri turu ters sırayla
+gelebilir (`ROADMAP.md` "önce Android yarısı" diyor, Apple önce çıkarsa o
+satır tersine döner).
+
 ⚠ **Play'e yüklemeden önce indirdiğin `.aab`nin kimliğini DOĞRULA** — yükleme
 ekranındaki `versionCode` beklediğin numara mı? `mobile-latest` paylaşılan ve
 üzerine yazılan bir etiket, "dün indirdiğim dosya" bir kanıt değil.
