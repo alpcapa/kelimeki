@@ -925,6 +925,26 @@ düzeyinde, kapalı test kanalını da genişletir. Kapalı test zaten 177
 genişletmesiyle birlikte çıkıyor; bilgilendirme, bir form ya da onay
 DEĞİL — `Dismiss` edilebilir.
 
+### Submission activity — gönderim kütüğü (13 Eylül 2026, 00:43'te okundu)
+
+**Publishing overview → `Submission activity`.** Her gönderim bir
+**Submission ID** alıyor; tablo `Submitted` · `Changes` · `Status`
+sütunlarını ve satır başına bir **→** (içindekileri açan) oku taşıyor.
+
+| Submission | Ne | Durum |
+|---|---|---|
+| **18** · 13 Eyl 2026, 00:42 | **Production** | ⏳ *In review* — **bu uygulamanın İLK production gönderimi** |
+| 17 · 12 Eyl 12:24 | Closed testing - Alpha | ✅ Published (659) |
+| 16 ve öncesi (11 Eyl'e kadar) | hepsi Closed testing - Alpha | ✅ Published |
+
+⚠ **`Changes` sütunu "Production" der, İÇİNDEKİNİ söylemez.** Gönderimin
+paketi taşıyıp taşımadığı ancak **→** okuyla açılınca görülür. Bu ayrım
+teorik değil: 00:39 ve 00:41'de bekleyen listede yalnızca iki
+*Countries / regions* satırı vardı, 00:42'de gönderim yapıldı — yani 18'in
+`.aab`yi içerdiği EKRANDAN DOĞRULANMADI. Sadece ülke değişikliği
+gönderildiyse onay gelse bile sürüm yayınlanmaz ve vitrin 404 kalır.
+**Kural: gönderdikten sonra satırı aç ve paketin içeride olduğunu gör.**
+
 ### Hâlâ ölçülmemiş — vaat etme
 
 - **İnceleme süresi.** Bu hesapta kapalı test incelemeleri 10-34 dakika
