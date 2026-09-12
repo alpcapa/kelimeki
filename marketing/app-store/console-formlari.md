@@ -476,7 +476,7 @@ dokun** — yoksa bir sonraki oturum yine baştan sorar.
 | App Information — **Age Ratings** | ✅ girildi → **4+** (11 Eyl) | Cevaplar §5 |
 | App Information — Encryption · DSA etiketleri · Vietnam · Medical · Server Notifications · Shared Secret | — gerekmiyor | Sırasıyla: §12 (`Info.plist`), fiziksel ürün etiketi, VN lisansı yok, Games kategorisi + anket NONE, IAP yok |
 | **App Review Information** (demo hesap · iletişim · notlar) | ✅ girildi (11 Eyl) | §11 |
-| **App Privacy** | ⏳ SÜRÜYOR — `Name` türü bitti, **dokuz tür kaldı** | Eşleme §10. ⚠ Sonunda **Publish** şart, Save yayımlamıyor |
+| **App Privacy** | ⏳ SÜRÜYOR — `Name` türü bitti, **dokuz tür kaldı** | Eşleme §10; Console'un SORDUĞU sırayla numaralı cevap kağıdı §10 sonunda (12 Eyl) — bir tür bitince oradaki numarayı buraya yaz. ⚠ Sonunda **Publish** şart, Save yayımlamıyor |
 | **Pricing and Availability** | ⬜ | Free + tüm ülkeler (§9) |
 | Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ⬜ | §9 |
 | Ekran görüntüleri | ✅ yüklendi (11 Eyl, 8/10 · 8/10) | §13 |
@@ -646,6 +646,48 @@ bizim adımıza işleyen **hizmet sağlayıcı**; takma isim/fotoğraf/sohbet is
 kullanıcının kendi başlattığı görünürlük. **Bu denge bozulursa** (veriyi
 kendi amacı için kullanan bir üçüncü tarafa geçilirse) hem burası hem Play
 beyanı hem `PrivacyModal` birlikte değişir.
+
+### 🧾 Console'a giriş sırası — tür tür cevap kağıdı (12 Eylül 2026)
+
+⚠ **Yukarıdaki eşleme tablosu KATEGORİYE göre değil VERİYE göre yazılmış;
+Console ise türleri kendi kategori sırasıyla soruyor.** Form yarıda
+kaldığında ("`Name` bitti, dokuz tür kaldı") hangi türün sırada olduğunu
+bulmak her seferinde tablonun yeniden çevrilmesini gerektiriyordu. Bu liste
+aynı cevapları **Console'un sorduğu sırayla** yazar — tablo TEK kaynak,
+burası onun sıralanmış görünümü.
+
+ASC her tür için ÜÇ şey sorar: **amaçlar** (çoklu seçim) · **"Linked to the
+User?"** · **"Used for Tracking?"**. Üçüncüsü **her satırda `No`** (Soru 1).
+
+| # | Kategori → Tür | Amaç(lar) | Linked |
+|---|---|---|---|
+| ✅ | Contact Info → **Name** | App Functionality | Yes |
+| 1 | Contact Info → **Email Address** | App Functionality **+ Developer's Advertising or Marketing** | Yes |
+| 2 | User Content → **Photos or Videos** | App Functionality | Yes |
+| 3 | User Content → **Other User Content** | App Functionality | Yes |
+| 4 | Identifiers → **User ID** | App Functionality | Yes |
+| 5 | Identifiers → **Device ID** | App Functionality + Analytics | Yes ⚠ (bölünmüş satır) |
+| 6 | Usage Data → **Product Interaction** | App Functionality + Analytics | Yes ⚠ (bölünmüş satır) |
+| 7 | Diagnostics → **Crash Data** | Analytics | **No** |
+| 8 | Diagnostics → **Other Diagnostic Data** | Analytics | **No** |
+| 9 | Other Data → **Other Data Types** | Analytics | Yes |
+
+⚠ **`Third-Party Advertising` ve `Product Personalization` HİÇBİR satırda
+işaretlenmez** — reklam ağı yok, kişiselleştirme yok.
+
+⚠ **1. satırdaki ikinci amaç gerçek bir kutuya dayanıyor:** kayıt ekranında
+ve hesap ayarlarında *"Pazarlama iletişimi almayı kabul ediyorum"* onayı var
+(`AuthModal.tsx` · `AccountSettingsModal.tsx` → `marketing_consent`), yani
+e-posta yalnız onay verende pazarlama amacıyla da kullanılıyor. Onay kutusu
+kaldırılırsa bu amaç da kaldırılır.
+
+⚠ **9. satır serbest metin ister** (Apple türün adını yazdırır). Girilecek:
+`Optional profile fields: gender and date of birth`. Kaynak
+`profiles.gender` + `profiles.birth_date` (isteğe bağlı); kullanımı yalnızca
+admin panelindeki yaş/cinsiyet dökümü (`get_profile_age_gender`).
+
+⚠ **Sonunda `Publish` — `Save` YAYIMLAMAZ.** Sayfanın üstündeki durum
+`Published` demeden beyan gönderime girmez.
 
 ---
 
