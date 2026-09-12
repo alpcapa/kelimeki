@@ -448,6 +448,14 @@ bu yüzden var — özet liste, kaynağın kendi içinde bile bayatlayabiliyor.
 24.2 uçtan uca doğrulanmıştı. Bu tablo **iki kez** kaynağın kendi içinde
 bayatladı; bir kova kapandığında aynı turda buraya da dokun.
 
+⚠ **12 Eylül 2026 BEŞİNCİ tazeleme — ve bu sefer TERS YÖNDE:** durum
+tablosu sürüm sayfası metinlerini `⬜` gösteriyordu, oysa hepsi **11 Eylül'de
+girilmişti**; kullanıcı aynı metinleri ikinci kez yapıştırmak üzereyken fark
+etti. Önceki dördü "kapanan iş yazılmadı" idi, bu da aynı hatanın ta
+kendisi — yani tablonun kuralı ("bir sayfayı doldurduğun turda buraya da
+dokun") beş kez yazılıp beş kez uygulanmadı. **Refleks:** Console'da bir
+sayfayı kapatınca ÖNCE bu tabloya dokun, sonra sıradaki sayfaya geç.
+
 ⚠ **11 Eylül 2026 akşamı DÖRDÜNCÜ tazeleme:** kareler yüklendi (satır kapandı)
 ve "Gönderim" satırı gerçek duruma çekildi — bir oturum gönderimi YAPILMIŞ
 sanıp kütüğe öyle yazmıştı, ASC History'si tersini gösterdi.
@@ -459,7 +467,7 @@ da dokun.
 
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **Gönderim** | Sende | ⚠ **11 Eyl 23:02 — HENÜZ YAPILMADI, bir kez yanlış kaydedildi.** ASC → History gönderim satırı İÇERMİYOR (tek kayıt `Prepare for Submission · 8 Eyl`), sürüm hâlâ o durumda. **`Add for Review` gönderim DEĞİL** — ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadan sürüm incelemeye girmez; **kayıt kuralı: History'de SATIR görülmeden "gönderildi" yazma.** Kalan kapı metadata: Description · Keywords · Support/Marketing URL · Copyright · Promotional text (§9) + App Review Information demo hesabı (§11) + yayın seçeneği. İliştirilen build 629 → 654 → 656 → 659 → **665** (12 Eyl, kullanıcı). ⚠ İlk DÖRDÜNÜN kodu birebir aynıydı; **665 FARKLI** — PR #533'ün üç işini taşıyor (mesaj satırı kırpması · ipucu tavanı 2→1 · oyun sonu kutlaması). Kural artık yazılı: *ASC'de her zaman son derleme iliştirili olur, Play aynı numarayla takip eder* (`mobile/docs/surumler.md` → "SÜRÜM SENKRONU") |
+| **Gönderim** | Sende | ⚠ **11 Eyl 23:02 — HENÜZ YAPILMADI, bir kez yanlış kaydedildi.** ASC → History gönderim satırı İÇERMİYOR (tek kayıt `Prepare for Submission · 8 Eyl`), sürüm hâlâ o durumda. **`Add for Review` gönderim DEĞİL** — ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadan sürüm incelemeye girmez; **kayıt kuralı: History'de SATIR görülmeden "gönderildi" yazma.** **Kalan kapı (12 Eyl itibarıyla): YALNIZCA gönderimin kendisi** — metadata (§9), App Review Information (§11), App Privacy (§10) ve Pricing girildi; doğrulanmayan tek şey sürüm sayfasındaki `Version Release` seçeneği (öneri: *Manually release this version*, Play ile aynı gün yayınlamak için). İliştirilen build 629 → 654 → 656 → 659 → **665** (12 Eyl, kullanıcı). ⚠ İlk DÖRDÜNÜN kodu birebir aynıydı; **665 FARKLI** — PR #533'ün üç işini taşıyor (mesaj satırı kırpması · ipucu tavanı 2→1 · oyun sonu kutlaması). Kural artık yazılı: *ASC'de her zaman son derleme iliştirili olur, Play aynı numarayla takip eder* (`mobile/docs/surumler.md` → "SÜRÜM SENKRONU") |
 
 ### Console'a NE GİRİLDİ — durum tablosu (11 Eylül 2026, 23:45)
 
@@ -477,8 +485,8 @@ dokun** — yoksa bir sonraki oturum yine baştan sorar.
 | App Information — Encryption · DSA etiketleri · Vietnam · Medical · Server Notifications · Shared Secret | — gerekmiyor | Sırasıyla: §12 (`Info.plist`), fiziksel ürün etiketi, VN lisansı yok, Games kategorisi + anket NONE, IAP yok |
 | **App Review Information** (demo hesap · iletişim · notlar) | ✅ girildi (11 Eyl) | §11 |
 | **App Privacy** | ✅ **PUBLISHED** (12 Eyl) — on türün hepsi + Privacy Policy URL | Girilen cevaplar §10 (Console sırasıyla numaralı tablo). `Save` değil **Publish** basıldı, yani beyan yayımlandı. Beyan değişirse (yeni veri türü, yeni amaç, reklam SDK'sı) aynı sayfa yeniden Publish ister |
-| **Pricing and Availability** | ⬜ | Free + tüm ülkeler (§9) |
-| Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ⬜ | §9 |
+| **Pricing and Availability** | ✅ girildi (12 Eyl) | **Free** · taban ülke `United States (USD)` (Free'de fiyat türetmediği için etkisiz) · tüm ülke ve bölgeler |
+| Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ✅ girildi (**11 Eyl**) | §9. ⚠ Bu satır 12 Eyl'e kadar `⬜` duruyordu — girilmişti, yazılmamıştı (aşağıdaki beşinci bayatlama). Sayfa: sol menünün EN ÜSTÜ → `iOS App` → **1.1.0 Prepare for Submission** (App Information DEĞİL). `Version Release` seçeneği doğrulanmadı |
 | Ekran görüntüleri | ✅ yüklendi (11 Eyl, 8/10 · 8/10) | §13 |
 | Derleme iliştirme | ✅ **665** (12 Eyl; 629 → 654 → 656 → 659 → 665) | §15. Kullanıcı kuralı: *"ASC'de her zaman son versiyon olmalı"* — Play aynı numarayla takip eder (665'in `.aab`si 13 Eyl'de yüklenecek; o ana kadar Play **659**'da, yani iki mağaza GEÇİCİ olarak ayrı). ⚠ 665 ilk dört paketten FARKLI: PR #533'ün üç işini taşıyor. Ölçüm: `mobile/docs/surumler.md` → "1.1.0 (665)" + `surumler-ios.csv` |
 | **Gönderim** | ⬜ YAPILMADI | Yukarıdaki açık iş satırı |
