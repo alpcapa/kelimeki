@@ -42,9 +42,20 @@ yalnızca onu ilgilendiriyor, bizi değil.
 | Program | Apple Developer Program |
 | Enrolled as | **Individual** |
 | Ad | Alp Reşat Çapa |
-| Apple ID | `destek@kelimeki.com` |
+| Apple ID (**hesap**) | `destek@kelimeki.com` |
 | Team ID | `8277D85FY9` |
 | Yenileme | 9 Eylül 2027, auto-renew açık |
+| **Apple ID (UYGULAMA)** | **`6809809788`** — ASC → App Information → *General Information* → Apple ID (13 Eyl 2026'da okundu) |
+
+⚠ **"Apple ID" bu konsolda İKİ ayrı şeyin adı** ve tablodaki iki satır
+tam da o yüzden ayrı etiketlendi: biri hesabın **e-postası**, öteki
+uygulamanın **10 haneli sayısal kimliği**. Sayısal olan mağaza kaydı
+oluşturulunca atanır — **yayına girmeyi beklemez**, o yüzden bugün
+okunabildi. Kullanıldığı yer: iOS **Smart App Banner**
+(`<meta name="apple-itunes-app" content="app-id=6809809788">`,
+`ROADMAP.md` §26). ⚠ Değer gizli değil (sayfanın kaynağında herkese
+görünür olacak), ama etiketi **uygulama App Store'da yayına girmeden
+koyma** — yoksa ziyaretçi olmayan bir mağaza sayfasına gider.
 
 ⚠ **Bireysel hesabın geri alınamaz sonucu:** App Store'da satıcı olarak
 **kişinin yasal adı** görünür ve değiştirilemez. Play tarafı da kişiseldi

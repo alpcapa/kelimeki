@@ -1678,7 +1678,7 @@ ama onay ERİŞİM verir, vitrin açmaz. Doğru kapı yayınlanmış sürümdür
 | Mağaza URL'leri tek bir sabit dosyasında | `null` = "henüz yayında değil" → o rozet/dal HİÇ render edilmez. Tek satır değiştirip merge etmek yeter |
 | `Setup.tsx` footer'ına rozet satırı | Hukuki linklerin (`Kullanım Koşulları · Gizlilik Politikası · Paylaş`) ÜSTÜNE, ortalanmış kendi satırı |
 | `AddToHomeScreen.tsx` platforma göre dallansın | **Asıl iş burada.** Bugün `detectPlatform()` zaten `ios`/`android`/`other` ayırıyor ama üçü de aynı PWA talimatına düşüyor. Mağaza yayındaysa o platform mağazaya, değilse bugünkü PWA şeridine düşmeli — hiçbir aşamada boş ekran olmamalı |
-| iOS Smart App Banner | `<meta name="apple-itunes-app" content="app-id=…">` — tek satır, ama App Store onayı + **sayısal App ID** ister |
+| iOS Smart App Banner | `<meta name="apple-itunes-app" content="app-id=6809809788">` — **sayısal App ID artık ELDE** (13 Eyl 2026, ASC → App Information; `marketing/app-store/console-formlari.md` §1). Geriye tek koşul kaldı: uygulamanın App Store'da **yayında** olması. ⚠ Bu etiket bugünkü Universal Links bandının yerine geçmez, onu KAPSAR: uygulama yoksa *GET* (mağazaya), varsa *OPEN* — bugünkü bant yalnızca ikinci hâli yapıyor (bkz. 24.4) |
 | Manifest `related_applications` + `prefer_related_applications` | ⚠ **ÖLÇMEDEN AÇMA.** Chrome'un PWA kurulumunu Play'e yönlendirmesinin standart yolu, ama masaüstü kurulumunu da bastırıp bastırmadığı bu depoda ÖLÇÜLMEDİ — açılırsa masaüstündeki çalışan davranış sessizce kaybedilebilir |
 | Doküman senkronu | `docs/decisions/components.md` → `AddToHomeScreen` notu |
 
