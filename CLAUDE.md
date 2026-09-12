@@ -272,6 +272,15 @@ git diff --name-only origin/main...HEAD \
 şey eşleştirmiyor**, yani uyarı sessizce hiç çıkmaz (denendi, 12 Eylül
 2026). Elemeyi ikinci `grep -v` yapıyor.
 
+⚠ **COMMIT'TEN SONRA koş.** `origin/main...HEAD` yalnızca COMMIT'LENMİŞ
+farkı görür; çalışma ağacında duran (henüz `git add`lenmemiş) mobil bir
+değişiklik bu komuta GÖRÜNMEZ ve sonuç yanlışlıkla "eşleşme: 0" çıkar —
+yani uyarı yine sessizce kaybolur. 12 Eylül 2026'da tam bu sırayla koşuldu
+ve boş liste döndü; o turda gerçekten mobil değişiklik yoktu, ama olsaydı
+yakalanmayacaktı. **Sağlama:** komut dosya adlarını da bassın; hiç dosya
+basmıyorsa ölçtüğün şey diff DEĞİL, boşluktur — önce commit'le, sonra
+tekrar koş. (En sağlamı PR'ın kendi dosya listesi üzerinden bakmak.)
+
 Eşleşme varsa uyarı tek cümle: *"Bu merge mobil derlemeyi tetikler →
 `mobile-latest` ezilecek ve TestFlight'a yeni build gidecek; sürüm senkronu
 (`mobile/docs/surumler.md` → 'SÜRÜM SENKRONU') buna göre güncellenmeli."*
