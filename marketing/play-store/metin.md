@@ -78,6 +78,44 @@ karakterde kesiyor ve kesilen metin sessizce kayboluyor.
 
 ---
 
+## Sürüm notları / "What's new" (≤500 karakter, dil BAŞINA)
+
+**AS-BUILT — 1.1.0 (665), ilk production sürümü (13 Eylül 2026).**
+Console'a bu metin girildi; Play'in çok dilli alanı `<tr-TR>` etiketiyle
+kullanıldı (mağazanın tek dili tr-TR, §1):
+
+```
+<tr-TR>
+Kelimeki - Yepyeni ve çok farklı bir kelime oyunuyla tanış
+
+Türkçe için sıfırdan tasarlandı: Kendi köşenden başlar, kelime kurarak bölgeni büyütürsün. Rakibinin bölgesine girersen puanının bir kısmını ona kaptırırsın. Stratejik düşünüp, akıllı oynamalısın.
+
+• Yapay zekaya karşı üç seviye: Kolay, Normal, Zor
+• İnternetsiz oynanır — sözlük uygulamanın içinde
+• Arkadaşınla canlı, sırayla oynanan oyunlar
+• TDK tabanlı 63 binden fazla kelime, anlamlarıyla
+• Reklam yok, uygulama içi satın alma yok
+</tr-TR>
+```
+
+⚠ **496/500 karakter** (etiketler hariç ölçüldü). Tavana **4 karakter**
+kaldı — bir sonraki sürümde bu metne tek kelime bile eklenemez, önce bir
+yerden kısaltılmalı.
+
+**Neden değişiklik listesi değil tanıtım:** production'da kimsede önceki
+sürüm yok, "şu düzeltildi" yeni kullanıcıya bir şey söylemez. Kapalı
+testteki 659 kullanıcıları 665'i production'dan alacağı için aynı metni
+bir *güncelleme* notu olarak da görecekler; "ilk sürüm" ifadesinden bu
+yüzden vazgeçildi (kullanıcı kararı: *"İlk sürüm demeye gerek yok"*).
+
+⚠ **Terminoloji sapması, bilerek kabul edildi:** uygulama içinde bu şey
+**"Zorluk"** (kök `CLAUDE.md` → seviyeli YZ: *"Terminoloji tek: Zorluk:
+Kolay · Normal · Zor"*), mağaza metninde **"üç seviye"** yazıyor. Vitrin
+metni uygulama yüzeyi değil; ikisi ayrışırsa buradaki değil oradaki
+kazanır.
+
+---
+
 ## Ekran görüntüleri — GERÇEK CİHAZDAN
 
 **Neden emülatör/Appetize/web değil:** Play'e giden görüntülerin uygulamanın
