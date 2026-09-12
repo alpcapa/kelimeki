@@ -8,6 +8,7 @@ import { rankPlayers } from '../utils/ranking';
 import { leaguePoints, formatLeaguePoints } from '../utils/leaguePoints';
 import { PlayerBadge } from './PlayerBadge';
 import { AiLevelBadge } from './AiLevelBadge';
+import { FIRST_WIN_TEXTS, FIRST_WIN_GUEST_CTA, type FirstWinCelebrationId } from '../utils/onboarding';
 
 interface GameOverProps {
   show: boolean;
@@ -18,9 +19,23 @@ interface GameOverProps {
   onOpenHistory: () => void;
   onOpenFeedback: () => void;
   onClose: () => void;
+  /**
+   * Oyun sonu kutlaması (12 Eylül 2026) — `pickFirstWinCelebration`'ın
+   * kararı. ⚠ Karar ÇAĞIRANDA, burada DEĞİL: bu bileşen "ben kimim"
+   * bilmiyor (yalnız `players` alıyor) ve iki çağıranın kaynağı farklı —
+   * yerel oyunda misafir dalı da mümkün, Canlı'da oyuncu zaten girişli.
+   * `aiLevelForBadge` deseninin aynısı.
+   */
+  celebration?: FirstWinCelebrationId | null;
+  /**
+   * Misafir kutlamasındaki "hemen giriş yap" çağrısını bir BUTON yapar.
+   * Verilmezse metin düz kalır — mesajın kendisi zaten anlaşılır, ama
+   * çağıran bir giriş penceresi açabiliyorsa buton daha iyi.
+   */
+  onSignIn?: () => void;
 }
 
-export function GameOver({ show, players, turnCount, aiLevel, onOpenHistory, onOpenFeedback, onClose }: GameOverProps) {
+export function GameOver({ show, players, turnCount, aiLevel, onOpenHistory, onOpenFeedback, onClose, celebration, onSignIn }: GameOverProps) {
   if (!show) return null;
 
   const ranked = rankPlayers(players);
@@ -41,6 +56,40 @@ export function GameOver({ show, players, turnCount, aiLevel, onOpenHistory, onO
             turuncu · Zor kırmızı) başlığın hemen altında; Canlı'da prop yok →
             `null`, `gap` de açılmaz. */}
         <AiLevelBadge level={aiLevel} size="sm" />
+
+        {/* İlk galibiyet / ilk puan kutlaması. Metin `utils/onboarding.ts`te
+            (port ikiziyle birebir); burada yalnızca çizim. Misafir dalında
+            ikinci cümle bir çağrı olduğundan, çağıran giriş penceresini
+            açabiliyorsa buton olarak ayrılıyor. */}
+        {celebration ? (
+          <div
+            data-metin-kutusu="ilk-kutlama"
+            className="w-full rounded-2xl bg-accent/10 px-3 py-2 text-center font-sans text-[13px] leading-relaxed text-text"
+          >
+            {celebration === 'misafir' && onSignIn ? (
+              (() => {
+                // Cümle TEK kaynaktan (`FIRST_WIN_TEXTS.misafir`) bölünüyor:
+                // CTA parçası butona, öncesi/sonrası düz metne.
+                const [once, ...kalan] = FIRST_WIN_TEXTS.misafir.split(FIRST_WIN_GUEST_CTA);
+                return (
+                  <>
+                    {once}
+                    <button
+                      type="button"
+                      onClick={onSignIn}
+                      className="font-bold text-accent underline underline-offset-2"
+                    >
+                      {FIRST_WIN_GUEST_CTA}
+                    </button>
+                    {kalan.join(FIRST_WIN_GUEST_CTA)}
+                  </>
+                );
+              })()
+            ) : (
+              FIRST_WIN_TEXTS[celebration]
+            )}
+          </div>
+        ) : null}
 
         {/* ÜÇ sabit sayı kolonu + esneyen ad. Ad `flex-1 min-w-0 truncate`:
             önceden kırpılmıyordu, uzun bir ad (en sık "Yapay Zeka 1"; ayrıca

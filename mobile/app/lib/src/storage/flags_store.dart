@@ -16,6 +16,7 @@ class FlagsStore {
   static const _seenQuickstart = 'seen_quickstart';
   static const _seenTutorial = 'seen_tutorial';
   static const _seenChatIntro = 'seen_chat_intro';
+  static const _guestFirstPoints = 'guest_first_points_celebrated';
   static const _zoomHintShown = 'zoom_hint_shown';
   static const _zoomTried = 'zoom_tried';
   static const _anonId = 'anon_id';
@@ -45,6 +46,14 @@ class FlagsStore {
   /// döngüye dönüşmez. Kapı kararı `util/onboarding.dart`ta.
   bool get seenTutorial => prefs.getBool(_seenTutorial) ?? false;
   Future<void> markTutorialSeen() => prefs.setBool(_seenTutorial, true);
+
+  /// Misafir "ilk puan" kutlaması bu cihazda gösterildi mi — web
+  /// `kelimeki:first-points-celebrated`. Yalnızca MİSAFİR dalı için;
+  /// girişlide ölçüt hesabın `wins` sayısı (bkz. `util/onboarding.dart`).
+  bool get guestFirstPointsCelebrated =>
+      prefs.getBool(_guestFirstPoints) ?? false;
+  Future<void> markGuestFirstPointsCelebrated() =>
+      prefs.setBool(_guestFirstPoints, true);
 
   bool get seenChatIntro => prefs.getBool(_seenChatIntro) ?? false;
   Future<void> markChatIntroSeen() => prefs.setBool(_seenChatIntro, true);

@@ -584,6 +584,55 @@ kolay kaçırılıyor ve ikisi de kilitli:
    anlatıyor ve oyuncu ikisini bir oyunda, üçüncüsünü haftalar sonra
    yaşayabilir.
 
+### Oyun sonu kutlaması — ilk galibiyet / ilk puan (12 Eylül 2026)
+
+Kullanıcı önce *"mümkünse oyun sonu modalında 'Tebrikler ilk puanını
+kazandın' mesajı (eğer kazanmışsa)"* dedi; sorulunca ayrımı kendisi
+netleştirdi ve **iki farklı mesaj** çıktı:
+
+| Kim | Ölçüt | Kaynak | Metin |
+|---|---|---|---|
+| Girişli | ilk **GALİBİYET** (n oyun oynamış olsa da) | HESAP — `player_stats_overall.wins` | *Tebrikler, ilk oyununu kazandın!* |
+| Misafir | ilk **PUAN** (`leaguePoints > 0`) | CİHAZ bayrağı | *Tebrikler, ilk puanını kazandın. Bu puanı kaybetmemek için hemen giriş yap.* |
+
+**Neden iki ayrı kaynak.** Girişlide cihaz bayrağı YANLIŞ olurdu: telefon
+değiştiren ya da uygulamayı silip kuran kişi yıllar sonra yeniden "ilk
+oyununu kazandın" görürdü. Misafirde ise sunucuda sayılacak bir şey YOK —
+hesap yok. Mesajın kendisi zaten bunu söylüyor: puan kaydedilmiyor,
+kaydolmaya davet var. Yani ikisi "aynı özelliğin iki hâli" değil, iki ayrı
+ürün kararı: biri kutlama, öteki dönüşüm çağrısı.
+
+**İki ölçüt de aynı şey DEĞİL.** 2 kişilik oyunda "kazandı" ile "puan aldı"
+çakışıyor (2. sıra 0 puan alır), 4 kişilikte ayrışıyor: 2. sıra puan alır
+ama kazanmamıştır. Doğrulayıcının son iki vakası tam bu ayrımı kilitliyor.
+
+**`wins` neden kaydın ARDINDAN okunuyor.** Kaydı yazmadan önce okunsaydı
+`0` beklenirdi — ama kaydın sunucuya düşüp düşmediği bilinemezdi ve
+çevrimdışı biten bir oyunda mesaj YANLIŞ çıkardı. Sonradan okunan `wins == 1`
+tek bir şeyi söylüyor: **bu oyun sunucuya düştü VE hesabın ilk galibiyeti.**
+Kayıt düşmediyse sayı artmaz, mesaj çıkmaz — güvenli yön. (`totalWins: null`
+= istek düştü → yine sessiz; doğrulayıcıda kendi vakası var.)
+
+⚠ **Beraberlik kutlanmıyor** ve bu `wins`in tanımından geliyor:
+`count(*) filter (where games.result = 'win')`, beraberlik `'tie'`. Sıralamada
+rank 1 olsa da kutlama çıkmaz, bir sonraki gerçek galibiyette çıkar.
+
+**Karar ÇAĞIRANDA, bileşende değil** — `aiLevelForBadge` deseninin aynısı:
+`GameOver` "ben kimim" bilmiyor (yalnız `players` alıyor) ve iki çağıranın
+kaynağı farklı. Yerel ekran iki dalı da kurabilir, Canlı ekran yalnız üye
+dalını (oyun zaten hesap gerektiriyor).
+
+**Metin TEK kaynak.** İlk sürümde misafir cümlesi JSX'te butonun iki yanına
+İKİNCİ KEZ yazılmıştı — bu depodaki en sık bayatlama biçimi. Düzeltildi:
+`FIRST_WIN_GUEST_CTA` ayrı bir sabit ve çizim cümleyi ondan BÖLÜYOR; parça
+cümlede geçmezse buton hiç çıkmayacağından doğrulayıcı içermeyi ayrıca
+kontrol ediyor.
+
+⚠ **Port farkı (kabul edildi):** portta oyun ekranından açılabilen bir giriş
+penceresi YOK (web'de `showLoginModal` var), bu yüzden misafir metni portta
+düz kalıyor — cümle aynı, "hemen giriş yap" tıklanabilir değil. Web'de
+buton.
+
 ### Tavan 2 → 1 (12 Eylül 2026, kullanıcı kararı)
 
 Sözleri birebir: *"İlk defa oynayan kişiye oyun sırasında çıkan max 6

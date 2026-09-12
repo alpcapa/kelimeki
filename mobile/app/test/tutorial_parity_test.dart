@@ -297,6 +297,28 @@ void main() {
     }
   });
 
+  // ── Oyun sonu kutlaması (12 Eylül 2026) ───────────────────────────────
+  // İki metin ve CTA parçası web'de `utils/onboarding.ts`te, portta
+  // `util/onboarding.dart`ta ELLE senkron — ayrışırsa iki platform aynı
+  // anda FARKLI şey söyler. CTA parçası ayrıca cümlenin İÇİNDE geçmek
+  // zorunda: çizim cümleyi ondan bölüyor, geçmezse buton hiç çıkmaz ve
+  // hiçbir test bunu görmez.
+  test('oyun sonu kutlaması: metinler + CTA parçası web ile birebir', () {
+    for (final id in FirstWinCelebrationId.values) {
+      expect(
+          pick(onboardingTs, RegExp("${id.name}: '([^']*)'"),
+              '${id.name} kutlama metni'),
+          firstWinTexts[id]);
+    }
+    expect(
+        pick(onboardingTs, RegExp(r"FIRST_WIN_GUEST_CTA = '([^']+)'"),
+            'misafir CTA parçası'),
+        firstWinGuestCta);
+    expect(firstWinTexts[FirstWinCelebrationId.misafir]!.contains(firstWinGuestCta),
+        isTrue,
+        reason: 'CTA parçası cümlede geçmezse buton hiç çıkmaz');
+  });
+
   test('kapı tarihi: TUTORIAL_LAUNCH_AT port için yeniden tarihlenmedi', () {
     expect(tutorialLaunchAt,
         pick(onboardingTs, RegExp(r"TUTORIAL_LAUNCH_AT = '([^']+)'"), 'LAUNCH_AT'),

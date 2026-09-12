@@ -158,6 +158,16 @@ dosyaları AYNI PR'da güncellenir. `TUTORIAL_LAUNCH_AT` iki platformda AYNI
 - **Ölçüm (Faz 5).** `tutorial_events` (`start`/`finish`/`skip` + sahne +
   `auto`/`replay`) → admin panelinde "Tanıtım Turu" kartı. `user_id` YOK
   (`game_starts` ile aynı gizlilik kararı).
+- **Oyun sonu kutlaması (12 Eylül 2026).** `GameOver`/`GameOverModal`'da tek
+  seferlik banner; karar saf fonksiyonda (`pickFirstWinCelebration`,
+  `utils/onboarding.ts` ↔ `util/onboarding.dart`). **İki dal AYNI şeyi
+  ölçmüyor ve bu bilinçli:** GİRİŞLİ → ilk GALİBİYET, kaynağı HESAP
+  (`player_stats_overall.wins`, kayıt düştükten SONRA okunur; `null`/offline
+  → sessiz). MİSAFİR → ilk PUAN (`leaguePoints > 0`), kaynağı CİHAZ bayrağı
+  + "hemen giriş yap" çağrısı. Kapsam yerel **ve** Canlı (Canlı'da misafir
+  dalı hiç doğmaz — oyun hesap gerektiriyor). Metin TEK kaynak
+  (`FIRST_WIN_TEXTS`); butona dönüşen parça `FIRST_WIN_GUEST_CTA` ile
+  cümlenin İÇİNDEN bölünüyor, ikinci kez yazılmıyor.
 
 Ayrıntı, ölçümler ve tuzaklar: `docs/decisions/onboarding.md`.
 

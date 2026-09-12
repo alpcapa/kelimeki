@@ -37,6 +37,11 @@ class PlayerStats {
   final int gamesPlayed;
   final int localGamesPlayed;
   final int onlineGamesPlayed;
+  /// Kazanılan oyun sayısı — `count(*) filter (where games.result = 'win')`.
+  /// ⚠ [firstPlaces] ile AYNI ŞEY DEĞİL: beraberlik `result='tie'` olduğundan
+  /// `wins`e girmez ama sıralamada rank 1'dir. "İlk oyununu kazandın"
+  /// kutlaması bu alandan karar veriyor (`util/onboarding.dart`).
+  final int wins;
   final int firstPlaces;
   final int secondPlaces;
   final int surrenderedCount;
@@ -69,6 +74,7 @@ class PlayerStats {
     required this.gamesPlayed,
     required this.localGamesPlayed,
     required this.onlineGamesPlayed,
+    required this.wins,
     required this.firstPlaces,
     required this.secondPlaces,
     required this.surrenderedCount,
@@ -89,6 +95,7 @@ class PlayerStats {
         gamesPlayed: _i(j['games_played']),
         localGamesPlayed: _i(j['local_games_played']),
         onlineGamesPlayed: _i(j['online_games_played']),
+        wins: _i(j['wins']),
         firstPlaces: _i(j['first_places']),
         secondPlaces: _i(j['second_places']),
         surrenderedCount: _i(j['surrendered_count']),

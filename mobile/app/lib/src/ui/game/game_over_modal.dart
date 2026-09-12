@@ -11,6 +11,7 @@
 // Web ile BİREBİR aynı sayılar — biri değişirse öteki de değişmeli.
 // Web'deki iki link de portlandı: "Oyun Geçmişi" + "Görüş Bildir"
 // ([onFeedback] verilmezse — bazı testler — ikincisi hiç çizilmez).
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
 
@@ -20,18 +21,23 @@ import 'player_badge.dart';
 import 'player_colors.dart';
 import '../tokens.dart';
 import '../ai_level_badge.dart';
+import '../../util/onboarding.dart';
 
 Future<void> showGameOverModal(BuildContext context, GameState state,
     {required VoidCallback onOpenHistory,
     VoidCallback? onFeedback,
-    AiLevel? aiLevel}) {
+    AiLevel? aiLevel,
+    FirstWinCelebrationId? celebration,
+    VoidCallback? onSignIn}) {
   return showDialog<void>(
     context: context,
     builder: (context) => GameOverModal(
         state: state,
         onOpenHistory: onOpenHistory,
         onFeedback: onFeedback,
-        aiLevel: aiLevel),
+        aiLevel: aiLevel,
+        celebration: celebration,
+        onSignIn: onSignIn),
   );
 }
 
@@ -60,12 +66,23 @@ class GameOverModal extends StatelessWidget {
   /// GEÇİRMEZ → rozet yok, puan Normal (web `GameOver.aiLevel` aynı).
   final AiLevel? aiLevel;
 
+  /// Oyun sonu kutlaması — `pickFirstWinCelebration`ın kararı. ⚠ Karar
+  /// ÇAĞIRANDA: bu widget "ben kimim" bilmiyor ve iki çağıranın kaynağı
+  /// farklı (yerelde misafir dalı da mümkün, Canlı'da oyuncu zaten girişli).
+  /// Web ikizi `GameOver.celebration`.
+  final FirstWinCelebrationId? celebration;
+
+  /// Misafir kutlamasındaki "hemen giriş yap" çağrısını BUTON yapar.
+  final VoidCallback? onSignIn;
+
   const GameOverModal(
       {super.key,
       required this.state,
       required this.onOpenHistory,
       this.onFeedback,
-      this.aiLevel});
+      this.aiLevel,
+      this.celebration,
+      this.onSignIn});
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +116,25 @@ class GameOverModal extends StatelessWidget {
           if (aiLevel != null) ...[
             const SizedBox(height: 18),
             AiLevelBadge(level: aiLevel, size: AiLevelBadgeSize.sm),
+          ],
+          // İlk galibiyet / ilk puan kutlaması (12 Eylül 2026). Metin
+          // `util/onboarding.dart`ta (web ile birebir); burada yalnızca
+          // çizim. Misafir dalında ikinci cümle bir ÇAĞRI olduğundan, çağıran
+          // giriş penceresini açabiliyorsa buton olarak ayrılıyor —
+          // cümle TEK kaynaktan (`firstWinTexts`) bölünüyor, ikinci kez
+          // YAZILMIYOR (web `GameOver.tsx` ile aynı kural).
+          if (celebration != null) ...[
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: kAccent.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: _KutlamaMetni(
+                  celebration: celebration!, onSignIn: onSignIn),
+            ),
           ],
           const SizedBox(height: 18),
           Container(
@@ -333,6 +369,41 @@ class _PlayerRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Kutlama metni — misafir dalında CTA parçası butona dönüşür.
+class _KutlamaMetni extends StatelessWidget {
+  final FirstWinCelebrationId celebration;
+  final VoidCallback? onSignIn;
+  const _KutlamaMetni({required this.celebration, this.onSignIn});
+
+  @override
+  Widget build(BuildContext context) {
+    const stil = TextStyle(fontSize: 13, color: kText, height: 1.5);
+    final metin = firstWinTexts[celebration]!;
+    if (celebration != FirstWinCelebrationId.misafir || onSignIn == null) {
+      return Text(metin, textAlign: TextAlign.center, style: stil);
+    }
+    // ⚠ Bölme metnin İÇİNDEN: `firstWinGuestCta` cümlede geçmezse buton hiç
+    // çıkmaz — parite testi bu içermeyi ayrıca kilitliyor.
+    final parcalar = metin.split(firstWinGuestCta);
+    return Text.rich(
+      TextSpan(children: [
+        TextSpan(text: parcalar.first),
+        TextSpan(
+          text: firstWinGuestCta,
+          style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: kAccent,
+              decoration: TextDecoration.underline),
+          recognizer: TapGestureRecognizer()..onTap = onSignIn,
+        ),
+        TextSpan(text: parcalar.skip(1).join(firstWinGuestCta)),
+      ]),
+      textAlign: TextAlign.center,
+      style: stil,
     );
   }
 }

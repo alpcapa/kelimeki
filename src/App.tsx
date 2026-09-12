@@ -42,6 +42,12 @@ import {
 } from './utils/cloudSaveMirror';
 import { buildGameRecord } from './utils/gameRecord';
 import {
+  pickFirstWinCelebration,
+  guestFirstPointsCelebrated,
+  bumpGuestFirstPointsCelebrated,
+  type FirstWinCelebrationId,
+} from './utils/onboarding';
+import {
   ONBOARDING_HINT_MS,
   ONBOARDING_HINT_TEXTS,
   bumpOnboardingHintShown,
@@ -73,7 +79,10 @@ import {
   upsertLocalGameSave,
   deleteLocalGameSave,
   claimAbandonedLocalGameSave,
+  fetchPlayerStats,
 } from './lib/api';
+import { rankPlayers } from './utils/ranking';
+import { leaguePoints } from './utils/leaguePoints';
 import { saveGameDurable, flushPendingGames } from './utils/gameSync';
 import { setActivelyPlaying } from './lib/pwa';
 import { flushPendingFeedback } from './utils/feedbackSync';
@@ -768,8 +777,14 @@ export default function App() {
 
   // Oyun sonu ekranı kapatıldı mı (X'e basıldı mı) — board'u görmek için.
   const [gameOverDismissed, setGameOverDismissed] = useState(false);
+  // Oyun sonu kutlaması — `null` = kutlama yok. Oyun bitince BİR KEZ
+  // hesaplanıyor (aşağıdaki kayıt effect'i), yeni oyun başlayınca sıfırlanır.
+  const [celebration, setCelebration] = useState<FirstWinCelebrationId | null>(null);
   useEffect(() => {
     if (state.isGameOver) setGameOverDismissed(false);
+    // Yeni oyun başlayınca kutlama düşer — aksi halde bir sonraki oyunun
+    // sonunda bayat bir "ilk galibiyet" banner'ı açık kalırdı.
+    else setCelebration(null);
   }, [state.isGameOver]);
 
   // Joker taş konurken hangi harfe dönüşeceğini seçme penceresi. `editing`
@@ -1227,7 +1242,49 @@ export default function App() {
     // (`games_award_league_rewards`) ödülü aynı transaction'da açtığından
     // hemen ardından çekmek güvenli. Misafirde kayıt kuyruğa girer, kontrol
     // boş döner; ödül girişten sonraki flush'ta açılıp ilk kontrolde görünür.
-    if (record) void saveGameDurable(record).then(() => requestLeagueRewardCheck());
+    // ⚠ TEK kayıt: kutlama da bu promise'e zincirleniyor. İkinci bir
+    // `saveGameDurable` çağrısı satırı İKİ KEZ yazardı.
+    const kaydedildi = record
+      ? saveGameDurable(record).then(() => {
+          requestLeagueRewardCheck();
+        })
+      : Promise.resolve();
+    void kaydedildi;
+
+    // Oyun sonu kutlaması (12 Eylül 2026) — karar `pickFirstWinCelebration`da.
+    // ⚠ Girişli dal kaydın sunucuya DÜŞMESİNİ bekliyor: `wins` bu oyunu da
+    // sayacak, yani `1` tek bir şeyi söyler — kayıt düştü VE ilk galibiyet.
+    // Çevrimdışı bitirilen bir oyunda sayı artmaz, mesaj çıkmaz (güvenli yön).
+    const meRank = rankPlayers(state.players).find((r) => r.index === 0)?.rank ?? 0;
+    const won = meRank === 1 && !state.players[0]?.surrendered;
+    const earned =
+      leaguePoints(meRank, state.players.length, state.players[0]?.surrendered, aiLevelOf(state.aiLevel)) > 0;
+    if (user) {
+      void kaydedildi
+        .then(() => fetchPlayerStats('all'))
+        .then((stats) => {
+          const karar = pickFirstWinCelebration({
+            signedIn: true,
+            won,
+            earnedPoints: earned,
+            totalWins: stats?.wins ?? null,
+            guestCelebrated: true,
+          });
+          if (karar) setCelebration(karar);
+        });
+    } else {
+      const karar = pickFirstWinCelebration({
+        signedIn: false,
+        won,
+        earnedPoints: earned,
+        totalWins: null,
+        guestCelebrated: guestFirstPointsCelebrated(),
+      });
+      if (karar) {
+        bumpGuestFirstPointsCelebrated();
+        setCelebration(karar);
+      }
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);
 
@@ -2234,6 +2291,8 @@ export default function App() {
         players={state.players}
         turnCount={state.turnCount}
         aiLevel={aiLevelOf(state.aiLevel)}
+        celebration={celebration}
+        onSignIn={() => setShowLoginModal(true)}
         onOpenHistory={() => setShowHistory(true)}
         onOpenFeedback={() => setShowFeedback(true)}
         onClose={() => {
