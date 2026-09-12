@@ -524,7 +524,7 @@ metni sessizce keser.
 |---|---|---|---|
 | **Name** | 30 | **29** | `Kelimeki: Türkçe Kelime Oyunu` |
 | **Subtitle** | 30 | **30** | `Bölgeni büyüt, tahtaya hükmet.` ⚠ 11 Eyl 2026'da Console'a GİRİLEN değer bu; tasarım sırasında yazılan `Bölgeni büyüt, tahtayı al` (25) artık geçersiz |
-| **Keywords** | 100 | **93** | aşağı |
+| **Keywords** | 100 | tasarım **93** · Console'da **100** (DOLU) | aşağı |
 | **Promotional text** | 170 | **162** | aşağı |
 | **Copyright** | — | 19 | `2026 Alp Reşat Çapa` |
 
@@ -543,6 +543,37 @@ sözcük,harf,bulmaca,zeka,strateji,sözlük,TDK,arkadaş,çevrimdışı,yapay,t
 ⚠ **Name ve Subtitle'daki kelimeler TEKRARLANMAZ** — Apple onları zaten
 indeksliyor, tekrar bütçe israfı. Bu yüzden elendi: *kelime · türkçe · oyun ·
 bölge · büyüt · tahtayı*.
+
+⚠ **CONSOLE'DAKİ DEĞER BUNDAN FARKLI — as-built (12 Eylül 2026, ekran
+görüntüsünden okundu).** Yukarıdaki blok TASARIM; girilen değer şu:
+
+```
+kelime, sözcük, harf, bulmaca, zeka, strateji, sözlük, arkadaş, çevrimdışı, yapay zeka, tahta, anlam
+```
+
+**100/100 — alan TAM DOLU** (Console'un sayacı `0` gösteriyor; yerelde de
+ölçüldü). Yani bundan sonra bir kelime EKLEMEK için önce bir şey çıkarmak
+gerekir. Tasarımdan üç sapma var, üçü de bütçeyi yiyor:
+
+| Sapma | Bedeli |
+|---|---|
+| Virgülden sonra boşluk var (12 adet) | **11 karakter**; boşluksuz aynı liste 89'a iner |
+| `kelime` girilmiş — oysa Name'de (`…Kelime Oyunu`) zaten var | 8 karakter, Apple'ın zaten indekslediği bir sözcük için |
+| `TDK` · `bingo` · `joker` girilmemiş | tasarımda vardı, listede yok |
+
+**`yapay` → `yapay zeka` (12 Eylül 2026, kullanıcı Console'dan değiştirdi,
+bildirdi).** ⚠ Bu değişiklik alanı 95'ten 100'e çıkardı ve **aramada bir şey
+kazandırmıyor**: Apple tek tek anahtar kelimeleri kendisi birleştirip ifade
+üretiyor, `zeka` listede zaten TEK BAŞINA duruyor, yani `yapay` + `zeka`
+çifti "yapay zeka" aramasını baştan karşılıyordu. Bir daha bütçe sıkışırsa
+geri alınacak ilk beş karakter budur. (Geri alınmadı — ölçü bu kayda
+geçirildi, karar kullanıcının.)
+
+⚠ **Sürüm `Waiting for Review` iken metadata düzenlemek serbesttir** ve
+sürümü incelemeden ÇIKARMAZ (Apple'ın kendi durum referansı). Yine de
+kaydettikten sonra sol üstteki rozetin hâlâ `Waiting for Review` dediği
+doğrulanmalı — düzenleme sırası bir kez `Prepare for Submission`'a
+düşürürse sürüm sessizce kuyruktan çıkmış olur ve kimse fark etmez.
 
 ### Promotional text (sürüm yayınlamadan değiştirilebilir)
 
