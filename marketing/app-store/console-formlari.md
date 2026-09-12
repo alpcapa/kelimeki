@@ -459,7 +459,7 @@ da dokun.
 
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **Gönderim** | Sende | ⚠ **11 Eyl 23:02 — HENÜZ YAPILMADI, bir kez yanlış kaydedildi.** ASC → History gönderim satırı İÇERMİYOR (tek kayıt `Prepare for Submission · 8 Eyl`), sürüm hâlâ o durumda. **`Add for Review` gönderim DEĞİL** — ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadan sürüm incelemeye girmez; **kayıt kuralı: History'de SATIR görülmeden "gönderildi" yazma.** Kalan kapı metadata: Description · Keywords · Support/Marketing URL · Copyright · Promotional text (§9) + App Review Information demo hesabı (§11) + yayın seçeneği. İliştirilen build 629 → 654 → 656 → **659** (11 Eyl gecesi; dördünün de kodu birebir aynı, `mobile/app/lib` altında tek satır fark yok) |
+| **Gönderim** | Sende | ⚠ **11 Eyl 23:02 — HENÜZ YAPILMADI, bir kez yanlış kaydedildi.** ASC → History gönderim satırı İÇERMİYOR (tek kayıt `Prepare for Submission · 8 Eyl`), sürüm hâlâ o durumda. **`Add for Review` gönderim DEĞİL** — ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadan sürüm incelemeye girmez; **kayıt kuralı: History'de SATIR görülmeden "gönderildi" yazma.** Kalan kapı metadata: Description · Keywords · Support/Marketing URL · Copyright · Promotional text (§9) + App Review Information demo hesabı (§11) + yayın seçeneği. İliştirilen build 629 → 654 → 656 → 659 → **665** (12 Eyl, kullanıcı). ⚠ İlk DÖRDÜNÜN kodu birebir aynıydı; **665 FARKLI** — PR #533'ün üç işini taşıyor (mesaj satırı kırpması · ipucu tavanı 2→1 · oyun sonu kutlaması). Kural artık yazılı: *ASC'de her zaman son derleme iliştirili olur, Play aynı numarayla takip eder* (`mobile/docs/surumler.md` → "SÜRÜM SENKRONU") |
 
 ### Console'a NE GİRİLDİ — durum tablosu (11 Eylül 2026, 23:45)
 
@@ -480,7 +480,7 @@ dokun** — yoksa bir sonraki oturum yine baştan sorar.
 | **Pricing and Availability** | ⬜ | Free + tüm ülkeler (§9) |
 | Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ⬜ | §9 |
 | Ekran görüntüleri | ✅ yüklendi (11 Eyl, 8/10 · 8/10) | §13 |
-| Derleme iliştirme | ✅ **659** (11 Eyl gecesi; 629 → 654 → 656 → 659) | §15. Kullanıcı kararı: *"sürümler aynı olsun istiyorum"* — Play'e gidecek `.aab` de **659**, iki mağaza TEK numarada. Dört paketin kodu birebir aynı. Ölçüm: `mobile/docs/surumler.md` → 1.1.0 satırı + `surumler-ios.csv` |
+| Derleme iliştirme | ✅ **665** (12 Eyl; 629 → 654 → 656 → 659 → 665) | §15. Kullanıcı kuralı: *"ASC'de her zaman son versiyon olmalı"* — Play aynı numarayla takip eder (665'in `.aab`si 13 Eyl'de yüklenecek; o ana kadar Play **659**'da, yani iki mağaza GEÇİCİ olarak ayrı). ⚠ 665 ilk dört paketten FARKLI: PR #533'ün üç işini taşıyor. Ölçüm: `mobile/docs/surumler.md` → "1.1.0 (665)" + `surumler-ios.csv` |
 | **Gönderim** | ⬜ YAPILMADI | Yukarıdaki açık iş satırı |
 
 **Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
