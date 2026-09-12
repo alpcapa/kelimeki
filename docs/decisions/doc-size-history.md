@@ -140,3 +140,57 @@ korundu, kalan kural kısaltıldı ve her birine karar kaydına atıf konuldu.
 İlkesi" (7,6 KB) bölümleri büyük ama TAMAMI kural/indeks — taşınacak anlatı
 yok, bölmek yalnızca atıfları kırardı.
 
+
+## 12 Eylül 2026 — `marketing/app-store/console-formlari.md` (121 → 72,6 KB)
+
+**Tetikleyen:** dosya 11 Eylül'de `active` uyarı bandına (120 KB) girmişti
+ve kural *"bir sonraki dokunuşunda böl"* diyor. İki tur ertelendi (araya
+sürüm gönderimi ve iki özellik girdi), kullanıcı üçüncü turda *"böl"* dedi.
+
+**Kesme noktası — CEVAP KAĞIDI ↔ KAPANMIŞ VAKA ANLATISI.** Bu dosyanın işi
+"Console'a ne yazılacak" sorusuna cevap vermek; ama 2.226 satırının
+**1.309'u** iki kapanmış vakanın adım adım kütüğüydü: §3'ün `.p8`
+indirilemedi sagası (9 Eylül'de bir Mac'ten indirilerek çözüldü) ve §13'ün
+kare boru hattı anlatısı (11 Eylül'de kareler Console'a yüklendi). İkisi de
+"o cevaba nasıl gelindi" — yalnızca o vakaya dönüldüğünde gerekiyor.
+
+**Taşınan ↔ kalan, alt bölüm alt bölüm:**
+
+| Kalan (cevap kağıdı) | Taşınan (arşiv) |
+|---|---|
+| §3: anahtarın künyesi + `Access neden Admin` · *"imzalama için zorunlu DEĞİL"* · *"değerler bu dosyaya YAZILMAZ"* · **24.2 kurulum durumu tablosu** · 24.2'nin doğrulandığı koşu (#614) | §3: indirme hatası, `Team Keys` ↔ `Individual Keys`, Support vakası ve metni, bekleme günlerinin durum kayıtları, "arıza ASC genelinde" teşhisi, ilk dört koşunun kütüğü, yanlış derleme numarası post-mortem'i, #612'nin reddi |
+| §13: gereksinim tablosu · çekim listesi · Android setinden İKİ FARK · mağazaya giden kompozisyon kararı · eksik kare kuralı · slot doğrulaması · **alfa kanalı kuralı** · yerel önizleme · kalan iş | §13: kaynağın simülatöre çevrilmesi, ilk piksel ölçümü ve sınırları, boru hattının gün gün kütüğü (kuruluş → ilk koşu → kompozisyon bulguları → 2. karenin konu değiştirmesi → DEBUG bandı → bayat set), modal karelerinin taşınması |
+
+**Hedef `docs/decisions/` — `marketing/app-store/` DEĞİL, ve bu bilinçli.**
+Dosya bir `reference`: grep'lenir, baştan sona okunmaz. `marketing/` altına
+konsaydı betiğin sınıflandırması onu `active` sayardı (kural dosya adına
+değil, `docs/decisions/` ↔ `parca-log*` YOLUNA bakıyor) ve bir gün "böl"
+uyarısı verirdi — oysa bir arşivin doğru çaresi budamak ya da cilt
+dondurmaktır. Ayrıca depoda tarihli post-mortem'lerin adresi zaten orası ve
+bulunabilirliği kök `CLAUDE.md`'nin indeks tablosu sağlıyor (bir satır
+eklendi).
+
+**Bölüm numaraları korundu:** arşivin başlıkları `## §3 — …` / `## §13 — …`
+diye adlandırıldı, yani "§3" diye yapılan eski atıflar iki dosyada da
+karşılık buluyor. Cevap kağıdında her boşluğa tek paragraflık bir işaretçi
+kaldı. Taşınan içerikte **hiçbir satır değişmedi** — doğrulandı: eski
+dosyanın boş olmayan satırlarının çokluğu, yeni ikilinin toplamına birebir
+eşit (kayıp 0; eklenen 55 satır işaretçiler + arşiv başlığı).
+
+⚠ **Bölmenin bedeli yine ödendi:** repoda §3'ün TAŞINAN kısmına bakan iki
+atıf vardı (`mobile/docs/test-ortamlari.md`) ve aynı turda arşive
+yönlendirildi. Üçüncü bir atıf (`parca-log.md` → §13) KALAN içeriğe
+bakıyordu, dokunulmadı. Bölmeden önce `grep -rn` refleksi bu yüzden var.
+
+⚠ **YENİ DERS — bölme, bir başlığı YALAN hâline getirebilir.** İki bölüm
+başlığı da kendi içindeki bir cümleyle düzeltilmişti: §3 *"`.p8`
+İNDİRİLEMEDİ"* diyordu (9 Eylül'de indirildi), §13 *"simülatöre GEREK YOK"*
+diyordu ve bu iddia **aynı gün** bölümün içinde çürütülmüştü. Düzeltmeler
+arşive taşınınca başlıklar yalnız kaldı — yani bölmenin KENDİSİ bir an
+için yanlış bilgi üretti. İkisi de aynı turda düzeltildi (numaralar
+değişmeden, gerekçe başlığın altına yazılarak).
+
+**Kural:** bir bölümü bölmeden önce *"bu bölümün BAŞLIĞI hangi cümleyle
+düzeltiliyor?"* diye sor. Düzeltme taşınan tarafa gidiyorsa başlık da
+düzeltilmeli. "Hiçbir satır değişmez" kuralı TAŞINAN metin için geçerli;
+kalan tarafın kendi doğruluğu ayrı bir sorumluluk.

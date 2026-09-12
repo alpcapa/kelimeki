@@ -523,6 +523,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | Supabase işletimi: Brevo SMTP/teslimat geçmişi, SPF-DKIM-DMARC'ın gerçek hâli, migration geçmişinin kopması, dal temizliği, Edge Function deploy tuzakları | `docs/decisions/supabase-ops.md` |
 | Sonraya bırakılan ürün fikirleri (karar verildi, henüz yapılmadı) | `docs/decisions/product-backlog.md` |
 | ROADMAP arşivi — kapanmış maddeler, fazlar ve sürüm turları (grep'lenir, baştan sona okunmaz) | `docs/decisions/roadmap-arsiv.md` |
+| App Store Connect — kapanmış vaka anlatıları (`.p8` sagası, 24.2 zincirinin koşuları, kare boru hattının kuruluşu). ⚠ Cevap kağıdı `marketing/app-store/console-formlari.md`'de KALDI | `docs/decisions/app-store-gecmis.md` |
 | Doküman boyutu — bölme günlüğü (hangi dosya ne zaman, hangi kuralla bölündü) | `docs/decisions/doc-size-history.md` |
 
 **Yeni bir dated not eklerken:** eğer not, kod tabanında HER YERDE geçerli

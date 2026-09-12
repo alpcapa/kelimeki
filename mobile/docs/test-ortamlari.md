@@ -354,7 +354,8 @@ fazların sırası ve bağımlılıkları orada.
    gerekli: Key ID, Issuer ID, `.p8` içeriği.
    - ⚠ **`Team Keys` değil `Individual Keys`** ve indirme iPadOS'ta
      defalarca düştü; anahtar sonunda bir **Mac'ten** ilk denemede indi.
-     Ölçüm ve teşhis zinciri: `marketing/app-store/console-formlari.md` §3.
+     Ölçüm ve teşhis zinciri (12 Eylül 2026'da arşive taşındı):
+     `docs/decisions/app-store-gecmis.md` → "§3 — `.p8` indirilemedi".
 3. **GitHub deposu sırları** (Settings → Secrets → Actions) — BEŞ tane:
 
    | Secret | Ne |
@@ -403,8 +404,9 @@ fazların sırası ve bağımlılıkları orada.
      `Generated.xcconfig`i eziyor ve build numarasını belirleyen şey
      pubspec de ilk komut da değil, **fastlane'den önceki SON
      `flutter build`**. Düzeltildi ve **#616 ile kanıtlandı: TestFlight'ta
-     `1.0.9 (616)` · Complete**. Post-mortem:
-     `marketing/app-store/console-formlari.md` §3.
+     `1.0.9 (616)` · Complete**. Post-mortem (12 Eylül 2026'da arşive
+     taşındı): `docs/decisions/app-store-gecmis.md` → "§3 — 24.2 zincirinin
+     koşuları".
 6. ✅ **İÇ TEST GRUBU KURULDU — ve uygulama iPad'de ÇALIŞTI (10 Eylül
    2026 akşamı).** `INTERNAL TESTING` → **`İç Test`** grubu · 2 testçi ·
    dağıtılan derleme **`1.0.9 (620)`**. Cihazda Setup teşhis satırı
