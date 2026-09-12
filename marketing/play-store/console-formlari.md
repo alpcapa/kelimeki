@@ -863,8 +863,12 @@ Play App Signing'e **yeniden kaydolunmaz** — 25 Ağustos'ta kaydolundu
 
 ### Adımlar
 
-1. Sol menü → **Test and release** → **Production** → **Create new release**.
-2. `.aab`'yi yükle (§2 · `mobile-latest`).
+1. **ÖNCE ÜLKELER.** Sol menü → **Test and release** → **Production** →
+   **Countries / regions** sekmesi → hepsini ekle ve kaydet. ⚠ Sürümü
+   ülke seçilmeden kaydedemezsin (13 Eyl 2026'da ölçüldü: `Save` hata
+   verdi) ve ülkeleri sonradan düzeltmek paketi bekleyen listede geride
+   bırakabiliyor — aşağıdaki "şüphe doğrulandı" vakası tam bu.
+2. **Create new release** → `.aab`'yi yükle (§2 · `mobile-latest`).
 3. **Release name:** `1.1.0 (665)` — §5'teki `<sürüm adı> (<versionCode>)`
    deseni. **Release notes:** Türkçe; ilk production sürümü.
 4. **Ülkeler.** Kapalı test 177 ülkeye açıktı; production'ın kendi ülke
@@ -944,6 +948,23 @@ teorik değil: 00:39 ve 00:41'de bekleyen listede yalnızca iki
 `.aab`yi içerdiği EKRANDAN DOĞRULANMADI. Sadece ülke değişikliği
 gönderildiyse onay gelse bile sürüm yayınlanmaz ve vitrin 404 kalır.
 **Kural: gönderdikten sonra satırı aç ve paketin içeride olduğunu gör.**
+
+✅ **ŞÜPHE DOĞRULANDI (00:46).** `Test and release → Production` →
+*Track summary*: **`Inactive · Draft release: 1.1.0 (665) · 177 countries /
+regions · 22 installs`**. Yani paket **taslakta kalmış**, #18 gerçekten
+yalnızca ülke değişikliğini taşıyor. Track `Inactive` olduğu sürece vitrin
+404'tür. Taslak varken **`Create new release` düğmesi de gri** — bu, "bir
+taslağın var" işaretidir, hata değil.
+
+⚠ **Bu tuzağın kökü bir SIRA:** Play sürümü ülke seçilmeden kaydettirmiyor
+(kullanıcı önce paketi yükleyip `Save` dedi, hata aldı), ülkeleri
+düzeltmek bekleyen listeye kendi satırlarını düşürdü ve o liste
+gönderilince **paket geride kaldı**. Doğru sıra: **önce
+`Countries / regions`, sonra sürüm.**
+
+**Track summary tek bakışta doğrulama noktasıdır** — `Inactive` /
+`Draft release` / `In review` / yayında olduğunu oradan oku, bekleyen
+değişiklik listesinden değil.
 
 ### Hâlâ ölçülmemiş — vaat etme
 
