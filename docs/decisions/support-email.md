@@ -137,12 +137,35 @@ bağlı**. Ücretsiz planda Outbound webhook var, Inbound yok.
 bildirim rozeti; asıl iş — kullanıcının cevabının `destek@` kutusuna
 düşmesi — zaten çalışıyor ve o Zoho'ya bağlı, Brevo'ya değil.
 
-**Yerine ne yapıldı: HİÇBİR ŞEY — ve bu da bilinçli.** Zoho'nun mobil
+**Yerine ne yapıldı: önce HİÇBİR ŞEY — ve o da bilinçliydi.** Zoho'nun mobil
 bildirimi ya da kutunun kişisel adrese kopyalanması konuşuldu, ikisi de
 kurulmadı. Kullanıcının kararı (26 Ağustos 2026): *"Zoho app'e bile şu
 aşamada gerek yok. Ara ara inbox'a girer bakarım."* Kapalı testte ~11
-kullanıcı var; destek trafiği elle bakmayı kaldıracak kadar az. Hacim
+kullanıcı vardı; destek trafiği elle bakmayı kaldıracak kadar azdı. Hacim
 arttığında en ucuz adım Zoho bildirimidir — plan yükseltmek değil.
+
+**GÜNCELLENDİ (12 Eylül 2026): Zoho Mail uygulaması iPhone + iPad'e kuruldu.**
+Yani yukarıdaki cümlenin işaret ettiği "en ucuz adım" atıldı — **plan
+yükseltilmedi**, Brevo Inbound zinciri ve rozet hâlâ uykuda (aşağıdaki tablo
+aynen geçerli). Bir daha aynı soru sorulmasın diye kurulum notu:
+
+- **Apple Mail ÇALIŞMAZ; tek yol Zoho'nun kendi uygulaması.** `destek@`
+  ücretsiz katmanda açıldı ve Zoho yeni ücretsiz hesaplarda **IMAP/POP'u
+  kapatıyor** — kutuya yalnızca web ve Zoho'nun mobil uygulamalarından
+  erişiliyor. Yerleşik Mail'e "Diğer → Posta Hesabı Ekle" ile eklemeye
+  çalışan bağlantı reddi alır; bu bir yapılandırma hatası değil, planın
+  sınırı.
+- **Girişte veri merkezi `Europe` seçilmeli** — kutu Avrupa DC'sinde
+  (panel linkinin `mail.zoho.eu` olmasıyla aynı sebep); yanlış bölge
+  "hesap bulunamadı" verir.
+- `noreply@` bir GRUP olarak aynı kutuya düştüğünden ikinci bir kurulum
+  gerekmez: kullanıcıların "Yanıtla" cevapları da telefonda görünür.
+- IMAP gerçekten istenirse bedeli **Mail Lite** (~1 $/kullanıcı/ay) →
+  `imappro.zoho.eu` 993 SSL / `smtppro.zoho.eu` 465 SSL, iki adımlı
+  doğrulama açıksa uygulama şifresi. Tek kutu için alınmadı.
+
+⚠ Bu, panelin rozetini ÇALIŞTIRMAZ. Artık bildirimi Zoho veriyor, Kelimeki
+paneli değil — `fetchAdminPendingCount`'un üçüncü kaynağı hâlâ 0 ekliyor.
 
 **Kod SİLİNMEDİ, uykuda:**
 
