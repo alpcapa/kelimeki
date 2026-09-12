@@ -874,7 +874,11 @@ Play App Signing'e **yeniden kaydolunmaz** — 25 Ağustos'ta kaydolundu
    kullanıcıların yüzde kaçına gitsin. ⚠ **Bu hesapta ölçülmedi** — ekran
    ne sunuyorsa o. İlk yayında düşük yüzde muhafazakâr seçimdir, ama
    bugünkü kullanıcı tabanı zaten testerlar; %100 de savunulabilir.
-6. **Gözden geçir → yayınla.** Sürümün **kendi incelemesi** var.
+6. **Publishing overview → `Submit N changes for review`.** Sürüm tek
+   başına gitmez; Play bekleyen TÜM değişiklikleri birlikte yollar
+   (aşağıdaki ölçüm). Paket listede görünmüyorsa gönderme.
+7. **İnceleme.** Sürümün kendi incelemesi var; **Managed publishing
+   KAPALI** olduğu için onaylanınca kendiliğinden yayınlanır.
 
 ### Yayından SONRA
 
@@ -884,17 +888,51 @@ Play App Signing'e **yeniden kaydolunmaz** — 25 Ağustos'ta kaydolundu
 | **Kapalı test** | Kapatmaya gerek yok. Bir kullanıcı hem testere hem production'a uygunsa Play en yüksek `versionCode`u sunar — yani 665 production'a çıkınca testerlar da onu alır |
 | **Sürüm senkronu** | `mobile/docs/surumler.md` → "1.1.0 (665)" bölümü YAYINDA'ya çekilir, 659 pasife |
 
-### Ölçülmemiş iki şey — vaat etme
+### ✅ Publishing overview — ÖLÇÜLDÜ (13 Eylül 2026, 00:39-00:41)
+
+Sol menü → **Publishing overview**. Production akışının bu depoda ilk kez
+görülen parçası; aşağısı ekrandan okundu, türetilmedi.
+
+**Play değişiklikleri BİRİKTİRİR, tek tek göndermez.** Sayfa
+*"Changes not yet submitted for review"* başlığı altında bekleyen
+değişiklikleri listeler ve tek düğmeyle (*Submit N changes for review*)
+hepsini birlikte incelemeye yollar. Satır başına `Save for later` var.
+
+⚠ **Sonucu bir SIRA kuralı:** `.aab`yi eklemeden gönderirsen incelemeye
+yalnızca öteki değişiklikler gider, sürüm YAYINLANMAZ. 00:39'da tam bu
+durum görüldü — listede iki satır vardı ve ikisi de *Countries / regions*,
+paket yoktu. **Önce Production → Create new release ile paketi kaydet,
+sonra hepsini tek seferde gönder**; ayrı göndermenin kazancı yok, iki ayrı
+bekleme demek.
+
+| Ekrandan okunan | Değer |
+|---|---|
+| **Managed publishing** | **OFF** — yani onaylanan sürüm KENDİLİĞİNDEN yayınlanır, "yayınla" demeye gerek yok |
+| Last published | **12 Eylül 2026** (kapalı testteki 659) |
+| Bekleyen değişiklikler | 2 × *Countries / regions* → "Add 176 countries / regions" + "Add rest of world", ikisi de **`Affects other tracks`** rozetli |
+| İncelemede olan | YOK (*Changes in review* bölümü hiç çıkmadı) |
+
+**Managed publishing OFF, "Apple beklemez" kararıyla TUTARLI**
+(`mobile/docs/surumler.md` → "YAYIN SIRASI"): Play onaylanır onaylanmaz
+açılır, App Store ise *Manually release*'te bekler. İki mağazayı aynı
+DAKİKADA açmak istenseydi bu ayarın açılması gerekirdi — istenmedi.
+
+**`Affects other tracks` beklenen davranış:** ülke ayarı uygulama
+düzeyinde, kapalı test kanalını da genişletir. Kapalı test zaten 177
+ülkeye açıktı (§5), kaybı yok.
+
+**EU Geo-blocking bilgi kartı** (*Regulation (EU) 2018/302*) ülke
+genişletmesiyle birlikte çıkıyor; bilgilendirme, bir form ya da onay
+DEĞİL — `Dismiss` edilebilir.
+
+### Hâlâ ölçülmemiş — vaat etme
 
 - **İnceleme süresi.** Bu hesapta kapalı test incelemeleri 10-34 dakika
   sürdü (`mobile/docs/surumler.md`). **Production incelemesinin süresi
   ölçülmedi** ve kapalı testinkine uyarlanamaz — ilk production sürümü
   ayrıca daha ayrıntılı incelenebilir.
-- **Managed publishing.** Play'de onaylanan bir sürümü "yayınla" diyene
-  kadar bekleten bir ayar var; App Store'daki *Manually release*'in
-  karşılığı ve iki mağazayı aynı gün açmak isteniyorsa işe yarar. **Bu
-  hesapta açık mı kapalı mı bakılmadı.** Kapalıysa onaylanan sürüm
-  kendiliğinden yayınlanır.
+- **Kademeli yayın (staged rollout) ekranı** — sürüm oluşturma akışı henüz
+  görülmedi.
 
 ---
 
