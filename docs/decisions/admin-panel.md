@@ -427,7 +427,7 @@ satırı `skips`e girer, döküme girmez.
 
 ---
 
-## Cihaz Markası / Modeli / İşletim Sistemi tabloları (11 Eylül 2026)
+## Cihaz / Marka / Model / İşletim Sistemi tabloları (11-12 Eylül 2026)
 
 Kullanıcı isteği, sözleri birebir: *"Admin kurulu cihaz da görebiliyor
 muyuz? Iphone 17, 14, Samsung, vb. Onun için ayrı bir tablo mesela."*
@@ -503,6 +503,48 @@ toplamak, aynı cihaz iki satırda görünürse şişerdi. Ölçüldü: model ba
 benzersizlerin toplamı **788**, gerçek benzersiz **788**, birden fazla model
 dizesi taşıyan cihaz **0**. Bir gün ayrışırsa belirtisi görünür: marka
 tablosunun toplamı "Cihaz" tablosununkini AŞAR.
+
+### İşletim sistemi de "Cihaz"ın ALTINA girdi (12 Eylül 2026)
+
+Kullanıcı isteği, sözleri birebir: *"Admin ekranında işletim sistemi
+kırılımlarını da cihaz altına alalım, ayrı tabloya gerek yok. Cihaz
+markasında yaptığımız gibi Android oka basınca altında detayı görelim."*
+
+Bir gün önce marka/model için verilen kararın aynısı, bu kez OS için:
+"İşletim Sistemi" ayrı bir tablo olmaktan çıktı, **"Cihaz" tablosunun
+satırları açılır oldu** (`DeviceOsTable`, `osBreakdown`). Sayfa üç uzun
+tablodan ikiye indi; ok, hareket, girinti, `?` popup'ı ve düz CSV marka
+tablosuyla BİREBİR aynı — yan yana duran iki ağacın farklı davranması
+okuyanı durdururdu.
+
+⚠ **Tek fark, ve bilerek: üst satırın sayısı alt toplamı DEĞİL.**
+`brandBreakdown`da marka satırı modellerin toplamıdır; burada cihaz satırı
+"Cihaz" tablosunun kendi RPC'sinden (`admin_device_breakdown`) gelir. Sebep
+ölçüldü — canlı, son 90 gün, 12 Eylül 2026:
+
+| Cihaz | "Cihaz" satırı | OS satırlarının toplamı |
+|---|---|---|
+| Android | 568 | 568 |
+| Masaüstü | 132 | 132 |
+| **iOS** | **91** | **92** |
+
+Fark tek bir cihaz: pencere içinde iOS'u `26.5.2` → `26.6.1` güncellemiş,
+yani iki sürüm satırında da benzersiz sayılıyor. Alt toplamı üst satır
+yapmak "Cihaz" tablosunun (ve panelin en çok bakılan sayısının) değerini
+sessizce şişirirdi; alt satırları kırpmak veriyi gizlerdi. Üçüncü yol
+seçildi: **üst satır benzersiz ziyaretçi olarak kalır, fark ekranda
+görünür durur**, `?` popup'ı da bunu yazıyor. Aynı davranış
+`verify-device-labels`te canlıdan alınmış bu sayılarla kilitli.
+
+⚠ **Sürüm sıralaması alfabetik DEĞİL** (`compareOsVersionDesc`): düz
+`trCompare` "Android 9"u "Android 13"ün ÜSTÜNE koyardı ("1" < "9").
+Sıralama önce ziyaretçi sayısı, eşitlikte sayısal ve YENİDEN ESKİYE;
+sürümsüz satır her zaman en sonda.
+
+⚠ **`?` popup'ı birleşti:** `isletim-sistemi` girdisi silindi, içeriği
+(özellikle `iOS 10.15.7` uyarısı — aşağı bkz.) `cihaz` girdisine taşındı.
+Tablo kalkarken açıklamasının kalması, panelde açıklaması olmayan bir
+kavram bırakırdı.
 
 ### Yan bulgu — `iOS 10.15.7` bir iOS sürümü değil
 
