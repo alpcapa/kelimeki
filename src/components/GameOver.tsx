@@ -62,8 +62,15 @@ export function GameOver({ show, players, turnCount, aiLevel, onOpenHistory, onO
             ikinci cümle bir çağrı olduğundan, çağıran giriş penceresini
             açabiliyorsa buton olarak ayrılıyor. */}
         {celebration ? (
+          /* ⚠ İşaret `data-metin-kutusu` DEĞİL: o işaret skor ızgarasının
+             SABİT genişlikli sayı/başlık hücrelerini gösteriyor ve
+             `tests/text-scale*.spec.ts` onu taşıyan HER öğe için
+             "sarmayacak · taşmayacak · SAĞA yaslı" diye bakıyor. Bu kutu
+             ortalanmış, saran bir CÜMLE — o sözleşmeyi tutamaz. (12 Eylül
+             2026: işaret önce buraya da konmuştu ve iki Playwright testini
+             birden düşürdü.) */
           <div
-            data-metin-kutusu="ilk-kutlama"
+            data-kutlama="ilk"
             className="w-full rounded-2xl bg-accent/10 px-3 py-2 text-center font-sans text-[13px] leading-relaxed text-text"
           >
             {celebration === 'misafir' && onSignIn ? (

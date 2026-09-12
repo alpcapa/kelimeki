@@ -628,6 +628,26 @@ dalını (oyun zaten hesap gerektiriyor).
 cümlede geçmezse buton hiç çıkmayacağından doğrulayıcı içermeyi ayrıca
 kontrol ediyor.
 
+⚠ **Bir test sözleşmesi ödünç alındı ve CI'ı düşürdü (12 Eylül 2026).**
+Banner'a önce `data-metin-kutusu="ilk-kutlama"` işareti kondu. O işaret bu
+depoda **skor ızgarasının sabit genişlikli sayı/başlık hücrelerini**
+gösteriyor ve `tests/text-scale*.spec.ts` onu taşıyan HER öğe için üç şey
+birden iddia ediyor: *sarmayacak · kutusundan taşmayacak · SAĞA yaslı*.
+Kutlama banner'ı ortalanmış, doğal olarak SARAN bir cümle — üç iddiadan
+ikisini yapısı gereği tutamaz, ve iki Playwright testi birden düştü.
+İşaret `data-kutlama="ilk"` oldu; testler dokunulmadı.
+
+**Ders:** bir `data-*` işareti koymadan önce **onu kimin okuduğuna** bak.
+Bu depoda bazı işaretler yalnızca "seçici" değil, bir SÖZLEŞME — ve
+sözleşme testte yazılı, işaretin adında değil. (Aynı sınıfın başka bir
+örneği: `layout_parity_test.dart` `GameOver.tsx`'teki `w-[29px]` sınıfından
+sayı çekiyor.)
+
+⚠ **Yan fayda — düşen test özelliğin ÇALIŞTIĞINI kanıtladı:** hata mesajı
+banner'ın metnini olduğu gibi bastı (*"Tebrikler, ilk puanını kazandın…"*),
+yani Playwright fixture'ındaki misafir oyunu kazanıyor ve misafir dalı
+gerçek tarayıcıda uçtan uca doğru çalışıyor.
+
 ⚠ **Port farkı — KULLANICI ONAYLADI (12 Eylül 2026: *"Portta butona gerek
 yok"*).** Portta oyun ekranından açılabilen bir giriş penceresi YOK (web'de
 `showLoginModal` var), bu yüzden misafir metni portta düz kalıyor — cümle
