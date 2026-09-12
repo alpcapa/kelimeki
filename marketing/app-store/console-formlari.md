@@ -448,6 +448,14 @@ bu yüzden var — özet liste, kaynağın kendi içinde bile bayatlayabiliyor.
 24.2 uçtan uca doğrulanmıştı. Bu tablo **iki kez** kaynağın kendi içinde
 bayatladı; bir kova kapandığında aynı turda buraya da dokun.
 
+⚠ **12 Eylül 2026 BEŞİNCİ tazeleme — ve bu sefer TERS YÖNDE:** durum
+tablosu sürüm sayfası metinlerini `⬜` gösteriyordu, oysa hepsi **11 Eylül'de
+girilmişti**; kullanıcı aynı metinleri ikinci kez yapıştırmak üzereyken fark
+etti. Önceki dördü "kapanan iş yazılmadı" idi, bu da aynı hatanın ta
+kendisi — yani tablonun kuralı ("bir sayfayı doldurduğun turda buraya da
+dokun") beş kez yazılıp beş kez uygulanmadı. **Refleks:** Console'da bir
+sayfayı kapatınca ÖNCE bu tabloya dokun, sonra sıradaki sayfaya geç.
+
 ⚠ **11 Eylül 2026 akşamı DÖRDÜNCÜ tazeleme:** kareler yüklendi (satır kapandı)
 ve "Gönderim" satırı gerçek duruma çekildi — bir oturum gönderimi YAPILMIŞ
 sanıp kütüğe öyle yazmıştı, ASC History'si tersini gösterdi.
@@ -459,7 +467,7 @@ da dokun.
 
 | Açık iş | Kimde | Notu |
 |---|---|---|
-| **Gönderim** | Sende | ⚠ **11 Eyl 23:02 — HENÜZ YAPILMADI, bir kez yanlış kaydedildi.** ASC → History gönderim satırı İÇERMİYOR (tek kayıt `Prepare for Submission · 8 Eyl`), sürüm hâlâ o durumda. **`Add for Review` gönderim DEĞİL** — ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadan sürüm incelemeye girmez; **kayıt kuralı: History'de SATIR görülmeden "gönderildi" yazma.** Kalan kapı metadata: Description · Keywords · Support/Marketing URL · Copyright · Promotional text (§9) + App Review Information demo hesabı (§11) + yayın seçeneği. İliştirilen build 629 → 654 → 656 → 659 → **665** (12 Eyl, kullanıcı). ⚠ İlk DÖRDÜNÜN kodu birebir aynıydı; **665 FARKLI** — PR #533'ün üç işini taşıyor (mesaj satırı kırpması · ipucu tavanı 2→1 · oyun sonu kutlaması). Kural artık yazılı: *ASC'de her zaman son derleme iliştirili olur, Play aynı numarayla takip eder* (`mobile/docs/surumler.md` → "SÜRÜM SENKRONU") |
+| ~~Gönderim~~ | ✅ **KAPANDI** | **12 Eylül 2026, 17:32 (TSİ) — sürüm incelemeye GÖNDERİLDİ.** `Add for Review` → `Submit to App Review` → *"1 Item Submitted · It can take up to 48 hours"*; sol menüdeki sürüm satırı `Prepare for Submission` → **`1.1.0 Waiting for Review`** oldu. İliştirilen build **665**, yayın seçeneği **Manually release**. ⚠ **Kanıt kuralı GENİŞLEDİ:** dosya "History'de SATIR görülmeden yazma" diyordu; sürüm durumunun `Waiting for Review`a dönmesi History satırı kadar kesin bir kanıt (ve daha erken görünür) — ikisinden biri yeter, "butona bastım" yetmez. İliştirilen build geçmişi: 629 → 654 → 656 → 659 → **665** |
 
 ### Console'a NE GİRİLDİ — durum tablosu (11 Eylül 2026, 23:45)
 
@@ -476,14 +484,14 @@ dokun** — yoksa bir sonraki oturum yine baştan sorar.
 | App Information — **Age Ratings** | ✅ girildi → **4+** (11 Eyl) | Cevaplar §5 |
 | App Information — Encryption · DSA etiketleri · Vietnam · Medical · Server Notifications · Shared Secret | — gerekmiyor | Sırasıyla: §12 (`Info.plist`), fiziksel ürün etiketi, VN lisansı yok, Games kategorisi + anket NONE, IAP yok |
 | **App Review Information** (demo hesap · iletişim · notlar) | ✅ girildi (11 Eyl) | §11 |
-| **App Privacy** | ⏳ SÜRÜYOR — `Name` türü bitti, **dokuz tür kaldı** | Eşleme §10. ⚠ Sonunda **Publish** şart, Save yayımlamıyor |
-| **Pricing and Availability** | ⬜ | Free + tüm ülkeler (§9) |
-| Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ⬜ | §9 |
+| **App Privacy** | ✅ **PUBLISHED** (12 Eyl) — on türün hepsi + Privacy Policy URL | Girilen cevaplar §10 (Console sırasıyla numaralı tablo). `Save` değil **Publish** basıldı, yani beyan yayımlandı. Beyan değişirse (yeni veri türü, yeni amaç, reklam SDK'sı) aynı sayfa yeniden Publish ister |
+| **Pricing and Availability** | ✅ girildi (12 Eyl) | **Free** · taban ülke `United States (USD)` (Free'de fiyat türetmediği için etkisiz) · tüm ülke ve bölgeler |
+| Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ✅ girildi (**11 Eyl**) | §9. ⚠ Bu satır 12 Eyl'e kadar `⬜` duruyordu — girilmişti, yazılmamıştı (aşağıdaki beşinci bayatlama). Sayfa: sol menünün EN ÜSTÜ → `iOS App` → **1.1.0 Prepare for Submission** (App Information DEĞİL). `Version Release` = **Manually release this version** (12 Eyl, kullanıcı Console'dan doğruladı) — Play ile aynı gün yayınlayabilmek için |
 | Ekran görüntüleri | ✅ yüklendi (11 Eyl, 8/10 · 8/10) | §13 |
 | Derleme iliştirme | ✅ **665** (12 Eyl; 629 → 654 → 656 → 659 → 665) | §15. Kullanıcı kuralı: *"ASC'de her zaman son versiyon olmalı"* — Play aynı numarayla takip eder (665'in `.aab`si 13 Eyl'de yüklenecek; o ana kadar Play **659**'da, yani iki mağaza GEÇİCİ olarak ayrı). ⚠ 665 ilk dört paketten FARKLI: PR #533'ün üç işini taşıyor. Ölçüm: `mobile/docs/surumler.md` → "1.1.0 (665)" + `surumler-ios.csv` |
-| **Gönderim** | ⬜ YAPILMADI | Yukarıdaki açık iş satırı |
+| **Gönderim** | ✅ **GÖNDERİLDİ** (12 Eyl, 17:32) | `Submit to App Review` → *"1 Item Submitted"*; sürüm durumu **Waiting for Review**. İnceleme ≤48 saat, sonuç e-postayla gelir. Yayın **elle** (Manually) |
 
-**Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
+**Kapananlar:** **App Privacy Console'a GİRİLDİ ve Published → §10 (12 Eylül 2026)** · mağaza metinleri → §9 · yaş derecesi →
 §5 · demo hesap → §11 · Export Compliance → §12 · **API anahtarı `.p8` →
 §3 (9 Eylül 2026, Mac'ten indirildi)** · **imzalama + TestFlight yüklemesi
 → §3, koşu #614/#616** · **DSA trader beyanı + DOĞRULAMASI → §2 (10 Eylül
@@ -547,7 +555,17 @@ Türkçe için sıfırdan tasarlanmış bir kelime oyunu. Kelime kur, bölgeni b
 **Play'in tam açıklaması AYNEN kullanılabilir** (`marketing/play-store/
 metin.md` → "Tam açıklama"): 4000 karakter sınırı iki mağazada da aynı ve
 metin başka bir platformdan söz etmiyor. Buraya KOPYALANMIYOR — tek kaynak
-o dosya, ikiye bölünürse biri bayatlar.
+o dosya, ikiye bölünürse biri bayatlar. Ölçüldü: **2.072 karakter**.
+
+⚠ **Yapıştırmadan ÖNCE satır sonlarını birleştir** (12 Eylül 2026). Kaynak
+dosya ~78 sütunda SABİT SARMALI yazılmış; metin kutusuna olduğu gibi
+yapıştırılırsa o sarmalar GERÇEK satır sonu olur ve mağaza sayfasında
+cümleler ortasından kırılır. Birleştirme kuralı: paragraf içi satırlar tek
+satıra, **boş satırlar · BAŞLIK satırları (`NASIL OYNANIR`, `İKİ OYUN
+MODU`, `SÖZLÜK`, `k-lig`, `ÜCRETSİZ VE REKLAMSIZ`) · `•` ile başlayan her
+madde** kendi satırında kalır (maddenin devamı üstteki maddeye eklenir).
+Aynı tuzak Play'in açıklaması için de geçerli — oradaki listenin şu an
+kırık olup olmadığı ÖLÇÜLMEDİ, mağaza sayfasından bakılmalı.
 
 ### Sabit alanlar
 
@@ -646,6 +664,59 @@ bizim adımıza işleyen **hizmet sağlayıcı**; takma isim/fotoğraf/sohbet is
 kullanıcının kendi başlattığı görünürlük. **Bu denge bozulursa** (veriyi
 kendi amacı için kullanan bir üçüncü tarafa geçilirse) hem burası hem Play
 beyanı hem `PrivacyModal` birlikte değişir.
+
+### 🧾 Console'a giriş sırası — tür tür cevap kağıdı (12 Eylül 2026)
+
+⚠ **Yukarıdaki eşleme tablosu KATEGORİYE göre değil VERİYE göre yazılmış;
+Console ise türleri kendi kategori sırasıyla soruyor.** Form yarıda
+kaldığında ("`Name` bitti, dokuz tür kaldı") hangi türün sırada olduğunu
+bulmak her seferinde tablonun yeniden çevrilmesini gerektiriyordu. Bu liste
+aynı cevapları **Console'un sorduğu sırayla** yazar — tablo TEK kaynak,
+burası onun sıralanmış görünümü.
+
+ASC her tür için ÜÇ şey sorar: **amaçlar** (çoklu seçim) · **"Linked to the
+User?"** · **"Used for Tracking?"**. Üçüncüsü **her satırda `No`** (Soru 1).
+
+✅ **ONU DA GİRİLDİ VE PUBLISH EDİLDİ** (12 Eylül 2026). Aşağısı artık
+"girilecek" değil **"girilmiş olan"** — beyan değişirse buradan okunur.
+
+| # | Kategori → Tür | Amaç(lar) | Linked |
+|---|---|---|---|
+| ✅ | Contact Info → **Name** | App Functionality | Yes |
+| 1 | Contact Info → **Email Address** | App Functionality **+ Developer's Advertising or Marketing** | Yes |
+| 2 | User Content → **Photos or Videos** | App Functionality | Yes |
+| 3 | User Content → **Other User Content** | App Functionality | Yes |
+| 4 | Identifiers → **User ID** | App Functionality | Yes |
+| 5 | Identifiers → **Device ID** | App Functionality + Analytics | Yes ⚠ (bölünmüş satır) |
+| 6 | Usage Data → **Product Interaction** | App Functionality + Analytics | Yes ⚠ (bölünmüş satır) |
+| 7 | Diagnostics → **Crash Data** | Analytics | **No** |
+| 8 | Diagnostics → **Other Diagnostic Data** | Analytics | **No** |
+| 9 | Other Data → **Other Data Types** | Analytics | Yes |
+
+⚠ **`Third-Party Advertising` ve `Product Personalization` HİÇBİR satırda
+işaretlenmez** — reklam ağı yok, kişiselleştirme yok.
+
+⚠ **1. satırdaki ikinci amaç gerçek bir kutuya dayanıyor:** kayıt ekranında
+ve hesap ayarlarında *"Pazarlama iletişimi almayı kabul ediyorum"* onayı var
+(`AuthModal.tsx` · `AccountSettingsModal.tsx` → `marketing_consent`), yani
+e-posta yalnız onay verende pazarlama amacıyla da kullanılıyor. Onay kutusu
+kaldırılırsa bu amaç da kaldırılır.
+
+⚠ **9. satır serbest metin İSTEMİYOR** (12 Eylül 2026, Console'dan ölçüldü —
+bu dosya önce tersini yazıyordu): `Other Data Types` seçilince doğrudan amaç
+ekranına gidiyor, türün adını yazdıran bir alan YOK. Yani beyanda bu türün
+NE olduğu hiçbir yere yazılmıyor; kaydı yalnızca burada duruyor →
+`profiles.gender` + `profiles.birth_date` (isteğe bağlı), kullanımı yalnızca
+admin panelindeki yaş/cinsiyet dökümü (`get_profile_age_gender`).
+
+⚠ **Sonunda `Publish` — `Save` YAYIMLAMAZ.** Sayfanın üstündeki durum
+`Published` demeden beyan gönderime girmez. (12 Eylül 2026: basıldı.)
+
+⚠ **Aynı sayfa bir de `Privacy Policy URL` ister** — girilen değer
+`https://kelimeki.com/gizlilik/` (§6; eğik çizgi zorunlu). Yanındaki
+`Privacy Choices URL` **bilerek BOŞ**: kullanıcıya ayrı bir "veri
+tercihleri" sayfası sunmuyoruz, hesap silme uygulamanın içinden ve
+`/hesap-silme/`ten yapılıyor ve gizlilik sayfasında anlatılıyor.
 
 ---
 
