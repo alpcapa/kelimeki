@@ -214,34 +214,39 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **SÜRÜM 1.1.0 HAZIR (10 Eylül 2026 gece).** `appVersion` + `pubspec`
-1.1.0'a çekildi (#514); mağazadaki paket hâlâ **1.0.9 (581)**, yani
-aşağıdaki 11 satırın tamamı bu sürümle gidiyor. **Android paketine
-GERÇEKTEN binen dört iş:** #488 (onboarding Faz 2·3·5) · #509 ("Kalan
-Taşlar" çökmesi) · #512 (Arkadaşlar → "Davetler") · #514 (hiç oynanmamış
-oyunun bulut kaydı + tanıtım rozetleri + yapışık `OYUNU BAŞLAT`). Geri
-kalanlar `ios/` altında, CI'da ya da yalnızca `test/`te — ikiliye girmiyor
-(her satırın kendi ⚠'ı bunu söylüyor). Doğrulama komutu:
-`git log --oneline 1abde38..origin/main -- mobile/app mobile/kelimeki_core`
-(10 Eylül gecesi koşuldu: 12 commit, tablo eksiksiz).
+⚠ **DURUM (12 Eylül 2026): LİSTE BOŞ — `main`'de olup mağaza paketinde
+olmayan mobil iş YOK.** 1.1.0 (**659**) = `7bccbf7`, 12 Eylül 12:24'te Play'in
+kapalı testine (Alpha) gönderildi ve **`In review`**; aynı kod App Store
+Connect'te de 1.1.0'ın sürüm kaydına iliştirili. Doğrulama (koşuldu, BOŞ
+döndü):
+`git log --oneline 7bccbf7..origin/main -- mobile/app mobile/kelimeki_core`
 
-⚠ **DURUM (8 Eylül 2026): 1.0.9 (581) = `1abde38` kapalı testte YAYINDA
-(gönderim 08:41, yayın ≤ 09:10). Liste aynı gün SIFIRLANDI, ama AYNI GÜN
-yeniden doldu — onboarding Faz 2·3·5 (#488) porta dokundu, aşağıdaki tabloya
-bak.** Turun kaydı (paket, içerik tablosu, dersler):
-`docs/decisions/roadmap-arsiv.md` → "1.0.9 sürüm turu"; paket künyesi ve
-sürüm notları `mobile/docs/surumler.md` → "1.0.9 (581)".
+⚠ **"In review" ≠ sahada.** İnceleme reddederse bu liste yeniden anlam
+kazanır; paket YAYINLANDIĞINDA aşağıdaki tablo
+`docs/decisions/roadmap-arsiv.md`'ye "1.1.0 sürüm turu" olarak TAŞINIR
+(kuralın kendisi: ROADMAP yalnızca AÇIK maddeleri tutar). Paket künyesi,
+sürüm notları ve yayın sonrası yapılacaklar: `mobile/docs/surumler.md` →
+"1.1.0 (659)".
+
+⚠ **Sürüm İKİ pakete bölündü, ikisinin de adı 1.1.0.** Play'e önce **627**
+(`a4c809b`, 11 Eyl 08:01, yayınlandı) gitti; **659** onun üstüne bindi ve
+aradaki TEK ikili farkı #525 (Canlı oyun: sahte "Sıra sende değil." + sonsuz
+"Yükleniyor…"). Yani aşağıdaki tablonun satırları iki pakete dağıldı — hangi
+commit hangi pakete girdi, `mobile/docs/surumler/degisiklikler.csv`'nin
+"Android paketi" sütununda satır satır yazılı.
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
 değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
 derleme sha'sını `main`'in başıyla karşılaştır.
 
-**Kapalı testteki paket:** 1.0.9 (581) = commit `1abde38` (#486),
-8 Eylül 2026'da yayınlandı.
+**İncelemedeki paket:** 1.1.0 (659) = commit `7bccbf7` (#529), 12 Eylül
+2026'da gönderildi. Bir öncekisi: 1.1.0 (627) = `a4c809b` (#514), 11 Eylül'de
+yayınlandı.
 
-**O paketten beri porta dokunan işler — sıradaki sürümün içeriği.** Yeni bir
-satır eklemeden önce komutu KOŞ (aşağıdaki uyarı):
+**1.0.9'dan (581, `1abde38`) beri porta dokunan işler — YUKARIDAKİ İKİ
+PAKETİN içeriği.** Yeni bir satır eklemeden önce komutu KOŞ (aşağıdaki
+uyarı):
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
