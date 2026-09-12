@@ -524,7 +524,7 @@ metni sessizce keser.
 |---|---|---|---|
 | **Name** | 30 | **29** | `Kelimeki: Türkçe Kelime Oyunu` |
 | **Subtitle** | 30 | **30** | `Bölgeni büyüt, tahtaya hükmet.` ⚠ 11 Eyl 2026'da Console'a GİRİLEN değer bu; tasarım sırasında yazılan `Bölgeni büyüt, tahtayı al` (25) artık geçersiz |
-| **Keywords** | 100 | **93** | aşağı |
+| **Keywords** | 100 | **100** (DOLU) | aşağı |
 | **Promotional text** | 170 | **162** | aşağı |
 | **Copyright** | — | 19 | `2026 Alp Reşat Çapa` |
 
@@ -543,6 +543,41 @@ sözcük,harf,bulmaca,zeka,strateji,sözlük,TDK,arkadaş,çevrimdışı,yapay,t
 ⚠ **Name ve Subtitle'daki kelimeler TEKRARLANMAZ** — Apple onları zaten
 indeksliyor, tekrar bütçe israfı. Bu yüzden elendi: *kelime · türkçe · oyun ·
 bölge · büyüt · tahtayı*.
+
+⚠ **CONSOLE'A GİRİLEN DEĞER — as-built (12 Eylül 2026, 22:11, ekran
+görüntüsünden okundu).** Yukarıdaki blok tasarım; girilen değer onun
+`kelime,` eklenmiş hâli:
+
+```
+kelime,sözcük,harf,bulmaca,zeka,strateji,sözlük,arkadaş,çevrimdışı,yapay,tahta,anlam,tdk,bingo,joker
+```
+
+15 terim, **tam 100/100 — alan DOLU** (Console'un sayacı `0`; string
+yerelde de ölçüldü). Yani bundan sonra bir kelime EKLEMEK için önce bir şey
+çıkarmak gerekir. **Elde tutulan tek rezerv `kelime,` (7 karakter)** — Name
+zaten `Kelimeki: Türkçe Kelime Oyunu` olduğundan Apple o sözcüğü ayrıca
+indeksliyor, yani bütçe sıkışırsa ilk çıkacak olan budur. `tdk`nın küçük
+harfle yazılması sorun değil; Apple anahtar kelimelerde harf büyüklüğüne
+bakmıyor.
+
+**Aynı akşam iki tur sürdü, ikisi de aynı derse çıktı (kayda değer, çünkü
+alan 100'de tıkalı ve bir dahaki dokunuş aynı yerden başlayacak):**
+
+| Saat | Değer | Ölçüm |
+|---|---|---|
+| 22:05 | virgülden sonra BOŞLUKLU liste + `yapay zeka` | 100/100 — ama 11 karakteri boşluklar, 5 karakteri gereksiz bir tekrar yiyordu |
+| 22:11 | boşluklar silindi, `yapay zeka` → `yapay`, `tdk`+`bingo`+`joker` eklendi | 100/100 — aynı bütçeyle **üç terim daha** |
+
+⚠ **`yapay zeka` gibi çok sözcüklü bir madde yazma.** Apple tek tek anahtar
+kelimeleri kendisi birleştirip ifade üretiyor: `yapay` + `zeka` listede ayrı
+ayrı dururken "yapay zeka" araması zaten karşılanıyor. İfade olarak yazmak
+`zeka`yı ikinci kez ödetiyor, karşılığında hiçbir şey kazandırmıyor.
+
+⚠ **Sürüm `Waiting for Review` iken metadata düzenlemek serbesttir** ve
+sürümü incelemeden ÇIKARMAZ (Apple'ın kendi durum referansı). Yine de
+kaydettikten sonra sol üstteki rozetin hâlâ `Waiting for Review` dediği
+doğrulanmalı — düzenleme sırası bir kez `Prepare for Submission`'a
+düşürürse sürüm sessizce kuyruktan çıkmış olur ve kimse fark etmez.
 
 ### Promotional text (sürüm yayınlamadan değiştirilebilir)
 
