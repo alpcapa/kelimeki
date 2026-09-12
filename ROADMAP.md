@@ -1606,8 +1606,13 @@ vitrin adresi 404 veriyor (`marketing/play-store/console-formlari.md` §7'nin
 ölçümü); App Store ise henüz gönderilmedi (24.6 açık). Rozetleri şimdi
 koymak kullanıcıyı 404'e göndermek olurdu.
 
-⚠ **İKİ TUR OLACAK, tek seferde bitmez:** Play muhtemelen bir hafta içinde,
-App Store haftalar sonra açılıyor. Önce Android yarısı, sonra Apple'ınki.
+⚠ **İKİ TUR OLACAK, tek seferde bitmez** — **ama sıra tersine dönebilir**
+(12 Eylül 2026): App Store'a 1.1.0 (665) o gün gönderildi (inceleme ≤48
+saat) ve kullanıcı kararı *"Apple önce gelirse direkt yayına alırız"*;
+Play'in production ERİŞİM başvurusu ise hâlâ Google'da (10 Eyl, ≤7 gün) ve
+onay gelse bile production sürümünün kendi incelemesi var. Yani ilk turun
+Apple yarısı olması artık daha olası — hangisi önce açılırsa o yarısı
+yapılır.
 
 ### Tetikleyici
 
