@@ -547,7 +547,17 @@ Türkçe için sıfırdan tasarlanmış bir kelime oyunu. Kelime kur, bölgeni b
 **Play'in tam açıklaması AYNEN kullanılabilir** (`marketing/play-store/
 metin.md` → "Tam açıklama"): 4000 karakter sınırı iki mağazada da aynı ve
 metin başka bir platformdan söz etmiyor. Buraya KOPYALANMIYOR — tek kaynak
-o dosya, ikiye bölünürse biri bayatlar.
+o dosya, ikiye bölünürse biri bayatlar. Ölçüldü: **2.072 karakter**.
+
+⚠ **Yapıştırmadan ÖNCE satır sonlarını birleştir** (12 Eylül 2026). Kaynak
+dosya ~78 sütunda SABİT SARMALI yazılmış; metin kutusuna olduğu gibi
+yapıştırılırsa o sarmalar GERÇEK satır sonu olur ve mağaza sayfasında
+cümleler ortasından kırılır. Birleştirme kuralı: paragraf içi satırlar tek
+satıra, **boş satırlar · BAŞLIK satırları (`NASIL OYNANIR`, `İKİ OYUN
+MODU`, `SÖZLÜK`, `k-lig`, `ÜCRETSİZ VE REKLAMSIZ`) · `•` ile başlayan her
+madde** kendi satırında kalır (maddenin devamı üstteki maddeye eklenir).
+Aynı tuzak Play'in açıklaması için de geçerli — oradaki listenin şu an
+kırık olup olmadığı ÖLÇÜLMEDİ, mağaza sayfasından bakılmalı.
 
 ### Sabit alanlar
 
