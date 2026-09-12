@@ -650,7 +650,7 @@ Sayaç "yükledim" ile değil, **12 kişi opt-in olduğunda** işlemeye başlıy
 | Link her zaman orada DEĞİL | 25 Ağustos'ta yoktu, 26 Ağustos'ta (liste 11 kişiyken, 372 incelemedeyken) vardı — §6.5'teki tablo. Kapısının ne olduğu ölçülmedi; görmüyorsan kanalda işlenmiş bir sürüm olduğundan emin ol |
 | **İki ayrı link var** | *Join on Android* (Play uygulaması üzerinden) ve *Join on the web*. Kişiye telefonundaki Play hesabıyla açacağı için Android linkini vermek daha az aksaklık çıkarır |
 | ⚠ **Linki DOĞRU KANALDAN kopyala** | *Internal testing* ve *Closed testing → Alpha* sayfalarının İKİSİNDE de aynı başlıklı "How testers join your test" bölümü var. Internal'dan kopyalanan link Play'de **"App not available — your account hasn't yet been invited to participate in this app's _internal testing_ program"** veriyor. **İpucu mesajın içinde: "internal" yazıyorsa yanlış sayfadasın.** 26 Ağustos 2026'da ölçüldü, doğru sayfadan kopyalanınca çalıştı |
-| ⚠ **Mağaza adresini ELLE yazma** | `play.google.com/store/apps/details?id=com.kelimeki.kelimeki` herkese açık vitrin adresi; production sürümü olmadığı sürece (Dashboard: *Production: Inactive*) **404** veriyor — "istenen URL bu sunucuda bulunamadı". Bu bir yetki/tester sorunu DEĞİL, sayfanın hiç var olmaması. Her zaman **Copy link** kullan |
+| ⚠ **Mağaza adresini ELLE yazma** | `play.google.com/store/apps/details?id=com.kelimeki.kelimeki` herkese açık vitrin adresi; production sürümü olmadığı sürece (Dashboard: *Production: Inactive*) **404** veriyor — "istenen URL bu sunucuda bulunamadı". Bu bir yetki/tester sorunu DEĞİL, sayfanın hiç var olmaması. Her zaman **Copy link** kullan. ⚠ **13 Eyl 2026'da production ERİŞİMİ onaylandı — bu ölçüm DEĞİŞMEDİ:** vitrin, production kanalına bir sürüm yayınlanana kadar 404 |
 | Adres, kişinin TELEFONUNDAKİ Play hesabı olmalı | En sık aksaklık: iş adresi verilir, telefonda başka Gmail açıktır. Sorulacak soru "hangi adresi istersin" değil, "telefonunda hangi hesap açık" |
 | Biri çıkarsa sayaç kırılır | **15-20 kişi topla**, 12 tabandır |
 | Adresler Google hesabı olmalı | Gmail ya da Google'a bağlı bir adres; şirket/okul adresi olabilir ama Play hesabı olmalı |
@@ -730,6 +730,10 @@ sıralaması" §3).
 
 ### ✅ SAYAÇ DOLDU, BAŞVURU GÖNDERİLDİ — 10 Eylül 2026, 15:26
 
+→ **SONUÇ: ONAYLANDI** (13 Eylül 2026, 00:14) — bu bölümün sonundaki
+"PRODUCTION ERİŞİMİ ONAYLANDI" başlığına bak. Aşağısı başvurunun kendisi;
+ret gelseydi buradan devam edilecekti, artık ARŞİV değeri taşıyor.
+
 Kart üç şartı da çizili gösterdi ve `Apply for production` butonu AKTİF oldu
 (09:35'te görüldü). Başvuru aynı gün **15:26**'da gönderildi; Console'un
 kendi yazdığı: *"We're reviewing your application form. We'll email the
@@ -793,6 +797,31 @@ Yani ya testçi yanlış hatırladı ya da kelime doğrulamasında gerçek bir h
 var. 7 Eylül'deki **`regl` ise gerçekten YOK** ve eklenmedi. Production'a
 çıkmadan bakılmalı.
 
+### 🎉 PRODUCTION ERİŞİMİ ONAYLANDI — 13 Eylül 2026, 00:14
+
+Play Console'dan e-posta: *"Congratulations! Your app has been granted
+Google Play production access"* — `com.kelimeki.kelimeki` için başvuru
+**kabul edildi**. Başvuru 10 Eylül 15:26'da gönderilmişti; Console
+*"7 gün ya da daha az"* demişti, sonuç **~2,5 günde** geldi. (Saat,
+e-postanın okunduğu andır — Google'ın gönderim damgası ölçülmedi.)
+
+Yani §7'nin tamamı (12 tester × 14 gün, başvuru, cevaplar) **kapandı**.
+Aşağıdaki tester metni ve tuzak tablosu bir sonraki uygulama/hesap için
+işletim bilgisi olarak duruyor.
+
+⚠ **ERİŞİM ≠ SÜRÜM — vitrin HÂLÂ 404.** Onaylanan şey production
+KANALINI kullanma hakkı; `play.google.com/store/apps/details?id=com.kelimeki.kelimeki`
+adresi, o kanala bir sürüm yayınlanıp **kendi incelemesinden** geçene
+kadar 404 vermeye devam eder (yukarıdaki tuzak tablosundaki ölçüm aynen
+geçerli). Pratik sonuçları:
+
+| Soru | Cevap |
+|---|---|
+| Mağaza rozetleri (`ROADMAP.md` §26) açıldı mı? | **HAYIR.** Tetikleyici yayınlanmış bir production sürümü; onay e-postası değil |
+| Kapalı test kapanıyor mu? | **Hayır**, kapatılması da gerekmiyor. E-postanın kendi uyarısı: *"We recommend testing your app extensively before publishing your app to production"* |
+| Sıradaki paket (665) nereye? | **Karar işi** — kapalı test ↔ production. `mobile/docs/surumler.md` → "1.1.0 (665)" |
+| Production sürümü anında mı yayınlanır? | Hayır, kendi incelemesi var. Kapalı test incelemeleri bu hesapta 10-34 dk sürdü; **production incelemesinin süresi bu depoda ÖLÇÜLMEDİ** — kapalı testin süresini ona uyarlama |
+
 ---
 
 **Tester'a gönderilecek metin (taslak):**
@@ -805,6 +834,194 @@ var. 7 Eylül'deki **`regl` ise gerçekten YOK** ve eklenmedi. Production'a
 > Testin sayması için **14 gün boyunca listede kalman** yeterli — uygulamayı
 > silsen bile testerlıktan çıkma. Takıldığın ya da tuhaf gelen bir şey olursa
 > yaz, iyi olur.
+
+---
+
+## 7.5 — Production kanalı: ilk yayın (13 Eylül 2026 kararı)
+
+**Kullanıcı kararı:** 665 kapalı testten geçirilmeden **doğrudan
+production'a** yüklenecek. Gerekçe: 659 zaten kapalı testte yayında ve
+665'in ondan farkı üç iş (mesaj satırı kırpması · ipucu tavanı 2→1 · oyun
+sonu kutlaması); Apple tarafında 1.1.0 (665) zaten incelemede, iki mağaza
+aynı gün açılabilsin diye Play bir tur daha bekletilmiyor.
+
+⚠ **Bu bölüm §5'in (kapalı test ilk yükleme) production ikizi, ama
+Console'un production akışı bu depoda HİÇ görülmedi.** Aşağıdaki adımlar
+§5'in ölçülmüş akışından ve paket gerçeklerinden türetildi; ekranda farklı
+bir şey görürsen ekranın dediği doğrudur ve buraya yazılmalı.
+
+### Yüklemeden önce — üç sağlama
+
+| Sağlama | Neden |
+|---|---|
+| `.aab` **`mobile-latest`**ten indirildi ve `versionCode` **665** | Etiket her mobil derlemede EZİLİR (`mobile/docs/surumler.md` → "SÜRÜM SENKRONU"). Yükleme ekranı numarayı gösteriyor: 665 değilse dosya değişmiş demektir |
+| `versionCode` 665 Play'de HİÇ kullanılmadı | Bir `versionCode` uygulama başına bir kez kullanılır. Play'de bugüne kadar 627 ve 659 yayınlandı; 665 temiz |
+| App content beyanları tam | §3'te bitti. Production kanalı bunları YENİDEN sormaz, ama eksik olan bir beyan yayını bloke eder |
+
+Play App Signing'e **yeniden kaydolunmaz** — 25 Ağustos'ta kaydolundu
+(§6.6, `assetlinks.json` o parmak izine bağlı).
+
+### Adımlar
+
+1. **ÖNCE ÜLKELER.** Sol menü → **Test and release** → **Production** →
+   **Countries / regions** sekmesi → hepsini ekle ve kaydet. ⚠ Sürümü
+   ülke seçilmeden kaydedemezsin (13 Eyl 2026'da ölçüldü: `Save` hata
+   verdi) ve ülkeleri sonradan düzeltmek paketi bekleyen listede geride
+   bırakabiliyor — aşağıdaki "şüphe doğrulandı" vakası tam bu.
+2. **Create new release** → `.aab`'yi yükle (§2 · `mobile-latest`).
+3. **Release name:** `1.1.0 (665)` — §5'teki `<sürüm adı> (<versionCode>)`
+   deseni. **Release notes:** Türkçe; ilk production sürümü.
+4. **Ülkeler.** Kapalı test 177 ülkeye açıktı; production'ın kendi ülke
+   seçimi var ve varsayılanı **devralmayabilir** — ekranda DOĞRULA.
+   §5'in gerekçesi burada da geçerli (kısıtlamanın kazancı yok).
+5. **Kademeli yayın (staged rollout).** Production'a özgü: sürüm
+   kullanıcıların yüzde kaçına gitsin. ⚠ **Bu hesapta ölçülmedi** — ekran
+   ne sunuyorsa o. İlk yayında düşük yüzde muhafazakâr seçimdir, ama
+   bugünkü kullanıcı tabanı zaten testerlar; %100 de savunulabilir.
+6. **Publishing overview → `Submit N changes for review`.** Sürüm tek
+   başına gitmez; Play bekleyen TÜM değişiklikleri birlikte yollar
+   (aşağıdaki ölçüm). Paket listede görünmüyorsa gönderme.
+7. **İnceleme.** Sürümün kendi incelemesi var; **Managed publishing
+   KAPALI** olduğu için onaylanınca kendiliğinden yayınlanır.
+
+### Yayından SONRA
+
+| İş | Not |
+|---|---|
+| **Vitrini ÖLÇ** | `curl -sI 'https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki'` — 404 bitmişse vitrin canlı. Bu, `ROADMAP.md` §26'nın (mağaza rozetleri) Android yarısının GERÇEK tetikleyicisi; onay e-postası değil. ⚠ **Bu ölçümü AJAN YAPAMAZ** (13 Eyl 2026'da denendi): oturumun ağ politikası `play.google.com`'a `CONNECT` 403 veriyor. Siteye özel — aynı anda `kelimeki.com` 200 dönüyor, yani web derleme kimliği ölçümü ("Deploy Doğrulaması") çalışmaya devam ediyor. **Play vitrinine yalnızca kullanıcı bakabilir** |
+| **Kapalı test** | Kapatmaya gerek yok. Bir kullanıcı hem testere hem production'a uygunsa Play en yüksek `versionCode`u sunar — yani 665 production'a çıkınca testerlar da onu alır |
+| **Sürüm senkronu** | `mobile/docs/surumler.md` → "1.1.0 (665)" bölümü YAYINDA'ya çekilir, 659 pasife |
+
+### ✅ Publishing overview — ÖLÇÜLDÜ (13 Eylül 2026, 00:39-00:41)
+
+Sol menü → **Publishing overview**. Production akışının bu depoda ilk kez
+görülen parçası; aşağısı ekrandan okundu, türetilmedi.
+
+**Play değişiklikleri BİRİKTİRİR, tek tek göndermez.** Sayfa
+*"Changes not yet submitted for review"* başlığı altında bekleyen
+değişiklikleri listeler ve tek düğmeyle (*Submit N changes for review*)
+hepsini birlikte incelemeye yollar. Satır başına `Save for later` var.
+
+⚠ **Sonucu bir SIRA kuralı:** `.aab`yi eklemeden gönderirsen incelemeye
+yalnızca öteki değişiklikler gider, sürüm YAYINLANMAZ. 00:39'da tam bu
+durum görüldü — listede iki satır vardı ve ikisi de *Countries / regions*,
+paket yoktu. **Önce Production → Create new release ile paketi kaydet,
+sonra hepsini tek seferde gönder**; ayrı göndermenin kazancı yok, iki ayrı
+bekleme demek.
+
+| Ekrandan okunan | Değer |
+|---|---|
+| **Managed publishing** | **OFF** — yani onaylanan sürüm KENDİLİĞİNDEN yayınlanır, "yayınla" demeye gerek yok |
+| Last published | **12 Eylül 2026** (kapalı testteki 659) |
+| Bekleyen değişiklikler | 2 × *Countries / regions* → "Add 176 countries / regions" + "Add rest of world", ikisi de **`Affects other tracks`** rozetli |
+| İncelemede olan | YOK (*Changes in review* bölümü hiç çıkmadı) |
+
+**Managed publishing OFF, "Apple beklemez" kararıyla TUTARLI**
+(`mobile/docs/surumler.md` → "YAYIN SIRASI"): Play onaylanır onaylanmaz
+açılır, App Store ise *Manually release*'te bekler. İki mağazayı aynı
+DAKİKADA açmak istenseydi bu ayarın açılması gerekirdi — istenmedi.
+
+**`Affects other tracks` beklenen davranış:** ülke ayarı uygulama
+düzeyinde, kapalı test kanalını da genişletir. Kapalı test zaten 177
+ülkeye açıktı (§5), kaybı yok.
+
+**EU Geo-blocking bilgi kartı** (*Regulation (EU) 2018/302*) ülke
+genişletmesiyle birlikte çıkıyor; bilgilendirme, bir form ya da onay
+DEĞİL — `Dismiss` edilebilir.
+
+### Submission activity — gönderim kütüğü (13 Eylül 2026, 00:43'te okundu)
+
+**Publishing overview → `Submission activity`.** Her gönderim bir
+**Submission ID** alıyor; tablo `Submitted` · `Changes` · `Status`
+sütunlarını ve satır başına bir **→** (içindekileri açan) oku taşıyor.
+
+| Submission | Ne | Durum |
+|---|---|---|
+| **19** · 13 Eyl 2026, 00:49 | **Production** — sürümü (665) taşıyan gönderim | ⏳ *In review* (01:04) |
+| **18** · 13 Eyl 2026, 00:42 | **Production** — yalnızca ülkeler, paketsiz | ✅ **Published** · 00:42 → ≤01:04, yani **≤22 dk** |
+| 17 · 12 Eyl 12:24 | Closed testing - Alpha | ✅ Published (659) |
+| 16 ve öncesi (11 Eyl'e kadar) | hepsi Closed testing - Alpha | ✅ Published |
+
+⚠ **`Changes` sütunu "Production" der, İÇİNDEKİNİ söylemez.** Gönderimin
+paketi taşıyıp taşımadığı ancak **→** okuyla açılınca görülür. Bu ayrım
+teorik değil: 00:39 ve 00:41'de bekleyen listede yalnızca iki
+*Countries / regions* satırı vardı, 00:42'de gönderim yapıldı — yani 18'in
+`.aab`yi içerdiği EKRANDAN DOĞRULANMADI. Sadece ülke değişikliği
+gönderildiyse onay gelse bile sürüm yayınlanmaz ve vitrin 404 kalır.
+**Kural: gönderdikten sonra satırı aç ve paketin içeride olduğunu gör.**
+
+✅ **ŞÜPHE DOĞRULANDI (00:46).** `Test and release → Production` →
+*Track summary*: **`Inactive · Draft release: 1.1.0 (665) · 177 countries /
+regions · 22 installs`**. Yani paket **taslakta kalmış**, #18 gerçekten
+yalnızca ülke değişikliğini taşıyor. Track `Inactive` olduğu sürece vitrin
+404'tür. Taslak varken **`Create new release` düğmesi de gri** — bu, "bir
+taslağın var" işaretidir, hata değil.
+
+⚠ **Bu tuzağın kökü bir SIRA:** Play sürümü ülke seçilmeden kaydettirmiyor
+(kullanıcı önce paketi yükleyip `Save` dedi, hata aldı), ülkeleri
+düzeltmek bekleyen listeye kendi satırlarını düşürdü ve o liste
+gönderilince **paket geride kaldı**. Doğru sıra: **önce
+`Countries / regions`, sonra sürüm.**
+
+**Track summary tek bakışta doğrulama noktasıdır** — `Inactive` /
+`Draft release` / `In review` / yayında olduğunu oradan oku, bekleyen
+değişiklik listesinden değil.
+
+### ✅ Gönderim ÖNCESİ bir adım daha var: quick checks (00:49'da ölçüldü)
+
+Taslak `Edit release` → *Start rollout* ile gönderilince değişiklikler
+**doğrudan incelemeye girmiyor**. Önce *Changes in review* başlığı altında
+bir ön tarama koşuyor:
+
+> **Running quick checks for commonly found issues** — *"These checks help
+> to find certain policy and app quality issues, so you can fix them before
+> review. Changes will be sent for review as soon as checks complete
+> successfully."* · **Up to 14 minutes remaining**
+
+⚠ **Bu 14 dakika YAYIN süresi değil.** Zincir üç adım:
+`quick checks (≤14 dk)` → `inceleme` → `yayın`. 14 dakika sonra beklenecek
+şey "yayında" değil, *In review*'ya geçmiş olmasıdır. (Kullanıcı bu turda
+tam bunu sordu — sayaç yayın sanılmaya çok müsait.)
+
+⚠ Bu ekrandaki **`Remove changes`** gönderimi geri çeker; yanlışlıkla
+basılacak yerde duruyor.
+
+**Partinin son hâli (13 Eyl 2026, 00:49) — üç satır:**
+
+| Item changed | Description |
+|---|---|
+| **1.1.0 (665)** | **Start full rollout** |
+| Countries / regions | Add 176 countries / regions | 
+| Countries / regions | Add rest of world |
+
+**İki bilinmeyen daha kapandı:**
+
+- **Kademeli yayın:** akış *"Start full rollout"* (yani %100) seçeneğini
+  verdi ve o seçildi. Kullanıcı tabanı zaten testerlar olduğu için
+  kademeli yayının kazancı yoktu.
+- **İnceleme sürerken ikinci bir gönderim YAPILABİLİYOR.** #18 (yalnızca
+  ülkeler, 00:42) incelemedeyken sürüm gönderildi; Play engellemedi.
+  ⚠ **Ama "aynı partide birleşti" DEĞİL** — bu ilk okuma 01:04'te kütükle
+  çürüdü: gönderim **#19** ayrı bir kayıt olarak açıldı. *Changes in
+  review* paneli tek bir gönderimi değil, **incelemedeki TÜM
+  değişiklikleri topluca** gösteriyor. Bir partinin sınırını o panelden
+  değil `Submission activity`den oku.
+
+### Hâlâ ölçülmemiş — vaat etme
+
+- **PAKETLİ production incelemesinin süresi.** Elde üç ölçüm var ve
+  hiçbiri bunu tahmin etmeye yetmiyor, çünkü aynı türden değiller:
+
+  | Ne | Süre |
+  |---|---|
+  | Kapalı test güncellemeleri (17 gönderim) | 10-34 dk |
+  | **#18** — Production, **paketsiz** (yalnızca ülkeler) | **≤22 dk** |
+  | **#19** — Production, **ilk kez paket taşıyor** | ölçüm YOK |
+
+  ⚠ **Kapalı test süresini buraya uyarlama.** İlk production sürümü
+  tipik olarak daha ayrıntılı inceleniyor ve Google'ın kendi yönlendirmesi
+  "7 güne kadar sürebilir" diyor. Kullanıcıya süre VAAT ETME; #19'un
+  onay saati öğrenilince bu satır kapanır.
 
 ---
 
