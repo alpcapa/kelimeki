@@ -252,6 +252,35 @@ paketlere yalnızca derleme-zamanı görsel üreticileri erişiyor), buna karş�
 - Her feature/fix ayrı branch → PR → main'e merge
 - Main'e merge = Vercel otomatik deploy tetiklenir
 
+⚠ **"Merge et" denince, MERGE MOBİL DERLEMEYİ TETİKLİYORSA ÖNCE UYAR**
+(12 Eylül 2026, kullanıcı isteği: *"merge et dediğimde mobil tetiklenecekse
+uyar önce"*). Merge, PR'ın yapmadığı şeyi yapar: `main`'e mobil bir dosya
+girdiği anda `mobile-build.yml` **yayınlar** — `mobile-latest`teki
+`.aab`/`.apk` EZİLİR (mağazaya gidecek paket artık indirilemez), Appetize
+tazelenir ve **TestFlight'a yeni bir build yüklenir**. Yani merge yalnızca
+kodu birleştirmiyor, SÜRÜM DURUMUNU değiştiriyor.
+
+**Merge'den önce koş ve sonucu SÖYLE:**
+
+```
+git diff --name-only origin/main...HEAD \
+  | grep -E '^(mobile/|\.github/workflows/mobile-build\.yml)' \
+  | grep -vE '^mobile/docs/|\.md$'
+```
+⚠ İki aşamalı, çünkü `grep -E` negatif lookahead DESTEKLEMEZ — tek satırlık
+`(?!docs/)` denemesi *"warning: ? at start of expression"* verip **hiçbir
+şey eşleştirmiyor**, yani uyarı sessizce hiç çıkmaz (denendi, 12 Eylül
+2026). Elemeyi ikinci `grep -v` yapıyor.
+
+Eşleşme varsa uyarı tek cümle: *"Bu merge mobil derlemeyi tetikler →
+`mobile-latest` ezilecek ve TestFlight'a yeni build gidecek; sürüm senkronu
+(`mobile/docs/surumler.md` → 'SÜRÜM SENKRONU') buna göre güncellenmeli."*
+Eşleşme yoksa merge sürüm durumuna DOKUNMAZ, uyarıya gerek yok.
+
+⚠ Tetikleyici `mobile/**`; `mobile/**.md` ve `mobile/docs/**` HARİÇ, artı
+`mobile-build.yml`in kendisi DAHİL. Kök `CLAUDE.md`/`README.md`/`docs/` gibi
+depo kökündeki dosyalar tetiklemez.
+
 **Bir dal PR'sız BIRAKILMAZ (4 Eylül 2026, kullanıcı isteği).** Oturum
 biterken dalda iş varsa iki seçenek vardır: PR aç, ya da dalı sil. Üçüncü
 seçenek — "dursun, sonra bakarız" — bu depoda İKİ gerçek işi kaybetti:

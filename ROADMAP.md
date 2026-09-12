@@ -214,6 +214,14 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
+⚠ **GÜNCELLEME (12 Eylül 2026, akşam): aşağıdaki üç satır ARTIK PAKETTE.**
+PR #533'ün merge'i koşu **#665**'i tetikledi; `mobile-latest` ezildi ve
+TestFlight'a 665 yüklendi. Kullanıcı kararı: **ASC'de her zaman son derleme
+iliştirili olur, Play aynı numarayla takip eder** — ASC 665'e çekiliyor,
+Play'e 13 Eylül'de 665'in `.aab`si yüklenecek. Kural ve aradaki pencerenin
+riski: `mobile/docs/surumler.md` → "SÜRÜM SENKRONU". Senkron bitince bu
+tablo yeniden BOŞALIR ve tur arşive taşınır.
+
 ⚠ **DURUM (12 Eylül 2026): 1.1.0 (659) SAHADA.** `7bccbf7` Play'in kapalı
 testinde (Alpha) yayınlandı — gönderim ≤ 12:24, yayın ~13:42 (kullanıcı
 bildirdi). Aynı kod App Store Connect'in 1.1.0 sürüm kaydında da iliştirili,
