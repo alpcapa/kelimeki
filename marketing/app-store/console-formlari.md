@@ -524,7 +524,7 @@ metni sessizce keser.
 |---|---|---|---|
 | **Name** | 30 | **29** | `Kelimeki: Türkçe Kelime Oyunu` |
 | **Subtitle** | 30 | **30** | `Bölgeni büyüt, tahtaya hükmet.` ⚠ 11 Eyl 2026'da Console'a GİRİLEN değer bu; tasarım sırasında yazılan `Bölgeni büyüt, tahtayı al` (25) artık geçersiz |
-| **Keywords** | 100 | tasarım **93** · Console'da **100** (DOLU) | aşağı |
+| **Keywords** | 100 | **100** (DOLU) | aşağı |
 | **Promotional text** | 170 | **162** | aşağı |
 | **Copyright** | — | 19 | `2026 Alp Reşat Çapa` |
 
@@ -544,30 +544,34 @@ sözcük,harf,bulmaca,zeka,strateji,sözlük,TDK,arkadaş,çevrimdışı,yapay,t
 indeksliyor, tekrar bütçe israfı. Bu yüzden elendi: *kelime · türkçe · oyun ·
 bölge · büyüt · tahtayı*.
 
-⚠ **CONSOLE'DAKİ DEĞER BUNDAN FARKLI — as-built (12 Eylül 2026, ekran
-görüntüsünden okundu).** Yukarıdaki blok TASARIM; girilen değer şu:
+⚠ **CONSOLE'A GİRİLEN DEĞER — as-built (12 Eylül 2026, 22:11, ekran
+görüntüsünden okundu).** Yukarıdaki blok tasarım; girilen değer onun
+`kelime,` eklenmiş hâli:
 
 ```
-kelime, sözcük, harf, bulmaca, zeka, strateji, sözlük, arkadaş, çevrimdışı, yapay zeka, tahta, anlam
+kelime,sözcük,harf,bulmaca,zeka,strateji,sözlük,arkadaş,çevrimdışı,yapay,tahta,anlam,tdk,bingo,joker
 ```
 
-**100/100 — alan TAM DOLU** (Console'un sayacı `0` gösteriyor; yerelde de
-ölçüldü). Yani bundan sonra bir kelime EKLEMEK için önce bir şey çıkarmak
-gerekir. Tasarımdan üç sapma var, üçü de bütçeyi yiyor:
+15 terim, **tam 100/100 — alan DOLU** (Console'un sayacı `0`; string
+yerelde de ölçüldü). Yani bundan sonra bir kelime EKLEMEK için önce bir şey
+çıkarmak gerekir. **Elde tutulan tek rezerv `kelime,` (7 karakter)** — Name
+zaten `Kelimeki: Türkçe Kelime Oyunu` olduğundan Apple o sözcüğü ayrıca
+indeksliyor, yani bütçe sıkışırsa ilk çıkacak olan budur. `tdk`nın küçük
+harfle yazılması sorun değil; Apple anahtar kelimelerde harf büyüklüğüne
+bakmıyor.
 
-| Sapma | Bedeli |
-|---|---|
-| Virgülden sonra boşluk var (12 adet) | **11 karakter**; boşluksuz aynı liste 89'a iner |
-| `kelime` girilmiş — oysa Name'de (`…Kelime Oyunu`) zaten var | 8 karakter, Apple'ın zaten indekslediği bir sözcük için |
-| `TDK` · `bingo` · `joker` girilmemiş | tasarımda vardı, listede yok |
+**Aynı akşam iki tur sürdü, ikisi de aynı derse çıktı (kayda değer, çünkü
+alan 100'de tıkalı ve bir dahaki dokunuş aynı yerden başlayacak):**
 
-**`yapay` → `yapay zeka` (12 Eylül 2026, kullanıcı Console'dan değiştirdi,
-bildirdi).** ⚠ Bu değişiklik alanı 95'ten 100'e çıkardı ve **aramada bir şey
-kazandırmıyor**: Apple tek tek anahtar kelimeleri kendisi birleştirip ifade
-üretiyor, `zeka` listede zaten TEK BAŞINA duruyor, yani `yapay` + `zeka`
-çifti "yapay zeka" aramasını baştan karşılıyordu. Bir daha bütçe sıkışırsa
-geri alınacak ilk beş karakter budur. (Geri alınmadı — ölçü bu kayda
-geçirildi, karar kullanıcının.)
+| Saat | Değer | Ölçüm |
+|---|---|---|
+| 22:05 | virgülden sonra BOŞLUKLU liste + `yapay zeka` | 100/100 — ama 11 karakteri boşluklar, 5 karakteri gereksiz bir tekrar yiyordu |
+| 22:11 | boşluklar silindi, `yapay zeka` → `yapay`, `tdk`+`bingo`+`joker` eklendi | 100/100 — aynı bütçeyle **üç terim daha** |
+
+⚠ **`yapay zeka` gibi çok sözcüklü bir madde yazma.** Apple tek tek anahtar
+kelimeleri kendisi birleştirip ifade üretiyor: `yapay` + `zeka` listede ayrı
+ayrı dururken "yapay zeka" araması zaten karşılanıyor. İfade olarak yazmak
+`zeka`yı ikinci kez ödetiyor, karşılığında hiçbir şey kazandırmıyor.
 
 ⚠ **Sürüm `Waiting for Review` iken metadata düzenlemek serbesttir** ve
 sürümü incelemeden ÇIKARMAZ (Apple'ın kendi durum referansı). Yine de
