@@ -966,14 +966,48 @@ gönderilince **paket geride kaldı**. Doğru sıra: **önce
 `Draft release` / `In review` / yayında olduğunu oradan oku, bekleyen
 değişiklik listesinden değil.
 
+### ✅ Gönderim ÖNCESİ bir adım daha var: quick checks (00:49'da ölçüldü)
+
+Taslak `Edit release` → *Start rollout* ile gönderilince değişiklikler
+**doğrudan incelemeye girmiyor**. Önce *Changes in review* başlığı altında
+bir ön tarama koşuyor:
+
+> **Running quick checks for commonly found issues** — *"These checks help
+> to find certain policy and app quality issues, so you can fix them before
+> review. Changes will be sent for review as soon as checks complete
+> successfully."* · **Up to 14 minutes remaining**
+
+⚠ **Bu 14 dakika YAYIN süresi değil.** Zincir üç adım:
+`quick checks (≤14 dk)` → `inceleme` → `yayın`. 14 dakika sonra beklenecek
+şey "yayında" değil, *In review*'ya geçmiş olmasıdır. (Kullanıcı bu turda
+tam bunu sordu — sayaç yayın sanılmaya çok müsait.)
+
+⚠ Bu ekrandaki **`Remove changes`** gönderimi geri çeker; yanlışlıkla
+basılacak yerde duruyor.
+
+**Partinin son hâli (13 Eyl 2026, 00:49) — üç satır:**
+
+| Item changed | Description |
+|---|---|
+| **1.1.0 (665)** | **Start full rollout** |
+| Countries / regions | Add 176 countries / regions | 
+| Countries / regions | Add rest of world |
+
+**İki bilinmeyen daha kapandı:**
+
+- **Kademeli yayın:** akış *"Start full rollout"* (yani %100) seçeneğini
+  verdi ve o seçildi. Kullanıcı tabanı zaten testerlar olduğu için
+  kademeli yayının kazancı yoktu.
+- **İnceleme sürerken yeni değişiklik EKLENEBİLİYOR.** #18 (yalnızca
+  ülkeler, 00:42) incelemedeyken sürüm gönderildi; Play engellemedi,
+  üçü aynı partide birleşti.
+
 ### Hâlâ ölçülmemiş — vaat etme
 
 - **İnceleme süresi.** Bu hesapta kapalı test incelemeleri 10-34 dakika
   sürdü (`mobile/docs/surumler.md`). **Production incelemesinin süresi
   ölçülmedi** ve kapalı testinkine uyarlanamaz — ilk production sürümü
   ayrıca daha ayrıntılı incelenebilir.
-- **Kademeli yayın (staged rollout) ekranı** — sürüm oluşturma akışı henüz
-  görülmedi.
 
 ---
 
