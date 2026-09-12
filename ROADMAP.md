@@ -1502,7 +1502,24 @@ değil yalnızca bildirim satırlarını hedefler. Sunucuya `badge` eklenip
 eklenmeyeceği bu fazın parçası DEĞİL — açılırsa `_shared/push.ts` +
 `verify-push-payload` birlikte değişir.
 
-### 24.4 — Universal Links (Associated Domains) — **WEB YARISI ✅**
+### 24.4 — Universal Links (Associated Domains) — **CİHAZDA DOĞRULANDI ✅** (13 Eylül 2026)
+
+✅ **İki yarı da çalışıyor, kanıt cihazdan geldi.** iPad'de Safari'de
+`kelimeki.com` açılınca üstte **"Kelimeki: Türkçe Kelime Oyunu — Open in
+the Kelimeki app · OPEN"** bandı çıktı (TestFlight 665 kurulu). Bandın
+çıkması iki şeyi birden kanıtlıyor: Apple'ın CDN'i AASA'yı **doğrulamış**
+ve uygulama `associated-domains` yetkisini **taşıyor**. Aynı anda
+depodan/canlıdan ölçüldü: `content-type: application/json` ✅ (aşağıdaki
+Vercel tuzağı geçilmiş).
+
+⚠ **Bu bant §26'nın Smart App Banner'ı DEĞİL** — depoda `apple-itunes-app`
+meta etiketi yok (13 Eyl 2026'da `index.html`/`src/`/`public/` tarandı,
+sıfır eşleşme). İkisi kolay karışıyor ama işleri farklı: Universal Links
+bandı yalnızca **uygulamayı ZATEN kurmuş** kişiye çıkar; §26'nın rozetleri
+ve Smart App Banner'ı uygulamayı hiç görmemiş ziyaretçi içindir. Biri
+ötekinin yerini tutmaz.
+
+**Aşağısı işin nasıl kurulduğunun kaydı.**
 
 **ROADMAP 0.B/3'ün açık kalan TEK parçası buydu** (satır 858).
 
