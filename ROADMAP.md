@@ -1661,10 +1661,12 @@ yapılır.
 bıraktığında — ÖLÇ, varsayma) → Android yarısı. App Store yayını → Apple
 yarısı.
 
-⚠ **Play vitrinini ajan ölçemez** (13 Eyl 2026): oturumun ağ politikası
-`play.google.com`'a `CONNECT` 403 veriyor, `kelimeki.com` ise 200 —
-yani engel siteye özel. Bu maddenin Android yarısını açan bilgi
-KULLANICIDAN gelir; "curl ile bakarım" diye söz verme.
+⚠ **Ajan İKİ vitrini de ölçemez** (13 Eyl 2026): oturumun ağ politikası
+`play.google.com`'a **ve** `apps.apple.com`'a `CONNECT` 403 veriyor,
+`kelimeki.com` ise 200 — yani engel siteye özel, ağ genel olarak açık.
+Yani maddenin HER İKİ yarısını da açan bilgi KULLANICIDAN gelir; "curl
+ile bakarım" diye söz verme. (Apple yarısı ayrıca `id6809809788` ile
+denendi, aynı 403.)
 
 ⚠ Bu satır 13 Eylül 2026'da düzeltildi; önce *"Play production onayı
 (e-posta `destek@kelimeki.com`'a düşecek) → Android yarısı"* diyordu.
