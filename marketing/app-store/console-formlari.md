@@ -476,14 +476,14 @@ dokun** — yoksa bir sonraki oturum yine baştan sorar.
 | App Information — **Age Ratings** | ✅ girildi → **4+** (11 Eyl) | Cevaplar §5 |
 | App Information — Encryption · DSA etiketleri · Vietnam · Medical · Server Notifications · Shared Secret | — gerekmiyor | Sırasıyla: §12 (`Info.plist`), fiziksel ürün etiketi, VN lisansı yok, Games kategorisi + anket NONE, IAP yok |
 | **App Review Information** (demo hesap · iletişim · notlar) | ✅ girildi (11 Eyl) | §11 |
-| **App Privacy** | ⏳ SÜRÜYOR — `Name` türü bitti, **dokuz tür kaldı** | Eşleme §10; Console'un SORDUĞU sırayla numaralı cevap kağıdı §10 sonunda (12 Eyl) — bir tür bitince oradaki numarayı buraya yaz. ⚠ Sonunda **Publish** şart, Save yayımlamıyor |
+| **App Privacy** | ✅ **PUBLISHED** (12 Eyl) — on türün hepsi + Privacy Policy URL | Girilen cevaplar §10 (Console sırasıyla numaralı tablo). `Save` değil **Publish** basıldı, yani beyan yayımlandı. Beyan değişirse (yeni veri türü, yeni amaç, reklam SDK'sı) aynı sayfa yeniden Publish ister |
 | **Pricing and Availability** | ⬜ | Free + tüm ülkeler (§9) |
 | Sürüm sayfası metinleri (Description · Keywords · URL'ler · Copyright · Promotional) | ⬜ | §9 |
 | Ekran görüntüleri | ✅ yüklendi (11 Eyl, 8/10 · 8/10) | §13 |
 | Derleme iliştirme | ✅ **665** (12 Eyl; 629 → 654 → 656 → 659 → 665) | §15. Kullanıcı kuralı: *"ASC'de her zaman son versiyon olmalı"* — Play aynı numarayla takip eder (665'in `.aab`si 13 Eyl'de yüklenecek; o ana kadar Play **659**'da, yani iki mağaza GEÇİCİ olarak ayrı). ⚠ 665 ilk dört paketten FARKLI: PR #533'ün üç işini taşıyor. Ölçüm: `mobile/docs/surumler.md` → "1.1.0 (665)" + `surumler-ios.csv` |
 | **Gönderim** | ⬜ YAPILMADI | Yukarıdaki açık iş satırı |
 
-**Kapananlar:** App Privacy → §10 · mağaza metinleri → §9 · yaş derecesi →
+**Kapananlar:** **App Privacy Console'a GİRİLDİ ve Published → §10 (12 Eylül 2026)** · mağaza metinleri → §9 · yaş derecesi →
 §5 · demo hesap → §11 · Export Compliance → §12 · **API anahtarı `.p8` →
 §3 (9 Eylül 2026, Mac'ten indirildi)** · **imzalama + TestFlight yüklemesi
 → §3, koşu #614/#616** · **DSA trader beyanı + DOĞRULAMASI → §2 (10 Eylül
@@ -659,6 +659,9 @@ burası onun sıralanmış görünümü.
 ASC her tür için ÜÇ şey sorar: **amaçlar** (çoklu seçim) · **"Linked to the
 User?"** · **"Used for Tracking?"**. Üçüncüsü **her satırda `No`** (Soru 1).
 
+✅ **ONU DA GİRİLDİ VE PUBLISH EDİLDİ** (12 Eylül 2026). Aşağısı artık
+"girilecek" değil **"girilmiş olan"** — beyan değişirse buradan okunur.
+
 | # | Kategori → Tür | Amaç(lar) | Linked |
 |---|---|---|---|
 | ✅ | Contact Info → **Name** | App Functionality | Yes |
@@ -689,7 +692,13 @@ NE olduğu hiçbir yere yazılmıyor; kaydı yalnızca burada duruyor →
 admin panelindeki yaş/cinsiyet dökümü (`get_profile_age_gender`).
 
 ⚠ **Sonunda `Publish` — `Save` YAYIMLAMAZ.** Sayfanın üstündeki durum
-`Published` demeden beyan gönderime girmez.
+`Published` demeden beyan gönderime girmez. (12 Eylül 2026: basıldı.)
+
+⚠ **Aynı sayfa bir de `Privacy Policy URL` ister** — girilen değer
+`https://kelimeki.com/gizlilik/` (§6; eğik çizgi zorunlu). Yanındaki
+`Privacy Choices URL` **bilerek BOŞ**: kullanıcıya ayrı bir "veri
+tercihleri" sayfası sunmuyoruz, hesap silme uygulamanın içinden ve
+`/hesap-silme/`ten yapılıyor ve gizlilik sayfasında anlatılıyor.
 
 ---
 
