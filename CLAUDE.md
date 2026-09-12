@@ -514,6 +514,14 @@ daha verimli olur."*
 ⚠ **Öneriyle birlikte devir notunu da ver:** dal adı, açık PR numarası,
 bekleyen iş. Yeni oturum repoyu okuyabilir ama bu üçünü tahmin edemez.
 
+⚠ **DEVİR NOTU KISA OLUR — en fazla 5-6 madde işareti, tablo/başlık YOK**
+(12 Eylül 2026, kullanıcı: *"Kısa devir notu, yine hikaye yazmışsın. Bir
+daha yapma."*). Notun işi yeni oturumu **konumlandırmak**, ona dosyayı
+özetlemek değil: sıradaki iş + nerede kaldığı + varsa TEK tehlike. Gerekçe,
+ölçüm, tarihçe ve "nerede ne var" tablosu zaten repoda — devir notunda
+tekrar edilirse hem uzun hem bayat olur. Ayrıntı gerekiyorsa notta dosya
+adı yeter.
+
 ## Karar Kayıtları (`docs/decisions/`) — geçmiş, arşivlenmiş
 
 Bu dosya artık **yaşayan bir indeks**: mimari, komutlar, klasör yapısı,
