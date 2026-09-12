@@ -1333,6 +1333,41 @@ yazılması. **Temiz bir profille** koş.
       görünüyor. Kartın kendi kontrol listesi (oran/adet ayrımı, boş aralık,
       yalıtım, yetki) admin dosyasında: `docs/testing-admin.md` §9.16.
 
+## 13.7 Oyun sonu kutlaması — ilk galibiyet / ilk puan (12 Eylül 2026)
+
+Karar tablosu `npm run verify-tutorial-script`te kapalı (dokuz vaka); metin
+paritesi `tutorial_parity_test.dart`ta. Buradaki maddeler otomatik testin
+göremediği şey: **gerçek `wins` sayısı** ve **misafir ↔ üye ayrımı**.
+
+⚠ Girişli dal hesabın GERÇEK geçmişine bakıyor, yani "test için bir kez
+daha göster" diye bir yol YOK — denemek için ya hiç kazanmamış bir hesap ya
+da yeni bir hesap gerekiyor. Misafir dalını tekrar denemek için:
+DevTools → Application → Local Storage → `kelimeki:first-points-celebrated`
+anahtarını sil (portta uygulama verisini temizle).
+
+- [ ] **Misafir, ilk puan.** Çıkış yap (ya da gizli sekme) → Yapay Zeka'ya
+      karşı bir oyun KAZAN → oyun sonu modalında *"Tebrikler, ilk puanını
+      kazandın. Bu puanı kaybetmemek için **hemen giriş yap**"* çıkmalı ve
+      koyu/altı çizili parça BUTON olmalı → bas → giriş penceresi açılmalı.
+- [ ] **Misafir, ikinci oyun.** Bir oyun daha kazan → kutlama ÇIKMAMALI
+      (cihaz bayrağı tüketildi).
+- [ ] **Misafir, kaybedilen oyun.** Bayrağı silip bir oyunu KAYBET →
+      kutlama çıkmamalı (ölçüt puan, oyun sonu değil).
+- [ ] **Girişli, hiç kazanmamış hesap.** Giriş yap → ilk galibiyetinde
+      *"Tebrikler, ilk oyununu kazandın!"* çıkmalı; misafir metni (giriş
+      çağrısı) ÇIKMAMALI.
+- [ ] **Girişli, ikinci galibiyet.** Bir kez daha kazan → kutlama YOK.
+- [ ] **Girişli, çevrimdışı.** Uçak modunda bir oyunu kazanıp bitir →
+      kutlama ÇIKMAMALI (istatistik okunamıyor; yanlış kutlamaktansa
+      susmak). Bağlantı gelince kayıt düşer; bir SONRAKİ galibiyette de
+      çıkmaz, çünkü artık ilk galibiyet değil.
+- [ ] **Canlı oyun (Arkadaşınla).** Hiç kazanmamış bir hesapla bir Canlı
+      oyun kazan → *"Tebrikler, ilk oyununu kazandın!"* çıkmalı. ⚠ Canlı'da
+      misafir dalı HİÇ doğmaz (oyun hesap gerektiriyor).
+- [ ] **Beraberlik kutlamaz.** İlk oyunu berabere bitiren hesapta kutlama
+      çıkmamalı (`wins` beraberliği saymıyor) — sonraki gerçek galibiyette
+      çıkmalı.
+
 ## 14+ — Tarihli turlar → `docs/testing-turlari.md`
 
 Belirli bir düzeltmenin gerilemediğini doğrulayan tarihli turlar (14'ten

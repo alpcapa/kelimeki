@@ -570,7 +570,8 @@ sonraki cümle yine "sınır" derdi.
 
 **Karar saf bir fonksiyonda:** `pickOnboardingHint(input, shown)`
 (`utils/onboarding.ts` ↔ `util/onboarding.dart`). Sayaçlar çağıranda
-(cihaz-yerel, ipucu BAŞINA tavan 2) — böylece tablo `verify-tutorial-script`
+(cihaz-yerel, ipucu BAŞINA tavan 1 — 12 Eylül 2026'da 2'den indi, aşağı
+bkz.) — böylece tablo `verify-tutorial-script`
 ve `tutorial_script_test.dart`ta depolamaya hiç dokunmadan koşuyor. İki kural
 kolay kaçırılıyor ve ikisi de kilitli:
 
@@ -582,6 +583,98 @@ kolay kaçırılıyor ve ikisi de kilitli:
 2. **Tavana çarpan bir ipucu ötekileri SUSTURMAZ** — üçü farklı mekaniği
    anlatıyor ve oyuncu ikisini bir oyunda, üçüncüsünü haftalar sonra
    yaşayabilir.
+
+### Oyun sonu kutlaması — ilk galibiyet / ilk puan (12 Eylül 2026)
+
+Kullanıcı önce *"mümkünse oyun sonu modalında 'Tebrikler ilk puanını
+kazandın' mesajı (eğer kazanmışsa)"* dedi; sorulunca ayrımı kendisi
+netleştirdi ve **iki farklı mesaj** çıktı:
+
+| Kim | Ölçüt | Kaynak | Metin |
+|---|---|---|---|
+| Girişli | ilk **GALİBİYET** (n oyun oynamış olsa da) | HESAP — `player_stats_overall.wins` | *Tebrikler, ilk oyununu kazandın!* |
+| Misafir | ilk **PUAN** (`leaguePoints > 0`) | CİHAZ bayrağı | *Tebrikler, ilk puanını kazandın. Bu puanı kaybetmemek için hemen giriş yap.* |
+
+**Neden iki ayrı kaynak.** Girişlide cihaz bayrağı YANLIŞ olurdu: telefon
+değiştiren ya da uygulamayı silip kuran kişi yıllar sonra yeniden "ilk
+oyununu kazandın" görürdü. Misafirde ise sunucuda sayılacak bir şey YOK —
+hesap yok. Mesajın kendisi zaten bunu söylüyor: puan kaydedilmiyor,
+kaydolmaya davet var. Yani ikisi "aynı özelliğin iki hâli" değil, iki ayrı
+ürün kararı: biri kutlama, öteki dönüşüm çağrısı.
+
+**İki ölçüt de aynı şey DEĞİL.** 2 kişilik oyunda "kazandı" ile "puan aldı"
+çakışıyor (2. sıra 0 puan alır), 4 kişilikte ayrışıyor: 2. sıra puan alır
+ama kazanmamıştır. Doğrulayıcının son iki vakası tam bu ayrımı kilitliyor.
+
+**`wins` neden kaydın ARDINDAN okunuyor.** Kaydı yazmadan önce okunsaydı
+`0` beklenirdi — ama kaydın sunucuya düşüp düşmediği bilinemezdi ve
+çevrimdışı biten bir oyunda mesaj YANLIŞ çıkardı. Sonradan okunan `wins == 1`
+tek bir şeyi söylüyor: **bu oyun sunucuya düştü VE hesabın ilk galibiyeti.**
+Kayıt düşmediyse sayı artmaz, mesaj çıkmaz — güvenli yön. (`totalWins: null`
+= istek düştü → yine sessiz; doğrulayıcıda kendi vakası var.)
+
+⚠ **Beraberlik kutlanmıyor** ve bu `wins`in tanımından geliyor:
+`count(*) filter (where games.result = 'win')`, beraberlik `'tie'`. Sıralamada
+rank 1 olsa da kutlama çıkmaz, bir sonraki gerçek galibiyette çıkar.
+
+**Karar ÇAĞIRANDA, bileşende değil** — `aiLevelForBadge` deseninin aynısı:
+`GameOver` "ben kimim" bilmiyor (yalnız `players` alıyor) ve iki çağıranın
+kaynağı farklı. Yerel ekran iki dalı da kurabilir, Canlı ekran yalnız üye
+dalını (oyun zaten hesap gerektiriyor).
+
+**Metin TEK kaynak.** İlk sürümde misafir cümlesi JSX'te butonun iki yanına
+İKİNCİ KEZ yazılmıştı — bu depodaki en sık bayatlama biçimi. Düzeltildi:
+`FIRST_WIN_GUEST_CTA` ayrı bir sabit ve çizim cümleyi ondan BÖLÜYOR; parça
+cümlede geçmezse buton hiç çıkmayacağından doğrulayıcı içermeyi ayrıca
+kontrol ediyor.
+
+⚠ **Bir test sözleşmesi ödünç alındı ve CI'ı düşürdü (12 Eylül 2026).**
+Banner'a önce `data-metin-kutusu="ilk-kutlama"` işareti kondu. O işaret bu
+depoda **skor ızgarasının sabit genişlikli sayı/başlık hücrelerini**
+gösteriyor ve `tests/text-scale*.spec.ts` onu taşıyan HER öğe için üç şey
+birden iddia ediyor: *sarmayacak · kutusundan taşmayacak · SAĞA yaslı*.
+Kutlama banner'ı ortalanmış, doğal olarak SARAN bir cümle — üç iddiadan
+ikisini yapısı gereği tutamaz, ve iki Playwright testi birden düştü.
+İşaret `data-kutlama="ilk"` oldu; testler dokunulmadı.
+
+**Ders:** bir `data-*` işareti koymadan önce **onu kimin okuduğuna** bak.
+Bu depoda bazı işaretler yalnızca "seçici" değil, bir SÖZLEŞME — ve
+sözleşme testte yazılı, işaretin adında değil. (Aynı sınıfın başka bir
+örneği: `layout_parity_test.dart` `GameOver.tsx`'teki `w-[29px]` sınıfından
+sayı çekiyor.)
+
+⚠ **Yan fayda — düşen test özelliğin ÇALIŞTIĞINI kanıtladı:** hata mesajı
+banner'ın metnini olduğu gibi bastı (*"Tebrikler, ilk puanını kazandın…"*),
+yani Playwright fixture'ındaki misafir oyunu kazanıyor ve misafir dalı
+gerçek tarayıcıda uçtan uca doğru çalışıyor.
+
+⚠ **Port farkı — KULLANICI ONAYLADI (12 Eylül 2026: *"Portta butona gerek
+yok"*).** Portta oyun ekranından açılabilen bir giriş penceresi YOK (web'de
+`showLoginModal` var), bu yüzden misafir metni portta düz kalıyor — cümle
+aynı, "hemen giriş yap" tıklanabilir değil. Bu bir eksik değil, kayda
+geçmiş bir karar: portta butonu doğru yere bağlamak oyun ekranına yeni bir
+giriş yolu açmak demekti ve cümle butonsuz da işini yapıyor.
+
+### Tavan 2 → 1 (12 Eylül 2026, kullanıcı kararı)
+
+Sözleri birebir: *"İlk defa oynayan kişiye oyun sırasında çıkan max 6
+gösterim iyi bir deneyim değil. Onu her bir mesaj için 1 kere olacak şekilde
+düzelteceğiz."*
+
+**Aritmetik neden burada kaçtı:** tavan "ipucu BAŞINA" diye tasarlandı ve
+yukarıdaki 2. kural (biri susunca ötekiler susmaz) tek başına doğru. Ama
+üçünün TOPLAMI hiç hesaplanmadı: 3 ipucu × 2 gösterim = **6 balon**, üstelik
+hepsi ilk birkaç oyunda, yani tam da oyuncunun oyunu öğrenmeye çalıştığı
+anda. Ders: bir tavan "öğe başına" konurken **öğe SAYISIYLA çarpılıp** son
+kullanıcının göreceği toplam da yazılmalı.
+
+Değişen tek şey sabitin değeri (`ONBOARDING_HINT_MAX_SHOWS` ↔
+`onboardingHintMaxShows`, ikisi de `1`). **Tasarım DEĞİŞMEDİ:** tavan hâlâ
+ipucu başına, sıra hâlâ `vergi › carpan › bolge`, karar hâlâ aynı saf
+fonksiyonda. Doğrulayıcı ve testler tavanı sabitten okuduğu için (hard-code
+edilmiş `2` yok) vaka tablosu olduğu gibi geçerli kaldı —
+`npm run verify-tutorial-script` yeşil, `tutorial_parity_test.dart` iki
+tarafın değerini karşılaştırmaya devam ediyor.
 
 **Çizim ikinci bir geometri yazmıyor:** balon `Board`un mevcut `coach`
 prop'u (tanıtımın çizdiği balonun aynısı). Çapa cümlenin ANLATTIĞI kare —

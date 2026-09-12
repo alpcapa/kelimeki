@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
+import 'package:kelimeki/src/ui/text_scale.dart' show kMaxTextScale;
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/util/online_status.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
@@ -332,6 +333,7 @@ void main() {
       GlobalKey? boundaryKey,
       bool isGameOver = false,
       OnlineStatus? onlineStatus,
+      double textScale = 1.0,
     }) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       final s = _baseState(opponentIsAi: opponentIsAi);
@@ -361,7 +363,15 @@ void main() {
       }
       await tester.pumpWidget(MaterialApp(
         theme: kelimekiTheme(),
-        home: screen,
+        home: textScale == 1.0
+            ? screen
+            : Builder(
+                builder: (ctx) => MediaQuery(
+                  data: MediaQuery.of(ctx)
+                      .copyWith(textScaler: TextScaler.linear(textScale)),
+                  child: screen,
+                ),
+              ),
       ));
       await tester.pump(); // initState → loadGame (sahte uç, mikrotask)
       await tester.pump();
@@ -916,6 +926,78 @@ void main() {
       expect(find.textContaining('SIRA: ESİNER'), findsNothing);
       await unmount(tester);
       expect(gw.gameUnsubscribeCount, 1);
+    });
+
+    // Rafın üstündeki mesaj satırı yazı ölçeğinde KESİLMEZ — Canlı ekran.
+    //
+    // 12 Eylül 2026, kullanıcı iPhone'da (büyük punto): mesajın 2. satırı
+    // ("Kelimeler: ÇATAK") yarım görünüyordu. Ekran `SizedBox(height: 30)` +
+    // `maxLines: 2` ile SABİT yükseklik veriyordu; web ikizi
+    // (`OnlineGameScreen.tsx`) `min-h-[30px]`, yani ASGARİ.
+    //
+    // ⚠ Bu, YEREL oyun ekranında 2 Eylül 2026'da düzeltilmiş hatanın TIPATIP
+    // aynısı (`message_line_test.dart`) — o turda Canlı ikizi atlanmıştı.
+    // Kapı bu yüzden İKİ dosyada: desen paylaşılıyor, hata da paylaşılıyor.
+    //
+    // Test yapıyı değil DAVRANIŞI ölçüyor: kutu, içindeki metni tamamen
+    // barındırıyor mu?
+    testWidgets('mesaj satırı ölçekte kesilmez (kutu metni barındırır)',
+        (tester) async {
+      const uzunMesaj = 'Esiner: +13 puan (4 puanı Ironman kaptı) '
+          'Kelimeler: ARA';
+
+      Future<double> yukseklikFarki(double olcek) async {
+        await pumpScreen(
+          tester,
+          current: 0,
+          textScale: olcek,
+          moveRows: [
+            {
+              'turn': 0,
+              'player_index': 1,
+              'action': 'play',
+              'words': ['ARA'],
+              'points': 13,
+              'lost_shares': [
+                {'to': 0, 'amount': 4}
+              ],
+              'tile_count': 3,
+              'finish_joker_count': 0,
+              'bingo': false,
+            }
+          ],
+        );
+        final kutu = tester.getRect(find.byKey(const ValueKey('message-line')));
+        // ⚠ `getRect(find.text(...))` KESİLMEYİ GÖRMEZ: sabit kutuda metin
+        // de 30 px'e SIKIŞTIRILIYOR ve fark 0 çıkıyor — ölçüldü (düzeltme geri
+        // alınarak): ölçek 1,3'te kutu 30, metnin rect'i de 30, oysa metin
+        // gerçekte 40 px istiyordu. Yani metnin İHTİYACI ayrıca hesaplanmalı.
+        //
+        // ⚠ Stil widget'ın KENDİSİNDEN okunuyor, elle yeniden yazılmıyor:
+        // `Text` çevresindeki `DefaultTextStyle` ile birleşiyor ve temanın
+        // satır yüksekliği bare bir `TextStyle`da YOK. Elle kurulan ilk sürüm
+        // bu yüzden 42 ↔ 40 diye tutarsız ölçtü.
+        final metinW = tester.widget<Text>(find.text(uzunMesaj));
+        final stil = DefaultTextStyle.of(tester.element(find.text(uzunMesaj)))
+            .style
+            .merge(metinW.style);
+        final tp = TextPainter(
+          text: TextSpan(text: uzunMesaj, style: stil),
+          textDirection: TextDirection.ltr,
+          textAlign: TextAlign.center,
+          textScaler: TextScaler.linear(olcek),
+        )..layout(maxWidth: kutu.width);
+        await unmount(tester);
+        return tp.height - kutu.height;
+      }
+
+      // Normal ölçek: kutu zaten 30 px asgarisinde ve metin sığıyor.
+      expect(await yukseklikFarki(1.0), lessThanOrEqualTo(0.5),
+          reason: 'ölçek 1,0da metin kutuya sığmalı');
+      // Tavan: kutu metinle birlikte BÜYÜMELİ. Sabit yükseklikte bu düşer —
+      // duyarlılığı ölçüldü (30 px kutuda taşan metin).
+      expect(await yukseklikFarki(kMaxTextScale), lessThanOrEqualTo(0.5),
+          reason: 'ölçek tavanında metin kutudan taşıyor — KESİLİR');
     });
 
     testWidgets('son hamle mesajı sunucudaki satırdan türetilir + görüntü',

@@ -52,7 +52,15 @@ import { getFormedWords, getFullWordAt, key } from '../utils/board';
 import { nearbyDraftCell } from '../utils/draftRescue';
 import { buildRematchSlots, rematchHasAi, rematchOpponentNames } from '../utils/rematchSlots';
 import { trLower } from '../utils/turkish';
-import { hasSeenChatIntro, markChatIntroSeen, getChatLastReadAt, markChatRead } from '../utils/onboarding';
+import { rankPlayers } from '../utils/ranking';
+import {
+  hasSeenChatIntro,
+  markChatIntroSeen,
+  getChatLastReadAt,
+  markChatRead,
+  pickFirstWinCelebration,
+  type FirstWinCelebrationId,
+} from '../utils/onboarding';
 import { swallowNextClick } from '../utils/ghostClick';
 import { useBoardZoom } from '../hooks/useBoardZoom';
 import {
@@ -67,6 +75,7 @@ import {
   getMyOnlineRack,
   isValidWordRemote,
   markGameFinishesSeen,
+  fetchPlayerStats,
   sendOnlineGameMessage,
   setOnlineGamePlatform,
   submitMove,
@@ -309,10 +318,31 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
   // başka bir oyuna geçilirse (bildirimden yönlendirme) boolean ikinci oyunu
   // sessizce atlardı.
   const finishMarkedRef = useRef<string | null>(null);
+  // Oyun sonu kutlaması. ⚠ Burada YALNIZCA üye dalı olabilir — Canlı oyun
+  // hesap gerektiriyor, yani misafir dalı (`'misafir'`) bu ekranda hiç
+  // doğmaz; `signedIn: true` bu yüzden sabit. Karar yine
+  // `pickFirstWinCelebration`da (yerel ekranla TEK kaynak).
+  const [celebration, setCelebration] = useState<FirstWinCelebrationId | null>(null);
   useEffect(() => {
     if (!state.isGameOver || finishMarkedRef.current === game.id) return;
     finishMarkedRef.current = game.id;
     void markGameFinishesSeen(game.id);
+    // Canlı oyunun `games` satırını SUNUCU yazıyor (bitiren hamlenin
+    // `submit_move`'u), yani istemcinin bekleyeceği bir kayıt yok —
+    // istatistik doğrudan okunabilir ve `wins` bu oyunu zaten sayıyor.
+    const meRank = rankPlayers(state.players).find((r) => r.index === mySlotIndex)?.rank ?? 0;
+    const won = meRank === 1 && !state.players[mySlotIndex]?.surrendered;
+    void fetchPlayerStats('all').then((stats) => {
+      const karar = pickFirstWinCelebration({
+        signedIn: true,
+        won,
+        earnedPoints: false, // üye dalında okunmuyor (yalnız misafir dalının ölçütü)
+        totalWins: stats?.wins ?? null,
+        guestCelebrated: true,
+      });
+      if (karar) setCelebration(karar);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver, game.id]);
   const [showPassConfirm, setShowPassConfirm] = useState(false);
   /**
@@ -1896,6 +1926,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         show={state.isGameOver && !gameOverDismissed}
         players={state.players}
         turnCount={state.turnCount}
+        celebration={celebration}
         onOpenHistory={() => setShowHistory(true)}
         onOpenFeedback={() => setShowFeedback(true)}
         onClose={() => {

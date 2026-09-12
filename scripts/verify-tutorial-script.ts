@@ -49,6 +49,9 @@ import {
 } from '../src/utils/tutorialScript';
 import {
   ONBOARDING_HINT_MAX_SHOWS,
+  pickFirstWinCelebration,
+  FIRST_WIN_TEXTS,
+  FIRST_WIN_GUEST_CTA,
   ONBOARDING_HINT_ORDER,
   ONBOARDING_HINT_TEXTS,
   TUTORIAL_LAUNCH_AT,
@@ -391,6 +394,86 @@ for (const vaka of ipucuVakalari) {
   } else {
     ok(`${sonuc ?? 'balon yok'} — ${vaka.ad}`);
   }
+}
+
+// ── 11. Oyun sonu kutlaması (ilk galibiyet / ilk puan) ───────────────────
+// İki dal AYNI şeyi ölçmüyor ve en kolay kaçırılan kural bu: girişlide
+// ölçüt GALİBİYET + hesabın `wins` sayısı, misafirde PUAN + cihaz bayrağı.
+// Ayrıca `totalWins: null` (okunamadı) SESSİZ kalmalı — yanlış kutlamak,
+// hiç kutlamamaktan kötü.
+const kutlamaVakalari: {
+  ad: string;
+  girdi: Parameters<typeof pickFirstWinCelebration>[0];
+  beklenen: 'uye' | 'misafir' | null;
+}[] = [
+  {
+    ad: 'girişli — ilk galibiyet',
+    girdi: { signedIn: true, won: true, earnedPoints: true, totalWins: 1, guestCelebrated: true },
+    beklenen: 'uye',
+  },
+  {
+    ad: 'girişli — ikinci galibiyet, kutlama YOK',
+    girdi: { signedIn: true, won: true, earnedPoints: true, totalWins: 2, guestCelebrated: true },
+    beklenen: null,
+  },
+  {
+    ad: 'girişli — kazanmadı (n oyun oynamış olsa da)',
+    girdi: { signedIn: true, won: false, earnedPoints: true, totalWins: 1, guestCelebrated: true },
+    beklenen: null,
+  },
+  {
+    ad: 'girişli — istatistik OKUNAMADI (offline): sessiz',
+    girdi: { signedIn: true, won: true, earnedPoints: true, totalWins: null, guestCelebrated: true },
+    beklenen: null,
+  },
+  {
+    ad: 'misafir — ilk puan',
+    girdi: { signedIn: false, won: true, earnedPoints: true, totalWins: null, guestCelebrated: false },
+    beklenen: 'misafir',
+  },
+  {
+    ad: 'misafir — puan aldı ama cihazda zaten kutlandı',
+    girdi: { signedIn: false, won: true, earnedPoints: true, totalWins: null, guestCelebrated: true },
+    beklenen: null,
+  },
+  {
+    ad: 'misafir — puan almadı',
+    girdi: { signedIn: false, won: false, earnedPoints: false, totalWins: null, guestCelebrated: false },
+    beklenen: null,
+  },
+  {
+    // 4 kişilikte ayrışan vaka: 2. sıra PUAN alır ama KAZANMAMIŞTIR.
+    // Misafir dalı puana bakar → kutlar; girişli dal galibiyete bakar → susar.
+    ad: '4 kişilik 2. sıra — misafir kutlanır',
+    girdi: { signedIn: false, won: false, earnedPoints: true, totalWins: null, guestCelebrated: false },
+    beklenen: 'misafir',
+  },
+  {
+    ad: '4 kişilik 2. sıra — girişli KUTLANMAZ (kazanmadı)',
+    girdi: { signedIn: true, won: false, earnedPoints: true, totalWins: 1, guestCelebrated: true },
+    beklenen: null,
+  },
+];
+
+console.log('\nOyun sonu kutlaması — kim, ne zaman');
+for (const vaka of kutlamaVakalari) {
+  const sonuc = pickFirstWinCelebration(vaka.girdi);
+  if (sonuc !== vaka.beklenen) {
+    bildir(`kutlama "${vaka.ad}": beklenen ${vaka.beklenen ?? 'yok'}, gerçek ${sonuc ?? 'yok'}`);
+  } else {
+    ok(`${sonuc ?? 'kutlama yok'} — ${vaka.ad}`);
+  }
+}
+
+// ⚠ Buton metni cümlenin İÇİNDEN bölünüyor (`GameOver.tsx`): parça cümlede
+// geçmezse buton hiç çıkmaz ve hiçbir test bunu görmez.
+if (!FIRST_WIN_TEXTS.misafir.includes(FIRST_WIN_GUEST_CTA)) {
+  bildir(
+    `FIRST_WIN_GUEST_CTA ("${FIRST_WIN_GUEST_CTA}") misafir metninde GEÇMİYOR — ` +
+      'buton çıkmaz',
+  );
+} else {
+  ok(`misafir metni "${FIRST_WIN_GUEST_CTA}" parçasını içeriyor (buton bölmesi)`);
 }
 
 // Metinler TEK cümle olmalı (tanıtımın "tek cümle bütçesi" kuralı) ve

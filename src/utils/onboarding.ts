@@ -231,8 +231,17 @@ export const SEEN_INTRO_KEY = 'kelimeki:seen-intro';
 // oyunda, üçüncüsünü haftalar sonra yaşayabilir.
 export type OnboardingHintId = 'vergi' | 'carpan' | 'bolge';
 
-/** Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA). */
-export const ONBOARDING_HINT_MAX_SHOWS = 2;
+/**
+ * Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA).
+ *
+ * ⚠ **2 → 1 (12 Eylül 2026, kullanıcı kararı):** *"İlk defa oynayan kişiye
+ * oyun sırasında çıkan max 6 gösterim iyi bir deneyim değil. Onu her bir
+ * mesaj için 1 kere olacak şekilde düzelteceğiz."* Üç ipucu × tavan 2 =
+ * oyuncunun görebileceği **6 balon**du; artık üçü de bir kez, yani en fazla
+ * **3**. Tavanın ipucu BAŞINA olması DEĞİŞMEDİ — üçü farklı mekaniği
+ * anlatıyor ve biri susunca ötekiler susmaz.
+ */
+export const ONBOARDING_HINT_MAX_SHOWS = 1;
 
 /** Balonun ekranda kalma süresi (ms) — tanıtımdaki `RAKIP_OKUMA`nın iki katı:
  *  orada cümle "Rakip hamlesini yaptı", burada bir KURAL anlatılıyor. */
@@ -324,4 +333,114 @@ export function pickOnboardingHint(
     if (hakEdilen[id] && (shown[id] ?? 0) < ONBOARDING_HINT_MAX_SHOWS) return id;
   }
   return null;
+}
+
+// ── Oyun sonu kutlaması — "ilk kazanma" / "ilk puan" (12 Eylül 2026) ──────
+//
+// Kullanıcı isteği: *"oyun sonu modalında 'Tebrikler ilk puanını kazandın'
+// mesajı (eğer kazanmışsa)"*, ardından ayrımı kendisi netleştirdi:
+//
+//   • GİRİŞLİ → *"Girişliyse sadece 'Tebrikler ilk oyununu kazandın'. Bunu
+//     n oyun da oynasa, ilk kazandığında çıkartmalıyız."* Yani ölçüt oyun
+//     SAYISI değil, ilk GALİBİYET — ve kaynağı cihaz değil HESAP (`wins`,
+//     `player_stats_overall`). Cihaz bayrağı burada yanlış olurdu: telefonu
+//     değiştiren ya da uygulamayı silip kuran kişi yıllar sonra yeniden
+//     "ilk oyununu kazandın" görürdü.
+//   • MİSAFİR → *"ilk puan alan kişiye 1 kere 'Tebrikler, ilk puanını
+//     kazandın. Bu puanı kaybetmemek için hemen giriş yap'"*. Misafirin
+//     hesabı YOK, yani sunucuda sayılacak bir şey de yok — tek olabilecek
+//     kaynak cihaz bayrağı. Mesajın kendisi zaten bunun sebebini söylüyor:
+//     puan kaydedilmiyor, kaydolmaya davet var.
+//
+// ⚠ İki dal AYNI şeyi ölçmüyor ve bu bilinçli: girişlide "kazandı" (1.
+// sıra), misafirde "puan aldı" (k-lig puanı > 0). 2 kişilik oyunda ikisi
+// aynı şeye denk düşüyor (2. sıra 0 puan alır), 4 kişilikte ayrışıyor —
+// orada 2. sıra puan alır ama kazanmamıştır. Metinler de öyle diyor.
+export type FirstWinCelebrationId = 'uye' | 'misafir';
+
+/**
+ * Kutlama metinleri. ⚠ Port ikizi `util/onboarding.dart` ile BİREBİR aynı
+ * olmak zorunda (`tutorial_parity_test.dart` karşılaştırıyor).
+ */
+export const FIRST_WIN_TEXTS: Record<FirstWinCelebrationId, string> = {
+  uye: 'Tebrikler, ilk oyununu kazandın!',
+  misafir: 'Tebrikler, ilk puanını kazandın. Bu puanı kaybetmemek için hemen giriş yap.',
+};
+
+/**
+ * Misafir metninin BUTONA dönüşen parçası. Ayrı bir sabit, çünkü çizim
+ * tarafı cümleyi ikiye bölmek zorunda ve metni İKİNCİ KEZ yazmak bu
+ * depodaki en sık bayatlama biçimi — `FIRST_WIN_TEXTS.misafir` tek kaynak
+ * kalsın diye bölme bu parçadan yapılıyor.
+ *
+ * ⚠ Bu dizgi `FIRST_WIN_TEXTS.misafir`in İÇİNDE geçmek zorunda;
+ * `verify-tutorial-script` bunu ayrıca kontrol ediyor (geçmezse buton hiç
+ * çıkmaz ve kimse fark etmez).
+ */
+export const FIRST_WIN_GUEST_CTA = 'hemen giriş yap';
+
+export interface FirstWinCelebrationInput {
+  /** Hesapla mı oynanıyor. */
+  signedIn: boolean;
+  /** Bu oyunda 1. sırada bitirdi mi (`rankPlayers`). */
+  won: boolean;
+  /** Bu oyundan k-lig puanı kazandı mı (`leaguePoints(...) > 0`). */
+  earnedPoints: boolean;
+  /**
+   * GİRİŞLİ dal: hesabın toplam galibiyet sayısı — **bu oyun DAHİL**
+   * (`player_stats_overall.wins`, kayıt sunucuya düştükten SONRA okunur).
+   * `null` = okunamadı (offline, istek düştü) → kutlama YOK.
+   *
+   * ⚠ "Bu oyun dahil" olması bir yarışı kapatıyor: kaydı yazmadan ÖNCE
+   * okunsaydı `0` beklenirdi, ama kaydın yazılıp yazılmadığı bilinemezdi
+   * ve çevrimdışı bir oyun sonunda mesaj YANLIŞ çıkardı. Sonradan okunan
+   * `wins === 1` ise tek bir şeyi söyler: bu oyun sunucuya düştü VE
+   * hesabın ilk galibiyeti. Kayıt düşmediyse sayı artmaz, mesaj çıkmaz —
+   * güvenli yön.
+   */
+  totalWins: number | null;
+  /** MİSAFİR dal: bu cihazda kutlama daha önce gösterildi mi. */
+  guestCelebrated: boolean;
+}
+
+/**
+ * Oyun sonu modalında hangi kutlama gösterilsin? Saf fonksiyon — depolama
+ * ve ağ erişimi çağıranda (`verify-tutorial-script` tabloyu doğrudan
+ * koşabilsin diye, `pickOnboardingHint` ile aynı gerekçe).
+ *
+ * `null` = kutlama yok.
+ */
+export function pickFirstWinCelebration(
+  input: FirstWinCelebrationInput,
+): FirstWinCelebrationId | null {
+  if (input.signedIn) {
+    // Girişlide ölçüt GALİBİYET, ve "ilk" hesabın kendi geçmişinden.
+    if (!input.won) return null;
+    return input.totalWins === 1 ? 'uye' : null;
+  }
+  // Misafirde ölçüt PUAN; "ilk" cihaz bayrağından.
+  if (!input.earnedPoints || input.guestCelebrated) return null;
+  return 'misafir';
+}
+
+const FIRST_POINTS_KEY = 'kelimeki:first-points-celebrated';
+
+/** Misafir kutlaması bu cihazda gösterildi mi. */
+export function guestFirstPointsCelebrated(): boolean {
+  try {
+    return localStorage.getItem(FIRST_POINTS_KEY) === '1';
+  } catch {
+    // Depolama kapalıysa "gösterilmiş" say — ipuçlarındaki ilkenin aynısı:
+    // aynı kutlamayı her oyun sonunda tekrarlamak, hiç göstermemekten kötü.
+    return true;
+  }
+}
+
+/** Gösterime KARAR VERİLDİĞİNDE çağrılır (ipuçlarındaki kuralın aynısı). */
+export function bumpGuestFirstPointsCelebrated(): void {
+  try {
+    localStorage.setItem(FIRST_POINTS_KEY, '1');
+  } catch {
+    // yoksay
+  }
 }

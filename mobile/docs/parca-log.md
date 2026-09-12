@@ -25,6 +25,82 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
+     (12 Eylül 2026):** Kullanıcı isteği, önce *"mümkünse oyun sonu
+     modalında 'Tebrikler ilk puanını kazandın' mesajı (eğer kazanmışsa)"*;
+     sorulunca ayrımı kendisi netleştirdi ve **iki farklı mesaj** çıktı —
+     GİRİŞLİ: *"Tebrikler, ilk oyununu kazandın!"* (ölçüt ilk GALİBİYET,
+     kaynak hesabın `wins`i), MİSAFİR: *"Tebrikler, ilk puanını kazandın.
+     Bu puanı kaybetmemek için hemen giriş yap."* (ölçüt ilk PUAN, kaynak
+     cihaz bayrağı + dönüşüm çağrısı).
+     ⚠ **İki kaynak bilinçli:** girişlide cihaz bayrağı yanlış olurdu
+     (telefon değiştiren yıllar sonra yeniden "ilk galibiyet" görürdü);
+     misafirde sunucuda sayılacak bir şey yok (hesap yok). ⚠ İki ÖLÇÜT de
+     aynı şey değil: 2 kişilikte çakışıyor, 4 kişilikte 2. sıra puan alır
+     ama kazanmamıştır — doğrulayıcının son iki vakası bunu kilitliyor.
+     ⚠ `wins` kaydın ARDINDAN okunuyor: `1` tek bir şeyi söyler — "bu oyun
+     sunucuya düştü VE hesabın ilk galibiyeti"; çevrimdışı bitirilen oyunda
+     sayı artmaz, mesaj çıkmaz (güvenli yön).
+     **Port dosyaları:** `util/onboarding.dart` (enum + metinler + saf
+     karar), `storage/flags_store.dart` (misafir bayrağı),
+     `data/stats_api.dart` (`PlayerStats.wins` EKLENDİ — portta yoktu),
+     `ui/game/game_over_modal.dart` (banner + `Text.rich` ile CTA bölmesi),
+     `game_screen.dart` (iki dal) ve `live/online_game_screen.dart` (yalnız
+     üye dalı — Canlı hesap gerektiriyor).
+     ⚠ **Kabul edilen port farkı:** portta oyun ekranından açılabilen bir
+     giriş penceresi YOK (web'de `showLoginModal`), misafir metni düz
+     kalıyor — cümle aynı, parça tıklanabilir değil. Web'de buton.
+     ⚠ İlk sürümde misafir cümlesi çizim tarafında İKİNCİ KEZ yazılmıştı
+     (butonun iki yanına); bu depodaki en sık bayatlama biçimi. Düzeltildi:
+     `firstWinGuestCta` ayrı sabit, çizim cümleyi ONDAN bölüyor ve
+     doğrulayıcı "parça cümlede geçiyor mu" diye ayrıca bakıyor (geçmezse
+     buton hiç çıkmaz, hiçbir test görmez).
+     **Doğrulama:** `npm run verify-tutorial-script` (dokuz kutlama vakası +
+     CTA içermesi) · `tutorial_parity_test.dart` (metin paritesi) ·
+     `flutter analyze` temiz · **846 test yeşil** · `npm run lint` temiz.
+     **Doğrulama sınırı:** gerçek `wins` sayısı ve misafir↔üye ayrımı
+     cihazda DENENMEDİ — kontrol listesi `TESTING.md` §13.7.
+
+   - ✅ **Parça 203 — Canlı oyunun mesaj satırı yazı ölçeğinde KESİLİYORDU;
+     ikizi 10 gün önce düzeltilmişti (12 Eylül 2026):** Kullanıcı iPhone'da
+     ekran görüntüsüyle bildirdi — büyük puntoda mesajın 2. satırı
+     (*"Kelimeler: ÇATAK"*) yarım görünüyor.
+     **Kök sebep:** `online_game_screen.dart` mesaj satırını
+     `SizedBox(height: 30)` + `maxLines: 2` + `ellipsis` ile SABİT kutuya
+     koyuyordu. Ölçek 1,3'te iki satır 40 px istiyor, kutu 30 px'te
+     kalıyor → kırpma. Web ikizi (`OnlineGameScreen.tsx` ve `App.tsx`)
+     ikisi de `min-h-[30px]`, yani ASGARİ — orada sorun YOK ve hiç olmadı.
+     ⚠ **Bu hata 2 Eylül 2026'da BİR KEZ düzeltilmişti** — aynı kutu, aynı
+     30 px, aynı kullanıcı şikâyeti, ama YEREL oyun ekranında
+     (`game_screen.dart` → `ConstrainedBox(minHeight: 30)`, kapı
+     `message_line_test.dart`). O turda Canlı ikizi güncellenmedi. Kök
+     `CLAUDE.md` bu çifti açıkça sayıyor (*"`App.tsx`'teki joker/mesaj/raf
+     desenleri → `OnlineGameScreen.tsx` (ikisi deseni paylaşıyor)"*) ve
+     kural bir kez daha atlandı; ders **"ikizi ara"nın düzeltmenin PARÇASI
+     olduğu**, sonradan hatırlanacak bir nezaket olmadığı.
+     ⚠ **Android'de de vardı** — dosya tek, `MediaQuery.textScaler` iki
+     platformda da sistem ayarından geliyor (Android: Ayarlar → Ekran →
+     Yazı tipi boyutu). Yalnız iOS'ta bildirilmiş olması onu iOS hatası
+     yapmıyor.
+     **Düzeltme:** `ConstrainedBox(minHeight: 30)`; `maxLines`/`ellipsis`
+     kaldırıldı (web'de sınır yok, uzun mesaj satır sayısı kadar yer
+     kaplar). Gövde zaten `SingleChildScrollView` içinde, yani büyüyen
+     kutu rafı ekran dışına itmiyor.
+     **Kapı:** `online_game_screen_test.dart` → *"mesaj satırı ölçekte
+     kesilmez"*, ölçek 1,0 ve `kMaxTextScale`. ⚠ İki ölçüm tuzağı yaşandı:
+     (1) `getRect(find.text(...))` KESİLMEYİ GÖRMEZ — sabit kutuda metnin
+     rect'i de 30'a sıkışıyor (ölçüldü: kutu 30, metin 30, gerçek ihtiyaç
+     40), bu yüzden ihtiyaç `TextPainter` ile ayrıca hesaplanıyor;
+     (2) `TextPainter`ın stili ELLE yazılınca tema `DefaultTextStyle`inin
+     satır yüksekliği kaçıyor ve ölçüm 42 ↔ 40 diye tutarsızlaşıyor —
+     stil artık widget'ın kendisinden okunup `merge` ediliyor.
+     Duyarlılık kanıtlandı: düzeltme geri alınınca fark +10 px ile DÜŞÜYOR.
+     **Doğrulama:** `flutter analyze` temiz (tek info `main`'de de olan
+     `fake_async` satırı), **845 test yeşil** (844 → 845).
+     **Doğrulama sınırı:** cihazda büyük puntoyla GÖRÜLMEDİ — kontrol
+     maddesi `mobile/docs/testing-ux-turlari.md` §25'te iki ekranı da
+     kapsayacak şekilde güncellendi.
+
    - ✅ **Parça 202 — Sonsuz "Yükleniyor…": `catch` yetmez, TAVAN gerekiyor
      (11 Eylül 2026):** Kullanıcı iPhone'da bildirdi — *"bekleyen oyuna
      tıklayınca bu ekran uzun süre asılı kalıyor. Sanıyorum internet yavaş

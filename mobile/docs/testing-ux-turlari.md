@@ -414,9 +414,15 @@ kırpar), sonra:
       `SIRA SENDE`/`SIRA RAKİPTE` puntosu 15 px'e çıktı — iki kartta da
       aynı büyüklükte görünmeli, yanındaki üçgen/nokta harflerle aynı
       bantta durmalı (küçük kalmamalı).
-- [ ] **Rafın üstündeki mesaj satırı** → uzun bir mesaj (ör. "+9 puan
-      (5 puanı X kaptı)") KESİLMEMELİ; kutu metinle birlikte büyümeli.
-      (2 Eylül 2026: port sabit 30 px kullanıyordu, web ikizi `min-h`.)
+- [ ] **Rafın üstündeki mesaj satırı — İKİ EKRANDA DA** → uzun bir mesaj
+      (ör. "+9 puan (5 puanı X kaptı) Kelimeler: …") KESİLMEMELİ; kutu
+      metinle birlikte büyümeli. **(a) Yapay Zeka oyunu** (2 Eylül 2026:
+      port sabit 30 px kullanıyordu, web ikizi `min-h`) **ve (b) CANLI
+      oyun** — ⚠ Canlı ekran 12 Eylül 2026'ya kadar hâlâ sabit 30 px'ti,
+      yani 2 Eylül turu ikizi atlamıştı ve bu madde yalnızca (a) ile
+      işaretlenmişti. Kullanıcı iPhone'da yakaladı (mesajın 2. satırı
+      yarım). Canlı tarafta mesajı görmek için: sıranın SENDE olduğu bir
+      oyunda rakibin son hamlesinin satırı zaten yazıyor.
 - [ ] **Board altındaki şerit** (Hamleler · Mesajlaşma · **Yardım**) →
       ölçek tavanında da TEK SATIR (48 px) kalmalı, iki satıra düşmemeli.
       Etiket 2 Eylül 2026'da `Nasıl Oynanır?` → `Yardım` oldu (kullanıcı

@@ -143,7 +143,9 @@ dosyaları AYNI PR'da güncellenir. `TUTORIAL_LAUNCH_AT` iki platformda AYNI
 - **Bağlamsal ipuçları (Faz 2).** Atlayanın da öğrenmesi için, GERÇEK oyunda
   mekanik yaşandığı anda çıkan tek cümlelik balon: `vergi` · `carpan` ·
   `bolge`. Karar saf fonksiyonda (`pickOnboardingHint`, `utils/onboarding.ts`
-  ↔ `util/onboarding.dart`), sayaç cihaz-yerel ve ipucu BAŞINA tavan 2, çizim
+  ↔ `util/onboarding.dart`), sayaç cihaz-yerel ve ipucu BAŞINA tavan **1**
+  (12 Eylül 2026'da 2'den indi — üç ipucu × 2 = 6 balon ilk oyunda fazlaydı;
+  kullanıcı kararı), çizim
   `Board`un mevcut `coach` prop'u. **Sıra sabittir** (`vergi › carpan ›
   bolge`) — ekranda aynı anda TEK balon; öncelik `Sınır İhlali penceresi ›
   ipucu › zoom balonu` (zoom balonu oyun boyunca durduğundan yazılı plan
@@ -156,6 +158,16 @@ dosyaları AYNI PR'da güncellenir. `TUTORIAL_LAUNCH_AT` iki platformda AYNI
 - **Ölçüm (Faz 5).** `tutorial_events` (`start`/`finish`/`skip` + sahne +
   `auto`/`replay`) → admin panelinde "Tanıtım Turu" kartı. `user_id` YOK
   (`game_starts` ile aynı gizlilik kararı).
+- **Oyun sonu kutlaması (12 Eylül 2026).** `GameOver`/`GameOverModal`'da tek
+  seferlik banner; karar saf fonksiyonda (`pickFirstWinCelebration`,
+  `utils/onboarding.ts` ↔ `util/onboarding.dart`). **İki dal AYNI şeyi
+  ölçmüyor ve bu bilinçli:** GİRİŞLİ → ilk GALİBİYET, kaynağı HESAP
+  (`player_stats_overall.wins`, kayıt düştükten SONRA okunur; `null`/offline
+  → sessiz). MİSAFİR → ilk PUAN (`leaguePoints > 0`), kaynağı CİHAZ bayrağı
+  + "hemen giriş yap" çağrısı. Kapsam yerel **ve** Canlı (Canlı'da misafir
+  dalı hiç doğmaz — oyun hesap gerektiriyor). Metin TEK kaynak
+  (`FIRST_WIN_TEXTS`); butona dönüşen parça `FIRST_WIN_GUEST_CTA` ile
+  cümlenin İÇİNDEN bölünüyor, ikinci kez yazılmıyor.
 
 Ayrıntı, ölçümler ve tuzaklar: `docs/decisions/onboarding.md`.
 
@@ -511,6 +523,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | Supabase işletimi: Brevo SMTP/teslimat geçmişi, SPF-DKIM-DMARC'ın gerçek hâli, migration geçmişinin kopması, dal temizliği, Edge Function deploy tuzakları | `docs/decisions/supabase-ops.md` |
 | Sonraya bırakılan ürün fikirleri (karar verildi, henüz yapılmadı) | `docs/decisions/product-backlog.md` |
 | ROADMAP arşivi — kapanmış maddeler, fazlar ve sürüm turları (grep'lenir, baştan sona okunmaz) | `docs/decisions/roadmap-arsiv.md` |
+| App Store Connect — kapanmış vaka anlatıları (`.p8` sagası, 24.2 zincirinin koşuları, kare boru hattının kuruluşu). ⚠ Cevap kağıdı `marketing/app-store/console-formlari.md`'de KALDI | `docs/decisions/app-store-gecmis.md` |
 | Doküman boyutu — bölme günlüğü (hangi dosya ne zaman, hangi kuralla bölündü) | `docs/decisions/doc-size-history.md` |
 
 **Yeni bir dated not eklerken:** eğer not, kod tabanında HER YERDE geçerli

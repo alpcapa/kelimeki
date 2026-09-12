@@ -659,6 +659,50 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     });
   }
 
+  /// Oyun sonu kutlaması: girişlide hesabın `wins` sayısı, misafirde cihaz
+  /// bayrağı. Karar saf fonksiyonda (`pickFirstWinCelebration`), burası
+  /// yalnızca girdileri topluyor — web `App.tsx`in kayıt effect'inin eşi.
+  ///
+  /// ⚠ Girişli dalda `wins` bu oyunu da saymalı; port kaydı sunucuya
+  /// `GameController`ın kendi akışında yazdığından burada ayrıca beklenen
+  /// bir promise yok — istatistik doğrudan okunuyor.
+  /// ⚠ `onSignIn` GEÇİLMİYOR: portta oyun ekranından açılabilen bir giriş
+  /// penceresi yok (web'de `showLoginModal` var), metin düz kalıyor.
+  Future<FirstWinCelebrationId?> _ilkKutlama(GameState state) async {
+    final ranked = rankPlayers(state.players);
+    final meRank =
+        ranked.where((r) => r.index == 0).map((r) => r.rank).firstOrNull ?? 0;
+    final me = state.players.isEmpty ? null : state.players[0];
+    final won = meRank == 1 && !(me?.surrendered ?? false);
+    final earned = leaguePoints(meRank, state.players.length,
+            surrendered: me?.surrendered ?? false, aiLevel: state.aiLevel) >
+        0;
+    final user = widget.auth?.user;
+    if (user != null) {
+      final stats = await widget.stats?.playerStats(user.id, StatsTab.all);
+      return pickFirstWinCelebration(FirstWinCelebrationInput(
+        signedIn: true,
+        won: won,
+        earnedPoints: earned,
+        totalWins: stats?.wins,
+        guestCelebrated: true,
+      ));
+    }
+    final storageFuture = widget.storage;
+    if (storageFuture == null) return null;
+    final storage = await storageFuture;
+    final flags = storage.flags;
+    final karar = pickFirstWinCelebration(FirstWinCelebrationInput(
+      signedIn: false,
+      won: won,
+      earnedPoints: earned,
+      totalWins: null,
+      guestCelebrated: flags.guestFirstPointsCelebrated,
+    ));
+    if (karar != null) await flags.markGuestFirstPointsCelebrated();
+    return karar;
+  }
+
   /// Balon gösterilsin mi — kararı `FlagsStore` veriyor (tek kaynak, web
   /// `onboarding.ts` ile aynı kural: denenmişse asla, denenmemişse en çok
   /// iki oyun açılışında). Gösterime KARAR VERİLDİĞİ anda sayaç artıyor:
@@ -1231,6 +1275,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 auth: auth!,
                 feedback: widget.feedback,
                 source: FeedbackSource.gameEnd);
+            // Oyun sonu kutlaması (12 Eylül 2026) — karar
+            // `pickFirstWinCelebration`da (web ile TEK kaynak).
+            final kutlama = await _ilkKutlama(state);
+            // ⚠ `context` burada builder'ın context'i (State'inki DEĞİL), o
+            // yüzden `mounted` tek başına yetmiyor — analiz de bunu söylüyor.
+            if (!mounted || !context.mounted) return;
             await showGameOverModal(context, state,
                 // Yerel oyunda hamle geçmişi reducer'ın kendi state'inde —
                 // tahta altındaki "Hamleler" linkiyle AYNI kaynak.
@@ -1238,7 +1288,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 onFeedback: auth == null ? null : openFeedback,
                 // Yerel oyun = YZ oyunu → rozet her seviyede; Canlı ekran
                 // bu parametreyi hiç geçirmez.
-                aiLevel: aiLevelForBadge(state.aiLevel, isAiGame: true));
+                aiLevel: aiLevelForBadge(state.aiLevel, isAiGame: true),
+                celebration: kutlama);
             if (!mounted || auth == null) return;
             openFeedback();
           });

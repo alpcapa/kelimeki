@@ -78,6 +78,7 @@ import '../game/invasion_confirm.dart';
 import '../../util/offline_notice.dart';
 import '../../util/uuid.dart';
 import '../../util/online_status.dart';
+import '../../util/onboarding.dart';
 import '../../data/error_reporter.dart';
 
 const Color _muted = kMuted;
@@ -247,6 +248,34 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   /// yapıyordu, oyun sonu modalı yapmıyordu (14 Ağustos 2026, cihaz testi).
   GameState get _historyState =>
       state.copyWith(moveHistory: buildMoveHistory(_moves));
+
+  /// Oyun sonu kutlaması — Canlı ekranda YALNIZCA üye dalı.
+  ///
+  /// Canlı oyunun `games` satırını SUNUCU yazıyor (bitiren hamlenin
+  /// `submit_move`'u), yani istemcinin bekleyeceği bir kayıt yok —
+  /// istatistik doğrudan okunuyor ve `wins` bu oyunu zaten sayıyor.
+  /// ⚠ `earnedPoints` üye dalında OKUNMUYOR (yalnız misafir dalının ölçütü),
+  /// `false` geçiliyor.
+  Future<FirstWinCelebrationId?> _ilkKutlama() async {
+    final user = widget.auth?.user;
+    if (user == null || _mySlot < 0) return null;
+    final ranked = rankPlayers(state.players);
+    final meRank = ranked
+            .where((r) => r.index == _mySlot)
+            .map((r) => r.rank)
+            .firstOrNull ??
+        0;
+    final me = _mySlot < state.players.length ? state.players[_mySlot] : null;
+    final won = meRank == 1 && !(me?.surrendered ?? false);
+    final stats = await widget.stats?.playerStats(user.id, StatsTab.all);
+    return pickFirstWinCelebration(FirstWinCelebrationInput(
+      signedIn: true,
+      won: won,
+      earnedPoints: false,
+      totalWins: stats?.wins,
+      guestCelebrated: true,
+    ));
+  }
 
   bool _loaded = false;
 
@@ -1695,10 +1724,17 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                 auth: auth!,
                 feedback: widget.feedback,
                 source: FeedbackSource.gameEnd);
+            // Oyun sonu kutlaması (12 Eylül 2026). ⚠ Burada YALNIZCA üye
+            // dalı olabilir — Canlı oyun hesap gerektiriyor, misafir dalı
+            // bu ekranda hiç doğmaz. Karar yine `pickFirstWinCelebration`da
+            // (yerel ekranla TEK kaynak).
+            final kutlama = await _ilkKutlama();
+            if (!mounted || !context.mounted) return;
             await showGameOverModal(context, state,
                 onOpenHistory: () =>
                     showMoveHistoryModal(context, _historyState),
-                onFeedback: auth == null ? null : openFeedback);
+                onFeedback: auth == null ? null : openFeedback,
+                celebration: kutlama);
             if (!mounted || auth == null) return;
             openFeedback();
           });
@@ -1932,17 +1968,34 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                             ? _TurnBanner(
                                                 isAiTurn: _isAiTurn,
                                                 name: _currentName)
-                                            : SizedBox(
+                                            // ⚠ SABİT YÜKSEKLİK DEĞİL, ASGARİ
+                                            // — web ikizi (`OnlineGameScreen
+                                            // .tsx`) `min-h-[30px]` diyor.
+                                            // Sistem yazı ölçeğinde iki
+                                            // satır 30 px kutuda KESİLİYORDU
+                                            // (12 Eylül 2026, kullanıcı
+                                            // iPhone'da: mesajın 2. satırı
+                                            // yarım görünüyor). `maxLines`/
+                                            // `ellipsis` de kaldırıldı:
+                                            // web'de sınır yok, uzun mesaj
+                                            // satır sayısı kadar yer kaplar.
+                                            // ⚠ YEREL oyun ekranı bunu
+                                            // 2 Eylül 2026'da AYNI hatayla
+                                            // öğrenmişti (`game_screen.dart`,
+                                            // `message_line_test.dart`);
+                                            // Canlı ikizi o turda atlandı —
+                                            // iki ekranın paylaştığı desen
+                                            // kuralı (kök `CLAUDE.md`).
+                                            : ConstrainedBox(
                                                 key: const ValueKey(
                                                     'message-line'),
-                                                height: 30,
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minHeight: 30),
                                                 child: Center(
                                                   child: Text(
                                                     liveMessage,
-                                                    maxLines: 2,
                                                     textAlign: TextAlign.center,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
                                                     style: TextStyle(
                                                       fontSize: 11,
                                                       fontFamily: 'SpaceMono',

@@ -81,7 +81,12 @@ bool shouldShowTutorial(TutorialGateInput input) {
 enum OnboardingHintId { vergi, carpan, bolge }
 
 /// Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA).
-const int onboardingHintMaxShows = 2;
+///
+/// ⚠ **2 → 1 (12 Eylül 2026, kullanıcı kararı):** üç ipucu × tavan 2 =
+/// oyuncunun görebileceği 6 balondu ve bu ilk oyunda fazlaydı; artık üçü de
+/// bir kez (en fazla 3). Web ikizi `ONBOARDING_HINT_MAX_SHOWS` — değer
+/// `tutorial_parity_test.dart` ile kilitli.
+const int onboardingHintMaxShows = 1;
 
 /// Balonun ekranda kalma süresi — web `ONBOARDING_HINT_MS`.
 const Duration onboardingHintDuration = Duration(milliseconds: 4000);
@@ -139,4 +144,69 @@ OnboardingHintId? pickOnboardingHint(
     }
   }
   return null;
+}
+
+// ── Oyun sonu kutlaması — "ilk kazanma" / "ilk puan" (12 Eylül 2026) ──────
+//
+// Web ikizi: `src/utils/onboarding.ts` → `pickFirstWinCelebration`.
+// Kullanıcı kararı iki dalı ayırıyor:
+//   • GİRİŞLİ → ölçüt ilk GALİBİYET, kaynağı HESAP (`player_stats_overall
+//     .wins`). Cihaz bayrağı yanlış olurdu: telefon değiştiren kişi yıllar
+//     sonra yeniden "ilk oyununu kazandın" görürdü.
+//   • MİSAFİR → ölçüt ilk PUAN, kaynağı cihaz bayrağı (`FlagsStore`) —
+//     misafirin hesabı yok, sunucuda sayılacak bir şey de yok. Mesaj zaten
+//     bunu söylüyor: puan kaydedilmiyor, kaydolmaya davet var.
+//
+// ⚠ İki dal AYNI şeyi ölçmüyor ve bu bilinçli: 2 kişilikte "kazandı" ile
+// "puan aldı" aynı şeye denk düşüyor, 4 kişilikte ayrışıyor (2. sıra puan
+// alır ama kazanmamıştır).
+enum FirstWinCelebrationId { uye, misafir }
+
+/// ⚠ Metinler web ile BİREBİR (`tutorial_parity_test.dart` karşılaştırıyor).
+const Map<FirstWinCelebrationId, String> firstWinTexts = {
+  FirstWinCelebrationId.uye: 'Tebrikler, ilk oyununu kazandın!',
+  FirstWinCelebrationId.misafir:
+      'Tebrikler, ilk puanını kazandın. Bu puanı kaybetmemek için hemen giriş yap.',
+};
+
+/// Misafir metninin BUTONA dönüşen parçası — çizim cümleyi bundan bölüyor,
+/// metni ikinci kez YAZMIYOR. Web `FIRST_WIN_GUEST_CTA`.
+const String firstWinGuestCta = 'hemen giriş yap';
+
+class FirstWinCelebrationInput {
+  /// Hesapla mı oynanıyor.
+  final bool signedIn;
+
+  /// Bu oyunda 1. sırada bitirdi mi (`rankPlayers`).
+  final bool won;
+
+  /// Bu oyundan k-lig puanı kazandı mı (`leaguePoints(...) > 0`).
+  final bool earnedPoints;
+
+  /// GİRİŞLİ dal: hesabın toplam galibiyeti — **bu oyun DAHİL**. `null` =
+  /// okunamadı (offline) → kutlama YOK. Gerekçe web ikizinde uzun uzun
+  /// yazılı: sonradan okunan `1`, "kayıt düştü VE ilk galibiyet" demek.
+  final int? totalWins;
+
+  /// MİSAFİR dal: bu cihazda kutlama daha önce gösterildi mi.
+  final bool guestCelebrated;
+
+  const FirstWinCelebrationInput({
+    required this.signedIn,
+    required this.won,
+    required this.earnedPoints,
+    required this.totalWins,
+    required this.guestCelebrated,
+  });
+}
+
+/// Oyun sonu modalında hangi kutlama gösterilsin? Saf fonksiyon —
+/// depolama/ağ erişimi çağıranda. `null` = kutlama yok.
+FirstWinCelebrationId? pickFirstWinCelebration(FirstWinCelebrationInput input) {
+  if (input.signedIn) {
+    if (!input.won) return null;
+    return input.totalWins == 1 ? FirstWinCelebrationId.uye : null;
+  }
+  if (!input.earnedPoints || input.guestCelebrated) return null;
+  return FirstWinCelebrationId.misafir;
 }
