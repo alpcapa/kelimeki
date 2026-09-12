@@ -937,7 +937,8 @@ sütunlarını ve satır başına bir **→** (içindekileri açan) oku taşıyo
 
 | Submission | Ne | Durum |
 |---|---|---|
-| **18** · 13 Eyl 2026, 00:42 | **Production** | ⏳ *In review* — **bu uygulamanın İLK production gönderimi** |
+| **19** · 13 Eyl 2026, 00:49 | **Production** — sürümü (665) taşıyan gönderim | ⏳ *In review* (01:04) |
+| **18** · 13 Eyl 2026, 00:42 | **Production** — yalnızca ülkeler, paketsiz | ✅ **Published** · 00:42 → ≤01:04, yani **≤22 dk** |
 | 17 · 12 Eyl 12:24 | Closed testing - Alpha | ✅ Published (659) |
 | 16 ve öncesi (11 Eyl'e kadar) | hepsi Closed testing - Alpha | ✅ Published |
 
@@ -998,16 +999,29 @@ basılacak yerde duruyor.
 - **Kademeli yayın:** akış *"Start full rollout"* (yani %100) seçeneğini
   verdi ve o seçildi. Kullanıcı tabanı zaten testerlar olduğu için
   kademeli yayının kazancı yoktu.
-- **İnceleme sürerken yeni değişiklik EKLENEBİLİYOR.** #18 (yalnızca
-  ülkeler, 00:42) incelemedeyken sürüm gönderildi; Play engellemedi,
-  üçü aynı partide birleşti.
+- **İnceleme sürerken ikinci bir gönderim YAPILABİLİYOR.** #18 (yalnızca
+  ülkeler, 00:42) incelemedeyken sürüm gönderildi; Play engellemedi.
+  ⚠ **Ama "aynı partide birleşti" DEĞİL** — bu ilk okuma 01:04'te kütükle
+  çürüdü: gönderim **#19** ayrı bir kayıt olarak açıldı. *Changes in
+  review* paneli tek bir gönderimi değil, **incelemedeki TÜM
+  değişiklikleri topluca** gösteriyor. Bir partinin sınırını o panelden
+  değil `Submission activity`den oku.
 
 ### Hâlâ ölçülmemiş — vaat etme
 
-- **İnceleme süresi.** Bu hesapta kapalı test incelemeleri 10-34 dakika
-  sürdü (`mobile/docs/surumler.md`). **Production incelemesinin süresi
-  ölçülmedi** ve kapalı testinkine uyarlanamaz — ilk production sürümü
-  ayrıca daha ayrıntılı incelenebilir.
+- **PAKETLİ production incelemesinin süresi.** Elde üç ölçüm var ve
+  hiçbiri bunu tahmin etmeye yetmiyor, çünkü aynı türden değiller:
+
+  | Ne | Süre |
+  |---|---|
+  | Kapalı test güncellemeleri (17 gönderim) | 10-34 dk |
+  | **#18** — Production, **paketsiz** (yalnızca ülkeler) | **≤22 dk** |
+  | **#19** — Production, **ilk kez paket taşıyor** | ölçüm YOK |
+
+  ⚠ **Kapalı test süresini buraya uyarlama.** İlk production sürümü
+  tipik olarak daha ayrıntılı inceleniyor ve Google'ın kendi yönlendirmesi
+  "7 güne kadar sürebilir" diyor. Kullanıcıya süre VAAT ETME; #19'un
+  onay saati öğrenilince bu satır kapanır.
 
 ---
 
