@@ -13,8 +13,10 @@
 // Koşum: npm run verify-device-labels
 import {
   brandBreakdown,
+  compareOsVersionDesc,
   deviceBrand,
   deviceModelLabel,
+  osBreakdown,
   osVersionLabel,
   platformLabel,
 } from '../src/utils/deviceLabels';
@@ -106,6 +108,69 @@ console.log('Marka gruplaması — sayılar korunur, modeller altta');
   const bilinmiyor = b.find((r) => r.brand === 'Bilinmiyor');
   check('modelsiz satır da kırılımda görünür (gizlenmiyor)',
     bilinmiyor?.models.length === 1 && bilinmiyor?.models[0].deviceModel === null);
+}
+
+console.log('Sürüm sıralaması — SAYISAL, yeniden eskiye');
+check('9, 18.7den SONRA gelir (düz metin sırası ters olurdu)',
+  compareOsVersionDesc('18.7', '9') < 0);
+check('16 > 13', compareOsVersionDesc('16', '13') < 0);
+check('26.6.1 > 26.5.2', compareOsVersionDesc('26.6.1', '26.5.2') < 0);
+check('eksik parça 0 sayılır (18 ↔ 18.0)', compareOsVersionDesc('18', '18.0') === 0);
+check('sürümsüz satır EN SONDA', compareOsVersionDesc(null, '9') > 0 &&
+  compareOsVersionDesc('9', null) < 0);
+check('sayıya çevrilemeyen dize alfabetiğe düşer, patlamaz',
+  compareOsVersionDesc('beta', '16') !== 0);
+
+console.log('Cihaz + işletim sistemi ağacı (12 Eylül 2026)');
+{
+  // Canlıdan alınmış GERÇEK dağılımın kesiti (son 90 gün, 12 Eylül 2026):
+  // android 568 · masaüstü 132 · iOS 91 — ve iOS'un alt toplamı 92, çünkü
+  // tek bir cihaz pencere içinde 26.5.2 → 26.6.1 güncellemiş.
+  const devices = [
+    { device_type: 'android', visitors: 568 },
+    { device_type: 'desktop', visitors: 132 },
+    { device_type: 'ios', visitors: 91 },
+  ];
+  const osRows = [
+    { device_type: 'android', os_version: '16', visitors: 273 },
+    { device_type: 'android', os_version: '13', visitors: 64 },
+    { device_type: 'android', os_version: '9', visitors: 12 },
+    { device_type: 'android', os_version: null, visitors: 219 },
+    { device_type: 'desktop', os_version: '10.15.7', visitors: 132 },
+    { device_type: 'ios', os_version: '18.7', visitors: 28 },
+    { device_type: 'ios', os_version: '26.6.1', visitors: 32 },
+    { device_type: 'ios', os_version: '26.5.2', visitors: 32 },
+  ];
+  const g = osBreakdown(devices, osRows);
+  check('gruplar çoktan aza', g.map((x) => x.deviceType).join(',') === 'android,desktop,ios',
+    g.map((x) => x.deviceType).join(','));
+  const android = g.find((x) => x.deviceType === 'android');
+  check('üst satır "Cihaz" RPC\'sinin sayısı (568)', android?.visitors === 568,
+    `gelen=${android?.visitors}`);
+  check('sürümler çoktan aza, eşitlikte yeniden eskiye',
+    android?.versions.map((v) => v.osVersion ?? '(yok)').join(',') === '16,(yok),13,9',
+    android?.versions.map((v) => v.osVersion ?? '(yok)').join(','));
+  const ios = g.find((x) => x.deviceType === 'ios');
+  check('üst satır alt toplamdan KÜÇÜK kalabilir (91 ↔ 92) — şişirilmiyor',
+    ios?.visitors === 91 &&
+      (ios?.versions.reduce((a, v) => a + v.visitors, 0) ?? 0) === 92);
+  check('eşit ziyaretçide YENİ sürüm önce (26.6.1 → 26.5.2)',
+    ios?.versions[0].osVersion === '26.6.1' && ios?.versions[1].osVersion === '26.5.2',
+    ios?.versions.map((v) => v.osVersion).join(','));
+  check('tablo toplamı "Cihaz" tablosununkiyle AYNI (791)',
+    g.reduce((a, x) => a + x.visitors, 0) === 791);
+
+  // Üst satırı olmayan bir cihaz tipi DÜŞÜRÜLMEZ — iki RPC aynı pencereyi
+  // okuduğu için beklenmez, ama olursa sayı kaybolmamalı.
+  const ekstra = osBreakdown(devices, [
+    ...osRows,
+    { device_type: 'bilinmiyor', os_version: null, visitors: 7 },
+  ]);
+  const b = ekstra.find((x) => x.deviceType === 'bilinmiyor');
+  check('üst satırsız cihaz tipi kendi grubunu açar', b?.visitors === 7 &&
+    b?.versions.length === 1, `gelen=${b?.visitors}`);
+  check('boş sürüm listesi de sorun değil (OS satırı hiç yoksa)',
+    osBreakdown(devices, []).every((x) => x.versions.length === 0));
 }
 
 console.log(failures === 0 ? '\nTÜMÜ GEÇTİ' : `\n${failures} BAŞARISIZ`);

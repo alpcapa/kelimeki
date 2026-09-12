@@ -187,3 +187,102 @@ export function osVersionLabel(
   const v = osVersion?.trim();
   return v ? `${platformLabel(deviceType)} ${v}` : `${platformLabel(deviceType)} · sürüm yok`;
 }
+
+/** Bir cihaz satırı ve altında açılacak işletim sistemi kırılımı. */
+export interface DeviceOsGroup {
+  deviceType: string;
+  /**
+   * ⚠ "Cihaz" tablosunun KENDİ sayısı (`admin_device_breakdown`), alt
+   * satırların toplamı DEĞİL — `osBreakdown`ın açıklamasına bak.
+   */
+  visitors: number;
+  /** O cihaz tipindeki sürüm satırları, çoktan aza sıralı. */
+  versions: Array<{ osVersion: string | null; visitors: number }>;
+}
+
+/**
+ * Sürüm dizelerini SAYISAL ve YENİDEN ESKİYE sıralar — `9`, `18.7`den
+ * SONRA gelmeli. Düz `trCompare` bunu ters yapardı ("1" < "9").
+ *
+ * Yalnızca eşit ziyaretçili satırlar arasında bir bozan (tiebreak):
+ * asıl sıra her zaman ziyaretçi sayısı. Sayıya çevrilemeyen bir dize
+ * gelirse (canlıda görülmedi ama `os_version` serbest metin) `trCompare`e
+ * düşer — sıralamayı bozmaktansa alfabetik davranmak yeğdir.
+ * Sürümsüz satır (null) HER ZAMAN en sonda.
+ */
+export function compareOsVersionDesc(a: string | null, b: string | null): number {
+  if (a === b) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  const pa = a.split('.');
+  const pb = b.split('.');
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = Number(pa[i] ?? '0');
+    const nb = Number(pb[i] ?? '0');
+    if (!Number.isFinite(na) || !Number.isFinite(nb)) return trCompare(a, b);
+    if (na !== nb) return nb - na;
+  }
+  return 0;
+}
+
+/**
+ * "Cihaz" tablosunun satırlarına işletim sistemi kırılımını İLİŞTİRİR.
+ *
+ * ⚠ **Neden ayrı bir "İşletim Sistemi" tablosu YOK (12 Eylül 2026,
+ * kullanıcı isteği):** *"Admin ekranında işletim sistemi kırılımlarını da
+ * cihaz altına alalım, ayrı tabloya gerek yok. Cihaz markasında yaptığımız
+ * gibi Android oka basınca altında detayı görelim."* Yani `brandBreakdown`
+ * ile aynı desen: üst satır kapalı durur, isteyen açar.
+ *
+ * ⚠ **Üst satırın sayısı alt satırların toplamı DEĞİL** — burası
+ * `brandBreakdown`dan ayrılıyor. Üst sayı "Cihaz" tablosunun kendi
+ * RPC'sinden (`admin_device_breakdown`) geliyor ve o tablonun toplamı
+ * DEĞİŞMEDEN kalsın diye bilerek öyle: aynı ziyaretçi pencere içinde
+ * işletim sistemini güncellerse İKİ sürüm satırında birden sayılır, yani
+ * alt toplam üst satırı AŞABİLİR. Canlıdan ölçüldü (12 Eylül 2026, son 90
+ * gün): android 568 ↔ 568, masaüstü 132 ↔ 132, **iOS 91 ↔ 92** — tek bir
+ * cihaz pencere içinde `26.5.2` → `26.6.1` geçmiş. Alt toplamı üst satır
+ * yapmak "Cihaz" tablosunun sayısını şişirirdi; tersi (alt satırları
+ * kırpmak) veriyi gizlerdi. Fark ekranda görünür kalıyor, `?` popup'ı da
+ * söylüyor.
+ */
+export function osBreakdown(
+  devices: ReadonlyArray<{ device_type: string; visitors: number }>,
+  osRows: ReadonlyArray<{ device_type: string; os_version: string | null; visitors: number }>,
+): DeviceOsGroup[] {
+  const gruplar = new Map<string, DeviceOsGroup>();
+  for (const d of devices) {
+    gruplar.set(d.device_type, { deviceType: d.device_type, visitors: d.visitors, versions: [] });
+  }
+  // İki RPC aynı tabloyu aynı pencereyle okuduğundan beklenmeyen durum;
+  // yine de satırı DÜŞÜRMEK yerine kendi grubunu açıyoruz (üst sayı o
+  // zaman alt toplam olur). Veriyi sessizce yutmak, tablonun toplamını
+  // açıklanamaz biçimde küçültürdü.
+  const ustSatiriOlmayan = new Set<string>();
+  for (const r of osRows) {
+    const g = gruplar.get(r.device_type) ?? {
+      deviceType: r.device_type,
+      visitors: 0,
+      versions: [],
+    };
+    if (!gruplar.has(r.device_type)) {
+      gruplar.set(r.device_type, g);
+      ustSatiriOlmayan.add(r.device_type);
+    }
+    g.versions.push({ osVersion: r.os_version, visitors: r.visitors });
+  }
+  for (const g of gruplar.values()) {
+    if (ustSatiriOlmayan.has(g.deviceType)) {
+      g.visitors = g.versions.reduce((a, v) => a + v.visitors, 0);
+    }
+    g.versions.sort(
+      (a, b) => b.visitors - a.visitors || compareOsVersionDesc(a.osVersion, b.osVersion),
+    );
+  }
+  return [...gruplar.values()].sort(
+    // ⚠ `trCompare` — locale'siz `localeCompare` ş/ğ/ı'yı yanlış sıralar.
+    (a, b) =>
+      b.visitors - a.visitors ||
+      trCompare(platformLabel(a.deviceType), platformLabel(b.deviceType)),
+  );
+}

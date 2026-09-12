@@ -67,9 +67,11 @@ import { trLower } from '../utils/turkish';
 import {
   brandBreakdown,
   deviceModelLabel,
+  osBreakdown,
   osVersionLabel,
   platformLabel,
   type BrandGroup,
+  type DeviceOsGroup,
 } from '../utils/deviceLabels';
 import { GENDER_OPTIONS, isoToTrDate } from '../utils/profileFields';
 import { useModalA11y } from '../hooks/useModalA11y';
@@ -472,7 +474,17 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <b>"App mi web mi" DEĞİL</b> — iOS/Android satırları o cihazlardaki TARAYICIYI da
         içeriyor, yalnız kurulu uygulamayı değil ("Sürüm Dağılımı" tablosu o soruyu yanıtlıyor).
         24 Ağustos 2026'dan ÖNCEki misafir-only ölçüm (eski "Cihaz" tablosu) veritabanında
-        duruyor ama artık çizilmiyor.
+        duruyor ama artık çizilmiyor.{' '}
+        <b>Satıra tıkla, işletim sistemi SÜRÜMLERİ açılır</b> — "kaç kişi hâlâ eski Android'de?"
+        sorusunun cevabı (12 Eylül 2026'ya kadar ayrı bir "İşletim Sistemi" tablosuydu).{' '}
+        <b>Sürüm dizesi platformdan bağımsız okunmaz:</b> canlıda <code>iOS 10.15.7</code>{' '}
+        satırları var ve bu bir iOS sürümü DEĞİL, macOS'un dondurulmuş sürüm dizesi — masaüstü
+        User-Agent'ı veren cihazlar (iPad'in "Masaüstü site" modu, Mac) iOS kovasına düşüyor;
+        tablo o sınıflandırma hatasını gizlemiyor, gösteriyor. <b>Açılan sürüm satırlarının
+        toplamı üstteki cihaz satırından BÜYÜK olabilir</b> — aynı ziyaretçi aralık içinde
+        işletim sistemini güncellerse iki sürümde de sayılır (canlıda 12 Eylül 2026'da tek
+        vaka: iOS <code>26.5.2</code> → <code>26.6.1</code>). Üstteki sayı ve tablonun TOPLAMI
+        her zaman benzersiz ziyaretçidir; yüzdeler açılan satırlarda da GENEL toplamın payı.
       </>
     ),
   },
@@ -493,18 +505,6 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         Android tarayıcıları. Sayılar <b>benzersiz ziyaretçi</b>; yüzdeler açılan
         satırlarda da GENEL toplamın payı, markanın değil. CSV marka ve modeli birlikte,
         düz olarak indirir.
-      </>
-    ),
-  },
-  'isletim-sistemi': {
-    title: 'İşletim Sistemi',
-    body: (
-      <>
-        Platform + sürüm kırılımı — "kaç kişi hâlâ eski Android'de?" sorusunun cevabı.{' '}
-        <b>Sürüm dizesi platformdan bağımsız okunmaz:</b> canlıda <code>iOS 10.15.7</code>{' '}
-        satırları var ve bu bir iOS sürümü DEĞİL, macOS'un dondurulmuş sürüm dizesi — masaüstü
-        User-Agent'ı veren cihazlar (iPad'in "Masaüstü site" modu, Mac) iOS kovasına düşüyor.
-        Yani bu tablo aynı zamanda o sınıflandırma hatasının görünür olduğu yer.
       </>
     ),
   },
@@ -834,6 +834,164 @@ function GuestBreakdownTable<T extends { visitors: number }>({
             <tr className="border-b border-border/50">
               <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
               <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{totalVisitors}</td>
+              <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">100.00%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Cihaz — satır AÇILINCA o cihaz tipinin işletim sistemi kırılımını gösterir.
+ *
+ * ⚠ **Neden ayrı bir "İşletim Sistemi" tablosu YOK (12 Eylül 2026, kullanıcı
+ * isteği):** *"Admin ekranında işletim sistemi kırılımlarını da cihaz altına
+ * alalım, ayrı tabloya gerek yok. Cihaz markasında yaptığımız gibi Android
+ * oka basınca altında detayı görelim."* `DeviceBrandTable` ile BİREBİR aynı
+ * desen ve aynı görsel dil — ikisi yan yana duruyor, ayrışırlarsa okuyan
+ * "bunlar neden farklı davranıyor" diye sorar.
+ *
+ * ⚠ **Üst satırın sayısı alt satırların toplamı DEĞİL** (tek fark burası):
+ * "Cihaz" tablosunun kendi RPC'si benzersiz ziyaretçi sayıyor, aynı cihaz
+ * pencere içinde OS güncellerse iki sürüm satırında birden görünür. Gerekçe
+ * ve canlı ölçüm: `osBreakdown` (`src/utils/deviceLabels.ts`).
+ *
+ * ⚠ `useState` erken `return`ün ÜSTÜNDE — altına inerse boş/yüklenen
+ * durumda hook atlanır ve React #300 patlar (`npm run verify-hook-order`).
+ */
+function DeviceOsTable({
+  rows,
+  infoHint,
+}: {
+  rows: DeviceOsGroup[] | null;
+  infoHint?: ReactNode;
+}) {
+  const [acik, setAcik] = useState<ReadonlySet<string>>(() => new Set());
+
+  // Boş/yüklenirken de `?` çizilir — GuestBreakdownTable ile aynı gerekçe.
+  if (rows === null || rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta ziyaret yok.'}
+        </div>
+      </div>
+    );
+  }
+
+  // ⚠ Yerel `const`a alınıyor: `handleExportCsv` bir fonksiyon bildirimi ve
+  // TS, erken `return`ün daraltmasını kapanışın içine taşımıyor.
+  const gruplar = rows;
+  const toplam = gruplar.reduce((sum, r) => sum + r.visitors, 0);
+  const yuzde = (n: number) => (toplam > 0 ? ((n / toplam) * 100).toFixed(2) : '0.00');
+
+  function toggle(deviceType: string) {
+    setAcik((onceki) => {
+      const y = new Set(onceki);
+      if (y.has(deviceType)) y.delete(deviceType);
+      else y.add(deviceType);
+      return y;
+    });
+  }
+
+  // CSV cihazı VE sürümü birlikte, DÜZ olarak verir — tabloyu katlamak
+  // veriyi gizlemek değil, ekranı kısaltmak içindi.
+  function handleExportCsv() {
+    downloadCsv(
+      csvFilename('kelimeki-cihaz-os'),
+      ['Cihaz', 'İşletim Sistemi', 'Ziyaretçi', '%'],
+      [
+        ...gruplar.flatMap((g) => [
+          [platformLabel(g.deviceType), '(cihaz toplamı)', g.visitors, yuzde(g.visitors)],
+          ...g.versions.map((v) => [
+            platformLabel(g.deviceType),
+            osVersionLabel(g.deviceType, v.osVersion),
+            v.visitors,
+            yuzde(v.visitors),
+          ]),
+        ]),
+        ['TOPLAM', '', toplam, '100.00'],
+      ],
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-end gap-2">
+        {infoHint}
+        <button type="button" onClick={handleExportCsv} className={csvLinkCls}>
+          CSV İndir
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-auto text-[11px] font-mono border-collapse">
+          <thead>
+            <tr className="text-left text-muted border-b border-border">
+              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Cihaz</th>
+              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Ziyaretçi</th>
+              <th className="py-1.5 font-bold uppercase tracking-[1px] text-center">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {gruplar.map((g) => {
+              const open = acik.has(g.deviceType);
+              const etiket = platformLabel(g.deviceType);
+              return (
+                <Fragment key={g.deviceType}>
+                  <tr className="border-b border-border/50">
+                    <td className="py-1.5 pr-8 text-text whitespace-nowrap">
+                      {/* Sürüm satırı YOKSA ok da yok — açılmayan bir oka
+                          basmak "bozuk" hissi verir. Beklenmeyen bir durum
+                          (iki RPC aynı pencereyi okuyor), ama boş liste
+                          yükleniyor sayılmadığından mümkün. */}
+                      {g.versions.length === 0 ? (
+                        <span className="inline-block pl-[14px]">{etiket}</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => toggle(g.deviceType)}
+                          aria-expanded={open}
+                          aria-label={`${etiket} — işletim sistemi kırılımını ${open ? 'kapat' : 'aç'}`}
+                          className="tap-expand relative inline-flex items-center gap-1.5 active:opacity-70 transition-opacity"
+                        >
+                          {/* Ok DÖNÜYOR, iki ayrı ikon değil — marka tablosuyla
+                              aynı öğe, aynı hareket. */}
+                          <svg
+                            viewBox="0 0 10 6"
+                            className={`w-[8px] h-[5px] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+                            aria-hidden="true"
+                          >
+                            <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          {etiket}
+                        </button>
+                      )}
+                    </td>
+                    <td className="py-1.5 pr-8 text-muted whitespace-nowrap text-center">{g.visitors}</td>
+                    <td className="py-1.5 text-muted whitespace-nowrap text-center">{yuzde(g.visitors)}%</td>
+                  </tr>
+                  {open &&
+                    g.versions.map((v) => (
+                      <tr
+                        key={`${g.deviceType}|${v.osVersion ?? ''}`}
+                        className="border-b border-border/50 bg-panel/40"
+                      >
+                        <td className="py-1 pr-8 pl-5 text-muted whitespace-nowrap">
+                          {osVersionLabel(g.deviceType, v.osVersion)}
+                        </td>
+                        <td className="py-1 pr-8 text-muted whitespace-nowrap text-center">{v.visitors}</td>
+                        <td className="py-1 text-muted whitespace-nowrap text-center">{yuzde(v.visitors)}%</td>
+                      </tr>
+                    ))}
+                </Fragment>
+              );
+            })}
+            <tr className="border-b border-border/50">
+              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
+              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{toplam}</td>
               <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">100.00%</td>
             </tr>
           </tbody>
@@ -2818,13 +2976,10 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <span className={sectionTitleCls}>
                       Cihaz (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
                     </span>
-                    <GuestBreakdownTable
-                      columnLabel="Cihaz"
-                      emptyLabel="Bu aralıkta ziyaret yok."
-                      rows={deviceBreakdown}
-                      getKey={(row) => row.device_type}
-                      getLabel={(row) => platformLabel(row.device_type)}
-                      csvBaseName="kelimeki-cihaz"
+                    <DeviceOsTable
+                      rows={
+                        deviceBreakdown && osVersions && osBreakdown(deviceBreakdown, osVersions)
+                      }
                       infoHint={<InfoHint id="cihaz" onOpen={setHint} />}
                     />
                   </div>
@@ -2835,20 +2990,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <DeviceBrandTable
                       rows={deviceModels && brandBreakdown(deviceModels)}
                       infoHint={<InfoHint id="cihaz-markasi" onOpen={setHint} />}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <span className={sectionTitleCls}>
-                      İşletim Sistemi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                    </span>
-                    <GuestBreakdownTable
-                      columnLabel="Sürüm"
-                      emptyLabel="Bu aralıkta ziyaret yok."
-                      rows={osVersions}
-                      getKey={(row) => `${row.device_type}|${row.os_version ?? ''}`}
-                      getLabel={(row) => osVersionLabel(row.device_type, row.os_version)}
-                      csvBaseName="kelimeki-isletim-sistemi"
-                      infoHint={<InfoHint id="isletim-sistemi" onOpen={setHint} />}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
