@@ -1016,12 +1016,30 @@ basılacak yerde duruyor.
   |---|---|
   | Kapalı test güncellemeleri (17 gönderim) | 10-34 dk |
   | **#18** — Production, **paketsiz** (yalnızca ülkeler) | **≤22 dk** |
-  | **#19** — Production, **ilk kez paket taşıyor** | ölçüm YOK |
+  | **#19** — Production, **ilk kez paket taşıyor** | süre YOK, ama **alt sınır var**: ≫ 34 dk |
 
-  ⚠ **Kapalı test süresini buraya uyarlama.** İlk production sürümü
-  tipik olarak daha ayrıntılı inceleniyor ve Google'ın kendi yönlendirmesi
-  "7 güne kadar sürebilir" diyor. Kullanıcıya süre VAAT ETME; #19'un
-  onay saati öğrenilince bu satır kapanır.
+  ⚠ **Kapalı test süresini buraya uyarlama** — ve artık bunun bir KANITI
+  var. Kullanıcı 13 Eylül gecesi yatarken #19 **hâlâ `In review`**'daydı
+  (bildirim: *"Hala in review"*), yani süre hem kapalı testin 10-34 dk
+  bandını hem #18'in ≤22 dk'sını **çoktan aştı**. Paketli production
+  incelemesi bu depoda ölçülen her şeyden farklı bir tür; Google'ın kendi
+  yönlendirmesi de "7 güne kadar sürebilir" diyor. Kullanıcıya süre
+  VAAT ETME.
+
+  ⚠ **Sabah bu satırı nasıl kapatacaksın — tahminle DEĞİL.** Kullanıcı
+  *"saatini tam bilemeyeceğiz"* dedi, ama Console'da bilinebilir:
+  **Publishing overview → `Submission activity`** her gönderimin kendi
+  zaman damgasını taşıyor (#18'in `00:42`si oradan okundu). Sıra:
+
+  1. `Submission activity` → #19 satırını aç; `Submitted` **00:49**,
+     `Status` yayınlandıysa kapanış zamanını oradan OKU → gerçek süre.
+  2. Satır zamanı vermiyorsa `Test and release → Production` →
+     *Track summary*: `Inactive`/`Draft` değil de yayında mı — bu
+     yalnızca DURUM verir, süre vermez.
+  3. İkisi de saati vermezse **uydurma**: "13 Eyl 00:49 → sabah ilk
+     görüldüğü saat, yani ≤ N saat" diye ALT/ÜST SINIR yaz ve satırı
+     *"kullanıcı bildirimi, Console'dan okunmadı"* diye işaretle —
+     659 turunun disiplini (`mobile/docs/surumler.md`).
 
 ---
 
