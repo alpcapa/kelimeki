@@ -25,6 +25,46 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 203 — Canlı oyunun mesaj satırı yazı ölçeğinde KESİLİYORDU;
+     ikizi 10 gün önce düzeltilmişti (12 Eylül 2026):** Kullanıcı iPhone'da
+     ekran görüntüsüyle bildirdi — büyük puntoda mesajın 2. satırı
+     (*"Kelimeler: ÇATAK"*) yarım görünüyor.
+     **Kök sebep:** `online_game_screen.dart` mesaj satırını
+     `SizedBox(height: 30)` + `maxLines: 2` + `ellipsis` ile SABİT kutuya
+     koyuyordu. Ölçek 1,3'te iki satır 40 px istiyor, kutu 30 px'te
+     kalıyor → kırpma. Web ikizi (`OnlineGameScreen.tsx` ve `App.tsx`)
+     ikisi de `min-h-[30px]`, yani ASGARİ — orada sorun YOK ve hiç olmadı.
+     ⚠ **Bu hata 2 Eylül 2026'da BİR KEZ düzeltilmişti** — aynı kutu, aynı
+     30 px, aynı kullanıcı şikâyeti, ama YEREL oyun ekranında
+     (`game_screen.dart` → `ConstrainedBox(minHeight: 30)`, kapı
+     `message_line_test.dart`). O turda Canlı ikizi güncellenmedi. Kök
+     `CLAUDE.md` bu çifti açıkça sayıyor (*"`App.tsx`'teki joker/mesaj/raf
+     desenleri → `OnlineGameScreen.tsx` (ikisi deseni paylaşıyor)"*) ve
+     kural bir kez daha atlandı; ders **"ikizi ara"nın düzeltmenin PARÇASI
+     olduğu**, sonradan hatırlanacak bir nezaket olmadığı.
+     ⚠ **Android'de de vardı** — dosya tek, `MediaQuery.textScaler` iki
+     platformda da sistem ayarından geliyor (Android: Ayarlar → Ekran →
+     Yazı tipi boyutu). Yalnız iOS'ta bildirilmiş olması onu iOS hatası
+     yapmıyor.
+     **Düzeltme:** `ConstrainedBox(minHeight: 30)`; `maxLines`/`ellipsis`
+     kaldırıldı (web'de sınır yok, uzun mesaj satır sayısı kadar yer
+     kaplar). Gövde zaten `SingleChildScrollView` içinde, yani büyüyen
+     kutu rafı ekran dışına itmiyor.
+     **Kapı:** `online_game_screen_test.dart` → *"mesaj satırı ölçekte
+     kesilmez"*, ölçek 1,0 ve `kMaxTextScale`. ⚠ İki ölçüm tuzağı yaşandı:
+     (1) `getRect(find.text(...))` KESİLMEYİ GÖRMEZ — sabit kutuda metnin
+     rect'i de 30'a sıkışıyor (ölçüldü: kutu 30, metin 30, gerçek ihtiyaç
+     40), bu yüzden ihtiyaç `TextPainter` ile ayrıca hesaplanıyor;
+     (2) `TextPainter`ın stili ELLE yazılınca tema `DefaultTextStyle`inin
+     satır yüksekliği kaçıyor ve ölçüm 42 ↔ 40 diye tutarsızlaşıyor —
+     stil artık widget'ın kendisinden okunup `merge` ediliyor.
+     Duyarlılık kanıtlandı: düzeltme geri alınınca fark +10 px ile DÜŞÜYOR.
+     **Doğrulama:** `flutter analyze` temiz (tek info `main`'de de olan
+     `fake_async` satırı), **845 test yeşil** (844 → 845).
+     **Doğrulama sınırı:** cihazda büyük puntoyla GÖRÜLMEDİ — kontrol
+     maddesi `mobile/docs/testing-ux-turlari.md` §25'te iki ekranı da
+     kapsayacak şekilde güncellendi.
+
    - ✅ **Parça 202 — Sonsuz "Yükleniyor…": `catch` yetmez, TAVAN gerekiyor
      (11 Eylül 2026):** Kullanıcı iPhone'da bildirdi — *"bekleyen oyuna
      tıklayınca bu ekran uzun süre asılı kalıyor. Sanıyorum internet yavaş

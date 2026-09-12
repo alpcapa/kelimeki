@@ -1932,17 +1932,34 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                             ? _TurnBanner(
                                                 isAiTurn: _isAiTurn,
                                                 name: _currentName)
-                                            : SizedBox(
+                                            // ⚠ SABİT YÜKSEKLİK DEĞİL, ASGARİ
+                                            // — web ikizi (`OnlineGameScreen
+                                            // .tsx`) `min-h-[30px]` diyor.
+                                            // Sistem yazı ölçeğinde iki
+                                            // satır 30 px kutuda KESİLİYORDU
+                                            // (12 Eylül 2026, kullanıcı
+                                            // iPhone'da: mesajın 2. satırı
+                                            // yarım görünüyor). `maxLines`/
+                                            // `ellipsis` de kaldırıldı:
+                                            // web'de sınır yok, uzun mesaj
+                                            // satır sayısı kadar yer kaplar.
+                                            // ⚠ YEREL oyun ekranı bunu
+                                            // 2 Eylül 2026'da AYNI hatayla
+                                            // öğrenmişti (`game_screen.dart`,
+                                            // `message_line_test.dart`);
+                                            // Canlı ikizi o turda atlandı —
+                                            // iki ekranın paylaştığı desen
+                                            // kuralı (kök `CLAUDE.md`).
+                                            : ConstrainedBox(
                                                 key: const ValueKey(
                                                     'message-line'),
-                                                height: 30,
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minHeight: 30),
                                                 child: Center(
                                                   child: Text(
                                                     liveMessage,
-                                                    maxLines: 2,
                                                     textAlign: TextAlign.center,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
                                                     style: TextStyle(
                                                       fontSize: 11,
                                                       fontFamily: 'SpaceMono',

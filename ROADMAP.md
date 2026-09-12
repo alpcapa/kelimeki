@@ -214,11 +214,13 @@ Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **DURUM (12 Eylül 2026): LİSTE BOŞ — `main`'de olup mağaza paketinde
-olmayan mobil iş YOK.** 1.1.0 (**659**) = `7bccbf7`, 12 Eylül 12:24'te Play'in
-kapalı testine (Alpha) gönderildi ve **`In review`**; aynı kod App Store
-Connect'te de 1.1.0'ın sürüm kaydına iliştirili. Doğrulama (koşuldu, BOŞ
-döndü):
+⚠ **DURUM (12 Eylül 2026): liste AYNI GÜN yeniden doldu — BİR satır.**
+1.1.0 (**659**) = `7bccbf7`, 12 Eylül 12:24'te Play'in kapalı testine
+(Alpha) gönderildi ve **`In review`**; aynı kod App Store Connect'te de
+1.1.0'ın sürüm kaydına iliştirili. Gönderimden SONRA porta dokunan iş:
+Canlı oyunun mesaj satırı (aşağıda). ⚠ Bu, 8 Eylül'ün tıpatıp tekrarı —
+liste sıfırlandığı gün yeniden doluyor; "boş" bir DURUM değil, bir AN.
+Doğrulama komutu (paketin sha'sıyla):
 `git log --oneline 7bccbf7..origin/main -- mobile/app mobile/kelimeki_core`
 
 ⚠ **"In review" ≠ sahada.** İnceleme reddederse bu liste yeniden anlam
@@ -244,9 +246,15 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 2026'da gönderildi. Bir öncekisi: 1.1.0 (627) = `a4c809b` (#514), 11 Eylül'de
 yayınlandı.
 
-**1.0.9'dan (581, `1abde38`) beri porta dokunan işler — YUKARIDAKİ İKİ
-PAKETİN içeriği.** Yeni bir satır eklemeden önce komutu KOŞ (aşağıdaki
-uyarı):
+**İNCELEMEDEKİ PAKETTEN (659, `7bccbf7`) SONRA porta dokunan işler —
+sıradaki sürümün içeriği:**
+
+| Commit / PR | Ne | Neden porta dokunuyor |
+|---|---|---|
+| (12 Eyl) | Canlı oyunda rafın üstündeki **mesaj satırı yazı ölçeğinde kesiliyordu** | ⚠ **SÜRÜME BİNİYOR:** `ui/live/online_game_screen.dart` — `SizedBox(height: 30)` + `maxLines: 2` → `ConstrainedBox(minHeight: 30)`, `maxLines`/`ellipsis` kaldırıldı. Kullanıcı iPhone'da ekran görüntüsüyle bildirdi (2. satır yarım). ⚠ **Android'de de vardı** — dosya tek, `textScaler` iki platformda da sistemden geliyor. ⚠ **Aynı hata 2 Eylül 2026'da YEREL ekranda düzeltilmişti** (`game_screen.dart` + `message_line_test.dart`); Canlı ikizi o turda atlandı — kök `CLAUDE.md`'nin "ikisi deseni paylaşıyor" çiftinin bir kez daha kaçırılması. Web ikizi ZATEN doğruydu (`min-h-[30px]`, iki ekranda da), yani web'de değişiklik YOK. Kapı: `online_game_screen_test.dart` → "mesaj satırı ölçekte kesilmez" (ölçek 1,0 + `kMaxTextScale`), duyarlılığı kanıtlandı (+10 px ile düşüyor); **845 test yeşil**. Kayıt: Parça 203, cihaz maddesi `mobile/docs/testing-ux-turlari.md` §25 |
+
+**1.0.9'dan (581, `1abde38`) beri porta dokunan işler — 1.1.0'IN İKİ
+PAKETİNİN içeriği** (627 ve 659; yayınlanınca arşive taşınacak):
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
