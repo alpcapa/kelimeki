@@ -91,7 +91,7 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
-| **1.1.0** | **665** (iOS + Play, SENKRON SÜRÜYOR) | `9c62289` | 12 Eyl 2026 (PR #533 merge'i) | ⏳ ASC: 665'e çekiliyor · Play: 13 Eyl'de yüklenecek | ⏳ **senkron sürüyor** | PR #533'ün merge'inin YAN ÜRÜNÜ (koşu #665). 659'dan farkı üç iş: mesaj satırı kırpması · ipucu tavanı 2→1 · oyun sonu kutlaması. Aşağı bkz. |
+| **1.1.0** | **665** (iOS ✅ + Play ⏳) | `9c62289` | 12 Eyl 2026 (PR #533 merge'i) | ✅ ASC: **665 iliştirildi** (12 Eyl) · ⏳ Play: 13 Eyl'de yüklenecek | ⏳ **senkron penceresi AÇIK** (ASC 665 ↔ Play 659) | PR #533'ün merge'inin YAN ÜRÜNÜ (koşu #665). 659'dan farkı üç iş: mesaj satırı kırpması · ipucu tavanı 2→1 · oyun sonu kutlaması. Aşağı bkz. |
 | **1.1.0** | **659** (iOS + **Play**) | `7bccbf7` | 11 Eyl 2026 (`c7ac2e9`, #528) | **Play: 12 Eyl 2026, ≤ 12:24** (kapalı test/Alpha) · App Store: **— GÖNDERİLMEDİ** (11 Eyl 23:02'de ASC History'den ölçüldü: gönderim satırı YOK) | ✅ Play: **YAYINDA** (Alpha, ~13:42) · App Store: **Prepare for Submission** — metadata giriliyor | İki Canlı oyun düzeltmesi (sahte "Sıra sende değil." + sonsuz "Yükleniyor…") + mağaza kareleri. ⚠ **Bu satır 11 Eyl akşamı DÜZELTİLDİ:** önce *"654 · 16:08 · App Store incelemesine GÖNDERİLDİ · ⏳ incelemede"* diyordu. Gerçek: `Add for Review` basıldı ama ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadı; Description/Keywords o saatte BOŞTU, yani gönderim zaten geçemezdi. İliştirilen build 629 → 654 → 656 → **659** (11 Eyl gecesi; kullanıcı: *"ASC'yi de 659 yaptım, sürümler aynı olsun istiyorum"*). **Dört numara, TEK kod:** `mobile/app/lib` altında 654'ten 659'a tek satır değişmedi (`git diff c22b757 7bccbf7 -- mobile/app/lib` boş) — aradaki her fark doküman/CSV/workflow. ⚠ 659'un doğuş sebebi: `mobile-build.yml`in `paths` düzeltmesi (#529) kendi merge'inde son kez tam derleme tetikledi ve `mobile-latest`teki `.aab`yi (656) ezdi; `mobile-latest` her mobil derlemede ezilir, yani 656'nın paketi artık indirilemiyor ve Play'e zorunlu olarak 659 gidiyor. ASC de 659'a çekilince **iki mağaza yine tek numarada**. ✅ **Play'de 12 Eyl 2026'da YAYINLANDI** (kapalı test/Alpha) — iki mağaza artık yalnızca tek NUMARADA değil, tek PAKETTE. Aşağı bkz. |
 | **1.1.0** | **627** (Play) | `a4c809b` | 10 Eyl 2026 (`a4c809b`, #514) | **11 Eyl 2026, 08:01** (Console) | yayınlandı → **pasif** (12 Eyl, 1.1.0/659 devraldı); Alpha'da ≤ 08:33'te "Published" olmuştu | İlk TestFlight turunun bulguları + onboarding Faz 2·3·5 + "Davetler" adlandırması. Aşağı bkz. |
 | **1.0.9** | **581** | `1abde38` | 7 Eyl 2026 akşamı (`main`) | **8 Eyl 2026, 08:41** (Console) | yayınlandı → **pasif** (11 Eyl, 1.1.0 devraldı) | "Oynayarak öğren" tanıtımının PORT ikizi (Onboarding Faz 4) + tanıtımın cihaz/tarayıcı turu düzeltmeleri. Aşağı bkz. |
@@ -181,9 +181,12 @@ mobile/kelimeki_core/lib` → tek commit (squash).
 
 **Senkron planı (kullanıcı kararı, yukarıdaki "SÜRÜM SENKRONU"):**
 
-- [ ] **ASC** → 1.1.0 sürüm kaydındaki build 659 → **665** (12 Eyl akşamı,
-      kullanıcı). ⚠ TestFlight'ta görünmesi Apple'ın işlemesine bağlı
-      (10-40 dk; yükleme 13:06Z) — listede yoksa arıza değil, bekleme.
+- [x] **ASC** → 1.1.0 sürüm kaydındaki build 659 → **665** ✅ **YAPILDI**
+      (12 Eyl, kullanıcı bildirdi). Sürüm durumu DEĞİŞMEDİ: hâlâ
+      `Prepare for Submission` — kalan kapı metadata (§9 metinleri,
+      App Privacy, Pricing).
+      ⚠ **Bu andan itibaren senkron PENCERESİ AÇIK:** ASC 665, Play 659.
+      Pencere Play yüklemesiyle kapanır; açıkken mobil merge EDİLMEZ.
 - [ ] **Play** → `mobile-latest`teki `.aab` (665) kapalı teste yüklenecek
       (13 Eyl). ⚠ Yükleme ekranında `versionCode`un **665** olduğunu
       DOĞRULA; arada mobil bir merge olursa etiket ezilir ve dosya değişir.
