@@ -681,9 +681,11 @@ ve hesap ayarlarında *"Pazarlama iletişimi almayı kabul ediyorum"* onayı var
 e-posta yalnız onay verende pazarlama amacıyla da kullanılıyor. Onay kutusu
 kaldırılırsa bu amaç da kaldırılır.
 
-⚠ **9. satır serbest metin ister** (Apple türün adını yazdırır). Girilecek:
-`Optional profile fields: gender and date of birth`. Kaynak
-`profiles.gender` + `profiles.birth_date` (isteğe bağlı); kullanımı yalnızca
+⚠ **9. satır serbest metin İSTEMİYOR** (12 Eylül 2026, Console'dan ölçüldü —
+bu dosya önce tersini yazıyordu): `Other Data Types` seçilince doğrudan amaç
+ekranına gidiyor, türün adını yazdıran bir alan YOK. Yani beyanda bu türün
+NE olduğu hiçbir yere yazılmıyor; kaydı yalnızca burada duruyor →
+`profiles.gender` + `profiles.birth_date` (isteğe bağlı), kullanımı yalnızca
 admin panelindeki yaş/cinsiyet dökümü (`get_profile_age_gender`).
 
 ⚠ **Sonunda `Publish` — `Save` YAYIMLAMAZ.** Sayfanın üstündeki durum
