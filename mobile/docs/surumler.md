@@ -217,9 +217,14 @@ mobile/kelimeki_core/lib` → tek commit (squash).
       `marketing/app-store/console-formlari.md` §7.
       ⚠ **Bu andan itibaren senkron PENCERESİ AÇIK:** ASC 665, Play 659.
       Pencere Play yüklemesiyle kapanır; açıkken mobil merge EDİLMEZ.
-- [ ] **Play** → `mobile-latest`teki `.aab` (665) kapalı teste yüklenecek
-      (13 Eyl). ⚠ Yükleme ekranında `versionCode`un **665** olduğunu
-      DOĞRULA; arada mobil bir merge olursa etiket ezilir ve dosya değişir.
+- [ ] **Play** → `mobile-latest`teki `.aab` (665) yüklenecek (13 Eyl).
+      ⚠ Yükleme ekranında `versionCode`un **665** olduğunu DOĞRULA; arada
+      mobil bir merge olursa etiket ezilir ve dosya değişir.
+      ⚠ **KANAL ARTIK BİR KARAR** (13 Eyl 2026, 00:14): production
+      ERİŞİMİ onaylandı (`marketing/play-store/console-formlari.md` §7),
+      yani `.aab` kapalı teste DE production'a DA yüklenebilir. Plan
+      yazıldığında yalnızca kapalı test mümkündü; bu satır o yüzden
+      "kapalı teste" diyordu. Seçim kullanıcının.
 - [ ] İkisi de bitince bu bölüm YAYINDA'ya çekilir, 659 pasife.
 
 ⚠ **Bu paket Play'de 1.1.0'ın ÜÇÜNCÜ `versionCode`u olacak** (627 → 659 →

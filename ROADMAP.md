@@ -76,17 +76,24 @@ sunucu tarafında olduğu için sürüm beklemiyor.
 
 ### Kalan işlerin tamamı — tek bakışta (2 Eylül 2026'da güncellendi)
 
-✅ **O BLOKER DÜŞTÜ (10 Eylül 2026, 15:26).** Aylardır sırayı belirleyen
-şey koda değil takvime bağlıydı: kişisel hesaplarda **12 tester × 14 gün
-kesintisiz**. Sayaç doldu, kartın üç şartı da çizildi ve **production
-başvurusu gönderildi**; Console *"7 gün ya da daha az"* diyor ve sonucu
-`destek@kelimeki.com`'a yazacak. Cevaplar, ölçümler ve soruların tam metni:
-`marketing/play-store/console-formlari.md` §7 — **ret gelirse oradan devam
-edilir, sıfırdan yazılmaz.**
+✅ **O BLOKER DÜŞTÜ — ve 13 Eylül 2026, 00:14'te ONAYLANDI.** Aylardır
+sırayı belirleyen şey koda değil takvime bağlıydı: kişisel hesaplarda
+**12 tester × 14 gün kesintisiz**. Sayaç doldu, kartın üç şartı da çizildi,
+başvuru 10 Eylül 15:26'da gönderildi ve Google **kabul etti**
+(*"Congratulations! Your app has been granted Google Play production
+access"*, `com.kelimeki.kelimeki`) — Console *"7 gün ya da daha az"*
+demişti, **~2,5 günde** geldi. Cevaplar, ölçümler ve soruların tam metni:
+`marketing/play-store/console-formlari.md` §7.
+
+⚠ **ERİŞİM ≠ SÜRÜM.** Onaylanan şey production KANALINI kullanma hakkı;
+mağaza vitrini (`play.google.com/store/apps/details?id=com.kelimeki.kelimeki`)
+o kanala bir sürüm yayınlanıp KENDİ incelemesinden geçene kadar **404**
+vermeye devam eder. Yani §26'nın (mağaza rozetleri) Android yarısı bu
+e-postayla AÇILMADI.
 
 | Kova | Ne | Durum |
 |---|---|---|
-| **Sayaç** | 12 tester × 14 gün | ✅ **DOLDU — başvuru gönderildi 10 Eyl 2026, 15:26; inceleme ≤7 gün, sonuç e-postayla** · ⚠ karttaki **12**'nin gerçek adet mi şartın tavanı mı olduğu ÖLÇÜLMEDİ (2 Eylül, kullanıcı itirazı — aşağıda) · *Android developer verification* ✅ **BİTTİ** (Console'dan doğrulandı 31 Ağustos: `com.kelimeki.kelimeki` Registered, 3 anahtar, Identity dolu) |
+| **Sayaç** | 12 tester × 14 gün | ✅ **KAPANDI — production ERİŞİMİ ONAYLANDI 13 Eyl 2026, 00:14** (başvuru 10 Eyl 15:26, ~2,5 gün). ⚠ Erişim ≠ sürüm: vitrin, production kanalına sürüm yayınlanana kadar 404 · ⚠ karttaki **12**'nin gerçek adet mi şartın tavanı mı olduğu ÖLÇÜLMEDİ (2 Eylül, kullanıcı itirazı — aşağıda) · *Android developer verification* ✅ **BİTTİ** (Console'dan doğrulandı 31 Ağustos: `com.kelimeki.kelimeki` Registered, 3 anahtar, Identity dolu) |
 | **Console (elle)** | — | ✅ **KAPANDI** (bu satır 31 Ağustos'a kadar bayat kaldı; ayrıntı aşağıda) |
 | **1.0.4'e binecek kod** | Faz 6 istemci yarısı (rozet sıfırlama + sürüm damgası) · Faz 7 (iki çökme) · **+ #10 hata hız sınırı** (1 Eylül'de eklendi) | ✅ **1.0.4 (467) Play'e YÜKLENDİ, incelemede** (1 Eylül 2026) |
 | **1.0.5'e binen kod** | Tahta zoom'u (+2 APK turu) · zoom tanıtım balonu · yazı ölçeği (sınıf 3+2) · mesaj kutusu etiketi · **cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar)** | ✅ **TUR KAPANDI** — `1.0.5 (501) — 4a0a29b` kapalı testte yayında (~15:03) ve üç işin cihaz doğrulaması da alındı (2 Eylül, kullanıcı). Ayrıntı: arşiv → "1.0.5 SÜRÜM TURU" |
@@ -661,6 +668,12 @@ kalan tek şey güvenlik geçişinin yukarıda duran maddeleri (18-21).
 ---
 
 ## 0. FAZ B — Google Play yayını — **SIRA OMURGASI**
+
+**Durum eki (13 Eylül 2026, 00:14):** Bu fazın takvimini belirleyen kısıt
+— aşağıdaki "12 tester × 14 gün" — **tamamen kapandı**: production erişimi
+onaylandı (`console-formlari.md` §7). Fazın kalanı artık takvim değil karar
+işi: 665 paketi hangi kanala yüklenecek (kapalı test ↔ production) ve
+production sürümünün kendi incelemesi.
 
 **Durum (22 Ağustos 2026):** Play Console hesabı açıldı ve kayıt işlemleri
 bitti (*Personal account*, Account ID `5939732949280610022`), henüz **sıfır**
@@ -1606,6 +1619,11 @@ vitrin adresi 404 veriyor (`marketing/play-store/console-formlari.md` §7'nin
 ölçümü); App Store ise henüz gönderilmedi (24.6 açık). Rozetleri şimdi
 koymak kullanıcıyı 404'e göndermek olurdu.
 
+⚠ **13 Eylül 2026, 00:14 — Play production ERİŞİMİ onaylandı, ama bu
+maddeyi AÇMADI.** Onay, production kanalını kullanma hakkı; vitrin adresi
+o kanala bir sürüm yayınlanıp incelemesi bitene kadar 404 kalmaya devam
+ediyor. Android yarısının tetikleyicisi bu yüzden aşağıda düzeltildi.
+
 ⚠ **İKİ TUR OLACAK, tek seferde bitmez** — **ama sıra tersine dönebilir**
 (12 Eylül 2026): App Store'a 1.1.0 (665) o gün gönderildi (inceleme ≤48
 saat) ve kullanıcı kararı *"Apple önce gelirse direkt yayına alırız"*;
@@ -1616,8 +1634,14 @@ yapılır.
 
 ### Tetikleyici
 
-Play production onayı (e-posta `destek@kelimeki.com`'a düşecek) → Android
-yarısı. App Store yayını → Apple yarısı.
+**Yayınlanmış** bir Play production sürümü (vitrin adresi 404 vermeyi
+bıraktığında — `curl` ile ÖLÇ, varsayma) → Android yarısı. App Store
+yayını → Apple yarısı.
+
+⚠ Bu satır 13 Eylül 2026'da düzeltildi; önce *"Play production onayı
+(e-posta `destek@kelimeki.com`'a düşecek) → Android yarısı"* diyordu.
+E-posta 13 Eyl 00:14'te geldi ve tetikleyici sanılıp madde açılabilirdi —
+ama onay ERİŞİM verir, vitrin açmaz. Doğru kapı yayınlanmış sürümdür.
 
 ### Yapılacaklar
 

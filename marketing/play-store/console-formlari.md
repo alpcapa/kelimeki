@@ -650,7 +650,7 @@ Sayaç "yükledim" ile değil, **12 kişi opt-in olduğunda** işlemeye başlıy
 | Link her zaman orada DEĞİL | 25 Ağustos'ta yoktu, 26 Ağustos'ta (liste 11 kişiyken, 372 incelemedeyken) vardı — §6.5'teki tablo. Kapısının ne olduğu ölçülmedi; görmüyorsan kanalda işlenmiş bir sürüm olduğundan emin ol |
 | **İki ayrı link var** | *Join on Android* (Play uygulaması üzerinden) ve *Join on the web*. Kişiye telefonundaki Play hesabıyla açacağı için Android linkini vermek daha az aksaklık çıkarır |
 | ⚠ **Linki DOĞRU KANALDAN kopyala** | *Internal testing* ve *Closed testing → Alpha* sayfalarının İKİSİNDE de aynı başlıklı "How testers join your test" bölümü var. Internal'dan kopyalanan link Play'de **"App not available — your account hasn't yet been invited to participate in this app's _internal testing_ program"** veriyor. **İpucu mesajın içinde: "internal" yazıyorsa yanlış sayfadasın.** 26 Ağustos 2026'da ölçüldü, doğru sayfadan kopyalanınca çalıştı |
-| ⚠ **Mağaza adresini ELLE yazma** | `play.google.com/store/apps/details?id=com.kelimeki.kelimeki` herkese açık vitrin adresi; production sürümü olmadığı sürece (Dashboard: *Production: Inactive*) **404** veriyor — "istenen URL bu sunucuda bulunamadı". Bu bir yetki/tester sorunu DEĞİL, sayfanın hiç var olmaması. Her zaman **Copy link** kullan |
+| ⚠ **Mağaza adresini ELLE yazma** | `play.google.com/store/apps/details?id=com.kelimeki.kelimeki` herkese açık vitrin adresi; production sürümü olmadığı sürece (Dashboard: *Production: Inactive*) **404** veriyor — "istenen URL bu sunucuda bulunamadı". Bu bir yetki/tester sorunu DEĞİL, sayfanın hiç var olmaması. Her zaman **Copy link** kullan. ⚠ **13 Eyl 2026'da production ERİŞİMİ onaylandı — bu ölçüm DEĞİŞMEDİ:** vitrin, production kanalına bir sürüm yayınlanana kadar 404 |
 | Adres, kişinin TELEFONUNDAKİ Play hesabı olmalı | En sık aksaklık: iş adresi verilir, telefonda başka Gmail açıktır. Sorulacak soru "hangi adresi istersin" değil, "telefonunda hangi hesap açık" |
 | Biri çıkarsa sayaç kırılır | **15-20 kişi topla**, 12 tabandır |
 | Adresler Google hesabı olmalı | Gmail ya da Google'a bağlı bir adres; şirket/okul adresi olabilir ama Play hesabı olmalı |
@@ -730,6 +730,10 @@ sıralaması" §3).
 
 ### ✅ SAYAÇ DOLDU, BAŞVURU GÖNDERİLDİ — 10 Eylül 2026, 15:26
 
+→ **SONUÇ: ONAYLANDI** (13 Eylül 2026, 00:14) — bu bölümün sonundaki
+"PRODUCTION ERİŞİMİ ONAYLANDI" başlığına bak. Aşağısı başvurunun kendisi;
+ret gelseydi buradan devam edilecekti, artık ARŞİV değeri taşıyor.
+
 Kart üç şartı da çizili gösterdi ve `Apply for production` butonu AKTİF oldu
 (09:35'te görüldü). Başvuru aynı gün **15:26**'da gönderildi; Console'un
 kendi yazdığı: *"We're reviewing your application form. We'll email the
@@ -792,6 +796,31 @@ sözlükte VAR** — hem `src/data/words.ts`te hem `1.0.9`'un paketindeki
 Yani ya testçi yanlış hatırladı ya da kelime doğrulamasında gerçek bir hata
 var. 7 Eylül'deki **`regl` ise gerçekten YOK** ve eklenmedi. Production'a
 çıkmadan bakılmalı.
+
+### 🎉 PRODUCTION ERİŞİMİ ONAYLANDI — 13 Eylül 2026, 00:14
+
+Play Console'dan e-posta: *"Congratulations! Your app has been granted
+Google Play production access"* — `com.kelimeki.kelimeki` için başvuru
+**kabul edildi**. Başvuru 10 Eylül 15:26'da gönderilmişti; Console
+*"7 gün ya da daha az"* demişti, sonuç **~2,5 günde** geldi. (Saat,
+e-postanın okunduğu andır — Google'ın gönderim damgası ölçülmedi.)
+
+Yani §7'nin tamamı (12 tester × 14 gün, başvuru, cevaplar) **kapandı**.
+Aşağıdaki tester metni ve tuzak tablosu bir sonraki uygulama/hesap için
+işletim bilgisi olarak duruyor.
+
+⚠ **ERİŞİM ≠ SÜRÜM — vitrin HÂLÂ 404.** Onaylanan şey production
+KANALINI kullanma hakkı; `play.google.com/store/apps/details?id=com.kelimeki.kelimeki`
+adresi, o kanala bir sürüm yayınlanıp **kendi incelemesinden** geçene
+kadar 404 vermeye devam eder (yukarıdaki tuzak tablosundaki ölçüm aynen
+geçerli). Pratik sonuçları:
+
+| Soru | Cevap |
+|---|---|
+| Mağaza rozetleri (`ROADMAP.md` §26) açıldı mı? | **HAYIR.** Tetikleyici yayınlanmış bir production sürümü; onay e-postası değil |
+| Kapalı test kapanıyor mu? | **Hayır**, kapatılması da gerekmiyor. E-postanın kendi uyarısı: *"We recommend testing your app extensively before publishing your app to production"* |
+| Sıradaki paket (665) nereye? | **Karar işi** — kapalı test ↔ production. `mobile/docs/surumler.md` → "1.1.0 (665)" |
+| Production sürümü anında mı yayınlanır? | Hayır, kendi incelemesi var. Kapalı test incelemeleri bu hesapta 10-34 dk sürdü; **production incelemesinin süresi bu depoda ÖLÇÜLMEDİ** — kapalı testin süresini ona uyarlama |
 
 ---
 
