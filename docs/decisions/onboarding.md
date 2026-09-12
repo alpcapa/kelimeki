@@ -628,10 +628,12 @@ dalını (oyun zaten hesap gerektiriyor).
 cümlede geçmezse buton hiç çıkmayacağından doğrulayıcı içermeyi ayrıca
 kontrol ediyor.
 
-⚠ **Port farkı (kabul edildi):** portta oyun ekranından açılabilen bir giriş
-penceresi YOK (web'de `showLoginModal` var), bu yüzden misafir metni portta
-düz kalıyor — cümle aynı, "hemen giriş yap" tıklanabilir değil. Web'de
-buton.
+⚠ **Port farkı — KULLANICI ONAYLADI (12 Eylül 2026: *"Portta butona gerek
+yok"*).** Portta oyun ekranından açılabilen bir giriş penceresi YOK (web'de
+`showLoginModal` var), bu yüzden misafir metni portta düz kalıyor — cümle
+aynı, "hemen giriş yap" tıklanabilir değil. Bu bir eksik değil, kayda
+geçmiş bir karar: portta butonu doğru yere bağlamak oyun ekranına yeni bir
+giriş yolu açmak demekti ve cümle butonsuz da işini yapıyor.
 
 ### Tavan 2 → 1 (12 Eylül 2026, kullanıcı kararı)
 

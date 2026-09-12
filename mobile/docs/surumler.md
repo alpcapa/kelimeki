@@ -63,8 +63,8 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
-| **1.1.0** | **659** (iOS + **Play**) | `7bccbf7` | 11 Eyl 2026 (`c7ac2e9`, #528) | **Play: 12 Eyl 2026, 12:24** (kapalı test/Alpha) · App Store: **— GÖNDERİLMEDİ** (11 Eyl 23:02'de ASC History'den ölçüldü: gönderim satırı YOK) | ⏳ Play: **In review** · App Store: **Prepare for Submission** — metadata giriliyor | İki Canlı oyun düzeltmesi (sahte "Sıra sende değil." + sonsuz "Yükleniyor…") + mağaza kareleri. ⚠ **Bu satır 11 Eyl akşamı DÜZELTİLDİ:** önce *"654 · 16:08 · App Store incelemesine GÖNDERİLDİ · ⏳ incelemede"* diyordu. Gerçek: `Add for Review` basıldı ama ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadı; Description/Keywords o saatte BOŞTU, yani gönderim zaten geçemezdi. İliştirilen build 629 → 654 → 656 → **659** (11 Eyl gecesi; kullanıcı: *"ASC'yi de 659 yaptım, sürümler aynı olsun istiyorum"*). **Dört numara, TEK kod:** `mobile/app/lib` altında 654'ten 659'a tek satır değişmedi (`git diff c22b757 7bccbf7 -- mobile/app/lib` boş) — aradaki her fark doküman/CSV/workflow. ⚠ 659'un doğuş sebebi: `mobile-build.yml`in `paths` düzeltmesi (#529) kendi merge'inde son kez tam derleme tetikledi ve `mobile-latest`teki `.aab`yi (656) ezdi; `mobile-latest` her mobil derlemede ezilir, yani 656'nın paketi artık indirilemiyor ve Play'e zorunlu olarak 659 gidiyor. ASC de 659'a çekilince **iki mağaza yine tek numarada**. ✅ **Play'e 12 Eyl 2026 12:24'te gönderildi** (kapalı test/Alpha, `In review`) — iki mağaza artık yalnızca tek NUMARADA değil, tek PAKETTE. Aşağı bkz. |
-| **1.1.0** | **627** (Play) | `a4c809b` | 10 Eyl 2026 (`a4c809b`, #514) | **11 Eyl 2026, 08:01** (Console) | yayınlandı → **659 devralıyor** (12 Eyl, incelemede); Alpha'da ≤ 08:33'te "Published" olmuştu | İlk TestFlight turunun bulguları + onboarding Faz 2·3·5 + "Davetler" adlandırması. Aşağı bkz. |
+| **1.1.0** | **659** (iOS + **Play**) | `7bccbf7` | 11 Eyl 2026 (`c7ac2e9`, #528) | **Play: 12 Eyl 2026, ≤ 12:24** (kapalı test/Alpha) · App Store: **— GÖNDERİLMEDİ** (11 Eyl 23:02'de ASC History'den ölçüldü: gönderim satırı YOK) | ✅ Play: **YAYINDA** (Alpha, ~13:42) · App Store: **Prepare for Submission** — metadata giriliyor | İki Canlı oyun düzeltmesi (sahte "Sıra sende değil." + sonsuz "Yükleniyor…") + mağaza kareleri. ⚠ **Bu satır 11 Eyl akşamı DÜZELTİLDİ:** önce *"654 · 16:08 · App Store incelemesine GÖNDERİLDİ · ⏳ incelemede"* diyordu. Gerçek: `Add for Review` basıldı ama ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadı; Description/Keywords o saatte BOŞTU, yani gönderim zaten geçemezdi. İliştirilen build 629 → 654 → 656 → **659** (11 Eyl gecesi; kullanıcı: *"ASC'yi de 659 yaptım, sürümler aynı olsun istiyorum"*). **Dört numara, TEK kod:** `mobile/app/lib` altında 654'ten 659'a tek satır değişmedi (`git diff c22b757 7bccbf7 -- mobile/app/lib` boş) — aradaki her fark doküman/CSV/workflow. ⚠ 659'un doğuş sebebi: `mobile-build.yml`in `paths` düzeltmesi (#529) kendi merge'inde son kez tam derleme tetikledi ve `mobile-latest`teki `.aab`yi (656) ezdi; `mobile-latest` her mobil derlemede ezilir, yani 656'nın paketi artık indirilemiyor ve Play'e zorunlu olarak 659 gidiyor. ASC de 659'a çekilince **iki mağaza yine tek numarada**. ✅ **Play'de 12 Eyl 2026'da YAYINLANDI** (kapalı test/Alpha) — iki mağaza artık yalnızca tek NUMARADA değil, tek PAKETTE. Aşağı bkz. |
+| **1.1.0** | **627** (Play) | `a4c809b` | 10 Eyl 2026 (`a4c809b`, #514) | **11 Eyl 2026, 08:01** (Console) | yayınlandı → **pasif** (12 Eyl, 1.1.0/659 devraldı); Alpha'da ≤ 08:33'te "Published" olmuştu | İlk TestFlight turunun bulguları + onboarding Faz 2·3·5 + "Davetler" adlandırması. Aşağı bkz. |
 | **1.0.9** | **581** | `1abde38` | 7 Eyl 2026 akşamı (`main`) | **8 Eyl 2026, 08:41** (Console) | yayınlandı → **pasif** (11 Eyl, 1.1.0 devraldı) | "Oynayarak öğren" tanıtımının PORT ikizi (Onboarding Faz 4) + tanıtımın cihaz/tarayıcı turu düzeltmeleri. Aşağı bkz. |
 | **1.0.8** | **569** | `f4de936` | 6 Eyl 2026 (`5a540cb`) | **7 Eyl 2026, 13:28** (Console) | yayınlandı → **pasif** (8 Eyl, 1.0.9 devraldı) | Seviyeli YZ'nin TAMAMI (ROADMAP #23 Faz 2-5): ZORLUK seçici (Kolay · Normal · **Zor**), üç renkli rozet, seviyeye göre k-lig puanı, Zor = geniş arama motoru, kart altı puan satırı. Aşağı bkz. |
 
@@ -103,7 +103,7 @@ bölümü) — "ölçüldü" işaretli üç satır Console'dan doğrudan okundu,
 
 | # | Gönderim | Kapsam | Durum | Sürüm (çıkarım) |
 |---|---|---|---|---|
-| — | **12 Eyl 2026, 12:24** | Closed testing - Alpha | ⏳ **In review** | **1.1.0 (659)** — kullanıcı bildirdi (ID okunmadı) |
+| — | **12 Eyl 2026, ≤ 12:24** | Closed testing - Alpha | ✅ **Published** (~13:42) | **1.1.0 (659)** — kullanıcı bildirdi (ID ve Console saatleri okunmadı) |
 | 15 | **11 Eyl 2026, 08:01** | Closed testing - Alpha | ✅ **Published** | **1.1.0 (627)** — ölçüldü |
 | 14 | 8 Eyl 2026, 08:41 | Closed testing - Alpha | ✅ **Published** | **1.0.9 (581)** — ölçüldü |
 | 13 | 7 Eyl 2026, 13:28 | Closed testing - Alpha | ✅ **Published** | **1.0.8 (569)** — ölçüldü |
@@ -128,18 +128,29 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
-## 1.1.0 (659) — ⏳ İNCELEMEDE (kapalı test/Alpha, 12 Eyl 2026)
+## 1.1.0 (659) — ✅ YAYINDA (kapalı test/Alpha, 12 Eyl 2026)
 
-**Durum:** Paket **12 Eyl 2026**'da Play'in kapalı testine (Alpha) yüklendi
-ve gönderildi; **12:24'te Console'da `In review`** görüldü (kullanıcı
-bildirdi). Sürüm adı `1.1.0`, `versionCode` **659** — yani iki mağaza artık
-yalnızca tek numarada değil, **tek PAKETTE**: App Store Connect'in 1.1.0
-sürüm kaydına da aynı derleme (659 / `7bccbf7`) iliştirili.
+**Durum:** Paket **12 Eyl 2026**'da Play'in kapalı testine (Alpha) yüklendi,
+gönderildi ve **aynı gün YAYINLANDI**. Sürüm adı `1.1.0`, `versionCode`
+**659** — yani iki mağaza artık yalnızca tek numarada değil, **tek
+PAKETTE**: App Store Connect'in 1.1.0 sürüm kaydına da aynı derleme
+(659 / `7bccbf7`) iliştirili.
 
-⚠ **Gönderim DAKİKASI ve Submission ID Console'dan OKUNMADI.** Elimizdeki
-tek gerçek "12:24'te `In review`"; 12:24 gönderim dakikası da olabilir,
-gözlem anı da. Yayın saatiyle birlikte ikisi de okunmalı — "İnceleme süresi"
-tablosundaki satır bu yüzden `⏳`.
+⚠ **Bu satırın ZAMANLARI Console'dan OKUNMADI — ikisi de kullanıcının
+bildirimi:** 12:24'te `In review` görüldü, 14:12'de *"yarım saat önce
+canlıda"* dendi (→ yayın ~13:42, süre ~78 dk). Submission ID de okunmadı.
+Kütüğün geri kalanında "ölçüldü" işaretli saatler Console'un KENDİ kaydından
+geliyor; bu satır o güvende DEĞİL ve öyle işaretlendi. (11 Eylül'ün dersi:
+gönderim ancak Console'un kendi kaydında görülürse kesin yazılır — burada
+kapanış yönü aynı disipline tabi.)
+
+⚠ **"Yayınlandı" = kapalı test (Alpha) kanalı.** Üretime (production)
+yükseltme İDDİA EDİLMİYOR — bugüne kadarki on bir paketin hepsi Alpha'ya
+gitti ve bu satır da öyle kaydedildi.
+
+⚠ **"Published" ≠ testçinin telefonunda** — bu depoda ölçülmüş tuzak
+(627 turunun notu). Cihazda kanıt tek: Setup teşhis satırının
+**`Derleme 7bccbf7`** demesi.
 
 | | |
 |---|---|
@@ -182,21 +193,20 @@ commit var, ama mağazaya giden ikiliye dokunan tek iş **#525**:
 • Canlı oyun listeleri de aynı korumaya alındı; takılan bir istek artık listeyi kilitlemiyor.
 ```
 
-### Yayınlanınca yapılacaklar
+### Yayın sonrası — ne yapıldı, ne kaldı
 
-1. Console'dan **yayın saatini** ve **Submission ID**'yi oku → bu bölüm +
-   "Gönderim geçmişi" + "İnceleme süresi" tabloları + `surumler-android.csv`
-   + `gonderimler-android.csv`.
-2. Kütükte **1.1.0 (627)** satırını *pasif*e çek.
-3. `ROADMAP.md` → "Sıradaki sürüme binecekler" tablosunu
-   `docs/decisions/roadmap-arsiv.md`'ye **"1.1.0 sürüm turu"** olarak taşı
-   (şu an incelemede olduğu için ROADMAP'te duruyor).
-4. Cihazda doğrula: Setup teşhis satırı **`Derleme 7bccbf7`** demeli.
-   ⚠ "Published" ≠ testçinin telefonunda — 627 turunun dersi; kanıt tek,
-   o satır.
-5. #525'in iki düzeltmesini Canlı oyunda elle gör: hamle gönderiminde sahte
-   "Sıra sende değil." çıkmamalı; yavaş/kopuk bağlantıda oyun açınca 20 sn
-   içinde "Tekrar Dene" paneli gelmeli (maddeler `TESTING.md`'de).
+- [x] Kütük + "Gönderim geçmişi" + "İnceleme süresi" tabloları ve iki
+      Android CSV'si güncellendi; **1.1.0 (627)** pasife çekildi.
+- [x] `ROADMAP.md` → "Sıradaki sürüme binecekler" tablosu
+      `docs/decisions/roadmap-arsiv.md` → **"1.1.0 sürüm turu"**na taşındı
+      (satırlar değişmeden).
+- [ ] **Console'un KENDİ saatleri ve Submission ID** — okunmadı. Okunursa
+      yukarıdaki üç tablodaki `~` ve `≤` işaretleri gerçek ölçüme çevrilir.
+- [ ] **Cihazda doğrula:** Setup teşhis satırı **`Derleme 7bccbf7`** demeli.
+- [ ] **#525'in iki düzeltmesini Canlı oyunda elle gör:** hamle
+      gönderiminde sahte "Sıra sende değil." çıkmamalı; yavaş/kopuk
+      bağlantıda oyun açınca 20 sn içinde "Tekrar Dene" paneli gelmeli
+      (maddeler `TESTING.md`'de).
 
 ## 1.1.0 (627) — ✅ YAYINDA (kapalı test/Alpha, 11 Eyl 2026)
 
@@ -983,7 +993,7 @@ yardım ekranına zorluk paragrafı. Normal'de hiçbir şey değişmedi
 | 1.0.8 (569) | 7 Eyl 13:28 | ≤ 13:57 | **≤ 29 dk** | Console (gönderim) + 13:57'de "Published" bildirildi (Console'un yayın saati okunmadı) |
 | 1.0.9 (581) | 8 Eyl 08:41 | ≤ 09:10 | **≤ 29 dk** | Console (gönderim) + 09:10'da "Published" bildirildi (Console'un yayın saati okunmadı) |
 | **1.1.0 (627)** | 11 Eyl 08:01 | ≤ 08:33 | **≤ 32 dk** | Console (gönderim) + 08:33'te "Published" bildirildi (Console'un yayın saati okunmadı) |
-| **1.1.0 (659)** | 12 Eyl ≤ 12:24 | — | ⏳ **ölçülecek** | Kullanıcı 12:24'te `In review` gördü; gönderim DAKİKASI ve yayın saati Console'dan okunmadı |
+| **1.1.0 (659)** | 12 Eyl ≤ 12:24 | ~13:42 | **~78 dk** | ⚠ İKİ UÇ DA KULLANICININ BİLDİRİMİ, Console'un kendi kaydı OKUNMADI: 12:24'te `In review` görüldü, 14:12'de *"yarım saat önce canlıda"* dendi. Bu satır bir ÖLÇÜM değil, iki bildirimin arası — diğer satırlarla aynı güvende DEĞİL |
 
 ⚠ **DÜZELTME (4 Eylül 2026):** bu bölüm daha önce 1.0.5 için **"≈23 dakika
 (~14:40 → ~15:03)"** diyordu. O rakam Console'dan değil kullanıcının
