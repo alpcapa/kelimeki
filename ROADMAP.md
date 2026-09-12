@@ -1624,6 +1624,12 @@ maddeyi AÇMADI.** Onay, production kanalını kullanma hakkı; vitrin adresi
 o kanala bir sürüm yayınlanıp incelemesi bitene kadar 404 kalmaya devam
 ediyor. Android yarısının tetikleyicisi bu yüzden aşağıda düzeltildi.
 
+**Ama madde artık YAKIN:** aynı gün kullanıcı 665'i **doğrudan
+production'a** yüklemeye karar verdi (`console-formlari.md` §7.5). Yani
+Android yarısının kapısı bir sürüm incelemesi kadar uzakta — Apple yarısı
+da 1.1.0'ın ASC incelemesini bekliyor. **İki yarı aynı hafta içinde
+açılabilir**, o yüzden §26'yı tek turda yapmaya hazır ol.
+
 ⚠ **İKİ TUR OLACAK, tek seferde bitmez** — **ama sıra tersine dönebilir**
 (12 Eylül 2026): App Store'a 1.1.0 (665) o gün gönderildi (inceleme ≤48
 saat) ve kullanıcı kararı *"Apple önce gelirse direkt yayına alırız"*;

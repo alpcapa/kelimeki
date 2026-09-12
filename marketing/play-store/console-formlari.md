@@ -837,6 +837,67 @@ geçerli). Pratik sonuçları:
 
 ---
 
+## 7.5 — Production kanalı: ilk yayın (13 Eylül 2026 kararı)
+
+**Kullanıcı kararı:** 665 kapalı testten geçirilmeden **doğrudan
+production'a** yüklenecek. Gerekçe: 659 zaten kapalı testte yayında ve
+665'in ondan farkı üç iş (mesaj satırı kırpması · ipucu tavanı 2→1 · oyun
+sonu kutlaması); Apple tarafında 1.1.0 (665) zaten incelemede, iki mağaza
+aynı gün açılabilsin diye Play bir tur daha bekletilmiyor.
+
+⚠ **Bu bölüm §5'in (kapalı test ilk yükleme) production ikizi, ama
+Console'un production akışı bu depoda HİÇ görülmedi.** Aşağıdaki adımlar
+§5'in ölçülmüş akışından ve paket gerçeklerinden türetildi; ekranda farklı
+bir şey görürsen ekranın dediği doğrudur ve buraya yazılmalı.
+
+### Yüklemeden önce — üç sağlama
+
+| Sağlama | Neden |
+|---|---|
+| `.aab` **`mobile-latest`**ten indirildi ve `versionCode` **665** | Etiket her mobil derlemede EZİLİR (`mobile/docs/surumler.md` → "SÜRÜM SENKRONU"). Yükleme ekranı numarayı gösteriyor: 665 değilse dosya değişmiş demektir |
+| `versionCode` 665 Play'de HİÇ kullanılmadı | Bir `versionCode` uygulama başına bir kez kullanılır. Play'de bugüne kadar 627 ve 659 yayınlandı; 665 temiz |
+| App content beyanları tam | §3'te bitti. Production kanalı bunları YENİDEN sormaz, ama eksik olan bir beyan yayını bloke eder |
+
+Play App Signing'e **yeniden kaydolunmaz** — 25 Ağustos'ta kaydolundu
+(§6.6, `assetlinks.json` o parmak izine bağlı).
+
+### Adımlar
+
+1. Sol menü → **Test and release** → **Production** → **Create new release**.
+2. `.aab`'yi yükle (§2 · `mobile-latest`).
+3. **Release name:** `1.1.0 (665)` — §5'teki `<sürüm adı> (<versionCode>)`
+   deseni. **Release notes:** Türkçe; ilk production sürümü.
+4. **Ülkeler.** Kapalı test 177 ülkeye açıktı; production'ın kendi ülke
+   seçimi var ve varsayılanı **devralmayabilir** — ekranda DOĞRULA.
+   §5'in gerekçesi burada da geçerli (kısıtlamanın kazancı yok).
+5. **Kademeli yayın (staged rollout).** Production'a özgü: sürüm
+   kullanıcıların yüzde kaçına gitsin. ⚠ **Bu hesapta ölçülmedi** — ekran
+   ne sunuyorsa o. İlk yayında düşük yüzde muhafazakâr seçimdir, ama
+   bugünkü kullanıcı tabanı zaten testerlar; %100 de savunulabilir.
+6. **Gözden geçir → yayınla.** Sürümün **kendi incelemesi** var.
+
+### Yayından SONRA
+
+| İş | Not |
+|---|---|
+| **Vitrini ÖLÇ** | `curl -sI 'https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki'` — 404 bitmişse vitrin canlı. Bu, `ROADMAP.md` §26'nın (mağaza rozetleri) Android yarısının GERÇEK tetikleyicisi; onay e-postası değil |
+| **Kapalı test** | Kapatmaya gerek yok. Bir kullanıcı hem testere hem production'a uygunsa Play en yüksek `versionCode`u sunar — yani 665 production'a çıkınca testerlar da onu alır |
+| **Sürüm senkronu** | `mobile/docs/surumler.md` → "1.1.0 (665)" bölümü YAYINDA'ya çekilir, 659 pasife |
+
+### Ölçülmemiş iki şey — vaat etme
+
+- **İnceleme süresi.** Bu hesapta kapalı test incelemeleri 10-34 dakika
+  sürdü (`mobile/docs/surumler.md`). **Production incelemesinin süresi
+  ölçülmedi** ve kapalı testinkine uyarlanamaz — ilk production sürümü
+  ayrıca daha ayrıntılı incelenebilir.
+- **Managed publishing.** Play'de onaylanan bir sürümü "yayınla" diyene
+  kadar bekleten bir ayar var; App Store'daki *Manually release*'in
+  karşılığı ve iki mağazayı aynı gün açmak isteniyorsa işe yarar. **Bu
+  hesapta açık mı kapalı mı bakılmadı.** Kapalıysa onaylanan sürüm
+  kendiliğinden yayınlanır.
+
+---
+
 ## 8. `destek@kelimeki.com` — kurulum
 
 **Karar (24 Ağustos 2026, kullanıcı):** mağaza iletişim adresi kendi

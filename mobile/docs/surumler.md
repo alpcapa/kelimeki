@@ -220,11 +220,13 @@ mobile/kelimeki_core/lib` → tek commit (squash).
 - [ ] **Play** → `mobile-latest`teki `.aab` (665) yüklenecek (13 Eyl).
       ⚠ Yükleme ekranında `versionCode`un **665** olduğunu DOĞRULA; arada
       mobil bir merge olursa etiket ezilir ve dosya değişir.
-      ⚠ **KANAL ARTIK BİR KARAR** (13 Eyl 2026, 00:14): production
-      ERİŞİMİ onaylandı (`marketing/play-store/console-formlari.md` §7),
-      yani `.aab` kapalı teste DE production'a DA yüklenebilir. Plan
+      ⚠ **KANAL DEĞİŞTİ → PRODUCTION** (13 Eyl 2026, kullanıcı kararı).
+      Production ERİŞİMİ 00:14'te onaylandı
+      (`marketing/play-store/console-formlari.md` §7), kullanıcı da 665'i
+      kapalı testten geçirmeden **doğrudan production'a** yüklemeyi seçti —
+      659 zaten kapalı testte yayında ve Apple'da 665 incelemede. Plan
       yazıldığında yalnızca kapalı test mümkündü; bu satır o yüzden
-      "kapalı teste" diyordu. Seçim kullanıcının.
+      "kapalı teste" diyordu. Adımlar ve sağlamalar: §7.5.
 - [ ] İkisi de bitince bu bölüm YAYINDA'ya çekilir, 659 pasife.
 
 ⚠ **Bu paket Play'de 1.1.0'ın ÜÇÜNCÜ `versionCode`u olacak** (627 → 659 →
