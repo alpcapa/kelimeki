@@ -1549,6 +1549,25 @@ dokunuş dahil — ve oyun akışını kesintisiz göstermeli.
 7. **Ücretli içerik: YOK** — gösterilecek bir şey yok, uygulama tamamen
    ücretsiz ve uygulama içi satın alma taşımıyor.
 
+#### Cihaz ayarları — kayıttan önce varsayılana al (13 Eylül 2026)
+
+| Ayar | Değer | Neden |
+|---|---|---|
+| Ekran ve Parlaklık → **Metin Boyutu** | varsayılan | Takımda taşma sayısı ölçek **1,0'da 0**, uygulamanın tavanı **1,3'te 10** (`mobile/CLAUDE.md` → "Sistem Yazı Boyutu") |
+| Ekran ve Parlaklık → **Görüntü Yakınlaştırma** | **Standart** | Bu bir YAZI ayarı değil: açıkken uygulamaya **375 pt** genişlik verir |
+
+⚠ **İkincisi kritik olan.** 10 Eylül 2026'da Display Zoom'lu bir iPhone'da,
+**varsayılan yazı boyutunda** iki gerçek hata bulunmuştu (Parça 198):
+tanıtımın X2/X3 rozetleri iki satıra düşüyordu ve `OYUNU BAŞLAT` görünür alt
+sınırın ALTINDA kalıyordu (buton 769–786, sınır 778). Kullanıcılar bu ayarı
+*"fontlar büyük görünüyor"* diye tarif ettiğinden yazı boyutuyla karıştırılır.
+
+✅ **İkisi de 665'te düzeltilmiş** — doğrulandı: yapışık alt çubuk
+(`bottomNavigationBar` + `heightFactor: 1`) `9c62289` ağacında var. Yani
+Apple'ın izleyeceği pakette bu kırılma yok; ayarı yine de varsayılana almak
+gereksiz riski kaldırır ve incelemeci uygulamayı **tipik kullanıcının**
+gördüğü gibi görür.
+
 #### 3. video için HAZIRLIK (kayıttan ÖNCE, filme alınmaz)
 
 Sohbet/şikayet yüzeyi **yalnızca AKTİF bir Canlı oyundan** açılıyor ve
