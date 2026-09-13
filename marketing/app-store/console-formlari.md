@@ -1549,6 +1549,45 @@ dokunuş dahil — ve oyun akışını kesintisiz göstermeli.
 7. **Ücretli içerik: YOK** — gösterilecek bir şey yok, uygulama tamamen
    ücretsiz ve uygulama içi satın alma taşımıyor.
 
+#### Tanıtım (onboarding) kayıtta ÇIKMAZ — ve çıkarmaya gerek yok
+
+`shouldShowTutorial` (`src/utils/onboarding.ts` ↔ `util/onboarding.dart`)
+dört sinyale bakıyor ve HERHANGİ biri "yeni değil" derse göstermiyor. İlki
+`seenTutorial` ve o bir **CİHAZ bayrağı** — geliştiricinin telefonu onu
+çoktan gördü. ⚠ **2. videodaki yepyeni hesap da tetiklemez:** bayrak hesaba
+değil cihaza bağlı (yaygın yanlış varsayım). Aynısı zoom balonu ve bağlamsal
+ipuçları için de geçerli — hepsi cihaz-yerel, hepsi tükenmiş. Yani kayıt
+bölünmez.
+
+**Zorlamaya da gerek yok:** Apple'ın altı maddesinde tanıtım yok. Çıkarmanın
+tek yolu uygulamayı silip yeniden kurmak olurdu — cihaz bayrakları ve yerel
+veri gider, baştan giriş gerekir. Tanıtımın kazancı (köşe-bölge mekaniğini
+60 saniyede anlatması) zaten İngilizce ANLATIMLA sağlanıyor.
+
+⚠ Başka bir sebeple yeniden kurulursa tanıtım açılır ve önünde bir karşılama
+penceresi çıkar (*"Kelimeki Tanıtım Turu"*). O durumda kesme — oynat ya da
+atla, ama ne olduğunu söyle: *"this is the built-in tutorial that first-time
+players see."*
+
+#### Cihaz ayarları — kayıttan önce varsayılana al (13 Eylül 2026)
+
+| Ayar | Değer | Neden |
+|---|---|---|
+| Ekran ve Parlaklık → **Metin Boyutu** | varsayılan | Takımda taşma sayısı ölçek **1,0'da 0**, uygulamanın tavanı **1,3'te 10** (`mobile/CLAUDE.md` → "Sistem Yazı Boyutu") |
+| Ekran ve Parlaklık → **Görüntü Yakınlaştırma** | **Standart** | Bu bir YAZI ayarı değil: açıkken uygulamaya **375 pt** genişlik verir |
+
+⚠ **İkincisi kritik olan.** 10 Eylül 2026'da Display Zoom'lu bir iPhone'da,
+**varsayılan yazı boyutunda** iki gerçek hata bulunmuştu (Parça 198):
+tanıtımın X2/X3 rozetleri iki satıra düşüyordu ve `OYUNU BAŞLAT` görünür alt
+sınırın ALTINDA kalıyordu (buton 769–786, sınır 778). Kullanıcılar bu ayarı
+*"fontlar büyük görünüyor"* diye tarif ettiğinden yazı boyutuyla karıştırılır.
+
+✅ **İkisi de 665'te düzeltilmiş** — doğrulandı: yapışık alt çubuk
+(`bottomNavigationBar` + `heightFactor: 1`) `9c62289` ağacında var. Yani
+Apple'ın izleyeceği pakette bu kırılma yok; ayarı yine de varsayılana almak
+gereksiz riski kaldırır ve incelemeci uygulamayı **tipik kullanıcının**
+gördüğü gibi görür.
+
 #### 3. video için HAZIRLIK (kayıttan ÖNCE, filme alınmaz)
 
 Sohbet/şikayet yüzeyi **yalnızca AKTİF bir Canlı oyundan** açılıyor ve
@@ -1589,6 +1628,20 @@ sözlük cümlesi eklenirse oraya sığar). **Metni değiştiren yeniden ÖLÇS�
 
 ⚠ `Attach File` bir BOYUT sınırı yazmıyor; videoyu eklerken ekran ne derse
 o. Takılırsa yedek yol yine listelenmemiş bağlantı.
+
+✅ **ÇOKLU dosya kabul ediyor (13 Eylül 2026, kullanıcı ekrandan doğruladı).**
+Yani dört klip **birleştirilmeyecek** ve cevap metnindeki *"It is split into
+four parts"* cümlesi doğru kalıyor. Dosyaları **sırayla** ekle: iOS ekran
+kayıtları `RPReplay_Final…` diye adlandırıldığından incelemeci sırayı dosya
+adından okuyamaz — Dosyalar'da `1-launch` · `2-signup` · `3-chat` ·
+`4-delete` gibi yeniden adlandırmak bunu çözer.
+⚠ Tek dosyaya düşülürse (ör. ileride bir gönderimde) o cümle
+*"It is a single recording with four sections, in this order:"* olmalı —
+aksi halde metin ekteki dosyayla çelişir.
+
+⚠ **Birleştirmeyi AJAN YAPAMAZ** (13 Eyl 2026'da denendi): bu ortamda
+`ffmpeg` kurulu değil, ve asıl engel o da değil — videoların cihazdan bu
+oturuma gelip geri dönmesi gerekirdi. Gerekirse cihazda iMovie ile yapılır.
 
 ### Ekran kaydı — cihaz ve ses (13 Eylül 2026, kullanıcı kararı)
 
