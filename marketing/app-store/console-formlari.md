@@ -1510,23 +1510,25 @@ anket tekrar gelmesin diye orada DURMALI.
 
 ### Ekran kaydı — çekim listesi
 
-⚠ **Tek çekimde, kesmeden.** Kayıt uygulamanın AÇILIŞIYLA başlamalı
-(ana ekrandan uygulamaya dokunuş dahil).
+⚠ **DÖRT parça** (aşağıdaki gruplama; gerekçe "Ekran kaydı — cihaz ve ses").
+**1. parça uygulamanın AÇILIŞIYLA başlamalı** — ana ekrandan uygulamaya
+dokunuş dahil — ve oyun akışını kesintisiz göstermeli.
 
-1. **Açılış + tipik akış.** Uygulamayı aç → Yapay Zekaya karşı bir oyun
-   başlat → 2-3 hamle oyna (tahta, puan, bölge görünsün).
-2. **Kayıt olma.** Çıkış yaptıktan sonra Kayıt Ol → formu doldur → gönder.
+1. **Açılış + tipik akış.** *(video 1)* Uygulamayı aç → **"Yapay Zeka ile"**
+   bir oyun başlat → 2-3 hamle oyna (tahta, puan, bölge görünsün).
+2. **Kayıt olma.** *(video 2)* Çıkış yaptıktan sonra Kayıt Ol → formu
+   doldur → gönder.
    ⚠ **ATILABİLİR bir hesap kullan** — 6. adımda bu hesap silinecek.
    E-posta doğrulaması gerektiğinden gerçek bir gelen kutusu lazım.
 3. **Giriş.** `kelimekitest2` ile giriş yap (incelemeciye verilen hesabın
    çalıştığını da aynı kayıtta göstermiş olursun).
-4. **Kullanıcı üretimi içerik.** Aktif bir Canlı oyunu aç → tahtanın
+4. **Kullanıcı üretimi içerik.** *(video 3)* Aktif bir Canlı oyunu aç → tahtanın
    altındaki mesaj butonu → bir mesaj yaz ve gönder.
 5. **Raporlama ve engelleme — Apple'ın ÖZELLİKLE istediği adım.** Sohbet
    başlığındaki dişli → katılımcı seç → **"Kişiyi Sessize Al"** (onay
-   ekranıyla birlikte) → geri dön → **"Kişiyi Rapor Et"** → neden yaz →
+   ekranıyla birlikte) → geri dön → **"Kişiyi Şikayet Et"** → neden yaz →
    onayla → *"Şikayetiniz iletildi."* ekranını göster.
-6. **Hesap silme.** 2. adımdaki ATILABİLİR hesaba geç → Hesap Ayarları →
+6. **Hesap silme.** *(video 4)* 2. adımdaki ATILABİLİR hesaba geç → Hesap Ayarları →
    Hesabımı Sil → `SİL` yaz → onayla, silmeyi TAMAMLA.
    ⚠ **`kelimekitest2`'yi ASLA SİLME** — hem incelemecinin hesabı hem de
    `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK İKİ HESAP"
@@ -1534,92 +1536,131 @@ anket tekrar gelmesin diye orada DURMALI.
 7. **Ücretli içerik: YOK** — gösterilecek bir şey yok, uygulama tamamen
    ücretsiz ve uygulama içi satın alma taşımıyor.
 
-### Cevap metni (İngilizce, olduğu gibi yapıştırılır)
+### ÖLÇÜLDÜ — `Reply to App Review` penceresi (13 Eylül 2026, 07:57)
 
-> **1. Screen recording**
->
-> A screen recording captured on a physical iPhone running the latest iOS
-> is attached. It begins with launching the app and shows the typical user
-> flow, account registration, login, the account deletion flow, and
-> user-generated content together with the in-app reporting and blocking
-> mechanisms. The app contains no paid content or features.
->
-> **2. Purpose and target audience**
->
-> Kelimeki is a free Turkish word game. Players form Turkish words from
-> letter tiles on a 13x13 board. Its distinguishing mechanic is corner
-> territories: each player starts from their own 4x4 corner and grows a
-> territory across the board, and placing tiles inside or next to an
-> opponent's territory transfers part of the move's score to that opponent.
->
-> The target audience is Turkish-speaking players of any age who enjoy word
-> and puzzle games. The app's entire interface and content are in Turkish.
-> It offers a validated Turkish dictionary of roughly 63,000 words with
-> definitions, an offline single-player mode against a computer opponent at
-> three difficulty levels, pass-and-play for 2-4 players on one device, and
-> optional online multiplayer against friends.
->
-> **3. Setting up and accessing the main features**
->
-> No account is needed to play. On first launch the app opens directly on
-> the setup screen, where a game against the computer opponent or a
-> pass-and-play game can be started immediately. An account is only
-> required for online multiplayer, the league standings, the friends list
-> and game history.
->
-> Demo account credentials are provided in the App Review Information
-> section. Using that account:
->
-> - Play the computer opponent: setup screen, choose the single-player
->   option, pick a difficulty, start.
-> - Online multiplayer: sign in, open the live games tab, open the active
->   game listed there.
-> - User-generated content (chat): inside a live game, the message button
->   below the board opens the conversation.
-> - Reporting and blocking: in the chat, the gear icon in the header opens
->   the participant list; selecting a participant offers "block this person"
->   and "report this person" (a reason is required, followed by a
->   confirmation step). A blocked or reported person can also be managed
->   later from the friends list.
-> - Account deletion: the user menu, then account settings, then delete my
->   account. The user must type a confirmation word; the account and its
->   data are then permanently deleted.
->
-> **4. External services used to deliver core functionality**
->
-> - Supabase - authentication, database, realtime updates for online
->   games, file storage for profile pictures, and serverless functions.
-> - Firebase Cloud Messaging - push notifications (turn reminders, friend
->   requests).
-> - Firebase Analytics - anonymous usage analytics.
-> - Brevo - transactional email (sign-up confirmation, password reset,
->   notification emails). It is called only from our own server-side
->   functions; the app never contacts it directly.
-> - Vercel - hosting for the companion web version at kelimeki.com.
->
-> The app does not use any AI service. The single-player opponent is a
-> deterministic search algorithm that runs entirely on the device, with no
-> network access and no machine-learning model. There are no payment
-> processors: the app is free, with no in-app purchases, no subscriptions
-> and no advertising.
->
-> **5. Regional differences**
->
-> There are none. The app is Turkish-language only and functions
-> identically in every region. No content or feature is gated, priced or
-> varied by country.
->
-> **6. Regulated industry and third-party material**
->
-> Kelimeki does not operate in a regulated industry. It is a word game with
-> no gambling, no real-money wagering, and no financial, medical or legal
-> functionality.
+| Ekrandan okunan | Değer |
+|---|---|
+| **Cevap kutusu sınırı** | **4000 karakter** (sayaç kutunun altında) |
+| **Dosya eki** | **VAR** — `Attach File` bağlantısı kutunun hemen altında. Videoyu listelenmemiş bir bağlantıya koymaya GEREK YOK |
+| Öteki düğmeler | `Save Draft` (yarıda bırakılabilir) · `Cancel` · `Reply` |
 
-⚠ **6. maddenin SÖZLÜK cümlesi bilerek BOŞ bırakıldı — kullanıcı kararı.**
-Uygulama ~63 bin kelimelik listeyi ve kelime ANLAMLARINI taşıyor; anlamların
-kaynağı GTS (bkz. `docs/decisions/dictionary.md` → `npm run build:dict`).
-Kelime listesi ile yazılmış TANIMLAR aynı şey değildir ve buraya ne
-yazılacağı hukuki bir beyandır — ajan bir yetkilendirme iddiası UYDURAMAZ.
-Apple'ın sorusu koşullu ("*If* the app ... includes protected third-party
-material"), yani bu cümleyi eklemek zorunlu değil. Karar verilince bu not
-silinip seçilen cümle yukarıdaki bloğa eklenir.
+⚠ **4000 sınırı taslağı bir kez DÜŞÜRDÜ:** ilk yazılan cevap **4307**
+karakterdi, yani 307 fazla — ve bu ancak ekran görüntüsü geldikten sonra
+ölçüldü. Aşağıdaki sürüm **3385 karakter** (615 pay kalıyor; 6. maddeye
+sözlük cümlesi eklenirse oraya sığar). **Metni değiştiren yeniden ÖLÇSÜN:**
+`wc -m` yeter, gözle tahmin etme.
+
+⚠ `Attach File` bir BOYUT sınırı yazmıyor; videoyu eklerken ekran ne derse
+o. Takılırsa yedek yol yine listelenmemiş bağlantı.
+
+### Ekran kaydı — cihaz ve ses (13 Eylül 2026, kullanıcı kararı)
+
+**iPhone'u iPad'le FİLME ÇEKME.** Apple'ın istediği *"a screen recording
+captured on a physical device"*, yani cihazın KENDİ ekran kaydı; kamerayla
+çekilmiş görüntü ekran kaydı değildir (yansıma/moiré/el titremesi, üstelik
+kat kat büyük dosya) ve aynı 2.1 turunu geri getirebilir.
+
+**İngilizce anlatım İSTENİYOR ve ekran kaydıyla birlikte mümkün:** Denetim
+Merkezi → kayıt düğmesine **basılı tut** → **Mikrofon: Açık**. Tek cihaz
+yeter, iPad'e gerek yok.
+
+**Dört parçaya bölmek uygun** (Apple tek dosya şart koşmuyor), iki kuralla:
+ilk video uygulamanın **AÇILIŞIYLA** başlar ve tipik oyun akışını kesintisiz
+gösterir; her parçanın ne olduğu cevap metninde adıyla listelenir (aşağıdaki
+1-4). Bölmenin ikinci faydası: kayıt adımındaki **e-posta doğrulama
+beklemesi** ölü zaman, orası doğal kesme noktası.
+
+### Anlatım metni (İngilizce, kayıt sırasında okunur)
+
+> **1 — Launch and gameplay.** "This is Kelimeki, a Turkish word game. I am
+> opening it now on my iPhone. No account is needed to play. This is the
+> setup screen, and I am starting a game against the computer opponent. The
+> board is thirteen by thirteen. Each player starts from their own corner
+> and grows a territory across the board. I place tiles to form a Turkish
+> word and play the move. The score is added here, and my territory has
+> grown."
+>
+> **2 — Registration and login.** "Now I will show account registration. I
+> sign out first. This is the registration form: I enter an email address
+> and a password and submit it. The app sends a confirmation email, which I
+> confirm now. Then I sign in with the demo account we provided to App
+> Review."
+>
+> **3 — Chat, blocking and reporting.** "This is an online game against
+> another player. The message button below the board opens the chat. This is
+> user-generated content, and I am sending a message now. The gear icon in
+> the chat header opens the participant list. Selecting a person gives two
+> options: the first one blocks this person, with a confirmation step. The
+> second one reports the person to us. A reason is required, and there is
+> another confirmation. The report has now been sent."
+>
+> **4 — Account deletion.** "Finally, account deletion. I am signed in with
+> a disposable test account. From the user menu I open account settings, and
+> here is delete my account. The app shows exactly what will be deleted. I
+> type the confirmation word and confirm. The account is now permanently
+> deleted."
+
+### Cevap metni — 3385 karakter, olduğu gibi yapıştırılır
+
+⚠ **Türkçe etiketler KODDAN doğrulandı, ezberden yazılmadı** — ve iki tanesi
+ilk taslakta YANLIŞTI: rapor düğmesi *"Kişiyi Rapor Et"* değil
+**"Kişiyi Şikayet Et"** (4 Ağustos 2026 kararı: kullanıcıya görünen tüm
+metinlerde "rapor" yerine "şikayet"), tek kişilik mod da *"Yapay Zekaya
+Karşı"* değil **"Yapay Zeka ile"**. Arayüz Türkçe olduğundan bu etiketler
+metinde DURMALI: incelemeci ekranda gördüğü kelimeyi ancak böyle eşleştirir.
+
+```
+1. SCREEN RECORDING
+
+Attached, recorded on a physical iPhone running the latest iOS, with English narration. It is split into four parts:
+
+1 - App launch and a typical game against the computer opponent.
+2 - Account registration, then login with the demo account.
+3 - User-generated content (in-game chat) with the blocking and reporting mechanisms.
+4 - The account deletion flow, completed on a disposable account.
+
+The app has no paid content or features.
+
+2. PURPOSE AND TARGET AUDIENCE
+
+Kelimeki is a free Turkish word game. Players form Turkish words from letter tiles on a 13x13 board. Its distinguishing mechanic is corner territories: each player grows a territory out of their own 4x4 corner, and placing tiles inside or next to an opponent's territory transfers part of the move's score to that opponent.
+
+It is made for Turkish-speaking players of any age who enjoy word and puzzle games. The interface and all content are in Turkish. It offers a validated Turkish dictionary of about 63,000 words with definitions, an offline single-player mode at three difficulty levels, pass-and-play for 2-4 players on one device, and optional online multiplayer with friends.
+
+3. ACCESSING THE MAIN FEATURES
+
+No account is needed to play. The app opens on the setup screen, where a game against the computer or a pass-and-play game can be started immediately. An account is only required for online multiplayer, league standings, friends and game history. Demo account credentials are in the App Review Information section. The interface is Turkish, so the on-screen labels are given below.
+
+- Single player: setup screen, "Yapay Zeka ile", pick a difficulty, "OYUNU BAŞLAT".
+- Online multiplayer: sign in, "Canlı" tab, open the active game listed there.
+- Chat (user-generated content): inside a live game, the message button below the board.
+- Blocking and reporting: in the chat, the gear icon opens the participant list; selecting a person offers "Kişiyi Sessize Al" (block) and "Kişiyi Şikayet Et" (report, which requires a reason and a confirmation step). Both can be undone later from the friends list.
+- Account deletion: user menu, "Hesap Ayarları", "Hesabımı Sil", then type "SİL" to confirm. The account and its data are permanently deleted.
+
+4. EXTERNAL SERVICES
+
+- Supabase - authentication, database, realtime updates for online games, storage for profile pictures, serverless functions.
+- Firebase Cloud Messaging - push notifications.
+- Firebase Analytics - anonymous usage analytics.
+- Brevo - transactional email (sign-up confirmation, password reset). Called only from our own server-side functions; the app never contacts it directly.
+- Vercel - hosting for the companion web version at kelimeki.com.
+
+The app uses no AI service. The single-player opponent is a deterministic search algorithm that runs entirely on the device, with no network access and no machine-learning model. There are no payment processors: the app is free, with no in-app purchases, no subscriptions and no advertising.
+
+5. REGIONAL DIFFERENCES
+
+None. The app is Turkish-language only and works identically in every region. No content, feature or price varies by country.
+
+6. REGULATED INDUSTRY AND THIRD-PARTY MATERIAL
+
+Kelimeki does not operate in a regulated industry. It is a word game with no gambling, no real-money wagering, and no financial, medical or legal functionality.
+```
+
+⚠ **6. maddenin SÖZLÜK cümlesi bilerek EKSİK — kullanıcı kararı.** Uygulama
+~63 bin kelimelik listeyi ve kelime ANLAMLARINI taşıyor; anlamların kaynağı
+GTS (bkz. `docs/decisions/dictionary.md` → `npm run build:dict`). Kelime
+listesi ile yazılmış TANIMLAR aynı şey değildir ve buraya ne yazılacağı
+hukuki bir beyandır — ajan bir yetkilendirme iddiası UYDURAMAZ. Apple'ın
+sorusu koşullu ("*If* the app ... includes protected third-party material"),
+yani cümleyi hiç eklememek de geçerli bir seçim. Karar verilince bu not
+silinip seçilen cümle 6. maddeye eklenir ve metin YENİDEN ÖLÇÜLÜR.
