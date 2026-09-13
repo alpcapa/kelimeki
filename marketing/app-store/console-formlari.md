@@ -1690,6 +1690,37 @@ beklemesi** ölü zaman, orası doğal kesme noktası.
 > type the confirmation word and confirm. The account is now permanently
 > deleted."
 
+### ✅ AS-BUILT — cevap GÖNDERİLDİ (13 Eylül 2026, 17:58)
+
+`Messages (2)`, taslak bağlantıları kayboldu. **Beş video**, ekran kaydı
+olarak DEĞİL, **YouTube (Unlisted) linki** olarak gitti; final metin
+**3832 karakter**. Aşağıdaki blok o metnin şablonu — linkler ve 1-5
+açıklamaları o turun kendine ait.
+
+**Ekleme yolu DENENDİ ve DÜŞTÜ — sebebi boyut:** tek video **760 MB**
+(7 dk, ~14 Mbit/sn), beşi ~3,8 GB. `Attach File` beşini birden kabul
+etmedi; tek dosyada `Processing…`te kaldı ve o sırada `Reply` düğmesi
+GRİ (işlem bitmeden gönderilemiyor). ⚠ **Zip ÇÖZÜM DEĞİL:** video zaten
+sıkıştırılmış, zip ~%0 kazandırır ve beş dosyayı tek dev dosyaya çevirip
+durumu kötüleştirir.
+
+⚠ **iMovie portre ekran kaydını KÜÇÜLTEMEZ (yaşandı).** iOS'ta iMovie
+projeleri 16:9; dikey klip verilince kadrajı doldurmak için üstten-alttan
+kırpıyor ve KARE video üretiyor. **Çözünürlüğü 1080'e çıkarmak bunu
+düzeltmez** — kırpma orandan geliyor, çözünürlükten değil. Kırpılmış kayıt
+bu iş için orijinalden KÖTÜ: incelemecinin görmesi gereken şeyler
+(üstte skorlar, altta `OYUNU BAŞLAT` · mesaj butonu · `Hesabımı Sil`)
+tam da kesilen kenarlarda.
+
+⚠ **YouTube uygulamasının `+` düğmesi dikey videoyu SHORTS'a yolluyor**
+ve orada tavan **3 dakika**. 7 dakikalık kayıt "yüklenmiyor" sanıldı.
+Doğrusu `+` → **"Video yükle"** (Short oluştur DEĞİL); normal yüklemede
+sınır 15 dk, doğrulanmamış hesapta bile.
+
+**Linklerde üç kural:** `Unlisted` (Private DEĞİL — incelemeci açamaz) ·
+HD işlenmesini bekle (yükleme biter bitmez verilen link bulanık sürümü
+gösterir) · **inceleme bitene kadar videoları silme.**
+
 ### Cevap metni — 3385 karakter, olduğu gibi yapıştırılır
 
 ⚠ **Türkçe etiketler KODDAN doğrulandı, ezberden yazılmadı** — ve iki tanesi
