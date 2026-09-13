@@ -892,6 +892,37 @@ Play App Signing'e **yeniden kaydolunmaz** — 25 Ağustos'ta kaydolundu
 | **Kapalı test** | Kapatmaya gerek yok. Bir kullanıcı hem testere hem production'a uygunsa Play en yüksek `versionCode`u sunar — yani 665 production'a çıkınca testerlar da onu alır |
 | **Sürüm senkronu** | `mobile/docs/surumler.md` → "1.1.0 (665)" bölümü YAYINDA'ya çekilir, 659 pasife |
 
+### 🔴 "Play'de arayınca ÇIKIYOR" vitrin açıldı DEMEK DEĞİL (13 Eylül 2026, ölçüldü)
+
+Kullanıcı #19 incelemedeyken telefonunda Play'de `kelimeki` aradı ve uygulama
+**çıktı** — arama sonucunda, ekran görüntüleriyle, `Yüklü` rozetiyle. Doğal
+sonuç *"demek ki yayınlandı"* olurdu. **Değildi:** aynı anda Console `#19 ·
+In review` diyordu.
+
+**Sebep: geliştirici kendi hesabıyla ölçemiyor.** O hesap `Kelimeki Testers`
+listesinde, yani Play ona **kapalı test** listesini gösteriyor. Üç işaret
+telefon ekranının kendisinde yazılıydı:
+
+| Ekranda | Ne söylüyor |
+|---|---|
+| Başlık: *Kelimeki… **(Erken Erişim)*** | Play test kanalındaki kişiye listeyi bu ekle gösterir |
+| *"Bu uygulama için **erken erişim** kapsamındasınız"* | Açıkça: bunu testçi olduğun için görüyorsun |
+| *Son güncelleme **12 Eyl 2026*** | Bu **659** (kapalı test). 665 yayınlansaydı 13 Eyl yazardı |
+
+⚠ **Dashboard'ın `Production: Active` satırı da tek başına yetmez** — aynı
+panelde `Update status: In review` yazıyordu. Uzlaştıran yer dashboard
+değil: **Publishing overview → Submission activity** (gönderimin kendi
+durumu) ve **Test and release → Production → Releases** (*Track summary*).
+
+**Kural: "vitrin açıldı mı" sorusu OTURUM AÇMADAN ölçülür** — gizli
+sekmede, ya da testçi OLMAYAN birinin cihazında. Kendi Play uygulamanda
+bakmak her koşulda bir liste gösterir, yani yanlış pozitif üretir.
+`ROADMAP.md` §26'nın tetikleyicisi bu yüzden `curl` ile yazılmıştı; ölçümü
+telefona taşırken bu koşul düşmemeli.
+
+**Cihazdaki paketi kesin söyleyen tek şey Setup teşhis satırı:**
+`Derleme 7bccbf7` = 659 · `Derleme 9c62289` = 665.
+
 ### ✅ Publishing overview — ÖLÇÜLDÜ (13 Eylül 2026, 00:39-00:41)
 
 Sol menü → **Publishing overview**. Production akışının bu depoda ilk kez
@@ -1016,12 +1047,14 @@ basılacak yerde duruyor.
   |---|---|
   | Kapalı test güncellemeleri (17 gönderim) | 10-34 dk |
   | **#18** — Production, **paketsiz** (yalnızca ülkeler) | **≤22 dk** |
-  | **#19** — Production, **ilk kez paket taşıyor** | süre YOK, ama **alt sınır var**: ≫ 34 dk |
+  | **#19** — Production, **ilk kez paket taşıyor** | süre YOK, ama **alt sınır var**: **> 8 saat** |
 
   ⚠ **Kapalı test süresini buraya uyarlama** — ve artık bunun bir KANITI
   var. Kullanıcı 13 Eylül gecesi yatarken #19 **hâlâ `In review`**'daydı
   (bildirim: *"Hala in review"*), yani süre hem kapalı testin 10-34 dk
-  bandını hem #18'in ≤22 dk'sını **çoktan aştı**. Paketli production
+  bandını hem #18'in ≤22 dk'sını **çoktan aştı**. **13 Eyl 09:00'da hâlâ
+  `In review`** (kullanıcı bildirdi) → gönderim 00:49 olduğuna göre alt
+  sınır artık **8 saatin üstünde**. Paketli production
   incelemesi bu depoda ölçülen her şeyden farklı bir tür; Google'ın kendi
   yönlendirmesi de "7 güne kadar sürebilir" diyor. Kullanıcıya süre
   VAAT ETME.
