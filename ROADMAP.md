@@ -1661,6 +1661,13 @@ yapılır.
 bıraktığında — ÖLÇ, varsayma) → Android yarısı. App Store yayını → Apple
 yarısı.
 
+⚠ **Ve ölçümü KENDİ Play hesabınla yapma** (13 Eyl 2026, yaşandı): geliştirici
+`Kelimeki Testers` listesinde olduğundan Play ona her hâlükârda bir liste
+gösteriyor — *(Erken Erişim)* etiketiyle, arama sonucunda, yüklü rozetiyle.
+#19 incelemedeyken tam bu görüldü ve "yayınlandı" sanıldı. Doğru ölçüm
+OTURUM AÇMADAN: gizli sekme, ya da testçi olmayan biri. Vaka:
+`marketing/play-store/console-formlari.md` §7.5.
+
 ⚠ **Ajan İKİ vitrini de ölçemez** (13 Eyl 2026): oturumun ağ politikası
 `play.google.com`'a **ve** `apps.apple.com`'a `CONNECT` 403 veriyor,
 `kelimeki.com` ise 200 — yani engel siteye özel, ağ genel olarak açık.

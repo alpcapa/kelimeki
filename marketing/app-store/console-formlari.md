@@ -1590,6 +1590,20 @@ sözlük cümlesi eklenirse oraya sığar). **Metni değiştiren yeniden ÖLÇS�
 ⚠ `Attach File` bir BOYUT sınırı yazmıyor; videoyu eklerken ekran ne derse
 o. Takılırsa yedek yol yine listelenmemiş bağlantı.
 
+✅ **ÇOKLU dosya kabul ediyor (13 Eylül 2026, kullanıcı ekrandan doğruladı).**
+Yani dört klip **birleştirilmeyecek** ve cevap metnindeki *"It is split into
+four parts"* cümlesi doğru kalıyor. Dosyaları **sırayla** ekle: iOS ekran
+kayıtları `RPReplay_Final…` diye adlandırıldığından incelemeci sırayı dosya
+adından okuyamaz — Dosyalar'da `1-launch` · `2-signup` · `3-chat` ·
+`4-delete` gibi yeniden adlandırmak bunu çözer.
+⚠ Tek dosyaya düşülürse (ör. ileride bir gönderimde) o cümle
+*"It is a single recording with four sections, in this order:"* olmalı —
+aksi halde metin ekteki dosyayla çelişir.
+
+⚠ **Birleştirmeyi AJAN YAPAMAZ** (13 Eyl 2026'da denendi): bu ortamda
+`ffmpeg` kurulu değil, ve asıl engel o da değil — videoların cihazdan bu
+oturuma gelip geri dönmesi gerekirdi. Gerekirse cihazda iMovie ile yapılır.
+
 ### Ekran kaydı — cihaz ve ses (13 Eylül 2026, kullanıcı kararı)
 
 **iPhone'u iPad'le FİLME ÇEKME.** Apple'ın istediği *"a screen recording
