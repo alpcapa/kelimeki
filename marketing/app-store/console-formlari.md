@@ -1721,6 +1721,31 @@ sınır 15 dk, doğrulanmamış hesapta bile.
 HD işlenmesini bekle (yükleme biter bitmez verilen link bulanık sürümü
 gösterir) · **inceleme bitene kadar videoları silme.**
 
+### ⏸ Cevaptan SONRA: sürümü incelemeye geri sokan bir düğme YOK (13 Eyl 2026, ölçüldü)
+
+Cevap gönderildikten sonra iki düğme denendi, **ikisi de yol vermedi**:
+
+| Düğme | Nerede | Sonuç |
+|---|---|---|
+| `Resubmit to App Review` | gönderim sayfası | **GRİ** — Notes kaydedildikten sonra da gri kaldı |
+| `Update Review` | sürüm sayfası (`App Review`) | Notes kaydıyla **MAVİLEŞTİ**, basınca *"Unable to Add for Review — An unexpected error was encountered when submitting for review"* |
+
+⚠ **`Update Review`i açan şey Notes düzenlemesidir** — kaydetmeden önce o da griydi. Yani düğmenin aktifleşmesi "gönderilebilir" anlamına GELMİYOR.
+
+**En olası açıklama:** sürüm hâlâ AÇIK (reddedilmiş ama iptal edilmemiş) bir
+gönderimin item'ı; aynı sürüm ikinci kez incelemeye EKLENEMİYOR.
+
+**Doğru davranış: BEKLEMEK.** Apple'ın 2.1 *Information Needed* mesajı
+"resubmit" İSTEMİYOR — *"Reply in App Store Connect … and also add this
+information to the Notes field"* diyor, ikisi de yapıldı. Gri düğme
+"senin tarafında iş kalmadı" okumasıyla tutarlı.
+
+⚠ **`Cancel Submission` / item'ı `remove` ETME.** Gönderimi geri çekmek
+cevapla kurulan bağlamı ve kuyruktaki yeri riske atar.
+
+**Eşik — 2 iş günü.** O zamana kadar Apple'dan hareket yoksa (`Messages`
+sayacı artmadı, durum değişmedi) `contact us` formu, Submission ID ile.
+
 ### Cevap metni — 3385 karakter, olduğu gibi yapıştırılır
 
 ⚠ **Türkçe etiketler KODDAN doğrulandı, ezberden yazılmadı** — ve iki tanesi
