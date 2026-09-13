@@ -1549,6 +1549,26 @@ dokunuş dahil — ve oyun akışını kesintisiz göstermeli.
 7. **Ücretli içerik: YOK** — gösterilecek bir şey yok, uygulama tamamen
    ücretsiz ve uygulama içi satın alma taşımıyor.
 
+#### Tanıtım (onboarding) kayıtta ÇIKMAZ — ve çıkarmaya gerek yok
+
+`shouldShowTutorial` (`src/utils/onboarding.ts` ↔ `util/onboarding.dart`)
+dört sinyale bakıyor ve HERHANGİ biri "yeni değil" derse göstermiyor. İlki
+`seenTutorial` ve o bir **CİHAZ bayrağı** — geliştiricinin telefonu onu
+çoktan gördü. ⚠ **2. videodaki yepyeni hesap da tetiklemez:** bayrak hesaba
+değil cihaza bağlı (yaygın yanlış varsayım). Aynısı zoom balonu ve bağlamsal
+ipuçları için de geçerli — hepsi cihaz-yerel, hepsi tükenmiş. Yani kayıt
+bölünmez.
+
+**Zorlamaya da gerek yok:** Apple'ın altı maddesinde tanıtım yok. Çıkarmanın
+tek yolu uygulamayı silip yeniden kurmak olurdu — cihaz bayrakları ve yerel
+veri gider, baştan giriş gerekir. Tanıtımın kazancı (köşe-bölge mekaniğini
+60 saniyede anlatması) zaten İngilizce ANLATIMLA sağlanıyor.
+
+⚠ Başka bir sebeple yeniden kurulursa tanıtım açılır ve önünde bir karşılama
+penceresi çıkar (*"Kelimeki Tanıtım Turu"*). O durumda kesme — oynat ya da
+atla, ama ne olduğunu söyle: *"this is the built-in tutorial that first-time
+players see."*
+
 #### Cihaz ayarları — kayıttan önce varsayılana al (13 Eylül 2026)
 
 | Ayar | Değer | Neden |
