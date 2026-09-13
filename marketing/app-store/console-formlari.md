@@ -1622,9 +1622,10 @@ admin panelinden okundu işaretle. **Sessize alma da kişi bazlı ve kalıcıdı
 
 ⚠ **4000 sınırı taslağı bir kez DÜŞÜRDÜ:** ilk yazılan cevap **4307**
 karakterdi, yani 307 fazla — ve bu ancak ekran görüntüsü geldikten sonra
-ölçüldü. Aşağıdaki sürüm **3385 karakter** (615 pay kalıyor; 6. maddeye
-sözlük cümlesi eklenirse oraya sığar). **Metni değiştiren yeniden ÖLÇSÜN:**
-`wc -m` yeter, gözle tahmin etme.
+ölçüldü. Aşağıdaki sürüm **3842 karakter** (158 pay) — 13 Eylül akşamı 6.
+maddeye sözlük cümlesi eklendikten SONRAKİ hâli; pay o yüzden 615'ten
+158'e indi. **Metni değiştiren yeniden ÖLÇSÜN:** `wc -m` yeter, gözle
+tahmin etme.
 
 ⚠ `Attach File` bir BOYUT sınırı yazmıyor; videoyu eklerken ekran ne derse
 o. Takılırsa yedek yol yine listelenmemiş bağlantı.
@@ -1750,7 +1751,16 @@ GEÇİCİDİR.** `Update Review` ilk denemede (18:07) tam bu hatayı verdi;
 `Cancel Submission`'a ya da item'ı `remove` etmeye gitme — sayfayı yenile,
 bir süre sonra tekrar dene.
 
-### Cevap metni — 3385 karakter, olduğu gibi yapıştırılır
+### Cevap metni — **3842 karakter** (4000 sınırı, 158 pay), olduğu gibi
+yapıştırılır
+
+⚠ **Bu blok 1. maddenin KISA ("Attached…") sürümüyle ölçüldü.** 13 Eylül'de
+gerçekte gönderilen cevap videoları EK olarak değil BEŞ YouTube linkiyle
+taşıdı ve 3832 karakterdi; aynı beş link bu bloğa eklenirse **4000 aşılır**.
+Bir sonraki gönderimde yine link gerekirse seçim şu: ya sözlük paragrafı
+yalnızca **Notes** alanında kalsın (cevap kutusuna girmesin — Notes kalıcı
+olduğu için Apple onu zaten okur), ya da 1. madde link listesiyle birlikte
+yeniden yazılıp `wc -m` ile ÖLÇÜLSÜN. Gözle tahmin etme.
 
 ⚠ **Türkçe etiketler KODDAN doğrulandı, ezberden yazılmadı** — ve iki tanesi
 ilk taslakta YANLIŞTI: rapor düğmesi *"Kişiyi Rapor Et"* değil
@@ -1804,13 +1814,31 @@ None. The app is Turkish-language only and works identically in every region. No
 6. REGULATED INDUSTRY AND THIRD-PARTY MATERIAL
 
 Kelimeki does not operate in a regulated industry. It is a word game with no gambling, no real-money wagering, and no financial, medical or legal functionality.
+
+The app includes a Turkish word list and short dictionary definitions, shown for the words played in a game. The definitions are compiled from the Guncel Turkce Sozluk, the publicly accessible reference dictionary published by the Turk Dil Kurumu (Turkish Language Association), the official language institution of Turkiye. It is used as a language reference for validating and explaining Turkish words, not reproduced as a standalone dictionary product.
 ```
 
-⚠ **6. maddenin SÖZLÜK cümlesi bilerek EKSİK — kullanıcı kararı.** Uygulama
-~63 bin kelimelik listeyi ve kelime ANLAMLARINI taşıyor; anlamların kaynağı
-GTS (bkz. `docs/decisions/dictionary.md` → `npm run build:dict`). Kelime
-listesi ile yazılmış TANIMLAR aynı şey değildir ve buraya ne yazılacağı
-hukuki bir beyandır — ajan bir yetkilendirme iddiası UYDURAMAZ. Apple'ın
-sorusu koşullu ("*If* the app ... includes protected third-party material"),
-yani cümleyi hiç eklememek de geçerli bir seçim. Karar verilince bu not
-silinip seçilen cümle 6. maddeye eklenir ve metin YENİDEN ÖLÇÜLÜR.
+✅ **6. maddenin SÖZLÜK cümlesi EKLENDİ (13 Eylül 2026, kullanıcı kararı).**
+Uygulama ~63 bin kelimelik listeyi ve kelime ANLAMLARINI taşıyor; anlamların
+kaynağı GTS (bkz. `docs/decisions/dictionary.md` → `npm run build:dict`).
+Seçilen çizgi **kaynağı BEYAN et, yetkilendirme İDDİA ETME**: cümle GTS'i ve
+TDK'yı adıyla anıyor, "hakkımız var" demiyor. Kullanıcının gerekçesi: *TDK
+Türkiye'nin resmî dil kurumu, sitesi herkese açık ve Türkçe kelimelerin sahibi
+değil; resmî referans olduğu için baz alınıyor.* ⚠ Bunun tanım METİNLERİNİN
+telifsiz olduğunu kanıtlamadığı kullanıcıya söylendi — seçilen cümle iddia
+taşımadığı için ayrım cümleyi değiştirmiyor. Apple'ın sorusu zaten koşullu
+("*If* the app ... includes protected third-party material"). Aynı
+çizginin §10'daki ikizi: **Content Rights = `Yes`** (11 Eylül kararı) — orada
+da TDK'nın kullanım koşullarının ölçülmediği açıkça yazılı. İkisi tutarlı;
+biri değişirse ÖTEKİ de.
+
+⚠ **Cümle Türkçe karakter TAŞIMIYOR** (`Guncel Turkce Sozluk`, `Turk Dil
+Kurumu`, `Turkiye`) — metnin geri kalanı İngilizce ve ASCII; Türkçe etiketler
+yalnızca 3. maddede, incelemecinin EKRANDA göreceği düğme adları olarak var
+(orada `Hesabımı Sil` gibi diakritikler DURMALI). Bir kurum adının ASCII
+yazılması eşleştirmeyi bozmuyor.
+
+⚠ **Bu cümle bu turda gönderilen cevaba GİRMEDİ** — cevap 17:58'de gitmişti
+(as-built: 3832 karakter). Cümlenin yeri App Review Information → **Notes**
+alanı ve bir SONRAKİ gönderimin cevabı; oraya yukarıdaki blok olduğu gibi
+yapıştırılır.
