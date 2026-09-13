@@ -217,6 +217,16 @@ mobile/kelimeki_core/lib` → tek commit (squash).
       `marketing/app-store/console-formlari.md` §7.
       ⚠ **Bu andan itibaren senkron PENCERESİ AÇIK:** ASC 665, Play 659.
       Pencere Play yüklemesiyle kapanır; açıkken mobil merge EDİLMEZ.
+      🔴 **13 Eyl 04:16'da REDDEDİLDİ — ama PAKET GEÇERLİ.** Guideline 2.1
+      *Information Needed*; gerekçe *"limited App Review history"*, yani
+      yeni geliştirici hesabına uygulanan TANIMA anketi. Bildirilen çökme/
+      hata/giriş arızası YOK (demo hesap `kelimekitest2` ölçüldü: sağlam,
+      son giriş 12 Eyl 21:43 UTC — inceleme penceresinin İÇİNDE).
+      **Kod değişikliği gerekmiyor: 665 aynen kalır**, yeni `versionCode`
+      ÜRETİLMEZ, `mobile-latest`e ve TestFlight'a dokunulmaz. Gönderim
+      iptal EDİLMEZ; cevap `Reply to App Review` + Notes alanına yazılır.
+      Cevap kâğıdı ve ekran kaydı çekim listesi:
+      `marketing/app-store/console-formlari.md` **§16**.
 - [ ] **Play** → `mobile-latest`teki `.aab` (665) yüklenecek (13 Eyl).
       ⚠ Yükleme ekranında `versionCode`un **665** olduğunu DOĞRULA; arada
       mobil bir merge olursa etiket ezilir ve dosya değişir.

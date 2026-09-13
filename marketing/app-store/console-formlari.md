@@ -789,12 +789,27 @@ veritabanından ölçülmüştü: doğrulanmış, dondurulmamış, 3 arkadaş, 1
 Canlı oyun, 11 bitmiş oyun — yani incelemecinin göreceği dört ekran da boş
 değil.
 
+⚠ **YENİDEN ÖLÇÜLDÜ (13 Eylül 2026) — rakamlar bayatlamıştı:** bugün
+**2 arkadaş** (`kelimekitest3` + `Alp Çapa`, ikisi de `accepted`),
+**0 aktif Canlı oyun**, **12 bitmiş Canlı oyun**. Hesabın kendisi sağlam
+(doğrulanmış · banlı değil · silinmemiş · son giriş 12 Eyl 21:43 UTC).
+**Sonucu olan fark AKTİF oyunun sıfırlanması:** mesajlaşma ve şikayet/
+engelleme arayüzü yalnızca AKTİF bir Canlı oyundan açılıyor (biten oyunun
+arşivi bilerek salt-görsel, bkz. `docs/decisions/chat-moderation.md`).
+Yani incelemeci bugün giriş yapsa o yüzeye ULAŞAMAZ — §16'nın 3. videosu
+için önceden bir oyun kurulması bu yüzden gerekli.
+
 ⚠ İki hesap da `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK
 İKİ HESAP" kaydında; şifresinin değişmemesi kuralı oradan da bağlayıcı.
 
 ⚠ **Not alanına şunu yazmak faydalı:** uygulamanın hesapsız da (yapay zekaya
 karşı) oynanabildiği, girişin yalnızca Canlı oyun/k-lig için gerektiği.
 İncelemecinin "neden giriş istiyor" sorusunu baştan kapatır.
+
+⚠ **13 Eylül 2026'da bu "faydalı" ZORUNLU oldu.** Apple 1.1.0 (665)'i
+Guideline 2.1 *Information Needed* ile reddetti ve cevabın **Notes alanına
+da** yazılmasını açıkça istedi (*"for reference on future submissions"*).
+Notes'a girilecek tam metin ve gerekçesi: **§16**.
 
 ---
 
@@ -1459,3 +1474,230 @@ içeriği göremez; içerik kapıları (`pencereyiBekle` · `zoomKapisi` ·
 bir kare eklerken sıra şu: *ekranda olması gereken neyse onu `find` ile
 iddia et, sonra animasyonun bittiğini bekle.*
 
+
+---
+
+## 16. Guideline 2.1 — "Information Needed" reddi ve CEVAP KÂĞIDI (13 Eylül 2026)
+
+**Ne oldu:** 1.1.0 (665) gönderimi (12 Eyl 17:32, Submission ID
+`59db85e6-1159-46c9-a4ec-cbe3b1c2a3a8`) 13 Eyl **04:16**'da reddedildi.
+Durum: *Rejected · 2.1.0 Performance: App Completeness*.
+
+⚠ **BU BİR ARIZA BİLDİRİMİ DEĞİL.** Apple'ın gerekçesi tek cümle:
+*"This app has been submitted by a developer account that has a **limited
+App Review history**. We need additional information to better understand
+the app and complete the review."* Yani yeni geliştirici hesabına
+uygulanan bir TANIMA anketi. Mesajda bildirilen bir çökme, bir hata ya da
+"giriş yapamadık" YOK; alttaki *"Prevent Common Issues"* listesi de bulgu
+değil, herkese gönderilen standart hatırlatma.
+
+**Sonuç — kod değişikliği gerekmez:** 665 paketi geçerli kalır, yeni
+`versionCode` üretilmez, `mobile-latest` ve TestFlight'a dokunulmaz, ASC ↔
+Play sürüm senkronu (`mobile/docs/surumler.md`) BOZULMAZ. `Cancel
+Submission`'a basılmaz — gönderim canlı kalır, cevap `Reply to App Review`
+ile yazılır.
+
+**Demo hesap sağlam, ölçüldü (13 Eyl, üretim veritabanı):** `kelimekitest2`
+doğrulanmış · banlı değil · silinmemiş · şifre kayıtlı, **son giriş 12 Eyl
+21:43 UTC** — yani gönderim ile ret arasındaki pencerede hesaba BAŞARIYLA
+girilmiş. Ret sebebinin "hesaba erişemedik" olmadığının ikinci kanıtı.
+
+### Apple'ın istediği altı şey ve kim yapacak
+
+| # | İstenen | Kim |
+|---|---|---|
+| 1 | Fiziksel cihazda, güncel iOS'ta, **uygulama açılışından başlayan** ekran kaydı | **KULLANICI** (aşağıdaki çekim listesi) |
+| 2 | Uygulamanın amacı + hedef kitle | metin hazır ↓ |
+| 3 | Ana özelliklere erişim talimatı + giriş bilgileri | metin hazır ↓ |
+| 4 | Çekirdek işlevi sağlayan DIŞ SERVİSLER | metin hazır ↓ |
+| 5 | Bölgesel farklar (ya da yok beyanı) | metin hazır ↓ |
+| 6 | Düzenlemeye tabi sektör / korumalı üçüncü taraf materyali | ⚠ **KULLANICI KARARI** ↓ |
+
+⚠ Cevap **İKİ yere** girilecek: `Reply to App Review` **ve** App Review
+Information → **Notes** alanı (Apple açıkça *"for reference on future
+submissions"* diyor). Notes alanı kalıcıdır — bir sonraki gönderimde aynı
+anket tekrar gelmesin diye orada DURMALI.
+
+### Ekran kaydı — çekim listesi
+
+⚠ **DÖRT parça** (aşağıdaki gruplama; gerekçe "Ekran kaydı — cihaz ve ses").
+**1. parça uygulamanın AÇILIŞIYLA başlamalı** — ana ekrandan uygulamaya
+dokunuş dahil — ve oyun akışını kesintisiz göstermeli.
+
+1. **Açılış + tipik akış.** *(video 1)* Uygulamayı aç → **"Yapay Zeka ile"**
+   bir oyun başlat → 2-3 hamle oyna (tahta, puan, bölge görünsün).
+2. **Kayıt olma.** *(video 2)* Çıkış yaptıktan sonra Kayıt Ol → formu
+   doldur → gönder.
+   ⚠ **ATILABİLİR bir hesap kullan** — 6. adımda bu hesap silinecek.
+   E-posta doğrulaması gerektiğinden gerçek bir gelen kutusu lazım.
+3. **Giriş.** `kelimekitest2` ile giriş yap (incelemeciye verilen hesabın
+   çalıştığını da aynı kayıtta göstermiş olursun).
+4. **Kullanıcı üretimi içerik.** *(video 3)* Önceden kurulmuş Canlı oyunu aç
+   (aşağıdaki hazırlık) → tahtanın altındaki mesaj butonu → bir mesaj yaz
+   ve gönder. ⚠ **Hamle oynamak GEREKMİYOR** — Apple "online oyun göster"
+   demiyor, "kullanıcı üretimi içerik + şikayet/engelleme göster" diyor;
+   Canlı oyun videoya yalnızca sohbet orada olduğu için giriyor.
+5. **Raporlama ve engelleme — Apple'ın ÖZELLİKLE istediği adım.** Sohbet
+   başlığındaki dişli → katılımcı seç → **"Kişiyi Sessize Al"** (onay
+   ekranıyla birlikte) → geri dön → **"Kişiyi Şikayet Et"** → neden yaz →
+   onayla → *"Şikayetiniz iletildi."* ekranını göster.
+6. **Hesap silme.** *(video 4)* 2. adımdaki ATILABİLİR hesaba geç → Hesap Ayarları →
+   Hesabımı Sil → `SİL` yaz → onayla, silmeyi TAMAMLA.
+   ⚠ **`kelimekitest2`'yi ASLA SİLME** — hem incelemecinin hesabı hem de
+   `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK İKİ HESAP"
+   kaydında.
+7. **Ücretli içerik: YOK** — gösterilecek bir şey yok, uygulama tamamen
+   ücretsiz ve uygulama içi satın alma taşımıyor.
+
+#### 3. video için HAZIRLIK (kayıttan ÖNCE, filme alınmaz)
+
+Sohbet/şikayet yüzeyi **yalnızca AKTİF bir Canlı oyundan** açılıyor ve
+13 Eylül 2026'da ölçüldü: `kelimekitest2`'nin aktif oyunu **YOK** (12'si de
+bitmiş). Yani bir oyun kurulacak. Sıra dışı bir şey gerekmiyor, çünkü
+**iki hesap da sende**:
+
+| | |
+|---|---|
+| iPhone | `kelimekitest2` ile giriş (demo hesap — kaydın kendisi hesabın çalıştığını da kanıtlar) |
+| iPad | `kelimekitest3` ile giriş |
+| Arkadaşlık | ⚠ ZATEN VAR — 16 Ağu 2026'da kabul edilmiş (13 Eyl'de doğrulandı), istek göndermeye gerek yok |
+| Oyun | Birinden Canlı oyun kur, ötekinden kabul et → oyun `active` olur |
+| Mesaj | iPad'den (T3) bir mesaj at ki sohbet çift taraflı görünsün |
+
+Bundan sonra kaydı iPhone'da başlat. **Hamle sırası beklemek yok** — oyunun
+`active` olması yeterli.
+
+⚠ **Şikayet GERÇEK bir kayıt üretir.** `report_online_game_participant`
+admin panelinde "Yeni" rozetli bir satır açar ve bekleyen-iş sayacına girer.
+Kayıt bittikten sonra temizle: uygulamadan **"Şikayeti Geri Çek"**, sonra
+admin panelinden okundu işaretle. **Sessize alma da kişi bazlı ve kalıcıdır**
+— geri almazsan T3 ile sonraki her oyunda rozet görünür.
+
+### ÖLÇÜLDÜ — `Reply to App Review` penceresi (13 Eylül 2026, 07:57)
+
+| Ekrandan okunan | Değer |
+|---|---|
+| **Cevap kutusu sınırı** | **4000 karakter** (sayaç kutunun altında) |
+| **Dosya eki** | **VAR** — `Attach File` bağlantısı kutunun hemen altında. Videoyu listelenmemiş bir bağlantıya koymaya GEREK YOK |
+| Öteki düğmeler | `Save Draft` (yarıda bırakılabilir) · `Cancel` · `Reply` |
+
+⚠ **4000 sınırı taslağı bir kez DÜŞÜRDÜ:** ilk yazılan cevap **4307**
+karakterdi, yani 307 fazla — ve bu ancak ekran görüntüsü geldikten sonra
+ölçüldü. Aşağıdaki sürüm **3385 karakter** (615 pay kalıyor; 6. maddeye
+sözlük cümlesi eklenirse oraya sığar). **Metni değiştiren yeniden ÖLÇSÜN:**
+`wc -m` yeter, gözle tahmin etme.
+
+⚠ `Attach File` bir BOYUT sınırı yazmıyor; videoyu eklerken ekran ne derse
+o. Takılırsa yedek yol yine listelenmemiş bağlantı.
+
+### Ekran kaydı — cihaz ve ses (13 Eylül 2026, kullanıcı kararı)
+
+**iPhone'u iPad'le FİLME ÇEKME.** Apple'ın istediği *"a screen recording
+captured on a physical device"*, yani cihazın KENDİ ekran kaydı; kamerayla
+çekilmiş görüntü ekran kaydı değildir (yansıma/moiré/el titremesi, üstelik
+kat kat büyük dosya) ve aynı 2.1 turunu geri getirebilir.
+
+**İngilizce anlatım İSTENİYOR ve ekran kaydıyla birlikte mümkün:** Denetim
+Merkezi → kayıt düğmesine **basılı tut** → **Mikrofon: Açık**. Tek cihaz
+yeter, iPad'e gerek yok.
+
+**Dört parçaya bölmek uygun** (Apple tek dosya şart koşmuyor), iki kuralla:
+ilk video uygulamanın **AÇILIŞIYLA** başlar ve tipik oyun akışını kesintisiz
+gösterir; her parçanın ne olduğu cevap metninde adıyla listelenir (aşağıdaki
+1-4). Bölmenin ikinci faydası: kayıt adımındaki **e-posta doğrulama
+beklemesi** ölü zaman, orası doğal kesme noktası.
+
+### Anlatım metni (İngilizce, kayıt sırasında okunur)
+
+> **1 — Launch and gameplay.** "This is Kelimeki, a Turkish word game. I am
+> opening it now on my iPhone. No account is needed to play. This is the
+> setup screen, and I am starting a game against the computer opponent. The
+> board is thirteen by thirteen. Each player starts from their own corner
+> and grows a territory across the board. I place tiles to form a Turkish
+> word and play the move. The score is added here, and my territory has
+> grown."
+>
+> **2 — Registration and login.** "Now I will show account registration. I
+> sign out first. This is the registration form: I enter an email address
+> and a password and submit it. The app sends a confirmation email, which I
+> confirm now. Then I sign in with the demo account we provided to App
+> Review."
+>
+> **3 — Chat, blocking and reporting.** "This is an online game against
+> another player. The message button below the board opens the chat. This is
+> user-generated content, and I am sending a message now. The gear icon in
+> the chat header opens the participant list. Selecting a person gives two
+> options: the first one blocks this person, with a confirmation step. The
+> second one reports the person to us. A reason is required, and there is
+> another confirmation. The report has now been sent."
+>
+> **4 — Account deletion.** "Finally, account deletion. I am signed in with
+> a disposable test account. From the user menu I open account settings, and
+> here is delete my account. The app shows exactly what will be deleted. I
+> type the confirmation word and confirm. The account is now permanently
+> deleted."
+
+### Cevap metni — 3385 karakter, olduğu gibi yapıştırılır
+
+⚠ **Türkçe etiketler KODDAN doğrulandı, ezberden yazılmadı** — ve iki tanesi
+ilk taslakta YANLIŞTI: rapor düğmesi *"Kişiyi Rapor Et"* değil
+**"Kişiyi Şikayet Et"** (4 Ağustos 2026 kararı: kullanıcıya görünen tüm
+metinlerde "rapor" yerine "şikayet"), tek kişilik mod da *"Yapay Zekaya
+Karşı"* değil **"Yapay Zeka ile"**. Arayüz Türkçe olduğundan bu etiketler
+metinde DURMALI: incelemeci ekranda gördüğü kelimeyi ancak böyle eşleştirir.
+
+```
+1. SCREEN RECORDING
+
+Attached, recorded on a physical iPhone running the latest iOS, with English narration. It is split into four parts:
+
+1 - App launch and a typical game against the computer opponent.
+2 - Account registration, then login with the demo account.
+3 - User-generated content (in-game chat) with the blocking and reporting mechanisms.
+4 - The account deletion flow, completed on a disposable account.
+
+The app has no paid content or features.
+
+2. PURPOSE AND TARGET AUDIENCE
+
+Kelimeki is a free Turkish word game. Players form Turkish words from letter tiles on a 13x13 board. Its distinguishing mechanic is corner territories: each player grows a territory out of their own 4x4 corner, and placing tiles inside or next to an opponent's territory transfers part of the move's score to that opponent.
+
+It is made for Turkish-speaking players of any age who enjoy word and puzzle games. The interface and all content are in Turkish. It offers a validated Turkish dictionary of about 63,000 words with definitions, an offline single-player mode at three difficulty levels, pass-and-play for 2-4 players on one device, and optional online multiplayer with friends.
+
+3. ACCESSING THE MAIN FEATURES
+
+No account is needed to play. The app opens on the setup screen, where a game against the computer or a pass-and-play game can be started immediately. An account is only required for online multiplayer, league standings, friends and game history. Demo account credentials are in the App Review Information section. The interface is Turkish, so the on-screen labels are given below.
+
+- Single player: setup screen, "Yapay Zeka ile", pick a difficulty, "OYUNU BAŞLAT".
+- Online multiplayer: sign in, "Canlı" tab, open the active game listed there.
+- Chat (user-generated content): inside a live game, the message button below the board.
+- Blocking and reporting: in the chat, the gear icon opens the participant list; selecting a person offers "Kişiyi Sessize Al" (block) and "Kişiyi Şikayet Et" (report, which requires a reason and a confirmation step). Both can be undone later from the friends list.
+- Account deletion: user menu, "Hesap Ayarları", "Hesabımı Sil", then type "SİL" to confirm. The account and its data are permanently deleted.
+
+4. EXTERNAL SERVICES
+
+- Supabase - authentication, database, realtime updates for online games, storage for profile pictures, serverless functions.
+- Firebase Cloud Messaging - push notifications.
+- Firebase Analytics - anonymous usage analytics.
+- Brevo - transactional email (sign-up confirmation, password reset). Called only from our own server-side functions; the app never contacts it directly.
+- Vercel - hosting for the companion web version at kelimeki.com.
+
+The app uses no AI service. The single-player opponent is a deterministic search algorithm that runs entirely on the device, with no network access and no machine-learning model. There are no payment processors: the app is free, with no in-app purchases, no subscriptions and no advertising.
+
+5. REGIONAL DIFFERENCES
+
+None. The app is Turkish-language only and works identically in every region. No content, feature or price varies by country.
+
+6. REGULATED INDUSTRY AND THIRD-PARTY MATERIAL
+
+Kelimeki does not operate in a regulated industry. It is a word game with no gambling, no real-money wagering, and no financial, medical or legal functionality.
+```
+
+⚠ **6. maddenin SÖZLÜK cümlesi bilerek EKSİK — kullanıcı kararı.** Uygulama
+~63 bin kelimelik listeyi ve kelime ANLAMLARINI taşıyor; anlamların kaynağı
+GTS (bkz. `docs/decisions/dictionary.md` → `npm run build:dict`). Kelime
+listesi ile yazılmış TANIMLAR aynı şey değildir ve buraya ne yazılacağı
+hukuki bir beyandır — ajan bir yetkilendirme iddiası UYDURAMAZ. Apple'ın
+sorusu koşullu ("*If* the app ... includes protected third-party material"),
+yani cümleyi hiç eklememek de geçerli bir seçim. Karar verilince bu not
+silinip seçilen cümle 6. maddeye eklenir ve metin YENİDEN ÖLÇÜLÜR.
