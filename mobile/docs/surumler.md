@@ -227,6 +227,11 @@ mobile/kelimeki_core/lib` → tek commit (squash).
       iptal EDİLMEZ; cevap `Reply to App Review` + Notes alanına yazılır.
       Cevap kâğıdı ve ekran kaydı çekim listesi:
       `marketing/app-store/console-formlari.md` **§16**.
+      ✅ **13 Eyl'de CEVAPLANDI ve YENİDEN GÖNDERİLDİ.** Cevap 17:58
+      (beş anlatımlı ekran kaydı, Unlisted YouTube linki olarak — 760 MB'lık
+      dosyalar eke sığmadı), Notes 18:04, `Update Review` 18:13,
+      `Resubmit to App Review` **18:15**. Durum: 🟡 **`Waiting for Review`**.
+      **Paket hâlâ 665, kod değişmedi** — senkron bozulmadı.
 - [ ] **Play** → `mobile-latest`teki `.aab` (665) yüklenecek (13 Eyl).
       ⚠ Yükleme ekranında `versionCode`un **665** olduğunu DOĞRULA; arada
       mobil bir merge olursa etiket ezilir ve dosya değişir.

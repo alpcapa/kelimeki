@@ -1721,30 +1721,34 @@ sınır 15 dk, doğrulanmamış hesapta bile.
 HD işlenmesini bekle (yükleme biter bitmez verilen link bulanık sürümü
 gösterir) · **inceleme bitene kadar videoları silme.**
 
-### ⏸ Cevaptan SONRA: sürümü incelemeye geri sokan bir düğme YOK (13 Eyl 2026, ölçüldü)
+### ✅ Cevaptan SONRA sürümü incelemeye geri sokan ZİNCİR (13 Eyl 2026, ölçüldü)
 
-Cevap gönderildikten sonra iki düğme denendi, **ikisi de yol vermedi**:
+⚠ **Cevabı göndermek TEK BAŞINA yetmiyor.** Sürüm reddedilmiş hâlde kalır;
+onu kuyruğa geri sokan dört adımlı bir zincir var ve **sırası zorunlu**:
 
-| Düğme | Nerede | Sonuç |
-|---|---|---|
-| `Resubmit to App Review` | gönderim sayfası | **GRİ** — Notes kaydedildikten sonra da gri kaldı |
-| `Update Review` | sürüm sayfası (`App Review`) | Notes kaydıyla **MAVİLEŞTİ**, basınca *"Unable to Add for Review — An unexpected error was encountered when submitting for review"* |
+| # | Nerede | Ne | Sonuç |
+|---|---|---|---|
+| 1 | gönderim sayfası | `Reply to App Review` | `Messages (2)`. Durum hâlâ `Rejected`, `Resubmit` GRİ |
+| 2 | sürüm sayfası → `App Review` | **Notes** alanına metni yaz + **`Save`** | `Update Review` GRİ'den **MAVİ**'ye döner |
+| 3 | aynı sayfa | **`Update Review`** | item `Rejected` → 🟡 **`Ready for Review`**; `Resubmit to App Review` MAVİLEŞİR |
+| 4 | gönderim sayfası | **`Resubmit to App Review`** | gönderim 🟡 **`Waiting for Review`**, `Unresolved Issues` kalkar |
 
-⚠ **`Update Review`i açan şey Notes düzenlemesidir** — kaydetmeden önce o da griydi. Yani düğmenin aktifleşmesi "gönderilebilir" anlamına GELMİYOR.
+**13 Eylül ölçümü:** cevap 17:58 → Notes 18:04 → `Update Review` 18:13 →
+`Resubmit` 18:15.
 
-**En olası açıklama:** sürüm hâlâ AÇIK (reddedilmiş ama iptal edilmemiş) bir
-gönderimin item'ı; aynı sürüm ikinci kez incelemeye EKLENEMİYOR.
+⚠ **`Ready for Review` "gönderildi" DEĞİL, "gönderilmeye hazır".** 3. adımda
+durup 4'ü atlarsan Apple'a hiçbir şey gitmez ve ekran sana yeşil gibi görünür.
+Bu zincirin en kolay kaçırılan yeri burasıdır.
 
-**Doğru davranış: BEKLEMEK.** Apple'ın 2.1 *Information Needed* mesajı
-"resubmit" İSTEMİYOR — *"Reply in App Store Connect … and also add this
-information to the Notes field"* diyor, ikisi de yapıldı. Gri düğme
-"senin tarafında iş kalmadı" okumasıyla tutarlı.
+⚠ **2. adım bir KAPI, sadece bir form alanı değil.** `Update Review` yalnızca
+sürümde kaydedilmiş bir düzenleme varken açılıyor; Notes'u doldurmak hem
+Apple'ın istediği şey hem de düğmeyi açan şey.
 
-⚠ **`Cancel Submission` / item'ı `remove` ETME.** Gönderimi geri çekmek
-cevapla kurulan bağlamı ve kuyruktaki yeri riske atar.
-
-**Eşik — 2 iş günü.** O zamana kadar Apple'dan hareket yoksa (`Messages`
-sayacı artmadı, durum değişmedi) `contact us` formu, Submission ID ile.
+⚠ **"Unable to Add for Review — An unexpected error was encountered"
+GEÇİCİDİR.** `Update Review` ilk denemede (18:07) tam bu hatayı verdi;
+~6 dakika sonra aynı düğme sorunsuz çalıştı. Hatayı görünce
+`Cancel Submission`'a ya da item'ı `remove` etmeye gitme — sayfayı yenile,
+bir süre sonra tekrar dene.
 
 ### Cevap metni — 3385 karakter, olduğu gibi yapıştırılır
 
