@@ -789,6 +789,16 @@ veritabanından ölçülmüştü: doğrulanmış, dondurulmamış, 3 arkadaş, 1
 Canlı oyun, 11 bitmiş oyun — yani incelemecinin göreceği dört ekran da boş
 değil.
 
+⚠ **YENİDEN ÖLÇÜLDÜ (13 Eylül 2026) — rakamlar bayatlamıştı:** bugün
+**2 arkadaş** (`kelimekitest3` + `Alp Çapa`, ikisi de `accepted`),
+**0 aktif Canlı oyun**, **12 bitmiş Canlı oyun**. Hesabın kendisi sağlam
+(doğrulanmış · banlı değil · silinmemiş · son giriş 12 Eyl 21:43 UTC).
+**Sonucu olan fark AKTİF oyunun sıfırlanması:** mesajlaşma ve şikayet/
+engelleme arayüzü yalnızca AKTİF bir Canlı oyundan açılıyor (biten oyunun
+arşivi bilerek salt-görsel, bkz. `docs/decisions/chat-moderation.md`).
+Yani incelemeci bugün giriş yapsa o yüzeye ULAŞAMAZ — §16'nın 3. videosu
+için önceden bir oyun kurulması bu yüzden gerekli.
+
 ⚠ İki hesap da `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK
 İKİ HESAP" kaydında; şifresinin değişmemesi kuralı oradan da bağlayıcı.
 
@@ -1522,8 +1532,11 @@ dokunuş dahil — ve oyun akışını kesintisiz göstermeli.
    E-posta doğrulaması gerektiğinden gerçek bir gelen kutusu lazım.
 3. **Giriş.** `kelimekitest2` ile giriş yap (incelemeciye verilen hesabın
    çalıştığını da aynı kayıtta göstermiş olursun).
-4. **Kullanıcı üretimi içerik.** *(video 3)* Aktif bir Canlı oyunu aç → tahtanın
-   altındaki mesaj butonu → bir mesaj yaz ve gönder.
+4. **Kullanıcı üretimi içerik.** *(video 3)* Önceden kurulmuş Canlı oyunu aç
+   (aşağıdaki hazırlık) → tahtanın altındaki mesaj butonu → bir mesaj yaz
+   ve gönder. ⚠ **Hamle oynamak GEREKMİYOR** — Apple "online oyun göster"
+   demiyor, "kullanıcı üretimi içerik + şikayet/engelleme göster" diyor;
+   Canlı oyun videoya yalnızca sohbet orada olduğu için giriyor.
 5. **Raporlama ve engelleme — Apple'ın ÖZELLİKLE istediği adım.** Sohbet
    başlığındaki dişli → katılımcı seç → **"Kişiyi Sessize Al"** (onay
    ekranıyla birlikte) → geri dön → **"Kişiyi Şikayet Et"** → neden yaz →
@@ -1535,6 +1548,30 @@ dokunuş dahil — ve oyun akışını kesintisiz göstermeli.
    kaydında.
 7. **Ücretli içerik: YOK** — gösterilecek bir şey yok, uygulama tamamen
    ücretsiz ve uygulama içi satın alma taşımıyor.
+
+#### 3. video için HAZIRLIK (kayıttan ÖNCE, filme alınmaz)
+
+Sohbet/şikayet yüzeyi **yalnızca AKTİF bir Canlı oyundan** açılıyor ve
+13 Eylül 2026'da ölçüldü: `kelimekitest2`'nin aktif oyunu **YOK** (12'si de
+bitmiş). Yani bir oyun kurulacak. Sıra dışı bir şey gerekmiyor, çünkü
+**iki hesap da sende**:
+
+| | |
+|---|---|
+| iPhone | `kelimekitest2` ile giriş (demo hesap — kaydın kendisi hesabın çalıştığını da kanıtlar) |
+| iPad | `kelimekitest3` ile giriş |
+| Arkadaşlık | ⚠ ZATEN VAR — 16 Ağu 2026'da kabul edilmiş (13 Eyl'de doğrulandı), istek göndermeye gerek yok |
+| Oyun | Birinden Canlı oyun kur, ötekinden kabul et → oyun `active` olur |
+| Mesaj | iPad'den (T3) bir mesaj at ki sohbet çift taraflı görünsün |
+
+Bundan sonra kaydı iPhone'da başlat. **Hamle sırası beklemek yok** — oyunun
+`active` olması yeterli.
+
+⚠ **Şikayet GERÇEK bir kayıt üretir.** `report_online_game_participant`
+admin panelinde "Yeni" rozetli bir satır açar ve bekleyen-iş sayacına girer.
+Kayıt bittikten sonra temizle: uygulamadan **"Şikayeti Geri Çek"**, sonra
+admin panelinden okundu işaretle. **Sessize alma da kişi bazlı ve kalıcıdır**
+— geri almazsan T3 ile sonraki her oyunda rozet görünür.
 
 ### ÖLÇÜLDÜ — `Reply to App Review` penceresi (13 Eylül 2026, 07:57)
 
