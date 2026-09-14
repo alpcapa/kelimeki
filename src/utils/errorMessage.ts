@@ -65,7 +65,7 @@
  * karşılaştırır.
  *
  * ⚠ **İkisi AYRI günlerde `main`'e girdi** (web 14 Eylül, port sonrası):
- * 1.1.0 (665) kodu donduruğu ve iki mağaza da incelediği için web yarısı
+ * 1.1.0 (665) kodu donduğu ve iki mağaza da incelediği için web yarısı
  * tek başına yayınlandı, port yarısı inceleme kapanana kadar bekletildi.
  * Yani `client_errors`ta 14 Eylül ile port sürümünün yayını arasındaki
  * pencerede `hata-metni:*` kayıtları YALNIZCA web'den gelir — mobil

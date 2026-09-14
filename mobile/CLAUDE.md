@@ -119,13 +119,27 @@ yukarıda.) Merge etmeden cihazda görmek gerekiyorsa tek yol dalda bir
 
 ### Bu ortamın sınırı (kritik — buradaki tek gözlem yolu MCP)
 
-`curl`/`bash` bu oturumdan **ne `api.github.com`'a ne siteye** çıkabiliyor
-(proxy 403, token'la bile). Yani:
+⚠ **DÜZELTME (14 Eylül 2026, ölçüldü): `curl` `api.github.com`'a DA
+ÇIKIYOR.** Bu bölüm uzun süre *"ne `api.github.com`'a ne siteye
+çıkabiliyor (proxy 403, token'la bile)"* diyordu; depo public olduğundan
+kimlik doğrulamasız okumalar **200** dönüyor — `/commits/<sha>/check-runs`
+ve `/rate_limit` ayrı ayrı denendi. Yani koşu durumu shell'den de
+okunabiliyor ve bir Bash izleyicisi (poll + `sleep`) GERÇEKTEN çalışıyor;
+PR #548'in CI'ı tam bu yolla izlendi. Eski not yüzünden bu yol aylarca hiç
+denenmedi. **Sınırı:** kimlik doğrulamasız kota saatte 60 istek (30 sn'lik
+poll'da sorun değil) ve YAZMA hâlâ yok — `rerun`/`dispatch` için aşağıdaki
+403 maddesi geçerli.
 
-- Bash tabanlı bir "deploy izleyici" **sessizce ölü kalır** ve sessizlik
-  "hâlâ çalışıyor" gibi görünür — 15 Ağustos'ta tam bu kuruldu ve fark
-  edilmeseydi 40 dakika boş beklenecekti.
-- Koşu durumu YALNIZCA GitHub MCP araçlarıyla **okunabilir**
+Siteye çıkış zaten 2 Eylül 2026'da düzeltilmişti (aşağıdaki DÜZELTME 2).
+Yani bu başlığın "tek gözlem yolu MCP" iddiası artık YALNIZCA yazma
+işlemleri ve Flutter/Pages yüzeyi için doğru:
+
+- Bash tabanlı bir "deploy izleyici" 15 Ağustos'ta **sessizce ölü kalmıştı**
+  ve sessizlik "hâlâ çalışıyor" gibi görünmüştü — fark edilmeseydi 40 dakika
+  boş beklenecekti. ⚠ O vakanın DERSİ duruyor (sessizlik ≠ çalışıyor:
+  izleyici her terminal durumu bassın), ama SEBEBİ artık geçerli değil.
+- Koşu durumu GitHub MCP araçlarıyla **okunabilir** (ve yukarıdaki
+  düzeltmeden beri `curl` ile de)
   (`actions_list` → `list_workflow_runs`, `pull_request_read`).
 - **Ama TETİKLENEMEZ (18 Ağustos 2026'da ölçüldü):** bu oturumun tokeni
   Actions'a yazamıyor — `rerun_workflow_run` ve `run_workflow` (dispatch)
