@@ -1729,14 +1729,22 @@ gösterir) · **inceleme bitene kadar videoları silme.**
 kayıt olma + demo hesapla giriş) kaldırdı. Gerekçe: **policy on personally
 identifiable information**. Kullanıcı itiraz etti.
 
+🔴 **İTİRAZ REDDEDİLDİ (14 Eylül 2026, 12:43).** YouTube'un cevabı:
+*"We reviewed Kelimeki Review - Video 2 again and **confirmed** it's not
+allowed under our policy on personally identifiable information. **Your
+video won't be put back on YouTube.**"* Karar insan incelemesinden de geçti;
+video KALICI olarak gitti. Aşağıdaki "muhtemelen" değerlendirmesi böylece
+doğrulandı — artık tahmin değil ÖLÇÜM.
+
 ⚠ **Bu muhtemelen YANLIŞ TESPİT DEĞİL, ve bunu böyle kabul etmek planı
 değiştiriyor.** Video 2'nin içeriği tanımı gereği şunları gösteriyor: bir
 e-posta adresinin forma yazılması, bir şifrenin yazılması, ve
 `kelimekitest2`nin giriş bilgileriyle oturum açılması. YouTube'un kendi
 metni tam da bunları sayıyor: *"…an individual's home address, **email
 address**, **sign-in credentials**, phone number…"*. Yani sınıflandırıcı
-videoda GERÇEKTEN var olan bir şeyi yakaladı. İtiraz reddedilebilir;
-sonucuna bağlı plan yapma.
+videoda GERÇEKTEN var olan bir şeyi yakaladı — ve itirazın reddi bunu
+teyit etti. **Bu yüzden aşağıdaki 1. kural KOŞULSUZ:** kayıt/giriş gösteren
+bir ekran kaydı YouTube'da barındırılamaz, "belki geçer" diye denenmez.
 
 ⚠ **VE CEVAP VERECEK KANAL YOK (ölçüldü, aynı gün).** Gönderim
 `Waiting for Review` durumundayken sayfada **`Reply to App Review` düğmesi
