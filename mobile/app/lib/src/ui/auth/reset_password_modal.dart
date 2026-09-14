@@ -10,13 +10,13 @@
 // Bir Navigator route'u OLMADAN inline render edildiğinden KModal'a `onClose`
 // geçilir (pop edilecek dialog route'u yok — modal_shell.dart'taki not).
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 
 import '../../data/auth_service.dart';
 import '../game/modal_shell.dart';
 import '../game/neo_button.dart';
 import '../tokens.dart';
 import '../form_input.dart';
+import '../../util/error_message.dart';
 
 const Color _muted = kMuted;
 const Color _red = kRed;
@@ -75,12 +75,11 @@ class _ResetPasswordModalState extends State<ResetPasswordModal> {
       await setter(_password.text);
       if (mounted) setState(() => _done = true);
     } catch (e) {
-      // Web: friendlyAuthMessage ?? err.message ?? 'Bir hata oluştu.'
+      // Web: friendlyAuthMessage ?? friendlyErrorMessage(...)
       final friendly = friendlyAuthMessage(e);
-      final raw = e is AuthException ? e.message : e.toString();
       if (mounted) {
         setState(() => _error =
-            friendly ?? (raw.trim().isEmpty ? 'Bir hata oluştu.' : raw));
+            friendly ?? friendlyErrorMessage(e, surface: 'sifre-sifirlama'));
       }
     } finally {
       if (mounted) setState(() => _busy = false);

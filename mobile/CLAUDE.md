@@ -568,7 +568,7 @@ mobile/
       util/                # saf yardımcılar: deep_link, push_rules, semver,
                            # share_board + web ikizleri (game_list_order,
                            # recent_game_avatars, head_to_head, score_line, platform,
-                           # away_return, ai_level, onboarding)
+                           # away_return, ai_level, onboarding, error_message)
     test/                  # util + controller (golden replay) + widget testleri
                            # + support/ (paylaşılan test altyapısı)
     integration_test/      # ⚠ `flutter test` BUNU TOPLAMAZ — GERÇEK iOS
@@ -614,7 +614,9 @@ sunucu `coalesce` ile ortak, bkz. ROADMAP #23):
    k-lig kademeleri, `platform.dart`in değer kümesi ↔ sunucu kısıtı, yardım
    metni, giriş sekmesi kuralı, `appVersion` ↔ `pubspec`, YZ zorluğunun
    etiket/seçilebilir liste/seviye açıklamaları (hitap cümlesi + puan)/yardım paragrafı —
-   `ai_level_parity_test`, 6 Eylül 2026) — **yeni bir
+   `ai_level_parity_test`, 6 Eylül 2026; kullanıcıya gösterilen hata
+   metninin kapısı — metinler + kalıp sayıları, `error_message_parity_test`,
+   13 Eylül 2026) — **yeni bir
    elle-senkron çift eklerken testini de yaz**, desen hazır (web kaynağını/
    migration'ı okuyup karşılaştır). Bugün kapısı OLMAYAN iki çift:
    `intro_screen.dart` metinleri ↔ `Landing.tsx`, ve k-lig kademe

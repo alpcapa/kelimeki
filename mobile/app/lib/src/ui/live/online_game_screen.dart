@@ -80,6 +80,7 @@ import '../../util/uuid.dart';
 import '../../util/online_status.dart';
 import '../../util/onboarding.dart';
 import '../../data/error_reporter.dart';
+import '../../util/error_message.dart';
 
 const Color _muted = kMuted;
 const Color _red = kRed;
@@ -1063,8 +1064,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     // 11 Eylül 2026'ya kadar ham `PostgrestException` dökümü ekrana
     // düşüyordu: *"PostgrestException(message: Sıra sende değil., code:
     // P0001, details: Bad Request…)"* — kullanıcı iPhone'da gördü.
-    final msg = e.toString();
-    return msg.isEmpty ? 'Hamle gönderilemedi.' : msg;
+    return friendlyErrorMessage(e,
+        surface: 'hamle', fallback: 'Hamle gönderilemedi.');
   }
 
   /// Bekleyen gönderimin idempotency anahtarı ve hangi hamleye ait olduğu.

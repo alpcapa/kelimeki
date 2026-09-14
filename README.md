@@ -189,6 +189,7 @@ src/
 │   ├── draftRescue.ts  # ıskalanan dokunuşu en yakın taslak taşa yönlendirir (npm run verify-draft-rescue)
 │   ├── ghostClick.ts   # bir jestin ardından gelen "hayalet" click'i yutar (dokunmatikte compat mouse olayları O ANDAKİ DOM'a düşer) — dört çağrı yeri ortak
 │   ├── errorReporting.ts # istemci hata telemetrisi (client_errors) — beklenen durumlar BİLEREK kaydedilmez, saatte 10 kayıt tavanı (zaman penceresi, süreç ömrü DEĞİL)
+│   ├── errorMessage.ts  # kullanıcıya gösterilen hata metninin son kapısı: ham makine çıktısı (504 gövdesi, SQLSTATE dökümü) yerine Türkçe cümle, ham metin telemetriye (Flutter portuyla testli olarak senkron)
 │   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı için tek seferlik localStorage kuyruğu
 │   ├── csvExport.ts    # admin paneli tabloları/grafikleri için CSV indirme yardımcısı
 │   ├── leaguePoints.ts # k-lig puanı hesaplama — (rank, count, surrendered, level); SQL league_points_for ↔ Dart ile verify-league-points kilitler

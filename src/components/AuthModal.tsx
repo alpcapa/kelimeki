@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import { GENDER_OPTIONS, formatTrDateInput, trDateToIso } from '../utils/profileFields';
 import type { Gender } from '../lib/database.types';
+import { friendlyErrorMessage, GENERIC_ERROR_NOTICE } from '../utils/errorMessage';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -113,8 +114,10 @@ export function AuthModal({
         }
       }
     } catch (err) {
-      const msg = friendlyAuthMessage(err) ?? (err instanceof Error ? err.message : (err as { message?: string })?.message);
-      setError(msg || 'Bir hata oluştu.');
+      setError(
+        friendlyAuthMessage(err) ??
+          friendlyErrorMessage(err, { surface: 'giris', fallback: GENERIC_ERROR_NOTICE }),
+      );
     } finally {
       setBusy(false);
     }

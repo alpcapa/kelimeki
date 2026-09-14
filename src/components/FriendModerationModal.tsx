@@ -28,6 +28,7 @@ import { useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
 import { setChatMute, withdrawChatReports } from '../lib/api';
+import { friendlyErrorMessage } from '../utils/errorMessage';
 
 export interface FriendModerationTarget {
   userId: string;
@@ -68,7 +69,9 @@ export function FriendModerationModal({
     } catch (e) {
       // Sessizce yutma YOK — kullanıcı gerçekleşmemiş bir sonucu
       // "olmuş" sanmamalı (bkz. FriendsModal'ın aynı dersi).
-      setError(e instanceof Error ? e.message : 'İşlem başarısız oldu.');
+      setError(
+        friendlyErrorMessage(e, { surface: 'arkadas-moderasyon', fallback: 'İşlem başarısız oldu.' }),
+      );
     } finally {
       setBusy(false);
     }
