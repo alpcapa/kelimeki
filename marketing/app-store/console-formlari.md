@@ -1722,6 +1722,56 @@ sınır 15 dk, doğrulanmamış hesapta bile.
 HD işlenmesini bekle (yükleme biter bitmez verilen link bulanık sürümü
 gösterir) · **inceleme bitene kadar videoları silme.**
 
+### 🔴 YouTube video 2'yi KALDIRDI — ve cevap verecek kanal YOK (14 Eylül 2026)
+
+**Ne oldu:** cevap 13 Eylül 17:58'de beş YouTube (Unlisted) linkiyle gitti.
+14 Eylül 11:44'te YouTube **video 2'yi** (*"Kelimeki Review - Video 2"*,
+kayıt olma + demo hesapla giriş) kaldırdı. Gerekçe: **policy on personally
+identifiable information**. Kullanıcı itiraz etti.
+
+⚠ **Bu muhtemelen YANLIŞ TESPİT DEĞİL, ve bunu böyle kabul etmek planı
+değiştiriyor.** Video 2'nin içeriği tanımı gereği şunları gösteriyor: bir
+e-posta adresinin forma yazılması, bir şifrenin yazılması, ve
+`kelimekitest2`nin giriş bilgileriyle oturum açılması. YouTube'un kendi
+metni tam da bunları sayıyor: *"…an individual's home address, **email
+address**, **sign-in credentials**, phone number…"*. Yani sınıflandırıcı
+videoda GERÇEKTEN var olan bir şeyi yakaladı. İtiraz reddedilebilir;
+sonucuna bağlı plan yapma.
+
+⚠ **VE CEVAP VERECEK KANAL YOK (ölçüldü, aynı gün).** Gönderim
+`Waiting for Review` durumundayken sayfada **`Reply to App Review` düğmesi
+ÇIKMIYOR** — tek düğme `Cancel Submission`. Yani:
+
+- Yeni bir link ya da dosya İLETİLEMİYOR.
+- Videoyu doğrudan eklemek (yukarıdaki "Ekleme yolu" tartışması) da
+  mümkün değil, çünkü ek kutusunu açan şey o cevap penceresiydi.
+- Tek teknik seçenek `Cancel Submission` idi ve **kullanmadık**: kuyruk
+  sırasını KESİN olarak kaybettirir, üstelik 13 Eylül'de ölçülen dört
+  adımlı zincir (`Reply` → Notes → `Update Review` → `Resubmit`) baştan
+  koşulmak zorunda kalırdı. Bilinen bir zararı olası bir zararla takas
+  etmek olurdu.
+
+**Kullanıcı kararı: BEKLE.** Kalan dört video Apple'ın altı maddesini
+karşılıyor (video 2 kayıt akışıydı; incelemecinin kendi giriş bilgileri
+zaten App Review Information'da yazılı, videoya bağlı değil).
+
+### ⚠ BİR SONRAKİ TURUN KURALI — kimlik bilgisi gösteren kaydı YouTube'a KOYMA
+
+Bu turdan çıkan kalıcı ders, üç maddede:
+
+1. **Kayıt/giriş gösteren bir ekran kaydı YouTube'da barındırılamaz.** PII
+   politikası e-posta adresini ve giriş bilgilerini açıkça sayıyor; kayıt
+   formunu filme alan her video bu sınıfa girer.
+2. **Aynı videoyu yeniden YÜKLEME.** İtiraz sürerken aynı içeriği tekrar
+   yüklemek kanal ihtarına (strike) yol açabilir ve aynı sınıflandırıcı
+   yine yakalar — bir kaybı ikiye çıkarır.
+3. **Cevap penceresi KAPANMADAN karar ver.** Ek kutusu yalnızca
+   `Reply to App Review` açıkken var; `Resubmit`ten sonra kanal kapanıyor.
+   Yani videoların nerede duracağı, cevabı GÖNDERMEDEN önce çözülmüş
+   olmalı. Bir sonraki turda sıra: önce videoyu küçült (yalnızca gerekli
+   bölümü kırp, düşük bit hızı) ve **doğrudan ekle**; YouTube yedek yol
+   bile olmasın.
+
 ### ✅ Cevaptan SONRA sürümü incelemeye geri sokan ZİNCİR (13 Eyl 2026, ölçüldü)
 
 ⚠ **Cevabı göndermek TEK BAŞINA yetmiyor.** Sürüm reddedilmiş hâlde kalır;
