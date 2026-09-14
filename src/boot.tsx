@@ -36,7 +36,8 @@ const SharedGamePage = lazy(() =>
 const FriendInvitePage = lazy(() =>
   import('./components/FriendInvitePage').then((m) => ({ default: m.FriendInvitePage })));
 import { captureUtmSource } from './utils/visitTracking';
-import { installGlobalErrorReporting } from './utils/errorReporting';
+import { installGlobalErrorReporting, reportClientError } from './utils/errorReporting';
+import { setErrorMessageReporter } from './utils/errorMessage';
 
 import { setupPwaUpdates } from './lib/pwa';
 import { preloadWordSet } from './data/wordSetLoader';
@@ -54,6 +55,9 @@ export function mount(): void {
   // yakalansın. Çevrimdışılık/ağ hataları BİLEREK bildirilmiyor — bkz.
   // `errorReporting.ts`, "NE KAYDEDİLMEZ".
   installGlobalErrorReporting();
+  // Ekrana Türkçe metin koyan kapının ham metni telemetriye yazabilmesi için
+  // (bkz. utils/errorMessage.ts — neden import değil enjeksiyon).
+  setErrorMessageReporter((err, context) => reportClientError(err, 'manual', context));
 
   // `?ref=` etiketini ilk temas (first-touch) olarak sakla — ROUTE'DAN ÖNCE,
   // çünkü uygulamanın ÜÇ dalı var ve etiketi yalnızca biri yakalıyordu.

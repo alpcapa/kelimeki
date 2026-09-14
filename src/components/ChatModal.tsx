@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { ChatThread, type ChatThreadMessage } from './ChatThread';
 import type { OnlineGameMessageRow } from '../lib/database.types';
+import { friendlyErrorMessage } from '../utils/errorMessage';
 
 const MAX_LENGTH = 200;
 
@@ -76,7 +77,9 @@ export function ChatModal({
       await onSend(trimmed);
       setText('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Mesaj gönderilemedi.');
+      setError(
+        friendlyErrorMessage(err, { surface: 'mesaj', fallback: 'Mesaj gönderilemedi.' }),
+      );
     } finally {
       setSending(false);
     }

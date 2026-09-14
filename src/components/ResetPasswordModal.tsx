@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { setNewPassword, friendlyAuthMessage } from '../lib/api';
+import { friendlyErrorMessage, GENERIC_ERROR_NOTICE } from '../utils/errorMessage';
 
 interface ResetPasswordModalProps {
   onDone: () => void;
@@ -31,8 +32,10 @@ export function ResetPasswordModal({ onDone }: ResetPasswordModalProps) {
       if (error) throw error;
       setDone(true);
     } catch (err) {
-      const msg = friendlyAuthMessage(err) ?? (err instanceof Error ? err.message : (err as { message?: string })?.message);
-      setError(msg || 'Bir hata oluştu.');
+      setError(
+        friendlyAuthMessage(err) ??
+          friendlyErrorMessage(err, { surface: 'sifre-sifirlama', fallback: GENERIC_ERROR_NOTICE }),
+      );
     } finally {
       setBusy(false);
     }

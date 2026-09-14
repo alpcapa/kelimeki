@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import type { Gender } from '../lib/database.types';
 import { GENDER_OPTIONS, formatTrDateInput, isoToTrDate, trDateToIso } from '../utils/profileFields';
+import { friendlyErrorMessage, GENERIC_ERROR_NOTICE } from '../utils/errorMessage';
 
 interface AccountSettingsModalProps {
   onClose: () => void;
@@ -89,8 +90,10 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
       await refreshProfile();
       setInfo('Profil fotoğrafı güncellendi.');
     } catch (err) {
-      const msg = friendlyAuthMessage(err) ?? (err instanceof Error ? err.message : (err as { message?: string })?.message);
-      setError(msg || 'Yükleme başarısız.');
+      setError(
+        friendlyAuthMessage(err) ??
+          friendlyErrorMessage(err, { surface: 'avatar', fallback: 'Yükleme başarısız.' }),
+      );
     } finally {
       setUploading(false);
     }
@@ -171,8 +174,10 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
 
       setInfo(notes.length ? notes.join(' ') : 'Değişiklik yok.');
     } catch (err) {
-      const msg = friendlyAuthMessage(err) ?? (err instanceof Error ? err.message : (err as { message?: string })?.message);
-      setError(msg || 'Bir hata oluştu.');
+      setError(
+        friendlyAuthMessage(err) ??
+          friendlyErrorMessage(err, { surface: 'hesap-ayarlari', fallback: GENERIC_ERROR_NOTICE }),
+      );
       // Profil kısmı (updateProfile) e-posta güncellemesinden ÖNCE zaten
       // başarıyla tamamlanmış olabilir — hata yalnızca sonraki e-posta
       // adımından geliyorsa, kullanıcı profildeki değişikliklerinin de

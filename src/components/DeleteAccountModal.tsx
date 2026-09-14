@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { deleteMyAccount, previewAccountDeletion, signOut, type AccountDeletionReport } from '../lib/api';
 import { trUpper } from '../utils/turkish';
+import { friendlyErrorMessage } from '../utils/errorMessage';
 
 interface DeleteAccountModalProps {
   onClose: () => void;
@@ -61,7 +62,13 @@ export function DeleteAccountModal({ onClose }: DeleteAccountModalProps) {
         // Kuru çalıştırma başarısızsa silmeyi de ENGELLE: sunucuya
         // ulaşılamıyorsa (ya da hesap silinemez bir hesapsa — ör. yönetici)
         // butonu etkinleştirmek yanlış bir söz verir.
-        if (!iptal) setError(e instanceof Error ? e.message : 'Hesap bilgileri okunamadı.');
+        if (!iptal)
+          setError(
+            friendlyErrorMessage(e, {
+              surface: 'hesap-silme-ozet',
+              fallback: 'Hesap bilgileri okunamadı.',
+            }),
+          );
       })
       .finally(() => {
         if (!iptal) setYukleniyor(false);
@@ -81,7 +88,7 @@ export function DeleteAccountModal({ onClose }: DeleteAccountModalProps) {
       // yazılmış her şey bu noktadan sonra artık var olmayan bir hesaba ait.
       window.location.replace('/');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Hesap silinemedi.');
+      setError(friendlyErrorMessage(e, { surface: 'hesap-silme', fallback: 'Hesap silinemedi.' }));
       setBusy(false);
     }
   };

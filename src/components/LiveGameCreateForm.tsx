@@ -16,6 +16,7 @@ import { Avatar } from './Avatar';
 import { FriendsModal } from './FriendsModal';
 import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
+import { friendlyErrorMessage } from '../utils/errorMessage';
 
 interface LiveGameCreateFormProps {
   onCancel: () => void;
@@ -124,7 +125,9 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
         withAi: withAiLastSlot,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Davet gönderilemedi.');
+      setError(
+        friendlyErrorMessage(err, { surface: 'canli-davet', fallback: 'Davet gönderilemedi.' }),
+      );
     } finally {
       setBusy(false);
     }

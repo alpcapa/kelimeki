@@ -363,3 +363,106 @@ satırlar (yayınlanmayan masaüstü hedefleri) ve listede olmayan bir platform
 değeri yalnızca "Tüm Platformlar" görünümünde okunur — `client_errors`
 üzerinde kısıt BİLEREK yok (öngörülmemiş bir değer yüzünden bir hata
 raporunu kör etmemek için). Filtre bir kolaylık, tek görüntüleme yolu değil.
+
+## Ham hata metni ekrana DÜŞMEZ — `friendlyErrorMessage` (13 Eylül 2026)
+
+Kullanıcı App Store için ekran kaydı çekerken giriş penceresinde şunu gördü
+ve fotoğrafladı:
+
+```
+{"message":"Gateway Timeout"}
+```
+
+Ham bir HTTP 504 gövdesi, Türkçe bir uygulamada, giriş formunun altında.
+İkinci denemede giriş çalıştı — arıza geçiciydi, ama ekrandaki metin bunu
+söylemiyordu. İsteği: *"kullanıcıya gösterilen tüm mesajları kontrol et."*
+
+### Bu bir unutulmuş satır değil, bir POLİTİKANIN sonucuydu
+
+`friendlyAuthMessage` (4 Ağustos 2026) ve `isNetworkError` ikisi de bilerek
+*"eşleşmeyen hata HAM hâliyle geçsin"* diyordu, ve gerekçe o gün
+sağlamdı — kendi yorumundan: *"bilinmeyen bir hatayı uydurma bir Türkçe
+cümleyle gizlemek, hata ayıklamayı imkânsız kılardı."*
+
+**O gerekçe bu dosyanın kendisi yüzünden geçersiz kaldı.** `client_errors`
+(30 Ağustos 2026) arada duruyor: ham metni kullanıcıya BASMAK ile onu
+KAYBETMEK aynı şey değil. Yeni kapı ham metni telemetriye yazar, ekrana
+Türkçe cümle koyar — hata ayıklama kabiliyeti ARTIYOR, çünkü eskiden
+yalnızca ekranı gören kişi biliyordu (nitekim öyle oldu: bu hatayı ancak
+kullanıcı ekran görüntüsüyle bildirdiği için öğrendik).
+
+### Dört dal — sıra davranışın parçası
+
+| # | Koşul | Sonuç | Telemetri |
+|---|---|---|---|
+| 1 | `code === 'P0001'` | mesaj OLDUĞU GİBİ | hayır |
+| 2 | geçici arıza kalıbı | *"Sunucuya şu anda ulaşılamıyor. Birkaç saniye sonra tekrar dene."* | evet |
+| 3 | makine metni kalıbı | çağıranın `fallback`'i (varsayılan: *"Bir sorun oluştu. Lütfen tekrar dene."*) | evet |
+| 4 | kalan | mesaj OLDUĞU GİBİ | hayır |
+
+⚠ **1 her şeyden önce.** `P0001` = plpgsql `raise exception`, yani
+sunucunun KULLANICIYA GÖSTERİLMEK üzere yazdığı Türkçe metin
+(`submit_move` → "Sıra sende değil."). Makine kalıbına benzese bile
+gösterilir.
+
+⚠ **2 mutlaka 3'ten önce.** Ekranda görülen `Gateway Timeout` **düz metin
+olarak da** geliyor (JSON gövdesi olmadan) ve o hâliyle hiçbir makine
+kalıbına takılmaz. Sıra ters olsaydı 4. dala düşüp yine ham görünürdü —
+yani vakanın kendisi bu sıraya bağlı. `verify-error-messages` bunu ayrı bir
+kontrolle kilitliyor.
+
+### En büyük regresyon riski: kaybolan SQLSTATE
+
+1. dal ancak `code` taşınırsa çalışır. `src/lib/api.ts` **45 yerde**
+`throw new Error(error.message)` diyordu — kod yolda düşüyordu, yani
+ayrım hiçbir zaman yapılamazdı ve oyunun Türkçe iş kuralı mesajları
+jenerikleşirdi. Hepsi `rethrowSupabase()`e çevrildi. Portta karşılık
+zaten vardı (`ServerRejection.code`).
+
+⚠ **Yeni bir uç yazarken Supabase hatasını elle sarma** — `rethrowSupabase`
+çağır.
+
+### Neden BEYAZ liste değil KARA liste
+
+"Metin Türkçe mi?" diye bakan bir beyaz liste denenemez: kendi
+mesajlarımızın çoğu ASCII (*"Ad zorunludur."*, *"Oturum açık değil."*),
+yani Türkçe karaktere bakan bir test onları da elerdi. Kara liste yanılırsa
+hata GÜVENLİ tarafta olur — tanımadığı bir metin geçer, ekranda tuhaf ama
+okunabilir bir şey kalır; sessizce jenerikleşen bir Türkçe mesajdan iyidir.
+
+### Telemetri ENJEKTE edilir, import EDİLMEZ
+
+İlk deneme `reportClientError`ı doğrudan import etti ve geri alındı: o
+modül Supabase istemcisini çekiyor, istemci de `import.meta.env` okuyor —
+`npm run verify-error-messages` daha ilk satırda düştü. Bağlama yeri
+`boot.tsx` (web) / `main.dart` (port); bağlanmazsa sessizce hiçbir şey
+yazılmaz, metin kararı yine de doğrudur.
+
+### Bilinçli kapsam dışı
+
+- **Admin paneli** (`AdminDashboard`, `MemberMessageModal`) ham metni
+  göstermeye DEVAM eder: oranın tek kullanıcısı geliştiricinin kendisi ve
+  ham hata orada bir ARAÇ, arıza değil.
+- **`trDateToIso`nun `FormatException`ı** doğrudan geçer — yerel doğrulama,
+  sunucu yok, metin zaten Türkçe.
+- **Ağ (cihaz çevrimdışı) dalı** bu kapıya girmedi: çağıranların kendi
+  bağlam metinleri var (`OFFLINE_MOVE_NOTICE` gibi) ve ayrım çağıranda
+  `isNetworkError` ile yapılıyor.
+
+### Doğrulama sınırı
+
+Gerçek bir 504 üretilemedi. Kalıplar ölçülmüş metinlerden türetildi:
+kullanıcının ekran görüntüsü + PostgREST/GoTrue/Dart istisna biçimleri.
+Kapılar: `npm run verify-error-messages` (66 kontrol) ve
+`error_message_parity_test.dart` (22 test; web dosyasını OKUR — metinler
+birebir, kalıp sayıları eşit).
+
+⚠ **PORT YARISI `main`'DE DEĞİL (14 Eylül 2026).** Yazıldı, 868 testle
+doğrulandı, ama ayrı bir PR'da BEKLETİLİYOR: 1.1.0 (665) kodu donduruldu ve
+iki mağaza da aynı anda inceliyor; `mobile/` altına giren her merge
+`mobile-latest`i ezip TestFlight'a yeni build yolluyor. Kullanıcı kararı:
+*"mobile dokunmadan web tarafını yayına alalım ama yanlışlıkla mobil
+gitmesin."* Sonuç: **bugün düzeltme yalnızca web'de canlı**; mağazadaki 665
+paketi hâlâ ham metni gösterebilir ve bu bilinçli bir takas. İnceleme
+kapanınca port PR'ı merge edilir; o ana kadar `errorMessage.ts`i değiştiren
+bekleyen PR'ı da güncellemek zorunda (parite kapısı henüz yok).

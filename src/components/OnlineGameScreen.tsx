@@ -88,6 +88,7 @@ import { HelpModal } from './HelpModal';
 import type { GameState, HistoryEntry, Tile as TileModel } from '../game/types';
 import type { OnlineGame, OnlineGameMessageRow, OnlineGameSlot, OnlineMoveRow, WordMeaning } from '../lib/database.types';
 import { reportClientError } from '../utils/errorReporting';
+import { friendlyErrorMessage } from '../utils/errorMessage';
 import {
   GHOST_TILE_STYLE,
   TAP_SLOP_ON_RELEASE,
@@ -1286,9 +1287,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         setSubmitError(
           isNetworkError(err)
             ? OFFLINE_MOVE_NOTICE
-            : err instanceof Error
-              ? err.message
-              : 'Hamle gönderilemedi.',
+            : friendlyErrorMessage(err, { surface: 'hamle', fallback: 'Hamle gönderilemedi.' }),
         );
       } finally {
         setBusy(false);
@@ -1319,9 +1318,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       setSubmitError(
         isNetworkError(err)
           ? OFFLINE_MOVE_NOTICE
-          : err instanceof Error
-            ? err.message
-            : 'Hata oluştu.',
+          : friendlyErrorMessage(err, { surface: 'hamle' }),
       );
     } finally {
       setBusy(false);
@@ -1343,7 +1340,13 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       await createOnlineGame(game.player_count as 2 | 4, buildRematchSlots(game.slots, myUserId));
       setRematch({ phase: 'sent', names: opponentNames, withAi: hasAiSlot });
     } catch (err) {
-      setRematch({ phase: 'error', message: err instanceof Error ? err.message : 'Davet gönderilemedi.' });
+      setRematch({
+        phase: 'error',
+        message: friendlyErrorMessage(err, {
+          surface: 'revans',
+          fallback: 'Davet gönderilemedi.',
+        }),
+      });
     }
   };
 
@@ -1372,9 +1375,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       setSubmitError(
         isNetworkError(err)
           ? OFFLINE_MOVE_NOTICE
-          : err instanceof Error
-            ? err.message
-            : 'Hata oluştu.',
+          : friendlyErrorMessage(err, { surface: 'hamle' }),
       );
     } finally {
       setBusy(false);
