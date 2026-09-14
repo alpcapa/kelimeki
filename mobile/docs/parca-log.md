@@ -25,6 +25,58 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 206 — Taş değiştirme sınırı: torbada kalandan fazlası
+     değiştirilemez (14 Eylül 2026):** Kullanıcı raporu (Asnmzr): *"torbada
+     4 harf kalmışken 7 harf değiştirdim"*. Doğruydu; web'in ÜRETİM
+     reducer'ıyla birebir yeniden üretildi (torba 4 → seçim 7 → *"7 taş
+     değiştirdi"*, torba yine 4, raf yine 7, ne hata ne uyarı).
+
+     **Neden golden vector'lar görmedi — ve bu bu projede İKİNCİ kez:**
+     fixture'lar web ile Dart'ı KARŞILAŞTIRIR, yani ikisinde BİRDEN var olan
+     bir kuralsızlığa kördür. Üstelik `verify-swap-invariants`in taş korunumu
+     kontrolü de göremezdi, çünkü dört motor da *önce seçilenleri torbaya koy,
+     SONRA en fazla o kadar çek* sırasını uyguluyor — toplam taş sayısı hep
+     doğru kalıyordu. Arıza tamamen sessizdi. (Aynı körlük Parça 112'de
+     `remainingTiles` için yaşanmıştı; ders tekrarlandı.)
+
+     **Port tarafında yapılan:** `constants.dart`a `maxSwapCount` +
+     `swapLimitMessage`; `reducer.dart`ta üç nokta — `ToggleSwapTileAction`
+     sınırı SEÇİM anında uyguluyor, `_confirmSwap` TEKRAR kontrol ediyor
+     (kuralın sahibi UI değil reducer; `swapSelection` kayıttan devam ya da
+     araya giren senkronla da dolabiliyor), `_aiPlay` rafı dilimliyor.
+
+     ⚠ **Mesaj temizlemesi DAR tutuldu.** İlk yazımda `ToggleSwapTile`
+     koşulsuz `message: ''` yazıyordu; web tarafında golden'lar bunu anında
+     gösterdi — swap modunun kendi ipucu (*"Değiştireceğin taşları seç…"*)
+     ilk dokunuşta siliniyordu. Artık yalnızca KENDİ sınır uyarısı düşüyor.
+     Port ikizi aynı daraltmayı taşıyor.
+
+     **İki ayrı kapı, ikisi de gerekli:**
+     `kelimeki_core/test/run_all.dart` → `testSwapLimit` DAVRANIŞI Dart
+     motorunda oynatıyor (6883 → **6890** kontrol); `app/test/
+     swap_limit_parity_test.dart` web KAYNAĞINI okuyup metni, `maxSwapCount`i,
+     iki kapıyı ve **YZ dilimini üç kopyada birden** karşılaştırıyor.
+
+     **Duyarlılık kanıtlandı:** sınır geçici olarak kaldırıldığında
+     `testSwapLimit` 5 hatayla düştü, geri alınınca yeşile döndü — "yeşil ama
+     hiçbir şey kanıtlamayan test" değil.
+
+     **Doğrulama:** Dart core 6890 kontrol · `flutter test` tam takım ·
+     `flutter analyze` temiz. Golden vector'lar DEĞİŞMEDİ (web yarısında da
+     bayt-eş kaldı) — mevcut senaryoların hiçbiri bu yola girmiyordu.
+
+     ⚠ **Web + sunucu yarısı AYRI PR'da ve zaten CANLIDA** (#553): migration
+     `20260914152808` uygulandı, `play-ai-turn` v10 deploy edildi. Sıra
+     önemliydi — **önce Edge, sonra migration**: tersi olsaydı YZ'nin tam
+     rafı sunucuda reddedilir ve `play-ai-turn`ün `catch`i sessizce pas
+     geçmeye düşerdi (`verify-edge-engine-parity`nin doğuş sebebiyle aynı
+     sınıf). Dilimlenmiş istek eski SQL'de de geçerli olduğundan kırık
+     pencere sıfır.
+
+     ⚠ **Bu PR merge edilene kadar mobilin YEREL oyunu eski kuralla
+     oynuyor** — sunucu kapısı yalnızca Canlı oyunu kapsıyor, yerel oyun
+     tamamen istemcide. Mağaza incelemesi (1.1.0/665) bitene kadar bekliyor.
+
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
      (12 Eylül 2026):** Kullanıcı isteği, önce *"mümkünse oyun sonu
      modalında 'Tebrikler ilk puanını kazandın' mesajı (eğer kazanmışsa)"*;
