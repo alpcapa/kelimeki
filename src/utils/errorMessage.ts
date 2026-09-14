@@ -63,6 +63,13 @@
  * Port ikizi: `mobile/app/lib/src/util/error_message.dart` — metinler ve
  * kalıplar BİREBİR aynı, `error_message_parity_test.dart` bu dosyayı okuyup
  * karşılaştırır.
+ *
+ * ⚠ **İkisi AYRI günlerde `main`'e girdi** (web 14 Eylül, port sonrası):
+ * 1.1.0 (665) kodu donduruğu ve iki mağaza da incelediği için web yarısı
+ * tek başına yayınlandı, port yarısı inceleme kapanana kadar bekletildi.
+ * Yani `client_errors`ta 14 Eylül ile port sürümünün yayını arasındaki
+ * pencerede `hata-metni:*` kayıtları YALNIZCA web'den gelir — mobil
+ * sessizliği "mobilde hata yok" diye okunmamalı.
  */
 
 /**

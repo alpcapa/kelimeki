@@ -456,3 +456,16 @@ kullanıcının ekran görüntüsü + PostgREST/GoTrue/Dart istisna biçimleri.
 Kapılar: `npm run verify-error-messages` (66 kontrol) ve
 `error_message_parity_test.dart` (22 test; web dosyasını OKUR — metinler
 birebir, kalıp sayıları eşit).
+
+### ⚠ İki yarı AYRI günlerde yayınlandı — telemetriyi okurken bunu bil
+
+Web yarısı 14 Eylül 2026'da tek başına merge edildi (`d584f3f`), port yarısı
+bekletildi: 1.1.0 (665) kodu donduruldu ve iki mağaza da aynı anda
+inceliyordu; `mobile/` altına giren her merge `mobile-latest`i ezip
+TestFlight'a yeni build yolluyor. Kullanıcı kararı: *"Mobile dokunmadan web
+tarafını yayına alabiliyorsak alalım ama yanlışlıkla mobil gitmesin."*
+
+**Sonucu telemetriye yansıyor:** web yayını ile port sürümünün MAĞAZAYA
+inmesi arasındaki pencerede `hata-metni:*` bağlamlı kayıtlar yalnızca
+web'den gelir. O aralıkta mobil sessizliği *"mobilde bu hata yok"* diye
+OKUNMAMALI — mobilde kapı henüz kullanıcıdaki pakette değildi.
