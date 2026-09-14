@@ -47,6 +47,7 @@ npm run check-doc-size           # doküman boyutu bütçesi (bkz. "Doküman Boy
 npm run verify-draft-rescue      # ıskalanan dokunuşun en yakın taslak taşına yönlendirilmesi
 npm run verify-hook-order        # React hook sırası: erken `return` altında hook YOK (React #300 kapısı)
 npm run verify-error-reporting   # istemci hata telemetrisi: ne kaydedilir/kaydedilmez, tekrar bastırma, hız sınırı
+npm run verify-error-messages    # kullanıcıya gösterilen hata metni: ham makine çıktısı (504 gövdesi, SQLSTATE dökümü) ekrana DÜŞMÜYOR mu
 npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run augment-dictionary       # Sözlüğe elle madde ekleme (GTS'siz — bkz. "Sözlüğe Kelime/Anlam Ekleme")
@@ -220,6 +221,7 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | Migration bir kolonu **nullable** yapıyor (ya da FK'yi `cascade`→`set null` çeviriyor) | `database.types.ts` **ve** portun `fromJson`'ı — bu bir SÖZLEŞME değişikliği (bkz. `docs/decisions/account-deletion.md` → "SET NULL'ın bedeli") |
 | Yeni kullanıcı verisi ya da görünürlük değişikliği | `TermsModal`/`PrivacyModal` |
 | Tanıtım senaryosu (`src/utils/tutorialScript.ts`), `TutorialGame.tsx`in metin/süreleri, `utils/onboarding.ts`in kapısı **ya da bağlamsal ipucu metinleri/sırası/tavanı** ya da motorun puan/vergi/çarpan kuralı | `npm run verify-tutorial-script` (CI'da) — tanıtım EKRANDA puan yazıyor, kural değişince metin sessizce bayatlar. **Port ikizi AYNI PR'da:** `mobile/app/lib/src/ui/tutorial/*` + `util/onboarding.dart`; `tutorial_parity_test.dart` web kaynağını okur (metin/sayı ayrışırsa web CI'ın `parite` işi düşer), `tutorial_script_test.dart` senaryoyu Dart motorunda oynatır |
+| Kullanıcıya hata metni gösteren YENİ bir `catch` | `friendlyErrorMessage` (`utils/errorMessage.ts` ↔ `util/error_message.dart`) — ham `err.message` EKRANA BASMA. 13 Eylül 2026'da ham bir 504 gövdesi (`{"message":"Gateway Timeout"}`) giriş penceresinde göründü, üstelik App Store ekran kaydı çekilirken. Kapı: `npm run verify-error-messages` (CI'da). ⚠ **Port ikizi 14 Eylül 2026'da `main`'de DEĞİL** — mobil yarısı inceleme dondurması yüzünden ayrı bir PR'da bekliyor, yani parite kapısı (`error_message_parity_test.dart`) henüz yok; `errorMessage.ts`i değiştiren o PR'ı da güncellemeli. ⚠ Supabase hatasını yeniden fırlatırken `code`'u DÜŞÜRME (`rethrowSupabase`, `api.ts`) — "sunucunun Türkçe reddi" (P0001) ile "makine hatası" ayrımı ona dayanıyor. Admin paneli bilerek dışarıda |
 | `App.tsx`'teki joker/mesaj/raf desenleri | `OnlineGameScreen.tsx` (ikisi deseni paylaşıyor) |
 | `Setup.tsx`'in "devam eden oyun" kartı | `LiveGamesTab.tsx`'in aktif oyun kartı — ikisi AYNI düzeni paylaşıyor ve kullanıcı onları iki sekmede yan yana görüyor (2 Eylül 2026: biri düzeltilip öteki unutuldu, kart ayrıştı; port ikizi `ui/devam_eden_govde.dart`) |
 | Bir Dart↔Kotlin/Swift MethodChannel adı ya da bildirim kanalı kimliği | Parite testi (`notification_*_parity_test.dart`) — derleyici görmez, uyuşmazlık SESSİZ arızadır |
@@ -607,7 +609,7 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, aiLevel, tutorialScript, scoreLine, deviceLabels, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, aiLevel, tutorialScript, scoreLine, deviceLabels, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan

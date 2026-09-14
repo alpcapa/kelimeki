@@ -5,6 +5,7 @@ import { AuthModal } from './AuthModal';
 import { submitFeedbackDurable } from '../utils/feedbackSync';
 import { useAuth } from '../hooks/useAuth';
 import type { FeedbackSource } from '../lib/database.types';
+import { friendlyErrorMessage } from '../utils/errorMessage';
 
 interface FeedbackModalProps {
   onClose: () => void;
@@ -96,8 +97,7 @@ export function FeedbackModal({ onClose, source, relatedTo, fromEmailLink = fals
       recordSubmission();
       setSent(true);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
-      setError(msg || 'Bir hata oluştu.');
+      setError(friendlyErrorMessage(err, { surface: 'gorus-bildir' }));
     } finally {
       setBusy(false);
     }

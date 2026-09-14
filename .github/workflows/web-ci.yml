@@ -33,7 +33,9 @@
 # PARALEL koşuyor, yani duvar saatine maliyeti yok.
 #
 # ⚠ `paths` LİSTESİ BU İŞİN DE KAPSAMI. Mobil testlerin okuduğu depo
-# dosyaları (2 Eylül 2026'da sayıldı): `src/**` (13 bileşen/util),
+# dosyaları (13 Eylül 2026'da sayıldı): `src/**` (14 bileşen/util —
+# sonuncusu `src/utils/errorMessage.ts` — onu okuyan
+# `error_message_parity_test.dart` port PR'ıyla birlikte gelecek),
 # `scripts/verify-error-reporting.ts`, `supabase/migrations/**`,
 # `tailwind.config.js` — dördü de yukarıdaki listede VAR. Mobil testlere
 # `mobile/` DIŞINDAN yeni bir dosya okutulursa o yolun burada karşılığı
@@ -204,6 +206,14 @@ jobs:
       # sınanamıyor: Setup'ın varsayılan-sekme effect'i yalnızca giriş
       # yapılmış kullanıcıda ve Supabase yapılandırılmışken çalışıyor.
       - run: npm run verify-away-return
+
+      # Kullanıcıya gösterilen hata metninin son kapısı: ham makine çıktısı
+      # (504 gövdesi, SQLSTATE dökümü, PostgREST İngilizcesi) ekrana DÜŞMEZ,
+      # ama sunucunun Türkçe reddi (P0001) korunur. 13 Eylül 2026'da bir 504
+      # gövdesi giriş penceresinde göründü — üstelik App Store ekran kaydı
+      # çekilirken. Duman testiyle sınanamıyor: tetiklemek için sunucunun
+      # 504 dönmesi ya da RLS'in reddetmesi gerekiyor.
+      - run: npm run verify-error-messages
 
       - run: npm run build
 

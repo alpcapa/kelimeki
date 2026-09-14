@@ -30,6 +30,7 @@ import { GameChatHistoryModal } from './GameChatHistoryModal';
 import { captureNodeAsPng } from '../utils/shareBoardImage';
 import { leaguePoints, formatLeaguePoints, computeRanks } from '../utils/leaguePoints';
 import { shortDisplayName } from '../utils/profileFields';
+import { friendlyErrorMessage } from '../utils/errorMessage';
 
 /** Beğenenler listesindeki bir satırı `PlayerScoreCard` açabilecek şekle çevirir. */
 function likerToPlayerSummary(l: GameLiker): PlayerSummary {
@@ -382,7 +383,7 @@ export function GameHistoryModal({
       setRematch({
         ...st,
         phase: 'error',
-        message: err instanceof Error ? err.message : 'Davet gönderilemedi.',
+        message: friendlyErrorMessage(err, { surface: 'revans', fallback: 'Davet gönderilemedi.' }),
       });
     }
   }, [user?.id]);

@@ -36,6 +36,7 @@ import { Modal } from './Modal';
 import { Avatar } from './Avatar';
 import type { ChatParticipant } from './ChatModal';
 import { setChatMute, reportChatParticipant, withdrawChatReports } from '../lib/api';
+import { friendlyErrorMessage } from '../utils/errorMessage';
 
 interface ChatSettingsModalProps {
   gameId: string;
@@ -91,7 +92,9 @@ export function ChatSettingsModal({
       await setChatMute(gameId, participant.userId, nextMuted);
       onMuteChange(participant.userId, nextMuted);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'İşlem başarısız oldu.');
+      setError(
+        friendlyErrorMessage(err, { surface: 'sessize-al', fallback: 'İşlem başarısız oldu.' }),
+      );
     } finally {
       setBusy(false);
     }
@@ -105,7 +108,12 @@ export function ChatSettingsModal({
       onWithdrawn(participant.userId);
       setView({ kind: 'list' });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'İşlem başarısız oldu.');
+      setError(
+        friendlyErrorMessage(err, {
+          surface: 'sikayet-geri-cek',
+          fallback: 'İşlem başarısız oldu.',
+        }),
+      );
     } finally {
       setBusy(false);
     }
@@ -125,7 +133,9 @@ export function ChatSettingsModal({
       setView({ kind: 'report-sent', participant });
       setReasonDraft('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Şikayet gönderilemedi.');
+      setError(
+        friendlyErrorMessage(err, { surface: 'sikayet', fallback: 'Şikayet gönderilemedi.' }),
+      );
     } finally {
       setBusy(false);
     }
