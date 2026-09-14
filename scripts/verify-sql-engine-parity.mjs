@@ -46,7 +46,8 @@ const sql = readdirSync(migDir)
     f.includes('km_shadow') ||
     f.includes('submit_move_shadow_phase') ||
     f.includes('move_shadow_coverage') ||
-    f.includes('shadow_check_coverage_counter'),
+    f.includes('shadow_check_coverage_counter') ||
+    f.includes('submit_move_swap_bag_limit'),
   )
   .sort()
   .map((f) => readFileSync(path.join(migDir, f), 'utf8'))
@@ -118,6 +119,25 @@ for (const m of mesajlar) {
 check('sözlük hata biçimi ("geçerli bir kelime değil." / "geçerli kelimeler değil.") eşleşiyor',
   validator.includes('geçerli bir kelime değil.') && sql.includes('geçerli bir kelime değil.') &&
   validator.includes('geçerli kelimeler değil.') && sql.includes('geçerli kelimeler değil.'));
+
+// ── 2b. Taş değiştirme sınırı: constants.ts ↔ SQL ───────────────────────────
+// 14 Eylül 2026 (kullanıcı raporu — Asnmzr): torbada kalandan fazla taş
+// değiştirilebiliyordu. Kural artık dört kopyada; sunucununki BU migration.
+// Metin şablonu iki tarafta AYNI olmalı — TS `${n}`, SQL `%` kullanıyor,
+// o yüzden aradaki SABİT parçalar kilitleniyor.
+{
+  const parcalar = ['Torbada ', ' taş var — en fazla ', ' taş değiştirebilirsin.'];
+  for (const parca of parcalar) {
+    check(`swapLimitMessage parçası "${parca.trim()}" iki tarafta da var`,
+      constants.includes(parca) && sql.includes(parca),
+      constants.includes(parca) ? 'SQL kopyasında YOK' : 'constants.ts’te YOK (metin mi değişti?)');
+  }
+  check('SQL kapısı torba uzunluğuna bakıyor (raf sınırına değil)',
+    /v_tile_count > coalesce\(array_length\(v_bag_arr, 1\), 0\)/.test(sql),
+    'sınır torbadan değil başka bir şeyden okunuyor olabilir');
+  check('TS tarafında maxSwapCount tanımlı',
+    /export function maxSwapCount\(/.test(constants));
+}
 
 // ── 3. Ayna envanteri eksiksiz mi ───────────────────────────────────────────
 const beklenen = [

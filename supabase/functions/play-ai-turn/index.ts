@@ -180,14 +180,21 @@ Deno.serve(async (req: Request) => {
     const move = findAIMove(board, rack, bonuses, current, corners, firstMove, players);
 
     if (!move) {
-      // Oynanamaz durumda: torba doluysa tüm rafı değiştir, boşsa pas geç —
+      // Oynanamaz durumda: torbada taş varsa rafı değiştir, boşsa pas geç —
       // yerel AI_PLAY case'iyle (gameReducer.ts) aynı mantık.
-      if ((publicState.bag_count as number) > 0) {
+      const bagCount = publicState.bag_count as number;
+      if (bagCount > 0) {
+        // ⚠ TORBADA KALANDAN FAZLA TAŞ DEĞİŞTİRİLEMEZ (14 Eylül 2026).
+        // Eskiden rafın TAMAMI gönderiliyordu; `submit_move` artık bunu
+        // torba 7'nin altındayken REDDEDİYOR ve buradaki `catch` sessizce
+        // pas geçmeye düşerdi — yani YZ tıkandığı her turda oynamak yerine
+        // pas geçerdi. Dilim `maxSwapCount` ile aynı kural.
+        const exchangeLetters = rack.slice(0, bagCount).map((t) => t.letter);
         const { error: submitError } = await supabase.rpc('submit_move', {
           p_game_id: gameId,
           p_action: 'exchange',
           p_placements: null,
-          p_exchange_letters: rack.map((t) => t.letter),
+          p_exchange_letters: exchangeLetters,
           p_words: [],
           p_word_scores: null,
           p_base_points: 0,

@@ -1368,6 +1368,33 @@ anahtarını sil (portta uygulama verisini temizle).
       çıkmamalı (`wins` beraberliği saymıyor) — sonraki gerçek galibiyette
       çıkmalı.
 
+## 13.8 Taş değiştirme sınırı — torbada kalan kadar (14 Eylül 2026)
+
+Kullanıcı raporuyla (Asnmzr) bulundu: torbada 4 taş kalmışken 7 taş
+değiştirilebiliyordu. Kural dört kopyada birden değişti, ama **sunucu
+dalı** (Canlı oyun + YZ) otomatik koşulamıyor — iki gerçek oturum ve
+torbanın gerçekten tükenmesi gerekiyor.
+
+Kurulum: torbanın 7'nin altına inmesi için oyunu sona doğru götür
+(`Torba` penceresi kalan sayıyı yazıyor).
+
+- [ ] **Yerel/YZ oyunu:** torbada 4 taş varken "Değiştir" → 5. taşa
+      dokunulduğunda taş SEÇİLMİYOR ve *"Torbada 4 taş var — en fazla 4 taş
+      değiştirebilirsin."* çıkıyor. Dördüncüye kadar seçim normal.
+- [ ] Seçimi 4'ten 3'e düşür → uyarı kayboluyor, "Değiştir (3)" çalışıyor.
+- [ ] Değişim uygulandıktan sonra `Torba` penceresindeki sayı DEĞİŞMİYOR
+      (4 kalmalı) ve raf 7 taş.
+- [ ] **Canlı oyun:** aynı senaryo, aynı metin. ⚠ Ters yön: sınırın
+      ALTINDAKİ bir değişim (torba 4, seçim 2) sunucuda REDDEDİLMEMELİ.
+- [ ] **YZ (Canlı):** torba 7'nin altındayken YZ'nin tıkandığı bir tur
+      yakalanırsa, YZ **pas geçmiyor**, taş değiştiriyor (hamle geçmişinde
+      `Değiştirme`). ⚠ Bu, migration ile `play-ai-turn` deploy'unun
+      birlikte gittiğinin tek saha kanıtı — biri eksikse YZ sessizce pas
+      geçmeye düşer, hata görünmez.
+- [ ] **Eski istemci (mağazadaki paket):** sunucu kuralı istemciden önce
+      canlıya çıktıysa, eski uygulamada 7 seçilip gönderilebilir — beklenen
+      sonuç sessiz başarı DEĞİL, aynı Türkçe metnin hata olarak görünmesi.
+
 ## 14+ — Tarihli turlar → `docs/testing-turlari.md`
 
 Belirli bir düzeltmenin gerilemediğini doğrulayan tarihli turlar (14'ten
