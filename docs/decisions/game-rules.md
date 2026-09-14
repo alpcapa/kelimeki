@@ -77,3 +77,72 @@ zaten yalnızca 1. oyuncu (hesap sahibi) insan olabildiğinden (diğerleri her
 zaman YZ), modalın hotseat dalı — *"başka bir insan oyuncuyu teslim et,
 diğerleri devam etsin"* — pratikte hiç tetiklenmiyordu.
 
+
+## Taş değiştirme sınırı: torbada kalandan fazlası değiştirilemez (14 Eylül 2026)
+
+**Kullanıcı raporu (Asnmzr):** *"torbada 4 harf kalmışken 7 harf
+değiştirdim"*. Doğru: üretim reducer'ıyla birebir yeniden üretildi —
+torba 4, seçim 7, sonuç `"Ben 7 taş değiştirdi ve sırasını kullandı."`,
+torba yine 4, raf yine 7, hata da uyarı da yok.
+
+**Neden hiçbir kapı yakalamadı.** Motorun dördü de aynı sırayı uyguluyordu:
+*önce seçilenleri torbaya koy, SONRA en fazla o kadar çek*
+(`shuffle([...bag, ...returned])` → `drawTiles(bag, returned.length)`;
+SQL'de `v_draw_n := least(v_tile_count, array_length(v_bag_arr, 1))`).
+Yani **taş korunumu hiç bozulmuyordu** — `verify-swap-invariants`in 1.
+kontrolü (`tileTotal` değişmesin) bu hatayı tanımı gereği GÖREMEZ, golden
+vector'lar da web ↔ Dart'ı karşılaştırdığından ikisinde birden var olan bir
+kuralsızlığa kör. Arıza tamamen sessizdi; tek görünen yeri oyuncunun kendi
+rafıydı.
+
+**Bedeli neydi.** Torbanın taşıyamayacağı bir tazeleme bedavaya alınıyordu:
+torba 4'e düşmüş bir oyun sonunda 7 taşın tamamı yenileniyor (üstelik geri
+konan taşların bir kısmı yeniden çekilebildiğinden sonuç kısmen "aynı raf"
+da olabiliyor). Oyun sonu dengesi tam da torbanın tükendiği yerde bozuluyor.
+
+**Kural:** sınır torbanın KENDİSİ — 4 taş varsa en fazla 4. Torba boşsa
+değiştirme zaten hiç açılmıyordu (`Torba boş — taş değiştirilemez.`), yani
+yeni kural o kapının doğal devamı. Alternatif olarak klasik Scrabble'ın
+"torbada 7'den az taş varsa değiştirme YOK" kuralı da düşünüldü ve
+elendi: oyuncunun elindeki tek çıkışı tamamen kapatıyor, üstelik
+kullanıcının istediği davranış da bu değildi.
+
+**Uyarı SEÇİM anında.** `TOGGLE_SWAP_TILE` sınırı aşan dokunuşu yutup
+metni basıyor; "Değiştir"e basılana kadar beklemek, sınırı ancak
+reddedildiğinde öğrenmek olurdu. Metin tek kaynakta (`swapLimitMessage`)
+çünkü dört kopyanın da aynı cümleyi söylemesi gerekiyor.
+
+**Sınırın sahibi UI değil reducer.** `CONFIRM_SWAP` kontrolü TEKRAR yapıyor
+— `swapSelection` state'e başka yollardan da girebiliyor (kayıttan devam,
+araya giren senkron torbayı küçültebilir). Aynı ders `docs/decisions/
+roadmap-arsiv.md`'deki taş korunumu vakasında da alınmıştı: bir değişmez,
+onu hiç bilmeyen UI koduna emanet edilmez.
+
+**⚠ YZ ve sıralama.** `play-ai-turn` tıkandığı turda rafın TAMAMINI
+değiştirmeye gönderiyordu. Sunucu kapısı tek başına deploy edilseydi bu
+hamle reddedilir, fonksiyonun `catch`i son çare olarak pas geçmeye düşer
+ve **YZ Canlı oyunlarda tıkandığı her turda sessizce pas geçerdi** —
+`verify-edge-engine-parity`nin doğuş sebebiyle aynı sınıftan bir arıza.
+Bu yüzden migration ile Edge deploy'u ayrılmaz: ikisi birlikte gider.
+Yerel YZ (`AI_PLAY`) de aynı dilimi uyguluyor ki iki yüzey ayrışmasın.
+
+**Ölçüm:** golden vector'lar yeniden üretildi ve **bayt-eş** kaldı —
+mevcut senaryoların hiçbiri bu yola girmiyordu, yani düzeltme yalnızca
+erişilebilir olmaması gereken dalı kapattı. `verify-swap-invariants`e
+dokuz yeni kontrol eklendi (sınırın kendisi + "sınırın altını engelleme" +
+reducer'ın kendi kapısı), `verify-sql-engine-parity` metin şablonunu
+kilitliyor.
+
+## Torba neden 100 taş (ve 186 denemesi neden geri alındı)
+
+Torba oyuncu sayısından bağımsız olarak sabit **100** taş (Türkçe dağılım,
+`src/data/tiles.ts`).
+
+Bir ara tüm modlarda 186'ya çıkarılmıştı. Simülasyon bunun torbanın gerçek
+bitirişini — rafını torba boşken tamamen bitirme + rakip puanlarını kapma —
+neredeyse imkânsız kıldığını gösterdi (4 oyunculuda 0/10), bu yüzden 100'e
+geri dönüldü.
+
+Bölge statik 5×5 değil dinamik/genişleyen olduğundan, 4 oyunculu oyunlarda
+köşe sınırıyla etkileşim için torbayı büyütmeye (eski
+`BAG_SCALE_BY_PLAYER_COUNT` denemesi) de gerek kalmadı; kaldırıldı.

@@ -15,6 +15,7 @@
 import { gameReducer, createInitialState, type Action } from '../src/game/gameReducer';
 import type { GameState, Tile } from '../src/game/types';
 import { setRandomSource } from '../src/utils/random';
+import { swapLimitMessage } from '../src/game/constants';
 
 let failures = 0;
 function check(name: string, cond: boolean, detail = ''): void {
@@ -204,6 +205,54 @@ console.log('\nTaş değiştirme değişmezleri\n');
     mySlotIndex: 0,
   });
   check('raf aynıysa seçim korunuyor', JSON.stringify(s.swapSelection) === '[1]');
+}
+
+// ── 5. Torbada kalandan FAZLA taş değiştirilemez ─────────────────────────────
+// 14 Eylül 2026, kullanıcı raporu (Asnmzr): torbada 4 taş kalmışken 7 taş
+// değiştirilebiliyordu. Taş korunumu bozulmuyordu (seçilenler önce torbaya
+// giriyor, sonra çekiliyor) — bu yüzden 1. kontrol bunu GÖREMEZ, arıza
+// tamamen sessizdi. Sınır `maxSwapCount` (= torbadaki taş sayısı).
+{
+  let s = start();
+  s = { ...s, bag: s.bag.slice(0, 4) };
+  s = gameReducer(s, { type: 'TOGGLE_SWAP_MODE' });
+  for (let i = 0; i < 7; i++) s = gameReducer(s, { type: 'TOGGLE_SWAP_TILE', index: i });
+  check('torba 4 iken 5. taş seçilemiyor', s.swapSelection.length === 4,
+    `seçili=${s.swapSelection.length}`);
+  check('sınır aşılınca uyarı çıkıyor', s.messageType === 'err' && s.message === swapLimitMessage(4),
+    JSON.stringify(s.message));
+
+  // Sınırın ALTINDA kalan seçim engellenmemeli (kapı aşırı hevesli olmasın).
+  let t = start();
+  t = { ...t, bag: t.bag.slice(0, 4) };
+  t = gameReducer(t, { type: 'TOGGLE_SWAP_MODE' });
+  t = gameReducer(t, { type: 'TOGGLE_SWAP_TILE', index: 0 });
+  t = gameReducer(t, { type: 'TOGGLE_SWAP_TILE', index: 1 });
+  check('sınırın altındaki seçim serbest', t.swapSelection.length === 2 && t.messageType !== 'err');
+
+  const toplam = tileTotal(s);
+  const after = gameReducer(s, { type: 'CONFIRM_SWAP' });
+  check('sınıra uyan değişim uygulandı', after.moveHistory.at(-1)?.tileCount === 4);
+  check('taş sayısı yine korunuyor', tileTotal(after) === toplam);
+}
+
+// ── 6. Sınır UI'ya emanet DEĞİL — reducer kendi kapısını tutuyor ─────────────
+// `swapSelection` state'e başka yollardan da girebilir (kayıttan devam,
+// araya giren senkron torbayı küçültebilir). Kuralın sahibi reducer.
+{
+  let s = start();
+  s = gameReducer(s, { type: 'TOGGLE_SWAP_MODE' });
+  for (let i = 0; i < 7; i++) s = gameReducer(s, { type: 'TOGGLE_SWAP_TILE', index: i });
+  check('torba doluyken 7 taş seçilebiliyor (senaryo kuruldu)', s.swapSelection.length === 7);
+  // Torba SEÇİMDEN SONRA küçüldü — UI'nın hiç göremediği sıra.
+  s = { ...s, bag: s.bag.slice(0, 2) };
+  const toplam = tileTotal(s);
+  const after = gameReducer(s, { type: 'CONFIRM_SWAP' });
+  check('reducer sınırı aşan CONFIRM_SWAP\'i reddetti',
+    after.messageType === 'err' && after.message === swapLimitMessage(2),
+    JSON.stringify(after.message));
+  check('reddedilen değişimde taş sayısı korunuyor', tileTotal(after) === toplam);
+  check('reddedilen değişimde sıra ilerlemedi', after.current === s.current);
 }
 
 console.log('');

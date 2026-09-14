@@ -7,6 +7,8 @@ import {
   buildInitialBonuses,
   cornersFor,
   jokerFinishBonus,
+  maxSwapCount,
+  swapLimitMessage,
 } from './constants';
 import type { AiLevel, GameState, HistoryEntry, Owner, Player, Tile } from './types';
 import type { OnlineGameStatePublic } from '../lib/database.types';
@@ -603,10 +605,36 @@ export function gameReducer(state: GameState, action: Action): GameState {
       if (state.phase !== 'play' || state.isGameOver || !state.swapMode) {
         return state;
       }
-      const swapSelection = state.swapSelection.includes(action.index)
-        ? state.swapSelection.filter((i) => i !== action.index)
-        : [...state.swapSelection, action.index];
-      return { ...state, swapSelection };
+      const limit = maxSwapCount(state.bag.length);
+      // Ekranda BİZİM sınır uyarımız duruyorsa seçim değişince düşsün; swap
+      // modunun kendi ipucu ("Değiştireceğin taşları seç…") ise KALSIN —
+      // koşulsuz temizlemek onu ilk dokunuşta siliyordu (golden'lar gösterdi).
+      const cleared =
+        state.message === swapLimitMessage(limit)
+          ? { message: '', messageType: '' as GameState['messageType'] }
+          : {};
+      if (state.swapSelection.includes(action.index)) {
+        return {
+          ...state,
+          ...cleared,
+          swapSelection: state.swapSelection.filter((i) => i !== action.index),
+        };
+      }
+      // Torbada kalandan fazla taş seçilemez (bkz. `maxSwapCount`). Uyarı
+      // SEÇİM anında çıkar — "Değiştir"e basılana kadar beklemek, sınırı
+      // ancak reddedildiğinde öğrenmek demek olurdu.
+      if (state.swapSelection.length >= limit) {
+        return {
+          ...state,
+          message: swapLimitMessage(limit),
+          messageType: 'err',
+        };
+      }
+      return {
+        ...state,
+        ...cleared,
+        swapSelection: [...state.swapSelection, action.index],
+      };
     }
 
     case 'CONFIRM_SWAP': {
@@ -619,6 +647,21 @@ export function gameReducer(state: GameState, action: Action): GameState {
           message: 'En az bir taş seçmelisin.',
           messageType: 'err',
         };
+      }
+      // Sınır TOGGLE_SWAP_TILE'da da uygulanıyor, ama burada TEKRAR
+      // kontrol ediliyor: `swapSelection` state'e başka yollardan da
+      // girebilir (`RESUME_SAVED`, `SYNC_ONLINE_STATE` araya girip torbayı
+      // küçültebilir) ve kuralın sahibi UI değil reducer olmalı — taş
+      // korunumu notundaki dersin aynısı.
+      {
+        const limit = maxSwapCount(state.bag.length);
+        if (state.swapSelection.length > limit) {
+          return {
+            ...state,
+            message: swapLimitMessage(limit),
+            messageType: 'err',
+          };
+        }
       }
       // Taş korunumu REDUCER'ın kendi sorumluluğu olmalı (5 Eylül 2026, hata
       // avı geçişi #24 — bkz. docs/decisions/roadmap-arsiv.md).
@@ -765,10 +808,17 @@ export function gameReducer(state: GameState, action: Action): GameState {
         const consecutivePasses = state.consecutivePasses + 1;
         let moved: GameState;
         if (state.bag.length > 0) {
-          const returned = me.rack.map((t) => ({
-            letter: t.wild ? '?' : t.letter,
-            pts: t.pts,
-          }));
+          // YZ de aynı sınıra tabi (`maxSwapCount`): torbada kalandan fazla
+          // taş değiştiremez. Eskiden rafın TAMAMINI atıyordu; torba 7'nin
+          // altına düştüğünde bu, insan oyuncuya kapalı olan bir tazeleme
+          // olurdu — üstelik Canlı oyunda `submit_move` artık bu hamleyi
+          // REDDEDER (bkz. play-ai-turn'ün aynı dilimi).
+          const returned = me.rack
+            .slice(0, maxSwapCount(state.bag.length))
+            .map((t) => ({
+              letter: t.wild ? '?' : t.letter,
+              pts: t.pts,
+            }));
           const bag = shuffle([...state.bag, ...returned]);
           const rack = drawTiles(bag, returned.length);
           moved = {

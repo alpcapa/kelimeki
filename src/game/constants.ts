@@ -82,6 +82,34 @@ export function jokerFinishBonus(jokerCount: number): number {
   return 0;
 }
 
+/**
+ * Taş değiştirmenin ÜST SINIRI: torbada kalan taş sayısı.
+ *
+ * 14 Eylül 2026, kullanıcı raporu (Asnmzr): torbada 4 taş kalmışken 7 taş
+ * değiştirilebiliyordu. Motorun DÖRDÜ de (src · Dart · SQL · play-ai-turn)
+ * "önce seçilenleri torbaya koy, SONRA aynı sayıda çek" sırasını
+ * uyguladığından taş korunumu bozulmuyordu — arıza sessizdi: torba 4'te
+ * kalıyor, rafa 7 taş dönüyor, hata da uyarı da çıkmıyordu. Oyuncu böylece
+ * torbanın taşıyamayacağı bir tazelemeyi bedavaya alıyor (ve kendi attığı
+ * taşları geri çekme ihtimaliyle birlikte, oyun sonu dengesini bozuyor).
+ *
+ * Sınır TORBANIN KENDİSİ: 4 taş varsa en fazla 4 taş değiştirilebilir.
+ * Torba boşsa değiştirme zaten hiç açılmıyor ('Torba boş — taş
+ * değiştirilemez.', `TOGGLE_SWAP_MODE`).
+ */
+export function maxSwapCount(bagCount: number): number {
+  return bagCount;
+}
+
+/**
+ * Sınır aşıldığında gösterilen tek metin. Dört kopya da BUNU söylemeli —
+ * `verify-swap-invariants` (istemci) ve `verify-sql-engine-parity` (sunucu)
+ * parçalarını kilitliyor, port ikizi `constants.dart`'ta.
+ */
+export function swapLimitMessage(bagCount: number): string {
+  return `Torbada ${bagCount} taş var — en fazla ${bagCount} taş değiştirebilirsin.`;
+}
+
 /** Bonus kare kısa etiketi: X3 = üç kat kelime. */
 export const BONUS_LABELS: Record<BonusType, string> = {
   tw: 'X3',
