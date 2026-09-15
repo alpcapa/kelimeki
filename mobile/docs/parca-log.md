@@ -25,6 +25,30 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 208 — App Store ürün sayfası "EN English" diyordu; dil
+     paketten okunuyor (15 Eylül 2026):** Kullanıcı yayınlanan sayfanın
+     ekran görüntüsüyle sordu: **LANGUAGE → EN English**, oysa uygulama
+     tamamen Türkçe. Apple bu satırı **Connect'ten değil yüklenen
+     paketten** okuyor: önce `CFBundleLocalizations`, yoksa
+     `CFBundleDevelopmentRegion`. Depoda ölçüldü — `CFBundleLocalizations`
+     anahtarı HİÇ yoktu, region ise `$(DEVELOPMENT_LANGUAGE)` →
+     pbxproj'deki `developmentRegion = en`. Yani `flutter create`in
+     varsayılanı sahaya çıkmıştı.
+     **Düzeltme:** `ios/Runner/Info.plist` → `CFBundleDevelopmentRegion` =
+     `tr` + `CFBundleLocalizations` = `[tr]`; `project.pbxproj` →
+     `developmentRegion = tr`, `knownRegions`a `tr`.
+     ⚠ **Yeni derleme gerektirir** — yayındaki sürümün sayfası değişmez.
+     ⚠ **Flutter'ın KENDİ metinleri hâlâ İngilizce** (metin seçme menüsü,
+     semantik etiketler, tarih seçici): `MaterialApp`te
+     `localizationsDelegates`/`supportedLocales` yok ve
+     `flutter_localizations` bağımlılığı eklenmedi. Mağaza etiketi ile
+     uygulama içi yerelleştirme AYRI işler; ikincisi bilinçli olarak bu
+     parçanın dışında bırakıldı (bağımlılık + davranış değişikliği).
+     **Doğrulama sınırı:** iOS derlemesi bu ortamda koşturulamıyor;
+     `Info.plist` `plistlib` ile ayrıştırılıp iki anahtar okundu, gerçek
+     kanıt CI'ın "iOS (imzasız)" işi ve sonrasında mağaza sayfası.
+     Kayıt: `marketing/app-store/console-formlari.md` §17.
+
    - ✅ **Parça 207 — Oyun ORTASINDA giriş: ad "Misafir" kalıyordu ve
      bulutta HAYALET bir "Devam Eden Oyun" doğuyordu (15 Eylül 2026):**
      Kullanıcı cihazda bildirdi (TestFlight 1.1.0/665, `Derleme 9c62289`):

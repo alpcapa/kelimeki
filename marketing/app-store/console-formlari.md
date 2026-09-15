@@ -1480,6 +1480,43 @@ iddia et, sonra animasyonun bittiğini bekle.*
 
 ---
 
+## 17. Ürün sayfasındaki "LANGUAGE" — Connect'te DEĞİL, `Info.plist`'te (15 Eylül 2026)
+
+Kullanıcı ekran görüntüsüyle sordu: yayınlanan sayfada **LANGUAGE → "EN
+English"** yazıyordu, oysa uygulama tamamen Türkçe (adı, altyazısı, ekran
+görüntüsü başlıkları, arayüzün tamamı).
+
+**Bu satır App Store Connect'teki hiçbir alandan gelmiyor** — ne "Primary
+Language" ne metadata yerelleştirmeleri. Apple onu YÜKLENEN PAKETTEN okur:
+önce `CFBundleLocalizations`, o yoksa `CFBundleDevelopmentRegion`.
+
+**Bizdeki durum (depodan ölçüldü):** `CFBundleLocalizations` anahtarı HİÇ
+YOKTU ve `CFBundleDevelopmentRegion` `$(DEVELOPMENT_LANGUAGE)` idi; o değişken
+`Runner.xcodeproj/project.pbxproj` → `developmentRegion = en`e çözülüyor.
+Yani paket kendini İngilizce ilan ediyordu. Bu, `flutter create`in
+varsayılanı — kimsenin bilinçli bir kararı değildi.
+
+**Düzeltme:** `Info.plist`'te `CFBundleDevelopmentRegion` = `tr` + yeni
+`CFBundleLocalizations` = `[tr]`; pbxproj'de `developmentRegion = tr`,
+`knownRegions`a `tr` eklendi.
+
+⚠ **YENİ BİR DERLEME gerektirir.** Yayındaki sürümün sayfası değişmez;
+satır ancak yeni derleme işlenip o sürüm yayınlandığında "TR Turkish"e
+döner. Connect'te tıklanacak bir düğme YOK — bunu arayan zaman kaybeder.
+
+⚠ **Uygulama İÇİNDEKİ Flutter metinleri AYRI bir iş.** Bu anahtarlar
+mağaza etiketini düzeltir; Flutter'ın kendi widget metinleri (metin seçme
+menüsü "Paste", semantik etiketler, tarih seçici) hâlâ İngilizce, çünkü
+`MaterialApp`te `localizationsDelegates`/`supportedLocales` yok ve
+`flutter_localizations` bağımlılığı eklenmedi. İkisi birbirinin yerine
+geçmez.
+
+**Play tarafında karşılığı yok:** Play'de dil listesi mağaza listelemesinin
+yerelleştirmelerinden geliyor (Console'da girilen), paketten değil.
+
+
+---
+
 ## 16. Guideline 2.1 — "Information Needed" reddi ve CEVAP KÂĞIDI (13 Eylül 2026)
 
 **Ne oldu:** 1.1.0 (665) gönderimi (12 Eyl 17:32, Submission ID
