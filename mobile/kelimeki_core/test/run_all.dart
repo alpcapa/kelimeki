@@ -280,6 +280,77 @@ void testRemainingTiles() {
   }
 }
 
+/// Taş değiştirmenin üst sınırı (14 Eylül 2026, kullanıcı raporu — Asnmzr).
+///
+/// Golden vector'larla KANITLANAMAZ ve bu bilinçli: fixture'lar web ile
+/// Dart'ı karşılaştırır, yani ikisinde BİRDEN var olan bir kuralsızlığa
+/// kördür — bu hata tam olarak öyleydi (torbada 4 taş kalmışken 7 taş
+/// değiştirilebiliyordu, taş korunumu da bozulmuyordu). Web ikizi:
+/// scripts/verify-swap-invariants.ts'in 5. ve 6. bölümleri.
+void testSwapLimit() {
+  final engine = GameEngine(
+    words: words,
+    rng: Mulberry32(4242),
+    nowIso: () => '',
+  );
+  GameState basla() => engine.reduce(
+        createInitialState(),
+        const StartAction([
+          PlayerSetup(name: 'Ben', isAI: false),
+          PlayerSetup(name: 'Rakip', isAI: false),
+        ]),
+      );
+
+  // ── Sınır: torba 4 iken 5. taş seçilemez ──────────────────────────────
+  {
+    var s = basla();
+    s = s.copyWith(bag: s.bag.sublist(0, 4));
+    s = engine.reduce(s, const ToggleSwapModeAction());
+    for (var i = 0; i < 7; i++) {
+      s = engine.reduce(s, ToggleSwapTileAction(i));
+    }
+    check(s.swapSelection.length == 4,
+        () => 'swap sınırı: seçili ${s.swapSelection.length}, 4 olmalı');
+    check(s.message == swapLimitMessage(4) && s.messageType == MessageKind.err,
+        () => 'swap sınırı uyarısı: "${s.message}"');
+
+    final after = engine.reduce(s, const ConfirmSwapAction());
+    check(after.moveHistory.last.tileCount == 4,
+        () => 'sınıra uyan değişim: ${after.moveHistory.last.tileCount}');
+  }
+
+  // ── Sınırın ALTI engellenmemeli (kapı aşırı hevesli olmasın) ──────────
+  {
+    var s = basla();
+    s = s.copyWith(bag: s.bag.sublist(0, 4));
+    s = engine.reduce(s, const ToggleSwapModeAction());
+    s = engine.reduce(s, const ToggleSwapTileAction(0));
+    s = engine.reduce(s, const ToggleSwapTileAction(1));
+    check(s.swapSelection.length == 2 && s.messageType != MessageKind.err,
+        () => 'sınırın altındaki seçim engellendi: "${s.message}"');
+  }
+
+  // ── Sınır UI'ya emanet DEĞİL: reducer kendi kapısını tutuyor ──────────
+  // Torba SEÇİMDEN SONRA küçülüyor — UI'nın hiç göremediği sıra.
+  {
+    var s = basla();
+    s = engine.reduce(s, const ToggleSwapModeAction());
+    for (var i = 0; i < 7; i++) {
+      s = engine.reduce(s, ToggleSwapTileAction(i));
+    }
+    check(s.swapSelection.length == 7,
+        () => 'senaryo kurulamadı: seçili ${s.swapSelection.length}');
+    s = s.copyWith(bag: s.bag.sublist(0, 2));
+    final onceki = s.current;
+    final after = engine.reduce(s, const ConfirmSwapAction());
+    check(
+        after.messageType == MessageKind.err &&
+            after.message == swapLimitMessage(2),
+        () => 'reducer sınırı aşan değişimi kabul etti: "${after.message}"');
+    check(after.current == onceki, () => 'reddedilen değişimde sıra ilerledi');
+  }
+}
+
 void testReducerScenario(String name) {
   final g = loadGolden(name);
   final seed = g['seed'] as int;
@@ -324,6 +395,7 @@ void main() {
   testRanking();
   testScoring();
   testRemainingTiles();
+  testSwapLimit();
   for (final name in [
     'reducer_ai2',
     'reducer_ai2_kolay',
