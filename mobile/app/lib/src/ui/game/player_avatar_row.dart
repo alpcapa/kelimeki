@@ -15,6 +15,7 @@
 // ⚠ Bu satır 2 Eylül 2026'ya kadar "İki çağrı yeri var" diyordu ve BAYATTI —
 // Canlı kartı sonradan eklenmiş, yorum güncellenmemişti. Boyut değiştirmeye
 // gelen biri kapsamı eksik ölçerdi.
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 
 import '../../util/score_line.dart';
@@ -108,6 +109,37 @@ class PlayerAvatarRow extends StatelessWidget {
   }
 }
 
+/// ⚠ APPLE COLOR EMOJI'NİN MÜREKKEBİ KENDİ KUTUSUNDA ORTALI DEĞİL
+/// (15 Eylül 2026, kullanıcı iPhone'da bildirdi: *"YZ robot avatarı iPhone ve
+/// iPad'de ortalı değil"*).
+///
+/// `Container(alignment: center)` metnin KUTUSUNU ortalar; kutu = glif'in
+/// ilerleme genişliği (advance) ve satır kutusu. Apple Color Emoji'de ikisi de
+/// mürekkebe göre asimetrik: advance ≈ 1,26 em ama mürekkep 1,0 em ve SOLA
+/// yaslı; dikeyde de taban çizgisi mürekkebi kutunun altına itiyor.
+///
+/// **ÖLÇÜLDÜ — kullanıcının 1170×2532 iPhone ekran görüntüsünden**, daire
+/// maskesiyle (mühür testinin yöntemi), iki ayrı kartta İKİ yalıtık robot,
+/// dördü de birebir aynı: mürekkep 42×43 px (font 42 px = 14 pt), merkezi
+/// daireye göre **yatayda −0,131 em, dikeyde +0,083 em**. Aşağıdaki değerler
+/// bunun tersi, yani düzeltme.
+///
+/// ⚠ **YALNIZCA APPLE fontunda uygulanır.** Aynı ölçüm Linux/Noto Color
+/// Emoji'de **0,00 em** verdi (300 px kutuda 1 px), yani Android'de sapma YOK
+/// ve koşulsuz bir kaydırma orayı BOZARDI.
+///
+/// ⚠ Bu bir "boşluk ayarı" değil, ÖLÇÜLMÜŞ bir font metriği telafisi —
+/// `RankSeal`in `sealBaselineEm`i ile aynı sınıf (orada da harfin mürekkebi
+/// font metriğiyle ortalanmıyordu). Apple metriklerini değiştirirse bu sabit
+/// bayatlar; doğrulaması cihazda (`mobile/TESTING.md` §29).
+const double kAppleEmojiNudgeXEm = 0.131;
+const double kAppleEmojiNudgeYEm = -0.083;
+
+/// Apple Color Emoji kullanan platformlar — düzeltme yalnızca burada.
+bool get _appleEmoji =>
+    defaultTargetPlatform == TargetPlatform.iOS ||
+    defaultTargetPlatform == TargetPlatform.macOS;
+
 class _Avatar extends StatelessWidget {
   final AvatarRowPlayer player;
   final double size;
@@ -130,18 +162,28 @@ class _Avatar extends StatelessWidget {
           border: Border.all(color: _border),
           shape: BoxShape.circle,
         ),
-        child: Text(
-          '🤖',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: (size * 0.55).roundToDouble(),
-            height: 1,
-            fontFamilyFallback: const [
-              'Noto Color Emoji',
-              'Apple Color Emoji',
-            ],
-          ),
-        ),
+        child: Builder(builder: (_) {
+          final fs = (size * 0.55).roundToDouble();
+          return Transform.translate(
+            // Düzeltme LAYOUT'A DOKUNMAZ (Transform yalnızca boyar) — daire,
+            // satır adımı ve puan sütunu bitine kadar aynı kalır.
+            offset: _appleEmoji
+                ? Offset(kAppleEmojiNudgeXEm * fs, kAppleEmojiNudgeYEm * fs)
+                : Offset.zero,
+            child: Text(
+              '🤖',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: fs,
+                height: 1,
+                fontFamilyFallback: const [
+                  'Noto Color Emoji',
+                  'Apple Color Emoji',
+                ],
+              ),
+            ),
+          );
+        }),
       );
     }
     // Misafir koltuk (isGuest) da dahil — `KAvatar`'a boş isim geçirmek

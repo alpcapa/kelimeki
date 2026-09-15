@@ -25,6 +25,190 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 210 — YZ robot avatarı iPhone/iPad'de ortalı değildi: Apple
+     Color Emoji'nin mürekkebi kutusunda ortalı DEĞİL (15 Eylül 2026):**
+     Kullanıcı bildirdi: *"YZ robot avatarı iPhone ve iPad'de ortalı
+     değil."* Eksen söylenmemişti; ikisi de sapmış çıktı.
+
+     **ÖLÇÜM — kullanıcının 1170×2532 ekran görüntüsünden** (PNG elle
+     çözüldü; bu ortamda PIL yok, `zlib` + unfilter yeterli). İlk pencereler
+     komşu öğeleri (turuncu "Normal" rozeti, bitişik avatarın halkası, puan
+     satırı) kaptı ve sayılar tutarsız çıktı; **daire maskesine** geçilince
+     (mühür testinin yöntemi, `league_rewards_test.dart`) dört yalıtık
+     robotun dördü de BİREBİR aynı dedi:
+     mürekkep **42×43 px** (font 42 px = 14 pt), merkezi daireye göre
+     **yatay −0,131 em · dikey +0,083 em**.
+
+     ⚠ **Ders (ölçüm yönteminin kendisi):** bir ekran görüntüsünden ölçüm
+     yaparken dikdörtgen pencere YETMEZ — bitişik öğeler mürekkep sanılır.
+     Yuvarlak bir kaptaki mürekkebi ölçerken maske de yuvarlak olmalı.
+
+     **Kök sebep:** `Container(alignment: center)` metnin KUTUSUNU ortalar;
+     kutu = glif'in advance genişliği + satır kutusu. Apple Color Emoji'de
+     ikisi de mürekkebe göre asimetrik (advance ≈ 1,26 em, mürekkep 1,0 em
+     ve SOLA yaslı). **Linux/Noto Color Emoji'de aynı ölçüm 0,00 em** (300
+     px kutuda 1 px) — yani Android'de sapma YOK, hata Apple fontuna özgü ve
+     `flutter test` bunu ASLA göremezdi (test ortamında Apple fontu yok).
+
+     **Düzeltme:** `player_avatar_row.dart`ta ölçülen değerin tersi kadar
+     `Transform.translate` — `kAppleEmojiNudgeXEm = 0.131`,
+     `kAppleEmojiNudgeYEm = -0.083`, **yalnızca Apple platformlarında**
+     (`defaultTargetPlatform`). Transform yalnızca BOYAR, yani daire/satır
+     adımı/puan sütunu bitine kadar aynı kalıyor (test bunu da ölçüyor).
+
+     ⚠ **Bu "boşluk ayarı" değil, ölçülmüş bir font metriği telafisi** —
+     `RankSeal`in `sealBaselineEm`i ile aynı sınıf (orada da harfin
+     mürekkebi font metriğiyle ortalanmıyordu, 12 Ağustos 2026). Kural
+     "yapısal farkı değer ayarıyla kapatma" hâlâ geçerli; buradaki fark
+     yapısal DEĞİL, üçüncü tarafın font metriği.
+
+     **Kapı:** `test/avatar_emoji_nudge_test.dart` (3 test) — doğru
+     platformda doğru büyüklük (em tabanlı, daire büyüyünce kaydırma da
+     büyür), Android'de SIFIR, ve layout'un iki platformda birebir aynı
+     kalması. ⚠ **Testin sınırı açıkça yazılı:** pikselleri ölçemez (Apple
+     fontu yok), yalnızca sabitlerin sessizce silinmesini/sürüklenmesini
+     engeller; mürekkebin gerçekten ortalandığı **cihazda** doğrulanır
+     (`mobile/TESTING.md` §29). **858 test yeşil**, `flutter analyze` temiz.
+
+     ⚠ **`debugDefaultTargetPlatformOverride`u `addTearDown`la geri alma** —
+     foundation'ın "debug değişkeni sıfırlandı mı" kontrolü test GÖVDESİ
+     biter bitmez koşuyor, tearDown'dan ÖNCE (bekleyen-timer dersinin
+     aynısı, `support/real_io.dart`). Gövdenin sonunda elle `null`la.
+
+     **Web ikizi BİLEREK dokunulmadı:** aynı emoji `PlayerAvatarRow.tsx`te
+     de dairede duruyor ve iOS Safari'de büyük ihtimalle aynı sapma var, ama
+     ÖLÇÜLMEDİ — ve tarayıcıda telafi CSS'e girer, portun `Transform`una
+     değil. Ölçülürse ayrı bir iş.
+
+   - ✅ **Parça 209 — Flutter'ın KENDİ metinleri de Türkçe
+     (`flutter_localizations`, 15 Eylül 2026):** Parça 208 mağaza
+     etiketini düzeltti ve orada *"uygulama içi yerelleştirme ayrı bir iş,
+     kapsam dışı"* denmişti; kullanıcı aynı sürüme yetişmesini istedi.
+     Öncesinde `MaterialApp`in `localizationsDelegates`ı YOKTU, yani
+     Flutter `DefaultMaterialLocalizations`a (İngilizce) düşüyordu: metin
+     seçme menüsü *Cut/Copy/Paste*, semantik etiketler, tarih/saat seçici.
+     Uygulamanın kendi metinlerinin tamamı Türkçe olduğundan ekranda
+     KARIŞIK dil çıkıyordu.
+     **Yapılan:** `flutter_localizations` (SDK bağımlılığı, ağ gerektirmez)
+     + `MaterialApp`e üç delege ve `supportedLocales: [Locale('tr')]`.
+     ⚠ **`GlobalCupertinoLocalizations` DA gerekli:** iOS'ta metin seçme
+     araç çubuğunu Cupertino çiziyor; yalnız Material delegesi konsaydı
+     menü **yalnızca iPhone'da** İngilizce kalırdı — yani hata Linux
+     testlerinde de Android'de de görünmezdi. Test bunu ayrıca sınıyor.
+     ⚠ **`locale` BİLEREK sabitlenmedi:** desteklenen tek dil `tr` olduğu
+     için çözümleyici cihaz dili ne olursa olsun ona düşüyor
+     (`supportedLocales.first`); sabitlemek ilerde ikinci bir dil
+     eklenirse cihaz seçimini sessizce yok sayardı. Kullanıcının iPad'i
+     İngilizce olduğundan "cihaz Türkçe değil" yanlış teşhisi mümkündü —
+     ikinci test tam o dalı (cihaz `en-US`/`de`) oynatıyor.
+     **Kapı:** `test/localization_test.dart` (3 test) — Material +
+     Cupertino metinleri, desteklenmeyen cihaz dili dalı, ve **Parça
+     208'in plist/pbxproj iddiası** (mağaza etiketi ile uygulama içi
+     yerelleştirme aynı dosyada kilitli ki biri düzeltilip öteki
+     unutulmasın). Duyarlılık: delegeler çıkarılınca ilk iki test düşüyor.
+     **855 test yeşil**, `flutter analyze` temiz, mevcut testlerin hiçbiri
+     etkilenmedi.
+
+   - ✅ **Parça 208 — App Store ürün sayfası "EN English" diyordu; dil
+     paketten okunuyor (15 Eylül 2026):** Kullanıcı yayınlanan sayfanın
+     ekran görüntüsüyle sordu: **LANGUAGE → EN English**, oysa uygulama
+     tamamen Türkçe. Apple bu satırı **Connect'ten değil yüklenen
+     paketten** okuyor: önce `CFBundleLocalizations`, yoksa
+     `CFBundleDevelopmentRegion`. Depoda ölçüldü — `CFBundleLocalizations`
+     anahtarı HİÇ yoktu, region ise `$(DEVELOPMENT_LANGUAGE)` →
+     pbxproj'deki `developmentRegion = en`. Yani `flutter create`in
+     varsayılanı sahaya çıkmıştı.
+     **Düzeltme:** `ios/Runner/Info.plist` → `CFBundleDevelopmentRegion` =
+     `tr` + `CFBundleLocalizations` = `[tr]`; `project.pbxproj` →
+     `developmentRegion = tr`, `knownRegions`a `tr`.
+     ⚠ **Yeni derleme gerektirir** — yayındaki sürümün sayfası değişmez.
+     ⚠ **Flutter'ın KENDİ metinleri hâlâ İngilizce** (metin seçme menüsü,
+     semantik etiketler, tarih seçici): `MaterialApp`te
+     `localizationsDelegates`/`supportedLocales` yok ve
+     `flutter_localizations` bağımlılığı eklenmedi. Mağaza etiketi ile
+     uygulama içi yerelleştirme AYRI işler; ikincisi bu parçanın dışında
+     bırakılmıştı ve **AYNI GÜN Parça 209'da yapıldı** (kullanıcı isteği:
+     aynı sürüme yetişsin).
+     **Doğrulama sınırı:** iOS derlemesi bu ortamda koşturulamıyor;
+     `Info.plist` `plistlib` ile ayrıştırılıp iki anahtar okundu, gerçek
+     kanıt CI'ın "iOS (imzasız)" işi ve sonrasında mağaza sayfası.
+     Kayıt: `marketing/app-store/console-formlari.md` §17.
+
+   - ✅ **Parça 207 — Oyun ORTASINDA giriş: ad "Misafir" kalıyordu ve
+     bulutta HAYALET bir "Devam Eden Oyun" doğuyordu (15 Eylül 2026):**
+     Kullanıcı cihazda bildirdi (TestFlight 1.1.0/665, `Derleme 9c62289`):
+     *"Misafir olarak 4 kişilik oyun başlattım. Oyunun ortasında giriş
+     yaptım. Oyunu bitirdim ama oyun sonu ekranı Misafir olarak gösterdi.
+     Sonra geri yaptım ve bekleyen oyunlar arasında gördüm. Oyunun girişten
+     sonraki kısmı hiç oynanmamış gibi duruyordu. Tekrar oyunu bitirdim. Bu
+     sefer Ironman olarak gözüktü ve bekleyen oyunlar arasından çıktı."*
+     Ekran görüntüleri tarifle birebir: bitiş ekranı `Misafir 97 · YZ2 122`,
+     listedeki kart ise `74 95 66 71` — yani girişin yapıldığı ANIN skoru.
+
+     **İKİ ayrı kusur, tek tetikleyici; ikisi de web'de VAR olan bir
+     effect'in portta hiç yazılmamış olması** (kural: "sorun bildirildiğinde
+     İLK ADIM web'de bu nasıl yapılmış"):
+
+     1. **Ad.** Web'in `App.tsx`'inde *"Oyun devam ederken giriş yapılırsa
+        1. oyuncunun adını güncelle"* effect'i var (`RENAME_PLAYER`).
+        Portta `RenamePlayerAction` MOTORDA duruyordu ama `mobile/app`
+        içinde onu dispatch eden tek bir satır yoktu — `grep -rn
+        "RenamePlayer" mobile/` yalnızca motoru ve action codec'ini
+        buluyordu. Oyun `Setup`ta `players[0].name: 'Misafir'` literal'iyle
+        kuruluyor ve state'e gömülüyor, yani giriş sonrası ekranda görünen
+        her yer (oyun sonu modalı dahil) "Misafir" diyordu.
+     2. **Kayıt hedefi.** Web'in autosave effect'i `[state, savedGame,
+        user]`e bağlı: `user` dolduğu an hedef localStorage'dan
+        `local_game_saves`e GEÇİYOR. Port hedefi oyun AÇILIRKEN bir kez
+        seçiyordu (`SetupScreen._openGame` → `GameSession` ya da
+        `CloudGameSession`). Giriş sonrası oyun misafir slotuna yazmaya
+        devam ediyor, bu arada **Setup'ın auth dinleyicisi hâlâ ayakta**
+        (oyun rotası onun ÜSTÜNDE açılıyor, Setup dispose olmuyor) ve
+        `_syncCloud` → `migrateGuestSave` o slotun O ANKİ kopyasını buluta
+        taşıyordu. Bulut satırı bir daha GÜNCELLENMİYOR; oyun bitince
+        misafir slotu siliniyor ama satır kalıyor. Hayalet tam olarak bu.
+
+     **Düzeltme — hedefi oturuma CANLI bağlamak:** yeni
+     `game/game_session_host.dart` (`GameSessionHost`) auth'u dinler,
+     misafir ↔ bulut oturumunu devreder ve 1. oyuncunun adını hesap adıyla
+     eşitler; web'de de ikisi tek dosyada (App.tsx) yaşıyor. Devir SIRALI:
+     önce bulut oturumu kurulur (yapıcısı mevcut state'i hemen kuyruğa
+     alır), sonra misafir slotu silinir — tersi, giriş ile ilk yazma
+     arasındaki pencerede uygulama öldürülürse oyunun TEK kopyasını
+     silerdi. Çıkış (logout) simetrik: bulut satırına DOKUNULMAZ (web'de de
+     autosave yalnızca yazmayı bırakır), oyun misafir slotundan devam eder.
+
+     ⚠ **Devir tek başına YETMEZ — ikinci bir kural gerekti:** iki dinleyici
+     (Setup'ınki ve host'unki) aynı bildirimde aynı slota koşuyor ve sıra
+     garanti edilemiyor. `SetupScreen`'e `_gameRouteOpen` bayrağı kondu:
+     **oyun ekranı açıkken `migrateGuestSave` KOŞMAZ** — o slot çalışan
+     oyunun kendi defteridir, devri host yapar. Ölçüldü: kapı olmadan sıra
+     deterministik biçimde migrasyon LEHİNE çıkıyor (Setup'ın dinleyicisi
+     `initState`'te, yani ÖNCE kayıtlı) ve widget testi iki satır görüyor.
+
+     **Kapılar (6 yeni test):** `test/game_session_host_test.dart` (5) —
+     devir + isim + hamlelerin AYNI satırı güncellemesi + oyun bitince
+     satırın silinmesi; aynı hesabın tekrar bildirimi (token tazelenmesi)
+     yeni satır AÇMAZ; çıkış yolu; `turnCount<2` iken önceki misafir kaydı
+     silinmez; buluttan devam edilen BAYAT "Misafir" kaydının adı ilk karede
+     düzelir (sahadaki kalıntıyı da onarır). Artı `setup_screen_test.dart`
+     → *"oyun ekranı AÇIKKEN giriş yapılırsa TEK bulut satırı doğar"*:
+     vakanın uçtan uca hâli, gerçek ekran + gerçek SQLite ile.
+     **Duyarlılık kanıtlandı:** host'un dinleyicisi susturulunca 5 testin
+     4'ü düşüyor, migrasyon kapısı kaldırılınca widget testi iki satır
+     görüp düşüyor. **852 test yeşil**, `flutter analyze` temiz.
+
+     ⚠ **Testte İKİ saat var:** bulut yazmasının 600 ms debounce'u testin
+     SAHTE saatinde (`pump(süre)` ilerletir, süresiz `pump()` İLERLETMEZ),
+     depolama/ağ I/O'su GERÇEK async (`runAsync`). İlk yazımda satır bu
+     yüzden hiç doğmadı ve test yanlışlıkla "yazma yok" diyordu.
+
+     **Web'de değişiklik YOK** — iki effect de orada zaten doğru; bu bir
+     port eksiğiydi. Sahadaki kalıntı: bu sürümden önce doğmuş hayalet
+     satırlar 7 günlük süpürmeye takılır; süpürme `turnCount>=2` satıra -2
+     ceza yazdığından **kullanıcı bunları elle bitirip listeden düşürmeli**
+     (vakadaki gibi "tekrar bitirmek" satırı siliyor).
+
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
      (12 Eylül 2026):** Kullanıcı isteği, önce *"mümkünse oyun sonu
      modalında 'Tebrikler ilk puanını kazandın' mesajı (eğer kazanmışsa)"*;
