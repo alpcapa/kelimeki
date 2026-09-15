@@ -1292,6 +1292,15 @@ export interface AdminFeedbackRow {
  * `AdminSourceFunnelRow`'daki aynı ayrım ve aynı gerekçe. `anon_id`
  * okunamayan (depolaması kapalı) bir istemcinin satırı adette sayılır,
  * benzersizde sayılmaz.
+ *
+ * ⚠ **Kartın oranı ADET üzerinden** (15 Eylül 2026'da cihazdan çevrildi):
+ * port `anon_id` YAZMIYOR (`mobile/app/lib/src/data/games_api.dart` →
+ * `'anon_id': null`) ve `count(distinct anon_id)` NULL saymaz, yani cihaz
+ * paydası yalnızca web'i görüyordu — kart son 30 gün için %50 diyordu, 13
+ * `auto` başlangıcının 11'i iOS'tan geliyordu ve gerçek bitirme %85'ti.
+ * `starters`/`finishers` DURUYOR (ikincil sayı olarak kartta parantez
+ * içinde) ama "yalnızca web" diye okunmalı; port damgalamayı eklerse
+ * (ROADMAP → "Port anonim cihaz damgası") cihaz paydasına dönülebilir.
  */
 export interface AdminTutorialFunnelRow {
   /** 'auto' | 'replay' — sunucu `check` kısıtıyla bu ikisiyle sınırlı. */

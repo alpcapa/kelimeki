@@ -1049,6 +1049,50 @@ gerekçeyle 27 Ağustos'ta Sürüm A'ya alınmadı.
 
 ---
 
+## 30. Port anonim cihaz damgası (`anon_id`) — **AÇIK, ölçüldü** (15 Eylül 2026)
+
+Kullanıcı admin panelindeki Tanıtım Turu kartına bakıp sordu: *"Sanki
+sadece parantez içindeki rakamlar artıyor"*. Doğruydu ve sebebi tek satır:
+port `anon_id` YAZMIYOR (`mobile/app/lib/src/data/games_api.dart` →
+`tutorial_events` ve `game_starts` insert'lerinde `'anon_id': null`).
+`count(distinct anon_id)` NULL saymaz, yani BENZERSİZ CİHAZ sayan her
+sütun yalnızca web'i görüyor. Canlıdan ölçüldü (son 30 gün):
+
+| Tablo | Uygulamadan gelen satır (`anon_id` NULL) | Web |
+|---|---|---|
+| `tutorial_events` | 24 (hepsi iOS) | 7 |
+| `game_starts` | **618** (`android` 587 · `ios` 16 · `app-web` 15) | 993 |
+
+**Yarısı 15 Eylül'de kapatıldı (web tarafı):** Tanıtım Turu kartının oranı
+CİHAZ paydasından ADET paydasına çevrildi — kart %85 yerine %50 yazıyordu.
+Ayrıntı: `docs/decisions/admin-panel.md` → "Tanıtım Turu kartı". Bu bir
+yama; ölçümün kendisi hâlâ eksik.
+
+**Kalan iş (port):** web'in `src/utils/visitTracking.ts` damgasının ikizi —
+cihazda saklanan rastgele bir uuid üretilip `tutorial_events` ve
+`game_starts` satırlarına yazılsın.
+
+- **Gizlilik kapsamı ZATEN var:** `PrivacyModal` bölüm 6 anonim cihaz kodunu
+  tarif ediyor (*"hesabınızla ASLA eşleştirilmez"*), yani yeni bir veri
+  TÜRÜ değil — web'de var olanın portta da yazılması. ⚠ `user_id` ile aynı
+  satıra KOYMA; tabloların ikisinde de böyle bir kolon yok ve olmayacak.
+- **Nerede saklanacağı bir karar:** uygulama silinip yeniden kurulunca
+  sıfırlanan bir yer (uygulama dizini) mi, yoksa kalıcı (Keychain) mi?
+  Web'de `localStorage`, yani "tarayıcı verisi silinene kadar" — porta en
+  yakın karşılığı uygulama dizinidir. Keychain iOS'ta kurulumlar arası
+  YAŞAR ve bu, gizlilik metninin vaat ettiğinden daha kalıcı bir kimlik
+  üretir; bilerek seçilmediyse ALMA.
+- ⚠ **`mobile/app/**` değiştirir → merge mobil derlemeyi TETİKLER**
+  (`mobile-latest` ezilir, TestFlight'a build gider). Sürüm dondurması
+  bitmeden başlama.
+- **Kapandığında geri alınacak yama:** Tanıtım Turu kartının oranı cihaz
+  paydasına dönebilir (adet paydası, aynı cihazda iki kez açıp bir kez
+  bitireni oranı düşürerek cezalandırıyor). Dönülürse
+  `docs/decisions/admin-panel.md`, `docs/decisions/onboarding.md` ve
+  `docs/testing-admin.md`'deki üç not birlikte güncellenmeli.
+
+---
+
 ## Her iş için değişmeyen kurallar
 
 1. **Önce etki analizi** (kök `CLAUDE.md` → "Çalışma İlkesi"): bu kodun
