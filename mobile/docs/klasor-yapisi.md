@@ -141,6 +141,14 @@ mobile/
                              # Android/iOS DIŞI platformlarda `false` döner
                              # (GitHub Pages web derlemesi açılışta ölmesin)
       game/game_controller.dart # ChangeNotifier motor kabuğu + otomatik YZ turu
+      game/game_session_host.dart # çalışan yerel oyunun OTURUMA tepki veren
+                             # kabuğu: kayıt hedefini (misafir slotu ↔ bulut
+                             # satırı) giriş/çıkışta DEVREDER ve 1. oyuncunun
+                             # adını hesap adıyla eşitler — web App.tsx'teki
+                             # iki effect'in ikizi (Parça 207).
+                             # ⚠ İkizi `SetupScreen._gameRouteOpen`: oyun
+                             # ekranı açıkken `migrateGuestSave` KOŞMAZ,
+                             # yoksa aynı oyun iki satıra bölünür
       storage/               # SQLite + prefs katmanı (bkz. "Depolama Katmanı"):
                              # app_database (şema), app_storage (giriş kapısı),
                              # local_save_store (karantinalı kayıt), pending_queue_store,
@@ -347,6 +355,12 @@ mobile/
                              # kullanıyor (icon_parity, relation_icon_parity)
                              # — üçüncü bir elle-senkron vektör çifti
                              # eklenirse kopyalama, buradan tüket
+      game_session_host_test.dart # oyun ORTASINDA giriş/çıkış: devir, isim,
+                             # oyun bitince satırın silinmesi (hayalet "Devam
+                             # Eden Oyun" regresyonu, Parça 207)
+      support/fake_cloud_save_gateway.dart # sahte local_game_saves ucu —
+                             # `cloud_save_test.dart`inkinden ayrı, sade:
+                             # "kaç satır ve içinde ne var" sorusu için
       support/fake_analytics.dart # sahte GA4 ucu — configure eden test
                              # tearDown'da analytics.reset() çağırmak
                              # ZORUNDA (global tek örnek, sızıntı)

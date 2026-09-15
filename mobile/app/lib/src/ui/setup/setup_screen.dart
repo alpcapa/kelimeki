@@ -51,6 +51,7 @@ import '../../storage/flags_store.dart';
 import '../../util/onboarding.dart';
 import '../tutorial/tutorial_game.dart';
 import '../../game/local_game_repo.dart';
+import '../../game/game_session_host.dart';
 import '../../storage/local_save_store.dart' show abandonTimeout;
 import '../../util/away_return.dart';
 import '../../util/share_board.dart';
@@ -235,6 +236,14 @@ class _SetupScreenState extends State<SetupScreen>
   // Misafir kaydını hesaba taşıyan akışın mükerrer-çalışma kilidi (web
   // migratingSavedGameRef).
   bool _migratingGuest = false;
+  // Oyun ekranı bu ekranın ÜSTÜNDE açık mı. Setup route'u o sırada ayakta
+  // kalır (dispose olmaz), yani auth dinleyicisi de çalışmaya devam eder —
+  // oyun ortasında giriş yapılınca `_syncCloud` tetiklenir. O anda misafir
+  // slotu ÇALIŞAN OYUNUN defteridir ve devri `GameSessionHost` yapar;
+  // migrasyon da aynı slota koşarsa aynı oyun hem buluta hem misafir slotuna
+  // yazılır ve bulut kopyası bir daha güncellenmeyen bayat bir "Devam Eden
+  // Oyun" olarak kalır (15 Eylül 2026 cihaz turunda görüldü).
+  bool _gameRouteOpen = false;
   // Hesap değişimi kararı `user` REFERANSINA değil id'ye bakar — web dersi:
   // her onAuthStateChange (TOKEN_REFRESHED dahil) yeni bir User nesnesi
   // verir; referansa bakmak "bir kez"lik sıfırlamaları saatlik tekrara
@@ -742,7 +751,15 @@ class _SetupScreenState extends State<SetupScreen>
     // kalıyor ve "Yükleniyor…" TERMİNAL bir duruma dönüşüyordu — üstelik
     // çağrı `unawaited` olduğundan hata da görünmüyordu.
     final repo = _repo;
-    if (repo != null && !auth.profileLoading && !_migratingGuest) {
+    // ⚠ `_gameRouteOpen` iken migrasyon KOŞMAZ (bkz. alanın kendi notu):
+    // o slot şu an oynanan oyunundur ve misafir→bulut devrini
+    // `GameSessionHost` yapar. Ekrandan dönüşte `_openGame` `_syncCloud`'u
+    // yeniden çağırdığından bekleyen gerçek bir misafir kaydı gecikmeli de
+    // olsa taşınır.
+    if (repo != null &&
+        !auth.profileLoading &&
+        !_migratingGuest &&
+        !_gameRouteOpen) {
       _migratingGuest = true;
       try {
         final moved = await cloud.migrateGuestSave(
@@ -856,7 +873,6 @@ class _SetupScreenState extends State<SetupScreen>
     // misafir slotuna HİÇ dokunulmaz — web'in "girişliyken localStorage'a
     // yazılmaz" kuralının eşleniği (mükerrer terk cezası önlemi; giriş
     // öncesi eski misafir kaydı zaten migrasyonla taşınıp silinmiş olur).
-    final user = widget.services.auth.user;
     final cloud = widget.services.cloudSaves;
     // Oyun bittiği AN kaydı tutulur — web'in `[state.isGameOver]` effect'i
     // gibi (ekran açıkken, GameOver modalı kapatılmasa bile). Uygulama o
@@ -880,14 +896,22 @@ class _SetupScreenState extends State<SetupScreen>
 
     controller.addListener(recordOnGameOver);
 
-    GameSession? guestSession;
-    CloudGameSession? cloudSession;
-    if (user != null && cloud != null) {
-      cloudSession = CloudGameSession(controller, cloud, user.id,
-          resumeSaveId: resumeCloudId);
-    } else {
-      guestSession = _repo?.attach(controller);
-    }
+    // Kayıt oturumu (misafir slotu ↔ bulut satırı) ve 1. oyuncunun adı artık
+    // OTURUMA CANLI bağlı — oyun ekranından giriş yapılabildiği için ikisi de
+    // oyun ortasında değişebilir (15 Eylül 2026 cihaz turu; gerekçe ve vaka
+    // `game_session_host.dart`ın başlığında). Hedefi burada bir kez seçmek
+    // bulutta bayat bir hayalet satır bırakıyordu.
+    final host = GameSessionHost(
+      controller: controller,
+      auth: widget.services.auth,
+      guestRepo: _repo,
+      cloud: cloud,
+      resumeCloudId: resumeCloudId,
+    );
+    // Oyun ekranı açıkken misafir slotu ÇALIŞAN OYUNUN defteridir: Setup'ın
+    // auth dinleyicisi (`_syncCloud`) o slotu buluta taşımaya kalkarsa devirle
+    // yarışır ve aynı oyun iki yere birden yazılır. Devir `host`un işi.
+    _gameRouteOpen = true;
     await Navigator.of(context).push(MaterialPageRoute(
       settings: const RouteSettings(name: 'game'),
       builder: (_) => GameScreen(
@@ -907,8 +931,8 @@ class _SetupScreenState extends State<SetupScreen>
         onlineStatus: widget.services.onlineStatus,
       ),
     ));
-    await guestSession?.end();
-    await cloudSession?.end();
+    _gameRouteOpen = false;
+    await host.end();
     controller.removeListener(recordOnGameOver);
     // Güvenlik ağı: dinleyici bir şekilde kaçırdıysa (ör. restore edilmiş
     // zaten bitmiş bir state) çıkışta bir kez daha denenir — `recorded`

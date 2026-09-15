@@ -25,6 +25,81 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 207 — Oyun ORTASINDA giriş: ad "Misafir" kalıyordu ve
+     bulutta HAYALET bir "Devam Eden Oyun" doğuyordu (15 Eylül 2026):**
+     Kullanıcı cihazda bildirdi (TestFlight 1.1.0/665, `Derleme 9c62289`):
+     *"Misafir olarak 4 kişilik oyun başlattım. Oyunun ortasında giriş
+     yaptım. Oyunu bitirdim ama oyun sonu ekranı Misafir olarak gösterdi.
+     Sonra geri yaptım ve bekleyen oyunlar arasında gördüm. Oyunun girişten
+     sonraki kısmı hiç oynanmamış gibi duruyordu. Tekrar oyunu bitirdim. Bu
+     sefer Ironman olarak gözüktü ve bekleyen oyunlar arasından çıktı."*
+     Ekran görüntüleri tarifle birebir: bitiş ekranı `Misafir 97 · YZ2 122`,
+     listedeki kart ise `74 95 66 71` — yani girişin yapıldığı ANIN skoru.
+
+     **İKİ ayrı kusur, tek tetikleyici; ikisi de web'de VAR olan bir
+     effect'in portta hiç yazılmamış olması** (kural: "sorun bildirildiğinde
+     İLK ADIM web'de bu nasıl yapılmış"):
+
+     1. **Ad.** Web'in `App.tsx`'inde *"Oyun devam ederken giriş yapılırsa
+        1. oyuncunun adını güncelle"* effect'i var (`RENAME_PLAYER`).
+        Portta `RenamePlayerAction` MOTORDA duruyordu ama `mobile/app`
+        içinde onu dispatch eden tek bir satır yoktu — `grep -rn
+        "RenamePlayer" mobile/` yalnızca motoru ve action codec'ini
+        buluyordu. Oyun `Setup`ta `players[0].name: 'Misafir'` literal'iyle
+        kuruluyor ve state'e gömülüyor, yani giriş sonrası ekranda görünen
+        her yer (oyun sonu modalı dahil) "Misafir" diyordu.
+     2. **Kayıt hedefi.** Web'in autosave effect'i `[state, savedGame,
+        user]`e bağlı: `user` dolduğu an hedef localStorage'dan
+        `local_game_saves`e GEÇİYOR. Port hedefi oyun AÇILIRKEN bir kez
+        seçiyordu (`SetupScreen._openGame` → `GameSession` ya da
+        `CloudGameSession`). Giriş sonrası oyun misafir slotuna yazmaya
+        devam ediyor, bu arada **Setup'ın auth dinleyicisi hâlâ ayakta**
+        (oyun rotası onun ÜSTÜNDE açılıyor, Setup dispose olmuyor) ve
+        `_syncCloud` → `migrateGuestSave` o slotun O ANKİ kopyasını buluta
+        taşıyordu. Bulut satırı bir daha GÜNCELLENMİYOR; oyun bitince
+        misafir slotu siliniyor ama satır kalıyor. Hayalet tam olarak bu.
+
+     **Düzeltme — hedefi oturuma CANLI bağlamak:** yeni
+     `game/game_session_host.dart` (`GameSessionHost`) auth'u dinler,
+     misafir ↔ bulut oturumunu devreder ve 1. oyuncunun adını hesap adıyla
+     eşitler; web'de de ikisi tek dosyada (App.tsx) yaşıyor. Devir SIRALI:
+     önce bulut oturumu kurulur (yapıcısı mevcut state'i hemen kuyruğa
+     alır), sonra misafir slotu silinir — tersi, giriş ile ilk yazma
+     arasındaki pencerede uygulama öldürülürse oyunun TEK kopyasını
+     silerdi. Çıkış (logout) simetrik: bulut satırına DOKUNULMAZ (web'de de
+     autosave yalnızca yazmayı bırakır), oyun misafir slotundan devam eder.
+
+     ⚠ **Devir tek başına YETMEZ — ikinci bir kural gerekti:** iki dinleyici
+     (Setup'ınki ve host'unki) aynı bildirimde aynı slota koşuyor ve sıra
+     garanti edilemiyor. `SetupScreen`'e `_gameRouteOpen` bayrağı kondu:
+     **oyun ekranı açıkken `migrateGuestSave` KOŞMAZ** — o slot çalışan
+     oyunun kendi defteridir, devri host yapar. Ölçüldü: kapı olmadan sıra
+     deterministik biçimde migrasyon LEHİNE çıkıyor (Setup'ın dinleyicisi
+     `initState`'te, yani ÖNCE kayıtlı) ve widget testi iki satır görüyor.
+
+     **Kapılar (6 yeni test):** `test/game_session_host_test.dart` (5) —
+     devir + isim + hamlelerin AYNI satırı güncellemesi + oyun bitince
+     satırın silinmesi; aynı hesabın tekrar bildirimi (token tazelenmesi)
+     yeni satır AÇMAZ; çıkış yolu; `turnCount<2` iken önceki misafir kaydı
+     silinmez; buluttan devam edilen BAYAT "Misafir" kaydının adı ilk karede
+     düzelir (sahadaki kalıntıyı da onarır). Artı `setup_screen_test.dart`
+     → *"oyun ekranı AÇIKKEN giriş yapılırsa TEK bulut satırı doğar"*:
+     vakanın uçtan uca hâli, gerçek ekran + gerçek SQLite ile.
+     **Duyarlılık kanıtlandı:** host'un dinleyicisi susturulunca 5 testin
+     4'ü düşüyor, migrasyon kapısı kaldırılınca widget testi iki satır
+     görüp düşüyor. **852 test yeşil**, `flutter analyze` temiz.
+
+     ⚠ **Testte İKİ saat var:** bulut yazmasının 600 ms debounce'u testin
+     SAHTE saatinde (`pump(süre)` ilerletir, süresiz `pump()` İLERLETMEZ),
+     depolama/ağ I/O'su GERÇEK async (`runAsync`). İlk yazımda satır bu
+     yüzden hiç doğmadı ve test yanlışlıkla "yazma yok" diyordu.
+
+     **Web'de değişiklik YOK** — iki effect de orada zaten doğru; bu bir
+     port eksiğiydi. Sahadaki kalıntı: bu sürümden önce doğmuş hayalet
+     satırlar 7 günlük süpürmeye takılır; süpürme `turnCount>=2` satıra -2
+     ceza yazdığından **kullanıcı bunları elle bitirip listeden düşürmeli**
+     (vakadaki gibi "tekrar bitirmek" satırı siliyor).
+
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
      (12 Eylül 2026):** Kullanıcı isteği, önce *"mümkünse oyun sonu
      modalında 'Tebrikler ilk puanını kazandın' mesajı (eğer kazanmışsa)"*;
