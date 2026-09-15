@@ -214,6 +214,13 @@ jobs:
       # 504 dönmesi ya da RLS'in reddetmesi gerekiyor.
       - run: npm run verify-error-messages
 
+      # Mağaza rozetlerinin YERLEŞİM kuralları (ROADMAP #26) ve "yayında
+      # değilse çizme" kapısı. İkisi de TESCİLLİ MARKA kuralı — ihlali görsel
+      # bir kusur değil, hukuki bir sorun. Duman testiyle sınanamaz: rozetler
+      # bugün hiç render edilmiyor (iki URL de null), tarayıcıda görülecek
+      # bir şey yok.
+      - run: npm run verify-store-badges
+
       - run: npm run build
 
       # Bu ortamdaki geliştirme oturumunun aksine (bkz. playwright.config.ts),

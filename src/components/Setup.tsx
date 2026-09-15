@@ -29,6 +29,7 @@ import { RankSeal } from "./RankSeal";
 import { useRankScores } from "../hooks/useRankScores";
 import { RecentGamesSection } from "./RecentGamesSection";
 import { ShareIcon } from "./RelationIcons";
+import { StoreBadges } from './StoreBadges';
 import { shareKelimekiLink } from "../utils/shareLink";
 import { createAwayTracker } from "../utils/awayReturn";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
@@ -1220,6 +1221,11 @@ export function Setup({
           `gap-3`üyle veriyor, yani iki footer artık BİREBİR aynı (ölçüldü:
           4.0 → 12.0px). Biri değişirse öteki de değişmeli. */}
         <div className="flex flex-col items-center gap-3">
+          {/* Mağaza rozetleri (ROADMAP #26) — hukuki linklerin ÜSTÜNDE, kendi
+            ortalanmış satırında. Hiçbir mağaza yayında değilken `null` döner,
+            yani bugün burada HİÇBİR ŞEY çizilmiyor; kurallar/gerekçeler
+            `utils/storeLinks.ts`te. */}
+          <StoreBadges />
           {/* `flex-wrap` bir emniyet ağı — 356px'in altındaki viewport'larda
             (320/344 gibi) üç öğe tek satıra sığmıyor; ÖLÇÜLDÜ, `gap-x-2 gap-y-1`
             320'de iki satıra sarıp yatay taşmayı 0'da tutuyor, 356+ genişlikte

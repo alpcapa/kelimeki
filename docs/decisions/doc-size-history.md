@@ -194,3 +194,55 @@ değişmeden, gerekçe başlığın altına yazılarak).
 düzeltiliyor?"* diye sor. Düzeltme taşınan tarafa gidiyorsa başlık da
 düzeltilmeli. "Hiçbir satır değişmez" kuralı TAŞINAN metin için geçerli;
 kalan tarafın kendi doğruluğu ayrı bir sorumluluk.
+
+---
+
+## 15 Eylül 2026 — kök `CLAUDE.md` (80 → 73 KB), `auto` sınıfı uyarı bandından çıkarıldı
+
+**Tetikleyici:** dosya 80 KB'a ulaşıp `auto` sınıfının uyarı bandına
+girmişti (80 / 120 KB) ve betiğin kendi tavsiyesi *"bir sonraki dokunuşta
+böl"* diyordu. İki tur üst üste uyarı görüldü, ikincisinde bölündü.
+
+**Kesme ölçütü sınıfın kuralı:** `auto` için bölme DEĞİL, **kural ↔ anlatı
+ayrımı** — *"tarihli 'neden böyle' anlatılarını `docs/decisions/*`'e taşı,
+burada yalnızca HER YERDE geçerli kural/değişmez kalsın."* Yani yeni bir
+dosya AÇILMADI; mevcut karar kayıtlarına eklendi.
+
+| Taşınan | Nereye | Neden anlatı |
+|---|---|---|
+| "İlk Oyun: Tanıtım Ekranı" bölümünün tamamı (~3.5 KB) | `onboarding.md` | Sahneler, karşılama penceresi, ölçüm tablosu, faz geçmişi — hepsi tek özelliğin "neden böyle"si |
+| "Tahta yakınlaştırması" + "Tanıtım balonu" maddeleri (~2.5 KB) | `touch-ux-bugs.md` | Dokunmatik davranış ayrıntısı; dosyanın zaten konusu |
+| "Joker" maddesinin `swallowNextClick()` paragrafı (~1.3 KB) | `touch-ux-bugs.md` | Zaten oraya işaret ediyordu, gövdesi de gitti |
+| "YZ seviyesi" maddesinin tam dökümü (~3.3 KB) | `ai-levels.md` | Madde zaten *"TASARIM KAYDI ai-levels.md, önce onu oku"* diyordu |
+| "Bu dal merge edilmiş mi" üç tuzak tablosu (~1 KB) | `supabase-ops.md` | Vaka anlatısı; dosyada "dal temizliği" başlığı zaten vardı |
+| "Teslim sonrası izleme — SİLİNDİ" maddesi | *silindi* | İçeriği `roadmap-arsiv.md`'de zaten vardı ve madde oraya işaret ediyordu — ikinci kopya |
+
+**Her taşınan blok BİREBİR gitti** (satır aralığıyla kesilip hedefe
+eklendi, tek satırı yeniden yazılmadı) ve her hedefe *"kök `CLAUDE.md`'den
+15 Eylül 2026'da taşındı"* künyesi düşüldü. `CLAUDE.md`'de yerlerine
+**kural çekirdeği + işaret** kaldı: değişmez kalıyor, gerekçe gidiyor.
+
+**İndeks tablosu aynı turda güncellendi** — dört satıra "…15 Eyl 2026'da
+buraya taşındı" eklendi. Bölünen içeriğin bulunabilirliğini bu tablo
+sağlıyor; güncellenmezse taşıma bir kayıp olurdu.
+
+⚠ **Önceki turun dersi uygulandı ve bir hata yakalandı.** Günlüğün kendi
+kuralı *"başlığı/numarayı değiştirme, atıflar kırılır"* diyor. İlk geçişte
+`## İlk Oyun: Tanıtım Ekranı (7 Eylül 2026)` başlığından tarih düşürülmüştü;
+`grep -rn` taraması kırık atıf bulmadı ama başlık **eski hâline geri
+alındı** — atıf taraması "bugün kırık değil" der, "yarın da kırılmaz" demez.
+
+⚠ **"Başlık yalan oldu mu?" kontrolü koşuldu** (26 Ağustos turunun dersi):
+kalan üç başlık — "İlk Oyun: Tanıtım Ekranı", "Oyun Mekaniği Özeti",
+"Git / Branch Kuralı" — taşımadan sonra da kendi içeriklerini doğru
+anlatıyor, düzeltme gerekmedi.
+
+**Sonuç:** 80.489 → 73.672 bayt (~%8,5 küçülme). Uyarı listesinden ÇIKTI —
+betiğin uyarı listesinde artık yalnızca `roadmap-arsiv.md` var. `auto`
+tavanına (120 KB) karşı ~%39 pay kaldı.
+
+⚠ **Kazanç mütevazı ve bu bilinçli:** taşınan ~11,5 KB'ın yerine ~4 KB
+kural çekirdeği kondu. `auto` sınıfında amaç dosyayı küçültmek DEĞİL,
+her turda yüklenen şeyi KURALA indirgemek; çekirdeği de kesmek bu
+dosyanın var olma sebebini kesmek olurdu.
+

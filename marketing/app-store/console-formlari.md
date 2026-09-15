@@ -501,6 +501,9 @@ dokun** — yoksa bir sonraki oturum yine baştan sorar.
 | Ekran görüntüleri | ✅ yüklendi (11 Eyl, 8/10 · 8/10) | §13 |
 | Derleme iliştirme | ✅ **665** (12 Eyl; 629 → 654 → 656 → 659 → 665) | §15. Kullanıcı kuralı: *"ASC'de her zaman son versiyon olmalı"* — Play aynı numarayla takip eder (665'in `.aab`si 13 Eyl'de yüklenecek; o ana kadar Play **659**'da, yani iki mağaza GEÇİCİ olarak ayrı). ⚠ 665 ilk dört paketten FARKLI: PR #533'ün üç işini taşıyor. Ölçüm: `mobile/docs/surumler.md` → "1.1.0 (665)" + `surumler-ios.csv` |
 | **Gönderim** | ✅ **GÖNDERİLDİ** (12 Eyl, 17:32) | `Submit to App Review` → *"1 Item Submitted"*; sürüm durumu **Waiting for Review**. İnceleme ≤48 saat, sonuç e-postayla gelir. Yayın **elle** (Manually) |
+| **İnceleme sonucu** | ✅ **ONAYLANDI** (15 Eyl, ~05:46) | *"…has been approved for distribution."* Sürüm **`1.1.0 Pending Developer Release`**. Düz bir yol DEĞİLDİ: 13 Eyl 04:16 **reddedildi** (Guideline 2.1, "limited App Review history" — tanıma anketi, arıza bildirimi değil) → cevap + dört adımlı zincir → 13 Eyl 18:15 yeniden gönderim. Tamamı §16. **Kod hiç değişmedi; 665 aynı paket** |
+| **Yayın** | ✅ **YAYINDA** (15 Eyl; 06:02 başlatıldı, ~06:39 vitrin doğrulandı — kullanıcı App Store'da gördü ve indirdi) | Kullanıcı `Release This Version`a bastı. Kapı önce ölçüldü: Free Apps Agreement **`Active`** (8 Eyl 2026 – 8 Eyl 2027) · DSA **`Active`** · Paid Apps `New` (ücretsiz uygulamada gerekmiyor) — onay e-postasındaki *"contracts not yet in effect"* uyarısı bu hesapta geçersiz. ✅ Vitrin ~06:39'da ölçüldü (kullanıcı gördü + indirdi); ikinci kanıt Marketing Tools akışının bu uygulama için ilerlemesi — 10 Eyl'de duruyordu. ⚠ Ajan ölçemedi: `apps.apple.com` / `itunes.apple.com` / `tools.applemediaservices.com` proxy'den 403. Ölçüm gelince §26 Apple yarısı yapıldı (rozet + link) |
+| **Web rozeti + link** (ROADMAP §26 Apple yarısı) | ✅ **YAPILDI** (15 Eyl) | Rozet Marketing Tools'tan indirildi (Türkçe SİYAH, `..._Badge_TR_blk_...`) → `public/app-store-badge.svg`; adres ülkesiz (`/app/…/id6809809788`, izleme kuyruğu atıldı). ⚠ **Marketing Tools'un bu uygulama için İLERLEMESİ vitrinin açıldığının kanıtı** — 10 Eyl'de yayında olmayan uygulamada duruyordu. ⚠ Tur bir kural ihlali ortaya çıkardı: eşit yükseklik hizalaması Google'ın "same size or larger"ını bozuyordu (Türkçe Apple rozeti **3.78:1**, varsayım `~3.0` idi); hizalama GENİŞLİĞE çevrildi, kapı iki dosyayı da okuyor. Ayrıntı `src/utils/storeLinks.ts` |
 
 **Kapananlar:** **App Privacy Console'a GİRİLDİ ve Published → §10 (12 Eylül 2026)** · mağaza metinleri → §9 · yaş derecesi →
 §5 · demo hesap → §11 · Export Compliance → §12 · **API anahtarı `.p8` →
@@ -1721,6 +1724,64 @@ sınır 15 dk, doğrulanmamış hesapta bile.
 **Linklerde üç kural:** `Unlisted` (Private DEĞİL — incelemeci açamaz) ·
 HD işlenmesini bekle (yükleme biter bitmez verilen link bulanık sürümü
 gösterir) · **inceleme bitene kadar videoları silme.**
+
+### 🔴 YouTube video 2'yi KALDIRDI — ve cevap verecek kanal YOK (14 Eylül 2026)
+
+**Ne oldu:** cevap 13 Eylül 17:58'de beş YouTube (Unlisted) linkiyle gitti.
+14 Eylül 11:44'te YouTube **video 2'yi** (*"Kelimeki Review - Video 2"*,
+kayıt olma + demo hesapla giriş) kaldırdı. Gerekçe: **policy on personally
+identifiable information**. Kullanıcı itiraz etti.
+
+🔴 **İTİRAZ REDDEDİLDİ (14 Eylül 2026, 12:43).** YouTube'un cevabı:
+*"We reviewed Kelimeki Review - Video 2 again and **confirmed** it's not
+allowed under our policy on personally identifiable information. **Your
+video won't be put back on YouTube.**"* Karar insan incelemesinden de geçti;
+video KALICI olarak gitti. Aşağıdaki "muhtemelen" değerlendirmesi böylece
+doğrulandı — artık tahmin değil ÖLÇÜM.
+
+⚠ **Bu muhtemelen YANLIŞ TESPİT DEĞİL, ve bunu böyle kabul etmek planı
+değiştiriyor.** Video 2'nin içeriği tanımı gereği şunları gösteriyor: bir
+e-posta adresinin forma yazılması, bir şifrenin yazılması, ve
+`kelimekitest2`nin giriş bilgileriyle oturum açılması. YouTube'un kendi
+metni tam da bunları sayıyor: *"…an individual's home address, **email
+address**, **sign-in credentials**, phone number…"*. Yani sınıflandırıcı
+videoda GERÇEKTEN var olan bir şeyi yakaladı — ve itirazın reddi bunu
+teyit etti. **Bu yüzden aşağıdaki 1. kural KOŞULSUZ:** kayıt/giriş gösteren
+bir ekran kaydı YouTube'da barındırılamaz, "belki geçer" diye denenmez.
+
+⚠ **VE CEVAP VERECEK KANAL YOK (ölçüldü, aynı gün).** Gönderim
+`Waiting for Review` durumundayken sayfada **`Reply to App Review` düğmesi
+ÇIKMIYOR** — tek düğme `Cancel Submission`. Yani:
+
+- Yeni bir link ya da dosya İLETİLEMİYOR.
+- Videoyu doğrudan eklemek (yukarıdaki "Ekleme yolu" tartışması) da
+  mümkün değil, çünkü ek kutusunu açan şey o cevap penceresiydi.
+- Tek teknik seçenek `Cancel Submission` idi ve **kullanmadık**: kuyruk
+  sırasını KESİN olarak kaybettirir, üstelik 13 Eylül'de ölçülen dört
+  adımlı zincir (`Reply` → Notes → `Update Review` → `Resubmit`) baştan
+  koşulmak zorunda kalırdı. Bilinen bir zararı olası bir zararla takas
+  etmek olurdu.
+
+**Kullanıcı kararı: BEKLE.** Kalan dört video Apple'ın altı maddesini
+karşılıyor (video 2 kayıt akışıydı; incelemecinin kendi giriş bilgileri
+zaten App Review Information'da yazılı, videoya bağlı değil).
+
+### ⚠ BİR SONRAKİ TURUN KURALI — kimlik bilgisi gösteren kaydı YouTube'a KOYMA
+
+Bu turdan çıkan kalıcı ders, üç maddede:
+
+1. **Kayıt/giriş gösteren bir ekran kaydı YouTube'da barındırılamaz.** PII
+   politikası e-posta adresini ve giriş bilgilerini açıkça sayıyor; kayıt
+   formunu filme alan her video bu sınıfa girer.
+2. **Aynı videoyu yeniden YÜKLEME.** İtiraz sürerken aynı içeriği tekrar
+   yüklemek kanal ihtarına (strike) yol açabilir ve aynı sınıflandırıcı
+   yine yakalar — bir kaybı ikiye çıkarır.
+3. **Cevap penceresi KAPANMADAN karar ver.** Ek kutusu yalnızca
+   `Reply to App Review` açıkken var; `Resubmit`ten sonra kanal kapanıyor.
+   Yani videoların nerede duracağı, cevabı GÖNDERMEDEN önce çözülmüş
+   olmalı. Bir sonraki turda sıra: önce videoyu küçült (yalnızca gerekli
+   bölümü kırp, düşük bit hızı) ve **doğrudan ekle**; YouTube yedek yol
+   bile olmasın.
 
 ### ✅ Cevaptan SONRA sürümü incelemeye geri sokan ZİNCİR (13 Eyl 2026, ölçüldü)
 

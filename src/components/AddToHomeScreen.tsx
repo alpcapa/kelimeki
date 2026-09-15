@@ -1,20 +1,28 @@
 import { useEffect, useState } from 'react';
-import { isStandaloneDisplay } from '../utils/visitTracking';
+import { getDeviceType, isStandaloneDisplay } from '../utils/visitTracking';
 
 const DISMISSED_KEY = 'kelimeki_a2hs_dismissed';
 
-// Basit User-Agent tabanlı ayrım — kod incelemesinde "tüm platformlara
-// iOS'a özgü talimat gösteriyor" bulgusu için eklendi. Android Chrome'un
-// kurulum akışı (tarayıcı menüsü → "Ana ekrana ekle"/"Yükle") iOS'un paylaş
-// sayfası jestinden tamamen farklı olduğundan, yanlış platforma iOS
-// talimatı göstermek kafa karıştırıcıydı. `beforeinstallprompt` API'sine
-// (yalnızca bazı Chromium sürümlerinde var) bağlanmak yerine bilinçli
-// olarak basit tutuldu — masaüstü/diğer tarayıcılar genel bir talimata düşer.
+// Platform ayrımı — kod incelemesinde "tüm platformlara iOS'a özgü talimat
+// gösteriyor" bulgusu için eklendi. Android Chrome'un kurulum akışı (tarayıcı
+// menüsü → "Ana ekrana ekle"/"Yükle") iOS'un paylaş sayfası jestinden tamamen
+// farklı olduğundan, yanlış platforma iOS talimatı göstermek kafa
+// karıştırıcıydı. `beforeinstallprompt` API'sine (yalnızca bazı Chromium
+// sürümlerinde var) bağlanmak yerine bilinçli olarak basit tutuldu —
+// masaüstü/diğer tarayıcılar genel bir talimata düşer.
+//
+// ⚠ **KENDİ UA TESTİNİ YAZMA — `getDeviceType()` kullan** (14 Eylül 2026).
+// Burada bir dönem ikinci bir kopya vardı ve yalnızca `/iPhone|iPad|iPod/`e
+// bakıyordu. **iPadOS 13+ Safari kendini `Macintosh` diye tanıttığından iPad
+// bu testten GEÇEMİYOR** ve `'other'` dalına, yani genel "tarayıcı menüsünden
+// Yükle" metnine düşüyordu — iPad kullanıcısı iOS talimatını HİÇ görmedi.
+// Bilgi depoda zaten vardı (`visitTracking.getDeviceType`, 24 Ağustos 2026,
+// gerekçesi de yazılı), ama bu dosyaya hiç işlenmemişti. Kök `CLAUDE.md`'nin
+// "aynı veriyi eleyen TÜM filtreler tek tek okunmalı" kuralının bir vakası.
+// Çözüm kopyayı düzeltmek değil, KALDIRMAK oldu.
 function detectPlatform(): 'ios' | 'android' | 'other' {
-  const ua = navigator.userAgent;
-  if (/iPhone|iPad|iPod/.test(ua)) return 'ios';
-  if (/Android/.test(ua)) return 'android';
-  return 'other';
+  const tip = getDeviceType();
+  return tip === 'desktop' ? 'other' : tip;
 }
 
 export function AddToHomeScreen() {
@@ -67,12 +75,9 @@ export function AddToHomeScreen() {
           </p>
           {platform === 'ios' ? (
             <p className="text-[10px] text-muted font-mono leading-relaxed mt-0.5">
-              Paylaş{' '}
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="inline-block align-middle -mt-0.5" aria-hidden>
-                <path d="M5 1v6M3 3l2-2 2 2M1 6v3h8V6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              {' '}düğmesine dokun, ardından{' '}
-              <span className="text-text font-bold">"Ana Ekrana Ekle"</span>'yi seç.
+              Tarayıcında <span className="text-text font-bold">"Paylaş"</span>{' '}
+              simgesine tıkla,{' '}
+              <span className="text-text font-bold">"Ana Ekrana Ekle"</span>yi seç.
             </p>
           ) : platform === 'android' ? (
             <p className="text-[10px] text-muted font-mono leading-relaxed mt-0.5">

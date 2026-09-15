@@ -1662,6 +1662,27 @@ yapılır.
 bıraktığında — ÖLÇ, varsayma) → Android yarısı. App Store yayını → Apple
 yarısı.
 
+✅ **15 Eylül 2026 — APPLE YARISI YAPILDI.** 1.1.0 (665) onaylandı, yayın
+başlatıldı ve rozet siteye kondu. **Vitrinin açıldığının kanıtı:** Apple'ın
+Marketing Tools akışı bu uygulama için ilerledi ve rozeti/linki üretti —
+10 Eylül'de aynı akış yayında olmayan uygulamada DURUYORDU, yani ilerlemesi
+ölçümün kendisi. (⚠ Ajan doğrudan ölçemez: `apps.apple.com`,
+`itunes.apple.com` ve `tools.applemediaservices.com` agent proxy'den **403**
+dönüyor; yalnız `developer.apple.com` erişilebilir.)
+
+Girilenler: `public/app-store-badge.svg` (Türkçe SİYAH, künye
+`..._Badge_TR_blk_...`) + `storeLinks.ts`'te ülkesiz adres. ⚠ Bu tur
+**dokümante edilmiş bir kuralın çiğnendiğini ortaya çıkardı** — eşit
+yükseklik hizalaması Google'ın "same size or larger"ını bozuyordu, çünkü
+Apple'ın oranı `~3.0` diye VARSAYILMIŞTI ama Türkçe rozet **3.78:1**.
+Hizalama genişliğe çevrildi, kapı iki dosyayı da okuyacak şekilde yeniden
+yazıldı. Ayrıntı: `src/utils/storeLinks.ts`.
+
+**ANDROID YARISI HÂLÂ AÇIK** — Play production sürümü incelemede. Vitrin
+açılınca `googlePlay.url` doldurulur, rozet kendiliğinden yanına gelir
+(bileşen tek rozetle de çalışıyor, kapıda ölçülü). Kayıt:
+`mobile/docs/surumler/gonderimler-ios.csv` satır 12-13.
+
 ⚠ **Ve ölçümü KENDİ Play hesabınla yapma** (13 Eyl 2026, yaşandı): geliştirici
 `Kelimeki Testers` listesinde olduğundan Play ona her hâlükârda bir liste
 gösteriyor — *(Erken Erişim)* etiketiyle, arama sonucunda, yüklü rozetiyle.
@@ -1681,13 +1702,57 @@ denendi, aynı 403.)
 E-posta 13 Eyl 00:14'te geldi ve tetikleyici sanılıp madde açılabilirdi —
 ama onay ERİŞİM verir, vitrin açmaz. Doğru kapı yayınlanmış sürümdür.
 
-### Yapılacaklar
+### ✅ İSKELET KURULDU (14 Eylül 2026)
 
-| Parça | Not |
+İlk iki parça YAPILDI ve `main`'de; bugün ekranda hiçbir değişiklik YOK
+(iki URL de `null`, `StoreBadges` `null` dönüyor). Rozeti GÖSTERMEK için
+yapılacak tek şey `src/utils/storeLinks.ts`teki `null`u gerçek adresle
+değiştirmek.
+
+⚠ **Ama "tek satır" maddeyi KAPATMAZ.** Aynı gün yapılan ölçüm (aşağıda,
+`AddToHomeScreen` satırı) rozetin tek başına yayınlanmasının çelişkili bir
+ekran ürettiğini gösterdi: "ana ekrana ekle" şeridi footer'ın üstüne binen
+bir katman ve Android'de rozetle aynı anda görünüyor. Yani URL'yi doldurmak
+ile maddeyi kapatmak AYNI ŞEY DEĞİL — ikisi birlikte gitmeli.
+
+**Yerleşim ÖLÇÜLDÜ** (14 Eylül 2026, 390×844, üretim derlemesi, URL geçici
+doldurulup gerçek Setup ekranında): rozet **44 × 148,4 px** · rozet altı →
+hukuki satırın kutusu **12 px** · rozet altı → **görünür metin 28,5 px** ·
+şart (yükseklik/4) **11 px**. İkisi de şartın üstünde; aradaki fark
+hukuki butonların `min-h-[48px]` dokunma hedefinden geliyor (kutu erken
+başlıyor, yazı aşağıda).
+
+⚠ **Play rozeti ELDE** (`public/google-play-badge.svg`, kullanıcı indirdi):
+Türkçe · siyah · gri kenarlık yerinde · `<text>` yok (path'e çevrilmiş) ·
+5.480 bayt · oran 3.37:1. Render edilip gözle doğrulandı.
+**Apple rozeti HÂLÂ YOK** — Marketing Tools yayında olmayan uygulamada
+ilerlemiyor (10 Eylül ölçümü); o yarı yayını bekliyor.
+
+⚠ **Yerleşim kuralları artık İKİ KAYNAKTAN da doğrulandı** (14 Eylül 2026):
+
+| Kural | Kaynak |
 |---|---|
-| Mağaza URL'leri tek bir sabit dosyasında | `null` = "henüz yayında değil" → o rozet/dal HİÇ render edilmez. Tek satır değiştirip merge etmek yeter |
-| `Setup.tsx` footer'ına rozet satırı | Hukuki linklerin (`Kullanım Koşulları · Gizlilik Politikası · Paylaş`) ÜSTÜNE, ortalanmış kendi satırı |
-| `AddToHomeScreen.tsx` platforma göre dallansın | **Asıl iş burada.** Bugün `detectPlatform()` zaten `ios`/`android`/`other` ayırıyor ama üçü de aynı PWA talimatına düşüyor. Mağaza yayındaysa o platform mağazaya, değilse bugünkü PWA şeridine düşmeli — hiçbir aşamada boş ekran olmamalı |
+| App Store **ilk** (solda) | Apple, yazılı: *"Place the App Store badge first in the lineup of badges."* |
+| Play rozeti **aynı boy ya da daha büyük** | Google, yazılı: *"make sure the Google Play badge is the same size or larger"* |
+| Clear space = yüksekliğin **1/4**'ü | İKİSİ DE aynı sayıyı veriyor |
+| Ekranda min **40 px** | Apple |
+
+⚠ **Görünürdeki çelişki GERÇEK DEĞİL:** Google'ın kılavuzundaki örnek
+görselde Play SOLDA duruyor, ama o bir ÖRNEK — Google'ın metni sıra
+hakkında hiçbir şey söylemiyor. Apple'ınki açık bir kural, sıra ona göre.
+Bu tuzağa düşülmesin diye `npm run verify-store-badges` sırayı KİLİTLİYOR
+(duyarlılığı kanıtlandı: sıra ters çevrildiğinde 3 kontrol düşüyor).
+
+⚠ **Rozet SVG'leri DOM'a INLINE EDİLMEZ, `<img>` ile çizilir.** Illustrator
+ihracatları `<style>` içinde `.st0`/`.st1` gibi jenerik sınıflar taşıyor
+(elimizdeki Play dosyasında da var) ve inline SVG'nin CSS'i sayfa geneline
+sızıyor — Apple'ın dosyası da aynı adları taşıyacağından ikisi inline
+edilirse renkleri birbirini ezer.
+
+### Kalan yapılacaklar
+| **Yayın gelince: `storeLinks.ts`'te `null` → URL** | ⚠ Ölçüt "onay geldi" ya da Console'un "Active"i DEĞİL, vitrinin 404 vermeyi bırakması — ve ölçüm OTURUM AÇMADAN (gizli sekme). `verify-store-badges`in "bugün hiçbir rozet çizilmiyor" satırı o an bilerek DÜŞER, bakanı uyarır |
+| Apple rozet dosyası (`public/app-store-badge.svg`) | Yayından sonra Marketing Tools'tan; yedek yol 336 MB arşivden yalnızca Türkçe SİYAH dosya |
+| `AddToHomeScreen.tsx` platforma göre dallansın | **Asıl iş burada.** Bugün `detectPlatform()` zaten `ios`/`android`/`other` ayırıyor ama üçü de aynı PWA talimatına düşüyor. Mağaza yayındaysa o platform mağazaya, değilse bugünkü PWA şeridine düşmeli — hiçbir aşamada boş ekran olmamalı. ⚠ **14 Eylül 2026'da ÖLÇÜLDÜ ve gerekçe somutlaştı:** şerit `fixed bottom-4 … z-[60]`, yani sayfa akışında DEĞİL — footer'ın üstüne biniyor ve hukuki satır ile `© Kelimeki`yi ÖRTÜYOR (390×844'te üretim derlemesinde görüldü). Bu bugün de böyle, rozetten bağımsız; ama rozet çıkınca Android kullanıcısı aynı anda **hem** *"ana ekrana ekle"* şeridini **hem** Play rozetini görecek — biri PWA'ya, öteki mağazaya, üstelik üst üste. Yani bu madde rozetlerle birlikte açılmalı, sonraya bırakılırsa çelişkili bir ekran doğar |
 | iOS Smart App Banner | `<meta name="apple-itunes-app" content="app-id=6809809788">` — **sayısal App ID artık ELDE** (13 Eyl 2026, ASC → App Information; `marketing/app-store/console-formlari.md` §1). Geriye tek koşul kaldı: uygulamanın App Store'da **yayında** olması. ⚠ Bu etiket bugünkü Universal Links bandının yerine geçmez, onu KAPSAR: uygulama yoksa *GET* (mağazaya), varsa *OPEN* — bugünkü bant yalnızca ikinci hâli yapıyor (bkz. 24.4) |
 | Manifest `related_applications` + `prefer_related_applications` | ⚠ **ÖLÇMEDEN AÇMA.** Chrome'un PWA kurulumunu Play'e yönlendirmesinin standart yolu, ama masaüstü kurulumunu da bastırıp bastırmadığı bu depoda ÖLÇÜLMEDİ — açılırsa masaüstündeki çalışan davranış sessizce kaybedilebilir |
 | Doküman senkronu | `docs/decisions/components.md` → `AddToHomeScreen` notu |
