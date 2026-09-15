@@ -25,6 +25,61 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 210 — YZ robot avatarı iPhone/iPad'de ortalı değildi: Apple
+     Color Emoji'nin mürekkebi kutusunda ortalı DEĞİL (15 Eylül 2026):**
+     Kullanıcı bildirdi: *"YZ robot avatarı iPhone ve iPad'de ortalı
+     değil."* Eksen söylenmemişti; ikisi de sapmış çıktı.
+
+     **ÖLÇÜM — kullanıcının 1170×2532 ekran görüntüsünden** (PNG elle
+     çözüldü; bu ortamda PIL yok, `zlib` + unfilter yeterli). İlk pencereler
+     komşu öğeleri (turuncu "Normal" rozeti, bitişik avatarın halkası, puan
+     satırı) kaptı ve sayılar tutarsız çıktı; **daire maskesine** geçilince
+     (mühür testinin yöntemi, `league_rewards_test.dart`) dört yalıtık
+     robotun dördü de BİREBİR aynı dedi:
+     mürekkep **42×43 px** (font 42 px = 14 pt), merkezi daireye göre
+     **yatay −0,131 em · dikey +0,083 em**.
+
+     ⚠ **Ders (ölçüm yönteminin kendisi):** bir ekran görüntüsünden ölçüm
+     yaparken dikdörtgen pencere YETMEZ — bitişik öğeler mürekkep sanılır.
+     Yuvarlak bir kaptaki mürekkebi ölçerken maske de yuvarlak olmalı.
+
+     **Kök sebep:** `Container(alignment: center)` metnin KUTUSUNU ortalar;
+     kutu = glif'in advance genişliği + satır kutusu. Apple Color Emoji'de
+     ikisi de mürekkebe göre asimetrik (advance ≈ 1,26 em, mürekkep 1,0 em
+     ve SOLA yaslı). **Linux/Noto Color Emoji'de aynı ölçüm 0,00 em** (300
+     px kutuda 1 px) — yani Android'de sapma YOK, hata Apple fontuna özgü ve
+     `flutter test` bunu ASLA göremezdi (test ortamında Apple fontu yok).
+
+     **Düzeltme:** `player_avatar_row.dart`ta ölçülen değerin tersi kadar
+     `Transform.translate` — `kAppleEmojiNudgeXEm = 0.131`,
+     `kAppleEmojiNudgeYEm = -0.083`, **yalnızca Apple platformlarında**
+     (`defaultTargetPlatform`). Transform yalnızca BOYAR, yani daire/satır
+     adımı/puan sütunu bitine kadar aynı kalıyor (test bunu da ölçüyor).
+
+     ⚠ **Bu "boşluk ayarı" değil, ölçülmüş bir font metriği telafisi** —
+     `RankSeal`in `sealBaselineEm`i ile aynı sınıf (orada da harfin
+     mürekkebi font metriğiyle ortalanmıyordu, 12 Ağustos 2026). Kural
+     "yapısal farkı değer ayarıyla kapatma" hâlâ geçerli; buradaki fark
+     yapısal DEĞİL, üçüncü tarafın font metriği.
+
+     **Kapı:** `test/avatar_emoji_nudge_test.dart` (3 test) — doğru
+     platformda doğru büyüklük (em tabanlı, daire büyüyünce kaydırma da
+     büyür), Android'de SIFIR, ve layout'un iki platformda birebir aynı
+     kalması. ⚠ **Testin sınırı açıkça yazılı:** pikselleri ölçemez (Apple
+     fontu yok), yalnızca sabitlerin sessizce silinmesini/sürüklenmesini
+     engeller; mürekkebin gerçekten ortalandığı **cihazda** doğrulanır
+     (`mobile/TESTING.md` §29). **858 test yeşil**, `flutter analyze` temiz.
+
+     ⚠ **`debugDefaultTargetPlatformOverride`u `addTearDown`la geri alma** —
+     foundation'ın "debug değişkeni sıfırlandı mı" kontrolü test GÖVDESİ
+     biter bitmez koşuyor, tearDown'dan ÖNCE (bekleyen-timer dersinin
+     aynısı, `support/real_io.dart`). Gövdenin sonunda elle `null`la.
+
+     **Web ikizi BİLEREK dokunulmadı:** aynı emoji `PlayerAvatarRow.tsx`te
+     de dairede duruyor ve iOS Safari'de büyük ihtimalle aynı sapma var, ama
+     ÖLÇÜLMEDİ — ve tarayıcıda telafi CSS'e girer, portun `Transform`una
+     değil. Ölçülürse ayrı bir iş.
+
    - ✅ **Parça 209 — Flutter'ın KENDİ metinleri de Türkçe
      (`flutter_localizations`, 15 Eylül 2026):** Parça 208 mağaza
      etiketini düzeltti ve orada *"uygulama içi yerelleştirme ayrı bir iş,

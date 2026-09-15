@@ -355,6 +355,10 @@ mobile/
                              # kullanıyor (icon_parity, relation_icon_parity)
                              # — üçüncü bir elle-senkron vektör çifti
                              # eklenirse kopyalama, buradan tüket
+      avatar_emoji_nudge_test.dart # YZ robotunun Apple Color Emoji
+                             # telafisi: doğru platform + em tabanlı büyüklük
+                             # + layout'a dokunmama. ⚠ Piksel ÖLÇMEZ (Apple
+                             # fontu bu ortamda yok) — Parça 210
       localization_test.dart # İKİ yerelleştirme birden: Flutter'ın kendi
                              # metinleri (Material + CUPERTINO — ikincisi
                              # olmadan hata yalnız iPhone'da görünür) ve
