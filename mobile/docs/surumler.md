@@ -78,6 +78,22 @@ NUMARASI hakkında, yayın TARİHİ hakkında değil.
 gelebilir (`ROADMAP.md` "önce Android yarısı" diyor, Apple önce çıkarsa o
 satır tersine döner).
 
+**✅ 15 Eylül 2026 — GERÇEKTEN ÖYLE OLDU: Apple önce çıktı.** 1.1.0 (665)
+onaylandı (~05:46) ve kullanıcı aynı sabah `Release This Version`a bastı
+(06:02); Play hâlâ incelemede. Yani yukarıdaki "ters sıra" ihtimali
+gerçekleşti — §26'nın **Apple yarısı** önce yapılacak. Satır satır kayıt:
+`surumler/gonderimler-ios.csv` (satır 9-13).
+
+⚠ **Yayın butonu ≠ vitrin açık.** Apple "up to 24 hours" diyor;
+`storeLinks.ts`'in "URL'yi ölçmeden doldurma" kuralı gereği App Store
+rozeti, vitrin adresi 404 vermeyi bıraktığı ÖLÇÜLENE kadar `null` kalır.
+⚠ Bu ölçümü ajan YAPAMAZ: `itunes.apple.com` agent proxy'den 403 dönüyor
+(15 Eyl'de denendi).
+
+⚠ **Freeze DEVAM EDİYOR.** Apple'ın onayı mobil merge kapısını AÇMAZ —
+`mobile-latest`teki `.aab` Play'in incelemesi bitene kadar korunmalı;
+merge onu EZER. Bekleyen iki PR: #547, #554.
+
 ⚠ **Play'e yüklemeden önce indirdiğin `.aab`nin kimliğini DOĞRULA** — yükleme
 ekranındaki `versionCode` beklediğin numara mı? `mobile-latest` paylaşılan ve
 üzerine yazılan bir etiket, "dün indirdiğim dosya" bir kanıt değil.

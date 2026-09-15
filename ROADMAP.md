@@ -1661,6 +1661,16 @@ yapılır.
 bıraktığında — ÖLÇ, varsayma) → Android yarısı. App Store yayını → Apple
 yarısı.
 
+⚠ **15 Eylül 2026 — APPLE YARISI TETİKLENDİ, ama HENÜZ AÇILMADI.** 1.1.0
+(665) onaylandı ve `Release This Version` basıldı (06:02). Tetikleyicinin
+kendi kuralı gereği bu YETMEZ: ölçüt yayın butonu değil, **vitrin adresinin
+404 vermeyi bırakması** (Apple "up to 24 hours" diyor). ⚠ Ve bu ölçümü ajan
+yapamaz — `itunes.apple.com` agent proxy'den **403** dönüyor (denendi).
+Ölçüm kullanıcıdan ya da başka bir ortamdan gelecek; geldiğinde yapılacak
+tek şey `src/utils/storeLinks.ts`'teki App Store `url: null`unu gerçek
+adresle değiştirmek. Kayıt: `mobile/docs/surumler/gonderimler-ios.csv`
+satır 12-13.
+
 ⚠ **Ve ölçümü KENDİ Play hesabınla yapma** (13 Eyl 2026, yaşandı): geliştirici
 `Kelimeki Testers` listesinde olduğundan Play ona her hâlükârda bir liste
 gösteriyor — *(Erken Erişim)* etiketiyle, arama sonucunda, yüklü rozetiyle.
