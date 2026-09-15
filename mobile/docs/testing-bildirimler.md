@@ -562,19 +562,20 @@ Developer → Keys → `RL4JLXL389` → **Environment: Sandbox**). ROADMAP'e
 okunmamış bir ayar "yapıldı" diye kaydedilmişti ve bir hafta boyunca yanlış
 kaldı, çünkü o sürede kimse iOS'ta bildirim beklemiyordu.
 
-**Düzeltme sırası — ucuzdan pahalıya:**
+⚠ **Ortam SONRADAN DEĞİŞTİRİLEMEZ — konsolda denendi ve ölçüldü** (15 Eyl
+2026): anahtar sayfasındaki `Edit` → APNs satırının `Edit`i → *Configure
+Key* açılıyor, ama orada **Environment ve Key Restriction düz METİN olarak
+gösteriliyor** (seçim kontrolü yok; `Save` düğmesi var ama değiştirilecek
+bir şey yok). Yani "önce düzenlemeyi dene" bir çıkış yolu DEĞİL, yalnızca
+iki tık.
 
-1. Anahtar sayfasındaki **Edit** düğmesi (Apple bunu APNs anahtarlarında da
-   gösteriyor). Yapılandırmayı *Team scoped (All topics)* **[Sandbox &
-   Production]** yapabiliyorsa iş biter: **Key ID ve `.p8` AYNI kalır, yani
-   Firebase'e hiç dokunulmaz.**
-2. Edit ortamı değiştirmiyorsa YENİ anahtar: APNs işaretli, **Key
-   Restriction: Team Scoped (All Topics)**, **Environment: Sandbox &
-   Production**; `.p8` Firebase → Project settings → General → Cloud
-   Messaging → iOS uygulaması → *APNs Authentication Key* alanına yüklenir
-   (Key ID yeni, Team ID `8277D85FY9`). ⚠ Takım başına en fazla **2** APNs
-   anahtarı tutulabilir — yenisi çalıştığı DOĞRULANDIKTAN sonra eskisini
-   revoke et.
+**Tek çözüm YENİ anahtar:** All Keys → **+** → APNs işaretle → *Configure*
+→ **Environment: Sandbox & Production** · **Key Restriction: Team Scoped
+(All topics)** → Register → `.p8` indir (⚠ bir kez; ⚠ depo PUBLIC, girmez)
+→ Firebase → Project settings → General → Cloud Messaging → iOS uygulaması
+→ *APNs Authentication Key*: yeni `.p8` + yeni Key ID + Team ID
+`8277D85FY9`. ⚠ Takım başına en fazla **2** APNs anahtarı tutulabilir —
+eskisini, yenisinin çalıştığı DOĞRULANDIKTAN sonra revoke et.
 
 ⚠ **Bu arıza sürüm gerektirmez.** Anahtar değişince sahadaki paket
 (1.1.0/665) olduğu gibi bildirim almaya başlar; istemcide düzeltilecek bir
