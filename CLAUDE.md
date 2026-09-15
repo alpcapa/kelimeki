@@ -449,6 +449,13 @@ yükseltmek kontrolü süse çevirir, o yüzden karşılığında bölüm ölç�
 eklendi. `frozen` bu ölçünün DIŞINDA (o ciltlerin başlığı baştan sona
 okumayı zaten yasaklıyor).
 
+**İlk hedef aynı gün kapandı:** `admin-panel.md`in 111 KB'lık tek bloğu on
+bir `##` bölüme ayrıldı (en büyük bölüm **24 KB**), dosya yerinde kaldı —
+reçetenin uygulanmış hâli için `docs/decisions/doc-size-history.md` → "15
+Eylül 2026 (akşam)". Uyarı listesindeki sıradaki hedefler:
+`mobile/docs/parca-log.md`, `components-score.md`, `components-account.md`,
+`components.md`, `online-game-screen.md`.
+
 ⚠ **Alt sınır da var (7 Eylül 2026):** betik 0 baytlık her `.md`'yi ve
 tabanının altına düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki
 `CLAUDE`, `README`, iki `TESTING`) da düşürür — bir dosyanın BOŞALMASI da

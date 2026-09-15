@@ -246,3 +246,57 @@ kural çekirdeği kondu. `auto` sınıfında amaç dosyayı küçültmek DEĞİL
 her turda yüklenen şeyi KURALA indirgemek; çekirdeği de kesmek bu
 dosyanın var olma sebebini kesmek olurdu.
 
+
+---
+
+## 15 Eylül 2026 (akşam) — `admin-panel.md`: bölüm ölçüsünün İLK uygulaması (111 → 24 KB)
+
+Aynı gün eklenen **EN BÜYÜK BÖLÜM** ölçüsünün (kök `CLAUDE.md`, "Doküman
+Boyutu Bütçesi") ilk hedefi. `docs/decisions/admin-panel.md` dosya olarak
+bütçe içindeydi (127 KB / 260 KB uyarı bandı) ama **127 KB'ın 111 KB'ı tek
+bir `##` bloktu** — `## Admin Paneli`. Yani bu dosyada bir `grep` isabeti
+okuyanı ~28K token'lık tek bir parçaya düşürüyordu; dosya boyutu VEKİL bir
+sayı olarak yanılıyordu.
+
+**Uygulanan ilaç BÖLME DEĞİL, ALT BAŞLIK** (kuralın kendi reçetesi): dosya
+yerinde kaldı, tek dev blok on bir `##` bölümüne ayrıldı. Kesme noktaları
+boyut değil İÇERİĞİN TÜRÜ: panelin sekmeleri (Üyeler · Geri Bildirim),
+üreticiler (CSV export) ve Büyüme sekmesinin birbirinden bağımsız
+panelleri (Kullanıcı · Oyun · Beğeni/Arkadaşlık/`?` · Kaynak Hunisi ·
+Retention · Platform · Cihaz).
+
+| | Önce | Sonra |
+|---|---|---|
+| Dosya | 127 KB | 126 KB |
+| `##` başlığı (dosyanın tamamı) | 5 | 15 |
+| **En büyük bölüm** | **111 KB** (~28K token) | **24 KB** (~6K token) |
+
+Dosya uyarı listesinden ÇIKTI.
+
+⚠ **Mekanik dönüşüm + içerik sağlaması.** Bloğun içi iç içe madde
+listesiydi; her yeni bölümün gövdesi tek tip bir kuralla açıldı (baş
+maddenin metni paragrafa indi, alt ağacı 2 ya da 4 boşluk geri alındı).
+Hiçbir cümle yeniden yazılmadı ve bu **ölçüldü**: eski ve yeni dosyanın
+sözcük akışları sıralanıp `diff`lendi — fark yalnızca eklenen on
+başlık, üç yeni yönlendirme maddesi ve paragrafa inen dokuz baş maddenin
+işareti (net **6** adet `- `) ile başlığa çıkan iki kalın başlıktı
+(`**Büyüme > Kullanıcı**`, `**Büyüme > Oyun**`) — içerik tarafında SIFIR
+kayıp.
+
+⚠ **Atıf taraması koşuldu.** Dışarıdan `admin-panel.md`'ye yapılan tüm
+atıflar (`ROADMAP.md`, `onboarding.md`, `product-backlog.md`,
+`testing-admin.md`, `TESTING.md`) "Tanıtım Turu kartı" ve "Bitiren Cihaz"
+başlıklarını gösteriyor — ikisi de bu turda DOKUNULMAYAN bölümler.
+`## Admin Paneli` başlığı da yerinde bırakıldı (artık yalnızca erişim
+kuralı + sekme envanteri taşıyor, her sekme kendi bölümüne yönlendiriyor).
+
+⚠ **Yeni başlık, var olan bir başlığın kopyası OLMAMALI.** Dosyada zaten
+`## Kaynak Hunisi: "Bitiren Cihaz" (\`finishers\`)` vardı; bu turda çıkan
+huni bölümü bu yüzden `## Kaynak Hunisi — misafir hunisi (…)` oldu. İki
+`##` aynı adı taşısaydı "→ Kaynak Hunisi" biçimindeki atıflar hangi bölüme
+gittiğini söyleyemezdi.
+
+**Sıradaki hedefler** (aynı ölçünün uyarı listesi, eşik 40 KB):
+`mobile/docs/parca-log.md` (108 KB), `components-score.md` (77 KB),
+`components-account.md` (75 KB), `components.md` (74 KB),
+`online-game-screen.md` (65 KB) ve iki dosya daha.
