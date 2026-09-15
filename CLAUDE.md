@@ -402,7 +402,7 @@ dosyasını ölçüp üç sınıfa ayırır — çünkü maliyetleri farklı:
 |---|---|---|
 | **auto** | Her turda bağlama YÜKLENİR: `CLAUDE.md`, `mobile/CLAUDE.md` | 80 KB / **120 KB** |
 | **active** | BAŞTAN SONA okunur ve büyümeye devam eder: `TESTING*`, `README`, `ROADMAP` | 120 KB / **200 KB** |
-| **reference** | Yalnızca GREP'lenir: `docs/decisions/*`, `mobile/docs/parca-log*` | 200 KB / **300 KB** |
+| **reference** | Yalnızca GREP'lenir: `docs/decisions/*`, `mobile/docs/parca-log*` | 260 KB / **400 KB** (15 Eyl 2026'da 200/300'den yükseltildi — aşağı bkz.) |
 | **frozen** | Dondurulmuş arşiv; okuması opt-in, tek kural BÜYÜMEMESİ | kendi tavanı |
 
 **Sınır aşılınca ne yapılır** (betik zaten yazdırıyor):
@@ -430,6 +430,24 @@ değiştiğinde. `npm install` ve derleme YOK (saniyeler) — bu repoda
 ⚠ **Uyarı bandındaki dosyayı bir sonraki dokunuşunda böl.** Uyarı, sınıra
 çarpmadan önce hareket etme fırsatıdır; biriktirilirse kontrolün anlamı
 kalmaz.
+
+⚠ **İKİNCİ bir ölçü var: EN BÜYÜK BÖLÜM (15 Eylül 2026).** `reference`
+sınıfında dosya boyutu VEKİL bir sayıdır — kimse baştan sona okumaz, grep
+bir bölüme düşürür ve okunan o bölümdür. Betik bu yüzden her `reference`
+dosyasının en büyük `##` bloğunu da ölçüyor ve **40 KB**'ı aşanı yazdırıyor.
+Bu bir UYARI, kapı DEĞİL (CI'ı düşürseydi ilgisiz her PR'ı bir doküman
+ameliyatına rehin alırdı) ve **ilacı bölmek değil, bloğa ALT BAŞLIK
+koymak** — dosya aynı kalır, grep'in düştüğü parça küçülür.
+
+Ölçüm (15 Eylül 2026), gevşetmenin gerekçesi de bu: `roadmap-arsiv.md`
+235 KB ama 29 bölüme dağılmış, ortanca bölüm **5 KB**; buna karşılık
+"bütçe içinde" görünen `admin-panel.md` 123 KB'ın **111 KB**'ı tek bir
+blok. Kontrol ikisini de dosya boyutundan yargılıyordu ve ikisinde de
+yanılıyordu. `reference` bandı bu yüzden 260/400'e çıkarıldı (400 KB ≈
+100K token) — ama gevşetme TEK BAŞINA yapılmadı: sınıra çarpınca sınırı
+yükseltmek kontrolü süse çevirir, o yüzden karşılığında bölüm ölçüsü
+eklendi. `frozen` bu ölçünün DIŞINDA (o ciltlerin başlığı baştan sona
+okumayı zaten yasaklıyor).
 
 ⚠ **Alt sınır da var (7 Eylül 2026):** betik 0 baytlık her `.md`'yi ve
 tabanının altına düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki
