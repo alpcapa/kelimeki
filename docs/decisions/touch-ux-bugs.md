@@ -1311,3 +1311,52 @@ açık kalmalı, harf değişmemeli, ve ardından GERÇEK bir harf seçimi hâl�
 ölçüyor — düzen değişip örtüşme kaybolursa testi sessizce geçirmek yerine
 düşürüyor. **Negatif eş:** joker dalındaki tek satır kaldırılınca test
 GERÇEKTEN düşüyor.
+
+
+---
+
+## Joker düzenleme yolu — `swallowNextClick()` zorunluluğunun tam kaydı (CLAUDE.md'den taşındı)
+
+⚠ **Bu bölüm 15 Eylül 2026'da kök `CLAUDE.md`'den BİREBİR taşındı**
+(Oyun Mekaniği Özeti → "Joker" maddesinin ikinci paragrafı). Tek satırı değiştirilmedi; `CLAUDE.md`'de yerine kural
+çekirdeği + buraya işaret kaldı. Gerekçe: `auto` sınıfı uyarı bandına
+girmişti (80/120 KB) ve kuralı "tarihli anlatıyı `docs/decisions/*`'e
+taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
+
+  **Dokunmatikte joker dalı `swallowNextClick()` KURMAK ZORUNDA** (`src/utils/ghostClick.ts`, 22 Ağustos 2026): tarayıcı jestin `pointerup`ından SONRA compat `click` üretir ve pencere o anda açıldığından click hücreye değil MODALA düşer (joker sessizce başka harfe dönüyor ya da pencere anında kapanıyordu). Raftan sürüklenerek konan joker de aynı korumayı taşır. **Kural: Sınıf 1'de "bu click zaten hiçbir şey yapmıyor" gerekçesiyle yutmayı ATLAMA** — 28 Ağustos'ta tam bu varsayım `draftRescue` ile geçersiz kalıp iki taşı birden geri aldırdı. Flutter portu ETKİLENMEZ (compat click yok). Regresyon `tests/smoke.spec.ts`te dokunmatik bağlamda (masaüstü profilinde hata GÖRÜNMEZ). Ölçümler, olay zinciri ve üç vakanın tamamı: `docs/decisions/touch-ux-bugs.md` → "Joker düzenleme yolu — Sınıf 1'in ilk vakası".
+
+
+---
+
+## Tahta yakınlaştırması ve tanıtım balonu — tam kayıt (CLAUDE.md'den taşındı)
+
+⚠ **Bu bölüm 15 Eylül 2026'da kök `CLAUDE.md`'den BİREBİR taşındı**
+(Oyun Mekaniği Özeti → "Tahta yakınlaştırması" maddesi). Tek satırı değiştirilmedi; `CLAUDE.md`'de yerine kural
+çekirdeği + buraya işaret kaldı. Gerekçe: `auto` sınıfı uyarı bandına
+girmişti (80/120 KB) ve kuralı "tarihli anlatıyı `docs/decisions/*`'e
+taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
+
+- **Tahta yakınlaştırması (1 Eylül 2026):** Tahtanın İÇİNE çift dokunuş 2×
+  yakınlaştırır (dokunulan noktaya odaklı), zoom açıkken tahta parmakla
+  kaydırılır, tekrar çift dokunuş eski hâline döndürür. Kapsam yalnızca
+  tahta — raf/başlık/butonlar kımıldamaz. **Tek dokunuşlar birebir korunur
+  ve GECİKMEZ:** ilk dokunuş normal işini yapar (taş konur ve KONDUĞU YERDE
+  KALIR), pencere içinde gelen ikinci dokunuş yalnızca yutulup zoom'u
+  değiştirir; çift yalnızca boş kareye/boşluğa/çerçeveye dokunuşla başlar,
+  taşa dokunuş (geri alma, anlam penceresi, joker) çift BAŞLATAMAZ. Kaynak
+  `src/utils/boardZoom.ts` + `src/hooks/useBoardZoom.ts`; iki oyun ekranı da
+  aynı hook'u kullanır. **Port ile AYNI davranış** (kullanıcı kararı: *"her
+  yerde aynı deneyim olsun"*) — port karşılığı
+  `mobile/app/lib/src/ui/game/board_zoom.dart`, biri değişirse öteki de.
+  ⚠ Kabul edilen tek yan etki: taş konduktan sonra 300 ms İÇİNDE aynı
+  bölgeye (40 px) yapılan dokunuş çift sayılır, yani geri alma yerine zoom
+  açar — insan ritminde erişilmiyor, testler bu yüzden araya 350 ms koyuyor.
+  **Tanıtım balonu (1 Eylül 2026):** oyun ekranı açılışında merkez kareyi
+  işaret eden tek seferlik ipucu — *"Boş kareye veya çerçevesine çift
+  tıklama tahtayı büyütür. Hemen dene!"*. Kural İKİ değere birden bakıyor
+  (`src/utils/onboarding.ts` → `shouldShowZoomHint`): gösterim sayacı
+  (tavan 2) VE "denedi mi" — zoom bir kez denenirse balon anında kapanır ve
+  bir daha hiç çıkmaz, hiç denenmezse ikinci bir açılışta bir kez daha
+  çıkar. Bayraklar cihaz-yerel, yani Canlı oyunda hem açan hem karşı taraf
+  kendi ilk açılışında görür. Port ikizi: `FlagsStore.shouldShowZoomHint`;
+  metin iki tarafta BİREBİR aynı olmalı.

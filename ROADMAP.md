@@ -1662,6 +1662,27 @@ yapılır.
 bıraktığında — ÖLÇ, varsayma) → Android yarısı. App Store yayını → Apple
 yarısı.
 
+✅ **15 Eylül 2026 — APPLE YARISI YAPILDI.** 1.1.0 (665) onaylandı, yayın
+başlatıldı ve rozet siteye kondu. **Vitrinin açıldığının kanıtı:** Apple'ın
+Marketing Tools akışı bu uygulama için ilerledi ve rozeti/linki üretti —
+10 Eylül'de aynı akış yayında olmayan uygulamada DURUYORDU, yani ilerlemesi
+ölçümün kendisi. (⚠ Ajan doğrudan ölçemez: `apps.apple.com`,
+`itunes.apple.com` ve `tools.applemediaservices.com` agent proxy'den **403**
+dönüyor; yalnız `developer.apple.com` erişilebilir.)
+
+Girilenler: `public/app-store-badge.svg` (Türkçe SİYAH, künye
+`..._Badge_TR_blk_...`) + `storeLinks.ts`'te ülkesiz adres. ⚠ Bu tur
+**dokümante edilmiş bir kuralın çiğnendiğini ortaya çıkardı** — eşit
+yükseklik hizalaması Google'ın "same size or larger"ını bozuyordu, çünkü
+Apple'ın oranı `~3.0` diye VARSAYILMIŞTI ama Türkçe rozet **3.78:1**.
+Hizalama genişliğe çevrildi, kapı iki dosyayı da okuyacak şekilde yeniden
+yazıldı. Ayrıntı: `src/utils/storeLinks.ts`.
+
+**ANDROID YARISI HÂLÂ AÇIK** — Play production sürümü incelemede. Vitrin
+açılınca `googlePlay.url` doldurulur, rozet kendiliğinden yanına gelir
+(bileşen tek rozetle de çalışıyor, kapıda ölçülü). Kayıt:
+`mobile/docs/surumler/gonderimler-ios.csv` satır 12-13.
+
 ⚠ **Ve ölçümü KENDİ Play hesabınla yapma** (13 Eyl 2026, yaşandı): geliştirici
 `Kelimeki Testers` listesinde olduğundan Play ona her hâlükârda bir liste
 gösteriyor — *(Erken Erişim)* etiketiyle, arama sonucunda, yüklü rozetiyle.

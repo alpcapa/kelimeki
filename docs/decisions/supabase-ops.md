@@ -210,3 +210,26 @@ projeyi görüyordu (`list_deployments` → 403 / listede yalnızca `sharedxp`),
 yani panel kullanıcıda. Ajanın yapabildiği tek şey siteyi `curl`lamak — o da
 zaten kesin olan kanıt.
 
+
+
+---
+
+## "Bu dal merge edilmiş mi?" — üç tuzak (CLAUDE.md'den taşındı)
+
+⚠ **Bu bölüm 15 Eylül 2026'da kök `CLAUDE.md`'den BİREBİR taşındı**
+(Git / Branch Kuralı bölümü). Tek satırı değiştirilmedi; `CLAUDE.md`'de yerine kural
+çekirdeği + buraya işaret kaldı. Gerekçe: `auto` sınıfı uyarı bandına
+girmişti (80/120 KB) ve kuralı "tarihli anlatıyı `docs/decisions/*`'e
+taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
+
+⚠ **"Bu dal merge edilmiş mi?" sorusunu commit sayısıyla cevaplama — üç
+tuzağı da bu depo tek turda yaşadı:**
+
+| Tuzak | Neden yanıltıyor | Doğrusu |
+|---|---|---|
+| `git log main..dal` | Depo **squash** merge ediyor; merge edilmiş dalın commit'leri `main`'de ayrı SHA olarak GÖRÜNMEZ, dal "1500 commit ileri" çıkar | Commit'in getirdiği İÇERİĞİ `main`'de ara (dosya/sembol/metin) |
+| Sığ klon | Oturumun klonu 50 commit'likti; `merge-base` boş dönüp dallar "ilgisiz geçmiş" gibi göründü | Önce `git fetch --unshallow` |
+| Harf duyarlı `grep` | "AYRI zamanlarda" yazan bir not "ayrı zamanlarda" aranınca bulunamadı, merge edilmiş bir dal "kayıp iş var" sanıldı | Türkçe metinde `grep -i`; İ/ı dönüşümü için ayrıca `trUpper`/`trLower` refleksi |
+
+`git cherry` de tek başına YETMEZ: yama-kimliği eşitliği arar, sonradan
+farklı bağlamda yeniden inen bir değişikliği "yok" işaretler.

@@ -48,7 +48,7 @@ npm run verify-draft-rescue      # ıskalanan dokunuşun en yakın taslak taşı
 npm run verify-hook-order        # React hook sırası: erken `return` altında hook YOK (React #300 kapısı)
 npm run verify-error-reporting   # istemci hata telemetrisi: ne kaydedilir/kaydedilmez, tekrar bastırma, hız sınırı
 npm run verify-error-messages    # kullanıcıya gösterilen hata metni: ham makine çıktısı (504 gövdesi, SQLSTATE dökümü) ekrana DÜŞMÜYOR mu
-npm run verify-store-badges      # mağaza rozetleri: App Store ÖNCE (Apple'ın yazılı kuralı), eşit yükseklik ≥40px, clear space 1/4, yayında olmayan rozet HİÇ çizilmiyor
+npm run verify-store-badges      # mağaza rozetleri: App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT GENİŞLİK (yükseklik değil — Türkçe Apple rozeti 3.78:1, Play 3.37:1), App Store yüksekliği ≥40px, clear space en yüksek olanın 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor
 npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run augment-dictionary       # Sözlüğe elle madde ekleme (GTS'siz — bkz. "Sözlüğe Kelime/Anlam Ekleme")
@@ -98,80 +98,35 @@ Projenin geri kalanının çok büyük bölümü (Canlı oyun, mesajlaşma, e-po
 
 ## İlk Oyun: Tanıtım Ekranı (7 Eylül 2026)
 
-İlk oyunda artık Hızlı Başlangıç PENCERESİ açılmıyor; onun yerine raylı,
-60 saniyelik bir mini oyun geliyor (`TutorialGame` + `utils/tutorialScript.ts`).
-Dört sahne: ev karesi → bölgenin büyümesi → merkezde ×2 → merkez karesinde
-×3 + sınıra değme vergisi (dördüncüsü iki dersi tek hamlede verir); her
-hamleden sonra rakip de oynuyor. Tanıtım AÇILIRKEN tek bir karşılama
-penceresi çıkar (*"Kelimeki Tanıtım Turu"* + Devam) — oyuncu kendini gerçek
-oyunda sanmasın diye (7 Eylül 2026 akşamı, kullanıcı isteği); pencere
-kapının parçası DEĞİL, kendi bayrağı yok. Pencere SİLİNMEDİ —
-kendiliğinden açılmıyor, "Yardım" linkinden ve `/nasil-oynanir/`ten erişilir.
+İlk oyunda Hızlı Başlangıç PENCERESİ açılmaz; yerine raylı, 60 saniyelik bir
+mini oyun gelir (`TutorialGame` + `utils/tutorialScript.ts`). Aynı kural
+kümesine bağlı üç yüzey daha var: **bağlamsal ipuçları** (`pickOnboardingHint`),
+**tekrar oynama** (`TUTORIAL_REPLAY_CTA`, yalnızca Setup'tan açılan pencerede)
+ve **oyun sonu kutlaması** (`pickFirstWinCelebration`). Dördünün de kararı
+`utils/onboarding.ts`'te SAF FONKSİYON — koşula bileşen içinde karar verme.
 
-Her yerde geçerli dört kural:
+**Dört değişmez:**
 
-1. **Tanıtım motora dokunmaz.** Yeni reducer action'ı ya da yeni
-   `GameState` alanı YOK; senaryo mevcut `PLACE_TILE`/`PLAY` ile sürülür.
-   Motorun dört kopyası olduğu için bu bilinçli bir sınır (bkz. etki
-   analizi tablosu).
-2. **Tanıtım bir "oyun" DEĞİLDİR.** Kendi `useReducer`'ı var; kayıt,
-   bulut kaydı, `logGameStart`, `games` satırı, k-lig, istatistik ve
-   terk-edilme cezası ÇALIŞMAZ. Gerçek oyun tanıtım kapanınca başlar.
-3. **Senaryoyu değiştiren `npm run verify-tutorial-script` koşar.**
-   Ekranda puan yazıyor; koordinat/kelime/puan elle doğrulanmaz.
-4. **Kapı tek bayrağa bakmaz.** *"Sadece yeni gelenlere bir kere; mevcut
-   oynamış kişilere gösterilmeyecek"* (kullanıcı isteği) — karar saf bir
-   fonksiyonda (`shouldShowTutorial`, `utils/onboarding.ts`) ve dört
-   sinyali birden okur: iki cihaz bayrağı · devam eden oyun · **hesap
-   yaşı** (cihaz değiştireni ve yalnızca Canlı oynayanı yakalayan satır).
-   Varsayılan GÖSTERME tarafında; "bir kere" = işaret tanıtım AÇILIRKEN
-   konur; yardım sayfasını okumak tanıtımı TÜKETMEZ.
+1. **Tanıtım motora DOKUNMAZ.** Yeni reducer action'ı ya da yeni `GameState`
+   alanı YOK; senaryo mevcut `PLACE_TILE`/`PLAY` ile sürülür. Motorun dört
+   kopyası olduğu için bu bilinçli bir sınır.
+2. **Tanıtım bir "oyun" DEĞİLDİR.** Kendi `useReducer`'ı var; kayıt, bulut
+   kaydı, `logGameStart`, `games` satırı, k-lig, istatistik ve terk-edilme
+   cezası ÇALIŞMAZ. Gerçek oyun tanıtım kapanınca başlar.
+3. **Senaryoyu, metni, ipucu sırasını/tavanını ya da motorun puan/vergi/
+   çarpan kuralını değiştiren `npm run verify-tutorial-script` koşar** —
+   tanıtım EKRANDA puan yazıyor, kural değişince metin sessizce bayatlar.
+4. **Port ikizi AYNI PR'da:** `mobile/app/lib/src/ui/tutorial/*` +
+   `util/onboarding.dart`. `tutorial_parity_test.dart` web kaynağını OKUR
+   (metin/sayı/koordinat/süre ayrışırsa web CI'ın `parite` işi düşer),
+   `tutorial_script_test.dart` senaryoyu Dart motorunda oynatır.
 
-**Port ikizi (Faz 4, 7 Eylül 2026 — Parça 194):** `mobile/app/lib/src/ui/
-tutorial/` (`tutorial_script.dart` + `tutorial_game.dart`), kapı
-`util/onboarding.dart` + `FlagsStore.seenTutorial`, açan yer
-`setup_screen.dart`. Web TEK doğruluk kaynağı: `tutorial_parity_test.dart`
-`src/utils/tutorialScript.ts` + `TutorialGame.tsx` + `utils/onboarding.ts`i
-OKUYUP metin/sayı/koordinat/süre/tarih karşılaştırır (bulamazsa düşer);
-`tutorial_script_test.dart` senaryoyu Dart motorunda oynatır. Yani
-senaryoyu/metni değiştiren `npm run verify-tutorial-script` + mobil
-testleri (web CI'ın `parite` işi) ikisini birden geçirmek zorunda; port
-dosyaları AYNI PR'da güncellenir. `TUTORIAL_LAUNCH_AT` iki platformda AYNI
-(anlamı "web yayınından önce hesap açan = mevcut oyuncu").
+⚠ **Kapı tek bayrağa bakmaz** — *"sadece yeni gelenlere bir kere"*
+(kullanıcı isteği): `shouldShowTutorial` dört sinyali birden okur ve
+varsayılan GÖSTERME tarafındadır.
 
-**Tanıtım artık tek başına değil — üç yüzey, tek kural kümesi (8 Eylül
-2026, Faz 2·3·5 kapandı):**
-
-- **Bağlamsal ipuçları (Faz 2).** Atlayanın da öğrenmesi için, GERÇEK oyunda
-  mekanik yaşandığı anda çıkan tek cümlelik balon: `vergi` · `carpan` ·
-  `bolge`. Karar saf fonksiyonda (`pickOnboardingHint`, `utils/onboarding.ts`
-  ↔ `util/onboarding.dart`), sayaç cihaz-yerel ve ipucu BAŞINA tavan **1**
-  (12 Eylül 2026'da 2'den indi — üç ipucu × 2 = 6 balon ilk oyunda fazlaydı;
-  kullanıcı kararı), çizim
-  `Board`un mevcut `coach` prop'u. **Sıra sabittir** (`vergi › carpan ›
-  bolge`) — ekranda aynı anda TEK balon; öncelik `Sınır İhlali penceresi ›
-  ipucu › zoom balonu` (zoom balonu oyun boyunca durduğundan yazılı plan
-  ters çevrildi, gerekçe karar kaydında). Kapsam bugün yalnızca YEREL oyun.
-- **Tekrar oynama (Faz 3).** "Nasıl oynanır?" penceresinin başındaki
-  `TUTORIAL_REPLAY_CTA` butonu — **yalnızca Setup'tan açılan pencerede**
-  (`onReplayTutorial` opsiyonel prop; tam ekran tanıtım süren bir oyunun
-  üstüne binmemeli). Tekrar modunda kapanışta oyun BAŞLAMAZ ve buton
-  `TUTORIAL_REPLAY_FINISH_BUTTON` der.
-- **Ölçüm (Faz 5).** `tutorial_events` (`start`/`finish`/`skip` + sahne +
-  `auto`/`replay`) → admin panelinde "Tanıtım Turu" kartı. `user_id` YOK
-  (`game_starts` ile aynı gizlilik kararı).
-- **Oyun sonu kutlaması (12 Eylül 2026).** `GameOver`/`GameOverModal`'da tek
-  seferlik banner; karar saf fonksiyonda (`pickFirstWinCelebration`,
-  `utils/onboarding.ts` ↔ `util/onboarding.dart`). **İki dal AYNI şeyi
-  ölçmüyor ve bu bilinçli:** GİRİŞLİ → ilk GALİBİYET, kaynağı HESAP
-  (`player_stats_overall.wins`, kayıt düştükten SONRA okunur; `null`/offline
-  → sessiz). MİSAFİR → ilk PUAN (`leaguePoints > 0`), kaynağı CİHAZ bayrağı
-  + "hemen giriş yap" çağrısı. Kapsam yerel **ve** Canlı (Canlı'da misafir
-  dalı hiç doğmaz — oyun hesap gerektiriyor). Metin TEK kaynak
-  (`FIRST_WIN_TEXTS`); butona dönüşen parça `FIRST_WIN_GUEST_CTA` ile
-  cümlenin İÇİNDEN bölünüyor, ikinci kez yazılmıyor.
-
-Ayrıntı, ölçümler ve tuzaklar: `docs/decisions/onboarding.md`.
+Sahneler, karşılama penceresi, kapının dört sinyali, ipucu metinleri/sırası,
+ölçüm (`tutorial_events`) ve tuzaklar: `docs/decisions/onboarding.md`.
 
 ## Çalışma İlkesi: Önce Etki Analizi, Sonra Doküman Senkronu
 
@@ -305,17 +260,12 @@ değildi: `main` o arada ilerlediğinden ikisi de elle uyarlandı (PR #441).
 Bir dalı bilerek açık bırakıyorsan nedenini ve sıradaki adımı `ROADMAP.md`'ye
 yaz — dalın kendisi bir hatırlatıcı DEĞİL, kimse ona bakmıyor.
 
-⚠ **"Bu dal merge edilmiş mi?" sorusunu commit sayısıyla cevaplama — üç
-tuzağı da bu depo tek turda yaşadı:**
-
-| Tuzak | Neden yanıltıyor | Doğrusu |
-|---|---|---|
-| `git log main..dal` | Depo **squash** merge ediyor; merge edilmiş dalın commit'leri `main`'de ayrı SHA olarak GÖRÜNMEZ, dal "1500 commit ileri" çıkar | Commit'in getirdiği İÇERİĞİ `main`'de ara (dosya/sembol/metin) |
-| Sığ klon | Oturumun klonu 50 commit'likti; `merge-base` boş dönüp dallar "ilgisiz geçmiş" gibi göründü | Önce `git fetch --unshallow` |
-| Harf duyarlı `grep` | "AYRI zamanlarda" yazan bir not "ayrı zamanlarda" aranınca bulunamadı, merge edilmiş bir dal "kayıp iş var" sanıldı | Türkçe metinde `grep -i`; İ/ı dönüşümü için ayrıca `trUpper`/`trLower` refleksi |
-
-`git cherry` de tek başına YETMEZ: yama-kimliği eşitliği arar, sonradan
-farklı bağlamda yeniden inen bir değişikliği "yok" işaretler.
+⚠ **"Bu dal merge edilmiş mi?" sorusunu commit sayısıyla cevaplama.** Depo
+**squash** merge ediyor (commit'ler `main`'de ayrı SHA olarak GÖRÜNMEZ),
+oturumun klonu sığ olabiliyor (`git fetch --unshallow`), ve Türkçe metinde
+`grep` harf duyarlı (İ/ı için `trUpper`/`trLower` refleksi). `git cherry` de
+tek başına yetmez. Doğrusu: commit'in getirdiği İÇERİĞİ `main`'de ara. Üç
+tuzağın tam tablosu ve vakası: `docs/decisions/supabase-ops.md`.
 
 ⚠ **Dal SİLMEYİ ajan yapamaz — üç kapı da kapalı** (4 Eylül 2026'da
 ölçüldü): `git push --delete` 403, GitHub MCP'de ref silen araç yok,
@@ -546,18 +496,18 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 
 | Konu | Dosya |
 |---|---|
-| Onboarding — "Oynayarak öğren" tanıtımı (senaryo, raylar, yalıtım, doğrulayıcı, kalan fazlar) | `docs/decisions/onboarding.md` |
+| Onboarding — "Oynayarak öğren" tanıtımı (senaryo, raylar, yalıtım, doğrulayıcı) + **"İlk Oyun: Tanıtım Ekranı" bölümünün tamamı** (15 Eyl 2026'da buraya taşındı: sahneler, karşılama penceresi, kapının dört sinyali, ipucu metinleri/sırası/tavanı, `tutorial_events` ölçümü, port ikizi) | `docs/decisions/onboarding.md` |
 | Karşılama katmanı (`/`, landing/) — statik SEO sayfası, kapı script'i, tanıtım tahtası | `docs/decisions/landing-page.md` |
 | Bileşen post-mortem'leri — **hesap/kimlik** (RemainingTilesModal, GameOver, CountBadge, UserMenu, RelationIcons, AuthModal, AccountSettingsModal, avatar) | `docs/decisions/components-account.md` |
 | Bileşen post-mortem'leri — **skor/k-lig** (ScoreCard, k-lig rebrand'i, Leaderboard) | `docs/decisions/components-score.md` |
 | Bileşen post-mortem'leri — **oyun ekranı/kabuk** (Setup, PlayerAvatarRow, LandscapeHint, AddToHomeScreen, useAppIconBadge, Board, GameHeader, HelpModal, LogoMark, useModalA11y, TermsModal/PrivacyModal) + port dalı teslim dersi | `docs/decisions/components.md` |
-| Dokunmatik/hover hata sınıfları (ghost click, drag threshold, sticky hover) + iOS Safari form zoom post-mortem'i | `docs/decisions/touch-ux-bugs.md` |
+| Dokunmatik/hover hata sınıfları (ghost click, drag threshold, sticky hover) + iOS Safari form zoom post-mortem'i + **tahta yakınlaştırması ve joker düzenleme yolunun tam kaydı** (15 Eyl 2026'da `CLAUDE.md`'den taşındı) | `docs/decisions/touch-ux-bugs.md` |
 | PWA servis çalışanı / Android uyumluluğu | `docs/decisions/pwa-and-android.md` |
 | Sözlüğe kelime/anlam ekleme prosedürü + kelime listesi code-splitting | `docs/decisions/dictionary.md` |
 | Admin paneli (tüm sekmeler, rozet zinciri, büyüme grafikleri, kaynak hunisi, retention) | `docs/decisions/admin-panel.md` |
 | **Oyun kurallarının "neden böyle" kayıtları** (iletken hücre vakası, vergi terminolojisi, logo'nun "Çık" modalı) — kuralların KENDİSİ bu dosyada, gerekçeleri orada | `docs/decisions/game-rules.md` |
 | k-lig ödül & rütbe sistemi | `docs/decisions/league-system.md` |
-| Seviyeli YZ (Kolay · Normal · Zor): motor (top-N ↔ geniş arama), puan tablosu, ölçümler, parite kapıları, sözleşmeler, kadranlar | `docs/decisions/ai-levels.md` |
+| Seviyeli YZ (Kolay · Normal · Zor): motor (top-N ↔ geniş arama), puan tablosu, ölçümler, parite kapıları, sözleşmeler, kadranlar + **motor sözleşmesinin tam dökümü** (15 Eyl 2026'da `CLAUDE.md`'den taşındı) | `docs/decisions/ai-levels.md` |
 | Arkadaşlık sistemi (istek/kabul, davet linki ve `/davet/:token` sayfası, işlemsel e-postalar) | `docs/decisions/friends.md` |
 | Canlı Oyun — Faz 2-3.6 (veri modeli, RPC'ler, zaman aşımı, cron) | `docs/decisions/live-game.md` |
 | Canlı oyun EKRANI (`OnlineGameScreen.tsx`) — sürükleme, joker, raf, senkron | `docs/decisions/online-game-screen.md` |
@@ -569,7 +519,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | İstemci hata telemetrisi (`client_errors`, admin "Hatalar" sekmesi) | `docs/decisions/telemetry.md` |
 | Yerel oyunun kalıcılığı, terk-edilme cezası, offline kuyruk | `docs/decisions/local-game-persistence.md` |
 | E-posta gönderenleri (`noreply@` ↔ `destek@`), Zoho rozeti, inbound webhook kurulumu | `docs/decisions/support-email.md` |
-| Supabase işletimi: Brevo SMTP/teslimat geçmişi, SPF-DKIM-DMARC'ın gerçek hâli, migration geçmişinin kopması, dal temizliği, Edge Function deploy tuzakları | `docs/decisions/supabase-ops.md` |
+| Supabase işletimi: Brevo SMTP/teslimat geçmişi, SPF-DKIM-DMARC'ın gerçek hâli, migration geçmişinin kopması, dal temizliği, Edge Function deploy tuzakları + **"bu dal merge edilmiş mi" üç tuzağı** (15 Eyl 2026'da `CLAUDE.md`'den taşındı) | `docs/decisions/supabase-ops.md` |
 | Sonraya bırakılan ürün fikirleri (karar verildi, henüz yapılmadı) | `docs/decisions/product-backlog.md` |
 | ROADMAP arşivi — kapanmış maddeler, fazlar ve sürüm turları (grep'lenir, baştan sona okunmaz) | `docs/decisions/roadmap-arsiv.md` |
 | App Store Connect — kapanmış vaka anlatıları (`.p8` sagası, 24.2 zincirinin koşuları, kare boru hattının kuruluşu). ⚠ Cevap kağıdı `marketing/app-store/console-formlari.md`'de KALDI | `docs/decisions/app-store-gecmis.md` |
@@ -653,38 +603,20 @@ mobile/         # Flutter portu — kelimeki_core (saf Dart motor) + üretilmiş
   yakınlaştırır (dokunulan noktaya odaklı), zoom açıkken tahta parmakla
   kaydırılır, tekrar çift dokunuş eski hâline döndürür. Kapsam yalnızca
   tahta — raf/başlık/butonlar kımıldamaz. **Tek dokunuşlar birebir korunur
-  ve GECİKMEZ:** ilk dokunuş normal işini yapar (taş konur ve KONDUĞU YERDE
-  KALIR), pencere içinde gelen ikinci dokunuş yalnızca yutulup zoom'u
-  değiştirir; çift yalnızca boş kareye/boşluğa/çerçeveye dokunuşla başlar,
-  taşa dokunuş (geri alma, anlam penceresi, joker) çift BAŞLATAMAZ. Kaynak
-  `src/utils/boardZoom.ts` + `src/hooks/useBoardZoom.ts`; iki oyun ekranı da
-  aynı hook'u kullanır. **Port ile AYNI davranış** (kullanıcı kararı: *"her
-  yerde aynı deneyim olsun"*) — port karşılığı
-  `mobile/app/lib/src/ui/game/board_zoom.dart`, biri değişirse öteki de.
-  ⚠ Kabul edilen tek yan etki: taş konduktan sonra 300 ms İÇİNDE aynı
-  bölgeye (40 px) yapılan dokunuş çift sayılır, yani geri alma yerine zoom
-  açar — insan ritminde erişilmiyor, testler bu yüzden araya 350 ms koyuyor.
-  **Tanıtım balonu (1 Eylül 2026):** oyun ekranı açılışında merkez kareyi
-  işaret eden tek seferlik ipucu — *"Boş kareye veya çerçevesine çift
-  tıklama tahtayı büyütür. Hemen dene!"*. Kural İKİ değere birden bakıyor
-  (`src/utils/onboarding.ts` → `shouldShowZoomHint`): gösterim sayacı
-  (tavan 2) VE "denedi mi" — zoom bir kez denenirse balon anında kapanır ve
-  bir daha hiç çıkmaz, hiç denenmezse ikinci bir açılışta bir kez daha
-  çıkar. Bayraklar cihaz-yerel, yani Canlı oyunda hem açan hem karşı taraf
-  kendi ilk açılışında görür. Port ikizi: `FlagsStore.shouldShowZoomHint`;
-  metin iki tarafta BİREBİR aynı olmalı.
+  ve GECİKMEZ**; çift yalnızca boş kareye/boşluğa/çerçeveye dokunuşla
+  başlar, taşa dokunuş çift BAŞLATAMAZ. Kaynak `src/utils/boardZoom.ts` +
+  `src/hooks/useBoardZoom.ts`; iki oyun ekranı da aynı hook'u kullanır.
+  **Port ile AYNI davranış** (kullanıcı kararı: *"her yerde aynı deneyim
+  olsun"*) — `mobile/app/lib/src/ui/game/board_zoom.dart`; biri değişirse
+  öteki de. Açılış balonunun kuralı (`shouldShowZoomHint`, tavan 2 + "denedi
+  mi"), metnin iki tarafta BİREBİR aynı olma zorunluluğu, kabul edilen yan
+  etki ve ölçümler: `docs/decisions/touch-ux-bugs.md`.
 - **Joker (`?`):** 2 adet, 0 puan, oynanırken herhangi bir Türkçe harfe dönüşür. **Tahtaya konmuş bir jokerin `0` puanı KIRMIZI yazılır** (token `red`/`kRed`, 28 Ağustos 2026 kullanıcı isteği) — jokerin nereye harcandığı tahtada görünsün diye; RAF taşı bilinçli olarak dışarıda (orada ★ zaten ayırt ediyor). `Tile.tsx` ↔ `tile_widget.dart`, ikisi de testli. Tahtaya bu turda konmuş (henüz "Oyna" ile onaylanmamış) bir jokere tekrar dokunmak artık onu geri almaz — `WildcardModal` tekrar açılır (başlık "Jokeri Hangi Harfe Çevir?") ve seçilen yeni harf `SET_WILD_LETTER` action'ıyla (`src/game/gameReducer.ts`) hücredeki `wildLetter`'ı günceller; taş geri alınmaz. Geri alma bu modda hâlâ iki yoldan mümkün: modaldeki "Geri Al" butonu (`RECALL_CELL` dispatch eder) ya da taşı doğrudan rafa sürükleyerek (mevcut sürükle-bırak `RECALL_CELL` yolu, dokunmadan ayrışır — sürükleme hâlâ eski davranışı korur, yalnızca hareketsiz dokunuş/tık yeni davranışa geçti). Sıradan (joker olmayan) yerleştirilmiş bir taşa dokunmak hâlâ doğrudan geri alır, davranış değişmedi. `App.tsx` (yerel/YZ oyun) ve `OnlineGameScreen.tsx` (Canlı oyun) aynı deseni birebir paylaşıyor (`pendingWild.editing` bayrağı) — biri değişirse diğeri de güncellenmeli.
-  **Dokunmatikte joker dalı `swallowNextClick()` KURMAK ZORUNDA** (`src/utils/ghostClick.ts`, 22 Ağustos 2026): tarayıcı jestin `pointerup`ından SONRA compat `click` üretir ve pencere o anda açıldığından click hücreye değil MODALA düşer (joker sessizce başka harfe dönüyor ya da pencere anında kapanıyordu). Raftan sürüklenerek konan joker de aynı korumayı taşır. **Kural: Sınıf 1'de "bu click zaten hiçbir şey yapmıyor" gerekçesiyle yutmayı ATLAMA** — 28 Ağustos'ta tam bu varsayım `draftRescue` ile geçersiz kalıp iki taşı birden geri aldırdı. Flutter portu ETKİLENMEZ (compat click yok). Regresyon `tests/smoke.spec.ts`te dokunmatik bağlamda (masaüstü profilinde hata GÖRÜNMEZ). Ölçümler, olay zinciri ve üç vakanın tamamı: `docs/decisions/touch-ux-bugs.md` → "Joker düzenleme yolu — Sınıf 1'in ilk vakası".
-- **YZ seviyesi (Kolay / Normal / Zor — ROADMAP #23; TASARIM KAYDI `docs/decisions/ai-levels.md`, bir şey değiştirmeden önce onu oku):** `findAIMove(..., level)` (`src/utils/ai.ts`) = `findAIMoves` (en iyi N hamlenin sıralı listesi; vergisiz hamle varsa yalnızca onlar) + `pickTopMove` (boş → null; tek eleman → o, rastgele değer ÇAĞRILMAZ; birden fazla → TEK `nextRandom()`, `floor(r·len)`); N `AI_LEVEL_TOP_N` (`src/game/constants.ts`: Kolay 4 · Normal 1 · Zor 1). **Zor'un gücü N'den değil ARAMANIN GENİŞLİĞİNDEN gelir** — `AI_LEVEL_SEARCH` (`{ wide, maxWordLen }`; Normal/Kolay dar: tek çapadan geçen hat, havuz 2-7; Zor geniş: bir taşa komşu boş "kanca" hücresinden başlayan PARALEL dizişler + aynı hattaki birden çok taştan geçen kelimeler, havuz 2-8). Kural bunlara baştan beri izin veriyordu (`validatePlacement`), Normal'in araması hiç üretmiyordu. **Rakibin rafına bakan hiçbir yol YOK** (kullanıcı kararı, 7 Eylül 2026: hiledir; oyun sonu çözücü de bu yüzden silindi). **Normal hiç rastgele değer tüketmez** (golden'lar bayt-eş kaldı), Zor da tüketmez (N=1); Kolay torbayla AYNI enjekte edilebilir kaynaktan tüketir (`reducer_ai2_kolay.json` kilitler). Döngü SIRASI davranışın parçası — `reducer_ai2_zor.json` Dart'ı, `verify-edge-engine-parity`nin Zor adımı Edge'i kilitler. Seviye `GameState.aiLevel?` (opsiyonel; **Normal JSON'a YAZILMAZ** — `'normal'` yazma, aynı şeyi ikinci biçimde söylemek olur; eski kayıtlar/bulut kayıtları/Canlı oyunlar hep alansız, `STORAGE_VERSION` sabit), `START` payload'ıyla bir kez yazılır, değiştiren action YOK. `buildGameRecord` → `games.ai_level` (Normal → null); `leaguePoints(rank, count, surrendered, level)` dört kartta (`GameOver`/`GameHistoryModal`/`RecentGamesSection`/`SharedGamePage`) seviyeyle hesaplanır — ⚠ `level`ine JS varsayılanı VERME, `verify-league-points` ariteyi `.length`le okuyor. `AiLevelBadge` YZ oyununda HER seviyede çıkar (Kolay YEŞİL · Normal TURUNCU · Zor KIRMIZI — `AI_LEVEL_BADGE_CLASS` ↔ port `aiLevelBadgeColor`), Canlı oyunda hiç çıkmaz — "YZ oyunu mu" kararı ÇAĞIRANDA (`aiLevelForBadge(raw, isAiGame)`). Terminoloji tek: **Zorluk: Kolay · Normal · Zor**. ⚠ **Üç kopya:** Dart `aiLevelTopN`/`aiLevelSearch` (golden `ai_level.json`) + Edge `_game/constants.ts`; `AiLevel` tipinin kaynağı `src/game/types.ts`, `database.types.ts` yeniden dışa aktarır. Port ikizi `util/ai_level.dart` + `ui/ai_level_badge.dart` — `ai_level_parity_test.dart` etiket/seçilebilir liste/seviye açıklamaları/yardım paragrafını kilitler, biri değişirse İKİSİ AYNI PR'da. Ölçümler (Zor ↔ Normal %70/%72, elenen dokuz sezgisel, düşünme süresi), ürün yüzeyinin fazları ve seçici altı açıklama metinlerinin gerekçesi: `docs/decisions/ai-levels.md`.
+  ⚠ **Dokunmatikte joker dalı `swallowNextClick()` KURMAK ZORUNDA** (`src/utils/ghostClick.ts`). **Kural: Sınıf 1'de "bu click zaten hiçbir şey yapmıyor" gerekçesiyle yutmayı ATLAMA** — bu varsayım bir kez geçersiz kalıp iki taşı birden geri aldırdı. Flutter portu ETKİLENMEZ (compat click yok). Olay zinciri, ölçümler ve üç vakanın tamamı: `docs/decisions/touch-ux-bugs.md` → "Joker düzenleme yolu".
+- **YZ seviyesi (Kolay / Normal / Zor — ROADMAP #23):** `findAIMove(..., level)` (`src/utils/ai.ts`); en iyi N `AI_LEVEL_TOP_N`, arama genişliği `AI_LEVEL_SEARCH` (`src/game/constants.ts`). Seviye `GameState.aiLevel?` — **Normal JSON'a YAZILMAZ**. Terminoloji tek: **Zorluk: Kolay · Normal · Zor**. ⚠ **Rakibin rafına bakan hiçbir yol YOK** (kullanıcı kararı, 7 Eylül 2026: hiledir). ⚠ **Motorun üç kopyası + port ikizi AYNI PR'da:** Dart `aiLevelTopN`/`aiLevelSearch`, Edge `_game/constants.ts`, `util/ai_level.dart` + `ui/ai_level_badge.dart` (`ai_level_parity_test.dart` kilitler). ⚠ `leaguePoints`in `level`ine JS varsayılanı VERME — `verify-league-points` ariteyi `.length`le okuyor. **TASARIM KAYDI, bir şey değiştirmeden ÖNCE oku:** `docs/decisions/ai-levels.md` (motor sözleşmesinin tam dökümü, rastgelelik, yüzeyler, ölçümler, parite kapıları).
 - **Torba:** Oyuncu sayısından bağımsız olarak sabit 100 taş (Türkçe dağılım, `src/data/tiles.ts`). ⚠ Büyütmeyi yeniden önermeden önce `docs/decisions/game-rules.md` → "Torba neden 100" (186 denemesi ve `BAG_SCALE_BY_PLAYER_COUNT` ölçümle elendi).
 - **Taş değiştirme — üst sınır TORBADAKİ taş sayısı (14 Eylül 2026):** Torbada kaç taş kaldıysa en fazla o kadar değiştirilebilir (`maxSwapCount`); metin tek kaynakta (`swapLimitMessage`) ve uyarı SEÇİM anında çıkar, "Değiştir"e basılınca değil. ⚠ **DÖRT kopya:** reducer (`TOGGLE_SWAP_TILE` + `CONFIRM_SWAP`) · Dart ikizi · `submit_move`'un `exchange` dalı · **`play-ai-turn`** (YZ rafın TAMAMINI gönderiyordu — sunucu kapısı tek başına giderse YZ Canlı'da sessizce pas geçer, **migration ile Edge deploy'u birlikte gider**). Kapılar: `verify-swap-invariants` + `verify-sql-engine-parity`. Vaka: `docs/decisions/game-rules.md`.
 - **Teslim olma (kademeli):** Bir oyuncu teslim olduğunda (`Player.surrendered`, `SURRENDER` action, `src/game/gameReducer.ts`) oyun tümüyle bitmez — o oyuncu sırayı devretmeden çekilir, kalan oyuncular (YZ ve/veya diğer hotseat oyuncuları) oynamaya devam eder; sıra rotasyonu ve pas-turu sayacı yalnızca teslim olmamış oyuncuları sayar (`nextActiveIndex`/`activePlayerCount`). Teslim olan oyuncunun puanı dondurulmaz, **sıfırlanır** (`score: 0`) ve rafında kalan kullanılmamış taşlar torbaya geri karıştırılır (`shuffle`) — böylece o taşlar kalan oyuncular için tamamen kaybolmaz. Oyun yalnızca teslim sonrası aktif oyuncu sayısı 1'e düşünce biter: 2 kişilik oyunda tek teslim bunu anında tetikler; 4 kişilikte sırasıyla 3 → 2 → (üçüncü teslimde) 1 aktif oyuncuya iner ve o son kalan oyuncu kazanır — sıralama, teslim olanları puanlarından bağımsız olarak her zaman en sona koyan `rankPlayers` (`src/utils/ranking.ts`) ile hesaplanır ve hem `GameOver` hem `buildGameRecord`'un (`App.tsx`) skor kaydı bunu kullanır. **Logo artık teslim ETMEZ (29 Temmuz 2026):** logoya tıklamak HER DURUMDA (onay sorulmadan, kimin sırası olduğuna bakılmadan) doğrudan Setup'a döner (`handleLogoClick`, `App.tsx`). `SURRENDER` action'ı ve yukarıdaki kademeli teslim mekaniği DURUYOR, ama yerel oyunda hesap sahibi için onu tetikleyen TEK yol 7 günlük terk edilme kuralı (`takePendingAbandonedGame`, gecikmeli -2 ceza) — anlık bir "Çık" kararı artık mümkün değil. `games.players` jsonb'sindeki her satırda hâlâ `surrendered` alanı var; `GameHistoryModal` yalnızca teslim olan oyuncunun KENDİ satırında "Teslim Oldu" rozeti gösterir. Kaldırılan "Çık" modalının ne yaptığı ve hotseat dalının neden hiç tetiklenmediği: `docs/decisions/game-rules.md`.
-
-- **Teslim sonrası izleme (4 kişilik) — 5 Eylül 2026'da SİLİNDİ:** `App.tsx`
-  erişilemez bir "teslim oldun — izliyorsun" dalı taşıyordu, port hiç
-  taşımamıştı (parite de bozuktu). Dal kaldırıldı; reducer'ın `SURRENDER`
-  case'i DURUYOR (7 günlük terk-edilme akışı canlı kullanıyor). Kayıt:
-  `docs/decisions/roadmap-arsiv.md` → "Teslim sonrası izleme dalı".
 - **Teslim olanın bölgesi doğal alana döner:** Bir oyuncu teslim olduğunda bölgesi (`computeAllTerritories`, `src/utils/validator.ts`) — hem kendi köşesi hem daha önce fethettiği hücreler dahil — o oyuncu için boş `Set` olarak hesaplanır: kimseye ait olmayan, sahipsiz/"doğal" alana döner. Sonuç: Board'daki kalın dış hat çizgisi kalkar (`buildOutline`, `src/components/Board.tsx` aynı fonksiyonu tüketir), ve o bölgeye giren/sınırına değen kimse artık bölge vergisi ödemez (`computeInvasionSplit` de aynı `computeAllTerritories`'i kullandığından otomatik yansır). YZ'nin hamle değerlendirmesi de (`src/utils/ai.ts`) aynı fonksiyonu çağırdığından, YZ'ler teslim olmuş oyuncunun eski bölgesini serbestçe (paylaşımsız) kullanır.
 - **Devam eden oyunun kalıcılığı, 7 günlük terk-edilme cezası ve offline
   kuyruğu:** kendi dosyasına taşındı —
