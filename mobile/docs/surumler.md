@@ -84,11 +84,14 @@ onaylandı (~05:46) ve kullanıcı aynı sabah `Release This Version`a bastı
 gerçekleşti — §26'nın **Apple yarısı** önce yapılacak. Satır satır kayıt:
 `surumler/gonderimler-ios.csv` (satır 9-13).
 
-⚠ **Yayın butonu ≠ vitrin açık.** Apple "up to 24 hours" diyor;
-`storeLinks.ts`'in "URL'yi ölçmeden doldurma" kuralı gereği App Store
-rozeti, vitrin adresi 404 vermeyi bıraktığı ÖLÇÜLENE kadar `null` kalır.
-⚠ Bu ölçümü ajan YAPAMAZ: `itunes.apple.com` agent proxy'den 403 dönüyor
-(15 Eyl'de denendi).
+✅ **Vitrin ~06:39'da AÇILDI ve ölçüldü** — kullanıcı App Store'da gördü ve
+indirdi (yayın butonundan ~37 dk sonra; Apple'ın "up to 24 hours"u üst
+sınırmış). Ölçüm geldiği için `storeLinks.ts`'teki App Store `url`u
+dolduruldu ve rozet siteye kondu (ROADMAP §26 Apple yarısı).
+⚠ Bu ölçümü ajan YAPAMAZ: `apps.apple.com`, `itunes.apple.com` ve
+`tools.applemediaservices.com` agent proxy'den 403 dönüyor (15 Eyl'de
+denendi); yalnız `developer.apple.com` erişilebilir. Yani "vitrin açıldı mı"
+sorusunun cevabı bu ortamda HER ZAMAN kullanıcıdan gelmek zorunda.
 
 ⚠ **Freeze DEVAM EDİYOR.** Apple'ın onayı mobil merge kapısını AÇMAZ —
 `mobile-latest`teki `.aab` Play'in incelemesi bitene kadar korunmalı;
