@@ -22,7 +22,7 @@ karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
 | Üyelik | Apple Developer Program, **Bireysel** | ✅ aynı gün aktif (ödeme→aktivasyon ~12 dk) |
 | Team ID | `8277D85FY9` | ✅ |
 | App ID | `com.kelimeki.kelimeki`, **Explicit** + Push Notifications + Associated Domains | ✅ |
-| APNs anahtarı | Key ID `V85TL79C5R`, *Kelimeki APNs Prod*, Team Scoped (All topics) + **Sandbox & Production** | ✅ **ÇALIŞIYOR** (15 Eyl 2026, cihazda + logda doğrulandı). ⚠ İlk anahtar `RL4JLXL389` **Sandbox-only**du ve iOS'ta bildirim HİÇ düşmüyordu (`403 BadEnvironmentKeyInToken`); ortam kısıtı düzenlenemediği için yenisi üretildi. Firebase'de *development* + *production* satırlarının İKİSİ de yeni anahtarla dolu |
+| APNs anahtarı | Key ID `V85TL79C5R`, *Kelimeki APNs Prod*, Team Scoped (All topics) + **Sandbox & Production** | ✅ **ÇALIŞIYOR** (15 Eyl 2026, cihazda + logda doğrulandı). ⚠ İlk anahtar `RL4JLXL389` **Sandbox-only**du ve iOS'ta bildirim HİÇ düşmüyordu (`403 BadEnvironmentKeyInToken`); ortam kısıtı düzenlenemediği için yenisi üretildi. Firebase'de *development* + *production* satırlarının İKİSİ de yeni anahtarla dolu. Eski anahtar aynı gün **revoke edildi** (takım başına 2 anahtar sınırı; bir slot boşta), `.p8` kullanıcının bulut deposunda — bir daha indirilemez |
 | Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
 | Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
 | App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ✅ `.p8` **9 Eylül 2026 akşamı bir Mac'ten indirildi** ve üç secret girildi; zincir #614/#616'da uçtan uca koştu (§3) |
