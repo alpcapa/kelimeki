@@ -25,6 +25,35 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+   - ✅ **Parça 209 — Flutter'ın KENDİ metinleri de Türkçe
+     (`flutter_localizations`, 15 Eylül 2026):** Parça 208 mağaza
+     etiketini düzeltti ve orada *"uygulama içi yerelleştirme ayrı bir iş,
+     kapsam dışı"* denmişti; kullanıcı aynı sürüme yetişmesini istedi.
+     Öncesinde `MaterialApp`in `localizationsDelegates`ı YOKTU, yani
+     Flutter `DefaultMaterialLocalizations`a (İngilizce) düşüyordu: metin
+     seçme menüsü *Cut/Copy/Paste*, semantik etiketler, tarih/saat seçici.
+     Uygulamanın kendi metinlerinin tamamı Türkçe olduğundan ekranda
+     KARIŞIK dil çıkıyordu.
+     **Yapılan:** `flutter_localizations` (SDK bağımlılığı, ağ gerektirmez)
+     + `MaterialApp`e üç delege ve `supportedLocales: [Locale('tr')]`.
+     ⚠ **`GlobalCupertinoLocalizations` DA gerekli:** iOS'ta metin seçme
+     araç çubuğunu Cupertino çiziyor; yalnız Material delegesi konsaydı
+     menü **yalnızca iPhone'da** İngilizce kalırdı — yani hata Linux
+     testlerinde de Android'de de görünmezdi. Test bunu ayrıca sınıyor.
+     ⚠ **`locale` BİLEREK sabitlenmedi:** desteklenen tek dil `tr` olduğu
+     için çözümleyici cihaz dili ne olursa olsun ona düşüyor
+     (`supportedLocales.first`); sabitlemek ilerde ikinci bir dil
+     eklenirse cihaz seçimini sessizce yok sayardı. Kullanıcının iPad'i
+     İngilizce olduğundan "cihaz Türkçe değil" yanlış teşhisi mümkündü —
+     ikinci test tam o dalı (cihaz `en-US`/`de`) oynatıyor.
+     **Kapı:** `test/localization_test.dart` (3 test) — Material +
+     Cupertino metinleri, desteklenmeyen cihaz dili dalı, ve **Parça
+     208'in plist/pbxproj iddiası** (mağaza etiketi ile uygulama içi
+     yerelleştirme aynı dosyada kilitli ki biri düzeltilip öteki
+     unutulmasın). Duyarlılık: delegeler çıkarılınca ilk iki test düşüyor.
+     **855 test yeşil**, `flutter analyze` temiz, mevcut testlerin hiçbiri
+     etkilenmedi.
+
    - ✅ **Parça 208 — App Store ürün sayfası "EN English" diyordu; dil
      paketten okunuyor (15 Eylül 2026):** Kullanıcı yayınlanan sayfanın
      ekran görüntüsüyle sordu: **LANGUAGE → EN English**, oysa uygulama
@@ -42,8 +71,9 @@
      semantik etiketler, tarih seçici): `MaterialApp`te
      `localizationsDelegates`/`supportedLocales` yok ve
      `flutter_localizations` bağımlılığı eklenmedi. Mağaza etiketi ile
-     uygulama içi yerelleştirme AYRI işler; ikincisi bilinçli olarak bu
-     parçanın dışında bırakıldı (bağımlılık + davranış değişikliği).
+     uygulama içi yerelleştirme AYRI işler; ikincisi bu parçanın dışında
+     bırakılmıştı ve **AYNI GÜN Parça 209'da yapıldı** (kullanıcı isteği:
+     aynı sürüme yetişsin).
      **Doğrulama sınırı:** iOS derlemesi bu ortamda koşturulamıyor;
      `Info.plist` `plistlib` ile ayrıştırılıp iki anahtar okundu, gerçek
      kanıt CI'ın "iOS (imzasız)" işi ve sonrasında mağaza sayfası.

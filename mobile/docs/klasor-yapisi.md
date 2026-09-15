@@ -355,6 +355,11 @@ mobile/
                              # kullanıyor (icon_parity, relation_icon_parity)
                              # — üçüncü bir elle-senkron vektör çifti
                              # eklenirse kopyalama, buradan tüket
+      localization_test.dart # İKİ yerelleştirme birden: Flutter'ın kendi
+                             # metinleri (Material + CUPERTINO — ikincisi
+                             # olmadan hata yalnız iPhone'da görünür) ve
+                             # iOS paketinin App Store'a bildirdiği dil
+                             # (Info.plist + pbxproj). Parça 208-209
       game_session_host_test.dart # oyun ORTASINDA giriş/çıkış: devir, isim,
                              # oyun bitince satırın silinmesi (hayalet "Devam
                              # Eden Oyun" regresyonu, Parça 207)

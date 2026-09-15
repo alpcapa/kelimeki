@@ -1504,12 +1504,14 @@ varsayılanı — kimsenin bilinçli bir kararı değildi.
 satır ancak yeni derleme işlenip o sürüm yayınlandığında "TR Turkish"e
 döner. Connect'te tıklanacak bir düğme YOK — bunu arayan zaman kaybeder.
 
-⚠ **Uygulama İÇİNDEKİ Flutter metinleri AYRI bir iş.** Bu anahtarlar
-mağaza etiketini düzeltir; Flutter'ın kendi widget metinleri (metin seçme
-menüsü "Paste", semantik etiketler, tarih seçici) hâlâ İngilizce, çünkü
-`MaterialApp`te `localizationsDelegates`/`supportedLocales` yok ve
-`flutter_localizations` bağımlılığı eklenmedi. İkisi birbirinin yerine
-geçmez.
+⚠ **Uygulama İÇİNDEKİ Flutter metinleri AYRI bir iş — ikisi birbirinin
+yerine geçmez.** Bu anahtarlar yalnızca mağaza etiketini düzeltir.
+Flutter'ın kendi widget metinleri (metin seçme menüsü "Paste", semantik
+etiketler, tarih seçici) İngilizceydi; **aynı gün o da yapıldı**
+(`flutter_localizations` + `MaterialApp` delegeleri +
+`supportedLocales: [tr]`, Parça 209). Kapı `mobile/app/test/
+localization_test.dart` ikisini birlikte kilitliyor — biri düzeltilip
+öteki unutulmasın diye plist iddiası da o dosyada.
 
 **Play tarafında karşılığı yok:** Play'de dil listesi mağaza listelemesinin
 yerelleştirmelerinden geliyor (Console'da girilen), paketten değil.
