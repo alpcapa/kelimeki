@@ -1024,6 +1024,30 @@ boru hattının ölçüsü (6.9" = `1320×2868`) yanlış sanıldı. **Media Man
 Sayfanın kendi açıklaması da bunu söylüyor: verilen kareler öteki ekran
 boyutları için ölçekleniyor.
 
+### ⚠ ARAMA SONUCUNDA KARE ÇIKMAMASI ≠ KARE EKSİKLİĞİ (15 Eylül 2026)
+
+Kullanıcı sordu: iPhone'da App Store'da "Kelimeki" aratınca sonuç satırında
+ekran görüntüleri ÇIKMIYOR, iPad'de çıkıyor.
+
+**Ölçüldü ve elendi:** satıra basılınca ürün sayfasında kareler **geliyor**.
+Yani 6.9" seti yüklü ve sağlam; fark yalnızca Apple'ın **arama sonucu
+düzeninde**. iPhone'da zengin kart (kare şeridi) her sonuca verilmiyor —
+o turda üstteki zengin kartı bir **reklam** kapmıştı ve bizim organik
+sonucumuz kompakt satıra düşmüştü. iPad'de sonuçlar iki sütunlu kart
+ızgarası olduğundan her sonuç kartla çiziliyor.
+
+**Kural:** "aramada kare yok" bildirimi geldiğinde ÖNCE ürün sayfasını
+açtır. Sayfada varsa Connect'te yapılacak bir şey YOKTUR; yoksa iki yere
+bakılır — yayındaki SÜRÜMÜN lokalizasyonu ve 6.9" slotunun o sürüm için
+dolu olup olmadığı (yukarıdaki slot doğrulaması 1.1.0 kaydı içindi).
+
+⚠ Aynı ekran görüntüsünden çıkan, kare sorunuyla İLGİSİZ ama daha önemli
+bulgu: **rakip bir uygulama (Kelimo, Codivion LLC) "Kelimeki" marka
+kelimesine Apple Search Ads veriyor** ve iPhone'da bizim sonucumuzun
+ÜSTÜNDE tam kartla duruyor (iPad'de Words With Friends aynısını yapıyor).
+Apple bunu engellemiyor; tek karşılığı kendi marka kelimene reklam vermek.
+Karar verilmedi, kayda geçiriliyor.
+
 ### 🔴 ALFA KANALI — kareler yüklenemeyecekti (11 Eylül 2026, ölçüldü)
 
 **App Store Connect ekran görüntüsünde saydamlık kabul etmiyor** ("flattened"
