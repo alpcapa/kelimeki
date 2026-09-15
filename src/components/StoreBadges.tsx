@@ -1,4 +1,4 @@
-import { BADGE_GAP_PX, BADGE_HEIGHT_PX, visibleStoreBadges } from '../utils/storeLinks';
+import { BADGE_GAP_PX, BADGE_WIDTH_PX, visibleStoreBadges } from '../utils/storeLinks';
 
 /**
  * Mağaza rozeti satırı (ROADMAP #26) — Setup'ın footer'ında, hukuki
@@ -6,12 +6,18 @@ import { BADGE_GAP_PX, BADGE_HEIGHT_PX, visibleStoreBadges } from '../utils/stor
  *
  * Kurallar ve gerekçeleri `utils/storeLinks.ts`'te; burada yalnızca çizim.
  * Üç şey oradan gelir ve burada ELLE YAZILMAZ: sıra (App Store önce),
- * yükseklik (≥40 px) ve aradaki boşluk (yüksekliğin 1/4'ü).
+ * GENİŞLİK (ikisi eşit) ve aradaki boşluk (yüksek olanın 1/4'ü).
  *
- * ⚠ **Hiçbir mağaza yayında değilken `null` döner** — yani bugün Setup'ta
- * hiçbir görsel değişiklik yok. Bir mağaza açıldığında `storeLinks.ts`'teki
- * `null` gerçek adresle değişir ve o rozet tek başına çıkar; ikisini birden
- * beklemeye gerek yok.
+ * ⚠ **Hizalama YÜKSEKLİKTEN değil GENİŞLİKTEN** (15 Eylül 2026). Eşit
+ * yükseklik sezgisel olanıydı ama Google'ın "same size or larger" kuralını
+ * çiğniyordu: Türkçe App Store rozeti 3.78:1, Play'inki 3.37:1 — eşit
+ * yükseklikte Apple daha geniş kalıyor. Ölçüm ve tam gerekçe
+ * `storeLinks.ts`'te. Sonuç: Play biraz daha yüksek durur, bu BEKLENEN.
+ *
+ * ⚠ **Yayında olmayan mağaza HİÇ çizilmez** (`visibleStoreBadges`). Kapı
+ * hâlâ yerinde: 15 Eylül 2026 itibarıyla **yalnız App Store** yayında, yani
+ * Setup'ta TEK rozet çıkıyor; Play'inki incelemesi bitip URL'si dolunca
+ * kendiliğinden yanına gelir. İkisini birden beklemeye gerek yok.
  *
  * ⚠ **`<img>` kullanılıyor, SVG inline EDİLMİYOR** — gerekçe `storeLinks.ts`
  * (Illustrator'ın `.st0` sınıfları sayfa geneline sızıp iki rozetin rengini
@@ -37,9 +43,10 @@ export function StoreBadges() {
           <img
             src={badge.asset}
             alt={badge.alt}
-            // Yükseklik SABİT, genişlik oranla — iki rozetin aynı yükseklikte
-            // durması hem Apple'ın hem Google'ın kuralının karşılığı.
-            style={{ height: BADGE_HEIGHT_PX, width: 'auto', display: 'block' }}
+            // GENİŞLİK sabit, yükseklik oranla — eşit genişlik Google'ın
+            // "same size or larger"ını tanım gereği sağlar; Apple'ın tek
+            // boyut kuralı (≥40 px yükseklik) kapıda doğrulanıyor.
+            style={{ width: BADGE_WIDTH_PX, height: 'auto', display: 'block' }}
           />
         </a>
       ))}

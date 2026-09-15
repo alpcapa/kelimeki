@@ -19,7 +19,8 @@ import { readFileSync } from 'node:fs';
 
 import {
   BADGE_GAP_PX,
-  BADGE_HEIGHT_PX,
+  BADGE_MIN_HEIGHT_PX,
+  BADGE_WIDTH_PX,
   STORE_BADGES,
   visibleStoreBadges,
   type StoreBadge,
@@ -54,21 +55,70 @@ console.log('storeLinks — mağaza rozetleri');
   check('başka rozet yok', STORE_BADGES.length === 2);
 }
 
-// ── 2. BOYUT — Apple'ın alt sınırı, Google'ın "aynı boy ya da daha büyük"ü ──
+// ── 2. BOYUT — İKİ DOSYA DA OKUNARAK ───────────────────────────────────────
+//
+// ⚠ Bu bölüm 15 Eylül 2026'da yeniden yazıldı. Eskisi Apple'ın oranını
+// VARSAYIYORDU (`~3.0`, yorumda) ve yalnız Play'in oranına `≥ 3.0` diye
+// bakıyordu. Gerçek dosya gelince varsayım çöktü: Türkçe App Store rozeti
+// **3.78:1**. Yani eski kapı yeşil kalırken Google'ın kuralı çiğneniyordu.
+// Ders: iki rozeti KARŞILAŞTIRAN bir kural, iki dosyayı da okumadan
+// kanıtlanamaz.
 {
-  check(
-    `yükseklik ≥ 40 px (Apple'ın ekran alt sınırı) — ${BADGE_HEIGHT_PX}`,
-    BADGE_HEIGHT_PX >= 40,
-  );
-  // İki rozet de AYNI yüksekliği kullanıyor (bileşen tek sabitten okuyor).
-  // Eşit yükseklikte Play rozeti daha geniş olduğundan Google'ın "same size
-  // or larger" kuralı da sağlanıyor — aşağıda oranla kanıtlanıyor.
-  check(
-    'clear space = yüksekliğin 1/4\'ü (İKİ kılavuz da aynı sayıyı veriyor)',
-    BADGE_GAP_PX === Math.ceil(BADGE_HEIGHT_PX / 4),
-    `${BADGE_GAP_PX} ↔ ${Math.ceil(BADGE_HEIGHT_PX / 4)}`,
-  );
-  check('boşluk elle yazılmamış, yükseklikten TÜRETİLMİŞ', BADGE_GAP_PX > 0);
+  const olc = (yol: string): { w: number; h: number; oran: number } | null => {
+    let svg: string;
+    try {
+      svg = readFileSync(yol, 'utf8');
+    } catch {
+      return null;
+    }
+    const vb = /viewBox="([\d.\s-]+)"/.exec(svg);
+    if (!vb) return null;
+    const [, , w, h] = vb[1].trim().split(/\s+/).map(Number);
+    if (!(w > 0 && h > 0)) return null;
+    return { w, h, oran: w / h };
+  };
+
+  const apple = olc('public/app-store-badge.svg');
+  const play = olc('public/google-play-badge.svg');
+
+  if (apple && play) {
+    // İkisi de AYNI genişlikte çiziliyor → yükseklik orandan geliyor.
+    const appleY = BADGE_WIDTH_PX / apple.oran;
+    const playY = BADGE_WIDTH_PX / play.oran;
+
+    check(
+      `App Store yüksekliği ≥ ${BADGE_MIN_HEIGHT_PX} px (Apple'ın ekran alt sınırı)`,
+      appleY >= BADGE_MIN_HEIGHT_PX,
+      `${BADGE_WIDTH_PX} px genişlikte ${appleY.toFixed(1)} px`,
+    );
+
+    // Google: "same size or larger than the other badges". Eşit GENİŞLİK bunu
+    // tanım gereği sağlar; yine de açıkça ölçülüyor ki biri bileşeni
+    // yüksekliğe geri çevirirse kapı düşsün.
+    check(
+      'Play rozeti App Store\'unkinden dar DEĞİL (Google: "same size or larger")',
+      BADGE_WIDTH_PX >= BADGE_WIDTH_PX && playY >= appleY,
+      `Play ${BADGE_WIDTH_PX}×${playY.toFixed(1)} ↔ App Store ${BADGE_WIDTH_PX}×${appleY.toFixed(1)}`,
+    );
+
+    // Clear space ölçütü YÜKSEK olan rozet (artık ikisi eşit yükseklikte değil).
+    const enYuksek = Math.max(appleY, playY);
+    check(
+      'clear space = YÜKSEK olanın 1/4\'ü (İKİ kılavuz da aynı sayıyı veriyor)',
+      BADGE_GAP_PX === Math.ceil(enYuksek / 4),
+      `${BADGE_GAP_PX} ↔ ${Math.ceil(enYuksek / 4)} (en yüksek ${enYuksek.toFixed(1)} px)`,
+    );
+  } else {
+    // Dosyalardan biri yoksa oran karşılaştırması YAPILAMAZ. Sessizce
+    // geçmek bu kapının tam olarak kaçırdığı şeydi — açıkça söylüyoruz.
+    check(
+      'iki rozet dosyası da okunabiliyor (oran karşılaştırması için ŞART)',
+      false,
+      `apple=${apple ? 'ok' : 'YOK/bozuk'} play=${play ? 'ok' : 'YOK/bozuk'}`,
+    );
+  }
+
+  check('boşluk pozitif', BADGE_GAP_PX > 0);
 }
 
 // ── 3. KAPI — yayında olmayan mağaza HİÇ çizilmez ──────────────────────────
@@ -77,8 +127,13 @@ console.log('storeLinks — mağaza rozetleri');
   const hicbiri: StoreBadge[] = STORE_BADGES.map((b) => ({ ...b, url: null }));
   check('iki URL de null → hiçbir rozet yok', visibleStoreBadges(hicbiri).length === 0);
 
+  // ⚠ Senaryo fixture'ları GERÇEK durumdan bağımsız kurulmalı: bu satır
+  // eskiden App Store'un `url`unun null OLMASINA güveniyordu ve 15 Eylül'de
+  // o alan dolunca düştü. Artık her rozetin URL'si açıkça yazılıyor.
   const yalnizPlay: StoreBadge[] = STORE_BADGES.map((b) =>
-    b.key === 'googlePlay' ? { ...b, url: 'https://play.google.com/store/apps/details?id=x' } : b,
+    b.key === 'googlePlay'
+      ? { ...b, url: 'https://play.google.com/store/apps/details?id=x' }
+      : { ...b, url: null },
   );
   const g = visibleStoreBadges(yalnizPlay);
   check('yalnız Play yayında → TEK rozet çıkar', g.length === 1 && g[0].key === 'googlePlay');
@@ -87,12 +142,16 @@ console.log('storeLinks — mağaza rozetleri');
   const i = visibleStoreBadges(ikisi);
   check('ikisi yayında → SIRA korunur (App Store önce)', i[0]?.key === 'appStore');
 
-  // BUGÜNKÜ durum: ikisi de yayında değil. Bu satır bir "todo" değil, bir
-  // ÖLÇÜM — biri doldurulduğunda bilerek düşer ve bakanı uyarır.
+  // BUGÜNKÜ durum (15 Eylül 2026): YALNIZ App Store yayında. Bu satır bir
+  // "todo" değil, bir ÖLÇÜM — Play'in URL'si dolduğunda bilerek düşer ve
+  // bakanı uyarır. ⚠ Play'in vitrinini OTURUM AÇMADAN ölç: geliştirici
+  // hesabı testçi listesinde olduğu için ona her hâlükârda liste gösterilir
+  // (13 Eylül 2026'da tam bu yanlış okundu).
+  const bugun = visibleStoreBadges();
   check(
-    'bugün hiçbir rozet render EDİLMİYOR (ikisi de yayında değil)',
-    visibleStoreBadges().length === 0,
-    'bir URL dolduysa bu satır düşer — vitrini OTURUM AÇMADAN ölçtüğünden emin ol',
+    'bugün YALNIZ App Store rozeti çiziliyor (Play henüz yayında değil)',
+    bugun.length === 1 && bugun[0].key === 'appStore',
+    bugun.map((b) => b.key).join(', ') || 'hiçbiri',
   );
 }
 
@@ -129,17 +188,10 @@ console.log('storeLinks — mağaza rozetleri');
     if (vb) {
       const [, , w, h] = vb[1].trim().split(/\s+/).map(Number);
       check(`${badge.key}: viewBox ölçülebilir`, w > 0 && h > 0, vb[1]);
-      if (badge.key === 'googlePlay') {
-        // Google: "same size or larger than the other badges". Eşit
-        // YÜKSEKLİKTE çizdiğimiz için bu ancak Play rozeti en az Apple'ınki
-        // kadar GENİŞSE sağlanır. Apple'ın rozeti ~3.0:1; Play'inki daha
-        // geniş olmalı.
-        check(
-          `${badge.key}: en/boy oranı ≥ 3.0 (eşit yükseklikte Apple'dan geniş)`,
-          w / h >= 3.0,
-          `${(w / h).toFixed(2)}:1`,
-        );
-      }
+      // ⚠ Burada TEK rozetin oranına bakan bir kontrol YOK, bilerek: iki
+      // rozeti karşılaştıran kural yukarıda, İKİ dosya birden okunarak
+      // ölçülüyor. Eski `≥ 3.0` eşiği tam da bu yüzden yanıltıcıydı —
+      // Play'i tek başına ölçüp Apple'ınkini varsayıyordu.
     }
   }
 }

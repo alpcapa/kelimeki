@@ -48,7 +48,7 @@ npm run verify-draft-rescue      # ıskalanan dokunuşun en yakın taslak taşı
 npm run verify-hook-order        # React hook sırası: erken `return` altında hook YOK (React #300 kapısı)
 npm run verify-error-reporting   # istemci hata telemetrisi: ne kaydedilir/kaydedilmez, tekrar bastırma, hız sınırı
 npm run verify-error-messages    # kullanıcıya gösterilen hata metni: ham makine çıktısı (504 gövdesi, SQLSTATE dökümü) ekrana DÜŞMÜYOR mu
-npm run verify-store-badges      # mağaza rozetleri: App Store ÖNCE (Apple'ın yazılı kuralı), eşit yükseklik ≥40px, clear space 1/4, yayında olmayan rozet HİÇ çizilmiyor
+npm run verify-store-badges      # mağaza rozetleri: App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT GENİŞLİK (yükseklik değil — Türkçe Apple rozeti 3.78:1, Play 3.37:1), App Store yüksekliği ≥40px, clear space en yüksek olanın 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor
 npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run augment-dictionary       # Sözlüğe elle madde ekleme (GTS'siz — bkz. "Sözlüğe Kelime/Anlam Ekleme")
