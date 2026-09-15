@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'src/bootstrap.dart';
 import 'src/data/error_reporter.dart';
+import 'src/util/error_message.dart';
 import 'src/ui/app.dart';
 
 Future<void> main() async {
@@ -19,6 +20,13 @@ Future<void> main() async {
   //     hatalar. Web'deki `ErrorBoundary`nin karşılığı.
   //   * `runZonedGuarded` — zone dışına kaçan yakalanmamış async hatalar.
   // Yalnızca birini kurmak diğerinin gördüğü sınıfı sessizce kaçırır.
+  // Ekrana Türkçe metin koyan kapının (util/error_message.dart) ham metni
+  // telemetriye yazabilmesi için. Doğrudan import EDİLMİYOR — o dosya saf
+  // kalsın diye enjeksiyon; gerekçe orada yazılı.
+  setErrorMessageReporter((err, context) {
+    if (err != null) errorReporter.report(err, context: context);
+  });
+
   final onceki = FlutterError.onError;
   FlutterError.onError = (details) {
     errorReporter.report(

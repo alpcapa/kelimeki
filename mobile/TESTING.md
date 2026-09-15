@@ -1592,6 +1592,28 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
       çıkmalı; geri al → normal açılmalı. (Sürüm sabiti bu kapının girdisi;
       parite testi tam bunu koruyor.)
 
+## 27. Hata metinleri — ham makine çıktısı ekrana düşmüyor (13 Eylül 2026, Parça 205)
+
+Vaka: kullanıcı App Store ekran kaydı çekerken giriş penceresinde ham
+`{"message":"Gateway Timeout"}` gördü. `friendlyErrorMessage`
+(`util/error_message.dart`) bunu kapatıyor, ama asıl risk TERS yönde —
+sunucunun Türkçe redlerini de yutmuş olmak. **Aşağıdaki iki madde bir arada
+koşulmalı; ikincisi olmadan birincisi yanlış güven verir.**
+
+- [ ] **Ham metin YOK:** uygulamayı uçak moduna alıp giriş yapmayı dene,
+      sonra bir Canlı oyunda mesaj göndermeyi dene. Görülen metin her zaman
+      Türkçe bir cümle olmalı — `{`, `Exception`, `PGRST`, `details:`,
+      İngilizce bir cümle GÖRÜNMEMELİ.
+- [ ] **Sunucunun Türkçe reddi HÂLÂ görünüyor** (regresyon kontrolü): Canlı
+      bir oyunda sıra RAKİPTEYKEN hamle göndermeyi dene → ekranda
+      **"Sıra sende değil."** yazmalı. "Bir sorun oluştu" yazıyorsa P0001
+      dalı kırılmış demektir (SQLSTATE yolda düşüyor) — kapı
+      `error_message_parity_test.dart`.
+- [ ] **Telemetriye düşüyor:** yukarıdaki ilk maddeden sonra admin panelinin
+      "Hatalar" sekmesinde `hata-metni:giris` / `hata-metni:mesaj` bağlamlı
+      bir satır olmalı. **Yoksa ham metin gerçekten KAYBOLUYOR demektir** —
+      düzeltmenin tüm gerekçesi ham metnin telemetriye yazılmasıydı.
+
 ## 26. iPad'de MANZARA (9 Eylül 2026 — App Store'un dayattığı yeni yüzey)
 
 🔴 **ÖNCELİK: iPad birinci sınıf yüzey.** Kullanıcı kararı, sözleri
