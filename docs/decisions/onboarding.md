@@ -781,3 +781,91 @@ BENZERSİZ CİHAZ'da sayılmaz; `AdminTutorialFunnelRow` bunu açıkça yazıyor
 `_telemetri`): StrictMode dev'de effect iki kez koştuğundan tek açılış iki
 `start` satırı yazardı — `useBoardZoom`'daki `hintDecided` ile aynı sınıf
 koruma.
+
+
+---
+
+## İlk Oyun: Tanıtım Ekranı — tam bölüm (CLAUDE.md'den taşındı)
+
+⚠ **Bu bölüm 15 Eylül 2026'da kök `CLAUDE.md`'den BİREBİR taşındı**
+(kök CLAUDE.md'nin "İlk Oyun: Tanıtım Ekranı" bölümünün tamamı). Tek satırı değiştirilmedi; `CLAUDE.md`'de yerine kural
+çekirdeği + buraya işaret kaldı. Gerekçe: `auto` sınıfı uyarı bandına
+girmişti (80/120 KB) ve kuralı "tarihli anlatıyı `docs/decisions/*`'e
+taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
+
+## İlk Oyun: Tanıtım Ekranı (7 Eylül 2026)
+
+İlk oyunda artık Hızlı Başlangıç PENCERESİ açılmıyor; onun yerine raylı,
+60 saniyelik bir mini oyun geliyor (`TutorialGame` + `utils/tutorialScript.ts`).
+Dört sahne: ev karesi → bölgenin büyümesi → merkezde ×2 → merkez karesinde
+×3 + sınıra değme vergisi (dördüncüsü iki dersi tek hamlede verir); her
+hamleden sonra rakip de oynuyor. Tanıtım AÇILIRKEN tek bir karşılama
+penceresi çıkar (*"Kelimeki Tanıtım Turu"* + Devam) — oyuncu kendini gerçek
+oyunda sanmasın diye (7 Eylül 2026 akşamı, kullanıcı isteği); pencere
+kapının parçası DEĞİL, kendi bayrağı yok. Pencere SİLİNMEDİ —
+kendiliğinden açılmıyor, "Yardım" linkinden ve `/nasil-oynanir/`ten erişilir.
+
+Her yerde geçerli dört kural:
+
+1. **Tanıtım motora dokunmaz.** Yeni reducer action'ı ya da yeni
+   `GameState` alanı YOK; senaryo mevcut `PLACE_TILE`/`PLAY` ile sürülür.
+   Motorun dört kopyası olduğu için bu bilinçli bir sınır (bkz. etki
+   analizi tablosu).
+2. **Tanıtım bir "oyun" DEĞİLDİR.** Kendi `useReducer`'ı var; kayıt,
+   bulut kaydı, `logGameStart`, `games` satırı, k-lig, istatistik ve
+   terk-edilme cezası ÇALIŞMAZ. Gerçek oyun tanıtım kapanınca başlar.
+3. **Senaryoyu değiştiren `npm run verify-tutorial-script` koşar.**
+   Ekranda puan yazıyor; koordinat/kelime/puan elle doğrulanmaz.
+4. **Kapı tek bayrağa bakmaz.** *"Sadece yeni gelenlere bir kere; mevcut
+   oynamış kişilere gösterilmeyecek"* (kullanıcı isteği) — karar saf bir
+   fonksiyonda (`shouldShowTutorial`, `utils/onboarding.ts`) ve dört
+   sinyali birden okur: iki cihaz bayrağı · devam eden oyun · **hesap
+   yaşı** (cihaz değiştireni ve yalnızca Canlı oynayanı yakalayan satır).
+   Varsayılan GÖSTERME tarafında; "bir kere" = işaret tanıtım AÇILIRKEN
+   konur; yardım sayfasını okumak tanıtımı TÜKETMEZ.
+
+**Port ikizi (Faz 4, 7 Eylül 2026 — Parça 194):** `mobile/app/lib/src/ui/
+tutorial/` (`tutorial_script.dart` + `tutorial_game.dart`), kapı
+`util/onboarding.dart` + `FlagsStore.seenTutorial`, açan yer
+`setup_screen.dart`. Web TEK doğruluk kaynağı: `tutorial_parity_test.dart`
+`src/utils/tutorialScript.ts` + `TutorialGame.tsx` + `utils/onboarding.ts`i
+OKUYUP metin/sayı/koordinat/süre/tarih karşılaştırır (bulamazsa düşer);
+`tutorial_script_test.dart` senaryoyu Dart motorunda oynatır. Yani
+senaryoyu/metni değiştiren `npm run verify-tutorial-script` + mobil
+testleri (web CI'ın `parite` işi) ikisini birden geçirmek zorunda; port
+dosyaları AYNI PR'da güncellenir. `TUTORIAL_LAUNCH_AT` iki platformda AYNI
+(anlamı "web yayınından önce hesap açan = mevcut oyuncu").
+
+**Tanıtım artık tek başına değil — üç yüzey, tek kural kümesi (8 Eylül
+2026, Faz 2·3·5 kapandı):**
+
+- **Bağlamsal ipuçları (Faz 2).** Atlayanın da öğrenmesi için, GERÇEK oyunda
+  mekanik yaşandığı anda çıkan tek cümlelik balon: `vergi` · `carpan` ·
+  `bolge`. Karar saf fonksiyonda (`pickOnboardingHint`, `utils/onboarding.ts`
+  ↔ `util/onboarding.dart`), sayaç cihaz-yerel ve ipucu BAŞINA tavan **1**
+  (12 Eylül 2026'da 2'den indi — üç ipucu × 2 = 6 balon ilk oyunda fazlaydı;
+  kullanıcı kararı), çizim
+  `Board`un mevcut `coach` prop'u. **Sıra sabittir** (`vergi › carpan ›
+  bolge`) — ekranda aynı anda TEK balon; öncelik `Sınır İhlali penceresi ›
+  ipucu › zoom balonu` (zoom balonu oyun boyunca durduğundan yazılı plan
+  ters çevrildi, gerekçe karar kaydında). Kapsam bugün yalnızca YEREL oyun.
+- **Tekrar oynama (Faz 3).** "Nasıl oynanır?" penceresinin başındaki
+  `TUTORIAL_REPLAY_CTA` butonu — **yalnızca Setup'tan açılan pencerede**
+  (`onReplayTutorial` opsiyonel prop; tam ekran tanıtım süren bir oyunun
+  üstüne binmemeli). Tekrar modunda kapanışta oyun BAŞLAMAZ ve buton
+  `TUTORIAL_REPLAY_FINISH_BUTTON` der.
+- **Ölçüm (Faz 5).** `tutorial_events` (`start`/`finish`/`skip` + sahne +
+  `auto`/`replay`) → admin panelinde "Tanıtım Turu" kartı. `user_id` YOK
+  (`game_starts` ile aynı gizlilik kararı).
+- **Oyun sonu kutlaması (12 Eylül 2026).** `GameOver`/`GameOverModal`'da tek
+  seferlik banner; karar saf fonksiyonda (`pickFirstWinCelebration`,
+  `utils/onboarding.ts` ↔ `util/onboarding.dart`). **İki dal AYNI şeyi
+  ölçmüyor ve bu bilinçli:** GİRİŞLİ → ilk GALİBİYET, kaynağı HESAP
+  (`player_stats_overall.wins`, kayıt düştükten SONRA okunur; `null`/offline
+  → sessiz). MİSAFİR → ilk PUAN (`leaguePoints > 0`), kaynağı CİHAZ bayrağı
+  + "hemen giriş yap" çağrısı. Kapsam yerel **ve** Canlı (Canlı'da misafir
+  dalı hiç doğmaz — oyun hesap gerektiriyor). Metin TEK kaynak
+  (`FIRST_WIN_TEXTS`); butona dönüşen parça `FIRST_WIN_GUEST_CTA` ile
+  cümlenin İÇİNDEN bölünüyor, ikinci kez yazılmıyor.
+
+Ayrıntı, ölçümler ve tuzaklar: `docs/decisions/onboarding.md`.
