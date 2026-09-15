@@ -517,6 +517,20 @@ yazılıyor.
 
 ## 3g. iOS'ta bildirim HİÇ düşmüyor — önce APNs anahtarının ORTAMINA bak
 
+✅ **VAKA KAPANDI (15 Eylül 2026, aynı gün).** Yeni anahtar `V85TL79C5R`
+(*Kelimeki APNs Prod* · Team Scoped (All topics) · **Sandbox &
+Production**) üretilip Firebase'in development+production satırlarının
+İKİSİNE de yüklendi; bildirim ilk denemede iPhone'a düştü ve push log'unda
+yüklemeden sonra **sıfır hata** var. İstemcide tek satır değişmedi, sürüm
+çıkılmadı. Aşağısı teşhis yöntemi — bir daha aynı belirti görülürse buradan
+yürünür.
+
+⚠ **Bir okuma tuzağı, aynı turda yaşandı:** Supabase log'u **UTC**,
+konsol/cihaz ekran görüntüleri **yerel saat** (UTC+3). Düzeltmeden sonra
+"hâlâ hata var" sanıldı; hata yığını aslında yüklemeden 10 dakika ÖNCEYDİ.
+Bir düzeltmenin işe yarayıp yaramadığını log'dan okurken **saati UTC'ye
+çevirip öyle karşılaştır.**
+
 15 Eylül 2026, kullanıcı bildirdi: *"Apple bildirimleri açayım mı diye
 sordu, izin verdim ama bildirim gelmiyor."* Uygulamada değişecek tek satır
 yoktu; arıza Apple ile Firebase arasındaydı ve **belirtisi cihazda tamamen
@@ -586,10 +600,13 @@ doğrulamasında düştüğü için FCM `UNREGISTERED` dönemiyor, yani
 `sendPush`'un bayat token silme dalı hiç çalışmıyor (15 Eylül'de 2 kişiye
 6 satır). Anahtar düzelince ilk gönderimlerde kendiliğinden elenir.
 
-- [ ] **3g.1** Yeni anahtar yüklendikten sonra bir "sıra sende"
-      tetikle → iPhone'a bildirim düşmeli **ve** yukarıdaki log sorgusu yeni
-      `THIRD_PARTY_AUTH_ERROR` ÜRETMEMELİ (ikisi birlikte; yalnız cihaza
-      bakmak yetmez, sessizlik iki şeyi birden anlatabiliyor).
+- [x] **3g.1 GEÇTİ (15 Eylül 2026).** Yeni anahtar yüklendikten sonra bir
+      "sıra sende" tetiklendi → bildirim iPhone'a düştü **ve** log sorgusu
+      yüklemeden sonrası için sıfır hata verdi (ikisi birlikte; yalnız
+      cihaza bakmak yetmez, sessizlik iki şeyi birden anlatabiliyor).
+      ⚠ Bayat iOS satırları (o gün 2 kişiye 6 satır) artık kendiliğinden
+      elenir: gönderim APNs'e ulaştığı için FCM ölü token'lara
+      `UNREGISTERED` dönüyor ve `sendPush`un silme dalı çalışıyor.
 
 ## 4. Kayıt onayı ve şifre sıfırlama (derin bağlantı kanalı)
 
