@@ -767,15 +767,22 @@ politikası YOK (tabloyu yalnızca security definer admin RPC'si okur).
 **Admin kartı:** Büyüme > Kullanıcı → "Tanıtım Turu", Kaynak Hunisi'nin
 hemen altında. `auto` ve `replay` AYRI satırlar — kendi isteğiyle izleyen
 tanım gereği daha meraklıdır, tek satırda toplansalar `auto` kitlesinin
-gerçek terk oranı yukarı çekilirdi. `starters`/`finishers` BENZERSİZ CİHAZ,
-parantezdeki `starts`/`finishes` ADET (bir cihaz tanıtımı iki kez açabilir);
-oran cihaz üzerinden hesaplanıyor. Satırın altındaki **sahne dökümü**
+gerçek terk oranı yukarı çekilirdi. `starts`/`finishes` ADET,
+parantezdeki `starters`/`finishers` BENZERSİZ CİHAZ (bir cihaz tanıtımı iki
+kez açabilir); oran ADET üzerinden hesaplanıyor — 15 Eylül 2026'da cihazdan
+çevrildi, çünkü port `anon_id` yazmadığından cihaz paydası fiilen WEB-ONLY
+idi ve kart %85 yerine %50 gösteriyordu (ölçüm ve gerekçe:
+`docs/decisions/admin-panel.md` → "Tanıtım Turu kartı"). Satırın altındaki **sahne dökümü**
 (`skip_steps`, jsonb) kartın asıl sorusunu cevaplıyor: tanıtım BAŞTA mı
 kaybediyor (metin/hız) yoksa SONDA mı (uzun geliyor).
 
 **Portta `anon_id` null gidiyor** — web'in `visitTracking.ts` damgası porta
 hiç girmedi (`game_starts`ta da öyle). Yani port satırları ADET'te sayılır,
 BENZERSİZ CİHAZ'da sayılmaz; `AdminTutorialFunnelRow` bunu açıkça yazıyor.
+⚠ Bunun bedeli 15 Eylül 2026'da ölçüldü: kartın bitirme oranı cihaz
+paydasıyla hesaplandığından sahadaki 13 turun 11'ini görmüyordu. Oran ADET'e
+çevrildi; kalıcı çözüm portun damgayı yazması (ROADMAP → "Port anonim cihaz
+damgası").
 
 **Olay yazımı fire-and-forget ve her olay en çok bir kez** (`telemetriRef` /
 `_telemetri`): StrictMode dev'de effect iki kez koştuğundan tek açılış iki

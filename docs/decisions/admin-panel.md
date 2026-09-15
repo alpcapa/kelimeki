@@ -407,11 +407,29 @@ kullanıcı "Nasıl oynanır?" penceresinden kendi başlattı. Kendi isteğiyle
 izleyen tanım gereği daha meraklıdır — tek satırda toplansalar `auto`
 kitlesinin gerçek terk oranı yukarı çekilirdi.
 
-**Sayı çifti `Kaynak Hunisi`'ndeki ayrımın aynısı:** `Başlatan`/`Bitiren`
-BENZERSİZ CİHAZ, parantez içindeki ADET. Oran (`Bitirme`) CİHAZ üzerinden
-hesaplanıyor — adet payda olsaydı tanıtımı iki kez açıp bir kez bitiren
-cihaz oranı yapay olarak düşürürdü. `Başlatan` sıfırsa oran `—` (aynı
+**Sayı çifti 15 Eylül 2026'da TERS ÇEVRİLDİ:** `Başlatma`/`Bitirme`
+sütunundaki büyük sayı artık ADET, parantezdeki soluk sayı BENZERSİZ CİHAZ;
+oran (`Oran`) da ADET üzerinden. `Başlatma` sıfırsa oran `—` (aynı
 "0% ≠ bilgi yok" kuralı).
+
+**Neden çevrildi (kullanıcı sordu: *"sanki sadece parantez içindeki
+rakamlar artıyor"*):** kartın ilk hâli `Kaynak Hunisi`'nin ayrımını
+kopyalıyordu (büyük sayı cihaz, parantez adet) ve oranı CİHAZ üzerinden
+hesaplıyordu — adet payda olsaydı tanıtımı iki kez açıp bir kez bitiren
+cihaz oranı yapay olarak düşerdi diye. Ama port `anon_id` YAZMIYOR
+(`games_api.dart` → `'anon_id': null`) ve `count(distinct anon_id)` NULL
+saymaz: uygulamadan gelen her satır YALNIZCA parantezi büyütüyordu, yani
+büyük sayı da oran da fiilen WEB-ONLY idi. Canlıdan ölçüldü (son 30 gün,
+`tutorial_events`): `auto` için 13 başlangıç / 11 bitirme, bunların 11'i ve
+10'u iOS'tan; kart `2 (13) · 1 (11) · %50` yazıyordu, gerçek bitirme
+**%85**. Yani kartın var olma sebebi olan tek soru (*"açanların yüzde kaçı
+bitiriyor"*) kitlenin %15'lik bir diliminden cevaplanıyordu.
+
+**Adet paydasının bedeli kabul edildi:** aynı cihazda iki kez açıp bir kez
+bitirmek oranı biraz düşürür. Kitlenin tamamını biraz gürültülü ölçmek,
+%15'ini temiz ölçmeye yeğlendi. `starters`/`finishers` KALDI (parantez) —
+port damgalamayı eklerse (ROADMAP → "Port anonim cihaz damgası") cihaz
+paydasına geri dönülebilir ve bu paragraf güncellenmeli.
 
 **Kartın asıl cevabı satırın altındaki sahne dökümü** (`skip_steps`, jsonb):
 *bırakılan sahne: 1. (4) · 3. (1)*. "Atlayan var" bilgisi tek başına ne
@@ -420,7 +438,11 @@ kaybediyorsa tanıtım uzun.
 
 **Port `anon_id` göndermiyor** (`game_starts`taki aynı durum): port satırları
 ADET'te sayılır, BENZERSİZ CİHAZ'da sayılmaz. `AdminTutorialFunnelRow` bunu
-açıkça yazıyor; port damgalamayı eklerse burası da güncellenmeli.
+açıkça yazıyor; port damgalamayı eklerse burası da güncellenmeli. ⚠ Bu
+"küçük bir sapma" DEĞİL — 15 Eylül 2026'da kartın oranını yanlış gösterdiği
+ölçüldü (yukarı bkz.). Aynı boşluk `game_starts`ta çok daha büyük: son 30
+günde 618 uygulama satırı (`android` 587 · `ios` 16 · `app-web` 15)
+`anon_id` NULL taşıyor.
 
 ⚠ `skips` ile döküm toplamı EŞİT OLMAYABİLİR: sahne yazmayan bir istemcinin
 satırı `skips`e girer, döküme girmez.
