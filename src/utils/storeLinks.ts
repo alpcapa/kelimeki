@@ -35,9 +35,25 @@
  * metni sıra hakkında hiçbir şey söylemiyor, yalnızca boyut diyor. Apple'ınki
  * ise açık yazılı bir kural. Bu yüzden sıra Apple'a göre belirlendi.
  *
- * ⚠ **Eşit yükseklik İKİ kuralı birden karşılıyor:** Play rozeti eşit
- * yükseklikte zaten daha geniş (oran 3.37:1 ↔ Apple ~3.0:1), yani "aynı boy
- * ya da daha büyük" sağlanıyor.
+ * ⚠ **EŞİT YÜKSEKLİK KURALI ÇİĞNİYORDU — 15 Eylül 2026'da ÖLÇÜLDÜ ve
+ * düzeltildi.** Bu satır eskiden *"eşit yükseklik iki kuralı birden
+ * karşılıyor, çünkü Play daha geniş (3.37:1 ↔ Apple ~3.0:1)"* diyordu.
+ * O `~3.0` bir VARSAYIMDI: Apple'ın dosyası o tarihte repoda yoktu, oran
+ * İngilizce rozetten tahmin edilmişti. Gerçek dosya gelince ölçüldü —
+ * **Türkçe rozet 3.78:1** ("App Store'dan İndirin" İngilizcesinden uzun).
+ * Yani eşit yükseklikte Apple DAHA GENİŞ kalıyordu (44 px'te 166 ↔ 148) ve
+ * Google'ın *"same size or larger"* kuralı ÇİĞNENİYORDU.
+ *
+ * **Çözüm: hizalama yükseklikten GENİŞLİĞE çevrildi.** İkisi de aynı
+ * genişlikte çizilir (`BADGE_WIDTH_PX`), yükseklik orandan gelir. Sonuç:
+ * Play biraz daha YÜKSEK durur (~50 px ↔ Apple ~44 px) — bu bir kusur
+ * değil, Google'ın kuralının ta kendisi. Apple'ın tek boyut kuralı
+ * "≥ 40 px yükseklik" ve o da sağlanıyor.
+ *
+ * ⚠ **Ders: iki rozeti KARŞILAŞTIRAN bir kural, iki dosya da elde olmadan
+ * kanıtlanamaz.** Kapı (`verify-store-badges`) eskiden yalnızca Play'in
+ * oranına bakıyordu (`≥ 3.0`) ve Apple'ın gerçek oranını hiç görmüyordu;
+ * artık İKİ SVG'yi de okuyup çizilen genişlikleri doğrudan karşılaştırıyor.
  *
  * ## Rozet dosyaları ÇİZİLMEZ
  *
@@ -53,16 +69,29 @@
  * paketinin dışında tutar.
  */
 
-/** Rozetin ekranda çizileceği yükseklik (px). Apple'ın alt sınırı 40. */
-export const BADGE_HEIGHT_PX = 44;
+/** Apple'ın ekran alt sınırı — App Store rozeti bundan kısa çizilemez. */
+export const BADGE_MIN_HEIGHT_PX = 40;
+
+/**
+ * Rozetlerin ekranda çizileceği GENİŞLİK (px); yükseklik orandan gelir.
+ *
+ * ⚠ Hizalama bilerek genişlikten yapılıyor — gerekçe yukarıdaki ölçümde.
+ * Eşit genişlik, Google'ın "same size or larger"ını tanım gereği sağlar.
+ * Değer, Apple rozetinin yüksekliğini 40'ın altına DÜŞÜRMEYECEK kadar
+ * büyük olmalı: 166 / 3.78 ≈ 43.9 px. Kapı bunu her koşuda doğruluyor.
+ */
+export const BADGE_WIDTH_PX = 166;
 
 /**
  * Rozetler arası boşluk (px) — clear space kuralının karşılığı.
  *
- * İki kılavuz da "yüksekliğin 1/4'ü" diyor. Burada TÜRETİLİYOR, elle
- * yazılmıyor: yükseklik değişirse boşluk da değişsin.
+ * İki kılavuz da "yüksekliğin 1/4'ü" diyor. İki rozet artık AYNI yükseklikte
+ * olmadığından ölçüt YÜKSEK OLANI (Play, ~50 px): 50/4 ≈ 13.
+ * ⚠ Elle yazılmış görünüyor ama denetimsiz DEĞİL — `verify-store-badges`
+ * bu sayıyı gerçek SVG'lerden hesaplayıp karşılaştırıyor; rozet dosyası
+ * ya da genişlik değişirse kapı düşer.
  */
-export const BADGE_GAP_PX = Math.ceil(BADGE_HEIGHT_PX / 4);
+export const BADGE_GAP_PX = 13;
 
 export type StoreKey = 'appStore' | 'googlePlay';
 
@@ -84,13 +113,18 @@ export type StoreBadge = {
 export const STORE_BADGES: StoreBadge[] = [
   {
     key: 'appStore',
-    // Sayısal App ID elde (6809809788) ama uygulama HENÜZ YAYINDA DEĞİL.
-    // ⚠ Rozet dosyası da yok: Apple'ın Marketing Tools akışı rozeti vermeden
-    // önce uygulamayı arattırıyor ve yayında olmayan uygulamada ilerlemiyor
-    // (10 Eylül 2026'da denendi). Yedek yol: kılavuz sayfasındaki
-    // "Download Artwork" arşivi (336 MB) — içinden yalnızca Türkçe SİYAH
-    // dosya alınır, gerisi repoya GİRMEZ.
-    url: null,
+    // ✅ 15 Eylül 2026: 1.1.0 (665) onaylandı, yayın başlatıldı ve Apple'ın
+    // Marketing Tools akışı bu uygulama için ARTIK İLERLİYOR — 10 Eylül'de
+    // ilerlemiyordu (yayında olmayan uygulamada duruyor), yani akışın kendisi
+    // vitrinin açıldığının kanıtı. Rozet dosyası da oradan indirildi
+    // (Türkçe SİYAH; künye `..._Badge_TR_blk_...`).
+    //
+    // ⚠ Adres bilerek ÜLKESİZ (`/app/`, `/tr/app/` değil): Apple ziyaretçiyi
+    // kendi ülke vitrinine yönlendirir, uygulama tüm ülkelerde yayında.
+    // ⚠ Marketing Tools'un verdiği `?itscg=…&itsct=apps_box_link&…` izleme
+    // kuyruğu BİLEREK atıldı — o token aracın kendi bağlamı için üretildi,
+    // sitedeki kalıcı bir rozetin bağlamı değil (kullanıcı kararı).
+    url: 'https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788',
     asset: '/app-store-badge.svg',
     alt: "App Store'dan indirin",
   },
