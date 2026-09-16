@@ -25,6 +25,8 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
+
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
      (12 Eylül 2026):** Kullanıcı isteği, önce *"mümkünse oyun sonu
      modalında 'Tebrikler ilk puanını kazandın' mesajı (eğer kazanmışsa)"*;
@@ -60,6 +62,8 @@
      `flutter analyze` temiz · **846 test yeşil** · `npm run lint` temiz.
      **Doğrulama sınırı:** gerçek `wins` sayısı ve misafir↔üye ayrımı
      cihazda DENENMEDİ — kontrol listesi `TESTING.md` §13.7.
+
+## Parça 203 — Canlı oyunun mesaj satırı yazı ölçeğinde KESİLİYORDU; ikizi 10 gün önce düzeltilmişti
 
    - ✅ **Parça 203 — Canlı oyunun mesaj satırı yazı ölçeğinde KESİLİYORDU;
      ikizi 10 gün önce düzeltilmişti (12 Eylül 2026):** Kullanıcı iPhone'da
@@ -101,6 +105,8 @@
      maddesi `mobile/docs/testing-ux-turlari.md` §25'te iki ekranı da
      kapsayacak şekilde güncellendi.
 
+## Parça 202 — Sonsuz "Yükleniyor…": `catch` yetmez, TAVAN gerekiyor
+
    - ✅ **Parça 202 — Sonsuz "Yükleniyor…": `catch` yetmez, TAVAN gerekiyor
      (11 Eylül 2026):** Kullanıcı iPhone'da bildirdi — *"bekleyen oyuna
      tıklayınca bu ekran uzun süre asılı kalıyor. Sanıyorum internet yavaş
@@ -137,6 +143,8 @@
      **Doğrulama:** `dart analyze` temiz · **844 test yeşil** ·
      `npm run lint` temiz. **Doğrulama sınırı:** gerçek yavaş ağ cihazda
      denenmedi — `TESTING.md`'ye elle madde eklendi.
+
+## Parça 201 — Sahte "Sıra sende değil.": hamle işlenmişti, ekranda hata vardı
 
    - ✅ **Parça 201 — Sahte "Sıra sende değil.": hamle işlenmişti, ekranda
      hata vardı (11 Eylül 2026):** Kullanıcı iPhone'da bildirdi — taşları
@@ -191,6 +199,8 @@
      `mobile/docs/testing-arkadaslar-canli.md`'de hâlâ işaretsiz.
      Kayıt: `docs/decisions/live-game.md` → "Sahte 'Sıra sende değil.'".
 
+## Parça 200 — Mağaza kareleri: pencereler artık OYUN EKRANININ ÜSTÜNDE + kareler CI'dan ÖNCE yerelde görülebiliyor
+
    - ✅ **Parça 200 — Mağaza kareleri: pencereler artık OYUN EKRANININ
      ÜSTÜNDE + kareler CI'dan ÖNCE yerelde görülebiliyor (11 Eylül 2026,
      App Store FAZ C 24.5):** Kullanıcı Parça 199'un taze setine gözle
@@ -226,6 +236,8 @@
      Kapı: `KARE_ONIZLEME=1` ortam değişkeni — normal `flutter test`
      koşusunda test atlanıyor (CI'da PNG üretmenin anlamı yok, ölçüldü).
      Kayıt: `marketing/app-store/console-formlari.md` §13.
+
+## Parça 199 — Mağaza kareleri: başlık şeridi, 7. kare ve ALFA ARIZASI
 
    - ✅ **Parça 199 — Mağaza kareleri: başlık şeridi, 7. kare ve ALFA
      ARIZASI (11 Eylül 2026, App Store FAZ C 24.5):** Kompozisyon kararı
@@ -274,6 +286,8 @@
      oturumun çıkış vekili onu reddediyor). Şerit oranları sayıyla
      doğrulandı, göze nasıl göründüğü kullanıcının onayında.
 
+## Parça 198 — DAR EKRAN (375 pt) GERÇEK BİR HEDEF: tanıtım rozetleri ve Setup'ın birincil butonu
+
    - ✅ **Parça 198 — DAR EKRAN (375 pt) GERÇEK BİR HEDEF: tanıtım
      rozetleri ve Setup'ın birincil butonu (10 Eylül 2026, iPhone/TestFlight):**
      Kullanıcı iki şey bildirdi — *"tanıtım ilk slaytta X2/X3 legend'lar 2
@@ -312,6 +326,8 @@
      375@1,0 · 375@1,3 · 393@1,3'ü gerçek çentik/gösterge paylarıyla
      ölçüyor. Doğrulama: `dart analyze` temiz, **835 test yeşil**.
 
+## Parça 197 — HİÇ OYNANMAMIŞ OYUN ARTIK PORTTA DA HİÇ YAZILMIYOR
+
    - ✅ **Parça 197 — HİÇ OYNANMAMIŞ OYUN ARTIK PORTTA DA HİÇ
      YAZILMIYOR (10 Eylül 2026; ilk TestFlight turunda kullanıcı gördü):**
      Cihaz turu (1.0.9/620, `Derleme 46664f6`) temiz geçti; tek gözlem şuydu:
@@ -346,6 +362,8 @@
      Yeni iddialar eskisinin tersi: kill yolunda (`detach()`, `end()` YOK)
      ne satır ne terk olayı kalıyor; Setup'ta satır bir an bile görünmüyor.
      Doğrulama: `dart analyze` temiz + tam takım yeşil.
+
+## Parça 196 — iPad MANZARA: ölçüldü, karar verildi, kapı Linux'a indi (9-10 Eylül 2026; arşiv §25)
 
    - ✅ **Parça 196 — iPad MANZARA: ölçüldü, karar verildi, kapı Linux'a
      indi (9-10 Eylül 2026; arşiv §25):** Apple bundle'ı 90474 ile
@@ -396,6 +414,8 @@
        koşu #6'da geçmişti ve `ipad-13` bu koşuda da geçti — yani altyapı
        takılması, kod değil. Tekrarlarsa bir zaman aşımı (`timeout-minutes`)
        eklenmeli; tek vakada eklenmedi.
+
+## Parça 195 — tanıtımın tarayıcı turu: karşılama penceresi + balon hizası/tipografisi
 
    - ✅ **Parça 195 — tanıtımın tarayıcı turu: karşılama penceresi + balon
      hizası/tipografisi (7 Eylül 2026 akşamı; web + port AYNI PR):**
@@ -476,6 +496,8 @@
      - **Doğrulama sınırı:** cihazda koşulmadı; punto/satır kırılması ve
        balonun hedefi örtmemesi gözle `mobile/TESTING.md` §1.9'da.
 
+## Parça 194 — "Oynayarak öğren" tanıtımının port ikizi (Onboarding Faz 4, 7 Eylül 2026; web `TutorialGame.tsx` +
+
    - ✅ **Parça 194 — "Oynayarak öğren" tanıtımının port ikizi (Onboarding
      Faz 4, 7 Eylül 2026; web `TutorialGame.tsx` + `tutorialScript.ts` +
      `utils/onboarding.ts`in portu):** kullanıcı APK'yı indirip tanıtımı
@@ -545,6 +567,8 @@
        DEĞİŞMEDİ; parite testi `src/**` okuduğu için `web-ci.yml`in mevcut
        `paths` listesi zaten kapsıyor.
 
+## Parça 193 — puan satırı AVATAR HİZASINA oturdu + yardım metninin zorluk cümlesi
+
    - ✅ **Parça 193 — puan satırı AVATAR HİZASINA oturdu + yardım metninin
      zorluk cümlesi (6 Eylül 2026, kullanıcı iki bildirim; web + port aynı
      PR):** *"Puanlar avatarların tam altına gelmiyor. Özellikle 4 kişilik
@@ -588,6 +612,9 @@
        Ayrıca GERÇEK uygulamada uçtan uca doğrulandı (Chromium, 4 kişilik
        YZ oyunu oynanıp Setup'a dönüldü): kart `0 36 43 45` puanlarını dört
        avatarın altında hizalı çizdi.
+
+## Parça 192 — kart altı PUAN SATIRI + "X açtı" kalktı + Son Oynananlar'da tarih üste
+
    - ✅ **Parça 192 — kart altı PUAN SATIRI + "X açtı" kalktı + Son
      Oynananlar'da tarih üste (6 Eylül 2026, kullanıcı isteği; web + port
      aynı PR):** *"Canlı ve YZ bekleyen oyunlarda avatarların altına
@@ -619,6 +646,9 @@
      - **Doğrulama sınırı:** gerçek `online_game_states` satırının `players`
        jsonb'si sahte uçla temsil edildi; cihazda `mobile/TESTING.md`
        "Kart altı PUAN SATIRI" maddesi (Realtime tazelenmesi dahil).
+
+## Parça 191 — zorluk rozeti üç renk + tahta şeridinde + seçici alt-sekme stilinde
+
    - ✅ **Parça 191 — zorluk rozeti üç renk + tahta şeridinde + seçici
      alt-sekme stilinde (6 Eylül 2026 gece, kullanıcı isteği; web + port
      aynı PR):** *"kolay rozeti yeşil, normal turuncu, zor kırmızı olsun;
@@ -646,6 +676,8 @@
        dalı), setup/layout/text_scale/tap_target/game_screen takımları
        yeşil; web `tsc` + smoke Kolay/Normal yeşil. **Sınır:** cihazda
        renklerin ve şeridin tek satırda kaldığı görülmedi — §13 maddesi.
+
+## Parça 190 — Zorluk seçicisinin açıklama metni: her seviyede, kullanıcıya hitapla, puanı `leaguePoints`ten
 
    - ✅ **Parça 190 — Zorluk seçicisinin açıklama metni: her seviyede,
      kullanıcıya hitapla, puanı `leaguePoints`ten (6 Eylül 2026 akşamı, web +
@@ -685,6 +717,8 @@
        yüklenmediyse bu değişiklik o pakete biner (`mobile-latest` yeniden
        derlenir, kütükteki koşu no/SHA-256 bayatlar).
 
+## Parça 189 — YZ zorluğu portta: ZORLUK seçici + seviyeli k-lig puanı/rozet üç kartta
+
    - ✅ **Parça 189 — YZ zorluğu portta: ZORLUK seçici + seviyeli k-lig
      puanı/rozet üç kartta (6 Eylül 2026, ROADMAP #23 Faz 4 — web Faz 3'ün
      ikizi):** kaynak `Setup.tsx` / `AiLevelBadge.tsx` / `aiLevel.ts` /
@@ -704,6 +738,8 @@
        `setup_screen_test` +3 · `game_record_test` +1). **Sınır:** cihaz
        kanıtı (web ↔ port aynı puan, aynı hesap iki cihaz) sürüm turunda —
        `mobile/TESTING.md` §13'e madde yazıldı.
+
+## Parça 124 — arka plandan dönüş artık "ekrana giriş" sayılıyor
 
    - ✅ **Parça 124 — arka plandan dönüş artık "ekrana giriş" sayılıyor
      (21 Ağustos 2026 yazıldı, **4 Eylül 2026'da kurtarıldı**; web + port
@@ -741,6 +777,8 @@
        kesinti → false, ilk `markAway` kazanır, karar bir kez tüketilir).
      - **Flutter SDK bu ortamda YOK** — Dart yarısının kanıtı CI.
 
+## Parça 188 — kafa kafaya çubuğunun avatarları 18 → 26 px
+
    - ✅ **Parça 188 — kafa kafaya çubuğunun avatarları 18 → 26 px
      (3 Eylül 2026, kullanıcı cihazda gördü; değişen
      `ui/score/player_score_card_modal.dart` + web ikizi
@@ -762,6 +800,8 @@
        boyandığını zorluyor; üç şeritli yapının simetrisi avatar boyutundan
        BAĞIMSIZ olduğundan hiçbir hiza testi dokunulmadan geçti (757 test +
        `dart analyze` temiz, web tarafında 65 Playwright testi).
+
+## Parça 187 — cihazda çıkan İKİ hata: boş çubuk ve bozuk hiza
 
    - ✅ **Parça 187 — cihazda çıkan İKİ hata: boş çubuk ve bozuk hiza
      (3 Eylül 2026, kullanıcı APK testi; değişen
@@ -795,6 +835,8 @@
        `evaluate()` ile HEPSİNİ topla.
      - Kullanıcı ayrıca *"en büyük fontla denedim sorun yok"* dedi — Parça
        186'nın `Wrap` düzeltmesi sahada doğrulandı.
+
+## Parça 186 — "Oyun Bitti (Yeni)": biten oyunun haberi
 
    - ✅ **Parça 186 — "Oyun Bitti (Yeni)": biten oyunun haberi (3 Eylül
      2026, kullanıcı isteği; yeni tablo `game_finish_seen` + 2 RPC, değişen
@@ -914,6 +956,8 @@
      - **Doğrulama sınırı:** gerçek akış İKİ hesap ister (rakip senin yokken
        oynayıp oyunu bitirmeli). Cihaz kontrolü `mobile/TESTING.md`'de.
 
+## Parça 185 — kafa kafaya istatistik: skor kartının alt şeridi
+
    - ✅ **Parça 185 — kafa kafaya istatistik: skor kartının alt şeridi (3
      Eylül 2026, kullanıcı isteği; yeni `util/head_to_head.dart` +
      `test/head_to_head_test.dart`, değişen `data/stats_api.dart`,
@@ -1004,6 +1048,8 @@
      - **Doğrulama sınırı:** iki GERÇEK hesap gerektiriyor — `flutter test`
        sahte uçla çiziyor. Cihaz kontrolü `mobile/TESTING.md`'de.
 
+## Parça 184 — liste sıralaması: "bitmeye en yakın üstte"
+
    - ✅ **Parça 184 — liste sıralaması: "bitmeye en yakın üstte" (3 Eylül
      2026, kullanıcı isteği; yeni `util/game_list_order.dart`, değişen
      `data/online_games_api.dart`, `ui/setup/setup_screen.dart` + web
@@ -1041,6 +1087,8 @@
        göre ARTAN. İkisinin de depo sorgusu `desc` döndüğü için sıra
        gösterim katmanında çevriliyor.
 
+## Parça 183 — avatarlar 26 px, bindirme 4 → 6
+
    - ✅ **Parça 183 — avatarlar 26 px, bindirme 4 → 6 (2 Eylül 2026,
      kullanıcı isteği; değişen `ui/game/player_avatar_row.dart`,
      `ui/live/live_games_tab.dart` + web ikizleri):**
@@ -1063,6 +1111,8 @@
        çağrı yeri var" diyordu, ÜÇ tane (Canlı kartı sonradan eklenmiş).
        Boyut değiştirmeye gelen biri kapsamı eksik ölçerdi.
      - ✅ **CİHAZDA DOĞRULANDI (3 Eylül 2026, kullanıcı — Appetize).**
+
+## Parça 182 — "Son Oynananlar"da avatarlar
 
    - ✅ **Parça 182 — "Son Oynananlar"da avatarlar (2 Eylül 2026, kullanıcı
      isteği; yeni `util/recent_game_avatars.dart`, değişen
@@ -1099,6 +1149,8 @@
        `npm run verify-recent-game-avatars` + `recent_game_avatars_test.dart`.
      - ✅ **CİHAZDA DOĞRULANDI (3 Eylül 2026, kullanıcı — Appetize):**
        *"Avatar maddeleri de ok."* Fotoğraflar listede görünüyor.
+
+## Parça 181 — iPad'de paylaşım İKİ yolda ASILI KALIYORDU: ankrajın kendisi geçersizdi
 
    - ✅ **Parça 181 — iPad'de paylaşım İKİ yolda ASILI KALIYORDU: ankrajın
      kendisi geçersizdi (2 Eylül 2026; değişen: `util/share_board.dart`,
@@ -1144,6 +1196,8 @@
        üç yolu da denedi — *"üçü de açtı"*. Kanıtı güçlü kılan tek yeşil
        değil DAVRANIŞIN DEĞİŞMESİ: aynı ortamda düzeltmeden önce ikisi
        kırıktı. ROADMAP madde 8 bu doğrulamayla kapandı.
+
+## Parça 180 — "devam eden oyun" kartları İKİ SEKMEDE AYRIŞMIŞTI
 
    - ✅ **Parça 180 — "devam eden oyun" kartları İKİ SEKMEDE AYRIŞMIŞTI
      (2 Eylül 2026; değişen: yeni `ui/devam_eden_govde.dart`,
@@ -1195,6 +1249,8 @@
      - ✅ **CİHAZDA DOĞRULANDI (3 Eylül 2026, kullanıcı — Appetize):**
        *"Sonuncu madde de ok."* Bu turun dört işi de (iPad paylaşımı,
        avatar 26, Son Oynananlar avatarları, kart düzeni) onaylandı.
+
+## Parça 179 — zoom'da kalıcı 10 px çerçeve + filigranların yazı ölçeğiyle bölgeyi taşırması
 
    - ✅ **Parça 179 — zoom'da kalıcı 10 px çerçeve + filigranların yazı
      ölçeğiyle bölgeyi taşırması (2 Eylül 2026; değişen:
@@ -1268,6 +1324,8 @@
        −3,1 çıktı. Kurulum "ötelemeyi 0'a daya, sonra ölç" hâline geldi.
      - **Doğrulama:** `dart analyze` temiz · `flutter test` 701 → **702**.
 
+## Parça 178 — şerit ÇEVRİMDIŞIYKEN iki satıra düşüyordu; "taşma yok" testi bunu göremez
+
    - ✅ **Parça 178 — şerit ÇEVRİMDIŞIYKEN iki satıra düşüyordu; "taşma
      yok" testi bunu göremez (2 Eylül 2026; değişen:
      `ui/game/board_widget.dart`, `test/text_scale_test.dart`):**
@@ -1325,6 +1383,8 @@
        aranamıyor).
      - **Doğrulama:** `dart analyze` temiz · `flutter test` 700 → **701**.
 
+## Parça 177 — sistem yazı boyutunun ÜÇÜNCÜ hata sınıfı: sabit genişlikli kutuda SARMA
+
    - ✅ **Parça 177 — sistem yazı boyutunun ÜÇÜNCÜ hata sınıfı: sabit
      genişlikli kutuda SARMA (1 Eylül 2026; YENİ dosya
      `test/text_wrap_test.dart`; değişen: `ui/text_scale.dart`,
@@ -1363,6 +1423,9 @@
        web tarafındaki aynı desen (`w-[29px]` vb.) de ölçülmedi — orada
        sistem ölçeği metni büyütmüyor ama tarayıcının "en küçük yazı
        boyutu" ayarı aynı sınıfı doğurabilir.
+
+## Parça 176 — zoom tanıtım balonu
+
    - ✅ **Parça 176 — zoom tanıtım balonu (1 Eylül 2026; YENİ dosya
      `test/zoom_hint_test.dart`; değişen: `flags_store.dart`,
      `board_widget.dart`, `game_screen.dart`, `online_game_screen.dart`,
@@ -1401,6 +1464,9 @@
        temiz. Cihaz listesi: `mobile/TESTING.md` § 24 → "Tanıtım balonu".
        **Doğrulama SINIRI:** balonun dar telefonda taşıp taşmadığı widget
        testiyle KANITLANMADI — cihaz listesinde ayrı madde.
+
+## Parça 175 — tahta zoom'u: çift dokunuşla 2× büyüt/küçült + parmakla pan
+
    - ✅ **Parça 175 — tahta zoom'u: çift dokunuşla 2× büyüt/küçült +
      parmakla pan (1 Eylül 2026; YENİ dosyalar
      `ui/game/board_zoom.dart`, `test/board_zoom_test.dart`; değişen:

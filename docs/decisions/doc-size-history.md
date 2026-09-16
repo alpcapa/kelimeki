@@ -246,3 +246,56 @@ kural çekirdeği kondu. `auto` sınıfında amaç dosyayı küçültmek DEĞİL
 her turda yüklenen şeyi KURALA indirgemek; çekirdeği de kesmek bu
 dosyanın var olma sebebini kesmek olurdu.
 
+
+## 16 Eylül 2026 — BÖLÜM ölçüsü düzeltildi + altı dosyaya alt başlık
+
+Kullanıcı: *"admin-panel.md'ye alt başlık ekleme işi neydi?"* → *"başla, alt
+başlıkları ekle, dosya işini optimize et. **Sürekli dosya bölme uyarısı
+mantıklı değil.**"*
+
+**Kök sebep bir ölçü hatasıydı, biriken iş değil.** 15 Eylül'de eklenen
+BÖLÜM ölçüsü (`enBuyukBolum`) yalnızca `^## ` başlıklarına bölüyordu. Oysa
+aynı kuralın reçetesi *"ilacı bölmek değil, bloğa ALT BAŞLIK koymak"*tı —
+yani önerilen tek eylem, yazdırılan sayıyı **bir bayt bile** değiştirmiyordu.
+Sonuç: uyarıyı temizlemenin tek yolu kuralın açıkça yasakladığı şeydi
+(bölmek), uyarı her koşumda aynı sekiz dosyayı bastı ve okunmayan sabit bir
+gürültü duvarına dönüştü.
+
+**Düzeltme:** ölçü artık YAPRAK bölümü alıyor — `##`'den `######`'ya kadar
+her seviyede kesiyor, çünkü grep isabette seni en yakın başlıktan sonraki
+parçaya bırakır, o başlık hangi seviyede olursa olsun. Kod çiti (```)
+takibi de eklendi: çit içindeki `# ...` bir kabuk yorumudur, başlık değil
+(eski ölçü de bunu kaçırıyordu).
+
+Düzeltme TEK BAŞINA iki yanlış pozitifi temizledi — `live-game.md`
+52 → 24 KB, `local-game-persistence.md` 41 → 38 KB. İkisinde alt başlık
+zaten vardı; ölçü onları görmüyordu.
+
+**Sonra kalan altı dosyaya alt başlık eklendi** (99 başlık, 245 satır;
+girinti kurallarına göre yerleştirildi — 4+ boşluk girintili bir satırın
+önüne başlık konamaz, markdown onu kod bloğu yapar):
+
+| Dosya | En büyük bölüm | Eklenen |
+|---|---|---|
+| `admin-panel.md` | 111 → 23 KB | 15 (`###`/`####`) |
+| `components-score.md` | 77 → 17 KB | 11 (`##`/`###`) |
+| `components-account.md` | 75 → 22 KB | 12 (`##`) |
+| `components.md` | 72 → 17 KB | 17 (`###`) |
+| `online-game-screen.md` | 65 → 12 KB | 13 (`###`) |
+| `mobile/docs/parca-log.md` | 108 → 9 KB | 31 (`## Parça N — …`) |
+
+Sonuç: BÖLÜM UYARISI listesi **boş**. Hiçbir dosya bölünmedi, hiçbir cilt
+dondurulmadı, tek bir atıf kırılmadı.
+
+**Hiçbir MEVCUT satır değişmedi — ve bu iddia ölçülerek kanıtlandı.** Bir
+doğrulama betiği her dosyada eklenen satırları çıkarıp sonucu `git show
+HEAD:<dosya>` ile karşılaştırdı (birebir eşit), her eklemenin yalnızca bir
+başlık ya da boş satır olduğunu, ve hiçbir başlığın ardından 4+ boşluk
+girintili bir satır gelmediğini (kod bloğu riski) doğruladı. Altı dosyanın
+`git diff --numstat`'ı da bunu gösteriyor: silinen satır **0**.
+
+**Ders, yeni bir ölçü eklerken:** ölçünün KESTİĞİ şey ile reçetenin
+DEĞİŞTİRDİĞİ şey aynı olmalı. Değilse kontrol bir iş emri değil sabit bir
+gürültü üretir — ve gürültü okunmaz. Bu, 15 Eylül'ün *"sınıra çarpınca
+sınırı yükseltmek kontrolü süse çevirir"* dersinin ikizi: bir kontrolü süse
+çeviren ikinci yol, temizlenmesi imkânsız bir uyarı bastırmaktır.
