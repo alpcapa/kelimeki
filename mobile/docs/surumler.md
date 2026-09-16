@@ -95,7 +95,45 @@ sorusunun cevabı bu ortamda HER ZAMAN kullanıcıdan gelmek zorunda.
 
 ⚠ **Freeze DEVAM EDİYOR.** Apple'ın onayı mobil merge kapısını AÇMAZ —
 `mobile-latest`teki `.aab` Play'in incelemesi bitene kadar korunmalı;
-merge onu EZER. Bekleyen iki PR: #547, #554.
+merge onu EZER.
+
+### 🔒 Freeze kalkınca — MERGE PLANI (16 Eylül 2026, ONAY BEKLİYOR)
+
+Kullanıcı kararı: *"Bunu not et, onay gelince bu şekilde yaparsın."* Kapı
+tek bir bilgi: **Play'in production incelemesi (gönderim #19) kapandı mı?**
+Ajan ölçemez, Console kullanıcıda.
+
+**Bekleyen BEŞ PR** — 15 Eyl'de bu satır "iki PR" diyordu, bayattı. Beşi de
+`mobile/app` ya da `mobile/kelimeki_core` taşıyor, yani her biri TEK BAŞINA
+`mobile-latest`i ezer ve TestFlight'a build gönderir
+(`--build-number=github.run_number` → her merge AYRI numara). CI'ları
+16 Eyl itibarıyla beşinde de yeşil.
+
+| PR | Parça | `mobile/TESTING.md` § | `main` (3a7b777) ile çakışma |
+|---|---|---|---|
+| #547 — ham hata metinleri | 205 | 27 | `CLAUDE.md` · `parca-log.md` |
+| #554 — taş değiştirme sınırı | 206 | 27 ⚠ #547'yle AYNI numara | `parca-log.md` |
+| #557 — oyun ortasında giriş | 207–210 | 28, 29 | **yok (temiz)** |
+| #562 — kayıt onayı | 211 | 30 | `parca-log.md` |
+| #565 — bitiş telemetrisi `platform` | — | §18'e madde | `mobile/TESTING.md` |
+
+**Sıra: #547 → #554 → #557 → #562 → #565** — parça numarası sırası;
+`parca-log.md` yeni-önce dizili olduğundan bu sıra dosyayı kendiliğinden
+doğru diziyor. Bedeli § kaydırması: 547 → 27 kalır, 554 → 28, 557 → 29+30,
+562 → 31. (#565'in çakışması önemsiz: #566 aynı §18 maddesini yeniden
+yazmış; çözüm `main`'in metni + #565'in YENİ maddesi.)
+
+⚠ **Her merge `main`'i ilerletir ve sıradakinin çakışmasını YENİDEN
+doğurur** — her dala önce `main` merge edilip çözülmeli, sonra merge.
+⚠ **Beşi TEK OTURUMDA arka arkaya.** `mobile-latest` beş kez ezilir ama
+yalnızca sonuncusu geçerlidir; yarım kalan bir tur ikinci bir senkron
+penceresi açar.
+⚠ **Tur bitince ortaya 665'ten FARKLI bir paket çıkar.** App Store'da 665
+yayında olduğu için bu artık bir senkron güncellemesi değil, **yeni bir
+sürüm kaydı** demek (yukarıdaki "SÜRÜM SENKRONU").
+⚠ Çakışma iki dosyada yığılıyor: `parca-log.md` (hepsi dosyanın BAŞINA
+yazıyor) ve `mobile/TESTING.md` (§ numaraları). `ROADMAP.md` ve
+`mobile/docs/klasor-yapisi.md` beşinde de otomatik birleşiyor.
 
 ⚠ **Play'e yüklemeden önce indirdiğin `.aab`nin kimliğini DOĞRULA** — yükleme
 ekranındaki `versionCode` beklediğin numara mı? `mobile-latest` paylaşılan ve
