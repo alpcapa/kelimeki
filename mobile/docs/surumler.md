@@ -103,7 +103,8 @@ Kullanıcı kararı: *"Bunu not et, onay gelince bu şekilde yaparsın."* Kapı
 tek bir bilgi: **Play'in production incelemesi (gönderim #19) kapandı mı?**
 Ajan ölçemez, Console kullanıcıda.
 
-**Bekleyen BEŞ PR** — 15 Eyl'de bu satır "iki PR" diyordu, bayattı. Beşi de
+**Bekleyen ALTI PR** — bu satır 15 Eyl'de "iki", 16 Eyl'de "beş"
+diyordu; ikisi de bayattı (altıncısı 16 Eyl akşamı eklendi, #576). Beşi de
 `mobile/app` ya da `mobile/kelimeki_core` taşıyor, yani her biri TEK BAŞINA
 bir mobil derleme TETİKLER. ⚠ **"Tetikler" ile "TestFlight'a build gönderir"
 AYNI ŞEY DEĞİL** — bu satır 16 Eyl'e kadar öyle diyordu ve yanlıştı; sebebi
@@ -153,12 +154,31 @@ hâlâ"*).** `main` o gün beş commit daha ilerledi (#568 · #571 · #572 · #5
 | #557 — oyun ortasında giriş | 207–210 | 28, 29 | **yok (temiz)** |
 | #562 — kayıt onayı | 211 | 30 | `parca-log.md` |
 | #565 — bitiş telemetrisi `platform` | — | §18'e madde | `mobile/TESTING.md` |
+| #576 — zoom balonu kendi kendine kapanır | 212 | — | **yok (temiz)** |
 
-**Sıra: #547 → #554 → #557 → #562 → #565** — parça numarası sırası;
+**Sıra: #547 → #554 → #557 → #562 → #565 → #576** — parça numarası sırası;
 `parca-log.md` yeni-önce dizili olduğundan bu sıra dosyayı kendiliğinden
 doğru diziyor. Bedeli § kaydırması: 547 → 27 kalır, 554 → 28, 557 → 29+30,
 562 → 31. (#565'in çakışması önemsiz: #566 aynı §18 maddesini yeniden
 yazmış; çözüm `main`'in metni + #565'in YENİ maddesi.)
+
+**ALTINCI PR — #576, zoom balonu (16 Eyl akşamı eklendi).** Bir oyuncunun
+geri bildirimi: balon sürekli kaldığı için oyunu zorlaştırıyor; artık 4 sn
+sonra kendi kendine kapanıyor. Web yarısı AYNI GÜN `main`'e girdi, bu dal
+port ikizi.
+
+- **`main`'e (`e1f8212`) karşı ÇAKIŞMA YOK** — dal bugünkü baştan açıldı.
+  Tur içindeki çakışması ötekilerle aynı yerde: `parca-log.md` (hepsi
+  dosyanın başına yazıyor) ve `ROADMAP.md` (hepsi aynı tabloya satır
+  ekliyor).
+- **Sıraya SONA konuyor** çünkü parça numarası en büyüğü (212) — tablodaki
+  "parça numarası sırası" kuralı kendiliğinden bunu veriyor.
+- ⚠ **Tek KAYNAK dosyası örtüşmesi: `online_game_screen.dart` (#547 ∩ #576).**
+  İkili ölçümde otomatik birleşiyor (`auth_modal.dart` ile aynı durum), ama
+  #576 merge edilirken bu dosya ELLE okunmalı. Öteki dörtle hiçbir
+  `.dart`/`.ts` örtüşmesi yok.
+- Turun derleme maliyeti DEĞİŞMİYOR: aşağıdaki kilit altıncı merge'i de aynı
+  gruba düşürür, tur yine TEK derleme ve TEK TestFlight build'i.
 
 #### Tur kaç mobil derleme demek? — BEŞ DEĞİL, BİR (16 Eyl'de ölçüldü)
 
