@@ -19,15 +19,18 @@ const DIST = path.join(ROOT, 'dist');
 // üretir (4:1), bayraksız hâli Facebook sayfa kapağını (2.63:1). Ayrı
 // dosya olmalarının sebebi kırpma kurallarının farkı — `linkedin.tsx`'in
 // başındaki nota bak.
-const LINKEDIN = process.argv.includes('--linkedin');
+const SAYFA = process.argv.includes('--linkedin-sayfa');
+const LINKEDIN = SAYFA || process.argv.includes('--linkedin');
 
-const OUT = LINKEDIN
-  ? path.join(ROOT, 'marketing', 'app-store', 'kelimeki-linkedin-kapak.png')
-  : path.join(ROOT, 'marketing', 'sponsored-2026-08', 'kelimeki-fb-kapak.png');
-const W = LINKEDIN ? 792 : 820;
-const H = LINKEDIN ? 198 : 312;
+const OUT = SAYFA
+  ? path.join(ROOT, 'marketing', 'app-store', 'kelimeki-linkedin-sayfa-kapak.png')
+  : LINKEDIN
+    ? path.join(ROOT, 'marketing', 'app-store', 'kelimeki-linkedin-kapak.png')
+    : path.join(ROOT, 'marketing', 'sponsored-2026-08', 'kelimeki-fb-kapak.png');
+const W = SAYFA ? 1128 : LINKEDIN ? 792 : 820;
+const H = SAYFA ? 191 : LINKEDIN ? 198 : 312;
 /** Telefon kırpmasının gösterdiği orta şeridin genişliği (CSS px). */
-const MOBIL_W = LINKEDIN ? 560 : 640;
+const MOBIL_W = SAYFA ? 840 : LINKEDIN ? 560 : 640;
 
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript',
   '.woff2':'font/woff2', '.png':'image/png', '.svg':'image/svg+xml', '.json':'application/json' };
@@ -46,7 +49,11 @@ async function main() {
     loader: { '.css': 'empty' }, outfile: outMjs, logLevel: 'error',
   });
   const mod = await import(`file://${outMjs}?t=${Date.now()}`);
-  const render = LINKEDIN ? mod.renderLinkedInKapakHtml : mod.renderKapakHtml;
+  const render = SAYFA
+    ? mod.renderLinkedInSayfaKapakHtml
+    : LINKEDIN
+      ? mod.renderLinkedInKapakHtml
+      : mod.renderKapakHtml;
   writeFileSync(path.join(DIST, 'kapak.html'), render(`/assets/${cssFile}`), 'utf8');
 
   const server = createServer(async (req, res) => {
@@ -83,8 +90,9 @@ async function main() {
   const mobilSag = W - mobilSol;
   // LinkedIn'e özgü İKİNCİ ölçüm: profil fotoğrafı kapağın SOL ALT köşesini
   // örtüyor. Kaba ama muhafazakâr kutu — kapağın sol %22'si ve alt %45'i.
-  const avatarSag = LINKEDIN ? W * 0.22 : 0;
-  const avatarUst = LINKEDIN ? H * 0.55 : H;
+  // Sayfa kapağında logo kutusu daha büyük bir sol alt alan kaplıyor.
+  const avatarSag = SAYFA ? W * 0.16 : LINKEDIN ? W * 0.22 : 0;
+  const avatarUst = SAYFA ? H * 0.35 : LINKEDIN ? H * 0.55 : H;
   console.log(`  güvenli kutu: x ${olcum.sol}–${olcum.sag}, y ${olcum.ust}–${olcum.alt}`);
   console.log(`  telefon kırpması: x ${mobilSol}–${mobilSag}  →  ${olcum.sol >= mobilSol && olcum.sag <= mobilSag ? 'İÇERİDE ✓' : 'TAŞIYOR ✗'}`);
   if (LINKEDIN) {

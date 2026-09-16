@@ -114,6 +114,79 @@ export function LinkedInKapak() {
   );
 }
 
+/* ─────────────────── LinkedIn ŞİRKET SAYFASI kapağı ─────────────────── */
+//
+// 1128×191 (≈5.9:1) — kişisel kapaktan bile alçak ve çok daha geniş, o
+// yüzden dikey yığın yerine YATAY dizilim: solda marka, sağda cümle.
+// Sayfa logosu kapağın SOL ALT köşesine oturuyor, bu yüzden içerik sağa
+// kaydırıldı. 2× ile 2256×382 basılır (LinkedIn oranı koruyup küçültür,
+// büyük dosya daha net görünür).
+export const SAYFA_W = 1128;
+export const SAYFA_H = 191;
+
+export function LinkedInSayfaKapak() {
+  return (
+    <div
+      style={{
+        width: SAYFA_W,
+        height: SAYFA_H,
+        position: 'relative',
+        overflow: 'hidden',
+        background: '#FFFFFF',
+        fontFamily: SANS,
+        color: '#1B2430',
+      }}
+    >
+      <LandingLogoDefs />
+
+      <Tahta tiles={DEMO_TILES_2} sayi={2} stil={{ left: -104, top: -96 }} />
+      <Tahta tiles={DEMO_TILES_4} sayi={4} stil={{ right: -104, top: -62 }} />
+
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'radial-gradient(ellipse 340px 120px at 56% 50%, rgba(255,255,255,0.98) 55%, rgba(255,255,255,0) 100%)',
+        }}
+      />
+
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          // Sayfa logosu sol alta oturuyor → içerik sağa kaydırıldı.
+          paddingLeft: 150,
+        }}
+      >
+        <div data-guvenli-kutu="" style={{ display: 'flex', alignItems: 'center', gap: 26 }}>
+          <LandingLogo height={46} />
+          <span style={{ width: 1, height: 52, background: '#D8DEE6' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <p style={{ margin: 0, fontSize: 19, lineHeight: 1.2, fontWeight: 700, letterSpacing: -0.2 }}>
+              Kelime bul, bölgeni büyüt, tahtayı ele geçir.
+            </p>
+            <span style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: ACCENT, letterSpacing: 0.4 }}>
+              {MAGAZA ? `kelimeki.com · ${MAGAZA}` : 'kelimeki.com'}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function renderLinkedInSayfaKapakHtml(cssHref: string): string {
+  return `<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>Kelimeki LinkedIn sayfa kapağı</title>
+<link rel="stylesheet" href="${cssHref}">
+<style>html,body{margin:0;padding:0;background:#fff}</style>
+</head><body>${renderToStaticMarkup(<LinkedInSayfaKapak />)}</body></html>`;
+}
+
 export function renderLinkedInKapakHtml(cssHref: string): string {
   return `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><title>Kelimeki LinkedIn kapak</title>

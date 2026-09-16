@@ -43,6 +43,7 @@
     "generate-reel": "node scripts/reel/build.mjs",
     "generate-fb-cover": "node scripts/kapak/build.mjs",
     "generate-linkedin-cover": "node scripts/kapak/build.mjs --linkedin",
+    "generate-linkedin-page-cover": "node scripts/kapak/build.mjs --linkedin-sayfa",
     "generate-play-assets": "node scripts/play-store/build.mjs",
     "generate-store-header": "node scripts/store-header/build.mjs",
     "preview-store-frames": "npm run preview-store-frames:iphone && npm run preview-store-frames:ipad",
