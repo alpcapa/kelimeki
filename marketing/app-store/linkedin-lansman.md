@@ -103,33 +103,39 @@ kapatıyor (sözlük güveni, rakip, arkadaşın çevrimiçi olmaması, internet
 ücret). Emoji Instagram metnindekinden az: aynı liste burada `•` ile
 yazıldığında daha ciddi okunuyor.
 
-## 4 · Kişisel profilden yeniden paylaşım (yapım notu)
+## 4 · Kişisel profilden paylaşım — SADE duyuru
 
-Sayfanın gönderisini yeniden paylaşırken üstüne bunu yaz — LinkedIn'de
-"nasıl yapıldı" kısmı asıl ilgiyi çeken parça:
+⚠ **Repost DEĞİL, sıfırdan gönderi** (16 Eylül 2026 kararı): sayfanın 0
+takipçisi olduğu için sayfa gönderisini pratikte kimse görmedi, yani
+"aynı içerik iki kez" riski yok; kendi ağında yayılan tek biçim native
+gönderi. Sayfa boşta kalmasın diye metinde **@Kelimeki** etiketlenir
+(elle yazılıp listeden seçilir — yapıştırınca düz metin kalır).
 
-> Kelimeki bugün App Store'da. Uzun süredir üzerinde çalıştığım bir yan
-> proje; teknik tarafından üç not:
+> Kelimeki bugün App Store'da 🎉
 >
-> • Oyun motoru tek bir yerde yaşamıyor: tarayıcıda TypeScript, mobilde
-> Dart, sunucuda bir Edge Function ve bir Postgres fonksiyonu olarak —
-> dördü de aynı fixture'larla parite testinden geçiyor, çünkü bir hamlenin
-> puanını nerede hesaplarsan hesapla aynı çıkmak zorunda.
-> • Uygulama internetsiz de tam çalışıyor: 63.905 kelimelik sözlük ve
-> anlamları cihazın içinde. Sunucu yalnızca hesap, sıralama ve arkadaşla
-> oynama için gerekiyor.
-> • Web React + TypeScript, mobil Flutter. Aynı ekranın iki kez yazılması
-> pahalı — ama tek bir "deneyim" olması pazarlıksızdı.
+> Uzun süredir üzerinde çalıştığım bir yan proje: Türkçe için sıfırdan
+> tasarlanmış bir kelime oyunu. Tahtada kendi bölgen var, kelime kurarak
+> onu büyütüyorsun. Bir süre sonra "hangi kelimeyi kurayım" sorusunun
+> yerini "bu kelimeyi nereye koyayım" alıyor.
 >
-> Denemek isteyen: App Store'da "Kelimeki", ya da kelimeki.com
+> Ücretsiz, reklamsız; internet olmadan da oynanıyor.
+>
+> iPhone ve iPad için App Store'da:
+> https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788
+>
+> Tarayıcıdan denemek isteyen:
+> https://kelimeki.com/?ref=li-profil
+>
+> #kelimeoyunu #türkçe #appstore
 
-**Uzunluk:** 718 karakter — yeniden paylaşım notu için de, gerekirse ilk
-yorum olarak kullanmak için de (1.250 sınırı) yeterince kısa.
+⚠ **TEKNİK ANLATI YOK — kullanıcı kararı (16 Eylül 2026).** İlk taslak
+motorun dört kopyasını, parite testlerini ve yığını anlatan üç maddelik
+bir "yapım notu"ydu; kullanıcı eledi: *"Sadece basit bir duyuru yapalım
+yeter."* Bir dahaki gönderide o biçimi geri getirme — LinkedIn'in
+"meslektaş okuyor" gerekçesi bu hesap için yeterli sebep değil.
 
-⚠ **Rakam ve süre UYDURMA.** "Bir yılda yazdım", "X kişi oynuyor" gibi
-cümleler bu dosyada bilerek YOK — yalnızca repodan doğrulanabilir sayılar
-var (63.905 kelime = `src/data/words.ts`, anlam sayısı da aynı;
-`src/data/meanings.json`). Süreyi eklemek istersen kendi takviminden yaz.
+⚠ Link `?ref=li-profil` (sayfanınki `li-sayfa`) — iki kanalın getirdiği
+ayrı okunsun diye.
 
 ## 5 · Link ve ölçüm
 
