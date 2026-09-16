@@ -1275,7 +1275,10 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
       yaptı" 1. sahnede SAĞ yarıda (rakip sütun 12'de oynuyor); raf balonu
       rafın ortasında, OYNA balonu sağda.
 - [ ] **Üç balon TEK ölçüde + OYNA okunun hedefi:** tanıtım balonu, zoom
-      ipucu ve "Buradan başla" aynı büyüklükte; "Hamleni tamamlamak için
+      ipucu ve "Buradan başla" aynı büyüklükte; ⚠ **zoom ipucu artık
+      yalnızca 4 saniye duruyor** (16 Eylül 2026) — ölçümü oyun açılır
+      açılmaz yap; kaçırdıysan `kelimeki:zoom-hint-shown`i sıfırlayıp
+      (tavan 2) yeni bir oyun aç. "Hamleni tamamlamak için
       OYNA'ya bas" balonunun kuyruğu OYNA butonunun üstünde (7 Eylül 2026
       akşamı, ikinci tur — önce rafın ortasını gösteriyordu).
 - [ ] **Balon okunabiliyor VE hedefi örtmüyor:** Dört sahnenin de balonu
@@ -1329,7 +1332,12 @@ yazılması. **Temiz bir profille** koş.
 - [ ] **Tavan 2:** Aynı ipucunu üçüncü kez hak eden bir hamlede balon artık
       ÇIKMAMALI (öteki iki ipucu hâlâ çalışıyor olmalı).
 - [ ] **Zoom balonuyla çakışma:** İpucu görünürken merkezdeki *"Boş kareye
-      … çift tıklama"* balonu gizlenmeli, ipucu kaybolunca geri gelmeli.
+      … çift tıklama"* balonu gizlenmeli. ⚠ **"İpucu kaybolunca geri gelir"
+      ARTIK GEÇERLİ DEĞİL** (16 Eylül 2026): zoom balonu ekrana geldiği andan
+      itibaren 4 saniye yaşıyor (`ZOOM_HINT_AUTO_HIDE_MS`) ve süre balon
+      gizliyken de işliyor, yani bağlamsal ipucu bir hamleden sonra çıktığında
+      zoom balonu çoktan kapanmış olur. Kabul edilen davranış: iki balon asla
+      üst üste binmiyor, istenen de buydu.
 - [ ] **Taslak balonu susturuyor:** Balon dururken rafa/tahtaya yeni bir taş
       koy — balon anında kaybolmalı.
 - [ ] **Tekrar oynama (Faz 3):** Setup → "Nasıl oynanır?" → penceresinin EN
