@@ -26,7 +26,10 @@ import { trCompare } from './turkish';
  * ⚠ Etiketlerin merkezî bir kaydı YOK — pazarlama malzemesine elle yazılıyor
  * (`?ref=ig-bio`, `?ref=fb-reel`, …), yani liste "kapsamlı" olamaz, ancak
  * GÖRÜLENE dayanır. Bu yüzden kural önek-bazlı: `ig` ve `instagram` ile
- * başlayan her şey Instagram, `fb`/`facebook` ile başlayan her şey Facebook.
+ * başlayan her şey Instagram, `fb`/`facebook` ile başlayan her şey Facebook,
+ * `li`/`linkedin` ile başlayan her şey LinkedIn (16 Eylül 2026'da eklendi:
+ * lansman turu dört etiket birden üretti — `li-sayfa`, `li-profil`,
+ * `li-hakkinda`, `li-buton` — ve dördü de `Diğer`de dağınık duruyordu).
  * Yeni bir kanal açılırsa (TikTok gibi) buraya bir önek eklenir; eklenmezse
  * etiket sessizce kaybolmaz, "Diğer" grubunda GÖRÜNÜR kalır.
  *
@@ -42,6 +45,7 @@ import { trCompare } from './turkish';
 export type SourceChannel =
   | 'instagram'
   | 'facebook'
+  | 'linkedin'
   | 'arkadas'
   | 'direkt'
   | 'diger'
@@ -50,6 +54,7 @@ export type SourceChannel =
 export const SOURCE_CHANNEL_LABEL: Record<SourceChannel, string> = {
   instagram: 'Instagram',
   facebook: 'Facebook',
+  linkedin: 'LinkedIn',
   arkadas: 'Arkadaş Daveti',
   direkt: 'Direkt',
   diger: 'Diğer',
@@ -75,6 +80,10 @@ export function sourceChannel(source: string | null): SourceChannel {
   if (s === 'arkadas') return 'arkadas';
   if (hasPrefix(s, 'ig') || hasPrefix(s, 'instagram')) return 'instagram';
   if (hasPrefix(s, 'fb') || hasPrefix(s, 'facebook')) return 'facebook';
+  // ⚠ `li` iki harf — sınır kuralı burada daha da kritik: `link`, `lig`,
+  // `liste` gibi bir etiket LinkedIn sayılmamalı. `hasPrefix` bunu zaten
+  // yapıyor, kapı da ayrıca ölçüyor.
+  if (hasPrefix(s, 'li') || hasPrefix(s, 'linkedin')) return 'linkedin';
   return 'diger';
 }
 

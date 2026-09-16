@@ -188,14 +188,11 @@ mağazada (`src/utils/storeLinks.ts`).
 `src/utils/visitTracking.ts`) — siteye daha önce uğramış biri bu linkten
 girse de eski etiketiyle sayılır. Yani rakam alt sınırdır, düzeltilemez.
 
-⚠ **Etiket `li-…` olduğu sürece huninin ÜST satırında değil, `Diğer`
-grubunda görünür.** `sourceChannel` (`src/utils/adminGroups.ts`) bugün
-yalnızca `ig`/`instagram` ve `fb`/`facebook` öneklerini tanıyor; tanınmayan
-etiket kaybolmaz ama gruplanmaz. İki seçenek: (a) `Diğer` satırını açıp ham
-etiketi oku — bugün çalışır, (b) `linkedin` kanalını ekle (`SourceChannel`
-+ `SOURCE_CHANNEL_LABEL` + `li`/`linkedin` öneki + `verify-admin-groups`
-satırı). ⚠ `li` önekinin sınır karakteri kuralı bunu güvenli yapıyor:
-`li-sayfa` eşleşir, `link` eşleşmez.
+✅ **`li-…` etiketleri huninin kendi `LinkedIn` satırında toplanıyor**
+(16 Eylül 2026'da eklendi): `sourceChannel` (`src/utils/adminGroups.ts`)
+`li`/`linkedin` önekini tanıyor. Satırı açınca ham etiketler alt alta
+görünür. Etiketlerin tam listesi ve hangi yüzeye ait oldukları:
+`marketing/linkedin/sayfa-formlari.md` → "Ölçüm".
 
 **Sonucu nereden okursun:** Admin paneli → Büyüme › Kullanıcı › Kaynak
 Hunisi. App Store indirmeleri bu hunide GÖRÜNMEZ — onlar App Store Connect

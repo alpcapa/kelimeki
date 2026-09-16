@@ -30,6 +30,10 @@ console.log('Kaynak → kanal: canlıdan gelen GERÇEK etiketler (16 Eylül 2026
 for (const [tag, beklenen] of [
   ['instagram', 'instagram'], ['ig-bio', 'instagram'],
   ['fb', 'facebook'], ['fb-reel', 'facebook'], ['fb-btn', 'facebook'],
+  // LinkedIn lansmanı (16 Eylül 2026) — ilk üçü canlıda GERÇEKTEN var,
+  // `li-buton` ve `li-deneyim` aynı turda sayfaya/profile girildi.
+  ['li-sayfa', 'linkedin'], ['li-profil', 'linkedin'], ['li-hakkinda', 'linkedin'],
+  ['li-buton', 'linkedin'], ['li-deneyim', 'linkedin'], ['linkedin', 'linkedin'],
   ['arkadas', 'arkadas'],
   ['direkt', 'direkt'],
   // `--sanitized--` canlıda GERÇEKTEN var (1 ziyaret): istemci tarafı
@@ -44,6 +48,11 @@ for (const [tag, beklenen] of [
 console.log('Önek eşleşmesi SINIR arar — yarım kelime yutulmaz');
 check('ignore Instagram DEĞİL', sourceChannel('ignore') === 'diger', sourceChannel('ignore'));
 check('fbi Facebook DEĞİL', sourceChannel('fbi') === 'diger', sourceChannel('fbi'));
+// `li` yalnızca İKİ harf: sınır kuralı olmasa bu üçü de LinkedIn sayılırdı.
+check('link LinkedIn DEĞİL', sourceChannel('link') === 'diger', sourceChannel('link'));
+check('lig LinkedIn DEĞİL', sourceChannel('lig') === 'diger', sourceChannel('lig'));
+check('liste LinkedIn DEĞİL', sourceChannel('liste') === 'diger', sourceChannel('liste'));
+check('li_post LinkedIn', sourceChannel('li_post') === 'linkedin');
 check('ig_story Instagram', sourceChannel('ig_story') === 'instagram');
 check('facebook.grup Facebook', sourceChannel('facebook.grup') === 'facebook');
 check('tanınmayan kanal UYDURULMAZ → Diğer', sourceChannel('tiktok') === 'diger');
