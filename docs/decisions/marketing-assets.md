@@ -2,6 +2,12 @@
 
 > docs/decisions/'e taşındı (context split, 24 Ağustos 2026). scripts/sponsored-post, scripts/play-store, scripts/kapak, scripts/reel.
 
+**Bu dosya GÖRSELLERİ anlatır; kanal başına GÖNDERİ metinleri ayrı durur**
+(16 Eylül lansman turu üç kanalda birden çıktı, üçünün metni/linki/etiketi
+farklı): `marketing/app-store/instagram-lansman.md` ·
+`linkedin-lansman.md` · `facebook-lansman.md`. Her biri kendi `?ref=`
+etiketini, kare setini ve yayın kütüğünü taşır.
+
 ## Reklam Görselleri (`scripts/sponsored-post/`, 20 Ağustos 2026)
 
 Kullanıcının kendi network'üne yaptığı organik paylaşım beğeni aldı ama tek
