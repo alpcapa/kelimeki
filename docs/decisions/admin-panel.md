@@ -654,9 +654,13 @@ etiketler.
 
 ⚠ **`?ref=` etiketlerinin merkezî bir kaydı YOK** — pazarlama malzemesine elle
 yazılıyor (`ig-bio`, `fb-reel`, `fb-btn`, …). Kural bu yüzden önek-bazlı:
-`ig`/`instagram` → Instagram, `fb`/`facebook` → Facebook. **Önek eşleşmesi
-sınır karakteri arar** (`-`, `_`, `.` ya da dize sonu); yoksa `fb` öneki
-`fbi`yi, `ig` öneki `ignore`u yutardı. Tanınmayan etiket UYDURMA bir kanala
+`ig`/`instagram` → Instagram, `fb`/`facebook` → Facebook, `li`/`linkedin` →
+LinkedIn (16 Eylül 2026'da eklendi; lansman turu dört etiket birden üretti:
+`li-sayfa`, `li-profil`, `li-hakkinda`, `li-buton` — beşincisi `li-deneyim`
+profil deneyim girişinde). **Önek eşleşmesi sınır karakteri arar** (`-`, `_`,
+`.` ya da dize sonu); yoksa `fb` öneki `fbi`yi, `ig` öneki `ignore`u yutardı —
+ve iki harflik `li` bunu daha da kritik yapıyor: `link`, `lig`, `liste`
+LinkedIn DEĞİL, üçü de kapıda ölçülüyor. Tanınmayan etiket UYDURMA bir kanala
 atanmaz, **Diğer**'de GÖRÜNÜR kalır — yeni bir kanal açılırsa (TikTok) fark
 edilir.
 

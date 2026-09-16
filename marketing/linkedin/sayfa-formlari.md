@@ -73,11 +73,23 @@ oranı ve örtülen bölgeleri farklı; karıştırılırsa sayfa logosu metnin
 
 ## 6 · Ölçüm
 
-Bu dosyadaki iki yeni etiket — `li-hakkinda` (Website alanı) ve `li-buton`
-(Custom button) — gönderi etiketlerinden (`li-sayfa`, `li-profil`) ayrı
-tutuldu: sayfayı gezip siteye geçen ile gönderiden tıklayan aynı şey değil.
+LinkedIn'in beş `?ref=` etiketi, her biri AYRI bir yüzey — hangisinin
+getirdiğini ayırt edebilmek için bilerek bölündü:
 
-⚠ Hepsi bugün admin panelinde **`Diğer`** grubunda görünür;
-`sourceChannel` (`src/utils/adminGroups.ts`) `li` önekini henüz tanımıyor.
-Kaybolmazlar, gruplanmazlar. Kanal eklenirse dört etiket birden tek
-"LinkedIn" satırında toplanır.
+| Etiket | Nerede |
+|---|---|
+| `li-sayfa` | Kelimeki sayfasının gönderisi |
+| `li-profil` | Kişisel profilden yapılan gönderi |
+| `li-hakkinda` | Sayfanın **Website** alanı |
+| `li-buton` | Sayfanın **Custom button**'ı (*Visit website*) |
+| `li-deneyim` | Kişisel profildeki **deneyim girişinin** media bağlantısı |
+
+✅ **Beşi de admin panelinde tek bir `LinkedIn` satırında toplanıyor**
+(16 Eylül 2026): `sourceChannel` (`src/utils/adminGroups.ts`) artık
+`li`/`linkedin` önekini tanıyor, satırı açınca ham etiketler alt alta
+görünür. Öncesinde hepsi `Diğer` grubundaydı.
+
+⚠ Yeni bir LinkedIn yüzeyi eklersen etiketi `li-` ile başlat; kanal
+kendiliğinden doğru yere düşer. ⚠ `li` yalnızca iki harf olduğundan sınır
+kuralı kritik — `link`, `lig`, `liste` LinkedIn sayılmaz
+(`npm run verify-admin-groups` üçünü de ölçüyor).
