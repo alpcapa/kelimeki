@@ -41,9 +41,19 @@ link önizlemesi kaybolur. Elde üç kurgu var:
 
 | Kurgu | Ne görünür | Ne zaman |
 |---|---|---|
-| **A · Yalnız link** (önerilen) | `kelimeki.com`un kendi OG kartı: `public/og-image.png`, **1200×630** — LinkedIn'in istediği 1.91:1 oranın tam karşılığı | Tek gönderilik lansman. Kart tıklanabilir, tıklama alanı büyük, ayrıca hazırlık gerektirmiyor |
-| **B · Apple'ın `Link Card Preview` karesi** (1200×628) + link **ilk yoruma** | Apple'ın lansman artwork'ü, App Store rozeti görselin içinde | Görsel olarak Apple'ın karesini istiyorsan. ⚠ Bedeli: link gövdeden çıkar, tıklama yolu uzar |
-| **C · PDF belge gönderisi** (LinkedIn'in "document post"u) | Çevrilebilir kareler — LinkedIn'e özgü format | `sponsored-2026-08/kelimeki-02…05.png` kareleri tek PDF'e dizilirse. Depoda böyle bir PDF **yok**; istenirse üretilir |
+| **A · Yalnız link** | `kelimeki.com`un kendi OG kartı: `public/og-image.png`, **1200×630** — LinkedIn'in istediği 1.91:1 oranın tam karşılığı | Hiç görsel yüklemek istemiyorsan. Kart tıklanabilir, hazırlık gerektirmiyor |
+| **B · `Square Post` 1080×1080** (16 Eylül 2026'da SEÇİLEN) | Apple'ın lansman karesi; App Store rozeti ve logo görselin İÇİNDE | Akışta kare, yatay karenin ~1,9 katı dikey yer kaplar → mobilde daha çok görünür. Link gövdede kalır, önizleme kartı çıkmaz |
+| C · `Link Card Preview` 1200×628 | Aynı artwork'ün yatay hâli | B yerine yalnızca "link kartı gibi dursun" istenirse. Akışta daha az yer kaplar |
+| D · PDF belge gönderisi | Çevrilebilir kareler — LinkedIn'e özgü format | `sponsored-2026-08/kelimeki-02…05.png` tek PDF'e dizilirse. Depoda böyle bir PDF **yok**; istenirse üretilir |
+
+**Elenenler:** `Story Post` 1080×1920 (LinkedIn'de story yok), `Portrait
+Banner` 720×1280 (dikey kare akışta kırpılır, üstelik düşük çözünürlük),
+`Landscape Banner` 1280×720 (C ile aynı işi görüyor ama link kartı için
+üretilmemiş).
+
+⚠ **Görsel yüklenince link önizleme kartı ÇIKMAZ** — gövdedeki link düz
+metin olarak tıklanabilir kalır, kart kaybolur. B'yi seçmenin bedeli bu;
+karşılığı akışta kapladığı yer.
 
 ⚠ **`?ref=` parametresi önizlemeyi BOZMAZ** — OG etiketleri statik
 (`index.html`), sorgu dizesinden bağımsız.
@@ -124,6 +134,24 @@ var (63.905 kelime = `src/data/words.ts`, anlam sayısı da aynı;
 |---|---|
 | Sayfa gönderisi | `https://kelimeki.com/?ref=li-sayfa` |
 | Kişisel yeniden paylaşım | `https://kelimeki.com/?ref=li-profil` |
+
+**16 Eylül 2026 kararı: gövdede site linki, App Store linki İLK YORUMDA.**
+Gerekçe ölçüm değil, LinkedIn'in masaüstü ağırlığı: `apps.apple.com` linki
+masaüstünde yüklenemeyen bir vitrin sayfasıdır, kişi telefona geçip yeniden
+aramak zorunda kalır. `kelimeki.com` iki tarafta da çalışıyor — masaüstünde
+"Hemen Oyna" ile oyun o an oynanıyor, telefonda sayfanın üstünde ve altında
+App Store rozeti duruyor (`Landing.tsx`, iki `StoreBadges`).
+
+**App Store adresi — iki biçim:**
+
+```
+https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788   (kanonik, storeLinks.ts'te canlı)
+https://apps.apple.com/app/id6809809788                                          (kısa hâli)
+```
+
+⚠ **Kısa hâl bu depoda DOĞRULANMADI** — oturumun ağ politikası
+`apps.apple.com`a da kapalı (16 Eylül 2026'da ölçüldü). Yoruma yapıştırmadan
+önce bir kez kendin dokun; açılmazsa kanonik adresi kullan.
 
 **Neden App Store'a değil siteye:** `?ref=` ölçümü yalnızca sitede
 çalışıyor; doğrudan App Store'a link verirsen o gönderiden gelen trafik
