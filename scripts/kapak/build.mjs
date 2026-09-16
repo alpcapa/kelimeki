@@ -15,9 +15,19 @@ import { chromium } from 'playwright';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const DIST = path.join(ROOT, 'dist');
-const OUT = path.join(ROOT, 'marketing', 'sponsored-2026-08', 'kelimeki-fb-kapak.png');
-const W = 820;
-const H = 312;
+// İki kapak, TEK boru hattı: `--linkedin` LinkedIn kişisel profil kapağını
+// üretir (4:1), bayraksız hâli Facebook sayfa kapağını (2.63:1). Ayrı
+// dosya olmalarının sebebi kırpma kurallarının farkı — `linkedin.tsx`'in
+// başındaki nota bak.
+const LINKEDIN = process.argv.includes('--linkedin');
+
+const OUT = LINKEDIN
+  ? path.join(ROOT, 'marketing', 'app-store', 'kelimeki-linkedin-kapak.png')
+  : path.join(ROOT, 'marketing', 'sponsored-2026-08', 'kelimeki-fb-kapak.png');
+const W = LINKEDIN ? 792 : 820;
+const H = LINKEDIN ? 198 : 312;
+/** Telefon kırpmasının gösterdiği orta şeridin genişliği (CSS px). */
+const MOBIL_W = LINKEDIN ? 560 : 640;
 
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript',
   '.woff2':'font/woff2', '.png':'image/png', '.svg':'image/svg+xml', '.json':'application/json' };
@@ -30,13 +40,14 @@ async function main() {
 
   const outMjs = path.join(ROOT, 'node_modules', '.cache', 'kelimeki', 'kapak.mjs');
   await esbuild({
-    entryPoints: [path.join(ROOT, 'scripts', 'kapak', 'kapak.tsx')],
+    entryPoints: [path.join(ROOT, 'scripts', 'kapak', LINKEDIN ? 'linkedin.tsx' : 'kapak.tsx')],
     bundle: true, platform: 'node', format: 'esm', jsx: 'automatic',
     external: ['react', 'react-dom', 'react-dom/server'],
     loader: { '.css': 'empty' }, outfile: outMjs, logLevel: 'error',
   });
-  const { renderKapakHtml } = await import(`file://${outMjs}?t=${Date.now()}`);
-  writeFileSync(path.join(DIST, 'kapak.html'), renderKapakHtml(`/assets/${cssFile}`), 'utf8');
+  const mod = await import(`file://${outMjs}?t=${Date.now()}`);
+  const render = LINKEDIN ? mod.renderLinkedInKapakHtml : mod.renderKapakHtml;
+  writeFileSync(path.join(DIST, 'kapak.html'), render(`/assets/${cssFile}`), 'utf8');
 
   const server = createServer(async (req, res) => {
     const f = path.join(DIST, decodeURIComponent((req.url ?? '/').split('?')[0]));
@@ -68,10 +79,18 @@ async function main() {
     const b = kutu.getBoundingClientRect();
     return { sol: Math.round(b.left), sag: Math.round(b.right), ust: Math.round(b.top), alt: Math.round(b.bottom) };
   });
-  const mobilSol = (W - 640) / 2;
+  const mobilSol = (W - MOBIL_W) / 2;
   const mobilSag = W - mobilSol;
+  // LinkedIn'e özgü İKİNCİ ölçüm: profil fotoğrafı kapağın SOL ALT köşesini
+  // örtüyor. Kaba ama muhafazakâr kutu — kapağın sol %22'si ve alt %45'i.
+  const avatarSag = LINKEDIN ? W * 0.22 : 0;
+  const avatarUst = LINKEDIN ? H * 0.55 : H;
   console.log(`  güvenli kutu: x ${olcum.sol}–${olcum.sag}, y ${olcum.ust}–${olcum.alt}`);
   console.log(`  telefon kırpması: x ${mobilSol}–${mobilSag}  →  ${olcum.sol >= mobilSol && olcum.sag <= mobilSag ? 'İÇERİDE ✓' : 'TAŞIYOR ✗'}`);
+  if (LINKEDIN) {
+    const cakisma = olcum.sol < avatarSag && olcum.alt > avatarUst;
+    console.log(`  avatar bölgesi: x < ${Math.round(avatarSag)} ve y > ${Math.round(avatarUst)}  →  ${cakisma ? 'ÇAKIŞIYOR ✗' : 'UZAKTA ✓'}`);
+  }
 
   await browser.close();
   server.close();

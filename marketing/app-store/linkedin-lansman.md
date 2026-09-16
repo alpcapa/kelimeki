@@ -201,7 +201,19 @@ satırı). ⚠ `li` önekinin sınır karakteri kuralı bunu güvenli yapıyor:
 Hunisi. App Store indirmeleri bu hunide GÖRÜNMEZ — onlar App Store Connect
 → Analytics'te, ve LinkedIn'in kendi gönderi istatistikleri de ayrı.
 
-## 6 · Yapma listesi
+## 6 · Profil kapağı (16 Eylül 2026)
+
+Apple'ın beş karesinin **hiçbiri** LinkedIn kapağı için uygun değil:
+kişisel kapak **1584×396 (4:1)**, en yakını `Landscape Banner` 1280×720
+(16:9) ve onu 4:1'e kırpmak hem artwork'ü keser hem Apple'ın kurallarına
+aykırıdır. FB kapağı da başka orandadır (2.63:1).
+
+**Üretilen dosya:** `marketing/app-store/kelimeki-linkedin-kapak.png`
+(1584×396) — `npm run build && npm run generate-linkedin-cover`.
+Tasarım kararları ve ölçümleri: `docs/decisions/marketing-assets.md` →
+"LinkedIn kişisel profil kapağı".
+
+## 7 · Yapma listesi
 
 - ⚠ **Android'den söz etme.** Play production sürümü 13 Eylül'de gönderildi,
   bu dosya yazılırken hâlâ incelemede (`STORE_BADGES.googlePlay.url = null`).
@@ -216,7 +228,7 @@ Hunisi. App Store indirmeleri bu hunide GÖRÜNMEZ — onlar App Store Connect
 
 ---
 
-## 7 · Yayın kütüğü
+## 8 · Yayın kütüğü
 
 | Ne zaman | Ne | Ölçüm |
 |---|---|---|
