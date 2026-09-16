@@ -105,11 +105,34 @@ Ajan ölçemez, Console kullanıcıda.
 
 **Bekleyen BEŞ PR** — 15 Eyl'de bu satır "iki PR" diyordu, bayattı. Beşi de
 `mobile/app` ya da `mobile/kelimeki_core` taşıyor, yani her biri TEK BAŞINA
-`mobile-latest`i ezer ve TestFlight'a build gönderir
-(`--build-number=github.run_number` → her merge AYRI numara). CI'ları
+bir mobil derleme TETİKLER. ⚠ **"Tetikler" ile "TestFlight'a build gönderir"
+AYNI ŞEY DEĞİL** — bu satır 16 Eyl'e kadar öyle diyordu ve yanlıştı; sebebi
+aşağıdaki "Tur kaç mobil derleme demek" bölümünde ÖLÇÜLDÜ. CI'ları
 16 Eyl itibarıyla beşinde de yeşil.
 
-| PR | Parça | `mobile/TESTING.md` § | `main` (3a7b777) ile çakışma |
+**16 Eyl, ikinci ölçüm (freeze SÜRÜYOR — kullanıcı: inceleme kapanmadı).**
+Plan 3a7b777'ye göre yazılmıştı, `main` o gün 70c786f'e ilerledi (#567,
+yalnızca bu dosya). Ölçüm tekrarlandı:
+
+- **Çakışma haritası DEĞİŞMEDİ** — tablo 70c786f'e karşı da birebir geçerli
+  (`git merge-tree --write-tree`, her PR `main`'e karşı TEK TEK).
+- **CI beşinde de yeşil:** `Analiz + testler` · `Android APK` ·
+  `iOS (imzasız)` · `Bütçe` · Vercel. #547 ayrıca web CI'ın `test` +
+  `Mobil parite testleri` işlerini koşuyor (tek web kaynağına dokunan PR:
+  `src/utils/errorMessage.ts` + `web-ci.yml`), beşi de başarılı.
+- **#547'nin `CLAUDE.md` çakışması MEKANİK:** tek hunk, iki komşu tablo
+  satırı. Çözüm = birinci satır #547'nin metni (parite kapısı artık VAR,
+  "port ikizi `main`'de DEĞİL" uyarısı düşer) + ikinci satır `main`'inki
+  (`logGameFinish` satırı; onu sırası gelince #565 aynı şekilde yeniden
+  yazar).
+- ⚠ **Tek KAYNAK dosyası örtüşmesi: `auth_modal.dart` (#547 ∩ #562).**
+  İkili ölçümde otomatik birleşiyor, ama ikisi de aynı giriş penceresini
+  düzenliyor — birleşme temiz diye DOĞRU olduğu varsayılmasın, #562 merge
+  edilirken bu dosya elle okunmalı. Öteki dört PR hiçbir `.dart`/`.ts`
+  dosyasında örtüşmüyor.
+- **#557 × #565 ikilisi tamamen temiz** — aralarında tek çakışma yok.
+
+| PR | Parça | `mobile/TESTING.md` § | `main` (70c786f) ile çakışma |
 |---|---|---|---|
 | #547 — ham hata metinleri | 205 | 27 | `CLAUDE.md` · `parca-log.md` |
 | #554 — taş değiştirme sınırı | 206 | 27 ⚠ #547'yle AYNI numara | `parca-log.md` |
@@ -123,17 +146,70 @@ doğru diziyor. Bedeli § kaydırması: 547 → 27 kalır, 554 → 28, 557 → 2
 562 → 31. (#565'in çakışması önemsiz: #566 aynı §18 maddesini yeniden
 yazmış; çözüm `main`'in metni + #565'in YENİ maddesi.)
 
+#### Tur kaç mobil derleme demek? — BEŞ DEĞİL, BİR (16 Eyl'de ölçüldü)
+
+Soru: *"Sırayla merge demek 5 mobil tur mu demek?"* Hayır. Sebep
+`mobile-build.yml`in kendi kilidi:
+
+```yaml
+concurrency:
+  group: mobile-build-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+Beş merge'in beşi de `main`'e gidiyor → `github.ref` aynı → **beşi de AYNI
+gruba düşüyor**, yani her yeni merge bir öncekinin KOŞAN derlemesini iptal
+ediyor. `main`'deki son 15 koşu 17–27 dk sürmüş (tipik ~25 dk), yani birkaç
+dakika arayla merge edilen her koşu iptal yiyor.
+
+**Bu bir varsayım değil, yaşandı:** koşu **652, 10 dakika sonra
+`cancelled`** — koşu 654 dokuz dakika sonra başladığı için. (İptal edilen
+commit, bugün #557'de bekleyen "sahte *Sıra sende değil*" düzeltmesinin ilk
+turuydu.)
+
+| | Önceki plan ne ima ediyordu | ÖLÇÜLEN |
+|---|---|---|
+| Başlayan koşu | 5 | 5 |
+| **Tamamlanan** derleme | 5 | **1** (sonuncusu) |
+| **TestFlight'a giden build** | 5 ("her merge AYRI numara") | **1** |
+| Yanan koşu numarası | — | 4 tanesi boşa |
+
+TestFlight adımı `ios` işinin SON adımı ve `ios` de `needs: android` — yani
+iptal, TestFlight'a varmadan çok önce düşüyor. Testçilere beş çöp paket
+GİTMİYOR.
+
+⚠ **Ama `mobile-latest` ayrı bir hikâye:** `.apk`/`.aab` yüklemesi `android`
+işinde, koşunun ~9. dakikasında bitiyor — yani iptalden ÖNCE. Ara bir koşu
+TestFlight'a hiçbir şey göndermeden `mobile-latest`i EZEBİLİR. Tur sonunda
+son koşu tamamlandığı için doğru `.aab` üste yazılır, ama bu, aşağıdaki
+"`versionCode`'u DOĞRULA" uyarısını süs olmaktan çıkarıp ZORUNLU yapar.
+
+**Alternatif (SEÇİLMEDİ):** beş ayrı tam derleme istenseydi her merge
+arasında ~25 dk beklemek gerekirdi; kazancı her adımın ayrı derlenme kanıtı,
+bedeli 5 TestFlight numarası ve ~2 saat. Kullanıcı kararı (16 Eyl):
+**hızlı tur.**
+
 ⚠ **Her merge `main`'i ilerletir ve sıradakinin çakışmasını YENİDEN
 doğurur** — her dala önce `main` merge edilip çözülmeli, sonra merge.
-⚠ **Beşi TEK OTURUMDA arka arkaya.** `mobile-latest` beş kez ezilir ama
-yalnızca sonuncusu geçerlidir; yarım kalan bir tur ikinci bir senkron
-penceresi açar.
+⚠ **Beşi TEK OTURUMDA arka arkaya — "HIZLI TUR" (kullanıcı onayı, 16 Eyl).**
+Bu artık yalnızca bir hijyen tercihi değil, workflow'un kilidinin dayattığı
+şey: arka arkaya merge tam olarak BİR derleme ve BİR TestFlight build'i
+üretir (aşağıda ölçüldü). Yarım kalan bir tur ikinci bir senkron penceresi
+açar.
 ⚠ **Tur bitince ortaya 665'ten FARKLI bir paket çıkar.** App Store'da 665
 yayında olduğu için bu artık bir senkron güncellemesi değil, **yeni bir
 sürüm kaydı** demek (yukarıdaki "SÜRÜM SENKRONU").
-⚠ Çakışma iki dosyada yığılıyor: `parca-log.md` (hepsi dosyanın BAŞINA
-yazıyor) ve `mobile/TESTING.md` (§ numaraları). `ROADMAP.md` ve
+⚠ Çakışma ÜÇ dosyada yığılıyor: `parca-log.md` (hepsi dosyanın BAŞINA
+yazıyor), `mobile/TESTING.md` (§ numaraları) ve **`ROADMAP.md`**. Yalnızca
 `mobile/docs/klasor-yapisi.md` beşinde de otomatik birleşiyor.
+
+⚠ **Bu satır 16 Eyl'de DÜZELTİLDİ** — önce *"`ROADMAP.md` ve
+`klasor-yapisi.md` beşinde de otomatik birleşiyor"* diyordu. `ROADMAP.md`
+BUGÜNKÜ `main`'e karşı gerçekten temiz birleşiyor (beşi de), ama beşi de
+AYNI dosyaya yazdığından zincir ilerleyince çakışıyor: ikili ölçümde
+#547×#557, #554×#562, #554×#565 ve #562×#565 `ROADMAP.md`'de çakıştı.
+"`main`'e karşı temiz" ile "tur boyunca temiz" AYNI ŞEY DEĞİL — tablonun
+çakışma sütunu birinciyi ölçüyor.
 
 ⚠ **Play'e yüklemeden önce indirdiğin `.aab`nin kimliğini DOĞRULA** — yükleme
 ekranındaki `versionCode` beklediğin numara mı? `mobile-latest` paylaşılan ve
