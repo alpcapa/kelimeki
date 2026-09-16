@@ -713,6 +713,20 @@ export interface LeagueReward {
 export interface AdminMember {
   id: string;
   email: string | null;
+  /**
+   * E-posta onayının anı; `null` = HENÜZ ONAYLAMADI (16 Eylül 2026,
+   * ROADMAP #9). `auth.users.email_confirmed_at` istemciye kapalı, bu alan
+   * yalnızca `admin_list_members`in security-definer bağlamından geliyor.
+   *
+   * ⚠ **Pencere yapısı gereği 48 SAAT.** `sweep-unconfirmed-accounts` cron'u
+   * 48. saatte onaysız hesabı SİLİYOR (bkz. `docs/decisions/friends.md` →
+   * "Onaylanmamış hesap süpürmesi"), yani burada `null` görülen bir satır
+   * her zaman son iki günün kaydıdır. Canlıda ölçüldü (16 Eylül 2026):
+   * 56 hesabın 4'ü onaysız ve dördü de 1 günden yeni. Uzun süredir bekleyen
+   * bir "onaysız" listesi GÖRMEK bir arıza işareti olur — süpürme durmuş
+   * demektir.
+   */
+  email_confirmed_at: string | null;
   username: string | null;
   first_name: string | null;
   last_name: string | null;

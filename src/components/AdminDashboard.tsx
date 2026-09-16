@@ -698,6 +698,16 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         değeri gösterir. Girilmemiş alanlar <b>—</b> ile yazılır. Tablo yana kaydırılır.
         <br />
         <br />
+        <b>Onay</b> = e-postanın doğrulanıp doğrulanmadığı (<code>auth.users</code>). <b>Onaylı</b>{' '}
+        satırında üstüne gelince onay TARİHİ çıkar; <b>Bekliyor</b> turuncudur çünkü geçici bir
+        durumdur: onay maili 24 saat geçerli, ~20. saatte taze linkle bir hatırlatma gider ve{' '}
+        <b>48. saatte hesap SİLİNİR</b> (saatlik süpürme). Yani buradaki "Bekliyor" satırları her
+        zaman son iki günün kaydıdır — ölçüldü, 56 hesabın 4'ü onaysız ve dördü de 1 günden
+        yeniydi. <b>Eskimiş bir "Bekliyor" görürsen bu bir arıza işaretidir</b> (süpürme durmuş
+        demektir). Üstteki <b>"Yalnızca onaylanmamışlar"</b> düğmesi listeyi bunlara daraltır ve
+        aramayla BİRLİKTE çalışır; onaysız hesap yoksa düğme hiç çizilmez.
+        <br />
+        <br />
         <b>Koşullar</b> = Kullanım Koşulları/Gizlilik onayı; kayıt formunda ZORUNLUDUR, yani
         "Hayır" pratikte yalnızca onayın kayda hiç geçmediği çok eski hesaplarda görünür.
         <b> Pazarlama</b> isteğe bağlıdır ve sonradan geri çekilebilir — "Hayır" bir eksik
@@ -2161,6 +2171,10 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [engagementTotals, setEngagementTotals] = useState<AdminEngagementTotals | null>(null);
   const [aiBalance, setAiBalance] = useState<AdminAiBalanceRow[] | null>(null);
   const [memberSearch, setMemberSearch] = useState('');
+  // "Yalnızca onaylanmamışlar" (16 Eylül 2026, ROADMAP #9). Varsayılan
+  // KAPALI: normalde liste onaysızları da göstermeli, filtre bir teşhis
+  // aracı — canlıda ölçüldü, 56 hesabın yalnızca 4'ü onaysız.
+  const [onlyUnconfirmed, setOnlyUnconfirmed] = useState(false);
   const [sortKey, setSortKey] = useState<MemberSortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [feedback, setFeedback] = useState<AdminFeedbackRow[] | null>(null);
@@ -2384,11 +2398,16 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const filteredMembers = useMemo(() => {
     if (!members) return null;
     const q = trLower(memberSearch.trim());
-    const filtered = q
+    const searched = q
       ? members.filter(
           (m) => trLower(memberName(m)).includes(q) || trLower(memberNickname(m)).includes(q),
         )
       : members;
+    // Onay filtresi aramadan SONRA uygulanıyor — ikisi birlikte daraltır
+    // ("şu isim onaylamış mı?"), biri ötekini geçersiz kılmaz.
+    const filtered = onlyUnconfirmed
+      ? searched.filter((m) => m.email_confirmed_at === null)
+      : searched;
     return [...filtered].sort((a, b) => {
       const av = memberSortValue(a, sortKey);
       const bv = memberSortValue(b, sortKey);
@@ -2396,7 +2415,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
         typeof av === 'string' ? av.localeCompare(bv as string, 'tr') : (av as number) - (bv as number);
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [members, memberSearch, sortKey, sortDir]);
+  }, [members, memberSearch, onlyUnconfirmed, sortKey, sortDir]);
+
+  /** Onay filtresinin rozeti — kapalıyken de sayıyı gösterir (0 ise "yok"). */
+  const unconfirmedCount = useMemo(
+    () => (members ?? []).filter((m) => m.email_confirmed_at === null).length,
+    [members],
+  );
 
   function SortHeader({ label, sortKeyFor, className }: { label: string; sortKeyFor: MemberSortKey; className?: string }) {
     const active = sortKey === sortKeyFor;
@@ -2451,7 +2476,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     downloadCsv(
       csvFilename('kelimeki-uyeler'),
       [
-        'Ad', 'Soyad', 'Nickname', 'E-posta', 'Cinsiyet', 'Doğum Tarihi',
+        'Ad', 'Soyad', 'Nickname', 'E-posta', 'E-posta Onayı', 'Cinsiyet', 'Doğum Tarihi',
         'Fotoğraf', 'Koşullar Onayı', 'Pazarlama Onayı', 'Pazarlama Onay Tarihi',
         'E-posta Bildirimi', 'Kanal', 'Kaynak', 'Davet Eden', 'Katılma',
         'Son Giriş', 'Rol', 'Durum',
@@ -2461,6 +2486,10 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
         m.last_name ?? '',
         m.display_name ?? '',
         m.email ?? '',
+        // "CSV ekranda görüneni indirir" sözü: ekranda bir kolon varsa
+        // CSV'de de olmalı. Tarih de yazılıyor — tabloda yer yok ama
+        // dosyada bedava.
+        m.email_confirmed_at ? fmtDate(m.email_confirmed_at) : 'Bekliyor',
         m.gender ? memberGenderLabel(m) : '',
         m.birth_date ? memberBirthDateLabel(m) : '',
         m.avatar_url ? 'Var' : '',
@@ -3001,6 +3030,27 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                 className="w-full bg-bg border border-border rounded-md px-2.5 py-1.5 text-[11px] font-mono text-text outline-none focus:border-accent transition-colors"
               />
 
+              {/* "Yalnızca onaylanmamışlar" (16 Eylül 2026, ROADMAP #9).
+                  ⚠ Onaysız hesap YOKKEN düğme çizilmiyor: basılacak ama
+                  hiçbir şey yapmayacak bir kontrol "bozuk" hissi verir
+                  (`DeviceOsTable`teki "sürüm satırı yoksa ok da yok"
+                  kuralının aynısı). Sayı başlıkta yazıyor çünkü asıl bilgi
+                  ZATEN o — filtre yalnızca listeyi daraltıyor. */}
+              {unconfirmedCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setOnlyUnconfirmed((v) => !v)}
+                  aria-pressed={onlyUnconfirmed}
+                  className={`self-start text-[10px] font-mono uppercase tracking-[0.5px] border rounded-md px-2 py-1 active:opacity-70 transition-colors ${
+                    onlyUnconfirmed
+                      ? 'border-accent text-accent font-bold'
+                      : 'border-border text-muted'
+                  }`}
+                >
+                  Yalnızca onaylanmamışlar ({unconfirmedCount})
+                </button>
+              )}
+
               {members === null ? (
                 <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
               ) : members.length === 0 ? (
@@ -3009,7 +3059,11 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                 </div>
               ) : filteredMembers && filteredMembers.length === 0 ? (
                 <div className="text-xs font-mono text-muted text-center py-6">
-                  Aramayla eşleşen üye yok.
+                  {/* Filtre açıkken "aramayla eşleşen" demek yanlış olurdu —
+                      arama boş bile olabilir. */}
+                  {onlyUnconfirmed
+                    ? 'Bu aramada onaylanmamış üye yok.'
+                    : 'Aramayla eşleşen üye yok.'}
                 </div>
               ) : (
                 <div className="overflow-auto max-h-[60vh]">
@@ -3019,6 +3073,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         <SortHeader label="İsim" sortKeyFor="name" className={STICKY_HEAD_NAME_CELL} />
                         <SortHeader label="Nickname" sortKeyFor="nickname" />
                         <SortHeader label="E-posta" sortKeyFor="email" />
+                        {/* E-posta onayı (16 Eylül 2026, ROADMAP #9) —
+                            E-posta'nın hemen SAĞINDA, çünkü o adresin
+                            durumunu söylüyor. Sıralama anahtarı BİLEREK
+                            eklenmedi (aşağıdaki yedi-anahtar kararının
+                            aynısı); onaysızları toplamanın yolu sıralama
+                            değil, üstteki filtre. */}
+                        <th className={`py-2 pr-3 text-left font-normal ${STICKY_HEAD_CELL}`}>Onay</th>
                         {/* Kayıt formunun geri kalanı + izinler (21 Ağustos
                             2026, kullanıcı isteği). Sıralama BİLEREK
                             eklenmedi: bu kolonlar tarama/dışa aktarma için,
@@ -3073,6 +3134,24 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                           </td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{memberNickname(m)}</td>
                           <td className="py-2 pr-3 text-text whitespace-nowrap">{m.email ?? BOS}</td>
+                          {/* ⚠ `ConsentCell` KULLANILMIYOR ve bu bilinçli:
+                              orada "hayır" tarafı soluk (`text-muted`),
+                              çünkü Pazarlama/Fotoğraf'ta "hayır" bir eksik
+                              DEĞİL kullanıcının tercihi. Burada tersi —
+                              onaysız hesap 48 saat içinde SİLİNİYOR, yani
+                              bakılması gereken bir durum; turuncu yazıyor.
+                              Onaylıda tarih `title`da: kolon dar, ama
+                              "ne zaman onayladı" CSV'de ve burada hover'da
+                              var. */}
+                          <td className="py-2 pr-3 whitespace-nowrap">
+                            {m.email_confirmed_at ? (
+                              <span className="text-green font-bold" title={fmtDate(m.email_confirmed_at)}>
+                                Onaylı
+                              </span>
+                            ) : (
+                              <span className="text-orange font-bold">Bekliyor</span>
+                            )}
+                          </td>
                           <td className="py-2 pr-3 text-muted whitespace-nowrap">{memberGenderLabel(m)}</td>
                           <td className="py-2 pr-3 text-muted whitespace-nowrap">{memberBirthDateLabel(m)}</td>
                           <td className="py-2 pr-3 whitespace-nowrap">
@@ -3159,7 +3238,11 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <InfoHint id="uyeler" onOpen={setHint} />
                 </div>
                 <div className="text-[10px] font-mono text-muted text-right">
-                  {memberSearch.trim() && members
+                  {/* ⚠ Koşul ARAMAYA değil DARALTMAYA bakıyor: onay filtresi
+                      de listeyi kısaltıyor ve sayaç "Toplam N üye" demeye
+                      devam etseydi ekrandaki satır sayısıyla çelişirdi
+                      (16 Eylül 2026'da filtre eklenirken düzeltildi). */}
+                  {(memberSearch.trim() || onlyUnconfirmed) && members
                     ? `${filteredMembers?.length ?? 0} / ${members.length} üye`
                     : `Toplam ${members?.length ?? 0} üye`}
                 </div>

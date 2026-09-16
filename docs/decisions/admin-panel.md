@@ -785,3 +785,76 @@ aynı bilinçli bekleme deseni; grafiği geri getirmek tek bileşenlik iş.
 (`admin_friend_totals`/`admin_engagement_totals` parametresiz). Grafik
 varken bu ayrım görünürdü (grafik pencereli, kutular değil); grafik kalkınca
 görünmez oldu, bu yüzden `?` metinlerine AÇIKÇA yazıldı.
+
+## Üyeler tablosuna "Onay" kolonu + onaylanmamış filtresi (16 Eylül 2026)
+
+Kullanıcı isteği: *"üyeler tablosuna onay kolonu ekleyecektik"*. ROADMAP #9
+("onaylanmamış filtresi", 23 Ağustos 2026'da onaylanmış ama kapsam dışı
+bırakılmış) aynı işin öteki yarısıydı — filtre zaten bu kolon olmadan
+kurulamıyordu, ikisi birlikte kapandı. Maddenin tam metni ve kapanış kaydı:
+`docs/decisions/roadmap-arsiv.md`.
+
+### Kolon neden `ConsentCell` kullanmıyor
+
+Tablodaki öteki üç onay hücresi (`Koşullar`, `Pazarlama`, `E-posta
+Bildirimi`) `ConsentCell` ile çiziliyor: "evet" yeşil, "hayır" SOLUK
+(`text-muted`). O soluklaştırma bilinçli — orada "hayır" bir eksik değil,
+**kullanıcının tercihi**.
+
+Onay kolonunda durum tam tersi: onaysız hesap **48 saat içinde silinecek**,
+yani bakılması gereken geçici bir durum. `Bekliyor` bu yüzden TURUNCU
+(`text-orange`) ve `ConsentCell` bilerek kullanılmadı. Soluk bir "Hayır"
+tam da görülmesi gereken satırı gizlerdi.
+
+`Onaylı` tarafında onay TARİHİ `title`da duruyor (kolon dar); CSV'de ise
+sütun ya tarihi ya `Bekliyor` yazıyor.
+
+### Pencere yapısı gereği 48 SAAT — "boş liste" iyi haberdir
+
+`sweep-unconfirmed-accounts` 48. saatte onaysız hesabı siliyor (zincirin
+tamamı: `docs/decisions/friends.md` → "Onaylanmamış hesap süpürmesi").
+Dolayısıyla bu kolonda `Bekliyor` görülen her satır **son iki günün**
+kaydıdır.
+
+Ölçüldü (16 Eylül 2026): 56 hesabın 52'si onaylı, 4'ü onaysız ve **dördü de
+1 günden yeni**. Bu tesadüf değil, süpürmenin çalıştığının kanıtı —
+⚠ **eskimiş bir "Bekliyor" satırı görmek bir ARIZA işaretidir.** Bu cümle
+`?` metnine de yazıldı, çünkü kolonu okuyanın ilk refleksi "demek ki 4 kişi
+kayıp" olur; asıl okuma "süpürme ayakta".
+
+### Filtre — düğme yokken çizilmiyor
+
+"Yalnızca onaylanmamışlar (N)" arama kutusunun altında ve **aramayla
+BİRLİKTE** daraltıyor (önce arama, sonra onay) — "şu isim onaylamış mı?"
+sorusu ancak böyle sorulabiliyor.
+
+⚠ Onaysız hesap YOKKEN düğme hiç çizilmiyor: basılabilen ama hiçbir şey
+yapmayan bir kontrol "bozuk" hissi verir (`DeviceOsTable`teki *"sürüm satırı
+yoksa ok da yok"* kuralının aynısı). Sayı zaten düğmenin kendisinde.
+
+⚠ Alt sayacın koşulu da düzeltildi: eskiden yalnızca ARAMA doluyken
+`N / M üye` yazıyordu, filtre açıkken "Toplam N üye" demeye devam edip
+ekrandaki satır sayısıyla çelişirdi. Koşul artık aramaya değil DARALTMAYA
+bakıyor.
+
+⚠ **Sıralama anahtarı EKLENMEDİ** — ROADMAP #9'un kendi kararı ve 21 Ağustos
+2026'daki yedi-anahtar gerekçesiyle aynı: onaysızları toplamanın yolu
+sıralama değil, filtre.
+
+### ⚠ Beklenmeyen bulgu — drop+create `anon` grant'ini GERİ GETİRDİ
+
+ROADMAP #9 "dönüş tipi değişince drop+create + grant'leri elle geri kur"
+diyordu. Eksik olan şey bunun TERSİYDİ: canlıda drop+create sonrası ACL
+`{postgres, ANON, authenticated, service_role}` çıktı — oysa öncesinde
+`anon` YOKTU.
+
+Supabase yeni fonksiyonlara varsayılan olarak `anon`a da execute veriyor ve
+`revoke ... from public` **doğrudan verilmiş** bir grant'i düşürmüyor. Veri
+sızmazdı (fonksiyon girişte `is_admin()` kontrol ediyor) ama bu depo yüzeyi
+bilerek dar tutuyor (`revoke_anon_identity_leak` · `head_to_head_stats_revoke_anon`).
+Ayrı bir migration'la geri alındı ve ACL merge öncesiyle birebir aynı
+doğrulandı.
+
+**Ders (kök `CLAUDE.md`'ye de yazıldı):** dönüş tipi değişen her fonksiyonda
+drop+create'ten SONRA `proacl`i OKU. "Grant'leri geri kur" yetmiyor — geri
+GELEN bir grant de olabiliyor.

@@ -634,3 +634,41 @@ tablolar + üç grafiğin kaldırılması".
       (iOS ve Android ayrı ayrı) → ilgili platform serisi 1 artmalı. Hâlâ
       "Diğer"e gidiyorsa `data/games_api.dart` damgayı göndermiyordur. Bu
       maddeyi o sürüm turunda koş, öncesinde DEĞİL.
+
+## 9.18. Admin — Üyeler tablosunda "Onay" kolonu + filtre (16 Eylül 2026)
+
+ROADMAP #9'u kapatan tur. Sunucu tarafı canlıda doğrulandı (RPC yeni kolonu
+döndürüyor, ACL merge öncesiyle birebir aynı); aşağıdakiler gerçek
+istemcide görülmesi gerekenler. Kararlar: `docs/decisions/admin-panel.md` →
+"Üyeler tablosuna 'Onay' kolonu + onaylanmamış filtresi".
+
+- [ ] **"Onay" kolonu E-posta'nın hemen SAĞINDA.** Çoğu satır yeşil
+      **Onaylı** olmalı.
+- [ ] **"Onaylı" üstüne gelince (hover / uzun dokunuş) onay TARİHİ çıkıyor.**
+- [ ] **Onaysız satır TURUNCU "Bekliyor" yazıyor** — soluk gri DEĞİL. Gri
+      görüyorsan `ConsentCell`e geri dönülmüş demektir; o soluklaştırma
+      "kullanıcının tercihi" içindi, burada bakılması gereken bir durum var.
+- [ ] **"Yalnızca onaylanmamışlar (N)" düğmesi arama kutusunun altında** ve
+      N, turuncu satırların sayısıyla aynı olmalı.
+- [ ] **Düğme listeyi daraltıyor**; tekrar basınca eski hâline dönüyor.
+- [ ] **Arama ile BİRLİKTE çalışıyor:** bir isim ara + filtreyi aç → ikisi
+      birden uygulanmalı. Sonuç boşsa metin *"Bu aramada onaylanmamış üye
+      yok."* olmalı, *"Aramayla eşleşen üye yok."* DEĞİL.
+- [ ] **Alt sayaç daralmayı yansıtıyor:** filtre açıkken (arama boş olsa
+      bile) `N / M üye` yazmalı, "Toplam M üye" DEĞİL.
+- [ ] ⚠ **Onaysız hesap yokken düğme HİÇ çizilmemeli.** (Canlıda genelde
+      1-4 onaysız olur; hiç yoksa bu maddeyi doğrulamak için bekle, düğmeyi
+      "eksik" sayma.)
+- [ ] **CSV'de `E-posta Onayı` sütunu var** ve değeri ya onay tarihi ya
+      `Bekliyor`. CSV filtre/aramayla daralmış listeyi indirmeli.
+- [ ] **Sıralama başlığı EKLENMEDİ** — "Onay" tıklanabilir OLMAMALI (mevcut
+      yedi sıralama anahtarı korunuyor).
+- [ ] **`?` metni okunuyor:** 24 saat / ~20. saat hatırlatma / 48. saatte
+      silme zincirini ve "eskimiş Bekliyor bir arıza işaretidir" cümlesini
+      içermeli.
+
+### Yapısal sağlama (ayda bir bakılır)
+
+- [ ] **"Bekliyor" satırlarının hepsi son 48 SAATTEN olmalı.** Katılma
+      tarihi daha eski bir "Bekliyor" görürsen `sweep-unconfirmed-accounts`
+      cron'u durmuş demektir — kolonun asıl teşhis değeri bu.
