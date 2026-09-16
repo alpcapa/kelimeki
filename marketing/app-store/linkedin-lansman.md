@@ -250,3 +250,24 @@ yol **Safari'den masaüstü sitesi** oldu (sayfanın yönetici görünümü →
 **Kural: `Post`a basmadan önce kompozitörün üstündeki isme bak.** Kelimeki
 yazmıyorsa gönderme — yayınlandıktan sonra gönderinin yazarı
 DEĞİŞTİRİLEMEZ, tek çare silip yeniden paylaşmak.
+
+### ✅ `?ref=` lnkd.in'den SAĞ ÇIKIYOR — ölçüldü (16 Eylül 2026)
+
+LinkedIn gövdedeki her dış linki kendi kısaltıcısıyla (`lnkd.in/…`)
+değiştiriyor. Soru haklıydı: sorgu dizesi korunuyor mu? **Korunuyor** —
+yayından ~1 saat sonra `guest_visits` (TR saatleri):
+
+| Etiket | Farklı cihaz | Ne zaman |
+|---|---|---|
+| `li-sayfa` | 2 (1 masaüstü, 1 iOS) | 14:21 · 15:37 |
+| `li-profil` | 2 (ikisi masaüstü) | 14:53 · 15:25 |
+
+⚠ **Bu sayı ALT SINIR, üç sebeple:** `guest_visits` yalnızca oturum
+KAPALIYKEN yazılır (girişli ziyaret hiç satır düşürmez) · cihaz başına
+günde TEK satır · etiket İLK TEMASTA sabitlenir. Bir sonraki kampanyada
+"tıklama sayısı" diye okuma; "en az şu kadar farklı misafir cihaz" diye
+oku.
+
+⚠ Ajan bu ölçümü `lnkd.in`e bakarak yapamaz (oturuma kapalı) — **veritabanı
+üzerinden** yapılır, yukarıdaki gibi.
+
