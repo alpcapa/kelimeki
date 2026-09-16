@@ -207,3 +207,28 @@ Hunisi. App Store indirmeleri bu hunide GÖRÜNMEZ — onlar App Store Connect
   büyüklüğüne bakmıyor ama `#TURKCE` AYRI bir etikettir.
 - ⚠ **Aynı gün üç platforma aynı metni atma.** Instagram metni oraya,
   buradaki metin buraya; ortak olan yalnızca haberin kendisi.
+
+---
+
+## 7 · Yayın kütüğü
+
+| Ne zaman | Ne | Ölçüm |
+|---|---|---|
+| 16 Eyl 2026, ~14:42 | Gönderi **Kelimeki sayfasından** yayınlandı (Square Post 1080×1080 + gövdede iki link) | Ekrandan doğrulandı: yazar `Kelimeki`, kimlik doğru |
+| aynı tur | ⚠ **Sayfanın takipçi sayısı: 0** | Ekrandan okundu — sayfanın kendi dağıtımı YOK |
+
+⚠ **0 takipçi, §1'deki "kişisel profilden yeniden paylaş" adımını isteğe
+bağlı olmaktan çıkarıyor:** bugün gönderinin TEK dağıtım kanalı o. İkinci
+adım sayfanın yönetici görünümündeki *Invite connections* — bir sonraki
+gönderi sıfırdan başlamasın diye.
+
+### Kimlik tuzağı — ÖLÇÜLDÜ (16 Eylül 2026)
+
+iPad **uygulamasında** sayfa panelindeki `Start a post`, kompozitörü
+kişisel kimlikle açtı; gönderi `Alp Çapa` adına çıktı ve silindi. Çalışan
+yol **Safari'den masaüstü sitesi** oldu (sayfanın yönetici görünümü →
+`Start a post`), orada kimlik açıkça yazılı.
+
+**Kural: `Post`a basmadan önce kompozitörün üstündeki isme bak.** Kelimeki
+yazmıyorsa gönderme — yayınlandıktan sonra gönderinin yazarı
+DEĞİŞTİRİLEMEZ, tek çare silip yeniden paylaşmak.
