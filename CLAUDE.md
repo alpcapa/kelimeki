@@ -33,6 +33,7 @@ npm run verify-rematch-slots     # Rövanş kadrosu: ilk koltuk çağıran, YZ'l
 npm run verify-head-to-head      # Kafa kafaya oran çubuğu: üç dilim TAM 100 eder mi (kümülatif yuvarlama)
 npm run verify-fetch-my-games    # Oyun geçmişi: ağ hatası ↔ boş liste ayrımı (sahte Supabase ucu)
 npm run verify-device-labels     # Admin cihaz tabloları: model KODU → marka öneki + cihaz→OS sürümü ağacı (canlıdan alınmış gerçek kodlar)
+npm run verify-admin-groups      # Admin AÇILIR tabloları: `?ref=` → kanal öneki (fbi Facebook DEĞİL) + (platform, sürüm) ağacı ve sürümün SAYISAL sıralaması
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ leagueRank.ts
 npm run verify-league-points     # k-lig PUAN tablosu (seviyeye göre): league_points_for SQL ↔ leaguePoints.ts ↔ league_points.dart
 npm run verify-sql-engine-parity # motorun DÖRDÜNCÜ (SQL) kopyası ↔ src/ sabitleri ve hata metinleri
@@ -178,6 +179,7 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | Yeni kullanıcı verisi ya da görünürlük değişikliği | `TermsModal`/`PrivacyModal` |
 | Tanıtım senaryosu (`src/utils/tutorialScript.ts`), `TutorialGame.tsx`in metin/süreleri, `utils/onboarding.ts`in kapısı **ya da bağlamsal ipucu metinleri/sırası/tavanı** ya da motorun puan/vergi/çarpan kuralı | `npm run verify-tutorial-script` (CI'da) — tanıtım EKRANDA puan yazıyor, kural değişince metin sessizce bayatlar. **Port ikizi AYNI PR'da:** `mobile/app/lib/src/ui/tutorial/*` + `util/onboarding.dart`; `tutorial_parity_test.dart` web kaynağını okur (metin/sayı ayrışırsa web CI'ın `parite` işi düşer), `tutorial_script_test.dart` senaryoyu Dart motorunda oynatır |
 | Kullanıcıya hata metni gösteren YENİ bir `catch` | `friendlyErrorMessage` (`utils/errorMessage.ts` ↔ `util/error_message.dart`) — ham `err.message` EKRANA BASMA. 13 Eylül 2026'da ham bir 504 gövdesi (`{"message":"Gateway Timeout"}`) giriş penceresinde göründü, üstelik App Store ekran kaydı çekilirken. Kapı: `npm run verify-error-messages` (CI'da). ⚠ **Port ikizi 14 Eylül 2026'da `main`'de DEĞİL** — mobil yarısı inceleme dondurması yüzünden ayrı bir PR'da bekliyor, yani parite kapısı (`error_message_parity_test.dart`) henüz yok; `errorMessage.ts`i değiştiren o PR'ı da güncellemeli. ⚠ Supabase hatasını yeniden fırlatırken `code`'u DÜŞÜRME (`rethrowSupabase`, `api.ts`) — "sunucunun Türkçe reddi" (P0001) ile "makine hatası" ayrımı ona dayanıyor. Admin paneli bilerek dışarıda |
+| `logGameFinish` (`src/lib/api.ts`) | Port ikizi `mobile/app/lib/src/data/games_api.dart` — iki istemci AYNI tabloya (`game_finishes`) yazıyor, biri bir alanı atlarsa admin panelinde o platform sessizce "Diğer"e düşer. ⚠ **`platform` alanının port yarısı 16 Eylül 2026'da `main`'de DEĞİL** (kullanıcı kararı: *"Mobile dokunma"*, inceleme dondurması) — `claude/oyun-bitis-platform-port` dalında bekliyor; bu dosyayı değiştiren o PR'ı da güncellemeli |
 | `App.tsx`'teki joker/mesaj/raf desenleri | `OnlineGameScreen.tsx` (ikisi deseni paylaşıyor) |
 | `Setup.tsx`'in "devam eden oyun" kartı | `LiveGamesTab.tsx`'in aktif oyun kartı — ikisi AYNI düzeni paylaşıyor ve kullanıcı onları iki sekmede yan yana görüyor (2 Eylül 2026: biri düzeltilip öteki unutuldu, kart ayrıştı; port ikizi `ui/devam_eden_govde.dart`) |
 | Bir Dart↔Kotlin/Swift MethodChannel adı ya da bildirim kanalı kimliği | Parite testi (`notification_*_parity_test.dart`) — derleyici görmez, uyuşmazlık SESSİZ arızadır |
@@ -589,7 +591,7 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, aiLevel, tutorialScript, scoreLine, deviceLabels, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan

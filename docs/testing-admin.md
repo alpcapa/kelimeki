@@ -218,9 +218,16 @@ gerçek admin JWT'siyle doğrulandı (yetki matrisi, dönen değerlerin bağıms
 ölçümle birebir eşleşmesi); aşağıdakiler gerçek istemcide görülmesi
 gerekenler.
 
-- [ ] **Grafik başlığı "Oyun Süresi (Medyan)" olmalı** — "Ortalama Oyun
+> ⚠ **16 Eylül 2026: süre artık GRAFİK DEĞİL, dört KUTU.** Aşağıdaki
+> legend/eğri/CSV maddeleri o tarihten itibaren GEÇERSİZ; güncel liste
+> **9.17**'de. Bölüm, atıflar kırılmasın diye olduğu gibi bırakıldı (dosyanın
+> kendi kuralı) — medyan/p90 ve kaynak filtresi maddeleri kutularda da
+> geçerli, yalnızca "grafikte" diyen cümleleri "kutuda" diye oku.
+
+- [ ] ~~**Grafik başlığı "Oyun Süresi (Medyan)" olmalı** — "Ortalama Oyun
       Süresi" YAZMAMALI. Legend'da üç seri açık (**Genel**, **Tek Oturumda**,
-      **Günlere Yayılan**) + **Uzun kuyruk (p90)** KAPALI gelmeli.
+      **Günlere Yayılan**) + **Uzun kuyruk (p90)** KAPALI gelmeli.~~
+      (16 Eyl 2026: legend yok, dört kutu — bkz. 9.17)
 - [ ] **Sayı gerçekten düştü mü.** Yerel/tek oturum kovasında değer saatler
       değil DAKİKALAR mertebesinde olmalı (ölçüm anında ~18 dk; eski ortalama
       ~247 dk gösteriyordu). Saatlerce süren bir değer görürsen ortalamaya
@@ -294,14 +301,13 @@ Grafik/tablo altındaki uzun açıklama paragrafları kaldırılıp tek bir popu
 taşındı. Ekranda kalan tek "açıklama" aktivasyonun DAĞILIM satırı — o bir
 açıklama değil veri.
 
-- [ ] **Her CSV'nin yanında bir `?` var — 11 yer.** 6 grafik (Yeni Üye/Ziyaret,
-      Aktif Oyuncu, Arkadaşlık, Oyun Sayısı, Oyun Süresi, Beğeni/Paylaşma) +
-      3 tablo (Retention, Kaynak Hunisi, Cihaz) + 2 liste (Üyeler, Geri
-      Bildirim). `?` her zaman "CSV İndir"in SOLUNDA.
-- [ ] **CSV'si olmayan iki panelde `?` başlığın yanında:** "Aktivasyon" ve
-      "YZ Dengesi". Bu ikisi CSV'ye bağlansaydı açıklamaları kaybolurdu.
-      Toplam 13 rozet; her birinin `HINTS`te kendi metni var, ikisi aynı
-      metni göstermemeli.
+- [ ] **Her CSV'nin yanında bir `?` var.** `?` her zaman "CSV İndir"in
+      SOLUNDA. ⚠ **Sayı 16 Eylül 2026'da değişti:** üç grafik (Arkadaşlık,
+      Oyun Süresi, Beğeni/Paylaşma) kaldırıldı, rozetleri BAŞLIĞIN YANINA
+      geçti — güncel döküm 9.17'de.
+- [ ] **CSV'si olmayan panellerde `?` başlığın yanında.** Bu paneller CSV'ye
+      bağlansaydı açıklamaları kaybolurdu. Her rozetin `HINTS`te kendi metni
+      var, ikisi aynı metni göstermemeli.
 - [ ] **`?` bir DAİRE, elips değil** ve bulunduğu satırı büyütmemeli — kontrol
       satırının yüksekliği "CSV İndir"in tek başına olduğu hâlle aynı kalmalı.
 - [ ] **Popup açılıyor ve kapanıyor.** Dokun → başlık + metin; "Kapat" ve
@@ -543,3 +549,88 @@ sayıları o turun ÇIKTISI.
       bitirince yalnızca parantezdeki ADET artmalı, BENZERSİZ CİHAZ sayısı
       DEĞİL. (Port damgalamayı eklerse bu madde ve `admin-panel.md`'deki not
       birlikte güncellenir.)
+
+
+## 9.17. Admin — açılır tablolar + üç grafiğin kaldırılması (16 Eylül 2026)
+
+Yedi maddelik bir tur (kullanıcı isteği). Sunucu tarafı canlıda doğrulandı
+(geriye doldurma sayıları, dört serinin toplamının "Bitirilen"e eşitliği,
+`grouping sets` ağacı); aşağıdakiler **gerçek istemcide** görülmesi
+gerekenler. Kararların tamamı: `docs/decisions/admin-panel.md` → "Açılır
+tablolar + üç grafiğin kaldırılması".
+
+### Büyüme > Kullanıcı
+
+- [ ] **Kaynak Hunisi artık KANAL satırları gösteriyor** — "Instagram",
+      "Facebook", "Arkadaş Daveti", "Direkt", "Bilinmiyor". Ham `instagram`/
+      `ig-bio`/`fb-reel` satırları ÜST düzeyde GÖRÜNMEMELİ.
+- [ ] **Satıra dokun → ham etiketler açılıyor** (ok 180° dönüyor). Birden çok
+      etiketi olmayan kanalda **ok HİÇ çizilmemeli** (ör. "Arkadaş Daveti") —
+      açılınca aynı sayıyı ikinci kez yazardı.
+- [ ] **Kanalın sayısı alt satırların toplamı.** Facebook'u aç: alt satırların
+      "Gelen" değerleri üstteki kanal satırını vermeli.
+- [ ] **% / Sayı düğmesi açık satırlarda da çalışıyor.** Yüzdeye çevir → hem
+      kanal hem ham etiket satırları yüzdeye dönmeli, "Gelen" sütunu genel
+      toplamın payını göstermeli.
+- [ ] **CSV DÜZ iniyor:** ilk sütun "Kanal", ikinci "Kaynak"; her kanal için
+      bir `(kanal toplamı)` satırı + ham etiketleri. Tabloyu katlamak veriyi
+      GİZLEMEK değildi.
+- [ ] **Sürüm Dağılımı da açılır oldu** — üst satırlar "Web / Android / iOS /
+      Uygulama (web)". Android'i aç: sürümler **yeniden eskiye** sıralı
+      (1.1.0 → 1.0.9 → 1.0.0), metin sırasıyla DEĞİL (1.0.10, 1.0.9'un
+      ÜSTÜNDE olmalı). Web'in tek satırı **—** olduğundan oku OLMAMALI.
+- [ ] **Başlık "Bildirim İzni Verenler" oldu** ("Kurulu Sürümler — Kişi"
+      YAZMAMALI). `?` metni kapsamı açıkça söylemeli: yalnızca giriş yapmış
+      VE bildirim izni vermiş kişiler.
+- [ ] ⚠ **TOPLAM, alt satırların toplamı OLMAK ZORUNDA DEĞİL** ve bu bir hata
+      değil: değerler benzersiz KİŞİ, iki telefonu olan biri iki satırda
+      birden görünür. Platform satırı ve TOPLAM sunucuda ayrı ayrı sayılıyor.
+      Sağlama: TOPLAM asla satırların toplamından BÜYÜK olmamalı.
+- [ ] **Arkadaşlık GRAFİĞİ yok, dört kutu duruyor** ("Toplam Arkadaşlık",
+      "Bekleyen İstek", "Oluşturulan Davet Linki", "Davetle Katılan Üye") ve
+      `?` rozeti başlığın yanında.
+- [ ] **Kutular periyot kombosuna BAĞLI DEĞİL** — periyodu değiştir, dört sayı
+      da AYNI kalmalı (tüm zamanlar). `?` metni bunu söylemeli.
+
+### Büyüme > Oyun
+
+- [ ] **Oyun Sayısı grafiğinde altı seri var:** Bitirilen, Teslim, Web, iOS,
+      Android, Diğer. Açılışta yalnızca **Bitirilen** açık olmalı.
+- [ ] **Dört platform serisi "Bitirilen"e TAM toplanıyor.** Dördünü birden aç,
+      bir kovanın değerlerini topla → "Bitirilen"i vermeli. Tutmuyorsa sunucu
+      tarafı bozulmuştur.
+- [ ] **"Teslim" kırılmadı** — platform serileri açıkken bile tek bir Teslim
+      çizgisi olmalı.
+- [ ] **Geçmiş boş DEĞİL.** 17 Ağustos 2026 sonrası kovalarda Web/Android
+      gerçek değerler göstermeli (geriye doldurma çalıştı). "Diğer" eski
+      kovalarda baskın olacak — bu beklenen.
+- [ ] **Oyun Süresi GRAFİĞİ yok, DÖRT kutu var:** Genel · Tek Oturumda ·
+      Günlere Yayılan · Uzun kuyruk (p90). `?` rozeti başlığın yanında (CSV
+      yok — YZ Dengesi ile aynı desen).
+- [ ] **Kutular pencerenin TAMAMINI ölçüyor, son kovayı değil.** Periyodu
+      uzat/kısalt → değerler değişmeli. Sağlama: **p90 her zaman Genel'in
+      ÜSTÜNDE** olmalı.
+- [ ] **Kutuların altında "Pencerede biten oyun: N" yazıyor** ve N, Oyun
+      Sayısı grafiğindeki "Bitirilen" toplamıyla uyumlu olmalı.
+- [ ] **Hiç biten oyun olmayan aralıkta "Bu aralıkta biten oyun yok." çıkıyor**
+      — kutularda 0 dk YAZMAMALI.
+- [ ] **Kaynak/kapsam/oyuncu sayısı komboları kutuları da değiştiriyor**
+      (grafikle AYNI filtreler). Değişmiyorsa özet RPC'sine parametreler
+      geçmiyor demektir.
+- [ ] **Beğeni/Paylaşma GRAFİĞİ yok, iki kutu duruyor** ve `?` başlığın
+      yanında. Kutular yine periyottan bağımsız (tüm zamanlar).
+
+### Telemetri
+
+- [ ] **Web'den bir oyun bitir** → "Web" serisi o günün kovasında **1
+      artmalı**. Bu, merge'den hemen sonra koşulabilir.
+- [ ] **Misafirken (web) bir oyun bitir** → "Diğer" artmalı, Web DEĞİL. Bu
+      yapısal: misafirin `games` satırı hiç açılmıyor.
+- [ ] ⚠ **Uygulamadan biten oyunlar ŞU AN "Diğer"e düşüyor ve bu BEKLENEN.**
+      Portun `logGameFinish`i damgayı henüz yazmıyor — o değişiklik inceleme
+      dondurması yüzünden ayrı bir PR'da (`claude/oyun-bitis-platform-port`).
+      **iOS/Android serileri bugün yalnızca Canlı oyunları sayıyor.**
+- [ ] **O PR merge edilip yeni paket çıkınca:** uygulamadan bir oyun bitir
+      (iOS ve Android ayrı ayrı) → ilgili platform serisi 1 artmalı. Hâlâ
+      "Diğer"e gidiyorsa `data/games_api.dart` damgayı göndermiyordur. Bu
+      maddeyi o sürüm turunda koş, öncesinde DEĞİL.

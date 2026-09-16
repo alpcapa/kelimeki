@@ -34,6 +34,7 @@ import type {
   AdminFriendActivityPoint,
   AdminFriendTotals,
   AdminGameActivityPoint,
+  AdminGameDurationSummary,
   AdminGameScope,
   AdminGameSourceType,
   AdminAppVersionRow,
@@ -315,6 +316,17 @@ export async function logGameFinish(
       multi_session: multiSession,
       ended_by_surrender: endedBySurrender,
       utm_source: getStoredUtmSource() ?? 'direkt',
+      // 16 Eylül 2026: admin panelindeki "Oyun Sayısı" grafiğinin platform
+      // kırılımı. `utm_source`/`anon_id` ile aynı gerekçe — ÇAĞIRANDAN
+      // değil buradan okunuyor, fonksiyonun üç çağrı yeri var ve birini
+      // atlamak sessizce "Diğer" kovasını şişirirdi.
+      //
+      // ⚠ PORT İKİZİ `main`'DE DEĞİL (16 Eylül 2026, kullanıcı kararı:
+      // *"Mobile dokunma"* — inceleme dondurması). `games_api.dart`in aynı
+      // satırı AYRI bir PR'da bekliyor; o merge edilene kadar app'ten biten
+      // her oyun sunucuda "Diğer" kovasına düşer. Bu dosyayı değiştiren o
+      // PR'ı da güncellemeli (`errorMessage.ts` ile aynı durum).
+      platform: CLIENT_PLATFORM,
       ...(finishedAtMs != null
         ? { created_at: new Date(finishedAtMs).toISOString() }
         : {}),
@@ -2294,6 +2306,38 @@ export async function fetchAdminGameActivitySeries(
     rethrowSupabase(error);
   }
   return (data as AdminGameActivityPoint[]) ?? [];
+}
+
+/**
+ * Aynı pencerenin süre ÖZETİ — tek satır (yalnızca admin — Büyüme > Oyun).
+ * Parametreler `fetchAdminGameActivitySeries` ile BİREBİR aynı: iki sayı aynı
+ * ekranda yan yana duruyor.
+ *
+ * ⚠ **Bu, serinin son kovası ya da kova medyanlarının ortalaması DEĞİL** —
+ * medyanlar toplanamaz, o yüzden sunucuda ayrı bir sorgu var. 16 Eylül
+ * 2026'da "Oyun Süresi" grafiği kutulara çevrilirken (kullanıcı isteği)
+ * eklendi; grafik olmadan pencerenin gerçek medyanını verecek başka bir yol
+ * yoktu.
+ */
+export async function fetchAdminGameDurationSummary(
+  periods: number,
+  granularity: AdminActivityGranularity,
+  scope: AdminGameScope,
+  playerCount: number | null,
+  source: AdminGameSourceType,
+): Promise<AdminGameDurationSummary | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.rpc('admin_game_duration_summary', {
+    p_periods: periods,
+    p_granularity: granularity,
+    p_scope: scope,
+    p_player_count: playerCount,
+    p_source: source,
+  });
+  if (error) {
+    rethrowSupabase(error);
+  }
+  return ((data as AdminGameDurationSummary[]) ?? [])[0] ?? null;
 }
 
 /**

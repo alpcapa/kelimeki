@@ -181,6 +181,7 @@ src/
 │   ├── tutorialScript.ts # tanıtımın senaryosu: 4 sahne + rakibin 4 cevabı, senaryolu torba/raf, beklenen puanlar (npm run verify-tutorial-script kilitler)
 │   ├── visitTracking.ts # anonim misafir ziyaret kimliği, cihaz/standalone tespiti, UTM kaynağı
 │   ├── deviceLabels.ts # admin cihaz tablolarının saf etiketleyicileri: model KODUNDAN marka (SM- → Samsung), platform/OS sürümü etiketleri + iki açılır ağaç (marka→model, cihaz→OS sürümü) (npm run verify-device-labels kilitler)
+│   ├── adminGroups.ts  # admin AÇILIR tablolarının gruplayıcıları: `?ref=` etiketi → kanal (ig-bio → Instagram, fbi → Diğer) ve (platform, sürüm) ağacı + sürümün SAYISAL sıralaması (npm run verify-admin-groups kilitler)
 │   ├── platform.ts     # bu istemcinin platformu ('web') — telemetri, tek kaynak
 │   ├── offlineNotice.ts # sunucuya ulaşılamadığında gösterilen metinler + ağ hatası tespiti (Flutter portuyla testli olarak senkron)
 │   ├── shareBoardImage.ts # bir DOM düğümünü (tahta önizlemesi) paylaşılabilir PNG'ye çevirir (html-to-image)

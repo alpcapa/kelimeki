@@ -115,6 +115,17 @@ jobs:
       # Playwright'a gerek yok, saniyeler sürüyor — lint'in hemen yanında.
       - run: npm run verify-remaining-tiles
 
+      # Admin panelinin AÇILIR tablolarının gruplama kuralları (16 Eylül
+      # 2026): `?ref=` etiketi → kanal, (platform, sürüm) → ağaç. Etiketlerin
+      # merkezî bir kaydı YOK, kural önek-bazlı — yani "yeni etiket sessizce
+      # Instagram sayıldı" ya da "Diğer'e düşmesi gerekeni yuttu" gerilemesini
+      # `tsc` GÖREMEZ. Vakaların tamamı canlıdan alınmış gerçek etiketler.
+      # Kardeşi `verify-device-labels` de (aynı sınıf kural: model kodu →
+      # marka) buraya aynı gerekçeyle eklendi — 11 Eylül 2026'da yazılmış ama
+      # CI'a hiç bağlanmamıştı, yani kimse koşmuyordu.
+      - run: npm run verify-admin-groups
+      - run: npm run verify-device-labels
+
       # "Oynayarak öğren" tanıtımının senaryosu (7 Eylül 2026): koordinatlar,
       # kelimeler ve EKRANDA YAZAN PUANLAR gerçek motorda oynatılarak
       # doğrulanır. Bu adım olmadan motordaki bir kural değişikliği (çarpan,
