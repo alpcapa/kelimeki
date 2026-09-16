@@ -3,6 +3,26 @@
 **Görseller:** Apple Marketing Tools'un "ilk sürüm" banner'ları (kullanıcı
 indirdi). **Kanal:** Instagram, organik. **Amaç:** App Store indirmesi.
 
+### Eldeki beş kare — hangisi nereye
+
+| Dosya | Ölçü | Oran | Nereye |
+|---|---|---|---|
+| **Square Post** | 1080×1080 | 1:1 | ✅ **Instagram feed** (gönderinin 1. karesi) |
+| **Story Post** | 1080×1920 | 9:16 | ✅ **Instagram story** |
+| Portrait Banner | 720×1280 | 9:16 | ❌ Instagram'a GİRMEZ — feed 4:5'ten (0.8) dar kareyi kırpar, story'de zaten Story Post daha yüksek çözünürlüklü |
+| Landscape Banner | 1280×720 | 16:9 | ❌ Instagram değil — X/YouTube/site kapağı |
+| Link Card Preview | 1200×628 | 1.91:1 | ❌ Instagram değil — link önizleme karesi (LinkedIn/Facebook paylaşımı) |
+
+⚠ **Feed'e Portrait Banner'ı koyma.** Instagram'ın izin verdiği en dar feed
+oranı 4:5; 9:16'lık kare ya kırpılır (App Store rozeti ya da logo gider)
+ya da beyaz şeritlerle küçülür. Apple'ın artwork'ünü kırpmak zaten yasak.
+
+**Carousel seçeneği (önerilen):** 1. kare Apple'ın Square Post'u (haber),
+2–4. kareler Ağustos kampanyasının `marketing/sponsored-2026-08/
+kelimeki-02…05.png` kareleri (oyunun mekaniğini anlatanlar). Hepsi 1080×1080,
+yani oran tutarlı. Tek kare de yeterli; carousel "bu oyun tam olarak ne"
+sorusunu kapatıyor, Apple'ın karesi tek başına kapatmıyor.
+
 ⚠ **Banner'lara DOKUNMA.** Apple'ın ürettiği bu görseller tescilli
 artwork: kırpma, renk/oran değiştirme, üstüne yazı/logo bindirme yasak.
 App Store rozeti zaten görselin İÇİNDE — ikinci bir rozet ekleme
@@ -55,6 +75,10 @@ ikinci satırda. Emoji'li liste tarama için; her satır bir itiraz kapatıyor
 > Kelimeki artık App Store'da 🎉
 > Kelime kur, bölgeni büyüt, tahtaya hükmet.
 > ⬇️ Link sticker: App Store
+
+Story karesi (1080×1920) Apple'ın **Story Post**'u. **Link sticker**'ı orta-alt
+bölgeye koy — üstteki ~250 px'i profil şeridi, alttaki ~250 px'i yanıt kutusu
+örtüyor; rozetin ya da logonun üstünü kapatma.
 
 Story'ye **Link sticker** koy — story'de bio'ya gitmeden doğrudan
 App Store'a götüren tek yol bu.
