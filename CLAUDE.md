@@ -434,20 +434,31 @@ kalmaz.
 ⚠ **İKİNCİ bir ölçü var: EN BÜYÜK BÖLÜM (15 Eylül 2026).** `reference`
 sınıfında dosya boyutu VEKİL bir sayıdır — kimse baştan sona okumaz, grep
 bir bölüme düşürür ve okunan o bölümdür. Betik bu yüzden her `reference`
-dosyasının en büyük `##` bloğunu da ölçüyor ve **40 KB**'ı aşanı yazdırıyor.
-Bu bir UYARI, kapı DEĞİL (CI'ı düşürseydi ilgisiz her PR'ı bir doküman
-ameliyatına rehin alırdı) ve **ilacı bölmek değil, bloğa ALT BAŞLIK
+dosyasının en büyük **yaprak bölümünü** de ölçüyor ve **40 KB**'ı aşanı
+yazdırıyor. Bu bir UYARI, kapı DEĞİL (CI'ı düşürseydi ilgisiz her PR'ı bir
+doküman ameliyatına rehin alırdı) ve **ilacı bölmek değil, bloğa ALT BAŞLIK
 koymak** — dosya aynı kalır, grep'in düştüğü parça küçülür.
 
-Ölçüm (15 Eylül 2026), gevşetmenin gerekçesi de bu: `roadmap-arsiv.md`
-235 KB ama 29 bölüme dağılmış, ortanca bölüm **5 KB**; buna karşılık
-"bütçe içinde" görünen `admin-panel.md` 123 KB'ın **111 KB**'ı tek bir
-blok. Kontrol ikisini de dosya boyutundan yargılıyordu ve ikisinde de
-yanılıyordu. `reference` bandı bu yüzden 260/400'e çıkarıldı (400 KB ≈
-100K token) — ama gevşetme TEK BAŞINA yapılmadı: sınıra çarpınca sınırı
-yükseltmek kontrolü süse çevirir, o yüzden karşılığında bölüm ölçüsü
-eklendi. `frozen` bu ölçünün DIŞINDA (o ciltlerin başlığı baştan sona
-okumayı zaten yasaklıyor).
+`reference` bandı aynı gün 260/400'e çıkarıldı (400 KB ≈ 100K token) ama
+gevşetme TEK BAŞINA yapılmadı: sınıra çarpınca sınırı yükseltmek kontrolü
+süse çevirir, o yüzden karşılığında bu bölüm ölçüsü eklendi. `frozen` bu
+ölçünün DIŞINDA (o ciltlerin başlığı baştan sona okumayı zaten yasaklıyor).
+
+⚠ **Ölçü 16 Eylül 2026'da DÜZELTİLDİ — "yaprak" kelimesi bedava değil.**
+İlk sürüm yalnızca `## ` başlıklarına bölüyordu, yani reçetenin kendisi
+(`###` ekle) yazdırılan sayıyı **bir bayt bile** değiştirmiyordu. Sonuç:
+uyarıyı temizleyecek tek eylem kuralın yasakladığı şeydi (bölmek), uyarı
+bu yüzden sürekliydi ve sekiz dosyalık sabit bir gürültü duvarına dönüştü
+(kullanıcı: *"Sürekli dosya bölme uyarısı mantıklı değil"*). Ölçü artık
+`##`'den `######`'ya kadar HER seviyede kesiyor — grep isabette seni en
+yakın başlıktan sonraki parçaya bırakır, o başlık hangi seviyede olursa
+olsun. Kod çiti (```) içindeki `# ...` satırı başlık sayılmaz.
+
+**Ders, yeni bir ölçü eklerken:** ölçünün kestiği şey ile reçetenin
+değiştirdiği şey AYNI olmalı. Değilse kontrol bir iş emri değil, sabit bir
+gürültü üretir — ve gürültü okunmaz. Düzeltme tek başına iki yanlış
+pozitifi temizledi (`live-game.md` 52 → 24 KB, `local-game-persistence.md`
+41 → 38 KB: ikisinde alt başlık ZATEN vardı, ölçü onları görmüyordu).
 
 ⚠ **Alt sınır da var (7 Eylül 2026):** betik 0 baytlık her `.md`'yi ve
 tabanının altına düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki

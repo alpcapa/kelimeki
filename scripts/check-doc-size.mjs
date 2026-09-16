@@ -131,11 +131,41 @@ function walk(dir, out = []) {
 // gürültüden başka bir şey değil).
 const BOLUM_UYAR = 40 * KB;
 
+// ⚠ 16 Eylül 2026 — ÖLÇÜ DÜZELTİLDİ: yalnızca `## ` sayılıyordu.
+// Betiğin kendi reçetesi "ilaç bölmek değil ALT BAŞLIK" diyordu, ama ölçü
+// `###`/`####` başlıklarını HİÇ görmediğinden alt başlık eklemek yazdırdığı
+// sayıyı bir bayt bile değiştirmiyordu. Yani uyarıyı temizleyecek tek eylem,
+// kuralın açıkça yasakladığı şeydi (bölmek) — uyarı bu yüzden sürekliydi ve
+// sekiz dosyalık sabit bir gürültü duvarına dönüşmüştü (kullanıcı, 16 Eylül
+// 2026: *"Sürekli dosya bölme uyarısı mantıklı değil"*).
+//
+// Doğrusu YAPRAK bölüm: grep bir isabette seni EN YAKIN başlıktan sonraki
+// parçaya bırakır, o başlık hangi seviyede olursa olsun. Ölçü artık `##`'den
+// `######`'ya kadar her seviyede kesiyor. Düzeltme tek başına iki yanlış
+// pozitifi temizledi (live-game.md 52 → 24 KB, local-game-persistence.md
+// 41 → 38 KB — ikisinde alt başlık ZATEN vardı, ölçü onları görmüyordu).
+//
+// ⚠ Kod çiti (```) içindeki `# ...` satırı başlık DEĞİL, kabuk yorumudur —
+// eski ölçü de bunu gözden kaçırıyordu. Çit takibi bu yüzden zorunlu.
 function enBuyukBolum(mutlakYol) {
   const metin = readFileSync(mutlakYol, 'utf8');
-  // Bölüm = bir `## ` başlığından bir sonrakine kadar. İlk başlıktan
-  // öncesi (preamble) de bir parça sayılır — o da okunuyor.
-  const parcalar = metin.split(/(?=^## )/m);
+  const parcalar = [];
+  let cur = [];
+  let cit = null; // açık kod çitinin karakteri (` ya da ~)
+  for (const satir of metin.split('\n')) {
+    const c = satir.match(/^ {0,3}(`{3,}|~{3,})/);
+    if (c) {
+      if (!cit) cit = c[1][0];
+      else if (satir.trimStart().startsWith(cit)) cit = null;
+    }
+    if (!cit && /^#{2,6}\s/.test(satir)) {
+      parcalar.push(cur.join('\n'));
+      cur = [satir];
+    } else {
+      cur.push(satir);
+    }
+  }
+  parcalar.push(cur.join('\n'));
   return parcalar.reduce((enb, p) => Math.max(enb, Buffer.byteLength(p, 'utf8')), 0);
 }
 
