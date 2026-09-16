@@ -137,6 +137,34 @@ export const STORE_BADGES: StoreBadge[] = [
   },
 ];
 
+/**
+ * Yayındaki mağazaların Türkçe adı, bulunma ekiyle — "App Store'da",
+ * "Google Play'de", "App Store ve Google Play'de"; hiçbiri yayında değilse
+ * `null`.
+ *
+ * ⚠ **Metin yazan her yüzey bunu ÇAĞIRSIN, cümleyi elle yazmasın.** Gerekçe
+ * 16 Eylül 2026'da ölçüldü: karşılama katmanının SSS'i *"uygulamalarımız …
+ * inceleme sürecinde, çok yakında mağazalarda olacaklar"* diyordu — App Store
+ * yayınının üstünden bir gün geçmişti ve o cümle yalnızca ekranda değil,
+ * `render.tsx`in ürettiği `FAQPage` JSON-LD'sinde, yani ARAMA SONUCUNDA da
+ * duruyordu. Rozet kapısı (`visibleStoreBadges`) doğru çalışıyordu; bayatlayan
+ * şey onun yanındaki düz metindi.
+ *
+ * ⚠ Ek harfi mağazaya göre değişiyor (Store'**da** ↔ Play'**de**), o yüzden
+ * çağıran taraf `${ad}'da` diye birleştiremez — cümleyi buradan alsın.
+ */
+export function visibleStoreNamesTr(
+  badges: StoreBadge[] = STORE_BADGES,
+): string | null {
+  const adlar = visibleStoreBadges(badges).map((b) =>
+    b.key === 'appStore' ? "App Store" : "Google Play",
+  );
+  if (adlar.length === 0) return null;
+  if (adlar.length === 1) return adlar[0] === 'App Store' ? "App Store'da" : "Google Play'de";
+  // İkisi birden: ek YALNIZCA sondakine gelir ("App Store ve Google Play'de").
+  return `${adlar.slice(0, -1).join(', ')} ve ${adlar[adlar.length - 1]}'de`;
+}
+
 /** Bugün gösterilebilecek rozetler — URL'si olmayan HİÇ çıkmaz. */
 export function visibleStoreBadges(
   badges: StoreBadge[] = STORE_BADGES,

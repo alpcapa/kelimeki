@@ -1,8 +1,15 @@
 import { BADGE_GAP_PX, BADGE_WIDTH_PX, visibleStoreBadges } from '../utils/storeLinks';
 
 /**
- * Mağaza rozeti satırı (ROADMAP #26) — Setup'ın footer'ında, hukuki
- * linklerin ÜSTÜNDE.
+ * Mağaza rozeti satırı (ROADMAP #26) — ÜÇ yerde: Setup'ın footer'ında (hukuki
+ * linklerin üstünde) ve karşılama katmanının hem kahraman hem son çağrı
+ * bölümünde (`src/landing/Landing.tsx`).
+ *
+ * ⚠ **Katman 16 Eylül 2026'ya kadar rozeti HİÇ göstermiyordu** ve kaçak tam da
+ * en görünür yüzeydeydi: `/` adresi Instagram'dan gelen ziyaretçinin gördüğü
+ * ilk (çoğu zaman tek) sayfa, üstelik uygulamaya hiç girmeden okunabiliyor.
+ * Ders: "rozeti ekledim" demeden önce rozetin hangi YÜZEYLERDE çizildiğini
+ * say — bileşeni yazmak yüzeyleri kapatmıyor.
  *
  * Kurallar ve gerekçeleri `utils/storeLinks.ts`'te; burada yalnızca çizim.
  * Üç şey oradan gelir ve burada ELLE YAZILMAZ: sıra (App Store önce),

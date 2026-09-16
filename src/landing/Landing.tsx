@@ -29,6 +29,8 @@ import { LandingLogo, LandingLogoDefs } from './LandingLogo';
 import { GameBoardPreview } from '../components/GameBoardPreview';
 import { RankSeal } from '../components/RankSeal';
 import { ShareIcon } from '../components/RelationIcons';
+import { StoreBadges } from '../components/StoreBadges';
+import { visibleStoreNamesTr } from '../utils/storeLinks';
 import { RANK_TIERS } from '../utils/leagueRank';
 import { PLAYER_COLORS } from '../game/constants';
 import { DEMO_TILES_2, DEMO_TILES_4 } from './demoBoard';
@@ -82,6 +84,20 @@ const PARK_LOGO_HEIGHT = `calc(2 * ${GIRIS_PADDING_Y} + ${GIRIS_FONT_SIZE} + 2px
 const KELIME_SAYISI = '63.000';
 
 /**
+ * Yayındaki mağazaların adı — `storeLinks.ts`teki KAPIDAN türer (`null` =
+ * hiçbiri yayında değil). SSS metinleri bunu tüketiyor; cümle elle yazılırsa
+ * mağaza durumu değişince sessizce bayatlar — 16 Eylül 2026'da tam bu oldu
+ * (aşağıdaki iki cevabın notuna bak).
+ */
+const MAGAZA = visibleStoreNamesTr();
+
+/** Play henüz yayında DEĞİLKEN eklenen not; yayına girince kendiliğinden düşer. */
+const ANDROID_NOTU =
+  MAGAZA && !MAGAZA.includes('Google Play')
+    ? ' Android sürümü Google Play incelemesinde.'
+    : '';
+
+/**
  * SSS metinleri — TEK KAYNAK. Hem ekrandaki `<details>` kutuları (aşağıda,
  * `.map`) hem `render.tsx`'in ürettiği `FAQPage` JSON-LD'si (18 Ağustos
  * 2026, SEO denetimi) bu diziyi tüketir. Metinleri schema için İKİNCİ KEZ
@@ -111,13 +127,21 @@ export const SSS: { soru: string; cevap: string }[] = [
   },
   {
     soru: 'Uygulama indirmem gerekiyor mu?',
-    cevap:
-      "Hayır, tarayıcıda çalışıyor. İstersen telefonundaki 'Ana Ekrana Ekle' seçeneğiyle uygulama gibi de kurabilirsin.",
+    cevap: MAGAZA
+      ? `Hayır, tarayıcıda eksiksiz çalışıyor. İstersen uygulamayı ${MAGAZA} bulabilirsin; telefonundaki 'Ana Ekrana Ekle' seçeneği de duruyor.`
+      : "Hayır, tarayıcıda çalışıyor. İstersen telefonundaki 'Ana Ekrana Ekle' seçeneğiyle uygulama gibi de kurabilirsin.",
   },
   {
-    soru: 'Kelimeki\'nin mobil uygulaması yok mu?',
-    cevap:
-      'Mobil uygulamalarımız hazır; şu anda App Store ve Google Play inceleme sürecinde, çok yakında mağazalarda olacaklar. O zamana kadar tarayıcıdan eksiksiz oynayabilirsin.',
+    // ⚠ 16 Eylül 2026'da DÜZELTİLDİ. Bu iki cevap *"uygulamalarımız … inceleme
+    // sürecinde, çok yakında mağazalarda olacaklar"* diyordu — App Store yayını
+    // (15 Eylül) bir gün öncesindeydi ve cümle yalnızca ekranda değil,
+    // `render.tsx`in ürettiği `FAQPage` JSON-LD'sinde, yani ARAMA SONUCUNDA da
+    // duruyordu. Artık metin `storeLinks.ts`teki kapıdan türüyor: bir mağaza
+    // yayına girip URL'si dolduğunda cevaplar kendiliğinden doğrulanır.
+    soru: 'Kelimeki\'nin mobil uygulaması var mı?',
+    cevap: MAGAZA
+      ? `Var — uygulama ${MAGAZA} yayında.${ANDROID_NOTU} Tarayıcıdan da eksiksiz oynayabilirsin; hesabın iki tarafta da aynı.`
+      : 'Mobil uygulamalarımız hazır ve mağaza incelemesinde. O zamana kadar tarayıcıdan eksiksiz oynayabilirsin.',
   },
   {
     soru: 'Arkadaşımla aynı anda çevrimiçi olmamız gerekiyor mu?',
@@ -411,9 +435,19 @@ export function Landing() {
 
               <div className="w-full flex flex-col gap-2 pt-1">
                 <Oyna etiket="Hemen Oyna" />
+                {/* ⚠ Bu satır "Ücretsiz · Kurulum yok · Üyelik gerekmez" idi;
+                    uygulama App Store'a çıkınca "kurulum yok" rozetle ÇELİŞTİ.
+                    Tarayıcı hâlâ gerçek bir yol, o yüzden eleniyor değil
+                    ikincilleşiyor. */}
                 <span className="font-mono text-[10px] text-muted">
-                  Ücretsiz · Kurulum yok · Üyelik gerekmez
+                  Ücretsiz · Reklam yok · Üyelik gerekmez
                 </span>
+                {/* Mağaza rozeti — `Setup.tsx`in footer'ıyla AYNI bileşen,
+                    yani sıra/genişlik/boşluk kuralları ve "yayında değilse
+                    çizme" kapısı tek kaynaktan. */}
+                <div className="pt-2">
+                  <StoreBadges />
+                </div>
               </div>
             </div>
 
@@ -695,6 +729,10 @@ export function Landing() {
               <div className="w-full flex flex-col gap-2 pt-1">
                 <Oyna etiket="Oyuna Başla" />
               </div>
+
+              {/* Sayfayı sonuna kadar okuyan ziyaretçi en ikna olmuş olan;
+                  rozet burada da duruyor (kahramandakiyle AYNI bileşen). */}
+              <StoreBadges />
 
               {/* Hukuki alt satır — `Setup.tsx`'in kendi footer'ıyla AYNI üç
                   bağlantı (18 Ağustos 2026'ya kadar iki bağlantıydı, o gün

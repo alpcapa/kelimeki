@@ -638,6 +638,47 @@ yedi `<summary>` ile birebir; `dist/index.html` ham 253.990 → **254.771** /
 gzip 22.260 → **22.290** bayt (+781 / +30). Port etkilenmedi — karşılama
 katmanı web'e özgü (yukarı bkz.).
 
+## Mağaza rozeti katmana girdi + SSS bayatlığı (16 Eylül 2026)
+
+Kullanıcı bildirdi: *"Webde ilk girişte çıkan tanıtımda app store banner'ı
+yok."* Doğruydu ve İKİ ayrı kusur vardı.
+
+**1 · Rozet yanlış yüzeydeydi.** ROADMAP §26'nın Apple yarısı 15 Eylül'de
+"yapıldı" diye kapanmıştı, ama `StoreBadges` YALNIZCA `Setup.tsx`in
+footer'ında çiziliyordu — yani rozeti görmek için uygulamaya girmek
+gerekiyordu. Katman (`/`) ise Instagram'dan gelen ziyaretçinin gördüğü ilk
+ve çoğu zaman TEK sayfa. Rozet artık katmanın kahraman bölümünde (CTA'nın
+altında) ve son çağrısında da duruyor; bileşen aynı, yani sıra/genişlik/
+boşluk kuralları ve "yayında değilse çizme" kapısı tek kaynaktan geliyor.
+
+⚠ **Ders:** "rozeti ekledim" demeden önce rozetin hangi YÜZEYLERDE
+çizildiğini say. Bileşeni yazmak yüzeyleri kapatmıyor; bu depoda aynı sınıf
+hata (zincirin bir halkasının atlanması) daha önce rozet sayaçlarında da
+yaşandı.
+
+**2 · SSS metni ARAMA SONUCUNDA bayatlamıştı.** Yedinci madde
+(*"Kelimeki'nin mobil uygulaması yok mu?"*, 21 Ağustos) *"şu anda App Store
+ve Google Play inceleme sürecinde, çok yakında mağazalarda olacaklar"*
+diyordu — App Store yayınının (15 Eylül) üstünden bir gün geçmişti. Bu metin
+yalnızca ekrandaki `<details>` kutusunda değil, `render.tsx`in ürettiği
+`FAQPage` JSON-LD'sinde, yani Google'ın okuduğu yerde de duruyordu.
+
+Çözüm metni tazelemek DEĞİL, kaynağa bağlamak oldu:
+`visibleStoreNamesTr()` (`src/utils/storeLinks.ts`) yayındaki mağazaların
+adını bulunma ekiyle veriyor ("App Store'da" ↔ "Google Play'de" ↔ "App Store
+ve Google Play'de"), iki SSS cevabı da onu tüketiyor. Play yayına girip
+URL'si dolduğunda cevaplar ve `ANDROID_NOTU` kendiliğinden düzelir. Soru da
+düzeltildi: *"yok mu?"* → **"var mı?"** (madde sayısı 7'de kaldı, smoke
+testinin FAQ sayacı etkilenmedi).
+
+⚠ Ek harfi mağazaya göre değişiyor (Store'**da** ↔ Play'**de**) — bu yüzden
+çağıran taraf `${ad}'da` diye birleştiremez, cümleyi helper'dan alır.
+
+**Kahramandaki alt satır da düzeltildi:** *"Ücretsiz · Kurulum yok · Üyelik
+gerekmez"* → *"Ücretsiz · Reklam yok · Üyelik gerekmez"*. "Kurulum yok"
+artık rozetle açıkça çelişiyordu; aynı cümle sponsorlu carousel'in 1.
+karesinde de aynı gün temizlendi (`docs/decisions/marketing-assets.md`).
+
 ## Karşılama Katmanı — Sertleştirme (18 Ağustos 2026)
 
 İçerik/efekt turları bitince (yukarıdaki Bölüm 2/3) bağımsız bir denetim

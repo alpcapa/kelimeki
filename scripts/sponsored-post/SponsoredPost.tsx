@@ -43,6 +43,7 @@ import {
   BADGE_MIN_HEIGHT_PX,
   BADGE_WIDTH_PX,
   visibleStoreBadges,
+  visibleStoreNamesTr,
 } from '../../src/utils/storeLinks';
 
 const SLIDE = 1080;
@@ -127,9 +128,9 @@ function Footer({ no }: { no: number }) {
         <span style={{ fontFamily: MONO, fontSize: 26, fontWeight: 700, color: C.accent }}>
           kelimeki.com
         </span>
-        {magazaMetni() && (
+        {visibleStoreNamesTr() && (
           <span style={{ fontFamily: MONO, fontSize: 22, color: C.muted }}>
-            · {magazaMetni()}
+            · {visibleStoreNamesTr()}
           </span>
         )}
       </div>
@@ -408,7 +409,7 @@ const TELEFON_OLCEK = 390 / SLIDE;
  * ⚠ **Rozet bu yüzden HER kareye konmadı.** Alt şeride sığacak bir rozet
  * (~50 px) telefonda ~18 pt'ye düşer, yani Apple'ın sınırının ALTINDA kalırdı.
  * İçerik kareleri (2-4) alt şeritte rozet yerine düz metin taşıyor
- * (`magazaMetni`); rozet yalnızca kanca (1) ve çağrı (5) karelerinde.
+ * (`visibleStoreNamesTr`); rozet yalnızca kanca (1) ve çağrı (5) karelerinde.
  */
 const ROZET_W = rozetGenisligi();
 
@@ -475,16 +476,6 @@ function MagazaRozetleri({ genislik = ROZET_W }: { genislik?: number }) {
       ))}
     </div>
   );
-}
-
-/** Alt şeridin mağaza cümlesi — rozetle AYNI kaynaktan (üçüncü bir liste yok). */
-function magazaMetni(): string | null {
-  const anahtarlar = visibleStoreBadges().map((b) => b.key);
-  if (anahtarlar.length === 0) return null;
-  if (anahtarlar.length === 1) {
-    return anahtarlar[0] === 'appStore' ? "App Store'da" : "Google Play'de";
-  }
-  return "App Store ve Google Play'de";
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
