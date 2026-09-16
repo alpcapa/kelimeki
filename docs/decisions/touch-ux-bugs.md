@@ -1360,3 +1360,24 @@ taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
   çıkar. Bayraklar cihaz-yerel, yani Canlı oyunda hem açan hem karşı taraf
   kendi ilk açılışında görür. Port ikizi: `FlagsStore.shouldShowZoomHint`;
   metin iki tarafta BİREBİR aynı olmalı.
+
+  **Balon 4 saniye sonra KENDİ KENDİNE kapanır (16 Eylül 2026).** Bir oyuncu
+  bildirdi: *"tanıtımdan sonra zoom özelliği için sürekli kalan uyarı mesajı
+  oyun oynamayı zorlaştırıyor... 3-5 saniye sonra gidecek şekle getirelim.
+  İnsanlar okumuyor."* Öncesinde balonu kapatan TEK şey zoom'u denemekti,
+  yani denemeyen oyuncuda balon oyun boyunca merkez karenin üstünde
+  duruyordu. Süre `ZOOM_HINT_AUTO_HIDE_MS` (`src/utils/boardZoom.ts`) ↔ port
+  `kZoomHintAutoHide`.
+
+  ⚠ **Kendi kendine kapanma "denedi" SAYILMAZ** — `markZoomTried` çağrılmaz
+  ve sayaç ayrıca artmaz (o zaten karar anında arttı). Yani yukarıdaki kural
+  değişmedi: hiç denemeyen oyuncu balonu ikinci oyun açılışında bir kez daha
+  görür. Kapanmayı "deneme" saymak kuralı sessizce tek gösterime indirirdi.
+
+  ⚠ **Fikstür dersi (aynı gün):** süre gelince `tahta zoom` bloğundaki BEŞ
+  test düştü ve sebep ürün DEĞİLDİ — `tanitimiAtla` (tests/gameOverFixture.ts)
+  tanıtımın hiç çıkmadığı akışlarda iki `waitFor` ile 10 saniye ölü
+  bekliyordu, balon tam o beklemede kapanıyordu. Bekleme bir YARIŞA çevrildi
+  (tanıtımın düğmeleri ya da gerçek oyunun "Pas Geç"i); blok 2.6 dk → 34 sn.
+  Ders: bir fikstürün ölü beklemesi, ürüne zaman bağımlı bir davranış
+  girene kadar zararsız GÖRÜNÜR.

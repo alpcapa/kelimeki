@@ -1738,6 +1738,25 @@ test.describe('tahta zoom', () => {
       .toBe('1');
   });
 
+  // 16 Eylül 2026 — bir oyuncu bildirdi: *"tanıtımdan sonra zoom özelliği için
+  // sürekli kalan uyarı mesajı oyun oynamayı zorlaştırıyor... 3-5 saniye sonra
+  // gidecek şekle getirelim. İnsanlar okumuyor."* Öncesinde balonu kapatan TEK
+  // şey zoom'u denemekti. Süre: `ZOOM_HINT_AUTO_HIDE_MS`.
+  test('balon kendi kendine kapanır — ve bu "denedi" SAYILMAZ', async ({ page }) => {
+    await oyunEkrani(page);
+    await expect(page.getByText(HINT)).toBeVisible();
+
+    // Hiçbir dokunuş yok: yalnızca zaman geçiyor.
+    await expect(page.getByText(HINT)).toHaveCount(0, { timeout: 10_000 });
+
+    // ⚠ Kural DEĞİŞMEDİ: kendi kendine kapanma "denendi" yazmaz ve sayacı
+    // ayrıca artırmaz — hiç denemeyen kullanıcı balonu ikinci oyun
+    // açılışında bir kez daha görür (tavan 2).
+    expect(await page.evaluate(() => localStorage.getItem('kelimeki:zoom-tried')))
+      .toBeNull();
+    expect(await sayac(page)).toBe(1);
+  });
+
   test('balon tahtadan TAŞMAZ (dar telefonda metin sarılır)', async ({ page }) => {
     await oyunEkrani(page);
     const balon = (await page.locator('[data-zoom-hint]').boundingBox())!;
