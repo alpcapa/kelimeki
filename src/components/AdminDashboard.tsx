@@ -337,10 +337,21 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
     body: (
       <>
         <b>Oynayarak öğren</b> tanıtımının hunisi (Onboarding Faz 5).{' '}
-        <b>Başlatan</b>/<b>Bitiren</b> = tanıtımı açan/dört sahneyi tamamlayan{' '}
-        <b>benzersiz cihaz</b>; parantezdeki sayı ADETTİR (bir cihaz tanıtımı iki kez
-        açabilir). <b>Atlayan</b> = "ATLA →" ile çıkan hamle sayısı, altındaki döküm hangi
-        sahnede bırakıldığını söyler.
+        <b>Başlatma</b>/<b>Bitirme</b> = tanıtımı açan/dört sahneyi tamamlayan{' '}
+        <b>ADET</b>; parantezdeki soluk sayı BENZERSİZ CİHAZDIR (bir cihaz tanıtımı iki
+        kez açabilir). <b>Oran</b> = Bitirme / Başlatma, yani ADET üzerinden.{' '}
+        <b>Atlayan</b> = "ATLA →" ile çıkan hamle sayısı, altındaki döküm hangi sahnede
+        bırakıldığını söyler.
+        <br />
+        <br />
+        ⚠ <b>Parantezdeki cihaz sayısı yalnızca WEB'i görür:</b> port{' '}
+        <code>anon_id</code> yazmıyor ve benzersiz sayım NULL'ları saymaz — uygulamadan
+        gelen her satır yalnızca ADET'i büyütür. Oran bu yüzden 15 Eylül 2026'da cihazdan
+        ADET'e çevrildi: o gün kart son 30 gün için %50 diyordu (payda 2 web cihazı),
+        oysa 13 başlangıcın 11'i iOS'tandı ve gerçek bitirme %85'ti. Adet paydasının
+        bedeli bilinir — aynı cihazda iki kez açıp bir kez bitirmek oranı biraz düşürür —
+        ama kitlenin yalnızca %15'ini ölçmeye yeğlendi. Port damgalamayı eklerse cihaz
+        paydasına dönülebilir.
         <br />
         <br />
         <b>İki kaynak neden ayrı:</b> <b>otomatik</b> = ilk oyunda kapı açtı;{' '}
@@ -1262,17 +1273,25 @@ function TutorialFunnelTable({
           <thead>
             <tr className="text-muted border-b border-border">
               <th className="text-left py-1 pr-2 font-normal">Kaynak</th>
-              <th className="text-right py-1 px-2 font-normal">Başlatan</th>
-              <th className="text-right py-1 px-2 font-normal">Bitiren</th>
+              <th className="text-right py-1 px-2 font-normal">Başlatma</th>
               <th className="text-right py-1 px-2 font-normal">Bitirme</th>
+              <th className="text-right py-1 px-2 font-normal">Oran</th>
               <th className="text-right py-1 pl-2 font-normal">Atlayan</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => {
-              // Oran CİHAZ üzerinden: adet payda olsaydı iki kez açıp bir kez
-              // bitiren cihaz oranı yapay olarak düşürürdü.
-              const oran = row.starters > 0 ? Math.round((row.finishers / row.starters) * 100) : null;
+              // Oran ADET üzerinden (15 Eylül 2026'da cihazdan çevrildi).
+              // Gerekçe: port `anon_id` YAZMIYOR (`games_api.dart` →
+              // `'anon_id': null`) ve `count(distinct anon_id)` NULL saymaz,
+              // yani cihaz paydası YALNIZCA web'i görüyordu. Ölçüldü: son 30
+              // günde 13 `auto` başlangıcının 11'i iOS'tan geliyordu ve kart
+              // %85 yerine %50 yazıyordu (payda 2 web cihazı). Adet paydasının
+              // bilinen bedeli — iki kez açıp bir kez bitiren cihaz oranı biraz
+              // düşürür — kabul edildi: kitlenin %15'ini ölçmektense tamamını
+              // biraz gürültülü ölçmek. Port damgalamayı eklerse cihaza geri
+              // dönülebilir (ROADMAP → "Port anonim cihaz damgası").
+              const oran = row.starts > 0 ? Math.round((row.finishes / row.starts) * 100) : null;
               const sahneler = Object.entries(row.skip_steps ?? {}).sort(
                 (a, b) => Number(a[0]) - Number(b[0]),
               );
@@ -1287,10 +1306,10 @@ function TutorialFunnelTable({
                     )}
                   </td>
                   <td className="text-right py-1 px-2 text-text">
-                    {row.starters} <span className="text-muted">({row.starts})</span>
+                    {row.starts} <span className="text-muted">({row.starters})</span>
                   </td>
                   <td className="text-right py-1 px-2 text-text">
-                    {row.finishers} <span className="text-muted">({row.finishes})</span>
+                    {row.finishes} <span className="text-muted">({row.finishers})</span>
                   </td>
                   <td className="text-right py-1 px-2 text-text">
                     {oran === null ? '—' : `%${oran}`}

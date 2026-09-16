@@ -105,7 +105,7 @@ e-postayla AÇILMADI.
 | **İsteğe bağlı** | #5 k-lig grafiği · #9 admin filtre · #14 tembel liste | ⬜ hiçbiri yolu tıkamıyor · **#10 hata hız sınırı ✅** ve **#11 platform filtresi ✅ YAPILDI** (31 Ağustos 2026) |
 | **Yapıldı** | #6 taranabilir `/nasil-oynanir/` sayfası | ✅ 31 Ağustos 2026 |
 | **Play Store'a girdikten sonra** | **#17 Google ile giriş** — sunucu → web → mobil; migration BLOKER (OAuth bugün `handle_new_user`'da patlar) | ⏳ ERTELENDİ — acelesi yok, çalışan kimlik akışına şimdi dokunulmuyor (2 Eylül, kullanıcı). ⚠ Sayaçla İLİŞKİSİ YOK; o bağ aynı gün koptu, gerekçe #17'de |
-| **iOS/App Store** | 🔓 **BLOKE KALKTI** (8 Eylül 2026 — Apple Developer hesabı açıldı). Fazlı plan: **#24 FAZ C**. Kalan iş APNs'ten İBARET DEĞİL: Mac'siz imzalama/TestFlight zinciri, entitlements, Associated Domains ve mağaza vitrini de bu fazın parçası | ⬜ |
+| **iOS/App Store** | **#24 FAZ C** — hesap/kimlik · Mac'siz imzalama + TestFlight · APNs · Universal Links · vitrin · gönderim | ✅ **KAPANDI: `1.1.0 (665)` 15 Eylül 2026'da App Store'da YAYINDA.** Bölümün tamamı arşivde (`docs/decisions/roadmap-arsiv.md` → "24. FAZ C — App Store yayını"); işletim kaynağı `marketing/app-store/console-formlari.md` |
 
 ⚠ **"Console (elle)" satırı 31 Ağustos'a kadar BAYAT kaldı** — dört maddesi
 de aslında 25-26 Ağustos'ta bitmişti ve bu tablo onları hâlâ "kullanıcıda"
@@ -135,8 +135,8 @@ aynı gün yukarıdaki özet tablo ✅ diyordu (kaydın iki yerde durması).
 arşivde "Faz 6".
 **#15 — uygulama öne gelince bildirim panelini temizle** → ✅ **KOD TAMAM**
 (31 Ağustos 2026), sıradaki mobil sürümle çıkar. Ayrıntı arşivde: "Faz 6".
-**iOS/App Store** → 🔓 **artık bloke DEĞİL** (8 Eylül 2026, Apple Developer
-hesabı açıldı); fazlı plan **#24 FAZ C**. Push tasarımı bilerek FCM üzerinden
+**iOS/App Store** → ✅ **KAPANDI** (15 Eylül 2026, `1.1.0 (665)` yayında);
+**#24 FAZ C** arşivde. Push tasarımı bilerek FCM üzerinden
 yazıldığı için **ikinci bir gönderici YAZILMAYACAK** — bu karar duruyor ve
 sunucu tarafı ölçülünce zaten iOS-hazır çıktı (`apns-collapse-id` yazılmış,
 `push_tokens.platform` `'ios'` kabul ediyor; kanıtlar #24.0'da). ⚠ Bu satır
@@ -483,97 +483,18 @@ birebir üretiyor. Açıklanamayan sapma: **0**. Ayrıntı:
    hata metinlerini kilitliyor ama davranışı kilitleyemiyor — o yüzden 1. adım
    atlanamaz.
 
-### 19. `anon` için sınırsız telemetri yazımı — **ÖLÇÜLDÜ: KABUL EDİLDİ**
+### 19-20. `anon` telemetri yazımı · `CRON_SECRET` fail-open — ✅ **ÖLÇÜLDÜ, KABUL EDİLDİ → ARŞİVDE**
 
-`client_errors`, `device_visits`, `guest_visits`, `game_starts` — dördünde
-de INSERT politikası `with_check: true`, yani oturumsuz sınırsız satır
-eklenebiliyor. **İlk yazımda "feedback_rate_limit desenini kopyala" deniyordu;
-o tavsiye ÖLÇÜMDEN ÖNCEYDİ ve GERİ ALINDI.** Ölçünce üç şey çıktı:
+İkisi de "ölçüldü, risk düşük, bilinçli olarak kabul edildi" diye kapandı;
+tam ölçümler (tablo hacimleri, hangi RPC'nin `count(distinct)` kullandığı,
+üç cron fonksiyonunun atomik iddia koruması) **arşivde**, başlıkları AYNEN:
+`docs/decisions/roadmap-arsiv.md` → *"19. `anon` için sınırsız telemetri
+yazımı"* · *"20. `CRON_SECRET` fail-open"*.
 
-**1. İddia edilen zarar büyük ölçüde YOK — tüketici zaten dayanıklı.**
-Dokuz admin RPC'sinin sekizi `count(distinct ...)` kullanıyor.
-`admin_source_funnel`ın "Ziyaretçi" adımı YALNIZCA
-`count(distinct gv.anon_id)`; `game_starts`/`game_finishes` adımları ham `n`
-ile `uniq`i YAN YANA döndürüyor (ham sayı meşru olarak ham: "toplam
-başlangıç"). `admin_activation_stats` bu tabloların hiçbirine dokunmuyor.
-Yani bir sel `uniq` sütunlarını oynatamaz.
-
-**2. Bugün kötüye kullanım yok ve hacim küçük** (5 Eylül 2026):
-
-| Tablo | Toplam | Farklı cihaz | Son 7 gün |
-|---|---|---|---|
-| `client_errors` | 40 | 27 | 12 |
-| `device_visits` | 877 | 731 | 184 |
-| `guest_visits` | 2.316 | 2.032 | 128 |
-| `game_starts` | 931 | 181 | 346 |
-
-**3. IP'ye anahtarlanan bir limitin İKİ yan etkisi, faydasından büyük:**
-- **CGNAT.** Türk mobil operatörleri operatör düzeyinde NAT kullanıyor;
-  gerçek kullanıcılar tek çıkış IP'sini paylaşıyor. Ziyaret/oyun başına
-  yazan bir tabloda IP limiti gerçek satırları SESSİZCE düşürür (istemci
-  hatayı yutuyor — ölçüldü, iki tarafta da fire-and-forget) ve huni EKSİK
-  sayar. Bu, önlemeye çalıştığımız zararın aynı sınıfı, ters yönü.
-- **`client_errors`'ta olayı gizler.** Tek cihazdan gelen hata seli tam da
-  görmek istediğin şeydir; limit gerçek bir çökme olayında kanıtı kısar.
-  Üstelik #10 ile istemci tarafında zaten hız sınırı var.
-
-**Karar: bugün bir şey yapma.** Yeniden açılma tetikleyicisi: telemetri
-tablolarından birinde `count(*)` ile `count(distinct anon_id)` arasında
-açıklanamayan bir uçurum görülmesi, ya da satır sayısının maliyet yaratacak
-mertebeye çıkması.
-
-⚠ Limit ileride gerekirse **IP'ye DEĞİL `anon_id`'ye anahtarla** — CGNAT
-komşularını vurmaz. Saldırgan `anon_id`yi de döndürebilir (yani naif seli
-durdurur, kararlıyı durdurmaz), ama dürüst kullanıcıya maliyeti sıfırdır.
-
-### 20. `CRON_SECRET` fail-open — **ÖLÇÜLDÜ: DÜŞÜK, kabul edilebilir**
-
-**Durum (5 Eylül 2026): `CRON_SECRET` Dashboard'da TANIMLI DEĞİL** (kullanıcı
-ekran görüntüsüyle doğruladı — Custom secrets'ta yalnızca `BREVO_API_KEY` ve
-`FCM_SERVICE_ACCOUNT` var). Yani `if (CRON_SECRET && ...)` kapısı fiilen
-açık ve **üç** fonksiyon (beş değil — ilk sayım yanlıştı) internetten
-çağrılabiliyor: `notify-deadline-warnings`,
-`notify-friend-request-reminders`, `sweep-unconfirmed-accounts`.
-
-**Ama etkisi ölçüldü ve düşük** — üçünde de atomik "iddia" koruması var
-(`.is(alan, null)` filtreli UPDATE), yani `notify-turn-timeout-surrender`
-ile aynı desen:
-
-| Fonksiyon | Dışarıdan tekrar çağrılırsa |
-|---|---|
-| `notify-deadline-warnings` | `deadline_warning_sent_at` → satır başına tek mail |
-| `notify-friend-request-reminders` | `reminder_sent_at` → aynısı |
-| `sweep-unconfirmed-accounts` | Yaş ölçütünü kendi uyguluyor → erken silme YOK |
-
-Saldırgan zaten gönderilmeyecek tek bir mail bile göndertemiyor; kalan etki
-yalnızca boşa çağrı maliyeti. **Bu yüzden acil değil.**
-
-⚠ **Düzeltmenin bedeli faydasından büyük olabilir — üç parça aynı anda
-değişmek zorunda.** Ölçüldü: `cron.job`taki üç komut da **hiçbir
-`Authorization` başlığı göndermiyor** (`headers` yalnızca `Content-Type`).
-Yani secret'ı tek başına tanımlamak üç özelliği birden 401'e düşürür ve
-arıza SESSİZ olur (mailler durur, hata veren bir yüzey yok). Sıra şu
-olmalı: secret + cron komutları + kodun fail-closed'a çevrilmesi, hepsi
-tek turda.
-
-**İki seçenek:**
-
-- **(a) Vault ile, Dashboard adımı OLMADAN:** sır `supabase_vault`'ta
-  (0.3.1 kurulu), cron komutu onu okuyup `Authorization` başlığına koyar,
-  Edge Function beklenen değeri kendi `service_role` istemcisiyle DB'den
-  okur. Depoda ve sohbette sır geçmez, tamamen ajandan doğrulanabilir.
-  Bedeli: çağrı başına bir DB okuması (15 dk/saatlik/günlük iş için
-  önemsiz) ve koddaki `Deno.env.get('CRON_SECRET')` deseninden sapma.
-- **(b) Kabul et ve YAZ:** bugünkü fiili durum bu; ölçüm yukarıda. Bu
-  seçilirse koddaki `if (CRON_SECRET && ...)` satırlarına "secret bilerek
-  tanımlı değil, koruma iddia sütunlarından geliyor" notu düşülmeli —
-  aksi halde bir sonraki okuyan onu çalışan bir kapı sanır.
-
-⚠ **`inbound-email` bu maddeye DAHİL DEĞİL.** O fail-closed yazılmış
-(`INBOUND_EMAIL_SECRET` yoksa 503) ve sırrının tanımsız olması BİLİNÇLİ:
-Brevo Inbound webhook'u ücretli plana bloke, bkz.
-`docs/decisions/support-email.md` → "GELEN ZİNCİRİ DURDURULDU". Boş
-`support_inbox` (0 satır) beklenen durum, arıza değil.
+⚠ Kabul kararının iki koşulu orada yazılı ve bu geçiş bir daha açılırsa
+önce onlar okunmalı: limit gerekirse IP'ye DEĞİL `anon_id`'ye anahtarlanır;
+`CRON_SECRET` bir gün tanımlanırsa koddaki `if (CRON_SECRET && ...)`
+satırlarına "koruma iddia sütunlarından geliyor" notu düşülmeli.
 
 ### 21. Advisor gürültüsü + Auth ayarları — **KISMEN YAPILDI**
 
@@ -638,7 +559,9 @@ listeleri ve dersleri — `docs/decisions/roadmap-arsiv.md`'ye taşındı;
 başlıklar ("Hata avı geçişi — KAPANDI", "Performans geçişi — KAPANDI",
 "Temizlik geçişi — KAPANDI") değiştirilmedi. Yukarıdaki geçiş tablosu canlı
 indeks olarak burada kaldı. **Dört geçiş de kapandı**; incelemeden açık
-kalan tek şey güvenlik geçişinin yukarıda duran maddeleri (18-21).
+kalan tek şey güvenlik geçişinin yukarıda duran maddeleri — 15 Eylül
+2026'dan beri **18, 21 ve 22** (19 ve 20 ölçülüp kabul edildi, arşive
+taşındı).
 
 ## Modeller — hangi iş için hangisi
 
@@ -1052,6 +975,50 @@ gerekçeyle 27 Ağustos'ta Sürüm A'ya alınmadı.
 
 ---
 
+## 30. Port anonim cihaz damgası (`anon_id`) — **AÇIK, ölçüldü** (15 Eylül 2026)
+
+Kullanıcı admin panelindeki Tanıtım Turu kartına bakıp sordu: *"Sanki
+sadece parantez içindeki rakamlar artıyor"*. Doğruydu ve sebebi tek satır:
+port `anon_id` YAZMIYOR (`mobile/app/lib/src/data/games_api.dart` →
+`tutorial_events` ve `game_starts` insert'lerinde `'anon_id': null`).
+`count(distinct anon_id)` NULL saymaz, yani BENZERSİZ CİHAZ sayan her
+sütun yalnızca web'i görüyor. Canlıdan ölçüldü (son 30 gün):
+
+| Tablo | Uygulamadan gelen satır (`anon_id` NULL) | Web |
+|---|---|---|
+| `tutorial_events` | 24 (hepsi iOS) | 7 |
+| `game_starts` | **618** (`android` 587 · `ios` 16 · `app-web` 15) | 993 |
+
+**Yarısı 15 Eylül'de kapatıldı (web tarafı):** Tanıtım Turu kartının oranı
+CİHAZ paydasından ADET paydasına çevrildi — kart %85 yerine %50 yazıyordu.
+Ayrıntı: `docs/decisions/admin-panel.md` → "Tanıtım Turu kartı". Bu bir
+yama; ölçümün kendisi hâlâ eksik.
+
+**Kalan iş (port):** web'in `src/utils/visitTracking.ts` damgasının ikizi —
+cihazda saklanan rastgele bir uuid üretilip `tutorial_events` ve
+`game_starts` satırlarına yazılsın.
+
+- **Gizlilik kapsamı ZATEN var:** `PrivacyModal` bölüm 6 anonim cihaz kodunu
+  tarif ediyor (*"hesabınızla ASLA eşleştirilmez"*), yani yeni bir veri
+  TÜRÜ değil — web'de var olanın portta da yazılması. ⚠ `user_id` ile aynı
+  satıra KOYMA; tabloların ikisinde de böyle bir kolon yok ve olmayacak.
+- **Nerede saklanacağı bir karar:** uygulama silinip yeniden kurulunca
+  sıfırlanan bir yer (uygulama dizini) mi, yoksa kalıcı (Keychain) mi?
+  Web'de `localStorage`, yani "tarayıcı verisi silinene kadar" — porta en
+  yakın karşılığı uygulama dizinidir. Keychain iOS'ta kurulumlar arası
+  YAŞAR ve bu, gizlilik metninin vaat ettiğinden daha kalıcı bir kimlik
+  üretir; bilerek seçilmediyse ALMA.
+- ⚠ **`mobile/app/**` değiştirir → merge mobil derlemeyi TETİKLER**
+  (`mobile-latest` ezilir, TestFlight'a build gider). Sürüm dondurması
+  bitmeden başlama.
+- **Kapandığında geri alınacak yama:** Tanıtım Turu kartının oranı cihaz
+  paydasına dönebilir (adet paydası, aynı cihazda iki kez açıp bir kez
+  bitireni oranı düşürerek cezalandırıyor). Dönülürse
+  `docs/decisions/admin-panel.md`, `docs/decisions/onboarding.md` ve
+  `docs/testing-admin.md`'deki üç not birlikte güncellenmeli.
+
+---
+
 ## Her iş için değişmeyen kurallar
 
 1. **Önce etki analizi** (kök `CLAUDE.md` → "Çalışma İlkesi"): bu kodun
@@ -1278,351 +1245,27 @@ değişir (web · Dart · Edge) ve `verify-edge-engine-parity` ayrışmayı yaka
 | 5 | ✅ kod (7 Eylül 2026, PR #475): Zor = geniş arama, YZ↔YZ Normal'e karşı **%70** (tohum 1, GA %63-75) ve **%72** (tohum 1000, GA %66-78); Normal golden'ları git diff boş; `reducer_ai2_zor` + `ai_level.json` Dart'ta yeşil (6883 kontrol); `verify-edge-engine-parity` `AI_LEVEL_SEARCH` kilidi + Zor adımıyla yeşil; `play-ai-turn` yeniden deploy edildi (`verify_jwt=true` korundu); seçici web+portta açık, `ai_level_parity_test` + smoke Zor testi yeşil; web canlıda `dd55ae0`. **KALAN:** sahada iki hafta — Kolay ~%30 / Zor ~%70 YZ kazanma bandında |
 
 
-## 24. FAZ C — App Store yayını — **YÜRÜYOR** (8 Eylül 2026)
+## 24. FAZ C — App Store yayını — ✅ **KAPANDI: UYGULAMA YAYINDA** (15 Eylül 2026)
 
-**Bu bölüm bir İNDEKS. Kaynak: `marketing/app-store/console-formlari.md`** —
-Console cevapları, kararlar, ölçümler ve tuzaklar orada; burada yalnızca
-hangi fazın nerede olduğu duruyor. (Play tarafında bunun tersi bir kez
-yaşandı ve özet tablo altı gün bayat kaldı.)
+Altı fazın altısı da kapandı ve **`1.1.0 (665)` 15 Eylül 06:02'de App
+Store'da yayına alındı** (vitrin ~06:39'da kullanıcı tarafından görüldü ve
+indirildi). Bölümün tamamı — 24.0-24.6, imzalama zincirinin sekiz arızası,
+APNs, Universal Links, kare boru hattı, DSA — **arşive taşındı:**
+`docs/decisions/roadmap-arsiv.md` → başlık AYNEN korundu
+(*"24. FAZ C — App Store yayını"*), yani koddaki `ROADMAP.md → #24 FAZ C`
+atıfları (ör. `mobile/app/lib/src/data/push_init.dart`) orada karşılığını
+bulur.
 
-| Faz | Durum |
-|---|---|
-| **24.1** Hesap & kimlik | ✅ üyelik aktif · Team ID `8277D85FY9` · App ID + capability'ler · APNs anahtarı `RL4JLXL389` · uygulama kaydı · Free Apps Agreement · **DSA trader: beyan ✅, doğrulama `In Review`** (9 Eyl) · ✅ **API anahtarı `.p8` ALINDI** (9 Eyl akşamı, bir Mac'ten — §3) |
-| **24.2** Mac'siz imzalama + TestFlight | ✅ **UÇTAN UCA DOĞRULANDI** (9 Eyl, koşu #614): zincir baştan sona koştu ve paket App Store Connect → TestFlight'ta **"Ready to Submit"** olarak GÖRÜLDÜ. Altı koşu, sekiz ayrı arıza; teşhis zinciri `console-formlari.md` §3'te. ⚠ Dokuzuncu arıza yeşil koşudan SONRA bulundu: paket **1.0.9 (1)** olarak yüklendi, 614 olarak değil — araya giren bayraksız `flutter build ios` `Generated.xcconfig`i eziyordu. Düzeltildi (bayrak + fastlane öncesi doğrulama) ve **koşu #616 ile kanıtlandı: TestFlight'ta `1.0.9 (616)` · Complete**; post-mortem `console-formlari.md` §3 |
-| **24.3** APNs / push | ✅ **UÇTAN UCA ÇALIŞIYOR** (15 Eyl 2026): `GoogleService-Info.plist` · `Runner.entitlements` · `AppDelegate` kanalı · `push_tokens`te iOS satırları · **bildirim cihaza düştü**. ⚠ Aynı gün bir arıza bulunup kapatıldı: ilk APNs anahtarı (`RL4JLXL389`) **Sandbox-only**du, her gönderim `403 BadEnvironmentKeyInToken` ile reddediliyordu; ortam kısıtı düzenlenemediğinden yeni anahtar (`V85TL79C5R`, Sandbox & Production) üretilip Firebase'in iki satırına da yüklendi. Kanıt: yüklemeden sonra push log'unda **sıfır hata** + kullanıcı cihazda gördü. İstemcide tek satır değişmedi |
-| **24.4** Universal Links | ✅ web yarısı **CANLIDA ölçüldü** (`200` + `application/json`) · ✅ iOS yarısı yazıldı · ⚠ doğrulama TestFlight ister — **kapı: iç test grubu** (aşağı, madde 0) |
-| **24.5** Mağaza vitrini | ✅ cevap kâğıdı · metinler (ölçülü) · App Privacy eşlemesi · yaş derecesi · demo hesap `T2` · ✅ **ekran görüntüsü boru hattı ÇALIŞIYOR** — 9 Eyl, run #1 ile CI'da DOĞRULANDI: iPhone 6.9" karesi **tam 1320×2868**, artefakt 1,6 MB. iPad yarısı da run #2'de DOĞRULANDI (`2064×2752`) · ✅ **6/6 kare, iki cihazda da CI'da DOĞRULANDI** (9 Eyl, run #4: on iki PNG'nin on ikisi tam ölçüde) · ✅ **KOMPOZİSYON KARARI VERİLDİ** (11 Eyl, kullanıcı): kareler **başlıklı** + **7. kare** (k-lig) eklendi — şerit `MaterialApp.builder` ile Flutter ağacının içinde, son işlem YOK, piksel ölçüsü değişmiyor; eksik kare artık koşuyu düşürüyor (`KARE_SAYISI`). ⚠ **Aynı turda bir yükleme blokeri bulundu ve kapatıldı:** kareler ALFA kanalı taşıyordu (ölçüldü: 7/7 `hasAlpha: yes`) ve ASC saydamlık kabul etmiyor — arıza ancak Console'da görünecekti; düzeltme `test_driver/png_flatten.dart`, kapı hem Linux birim testi hem iş akışı. ⚠ **İKİNCİ yükleme blokeri, kullanıcı yakaladı (11 Eyl):** karelerin sağ üst köşesinde Flutter'ın kırmızı **DEBUG bandı** vardı — `flutter drive` debug modda derliyor ve bayrak hiç kapatılmamıştı; bugüne kadarki BÜTÜN setler bu yüzden çöp. Düzeltildi (`debugShowCheckedModeBanner: false` × 6) ve kapı kondu (`_kareCek` her karede bandın yokluğunu iddia ediyor, duyarlılığı ölçüldü). ⚠ **Ders:** sayım/piksel/alfa kapılarının üçü de dosyanın ŞEKLİNE bakıyor, İÇERİĞİNE değil — ajan artefaktı indiremediğinden **kareye bakan bir insan olmadan set onaylanamaz.** ⚠ Kalan: yeni koşunun artefaktını indirip **bir kareyi GÖZLE kontrol etmek**, sonra Console'a yüklemek |
-| **24.6** Gönderim | ⬜ DSA doğrulaması ✅ (10 Eyl) · paket ✅ (24.2) · kareler ✅ (24.5, 11 Eyl) · **sürüm kaydı `1.1.0` + derleme iliştirme ✅** (11 Eyl, kullanıcı — teşhis ve ders `console-formlari.md` §15: belirti "ikon çıkmıyor"du, sebep sürüm dizesi uyuşmazlığıydı). ⚠ **Kalan TEK adım:** koşu `7d6361e`nin artefaktlarını indirip kareleri 6.9" + iPad 13" slotlarına yüklemek — sonra gönderimin önünde kapı yok |
+**Cevap kâğıdı taşınmadı, yerinde:** `marketing/app-store/console-formlari.md`
+(§ durum tablosu) — Console'da neyin yapıldığını yazan tek kaynak orası.
 
-⏳ **TRADER: beyan ✅, doğrulama SÜRÜYOR (9 Eylül 2026).** Console'un
-Compliance tablosu `Digital Services Act · 27 ülke · In Review` diyor —
-yani gönderim kapısı HÂLÂ AÇIK. ⚠ Bu satır bir kez *"kapandı"* diye
-yazıldı ve aynı gün düzeltildi: sözlü bildirim değil, **Console'un kendi
-STATUS alanı** kanıttır (gerekçe `console-formlari.md` §2).
-
-**Sırayı tıkayan şeyler (10 Eylül 2026 GECE tazelendi — ÜÇ maddenin ÜÇÜ de
-düştü; bu listede artık tıkayan bir şey YOK):**
-0. ✅ **TestFlight iç test grubu KURULDU ve uygulama iPad'de ÇALIŞTI**
-   (10 Eylül 2026 akşamı). `İç Test` grubu · 2 testçi · dağıtılan derleme
-   **`1.0.9 (620)`**; cihazda Setup teşhis satırı `Derleme 46664f6`
-   gösterdi. Cihaz turu koşuldu ve **temiz geçti** (manzara/düzen/taşma
-   yok); tek bulgu hiç oynanmamış YZ oyununun bulut kaydıydı → düzeltildi
-   (aşağıdaki sürüm tablosuna bak). Böylece 24.3 (`aps-environment`), 24.4
-   (Universal Links iOS yarısı) ve `mobile/TESTING.md` §26 artık
-   koşulabilir durumda. ⚠ *"Ready to Submit"* bir engel DEĞİLDİ: o durum
-   DIŞ dağıtımı anlatır, iç testçi için Beta App Review yok — ölçüldü.
-   Kurulumun tuzakları (ekip daveti ≠ testçi daveti, "Redeem" ekranı bir
-   kod istemiyor, tester statüsü teşhis aracı değil):
-   `console-formlari.md` §14.
-1. ✅ **API anahtarı ALINDI (9 Eylül 2026 akşamı)** — bir **Mac'ten**, ilk
-   denemede. iPadOS'ta (özel sekme dahil) defalarca başarısız olmuştu;
-   ölçüm arızanın istemci/platform tarafında olduğunu gösteriyor, Apple'ın
-   sunucusunda değil. Support hiç yanıt vermeden çözüldü. ✅ **Ardından
-   secret'lar girildi ve 24.2 uçtan uca doğrulandı** (#614 zinciri
-   bitirdi, #616 doğru build numarasını kanıtladı) — yani bu madde artık
-   hiçbir şeyi tıkamıyor. ⚠ Ama anahtar **imzalama için zorunlu değil, OTOMASYON için
-   zorunlu** — `openssl` CSR + elle sertifika/profil + uygulamaya özel şifre
-   ile anahtarsız bir zincir kurulabilir (kayıt `console-formlari.md` §3).
-   Arıza uzarsa gönderim buna çevrilir.
-2. ✅ **DSA doğrulaması BİTTİ (10 Eylül 2026, 22:21).** Apple'ın
-   e-postası: *"We successfully verified your trader contact information…
-   Your information is now live on the App Store in the European Union."*
-   Beyan 9 Eylül → doğrulama 10 Eylül, yani **~1 gün** (ölçüldü, tek
-   ölçüm). Gönderim kapısı DÜŞTÜ — kayıt `console-formlari.md` §2.
-
-✅ **Bizde kod işi KALMADI** (11 Eylül 2026): 24.5'in kompozisyon kararı
-verildi ve uygulandı (başlıklı set + 7. kare). Sıradaki adım **sende ve
-Console'da**: (1) sürüm numarasını `1.1.0` yapıp derlemeyi iliştir,
-(2) `ios-screenshots.yml`in bir sonraki koşusunun artefaktını indirip
-kareleri 6.9" ve iPad 13" slotlarına yükle.
-
-**Durum:** kullanıcı Apple Developer hesabını açtı. Bu, bugüne kadar altı
-ayrı yerde *"🔒 Apple Developer üyeliğine bloke"* diye kayıtlı olan işleri
-birden açıyor. Bu bölüm onların **hangi sırayla** yapılacağını söyler —
-`0. FAZ B`nin (Google Play) App Store ikizi.
-
-⚠ **Play'in sayacının burada karşılığı YOK.** Faz B'nin takvimini "12
-tester × 14 gün" belirliyordu; Apple'da böyle bir bekleme yok. Buradaki
-takvimi belirleyen tek şey **App Review** (reddedilirse tur başa döner).
-TestFlight'ın *iç* test kanalı incelemesiz; *dış* kanal ayrı bir Beta App
-Review istiyor. *(Apple dokümanından; bu depoda ÖLÇÜLMEDİ.)*
-
-**Hesap kimliği (8 Eylül 2026, kullanıcı bildirdi + ekran görüntüsü):**
-**Bireysel** (Individual), ad **Alp Reşat Çapa**, Apple ID
-**`destek@kelimeki.com`**. Play tarafının karşılığı da kişiseldi
-(*Personal account*, Account ID `5939732949280610022`), yani iki mağazada
-tutarlı.
-
-✅ **ÜYELİK AKTİF** — aynı gün 14:48'de `(Pending)` düştü (ekran
-görüntüsüyle doğrulandı: *Program resources* açıldı, yani **App Store
-Connect · Certificates, IDs & Profiles · Membership details** erişilebilir).
-Ödeme→aktivasyon **~12 dakika** sürdü; Apple'ın vaat ettiği 48 saatlik
-tavan bu turda hiç kullanılmadı. Kimlik taraması İSTENMEDİ.
-**24.1 artık koşulabilir.**
-
-⚠ **Bireysel hesabın geri alınamaz sonucu:** App Store'da satıcı olarak
-**kişinin yasal adı** görünür ve sonradan değiştirilemez. 24.5'in cevap
-kâğıdı bunu veri olarak alır, yeniden sormaz.
-
-⚠ **`destek@kelimeki.com` artık kritik bir kutu:** üyelik yenileme,
-sözleşme değişikliği ve App Review yazışmaları oraya düşüyor. Adres Zoho'da
-(bkz. `docs/decisions/support-email.md`) ve o kutuya erişimi kaybetmek
-geliştirici hesabına erişimi kaybetmek demek. Aynı sebeple Apple ID'nin
-2FA'sındaki güvenilir numara/cihaz kalıcı olmalı.
-
-⚠ **`(Pending)` iken hiçbir 24.1 adımı yapılamaz** (bu tur ~12 dakika
-sürdü, ama kayda geçsin): Team ID, Identifiers ve Keys ekranları üyelik
-aktifleşmeden açılmıyor. Pending sayfasındaki *"complete your purchase
-now"* banner'ı hem "ödeme yapılmadı" hem "işleniyor" durumunda göründüğü
-için **tek başına kanıt değil** — ayrım Apple'ın makbuzuyla yapılır
-(`destek@` kutusu ya da `reportaproblem.apple.com`). Apple bireysel
-kayıtlarda ayrıca kimlik taraması isteyebiliyor ve bunu web'den değil
-iPad/iPhone'daki *Apple Developer* uygulamasından yaptırıyor; **bu turda
-istenmedi**, ama uzun süre Pending kalan bir hesapta ilk bakılacak yer
-orası. *(Apple'ın süreci; bu depoda ÖLÇÜLMEDİ.)*
-
-### 24.0 — Neyin HAZIR olduğu (8 Eylül 2026'da depodan ölçüldü)
-
-Beklenenden fazlası hazır; özellikle **sunucu tarafı push tamamen
-iOS-hazır**, çünkü tasarım baştan FCM üzerinden yazıldı:
-
-| Hazır olan | Kanıt |
-|---|---|
-| Bundle id `com.kelimeki.kelimeki` (Android'le AYNI), deployment target iOS 13 | `ios/Runner.xcodeproj/project.pbxproj:385,363` |
-| CI'da macOS runner'lı `ios` işi — `--no-codesign` cihaz + Appetize simülatör derlemesi | `.github/workflows/mobile-build.yml:369` |
-| `push_tokens.platform` **`'ios'` değerini zaten kabul ediyor**, `register_push_token` doğruluyor | `20260828114349_push_tokens_and_preference.sql:39` · `20260831093203_...:60` |
-| Çakıştırma etiketinin iOS yarısı **yazılmış**: `apns-collapse-id` | `supabase/functions/_shared/push.ts:310` (`npm run verify-push-payload` kilitliyor) |
-| Admin hata panelinde platform filtresi (#11) | ✅ 31 Ağustos 2026 |
-| Sürüm kapısı iOS anahtarını okuyor | `config/version_gate.dart:35` → `Platform.isIOS ? 'ios' : 'android'` |
-| `Info.plist`'te `kelimeki://` şeması + iPad yönelimleri | `ios/Runner/Info.plist:30,83` |
-
-### 24.1 — SENDE: hesap & kimlik (Console işi, kod yok)
-
-Bunlar bitmeden 24.2 ve 24.3 test EDİLEMEZ.
-
-1. Üyeliğin aktifleştiğini doğrula (satın alma → aktivasyon Apple'da 24-48
-   saat sürebiliyor).
-2. **Team ID'yi not et.** 24.4'ün `apple-app-site-association` dosyası buna
-   bağlı ve **ben üretemem** — Membership sayfasında yazıyor.
-3. Identifiers → App ID `com.kelimeki.kelimeki`; capability olarak **Push
-   Notifications** ve **Associated Domains** işaretlensin.
-   ⚠ Bundle ID tipi **Explicit** olmalı — *Wildcard* App ID push
-   DESTEKLEMEZ ve sonradan değiştirilemez.
-   ⚠ Bu adım **5'i kilitliyor**: App Store Connect'in "New App" formunda
-   bundle ID bir AÇILIR LİSTE, burada kayıtlı olmayan görünmez.
-4. Keys → **APNs Authentication Key** (`.p8`) üret.
-5. Keys → **App Store Connect API Key** (rol: Admin ya da App Manager) —
-   `.p8` + **Key ID** + **Issuer ID**. CI'ın Mac'siz imzalama yolu bu.
-6. App Store Connect → yeni uygulama: ad **Kelimeki**, birincil dil
-   **Türkçe**, SKU, bundle id yukarıdaki.
-
-⚠ **5 ve 6 burada İLK KEZ yazılmıyor** — `mobile/docs/test-ortamlari.md`
-→ *"TestFlight kurulumu"* onları 25 Ağustos 2026'da adım adım yazmıştı.
-O dosya kaynak, burası indeks.
-
-⚠ **İki `.p8` KARIŞTIRILMAZ:** biri APNs (→ Firebase Console'a yüklenir),
-biri App Store Connect API (→ GitHub secret'ı olur). İkisi de **yalnızca
-bir kez indirilebilir**; kaybolursa iptal edip yenisi üretilir.
-
-### 24.2 — BENDE: Mac'siz imzalama + TestFlight (CI)
-
-**Kısıt, `mobile-build.yml`in kendi notundan:** *"geliştirici iPad'den
-çalışıyor; elinde ne Mac ne Android cihaz var"* (satır 461). Yani imzalama
-ve yükleme **tamamen CI'dan** yürümek zorunda — Xcode'da elle "Archive"
-seçeneği YOK. Android'de `.aab` için kurulan desenin aynısı:
-
-**KAYNAK BU BÖLÜM DEĞİL:** işletim adımları `mobile/docs/test-ortamlari.md`
-→ *"TestFlight kurulumu"*'nda zaten yazılı (25 Ağustos 2026) ve orası daha
-ayrıntılı. Burada yalnızca indeks duruyor — karar oradan okunur.
-
-- `mobile-build.yml`'e `ios` işinin yanına imzalı `.ipa` adımı: App Store
-  Connect API anahtarıyla headless sertifika + App Store profili, sonra
-  `upload_to_testflight`.
-- Secret'lar: `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`,
-  `APP_STORE_CONNECT_KEY_P8`, `MATCH_PASSWORD`.
-- ⚠ **`fastlane match` + AYRI BİR ÖZEL DEPO zorunlu, tercih değil:** Apple
-  hesap başına dağıtım sertifikası sayısını sınırlıyor, yani her koşuda
-  yenisini üretmek ÇALIŞMAZ — sertifika/profil şifreli olarak kalıcı bir
-  depoda saklanmalı (gerekçenin tamamı `test-ortamlari.md`'de).
-- **Secret yoksa adım sessizce atlanır** — `ANDROID_KEYSTORE_BASE64`'ün
-  kuralı; mevcut Appetize/imzasız akışlar bozulmaz.
-- ⚠ **Bu iş ancak gerçek anahtarla doğrulanabilir.** Yazıldığı an "çalışıyor"
-  denemez; kanıt, TestFlight'ta beliren derlemedir (Faz B'de `.aab`'nin
-  parmak izini CI log'undan geri okumakla aynı refleks).
-- ⚠ **`mobile-build.yml`in başlığındaki iki yorum BAYAT ve bilerek
-  düzeltilmedi** (satır 42-48 *"TestFlight… o iş üyelik geldiğinde
-  eklenecek"*, satır 462 *"Apple Developer üyeliği (TestFlight) askıda"*).
-  Sebep: o dosyaya dokunmak `paths` listesi gereği **tam bir macOS+Android
-  derlemesi tetikliyor** ve deponun *"yalnızca doküman değişikliği
-  ücretsizdir"* ilkesini bir yorum için bozmak anlamsız. **Düzeltme 24.2'nin
-  kendi PR'ında yapılır** — imzalama adımı zaten o dosyaya giriyor.
-
-### 24.3 — SENDE + BENDE: APNs / push
-
-ROADMAP bunu bugüne kadar *"APNs anahtarını Firebase'e yükle + Push
-capability ekle"* kadar kısa yazıyordu; ölçünce istemci tarafında üç dosya
-daha çıktı.
-
-| Kim | İş |
-|---|---|
-| Sen | Firebase Console → projeye **iOS uygulaması** ekle (`com.kelimeki.kelimeki`) → `GoogleService-Info.plist` indir |
-| Sen | ✅ **YAPILDI (8 Eylül 2026)** — `.p8` Firebase'e yüklendi. **İKİ SATIR DA dolu** (*development* + *production*), ikisinde de `RL4JLXL389` / `8277D85FY9`. ⚠ Bu konsol sürümü ortamları AYRI satır olarak listeliyor ve **kritik olan `production`**: TestFlight/App Store derlemeleri production APNs'e bağlanır, yalnız development doluyken bildirim **hatasız** düşmez. *development* pratikte kullanılmıyor (Xcode debug derlemesi Mac ister, yok) — boş bırakılabilirdi, doldurmanın zararı yok |
-| — | ⚠ **Yer bulma notu:** APNs yükleme ekranı *Project settings*'in **Cloud Messaging** sekmesinde ve dişli menüsünde GÖRÜNMÜYOR — dişliden **General**'a girip sekme şeridini kullanmak gerekiyor. Firebase bu bölümü birkaç kez taşıdı |
-| — | ✅ **ÇÖZÜLDÜ 15 Eylül 2026 — yeni anahtar `V85TL79C5R`** (*Kelimeki APNs Prod*, Team Scoped (All topics) + Sandbox & Production), Firebase'in development+production satırlarının İKİSİNE de yüklendi; bildirim aynı dakika cihaza düştü, log temiz. Aşağısı vakanın kaydı. ⛔ **APNs anahtarı `RL4JLXL389` YANLIŞ ORTAMDAYDI** — bu satır 8 Eylül'de *"Team Scoped (All Topics) + Sandbox & Production"* diyordu; **15 Eylül 2026'da konsoldan okundu: `Sandbox`.** Sonuç: TestFlight/App Store token'ları production APNs'ten geldiği için Apple her gönderimi reddediyor (aşağıdaki teşhis). ⚠ **Ortam düzenlenemiyor — konsolda denendi** (15 Eyl): `Configure Key` sayfası Environment/Key Restriction'ı düz METİN gösteriyor. Çözüm YENİ anahtar: APNs · **Team Scoped (All Topics)** · **Sandbox & Production**, `.p8`yi Firebase'e yükle, çalıştığı doğrulanınca eskisini revoke et (takım başına en fazla 2 APNs anahtarı). ⚠ Ders: konsoldan okunmamış bir ayar "yapıldı" diye YAZILMAZ — bu satır bir haftadır yanlıştı ve kimse göremedi, çünkü kimse iOS'ta bildirim beklemiyordu |
-| Ben | ✅ **YAPILDI (8 Eylül 2026)** — `ios/Runner/GoogleService-Info.plist`. Aynı Firebase projesi doğrulandı (`kelimeki` / `791040026998`, bundle id eşleşiyor). Android'in `google-services.json`'ı da repoda, aynı karar. ⚠ **Klasöre atmak YETMEZ:** `project.pbxproj`'a dört yerden kaydedildi (PBXFileReference · PBXBuildFile · Runner grubu · **Runner hedefinin Resources fazı**). Sonuncusu olmadan dosya pakete GİRMEZ ve `Firebase.initializeApp()` cihazda sessizce başarısız olur. ⚠ Firebase Console'un **"Flutter"** akışı KULLANILMADI — o akış `firebase_options.dart` üretip Android tarafını da yeniden yazar; bu depo yapılandırmayı iki platformda da NATIVE dosyadan okuyor |
-| Ben | `ios/Runner/Runner.entitlements` — dosya bugün **hiç yok**; `aps-environment` + `Info.plist`'e `UIBackgroundModes: remote-notification` |
-| Ben | `AppDelegate.swift`'e bildirim paneli kanalı |
-
-⚠ **`.p8` DOSYALARI DEPOYA GİRMEZ — depo PUBLIC** (8 Eylül 2026'da
-doğrulandı: `alpcapa/kelimeki`, `visibility: public`). Burada yalnızca
-**Key ID** ve **Team ID** kayıtlı; ikisi de gizli değil (Team ID her iOS
-uygulamasının AASA'sında zaten yayınlanıyor, APNs Key ID her push JWT'sinin
-`kid` başlığında gidiyor) ve özel anahtar olmadan işe yaramıyorlar.
-Kaydedilmelerinin sebebi operasyonel: hesapta birkaç anahtar birikince
-"Firebase hangisini kullanıyor" sorusunun cevabı olmazsa **yanlış anahtar
-iptal edilip canlıda push düşer**.
-
-⚠ **APNs anahtarının iki ayarı sessiz arıza üretir** (bu turda seçildi,
-kayda geçsin): *Environment* **Sandbox & Production** olmalı — TestFlight
-ve App Store derlemeleri Production'a, Xcode'dan çıkan geliştirme
-derlemeleri Sandbox'a bağlanır; tek ortam seçilirse öteki tarafta bildirim
-**hata vermeden** gelmez. *Type* **Team Scoped (All Topics)** — kısıtlı bir
-anahtar, sonradan eklenen bir bundle ID'de aynı şekilde sessizce çalışmaz.
-
-**Kanal adı ve metot BUGÜNDEN belli, uydurulmayacak** —
-`data/notification_shade.dart:52,56` Kotlin tarafıyla birebir aynı olmak
-zorunda diyor ve iOS için ne yapılacağını da yazmış: kanal
-`kelimeki/bildirimler`, metot `hepsiniTemizle`, iOS karşılığı
-`removeAllDeliveredNotifications()`. **Dart tarafı DEĞİŞMEZ.** Parite testi
-(`test/notification_shade_parity_test.dart`) bugün Kotlin'i okuyor; iOS
-yarısı eklenince Swift'i de okumalı — yoksa uyuşmazlık SESSİZ arıza
-(çağrı `MissingPluginException` fırlatır ve yutulur).
-
-⚠ **iOS rozeti bugün hiç ARTMAZ ve bu ayrı bir karar.** Rozet
-`aps.badge`den geliyor, sunucu onu **hiç göndermiyor**
-(`notification_shade.dart:26`). Yani "paneli temizle" işi iOS'ta rozet
-değil yalnızca bildirim satırlarını hedefler. Sunucuya `badge` eklenip
-eklenmeyeceği bu fazın parçası DEĞİL — açılırsa `_shared/push.ts` +
-`verify-push-payload` birlikte değişir.
-
-### 24.4 — Universal Links (Associated Domains) — **CİHAZDA DOĞRULANDI ✅** (13 Eylül 2026)
-
-✅ **İki yarı da çalışıyor, kanıt cihazdan geldi.** iPad'de Safari'de
-`kelimeki.com` açılınca üstte **"Kelimeki: Türkçe Kelime Oyunu — Open in
-the Kelimeki app · OPEN"** bandı çıktı (TestFlight 665 kurulu). Bandın
-çıkması iki şeyi birden kanıtlıyor: Apple'ın CDN'i AASA'yı **doğrulamış**
-ve uygulama `associated-domains` yetkisini **taşıyor**. Aynı anda
-depodan/canlıdan ölçüldü: `content-type: application/json` ✅ (aşağıdaki
-Vercel tuzağı geçilmiş).
-
-⚠ **Bu bant §26'nın Smart App Banner'ı DEĞİL** — depoda `apple-itunes-app`
-meta etiketi yok (13 Eyl 2026'da `index.html`/`src/`/`public/` tarandı,
-sıfır eşleşme). İkisi kolay karışıyor ama işleri farklı: Universal Links
-bandı yalnızca **uygulamayı ZATEN kurmuş** kişiye çıkar; §26'nın rozetleri
-ve Smart App Banner'ı uygulamayı hiç görmemiş ziyaretçi içindir. Biri
-ötekinin yerini tutmaz.
-
-**Aşağısı işin nasıl kurulduğunun kaydı.**
-
-**ROADMAP 0.B/3'ün açık kalan TEK parçası buydu** (satır 858).
-
-**Team ID: `8277D85FY9`** (8 Eylül 2026, Membership details'ten okundu —
-gizli değil, uygulama kimliğinin parçası).
-
-✅ **Web yarısı YAZILDI** (8 Eylül 2026):
-`public/.well-known/apple-app-site-association`, tek `appID`
-`8277D85FY9.com.kelimeki.kelimeki`.
-
-**Kapsam Android'le BİLEREK aynı: `/*`, yani tüm `kelimeki.com` yolları.**
-`AndroidManifest.xml`'deki `autoVerify` intent-filter'ında da `android:path`
-kısıtı yok. İkisi ayrışırsa aynı link iki platformda farklı davranır ve bu
-**sessiz** bir arızadır — kapsamı daraltmak isteyen iki tarafı BİRLİKTE
-daraltmalı.
-
-⚠ **Vercel'de `Content-Type` ELLE verilmek zorunda ve bu iOS'a özgü.**
-Apple dosyayı **uzantısız** istiyor, Vercel ise Content-Type'ı uzantıdan
-türetiyor — yani dosya varsayılan olarak `application/json` etiketlenmez ve
-Apple'ın CDN'i doğrulamayı reddedebilir. `vercel.json` → `headers`'a açık
-bir kural eklendi. `assetlinks.json`'ın böyle bir derdi YOK (`.json`
-uzantısı var; canlıda ölçüldü: `content-type: application/json`), o yüzden
-bu tuzak Android turunda hiç görülmedi.
-⚠ `vercel.json`'a **şema dışı anahtar YAZILMAZ** — gerekçe yorumu olarak
-bir `comment` alanı denendi ve geri alındı; Vercel `vercel.json`'ı şemaya
-göre doğruluyor, bilinmeyen anahtar deploy'u kırabilir.
-
-**Ölçüldü (derlemeden sonra):** dosya `dist/.well-known/`e kopyalanıyor ve
-service worker precache'ine **girmiyor** (`globPatterns` varsayılanı
-uzantıya bakıyor, uzantısız dosya eşleşmiyor) — yani SW araya girmiyor.
-
-**KALAN — iOS yarısı, 24.3 ile AYNI PR'da:**
-- `ios/Runner/Runner.entitlements` (dosya bugün hiç yok) →
-  `com.apple.developer.associated-domains` = `applinks:kelimeki.com`
-- `project.pbxproj` → `CODE_SIGN_ENTITLEMENTS` bu dosyayı göstermeli
-- ⚠ App Links'in Android'deki dersi burada da geçerli: doğrulama yalnızca
-  **TestFlight/mağaza imzalı** derlemede sınanabilir, CI'nın imzasız
-  çıktısında değil (`mobile/docs/sonraya-birakilanlar.md`).
-
-⚠ **Yayından sonra `curl` ile OKU** (deploy doğrulamasının aynı kuralı):
-```
-curl -sI https://kelimeki.com/.well-known/apple-app-site-association | grep -i content-type
-```
-`application/json` dönmüyorsa Apple doğrulaması yapılmadan iOS yarısına
-geçme — entitlements doğru olsa bile link uygulamayı açmaz.
-
-### 24.5 — SENDE + BENDE: mağaza vitrini
-
-- **Ben:** `marketing/app-store/console-formlari.md` — Play'in cevap
-  kâğıdının iOS ikizi. **App Privacy**, Play'in Data safety'sinin eşi ve
-  büyük ölçüde ondan türer (`marketing/play-store/console-formlari.md` §3).
-  Kategori **Games → Word**, destek URL `kelimeki.com`, gizlilik URL
-  `kelimeki.com/gizlilik/`, hesap silme `kelimeki.com/hesap-silme/`.
-- **Ekran görüntüleri — cihaz yokluğu burada ısırıyor.** Apple hem büyük
-  iPhone hem (uygulama iPad'i desteklediği için) **13" iPad** seti istiyor.
-  Play'de bunlar gerçek cihazdan alınmıştı; burada kaynak CI'nın zaten
-  ürettiği **simülatör derlemesi** (`kelimeki-ios-simulator.zip`) ya da
-  Appetize. Çözülmemiş: simülatör penceresinden Apple'ın istediği tam
-  piksel ölçüsünde kare almanın yolu — **ölçülmedi, tur açılırken bak.**
-- ⚠ **App Store 4.8 kapısı bugün KAPALI ve öyle kalsın:** uygulamada
-  üçüncü taraf girişi YOK, o yüzden "Apple ile giriş" de zorunlu değil.
-  #17 (Google ile giriş) iOS'a girdiği gün ikisi **birlikte** gider —
-  gerekçe #17 → "Apple neden bu maddede YOK".
-- ⚠ **`in_app_update` Android'e özgü**, iOS'ta karşılığı yok
-  (`mobile/CLAUDE.md`). Yani iOS'ta elimizdeki TEK fren sürüm kapısı
-  (`app_config.mobile_min_supported_version`).
-  ✅ **9 Eylül 2026'da CANLIDAN ölçüldü: anahtar EKSİK DEĞİL** —
-  satır `{"ios":"0.0.0","android":"0.0.0"}`. Bu bölüm *"o anahtarın satırı
-  doldurulmalı"* diyordu; yanlıştı, `version_gate.dart`in okuduğu `'ios'`
-  anahtarı zaten yazılı. **`0.0.0` bugün DOĞRU değer** (fail-open: kapı
-  kapalı, zorunlu güncelleme yok) çünkü henüz yayınlanmış bir iOS sürümü
-  yok. Gerçek iş şu: ilk TestFlight/App Store sürümünden SONRA bu satır
-  iOS'ta tek fren olduğu için bilinçli yükseltilmeli — Android'deki gibi
-  bir mağaza diyaloğu devreye girmiyor.
-
-### 24.6 — Gönderim & inceleme
-
-TestFlight'ta çalışan bir derleme + 24.5'in formları tamamlanınca gönderim.
-Faz B'nin dersi burada da geçerli: **bir işin kaydı iki yerde durursa biri
-kapanırken öteki kapanmıyor** — bu tablo bir İNDEKS, kararların kaynağı
-`marketing/app-store/console-formlari.md` olacak.
-
-### Sıra ve bağımlılıklar
-
-```
-24.1 (sende, Console)
-  ├─→ 24.2 (imzalama/TestFlight)  ─┐
-  ├─→ 24.3 (APNs)                  ├─→ 24.6 (gönderim)
-  ├─→ 24.4 (Universal Links)      ─┤
-  └─→ 24.5 (vitrin) ───────────────┘
-```
-
-**24.1 tek gerçek kilit.** 24.5'in cevap kâğıdı ondan bağımsız yazılabilir
-(hesap tipi hariç); 24.2/24.3/24.4 anahtarlar ve Team ID gelmeden
-YAZILABİLİR ama DOĞRULANAMAZ — ve bu depoda "yazıldı" ile "çalışıyor"
-arasındaki farkın bedeli defalarca ödendi.
+⚠ **Kapanan şey FAZ C, App Store işi DEĞİL.** Yayındaki sürümün bakımı,
+sonraki gönderimler ve inceleme yazışmaları `console-formlari.md`'den
+yürür; §26'nın Apple yarısı da bu yayınla açıldı ve YAPILDI.
 
 ---
 
-## 26. Web'den mağazalara yönlendirme — **BEKLİYOR: mağaza linkleri canlı değil** (10 Eylül 2026)
+## 26. Web'den mağazalara yönlendirme — **APPLE YARISI ✅ YAPILDI · ANDROID YARISI BEKLİYOR** (15 Eylül 2026)
 
 Kullanıcı isteği: *"web'de çıkan 'Add to homescreen' sadece web'de kalmalı.
 Android ve iOS'dan gelenleri Store'lara yönlendirmek gerekecek. Bir de

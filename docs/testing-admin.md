@@ -497,14 +497,21 @@ sayıları o turun ÇIKTISI.
 - [ ] **En fazla İKİ satır: `Otomatik` ve `Tekrar`.** Ham `auto`/`replay`
       değerleri ekranda GÖRÜNMEMELİ. Hiç tekrar izleyen yoksa `Tekrar`
       satırı hiç olmayabilir — bu normal, boş satır çizilmemeli.
-- [ ] **Sayı çifti doğru okunuyor:** `Başlatan`/`Bitiren` sütunundaki büyük
-      sayı BENZERSİZ CİHAZ, parantezdeki soluk sayı ADET. Parantezdeki sayı
-      hiçbir zaman büyük sayıdan KÜÇÜK olamaz. Tanıtımı aynı cihazda iki kez
-      açınca yalnızca parantez artmalı.
-- [ ] **`Bitirme` oranı cihaz üzerinden:** `Bitiren cihaz / Başlatan cihaz`.
-      Aynı cihazda iki kez açıp bir kez bitirince oran DÜŞMEMELİ (adet payda
-      olsaydı düşerdi).
-- [ ] **`Başlatan` 0 ise oran `—`, `%0` DEĞİL** ("0% ≠ bilgi yok" kuralı,
+- [ ] **Sayı çifti doğru okunuyor (15 Eylül 2026'da TERS ÇEVRİLDİ):**
+      `Başlatma`/`Bitirme` sütunundaki büyük sayı ADET, parantezdeki soluk
+      sayı BENZERSİZ CİHAZ. Parantezdeki sayı hiçbir zaman büyük sayıdan
+      BÜYÜK olamaz. Tanıtımı aynı cihazda iki kez açınca yalnızca büyük sayı
+      artmalı.
+- [ ] **UYGULAMADAN açılan tanıtım parantezi ARTIRMAZ** ve bu bir hata
+      değil: port `anon_id` yazmıyor, benzersiz sayım NULL saymaz. Kontrol:
+      telefonda tanıtımı aç → büyük sayı +1, parantez AYNI kalmalı. (Tersi —
+      parantezin de artması — portun damgayı yazmaya başladığı anlamına
+      gelir; o zaman ROADMAP'teki madde kapanmış demektir ve oran cihaz
+      paydasına geri alınabilir.)
+- [ ] **`Oran` sütunu ADET üzerinden:** `Bitirme / Başlatma`. Aynı cihazda
+      iki kez açıp bir kez bitirince oran DÜŞER — bu beklenen davranış, kabul
+      edilmiş bedel (gerekçe: `docs/decisions/admin-panel.md`).
+- [ ] **`Başlatma` 0 ise oran `—`, `%0` DEĞİL** ("0% ≠ bilgi yok" kuralı,
       Kaynak Hunisi ile aynı).
 - [ ] **Bırakılan sahne dökümü:** ATLA ile 1. sahnede çıkıp yeniden açıp 3.
       sahnede çıktıktan sonra satırın altında *"bırakılan sahne: 1. (1) · 3.
@@ -515,9 +522,10 @@ sayıları o turun ÇIKTISI.
 - [ ] **Boş aralık "Bu aralıkta veri yok." demeli** — sıfırlarla dolu bir
       tablo DEĞİL. Yüklenirken "Yükleniyor…"; ikisinde de `?` rozeti çizili
       kalmalı.
-- [ ] **`?` popup'ı (`tanitim-turu`)** başlığı "Tanıtım Turu" olmalı ve iki
-      şeyi açıkça söylemeli: benzersiz cihaz ↔ adet ayrımı, ve iki kaynağın
-      neden ayrı satır olduğu.
+- [ ] **`?` popup'ı (`tanitim-turu`)** başlığı "Tanıtım Turu" olmalı ve üç
+      şeyi açıkça söylemeli: adet ↔ benzersiz cihaz ayrımı, parantezdeki
+      cihaz sayısının YALNIZCA web'i gördüğü, ve iki kaynağın neden ayrı
+      satır olduğu.
 - [ ] **Tanıtım Kaynak Hunisi'ni KİRLETMİYOR.** Bir tanıtım turu oyna → üstteki
       Kaynak Hunisi'nin "Başlayan" sütunu DEĞİŞMEMELİ (tanıtım bilerek bir
       "oyun" değil: `game_starts` yazılmıyor, `games` satırı açılmıyor).

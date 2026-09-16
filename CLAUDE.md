@@ -402,7 +402,7 @@ dosyasını ölçüp üç sınıfa ayırır — çünkü maliyetleri farklı:
 |---|---|---|
 | **auto** | Her turda bağlama YÜKLENİR: `CLAUDE.md`, `mobile/CLAUDE.md` | 80 KB / **120 KB** |
 | **active** | BAŞTAN SONA okunur ve büyümeye devam eder: `TESTING*`, `README`, `ROADMAP` | 120 KB / **200 KB** |
-| **reference** | Yalnızca GREP'lenir: `docs/decisions/*`, `mobile/docs/parca-log*` | 200 KB / **300 KB** |
+| **reference** | Yalnızca GREP'lenir: `docs/decisions/*`, `mobile/docs/parca-log*` | 260 KB / **400 KB** (15 Eyl 2026'da 200/300'den yükseltildi — aşağı bkz.) |
 | **frozen** | Dondurulmuş arşiv; okuması opt-in, tek kural BÜYÜMEMESİ | kendi tavanı |
 
 **Sınır aşılınca ne yapılır** (betik zaten yazdırıyor):
@@ -430,6 +430,35 @@ değiştiğinde. `npm install` ve derleme YOK (saniyeler) — bu repoda
 ⚠ **Uyarı bandındaki dosyayı bir sonraki dokunuşunda böl.** Uyarı, sınıra
 çarpmadan önce hareket etme fırsatıdır; biriktirilirse kontrolün anlamı
 kalmaz.
+
+⚠ **İKİNCİ bir ölçü var: EN BÜYÜK BÖLÜM (15 Eylül 2026).** `reference`
+sınıfında dosya boyutu VEKİL bir sayıdır — kimse baştan sona okumaz, grep
+bir bölüme düşürür ve okunan o bölümdür. Betik bu yüzden her `reference`
+dosyasının en büyük **yaprak bölümünü** de ölçüyor ve **40 KB**'ı aşanı
+yazdırıyor. Bu bir UYARI, kapı DEĞİL (CI'ı düşürseydi ilgisiz her PR'ı bir
+doküman ameliyatına rehin alırdı) ve **ilacı bölmek değil, bloğa ALT BAŞLIK
+koymak** — dosya aynı kalır, grep'in düştüğü parça küçülür.
+
+`reference` bandı aynı gün 260/400'e çıkarıldı (400 KB ≈ 100K token) ama
+gevşetme TEK BAŞINA yapılmadı: sınıra çarpınca sınırı yükseltmek kontrolü
+süse çevirir, o yüzden karşılığında bu bölüm ölçüsü eklendi. `frozen` bu
+ölçünün DIŞINDA (o ciltlerin başlığı baştan sona okumayı zaten yasaklıyor).
+
+⚠ **Ölçü 16 Eylül 2026'da DÜZELTİLDİ — "yaprak" kelimesi bedava değil.**
+İlk sürüm yalnızca `## ` başlıklarına bölüyordu, yani reçetenin kendisi
+(`###` ekle) yazdırılan sayıyı **bir bayt bile** değiştirmiyordu. Sonuç:
+uyarıyı temizleyecek tek eylem kuralın yasakladığı şeydi (bölmek), uyarı
+bu yüzden sürekliydi ve sekiz dosyalık sabit bir gürültü duvarına dönüştü
+(kullanıcı: *"Sürekli dosya bölme uyarısı mantıklı değil"*). Ölçü artık
+`##`'den `######`'ya kadar HER seviyede kesiyor — grep isabette seni en
+yakın başlıktan sonraki parçaya bırakır, o başlık hangi seviyede olursa
+olsun. Kod çiti (```) içindeki `# ...` satırı başlık sayılmaz.
+
+**Ders, yeni bir ölçü eklerken:** ölçünün kestiği şey ile reçetenin
+değiştirdiği şey AYNI olmalı. Değilse kontrol bir iş emri değil, sabit bir
+gürültü üretir — ve gürültü okunmaz. Düzeltme tek başına iki yanlış
+pozitifi temizledi (`live-game.md` 52 → 24 KB, `local-game-persistence.md`
+41 → 38 KB: ikisinde alt başlık ZATEN vardı, ölçü onları görmüyordu).
 
 ⚠ **Alt sınır da var (7 Eylül 2026):** betik 0 baytlık her `.md`'yi ve
 tabanının altına düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki
