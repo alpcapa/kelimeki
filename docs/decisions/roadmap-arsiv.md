@@ -3675,3 +3675,56 @@ seviye kırılımı iki hafta (Kolay ~%30 · Normal ~%51 · Zor ~%70 YZ kazanma)
 sapma varsa kadran ayarlanır, motor yeniden yazılmaz (23.3).
 
 ---
+
+## 9. Admin Üyeler tablosuna "onaylanmamış" filtresi — **İSTEĞE BAĞLI**
+
+**Model: Sonnet 5, efor `medium`.** Salt-okunur bir liste filtresi.
+
+Kullanıcı 23 Ağustos 2026'da onayladı ("Filtre kalsın") ama o günkü "hemen
+canlıya alalım" kapsamının DIŞINDA bırakıldı — asıl sorun (onaylanmamış
+hesabın takma adı süresiz kilitlemesi) artık saatlik süpürmeyle çözülü
+(bkz. kök `CLAUDE.md` → "Onaylanmamış hesap süpürmesi"), yani bu filtre bir
+arıza değil bir görünürlük kolaylığı.
+
+**Ne:** Üyeler tablosunda "yalnızca onaylanmamışları göster" seçeneği. Bugün
+`admin_list_members` bu alanı HİÇ döndürmüyor — `auth.users.email_confirmed_at`
+istemciye kapalı, yani RPC'ye bir kolon eklemek gerekiyor (dönüş tipi
+değişince `create or replace` YETMEZ, drop+create + grant'leri elle geri kur;
+kayıtlı tuzak: `fix_withdraw_report_wrong_overload`).
+
+**Kapsam kararı:** yeni kolon Üyeler tablosunda gösterilecekse CSV'ye de
+eklenmeli — "CSV ekranda görüneni indirir" sözü ancak öyle doğru kalır.
+Sıralama anahtarı EKLEME (mevcut yedi anahtar korunuyor, gerekçesi
+`CLAUDE.md` → "Kayıt alanlarının tamamı tabloda").
+
+**YAPILDI — 16 Eylül 2026.** Kullanıcı isteği (*"üyeler tablosuna onay
+kolonu ekleyecektik"*) bu maddeyi kapattı; iki yarısı da yapıldı.
+
+- **RPC:** `admin_list_members` artık `email_confirmed_at` döndürüyor
+  (`20260916064532_admin_list_members_email_confirmed`). Dönüş tipi
+  değiştiği için drop+create; gövdenin geri kalanı BİREBİR korundu.
+- **Kolon:** tabloda **Onay** (E-posta'nın sağında) — `Onaylı` yeşil,
+  tarih `title`da; `Bekliyor` TURUNCU, çünkü 48 saat içinde silinecek bir
+  durum. `ConsentCell` bilerek kullanılmadı (orada "hayır" tarafı soluk ve
+  bu, bakılması gereken bir durumu gizlerdi).
+- **Filtre:** "Yalnızca onaylanmamışlar (N)", aramayla BİRLİKTE daraltıyor;
+  onaysız hesap yokken düğme HİÇ çizilmiyor. Alt sayaç da düzeltildi —
+  koşul artık aramaya değil DARALTMAYA bakıyor.
+- **CSV:** `E-posta Onayı` sütunu eklendi (tarih ya da `Bekliyor`) —
+  kapsam kararı gereği.
+- **Sıralama anahtarı EKLENMEDİ**, maddenin kendi kararına uyuldu.
+
+⚠ **Beklenmeyen bulgu — drop+create `anon` grant'ini GERİ GETİRDİ.**
+Maddede "grant'leri elle geri kur" yazıyordu; eksik olan şey bunun tersiydi:
+Supabase yeni fonksiyona varsayılan olarak `anon`a da execute veriyor ve
+`revoke ... from public` doğrudan verilmiş bir grant'i düşürmüyor. Canlıda
+ACL `{postgres, ANON, authenticated, service_role}` çıktı (öncesinde `anon`
+YOKTU) ve ayrı bir migration'la geri alındı
+(`20260916064548_admin_list_members_revoke_anon`). Veri sızmazdı —
+fonksiyon girişte `is_admin()` kontrol ediyor — ama yüzey bu depoda bilerek
+dar tutuluyor. **Ders `CLAUDE.md`'ye yazıldı:** dönüş tipi değişen her
+fonksiyonda drop+create'ten SONRA `proacl` OKU.
+
+Ölçüm (16 Eylül 2026): 56 hesabın 52'si onaylı, 4'ü onaysız ve dördü de
+1 günden yeni — `sweep-unconfirmed-accounts` çalışıyor demektir.
+
