@@ -533,6 +533,18 @@ kopyanın da güncellendiğini doğrula.
 
 - [ ] Kayıt onayı, şifre sıfırlama, e-posta değişikliği — üçü de marka kartıyla
       gelmeli, gönderen "Kelimeki &lt;noreply@kelimeki.com&gt;" olmalı.
+- [ ] **Kayıt sonrası kırmızı uyarı** (16 Eylül 2026): "Kayıt Ol"a basınca
+      pencere giriş moduna döner ve kırmızı satır çıkar — eylem cümlesi
+      **BÜYÜK HARF ve KALIN**: *"Hesap oluşturuldu. **E-POSTANIZI KONTROL
+      EDİP ONAY VERİN.**"*. ⚠ Türkçe harflere bak: `EDİP`/`VERİN`
+      noktalı **İ** taşımalı (`I` görüyorsan biri metni CSS `uppercase`
+      sınıfına bağlamış demektir — `trUpper` kuralının CSS'teki eşi).
+- [ ] **Onay linki pencereyi KAPATIR** (16 Eylül 2026, kullanıcı bildirdi):
+      yukarıdaki kırmızı uyarı EKRANDAYKEN e-postadaki onay bağlantısına
+      bas. Uygulama açılıp oturum kurulduğunda *"onay verin"* penceresi
+      **kendiliğinden kapanmalı** — X'e basmak GEREKMEMELİ. Aynı kontrolü
+      PWA (ana ekrana eklenmiş) kurulumunda da yap: hata tam orada
+      görülmüştü, çünkü link uygulamanın AÇIK örneğine düşüyor.
 
 ## 7. Bildirim rozetleri (site geneli)
 

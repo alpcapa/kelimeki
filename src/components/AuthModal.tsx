@@ -1,5 +1,5 @@
 // Kelimeki — giriş / kayıt ekranı
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PrivacyModal';
@@ -7,6 +7,7 @@ import { signIn, signUp, sendPasswordReset, friendlyAuthMessage } from '../lib/a
 import { useAuth } from '../hooks/useAuth';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import { GENDER_OPTIONS, formatTrDateInput, trDateToIso } from '../utils/profileFields';
+import type { ReactNode } from 'react';
 import type { Gender } from '../lib/database.types';
 import { friendlyErrorMessage, GENERIC_ERROR_NOTICE } from '../utils/errorMessage';
 
@@ -40,7 +41,7 @@ export function AuthModal({
   initialEmail = '',
   signupChannel = 'direct',
 }: AuthModalProps) {
-  const { refreshProfile } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
@@ -52,7 +53,7 @@ export function AuthModal({
   const [birthDate, setBirthDate] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
+  const [info, setInfo] = useState<ReactNode>(null);
   const [infoTone, setInfoTone] = useState<'gold' | 'red'>('gold');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
@@ -60,6 +61,29 @@ export function AuthModal({
   const [showPrivacy, setShowPrivacy] = useState(false);
 
   const nicknameStatus = useNicknameAvailability(nickname, mode === 'signup');
+
+  // ── Oturum belirdiğinde pencere KENDİ kapanır (15 Eylül 2026) ────────────
+  // Kullanıcı bildirdi: kayıt sonrası "onay verin" penceresi açıkken
+  // e-postadaki onay linkine basılıyor, link AYNI uygulama örneğini açıyor,
+  // Supabase oturumu kuruyor — kişi giriş YAPMIŞ oluyor ama pencere açık
+  // kalıyor ve X'e basmak gerekiyor.
+  //
+  // Düzeltmenin yeri BURASI, çağıranlar değil: `AuthModal`ı açan altı yer
+  // (`Setup`, `LiveGamesTab`, `UserMenu`, `FriendInvitePage`, `FeedbackModal`,
+  // `App`) kendi `showAuthModal` state'ini tutuyor ve hiçbiri oturumu
+  // dinlemiyor — düzeltme orada yapılsaydı altı kopya olurdu.
+  //
+  // ⚠ Hook, erken `return`ların ÜSTÜNDE (React #300 kapısı,
+  // `npm run verify-hook-order`). `kapandi` bayrağı: `onClose` çağıranların
+  // çoğunda satır içi bir ok fonksiyonu, yani her render'da kimliği
+  // değişiyor — bayrak olmadan efekt her render'da yeniden koşup `onClose`'u
+  // tekrar tekrar çağırırdı.
+  const kapandi = useRef(false);
+  useEffect(() => {
+    if (!user || kapandi.current) return;
+    kapandi.current = true;
+    onClose();
+  }, [user, onClose]);
 
   const switchMode = (next: Mode) => {
     setMode(next);
@@ -110,7 +134,15 @@ export function AuthModal({
         } else {
           switchMode('login');
           setInfoTone('red');
-          setInfo('Hesap oluşturuldu. E-postanı doğrulayıp giriş yap.');
+          // ⚠ Metin ELDE büyük harfle yazılı, `uppercase` SINIFIYLA değil:
+          // CSS `text-transform` Türkçe'de i→I yapar (`İ` yerine `I`), yani
+          // "EDİP"/"VERİN" bozulurdu — `trUpper` refleksinin CSS'teki eşi.
+          setInfo(
+            <>
+              Hesap oluşturuldu.{' '}
+              <strong className="font-bold">E-POSTANIZI KONTROL EDİP ONAY VERİN.</strong>
+            </>,
+          );
         }
       }
     } catch (err) {
