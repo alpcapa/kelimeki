@@ -23,6 +23,34 @@ yılda birkaç kez koşuluyor) — yani `npm run` listesinde aramayın. Özellik
 okuyup `sharp` ile rasterize eder; font/tarayıcı gerektirmez, `LogoMark`
 tarafının `generate-logo.mjs`'iyle aynı rolü oynar.
 
+### Mağaza rozeti karelere girdi (16 Eylül 2026)
+
+Uygulama 15 Eylül'de App Store'a çıktı; kareler hâlâ yalnızca `kelimeki.com`
+diyordu ve 1. karenin alt satırı *"Kurulum yok"* iddiasını taşıyordu — rozetle
+açıkça çelişen bir cümle. Kare 1 ve 5 artık resmî App Store rozetini taşıyor,
+her karenin alt şeridi `kelimeki.com · App Store'da` diyor, 5. karedeki mavi
+`CtaButon` kaldırıldı (rozet çağrının kendisi; iki güçlü çağrı son karede
+hedefi ikiye bölüyordu).
+
+- **Rozet ÇİZİLMİYOR, `public/`teki resmî dosya `<img>` ile basılıyor** —
+  inline SVG yasağının gerekçesi `src/utils/storeLinks.ts`te (Illustrator
+  ihracatının `.st0` sınıfları sayfaya sızıyor).
+- **Kapı paylaşılıyor:** kareler `visibleStoreBadges()` çağırıyor, yani
+  "yayında değilse çizme" kuralı ve rozet SIRASI (App Store önce) tek
+  kaynaktan geliyor. Play yayına girip `storeLinks.ts`teki `null` dolduğunda
+  ikinci rozet, kareler yeniden üretildiğinde kendiliğinden gelir — burada
+  yapılacak iş yok. Alt şeridin cümlesi de (`magazaMetni`) aynı listeden
+  türüyor, üçüncü bir yerde tekrarlanmıyor.
+- **⚠ Ölçü EKRANA göre, dosyaya göre değil.** Apple'ın 40 px alt sınırı
+  render edilmiş boyutu bağlar. Instagram karesi telefonda ~390 pt genişlikte
+  çizildiğinden 1080 px'lik tasarım orada ×0,36 küçülüyor: rozetin karede
+  40 / 0,36 ≈ 111 px yüksek olması gerekiyor → ≈420 px geniş. Genişlik elle
+  yazılmıyor, `rozetGenisligi()` rozet SVG'sinin `viewBox`ından oranı okuyup
+  hesaplıyor (aynı dosyada `~3.0` varsayımının nasıl çöktüğü yazılı).
+- **⚠ Bu yüzden rozet her kareye konmadı.** Alt şeride sığacak bir rozet
+  (~50 px) telefonda ~18 pt'ye düşerdi, yani kuralın altında. İçerik kareleri
+  (2-4) alt şeritte düz metin taşıyor.
+
 - **Görseller çizim DEĞİL, üretim bileşenlerinin sunucuda render'ı** —
   tahtalar `GameBoardPreview`→`Board` (`compact={false}`, `demoBoard.ts`),
   rütbeler `RankSeal` + `RANK_TIERS`, logo `LandingLogo`, adım şemalarının

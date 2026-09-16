@@ -35,6 +35,15 @@ import { RANK_TIERS } from '../../src/utils/leagueRank';
 import { PLAYER_COLORS } from '../../src/game/constants';
 import { DEMO_TILES_2, DEMO_TILES_4 } from '../../src/landing/demoBoard';
 import { IkiKisiIkon, RobotIkon, SohbetIkon } from '../../src/landing/OzellikIkonlari';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+import {
+  BADGE_GAP_PX,
+  BADGE_MIN_HEIGHT_PX,
+  BADGE_WIDTH_PX,
+  visibleStoreBadges,
+} from '../../src/utils/storeLinks';
 
 const SLIDE = 1080;
 const PAD_X = 64;
@@ -114,9 +123,16 @@ function Footer({ no }: { no: number }) {
         justifyContent: 'space-between',
       }}
     >
-      <span style={{ fontFamily: MONO, fontSize: 26, fontWeight: 700, color: C.accent }}>
-        kelimeki.com
-      </span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
+        <span style={{ fontFamily: MONO, fontSize: 26, fontWeight: 700, color: C.accent }}>
+          kelimeki.com
+        </span>
+        {magazaMetni() && (
+          <span style={{ fontFamily: MONO, fontSize: 22, color: C.muted }}>
+            · {magazaMetni()}
+          </span>
+        )}
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {[1, 2, 3, 4, 5].map((i) => (
           <span
@@ -369,28 +385,106 @@ function Rozet({ renk, metin }: { renk: string; metin: string }) {
   );
 }
 
-/** Slide 5'teki ana çağrı — uygulamadaki "HEMEN OYNA" düğmesinin poster ölçeği. */
-function CtaButon({ etiket }: { etiket: string }) {
+/**
+ * Instagram karesinin telefonda çizildiği ölçek — ölçünün paydası.
+ * Kare feed'de ekranın neredeyse tamamını kaplıyor; 390 pt modern bir iPhone'un
+ * mantıksal genişliği (Pro Max'te 430, yani bu DAR olanı — güvenli taraf).
+ *
+ * ⚠ `ROZET_W`den ÖNCE durmak zorunda: `rozetGenisligi()` modül yüklenirken
+ * çağrılıyor ve bu sabiti okuyor (bildirimi sonraya alınırsa TDZ hatası).
+ */
+const TELEFON_OLCEK = 390 / SLIDE;
+
+/**
+ * Rozetin bu karelerdeki genişliği (1080 px'lik tasarım uzayında).
+ *
+ * ⚠ Apple'ın alt sınırı (`BADGE_MIN_HEIGHT_PX` = 40) EKRANDA ölçülür, dosyada
+ * değil — ve bu kareler bir ekran değil, bir GÖRSEL. Instagram kareyi telefonun
+ * neredeyse tam genişliğinde çiziyor (~390 pt), yani 1080 px'lik tasarım orada
+ * ×0,36 küçülüyor: 40 pt'yi GERÇEKTEN geçmek için rozetin bu karede
+ * 40 / 0,36 ≈ 111 px yüksek olması gerekiyor. Türkçe rozet 3,78:1 olduğundan
+ * genişlik 111 × 3,78 ≈ 420.
+ *
+ * ⚠ **Rozet bu yüzden HER kareye konmadı.** Alt şeride sığacak bir rozet
+ * (~50 px) telefonda ~18 pt'ye düşer, yani Apple'ın sınırının ALTINDA kalırdı.
+ * İçerik kareleri (2-4) alt şeritte rozet yerine düz metin taşıyor
+ * (`magazaMetni`); rozet yalnızca kanca (1) ve çağrı (5) karelerinde.
+ */
+const ROZET_W = rozetGenisligi();
+
+/**
+ * Rozet genişliğini ÖLÇEREK bulur, varsayarak değil.
+ *
+ * Oran `public/`teki resmî dosyanın `viewBox`ından okunuyor. Bu, `storeLinks.ts`te
+ * bedeli ödenmiş bir ders: 15 Eylül 2026'ya kadar Apple rozetinin oranı `~3.0`
+ * VARSAYILIYORDU; gerçek dosya gelince 3,78 çıktı ve yerleşim kuralı çiğniyordu.
+ *
+ * ⚠ En GENİŞ oran ölçütü belirler: rozetler eşit genişlikte çizildiğinden en
+ * geniş oranlı olan en ALÇAK rozeti üretir, Apple'ın 40 pt sınırını onun
+ * geçmesi gerekir.
+ */
+function rozetGenisligi(): number {
+  const oranlar = visibleStoreBadges().map((b) => {
+    const dosya = path.join('public', path.basename(b.asset));
+    const vb = /viewBox="([\d.\s-]+)"/.exec(readFileSync(dosya, 'utf8'));
+    if (!vb) throw new Error(`${dosya}: viewBox okunamadı — rozet ölçülemiyor.`);
+    const [, , w, h] = vb[1].trim().split(/\s+/).map(Number);
+    if (!(w > 0 && h > 0)) throw new Error(`${dosya}: viewBox geçersiz (${vb[1]}).`);
+    return w / h;
+  });
+  if (oranlar.length === 0) return 0;
+  return Math.ceil((BADGE_MIN_HEIGHT_PX / TELEFON_OLCEK) * Math.max(...oranlar));
+}
+
+/**
+ * Mağaza rozetleri — ÜRETİM kapısından geçerek (`visibleStoreBadges`).
+ *
+ * ⚠ **Rozet ÇİZİLMİYOR:** `public/`teki resmî dosyalar `<img>` ile basılıyor.
+ * Inline SVG yasak — Illustrator ihracatlarının `.st0` gibi jenerik sınıfları
+ * sayfaya sızıp iki rozetin rengini birbirine eziyor (`storeLinks.ts`).
+ *
+ * ⚠ **Yayında olmayan mağazanın rozeti HİÇ çıkmaz** ve sıra `STORE_BADGES`ten
+ * gelir (App Store önce — Apple'ın yazılı kuralı). Play yayına girip
+ * `storeLinks.ts`teki `null` dolduğunda kareler yeniden üretildiğinde ikinci
+ * rozet kendiliğinden gelir; burada yapılacak bir iş YOK.
+ *
+ * ⚠ **Eşit GENİŞLİK, eşit yükseklik değil** — gerekçesi `storeLinks.ts`te
+ * ölçülü (eşit yükseklik Google'ın "same size or larger" kuralını çiğniyordu).
+ * Aradaki clear space, web'deki denetlenmiş (`BADGE_WIDTH_PX`, `BADGE_GAP_PX`)
+ * çiftinin oranıyla ölçekleniyor — yani kapının (`verify-store-badges`)
+ * doğruladığı sayıdan türüyor, elle seçilmiş bir boşluk değil.
+ */
+function MagazaRozetleri({ genislik = ROZET_W }: { genislik?: number }) {
+  const rozetler = visibleStoreBadges();
+  if (rozetler.length === 0) return null;
   return (
     <div
-      className="btn-raised"
       style={{
-        background: C.accent,
-        border: `1px solid ${C.accent}`,
-        borderRadius: 26,
-        color: '#FFFFFF',
-        fontFamily: MONO,
-        fontWeight: 700,
-        fontSize: 34,
-        letterSpacing: 2,
-        textTransform: 'uppercase',
-        textAlign: 'center',
-        padding: '30px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: Math.round((genislik * BADGE_GAP_PX) / BADGE_WIDTH_PX),
       }}
     >
-      {etiket}
+      {rozetler.map((b) => (
+        <img
+          key={b.key}
+          src={b.asset}
+          alt={b.alt}
+          style={{ width: genislik, height: 'auto', display: 'block' }}
+        />
+      ))}
     </div>
   );
+}
+
+/** Alt şeridin mağaza cümlesi — rozetle AYNI kaynaktan (üçüncü bir liste yok). */
+function magazaMetni(): string | null {
+  const anahtarlar = visibleStoreBadges().map((b) => b.key);
+  if (anahtarlar.length === 0) return null;
+  if (anahtarlar.length === 1) {
+    return anahtarlar[0] === 'appStore' ? "App Store'da" : "Google Play'de";
+  }
+  return "App Store ve Google Play'de";
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -470,9 +564,16 @@ export function SponsoredPost() {
             <Kutu sayi="2–4" etiket="Oyuncu" />
             <Kutu sayi="Ücretsiz" etiket="Fiyat" />
           </div>
-          <span style={{ fontFamily: MONO, fontSize: 22, color: C.muted }}>
-            Kurulum yok · Üyelik gerekmez · Tarayıcıda çalışır
-          </span>
+          {/* ⚠ Eski satır "Kurulum yok · Üyelik gerekmez · Tarayıcıda çalışır"
+              idi; uygulama App Store'a çıkınca "kurulum yok" cümlesi rozetle
+              ÇELİŞİR oldu. Tarayıcı hâlâ gerçek bir yol, o yüzden eleniyor
+              değil ikincilleşiyor. */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <MagazaRozetleri />
+            <span style={{ fontFamily: MONO, fontSize: 22, color: C.muted }}>
+              Ücretsiz · Reklam yok · Tarayıcıda da oynanır
+            </span>
+          </div>
         </div>
       </Slide>
 
@@ -670,7 +771,13 @@ export function SponsoredPost() {
         </ul>
 
         <div style={{ marginTop: 22, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <CtaButon etiket="kelimeki.com — hemen oyna" />
+          {/* ⚠ Burada eskiden mavi bir `CtaButon` ("kelimeki.com — hemen oyna")
+              vardı. Rozet ARTIK çağrının kendisi; iki güçlü çağrıyı yan yana
+              koymak son karede hedefi ikiye bölerdi. Rozet tek başına ve
+              clear space'iyle duruyor — üstüne yazı/çerçeve konmaz. */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <MagazaRozetleri />
+          </div>
           <span
             style={{
               fontFamily: MONO,
@@ -679,7 +786,7 @@ export function SponsoredPost() {
               textAlign: 'center',
             }}
           >
-            Ücretsiz · Kurulum yok · Reklam yok
+            Ücretsiz · Reklam yok · Tarayıcıda: kelimeki.com
           </span>
         </div>
       </Slide>

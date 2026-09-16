@@ -23,6 +23,15 @@ kelimeki-02…05.png` kareleri (oyunun mekaniğini anlatanlar). Hepsi 1080×1080
 yani oran tutarlı. Tek kare de yeterli; carousel "bu oyun tam olarak ne"
 sorusunu kapatıyor, Apple'ın karesi tek başına kapatmıyor.
 
+⚠ **`kelimeki-01`'i bu gönderide kullanma.** O kare Ağustos kampanyasının
+açılış/durdurucusuydu; lansmanda o işi Apple'ın banner'ı yapıyor, ikisi arka
+arkaya gelirse tekrar olur.
+
+**Kareler 16 Eylül 2026'da App Store rozetiyle yeniden üretildi** (kare 1 ve 5
+rozeti taşıyor, hepsinin alt şeridi `kelimeki.com · App Store'da` diyor) —
+yani Apple'ın karesiyle yan yana koyduğunda mesaj çelişmiyor. Gerekçe ve
+ölçüler: `marketing/sponsored-2026-08/metin.md` → "16 Eylül 2026".
+
 ⚠ **Banner'lara DOKUNMA.** Apple'ın ürettiği bu görseller tescilli
 artwork: kırpma, renk/oran değiştirme, üstüne yazı/logo bindirme yasak.
 App Store rozeti zaten görselin İÇİNDE — ikinci bir rozet ekleme
