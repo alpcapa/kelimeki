@@ -86,7 +86,7 @@ değişikliği): tescilli artwork. Gerekçe ve beş karenin tam envanteri
 > • Ücretsiz; reklam yok, uygulama içi satın alma yok
 >
 > iPhone ve iPad için App Store'da:
-> https://apps.apple.com/app/id6809809788
+> https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788
 >
 > Bilgisayardan okuyorsan tarayıcıda da eksiksiz oynanıyor:
 > https://kelimeki.com/?ref=li-sayfa
@@ -165,9 +165,12 @@ https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788  
 https://apps.apple.com/app/id6809809788                                          (kısa hâli)
 ```
 
-⚠ **Kısa hâl bu depoda DOĞRULANMADI** — oturumun ağ politikası
-`apps.apple.com`a da kapalı (16 Eylül 2026'da ölçüldü). Yoruma yapıştırmadan
-önce bir kez kendin dokun; açılmazsa kanonik adresi kullan.
+⚠ **Kısa hâl ÇALIŞMIYOR — 16 Eylül 2026'da kullanıcı denedi, açılmadı.**
+Gönderilerde **kanonik adresi** kullan; uzun görünmesi bir kusur değil,
+LinkedIn onu tıklanabilir tek satır olarak gösteriyor. Ajan bunu kendi
+ölçemez: oturumun ağ politikası `apps.apple.com`a kapalı (aynı gün
+denendi), yani "şu kısaltma da olur" diye ÖNERİLMEZ — kanonik adres
+`storeLinks.ts`te canlı ve sitedeki rozet de ona gidiyor.
 
 **Neden App Store'a değil siteye:** `?ref=` ölçümü yalnızca sitede
 çalışıyor; doğrudan App Store'a link verirsen o gönderiden gelen trafik
