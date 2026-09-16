@@ -168,6 +168,28 @@ tahtalar bilerek kadraj dışına taşıyor. **Ölçüldü:** güvenli kutu x 17
 telefon kırpması x 90–730 → tamamen içeride. Betik bu kontrolü her çalıştırmada
 tekrar ediyor, "sığdı" varsayılmıyor.
 
+### LinkedIn kişisel profil kapağı (`scripts/kapak/linkedin.tsx`, 16 Eylül 2026)
+
+`marketing/app-store/kelimeki-linkedin-kapak.png` (1584×396).
+`npm run generate-linkedin-cover` — FB kapağıyla **aynı boru hattı**,
+`build.mjs --linkedin` bayrağı.
+
+**Neden ayrı bir dosya:** oran ve kırpma kuralları başka. LinkedIn kişisel
+kapak **4:1** (FB'ninki 2.63:1) ve yükseklik yalnızca 198 CSS px — metni
+dikeyde ortalarsan profil fotoğrafının örttüğü banda giriyor. Üç kısıt
+birden: avatar SOL ALT'ı örter · telefonda kapak yanlardan kırpılır · ad
+kartı kapağın hemen altında başlar. Çözüm FB'dekiyle aynı ilke, farklı
+sayılar: güvenli kutu 440 px, dikeyde 26 px yukarı kaydırılmış.
+
+**Ölçüldü (üretimde her koşuda tekrar ediliyor):** güvenli kutu x 176–616,
+y 35–137 · telefon kırpması x 116–676 → içeride · avatar bölgesi (sol %22,
+alt %45) → uzakta.
+
+⚠ **Mağaza cümlesi ELLE YAZILMIYOR** — `visibleStoreNamesTr()`ten geliyor
+(`storeLinks.ts`). Play yayına girip URL dolduğunda kapak yeniden
+üretilirse satır kendiliğinden "App Store ve Google Play'de" olur; bu,
+16 Eylül 2026'da SSS metninin bayatlamasıyla alınan dersin aynısı.
+
 ### Reel (`scripts/reel/`, 20 Ağustos 2026)
 
 Instagram "trial reel" denemesi için 1080×1920 / 9.4 sn MP4
