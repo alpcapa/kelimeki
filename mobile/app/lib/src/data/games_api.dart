@@ -432,6 +432,10 @@ class SupabaseGamesGateway implements GamesGateway {
             .toUtc()
             .toIso8601String(),
       'utm_source': null,
+      // 16 Eylül 2026: admin panelindeki "Oyun Sayısı" grafiğinin platform
+      // kırılımı (web ikizi: `logGameFinish`, `src/lib/api.ts`). Damgalamayan
+      // istemcinin satırı sunucuda "Diğer" kovasına düşer.
+      'platform': currentPlatform,
     });
   }
 
