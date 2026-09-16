@@ -640,9 +640,14 @@ mobile/         # Flutter portu — kelimeki_core (saf Dart motor) + üretilmiş
   `src/hooks/useBoardZoom.ts`; iki oyun ekranı da aynı hook'u kullanır.
   **Port ile AYNI davranış** (kullanıcı kararı: *"her yerde aynı deneyim
   olsun"*) — `mobile/app/lib/src/ui/game/board_zoom.dart`; biri değişirse
-  öteki de. Açılış balonunun kuralı (`shouldShowZoomHint`, tavan 2 + "denedi
-  mi"), metnin iki tarafta BİREBİR aynı olma zorunluluğu, kabul edilen yan
-  etki ve ölçümler: `docs/decisions/touch-ux-bugs.md`.
+  öteki de. **Açılış balonu 4 sn sonra KENDİ KENDİNE kapanır**
+  (`ZOOM_HINT_AUTO_HIDE_MS` ↔ port `kZoomHintAutoHide`; 16 Eylül 2026,
+  oyuncu bildirdi: *"sürekli kalan uyarı oyun oynamayı zorlaştırıyor"*)
+  ⚠ ama bu kapanma **"denedi" SAYILMAZ**: `markZoomTried` çağrılmaz, yani
+  hiç denemeyen oyuncu balonu ikinci açılışta yine görür. Balonun kuralı
+  (`shouldShowZoomHint`, tavan 2 + "denedi mi"), metnin iki tarafta BİREBİR
+  aynı olma zorunluluğu, kabul edilen yan etki ve ölçümler:
+  `docs/decisions/touch-ux-bugs.md`.
 - **Joker (`?`):** 2 adet, 0 puan, oynanırken herhangi bir Türkçe harfe dönüşür. **Tahtaya konmuş bir jokerin `0` puanı KIRMIZI yazılır** (token `red`/`kRed`, 28 Ağustos 2026 kullanıcı isteği) — jokerin nereye harcandığı tahtada görünsün diye; RAF taşı bilinçli olarak dışarıda (orada ★ zaten ayırt ediyor). `Tile.tsx` ↔ `tile_widget.dart`, ikisi de testli. Tahtaya bu turda konmuş (henüz "Oyna" ile onaylanmamış) bir jokere tekrar dokunmak artık onu geri almaz — `WildcardModal` tekrar açılır (başlık "Jokeri Hangi Harfe Çevir?") ve seçilen yeni harf `SET_WILD_LETTER` action'ıyla (`src/game/gameReducer.ts`) hücredeki `wildLetter`'ı günceller; taş geri alınmaz. Geri alma bu modda hâlâ iki yoldan mümkün: modaldeki "Geri Al" butonu (`RECALL_CELL` dispatch eder) ya da taşı doğrudan rafa sürükleyerek (mevcut sürükle-bırak `RECALL_CELL` yolu, dokunmadan ayrışır — sürükleme hâlâ eski davranışı korur, yalnızca hareketsiz dokunuş/tık yeni davranışa geçti). Sıradan (joker olmayan) yerleştirilmiş bir taşa dokunmak hâlâ doğrudan geri alır, davranış değişmedi. `App.tsx` (yerel/YZ oyun) ve `OnlineGameScreen.tsx` (Canlı oyun) aynı deseni birebir paylaşıyor (`pendingWild.editing` bayrağı) — biri değişirse diğeri de güncellenmeli.
   ⚠ **Dokunmatikte joker dalı `swallowNextClick()` KURMAK ZORUNDA** (`src/utils/ghostClick.ts`). **Kural: Sınıf 1'de "bu click zaten hiçbir şey yapmıyor" gerekçesiyle yutmayı ATLAMA** — bu varsayım bir kez geçersiz kalıp iki taşı birden geri aldırdı. Flutter portu ETKİLENMEZ (compat click yok). Olay zinciri, ölçümler ve üç vakanın tamamı: `docs/decisions/touch-ux-bugs.md` → "Joker düzenleme yolu".
 - **YZ seviyesi (Kolay / Normal / Zor — ROADMAP #23):** `findAIMove(..., level)` (`src/utils/ai.ts`); en iyi N `AI_LEVEL_TOP_N`, arama genişliği `AI_LEVEL_SEARCH` (`src/game/constants.ts`). Seviye `GameState.aiLevel?` — **Normal JSON'a YAZILMAZ**. Terminoloji tek: **Zorluk: Kolay · Normal · Zor**. ⚠ **Rakibin rafına bakan hiçbir yol YOK** (kullanıcı kararı, 7 Eylül 2026: hiledir). ⚠ **Motorun üç kopyası + port ikizi AYNI PR'da:** Dart `aiLevelTopN`/`aiLevelSearch`, Edge `_game/constants.ts`, `util/ai_level.dart` + `ui/ai_level_badge.dart` (`ai_level_parity_test.dart` kilitler). ⚠ `leaguePoints`in `level`ine JS varsayılanı VERME — `verify-league-points` ariteyi `.length`le okuyor. **TASARIM KAYDI, bir şey değiştirmeden ÖNCE oku:** `docs/decisions/ai-levels.md` (motor sözleşmesinin tam dökümü, rastgelelik, yüzeyler, ölçümler, parite kapıları).
