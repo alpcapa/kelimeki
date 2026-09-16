@@ -916,13 +916,34 @@ export interface AdminAppVersionRow {
  * DOLDURULAMAZ: bir cihaz 1.0.4+ ile açılana kadar `bilinmiyor` kalır.
  */
 export interface AdminPushVersionRow {
-  /** `android` / `ios` / `bilinmiyor`. */
+  /**
+   * Satırın ağaçtaki düzeyi (16 Eylül 2026):
+   *   `'surum'`    → (platform, sürüm) yaprağı
+   *   `'platform'` → o platformun toplamı
+   *   `'toplam'`   → genel toplam
+   *
+   * ⚠ **Platform ve genel toplam istemcide TOPLANARAK bulunamaz** ve mesele
+   * estetik değil doğruluk: değerler `count(distinct user_id)`, yani iki
+   * gruba birden düşen bir kişi (iki telefon, ya da pencere içinde sürüm
+   * atlama) toplamada İKİ KEZ sayılır. Sunucu üç düzeyi de `grouping sets`
+   * ile ayrı ayrı `distinct` sayıyor.
+   */
+  level: 'surum' | 'platform' | 'toplam';
+  /** `android` / `ios` / `bilinmiyor`. `level: 'toplam'` satırında boş. */
   platform: string;
-  /** Mobil sürüm; 1.0.4 öncesi hizalanmış satırlarda `bilinmiyor`. */
+  /**
+   * Mobil sürüm; 1.0.4 öncesi hizalanmış satırlarda `bilinmiyor`.
+   * `level` `'surum'` DEĞİLSE boş.
+   */
   app_version: string;
   /** Benzersiz kişi (`count(distinct user_id)`). */
   kisi: number;
-  /** Token satırı sayısı — bir kişinin birden çok cihazı olabilir. */
+  /**
+   * Token SATIRI sayısı — "cihaz" DEĞİL. Uygulama yeniden kurulunca ya da
+   * token yenilenince yeni satır açılır; canlıda ölçüldü (16 Eylül 2026),
+   * tek bir iPhone 30 günde 5 satır üretmişti. Hiçbir ekranda
+   * gösterilmiyor, adı tarihsel.
+   */
   cihaz: number;
   last_seen: string;
 }
@@ -1063,12 +1084,64 @@ export type AdminGameSourceType = 'total' | 'online' | 'local';
  * "Aynı Oturum / Çok Oturumlu kırılımı") — süre tarafında ise kırılım
  * kalıyor, yalnızca etiketi "Tek Oturumda / Günlere Yayılan" oldu.
  */
+/**
+ * `admin_game_duration_summary` RPC çıktısı — TEK satır (Büyüme > Oyun,
+ * "Oyun Süresi" kutuları).
+ *
+ * ⚠ **Neden ayrı bir RPC:** `AdminGameActivityPoint` kova başına medyan
+ * taşır ve **medyanlar toplanamaz** — pencerenin medyanı, kova medyanlarından
+ * hesaplanamaz. 16 Eylül 2026'da grafik kutulara çevrilirken (kullanıcı
+ * isteği) bu yüzden sunucuda ayrı bir sorgu açıldı.
+ *
+ * Filtreler (periyot/granülerlik/kapsam/oyuncu sayısı/kaynak) seriyle BİREBİR
+ * aynı; biri değişirse öteki de değişmeli — ikisi aynı ekranda yan yana.
+ *
+ * Hiç biten oyun yoksa süre alanları `null` döner (0 DEĞİL: "0 dakika" çok
+ * hızlı biten bir oyun gibi okunurdu). `finished_games` o durumda 0'dır ve
+ * kutunun "veri yok" ile "gerçekten 0" ayrımını yapmasını sağlar.
+ */
+export interface AdminGameDurationSummary {
+  med_duration_seconds: number | null;
+  med_duration_same_session_seconds: number | null;
+  med_duration_multi_session_seconds: number | null;
+  p90_duration_seconds: number | null;
+  finished_games: number;
+}
+
 export interface AdminGameActivityPoint {
   bucket: string;
   games_finished: number;
   games_finished_same_session: number;
   games_finished_multi_session: number;
   games_surrendered: number;
+  /**
+   * Platform kırılımı (16 Eylül 2026, kullanıcı isteği: *"Oyun sayısına
+   * genel, ios, android, web kırılımı ekleyebilir miyiz? Terk genel olarak
+   * kalsın."*).
+   *
+   * ⚠ **Dördü HER ZAMAN `games_finished`e TAM olarak toplanır** — kırılımın
+   * tek anlamlı okuması bu, ve `_other` bu yüzden var. `games_surrendered`
+   * bilerek KIRILMADI: terk bir platformun değil, 7 günlük/48 saatlik
+   * pencerenin sonucu.
+   *
+   * Platform iki kaynaktan çözülür: yerel oyun `game_finishes.platform`
+   * (16 Eylül 2026'da eklendi, `games`ten geriye dolduruldu), Canlı oyun
+   * `online_game_clients` — ve yalnızca oyunun TÜM istemcileri aynı
+   * platformdaysa. `_other` DÖRT şeyi toplar: misafir yerel oyun
+   * (`games` satırı hiç açılmaz), 17 Ağustos 2026 öncesi (kolon yoktu),
+   * karma Canlı oyun (canlıda ölçüldü: Canlı oyunların %40'ı karma) — ve
+   * şimdilik MOBİL UYGULAMADAN biten oyunlar.
+   *
+   * ⚠ Sonuncusu GEÇİCİ: portun `logGameFinish`i damgayı yazmıyor, çünkü o
+   * değişiklik inceleme dondurması yüzünden AYRI bir PR'da bekliyor
+   * (16 Eylül 2026, kullanıcı kararı: *"Mobile dokunma"*). O PR merge edilip
+   * yeni bir mağaza paketi çıkana kadar `_ios`/`_android` yalnızca Canlı
+   * oyunları sayar.
+   */
+  games_finished_web: number;
+  games_finished_ios: number;
+  games_finished_android: number;
+  games_finished_other: number;
   med_duration_seconds: number | null;
   med_duration_same_session_seconds: number | null;
   med_duration_multi_session_seconds: number | null;

@@ -631,3 +631,157 @@ User-Agent'ı yalnızca `iPhone` diyor. Ancak kurulu uygulamadan ölçülebilir
 `docs/decisions/product-backlog.md`'de; App Store gönderimi kapıdayken
 YAPILMADI, çünkü yeni veri sınıfı App Privacy/Data safety beyanlarını
 yeniden açardı.
+
+## Açılır tablolar + üç grafiğin kaldırılması (16 Eylül 2026)
+
+Kullanıcı isteği, yedi madde hâlinde: *"Kaynak hunisini expandible ana
+kategorilere getirip detayları altlarına topla · Sürüm dağılımını expandible
+ana kategorilere getirip detayları altlarına topla · Kurulu sürümler datası
+hatalı gibi. Düzelt onları da expandible kategori yap. · Arkadaşlık grafiğini
+kaldır · Oyun sayısına genel, ios, android, web kırılımı ekleyebilir miyiz?
+Terk genel olarak kalsın. · Oyun süresi grafiğini kaldır. YZ dengesi gibi
+kutulara koyalım · Beğeni/Paylaşma grafiğini kaldıralım"*
+
+Desen YENİ DEĞİL: "Cihaz" (12 Eylül) ve "Cihaz Markası" (11 Eylül) tabloları
+zaten açılır. Bu tur o deseni panelin geri kalanına yaydı ve yolda iki
+DOĞRULUK hatası çıkardı — asıl kayıt onlar.
+
+### Gruplama kuralları tek bir saf dosyada
+
+`src/utils/adminGroups.ts` (`deviceLabels.ts`in kardeşi) + `npm run
+verify-admin-groups` (CI'da). Vakaların tamamı canlıdan alınmış GERÇEK
+etiketler.
+
+⚠ **`?ref=` etiketlerinin merkezî bir kaydı YOK** — pazarlama malzemesine elle
+yazılıyor (`ig-bio`, `fb-reel`, `fb-btn`, …). Kural bu yüzden önek-bazlı:
+`ig`/`instagram` → Instagram, `fb`/`facebook` → Facebook. **Önek eşleşmesi
+sınır karakteri arar** (`-`, `_`, `.` ya da dize sonu); yoksa `fb` öneki
+`fbi`yi, `ig` öneki `ignore`u yutardı. Tanınmayan etiket UYDURMA bir kanala
+atanmaz, **Diğer**'de GÖRÜNÜR kalır — yeni bir kanal açılırsa (TikTok) fark
+edilir.
+
+⚠ **`direkt` ile `bilinmiyor` birleştirilmedi** — 16 Ağustos 2026'nın kararı
+aynen duruyor: `direkt` = `?ref=` olmadan geliş, `bilinmiyor` = istemcinin hiç
+damgalamaması (bugün Flutter portu).
+
+⚠ **`verify-device-labels` aynı turda CI'a bağlandı.** 11 Eylül 2026'da
+yazılmıştı ama hiçbir iş akışında koşmuyordu — yani bir gerileme yakalayacak
+kapı vardı, kapıda kimse yoktu. Kardeş betiği eklerken fark edildi.
+
+### Hata 1 — "Kurulu Sürümler" başlığı yalan söylüyordu
+
+Kullanıcının *"datası hatalı gibi"* sezgisi doğruydu ama sorun sayıda değil
+BAŞLIKTAYDI. Canlıda ölçüldü (16 Eylül 2026, son 30 gün):
+
+| | |
+|---|---|
+| Tablonun gösterdiği | 8 kişi (ios 1.1.0 → 2, android 1.1.0 → 4, android 1.0.9 → 2) |
+| Aynı pencerede android 1.1.0'dan oyun açılışı | **134** |
+
+Sayılar doğruydu: tablo `push_tokens`tan besleniyor, yani **yalnızca giriş
+yapmış VE bildirim izni vermiş** kişiyi görüyor. Ama "Kurulu Sürümler — Kişi"
+başlığı "kaç kişide hangi sürüm KURULU" vaat ediyordu. Kullanıcı kararı:
+**"Bildirim izni verenler yap"** — başlık artık ölçtüğü şeyi söylüyor, kapsam
+`?` metninde ölçümüyle birlikte yazılı.
+
+Ders: bir sayının "hatalı görünmesi" çoğu zaman sayının değil, ona verilen
+ADIN hatası. Panelde bir tabloyu yeniden adlandırırken sorulacak soru "bu
+başlık neyi vaat ediyor" olmalı.
+
+### Hata 2 — platform/genel toplam istemcide TOPLANAMAZ
+
+Tabloyu açılır yapmak platform düzeyinde bir sayı gerektiriyor ve o sayıyı
+yaprakları toplayarak bulmak **yanlış**: değerler `count(distinct user_id)`,
+yani iki telefonu olan (ya da pencere içinde sürüm atlayan) biri iki yaprakta
+birden görünür ve toplamada İKİ KEZ sayılır.
+
+Canlıda bugün kimse iki gruba birden düşmüyor, yani **eski TOPLAM tesadüfen
+doğruydu**. Kural tesadüfe bırakılmadı: `admin_push_version_breakdown` artık
+`grouping sets` ile üç düzeyi de (`surum` / `platform` / `toplam`) ayrı ayrı
+`distinct` sayıyor ve satırın düzeyini `level` sütunuyla söylüyor.
+
+⚠ **"Sürüm Dağılımı"nda durum FARKLI** — orada ölçü oyun AÇILIŞI, yani
+toplanabilir; gruplar istemcide kuruluyor. İki tablo yan yana duruyor ve aynı
+gövdeyi (`PlatformVersionTable`) paylaşıyor, bu yüzden toplam ÇAĞIRANDAN
+parametre olarak alınıyor — bileşen asla kendi toplamasını yapmıyor.
+
+⚠ Yan bulgu: RPC'nin `cihaz` sütunu **cihaz değil token SATIRI** sayıyor.
+Uygulama yeniden kurulunca yeni satır açılıyor; canlıda tek bir iPhone 30
+günde **5 satır** üretmişti. Hiçbir ekranda gösterilmiyor, adı tarihsel —
+`AdminPushVersionRow`de bu notla birlikte duruyor.
+
+### "Oyun Sayısı" platform kırılımı — kolon eklemek YETMEZDİ
+
+`game_finishes` tablosunda `platform` kolonu YOKTU. Kolonu eklemek tek başına
+bu depoda zaten denenmiş ve geri alınmış bir hata: "Platform" tablosu 15
+Ağustos 2026'da tam bu yüzden kaldırılmıştı (337 oyunun 326'sı "Bilinmiyor").
+
+Bu yüzden kolon **geriye dönük dolduruldu** — `games` tablosundan, `(user_id,
+player_count, ±120 sn)` üçlüsüyle. Doldurmadan ÖNCE ölçüldü (1.468 satır):
+
+| | |
+|---|---|
+| Doldurulabilen | **1.037** (çelişkili eşleşme: **0**) |
+| Misafir — yapısal olarak bilinemez (`games` satırı hiç açılmaz) | 240 |
+| 17 Ağustos 2026 öncesi — `games.platform` da yoktu | 191 |
+
+Yani geçmişin **%71'i** kurtarıldı. Çelişkili eşleşme (aynı pencerede iki
+FARKLI platform) NULL bırakılıyor — bugün sıfır vaka var ama kural ölçüme
+değil sorgunun `n = 1` koşuluna yazıldı.
+
+**Canlı oyunun platformu ayrı çözülüyor:** `online_game_clients`, ve yalnızca
+oyunun TÜM istemcileri aynı platformdaysa. Karma bir oyunu tek bir platforma
+yazmak uydurma olurdu — ölçüldü, **Canlı oyunların %40'ı karma** (34/85).
+
+⚠ **Dört seri (Web/iOS/Android/Diğer) HER ZAMAN "Bitirilen"e TAM olarak
+toplanır** — sunucunun değişmezi, canlıda doğrulandı (429+10+484+477 = 1400).
+"Diğer" tam da bunun için var ve DÖRT farklı şeyi toplar (misafir · kolondan
+önce · karma Canlı · şimdilik mobil uygulama); ayrım `?` metninde.
+**"Teslim" bilerek kırılmadı** (kullanıcı kararı): terk bir platformun değil,
+7 günlük/48 saatlik pencerenin sonucu.
+
+⚠ **PORT İKİZİ `main`'DE DEĞİL.** Kullanıcı kararı (16 Eylül 2026, merge
+anında): *"Pr aç merge et. Mobile dokunma"* — inceleme dondurması sürüyor ve
+`mobile/app/**` altındaki tek bir dosya bile `main`'e girse `mobile-build.yml`
+**yayınlar** (`mobile-latest` ezilir, TestFlight'a build gider). `games_api.dart`in
+tek satırlık `'platform': currentPlatform` eklentisi bu yüzden ayrı bir PR'da
+bekliyor (`claude/oyun-bitis-platform-port`).
+
+**Bunun ÖLÇÜLEBİLİR bedeli var ve gizlenmemeli:** o PR merge edilip yeni bir
+mağaza paketi çıkana kadar **iOS/Android serileri yalnızca Canlı oyunları
+sayar**; app'ten biten YZ oyunları "Diğer"e düşer. Bu yüzden ayrım üç yere
+birden yazıldı — `?` metni, `AdminGameActivityPoint` doc'u ve `logGameFinish`in
+yanı (`errorMessage.ts`in aynı durumdaki deseni). Panelde bir sayıyı
+"bilinmiyor"dan ayırt edilemez hâlde bırakmak, bu depoda kaydı olan bir hata
+sınıfı.
+
+### "Oyun Süresi" grafikten kutulara — MEDYANLAR TOPLANMAZ
+
+İstek sunumla ilgiliydi ama kaynağı da değiştirmek zorunda bıraktı: seri
+KOVA BAŞINA medyan taşıyor ve kova medyanlarının medyanı (ya da son kova)
+pencerenin medyanı DEĞİLDİR. Bu yüzden `admin_game_duration_summary` RPC'si
+açıldı — tek satır, filtreleri seriyle **birebir aynı** (ikisi aynı ekranda
+yan yana; gövde oradan kopyalandı, biri değişirse öteki de değişmeli).
+
+Aynı gerekçe 16 Ağustos 2026'da ortalamadan medyana geçilirken de yaşanmıştı
+(seriler tek bir `union`da birleştirilmişti) — aynı tuzağa ikinci kez
+düşülmedi.
+
+p90 artık "varsayılan kapalı bir seri" değil, dördüncü kutu: dört sayı bir
+grafiği kalabalıklaştırmıyor.
+
+### Kaldırılan iki grafik — RPC'ler DURUYOR
+
+**Arkadaşlık** ve **Beğeni / Paylaşma** grafikleri kaldırıldı, kutuları kaldı.
+İki serinin zaman içindeki şekli bir karar değiştirmiyordu; sorulan soru "kaç
+arkadaşlık var / kaç beğeni var" ve onu kutular zaten yazıyor.
+
+⚠ Sunucu RPC'leri (`admin_friend_activity_series`,
+`admin_engagement_activity_series`) ve `api.ts`teki sarmalayıcıları **DURUYOR**
+— yalnızca admin ekranı artık çağırmıyor. `fetchAdminPlatformBreakdown` ile
+aynı bilinçli bekleme deseni; grafiği geri getirmek tek bileşenlik iş.
+
+⚠ Kutuların sayıları **TÜM zamanlar**, üstteki periyot kombosuna bağlı DEĞİL
+(`admin_friend_totals`/`admin_engagement_totals` parametresiz). Grafik
+varken bu ayrım görünürdü (grafik pencereli, kutular değil); grafik kalkınca
+görünmez oldu, bu yüzden `?` metinlerine AÇIKÇA yazıldı.
