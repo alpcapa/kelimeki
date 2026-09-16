@@ -132,6 +132,20 @@ yalnızca bu dosya). Ölçüm tekrarlandı:
   dosyasında örtüşmüyor.
 - **#557 × #565 ikilisi tamamen temiz** — aralarında tek çakışma yok.
 
+**16 Eyl akşamı, ÜÇÜNCÜ ölçüm (freeze hâlâ sürüyor — kullanıcı: *"Bekliyor
+hâlâ"*).** `main` o gün beş commit daha ilerledi (#568 · #571 · #572 · #573 ·
+#574 — hiçbiri `mobile/` taşımıyor), ölçüm `8bc29da`'ya karşı tekrarlandı:
+
+- **Çakışma haritası yine DEĞİŞMEDİ** — aşağıdaki tablo `8bc29da`'ya karşı da
+  birebir geçerli (`git merge-tree --write-tree`, her PR `main`'e karşı TEK
+  TEK). #557 hâlâ tek temiz PR.
+- **CI beşinde de yeşil** (check run'lar okundu, statüs değil; PR başlarının
+  hiçbiri değişmedi, yani koşular 15–16 Eyl'den duruyor). `Web (GitHub Pages
+  test ortamı)` ve `Supabase Preview` beşinde de `skipped` — bu normal, PR'da
+  bilerek yayınlamıyorlar.
+- Tablonun başlığı "`main` (70c786f)" diyor; sayı bayat, **içerik değil** —
+  üç ölçümde de aynı çıktı.
+
 | PR | Parça | `mobile/TESTING.md` § | `main` (70c786f) ile çakışma |
 |---|---|---|---|
 | #547 — ham hata metinleri | 205 | 27 | `CLAUDE.md` · `parca-log.md` |
