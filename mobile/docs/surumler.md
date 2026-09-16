@@ -104,7 +104,7 @@ tek bir bilgi: **Play'in production incelemesi (gönderim #19) kapandı mı?**
 Ajan ölçemez, Console kullanıcıda.
 
 **Bekleyen ALTI PR** — bu satır 15 Eyl'de "iki", 16 Eyl'de "beş"
-diyordu; ikisi de bayattı (altıncısı 16 Eyl akşamı eklendi, #576). Beşi de
+diyordu; ikisi de bayattı (altıncısı 16 Eyl akşamı eklendi, #576). Altısı da
 `mobile/app` ya da `mobile/kelimeki_core` taşıyor, yani her biri TEK BAŞINA
 bir mobil derleme TETİKLER. ⚠ **"Tetikler" ile "TestFlight'a build gönderir"
 AYNI ŞEY DEĞİL** — bu satır 16 Eyl'e kadar öyle diyordu ve yanlıştı; sebebi
