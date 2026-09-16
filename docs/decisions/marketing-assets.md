@@ -39,7 +39,7 @@ hedefi ikiye bölüyordu).
   "yayında değilse çizme" kuralı ve rozet SIRASI (App Store önce) tek
   kaynaktan geliyor. Play yayına girip `storeLinks.ts`teki `null` dolduğunda
   ikinci rozet, kareler yeniden üretildiğinde kendiliğinden gelir — burada
-  yapılacak iş yok. Alt şeridin cümlesi de (`magazaMetni`) aynı listeden
+  yapılacak iş yok. Alt şeridin cümlesi de (`visibleStoreNamesTr`, `storeLinks.ts`) aynı listeden
   türüyor, üçüncü bir yerde tekrarlanmıyor.
 - **⚠ Ölçü EKRANA göre, dosyaya göre değil.** Apple'ın 40 px alt sınırı
   render edilmiş boyutu bağlar. Instagram karesi telefonda ~390 pt genişlikte
