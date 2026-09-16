@@ -85,8 +85,11 @@ değişikliği): tescilli artwork. Gerekçe ve beş karenin tam envanteri
 > • İnternetsiz oynanır — sözlük cihazın içinde
 > • Ücretsiz; reklam yok, uygulama içi satın alma yok
 >
-> iPhone ve iPad için App Store'da. Tarayıcıdan denemek isteyen için:
-> kelimeki.com
+> iPhone ve iPad için App Store'da:
+> https://apps.apple.com/app/id6809809788
+>
+> Bilgisayardan okuyorsan tarayıcıda da eksiksiz oynanıyor:
+> https://kelimeki.com/?ref=li-sayfa
 >
 > #kelimeoyunu #türkçe #appstore #mobiluygulama
 
@@ -135,7 +138,20 @@ var (63.905 kelime = `src/data/words.ts`, anlam sayısı da aynı;
 | Sayfa gönderisi | `https://kelimeki.com/?ref=li-sayfa` |
 | Kişisel yeniden paylaşım | `https://kelimeki.com/?ref=li-profil` |
 
-**16 Eylül 2026 kararı: gövdede site linki, App Store linki İLK YORUMDA.**
+**16 Eylül 2026, DÜZELTİLMİŞ karar: İKİ link de gövdede, cihaza göre
+ayrılmış — App Store önce, site sonra.** İlk taslak App Store linkini ilk
+yoruma koyuyordu; gerekçesi "gövdedeki İLK link önizleme kartını belirler"
+idi. **Görsel yüklendiğinde o gerekçe DÜŞÜYOR** — kart zaten çıkmıyor, yani
+ikinci linkin bedeli yok ve telefondan okuyanı yoruma göndermek gereksiz bir
+adım. Yorum bu hâlde isteğe bağlı.
+
+⚠ **Ölçümün bedeli kabul edildi:** App Store linkine dokunan kimse Kaynak
+Hunisi'nde görünmez (`?ref=` yalnızca sitede çalışıyor). Hedef indirme
+olduğu için bu bilinçli — o kişiler App Store Connect → Analytics'ten
+sayılır.
+
+**Gövdede site linki, App Store linki ilk yorumda (yalnızca GÖRSELSİZ
+kurguda geçerli):**
 Gerekçe ölçüm değil, LinkedIn'in masaüstü ağırlığı: `apps.apple.com` linki
 masaüstünde yüklenemeyen bir vitrin sayfasıdır, kişi telefona geçip yeniden
 aramak zorunda kalır. `kelimeki.com` iki tarafta da çalışıyor — masaüstünde
