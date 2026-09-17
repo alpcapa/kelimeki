@@ -82,7 +82,7 @@ import { getLocalMeaning } from '../data/meanings';
 import { CLIENT_PLATFORM } from '../utils/platform';
 import { trCompare, trLower } from '../utils/turkish';
 import { getOrCreateAnonId, getStoredUtmSource } from '../utils/visitTracking';
-import { isNetworkError } from '../utils/offlineNotice';
+import { isNetworkError, isTransientServerError } from '../utils/offlineNotice';
 import { reportClientError } from '../utils/errorReporting';
 import type { GameState, HistoryEntry, Tile } from '../game/types';
 
@@ -106,9 +106,15 @@ import type { GameState, HistoryEntry, Tile } from '../game/types';
 // olayıydı — ekrana bakıp bekleyen birinde ikisi de olmuyor. Nadir bir olay
 // böylece KALICI bir yanlış ekrana dönüşüyordu.
 //
-// KURAL: yalnızca ağ katmanı hataları (cevabın hiç gelmediği durum)
-// tekrarlanır. Sunucunun KENDİ reddi (401/403/RLS/iş kuralı) ASLA — o bir
-// karar, hata değil (aynı ilke: `friendlyAuthMessage`, `isNetworkError`).
+// KURAL: yalnızca CEVABIN GELMEDİĞİ durumlar tekrarlanır — ağ katmanı
+// hataları (istek hiç gitmedi) ve ağ geçidinin geçici hataları (504/503/502/
+// 408; bkz. `isTransientServerError`). Sunucunun KENDİ reddi (401/403/RLS/iş
+// kuralı) ASLA — o bir karar, hata değil (aynı ilke: `friendlyAuthMessage`).
+//
+// ⚠ 504 bu listeye 17 Eylül 2026'da EKLENDİ: `PostgrestException(code: 504)`
+// taşıma kalıplarına uymadığı için "sunucunun reddi" sayılıyor, yani ne
+// yeniden deneniyor ne de kullanıcıdan gizleniyordu. Ölçüm ve gerekçe
+// `isTransientServerError`in başında.
 // Yalnızca OKUMA yollarında kullanılır; `submit_move` gibi yazmalar buradan
 // GEÇMEZ (yazma idempotensi ayrı bir iş, bkz. `p_move_id`).
 const RETRY_DELAYS_MS = [400, 1200];
@@ -125,6 +131,14 @@ const RETRY_DELAYS_MS = [400, 1200];
 function isNetworkFailure(error: { message?: string } | null | undefined): boolean {
   if (!error) return false;
   return isNetworkError(error.message ?? '');
+}
+
+/** Yeniden denenmeye DEĞER mi — ağ düşmesi ya da geçici bir ağ geçidi hatası. */
+function isRetryableFailure(
+  error: { message?: string; code?: string } | null | undefined,
+): boolean {
+  if (!error) return false;
+  return isNetworkFailure(error) || isTransientServerError(error);
 }
 
 /**
@@ -144,13 +158,13 @@ function rethrowSupabase(error: { message?: string; code?: string }): never {
   throw hata;
 }
 
-/** Ağ katmanında düşen bir okumayı `RETRY_DELAYS_MS` kadar yeniden dener. */
-async function retryOnNetworkFailure<T extends { error: { message?: string } | null }>(
-  islem: () => PromiseLike<T>,
-): Promise<T> {
+/** Geçici olarak düşen bir okumayı `RETRY_DELAYS_MS` kadar yeniden dener. */
+async function retryOnTransientFailure<
+  T extends { error: { message?: string; code?: string } | null },
+>(islem: () => PromiseLike<T>): Promise<T> {
   let sonuc = await islem();
   for (const gecikme of RETRY_DELAYS_MS) {
-    if (!isNetworkFailure(sonuc.error)) return sonuc;
+    if (!isRetryableFailure(sonuc.error)) return sonuc;
     await new Promise((r) => setTimeout(r, gecikme));
     sonuc = await islem();
   }
@@ -1457,7 +1471,7 @@ export async function listMyOnlineGames(): Promise<OnlineGame[] | null> {
   // hâli — `fetchMyGames`'in `failed:false` kararıyla aynı (14 Ağustos 2026).
   if (!supabase) return [];
   const client = supabase;
-  const { data, error } = await retryOnNetworkFailure(() => client.rpc('list_my_online_games'));
+  const { data, error } = await retryOnTransientFailure(() => client.rpc('list_my_online_games'));
   if (error) {
     console.error('[Kelimeki] listMyOnlineGames hatası:', error.message);
     reportLiveListError(error, 'list_my_online_games');
@@ -1545,7 +1559,7 @@ export async function fetchFinishedGameSlots(
 export async function fetchOnlineGameTurns(gameIds: string[]): Promise<Record<string, number> | null> {
   if (!supabase || gameIds.length === 0) return {};
   const client = supabase;
-  const { data, error } = await retryOnNetworkFailure(() =>
+  const { data, error } = await retryOnTransientFailure(() =>
     client.from('online_game_states').select('online_game_id, current').in('online_game_id', gameIds),
   );
   if (error) {
@@ -1592,7 +1606,7 @@ export async function fetchOnlineGameGlances(
 ): Promise<Record<string, OnlineGameGlance> | null> {
   if (!supabase || gameIds.length === 0) return {};
   const client = supabase;
-  const { data, error } = await retryOnNetworkFailure(() =>
+  const { data, error } = await retryOnTransientFailure(() =>
     client
       .from('online_game_states')
       .select('online_game_id, turn_deadline, players')

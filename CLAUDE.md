@@ -39,7 +39,7 @@ npm run verify-league-points     # k-lig PUAN tablosu (seviyeye göre): league_p
 npm run verify-sql-engine-parity # motorun DÖRDÜNCÜ (SQL) kopyası ↔ src/ sabitleri ve hata metinleri
 npm run simulate-ai-levels       # YZ↔YZ kadran ölçümü (ROADMAP #23): üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal; `-- --oyun 200 --n 2,3,4`
 npm run generate-initial-main-view-golden # Giriş sekmesi kuralı: web→port davranış golden'ı (CI tazeliği zorluyor)
-npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz)
+npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz) — ağ hatası VE geçici sunucu hatası (504/503/502/408); 500 ve 429 bilerek DIŞARIDA
 npm run verify-shared-realtime    # Canlı oyun aboneliği: üç çağıran → TEK Realtime kanalı (sunucu maliyeti çarpanı)
 npm run verify-tutorial-script   # "Oynayarak öğren" tanıtımı: senaryo GERÇEK motorda oynatılır (ekrandaki puanlar dahil)
 npm run verify-demo-board        # Karşılama katmanındaki tanıtım tahtası sözlüğe karşı doğrulanır
