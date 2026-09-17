@@ -25,6 +25,40 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 213 — 504 "sunucunun reddi" sayılıyordu + oturum kapısı
+
+   - ✅ **Parça 213 — Geçici sunucu hatası yeniden denenir (17 Eylül 2026):**
+     Kullanıcı admin panelinde yığılma fark etti (*"android online games repo
+     load hatası çok sık çıkmış"*); tüm `client_errors` tablosu okundu (62
+     kayıt / 34 cihaz). En büyük küme `online_games_repo.load` →
+     `PostgrestException(code: 504)`: **11 kayıt** (android 9 · ios 2, 8
+     cihaz), 12-14 Eylül'de yoğunlaşmış.
+     ⚠ **Önce sunucu ELENDİ:** `list_my_online_games` en ağır kullanıcıda
+     (97 oyun) `EXPLAIN ANALYZE` ile **12,7 ms**, planı indeksli, veri küçük
+     (130 oyun / 136 davet) — yani 504 yavaş sorgudan DEĞİL, ağ geçidinden.
+     **Kusur sınıflandırmadaydı:** `_fetchWithRetry` yalnızca `isNetworkError`
+     doğruysa tekrarlıyordu, o da TAŞIMA istisnalarının metnine bakıyor. 504
+     hiçbirine uymuyor → "sunucunun kendi reddi" sayılıyor, yani ne
+     tekrarlanıyor ne de kullanıcıdan gizleniyordu. Yeni yüklem
+     `isTransientServerError` (`util/offline_notice.dart` ↔ web
+     `utils/offlineNotice.ts`): **408/502/503/504/522/524** ya da ağ
+     geçidinin İngilizce metni. ⚠ `500` ve `429` BİLEREK dışarıda — biri
+     gerçek sunucu kusurunu maskeler, öteki hız sınırını zorlar.
+     **İKİNCİ iş — oturum kapısı (web paritesi):** `load()`in catch'i
+     `isNetworkError` dışındaki HER şeyi raporluyordu; web'in
+     `reportLiveListError`inde olan "oturum düşmüşse yetki hatası BUG değil"
+     kapısı portta YOKTU (panelde bu sınıftan 6 kayıt: Invalid Refresh
+     Token). Arayüze `hasValidSession` eklendi — **varsayılanı `true`**,
+     böylece geçersiz kılmayan sahte uçlar kırılmıyor;
+     `SupabaseOnlineGamesGateway` onu `client.auth.currentSession` ile
+     dolduruyor (ağa GİTMEZ). ⚠ Oturum VARKEN gelen aynı "permission denied"
+     YİNE raporlanır — o gerçek bir grant hatasının yüzü olabilir.
+     Kapılar: `live_games_test.dart` dört yeni vaka (504 kurtarması · mesajı
+     boş 504 · 500 tekrarlanmıyor · yetki hatasının iki dalı); duyarlılık
+     kanıtlandı (yüklem `false` → iki vaka düşüyor). Web yarısı AYNI GÜN
+     `main`'e girdi (#578); bu dal port ikizi ve inceleme dondurması
+     yüzünden ayrı bırakıldı.
+
 ## Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
 
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
