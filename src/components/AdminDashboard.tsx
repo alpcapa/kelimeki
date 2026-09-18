@@ -12,6 +12,7 @@ import {
   fetchAdminActivePlayersSeries,
   fetchAdminRetentionCohorts,
   fetchAdminActivationStats,
+  fetchAdminActiveHours,
   fetchAdminSourceFunnel,
   fetchAdminTutorialFunnel,
   fetchAdminDeviceBreakdown,
@@ -43,6 +44,7 @@ import type {
   AdminActivePlayersPoint,
   AdminRetentionCell,
   AdminActivationStats,
+  AdminActiveHoursRow,
   AdminSourceFunnelRow,
   AdminTutorialFunnelRow,
   AdminAppVersionRow,
@@ -61,6 +63,7 @@ import { MemberMessageModal } from './MemberMessageModal';
 import { AdminChatTranscriptModal } from './AdminChatTranscriptModal';
 import { CountBadge } from './CountBadge';
 import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
+import { ActiveHoursChart } from './ActiveHoursChart';
 import { trCompare, trLower } from '../utils/turkish';
 import {
   brandBreakdown,
@@ -180,6 +183,25 @@ const GAME_COUNT_SERIES: ChartSeriesDef[] = [
   { key: 'games_finished_ios', label: 'iOS', color: '#DB2777' },
   { key: 'games_finished_android', label: 'Android', color: '#0891B2' },
   { key: 'games_finished_other', label: 'Diğer', color: '#8A93A2' },
+];
+
+// "Aktif Saatler" yığılmış çubuklarının segment sırası — dizinin İLK öğesi en
+// ALTTA çizilir (18 Eylül 2026).
+//
+// Renkler GAME_COUNT_SERIES'in platform üçlüsüyle BİREBİR aynı: iki grafik
+// aynı sekmede yan yana duruyor ve "Web" iki yerde iki renk olsaydı okuma
+// bozulurdu — iOS'un macenta (mor değil) seçimi de oradaki deutan notuna
+// dayanıyor, burada yeniden karar verilmiyor.
+//
+// Sıra bilinçli: bilinen platformlar altta, "Diğer" en üstte. Bugün "Diğer"
+// kovası port PR'ı merge edilene kadar şişkin (bkz. `AdminActiveHoursRow`);
+// en üste konunca çubuğun TABANI kararlı kalıyor ve o boşluk kapandıkça
+// grafik alttan değil üstten inceliyor.
+const ACTIVE_HOURS_SERIES: ChartSeriesDef[] = [
+  { key: 'finished_web', label: 'Web', color: '#2a78d6' },
+  { key: 'finished_ios', label: 'iOS', color: '#DB2777' },
+  { key: 'finished_android', label: 'Android', color: '#0891B2' },
+  { key: 'finished_other', label: 'Diğer', color: '#8A93A2' },
 ];
 // Süre kırılımı KALIYOR ve gerçek iş yapıyor: Canlı oyunlar 48 saatlik sıra
 // penceresi yüzünden günlere yayılıyor, tek bir sayıya katılırlarsa "bir oyun
@@ -617,6 +639,43 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         PR'da bekliyor. O PR merge edilip yeni bir mağaza paketi çıkana kadar{' '}
         <b>iOS ve Android serileri yalnızca Canlı oyunları sayar</b>, app'ten biten YZ oyunları
         "Diğer"e düşer. Web tarafı ilk günden doğru sayıyor.
+      </>
+    ),
+  },
+  'aktif-saatler': {
+    title: 'Aktif Saatler',
+    body: (
+      <>
+        Oyun <b>bitişlerinin</b> günün hangi saatinde olduğu — <b>2 saatlik</b> dilimler,{' '}
+        <b>son 30 gün</b>, saat dilimi <b>Europe/Istanbul</b>. Dilimin etiketi başlangıç
+        saatidir: <code>22–24</code> = akşam 22:00 ile gece yarısı arası.
+        <br />
+        <br />
+        <b>Neden bitiş:</b> başlangıç anı bir niyeti ölçer, bitiş anı gerçekten oynanmış bir
+        oyunu. Kaynak <code>game_finishes</code> — misafir oyunlarını da kapsayan tek bitiş
+        tablosu (<code>games</code> satırı yalnızca girişli kullanıcı için açılır).
+        <br />
+        <br />
+        ⚠ <b>Teslim satırları bu grafiğe GİRMEZ.</b> Teslim, 7 günlük/48 saatlik zaman
+        aşımının <b>dolduğu</b> anı taşır — bir insanın oyun bitirdiği anı değil. İçeri
+        alınsaydı dağılıma insan davranışıyla ilgisi olmayan bir saat deseni karışırdı (son
+        30 günde 152 teslim / 1199 bitirilen).
+        <br />
+        <br />
+        <b>Bu grafik üstteki kombolara bağlı değil</b> (kaynak / kapsam / oyuncu sayısı) —
+        kendi başına duran, sabit pencereli bir günlük ritim dağılımı.
+        <br />
+        <br />
+        <b>Platform kırılımı:</b> <b>Web · iOS · Android · Diğer</b> segmentleri HER ZAMAN
+        toplam bitişe tam olarak toplanır. <b>Diğer</b>'in tanımı "Oyun Sayısı" grafiğiyle
+        birebir aynı.
+        <br />
+        ⚠ <b>Bugün "Diğer" şişkin ve bu geçici:</b> <code>game_finishes.platform</code>{' '}
+        damgasını yalnızca web istemcisi yazıyor; portun aynı satırı inceleme dondurması
+        yüzünden ayrı bir PR'da bekliyor. O merge edilip yeni mağaza paketi dağılana kadar
+        app'ten biten oyunlar "Diğer"e düşer (18 Eylül 2026'da ölçüldü: 17 Eylül'ün 89
+        bitişinden 54'ü platformsuz). <b>Toplam çubuk yüksekliği bundan etkilenmez</b> —
+        yalnızca rengin dağılımı eksik.
       </>
     ),
   },
@@ -2159,6 +2218,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [activation, setActivation] = useState<AdminActivationStats | null>(null);
   const [friendTotals, setFriendTotals] = useState<AdminFriendTotals | null>(null);
   const [gameActivity, setGameActivity] = useState<AdminGameActivityPoint[] | null>(null);
+  const [activeHours, setActiveHours] = useState<AdminActiveHoursRow[] | null>(null);
   // "Oyun Süresi" 16 Eylül 2026'da grafikten KUTULARA geçti (kullanıcı
   // isteği) — kutular pencerenin TAMAMININ medyanını gösterdiğinden seriden
   // türetilemez (medyanlar toplanamaz), kendi RPC'si var.
@@ -2357,6 +2417,16 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       .then(setDurationSummary)
       .catch((e) => setError(String(e)));
   }, [gamePeriod, gameGranularity, gameScope, gamePlayerCount, gameSource]);
+
+  // "Aktif Saatler" AYRI bir effect'te ve bağımlılık dizisi BOŞ — grafik
+  // üstteki kombolara bilerek bağlı değil (18 Eylül 2026, kullanıcı kararı:
+  // bağımsız, sabit 30 günlük pencere). Yukarıdaki effect'e eklenseydi her
+  // kombo değişiminde gereksiz bir RPC daha koşardı.
+  useEffect(() => {
+    fetchAdminActiveHours(30)
+      .then(setActiveHours)
+      .catch((e) => setError(String(e)));
+  }, []);
 
   function selectUserGranularity(g: AdminActivityGranularity) {
     setUserGranularity(g);
@@ -3531,6 +3601,24 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       />
                     </>
                   )}
+
+                  {/* Aktif Saatler — "Oyun Sayısı"nın HEMEN ALTINDA duruyor:
+                      ikisi de oyun bitişlerini sayıyor, biri zaman içindeki
+                      hacmi, öteki günün içindeki ritmi. Kombolara bağlı
+                      olmadığı için kendi yükleniyor durumu var. */}
+                  <div className="flex flex-col gap-2">
+                    {activeHours === null ? (
+                      <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                    ) : (
+                      <ActiveHoursChart
+                        data={activeHours}
+                        series={ACTIVE_HOURS_SERIES}
+                        controls={<span className={sectionTitleCls}>Aktif Saatler</span>}
+                        csvBaseName="kelimeki-aktif-saatler"
+                        infoHint={<InfoHint id="aktif-saatler" onOpen={setHint} />}
+                      />
+                    )}
+                  </div>
 
                   {/* Oyun Süresi — 16 Eylül 2026'da GRAFİKTEN KUTULARA geçti
                       (kullanıcı isteği: *"Oyun süresi grafiğini kaldır. YZ

@@ -34,6 +34,7 @@ import type {
   AdminFriendActivityPoint,
   AdminFriendTotals,
   AdminGameActivityPoint,
+  AdminActiveHoursRow,
   AdminGameDurationSummary,
   AdminGameScope,
   AdminGameSourceType,
@@ -2320,6 +2321,30 @@ export async function fetchAdminGameActivitySeries(
     rethrowSupabase(error);
   }
   return (data as AdminGameActivityPoint[]) ?? [];
+}
+
+/**
+ * "Aktif Saatler" — oyun bitişlerinin 2 saatlik dilimlere dağılımı
+ * (yalnızca admin — Büyüme > Oyun). 18 Eylül 2026, kullanıcı isteği.
+ *
+ * Sunucu HER ZAMAN 12 satır döndürür (boş saatler 0), yani çağıran tarafın
+ * eksik dilimi doldurması gerekmez — `[]` yalnızca Supabase yapılandırılmamışsa
+ * döner.
+ *
+ * ⚠ Bu grafik, sekmedeki kaynak/kapsam/oyuncu sayısı kombolarına BİLEREK
+ * bağlı değil (kullanıcı kararı): kendi başına duran, sabit pencereli bir
+ * günlük ritim dağılımı. Bir gün kombolara bağlanacaksa `admin_active_hours`
+ * imzası da büyümeli — `fetchAdminGameActivitySeries` ile aynı desen.
+ */
+export async function fetchAdminActiveHours(days = 30): Promise<AdminActiveHoursRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_active_hours', { p_days: days });
+  if (error) {
+    // `fetchAdminGameActivitySeries` ile aynı gerekçe: hatayı yutup boş dizi
+    // dönmek admin'e gerçek bir RPC/izin hatasını asla göstermezdi.
+    rethrowSupabase(error);
+  }
+  return (data as AdminActiveHoursRow[]) ?? [];
 }
 
 /**
