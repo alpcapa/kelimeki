@@ -160,7 +160,23 @@ ve yedinci PR açıldı. Ölçüm `467e758`'e karşı tekrarlandı:
   `Web (GitHub Pages test ortamı)` ve `Supabase Preview` yedisinde de
   `skipped` — normal, PR'da bilerek yayınlamıyorlar.
 
-| PR | Parça | `mobile/TESTING.md` § | `main` (467e758) ile çakışma |
+**18 Eyl, BEŞİNCİ ölçüm (freeze HÂLÂ sürüyor — Play production #19 incelemede).**
+`main` üç commit daha ilerledi (#581 · #582 · #583 — üçü de `mobile/` taşımıyor;
+#583 ROADMAP #25'in yalnızca kaydı). Ölçüm `2f09daa`'ya karşı tekrarlandı:
+
+- **Çakışma haritası BEŞİNCİ kez DEĞİŞMEDİ** — aşağıdaki tablo `2f09daa`'ya
+  karşı da birebir geçerli (`git merge-tree --write-tree`, her PR `main`'e
+  karşı TEK TEK). Başlık artık bu sha'yı gösteriyor. #557 · #576 · #579 temiz.
+- **CI yedisinde de yeşil** (check run'lar okundu, statüs değil). PR
+  başlarının hiçbiri değişmedi — koşular 15-17 Eyl'den duruyor.
+- ⚠ **Ölçüm refleksi:** `git merge-tree`in çıktısında yalnızca `CONFLICT`
+  satırları çakışmadır; `Auto-merging` satırları TEMİZ birleşen dosyaları
+  sayar. İkisini birden toplayan bir `grep` bu turda #547'ye üç fazladan
+  dosya (`web-ci.yml` · `ROADMAP.md` · `mobile/TESTING.md`) yazdırdı ve
+  harita bir an "değişti" sanıldı — ölçü `^CONFLICT`'e daraltılınca tablo
+  birebir çıktı.
+
+| PR | Parça | `mobile/TESTING.md` § | `main` (2f09daa) ile çakışma |
 |---|---|---|---|
 | #547 — ham hata metinleri | 205 | 27 | `CLAUDE.md` · `parca-log.md` |
 | #554 — taş değiştirme sınırı | 206 | 27 ⚠ #547'yle AYNI numara | `parca-log.md` |
