@@ -295,6 +295,14 @@ abstract class OnlineGamesGateway {
   Future<void> checkTurnTimeout(String gameId);
   Future<void> checkInviteExpiry(String gameId);
 
+  /// Oturum YERELDE hâlâ geçerli mi — web `hasValidSession` ikizi
+  /// (`api.ts`). Ağa GİTMEZ; yalnızca elde tutulan token'a bakar.
+  ///
+  /// Varsayılanı `true`: bunu geçersiz kılmayan bir uç eski davranışta kalır
+  /// (yani hatayı raporlar). Böylece arayüze üye eklemek mevcut sahte
+  /// uçları kırmıyor.
+  bool get hasValidSession => true;
+
   /// BİTMİŞ bir oyunun ham `slots` dizisi — oyun geçmişindeki "Tekrar
   /// Oyna" rövanş kadrosunu buradan kuruyor. Web `fetchFinishedGameSlots`
   /// ikizi. Erişim yoksa ya da satır gitmişse `null`.
@@ -368,6 +376,12 @@ class SupabaseOnlineGamesGateway implements OnlineGamesGateway {
   final SupabaseClient client;
   late final OnlineApi _moves = OnlineApi(client);
   SupabaseOnlineGamesGateway(this.client);
+
+  @override
+  bool get hasValidSession {
+    final oturum = client.auth.currentSession;
+    return oturum != null && !oturum.isExpired;
+  }
 
   List<Map<String, Object?>> _rows(dynamic data) => [
         for (final r in (data as List? ?? const []))
@@ -590,8 +604,10 @@ class OnlineGamesRepo {
   /// Web `RETRY_DELAYS_MS` ile AYNI gecikmeler — düşen bir istek yüzünden
   /// kullanıcıya "hiç oyunun yok" DENMEMELİ (21 Ağustos 2026 vakası: ağ
   /// değişiminde yarıda kalan istek boş liste gibi okunuyordu). Kapsam
-  /// BİLEREK dar: yalnızca AĞ hatası tekrarlanır — sunucunun kendi reddi
-  /// (yetki/kural) tekrar denenirse yalnızca gecikme üretir.
+  /// BİLEREK dar: yalnızca CEVABIN GELMEDİĞİ durumlar tekrarlanır — ağ
+  /// hatası ve ağ geçidinin geçici hatası (504/503/502/408, bkz.
+  /// `isTransientServerError`). Sunucunun kendi reddi (yetki/kural) tekrar
+  /// denenirse yalnızca gecikme üretir.
   static const List<Duration> retryDelays = [
     Duration(milliseconds: 400),
     Duration(milliseconds: 1200),
@@ -649,11 +665,33 @@ class OnlineGamesRepo {
       // kullanıcı bu satıra her açılışta düşer. Kalan tek şey GERÇEK
       // kusurlar: ayrıştırma hataları, sunucu sözleşmesinin bozulması.
       debugPrint('[Kelimeki] Canlı oyun listesi alınamadı: $e');
-      if (!isNetworkError(e)) {
+      // OTURUM KAPISI (17 Eylül 2026, web `reportLiveListError` ikizi):
+      // `authenticated`e kilitli bir RPC geçerli JWT olmadan çağrılırsa
+      // PostgREST "permission denied for function …" (42501) döner — bu bir
+      // BUG değil, beklenen auth durumu. ⚠ AMA aynı mesaj gerçek bir grant
+      // hatasının da yüzü olabilir; ikisini ayıran TEK şey oturumun
+      // varlığıdır, mesaj değil: oturum VARKEN gelen aynı hata raporlanır.
+      // Panelde bu sınıftan 6 kayıt vardı (Invalid Refresh Token).
+      final oturumDustu = _isAuthStateError(e) && !gateway.hasValidSession;
+      if (!isNetworkError(e) && !oturumDustu) {
         errorReporter.report(e, stack: st, context: 'online_games_repo.load');
       }
       return null;
     }
+  }
+
+  /// Hata OTURUMUN DÜŞMESİNDEN mi kaynaklanıyor — web `isAuthStateError`
+  /// ikizi (`api.ts`). Kod eşleşmesi `PostgrestException.code`tan, metin
+  /// eşleşmesi `AuthApiException` gibi tipleri de yakalıyor.
+  static bool _isAuthStateError(Object? e) {
+    final s = e.toString().toLowerCase();
+    return s.contains('42501') ||
+        s.contains('pgrst301') ||
+        s.contains('permission denied') ||
+        s.contains('invalid refresh token') ||
+        s.contains('jwt expired') ||
+        s.contains('jwt is invalid') ||
+        s.contains('invalid claim');
   }
 
   Future<OnlineGamesSnapshot> _fetchWithRetry() async {
@@ -661,7 +699,11 @@ class OnlineGamesRepo {
       try {
         return await _fetchOnce();
       } catch (e) {
-        if (!isNetworkError(e)) rethrow;
+        // ⚠ 504 bu dala 17 Eylül 2026'da GİRDİ: `PostgrestException(code:
+        // 504)` taşıma kalıplarına uymadığı için "sunucunun reddi"
+        // sayılıyordu — ne tekrarlanıyor ne de kullanıcıdan gizleniyordu.
+        // Ölçüm `isTransientServerError`in başında.
+        if (!isNetworkError(e) && !isTransientServerError(e)) rethrow;
         await _delay(gecikme);
       }
     }
