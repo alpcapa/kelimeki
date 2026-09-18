@@ -1344,6 +1344,14 @@ export async function fetchFriendInviteInfo(token: string): Promise<string | nul
  * doğrudan `accepted` olarak açar (link tıklaması zaten bilinçli bir onay,
  * pending beklemeye gerek yok), linkin `use_count`'unu artırır ve ilk kezse
  * `profiles.invited_by`'ı doldurur. Davet edenin adını döner.
+ *
+ * ⚠ **18 Eylül 2026'dan beri İDEMPOTENT** (ROADMAP #31): taraflar ZATEN
+ * arkadaşsa çağrı tam no-op olur — sayaç artmaz, `responded_at` tazelenmez.
+ * Bu yüzden burayı BİRDEN ÇOK kez çağırmak güvenlidir ve gerçekten öyle
+ * oluyor: `FriendInvitePage`'in kendi otomatik kabulü ile `App.tsx`'teki
+ * `localStorage` kuyruğu fallback'i aynı token'ı arka arkaya işleyebiliyor
+ * (ikisi de bilerek var, bkz. `docs/decisions/friends.md`). Çift çağrı
+ * sayacı 18 Eylül'e kadar şişiriyordu.
  */
 export async function acceptFriendInvite(token: string): Promise<string | null> {
   if (!supabase) return null;

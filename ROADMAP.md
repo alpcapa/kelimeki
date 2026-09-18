@@ -1029,7 +1029,7 @@ cihazda saklanan rastgele bir uuid üretilip `tutorial_events` ve
 
 ---
 
-## 31. Davet linki `use_count`'u gerçeğin ~12 katı — **AÇIK, canlıdan ölçüldü** (18 Eylül 2026)
+## 31. Davet linki `use_count`'u gerçeğin ~12 katı — **SUNUCU YARISI ✅ CANLIDA · istemci yarısı AÇIK** (18 Eylül 2026)
 
 Kullanıcı yeni bir üyenin (Serbay → nadidesultan) linkten gelip gelmediğini
 sordu. Arkadaşlık doğruydu (`friend_requests` = `accepted`, `invited_by`
@@ -1063,9 +1063,38 @@ hata raporu değil, **metrik kurulmadan önce ödenecek bir borç**: admin
 Büyüme panelinde "arkadaş daveti ile gelen kayıt" kartı `use_count`'a
 bakarak yazılırsa rakam ilk günden ~12 kat şişik doğar.
 
+✅ **SUNUCU YARISI AYNI GÜN KAPANDI — migration `20260918154109`, canlıda.**
+`accept_friend_invite` idempotent: taraflar zaten `accepted` ise çağrı **tam
+no-op** (sayaç artmaz, `responded_at` tazelenmez, `invited_by`'a dokunulmaz).
+Ayrıca yarış sertleştirmesi var (var olan satır `for update` ile kilitleniyor,
+ekleme `on conflict do nothing` + `found` kontrolüyle yapılıyor), yani iki
+EŞZAMANLI çağrıdan da yalnızca biri sayar. Dönen `inviter_name` ve üç `P0001`
+reddi AYNEN korundu — iki istemci de yalnızca bu ikisine baktığından davranış
+değişmedi.
+
+**Canlıda ölçülen dört davranış** (hepsi uygulamadan sonra, gerçek veriyle):
+
+| Ölçüm | Sonuç |
+|---|---|
+| Zaten arkadaş olan çift üzerinde gerçek çağrı | `use_count` **2 → 2**, `responded_at` tazelenmedi, dönen ad `Serbay` (öncesinde 3 olurdu) |
+| Mutlu yol (yeni kabul), geri sarılan alt-işlemde | sayaç **+1**, satır `accepted`, ad doğru → sonra geri sarıldı, canlı iz YOK |
+| Üç ret (oturum yok · kendi linki · geçersiz token) | üçü de `P0001` |
+| `insert … on conflict do nothing` sonrası `found` | ekleme `true`, çakışma `false` (geçici tabloyla ayrıca ölçüldü) |
+
+⚠ **Geçmiş değerler DÜZELTİLMEDİ** ve düzeltilemez (tıklama başına iz yok):
+canlıdaki 128 olduğu gibi duruyor, kolon yorumu kesim tarihini yazıyor.
+Büyüme kartı yazılırsa sayı `profiles.invited_by`'dan okunmalı.
+
+**KALAN İŞ — istemci yarısı (AÇIK).** Sunucu artık zararsız, ama çift çağrı
+hâlâ gidiyor (boşa bir RPC turu). Aşağıdaki 2. madde duruyor; 1. madde
+kapandı.
+
 **İki ayrı iş, karıştırma:**
 
-1. **Sayacın anlamı** (asıl iş). Ya `use_count` artışı yalnızca `invited_by`
+1. ~~**Sayacın anlamı**~~ → ✅ **YAPILDI** (yukarı). Seçilen yol: sayaç
+   "bu linkle KURULAN arkadaşlık" anlamına sabitlendi; ikinci ve sonraki
+   çağrılar sayılmıyor. Eski metin referans için bırakıldı:
+   **Sayacın anlamı** (asıl iş). Ya `use_count` artışı yalnızca `invited_by`
    o çağrıda İLK KEZ dolduğunda yapılsın (sayaç "benzersiz davetli"ye
    dönüşür — metriğin istediği sayı budur), ya da sayaç olduğu gibi bırakılıp
    metrik doğrudan `profiles.invited_by`'dan okunsun ve `use_count` "tıklama"
