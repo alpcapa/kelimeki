@@ -1029,7 +1029,7 @@ cihazda saklanan rastgele bir uuid üretilip `tutorial_events` ve
 
 ---
 
-## 31. Davet linki `use_count`'u gerçeğin ~12 katı — **AÇIK, canlıdan ölçüldü** (18 Eylül 2026)
+## 31. Davet linki `use_count`'u gerçeğin ~12 katı — **SUNUCU YARISI ✅ CANLIDA · istemci yarısı AÇIK** (18 Eylül 2026)
 
 Kullanıcı yeni bir üyenin (Serbay → nadidesultan) linkten gelip gelmediğini
 sordu. Arkadaşlık doğruydu (`friend_requests` = `accepted`, `invited_by`
@@ -1063,9 +1063,61 @@ hata raporu değil, **metrik kurulmadan önce ödenecek bir borç**: admin
 Büyüme panelinde "arkadaş daveti ile gelen kayıt" kartı `use_count`'a
 bakarak yazılırsa rakam ilk günden ~12 kat şişik doğar.
 
+✅ **SUNUCU YARISI AYNI GÜN KAPANDI — migration `20260918154109` + `20260918155030`, ikisi de canlıda.**
+`accept_friend_invite` idempotent: taraflar zaten `accepted` ise çağrı **tam
+no-op** (sayaç artmaz, `responded_at` tazelenmez, `invited_by`'a dokunulmaz).
+Ayrıca yarış sertleştirmesi var (var olan satır `for update` ile kilitleniyor,
+ekleme `on conflict do nothing` + `found` kontrolüyle yapılıyor), yani iki
+EŞZAMANLI çağrıdan da yalnızca biri sayar. Dönen `inviter_name` ve üç `P0001`
+reddi AYNEN korundu — iki istemci de yalnızca bu ikisine baktığından davranış
+değişmedi.
+
+⚠ **İKİNCİ TUR GEREKTİ — ilk migration bir BELİRSİZLİK soktu.** İlk sürüm
+tek satır okuyordu (`select fr.status into v_status`), oysa `friend_requests`'te
+aynı ikili için İKİ YÖNLÜ satır olabiliyor (`sendFriendRequest` düz `insert`,
+PK `(user_id, friend_id)` ters yönü engellemez) ve canlıda bir örneği var.
+Karışık durumda (biri `accepted`, biri `pending`) hangi satırın okunacağı
+belirsizdi; eski kod bu yönden deterministikti. `20260918155030` kararı
+`bool_or(status = 'accepted')`e bağladı — satırların tamamı kilitlenir, soru
+tek ve kesin cevaplanır; kalıntı `pending` satırı da eski davranıştaki gibi
+normalize edilir (sayaç yine artmadan). **Canlıdaki tek çift yönlü ikili
+`accepted`/`accepted` olduğu için hiçbir kullanıcı etkilenmedi.**
+
+**Canlıda ölçülen YEDİ yol** (hepsi ikinci migration'dan SONRA, gerçek veriyle;
+yazanlar geri sarılan alt-işlemlerde):
+
+| Yol | Sonuç |
+|---|---|
+| A) `pending` ileri yön (davet eden → çağıran) | kabul + sayaç **+1** |
+| B) `pending` ters yön (çağıran → davet eden) | kabul + sayaç **+1** |
+| C) karışık çift yön (`accepted` + `pending`) | sayaç **SABİT**, kalıntı normalize, `accepted` satırın damgası korundu |
+| D) zaten arkadaş — **gerçek çağrı, geri sarmasız** | `use_count` **2 → 2**, damga sabit, dönen ad `Serbay` (öncesinde 3 olurdu) |
+| E) mutlu yol (hiç satır yok) | sayaç **+1**, satır `accepted` |
+| F) üst üste **İKİ** çağrı (asıl vaka) | ikisi de no-op, sayaç sabit |
+| G) üç ret (oturum yok · kendi linki · geçersiz token) | üçü de `P0001`, **metinler birebir** |
+
+Ayrıca `insert … on conflict do nothing` sonrası `found` semantiği geçici
+tabloyla ölçüldü (ekleme `true`, çakışma `false`) — yanlış olsaydı gerçek
+kabuller SESSİZCE sayılmaz olurdu.
+
+Test sonrası çevre sağlaması: 49 ilişki · `use_count` toplam 128 · atfedilen 11
+· çift yönlü ikili 1 (dokunulmadı) · yetkiler değişmedi (`anon` yok) · kaçak
+JWT ayarı yok.
+
+⚠ **Geçmiş değerler DÜZELTİLMEDİ** ve düzeltilemez (tıklama başına iz yok):
+canlıdaki 128 olduğu gibi duruyor, kolon yorumu kesim tarihini yazıyor.
+Büyüme kartı yazılırsa sayı `profiles.invited_by`'dan okunmalı.
+
+**KALAN İŞ — istemci yarısı (AÇIK).** Sunucu artık zararsız, ama çift çağrı
+hâlâ gidiyor (boşa bir RPC turu). Aşağıdaki 2. madde duruyor; 1. madde
+kapandı.
+
 **İki ayrı iş, karıştırma:**
 
-1. **Sayacın anlamı** (asıl iş). Ya `use_count` artışı yalnızca `invited_by`
+1. ~~**Sayacın anlamı**~~ → ✅ **YAPILDI** (yukarı). Seçilen yol: sayaç
+   "bu linkle KURULAN arkadaşlık" anlamına sabitlendi; ikinci ve sonraki
+   çağrılar sayılmıyor. Eski metin referans için bırakıldı:
+   **Sayacın anlamı** (asıl iş). Ya `use_count` artışı yalnızca `invited_by`
    o çağrıda İLK KEZ dolduğunda yapılsın (sayaç "benzersiz davetli"ye
    dönüşür — metriğin istediği sayı budur), ya da sayaç olduğu gibi bırakılıp
    metrik doğrudan `profiles.invited_by`'dan okunsun ve `use_count` "tıklama"
