@@ -148,6 +148,8 @@ Kullanıcılar "karşılıklı/canlı oyun" istiyor — bunun ön koşulu olarak
 
 ⚠ **Çift yol KALDIRILMADI ve kaldırılmamalı** — varlık sebebi gerçek (e-posta doğrulaması açıkken taze kayıt oturum açmıyor ve doğrulama linki köke dönüyor). Düzeltme kuyruğu değil, SUNUCUyu idempotent yaptı; yani ikinci çağrı hâlâ gidiyor, sadece artık zararsız.
 
+⚠ **İKİ YÖNLÜ satır mümkün — `accept_friend_invite` bunu varsaymaz (migration `20260918155030`).** `friend_requests`'te aynı ikili için `(a,b)` ve `(b,a)` satırlarının İKİSİ birden olabiliyor: `sendFriendRequest` düz bir `insert` ve PK `(user_id, friend_id)` ters yönü engellemez. Canlıda 18 Eylül 2026'da bir örneği sayıldı (ikisi de `accepted`, yani zararsız). İlk idempotentlik migration'ı tek satır okuyordu ve karışık bir durumda (biri `accepted`, biri `pending`) hangisini okuyacağı BELİRSİZDİ — karar aynı gün `bool_or(status = 'accepted')`e çevrildi: satırların tamamı kilitlenir, soru tek ve kesin cevaplanır. ⚠ Yeni bir yüzey bu tabloya bakarken "ikili başına tek satır" VARSAYMASIN.
+
 ⚠ **Geçmiş `use_count` değerleri DÜZELTİLMEDİ** ve düzeltilemez: tıklama başına iz tutulmadığından hangisinin gerçek kabul olduğu geriye dönük çıkarılamaz. Kolon yorumu kesim tarihini yazıyor. Geçmişi de kapsayan tek güvenilir taban `profiles.invited_by` sayımıdır — Büyüme kartı yazılırsa ORADAN okunmalı.
 
 `search_users_for_friend`/`list_friends`/`list_incoming_friend_requests` RPC'leri `security definer` — `profiles.select` RLS'i `lock_down_profiles_games_select` migration'ından beri owner-or-admin'e kilitli olduğundan (`game_likers`/`leaderboard` ile aynı gerekçe) başka kullanıcıların adını okumak için gerekiyor; **e-posta hiçbir zaman döndürülmez** (projenin genel ilkesi, bkz. Skor Kartı notundaki e-posta gizliliği).

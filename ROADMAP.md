@@ -1063,7 +1063,7 @@ hata raporu değil, **metrik kurulmadan önce ödenecek bir borç**: admin
 Büyüme panelinde "arkadaş daveti ile gelen kayıt" kartı `use_count`'a
 bakarak yazılırsa rakam ilk günden ~12 kat şişik doğar.
 
-✅ **SUNUCU YARISI AYNI GÜN KAPANDI — migration `20260918154109`, canlıda.**
+✅ **SUNUCU YARISI AYNI GÜN KAPANDI — migration `20260918154109` + `20260918155030`, ikisi de canlıda.**
 `accept_friend_invite` idempotent: taraflar zaten `accepted` ise çağrı **tam
 no-op** (sayaç artmaz, `responded_at` tazelenmez, `invited_by`'a dokunulmaz).
 Ayrıca yarış sertleştirmesi var (var olan satır `for update` ile kilitleniyor,
@@ -1072,14 +1072,37 @@ EŞZAMANLI çağrıdan da yalnızca biri sayar. Dönen `inviter_name` ve üç `P
 reddi AYNEN korundu — iki istemci de yalnızca bu ikisine baktığından davranış
 değişmedi.
 
-**Canlıda ölçülen dört davranış** (hepsi uygulamadan sonra, gerçek veriyle):
+⚠ **İKİNCİ TUR GEREKTİ — ilk migration bir BELİRSİZLİK soktu.** İlk sürüm
+tek satır okuyordu (`select fr.status into v_status`), oysa `friend_requests`'te
+aynı ikili için İKİ YÖNLÜ satır olabiliyor (`sendFriendRequest` düz `insert`,
+PK `(user_id, friend_id)` ters yönü engellemez) ve canlıda bir örneği var.
+Karışık durumda (biri `accepted`, biri `pending`) hangi satırın okunacağı
+belirsizdi; eski kod bu yönden deterministikti. `20260918155030` kararı
+`bool_or(status = 'accepted')`e bağladı — satırların tamamı kilitlenir, soru
+tek ve kesin cevaplanır; kalıntı `pending` satırı da eski davranıştaki gibi
+normalize edilir (sayaç yine artmadan). **Canlıdaki tek çift yönlü ikili
+`accepted`/`accepted` olduğu için hiçbir kullanıcı etkilenmedi.**
 
-| Ölçüm | Sonuç |
+**Canlıda ölçülen YEDİ yol** (hepsi ikinci migration'dan SONRA, gerçek veriyle;
+yazanlar geri sarılan alt-işlemlerde):
+
+| Yol | Sonuç |
 |---|---|
-| Zaten arkadaş olan çift üzerinde gerçek çağrı | `use_count` **2 → 2**, `responded_at` tazelenmedi, dönen ad `Serbay` (öncesinde 3 olurdu) |
-| Mutlu yol (yeni kabul), geri sarılan alt-işlemde | sayaç **+1**, satır `accepted`, ad doğru → sonra geri sarıldı, canlı iz YOK |
-| Üç ret (oturum yok · kendi linki · geçersiz token) | üçü de `P0001` |
-| `insert … on conflict do nothing` sonrası `found` | ekleme `true`, çakışma `false` (geçici tabloyla ayrıca ölçüldü) |
+| A) `pending` ileri yön (davet eden → çağıran) | kabul + sayaç **+1** |
+| B) `pending` ters yön (çağıran → davet eden) | kabul + sayaç **+1** |
+| C) karışık çift yön (`accepted` + `pending`) | sayaç **SABİT**, kalıntı normalize, `accepted` satırın damgası korundu |
+| D) zaten arkadaş — **gerçek çağrı, geri sarmasız** | `use_count` **2 → 2**, damga sabit, dönen ad `Serbay` (öncesinde 3 olurdu) |
+| E) mutlu yol (hiç satır yok) | sayaç **+1**, satır `accepted` |
+| F) üst üste **İKİ** çağrı (asıl vaka) | ikisi de no-op, sayaç sabit |
+| G) üç ret (oturum yok · kendi linki · geçersiz token) | üçü de `P0001`, **metinler birebir** |
+
+Ayrıca `insert … on conflict do nothing` sonrası `found` semantiği geçici
+tabloyla ölçüldü (ekleme `true`, çakışma `false`) — yanlış olsaydı gerçek
+kabuller SESSİZCE sayılmaz olurdu.
+
+Test sonrası çevre sağlaması: 49 ilişki · `use_count` toplam 128 · atfedilen 11
+· çift yönlü ikili 1 (dokunulmadı) · yetkiler değişmedi (`anon` yok) · kaçak
+JWT ayarı yok.
 
 ⚠ **Geçmiş değerler DÜZELTİLMEDİ** ve düzeltilemez (tıklama başına iz yok):
 canlıdaki 128 olduğu gibi duruyor, kolon yorumu kesim tarihini yazıyor.
