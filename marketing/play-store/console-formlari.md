@@ -107,18 +107,37 @@ ister. **Bu ölçülmedi** — ilk yüklemede göreceğiz.
 
 ## 3. App content (Uygulama içeriği) formları
 
-Sol menü → **Test and release** → **App content**. Sırayla:
+Sol menü → **Monitor and improve** → **Policy and programs** →
+**App content**. Sırayla:
 
-⚠ **YOL DÜZELTİLDİ (26 Ağustos 2026 — menüde ölçüldü):** burada uzun süre
-*"Sol menü → Policy → App content"* yazıyordu; **`Policy` diye bir grup
-YOK.** Sol menünün tamamı sekiz gruptan ibaret (Dashboard · Statistics ·
-Publishing overview · Protected with Play · Test and release · Monitor and
-improve · Grow users · Monetize with Play) ve App content, **Test and
-release**'in içinde — Testing kanallarının ALTINDA, `App integrity` ve
-`Setup` ile aynı yerde. §6.6 bunu zaten doğru yazmıştı ("Test and release →
-App integrity"), bu satır onunla çelişiyordu. **Tuzak:** "Test and
-release"i açtığında "Testing" alt grubu da açık geliyor ve altındakileri
-ekrandan itiyor — Testing'i kapatınca App content görünüyor.
+⚠ **YOL İKİ KEZ DEĞİŞTİ — Console'un menüsü Eylül 2026'da yeniden
+düzenlendi. Bir yol notu SABİT DEĞİL, tarihli bir ölçümdür; tarihini de
+yaz.**
+
+| Ne zaman | Yol |
+|---|---|
+| 26 Ağu 2026 (menüde ölçüldü) | `Test and release` → `App content` — Testing kanallarının ALTINDA, `App integrity` ve `Setup` ile aynı yerde |
+| **18 Eyl 2026 (menüde ölçüldü)** | **`Monitor and improve` → `Policy and programs` → `App content`** |
+
+Eylül düzenlemesinde üç şey birden oynadı ve üçü de eski notları bayattı:
+
+- **`Policy and programs` alt grubu GERİ GELDİ** (`Policy status` ·
+  `App content` · `Programs`). 26 Ağustos'ta sekiz grup tek tek sayılıp
+  *"`Policy` diye bir grup YOK"* diye yazılmıştı — o ölçüm O GÜN doğruydu.
+- **`App integrity`, `Test and release`'ten çıkıp `Protected with Play`
+  üst grubuna taşındı**; eski sayfa artık yalnızca *"App Integrity settings
+  have moved"* diyor (§6.6 bu yüzden tazelendi).
+- **`Setup` → `Advanced settings`** oldu.
+
+⚠ **Menüden bağımsız kestirme:** adres çubuğunda app id'den sonraki son
+parçayı **`app-content`** ile değiştir — sayfa menü nereye taşınırsa
+taşınsın o adreste durur. Yol notu bayatladığında aramaya girişmeden önce
+bunu dene.
+
+**Sayfanın okunuşu:** iki sekme var — `Need attention` (bekleyen beyanlar)
+ve `Actioned` (tamamlananlar). *"You're all caught up"* = bekleyen beyan
+YOK. 18 Eyl 2026'da #19 production incelemesi altıncı gününde dururken bu
+sekme BOŞ ölçüldü; yani beklemenin sebebi eksik bir beyan DEĞİLDİ.
 
 ### 3.1 Privacy policy
 ```
@@ -506,10 +525,17 @@ ayrıntısından zaten okunmuştu.
 
 ## 6.6 — Play App Signing SHA-256 → `assetlinks.json` (25 Ağustos 2026)
 
-**Console'da nerede:** Test and release → **App integrity** → *Play app
-signing* sekmesi. (Menüde "App integrity" bir süredir *Release* başlığının
-altına taşındı; eski "Setup → App integrity" yolu artık yok — kullanıcı bu
-yüzden ilk aramada bulamadı.)
+**Console'da nerede — ⚠ YOL BAYAT (18 Eyl 2026):** bu satır uzun süre
+*"Test and release → **App integrity** → Play app signing sekmesi"* diyordu;
+Eylül 2026 düzenlemesinde `App integrity` o gruptan ÇIKTI ve eski sayfa
+artık yalnızca *"App Integrity settings have moved — you can now find your
+app integrity settings on the **Protected with Play** page"* diyor. (Daha
+eski "Setup → App integrity" yolu iki düzenleme öncesine ait; `Setup` da
+`Advanced settings` oldu.) ⚠ **`Play app signing` sekmesinin
+`Protected with Play` içinde olduğu DOĞRULANMADI** — imza parmak izine
+tekrar ihtiyaç olduğunda oradan ÖLÇ ve bu satırı tarihiyle güncelle.
+Menü yolu notlarının bu dosyada sürekli bayatlaması hakkında: §3'ün
+başındaki yol tablosu.
 
 ### ⚠ DEĞERİ ANAHTAR TABLOSUNDAN OKUMA — sayfanın kendi ürettiği JSON'u kopyala
 
