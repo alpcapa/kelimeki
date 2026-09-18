@@ -25,6 +25,33 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 212 — Zoom tanıtım balonu kendi kendine kapanıyor
+
+   - ✅ **Parça 212 — Zoom balonu 4 sn sonra kapanır (16 Eylül 2026):** Bir
+     oyuncu bildirdi: *"tanıtımdan sonra zoom özelliği için sürekli kalan
+     uyarı mesajının oyun oynamayı zorlaştırdığından bahsetmiş. Onu sürekli
+     değil. 3-5 saniye sonra gidecek şekle getirelim. İnsanlar okumuyor."*
+     Öncesinde balonu kapatan TEK şey zoom'u DENEMEKTİ — yani denemeyen
+     oyuncuda balon oyun boyunca merkez karenin üstünde duruyordu ve tam da
+     taş konacak bölgeyi örtüyordu. Süre `kZoomHintAutoHide`
+     (`ui/game/board_zoom.dart`) ↔ web `ZOOM_HINT_AUTO_HIDE_MS`.
+     ⚠ **Kendi kendine kapanma "denedi" SAYILMAZ:** `markZoomTried`
+     çağrılmıyor ve gösterim sayacı ayrıca artmıyor (karar anında arttı).
+     Yani Parça 1 Eylül'ün kuralı DEĞİŞMEDİ: hiç denemeyen oyuncu balonu
+     ikinci oyun açılışında bir kez daha görür (tavan 2). Kapanmayı "deneme"
+     saymak kuralı sessizce tek gösterime indirirdi.
+     ⚠ Zamanlayıcı İKİ yerde iptal ediliyor: `dispose` (sökülmüş State'te
+     `setState` olmasın) ve `_zoomDenendiIsaretle` (denenince zaten kapandı).
+     Alan adı `_zoomHintTimer` — `game_screen.dart`ta ZATEN bir `_hintTimer`
+     var (bağlamsal ipuçları), ikisi karıştırılmamalı.
+     ⚠ **İki ekran da:** `game_screen.dart` + `online_game_screen.dart`
+     (aynı deseni paylaşıyorlar, bu projenin kayıtlı ayrışma sınıfı).
+     Kapı: `zoom_hint_test.dart` → "balon KENDİ KENDİNE kapanır — ve bu
+     'denedi' SAYILMAZ"; test erken kapanmayı DA ölçüyor (süre − 500 ms'de
+     hâlâ ekranda). Web ikizi `tests/smoke.spec.ts` → "balon kendi kendine
+     kapanır", web yarısı aynı gün `main`'e girdi; bu PR inceleme
+     dondurması yüzünden ayrı bırakıldı.
+
 ## Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
 
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan

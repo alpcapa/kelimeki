@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
 import 'package:kelimeki/src/game/game_controller.dart';
 import 'package:kelimeki/src/storage/app_storage.dart';
+import 'package:kelimeki/src/ui/game/board_zoom.dart';
 import 'package:kelimeki/src/ui/game/game_screen.dart';
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
@@ -107,6 +108,31 @@ void main() {
 
     await drainRealIo(tester);
     expect(storage.flags.zoomTried, isTrue);
+  });
+
+  // 16 Eylül 2026 — oyuncu bildirdi: *"tanıtımdan sonra zoom özelliği için
+  // sürekli kalan uyarı mesajı oyun oynamayı zorlaştırıyor... 3-5 saniye
+  // sonra gidecek şekle getirelim. İnsanlar okumuyor."* Web ikizi:
+  // `tests/smoke.spec.ts` → "balon kendi kendine kapanır".
+  testWidgets('balon KENDİ KENDİNE kapanır — ve bu "denedi" SAYILMAZ',
+      (tester) async {
+    final (_, storage) = await _pump(tester);
+    expect(find.text(_metin), findsOneWidget);
+
+    // Süre dolmadan HÂLÂ ekranda: erken kapanma da bir arıza.
+    await tester.pump(kZoomHintAutoHide - const Duration(milliseconds: 500));
+    expect(find.text(_metin), findsOneWidget);
+
+    // Hiçbir dokunuş yok: yalnızca zaman geçiyor.
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text(_metin), findsNothing);
+
+    // ⚠ Kural DEĞİŞMEDİ: kendi kendine kapanma "denendi" yazmaz ve sayacı
+    // ayrıca artırmaz — hiç denemeyen oyuncu balonu ikinci açılışta yine
+    // görür (tavan 2).
+    await drainRealIo(tester);
+    expect(storage.flags.zoomTried, isFalse);
+    expect(storage.flags.zoomHintShown, 1);
   });
 
   testWidgets('storage verilmezse balon HİÇ çıkmaz (testler/önizlemeler)',

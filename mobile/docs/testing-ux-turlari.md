@@ -466,6 +466,11 @@ Kural: balon **en çok iki oyun açılışında** çıkar ve zoom bir kez
 denenirse bir daha ASLA çıkmaz. Bayraklar cihaz-yerel, yani Canlı oyunda
 hem açan hem karşı taraf kendi ilk açılışında görür.
 
+⚠ **16 Eylül 2026'dan beri balon 4 saniye sonra KENDİ KENDİNE kapanıyor**
+(`kZoomHintAutoHide`; oyuncu bildirdi: sürekli kalan uyarı oyunu
+zorlaştırıyor). Kapanma **"denedi" SAYILMAZ** — yukarıdaki iki gösterimlik
+kural aynen duruyor.
+
 - [ ] **Uygulamayı ilk kez kurup oyun aç** → tahtanın ortasında, merkez
       kareyi işaret eden mavi balon: **"Boş kareye veya çerçevesine çift
       tıklama tahtayı büyütür. Hemen dene!"** Balon tahtadan taşmamalı,
@@ -474,8 +479,12 @@ hem açan hem karşı taraf kendi ilk açılışında görür.
 - [ ] **Oyundan çık, yeni oyun aç** → balon bir daha ÇIKMAMALI (denendi).
 - [ ] **(Temiz kurulumla)** balonu görüp zoom yapMADAN çık, yeni oyun aç →
       balon İKİNCİ kez çıkar; üçüncü açılışta artık çıkmaz.
-- [ ] **Raftan taş kaldır (sürükle)** → balon kaybolur, bırakınca döner
-      ("Buradan başla" ile aynı davranış).
+- [ ] **Balona DOKUNMA, say** → ~4 saniye sonra kendiliğinden kaybolmalı
+      (16 Eylül 2026). Sonra oyundan çık ve yeni oyun aç → balon İKİNCİ kez
+      çıkmalı: kendi kendine kapanmak "denedim" demek DEĞİL.
+- [ ] **Raftan taş kaldır (sürükle)** → balon kaybolur; ilk 4 saniye içinde
+      bıraktıysan döner ("Buradan başla" ile aynı davranış), süre dolduysa
+      dönmez (kabul edilen davranış — sayaç zaten harcandı).
 - [ ] **Canlı oyun** ekranında da aynı balon aynı kurallarla.
 
 ### Tek dokunuşlar DEĞİŞMEDİ (en kritik grup)
