@@ -125,7 +125,43 @@ kapandığında kaynağı `console-formlari.md`'dir, karar oradan okunur.
 
 ### Sonra / bloke
 
-Açık madde KALMADI. **#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
+**#25 — iOS uygulama simgesinde rozet SAYISI çıkmıyor** → ⏳ **AÇIK, freeze'i
+bekliyor** (18 Eylül 2026, kullanıcı bildirdi: *"Apple uyarılar geliyor ama
+ikon üzerinde numara çıkmıyor"*).
+
+Bildirimler geliyor, yalnızca sayı yok. Sebep bir regresyon DEĞİL, dayanağı
+geçersizleşmiş bilinçli bir erteleme — kod üç yerde yazmış
+(`_shared/push.ts`, `notification_shade.dart`, `AppDelegate.swift`):
+*"iOS henüz CANLI DEĞİL… yükü BİLEREK vermiyoruz"*. iOS artık canlı
+(18 Eylül'de ölçüldü: **9 token / 5 kişi**), varsayım düştü.
+
+⚠ **İki platform rozeti tamamen farklı üretiyor.** Android'de rozet bizim
+gönderdiğimiz bir sayı değil — One UI onu PANELDE DURAN bildirimlerden
+türetiyor, yani `cancelAll()` rozeti de düşürüyor (#15). iOS'ta böyle bir
+türetme YOK: sayı yalnızca `aps.badge`den gelir ve `buildFcmMessage`
+`apns.payload`ı hiç göndermiyor.
+
+**Düzeltme iki yarım ve İKİSİ AYNI PR'DA gitmeli:**
+
+| Yarım | Nerede | Freeze |
+|---|---|---|
+| Rozeti göster — `apns.payload.aps.badge` + sayıyı hesapla | `supabase/functions/` + `verify-push-payload` | ✅ `mobile/` dışı |
+| Rozeti sıfırla — açılışta `setBadgeCount(0)` | `ios/Runner/AppDelegate.swift` | ⛔ `mobile/` |
+
+⚠ **Yalnızca sunucu yarımını göndermek işi BOZAR:** iOS rozeti MUTLAK bir
+sayı, yeni bir push gelene kadar ekranda asılı kalır — 31 Ağustos'taki
+*"9'da takılı kaldı"* hatasının iOS kopyası. `AppDelegate.swift` bunu zaten
+öngörmüş (*"o değişiklik `verify-push-payload` ile birlikte gelmeli"*).
+
+**Sayının tanımı da karar:** web'de `useAppIconBadge` üç şeyi topluyor
+(arkadaşlık isteği + Canlı oyun + yerel kayıt); sunucuda bunu hesaplayan
+hazır bir fonksiyon YOK, yazılması gerekiyor.
+
+**Sıradaki adım:** Play production incelemesi kapanıp mobil merge kapısı
+açılınca tek PR. Kullanıcı kararı (18 Eylül): acele yok, 5 test kullanıcısı
+etkileniyor.
+
+**#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
 ✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
 doğrulandı; arşivde.
 **#11** (hata panelinde platform filtresi) ✅ **KAPANDI** 31 Ağustos 2026
