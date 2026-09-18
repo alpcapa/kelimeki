@@ -862,3 +862,81 @@ doğrulandı.
 **Ders (kök `CLAUDE.md`'ye de yazıldı):** dönüş tipi değişen her fonksiyonda
 drop+create'ten SONRA `proacl`i OKU. "Grant'leri geri kur" yetmiyor — geri
 GELEN bir grant de olabiliyor.
+
+## "Aktif Saatler" — günün ritmi (18 Eylül 2026)
+
+Kullanıcı isteği: *"Admin oyun sayfasına Aktif Saatler bar grafiği eklemek
+istiyorum. 2 saatlik dilimler olsun. Web, ios ve android kırılımları olursa
+iyi olur. Oyun bitişleri baz alalım."*
+
+Büyüme > Oyun sekmesinde, "Oyun Sayısı"nın hemen altında. İkisi de oyun
+bitişlerini sayıyor ama farklı soruları yanıtlıyor: biri **zaman içindeki
+hacmi**, öteki **günün içindeki ritmi**.
+
+`admin_active_hours(p_days)` · `ActiveHoursChart.tsx` · `AdminActiveHoursRow`
+
+### Kararlar
+
+| Karar | Gerekçe |
+|---|---|
+| Kaynak `game_finishes` | MİSAFİR oyunlarını da kapsayan tek bitiş tablosu. `games`ten okunsaydı grafiğin misafir kolu tamamen kör kalırdı (`games` satırı yalnızca girişli kullanıcı için açılıyor) |
+| Saat dilimi `Europe/Istanbul` | Deponun tamamının kuralı. Burada süs değil **metriğin kendisi**: UTC dağılımı 3 saat kaydırıp grafiği sessizce yanlış okuturdu |
+| **Teslim satırları HARİÇ** | Teslim satırı 7 günlük/48 saatlik zaman aşımının DOLDUĞU anı taşır, bir insanın oyun bitirdiği anı değil. Dahil edilseydi dağılıma insan davranışıyla ilgisi olmayan bir saat deseni karışırdı. Son 30 günde **152 teslim / 1199 bitirilen** — %11, yuvarlama hatası değil |
+| Kombolardan BAĞIMSIZ, sabit 30 gün | Kullanıcı kararı. Kendi `useEffect`'i var ve bağımlılık dizisi boş — yukarıdaki effect'e eklenseydi her kombo değişiminde gereksiz bir RPC daha koşardı |
+| Efsane TIKLANABİLİR DEĞİL | `GrowthChart`tan bilinçli ayrım: orada çizgiler bağımsız, açıp kapatmak anlamlı. Burada segmentler `finished`e TAM toplanıyor; bir segmenti gizlemek çubuğu sessizce yalan söyletirdi (toplam aynı kalır, parçalar tutmaz) |
+| "Diğer" en ÜSTTE | Bugün şişkin (aşağı bkz.); en üste konunca çubuğun TABANI kararlı kalıyor ve boşluk kapandıkça grafik alttan değil üstten inceliyor |
+
+### Neden `GrowthChart` kullanılmadı
+
+`GrowthChart` bir ZAMAN SERİSİ çizgi grafiği: x ekseni tarih
+(`bucket: string`), etiketleri `toLocaleDateString` ile biçimliyor, serileri
+üst üste BİNEN çizgiler olarak çiziyor. Buradaki soru başka: 12 sabit kova ve
+segmentleri TOPLANAN tek bir çubuk. Zorlanarak uydurulsaydı tarih
+biçimlendirmesi de çizgi mantığı da yolda bozulurdu. Görsel dil yine de
+birebir aynı (viewBox, kenar boşlukları, ızgara/metin renkleri, CSV + Tablo
+Görünümü + `?` üçlüsü, padding-top oranı tekniği).
+
+**Tek bilinçli sapma — `niceCeil`'in merdiveni.** `GrowthChart` 1·2·5·10
+kullanıyor; burada 1·1,5·2·2,5·3·4·5·6·8·10. Sebep grafik türü: çizgi
+ŞEKİLDEN okunur, çubuk YÜKSEKLİKTEN. Kaba merdivende 236'lık tepe 500'e
+yuvarlanıyordu ve en yüksek çubuk çizim alanının **%47**'sinde kalıyordu —
+gerçek 30 günlük veriyle ekran görüntüsü alınarak ölçüldü. İnce merdivende
+aynı tepe 250'ye yuvarlanıyor: **%94**.
+
+### ⚠ Platform kırılımı bugün YARIM — geçici ve beklenen
+
+`game_finishes.platform` damgasını **yalnızca web istemcisi** yazıyor;
+portun aynı satırı (`games_api.dart`) inceleme dondurması yüzünden AYRI bir
+PR'da bekliyor (#565). Canlıda ölçüldü (18 Eylül 2026):
+
+| Gün | web | android | ios | boş |
+|---|---|---|---|---|
+| 17 Eyl | 35 | 0 | 0 | **54** |
+| 15 Eyl | 9 | 21 | 5 | 5 |
+
+android/ios 16 Eylül'de sıfırlandı. ⚠ **Öncesindeki android/ios satırları
+CANLI VERİ DEĞİL** — `20260916054513`'ün `games`ten geriye doldurduğu
+satırlar. O PR merge edilip yeni mağaza paketi dağılana kadar app'ten biten
+oyunlar "Diğer"e düşer.
+
+**Toplam çubuk yüksekliği bundan ETKİLENMEZ** — yalnızca rengin dağılımı
+eksik. Grafiğin asıl sorusu (günün hangi saatinde oynanıyor) bugün de doğru
+cevaplanıyor.
+
+⚠ "Diğer"in tanımı `admin_game_activity_series` ile BİREBİR aynı tutuldu
+(`platform is null or platform = 'app-web'`). İki grafik aynı sekmede yan
+yana; kovaların anlamı ayrışırsa sayılar birbirini tutmaz.
+
+### SQL tuzağı — `left join`de `count(*)` boş kovayı 1 gösterir
+
+12 dilim `generate_series` ile HER ZAMAN üretiliyor (boş saatler 0 olarak
+gelmeli, eksik satır olarak değil — yoksa çubuklar kayar). Ama `left join`
+sonrası eşleşme olmayan dilim için `count(*)` **1** döndürür. İki yerde
+tuzağa düşülebilirdi ve ikisi de kapatıldı:
+
+- `finished` → `count(*)` değil **`count(b.hour_start)`**.
+- "Diğer" filtresi → `b.platform is null` tek başına YETMEZ (eşleşmeyen
+  dilimde de doğrudur); filtreye **`b.hour_start is not null`** şartı eklendi.
+
+Değişmez canlıda 12 dilimde de doğrulandı: web + ios + android + other =
+finished.

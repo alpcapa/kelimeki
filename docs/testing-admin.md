@@ -672,3 +672,34 @@ istemcide görülmesi gerekenler. Kararlar: `docs/decisions/admin-panel.md` →
 - [ ] **"Bekliyor" satırlarının hepsi son 48 SAATTEN olmalı.** Katılma
       tarihi daha eski bir "Bekliyor" görürsen `sweep-unconfirmed-accounts`
       cron'u durmuş demektir — kolonun asıl teşhis değeri bu.
+
+## 9.19. Admin — "Aktif Saatler" grafiği (18 Eylül 2026)
+
+Büyüme > **Oyun** sekmesi, "Oyun Sayısı"nın hemen altında.
+
+- [ ] Grafik açılıyor, **12 çubuk** var ve x ekseni `00 · 04 · 08 · 12 · 16 · 20`
+      yazıyor (ara dilimler etiketsiz — kalabalık olmasın diye bilerek).
+- [ ] Çubukların üzerine gelince tooltip çıkıyor; başlığı `22–24` gibi bir
+      ARALIK (tek saat değil), 22 diliminin ucu `24` yazıyor — `00` DEĞİL.
+- [ ] Tooltip'teki **Web + iOS + Android + Diğer toplamı, "Bitirilen"e TAM
+      eşit.** Tutmuyorsa sunucudaki değişmez kırılmış demektir.
+- [ ] ⚠ **İlk ve SON çubuğun tooltip'i grafiğin dışına taşmıyor** (18 Eylül
+      2026'da tam bu hata yakalanmıştı: son çubuğun kutusu grafiğin üstünü
+      örtüyordu).
+- [ ] **Efsane tıklanamaz** — Web/iOS/Android/Diğer rozetlerine basmak hiçbir
+      şey yapmamalı (bu grafikte seri açıp kapatmak YOK; segmentler toplama
+      tam eklendiği için bir segmenti gizlemek çubuğu yalan söyletirdi).
+- [ ] "Tablo Görünümü" 12 satır + `Saat · Bitirilen · Web · iOS · Android ·
+      Diğer` kolonlarını veriyor; geri dönünce grafik yeniden çiziliyor.
+- [ ] "CSV İndir" aynı 12 satırı veriyor.
+- [ ] `?` rozeti "Aktif Saatler" açıklamasını açıyor.
+- [ ] ⚠ **Üstteki kombolar (kaynak / kapsam / oyuncu sayısı) bu grafiği
+      DEĞİŞTİRMEMELİ** — bilerek bağımsız, sabit 30 günlük pencere. Kombo
+      değiştirince çubuklar kıpırdıyorsa effect'in bağımlılık dizisi
+      kirlenmiş demektir.
+
+⚠ **Bugünkü BEKLENEN görüntü:** "Diğer" segmenti şişkin ve iOS neredeyse
+görünmez. Bu bir hata DEĞİL — portun `logGameFinish`i platform damgasını
+yazmıyor (PR #565 dondurulmuş). O merge edilip yeni mağaza paketi dağılınca
+"Diğer" kendiliğinden incelmeli. **Toplam çubuk yüksekliği bundan
+etkilenmez.** Ayrıntı: `docs/decisions/admin-panel.md` → "Aktif Saatler".

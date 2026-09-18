@@ -1163,6 +1163,41 @@ export interface AdminGameActivityPoint {
 }
 
 /**
+ * `admin_active_hours` RPC çıktısındaki tek dilim — "Aktif Saatler" grafiği
+ * (Büyüme > Oyun, 18 Eylül 2026, kullanıcı isteği: *"Admin oyun sayfasına
+ * Aktif Saatler bar grafiği eklemek istiyorum. 2 saatlik dilimler olsun.
+ * Web, ios ve android kırılımları olursa iyi olur. Oyun bitişleri baz
+ * alalım."*).
+ *
+ * `hour_start` dilimin BAŞLANGIÇ saati (0 · 2 · … · 22), **Europe/Istanbul**.
+ * Sunucu her zaman 12 satır döndürür — boş saatler 0 olarak gelir, eksik
+ * satır olarak DEĞİL (yoksa çubuklar kayardı).
+ *
+ * ⚠ **Dördü HER ZAMAN `finished`e TAM olarak toplanır** — grafiğin yığılmış
+ * çubukları buna dayanıyor, `_other` bu yüzden var.
+ *
+ * ⚠ **Teslim satırları HARİÇ.** Gerekçe bu grafiğe özgü ve `Oyun Sayısı`
+ * grafiğininkinden farklı: teslim satırı 7 günlük/48 saatlik zaman aşımının
+ * DOLDUĞU anı taşır, bir insanın oyun bitirdiği anı değil — dahil edilseydi
+ * dağılıma insan davranışıyla ilgisi olmayan bir saat deseni karışırdı.
+ * (Son 30 günde 152 teslim / 1199 bitirilen, canlıda ölçüldü.)
+ *
+ * ⚠ `_other` = `platform is null or platform = 'app-web'` — tanım
+ * `AdminGameActivityPoint._other` ile BİREBİR aynı tutuldu; iki grafik aynı
+ * sekmede yan yana ve kovaların anlamı ayrışırsa sayılar birbirini tutmaz.
+ * Aynı geçici boşluk burada da geçerli: portun `logGameFinish`i damgayı
+ * yazmadığı sürece app'ten biten oyunlar `_other`a düşer.
+ */
+export interface AdminActiveHoursRow {
+  hour_start: number;
+  finished: number;
+  finished_web: number;
+  finished_ios: number;
+  finished_android: number;
+  finished_other: number;
+}
+
+/**
  * admin_ai_balance RPC çıktısındaki tek satır (Büyüme > Oyun, "YZ Dengesi").
  * Yerel (Yapay Zeka'ya karşı) oyunlarda İNSANIN sonuç dağılımı, oyuncu
  * sayısı bazında. Teslim olan satırlar HARİÇ — onlar bir beceri sonucu
