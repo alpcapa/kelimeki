@@ -1029,6 +1029,72 @@ cihazda saklanan rastgele bir uuid üretilip `tutorial_events` ve
 
 ---
 
+## 31. Davet linki `use_count`'u gerçeğin ~12 katı — **AÇIK, canlıdan ölçüldü** (18 Eylül 2026)
+
+Kullanıcı yeni bir üyenin (Serbay → nadidesultan) linkten gelip gelmediğini
+sordu. Arkadaşlık doğruydu (`friend_requests` = `accepted`, `invited_by`
+dolu), ama satırın iki zaman damgası uyuşmuyordu: `created_at` 15:17:51,
+`responded_at` 15:17:56. `accept_friend_invite` tek çağrıda ikisini de
+`now()` yazar — beş saniyelik fark, fonksiyonun **iki kez** çağrıldığını
+söylüyor (ilki `insert`, ikincisi `exists` dalına düşüp `responded_at`'i
+tazeledi). Her çağrı `use_count`'u bir artırdığı için sayaç tek davetliye
+**2** yazdı.
+
+**Canlıdan ölçüldü — sapma tek vakaya özgü DEĞİL, beş linkin beşinde de var:**
+
+| Link sahibi | `use_count` | `invited_by` ile atfedilen kişi | Link tarihi |
+|---|---|---|---|
+| Asnmzr | **84** | 2 | 3 Eyl 2026 |
+| Zesiner | **32** | 4 | 27 Tem 2026 |
+| Ironman | 9 | 4 | 26 Tem 2026 |
+| Serbay | 2 | 1 | 18 Eyl 2026 |
+| Minka | 1 | 0 | 28 Tem 2026 |
+| **Toplam** | **128** | **11** | — |
+
+Yani sayaç bugünkü hâliyle "bu linkle kaç kişi geldi" DEĞİL, **"oturumu açık
+biri bu linke kaç kez tıkladı"** ölçüyor: zaten arkadaş olmuş biri linki her
+açtığında `exists` dalı çalışıyor ve sayaç bir daha artıyor. 84/2 oranı bunu
+tek başına gösteriyor.
+
+⚠ **Bugün hiçbir şeyi bozmuyor** — `use_count` repoda hiçbir yerde OKUNMUYOR
+(`grep use_count` → yalnızca migration'daki yazma + iki yorum satırı).
+Arkadaşlığın kendisi doğru kuruluyor, fonksiyon idempotent. Bu madde bir
+hata raporu değil, **metrik kurulmadan önce ödenecek bir borç**: admin
+Büyüme panelinde "arkadaş daveti ile gelen kayıt" kartı `use_count`'a
+bakarak yazılırsa rakam ilk günden ~12 kat şişik doğar.
+
+**İki ayrı iş, karıştırma:**
+
+1. **Sayacın anlamı** (asıl iş). Ya `use_count` artışı yalnızca `invited_by`
+   o çağrıda İLK KEZ dolduğunda yapılsın (sayaç "benzersiz davetli"ye
+   dönüşür — metriğin istediği sayı budur), ya da sayaç olduğu gibi bırakılıp
+   metrik doğrudan `profiles.invited_by`'dan okunsun ve `use_count` "tıklama"
+   olarak yeniden adlandırılsın. ⚠ Geriye dönük düzeltme: mevcut 128 sayısı
+   kurtarılamaz, çünkü tıklama başına iz tutulmuyor — `invited_by` sayımı (11)
+   tek güvenilir taban.
+2. **Çift çağrının kendisi.** `/davet/:token` sayfasının kendi otomatik kabulü
+   ile `App.tsx`'teki `localStorage` kuyruğu fallback'i (ikisi de
+   `docs/decisions/friends.md`'de tarifli, e-posta doğrulaması yüzünden
+   oturumun geç açılma riskine karşı BİLEREK çift yol) aynı token'ı arka
+   arkaya işliyor olabilir. Kuyruk `read-then-clear` desenli, yani çağrı ile
+   temizleme arasındaki pencere dar ama sıfır değil. ⚠ Çift yolu KALDIRMA —
+   varlık sebebi gerçek; yapılacaksa token çağrıdan ÖNCE temizlenmeli.
+
+⚠ **Yan etki, atlanmasın:** ikinci çağrı `responded_at`'i de tazeliyor ve
+`fetchFriends` (`list_friends`) listeyi `responded_at desc` ile döndürüyor —
+yani linke tekrar tıklayan eski bir arkadaş, listede yeniden "en yeni"ye
+çıkıyor. İstemci zaten `trCompare` ile yeniden sıralıyor (bkz. kök
+`CLAUDE.md`, "Türkçe Dil Notu"), o yüzden kullanıcıya YANSIMIYOR — ama
+sunucunun sırasına güvenen yeni bir yüzey yazılırsa yansır.
+
+⚠ **Kapsam: yalnızca SUNUCU** (`accept_friend_invite`). Düzeltme bir
+migration ise `mobile/` DEĞİŞMEZ, yani mobil derleme tetiklenmez ve sürüm
+dondurmasını beklemek gerekmez. İkinci iş (çift çağrı) web istemcisinde;
+portta `/davet` sayfası yok, token `friend_invite_inbox.dart` üzerinden tek
+yoldan giriyor — port ETKİLENMİYOR, ama düzeltilirse orada da ölçülmeli.
+
+---
+
 ## Her iş için değişmeyen kurallar
 
 1. **Önce etki analizi** (kök `CLAUDE.md` → "Çalışma İlkesi"): bu kodun
