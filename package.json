@@ -32,6 +32,7 @@
     "verify-cloud-save-mirror": "esbuild scripts/verify-cloud-save-mirror.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/kelimeki/verify-cloud-save-mirror.mjs --log-level=error && node node_modules/.cache/kelimeki/verify-cloud-save-mirror.mjs",
     "verify-fetch-my-games": "node scripts/run-verify-fetch-my-games.mjs",
     "verify-hook-order": "node scripts/verify-hook-order.mjs",
+    "verify-invite-queue": "esbuild scripts/verify-invite-queue.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/kelimeki/verify-invite-queue.mjs --log-level=error && node node_modules/.cache/kelimeki/verify-invite-queue.mjs",
     "verify-sw-update-loop": "esbuild scripts/verify-sw-update-loop.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/kelimeki/verify-sw-update-loop.mjs --log-level=error && node node_modules/.cache/kelimeki/verify-sw-update-loop.mjs",
     "verify-auth-user-identity": "esbuild scripts/verify-auth-user-identity.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/kelimeki/verify-auth-user-identity.mjs --log-level=error && node node_modules/.cache/kelimeki/verify-auth-user-identity.mjs",
     "verify-store-badges": "esbuild scripts/verify-store-badges.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/kelimeki/verify-store-badges.mjs --log-level=error && node node_modules/.cache/kelimeki/verify-store-badges.mjs",

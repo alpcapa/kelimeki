@@ -1029,7 +1029,7 @@ cihazda saklanan rastgele bir uuid üretilip `tutorial_events` ve
 
 ---
 
-## 31. Davet linki `use_count`'u gerçeğin ~12 katı — **SUNUCU YARISI ✅ CANLIDA · istemci yarısı AÇIK** (18 Eylül 2026)
+## 31. Davet linki `use_count`'u gerçeğin ~12 katı — ✅ **YAPILDI** (sunucu 18 Eylül · istemci 19 Eylül 2026)
 
 Kullanıcı yeni bir üyenin (Serbay → nadidesultan) linkten gelip gelmediğini
 sordu. Arkadaşlık doğruydu (`friend_requests` = `accepted`, `invited_by`
@@ -1108,9 +1108,26 @@ JWT ayarı yok.
 canlıdaki 128 olduğu gibi duruyor, kolon yorumu kesim tarihini yazıyor.
 Büyüme kartı yazılırsa sayı `profiles.invited_by`'dan okunmalı.
 
-**KALAN İŞ — istemci yarısı (AÇIK).** Sunucu artık zararsız, ama çift çağrı
-hâlâ gidiyor (boşa bir RPC turu). Aşağıdaki 2. madde duruyor; 1. madde
-kapandı.
+✅ **İSTEMCİ YARISI DA KAPANDI (19 Eylül 2026).** Çift çağrının penceresi
+SIRA hatasıydı: `/davet/:token` sayfası kuyruğu `.then()` içinde
+temizliyordu, yani token RPC uçarken kuyrukta DURUYORDU. O pencerede
+uygulamanın köküne düşen biri (doğrulama linki, yeni sekme, sayfayı kapatıp
+dönme) `App.tsx`'in fallback'ini tetikliyor ve aynı token ikinci kez
+gidiyordu. Temizlik çağrının ÖNÜNE alındı.
+
+⚠ **Çift yol KALDIRILMADI** (ROADMAP'in kendi uyarısı) — varlık sebebi
+gerçek. Ve erken temizlik kurtarma yolunu kesmesin diye: **geçici** arızada
+token kuyruğa GERİ konuyor (`storePendingInviteToken` catch içinde), kalıcı
+rette (P0001) konmuyor — ikinci deneme aynı reddi alır ve kuyruk sonsuza dek
+dolu kalırdı. Sayfadaki "Tekrar Dene" zaten bellekteki `token` ile çalışıyor,
+ondan etkilenmiyor.
+
+**Kapı: `npm run verify-invite-queue`** (CI'da) — sıra kuralını, kurtarma
+yolunu ve çift yolun DURDUĞUNU kaynaktan sınar. Duyarlılığı düzeltme geri
+alınarak kanıtlandı (düzeltmesiz DÜŞÜYOR).
+
+⚠ Port ETKİLENMEDİ: portta `/davet` sayfası yok, token `friend_invite_inbox.dart`
+üzerinden tek yoldan giriyor.
 
 **İki ayrı iş, karıştırma:**
 
