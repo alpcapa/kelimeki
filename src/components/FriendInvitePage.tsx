@@ -159,7 +159,7 @@ export function FriendInvitePage({ token }: FriendInvitePageProps) {
         setKaliciRet(kod === 'P0001' && err instanceof Error ? err.message : null);
         setStatus('error');
       });
-  }, [authLoading, user, status, token]);
+  }, [authLoading, user?.id, status, token]);
 
   // Tanıtım bölümü yalnızca GİRİŞSİZ ziyaretçiye gösteriliyor: girişli biri
   // zaten üye, ona oyunu anlatmak gürültü olur (ve o kişi için sayfa bir

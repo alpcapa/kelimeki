@@ -65,7 +65,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
     if (emailHydratedRef.current || !user) return;
     emailHydratedRef.current = true;
     setEmail(user.email ?? '');
-  }, [user]);
+  }, [user?.id, user?.email]);
 
   const name = nickname || firstName || user?.email || 'Oyuncu';
   const nicknameStatus = useNicknameAvailability(nickname, true, profile?.display_name ?? undefined);

@@ -1,8 +1,11 @@
 // Kelimeki — kimlik doğrulama bağlamı (Supabase Auth)
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -113,39 +116,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
       // ⚠ Her `null` oturum bir ÇIKIŞ DEĞİLDİR. 19 Eylül 2026'da canlıda
       // ölçüldü: oturum `kullanıcı → null → kullanıcı` diye titriyordu ve her
-      // titreme hem dokuz effect'i yeniden koşturuyor hem de UÇAN profil
-      // isteğini çöpe attırıyordu (aşağıdaki `currentUserId` koruması
+      // titreme hem `user`e bağlı effect'leri yeniden koşturuyor hem de UÇAN
+      // profil isteğini çöpe attırıyordu (aşağıdaki `currentUserId` koruması
       // sıfırlandığı için). Kullanıcı bunu "oyunlar geldi ama avatar/isim
-      // gelmedi" diye gördü. Kural `utils/authUser.ts`te, kapısı
+      // gelmedi" diye gördü.
+      //
+      // İlk düzeltme olayın ADINA bakıyordu (`SIGNED_OUT`/`INITIAL_SESSION`
+      // dışındakileri eler). Yayına çıktı ve YETMEDİ — titreme aynı hızda
+      // sürdü, yani titreten olay o iki addan biriyle geliyor. Bu yüzden
+      // karar artık ada değil, DEPODAKİ OTURUMA bakıyor: gerçek bir çıkışta
+      // `supabase-js` kalıcı oturumu olaydan ÖNCE siler, dolayısıyla depo da
+      // boşsa çıkış gerçektir. Kural `utils/authUser.ts`te, kapısı
       // `npm run verify-auth-user-identity`.
-      if (shouldApplyAuthSession(event, !!session)) applyUser(session?.user ?? null);
-      if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
+      if (shouldApplyAuthSession(!!session)) {
+        applyUser(session?.user ?? null);
+        return;
+      }
+      // ⚠ `setTimeout(…, 0)` ZORUNLU, süslemek için değil: bu geri çağrı
+      // Supabase'in auth kilidini TUTARKEN çalışıyor ve kilit altında ikinci
+      // bir auth çağrısı yapmak (burada `getSession`) kilitlenme üretir —
+      // Supabase'in kendi dokümanındaki uyarı. Erteleme kilidi bırakır.
+      window.setTimeout(() => {
+        void supabase?.auth
+          .getSession()
+          .then(({ data }) => {
+            const depodaki = data.session?.user ?? null;
+            // Depoda oturum duruyorsa olay gürültüydü: DOKUNMA.
+            if (!shouldApplyAuthSession(false, depodaki?.id ?? null)) return;
+            applyUser(null);
+          })
+          .catch((err) => {
+            // Depo okunamadıysa oturumu DÜŞÜRME — yanlış yönde hata yapmak
+            // (girişli kullanıcıyı çıkmış saymak) tam da düzeltilen arıza.
+            console.error('[Kelimeki] oturum doğrulaması başarısız:', err);
+          });
+      }, 0);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const refreshProfile = async () => {
-    if (user) setProfile(await fetchMyProfile());
-  };
+  // `refreshProfile` her render'da YENİDEN YAZILMAMALI: bağlam nesnesinin
+  // içinde duruyor ve bağlam nesnesinin kimliği değişince `useAuth()` çağıran
+  // her bileşen yeniden render oluyor. Oturumu `ref` üzerinden okuyor ki
+  // bağımlılığı da olmasın (hesap değişse bile fonksiyon aynı kalır).
+  const userRef = useRef<User | null>(user);
+  userRef.current = user;
+  const refreshProfile = useCallback(async () => {
+    if (userRef.current) setProfile(await fetchMyProfile());
+  }, []);
+  const clearPasswordRecovery = useCallback(() => setPasswordRecovery(false), []);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        profile,
-        loading,
-        profileLoading,
-        configured: isSupabaseConfigured,
-        passwordRecovery,
-        clearPasswordRecovery: () => setPasswordRecovery(false),
-        refreshProfile,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  // ⚠ Bağlam değeri MEMOIZE edilmeli. Süsleme değil: `AuthProvider` her
+  // render'ında yeni bir nesne ürettiğinde `useAuth()` çağıran TÜM bileşenler
+  // (Setup, UserMenu, ScoreCard, LiveGamesTab, App…) gereksiz yere yeniden
+  // render oluyordu — 19 Eylül 2026'daki döngünün yükselteçlerinden biri.
+  const value = useMemo(
+    () => ({
+      user,
+      profile,
+      loading,
+      profileLoading,
+      configured: isSupabaseConfigured,
+      passwordRecovery,
+      clearPasswordRecovery,
+      refreshProfile,
+    }),
+    [user, profile, loading, profileLoading, passwordRecovery, clearPasswordRecovery, refreshProfile],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

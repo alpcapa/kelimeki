@@ -63,29 +63,47 @@ export function sameAuthUser(a: AuthUserLike | null, b: AuthUserLike | null): bo
 }
 
 /**
- * Bir `onAuthStateChange` olayı oturumu GERÇEKTEN düşürüyor mu?
+ * Bir `onAuthStateChange` olayının `user`'ı UYGULANMALI MI?
  *
- * 19 Eylül 2026'da ölçülen ikinci arıza: oturum `kullanıcı → null → kullanıcı`
- * diye titriyordu. Her titreme iki şey birden yapıyordu — (1) `user` nesnesini
- * gerçekten değiştirdiği için ona bağlı dokuz effect yeniden koşuyor, (2)
- * `useAuth`'un `currentUserId` koruması sıfırlandığı için UÇAN profil isteği
- * dönüşünde ÇÖPE atılıyordu. Sonucu kullanıcı şöyle gördü: *"Uzunca süre
- * yükleniyor yazıp oyunları getirdi ama avatar, isim soyad gelmedi"* — profil
- * hiç yüklenemiyor, ekranda isim yerine e-posta öneki kalıyordu.
+ * ## Neden olayın ADINA bakmıyoruz (19 Eylül 2026, ÜÇÜNCÜ tur)
  *
- * Kural: **oturumu yalnızca GERÇEK bir çıkış düşürür.**
+ * İlk sürüm `SIGNED_OUT`/`INITIAL_SESSION` dışındaki `null` oturumları yok
+ * sayıyordu. Canlıda ölçüldü: **yetmedi.** Aynı gün, iki düzeltme de
+ * yayındayken (derleme `7353b50`) aynı hesapta iki dakikada ~52 tur daha
+ * sayıldı — her turda `/auth/v1/user` + `/rest/v1/profiles`, yani
+ * `fetchMyProfile` baştan koşuyor. Bu ancak `currentUserId`'nin `null`a
+ * düşmesiyle olur, yani titreten olay ya `SIGNED_OUT` ya `INITIAL_SESSION`
+ * adıyla geliyordu: **olay adı bir filtre değil.**
  *
- * - `SIGNED_OUT` → gerçek çıkış, `null` uygulanır.
- * - `INITIAL_SESSION` → ilk okuma; `null` gelmesi "giriş yapılmamış" demektir,
- *   uygulanır.
- * - Öteki olaylarda (`TOKEN_REFRESHED`, `USER_UPDATED`, `SIGNED_IN`…) `session`
- *   `null` geldiyse bu geçici bir okuma/yenileme gürültüsüdür: YOK SAYILIR.
- *   Oturum gerçekten bitmişse zaten arkasından `SIGNED_OUT` gelir.
+ * Hangi olayın neden `null` yaydığı sunucu loglarından GÖRÜLEMEZ (istemci
+ * konsolu bizde yok, kullanıcı iPhone Safari'de). O yüzden tahmini bırakıp
+ * ÖLÇÜLEBİLİR olana bakıyoruz: **depodaki oturum.** Çıkış gerçekse
+ * `supabase-js` kalıcı oturumu olayı yaymadan ÖNCE siler; yani depo da
+ * boşsa çıkış gerçektir, depoda oturum duruyorsa olay gürültüdür.
  *
- * ⚠ `SIGNED_OUT`'u bu listeden ÇIKARMA: çıkış yapan kullanıcı ekranda girişli
- * kalır ve bir sonraki isteğinde anlamsız bir hata görür.
+ * ## Üç durum
+ *
+ * | `hasSession` | `depodakiId` | Sonuç |
+ * |---|---|---|
+ * | `true` | — (okunmadı) | **uygula** — oturum var, tartışma yok |
+ * | `false` | `undefined` | **bekle** — depo henüz okunmadı, karar verme |
+ * | `false` | `null` | **uygula** — depo da boş, çıkış GERÇEK |
+ * | `false` | `'u1'` | **yok say** — depoda oturum duruyor, olay gürültü |
+ *
+ * ⚠ Son satırı "her ihtimale karşı" uygulamaya çevirme: bu fonksiyonun
+ * varlık sebebi tam olarak o. Bir kez `TOKEN_REFRESHED`e, bir kez olay adı
+ * listesine güvenildi; ikisi de canlıda düştü.
+ *
+ * ⚠ Depo okuması `onAuthStateChange` geri çağrısının İÇİNDEN yapılamaz —
+ * Supabase'in kendi kuralı: geri çağrı auth kilidini tutarken başka bir auth
+ * çağrısı yapmak kilitlenme üretir. Çağıran `setTimeout(…, 0)` ile ertelemek
+ * ZORUNDA (bkz. `useAuth.tsx`).
  */
-export function shouldApplyAuthSession(event: string, hasSession: boolean): boolean {
+export function shouldApplyAuthSession(
+  hasSession: boolean,
+  depodakiKullaniciId?: string | null,
+): boolean {
   if (hasSession) return true;
-  return event === 'SIGNED_OUT' || event === 'INITIAL_SESSION';
+  if (depodakiKullaniciId === undefined) return false;
+  return depodakiKullaniciId === null;
 }
