@@ -96,8 +96,20 @@ export function setupPwaUpdates(): void {
     apply();
   };
 
+  // `registration.update()` KISILIR. iOS'ta ana ekrandan açılan bir PWA'da
+  // `visibilitychange`, `focus` ve `pageshow` her uygulama geçişinde ÜÇÜ
+  // BİRDEN ateşliyor — yani her geçiş üç ayrı sw.js çekimi demekti. Kısma
+  // tazeliği anlamlı biçimde geciktirmiyor (saatlik tetikleyici zaten duruyor
+  // ve 5 dakikadan uzun her dönüş yine kontrol ediyor), ama gereksiz
+  // service worker kurulumlarını kesiyor.
+  const UPDATE_KISMA_MS = 5 * 60 * 1000;
+  let sonKontrol = 0;
   const checkForUpdate = () => {
-    registration?.update().catch(() => {});
+    const simdi = Date.now();
+    if (simdi - sonKontrol >= UPDATE_KISMA_MS) {
+      sonKontrol = simdi;
+      registration?.update().catch(() => {});
+    }
     tryApplyUpdate();
   };
 
