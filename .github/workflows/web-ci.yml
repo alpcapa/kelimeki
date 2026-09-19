@@ -241,6 +241,7 @@ jobs:
       # sınanamaz: gerçek bir oturum ve arka arkaya gelen auth olayları
       # gerekiyor, CI'da ikisi de yok.
       - run: npm run verify-auth-user-identity
+      - run: npm run verify-sw-update-loop
 
       - run: npm run build
 

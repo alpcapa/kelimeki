@@ -1,4 +1,10 @@
 import { registerSW } from 'virtual:pwa-register';
+import {
+  readSwUpdateKaydi,
+  shouldApplySwUpdate,
+  writeSwUpdateKaydi,
+} from '../utils/swUpdate';
+import { reportClientError } from '../utils/errorReporting';
 
 // App.tsx bu bayrağı, kullanıcı GERÇEKTEN o an bir oyun ekranında (yerel
 // 'play' fazında ya da bir Canlı oyun ekranında) iken true'ya çekiyor —
@@ -66,8 +72,27 @@ export function setupPwaUpdates(): void {
 
   const tryApplyUpdate = () => {
     if (!applyUpdate || isAuthRedirect || activelyPlaying) return;
+    // ⚠ YENİDEN YÜKLEME DÖNGÜSÜ KAPISI — bu satırlar olmadan aşağıdaki
+    // `apply()` sonsuz bir döngü kurabiliyor:
+    //   pageshow → update() → bekleyen SW → onNeedRefresh → reload → pageshow
+    // Yukarıdaki `applyUpdate = null` koruması YALNIZCA tek bir sayfa ömrü
+    // içinde çalışır; `reload` o ömrü bitirdiğinden döngüyü hiç görmez.
+    // 19 Eylül 2026'da ana ekrandan açılan iOS PWA'sında gerçekleşti ve
+    // üç tur boyunca auth katmanında arandı. Gerekçe: utils/swUpdate.ts.
+    if (!shouldApplySwUpdate(readSwUpdateKaydi(), __KELIMEKI_BUILD__)) {
+      applyUpdate = null;
+      // Bir kez bildir: bu, bekleyen SW'nin ETKİNLEŞEMEDİĞİ anlamına gelir —
+      // kullanıcı eski sürümde kalıyor demektir, birinin bakması gerekir.
+      reportClientError(
+        `service worker güncellemesi TUTMADI — derleme ${__KELIMEKI_BUILD__} değişmedi, döngü kesildi`,
+        'manual',
+        'sw-update-loop',
+      );
+      return;
+    }
     const apply = applyUpdate;
     applyUpdate = null;
+    writeSwUpdateKaydi(__KELIMEKI_BUILD__, Date.now());
     apply();
   };
 
