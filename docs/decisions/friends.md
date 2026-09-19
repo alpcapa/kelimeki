@@ -148,7 +148,7 @@ Kullanıcılar "karşılıklı/canlı oyun" istiyor — bunun ön koşulu olarak
 
 ⚠ **Çift yol KALDIRILMADI ve kaldırılmamalı** — varlık sebebi gerçek (e-posta doğrulaması açıkken taze kayıt oturum açmıyor ve doğrulama linki köke dönüyor). Düzeltme kuyruğu değil, SUNUCUyu idempotent yaptı; yani ikinci çağrı hâlâ gidiyor, sadece artık zararsız.
 
-⚠ **19 Eylül 2026 — `/davet/:token` sayfasına mağaza rozeti eklendi (ROADMAP #26).** Sayfa dört ay boyunca rozetsizdi, oysa davetle gelen birinin gördüğü İLK ekran burası. Kaçak gerçek bir kullanıcıyla ortaya çıktı: davet linkinden gelen bir oyuncu kayıt olup bir oyun oynamış, `games.platform` ve `game_finishes.platform` **`web`** yazmış ve **push token'ı hiç yok** — yani uygulamanın varlığını görmeden ayrılmış. Rozet Setup'takiyle aynı yere kondu (footer'da, hukuki linklerin üstünde).
+⚠ **19 Eylül 2026 — `/davet/:token` sayfasına mağaza rozeti eklendi (ROADMAP #26).** Sayfa dört ay boyunca rozetsizdi, oysa davetle gelen birinin gördüğü İLK ekran burası. Kaçak gerçek bir kullanıcıyla ortaya çıktı: davet linkinden gelen bir oyuncu kayıt olup bir oyun oynamış, `games.platform` ve `game_finishes.platform` **`web`** yazmış ve **push token'ı hiç yok** — yani uygulamanın varlığını görmeden ayrılmış. Rozetin YERİ aşağıda: davet kartının hemen altında (footer DEĞİL — gerekçesi ve ölçümü iki paragraf aşağıda).
 
 ⚠ **Rozet bilerek "Daveti Kabul Et"in YANINA konmadı.** İki sebep: (1) sayfanın tek işiyle yarışırdı; (2) mağazaya giden kişi davet TOKEN'ını geride bırakır — App Store linki onu taşımaz, kurulumdan sonra linke yeniden tıklaması gerekirdi. Doğru sıra: önce daveti kabul et, sonra uygulamayı al.
 
