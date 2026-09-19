@@ -231,6 +231,8 @@ jobs:
       # bir kusur değil, hukuki bir sorun. Duman testiyle sınanamaz: rozetler
       # bugün hiç render edilmiyor (iki URL de null), tarayıcıda görülecek
       # bir şey yok.
+      - run: npm run verify-store-badges
+
       # Oturum kullanıcısının KİMLİK sabitleyicisi (`utils/authUser.ts`).
       # 19 Eylül 2026'da canlıda ölçülen döngünün kapısı: Supabase her auth
       # olayında alanları aynı ama kimliği YENİ bir `User` nesnesi üretiyor;
@@ -239,8 +241,6 @@ jobs:
       # sınanamaz: gerçek bir oturum ve arka arkaya gelen auth olayları
       # gerekiyor, CI'da ikisi de yok.
       - run: npm run verify-auth-user-identity
-
-      - run: npm run verify-store-badges
 
       - run: npm run build
 
