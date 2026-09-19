@@ -148,6 +148,26 @@ Kullanıcılar "karşılıklı/canlı oyun" istiyor — bunun ön koşulu olarak
 
 ⚠ **Çift yol KALDIRILMADI ve kaldırılmamalı** — varlık sebebi gerçek (e-posta doğrulaması açıkken taze kayıt oturum açmıyor ve doğrulama linki köke dönüyor). Düzeltme kuyruğu değil, SUNUCUyu idempotent yaptı; yani ikinci çağrı hâlâ gidiyor, sadece artık zararsız.
 
+⚠ **19 Eylül 2026 — `/davet/:token` sayfasına mağaza rozeti eklendi (ROADMAP #26).** Sayfa dört ay boyunca rozetsizdi, oysa davetle gelen birinin gördüğü İLK ekran burası. Kaçak gerçek bir kullanıcıyla ortaya çıktı: davet linkinden gelen bir oyuncu kayıt olup bir oyun oynamış, `games.platform` ve `game_finishes.platform` **`web`** yazmış ve **push token'ı hiç yok** — yani uygulamanın varlığını görmeden ayrılmış. Rozetin YERİ aşağıda: davet kartının hemen altında (footer DEĞİL — gerekçesi ve ölçümü iki paragraf aşağıda).
+
+⚠ **Rozet bilerek "Daveti Kabul Et"in YANINA konmadı.** İki sebep: (1) sayfanın tek işiyle yarışırdı; (2) mağazaya giden kişi davet TOKEN'ını geride bırakır — App Store linki onu taşımaz, kurulumdan sonra linke yeniden tıklaması gerekirdi. Doğru sıra: önce daveti kabul et, sonra uygulamayı al.
+
+⚠ **`index.html`teki iOS Smart App Banner bunun yerine GEÇMEZ, tamamlar.** O etiket sayfanın en üstünde çıkar (scroll gerekmez) ama **yalnızca iOS Safari'de**; davet linkleri çoğunlukla WhatsApp'ın uygulama-içi tarayıcısında açılıyor ve orada çizilmiyor. Sayfadaki rozet tam o yolu kapatıyor.
+
+⚠ **Rozet önce footer'a kondu ve bu YANLIŞTI — ölçüm düzeltti.** İlk yerleşim Setup'ınkiyle aynıydı (hukuki linklerin üstü), ama 390×844'te rozetin y'si **1153 px** çıktı: sayfanın dibi, yani düzeltilmek istenen "scroll etmeyen göremiyor" sorununun ta kendisi. Kullanıcı kararıyla davet kartının hemen ALTINA taşındı. Yeni ölçüm (aynı viewport, `get_friend_invite_info` sahtelenip GEÇERLİ davet ekranında):
+
+| Öğe | y |
+|---|---|
+| "Daveti Kabul Et" butonu | 274 → 318 |
+| "Kelimeki'yi telefonuna da kurabilirsin" | 355 |
+| App Store rozeti | **378 → 421** |
+
+600 px yüksekliğindeki bir viewport'ta bile tamamen görünür — uygulama-içi tarayıcıların kendi çubuklarına yer var.
+
+⚠ **Ders:** "rozeti ekledim" bir ölçüm DEĞİL. Yüzeye eklemek ile görünür olmak ayrı şeyler; bu sayfada ikisi 829 px ayrıydı ve fark ancak `boundingBox()` okununca görüldü.
+
+⚠ **Blok KOMPLE korunuyor** (`visibleStoreBadges().length > 0`), tek başına `<StoreBadges />` yetmez: o hiçbir mağaza yayında değilken `null` döner ve üstündeki etiket öksüz kalırdı.
+
 ⚠ **İKİ YÖNLÜ satır mümkün — `accept_friend_invite` bunu varsaymaz (migration `20260918155030`).** `friend_requests`'te aynı ikili için `(a,b)` ve `(b,a)` satırlarının İKİSİ birden olabiliyor: `sendFriendRequest` düz bir `insert` ve PK `(user_id, friend_id)` ters yönü engellemez. Canlıda 18 Eylül 2026'da bir örneği sayıldı (ikisi de `accepted`, yani zararsız). İlk idempotentlik migration'ı tek satır okuyordu ve karışık bir durumda (biri `accepted`, biri `pending`) hangisini okuyacağı BELİRSİZDİ — karar aynı gün `bool_or(status = 'accepted')`e çevrildi: satırların tamamı kilitlenir, soru tek ve kesin cevaplanır. ⚠ Yeni bir yüzey bu tabloya bakarken "ikili başına tek satır" VARSAYMASIN.
 
 ⚠ **Geçmiş `use_count` değerleri DÜZELTİLMEDİ** ve düzeltilemez: tıklama başına iz tutulmadığından hangisinin gerçek kabul olduğu geriye dönük çıkarılamaz. Kolon yorumu kesim tarihini yazıyor. Geçmişi de kapsayan tek güvenilir taban `profiles.invited_by` sayımıdır — Büyüme kartı yazılırsa ORADAN okunmalı.
