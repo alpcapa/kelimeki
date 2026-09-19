@@ -242,6 +242,7 @@ jobs:
       # gerekiyor, CI'da ikisi de yok.
       - run: npm run verify-auth-user-identity
       - run: npm run verify-sw-update-loop
+      - run: npm run verify-invite-queue
 
       - run: npm run build
 

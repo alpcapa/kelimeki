@@ -467,3 +467,31 @@ liste: `TESTING.md` → "21. Davet sayfası".
   - **KAYDA GEÇEN KALINTI — takma isim, alıcının istemcisinde tıklanabilir hale gelebilir (kullanıcı kararı: "şimdilik değiştirme").** Gmail/Apple Mail gibi istemciler DÜZ METİN içindeki `evil.com` gibi ifadeleri kendileri linkleştirir. Bizim HTML'imiz bağlantı üretmiyor, ama istemci render ederken üretebilir. Teorik olarak iki yer: (1) `feedback-reply`, kişinin kendi mesajını ona geri alıntılıyor — olası bağlantıyı yalnızca onu YAZAN kişi görür, pratik risk yok; (2) **`display_name`**, arkadaşlık/davet maillerinde KARŞI TARAFA gösteriliyor (`<strong>${escapeHtml(inviterName)}</strong>`) — boşluk yasak (`display_name_no_whitespace`) ve istemcide `maxLength={10}`, yani `evil.com` gibi kısa bir alan adı sığar. Vektör dar (10 karakter, boşluksuz, alıcı zaten o kişiden davet bekliyor) ve gerçek bir açık DEĞİL — bir istemci davranışı. Kapatılmak istenirse seçenekler: mail gövdesinde noktalı bir takma ismi maskelemek, ya da adı `<strong>` ile vurgulamadan yazmak. **Bir daha denetlenirse "bu neden düzeltilmemiş?" sorusunun cevabı budur** — bilinçli, kullanıcı onaylı bir kabul.
 - **Marka şablonu (29 Temmuz 2026):** İlk sürümde bu iki fonksiyonun (ve `feedback-reply`/`admin-send-message`'ın) HTML'i düz metin+buton (`-apple-system` font, kart/logo yok) idi — kullanıcı gerçek bir şifre sıfırlama mailiyle (Supabase Auth şablonu, `supabase/email-templates/reset-password.html` — logo header + beyaz kart + footer) karşılaştırınca tutarsızlığı fark etti. `_shared/email.ts`'e reset-password.html'in kart yapısını birebir tekrarlayan bir `buildBrandedEmailHtml(title, bodyHtml)` eklendi (logo `https://kelimeki.com/email-logo.png`, kart `#DCE2EA` çerçeve/`16px` radius, buton `#2563EB`, footer metni `#8A93A2`) — dört Edge Function'ın da (`notify-friend-request`, `notify-game-invite`, `feedback-reply`, `admin-send-message`) gövde üreten fonksiyonları artık düz `<div>` yerine bu wrapper'ı çağırıyor; `buildNoreplyNoticeHtml`'in renkleri de aynı palete (`#DCE2EA`/`#8A93A2`/`#2563EB`) çekildi. Auth şablonları (Dashboard'da yaşıyor) bu wrapper'ı otomatik paylaşamıyor — reset-password.html değişirse bu wrapper da elle senkronize edilmeli, aksi halde tekrar sapabilirler.
 - **Arkadaşlık isteği hatırlatma e-postası (1 Ağustos 2026, `notify-friend-request-reminders` Edge Function'ı):** Kullanıcı gözlemi — yukarıdaki anlık bildirimden sonra alıcı yanıtlamazsa istek sessizce unutulup gidiyordu. Sohbet sırasında expire etmenin de aynı sonucu verdiği (tek fark gönderenin iptal edip tekrar gönderebilmesi) netleşince, çözüm olarak expire yerine bir hatırlatma tercih edildi. `friend_requests`'e eklenen `reminder_sent_at` (nullable, `friend_request_reminder_column` migration'ı), bir istek 3 gün cevapsız kalınca gönderilen TEK SEFERLİK hatırlatmanın zamanını tutar — `deadline_warning_sent_at` ile birebir aynı desen (`is(..., null)` filtreli atomik UPDATE ile "iddia edilir", tekrar tekrar tetiklenmesi zararsız, en fazla bir kez mail gider). Cancel (satır tamamen silinir) ve resend (yeni satır, bu alan yeniden null) sayacı doğal olarak sıfırlar — `online_game_states`/`local_game_saves`'in aksine ayrı bir reset trigger'ı gerekmedi. **Projedeki İKİNCİ pg_cron job'u** — `deadline_warnings_cron`'un 15 dakikalık hassasiyetinin aksine (24-48 saatlik dar pencereler için gerekliydi), burada gün bazlı bir eşik (3 gün) yeterli olduğundan AYRI, günlük bir cron'a bağlandı (`0 8 * * *` ≈ 11:00 İstanbul, `friend_request_reminders_cron` migration'ı). `verify_jwt: false` — `notify-deadline-warnings` ile aynı gerekçe (cron çağırıyor, kullanıcı JWT'si yok). E-posta metni bilinçli olarak isme doğrudan iyelik eki eklemiyor ("XYZ'nin ... isteği" DEĞİL, "XYZ tarafından gönderilen ... istek") — takma isimler keyfi olduğundan Türkçe ünlü uyumu programatik garanti edilemiyor (bkz. "Sıra: {isim}" dersi, Canlı Oyun — Faz 3). **Deploy notu:** `notify-deadline-warnings`'teki aynı import-yolu tuhaflığı burada da tekrarlandı — ilk denemede `'../_shared/email.ts'` "Module not found" hatası verdi, `'./_shared/email.ts'`e geçilince sorunsuz deploy oldu (kesin sebep hâlâ netleştirilmedi). Query/atomik-iddia mantığı disposable, backdated bir test satırıyla doğrulandı — gerçek bir kullanıcıya fabrike bir bildirim gitmesin diye Brevo'ya gerçekten gönderim YAPILMADI, yalnızca SQL seviyesinde "due" sorgusu ve `is(reminder_sent_at, null)` filtreli UPDATE'in ikinci çağrıda no-op döndüğü (mükerrer gönderim koruması) test edilip temizlendi. Migration uygulandığı anda production'da 3 günden eski bekleyen gerçek bir istek yoktu.
+
+## Davet kuyruğu: temizlik çağrıdan ÖNCE (19 Eylül 2026, ROADMAP #31 istemci yarısı)
+
+Aynı davet token'ı İKİ yoldan işleniyor ve bu **bilerek** böyle:
+
+1. `/davet/:token` sayfasının kendi otomatik kabulü (oturum açıksa),
+2. `App.tsx`'in `localStorage` kuyruğu — e-posta doğrulaması açıkken kayıt bu
+   sayfada oturum AÇMAZ ve doğrulama linki genelde köke döner; daveti orada
+   kuyruk yakalıyor.
+
+Çift ÇAĞRIYI doğuran şey bu ikilik değil, **sıra** idi: sayfa kuyruğu
+`.then()` içinde temizliyordu, yani token RPC uçarken kuyrukta duruyordu. O
+pencerede köke düşen biri (doğrulama linki, yeni sekme, sayfayı kapatıp
+dönme) fallback'i tetikliyor ve aynı token ikinci kez gidiyordu. Canlıda
+ölçülmüştü: tek davetli, `created_at` 15:17:51 ↔ `responded_at` 15:17:56.
+
+**Temizlik çağrının önüne alındı.** Sunucu 18 Eylül'den beri idempotent, yani
+ikinci çağrı zaten tam no-op — bu düzeltme sayacı değil, boşa giden RPC turunu
+kesiyor.
+
+⚠ **Erken temizlik kurtarma yolunu kesmemeli.** Geçici arızada (ağ) token
+kuyruğa GERİ konuyor; kalıcı rette (P0001) konmuyor — ikinci deneme aynı reddi
+alır ve kuyruk sonsuza dek dolu kalırdı. Sayfadaki "Tekrar Dene" bellekteki
+`token` ile çalıştığından bundan etkilenmiyor.
+
+⚠ **Çift yolu kaldırma.** Kapı (`npm run verify-invite-queue`, CI'da) sırayı,
+kurtarma yolunu ve çift yolun DURDUĞUNU birlikte sınıyor — biri kaldırılırsa
+düşer. Duyarlılığı düzeltme geri alınarak kanıtlandı.
