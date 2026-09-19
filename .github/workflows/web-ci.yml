@@ -233,6 +233,15 @@ jobs:
       # bir şey yok.
       - run: npm run verify-store-badges
 
+      # Oturum kullanıcısının KİMLİK sabitleyicisi (`utils/authUser.ts`).
+      # 19 Eylül 2026'da canlıda ölçülen döngünün kapısı: Supabase her auth
+      # olayında alanları aynı ama kimliği YENİ bir `User` nesnesi üretiyor;
+      # koşulsuz `setUser` edilince `[user]`e bağlı dokuz effect birden
+      # koşuyor ve uygulama saniyede ~19 istek atıyordu. Duman testiyle
+      # sınanamaz: gerçek bir oturum ve arka arkaya gelen auth olayları
+      # gerekiyor, CI'da ikisi de yok.
+      - run: npm run verify-auth-user-identity
+
       - run: npm run build
 
       # Bu ortamdaki geliştirme oturumunun aksine (bkz. playwright.config.ts),
