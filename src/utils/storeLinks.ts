@@ -110,6 +110,35 @@ export type StoreBadge = {
  *
  * ⚠ App Store ÖNCE. Bu Apple'ın yazılı kuralı; yeniden sıralama.
  */
+/**
+ * App Store uygulama kimliği — **tek kaynak**.
+ *
+ * İKİ yerde kullanılıyor: aşağıdaki vitrin adresi ve Safari'nin kendi
+ * "Smart App Banner"ı (`<meta name="apple-itunes-app">`). Banner statik
+ * HTML'e yazıldığından (`index.html` ve `src/legal/render.tsx`) sayı orada
+ * elle duruyor; `npm run verify-store-badges` ikisinin de buradaki değerle
+ * eşleştiğini kilitliyor — bu projede "iki kopya sessizce ayrışır" en sık
+ * tekrarlayan hata sınıfı.
+ */
+export const APPLE_APP_ID = '6809809788';
+
+/**
+ * Safari'nin Smart App Banner `<meta>` etiketi — yayında DEĞİLSE `null`.
+ *
+ * Rozetlerle AYNI kapıya bağlı (`url === null` → hiç render etme): yayında
+ * olmayan bir uygulamaya banner koymak kullanıcıyı boş bir App Store
+ * sayfasına yollar.
+ *
+ * ⚠ Banner YALNIZCA Safari'de çıkar — uygulama içi tarayıcılarda
+ * (Instagram/Facebook) ve Chrome'da görünmez, bu yüzden mağaza rozetlerinin
+ * YERİNİ TUTMAZ, onlara ek bir katmandır.
+ */
+export function appleSmartAppBannerMeta(): string | null {
+  const appStore = STORE_BADGES.find((b) => b.key === 'appStore');
+  if (!appStore?.url) return null;
+  return `<meta name="apple-itunes-app" content="app-id=${APPLE_APP_ID}" />`;
+}
+
 export const STORE_BADGES: StoreBadge[] = [
   {
     key: 'appStore',
@@ -124,7 +153,7 @@ export const STORE_BADGES: StoreBadge[] = [
     // ⚠ Marketing Tools'un verdiği `?itscg=…&itsct=apps_box_link&…` izleme
     // kuyruğu BİLEREK atıldı — o token aracın kendi bağlamı için üretildi,
     // sitedeki kalıcı bir rozetin bağlamı değil (kullanıcı kararı).
-    url: 'https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788',
+    url: `https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id${APPLE_APP_ID}`,
     asset: '/app-store-badge.svg',
     alt: "App Store'dan indirin",
   },
