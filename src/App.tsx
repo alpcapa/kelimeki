@@ -11,6 +11,7 @@ import { PrivacyModal } from './components/PrivacyModal';
 import { AuthModal } from './components/AuthModal';
 import { Setup } from './components/Setup';
 import { AddToHomeScreen } from './components/AddToHomeScreen';
+import { AppStoreStrip } from './components/AppStoreStrip';
 import { LandscapeHint } from './components/LandscapeHint';
 import { LeagueRewardsHost, requestLeagueRewardCheck } from './components/LeagueRewardsHost';
 import { MeaningModal } from './components/MeaningModal';
@@ -1469,6 +1470,11 @@ export default function App() {
     const showTanitimLink = !authLoading && !user;
     return (
       <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
+        {/* Ana ekrandan açılan uygulamada "yerel uygulama mağazada" şeridi.
+            AKIŞIN EN ÜSTÜNDE: içeriği aşağı iter, logoyu ÖRTMEZ (bkz.
+            AppStoreStrip'in başlığı). `AddToHomeScreen`in tam TERSİ koşula
+            baktığından ikisi asla aynı anda görünmez. */}
+        <AppStoreStrip />
         <div
           className={`w-full max-w-[460px] flex items-center px-3.5 pt-3 ${
             showTanitimLink ? 'justify-between' : 'justify-end'

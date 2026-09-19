@@ -9,7 +9,7 @@
 > |---|---|
 > | `components-account.md` | RemainingTilesModal, GameOver, CountBadge, UserMenu, RelationIcons, Auth mesajları, AuthModal, AccountSettingsModal, avatar yükleme |
 > | `components-score.md` | ScoreCard, "Sanal Lig" → k-lig rebrand'i, Leaderboard |
-> | **`components.md` (bu dosya)** | Setup, PlayerAvatarRow, LandscapeHint, AddToHomeScreen, useAppIconBadge, Board, GameHeader, HelpModal, LogoMark, useModalA11y, TermsModal/PrivacyModal + port dalı teslim dersi |
+> | **`components.md` (bu dosya)** | Setup, PlayerAvatarRow, LandscapeHint, AddToHomeScreen/AppStoreStrip, useAppIconBadge, Board, GameHeader, HelpModal, LogoMark, useModalA11y, TermsModal/PrivacyModal + port dalı teslim dersi |
 >
 > **Yeni bir bileşen notu** konusuna en yakın cilde yazılır; hiçbirine
 > uymuyorsa bu dosyaya.
@@ -223,3 +223,47 @@
 
 **1 Ağustos 2026 — Space Mono 700 örneği, yanlış teşhisin nasıl zaman kaybettirdiğine dair bir ders:** Kullanıcı, YZ'nin skor kutusunun (dar kutu, `font-mono font-bold`) her hamleden kısa bir süre sonra "1…" diye kırpılıp kendiliğinden düzeldiğini bildirdiğinde, önce `GameHeader.tsx`'teki kutu genişliği/`border` hesaplarında (bkz. "Bileşen Notları" → `GameHeader` skor kutuları, madde 3) bir hata arandı ve gerçek de bir hata bulunup (`border`→`outline`) düzeltildi — ama kullanıcı PR Preview'da (her açılış TAZE bir sayfa, önbelleksiz font) sorunun AYNEN devam ettiğini bildirince asıl kök sebebin bu maddede zaten TANIMLANMIŞ olan (o zamana kadar "henüz raporlanmadı" diye bırakılmış) Space Mono 700'ün preload edilmemesi olduğu anlaşıldı — sayfa önce geniş bir fallback monospace'le boyanıp gerçek (dar) font `swap` ile geldiğinde yeniden akıyordu, dar YZ kutusunda bu ara an tam kenardan taşıp kırpılmaya yol açıyordu. **Ders:** "kısa süre görünüp kendiliğinden düzeliyor" tarifi güçlü bir FOUT/font-swap sinyali — bu proje zaten aynı belirtiyi Caveat/Space Grotesk'te yaşamıştı, yeni bir yerde görülünce önce BU listeye (henüz preload edilmemiş ağırlıklar) bakılmalı, layout/CSS box-model hesaplarına dalmadan önce.
 
+
+### `AppStoreStrip` — ana ekrandan açanlara "yerel uygulama mağazada" (19 Eylül 2026)
+
+`AddToHomeScreen`in TAM TERSİ: o tarayıcıda çıkar ("bu siteyi ana ekrana
+ekle"), bu ise **ana ekrandan açılan uygulamada** ("aslında gerçek bir
+uygulamamız var"). Koşulları birbirinin değili olduğundan ikisi asla aynı
+anda görünmez.
+
+**Neden gerekti — Apple'ın banner'ı tam burada susuyor.** Safari'nin Smart
+App Banner'ı standalone modda hiç çıkmaz; Apple "bu kullanıcı zaten
+uygulamada" varsayıyor. Kullanıcının tespiti: *"Apple bunu yapanlara
+göstermemekle aslında App Store'da gerçek app'in olduğunu bilmeyenlere 'sen
+web'den devam et' demiş oluyor."* Mağaza rozetleri bu boşluğu kapatmıyor —
+Setup'ta footer'da duruyorlar, kaydırmayan görmüyor (davet sayfasında
+ölçülen y=1153 px sorununun aynısı).
+
+**Dört kural:**
+
+1. **Yalnızca standalone** — tarayıcıda zaten Apple'ınki var, ikisi birden
+   gürültü olur.
+2. **Yalnızca o cihazın mağazası YAYINDAYSA** (`storeForDevice`,
+   `utils/storeLinks.ts`). Bugün: iOS'ta çıkar, **Android'de çıkmaz** (Play
+   `url: null`), masaüstünde çıkmaz (kurulacak yerel uygulama yok). Play
+   yayına girince URL'yi doldurmak yeter — şerit kendiliğinden belirir,
+   rozetlerle AYNI kapı.
+3. **✕ KALICI DEĞİL** (kullanıcı kararı: *"X olmalı ama her seferinde çıksın
+   ki app'e gitsin sonunda"*). Kapatma `sessionStorage`da: o açılış boyunca
+   gizli, uygulama kapanıp açılınca yeniden çıkar. ⚠ `localStorage`a
+   ÇEVİRME — `AddToHomeScreen` onu bilerek kullanıyor (oraya bir kez "hayır"
+   demek kalıcı bir karar), burada tam tersi isteniyor.
+4. **AKIŞTA durur, `fixed` DEĞİL.** İlk sürüm `fixed top-0` idi ve
+   önizlemede logoyu ÖRTTÜĞÜ görüldü. Apple'ın banner'ı da akıştadır.
+   ⚠ `fixed`e çevirme: bu uygulamada `body` zaten `position: fixed;
+   overflow: hidden`, yani üstteki bir katman içeriği HER ZAMAN örter.
+
+⚠ **Türkçe eki TÜRETİLMEZ, yazılır.** İlk sürüm `{mağazaAdı}'da` diyordu ve
+Play için **"Google Play'da"** üretiyordu; doğrusu **"Play'de"**. Ek, adın
+son hecesinin OKUNUŞUNA bağlı ("pley"), yazılışına değil — hiçbir kural bunu
+güvenilir türetemez. İki ifade de sabit.
+
+**Ölçüldü (gerçek üretim derlemesi + Chromium, standalone taklidi):** iPhone
+13 → şerit VAR; Pixel 5 → YOK; masaüstü → YOK; Play URL'si geçici
+doldurulunca Pixel 5 → VAR (sonra geri alındı). Kapı:
+`npm run verify-store-badges`.

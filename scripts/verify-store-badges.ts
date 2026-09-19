@@ -19,6 +19,7 @@ import { readFileSync } from 'node:fs';
 
 import {
   APPLE_APP_ID,
+  storeForDevice,
   appleSmartAppBannerMeta,
   BADGE_GAP_PX,
   BADGE_MIN_HEIGHT_PX,
@@ -239,6 +240,53 @@ console.log('storeLinks — mağaza rozetleri');
     // App Store yayında değilse banner da OLMAMALI — rozetlerle aynı kapı.
     check('App Store yayında değil → index.html banner TAŞIMAMALI', indexAppId === null);
   }
+}
+
+// ── 7. `AppStoreStrip` — standalone moddaki kendi şeridimiz ────────────────
+// Apple'ın Smart App Banner'ı standalone modda hiç çıkmadığından, ana
+// ekrandan açan kullanıcıya yerel uygulamayı duyuran TEK yüzey bu.
+{
+  // Cihaz kapısı rozetlerle aynı kaynaktan beslenmeli.
+  check('masaüstünde şerit YOK (kurulacak yerel uygulama yok)', storeForDevice('desktop') === null);
+  const ios = storeForDevice('ios');
+  const android = storeForDevice('android');
+  const appStore = STORE_BADGES.find((b) => b.key === 'appStore');
+  const play = STORE_BADGES.find((b) => b.key === 'googlePlay');
+  check(
+    'iOS şeridi App Store YAYINDAYKEN (ve yalnızca o zaman) var',
+    appStore?.url ? ios?.key === 'appStore' : ios === null,
+  );
+  check(
+    'Android şeridi Play YAYINDAYKEN (ve yalnızca o zaman) var',
+    play?.url ? android?.key === 'googlePlay' : android === null,
+  );
+
+  const stripHam = readFileSync('src/components/AppStoreStrip.tsx', 'utf8');
+  // ⚠ YORUMLARI AT: dosya kuralın KENDİSİNİ yorumda anlatıyor
+  // ("`localStorage` KULLANMA"), ham metinde arama yapmak onu kod sanar
+  // (ölçüldü: kapı ilk koşuda tam bu yüzden düştü).
+  const strip = stripHam
+    .split('\n')
+    .filter((r) => {
+      const t = r.trimStart();
+      return !t.startsWith('*') && !t.startsWith('//') && !t.startsWith('/*');
+    })
+    .join('\n');
+  // ⚠ Kullanıcı kararı: "X olmalı ama her seferinde çıksın ki app'e gitsin
+  // sonunda." localStorage'a geçmek bu kararı sessizce tersine çevirir.
+  check('kapatma `sessionStorage`da (her açılışta yeniden çıkar)', strip.includes('sessionStorage'));
+  check('kapatma `localStorage`a YAZILMIYOR', !strip.includes('localStorage'));
+  // ⚠ `fixed` üstteki bir katman bu uygulamada içeriği HER ZAMAN örter
+  // (body: position fixed + overflow hidden) — önizlemede logoyu örtmüştü.
+  check('şerit AKIŞTA (`fixed` konumlandırma yok)', !/className="fixed/.test(strip));
+  // ⚠ Türkçe eki türetilemez: "Google Play'da" YANLIŞ, "Play'de" doğru.
+  check("Play ifadesi 'Play\'de' (ek türetilmiyor)", strip.includes("Google Play'de"));
+  check("App Store ifadesi 'App Store\'da'", strip.includes("App Store'da"));
+  check('şerit yalnızca standalone modda çiziliyor', strip.includes('isStandaloneDisplay()'));
+  check(
+    'cihaz tespiti `getDeviceType()`ten (kendi UA testi YOK — iPadOS `Macintosh` der)',
+    strip.includes('getDeviceType()') && !/iPhone\|iPad/.test(strip),
+  );
 }
 
 console.log('');
