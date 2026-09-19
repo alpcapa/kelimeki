@@ -167,6 +167,29 @@ export const STORE_BADGES: StoreBadge[] = [
 ];
 
 /**
+ * Bu CİHAZIN mağazası — yayında değilse (ya da masaüstüyse) `null`.
+ *
+ * `AppStoreStrip` (standalone moddaki kendi şeridimiz) bunu kullanıyor:
+ * iOS'ta App Store, Android'de Play. **Masaüstünde `null`** — orada kurulacak
+ * yerel bir uygulama yok, kurulu PWA zaten son hâli.
+ *
+ * ⚠ Play yayına girene kadar Android'de `null` döner, yani şerit Android
+ * kullanıcısına **hiç çizilmez**. Yayın geldiğinde `STORE_BADGES`teki `url`u
+ * doldurmak yeter; şerit kendiliğinden belirir, burada ikinci bir düzenleme
+ * gerekmez (rozetlerle AYNI kapı).
+ *
+ * ⚠ Cihaz tespiti `getDeviceType()`ten gelir, KENDİ UA testİNİ YAZMA —
+ * iPadOS 13+ Safari kendini `Macintosh` diye tanıtıyor ve elle yazılan bir
+ * `/iPhone|iPad/` testi iPad'i KAÇIRIYOR (vaka: `AddToHomeScreen`in başlığı).
+ */
+export function storeForDevice(cihaz: 'ios' | 'android' | 'desktop'): StoreBadge | null {
+  if (cihaz === 'desktop') return null;
+  const key: StoreKey = cihaz === 'ios' ? 'appStore' : 'googlePlay';
+  const badge = STORE_BADGES.find((b) => b.key === key);
+  return badge?.url ? badge : null;
+}
+
+/**
  * Yayındaki mağazaların Türkçe adı, bulunma ekiyle — "App Store'da",
  * "Google Play'de", "App Store ve Google Play'de"; hiçbiri yayında değilse
  * `null`.
