@@ -107,3 +107,44 @@ export function shouldApplyAuthSession(
   if (depodakiKullaniciId === undefined) return false;
   return depodakiKullaniciId === null;
 }
+
+/**
+ * `null` oturum FIRTINASI — kök sebep bilinmeden hasarı sınırlayan devre
+ * kesici (19 Eylül 2026, DÖRDÜNCÜ tur).
+ *
+ * ## Neden gerekti
+ *
+ * Üç tur boyunca titremenin KAYNAĞI arandı ve bulunamadı: önce nesne kimliği
+ * (`sameAuthUser`), sonra olay adı filtresi, sonra depodaki oturumun
+ * doğrulanması. Üçü de yayına çıktı, üçü de yetmedi. Saniye saniye ölçüm
+ * (13:44–13:46) şunu gösterdi: oturum **saniyede iki kez** `null`a düşüyor ve
+ * her düşüşte tam bir veri turu doğuyor (~20 istek/sn).
+ *
+ * Bir şeyi kesin biliyoruz: **gerçek bir çıkış saniyede iki kez olmaz.**
+ * Kullanıcı "Çıkış Yap"a bir kez basar. Yani kök sebep ne olursa olsun, kısa
+ * pencerede tekrarlayan `null` tanım gereği gürültüdür.
+ *
+ * Kesici bu yüzden sebebe değil FREKANSA bakıyor: `AUTH_NULL_BURST_MS`
+ * içinde `AUTH_NULL_BURST_LIMIT` kez `null` uygulandıysa, bu sayfa ömrü
+ * boyunca `null` bir daha uygulanmaz.
+ *
+ * ⚠ İlk `null` HER ZAMAN uygulanır — gerçek çıkış bu yüzden bozulmaz;
+ * kesici ancak üçüncüde devreye girer. Ödediğimiz bedel dar: oturumu
+ * saniyeler içinde üç kez düşen bir sayfa, bir sonraki yüklemeye kadar
+ * girişli görünmeye devam eder. Sonsuz döngünün bedeli bunun yanında
+ * kıyaslanamaz.
+ *
+ * ⚠ Bu bir TEŞHİS DEĞİL, bir TAMPON. Gerçek sebep `auth-null` telemetri
+ * kaydından okunacak (olay adı + depo dolu muydu) ve bulunduğunda kesici
+ * kalmaya devam etmeli — bu sınıf bir hata bir kez daha doğarsa kullanıcı
+ * yine sonsuz döngü görmemeli.
+ */
+export const AUTH_NULL_BURST_LIMIT = 3;
+export const AUTH_NULL_BURST_MS = 10_000;
+
+/** Verilen zaman damgaları `simdi` anında bir fırtına oluşturuyor mu? */
+export function isAuthNullBurst(zamanlar: readonly number[], simdi: number): boolean {
+  let sayac = 0;
+  for (const t of zamanlar) if (simdi - t < AUTH_NULL_BURST_MS) sayac++;
+  return sayac >= AUTH_NULL_BURST_LIMIT;
+}

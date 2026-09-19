@@ -15,7 +15,13 @@
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { sameAuthUser, shouldApplyAuthSession } from '../src/utils/authUser';
+import {
+  AUTH_NULL_BURST_LIMIT,
+  AUTH_NULL_BURST_MS,
+  isAuthNullBurst,
+  sameAuthUser,
+  shouldApplyAuthSession,
+} from '../src/utils/authUser';
 
 let dusen = 0;
 const kontrol = (ad: string, kosul: boolean): void => {
@@ -72,6 +78,38 @@ kontrol(
 kontrol(
   'null + depoda oturum DURUYOR → YOK SAYILIR (titreme)',
   !shouldApplyAuthSession(false, 'u1'),
+);
+
+// ── Devre kesici: `null` FIRTINASI ────────────────────────────────────────
+// DÖRDÜNCÜ tur. Üç düzeltme de kök sebebi bulamadı; ölçüm oturumun SANİYEDE
+// İKİ KEZ null'a düştüğünü gösterdi. Gerçek bir çıkış saniyede iki kez olmaz,
+// yani kısa pencerede tekrarlayan null tanım gereği gürültüdür.
+console.log('\n`null` fırtınası devre kesicisi\n');
+
+const t0 = 1_000_000;
+kontrol('hiç olay yok → fırtına DEĞİL', !isAuthNullBurst([], t0));
+kontrol(
+  'tek bir çıkış → fırtına DEĞİL (gerçek çıkış BOZULMAMALI)',
+  !isAuthNullBurst([t0], t0),
+);
+kontrol(
+  `sınırın bir altı (${AUTH_NULL_BURST_LIMIT - 1}) → fırtına DEĞİL`,
+  !isAuthNullBurst(Array.from({ length: AUTH_NULL_BURST_LIMIT - 1 }, () => t0), t0),
+);
+kontrol(
+  `sınır kadar (${AUTH_NULL_BURST_LIMIT}) aynı anda → FIRTINA`,
+  isAuthNullBurst(Array.from({ length: AUTH_NULL_BURST_LIMIT }, () => t0), t0),
+);
+kontrol(
+  'pencere DIŞINDA kalan eski olaylar SAYILMAZ (gün boyu birikmez)',
+  !isAuthNullBurst(
+    Array.from({ length: AUTH_NULL_BURST_LIMIT * 3 }, () => t0),
+    t0 + AUTH_NULL_BURST_MS + 1,
+  ),
+);
+kontrol(
+  'ölçülen gerçek hız (saniyede 2) pencerede FIRTINA üretir',
+  isAuthNullBurst([t0, t0 + 500, t0 + 1000, t0 + 1500], t0 + 1500),
 );
 
 // ── Kaynak taraması: hiçbir effect `user` NESNESİNE bağlanmamalı ───────────

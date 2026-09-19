@@ -1095,18 +1095,35 @@ export async function fetchSharedGame(gameId: string): Promise<SharedGameData | 
   return (row as SharedGameData | null) ?? null;
 }
 
-/** Oturum açan oyuncunun profilini döner. */
-export async function fetchMyProfile(): Promise<Profile | null> {
+/**
+ * Oturum açan oyuncunun profilini döner.
+ *
+ * ⚠ `userId` VERİLEBİLİYORSA VER (19 Eylül 2026). Parametresiz çağrıda
+ * fonksiyon kimliği `supabase.auth.getUser()` ile soruyor; bu hem bir AĞ TURU
+ * (`/auth/v1/user`) hem de bir AUTH KİLİDİ demek. Oturum döngüsü turunda
+ * ölçüldü: profil çekimi saniyede ~2 kez koşarken bu çağrı da saniyede ~2 kez
+ * kilit alıyordu ve ekrandaki öteki auth çağrılarıyla yarışıyordu.
+ *
+ * Çağıran kimliği zaten biliyorsa (ki `useAuth` biliyor — `applyUser` onu
+ * `u.id` olarak elinde tutuyor) sormanın hiçbir faydası yok: satırı RLS
+ * zaten koruyor. **Portun `_fetchProfile`'ı da böyle** (`auth_service.dart`)
+ * — doğrudan `userId` ile sorguluyor, kimlik doğrulamıyor.
+ */
+export async function fetchMyProfile(userId?: string): Promise<Profile | null> {
   if (!supabase) return null;
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  let id = userId;
+  if (!id) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    id = user.id;
+  }
 
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', user.id)
+    .eq('id', id)
     .maybeSingle();
   if (error) {
     console.error('[Kelimeki] fetchMyProfile hatası:', error.message);
