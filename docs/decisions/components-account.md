@@ -374,3 +374,59 @@ kontrollerine ek olarak `src/` altındaki 136 dosyayı tarayıp bare `user`
 bağımlılığı arıyor. Derleyici bunu göremez, ESLint bu repoda kurulu değil
 (`npm run lint` = `tsc --noEmit`) — yani kural ancak bir kaynak taramasıyla
 korunabilir.
+
+### Dördüncü tur — sebebe değil FREKANSA bakmak (19 Eylül 2026, aynı gün)
+
+Üçüncü düzeltme de yayına çıktı (`444c829`) ve kullanıcı yine bildirdi:
+*"Aç kapa yapınca loop yaptı, kapatıp açtım, düzeldi. Tekrar kapatıp açınca
+yine yaptı."* — yani arıza **açılış başına ~%50 olasılıkla** doğuyor.
+
+**Saniye saniye ölçüm (13:44–13:46) iki şeyi kesinleştirdi:**
+
+| Gözlem | Sonuç |
+|---|---|
+| Patlamalar 13–15 sn sürüp kesiliyor, aralarda boşluk | Kullanıcının aç-kapa turları |
+| Patlama içinde **saniyede ~2 profil çekimi + ~2 websocket**, ~20 istek/sn | Tur başına ~10 istek |
+| Bir iPhone saniyede iki kez 400 KB paketi indirip React'i kuramaz | **Sayfa YENİLENMİYOR** — döngü sayfa İÇİNDE |
+| `client_errors` 4 saattir BOŞ | Uygulama çökmüyor, `ErrorBoundary` hiç girmiyor |
+| `sw.js`in ETag'i ardışık 8 istekte aynı | İki dağıtımın farklı SW servis etmesi DEĞİL |
+
+⚠ **Üçüncü turda elenen "sayfa yeniden yükleniyor" hipotezi YANLIŞ
+gerekçeyle elenmişti.** O tur "tam sayfa yüklemesi her uçtan BİRER istek
+üretir, oysa uçlar 1×–2,4× ayrışıyor" demişti — bu yanlış: `Setup` ve
+`LiveGamesTab` aynı ucu ikisi birden çağırdığından tek bir yükleme de 2×
+üretir. Hipotezi gerçekten eleyen şey oran değil **HIZ** oldu (saniyede iki
+tam açılış fiziksel olarak mümkün değil). Ders: bir hipotezi elerken
+gerekçenin kendisini de sına — yanlış gerekçeyle elenen doğru hipotez, bir
+sonraki turda geri gelir.
+
+**Kabul: kök sebep hâlâ bulunamadı.** Dört turdur aranıyor (nesne kimliği →
+olay adı → depo doğrulaması → bu). Sunucu logları tetikleyiciyi
+GÖSTEREMİYOR. O yüzden bu tur iki farklı şey yapıyor:
+
+1. **ÖLÇÜM — cihazdan.** `null` oturumlu her olayda `client_errors`'a tek
+   satır: *olay adı* + *o anda kalıcı oturum duruyor muydu*. Bu ikisi kök
+   sebebi ikiye indiriyor: **depo DOLU** ise olay sahtedir (supabase-js
+   gürültüsü), **depo BOŞ** ise oturum gerçekten siliniyordur ve teşhis
+   `_removeSession`'a kayar.
+
+2. **DEVRE KESİCİ — sebebe değil frekansa bakar.** Kesin bildiğimiz tek şey:
+   *gerçek bir çıkış saniyede iki kez olmaz.* `AUTH_NULL_BURST_MS` (10 sn)
+   içinde `AUTH_NULL_BURST_LIMIT` (3) kez `null` uygulandıysa, o sayfa ömrü
+   boyunca `null` bir daha uygulanmaz. İlk `null` her zaman uygulanır, yani
+   gerçek çıkış bozulmaz; bedel dar ve bilinçli: oturumu saniyeler içinde üç
+   kez düşen bir sayfa, bir sonraki yüklemeye kadar girişli görünür.
+
+   ⚠ Kesici kök sebep bulununca da KALIR. Bu sınıf bir hata bir kez daha
+   doğarsa kullanıcı yine sonsuz döngü görmemeli.
+
+**Ayrıca — `fetchMyProfile` artık `getUser()` çağırmıyor.** Çağıran kimliği
+biliyorsa (`useAuth` biliyor) `fetchMyProfile(u.id)` geçiyor. Öncesinde her
+profil çekimi bir AĞ TURU (`/auth/v1/user`) **ve bir AUTH KİLİDİ** demekti;
+döngü sırasında bu saniyede ~2 kez oluyordu ve ekrandaki öteki auth
+çağrılarıyla yarışıyordu. **Portun `_fetchProfile`'ı zaten böyle**
+(`auth_service.dart` — doğrudan `userId` ile sorgular, kimlik doğrulamaz);
+yani bu da web'i porta yaklaştıran bir değişiklik.
+
+⚠ Bu, kilit yarışının kök sebep OLDUĞU iddiası DEĞİL — sınanmamış bir
+hipotez. Kanıtı telemetri verecek.

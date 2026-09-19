@@ -11,7 +11,8 @@ import {
 } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { sameAuthUser, shouldApplyAuthSession } from '../utils/authUser';
+import { isAuthNullBurst, sameAuthUser, shouldApplyAuthSession } from '../utils/authUser';
+import { reportClientError } from '../utils/errorReporting';
 import { fetchMyProfile } from '../lib/api';
 import type { Profile } from '../lib/database.types';
 
@@ -80,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       currentUserId = u?.id ?? null;
       if (u) {
         setProfileLoading(true);
-        fetchMyProfile()
+        fetchMyProfile(u.id)
           .then((p) => {
             if (currentUserId === u.id) {
               setProfile(p);
@@ -115,6 +116,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('[Kelimeki] getSession beklenmedik hata:', err);
         setLoading(false);
       });
+    // Devre kesicinin sayacı — SAYFA ÖMRÜ boyunca yaşar (effect `[]`e bağlı).
+    const nullOlaylari: number[] = [];
+    let nullKilitli = false;
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
       // ⚠ Her `null` oturum bir ÇIKIŞ DEĞİLDİR. 19 Eylül 2026'da canlıda
@@ -144,8 +148,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .getSession()
           .then(({ data }) => {
             const depodaki = data.session?.user ?? null;
+            // ── TEŞHİS ────────────────────────────────────────────────────
+            // Tetikleyici ÜÇ turdur bilinmiyor ve sunucu loglarından
+            // GÖRÜLEMİYOR (istemci konsolu bizde yok, kullanıcı iPhone
+            // Safari'de). Tek yol cihazdan kaydetmek: hangi olay adı geliyor
+            // ve o anda kalıcı oturum duruyor mu? İkisi birlikte kök sebebi
+            // ikiye indiriyor — "sahte olay" mı, "oturum gerçekten siliniyor"
+            // mu. `reportClientError` fire-and-forget, imzaya göre tekilliyor
+            // ve hız sınırlı; bir döngüde bile birkaç satır yazar.
+            reportClientError(
+              `auth null olayı: ${event} · depo=${depodaki ? 'dolu' : 'BOŞ'}`,
+              'manual',
+              'auth-null',
+            );
             // Depoda oturum duruyorsa olay gürültüydü: DOKUNMA.
             if (!shouldApplyAuthSession(false, depodaki?.id ?? null)) return;
+            // ── DEVRE KESİCİ ──────────────────────────────────────────────
+            // Gerçek bir çıkış saniyede iki kez olmaz. Kök sebep ne olursa
+            // olsun, kısa pencerede tekrarlayan `null` gürültüdür — kesici
+            // sebebe değil FREKANSA bakıyor (bkz. utils/authUser.ts).
+            if (nullKilitli) return;
+            const simdi = Date.now();
+            if (isAuthNullBurst(nullOlaylari, simdi)) {
+              nullKilitli = true;
+              reportClientError(
+                `auth null fırtınası — oturum düşürme bu sayfa ömrü boyunca KAPATILDI (son olay: ${event})`,
+                'manual',
+                'auth-null-burst',
+              );
+              return;
+            }
+            nullOlaylari.push(simdi);
             applyUser(null);
           })
           .catch((err) => {
@@ -165,7 +198,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const userRef = useRef<User | null>(user);
   userRef.current = user;
   const refreshProfile = useCallback(async () => {
-    if (userRef.current) setProfile(await fetchMyProfile());
+    const u = userRef.current;
+    if (u) setProfile(await fetchMyProfile(u.id));
   }, []);
   const clearPasswordRecovery = useCallback(() => setPasswordRecovery(false), []);
 
