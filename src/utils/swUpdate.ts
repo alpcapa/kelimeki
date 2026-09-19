@@ -81,6 +81,22 @@ export interface SwUpdateKaydi {
   build: string;
   /** Epoch ms — yalnızca teşhis için; karar zamana BAKMAZ. */
   at: number;
+  /**
+   * Bu derleme için "güncelleme tutmadı" telemetrisi YAZILDI mı.
+   *
+   * ⚠ Var olma sebebi ölçülmüş bir GÜRÜLTÜ (19 Eylül 2026, aynı gün):
+   * `localStorage`a geçtikten sonra yeniden yükleme derleme başına bire indi
+   * ama TELEMETRİ inmedi — kapı her açılışta yeniden değerlendiriliyor ve her
+   * açılış `client_errors`'a bir satır yazıyordu (canlıda görüldü: aynı
+   * derleme için art arda kayıtlar). Kaydın ilk kez yazılması değerli,
+   * tekrarı gürültü — ve `errorReporting.ts`in kendi kuralı bunu yasaklıyor:
+   * *"bir kayıt 'birinin bakması gereken bir şey' demek olmalı; gürültü
+   * sinyali boğarsa panel bir daha açılmaz."*
+   *
+   * `reportClientError`in kendi tekilleştirmesi BURADA YETMEZ: o pencere
+   * sayfa ömrüyle sınırlı, bu arıza ise her AÇILIŞTA yeniden doğuyor.
+   */
+  reported?: boolean;
 }
 
 /**
@@ -107,10 +123,29 @@ export function readSwUpdateKaydi(): SwUpdateKaydi | null {
     if (!ham) return null;
     const v = JSON.parse(ham) as Partial<SwUpdateKaydi>;
     return typeof v?.build === 'string' && typeof v?.at === 'number'
-      ? { build: v.build, at: v.at }
+      ? { build: v.build, at: v.at, reported: v.reported === true }
       : null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Güncelleme BASTIRILDI — bunu ayrıca telemetriye yazmalı mıyız?
+ *
+ * Derleme başına BİR kez. Kayıt yoksa bastırma da olmamıştır (o dalda
+ * `shouldApplySwUpdate` zaten `true` döner), dolayısıyla `false`.
+ */
+export function shouldReportSwUpdateFailure(kayit: SwUpdateKaydi | null): boolean {
+  return kayit !== null && kayit.reported !== true;
+}
+
+/** Telemetri yazıldı — aynı derleme için bir daha yazılmasın. */
+export function markSwUpdateReported(kayit: SwUpdateKaydi): void {
+  try {
+    localStorage.setItem(SW_UPDATE_KEY, JSON.stringify({ ...kayit, reported: true }));
+  } catch {
+    // Depo kapalıysa bir sonraki açılışta bir kez daha yazılır — kabul.
   }
 }
 

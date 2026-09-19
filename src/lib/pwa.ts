@@ -1,7 +1,9 @@
 import { registerSW } from 'virtual:pwa-register';
 import {
+  markSwUpdateReported,
   readSwUpdateKaydi,
   shouldApplySwUpdate,
+  shouldReportSwUpdateFailure,
   writeSwUpdateKaydi,
 } from '../utils/swUpdate';
 import { reportClientError } from '../utils/errorReporting';
@@ -79,15 +81,22 @@ export function setupPwaUpdates(): void {
     // içinde çalışır; `reload` o ömrü bitirdiğinden döngüyü hiç görmez.
     // 19 Eylül 2026'da ana ekrandan açılan iOS PWA'sında gerçekleşti ve
     // üç tur boyunca auth katmanında arandı. Gerekçe: utils/swUpdate.ts.
-    if (!shouldApplySwUpdate(readSwUpdateKaydi(), __KELIMEKI_BUILD__)) {
+    const swKaydi = readSwUpdateKaydi();
+    if (!shouldApplySwUpdate(swKaydi, __KELIMEKI_BUILD__)) {
       applyUpdate = null;
-      // Bir kez bildir: bu, bekleyen SW'nin ETKİNLEŞEMEDİĞİ anlamına gelir —
-      // kullanıcı eski sürümde kalıyor demektir, birinin bakması gerekir.
-      reportClientError(
-        `service worker güncellemesi TUTMADI — derleme ${__KELIMEKI_BUILD__} değişmedi, döngü kesildi`,
-        'manual',
-        'sw-update-loop',
-      );
+      // DERLEME BAŞINA BİR KEZ bildir: bu, bekleyen SW'nin ETKİNLEŞEMEDİĞİ
+      // anlamına gelir — kullanıcı eski sürümde kalıyor demektir, birinin
+      // bakması gerekir. ⚠ Her AÇILIŞTA yazmak gürültüdür ve canlıda ölçüldü
+      // (bkz. `SwUpdateKaydi.reported`); `reportClientError`in kendi
+      // tekilleştirmesi sayfa ömrüyle sınırlı olduğundan burada yetmiyor.
+      if (swKaydi && shouldReportSwUpdateFailure(swKaydi)) {
+        markSwUpdateReported(swKaydi);
+        reportClientError(
+          `service worker güncellemesi TUTMADI — derleme ${__KELIMEKI_BUILD__} değişmedi, döngü kesildi`,
+          'manual',
+          'sw-update-loop',
+        );
+      }
       return;
     }
     const apply = applyUpdate;
