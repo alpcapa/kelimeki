@@ -257,6 +257,51 @@ kalır ve bir sonraki isteğinde anlamsız bir hata görür.
 değil, ETKİSİNİ kesiyor: titreme sürse bile artık ne effect turu ne de
 çöpe atılan profil isteği doğuruyor. Kaynak bulunursa bu not güncellenmeli.
 
+### Sonuç — ÖLÇÜLDÜ (19 Eylül 2026, iki düzeltme de canlıda)
+
+Her satır aynı kullanıcının (Ironman) iPhone Safari oturumundan, Supabase edge
+loglarından okundu:
+
+| Ölçüm | Düzeltme yokken (11:19) | `sameAuthUser` sonrası (11:52) | + `shouldApplyAuthSession` sonrası (12:11) |
+|---|---|---|---|
+| İstek/dk | **632** | 282 | **24** |
+| `fetchMyProfile` (auth+profiles)/dk | 18 | 18 | **~1,5** |
+| Realtime websocket/dk | ~19 | 20 | **~1,5** |
+
+**Asıl kanıt sayı değil, tek bir satır:** düzeltmeden sonraki logda
+`storage/.../avatars/<id>/avatar.jpg` isteği belirdi — yani profil gerçekten
+çözüldü. O istek profil dolmadan hiç oluşmaz; önceki turda avatar baş
+harflerdi. Kullanıcı da aynı anda *"düzelmiş görünüyor"* dedi.
+
+⚠ **İki düzeltmenin İKİSİ de gerekliydi.** Ara ölçüm (282) bunu tek başına
+kanıtlıyor: olayların ~yarısı "aynı kullanıcı, yeni nesne" tekrarıydı
+(`sameAuthUser` onu kesti), ~yarısı oturum titremesiydi
+(`shouldApplyAuthSession` onu kesti). Biri ötekinin yerine geçmez; ilki
+"gereksizdi" diye geri alınmamalı.
+
+⚠ **Geçiş anı yanıltır.** Düzeltme yayına çıktıktan SONRA da bir süre eski
+rakamlar görülür (12:07'de hâlâ 122 istek/dk): service worker yeni paketi
+indirip sayfayı yenileyene kadar eski paket koşmaya devam eder. Ölçümü
+`kelimeki-build` sha'sı yeni sürümü gösterdikten sonra al.
+
+### Yükselteç ne zaman girdi — ve neden iki ay patlamadı
+
+`applyUser`'daki koşulsuz `setUser` **21 Temmuz 2026**'da geldi (`d7b68452`),
+üstelik adı *"Sayfa yüklenirken hesap adının bir anlığına e-posta önekine
+düşmesini düzelt"* olan commit'le. O gün BİR ANLIK e-posta öneki sorununu
+çözmek için konan desen, 19 Eylül'de KALICI e-posta öneki sorununu doğurdu.
+
+İki ay zararsız kaldı çünkü zarar için auth olaylarının sıklaşması gerekiyor:
+desen barut, tetikleyici kıvılcım. **Kıvılcımın ne olduğu bulunamadı** (elenen
+hipotezler yukarıda). `supabase-js` sürümü şüpheli değil — kilitte
+**2.108.2**, 28 Haziran'dan 19 Eylül'e altı ayrı commit'te okundu, hiç
+değişmemiş.
+
+⚠ **Tarih ararken sığ klon tuzağı:** ilk bakışta `git log` "her şey 11
+Eylül'de değişti" diyordu — oturumun klonu sığdı (56 commit). Gerçek tarih
+`git fetch --unshallow` sonrası çıktı (1766 commit). Kök `CLAUDE.md` bu
+tuzağı zaten uyarıyor; burada ikinci kez ödendi.
+
 ⚠ **Kapı: `npm run verify-auth-user-identity`** (CI'da). Duman testiyle
 sınanamaz — gerçek bir oturum ve arka arkaya gelen auth olayları gerekiyor.
 Kapı iki yönü de sınıyor: yalnızca "aynıysa true" sınansaydı fonksiyon
