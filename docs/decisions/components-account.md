@@ -306,3 +306,71 @@ tuzağı zaten uyarıyor; burada ikinci kez ödendi.
 sınanamaz — gerçek bir oturum ve arka arkaya gelen auth olayları gerekiyor.
 Kapı iki yönü de sınıyor: yalnızca "aynıysa true" sınansaydı fonksiyon
 `() => true` yazılarak da geçerdi ve o zaman gerçek güncellemeler yutulurdu.
+
+### Üçüncü tur — olay ADINA bakmayı bırakmak (19 Eylül 2026, aynı gün)
+
+İki düzeltme de canlıdayken (derleme `7353b50`, `curl` ile doğrulandı)
+kullanıcı döngünün geri geldiğini bildirdi: *"Şimdi gene loop yapıyor. Bu
+konu acil hale geldi. App tarafı düzgün çalışıyor, o nedenle, o tarafı
+incele ve oradaki gibi olması sağla."*
+
+**Ölçüm (edge logs, 13:17–13:19, tek oturum, iPhone Safari 18.7):**
+
+| Yol | 2 dakikada | Tur başına |
+|---|---|---|
+| `rpc/list_my_online_games` | 125 | ~2 |
+| `online_game_states` | 112 | ~2 |
+| `rpc/list_incoming_friend_requests` | 109 | ~2 |
+| `leaderboard` | 61 | ~1 |
+| `rpc/unseen_finished_online_games` | 59 | ~1 |
+| `league_rewards` · `local_game_saves` | 54 | ~1 |
+| **`/auth/v1/user` + `profiles`** | **52 + 51** | **~1** |
+
+Son satır teşhisi tek başına veriyor: `fetchMyProfile` yalnızca
+`currentUserId` DEĞİŞİNCE koşar, yani `user` iki dakikada ~52 kez `null`a
+düşüp geri geliyordu. Ve o `null`lar `shouldApplyAuthSession`'ın elemesine
+rağmen geçtiğine göre, titreten olay `SIGNED_OUT` ya da `INITIAL_SESSION`
+adıyla geliyordu: **olay adı bir filtre değil.**
+
+⚠ Elenen ilk hipotez, ölçümle: *"service worker sayfayı yeniden yükleme
+döngüsüne soktu"* (`pwa.ts` → `onNeedRefresh` → `updateSW(true)`). Bir tam
+sayfa yüklemesi her uçtan BİRER istek üretir; yukarıdaki tabloda uçlar
+1×–2,4× arası ayrışıyor. Yani bunlar yeniden yükleme değil, **bağımsız
+effect koşuları**. Sayfa yenilense sayılar birbirine eşit olurdu.
+
+**İki değişiklik — biri karar, biri yapı.**
+
+1. **Karar artık ada değil DEPOYA bakıyor** (`shouldApplyAuthSession`, yeni
+   imza). `null` oturumlu bir olay geldiğinde kalıcı oturum okunuyor: depo da
+   boşsa çıkış gerçektir, depoda oturum duruyorsa olay gürültüdür ve YOK
+   SAYILIR. Olayın neden `null` yaydığı hâlâ BİLİNMİYOR — ama artık önemi de
+   yok: karar tahmin edilen bir ada değil ölçülebilir bir duruma dayanıyor.
+   ⚠ Okuma `setTimeout(…, 0)` ile erteleniyor; geri çağrı Supabase'in auth
+   kilidini tutarken ikinci bir auth çağrısı yapmak kilitlenme üretir
+   (Supabase'in kendi uyarısı). ⚠ Hata yönü de seçildi: depo okunamazsa
+   oturum DÜŞÜRÜLMEZ — girişli kullanıcıyı çıkmış saymak düzeltilen arızanın
+   ta kendisi.
+
+2. **Yükselteç yapısal olarak kaldırıldı — portun değişmezi web'e taşındı.**
+   Kullanıcının isteği buydu ve portun kuralı zaten yazılıydı
+   (`mobile/app/lib/src/auth/account_scope.dart`, PORT_BRIEF §7): *"karar auth
+   NESNESİNE değil `user.id`'ye bakmalı"*. Web'de **21 effect** `user`
+   nesnesine bağlıydı. Hepsi `user?.id`'ye çevrildi (e-postayı okuyan ikisine
+   `user?.email` de eklendi). Artık bir auth olayı `user` nesnesini
+   değiştirse bile hiçbir veri turu doğmuyor.
+
+   ⚠ Port'un döngüye girmemesinin sebebi olayları farklı almak DEĞİL —
+   `_applyUser` orada da her olayda koşuyor. Fark mimari: Flutter'da
+   `notifyListeners()` bir YENİDEN ÇİZİM'dir, veri çekimi değil. React'te
+   `[user]`e bağlı bir effect için yeniden render = yeniden çekim. Aynı
+   olay akışı iki tarafta iki farklı maliyet üretiyor.
+
+   Taramayı yazınca 21. ihlal ortaya çıktı: `FriendInvitePage.tsx`in davet
+   kabul effect'i (`[authLoading, user, status, token]`) — elle yapılan grep
+   bunu kaçırmıştı, çünkü `user` dört bağımlılığın ortasındaydı.
+
+**Kapı genişledi:** `npm run verify-auth-user-identity` artık saf fonksiyon
+kontrollerine ek olarak `src/` altındaki 136 dosyayı tarayıp bare `user`
+bağımlılığı arıyor. Derleyici bunu göremez, ESLint bu repoda kurulu değil
+(`npm run lint` = `tsc --noEmit`) — yani kural ancak bir kaynak taramasıyla
+korunabilir.

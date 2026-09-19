@@ -538,7 +538,7 @@ export default function App() {
       getOsVersion(),
       getDeviceModel(),
     );
-  }, [authLoading, user]);
+  }, [authLoading, user?.id]);
 
   // Cihaz/OS pingi — yukarıdaki misafir-ziyaret effect'inden BİLEREK AYRI:
   // o yalnızca oturum KAPALIYKEN ateşlenip Kaynak Hunisi'ni besliyor (huni
@@ -642,7 +642,7 @@ export default function App() {
     // (henüz Setup'ta gösterilmemiş bir kayıt) localStorage silinmez.
     activeSaveIdRef.current = null;
     if (!savedGame) clearGameState();
-  }, [state, savedGame, user]);
+  }, [state, savedGame, user?.id]);
 
   // Offline nedeniyle sunucuya kaydedilemeyip kuyruğa alınmış bitmiş oyun
   // sonuçlarını (bkz. gameSync.ts) bağlantı geri gelir gelmez tekrar
@@ -653,7 +653,7 @@ export default function App() {
     void flushPendingGames();
     window.addEventListener('online', flushPendingGames);
     return () => window.removeEventListener('online', flushPendingGames);
-  }, [user]);
+  }, [user?.id]);
 
   // Bir arkadaşlık davet linkinden (/davet/:token, FriendInvitePage.tsx)
   // gelip oturum açan kullanıcı için bekleyen bir davet token'ı varsa burada
@@ -666,7 +666,7 @@ export default function App() {
     if (!user) return;
     const token = takePendingInviteToken();
     if (token) void acceptFriendInvite(token).catch((err) => console.error('acceptFriendInvite (pending token):', err));
-  }, [user]);
+  }, [user?.id]);
 
   // Offline nedeniyle gönderilemeyip kuyruğa alınmış "Görüş Bildir" mesajlarını
   // (bkz. feedbackSync.ts) bağlantı geri gelir gelmez tekrar dener. Oyun
@@ -973,7 +973,7 @@ export default function App() {
     if (prev === id) return;
     lastAuthUserIdRef.current = id;
     if (prev !== null) setMainView('local');
-  }, [user]);
+  }, [user?.id]);
 
   // Açık olan Canlı oyun (Faz 3, 4. adım) — Setup/LiveGamesTab'daki "Devam
   // Eden" bir oyuna dokununca dolar; doluyken tüm normal kurulum/yerel oyun
@@ -1320,7 +1320,7 @@ export default function App() {
     if (p0 && !p0.isAI && p0.name !== accountName) {
       dispatch({ type: 'RENAME_PLAYER', index: 0, name: accountName });
     }
-  }, [user, profile, profileLoading, state.phase]);
+  }, [user?.id, user?.email, profile, profileLoading, state.phase]);
 
   // YZ sırası: kısa bir düşünme gecikmesiyle otomatik oyna.
   const aiTurn =

@@ -13,6 +13,8 @@
  * `() => true` yazılarak da geçer ve o zaman GERÇEK güncellemeler yutulur
  * (e-posta değişimi ekrana hiç yansımaz).
  */
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { sameAuthUser, shouldApplyAuthSession } from '../src/utils/authUser';
 
 let dusen = 0;
@@ -43,31 +45,75 @@ kontrol('çıkış yapıldı (dolu → null) → FARKLI', !sameAuthUser(kullanic
 kontrol('giriş yapıldı (null → dolu) → FARKLI', !sameAuthUser(null, kullanici()));
 
 
-// ── Oturum titremesi: hangi olay oturumu GERÇEKTEN düşürür ─────────────────
+// ── Oturum titremesi: bir `null` olay oturumu GERÇEKTEN düşürür mü ────────
 // 19 Eylül 2026: oturum `kullanıcı → null → kullanıcı` diye titriyordu; her
 // titreme hem effect turunu hem de UÇAN profil isteğinin çöpe atılmasını
 // tetikliyordu (ekranda avatar/isim hiç gelmiyordu).
+//
+// ÜÇÜNCÜ tur: ilk kapı olayın ADINA bakıyordu ve canlıda YETMEDİ (derleme
+// 7353b50 yayındayken aynı hesapta iki dakikada ~52 tur). Karar artık
+// DEPODAKİ oturuma bakıyor — ölçülebilir olana.
 console.log('\nOturum titremesi kapısı\n');
 
-kontrol('oturum VARSA her olay uygulanır (SIGNED_IN)', shouldApplyAuthSession('SIGNED_IN', true));
-kontrol('oturum VARSA her olay uygulanır (TOKEN_REFRESHED)', shouldApplyAuthSession('TOKEN_REFRESHED', true));
-
-kontrol('SIGNED_OUT + null → UYGULANIR (gerçek çıkış)', shouldApplyAuthSession('SIGNED_OUT', false));
+kontrol('oturum VARSA uygulanır (depoya hiç sorulmaz)', shouldApplyAuthSession(true));
 kontrol(
-  'INITIAL_SESSION + null → UYGULANIR (giriş yapılmamış)',
-  shouldApplyAuthSession('INITIAL_SESSION', false),
+  'oturum VARSA, depo boş görünse bile uygulanır',
+  shouldApplyAuthSession(true, null),
 );
 
 kontrol(
-  'TOKEN_REFRESHED + null → YOK SAYILIR (titreme)',
-  !shouldApplyAuthSession('TOKEN_REFRESHED', false),
+  'null + depo HENÜZ okunmadı → UYGULANMAZ (karar ertelenir)',
+  !shouldApplyAuthSession(false),
 );
-kontrol('SIGNED_IN + null → YOK SAYILIR (titreme)', !shouldApplyAuthSession('SIGNED_IN', false));
-kontrol('USER_UPDATED + null → YOK SAYILIR (titreme)', !shouldApplyAuthSession('USER_UPDATED', false));
 kontrol(
-  'bilinmeyen bir olay + null → YOK SAYILIR (varsayılan güvenli taraf)',
-  !shouldApplyAuthSession('YENI_BIR_OLAY', false),
+  'null + depo da BOŞ → UYGULANIR (gerçek çıkış)',
+  shouldApplyAuthSession(false, null),
 );
+kontrol(
+  'null + depoda oturum DURUYOR → YOK SAYILIR (titreme)',
+  !shouldApplyAuthSession(false, 'u1'),
+);
+
+// ── Kaynak taraması: hiçbir effect `user` NESNESİNE bağlanmamalı ───────────
+// Port'un değişmezi (PORT_BRIEF §7 / `auth/account_scope.dart`): oturuma bağlı
+// karar auth NESNESİNE değil `user.id`'ye bakar. Web'de bu kural 20 effect'te
+// ihlal ediliyordu ve döngünün YÜKSELTECİ buydu — bir tek auth olayı tam bir
+// veri turuna dönüşüyordu. Derleyici görmez, bu yüzden kapı bir kaynak
+// taraması.
+console.log('\nEffect bağımlılıkları — `user` nesnesi YASAK\n');
+
+// ⚠ `import.meta.url` KULLANMA: bu betik esbuild ile `node_modules/.cache/`
+// altına paketlenip oradan koşuyor, yani modülün yolu kaynağın yolu DEĞİL
+// (denendi, `ENOENT .../node_modules/.cache/src/`). Kök `process.cwd()`.
+const KOK = join(process.cwd(), 'src');
+const dosyalar: string[] = [];
+const tara = (dizin: string): void => {
+  for (const giris of readdirSync(dizin, { withFileTypes: true })) {
+    const yol = join(dizin, giris.name);
+    if (giris.isDirectory()) tara(yol);
+    else if (giris.name.endsWith('.tsx') || giris.name.endsWith('.ts')) dosyalar.push(yol);
+  }
+};
+tara(KOK);
+
+const ihlaller: string[] = [];
+for (const dosya of dosyalar) {
+  if (dosya.endsWith('hooks/useAuth.tsx')) continue; // `user` state'inin KENDİ tanımı
+  const satirlar = readFileSync(dosya, 'utf8').split('\n');
+  satirlar.forEach((satir, i) => {
+    const m = satir.match(/^\s*\}, \[(.*)\]\);\s*$/);
+    if (!m) return;
+    const bagimliliklar = m[1].split(',').map((s) => s.trim());
+    if (bagimliliklar.includes('user')) {
+      ihlaller.push(`${dosya.replace(process.cwd() + '/', '')}:${i + 1} → ${satir.trim()}`);
+    }
+  });
+}
+kontrol(
+  `hiçbir effect bağımlılığı bare \`user\` DEĞİL (${dosyalar.length} dosya tarandı)`,
+  ihlaller.length === 0,
+);
+for (const ihlal of ihlaller) console.log(`      ${ihlal}  →  \`user?.id\` kullan`);
 
 console.log(dusen === 0 ? '\nTüm kontroller geçti.\n' : `\n${dusen} kontrol DÜŞTÜ\n`);
 process.exit(dusen === 0 ? 0 : 1);

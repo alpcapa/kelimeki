@@ -83,7 +83,7 @@ export function AuthModal({
     if (!user || kapandi.current) return;
     kapandi.current = true;
     onClose();
-  }, [user, onClose]);
+  }, [user?.id, onClose]);
 
   const switchMode = (next: Mode) => {
     setMode(next);
