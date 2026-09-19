@@ -61,3 +61,31 @@ export function sameAuthUser(a: AuthUserLike | null, b: AuthUserLike | null): bo
     return false;
   }
 }
+
+/**
+ * Bir `onAuthStateChange` olayı oturumu GERÇEKTEN düşürüyor mu?
+ *
+ * 19 Eylül 2026'da ölçülen ikinci arıza: oturum `kullanıcı → null → kullanıcı`
+ * diye titriyordu. Her titreme iki şey birden yapıyordu — (1) `user` nesnesini
+ * gerçekten değiştirdiği için ona bağlı dokuz effect yeniden koşuyor, (2)
+ * `useAuth`'un `currentUserId` koruması sıfırlandığı için UÇAN profil isteği
+ * dönüşünde ÇÖPE atılıyordu. Sonucu kullanıcı şöyle gördü: *"Uzunca süre
+ * yükleniyor yazıp oyunları getirdi ama avatar, isim soyad gelmedi"* — profil
+ * hiç yüklenemiyor, ekranda isim yerine e-posta öneki kalıyordu.
+ *
+ * Kural: **oturumu yalnızca GERÇEK bir çıkış düşürür.**
+ *
+ * - `SIGNED_OUT` → gerçek çıkış, `null` uygulanır.
+ * - `INITIAL_SESSION` → ilk okuma; `null` gelmesi "giriş yapılmamış" demektir,
+ *   uygulanır.
+ * - Öteki olaylarda (`TOKEN_REFRESHED`, `USER_UPDATED`, `SIGNED_IN`…) `session`
+ *   `null` geldiyse bu geçici bir okuma/yenileme gürültüsüdür: YOK SAYILIR.
+ *   Oturum gerçekten bitmişse zaten arkasından `SIGNED_OUT` gelir.
+ *
+ * ⚠ `SIGNED_OUT`'u bu listeden ÇIKARMA: çıkış yapan kullanıcı ekranda girişli
+ * kalır ve bir sonraki isteğinde anlamsız bir hata görür.
+ */
+export function shouldApplyAuthSession(event: string, hasSession: boolean): boolean {
+  if (hasSession) return true;
+  return event === 'SIGNED_OUT' || event === 'INITIAL_SESSION';
+}

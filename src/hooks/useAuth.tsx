@@ -8,7 +8,7 @@ import {
 } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { sameAuthUser } from '../utils/authUser';
+import { sameAuthUser, shouldApplyAuthSession } from '../utils/authUser';
 import { fetchMyProfile } from '../lib/api';
 import type { Profile } from '../lib/database.types';
 
@@ -113,7 +113,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      applyUser(session?.user ?? null);
+      // ⚠ Her `null` oturum bir ÇIKIŞ DEĞİLDİR. 19 Eylül 2026'da canlıda
+      // ölçüldü: oturum `kullanıcı → null → kullanıcı` diye titriyordu ve her
+      // titreme hem dokuz effect'i yeniden koşturuyor hem de UÇAN profil
+      // isteğini çöpe attırıyordu (aşağıdaki `currentUserId` koruması
+      // sıfırlandığı için). Kullanıcı bunu "oyunlar geldi ama avatar/isim
+      // gelmedi" diye gördü. Kural `utils/authUser.ts`te, kapısı
+      // `npm run verify-auth-user-identity`.
+      if (shouldApplyAuthSession(event, !!session)) applyUser(session?.user ?? null);
       if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
     });
     return () => sub.subscription.unsubscribe();

@@ -13,7 +13,7 @@
  * `() => true` yazılarak da geçer ve o zaman GERÇEK güncellemeler yutulur
  * (e-posta değişimi ekrana hiç yansımaz).
  */
-import { sameAuthUser } from '../src/utils/authUser';
+import { sameAuthUser, shouldApplyAuthSession } from '../src/utils/authUser';
 
 let dusen = 0;
 const kontrol = (ad: string, kosul: boolean): void => {
@@ -41,6 +41,33 @@ kontrol(
 kontrol('yeni bir alan eklendi → FARKLI', !sameAuthUser(kullanici(), kullanici({ phone: '555' })));
 kontrol('çıkış yapıldı (dolu → null) → FARKLI', !sameAuthUser(kullanici(), null));
 kontrol('giriş yapıldı (null → dolu) → FARKLI', !sameAuthUser(null, kullanici()));
+
+
+// ── Oturum titremesi: hangi olay oturumu GERÇEKTEN düşürür ─────────────────
+// 19 Eylül 2026: oturum `kullanıcı → null → kullanıcı` diye titriyordu; her
+// titreme hem effect turunu hem de UÇAN profil isteğinin çöpe atılmasını
+// tetikliyordu (ekranda avatar/isim hiç gelmiyordu).
+console.log('\nOturum titremesi kapısı\n');
+
+kontrol('oturum VARSA her olay uygulanır (SIGNED_IN)', shouldApplyAuthSession('SIGNED_IN', true));
+kontrol('oturum VARSA her olay uygulanır (TOKEN_REFRESHED)', shouldApplyAuthSession('TOKEN_REFRESHED', true));
+
+kontrol('SIGNED_OUT + null → UYGULANIR (gerçek çıkış)', shouldApplyAuthSession('SIGNED_OUT', false));
+kontrol(
+  'INITIAL_SESSION + null → UYGULANIR (giriş yapılmamış)',
+  shouldApplyAuthSession('INITIAL_SESSION', false),
+);
+
+kontrol(
+  'TOKEN_REFRESHED + null → YOK SAYILIR (titreme)',
+  !shouldApplyAuthSession('TOKEN_REFRESHED', false),
+);
+kontrol('SIGNED_IN + null → YOK SAYILIR (titreme)', !shouldApplyAuthSession('SIGNED_IN', false));
+kontrol('USER_UPDATED + null → YOK SAYILIR (titreme)', !shouldApplyAuthSession('USER_UPDATED', false));
+kontrol(
+  'bilinmeyen bir olay + null → YOK SAYILIR (varsayılan güvenli taraf)',
+  !shouldApplyAuthSession('YENI_BIR_OLAY', false),
+);
 
 console.log(dusen === 0 ? '\nTüm kontroller geçti.\n' : `\n${dusen} kontrol DÜŞTÜ\n`);
 process.exit(dusen === 0 ? 0 : 1);

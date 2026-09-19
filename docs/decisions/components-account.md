@@ -217,6 +217,46 @@ aynı sha), yoklama (tek aralıklar 10 dk/60 dk), o gün merge edilen PR'lar
 tetikleyiciden BAĞIMSIZ çalışır: olay gelmeye devam etse bile artık bir tam
 veri turu doğurmuyor. Tetikleyici bulunursa bu not güncellenmeli.
 
+### İkinci tur — oturum TİTREMESİ (aynı gün, düzeltme yetmeyince)
+
+İlk düzeltme (`sameAuthUser`) yayına çıktı ve **ölçüldü: 632 istek/dk → 282**,
+yani yarısı gitti ama döngü sürdü. Sebep tasarım gereğiydi: `sameAuthUser`
+yalnızca *"aynı kullanıcı, yeni nesne"* durumunu bastırır; `null → kullanıcı`
+ise GERÇEK bir değişimdir ve bastırılmaz.
+
+Kalan turda `/auth/v1/user` + `profiles` hâlâ tur başına koşuyordu — oysa
+`applyUser` profili yalnızca kimlik DEĞİŞİNCE çeker. Tek açıklama: oturum
+`kullanıcı → null → kullanıcı` diye titriyordu.
+
+**İkinci semptom teşhisi kesinleştirdi.** Kullanıcı: *"Uzunca süre yükleniyor
+yazıp oyunları getirdi ama avatar, isim soyad vb gelmedi."* Ekran
+görüntüsünde Ad/Soyad/Takma İsim boş, menüde isim yerine e-posta öneki,
+avatar baş harfler. Yani `profile` hiç dolmamıştı — ve bunun sebebi aynı
+titreme:
+
+```js
+fetchMyProfile().then((p) => {
+  if (currentUserId === u.id) { setProfile(p); setProfileLoading(false); }
+})
+```
+
+Arada `applyUser(null)` gelince `currentUserId` null'a düşüyor, UÇAN istek
+dönünce koruma tutmuyor ve **sonuç çöpe atılıyor**; `profileLoading` sonsuza
+dek `true` kalıyor. Bir sonraki tur da aynı şekilde çöpe gidiyor. Tek
+mekanizma iki şikayeti birden açıklıyor.
+
+**Düzeltme** (`shouldApplyAuthSession`): oturumu yalnızca GERÇEK bir çıkış
+düşürür. `SIGNED_OUT` ve `INITIAL_SESSION` dışındaki bir olayda `session`
+`null` geldiyse yok sayılır — oturum gerçekten bittiyse arkasından zaten
+`SIGNED_OUT` gelir.
+
+⚠ **`SIGNED_OUT`'u listeden çıkarma:** çıkış yapan kullanıcı ekranda girişli
+kalır ve bir sonraki isteğinde anlamsız bir hata görür.
+
+⚠ **`null` olayların KAYNAĞI hâlâ bilinmiyor.** Bu düzeltme tetikleyiciyi
+değil, ETKİSİNİ kesiyor: titreme sürse bile artık ne effect turu ne de
+çöpe atılan profil isteği doğuruyor. Kaynak bulunursa bu not güncellenmeli.
+
 ⚠ **Kapı: `npm run verify-auth-user-identity`** (CI'da). Duman testiyle
 sınanamaz — gerçek bir oturum ve arka arkaya gelen auth olayları gerekiyor.
 Kapı iki yönü de sınıyor: yalnızca "aynıysa true" sınansaydı fonksiyon
