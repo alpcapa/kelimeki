@@ -12,7 +12,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { shouldApplySwUpdate } from '../src/utils/swUpdate';
+import { shouldApplySwUpdate, shouldReportSwUpdateFailure } from '../src/utils/swUpdate';
 
 let dusen = 0;
 const kontrol = (ad: string, kosul: boolean): void => {
@@ -43,12 +43,42 @@ console.log('\nÇağrı yeri\n');
 
 const pwa = readFileSync(join(process.cwd(), 'src/lib/pwa.ts'), 'utf8');
 kontrol('pwa.ts `shouldApplySwUpdate` çağırıyor', pwa.includes('shouldApplySwUpdate('));
+kontrol(
+  'pwa.ts telemetriyi `shouldReportSwUpdateFailure` ile kapıyor',
+  pwa.includes('shouldReportSwUpdateFailure(') && pwa.includes('markSwUpdateReported('),
+);
+// ⚠ İşaret rapordan ÖNCE konmalı: rapor fırlatırsa (fire-and-forget olsa da)
+// işaret konmadan çıkılırsa gürültü geri gelir.
+kontrol(
+  '`markSwUpdateReported` çağrısı `reportClientError`tan ÖNCE',
+  pwa.indexOf('markSwUpdateReported(') < pwa.indexOf("'sw-update-loop'"),
+);
 kontrol('pwa.ts yeniden yüklemeden ÖNCE kaydı yazıyor', pwa.includes('writeSwUpdateKaydi('));
 // `apply()` — gerçek reload — kayıt yazıldıktan SONRA gelmeli, aksi halde
 // döngü sırasında kayıt hiç oluşmaz ve kapı işlevsizdir.
 kontrol(
   '`apply()` çağrısı `writeSwUpdateKaydi` SONRASINDA',
   pwa.indexOf('writeSwUpdateKaydi(') < pwa.lastIndexOf('apply();'),
+);
+
+// ── Telemetri: DERLEME başına bir, AÇILIŞ başına değil ────────────────────
+// 19 Eylül 2026, canlıda ölçüldü: `localStorage`a geçtikten sonra yeniden
+// yükleme derleme başına bire indi ama telemetri inmedi — kapı her açılışta
+// yeniden değerlendiğinden `client_errors`'a her açılış bir satır yazıyordu.
+// `errorReporting.ts`in kendi kuralı bunu yasaklıyor ("gürültü sinyali boğar").
+console.log('\nTelemetri tekrarı\n');
+
+kontrol(
+  'kayıt YOK → bildirilmez (bastırma da olmadı)',
+  !shouldReportSwUpdateFailure(null),
+);
+kontrol(
+  'ilk bastırma → BİLDİRİLİR',
+  shouldReportSwUpdateFailure({ build: 'a1b2c3d', at: 1 }),
+);
+kontrol(
+  'aynı derleme için ikinci açılış → BİLDİRİLMEZ (gürültü kesildi)',
+  !shouldReportSwUpdateFailure({ build: 'a1b2c3d', at: 1, reported: true }),
 );
 
 // ── Kaydın DEPOSU: `localStorage`, `sessionStorage` DEĞİL ─────────────────

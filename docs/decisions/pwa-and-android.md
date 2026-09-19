@@ -193,3 +193,30 @@ Dağıtım karışması elendi: canlıdaki `index.html`in yüklediği iki paket 
 (`boot-*.js`, `index-*.js`) aynı `sw.js`in precache manifest'inde duruyor,
 yani HTML ile service worker AYNI dağıtımdan geliyor. Bu soru açık; ama
 artık kullanıcıya bir maliyeti yok.
+
+### Üçüncü ölçüm — telemetri AÇILIŞ başına yazıyordu (aynı gün)
+
+`localStorage`a geçildikten sonra yeniden yükleme derleme başına bire indi,
+**ama telemetri inmedi.** Canlıda görüldü: kapı her açılışta yeniden
+değerlendiğinden `client_errors`'a her açılış bir satır düşüyordu (aynı
+derleme `ae9b247` için art arda kayıtlar).
+
+Kaydın İLK yazılması değerli — "bekleyen worker etkinleşemiyor, kullanıcı
+eski sürümde kalıyor, birinin bakması gerekir". Tekrarı gürültü, ve
+`errorReporting.ts`in kendi kuralını çiğniyor: *"bir kayıt 'birinin bakması
+gereken bir şey' demek olmalı; gürültü sinyali boğarsa panel bir daha
+açılmaz."*
+
+⚠ **`reportClientError`in kendi tekilleştirmesi burada YETMEZ** — o pencere
+sayfa ömrüyle sınırlı, bu arıza ise her AÇILIŞTA yeniden doğuyor. Bu yüzden
+işaret kalıcı kayda kondu: `SwUpdateKaydi.reported`. Telemetri artık
+**derleme başına bir**; derleme değişince kayıt tazelenir ve yeni bir arıza
+yine bir kez bildirilir.
+
+Kapı üç yeni kontrolle genişledi (kayıt yok → bildirme · ilk bastırma →
+bildir · aynı derleme ikinci kez → bildirme) + çağrı yeri taraması: işaret
+rapordan ÖNCE konmalı. Duyarlılığı düzeltme geri alınarak kanıtlandı.
+
+**Ders:** bir "sessize alma" mekanizması eklerken sessize alınan ŞEYİ de say.
+Yeniden yükleme susturuldu, telemetri susturulmadı — ikisi aynı kapıdan
+geçiyor görünüyordu ama ömürleri farklıydı (biri sayfa, öteki cihaz).
