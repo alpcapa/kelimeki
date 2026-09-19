@@ -53,6 +53,7 @@ import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PrivacyModal';
 import { GameBoardPreview } from './GameBoardPreview';
 import { StoreBadges } from './StoreBadges';
+import { visibleStoreBadges } from '../utils/storeLinks';
 import { CENTER_ZONE_STYLE, GOLD_ZONE_STYLE } from './Board';
 import { DEMO_TILES_2 } from '../landing/demoBoard';
 import { IkiKisiIkon, MadalyaIkon, RobotIkon, SohbetIkon } from '../landing/OzellikIkonlari';
@@ -254,6 +255,40 @@ export function FriendInvitePage({ token }: FriendInvitePageProps) {
           )}
         </section>
 
+        {/* ── Mağaza rozeti — davet kartının HEMEN ALTINDA ──────────────
+            19 Eylül 2026. Önce footer'a (Setup'takiyle aynı yere) konmuştu,
+            AMA ölçüldü: 390×844'te rozetin y'si **1153 px**, yani sayfanın
+            dibi — davetten gelen kimse scroll etmeden göremiyordu ve zaten
+            düzeltilmek istenen şey buydu. Kullanıcı kararı: yukarı taşı.
+
+            Tetikleyen vaka: davet linkiyle gelen gerçek bir oyuncu kayıt olup
+            oynamış ve ayrılmış; `games.platform`/`game_finishes.platform`
+            **`web`**, push token YOK — uygulamanın varlığını hiç görmemiş.
+
+            ⚠ Kabul butonunun ÜSTÜNE değil ALTINA: mağazaya giden kişi davet
+            TOKEN'ını geride bırakır (App Store linki onu taşımaz), kurulumdan
+            sonra linke yeniden tıklaması gerekirdi. Doğru sıra önce daveti
+            kabul etmek, sonra uygulamayı almak — yerleşim bu sırayı korur.
+
+            ⚠ `index.html`teki iOS Smart App Banner bunun YERİNE GEÇMEZ: o
+            yalnızca Safari'de çıkar, davet linkleri ise çoğunlukla WhatsApp'ın
+            uygulama-içi tarayıcısında açılıyor ve orada hiç çizilmiyor. Bu
+            rozet tam o yolu kapatıyor.
+
+            ⚠ Blok KOMPLE korunuyor (`visibleStoreBadges().length > 0`), tek
+            başına `<StoreBadges />` YETMEZ: o hiçbir mağaza yayında değilken
+            `null` döner ve üstteki etiket ÖKSÜZ kalırdı. Bugün yalnız App
+            Store yayında, Play'inki URL'si dolunca kendiliğinden yanına
+            gelir. */}
+        {visibleStoreBadges().length > 0 && (
+          <div className="flex flex-col items-center gap-2">
+            <p className="font-mono text-[10px] text-muted m-0 text-center">
+              Kelimeki'yi telefonuna da kurabilirsin
+            </p>
+            <StoreBadges />
+          </div>
+        )}
+
         {/* ── Kelimeki nedir ─────────────────────────────────────────── */}
         {showPitch && (
           <section className={`${cardCls} gap-4`}>
@@ -333,25 +368,6 @@ export function FriendInvitePage({ token }: FriendInvitePageProps) {
             (hukuki linkler + "© Kelimeki"). "Paylaş" BİLEREK yok: bu sayfaya
             gelen kişi henüz üye bile değil, davet edilen taraf. */}
         <div className="flex flex-col items-center gap-3 pt-1">
-          {/* Mağaza rozetleri (ROADMAP #26) — Setup'takiyle AYNI yerde: hukuki
-            linklerin ÜSTÜNDE, kendi ortalanmış satırında. 19 Eylül 2026'da
-            eklendi; davetten gelen bir oyuncu (ölçüldü: `platform='web'`,
-            push token YOK) uygulamanın varlığını hiç görmeden web'de oynayıp
-            ayrılmıştı ve bu sayfa o yolun İLK ekranı.
-
-            ⚠ Bilerek BURAYA, "Daveti Kabul Et"in yanına DEĞİL. Rozet oraya
-            konsaydı sayfanın tek işiyle yarışırdı ve daha kötüsü: mağazaya
-            giden kişi davet TOKEN'ını geride bırakır (App Store linki onu
-            taşımaz), kurulumdan sonra linke yeniden tıklaması gerekirdi.
-            Doğru sıra önce daveti kabul etmek, sonra uygulamayı almak.
-
-            ⚠ `index.html`teki iOS Smart App Banner bunun YERİNE GEÇMEZ: o
-            yalnızca Safari'de çıkar, davet linkleri ise çoğunlukla WhatsApp'ın
-            uygulama-içi tarayıcısında açılıyor ve orada hiç çizilmiyor.
-
-            Yayında olmayan mağaza hiç render edilmez (`visibleStoreBadges`),
-            yani bugün yalnızca App Store rozeti çıkar. */}
-          <StoreBadges />
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] font-mono text-muted">
             <button
               onClick={() => setShowTerms(true)}

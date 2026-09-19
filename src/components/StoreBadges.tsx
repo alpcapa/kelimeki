@@ -3,8 +3,12 @@ import { BADGE_GAP_PX, BADGE_WIDTH_PX, visibleStoreBadges } from '../utils/store
 /**
  * Mağaza rozeti satırı (ROADMAP #26) — DÖRT yerde: Setup'ın footer'ında
  * (hukuki linklerin üstünde), karşılama katmanının hem kahraman hem son çağrı
- * bölümünde (`src/landing/Landing.tsx`) ve **davet sayfasının footer'ında**
- * (`FriendInvitePage.tsx`, 19 Eylül 2026 — gerekçe orada).
+ * bölümünde (`src/landing/Landing.tsx`) ve **davet sayfasında, davet kartının
+ * hemen ALTINDA** (`FriendInvitePage.tsx`, 19 Eylül 2026 — gerekçe orada).
+ *
+ * ⚠ Davet sayfasındaki yer footer DEĞİL ve bu bilinçli: footer'a konduğunda
+ * ölçüldü, rozetin y'si 1153 px çıktı (390×844) — yani "scroll etmeyen
+ * göremiyor" sorununun kendisi. Kart altına taşınınca 378'e indi.
  *
  * ⚠ **Yüzey eklerken bu sayıyı da güncelle.** Aşağıdaki "kaçak" dersi tam da
  * bu yüzden yazıldı ve ikinci kez yaşandı: davet sayfası, davetle gelen bir

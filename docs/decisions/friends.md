@@ -152,7 +152,21 @@ Kullanıcılar "karşılıklı/canlı oyun" istiyor — bunun ön koşulu olarak
 
 ⚠ **Rozet bilerek "Daveti Kabul Et"in YANINA konmadı.** İki sebep: (1) sayfanın tek işiyle yarışırdı; (2) mağazaya giden kişi davet TOKEN'ını geride bırakır — App Store linki onu taşımaz, kurulumdan sonra linke yeniden tıklaması gerekirdi. Doğru sıra: önce daveti kabul et, sonra uygulamayı al.
 
-⚠ **`index.html`teki iOS Smart App Banner bunun yerine GEÇMEZ, tamamlar.** O etiket sayfanın en üstünde çıkar (scroll gerekmez) ama **yalnızca iOS Safari'de**; davet linkleri çoğunlukla WhatsApp'ın uygulama-içi tarayıcısında açılıyor ve orada çizilmiyor. ⚠ **Ölçüldü (390×844, üretim derlemesi): sayfadaki rozetin y'si 1153 px**, yani uygulama-içi tarayıcıdan gelen biri hâlâ scroll etmeden göremiyor. Bu boşluk KAPANMADI — kapatmak isteyen ya rozeti yukarı taşımalı ya da Safari dışı mobilde kendi üst şeridini çizmeli.
+⚠ **`index.html`teki iOS Smart App Banner bunun yerine GEÇMEZ, tamamlar.** O etiket sayfanın en üstünde çıkar (scroll gerekmez) ama **yalnızca iOS Safari'de**; davet linkleri çoğunlukla WhatsApp'ın uygulama-içi tarayıcısında açılıyor ve orada çizilmiyor. Sayfadaki rozet tam o yolu kapatıyor.
+
+⚠ **Rozet önce footer'a kondu ve bu YANLIŞTI — ölçüm düzeltti.** İlk yerleşim Setup'ınkiyle aynıydı (hukuki linklerin üstü), ama 390×844'te rozetin y'si **1153 px** çıktı: sayfanın dibi, yani düzeltilmek istenen "scroll etmeyen göremiyor" sorununun ta kendisi. Kullanıcı kararıyla davet kartının hemen ALTINA taşındı. Yeni ölçüm (aynı viewport, `get_friend_invite_info` sahtelenip GEÇERLİ davet ekranında):
+
+| Öğe | y |
+|---|---|
+| "Daveti Kabul Et" butonu | 274 → 318 |
+| "Kelimeki'yi telefonuna da kurabilirsin" | 355 |
+| App Store rozeti | **378 → 421** |
+
+600 px yüksekliğindeki bir viewport'ta bile tamamen görünür — uygulama-içi tarayıcıların kendi çubuklarına yer var.
+
+⚠ **Ders:** "rozeti ekledim" bir ölçüm DEĞİL. Yüzeye eklemek ile görünür olmak ayrı şeyler; bu sayfada ikisi 829 px ayrıydı ve fark ancak `boundingBox()` okununca görüldü.
+
+⚠ **Blok KOMPLE korunuyor** (`visibleStoreBadges().length > 0`), tek başına `<StoreBadges />` yetmez: o hiçbir mağaza yayında değilken `null` döner ve üstündeki etiket öksüz kalırdı.
 
 ⚠ **İKİ YÖNLÜ satır mümkün — `accept_friend_invite` bunu varsaymaz (migration `20260918155030`).** `friend_requests`'te aynı ikili için `(a,b)` ve `(b,a)` satırlarının İKİSİ birden olabiliyor: `sendFriendRequest` düz bir `insert` ve PK `(user_id, friend_id)` ters yönü engellemez. Canlıda 18 Eylül 2026'da bir örneği sayıldı (ikisi de `accepted`, yani zararsız). İlk idempotentlik migration'ı tek satır okuyordu ve karışık bir durumda (biri `accepted`, biri `pending`) hangisini okuyacağı BELİRSİZDİ — karar aynı gün `bool_or(status = 'accepted')`e çevrildi: satırların tamamı kilitlenir, soru tek ve kesin cevaplanır. ⚠ Yeni bir yüzey bu tabloya bakarken "ikili başına tek satır" VARSAYMASIN.
 
