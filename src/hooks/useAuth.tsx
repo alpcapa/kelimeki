@@ -8,6 +8,7 @@ import {
 } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { sameAuthUser } from '../utils/authUser';
 import { fetchMyProfile } from '../lib/api';
 import type { Profile } from '../lib/database.types';
 
@@ -62,7 +63,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // batch'inde) birlikte güncelliyoruz.
     let currentUserId: string | null = null;
     const applyUser = (u: User | null) => {
-      setUser(u);
+      // ⚠ `setUser(u)` DEĞİL: Supabase her auth olayında (token yenileme,
+      // sekmeye dönüş, aynı oturumun yeniden okunması) alanları birebir aynı
+      // AMA kimliği yeni bir `User` nesnesi üretir. Koşulsuz set edilince
+      // `user` NESNESİNE bağlı dokuz effect birden yeniden koşuyordu ve
+      // uygulama saniyede ~19 istek atan bir döngüye giriyordu (19 Eylül
+      // 2026 canlı ölçümü; gerekçenin tamamı `utils/authUser.ts`te).
+      //
+      // İçerik değiştiyse yeni nesne AYNEN geçer — bu satır güncelleme
+      // yutmaz, yalnızca gereksiz kimlik değişimini yutar.
+      setUser((onceki) => (sameAuthUser(onceki, u) ? onceki : u));
       if (u?.id === currentUserId) return;
       currentUserId = u?.id ?? null;
       if (u) {

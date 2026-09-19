@@ -166,3 +166,58 @@
   **Uçtan uca doğrulandı (13 Ağustos 2026):** kullanıcı düzeltmeden sonra hem web'de hem mobil uygulamada profil fotoğrafını birkaç kez değiştirdi — 403 bir daha görülmedi ve yeni boyut sınırı/küçültme de sorunsuz çalıştı. **Aynı gün kovadan ÖLÇÜLDÜ** (`storage.objects`, iki nesne): 83.815 B (82 KB) ve 126.095 B (123 KB) — ikisi de öngörülen 50-150 KB bandında, **ve ikisi de `image/jpeg`**. Bu ikinci alan asıl kanıt: `shrinkAvatar` yeniden kodlarken JPEG'e çeviriyor, küçültme koşmasaydı orijinalin türü (PNG/HEIC) korunurdu — yani dosyalar yalnızca küçük değil, gerçekten bu kod yolundan geçmiş. Zaman damgaları ayrıca RLS düzeltmesini de doğruluyor: 123 KB'lık nesne **28 Haziran'da oluşmuş ama 13 Ağustos'ta güncellenmiş**, yani 20 Temmuz'dan beri 403 veren "var olanın üzerine yaz" işlemi gerçekten çalışıyor; öteki nesne de önce oluşturulup iki dakika sonra güncellenmiş, yani ilk yükleme ve üzerine yazma AYRI AYRI kanıtlı. Bir regresyonda bu sayılar taban çizgisi: kovada ~1 MB'ı aşan ya da `image/jpeg` olmayan bir avatar görülürse küçültme yolu kırılmış demektir.
 
   **Ders — bir politikayı "gereksiz" diye düşürürken YALNIZCA okuma yolunu düşünme:** `public` bir kova okuma için RLS'i atlar ama `upsert` yazma yolu satırı GÖRMEYİ gerektirir. Aynı sınıf bir soru bu projede daha önce de yanlış cevaplanmıştı (bkz. `CountBadge`'in "şu filtre zaten eler" dersi ve `games.messages`'ın "bu satır zaten herkese açık" dersi) — "bu erişim başka bir yoldan zaten var" gerekçesi, o erişimin KULLANILDIĞI tüm yolları tek tek saymadan geçerli sayılmamalı.
+
+## `useAuth` — `user` nesnesinin kimliği (19 Eylül 2026)
+
+Kullanıcı bildirdi: *"Web masaüstünü açınca sürekli her şey yüklemeye
+çalışıyor, ekran deli gibi hareket ediyor, bir türlü durmuyor."* Aynı gün bir
+ekran kaydı da geldi: iPhone'da Setup'ta "Yükleniyor…" hiç bitmiyordu.
+
+**Canlıdan ölçüldü** (Supabase edge logları, tek `session_id`, iPhone Safari):
+
+| | |
+|---|---|
+| Süre | 11:19:29.968 → 11:20:11.279 (41 sn) |
+| İstek | **782** → saniyede ~19 |
+| Farklı uç | 12 |
+| Durum kodları | **hepsi 200** — tek hata yok |
+| `session_id` | **sabit** — oturum yeniden kurulmuyor |
+| `client_errors` | son 6 saatte **boş** |
+
+Tur saniyede bir tekrarlıyordu ve her turun başında `/auth/v1/user` vardı:
+`list_my_online_games` ×2 · `list_incoming_friend_requests` ×2 ·
+`local_game_saves` · `leaderboard` · `league_rewards` · `profiles` ·
+`online_game_states` ×2 · `unseen_finished_online_games` ×2 + admin HEAD'leri.
+
+**Sebep.** `applyUser` `setUser(u)`yu KOŞULSUZ çağırıyordu. Supabase her
+`onAuthStateChange` olayında alanları birebir aynı ama **kimliği yeni** bir
+`User` nesnesi üretir. React için bu "değişti" demek, ve `user` NESNESİNE
+bağlı dokuz effect birden yeniden koşuyordu: `Setup:490` · `Leaderboard:106` ·
+`LiveGamesTab:851` · `UserMenu:96` · `ScoreCard:43` ·
+`AccountSettingsModal:68` · `App` ×3. Bu liste loglardaki turla BİREBİR
+örtüştü — teşhisi kesinleştiren şey bu örtüşme oldu.
+
+**Düzeltme** (`utils/authUser.ts` → `sameAuthUser`): nesne YALNIZCA içeriği
+birebir aynıysa korunur. Bir alan bile değiştiyse yeni nesne aynen geçer, yani
+düzeltme hiçbir GÜNCELLEMEYİ yutmaz — sadece gereksiz kimlik değişimini yutar.
+
+⚠ **`id` karşılaştırması YETMEZDİ.** Uygulama `user.email`i de okuyor (ölçüldü:
+`user.id` 86, `user.email` 22 kullanım) ve e-posta değişiminde ekran
+bayatlardı. Karşılaştırma bu yüzden tek tek alanlara değil nesnenin tamamına
+bakıyor; anahtar sırası farklı gelirse `false` döner ve bugünkü davranışa
+düşeriz — başarısızlık yönü GÜVENLİ taraf.
+
+⚠ **TETİKLEYİCİ KANITLANMADI.** `onAuthStateChange`'i saniyede bir kez
+tetikleyen şeyin ne olduğu bulunamadı. Elenen hipotezler: kopya Supabase
+istemcisi (paketin tek chunk'ında), oturum yenilenmesi (`session_id` sabit),
+sunucu hatası (hepsi 200), service worker döngüsü (`sw.js` 6 istekte aynı,
+30 precache dosyası da 200), Vercel'in farklı sürüm servisi (10 istekte de
+aynı sha), yoklama (tek aralıklar 10 dk/60 dk), o gün merge edilen PR'lar
+(#582'nin effect'i `[]` bağımlılıklı, #586'nınki yalnızca yorum). Düzeltme
+tetikleyiciden BAĞIMSIZ çalışır: olay gelmeye devam etse bile artık bir tam
+veri turu doğurmuyor. Tetikleyici bulunursa bu not güncellenmeli.
+
+⚠ **Kapı: `npm run verify-auth-user-identity`** (CI'da). Duman testiyle
+sınanamaz — gerçek bir oturum ve arka arkaya gelen auth olayları gerekiyor.
+Kapı iki yönü de sınıyor: yalnızca "aynıysa true" sınansaydı fonksiyon
+`() => true` yazılarak da geçerdi ve o zaman gerçek güncellemeler yutulurdu.
