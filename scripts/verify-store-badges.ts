@@ -18,6 +18,8 @@
 import { readFileSync } from 'node:fs';
 
 import {
+  APPLE_APP_ID,
+  appleSmartAppBannerMeta,
   BADGE_GAP_PX,
   BADGE_MIN_HEIGHT_PX,
   BADGE_WIDTH_PX,
@@ -206,6 +208,36 @@ console.log('storeLinks — mağaza rozetleri');
       /indirin/i.test(badge.alt),
       badge.alt,
     );
+  }
+}
+
+// ── 6. SMART APP BANNER (`apple-itunes-app`) ───────────────────────────────
+// Safari'nin kendi üst şeridi. 19 Eylül 2026'da kullanıcı bildirdi: banner
+// `index.html`de vardı ama statik sayfalarda YOKTU — o dört sayfa kendi
+// HTML'ini ürettiğinden kapsam dışında kalmıştı.
+//
+// Sayı İKİ statik HTML'de elle duruyor (`index.html` import edemez), bu
+// yüzden kapı onları kaynakla karşılaştırıyor — "iki kopya sessizce ayrışır"
+// bu projenin en sık tekrarlayan hata sınıfı.
+{
+  const bannerVar = appleSmartAppBannerMeta() !== null;
+  const indexHtml = readFileSync('index.html', 'utf8');
+  const indexAppId = indexHtml.match(/name="apple-itunes-app"\s+content="app-id=(\d+)"/)?.[1] ?? null;
+
+  if (bannerVar) {
+    check('index.html Smart App Banner taşıyor', indexAppId !== null);
+    check(
+      `index.html app-id'si storeLinks ile AYNI (${APPLE_APP_ID})`,
+      indexAppId === APPLE_APP_ID,
+      indexAppId ?? 'yok',
+    );
+    check(
+      'statik sayfa üreticisi banner\'ı basıyor (render.tsx)',
+      readFileSync('src/legal/render.tsx', 'utf8').includes('appleSmartAppBannerMeta()'),
+    );
+  } else {
+    // App Store yayında değilse banner da OLMAMALI — rozetlerle aynı kapı.
+    check('App Store yayında değil → index.html banner TAŞIMAMALI', indexAppId === null);
   }
 }
 

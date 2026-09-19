@@ -149,3 +149,47 @@ yazdığının kaynak taraması.
 
 Güncelleme tutmazsa `client_errors`'a `sw-update-loop` bağlamıyla tek satır
 düşüyor — kullanıcı eski sürümde kalıyor demektir, birinin bakması gerekir.
+
+### İkinci ölçüm — kapı çalıştı, ama deneme AÇILIŞ başınaydı (aynı gün)
+
+Düzeltme yayına çıktı (`d7816d7`) ve `client_errors` ÜÇ satır yazdı —
+14:09:28 · 14:09:40 · 14:10:19, üçü de:
+
+```
+[sw-update-loop] service worker güncellemesi TUTMADI — derleme d7816d7 değişmedi, döngü kesildi
+```
+
+**Bu üç satır iki şeyi birden kanıtladı:** (1) teşhis doğru — bekleyen
+service worker gerçekten etkinleşemiyor; (2) kapı çalışıyor — sonsuz döngü
+kırıldı. Ama kayıt `sessionStorage`daydı, yani **her açılış bir boş yeniden
+yükleme harcıyordu**. Kullanıcı bunu *"sanki her seferinde 2 kere refresh
+yapıyor"* diye tarif etti: ilk açılış + bir reload.
+
+⚠ **Bu turda bir ölçüm aracı bedavaya çıktı:** aynı PR `fetchMyProfile`'ın
+`getUser()` çağrısını kaldırdığı için, edge loglarında **`/auth/v1/user` = 0
+olması artık "kullanıcı yeni derlemede" demek.** Sunucudan derleme
+tespitinin en ucuz yolu; yeni bir sürümün sahaya inip inmediği bundan
+okunabiliyor.
+
+**Değişiklik:** kayıt `localStorage`a alındı → deneme **derleme başına bir**.
+Bir kez denenir, tutmazsa o derleme için bir daha denenmez. Güncelleme
+kaybolmuyor: bekleyen worker, tüm istemciler kapanınca normal yaşam
+döngüsüyle kendiliğinden etkinleşir — biz yalnızca onu ZORLAMAYI bırakıyoruz.
+Derleme gerçekten değiştiği an kayıt eskiyor ve kapı kendiliğinden yeniden
+kuruluyor.
+
+⚠ Bedeli bilinçli: bir güncelleme geçici bir sebeple tutmazsa o derleme için
+otomatik yeniden deneme yok.
+
+**Ayrıca `registration.update()` kısıldı (5 dk).** iOS standalone'da
+`visibilitychange` + `focus` + `pageshow` her uygulama geçişinde ÜÇÜ BİRDEN
+ateşliyor, yani her geçiş üç ayrı `sw.js` çekimi demekti. Saatlik tetikleyici
+duruyor ve 5 dakikadan uzun her dönüş yine kontrol ediyor.
+
+⚠ **Hâlâ BİLİNMEYEN:** bekleyen worker'ın neden etkinleşmediği. Üretilen
+`sw.js`te `SKIP_WAITING` dinleyicisi ve `skipWaiting()` var, ama
+`clientsClaim` YOK (vite-plugin-pwa'nın `prompt` modundaki varsayılanı).
+Dağıtım karışması elendi: canlıdaki `index.html`in yüklediği iki paket de
+(`boot-*.js`, `index-*.js`) aynı `sw.js`in precache manifest'inde duruyor,
+yani HTML ile service worker AYNI dağıtımdan geliyor. Bu soru açık; ama
+artık kullanıcıya bir maliyeti yok.

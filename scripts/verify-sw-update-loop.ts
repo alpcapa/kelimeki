@@ -51,5 +51,20 @@ kontrol(
   pwa.indexOf('writeSwUpdateKaydi(') < pwa.lastIndexOf('apply();'),
 );
 
+// ── Kaydın DEPOSU: `localStorage`, `sessionStorage` DEĞİL ─────────────────
+// 19 Eylül 2026, ikinci ölçüm: `sessionStorage` sürümü sonsuz döngüyü kırdı
+// ama her AÇILIŞ hâlâ bir boş yeniden yükleme harcıyordu (canlıda üç ayrı
+// açılıştan üç `sw-update-loop` satırı). Kullanıcı bunu "her seferinde 2 kere
+// refresh yapıyor" diye gördü. Deneme derleme başına BİR olmalı.
+console.log('\nKaydın deposu\n');
+
+const swUtil = readFileSync(join(process.cwd(), 'src/utils/swUpdate.ts'), 'utf8');
+const kod = swUtil.split('\n').filter((r) => !r.trimStart().startsWith('*')).join('\n');
+kontrol('kayıt `localStorage`da tutuluyor', kod.includes('localStorage.getItem(SW_UPDATE_KEY)'));
+kontrol(
+  '`sessionStorage` KULLANILMIYOR (açılış başına bir deneme = her açılışta bir boş reload)',
+  !kod.includes('sessionStorage'),
+);
+
 console.log(dusen === 0 ? '\nTüm kontroller geçti.\n' : `\n${dusen} kontrol DÜŞTÜ\n`);
 process.exit(dusen === 0 ? 0 : 1);

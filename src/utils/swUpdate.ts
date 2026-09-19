@@ -49,12 +49,31 @@
  * derleme kimliği AYNI kaldıysa, o yükleme hiçbir şeyi değiştirmemiştir ve
  * tekrar denemek tanım gereği sonsuz döngüdür.
  *
- * ⚠ Kayıt `sessionStorage`da: yeniden yüklemeleri AŞAR (aynı bağlam) ama
- * uygulamayı kapatıp açmak onu sıfırlar — yani gerçek bir güncelleme bir
- * sonraki açılışta normal şekilde uygulanır, kalıcı olarak bloklanmaz.
+ * ⚠ Kayıt `localStorage`da — **`sessionStorage` YETMEDİ (aynı gün, ikinci
+ * ölçüm)**. İlk sürüm `sessionStorage` kullanıyordu: yeniden yüklemeleri
+ * aşıyor ama uygulama her kapanıp açıldığında sıfırlanıyordu. Sonuç canlıda
+ * ölçüldü — `client_errors`'a üç ayrı açılıştan üç satır düştü
+ * (14:09:28 · 14:09:40 · 14:10:19, hepsi `derleme d7816d7 değişmedi`):
+ * sonsuz döngü kırılmıştı ama **her açılış hâlâ bir boş yeniden yükleme
+ * harcıyordu**. Kullanıcı bunu *"sanki her seferinde 2 kere refresh
+ * yapıyor"* diye gördü — haklıydı: ilk açılış + bir reload.
+ *
+ * `localStorage` ile deneme sayısı **derleme başına bir**e iniyor: bir kez
+ * denenir, tutmazsa o derleme için bir daha denenmez. Güncelleme yine
+ * kaybolmuyor — bekleyen service worker, tüm istemciler kapanınca normal
+ * yaşam döngüsüyle kendiliğinden etkinleşir; biz yalnızca onu ZORLAMAYI
+ * bırakıyoruz. Derleme gerçekten değiştiği an kayıt eskiyor ve kapı
+ * kendiliğinden yeniden kuruluyor.
+ *
+ * ⚠ Bedeli bilinçli: bir güncelleme geçici bir sebeple tutmazsa o derleme
+ * için otomatik yeniden deneme YOK. Karşılığında kullanıcı her açılışta
+ * bedava bir yeniden yükleme yemiyor.
  */
 
-/** `sessionStorage` anahtarı — yeniden yüklemeyi aşar, yeni açılışta sıfırlanır. */
+/**
+ * `localStorage` anahtarı — yeniden yüklemeyi DE, uygulamanın kapanıp
+ * açılmasını DA aşar. Deneme derleme başına bir kez (yukarı bkz.).
+ */
 export const SW_UPDATE_KEY = 'kelimeki-sw-guncelleme';
 
 export interface SwUpdateKaydi {
@@ -84,7 +103,7 @@ export function shouldApplySwUpdate(
 /** Kayıt okunur; depo kapalıysa (gizli sekme vb.) `null` döner. */
 export function readSwUpdateKaydi(): SwUpdateKaydi | null {
   try {
-    const ham = sessionStorage.getItem(SW_UPDATE_KEY);
+    const ham = localStorage.getItem(SW_UPDATE_KEY);
     if (!ham) return null;
     const v = JSON.parse(ham) as Partial<SwUpdateKaydi>;
     return typeof v?.build === 'string' && typeof v?.at === 'number'
@@ -98,7 +117,7 @@ export function readSwUpdateKaydi(): SwUpdateKaydi | null {
 /** Yeniden yüklemeden HEMEN ÖNCE çağrılır — yazamazsak sessizce geçilir. */
 export function writeSwUpdateKaydi(build: string, simdi: number): void {
   try {
-    sessionStorage.setItem(SW_UPDATE_KEY, JSON.stringify({ build, at: simdi }));
+    localStorage.setItem(SW_UPDATE_KEY, JSON.stringify({ build, at: simdi }));
   } catch {
     // Depo kapalıysa döngü koruması olmadan bugünkü davranışa düşeriz.
   }
