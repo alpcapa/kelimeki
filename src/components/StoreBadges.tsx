@@ -1,9 +1,17 @@
 import { BADGE_GAP_PX, BADGE_WIDTH_PX, visibleStoreBadges } from '../utils/storeLinks';
 
 /**
- * Mağaza rozeti satırı (ROADMAP #26) — ÜÇ yerde: Setup'ın footer'ında (hukuki
- * linklerin üstünde) ve karşılama katmanının hem kahraman hem son çağrı
- * bölümünde (`src/landing/Landing.tsx`).
+ * Mağaza rozeti satırı (ROADMAP #26) — DÖRT yerde: Setup'ın footer'ında
+ * (hukuki linklerin üstünde), karşılama katmanının hem kahraman hem son çağrı
+ * bölümünde (`src/landing/Landing.tsx`) ve **davet sayfasının footer'ında**
+ * (`FriendInvitePage.tsx`, 19 Eylül 2026 — gerekçe orada).
+ *
+ * ⚠ **Yüzey eklerken bu sayıyı da güncelle.** Aşağıdaki "kaçak" dersi tam da
+ * bu yüzden yazıldı ve ikinci kez yaşandı: davet sayfası, davetle gelen bir
+ * oyuncunun gördüğü İLK ekran olmasına rağmen dört ay rozetsiz kaldı; kaçak
+ * ancak gerçek bir kullanıcının (`platform='web'`, push token yok) izi
+ * sürülünce görüldü. Kapı (`verify-store-badges`) yüzeyleri SAYMIYOR, yalnızca
+ * rozet kurallarını doğruluyor — yani bu satır tek envanter.
  *
  * ⚠ **Katman 16 Eylül 2026'ya kadar rozeti HİÇ göstermiyordu** ve kaçak tam da
  * en görünür yüzeydeydi: `/` adresi Instagram'dan gelen ziyaretçinin gördüğü

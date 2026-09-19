@@ -52,6 +52,7 @@ import { Avatar } from './Avatar';
 import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PrivacyModal';
 import { GameBoardPreview } from './GameBoardPreview';
+import { StoreBadges } from './StoreBadges';
 import { CENTER_ZONE_STYLE, GOLD_ZONE_STYLE } from './Board';
 import { DEMO_TILES_2 } from '../landing/demoBoard';
 import { IkiKisiIkon, MadalyaIkon, RobotIkon, SohbetIkon } from '../landing/OzellikIkonlari';
@@ -332,6 +333,25 @@ export function FriendInvitePage({ token }: FriendInvitePageProps) {
             (hukuki linkler + "© Kelimeki"). "Paylaş" BİLEREK yok: bu sayfaya
             gelen kişi henüz üye bile değil, davet edilen taraf. */}
         <div className="flex flex-col items-center gap-3 pt-1">
+          {/* Mağaza rozetleri (ROADMAP #26) — Setup'takiyle AYNI yerde: hukuki
+            linklerin ÜSTÜNDE, kendi ortalanmış satırında. 19 Eylül 2026'da
+            eklendi; davetten gelen bir oyuncu (ölçüldü: `platform='web'`,
+            push token YOK) uygulamanın varlığını hiç görmeden web'de oynayıp
+            ayrılmıştı ve bu sayfa o yolun İLK ekranı.
+
+            ⚠ Bilerek BURAYA, "Daveti Kabul Et"in yanına DEĞİL. Rozet oraya
+            konsaydı sayfanın tek işiyle yarışırdı ve daha kötüsü: mağazaya
+            giden kişi davet TOKEN'ını geride bırakır (App Store linki onu
+            taşımaz), kurulumdan sonra linke yeniden tıklaması gerekirdi.
+            Doğru sıra önce daveti kabul etmek, sonra uygulamayı almak.
+
+            ⚠ `index.html`teki iOS Smart App Banner bunun YERİNE GEÇMEZ: o
+            yalnızca Safari'de çıkar, davet linkleri ise çoğunlukla WhatsApp'ın
+            uygulama-içi tarayıcısında açılıyor ve orada hiç çizilmiyor.
+
+            Yayında olmayan mağaza hiç render edilmez (`visibleStoreBadges`),
+            yani bugün yalnızca App Store rozeti çıkar. */}
+          <StoreBadges />
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] font-mono text-muted">
             <button
               onClick={() => setShowTerms(true)}
