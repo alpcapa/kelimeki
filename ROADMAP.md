@@ -161,9 +161,11 @@ hazır bir fonksiyon YOK, yazılması gerekiyor.
 açılınca tek PR. Kullanıcı kararı (18 Eylül): acele yok, 5 test kullanıcısı
 etkileniyor.
 
-**#32 — e-posta onayı bir kullanıcı kaybı kapısı** → ⏳ **AÇIK, iki saha
-vakası** (20 Eylül 2026, kullanıcı: *"İnsanlar burada bounce ediyor, bu işi
-bir daha düşünmek lazım"*). Yedi alternatif ve önerilen sıra aşağıda, #32'de.
+**#32 — e-posta onayı bir kullanıcı kaybı kapısı** → ⏳ **AÇIK, ERTELENDİ**
+(20 Eylül 2026, kullanıcı: *"İnsanlar burada bounce ediyor, bu işi bir daha
+düşünmek lazım"* → aynı gün: *"Şu anda mobilde 7 update var. Bu zaten
+oldukça fazla. Roadmap'e yaz, daha sonra bakalım."*). İki saha vakası, yedi
+alternatif, önerilen sıra ve dondurma uyumluluğu aşağıda, #32'de.
 
 **#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
 ✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
@@ -1259,6 +1261,52 @@ gördü, yine de bilmedi), vaka 2 ise metnin hiç okunamadığı bir yol.
    istiyorsan D, kapıyı KALDIRMAK istiyorsan F. Saf E (F'siz) önerilmiyor —
    yukarıdaki bounce zinciri yüzünden.
 4. **G** kendi sırasında; bu madde onun gerekçesine bir satır ekliyor.
+
+### Dondurma uyumluluğu — `mobile/` dosyası ≠ sahadaki davranış
+
+⚠ **"Mobile dokunuyor mu" sorusunun İKİ ayrı cevabı var** (20 Eylül 2026,
+kullanıcı sordu ve ilk cevap eksikti):
+
+1. `mobile/` altında **dosya** değiştirmek → merge `mobile-build.yml`'i
+   tetikler (`mobile-latest` ezilir, TestFlight'a build gider).
+2. Sahadaki paketin **DAVRANIŞINI** değiştirmek → tek satır mobil kod
+   değişmeden de olur, çünkü **Supabase Auth ayarları anında canlıdır**
+   (bkz. "Deploy Doğrulaması", üçüncü satırın tersine tuzağı).
+
+| | `mobile/` dosyası | Sahadaki paketi etkiler | Dondurma sırasında |
+|---|---|---|---|
+| **A** ölçüm | yok (migration + Edge) | hayır | ✅ serbest |
+| **B** yazım hatası denetimi | **web yarısı yok** | hayır | ✅ web yarısı serbest |
+| **C** bekleme odası | **web yarısı yok** | hayır | ✅ web yarısı serbest |
+| **D** 6 haneli kod | web yarısı yok; şablon ORTAK | 🟡 kuruluşa bağlı | 🟡 koşullu |
+| **E** onaysız üyelik | **yok** | ⛔ **EVET, anında** | ⛔ |
+| **F** yumuşak onay | **yok** | ⛔ **EVET, anında** | ⛔ |
+| **G** Google girişi | var (SDK) | — | ⛔ |
+
+⚠ **Ters sürpriz: E ve F `mobile/` altında HİÇBİR dosyaya dokunmuyor ama en
+riskli olanlar.** `Confirm email` anahtarı global; kapatıldığı anda App
+Store'daki `1.1.0` paketi de etkilenir ve o paket buna hazır DEĞİL:
+`signUp` artık oturum döndürür (kullanıcı anında girmiş olur), ama sahadaki
+uygulama ekrana hâlâ *"Hesap oluşturuldu. E-postanı doğrulayıp giriş yap."*
+yazar **ve pencere kendini kapatmaz — çünkü onu kapatan düzeltme #562'de,
+yani hâlâ dondurulmuş.** Sonuç: giriş yapmış kullanıcı, "e-postanı doğrula"
+diyen açık bir pencereye bakar. **E/F, #562 SAHAYA İNMEDEN açılmaz.**
+
+⚠ **D'nin koşulu daha yumuşak:** Supabase şablonu `{{ .ConfirmationURL }}`
+ile `{{ .Token }}`'ı BİRLİKTE taşıyabilir. Şablona kod eklenirse link
+çalışmaya devam eder → sahadaki paket eski yolundan (link) gider, web yeni
+kod kutusunu kullanır; kademeli ve geriye uyumlu. **Şablondan link
+KALDIRILIRSA sahadaki paketin onay yolu kopar.**
+
+### Karar: ERTELENDİ (20 Eylül 2026)
+
+Kullanıcı: *"Şu anda mobilde 7 update var. Bu zaten oldukça fazla. Roadmap'e
+yaz, daha sonra bakalım."* — yani A/B/C dondurma sırasında teknik olarak
+mümkün olsa da **açılmıyor**: bekleyen yedi port PR'ı (#547, #554, #557,
+#562, #565, #576, #579) zaten bir merge turu ve bir sürüm borcu demek,
+üstüne yeni bir akış işi eklemek kuyruğu uzatır. **Tetikleyici:** yedi PR'ın
+merge turu kapanıp sürüm sahaya indikten sonra bu madde yeniden açılır ve
+sıra A → B → C olarak yürür.
 
 ⚠ **Hepsi kayıt akışına dokunuyor** → `TESTING.md` ve `mobile/TESTING.md`'nin
 kayıt onayı maddeleri aynı PR'da güncellenir. ⚠ **C/D/F portu değiştirir →
