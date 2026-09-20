@@ -35,6 +35,7 @@ import type {
   AdminFriendTotals,
   AdminGameActivityPoint,
   AdminActiveHoursRow,
+  AdminActiveDaysRow,
   AdminGameDurationSummary,
   AdminGameScope,
   AdminGameSourceType,
@@ -2370,6 +2371,33 @@ export async function fetchAdminActiveHours(days = 30): Promise<AdminActiveHours
     rethrowSupabase(error);
   }
   return (data as AdminActiveHoursRow[]) ?? [];
+}
+
+/**
+ * "Aktif Günler" — oyun bitişlerinin HAFTANIN GÜNLERİNE dağılımı (yalnızca
+ * admin — Büyüme > Oyun). 20 Eylül 2026, kullanıcı isteği.
+ *
+ * `fetchAdminActiveHours`ın İKİZİ ve bilerek birebir aynı imza/desen: aynı
+ * kaynak, aynı 30 günlük pencere, aynı platform kovaları, aynı teslim
+ * kuralı — tek fark kova. Biri değişirse ötekini de değiştir; ayrışırlarsa
+ * iki grafik aynı popülasyonu iki farklı toplamla gösterir.
+ *
+ * Sunucu HER ZAMAN 7 satır döndürür (`dow` = `isodow`, 1=Pazartesi), yani
+ * çağıran tarafın eksik günü doldurması gerekmez — `[]` yalnızca Supabase
+ * yapılandırılmamışsa döner.
+ *
+ * ⚠ Bu grafik de sekmedeki kaynak/kapsam/oyuncu sayısı kombolarına BİLEREK
+ * bağlı değil — `admin_active_hours` ile aynı karar.
+ */
+export async function fetchAdminActiveDays(days = 30): Promise<AdminActiveDaysRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_active_days', { p_days: days });
+  if (error) {
+    // `fetchAdminActiveHours` ile aynı gerekçe: hatayı yutup boş dizi dönmek
+    // admin'e gerçek bir RPC/izin hatasını asla göstermezdi.
+    rethrowSupabase(error);
+  }
+  return (data as AdminActiveDaysRow[]) ?? [];
 }
 
 /**

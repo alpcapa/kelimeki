@@ -703,3 +703,40 @@ görünmez. Bu bir hata DEĞİL — portun `logGameFinish`i platform damgasını
 yazmıyor (PR #565 dondurulmuş). O merge edilip yeni mağaza paketi dağılınca
 "Diğer" kendiliğinden incelmeli. **Toplam çubuk yüksekliği bundan
 etkilenmez.** Ayrıntı: `docs/decisions/admin-panel.md` → "Aktif Saatler".
+
+## 9.20. Admin — "Aktif Günler" grafiği (20 Eylül 2026)
+
+Büyüme > **Oyun** sekmesi, "Aktif Saatler"in hemen altında. §9.19'un
+İKİZİ — aynı bileşen, aynı seri, aynı pencere.
+
+- [ ] Grafik açılıyor, **7 çubuk** var ve x ekseni `Pzt · Sal · Çar · Per ·
+      Cum · Cmt · Paz` yazıyor — **hepsi etiketli** (saat ekseninin aksine
+      hiçbiri atlanmıyor) ve hafta **Pazartesi** başlıyor.
+- [ ] ⚠ **Hafta Pazar'dan BAŞLAMIYOR.** Başlıyorsa sunucuda `isodow` yerine
+      `dow` kullanılmış demektir ve hafta sonu çubukları grafiğin iki ucuna
+      dağılmıştır — desen okunamaz hale gelir.
+- [ ] Tooltip başlığı günün **TAM adı** (`Perşembe`), kısaltma değil.
+- [ ] Tooltip'teki **Web + iOS + Android + Diğer toplamı, "Bitirilen"e TAM
+      eşit.**
+- [ ] ⚠ **EN ÖNEMLİ KONTROL — iki grafiğin toplamı birbirini tutuyor.**
+      "Aktif Saatler"in tablo görünümündeki `Bitirilen` kolonunun toplamı ile
+      "Aktif Günler"inki **EŞİT** olmalı (20 Eylül 2026'da canlıda ölçüldü:
+      ikisi de **1279**). Tutmuyorsa iki RPC'den biri değişmiş, öteki
+      güncellenmemiştir — ikisi AYNI popülasyonu sayıyor.
+- [ ] İlk ve SON çubuğun tooltip'i grafiğin dışına taşmıyor.
+- [ ] **Efsane tıklanamaz** (§9.19 ile aynı gerekçe).
+- [ ] "Tablo Görünümü" 7 satır + `Gün · Bitirilen · Web · iOS · Android ·
+      Diğer` kolonlarını veriyor; ilk kolon başlığı **`Gün`** (`Saat` DEĞİL).
+- [ ] "CSV İndir" aynı 7 satırı veriyor, dosya adı `kelimeki-aktif-gunler-…`.
+- [ ] `?` rozeti "Aktif Günler" açıklamasını açıyor.
+- [ ] ⚠ **Üstteki kombolar (kaynak / kapsam / oyuncu sayısı) bu grafiği
+      DEĞİŞTİRMEMELİ** — §9.19 ile aynı, bilerek bağımsız sabit 30 gün.
+- [ ] ⚠ **"Aktif Saatler" de hâlâ doğru çalışıyor** — bileşen 20 Eylül'de
+      genelleştirildiği (`ActiveHoursChart.tsx` → `StackedBucketChart.tsx`)
+      için §9.19'un TAMAMI bu turda yeniden koşulmalı. Regresyon riski
+      kovaya özgü olan üç yerde: eksen etiketlerinin atlanması, `22–24`
+      aralık başlığı ve tablo/CSV'nin `Saat` başlığı.
+
+⚠ **Bugünkü BEKLENEN görüntü:** §9.19 ile aynı — "Diğer" şişkin, iOS
+neredeyse görünmez (portun `logGameFinish`i damgayı yazmıyor, PR #565
+dondurulmuş). Ayrıntı: `docs/decisions/admin-panel.md` → "Aktif Günler".

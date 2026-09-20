@@ -1198,6 +1198,36 @@ export interface AdminActiveHoursRow {
 }
 
 /**
+ * admin_active_days RPC çıktısındaki tek satır (Büyüme > Oyun, "Aktif
+ * Günler"). 20 Eylül 2026, kullanıcı isteği: *"Admin oyunda saatler gibi
+ * Aktif Günler bar chartı da koyabilir miyiz?"*
+ *
+ * `AdminActiveHoursRow`ın İKİZİ — aynı kaynak (`game_finishes`), aynı
+ * pencere (30 gün), aynı saat dilimi (**Europe/Istanbul**), aynı platform
+ * kovaları, aynı teslim kuralı. Yukarıdaki üç ⚠ notunun HEPSİ buraya da
+ * aynen geçerli; biri değişirse İKİSİ BİRLİKTE değişmeli, yoksa iki grafik
+ * aynı popülasyonu iki farklı sayıyla anlatır. (Değişmez canlıda ölçüldü,
+ * 20 Eylül 2026: ham pencere = saat toplamı = gün toplamı = 1279.)
+ *
+ * ⚠ `dow` = **`isodow`** — `1` Pazartesi … `7` Pazar. Postgres'in kendi
+ * `dow`u DEĞİL (o 0=Pazar ile başlar ve grafikte hafta sonunu iki uca
+ * dağıtır). Sunucu her zaman 7 satır döndürür — bitişi olmayan gün 0 olarak
+ * gelir, eksik satır olarak DEĞİL.
+ *
+ * ⚠ Teslimin dışarıda bırakılma gerekçesi bu kovada DAHA GÜÇLÜ: 7 günlük
+ * gecikme haftanın gününü KORUR, yani her teslim satırı terk edildiği günün
+ * kovasına düşüp dağılıma ikinci bir desen bindirirdi.
+ */
+export interface AdminActiveDaysRow {
+  dow: number;
+  finished: number;
+  finished_web: number;
+  finished_ios: number;
+  finished_android: number;
+  finished_other: number;
+}
+
+/**
  * admin_ai_balance RPC çıktısındaki tek satır (Büyüme > Oyun, "YZ Dengesi").
  * Yerel (Yapay Zeka'ya karşı) oyunlarda İNSANIN sonuç dağılımı, oyuncu
  * sayısı bazında. Teslim olan satırlar HARİÇ — onlar bir beceri sonucu

@@ -873,7 +873,11 @@ Büyüme > Oyun sekmesinde, "Oyun Sayısı"nın hemen altında. İkisi de oyun
 bitişlerini sayıyor ama farklı soruları yanıtlıyor: biri **zaman içindeki
 hacmi**, öteki **günün içindeki ritmi**.
 
-`admin_active_hours(p_days)` · `ActiveHoursChart.tsx` · `AdminActiveHoursRow`
+`admin_active_hours(p_days)` · `StackedBucketChart.tsx` · `AdminActiveHoursRow`
+
+⚠ Bileşen 20 Eylül 2026'da `ActiveHoursChart.tsx`ten `StackedBucketChart.tsx`e
+TAŞINDI ve kovadan bağımsız hale geldi — "Aktif Günler" aynı dosyayı
+kullanıyor (aşağı bkz.).
 
 ### Kararlar
 
@@ -940,3 +944,82 @@ tuzağa düşülebilirdi ve ikisi de kapatıldı:
 
 Değişmez canlıda 12 dilimde de doğrulandı: web + ios + android + other =
 finished.
+
+## "Aktif Günler" — haftanın ritmi (20 Eylül 2026)
+
+Kullanıcı isteği: *"Admin oyunda saatler gibi Aktif Günler bar chartı da
+koyabilir miyiz?"*
+
+Büyüme > Oyun sekmesinde, "Aktif Saatler"in hemen altında. Üçlü artık şöyle
+okunuyor: **Oyun Sayısı** = zaman içindeki hacim · **Aktif Saatler** = günün
+içindeki ritim · **Aktif Günler** = haftanın içindeki ritim.
+
+`admin_active_days(p_days)` · `StackedBucketChart.tsx` · `AdminActiveDaysRow`
+(migration `20260920151346_admin_active_days`)
+
+### Bu bir İKİZ — ve ikizliği korumak kuralın kendisi
+
+"Aktif Saatler"in TÜM kararları (kaynak `game_finishes` · saat dilimi
+`Europe/Istanbul` · teslim satırları hariç · kombolardan bağımsız sabit 30
+gün · efsane tıklanamaz · "Diğer" en üstte · `niceCeil`'in ince merdiveni)
+buraya **aynen** geçti. Yukarıdaki bölümdeki tablo tekrar edilmiyor; iki
+grafik aynı sekmede yan yana duruyor ve bir karar değişirse **İKİSİ
+BİRLİKTE** değişmeli.
+
+**Değişmez, canlıda ölçüldü (20 Eylül 2026):**
+
+```
+ham pencere (30 gün, teslim hariç) = 1279
+saat kovalarının toplamı           = 1279
+gün kovalarının toplamı            = 1279
+```
+
+Bu üç sayı ayrışırsa kovalardan biri sessizce başka bir popülasyonu
+sayıyordur. Kontrol listesine de girdi (`docs/testing-admin.md` §9.20).
+
+İlk ölçümün gün dağılımı: Pzt 191 · Sal 158 · Çar 154 · **Per 234** · Cum 179
+· Cmt 199 · Paz 164. Yedi günün hepsinde `web + ios + android + other =
+finished` doğrulandı.
+
+### `isodow`, `dow` DEĞİL
+
+Postgres'in `extract(dow)`u **0 = Pazar** ile başlar. Onunla çizilen grafik
+Türkçe bir panelde haftayı Pazar'dan açar ve **hafta sonu çubukları grafiğin
+iki ucuna dağılır** (Pazar en solda, Cumartesi en sağda) — "hafta sonu daha
+mı yoğun" sorusu grafiğe bakılarak cevaplanamaz hale gelir. `isodow`
+(1 = Pazartesi … 7 = Pazar) ile Cmt+Paz yan yana, sağ uçta duruyor.
+
+### Teslim kuralının gerekçesi burada DAHA GÜÇLÜ
+
+Saat kovasında teslim satırlarını dışarıda bırakmanın sebebi "zaman aşımının
+dolduğu an insan davranışı değil"di. Gün kovasında aynı satır **daha zararlı**:
+7 günlük terk-edilme gecikmesi haftanın gününü **KORUR** (7 ≡ 0 mod 7), yani
+her teslim, terk edildiği günün kovasına düşer ve dağılıma insan
+davranışıyla ilgisi olmayan, birebir kopyalanmış ikinci bir desen bindirir.
+%11'lik bir kirlilik burada gürültü değil, sistematik sapma olurdu.
+
+### İkinci bir bileşen YAZILMADI
+
+`ActiveHoursChart.tsx` → `StackedBucketChart.tsx` olarak taşındı ve kovadan
+bağımsız hale getirildi (`bucketKey` · `bucketLabel` · `axisLabel` ·
+`bucketHeader` prop'ları). Kopyalanmış 300 satırlık ikinci bir çizim kodu,
+bu depoda tam olarak cezalandırılan şeydi — `Setup.tsx` ile
+`LiveGamesTab.tsx`in aynı kartı ayrışmış ve kullanıcı ikisini iki sekmede
+yan yana görmüştü (kök `CLAUDE.md`, eş-dosya tablosu).
+
+Seri sabiti de TEK: `ACTIVE_HOURS_SERIES` → **`FINISH_PLATFORM_SERIES`**.
+İkiye ayrılsaydı "Web" iki grafikte iki renge kayabilir ve yan yana duran iki
+çubuk okunamaz hale gelirdi.
+
+**Kova sözlükleri bilerek bileşenin yanında** (`StackedBucketChart.tsx`
+altı): grafiğin genel olması etiket kurallarının dağılması anlamına gelmesin.
+Gün adları **elde** yazılı, `toLocaleDateString('tr-TR', { weekday })` ile
+DEĞİL — o yol bir tarih nesnesi uydurmayı ve tarayıcının ICU verisine
+güvenmeyi gerektirirdi; aynı panelde iki tarayıcıda iki farklı kısaltma
+çıkabilirdi.
+
+### Eksen etiketleri: saatte atlanır, günde atlanmaz
+
+`axisLabel` `null` dönerse o kova etiketsiz çizilir. Saat ekseninde 12 etiket
+640 px'de kalabalık, o yüzden yalnızca dört saatlik adımlar yazılıyor; gün
+ekseninde yedi kısaltma (Pzt…Paz) rahat sığdığından **hiçbiri atlanmıyor**.

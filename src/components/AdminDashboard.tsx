@@ -13,6 +13,7 @@ import {
   fetchAdminRetentionCohorts,
   fetchAdminActivationStats,
   fetchAdminActiveHours,
+  fetchAdminActiveDays,
   fetchAdminSourceFunnel,
   fetchAdminTutorialFunnel,
   fetchAdminDeviceBreakdown,
@@ -45,6 +46,7 @@ import type {
   AdminRetentionCell,
   AdminActivationStats,
   AdminActiveHoursRow,
+  AdminActiveDaysRow,
   AdminSourceFunnelRow,
   AdminTutorialFunnelRow,
   AdminAppVersionRow,
@@ -63,7 +65,13 @@ import { MemberMessageModal } from './MemberMessageModal';
 import { AdminChatTranscriptModal } from './AdminChatTranscriptModal';
 import { CountBadge } from './CountBadge';
 import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
-import { ActiveHoursChart } from './ActiveHoursChart';
+import {
+  StackedBucketChart,
+  hourBucketLabel,
+  hourAxisLabel,
+  dayBucketLabel,
+  dayAxisLabel,
+} from './StackedBucketChart';
 import { trCompare, trLower } from '../utils/turkish';
 import {
   brandBreakdown,
@@ -185,8 +193,13 @@ const GAME_COUNT_SERIES: ChartSeriesDef[] = [
   { key: 'games_finished_other', label: 'Diğer', color: '#8A93A2' },
 ];
 
-// "Aktif Saatler" yığılmış çubuklarının segment sırası — dizinin İLK öğesi en
-// ALTTA çizilir (18 Eylül 2026).
+// "Aktif Saatler" VE "Aktif Günler" yığılmış çubuklarının segment sırası —
+// dizinin İLK öğesi en ALTTA çizilir (18 Eylül 2026; 20 Eylül'de ikinci
+// grafik eklenince paylaşıldı).
+//
+// ⚠ TEK sabit, iki grafik: ikisi de aynı RPC kolonlarını (`finished_*`) aynı
+// renklerle çiziyor. İkiye ayrılsaydı "Web" iki grafikte iki renge kayabilir
+// ve aynı sekmede yan yana duran iki çubuk okunamaz hale gelirdi.
 //
 // Renkler GAME_COUNT_SERIES'in platform üçlüsüyle BİREBİR aynı: iki grafik
 // aynı sekmede yan yana duruyor ve "Web" iki yerde iki renk olsaydı okuma
@@ -197,7 +210,7 @@ const GAME_COUNT_SERIES: ChartSeriesDef[] = [
 // kovası port PR'ı merge edilene kadar şişkin (bkz. `AdminActiveHoursRow`);
 // en üste konunca çubuğun TABANI kararlı kalıyor ve o boşluk kapandıkça
 // grafik alttan değil üstten inceliyor.
-const ACTIVE_HOURS_SERIES: ChartSeriesDef[] = [
+const FINISH_PLATFORM_SERIES: ChartSeriesDef[] = [
   { key: 'finished_web', label: 'Web', color: '#2a78d6' },
   { key: 'finished_ios', label: 'iOS', color: '#DB2777' },
   { key: 'finished_android', label: 'Android', color: '#0891B2' },
@@ -676,6 +689,40 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         app'ten biten oyunlar "Diğer"e düşer (18 Eylül 2026'da ölçüldü: 17 Eylül'ün 89
         bitişinden 54'ü platformsuz). <b>Toplam çubuk yüksekliği bundan etkilenmez</b> —
         yalnızca rengin dağılımı eksik.
+      </>
+    ),
+  },
+  'aktif-gunler': {
+    title: 'Aktif Günler',
+    body: (
+      <>
+        Oyun <b>bitişlerinin</b> haftanın hangi gününde olduğu — <b>son 30 gün</b>, saat
+        dilimi <b>Europe/Istanbul</b>. Hafta <b>Pazartesi</b> başlar, böylece Cumartesi ve
+        Pazar yan yana, sağ uçta durur.
+        <br />
+        <br />
+        <b>"Aktif Saatler"in ikizi</b> ve bu bir benzetme değil: aynı kaynak
+        (<code>game_finishes</code>), aynı pencere, aynı platform kovaları, aynı teslim
+        kuralı — tek fark kovanın kendisi. <b>İki grafiğin toplamı birbirini tutmak
+        zorundadır</b> (20 Eylül 2026'da canlıda ölçüldü: ikisi de 1279). Tutmuyorsa biri
+        değişmiş, öteki güncellenmemiştir.
+        <br />
+        <br />
+        ⚠ <b>Teslim satırları bu grafiğe GİRMEZ</b> ve gerekçe burada saat grafiğindekinden
+        <b> daha güçlü</b>: teslim, 7 günlük terk-edilme ya da 48 saatlik sıra zaman
+        aşımının <b>dolduğu</b> anı taşır — ve yedi günlük bir gecikme haftanın gününü
+        <b> korur</b>. Dahil edilseydi her teslim, terk edildiği günün kovasına düşüp
+        dağılıma insan davranışıyla ilgisi olmayan ikinci bir desen bindirirdi.
+        <br />
+        <br />
+        <b>Bu grafik üstteki kombolara bağlı değil</b> (kaynak / kapsam / oyuncu sayısı).
+        <br />
+        <br />
+        <b>Platform kırılımı:</b> <b>Web · iOS · Android · Diğer</b> segmentleri HER ZAMAN
+        toplam bitişe tam olarak toplanır; <b>Diğer</b>'in tanımı "Oyun Sayısı" ve "Aktif
+        Saatler" ile birebir aynı. ⚠ <b>Bugün "Diğer" şişkin ve bu geçici</b> — sebep
+        "Aktif Saatler"dekiyle aynı: portun <code>platform</code> damgası inceleme
+        dondurması yüzünden ayrı bir PR'da bekliyor.
       </>
     ),
   },
@@ -2219,6 +2266,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [friendTotals, setFriendTotals] = useState<AdminFriendTotals | null>(null);
   const [gameActivity, setGameActivity] = useState<AdminGameActivityPoint[] | null>(null);
   const [activeHours, setActiveHours] = useState<AdminActiveHoursRow[] | null>(null);
+  const [activeDays, setActiveDays] = useState<AdminActiveDaysRow[] | null>(null);
   // "Oyun Süresi" 16 Eylül 2026'da grafikten KUTULARA geçti (kullanıcı
   // isteği) — kutular pencerenin TAMAMININ medyanını gösterdiğinden seriden
   // türetilemez (medyanlar toplanamaz), kendi RPC'si var.
@@ -2425,6 +2473,16 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   useEffect(() => {
     fetchAdminActiveHours(30)
       .then(setActiveHours)
+      .catch((e) => setError(String(e)));
+  }, []);
+
+  // "Aktif Günler" — ikizinin AYNI gerekçesiyle ayrı effect ve BOŞ bağımlılık
+  // dizisi (20 Eylül 2026). Saatlerle aynı effect'e konulabilirdi, ama o
+  // zaman biri düşünce öteki de hiç yüklenmezdi; ikisi bağımsız grafik,
+  // bağımsız yükleniyor durumu taşıyorlar.
+  useEffect(() => {
+    fetchAdminActiveDays(30)
+      .then(setActiveDays)
       .catch((e) => setError(String(e)));
   }, []);
 
@@ -3610,12 +3668,41 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     {activeHours === null ? (
                       <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
                     ) : (
-                      <ActiveHoursChart
+                      <StackedBucketChart
                         data={activeHours}
-                        series={ACTIVE_HOURS_SERIES}
+                        series={FINISH_PLATFORM_SERIES}
+                        bucketKey={(row) => row.hour_start}
+                        bucketLabel={(row) => hourBucketLabel(row.hour_start)}
+                        axisLabel={(row) => hourAxisLabel(row.hour_start)}
+                        bucketHeader="Saat"
                         controls={<span className={sectionTitleCls}>Aktif Saatler</span>}
                         csvBaseName="kelimeki-aktif-saatler"
                         infoHint={<InfoHint id="aktif-saatler" onOpen={setHint} />}
+                      />
+                    )}
+                  </div>
+
+                  {/* Aktif Günler — "Aktif Saatler"in HEMEN ALTINDA duruyor
+                      (20 Eylül 2026, kullanıcı isteği). İkisi aynı
+                      popülasyonu iki farklı kovayla anlatıyor: biri günün
+                      içindeki ritmi, öteki haftanın içindeki ritmi. Aynı
+                      bileşen, aynı seri sabiti, aynı pencere — toplamları
+                      birbirini TUTMAK zorunda (canlıda ölçüldü: ikisi de
+                      1279). */}
+                  <div className="flex flex-col gap-2">
+                    {activeDays === null ? (
+                      <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                    ) : (
+                      <StackedBucketChart
+                        data={activeDays}
+                        series={FINISH_PLATFORM_SERIES}
+                        bucketKey={(row) => row.dow}
+                        bucketLabel={(row) => dayBucketLabel(row.dow)}
+                        axisLabel={(row) => dayAxisLabel(row.dow)}
+                        bucketHeader="Gün"
+                        controls={<span className={sectionTitleCls}>Aktif Günler</span>}
+                        csvBaseName="kelimeki-aktif-gunler"
+                        infoHint={<InfoHint id="aktif-gunler" onOpen={setHint} />}
                       />
                     )}
                   </div>
