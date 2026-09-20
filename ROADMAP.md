@@ -161,6 +161,10 @@ hazır bir fonksiyon YOK, yazılması gerekiyor.
 açılınca tek PR. Kullanıcı kararı (18 Eylül): acele yok, 5 test kullanıcısı
 etkileniyor.
 
+**#32 — e-posta onayı bir kullanıcı kaybı kapısı** → ⏳ **AÇIK, iki saha
+vakası** (20 Eylül 2026, kullanıcı: *"İnsanlar burada bounce ediyor, bu işi
+bir daha düşünmek lazım"*). Yedi alternatif ve önerilen sıra aşağıda, #32'de.
+
 **#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
 ✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
 doğrulandı; arşivde.
@@ -1027,6 +1031,14 @@ cihazda saklanan rastgele bir uuid üretilip `tutorial_events` ve
   `docs/decisions/admin-panel.md`, `docs/decisions/onboarding.md` ve
   `docs/testing-admin.md`'deki üç not birlikte güncellenmeli.
 
+**Saha kanıtı (20 Eylül 2026) — eksiklik bir vakada ISPATLANDI.** Bir
+oyuncunun "misafir oynadı → üye olmayı denedi" hunisi elle, zaman damgası
+eşleştirerek kurulmak zorunda kaldı: iOS'ta 01:02 `tutorial start`
+(`src=auto`, yani sıfırdan kurulum) · 01:05 `game_starts`
+(`is_guest=true`) · 01:24 ve 01:27 iki kayıt denemesi. Dört satırı bağlayan
+tek şey ZAMANDI — `anon_id` dördünde de NULL olduğu için sorgu kurulamadı,
+çıkarım elle yapıldı ve KANIT değil KARİNE. Vakanın tamamı #32'de.
+
 ---
 
 ## 31. Davet linki `use_count`'u gerçeğin ~12 katı — ✅ **YAPILDI** (sunucu 18 Eylül · istemci 19 Eylül 2026)
@@ -1161,6 +1173,97 @@ migration ise `mobile/` DEĞİŞMEZ, yani mobil derleme tetiklenmez ve sürüm
 dondurmasını beklemek gerekmez. İkinci iş (çift çağrı) web istemcisinde;
 portta `/davet` sayfası yok, token `friend_invite_inbox.dart` üzerinden tek
 yoldan giriyor — port ETKİLENMİYOR, ama düzeltilirse orada da ölçülmeli.
+
+---
+
+## 32. E-posta onayı bir kullanıcı kaybı kapısı — **AÇIK, iki saha vakası** (20 Eylül 2026)
+
+Kullanıcı: *"İnsanlar burada bounce ediyor, bu işi bir daha düşünmek
+lazım."*
+
+**İki vaka, ikisi de aynı gün konuşuldu:**
+
+1. Kullanıcının bir arkadaşı kaydolup onay beklemede kalmış; şahsen
+   hatırlatılınca *"Aa onay mı gerekiyordu"* demiş. Yani mail kutuya DÜŞTÜ,
+   kişi ne yapması gerektiğini bilmedi.
+2. 20 Eylül gecesi bir oyuncu (iOS, `1.1.0`) üç dakika arayla **İKİ** hesap
+   açtı, ikisi de onaysız kaldı. İkincisinin adresi `…@icloid.com` —
+   `icloud.com`un yazım hatası, yani o hesaba onay maili de 20. saatteki
+   hatırlatma da **hiç ulaşmayacak**, hesap 48. saatte sessizce silinecek.
+   Zaman çizgisi: 01:02 `tutorial start` (`src=auto`, sıfırdan kurulum) ·
+   01:05 misafir oyun · 01:24 ve 01:27 iki kayıt · 02:19 yine misafir oyun.
+   **Kişi uygulamayı bırakmadı, HESABI bırakamadı.**
+
+### Ölçüm — ve ölçümün kör noktası
+
+| | |
+|---|---|
+| Toplam hesap (28 Haziran 2026'dan beri) | 64 |
+| Onaylamış | 62 — **60'ı ilk 5 DAKİKA içinde** |
+| 1 saatten sonra onaylamış | 1 |
+| Şu an onaysız | 2 (yukarıdaki vaka) |
+
+İlk satırın dersi: onay ya **hemen** oluyor ya hiç. "Sonra hallederim" diye
+bir davranış YOK; pencere dakikalarla ölçülüyor. Metni büyütmek bu yüzden
+tek başına yetmiyor — kullanıcı o dakikaların içinde kayboluyor.
+
+⚠ **Gerçek kayıp oranı BİLİNMİYOR ve bugünkü şemayla BİLİNEMEZ:**
+`sweep-unconfirmed-accounts` 48. saatte hesabı SİLİYOR, yani "kaydoldu, hiç
+onaylamadı" nüfusu kanıtıyla birlikte yok oluyor. 64 sayısı hayatta
+kalanlar; ölenler hiçbir yerde sayılmıyor. **Hiçbir alternatifin işe
+yarayıp yaramadığı, A yapılmadan ölçülemez.**
+
+### Bugün ne var
+
+Web'de kalın+BÜYÜK uyarı (#561, canlıda) · portta hâlâ eski sessiz satır
+(#562, dondurulmuş PR) · 20. saatte tek seferlik hatırlatma · 48. saatte
+silme. İlk ikisi METİN: vaka 1 metnin yetmediğini gösteriyor (kişi maili
+gördü, yine de bilmedi), vaka 2 ise metnin hiç okunamadığı bir yol.
+
+### Alternatifler
+
+| # | Ne | Kazanç | Bedel / risk |
+|---|---|---|---|
+| **A** | **Ölçümü aç** — `sweep` silmeden ÖNCE anonim bir sayaç satırı yazsın (kayıt anı, platform, hatırlatma gitti mi) | Kayıp oranı nihayet SAYIYLA bilinir; sonraki her kararın öncesi/sonrası olur | Küçük migration + Edge; `mobile/` DIŞI → **dondurmayı beklemeden bugün yapılabilir** |
+| **B** | **Yazım hatası denetimi** — `icloid→icloud`, `gmial→gmail`, `hotmial→hotmail`…; "Bunu mu demek istediniz?" tek dokunuşla düzeltme | Vaka 2'yi tamamen keser; sessiz bounce sınıfını kapatır | Saf istemci, sunucu DEĞİŞMEZ. Web + port ikizi |
+| **C** | **Kayıt sonrası "bekleme odası"** — pencere kapanıp kullanıcıyı yalnız bırakmasın: adresi EKRANDA göster + "Maili aç" + "Yanlış adres mi? Değiştir" + "Tekrar gönder" (60 sn sayaç) + spam uyarısı | Vaka 1'in tam ilacı: ne yapılacağı, kullanıcı kapatana kadar ekranda DURUR. Adres ekranda olduğu için vaka 2'yi de yakalar | Orta: akış değişikliği, web + port |
+| **D** | **Link yerine 6 haneli KOD** (Supabase email OTP) | En büyük kazanç: kullanıcı UYGULAMADAN ÇIKMIYOR. Mobilde link→tarayıcı→uygulama dönüşü zaten kırılgan (#562'nin ikinci hatası tam buydu). Kod gelmezse kişi hâlâ orada ve adresi düzeltebilir | Kayıt akışının yeniden yazımı (web + port) + Supabase şablonuna `{{ .Token }}`. **Doğrulama KORUNUR** |
+| **E** | **Onaysız direkt üyelik** (`Confirm email` KAPALI) — kullanıcının önerisi | Kapı tamamen kalkar, bu kayıp sıfırlanır | ⚠ Aşağıda ayrı |
+| **F** | **Yumuşak onay** — hesap hemen açılır, ama onaylanana kadar **hiçbir bildirim maili gönderilmez** ve uygulamada küçük kalıcı bir "E-postanı doğrula" şeridi durur | E'nin kazancını verir, E'nin en pahalı riskini (bounce) ALMAZ | Mail gönderen HER yola bir kapı; `sweep` yeniden yazılır (artık silme yok) |
+| **G** | **#17 Google ile giriş** (zaten ertelenmiş) | Onay adımını tamamen atlar — Google adresi doğrulanmış verir | Ayrı ve büyük iş; bu vaka onun ÖNCELİĞİNİ yükseltiyor |
+
+### E'nin (onaysız direkt üyelik) bedeli — seçilecekse BİLEREK seçilsin
+
+- **Yanlış adres = kurtarılamayan hesap.** Parola sıfırlama tek kanal;
+  `icloid.com` yazan kişi cihaz değiştirdiğinde hesabını SONSUZA DEK
+  kaybeder. Bugün o hesap 48 saatte siliniyor ve kişi yeniden kaydolabiliyor
+  — yani bugünkü "sertlik" aynı zamanda bir emniyet kemeri.
+- **Bounce itibarı.** Proje çok mail atıyor (sıra bildirimi, arkadaşlık,
+  süre uyarısı, k-lig). Doğrulanmamış adreslere gönderim Brevo'da sert
+  bounce üretir ve bu **GERÇEK adreslere teslimatı da bozar** — teslimat bu
+  projede bir kez zaten kırıldı (`docs/decisions/supabase-ops.md`).
+  **F bu riski kapatıyor, saf E kapatmıyor.**
+- **Başkasının adresiyle kayıt** mümkün hale gelir: lider tablosunda görünen
+  bir takma ad + o adrese giden bildirimler.
+- **`sweep-unconfirmed-accounts` anlamını yitirir** — takma ad ve e-posta
+  serbest bırakma mekanizması baştan tasarlanmalı.
+
+### Öneri (sıra)
+
+1. **A + B önce.** İkisi de ucuz ve geri alınabilir; A olmadan sonraki
+   adımların işe yarayıp yaramadığı ölçülemez. A tamamen `mobile/` dışında,
+   yani **dondurma sürerken bile yapılabilir**; B'nin port ikizi dondurma
+   sonrasına kalır.
+2. **Sonra C** — akışın omurgasını değiştirmeden en çok kazandıran adım.
+3. **D ya da F bir SEÇİM, ikisi birden gerekmiyor:** doğrulamayı KORUMAK
+   istiyorsan D, kapıyı KALDIRMAK istiyorsan F. Saf E (F'siz) önerilmiyor —
+   yukarıdaki bounce zinciri yüzünden.
+4. **G** kendi sırasında; bu madde onun gerekçesine bir satır ekliyor.
+
+⚠ **Hepsi kayıt akışına dokunuyor** → `TESTING.md` ve `mobile/TESTING.md`'nin
+kayıt onayı maddeleri aynı PR'da güncellenir. ⚠ **C/D/F portu değiştirir →
+merge mobil derlemeyi TETİKLER** (`mobile-latest` ezilir, TestFlight'a build
+gider); sürüm dondurması bitmeden başlama.
 
 ---
 
