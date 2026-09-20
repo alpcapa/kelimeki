@@ -1,19 +1,34 @@
-// Kelimeki — admin paneli: "Aktif Saatler" yığılmış çubuk grafiği
-// (18 Eylül 2026, kullanıcı isteği: *"Admin oyun sayfasına Aktif Saatler bar
-// grafiği eklemek istiyorum. 2 saatlik dilimler olsun. Web, ios ve android
-// kırılımları olursa iyi olur. Oyun bitişleri baz alalım."*)
+// Kelimeki — admin paneli: platform kırılımlı YIĞILMIŞ ÇUBUK grafiği.
 //
-// NEDEN AYRI BİR BİLEŞEN, `GrowthChart` DEĞİL: `GrowthChart` bir ZAMAN
-// SERİSİ çizgi grafiği — x ekseni tarih (`bucket: string`), etiketleri
-// `toLocaleDateString` ile biçimliyor ve serileri üst üste BİNEN çizgiler
-// olarak çiziyor. Buradaki soru başka bir soru: 12 sabit kova ve segmentleri
-// TOPLANAN tek bir çubuk. Zorlanarak uydurulsaydı tarih biçimlendirmesi de
-// çizgi mantığı da yolda bozulurdu.
+// 18 Eylül 2026'da "Aktif Saatler" için yazıldı (kullanıcı isteği: *"Admin
+// oyun sayfasına Aktif Saatler bar grafiği eklemek istiyorum. 2 saatlik
+// dilimler olsun. Web, ios ve android kırılımları olursa iyi olur. Oyun
+// bitişleri baz alalım."*), 20 Eylül 2026'da **"Aktif Günler"** istenince
+// (*"Admin oyunda saatler gibi Aktif Günler bar chartı da koyabilir
+// miyiz?"*) kovadan bağımsız hale getirildi.
+//
+// ⚠ NEDEN İKİNCİ BİR BİLEŞEN YAZILMADI: iki grafiğin çizim kodu piksel
+// piksel aynı — 300 satırlık bir kopya, bu depoda tam olarak cezalandırılan
+// şey (bkz. kök `CLAUDE.md`: `Setup.tsx`in devam eden oyun kartı ile
+// `LiveGamesTab.tsx`in aynı kartı ayrıştı ve kullanıcı ikisini iki sekmede
+// yan yana gördü). Kova hakkında bilmesi gereken HER ŞEY prop olarak
+// geliyor: anahtar, tam etiket, eksen etiketi ve tablo/CSV başlığı.
+//
+// Kova SÖZLÜKLERİ (saat ve gün) bu dosyada, altta: grafiğin genel olması
+// etiket kurallarının dağılması anlamına gelmesin — ikisi de aynı yerde
+// okunuyor ve karşılaştırılabiliyor.
+//
+// NEDEN `GrowthChart` DEĞİL: `GrowthChart` bir ZAMAN SERİSİ çizgi grafiği —
+// x ekseni tarih (`bucket: string`), etiketleri `toLocaleDateString` ile
+// biçimliyor ve serileri üst üste BİNEN çizgiler olarak çiziyor. Buradaki
+// soru başka bir soru: sabit sayıda kova ve segmentleri TOPLANAN tek bir
+// çubuk. Zorlanarak uydurulsaydı tarih biçimlendirmesi de çizgi mantığı da
+// yolda bozulurdu.
 //
 // Görsel dil yine de `GrowthChart`ınkiyle BİREBİR: aynı viewBox (640×240),
 // aynı kenar boşlukları, aynı ızgara/metin renkleri, aynı "Tablo Görünümü" +
 // "CSV İndir" + `infoHint` üçlüsü, aynı padding-top oranı tekniği (bkz.
-// oradaki Safari notu). İki grafik aynı sekmede yan yana duruyor.
+// oradaki Safari notu). Grafikler aynı sekmede yan yana duruyor.
 //
 // ⚠ EFSANE TIKLANABİLİR DEĞİL — `GrowthChart`tan bilinçli ayrım. Orada seri
 // açıp kapatmak anlamlı (çizgiler bağımsız); burada segmentler `finished`e
@@ -22,13 +37,33 @@
 // anahtar.
 import { useRef, useState } from 'react';
 import type { ChartSeriesDef } from './GrowthChart';
-import type { AdminActiveHoursRow } from '../lib/database.types';
 import { downloadCsv } from '../utils/csvExport';
 
-interface ActiveHoursChartProps {
-  data: AdminActiveHoursRow[];
+/**
+ * Bileşenin kovadan bağımsız olarak İHTİYAÇ DUYDUĞU tek alan. Segment
+ * kolonları (`finished_web` gibi) `series` üzerinden ADLA okunuyor, yani
+ * tipte sayılmıyorlar — kova tipleri (`AdminActiveHoursRow`,
+ * `AdminActiveDaysRow`) onları kendi tanımlarında tutuyor.
+ */
+export interface StackedBucketRow {
+  finished: number;
+}
+
+interface StackedBucketChartProps<T extends StackedBucketRow> {
+  data: T[];
   /** Yığılma sırası: dizinin İLK öğesi en ALTTA çizilir. */
   series: ChartSeriesDef[];
+  /** React `key`i ve kovanın kimliği. */
+  bucketKey: (row: T) => string | number;
+  /** Kovanın TAM etiketi — tooltip, tablo ve CSV'de görünen. */
+  bucketLabel: (row: T) => string;
+  /**
+   * X ekseni etiketi. `null` dönerse o kova için etiket ÇİZİLMEZ — kalabalık
+   * eksende (12 saat dilimi) kovaların bir bölümünü atlamak için.
+   */
+  axisLabel: (row: T) => string | null;
+  /** Tablo ve CSV'nin ilk kolon başlığı — "Saat" / "Gün". */
+  bucketHeader: string;
   /** Bölüm başlığı (+ varsa kontroller) — CSV/tablo linkleriyle aynı satırda. */
   controls?: React.ReactNode;
   csvBaseName?: string;
@@ -42,8 +77,8 @@ const PLOT_H = H - PAD.top - PAD.bottom;
 /** Çubuklar arası boşluğun banda oranı. */
 const BAR_GAP = 0.28;
 
-function valueOf(row: AdminActiveHoursRow, key: string): number {
-  const v = (row as unknown as Record<string, unknown>)[key];
+function valueOf(row: unknown, key: string): number {
+  const v = (row as Record<string, unknown>)[key];
   return typeof v === 'number' ? v : 0;
 }
 
@@ -67,8 +102,10 @@ function niceCeil(n: number): number {
   return niceNorm * base;
 }
 
+// ── Kova sözlükleri ─────────────────────────────────────────────────────────
+
 /** `0` → `"00–02"`. Tire değil EN DASH (–) — aralık işareti. */
-function hourBucketLabel(hourStart: number): string {
+export function hourBucketLabel(hourStart: number): string {
   const bit = (hourStart + 2) % 24;
   const iki = (n: number) => String(n).padStart(2, '0');
   // 22 diliminin ucu "00" değil "24" yazılır: "22–00" bir sonraki güne
@@ -76,13 +113,51 @@ function hourBucketLabel(hourStart: number): string {
   return `${iki(hourStart)}–${hourStart === 22 ? '24' : iki(bit)}`;
 }
 
-export function ActiveHoursChart({
+/**
+ * Saat ekseni: 12 etiket 640 px'de kalabalık olduğundan yalnızca dört saatlik
+ * adımlar (00 · 04 · 08 · 12 · 16 · 20) yazılıyor — kova aralığının TAMAMI
+ * zaten tooltip'te ve tabloda.
+ */
+export function hourAxisLabel(hourStart: number): string | null {
+  return hourStart % 4 === 0 ? String(hourStart).padStart(2, '0') : null;
+}
+
+/**
+ * Haftanın günü — `isodow` (1=Pazartesi … 7=Pazar), Postgres'in `dow`u
+ * DEĞİL. Sunucu tarafındaki gerekçe migration'da yazılı
+ * (`20260920151346_admin_active_days`): `dow` haftayı Pazar'dan açar ve
+ * hafta sonunu grafiğin iki ucuna dağıtır.
+ *
+ * ⚠ Etiketler ELDE yazılı, `toLocaleDateString('tr-TR', { weekday })` ile
+ * DEĞİL: o yol bir tarih nesnesi uydurmayı (hangi hafta?) ve tarayıcının
+ * ICU verisine güvenmeyi gerektirirdi — aynı panelde iki tarayıcıda iki
+ * farklı kısaltma çıkabilir. Yedi sabit dize daha az sürprizli.
+ */
+const GUN_TAM = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+const GUN_KISA = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+
+export function dayBucketLabel(dow: number): string {
+  return GUN_TAM[dow - 1] ?? String(dow);
+}
+
+/** Yedi etiket 640 px'e rahat sığıyor — saat ekseninin aksine hiçbiri atlanmaz. */
+export function dayAxisLabel(dow: number): string | null {
+  return GUN_KISA[dow - 1] ?? String(dow);
+}
+
+// ── Bileşen ─────────────────────────────────────────────────────────────────
+
+export function StackedBucketChart<T extends StackedBucketRow>({
   data,
   series,
+  bucketKey,
+  bucketLabel,
+  axisLabel,
+  bucketHeader,
   controls,
   csvBaseName,
   infoHint,
-}: ActiveHoursChartProps) {
+}: StackedBucketChartProps<T>) {
   const [showTable, setShowTable] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -120,9 +195,9 @@ export function ActiveHoursChart({
   function handleExportCsv() {
     downloadCsv(
       `${csvBaseName}-${new Date().toISOString().slice(0, 10)}.csv`,
-      ['Saat', 'Bitirilen', ...series.map((s) => s.label)],
+      [bucketHeader, 'Bitirilen', ...series.map((s) => s.label)],
       data.map((row) => [
-        hourBucketLabel(row.hour_start),
+        bucketLabel(row),
         row.finished,
         ...series.map((s) => valueOf(row, s.key)),
       ]),
@@ -173,7 +248,7 @@ export function ActiveHoursChart({
           <table className="w-full text-[11px] font-mono border-collapse">
             <thead>
               <tr className="text-left text-muted border-b border-border sticky top-0 bg-panel">
-                <th className="py-1.5 pr-3 font-bold">Saat</th>
+                <th className="py-1.5 pr-3 font-bold">{bucketHeader}</th>
                 <th className="py-1.5 pr-3 font-bold text-right">Bitirilen</th>
                 {series.map((s) => (
                   <th key={s.key} className="py-1.5 pr-3 font-bold text-right last:pr-0">
@@ -184,10 +259,8 @@ export function ActiveHoursChart({
             </thead>
             <tbody>
               {data.map((row) => (
-                <tr key={row.hour_start} className="border-b border-border/50">
-                  <td className="py-1.5 pr-3 text-text whitespace-nowrap">
-                    {hourBucketLabel(row.hour_start)}
-                  </td>
+                <tr key={bucketKey(row)} className="border-b border-border/50">
+                  <td className="py-1.5 pr-3 text-text whitespace-nowrap">{bucketLabel(row)}</td>
                   <td className="py-1.5 pr-3 text-text text-right font-bold">{row.finished}</td>
                   {series.map((s) => (
                     <td key={s.key} className="py-1.5 pr-3 text-text text-right last:pr-0">
@@ -232,7 +305,7 @@ export function ActiveHoursChart({
                 // segmentin tabanı.
                 let acc = 0;
                 return (
-                  <g key={row.hour_start}>
+                  <g key={bucketKey(row)}>
                     {hoverIndex === i && (
                       <rect
                         x={bandX(i)}
@@ -264,24 +337,24 @@ export function ActiveHoursChart({
                 );
               })}
 
-              {/* Saat etiketleri: 12 etiket 640 px'de kalabalık olduğundan
-                  yalnızca çift dilimler (00 · 04 · 08 · 12 · 16 · 20)
-                  yazılıyor — kova aralığının TAMAMI zaten tooltip'te ve
-                  tabloda. */}
-              {data.map((row, i) =>
-                row.hour_start % 4 === 0 ? (
+              {/* Eksen etiketleri — hangi kovanın yazılacağına `axisLabel`
+                  karar veriyor (`null` → atla). Saat ekseni kalabalık olduğu
+                  için bir bölümünü atlıyor, gün ekseni hepsini yazıyor. */}
+              {data.map((row, i) => {
+                const etiket = axisLabel(row);
+                return etiket === null ? null : (
                   <text
-                    key={row.hour_start}
+                    key={bucketKey(row)}
                     x={bandX(i) + band / 2}
                     y={H - 4}
                     textAnchor="middle"
                     fontSize={12}
                     fill="#8A93A2"
                   >
-                    {String(row.hour_start).padStart(2, '0')}
+                    {etiket}
                   </text>
-                ) : null,
-              )}
+                );
+              })}
             </svg>
 
             {hover && hoverIndex !== null && (
@@ -302,7 +375,7 @@ export function ActiveHoursChart({
                         : 'translateX(-50%)',
                 }}
               >
-                <div className="text-muted mb-1">{hourBucketLabel(hover.hour_start)}</div>
+                <div className="text-muted mb-1">{bucketLabel(hover)}</div>
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="font-bold text-text text-[12px]">{hover.finished}</span>
                   <span className="text-muted">Bitirilen</span>

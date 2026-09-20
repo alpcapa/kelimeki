@@ -130,7 +130,7 @@ src/
 │   ├── AdminChatTranscriptModal.tsx # admin paneli Şikayetler sekmesi: bitmiş bir Canlı oyunun tam sohbet dökümü
 │   ├── PlayerScoreCard.tsx      # bir oyuncunun ScoreCard'ının salt-okunur görünümü (admin panelinden ve k-lig'den açılır)
 │   ├── GrowthChart.tsx          # admin büyüme grafiği (generic zaman serisi çizgi grafiği)
-│   ├── ActiveHoursChart.tsx     # admin "Aktif Saatler" grafiği (2 saatlik dilimler, platform kırılımıyla yığılmış çubuk)
+│   ├── StackedBucketChart.tsx  # admin yığılmış çubuk grafiği — "Aktif Saatler" (2 saatlik dilimler) VE "Aktif Günler" (haftanın günleri) ortak kullanıyor; kova sözlükleri de burada
 │   ├── PrivacyModal.tsx         # gizlilik politikası
 │   ├── TermsModal.tsx           # kullanım koşulları
 │   ├── Modal.tsx                # paylaşılan modal kabuğu
