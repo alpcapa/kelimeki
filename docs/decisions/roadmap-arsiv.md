@@ -25,8 +25,172 @@
 > ⚠ Bu dosya artık kendi uyarı bandında (200 KB / 300 KB): bir sonraki
 > dokunuşta ya bayat anlatı budanmalı ya da bir CİLT dondurulmalı (aday
 > kesme noktası: sürüm turları ↔ kapanmış maddeler).
+>
+> **Üçüncü taşıma: 20 Eylül 2026.** Taşınanlar: **madde 31 (davet linki
+> `use_count`'u)**, sunucu 18 · istemci 19 Eylül'de kapandığı için; ve
+> **madde 24'ün ROADMAP'te kalan kapanış özeti** — gövdesi 15 Eylül'de
+> buraya gelmişti ama başlık hâlâ *"YÜRÜYOR"* diyordu, yani arşivin kendisi
+> bayattı. ⚠ Ders: bir maddeyi taşırken ARŞİVDEKİ başlığın durumunu da
+> güncelle; yoksa iki yerde iki farklı gerçek kalır (aynı hata Play özet
+> tablosunda yaşanmıştı). Sınıf bandı bu arada 200/300'den **260/400
+> KB**'a çıktı (bkz. kök `CLAUDE.md` → "Doküman Boyutu Bütçesi"), yani
+> yukarıdaki ⚠ artık geçerli değil. Bu taşımadan sonra: ROADMAP 113 →
+> **104 KB**, bu dosya 244 → **254 KB** — uyarıya (260 KB) **6 KB** kaldı,
+> yani BİR SONRAKİ taşımada önce bayat anlatı budanmalı ya da bir cilt
+> dondurulmalı (aday kesme noktası değişmedi: sürüm turları ↔ kapanmış
+> maddeler).
 
-## 24. FAZ C — App Store yayını — **YÜRÜYOR** (8 Eylül 2026)
+## 31. Davet linki `use_count`'u gerçeğin ~12 katı — ✅ **YAPILDI** (sunucu 18 Eylül · istemci 19 Eylül 2026)
+
+Kullanıcı yeni bir üyenin (Serbay → nadidesultan) linkten gelip gelmediğini
+sordu. Arkadaşlık doğruydu (`friend_requests` = `accepted`, `invited_by`
+dolu), ama satırın iki zaman damgası uyuşmuyordu: `created_at` 15:17:51,
+`responded_at` 15:17:56. `accept_friend_invite` tek çağrıda ikisini de
+`now()` yazar — beş saniyelik fark, fonksiyonun **iki kez** çağrıldığını
+söylüyor (ilki `insert`, ikincisi `exists` dalına düşüp `responded_at`'i
+tazeledi). Her çağrı `use_count`'u bir artırdığı için sayaç tek davetliye
+**2** yazdı.
+
+**Canlıdan ölçüldü — sapma tek vakaya özgü DEĞİL, beş linkin beşinde de var:**
+
+| Link sahibi | `use_count` | `invited_by` ile atfedilen kişi | Link tarihi |
+|---|---|---|---|
+| Asnmzr | **84** | 2 | 3 Eyl 2026 |
+| Zesiner | **32** | 4 | 27 Tem 2026 |
+| Ironman | 9 | 4 | 26 Tem 2026 |
+| Serbay | 2 | 1 | 18 Eyl 2026 |
+| Minka | 1 | 0 | 28 Tem 2026 |
+| **Toplam** | **128** | **11** | — |
+
+Yani sayaç bugünkü hâliyle "bu linkle kaç kişi geldi" DEĞİL, **"oturumu açık
+biri bu linke kaç kez tıkladı"** ölçüyor: zaten arkadaş olmuş biri linki her
+açtığında `exists` dalı çalışıyor ve sayaç bir daha artıyor. 84/2 oranı bunu
+tek başına gösteriyor.
+
+⚠ **Bugün hiçbir şeyi bozmuyor** — `use_count` repoda hiçbir yerde OKUNMUYOR
+(`grep use_count` → yalnızca migration'daki yazma + iki yorum satırı).
+Arkadaşlığın kendisi doğru kuruluyor, fonksiyon idempotent. Bu madde bir
+hata raporu değil, **metrik kurulmadan önce ödenecek bir borç**: admin
+Büyüme panelinde "arkadaş daveti ile gelen kayıt" kartı `use_count`'a
+bakarak yazılırsa rakam ilk günden ~12 kat şişik doğar.
+
+✅ **SUNUCU YARISI AYNI GÜN KAPANDI — migration `20260918154109` + `20260918155030`, ikisi de canlıda.**
+`accept_friend_invite` idempotent: taraflar zaten `accepted` ise çağrı **tam
+no-op** (sayaç artmaz, `responded_at` tazelenmez, `invited_by`'a dokunulmaz).
+Ayrıca yarış sertleştirmesi var (var olan satır `for update` ile kilitleniyor,
+ekleme `on conflict do nothing` + `found` kontrolüyle yapılıyor), yani iki
+EŞZAMANLI çağrıdan da yalnızca biri sayar. Dönen `inviter_name` ve üç `P0001`
+reddi AYNEN korundu — iki istemci de yalnızca bu ikisine baktığından davranış
+değişmedi.
+
+⚠ **İKİNCİ TUR GEREKTİ — ilk migration bir BELİRSİZLİK soktu.** İlk sürüm
+tek satır okuyordu (`select fr.status into v_status`), oysa `friend_requests`'te
+aynı ikili için İKİ YÖNLÜ satır olabiliyor (`sendFriendRequest` düz `insert`,
+PK `(user_id, friend_id)` ters yönü engellemez) ve canlıda bir örneği var.
+Karışık durumda (biri `accepted`, biri `pending`) hangi satırın okunacağı
+belirsizdi; eski kod bu yönden deterministikti. `20260918155030` kararı
+`bool_or(status = 'accepted')`e bağladı — satırların tamamı kilitlenir, soru
+tek ve kesin cevaplanır; kalıntı `pending` satırı da eski davranıştaki gibi
+normalize edilir (sayaç yine artmadan). **Canlıdaki tek çift yönlü ikili
+`accepted`/`accepted` olduğu için hiçbir kullanıcı etkilenmedi.**
+
+**Canlıda ölçülen YEDİ yol** (hepsi ikinci migration'dan SONRA, gerçek veriyle;
+yazanlar geri sarılan alt-işlemlerde):
+
+| Yol | Sonuç |
+|---|---|
+| A) `pending` ileri yön (davet eden → çağıran) | kabul + sayaç **+1** |
+| B) `pending` ters yön (çağıran → davet eden) | kabul + sayaç **+1** |
+| C) karışık çift yön (`accepted` + `pending`) | sayaç **SABİT**, kalıntı normalize, `accepted` satırın damgası korundu |
+| D) zaten arkadaş — **gerçek çağrı, geri sarmasız** | `use_count` **2 → 2**, damga sabit, dönen ad `Serbay` (öncesinde 3 olurdu) |
+| E) mutlu yol (hiç satır yok) | sayaç **+1**, satır `accepted` |
+| F) üst üste **İKİ** çağrı (asıl vaka) | ikisi de no-op, sayaç sabit |
+| G) üç ret (oturum yok · kendi linki · geçersiz token) | üçü de `P0001`, **metinler birebir** |
+
+Ayrıca `insert … on conflict do nothing` sonrası `found` semantiği geçici
+tabloyla ölçüldü (ekleme `true`, çakışma `false`) — yanlış olsaydı gerçek
+kabuller SESSİZCE sayılmaz olurdu.
+
+Test sonrası çevre sağlaması: 49 ilişki · `use_count` toplam 128 · atfedilen 11
+· çift yönlü ikili 1 (dokunulmadı) · yetkiler değişmedi (`anon` yok) · kaçak
+JWT ayarı yok.
+
+⚠ **Geçmiş değerler DÜZELTİLMEDİ** ve düzeltilemez (tıklama başına iz yok):
+canlıdaki 128 olduğu gibi duruyor, kolon yorumu kesim tarihini yazıyor.
+Büyüme kartı yazılırsa sayı `profiles.invited_by`'dan okunmalı.
+
+✅ **İSTEMCİ YARISI DA KAPANDI (19 Eylül 2026).** Çift çağrının penceresi
+SIRA hatasıydı: `/davet/:token` sayfası kuyruğu `.then()` içinde
+temizliyordu, yani token RPC uçarken kuyrukta DURUYORDU. O pencerede
+uygulamanın köküne düşen biri (doğrulama linki, yeni sekme, sayfayı kapatıp
+dönme) `App.tsx`'in fallback'ini tetikliyor ve aynı token ikinci kez
+gidiyordu. Temizlik çağrının ÖNÜNE alındı.
+
+⚠ **Çift yol KALDIRILMADI** (ROADMAP'in kendi uyarısı) — varlık sebebi
+gerçek. Ve erken temizlik kurtarma yolunu kesmesin diye: **geçici** arızada
+token kuyruğa GERİ konuyor (`storePendingInviteToken` catch içinde), kalıcı
+rette (P0001) konmuyor — ikinci deneme aynı reddi alır ve kuyruk sonsuza dek
+dolu kalırdı. Sayfadaki "Tekrar Dene" zaten bellekteki `token` ile çalışıyor,
+ondan etkilenmiyor.
+
+**Kapı: `npm run verify-invite-queue`** (CI'da) — sıra kuralını, kurtarma
+yolunu ve çift yolun DURDUĞUNU kaynaktan sınar. Duyarlılığı düzeltme geri
+alınarak kanıtlandı (düzeltmesiz DÜŞÜYOR).
+
+⚠ Port ETKİLENMEDİ: portta `/davet` sayfası yok, token `friend_invite_inbox.dart`
+üzerinden tek yoldan giriyor.
+
+**İki ayrı iş, karıştırma:**
+
+1. ~~**Sayacın anlamı**~~ → ✅ **YAPILDI** (yukarı). Seçilen yol: sayaç
+   "bu linkle KURULAN arkadaşlık" anlamına sabitlendi; ikinci ve sonraki
+   çağrılar sayılmıyor. Eski metin referans için bırakıldı:
+   **Sayacın anlamı** (asıl iş). Ya `use_count` artışı yalnızca `invited_by`
+   o çağrıda İLK KEZ dolduğunda yapılsın (sayaç "benzersiz davetli"ye
+   dönüşür — metriğin istediği sayı budur), ya da sayaç olduğu gibi bırakılıp
+   metrik doğrudan `profiles.invited_by`'dan okunsun ve `use_count` "tıklama"
+   olarak yeniden adlandırılsın. ⚠ Geriye dönük düzeltme: mevcut 128 sayısı
+   kurtarılamaz, çünkü tıklama başına iz tutulmuyor — `invited_by` sayımı (11)
+   tek güvenilir taban.
+2. **Çift çağrının kendisi.** `/davet/:token` sayfasının kendi otomatik kabulü
+   ile `App.tsx`'teki `localStorage` kuyruğu fallback'i (ikisi de
+   `docs/decisions/friends.md`'de tarifli, e-posta doğrulaması yüzünden
+   oturumun geç açılma riskine karşı BİLEREK çift yol) aynı token'ı arka
+   arkaya işliyor olabilir. Kuyruk `read-then-clear` desenli, yani çağrı ile
+   temizleme arasındaki pencere dar ama sıfır değil. ⚠ Çift yolu KALDIRMA —
+   varlık sebebi gerçek; yapılacaksa token çağrıdan ÖNCE temizlenmeli.
+
+⚠ **Yan etki, atlanmasın:** ikinci çağrı `responded_at`'i de tazeliyor ve
+`fetchFriends` (`list_friends`) listeyi `responded_at desc` ile döndürüyor —
+yani linke tekrar tıklayan eski bir arkadaş, listede yeniden "en yeni"ye
+çıkıyor. İstemci zaten `trCompare` ile yeniden sıralıyor (bkz. kök
+`CLAUDE.md`, "Türkçe Dil Notu"), o yüzden kullanıcıya YANSIMIYOR — ama
+sunucunun sırasına güvenen yeni bir yüzey yazılırsa yansır.
+
+⚠ **Kapsam: yalnızca SUNUCU** (`accept_friend_invite`). Düzeltme bir
+migration ise `mobile/` DEĞİŞMEZ, yani mobil derleme tetiklenmez ve sürüm
+dondurmasını beklemek gerekmez. İkinci iş (çift çağrı) web istemcisinde;
+portta `/davet` sayfası yok, token `friend_invite_inbox.dart` üzerinden tek
+yoldan giriyor — port ETKİLENMİYOR, ama düzeltilirse orada da ölçülmeli.
+
+---
+
+## 24. FAZ C — App Store yayını — ✅ **KAPANDI: UYGULAMA YAYINDA** (15 Eylül 2026)
+
+✅ **Altı fazın altısı da kapandı ve `1.1.0 (665)` 15 Eylül 2026 06:02'de App
+Store'da yayına alındı** (vitrin ~06:39'da kullanıcı tarafından görüldü ve
+indirildi). Başlık AYNEN korundu, yani koddaki ve dokümanlardaki
+`ROADMAP.md → #24 FAZ C` atıfları (ör. `mobile/app/lib/src/data/push_init.dart`,
+`mobile/docs/test-ortamlari.md`) karşılığını BURADA bulur; `ROADMAP.md`'de
+yalnızca "tek bakışta" tablosunun indeks satırı kaldı.
+
+**Cevap kâğıdı taşınmadı, yerinde:** `marketing/app-store/console-formlari.md`
+(§ durum tablosu) — Console'da neyin yapıldığını yazan tek kaynak orası.
+
+⚠ **Kapanan şey FAZ C, App Store işi DEĞİL.** Yayındaki sürümün bakımı,
+sonraki gönderimler ve inceleme yazışmaları `console-formlari.md`'den
+yürür; §26'nın Apple yarısı da bu yayınla açıldı ve YAPILDI (§26 ROADMAP'te
+AÇIK kaldı: Android yarısı bekliyor).
 
 **Bu bölüm bir İNDEKS. Kaynak: `marketing/app-store/console-formlari.md`** —
 Console cevapları, kararlar, ölçümler ve tuzaklar orada; burada yalnızca
@@ -568,6 +732,7 @@ kabul edilebilir değil.
 
 | Ne | Kapanış |
 |---|---|
+| Madde 31 · **Davet linki `use_count`'u gerçeğin ~12 katı** — `accept_friend_invite` idempotent (iki migration) + `/davet` kuyruğu çağrıdan ÖNCE temizleniyor; kapı `verify-invite-queue` | 18-19 Eylül 2026 |
 | Madde 24 · **FAZ C — App Store yayını**, altı fazın tamamı (hesap/kimlik · Mac'siz imzalama + TestFlight · APNs · Universal Links · vitrin + kare boru hattı · gönderim); `1.1.0 (665)` yayında | 15 Eylül 2026 |
 | Güvenlik geçişi #19-#20 — `anon` telemetri yazımı · `CRON_SECRET` fail-open (ikisi de ölçülüp kabul edildi; #18 ve #22 ROADMAP'te AÇIK) | 5 Eylül 2026 |
 | Madde 24 · Onboarding — "Oynayarak öğren" tanıtımı, BEŞ fazın tamamı (senaryo · bağlamsal ipuçları · tekrar izleme · port ikizi · ölçüm) | 8 Eylül 2026 |
