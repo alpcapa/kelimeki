@@ -42,6 +42,7 @@ import type {
   AdminAppVersionRow,
   AdminPushVersionRow,
   AdminClientErrorRow,
+  AdminSignupFunnelRow,
   AdminTutorialFunnelRow,
   AdminSourceFunnelRow,
   AdminDeviceBreakdownRow,
@@ -2646,6 +2647,59 @@ export async function logTutorialEvent(
   if (error) {
     console.error('[Kelimeki] logTutorialEvent hatası:', error.message);
   }
+}
+
+/**
+ * Kayıt hunisinin anonim sayacı (ROADMAP #32'nin ölçüm boşluğu).
+ *
+ * `'started'` = kayıt FORMU görüldü, `'completed'` = hesap OLUŞTU (oturum
+ * açıldıysa da, e-posta onayı bekleniyorsa da). Adlar ve anlamları portun
+ * Firebase Analytics olaylarıyla (`signup_started`/`signup_completed`,
+ * `ui/auth/auth_modal.dart`) BİREBİR aynı tutuldu — port bir gün bu tabloya
+ * da yazarsa iki taraf tek huniye düşsün diye.
+ *
+ * ⚠ **Kimlik YOK, bilerek:** `anon_id` de `user_id` de yazılmıyor. Gizlilik
+ * metni (`src/legal/LegalContent.tsx`) anonim cihaz kodunun sunucuya "DÖRT
+ * durumda" gönderildiğini SAYIYOR; beşinci bir durum o metni, dolayısıyla
+ * portun birebir kopyasını (`legal_modals.dart`, tazeliği
+ * `test/legal_text_test.dart` ile ölçülüyor) değiştirmeyi gerektirirdi.
+ * Kimliksiz sayaç aynı soruyu metne hiç dokunmadan cevaplıyor.
+ *
+ * Telemetri asla akışı bozmaz: hata yalnızca konsola yazılır (`logGameStart`
+ * ile aynı sözleşme) — kayıt olmaya çalışan biri bizim sayacımız yüzünden
+ * hata görmemeli.
+ */
+export async function logSignupEvent(
+  event: 'started' | 'completed',
+  channel: 'direct' | 'form',
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from('signup_events').insert({
+    event,
+    channel,
+    // `logTutorialEvent` ile aynı sözleşme: web'de `app_version` BİLEREK
+    // null (web'in sürümü derleme sha'sıyla zaten tekil).
+    platform: CLIENT_PLATFORM,
+    app_version: null,
+  });
+  if (error) {
+    console.error('[Kelimeki] logSignupEvent hatası:', error.message);
+  }
+}
+
+/**
+ * Kayıt hunisi: son `days` gün içinde kanal başına form açan → hesap kuran
+ * (yalnızca admin — Büyüme > Kullanıcı). Sözleşme: `AdminSignupFunnelRow`.
+ */
+export async function fetchAdminSignupFunnel(days = 30): Promise<AdminSignupFunnelRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_signup_funnel', { p_days: days });
+  if (error) {
+    // Admin panelindeki .catch(setError) zinciri buna güveniyor — hatayı
+    // yutup boş dizi dönmek gerçek bir RPC/izin hatasını gizlerdi.
+    rethrowSupabase(error);
+  }
+  return (data as AdminSignupFunnelRow[]) ?? [];
 }
 
 /**

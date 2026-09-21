@@ -15,6 +15,7 @@ import {
   fetchAdminActiveHours,
   fetchAdminActiveDays,
   fetchAdminSourceFunnel,
+  fetchAdminSignupFunnel,
   fetchAdminTutorialFunnel,
   fetchAdminDeviceBreakdown,
   fetchAdminDeviceModelBreakdown,
@@ -48,6 +49,7 @@ import type {
   AdminActiveHoursRow,
   AdminActiveDaysRow,
   AdminSourceFunnelRow,
+  AdminSignupFunnelRow,
   AdminTutorialFunnelRow,
   AdminAppVersionRow,
   AdminPushVersionRow,
@@ -388,6 +390,30 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <br />
         Hücre tonu yalnızca ikincil bir işaret; oran her hücrede sayıyla da yazıyor. CSV yüzde
         değil HAM SAYI indirir (yuvarlama kaybı olmasın diye — payda "Üye" sütununda).
+      </>
+    ),
+  },
+  'kayit-hunisi': {
+    title: 'Kayıt Hunisi',
+    body: (
+      <>
+        Kayıt formunu AÇAN ile hesabı OLUŞTURAN sayısı, kanal başına
+        (<b>Doğrudan</b> = kayıt kapısı, <b>Form</b> = Görüş Bildir formundan
+        gelen). <b>Oran</b> = Tamamlama / Açılış.
+        <br />
+        Bu kart <b>ADET</b> sayar, kişi değil: sayaç bilerek kimliksiz
+        (<code>signup_events</code> tablosunda ne <code>anon_id</code> ne{' '}
+        <code>user_id</code> var), çünkü gizlilik metnindeki "anonim kod DÖRT
+        durumda gönderilir" cümlesine beşinci bir durum eklemek istemedik. Aynı
+        kişi formu iki kez açarsa iki kez sayılır.
+        <br />
+        ⚠ <b>Yalnızca web.</b> Port aynı olayları (<code>signup_started</code>/
+        <code>signup_completed</code>) Firebase Analytics'e yazıyor, bu tabloya
+        değil — bu yüzden "Tamamlama" da <code>profiles</code>tan değil aynı
+        tablodan okunuyor (payda web, pay web+mobil olsaydı oran sahte çıkardı).
+        <br />
+        ⚠ "Tamamladı" = hesap oluştu demek, <b>e-postasını onayladı demek
+        DEĞİL</b>. Onay kaybı ayrı bir soru (ROADMAP #32).
       </>
     ),
   },
@@ -1525,6 +1551,61 @@ function DeviceBrandTable({
  * satır. Kasten KÜÇÜK: `SourceFunnelTable`'ın yüzde kipi/CSV'si burada yok,
  * çünkü tablo en çok iki satır ve altı sayı taşıyor.
  */
+function SignupFunnelTable({
+  rows,
+  infoHint,
+}: {
+  rows: AdminSignupFunnelRow[] | null;
+  infoHint?: ReactNode;
+}) {
+  // Boş/yüklenirken de `?` çizilir (öteki tablolarla aynı gerekçe).
+  if (rows === null || rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta veri yok.'}
+        </div>
+      </div>
+    );
+  }
+  const etiket = (channel: string) =>
+    channel === 'form' ? 'Form' : channel === 'direct' ? 'Doğrudan' : 'Bilinmiyor';
+  return (
+    <div className="flex flex-col gap-1.5">
+      {infoHint && <div className="self-end">{infoHint}</div>}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs font-mono">
+          <thead>
+            <tr className="text-muted border-b border-border">
+              <th className="text-left py-1 pr-2 font-normal">Kanal</th>
+              <th className="text-right py-1 px-2 font-normal">Açılış</th>
+              <th className="text-right py-1 px-2 font-normal">Tamamlama</th>
+              <th className="text-right py-1 pl-2 font-normal">Oran</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const oran =
+                row.starts > 0 ? Math.round((row.completions / row.starts) * 100) : null;
+              return (
+                <tr key={row.channel} className="border-b border-border/50">
+                  <td className="text-left py-1 pr-2 text-text">{etiket(row.channel)}</td>
+                  <td className="text-right py-1 px-2 text-text">{row.starts}</td>
+                  <td className="text-right py-1 px-2 text-text">{row.completions}</td>
+                  <td className="text-right py-1 pl-2 text-text">
+                    {oran === null ? '—' : `%${oran}`}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function TutorialFunnelTable({
   rows,
   infoHint,
@@ -2254,6 +2335,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [userGranularity, setUserGranularity] = useState<AdminActivityGranularity>('day');
   const [userPeriod, setUserPeriod] = useState<number>(30);
   const [sourceFunnel, setSourceFunnel] = useState<AdminSourceFunnelRow[] | null>(null);
+  const [signupFunnel, setSignupFunnel] = useState<AdminSignupFunnelRow[] | null>(null);
   const [tutorialFunnel, setTutorialFunnel] = useState<AdminTutorialFunnelRow[] | null>(null);
   const [deviceBreakdown, setDeviceBreakdown] = useState<AdminDeviceBreakdownRow[] | null>(null);
   const [deviceModels, setDeviceModels] = useState<AdminDeviceModelRow[] | null>(null);
@@ -2435,6 +2517,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     Promise.all([
       fetchAdminUserActivitySeries(userPeriod, userGranularity).then(setUserActivity),
       fetchAdminSourceFunnel(days).then(setSourceFunnel),
+      fetchAdminSignupFunnel(days).then(setSignupFunnel),
       fetchAdminTutorialFunnel(days).then(setTutorialFunnel),
       fetchAdminDeviceBreakdown(days).then(setDeviceBreakdown),
       fetchAdminDeviceModelBreakdown(days).then(setDeviceModels),
@@ -3502,6 +3585,15 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <SourceFunnelTable
                       rows={sourceFunnel}
                       infoHint={<InfoHint id="kaynak-hunisi" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Kayıt Hunisi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <SignupFunnelTable
+                      rows={signupFunnel}
+                      infoHint={<InfoHint id="kayit-hunisi" onOpen={setHint} />}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
