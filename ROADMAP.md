@@ -186,6 +186,58 @@ uzun süre kalan işi *"APNs anahtarını yükle + Push capability"* kadar
 gösterdi; ölçüm daha büyük çıktı (imzalama zinciri, entitlements, AASA,
 vitrin) — tahmin, kaynak okunarak düzeltildi.
 
+## Dondurulmuş port PR'ları — merge turu SIRASI (21 Eylül 2026)
+
+Play production incelemesi (#19) kapanınca girecek yedi PR. Önerilen sıra:
+**#565 → #562 → #579 → #576 → #554 → #557 → #547**.
+
+Sıra tahmin DEĞİL, ölçüldü (`main` = `3a55492`): yedisinin başı çekilip
+`merge-tree` ile tek tek denendi, sonra ayrı bir çalışma ağacında *"her
+adımda temiz birleşenler arasından, sonrasında en çok PR'ı temiz bırakanı
+seç"* diyen ileriye bakan bir simülasyon koşuldu.
+
+⚠ **"Çakışmasızları öne al" İŞE YARAMIYOR — denendi ve elendi.** Bugünkü
+`main`'e karşı üçü temiz (#557, #576, #579), ama bu özellik ilk merge'ü
+yaşamıyor: altı PR `mobile/docs/parca-log.md`'ye, altısı
+`mobile/TESTING.md`'ye ekleme yapıyor. Hangisi önce girerse KALAN ALTISI
+çakışıyor — simülasyonda en iyi adayın skoru bile **0**. Yani sıra
+çakışmayı önlemiyor, yalnızca kimin bedava geçeceğini seçiyor. Ölçüt bu
+yüzden "çakışmasız" değil, **küçükten büyüğe**: her çözüm olabildiğince
+küçük kalsın, en geniş iki PR temiz zemine otursun.
+
+⚠ **"Mobil tetiklemeyenleri öne al" seçeneği de YOK:** yedisi de
+`mobile/app` ya da `mobile/kelimeki_core` altında KOD değiştiriyor, yani
+her merge ayrı bir `mobile-build` + TestFlight yüklemesi demek.
+
+| Sıra | PR | Dosya | Neden burada |
+|---|---|---|---|
+| 1 | **#565** oyun bitiş `platform` damgası | 3 | `parca-log`'a hiç dokunmuyor — turun tek gerçekten temiz halkası |
+| 2 | **#562** kayıt onayı | 5 | küçük; tek dart dosyası + testi. ⚠ #32'nin E/F alternatifleri bunun SAHAYA inmesini bekliyor |
+| 3 | **#579** 504 yeniden deneme | 6 | `mobile/TESTING.md`'ye dokunmuyor, yalnızca `parca-log` |
+| 4 | **#576** zoom balonu otomatik kapanma | 8 | kapsam dar |
+| 5 | **#554** taş değiştirme sınırı | 9 | MOTOR dosyası (`constants.dart` + `reducer.dart`) → golden vector'lar + `dart run test/run_all.dart` aynı turda |
+| 6 | **#557** oyun ortasında giriş | 22 | en geniş; `Runner.xcodeproj` + `pubspec.lock` taşıyor |
+| 7 | **#547** ham hata metinleri | 20 | turun tek **web** dosyasını (`src/utils/errorMessage.ts`) ve `web-ci.yml`i o taşıyor; parite kapısı `error_message_parity_test.dart` onunla geliyor → en son, temiz zeminde. `npm run lint` + `verify-error-messages` |
+
+**Çakışmaların tamamı EKLEME çakışması** (`parca-log.md`,
+`mobile/TESTING.md`, bir kez kök `CLAUDE.md`): iki tarafı da tut, sırala,
+içerik kaybı yok. ⚠ `mobile/TESTING.md`'de bölüm NUMARALARI var —
+birleştirdikten sonra yeniden sırala. `ROADMAP.md` bugünkü ölçümde yedisinde
+de otomatik birleşiyor, ama sıra ilerledikçe bu değişebilir.
+
+⚠ **`mobile/docs/surumler.md` → "SÜRÜM SENKRONU" tur SONUNDA bir kez**
+güncellenir, her merge'de değil — yedi merge yedi build tetikler, anlamlı
+olan sonuncusudur.
+
+⚠ **Ölçüm `main` = `3a55492`'ye ait.** `main` ilerlediyse sıra yeniden
+ölçülmeli:
+
+```
+git fetch origin main $(for n in 547 554 557 562 565 576 579; do \
+  echo "refs/pull/$n/head:refs/remotes/pr/$n"; done)
+git merge-tree --write-tree --name-only origin/main refs/remotes/pr/<n>
+```
+
 ## Sürüm sıralaması, force update ve davetliler (27 Ağustos 2026)
 
 Bu bölümde artık TEK konu var: açık test penceresinin İŞLETİM bilgisi.
@@ -1171,7 +1223,8 @@ mümkün olsa da **açılmıyor**: bekleyen yedi port PR'ı (#547, #554, #557,
 #562, #565, #576, #579) zaten bir merge turu ve bir sürüm borcu demek,
 üstüne yeni bir akış işi eklemek kuyruğu uzatır. **Tetikleyici:** yedi PR'ın
 merge turu kapanıp sürüm sahaya indikten sonra bu madde yeniden açılır ve
-sıra A → B → C olarak yürür.
+sıra A → B → C olarak yürür. O turun ölçülmüş merge SIRASI yukarıda:
+"Dondurulmuş port PR'ları — merge turu SIRASI".
 
 ⚠ **Hepsi kayıt akışına dokunuyor** → `TESTING.md` ve `mobile/TESTING.md`'nin
 kayıt onayı maddeleri aynı PR'da güncellenir. ⚠ **C/D/F portu değiştirir →
