@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PrivacyModal';
-import { signIn, signUp, sendPasswordReset, friendlyAuthMessage } from '../lib/api';
+import { signIn, signUp, sendPasswordReset, friendlyAuthMessage, logSignupEvent } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import { GENDER_OPTIONS, formatTrDateInput, trDateToIso } from '../utils/profileFields';
@@ -85,7 +85,28 @@ export function AuthModal({
     onClose();
   }, [user?.id, onClose]);
 
+  // ── Kayıt hunisinin üst ucu (ROADMAP #32) ───────────────────────────────
+  // `'started'` = kayıt FORMU görüldü. İki giriş yolu var ve İKİSİ de
+  // sayılmalı: pencere doğrudan kayıt modunda açılabiliyor (`initialMode`,
+  // ör. "Neden Üye Olmalıyım?" kutusu ve davet sayfası) ya da giriş
+  // ekranından sekmeyle geçiliyor (`switchMode`). Port da tam bu iki yolu
+  // sayıyor (`auth_modal.dart` → `initState` + `_switchMode`).
+  //
+  // ⚠ Hook, erken `return`ların ÜSTÜNDE (React #300 kapısı,
+  // `npm run verify-hook-order`). `yazildi` bayrağı StrictMode'un çift
+  // çağrısına karşı: geliştirmede efekt iki kez koşuyor, sayaç ikiye
+  // katlanırdı.
+  const basladiYazildi = useRef(false);
+  useEffect(() => {
+    if (initialMode !== 'signup' || basladiYazildi.current) return;
+    basladiYazildi.current = true;
+    void logSignupEvent('started', signupChannel);
+  }, [initialMode, signupChannel]);
+
   const switchMode = (next: Mode) => {
+    if (next === 'signup' && mode !== 'signup') {
+      void logSignupEvent('started', signupChannel);
+    }
     setMode(next);
     setError(null);
     setInfo(null);
@@ -128,6 +149,12 @@ export function AuthModal({
           marketingConsent,
         );
         if (error) throw error;
+        // Hesap OLUŞTU. İki dal da başarı sayılır: oturum açıldıysa da,
+        // e-posta onayı bekleniyorsa da huni için "kayıt tamamlandı" —
+        // portla aynı karar (`auth_modal.dart`). Onayın gelip gelmediği
+        // AYRI bir soru; onu #32'nin A maddesi (sunucu tarafı sayaç)
+        // ölçecek, bu satır değil.
+        void logSignupEvent('completed', signupChannel);
         if (data.session) {
           await refreshProfile();
           onClose();

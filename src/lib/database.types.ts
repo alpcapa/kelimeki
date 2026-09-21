@@ -1470,3 +1470,23 @@ export interface AdminTutorialFunnelRow {
    */
   skip_steps: Record<string, number>;
 }
+
+/**
+ * `admin_signup_funnel` — kayıt hunisi (Büyüme > Kullanıcı → "Kayıt Hunisi").
+ *
+ * Kanal başına bir satır: kayıt FORMUNU açan (`starts`) ve hesabı OLUŞTURAN
+ * (`completions`) ADET. Kimlik yok, yani "benzersiz kişi" sayısı YOK —
+ * `signup_events` bilerek kimliksiz (bkz. migration `signup_events_funnel`
+ * ve `logSignupEvent`). Bir kişi formu iki kez açarsa iki kez sayılır.
+ *
+ * ⚠ **Yalnızca WEB.** Port aynı olayları Firebase Analytics'e yazıyor, bu
+ * tabloya değil — oranı `profiles` sayısıyla kurmak paydası web, payı
+ * web+mobil olan sahte bir yüzde üretirdi, o yüzden `completions` da bu
+ * tablodan okunuyor.
+ */
+export interface AdminSignupFunnelRow {
+  /** 'direct' | 'form' | 'bilinmiyor' (kanal yazmayan satırlar). */
+  channel: string;
+  starts: number;
+  completions: number;
+}
