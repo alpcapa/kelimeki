@@ -167,6 +167,31 @@ düşünmek lazım"* → aynı gün: *"Şu anda mobilde 7 update var. Bu zaten
 oldukça fazla. Roadmap'e yaz, daha sonra bakalım."*). İki saha vakası, yedi
 alternatif, önerilen sıra ve dondurma uyumluluğu aşağıda, #32'de.
 
+**#33 — gizlilik metni kendi içinde çelişiyor: "dört durumda" diyor, BEŞ
+madde sayıyor** → ⏳ **AÇIK, dondurmayı bekliyor** (21 Eylül 2026, kod
+okunurken bulundu — kullanıcı bildirmedi, yani sahada kimse fark etmemiş
+olabilir ama metin CANLIDA yanlış).
+
+`src/legal/LegalContent.tsx`: *"Bu kod **dört** durumda sunucuya iletilir:
+(1)… (2)… (3)… (4)… **(5)** Oyunu tanıtan kısa turu…"* ve paragraf
+*"**Bu beş kaydın** hiçbirinde…"* diye bitiyor. Tanıtım turu (5) 8 Eylül'de
+eklenirken açılış cümlesindeki sayı güncellenmemiş. Aynı hata portun birebir
+kopyasında da var (`mobile/app/lib/src/ui/auth/legal_modals.dart`: satır 417
+"dört durumda", 442 "(5)", 447 "Bu beş kaydın") — kopya sadık, hatayı da
+taşımış. `/gizlilik/` statik sayfası aynı kaynaktan üretildiği için hata
+yayında.
+
+**Düzeltme tek kelime** (`dört` → `beş`), ama ⚠ **iki dosyada birden ve
+`Son güncelleme` tarihiyle**: `mobile/app/test/legal_text_test.dart` port
+kopyasının tarihini doğrudan web kaynağını okuyarak karşılaştırıyor, yani
+tek taraflı düzeltme web CI'ın `parite` işini düşürür. `mobile/app/` dosyası
+olduğu için **mobil derlemeyi tetikler** → dondurma bitmeden yapılmaz;
+**port merge turuyla AYNI PR'da** halledilmeli (bkz. "Dondurulmuş port
+PR'ları — merge turu SIRASI").
+
+⚠ **Ders (aynı gün ikinci kez):** bir listeye madde eklerken listeyi SAYAN
+cümle de güncellenmeli — bu, rozet zincirinin metindeki karşılığı.
+
 **#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
 ✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
 doğrulandı; arşivde.
