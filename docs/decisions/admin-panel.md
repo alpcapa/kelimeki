@@ -1163,13 +1163,42 @@ definer`/`search_path`/grant'lerin hepsini düşürür ve Supabase yeni
 fonksiyona `anon`a da execute verebiliyor (16 Eylül 2026'da
 `admin_list_members`te canlıda ölçülmüştü).
 
-⚠ **AÇIK KALAN — geçmişteki 20 kayıt.** `NULL ⟺ app` bu veride
-TARTIŞMASIZ (16 Ağustos öncesi hiç NULL yok; 20 NULL'ın hepsi 26 Ağustos–20
-Eylül, app test dönemi), yani tek satırlık bir `update` geçmişi de
-düzeltirdi. YAPILMADI: geçmiş veriyi yeniden yazmak kullanıcının açık onayı
-olmadan atılacak bir adım değil. Karar verilirse SQL:
-`update public.profiles set signup_utm_source = 'app'
- where signup_utm_source is null;`
-(⚠ `trg_keep_signup_utm_source` tetikleyicisi `update`te eski değeri geri
-yazıyor — önce onu devre dışı bırakmak ya da tetikleyiciyi atlayan bir yol
-gerekir.)
+#### Geçmiş de hizalandı — `20260922072629_backfill_app_source_history`
+
+Kullanıcı onayıyla (*"Hepsi"*) CANLIYA UYGULANDI. Damga yalnızca BUNDAN
+SONRASINI düzeltiyordu; geçmiş dokunulmasa "Bilinmiyor" satırı aylarca dolu
+görünecekti.
+
+| Tablo | Çevrildi | Dokunulmadı |
+|---|---|---|
+| `profiles.signup_utm_source` | **20** | 0 |
+| `game_starts.utm_source` | **868** | 0 |
+| `game_finishes.utm_source` | **723** | **310** (kolon yoktu) |
+
+**Dayanak `NULL ⟺ app` ve ÖLÇÜLDÜ, varsayılmadı:** web istemcisi hiçbir
+zaman NULL yazmaz — üç çağrı yerinin üçü de `?? 'direkt'` gönderiyor
+(`signUp` · `logGameStart` · `logGameFinish`, kaynak okundu). Ayrıca 20
+damgasız kaydın **8'inin App oyunu var, 0'ının web oyunu var**, 11'i hiç
+oynamamış; damgalı her grupta ise web oyunu var. Tek karşı örnek yok.
+
+⚠ **`game_finishes`in 310 satırı BİLEREK DIŞARIDA.** Damgalama
+`2026-08-22 15:10:05.39781+00`'da başladı; öncesindeki NULL "app" değil
+*"kolon henüz yoktu"* demek ve onları çevirmek uydurma olurdu. Kesim
+timestamp'i migration'da SABİT yazılı — `min(created_at)` alt sorgusu
+backfill'den sonra başka bir değer döndüreceği için tekrar koşulamaz olurdu.
+
+⚠ **Tuzak: `trg_keep_signup_utm_source` BEFORE UPDATE'te eski değeri geri
+yazıyor** (kullanıcı kendi kaynağını değiştiremesin diye). Düz bir `update`
+SESSİZCE hiçbir şey yapardı — denenmeden "çalıştı" sanılabilirdi. Migration
+tetikleyiciyi kendi işleminin içinde kapatıp geri açıyor; uygulama sonrası
+`tgenabled = 'O'` (açık) doğrulandı.
+
+**Sonuç (canlıdan, son 30 gün):** `bilinmiyor` satırı huniden TAMAMEN
+kayboldu, yerine `app` geldi — Üye 20 · Başlayan 91 · Biten 10. ⚠ "Gelen"i
+0, çünkü geçmiş ziyaretler geriye dönük üretilemez (port o kaydı hiç
+yazmamıştı); port sürümü sahaya inince dolmaya başlar. O yüzden bu satırın
+yüzdeleri bir süre `—` gösterecek — `conversionCell`in "taban 0" kuralı,
+doğru davranış.
+
+⚠ Panelde **Bilinmiyor** grubu yine de görünür: `--sanitized--` ile gelen
+tek çöp ziyaret orada duruyor (Gelen 1, gerisi 0).
