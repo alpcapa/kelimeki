@@ -125,12 +125,13 @@ src/
 │   ├── RemainingTilesModal.tsx  # torbada kalan taşlar
 │   ├── WildcardModal.tsx        # joker taşı harf seçimi
 │   ├── FeedbackModal.tsx        # görüş/şikayet bildirme formu
-│   ├── AdminDashboard.tsx       # admin paneli: üyeler, oyunlar, büyüme (aktif oyuncu/aktivasyon/retention/kaynak hunisi/tanıtım turu/YZ dengesi), geri bildirim + şikayetler (yalnızca is_admin); metrik tanımları "?" rozetlerinin açtığı popup'ta
+│   ├── AdminDashboard.tsx       # admin paneli: üyeler, oyunlar, büyüme (aktif oyuncu/aktivasyon/retention/kaynak hunisi/tanıtım turu/oyun dağılımı/YZ dengesi), geri bildirim + şikayetler (yalnızca is_admin); metrik tanımları "?" rozetlerinin açtığı popup'ta
 │   ├── MemberMessageModal.tsx   # admin panelinden bir üyeye serbest metinli mesaj gönderme compose modalı
 │   ├── AdminChatTranscriptModal.tsx # admin paneli Şikayetler sekmesi: bitmiş bir Canlı oyunun tam sohbet dökümü
 │   ├── PlayerScoreCard.tsx      # bir oyuncunun ScoreCard'ının salt-okunur görünümü (admin panelinden ve k-lig'den açılır)
 │   ├── GrowthChart.tsx          # admin büyüme grafiği (generic zaman serisi çizgi grafiği)
 │   ├── StackedBucketChart.tsx  # admin yığılmış çubuk grafiği — "Aktif Saatler" (2 saatlik dilimler) VE "Aktif Günler" (haftanın günleri) ortak kullanıyor; kova sözlükleri de burada
+│   ├── SplitPieChart.tsx       # admin pasta grafiği — "Oyun Dağılımı"nın iki pastası (Oyun Tipi · Masa) aynı bileşenden; efsane aynı zamanda tablo (etiket + ham sayı + yüzde)
 │   ├── PrivacyModal.tsx         # gizlilik politikası
 │   ├── TermsModal.tsx           # kullanım koşulları
 │   ├── Modal.tsx                # paylaşılan modal kabuğu
