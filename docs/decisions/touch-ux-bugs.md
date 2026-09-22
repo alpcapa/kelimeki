@@ -1494,3 +1494,51 @@ elle kapatıyor.
 dayandığı KABUK her çağıranda aynı mı diye sor. `Board` iki ekran tarafından
 kullanılıyor ama krom sabiti tek ekranda ölçülmüştü; kapı da (spec) yalnızca
 o ekranı kapsıyordu.
+
+### Banner → TAM EKRAN BLOK, ve klavye tuzağı (22 Eylül 2026, aynı gün)
+
+Kullanıcı kararı, sözleri birebir: *"Telefonda web'in yatay çalışması
+gerekmiyor. Her durumda sadece dikey konuma getirin demek yeterli. Ama boş
+ekranda, arka planda bozuk görüntü vb olmadan. Eskiden böyleydi."*
+
+`src/components/LandscapeBlock.tsx` (eski `LandscapeHint.tsx`)
+
+**Bileşen İKİ KEZ yön değiştirdi ve tarihçe burada kritik:**
+
+1. Başta **sert bloktu** (`index.html`/`index.css`'te `#landscape-block`,
+   `#root`u gizliyordu).
+2. **Banner'a indirildi**, çünkü iPad'de yanlış tetikleniyordu: iPadOS
+   `pointer` media feature'ını güvenilmez raporluyor (WebKit 212580/209292),
+   trackpad'li kılıf takılıyken de `coarse` diyor → klavyeyle çalışan biri
+   yatay modda uygulamayı hiç açamıyordu.
+3. **Yine sert blok** — ama ölçüt `(orientation: landscape)` DEĞİL, yetersiz
+   **YÜKSEKLİK**. iPad yatayda 820px boy var, eşik 632 → iPad hiçbir koşulda
+   bloklanmaz. (2)'deki tuzağın geri gelmemesinin tek sebebi bu.
+
+**Banner neden yetmedi:** arkasında bozuk düzeni görünür bırakıyordu.
+
+**Değişmezler:** kapatılamaz (kapanabilseydi geriye yine bozuk düzen kalırdı)
+· kaplayıcı, sökücü değil (oyun durumu korunur) · **tek mount noktası
+`boot.tsx`** — `App.tsx`in içine konmaz, çünkü Canlı oyun orada erken dönüyor
+ve banner'ın iki mount noktası da o dönüşün altındaydı.
+
+#### Klavye tuzağı — kullanıcının yakaladığı
+
+*"Ama iPad'da klavye varsa, yatay olmadan mesaj yazılamıyor. Bu durumu da
+düşün."*
+
+iPad'in kendisi eşiğin üstünde, ama **aynı kök sebep DİKEY telefonda gerçek
+bir arızaydı**: Android Chrome ekran klavyesi açılınca layout viewport'unu
+küçültüyor (844 → ~450), yani yalnızca yüksekliğe bakan bir kapı **tam mesaj
+yazarken** "çevirin" derdi. Kapıya üçüncü koşul eklendi: bir metin alanı
+(input/textarea/contenteditable) **odaktayken blok bastırılır**.
+`focusout` 500 ms GECİKMELİ ölçülür — klavye kapanma animasyonu sürerken
+hemen ölçmek bloğu bir an parlatırdı.
+
+#### Testin yanlış yeşili — ders
+
+İlk yazılan klavye testi kapı kaldırılınca da GEÇİYORDU: `toBeHidden()` ilk
+denemede geçiyor, çünkü blok medya sorgusu olayından sonraki React turunda
+geliyor. **Yokluk iddiaları yarışa açıktır** — teste 800 ms'lik açık bir
+bekleme konduktan sonra kapı gerçekten düştü (ölçüldü: kapı kapalıyken 1
+düştü, açıkken 6/6 geçti).

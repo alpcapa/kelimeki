@@ -1428,16 +1428,30 @@ gerektiriyor. `tests/board-fit.spec.ts` yalnızca YEREL oyun ekranını ölçüy
 
 **Telefonda, Canlı bir oyun açıkken:**
 
-- [ ] Telefonu **yatay** tut → **"Dikey konumda daha iyi bir deneyim
-      yaşarsınız"** banner'ı çıkıyor. (22 Eylül 2026'dan önce bu ekranda HİÇ
-      çıkmıyordu.)
-- [ ] Banner'ın **✕**'ine bas → kapanıyor ve o oturumda bir daha çıkmıyor
-      (`sessionStorage`).
-- [ ] **Dikeye dön** → banner yok, raf ve butonların tamamı kaydırmadan
-      görünüyor.
-- [ ] ⚠ **TABLETTE ve açık KATLANABİLİRDE banner ÇIKMAMALI** — ölçüt yatay
+- [ ] Telefonu **yatay** tut → **TAM EKRAN** "Telefonunuzu dikey çevirin"
+      bloğu çıkıyor. (22 Eylül 2026'dan önce bu ekranda HİÇ uyarı yoktu.)
+- [ ] ⚠ **Arkada hiçbir şey görünmüyor** — ne tahta, ne yarım raf, ne açık
+      kalmış bir pencere. Kullanıcının isteği birebir buydu: *"boş ekranda,
+      arka planda bozuk görüntü vb olmadan"*.
+- [ ] ⚠ **Blok KAPATILAMAZ** — ✕ yok, dokunmayla geçilmiyor. Tek çıkış
+      çevirmek. (Kapatılabilseydi geriye yine bozuk düzen kalırdı.)
+- [ ] **Dikeye dön** → blok kalkıyor ve oyun **kaldığı yerden** devam ediyor
+      (taşlar, skor, sıra korunmuş — blok kaplayıcı, sökücü değil).
+- [ ] ⚠ **TABLETTE ve açık KATLANABİLİRDE blok ÇIKMAMALI** — ölçüt yatay
       DEĞİL, yetersiz yükseklik (`utils/boardFit.ts`). Orada yer var; çıkarsa
-      eşik bayatlamış demektir.
+      eşik bayatlamış demektir. **Bu madde kritik:** blok sert olduğu için
+      yanlış tetiklenmesi uygulamayı tamamen kullanılamaz yapar — eski
+      `#landscape-block` tam bu yüzden (iPad'de trackpad varken) kaldırılmıştı.
+
+**Klavye — kullanıcının işaret ettiği vaka (22 Eylül 2026):**
+
+- [ ] **DİKEY** telefonda Canlı oyun sohbetini aç, mesaj kutusuna dokun →
+      klavye açılıyor, ekran kısalıyor ama **blok ÇIKMIYOR**, yazmaya devam
+      edebiliyorsun.
+- [ ] Mesajı gönder / kutudan çık → klavye kapanıyor, blok yine çıkmıyor
+      (dikeydesin).
+- [ ] iPad'de klavye kılıfıyla, **yatay** konumda mesaj yazılabiliyor — iPad
+      hiçbir koşulda bloklanmamalı (yatayda 820px boy, eşik 632).
 
 **Aynı oyunda, tahtanın boyu:**
 

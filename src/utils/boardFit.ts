@@ -68,8 +68,13 @@ export const BOARD_MAX_PX = 680;
  * SE 56 · iPhone 15 74 · 15 Pro Max 111) — yani 13 hücreye 4–9px, taşın harfi
  * bile çizilmez. Orada hiçbir sınır değeri oyunu oynanabilir yapmaz: krom tek
  * başına 301px ve viewport 375–430. Doğru davranış tahtayı yok etmek değil,
- * makul bir tabanda durup `LandscapeHint`in "dikeye dön" önerisini
- * göstermek — telefon yatay zaten baştan beri önerilmeyen mod.
+ * makul bir tabanda durup `LandscapeBlock`un TAM EKRAN "dikeye çevirin"
+ * bloğunu göstermek — telefon yatay zaten baştan beri önerilmeyen mod.
+ *
+ * ⚠ 22 Eylül 2026'dan beri taban zaten GÖRÜNMEZ: o boyda blok devrede
+ * olduğundan tahta hiç çizilmiyor. Taban yine de duruyor çünkü blokla tabanı
+ * AYNI eşik yönetiyor (`BOTTOM_STRIP_MIN_HEIGHT_PX`); biri gevşerse öteki
+ * tek başına anlamlı kalmalı.
  */
 export const BOARD_MIN_PX = 324;
 
@@ -87,14 +92,16 @@ export function boardMaxWidthCss(): string {
  * Alt şeridin (raf + butonlar) ekrana sığması için gereken EN KÜÇÜK viewport
  * yüksekliği — yani tahta tabanına inmiş hâliyle sütunun tamamı.
  *
- * `LandscapeHint`in kapısı buna bağlı ve kuralın kendisi 22 Eylül 2026'da
+ * `LandscapeBlock`un kapısı buna bağlı ve kuralın kendisi 22 Eylül 2026'da
  * `(orientation: landscape)`ten BURAYA taşındı. Eski kural açık bir
- * katlanabilirde de tetikleniyordu ve orada *"Dikey konumda daha iyi bir
- * deneyim yaşarsınız"* YANLIŞ tavsiyeydi: açık Fold'da yer VAR (yatayda
- * tahtaya 443px kalıyor, dikey iPhone'un 369px'inden fazla). Yükseklik
- * ölçütü ikisini birden doğru yapıyor — telefon yatayda hâlâ çıkar (krom tek
- * başına 301px, viewport 375–430), açık katlanabilirde ve yatay tablette hiç
- * çıkmaz.
+ * katlanabilirde de tetikleniyordu ve orada "dikeye dön" YANLIŞ tavsiyeydi:
+ * açık Fold'da yer VAR (yatayda tahtaya 443px kalıyor, dikey iPhone'un
+ * 369px'inden fazla).
+ *
+ * ⚠ Yükseklik ölçütü, bloğun SERT olabilmesinin tek sebebi: eski sert blok
+ * (`#landscape-block`) iPad'de trackpad varken yanlış tetiklendiği için
+ * kaldırılmıştı. iPad yatayda 820px boy var, eşik 632 — yani iPad hiçbir
+ * koşulda bloklanmaz ve o tuzak geri gelmez.
  *
  * ⚠ TEK KAYNAK: hem banner'ın `max-height` sorgusu hem `board-fit.spec.ts`
  * bu sayıdan türer. İkisinde ayrı ayrı toplanırsa biri sessizce bayatlar.
