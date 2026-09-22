@@ -216,6 +216,17 @@ vitrin) — tahmin, kaynak okunarak düzeltildi.
 Play production incelemesi (#19) kapanınca girecek yedi PR. Önerilen sıra:
 **#565 → #562 → #579 → #576 → #554 → #557 → #547**.
 
+⚠ **Dondurmanın artık YAZILI bir dayanağı var (22 Eylül 2026).** Play
+destek talebine gelen cevap: *"each new submission will reset the review
+turnaround time, as the evaluation period is counted from the date of the
+most recent change"* — yani Play'e yeni bir paket yüklemek #19'un saatini
+SIFIRLAR. ⚠ Ama kapsamı karıştırma: bağlayıcı olan **Play'e yükleme**,
+`main`'e merge değil (merge yalnızca `mobile-build` + TestFlight'ı
+tetikler, Play kuyruğuna dokunmaz). Merge dondurması yine de duruyor,
+çünkü merge incelemedeki paketin `.aab`sini `mobile-latest`ten siliyor.
+Cevabın tamamı ve talebin künyesi:
+`marketing/play-store/console-formlari.md` → "Google cevapladı".
+
 Sıra tahmin DEĞİL, ölçüldü (`main` = `3a55492`): yedisinin başı çekilip
 `merge-tree` ile tek tek denendi, sonra ayrı bir çalışma ağacında *"her
 adımda temiz birleşenler arasından, sonrasında en çok PR'ı temiz bırakanı

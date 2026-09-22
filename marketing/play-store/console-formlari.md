@@ -1178,6 +1178,51 @@ meet the eligibility criteria"*. Üç sonucu var:
 `surumler-ios.csv`'nin 665 satırındaki *"Play: inceleme sürüyor"* hücresi
 birlikte güncellenecek.
 
+### ✅ Google cevapladı — talep AYNI GÜN karşılandı (22 Eylül 2026, 18:22)
+
+Talep 11:12'de gönderildi, cevap **18:22**'de geldi: ~7 saat. Ekrandaki
+taahhüt *"within 15 days"* idi, yani SLA'nın çok altında; kanal gerçekten
+**e-posta** oldu (Console'da hiçbir iz yok), bölümün öngördüğü gibi.
+Künye: `[6-4584000041347]`, gönderen `googleplay-developer-support@google.com`.
+
+Cevabın özü üç madde: (1) uygulama **Review Team'e hızlandırıldı**
+(*"We've expedited your app to the Google Play Review Team"*), (2) sonuç
+Console'dan izlenecek, bizden bir şey isteniyorsa ayrıntısı orada yazacak,
+(3) aşağıdaki kural.
+
+⚠ **YAZILI KURAL — inceleme saati her YENİ GÖNDERİMDE sıfırlanır.**
+Birebir: *"Please refrain from submitting any further versions until the
+current review is finished and the issue is resolved… each new submission
+will reset the review turnaround time, as the evaluation period is counted
+from the date of the most recent change."* Bu, bu depoda ilk kez TAHMİN
+değil **kaynağından yazılı**: 13 Eylül'den beri biriken 9 gün, Play'e yeni
+bir paket yüklendiği anda baştan başlar.
+
+⚠ **Kapsamı karıştırma: "submission" = Play'e YENİ PAKET yüklemek, `main`'e
+merge DEĞİL.** Bu depoda Play'e giden otomatik yol yok (gönderim elle);
+merge yalnızca `mobile-build`ı koşturur → `mobile-latest` ezilir ve
+TestFlight'a build gider, ikisi de Play kuyruğuna DOKUNMAZ. Yani Google'ın
+cümlesi merge dondurmasını teknik olarak zorunlu kılmıyor — ama dondurma
+yine de doğru tarafta duruyor: merge, incelemedeki paketin (665) `.aab`sini
+`mobile-latest`ten siler ve bir sonraki elle yüklemeyi kazara "yeni sürüm"
+yapmayı kolaylaştırır. **Bağlayıcı kapı yükleme, merge değil** — biri
+dondurmayı gevşetmek isterse tartışılacak şey budur.
+
+⚠ **Bu, kapalı testin "14 gün sayacı" ile AYNI ŞEY DEĞİL** (o, test
+kullanıcısı penceresiydi; kullanıcı 6 Eylül'de haklı olarak itiraz
+etmişti — `docs/decisions/roadmap-arsiv.md` → "1.0.7 sürüm turu"). Bu,
+inceleme süresinin kendi saati; ikisini aynı cümlede anma.
+
+⚠ **Apple'ın onayı bu turda ağa GİRDİ.** Yukarıdaki *"Apple'ın onayı talebe
+BİLEREK KONMADI"* kararı TALEP METNİ içindi ve orada tutuldu; kullanıcının
+20:40'taki teşekkür cevabına ayrıca tek satır *"P.S. Already on App Store."*
+eklendi. Gerekçe (kıyas/baskı tonu, "her fakt Google'ın kendi konsolundan")
+bir DURUM SORUSUNUN metni içindi, teşekkür notunda aynı ağırlığı taşımıyor.
+Kayda geçiyor ki bir sonraki oturum "Apple hiç anılmadı" diye okumasın.
+
+Cevap **aynı talebe** verildi, ikinci talep AÇILMADI — bölümün "İKİNCİ BİR
+TALEP AÇMA" kuralı uygulandı, doğru hamle buydu.
+
 ---
 
 ## 8. `destek@kelimeki.com` — kurulum
