@@ -1024,6 +1024,99 @@ güvenmeyi gerektirirdi; aynı panelde iki tarayıcıda iki farklı kısaltma
 640 px'de kalabalık, o yüzden yalnızca dört saatlik adımlar yazılıyor; gün
 ekseninde yedi kısaltma (Pzt…Paz) rahat sığdığından **hiçbiri atlanmıyor**.
 
+## Oyun Dağılımı — iki pasta, tek RPC (22 Eylül 2026)
+
+Kullanıcı isteği, birebir: *"Admin Oyun altına 2 pie chart yanyana.
+1. Yapay zeka vs Arkadaşınla  2. 2 player vs 4 player (biten count)"*
+
+`admin_game_mix(p_days)` · `SplitPieChart.tsx` · `AdminGameMix`
+
+Yeri: Büyüme > Oyun, "Oyun Süresi (Medyan)" ile "Beğeni / Paylaşma"
+arasında. Üstündeki dört panel (Oyun Sayısı · Aktif Saatler · Aktif Günler ·
+Oyun Süresi) hep AYNI kümeyi — pencerede biten oyunları — farklı eksenlerden
+anlatıyor; pastalar o dizinin son halkası: *o oyunlar NEYDİ*.
+
+### Tek RPC, çünkü toplamlar tutmak zorunda
+
+İki pasta aynı popülasyonu iki farklı eksende bölüyor, yani
+`ai_finished + friend_finished` ile `p2_finished + p4_finished` **eşit olmak
+zorunda**. İki ayrı RPC olsaydı pencereler sessizce ayrışabilirdi — Aktif
+Saatler ↔ Aktif Günler için yazılmış kuralın aynısı, burada daha bağlayıcı
+çünkü iki pasta tek satırda, yan yana.
+
+"Biten" tanımı `admin_game_activity_series`in `games_finished`iyle birebir:
+yerel taraf `game_finishes`ten `not ended_by_surrender`, canlı taraf
+`games`ten `online_game_id` **başına tekilleştirilmiş** ve
+`not bool_or(surrendered)`. Teslimle biten oyun hiçbir dilimde sayılmaz.
+
+⚠ **`online_game_states` JOIN'i süs değil:** seri RPC'si canlı oyunları o
+join'in içinden sayıyor. Düşürülürse state satırı olmayan bir canlı oyun
+pastada görünür, grafikte görünmez — fark "biten oyun" sayısında sessiz bir
+sapma olarak kalır.
+
+### "Arkadaşınla" OYUN TİPİDİR, "rakip insandı" DEĞİL
+
+Canlı bir oyunun boş koltuğu YZ ile doldurulabiliyor — **22 Eylül 2026'da
+canlıdan sayıldı: 4 kişilik 8 canlı oyunun 5'inde bir `{"type":"ai"}` koltuğu
+var.** Ayrım, oyunun Setup'ta hangi sekmeden başlatıldığıdır — üçüncü bir terim
+üretilmedi.
+
+**Etiket 22 Eylül 2026'da "Yapay Zeka ile" → "Yapay Zeka" olarak kısaldı**
+(kullanıcı: *"uzama sorunu kalksın"*) — dar telefonda efsane satırı iki satıra
+sarıyordu. Kısaltma tesadüfen bir tutarlılık da kazandırdı: aynı sekmedeki
+**Kaynak** kombosu zaten `Toplam · Canlı · Yapay Zeka` diyor, yani pastanın
+sol dilimi artık kombonun kelimesiyle birebir aynı.
+
+⚠ **Sağ dilimde bu hizalama YOK ve bu bilinçli:** kombo "Canlı" derken pasta
+"Arkadaşınla" diyor (kullanıcının istediği kelime, Setup'ın sekme adı). İkisi
+AYNI ayrımı iki kelimeyle anlatıyor; birleştirilecekse ikisi BİRLİKTE
+değişmeli. Sarma güvenliği (`break-words`) yine de duruyor — etiket bir gün
+uzarsa kırpılmak yerine sarar. *"Rakiplerin kaçı insandı"* başka bir soru ve
+`online_games.slots` okunmasını gerektirir; bu RPC onu yanıtlamaz. `?`
+rozetinin metni bunu açıkça yazıyor.
+
+### Üçüncü sütun ölçüm değil, sağlama
+
+`game_finishes.player_count`te CHECK **yok** (`games`/`online_games`te var —
+2 ya da 4). Bir gün 3 kişilik bir satır düşerse ikinci pasta onu sessizce
+yutardı. `finished_total` ayrıca döndüğünden pastaların altındaki satır
+`2 + 4 <> toplam` durumunu ekranda söylüyor.
+
+### Pencere sabit, kombolara bağlı DEĞİL
+
+Aktif Saatler/Günler ile aynı karar (`p_days`, varsayılan 30, ayrı effect,
+boş bağımlılık dizisi) ama gerekçe burada daha güçlü: **pastaların kırdığı
+boyutlar, üstteki kombolarla aynı boyutlar.** Kaynak "Canlı" seçiliyken
+soldaki pasta %100 tek dilime, "2 kişilik" seçiliyken sağdaki pasta tek
+dilime düşerdi — yani filtre, grafiğin ölçtüğü şeyi yok ederdi.
+
+### Pasta bilinçli bir seçim (ve bilinen itiraz)
+
+İki dilimlik pasta, veri görselleştirme literatüründe yığılmış tek çubuğa
+göre zayıf bir formdur — açı, uzunluktan zor okunur. Burada yine de pasta:
+kullanıcı açıkça pasta istedi ve soru *"kabaca hangi oranda"* düzeyinde.
+Okunabilirlik iki ek kanalla kurtarılıyor: dilimin İÇİNDE yüzde (yalnızca
+≥%8 dilimlerde — altında etiket komşusuna biner) ve altında etiket + **ham
+sayı**.
+
+**Renkler yeniden seçilmedi:** `USER_SERIES`/`ACTIVE_PLAYER_SERIES`in
+mavi+amber çifti (protan ΔE 27,0 · tritan 28,8 · normal 32,9). İki pasta da
+aynı çifti kullanıyor çünkü yan yana duruyorlar ve her birinin KENDİ efsanesi
+var — renk, pastalar arasında değil pastanın içinde anlam taşır.
+
+⚠ **Amberin panel zeminine (`bg-panel` #F5F7FA) kontrastı 2,97:1**, yani 3:1
+eşiğinin hemen altında (ölçüldü). Renk tek başına taşıyıcı olamaz: yüzde
+dilimin içinde, etiket ve ham sayı efsanede yazıyor, dilimler arasında 2px
+zemin boşluğu var — sınır renkten değil boşluktan okunuyor.
+
+### Efsanede KIRPMA yok
+
+İlk sürüm `truncate` kullanıyordu; önizlemede ölçüldü: iki pasta dar bir
+telefonda ~150px sütuna düşüyor ve orada *"Yapay …"* ile *"Arkadaşı…"* ayırt
+edilemiyordu. Etiket artık sarıyor — satırın iki satıra çıkması, etiketin
+okunamamasından iyi. Etiketin kendisi de kısaldı (yukarı bkz.), yani sarma
+artık normal değil SON ÇARE.
+
 ## Kaynak Hunisi: "Bilinmiyor" satırında yüzde YOK — %2000 vakası (22 Eylül 2026)
 
 Kullanıcı bildirdi: *"Admin kaynak hunisinde bilinmeyen 1, üye 20 gözüküyor.

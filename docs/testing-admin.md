@@ -758,3 +758,40 @@ Büyüme > **Oyun** sekmesi, "Aktif Saatler"in hemen altında. §9.19'un
 ⚠ **Bugünkü BEKLENEN görüntü:** §9.19 ile aynı — "Diğer" şişkin, iOS
 neredeyse görünmez (portun `logGameFinish`i damgayı yazmıyor, PR #565
 dondurulmuş). Ayrıntı: `docs/decisions/admin-panel.md` → "Aktif Günler".
+
+## 9.21. Admin — "Oyun Dağılımı" pastaları (22 Eylül 2026)
+
+Büyüme > **Oyun** sekmesi, "Oyun Süresi (Medyan)" ile "Beğeni / Paylaşma"
+arasında. İki pasta yan yana: **Oyun Tipi** (Yapay Zeka ↔ Arkadaşınla) ve
+**Masa** (2 Kişilik ↔ 4 Kişilik). Başlık `Oyun Dağılımı (Son 30 Gün)`.
+
+- [ ] İki pasta da çiziliyor, **yan yana** (dar telefonda da iki sütun).
+- [ ] ⚠ **EN ÖNEMLİ KONTROL — iki pastanın toplamı birbirini tutuyor.**
+      Soldaki efsanenin iki ham sayısının toplamı, sağdakinin iki ham
+      sayısının toplamına **EŞİT** olmalı ve ikisi de pastaların altındaki
+      `Pencerede biten oyun: N` satırına eşit (22 Eylül 2026'da canlıda
+      ölçüldü: **1271 + 72 = 1095 + 248 = 1343**). Tutmuyorsa satır bunu
+      zaten yazar (`⚠ masa kırılımı … ediyor`) — o uyarı çıkıyorsa
+      `game_finishes`e 2/4 dışında bir `player_count` düşmüş demektir.
+- [ ] Efsanede **ham sayı ve yüzde birlikte** var; etiketler **kırpılmamış**
+      (`Yapay …` gibi üç noktayla bitmiyor) ve dar telefonda **tek satırda**
+      duruyor — etiket 22 Eylül 2026'da bunun için kısaldı ("Yapay Zeka ile"
+      → "Yapay Zeka"). Sarma hâlâ mümkün ama artık son çare.
+- [ ] Sol dilimin etiketi, üstteki **Kaynak** kombosunun `Yapay Zeka`
+      seçeneğiyle **aynı kelime**.
+- [ ] Dilim içindeki yüzde yalnızca **büyük dilimlerde** yazıyor; küçük dilim
+      (bugün "Arkadaşınla", ~%5) etiketsiz — sayısı efsanede.
+- [ ] İki dilim arasında ince bir **zemin boşluğu** görünüyor (sınır renkten
+      değil boşluktan okunuyor).
+- [ ] `?` rozeti "Oyun Dağılımı" açıklamasını açıyor ve açıklama
+      **"Arkadaşınla = OYUN TİPİ, rakip insandı DEĞİL"** uyarısını taşıyor.
+- [ ] ⚠ **Üstteki kombolar (kaynak / kapsam / oyuncu sayısı) bu pastaları
+      DEĞİŞTİRMEMELİ** — §9.19/§9.20 ile aynı, bilerek bağımsız sabit 30 gün.
+      Değişiyorlarsa kırılım yok olur: kaynak "Canlı"da soldaki pasta tek
+      dilime düşer.
+- [ ] Teslimle biten oyunlar **hiçbir dilimde sayılmıyor** — "Oyun Sayısı"
+      grafiğinin `Bitirilen` serisiyle aynı tanım.
+
+⚠ **BEKLENEN görüntü (22 Eylül 2026):** "Yapay Zeka ile" ezici çoğunlukta
+(~%95) — Canlı oyun hacmi hâlâ küçük. Ayrıntı:
+`docs/decisions/admin-panel.md` → "Oyun Dağılımı".
