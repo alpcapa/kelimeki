@@ -1140,6 +1140,37 @@ cümlesi hazır: *"the same build (665, commit `9c62289`) was approved by
 App Store review on 15 September 2026"*. İki mağazaya giden paket
 gerçekten aynı commit (`surumler-ios.csv` · `surumler-android.csv`).
 
+**AS-BUILT — talep GÖNDERİLDİ (22 Eyl 2026, 11:12).** Formun tam yolu ve
+seçimleri, bir dahakine aranmasın diye:
+
+| Alan | Seçilen |
+|---|---|
+| Yol | Sol menü **`Help`** → **New support ticket** |
+| Kategori (ilk açılır liste) | **`App releases`** ⚠ `Google Play policies` DEĞİL — bizde ret/ihlal yok, oradan girilse talep politika kuyruğuna düşerdi |
+| Common issue | **"I submitted a new app or app update but it's not live"** (ikinci seçenek *managed publishing* bizde kapalı olduğu için yanlış olurdu) |
+| Uygulama | `Kelimeki: Türkçe Kelime Oyunu` — **ayrı alan**, metinde tekrar etmek gerekmiyor |
+| Ek dosya | **KONMADI** — temsilci konsolu zaten görüyor; ek, onun GÖREMEYECEĞİ bir şey varsa anlamlı |
+
+⚠ **`Describe your issue` alanı 1000 KARAKTERLE sınırlı.** Gönderilen metin
+**845** karakterdi (sayaç ekrandan doğrulandı, kırpılma yok). Sınır bir daha
+zorlanırsa atılacak ilk paragraf kıyas paragrafıdır (*"For comparison…"*);
+dört doğrulama maddesi ve kapanış sorusu KALMALI — o maddeler olmadan ilk
+cevabın *"lütfen App content'i kontrol edin"* olma ihtimali yüksek.
+
+**Gönderim onayı (ekrandan):** *"We'll respond via email within 15 days for
+the final decision. Google reserves the right to reject requests that do not
+meet the eligibility criteria"*. Üç sonucu var:
+
+- **Kanal e-posta**, Console değil → geliştirici hesabının gelen kutusu
+  (spam dahil) takip edilir.
+- **SLA 15 gün** → ~7 Ekim 2026. O tarihte #19 incelemede **24.** gününde
+  olur. Talep incelemeyi durdurmuyor; arada kendiliğinden de bitebilir.
+- ⚠ **İKİNCİ BİR TALEP AÇMA.** Mükerrer talep kuyrukta sırayı bozabiliyor —
+  aynı sınıfın bedeli Apple tarafında zaten ödendi
+  (`app-store/console-formlari.md` §16: yeniden gönderim sırayı KESİN
+  kaybettirir). Sıkışınca doğru hamle yeni talep değil, **aynı talebe
+  e-postayla cevap**.
+
 **Bu bölüm nasıl kapanacak:** cevap/yayın geldiğinde gerçek süre
 `Publishing overview → Submission activity → #19` satırından OKUNACAK
 (yukarıdaki üç adımlı sıra), tahminle değil; sonra
