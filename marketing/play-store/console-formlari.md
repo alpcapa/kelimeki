@@ -1073,7 +1073,7 @@ basılacak yerde duruyor.
   |---|---|
   | Kapalı test güncellemeleri (17 gönderim) | 10-34 dk |
   | **#18** — Production, **paketsiz** (yalnızca ülkeler) | **≤22 dk** |
-  | **#19** — Production, **ilk kez paket taşıyor** | süre YOK, ama **alt sınır var**: **> 8 saat** |
+  | **#19** — Production, **ilk kez paket taşıyor** | süre YOK; alt sınır **9 GÜNDEN fazla** — 22 Eyl 2026'da hâlâ `In review` (aşağıdaki bölüm) |
 
   ⚠ **Kapalı test süresini buraya uyarlama** — ve artık bunun bir KANITI
   var. Kullanıcı 13 Eylül gecesi yatarken #19 **hâlâ `In review`**'daydı
@@ -1099,6 +1099,53 @@ basılacak yerde duruyor.
      görüldüğü saat, yani ≤ N saat" diye ALT/ÜST SINIR yaz ve satırı
      *"kullanıcı bildirimi, Console'dan okunmadı"* diye işaretle —
      659 turunun disiplini (`mobile/docs/surumler.md`).
+
+### 🔴 #19 DOKUZ GÜNE ÇIKTI — destek talebi açıldı (22 Eylül 2026)
+
+Gönderim 13 Eyl 00:49; **22 Eyl'de hâlâ `In review`** → **9 gün**. Bu, bu
+hesapta ölçülen her şeyin dışında: kapalı test 10-34 dk, paketsiz
+production (#18) ≤22 dk. Google'ın kendi yönlendirdiği **"7 güne kadar"**
+bandı da aşıldı — bekleme artık "normal uzun" değil.
+
+**Bekleme BİZDEN kaynaklanmıyor — üç kapı da ölçüldü ve temiz:**
+
+| Kapı | Durum |
+|---|---|
+| `App content` → `Need attention` | **BOŞ** — bekleyen beyan yok (18 Eyl ölçüldü, 22 Eyl teyit edildi) |
+| `Policy and programs` → `Policy status` | ihlal/uyarı **YOK** |
+| Geliştirici hesabının e-postası (spam dahil) | Google'dan bekleyen mesaj **YOK** |
+| `Managed publishing` | **KAPALI** → onaylanınca kendiliğinden yayınlanır, bizden tıklama beklemiyor |
+
+⚠ **Bu tablo, cevapları değil SORULARI kaydetmek için var.** Aynı üç kontrol
+iki ayrı oturumda baştan soruldu (kullanıcı: *"zaten daha önce de sormuştun
+ve teyit etmiştik"*) — `CLAUDE.md`'nin "neyin YAPILDIĞINI yazan bir yer
+yoksa her oturum aynı soruyu baştan sorar" kuralının bu depodaki ikinci
+vakası. Durum yazılır, değerler değil.
+
+**Destek talebi (22 Eyl 2026).** Yol: Console → sağ üst **`?` (Help &
+feedback)** → aramaya `app review taking too long` → panelin altında
+**Contact support**. Talep yalnızca **Console'un kendi verisine** dayandı:
+bu hesaptaki önceki inceleme süreleri, yukarıdaki üç kapı, kapalı managed
+publishing. Paket künyesi: `com.kelimeki.kelimeki` · 1.1.0 (665) ·
+Production · full rollout · 177 ülke.
+
+⚠ **Apple'ın onayı talebe BİLEREK KONMADI** (22 Eyl, kullanıcı sordu:
+*"Apple App Store'da 1 haftadır yayında notunu da yazmak iyi olabilir
+mi?"*). Gerekçe: Play temsilcisinin Apple kararıyla yapabileceği bir şey
+yok (ayrı politika çerçevesi: Data safety, Families, target API, izinler),
+durum sorusunda kıyas/baskı tonu üretiyor, ve talebin gücü olan "her fakt
+Google'ın kendi konsolundan" odağını dağıtıyor. **Ama ATILMADI:** inceleme
+bir **rede ya da politika itirazına** dönerse orada meşru bağlam —
+cümlesi hazır: *"the same build (665, commit `9c62289`) was approved by
+App Store review on 15 September 2026"*. İki mağazaya giden paket
+gerçekten aynı commit (`surumler-ios.csv` · `surumler-android.csv`).
+
+**Bu bölüm nasıl kapanacak:** cevap/yayın geldiğinde gerçek süre
+`Publishing overview → Submission activity → #19` satırından OKUNACAK
+(yukarıdaki üç adımlı sıra), tahminle değil; sonra
+`mobile/docs/surumler/gonderimler-android.csv`'deki #19 satırı ve
+`surumler-ios.csv`'nin 665 satırındaki *"Play: inceleme sürüyor"* hücresi
+birlikte güncellenecek.
 
 ---
 
