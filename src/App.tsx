@@ -12,7 +12,6 @@ import { AuthModal } from './components/AuthModal';
 import { Setup } from './components/Setup';
 import { AddToHomeScreen } from './components/AddToHomeScreen';
 import { AppStoreStrip } from './components/AppStoreStrip';
-import { LandscapeHint } from './components/LandscapeHint';
 import { LeagueRewardsHost, requestLeagueRewardCheck } from './components/LeagueRewardsHost';
 import { MeaningModal } from './components/MeaningModal';
 import { RemainingTilesModal } from './components/RemainingTilesModal';
@@ -1558,7 +1557,6 @@ export default function App() {
           />
         </main>
         <AddToHomeScreen />
-        <LandscapeHint />
         {/* k-lig kutlama banner'ı — Setup'ta her zaman gösterilebilir
             (girişte/geçmişe dönük backfill'de bekleyen ödüller burada çıkar). */}
         <LeagueRewardsHost />
@@ -2327,7 +2325,6 @@ export default function App() {
       {showPostStartTutorial && (
         <HelpModal onClose={() => setShowPostStartTutorial(false)} />
       )}
-      <LandscapeHint />
       {/* k-lig kutlama banner'ı — oyun SÜRERKEN bastırılır (odak çalmasın),
           oyun bitince suppress düşer ve bekleyen kutlama otomatik gösterilir
           (oyun-bitti kaydının ardından requestLeagueRewardCheck de tetikler). */}

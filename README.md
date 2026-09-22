@@ -149,7 +149,7 @@ src/
 │   ├── PlayerAvatarRow.tsx      # oyun kartlarında "N Kişilik Oyun" başlığı yerine geçen katılımcı avatarları (YZ → robot, misafir → "?")
 │   ├── PlayerBadge.tsx          # renkli oyuncu sıra/koltuk rozeti
 │   ├── AiLevelBadge.tsx         # YZ zorluk rozeti (Kolay/Zor; Normal'de render edilmez) — 4 oyun kartı + Setup "devam eden oyun" satırı
-│   ├── LandscapeHint.tsx        # kapatılabilir "dikeye dön" önerisi banner'ı — ölçüt YATAY DEĞİL, yetersiz YÜKSEKLİK (bkz. utils/boardFit.ts)
+│   ├── LandscapeBlock.tsx       # TAM EKRAN, kapatılamaz "Telefonunuzu dikeye çevirin" bloğu — ölçüt YATAY DEĞİL yetersiz YÜKSEKLİK (iPad bloklanmaz), metin alanı odaktayken bastırılır (klavye viewport'u kısaltıyor); TEK mount noktası boot.tsx
 │   ├── ErrorBoundary.tsx        # kök seviye React crash yakalayıcı
 │   ├── LoadingNote.tsx          # ortak "Yükleniyor…" göstergesi (Flutter portundaki KLoadingNote ile birebir)
 │   ├── AddToHomeScreen.tsx      # PWA ana ekrana ekle (tarayıcıda)
