@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BOTTOM_STRIP_MIN_HEIGHT_PX } from '../utils/boardFit';
 
 const DISMISSED_KEY = 'kelimeki_landscape_hint_dismissed';
 
@@ -21,16 +22,25 @@ export function LandscapeHint() {
   useEffect(() => {
     if (sessionStorage.getItem(DISMISSED_KEY)) return;
     const coarse = window.matchMedia('(pointer: coarse)');
-    const landscape = window.matchMedia('(orientation: landscape)');
+    // ⚠ ÖLÇÜT `(orientation: landscape)` DEĞİL, YÜKSEKLİK (22 Eylül 2026).
+    // Eski kural açık bir katlanabilirde de tetikleniyordu (o da "coarse" +
+    // "landscape") ve orada "dikeye dön" YANLIŞ tavsiyeydi: açık Fold'da
+    // tahtaya 449px kalıyor, dikey iPhone'un 369px'inden FAZLA. Kullanıcı
+    // bunu ekran görüntüsünde bildirdi; banner ayrıca skor kutularının
+    // üstüne biniyordu. Yükseklik ölçütü ikisini birden doğru yapıyor:
+    // telefon yatayda hâlâ çıkar (orada gerçekten yer yok — krom tek başına
+    // 301px, viewport 375–430), açık katlanabilirde ve yatay tablette hiç
+    // çıkmaz. Eşiğin kendisi ve sayıların ölçümü: `utils/boardFit.ts`.
+    const short = window.matchMedia(`(max-height: ${BOTTOM_STRIP_MIN_HEIGHT_PX - 1}px)`);
     const update = () => {
-      setVisible(coarse.matches && landscape.matches && !sessionStorage.getItem(DISMISSED_KEY));
+      setVisible(coarse.matches && short.matches && !sessionStorage.getItem(DISMISSED_KEY));
     };
     update();
     coarse.addEventListener('change', update);
-    landscape.addEventListener('change', update);
+    short.addEventListener('change', update);
     return () => {
       coarse.removeEventListener('change', update);
-      landscape.removeEventListener('change', update);
+      short.removeEventListener('change', update);
     };
   }, []);
 
