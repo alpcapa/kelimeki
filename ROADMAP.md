@@ -255,6 +255,36 @@ her merge ayrı bir `mobile-build` + TestFlight yüklemesi demek.
 | 6 | **#557** oyun ortasında giriş | 22 | en geniş; `Runner.xcodeproj` + `pubspec.lock` taşıyor |
 | 7 | **#547** ham hata metinleri | 20 | turun tek **web** dosyasını (`src/utils/errorMessage.ts`) ve `web-ci.yml`i o taşıyor; parite kapısı `error_message_parity_test.dart` onunla geliyor → en son, temiz zeminde. `npm run lint` + `verify-error-messages` |
 
+### Dal ↔ PR eşlemesi — ⚠ İKİ DALIN ADI İÇERİĞİYLE UYUŞMUYOR
+
+⚠ **Merge turunda seçimi DAL ADINA göre yapma, PR NUMARASINA göre yap.**
+Aşağıdaki son iki satır bunun nedeni: dal adları o dalın taşıdığı işi
+tarif etmiyor (iş, adı başka bir konuya göre konmuş bir dalın üstüne
+yazılmış). Ada güvenen biri sırayı sessizce karıştırır ve — daha kötüsü —
+"bu dal zaten şu işti" diye yanlış PR'ı merge eder.
+
+| Sıra | PR | Dal |
+|---|---|---|
+| 1 | #565 oyun bitiş `platform` damgası | `claude/oyun-bitis-platform-port` |
+| 2 | #562 kayıt onayı | `claude/kayit-onay-port` |
+| 3 | #579 504 yeniden deneme | `claude/gecici-sunucu-hatasi-retry-port` |
+| 4 | #576 zoom balonu otomatik kapanma | `claude/zoom-balonu-otomatik-kapanma-port` |
+| 5 | #554 taş değiştirme sınırı | `claude/tas-degistirme-siniri-port` |
+| 6 | #557 oyun ortasında giriş | ⚠ `claude/mobile-latest-merge-conflict-lf2og7` |
+| 7 | #547 ham hata metinleri | ⚠ `claude/app-store-play-review-status-9wecvh` |
+| 8 | #601 kaynak hunisi (`app` kanalı) | `claude/frozen-port-prs-merge-cis79o` |
+
+⚠ **#601 bu turun SEKİZİNCİSİ.** Yukarıdaki yedili sıra 21 Eylül'de
+ölçüldüğünde #601 henüz yoktu; o da aynı dondurmayı bekliyor ve en sona
+biniyor (`mobile/app/` altında yedi dosya taşıyor, yani o da mobil
+derlemeyi tetikler).
+
+**Eşleme 22 Eylül 2026'da canlıdan ölçüldü** (`git ls-remote --heads
+origin 'refs/heads/claude/*'` + açık PR listesi): `origin`'de sekiz
+`claude/*` dalı var ve **sekizinin de açık bir PR'ı var** — öksüz dal YOK.
+Bu kontrol tekrarlanmaya değer, çünkü bu depoda PR'sız bırakılmış dallar
+iki kez gerçek iş kaybetti (kök `CLAUDE.md` → "Git / Branch Kuralı").
+
 **Çakışmaların tamamı EKLEME çakışması** (`parca-log.md`,
 `mobile/TESTING.md`, bir kez kök `CLAUDE.md`): iki tarafı da tut, sırala,
 içerik kaybı yok. ⚠ `mobile/TESTING.md`'de bölüm NUMARALARI var —
