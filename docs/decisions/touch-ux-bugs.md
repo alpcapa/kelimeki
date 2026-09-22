@@ -1465,3 +1465,32 @@ telefon vakası geçti. Yani test bir sayıyı değil davranışı kilitliyor.
 ⚠ **Port ikizi bu PR'da YOK** (kullanıcı kararı: *"Sadece web'de yap. Ama
 port'u roadmap'e yaz."*) — `board_widget.dart` aynı deseni taşıyor ama
 ÖLÇÜLMEDİ. ROADMAP #26.
+
+### Kaçış kapısı Canlı ekranda TAKILI DEĞİLDİ (22 Eylül 2026, aynı gün)
+
+Yukarıdaki taban kararı (`BOARD_MIN_PX`), telefon yatayda taşmayı **bilerek**
+kabul ediyor ve kaçış kapısı olarak `LandscapeHint`e güveniyor. Kullanıcı
+aynı gün bir ekran görüntüsü gönderdi: ana ekrana eklenmiş web uygulaması,
+**Canlı** bir oyun, iPhone yatay — tahta tabanına oturmuş ama raf/butonlar
+altta ve **hiçbir uyarı yok**.
+
+**Ekran görüntüsünden ölçüldü** (2532×1170 fiziksel, DPR 3 → **844×390 CSS
+px**): tahta kartı **tam 324px**, yani `BOARD_MIN_PX`e piksel piksel oturmuş.
+Düzeltme canlıda ve çalışıyordu; eksik olan kapıydı.
+
+**Sebep:** `App.tsx` Canlı oyunda `<OnlineGameScreen/>` ile **erken dönüyor**
+(~satır 1432), oysa `<LandscapeHint/>`in iki mount noktası da (Setup ~1561,
+yerel oyun ~2330) o dönüşün **altında**. Yani banner Canlı ekranda HİÇ
+render edilmiyordu — düzeltmeden önce de. `OnlineGameScreen`e takıldı.
+
+**İkinci bulgu — `BOARD_CHROME_PX` yalnızca YEREL ekranda ölçülmüştü.** Aynı
+viewport'ta (844×390) yerel ekranda kartın üstü **57px**, kullanıcının Canlı
+ekran görüntüsünde **63px**: Canlı başlık 6px daha uzun. Sabit 301 → **308**
+(7px pay). Canlı ekranın kromunun TAMAMI hâlâ ölçülmedi — iki gerçek oturum
+gerektirdiği için otomatik testle kapatılamaz; `TESTING.md` §13.9 o boşluğu
+elle kapatıyor.
+
+**Ders:** paylaşılan bir bileşene (burada `Board`) bütçe koyarken, o bütçenin
+dayandığı KABUK her çağıranda aynı mı diye sor. `Board` iki ekran tarafından
+kullanılıyor ama krom sabiti tek ekranda ölçülmüştü; kapı da (spec) yalnızca
+o ekranı kapsıyordu.

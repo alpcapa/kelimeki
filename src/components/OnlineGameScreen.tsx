@@ -20,6 +20,7 @@ import { Board } from './Board';
 import { Rack } from './Rack';
 import { GameHeader } from './GameHeader';
 import { GameOver } from './GameOver';
+import { LandscapeHint } from './LandscapeHint';
 import { MeaningModal } from './MeaningModal';
 import { RemainingTilesModal } from './RemainingTilesModal';
 import { PlayerScoreCard, type PlayerSummary } from './PlayerScoreCard';
@@ -1937,6 +1938,22 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       />
 
       {showFeedback && <FeedbackModal source="game_end" onClose={() => setShowFeedback(false)} />}
+
+      {/* ⚠ 22 Eylül 2026 — banner BU EKRANDA HİÇ YOKTU ve bu bir gözden
+          kaçmaydı: `App.tsx` Canlı oyunda `<OnlineGameScreen/>` ile ERKEN
+          DÖNÜYOR (satır ~1432), oysa `<LandscapeHint/>`in iki mount noktası
+          da (Setup ~1561, yerel oyun ~2330) o dönüşün ALTINDA. Yani Canlı
+          oyun oynayan biri telefonunu yatay tuttuğunda hiçbir uyarı
+          almıyordu.
+
+          Kullanıcı bunu ekran görüntüsüyle bildirdi (iPhone yatay,
+          844×390 CSS px, ana ekrana eklenmiş web uygulaması): tahta tabanına
+          (324px) oturmuştu ama raf ve butonlar yine ekranın altındaydı —
+          çünkü o boyda 324 + 301 = 625 zaten sığmaz. Tahtanın yükseklik
+          bütçesi (`utils/boardFit.ts`) bu durumu bilerek kabul ediyor ve
+          kaçış kapısı olarak TAM DA bu banner'a güveniyor; kapı burada
+          takılı olmadığı için varsayım boşa düşmüştü. */}
+      <LandscapeHint />
 
       {/* k-lig kutlama banner'ı — oyun sürerken bastırılır; oyun bitince
           suppress düşer ve host otomatik kontrol edip bekleyen kutlamayı

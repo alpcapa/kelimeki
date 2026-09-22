@@ -1415,6 +1415,44 @@ Kurulum: torbanın 7'nin altına inmesi için oyunu sona doğru götür
       canlıya çıktıysa, eski uygulamada 7 seçilip gönderilebilir — beklenen
       sonuç sessiz başarı DEĞİL, aynı Türkçe metnin hata olarak görünmesi.
 
+## 13.9 Canlı oyun — telefon YATAY tutulduğunda (22 Eylül 2026)
+
+Kullanıcı ekran görüntüsüyle bildirdi (ana ekrana eklenmiş web uygulaması,
+iPhone yatay, 844×390 CSS px): Canlı bir oyunda tahta ekranı dolduruyor, raf
+ve butonlar altta kalıyor ve **hiçbir uyarı çıkmıyordu**. Sebep:
+`App.tsx` Canlı oyunda `<OnlineGameScreen/>` ile ERKEN DÖNÜYOR, oysa
+`<LandscapeHint/>`in iki mount noktası da o dönüşün altındaydı.
+
+⚠ **Bu blok otomatik test edilemez** — iki gerçek oturum + gerçek Supabase
+gerektiriyor. `tests/board-fit.spec.ts` yalnızca YEREL oyun ekranını ölçüyor.
+
+**Telefonda, Canlı bir oyun açıkken:**
+
+- [ ] Telefonu **yatay** tut → **"Dikey konumda daha iyi bir deneyim
+      yaşarsınız"** banner'ı çıkıyor. (22 Eylül 2026'dan önce bu ekranda HİÇ
+      çıkmıyordu.)
+- [ ] Banner'ın **✕**'ine bas → kapanıyor ve o oturumda bir daha çıkmıyor
+      (`sessionStorage`).
+- [ ] **Dikeye dön** → banner yok, raf ve butonların tamamı kaydırmadan
+      görünüyor.
+- [ ] ⚠ **TABLETTE ve açık KATLANABİLİRDE banner ÇIKMAMALI** — ölçüt yatay
+      DEĞİL, yetersiz yükseklik (`utils/boardFit.ts`). Orada yer var; çıkarsa
+      eşik bayatlamış demektir.
+
+**Aynı oyunda, tahtanın boyu:**
+
+- [ ] Yatay iPad / açık katlanabilir gibi "geniş ama kısa" bir ekranda raf ve
+      butonların tamamı **kaydırmadan** görünüyor.
+- [ ] ⚠ Görünmüyorsa `BOARD_CHROME_PX` bayatlamıştır: o sabit YEREL ekranda
+      ölçüldü, Canlı ekranın başlığı 6px daha uzun olduğu için **7px pay**
+      eklendi. Canlı ekranın alt şeridi de değiştiyse pay yetmez — sayıyı
+      yeniden ölç ve `utils/boardFit.ts`teki notu güncelle.
+
+⚠ **Telefon YATAYDA tahta zaten küçük kalır (324px taban) ve bu bilinçli:**
+o boyda krom tek başına ~308px, viewport 375–430 — hiçbir sınır değeri oyunu
+oynanabilir yapmaz. Doğru davranış banner'ın "dikeye dön" demesi. Telefon
+yatayı gerçekten açmak YAN YANA bir düzen ister (ROADMAP #26).
+
 ## 14+ — Tarihli turlar → `docs/testing-turlari.md`
 
 Belirli bir düzeltmenin gerilemediğini doğrulayan tarihli turlar (14'ten

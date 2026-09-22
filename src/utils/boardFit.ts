@@ -40,10 +40,23 @@
  * bağlayıcı kısıt zaten GENİŞLİK ve bu sınır hiç devreye girmiyor (dikey
  * iPhone'da 852 − 301 = 551 > genişliğin verdiği 369).
  *
+ * ⚠ **CANLI oyun ekranı için +7px PAY var ve bu ölçülerek eklendi**
+ * (22 Eylül 2026): yukarıdaki 301 YEREL oyun ekranında ölçüldü, ama
+ * `OnlineGameScreen` aynı `Board`u kendi kabuğuyla kullanıyor ve başlığı
+ * daha uzun — kullanıcının ekran görüntüsünde (iPhone yatay, 844×390 CSS px)
+ * kartın üstü **63px**, aynı viewport'ta yerel ekranda **57px**. Fark 6px,
+ * pay 7px.
+ *
+ * ⚠ Canlı ekranın kromunun TAMAMI ölçülemedi: iki gerçek oturum + gerçek
+ * Supabase gerektiriyor, yani otomatik testle kapatılamaz (bkz. `TESTING.md`
+ * — Canlı oyun elle koşulan listede). Ölçülen tek fark başlık; alt şeritte
+ * de bir fark çıkarsa bu pay yetmez ve `TESTING.md`deki kontrol onu
+ * yakalamalı.
+ *
  * Değiştirirsen `tests/board-fit.spec.ts` düşer — o test bu sayının hâlâ
  * doğru olduğunu gerçek layout'ta ölçüyor.
  */
-export const BOARD_CHROME_PX = 301;
+export const BOARD_CHROME_PX = 308;
 
 /** Tahta kartının bugünkü üst sınırı (`Board.tsx`teki `max-w-[680px]`). */
 export const BOARD_MAX_PX = 680;
