@@ -1213,12 +1213,27 @@ kullanıcısı penceresiydi; kullanıcı 6 Eylül'de haklı olarak itiraz
 etmişti — `docs/decisions/roadmap-arsiv.md` → "1.0.7 sürüm turu"). Bu,
 inceleme süresinin kendi saati; ikisini aynı cümlede anma.
 
-⚠ **Apple'ın onayı bu turda ağa GİRDİ.** Yukarıdaki *"Apple'ın onayı talebe
-BİLEREK KONMADI"* kararı TALEP METNİ içindi ve orada tutuldu; kullanıcının
-20:40'taki teşekkür cevabına ayrıca tek satır *"P.S. Already on App Store."*
-eklendi. Gerekçe (kıyas/baskı tonu, "her fakt Google'ın kendi konsolundan")
-bir DURUM SORUSUNUN metni içindi, teşekkür notunda aynı ağırlığı taşımıyor.
-Kayda geçiyor ki bir sonraki oturum "Apple hiç anılmadı" diye okumasın.
+⚠ **Apple'ın onayı bu turda ağa GİRDİ — ve BİLEREK.** Yukarıdaki *"Apple'ın
+onayı talebe BİLEREK KONMADI"* kararı TALEP METNİ içindi ve orada tutuldu;
+kullanıcının 20:40'taki teşekkür cevabına ayrıca tek satır *"P.S. Already on
+App Store."* eklendi. **Niyet kullanıcının kendi sözleriyle:** *"I mentioned
+Apple to show them that their competitor already gave a go to our app. That
+may make them feel behind."* Yani atlanmış bir ayrıntı değil, kasıtlı bir
+kaldıraç.
+
+İki metnin işi farklı, çelişki yok: **durum sorusunda** kıyas zayıflatıyordu
+(talebin gücü "her fakt Google'ın kendi konsolundan" olmasıydı ve kıyas o
+odağı dağıtırdı), **hızlandırma teyidinden sonraki teşekkürde** ise baskı
+tam da amaç. Kural şöyle okunmalı: Apple kartı TALEBİN GÖVDESİNDE
+oynanmaz, takipte oynanabilir.
+
+⚠ **Bedeli: kart artık açık.** Yukarıda *"inceleme bir rede ya da politika
+itirazına dönerse orada meşru bağlam"* diye saklanan cümle (*"the same build
+(665, commit `9c62289`) was approved by App Store review on 15 September
+2026"*) artık temsilcinin BİLDİĞİ bir şey. Bir itirazda aynı bilgi ikinci
+kez "yeni bilgi" olarak sunulamaz — orada işe yarayacak olan onay değil,
+Apple'ın hangi politika başlığını (Data safety ≠ App Privacy, Families,
+target API) nasıl karşıladığının SOMUT dökümü olur.
 
 Cevap **aynı talebe** verildi, ikinci talep AÇILMADI — bölümün "İKİNCİ BİR
 TALEP AÇMA" kuralı uygulandı, doğru hamle buydu.
