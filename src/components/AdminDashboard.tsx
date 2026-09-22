@@ -85,11 +85,13 @@ import {
   type DeviceOsGroup,
 } from '../utils/deviceLabels';
 import {
+  channelHasVisitorBase,
   clientPlatformLabel,
   compareVersionDesc,
   groupPlatformVersions,
   groupSourceFunnel,
   type PlatformVersionGroup,
+  type SourceChannel,
   type SourceFunnelTotals,
 } from '../utils/adminGroups';
 import { GENDER_OPTIONS, isoToTrDate } from '../utils/profileFields';
@@ -508,6 +510,16 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         henüz damgalamıyor. O satırlarda oyun sayılır, cihaz sayılmaz — "0%" yazmak "hiçbir
         cihaz bitirmedi" derdi, oysa gerçek "cihaz bilgisi yok". CSV'deki <b>Bitiren Cihaz</b>
         sütunu ham sayıyı verir.
+        <br />
+        <br />
+        <b>"Bilinmiyor" satırında yüzde HİÇ hesaplanmaz (22 Eylül 2026)</b> — orada{' '}
+        <b>Üye</b> yalnızca damgalamayan bir istemciden (bugün mobil uygulama) gelir, oysa{' '}
+        <b>Gelen</b>'i besleyen ziyaret kaydına o istemci hiç yazmıyor: pay ile payda ayrı
+        kitleler, yani oran bir dönüşüm değil. Panel bir gün <b>%2000,0</b> yazdı (20 üye / 1
+        ziyaret) çünkü tabanı 0'dan 1'e çıkaran tek bir çöp ziyaret vardı
+        (<code>?ref=--sanitized--</code>). Sayılar olduğu gibi duruyor, yalnızca bölme
+        yapılmıyor. ⚠ <b>TOPLAM satırının Üye yüzdesi bu kayıtları İÇERİR</b> (34 üyenin 20'si
+        hiç "Gelen" olarak görünmedi), yani genel dönüşüm oranı bir ÜST sınırdır.
         <br />
         <br />
         <b>Satırlar 16 Eylül 2026'dan beri KANALA göre gruplu</b> (Instagram, Facebook,
@@ -1819,7 +1831,12 @@ function SourceFunnelTable({
   /**
    * "Üye"/"Başlayan"/"Biten" sütunları — yüzdeleri SATIR YÖNÜNDE dönüşüm
    * oranı. Taban 0 ise oran yok ("—"): sıfıra bölmek yerine bilinmediğini
-   * söylemek doğrusu (bugün "bilinmiyor" satırı tam bu durumda).
+   * söylemek doğrusu.
+   *
+   * ⚠ **Taban > 0 olması oranı ANLAMLI yapmaz.** "Bilinmiyor" satırında pay
+   * ile payda ayrı kitlelerden gelir, o yüzden eleme burada değil
+   * `channelHasVisitorBase`te (`adminGroups.ts`) — gerekçe ve %2000 vakası
+   * orada. Bu fonksiyon yalnızca aritmetiği korur.
    *
    * ⚠ TABAN SÜTUNA GÖRE DEĞİŞİR ve bu bilinçli: "Üye"/"Başlayan"ın tabanı o
    * satırın "Gelen"i, "Biten"in tabanı ise o satırın "Başlayan"ı — çünkü
@@ -1858,16 +1875,25 @@ function SourceFunnelTable({
     return pct(finishers, starters);
   }
 
-  /** Bir satırın dört sayı hücresi — grup ve detay satırı AYNI kuralı kullanır. */
-  function sayiHucreleri(r: SourceFunnelTotals, cls: string) {
+  /**
+   * Bir satırın dört sayı hücresi — grup ve detay satırı AYNI kuralı kullanır.
+   *
+   * ⚠ [channel] gerekli çünkü "Gelen" tabanının GEÇERLİ olup olmadığı kanala
+   * bağlı (`channelHasVisitorBase`): "Bilinmiyor"da oran hiç hesaplanmaz, SAYI
+   * modu ise değişmez — veri gizlenmiyor, yalnızca anlamsız bir bölme
+   * yapılmıyor. Detay satırları da grubun kanalını taşır: `sourceChannel`
+   * onları o gruba ZATEN o kanalla koydu.
+   */
+  function sayiHucreleri(r: SourceFunnelTotals, cls: string, channel: SourceChannel) {
+    const tabanVar = channelHasVisitorBase(channel);
     return (
       <>
         <td className={`${cls} pr-8 whitespace-nowrap text-center`}>{visitorCell(r.visitors)}</td>
         <td className={`${cls} pr-8 whitespace-nowrap text-center`}>
-          {conversionCell(r.signups, r.visitors, r.signups)}
+          {!asPercent || tabanVar ? conversionCell(r.signups, r.visitors, r.signups) : '—'}
         </td>
         <td className={`${cls} pr-8 whitespace-nowrap text-center`}>
-          {conversionCell(r.starts, r.visitors, r.starters)}
+          {!asPercent || tabanVar ? conversionCell(r.starts, r.visitors, r.starters) : '—'}
         </td>
         <td className={`${cls} whitespace-nowrap text-center`}>
           {completionCell(r.finishes, r.starters, r.finishers)}
@@ -1944,13 +1970,13 @@ function SourceFunnelTable({
                         </button>
                       )}
                     </td>
-                    {sayiHucreleri(g, 'py-1.5 text-muted')}
+                    {sayiHucreleri(g, 'py-1.5 text-muted', g.channel)}
                   </tr>
                   {open &&
                     g.sources.map((row) => (
                       <tr key={row.source} className="border-b border-border/50 bg-panel/40">
                         <td className="py-1 pr-8 pl-5 text-muted whitespace-nowrap">{row.source}</td>
-                        {sayiHucreleri(row, 'py-1 text-muted')}
+                        {sayiHucreleri(row, 'py-1 text-muted', g.channel)}
                       </tr>
                     ))}
                 </Fragment>

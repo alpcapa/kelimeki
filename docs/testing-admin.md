@@ -137,6 +137,17 @@ gerekenler.
       satırlar için de geçerli (port damgalamıyor, o satırlar zaten
       "bilinmiyor" kaynağında). İkisi de 0 ise oran gerçekten 0'dır ve
       "0.0%" yazar.
+- [ ] ⚠ **"Bilinmiyor" satırında "Üye" ve "Başlayan" yüzdeleri HER ZAMAN "—"
+      (22 Eylül 2026).** `%` moduna geç → o satırda iki hücre de `—` olmalı,
+      "Gelen" 0 OLMASA BİLE. Sebep: o satırın üyeleri mobil uygulamadan gelir
+      (port kayıtta damga yazmıyor), ziyaretleri ise gelemez (port
+      `guest_visits`e hiç yazmıyor) — pay ile payda ayrı kitleler. Bir sayı
+      görürsen kapı düşmüş demektir: panel bir gün **%2000,0** yazdı (20 üye /
+      `?ref=--sanitized--` ile gelmiş 1 çöp ziyaret). **Sayı modunda 20 hâlâ 20
+      görünmeli** — düzeltme veriyi gizlemiyor, yalnızca bölmeyi kapatıyor.
+- [ ] **TOPLAM satırının "Üye" yüzdesi o 20 kaydı İÇERİR ve bu bilinçli** —
+      genel dönüşüm bir ÜST sınırdır (InfoHint yazıyor). Buradaki sayı
+      satırların ölçülebilir altkümesinden büyük çıkabilir, bu bir hata değil.
 - [ ] **CSV'de "Bitiren Cihaz" sütunu var** ve ham sayı veriyor; "Biten Oyun"
       sütunundan küçük ya da ona eşit olmalı (büyükse bir şey yanlıştır).
 - [ ] **GİZLİLİK — girişliyken bitirilen oyunda cihaz kodu YAZILMAMALI.**

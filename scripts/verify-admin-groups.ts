@@ -13,6 +13,7 @@
 //
 // Koşum: npm run verify-admin-groups
 import {
+  channelHasVisitorBase,
   clientPlatformLabel,
   compareVersionDesc,
   groupPlatformVersions,
@@ -62,6 +63,25 @@ check('BÜYÜK harf de eşleşir', sourceChannel('Instagram') === 'instagram');
 
 console.log('direkt ≠ bilinmiyor (huninin 16 Ağustos 2026 kararı)');
 check('ikisi AYRI kanal', sourceChannel('direkt') !== sourceChannel('bilinmiyor'));
+
+{
+  // 22 Eylül 2026: panel "Bilinmiyor" satırında Üye = %2000,0 yazdı (20 üye /
+  // 1 ziyaret). Sebep bir sayım hatası DEĞİL, anlamsız bir bölmeydi: o satırın
+  // üyeleri damgalamayan istemciden (mobil uygulama) gelir, ziyaretleri ise
+  // gelemez. Taban büyüklüğe göre elenmiyor artık, KİTLEYE göre eleniyor.
+  console.log('Dönüşüm tabanı — "Bilinmiyor"da oran YOK (%2000 vakası)');
+  check('bilinmiyor tabanı GEÇERSİZ', channelHasVisitorBase('bilinmiyor') === false);
+  for (const ch of ['instagram', 'facebook', 'linkedin', 'arkadas', 'direkt', 'diger'] as const) {
+    check(`${ch} tabanı geçerli`, channelHasVisitorBase(ch) === true);
+  }
+  // ⚠ `--sanitized--` "Bilinmiyor"a düşmeye DEVAM ediyor (yukarıdaki vaka) —
+  // düzeltme etiketi taşımak DEĞİL, o satırda oranı kapatmak. Etiket başka bir
+  // kanala taşınsa taban yine geçerli sayılır ve %2000 geri gelir.
+  check('--sanitized-- hâlâ Bilinmiyor → tabanı geçersiz',
+    channelHasVisitorBase(sourceChannel('--sanitized--')) === false);
+  check('null kaynak da tabansız',
+    channelHasVisitorBase(sourceChannel(null)) === false);
+}
 
 {
   console.log('Huni gruplama — kanal toplamı alt satırların TOPLAMI');

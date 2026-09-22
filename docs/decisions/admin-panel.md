@@ -1023,3 +1023,63 @@ güvenmeyi gerektirirdi; aynı panelde iki tarayıcıda iki farklı kısaltma
 `axisLabel` `null` dönerse o kova etiketsiz çizilir. Saat ekseninde 12 etiket
 640 px'de kalabalık, o yüzden yalnızca dört saatlik adımlar yazılıyor; gün
 ekseninde yedi kısaltma (Pzt…Paz) rahat sığdığından **hiçbiri atlanmıyor**.
+
+## Kaynak Hunisi: "Bilinmiyor" satırında yüzde YOK — %2000 vakası (22 Eylül 2026)
+
+Kullanıcı bildirdi: *"Admin kaynak hunisinde bilinmeyen 1, üye 20 gözüküyor.
+(%2000 conversion not possible)"*. Doğru — ama **sayım değil, BÖLME hatasıydı**;
+iki sayının ikisi de gerçekti.
+
+**Ölçüm (canlı, son 30 gün):**
+
+| Kaynak | Gelen (cihaz) | Üye |
+|---|---|---|
+| `--sanitized--` | **1** | 0 |
+| NULL (`signup_utm_source`) | 0 | **20** |
+
+İkisi de `sourceChannel` ile **Bilinmiyor** kanalına düşüyor (doğru davranış),
+sonra `conversionCell` `20 / 1` hesaplayıp **%2000,0** yazıyor.
+
+**Kök neden: pay ile payda AYRI kitleler.**
+
+- **Üye = 20** → `profiles.signup_utm_source is null`. Web bunu ASLA yazmaz,
+  `?ref=` yokken bile açıkça `'direkt'` gönderir (`api.ts` → `signUp`, yorumu:
+  *"uygulama kayıtları 'Direkt'i şişirmesin"*). NULL yalnızca damgalamayan bir
+  istemciden gelir → **mobil uygulama** (`auth_service.dart`in kayıt
+  metadata'sında `utmSource` yok). 26 Ağustos–20 Eylül arası, kapalı test
+  dönemiyle birebir örtüşüyor. **Yani bu satır TASARIM GEREĞİ dolu.**
+- **Gelen = 1** → `guest_visits`e port HİÇ yazmıyor, dolayısıyla bu kanalın
+  ziyareti olamaz. O tek satır 23 Ağustos'ta `?ref=--sanitized--` ile gelmiş
+  bir masaüstü ziyaretçi (bot/temizleyici); pencereden çıkınca taban 0'a
+  dönerdi ve arıza kendiliğinden "düzelmiş" görünürdü.
+
+**Mevcut kapı neden tutmadı:** `conversionCell` "taban 0 ise `—`" diyordu ve
+yazıldığı gün yeterliydi — yorumu bunu açıkça söylüyordu: *"bugün 'bilinmiyor'
+satırı tam bu durumda"*. Varsayım **tabanın hep 0 kalacağıydı**; tek bir çöp
+ziyaret onu bozdu. Ders: bir oranı `base <= 0` ile korumak, PAYDANIN PAYLA AYNI
+KİTLEDEN geldiğini varsayar — o varsayım yazılı değilse kontrol geçicidir.
+
+**Düzeltme (yalnızca web, sunucu/port DEĞİŞMEDİ):**
+`channelHasVisitorBase(channel)` (`adminGroups.ts`) — `bilinmiyor` için
+`false`. Tablo o satırda "Üye" ve "Başlayan" yüzdelerini hiç hesaplamaz, `—`
+yazar. **Sayı modu değişmedi:** 20 üye hâlâ 20 görünüyor, veri gizlenmiyor.
+Kapı: `npm run verify-admin-groups` (CI'da) — `--sanitized--`ın hâlâ
+Bilinmiyor'a düştüğünü de kilitliyor, çünkü düzeltme etiketi taşımak değil o
+satırda oranı kapatmaktı.
+
+⚠ **"Başlayan" da aynı sebeple kapandı:** port `game_starts`a `anon_id: null`
+yazıyor → `starters` 0 kalıyor, oran `0/1` = **%0,0** olurdu ve bu *"hiçbir
+cihaz başlamadı"* DERDİ; gerçek *"cihaz bilgisi yok"*. "Biten" tabanını
+`starters`tan aldığı için kendi kapısıyla (`completionCell`) zaten korunuyordu.
+
+⚠ **AÇIK KALAN, bilerek:** TOPLAM satırının "Üye" yüzdesi bu 20 kaydı İÇERİR
+(34 üye / 1.194 ziyaret ≈ %2,8; ölçülebilir altküme 14 / 1.194 ≈ %1,2). Yani
+genel dönüşüm oranı bir **üst sınır**. Düzeltilmedi çünkü TOPLAM'ı alt
+kümeden hesaplamak sütunun elle toplanabilirliğini bozar — kararı gerektirir,
+sessizce değiştirilmemeli. InfoHint bunu yazıyor.
+
+**Mobil damgalama BİLEREK eklenmedi:** port kayıtta `'direkt'` yazmaya
+başlarsa satır Bilinmiyor'dan çıkar ama "Direkt" şişer — web'in kendi yazılı
+kararının tam tersi. Uygulama kayıtlarına kaynak vermek istenirse doğrusu
+`'direkt'` değil ayrı bir etiket (`app` gibi) ve o AYRI bir karar;
+`SourceChannel`e yeni bir kanal eklemeyi gerektirir.

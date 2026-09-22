@@ -87,6 +87,34 @@ export function sourceChannel(source: string | null): SourceChannel {
   return 'diger';
 }
 
+/**
+ * Bu kanalın **"Gelen"i bir dönüşüm TABANI olabilir mi.**
+ *
+ * `bilinmiyor` için CEVAP HAYIR ve bu yapısal: o satırın "Üye"si yalnızca
+ * DAMGALAMAYAN bir istemciden gelir (bugün Flutter portu — `auth_service.dart`
+ * kayıt metadata'sına `utmSource` KOYMUYOR, bilerek: web'in kendi notu
+ * *"uygulama kayıtları 'Direkt'i şişirmesin"* diyor), oysa "Gelen"i besleyen
+ * `guest_visits`e port HİÇ yazmıyor ve web `?ref=` yokken bile açıkça
+ * `'direkt'` yazıyor. Yani pay ile payda AYRI kitleler: oran bir dönüşüm
+ * DEĞİL, iki ilgisiz sayının bölümü.
+ *
+ * ⚠ **Bu `base <= 0` kontrolüyle yakalanMIYOR.** `conversionCell` "taban 0
+ * ise '—'" diyor ve yazıldığı gün bu yetiyordu (yorumu *"bugün 'bilinmiyor'
+ * satırı tam bu durumda"* diyordu). 22 Eylül 2026'da tabanı 1 yapan TEK bir
+ * satır çıktı — 23 Ağustos'ta `?ref=--sanitized--` ile gelen bir masaüstü
+ * ziyaretçi — ve panel **Üye %2000,0** yazdı (20 üye / 1 ziyaret; kullanıcı
+ * bildirdi). Ölçüm doğruydu, ORAN anlamsızdı. Taban artık BÜYÜKLÜKLE değil
+ * KİTLEYLE eleniyor: `bilinmiyor` satırında oran hiç hesaplanmaz.
+ *
+ * Aynı gerekçe "Başlayan" için de geçerli (`game_starts`a port `anon_id:
+ * null` yazıyor → `starters` 0 kalır, oran `0/1` = `%0,0` olurdu ve bu
+ * *"hiçbir cihaz başlamadı"* DERDİ, oysa gerçek *"cihaz bilgisi yok"*).
+ * "Biten" zaten tabanını `starters`tan aldığı için kendi kapısıyla korunuyor.
+ */
+export function channelHasVisitorBase(channel: SourceChannel): boolean {
+  return channel !== 'bilinmiyor';
+}
+
 /** Gruplanmış huni satırı — alan adları `AdminSourceFunnelRow` ile birebir. */
 export interface SourceFunnelTotals {
   visitors: number;
