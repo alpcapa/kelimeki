@@ -125,6 +125,39 @@ kapandığında kaynağı `console-formlari.md`'dir, karar oradan okunur.
 
 ### Sonra / bloke
 
+**#26 — Tahtanın yükseklik bütçesi PORTA da gerekli** → ⏳ **AÇIK, freeze'i
+bekliyor** (22 Eylül 2026; web yarısı `main`'de).
+
+Kullanıcı bildirdi: *"Kelimeki'yi Samsung katlanabilirde denedim, tahta yatay
+iPad gibi görünüyordu, raf ve butonlar ekranın altında kalıyordu. Görmek için
+aşağı kaydırmak gerekiyor, oynamak imkânsız."*
+
+Sebep: tahta YALNIZCA genişlikten boyutlanıyor, layout'ta "ne kadar boyum
+kaldı" sorusu hiç yok. ⚠ **Katlanabilire özel DEĞİL** — yatay tablet ve 800px
+yüksekliğindeki sıradan bir dizüstü tarayıcısı da aynı durumdaydı (webde
+ölçüldü: açık Fold yatay 195px · yatay iPad 143px · dizüstü 1440×800 163px
+taşma).
+
+**Web yarısı yapıldı** (`src/utils/boardFit.ts` + `Board.tsx` + kapısı
+`tests/board-fit.spec.ts`; kullanıcı kararı: *"Sadece web'de yap"*). Kalan:
+
+- **Port ikizi** — `mobile/app/lib/src/ui/game/board_widget.dart` aynı deseni
+  taşıyor (`MediaQuery.sizeOf(context).width` + `aspectRatio: 1`, yükseklik
+  bütçesi yok). ⚠ **Ölçülmedi**, yalnızca kaynaktan okundu; işe başlarken
+  önce cihazda ya da bir Flutter testinde ölçülmeli. Ölçüler
+  `boardFit.ts`teki üç sabitten gelmeli (301 krom · 680 tavan · 324 taban) —
+  web↔port ayrışırsa iki platform aynı tahtayı iki boyda çizer.
+- **`LandscapeHint` ikizi** — web'de kural `(orientation: landscape)`ten
+  YÜKSEKLİĞE taşındı (eski kural açık katlanabilirde de tetikleniyor ve
+  *"dikeye dön"* orada yanlış tavsiye oluyordu). Portun karşılığı varsa aynı
+  ölçüte geçmeli.
+
+⚠ **Bu bir "yatay düzen" işi DEĞİL, ayrı bir madde:** telefon YATAYDA hiçbir
+sınır değeri oyunu oynanabilir yapmaz — krom tek başına 301px, viewport
+375–430, yani tahtaya 56–111px kalıyor (13 hücreye 4–9px). Orayı gerçekten
+açmak tahta solda / raf+butonlar sağda bir YAN YANA düzen ister; karar
+verilmedi, bu maddenin kapsamında değil.
+
 **#25 — iOS uygulama simgesinde rozet SAYISI çıkmıyor** → ⏳ **AÇIK, freeze'i
 bekliyor** (18 Eylül 2026, kullanıcı bildirdi: *"Apple uyarılar geliyor ama
 ikon üzerinde numara çıkmıyor"*).

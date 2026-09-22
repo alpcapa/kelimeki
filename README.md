@@ -149,7 +149,7 @@ src/
 │   ├── PlayerAvatarRow.tsx      # oyun kartlarında "N Kişilik Oyun" başlığı yerine geçen katılımcı avatarları (YZ → robot, misafir → "?")
 │   ├── PlayerBadge.tsx          # renkli oyuncu sıra/koltuk rozeti
 │   ├── AiLevelBadge.tsx         # YZ zorluk rozeti (Kolay/Zor; Normal'de render edilmez) — 4 oyun kartı + Setup "devam eden oyun" satırı
-│   ├── LandscapeHint.tsx        # yatay modda gösterilen kapatılabilir dikey-mod önerisi banner'ı
+│   ├── LandscapeHint.tsx        # kapatılabilir "dikeye dön" önerisi banner'ı — ölçüt YATAY DEĞİL, yetersiz YÜKSEKLİK (bkz. utils/boardFit.ts)
 │   ├── ErrorBoundary.tsx        # kök seviye React crash yakalayıcı
 │   ├── LoadingNote.tsx          # ortak "Yükleniyor…" göstergesi (Flutter portundaki KLoadingNote ile birebir)
 │   ├── AddToHomeScreen.tsx      # PWA ana ekrana ekle (tarayıcıda)
@@ -190,6 +190,7 @@ src/
 │   ├── shareBoardImage.ts # bir DOM düğümünü (tahta önizlemesi) paylaşılabilir PNG'ye çevirir (html-to-image)
 │   ├── shareLink.ts    # ?ref=arkadas etiketli davet linki + native paylaşım/panoya kopyalama (Setup ve karşılama katmanı ORTAK — iki ayrı uygulama sessizce ayrışmasın diye)
 │   ├── boardZoom.ts    # tahtanın çift dokunuşla 2× büyütülmesi: çift dokunuş dedektörü, pan sınırlama, transform matrisi (saf; portun board_zoom.dart'ıyla senkron)
+│   ├── boardFit.ts     # tahtanın YÜKSEKLİK bütçesi — "geniş ama kısa" viewport'ta (açık katlanabilir, yatay tablet, kısa dizüstü) raf ve butonlar ekranın altında kalmasın diye; ölçülmüş sabitler + `LandscapeHint`in eşiği
 │   ├── draftRescue.ts  # ıskalanan dokunuşu en yakın taslak taşa yönlendirir (npm run verify-draft-rescue)
 │   ├── ghostClick.ts   # bir jestin ardından gelen "hayalet" click'i yutar (dokunmatikte compat mouse olayları O ANDAKİ DOM'a düşer) — dört çağrı yeri ortak
 │   ├── errorReporting.ts # istemci hata telemetrisi (client_errors) — beklenen durumlar BİLEREK kaydedilmez, saatte 10 kayıt tavanı (zaman penceresi, süreç ömrü DEĞİL)

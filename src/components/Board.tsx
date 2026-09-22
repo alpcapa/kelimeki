@@ -22,6 +22,7 @@ import {
 } from '../utils/boardZoom';
 import { computeAllTerritories } from '../utils/validator';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { boardMaxWidthCss } from '../utils/boardFit';
 import { AiLevelBadge } from './AiLevelBadge';
 import { CountBadge } from './CountBadge';
 import { Tile } from './Tile';
@@ -606,8 +607,20 @@ export function Board({
     [moveStatus],
   );
 
+  // ⚠ Kökün `max-w-[680px]`i YERİNE yükseklik bütçesi (22 Eylül 2026) — tahta
+  // eskiden YALNIZCA genişlikten boyutlanıyordu ve "geniş ama kısa" her
+  // viewport'ta (açık katlanabilir, yatay tablet, 800px'lik dizüstü) raf ve
+  // butonlar ekranın altında kalıyordu. Gerekçe, ölçümler ve tabanın neden
+  // ŞART olduğu: `src/utils/boardFit.ts`; kapı `tests/board-fit.spec.ts`.
+  //
+  // Sabit sınıf değil inline `style`: Tailwind yalnızca KAYNAKTA geçen
+  // sınıfları üretir, çalışma anında kurulan bir `max-w-[min(...)]` sessizce
+  // uygulanmazdı (aynı tuzak `AdminDashboard`ın grid sütunlarında da yazılı).
   return (
-    <div className="w-full max-w-[680px] mx-auto px-3 pt-1.5 pb-3 flex flex-col items-center">
+    <div
+      className="w-full mx-auto px-3 pt-1.5 pb-3 flex flex-col items-center"
+      style={{ maxWidth: boardMaxWidthCss() }}
+    >
       <div
         className="relative w-full bg-[#DDE4EE] rounded-[18px]"
         style={{

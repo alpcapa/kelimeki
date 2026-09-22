@@ -1381,3 +1381,87 @@ taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
   (tanıtımın düğmeleri ya da gerçek oyunun "Pas Geç"i); blok 2.6 dk → 34 sn.
   Ders: bir fikstürün ölü beklemesi, ürüne zaman bağımlı bir davranış
   girene kadar zararsız GÖRÜNÜR.
+
+## Tahtanın yükseklik bütçesi — "geniş ama kısa" viewport (22 Eylül 2026)
+
+Kullanıcı bildirdi: *"Kelimeki'yi Samsung katlanabilir telefonda denedim,
+tahta yatay iPad gibi görünüyordu, raf ve butonlar ekranın altında kalıyordu.
+Görmek için aşağı kaydırmak gerekiyor, oynamak imkânsız."*
+
+`src/utils/boardFit.ts` · `Board.tsx` · `LandscapeHint.tsx` ·
+kapı `tests/board-fit.spec.ts`
+
+### Sebep: layout'ta yükseklik sorusu hiç yoktu
+
+Tahta YALNIZCA genişlikten boyutlanıyordu — `max-w-[680px]` + `aspect-square`.
+Viewport genişliği ~700px'i geçince tahta **656px**'te doyuyor ve sütunun
+tamamı sabit **975px** oluyordu; yani 975 CSS px'ten kısa her viewport alt
+şeridi ekranın altına itiyordu. Gerçek kaydırma kabı `#root` olduğundan
+(`index.css`: `body { position: fixed; overflow: hidden }`) sayfa kayıyor,
+yani oyuncu her hamlede aşağı kaydırmak zorunda kalıyordu.
+
+### ⚠ Bu katlanabilire ÖZEL DEĞİL
+
+Üretim derlemesinde ölçüldü:
+
+| Görünüm | Tahta | Sütun sonu | Taşma |
+|---|---|---|---|
+| Pixel 7 · 412×915 | 388 | 706 | — |
+| Fold **kapalı** · 344×882 | 320 | 635 | — |
+| Fold **açık** · 768×1104 | 656 | 963 | — |
+| Fold açık **yatay** · 1104×768 | 656 | 963 | **195px** |
+| **Yatay iPad** · 1180×820 | 656 | 963 | **143px** |
+| **Dizüstü** · 1440×800 | 656 | 963 | **163px** |
+
+Yani yatay tablet ve 800px yüksekliğindeki sıradan bir dizüstü tarayıcısı da
+aynı durumdaydı; katlanabilirde göze batmasının sebebi, açılınca viewport'un
+bir anda "geniş ama kısa" olması.
+
+### Çözüm CSS-only, ve bu bilinçli
+
+`max-width: min(680px, max(324px, calc(100dvh - 301px)))`. Katlanıp açılmak
+**canlı bir resize**: `dvh` tabanlı bir sınır hiçbir dinleyici olmadan doğru
+davranır, `resize` olayına bağlanan bir JS çözümü ise katlanma anında bir kare
+geç kalır ve (bu depoda tekrarlanan hata sınıfı) bir değeri "ilk ölçümde"
+dondurma riskini taşır.
+
+Sonuç (aynı ölçüm, düzeltmeden sonra): Fold açık yatay **443px** tahta,
+yatay iPad **495px**, dizüstü **481px** — üçü de dikey iPhone'un 369px'inden
+büyük. Dar ekranda **hiçbir şey değişmedi** (388 · 320 · 656 aynı kaldı),
+çünkü orada bağlayıcı kısıt hâlâ genişlik.
+
+⚠ **Sınıf değil inline `style`:** Tailwind yalnızca KAYNAKTA geçen sınıfları
+üretir; çalışma anında kurulan bir `max-w-[min(...)]` sessizce uygulanmazdı
+(aynı tuzak `AdminDashboard`ın grid sütunlarında da yazılı).
+
+### Tabanın (324px) gerekçesi: telefon yatayda sınır ÇÖZMÜYOR
+
+Krom (tahta dışındaki her şey) tek başına **301px**, iPhone yatay viewport'u
+375–430. Sınır tabansız uygulansaydı tahta **56–111px**'e inerdi — 13 hücreye
+4–9px, taşın harfi bile çizilmez (ölçüldü: iPhone SE 56 · iPhone 15 74 ·
+15 Pro Max 111). Doğru davranış tahtayı yok etmek değil, makul bir tabanda
+durup "dikeye dön" önerisini göstermek.
+
+⚠ Telefon yatayı gerçekten oynanabilir yapmak **ayrı bir iş**: tahta solda,
+raf + butonlar sağda bir YAN YANA düzen. Karar verilmedi (ROADMAP #26'nın
+sonundaki not).
+
+### `LandscapeHint` ölçütü YATAY değil, YÜKSEKLİK
+
+Eski kural `(pointer: coarse) + (orientation: landscape)` idi ve açık bir
+katlanabilirde de tetikleniyordu — orada *"Dikey konumda daha iyi bir deneyim
+yaşarsınız"* **yanlış tavsiye**: açık Fold yatayda tahtaya 443px kalıyor,
+dikey iPhone'un 369px'inden fazla. Üstelik banner skor kutularının üstüne
+biniyordu (kullanıcının ekran görüntüsünde görünür). Ölçüt artık
+`max-height: BOTTOM_STRIP_MIN_HEIGHT_PX - 1` — telefon yatayda hâlâ çıkar,
+açık katlanabilirde ve yatay tablette hiç çıkmaz.
+
+### Kapı gerçekten düşüyor mu — ölçüldü
+
+`boardMaxWidthCss()` geçici olarak eski davranışa (`680px`) çevrildi ve
+`tests/board-fit.spec.ts`in üç "geniş ama kısa" vakası **düştü**, dikey
+telefon vakası geçti. Yani test bir sayıyı değil davranışı kilitliyor.
+
+⚠ **Port ikizi bu PR'da YOK** (kullanıcı kararı: *"Sadece web'de yap. Ama
+port'u roadmap'e yaz."*) — `board_widget.dart` aynı deseni taşıyor ama
+ÖLÇÜLMEDİ. ROADMAP #26.
