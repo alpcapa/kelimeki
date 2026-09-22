@@ -6,6 +6,7 @@ import {
   fetchAdminUserActivitySeries,
   fetchAdminGameActivitySeries,
   fetchAdminGameDurationSummary,
+  fetchAdminGameMix,
   fetchAdminEngagementTotals,
   fetchAdminAiBalance,
   fetchAdminFriendTotals,
@@ -48,6 +49,7 @@ import type {
   AdminActivationStats,
   AdminActiveHoursRow,
   AdminActiveDaysRow,
+  AdminGameMix,
   AdminSourceFunnelRow,
   AdminSignupFunnelRow,
   AdminTutorialFunnelRow,
@@ -67,6 +69,7 @@ import { MemberMessageModal } from './MemberMessageModal';
 import { AdminChatTranscriptModal } from './AdminChatTranscriptModal';
 import { CountBadge } from './CountBadge';
 import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
+import { SplitPieChart } from './SplitPieChart';
 import {
   StackedBucketChart,
   hourBucketLabel,
@@ -791,6 +794,36 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <br />
         <b>Zaman serisi grafiği 16 Eylül 2026'da kullanıcı kararıyla kaldırıldı</b>; sunucu
         serisi (<code>admin_engagement_activity_series</code>) duruyor, yalnızca çizilmiyor.
+      </>
+    ),
+  },
+  'oyun-dagilimi': {
+    title: 'Oyun Dağılımı',
+    body: (
+      <>
+        Pencerede <b>biten</b> oyunların iki kırılımı — ikisi de AYNI kümeyi böler, yani iki
+        pastanın toplamı birbirini tutmak zorundadır. <b>Teslimle biten oyun sayılmaz</b>
+        ("Oyun Sayısı" grafiğindeki <b>Bitirilen</b> serisiyle birebir aynı tanım).
+        <br />
+        <br />
+        <b>Soldaki: oyun tipi.</b> <b>Yapay Zeka ile</b> = yerel/aynı-cihaz oyunlar
+        (misafirler dahil); <b>Arkadaşınla</b> = Canlı oyunlar (oyun başına tek kez
+        sayılır, her oyuncu için ayrı değil).{' '}
+        <b>⚠ Bu bir OYUN TİPİ ayrımı, "rakip insandı" ayrımı DEĞİL</b> — Canlı bir oyunun
+        boş koltuğu YZ ile doldurulabiliyor (22 Eylül 2026'da canlıda ölçüldü: 4 kişilik 8
+        Canlı oyunun 5'inde bir YZ koltuğu vardı). Ayrım, oyunun Setup'ta hangi sekmeden
+        başlatıldığıdır.
+        <br />
+        <br />
+        <b>Sağdaki: masa büyüklüğü.</b> Aynı biten oyunlar, bu kez 2 ve 4 kişilik olarak.
+        Altındaki satır toplamı yazar; <b>iki pastanın toplamı tutmuyorsa</b> kırılımda
+        beklenmeyen bir oyuncu sayısı var demektir (satır bunu açıkça söyler).
+        <br />
+        <br />
+        <b>Pencere sabit ve üstteki kombolara BAĞLI DEĞİL</b> ("Aktif Saatler"/"Aktif
+        Günler" ile aynı karar) — bağlansaydı filtreler grafiğin ölçtüğü şeyi yok ederdi:
+        kaynak "Canlı" seçiliyken soldaki pasta tek dilime, "2 kişilik" seçiliyken sağdaki
+        pasta tek dilime düşerdi.
       </>
     ),
   },
@@ -2353,6 +2386,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   // isteği) — kutular pencerenin TAMAMININ medyanını gösterdiğinden seriden
   // türetilemez (medyanlar toplanamaz), kendi RPC'si var.
   const [durationSummary, setDurationSummary] = useState<AdminGameDurationSummary | null>(null);
+  const [gameMix, setGameMix] = useState<AdminGameMix | null>(null);
   const [gameGranularity, setGameGranularity] = useState<AdminActivityGranularity>('day');
   const [gamePeriod, setGamePeriod] = useState<number>(30);
   const [gameScope, setGameScope] = useState<AdminGameScope>('total');
@@ -2566,6 +2600,18 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   useEffect(() => {
     fetchAdminActiveDays(30)
       .then(setActiveDays)
+      .catch((e) => setError(String(e)));
+  }, []);
+
+  // "Oyun Dağılımı" — ikizlerinin AYNI gerekçesiyle ayrı effect ve BOŞ
+  // bağımlılık dizisi (22 Eylül 2026). Burada gerekçe daha da güçlü:
+  // pastaların kırdığı boyutlar (kaynak ve oyuncu sayısı) ÜSTTEKİ
+  // kombolarla aynı boyutlar — bağlansaydı "Canlı" ya da "2 kişilik"
+  // seçildiği anda ilgili pasta tek dilime düşer, yani filtre grafiğin
+  // ölçtüğü şeyi yok ederdi.
+  useEffect(() => {
+    fetchAdminGameMix(30)
+      .then(setGameMix)
       .catch((e) => setError(String(e)));
   }, []);
 
@@ -3851,6 +3897,74 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         ? ''
                         : `Pencerede biten oyun: ${durationSummary.finished_games}`}
                     </p>
+                  </div>
+
+                  {/* Oyun Dağılımı — 22 Eylül 2026, kullanıcı isteği:
+                      *"Admin Oyun altına 2 pie chart yanyana. 1. Yapay zeka
+                      vs Arkadaşınla  2. 2 player vs 4 player (biten count)"*
+
+                      Yeri bilinçli: üstündeki dört panel (Oyun Sayısı ·
+                      Aktif Saatler · Aktif Günler · Oyun Süresi) hep AYNI
+                      kümeyi — pencerede biten oyunları — farklı eksenlerden
+                      anlatıyor; pastalar o dizinin son halkası ("o oyunlar
+                      NEYDİ"). Beğeni/Paylaşma ve YZ Dengesi başka sorular,
+                      bu yüzden altta kalıyor.
+
+                      ⚠ İKİ PASTA TEK RPC'den besleniyor ve toplamları
+                      TUTMAK ZORUNDA — alttaki satır bunu ekranda ölçüyor,
+                      çünkü `game_finishes.player_count`te CHECK yok. */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={sectionTitleCls}>Oyun Dağılımı (Son 30 Gün)</span>
+                      <InfoHint id="oyun-dagilimi" onOpen={setHint} />
+                    </div>
+                    {gameMix === null ? (
+                      <div className="text-xs font-mono text-muted text-center py-4">Yükleniyor…</div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-3">
+                          <SplitPieChart
+                            title="Oyun Tipi"
+                            slices={[
+                              {
+                                key: 'ai',
+                                label: 'Yapay Zeka ile',
+                                value: gameMix.ai_finished,
+                                color: '#2a78d6',
+                              },
+                              {
+                                key: 'friend',
+                                label: 'Arkadaşınla',
+                                value: gameMix.friend_finished,
+                                color: '#D97706',
+                              },
+                            ]}
+                          />
+                          <SplitPieChart
+                            title="Masa"
+                            slices={[
+                              {
+                                key: 'p2',
+                                label: '2 Kişilik',
+                                value: gameMix.p2_finished,
+                                color: '#2a78d6',
+                              },
+                              {
+                                key: 'p4',
+                                label: '4 Kişilik',
+                                value: gameMix.p4_finished,
+                                color: '#D97706',
+                              },
+                            ]}
+                          />
+                        </div>
+                        <p className={captionCls}>
+                          Pencerede biten oyun: {gameMix.finished_total}
+                          {gameMix.p2_finished + gameMix.p4_finished !== gameMix.finished_total &&
+                            ` — ⚠ masa kırılımı ${gameMix.p2_finished + gameMix.p4_finished} ediyor, yani 2/4 dışında oyuncu sayısı var`}
+                        </p>
+                      </>
+                    )}
                   </div>
 
                   {/* ⚠ Beğeni/Paylaşma GRAFİĞİ 16 Eylül 2026'da kullanıcı

@@ -36,6 +36,7 @@ import type {
   AdminGameActivityPoint,
   AdminActiveHoursRow,
   AdminActiveDaysRow,
+  AdminGameMix,
   AdminGameDurationSummary,
   AdminGameScope,
   AdminGameSourceType,
@@ -2399,6 +2400,33 @@ export async function fetchAdminActiveDays(days = 30): Promise<AdminActiveDaysRo
     rethrowSupabase(error);
   }
   return (data as AdminActiveDaysRow[]) ?? [];
+}
+
+/**
+ * "Oyun Dağılımı" — pencerede biten oyunların İKİ kırılımı, tek satırda
+ * (yalnızca admin — Büyüme > Oyun). 22 Eylül 2026, kullanıcı isteği.
+ *
+ * ⚠ Sunucu TEK satır döndürür, boş pencerede bile (hepsi 0) — yani çağıran
+ * "satır yok" durumunu ayrıca ele almak zorunda değil. `null` yalnızca
+ * Supabase yapılandırılmamışsa döner ve ekran onu "Yükleniyor…" değil
+ * "veri yok" olarak çizer.
+ *
+ * ⚠ `fetchAdminActiveHours`/`_Days` ile AYNI desen ve aynı gerekçe: pencere
+ * sabit (`p_days`), sekmenin kaynak/kapsam/oyuncu sayısı kombolarına BAĞLI
+ * DEĞİL. Bağlansaydı filtreler grafiğin ölçtüğü şeyi yok ederdi — "Canlı"
+ * seçili bir pencerede birinci pasta tek dilim olurdu.
+ */
+export async function fetchAdminGameMix(days = 30): Promise<AdminGameMix | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.rpc('admin_game_mix', { p_days: days });
+  if (error) {
+    // `fetchAdminActiveDays` ile aynı gerekçe: hatayı yutmak admin'e gerçek
+    // bir RPC/izin hatasını asla göstermezdi.
+    rethrowSupabase(error);
+  }
+  // `returns table` bir DİZİ verir; tek satırlık sözleşme burada açılıyor ki
+  // çağıran her yerde `[0]` yazmasın (bkz. `fetchAdminGameDurationSummary`).
+  return (data as AdminGameMix[] | null)?.[0] ?? null;
 }
 
 /**

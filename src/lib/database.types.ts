@@ -1228,6 +1228,39 @@ export interface AdminActiveDaysRow {
 }
 
 /**
+ * admin_game_mix RPC çıktısındaki TEK satır (Büyüme > Oyun, "Oyun Dağılımı")
+ * — 22 Eylül 2026, kullanıcı isteği: *"Admin Oyun altına 2 pie chart yanyana.
+ * 1. Yapay zeka vs Arkadaşınla  2. 2 player vs 4 player (biten count)"*.
+ *
+ * ⚠ İKİ PASTA, TEK SATIR ve bu bilinçli: ikisi de AYNI popülasyonu (pencerede
+ * biten oyun) bölüyor, yani `ai_finished + friend_finished` ile
+ * `p2_finished + p4_finished` birbirine EŞİT olmak zorunda. İki ayrı RPC
+ * olsaydı pencereler sessizce ayrışır ve yan yana duran iki pasta iki farklı
+ * toplam gösterirdi.
+ *
+ * "Biten"in tanımı `AdminGameActivityPoint.games_finished` ile BİREBİR aynı:
+ * teslimle biten oyun hiçbir dilimde sayılmaz.
+ *
+ * ⚠ `friend_finished` OYUN TİPİDİR ("Arkadaşınla" sekmesi), "rakip insandı"
+ * DEĞİL — canlı bir oyunun boş koltuğu YZ ile doldurulabiliyor (22 Eylül
+ * 2026'da canlıda ölçüldü: 4 kişilik 8 canlı oyunun 5'inde bir YZ koltuğu
+ * var). "Rakiplerin kaçı insandı" ayrı bir soru ve `online_games.slots`
+ * okunmasını gerektirir.
+ *
+ * ⚠ `finished_total` ÖLÇÜM DEĞİL SAĞLAMA: `game_finishes.player_count`te
+ * CHECK yok (`games`/`online_games`te var — 2 ya da 4), yani bir gün 3
+ * kişilik bir satır düşerse ikinci pasta onu sessizce yutardı. Ekran bu
+ * sütunu kullanıp farkı GÖRÜNÜR yapıyor.
+ */
+export interface AdminGameMix {
+  ai_finished: number;
+  friend_finished: number;
+  p2_finished: number;
+  p4_finished: number;
+  finished_total: number;
+}
+
+/**
  * admin_ai_balance RPC çıktısındaki tek satır (Büyüme > Oyun, "YZ Dengesi").
  * Yerel (Yapay Zeka'ya karşı) oyunlarda İNSANIN sonuç dağılımı, oyuncu
  * sayısı bazında. Teslim olan satırlar HARİÇ — onlar bir beceri sonucu
