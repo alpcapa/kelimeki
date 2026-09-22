@@ -145,6 +145,13 @@ gerekenler.
       görürsen kapı düşmüş demektir: panel bir gün **%2000,0** yazdı (20 üye /
       `?ref=--sanitized--` ile gelmiş 1 çöp ziyaret). **Sayı modunda 20 hâlâ 20
       görünmeli** — düzeltme veriyi gizlemiyor, yalnızca bölmeyi kapatıyor.
+- [ ] **"Uygulama" satırı (22 Eylül 2026).** Port damgalayan sürümü sahaya
+      indikten sonra: app'ten gelen kayıtlar/ziyaretler/oyunlar bu satırda
+      toplanmalı ve `%` modunda oranlar HESAPLANMALI (`—` değil — o yalnızca
+      `Bilinmiyor` satırının kuralı). ⚠ Instagram'dan gelip uygulamayı kuran
+      biri Instagram satırında KALMALI (deep link kaynağı `app`i ezer).
+      ⚠ Ana ekrana eklenen web (PWA) buraya DÜŞMEZ — o normal bir web
+      ziyareti; "Cihaz/Sürüm" tablosundaki `Uygulama (web)` başka bir şey.
 - [ ] **TOPLAM satırının "Üye" yüzdesi o 20 kaydı İÇERİR ve bu bilinçli** —
       genel dönüşüm bir ÜST sınırdır (InfoHint yazıyor). Buradaki sayı
       satırların ölçülebilir altkümesinden büyük çıkabilir, bu bir hata değil.

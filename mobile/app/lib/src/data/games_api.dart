@@ -24,6 +24,7 @@ import '../storage/pending_queue_store.dart';
 import '../util/platform.dart';
 import '../util/uuid.dart';
 import 'game_record.dart';
+import 'device_stamp.dart';
 
 /// Bir oyunu beğenen kullanıcı — web `GameLiker` (`game_likers` RPC'si).
 /// E-posta HİÇBİR ZAMAN dönmez (projenin genel ilkesi).
@@ -251,11 +252,11 @@ abstract class GamesGateway {
   /// kimliğini aynı satırda birleştirmek gizlilik metnindeki "anonim kod
   /// hesabınızla asla eşleştirilmez" taahhüdünü bozardı.
   ///
-  /// ⚠ Portun `anon_id`/`?ref=` damgası HENÜZ YOK (web'in
-  /// `visitTracking.ts`inin karşılığı porta hiç girmedi), o yüzden ikisi de
-  /// null gidiyor ve satır sunucuda 'bilinmiyor' kaynağına düşüyor — bu
-  /// BİLİNÇLİ: 'direkt'e yazmak web'in gerçek doğrudan trafiğini şişirirdi.
-  /// Port mağazaya çıkarken damgalama eklenirse burası da güncellenmeli.
+  /// ⚠ 22 Eylül 2026'ya kadar `anon_id` ve `utm_source` null gidiyordu ve
+  /// satır panelde 'bilinmiyor' kaynağına düşüyordu. ARTIK İKİSİ DE DOLU:
+  /// kaynak `'app'` (ya da deep link'ten gelen gerçek `?ref=`), cihaz kodu
+  /// `FlagsStore.anonId()`. Gerekçe ve kullanıcı isteği:
+  /// `device_stamp.dart`ın başlığı.
   ///
   /// `is_guest` (22 Ağustos 2026) huninin "Başlayan" adımını misafire
   /// indiriyor. Bayrak PARAMETRE DEĞİL, gerçek uçta oturumdan okunuyor —
@@ -268,9 +269,9 @@ abstract class GamesGateway {
   /// Anonim bitiş telemetrisi (`game_finishes`). Web'de olduğu gibi
   /// best-effort: hata yutulur, kuyruğa ALINMAZ.
   ///
-  /// ⚠ `utm_source` null gidiyor — `logGameStart`ın aynı gerekçesi (portun
-  /// `?ref=` damgası henüz yok), yani satır sunucuda 'bilinmiyor' kaynağına
-  /// düşüyor. 'direkt' yazmak webin gerçek doğrudan trafiğini şişirirdi.
+  /// ⚠ `utm_source` 22 Eylül 2026'dan beri DOLU (`logGameStart`la aynı
+  /// damga). `anon_id` ise yalnızca `userId == null` iken yazılır — gizlilik
+  /// taahhüdü (ikisi aynı satırda asla bulunmaz).
   ///
   /// [finishedAtMs]: bitişin gerçekten olduğu an. Verilmezse sunucunun
   /// `now()` varsayılanı kalır (normal bitişte doğrusu bu). ⚠ Terk-edilme
@@ -352,7 +353,23 @@ abstract class GamesGateway {
 
 class SupabaseGamesGateway implements GamesGateway {
   final SupabaseClient client;
-  SupabaseGamesGateway(this.client);
+
+  /// `anon_id` + kaynak etiketi (22 Eylül 2026). null = damgasız yaz —
+  /// yalnızca Supabase'siz/testli yollar için; ÜRETİMDE her zaman dolu
+  /// (`bootstrap.dart`). Parametre değil ENJEKTE: çağrı yerleri çok ve
+  /// biri atlarsa sayım sessizce eksilir (`is_guest`in aynı gerekçesi).
+  final Future<DeviceStamp>? stamp;
+
+  SupabaseGamesGateway(this.client, {this.stamp});
+
+  /// Damga yoksa (test/offline yol) `anon_id` null, kaynak null gider —
+  /// yani ESKİ davranış. Sunucu ikisini de nullable tutuyor.
+  Future<({String? anonId, String? source})> _damga() async {
+    final f = stamp;
+    if (f == null) return (anonId: null, source: null);
+    final s = await f;
+    return (anonId: await s.anonId(), source: s.source);
+  }
 
   @override
   String? get currentUserId => client.auth.currentUser?.id;
@@ -395,10 +412,15 @@ class SupabaseGamesGateway implements GamesGateway {
 
   @override
   Future<void> logGameStart({required int playerCount}) async {
+    final d = await _damga();
     await client.from('game_starts').insert({
-      'anon_id': null,
+      // 22 Eylül 2026: ikisi de artık DOLU. `anon_id` huninin "Başlatan
+      // Cihaz" oranını, `utm_source` da satırın hangi kaynağa düştüğünü
+      // belirliyor — öncesinde ikisi de null gidiyordu ve satır
+      // `bilinmiyor`a düşüyordu.
+      'anon_id': d.anonId,
       'player_count': playerCount,
-      'utm_source': null,
+      'utm_source': d.source,
       // Oturum KAPALIYSA misafir başlangıcı. Sunucu `is_guest is true`
       // filtreliyor, yani yanlışlıkla null göndermek satırı sessizce
       // saydırmaz — bu yüzden değer her zaman açıkça yazılıyor.
@@ -421,6 +443,7 @@ class SupabaseGamesGateway implements GamesGateway {
     required bool endedBySurrender,
     int? finishedAtMs,
   }) async {
+    final d = await _damga();
     await client.from('game_finishes').insert({
       'user_id': userId,
       'player_count': playerCount,
@@ -431,7 +454,15 @@ class SupabaseGamesGateway implements GamesGateway {
         'created_at': DateTime.fromMillisecondsSinceEpoch(finishedAtMs)
             .toUtc()
             .toIso8601String(),
-      'utm_source': null,
+      // 22 Eylül 2026: kaynak artık DOLU (huninin "Biten" adımı).
+      'utm_source': d.source,
+      // ⚠ `anon_id` YALNIZCA misafirde. Girişliyken cihaz kodunu aynı satıra
+      // yazmak gizlilik metnindeki "ikisi aynı kayıtta asla bulunmaz"
+      // taahhüdünü bozardı — sunucu bunu ayrıca zorluyor (BEFORE INSERT
+      // trigger sessizce NULL'a çeker + CHECK kısıtı), ama istemci de
+      // göndermemeli: sunucunun sessiz düzeltmesine güvenmek, bir gün
+      // kısıtın kalkması hâlinde taahhüdü kırar.
+      if (userId == null) 'anon_id': d.anonId,
     });
   }
 

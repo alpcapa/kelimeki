@@ -25,6 +25,68 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 205 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
+
+**Kullanıcı bildirdi** (22 Eylül 2026): *"Admin kaynak hunisinde bilinmeyen
+1, üye 20 gözüküyor. (%2000 conversion not possible) Bir hata var galiba."*
+
+İlk teşhis yüzeyseldi (oranı susturmak) ve kullanıcı amacı hatırlattı:
+*"kim nereden gelmiş, kaç üye getirmiş, kaçı oyun başlatmış, kaçı bitirmiş
+görmek. Bu kadar komplike olmamalı. Kaynak belliyse onun altına girecek,
+değilse 'bilinmiyor'da yazacak (ki bilinmemesi mümkün olmamalı çünkü ya
+web'den direkt gelmiştir ya da app'den)."*
+
+**Ölçüm haklı çıkardı — "Bilinmiyor" portun damgasızlığının adıydı:**
+
+| | Gelen | Üye | Başlayan | Bitiren |
+|---|---|---|---|---|
+| Web | ✅ | ✅ | ✅ | ✅ |
+| App (önce) | ❌ hiç yazmıyor | ❌ | ❌ | ❌ |
+
+Yani app'in tabloya kattığı TEK şey `signup_utm_source is null` olan 20
+kayıttı; "Gelen"i 1 yapan da 23 Ağustos'ta `?ref=--sanitized--` ile gelmiş
+tek bir çöp web ziyaretiydi. 20/1 → %2000.
+
+**⚠ ALTYAPI ZATEN VARDI AMA ÖLÜYDÜ.** `flags_store.dart` `anonId()`,
+`captureUtmSource`, `anonVisitDate` taşıyor ve **hiçbir yer çağırmıyordu**
+(grep ile ölçüldü). `games_api.dart` `anon_id`/`utm_source`'u bilerek `null`
+yazıyordu — o "bilerek" bir dönem doğruydu ('direkt' yazmak web'i şişirirdi)
+ama üçüncü seçenek (`'app'`) hiç değerlendirilmemişti.
+
+**Yapılan — damga TEK yerde (`data/device_stamp.dart`), dört tüketici:**
+`guest_visits` pingi (YENİ, `data/visits_api.dart`) · `game_starts` ·
+`game_finishes` · kayıt metadata'sı (`utmSource`). Gateway'lere ENJEKTE
+ediliyor, çağıranlardan parametre olarak İSTENMİYOR — `is_guest`in aynı
+gerekçesi: çağrı yeri çok, biri atlarsa sayım SESSİZCE eksilir.
+
+**⚠ `anon_id` yalnızca `user_id == null` iken.** Sunucu bunu zaten zorluyor
+(trigger + CHECK), ama istemci de göndermiyor: sunucunun sessiz
+düzeltmesine güvenmek, kısıt bir gün kalkarsa gizlilik taahhüdünü kırar.
+
+**⚠ Gizlilik metni DEĞİŞMEDİ ve bu ölçülerek söylendi.** `LegalContent.tsx`in
+listesi platform-nötr: *"HER ziyarette — oturum açık olsun olmasın — işletim
+sistemi tipiyle (iOS/Android/masaüstü)… varsa kaynak etiketi"*. Portun aynı
+üç kaydı yazması yeni bir durum açmıyor. (`signup_events` migration'ındaki
+uyarı BEŞİNCİ bir durum — kayıt olayına `anon_id` — içindi; burada kayda
+yalnızca KAYNAK gidiyor, anonim kod GİTMİYOR.)
+
+**⚠ ZİNCİRİN ÜÇÜNCÜ HALKASI — `guest_visits`i huniden başka İKİ döküm daha
+okuyor.** App satırları eklenince `admin_guest_standalone_breakdown` her app
+açılışını "ana ekrana eklememiş" sayıp PWA oranını seyreltecekti
+(`coalesce(is_standalone,false)`). Migration `20260922070950` ikisinden de
+app satırlarını eliyor; **canlıya uygulandı ve bugün NO-OP** (`utm_source =
+'app'` satırı: 0). Bilerek önce uygulandı — sonra uygulansa port sahadayken
+iki tablo yanlış sayardı.
+
+**Kapılar:** `test/source_stamp_test.dart` (9 vaka: damga yoksa `app`, deep
+link kaynağı EZİLMEZ, girişliyken yazmaz, günde bir kez, ertesi gün yazar,
+insert düşerse gün damgası yanmaz, `device_type` web söz dağarcığı) +
+`npm run verify-admin-groups` (web kanalı). **855 test yeşil**, `dart
+analyze` temiz.
+
+**Doğrulama sınırı:** sahte uçlarla koşuldu — "sunucuya gerçekten doğru
+satır düştü mü" CEVAPLANMADI. Cihaz maddesi `mobile/TESTING.md`'de.
+
 ## Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
 
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan

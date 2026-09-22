@@ -1131,3 +1131,45 @@ tablo yan yana durduğu için InfoHint bunu açıkça yazıyor.
 **`bilinmiyor` kanalı ve kapısı KALDI** — geçmiş silinmiyor: 26 Ağustos–20
 Eylül 2026 arası 20 damgasız kayıt ve damgasız eski oyun başlangıçları orada.
 Port sürümü sahaya inince yeni satır düşmez.
+
+#### Yapılan iş — üç yarım, aynı PR
+
+1. **Web:** `SourceChannel`e `app` (etiket **Uygulama**), tam eşleşme,
+   `channelHasVisitorBase('app') = true`. Kapı `verify-admin-groups`.
+2. **Port:** damga TEK yerde (`data/device_stamp.dart`), dört tüketici —
+   `guest_visits` pingi (YENİ `data/visits_api.dart`) · `game_starts` ·
+   `game_finishes` · kayıt metadata'sı. Gateway'lere ENJEKTE ediliyor,
+   çağıranlardan İSTENMİYOR (`is_guest`in gerekçesi: çağrı yeri çok, biri
+   atlarsa sayım sessizce eksilir). Kapı `test/source_stamp_test.dart`,
+   855 test yeşil. Kayıt: `mobile/docs/parca-log.md` → Parça 205.
+3. **Sunucu:** `20260922070950_guest_visits_app_rows_out_of_web_breakdowns`
+   — CANLIYA UYGULANDI.
+
+⚠ **ÜÇÜNCÜ HALKA, az kalsın kaçıyordu:** `guest_visits`i huniden başka İKİ
+döküm daha okuyor. App satırları eklenince `admin_guest_standalone_breakdown`
+her app açılışını *"ana ekrana eklememiş"* sayıp PWA oranını seyreltecekti
+(`coalesce(is_standalone, false)`), `admin_guest_device_breakdown` ise
+`device_visits` tabanlı "Cihaz" tablosunun kötü bir kopyasına dönüşecekti.
+Migration ikisinden de `utm_source = 'app'` satırlarını eliyor. **Bugün
+NO-OP** (uygulamadan önce ölçüldü: `app` satırı 0) ve bilerek ÖNCE uygulandı
+— sonra uygulansaydı port sahadayken iki tablo bir süre yanlış sayardı.
+Doğrulama: her ad için tek fonksiyon (mükerrer overload yok), `proacl`
+değişmedi (`anon` YOK), `security definer`/`search_path` yerinde.
+
+⚠ **`create or replace` seçildi, `drop + create` DEĞİL:** imza birebir aynı
+olduğundan bu kod tabanının bildiği "sessiz ikinci overload" tuzağı
+oluşamaz, ve `create or replace` grant'leri KORUR — drop, `security
+definer`/`search_path`/grant'lerin hepsini düşürür ve Supabase yeni
+fonksiyona `anon`a da execute verebiliyor (16 Eylül 2026'da
+`admin_list_members`te canlıda ölçülmüştü).
+
+⚠ **AÇIK KALAN — geçmişteki 20 kayıt.** `NULL ⟺ app` bu veride
+TARTIŞMASIZ (16 Ağustos öncesi hiç NULL yok; 20 NULL'ın hepsi 26 Ağustos–20
+Eylül, app test dönemi), yani tek satırlık bir `update` geçmişi de
+düzeltirdi. YAPILMADI: geçmiş veriyi yeniden yazmak kullanıcının açık onayı
+olmadan atılacak bir adım değil. Karar verilirse SQL:
+`update public.profiles set signup_utm_source = 'app'
+ where signup_utm_source is null;`
+(⚠ `trg_keep_signup_utm_source` tetikleyicisi `update`te eski değeri geri
+yazıyor — önce onu devre dışı bırakmak ya da tetikleyiciyi atlayan bir yol
+gerekir.)
