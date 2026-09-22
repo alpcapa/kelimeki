@@ -806,9 +806,9 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         ("Oyun Sayısı" grafiğindeki <b>Bitirilen</b> serisiyle birebir aynı tanım).
         <br />
         <br />
-        <b>Soldaki: oyun tipi.</b> <b>Yapay Zeka ile</b> = yerel/aynı-cihaz oyunlar
-        (misafirler dahil); <b>Arkadaşınla</b> = Canlı oyunlar (oyun başına tek kez
-        sayılır, her oyuncu için ayrı değil).{' '}
+        <b>Soldaki: oyun tipi.</b> <b>Yapay Zeka</b> (Setup'taki "Yapay Zeka ile" sekmesi)
+        = yerel/aynı-cihaz oyunlar, misafirler dahil; <b>Arkadaşınla</b> = Canlı oyunlar
+        (oyun başına tek kez sayılır, her oyuncu için ayrı değil).{' '}
         <b>⚠ Bu bir OYUN TİPİ ayrımı, "rakip insandı" ayrımı DEĞİL</b> — Canlı bir oyunun
         boş koltuğu YZ ile doldurulabiliyor (22 Eylül 2026'da canlıda ölçüldü: 4 kişilik 8
         Canlı oyunun 5'inde bir YZ koltuğu vardı). Ayrım, oyunun Setup'ta hangi sekmeden
@@ -3928,7 +3928,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                             slices={[
                               {
                                 key: 'ai',
-                                label: 'Yapay Zeka ile',
+                                label: 'Yapay Zeka',
                                 value: gameMix.ai_finished,
                                 color: '#2a78d6',
                               },

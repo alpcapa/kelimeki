@@ -1058,9 +1058,20 @@ sapma olarak kalır.
 
 Canlı bir oyunun boş koltuğu YZ ile doldurulabiliyor — **22 Eylül 2026'da
 canlıdan sayıldı: 4 kişilik 8 canlı oyunun 5'inde bir `{"type":"ai"}` koltuğu
-var.** Ayrım, oyunun Setup'ta hangi sekmeden başlatıldığıdır ve etiketler
-bilerek o sekmelerin adını taşıyor ("Yapay Zeka ile" · "Arkadaşınla") —
-üçüncü bir terim üretilmedi. *"Rakiplerin kaçı insandı"* başka bir soru ve
+var.** Ayrım, oyunun Setup'ta hangi sekmeden başlatıldığıdır — üçüncü bir terim
+üretilmedi.
+
+**Etiket 22 Eylül 2026'da "Yapay Zeka ile" → "Yapay Zeka" olarak kısaldı**
+(kullanıcı: *"uzama sorunu kalksın"*) — dar telefonda efsane satırı iki satıra
+sarıyordu. Kısaltma tesadüfen bir tutarlılık da kazandırdı: aynı sekmedeki
+**Kaynak** kombosu zaten `Toplam · Canlı · Yapay Zeka` diyor, yani pastanın
+sol dilimi artık kombonun kelimesiyle birebir aynı.
+
+⚠ **Sağ dilimde bu hizalama YOK ve bu bilinçli:** kombo "Canlı" derken pasta
+"Arkadaşınla" diyor (kullanıcının istediği kelime, Setup'ın sekme adı). İkisi
+AYNI ayrımı iki kelimeyle anlatıyor; birleştirilecekse ikisi BİRLİKTE
+değişmeli. Sarma güvenliği (`break-words`) yine de duruyor — etiket bir gün
+uzarsa kırpılmak yerine sarar. *"Rakiplerin kaçı insandı"* başka bir soru ve
 `online_games.slots` okunmasını gerektirir; bu RPC onu yanıtlamaz. `?`
 rozetinin metni bunu açıkça yazıyor.
 
@@ -1103,4 +1114,5 @@ zemin boşluğu var — sınır renkten değil boşluktan okunuyor.
 İlk sürüm `truncate` kullanıyordu; önizlemede ölçüldü: iki pasta dar bir
 telefonda ~150px sütuna düşüyor ve orada *"Yapay …"* ile *"Arkadaşı…"* ayırt
 edilemiyordu. Etiket artık sarıyor — satırın iki satıra çıkması, etiketin
-okunamamasından iyi.
+okunamamasından iyi. Etiketin kendisi de kısaldı (yukarı bkz.), yani sarma
+artık normal değil SON ÇARE.

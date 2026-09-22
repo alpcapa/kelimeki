@@ -744,7 +744,7 @@ dondurulmuş). Ayrıntı: `docs/decisions/admin-panel.md` → "Aktif Günler".
 ## 9.21. Admin — "Oyun Dağılımı" pastaları (22 Eylül 2026)
 
 Büyüme > **Oyun** sekmesi, "Oyun Süresi (Medyan)" ile "Beğeni / Paylaşma"
-arasında. İki pasta yan yana: **Oyun Tipi** (Yapay Zeka ile ↔ Arkadaşınla) ve
+arasında. İki pasta yan yana: **Oyun Tipi** (Yapay Zeka ↔ Arkadaşınla) ve
 **Masa** (2 Kişilik ↔ 4 Kişilik). Başlık `Oyun Dağılımı (Son 30 Gün)`.
 
 - [ ] İki pasta da çiziliyor, **yan yana** (dar telefonda da iki sütun).
@@ -756,7 +756,11 @@ arasında. İki pasta yan yana: **Oyun Tipi** (Yapay Zeka ile ↔ Arkadaşınla)
       zaten yazar (`⚠ masa kırılımı … ediyor`) — o uyarı çıkıyorsa
       `game_finishes`e 2/4 dışında bir `player_count` düşmüş demektir.
 - [ ] Efsanede **ham sayı ve yüzde birlikte** var; etiketler **kırpılmamış**
-      (dar ekranda iki satıra sarıyor, `Yapay …` gibi üç noktayla bitmiyor).
+      (`Yapay …` gibi üç noktayla bitmiyor) ve dar telefonda **tek satırda**
+      duruyor — etiket 22 Eylül 2026'da bunun için kısaldı ("Yapay Zeka ile"
+      → "Yapay Zeka"). Sarma hâlâ mümkün ama artık son çare.
+- [ ] Sol dilimin etiketi, üstteki **Kaynak** kombosunun `Yapay Zeka`
+      seçeneğiyle **aynı kelime**.
 - [ ] Dilim içindeki yüzde yalnızca **büyük dilimlerde** yazıyor; küçük dilim
       (bugün "Arkadaşınla", ~%5) etiketsiz — sayısı efsanede.
 - [ ] İki dilim arasında ince bir **zemin boşluğu** görünüyor (sınır renkten
