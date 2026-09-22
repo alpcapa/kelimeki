@@ -82,7 +82,7 @@ for (const c of GENIS_AMA_KISA) {
     // (kapatılamaz), o yüzden yanlış tetiklenmesi uygulamayı tamamen
     // kullanılamaz yapardı — eski `#landscape-block`un iPad'de düştüğü tuzak.
     expect(c.h).toBeGreaterThanOrEqual(BOTTOM_STRIP_MIN_HEIGHT_PX);
-    await expect(page.getByText('Telefonunuzu dikey çevirin')).toBeHidden();
+    await expect(page.getByText('Telefonunuzu dikeye çevirin')).toBeHidden();
   });
 }
 
@@ -96,7 +96,7 @@ test('dikey telefon: düzen DEĞİŞMEDİ (yükseklik sınırı hiç devreye gir
   await oyunaGir(page);
   const tahta = await page.locator('[data-board-viewport]').boundingBox();
   expect(Math.round(tahta!.width)).toBe(369);
-  await expect(page.getByText('Telefonunuzu dikey çevirin')).toBeHidden();
+  await expect(page.getByText('Telefonunuzu dikeye çevirin')).toBeHidden();
 });
 
 // ⚠ Bloğun KENDİSİ — 22 Eylül 2026, kullanıcı kararı: *"Telefonda web'in
@@ -114,7 +114,7 @@ test('telefon YATAY: tam ekran blok çıkar, arkada bozuk düzen GÖRÜNMEZ', as
   // Kullanıcının bildirdiği viewport (iPhone 12/13/14 Pro yatay; ekran
   // görüntüsü 2532×1170 fiziksel, DPR 3'ten hesaplandı).
   await page.setViewportSize({ width: 844, height: 390 });
-  await expect(page.getByText('Telefonunuzu dikey çevirin')).toBeVisible();
+  await expect(page.getByText('Telefonunuzu dikeye çevirin')).toBeVisible();
 
   // ⚠ ASIL İDDİA: blok arkayı GERÇEKTEN kapatıyor. `toBeInViewport`
   // KULLANILMAZ — o geometriye bakar, üstü ÖRTÜLÜ olmasına değil; tahta
@@ -136,7 +136,7 @@ test('telefon YATAY: tam ekran blok çıkar, arkada bozuk düzen GÖRÜNMEZ', as
 
   // Dikeye dönünce blok kalkar ve oyun kaldığı yerden görünür.
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.getByText('Telefonunuzu dikey çevirin')).toBeHidden();
+  await expect(page.getByText('Telefonunuzu dikeye çevirin')).toBeHidden();
   await expect(page.locator('[data-board-viewport]')).toBeVisible();
 });
 
@@ -185,10 +185,10 @@ test('YAZARKEN blok çıkmaz — ekran klavyesi viewport\'u kısaltsa bile', asy
   // yaşandı, 22 Eylül 2026). Bekleme, bileşendeki 500 ms'lik
   // `focusout` gecikmesinden de uzun.
   await page.waitForTimeout(800);
-  await expect(page.getByText('Telefonunuzu dikey çevirin')).toBeHidden();
+  await expect(page.getByText('Telefonunuzu dikeye çevirin')).toBeHidden();
 
   // Odak gidince klavye kapanır ve blok geri gelir — bileşendeki 500 ms'lik
   // gecikmeyi `toBeVisible`ın kendi beklemesi karşılıyor.
   await alan.blur();
-  await expect(page.getByText('Telefonunuzu dikey çevirin')).toBeVisible();
+  await expect(page.getByText('Telefonunuzu dikeye çevirin')).toBeVisible();
 });

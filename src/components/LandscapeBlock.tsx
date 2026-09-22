@@ -3,7 +3,7 @@ import { LogoMark } from './LogoMark';
 import { BOTTOM_STRIP_MIN_HEIGHT_PX } from '../utils/boardFit';
 
 /**
- * "Telefonunuzu dikey çevirin" — TAM EKRAN, KAPATILAMAZ blok.
+ * "Telefonunuzu dikeye çevirin" — TAM EKRAN, KAPATILAMAZ blok.
  *
  * 22 Eylül 2026, kullanıcı kararı, sözleri birebir: *"Telefonda web'in yatay
  * çalışması gerekmiyor. Her durumda sadece dikey konuma getirin demek
@@ -133,7 +133,7 @@ export function LandscapeBlock() {
       </svg>
 
       <p className="text-base font-bold text-text font-sans leading-snug max-w-[280px]">
-        Telefonunuzu dikey çevirin
+        Telefonunuzu dikeye çevirin
       </p>
       <p className="text-xs font-mono text-muted leading-snug max-w-[280px]">
         Kelimeki 13×13'lük bir tahtayla oynanıyor; yatay konumda tahta ve raf

@@ -1428,7 +1428,7 @@ gerektiriyor. `tests/board-fit.spec.ts` yalnızca YEREL oyun ekranını ölçüy
 
 **Telefonda, Canlı bir oyun açıkken:**
 
-- [ ] Telefonu **yatay** tut → **TAM EKRAN** "Telefonunuzu dikey çevirin"
+- [ ] Telefonu **yatay** tut → **TAM EKRAN** "Telefonunuzu dikeye çevirin"
       bloğu çıkıyor. (22 Eylül 2026'dan önce bu ekranda HİÇ uyarı yoktu.)
 - [ ] ⚠ **Arkada hiçbir şey görünmüyor** — ne tahta, ne yarım raf, ne açık
       kalmış bir pencere. Kullanıcının isteği birebir buydu: *"boş ekranda,

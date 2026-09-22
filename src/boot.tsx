@@ -102,7 +102,7 @@ export function mount(): void {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <ErrorBoundary>
-        {/* ⚠ "Telefonunuzu dikey çevirin" bloğu ROUTE SWITCH'İN DIŞINDA ve
+        {/* ⚠ "Telefonunuzu dikeye çevirin" bloğu ROUTE SWITCH'İN DIŞINDA ve
             bu bilinçli: üç dalı da (uygulama, /game, /davet) birden kapsıyor
             ve `App.tsx`in erken dönüşlerinden ETKİLENMİYOR. 22 Eylül 2026'da
             tam bu yüzden bir hata yaşandı — banner `App.tsx`in içindeydi ve
