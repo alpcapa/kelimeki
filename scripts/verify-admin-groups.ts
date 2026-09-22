@@ -15,6 +15,7 @@
 import {
   channelHasVisitorBase,
   clientPlatformLabel,
+  SOURCE_CHANNEL_LABEL,
   compareVersionDesc,
   groupPlatformVersions,
   groupSourceFunnel,
@@ -71,7 +72,7 @@ check('ikisi AYRI kanal', sourceChannel('direkt') !== sourceChannel('bilinmiyor'
   // gelemez. Taban büyüklüğe göre elenmiyor artık, KİTLEYE göre eleniyor.
   console.log('Dönüşüm tabanı — "Bilinmiyor"da oran YOK (%2000 vakası)');
   check('bilinmiyor tabanı GEÇERSİZ', channelHasVisitorBase('bilinmiyor') === false);
-  for (const ch of ['instagram', 'facebook', 'linkedin', 'arkadas', 'direkt', 'diger'] as const) {
+  for (const ch of ['instagram', 'facebook', 'linkedin', 'arkadas', 'direkt', 'app', 'diger'] as const) {
     check(`${ch} tabanı geçerli`, channelHasVisitorBase(ch) === true);
   }
   // ⚠ `--sanitized--` "Bilinmiyor"a düşmeye DEVAM ediyor (yukarıdaki vaka) —
@@ -81,6 +82,26 @@ check('ikisi AYRI kanal', sourceChannel('direkt') !== sourceChannel('bilinmiyor'
     channelHasVisitorBase(sourceChannel('--sanitized--')) === false);
   check('null kaynak da tabansız',
     channelHasVisitorBase(sourceChannel(null)) === false);
+}
+
+{
+  // Uygulama, "Bilinmiyor"un YERİNE geçen gerçek kaynak (22 Eylül 2026,
+  // kullanıcı: *"bilinmemesi mümkün olmamalı çünkü ya web'den direkt
+  // gelmiştir ya da app'den"*). Port dört yere de damga yazdığı için bu
+  // satırın oranı GERÇEK — tabanı geçersiz sayılmamalı.
+  console.log('Uygulama kanalı — "Bilinmiyor"un yerine geçen gerçek kaynak');
+  check('app → Uygulama', sourceChannel('app') === 'app');
+  check('APP (büyük harf) de eşleşir', sourceChannel('APP') === 'app');
+  check('Uygulama etiketi', SOURCE_CHANNEL_LABEL.app === 'Uygulama');
+  check('app tabanı GEÇERLİ (bilinmiyor DEĞİL)', channelHasVisitorBase('app') === true);
+  // ⚠ Önek kuralına düşmemeli: `app` TAM eşleşmedir, `apple-*` gibi bir
+  // etiket uydurma bir kanala atanmaz, Diğer'de görünür kalır.
+  check('appstore → Diğer (önek değil, tam eşleşme)', sourceChannel('appstore') === 'diger');
+  check('app-ios → Diğer', sourceChannel('app-ios') === 'diger');
+  // Deep link'ten gerçek bir kaynak gelirse O kazanır — port `flags.utmSource
+  // ?? 'app'` yazıyor, yani Instagram'dan gelip uygulamayı kuran kişi
+  // Instagram satırında KALIR.
+  check('ig-bio app değil, Instagram', sourceChannel('ig-bio') === 'instagram');
 }
 
 {

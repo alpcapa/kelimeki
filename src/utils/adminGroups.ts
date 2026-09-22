@@ -48,6 +48,7 @@ export type SourceChannel =
   | 'linkedin'
   | 'arkadas'
   | 'direkt'
+  | 'app'
   | 'diger'
   | 'bilinmiyor';
 
@@ -57,6 +58,7 @@ export const SOURCE_CHANNEL_LABEL: Record<SourceChannel, string> = {
   linkedin: 'LinkedIn',
   arkadas: 'Arkadaş Daveti',
   direkt: 'Direkt',
+  app: 'Uygulama',
   diger: 'Diğer',
   bilinmiyor: 'Bilinmiyor',
 };
@@ -77,6 +79,14 @@ export function sourceChannel(source: string | null): SourceChannel {
   const s = (source ?? '').trim().toLowerCase();
   if (s === '' || s === 'bilinmiyor' || s === '--sanitized--') return 'bilinmiyor';
   if (s === 'direkt') return 'direkt';
+  // ⚠ `app` bir PLATFORM değil, burada bir KAYNAK: mağazadan/uygulamadan
+  // gelen kişinin ilk teması odur. Port bu etiketi dört yere de yazıyor
+  // (ziyaret · kayıt · oyun başlatma · oyun bitirme), böylece satırın dört
+  // adımı da AYNI kitleden gelir ve oran gerçek bir dönüşüm olur. Deep
+  // link'ten gerçek bir `?ref=` yakalanırsa o kazanır (`flags.utmSource ??
+  // 'app'`), yani Instagram'dan gelip uygulamayı kuran kişi Instagram
+  // satırında kalır.
+  if (s === 'app') return 'app';
   if (s === 'arkadas') return 'arkadas';
   if (hasPrefix(s, 'ig') || hasPrefix(s, 'instagram')) return 'instagram';
   if (hasPrefix(s, 'fb') || hasPrefix(s, 'facebook')) return 'facebook';
@@ -114,6 +124,15 @@ export function sourceChannel(source: string | null): SourceChannel {
 export function channelHasVisitorBase(channel: SourceChannel): boolean {
   return channel !== 'bilinmiyor';
 }
+
+/*
+ * ⚠ `app` BU LİSTEDE DEĞİL ve olmamalı: port damgalamaya başladığında
+ * "Uygulama" satırının dört adımı da (ziyaret · kayıt · başlatma · bitirme)
+ * aynı kitleden gelir, yani oran GERÇEK bir dönüşümdür. `bilinmiyor` ise
+ * artık yalnızca TARİHSEL satırları taşır — 26 Ağustos–20 Eylül 2026 arası
+ * damgasız 20 kayıt (ve damgasız eski oyun başlangıçları). Port sürümü sahaya
+ * inince yeni satır düşmeyecek, ama geçmiş silinmediği için kapı KALIR.
+ */
 
 /** Gruplanmış huni satırı — alan adları `AdminSourceFunnelRow` ile birebir. */
 export interface SourceFunnelTotals {

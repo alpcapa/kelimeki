@@ -1078,8 +1078,56 @@ genel dönüşüm oranı bir **üst sınır**. Düzeltilmedi çünkü TOPLAM'ı 
 kümeden hesaplamak sütunun elle toplanabilirliğini bozar — kararı gerektirir,
 sessizce değiştirilmemeli. InfoHint bunu yazıyor.
 
-**Mobil damgalama BİLEREK eklenmedi:** port kayıtta `'direkt'` yazmaya
-başlarsa satır Bilinmiyor'dan çıkar ama "Direkt" şişer — web'in kendi yazılı
-kararının tam tersi. Uygulama kayıtlarına kaynak vermek istenirse doğrusu
-`'direkt'` değil ayrı bir etiket (`app` gibi) ve o AYRI bir karar;
-`SourceChannel`e yeni bir kanal eklemeyi gerektirir.
+### Düzeltme YETMEDİ — kullanıcı asıl işi istedi (aynı gün)
+
+Yukarıdaki değişiklik yalnızca imkânsız yüzdeyi susturuyordu. Kullanıcı amacı
+hatırlattı: *"kim nereden gelmiş, kaç üye getirmiş, kaçı oyun başlatmış, kaçı
+bitirmiş görmek. Bu kadar komplike olmamalı. Kaynak belliyse onun altına
+girecek, değilse 'bilinmiyor'da yazacak (ki bilinmemesi mümkün olmamalı çünkü
+ya web'den direkt gelmiştir ya da app'den)"*.
+
+Teşhis doğruydu: **"Bilinmiyor" bir hesap hatası değil, portun hiç
+damgalamamasının adıydı.** Ölçüm:
+
+| | Gelen | Üye | Başlayan | Bitiren |
+|---|---|---|---|---|
+| Web | ✅ `?ref=` damgalı | ✅ | ✅ | ✅ |
+| App | ❌ hiç yazmıyor | ❌ damgasız | ❌ damgasız | ❌ damgasız |
+
+App'in tabloya kattığı TEK şey o 20 damgasız üyeydi; diğer üç adımda app hiç
+görünmüyordu. **Kullanıcı kararı: app huniye TAM sokulacak** — satırın adı
+`Uygulama`, dört adımı da dolu.
+
+⚠ **Portta altyapı VARDI ama ÖLÜYDÜ:** `flags_store.dart` `anonId()`,
+`captureUtmSource`, `anonVisitDate` taşıyor ve **hiçbir yer çağırmıyordu**;
+`games_api.dart` `anon_id`/`utm_source`'u bilerek `null` yazıyordu.
+
+⚠ **Gizlilik metni bu işi ZATEN kapsıyor — değişiklik GEREKMEDİ.**
+`LegalContent.tsx`in "anonim kod şu durumlarda iletilir" listesi
+platform-nötr yazılmış: (1) *"HER ziyarette — oturum açık olsun olmasın —
+işletim sistemi tipiyle (iOS/Android/masaüstü)… misafir ziyaretteyseniz varsa
+kaynak etiketi"*, (2) oyun başlatma, (4) misafir oyun bitirme. Portun aynı üç
+kaydı yazması yeni bir durum AÇMIYOR. `signup_events` migration'ının uyarısı
+BEŞİNCİ bir durum (kayıt olayına `anon_id`) eklemekle ilgiliydi, bununla değil.
+
+⚠ **Yan bulgu, AYRI iş:** metin *"Bu kod **dört** durumda iletilir"* diyor ama
+BEŞ madde sayıyor ve sonra *"Bu **beş** kaydın"* diyor — tanıtım turu (5)
+eklenirken sayı güncellenmemiş. Düzeltmek "Son güncelleme" tarihini
+değiştirmeyi gerektirir, `legal_text_test.dart` tam metni değil O TARİHİ
+karşılaştırdığı için port ikizi aynı PR'da güncellenmeli → mobil dosya →
+sürüm dondurmasını bekler.
+
+**`app` bir PLATFORM değil, burada bir KAYNAK.** Port `flags.utmSource ??
+'app'` yazıyor, yani deep link'ten gerçek bir `?ref=` yakalanırsa O kazanır:
+Instagram'dan gelip uygulamayı kuran kişi Instagram satırında KALIR.
+⚠ Eşleşme TAM, önek DEĞİL — `appstore`/`app-ios` gibi bir etiket uydurma bir
+kanala atanmaz, `Diğer`de görünür kalır (kapı ölçüyor).
+
+⚠ **Ana ekrana eklenen web (PWA) bu satıra GİRMEZ** — o normal bir web
+ziyareti, geldiği kaynağa/`direkt`e düşer. "Cihaz/Sürüm" tablosundaki
+`Uygulama (web)` satırı BAŞKA bir şeyi ölçüyor (`app-web` platformu); iki
+tablo yan yana durduğu için InfoHint bunu açıkça yazıyor.
+
+**`bilinmiyor` kanalı ve kapısı KALDI** — geçmiş silinmiyor: 26 Ağustos–20
+Eylül 2026 arası 20 damgasız kayıt ve damgasız eski oyun başlangıçları orada.
+Port sürümü sahaya inince yeni satır düşmez.

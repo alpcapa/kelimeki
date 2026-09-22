@@ -512,14 +512,24 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         sütunu ham sayıyı verir.
         <br />
         <br />
-        <b>"Bilinmiyor" satırında yüzde HİÇ hesaplanmaz (22 Eylül 2026)</b> — orada{' '}
-        <b>Üye</b> yalnızca damgalamayan bir istemciden (bugün mobil uygulama) gelir, oysa{' '}
-        <b>Gelen</b>'i besleyen ziyaret kaydına o istemci hiç yazmıyor: pay ile payda ayrı
-        kitleler, yani oran bir dönüşüm değil. Panel bir gün <b>%2000,0</b> yazdı (20 üye / 1
-        ziyaret) çünkü tabanı 0'dan 1'e çıkaran tek bir çöp ziyaret vardı
+        <b>"Uygulama" satırı (22 Eylül 2026)</b> — mağazadan kurulan iOS/Android uygulaması
+        artık kendi kaynağıdır: port dört adımın hepsini damgalıyor (ziyaret · kayıt · oyun
+        başlatma · oyun bitirme), yani bu satırın oranı gerçek bir dönüşümdür. Deep link'ten
+        gerçek bir <code>?ref=</code> gelirse O kazanır — Instagram'dan gelip uygulamayı kuran
+        kişi Instagram satırında kalır. ⚠ <b>Ana ekrana eklenen web (PWA) buraya DEĞİL</b>,
+        geldiği kaynağa (ya da Direkt'e) düşer; "Cihaz/Sürüm" tablosundaki{' '}
+        <i>Uygulama (web)</i> satırı o ve BAŞKA bir şeyi ölçüyor.
+        <br />
+        <br />
+        <b>"Bilinmiyor" artık yalnızca TARİHSEL satırları taşır ve yüzdesi HİÇ hesaplanmaz.</b>{' '}
+        Port damgalamaya başlamadan önceki kayıtlar (26 Ağustos–20 Eylül 2026 arası 20 üye) ve
+        damgasız eski oyun başlangıçları orada duruyor. O satırda <b>Üye</b> damgalamayan bir
+        istemciden gelirken <b>Gelen</b>'i besleyen ziyaret kaydına aynı istemci hiç yazmıyordu:
+        pay ile payda ayrı kitleler, yani oran bir dönüşüm değil. Panel bir gün <b>%2000,0</b>{' '}
+        yazdı (20 üye / 1 ziyaret) çünkü tabanı 0'dan 1'e çıkaran tek bir çöp ziyaret vardı
         (<code>?ref=--sanitized--</code>). Sayılar olduğu gibi duruyor, yalnızca bölme
-        yapılmıyor. ⚠ <b>TOPLAM satırının Üye yüzdesi bu kayıtları İÇERİR</b> (34 üyenin 20'si
-        hiç "Gelen" olarak görünmedi), yani genel dönüşüm oranı bir ÜST sınırdır.
+        yapılmıyor. ⚠ <b>TOPLAM satırının Üye yüzdesi bu kayıtları İÇERİR</b>, yani port sürümü
+        sahaya inene kadar genel dönüşüm oranı bir ÜST sınırdır.
         <br />
         <br />
         <b>Satırlar 16 Eylül 2026'dan beri KANALA göre gruplu</b> (Instagram, Facebook,
