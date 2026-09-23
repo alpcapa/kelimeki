@@ -1542,3 +1542,32 @@ denemede geçiyor, çünkü blok medya sorgusu olayından sonraki React turunda
 geliyor. **Yokluk iddiaları yarışa açıktır** — teste 800 ms'lik açık bir
 bekleme konduktan sonra kapı gerçekten düştü (ölçüldü: kapı kapalıyken 1
 düştü, açıkken 6/6 geçti).
+
+### Filigranlar yükseklik bütçesiyle küçülen tahtadan taşıyordu (23 Eylül 2026)
+
+#607'nin YAN ETKİSİ. Köşe rakamı ve "X2" puntosu ekran genişliğinden geliyor
+(`clamp(80px,32vw,220px)` / `clamp(60px,24vw,165px)`), yani tahtanın ekranla
+orantılı olduğunu varsayıyordu. #607'den beri tahta YÜKSEKLİĞE de
+sığdırıldığından bu varsayım "geniş ama kısa" her ekranda bozuldu: punto
+tavanda kalırken tahta küçülüyor. Kullanıcı iPad'de (ana ekrana eklenmiş web
+uygulaması, yatay) ekran görüntüsüyle bildirdi: "2" tahtanın alt kenarından,
+"X2" 5×5 bölgeden taşıyordu.
+
+**Düzeltme:** punto artık tahtanın KENDİ genişliğiyle de sınırlı — oran
+tavanı 0,371 (köşe) / 0,279 (X2), web'in desteklediği en dar ekrandaki
+(320 px, ızgara = ekran − 44) oran. Yükseklik bütçesi devrede değilken tavan
+hiç devreye girmez, yani telefon görünümü birebir aynı.
+
+⚠ **Punto DEĞİŞMİYOR, taşan filigran `scale()` ile küçülüyor.** Sebep: `clamp`
+ifadesi portla birebir kilitli — `mobile/app/test/layout_parity_test.dart`
+`Board.tsx`teki `fontSize: 'clamp(...)'` satırını regex'le okuyor. O satırı
+`min(...)`e çevirmek testi de değiştirmeyi gerektirirdi; test `mobile/`
+altında olduğu için merge MOBİL DERLEMEYİ tetiklerdi (dondurma). Ölçek
+`ResizeObserver` ile ölçülen ızgara genişliği ve hesaplanan puntodan geliyor
+(formül JS'te ikinci kez yazılmadı).
+
+**Port ikizi** aynı oranlarla (`_cornerFontPerGrid` / `_zoneFontPerGrid`,
+`board_widget.dart`), `claude/ipad-filigran-tasmasi` dalında dondurmayı
+bekliyor; portta punto doğrudan küçülüyor (orada parite kilidi yok).
+Kapı: `tests/board-fit.spec.ts` → "filigranlar tahtaya göre ölçekli" (üç
+geniş-ama-kısa ekran + dikey telefon; tavan kaldırılınca üçü düşüyor).

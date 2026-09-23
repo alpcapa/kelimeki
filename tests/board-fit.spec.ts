@@ -86,6 +86,47 @@ for (const c of GENIS_AMA_KISA) {
   });
 }
 
+// Filigran tavanı (23 Eylül 2026) — yükseklik bütçesi tahtayı küçültünce
+// punto ekran genişliğinden geldiği için tavanda kalıyordu ve "2"/"X2"
+// tahtadan taşıyordu (kullanıcı, iPad'de ana ekrana eklenmiş web uygulaması).
+// Ölçülen: ÇİZİLEN punto = hesaplanan `font-size` × uygulanan `scale()`
+// ↔ ızgara genişliği.
+async function filigranOlculeri(page: Page) {
+  return page.evaluate(() => {
+    const layer = document.querySelector('[data-watermarks]') as HTMLElement;
+    const w = layer.getBoundingClientRect().width;
+    // Ölçek `transform` matrisinden (offsetWidth tamsayıya yuvarlanıyor,
+    // oranı ~0,1% kaydırıyordu).
+    const cizilen = (el: HTMLElement) => {
+      const cs = getComputedStyle(el);
+      const olcek = cs.transform === 'none' ? 1 : new DOMMatrixReadOnly(cs.transform).a;
+      return parseFloat(cs.fontSize) * olcek;
+    };
+    const x2El = document.querySelector('[data-watermark-x2]') as HTMLElement;
+    const r = document.createRange();
+    r.selectNodeContents(x2El);
+    return {
+      w,
+      kose: cizilen(layer.firstElementChild as HTMLElement),
+      x2: cizilen(x2El),
+      x2W: r.getBoundingClientRect().width,
+    };
+  });
+}
+
+for (const c of [...GENIS_AMA_KISA, { ad: 'dikey telefon', w: 393, h: 852 }]) {
+  test(`${c.ad}: filigranlar tahtaya göre ölçekli (taşmaz)`, async ({ page }) => {
+    await page.setViewportSize({ width: c.w, height: c.h });
+    await oyunaGir(page);
+    const o = await filigranOlculeri(page);
+    // Oran tavanı: web'in en dar ekranındaki oran (102,4/276 ve 76,8/276).
+    expect(o.kose / o.w, 'köşe rakamı tahtaya göre fazla büyük').toBeLessThanOrEqual(0.3711);
+    expect(o.x2 / o.w, '"X2" tahtaya göre fazla büyük').toBeLessThanOrEqual(0.2791);
+    // "X2" 5×5 merkez bölgesinin içinde kalıyor.
+    expect(o.x2W, '"X2" merkez bölgesinden taşıyor').toBeLessThan((o.w * 5) / 13);
+  });
+}
+
 test('dikey telefon: düzen DEĞİŞMEDİ (yükseklik sınırı hiç devreye girmiyor)', async ({
   page,
 }) => {
