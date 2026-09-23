@@ -187,7 +187,11 @@ export function osVersionLabel(
   osVersion: string | null,
 ): string {
   const v = osVersion?.trim();
-  if (!v) return `${platformLabel(deviceType)} · sürüm yok`;
+  // Masaüstünde boş sürüm = işletim sistemi hiç tanınmadı (Windows/Mac
+  // sürüm bildirir, Linux/ChromeOS 23 Eylül 2026'dan beri adıyla yazılıyor).
+  // "bot" YAZILMIYOR: kullanıcı kararı, kanıt olmadan tahmin etiketi yok.
+  if (!v) return deviceType === 'desktop' ? 'Masaüstü · bilinmiyor' : `${platformLabel(deviceType)} · sürüm yok`;
+  if (v === 'bot') return `${platformLabel(deviceType)} · bot (kendini tanıtan)`;
   if (deviceType === 'desktop') return desktopOsLabel(v);
   return `${platformLabel(deviceType)} ${v}`;
 }
@@ -221,6 +225,7 @@ const WINDOWS_NT: Readonly<Record<string, string>> = {
 function desktopOsLabel(v: string): string {
   const win = WINDOWS_NT[v];
   if (win) return win;
+  if (v === 'Linux' || v === 'ChromeOS') return v;
   if (/^\d+\.\d+\.\d+$/.test(v) || /^10\.1\d$/.test(v)) return `macOS ${v}`;
   return `Masaüstü ${v}`;
 }
