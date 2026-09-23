@@ -58,6 +58,7 @@ import {
   markVisitLoggedToday,
   visitAlreadyLoggedToday,
 } from './utils/visitTracking';
+import { journeyScroll, journeyStart, journeyStep } from './utils/webJourney';
 
 /** Uygulamayı (React ağacı + PWA + sözlük ön yüklemesi) başlatır. */
 function baslat(): void {
@@ -84,6 +85,8 @@ const NIYET_PARAM: Record<Niyet, string> = {
 };
 
 function gec(niyet: Niyet): void {
+  // Ziyaretçi yolculuğu: karşılamadan uygulamaya geçti (bkz. utils/webJourney.ts).
+  journeyStep('landing_cta');
   try {
     localStorage.setItem(SEEN_INTRO_KEY, '1');
   } catch {
@@ -123,6 +126,32 @@ function gec(niyet: Niyet): void {
  * okunan bir sayı ve şerit yüksekliği `vw` tabanlı olduğundan döndürmede
  * bayatlar.
  */
+/**
+ * Ziyaretçi yolculuğu (`utils/webJourney.ts`): karşılama göründü + ne kadar
+ * aşağı kaydırıldı. Katman kendi kaydırma kabı (`#karsilama`, bkz.
+ * `index.css`), belge değil — derinlik oradan okunur. Karşılama yalnızca
+ * dönmeyen ziyaretçiye gösterildiği için oturum misafir sayılır.
+ */
+function yolculukKur(): void {
+  if (!import.meta.env.VITE_SUPABASE_URL) return;
+  journeyStart('landing', false, getDeviceType(), getStoredUtmSource());
+  const katman = document.getElementById('karsilama');
+  if (!katman) return;
+  // Yalnızca yeni bir DERİNLİK rekoru depoya yazılır — kaydırma olayı saniyede
+  // onlarca kez ateşlenir, her birinde `sessionStorage` yazmak gereksiz.
+  let enDerin = -1;
+  const olc = (): void => {
+    const toplam = katman.scrollHeight;
+    if (toplam <= 0) return;
+    const yuzde = Math.round(((katman.scrollTop + katman.clientHeight) / toplam) * 100);
+    if (yuzde <= enDerin) return;
+    enDerin = yuzde;
+    journeyScroll(yuzde);
+  };
+  olc();
+  katman.addEventListener('scroll', olc, { passive: true });
+}
+
 function logoParkiKur(): void {
   const katman = document.getElementById('karsilama');
   const serit = document.getElementById('karsilama-serit');
@@ -307,6 +336,7 @@ if (document.documentElement.classList.contains('uygulama-modu')) {
   captureUtmSource();
   misafirZiyaretiBildir();
   cihazZiyaretiBildir();
+  yolculukKur();
   // Sayfada birden fazla "Oyna"/"Giriş" düğmesi var (başlık + kahraman +
   // sayfa sonu). Hepsi öznitelikle bağlanıyor — id ile bağlamak yalnızca
   // başlıktakileri yakalardı ve yeni bir düğme eklendiğinde SESSİZCE ölü

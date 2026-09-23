@@ -1116,3 +1116,58 @@ telefonda ~150px sütuna düşüyor ve orada *"Yapay …"* ile *"Arkadaşı…"*
 edilemiyordu. Etiket artık sarıyor — satırın iki satıra çıkması, etiketin
 okunamamasından iyi. Etiketin kendisi de kısaldı (yukarı bkz.), yani sarma
 artık normal değil SON ÇARE.
+
+## Ziyaretçi Yolculuğu — web'de "nerede ayrıldı" (23 Eylül 2026)
+
+Kullanıcı isteği: *"Bizim web tarafında bounce rate'leri görmemiz lazım.
+Ziyaretçiler hangi noktalarda bounce ediyor."* Büyüme > Kullanıcı →
+Kaynak Hunisi'nin hemen üstünde. Yazan `src/utils/webJourney.ts`, sunucu
+`web_sessions` + `record_web_session` / `admin_web_journey`
+(`20260923103044_web_sessions_journey.sql`), kapı `npm run verify-web-journey`.
+
+### Neden vardı
+
+Mevcut tablolar huninin UÇLARINI görüyordu, ARASINI görmüyordu. Canlıdan
+ölçüldü (21-23 Eylül, 34 web cihazı): masaüstündeki 14 cihazın hiçbiri oyun
+başlatmamıştı, ama karşılama sayfasında mı yoksa kurulum ekranında mı
+çıktıkları BİLİNEMİYORDU. 8 başlangıçtan 1'i bitmişti, ama öteki 7'nin
+ilk hamlede mi yoksa 15. dakikada mı bıraktığı BİLİNEMİYORDU.
+
+### Şekil: sekme başına tek satır
+
+Her yeni adımda ve sekme gizlenirken (`visibilitychange`/`pagehide`) aynı
+satır güncellenir. `steps` ulaşılan adımların KÜMESİ, `last_step` ise
+kronolojik olarak SON adım, yani "burada ayrıldı". Kart adım başına Ulaşan /
+Ayrılan / Ayrılma % / medyan süre gösterir ve en çok kaybettiren adımı
+kırmızıyla vurgular. Karşılamada ayrılanlar için medyan kaydırma derinliği
+ayrıca yazılır (`#karsilama` kendi kaydırma kabı, belge değil).
+
+### Kimlik yok (kullanıcı kararı: *"Gizlilik metnine dokunmadan başla"*)
+
+`anon_id` ve `user_id` yok. Satır kodu sekmeye özel bir koddur
+(`sessionStorage`), sekme kapanınca silinir. `signup_events` ile aynı duruş:
+gizlilik metni anonim kodun gittiği durumları SAYIYOR, bu tablo o kodu
+taşımadığı için listeye madde eklemiyor. Bedeli: ölçü KİŞİ değil OTURUM
+bazlıdır. Kişi bazlı huni gerekirse metin değişikliği (#33 ile birlikte) +
+port kopyası gerekir, yani iş dondurma sonrasına kalır.
+
+### Tuzaklar (kodda da yazılı)
+
+- **Adımlı pingler SIRAYLA gider** (tek bir promise zinciri). `landing_cta`
+  ile `app` milisaniyeler içinde ateşleniyor, sunucu da `last_step`i geliş
+  sırasıyla yazıyor. Paralel gitseler ziyaretçiyi yanlış adımda "ayrılmış"
+  gösterirdi. Adımsız pingler `last_step`e dokunmadığı için sıra beklemez.
+- **Auth olayı ↔ AuthModal yarışı:** giriş/kayıt sonrası `useAuth` olayı
+  AuthModal'ın `login`/`signup_done` çağrısından önce gelebiliyor. Oturum
+  "üye" olunca adım yazımı durur, ama bu İKİ kapanış adımı yine geçer.
+- **Hamle adımları yalnızca bu sekmede BAŞLATILAN oyunu sayar.** Kayıttan
+  devam ettirilen oyunun eski hamleleri sayılmaz (`journeyGameRef`, `App.tsx`).
+- **Tablo istemciye kapalı:** RLS açık, politika yok, `anon`/`authenticated`
+  grant'leri revoke edildi. Yazma yalnızca security definer RPC'den (upsert
+  için select+update vermek, herkesin başkasının satırını okuması demekti).
+  Bir günden eski satır güncellenmez. Canlıda ölçüldü: `anon` yalnızca
+  `record_web_session`i çağırabiliyor, admin RPC'sinde `anon` yok.
+- `navigator.webdriver` taşıyan tarayıcılar sayılmaz (botlar + Playwright).
+- **Adım listesi İKİ yerde:** `JOURNEY_STEPS` ↔ migration'daki iki `v_steps`.
+  `verify-web-journey` üçünü sıra dahil karşılaştırır. Yeni adım ekleyen
+  ikisini birden güncellemeli, yoksa sunucu adımı SESSİZCE yok sayar.

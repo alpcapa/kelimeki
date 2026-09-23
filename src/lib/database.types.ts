@@ -1523,3 +1523,19 @@ export interface AdminSignupFunnelRow {
   starts: number;
   completions: number;
 }
+
+/**
+ * `admin_web_journey` RPC'sinin satırı — Ziyaretçi Yolculuğu kartı. Adım
+ * başına bir satır, `JOURNEY_STEPS` (`src/utils/webJourney.ts`) sırasıyla.
+ */
+export interface AdminWebJourneyRow {
+  step: string;
+  /** Bu adıma ulaşan oturum. */
+  reached: number;
+  /** SON adımı bu olan oturum — "burada ayrıldı". */
+  left_here: number;
+  /** Burada ayrılanların oturum süresi (saniye, medyan); ayrılan yoksa null. */
+  median_seconds: number | null;
+  /** Burada ayrılanların karşılamadaki kaydırma derinliği (%, medyan). */
+  median_scroll: number | null;
+}

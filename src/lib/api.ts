@@ -44,6 +44,7 @@ import type {
   AdminPushVersionRow,
   AdminClientErrorRow,
   AdminSignupFunnelRow,
+  AdminWebJourneyRow,
   AdminTutorialFunnelRow,
   AdminSourceFunnelRow,
   AdminDeviceBreakdownRow,
@@ -2762,6 +2763,21 @@ export async function fetchAdminSignupFunnel(days = 30): Promise<AdminSignupFunn
     rethrowSupabase(error);
   }
   return (data as AdminSignupFunnelRow[]) ?? [];
+}
+
+/**
+ * Ziyaretçi yolculuğu: son `days` gün içindeki misafir web oturumlarının adım
+ * başına ulaşan / burada ayrılan sayısı (yalnızca admin — Büyüme >
+ * Kullanıcı). `device` null → tüm cihazlar. Yazan taraf `utils/webJourney.ts`.
+ */
+export async function fetchAdminWebJourney(
+  days = 30,
+  device: 'ios' | 'android' | 'desktop' | null = null,
+): Promise<AdminWebJourneyRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_web_journey', { p_days: days, p_device: device });
+  if (error) rethrowSupabase(error);
+  return (data as AdminWebJourneyRow[]) ?? [];
 }
 
 /**

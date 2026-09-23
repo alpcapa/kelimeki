@@ -777,3 +777,27 @@ arasında. İki pasta yan yana: **Oyun Tipi** (Yapay Zeka ↔ Arkadaşınla) ve
 ⚠ **BEKLENEN görüntü (22 Eylül 2026):** "Yapay Zeka ile" ezici çoğunlukta
 (~%95) — Canlı oyun hacmi hâlâ küçük. Ayrıntı:
 `docs/decisions/admin-panel.md` → "Oyun Dağılımı".
+
+## 9.22. Admin — "Ziyaretçi Yolculuğu" kartı (23 Eylül 2026)
+
+Gerekçe ve tuzaklar: `docs/decisions/admin-panel.md` → "Ziyaretçi
+Yolculuğu". Burası yalnızca elle kontrol listesi. Kendi ziyaretini üretmek
+için **gizli sekme** kullan: oturum kodu sekmeye özel, karşılama sayfası da
+yalnızca ilk kez gelene gösteriliyor.
+
+- [ ] **Kart yerinde:** Büyüme > Kullanıcı, Kaynak Hunisi'nin ÜSTÜNDE,
+      başlık "Ziyaretçi Yolculuğu (Son 30 Gün)". Cihaz kombosu (Tüm Cihazlar /
+      Masaüstü / iOS / Android) değişince yalnızca bu kart yenilenmeli.
+- [ ] **Karşılamada çıkış:** gizli sekmede `kelimeki.com`u aç, biraz kaydır,
+      sekmeyi kapat → kartta "Karşılama sayfası" Ulaşan +1, Ayrılan +1. Alttaki
+      "sayfanın medyan %X kadarını gördü" satırı görünmeli.
+- [ ] **Oyun yolu:** yeni gizli sekme → Oyna → (tanıtımı bitir) → oyunda 5
+      hamle yap → sekmeyi kapat → "5. hamle" satırının Ayrılan'ı +1;
+      "Uygulamaya geçti", "Uygulama açıldı", "Oyun başladı", "İlk hamle"
+      Ulaşan'ları da +1 (Ayrılan'ları DEĞİŞMEMELİ).
+- [ ] **Kayıt/giriş başarıdır:** misafirken giriş yap → "Giriş yaptı" satırı
+      Ayrılma sütununda `✓` göstermeli, kırmızı vurgu ALMAMALI.
+- [ ] **Girişli oturum yazılmıyor:** girişliyken uygulamayı aç, bir oyun
+      başlat → hiçbir satır artmamalı.
+- [ ] **`?` popup'ı (`ziyaretci-yolculugu`)** "OTURUM sayar, kişi değil" ve
+      "adımlar bir sıra DEĞİL, bir küme" uyarılarını taşımalı.
