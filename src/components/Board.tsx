@@ -22,7 +22,7 @@ import {
 } from '../utils/boardZoom';
 import { computeAllTerritories } from '../utils/validator';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
-import { boardMaxWidthCss } from '../utils/boardFit';
+import { BOARD_MAX_PX, boardMaxWidthCss } from '../utils/boardFit';
 import { AiLevelBadge } from './AiLevelBadge';
 import { CountBadge } from './CountBadge';
 import { Tile } from './Tile';
@@ -91,6 +91,25 @@ interface BoardProps {
   hideFooter?: boolean;
   /** Taşları küçük/puan göstermeden çizer — salt-okunur önizlemelerde (bkz. `GameBoardPreview`). */
   compact?: boolean;
+  /**
+   * Tahtayı viewport YÜKSEKLİĞİNE de sığdırır (`boardMaxWidthCss`).
+   *
+   * ⚠ Yalnızca OYUN EKRANLARI için doğru: bütçenin çıkardığı 308px, tahtanın
+   * ALTINDAKİ şeridin (raf + Oyna/Pas/Değiştir) ölçülmüş yüksekliği. O şerit
+   * olmayan yerlerde — karşılama katmanının vitrin tahtası, `GameHistoryModal`
+   * kart açılımı, `SharedGamePage` — bütçe yalnızca zarar veriyor: 23 Eylül
+   * 2026'da iPad yatay Safari'de (sayfa ~619px) karşılama tahtası tabana,
+   * 324px'e indi; filigran puntosu ise ekran GENİŞLİĞİNDEN geldiği için
+   * (`clamp(80px, 32vw, 220px)`) tavanda kalıp tahtadan taştı. #609'un
+   * `scale()` ile küçültme düzeltmesi orayı kurtaramaz: karşılama katmanı
+   * derleme zamanında statik HTML'e basılıyor, `useLayoutEffect` HİÇ koşmuyor.
+   *
+   * Varsayılan `true` — iki oyun ekranı (`App`, `OnlineGameScreen`) bütçeyi
+   * istiyor ve #607'nin düzelttiği hata (raf ekranın altında kalıyordu) bir
+   * daha sessizce geri gelmesin. Önizlemeler `GameBoardPreview` üzerinden
+   * `false` geçiyor.
+   */
+  fitHeight?: boolean;
   /**
    * Tanıtım (`TutorialGame`) modunda vurgulanacak HEDEF kareler ("r,c"
    * anahtarları). Oyuncunun bu sahnede dokunacağı boş kareler kesikli mavi
@@ -214,6 +233,7 @@ export function Board({
   onTilePointerCancel,
   hideFooter = false,
   compact = false,
+  fitHeight = true,
   targets = null,
   coach = null,
   zoom = ZOOM_OFF,
@@ -663,7 +683,7 @@ export function Board({
   return (
     <div
       className="w-full mx-auto px-3 pt-1.5 pb-3 flex flex-col items-center"
-      style={{ maxWidth: boardMaxWidthCss() }}
+      style={{ maxWidth: fitHeight ? boardMaxWidthCss() : `${BOARD_MAX_PX}px` }}
     >
       <div
         className="relative w-full bg-[#DDE4EE] rounded-[18px]"

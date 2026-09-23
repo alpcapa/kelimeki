@@ -1003,3 +1003,41 @@ yapıyor), yani üretimde o şekil hiç oluşmuyor.
 yazılınca katman HİÇ görünmüyor, `#root` doluyor. **Negatif eş:** kapının
 oturum tarama dalı kaldırılınca test GERÇEKTEN düşüyor.
 
+
+## Vitrin tahtası: oyun ekranının yükseklik bütçesi buraya SIZDI (23 Eylül 2026)
+
+Kullanıcı iPad Safari yatayda ekran görüntüsüyle bildirdi: *"yatay mod
+tanıtım bölümü de sorunlu hale gelmiş. Eskisi gibi görünmeli."* Tahta
+minicik kalmış, taşlar ve filigranlar tahtanın dışına taşmıştı.
+
+**Sebep tek satır:** `Board.tsx`in kökü #607'den beri
+`max-width: min(680px, max(324px, calc(100dvh - 308px)))` taşıyor. Bu
+bütçe OYUN EKRANI için doğru — çıkarılan 308px tahtanın ALTINDAKİ şeridin
+(raf + Oyna/Pas/Değiştir) ölçülmüş yüksekliği. Ama `Board`, karşılama
+katmanının vitrin tahtası olarak da kullanılıyor (`GameBoardPreview`,
+`compact={false}`) ve orada o şerit YOK. Safari'nin adres/sekme çubuğu +
+mağaza bandı sayfayı ~619px'e indirince bütçe tabana çarpıyor ve vitrin
+tahtası **324px**'e (ızgara 300px) düşüyordu.
+
+**İkinci yarısı filigran:** punto ekran GENİŞLİĞİNDEN geliyor
+(`clamp(80px, 32vw, 220px)`), yani 1180px'lik iPad'de tavanda kalıyor —
+300px'lik bir tahtanın üstünde "2" ve "X2" tahtayı tamamen aşıyordu.
+⚠ #609'un bu taşmayı `scale()` ile küçülten düzeltmesi burayı **kurtaramaz**:
+karşılama katmanı derleme zamanında `renderToStaticMarkup` ile statik HTML'e
+basılıyor, o düzeltme `useLayoutEffect` içinde ve HİÇ koşmuyor. Statik
+sayfada tek güvence tahtanın kendi genişliğidir.
+
+**Düzeltme:** bütçe artık opt-in — `Board`un `fitHeight` prop'u (varsayılan
+`true`, iki oyun ekranı için), `GameBoardPreview` `false` geçiyor. Yani
+vitrin tahtası, `GameHistoryModal` kart açılımı ve `SharedGamePage`
+#607 öncesindeki gibi yalnızca GENİŞLİKTEN boyutlanıyor.
+
+**Ölçüm (1180×619, üretim derlemesi, gerçek tarayıcı):** ızgara
+**300px → 656px**. Kapı `tests/board-fit.spec.ts` → *"karşılama katmanı:
+vitrin tahtası yükseklik bütçesinden ETKİLENMEZ"*; düzeltme geri alınınca
+testin GERÇEKTEN düştüğü ölçüldü.
+
+⚠ **Ders:** oyun ekranının düzen kuralı `Board`un köküne yazılırsa, `Board`u
+önizleme olarak kullanan HER yüzeye sızar. Yeni bir kural eklerken soru
+"bu tahtanın altında o şerit var mı?" — `GameBoardPreview`in üç çağıranında
+yok. Aynı aile: `compact` prop'u da tam bu yüzden var.

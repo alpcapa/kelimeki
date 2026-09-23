@@ -83,6 +83,13 @@ export const BOARD_MIN_PX = 324;
  * çözülsün diye string döner, sayı DEĞİL).
  *
  * `min(680px, max(324px, 100dvh - 301px))`
+ *
+ * ⚠ YALNIZCA OYUN EKRANLARINDA (`Board`un `fitHeight` prop'u, varsayılan
+ * `true`). Çıkarılan 308px tahtanın ALTINDAKİ şeridin yüksekliği; o şeridin
+ * olmadığı yerlerde bütçenin karşılığı yok ve zarar veriyor — karşılama
+ * katmanının vitrin tahtası 23 Eylül 2026'da iPad Safari yatayda (sayfa
+ * ~619px) tabana, 324px'e indi. Vaka ve ölçüm:
+ * `docs/decisions/landing-page.md` → "Vitrin tahtası".
  */
 export function boardMaxWidthCss(): string {
   return `min(${BOARD_MAX_PX}px, max(${BOARD_MIN_PX}px, calc(100dvh - ${BOARD_CHROME_PX}px)))`;
