@@ -175,10 +175,12 @@ export function deviceModelLabel(
 /**
  * "İşletim Sistemi" tablosunun satır etiketi: `Android 16`, `iOS 18.7`.
  *
- * ⚠ Platform HER ZAMAN yazılıyor, çünkü sürüm dizesi tek başına yanıltıcı:
- * canlıda `ios` + `10.15.7` satırları var ve o bir iOS sürümü değil,
- * masaüstü User-Agent'ı veren bir cihazın macOS dizesi. Etiket platformu
- * gizleseydi tablo o karışıklığı da gizlerdi.
+ * ⚠ Platform HER ZAMAN yazılıyor, çünkü sürüm dizesi tek başına yanıltıcı
+ * olabilir. Örnek: canlıda `ios` + `10.15.7` satırları vardı, bunlar
+ * "masaüstü sitesi" kipindeki iPad'lerin Mac User-Agent'ından okunan sahte
+ * sürümdü. 23 Eylül 2026'da kaynağı kapatıldı (`getOsVersion` artık null
+ * yazıyor) ve geçmiş satırlar düzeltildi
+ * (`20260923141944_ipad_desktop_mode_os_version.sql`).
  */
 export function osVersionLabel(
   deviceType: string | null,

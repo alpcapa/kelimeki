@@ -20,6 +20,7 @@ import {
   osVersionLabel,
   platformLabel,
 } from '../src/utils/deviceLabels';
+import { getDeviceModel, getDeviceType, getOsVersion } from '../src/utils/visitTracking';
 
 let failures = 0;
 const check = (name: string, cond: boolean, detail = '') => {
@@ -70,10 +71,36 @@ check('modelsiz satır gizlenmez',
   deviceModelLabel('desktop', null));
 check('OS etiketi platformu HER ZAMAN yazar',
   osVersionLabel('android', '16') === 'Android 16');
-check('yanıltıcı macOS dizesi platformuyla birlikte görünür',
+check('beklenmeyen bir sürüm dizesi platformuyla birlikte görünür',
   osVersionLabel('ios', '10.15.7') === 'iOS 10.15.7');
 check('sürümsüz satır', osVersionLabel('android', null) === 'Android · sürüm yok');
 check('platformLabel bilinmeyen değer', platformLabel('app-web') === 'Bilinmiyor');
+
+console.log('User-Agent okuma — masaüstü kipindeki iPad (23 Eylül 2026)');
+{
+  // iPadOS Safari'nin varsayılan "masaüstü sitesi" kipi: UA bir Mac'inkiyle
+  // AYNI, ayıran tek şey dokunmatik. Eskiden sürüm olarak Mac'in dondurulmuş
+  // `10.15.7`si yazılıyordu (admin'de iOS altında 27 cihaz).
+  const MAC_UA =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15';
+  const IPHONE_UA =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1';
+  const kur = (userAgent: string, maxTouchPoints: number) =>
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { userAgent, maxTouchPoints },
+      configurable: true,
+    });
+  kur(MAC_UA, 5);
+  check('masaüstü kipindeki iPad → ios', getDeviceType() === 'ios', getDeviceType());
+  check('… sürümü sahte 10.15.7 DEĞİL, null', getOsVersion() === null, String(getOsVersion()));
+  check('… modeli iPad', getDeviceModel() === 'iPad', String(getDeviceModel()));
+  kur(MAC_UA, 0);
+  check('gerçek Mac → masaüstü', getDeviceType() === 'desktop', getDeviceType());
+  check('… Mac sürümü değişmedi', getOsVersion() === '10.15.7', String(getOsVersion()));
+  check('… Mac modelsiz', getDeviceModel() === null, String(getDeviceModel()));
+  kur(IPHONE_UA, 5);
+  check('iPhone sürümü yine okunuyor', getOsVersion() === '18.7', String(getOsVersion()));
+}
 
 console.log('Marka gruplaması — sayılar korunur, modeller altta');
 {
