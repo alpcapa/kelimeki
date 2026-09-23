@@ -1227,3 +1227,12 @@ Gerçek iPadOS sürümü bu kipte hiç gönderilmiyor.
   "bir Mac" demek, sürüm bilgisi değil. Satıra dokunulmadı: platform
   doğru, yanıltıcı olan yalnızca sürüm. Aynısı Windows'ta `10.0` için de
   geçerli (Windows 11 de `NT 10.0` gönderiyor).
+- **Masaüstü satırlarına aile adı (aynı gün, kullanıcı isteği: *"MacOS ve
+  windows başına yazılsa iyi olur, yoksa sayılardan neyin ne olduğu
+  anlaşılmayacak"*):** `osVersionLabel` → `desktopOsLabel`. Aile, sürüm
+  dizesinin şeklinden okunuyor: Windows iki parçalı bir NT numarası
+  (`10.0` → **Windows 10/11**, `6.1` → Windows 7), macOS üç parçalı
+  (`macOS 10.15.7`). Tanınmayan iki parçalı dize ham kalır ("Masaüstü
+  7.9"). Veri DEĞİŞMEDİ, yalnızca etiket. Canlıdaki her masaüstü sürümü
+  eşlendi (son 90 gün: `10.0` 67, `10.15.7` 21, `15.7.2` 2, `10.7.2` 1
+  cihaz). Kartın `?` metni sayının sürüm bilgisi olmadığını söylüyor.

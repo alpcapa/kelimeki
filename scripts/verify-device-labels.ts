@@ -74,6 +74,17 @@ check('OS etiketi platformu HER ZAMAN yazar',
 check('beklenmeyen bir sürüm dizesi platformuyla birlikte görünür',
   osVersionLabel('ios', '10.15.7') === 'iOS 10.15.7');
 check('sürümsüz satır', osVersionLabel('android', null) === 'Android · sürüm yok');
+// Masaüstü: aile başa yazılır (23 Eylül 2026). Değerler canlıdaki satırlar.
+check('Mac → macOS', osVersionLabel('desktop', '10.15.7') === 'macOS 10.15.7',
+  osVersionLabel('desktop', '10.15.7'));
+check('Firefox\'un iki parçalı Mac dizesi → macOS', osVersionLabel('desktop', '10.15') === 'macOS 10.15',
+  osVersionLabel('desktop', '10.15'));
+check('NT 10.0 → Windows 10/11 (ikisi ayırt edilemez)',
+  osVersionLabel('desktop', '10.0') === 'Windows 10/11', osVersionLabel('desktop', '10.0'));
+check('NT 6.1 → Windows 7', osVersionLabel('desktop', '6.1') === 'Windows 7');
+check('tanınmayan iki parçalı dize ham kalır', osVersionLabel('desktop', '7.9') === 'Masaüstü 7.9',
+  osVersionLabel('desktop', '7.9'));
+check('sürümsüz masaüstü (Linux vb.)', osVersionLabel('desktop', null) === 'Masaüstü · sürüm yok');
 check('platformLabel bilinmeyen değer', platformLabel('app-web') === 'Bilinmiyor');
 
 console.log('User-Agent okuma — masaüstü kipindeki iPad (23 Eylül 2026)');
