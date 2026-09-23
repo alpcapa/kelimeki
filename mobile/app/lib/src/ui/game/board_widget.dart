@@ -1425,16 +1425,19 @@ class BoardWidget extends StatelessWidget {
   ///
   /// ⚠ **Tavan: tahtanın KENDİ genişliği (23 Eylül 2026).** Punto ekran
   /// genişliğinden geliyor, yani tahtanın ekran genişliğiyle orantılı
-  /// olduğunu VARSAYIYOR — web'de bu hep doğru (tahta `max-w-[680px]`,
-  /// yüksekliğe göre hiç küçülmez), portta DEĞİL: iPad yatayda tahta
-  /// YÜKSEKLİĞE sığdırılıyor (bkz. `ipad_layout_test.dart`), ekran geniş
-  /// olduğu için punto tavana (220/165) çıkıyor, tahta ise ~370 pt'ye
-  /// iniyor. Kullanıcı cihazda bildirdi: *"filigranlar taşma yapıyor"* —
-  /// "2" rakamı tahtanın alt kenarından, "X2" 5×5 bölgeden taşıyordu.
-  /// Oranlar web'in desteklediği EN DAR ekrandan (320 px: 102,4 / 276 ve
-  /// 76,8 / 276, ızgara = ekran − 44) alındı; web'in orana en çok yaklaştığı
-  /// yer orası, yani telefonda tavan hiç devreye girmez ve web paritesi
-  /// (`board_render_test` 390 px → 124,8 / 93,6) aynen kalır.
+  /// olduğunu VARSAYIYOR. Web'de bu varsayım #607'nin yükseklik bütçesiyle
+  /// bozuldu: iPad yatayda (ana ekran web uygulaması) punto tavanda
+  /// (220/165) kalırken tahta küçüldü ve "2" tahtanın alt kenarından, "X2"
+  /// 5×5 bölgeden taştı (kullanıcı ekran görüntüsüyle bildirdi). Web ikizi
+  /// #609'da (`Board.tsx`, `WM_*_FONT_PER_GRID` — orada `scale()` ile,
+  /// çünkü `clamp` satırı `layout_parity_test.dart`e kilitli).
+  /// Portta tahta BUGÜN yalnızca genişlikten boyutlanıyor, yani tavan
+  /// tahtanın ekrandan dar kaldığı her yerde (Split View, ROADMAP #26'nın
+  /// yükseklik bütçesi geldiğinde iPad yatay) devreye girer — #26'nın ön
+  /// koşulu. Oranlar web'in desteklediği EN DAR ekrandan (320 px: 102,4 /
+  /// 276 ve 76,8 / 276, ızgara = ekran − 44) alındı; web'in orana en çok
+  /// yaklaştığı yer orası, yani telefonda tavan hiç devreye girmez ve web
+  /// paritesi (`board_render_test` 390 px → 124,8 / 93,6) aynen kalır.
   static const double _cornerFontPerGrid = 0.371;
   static const double _zoneFontPerGrid = 0.279;
 
