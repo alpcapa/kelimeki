@@ -128,6 +128,11 @@ kapandığında kaynağı `console-formlari.md`'dir, karar oradan okunur.
 **#26 — Tahtanın yükseklik bütçesi PORTA da gerekli** → ⏳ **AÇIK, freeze'i
 bekliyor** (22 Eylül 2026; web yarısı `main`'de).
 
+⚠ **Sıra: #611 merge edilmeden BAŞLAMA** (23 Eylül 2026). #611 (filigran
+tavanı, #609'un port ikizi, merge turunun dokuzuncusu) da
+`board_widget.dart`e dokunuyor ve tavanı bu maddenin ön koşulu olarak
+yazıldı; #26'yı onun üstüne kur, yan yana değil.
+
 Kullanıcı bildirdi: *"Kelimeki'yi Samsung katlanabilirde denedim, tahta yatay
 iPad gibi görünüyordu, raf ve butonlar ekranın altında kalıyordu. Görmek için
 aşağı kaydırmak gerekiyor, oynamak imkânsız."*
@@ -224,6 +229,21 @@ PR'ları — merge turu SIRASI").
 
 ⚠ **Ders (aynı gün ikinci kez):** bir listeye madde eklerken listeyi SAYAN
 cümle de güncellenmeli — bu, rozet zincirinin metindeki karşılığı.
+
+**#34 — Canlı sohbet okundu bilgisinin PORT yarısı** → ⏳ **AÇIK,
+dondurmayı bekliyor** (23 Eylül 2026; web yarısı #610 ile `main`'de).
+
+Okundu damgası artık sunucuda (`online_game_chat_reads` +
+`mark_online_game_chat_read` RPC'si), ama uygulama hâlâ yalnızca cihazdaki
+`chat_read_store.dart`'ı kullanıyor. ⚠ **Sonuç SAHADA: uygulamada okunan
+mesajlar web'e yansımıyor** (ve Android'deki "ilk açılışta her şey okundu"
+tohumu hâlâ yeni mesajları yutuyor). Yapılacak: port tabloyu OKUSUN ve
+RPC'yle YAZSIN; karar `decideChatRead`in (`utils/chatRead.ts`, kapı
+`npm run verify-chat-read`) Dart ikizine geçsin — iki kaynağın büyüğü,
+sunucu isteği düştüyse ve cihazda damga yoksa tohum sunucuya YAZILMAZ.
+Tasarım ve tuzaklar: `docs/decisions/chat-moderation.md` → "Okundu damgası
+SUNUCUDA". `mobile/app/` dosyası → mobil derlemeyi tetikler, merge turu
+bitince.
 
 **#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
 ✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
