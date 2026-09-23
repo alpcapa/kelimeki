@@ -306,11 +306,17 @@ yazılmış). Ada güvenen biri sırayı sessizce karıştırır ve — daha kö
 | 6 | #557 oyun ortasında giriş | ⚠ `claude/mobile-latest-merge-conflict-lf2og7` |
 | 7 | #547 ham hata metinleri | ⚠ `claude/app-store-play-review-status-9wecvh` |
 | 8 | #601 kaynak hunisi (`app` kanalı) | `claude/frozen-port-prs-merge-cis79o` |
+| 9 | #611 filigran tavanı (#609'un port ikizi) | `claude/ipad-filigran-tasmasi` |
 
 ⚠ **#601 bu turun SEKİZİNCİSİ.** Yukarıdaki yedili sıra 21 Eylül'de
 ölçüldüğünde #601 henüz yoktu; o da aynı dondurmayı bekliyor ve en sona
 biniyor (`mobile/app/` altında yedi dosya taşıyor, yani o da mobil
 derlemeyi tetikler).
+
+⚠ **#611 DOKUZUNCU** (23 Eylül 2026, kullanıcı: *"diğerleriyle sonraki
+sürüme dahil et"*). Web ikizi #609 zaten canlıda; #611 `board_widget.dart`e
+dokunuyor, yani ROADMAP #26 (portta yükseklik bütçesi) aynı dosyada
+başlayacağı için #26'dan ÖNCE merge edilmeli.
 
 **Eşleme 22 Eylül 2026'da canlıdan ölçüldü** (`git ls-remote --heads
 origin 'refs/heads/claude/*'` + açık PR listesi): `origin`'de sekiz
