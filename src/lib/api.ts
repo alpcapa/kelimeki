@@ -2885,9 +2885,9 @@ export async function fetchAdminDeviceModelBreakdown(days = 30): Promise<AdminDe
  * (yalnızca admin — Büyüme > Kullanıcı, "İşletim Sistemi" tablosu).
  *
  * ⚠ `device_type` ile birlikte okunmalı: aynı sürüm dizesi iki ayrı
- * platformda farklı şey demek (canlıda ölçüldü — `ios` + `10.15.7`
- * satırları aslında masaüstü User-Agent'ı veren cihazlar, o dize macOS'un
- * dondurulmuş sürümü).
+ * platformda farklı şey demek olabilir. `ios` + `10.15.7` satırları
+ * masaüstü kipindeki iPad'lerdi (macOS'un dondurulmuş dizesi); 23 Eylül
+ * 2026'da kaynağı kapatılıp geçmişi düzeltildi.
  */
 export async function fetchAdminOsVersionBreakdown(days = 30): Promise<AdminOsVersionRow[]> {
   if (!supabase) return [];

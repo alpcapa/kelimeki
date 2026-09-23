@@ -1202,3 +1202,37 @@ parametreyle çağırıyor, üçüncünün varsayılanı `null` olduğu için ya
 sırası önemsiz. `verify-web-journey` artık adım dizisi taşıyan İKİ
 migration'ı da okuyor.
 
+
+## Masaüstü kipindeki iPad: iOS altında sahte "10.15.7" (23 Eylül 2026)
+
+Kullanıcı fark etti: *"Admin Cihaz ios altında 10.15.7 gözüken 27 kişi var.
+Bu masaüstünde de olan bir versiyon."* iPadOS 13+ Safari varsayılan olarak
+"masaüstü sitesi" kipinde açılıyor ve User-Agent'ı bir Mac'inkiyle birebir
+aynı (`Macintosh; Intel Mac OS X 10_15_7`). `getDeviceType` bu cihazları
+dokunmatik oldukları için doğru biçimde `ios`a ayırıyordu. Ama
+`getOsVersion` `Mac OS X` dalına düşüp Apple'ın bütün Mac'lerde
+SABİTLEDİĞİ `10.15.7`yi yazıyordu, `getDeviceModel` de boş dönüyordu.
+Gerçek iPadOS sürümü bu kipte hiç gönderilmiyor.
+
+- **Kaynak:** `visitTracking.ts` → `isDesktopModeIPad`. Bu kipte sürüm
+  artık `null` ("sürüm yok"), model `'iPad'`. Bilinmeyen sürüm, yanlış
+  sürümden iyidir. `verify-device-labels` üç UA'yı sınıyor: masaüstü
+  kipindeki iPad, gerçek Mac (değişmedi) ve iPhone.
+- **Geçmiş:** `20260923141944_ipad_desktop_mode_os_version.sql`,
+  `device_visits` + `guest_visits`. Eşleşme kesin, çünkü `ios` + `10.15…`
+  yalnızca bu kipten gelebilir (iOS 10'un son sürümü 10.3.4). Canlıda
+  eşleşen satırların hepsi modelsizdi.
+- ⚠ **Masaüstü `10.15.7` de aynı dondurmanın ürünü:** Safari ve Chrome
+  bütün Mac'lerde bu diziyi gönderiyor, yani "Masaüstü → 10.15.7" satırı
+  "bir Mac" demek, sürüm bilgisi değil. Satıra dokunulmadı: platform
+  doğru, yanıltıcı olan yalnızca sürüm. Aynısı Windows'ta `10.0` için de
+  geçerli (Windows 11 de `NT 10.0` gönderiyor).
+- **Masaüstü satırlarına aile adı (aynı gün, kullanıcı isteği: *"MacOS ve
+  windows başına yazılsa iyi olur, yoksa sayılardan neyin ne olduğu
+  anlaşılmayacak"*):** `osVersionLabel` → `desktopOsLabel`. Aile, sürüm
+  dizesinin şeklinden okunuyor: Windows iki parçalı bir NT numarası
+  (`10.0` → **Windows 10/11**, `6.1` → Windows 7), macOS üç parçalı
+  (`macOS 10.15.7`). Tanınmayan iki parçalı dize ham kalır ("Masaüstü
+  7.9"). Veri DEĞİŞMEDİ, yalnızca etiket. Canlıdaki her masaüstü sürümü
+  eşlendi (son 90 gün: `10.0` 67, `10.15.7` 21, `15.7.2` 2, `10.7.2` 1
+  cihaz). Kartın `?` metni sayının sürüm bilgisi olmadığını söylüyor.

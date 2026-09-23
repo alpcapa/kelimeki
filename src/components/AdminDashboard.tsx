@@ -643,10 +643,14 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         duruyor ama artık çizilmiyor.{' '}
         <b>Satıra tıkla, işletim sistemi SÜRÜMLERİ açılır</b> — "kaç kişi hâlâ eski Android'de?"
         sorusunun cevabı (12 Eylül 2026'ya kadar ayrı bir "İşletim Sistemi" tablosuydu).{' '}
-        <b>Sürüm dizesi platformdan bağımsız okunmaz:</b> canlıda <code>iOS 10.15.7</code>{' '}
-        satırları var ve bu bir iOS sürümü DEĞİL, macOS'un dondurulmuş sürüm dizesi — masaüstü
-        User-Agent'ı veren cihazlar (iPad'in "Masaüstü site" modu, Mac) iOS kovasına düşüyor;
-        tablo o sınıflandırma hatasını gizlemiyor, gösteriyor. <b>Açılan sürüm satırlarının
+        <b>Masaüstü sürümlerinin başında işletim sistemi yazıyor</b> (<code>macOS</code>,{' '}
+        <code>Windows</code>). ⚠ Oradaki sayı gerçek sürüm DEĞİL: tarayıcılar bütün
+        Mac'lerde <code>10.15.7</code> gönderiyor, Windows 11 de kendini Windows 10 gibi
+        bildiriyor (bu yüzden <b>Windows 10/11</b> tek satır). Yani o satırlar "kaç Mac, kaç
+        Windows" sorusunu yanıtlar, sürümü yanıtlamaz.{' '}
+        <b>iPad "sürüm yok":</b> iPad Safari varsayılan olarak "masaüstü sitesi" kipinde
+        açılıp kendini Mac gibi tanıtıyor ve gerçek sürümünü göndermiyor (23 Eylül 2026'ya
+        kadar bu satırlar yanlışlıkla <code>iOS 10.15.7</code> görünüyordu). <b>Açılan sürüm satırlarının
         toplamı üstteki cihaz satırından BÜYÜK olabilir</b> — aynı ziyaretçi aralık içinde
         işletim sistemini güncellerse iki sürümde de sayılır (canlıda 12 Eylül 2026'da tek
         vaka: iOS <code>26.5.2</code> → <code>26.6.1</code>). Üstteki sayı ve tablonun TOPLAMI

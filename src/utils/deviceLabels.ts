@@ -175,17 +175,54 @@ export function deviceModelLabel(
 /**
  * "İşletim Sistemi" tablosunun satır etiketi: `Android 16`, `iOS 18.7`.
  *
- * ⚠ Platform HER ZAMAN yazılıyor, çünkü sürüm dizesi tek başına yanıltıcı:
- * canlıda `ios` + `10.15.7` satırları var ve o bir iOS sürümü değil,
- * masaüstü User-Agent'ı veren bir cihazın macOS dizesi. Etiket platformu
- * gizleseydi tablo o karışıklığı da gizlerdi.
+ * ⚠ Platform HER ZAMAN yazılıyor, çünkü sürüm dizesi tek başına yanıltıcı
+ * olabilir. Örnek: canlıda `ios` + `10.15.7` satırları vardı, bunlar
+ * "masaüstü sitesi" kipindeki iPad'lerin Mac User-Agent'ından okunan sahte
+ * sürümdü. 23 Eylül 2026'da kaynağı kapatıldı (`getOsVersion` artık null
+ * yazıyor) ve geçmiş satırlar düzeltildi
+ * (`20260923141944_ipad_desktop_mode_os_version.sql`).
  */
 export function osVersionLabel(
   deviceType: string | null,
   osVersion: string | null,
 ): string {
   const v = osVersion?.trim();
-  return v ? `${platformLabel(deviceType)} ${v}` : `${platformLabel(deviceType)} · sürüm yok`;
+  if (!v) return `${platformLabel(deviceType)} · sürüm yok`;
+  if (deviceType === 'desktop') return desktopOsLabel(v);
+  return `${platformLabel(deviceType)} ${v}`;
+}
+
+/**
+ * Windows'un İÇ sürüm numarası (`Windows NT 6.1`) → bilinen adı. ⚠ `10.0`
+ * hem Windows 10'u hem 11'i kapsıyor: Windows 11 de User-Agent'ta `NT 10.0`
+ * gönderiyor, ikisi tarayıcıdan ayırt edilemez.
+ */
+const WINDOWS_NT: Readonly<Record<string, string>> = {
+  '10.0': 'Windows 10/11',
+  '6.3': 'Windows 8.1',
+  '6.2': 'Windows 8',
+  '6.1': 'Windows 7',
+  '6.0': 'Windows Vista',
+  '5.1': 'Windows XP',
+};
+
+/**
+ * Masaüstü sürüm satırı: işletim sistemi AİLESİ başa yazılır (23 Eylül
+ * 2026, kullanıcı isteği: *"MacOS ve windows başına yazılsa iyi olur,
+ * yoksa sayılardan neyin ne olduğu anlaşılmayacak"*). `device_type` yalnızca
+ * `desktop` diyor. Aile, `getOsVersion`ın hangi dalından geldiği bilgisiyle
+ * sürüm dizesinin ŞEKLİNDEN okunuyor: Windows iki parçalı bir NT numarası
+ * yazıyor (`10.0`, `6.1`), macOS ise `10.15.7` gibi. Bilinmeyen bir iki
+ * parçalı dize macOS sayılmaz, ham kalır.
+ *
+ * ⚠ Sayı sürüm bilgisi DEĞİL: Safari ve Chrome bütün Mac'lerde `10.15.7`
+ * gönderiyor, Windows 11 de `10.0`. Kartın `?` metni bunu söylüyor.
+ */
+function desktopOsLabel(v: string): string {
+  const win = WINDOWS_NT[v];
+  if (win) return win;
+  if (/^\d+\.\d+\.\d+$/.test(v) || /^10\.1\d$/.test(v)) return `macOS ${v}`;
+  return `Masaüstü ${v}`;
 }
 
 /** Bir cihaz satırı ve altında açılacak işletim sistemi kırılımı. */
