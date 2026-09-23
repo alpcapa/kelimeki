@@ -271,6 +271,39 @@ notu ve `docs/decisions/admin-panel.md`. Port da yazmaya başlayınca oran
 yine AYNI tablodan kurulabilir, `profiles`a geçmeye gerek yok. `mobile/app/`
 dosyası olduğu için mobil derlemeyi tetikler, merge turu bitince yapılır.
 
+**#36 — Takma isim değişince geçmiş oyunlar ESKİ ismi göstermeye devam
+ediyor** → ⏳ **AÇIK, sonra bakılacak** (23 Eylül 2026, kullanıcı: *"Geçmiş
+oyunları da yeni isme döndürmek mantıklı gözüküyor ama bu anlık olabilecek
+bir değişiklik değil… roadmap'e koyalım"*).
+
+Bugünkü durum (kaynaktan okundu): benzersizlik yalnızca şu anki değerlere
+bakan unique index (`profiles_display_name_tr_lower_key`, migration
+`20260729141514`). İsim değişince eskisi **anında serbest kalır**; bekleme
+süresi ya da isim geçmişi yok. `games.players` jsonb'si ise oyunun bittiği
+andaki ismi DONMUŞ saklıyor. Kişi kendi geçmişinde kendi satırını güncel
+isimle görüyor (`GameHistoryModal.tsx` → `myCurrentName`; port ikizi
+`game_history_modal.dart`), rakipleri ise eski ismi görüyor. ⚠ **Asıl risk:**
+biri "A"yı bırakıp başkası "A"yı alırsa, eski geçmişlerdeki "A" artık yeni
+sahibine aitmiş gibi okunur.
+
+Neden anlık değil: `GamePlayerSnapshot`ta (`database.types.ts`) **kullanıcı
+kimliği YOK**; yalnızca `name` / `score` / `is_ai` / `colorIndex` var. Yani
+rakibin satırını bugünkü profiline bağlayacak bir anahtar kayıtta durmuyor.
+Olası yollar (karar verilmedi, ölçülmedi):
+(a) snapshot'a `user_id` ekle, isimleri okurken `profiles`tan çöz. Eski
+kayıtlar için Canlı oyunlarda `online_game_id` + koltuk eşlemesiyle
+backfill mümkün olabilir; yerel/YZ oyunlarında zaten tek insan var.
+(b) İsim değişikliğinde `games.players`ı yeniden yaz (toplu UPDATE, bir
+tetikleyici ya da RPC). Basit ama kimliği isimden tahmin etmek zorunda.
+(c) Ucuz ara çözüm: bırakılan ismi bir süre kilitle (karışıklığı önler,
+geçmişi düzeltmez).
+⚠ **Dokunacağı yerler:** `players`ı okuyan her yüzey (oyun geçmişi,
+favoriler/`list_liked_games`, herkese açık `/game/:id`, admin), port ikizi
+ve `database.types.ts` ↔ portun `fromJson`'ı (sözleşme değişikliği).
+Hesap silme de aynı jsonb'yi İSİMDEN eşleyerek yeniden yazıyor
+(`delete_account_cascade` → `name`i "Silinmiş oyuncu" yapar); (a) seçilirse
+o da kimliğe geçmeli, (b) onunla aynı kırılganlığı taşır.
+
 **#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
 ✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
 doğrulandı; arşivde.
