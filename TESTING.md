@@ -193,6 +193,15 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       AÇIKKEN sekmeyi/uygulamayı arka plana al, karşı taraftan mesaj
       gönder, sonra geri dön: mesaj kendiliğinden gelmeli (oyundan çıkıp
       girmek gerekmemeli). Popup çıkmamalı, yalnız okunmamış sayacı artmalı.
+- [ ] **Okundu bilgisi cihazlar arası (23 Eylül 2026, web).** İki tarayıcı
+      (ya da tarayıcı + gizli pencere) AYNI hesapla. (a) Karşı taraf iki mesaj
+      atsın; oyunu **daha önce hiç açmadığın** tarayıcıda aç → "Mesajlaşma"da
+      **2** görünmeli (eskiden 0 çıkıyordu). (b) Mesajları A tarayıcısında
+      oku, B'de oyunu aç/öne getir → sayı **çıkmamalı**. (c) A'da uçak
+      modunda oku, bağlantıyı aç, B'yi öne getir → sayı yine çıkmamalı
+      (cihaz damgası bağlantı gelince sunucuya yetişir). ⚠ **Uygulama henüz
+      cihaz damgasıyla çalışıyor** (port dondurmada), yani uygulamada okumak
+      web'e yansımaz — bu turda bir hata DEĞİL.
 - [ ] **Sürükle-bırak.** Raftan tahtaya, tahtada taşıma, tahtadan rafa geri
       alma — üçü de çalışmalı (yerel oyundakiyle aynı davranış).
 - [ ] **Realtime.** Karşı taraf oynadığında ekran kendiliğinden güncellenmeli.

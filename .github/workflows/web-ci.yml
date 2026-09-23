@@ -217,6 +217,7 @@ jobs:
       # sınanamıyor: Setup'ın varsayılan-sekme effect'i yalnızca giriş
       # yapılmış kullanıcıda ve Supabase yapılandırılmışken çalışıyor.
       - run: npm run verify-away-return
+      - run: npm run verify-chat-read
 
       # Kullanıcıya gösterilen hata metninin son kapısı: ham makine çıktısı
       # (504 gövdesi, SQLSTATE dökümü, PostgREST İngilizcesi) ekrana DÜŞMEZ,
