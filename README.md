@@ -47,6 +47,7 @@ npm run verify-edge-engine-parity # motorun üçüncü kopyası (Edge Function) 
 npm run verify-error-reporting   # istemci hata telemetrisi: ne kaydedilir/kaydedilmez, tekrar bastırma, hız sınırı
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı (sunucu ↔ cihaz damgası)
+npm run verify-web-journey       # Web ziyaretçi yolculuğu: misafir/üye kapısı + adım listesi ↔ SQL
 
 # Üretilmiş dosyalar — kaynağı değişince ELLE yeniden üretilir:
 npm run generate-logo-paths  # LogoMark.tsx + portun logo_mark_data.dart'ı (tek komut, iki taraf)
@@ -197,6 +198,7 @@ src/
 │   ├── errorReporting.ts # istemci hata telemetrisi (client_errors) — beklenen durumlar BİLEREK kaydedilmez, saatte 10 kayıt tavanı (zaman penceresi, süreç ömrü DEĞİL)
 │   ├── errorMessage.ts  # kullanıcıya gösterilen hata metninin son kapısı: ham makine çıktısı (504 gövdesi, SQLSTATE dökümü) yerine Türkçe cümle, ham metin telemetriye (Flutter portuyla testli olarak senkron)
 │   ├── chatRead.ts      # Canlı sohbetin okundu kararı — sunucu (`online_game_chat_reads`) ↔ cihaz damgasının büyüğü; kapı `verify-chat-read`
+│   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına kimliksiz oturum (`web_sessions`), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
 │   ├── storeLinks.ts    # mağaza rozetleri (ROADMAP #26): URL'ler (`null` = yayında değil → rozet HİÇ çizilmez), sıra (App Store önce — Apple'ın yazılı kuralı) ve yerleşim ölçüleri
 │   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı için tek seferlik localStorage kuyruğu
 │   ├── csvExport.ts    # admin paneli tabloları/grafikleri için CSV indirme yardımcısı

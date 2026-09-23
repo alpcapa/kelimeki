@@ -245,6 +245,32 @@ Tasarım ve tuzaklar: `docs/decisions/chat-moderation.md` → "Okundu damgası
 SUNUCUDA". `mobile/app/` dosyası → mobil derlemeyi tetikler, merge turu
 bitince.
 
+**#35 — Kayıt Hunisi'nin PORT yarısı: uygulama da `signup_events`e
+yazsın** → ⏳ **AÇIK, dondurmayı bekliyor** (23 Eylül 2026, kullanıcı
+isteği: *"Roadmap'e ekle"*).
+
+Admin → Büyüme → Kullanıcı'daki "Kayıt Hunisi" kartı (#600) **yalnızca
+web'i** sayıyor: port aynı iki olayı (`signup_started`/`signup_completed`,
+`ui/auth/auth_modal.dart`) yalnızca Firebase Analytics'e yazıyor. Kayıtların
+önemli bir kısmı mobilden geldiği için kart, kitlenin bir kısmını görüyor.
+Kullanıcı "veri yok" deyince fark edildi. Canlıdan ölçüldü (23 Eylül): tablo
+boştu ama arıza yoktu. 21 Eylül'deki yayından beri web'de kimse kayıt
+formunu açmamış, hiçbir platformda yeni hesap da açılmamıştı (son hesap
+20 Eylül).
+
+Yapılacak: `auth_modal.dart`taki iki `analytics.log` noktasına paralel
+olarak `signup_events` insert'i (`games_api.dart`taki `tutorial_events`
+ucunun deseni: `platform` + `app_version` dolu, hata akışı bozmaz). Firebase
+çağrısı KALIR. Kanal (`direct`/`form`) web'le aynı küme olmalı. ⚠ **`anon_id`
+EKLEME:** tablo bilerek kimliksiz, gizlilik metnine dokunmamak için (bkz.
+migration `20260921122031_signup_events_funnel.sql` başlığı ve #33). Aynı
+PR'da şunlar da güncellenmeli: kartın `?` metnindeki "⚠ Yalnızca web"
+paragrafı (`AdminDashboard.tsx` → `HINTS['kayit-hunisi']`), `logSignupEvent`
+yorumu (`src/lib/api.ts`), migration'daki "tablo yalnızca web'den yazılıyor"
+notu ve `docs/decisions/admin-panel.md`. Port da yazmaya başlayınca oran
+yine AYNI tablodan kurulabilir, `profiles`a geçmeye gerek yok. `mobile/app/`
+dosyası olduğu için mobil derlemeyi tetikler, merge turu bitince yapılır.
+
 **#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
 ✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
 doğrulandı; arşivde.
