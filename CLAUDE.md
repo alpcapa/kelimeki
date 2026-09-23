@@ -180,6 +180,7 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | `mobile/app/` ya da `mobile/kelimeki_core/` altında HERHANGİ bir dosya | `ROADMAP.md` → "Sıradaki sürüme binecekler" tablosuna bir satır — **kendi PR'ını da say**; bu tablo DÖRT kez eksik yakalandı ve bir kez sürümü bir gün geciktirdi. Refleks: `git log --oneline <mağazadaki-paketin-commiti>..origin/main -- mobile/app mobile/kelimeki_core` |
 | Konsol/CI KURULUMU (secret girildi, depo açıldı, token üretildi, sözleşme imzalandı) | İlgili `console-formlari.md`'nin **durum tablosu**. Dokümanlar neyin GEREKTİĞİNİ yazar; neyin YAPILDIĞINI yazan bir yer yoksa her oturum aynı soruyu baştan sorar (9 Eylül 2026'da yaşandı: bir gün önce açılmış depo kullanıcıya tekrar soruldu). Değerler gizli, **durum değil** |
 | Migration | Canlıya uygula + doğrula + `list_migrations` ile dosya adını eşleştir |
+| Migration bir tablo YARATIYOR | Aynı migration'da `grant` (30 Ekim 2026'dan sonra Supabase otomatik vermiyor; istemciler tabloları doğrudan okuyor) |
 | Migration bir kolonu **nullable** yapıyor (ya da FK'yi `cascade`→`set null` çeviriyor) | `database.types.ts` **ve** portun `fromJson`'ı — bu bir SÖZLEŞME değişikliği (bkz. `docs/decisions/account-deletion.md` → "SET NULL'ın bedeli") |
 | Yeni kullanıcı verisi ya da görünürlük değişikliği | `TermsModal`/`PrivacyModal` |
 | Tanıtım senaryosu (`src/utils/tutorialScript.ts`), `TutorialGame.tsx`in metin/süreleri, `utils/onboarding.ts`in kapısı **ya da bağlamsal ipucu metinleri/sırası/tavanı** ya da motorun puan/vergi/çarpan kuralı | `npm run verify-tutorial-script` (CI'da) — tanıtım EKRANDA puan yazıyor, kural değişince metin sessizce bayatlar. **Port ikizi AYNI PR'da:** `mobile/app/lib/src/ui/tutorial/*` + `util/onboarding.dart`; `tutorial_parity_test.dart` web kaynağını okur (metin/sayı ayrışırsa web CI'ın `parite` işi düşer), `tutorial_script_test.dart` senaryoyu Dart motorunda oynatır |
@@ -399,11 +400,9 @@ sürekli hata alıyor ve senin işlerin takılıyordu. Dosyaları böldük ve
 düzeldi. Bundan sonra tekrar aynı şeyin yaşanmaması için gerekli kontrolleri
 koyup ona göre zamanında önlem alalım."*
 
-Aynı gün bu ders İKİ kez alındı: (1) `CLAUDE.md` her turu yiyordu →
-bölündü; (2) **bölünme sorunu çözmedi, YER DEĞİŞTİRDİ** —
-`mobile/docs/parca-log.md` sessizce 714 KB'a, yani eski `CLAUDE.md`'nin
-YEDİ katına çıkmıştı. Yani "bir gün fark ederiz" işe yaramıyor; ölçüm
-otomatik olmak zorunda.
+Ders aynı gün İKİ kez alındı ve ikincisi belirleyici: bölmek sorunu
+çözmedi, YER DEĞİŞTİRDİ. Yani "bir gün fark ederiz" işe yaramıyor, ölçüm
+otomatik olmak zorunda. Vaka: bölme günlüğü.
 
 `npm run check-doc-size` (bağımlılıksız node betiği) repodaki her `.md`
 dosyasını ölçüp üç sınıfa ayırır — çünkü maliyetleri farklı:
@@ -449,32 +448,18 @@ yazdırıyor. Bu bir UYARI, kapı DEĞİL (CI'ı düşürseydi ilgisiz her PR'ı
 doküman ameliyatına rehin alırdı) ve **ilacı bölmek değil, bloğa ALT BAŞLIK
 koymak** — dosya aynı kalır, grep'in düştüğü parça küçülür.
 
-`reference` bandı aynı gün 260/400'e çıkarıldı (400 KB ≈ 100K token) ama
-gevşetme TEK BAŞINA yapılmadı: sınıra çarpınca sınırı yükseltmek kontrolü
-süse çevirir, o yüzden karşılığında bu bölüm ölçüsü eklendi. `frozen` bu
-ölçünün DIŞINDA (o ciltlerin başlığı baştan sona okumayı zaten yasaklıyor).
+Bölüm ölçüsü `##`'den `######`'ya kadar HER seviyede kesiyor (kod çiti
+içindeki `# ...` başlık sayılmaz) — grep seni en yakın başlıktan sonraki
+parçaya bırakır, o başlık hangi seviyede olursa olsun. **Ders, yeni bir ölçü
+eklerken: ölçünün kestiği şey ile reçetenin değiştirdiği şey AYNI olmalı;**
+değilse kontrol bir iş emri değil sabit bir gürültü üretir ve gürültü
+okunmaz. Bandın 260/400'e çıkarılması, ilk (yalnızca `##` kesen) sürümün
+sekiz dosyalık gürültü duvarına dönüşmesi ve düzeltmenin ölçümleri: bölme
+günlüğü.
 
-⚠ **Ölçü 16 Eylül 2026'da DÜZELTİLDİ — "yaprak" kelimesi bedava değil.**
-İlk sürüm yalnızca `## ` başlıklarına bölüyordu, yani reçetenin kendisi
-(`###` ekle) yazdırılan sayıyı **bir bayt bile** değiştirmiyordu. Sonuç:
-uyarıyı temizleyecek tek eylem kuralın yasakladığı şeydi (bölmek), uyarı
-bu yüzden sürekliydi ve sekiz dosyalık sabit bir gürültü duvarına dönüştü
-(kullanıcı: *"Sürekli dosya bölme uyarısı mantıklı değil"*). Ölçü artık
-`##`'den `######`'ya kadar HER seviyede kesiyor — grep isabette seni en
-yakın başlıktan sonraki parçaya bırakır, o başlık hangi seviyede olursa
-olsun. Kod çiti (```) içindeki `# ...` satırı başlık sayılmaz.
-
-**Ders, yeni bir ölçü eklerken:** ölçünün kestiği şey ile reçetenin
-değiştirdiği şey AYNI olmalı. Değilse kontrol bir iş emri değil, sabit bir
-gürültü üretir — ve gürültü okunmaz. Düzeltme tek başına iki yanlış
-pozitifi temizledi (`live-game.md` 52 → 24 KB, `local-game-persistence.md`
-41 → 38 KB: ikisinde alt başlık ZATEN vardı, ölçü onları görmüyordu).
-
-⚠ **Alt sınır da var (7 Eylül 2026):** betik 0 baytlık her `.md`'yi ve
-tabanının altına düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki
-`CLAUDE`, `README`, iki `TESTING`) da düşürür — bir dosyanın BOŞALMASI da
-bir arıza. Ders, betik yazana: bir dosyayı yazma modunda AÇMADAN önce
-içeriğini oku (vaka: bölme günlüğü).
+⚠ **Alt sınır da var:** betik 0 baytlık her `.md`'yi ve tabanının altına
+düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki `CLAUDE`, `README`,
+iki `TESTING`) da düşürür — bir dosyanın BOŞALMASI da bir arıza.
 
 **Bölme günlüğü — hangi dosya ne zaman, hangi kuralla bölündü:**
 `docs/decisions/doc-size-history.md` (26 Ağustos'ta beş dosyanın birden
@@ -740,6 +725,27 @@ Kullanıcı iPad'den çalışıyor; bunu tetikleyecek bir CLI/CI erişimi yok.
    adındaki zaman damgasıyla karşılaştır; tutmuyorsa `git mv` ile düzelt ve
    commit'e dahil et. (Bu adım atlandığı için 23 Temmuz 2026'da ayrı bir PR
    açmak gerekti.)
+
+⚠ **TABLO YARATAN migration `grant` da yazmak ZORUNDA (30 Ekim 2026'dan
+itibaren).** Supabase `public`te yaratılan YENİ tablolara Data API iznini
+otomatik vermeyi bırakıyor; izinsiz doğan tablo PostgREST'ten
+`permission denied` verir. Bizi ilgilendiriyor çünkü istemciler RPC'lerin
+yanında **tabloları doğrudan da okuyor** (`.from('games')` gibi; web 25,
+port 22, Edge 15 tablo).
+
+```sql
+grant select on public.<tablo> to anon;                              -- misafir okuyacaksa
+grant select, insert, update, delete on public.<tablo> to authenticated;
+grant select, insert, update, delete on public.<tablo> to service_role;
+```
+
+⚠ Bu bir şablon değil ÜST SINIR — **ihtiyaca göre daralt** (canlıda 35
+tablonun 6'sında `authenticated` select bile YOK, bilerek). `grant` RLS'in
+YERİNE geçmez. **Mevcut tablolar etkilenmiyor, geriye dönük iş yok;** tek
+istisna migration'ların sıfırdan oynatıldığı yer (yeni proje, preview
+branch, `db reset`) — 28 migration'ın yalnızca 5'inde açık `grant` var.
+Duyuru, ölçümler ve o istisnanın bugünkü riski:
+`docs/decisions/supabase-ops.md` → "Data API izinleri".
 
 ### Edge Function deploy — `deploy_edge_function`'ın İKİ tuzağı
 
