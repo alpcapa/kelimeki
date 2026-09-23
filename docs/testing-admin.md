@@ -799,5 +799,10 @@ yalnızca ilk kez gelene gösteriliyor.
       Ayrılma sütununda `✓` göstermeli, kırmızı vurgu ALMAMALI.
 - [ ] **Girişli oturum yazılmıyor:** girişliyken uygulamayı aç, bir oyun
       başlat → hiçbir satır artmamalı.
-- [ ] **`?` popup'ı (`ziyaretci-yolculugu`)** "OTURUM sayar, kişi değil" ve
-      "adımlar bir sıra DEĞİL, bir küme" uyarılarını taşımalı.
+- [ ] **Yeni / Dönen süzgeci:** varsayılan **Yeni**. Gizli sekmede karşılamadan
+      gelen oturum yalnızca Yeni'de (ve Tümü'nde) görünmeli. Aynı sekmede sayfayı
+      kapatıp `kelimeki.com`u normal sekmede yeniden açınca (karşılama atlanır)
+      oturum Dönen'de görünmeli.
+- [ ] **`?` popup'ı (`ziyaretci-yolculugu`)** "OTURUM sayar, kişi değil",
+      "adımlar bir sıra DEĞİL, bir küme" ve "Dönen = karşılama atlandı; linkle
+      gelen yeni ziyaretçi de burada" uyarılarını taşımalı.
