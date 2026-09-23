@@ -193,6 +193,15 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       AÇIKKEN sekmeyi/uygulamayı arka plana al, karşı taraftan mesaj
       gönder, sonra geri dön: mesaj kendiliğinden gelmeli (oyundan çıkıp
       girmek gerekmemeli). Popup çıkmamalı, yalnız okunmamış sayacı artmalı.
+- [ ] **Okundu bilgisi cihazlar arası (23 Eylül 2026, web).** İki tarayıcı
+      (ya da tarayıcı + gizli pencere) AYNI hesapla. (a) Karşı taraf iki mesaj
+      atsın; oyunu **daha önce hiç açmadığın** tarayıcıda aç → "Mesajlaşma"da
+      **2** görünmeli (eskiden 0 çıkıyordu). (b) Mesajları A tarayıcısında
+      oku, B'de oyunu aç/öne getir → sayı **çıkmamalı**. (c) A'da uçak
+      modunda oku, bağlantıyı aç, B'yi öne getir → sayı yine çıkmamalı
+      (cihaz damgası bağlantı gelince sunucuya yetişir). ⚠ **Uygulama henüz
+      cihaz damgasıyla çalışıyor** (port dondurmada), yani uygulamada okumak
+      web'e yansımaz — bu turda bir hata DEĞİL.
 - [ ] **Sürükle-bırak.** Raftan tahtaya, tahtada taşıma, tahtadan rafa geri
       alma — üçü de çalışmalı (yerel oyundakiyle aynı davranış).
 - [ ] **Realtime.** Karşı taraf oynadığında ekran kendiliğinden güncellenmeli.
@@ -1414,6 +1423,68 @@ Kurulum: torbanın 7'nin altına inmesi için oyunu sona doğru götür
 - [ ] **Eski istemci (mağazadaki paket):** sunucu kuralı istemciden önce
       canlıya çıktıysa, eski uygulamada 7 seçilip gönderilebilir — beklenen
       sonuç sessiz başarı DEĞİL, aynı Türkçe metnin hata olarak görünmesi.
+
+## 13.9 Canlı oyun — telefon YATAY tutulduğunda (22 Eylül 2026)
+
+Kullanıcı ekran görüntüsüyle bildirdi (ana ekrana eklenmiş web uygulaması,
+iPhone yatay, 844×390 CSS px): Canlı bir oyunda tahta ekranı dolduruyor, raf
+ve butonlar altta kalıyor ve **hiçbir uyarı çıkmıyordu**. Sebep:
+`App.tsx` Canlı oyunda `<OnlineGameScreen/>` ile ERKEN DÖNÜYOR, oysa
+`<LandscapeHint/>`in iki mount noktası da o dönüşün altındaydı.
+
+⚠ **Bu blok otomatik test edilemez** — iki gerçek oturum + gerçek Supabase
+gerektiriyor. `tests/board-fit.spec.ts` yalnızca YEREL oyun ekranını ölçüyor.
+
+**Telefonda, Canlı bir oyun açıkken:**
+
+- [ ] Telefonu **yatay** tut → **TAM EKRAN** "Telefonunuzu dikeye çevirin"
+      bloğu çıkıyor. (22 Eylül 2026'dan önce bu ekranda HİÇ uyarı yoktu.)
+- [ ] ⚠ **Arkada hiçbir şey görünmüyor** — ne tahta, ne yarım raf, ne açık
+      kalmış bir pencere. Kullanıcının isteği birebir buydu: *"boş ekranda,
+      arka planda bozuk görüntü vb olmadan"*.
+- [ ] ⚠ **Blok KAPATILAMAZ** — ✕ yok, dokunmayla geçilmiyor. Tek çıkış
+      çevirmek. (Kapatılabilseydi geriye yine bozuk düzen kalırdı.)
+- [ ] **Dikeye dön** → blok kalkıyor ve oyun **kaldığı yerden** devam ediyor
+      (taşlar, skor, sıra korunmuş — blok kaplayıcı, sökücü değil).
+- [ ] ⚠ **TABLETTE ve açık KATLANABİLİRDE blok ÇIKMAMALI** — blok yalnızca
+      TELEFONDA (ekranın kısa kenarı < 600px) ve yükseklik yetmediğinde
+      çıkar. ⚠ **iPad'de SAFARİ'de (ana ekran uygulamasında değil) yatay
+      aç** — adres/sekme çubuğu + üstteki "Open in the Kelimeki app" bandı
+      sayfayı ~619px'e indiriyor, yani yalnızca yüksekliğe bakan eski kapı
+      burada HER açılışta blok çıkarıyordu (23 Eylül 2026, kullanıcı
+      bildirdi). Blok çıkmamalı; tahta küçülür, raf en fazla birkaç piksel
+      kaydırmayla görünür. **Bu madde kritik:** blok sert olduğu için
+      yanlış tetiklenmesi uygulamayı tamamen kullanılamaz yapar — eski
+      `#landscape-block` tam bu yüzden (iPad'de trackpad varken) kaldırılmıştı.
+
+**Klavye — kullanıcının işaret ettiği vaka (22 Eylül 2026):**
+
+- [ ] **DİKEY** telefonda Canlı oyun sohbetini aç, mesaj kutusuna dokun →
+      klavye açılıyor, ekran kısalıyor ama **blok ÇIKMIYOR**, yazmaya devam
+      edebiliyorsun.
+- [ ] Mesajı gönder / kutudan çık → klavye kapanıyor, blok yine çıkmıyor
+      (dikeydesin).
+- [ ] iPad'de klavye kılıfıyla, **yatay** konumda mesaj yazılabiliyor — iPad
+      hiçbir koşulda bloklanmamalı (telefon değil — bkz. yukarıdaki Safari
+      maddesi).
+
+**Aynı oyunda, tahtanın boyu:**
+
+- [ ] Yatay iPad'de (ana ekran web uygulaması) köşe rakamları ("1"/"2") ve
+      "X2" filigranı tahtanın içinde kalıyor — 23 Eylül 2026'ya kadar "2"
+      tahtanın alt kenarından taşıyordu.
+
+- [ ] Yatay iPad / açık katlanabilir gibi "geniş ama kısa" bir ekranda raf ve
+      butonların tamamı **kaydırmadan** görünüyor.
+- [ ] ⚠ Görünmüyorsa `BOARD_CHROME_PX` bayatlamıştır: o sabit YEREL ekranda
+      ölçüldü, Canlı ekranın başlığı 6px daha uzun olduğu için **7px pay**
+      eklendi. Canlı ekranın alt şeridi de değiştiyse pay yetmez — sayıyı
+      yeniden ölç ve `utils/boardFit.ts`teki notu güncelle.
+
+⚠ **Telefon YATAYDA tahta zaten küçük kalır (324px taban) ve bu bilinçli:**
+o boyda krom tek başına ~308px, viewport 375–430 — hiçbir sınır değeri oyunu
+oynanabilir yapmaz. Doğru davranış banner'ın "dikeye dön" demesi. Telefon
+yatayı gerçekten açmak YAN YANA bir düzen ister (ROADMAP #26).
 
 ## 14+ — Tarihli turlar → `docs/testing-turlari.md`
 
