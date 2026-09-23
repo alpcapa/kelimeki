@@ -348,6 +348,39 @@ de otomatik birleşiyor, ama sıra ilerledikçe bu değişebilir.
 güncellenir, her merge'de değil — yedi merge yedi build tetikler, anlamlı
 olan sonuncusudur.
 
+**Dokuzlu yeniden ölçüm (23 Eylül 2026, `main` = `184dba1`, TAM geçmişle):**
+dokuz PR sırayla, arka arkaya birleştirildi — dokuzu da birleşiyor, her
+dosyada TEK blok. Tek KOD çakışması **#565 ↔ #601**
+(`mobile/app/lib/src/data/games_api.dart`, `game_finishes` satırı): #565
+`platform`, #601 `utm_source: d.source` + misafirde `anon_id` ekliyor —
+**üçü de tutulur**. Geri kalanı ekleme çakışması (`ROADMAP.md`,
+`parca-log.md`, `mobile/TESTING.md`, #547'de iki `CLAUDE.md`). ⚠ Sığ klonda
+#547 13 dosyada çakışıyor GÖRÜNÜYOR — yanlış alarm, önce
+`git fetch --unshallow`.
+
+### Tur sonu TEST PLANI — son derleme üzerinde, BİR kez (23 Eylül 2026)
+
+Kullanıcı kararı: dokuz PR tek sürümle çıkıyor, test her merge'de değil
+SON derlemede yapılır. Sürüm "tamam" sayılmadan ÖNCE üçü birden:
+
+1. **Son `main` commit'inde CI yeşil** (web CI'ın `parite` işi dahil) **ve
+   son `mobile-build` koşusu BÜTÜN adımlarını bitirmiş** — CI yeşilken
+   TestFlight yüklemesi ya da `.aab` imzası ayrıca düşebilir.
+2. **Android `.apk` ile tam tur** — dokuz PR'ın `mobile/TESTING.md`
+   maddeleri. Sekiz PR (#565 #562 #579 #576 #554 #547 #601 #611) yalnızca
+   ortak Dart kodu değiştiriyor, yani APK'da doğrulanan iOS'ta da doğrudur.
+3. **iPhone'da (TestFlight) KISA kontrol — yalnızca #557 için:** #557
+   APK'nın hiç taşımadığı iOS dosyalarına dokunuyor (`Info.plist` +
+   `Runner.xcodeproj` → paket dili `tr`; `flutter_localizations` → iOS'ta
+   metin seçme menüsünü Cupertino çiziyor). Uygulama açılıyor mu, metin
+   seçme menüsü Türkçe mi, kısa bir duman turu. Tam listeyi iOS'ta
+   TEKRARLAMA.
+
+⚠ Sunucuya dayanan PR'larda (ör. #601 huni damgası) ilgili migration/Edge
+Function'ın CANLIDA olduğunu da doğrula — istemci alanı gönderir, sunucuda
+karşılığı yoksa sessizce düşer. Adım adım test listesi tur sonunda,
+derleme hazır olunca verilecek.
+
 ⚠ **Ölçüm `main` = `3a55492`'ye ait.** `main` ilerlediyse sıra yeniden
 ölçülmeli:
 
