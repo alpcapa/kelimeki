@@ -1171,3 +1171,34 @@ port kopyası gerekir, yani iş dondurma sonrasına kalır.
 - **Adım listesi İKİ yerde:** `JOURNEY_STEPS` ↔ migration'daki iki `v_steps`.
   `verify-web-journey` üçünü sıra dahil karşılaştırır. Yeni adım ekleyen
   ikisini birden güncellemeli, yoksa sunucu adımı SESSİZCE yok sayar.
+
+### Yeni ↔ Dönen süzgeci (aynı gün, `20260923135848_admin_web_journey_entry_filter.sql`)
+
+Karta düşen İLK gerçek satır bir Android web misafiriydi: app → oyun → 5.
+hamle → oyun bitti, 594 sn. Kullanıcı fark etti: *"önceki android test
+grubundan düzenli oyuncu olmalı çünkü android hala Play Store'da yok."*
+Canlıdan doğrulandı: aynı cihaz 22 Ağustos'tan beri 205 oyunu MİSAFİR
+olarak başlatmış. Yani "misafir" iki ayrı kitleyi birleştiriyordu: bounce
+sorusunun konusu olan YENİ ziyaretçi ve hesapsız düzenli oyuncu. İkincisi
+uzun oyunlarıyla "oyun bitti" payını şişirip yeni gelenin kaybını gizler.
+
+**Veri zaten vardı:** `web_sessions.entry`. Karşılama sayfası yalnızca ilk
+kez gelene gösteriliyor, bu yüzden `landing` = yeni, `app` = karşılama
+atlandı. Kartın varsayılanı **Yeni**. Yazan tarafa dokunulmadı, geçmiş
+satırlar da doğru ayrılıyor.
+
+⚠ **`app` ≠ "dönen", birebir değil.** Kapı (`scripts/landing-plugin.js` →
+`kapiScript`) karşılamayı şunlarda da atlıyor: `/` dışındaki her yol
+(paylaşılan oyun `/game/:id`, davet `/davet/:token`, yani linkle gelen YENİ
+ziyaretçi) ve ana ekrana eklenmiş PWA. Tersi de var: `?tanitim=1` dönen
+kullanıcıya karşılamayı bilerek yeniden gösteriyor. Etiket bu yüzden `?`
+metninde açıklanıyor. Linkle gelen yeniyi ayırmak gerekirse satıra giriş
+YOLU yazılmalı (bugün yazılmıyor).
+
+`p_entry` bir parametre EKLEMESİ olduğu için eski `(integer, text)` imzası
+`drop` edildi. `proacl` sonrasında okundu ve öncekiyle aynı çıktı
+(`authenticated` + `service_role`, `anon` YOK). Eski istemci iki
+parametreyle çağırıyor, üçüncünün varsayılanı `null` olduğu için yayın
+sırası önemsiz. `verify-web-journey` artık adım dizisi taşıyan İKİ
+migration'ı da okuyor.
+
