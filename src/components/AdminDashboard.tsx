@@ -439,6 +439,15 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         Ertesi gün dönen ziyaretçi yeni bir oturumdur.
         <br />
         <br />
+        <b>Yeni / Dönen:</b> karşılama sayfası yalnızca ilk kez gelene gösterilir, ayrım
+        buna dayanır. <b>Yeni</b> = oturum karşılamayla başladı (varsayılan, bounce
+        sorusunun kitlesi). <b>Dönen</b> = karşılama atlandı. ⚠ Bu grup "dönen" ile
+        birebir aynı DEĞİL: paylaşılan oyun (<code>/game/…</code>) ve davet linkiyle
+        gelen YENİ ziyaretçi ile ana ekrana eklenmiş uygulama da buraya düşer. Hesapsız
+        düzenli oynayan misafirler (Android uygulaması Play'e çıkana kadar web'den
+        oynayanlar) da burada.
+        <br />
+        <br />
         ⚠ Adımlar bir sıra DEĞİL, bir küme: tanıtımı açmadan oyuna başlayan da, oyun
         oynamadan kayıt formunu açan da olur. Yani Ulaşan sayıları yukarıdan aşağı
         azalmak zorunda değil.
@@ -446,7 +455,8 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         ⚠ <b>Kapsam:</b> yalnızca web ve yalnızca misafir. Girişli açılan oturum hiç
         yazılmaz; <b>Kayıt oldu</b>/<b>Giriş yaptı</b> satırları ayrılma değil BAŞARI
         (oturum orada kapanır). Karşılama sayfası yalnızca ilk kez gelenlere
-        gösterildiği için dönen misafir <b>Uygulama açıldı</b>'dan başlar. Otomasyon
+        gösterildiği için dönen misafir <b>Uygulama açıldı</b>'dan başlar (<b>Yeni</b>
+        süzgecinde o satır "karşılamadan geçenler"i gösterir). Otomasyon
         tarayıcıları (<code>navigator.webdriver</code>) sayılmaz. Mobil Safari sekmeyi
         bazen son pingi göndermeden kapatıyor, bu yüzden Süre biraz eksik ölçülebilir.
         Adımlar bundan etkilenmez.
@@ -655,10 +665,14 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         duruyor ama artık çizilmiyor.{' '}
         <b>Satıra tıkla, işletim sistemi SÜRÜMLERİ açılır</b> — "kaç kişi hâlâ eski Android'de?"
         sorusunun cevabı (12 Eylül 2026'ya kadar ayrı bir "İşletim Sistemi" tablosuydu).{' '}
-        <b>Sürüm dizesi platformdan bağımsız okunmaz:</b> canlıda <code>iOS 10.15.7</code>{' '}
-        satırları var ve bu bir iOS sürümü DEĞİL, macOS'un dondurulmuş sürüm dizesi — masaüstü
-        User-Agent'ı veren cihazlar (iPad'in "Masaüstü site" modu, Mac) iOS kovasına düşüyor;
-        tablo o sınıflandırma hatasını gizlemiyor, gösteriyor. <b>Açılan sürüm satırlarının
+        <b>Masaüstü sürümlerinin başında işletim sistemi yazıyor</b> (<code>macOS</code>,{' '}
+        <code>Windows</code>). ⚠ Oradaki sayı gerçek sürüm DEĞİL: tarayıcılar bütün
+        Mac'lerde <code>10.15.7</code> gönderiyor, Windows 11 de kendini Windows 10 gibi
+        bildiriyor (bu yüzden <b>Windows 10/11</b> tek satır). Yani o satırlar "kaç Mac, kaç
+        Windows" sorusunu yanıtlar, sürümü yanıtlamaz.{' '}
+        <b>iPad "sürüm yok":</b> iPad Safari varsayılan olarak "masaüstü sitesi" kipinde
+        açılıp kendini Mac gibi tanıtıyor ve gerçek sürümünü göndermiyor (23 Eylül 2026'ya
+        kadar bu satırlar yanlışlıkla <code>iOS 10.15.7</code> görünüyordu). <b>Açılan sürüm satırlarının
         toplamı üstteki cihaz satırından BÜYÜK olabilir</b> — aynı ziyaretçi aralık içinde
         işletim sistemini güncellerse iki sürümde de sayılır (canlıda 12 Eylül 2026'da tek
         vaka: iOS <code>26.5.2</code> → <code>26.6.1</code>). Üstteki sayı ve tablonun TOPLAMI
@@ -1728,11 +1742,15 @@ function WebJourneyTable({
   rows,
   device,
   onDeviceChange,
+  entry,
+  onEntryChange,
   infoHint,
 }: {
   rows: AdminWebJourneyRow[] | null;
   device: string;
   onDeviceChange: (v: string) => void;
+  entry: string;
+  onEntryChange: (v: string) => void;
   infoHint?: ReactNode;
 }) {
   const toplam = rows ? rows.reduce((t, r) => t + r.left_here, 0) : 0;
@@ -1740,7 +1758,19 @@ function WebJourneyTable({
   const karsilama = rows?.find((r) => r.step === 'landing');
   const ust = (
     <div className="flex items-center justify-between gap-2">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center flex-wrap gap-2">
+        {/* Yeni ↔ dönen (23 Eylül 2026): karta düşen ilk gerçek satır 205
+            oyunluk, hesapsız düzenli bir misafirdi. Bounce sorusu YENİ
+            ziyaretçi hakkında, bu yüzden varsayılan "Yeni". */}
+        <AdminSelect
+          value={entry}
+          onChange={onEntryChange}
+          options={[
+            { value: 'landing', label: 'Yeni' },
+            { value: 'app', label: 'Dönen' },
+            { value: 'all', label: 'Tümü' },
+          ]}
+        />
         <AdminSelect
           value={device}
           onChange={onDeviceChange}
@@ -2569,6 +2599,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [signupFunnel, setSignupFunnel] = useState<AdminSignupFunnelRow[] | null>(null);
   const [webJourney, setWebJourney] = useState<AdminWebJourneyRow[] | null>(null);
   const [journeyDevice, setJourneyDevice] = useState<string>('all');
+  const [journeyEntry, setJourneyEntry] = useState<string>('landing');
   const [tutorialFunnel, setTutorialFunnel] = useState<AdminTutorialFunnelRow[] | null>(null);
   const [deviceBreakdown, setDeviceBreakdown] = useState<AdminDeviceBreakdownRow[] | null>(null);
   const [deviceModels, setDeviceModels] = useState<AdminDeviceModelRow[] | null>(null);
@@ -2769,10 +2800,11 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     fetchAdminWebJourney(
       days,
       journeyDevice === 'all' ? null : (journeyDevice as 'ios' | 'android' | 'desktop'),
+      journeyEntry === 'all' ? null : (journeyEntry as 'landing' | 'app'),
     )
       .then(setWebJourney)
       .catch((e) => setError(String(e)));
-  }, [userPeriod, userGranularity, journeyDevice]);
+  }, [userPeriod, userGranularity, journeyDevice, journeyEntry]);
 
   useEffect(() => {
     fetchAdminGameActivitySeries(
@@ -3844,6 +3876,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       rows={webJourney}
                       device={journeyDevice}
                       onDeviceChange={setJourneyDevice}
+                      entry={journeyEntry}
+                      onEntryChange={setJourneyEntry}
                       infoHint={<InfoHint id="ziyaretci-yolculugu" onOpen={setHint} />}
                     />
                   </div>

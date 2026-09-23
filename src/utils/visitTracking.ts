@@ -120,10 +120,22 @@ export function getStoredUtmSource(): string | null {
  * Chrome'da gezinen biri de "android" döner (bkz. `src/utils/platform.ts`,
  * o soru ayrı bir mekanizma).
  */
+/**
+ * iPadOS 13+ Safari'nin varsayılan "masaüstü sitesi" kipi: User-Agent bir
+ * Mac'inkiyle birebir aynı (`Macintosh; Intel Mac OS X 10_15_7`), iPad'i
+ * ayıran tek şey dokunmatik. ⚠ Bu kipte User-Agent'taki `10_15_7` iPad'in
+ * sürümü DEĞİL — Apple'ın bütün Mac'lerde sabitlediği değer; gerçek iPadOS
+ * sürümü hiç gönderilmiyor (23 Eylül 2026: admin "Cihaz" tablosunda iOS
+ * altında 27 cihazlık bir `10.15.7` satırı vardı, hepsi modelsizdi).
+ */
+function isDesktopModeIPad(ua: string): boolean {
+  return /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+}
+
 export function getDeviceType(): 'ios' | 'android' | 'desktop' {
   try {
     const ua = navigator.userAgent || '';
-    const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    const isIOS = /iPhone|iPad|iPod/.test(ua) || isDesktopModeIPad(ua);
     if (isIOS) return 'ios';
     if (/Android/.test(ua)) return 'android';
     return 'desktop';
@@ -146,6 +158,9 @@ export function getOsVersion(): string | null {
     if (ios) return `${ios[1]}.${ios[2]}${ios[3] ? `.${ios[3]}` : ''}`;
     const android = ua.match(/Android (\d+(?:\.\d+)?)/);
     if (android) return android[1];
+    // Masaüstü kipindeki iPad: aşağıdaki `Mac OS X` dalı ona sahte bir
+    // macOS sürümü yazardı. Bilinmeyen sürüm, yanlış sürümden iyidir.
+    if (isDesktopModeIPad(ua)) return null;
     const mac = ua.match(/Mac OS X (\d+)[_.](\d+)(?:[_.](\d+))?/);
     if (mac) return `${mac[1]}.${mac[2]}${mac[3] ? `.${mac[3]}` : ''}`;
     const win = ua.match(/Windows NT (\d+\.\d+)/);
@@ -171,7 +186,7 @@ export function getDeviceModel(): string | null {
     const ua = navigator.userAgent || '';
     const androidModel = ua.match(/;\s*([^;)]+?)\s*Build\//);
     if (androidModel) return androidModel[1].trim().slice(0, 60);
-    if (/iPad/.test(ua)) return 'iPad';
+    if (/iPad/.test(ua) || isDesktopModeIPad(ua)) return 'iPad';
     if (/iPhone/.test(ua)) return 'iPhone';
     if (/iPod/.test(ua)) return 'iPod';
     return null;

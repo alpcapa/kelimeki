@@ -171,19 +171,28 @@ console.log('webJourney — ziyaretçi yolculuğu');
   check('oturumsuz olaylar sessiz', steps.length === 0 && ids === 0);
 }
 
-// 10 — adım listesi SQL ile birebir (iki fonksiyonun ikisi de).
+// 10 — adım listesi SQL ile birebir. Fonksiyonun EN SON tanımı geçerli olduğu
+// için adım dizisi taşıyan HER migration okunur (yeni bir dosya
+// `admin_web_journey`i yeniden yazarsa buraya eklenmeli).
 {
-  const sql = readFileSync('supabase/migrations/20260923103044_web_sessions_journey.sql', 'utf8');
-  const diziler = [...sql.matchAll(/v_steps constant text\[\] := array\[([\s\S]*?)\];/g)].map((m) =>
-    [...m[1].matchAll(/'([a-z_0-9]+)'/g)].map((x) => x[1]),
-  );
-  check('SQL\'de iki adım dizisi bulundu', diziler.length === 2, String(diziler.length));
-  for (const [i, d] of diziler.entries()) {
-    check(
-      `SQL dizisi ${i + 1} ↔ JOURNEY_STEPS (sıra dahil)`,
-      JSON.stringify(d) === JSON.stringify(JOURNEY_STEPS),
-      JSON.stringify(d),
+  const dosyalar: [string, number][] = [
+    ['supabase/migrations/20260923103044_web_sessions_journey.sql', 2], // record_web_session + ilk admin_web_journey
+    ['supabase/migrations/20260923135848_admin_web_journey_entry_filter.sql', 1], // admin_web_journey + p_entry
+  ];
+  for (const [dosya, beklenen] of dosyalar) {
+    const sql = readFileSync(dosya, 'utf8');
+    const diziler = [...sql.matchAll(/v_steps constant text\[\] := array\[([\s\S]*?)\];/g)].map((m) =>
+      [...m[1].matchAll(/'([a-z_0-9]+)'/g)].map((x) => x[1]),
     );
+    const ad = dosya.split('/').pop();
+    check(`${ad}: ${beklenen} adım dizisi bulundu`, diziler.length === beklenen, String(diziler.length));
+    for (const [i, d] of diziler.entries()) {
+      check(
+        `${ad}: dizi ${i + 1} ↔ JOURNEY_STEPS (sıra dahil)`,
+        JSON.stringify(d) === JSON.stringify(JOURNEY_STEPS),
+        JSON.stringify(d),
+      );
+    }
   }
 }
 
