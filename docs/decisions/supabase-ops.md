@@ -233,3 +233,53 @@ tuzağı da bu depo tek turda yaşadı:**
 
 `git cherry` de tek başına YETMEZ: yama-kimliği eşitliği arar, sonradan
 farklı bağlamda yeniden inen bir değişikliği "yok" işaretler.
+
+## Data API izinleri — otomatik `grant` bitiyor (23 Eylül 2026 duyurusu)
+
+Supabase'den gelen duyuru: **30 Ekim 2026'dan itibaren `public` şemasında
+yaratılan YENİ tablolara Data API izni otomatik verilmeyecek.** İzin eksikse
+API `permission denied` döner ve hata mesajı koşulması gereken `grant`
+cümlesini yazar. Kural migration'lar için de geçerli: o tarihten sonra
+izinsiz tablo yaratan bir migration, tabloyu Data API'den erişilemez bırakır.
+
+**Bizi neden ilgilendiriyor — ölçüldü:** istemciler yalnızca RPC kullanmıyor,
+tabloları PostgREST üzerinden doğrudan da okuyor. `.from('…')` sayımı:
+
+| Taraf | Farklı tablo |
+|---|---|
+| `src/` (web) | 25 — `profiles`, `games`, `online_game_states`, `guest_visits`, `leaderboard`, `client_errors`, … |
+| `mobile/app/lib` (port) | 22 |
+| `supabase/functions` (Edge, `service_role`) | 15 |
+
+Yani yeni bir tabloyu izinsiz yaratmak, onu okuyacak istemciyi sessizce
+kırardı — üstelik hata istemcide çıkacağı için migration'ı yazan turda
+görünmezdi.
+
+**Bugün hiçbir şey kırılmıyor.** Duyuru mevcut tabloların izinlerini
+korumakta açık, ve canlıda da öyle görünüyor (23 Eylül 2026, `public`
+şemasında 35 tablo):
+
+```
+anon select:            22
+authenticated select:   29
+authenticated YOK:       6   ← bilerek kilitli olanlar
+```
+
+Bu dağılım, "yeni tabloya şablonu yapıştır" refleksinin neden yanlış
+olduğunu da gösteriyor: tabloların beşte biri `authenticated`a bile kapalı.
+İzin **daraltılarak** verilir; `grant` RLS'in yerine geçmez.
+
+**Geriye dönük iş YOK, tek istisna sıfırdan oynatma.** Tablo yaratan 28
+migration'ın yalnızca 5'i açık `grant` yazıyor (`app_config_min_supported_client`,
+`online_game_messages`, `online_game_state_schema`, `online_game_message_mutes`,
+`online_game_chat_reports`); kalan 23'ü otomatik izne güveniyordu. Bu
+migration'lar yeni bir projede / preview branch'te / `supabase db reset` ile
+yeniden oynatılırsa o tablolar erişilemez doğar. Şu an aktif preview branch
+YOK (`list_branches` yalnızca varsayılan `main`'i döndürüyor, CI'daki
+"Supabase Preview" kontrolü her PR'da atlanıyor), o yüzden risk teorik —
+ama böyle bir ortam kurulacaksa 23 migration'ın geriye dönük düzeltilmesi
+o işin ilk adımı olmalı.
+
+**Kural `CLAUDE.md` → "Migration'lar" bölümüne yazıldı** (her seferinde
+uygulanacak bir şey olduğu için orada; bu dosya yalnızca gerekçeyi ve
+ölçümleri tutuyor).

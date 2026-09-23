@@ -299,3 +299,29 @@ DEĞİŞTİRDİĞİ şey aynı olmalı. Değilse kontrol bir iş emri değil sab
 gürültü üretir — ve gürültü okunmaz. Bu, 15 Eylül'ün *"sınıra çarpınca
 sınırı yükseltmek kontrolü süse çevirir"* dersinin ikizi: bir kontrolü süse
 çeviren ikinci yol, temizlenmesi imkânsız bir uyarı bastırmaktır.
+
+## 23 Eylül 2026 — kök `CLAUDE.md` (81 → 79,6 KB), `auto` uyarı bandından çıkarıldı
+
+Supabase'in Data API izin kuralı (`docs/decisions/supabase-ops.md` → "Data
+API izinleri") `CLAUDE.md`in "Migration'lar" bölümüne bir kural olarak
+eklendi ve dosyayı 79,5 → 81 KB'a, yani `auto` sınıfının 80 KB'lık uyarı
+bandına taşıdı. Kuralın kendisi kalması gereken yerde (her migration turunda
+okunuyor), o yüzden karşılığı **"Doküman Boyutu Bütçesi" bölümünün kendi
+tarihli anlatısından** çıkarıldı — bölümün kuralları, tabloları ve reçeteleri
+olduğu gibi duruyor. Buraya taşınan üç kayıt:
+
+**1. 24 Ağustos 2026'nın ikinci dersi, sayıyla.** O gün `CLAUDE.md` bölündü,
+ama bölünme sorunu çözmedi, YER DEĞİŞTİRDİ: `mobile/docs/parca-log.md`
+sessizce **714 KB**'a, yani o tarihteki `CLAUDE.md`'nin YEDİ katına çıkmıştı.
+Ölçümün otomatik olma gerekçesi bu tek sayı.
+
+**2. `reference` bandının 200/300 → 260/400 yükseltilmesi (15 Eylül 2026).**
+400 KB ≈ 100K token. Gevşetme TEK BAŞINA yapılmadı: sınıra çarpınca sınırı
+yükseltmek kontrolü süse çevirir, o yüzden karşılığında bölüm ölçüsü eklendi.
+`frozen` bu ölçünün DIŞINDA — o ciltlerin başlığı baştan sona okumayı zaten
+yasaklıyor.
+
+**3. Alt sınırın gerekçesi (7 Eylül 2026).** Betik 0 baytlık her `.md`'yi ve
+tabanının altına düşen altı baştan sona okunan dosyayı da düşürür, çünkü bir
+dosyanın BOŞALMASI da bir arıza. Ders, betik yazana: bir dosyayı yazma
+modunda AÇMADAN önce içeriğini oku — vaka bu günlüğün kendisiydi.
