@@ -57,10 +57,11 @@ import {
   hasSeenChatIntro,
   markChatIntroSeen,
   getChatLastReadAt,
-  markChatRead,
+  markChatRead as markChatReadLocal,
   pickFirstWinCelebration,
   type FirstWinCelebrationId,
 } from '../utils/onboarding';
+import { decideChatRead } from '../utils/chatRead';
 import { swallowNextClick } from '../utils/ghostClick';
 import { useBoardZoom } from '../hooks/useBoardZoom';
 import {
@@ -70,6 +71,8 @@ import {
   fetchMyActiveChatReports,
   fetchMyChatMutes,
   fetchOnlineGameMessages,
+  fetchChatLastReadAt,
+  markChatReadRemote,
   fetchOnlineGameMoves,
   fetchOnlineGameState,
   getMyOnlineRack,
@@ -617,6 +620,12 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
     };
   }, [game.id, mySlotIndex]);
 
+  // Okundu damgası hem cihaza hem sunucuya (bkz. `utils/chatRead.ts`).
+  const markChatRead = (gameId: string, at: string) => {
+    markChatReadLocal(gameId, at);
+    void markChatReadRemote(gameId, at);
+  };
+
   // Oyun İçi Mesajlaşma — Faz 1: online_game_states'in Realtime aboneliğinden
   // BAĞIMSIZ ayrı bir effect/kanal (farklı tablo) — ilk yükte tüm sohbeti
   // çeker, sonrasında yeni mesajları INSERT olayıyla dinler. Sohbet penceresi
@@ -640,39 +649,32 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       fetchMyChatMutes(),
       fetchMyActiveChatReports(),
       fetchOnlineGameMessages(game.id),
-    ]).then(([mutes, reported, rows]) => {
+      fetchChatLastReadAt(game.id).catch(() => undefined),
+    ]).then(([mutes, reported, rows, serverAt]) => {
       if (cancelled) return;
       setMutedUserIds(mutes);
       setReportedUserIds(reported);
       setChatMessages(rows);
-      // Bu cihazda bu oyun için "en son okunan mesaj" damgası hiç yoksa
-      // (ör. bu özellik yeni devreye girdi ya da oyun ekranı bu cihazda
-      // hiç açılmadı), mevcut TÜM geçmişi "okunmamış" saymak yanlış
-      // pozitif üretiyordu — kullanıcı çoktan görmüş olabileceği eski
-      // mesajlar için de kırmızı nokta çıkıyordu. Bunun yerine ilk
-      // hesaplamada mevcut son mesaja (yoksa şu ana) kadar okunmuş kabul
-      // edilip damga oradan başlatılıyor; kırmızı nokta yalnızca BUNDAN
-      // SONRA gelecek gerçek yeni mesajlar için çıkar — geç giriş
-      // özelliği (bkz. CLAUDE.md) bir sonraki ziyarette olduğu gibi çalışmaya devam eder.
-      const lastReadAt = getChatLastReadAt(game.id);
-      if (lastReadAt === null) {
-        const seedAt =
-          rows.length > 0
-            ? rows.reduce((a, b) => (a.created_at > b.created_at ? a : b)).created_at
-            : new Date().toISOString();
-        markChatRead(game.id, seedAt);
-        setUnreadCount(0);
-        return;
-      }
+      // Okundu damgası 23 Eylül 2026'dan beri SUNUCUDA da (bkz.
+      // `utils/chatRead.ts` — iki kaynağın büyüğü alınır, geride kalan
+      // yetiştirilir). Eskiden yalnızca cihazdaydı: oyun bir cihazda ilk kez
+      // açılınca "ilk ziyaret" tohumu yeni gelmiş mesajları da okunmuş
+      // sayıyordu, bir cihazda okumak da ötekine ulaşmıyordu.
       // Sessize alma kırmızı noktayı ETKİLEMEZ (15 Ağustos 2026, kullanıcı
       // kararı) — mute yalnızca POPUP'ı bastırır. Gerekçe: oyunu bölen ve
       // taciz vektörü olan şey popup; alttaki nokta rahatsız etmiyor, üstelik
       // kullanıcı susturduğu kişinin ne yazdığını görmek isteyebilir (şikayet
       // etmek için bile). Önceden mute ikisini birden bastırıyordu.
-      const unread = rows.filter(
-        (r) => r.sender_user_id !== myUserId && r.created_at > lastReadAt,
-      ).length;
-      setUnreadCount(unread);
+      const d = decideChatRead({
+        serverAt,
+        localAt: getChatLastReadAt(game.id),
+        rows,
+        myUserId,
+        nowIso: new Date().toISOString(),
+      });
+      if (d.writeLocal) markChatReadLocal(game.id, d.writeLocal);
+      if (d.pushToServer) void markChatReadRemote(game.id, d.pushToServer);
+      setUnreadCount(d.unread);
       });
     };
     loadMessages();
