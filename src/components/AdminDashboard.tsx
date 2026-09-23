@@ -17,6 +17,7 @@ import {
   fetchAdminActiveDays,
   fetchAdminSourceFunnel,
   fetchAdminSignupFunnel,
+  fetchAdminWebJourney,
   fetchAdminTutorialFunnel,
   fetchAdminDeviceBreakdown,
   fetchAdminDeviceModelBreakdown,
@@ -52,6 +53,7 @@ import type {
   AdminGameMix,
   AdminSourceFunnelRow,
   AdminSignupFunnelRow,
+  AdminWebJourneyRow,
   AdminTutorialFunnelRow,
   AdminAppVersionRow,
   AdminPushVersionRow,
@@ -419,6 +421,35 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <br />
         ⚠ "Tamamladı" = hesap oluştu demek, <b>e-postasını onayladı demek
         DEĞİL</b>. Onay kaybı ayrı bir soru (ROADMAP #32).
+      </>
+    ),
+  },
+  'ziyaretci-yolculugu': {
+    title: 'Ziyaretçi Yolculuğu',
+    body: (
+      <>
+        Web'deki MİSAFİR ziyaretçinin <b>nerede ayrıldığı</b>. Her satır bir adım;{' '}
+        <b>Ulaşan</b> = o adıma gelen oturum, <b>Ayrılan</b> = SON adımı o olan oturum,{' '}
+        <b>Ayrılma</b> = Ayrılan / Ulaşan. Bounce'un yeri, Ayrılma yüzdesinin en yüksek
+        olduğu satırdır. <b>Süre</b> = orada ayrılanların oturumda kaldığı süre (medyan).
+        <br />
+        <br />
+        Bu kart <b>OTURUM</b> sayar, kişi değil: sekme başına bir satır, kimliksiz (ne{' '}
+        <code>anon_id</code> ne <code>user_id</code>, gizlilik metnine dokunmamak için).
+        Ertesi gün dönen ziyaretçi yeni bir oturumdur.
+        <br />
+        <br />
+        ⚠ Adımlar bir sıra DEĞİL, bir küme: tanıtımı açmadan oyuna başlayan da, oyun
+        oynamadan kayıt formunu açan da olur. Yani Ulaşan sayıları yukarıdan aşağı
+        azalmak zorunda değil.
+        <br />
+        ⚠ <b>Kapsam:</b> yalnızca web ve yalnızca misafir. Girişli açılan oturum hiç
+        yazılmaz; <b>Kayıt oldu</b>/<b>Giriş yaptı</b> satırları ayrılma değil BAŞARI
+        (oturum orada kapanır). Karşılama sayfası yalnızca ilk kez gelenlere
+        gösterildiği için dönen misafir <b>Uygulama açıldı</b>'dan başlar. Otomasyon
+        tarayıcıları (<code>navigator.webdriver</code>) sayılmaz. Mobil Safari sekmeyi
+        bazen son pingi göndermeden kapatıyor, bu yüzden Süre biraz eksik ölçülebilir.
+        Adımlar bundan etkilenmez.
       </>
     ),
   },
@@ -1661,6 +1692,137 @@ function SignupFunnelTable({
   );
 }
 
+const JOURNEY_LABEL: Record<string, string> = {
+  landing: 'Karşılama sayfası',
+  landing_cta: 'Uygulamaya geçti',
+  app: 'Uygulama açıldı',
+  tutorial_start: 'Tanıtımı açtı',
+  tutorial_done: 'Tanıtımı bitirdi',
+  game_start: 'Oyun başladı',
+  first_move: 'İlk hamle',
+  move_5: '5. hamle',
+  game_finish: 'Oyun bitti',
+  signup_form: 'Kayıt formu',
+  signup_done: 'Kayıt oldu',
+  login: 'Giriş yaptı',
+};
+
+/** Oturumu KAPATAN adımlar: orada "ayrılmak" bounce değil, başarı. */
+const JOURNEY_SUCCESS = new Set(['signup_done', 'login']);
+
+function formatJourneySeconds(sec: number | null): string {
+  if (sec === null) return '—';
+  if (sec < 60) return `${Math.round(sec)} sn`;
+  if (sec < 3600) return `${Math.round(sec / 60)} dk`;
+  return `${(sec / 3600).toFixed(1).replace('.', ',')} sa`;
+}
+
+/**
+ * Ziyaretçi yolculuğu (23 Eylül 2026) — web misafir oturumlarının adım başına
+ * ulaşan / burada ayrılan sayısı. Yazan taraf `utils/webJourney.ts`, sunucu
+ * `admin_web_journey`. Hiç ulaşılmamış adım satırı gizlenir (karşılama
+ * bugün yalnızca ilk kez gelene gösteriliyor, tanıtım yalnızca ilk oyunda
+ * açılıyor — boş satırlar okumayı zorlaştırıyordu).
+ */
+function WebJourneyTable({
+  rows,
+  device,
+  onDeviceChange,
+  infoHint,
+}: {
+  rows: AdminWebJourneyRow[] | null;
+  device: string;
+  onDeviceChange: (v: string) => void;
+  infoHint?: ReactNode;
+}) {
+  const toplam = rows ? rows.reduce((t, r) => t + r.left_here, 0) : 0;
+  const gorunen = rows ? rows.filter((r) => r.reached > 0) : [];
+  const karsilama = rows?.find((r) => r.step === 'landing');
+  const ust = (
+    <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        <AdminSelect
+          value={device}
+          onChange={onDeviceChange}
+          options={[
+            { value: 'all', label: 'Tüm Cihazlar' },
+            { value: 'desktop', label: 'Masaüstü' },
+            { value: 'ios', label: 'iOS' },
+            { value: 'android', label: 'Android' },
+          ]}
+        />
+        {rows !== null && toplam > 0 && (
+          <span className="text-[11px] font-mono text-muted">{toplam} oturum</span>
+        )}
+      </div>
+      {infoHint}
+    </div>
+  );
+  if (rows === null || gorunen.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {ust}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta veri yok.'}
+        </div>
+      </div>
+    );
+  }
+  const enYuksek = Math.max(
+    ...gorunen
+      .filter((r) => !JOURNEY_SUCCESS.has(r.step) && r.reached > 0)
+      .map((r) => r.left_here / r.reached),
+    0,
+  );
+  return (
+    <div className="flex flex-col gap-1.5">
+      {ust}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs font-mono">
+          <thead>
+            <tr className="text-muted border-b border-border">
+              <th className="text-left py-1 pr-2 font-normal">Adım</th>
+              <th className="text-right py-1 px-2 font-normal">Ulaşan</th>
+              <th className="text-right py-1 px-2 font-normal">Ayrılan</th>
+              <th className="text-right py-1 px-2 font-normal">Ayrılma</th>
+              <th className="text-right py-1 pl-2 font-normal">Süre</th>
+            </tr>
+          </thead>
+          <tbody>
+            {gorunen.map((row) => {
+              const basari = JOURNEY_SUCCESS.has(row.step);
+              const oran = row.left_here / row.reached;
+              // En çok kaybettiren adım vurgulanır: kartın sorduğu tek soru bu.
+              const zirve = !basari && row.left_here > 0 && oran === enYuksek;
+              return (
+                <tr key={row.step} className="border-b border-border/50">
+                  <td className={`text-left py-1 pr-2 ${zirve ? 'text-red font-bold' : 'text-text'}`}>
+                    {JOURNEY_LABEL[row.step] ?? row.step}
+                  </td>
+                  <td className="text-right py-1 px-2 text-text">{row.reached}</td>
+                  <td className="text-right py-1 px-2 text-text">{row.left_here}</td>
+                  <td className={`text-right py-1 px-2 ${zirve ? 'text-red font-bold' : 'text-text'}`}>
+                    {basari ? '✓' : `%${Math.round(oran * 100)}`}
+                  </td>
+                  <td className="text-right py-1 pl-2 text-muted">
+                    {formatJourneySeconds(row.median_seconds)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {karsilama && karsilama.left_here > 0 && karsilama.median_scroll !== null && (
+        <p className="text-[11px] font-mono text-muted">
+          Karşılamada ayrılanlar sayfanın medyan %{Math.round(karsilama.median_scroll)} kadarını
+          gördü.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function TutorialFunnelTable({
   rows,
   infoHint,
@@ -2405,6 +2567,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [userPeriod, setUserPeriod] = useState<number>(30);
   const [sourceFunnel, setSourceFunnel] = useState<AdminSourceFunnelRow[] | null>(null);
   const [signupFunnel, setSignupFunnel] = useState<AdminSignupFunnelRow[] | null>(null);
+  const [webJourney, setWebJourney] = useState<AdminWebJourneyRow[] | null>(null);
+  const [journeyDevice, setJourneyDevice] = useState<string>('all');
   const [tutorialFunnel, setTutorialFunnel] = useState<AdminTutorialFunnelRow[] | null>(null);
   const [deviceBreakdown, setDeviceBreakdown] = useState<AdminDeviceBreakdownRow[] | null>(null);
   const [deviceModels, setDeviceModels] = useState<AdminDeviceModelRow[] | null>(null);
@@ -2597,6 +2761,18 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       fetchAdminActivePlayersSeries(userPeriod, userGranularity).then(setActivePlayers),
     ]).catch((e) => setError(String(e)));
   }, [userPeriod, userGranularity]);
+
+  // Ziyaretçi yolculuğu ayrı: kendi cihaz süzgeci var, onu değiştirmek
+  // yukarıdaki on tabloyu yeniden çekmemeli.
+  useEffect(() => {
+    const days = userPeriod * GRANULARITY_TO_DAYS[userGranularity];
+    fetchAdminWebJourney(
+      days,
+      journeyDevice === 'all' ? null : (journeyDevice as 'ios' | 'android' | 'desktop'),
+    )
+      .then(setWebJourney)
+      .catch((e) => setError(String(e)));
+  }, [userPeriod, userGranularity, journeyDevice]);
 
   useEffect(() => {
     fetchAdminGameActivitySeries(
@@ -3660,6 +3836,17 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     />
                   </div>
 
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Ziyaretçi Yolculuğu (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <WebJourneyTable
+                      rows={webJourney}
+                      device={journeyDevice}
+                      onDeviceChange={setJourneyDevice}
+                      infoHint={<InfoHint id="ziyaretci-yolculugu" onOpen={setHint} />}
+                    />
+                  </div>
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Kaynak Hunisi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})

@@ -31,6 +31,7 @@ import { createRoot } from 'react-dom/client';
 const App = lazy(() => import('./App'));
 import { AuthProvider } from './hooks/useAuth';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { LandscapeBlock } from './components/LandscapeBlock';
 const SharedGamePage = lazy(() =>
   import('./components/SharedGamePage').then((m) => ({ default: m.SharedGamePage })));
 const FriendInvitePage = lazy(() =>
@@ -101,6 +102,13 @@ export function mount(): void {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <ErrorBoundary>
+        {/* ⚠ "Telefonunuzu dikeye çevirin" bloğu ROUTE SWITCH'İN DIŞINDA ve
+            bu bilinçli: üç dalı da (uygulama, /game, /davet) birden kapsıyor
+            ve `App.tsx`in erken dönüşlerinden ETKİLENMİYOR. 22 Eylül 2026'da
+            tam bu yüzden bir hata yaşandı — banner `App.tsx`in içindeydi ve
+            Canlı oyun ekranı (`if (onlineGame && user) return …`) onun
+            ÜSTÜNDE dönüyordu, yani Canlı oyunda uyarı HİÇ çıkmıyordu. */}
+        <LandscapeBlock />
         {/* `fallback={null}`: üç dal da kendi yükleme durumunu kendi içinde
             yönetiyor (App'in Setup'ı, iki sayfanın kendi iskeletleri) — burada
             ikinci bir ara ekran göstermek yanıp sönme yaratırdı. */}

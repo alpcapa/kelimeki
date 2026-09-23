@@ -1,5 +1,5 @@
 // Kelimeki — 13x13 oyun tahtası (çok oyunculu, renkli bölgeler)
-import { useMemo } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import {
   BONUS_LABELS,
@@ -22,6 +22,7 @@ import {
 } from '../utils/boardZoom';
 import { computeAllTerritories } from '../utils/validator';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { boardMaxWidthCss } from '../utils/boardFit';
 import { AiLevelBadge } from './AiLevelBadge';
 import { CountBadge } from './CountBadge';
 import { Tile } from './Tile';
@@ -189,6 +190,11 @@ function HelpIcon({ size = 12 }: { size?: number }) {
   );
 }
 
+/** Filigran puntosunun ızgara genişliğine oranı için tavan — bkz. `Board`
+ *  içindeki "Filigran tavanı" notu. Port ikizi: `board_widget.dart`. */
+const WM_CORNER_FONT_PER_GRID = 0.371;
+const WM_ZONE_FONT_PER_GRID = 0.279;
+
 export function Board({
   state,
   onCellClick,
@@ -220,6 +226,45 @@ export function Board({
 }: BoardProps) {
   const online = useOnlineStatus();
   const { board, placed, bonuses, players, current } = state;
+
+  // Filigran tavanı: tahtanın KENDİ genişliği (23 Eylül 2026). Punto ekran
+  // genişliğinden geliyor (`clamp(…vw…)`, aşağıda), yani tahtanın ekranla
+  // orantılı olduğunu varsayıyor — #607'nin yükseklik bütçesinden beri bu
+  // yanlış: iPad yatayda (ana ekrana eklenmiş web uygulaması) punto tavanda
+  // (220/165) kalırken tahta küçülüyor ve "2"/"X2" tahtadan taşıyordu
+  // (kullanıcı ekran görüntüsüyle bildirdi). Oranlar web'in desteklediği en
+  // dar ekrandan (320px: 102,4/276 ve 76,8/276, ızgara = ekran − 44) — yani
+  // yükseklik bütçesi devrede değilken tavan HİÇ devreye girmez.
+  // ⚠ Punto'nun kendisi DEĞİŞMİYOR, taşan filigran `scale()` ile küçülüyor:
+  // `clamp` ifadesi portla birebir kilitli (`layout_parity_test.dart` bu
+  // satırı okuyor). Portun ikizi aynı oranlarla (`_cornerFontPerGrid` /
+  // `_zoneFontPerGrid`, `board_widget.dart`) — biri değişirse öteki de.
+  const wmLayerRef = useRef<HTMLDivElement>(null);
+  const x2Ref = useRef<HTMLDivElement>(null);
+  const [wmScale, setWmScale] = useState({ corner: 1, zone: 1 });
+  useLayoutEffect(() => {
+    const layer = wmLayerRef.current;
+    if (!layer) return;
+    const oran = (el: Element | null, perGrid: number) => {
+      if (!el) return 1;
+      const font = parseFloat(getComputedStyle(el).fontSize);
+      if (!(font > 0)) return 1;
+      return Math.min(1, (layer.clientWidth * perGrid) / font);
+    };
+    const olc = () => {
+      const corner = oran(layer.firstElementChild, WM_CORNER_FONT_PER_GRID);
+      const zone = oran(x2Ref.current, WM_ZONE_FONT_PER_GRID);
+      setWmScale((p) => (p.corner === corner && p.zone === zone ? p : { corner, zone }));
+    };
+    olc();
+    const ro = new ResizeObserver(olc);
+    ro.observe(layer);
+    window.addEventListener('resize', olc);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', olc);
+    };
+  }, [compact]);
 
   // Köşe bölgesi -> o köşenin sahibinin rengi (boş kareleri renklendirmek için).
   const cornerColor: (PlayerColor | undefined)[] = [
@@ -606,8 +651,20 @@ export function Board({
     [moveStatus],
   );
 
+  // ⚠ Kökün `max-w-[680px]`i YERİNE yükseklik bütçesi (22 Eylül 2026) — tahta
+  // eskiden YALNIZCA genişlikten boyutlanıyordu ve "geniş ama kısa" her
+  // viewport'ta (açık katlanabilir, yatay tablet, 800px'lik dizüstü) raf ve
+  // butonlar ekranın altında kalıyordu. Gerekçe, ölçümler ve tabanın neden
+  // ŞART olduğu: `src/utils/boardFit.ts`; kapı `tests/board-fit.spec.ts`.
+  //
+  // Sabit sınıf değil inline `style`: Tailwind yalnızca KAYNAKTA geçen
+  // sınıfları üretir, çalışma anında kurulan bir `max-w-[min(...)]` sessizce
+  // uygulanmazdı (aynı tuzak `AdminDashboard`ın grid sütunlarında da yazılı).
   return (
-    <div className="w-full max-w-[680px] mx-auto px-3 pt-1.5 pb-3 flex flex-col items-center">
+    <div
+      className="w-full mx-auto px-3 pt-1.5 pb-3 flex flex-col items-center"
+      style={{ maxWidth: boardMaxWidthCss() }}
+    >
       <div
         className="relative w-full bg-[#DDE4EE] rounded-[18px]"
         style={{
@@ -870,7 +927,7 @@ export function Board({
             altına kaydırıyordu (ölçüldü: üstte -3.3px, altta +2.9px —
             toplam ~6px, tam da 10-4 farkı). */}
         {!compact && (
-          <div className="pointer-events-none absolute inset-[10px]">
+          <div ref={wmLayerRef} data-watermarks className="pointer-events-none absolute inset-[10px]">
             {[0, 1, 2, 3].map((i) => {
               const col = cornerColor[i];
               const num = cornerNumber[i];
@@ -890,6 +947,7 @@ export function Board({
                     right: left ? 'auto' : 0,
                     color: col.base,
                     opacity: 0.20,
+                    transform: wmScale.corner < 1 ? `scale(${wmScale.corner})` : undefined,
                     fontSize: 'clamp(80px, 32vw, 220px)',
                   }}
                 >
@@ -907,6 +965,8 @@ export function Board({
         {!compact && (
           <div className="pointer-events-none absolute inset-[10px]">
             <div
+              ref={x2Ref}
+              data-watermark-x2
               className="absolute flex items-center justify-center font-mono font-bold leading-none"
               style={{
                 width: zoneFrac,
@@ -915,6 +975,7 @@ export function Board({
                 left: zoneLeft,
                 color: '#92660A',
                 opacity: 0.28,
+                transform: wmScale.zone < 1 ? `scale(${wmScale.zone})` : undefined,
                 fontSize: 'clamp(60px, 24vw, 165px)',
               }}
             >

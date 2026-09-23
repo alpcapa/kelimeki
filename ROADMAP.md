@@ -125,6 +125,44 @@ kapandığında kaynağı `console-formlari.md`'dir, karar oradan okunur.
 
 ### Sonra / bloke
 
+**#26 — Tahtanın yükseklik bütçesi PORTA da gerekli** → ⏳ **AÇIK, freeze'i
+bekliyor** (22 Eylül 2026; web yarısı `main`'de).
+
+⚠ **Sıra: #611 merge edilmeden BAŞLAMA** (23 Eylül 2026). #611 (filigran
+tavanı, #609'un port ikizi, merge turunun dokuzuncusu) da
+`board_widget.dart`e dokunuyor ve tavanı bu maddenin ön koşulu olarak
+yazıldı; #26'yı onun üstüne kur, yan yana değil.
+
+Kullanıcı bildirdi: *"Kelimeki'yi Samsung katlanabilirde denedim, tahta yatay
+iPad gibi görünüyordu, raf ve butonlar ekranın altında kalıyordu. Görmek için
+aşağı kaydırmak gerekiyor, oynamak imkânsız."*
+
+Sebep: tahta YALNIZCA genişlikten boyutlanıyor, layout'ta "ne kadar boyum
+kaldı" sorusu hiç yok. ⚠ **Katlanabilire özel DEĞİL** — yatay tablet ve 800px
+yüksekliğindeki sıradan bir dizüstü tarayıcısı da aynı durumdaydı (webde
+ölçüldü: açık Fold yatay 195px · yatay iPad 143px · dizüstü 1440×800 163px
+taşma).
+
+**Web yarısı yapıldı** (`src/utils/boardFit.ts` + `Board.tsx` + kapısı
+`tests/board-fit.spec.ts`; kullanıcı kararı: *"Sadece web'de yap"*). Kalan:
+
+- **Port ikizi** — `mobile/app/lib/src/ui/game/board_widget.dart` aynı deseni
+  taşıyor (`MediaQuery.sizeOf(context).width` + `aspectRatio: 1`, yükseklik
+  bütçesi yok). ⚠ **Ölçülmedi**, yalnızca kaynaktan okundu; işe başlarken
+  önce cihazda ya da bir Flutter testinde ölçülmeli. Ölçüler
+  `boardFit.ts`teki üç sabitten gelmeli (301 krom · 680 tavan · 324 taban) —
+  web↔port ayrışırsa iki platform aynı tahtayı iki boyda çizer.
+- **`LandscapeHint` ikizi** — web'de kural `(orientation: landscape)`ten
+  YÜKSEKLİĞE taşındı (eski kural açık katlanabilirde de tetikleniyor ve
+  *"dikeye dön"* orada yanlış tavsiye oluyordu). Portun karşılığı varsa aynı
+  ölçüte geçmeli.
+
+⚠ **Bu bir "yatay düzen" işi DEĞİL, ayrı bir madde:** telefon YATAYDA hiçbir
+sınır değeri oyunu oynanabilir yapmaz — krom tek başına 301px, viewport
+375–430, yani tahtaya 56–111px kalıyor (13 hücreye 4–9px). Orayı gerçekten
+açmak tahta solda / raf+butonlar sağda bir YAN YANA düzen ister; karar
+verilmedi, bu maddenin kapsamında değil.
+
 **#25 — iOS uygulama simgesinde rozet SAYISI çıkmıyor** → ⏳ **AÇIK, freeze'i
 bekliyor** (18 Eylül 2026, kullanıcı bildirdi: *"Apple uyarılar geliyor ama
 ikon üzerinde numara çıkmıyor"*).
@@ -192,6 +230,47 @@ PR'ları — merge turu SIRASI").
 ⚠ **Ders (aynı gün ikinci kez):** bir listeye madde eklerken listeyi SAYAN
 cümle de güncellenmeli — bu, rozet zincirinin metindeki karşılığı.
 
+**#34 — Canlı sohbet okundu bilgisinin PORT yarısı** → ⏳ **AÇIK,
+dondurmayı bekliyor** (23 Eylül 2026; web yarısı #610 ile `main`'de).
+
+Okundu damgası artık sunucuda (`online_game_chat_reads` +
+`mark_online_game_chat_read` RPC'si), ama uygulama hâlâ yalnızca cihazdaki
+`chat_read_store.dart`'ı kullanıyor. ⚠ **Sonuç SAHADA: uygulamada okunan
+mesajlar web'e yansımıyor** (ve Android'deki "ilk açılışta her şey okundu"
+tohumu hâlâ yeni mesajları yutuyor). Yapılacak: port tabloyu OKUSUN ve
+RPC'yle YAZSIN; karar `decideChatRead`in (`utils/chatRead.ts`, kapı
+`npm run verify-chat-read`) Dart ikizine geçsin — iki kaynağın büyüğü,
+sunucu isteği düştüyse ve cihazda damga yoksa tohum sunucuya YAZILMAZ.
+Tasarım ve tuzaklar: `docs/decisions/chat-moderation.md` → "Okundu damgası
+SUNUCUDA". `mobile/app/` dosyası → mobil derlemeyi tetikler, merge turu
+bitince.
+
+**#35 — Kayıt Hunisi'nin PORT yarısı: uygulama da `signup_events`e
+yazsın** → ⏳ **AÇIK, dondurmayı bekliyor** (23 Eylül 2026, kullanıcı
+isteği: *"Roadmap'e ekle"*).
+
+Admin → Büyüme → Kullanıcı'daki "Kayıt Hunisi" kartı (#600) **yalnızca
+web'i** sayıyor: port aynı iki olayı (`signup_started`/`signup_completed`,
+`ui/auth/auth_modal.dart`) yalnızca Firebase Analytics'e yazıyor. Kayıtların
+önemli bir kısmı mobilden geldiği için kart, kitlenin bir kısmını görüyor.
+Kullanıcı "veri yok" deyince fark edildi. Canlıdan ölçüldü (23 Eylül): tablo
+boştu ama arıza yoktu. 21 Eylül'deki yayından beri web'de kimse kayıt
+formunu açmamış, hiçbir platformda yeni hesap da açılmamıştı (son hesap
+20 Eylül).
+
+Yapılacak: `auth_modal.dart`taki iki `analytics.log` noktasına paralel
+olarak `signup_events` insert'i (`games_api.dart`taki `tutorial_events`
+ucunun deseni: `platform` + `app_version` dolu, hata akışı bozmaz). Firebase
+çağrısı KALIR. Kanal (`direct`/`form`) web'le aynı küme olmalı. ⚠ **`anon_id`
+EKLEME:** tablo bilerek kimliksiz, gizlilik metnine dokunmamak için (bkz.
+migration `20260921122031_signup_events_funnel.sql` başlığı ve #33). Aynı
+PR'da şunlar da güncellenmeli: kartın `?` metnindeki "⚠ Yalnızca web"
+paragrafı (`AdminDashboard.tsx` → `HINTS['kayit-hunisi']`), `logSignupEvent`
+yorumu (`src/lib/api.ts`), migration'daki "tablo yalnızca web'den yazılıyor"
+notu ve `docs/decisions/admin-panel.md`. Port da yazmaya başlayınca oran
+yine AYNI tablodan kurulabilir, `profiles`a geçmeye gerek yok. `mobile/app/`
+dosyası olduğu için mobil derlemeyi tetikler, merge turu bitince yapılır.
+
 **#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
 ✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
 doğrulandı; arşivde.
@@ -215,6 +294,17 @@ vitrin) — tahmin, kaynak okunarak düzeltildi.
 
 Play production incelemesi (#19) kapanınca girecek yedi PR. Önerilen sıra:
 **#565 → #562 → #579 → #576 → #554 → #557 → #547**.
+
+⚠ **Dondurmanın artık YAZILI bir dayanağı var (22 Eylül 2026).** Play
+destek talebine gelen cevap: *"each new submission will reset the review
+turnaround time, as the evaluation period is counted from the date of the
+most recent change"* — yani Play'e yeni bir paket yüklemek #19'un saatini
+SIFIRLAR. ⚠ Ama kapsamı karıştırma: bağlayıcı olan **Play'e yükleme**,
+`main`'e merge değil (merge yalnızca `mobile-build` + TestFlight'ı
+tetikler, Play kuyruğuna dokunmaz). Merge dondurması yine de duruyor,
+çünkü merge incelemedeki paketin `.aab`sini `mobile-latest`ten siliyor.
+Cevabın tamamı ve talebin künyesi:
+`marketing/play-store/console-formlari.md` → "Google cevapladı".
 
 Sıra tahmin DEĞİL, ölçüldü (`main` = `3a55492`): yedisinin başı çekilip
 `merge-tree` ile tek tek denendi, sonra ayrı bir çalışma ağacında *"her
@@ -244,6 +334,36 @@ her merge ayrı bir `mobile-build` + TestFlight yüklemesi demek.
 | 6 | **#557** oyun ortasında giriş | 22 | en geniş; `Runner.xcodeproj` + `pubspec.lock` taşıyor |
 | 7 | **#547** ham hata metinleri | 20 | turun tek **web** dosyasını (`src/utils/errorMessage.ts`) ve `web-ci.yml`i o taşıyor; parite kapısı `error_message_parity_test.dart` onunla geliyor → en son, temiz zeminde. `npm run lint` + `verify-error-messages` |
 
+### Dal ↔ PR eşlemesi — ⚠ İKİ DALIN ADI İÇERİĞİYLE UYUŞMUYOR
+
+⚠ **Merge turunda seçimi DAL ADINA göre yapma, PR NUMARASINA göre yap.**
+Aşağıdaki son iki satır bunun nedeni: dal adları o dalın taşıdığı işi
+tarif etmiyor (iş, adı başka bir konuya göre konmuş bir dalın üstüne
+yazılmış). Ada güvenen biri sırayı sessizce karıştırır ve — daha kötüsü —
+"bu dal zaten şu işti" diye yanlış PR'ı merge eder.
+
+| Sıra | PR | Dal |
+|---|---|---|
+| 1 | #565 oyun bitiş `platform` damgası | `claude/oyun-bitis-platform-port` |
+| 2 | #562 kayıt onayı | `claude/kayit-onay-port` |
+| 3 | #579 504 yeniden deneme | `claude/gecici-sunucu-hatasi-retry-port` |
+| 4 | #576 zoom balonu otomatik kapanma | `claude/zoom-balonu-otomatik-kapanma-port` |
+| 5 | #554 taş değiştirme sınırı | `claude/tas-degistirme-siniri-port` |
+| 6 | #557 oyun ortasında giriş | ⚠ `claude/mobile-latest-merge-conflict-lf2og7` |
+| 7 | #547 ham hata metinleri | ⚠ `claude/app-store-play-review-status-9wecvh` |
+| 8 | #601 kaynak hunisi (`app` kanalı) | `claude/frozen-port-prs-merge-cis79o` |
+
+⚠ **#601 bu turun SEKİZİNCİSİ.** Yukarıdaki yedili sıra 21 Eylül'de
+ölçüldüğünde #601 henüz yoktu; o da aynı dondurmayı bekliyor ve en sona
+biniyor (`mobile/app/` altında yedi dosya taşıyor, yani o da mobil
+derlemeyi tetikler).
+
+**Eşleme 22 Eylül 2026'da canlıdan ölçüldü** (`git ls-remote --heads
+origin 'refs/heads/claude/*'` + açık PR listesi): `origin`'de sekiz
+`claude/*` dalı var ve **sekizinin de açık bir PR'ı var** — öksüz dal YOK.
+Bu kontrol tekrarlanmaya değer, çünkü bu depoda PR'sız bırakılmış dallar
+iki kez gerçek iş kaybetti (kök `CLAUDE.md` → "Git / Branch Kuralı").
+
 **Çakışmaların tamamı EKLEME çakışması** (`parca-log.md`,
 `mobile/TESTING.md`, bir kez kök `CLAUDE.md`): iki tarafı da tut, sırala,
 içerik kaybı yok. ⚠ `mobile/TESTING.md`'de bölüm NUMARALARI var —
@@ -253,6 +373,39 @@ de otomatik birleşiyor, ama sıra ilerledikçe bu değişebilir.
 ⚠ **`mobile/docs/surumler.md` → "SÜRÜM SENKRONU" tur SONUNDA bir kez**
 güncellenir, her merge'de değil — yedi merge yedi build tetikler, anlamlı
 olan sonuncusudur.
+
+**Dokuzlu yeniden ölçüm (23 Eylül 2026, `main` = `184dba1`, TAM geçmişle):**
+dokuz PR sırayla, arka arkaya birleştirildi — dokuzu da birleşiyor, her
+dosyada TEK blok. Tek KOD çakışması **#565 ↔ #601**
+(`mobile/app/lib/src/data/games_api.dart`, `game_finishes` satırı): #565
+`platform`, #601 `utm_source: d.source` + misafirde `anon_id` ekliyor —
+**üçü de tutulur**. Geri kalanı ekleme çakışması (`ROADMAP.md`,
+`parca-log.md`, `mobile/TESTING.md`, #547'de iki `CLAUDE.md`). ⚠ Sığ klonda
+#547 13 dosyada çakışıyor GÖRÜNÜYOR — yanlış alarm, önce
+`git fetch --unshallow`.
+
+### Tur sonu TEST PLANI — son derleme üzerinde, BİR kez (23 Eylül 2026)
+
+Kullanıcı kararı: dokuz PR tek sürümle çıkıyor, test her merge'de değil
+SON derlemede yapılır. Sürüm "tamam" sayılmadan ÖNCE üçü birden:
+
+1. **Son `main` commit'inde CI yeşil** (web CI'ın `parite` işi dahil) **ve
+   son `mobile-build` koşusu BÜTÜN adımlarını bitirmiş** — CI yeşilken
+   TestFlight yüklemesi ya da `.aab` imzası ayrıca düşebilir.
+2. **Android `.apk` ile tam tur** — dokuz PR'ın `mobile/TESTING.md`
+   maddeleri. Sekiz PR (#565 #562 #579 #576 #554 #547 #601 #611) yalnızca
+   ortak Dart kodu değiştiriyor, yani APK'da doğrulanan iOS'ta da doğrudur.
+3. **iPhone'da (TestFlight) KISA kontrol — yalnızca #557 için:** #557
+   APK'nın hiç taşımadığı iOS dosyalarına dokunuyor (`Info.plist` +
+   `Runner.xcodeproj` → paket dili `tr`; `flutter_localizations` → iOS'ta
+   metin seçme menüsünü Cupertino çiziyor). Uygulama açılıyor mu, metin
+   seçme menüsü Türkçe mi, kısa bir duman turu. Tam listeyi iOS'ta
+   TEKRARLAMA.
+
+⚠ Sunucuya dayanan PR'larda (ör. #601 huni damgası) ilgili migration/Edge
+Function'ın CANLIDA olduğunu da doğrula — istemci alanı gönderir, sunucuda
+karşılığı yoksa sessizce düşer. Adım adım test listesi tur sonunda,
+derleme hazır olunca verilecek.
 
 ⚠ **Ölçüm `main` = `3a55492`'ye ait.** `main` ilerlediyse sıra yeniden
 ölçülmeli:

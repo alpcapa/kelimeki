@@ -127,8 +127,9 @@ export function markChatIntroSeen(): void {
 // created_at'i) cihaza yazar; bir sonraki girişte (ör. 1 gün sonra) bundan
 // SONRA gelen ve kendisinin göndermediği bir mesaj varsa nokta çıkar —
 // `OnlineGameScreen.tsx`'teki mesaj listesi ilk yüklendiğinde bununla
-// karşılaştırılır. Cihaza özel (localStorage) — sunucuda okundu bilgisi
-// tutulmuyor, bilinçli olarak kapsam dışı (bkz. CLAUDE.md).
+// karşılaştırılır. ⚠ 23 Eylül 2026'dan beri bu cihazdaki damga yalnızca
+// YEDEK: asıl damga sunucuda (`online_game_chat_reads`), iki kaynağın
+// büyüğünü `decideChatRead` (`utils/chatRead.ts`) seçiyor.
 function chatLastReadKey(gameId: string): string {
   return `kelimeki:chat-last-read:${gameId}`;
 }

@@ -1381,3 +1381,214 @@ taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
   (tanıtımın düğmeleri ya da gerçek oyunun "Pas Geç"i); blok 2.6 dk → 34 sn.
   Ders: bir fikstürün ölü beklemesi, ürüne zaman bağımlı bir davranış
   girene kadar zararsız GÖRÜNÜR.
+
+## Tahtanın yükseklik bütçesi — "geniş ama kısa" viewport (22 Eylül 2026)
+
+Kullanıcı bildirdi: *"Kelimeki'yi Samsung katlanabilir telefonda denedim,
+tahta yatay iPad gibi görünüyordu, raf ve butonlar ekranın altında kalıyordu.
+Görmek için aşağı kaydırmak gerekiyor, oynamak imkânsız."*
+
+`src/utils/boardFit.ts` · `Board.tsx` · `LandscapeHint.tsx` ·
+kapı `tests/board-fit.spec.ts`
+
+### Sebep: layout'ta yükseklik sorusu hiç yoktu
+
+Tahta YALNIZCA genişlikten boyutlanıyordu — `max-w-[680px]` + `aspect-square`.
+Viewport genişliği ~700px'i geçince tahta **656px**'te doyuyor ve sütunun
+tamamı sabit **975px** oluyordu; yani 975 CSS px'ten kısa her viewport alt
+şeridi ekranın altına itiyordu. Gerçek kaydırma kabı `#root` olduğundan
+(`index.css`: `body { position: fixed; overflow: hidden }`) sayfa kayıyor,
+yani oyuncu her hamlede aşağı kaydırmak zorunda kalıyordu.
+
+### ⚠ Bu katlanabilire ÖZEL DEĞİL
+
+Üretim derlemesinde ölçüldü:
+
+| Görünüm | Tahta | Sütun sonu | Taşma |
+|---|---|---|---|
+| Pixel 7 · 412×915 | 388 | 706 | — |
+| Fold **kapalı** · 344×882 | 320 | 635 | — |
+| Fold **açık** · 768×1104 | 656 | 963 | — |
+| Fold açık **yatay** · 1104×768 | 656 | 963 | **195px** |
+| **Yatay iPad** · 1180×820 | 656 | 963 | **143px** |
+| **Dizüstü** · 1440×800 | 656 | 963 | **163px** |
+
+Yani yatay tablet ve 800px yüksekliğindeki sıradan bir dizüstü tarayıcısı da
+aynı durumdaydı; katlanabilirde göze batmasının sebebi, açılınca viewport'un
+bir anda "geniş ama kısa" olması.
+
+### Çözüm CSS-only, ve bu bilinçli
+
+`max-width: min(680px, max(324px, calc(100dvh - 301px)))`. Katlanıp açılmak
+**canlı bir resize**: `dvh` tabanlı bir sınır hiçbir dinleyici olmadan doğru
+davranır, `resize` olayına bağlanan bir JS çözümü ise katlanma anında bir kare
+geç kalır ve (bu depoda tekrarlanan hata sınıfı) bir değeri "ilk ölçümde"
+dondurma riskini taşır.
+
+Sonuç (aynı ölçüm, düzeltmeden sonra): Fold açık yatay **443px** tahta,
+yatay iPad **495px**, dizüstü **481px** — üçü de dikey iPhone'un 369px'inden
+büyük. Dar ekranda **hiçbir şey değişmedi** (388 · 320 · 656 aynı kaldı),
+çünkü orada bağlayıcı kısıt hâlâ genişlik.
+
+⚠ **Sınıf değil inline `style`:** Tailwind yalnızca KAYNAKTA geçen sınıfları
+üretir; çalışma anında kurulan bir `max-w-[min(...)]` sessizce uygulanmazdı
+(aynı tuzak `AdminDashboard`ın grid sütunlarında da yazılı).
+
+### Tabanın (324px) gerekçesi: telefon yatayda sınır ÇÖZMÜYOR
+
+Krom (tahta dışındaki her şey) tek başına **301px**, iPhone yatay viewport'u
+375–430. Sınır tabansız uygulansaydı tahta **56–111px**'e inerdi — 13 hücreye
+4–9px, taşın harfi bile çizilmez (ölçüldü: iPhone SE 56 · iPhone 15 74 ·
+15 Pro Max 111). Doğru davranış tahtayı yok etmek değil, makul bir tabanda
+durup "dikeye dön" önerisini göstermek.
+
+⚠ Telefon yatayı gerçekten oynanabilir yapmak **ayrı bir iş**: tahta solda,
+raf + butonlar sağda bir YAN YANA düzen. Karar verilmedi (ROADMAP #26'nın
+sonundaki not).
+
+### `LandscapeHint` ölçütü YATAY değil, YÜKSEKLİK
+
+Eski kural `(pointer: coarse) + (orientation: landscape)` idi ve açık bir
+katlanabilirde de tetikleniyordu — orada *"Dikey konumda daha iyi bir deneyim
+yaşarsınız"* **yanlış tavsiye**: açık Fold yatayda tahtaya 443px kalıyor,
+dikey iPhone'un 369px'inden fazla. Üstelik banner skor kutularının üstüne
+biniyordu (kullanıcının ekran görüntüsünde görünür). Ölçüt artık
+`max-height: BOTTOM_STRIP_MIN_HEIGHT_PX - 1` — telefon yatayda hâlâ çıkar,
+açık katlanabilirde ve yatay tablette hiç çıkmaz.
+
+### Kapı gerçekten düşüyor mu — ölçüldü
+
+`boardMaxWidthCss()` geçici olarak eski davranışa (`680px`) çevrildi ve
+`tests/board-fit.spec.ts`in üç "geniş ama kısa" vakası **düştü**, dikey
+telefon vakası geçti. Yani test bir sayıyı değil davranışı kilitliyor.
+
+⚠ **Port ikizi bu PR'da YOK** (kullanıcı kararı: *"Sadece web'de yap. Ama
+port'u roadmap'e yaz."*) — `board_widget.dart` aynı deseni taşıyor ama
+ÖLÇÜLMEDİ. ROADMAP #26.
+
+### Kaçış kapısı Canlı ekranda TAKILI DEĞİLDİ (22 Eylül 2026, aynı gün)
+
+Yukarıdaki taban kararı (`BOARD_MIN_PX`), telefon yatayda taşmayı **bilerek**
+kabul ediyor ve kaçış kapısı olarak `LandscapeHint`e güveniyor. Kullanıcı
+aynı gün bir ekran görüntüsü gönderdi: ana ekrana eklenmiş web uygulaması,
+**Canlı** bir oyun, iPhone yatay — tahta tabanına oturmuş ama raf/butonlar
+altta ve **hiçbir uyarı yok**.
+
+**Ekran görüntüsünden ölçüldü** (2532×1170 fiziksel, DPR 3 → **844×390 CSS
+px**): tahta kartı **tam 324px**, yani `BOARD_MIN_PX`e piksel piksel oturmuş.
+Düzeltme canlıda ve çalışıyordu; eksik olan kapıydı.
+
+**Sebep:** `App.tsx` Canlı oyunda `<OnlineGameScreen/>` ile **erken dönüyor**
+(~satır 1432), oysa `<LandscapeHint/>`in iki mount noktası da (Setup ~1561,
+yerel oyun ~2330) o dönüşün **altında**. Yani banner Canlı ekranda HİÇ
+render edilmiyordu — düzeltmeden önce de. `OnlineGameScreen`e takıldı.
+
+**İkinci bulgu — `BOARD_CHROME_PX` yalnızca YEREL ekranda ölçülmüştü.** Aynı
+viewport'ta (844×390) yerel ekranda kartın üstü **57px**, kullanıcının Canlı
+ekran görüntüsünde **63px**: Canlı başlık 6px daha uzun. Sabit 301 → **308**
+(7px pay). Canlı ekranın kromunun TAMAMI hâlâ ölçülmedi — iki gerçek oturum
+gerektirdiği için otomatik testle kapatılamaz; `TESTING.md` §13.9 o boşluğu
+elle kapatıyor.
+
+**Ders:** paylaşılan bir bileşene (burada `Board`) bütçe koyarken, o bütçenin
+dayandığı KABUK her çağıranda aynı mı diye sor. `Board` iki ekran tarafından
+kullanılıyor ama krom sabiti tek ekranda ölçülmüştü; kapı da (spec) yalnızca
+o ekranı kapsıyordu.
+
+### Banner → TAM EKRAN BLOK, ve klavye tuzağı (22 Eylül 2026, aynı gün)
+
+Kullanıcı kararı, sözleri birebir: *"Telefonda web'in yatay çalışması
+gerekmiyor. Her durumda sadece dikey konuma getirin demek yeterli. Ama boş
+ekranda, arka planda bozuk görüntü vb olmadan. Eskiden böyleydi."*
+
+`src/components/LandscapeBlock.tsx` (eski `LandscapeHint.tsx`)
+
+**Bileşen İKİ KEZ yön değiştirdi ve tarihçe burada kritik:**
+
+1. Başta **sert bloktu** (`index.html`/`index.css`'te `#landscape-block`,
+   `#root`u gizliyordu).
+2. **Banner'a indirildi**, çünkü iPad'de yanlış tetikleniyordu: iPadOS
+   `pointer` media feature'ını güvenilmez raporluyor (WebKit 212580/209292),
+   trackpad'li kılıf takılıyken de `coarse` diyor → klavyeyle çalışan biri
+   yatay modda uygulamayı hiç açamıyordu.
+3. **Yine sert blok** — ama ölçüt `(orientation: landscape)` DEĞİL, yetersiz
+   **YÜKSEKLİK**. iPad yatayda 820px boy var, eşik 632 → iPad hiçbir koşulda
+   bloklanmaz. (2)'deki tuzağın geri gelmemesinin tek sebebi bu.
+
+**Banner neden yetmedi:** arkasında bozuk düzeni görünür bırakıyordu.
+
+**Değişmezler:** kapatılamaz (kapanabilseydi geriye yine bozuk düzen kalırdı)
+· kaplayıcı, sökücü değil (oyun durumu korunur) · **tek mount noktası
+`boot.tsx`** — `App.tsx`in içine konmaz, çünkü Canlı oyun orada erken dönüyor
+ve banner'ın iki mount noktası da o dönüşün altındaydı.
+
+#### Klavye tuzağı — kullanıcının yakaladığı
+
+*"Ama iPad'da klavye varsa, yatay olmadan mesaj yazılamıyor. Bu durumu da
+düşün."*
+
+iPad'in kendisi eşiğin üstünde, ama **aynı kök sebep DİKEY telefonda gerçek
+bir arızaydı**: Android Chrome ekran klavyesi açılınca layout viewport'unu
+küçültüyor (844 → ~450), yani yalnızca yüksekliğe bakan bir kapı **tam mesaj
+yazarken** "çevirin" derdi. Kapıya üçüncü koşul eklendi: bir metin alanı
+(input/textarea/contenteditable) **odaktayken blok bastırılır**.
+`focusout` 500 ms GECİKMELİ ölçülür — klavye kapanma animasyonu sürerken
+hemen ölçmek bloğu bir an parlatırdı.
+
+#### Testin yanlış yeşili — ders
+
+İlk yazılan klavye testi kapı kaldırılınca da GEÇİYORDU: `toBeHidden()` ilk
+denemede geçiyor, çünkü blok medya sorgusu olayından sonraki React turunda
+geliyor. **Yokluk iddiaları yarışa açıktır** — teste 800 ms'lik açık bir
+bekleme konduktan sonra kapı gerçekten düştü (ölçüldü: kapı kapalıyken 1
+düştü, açıkken 6/6 geçti).
+
+### Filigranlar yükseklik bütçesiyle küçülen tahtadan taşıyordu (23 Eylül 2026)
+
+#607'nin YAN ETKİSİ. Köşe rakamı ve "X2" puntosu ekran genişliğinden geliyor
+(`clamp(80px,32vw,220px)` / `clamp(60px,24vw,165px)`), yani tahtanın ekranla
+orantılı olduğunu varsayıyordu. #607'den beri tahta YÜKSEKLİĞE de
+sığdırıldığından bu varsayım "geniş ama kısa" her ekranda bozuldu: punto
+tavanda kalırken tahta küçülüyor. Kullanıcı iPad'de (ana ekrana eklenmiş web
+uygulaması, yatay) ekran görüntüsüyle bildirdi: "2" tahtanın alt kenarından,
+"X2" 5×5 bölgeden taşıyordu.
+
+**Düzeltme:** punto artık tahtanın KENDİ genişliğiyle de sınırlı — oran
+tavanı 0,371 (köşe) / 0,279 (X2), web'in desteklediği en dar ekrandaki
+(320 px, ızgara = ekran − 44) oran. Yükseklik bütçesi devrede değilken tavan
+hiç devreye girmez, yani telefon görünümü birebir aynı.
+
+⚠ **Punto DEĞİŞMİYOR, taşan filigran `scale()` ile küçülüyor.** Sebep: `clamp`
+ifadesi portla birebir kilitli — `mobile/app/test/layout_parity_test.dart`
+`Board.tsx`teki `fontSize: 'clamp(...)'` satırını regex'le okuyor. O satırı
+`min(...)`e çevirmek testi de değiştirmeyi gerektirirdi; test `mobile/`
+altında olduğu için merge MOBİL DERLEMEYİ tetiklerdi (dondurma). Ölçek
+`ResizeObserver` ile ölçülen ızgara genişliği ve hesaplanan puntodan geliyor
+(formül JS'te ikinci kez yazılmadı).
+
+**Port ikizi** aynı oranlarla (`_cornerFontPerGrid` / `_zoneFontPerGrid`,
+`board_widget.dart`), `claude/ipad-filigran-tasmasi` dalında dondurmayı
+bekliyor; portta punto doğrudan küçülüyor (orada parite kilidi yok).
+Kapı: `tests/board-fit.spec.ts` → "filigranlar tahtaya göre ölçekli" (üç
+geniş-ama-kısa ekran + dikey telefon; tavan kaldırılınca üçü düşüyor).
+
+### iPad Safari'de "dikeye çevirin" bloğu çıkıyordu (23 Eylül 2026, aynı gün)
+
+#608'in varsayımı — *"iPad yatayda 820px boy var, eşik 632, yani iPad hiçbir
+koşulda bloklanmaz"* — EKRANIN boyunu sayfanın boyu sandı. Safari'de adres
+çubuğu + sekme çubuğu + mağaza bandı (Smart App Banner) birlikte ~200px
+yiyor; kullanıcının ekran görüntüsünden (iPad 1180×820) sayfa ≈ **619px**
+ölçüldü → eşiğin altında → iPad'de Safari yatayda HER açılışta blok.
+
+**Düzeltme:** kapıya üçüncü şart — cihaz TELEFON olmalı (`screen`in kısa
+kenarı < 600px; iOS `screen`i hep dikey verir, Android o anki yönelimle,
+kısa kenar ikisinde de doğru). Kural zaten telefon içindi; tablet ve açık
+katlanabilir artık bloklanmaz. Bedeli: iPad Safari'de sayfa 632'nin altına
+indiğinde tahta 324px tabanında durur ve raf ~13px kaydırma ister — blokla
+kıyaslanmayacak kadar küçük.
+
+⚠ **Ders:** "ekranın boyu" ile "sayfanın boyu" ayrı sayılar; tarayıcı
+kromu ve mağaza bandı aradaki farkı cihazdan cihaza değiştiriyor. Yükseklik
+eşiğine dayanan her kapı yalnızca ÖLÇÜLMÜŞ sayfa boyuyla doğrulanmalı.
+Kapı: `tests/board-fit.spec.ts` → "iPad Safari yatay (kısa sayfa)" (telefon
+şartı kaldırılınca düşüyor).

@@ -44,6 +44,7 @@ import type {
   AdminPushVersionRow,
   AdminClientErrorRow,
   AdminSignupFunnelRow,
+  AdminWebJourneyRow,
   AdminTutorialFunnelRow,
   AdminSourceFunnelRow,
   AdminDeviceBreakdownRow,
@@ -1823,6 +1824,40 @@ export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGam
 }
 
 /**
+ * Bu oyun için SUNUCUDAKİ okundu damgam (`online_game_chat_reads`, RLS ile
+ * yalnızca kendi satırım). `null` = satır yok (kesin), `undefined` = istek
+ * düştü (bilinmiyor) — ayrım `decideChatRead`e (`utils/chatRead.ts`) gerekli.
+ */
+export async function fetchChatLastReadAt(gameId: string): Promise<string | null | undefined> {
+  if (!supabase) return undefined;
+  const { data, error } = await supabase
+    .from('online_game_chat_reads')
+    .select('last_read_at')
+    .eq('online_game_id', gameId)
+    .maybeSingle();
+  if (error) {
+    console.error('[Kelimeki] fetchChatLastReadAt hatası:', error.message);
+    return undefined;
+  }
+  return (data as { last_read_at: string } | null)?.last_read_at ?? null;
+}
+
+/**
+ * Okundu damgasını sunucuya yazar (`mark_online_game_chat_read`). Sunucu
+ * yalnızca İLERİ gider (`greatest`), yani geç ulaşan eski bir çağrı zararsız.
+ * Hata yutulur: damga cihazda da duruyor ve bir sonraki yüklemede
+ * (`decideChatRead` → `pushToServer`) yeniden denenir.
+ */
+export async function markChatReadRemote(gameId: string, readAt: string): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('mark_online_game_chat_read', {
+    p_online_game_id: gameId,
+    p_read_at: readAt,
+  });
+  if (error) console.error('[Kelimeki] markChatReadRemote hatası:', error.message);
+}
+
+/**
  * Bir Canlı oyunun grup sohbetine yeni bir mesaj gönderir — RPC yok, doğrudan
  * RLS ile (`online_game_messages_insert_self`: gönderen kendi user_id'siyle
  * ve oyunun katılımcısı olarak insert edebilir). Sunucu tarafında 1-200
@@ -2728,6 +2763,21 @@ export async function fetchAdminSignupFunnel(days = 30): Promise<AdminSignupFunn
     rethrowSupabase(error);
   }
   return (data as AdminSignupFunnelRow[]) ?? [];
+}
+
+/**
+ * Ziyaretçi yolculuğu: son `days` gün içindeki misafir web oturumlarının adım
+ * başına ulaşan / burada ayrılan sayısı (yalnızca admin — Büyüme >
+ * Kullanıcı). `device` null → tüm cihazlar. Yazan taraf `utils/webJourney.ts`.
+ */
+export async function fetchAdminWebJourney(
+  days = 30,
+  device: 'ios' | 'android' | 'desktop' | null = null,
+): Promise<AdminWebJourneyRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_web_journey', { p_days: days, p_device: device });
+  if (error) rethrowSupabase(error);
+  return (data as AdminWebJourneyRow[]) ?? [];
 }
 
 /**

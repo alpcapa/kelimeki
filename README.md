@@ -46,6 +46,8 @@ npm run verify-swap-invariants   # taş değiştirme: taslak taşlar yok olmuyor
 npm run verify-edge-engine-parity # motorun üçüncü kopyası (Edge Function) src/'den ayrışmadı mı
 npm run verify-error-reporting   # istemci hata telemetrisi: ne kaydedilir/kaydedilmez, tekrar bastırma, hız sınırı
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
+npm run verify-chat-read         # Canlı sohbetin okundu kararı (sunucu ↔ cihaz damgası)
+npm run verify-web-journey       # Web ziyaretçi yolculuğu: misafir/üye kapısı + adım listesi ↔ SQL
 
 # Üretilmiş dosyalar — kaynağı değişince ELLE yeniden üretilir:
 npm run generate-logo-paths  # LogoMark.tsx + portun logo_mark_data.dart'ı (tek komut, iki taraf)
@@ -149,7 +151,7 @@ src/
 │   ├── PlayerAvatarRow.tsx      # oyun kartlarında "N Kişilik Oyun" başlığı yerine geçen katılımcı avatarları (YZ → robot, misafir → "?")
 │   ├── PlayerBadge.tsx          # renkli oyuncu sıra/koltuk rozeti
 │   ├── AiLevelBadge.tsx         # YZ zorluk rozeti (Kolay/Zor; Normal'de render edilmez) — 4 oyun kartı + Setup "devam eden oyun" satırı
-│   ├── LandscapeHint.tsx        # yatay modda gösterilen kapatılabilir dikey-mod önerisi banner'ı
+│   ├── LandscapeBlock.tsx       # TAM EKRAN, kapatılamaz "Telefonunuzu dikeye çevirin" bloğu — ölçüt YATAY DEĞİL yetersiz YÜKSEKLİK (iPad bloklanmaz), metin alanı odaktayken bastırılır (klavye viewport'u kısaltıyor); TEK mount noktası boot.tsx
 │   ├── ErrorBoundary.tsx        # kök seviye React crash yakalayıcı
 │   ├── LoadingNote.tsx          # ortak "Yükleniyor…" göstergesi (Flutter portundaki KLoadingNote ile birebir)
 │   ├── AddToHomeScreen.tsx      # PWA ana ekrana ekle (tarayıcıda)
@@ -190,10 +192,13 @@ src/
 │   ├── shareBoardImage.ts # bir DOM düğümünü (tahta önizlemesi) paylaşılabilir PNG'ye çevirir (html-to-image)
 │   ├── shareLink.ts    # ?ref=arkadas etiketli davet linki + native paylaşım/panoya kopyalama (Setup ve karşılama katmanı ORTAK — iki ayrı uygulama sessizce ayrışmasın diye)
 │   ├── boardZoom.ts    # tahtanın çift dokunuşla 2× büyütülmesi: çift dokunuş dedektörü, pan sınırlama, transform matrisi (saf; portun board_zoom.dart'ıyla senkron)
+│   ├── boardFit.ts     # tahtanın YÜKSEKLİK bütçesi — "geniş ama kısa" viewport'ta (açık katlanabilir, yatay tablet, kısa dizüstü) raf ve butonlar ekranın altında kalmasın diye; ölçülmüş sabitler + `LandscapeHint`in eşiği
 │   ├── draftRescue.ts  # ıskalanan dokunuşu en yakın taslak taşa yönlendirir (npm run verify-draft-rescue)
 │   ├── ghostClick.ts   # bir jestin ardından gelen "hayalet" click'i yutar (dokunmatikte compat mouse olayları O ANDAKİ DOM'a düşer) — dört çağrı yeri ortak
 │   ├── errorReporting.ts # istemci hata telemetrisi (client_errors) — beklenen durumlar BİLEREK kaydedilmez, saatte 10 kayıt tavanı (zaman penceresi, süreç ömrü DEĞİL)
 │   ├── errorMessage.ts  # kullanıcıya gösterilen hata metninin son kapısı: ham makine çıktısı (504 gövdesi, SQLSTATE dökümü) yerine Türkçe cümle, ham metin telemetriye (Flutter portuyla testli olarak senkron)
+│   ├── chatRead.ts      # Canlı sohbetin okundu kararı — sunucu (`online_game_chat_reads`) ↔ cihaz damgasının büyüğü; kapı `verify-chat-read`
+│   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına kimliksiz oturum (`web_sessions`), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
 │   ├── storeLinks.ts    # mağaza rozetleri (ROADMAP #26): URL'ler (`null` = yayında değil → rozet HİÇ çizilmez), sıra (App Store önce — Apple'ın yazılı kuralı) ve yerleşim ölçüleri
 │   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı için tek seferlik localStorage kuyruğu
 │   ├── csvExport.ts    # admin paneli tabloları/grafikleri için CSV indirme yardımcısı
