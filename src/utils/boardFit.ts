@@ -100,8 +100,10 @@ export function boardMaxWidthCss(): string {
  *
  * ⚠ Yükseklik ölçütü, bloğun SERT olabilmesinin tek sebebi: eski sert blok
  * (`#landscape-block`) iPad'de trackpad varken yanlış tetiklendiği için
- * kaldırılmıştı. iPad yatayda 820px boy var, eşik 632 — yani iPad hiçbir
- * koşulda bloklanmaz ve o tuzak geri gelmez.
+ * kaldırılmıştı. ⚠ "iPad yatayda 820px boy var, yani hiç bloklanmaz"
+ * varsayımı YANLIŞ çıktı (23 Eylül 2026): Safari'nin çubukları + mağaza bandı
+ * sayfayı ~619px'e indiriyor. Yükseklik tek başına yetmiyor; blok artık
+ * ayrıca TELEFON şartı arıyor (`LandscapeBlock` → `PHONE_MAX_SHORT_SIDE_PX`).
  *
  * ⚠ TEK KAYNAK: hem banner'ın `max-height` sorgusu hem `board-fit.spec.ts`
  * bu sayıdan türer. İkisinde ayrı ayrı toplanırsa biri sessizce bayatlar.
