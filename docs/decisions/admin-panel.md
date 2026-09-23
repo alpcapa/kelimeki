@@ -1236,3 +1236,35 @@ Gerçek iPadOS sürümü bu kipte hiç gönderilmiyor.
   7.9"). Veri DEĞİŞMEDİ, yalnızca etiket. Canlıdaki her masaüstü sürümü
   eşlendi (son 90 gün: `10.0` 67, `10.15.7` 21, `15.7.2` 2, `10.7.2` 1
   cihaz). Kartın `?` metni sayının sürüm bilgisi olmadığını söylüyor.
+
+### Masaüstü "sürüm yok" kovası: bot mu, Linux mu? Önce ÖLÇ (aynı gün)
+
+Masaüstünde sürümsüz 115 cihaz vardı (son 90 gün). 107'si tek seferlik, 1'i
+oyun başlatmış, 112'sinin kaynak etiketi yok ve günün her saatine
+yayılmışlardı. Bu örüntü tarayıcı botlarına uyuyor. İlk öneri satırı "bot"
+diye etiketlemekti. **Kullanıcı itiraz etti ve haklıydı:** *"Bunların gerçek
+ziyaretçi olma ihtimali de var… bunları bot olarak değerlendirmek tahmin olur
+ancak."* Ayrıca bilinen botların zaten dışarıda tutulduğunu sanıyordu. Kod
+okundu: ziyaret ve cihaz sayaçlarında HİÇBİR bot süzgeci yoktu, yalnızca
+Ziyaretçi Yolculuğu `navigator.webdriver`ı eliyordu.
+
+Kesin olan tek şey şuydu: Windows ve Mac tarayıcıları sürüm bildirir, yani
+bu kovaya yalnızca Linux, ChromeOS ya da kendini tanıtmayan istemci düşebilir.
+Reklamdan gelip oynamadan çıkan bir Windows/Mac kullanıcısı buraya düşmez.
+Ama kovanın içini bölmek için veri yoktu.
+
+**Karar: süzme yok, sınıflama var** (`visitTracking.ts`):
+- `isBotUserAgent` (açık liste) → `os_version = 'bot'`, model `null`.
+  Bot yine SAYILIYOR. Etiket: "bot (kendini tanıtan)".
+- `CrOS` → `'ChromeOS'`, kalan `Linux` → `'Linux'`.
+- Boş kalan masaüstü artık "Masaüstü · bilinmiyor". "Bot" DENMEZ.
+
+⚠ **İki tuzak, ikisi de `verify-device-labels`ta:** (1) Bot kontrolü işletim
+sistemi okumadan ÖNCE yapılmalı, çünkü Googlebot'un telefon tarayıcısı kendini
+`Linux; Android 6.0.1; Nexus 5X` olarak tanıtıyor ve Android sayılırdı.
+(2) `/bot/` ile eşleştirilmez: `CUBOT` gerçek bir Android markası.
+
+Geçmiş satırlar DEĞİŞTİRİLMEDİ, çünkü o satırlar için elde tarayıcı kimliği
+yok. **Sonraki adım:** bir hafta sonra kovanın dökümüne bak. Süzmeye
+("bilinen botları hiç sayma") ancak o sayılar varken karar verilir.
+

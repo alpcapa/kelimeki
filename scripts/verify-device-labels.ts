@@ -84,7 +84,13 @@ check('NT 10.0 → Windows 10/11 (ikisi ayırt edilemez)',
 check('NT 6.1 → Windows 7', osVersionLabel('desktop', '6.1') === 'Windows 7');
 check('tanınmayan iki parçalı dize ham kalır', osVersionLabel('desktop', '7.9') === 'Masaüstü 7.9',
   osVersionLabel('desktop', '7.9'));
-check('sürümsüz masaüstü (Linux vb.)', osVersionLabel('desktop', null) === 'Masaüstü · sürüm yok');
+check('tanınmayan masaüstü "bilinmiyor" (bot DENMEZ — kanıt yok)',
+  osVersionLabel('desktop', null) === 'Masaüstü · bilinmiyor', osVersionLabel('desktop', null));
+check('Linux / ChromeOS adıyla', osVersionLabel('desktop', 'Linux') === 'Linux' &&
+  osVersionLabel('desktop', 'ChromeOS') === 'ChromeOS');
+check('kendini tanıtan bot', osVersionLabel('desktop', 'bot') === 'Masaüstü · bot (kendini tanıtan)' &&
+  osVersionLabel('android', 'bot') === 'Android · bot (kendini tanıtan)', osVersionLabel('android', 'bot'));
+check('iOS sürümsüz satır değişmedi', osVersionLabel('ios', null) === 'iOS · sürüm yok');
 check('platformLabel bilinmeyen değer', platformLabel('app-web') === 'Bilinmiyor');
 
 console.log('User-Agent okuma — masaüstü kipindeki iPad (23 Eylül 2026)');
@@ -111,6 +117,26 @@ console.log('User-Agent okuma — masaüstü kipindeki iPad (23 Eylül 2026)');
   check('… Mac modelsiz', getDeviceModel() === null, String(getDeviceModel()));
   kur(IPHONE_UA, 5);
   check('iPhone sürümü yine okunuyor', getOsVersion() === '18.7', String(getOsVersion()));
+
+  // Bot + Linux/ChromeOS sınıflaması (23 Eylül 2026). UA'lar yayımlanmış
+  // gerçek dizeler.
+  kur('Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/130.0.0.0 Safari/537.36', 0);
+  check('Googlebot (masaüstü) → bot', getOsVersion() === 'bot', String(getOsVersion()));
+  kur('Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', 0);
+  check('Googlebot telefonu Android SAYILMAZ → bot', getOsVersion() === 'bot', String(getOsVersion()));
+  check('… iddia ettiği model yazılmaz', getDeviceModel() === null, String(getDeviceModel()));
+  kur('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/130.0.0.0 Safari/537.36', 0);
+  check('HeadlessChrome → bot', getOsVersion() === 'bot', String(getOsVersion()));
+  kur('Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36', 0);
+  check('Chromebook → ChromeOS (Linux DEĞİL)', getOsVersion() === 'ChromeOS', String(getOsVersion()));
+  kur('Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0', 0);
+  check('Ubuntu Firefox → Linux', getOsVersion() === 'Linux', String(getOsVersion()));
+  check('… masaüstü', getDeviceType() === 'desktop', getDeviceType());
+  kur('Mozilla/5.0 (Linux; Android 13; CUBOT KINGKONG 9 Build/TP1A.220624.014) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36', 0);
+  check('CUBOT marka telefon bot SAYILMAZ', getOsVersion() === '13', String(getOsVersion()));
+  check('… modeli okunuyor', getDeviceModel() === 'CUBOT KINGKONG 9', String(getDeviceModel()));
+  kur('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36', 0);
+  check('Windows değişmedi', getOsVersion() === '10.0', String(getOsVersion()));
 }
 
 console.log('Marka gruplaması — sayılar korunur, modeller altta');

@@ -648,6 +648,11 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         Mac'lerde <code>10.15.7</code> gönderiyor, Windows 11 de kendini Windows 10 gibi
         bildiriyor (bu yüzden <b>Windows 10/11</b> tek satır). Yani o satırlar "kaç Mac, kaç
         Windows" sorusunu yanıtlar, sürümü yanıtlamaz.{' '}
+        <b>Masaüstü "bilinmiyor"</b> = işletim sistemi hiç tanınmadı: Windows ve Mac her zaman
+        tanınır, <b>Linux</b> / <b>ChromeOS</b> 23 Eylül 2026'dan beri adıyla yazılıyor.{' '}
+        <b>"bot (kendini tanıtan)"</b> = tarayıcı kimliğinde Googlebot, bingbot gibi bir bot
+        adı geçiyor; bunlar SAYILMAYA devam ediyor, yalnızca ayrı satırda. Kendini tanıtmayan
+        bot "bilinmiyor"da kalır, o satır "bot" diye etiketlenmez (kanıt yok).{' '}
         <b>iPad "sürüm yok":</b> iPad Safari varsayılan olarak "masaüstü sitesi" kipinde
         açılıp kendini Mac gibi tanıtıyor ve gerçek sürümünü göndermiyor (23 Eylül 2026'ya
         kadar bu satırlar yanlışlıkla <code>iOS 10.15.7</code> görünüyordu). <b>Açılan sürüm satırlarının

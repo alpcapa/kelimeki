@@ -132,6 +132,26 @@ function isDesktopModeIPad(ua: string): boolean {
   return /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
 }
 
+/**
+ * Tarayıcı kimliğinde KENDİNİ bot olarak tanıtan istemciler (arama motoru,
+ * önizleme, SEO ve performans araçları). Bunlar SAYILMAYA devam ediyor,
+ * yalnızca `os_version`a `'bot'` olarak işaretleniyor (23 Eylül 2026,
+ * kullanıcı kararı: tahmine göre süzmeden önce ÖLÇ). Admin "Cihaz"
+ * tablosundaki masaüstü "sürüm yok" kovasında tek seferlik, oyunsuz,
+ * kaynaksız 115 cihaz vardı; kaçının bot, kaçının Linux/ChromeOS kullanıcısı
+ * olduğu bilinemiyordu.
+ *
+ * ⚠ Açık liste, `/bot/` DEĞİL: `bot` alt dizesi gerçek bir Android markasında
+ * (`CUBOT`) geçiyor. ⚠ Bu kontrol işletim sistemi okumadan ÖNCE yapılmalı:
+ * Googlebot'un telefon tarayıcısı kendini `Linux; Android …` olarak tanıtıyor.
+ */
+const BOT_UA =
+  /Googlebot|Google-InspectionTool|AdsBot|Storebot|bingbot|BingPreview|Applebot|YandexBot|Baiduspider|DuckDuckBot|AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|Bytespider|GPTBot|ClaudeBot|facebookexternalhit|Twitterbot|LinkedInBot|Slackbot|Discordbot|TelegramBot|WhatsApp|HeadlessChrome|Lighthouse|crawler|spider/i;
+
+export function isBotUserAgent(ua: string): boolean {
+  return BOT_UA.test(ua);
+}
+
 export function getDeviceType(): 'ios' | 'android' | 'desktop' {
   try {
     const ua = navigator.userAgent || '';
@@ -146,7 +166,9 @@ export function getDeviceType(): 'ios' | 'android' | 'desktop' {
 
 /**
  * İyi niyetle (best-effort) `navigator.userAgent`'tan işletim sistemi
- * sürümünü okur — kesin değil, yalnızca elde edilebiliyorsa. Şimdilik
+ * sürümünü okur — kesin değil, yalnızca elde edilebiliyorsa. Üç özel değer
+ * sürüm DEĞİL, sınıftır: `'bot'` (kendini bot olarak tanıtan istemci),
+ * `'Linux'`, `'ChromeOS'` (sürüm göndermeyen masaüstü aileleri). Şimdilik
  * hiçbir ekranda gösterilmiyor, yalnızca `guest_visits.os_version`'a VE
  * (24 Ağustos 2026'dan beri) `device_visits.os_version`'a kaydediliyor
  * (bkz. ilgili sütunların migration yorumları).
@@ -154,6 +176,7 @@ export function getDeviceType(): 'ios' | 'android' | 'desktop' {
 export function getOsVersion(): string | null {
   try {
     const ua = navigator.userAgent || '';
+    if (isBotUserAgent(ua)) return 'bot';
     const ios = ua.match(/OS (\d+)_(\d+)(?:_(\d+))?/);
     if (ios) return `${ios[1]}.${ios[2]}${ios[3] ? `.${ios[3]}` : ''}`;
     const android = ua.match(/Android (\d+(?:\.\d+)?)/);
@@ -165,6 +188,11 @@ export function getOsVersion(): string | null {
     if (mac) return `${mac[1]}.${mac[2]}${mac[3] ? `.${mac[3]}` : ''}`;
     const win = ua.match(/Windows NT (\d+\.\d+)/);
     if (win) return win[1];
+    // Sürüm değil AİLE: Linux ve ChromeOS tarayıcıları sürüm göndermiyor,
+    // ama "sürüm yok" kovasını gerçek kullanıcıyla tanımsız trafikten
+    // ayırmanın tek yolu bu (23 Eylül 2026).
+    if (/CrOS/.test(ua)) return 'ChromeOS';
+    if (/Linux/.test(ua)) return 'Linux';
     return null;
   } catch {
     return null;
@@ -184,6 +212,8 @@ export function getOsVersion(): string | null {
 export function getDeviceModel(): string | null {
   try {
     const ua = navigator.userAgent || '';
+    // Botun iddia ettiği cihaz (Googlebot telefonu `Nexus 5X` der) gerçek değil.
+    if (isBotUserAgent(ua)) return null;
     const androidModel = ua.match(/;\s*([^;)]+?)\s*Build\//);
     if (androidModel) return androidModel[1].trim().slice(0, 60);
     if (/iPad/.test(ua) || isDesktopModeIPad(ua)) return 'iPad';
