@@ -1571,3 +1571,24 @@ altında olduğu için merge MOBİL DERLEMEYİ tetiklerdi (dondurma). Ölçek
 bekliyor; portta punto doğrudan küçülüyor (orada parite kilidi yok).
 Kapı: `tests/board-fit.spec.ts` → "filigranlar tahtaya göre ölçekli" (üç
 geniş-ama-kısa ekran + dikey telefon; tavan kaldırılınca üçü düşüyor).
+
+### iPad Safari'de "dikeye çevirin" bloğu çıkıyordu (23 Eylül 2026, aynı gün)
+
+#608'in varsayımı — *"iPad yatayda 820px boy var, eşik 632, yani iPad hiçbir
+koşulda bloklanmaz"* — EKRANIN boyunu sayfanın boyu sandı. Safari'de adres
+çubuğu + sekme çubuğu + mağaza bandı (Smart App Banner) birlikte ~200px
+yiyor; kullanıcının ekran görüntüsünden (iPad 1180×820) sayfa ≈ **619px**
+ölçüldü → eşiğin altında → iPad'de Safari yatayda HER açılışta blok.
+
+**Düzeltme:** kapıya üçüncü şart — cihaz TELEFON olmalı (`screen`in kısa
+kenarı < 600px; iOS `screen`i hep dikey verir, Android o anki yönelimle,
+kısa kenar ikisinde de doğru). Kural zaten telefon içindi; tablet ve açık
+katlanabilir artık bloklanmaz. Bedeli: iPad Safari'de sayfa 632'nin altına
+indiğinde tahta 324px tabanında durur ve raf ~13px kaydırma ister — blokla
+kıyaslanmayacak kadar küçük.
+
+⚠ **Ders:** "ekranın boyu" ile "sayfanın boyu" ayrı sayılar; tarayıcı
+kromu ve mağaza bandı aradaki farkı cihazdan cihaza değiştiriyor. Yükseklik
+eşiğine dayanan her kapı yalnızca ÖLÇÜLMÜŞ sayfa boyuyla doğrulanmalı.
+Kapı: `tests/board-fit.spec.ts` → "iPad Safari yatay (kısa sayfa)" (telefon
+şartı kaldırılınca düşüyor).

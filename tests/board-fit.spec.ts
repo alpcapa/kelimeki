@@ -127,6 +127,25 @@ for (const c of [...GENIS_AMA_KISA, { ad: 'dikey telefon', w: 393, h: 852 }]) {
   });
 }
 
+// iPad Safari yatay — 23 Eylül 2026, kullanıcının ekran görüntüsünden
+// ölçüldü: ekran 1180×820 ama adres + sekme çubuğu + mağaza bandı sayfayı
+// ~619px'e indiriyor (eşik 632). Blok HER açılışta çıkıyordu. Ekran (screen)
+// bir tablet olduğu için artık çıkmamalı — viewport ne kadar kısa olursa olsun.
+test('iPad Safari yatay (kısa sayfa): blok ÇIKMAZ', async ({ browser }) => {
+  const ctx = await browser.newContext({
+    viewport: { width: 1180, height: 619 },
+    screen: { width: 820, height: 1180 }, // iOS `screen`i hep dikey verir
+    hasTouch: true,
+    isMobile: true,
+  });
+  const page = await ctx.newPage();
+  expect(619).toBeLessThan(BOTTOM_STRIP_MIN_HEIGHT_PX); // yükseklik kapısı AÇIK
+  await oyunaGir(page);
+  await page.waitForTimeout(800); // yokluk iddiası: bloğa çıkma fırsatı ver
+  await expect(page.getByText('Telefonunuzu dikeye çevirin')).toBeHidden();
+  await ctx.close();
+});
+
 test('dikey telefon: düzen DEĞİŞMEDİ (yükseklik sınırı hiç devreye girmiyor)', async ({
   page,
 }) => {

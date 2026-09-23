@@ -25,6 +25,16 @@ import { BOTTOM_STRIP_MIN_HEIGHT_PX } from '../utils/boardFit';
  *    trackpad'li ya da trackpad'siz, iPad HİÇBİR ZAMAN bloklanmaz. Blok
  *    yalnızca alt şeridin (raf + butonlar) gerçekten sığmadığı yerde çıkar
  *    ve orada uygulama zaten oynanamaz durumdadır.
+ * 4. **"iPad hiçbir zaman bloklanmaz" YANLIŞ ÇIKTI (23 Eylül 2026).** 820px
+ *    ekranın boyu, SAYFANIN boyu değil: Safari'de adres çubuğu + sekme
+ *    çubuğu + mağaza bandı (Smart App Banner, `apple-itunes-app`) birlikte
+ *    ~200px yiyor. Kullanıcının ekran görüntüsünden ölçüldü (iPad 1180×820,
+ *    sayfa ≈ 619px < 632) — iPad'de Safari yatayda HER açılışta blok
+ *    çıkıyordu. Kapıya üçüncü koşul eklendi: cihaz bir TELEFON olmalı
+ *    (ekranın kısa kenarı < 600px). Kural zaten telefon içindi (kullanıcı
+ *    kararı *"Telefonda web'in yatay çalışması gerekmiyor"*); tablet ve açık
+ *    katlanabilir artık hiçbir koşulda bloklanmaz, orada kısa sayfada tahta
+ *    tabanına iner ve gerekirse birkaç piksel kaydırılır.
  *
  * ## Neden banner YETMEDİ
  *
@@ -49,7 +59,7 @@ import { BOTTOM_STRIP_MIN_HEIGHT_PX } from '../utils/boardFit';
  *   textarea / contenteditable) ODAKTAYKEN blok bastırılır.
  *   Kullanıcı bunu bildirdi (22 Eylül 2026): *"Ama iPad'da klavye varsa,
  *   yatay olmadan mesaj yazılamıyor. Bu durumu da düşün."*
- *   ⚠ iPad'in KENDİSİ zaten güvende (yatayda 820px boy > 632 eşik), ama aynı
+ *   ⚠ iPad'in KENDİSİ zaten güvende (telefon değil, bkz. tarihçe #4), ama aynı
  *   kök sebep telefon dikeyde gerçek bir arızaydı.
  * - **TEK MOUNT NOKTASI `boot.tsx`.** `App.tsx`in İÇİNE konmaz: orada Canlı
  *   oyun `<OnlineGameScreen/>` ile ERKEN DÖNÜYOR ve banner'ın iki mount
@@ -58,6 +68,9 @@ import { BOTTOM_STRIP_MIN_HEIGHT_PX } from '../utils/boardFit';
  *   dalının da tek ortak giriş noktası, yani dördüncü bir route eklense bile
  *   kendiliğinden kapsanır.
  */
+/** Bu kısa kenarın altı TELEFON sayılır (bkz. tarihçe #4). */
+export const PHONE_MAX_SHORT_SIDE_PX = 600;
+
 export function LandscapeBlock() {
   const [blocked, setBlocked] = useState(false);
 
@@ -76,7 +89,13 @@ export function LandscapeBlock() {
       return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable;
     };
 
-    const update = () => setBlocked(coarse.matches && short.matches && !yaziliyor());
+    /** Telefon mu — ekranın KISA kenarı (yönelimden bağımsız; iOS
+     *  `screen`i hep dikey verir, Android o anki yönelimle). Telefonlar
+     *  320–440, en küçük iPad (mini) 744, açık katlanabilir ~880. */
+    const telefon = () => Math.min(window.screen.width, window.screen.height) < PHONE_MAX_SHORT_SIDE_PX;
+
+    const update = () =>
+      setBlocked(coarse.matches && short.matches && telefon() && !yaziliyor());
     update();
 
     // ⚠ `focusout` GECİKMELİ, `focusin` DEĞİL. Odak kaybında klavye kapanma

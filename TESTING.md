@@ -1437,9 +1437,14 @@ gerektiriyor. `tests/board-fit.spec.ts` yalnızca YEREL oyun ekranını ölçüy
       çevirmek. (Kapatılabilseydi geriye yine bozuk düzen kalırdı.)
 - [ ] **Dikeye dön** → blok kalkıyor ve oyun **kaldığı yerden** devam ediyor
       (taşlar, skor, sıra korunmuş — blok kaplayıcı, sökücü değil).
-- [ ] ⚠ **TABLETTE ve açık KATLANABİLİRDE blok ÇIKMAMALI** — ölçüt yatay
-      DEĞİL, yetersiz yükseklik (`utils/boardFit.ts`). Orada yer var; çıkarsa
-      eşik bayatlamış demektir. **Bu madde kritik:** blok sert olduğu için
+- [ ] ⚠ **TABLETTE ve açık KATLANABİLİRDE blok ÇIKMAMALI** — blok yalnızca
+      TELEFONDA (ekranın kısa kenarı < 600px) ve yükseklik yetmediğinde
+      çıkar. ⚠ **iPad'de SAFARİ'de (ana ekran uygulamasında değil) yatay
+      aç** — adres/sekme çubuğu + üstteki "Open in the Kelimeki app" bandı
+      sayfayı ~619px'e indiriyor, yani yalnızca yüksekliğe bakan eski kapı
+      burada HER açılışta blok çıkarıyordu (23 Eylül 2026, kullanıcı
+      bildirdi). Blok çıkmamalı; tahta küçülür, raf en fazla birkaç piksel
+      kaydırmayla görünür. **Bu madde kritik:** blok sert olduğu için
       yanlış tetiklenmesi uygulamayı tamamen kullanılamaz yapar — eski
       `#landscape-block` tam bu yüzden (iPad'de trackpad varken) kaldırılmıştı.
 
@@ -1451,9 +1456,14 @@ gerektiriyor. `tests/board-fit.spec.ts` yalnızca YEREL oyun ekranını ölçüy
 - [ ] Mesajı gönder / kutudan çık → klavye kapanıyor, blok yine çıkmıyor
       (dikeydesin).
 - [ ] iPad'de klavye kılıfıyla, **yatay** konumda mesaj yazılabiliyor — iPad
-      hiçbir koşulda bloklanmamalı (yatayda 820px boy, eşik 632).
+      hiçbir koşulda bloklanmamalı (telefon değil — bkz. yukarıdaki Safari
+      maddesi).
 
 **Aynı oyunda, tahtanın boyu:**
+
+- [ ] Yatay iPad'de (ana ekran web uygulaması) köşe rakamları ("1"/"2") ve
+      "X2" filigranı tahtanın içinde kalıyor — 23 Eylül 2026'ya kadar "2"
+      tahtanın alt kenarından taşıyordu.
 
 - [ ] Yatay iPad / açık katlanabilir gibi "geniş ama kısa" bir ekranda raf ve
       butonların tamamı **kaydırmadan** görünüyor.
