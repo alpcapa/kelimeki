@@ -47,6 +47,11 @@ export function GameBoardPreview({
           onOpenHistory={noop}
           hideFooter
           compact={compact}
+          /* Yükseklik bütçesi YOK: burada tahtanın altında raf/buton şeridi
+             yok, yani bütçenin çıkardığı 308px'in karşılığı da yok. Bkz.
+             `Board`un `fitHeight` notu — 23 Eylül 2026'da iPad yatay
+             Safari'de karşılama tahtasını 324px'e indirmişti. */
+          fitHeight={false}
         />
       </div>
     </div>
