@@ -97,6 +97,7 @@ export interface SourceFunnelTotals {
   finishers: number;
   member_games: number;
   players: number;
+  signup_players: number;
 }
 
 export interface SourceChannelGroup extends SourceFunnelTotals {
@@ -115,6 +116,7 @@ const EMPTY_TOTALS: SourceFunnelTotals = {
   finishers: 0,
   member_games: 0,
   players: 0,
+  signup_players: 0,
 };
 
 const TOTAL_KEYS = Object.keys(EMPTY_TOTALS) as (keyof SourceFunnelTotals)[];

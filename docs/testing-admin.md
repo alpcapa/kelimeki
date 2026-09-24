@@ -190,6 +190,14 @@ gerekenler.
       yanında **11.2%**, bitiren=4 ise "Bitiren"in yanında **1.5%** yazmalı.
       Bir sütunun yüzdesi solundakinden büyükse (Üye hariç — ayrı ölçüm) bir
       şey yanlıştır.
+- [ ] **"Oynayan Üye" sütunu (24 Eylül 2026) — yüzdesi ÜYE'ye göre, Gelen'e
+      değil.** Kişi görünümünde Üye ile Başlatan arasında. Arkadaş satırı
+      (90 gün) bugün **26 üye / 17 oynayan → 65.4%** gösteriyordu. Yüzde
+      ASLA %100'ü aşmamalı (kohort: pencerede üye olanlardan oynayanlar);
+      aşıyorsa sütun yine pencerede oynayan ESKİ üyeleri sayan `players`tan
+      besleniyor demektir (30 gün Arkadaş: 6 üye / 15 → %250 olurdu).
+      Yeni bir hesap aç, bir YZ oyunu BİTİR → o kaynağın "Oynayan Üye"si 1
+      artmalı; oyunu yarıda bırakırsan ARTMAMALI (`games` = bitmiş oyun).
 - [ ] **Gelen = 0 olan satırda yüzde YAZILMAZ** (yalnızca sayı; `app` satırı
       bugün böyle — port ziyaret kaydetmiyor).
 - [ ] **CSV görünümden bağımsız.** Hangi görünümde olursan ol "CSV İndir" →

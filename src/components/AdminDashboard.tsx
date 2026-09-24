@@ -508,10 +508,18 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <b>İki görünüm var (Kişi / Oyun düğmesi):</b>
         <br />
         <b>Kişi</b> — soldan sağa okunan huni: <b>Gelen</b> = o kaynaktan gelen benzersiz
-        misafir; <b>Üye</b> = o kaynak damgasıyla açılan hesap; <b>Başlatan</b> = üye olmadan
-        yerel (YZ) oyun başlatan benzersiz kişi; <b>Bitiren</b> = üye olmadan en az bir yerel
-        oyunu bitiren benzersiz kişi. Sayının yanındaki yüzde HER sütunda o satırın{' '}
-        <b>Gelen</b>'ine göredir ("gelenlerin yüzde kaçı buraya ulaştı").
+        misafir; <b>Üye</b> = o kaynak damgasıyla açılan hesap; <b>Oynayan Üye</b> = o üyelerden
+        bugüne kadar en az bir oyun bitirmiş olan; <b>Başlatan</b> = üye olmadan yerel (YZ)
+        oyun başlatan benzersiz kişi; <b>Bitiren</b> = üye olmadan en az bir yerel oyunu
+        bitiren benzersiz kişi. Sayının yanındaki yüzde o satırın <b>Gelen</b>'ine göredir
+        ("gelenlerin yüzde kaçı buraya ulaştı") — <b>tek istisna Oynayan Üye</b>: onun yüzdesi{' '}
+        <b>Üye</b>'ye göre ("üye olanların yüzde kaçı oynadı").
+        <br />
+        <br />
+        <b>Neden Oynayan Üye ayrı:</b> Başlatan/Bitiren yalnızca ÜYE OLMADAN oynanan oyunları
+        sayar. Davetle gelen ÖNCE üye olup SONRA oynar, yani o sütunlarda hiç görünmez —
+        ölçüldü (24 Eylül 2026, 90 gün, Arkadaş): 26 üye, 4 misafir başlatan, 0 misafir
+        bitiren; ama üyelerin 17'si oynamış (1.348 oyun).
         <br />
         <b>Oyun</b> — aynı kitlenin oyun ADETLERİ: <b>Başlayan Oyun</b>, <b>Biten Oyun</b> ve{' '}
         <b>Oyun / Kişi</b> (başlatan kişi başına başlayan oyun). Birkaç kişinin onlarca oyun
@@ -538,12 +546,12 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         sayfası çalışıyor, oyun uzun geliyor demektir; ikisi de 0 ise sorun açılış sayfasında.
         <br />
         <br />
-        <b>ÜYE tarafı bu tabloda YOK</b> — üyelerin oyunları kaynak kırılımlı olarak CSV'de
-        duruyor ("Üye Oyunu", "Oynayan Üye"), ve bunlar cihaz etiketinden değil üyenin KAYIT
-        damgasından gelir: hesabı takip ettiği için "bu kanal değerli üye getirdi mi"
-        sorusunun daha güvenilir cevabıdır (bir üye başka cihazdan oynarsa cihaz etiketi
-        kaybolur, kayıt damgası kaybolmaz). Üyelerin ne kadar oynadığını zaman içinde görmek
-        için Büyüme &gt; Oyun sekmesindeki Misafir/Kayıtlı kırılımı var.
+        <b>Üye tarafı tabloda yalnızca Oynayan Üye ile</b> — üyelerin oyun ADETLERİ kaynak
+        kırılımlı olarak CSV'de duruyor ("Üye Oyunu", "Oynayan Üye", "Oynayan Yeni Üye"). Üye
+        ölçüleri cihaz etiketinden değil üyenin KAYIT damgasından gelir: hesabı takip ettiği
+        için "bu kanal değerli üye getirdi mi" sorusunun daha güvenilir cevabıdır. CSV'deki
+        "Oynayan Üye" pencerede oynayan ESKİ üyeleri de sayar; tablodaki (CSV'de "Oynayan Yeni
+        Üye") yalnızca pencerede üye olanları.
         <br />
         <br />
         <b>Başlayan ve Biten 22 Ağustos 2026'da misafire indirildi, geriye dönük
@@ -1566,8 +1574,10 @@ function DeviceBrandTable({
  * tabanı sütuna göre değişiyordu (Başlayan → Gelen, Biten → Başlayan) —
  * canlıda Direkt'te 267 başlayan / 204 biten oyun "%6.4 / %10.5" okundu ve
  * "biten nasıl daha yüksek?" sorusunu doğurdu. Artık:
- *   - **Kişi**: Gelen · Üye · Başlatan · Bitiren — hepsi KİŞİ (üye hariç
- *     anonim cihaz kodu); yüzde her sütunda o satırın GELEN'ine göre.
+ *   - **Kişi**: Gelen · Üye · Oynayan Üye · Başlatan · Bitiren — hepsi KİŞİ;
+ *     yüzde o satırın GELEN'ine göre, Oynayan Üye'ninki ise ÜYE'ye göre
+ *     (`signup_players / signups`, kohort — aynı gün eklendi: davetle gelen
+ *     önce üye olup sonra oynadığından misafir sütunlarında görünmüyordu).
  *   - **Oyun**: Başlayan Oyun · Biten Oyun · Oyun / Kişi (starts/starters).
  * Tek ekranda iki birim yan yana DURMAZ. RPC değişmedi; bütün sayılar zaten
  * dönüyordu, yalnızca sunum değişti.
@@ -1958,6 +1968,7 @@ function SourceFunnelTable({
       finishers: acc.finishers + row.finishers,
       member_games: acc.member_games + row.member_games,
       players: acc.players + row.players,
+      signup_players: acc.signup_players + row.signup_players,
     }),
     {
       visitors: 0,
@@ -1968,6 +1979,7 @@ function SourceFunnelTable({
       finishers: 0,
       member_games: 0,
       players: 0,
+      signup_players: 0,
     },
   );
 
@@ -1998,10 +2010,11 @@ function SourceFunnelTable({
         'Bitiren Cihaz',
         'Üye Oyunu',
         'Oynayan Üye',
+        'Oynayan Yeni Üye',
       ],
       [
         ...gruplar.flatMap((g) => [
-          [g.label, '(kanal toplamı)', g.visitors, g.signups, g.starts, g.starters, g.finishes, g.finishers, g.member_games, g.players],
+          [g.label, '(kanal toplamı)', g.visitors, g.signups, g.starts, g.starters, g.finishes, g.finishers, g.member_games, g.players, g.signup_players],
           ...g.sources.map((row) => [
             g.label,
             row.source,
@@ -2013,6 +2026,7 @@ function SourceFunnelTable({
             row.finishers,
             row.member_games,
             row.players,
+            row.signup_players,
           ]),
         ]),
         [
@@ -2026,6 +2040,7 @@ function SourceFunnelTable({
           total.finishers,
           total.member_games,
           total.players,
+          total.signup_players,
         ],
       ],
     );
@@ -2071,7 +2086,7 @@ function SourceFunnelTable({
 
   const basliklar =
     gorunum === 'kisi'
-      ? ['Gelen', 'Üye', 'Başlatan', 'Bitiren']
+      ? ['Gelen', 'Üye', 'Oynayan Üye', 'Başlatan', 'Bitiren']
       : ['Başlayan Oyun', 'Biten Oyun', 'Oyun / Kişi'];
 
   function hucreler(r: SourceFunnelTotals): ReactNode[] {
@@ -2079,6 +2094,10 @@ function SourceFunnelTable({
       return [
         String(r.visitors),
         kisiHucre(r.signups, r.visitors),
+        // ⚠ Tabanı GELEN değil ÜYE: "üye olanların yüzde kaçı oynadı" (kohort,
+        // `signup_players <= signups`). Davetle gelen önce üye olup sonra
+        // oynar — oyunları misafir sütunlarına hiç düşmez (24 Eylül 2026).
+        kisiHucre(r.signup_players, r.signups),
         kisiHucre(bilinen(r.starters, r.starts), r.visitors),
         kisiHucre(bilinen(r.finishers, r.finishes), r.visitors),
       ];
