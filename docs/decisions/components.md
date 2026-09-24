@@ -267,3 +267,19 @@ güvenilir türetemez. İki ifade de sabit.
 13 → şerit VAR; Pixel 5 → YOK; masaüstü → YOK; Play URL'si geçici
 doldurulunca Pixel 5 → VAR (sonra geri alındı). Kapı:
 `npm run verify-store-badges`.
+
+## Font Yükleme Stratejisi
+
+> 24 Eylül 2026'da kök `CLAUDE.md`'den buraya taşındı (`auto` sınıfı bütçesi);
+> orada yalnızca kural özeti kaldı. Metin değiştirilmedi.
+
+Tüm fontlar (`src/fonts/*.css`, `main.tsx`'te import edilir) kendi sunucumuzdan `.woff2` olarak servis edilir, `font-display: swap` ile. 23 Temmuz 2026'da (PageSpeed'in render-blocking uyarısı yüzünden hepsi base64-gömülü tek bir CSS'ten bu yapıya geçirildiğinde) bu, logoda (Caveat) ve daha az belirgin biçimde Space Grotesk/Space Mono'da görünür bir FOUT'a yol açtı. Bu tek seferlik bir sorun değil: uygulama sık deploy edildiğinden ve PWA service worker'ı (`src/lib/pwa.ts`) her deploy sonrası arka planda güncelleyip sayfayı yeniden yüklediğinden, bir sonraki açılışta hâlâ eski (düzeltilmemiş) kod bir kez daha çalışıp sıçramayı tekrarlıyor — bu, herhangi bir düzeltmenin "işe yaramadığı" izlenimi verebilir, aslında düzeltme sonraki (arka plandaki güncelleme sonrası) açılışta devrede.
+
+- **Logo (Caveat)** — tamamen kaldırıldı, statik SVG path'lere çevrildi (bkz. `LogoMark`, yukarıdaki "Bileşen Notları").
+- **Space Grotesk 700 / Space Mono 400 / Space Mono 700** — Setup ekranında ilk boyamada görünen kalın buton etiketleri/açıklama paragrafı (700/400) ve `GameHeader`'daki skor kutuları (700) bu ağırlıkları kullanır; kullanıcı ikisindeki FOUT'u da ayrı ayrı bizzat bildirdi. `public/fonts/`'a taşınıp `index.html`'den `<link rel="preload">` ile öncelikli indirilir (bkz. ilgili `src/fonts/space-grotesk-inline.css`/`space-mono-inline.css` dosyalarındaki notlar). Bunlar canlı/değişken metin (skor, kullanıcı adı) render ettiğinden logodaki gibi statik path'e çevrilemez — preload en iyi pratik çözüm, garantili değil.
+  **1 Ağustos 2026 — Space Mono 700 örneği (yanlış teşhis dersi):**
+  "kısa süre görünüp kendiliğinden düzeliyor" tarifi güçlü bir FOUT sinyali;
+  yeni bir yerde görülünce önce BU listeye (preload edilmemiş ağırlıklar)
+  bak, layout/CSS hesaplarına dalmadan önce. Vaka kaydı:
+  `docs/decisions/components.md` → "Space Mono 700 — yanlış teşhis".
+- **Diğer ağırlıklar (Space Grotesk 400/500/600) ve Nunito (taş harfi fontu)** — henüz raporlanmadığından ve kritik ilk-boyama yolunda olmadığından dokunulmadı, hâlâ eski `./files/` + yalnızca-swap yolunda. Aynı şikayet başka bir ağırlıkta/yerde görülürse aynı desen uygulanmalı: dosyayı `public/fonts/`'a taşı, `index.html`'e `<link rel="preload">` ekle, `vite.config.ts`'teki `includeAssets`'e ekle (PWA precache için).

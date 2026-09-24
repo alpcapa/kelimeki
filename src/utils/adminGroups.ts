@@ -152,6 +152,113 @@ export function groupSourceFunnel(
   );
 }
 
+/* ─────────────────── Huni v2 (kohort, platform × kanal) ──────────────── */
+
+/** Huni v2 sayıları — alan adları `AdminFunnelRow` ile birebir. */
+export interface FunnelV2Totals {
+  land: number;
+  returned: number;
+  signed_up: number;
+  started: number;
+  finished: number;
+  games_started: number;
+  games_finished: number;
+}
+
+export interface FunnelV2ChannelGroup extends FunnelV2Totals {
+  channel: SourceChannel;
+  label: string;
+  /** Ham etiketler (`?ref=` değeri) — satır açılınca gösterilir. */
+  sources: (FunnelV2Totals & { source: string })[];
+}
+
+export interface FunnelV2PlatformGroup extends FunnelV2Totals {
+  platform: string;
+  label: string;
+  channels: FunnelV2ChannelGroup[];
+}
+
+export interface FunnelV2Grouped {
+  platforms: FunnelV2PlatformGroup[];
+  /** Kohort toplamı — `mevcut` HARİÇ. */
+  total: FunnelV2Totals;
+  /** Ölçüm v2'den önce de izi olan cihazlar: kohortun DIŞINDA, yalnızca bilgi. */
+  existing: number;
+}
+
+const FUNNEL_V2_KEYS = [
+  'land',
+  'returned',
+  'signed_up',
+  'started',
+  'finished',
+  'games_started',
+  'games_finished',
+] as const satisfies readonly (keyof FunnelV2Totals)[];
+
+function emptyFunnelV2(): FunnelV2Totals {
+  return { land: 0, returned: 0, signed_up: 0, started: 0, finished: 0, games_started: 0, games_finished: 0 };
+}
+
+function addFunnelV2(into: FunnelV2Totals, r: FunnelV2Totals): void {
+  for (const k of FUNNEL_V2_KEYS) into[k] += r[k];
+}
+
+const FUNNEL_V2_PLATFORM_ORDER = ['web', 'android', 'ios'];
+
+/**
+ * Huni v2 satırlarını platform → kanal → ham etiket ağacına toplar.
+ *
+ * Toplamak GÜVENLİ: sayılar benzersiz cihaz ama her cihazın TEK bir `land`
+ * satırı var (sunucuda unique), yani bir cihaz tek bir (platform, kanal)
+ * satırında görünür. `mevcut` kanalı kohorttan çıkarılır ve ayrıca sayılır.
+ */
+export function groupFunnelV2(
+  rows: ReadonlyArray<FunnelV2Totals & { platform: string; channel: string }>,
+  existingChannel: string,
+): FunnelV2Grouped {
+  const total = emptyFunnelV2();
+  let existing = 0;
+  const platforms = new Map<string, FunnelV2PlatformGroup>();
+  for (const r of rows) {
+    if (r.channel === existingChannel) {
+      existing += r.land;
+      continue;
+    }
+    addFunnelV2(total, r);
+    const p =
+      platforms.get(r.platform) ??
+      ({ ...emptyFunnelV2(), platform: r.platform, label: clientPlatformLabel(r.platform), channels: [] } as FunnelV2PlatformGroup);
+    addFunnelV2(p, r);
+    const ch = sourceChannel(r.channel);
+    let g = p.channels.find((x) => x.channel === ch);
+    if (!g) {
+      g = { ...emptyFunnelV2(), channel: ch, label: SOURCE_CHANNEL_LABEL[ch], sources: [] };
+      p.channels.push(g);
+    }
+    addFunnelV2(g, r);
+    const src = { ...emptyFunnelV2(), source: r.channel };
+    addFunnelV2(src, r);
+    g.sources.push(src);
+    platforms.set(r.platform, p);
+  }
+  for (const p of platforms.values()) {
+    for (const g of p.channels) {
+      g.sources.sort((a, b) => b.land - a.land || trCompare(a.source, b.source));
+    }
+    p.channels.sort((a, b) => b.land - a.land || trCompare(a.label, b.label));
+  }
+  const order = (x: string) => {
+    const i = FUNNEL_V2_PLATFORM_ORDER.indexOf(x);
+    return i < 0 ? FUNNEL_V2_PLATFORM_ORDER.length : i;
+  };
+  return {
+    platforms: [...platforms.values()].sort((a, b) => order(a.platform) - order(b.platform)),
+    total,
+    existing,
+  };
+}
+
 /* ─────────────────── Platform + sürüm (iki sürüm tablosu) ─────────────── */
 
 export interface PlatformVersionGroup {

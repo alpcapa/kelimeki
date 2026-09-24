@@ -39,6 +39,71 @@
 > yani BİR SONRAKİ taşımada önce bayat anlatı budanmalı ya da bir cilt
 > dondurulmalı (aday kesme noktası değişmedi: sürüm turları ↔ kapanmış
 > maddeler).
+>
+> **Dördüncü taşıma: 24 Eylül 2026.** `ROADMAP.md` yine uyarı bandındaydı
+> (120,5 KB). Taşınan: **"Sayaç — nerede okunur, 14. gün ne zaman"** (Faz B'nin
+> 14 günlük sayacı, 10 Eylül'de kapandı). Bilerek KÜÇÜK tutuldu: bu dosyanın
+> uyarıya ~5 KB payı vardı. ⚠ Artık pay ~2 KB — bir sonraki taşımadan ÖNCE
+> bayat anlatı budanmalı ya da bir cilt dondurulmalı (aday kesme noktası
+> değişmedi: sürüm turları ↔ kapanmış maddeler).
+
+### Sayaç — nerede okunur, 14. gün ne zaman
+
+✅ **KAPANDI 10 Eylül 2026** — sayaç doldu, başvuru gönderildi (15:26).
+Aşağısı bir sonraki uygulama/hesap için işletim bilgisi olarak duruyor.
+⚠ Tahmin TUTTU: bu bölüm *"14. gün ~10 Eylül"* diyordu ve kart tam o gün
+açıldı.
+
+⚠ Bu bir MADDE değil, açık pencerenin işletim bilgisi. *"Davetlilere
+hatırlatma"* maddesi 2 Eylül 2026'da KAPANDI (kullanıcı: *"Hep ben
+hatırlatıyorum zaten, burada madde olarak durmasına gerek yok"*) — arşivde:
+`docs/decisions/roadmap-arsiv.md` → *"3. Davetlilere hatırlatma"*. Aşağısı
+o maddeyle birlikte kaybolmasın diye burada kaldı.
+
+**Sayacın yeri:** Dashboard → (aşağı kaydır) Production → `Apply for access
+to production` kartı. Test menüsünde DEĞİL; track sayfasında da yok
+(ölçüldü). **14. gün ~10 Eylül 2026** (sayaç 27/28 Ağustos'ta başladı;
+Console'un günü nasıl saydığı ölçülmedi, ±1 gün kabul et ve tarihi kartın
+kendi metninden takip et).
+
+**Katılan/indiren sayısı:** Test → Closed testing → (track) → **Testers**
+sekmesi — ⚠ oradaki sayı opt-in DEĞİL, **izin listesi**; indirme adedi için
+**Statistics**.
+
+**14 gün dolmadan yapılabilecek iki iş** (ikisi de hâlâ açık): karttaki
+**`Preview questions`**'dan başvuru sorularını okuyup cevapları hazırlamak,
+ve tester'lardan **yazılı geri bildirim** toplamak (başvuru "testi nasıl
+yürüttün" diye soruyor).
+
+#### ✅ "12" TAVAN — kapandı (6 Eylül 2026, kullanıcı tespiti)
+
+Kullanıcı, Console'a bakarak kapattı: *"12 kişi Tavan, google daha fazla
+olsa bile gerçek sayıyı göstermiyor."* Yani kart `min(gerçek, 12)`
+gösteriyor; 2 Eylül'deki sezgisi (*"12'den fazla katılım olduğunu
+düşünüyorum"*) doğruymuş.
+
+Eski kayıt iki tezi yan yana tutuyordu ve ayırt edici gözlem olarak
+*"sayının 12'nin ÜSTÜNE çıktığının bir kez görülmesi"*ni işaret ediyordu.
+**O gözlem hiçbir zaman gerçekleşemezdi** — tavan tam da onu engelliyor.
+Ayırt etme yöntemi olarak yanlış seçilmişti; doğru kaynak baştan beri
+Console'un kendisiydi ve ona yalnızca kullanıcı bakabiliyor (bu oturumların
+Play Console erişimi YOK).
+
+**Pratik sonucu — kartın sayısı bir kapasite ölçüsü DEĞİL:**
+
+| Soru | Kart cevaplıyor mu |
+|---|---|
+| Şart sağlanıyor mu (≥12)? | ✅ evet, 12 yazıyorsa sağlanıyor |
+| Kaç kişi var, payımız ne kadar? | ❌ hayır, 12'de sabitleniyor |
+| Biri düşerse eşiğin altına iner miyiz? | ❌ karttan ANLAŞILMAZ |
+
+Son satır önemli: *"biri düşerse sayaç sıfırlanır"* endişesi kartla
+yanıtlanamaz, çünkü kart payı gizliyor. Gerçek katılım için **Test →
+Closed testing → (track) → Testers** (izin listesi) ve **Statistics**
+(indirme) sekmelerine bakılmalı — ikisi de yukarıda tarif edildi.
+
+Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
+
 
 ## 31. Davet linki `use_count`'u gerçeğin ~12 katı — ✅ **YAPILDI** (sunucu 18 Eylül · istemci 19 Eylül 2026)
 

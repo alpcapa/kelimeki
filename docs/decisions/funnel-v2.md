@@ -1,9 +1,10 @@
 # Ölçüm v2 — tek olay tablosu, tüm platformlar (PLAN, 24 Eylül 2026)
 
-> Durum: **PLAN — kodu yazılmadı.** Kullanıcı kararı (24 Eylül 2026):
-> *"Kendi tablomuz ve (a), planı yaz. Ayrıca tabloda revisit de görmek
-> istiyorum. 2+ kaç kişi?"* Bu dosya uygulanırken güncellenir; bittiğinde
-> "PLAN" başlığı kalkar ve dosya bir karar kaydına döner.
+> Durum: **PR 1 (sunucu + web) YAPILDI, gizlilik metni yarısı ve mobil
+> BEKLİYOR** (24 Eylül 2026). Kullanıcı kararı: *"Kendi tablomuz ve (a),
+> planı yaz. Ayrıca tabloda revisit de görmek istiyorum. 2+ kaç kişi?"* Bu
+> dosya uygulanırken güncellenir; bittiğinde "PLAN" başlığı kalkar ve dosya
+> bir karar kaydına döner. Uygulamanın kaydı: aşağıda "PR 1 — ne yapıldı".
 
 ## Neden
 
@@ -139,6 +140,53 @@ uygulama: `anonId` ya da onboarding bayrağı zaten var) `land` satırı
    kaldırılır (`admin_source_funnel` + tablo bileşeni). `guest_visits`
    KALIR (cihaz/OS tabloları onu kullanıyor), `game_starts`/`game_finishes`
    kendi admin kullanımları taranıp karar verilir.
+
+## PR 1 — ne yapıldı (24 Eylül 2026)
+
+**Gizlilik metni PR 1'e GİREMEDİ — plan ikiye bölündü** (kullanıcı kararı:
+*"ikiye böl"*). Metni değiştirmek "Son güncelleme" tarihini değiştirmek
+demek; `mobile/app/test/legal_text_test.dart` port kopyasının tarihini web
+kaynağından okuyup karşılaştırıyor, yani `legal_modals.dart` da AYNI PR'da
+değişmeli → `mobile/app/` → mobil derleme → dondurma (ROADMAP #33 aynı
+duvara çarpmıştı). Çözüm: web YALNIZCA metnin bugün zaten saydığı olayları
+yazar — (1) her ziyaret → `land`/`visit`, (2) YZ oyunu başlangıcı (girişli
+dahil) → `game_start`, (4) misafir bitişi → `game_finish`. `signup` ve üye
+bitişi `FUNNEL_MEMBER_EVENTS_ENABLED` bayrağının arkasında; çağrı yerleri
+(`AuthModal`, `App.tsx`) hazır. Kalan iş: ROADMAP **#36**.
+⚠ Bu arada admin tablosunun **Üye** sütunu "—" gösterir ve **Bitiren**
+yalnızca misafir bitişini sayar (tablonun altındaki not ve `?` metni söylüyor).
+
+**Uygulanan kararlar (plandan ayrılan ya da planın açık bıraktığı):**
+
+- **Gün sunucuda hesaplanır** (`now() at time zone 'Europe/Istanbul'`),
+  istemci gün göndermez. İstemcinin günde-bir damgası da İstanbul günüyle
+  (sabit UTC+3) tutulur — UTC tarihiyle tutulsaydı 00:00-03:00 arası açılış
+  bir önceki günün damgasına takılıp kaybolurdu.
+- **Birincil anahtar uuid, sıralı DEĞİL** ve `created_at` YOK: artan bir
+  sayı gün içindeki sırayı, dolayısıyla `profiles.created_at` ile
+  eşleştirmeyi geri getirirdi (planın "saat değil gün" gerekçesinin aynısı).
+- **"Önceden iz var mı"** = `kelimeki` önekli herhangi bir `localStorage`
+  anahtarı ya da Supabase oturumu, bu sayfa HİÇBİR ŞEY yazmadan okunur
+  (`?ref=` yakalaması da bir `kelimeki:` anahtarı yazdığı için ondan ÖNCE).
+  Huni v2'nin kendi anahtarları (`funnel-v2:*`) bilerek öneksiz: iz
+  sayılsalardı yarıda kalan bir `land` ikinci yüklemede "mevcut"a dönerdi.
+- **Land kanalı ilk kararda DONAR**, gönderim düşerse aynı kanalla tekrar
+  denenir (`planLand`).
+- **Bot:** planın "ilk sürümde filtre yok"u Instagram ön-yüklemesi gibi
+  TAHMİNE dayalı süzgeç içindi. Kendini bot olarak TANITAN istemci
+  (`isBotUserAgent`) ve `navigator.webdriver` yazılmaz: bir kohort hunisinde
+  hiçbiri "gelen kişi" değil. `guest_visits` botları damgalı saklamaya devam
+  ediyor, kıyas oradan yapılabilir.
+- **7 günlük terk yolu `game_finish` DEĞİL** — süre dolması "bitirdi" demek
+  değil. Canlı oyun başlangıcı da yazılmıyor (metnin (2)'si yalnızca YZ
+  oyununu sayıyor; Canlı zaten üyelik ister).
+- **Taşma freni:** cihaz başına günde 200 satır (uç `anon`a açık).
+- `mevcut` satırları RPC'den döner, istemci kohort toplamına katmaz; tablonun
+  altında "Eski cihaz (kohort dışı)" olarak görünür (yayın sonrası ilk
+  günlerde `guest_visits` ile kıyaslamak için).
+- Kapı: `npm run verify-funnel-events` (CI'da) — saf kararlar, olay/platform
+  listelerinin SQL ↔ TS birebirliği, bayrağın metin güncellenmeden açılamaması,
+  `main.tsx`'te çağrının kapı kararından önce durması.
 
 ## Açık sorular (uygulamaya başlarken)
 
