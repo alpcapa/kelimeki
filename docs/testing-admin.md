@@ -850,6 +850,9 @@ Uygulama 20/10, Instagram 9/3, Direkt 7/5 — birebir).
       2+ Gün · Oyun / Üye. Gelen/Başlatan/Bitiren sütunları GÖRÜNMEMELİ.
 - [ ] **Yüzdeler Üye'ye göre** ve hiçbiri %100'ü aşmıyor.
 - [ ] **`app` etiketi "Mobil Uygulama" satırında** (Diğer'de DEĞİL).
+- [ ] **Üye getirmeyen kanal 0 ile görünüyor:** Facebook satırı (bugün hiç
+      üye getirmedi) Üye 0, Oyun / Üye "—" ile en altta; Diğer/Bilinmiyor
+      yalnızca veri varsa çıkıyor.
 - [ ] **Yeni üye:** misafirken bir oyun bitirip kayıt ol → kendi etiketinin
       satırında Üye +1; hesapla bir oyun bitirince Oynayan ve 7 Günde +1.
 - [ ] **CSV:** Kanal, Kaynak ve beş sütun; TOPLAM satırı var.

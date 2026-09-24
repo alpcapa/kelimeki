@@ -86,6 +86,10 @@ check('ikisi AYRI kanal', sourceChannel('direkt') !== sourceChannel('bilinmiyor'
   check('app → Mobil Uygulama grubu', gruplar.find((g) => g.channel === 'uygulama')?.label === 'Mobil Uygulama');
   check('en büyük kanal ÖNCE', gruplar[0].channel === 'arkadas');
   check('hiçbir satır DÜŞMEZ', gruplar.reduce((a, g) => a + g.sources.length, 0) === 6);
+  const fb = gruplar.find((g) => g.channel === 'facebook');
+  check('üye getirmeyen Facebook 0 ile GÖRÜNÜR', fb?.members === 0 && fb.sources.length === 0);
+  check('sıfır satırlar EN SONDA', gruplar[gruplar.length - 1].members === 0);
+  check('Diğer/Bilinmiyor veri yoksa ÇIKMAZ', !gruplar.some((g) => g.channel === 'diger' || g.channel === 'bilinmiyor'));
   check('genel toplam korunur', gruplar.reduce((a, g) => a + g.members, 0) === 65);
 }
 

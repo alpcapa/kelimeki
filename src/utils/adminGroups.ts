@@ -117,6 +117,16 @@ const MEMBER_QUALITY_KEYS = [
   'games',
 ] as const satisfies readonly (keyof MemberQualityTotals)[];
 
+/** Üye getirmese de satırı her zaman çizilen kanallar. */
+export const MEMBER_QUALITY_ALWAYS: readonly SourceChannel[] = [
+  'instagram',
+  'facebook',
+  'linkedin',
+  'arkadas',
+  'uygulama',
+  'direkt',
+];
+
 /**
  * Üye Kalitesi satırlarını kanal gruplarına toplar.
  *
@@ -128,11 +138,20 @@ export function groupMemberQuality(
   rows: ReadonlyArray<MemberQualityTotals & { source: string }>,
 ): MemberQualityChannelGroup[] {
   const gruplar = new Map<SourceChannel, MemberQualityChannelGroup>();
+  const bos = (ch: SourceChannel): MemberQualityChannelGroup => ({
+    members: 0, players: 0, players_7d: 0, returning_players: 0, games: 0,
+    channel: ch, label: SOURCE_CHANNEL_LABEL[ch], sources: [],
+  });
+  // Bilinen pazarlama kanalları üye getirmese de 0 ile GÖRÜNÜR (24 Eylül
+  // 2026, kullanıcı isteği) — satırın yokluğu "ölçülmedi" gibi okunuyordu,
+  // oysa "bu kanal hiç üye getirmedi" bir bulgu. `diger`/`bilinmiyor` bir
+  // kanal değil, yalnızca veri varsa çıkar.
+  for (const ch of MEMBER_QUALITY_ALWAYS) gruplar.set(ch, bos(ch));
   for (const r of rows) {
     const ch = sourceChannel(r.source);
     let g = gruplar.get(ch);
     if (!g) {
-      g = { members: 0, players: 0, players_7d: 0, returning_players: 0, games: 0, channel: ch, label: SOURCE_CHANNEL_LABEL[ch], sources: [] };
+      g = bos(ch);
       gruplar.set(ch, g);
     }
     for (const k of MEMBER_QUALITY_KEYS) g[k] += r[k];

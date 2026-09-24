@@ -1329,5 +1329,9 @@ farklı İstanbul gününde oyun bitiren) · Oyun / Üye.
 - `app` etiketi (mobil kayıtlar) artık kendi kanalında: "Mobil Uygulama"
   (`sourceChannel`, TAM eşleşme — `apple`/`app-store` yutulmasın;
   `verify-admin-groups` kilitliyor).
+- Bilinen kanallar (`MEMBER_QUALITY_ALWAYS`: Instagram, Facebook,
+  LinkedIn, Arkadaş, Mobil Uygulama, Direkt) üye getirmese de 0 ile
+  çiziliyor (kullanıcı isteği) — ölçüldüğü gün Facebook hiç üye
+  getirmemişti ve satırın yokluğu "ölçülmedi" gibi okunuyordu.
 - `admin_source_funnel` veritabanında DURUYOR ama çağrılmıyor (geri dönüş
   yolu).

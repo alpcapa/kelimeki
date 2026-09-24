@@ -570,6 +570,12 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <b>Huni v2</b>'de.
         <br />
         <br />
+        <b>Instagram, Facebook, LinkedIn, Arkadaş Daveti, Mobil Uygulama ve Direkt her zaman
+        görünür</b> — pencerede hiç üye getirmediyse 0 ile. Satırın yokluğu "ölçülmedi" gibi
+        okunurdu; 0 ise bir bulgu. Gelen ziyaretçisi olup üye getirmeyen bir kanalın ziyaret
+        tarafı Huni v2'de.
+        <br />
+        <br />
         <b>Mobil Uygulama</b> = uygulamadan açılan hesaplar (etiket <code>app</code>).{' '}
         <b>Bilinmiyor</b> = etiketsiz hesap (etiketleme 16 Ağustos 2026'da başladı). Satıra
         tıkla, ham <code>?ref=</code> etiketleri açılır. CSV her zaman ham sayı indirir.
@@ -2265,7 +2271,8 @@ function MemberQualityTable({
           <tbody>
             {gruplar.map((g) => {
               const open = acik.has(g.channel);
-              // Tek etiketli kanalda ok GÖSTERİLMEZ: açılınca aynı sayıyı bir kez daha yazardı.
+              // Tek etiketli kanalda ok GÖSTERİLMEZ: açılınca aynı sayıyı bir
+              // kez daha yazardı. Sıfır satırın (üye getirmeyen kanal) etiketi yok.
               const acilir = g.sources.length > 1;
               return (
                 <Fragment key={g.channel}>
