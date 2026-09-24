@@ -1510,7 +1510,7 @@ export default function App() {
         {/* "Yerel uygulama mağazada" şeridi — telefonda (iOS/Android) HER
             yerde, tarayıcıda da ana ekrandan açılışta da. AKIŞIN EN ÜSTÜNDE:
             içeriği aşağı iter, logoyu ÖRTMEZ (bkz. AppStoreStrip'in başlığı). */}
-        <AppStoreStrip />
+        <AppStoreStrip userId={user?.id ?? null} authLoading={authLoading} />
         <div
           className={`w-full max-w-[460px] flex items-center px-3.5 pt-3 ${
             showTanitimLink ? 'justify-between' : 'justify-end'

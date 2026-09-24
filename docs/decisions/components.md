@@ -243,7 +243,22 @@ Setup'ta footer'da duruyorlar, kaydırmayan görmüyor (davet sayfasında
 
 **Dört kural:**
 
-1. **24 Eylül 2026 akşamından beri telefonda HER YERDE** (iOS dahil,
+1. **İki istisna (24 Eylül 2026, aynı akşam, kullanıcı: *"Apple'ın kendi
+   banner'ı ile ikisi birlikte fazla olacak"* + *"app yüklü insanlara
+   çıkartmama şansımız var mı?"*):** (a) iOS'un GERÇEK Safari'sinde ÇIKMAZ —
+   Apple'ın Smart App Banner'ı orada zaten var (uygulama yüklüyse "AÇ" da
+   diyor). Banner sayfadan GÖRÜLEMEZ; nerede çıktığı UA'dan çıkarılıyor
+   (`isIosSafari`: standalone değil + `Safari/` var + CriOS/FxiOS/GSA/
+   Instagram/FBAN… yok). Kör noktalar ikisi de "uyarı yok" yönünde:
+   `SFSafariViewController` Safari'yle aynı UA'yı taşıyor, ve Apple
+   banner'ını ✕'leyene bir süre göstermiyor. (b) Girişli kullanıcının
+   `push_tokens`ta satırı varsa ÇIKMAZ (`userHasAppInstall`, `api.ts`) —
+   uygulamaya giriş yapmış demek. 24 Eyl'de 64 üyenin 14'ü. Misafirde
+   iOS'ta yüklü uygulamayı sormanın yolu YOK; Android'de
+   `getInstalledRelatedApps` var ama uygulamanın manifestine
+   `asset_statements` ister (mobil iş, ROADMAP §26). Karar saf:
+   `shouldShowStoreStrip`; kapı `verify-store-badges` (gerçek UA'larla).
+   Kalan kural: **24 Eylül 2026 akşamından beri telefonda HER YERDE** (iOS dahil,
    tarayıcıda da): "ana ekrana ekle" kutusu kaldırıldı, şerit tek çağrı
    (yukarıda `AddToHomeScreen`). iOS Safari'de Apple'ın banner'ıyla üst üste
    görünebilir; ikisi de App Store'a gönderdiği için kabul edildi. Önceki

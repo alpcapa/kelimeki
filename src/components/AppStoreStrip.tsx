@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { getDeviceType } from '../utils/visitTracking';
-import { storeForDevice } from '../utils/storeLinks';
+import { getDeviceType, isStandaloneDisplay } from '../utils/visitTracking';
+import { shouldShowStoreStrip, storeForDevice } from '../utils/storeLinks';
+import { userHasAppInstall } from '../lib/api';
 
 /**
  * Ana ekrandan açılan uygulamada (standalone PWA) üstte çıkan "yerel uygulama
@@ -32,6 +33,11 @@ import { storeForDevice } from '../utils/storeLinks';
  *    görünebilir, ama ikisi de AYNI yere (App Store) gönderiyor, çelişki
  *    yok; Apple'ınki uygulama-içi tarayıcılarda (WhatsApp/Instagram)
  *    çizilmiyor, davet linkleri de tam oradan açılıyor.
+ *    **Aynı akşam iki istisna** (kullanıcı: *"ikisi birlikte fazla
+ *    olacak"* + *"app yüklü insanlara çıkartmama şansımız var mı?"*):
+ *    iOS'un GERÇEK Safari'sinde ÇIKMAZ (Apple'ınki orada — `isIosSafari`),
+ *    ve girişli kullanıcının `push_tokens`ta satırı varsa ÇIKMAZ
+ *    (`userHasAppInstall`). Karar saf: `shouldShowStoreStrip`.
  * 2. **Yalnızca o cihazın mağazası YAYINDAYSA** (`storeForDevice`). Play
  *    yayına girene kadar Android'de hiç çizilmez; URL dolunca kendiliğinden
  *    belirir. Masaüstünde hiç çıkmaz — kurulacak yerel uygulama yok.
@@ -60,17 +66,44 @@ function dismissedThisSession(): boolean {
   }
 }
 
-export function AppStoreStrip() {
+/**
+ * `userId`/`authLoading` App.tsx'ten — ⚠ bağımlılık `user` NESNESİ değil
+ * `user?.id` (kök CLAUDE.md, `verify-auth-user-identity`).
+ */
+export function AppStoreStrip({ userId, authLoading }: { userId: string | null; authLoading: boolean }) {
   const [visible, setVisible] = useState(false);
   const [store] = useState(() => storeForDevice(getDeviceType()));
 
   useEffect(() => {
     if (!store || dismissedThisSession()) return;
-    // İlk boyamada sıçramasın diye kısa gecikme; açılışta zaten
-    // sözlük/oturum yükleniyor.
-    const t = setTimeout(() => setVisible(true), 900);
-    return () => clearTimeout(t);
-  }, [store]);
+    // Oturum henüz bilinmiyorsa BEKLE: uygulaması kurulu bir üyeye şerit
+    // bir an görünüp kaybolmasın.
+    if (authLoading) return;
+    let iptal = false;
+    let t: ReturnType<typeof setTimeout> | undefined;
+    const karar = (hasAppInstall: boolean | null) => {
+      if (iptal) return;
+      const goster = shouldShowStoreStrip({
+        cihaz: getDeviceType(),
+        standalone: isStandaloneDisplay(),
+        ua: typeof navigator === 'undefined' ? '' : navigator.userAgent || '',
+        hasAppInstall,
+      });
+      if (!goster) {
+        setVisible(false);
+        return;
+      }
+      // İlk boyamada sıçramasın diye kısa gecikme; açılışta zaten
+      // sözlük/oturum yükleniyor.
+      t = setTimeout(() => setVisible(true), 900);
+    };
+    if (userId) void userHasAppInstall(userId).then(karar);
+    else karar(null);
+    return () => {
+      iptal = true;
+      if (t) clearTimeout(t);
+    };
+  }, [store, userId, authLoading]);
 
   const dismiss = () => {
     setVisible(false);

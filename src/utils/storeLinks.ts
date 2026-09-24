@@ -192,6 +192,50 @@ export function storeForDevice(cihaz: 'ios' | 'android' | 'desktop'): StoreBadge
 }
 
 /**
+ * Bu sayfa iOS'un GERÇEK Safari'sinde mi açık — yani Apple'ın Smart App
+ * Banner'ının (`<meta name="apple-itunes-app">`) çıkacağı tek yer mi?
+ *
+ * 24 Eylül 2026, kullanıcı: *"Apple'ın kendi banner'ı ile ikisi birlikte
+ * fazla olacak… İkisi de aynı şeyi söylüyor."* Banner tarayıcının kendi
+ * parçası, sayfa onu GÖREMEZ; ama nerede çıktığı belli: yalnızca iOS
+ * Safari'de. Ana ekrandan açılışta (standalone), Chrome/Firefox/Edge/
+ * Opera/Google uygulamasında ve uygulama-içi tarayıcılarda (Instagram,
+ * Facebook… — bunlar WKWebView, UA'larında `Safari/` bile YOK) çıkmaz.
+ *
+ * ⚠ **İki bilinen kör nokta, ikisi de "uyarı YOK" yönünde:** (1) bazı
+ * uygulamalar linki `SFSafariViewController`da açıyor; UA'sı Safari'yle
+ * BİREBİR aynı, ama Smart App Banner orada çıkmayabilir. (2) Apple'ın
+ * banner'ını ✕ ile kapatana Apple onu bir süre göstermiyor; biz de. Kullanıcı
+ * "fazla uyarı"yı "eksik uyarı"dan kötü saydı.
+ * ⚠ iPadOS 13+ Safari kendini `Macintosh` diye tanıtır — o yüzden cihaz
+ * `getDeviceType()`ten gelir, burada ayrıca iPhone/iPad ARANMAZ.
+ */
+export function isIosSafari(cihaz: 'ios' | 'android' | 'desktop', standalone: boolean, ua: string): boolean {
+  if (cihaz !== 'ios' || standalone) return false;
+  if (!/Safari\//.test(ua)) return false; // WKWebView (uygulama-içi tarayıcı)
+  return !/CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|Twitter|Snapchat|LinkedInApp|Pinterest|TikTok|musical_ly|Bytedance/.test(ua);
+}
+
+/**
+ * Mağaza şeridi (`AppStoreStrip`) gösterilsin mi — tek karar, saf.
+ * `hasAppInstall`: girişli kullanıcının `push_tokens`ta satırı var mı
+ * (`null` = bilinmiyor/misafir → yüklü DEĞİL sayılır).
+ */
+export function shouldShowStoreStrip(opts: {
+  cihaz: 'ios' | 'android' | 'desktop';
+  standalone: boolean;
+  ua: string;
+  hasAppInstall: boolean | null;
+  badges?: StoreBadge[];
+}): boolean {
+  const key: StoreKey | null = opts.cihaz === 'ios' ? 'appStore' : opts.cihaz === 'android' ? 'googlePlay' : null;
+  if (!key || !(opts.badges ?? STORE_BADGES).find((b) => b.key === key)?.url) return false;
+  if (isIosSafari(opts.cihaz, opts.standalone, opts.ua)) return false; // Apple'ınki zaten orada
+  if (opts.hasAppInstall === true) return false; // uygulama bu hesapta en az bir cihazda kurulu
+  return true;
+}
+
+/**
  * Yayındaki mağazaların Türkçe adı, bulunma ekiyle — "App Store'da",
  * "Google Play'de", "App Store ve Google Play'de"; hiçbiri yayında değilse
  * `null`.

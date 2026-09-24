@@ -20,6 +20,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import {
   APPLE_APP_ID,
   storeForDevice,
+  isIosSafari,
+  shouldShowStoreStrip,
   appleSmartAppBannerMeta,
   BADGE_GAP_PX,
   BADGE_MIN_HEIGHT_PX,
@@ -283,7 +285,39 @@ console.log('storeLinks — mağaza rozetleri');
   check("App Store ifadesi 'App Store\'da'", strip.includes("App Store'da"));
   // 24 Eylül 2026, kullanıcı kararı: "ana ekrana ekle" kutusu TAMAMEN
   // kaldırıldı; telefonda tek uygulama çağrısı bu şerit, tarayıcıda da.
-  check('şerit tarayıcıda da çıkıyor (standalone kapısı YOK)', !strip.includes('isStandaloneDisplay'));
+  check('şerit kararı `shouldShowStoreStrip`ten (tek saf karar)', strip.includes('shouldShowStoreStrip('));
+  check('girişli kullanıcıda `userHasAppInstall` soruluyor', strip.includes('userHasAppInstall(userId)'));
+
+  // Gerçek UA'lar (iOS 17/18). Apple'ın Smart App Banner'ı YALNIZCA iOS
+  // Safari'de çıkar → orada bizim şerit SUSAR; öteki her yerde çıkar.
+  const UA = {
+    safari: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+    ipadSafari: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
+    chromeIos: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/129.0.6668.46 Mobile/15E148 Safari/604.1',
+    firefoxIos: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/131.0 Mobile/15E148 Safari/605.1.15',
+    googleApp: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/335.0.671992561 Mobile/15E148 Safari/604.1',
+    instagram: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0.30.94 (iPhone15,2; iOS 18_0; tr_TR; tr; scale=3.00; 1179x2556; 634108168)',
+    facebook: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/482.0.0.40.108;FBBV/650000000;FBDV/iPhone15,2;FBMD/iPhone;FBSN/iOS;FBSV/18.0;FBSS/3;FBCR/;FBID/phone;FBLC/tr_TR;FBOP/5]',
+    android: 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36',
+  };
+  check('iOS Safari → Apple banner\'ı var', isIosSafari('ios', false, UA.safari));
+  check('iPadOS Safari (Macintosh UA) → Apple banner\'ı var', isIosSafari('ios', false, UA.ipadSafari));
+  check('iOS Safari ama ana ekrandan → Apple banner\'ı YOK', !isIosSafari('ios', true, UA.safari));
+  for (const ad of ['chromeIos', 'firefoxIos', 'googleApp', 'instagram', 'facebook'] as const) {
+    check(`iOS ${ad} → Apple banner'ı YOK`, !isIosSafari('ios', false, UA[ad]));
+  }
+  const yayin = STORE_BADGES.map((b) => ({ ...b, url: b.url ?? 'https://x' }));
+  const s = (cihaz: 'ios' | 'android' | 'desktop', standalone: boolean, ua: string, hasAppInstall: boolean | null) =>
+    shouldShowStoreStrip({ cihaz, standalone, ua, hasAppInstall, badges: yayin });
+  check('iOS Safari → şerit YOK (Apple\'ınki çıkıyor)', !s('ios', false, UA.safari, null));
+  check('iOS Instagram → şerit VAR', s('ios', false, UA.instagram, null));
+  check('iOS ana ekrandan → şerit VAR', s('ios', true, UA.safari, null));
+  check('Android tarayıcı → şerit VAR', s('android', false, UA.android, null));
+  check('masaüstü → şerit YOK', !s('desktop', false, 'Mozilla/5.0 (Windows NT 10.0)', null));
+  check('uygulaması kurulu üye → şerit YOK (Android)', !s('android', false, UA.android, true));
+  check('uygulaması kurulu üye → şerit YOK (iOS Instagram)', !s('ios', false, UA.instagram, true));
+  check('sorgu düştü (null) → yüklü DEĞİL sayılır, şerit VAR', s('android', false, UA.android, null));
+  check('mağaza yayında değil → şerit YOK', !shouldShowStoreStrip({ cihaz: 'android', standalone: false, ua: UA.android, hasAppInstall: null, badges: STORE_BADGES.map((b) => ({ ...b, url: null })) }));
   check('"ana ekrana ekle" kutusu silindi', !existsSync('src/components/AddToHomeScreen.tsx'));
   check('App.tsx kutuyu çizmiyor', !readFileSync('src/App.tsx', 'utf8').includes('AddToHomeScreen'));
   check(
