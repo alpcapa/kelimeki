@@ -882,6 +882,16 @@ export interface AdminSourceFunnelRow {
    * yalnızca CSV'de görünür.
    */
   players: number;
+  /**
+   * KOHORT (24 Eylül 2026): pencerede o kaynak damgasıyla ÜYE OLANLARDAN
+   * (`signups` ile AYNI küme) bugüne kadar EN AZ BİR oyun bitirmiş olan sayısı
+   * (`games`). `players`tan farkı: o, pencerede oynayan ESKİ üyeleri de sayar
+   * (ölçüldü, 30 gün `arkadas`: 6 üye / 15 players → %250). Bu ise tanım
+   * gereği `signups`tan büyük olamaz — panelin "Oynayan Üye" sütunu budur.
+   * Neden gerekli: davetle gelen ÖNCE üye olup SONRA oynar, oyunları misafir
+   * sütunlarına (`starts`/`finishes`) hiç düşmez.
+   */
+  signup_players: number;
 }
 
 /**

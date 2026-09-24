@@ -65,7 +65,7 @@ check('ikisi AYRI kanal', sourceChannel('direkt') !== sourceChannel('bilinmiyor'
 
 {
   console.log('Huni gruplama — kanal toplamı alt satırların TOPLAMI');
-  const bos = { starts: 0, starters: 0, signups: 0, finishes: 0, finishers: 0, member_games: 0, players: 0 };
+  const bos = { starts: 0, starters: 0, signups: 0, finishes: 0, finishers: 0, member_games: 0, players: 0, signup_players: 0 };
   const gruplar = groupSourceFunnel([
     { source: 'instagram', visitors: 1642, ...bos },
     { source: 'ig-bio', visitors: 5, ...bos },

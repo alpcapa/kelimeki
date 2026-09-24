@@ -460,6 +460,25 @@ başlatmış, kaçı oyun bitirmiş… Ayrıca başlayan, biten oyun ve ortalama
   ise "bilinmiyor". Port iki tarafa da `anon_id` yazmıyor (`app` satırı: 73
   oyun, 0 cihaz), bitiş tarafı 31 Ağustos'tan önce hiç yazmıyordu.
 
+**Aynı gün ikinci tur — "Oynayan Üye" (`signup_players`, migration
+`20260924125439_source_funnel_signup_players`).** Kullanıcı: *"arkadaş
+davetinden gelen 31 kişinin 26'sı üye olmuş fakat 4'ü oyun başlatıp hiçbiri
+bitirmemiş — bu mümkün mü?"* Mümkün: davetle gelen ÖNCE üye olur (isteği
+kabul etmek hesap ister), SONRA oynar; misafir sütunları onu hiç görmez.
+Ölçüldü (90 gün): 26 üyenin 17'si oynamış, 1.348 oyun.
+
+- **Mevcut `players` KULLANILAMADI:** pencere OYUN tarihine uygulanıyor,
+  yani pencerede oynayan eski üyeleri de sayıyor (30 gün Arkadaş: 6 üye /
+  15 players → %250). Yeni kolon bir KOHORT: pencerede üye olanlardan
+  bugüne kadar en az bir oyun (`games`, bitmiş) bitirmiş olan →
+  `signup_players <= signups`.
+- **Yüzdesinin tabanı ÜYE**, tablodaki tek istisna (öteki sütunlar Gelen'e
+  göre) — "gelenlerin yüzde kaçı oynayan üye oldu" değil "üye olanların
+  yüzde kaçı oynadı" sorusu soruldu.
+- Dönüş tipi değiştiği için drop + create; `proacl` öncesi/sonrası birebir
+  (`postgres, authenticated, service_role` — `anon` YOK), `security
+  definer` + `search_path` elle geri kuruldu.
+
 ## Tanıtım Turu kartı (Onboarding Faz 5, 8 Eylül 2026)
 
 Büyüme > Kullanıcı → Kaynak Hunisi'nin hemen altında. Kaynak
