@@ -16,7 +16,7 @@ import {
   clientPlatformLabel,
   compareVersionDesc,
   groupPlatformVersions,
-  groupSourceFunnel,
+  groupMemberQuality,
   sourceChannel,
 } from '../src/utils/adminGroups';
 
@@ -36,6 +36,8 @@ for (const [tag, beklenen] of [
   ['li-buton', 'linkedin'], ['li-deneyim', 'linkedin'], ['linkedin', 'linkedin'],
   ['arkadas', 'arkadas'],
   ['direkt', 'direkt'],
+  // Mobilden açılan hesabın kayıt etiketi (`backfill_app_source_history`).
+  ['app', 'uygulama'],
   // `--sanitized--` canlıda GERÇEKTEN var (1 ziyaret): istemci tarafı
   // temizleme bırakmış. "Diğer" değil "Bilinmiyor" — bir kanal adı değil,
   // kaynağın kaybolduğunun kaydı.
@@ -56,6 +58,8 @@ check('li_post LinkedIn', sourceChannel('li_post') === 'linkedin');
 check('ig_story Instagram', sourceChannel('ig_story') === 'instagram');
 check('facebook.grup Facebook', sourceChannel('facebook.grup') === 'facebook');
 check('tanınmayan kanal UYDURULMAZ → Diğer', sourceChannel('tiktok') === 'diger');
+check('app TAM eşleşme: apple Uygulama DEĞİL', sourceChannel('apple') === 'diger');
+check('app TAM eşleşme: app-store Uygulama DEĞİL', sourceChannel('app-store') === 'diger');
 check('null → Bilinmiyor', sourceChannel(null) === 'bilinmiyor');
 check('boş dize → Bilinmiyor', sourceChannel('   ') === 'bilinmiyor');
 check('BÜYÜK harf de eşleşir', sourceChannel('Instagram') === 'instagram');
@@ -64,28 +68,25 @@ console.log('direkt ≠ bilinmiyor (huninin 16 Ağustos 2026 kararı)');
 check('ikisi AYRI kanal', sourceChannel('direkt') !== sourceChannel('bilinmiyor'));
 
 {
-  console.log('Huni gruplama — kanal toplamı alt satırların TOPLAMI');
-  const bos = { starts: 0, starters: 0, signups: 0, finishes: 0, finishers: 0, member_games: 0, players: 0, signup_players: 0 };
-  const gruplar = groupSourceFunnel([
-    { source: 'instagram', visitors: 1642, ...bos },
-    { source: 'ig-bio', visitors: 5, ...bos },
-    { source: 'arkadas', visitors: 50, ...bos },
-    { source: 'fb-reel', visitors: 5, ...bos },
-    { source: 'fb', visitors: 1, ...bos },
-    { source: 'fb-btn', visitors: 1, ...bos },
-    { source: '--sanitized--', visitors: 1, ...bos },
+  console.log('Üye Kalitesi gruplama — kanal toplamı alt satırların TOPLAMI');
+  // Sayılar canlıdan (24 Eylül 2026, son 90 gün) — uydurulmadı.
+  const gruplar = groupMemberQuality([
+    { source: 'arkadas', members: 26, players: 17, players_7d: 17, returning_players: 15, games: 1352 },
+    { source: 'app', members: 20, players: 10, players_7d: 9, returning_players: 8, games: 85 },
+    { source: 'instagram', members: 9, players: 3, players_7d: 3, returning_players: 1, games: 165 },
+    { source: 'ig-bio', members: 2, players: 1, players_7d: 1, returning_players: 0, games: 4 },
+    { source: 'direkt', members: 7, players: 5, players_7d: 4, returning_players: 3, games: 298 },
+    { source: 'li-profil', members: 1, players: 1, players_7d: 1, returning_players: 0, games: 2 },
   ]);
   const ig = gruplar.find((g) => g.channel === 'instagram');
-  const fb = gruplar.find((g) => g.channel === 'facebook');
-  check('Instagram = 1642 + 5', ig?.visitors === 1647, `gelen=${ig?.visitors}`);
-  check('Facebook = 5 + 1 + 1', fb?.visitors === 7, `gelen=${fb?.visitors}`);
-  check('Facebook üç ham etiketi taşır', fb?.sources.length === 3);
-  check('en büyük kanal ÖNCE', gruplar[0].channel === 'instagram');
-  check('ham etiketler büyükten küçüğe', fb?.sources[0].source === 'fb-reel');
-  check('hiçbir satır DÜŞMEZ',
-    gruplar.reduce((a, g) => a + g.sources.length, 0) === 7);
-  check('genel toplam korunur',
-    gruplar.reduce((a, g) => a + g.visitors, 0) === 1705);
+  check('Instagram = 9 + 2 üye', ig?.members === 11, `gelen=${ig?.members}`);
+  check('Instagram oyunları da toplanır', ig?.games === 169 && ig.players === 4);
+  check('Instagram iki ham etiketi taşır', ig?.sources.length === 2);
+  check('ham etiketler büyükten küçüğe', ig?.sources[0].source === 'instagram');
+  check('app → Mobil Uygulama grubu', gruplar.find((g) => g.channel === 'uygulama')?.label === 'Mobil Uygulama');
+  check('en büyük kanal ÖNCE', gruplar[0].channel === 'arkadas');
+  check('hiçbir satır DÜŞMEZ', gruplar.reduce((a, g) => a + g.sources.length, 0) === 6);
+  check('genel toplam korunur', gruplar.reduce((a, g) => a + g.members, 0) === 65);
 }
 
 console.log('Sürüm sıralaması SAYISAL, metin DEĞİL');

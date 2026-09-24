@@ -1312,3 +1312,22 @@ Geçmiş satırlar DEĞİŞTİRİLMEDİ, çünkü o satırlar için elde tarayı
 yok. **Sonraki adım:** bir hafta sonra kovanın dökümüne bak. Süzmeye
 ("bilinen botları hiç sayma") ancak o sayılar varken karar verilir.
 
+## Kaynak Hunisi → "Kanal → Üye Kalitesi" — 24 Eylül 2026
+
+Kullanıcı: *"V1'i de farklı bir bakış açısı için modifiye edip tutmak mümkün
+mü? Rakamların anlamlı olduğu başka bir versiyon gibi."* Huni v2
+(`funnel_events`, `docs/decisions/funnel-v2.md`) misafir hunisini sıfırdan
+ölçmeye başlayınca Kaynak Hunisi'nin misafir sütunları (Gelen / Başlatan /
+Bitiren — üç ayrı anonim tablo, farklı başlangıç tarihleri) emekliye ayrıldı;
+üye yarısı yeni bir RPC'ye (`admin_member_quality`,
+`20260924151205_admin_member_quality.sql`) KOHORT olarak taşındı: pencerede
+hesap açanlar × kayıt etiketi → Üye · Oynayan · 7 Günde · 2+ Gün (iki
+farklı İstanbul gününde oyun bitiren) · Oyun / Üye.
+
+- Yukarıdaki iki Kaynak Hunisi bölümü ("Bitiren Cihaz", "Kişi / Oyun
+  görünümleri") bu tarihten itibaren TARİHÇE.
+- `app` etiketi (mobil kayıtlar) artık kendi kanalında: "Mobil Uygulama"
+  (`sourceChannel`, TAM eşleşme — `apple`/`app-store` yutulmasın;
+  `verify-admin-groups` kilitliyor).
+- `admin_source_funnel` veritabanında DURUYOR ama çağrılmıyor (geri dönüş
+  yolu).

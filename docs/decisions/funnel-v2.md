@@ -119,7 +119,8 @@ uygulama: `anonId` ya da onboarding bayrağı zaten var) `land` satırı
    (saf: olay adı/platform/kanal türetme) + `main.tsx`'te land/visit
    (kapı kararından ÖNCE — karşılama katmanı ve SPA ikisi de sayılsın) +
    signup/game_start/game_finish çağrı yerleri · yeni admin tablosu
-   ("Huni v2", Kaynak Hunisi'nin YANINDA; eskisi yerinde kalır) ·
+   ("Huni v2", Kaynak Hunisi'nin YANINDA; eskisi yerinde kalır — sonra
+   "Kanal → Üye Kalitesi"ne dönüştü, 4. adım) ·
    `npm run verify-funnel-events` · `PrivacyModal` + `/gizlilik/` metni.
 2. **PR 2 — mobil (Play #19 onayından SONRA, ilk güncelleme):** aynı RPC,
    `FlagsStore.anonId()`, ilk açılış = land, uygulama öne gelişi = visit,
@@ -136,8 +137,16 @@ uygulama: `anonId` ya da onboarding bayrağı zaten var) `land` satırı
    `marketing/play-store/console-formlari.md`.
 3. **Pazarlama kapısı:** PR 2'nin sürümü Play'de yayında + admin tablosunda
    Android land satırı görünüyor → bütçe açılır.
-4. **Emeklilik:** Huni v2 30 gün veri topladıktan sonra Kaynak Hunisi
-   kaldırılır (`admin_source_funnel` + tablo bileşeni). `guest_visits`
+4. **Emeklilik:** ~~Huni v2 30 gün veri topladıktan sonra Kaynak Hunisi
+   kaldırılır (`admin_source_funnel` + tablo bileşeni).~~ **Değişti (24 Eylül
+   2026, kullanıcı: *"V1'i de farklı bir bakış açısı için modifiye edip
+   tutmak mümkün mü?"*):** Kaynak Hunisi AYNI GÜN "Kanal → Üye Kalitesi"ne
+   dönüştü (`admin_member_quality`) — güvenilmez misafir sütunları atıldı,
+   sağlam olan üye yarısı kohort olarak kaldı (kayıt etiketi hesaba tek
+   seferlik yazılıyor, oyunlar hesaba bağlı; geçmişi de tutarlı). İki tablo
+   iki ayrı soruya bakıyor: Huni v2 "yeni gelen cihaz ne yaptı", Üye Kalitesi
+   "hangi kanal değerli üye getirdi". `admin_source_funnel` veritabanında
+   çağrılmadan duruyor. `guest_visits`
    KALIR (cihaz/OS tabloları onu kullanıyor), `game_starts`/`game_finishes`
    kendi admin kullanımları taranıp karar verilir.
 

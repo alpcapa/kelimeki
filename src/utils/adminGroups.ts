@@ -47,6 +47,7 @@ export type SourceChannel =
   | 'facebook'
   | 'linkedin'
   | 'arkadas'
+  | 'uygulama'
   | 'direkt'
   | 'diger'
   | 'bilinmiyor';
@@ -56,6 +57,7 @@ export const SOURCE_CHANNEL_LABEL: Record<SourceChannel, string> = {
   facebook: 'Facebook',
   linkedin: 'LinkedIn',
   arkadas: 'Arkadaş Daveti',
+  uygulama: 'Mobil Uygulama',
   direkt: 'Direkt',
   diger: 'Diğer',
   bilinmiyor: 'Bilinmiyor',
@@ -78,6 +80,10 @@ export function sourceChannel(source: string | null): SourceChannel {
   if (s === '' || s === 'bilinmiyor' || s === '--sanitized--') return 'bilinmiyor';
   if (s === 'direkt') return 'direkt';
   if (s === 'arkadas') return 'arkadas';
+  // `app` = mobil uygulamadan açılan hesap (`profiles.signup_utm_source`,
+  // `backfill_app_source_history`). TAM eşleşme, önek DEĞİL: `apple`,
+  // `app-store` gibi bir web etiketi yutulmasın.
+  if (s === 'app') return 'uygulama';
   if (hasPrefix(s, 'ig') || hasPrefix(s, 'instagram')) return 'instagram';
   if (hasPrefix(s, 'fb') || hasPrefix(s, 'facebook')) return 'facebook';
   // ⚠ `li` iki harf — sınır kuralı burada daha da kritik: `link`, `lig`,
@@ -87,69 +93,55 @@ export function sourceChannel(source: string | null): SourceChannel {
   return 'diger';
 }
 
-/** Gruplanmış huni satırı — alan adları `AdminSourceFunnelRow` ile birebir. */
-export interface SourceFunnelTotals {
-  visitors: number;
-  starts: number;
-  starters: number;
-  signups: number;
-  finishes: number;
-  finishers: number;
-  member_games: number;
+/** Üye Kalitesi sayıları — alan adları `AdminMemberQualityRow` ile birebir. */
+export interface MemberQualityTotals {
+  members: number;
   players: number;
-  signup_players: number;
+  players_7d: number;
+  returning_players: number;
+  games: number;
 }
 
-export interface SourceChannelGroup extends SourceFunnelTotals {
+export interface MemberQualityChannelGroup extends MemberQualityTotals {
   channel: SourceChannel;
   label: string;
   /** Ham etiketler — satır açılınca gösterilir. */
-  sources: (SourceFunnelTotals & { source: string })[];
+  sources: (MemberQualityTotals & { source: string })[];
 }
 
-const EMPTY_TOTALS: SourceFunnelTotals = {
-  visitors: 0,
-  starts: 0,
-  starters: 0,
-  signups: 0,
-  finishes: 0,
-  finishers: 0,
-  member_games: 0,
-  players: 0,
-  signup_players: 0,
-};
-
-const TOTAL_KEYS = Object.keys(EMPTY_TOTALS) as (keyof SourceFunnelTotals)[];
+const MEMBER_QUALITY_KEYS = [
+  'members',
+  'players',
+  'players_7d',
+  'returning_players',
+  'games',
+] as const satisfies readonly (keyof MemberQualityTotals)[];
 
 /**
- * Huni satırlarını kanal gruplarına toplar.
+ * Üye Kalitesi satırlarını kanal gruplarına toplar.
  *
- * ⚠ **Grubun sayısı alt satırların TOPLAMI** — cihaz tablolarındaki gibi
- * "benzersiz sayım" tuzağı burada YOK: `starters`/`finishers` benzersiz cihaz
- * sayar ama bir cihazın `utm_source`u ilk temasta DONDURULUYOR
- * (`captureUtmSource`), yani aynı cihaz iki kaynak satırında birden
- * görünemez. Bu bir varsayım değil, huninin veri modelinin kendisi;
- * değişirse (çok-temas attribution) bu toplama da bozulur.
+ * Toplamak GÜVENLİ: her üyenin TEK bir kayıt etiketi var (kayıt anında bir
+ * kez yazılır, sonra değişmez), yani bir üye iki etiket satırında birden
+ * görünemez ve benzersiz sayılar toplanabilir.
  */
-export function groupSourceFunnel(
-  rows: ReadonlyArray<SourceFunnelTotals & { source: string }>,
-): SourceChannelGroup[] {
-  const gruplar = new Map<SourceChannel, SourceChannelGroup>();
+export function groupMemberQuality(
+  rows: ReadonlyArray<MemberQualityTotals & { source: string }>,
+): MemberQualityChannelGroup[] {
+  const gruplar = new Map<SourceChannel, MemberQualityChannelGroup>();
   for (const r of rows) {
     const ch = sourceChannel(r.source);
-    const g =
-      gruplar.get(ch) ??
-      ({ ...EMPTY_TOTALS, channel: ch, label: SOURCE_CHANNEL_LABEL[ch], sources: [] } as SourceChannelGroup);
-    for (const k of TOTAL_KEYS) g[k] += r[k];
+    let g = gruplar.get(ch);
+    if (!g) {
+      g = { members: 0, players: 0, players_7d: 0, returning_players: 0, games: 0, channel: ch, label: SOURCE_CHANNEL_LABEL[ch], sources: [] };
+      gruplar.set(ch, g);
+    }
+    for (const k of MEMBER_QUALITY_KEYS) g[k] += r[k];
     g.sources.push(r);
-    gruplar.set(ch, g);
   }
   for (const g of gruplar.values()) {
-    g.sources.sort((a, b) => b.visitors - a.visitors || trCompare(a.source, b.source));
+    g.sources.sort((a, b) => b.members - a.members || trCompare(a.source, b.source));
   }
-  return [...gruplar.values()].sort(
-    (a, b) => b.visitors - a.visitors || trCompare(a.label, b.label),
-  );
+  return [...gruplar.values()].sort((a, b) => b.members - a.members || trCompare(a.label, b.label));
 }
 
 /* ─────────────────── Huni v2 (kohort, platform × kanal) ──────────────── */
