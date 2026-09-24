@@ -52,7 +52,7 @@ npm run verify-error-messages    # kullanıcıya gösterilen hata metni: ham mak
 npm run verify-auth-user-identity # oturum kimliği: aynı içerik → aynı nesne + `null` olay DEPOYA sorulmadan çıkış sayılmaz + KAYNAK TARAMASI (hiçbir effect bağımlılığı bare `user` değil — port'un `AccountScope` değişmezi)
 npm run verify-sw-update-loop    # service worker güncellemesi: yeniden yükleme DÖNGÜSÜ kapısı (derleme değişmediyse ikinci kez yükleme YOK) + çağrı yerinin kaynak taraması
 npm run verify-invite-queue      # davet kuyruğu: token RPC'den ÖNCE alınıyor mu (çift çağrı) + geçici arızada geri konuyor mu + ÇİFT YOL duruyor mu
-npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT GENİŞLİK (yükseklik değil — Türkçe Apple rozeti 3.78:1, Play 3.37:1), App Store yüksekliği ≥40px, clear space en yüksek olanın 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor
+npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT GENİŞLİK (yükseklik değil — Türkçe Apple rozeti 3.78:1, Play 3.37:1), App Store yüksekliği ≥40px, clear space en yüksek olanın 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + üst mağaza şeridi ↔ "ana ekrana ekle" kutusu TEK kararda (`decideAppPromo`)
 npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ

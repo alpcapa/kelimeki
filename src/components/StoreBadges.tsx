@@ -34,9 +34,9 @@ import { BADGE_GAP_PX, BADGE_WIDTH_PX, visibleStoreBadges } from '../utils/store
  * `storeLinks.ts`'te. Sonuç: Play biraz daha yüksek durur, bu BEKLENEN.
  *
  * ⚠ **Yayında olmayan mağaza HİÇ çizilmez** (`visibleStoreBadges`). Kapı
- * hâlâ yerinde: 15 Eylül 2026 itibarıyla **yalnız App Store** yayında, yani
- * Setup'ta TEK rozet çıkıyor; Play'inki incelemesi bitip URL'si dolunca
- * kendiliğinden yanına gelir. İkisini birden beklemeye gerek yok.
+ * hâlâ yerinde: 15-24 Eylül 2026 arası yalnız App Store yayındaydı ve
+ * Setup'ta TEK rozet çıkıyordu; 24 Eylül'de Play'in URL'si doldu, ikisi
+ * yan yana (App Store önce).
  *
  * ⚠ **`<img>` kullanılıyor, SVG inline EDİLMİYOR** — gerekçe `storeLinks.ts`
  * (Illustrator'ın `.st0` sınıfları sayfa geneline sızıp iki rozetin rengini

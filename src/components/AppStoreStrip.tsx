@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getDeviceType, isStandaloneDisplay } from '../utils/visitTracking';
-import { storeForDevice } from '../utils/storeLinks';
+import { decideAppPromo, storeForDevice } from '../utils/storeLinks';
 
 /**
  * Ana ekrandan açılan uygulamada (standalone PWA) üstte çıkan "yerel uygulama
@@ -22,10 +22,13 @@ import { storeForDevice } from '../utils/storeLinks';
  *
  * ## Üç kural
  *
- * 1. **Yalnızca standalone.** Tarayıcıda zaten Apple'ın kendi banner'ı var;
- *    ikisini birden göstermek gürültü olur. `AddToHomeScreen` bunun TAM
- *    TERSİ koşula bakıyor (`isStandaloneDisplay()` → `return`), yani ikisi
- *    yapısal olarak asla aynı anda çıkamaz.
+ * 1. **Standalone modda — ve Android'de tarayıcıda da.** iOS tarayıcısında
+ *    zaten Apple'ın kendi banner'ı var; ikisini birden göstermek gürültü
+ *    olur. Android Chrome'da öyle bir banner yok, bu yüzden Play yayına
+ *    girince (24 Eylül 2026) şerit orada tarayıcıda da çıkıyor ve
+ *    `AddToHomeScreen`in PWA kutusu çekiliyor. Karar tek yerde:
+ *    `decideAppPromo` (storeLinks.ts) — iki bileşen de onu çağırdığı için
+ *    ikisi yapısal olarak asla aynı anda çıkamaz.
  * 2. **Yalnızca o cihazın mağazası YAYINDAYSA** (`storeForDevice`). Play
  *    yayına girene kadar Android'de hiç çizilmez; URL dolunca kendiliğinden
  *    belirir. Masaüstünde hiç çıkmaz — kurulacak yerel uygulama yok.
@@ -59,7 +62,8 @@ export function AppStoreStrip() {
   const [store] = useState(() => storeForDevice(getDeviceType()));
 
   useEffect(() => {
-    if (!isStandaloneDisplay() || !store || dismissedThisSession()) return;
+    if (decideAppPromo(getDeviceType(), isStandaloneDisplay()) !== 'store-strip') return;
+    if (!store || dismissedThisSession()) return;
     // İlk boyamada sıçramasın diye kısa gecikme (AddToHomeScreen'le aynı
     // desen); açılışta zaten sözlük/oturum yükleniyor.
     const t = setTimeout(() => setVisible(true), 900);
