@@ -501,11 +501,27 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
     body: (
       <>
         <b>Bu tablo baştan sona MİSAFİR hunisidir:</b> bir kanaldan gelip{' '}
-        <b>henüz üye olmadan</b> ürünü deneyen insanları ölçer. <b>Gelen</b> = o kaynaktan gelen
-        benzersiz misafir ziyaretçi; <b>Üye</b> = o kaynak damgasıyla açılan hesap;{' '}
-        <b>Başlayan</b> = üye olmadan BAŞLATILAN yerel (YZ) oyun; <b>Biten</b> = üye olmadan
-        BİTİRİLEN yerel (YZ) oyun. Pencere her adıma KENDİ olay tarihinden uygulanır (kohort
-        değil).
+        <b>henüz üye olmadan</b> ürünü deneyen insanları ölçer. Pencere her adıma KENDİ olay
+        tarihinden uygulanır (kohort değil).
+        <br />
+        <br />
+        <b>İki görünüm var (Kişi / Oyun düğmesi):</b>
+        <br />
+        <b>Kişi</b> — soldan sağa okunan huni: <b>Gelen</b> = o kaynaktan gelen benzersiz
+        misafir; <b>Üye</b> = o kaynak damgasıyla açılan hesap; <b>Başlatan</b> = üye olmadan
+        yerel (YZ) oyun başlatan benzersiz kişi; <b>Bitiren</b> = üye olmadan en az bir yerel
+        oyunu bitiren benzersiz kişi. Sayının yanındaki yüzde HER sütunda o satırın{' '}
+        <b>Gelen</b>'ine göredir ("gelenlerin yüzde kaçı buraya ulaştı").
+        <br />
+        <b>Oyun</b> — aynı kitlenin oyun ADETLERİ: <b>Başlayan Oyun</b>, <b>Biten Oyun</b> ve{' '}
+        <b>Oyun / Kişi</b> (başlatan kişi başına başlayan oyun). Birkaç kişinin onlarca oyun
+        açtığı bir kaynağı Kişi görünümünden ayırt etmek için.
+        <br />
+        <br />
+        <b>"Kişi" = anonim cihaz kodu</b>, hesap değil. <b>"—"</b> = oyun VAR ama cihaz kodu
+        YOK: bitiş tarafına kod 31 Ağustos 2026'da eklendi (geriye dönük doldurulamaz) ve
+        mobil uygulama henüz damgalamıyor. Orada "0" yazmak "kimse oynamadı" derdi, oysa
+        gerçek "bilinmiyor".
         <br />
         <br />
         <b>Neden yalnızca misafir?</b> Aylardır oynayan bir üyenin oyunları "bu kanal işe
@@ -515,10 +531,10 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         tek kitle.
         <br />
         <br />
-        <b>Başlayan ile Biten bir ÇİFT</b> — ikisi de aynı kitleyi, aynı kapsamı (yerel/YZ) ve
-        aynı etiket sözleşmesini ölçer, o yüzden "başlayanların kaçı bitirdi" sorusu ancak bu
-        ikisiyle sorulabilir. Yerel oyunun medyan süresi 18,1 dakika olduğundan soğuk bir
-        ziyaretçi çoğu zaman oynar ama bitirmez: "Başlayan" yüksek + "Biten" 0 ise açılış
+        <b>Başlatan ile Bitiren bir ÇİFT</b> — ikisi de aynı kitleyi, aynı kapsamı (yerel/YZ)
+        ve aynı etiket sözleşmesini ölçer, o yüzden "başlayanların kaçı bitirdi" sorusu ancak
+        bu ikisiyle sorulabilir. Yerel oyunun medyan süresi 18,1 dakika olduğundan soğuk bir
+        ziyaretçi çoğu zaman oynar ama bitirmez: "Başlatan" yüksek + "Bitiren" 0 ise açılış
         sayfası çalışıyor, oyun uzun geliyor demektir; ikisi de 0 ise sorun açılış sayfasında.
         <br />
         <br />
@@ -534,24 +550,6 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         doldurulamaz</b> — o tarihten önceki başlangıçlarda "misafir miydi" bilgisi hiç
         tutulmuyordu, bu yüzden HİÇ sayılmıyorlar ve "Başlayan" bir süre düşük görünecek.
         Eski bitişler ise damgasız olduklarından "bilinmiyor" satırında toplanır.
-        <br />
-        <br />
-        Yüzde modunda <b>Üye</b> = üye / gelen. <b>Başlayan</b> = başlatan benzersiz CİHAZ /
-        gelen; <b>Gelen</b> ile aynı anonim koddan sayıldığı için bu, tablodaki tek cihaz-bazlı
-        dönüşüm oranı — <b>Üye</b> oranı ise ayrı bir kaynaktan (kayıt damgası) gelir.{' '}
-        <b>Biten</b> yüzdesi de 31 Ağustos 2026'dan beri CİHAZ üzerinden: <b>bitiren
-        benzersiz cihaz / başlatan benzersiz cihaz</b>, yani "başlayanların kaçı bitirdi"
-        (tamamlanma oranı). Oyun ADEDİ üzerinden hesaplanan eski oran tek bir cihazın açtığı
-        onlarca oyunla çarpılabiliyordu — ölçüldü: 117 oyunun 64 cihazdan geldiği bir
-        pencerede İKİ cihaz tek başına 47 oyun başlatmıştı. Taban 0 ise oran hesaplanmaz,
-        "—" gösterilir.
-        <br />
-        <br />
-        <b>"Biten" var ama yüzdesi "—" ise bu bir hata değil:</b> cihaz kodu bitmiş tarafa 31
-        Ağustos 2026'da eklendi ve <b>geriye dönük doldurulamaz</b>, ayrıca mobil uygulama
-        henüz damgalamıyor. O satırlarda oyun sayılır, cihaz sayılmaz — "0%" yazmak "hiçbir
-        cihaz bitirmedi" derdi, oysa gerçek "cihaz bilgisi yok". CSV'deki <b>Bitiren Cihaz</b>
-        sütunu ham sayıyı verir.
         <br />
         <br />
         <b>Satırlar 16 Eylül 2026'dan beri KANALA göre gruplu</b> (Instagram, Facebook,
@@ -1559,24 +1557,20 @@ function DeviceBrandTable({
  * hesaba bağlamak `PrivacyModal`daki anonimlik taahhüdünü bozardı. Bunun
  * doğal sonucu: bir satırda yalnızca ziyaretçi ya da yalnızca üye olabilir.
  *
- * `% / Sayı` düğmesi (16 Ağustos 2026, kullanıcı isteği: "basınca değerden
- * yüzdeye dönsün, basınca % sayı olsun, dönüşümlü çalışsın") üç sütunu birden
- * çevirir. Düğme iki etiketi de gösterip aktif olanı vurguluyor: tek kelimelik
- * bir düğme ("%") "şu an yüzde mi gösteriyorum, yoksa basınca yüzdeye mi
- * geçerim" belirsizliğini taşırdı.
- *
- * YÜZDELERİN TABANI SÜTUNA GÖRE DEĞİŞİR (aynı gün, kullanıcının ikinci
- * turu: *"kişi %'ye dönünce toplamın yüzdesini göstersin. Ama üye yüzdesi
- * kişinin % kaçı üye olmuş, oyun yüzdesi de kişinin % kaçı oyun oynamışı
- * göstersin."*):
- *   - **Gelen**    = sütun payı (o kaynak tüm ziyaretçilerin yüzde kaçı),
- *   - **Üye**      = `üye / gelen` — o kaynaktan gelenlerin yüzde kaçı üye oldu,
- *   - **Başlayan** = `başlatan cihaz / gelen` — yüzde kaçı oyuna oturdu,
- *   - **Biten**    = `biten / BAŞLAYAN` — başlayanların yüzde kaçı bitirdi.
- *
- * Son satırın tabanı bilinçli olarak "gelen" DEĞİL: "Biten" ile "Başlayan"
- * AYNI dimension'dan (anonim cihaz tabloları, misafir dahil) geliyor, yani
- * aralarındaki oran gerçek bir tamamlanma oranı.
+ * İKİ GÖRÜNÜM: **Kişi / Oyun** (24 Eylül 2026, kullanıcı isteği: *"Bence bu
+ * tablo elma armut karışmış. Burada görmek istediğimiz hangi kaynaktan kaç
+ * kişi gelmiş, kaçı üye olmuş, kaçı oyun başlatmış, kaçı oyun bitirmiş…
+ * Ayrıca başlayan, biten oyun ve ortalama oyun (kişi başı) kolonları da
+ * olabilir alternatif olarak."*). Yerini aldığı `% / Sayı` düğmesi sayı
+ * kipinde oyun ADEDİ, yüzde kipinde CİHAZ oranı gösteriyordu ve yüzdenin
+ * tabanı sütuna göre değişiyordu (Başlayan → Gelen, Biten → Başlayan) —
+ * canlıda Direkt'te 267 başlayan / 204 biten oyun "%6.4 / %10.5" okundu ve
+ * "biten nasıl daha yüksek?" sorusunu doğurdu. Artık:
+ *   - **Kişi**: Gelen · Üye · Başlatan · Bitiren — hepsi KİŞİ (üye hariç
+ *     anonim cihaz kodu); yüzde her sütunda o satırın GELEN'ine göre.
+ *   - **Oyun**: Başlayan Oyun · Biten Oyun · Oyun / Kişi (starts/starters).
+ * Tek ekranda iki birim yan yana DURMAZ. RPC değişmedi; bütün sayılar zaten
+ * dönüyordu, yalnızca sunum değişti.
  *
  * "Başlayan" 21 Ağustos 2026'da eklendi (ROADMAP #9) ve huninin KÖR olan
  * adımını kapatıyor: ilk Instagram kampanyasında 80 kişi / 0 üye / 0 oyun
@@ -1938,7 +1932,7 @@ function SourceFunnelTable({
   rows: AdminSourceFunnelRow[] | null;
   infoHint?: ReactNode;
 }) {
-  const [asPercent, setAsPercent] = useState(false);
+  const [gorunum, setGorunum] = useState<'kisi' | 'oyun'>('kisi');
   const [acik, setAcik] = useState<ReadonlySet<string>>(() => new Set());
   // Boş/yüklenirken de `?` çizilir (GuestBreakdownTable ile aynı gerekçe).
   if (rows === null || rows.length === 0) {
@@ -2040,70 +2034,69 @@ function SourceFunnelTable({
   const pct = (value: number, base: number) =>
     `${((value / base) * 100).toFixed(1)}%`;
 
-  /** "Gelen" sütunu — yüzdesi SÜTUN payı. */
-  function visitorCell(value: number): string {
-    if (!asPercent) return String(value);
-    return total.visitors > 0 ? pct(value, total.visitors) : '0.0%';
-  }
+  /**
+   * Oyun VAR ama kişi (cihaz kodu) YOKSA kişi sayısı BİLİNMİYOR, 0 değil:
+   * `anon_id` bitiş tarafına 31 Ağustos 2026'da eklendi (geriye dönük
+   * doldurulamaz) ve mobil uygulama iki tarafa da henüz yazmıyor. Orada "0"
+   * yazmak "kimse oynamadı/bitirmedi" DER — bu tablonun "sıfır yerine
+   * bilinmediğini söyle" kuralı.
+   */
+  const bilinen = (kisi: number, oyun: number): number | null =>
+    oyun > 0 && kisi === 0 ? null : kisi;
 
   /**
-   * "Üye"/"Başlayan"/"Biten" sütunları — yüzdeleri SATIR YÖNÜNDE dönüşüm
-   * oranı. Taban 0 ise oran yok ("—"): sıfıra bölmek yerine bilinmediğini
-   * söylemek doğrusu (bugün "bilinmiyor" satırı tam bu durumda).
+   * Kişi görünümünün hücresi: sayı + o satırın GELEN'ine göre payı.
    *
-   * ⚠ TABAN SÜTUNA GÖRE DEĞİŞİR ve bu bilinçli: "Üye"/"Başlayan"ın tabanı o
-   * satırın "Gelen"i, "Biten"in tabanı ise o satırın "Başlayan"ı — çünkü
-   * "Biten"in sorduğu soru "gelenlerin kaçı bitirdi" değil "başlayanların kaçı
-   * bitirdi" (tamamlanma oranı). İkisi de AYNI dimension'dan (anonim cihaz
-   * tabloları) geldiğinden bu oran gerçek; `member_games`/`players` ise
-   * profil damgasından gelir, o yüzden artık tabloda hiç gösterilmiyor.
-   *
-   * [percentOf] ayrı bir parametre çünkü bazı sütunlarda gösterilen SAYI ile
-   * oranın PAYI farklı: "Başlayan" oyun ADEDİNİ gösterir ama oranı benzersiz
-   * CİHAZ üzerinden hesaplanır (bir kişi 50 oyun açarsa oran %100'ü aşardı).
+   * ⚠ Taban HER sütunda AYNI (satırın Gelen'i) ve bu bilinçli (24 Eylül 2026,
+   * kullanıcı: *"elma armut karışmış"*). Önceki tabloda sayı oyun ADEDİ,
+   * yüzde ise CİHAZ üzerindendi ve tabanı sütuna göre değişiyordu (Başlayan →
+   * Gelen, Biten → Başlayan) — Direkt'te 267 başlayan / 204 biten oyun
+   * %6.4 / %10.5 okunuyordu. Tek taban = soldan sağa okunan bir huni.
    */
-  function conversionCell(value: number, base: number, percentOf: number): string {
-    if (!asPercent) return String(value);
-    if (base <= 0) return '—';
-    return pct(percentOf, base);
-  }
-
-  /**
-   * "Biten" sütunu — 31 Ağustos 2026'dan beri oranı CİHAZ üzerinden:
-   * `finishers / starters`, yani "başlatan cihazların kaçı bitirdi".
-   *
-   * ⚠ Neden ayrı bir fonksiyon: `conversionCell` taban 0 olunca "—" diyor,
-   * ama burada İKİNCİ bir "bilinmiyor" hâli var. `anon_id` kolonu YENİ ve
-   * geriye dönük doldurulamaz; eski bitişlerde (ve damgalamayan istemcide —
-   * bugün Flutter portu) `finishers` 0 kalır. Orada `0%` yazmak "hiçbir cihaz
-   * bitirmedi" DER, oysa gerçek "cihaz bilgisi yok"tur — tam da bu tablonun
-   * "sıfıra bölmek yerine bilinmediğini söyle" kuralının kapsamı. Bu yüzden
-   * biten VAR ama bitiren cihaz YOKSA "—" gösteriliyor; ikisi de 0 ise oran
-   * gerçekten 0'dır ve öyle yazılır.
-   */
-  function completionCell(finishes: number, starters: number, finishers: number): string {
-    if (!asPercent) return String(finishes);
-    if (starters <= 0) return '—';
-    if (finishes > 0 && finishers === 0) return '—';
-    return pct(finishers, starters);
-  }
-
-  /** Bir satırın dört sayı hücresi — grup ve detay satırı AYNI kuralı kullanır. */
-  function sayiHucreleri(r: SourceFunnelTotals, cls: string) {
+  function kisiHucre(n: number | null, gelen: number): ReactNode {
+    if (n === null) return '—';
+    if (gelen <= 0) return String(n);
     return (
       <>
-        <td className={`${cls} pr-8 whitespace-nowrap text-center`}>{visitorCell(r.visitors)}</td>
-        <td className={`${cls} pr-8 whitespace-nowrap text-center`}>
-          {conversionCell(r.signups, r.visitors, r.signups)}
-        </td>
-        <td className={`${cls} pr-8 whitespace-nowrap text-center`}>
-          {conversionCell(r.starts, r.visitors, r.starters)}
-        </td>
-        <td className={`${cls} whitespace-nowrap text-center`}>
-          {completionCell(r.finishes, r.starters, r.finishers)}
-        </td>
+        {n}
+        <span className="opacity-60 ml-1">{pct(n, gelen)}</span>
       </>
     );
+  }
+
+  /** Oyun görünümü: başlatan kişi başına başlayan oyun. */
+  function kisiBasi(r: SourceFunnelTotals): string {
+    return r.starters > 0 ? (r.starts / r.starters).toFixed(1) : '—';
+  }
+
+  const basliklar =
+    gorunum === 'kisi'
+      ? ['Gelen', 'Üye', 'Başlatan', 'Bitiren']
+      : ['Başlayan Oyun', 'Biten Oyun', 'Oyun / Kişi'];
+
+  function hucreler(r: SourceFunnelTotals): ReactNode[] {
+    if (gorunum === 'kisi') {
+      return [
+        String(r.visitors),
+        kisiHucre(r.signups, r.visitors),
+        kisiHucre(bilinen(r.starters, r.starts), r.visitors),
+        kisiHucre(bilinen(r.finishers, r.finishes), r.visitors),
+      ];
+    }
+    return [String(r.starts), String(r.finishes), kisiBasi(r)];
+  }
+
+  /** Bir satırın sayı hücreleri — grup, detay ve TOPLAM satırı AYNI kuralı kullanır. */
+  function sayiHucreleri(r: SourceFunnelTotals, cls: string) {
+    const h = hucreler(r);
+    return h.map((c, i) => (
+      <td
+        key={i}
+        className={`${cls} ${i < h.length - 1 ? 'pr-8' : ''} whitespace-nowrap text-center`}
+      >
+        {c}
+      </td>
+    ));
   }
 
   return (
@@ -2111,18 +2104,18 @@ function SourceFunnelTable({
       <div className="flex items-center justify-end gap-3">
         <button
           type="button"
-          onClick={() => setAsPercent((v) => !v)}
-          aria-pressed={asPercent}
-          aria-label={asPercent ? 'Sayıya dön' : 'Yüzdeye çevir'}
+          onClick={() => setGorunum((v) => (v === 'kisi' ? 'oyun' : 'kisi'))}
+          aria-pressed={gorunum === 'oyun'}
+          aria-label={gorunum === 'kisi' ? 'Oyun sayılarına geç' : 'Kişi sayılarına geç'}
           /* `py-1 -my-1`: dokunma alanı 13.5 → 21.5px olurken layout ayak izi
              DEĞİŞMİYOR (negatif margin dolguyu birebir geri alıyor) — aynı
              desen "Tüm Oyunlarım"daki hamle ikonunda da kullanıldı. Kardeşi
              olan "CSV İndir" de aynı payı alıyor ki ikisi asimetrik olmasın. */
           className="text-[9px] font-mono uppercase tracking-[0.5px] py-1 -my-1 active:opacity-70 transition-opacity shrink-0"
         >
-          <span className={asPercent ? 'text-accent font-bold' : 'text-muted'}>%</span>
+          <span className={gorunum === 'kisi' ? 'text-accent font-bold' : 'text-muted'}>Kişi</span>
           <span className="text-muted"> / </span>
-          <span className={asPercent ? 'text-muted' : 'text-accent font-bold'}>Sayı</span>
+          <span className={gorunum === 'oyun' ? 'text-accent font-bold' : 'text-muted'}>Oyun</span>
         </button>
         <button type="button" onClick={handleExportCsv} className={`${csvLinkCls} py-1 -my-1`}>
           CSV İndir
@@ -2134,12 +2127,14 @@ function SourceFunnelTable({
           <thead>
             <tr className="text-left text-muted border-b border-border">
               <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Kaynak</th>
-              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Gelen</th>
-              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Üye</th>
-              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">
-                Başlayan
-              </th>
-              <th className="py-1.5 font-bold uppercase tracking-[1px] text-center">Biten</th>
+              {basliklar.map((b, i) => (
+                <th
+                  key={b}
+                  className={`py-1.5 ${i < basliklar.length - 1 ? 'pr-8' : ''} font-bold uppercase tracking-[1px] text-center whitespace-nowrap`}
+                >
+                  {b}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -2188,18 +2183,7 @@ function SourceFunnelTable({
             })}
             <tr className="border-b border-border/50">
               <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
-              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">
-                {visitorCell(total.visitors)}
-              </td>
-              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">
-                {conversionCell(total.signups, total.visitors, total.signups)}
-              </td>
-              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">
-                {conversionCell(total.starts, total.visitors, total.starters)}
-              </td>
-              <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">
-                {completionCell(total.finishes, total.starters, total.finishers)}
-              </td>
+              {sayiHucreleri(total, 'py-1.5 text-text font-bold')}
             </tr>
           </tbody>
         </table>
