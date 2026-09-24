@@ -206,7 +206,8 @@ oldukça fazla. Roadmap'e yaz, daha sonra bakalım."*). İki saha vakası, yedi
 alternatif, önerilen sıra ve dondurma uyumluluğu aşağıda, #32'de.
 
 **#33 — gizlilik metni kendi içinde çelişiyor: "dört durumda" diyor, BEŞ
-madde sayıyor** → ⏳ **AÇIK, dondurmayı bekliyor** (21 Eylül 2026, kod
+madde sayıyor** → 🔒 **PR #626 AÇIK, dondurmayı bekliyor** (24 Eylül 2026;
+#36 ile aynı PR, sayı artık "yedi"). (21 Eylül 2026, kod
 okunurken bulundu — kullanıcı bildirmedi, yani sahada kimse fark etmemiş
 olabilir ama metin CANLIDA yanlış).
 
@@ -324,7 +325,9 @@ gösterdi; ölçüm daha büyük çıktı (imzalama zinciri, entitlements, AASA,
 vitrin) — tahmin, kaynak okunarak düzeltildi.
 
 **#36 — Huni v2'nin gizlilik metni yarısı: "Üye" sütunu + üye bitişi** →
-⏳ **AÇIK, dondurmayı bekliyor** (24 Eylül 2026, kullanıcı kararı: *"ikiye
+🔒 **PR #626 AÇIK, dondurmayı bekliyor** (24 Eylül 2026: metin (6)+(7),
+tarih, port kopyası, bayrak `true`; #33 aynı PR'da. Merge = kapanış → arşive
+taşı). (24 Eylül 2026, kullanıcı kararı: *"ikiye
 böl"*). Sunucu + web yarısı (`funnel_events`, admin "Huni v2") bu tarihte
 yayında, ama web yalnızca gizlilik metninin BUGÜN saydığı olayları yazıyor
 (ziyaret, YZ oyunu başlangıcı, misafir bitişi). `signup` ve üye oyun bitişi
@@ -340,7 +343,8 @@ dosyası). Mobil derlemeyi tetikler → merge turunda; Huni v2'nin mobil yarıs�
 
 ## Dondurulmuş port PR'ları — merge turu SIRASI (21 Eylül 2026)
 
-Play production incelemesi (#19) kapanınca girecek yedi PR. Önerilen sıra:
+Play production incelemesi (#19) kapanınca girecek yedi PR (+ 24 Eylül'de
+eklenen #626, sekizinci — aşağıda). Önerilen sıra:
 **#565 → #562 → #579 → #576 → #554 → #557 → #547**.
 
 ⚠ **Dondurmanın artık YAZILI bir dayanağı var (22 Eylül 2026).** Play
@@ -381,6 +385,7 @@ her merge ayrı bir `mobile-build` + TestFlight yüklemesi demek.
 | 5 | **#554** taş değiştirme sınırı | 9 | MOTOR dosyası (`constants.dart` + `reducer.dart`) → golden vector'lar + `dart run test/run_all.dart` aynı turda |
 | 6 | **#557** oyun ortasında giriş | 22 | en geniş; `Runner.xcodeproj` + `pubspec.lock` taşıyor |
 | 7 | **#547** ham hata metinleri | 20 | turun tek **web** dosyasını (`src/utils/errorMessage.ts`) ve `web-ci.yml`i o taşıyor; parite kapısı `error_message_parity_test.dart` onunla geliyor → en son, temiz zeminde. `npm run lint` + `verify-error-messages` |
+| 8 | **#626** gizlilik 6. bölüm + Huni v2 üye olayları (ROADMAP #33 + #36) | 8 | 24 Eyl'de eklendi, `merge-tree` ile ÖLÇÜLMEDİ. Tek mobil dosya `legal_modals.dart` (öteki yedisi dokunmuyor); `parca-log`/`mobile/TESTING.md`'ye dokunmuyor. Huni v2 PR 2 (mobil) ile birleştirilebilir. `verify-funnel-events` + `legal_text_test.dart` |
 
 ### Dal ↔ PR eşlemesi — ⚠ İKİ DALIN ADI İÇERİĞİYLE UYUŞMUYOR
 
@@ -399,6 +404,7 @@ yazılmış). Ada güvenen biri sırayı sessizce karıştırır ve — daha kö
 | 5 | #554 taş değiştirme sınırı | `claude/tas-degistirme-siniri-port` |
 | 6 | #557 oyun ortasında giriş | ⚠ `claude/mobile-latest-merge-conflict-lf2og7` |
 | 7 | #547 ham hata metinleri | ⚠ `claude/app-store-play-review-status-9wecvh` |
+| 8 | #626 gizlilik 6. bölüm + Huni v2 üye olayları | `claude/funnel-v2-privacy-text-853ycj` |
 | 8 | #601 kaynak hunisi (`app` kanalı) | `claude/frozen-port-prs-merge-cis79o` |
 
 ⚠ **#601 bu turun SEKİZİNCİSİ.** Yukarıdaki yedili sıra 21 Eylül'de
