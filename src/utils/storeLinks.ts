@@ -181,46 +181,14 @@ export const STORE_BADGES: StoreBadge[] = [
  *
  * ⚠ Cihaz tespiti `getDeviceType()`ten gelir, KENDİ UA testİNİ YAZMA —
  * iPadOS 13+ Safari kendini `Macintosh` diye tanıtıyor ve elle yazılan bir
- * `/iPhone|iPad/` testi iPad'i KAÇIRIYOR (vaka: `AddToHomeScreen`in başlığı).
+ * `/iPhone|iPad/` testi iPad'i KAÇIRIYOR (vaka: silinen `AddToHomeScreen`in
+ * başlığı, 14 Eylül 2026 — bkz. docs/decisions/components.md).
  */
 export function storeForDevice(cihaz: 'ios' | 'android' | 'desktop'): StoreBadge | null {
   if (cihaz === 'desktop') return null;
   const key: StoreKey = cihaz === 'ios' ? 'appStore' : 'googlePlay';
   const badge = STORE_BADGES.find((b) => b.key === key);
   return badge?.url ? badge : null;
-}
-
-/**
- * Bu cihaza HANGİ uygulama çağrısı gösterilir — üstteki mağaza şeridi
- * (`AppStoreStrip`), alttaki "ana ekrana ekle" kutusu (`AddToHomeScreen`)
- * ya da hiçbiri. İki bileşen de BUNU çağırır; tek fonksiyon olduğu için
- * ikisi yapısal olarak aynı anda çıkamaz.
- *
- * | Cihaz | Standalone (ana ekrandan) | Tarayıcıda |
- * |---|---|---|
- * | masaüstü | — | PWA kutusu |
- * | iOS | mağaza şeridi (App Store yayındaysa) | PWA kutusu — Safari'nin kendi Smart App Banner'ı zaten üstte |
- * | Android | mağaza şeridi (Play yayındaysa) | **Play yayındaysa mağaza şeridi**, değilse PWA kutusu |
- *
- * ⚠ **Android tarayıcı satırı 24 Eylül 2026'da değişti** (Play yayını).
- * Chrome'da Apple'ın banner'ının karşılığı YOK, yani şerit oradaki tek
- * mağaza duyurusu. PWA kutusu Play yayındayken çıksaydı Android kullanıcısı
- * aynı anda iki zıt çağrı görürdü: biri web sürümüne, öteki mağazaya
- * (ROADMAP "Kalan yapılacaklar" → `AddToHomeScreen.tsx` platforma göre
- * dallansın). iOS tarayıcı satırı bilerek DEĞİŞMEDİ.
- */
-export type AppPromo = 'store-strip' | 'pwa-install' | null;
-
-export function decideAppPromo(
-  cihaz: 'ios' | 'android' | 'desktop',
-  standalone: boolean,
-  badges: StoreBadge[] = STORE_BADGES,
-): AppPromo {
-  const key: StoreKey | null = cihaz === 'ios' ? 'appStore' : cihaz === 'android' ? 'googlePlay' : null;
-  const yayinda = key !== null && !!badges.find((b) => b.key === key)?.url;
-  if (standalone) return yayinda ? 'store-strip' : null;
-  if (cihaz === 'android' && yayinda) return 'store-strip';
-  return 'pwa-install';
 }
 
 /**

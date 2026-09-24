@@ -72,6 +72,7 @@
 ### `AddToHomeScreen`
 
 - **`AddToHomeScreen`** (`src/components/AddToHomeScreen.tsx`) — `isStandaloneDisplay()` (`src/utils/visitTracking.ts` — iOS'ta `navigator.standalone`, diğerlerinde `display-mode: standalone` media query'si) `false` iken 1.2sn sonra çıkan, kapatılabilir bir "Ana ekrana ekle" banner'ı. **1 Ağustos 2026'ya kadar** kapatma `sessionStorage`'a (`kelimeki_a2hs_dismissed_session`) yazılıyordu — kullanıcı, uygulamayı zaten ana ekrana eklemiş olsa bile bir e-posta linkinden (her zaman normal tarayıcı sekmesinde açılır, standalone DEĞİLDİR — bir sayfanın "bu cihazda PWA zaten kurulu mu" diye sorabileceği güvenilir/platformlar-arası bir API yok) her tıklayışında YENİ bir sekme/oturum açıldığından banner'ı defalarca görüyordu. `DISMISSED_KEY` artık `localStorage`'a (`kelimeki_a2hs_dismissed`) yazılıyor — bir kez kapatan kullanıcı o cihazda bir daha hiç görmüyor (e-posta linkinden gelse bile). **Platform kısıtı (düzeltilemez):** iOS'ta bir e-posta linkinin doğrudan ana ekrandaki kurulu PWA'yı açması mümkün değil — Universal Links yalnızca App Store'dan kurulan native uygulamalar için çalışıyor, "Ana Ekrana Ekle" ile kurulan bir web-app bu mekanizmaya hiç giremiyor; Android'de Chrome'un WebAPK'sı link-capturing ile bunu kısmen ("Şununla aç" seçeneği, kullanıcı "varsayılan yap" derse otomatikleşir) sağlayabiliyor ama garantili değil.
+- **🗑 24 Eylül 2026 (akşam) — BİLEŞEN KALDIRILDI, her platformda.** Kullanıcı kararı: *"Ios'da da çıkmamalı, sadece app store çıkmalı. Bence artık tamamen kaldırmak gerekir… Web'den de gelse herkesin cep telefonu var, gidip indirebilir."* Masaüstü dahil hiçbir yerde PWA kurulum çağrısı yok; telefonda tek çağrı `AppStoreStrip`, masaüstünde alttaki rozetler. Karşılama SSS'indeki "'Ana Ekrana Ekle' seçeneği de duruyor" cümlesi de çıktı. `isStandaloneDisplay` yalnızca ölçüm için duruyor (admin "Ana Ekrana Ekleme" tablosu). Kapı: `verify-store-badges` (dosya yok + App.tsx çizmiyor). Aşağıdaki satırlar TARİHÇE.
 - **24 Eylül 2026 — Android'de Play yayındayken ÇIKMAZ.** Gösterme kararı artık `decideAppPromo` (`utils/storeLinks.ts`): standalone'da hiç, Android tarayıcısında Play yayındaysa hiç (yerine üstteki `AppStoreStrip` çıkar — aşağıda). iOS tarayıcısında App Store yayında olduğu hâlde HÂLÂ çıkıyor; bilerek, karar ROADMAP §26'da açık.
 
   **⚠ iPad iOS talimatını HİÇ görmüyordu (14 Eylül 2026, kullanıcı bildirdi).**
@@ -242,7 +243,11 @@ Setup'ta footer'da duruyorlar, kaydırmayan görmüyor (davet sayfasında
 
 **Dört kural:**
 
-1. **Standalone — ve 24 Eylül 2026'dan beri Android TARAYICISINDA da.** iOS
+1. **24 Eylül 2026 akşamından beri telefonda HER YERDE** (iOS dahil,
+   tarayıcıda da): "ana ekrana ekle" kutusu kaldırıldı, şerit tek çağrı
+   (yukarıda `AddToHomeScreen`). iOS Safari'de Apple'ın banner'ıyla üst üste
+   görünebilir; ikisi de App Store'a gönderdiği için kabul edildi. Önceki
+   hâli: **Standalone — ve 24 Eylül 2026'dan beri Android TARAYICISINDA da.** iOS
    tarayıcısında zaten Apple'ınki var, ikisi birden gürültü olur; Android
    Chrome'da öyle bir banner YOK. Play yayına girince Android tarayıcıda
    şerit çıkar ve `AddToHomeScreen`in PWA kutusu ÇEKİLİR — ikisi aynı anda

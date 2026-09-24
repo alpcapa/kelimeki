@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getDeviceType, isStandaloneDisplay } from '../utils/visitTracking';
-import { decideAppPromo, storeForDevice } from '../utils/storeLinks';
+import { getDeviceType } from '../utils/visitTracking';
+import { storeForDevice } from '../utils/storeLinks';
 
 /**
  * Ana ekrandan açılan uygulamada (standalone PWA) üstte çıkan "yerel uygulama
@@ -22,13 +22,16 @@ import { decideAppPromo, storeForDevice } from '../utils/storeLinks';
  *
  * ## Üç kural
  *
- * 1. **Standalone modda — ve Android'de tarayıcıda da.** iOS tarayıcısında
- *    zaten Apple'ın kendi banner'ı var; ikisini birden göstermek gürültü
- *    olur. Android Chrome'da öyle bir banner yok, bu yüzden Play yayına
- *    girince (24 Eylül 2026) şerit orada tarayıcıda da çıkıyor ve
- *    `AddToHomeScreen`in PWA kutusu çekiliyor. Karar tek yerde:
- *    `decideAppPromo` (storeLinks.ts) — iki bileşen de onu çağırdığı için
- *    ikisi yapısal olarak asla aynı anda çıkamaz.
+ * 1. **Telefonda HER YERDE — tarayıcıda da, ana ekrandan açılışta da**
+ *    (24 Eylül 2026, kullanıcı kararı: *"Ios'da da çıkmamalı, sadece app
+ *    store çıkmalı… Web'den de gelse herkesin cep telefonu var, gidip
+ *    indirebilir."*). Aynı gün "ana ekrana ekle" kutusu (`AddToHomeScreen`)
+ *    TAMAMEN kaldırıldı, masaüstü dahil; şerit telefondaki TEK uygulama
+ *    çağrısı. İlk sürümde yalnızca standalone'daydı, çünkü iOS Safari'de
+ *    Apple'ın kendi Smart App Banner'ı var — ikisi artık üst üste
+ *    görünebilir, ama ikisi de AYNI yere (App Store) gönderiyor, çelişki
+ *    yok; Apple'ınki uygulama-içi tarayıcılarda (WhatsApp/Instagram)
+ *    çizilmiyor, davet linkleri de tam oradan açılıyor.
  * 2. **Yalnızca o cihazın mağazası YAYINDAYSA** (`storeForDevice`). Play
  *    yayına girene kadar Android'de hiç çizilmez; URL dolunca kendiliğinden
  *    belirir. Masaüstünde hiç çıkmaz — kurulacak yerel uygulama yok.
@@ -42,9 +45,9 @@ import { decideAppPromo, storeForDevice } from '../utils/storeLinks';
  * 4. **✕ KALICI DEĞİL** (kullanıcı kararı: *"X olmalı ama her seferinde
  *    çıksın ki app'e gitsin sonunda"*). Kapatma `sessionStorage`da tutuluyor:
  *    o açılış boyunca bir daha görünmez, uygulama kapanıp açılınca yeniden
- *    çıkar. ⚠ `localStorage` KULLANMA — `AddToHomeScreen` onu bilerek
- *    kullanıyor (oraya bir kez "hayır" demek kalıcı bir karar), burada tam
- *    tersi isteniyor.
+ *    çıkar. ⚠ `localStorage` KULLANMA — silinen `AddToHomeScreen` onu
+ *    kullanıyordu (orada bir kez "hayır" demek kalıcı bir karardı), burada
+ *    tam tersi isteniyor.
  */
 const DISMISSED_KEY = 'kelimeki_app_strip_dismissed';
 
@@ -62,10 +65,9 @@ export function AppStoreStrip() {
   const [store] = useState(() => storeForDevice(getDeviceType()));
 
   useEffect(() => {
-    if (decideAppPromo(getDeviceType(), isStandaloneDisplay()) !== 'store-strip') return;
     if (!store || dismissedThisSession()) return;
-    // İlk boyamada sıçramasın diye kısa gecikme (AddToHomeScreen'le aynı
-    // desen); açılışta zaten sözlük/oturum yükleniyor.
+    // İlk boyamada sıçramasın diye kısa gecikme; açılışta zaten
+    // sözlük/oturum yükleniyor.
     const t = setTimeout(() => setVisible(true), 900);
     return () => clearTimeout(t);
   }, [store]);

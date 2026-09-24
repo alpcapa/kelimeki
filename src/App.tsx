@@ -10,7 +10,6 @@ import { TermsModal } from './components/TermsModal';
 import { PrivacyModal } from './components/PrivacyModal';
 import { AuthModal } from './components/AuthModal';
 import { Setup } from './components/Setup';
-import { AddToHomeScreen } from './components/AddToHomeScreen';
 import { AppStoreStrip } from './components/AppStoreStrip';
 import { LeagueRewardsHost, requestLeagueRewardCheck } from './components/LeagueRewardsHost';
 import { MeaningModal } from './components/MeaningModal';
@@ -1508,10 +1507,9 @@ export default function App() {
     const showTanitimLink = !authLoading && !user;
     return (
       <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
-        {/* "Yerel uygulama mağazada" şeridi (standalone + Android tarayıcı).
-            AKIŞIN EN ÜSTÜNDE: içeriği aşağı iter, logoyu ÖRTMEZ (bkz.
-            AppStoreStrip'in başlığı). `AddToHomeScreen` ile aynı kararı
-            (`decideAppPromo`) okuduğundan ikisi asla aynı anda görünmez. */}
+        {/* "Yerel uygulama mağazada" şeridi — telefonda (iOS/Android) HER
+            yerde, tarayıcıda da ana ekrandan açılışta da. AKIŞIN EN ÜSTÜNDE:
+            içeriği aşağı iter, logoyu ÖRTMEZ (bkz. AppStoreStrip'in başlığı). */}
         <AppStoreStrip />
         <div
           className={`w-full max-w-[460px] flex items-center px-3.5 pt-3 ${
@@ -1597,7 +1595,6 @@ export default function App() {
             }}
           />
         </main>
-        <AddToHomeScreen />
         {/* k-lig kutlama banner'ı — Setup'ta her zaman gösterilebilir
             (girişte/geçmişe dönük backfill'de bekleyen ödüller burada çıkar). */}
         <LeagueRewardsHost />

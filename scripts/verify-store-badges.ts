@@ -15,11 +15,10 @@
 //            erişilemiyor, `play.google.com` da `000` dönüyor)
 //
 // Koşum: npm run verify-store-badges
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 import {
   APPLE_APP_ID,
-  decideAppPromo,
   storeForDevice,
   appleSmartAppBannerMeta,
   BADGE_GAP_PX,
@@ -242,9 +241,9 @@ console.log('storeLinks — mağaza rozetleri');
   }
 }
 
-// ── 7. `AppStoreStrip` — standalone moddaki kendi şeridimiz ────────────────
-// Apple'ın Smart App Banner'ı standalone modda hiç çıkmadığından, ana
-// ekrandan açan kullanıcıya yerel uygulamayı duyuran TEK yüzey bu.
+// ── 7. `AppStoreStrip` — telefondaki tek uygulama çağrısı ──────────────────
+// Önce yalnızca standalone içindi (Apple'ın banner'ı orada çıkmıyor); 24
+// Eylül 2026'dan beri telefonda her yerde, "ana ekrana ekle" kutusu yok.
 {
   // Cihaz kapısı rozetlerle aynı kaynaktan beslenmeli.
   check('masaüstünde şerit YOK (kurulacak yerel uygulama yok)', storeForDevice('desktop') === null);
@@ -282,19 +281,11 @@ console.log('storeLinks — mağaza rozetleri');
   // ⚠ Türkçe eki türetilemez: "Google Play'da" YANLIŞ, "Play'de" doğru.
   check("Play ifadesi 'Play\'de' (ek türetilmiyor)", strip.includes("Google Play'de"));
   check("App Store ifadesi 'App Store\'da'", strip.includes("App Store'da"));
-  // Şerit ↔ PWA kutusu: tek karar, iki bileşen de onu okur.
-  const karar = (b: StoreBadge[]) => (c: 'ios' | 'android' | 'desktop', s: boolean) => decideAppPromo(c, s, b);
-  const ikisi = karar(STORE_BADGES.map((b) => ({ ...b, url: b.url ?? 'https://x' })));
-  const hicbiri = karar(STORE_BADGES.map((b) => ({ ...b, url: null })));
-  check('masaüstü tarayıcı → PWA kutusu, standalone → hiçbiri', ikisi('desktop', false) === 'pwa-install' && ikisi('desktop', true) === null);
-  check('iOS tarayıcı → PWA kutusu (Safari banner\'ı zaten var)', ikisi('ios', false) === 'pwa-install');
-  check('Android tarayıcı + Play yayında → mağaza şeridi, PWA kutusu YOK', ikisi('android', false) === 'store-strip');
-  check('Android tarayıcı + Play yok → PWA kutusu', hicbiri('android', false) === 'pwa-install');
-  check('standalone + mağaza yayında → şerit', ikisi('ios', true) === 'store-strip' && ikisi('android', true) === 'store-strip');
-  check('standalone + mağaza yok → hiçbiri', hicbiri('ios', true) === null && hicbiri('android', true) === null);
-  check('şerit kararı `decideAppPromo`dan', strip.includes("decideAppPromo(getDeviceType(), isStandaloneDisplay()) !== 'store-strip'"));
-  const a2hs = readFileSync('src/components/AddToHomeScreen.tsx', 'utf8');
-  check('PWA kutusu kararı `decideAppPromo`dan', a2hs.includes("decideAppPromo(getDeviceType(), isStandaloneDisplay()) !== 'pwa-install'"));
+  // 24 Eylül 2026, kullanıcı kararı: "ana ekrana ekle" kutusu TAMAMEN
+  // kaldırıldı; telefonda tek uygulama çağrısı bu şerit, tarayıcıda da.
+  check('şerit tarayıcıda da çıkıyor (standalone kapısı YOK)', !strip.includes('isStandaloneDisplay'));
+  check('"ana ekrana ekle" kutusu silindi', !existsSync('src/components/AddToHomeScreen.tsx'));
+  check('App.tsx kutuyu çizmiyor', !readFileSync('src/App.tsx', 'utf8').includes('AddToHomeScreen'));
   check(
     'cihaz tespiti `getDeviceType()`ten (kendi UA testi YOK — iPadOS `Macintosh` der)',
     strip.includes('getDeviceType()') && !/iPhone\|iPad/.test(strip),
