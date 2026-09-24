@@ -102,6 +102,9 @@ tarayıcıda görülebilecek olanlar. **Admin hesabı gerekiyor.**
 
 ## 9.9. Admin — Kaynak Hunisi (16 Ağustos 2026)
 
+> ⚠ **24 Eylül 2026'dan beri bu tablo YOK** — yerini "Kanal → Üye Kalitesi"
+> aldı (§9.24), misafir sütunları Huni v2'ye (§9.23) geçti. Aşağısı tarihçe.
+
 "Ziyaretçi Kaynağı" tablosunun yerini aldı: kaynak → **Kişi** → **Başlayan**
 → **Üye** → **Oyun**. İlk sütun eskisiyle aynı sayı. Sunucu tarafı canlıda
 rollback'li senaryolarla doğrulandı (yetki matrisi, damgalama, write-once
@@ -816,7 +819,7 @@ Gerekçe ve kararlar: `docs/decisions/funnel-v2.md`. Kendi cihazını "yeni"
 olarak üretmek için **gizli sekme** kullan (depo boş başlar → `mevcut`
 sayılmaz). Sayılar İstanbul GÜNÜNE göre; "2+ Gün" ertesi gün kontrol edilir.
 
-- [ ] **Tablo yerinde:** Büyüme > Kullanıcı, Kaynak Hunisi'nin ÜSTÜNDE,
+- [ ] **Tablo yerinde:** Büyüme > Kullanıcı, "Kanal → Üye Kalitesi"nin ÜSTÜNDE,
       başlık "Huni v2 (Son 30 Gün)". Satırlar platform (kalın) → kanal.
 - [ ] **Yeni cihaz:** gizli sekmede `kelimeki.com/?ref=test-huni` aç → Web
       altında "Diğer" kanalında Land +1; kanala tıklayınca `test-huni`
@@ -834,3 +837,24 @@ sayılmaz). Sayılar İstanbul GÜNÜNE göre; "2+ Gün" ertesi gün kontrol edi
       o kanalın 2+ Gün'ü +1 (aynı gün ikinci açılış SAYILMAMALI).
 - [ ] **`?` popup'ı (`huni-v2`)** "KOHORT", "Eski cihaz (kohort dışı)" ve
       "Şimdilik eksik olanlar" paragraflarını taşımalı.
+
+## 9.24. Admin — "Kanal → Üye Kalitesi" tablosu (24 Eylül 2026)
+
+Kaynak Hunisi'nin yerini aldı: yalnızca ÜYE tarafı, kohort (pencerede hesap
+açanlar, kayıt etiketine göre). Sunucu fonksiyonu canlıda çağrılıp 90 günlük
+sonuç profillerden bağımsız bir sorguyla karşılaştırıldı (Arkadaş 26/17,
+Uygulama 20/10, Instagram 9/3, Direkt 7/5 — birebir).
+
+- [ ] **Tablo yerinde:** Büyüme > Kullanıcı, Huni v2'nin ALTINDA, başlık
+      "Kanal → Üye Kalitesi (Son N …)". Sütunlar: Üye · Oynayan · 7 Günde ·
+      2+ Gün · Oyun / Üye. Gelen/Başlatan/Bitiren sütunları GÖRÜNMEMELİ.
+- [ ] **Yüzdeler Üye'ye göre** ve hiçbiri %100'ü aşmıyor.
+- [ ] **`app` etiketi "Mobil Uygulama" satırında** (Diğer'de DEĞİL).
+- [ ] **Üye getirmeyen kanal 0 ile görünüyor:** Facebook satırı (bugün hiç
+      üye getirmedi) Üye 0, Oyun / Üye "—" ile en altta; Diğer/Bilinmiyor
+      yalnızca veri varsa çıkıyor.
+- [ ] **Yeni üye:** misafirken bir oyun bitirip kayıt ol → kendi etiketinin
+      satırında Üye +1; hesapla bir oyun bitirince Oynayan ve 7 Günde +1.
+- [ ] **CSV:** Kanal, Kaynak ve beş sütun; TOPLAM satırı var.
+- [ ] **`?` popup'ı (`uye-kalitesi`)** "Neden güvenilir" ve "Misafir
+      sütunları neden yok" paragraflarını taşımalı.

@@ -46,7 +46,7 @@ import type {
   AdminSignupFunnelRow,
   AdminWebJourneyRow,
   AdminTutorialFunnelRow,
-  AdminSourceFunnelRow,
+  AdminMemberQualityRow,
   AdminFunnelRow,
   AdminDeviceBreakdownRow,
   AdminDeviceModelRow,
@@ -2816,20 +2816,18 @@ export async function fetchAdminFunnel(days = 30): Promise<AdminFunnelRow[]> {
 }
 
 /**
- * Kaynak hunisi: son `days` gün içinde kaynak başına kişi → üye → oyun
- * (yalnızca admin — Büyüme > Kullanıcı). `admin_guest_source_breakdown`
- * RPC'sinin yerini aldı (o RPC veritabanında duruyor ama artık çağrılmıyor); ilk sütun onunla AYNI sayıyı taşır, üzerine iki adım ekler.
- * Ayrıntılı sözleşme: `AdminSourceFunnelRow`.
+ * "Kanal → Üye Kalitesi": son `days` günde hesap açan üyelerin kohortu,
+ * kayıt etiketine göre (yalnızca admin — Büyüme > Kullanıcı). 24 Eylül
+ * 2026'da `admin_source_funnel`in (Kaynak Hunisi) yerini aldı. Sözleşme:
+ * `AdminMemberQualityRow`.
  */
-export async function fetchAdminSourceFunnel(days = 30): Promise<AdminSourceFunnelRow[]> {
+export async function fetchAdminMemberQuality(days = 30): Promise<AdminMemberQualityRow[]> {
   if (!supabase) return [];
-  const { data, error } = await supabase.rpc('admin_source_funnel', { p_days: days });
-  if (error) {
-    // Admin panelindeki .catch(setError) zinciri buna güveniyor — hatayı
-    // yutup boş dizi dönmek gerçek bir RPC/izin hatasını gizlerdi.
-    rethrowSupabase(error);
-  }
-  return (data as AdminSourceFunnelRow[]) ?? [];
+  const { data, error } = await supabase.rpc('admin_member_quality', { p_days: days });
+  // Admin panelindeki .catch(setError) zinciri buna güveniyor — hatayı
+  // yutup boş dizi dönmek gerçek bir RPC/izin hatasını gizlerdi.
+  if (error) rethrowSupabase(error);
+  return (data as AdminMemberQualityRow[]) ?? [];
 }
 
 /**
