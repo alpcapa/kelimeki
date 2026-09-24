@@ -792,7 +792,7 @@ export interface AdminFunnelRow {
   land: number;
   /** Land gününden SONRA en az bir başka gün açan ("2+ gün"). */
   returned: number;
-  /** Hesap açan. ⚠ Gizlilik metni güncellenene kadar web YAZMIYOR (`FUNNEL_MEMBER_EVENTS_ENABLED`). */
+  /** Hesap açan. Web 24 Eylül 2026 gizlilik güncellemesinden beri yazıyor (`FUNNEL_MEMBER_EVENTS_ENABLED`). */
   signed_up: number;
   /** En az bir oyun başlatan. */
   started: number;

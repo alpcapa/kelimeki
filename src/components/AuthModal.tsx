@@ -163,9 +163,8 @@ export function AuthModal({
         // ölçecek, bu satır değil.
         void logSignupEvent('completed', signupChannel);
         journeyStep('signup_done');
-        // Huni v2 "Üye" sütunu. ⚠ Gizlilik metni güncellenene kadar KAPALI
-        // (`FUNNEL_MEMBER_EVENTS_ENABLED`) — çağrı burada duruyor ki bayrağı
-        // açan PR yalnızca bayrağı ve metni değiştirsin.
+        // Huni v2 "Üye" sütunu. Gizlilik 6. bölümün (6) numaralı durumu
+        // (`FUNNEL_MEMBER_EVENTS_ENABLED`, 24 Eylül 2026'dan beri açık).
         funnelEvent('signup', true);
         if (data.session) {
           await refreshProfile();

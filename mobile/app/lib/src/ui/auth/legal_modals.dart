@@ -20,8 +20,7 @@ const Color _text = kText;
 const Color _accent = kAccent;
 const Color _border = kBorder;
 
-Future<void> showTermsModal(BuildContext context,
-        {VoidCallback? onFeedback}) =>
+Future<void> showTermsModal(BuildContext context, {VoidCallback? onFeedback}) =>
     showDialog<void>(
         context: context,
         builder: (context) => TermsModal(onFeedback: onFeedback));
@@ -108,14 +107,14 @@ class _Bullets extends StatelessWidget {
 class _FeedbackLinkLine extends StatelessWidget {
   final String prefix;
   final String suffix;
+
   /// "Görüş Bildir formu"nu açan callback — AuthModal kurar (kendisi
   /// FeedbackModal'ı auth+repo ile açar); null ise link ölü görünmesin
   /// diye satır DÜZ METİN olarak çizilir (yalnızca modalın doğrudan,
   /// callback'siz kurulduğu test/önizleme durumları).
   final VoidCallback? onTap;
 
-  const _FeedbackLinkLine(
-      {required this.prefix, this.suffix = '', this.onTap});
+  const _FeedbackLinkLine({required this.prefix, this.suffix = '', this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -264,7 +263,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 8 Eylül 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 24 Eylül 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -414,7 +413,7 @@ class PrivacyModal extends StatelessWidget {
               'hangi cihaz/işletim sistemlerinden geldiğimizi ve kaç '
               'kişinin oyuna başladığını anlayabilmek için cihazınızda '
               'rastgele, kimliğinizle hiçbir şekilde ilişkilendirilmeyen '
-              'anonim bir kod üretilir. Bu kod dört durumda sunucuya '
+              'anonim bir kod üretilir. Bu kod yedi durumda sunucuya '
               'iletilir: '
               '(1) HER ziyarette — oturum açık olsun olmasın — işletim '
               'sistemi tipiyle (iOS/Android/masaüstü) ve, tarayıcınızdan '
@@ -437,14 +436,24 @@ class PrivacyModal extends StatelessWidget {
               'yalnızca girişsiz (misafir) oynuyorsanız — oyunun süresi, '
               'oyuncu sayısı ve varsa kaynak etiketiyle birlikte; böylece kaç '
               'FARKLI cihazın oyunu tamamladığını sayabiliyoruz. Girişliyken '
-              'bu kayıt hesabınıza bağlı tutulduğundan anonim kod ORAYA HİÇ '
-              'YAZILMAZ (ikisi aynı kayıtta asla bulunmaz; bunu sunucu da '
-              'zorunlu kılar). (5) Oyunu tanıtan kısa turu açtığınızda, '
+              'oyun kaydı hesabınıza bağlı tutulduğundan anonim kod O KAYDA '
+              'HİÇ YAZILMAZ (ikisi aynı kayıtta asla bulunmaz; bunu sunucu da '
+              'zorunlu kılar); girişli bitiş için anonim kodla yalnızca '
+              'aşağıdaki (7) numaralı, hesaptan bağımsız kayıt tutulur. (5) '
+              'Oyunu tanıtan kısa turu açtığınızda, '
               'bitirdiğinizde ya da atladığınızda: turun hangi adımında '
               'ayrıldığınız, turu kendinizin mi başlattığı ve platform '
               'bilgisi anonim kodla birlikte kaydedilir; böylece tanıtımın '
-              'işe yarayıp yaramadığını ölçebiliyoruz. '
-              'Bu beş kaydın hiçbirinde anonim kod ile hesap '
+              'işe yarayıp yaramadığını ölçebiliyoruz. (6) Hesap '
+              'açtığınızda ve (7) girişliyken yapay zekaya karşı bir oyunu '
+              'bitirdiğinizde: yalnızca olayın türü, platform '
+              '(web/iOS/Android), uygulamadan geliyorsa uygulama sürümü ve '
+              'olayın GÜNÜ anonim kodla birlikte kaydedilir. Bu iki kayda '
+              'hesap kimliğiniz YAZILMAZ ve saat tutulmaz — yalnızca gün '
+              'tutulduğu için kayıt, hesabınızın açıldığı anla da '
+              'eşleştirilemez; böylece yeni gelenlerin kaçının üye olup '
+              'oynamayı sürdürdüğünü kişileri tanımadan sayabiliyoruz. '
+              'Bu yedi kaydın hiçbirinde anonim kod ile hesap '
               'kimliğiniz BİR ARADA YER ALMAZ: girişli olsanız bile bu '
               'veriler hiçbir üçüncü tarafla paylaşılmaz ve hesabınızla asla '
               'eşleştirilmez. Yazı '

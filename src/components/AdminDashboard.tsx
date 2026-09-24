@@ -530,10 +530,11 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         kullanıcılar ilk haftalarda yeni gelen gibi görünürdü.
         <br />
         <br />
-        <b>Şimdilik eksik olanlar:</b> <b>Üye</b> sütunu ve üyelerin oyun bitişleri gizlilik
-        metni güncellenene kadar yazılmıyor (metin mobil uygulamanın bir sonraki güncellemesiyle
-        birlikte değişecek). O güne kadar <b>Bitiren</b> yalnızca misafir bitişlerini sayar.
-        Mobil uygulama da o güncellemeyle yazmaya başlayacak; şimdilik yalnızca web var.
+        <b>Üye</b> sütunu ve üyelerin oyun bitişleri, gizlilik metninin 24 Eylül 2026
+        güncellemesi yayına girdiği günden itibaren yazılıyor. O günden ÖNCE hesap açan ya da
+        girişliyken oyun bitiren cihazlar bu sütunlarda eksik kalır (o dönemde <b>Bitiren</b>
+        yalnızca misafir bitişlerini sayıyordu). Mobil uygulama bir sonraki güncellemesiyle
+        yazmaya başlayacak; şimdilik yalnızca web var.
         Kendini bot olarak tanıtan tarayıcılar ve otomasyon araçları sayılmaz.
         <br />
         <br />
@@ -1930,9 +1931,9 @@ function TutorialFunnelTable({
  * Eski Kaynak Hunisi'nin misafir yarısının yerini aldı; üye yarısı
  * "Kanal → Üye Kalitesi"nde (`MemberQualityTable`) yaşıyor.
  *
- * "Üye" sütunu gizlilik metni güncellenene kadar web'de yazılmıyor
- * (`FUNNEL_MEMBER_EVENTS_ENABLED`) — orada "0" yazmak "kimse üye olmadı"
- * derdi, bu yüzden "—".
+ * "Üye" sütunu `FUNNEL_MEMBER_EVENTS_ENABLED` kapalıyken "—" gösterir —
+ * orada "0" yazmak "kimse üye olmadı" derdi. Bayrak gizlilik metninin
+ * 24 Eylül 2026 güncellemesiyle (ROADMAP #36) açıldı.
  *
  * ⚠ `useState`ler erken `return`ün ÜSTÜNDE (`npm run verify-hook-order`).
  */
