@@ -125,9 +125,14 @@ uygulama: `anonId` ya da onboarding bayrağı zaten var) `land` satırı
    `play_install_referrer` paketi (Android), iOS sabit kanal. Olay/platform
    adları web kaynağından okunarak parite testi (`funnel_events_parity_test.dart`
    → `web-ci.yml` `paths`'e `src/utils/funnelEvents.ts`). ROADMAP "Sıradaki
-   sürüme binecekler" satırı. **Play Data safety** (Uygulama etkinliği +
-   Cihaz kimliği, "analiz", hesaba bağlı DEĞİL) ve **App Store gizlilik
-   etiketi** aynı sürümde güncellenir → `marketing/*/console-formlari.md`.
+   sürüme binecekler" satırı. **Beyan formları büyük ihtimalle DEĞİŞMEZ**
+   (24 Eyl 2026'da okundu): Play Data safety zaten "Device or other IDs →
+   `anon_id`" ve "App interactions → ziyaret ve oyun başlangıç olayları"
+   (Analytics) diyor; App Store gizlilik etiketi zaten "Device ID" ve
+   "Product Interaction — Not Linked, Analytics" diyor. `funnel_events` aynı
+   türler, aynı amaç, hesaba bağlı değil. Uygularken doğrulanacak TEK şey:
+   Play Install Referrer'ın ayrı bir beyan gerektirip gerektirmediği →
+   `marketing/play-store/console-formlari.md`.
 3. **Pazarlama kapısı:** PR 2'nin sürümü Play'de yayında + admin tablosunda
    Android land satırı görünüyor → bütçe açılır.
 4. **Emeklilik:** Huni v2 30 gün veri topladıktan sonra Kaynak Hunisi
