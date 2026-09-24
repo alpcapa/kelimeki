@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getDeviceType, isStandaloneDisplay } from '../utils/visitTracking';
+import { decideAppPromo } from '../utils/storeLinks';
 
 const DISMISSED_KEY = 'kelimeki_a2hs_dismissed';
 
@@ -30,7 +31,9 @@ export function AddToHomeScreen() {
   const [platform] = useState(detectPlatform);
 
   useEffect(() => {
-    if (isStandaloneDisplay()) return;
+    // Standalone'da ve Play yayındayken Android tarayıcısında ÇIKMAZ — orada
+    // üstteki mağaza şeridi var (`decideAppPromo`, storeLinks.ts).
+    if (decideAppPromo(getDeviceType(), isStandaloneDisplay()) !== 'pwa-install') return;
     if (localStorage.getItem(DISMISSED_KEY)) return;
     // Short delay so the banner doesn't flash on first paint.
     const t = setTimeout(() => setVisible(true), 1200);

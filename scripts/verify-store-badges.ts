@@ -3,9 +3,9 @@
 //
 // NEDEN AYRI BİR BETİK: bu kuralların ikisi de TESCİLLİ MARKA kuralı, yani
 // ihlali görsel bir kusur değil hukuki bir sorun — ve hiçbiri derleyicinin
-// göreceği türden. Duman testiyle de sınanamaz: rozetler bugün HİÇ
-// render edilmiyor (iki URL de `null`), yani tarayıcıda görülecek bir şey
-// yok. `verify-away-return`in aynı deseni (esbuild + node).
+// göreceği türden. Duman testiyle sınanmıyor: rozetlerin sırası ve boyu
+// saf veriden geliyor, tarayıcı gerekmez. `verify-away-return`in aynı
+// deseni (esbuild + node).
 //
 // KURALLARIN KAYNAĞI (14 Eylül 2026'da ikisi de doğrulandı):
 //   Apple  — developer.apple.com/app-store/marketing/guidelines/ (sayfa bu
@@ -19,6 +19,7 @@ import { readFileSync } from 'node:fs';
 
 import {
   APPLE_APP_ID,
+  decideAppPromo,
   storeForDevice,
   appleSmartAppBannerMeta,
   BADGE_GAP_PX,
@@ -145,15 +146,14 @@ console.log('storeLinks — mağaza rozetleri');
   const i = visibleStoreBadges(ikisi);
   check('ikisi yayında → SIRA korunur (App Store önce)', i[0]?.key === 'appStore');
 
-  // BUGÜNKÜ durum (15 Eylül 2026): YALNIZ App Store yayında. Bu satır bir
-  // "todo" değil, bir ÖLÇÜM — Play'in URL'si dolduğunda bilerek düşer ve
-  // bakanı uyarır. ⚠ Play'in vitrinini OTURUM AÇMADAN ölç: geliştirici
-  // hesabı testçi listesinde olduğu için ona her hâlükârda liste gösterilir
-  // (13 Eylül 2026'da tam bu yanlış okundu).
+  // BUGÜNKÜ durum (24 Eylül 2026): İKİ mağaza da yayında (App Store 15 Eyl,
+  // Play production 24 Eyl — vitrin oturum açmadan ölçüldü). Bu satır bir
+  // ÖLÇÜM: bir URL bilerek `null`a çekilirse (ör. mağazadan kaldırılma)
+  // düşer ve bakanı uyarır. 15-24 Eylül arası "yalnız App Store" diyordu.
   const bugun = visibleStoreBadges();
   check(
-    'bugün YALNIZ App Store rozeti çiziliyor (Play henüz yayında değil)',
-    bugun.length === 1 && bugun[0].key === 'appStore',
+    'bugün İKİ rozet çiziliyor, App Store önce (ikisi de yayında)',
+    bugun.length === 2 && bugun[0].key === 'appStore' && bugun[1].key === 'googlePlay',
     bugun.map((b) => b.key).join(', ') || 'hiçbiri',
   );
 }
@@ -282,7 +282,19 @@ console.log('storeLinks — mağaza rozetleri');
   // ⚠ Türkçe eki türetilemez: "Google Play'da" YANLIŞ, "Play'de" doğru.
   check("Play ifadesi 'Play\'de' (ek türetilmiyor)", strip.includes("Google Play'de"));
   check("App Store ifadesi 'App Store\'da'", strip.includes("App Store'da"));
-  check('şerit yalnızca standalone modda çiziliyor', strip.includes('isStandaloneDisplay()'));
+  // Şerit ↔ PWA kutusu: tek karar, iki bileşen de onu okur.
+  const karar = (b: StoreBadge[]) => (c: 'ios' | 'android' | 'desktop', s: boolean) => decideAppPromo(c, s, b);
+  const ikisi = karar(STORE_BADGES.map((b) => ({ ...b, url: b.url ?? 'https://x' })));
+  const hicbiri = karar(STORE_BADGES.map((b) => ({ ...b, url: null })));
+  check('masaüstü tarayıcı → PWA kutusu, standalone → hiçbiri', ikisi('desktop', false) === 'pwa-install' && ikisi('desktop', true) === null);
+  check('iOS tarayıcı → PWA kutusu (Safari banner\'ı zaten var)', ikisi('ios', false) === 'pwa-install');
+  check('Android tarayıcı + Play yayında → mağaza şeridi, PWA kutusu YOK', ikisi('android', false) === 'store-strip');
+  check('Android tarayıcı + Play yok → PWA kutusu', hicbiri('android', false) === 'pwa-install');
+  check('standalone + mağaza yayında → şerit', ikisi('ios', true) === 'store-strip' && ikisi('android', true) === 'store-strip');
+  check('standalone + mağaza yok → hiçbiri', hicbiri('ios', true) === null && hicbiri('android', true) === null);
+  check('şerit kararı `decideAppPromo`dan', strip.includes("decideAppPromo(getDeviceType(), isStandaloneDisplay()) !== 'store-strip'"));
+  const a2hs = readFileSync('src/components/AddToHomeScreen.tsx', 'utf8');
+  check('PWA kutusu kararı `decideAppPromo`dan', a2hs.includes("decideAppPromo(getDeviceType(), isStandaloneDisplay()) !== 'pwa-install'"));
   check(
     'cihaz tespiti `getDeviceType()`ten (kendi UA testi YOK — iPadOS `Macintosh` der)',
     strip.includes('getDeviceType()') && !/iPhone\|iPad/.test(strip),

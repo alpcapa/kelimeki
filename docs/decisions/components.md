@@ -72,6 +72,7 @@
 ### `AddToHomeScreen`
 
 - **`AddToHomeScreen`** (`src/components/AddToHomeScreen.tsx`) — `isStandaloneDisplay()` (`src/utils/visitTracking.ts` — iOS'ta `navigator.standalone`, diğerlerinde `display-mode: standalone` media query'si) `false` iken 1.2sn sonra çıkan, kapatılabilir bir "Ana ekrana ekle" banner'ı. **1 Ağustos 2026'ya kadar** kapatma `sessionStorage`'a (`kelimeki_a2hs_dismissed_session`) yazılıyordu — kullanıcı, uygulamayı zaten ana ekrana eklemiş olsa bile bir e-posta linkinden (her zaman normal tarayıcı sekmesinde açılır, standalone DEĞİLDİR — bir sayfanın "bu cihazda PWA zaten kurulu mu" diye sorabileceği güvenilir/platformlar-arası bir API yok) her tıklayışında YENİ bir sekme/oturum açıldığından banner'ı defalarca görüyordu. `DISMISSED_KEY` artık `localStorage`'a (`kelimeki_a2hs_dismissed`) yazılıyor — bir kez kapatan kullanıcı o cihazda bir daha hiç görmüyor (e-posta linkinden gelse bile). **Platform kısıtı (düzeltilemez):** iOS'ta bir e-posta linkinin doğrudan ana ekrandaki kurulu PWA'yı açması mümkün değil — Universal Links yalnızca App Store'dan kurulan native uygulamalar için çalışıyor, "Ana Ekrana Ekle" ile kurulan bir web-app bu mekanizmaya hiç giremiyor; Android'de Chrome'un WebAPK'sı link-capturing ile bunu kısmen ("Şununla aç" seçeneği, kullanıcı "varsayılan yap" derse otomatikleşir) sağlayabiliyor ama garantili değil.
+- **24 Eylül 2026 — Android'de Play yayındayken ÇIKMAZ.** Gösterme kararı artık `decideAppPromo` (`utils/storeLinks.ts`): standalone'da hiç, Android tarayıcısında Play yayındaysa hiç (yerine üstteki `AppStoreStrip` çıkar — aşağıda). iOS tarayıcısında App Store yayında olduğu hâlde HÂLÂ çıkıyor; bilerek, karar ROADMAP §26'da açık.
 
   **⚠ iPad iOS talimatını HİÇ görmüyordu (14 Eylül 2026, kullanıcı bildirdi).**
   Kullanıcı iPad'inde çıkan şeridi ekran görüntüsüyle gönderip metnin
@@ -228,8 +229,8 @@
 
 `AddToHomeScreen`in TAM TERSİ: o tarayıcıda çıkar ("bu siteyi ana ekrana
 ekle"), bu ise **ana ekrandan açılan uygulamada** ("aslında gerçek bir
-uygulamamız var"). Koşulları birbirinin değili olduğundan ikisi asla aynı
-anda görünmez.
+uygulamamız var"). İkisi de `decideAppPromo`yu okuduğundan asla aynı anda
+görünmez (24 Eylül 2026'dan beri Android tarayıcısında da şerit — aşağıda 1).
 
 **Neden gerekti — Apple'ın banner'ı tam burada susuyor.** Safari'nin Smart
 App Banner'ı standalone modda hiç çıkmaz; Apple "bu kullanıcı zaten
@@ -241,13 +242,16 @@ Setup'ta footer'da duruyorlar, kaydırmayan görmüyor (davet sayfasında
 
 **Dört kural:**
 
-1. **Yalnızca standalone** — tarayıcıda zaten Apple'ınki var, ikisi birden
-   gürültü olur.
+1. **Standalone — ve 24 Eylül 2026'dan beri Android TARAYICISINDA da.** iOS
+   tarayıcısında zaten Apple'ınki var, ikisi birden gürültü olur; Android
+   Chrome'da öyle bir banner YOK. Play yayına girince Android tarayıcıda
+   şerit çıkar ve `AddToHomeScreen`in PWA kutusu ÇEKİLİR — ikisi aynı anda
+   çıksaydı biri web sürümüne, öteki mağazaya çağırırdı. Karar tek saf
+   fonksiyonda: `decideAppPromo` (`utils/storeLinks.ts`); iki bileşen de onu
+   okur, kapı `npm run verify-store-badges`.
 2. **Yalnızca o cihazın mağazası YAYINDAYSA** (`storeForDevice`,
-   `utils/storeLinks.ts`). Bugün: iOS'ta çıkar, **Android'de çıkmaz** (Play
-   `url: null`), masaüstünde çıkmaz (kurulacak yerel uygulama yok). Play
-   yayına girince URL'yi doldurmak yeter — şerit kendiliğinden belirir,
-   rozetlerle AYNI kapı.
+   `utils/storeLinks.ts`). iOS: App Store 15 Eyl · Android: Play 24 Eyl;
+   masaüstünde çıkmaz (kurulacak yerel uygulama yok).
 3. **✕ KALICI DEĞİL** (kullanıcı kararı: *"X olmalı ama her seferinde çıksın
    ki app'e gitsin sonunda"*). Kapatma `sessionStorage`da: o açılış boyunca
    gizli, uygulama kapanıp açılınca yeniden çıkar. ⚠ `localStorage`a

@@ -159,8 +159,11 @@ export const STORE_BADGES: StoreBadge[] = [
   },
   {
     key: 'googlePlay',
-    // Play production sürümü incelemede (13 Eylül 2026'da gönderildi).
-    url: null,
+    // ✅ 24 Eylül 2026: production gönderimi #19 (1.1.0/665) 17:44'te yayında;
+    // vitrin OTURUM AÇMADAN (gizli sekme) açılıyor ve "Erken Erişim" etiketi
+    // YOK — kullanıcı ölçtü (bu ortamın vekili play.google.com'u engelliyor).
+    // ⚠ Adres bilerek `hl=` parametresiz: Play dili ziyaretçiye göre seçer.
+    url: 'https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki',
     asset: '/google-play-badge.svg',
     alt: "Google Play'den indirin",
   },
@@ -173,10 +176,8 @@ export const STORE_BADGES: StoreBadge[] = [
  * iOS'ta App Store, Android'de Play. **Masaüstünde `null`** — orada kurulacak
  * yerel bir uygulama yok, kurulu PWA zaten son hâli.
  *
- * ⚠ Play yayına girene kadar Android'de `null` döner, yani şerit Android
- * kullanıcısına **hiç çizilmez**. Yayın geldiğinde `STORE_BADGES`teki `url`u
- * doldurmak yeter; şerit kendiliğinden belirir, burada ikinci bir düzenleme
- * gerekmez (rozetlerle AYNI kapı).
+ * Play'in URL'si 24 Eylül 2026'ya kadar `null`dı ve şerit Android'de hiç
+ * çizilmiyordu; URL dolunca kendiliğinden belirdi (rozetlerle AYNI kapı).
  *
  * ⚠ Cihaz tespiti `getDeviceType()`ten gelir, KENDİ UA testİNİ YAZMA —
  * iPadOS 13+ Safari kendini `Macintosh` diye tanıtıyor ve elle yazılan bir
@@ -187,6 +188,39 @@ export function storeForDevice(cihaz: 'ios' | 'android' | 'desktop'): StoreBadge
   const key: StoreKey = cihaz === 'ios' ? 'appStore' : 'googlePlay';
   const badge = STORE_BADGES.find((b) => b.key === key);
   return badge?.url ? badge : null;
+}
+
+/**
+ * Bu cihaza HANGİ uygulama çağrısı gösterilir — üstteki mağaza şeridi
+ * (`AppStoreStrip`), alttaki "ana ekrana ekle" kutusu (`AddToHomeScreen`)
+ * ya da hiçbiri. İki bileşen de BUNU çağırır; tek fonksiyon olduğu için
+ * ikisi yapısal olarak aynı anda çıkamaz.
+ *
+ * | Cihaz | Standalone (ana ekrandan) | Tarayıcıda |
+ * |---|---|---|
+ * | masaüstü | — | PWA kutusu |
+ * | iOS | mağaza şeridi (App Store yayındaysa) | PWA kutusu — Safari'nin kendi Smart App Banner'ı zaten üstte |
+ * | Android | mağaza şeridi (Play yayındaysa) | **Play yayındaysa mağaza şeridi**, değilse PWA kutusu |
+ *
+ * ⚠ **Android tarayıcı satırı 24 Eylül 2026'da değişti** (Play yayını).
+ * Chrome'da Apple'ın banner'ının karşılığı YOK, yani şerit oradaki tek
+ * mağaza duyurusu. PWA kutusu Play yayındayken çıksaydı Android kullanıcısı
+ * aynı anda iki zıt çağrı görürdü: biri web sürümüne, öteki mağazaya
+ * (ROADMAP "Kalan yapılacaklar" → `AddToHomeScreen.tsx` platforma göre
+ * dallansın). iOS tarayıcı satırı bilerek DEĞİŞMEDİ.
+ */
+export type AppPromo = 'store-strip' | 'pwa-install' | null;
+
+export function decideAppPromo(
+  cihaz: 'ios' | 'android' | 'desktop',
+  standalone: boolean,
+  badges: StoreBadge[] = STORE_BADGES,
+): AppPromo {
+  const key: StoreKey | null = cihaz === 'ios' ? 'appStore' : cihaz === 'android' ? 'googlePlay' : null;
+  const yayinda = key !== null && !!badges.find((b) => b.key === key)?.url;
+  if (standalone) return yayinda ? 'store-strip' : null;
+  if (cihaz === 'android' && yayinda) return 'store-strip';
+  return 'pwa-install';
 }
 
 /**
