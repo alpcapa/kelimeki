@@ -435,6 +435,31 @@ null gönderdiğinden o satırlar zaten 'bilinmiyor' kaynağında toplanıyor ve
 reklam kampanyalarının baktığı satırlarda yalnızca web var. Port damgalamayı
 eklerse burası da güncellenmeli.
 
+## Kaynak Hunisi: Kişi / Oyun görünümleri — 24 Eylül 2026
+
+Kullanıcı sordu: *"Direkt başlayan 267, biten 204 ama yüzdeleri 6.4% ve
+10.5% — biten yüzdesi nasıl daha yüksek olabilir?"* Veri doğruydu, sunum
+yanlıştı: `% / Sayı` düğmesinin sayı kipi oyun ADEDİ, yüzde kipi CİHAZ
+oranı gösteriyordu ve yüzdenin tabanı sütuna göre değişiyordu ("Başlayan" →
+`starters / visitors`, "Biten" → `finishers / starters`). Canlıda ölçülen
+(son 30 gün, `direkt`): 229 oyun 29 cihazdan, 172 bitiş yalnızca 4-5
+cihazdan — oyun ile kişi arasında ~8 kat fark var, yan yana okunamazlar.
+
+Kullanıcı kararı: *"Bence bu tablo elma armut karışmış. Burada görmek
+istediğimiz hangi kaynaktan kaç kişi gelmiş, kaçı üye olmuş, kaçı oyun
+başlatmış, kaçı oyun bitirmiş… Ayrıca başlayan, biten oyun ve ortalama oyun
+(kişi başı) kolonları da olabilir alternatif olarak."*
+
+- **`% / Sayı` → `Kişi / Oyun`.** Kişi: Gelen · Üye · Başlatan · Bitiren,
+  her hücrede sayı + o satırın GELEN'ine göre yüzde (tek taban → soldan sağa
+  okunan huni). Oyun: Başlayan Oyun · Biten Oyun · Oyun / Kişi
+  (`starts / starters`).
+- **RPC DEĞİŞMEDİ** (`admin_source_funnel`) — bütün sayılar zaten dönüyordu.
+  CSV de aynı (ham, iki birim birden).
+- **"—" kuralı korundu ve Başlatan'a da yayıldı:** oyun > 0 ama cihaz = 0
+  ise "bilinmiyor". Port iki tarafa da `anon_id` yazmıyor (`app` satırı: 73
+  oyun, 0 cihaz), bitiş tarafı 31 Ağustos'tan önce hiç yazmıyordu.
+
 ## Tanıtım Turu kartı (Onboarding Faz 5, 8 Eylül 2026)
 
 Büyüme > Kullanıcı → Kaynak Hunisi'nin hemen altında. Kaynak
