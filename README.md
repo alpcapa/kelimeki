@@ -155,7 +155,6 @@ src/
 │   ├── LandscapeBlock.tsx       # TAM EKRAN, kapatılamaz "Telefonunuzu dikeye çevirin" bloğu — ölçüt YATAY DEĞİL yetersiz YÜKSEKLİK (iPad bloklanmaz), metin alanı odaktayken bastırılır (klavye viewport'u kısaltıyor); TEK mount noktası boot.tsx
 │   ├── ErrorBoundary.tsx        # kök seviye React crash yakalayıcı
 │   ├── LoadingNote.tsx          # ortak "Yükleniyor…" göstergesi (Flutter portundaki KLoadingNote ile birebir)
-│   ├── AddToHomeScreen.tsx      # PWA ana ekrana ekle (tarayıcıda)
 │   └── AppStoreStrip.tsx        # ana ekrandan açılan uygulamada "mağazada" şeridi
 ├── game/
 │   ├── types.ts       # GameState, Player, Tile tipleri

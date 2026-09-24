@@ -181,7 +181,8 @@ export const STORE_BADGES: StoreBadge[] = [
  *
  * ⚠ Cihaz tespiti `getDeviceType()`ten gelir, KENDİ UA testİNİ YAZMA —
  * iPadOS 13+ Safari kendini `Macintosh` diye tanıtıyor ve elle yazılan bir
- * `/iPhone|iPad/` testi iPad'i KAÇIRIYOR (vaka: `AddToHomeScreen`in başlığı).
+ * `/iPhone|iPad/` testi iPad'i KAÇIRIYOR (vaka: silinen `AddToHomeScreen`in
+ * başlığı, 14 Eylül 2026 — bkz. docs/decisions/components.md).
  */
 export function storeForDevice(cihaz: 'ios' | 'android' | 'desktop'): StoreBadge | null {
   if (cihaz === 'desktop') return null;
@@ -191,36 +192,47 @@ export function storeForDevice(cihaz: 'ios' | 'android' | 'desktop'): StoreBadge
 }
 
 /**
- * Bu cihaza HANGİ uygulama çağrısı gösterilir — üstteki mağaza şeridi
- * (`AppStoreStrip`), alttaki "ana ekrana ekle" kutusu (`AddToHomeScreen`)
- * ya da hiçbiri. İki bileşen de BUNU çağırır; tek fonksiyon olduğu için
- * ikisi yapısal olarak aynı anda çıkamaz.
+ * Bu sayfa iOS'un GERÇEK Safari'sinde mi açık — yani Apple'ın Smart App
+ * Banner'ının (`<meta name="apple-itunes-app">`) çıkacağı tek yer mi?
  *
- * | Cihaz | Standalone (ana ekrandan) | Tarayıcıda |
- * |---|---|---|
- * | masaüstü | — | PWA kutusu |
- * | iOS | mağaza şeridi (App Store yayındaysa) | PWA kutusu — Safari'nin kendi Smart App Banner'ı zaten üstte |
- * | Android | mağaza şeridi (Play yayındaysa) | **Play yayındaysa mağaza şeridi**, değilse PWA kutusu |
+ * 24 Eylül 2026, kullanıcı: *"Apple'ın kendi banner'ı ile ikisi birlikte
+ * fazla olacak… İkisi de aynı şeyi söylüyor."* Banner tarayıcının kendi
+ * parçası, sayfa onu GÖREMEZ; ama nerede çıktığı belli: yalnızca iOS
+ * Safari'de. Ana ekrandan açılışta (standalone), Chrome/Firefox/Edge/
+ * Opera/Google uygulamasında ve uygulama-içi tarayıcılarda (Instagram,
+ * Facebook… — bunlar WKWebView, UA'larında `Safari/` bile YOK) çıkmaz.
  *
- * ⚠ **Android tarayıcı satırı 24 Eylül 2026'da değişti** (Play yayını).
- * Chrome'da Apple'ın banner'ının karşılığı YOK, yani şerit oradaki tek
- * mağaza duyurusu. PWA kutusu Play yayındayken çıksaydı Android kullanıcısı
- * aynı anda iki zıt çağrı görürdü: biri web sürümüne, öteki mağazaya
- * (ROADMAP "Kalan yapılacaklar" → `AddToHomeScreen.tsx` platforma göre
- * dallansın). iOS tarayıcı satırı bilerek DEĞİŞMEDİ.
+ * ⚠ **İki bilinen kör nokta, ikisi de "uyarı YOK" yönünde:** (1) bazı
+ * uygulamalar linki `SFSafariViewController`da açıyor; UA'sı Safari'yle
+ * BİREBİR aynı, ama Smart App Banner orada çıkmayabilir. (2) Apple'ın
+ * banner'ını ✕ ile kapatana Apple onu bir süre göstermiyor; biz de. Kullanıcı
+ * "fazla uyarı"yı "eksik uyarı"dan kötü saydı.
+ * ⚠ iPadOS 13+ Safari kendini `Macintosh` diye tanıtır — o yüzden cihaz
+ * `getDeviceType()`ten gelir, burada ayrıca iPhone/iPad ARANMAZ.
  */
-export type AppPromo = 'store-strip' | 'pwa-install' | null;
+export function isIosSafari(cihaz: 'ios' | 'android' | 'desktop', standalone: boolean, ua: string): boolean {
+  if (cihaz !== 'ios' || standalone) return false;
+  if (!/Safari\//.test(ua)) return false; // WKWebView (uygulama-içi tarayıcı)
+  return !/CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|Twitter|Snapchat|LinkedInApp|Pinterest|TikTok|musical_ly|Bytedance/.test(ua);
+}
 
-export function decideAppPromo(
-  cihaz: 'ios' | 'android' | 'desktop',
-  standalone: boolean,
-  badges: StoreBadge[] = STORE_BADGES,
-): AppPromo {
-  const key: StoreKey | null = cihaz === 'ios' ? 'appStore' : cihaz === 'android' ? 'googlePlay' : null;
-  const yayinda = key !== null && !!badges.find((b) => b.key === key)?.url;
-  if (standalone) return yayinda ? 'store-strip' : null;
-  if (cihaz === 'android' && yayinda) return 'store-strip';
-  return 'pwa-install';
+/**
+ * Mağaza şeridi (`AppStoreStrip`) gösterilsin mi — tek karar, saf.
+ * `hasAppInstall`: girişli kullanıcının `push_tokens`ta satırı var mı
+ * (`null` = bilinmiyor/misafir → yüklü DEĞİL sayılır).
+ */
+export function shouldShowStoreStrip(opts: {
+  cihaz: 'ios' | 'android' | 'desktop';
+  standalone: boolean;
+  ua: string;
+  hasAppInstall: boolean | null;
+  badges?: StoreBadge[];
+}): boolean {
+  const key: StoreKey | null = opts.cihaz === 'ios' ? 'appStore' : opts.cihaz === 'android' ? 'googlePlay' : null;
+  if (!key || !(opts.badges ?? STORE_BADGES).find((b) => b.key === key)?.url) return false;
+  if (isIosSafari(opts.cihaz, opts.standalone, opts.ua)) return false; // Apple'ınki zaten orada
+  if (opts.hasAppInstall === true) return false; // uygulama bu hesapta en az bir cihazda kurulu
+  return true;
 }
 
 /**

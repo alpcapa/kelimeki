@@ -431,6 +431,28 @@ export async function logGameStart(
  * `getOsVersion`/`getDeviceModel`) iyi niyetle (best-effort) okunan,
  * şimdilik hiçbir ekranda gösterilmeyen ek alanlar — `null` gelmesi normal.
  */
+/**
+ * Bu hesap uygulamaya (iOS/Android) en az bir cihazda giriş yapmış mı —
+ * `push_tokens`ta satırı var mı. `AppStoreStrip` buna göre SUSAR: uygulamayı
+ * zaten kurmuş birine "indir" demenin anlamı yok (24 Eylül 2026, kullanıcı
+ * isteği). RLS: kullanıcı yalnızca KENDİ satırlarını görür
+ * (`push_tokens_select_own`). ⚠ Uygulamayı silen birinin satırı hemen
+ * silinmez → ona şerit çıkmaz; kabul edilen tek sızıntı.
+ * `null` = bilinmiyor (Supabase yok ya da hata) → çağıran "yüklü değil" sayar.
+ */
+export async function userHasAppInstall(userId: string): Promise<boolean | null> {
+  if (!supabase) return null;
+  const { count, error } = await supabase
+    .from('push_tokens')
+    .select('token', { count: 'exact', head: true })
+    .eq('user_id', userId);
+  if (error) {
+    console.error('[Kelimeki] userHasAppInstall hatası:', error.message);
+    return null;
+  }
+  return (count ?? 0) > 0;
+}
+
 export async function logGuestVisit(
   anonId: string,
   utmSource: string | null,
