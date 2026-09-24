@@ -44,11 +44,21 @@
  * Yani eşit yükseklikte Apple DAHA GENİŞ kalıyordu (44 px'te 166 ↔ 148) ve
  * Google'ın *"same size or larger"* kuralı ÇİĞNENİYORDU.
  *
- * **Çözüm: hizalama yükseklikten GENİŞLİĞE çevrildi.** İkisi de aynı
- * genişlikte çizilir (`BADGE_WIDTH_PX`), yükseklik orandan gelir. Sonuç:
- * Play biraz daha YÜKSEK durur (~50 px ↔ Apple ~44 px) — bu bir kusur
- * değil, Google'ın kuralının ta kendisi. Apple'ın tek boyut kuralı
- * "≥ 40 px yükseklik" ve o da sağlanıyor.
+ * **15 Eylül çözümü: hizalama yükseklikten GENİŞLİĞE çevrilmişti** — Play
+ * ~50 px, Apple ~44 px yüksekliğinde duruyordu.
+ *
+ * ⚠ **24 Eylül 2026 — EŞİT YÜKSEKLİĞE GERİ DÖNÜLDÜ (kullanıcı kararı).**
+ * İki rozet yan yana yayına girince (Play'in URL'si doldu) kullanıcı iPad'de
+ * gördü: *"Google Play banner'ı daha büyük duruyor. Aynı boy olmaları
+ * gerekmiyor mu?"* Oranlar farklı olduğundan iki rozet hem yükseklikte hem
+ * genişlikte eşit OLAMAZ; biri seçilmeli. Kılavuzlar yeniden okundu:
+ * Apple'da eşitlik kuralı YOK (yalnızca "ilk sırada", "≥ 40 px", "1/4 clear
+ * space" — sayfa 24 Eyl'de çekildi). Google *"same size or larger"* diyor ve
+ * "size" yükseklik olarak okunduğunda eşit yükseklik onu SAĞLIYOR; genişlik
+ * olarak okunursa Play ~%11 dar kalıyor. 15 Eylül'deki "çiğniyordu" tespiti
+ * ikinci okumaya dayanıyordu; kullanıcı görsel dengeyi seçti.
+ * Sonuç: ikisi `BADGE_HEIGHT_PX` yüksekliğinde, genişlik orandan (44 px'te
+ * Apple ~166, Play ~148). ⚠ Genişliğe geri çevirmeden önce bu kararı OKU.
  *
  * ⚠ **Ders: iki rozeti KARŞILAŞTIRAN bir kural, iki dosya da elde olmadan
  * kanıtlanamaz.** Kapı (`verify-store-badges`) eskiden yalnızca Play'in
@@ -73,25 +83,21 @@
 export const BADGE_MIN_HEIGHT_PX = 40;
 
 /**
- * Rozetlerin ekranda çizileceği GENİŞLİK (px); yükseklik orandan gelir.
- *
- * ⚠ Hizalama bilerek genişlikten yapılıyor — gerekçe yukarıdaki ölçümde.
- * Eşit genişlik, Google'ın "same size or larger"ını tanım gereği sağlar.
- * Değer, Apple rozetinin yüksekliğini 40'ın altına DÜŞÜRMEYECEK kadar
- * büyük olmalı: 166 / 3.78 ≈ 43.9 px. Kapı bunu her koşuda doğruluyor.
+ * Rozetlerin ekranda çizileceği YÜKSEKLİK (px) — İKİSİ DE; genişlik orandan
+ * gelir. 24 Eylül 2026 kullanıcı kararı, gerekçe yukarıda. Apple'ın
+ * "≥ 40 px" sınırının üstünde; kapı bunu her koşuda doğruluyor.
  */
-export const BADGE_WIDTH_PX = 166;
+export const BADGE_HEIGHT_PX = 44;
 
 /**
  * Rozetler arası boşluk (px) — clear space kuralının karşılığı.
  *
- * İki kılavuz da "yüksekliğin 1/4'ü" diyor. İki rozet artık AYNI yükseklikte
- * olmadığından ölçüt YÜKSEK OLANI (Play, ~50 px): 50/4 ≈ 13.
+ * İki kılavuz da "yüksekliğin 1/4'ü" diyor: 44/4 = 11.
  * ⚠ Elle yazılmış görünüyor ama denetimsiz DEĞİL — `verify-store-badges`
  * bu sayıyı gerçek SVG'lerden hesaplayıp karşılaştırıyor; rozet dosyası
  * ya da genişlik değişirse kapı düşer.
  */
-export const BADGE_GAP_PX = 13;
+export const BADGE_GAP_PX = 11;
 
 export type StoreKey = 'appStore' | 'googlePlay';
 
