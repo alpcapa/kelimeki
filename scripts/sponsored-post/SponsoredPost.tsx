@@ -35,13 +35,11 @@ import { RANK_TIERS } from '../../src/utils/leagueRank';
 import { PLAYER_COLORS } from '../../src/game/constants';
 import { DEMO_TILES_2, DEMO_TILES_4 } from '../../src/landing/demoBoard';
 import { IkiKisiIkon, RobotIkon, SohbetIkon } from '../../src/landing/OzellikIkonlari';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 
 import {
   BADGE_GAP_PX,
   BADGE_MIN_HEIGHT_PX,
-  BADGE_WIDTH_PX,
+  BADGE_HEIGHT_PX,
   visibleStoreBadges,
   visibleStoreNamesTr,
 } from '../../src/utils/storeLinks';
@@ -391,51 +389,28 @@ function Rozet({ renk, metin }: { renk: string; metin: string }) {
  * Kare feed'de ekranın neredeyse tamamını kaplıyor; 390 pt modern bir iPhone'un
  * mantıksal genişliği (Pro Max'te 430, yani bu DAR olanı — güvenli taraf).
  *
- * ⚠ `ROZET_W`den ÖNCE durmak zorunda: `rozetGenisligi()` modül yüklenirken
- * çağrılıyor ve bu sabiti okuyor (bildirimi sonraya alınırsa TDZ hatası).
+ * ⚠ `ROZET_H`den ÖNCE durmak zorunda: modül yüklenirken hesaplanıyor ve bu
+ * sabiti okuyor (bildirimi sonraya alınırsa TDZ hatası).
  */
 const TELEFON_OLCEK = 390 / SLIDE;
 
 /**
- * Rozetin bu karelerdeki genişliği (1080 px'lik tasarım uzayında).
+ * Rozetin bu karelerdeki YÜKSEKLİĞİ (1080 px'lik tasarım uzayında) — iki
+ * rozet de bu yükseklikte (24 Eylül 2026, kullanıcı kararı: eşit yükseklik;
+ * gerekçe `storeLinks.ts`).
  *
  * ⚠ Apple'ın alt sınırı (`BADGE_MIN_HEIGHT_PX` = 40) EKRANDA ölçülür, dosyada
  * değil — ve bu kareler bir ekran değil, bir GÖRSEL. Instagram kareyi telefonun
  * neredeyse tam genişliğinde çiziyor (~390 pt), yani 1080 px'lik tasarım orada
  * ×0,36 küçülüyor: 40 pt'yi GERÇEKTEN geçmek için rozetin bu karede
- * 40 / 0,36 ≈ 111 px yüksek olması gerekiyor. Türkçe rozet 3,78:1 olduğundan
- * genişlik 111 × 3,78 ≈ 420.
+ * 40 / 0,36 ≈ 111 px yüksek olması gerekiyor.
  *
  * ⚠ **Rozet bu yüzden HER kareye konmadı.** Alt şeride sığacak bir rozet
  * (~50 px) telefonda ~18 pt'ye düşer, yani Apple'ın sınırının ALTINDA kalırdı.
  * İçerik kareleri (2-4) alt şeritte rozet yerine düz metin taşıyor
  * (`visibleStoreNamesTr`); rozet yalnızca kanca (1) ve çağrı (5) karelerinde.
  */
-const ROZET_W = rozetGenisligi();
-
-/**
- * Rozet genişliğini ÖLÇEREK bulur, varsayarak değil.
- *
- * Oran `public/`teki resmî dosyanın `viewBox`ından okunuyor. Bu, `storeLinks.ts`te
- * bedeli ödenmiş bir ders: 15 Eylül 2026'ya kadar Apple rozetinin oranı `~3.0`
- * VARSAYILIYORDU; gerçek dosya gelince 3,78 çıktı ve yerleşim kuralı çiğniyordu.
- *
- * ⚠ En GENİŞ oran ölçütü belirler: rozetler eşit genişlikte çizildiğinden en
- * geniş oranlı olan en ALÇAK rozeti üretir, Apple'ın 40 pt sınırını onun
- * geçmesi gerekir.
- */
-function rozetGenisligi(): number {
-  const oranlar = visibleStoreBadges().map((b) => {
-    const dosya = path.join('public', path.basename(b.asset));
-    const vb = /viewBox="([\d.\s-]+)"/.exec(readFileSync(dosya, 'utf8'));
-    if (!vb) throw new Error(`${dosya}: viewBox okunamadı — rozet ölçülemiyor.`);
-    const [, , w, h] = vb[1].trim().split(/\s+/).map(Number);
-    if (!(w > 0 && h > 0)) throw new Error(`${dosya}: viewBox geçersiz (${vb[1]}).`);
-    return w / h;
-  });
-  if (oranlar.length === 0) return 0;
-  return Math.ceil((BADGE_MIN_HEIGHT_PX / TELEFON_OLCEK) * Math.max(...oranlar));
-}
+const ROZET_H = Math.ceil(BADGE_MIN_HEIGHT_PX / TELEFON_OLCEK);
 
 /**
  * Mağaza rozetleri — ÜRETİM kapısından geçerek (`visibleStoreBadges`).
@@ -449,13 +424,13 @@ function rozetGenisligi(): number {
  * `storeLinks.ts`teki `null` dolduğunda kareler yeniden üretildiğinde ikinci
  * rozet kendiliğinden gelir; burada yapılacak bir iş YOK.
  *
- * ⚠ **Eşit GENİŞLİK, eşit yükseklik değil** — gerekçesi `storeLinks.ts`te
- * ölçülü (eşit yükseklik Google'ın "same size or larger" kuralını çiğniyordu).
- * Aradaki clear space, web'deki denetlenmiş (`BADGE_WIDTH_PX`, `BADGE_GAP_PX`)
+ * ⚠ **Eşit YÜKSEKLİK** (24 Eylül 2026, kullanıcı kararı; 15-24 Eyl arası eşit
+ * genişlikti) — gerekçesi `storeLinks.ts`te.
+ * Aradaki clear space, web'deki denetlenmiş (`BADGE_HEIGHT_PX`, `BADGE_GAP_PX`)
  * çiftinin oranıyla ölçekleniyor — yani kapının (`verify-store-badges`)
  * doğruladığı sayıdan türüyor, elle seçilmiş bir boşluk değil.
  */
-function MagazaRozetleri({ genislik = ROZET_W }: { genislik?: number }) {
+function MagazaRozetleri({ yukseklik = ROZET_H }: { yukseklik?: number }) {
   const rozetler = visibleStoreBadges();
   if (rozetler.length === 0) return null;
   return (
@@ -463,7 +438,7 @@ function MagazaRozetleri({ genislik = ROZET_W }: { genislik?: number }) {
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: Math.round((genislik * BADGE_GAP_PX) / BADGE_WIDTH_PX),
+        gap: Math.round((yukseklik * BADGE_GAP_PX) / BADGE_HEIGHT_PX),
       }}
     >
       {rozetler.map((b) => (
@@ -471,7 +446,7 @@ function MagazaRozetleri({ genislik = ROZET_W }: { genislik?: number }) {
           key={b.key}
           src={b.asset}
           alt={b.alt}
-          style={{ width: genislik, height: 'auto', display: 'block' }}
+          style={{ height: yukseklik, width: 'auto', display: 'block' }}
         />
       ))}
     </div>

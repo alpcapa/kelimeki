@@ -25,7 +25,7 @@ import {
   appleSmartAppBannerMeta,
   BADGE_GAP_PX,
   BADGE_MIN_HEIGHT_PX,
-  BADGE_WIDTH_PX,
+  BADGE_HEIGHT_PX,
   STORE_BADGES,
   visibleStoreBadges,
   type StoreBadge,
@@ -87,31 +87,28 @@ console.log('storeLinks — mağaza rozetleri');
   const play = olc('public/google-play-badge.svg');
 
   if (apple && play) {
-    // İkisi de AYNI genişlikte çiziliyor → yükseklik orandan geliyor.
-    const appleY = BADGE_WIDTH_PX / apple.oran;
-    const playY = BADGE_WIDTH_PX / play.oran;
+    // 24 Eylül 2026, kullanıcı kararı: ikisi AYNI YÜKSEKLİKTE çiziliyor
+    // (15-24 Eyl arası eşit GENİŞLİKTİ). Gerekçe `storeLinks.ts`te.
+    const appleX = BADGE_HEIGHT_PX * apple.oran;
+    const playX = BADGE_HEIGHT_PX * play.oran;
 
     check(
-      `App Store yüksekliği ≥ ${BADGE_MIN_HEIGHT_PX} px (Apple'ın ekran alt sınırı)`,
-      appleY >= BADGE_MIN_HEIGHT_PX,
-      `${BADGE_WIDTH_PX} px genişlikte ${appleY.toFixed(1)} px`,
+      `iki rozet de ≥ ${BADGE_MIN_HEIGHT_PX} px yüksek (Apple'ın ekran alt sınırı)`,
+      BADGE_HEIGHT_PX >= BADGE_MIN_HEIGHT_PX,
+      `${BADGE_HEIGHT_PX} px`,
     );
-
-    // Google: "same size or larger than the other badges". Eşit GENİŞLİK bunu
-    // tanım gereği sağlar; yine de açıkça ölçülüyor ki biri bileşeni
-    // yüksekliğe geri çevirirse kapı düşsün.
+    // Google: "same size or larger" — YÜKSEKLİK okumasıyla eşit. Genişlikte
+    // Play daha dar (oran farkı); bilinçli, kayıtta.
+    console.log(`    (Play ${playX.toFixed(1)}×${BADGE_HEIGHT_PX} ↔ App Store ${appleX.toFixed(1)}×${BADGE_HEIGHT_PX})`);
+    const bilesen = readFileSync('src/components/StoreBadges.tsx', 'utf8');
     check(
-      'Play rozeti App Store\'unkinden dar DEĞİL (Google: "same size or larger")',
-      BADGE_WIDTH_PX >= BADGE_WIDTH_PX && playY >= appleY,
-      `Play ${BADGE_WIDTH_PX}×${playY.toFixed(1)} ↔ App Store ${BADGE_WIDTH_PX}×${appleY.toFixed(1)}`,
+      'StoreBadges YÜKSEKLİKTEN hizalıyor (genişliğe geri çevrilmedi)',
+      bilesen.includes('height: BADGE_HEIGHT_PX') && !bilesen.includes('BADGE_WIDTH_PX'),
     );
-
-    // Clear space ölçütü YÜKSEK olan rozet (artık ikisi eşit yükseklikte değil).
-    const enYuksek = Math.max(appleY, playY);
     check(
-      'clear space = YÜKSEK olanın 1/4\'ü (İKİ kılavuz da aynı sayıyı veriyor)',
-      BADGE_GAP_PX === Math.ceil(enYuksek / 4),
-      `${BADGE_GAP_PX} ↔ ${Math.ceil(enYuksek / 4)} (en yüksek ${enYuksek.toFixed(1)} px)`,
+      'clear space = yüksekliğin 1/4\'ü (İKİ kılavuz da aynı sayıyı veriyor)',
+      BADGE_GAP_PX === Math.ceil(BADGE_HEIGHT_PX / 4),
+      `${BADGE_GAP_PX} ↔ ${Math.ceil(BADGE_HEIGHT_PX / 4)}`,
     );
   } else {
     // Dosyalardan biri yoksa oran karşılaştırması YAPILAMAZ. Sessizce

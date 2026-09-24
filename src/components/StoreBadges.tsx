@@ -1,4 +1,4 @@
-import { BADGE_GAP_PX, BADGE_WIDTH_PX, visibleStoreBadges } from '../utils/storeLinks';
+import { BADGE_GAP_PX, BADGE_HEIGHT_PX, visibleStoreBadges } from '../utils/storeLinks';
 
 /**
  * Mağaza rozeti satırı (ROADMAP #26) — DÖRT yerde: Setup'ın footer'ında
@@ -25,13 +25,13 @@ import { BADGE_GAP_PX, BADGE_WIDTH_PX, visibleStoreBadges } from '../utils/store
  *
  * Kurallar ve gerekçeleri `utils/storeLinks.ts`'te; burada yalnızca çizim.
  * Üç şey oradan gelir ve burada ELLE YAZILMAZ: sıra (App Store önce),
- * GENİŞLİK (ikisi eşit) ve aradaki boşluk (yüksek olanın 1/4'ü).
+ * YÜKSEKLİK (ikisi eşit) ve aradaki boşluk (yüksekliğin 1/4'ü).
  *
- * ⚠ **Hizalama YÜKSEKLİKTEN değil GENİŞLİKTEN** (15 Eylül 2026). Eşit
- * yükseklik sezgisel olanıydı ama Google'ın "same size or larger" kuralını
- * çiğniyordu: Türkçe App Store rozeti 3.78:1, Play'inki 3.37:1 — eşit
- * yükseklikte Apple daha geniş kalıyor. Ölçüm ve tam gerekçe
- * `storeLinks.ts`'te. Sonuç: Play biraz daha yüksek durur, bu BEKLENEN.
+ * ⚠ **Hizalama YÜKSEKLİKTEN** (24 Eylül 2026, kullanıcı kararı: *"Aynı boy
+ * olmaları gerekmiyor mu?"*). 15-24 Eylül arası GENİŞLİKTENDİ ve Play ~%12
+ * daha yüksek duruyordu. Oranlar farklı (App Store 3.78:1, Play 3.37:1),
+ * yani eşit yükseklikte Apple biraz daha GENİŞ — bu beklenen. Gerekçe ve
+ * Google kuralının iki okuması `storeLinks.ts`'te.
  *
  * ⚠ **Yayında olmayan mağaza HİÇ çizilmez** (`visibleStoreBadges`). Kapı
  * hâlâ yerinde: 15-24 Eylül 2026 arası yalnız App Store yayındaydı ve
@@ -62,10 +62,9 @@ export function StoreBadges() {
           <img
             src={badge.asset}
             alt={badge.alt}
-            // GENİŞLİK sabit, yükseklik oranla — eşit genişlik Google'ın
-            // "same size or larger"ını tanım gereği sağlar; Apple'ın tek
+            // YÜKSEKLİK sabit (ikisi eşit), genişlik oranla. Apple'ın tek
             // boyut kuralı (≥40 px yükseklik) kapıda doğrulanıyor.
-            style={{ width: BADGE_WIDTH_PX, height: 'auto', display: 'block' }}
+            style={{ height: BADGE_HEIGHT_PX, width: 'auto', display: 'block' }}
           />
         </a>
       ))}
