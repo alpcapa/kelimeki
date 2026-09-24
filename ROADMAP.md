@@ -323,6 +323,21 @@ uzun süre kalan işi *"APNs anahtarını yükle + Push capability"* kadar
 gösterdi; ölçüm daha büyük çıktı (imzalama zinciri, entitlements, AASA,
 vitrin) — tahmin, kaynak okunarak düzeltildi.
 
+**#36 — Huni v2'nin gizlilik metni yarısı: "Üye" sütunu + üye bitişi** →
+⏳ **AÇIK, dondurmayı bekliyor** (24 Eylül 2026, kullanıcı kararı: *"ikiye
+böl"*). Sunucu + web yarısı (`funnel_events`, admin "Huni v2") bu tarihte
+yayında, ama web yalnızca gizlilik metninin BUGÜN saydığı olayları yazıyor
+(ziyaret, YZ oyunu başlangıcı, misafir bitişi). `signup` ve üye oyun bitişi
+`FUNNEL_MEMBER_EVENTS_ENABLED` (`src/utils/funnelEvents.ts`) bayrağının
+arkasında, çağrı yerleri hazır. Yapılacak TEK PR: 6. bölüme yeni durumları
+ekle (anonim kodla, hesap kimliği OLMADAN, yalnızca GÜN: "hesap açtığınızda"
++ "girişliyken oyun bitirdiğinizde") + tarihi güncelle + port kopyası
+(`legal_modals.dart`) + bayrağı `true` yap. `npm run verify-funnel-events`
+bayrağın metin güncellenmeden açılmasını engelliyor. **#33'ün "dört → beş"
+düzeltmesiyle AYNI PR** (ikisi de aynı paragraf, aynı tarih, aynı port
+dosyası). Mobil derlemeyi tetikler → merge turunda; Huni v2'nin mobil yarısı
+(PR 2, `docs/decisions/funnel-v2.md`) ile birleştirilebilir.
+
 ## Dondurulmuş port PR'ları — merge turu SIRASI (21 Eylül 2026)
 
 Play production incelemesi (#19) kapanınca girecek yedi PR. Önerilen sıra:
@@ -469,60 +484,9 @@ acil bir fren gerekirse eşiği yükseltmek YETER.
 
 ### Sayaç — nerede okunur, 14. gün ne zaman
 
-✅ **KAPANDI 10 Eylül 2026** — sayaç doldu, başvuru gönderildi (15:26).
-Aşağısı bir sonraki uygulama/hesap için işletim bilgisi olarak duruyor.
-⚠ Tahmin TUTTU: bu bölüm *"14. gün ~10 Eylül"* diyordu ve kart tam o gün
-açıldı.
-
-⚠ Bu bir MADDE değil, açık pencerenin işletim bilgisi. *"Davetlilere
-hatırlatma"* maddesi 2 Eylül 2026'da KAPANDI (kullanıcı: *"Hep ben
-hatırlatıyorum zaten, burada madde olarak durmasına gerek yok"*) — arşivde:
-`docs/decisions/roadmap-arsiv.md` → *"3. Davetlilere hatırlatma"*. Aşağısı
-o maddeyle birlikte kaybolmasın diye burada kaldı.
-
-**Sayacın yeri:** Dashboard → (aşağı kaydır) Production → `Apply for access
-to production` kartı. Test menüsünde DEĞİL; track sayfasında da yok
-(ölçüldü). **14. gün ~10 Eylül 2026** (sayaç 27/28 Ağustos'ta başladı;
-Console'un günü nasıl saydığı ölçülmedi, ±1 gün kabul et ve tarihi kartın
-kendi metninden takip et).
-
-**Katılan/indiren sayısı:** Test → Closed testing → (track) → **Testers**
-sekmesi — ⚠ oradaki sayı opt-in DEĞİL, **izin listesi**; indirme adedi için
-**Statistics**.
-
-**14 gün dolmadan yapılabilecek iki iş** (ikisi de hâlâ açık): karttaki
-**`Preview questions`**'dan başvuru sorularını okuyup cevapları hazırlamak,
-ve tester'lardan **yazılı geri bildirim** toplamak (başvuru "testi nasıl
-yürüttün" diye soruyor).
-
-#### ✅ "12" TAVAN — kapandı (6 Eylül 2026, kullanıcı tespiti)
-
-Kullanıcı, Console'a bakarak kapattı: *"12 kişi Tavan, google daha fazla
-olsa bile gerçek sayıyı göstermiyor."* Yani kart `min(gerçek, 12)`
-gösteriyor; 2 Eylül'deki sezgisi (*"12'den fazla katılım olduğunu
-düşünüyorum"*) doğruymuş.
-
-Eski kayıt iki tezi yan yana tutuyordu ve ayırt edici gözlem olarak
-*"sayının 12'nin ÜSTÜNE çıktığının bir kez görülmesi"*ni işaret ediyordu.
-**O gözlem hiçbir zaman gerçekleşemezdi** — tavan tam da onu engelliyor.
-Ayırt etme yöntemi olarak yanlış seçilmişti; doğru kaynak baştan beri
-Console'un kendisiydi ve ona yalnızca kullanıcı bakabiliyor (bu oturumların
-Play Console erişimi YOK).
-
-**Pratik sonucu — kartın sayısı bir kapasite ölçüsü DEĞİL:**
-
-| Soru | Kart cevaplıyor mu |
-|---|---|
-| Şart sağlanıyor mu (≥12)? | ✅ evet, 12 yazıyorsa sağlanıyor |
-| Kaç kişi var, payımız ne kadar? | ❌ hayır, 12'de sabitleniyor |
-| Biri düşerse eşiğin altına iner miyiz? | ❌ karttan ANLAŞILMAZ |
-
-Son satır önemli: *"biri düşerse sayaç sıfırlanır"* endişesi kartla
-yanıtlanamaz, çünkü kart payı gizliyor. Gerçek katılım için **Test →
-Closed testing → (track) → Testers** (izin listesi) ve **Statistics**
-(indirme) sekmelerine bakılmalı — ikisi de yukarıda tarif edildi.
-
-Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
+✅ **KAPANDI 10 Eylül 2026 → ARŞİVDE** (`docs/decisions/roadmap-arsiv.md`,
+aynı başlık; 24 Eylül 2026'da taşındı). Sayacın yeri, tester sayısının
+nereden okunacağı ve kartın "12" tavanı orada.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 

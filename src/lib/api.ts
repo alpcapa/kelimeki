@@ -47,6 +47,7 @@ import type {
   AdminWebJourneyRow,
   AdminTutorialFunnelRow,
   AdminSourceFunnelRow,
+  AdminFunnelRow,
   AdminDeviceBreakdownRow,
   AdminDeviceModelRow,
   AdminOsVersionRow,
@@ -2801,6 +2802,17 @@ export async function fetchAdminTutorialFunnel(days = 30): Promise<AdminTutorial
     rethrowSupabase(error);
   }
   return (data as AdminTutorialFunnelRow[]) ?? [];
+}
+
+/**
+ * Huni v2 (`admin_funnel`, yalnızca admin): son `days` günde ilk kez gelen
+ * cihazların kohortu, (platform, kanal) başına. Sözleşme: `AdminFunnelRow`.
+ */
+export async function fetchAdminFunnel(days = 30): Promise<AdminFunnelRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_funnel', { p_days: days });
+  if (error) rethrowSupabase(error);
+  return (data as AdminFunnelRow[]) ?? [];
 }
 
 /**

@@ -16,6 +16,7 @@ import {
   fetchAdminActiveHours,
   fetchAdminActiveDays,
   fetchAdminSourceFunnel,
+  fetchAdminFunnel,
   fetchAdminSignupFunnel,
   fetchAdminWebJourney,
   fetchAdminTutorialFunnel,
@@ -52,6 +53,7 @@ import type {
   AdminActiveDaysRow,
   AdminGameMix,
   AdminSourceFunnelRow,
+  AdminFunnelRow,
   AdminSignupFunnelRow,
   AdminWebJourneyRow,
   AdminTutorialFunnelRow,
@@ -94,12 +96,15 @@ import {
   compareVersionDesc,
   groupPlatformVersions,
   groupSourceFunnel,
+  groupFunnelV2,
+  type FunnelV2Totals,
   type PlatformVersionGroup,
   type SourceFunnelTotals,
 } from '../utils/adminGroups';
 import { GENDER_OPTIONS, isoToTrDate } from '../utils/profileFields';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { downloadCsv } from '../utils/csvExport';
+import { FUNNEL_EXISTING_CHANNEL, FUNNEL_MEMBER_EVENTS_ENABLED } from '../utils/funnelEvents';
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -493,6 +498,47 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         istatistik/k-lig kirletmez), yani Kaynak Hunisi'nin hiçbir adımında görünmez.
         <b>Sahne dökümü</b> asıl soruyu cevaplar: tanıtım BAŞTA mı kaybediyor (metin/hız)
         yoksa SONDA mı (uzun geliyor).
+      </>
+    ),
+  },
+  'huni-v2': {
+    title: 'Huni v2',
+    body: (
+      <>
+        <b>Bu tablo bir KOHORT'tur:</b> pencerede <b>ilk kez</b> gelen cihazları alır ve bütün
+        sütunlar <b>aynı cihazları</b> sayar. Bu yüzden hiçbir oran %100'ü aşmaz ve kişi ile oyun
+        adetleri yan yana gelmez. Olaylar bugüne kadar izlenir: 29 gün önce gelip dün oynayan
+        cihaz sayılır.
+        <br />
+        <br />
+        <b>Land</b> = pencerede ilk kez gelen cihaz (web: ilk sayfa, karşılama ya da uygulama;
+        mobil: ilk açılış). <b>2+ Gün</b> = geldiği günden SONRA en az bir başka gün yeniden
+        açan. <b>Üye</b> = bu cihazdan hesap açılan. <b>Başlatan</b> = en az bir yerel (YZ) oyun
+        başlatan (misafir ya da üye fark etmez). Bu üç sütunun yüzdesi <b>Land</b>'e göredir.{' '}
+        <b>Bitiren</b> = en az bir oyun bitiren; yüzdesi <b>Başlatan</b>'a göredir
+        ("başlayanların yüzde kaçı bitirdi"). <b>Oyun</b> görünümü aynı cihazların oyun
+        ADETLERİNİ gösterir.
+        <br />
+        <br />
+        <b>"Kişi" = anonim cihaz kodu</b>, hesap değil: aynı insan web'de ve uygulamada iki
+        cihaz sayılır (hesaba bağlanmadığı için birleştirilemez, bilinçli karar). Günler
+        İstanbul saatine göredir.
+        <br />
+        <br />
+        <b>Eski cihaz (kohort dışı)</b> = ölçüm v2 yayına girmeden önce de bu cihazda iz vardı.
+        Yayından sonraki ilk açılışta her cihaz "ilk geliş" yazar; bunlar ayrılmasaydı eski
+        kullanıcılar ilk haftalarda yeni gelen gibi görünürdü.
+        <br />
+        <br />
+        <b>Şimdilik eksik olanlar:</b> <b>Üye</b> sütunu ve üyelerin oyun bitişleri gizlilik
+        metni güncellenene kadar yazılmıyor (metin mobil uygulamanın bir sonraki güncellemesiyle
+        birlikte değişecek). O güne kadar <b>Bitiren</b> yalnızca misafir bitişlerini sayar.
+        Mobil uygulama da o güncellemeyle yazmaya başlayacak; şimdilik yalnızca web var.
+        Kendini bot olarak tanıtan tarayıcılar ve otomasyon araçları sayılmaz.
+        <br />
+        <br />
+        Satırlar platform → kanal gruplu; <b>kanala tıkla, ham <code>?ref=</code> etiketleri
+        açılır</b> (Kaynak Hunisi ile aynı gruplama kuralı). CSV her zaman ham sayı indirir.
       </>
     ),
   },
@@ -1919,6 +1965,224 @@ function TutorialFunnelTable({
 }
 
 /**
+ * Huni v2 (24 Eylül 2026, `docs/decisions/funnel-v2.md`) — KOHORT tablosu:
+ * bütün sütunlar pencerede İLK KEZ gelen (`land`) AYNI cihaz kümesini sayar,
+ * yani her oran ≤ %100. Satırlar platform → kanal → ham `?ref=` etiketi.
+ * Kaynak Hunisi'nin YANINDA duruyor; o 30 gün veri toplandıktan sonra
+ * emekliye ayrılacak (planın 4. adımı).
+ *
+ * "Üye" sütunu gizlilik metni güncellenene kadar web'de yazılmıyor
+ * (`FUNNEL_MEMBER_EVENTS_ENABLED`) — orada "0" yazmak "kimse üye olmadı"
+ * derdi, bu yüzden "—".
+ *
+ * ⚠ `useState`ler erken `return`ün ÜSTÜNDE (`npm run verify-hook-order`).
+ */
+function FunnelV2Table({
+  rows,
+  infoHint,
+}: {
+  rows: AdminFunnelRow[] | null;
+  infoHint?: ReactNode;
+}) {
+  const [gorunum, setGorunum] = useState<'kisi' | 'oyun'>('kisi');
+  const [acik, setAcik] = useState<ReadonlySet<string>>(() => new Set());
+  if (rows === null || rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta veri yok.'}
+        </div>
+      </div>
+    );
+  }
+  const g = groupFunnelV2(rows, FUNNEL_EXISTING_CHANNEL);
+  const uyeVar = FUNNEL_MEMBER_EVENTS_ENABLED || g.total.signed_up > 0;
+
+  function toggle(key: string) {
+    setAcik((onceki) => {
+      const y = new Set(onceki);
+      if (y.has(key)) y.delete(key);
+      else y.add(key);
+      return y;
+    });
+  }
+
+  function handleExportCsv() {
+    const satir = (p: string, k: string, e: string, r: FunnelV2Totals) => [
+      p,
+      k,
+      e,
+      r.land,
+      r.returned,
+      r.signed_up,
+      r.started,
+      r.finished,
+      r.games_started,
+      r.games_finished,
+    ];
+    downloadCsv(
+      csvFilename('kelimeki-huni-v2'),
+      ['Platform', 'Kanal', 'Kaynak', 'Land', 'Geri Gelen (2+ gün)', 'Üye', 'Oyun Başlatan', 'Oyun Bitiren', 'Başlayan Oyun', 'Biten Oyun'],
+      [
+        ...g.platforms.flatMap((p) =>
+          p.channels.flatMap((c) => c.sources.map((src) => satir(p.label, c.label, src.source, src))),
+        ),
+        satir('TOPLAM', '', '', g.total),
+        ['Eski cihaz (kohort dışı)', FUNNEL_EXISTING_CHANNEL, '', g.existing, '', '', '', '', '', ''],
+      ],
+    );
+  }
+
+  const pct = (n: number, taban: number) => `${((n / taban) * 100).toFixed(1)}%`;
+
+  function hucre(n: number | null, taban: number): ReactNode {
+    if (n === null) return '—';
+    if (taban <= 0) return String(n);
+    return (
+      <>
+        {n}
+        <span className="opacity-60 ml-1">{pct(n, taban)}</span>
+      </>
+    );
+  }
+
+  const basliklar =
+    gorunum === 'kisi'
+      ? ['Land', '2+ Gün', 'Üye', 'Başlatan', 'Bitiren']
+      : ['Başlayan Oyun', 'Biten Oyun', 'Oyun / Kişi'];
+
+  function hucreler(r: FunnelV2Totals): ReactNode[] {
+    if (gorunum === 'kisi') {
+      return [
+        String(r.land),
+        hucre(r.returned, r.land),
+        hucre(uyeVar ? r.signed_up : null, r.land),
+        hucre(r.started, r.land),
+        // Tabanı BAŞLATAN: "oyuna başlayanların yüzde kaçı bitirdi".
+        hucre(r.finished, r.started),
+      ];
+    }
+    return [
+      String(r.games_started),
+      String(r.games_finished),
+      r.started > 0 ? (r.games_started / r.started).toFixed(1) : '—',
+    ];
+  }
+
+  function sayilar(r: FunnelV2Totals, cls: string) {
+    const h = hucreler(r);
+    return h.map((c, i) => (
+      <td key={i} className={`${cls} ${i < h.length - 1 ? 'pr-8' : ''} whitespace-nowrap text-center`}>
+        {c}
+      </td>
+    ));
+  }
+
+  const ok = (open: boolean) => (
+    <svg
+      viewBox="0 0 10 6"
+      className={`w-[8px] h-[5px] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+      aria-hidden="true"
+    >
+      <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-end gap-3">
+        <button
+          type="button"
+          onClick={() => setGorunum((v) => (v === 'kisi' ? 'oyun' : 'kisi'))}
+          aria-pressed={gorunum === 'oyun'}
+          aria-label={gorunum === 'kisi' ? 'Oyun sayılarına geç' : 'Kişi sayılarına geç'}
+          className="text-[9px] font-mono uppercase tracking-[0.5px] py-1 -my-1 active:opacity-70 transition-opacity shrink-0"
+        >
+          <span className={gorunum === 'kisi' ? 'text-accent font-bold' : 'text-muted'}>Kişi</span>
+          <span className="text-muted"> / </span>
+          <span className={gorunum === 'oyun' ? 'text-accent font-bold' : 'text-muted'}>Oyun</span>
+        </button>
+        <button type="button" onClick={handleExportCsv} className={`${csvLinkCls} py-1 -my-1`}>
+          CSV İndir
+        </button>
+        {infoHint}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-auto text-[11px] font-mono border-collapse">
+          <thead>
+            <tr className="text-left text-muted border-b border-border">
+              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Kaynak</th>
+              {basliklar.map((b, i) => (
+                <th
+                  key={b}
+                  className={`py-1.5 ${i < basliklar.length - 1 ? 'pr-8' : ''} font-bold uppercase tracking-[1px] text-center whitespace-nowrap`}
+                >
+                  {b}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {g.platforms.map((p) => (
+              <Fragment key={p.platform}>
+                <tr className="border-b border-border">
+                  <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">{p.label}</td>
+                  {sayilar(p, 'py-1.5 text-text font-bold')}
+                </tr>
+                {p.channels.map((c) => {
+                  const key = `${p.platform}:${c.channel}`;
+                  const open = acik.has(key);
+                  const acilir = c.sources.length > 1;
+                  return (
+                    <Fragment key={key}>
+                      <tr className="border-b border-border/50">
+                        <td className="py-1.5 pr-8 pl-3 text-text whitespace-nowrap">
+                          {!acilir ? (
+                            <span className="inline-block pl-[14px]">{c.label}</span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => toggle(key)}
+                              aria-expanded={open}
+                              aria-label={`${p.label} ${c.label} — kaynak kırılımını ${open ? 'kapat' : 'aç'}`}
+                              className="tap-expand relative inline-flex items-center gap-1.5 active:opacity-70 transition-opacity"
+                            >
+                              {ok(open)}
+                              {c.label}
+                            </button>
+                          )}
+                        </td>
+                        {sayilar(c, 'py-1.5 text-muted')}
+                      </tr>
+                      {open &&
+                        c.sources.map((src) => (
+                          <tr key={src.source} className="border-b border-border/50 bg-panel/40">
+                            <td className="py-1 pr-8 pl-8 text-muted whitespace-nowrap">{src.source}</td>
+                            {sayilar(src, 'py-1 text-muted')}
+                          </tr>
+                        ))}
+                    </Fragment>
+                  );
+                })}
+              </Fragment>
+            ))}
+            <tr className="border-t border-border">
+              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
+              {sayilar(g.total, 'py-1.5 text-text font-bold')}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[10px] font-mono text-muted">
+        Eski cihaz (kohort dışı): {g.existing}
+        {!uyeVar && ' · Üye sütunu gizlilik metni güncellenince dolacak'}
+      </p>
+    </div>
+  );
+}
+
+/**
  * Kaynak hunisi — satır AÇILINCA o kanalın ham `?ref=` etiketlerini gösterir.
  *
  * ⚠ **Neden gruplanıyor (16 Eylül 2026, kullanıcı isteği):** *"Kaynak
@@ -2568,6 +2832,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [userGranularity, setUserGranularity] = useState<AdminActivityGranularity>('day');
   const [userPeriod, setUserPeriod] = useState<number>(30);
   const [sourceFunnel, setSourceFunnel] = useState<AdminSourceFunnelRow[] | null>(null);
+  const [funnelV2, setFunnelV2] = useState<AdminFunnelRow[] | null>(null);
   const [signupFunnel, setSignupFunnel] = useState<AdminSignupFunnelRow[] | null>(null);
   const [webJourney, setWebJourney] = useState<AdminWebJourneyRow[] | null>(null);
   const [journeyDevice, setJourneyDevice] = useState<string>('all');
@@ -2754,6 +3019,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     Promise.all([
       fetchAdminUserActivitySeries(userPeriod, userGranularity).then(setUserActivity),
       fetchAdminSourceFunnel(days).then(setSourceFunnel),
+      fetchAdminFunnel(days).then(setFunnelV2),
       fetchAdminSignupFunnel(days).then(setSignupFunnel),
       fetchAdminTutorialFunnel(days).then(setTutorialFunnel),
       fetchAdminDeviceBreakdown(days).then(setDeviceBreakdown),
@@ -3851,6 +4117,15 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       entry={journeyEntry}
                       onEntryChange={setJourneyEntry}
                       infoHint={<InfoHint id="ziyaretci-yolculugu" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Huni v2 (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <FunnelV2Table
+                      rows={funnelV2}
+                      infoHint={<InfoHint id="huni-v2" onOpen={setHint} />}
                     />
                   </div>
                   <div className="flex flex-col gap-2">

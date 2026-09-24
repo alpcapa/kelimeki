@@ -100,6 +100,7 @@ import {
   isStandaloneDisplay,
 } from './utils/visitTracking';
 import { journeyMoves, journeyStart, journeyStep } from './utils/webJourney';
+import { funnelEvent } from './utils/funnelEvents';
 import type { LocalGameSave, OnlineGame, WordMeaning } from './lib/database.types';
 import { OnlineGameScreen } from './components/OnlineGameScreen';
 import { useAuth } from './hooks/useAuth';
@@ -881,6 +882,8 @@ export default function App() {
     // `!user` = misafir başlangıcı — huninin "Başlayan" adımı yalnızca bunları
     // sayıyor (bkz. `logGameStart` ve `game_starts.is_guest`).
     void logGameStart(players.length, getOrCreateAnonId(), getStoredUtmSource(), !user);
+    // Huni v2 (`utils/funnelEvents.ts`) — misafir de üye de sayılır.
+    funnelEvent('game_start', !user);
     journeyGameRef.current = 'pending';
     journeyStep('game_start');
   };
@@ -1333,6 +1336,10 @@ export default function App() {
       state.endReason === 'surrender',
       user?.id ?? null,
     );
+    // Huni v2: gizlilik metni bugün bitiş kaydını yalnızca MİSAFİR için
+    // sayıyor — üye bitişini `funnelEvent` kendisi süzer (bayrak kapalıyken).
+    // 7 günlük terk yolu BİLEREK dahil değil: süre dolması "bitirdi" demek değil.
+    funnelEvent('game_finish', !user);
     journeyStep('game_finish');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);

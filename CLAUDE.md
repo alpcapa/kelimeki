@@ -56,6 +56,7 @@ npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (
 npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ
+npm run verify-funnel-events     # Huni v2: eski cihaz → `mevcut`, İstanbul günü, gizlilik metni bayrağı + olay listesi ↔ migration SQL'i
 npm run verify-web-journey       # Web ziyaretçi yolculuğu (admin → "Ziyaretçi Yolculuğu"): misafir/üye kapısı, adım tekrarı + adım listesi ↔ migration SQL'i
 npm run augment-dictionary       # Sözlüğe elle madde ekleme (GTS'siz — bkz. "Sözlüğe Kelime/Anlam Ekleme")
 npm run build:dict               # Sözlüğün TAM üretimi — 100 MB'lık GTS kaynağını ister
@@ -541,7 +542,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | Uygulama içinden hesap silme (kaskad, anonimleştirme, `delete-my-account`) | `docs/decisions/account-deletion.md` |
 | SEO (GSC/Bing, reindex adımları) | `docs/decisions/seo.md` |
 | İstemci hata telemetrisi (`client_errors`, admin "Hatalar" sekmesi) | `docs/decisions/telemetry.md` |
-| Ölçüm v2 (PLAN): `funnel_events`, tüm platformlar, kohort hunisi | `docs/decisions/funnel-v2.md` |
+| Ölçüm v2: `funnel_events`, tüm platformlar, kohort hunisi (PR 1 sunucu+web yayında; gizlilik metni yarısı ROADMAP #36, mobil PR 2) | `docs/decisions/funnel-v2.md` |
 | Yerel oyunun kalıcılığı, terk-edilme cezası, offline kuyruk | `docs/decisions/local-game-persistence.md` |
 | E-posta gönderenleri (`noreply@` ↔ `destek@`), Zoho rozeti, inbound webhook kurulumu | `docs/decisions/support-email.md` |
 | Supabase işletimi: Brevo SMTP/teslimat geçmişi, SPF-DKIM-DMARC'ın gerçek hâli, migration geçmişinin kopması, dal temizliği, Edge Function deploy tuzakları + **"bu dal merge edilmiş mi" üç tuzağı** (15 Eyl 2026'da `CLAUDE.md`'den taşındı) | `docs/decisions/supabase-ops.md` |
@@ -585,7 +586,7 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, webJourney, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, webJourney, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan
@@ -655,16 +656,15 @@ mobile/         # Flutter portu — kelimeki_core (saf Dart motor) + üretilmiş
   ve e-postası, `cloudSaveMirror` offline aynası, `gameSync` kuyruğu).
 ## Font Yükleme Stratejisi
 
-Tüm fontlar (`src/fonts/*.css`, `main.tsx`'te import edilir) kendi sunucumuzdan `.woff2` olarak servis edilir, `font-display: swap` ile. 23 Temmuz 2026'da (PageSpeed'in render-blocking uyarısı yüzünden hepsi base64-gömülü tek bir CSS'ten bu yapıya geçirildiğinde) bu, logoda (Caveat) ve daha az belirgin biçimde Space Grotesk/Space Mono'da görünür bir FOUT'a yol açtı. Bu tek seferlik bir sorun değil: uygulama sık deploy edildiğinden ve PWA service worker'ı (`src/lib/pwa.ts`) her deploy sonrası arka planda güncelleyip sayfayı yeniden yüklediğinden, bir sonraki açılışta hâlâ eski (düzeltilmemiş) kod bir kez daha çalışıp sıçramayı tekrarlıyor — bu, herhangi bir düzeltmenin "işe yaramadığı" izlenimi verebilir, aslında düzeltme sonraki (arka plandaki güncelleme sonrası) açılışta devrede.
-
-- **Logo (Caveat)** — tamamen kaldırıldı, statik SVG path'lere çevrildi (bkz. `LogoMark`, yukarıdaki "Bileşen Notları").
-- **Space Grotesk 700 / Space Mono 400 / Space Mono 700** — Setup ekranında ilk boyamada görünen kalın buton etiketleri/açıklama paragrafı (700/400) ve `GameHeader`'daki skor kutuları (700) bu ağırlıkları kullanır; kullanıcı ikisindeki FOUT'u da ayrı ayrı bizzat bildirdi. `public/fonts/`'a taşınıp `index.html`'den `<link rel="preload">` ile öncelikli indirilir (bkz. ilgili `src/fonts/space-grotesk-inline.css`/`space-mono-inline.css` dosyalarındaki notlar). Bunlar canlı/değişken metin (skor, kullanıcı adı) render ettiğinden logodaki gibi statik path'e çevrilemez — preload en iyi pratik çözüm, garantili değil.
-  **1 Ağustos 2026 — Space Mono 700 örneği (yanlış teşhis dersi):**
-  "kısa süre görünüp kendiliğinden düzeliyor" tarifi güçlü bir FOUT sinyali;
-  yeni bir yerde görülünce önce BU listeye (preload edilmemiş ağırlıklar)
-  bak, layout/CSS hesaplarına dalmadan önce. Vaka kaydı:
-  `docs/decisions/components.md` → "Space Mono 700 — yanlış teşhis".
-- **Diğer ağırlıklar (Space Grotesk 400/500/600) ve Nunito (taş harfi fontu)** — henüz raporlanmadığından ve kritik ilk-boyama yolunda olmadığından dokunulmadı, hâlâ eski `./files/` + yalnızca-swap yolunda. Aynı şikayet başka bir ağırlıkta/yerde görülürse aynı desen uygulanmalı: dosyayı `public/fonts/`'a taşı, `index.html`'e `<link rel="preload">` ekle, `vite.config.ts`'teki `includeAssets`'e ekle (PWA precache için).
+Fontlar kendi sunucumuzdan `.woff2` + `font-display: swap`. Logo bir font
+DEĞİL (statik SVG path, `LogoMark`); ilk boyamada görünen Space Grotesk 700
+/ Space Mono 400-700 `public/fonts/`'tan `<link rel="preload">` ile iner.
+⚠ **"Kısa süre görünüp kendiliğinden düzeliyor" tarifi = FOUT sinyali** —
+yeni bir yerde görülürse önce preload edilmemiş ağırlıklara bak; desen:
+dosyayı `public/fonts/`'a taşı, `index.html`'e preload, `vite.config.ts`
+`includeAssets`'e ekle. Tam kayıt (PWA güncellemesinin FOUT'u neden bir
+açılış daha tekrarlattığı, 1 Ağustos yanlış teşhisi):
+`docs/decisions/components.md` → "Font Yükleme Stratejisi".
 
 ## Form Input'ları — iOS Safari Zoom Kuralı
 

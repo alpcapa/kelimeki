@@ -59,6 +59,7 @@ import {
   visitAlreadyLoggedToday,
 } from './utils/visitTracking';
 import { journeyScroll, journeyStart, journeyStep } from './utils/webJourney';
+import { funnelOpen } from './utils/funnelEvents';
 
 /** Uygulamayı (React ağacı + PWA + sözlük ön yüklemesi) başlatır. */
 function baslat(): void {
@@ -319,6 +320,13 @@ function cihazZiyaretiBildir(): void {
     // Telemetri hiçbir koşulda karşılama katmanını etkilemez.
   });
 }
+
+// Huni v2 (`utils/funnelEvents.ts`): cihazın ilk gelişi (`land`) + günün
+// ziyareti (`visit`). Kapı kararından ÖNCE ve bu sayfada HİÇBİR ŞEY
+// yazılmadan önce — karşılama katmanı da uygulama da sayılsın, "bu cihazda
+// önceden iz var mı" (eski kullanıcı → `mevcut`) okuması da temiz kalsın.
+// `?ref=` yakalaması bu yüzden içeride, iz okunduktan SONRA yapılıyor.
+funnelOpen(captureUtmSource);
 
 // `<head>`'deki senkron kapı script'i (bkz. scripts/landing-plugin.js) dönen
 // ziyaretçiyi ZATEN uygulama moduna almış olabilir — o durumda bugünkü

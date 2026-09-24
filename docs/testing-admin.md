@@ -809,3 +809,28 @@ yalnızca ilk kez gelene gösteriliyor.
 - [ ] **`?` popup'ı (`ziyaretci-yolculugu`)** "OTURUM sayar, kişi değil",
       "adımlar bir sıra DEĞİL, bir küme" ve "Dönen = karşılama atlandı; linkle
       gelen yeni ziyaretçi de burada" uyarılarını taşımalı.
+
+## 9.23. Admin — "Huni v2" tablosu (24 Eylül 2026)
+
+Gerekçe ve kararlar: `docs/decisions/funnel-v2.md`. Kendi cihazını "yeni"
+olarak üretmek için **gizli sekme** kullan (depo boş başlar → `mevcut`
+sayılmaz). Sayılar İstanbul GÜNÜNE göre; "2+ Gün" ertesi gün kontrol edilir.
+
+- [ ] **Tablo yerinde:** Büyüme > Kullanıcı, Kaynak Hunisi'nin ÜSTÜNDE,
+      başlık "Huni v2 (Son 30 Gün)". Satırlar platform (kalın) → kanal.
+- [ ] **Yeni cihaz:** gizli sekmede `kelimeki.com/?ref=test-huni` aç → Web
+      altında "Diğer" kanalında Land +1; kanala tıklayınca `test-huni`
+      etiketi açılmalı.
+- [ ] **Eski cihaz kohort DIŞI:** daha önce kullanılmış normal tarayıcıda
+      siteyi aç → TOPLAM değişmemeli, alttaki "Eski cihaz (kohort dışı)" +1.
+- [ ] **Oyun:** aynı gizli sekmede YZ oyunu başlat → Başlatan +1; oyunu
+      bitir → Bitiren +1 (yüzdesi Başlatan'a göre). Oyun görünümünde
+      Başlayan/Biten Oyun adetleri artmalı.
+- [ ] **Üye sütunu "—":** gizlilik metni güncellenene kadar (ROADMAP #36)
+      kayıt olmak Üye sütununu DOLDURMAMALI; tablonun altında "Üye sütunu
+      gizlilik metni güncellenince dolacak" yazmalı.
+- [ ] **2+ Gün:** gizli sekme kapanınca depo silinir, bu yüzden YENİ bir
+      tarayıcı profiliyle ilk kez gel, ertesi gün aynı profille yeniden aç →
+      o kanalın 2+ Gün'ü +1 (aynı gün ikinci açılış SAYILMAMALI).
+- [ ] **`?` popup'ı (`huni-v2`)** "KOHORT", "Eski cihaz (kohort dışı)" ve
+      "Şimdilik eksik olanlar" paragraflarını taşımalı.

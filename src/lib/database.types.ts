@@ -777,6 +777,32 @@ export interface AdminUserActivityPoint {
 }
 
 /**
+ * `admin_funnel` RPC çıktısındaki tek satır — Huni v2 (Büyüme > Kullanıcı),
+ * (platform, kanal) başına. KOHORT: bütün sayılar pencerede İLK KEZ gelen
+ * (`land`) AYNI cihaz kümesinden, yani her oran ≤ %100. Olaylar pencere
+ * sonuna kadar izlenir. Kanal `'mevcut'` = ölçüm v2'den önce de bu cihazda
+ * iz vardı; istemci onu kohort toplamına KATMAZ. Sözleşme ve gerekçe:
+ * `supabase/migrations/20260924141953_funnel_events.sql`,
+ * `docs/decisions/funnel-v2.md`.
+ */
+export interface AdminFunnelRow {
+  platform: 'web' | 'ios' | 'android';
+  channel: string;
+  /** Kohorttaki cihaz (pencerede ilk geliş). */
+  land: number;
+  /** Land gününden SONRA en az bir başka gün açan ("2+ gün"). */
+  returned: number;
+  /** Hesap açan. ⚠ Gizlilik metni güncellenene kadar web YAZMIYOR (`FUNNEL_MEMBER_EVENTS_ENABLED`). */
+  signed_up: number;
+  /** En az bir oyun başlatan. */
+  started: number;
+  /** En az bir oyun bitiren (bugün web'de yalnızca misafir bitişi). */
+  finished: number;
+  games_started: number;
+  games_finished: number;
+}
+
+/**
  * admin_source_funnel RPC çıktısındaki tek satır (Büyüme > Kullanıcı) —
  * kaynak başına gelen → üye → başlayan → biten hunisi.
  *
