@@ -61,9 +61,12 @@ adımları yeşil) 25 Eylül'de doğrulandı.
 
 ## F. iPhone — TestFlight 1.1.1, YALNIZCA duman turu (#557)
 
-- [ ] TestFlight'tan 1.1.1'i kur; Setup'ta `Derleme 8c1828f`.
-- [ ] Açılıyor, bir YZ oyunu başlıyor, robot avatarı ortalı (§29.1-29.2).
-- [ ] Bir metin alanında (ör. giriş e-postası) uzun bas → seçim menüsü
+✅ **25 Eylül: ilk üç madde kullanıcı tarafından OK** — ardından App Store
+incelemesine gönderildi (`mobile/docs/surumler.md` → "1.1.1").
+
+- [x] TestFlight'tan 1.1.1'i kur; Setup'ta `Derleme 8c1828f`.
+- [x] Açılıyor, bir YZ oyunu başlıyor, robot avatarı ortalı (§29.1-29.2).
+- [x] Bir metin alanında (ör. giriş e-postası) uzun bas → seçim menüsü
       **Türkçe** (Kes/Kopyala/Yapıştır), İngilizce değil.
 - [ ] Setup altındaki **Gizlilik Politikası** linki → **"Son güncelleme 24 Eylül 2026"**,
       6. bölümde (6) ve (7) maddeleri var (#626).
