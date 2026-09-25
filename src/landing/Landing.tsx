@@ -128,8 +128,8 @@ export const SSS: { soru: string; cevap: string }[] = [
   {
     soru: 'Uygulama indirmem gerekiyor mu?',
     cevap: MAGAZA
-      ? `Hayır, tarayıcıda eksiksiz çalışıyor. İstersen uygulamayı ${MAGAZA} bulabilirsin; telefonundaki 'Ana Ekrana Ekle' seçeneği de duruyor.`
-      : "Hayır, tarayıcıda çalışıyor. İstersen telefonundaki 'Ana Ekrana Ekle' seçeneğiyle uygulama gibi de kurabilirsin.",
+      ? `Hayır, tarayıcıda eksiksiz çalışıyor. İstersen uygulamayı ${MAGAZA} bulabilirsin.`
+      : 'Hayır, tarayıcıda eksiksiz çalışıyor.',
   },
   {
     // ⚠ 16 Eylül 2026'da DÜZELTİLDİ. Bu iki cevap *"uygulamalarımız … inceleme

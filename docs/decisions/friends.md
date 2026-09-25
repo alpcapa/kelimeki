@@ -144,6 +144,34 @@ Kullanıcılar "karşılıklı/canlı oyun" istiyor — bunun ön koşulu olarak
 
 `accept_friend_invite` ayrıca `friend_invite_links.use_count`'u artırır ve (ilk kezse) `profiles.invited_by`'ı doldurur — `guest_visits.utm_source`'un ilk-temas ilkesiyle aynı mantık, ileride admin Büyüme panelinde "arkadaş daveti ile gelen kayıt" metriği için kullanılabilir (henüz eklenmedi).
 
+⚠ **18 Eylül 2026 — fonksiyon İDEMPOTENT hale getirildi (ROADMAP #31, migration `20260918154109`).** Yukarıdaki iki yol (sayfanın kendi otomatik kabulü + `localStorage` kuyruğu fallback'i) aynı token'ı arka arkaya işleyebildiği için `use_count` her kabulde İKİ artıyordu; zaten arkadaş olan biri linki yeniden açtığında da artıyor ve `responded_at` tazeleniyordu. Canlıdan ölçüldü: beş kullanılmış linkte toplam `use_count` **128**, gerçek davetli **11** (en uçta 84/2). Artık taraflar zaten `accepted` ise çağrı **tam no-op**'tur (sayaç artmaz, damga tazelenmez, `invited_by`'a dokunulmaz) ve dönen `inviter_name` ile üç `P0001` reddi AYNEN korunur — iki istemci de yalnızca bu ikisine baktığından davranışları değişmedi.
+
+⚠ **Çift yol KALDIRILMADI ve kaldırılmamalı** — varlık sebebi gerçek (e-posta doğrulaması açıkken taze kayıt oturum açmıyor ve doğrulama linki köke dönüyor). Düzeltme kuyruğu değil, SUNUCUyu idempotent yaptı; yani ikinci çağrı hâlâ gidiyor, sadece artık zararsız.
+
+⚠ **19 Eylül 2026 — `/davet/:token` sayfasına mağaza rozeti eklendi (ROADMAP #26).** Sayfa dört ay boyunca rozetsizdi, oysa davetle gelen birinin gördüğü İLK ekran burası. Kaçak gerçek bir kullanıcıyla ortaya çıktı: davet linkinden gelen bir oyuncu kayıt olup bir oyun oynamış, `games.platform` ve `game_finishes.platform` **`web`** yazmış ve **push token'ı hiç yok** — yani uygulamanın varlığını görmeden ayrılmış. Rozetin YERİ aşağıda: davet kartının hemen altında (footer DEĞİL — gerekçesi ve ölçümü iki paragraf aşağıda).
+
+⚠ **Rozet bilerek "Daveti Kabul Et"in YANINA konmadı.** İki sebep: (1) sayfanın tek işiyle yarışırdı; (2) mağazaya giden kişi davet TOKEN'ını geride bırakır — App Store linki onu taşımaz, kurulumdan sonra linke yeniden tıklaması gerekirdi. Doğru sıra: önce daveti kabul et, sonra uygulamayı al.
+
+⚠ **`index.html`teki iOS Smart App Banner bunun yerine GEÇMEZ, tamamlar.** O etiket sayfanın en üstünde çıkar (scroll gerekmez) ama **yalnızca iOS Safari'de**; davet linkleri çoğunlukla WhatsApp'ın uygulama-içi tarayıcısında açılıyor ve orada çizilmiyor. Sayfadaki rozet tam o yolu kapatıyor.
+
+⚠ **Rozet önce footer'a kondu ve bu YANLIŞTI — ölçüm düzeltti.** İlk yerleşim Setup'ınkiyle aynıydı (hukuki linklerin üstü), ama 390×844'te rozetin y'si **1153 px** çıktı: sayfanın dibi, yani düzeltilmek istenen "scroll etmeyen göremiyor" sorununun ta kendisi. Kullanıcı kararıyla davet kartının hemen ALTINA taşındı. Yeni ölçüm (aynı viewport, `get_friend_invite_info` sahtelenip GEÇERLİ davet ekranında):
+
+| Öğe | y |
+|---|---|
+| "Daveti Kabul Et" butonu | 274 → 318 |
+| "Kelimeki'yi telefonuna da kurabilirsin" | 355 |
+| App Store rozeti | **378 → 421** |
+
+600 px yüksekliğindeki bir viewport'ta bile tamamen görünür — uygulama-içi tarayıcıların kendi çubuklarına yer var.
+
+⚠ **Ders:** "rozeti ekledim" bir ölçüm DEĞİL. Yüzeye eklemek ile görünür olmak ayrı şeyler; bu sayfada ikisi 829 px ayrıydı ve fark ancak `boundingBox()` okununca görüldü.
+
+⚠ **Blok KOMPLE korunuyor** (`visibleStoreBadges().length > 0`), tek başına `<StoreBadges />` yetmez: o hiçbir mağaza yayında değilken `null` döner ve üstündeki etiket öksüz kalırdı.
+
+⚠ **İKİ YÖNLÜ satır mümkün — `accept_friend_invite` bunu varsaymaz (migration `20260918155030`).** `friend_requests`'te aynı ikili için `(a,b)` ve `(b,a)` satırlarının İKİSİ birden olabiliyor: `sendFriendRequest` düz bir `insert` ve PK `(user_id, friend_id)` ters yönü engellemez. Canlıda 18 Eylül 2026'da bir örneği sayıldı (ikisi de `accepted`, yani zararsız). İlk idempotentlik migration'ı tek satır okuyordu ve karışık bir durumda (biri `accepted`, biri `pending`) hangisini okuyacağı BELİRSİZDİ — karar aynı gün `bool_or(status = 'accepted')`e çevrildi: satırların tamamı kilitlenir, soru tek ve kesin cevaplanır. ⚠ Yeni bir yüzey bu tabloya bakarken "ikili başına tek satır" VARSAYMASIN.
+
+⚠ **Geçmiş `use_count` değerleri DÜZELTİLMEDİ** ve düzeltilemez: tıklama başına iz tutulmadığından hangisinin gerçek kabul olduğu geriye dönük çıkarılamaz. Kolon yorumu kesim tarihini yazıyor. Geçmişi de kapsayan tek güvenilir taban `profiles.invited_by` sayımıdır — Büyüme kartı yazılırsa ORADAN okunmalı.
+
 `search_users_for_friend`/`list_friends`/`list_incoming_friend_requests` RPC'leri `security definer` — `profiles.select` RLS'i `lock_down_profiles_games_select` migration'ından beri owner-or-admin'e kilitli olduğundan (`game_likers`/`leaderboard` ile aynı gerekçe) başka kullanıcıların adını okumak için gerekiyor; **e-posta hiçbir zaman döndürülmez** (projenin genel ilkesi, bkz. Skor Kartı notundaki e-posta gizliliği).
 
 **Kapsam dışı (henüz yok, bkz. aşağıdaki Faz 2):** Faz 1 yazıldığında oyun daveti/kurma burada listeleniyordu — 27 Temmuz 2026'da Faz 2 ile eklendi. Hâlâ kapsam dışı olanlar: gerçek zamanlı senkron oynanış (Faz 3), zaman aşımı/oto-teslim (Faz 4). Faz 2 eklenmeden önce arkadaş eklemenin tek somut faydası `FriendsModal`'ın "Arkadaşlarım" sekmesinde bir kişiye tıklayınca `PlayerScoreCard`'ı açmasıydı — `Leaderboard`/`GameHistoryModal`'daki `likerToPlayerSummary` ile aynı desende bir adaptör kullanır. Artık ikinci (ve asıl) somut fayda: arkadaşını Canlı bir oyuna davet edebilmek.
@@ -439,3 +467,31 @@ liste: `TESTING.md` → "21. Davet sayfası".
   - **KAYDA GEÇEN KALINTI — takma isim, alıcının istemcisinde tıklanabilir hale gelebilir (kullanıcı kararı: "şimdilik değiştirme").** Gmail/Apple Mail gibi istemciler DÜZ METİN içindeki `evil.com` gibi ifadeleri kendileri linkleştirir. Bizim HTML'imiz bağlantı üretmiyor, ama istemci render ederken üretebilir. Teorik olarak iki yer: (1) `feedback-reply`, kişinin kendi mesajını ona geri alıntılıyor — olası bağlantıyı yalnızca onu YAZAN kişi görür, pratik risk yok; (2) **`display_name`**, arkadaşlık/davet maillerinde KARŞI TARAFA gösteriliyor (`<strong>${escapeHtml(inviterName)}</strong>`) — boşluk yasak (`display_name_no_whitespace`) ve istemcide `maxLength={10}`, yani `evil.com` gibi kısa bir alan adı sığar. Vektör dar (10 karakter, boşluksuz, alıcı zaten o kişiden davet bekliyor) ve gerçek bir açık DEĞİL — bir istemci davranışı. Kapatılmak istenirse seçenekler: mail gövdesinde noktalı bir takma ismi maskelemek, ya da adı `<strong>` ile vurgulamadan yazmak. **Bir daha denetlenirse "bu neden düzeltilmemiş?" sorusunun cevabı budur** — bilinçli, kullanıcı onaylı bir kabul.
 - **Marka şablonu (29 Temmuz 2026):** İlk sürümde bu iki fonksiyonun (ve `feedback-reply`/`admin-send-message`'ın) HTML'i düz metin+buton (`-apple-system` font, kart/logo yok) idi — kullanıcı gerçek bir şifre sıfırlama mailiyle (Supabase Auth şablonu, `supabase/email-templates/reset-password.html` — logo header + beyaz kart + footer) karşılaştırınca tutarsızlığı fark etti. `_shared/email.ts`'e reset-password.html'in kart yapısını birebir tekrarlayan bir `buildBrandedEmailHtml(title, bodyHtml)` eklendi (logo `https://kelimeki.com/email-logo.png`, kart `#DCE2EA` çerçeve/`16px` radius, buton `#2563EB`, footer metni `#8A93A2`) — dört Edge Function'ın da (`notify-friend-request`, `notify-game-invite`, `feedback-reply`, `admin-send-message`) gövde üreten fonksiyonları artık düz `<div>` yerine bu wrapper'ı çağırıyor; `buildNoreplyNoticeHtml`'in renkleri de aynı palete (`#DCE2EA`/`#8A93A2`/`#2563EB`) çekildi. Auth şablonları (Dashboard'da yaşıyor) bu wrapper'ı otomatik paylaşamıyor — reset-password.html değişirse bu wrapper da elle senkronize edilmeli, aksi halde tekrar sapabilirler.
 - **Arkadaşlık isteği hatırlatma e-postası (1 Ağustos 2026, `notify-friend-request-reminders` Edge Function'ı):** Kullanıcı gözlemi — yukarıdaki anlık bildirimden sonra alıcı yanıtlamazsa istek sessizce unutulup gidiyordu. Sohbet sırasında expire etmenin de aynı sonucu verdiği (tek fark gönderenin iptal edip tekrar gönderebilmesi) netleşince, çözüm olarak expire yerine bir hatırlatma tercih edildi. `friend_requests`'e eklenen `reminder_sent_at` (nullable, `friend_request_reminder_column` migration'ı), bir istek 3 gün cevapsız kalınca gönderilen TEK SEFERLİK hatırlatmanın zamanını tutar — `deadline_warning_sent_at` ile birebir aynı desen (`is(..., null)` filtreli atomik UPDATE ile "iddia edilir", tekrar tekrar tetiklenmesi zararsız, en fazla bir kez mail gider). Cancel (satır tamamen silinir) ve resend (yeni satır, bu alan yeniden null) sayacı doğal olarak sıfırlar — `online_game_states`/`local_game_saves`'in aksine ayrı bir reset trigger'ı gerekmedi. **Projedeki İKİNCİ pg_cron job'u** — `deadline_warnings_cron`'un 15 dakikalık hassasiyetinin aksine (24-48 saatlik dar pencereler için gerekliydi), burada gün bazlı bir eşik (3 gün) yeterli olduğundan AYRI, günlük bir cron'a bağlandı (`0 8 * * *` ≈ 11:00 İstanbul, `friend_request_reminders_cron` migration'ı). `verify_jwt: false` — `notify-deadline-warnings` ile aynı gerekçe (cron çağırıyor, kullanıcı JWT'si yok). E-posta metni bilinçli olarak isme doğrudan iyelik eki eklemiyor ("XYZ'nin ... isteği" DEĞİL, "XYZ tarafından gönderilen ... istek") — takma isimler keyfi olduğundan Türkçe ünlü uyumu programatik garanti edilemiyor (bkz. "Sıra: {isim}" dersi, Canlı Oyun — Faz 3). **Deploy notu:** `notify-deadline-warnings`'teki aynı import-yolu tuhaflığı burada da tekrarlandı — ilk denemede `'../_shared/email.ts'` "Module not found" hatası verdi, `'./_shared/email.ts'`e geçilince sorunsuz deploy oldu (kesin sebep hâlâ netleştirilmedi). Query/atomik-iddia mantığı disposable, backdated bir test satırıyla doğrulandı — gerçek bir kullanıcıya fabrike bir bildirim gitmesin diye Brevo'ya gerçekten gönderim YAPILMADI, yalnızca SQL seviyesinde "due" sorgusu ve `is(reminder_sent_at, null)` filtreli UPDATE'in ikinci çağrıda no-op döndüğü (mükerrer gönderim koruması) test edilip temizlendi. Migration uygulandığı anda production'da 3 günden eski bekleyen gerçek bir istek yoktu.
+
+## Davet kuyruğu: temizlik çağrıdan ÖNCE (19 Eylül 2026, ROADMAP #31 istemci yarısı)
+
+Aynı davet token'ı İKİ yoldan işleniyor ve bu **bilerek** böyle:
+
+1. `/davet/:token` sayfasının kendi otomatik kabulü (oturum açıksa),
+2. `App.tsx`'in `localStorage` kuyruğu — e-posta doğrulaması açıkken kayıt bu
+   sayfada oturum AÇMAZ ve doğrulama linki genelde köke döner; daveti orada
+   kuyruk yakalıyor.
+
+Çift ÇAĞRIYI doğuran şey bu ikilik değil, **sıra** idi: sayfa kuyruğu
+`.then()` içinde temizliyordu, yani token RPC uçarken kuyrukta duruyordu. O
+pencerede köke düşen biri (doğrulama linki, yeni sekme, sayfayı kapatıp
+dönme) fallback'i tetikliyor ve aynı token ikinci kez gidiyordu. Canlıda
+ölçülmüştü: tek davetli, `created_at` 15:17:51 ↔ `responded_at` 15:17:56.
+
+**Temizlik çağrının önüne alındı.** Sunucu 18 Eylül'den beri idempotent, yani
+ikinci çağrı zaten tam no-op — bu düzeltme sayacı değil, boşa giden RPC turunu
+kesiyor.
+
+⚠ **Erken temizlik kurtarma yolunu kesmemeli.** Geçici arızada (ağ) token
+kuyruğa GERİ konuyor; kalıcı rette (P0001) konmuyor — ikinci deneme aynı reddi
+alır ve kuyruk sonsuza dek dolu kalırdı. Sayfadaki "Tekrar Dene" bellekteki
+`token` ile çalıştığından bundan etkilenmiyor.
+
+⚠ **Çift yolu kaldırma.** Kapı (`npm run verify-invite-queue`, CI'da) sırayı,
+kurtarma yolunu ve çift yolun DURDUĞUNU birlikte sınıyor — biri kaldırılırsa
+düşer. Duyarlılığı düzeltme geri alınarak kanıtlandı.

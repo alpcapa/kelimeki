@@ -40,7 +40,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
   useEffect(() => {
     if (!user) return;
     fetchMyLeaderboardRank(user.id).then(setMyRank);
-  }, [user]);
+  }, [user?.id]);
 
   // Skor kartı herkese açık olabildiğinden (k-lig üzerinden başkaları da
   // görebilir) tam ad/soyad değil, oyun içindeki aynı kısa kimlik gösterilir

@@ -103,13 +103,13 @@ Kullanıcı kararı: *"Bunu not et, onay gelince bu şekilde yaparsın."* Kapı
 tek bir bilgi: **Play'in production incelemesi (gönderim #19) kapandı mı?**
 Ajan ölçemez, Console kullanıcıda.
 
-**Bekleyen ALTI PR** — bu satır 15 Eyl'de "iki", 16 Eyl'de "beş"
-diyordu; ikisi de bayattı (altıncısı 16 Eyl akşamı eklendi, #576). Altısı da
-`mobile/app` ya da `mobile/kelimeki_core` taşıyor, yani her biri TEK BAŞINA
-bir mobil derleme TETİKLER. ⚠ **"Tetikler" ile "TestFlight'a build gönderir"
-AYNI ŞEY DEĞİL** — bu satır 16 Eyl'e kadar öyle diyordu ve yanlıştı; sebebi
-aşağıdaki "Tur kaç mobil derleme demek" bölümünde ÖLÇÜLDÜ. CI'ları
-16 Eyl itibarıyla beşinde de yeşil.
+**Bekleyen YEDİ PR** — bu satır 15 Eyl'de "iki", 16 Eyl'de önce "beş" sonra
+"altı" diyordu; üçü de bayattı (yedincisi 17 Eyl akşamı eklendi, #579).
+Yedisi de `mobile/app` ya da `mobile/kelimeki_core` taşıyor, yani her biri TEK
+BAŞINA bir mobil derleme TETİKLER. ⚠ **"Tetikler" ile "TestFlight'a build
+gönderir" AYNI ŞEY DEĞİL** — bu satır 16 Eyl'e kadar öyle diyordu ve yanlıştı;
+sebebi aşağıdaki "Tur kaç mobil derleme demek" bölümünde ÖLÇÜLDÜ. CI'ları
+17 Eyl itibarıyla **yedisinde de yeşil** (check run'lar okundu, statüs değil).
 
 **16 Eyl, ikinci ölçüm (freeze SÜRÜYOR — kullanıcı: inceleme kapanmadı).**
 Plan 3a7b777'ye göre yazılmıştı, `main` o gün 70c786f'e ilerledi (#567,
@@ -144,10 +144,39 @@ hâlâ"*).** `main` o gün beş commit daha ilerledi (#568 · #571 · #572 · #5
   hiçbiri değişmedi, yani koşular 15–16 Eyl'den duruyor). `Web (GitHub Pages
   test ortamı)` ve `Supabase Preview` beşinde de `skipped` — bu normal, PR'da
   bilerek yayınlamıyorlar.
-- Tablonun başlığı "`main` (70c786f)" diyor; sayı bayat, **içerik değil** —
-  üç ölçümde de aynı çıktı.
+- Tablonun başlığı o gün "`main` (70c786f)" diyordu; sayı bayattı, **içerik
+  değil** — üç ölçümde de aynı çıktı. (Başlık 17 Eyl'de `467e758`'e
+  tazelendi, aşağı bkz.)
 
-| PR | Parça | `mobile/TESTING.md` § | `main` (70c786f) ile çakışma |
+**17 Eyl, DÖRDÜNCÜ ölçüm (freeze HÂLÂ sürüyor).** `main` iki commit daha
+ilerledi (#577 · #578 — ikisi de #576/#579'un WEB yarısı, `mobile/` taşımıyor)
+ve yedinci PR açıldı. Ölçüm `467e758`'e karşı tekrarlandı:
+
+- **Çakışma haritası DÖRDÜNCÜ kez DEĞİŞMEDİ** — aşağıdaki tablo `467e758`'e
+  karşı da birebir geçerli (`git merge-tree --write-tree`, her PR `main`'e
+  karşı TEK TEK). Başlık artık bu sha'yı gösteriyor. #557 · #576 · #579 temiz.
+- **CI yedisinde de yeşil:** `Analiz + testler` · `Android APK` ·
+  `iOS (imzasız)` · `Bütçe` (+ #547'de `test` ve `Mobil parite testleri`).
+  `Web (GitHub Pages test ortamı)` ve `Supabase Preview` yedisinde de
+  `skipped` — normal, PR'da bilerek yayınlamıyorlar.
+
+**18 Eyl, BEŞİNCİ ölçüm (freeze HÂLÂ sürüyor — Play production #19 incelemede).**
+`main` üç commit daha ilerledi (#581 · #582 · #583 — üçü de `mobile/` taşımıyor;
+#583 ROADMAP #25'in yalnızca kaydı). Ölçüm `2f09daa`'ya karşı tekrarlandı:
+
+- **Çakışma haritası BEŞİNCİ kez DEĞİŞMEDİ** — aşağıdaki tablo `2f09daa`'ya
+  karşı da birebir geçerli (`git merge-tree --write-tree`, her PR `main`'e
+  karşı TEK TEK). Başlık artık bu sha'yı gösteriyor. #557 · #576 · #579 temiz.
+- **CI yedisinde de yeşil** (check run'lar okundu, statüs değil). PR
+  başlarının hiçbiri değişmedi — koşular 15-17 Eyl'den duruyor.
+- ⚠ **Ölçüm refleksi:** `git merge-tree`in çıktısında yalnızca `CONFLICT`
+  satırları çakışmadır; `Auto-merging` satırları TEMİZ birleşen dosyaları
+  sayar. İkisini birden toplayan bir `grep` bu turda #547'ye üç fazladan
+  dosya (`web-ci.yml` · `ROADMAP.md` · `mobile/TESTING.md`) yazdırdı ve
+  harita bir an "değişti" sanıldı — ölçü `^CONFLICT`'e daraltılınca tablo
+  birebir çıktı.
+
+| PR | Parça | `mobile/TESTING.md` § | `main` (2f09daa) ile çakışma |
 |---|---|---|---|
 | #547 — ham hata metinleri | 205 | 27 | `CLAUDE.md` · `parca-log.md` |
 | #554 — taş değiştirme sınırı | 206 | 27 ⚠ #547'yle AYNI numara | `parca-log.md` |
@@ -155,10 +184,11 @@ hâlâ"*).** `main` o gün beş commit daha ilerledi (#568 · #571 · #572 · #5
 | #562 — kayıt onayı | 211 | 30 | `parca-log.md` |
 | #565 — bitiş telemetrisi `platform` | — | §18'e madde | `mobile/TESTING.md` |
 | #576 — zoom balonu kendi kendine kapanır | 212 | — | **yok (temiz)** |
+| #579 — 504 yeniden denenir + oturum kapısı | 213 | — | **yok (temiz)** |
 
-**Sıra: #547 → #554 → #557 → #562 → #565 → #576** — parça numarası sırası;
-`parca-log.md` yeni-önce dizili olduğundan bu sıra dosyayı kendiliğinden
-doğru diziyor. Bedeli § kaydırması: 547 → 27 kalır, 554 → 28, 557 → 29+30,
+**Sıra: #547 → #554 → #557 → #562 → #565 → #576 → #579** — parça numarası
+sırası; `parca-log.md` yeni-önce dizili olduğundan bu sıra dosyayı
+kendiliğinden doğru diziyor. Bedeli § kaydırması: 547 → 27 kalır, 554 → 28, 557 → 29+30,
 562 → 31. (#565'in çakışması önemsiz: #566 aynı §18 maddesini yeniden
 yazmış; çözüm `main`'in metni + #565'in YENİ maddesi.)
 
@@ -179,6 +209,28 @@ port ikizi.
   `.dart`/`.ts` örtüşmesi yok.
 - Turun derleme maliyeti DEĞİŞMİYOR: aşağıdaki kilit altıncı merge'i de aynı
   gruba düşürür, tur yine TEK derleme ve TEK TestFlight build'i.
+
+**YEDİNCİ PR — #579, 504 yeniden denenir + oturum kapısı (17 Eyl akşamı
+eklendi).** Admin panelindeki `client_errors` yığılmasından çıktı:
+`online_games_repo.load` → `PostgrestException(code: 504)`, 11 kayıt / 8
+cihaz. Geçici sunucu hatası artık yeniden deneniyor, ayrıca oturumu düşmüş
+kullanıcının yetki hatası BUG olarak raporlanmıyor. Web yarısı AYNI GÜN
+`main`'e girdi (#578), bu dal onun port ikizi.
+
+- **`main`'e (`467e758`) karşı ÇAKIŞMA YOK** — dal bugünkü baştan açıldı.
+  Tur içindeki çakışması ötekilerle aynı yerde: `parca-log.md` (hepsi
+  dosyanın başına yazıyor) ve `ROADMAP.md` (hepsi aynı tabloya satır
+  ekliyor).
+- **Sıraya SONA konuyor** çünkü parça numarası en büyüğü (213).
+  `mobile/TESTING.md`'ye DOKUNMUYOR, yani § kaydırmasına bir şey eklemiyor.
+- ✅ **Hiçbir PR ile KAYNAK dosyası örtüşmesi YOK** — dokunduğu dört dosya
+  (`data/online_games_api.dart` · `util/offline_notice.dart` +
+  `test/live_games_test.dart` · `test/support/fake_online_gateway.dart`)
+  öteki altısının hiçbirinde geçmiyor. Yani #547 ∩ #562 (`auth_modal.dart`)
+  ve #547 ∩ #576 (`online_game_screen.dart`) gibi bir "elle oku" borcu
+  DOĞURMUYOR.
+- Turun derleme maliyeti yine DEĞİŞMİYOR: kilit yedinci merge'i de aynı
+  gruba düşürür, tur hâlâ TEK derleme ve TEK TestFlight build'i.
 
 #### Tur kaç mobil derleme demek? — BEŞ DEĞİL, BİR (16 Eyl'de ölçüldü)
 
@@ -225,7 +277,8 @@ bedeli 5 TestFlight numarası ve ~2 saat. Kullanıcı kararı (16 Eyl):
 
 ⚠ **Her merge `main`'i ilerletir ve sıradakinin çakışmasını YENİDEN
 doğurur** — her dala önce `main` merge edilip çözülmeli, sonra merge.
-⚠ **Beşi TEK OTURUMDA arka arkaya — "HIZLI TUR" (kullanıcı onayı, 16 Eyl).**
+⚠ **HEPSİ TEK OTURUMDA arka arkaya — "HIZLI TUR" (kullanıcı onayı, 16 Eyl;
+o gün beş PR vardı, 17 Eyl'de yedi — kural sayıdan bağımsız).**
 Bu artık yalnızca bir hijyen tercihi değil, workflow'un kilidinin dayattığı
 şey: arka arkaya merge tam olarak BİR derleme ve BİR TestFlight build'i
 üretir (aşağıda ölçüldü). Yarım kalan bir tur ikinci bir senkron penceresi
@@ -235,7 +288,9 @@ yayında olduğu için bu artık bir senkron güncellemesi değil, **yeni bir
 sürüm kaydı** demek (yukarıdaki "SÜRÜM SENKRONU").
 ⚠ Çakışma ÜÇ dosyada yığılıyor: `parca-log.md` (hepsi dosyanın BAŞINA
 yazıyor), `mobile/TESTING.md` (§ numaraları) ve **`ROADMAP.md`**. Yalnızca
-`mobile/docs/klasor-yapisi.md` beşinde de otomatik birleşiyor.
+`mobile/docs/klasor-yapisi.md` hepsinde otomatik birleşiyor. Sonradan eklenen
+#576 ve #579 de aynı iki dosyada (`parca-log.md` + `ROADMAP.md`) yığılıyor —
+ikili ölçümle doğrulandı.
 
 ⚠ **Bu satır 16 Eyl'de DÜZELTİLDİ** — önce *"`ROADMAP.md` ve
 `klasor-yapisi.md` beşinde de otomatik birleşiyor"* diyordu. `ROADMAP.md`
@@ -485,7 +540,7 @@ commit var, ama mağazaya giden ikiliye dokunan tek iş **#525**:
 - [x] Kütük + "Gönderim geçmişi" + "İnceleme süresi" tabloları ve iki
       Android CSV'si güncellendi; **1.1.0 (627)** pasife çekildi.
 - [x] `ROADMAP.md` → "Sıradaki sürüme binecekler" tablosu
-      `docs/decisions/roadmap-arsiv.md` → **"1.1.0 sürüm turu"**na taşındı
+      `docs/decisions/roadmap-arsiv-cilt-1.md` → **"1.1.0 sürüm turu"**na taşındı
       (satırlar değişmeden).
 - [ ] **Console'un KENDİ saatleri ve Submission ID** — okunmadı. Okunursa
       yukarıdaki üç tablodaki `~` ve `≤` işaretleri gerçek ölçüme çevrilir.
@@ -687,7 +742,7 @@ Store önbelleği, sonra Internal testing kanalı (bkz.
 `build-and-distribution-log.md` → "ÇARE").
 
 **Tur kapandı:** "İnceleme süresi" tablosuna satır eklendi, 1.0.8 pasife
-çekildi, ROADMAP'teki tur `docs/decisions/roadmap-arsiv.md` → "1.0.9 sürüm
+çekildi, ROADMAP'teki tur `docs/decisions/roadmap-arsiv-cilt-1.md` → "1.0.9 sürüm
 turu"na taşındı. ⚠ Kalan TEK ölçüm cihazda: testçinin telefonunda
 `Derleme 1abde38` göründü mü (kanala girmek ≠ cihaza inmek).
 
@@ -793,7 +848,7 @@ Console'dan okunmadı**, bu yüzden "İnceleme süresi" tablosunda satırı yok.
 
 ⚠ Bu satır kütüğe **geç yazıldı** (6 Eyl akşamı, 1.0.8 hazırlanırken): 1.0.7
 PR'ı (#461) ROADMAP'i güncellemiş ama bu dosyaya dokunmamıştı; tur arşive
-taşınırken de (`docs/decisions/roadmap-arsiv.md` → "1.0.7 sürüm turu") kütük
+taşınırken de (`docs/decisions/roadmap-arsiv-cilt-1.md` → "1.0.7 sürüm turu") kütük
 atlanmıştı. "Bir sürüm yüklendiğinde ne yapılır" listesinin 1. adımı tam
 bunu önlemek için var — arşive taşımak kütüğe yazmanın yerine geçmez.
 

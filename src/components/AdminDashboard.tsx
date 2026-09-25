@@ -6,13 +6,19 @@ import {
   fetchAdminUserActivitySeries,
   fetchAdminGameActivitySeries,
   fetchAdminGameDurationSummary,
+  fetchAdminGameMix,
   fetchAdminEngagementTotals,
   fetchAdminAiBalance,
   fetchAdminFriendTotals,
   fetchAdminActivePlayersSeries,
   fetchAdminRetentionCohorts,
   fetchAdminActivationStats,
-  fetchAdminSourceFunnel,
+  fetchAdminActiveHours,
+  fetchAdminActiveDays,
+  fetchAdminMemberQuality,
+  fetchAdminFunnel,
+  fetchAdminSignupFunnel,
+  fetchAdminWebJourney,
   fetchAdminTutorialFunnel,
   fetchAdminDeviceBreakdown,
   fetchAdminDeviceModelBreakdown,
@@ -43,7 +49,13 @@ import type {
   AdminActivePlayersPoint,
   AdminRetentionCell,
   AdminActivationStats,
-  AdminSourceFunnelRow,
+  AdminActiveHoursRow,
+  AdminActiveDaysRow,
+  AdminGameMix,
+  AdminMemberQualityRow,
+  AdminFunnelRow,
+  AdminSignupFunnelRow,
+  AdminWebJourneyRow,
   AdminTutorialFunnelRow,
   AdminAppVersionRow,
   AdminPushVersionRow,
@@ -61,6 +73,14 @@ import { MemberMessageModal } from './MemberMessageModal';
 import { AdminChatTranscriptModal } from './AdminChatTranscriptModal';
 import { CountBadge } from './CountBadge';
 import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
+import { SplitPieChart } from './SplitPieChart';
+import {
+  StackedBucketChart,
+  hourBucketLabel,
+  hourAxisLabel,
+  dayBucketLabel,
+  dayAxisLabel,
+} from './StackedBucketChart';
 import { trCompare, trLower } from '../utils/turkish';
 import {
   brandBreakdown,
@@ -75,13 +95,16 @@ import {
   clientPlatformLabel,
   compareVersionDesc,
   groupPlatformVersions,
-  groupSourceFunnel,
+  groupMemberQuality,
+  groupFunnelV2,
+  type FunnelV2Totals,
   type PlatformVersionGroup,
-  type SourceFunnelTotals,
+  type MemberQualityTotals,
 } from '../utils/adminGroups';
 import { GENDER_OPTIONS, isoToTrDate } from '../utils/profileFields';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { downloadCsv } from '../utils/csvExport';
+import { FUNNEL_EXISTING_CHANNEL, FUNNEL_MEMBER_EVENTS_ENABLED } from '../utils/funnelEvents';
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -180,6 +203,30 @@ const GAME_COUNT_SERIES: ChartSeriesDef[] = [
   { key: 'games_finished_ios', label: 'iOS', color: '#DB2777' },
   { key: 'games_finished_android', label: 'Android', color: '#0891B2' },
   { key: 'games_finished_other', label: 'Diğer', color: '#8A93A2' },
+];
+
+// "Aktif Saatler" VE "Aktif Günler" yığılmış çubuklarının segment sırası —
+// dizinin İLK öğesi en ALTTA çizilir (18 Eylül 2026; 20 Eylül'de ikinci
+// grafik eklenince paylaşıldı).
+//
+// ⚠ TEK sabit, iki grafik: ikisi de aynı RPC kolonlarını (`finished_*`) aynı
+// renklerle çiziyor. İkiye ayrılsaydı "Web" iki grafikte iki renge kayabilir
+// ve aynı sekmede yan yana duran iki çubuk okunamaz hale gelirdi.
+//
+// Renkler GAME_COUNT_SERIES'in platform üçlüsüyle BİREBİR aynı: iki grafik
+// aynı sekmede yan yana duruyor ve "Web" iki yerde iki renk olsaydı okuma
+// bozulurdu — iOS'un macenta (mor değil) seçimi de oradaki deutan notuna
+// dayanıyor, burada yeniden karar verilmiyor.
+//
+// Sıra bilinçli: bilinen platformlar altta, "Diğer" en üstte. Bugün "Diğer"
+// kovası port PR'ı merge edilene kadar şişkin (bkz. `AdminActiveHoursRow`);
+// en üste konunca çubuğun TABANI kararlı kalıyor ve o boşluk kapandıkça
+// grafik alttan değil üstten inceliyor.
+const FINISH_PLATFORM_SERIES: ChartSeriesDef[] = [
+  { key: 'finished_web', label: 'Web', color: '#2a78d6' },
+  { key: 'finished_ios', label: 'iOS', color: '#DB2777' },
+  { key: 'finished_android', label: 'Android', color: '#0891B2' },
+  { key: 'finished_other', label: 'Diğer', color: '#8A93A2' },
 ];
 // Süre kırılımı KALIYOR ve gerçek iş yapıyor: Canlı oyunlar 48 saatlik sıra
 // penceresi yüzünden günlere yayılıyor, tek bir sayıya katılırlarsa "bir oyun
@@ -356,6 +403,69 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
       </>
     ),
   },
+  'kayit-hunisi': {
+    title: 'Kayıt Hunisi',
+    body: (
+      <>
+        Kayıt formunu AÇAN ile hesabı OLUŞTURAN sayısı, kanal başına
+        (<b>Doğrudan</b> = kayıt kapısı, <b>Form</b> = Görüş Bildir formundan
+        gelen). <b>Oran</b> = Tamamlama / Açılış.
+        <br />
+        Bu kart <b>ADET</b> sayar, kişi değil: sayaç bilerek kimliksiz
+        (<code>signup_events</code> tablosunda ne <code>anon_id</code> ne{' '}
+        <code>user_id</code> var), çünkü gizlilik metnindeki "anonim kod DÖRT
+        durumda gönderilir" cümlesine beşinci bir durum eklemek istemedik. Aynı
+        kişi formu iki kez açarsa iki kez sayılır.
+        <br />
+        ⚠ <b>Yalnızca web.</b> Port aynı olayları (<code>signup_started</code>/
+        <code>signup_completed</code>) Firebase Analytics'e yazıyor, bu tabloya
+        değil — bu yüzden "Tamamlama" da <code>profiles</code>tan değil aynı
+        tablodan okunuyor (payda web, pay web+mobil olsaydı oran sahte çıkardı).
+        <br />
+        ⚠ "Tamamladı" = hesap oluştu demek, <b>e-postasını onayladı demek
+        DEĞİL</b>. Onay kaybı ayrı bir soru (ROADMAP #32).
+      </>
+    ),
+  },
+  'ziyaretci-yolculugu': {
+    title: 'Ziyaretçi Yolculuğu',
+    body: (
+      <>
+        Web'deki MİSAFİR ziyaretçinin <b>nerede ayrıldığı</b>. Her satır bir adım;{' '}
+        <b>Ulaşan</b> = o adıma gelen oturum, <b>Ayrılan</b> = SON adımı o olan oturum,{' '}
+        <b>Ayrılma</b> = Ayrılan / Ulaşan. Bounce'un yeri, Ayrılma yüzdesinin en yüksek
+        olduğu satırdır. <b>Süre</b> = orada ayrılanların oturumda kaldığı süre (medyan).
+        <br />
+        <br />
+        Bu kart <b>OTURUM</b> sayar, kişi değil: sekme başına bir satır, kimliksiz (ne{' '}
+        <code>anon_id</code> ne <code>user_id</code>, gizlilik metnine dokunmamak için).
+        Ertesi gün dönen ziyaretçi yeni bir oturumdur.
+        <br />
+        <br />
+        <b>Yeni / Dönen:</b> karşılama sayfası yalnızca ilk kez gelene gösterilir, ayrım
+        buna dayanır. <b>Yeni</b> = oturum karşılamayla başladı (varsayılan, bounce
+        sorusunun kitlesi). <b>Dönen</b> = karşılama atlandı. ⚠ Bu grup "dönen" ile
+        birebir aynı DEĞİL: paylaşılan oyun (<code>/game/…</code>) ve davet linkiyle
+        gelen YENİ ziyaretçi ile ana ekrana eklenmiş uygulama da buraya düşer. Hesapsız
+        düzenli oynayan misafirler (Android uygulaması Play'e çıkana kadar web'den
+        oynayanlar) da burada.
+        <br />
+        <br />
+        ⚠ Adımlar bir sıra DEĞİL, bir küme: tanıtımı açmadan oyuna başlayan da, oyun
+        oynamadan kayıt formunu açan da olur. Yani Ulaşan sayıları yukarıdan aşağı
+        azalmak zorunda değil.
+        <br />
+        ⚠ <b>Kapsam:</b> yalnızca web ve yalnızca misafir. Girişli açılan oturum hiç
+        yazılmaz; <b>Kayıt oldu</b>/<b>Giriş yaptı</b> satırları ayrılma değil BAŞARI
+        (oturum orada kapanır). Karşılama sayfası yalnızca ilk kez gelenlere
+        gösterildiği için dönen misafir <b>Uygulama açıldı</b>'dan başlar (<b>Yeni</b>
+        süzgecinde o satır "karşılamadan geçenler"i gösterir). Otomasyon
+        tarayıcıları (<code>navigator.webdriver</code>) sayılmaz. Mobil Safari sekmeyi
+        bazen son pingi göndermeden kapatıyor, bu yüzden Süre biraz eksik ölçülebilir.
+        Adımlar bundan etkilenmez.
+      </>
+    ),
+  },
   'tanitim-turu': {
     title: 'Tanıtım Turu',
     body: (
@@ -385,88 +495,94 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <br />
         <br />
         <b>Neden ayrı bir tablo:</b> tanıtım bilerek bir "oyun" SAYILMIYOR (huniye girmez,
-        istatistik/k-lig kirletmez), yani Kaynak Hunisi'nin hiçbir adımında görünmez.
+        istatistik/k-lig kirletmez), yani Huni v2'nin hiçbir adımında görünmez.
         <b>Sahne dökümü</b> asıl soruyu cevaplar: tanıtım BAŞTA mı kaybediyor (metin/hız)
         yoksa SONDA mı (uzun geliyor).
       </>
     ),
   },
-  'kaynak-hunisi': {
-    title: 'Kaynak Hunisi',
+  'huni-v2': {
+    title: 'Huni v2',
     body: (
       <>
-        <b>Bu tablo baştan sona MİSAFİR hunisidir:</b> bir kanaldan gelip{' '}
-        <b>henüz üye olmadan</b> ürünü deneyen insanları ölçer. <b>Gelen</b> = o kaynaktan gelen
-        benzersiz misafir ziyaretçi; <b>Üye</b> = o kaynak damgasıyla açılan hesap;{' '}
-        <b>Başlayan</b> = üye olmadan BAŞLATILAN yerel (YZ) oyun; <b>Biten</b> = üye olmadan
-        BİTİRİLEN yerel (YZ) oyun. Pencere her adıma KENDİ olay tarihinden uygulanır (kohort
-        değil).
+        <b>Bu tablo bir KOHORT'tur:</b> pencerede <b>ilk kez</b> gelen cihazları alır ve bütün
+        sütunlar <b>aynı cihazları</b> sayar. Bu yüzden hiçbir oran %100'ü aşmaz ve kişi ile oyun
+        adetleri yan yana gelmez. Olaylar bugüne kadar izlenir: 29 gün önce gelip dün oynayan
+        cihaz sayılır.
         <br />
         <br />
-        <b>Neden yalnızca misafir?</b> Aylardır oynayan bir üyenin oyunları "bu kanal işe
-        yaradı mı" sorusunun cevabını boğuyordu — ölçüldü, "arkadas" satırında 292 üye oyunu
-        vardı. "Gelen" zaten baştan beri yalnızca misafir sayıyordu (ziyaret kaydı yalnızca
-        oturum kapalıyken yazılır), yani tablo üç farklı kitleyi yan yana koyuyordu. Artık
-        tek kitle.
+        <b>Land</b> = pencerede ilk kez gelen cihaz (web: ilk sayfa, karşılama ya da uygulama;
+        mobil: ilk açılış). <b>2+ Gün</b> = geldiği günden SONRA en az bir başka gün yeniden
+        açan. <b>Üye</b> = bu cihazdan hesap açılan. <b>Başlatan</b> = en az bir yerel (YZ) oyun
+        başlatan (misafir ya da üye fark etmez). Bu üç sütunun yüzdesi <b>Land</b>'e göredir.{' '}
+        <b>Bitiren</b> = en az bir oyun bitiren; yüzdesi <b>Başlatan</b>'a göredir
+        ("başlayanların yüzde kaçı bitirdi"). <b>Oyun</b> görünümü aynı cihazların oyun
+        ADETLERİNİ gösterir.
         <br />
         <br />
-        <b>Başlayan ile Biten bir ÇİFT</b> — ikisi de aynı kitleyi, aynı kapsamı (yerel/YZ) ve
-        aynı etiket sözleşmesini ölçer, o yüzden "başlayanların kaçı bitirdi" sorusu ancak bu
-        ikisiyle sorulabilir. Yerel oyunun medyan süresi 18,1 dakika olduğundan soğuk bir
-        ziyaretçi çoğu zaman oynar ama bitirmez: "Başlayan" yüksek + "Biten" 0 ise açılış
-        sayfası çalışıyor, oyun uzun geliyor demektir; ikisi de 0 ise sorun açılış sayfasında.
+        <b>"Kişi" = anonim cihaz kodu</b>, hesap değil: aynı insan web'de ve uygulamada iki
+        cihaz sayılır (hesaba bağlanmadığı için birleştirilemez, bilinçli karar). Günler
+        İstanbul saatine göredir.
         <br />
         <br />
-        <b>ÜYE tarafı bu tabloda YOK</b> — üyelerin oyunları kaynak kırılımlı olarak CSV'de
-        duruyor ("Üye Oyunu", "Oynayan Üye"), ve bunlar cihaz etiketinden değil üyenin KAYIT
-        damgasından gelir: hesabı takip ettiği için "bu kanal değerli üye getirdi mi"
-        sorusunun daha güvenilir cevabıdır (bir üye başka cihazdan oynarsa cihaz etiketi
-        kaybolur, kayıt damgası kaybolmaz). Üyelerin ne kadar oynadığını zaman içinde görmek
-        için Büyüme &gt; Oyun sekmesindeki Misafir/Kayıtlı kırılımı var.
+        <b>Eski cihaz (kohort dışı)</b> = ölçüm v2 yayına girmeden önce de bu cihazda iz vardı.
+        Yayından sonraki ilk açılışta her cihaz "ilk geliş" yazar; bunlar ayrılmasaydı eski
+        kullanıcılar ilk haftalarda yeni gelen gibi görünürdü.
         <br />
         <br />
-        <b>Başlayan ve Biten 22 Ağustos 2026'da misafire indirildi, geriye dönük
-        doldurulamaz</b> — o tarihten önceki başlangıçlarda "misafir miydi" bilgisi hiç
-        tutulmuyordu, bu yüzden HİÇ sayılmıyorlar ve "Başlayan" bir süre düşük görünecek.
-        Eski bitişler ise damgasız olduklarından "bilinmiyor" satırında toplanır.
+        <b>Şimdilik eksik olanlar:</b> <b>Üye</b> sütunu ve üyelerin oyun bitişleri gizlilik
+        metni güncellenene kadar yazılmıyor (metin mobil uygulamanın bir sonraki güncellemesiyle
+        birlikte değişecek). O güne kadar <b>Bitiren</b> yalnızca misafir bitişlerini sayar.
+        Mobil uygulama da o güncellemeyle yazmaya başlayacak; şimdilik yalnızca web var.
+        Kendini bot olarak tanıtan tarayıcılar ve otomasyon araçları sayılmaz.
         <br />
         <br />
-        Yüzde modunda <b>Üye</b> = üye / gelen. <b>Başlayan</b> = başlatan benzersiz CİHAZ /
-        gelen; <b>Gelen</b> ile aynı anonim koddan sayıldığı için bu, tablodaki tek cihaz-bazlı
-        dönüşüm oranı — <b>Üye</b> oranı ise ayrı bir kaynaktan (kayıt damgası) gelir.{' '}
-        <b>Biten</b> yüzdesi de 31 Ağustos 2026'dan beri CİHAZ üzerinden: <b>bitiren
-        benzersiz cihaz / başlatan benzersiz cihaz</b>, yani "başlayanların kaçı bitirdi"
-        (tamamlanma oranı). Oyun ADEDİ üzerinden hesaplanan eski oran tek bir cihazın açtığı
-        onlarca oyunla çarpılabiliyordu — ölçüldü: 117 oyunun 64 cihazdan geldiği bir
-        pencerede İKİ cihaz tek başına 47 oyun başlatmıştı. Taban 0 ise oran hesaplanmaz,
-        "—" gösterilir.
-        <br />
-        <br />
-        <b>"Biten" var ama yüzdesi "—" ise bu bir hata değil:</b> cihaz kodu bitmiş tarafa 31
-        Ağustos 2026'da eklendi ve <b>geriye dönük doldurulamaz</b>, ayrıca mobil uygulama
-        henüz damgalamıyor. O satırlarda oyun sayılır, cihaz sayılmaz — "0%" yazmak "hiçbir
-        cihaz bitirmedi" derdi, oysa gerçek "cihaz bilgisi yok". CSV'deki <b>Bitiren Cihaz</b>
-        sütunu ham sayıyı verir.
-        <br />
-        <br />
-        <b>Satırlar 16 Eylül 2026'dan beri KANALA göre gruplu</b> (Instagram, Facebook,
-        Arkadaş Daveti, Direkt, Bilinmiyor) — <b>satıra tıkla, ham <code>?ref=</code>
-        etiketleri açılır</b> (<code>ig-bio</code>, <code>fb-reel</code> …). Etiketlerin
-        merkezî bir kaydı YOK, pazarlama malzemesine elle yazılıyor; bu yüzden kural
-        önek-bazlı ve tanınmayan bir etiket UYDURMA bir kanala atanmaz, <b>Diğer</b>'de
-        GÖRÜNÜR kalır. Kanalın sayısı alt satırların toplamıdır: bir cihazın kaynağı ilk
-        temasta dondurulduğundan (<code>captureUtmSource</code>) aynı cihaz iki kaynak
-        satırında birden görünemez.
-        <br />
-        <br />
-        <b>Direkt</b> = web'e <code>?ref=</code> olmadan geliş. <b>Bilinmiyor</b> = kaynak
-        damgası olmayan satırlar — damgalama 16 Ağustos 2026'da eklendi ve mobil uygulamadan
-        gelenler henüz damgalanmıyor. "Gelen" ile "Üye" İKİ AYRI ölçüm (ziyaretler anonim,
-        hesaba bağlanmaz), bu yüzden oran %100'ü aşabilir ve bu bir hata değildir. CSV her
-        zaman ham sayı indirir.
+        Satırlar platform → kanal gruplu; <b>kanala tıkla, ham <code>?ref=</code> etiketleri
+        açılır</b> (Üye Kalitesi ile aynı gruplama kuralı). CSV her zaman ham sayı indirir.
       </>
     ),
   },
+  'uye-kalitesi': {
+    title: 'Kanal → Üye Kalitesi',
+    body: (
+      <>
+        <b>"Hangi kanal DEĞERLİ üye getiriyor?"</b> sorusunun tablosu. Pencerede hesap açan
+        üyeleri, kayıt anında hesaba yazılan kaynak etiketine göre gruplar ve o üyelerin
+        oyunlarını bugüne kadar izler (KOHORT). Her yüzde o satırın <b>Üye</b>'sine göredir, yani
+        %100'ü aşamaz.
+        <br />
+        <br />
+        <b>Oynayan</b> = en az bir oyun bitiren. <b>7 Günde</b> = kayıttan sonraki 7 gün içinde
+        oyun bitiren (aktivasyon hızı). <b>2+ Gün</b> = en az iki farklı günde oyun bitiren (geri
+        dönüş — Huni v2'deki "2+ Gün"ün hesap karşılığı). <b>Oyun / Üye</b> = bu üyelerin
+        bitirdiği oyun sayısının üye sayısına oranı. Yerel (YZ) ve Canlı oyunlar birlikte sayılır;
+        yarım bırakılan oyun sayılmaz.
+        <br />
+        <br />
+        <b>Neden güvenilir:</b> etiket kayıt anında hesaba TEK SEFER yazılır ve sonra değişmez,
+        oyunlar da hesaba bağlıdır — anonim cihaz kodu, tahmin ya da eşleştirme yok. Geçmiş
+        de tutarlı: bu tablo geriye dönük okunabilir.
+        <br />
+        <br />
+        <b>Misafir sütunları neden yok:</b> 24 Eylül 2026'ya kadar bu tablo "Kaynak Hunisi"ydi ve
+        Gelen / Başlatan / Bitiren sütunları vardı. Onlar farklı tarihlerde başlamış üç ayrı
+        anonim tablodan besleniyordu ve güvenilmezdi. Üye olmadan gelenlerin hunisi artık{' '}
+        <b>Huni v2</b>'de.
+        <br />
+        <br />
+        <b>Instagram, Facebook, LinkedIn, Arkadaş Daveti, Mobil Uygulama ve Direkt her zaman
+        görünür</b> — pencerede hiç üye getirmediyse 0 ile. Satırın yokluğu "ölçülmedi" gibi
+        okunurdu; 0 ise bir bulgu. Gelen ziyaretçisi olup üye getirmeyen bir kanalın ziyaret
+        tarafı Huni v2'de.
+        <br />
+        <br />
+        <b>Mobil Uygulama</b> = uygulamadan açılan hesaplar (etiket <code>app</code>).{' '}
+        <b>Bilinmiyor</b> = etiketsiz hesap (etiketleme 16 Ağustos 2026'da başladı). Satıra
+        tıkla, ham <code>?ref=</code> etiketleri açılır. CSV her zaman ham sayı indirir.
+      </>
+    ),
+  },
+
   'surum-dagilimi': {
     title: 'Sürüm Dağılımı',
     body: (
@@ -538,10 +654,19 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         duruyor ama artık çizilmiyor.{' '}
         <b>Satıra tıkla, işletim sistemi SÜRÜMLERİ açılır</b> — "kaç kişi hâlâ eski Android'de?"
         sorusunun cevabı (12 Eylül 2026'ya kadar ayrı bir "İşletim Sistemi" tablosuydu).{' '}
-        <b>Sürüm dizesi platformdan bağımsız okunmaz:</b> canlıda <code>iOS 10.15.7</code>{' '}
-        satırları var ve bu bir iOS sürümü DEĞİL, macOS'un dondurulmuş sürüm dizesi — masaüstü
-        User-Agent'ı veren cihazlar (iPad'in "Masaüstü site" modu, Mac) iOS kovasına düşüyor;
-        tablo o sınıflandırma hatasını gizlemiyor, gösteriyor. <b>Açılan sürüm satırlarının
+        <b>Masaüstü sürümlerinin başında işletim sistemi yazıyor</b> (<code>macOS</code>,{' '}
+        <code>Windows</code>). ⚠ Oradaki sayı gerçek sürüm DEĞİL: tarayıcılar bütün
+        Mac'lerde <code>10.15.7</code> gönderiyor, Windows 11 de kendini Windows 10 gibi
+        bildiriyor (bu yüzden <b>Windows 10/11</b> tek satır). Yani o satırlar "kaç Mac, kaç
+        Windows" sorusunu yanıtlar, sürümü yanıtlamaz.{' '}
+        <b>Masaüstü "bilinmiyor"</b> = işletim sistemi hiç tanınmadı: Windows ve Mac her zaman
+        tanınır, <b>Linux</b> / <b>ChromeOS</b> 23 Eylül 2026'dan beri adıyla yazılıyor.{' '}
+        <b>"bot (kendini tanıtan)"</b> = tarayıcı kimliğinde Googlebot, bingbot gibi bir bot
+        adı geçiyor; bunlar SAYILMAYA devam ediyor, yalnızca ayrı satırda. Kendini tanıtmayan
+        bot "bilinmiyor"da kalır, o satır "bot" diye etiketlenmez (kanıt yok).{' '}
+        <b>iPad "sürüm yok":</b> iPad Safari varsayılan olarak "masaüstü sitesi" kipinde
+        açılıp kendini Mac gibi tanıtıyor ve gerçek sürümünü göndermiyor (23 Eylül 2026'ya
+        kadar bu satırlar yanlışlıkla <code>iOS 10.15.7</code> görünüyordu). <b>Açılan sürüm satırlarının
         toplamı üstteki cihaz satırından BÜYÜK olabilir</b> — aynı ziyaretçi aralık içinde
         işletim sistemini güncellerse iki sürümde de sayılır (canlıda 12 Eylül 2026'da tek
         vaka: iOS <code>26.5.2</code> → <code>26.6.1</code>). Üstteki sayı ve tablonun TOPLAMI
@@ -620,6 +745,77 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
       </>
     ),
   },
+  'aktif-saatler': {
+    title: 'Aktif Saatler',
+    body: (
+      <>
+        Oyun <b>bitişlerinin</b> günün hangi saatinde olduğu — <b>2 saatlik</b> dilimler,{' '}
+        <b>son 30 gün</b>, saat dilimi <b>Europe/Istanbul</b>. Dilimin etiketi başlangıç
+        saatidir: <code>22–24</code> = akşam 22:00 ile gece yarısı arası.
+        <br />
+        <br />
+        <b>Neden bitiş:</b> başlangıç anı bir niyeti ölçer, bitiş anı gerçekten oynanmış bir
+        oyunu. Kaynak <code>game_finishes</code> — misafir oyunlarını da kapsayan tek bitiş
+        tablosu (<code>games</code> satırı yalnızca girişli kullanıcı için açılır).
+        <br />
+        <br />
+        ⚠ <b>Teslim satırları bu grafiğe GİRMEZ.</b> Teslim, 7 günlük/48 saatlik zaman
+        aşımının <b>dolduğu</b> anı taşır — bir insanın oyun bitirdiği anı değil. İçeri
+        alınsaydı dağılıma insan davranışıyla ilgisi olmayan bir saat deseni karışırdı (son
+        30 günde 152 teslim / 1199 bitirilen).
+        <br />
+        <br />
+        <b>Bu grafik üstteki kombolara bağlı değil</b> (kaynak / kapsam / oyuncu sayısı) —
+        kendi başına duran, sabit pencereli bir günlük ritim dağılımı.
+        <br />
+        <br />
+        <b>Platform kırılımı:</b> <b>Web · iOS · Android · Diğer</b> segmentleri HER ZAMAN
+        toplam bitişe tam olarak toplanır. <b>Diğer</b>'in tanımı "Oyun Sayısı" grafiğiyle
+        birebir aynı.
+        <br />
+        ⚠ <b>Bugün "Diğer" şişkin ve bu geçici:</b> <code>game_finishes.platform</code>{' '}
+        damgasını yalnızca web istemcisi yazıyor; portun aynı satırı inceleme dondurması
+        yüzünden ayrı bir PR'da bekliyor. O merge edilip yeni mağaza paketi dağılana kadar
+        app'ten biten oyunlar "Diğer"e düşer (18 Eylül 2026'da ölçüldü: 17 Eylül'ün 89
+        bitişinden 54'ü platformsuz). <b>Toplam çubuk yüksekliği bundan etkilenmez</b> —
+        yalnızca rengin dağılımı eksik.
+      </>
+    ),
+  },
+  'aktif-gunler': {
+    title: 'Aktif Günler',
+    body: (
+      <>
+        Oyun <b>bitişlerinin</b> haftanın hangi gününde olduğu — <b>son 30 gün</b>, saat
+        dilimi <b>Europe/Istanbul</b>. Hafta <b>Pazartesi</b> başlar, böylece Cumartesi ve
+        Pazar yan yana, sağ uçta durur.
+        <br />
+        <br />
+        <b>"Aktif Saatler"in ikizi</b> ve bu bir benzetme değil: aynı kaynak
+        (<code>game_finishes</code>), aynı pencere, aynı platform kovaları, aynı teslim
+        kuralı — tek fark kovanın kendisi. <b>İki grafiğin toplamı birbirini tutmak
+        zorundadır</b> (20 Eylül 2026'da canlıda ölçüldü: ikisi de 1279). Tutmuyorsa biri
+        değişmiş, öteki güncellenmemiştir.
+        <br />
+        <br />
+        ⚠ <b>Teslim satırları bu grafiğe GİRMEZ</b> ve gerekçe burada saat grafiğindekinden
+        <b> daha güçlü</b>: teslim, 7 günlük terk-edilme ya da 48 saatlik sıra zaman
+        aşımının <b>dolduğu</b> anı taşır — ve yedi günlük bir gecikme haftanın gününü
+        <b> korur</b>. Dahil edilseydi her teslim, terk edildiği günün kovasına düşüp
+        dağılıma insan davranışıyla ilgisi olmayan ikinci bir desen bindirirdi.
+        <br />
+        <br />
+        <b>Bu grafik üstteki kombolara bağlı değil</b> (kaynak / kapsam / oyuncu sayısı).
+        <br />
+        <br />
+        <b>Platform kırılımı:</b> <b>Web · iOS · Android · Diğer</b> segmentleri HER ZAMAN
+        toplam bitişe tam olarak toplanır; <b>Diğer</b>'in tanımı "Oyun Sayısı" ve "Aktif
+        Saatler" ile birebir aynı. ⚠ <b>Bugün "Diğer" şişkin ve bu geçici</b> — sebep
+        "Aktif Saatler"dekiyle aynı: portun <code>platform</code> damgası inceleme
+        dondurması yüzünden ayrı bir PR'da bekliyor.
+      </>
+    ),
+  },
   'oyun-suresi': {
     title: 'Oyun Süresi (Medyan)',
     body: (
@@ -659,6 +855,36 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <br />
         <b>Zaman serisi grafiği 16 Eylül 2026'da kullanıcı kararıyla kaldırıldı</b>; sunucu
         serisi (<code>admin_engagement_activity_series</code>) duruyor, yalnızca çizilmiyor.
+      </>
+    ),
+  },
+  'oyun-dagilimi': {
+    title: 'Oyun Dağılımı',
+    body: (
+      <>
+        Pencerede <b>biten</b> oyunların iki kırılımı — ikisi de AYNI kümeyi böler, yani iki
+        pastanın toplamı birbirini tutmak zorundadır. <b>Teslimle biten oyun sayılmaz</b>
+        ("Oyun Sayısı" grafiğindeki <b>Bitirilen</b> serisiyle birebir aynı tanım).
+        <br />
+        <br />
+        <b>Soldaki: oyun tipi.</b> <b>Yapay Zeka</b> (Setup'taki "Yapay Zeka ile" sekmesi)
+        = yerel/aynı-cihaz oyunlar, misafirler dahil; <b>Arkadaşınla</b> = Canlı oyunlar
+        (oyun başına tek kez sayılır, her oyuncu için ayrı değil).{' '}
+        <b>⚠ Bu bir OYUN TİPİ ayrımı, "rakip insandı" ayrımı DEĞİL</b> — Canlı bir oyunun
+        boş koltuğu YZ ile doldurulabiliyor (22 Eylül 2026'da canlıda ölçüldü: 4 kişilik 8
+        Canlı oyunun 5'inde bir YZ koltuğu vardı). Ayrım, oyunun Setup'ta hangi sekmeden
+        başlatıldığıdır.
+        <br />
+        <br />
+        <b>Sağdaki: masa büyüklüğü.</b> Aynı biten oyunlar, bu kez 2 ve 4 kişilik olarak.
+        Altındaki satır toplamı yazar; <b>iki pastanın toplamı tutmuyorsa</b> kırılımda
+        beklenmeyen bir oyuncu sayısı var demektir (satır bunu açıkça söyler).
+        <br />
+        <br />
+        <b>Pencere sabit ve üstteki kombolara BAĞLI DEĞİL</b> ("Aktif Saatler"/"Aktif
+        Günler" ile aynı karar) — bağlansaydı filtreler grafiğin ölçtüğü şeyi yok ederdi:
+        kaynak "Canlı" seçiliyken soldaki pasta tek dilime, "2 kişilik" seçiliyken sağdaki
+        pasta tek dilime düşerdi.
       </>
     ),
   },
@@ -822,8 +1048,8 @@ const csvLinkCls =
  * o satırı büyütüyordu.
  *
  * `py-1 -my-1`: dokunma alanını büyütürken layout ayak izini DEĞİŞTİRMİYOR
- * (negatif margin dolguyu birebir geri alıyor) — `SourceFunnelTable`'ın
- * "% / Sayı" düğmesindeki aynı desen.
+ * (negatif margin dolguyu birebir geri alıyor) — `FunnelV2Table`'ın
+ * "Kişi / Oyun" düğmesindeki aynı desen.
  */
 function InfoHint({ id, onOpen }: { id: HintId; onOpen: (id: HintId) => void }) {
   return (
@@ -1344,24 +1570,22 @@ function DeviceBrandTable({
  * hesaba bağlamak `PrivacyModal`daki anonimlik taahhüdünü bozardı. Bunun
  * doğal sonucu: bir satırda yalnızca ziyaretçi ya da yalnızca üye olabilir.
  *
- * `% / Sayı` düğmesi (16 Ağustos 2026, kullanıcı isteği: "basınca değerden
- * yüzdeye dönsün, basınca % sayı olsun, dönüşümlü çalışsın") üç sütunu birden
- * çevirir. Düğme iki etiketi de gösterip aktif olanı vurguluyor: tek kelimelik
- * bir düğme ("%") "şu an yüzde mi gösteriyorum, yoksa basınca yüzdeye mi
- * geçerim" belirsizliğini taşırdı.
- *
- * YÜZDELERİN TABANI SÜTUNA GÖRE DEĞİŞİR (aynı gün, kullanıcının ikinci
- * turu: *"kişi %'ye dönünce toplamın yüzdesini göstersin. Ama üye yüzdesi
- * kişinin % kaçı üye olmuş, oyun yüzdesi de kişinin % kaçı oyun oynamışı
- * göstersin."*):
- *   - **Gelen**    = sütun payı (o kaynak tüm ziyaretçilerin yüzde kaçı),
- *   - **Üye**      = `üye / gelen` — o kaynaktan gelenlerin yüzde kaçı üye oldu,
- *   - **Başlayan** = `başlatan cihaz / gelen` — yüzde kaçı oyuna oturdu,
- *   - **Biten**    = `biten / BAŞLAYAN` — başlayanların yüzde kaçı bitirdi.
- *
- * Son satırın tabanı bilinçli olarak "gelen" DEĞİL: "Biten" ile "Başlayan"
- * AYNI dimension'dan (anonim cihaz tabloları, misafir dahil) geliyor, yani
- * aralarındaki oran gerçek bir tamamlanma oranı.
+ * İKİ GÖRÜNÜM: **Kişi / Oyun** (24 Eylül 2026, kullanıcı isteği: *"Bence bu
+ * tablo elma armut karışmış. Burada görmek istediğimiz hangi kaynaktan kaç
+ * kişi gelmiş, kaçı üye olmuş, kaçı oyun başlatmış, kaçı oyun bitirmiş…
+ * Ayrıca başlayan, biten oyun ve ortalama oyun (kişi başı) kolonları da
+ * olabilir alternatif olarak."*). Yerini aldığı `% / Sayı` düğmesi sayı
+ * kipinde oyun ADEDİ, yüzde kipinde CİHAZ oranı gösteriyordu ve yüzdenin
+ * tabanı sütuna göre değişiyordu (Başlayan → Gelen, Biten → Başlayan) —
+ * canlıda Direkt'te 267 başlayan / 204 biten oyun "%6.4 / %10.5" okundu ve
+ * "biten nasıl daha yüksek?" sorusunu doğurdu. Artık:
+ *   - **Kişi**: Gelen · Üye · Oynayan Üye · Başlatan · Bitiren — hepsi KİŞİ;
+ *     yüzde o satırın GELEN'ine göre, Oynayan Üye'ninki ise ÜYE'ye göre
+ *     (`signup_players / signups`, kohort — aynı gün eklendi: davetle gelen
+ *     önce üye olup sonra oynadığından misafir sütunlarında görünmüyordu).
+ *   - **Oyun**: Başlayan Oyun · Biten Oyun · Oyun / Kişi (starts/starters).
+ * Tek ekranda iki birim yan yana DURMAZ. RPC değişmedi; bütün sayılar zaten
+ * dönüyordu, yalnızca sunum değişti.
  *
  * "Başlayan" 21 Ağustos 2026'da eklendi (ROADMAP #9) ve huninin KÖR olan
  * adımını kapatıyor: ilk Instagram kampanyasında 80 kişi / 0 üye / 0 oyun
@@ -1416,9 +1640,211 @@ function DeviceBrandTable({
  */
 /**
  * Tanıtım turu hunisi (Onboarding Faz 5, 8 Eylül 2026) — kaynak başına bir
- * satır. Kasten KÜÇÜK: `SourceFunnelTable`'ın yüzde kipi/CSV'si burada yok,
+ * satır. Kasten KÜÇÜK: `FunnelV2Table`'ın görünüm düğmesi/CSV'si burada yok,
  * çünkü tablo en çok iki satır ve altı sayı taşıyor.
  */
+function SignupFunnelTable({
+  rows,
+  infoHint,
+}: {
+  rows: AdminSignupFunnelRow[] | null;
+  infoHint?: ReactNode;
+}) {
+  // Boş/yüklenirken de `?` çizilir (öteki tablolarla aynı gerekçe).
+  if (rows === null || rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta veri yok.'}
+        </div>
+      </div>
+    );
+  }
+  const etiket = (channel: string) =>
+    channel === 'form' ? 'Form' : channel === 'direct' ? 'Doğrudan' : 'Bilinmiyor';
+  return (
+    <div className="flex flex-col gap-1.5">
+      {infoHint && <div className="self-end">{infoHint}</div>}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs font-mono">
+          <thead>
+            <tr className="text-muted border-b border-border">
+              <th className="text-left py-1 pr-2 font-normal">Kanal</th>
+              <th className="text-right py-1 px-2 font-normal">Açılış</th>
+              <th className="text-right py-1 px-2 font-normal">Tamamlama</th>
+              <th className="text-right py-1 pl-2 font-normal">Oran</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const oran =
+                row.starts > 0 ? Math.round((row.completions / row.starts) * 100) : null;
+              return (
+                <tr key={row.channel} className="border-b border-border/50">
+                  <td className="text-left py-1 pr-2 text-text">{etiket(row.channel)}</td>
+                  <td className="text-right py-1 px-2 text-text">{row.starts}</td>
+                  <td className="text-right py-1 px-2 text-text">{row.completions}</td>
+                  <td className="text-right py-1 pl-2 text-text">
+                    {oran === null ? '—' : `%${oran}`}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+const JOURNEY_LABEL: Record<string, string> = {
+  landing: 'Karşılama sayfası',
+  landing_cta: 'Uygulamaya geçti',
+  app: 'Uygulama açıldı',
+  tutorial_start: 'Tanıtımı açtı',
+  tutorial_done: 'Tanıtımı bitirdi',
+  game_start: 'Oyun başladı',
+  first_move: 'İlk hamle',
+  move_5: '5. hamle',
+  game_finish: 'Oyun bitti',
+  signup_form: 'Kayıt formu',
+  signup_done: 'Kayıt oldu',
+  login: 'Giriş yaptı',
+};
+
+/** Oturumu KAPATAN adımlar: orada "ayrılmak" bounce değil, başarı. */
+const JOURNEY_SUCCESS = new Set(['signup_done', 'login']);
+
+function formatJourneySeconds(sec: number | null): string {
+  if (sec === null) return '—';
+  if (sec < 60) return `${Math.round(sec)} sn`;
+  if (sec < 3600) return `${Math.round(sec / 60)} dk`;
+  return `${(sec / 3600).toFixed(1).replace('.', ',')} sa`;
+}
+
+/**
+ * Ziyaretçi yolculuğu (23 Eylül 2026) — web misafir oturumlarının adım başına
+ * ulaşan / burada ayrılan sayısı. Yazan taraf `utils/webJourney.ts`, sunucu
+ * `admin_web_journey`. Hiç ulaşılmamış adım satırı gizlenir (karşılama
+ * bugün yalnızca ilk kez gelene gösteriliyor, tanıtım yalnızca ilk oyunda
+ * açılıyor — boş satırlar okumayı zorlaştırıyordu).
+ */
+function WebJourneyTable({
+  rows,
+  device,
+  onDeviceChange,
+  entry,
+  onEntryChange,
+  infoHint,
+}: {
+  rows: AdminWebJourneyRow[] | null;
+  device: string;
+  onDeviceChange: (v: string) => void;
+  entry: string;
+  onEntryChange: (v: string) => void;
+  infoHint?: ReactNode;
+}) {
+  const toplam = rows ? rows.reduce((t, r) => t + r.left_here, 0) : 0;
+  const gorunen = rows ? rows.filter((r) => r.reached > 0) : [];
+  const karsilama = rows?.find((r) => r.step === 'landing');
+  const ust = (
+    <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center flex-wrap gap-2">
+        {/* Yeni ↔ dönen (23 Eylül 2026): karta düşen ilk gerçek satır 205
+            oyunluk, hesapsız düzenli bir misafirdi. Bounce sorusu YENİ
+            ziyaretçi hakkında, bu yüzden varsayılan "Yeni". */}
+        <AdminSelect
+          value={entry}
+          onChange={onEntryChange}
+          options={[
+            { value: 'landing', label: 'Yeni' },
+            { value: 'app', label: 'Dönen' },
+            { value: 'all', label: 'Tümü' },
+          ]}
+        />
+        <AdminSelect
+          value={device}
+          onChange={onDeviceChange}
+          options={[
+            { value: 'all', label: 'Tüm Cihazlar' },
+            { value: 'desktop', label: 'Masaüstü' },
+            { value: 'ios', label: 'iOS' },
+            { value: 'android', label: 'Android' },
+          ]}
+        />
+        {rows !== null && toplam > 0 && (
+          <span className="text-[11px] font-mono text-muted">{toplam} oturum</span>
+        )}
+      </div>
+      {infoHint}
+    </div>
+  );
+  if (rows === null || gorunen.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {ust}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta veri yok.'}
+        </div>
+      </div>
+    );
+  }
+  const enYuksek = Math.max(
+    ...gorunen
+      .filter((r) => !JOURNEY_SUCCESS.has(r.step) && r.reached > 0)
+      .map((r) => r.left_here / r.reached),
+    0,
+  );
+  return (
+    <div className="flex flex-col gap-1.5">
+      {ust}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs font-mono">
+          <thead>
+            <tr className="text-muted border-b border-border">
+              <th className="text-left py-1 pr-2 font-normal">Adım</th>
+              <th className="text-right py-1 px-2 font-normal">Ulaşan</th>
+              <th className="text-right py-1 px-2 font-normal">Ayrılan</th>
+              <th className="text-right py-1 px-2 font-normal">Ayrılma</th>
+              <th className="text-right py-1 pl-2 font-normal">Süre</th>
+            </tr>
+          </thead>
+          <tbody>
+            {gorunen.map((row) => {
+              const basari = JOURNEY_SUCCESS.has(row.step);
+              const oran = row.left_here / row.reached;
+              // En çok kaybettiren adım vurgulanır: kartın sorduğu tek soru bu.
+              const zirve = !basari && row.left_here > 0 && oran === enYuksek;
+              return (
+                <tr key={row.step} className="border-b border-border/50">
+                  <td className={`text-left py-1 pr-2 ${zirve ? 'text-red font-bold' : 'text-text'}`}>
+                    {JOURNEY_LABEL[row.step] ?? row.step}
+                  </td>
+                  <td className="text-right py-1 px-2 text-text">{row.reached}</td>
+                  <td className="text-right py-1 px-2 text-text">{row.left_here}</td>
+                  <td className={`text-right py-1 px-2 ${zirve ? 'text-red font-bold' : 'text-text'}`}>
+                    {basari ? '✓' : `%${Math.round(oran * 100)}`}
+                  </td>
+                  <td className="text-right py-1 pl-2 text-muted">
+                    {formatJourneySeconds(row.median_seconds)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {karsilama && karsilama.left_here > 0 && karsilama.median_scroll !== null && (
+        <p className="text-[11px] font-mono text-muted">
+          Karşılamada ayrılanlar sayfanın medyan %{Math.round(karsilama.median_scroll)} kadarını
+          gördü.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function TutorialFunnelTable({
   rows,
   infoHint,
@@ -1498,32 +1924,27 @@ function TutorialFunnelTable({
 }
 
 /**
- * Kaynak hunisi — satır AÇILINCA o kanalın ham `?ref=` etiketlerini gösterir.
+ * Huni v2 (24 Eylül 2026, `docs/decisions/funnel-v2.md`) — KOHORT tablosu:
+ * bütün sütunlar pencerede İLK KEZ gelen (`land`) AYNI cihaz kümesini sayar,
+ * yani her oran ≤ %100. Satırlar platform → kanal → ham `?ref=` etiketi.
+ * Eski Kaynak Hunisi'nin misafir yarısının yerini aldı; üye yarısı
+ * "Kanal → Üye Kalitesi"nde (`MemberQualityTable`) yaşıyor.
  *
- * ⚠ **Neden gruplanıyor (16 Eylül 2026, kullanıcı isteği):** *"Kaynak
- * hunisini expandible ana kategorilere getirip detayları altlarına topla."*
- * Canlıda `instagram`, `ig-bio`, `fb`, `fb-reel`, `fb-btn`, `arkadas`,
- * `direkt`, `bilinmiyor` yan yana duruyordu ve pazarlama malzemesine yeni bir
- * etiket yazıldıkça tablo uzuyordu — oysa karar "Instagram işe yarıyor mu"
- * düzeyinde veriliyor. `DeviceBrandTable`/`DeviceOsTable` ile BİREBİR aynı
- * desen ve aynı görsel dil (üçü aynı sayfada yan yana).
+ * "Üye" sütunu gizlilik metni güncellenene kadar web'de yazılmıyor
+ * (`FUNNEL_MEMBER_EVENTS_ENABLED`) — orada "0" yazmak "kimse üye olmadı"
+ * derdi, bu yüzden "—".
  *
- * ⚠ **Grubun sayısı alt satırların TOPLAMI** ve bu burada GÜVENLİ — gerekçe
- * `groupSourceFunnel`de (cihaz tablolarında aynısı DOĞRU DEĞİL).
- *
- * ⚠ `useState`ler erken `return`ün ÜSTÜNDE — altına inerse boş/yüklenen
- * durumda hook atlanır ve React #300 patlar (`npm run verify-hook-order`).
+ * ⚠ `useState`ler erken `return`ün ÜSTÜNDE (`npm run verify-hook-order`).
  */
-function SourceFunnelTable({
+function FunnelV2Table({
   rows,
   infoHint,
 }: {
-  rows: AdminSourceFunnelRow[] | null;
+  rows: AdminFunnelRow[] | null;
   infoHint?: ReactNode;
 }) {
-  const [asPercent, setAsPercent] = useState(false);
+  const [gorunum, setGorunum] = useState<'kisi' | 'oyun'>('kisi');
   const [acik, setAcik] = useState<ReadonlySet<string>>(() => new Set());
-  // Boş/yüklenirken de `?` çizilir (GuestBreakdownTable ile aynı gerekçe).
   if (rows === null || rows.length === 0) {
     return (
       <div className="flex flex-col gap-1.5">
@@ -1534,178 +1955,112 @@ function SourceFunnelTable({
       </div>
     );
   }
-  // ⚠ Yerel `const`a alınıyor: `handleExportCsv` bir fonksiyon bildirimi ve
-  // TS, erken `return`ün daraltmasını kapanışın içine taşımıyor.
-  const gruplar = groupSourceFunnel(rows);
-  const total = rows.reduce(
-    (acc, row) => ({
-      visitors: acc.visitors + row.visitors,
-      starts: acc.starts + row.starts,
-      starters: acc.starters + row.starters,
-      signups: acc.signups + row.signups,
-      finishes: acc.finishes + row.finishes,
-      finishers: acc.finishers + row.finishers,
-      member_games: acc.member_games + row.member_games,
-      players: acc.players + row.players,
-    }),
-    {
-      visitors: 0,
-      starts: 0,
-      starters: 0,
-      signups: 0,
-      finishes: 0,
-      finishers: 0,
-      member_games: 0,
-      players: 0,
-    },
-  );
+  const g = groupFunnelV2(rows, FUNNEL_EXISTING_CHANNEL);
+  const uyeVar = FUNNEL_MEMBER_EVENTS_ENABLED || g.total.signed_up > 0;
 
-  function toggle(channel: string) {
+  function toggle(key: string) {
     setAcik((onceki) => {
       const y = new Set(onceki);
-      if (y.has(channel)) y.delete(channel);
-      else y.add(channel);
+      if (y.has(key)) y.delete(key);
+      else y.add(key);
       return y;
     });
   }
 
-  // CSV kanalı VE ham etiketi birlikte, DÜZ olarak verir — tabloyu katlamak
-  // veriyi gizlemek değil, ekranı kısaltmak içindi (`DeviceOsTable` ile aynı
-  // kural). Ham etiket sütunu 16 Eylül 2026'da eklendi; eski indirmelerde
-  // yalnızca "Kaynak" vardı ve o sütun artık KANALI taşıyor.
   function handleExportCsv() {
+    const satir = (p: string, k: string, e: string, r: FunnelV2Totals) => [
+      p,
+      k,
+      e,
+      r.land,
+      r.returned,
+      r.signed_up,
+      r.started,
+      r.finished,
+      r.games_started,
+      r.games_finished,
+    ];
     downloadCsv(
-      csvFilename('kelimeki-kaynak-funnel'),
+      csvFilename('kelimeki-huni-v2'),
+      ['Platform', 'Kanal', 'Kaynak', 'Land', 'Geri Gelen (2+ gün)', 'Üye', 'Oyun Başlatan', 'Oyun Bitiren', 'Başlayan Oyun', 'Biten Oyun'],
       [
-        'Kanal',
-        'Kaynak',
-        'Gelen',
-        'Üye',
-        'Başlayan Oyun',
-        'Başlatan Cihaz',
-        'Biten Oyun',
-        'Bitiren Cihaz',
-        'Üye Oyunu',
-        'Oynayan Üye',
-      ],
-      [
-        ...gruplar.flatMap((g) => [
-          [g.label, '(kanal toplamı)', g.visitors, g.signups, g.starts, g.starters, g.finishes, g.finishers, g.member_games, g.players],
-          ...g.sources.map((row) => [
-            g.label,
-            row.source,
-            row.visitors,
-            row.signups,
-            row.starts,
-            row.starters,
-            row.finishes,
-            row.finishers,
-            row.member_games,
-            row.players,
-          ]),
-        ]),
-        [
-          'TOPLAM',
-          '',
-          total.visitors,
-          total.signups,
-          total.starts,
-          total.starters,
-          total.finishes,
-          total.finishers,
-          total.member_games,
-          total.players,
-        ],
+        ...g.platforms.flatMap((p) =>
+          p.channels.flatMap((c) => c.sources.map((src) => satir(p.label, c.label, src.source, src))),
+        ),
+        satir('TOPLAM', '', '', g.total),
+        ['Eski cihaz (kohort dışı)', FUNNEL_EXISTING_CHANNEL, '', g.existing, '', '', '', '', '', ''],
       ],
     );
   }
 
-  const pct = (value: number, base: number) =>
-    `${((value / base) * 100).toFixed(1)}%`;
+  const pct = (n: number, taban: number) => `${((n / taban) * 100).toFixed(1)}%`;
 
-  /** "Gelen" sütunu — yüzdesi SÜTUN payı. */
-  function visitorCell(value: number): string {
-    if (!asPercent) return String(value);
-    return total.visitors > 0 ? pct(value, total.visitors) : '0.0%';
-  }
-
-  /**
-   * "Üye"/"Başlayan"/"Biten" sütunları — yüzdeleri SATIR YÖNÜNDE dönüşüm
-   * oranı. Taban 0 ise oran yok ("—"): sıfıra bölmek yerine bilinmediğini
-   * söylemek doğrusu (bugün "bilinmiyor" satırı tam bu durumda).
-   *
-   * ⚠ TABAN SÜTUNA GÖRE DEĞİŞİR ve bu bilinçli: "Üye"/"Başlayan"ın tabanı o
-   * satırın "Gelen"i, "Biten"in tabanı ise o satırın "Başlayan"ı — çünkü
-   * "Biten"in sorduğu soru "gelenlerin kaçı bitirdi" değil "başlayanların kaçı
-   * bitirdi" (tamamlanma oranı). İkisi de AYNI dimension'dan (anonim cihaz
-   * tabloları) geldiğinden bu oran gerçek; `member_games`/`players` ise
-   * profil damgasından gelir, o yüzden artık tabloda hiç gösterilmiyor.
-   *
-   * [percentOf] ayrı bir parametre çünkü bazı sütunlarda gösterilen SAYI ile
-   * oranın PAYI farklı: "Başlayan" oyun ADEDİNİ gösterir ama oranı benzersiz
-   * CİHAZ üzerinden hesaplanır (bir kişi 50 oyun açarsa oran %100'ü aşardı).
-   */
-  function conversionCell(value: number, base: number, percentOf: number): string {
-    if (!asPercent) return String(value);
-    if (base <= 0) return '—';
-    return pct(percentOf, base);
-  }
-
-  /**
-   * "Biten" sütunu — 31 Ağustos 2026'dan beri oranı CİHAZ üzerinden:
-   * `finishers / starters`, yani "başlatan cihazların kaçı bitirdi".
-   *
-   * ⚠ Neden ayrı bir fonksiyon: `conversionCell` taban 0 olunca "—" diyor,
-   * ama burada İKİNCİ bir "bilinmiyor" hâli var. `anon_id` kolonu YENİ ve
-   * geriye dönük doldurulamaz; eski bitişlerde (ve damgalamayan istemcide —
-   * bugün Flutter portu) `finishers` 0 kalır. Orada `0%` yazmak "hiçbir cihaz
-   * bitirmedi" DER, oysa gerçek "cihaz bilgisi yok"tur — tam da bu tablonun
-   * "sıfıra bölmek yerine bilinmediğini söyle" kuralının kapsamı. Bu yüzden
-   * biten VAR ama bitiren cihaz YOKSA "—" gösteriliyor; ikisi de 0 ise oran
-   * gerçekten 0'dır ve öyle yazılır.
-   */
-  function completionCell(finishes: number, starters: number, finishers: number): string {
-    if (!asPercent) return String(finishes);
-    if (starters <= 0) return '—';
-    if (finishes > 0 && finishers === 0) return '—';
-    return pct(finishers, starters);
-  }
-
-  /** Bir satırın dört sayı hücresi — grup ve detay satırı AYNI kuralı kullanır. */
-  function sayiHucreleri(r: SourceFunnelTotals, cls: string) {
+  function hucre(n: number | null, taban: number): ReactNode {
+    if (n === null) return '—';
+    if (taban <= 0) return String(n);
     return (
       <>
-        <td className={`${cls} pr-8 whitespace-nowrap text-center`}>{visitorCell(r.visitors)}</td>
-        <td className={`${cls} pr-8 whitespace-nowrap text-center`}>
-          {conversionCell(r.signups, r.visitors, r.signups)}
-        </td>
-        <td className={`${cls} pr-8 whitespace-nowrap text-center`}>
-          {conversionCell(r.starts, r.visitors, r.starters)}
-        </td>
-        <td className={`${cls} whitespace-nowrap text-center`}>
-          {completionCell(r.finishes, r.starters, r.finishers)}
-        </td>
+        {n}
+        <span className="opacity-60 ml-1">{pct(n, taban)}</span>
       </>
     );
   }
+
+  const basliklar =
+    gorunum === 'kisi'
+      ? ['Land', '2+ Gün', 'Üye', 'Başlatan', 'Bitiren']
+      : ['Başlayan Oyun', 'Biten Oyun', 'Oyun / Kişi'];
+
+  function hucreler(r: FunnelV2Totals): ReactNode[] {
+    if (gorunum === 'kisi') {
+      return [
+        String(r.land),
+        hucre(r.returned, r.land),
+        hucre(uyeVar ? r.signed_up : null, r.land),
+        hucre(r.started, r.land),
+        // Tabanı BAŞLATAN: "oyuna başlayanların yüzde kaçı bitirdi".
+        hucre(r.finished, r.started),
+      ];
+    }
+    return [
+      String(r.games_started),
+      String(r.games_finished),
+      r.started > 0 ? (r.games_started / r.started).toFixed(1) : '—',
+    ];
+  }
+
+  function sayilar(r: FunnelV2Totals, cls: string) {
+    const h = hucreler(r);
+    return h.map((c, i) => (
+      <td key={i} className={`${cls} ${i < h.length - 1 ? 'pr-8' : ''} whitespace-nowrap text-center`}>
+        {c}
+      </td>
+    ));
+  }
+
+  const ok = (open: boolean) => (
+    <svg
+      viewBox="0 0 10 6"
+      className={`w-[8px] h-[5px] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+      aria-hidden="true"
+    >
+      <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-end gap-3">
         <button
           type="button"
-          onClick={() => setAsPercent((v) => !v)}
-          aria-pressed={asPercent}
-          aria-label={asPercent ? 'Sayıya dön' : 'Yüzdeye çevir'}
-          /* `py-1 -my-1`: dokunma alanı 13.5 → 21.5px olurken layout ayak izi
-             DEĞİŞMİYOR (negatif margin dolguyu birebir geri alıyor) — aynı
-             desen "Tüm Oyunlarım"daki hamle ikonunda da kullanıldı. Kardeşi
-             olan "CSV İndir" de aynı payı alıyor ki ikisi asimetrik olmasın. */
+          onClick={() => setGorunum((v) => (v === 'kisi' ? 'oyun' : 'kisi'))}
+          aria-pressed={gorunum === 'oyun'}
+          aria-label={gorunum === 'kisi' ? 'Oyun sayılarına geç' : 'Kişi sayılarına geç'}
           className="text-[9px] font-mono uppercase tracking-[0.5px] py-1 -my-1 active:opacity-70 transition-opacity shrink-0"
         >
-          <span className={asPercent ? 'text-accent font-bold' : 'text-muted'}>%</span>
+          <span className={gorunum === 'kisi' ? 'text-accent font-bold' : 'text-muted'}>Kişi</span>
           <span className="text-muted"> / </span>
-          <span className={asPercent ? 'text-muted' : 'text-accent font-bold'}>Sayı</span>
+          <span className={gorunum === 'oyun' ? 'text-accent font-bold' : 'text-muted'}>Oyun</span>
         </button>
         <button type="button" onClick={handleExportCsv} className={`${csvLinkCls} py-1 -my-1`}>
           CSV İndir
@@ -1717,20 +2072,207 @@ function SourceFunnelTable({
           <thead>
             <tr className="text-left text-muted border-b border-border">
               <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Kaynak</th>
-              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Gelen</th>
-              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Üye</th>
-              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">
-                Başlayan
-              </th>
-              <th className="py-1.5 font-bold uppercase tracking-[1px] text-center">Biten</th>
+              {basliklar.map((b, i) => (
+                <th
+                  key={b}
+                  className={`py-1.5 ${i < basliklar.length - 1 ? 'pr-8' : ''} font-bold uppercase tracking-[1px] text-center whitespace-nowrap`}
+                >
+                  {b}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {g.platforms.map((p) => (
+              <Fragment key={p.platform}>
+                <tr className="border-b border-border">
+                  <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">{p.label}</td>
+                  {sayilar(p, 'py-1.5 text-text font-bold')}
+                </tr>
+                {p.channels.map((c) => {
+                  const key = `${p.platform}:${c.channel}`;
+                  const open = acik.has(key);
+                  const acilir = c.sources.length > 1;
+                  return (
+                    <Fragment key={key}>
+                      <tr className="border-b border-border/50">
+                        <td className="py-1.5 pr-8 pl-3 text-text whitespace-nowrap">
+                          {!acilir ? (
+                            <span className="inline-block pl-[14px]">{c.label}</span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => toggle(key)}
+                              aria-expanded={open}
+                              aria-label={`${p.label} ${c.label} — kaynak kırılımını ${open ? 'kapat' : 'aç'}`}
+                              className="tap-expand relative inline-flex items-center gap-1.5 active:opacity-70 transition-opacity"
+                            >
+                              {ok(open)}
+                              {c.label}
+                            </button>
+                          )}
+                        </td>
+                        {sayilar(c, 'py-1.5 text-muted')}
+                      </tr>
+                      {open &&
+                        c.sources.map((src) => (
+                          <tr key={src.source} className="border-b border-border/50 bg-panel/40">
+                            <td className="py-1 pr-8 pl-8 text-muted whitespace-nowrap">{src.source}</td>
+                            {sayilar(src, 'py-1 text-muted')}
+                          </tr>
+                        ))}
+                    </Fragment>
+                  );
+                })}
+              </Fragment>
+            ))}
+            <tr className="border-t border-border">
+              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
+              {sayilar(g.total, 'py-1.5 text-text font-bold')}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[10px] font-mono text-muted">
+        Eski cihaz (kohort dışı): {g.existing}
+        {!uyeVar && ' · Üye sütunu gizlilik metni güncellenince dolacak'}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Kanal → Üye Kalitesi (24 Eylül 2026) — Kaynak Hunisi'nin yerini aldı.
+ * Kullanıcı: *"V1'i de farklı bir bakış açısı için modifiye edip tutmak
+ * mümkün mü? Rakamların anlamlı olduğu başka bir versiyon gibi."*
+ *
+ * KOHORT: pencerede hesap açan üyeler, kayıt anındaki etikete göre; her
+ * sütun o üyelerin kaçının oraya ulaştığını sayar (oran ≤ %100, taban
+ * hep ÜYE). Misafir sütunları bilerek YOK — üç ayrı anonim tablodan,
+ * farklı başlangıç tarihleriyle besleniyorlardı ve güvenilmezdiler; o soru
+ * artık Huni v2'nin (`FunnelV2Table`). Gerekçe:
+ * `supabase/migrations/20260924151205_admin_member_quality.sql`.
+ *
+ * Satır AÇILINCA kanalın ham etiketleri görünür (16 Eylül 2026 kararı:
+ * *"expandible ana kategorilere getirip detayları altlarına topla"*);
+ * grubun sayısı alt satırların TOPLAMI — gerekçe `groupMemberQuality`de.
+ *
+ * ⚠ `useState` erken `return`ün ÜSTÜNDE (`npm run verify-hook-order`).
+ */
+function MemberQualityTable({
+  rows,
+  infoHint,
+}: {
+  rows: AdminMemberQualityRow[] | null;
+  infoHint?: ReactNode;
+}) {
+  const [acik, setAcik] = useState<ReadonlySet<string>>(() => new Set());
+  if (rows === null || rows.length === 0) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {infoHint && <div className="self-end">{infoHint}</div>}
+        <div className="text-xs font-mono text-muted text-center py-6">
+          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta yeni üye yok.'}
+        </div>
+      </div>
+    );
+  }
+  const gruplar = groupMemberQuality(rows);
+  const total: MemberQualityTotals = rows.reduce(
+    (a, r) => ({
+      members: a.members + r.members,
+      players: a.players + r.players,
+      players_7d: a.players_7d + r.players_7d,
+      returning_players: a.returning_players + r.returning_players,
+      games: a.games + r.games,
+    }),
+    { members: 0, players: 0, players_7d: 0, returning_players: 0, games: 0 },
+  );
+
+  function toggle(channel: string) {
+    setAcik((onceki) => {
+      const y = new Set(onceki);
+      if (y.has(channel)) y.delete(channel);
+      else y.add(channel);
+      return y;
+    });
+  }
+
+  function handleExportCsv() {
+    const satir = (kanal: string, kaynak: string, r: MemberQualityTotals) => [
+      kanal,
+      kaynak,
+      r.members,
+      r.players,
+      r.players_7d,
+      r.returning_players,
+      r.games,
+    ];
+    downloadCsv(
+      csvFilename('kelimeki-uye-kalitesi'),
+      ['Kanal', 'Kaynak', 'Üye', 'Oynayan', '7 Günde Oynayan', '2+ Günde Oynayan', 'Biten Oyun'],
+      [
+        ...gruplar.flatMap((g) => g.sources.map((r) => satir(g.label, r.source, r))),
+        satir('TOPLAM', '', total),
+      ],
+    );
+  }
+
+  function hucre(n: number, uye: number): ReactNode {
+    if (uye <= 0) return String(n);
+    return (
+      <>
+        {n}
+        <span className="opacity-60 ml-1">{`${((n / uye) * 100).toFixed(0)}%`}</span>
+      </>
+    );
+  }
+
+  const basliklar = ['Üye', 'Oynayan', '7 Günde', '2+ Gün', 'Oyun / Üye'];
+
+  function sayilar(r: MemberQualityTotals, cls: string) {
+    const h: ReactNode[] = [
+      String(r.members),
+      hucre(r.players, r.members),
+      hucre(r.players_7d, r.members),
+      hucre(r.returning_players, r.members),
+      r.members > 0 ? (r.games / r.members).toFixed(1) : '—',
+    ];
+    return h.map((c, i) => (
+      <td key={i} className={`${cls} ${i < h.length - 1 ? 'pr-8' : ''} whitespace-nowrap text-center`}>
+        {c}
+      </td>
+    ));
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-end gap-3">
+        <button type="button" onClick={handleExportCsv} className={`${csvLinkCls} py-1 -my-1`}>
+          CSV İndir
+        </button>
+        {infoHint}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-auto text-[11px] font-mono border-collapse">
+          <thead>
+            <tr className="text-left text-muted border-b border-border">
+              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Kanal</th>
+              {basliklar.map((b, i) => (
+                <th
+                  key={b}
+                  className={`py-1.5 ${i < basliklar.length - 1 ? 'pr-8' : ''} font-bold uppercase tracking-[1px] text-center whitespace-nowrap`}
+                >
+                  {b}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {gruplar.map((g) => {
               const open = acik.has(g.channel);
               // Tek etiketli kanalda ok GÖSTERİLMEZ: açılınca aynı sayıyı bir
-              // kez daha yazardı (`DeviceOsTable`teki "sürüm satırı yoksa ok
-              // da yok" kuralının aynısı).
+              // kez daha yazardı. Sıfır satırın (üye getirmeyen kanal) etiketi yok.
               const acilir = g.sources.length > 1;
               return (
                 <Fragment key={g.channel}>
@@ -1757,13 +2299,13 @@ function SourceFunnelTable({
                         </button>
                       )}
                     </td>
-                    {sayiHucreleri(g, 'py-1.5 text-muted')}
+                    {sayilar(g, 'py-1.5 text-muted')}
                   </tr>
                   {open &&
                     g.sources.map((row) => (
                       <tr key={row.source} className="border-b border-border/50 bg-panel/40">
                         <td className="py-1 pr-8 pl-5 text-muted whitespace-nowrap">{row.source}</td>
-                        {sayiHucreleri(row, 'py-1 text-muted')}
+                        {sayilar(row, 'py-1 text-muted')}
                       </tr>
                     ))}
                 </Fragment>
@@ -1771,18 +2313,7 @@ function SourceFunnelTable({
             })}
             <tr className="border-b border-border/50">
               <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
-              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">
-                {visitorCell(total.visitors)}
-              </td>
-              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">
-                {conversionCell(total.signups, total.visitors, total.signups)}
-              </td>
-              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">
-                {conversionCell(total.starts, total.visitors, total.starters)}
-              </td>
-              <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">
-                {completionCell(total.finishes, total.starters, total.finishers)}
-              </td>
+              {sayilar(total, 'py-1.5 text-text font-bold')}
             </tr>
           </tbody>
         </table>
@@ -2147,7 +2678,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [userActivity, setUserActivity] = useState<AdminUserActivityPoint[] | null>(null);
   const [userGranularity, setUserGranularity] = useState<AdminActivityGranularity>('day');
   const [userPeriod, setUserPeriod] = useState<number>(30);
-  const [sourceFunnel, setSourceFunnel] = useState<AdminSourceFunnelRow[] | null>(null);
+  const [memberQuality, setMemberQuality] = useState<AdminMemberQualityRow[] | null>(null);
+  const [funnelV2, setFunnelV2] = useState<AdminFunnelRow[] | null>(null);
+  const [signupFunnel, setSignupFunnel] = useState<AdminSignupFunnelRow[] | null>(null);
+  const [webJourney, setWebJourney] = useState<AdminWebJourneyRow[] | null>(null);
+  const [journeyDevice, setJourneyDevice] = useState<string>('all');
+  const [journeyEntry, setJourneyEntry] = useState<string>('landing');
   const [tutorialFunnel, setTutorialFunnel] = useState<AdminTutorialFunnelRow[] | null>(null);
   const [deviceBreakdown, setDeviceBreakdown] = useState<AdminDeviceBreakdownRow[] | null>(null);
   const [deviceModels, setDeviceModels] = useState<AdminDeviceModelRow[] | null>(null);
@@ -2159,10 +2695,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [activation, setActivation] = useState<AdminActivationStats | null>(null);
   const [friendTotals, setFriendTotals] = useState<AdminFriendTotals | null>(null);
   const [gameActivity, setGameActivity] = useState<AdminGameActivityPoint[] | null>(null);
+  const [activeHours, setActiveHours] = useState<AdminActiveHoursRow[] | null>(null);
+  const [activeDays, setActiveDays] = useState<AdminActiveDaysRow[] | null>(null);
   // "Oyun Süresi" 16 Eylül 2026'da grafikten KUTULARA geçti (kullanıcı
   // isteği) — kutular pencerenin TAMAMININ medyanını gösterdiğinden seriden
   // türetilemez (medyanlar toplanamaz), kendi RPC'si var.
   const [durationSummary, setDurationSummary] = useState<AdminGameDurationSummary | null>(null);
+  const [gameMix, setGameMix] = useState<AdminGameMix | null>(null);
   const [gameGranularity, setGameGranularity] = useState<AdminActivityGranularity>('day');
   const [gamePeriod, setGamePeriod] = useState<number>(30);
   const [gameScope, setGameScope] = useState<AdminGameScope>('total');
@@ -2326,7 +2865,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     const days = userPeriod * GRANULARITY_TO_DAYS[userGranularity];
     Promise.all([
       fetchAdminUserActivitySeries(userPeriod, userGranularity).then(setUserActivity),
-      fetchAdminSourceFunnel(days).then(setSourceFunnel),
+      fetchAdminMemberQuality(days).then(setMemberQuality),
+      fetchAdminFunnel(days).then(setFunnelV2),
+      fetchAdminSignupFunnel(days).then(setSignupFunnel),
       fetchAdminTutorialFunnel(days).then(setTutorialFunnel),
       fetchAdminDeviceBreakdown(days).then(setDeviceBreakdown),
       fetchAdminDeviceModelBreakdown(days).then(setDeviceModels),
@@ -2336,6 +2877,19 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       fetchAdminActivePlayersSeries(userPeriod, userGranularity).then(setActivePlayers),
     ]).catch((e) => setError(String(e)));
   }, [userPeriod, userGranularity]);
+
+  // Ziyaretçi yolculuğu ayrı: kendi cihaz süzgeci var, onu değiştirmek
+  // yukarıdaki on tabloyu yeniden çekmemeli.
+  useEffect(() => {
+    const days = userPeriod * GRANULARITY_TO_DAYS[userGranularity];
+    fetchAdminWebJourney(
+      days,
+      journeyDevice === 'all' ? null : (journeyDevice as 'ios' | 'android' | 'desktop'),
+      journeyEntry === 'all' ? null : (journeyEntry as 'landing' | 'app'),
+    )
+      .then(setWebJourney)
+      .catch((e) => setError(String(e)));
+  }, [userPeriod, userGranularity, journeyDevice, journeyEntry]);
 
   useEffect(() => {
     fetchAdminGameActivitySeries(
@@ -2357,6 +2911,38 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       .then(setDurationSummary)
       .catch((e) => setError(String(e)));
   }, [gamePeriod, gameGranularity, gameScope, gamePlayerCount, gameSource]);
+
+  // "Aktif Saatler" AYRI bir effect'te ve bağımlılık dizisi BOŞ — grafik
+  // üstteki kombolara bilerek bağlı değil (18 Eylül 2026, kullanıcı kararı:
+  // bağımsız, sabit 30 günlük pencere). Yukarıdaki effect'e eklenseydi her
+  // kombo değişiminde gereksiz bir RPC daha koşardı.
+  useEffect(() => {
+    fetchAdminActiveHours(30)
+      .then(setActiveHours)
+      .catch((e) => setError(String(e)));
+  }, []);
+
+  // "Aktif Günler" — ikizinin AYNI gerekçesiyle ayrı effect ve BOŞ bağımlılık
+  // dizisi (20 Eylül 2026). Saatlerle aynı effect'e konulabilirdi, ama o
+  // zaman biri düşünce öteki de hiç yüklenmezdi; ikisi bağımsız grafik,
+  // bağımsız yükleniyor durumu taşıyorlar.
+  useEffect(() => {
+    fetchAdminActiveDays(30)
+      .then(setActiveDays)
+      .catch((e) => setError(String(e)));
+  }, []);
+
+  // "Oyun Dağılımı" — ikizlerinin AYNI gerekçesiyle ayrı effect ve BOŞ
+  // bağımlılık dizisi (22 Eylül 2026). Burada gerekçe daha da güçlü:
+  // pastaların kırdığı boyutlar (kaynak ve oyuncu sayısı) ÜSTTEKİ
+  // kombolarla aynı boyutlar — bağlansaydı "Canlı" ya da "2 kişilik"
+  // seçildiği anda ilgili pasta tek dilime düşer, yani filtre grafiğin
+  // ölçtüğü şeyi yok ederdi.
+  useEffect(() => {
+    fetchAdminGameMix(30)
+      .then(setGameMix)
+      .catch((e) => setError(String(e)));
+  }, []);
 
   function selectUserGranularity(g: AdminActivityGranularity) {
     setUserGranularity(g);
@@ -3369,11 +3955,42 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
-                      Kaynak Hunisi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      Ziyaretçi Yolculuğu (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
                     </span>
-                    <SourceFunnelTable
-                      rows={sourceFunnel}
-                      infoHint={<InfoHint id="kaynak-hunisi" onOpen={setHint} />}
+                    <WebJourneyTable
+                      rows={webJourney}
+                      device={journeyDevice}
+                      onDeviceChange={setJourneyDevice}
+                      entry={journeyEntry}
+                      onEntryChange={setJourneyEntry}
+                      infoHint={<InfoHint id="ziyaretci-yolculugu" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Huni v2 (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <FunnelV2Table
+                      rows={funnelV2}
+                      infoHint={<InfoHint id="huni-v2" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Kanal → Üye Kalitesi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <MemberQualityTable
+                      rows={memberQuality}
+                      infoHint={<InfoHint id="uye-kalitesi" onOpen={setHint} />}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={sectionTitleCls}>
+                      Kayıt Hunisi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                    </span>
+                    <SignupFunnelTable
+                      rows={signupFunnel}
+                      infoHint={<InfoHint id="kayit-hunisi" onOpen={setHint} />}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -3532,6 +4149,53 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     </>
                   )}
 
+                  {/* Aktif Saatler — "Oyun Sayısı"nın HEMEN ALTINDA duruyor:
+                      ikisi de oyun bitişlerini sayıyor, biri zaman içindeki
+                      hacmi, öteki günün içindeki ritmi. Kombolara bağlı
+                      olmadığı için kendi yükleniyor durumu var. */}
+                  <div className="flex flex-col gap-2">
+                    {activeHours === null ? (
+                      <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                    ) : (
+                      <StackedBucketChart
+                        data={activeHours}
+                        series={FINISH_PLATFORM_SERIES}
+                        bucketKey={(row) => row.hour_start}
+                        bucketLabel={(row) => hourBucketLabel(row.hour_start)}
+                        axisLabel={(row) => hourAxisLabel(row.hour_start)}
+                        bucketHeader="Saat"
+                        controls={<span className={sectionTitleCls}>Aktif Saatler</span>}
+                        csvBaseName="kelimeki-aktif-saatler"
+                        infoHint={<InfoHint id="aktif-saatler" onOpen={setHint} />}
+                      />
+                    )}
+                  </div>
+
+                  {/* Aktif Günler — "Aktif Saatler"in HEMEN ALTINDA duruyor
+                      (20 Eylül 2026, kullanıcı isteği). İkisi aynı
+                      popülasyonu iki farklı kovayla anlatıyor: biri günün
+                      içindeki ritmi, öteki haftanın içindeki ritmi. Aynı
+                      bileşen, aynı seri sabiti, aynı pencere — toplamları
+                      birbirini TUTMAK zorunda (canlıda ölçüldü: ikisi de
+                      1279). */}
+                  <div className="flex flex-col gap-2">
+                    {activeDays === null ? (
+                      <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
+                    ) : (
+                      <StackedBucketChart
+                        data={activeDays}
+                        series={FINISH_PLATFORM_SERIES}
+                        bucketKey={(row) => row.dow}
+                        bucketLabel={(row) => dayBucketLabel(row.dow)}
+                        axisLabel={(row) => dayAxisLabel(row.dow)}
+                        bucketHeader="Gün"
+                        controls={<span className={sectionTitleCls}>Aktif Günler</span>}
+                        csvBaseName="kelimeki-aktif-gunler"
+                        infoHint={<InfoHint id="aktif-gunler" onOpen={setHint} />}
+                      />
+                    )}
+                  </div>
+
                   {/* Oyun Süresi — 16 Eylül 2026'da GRAFİKTEN KUTULARA geçti
                       (kullanıcı isteği: *"Oyun süresi grafiğini kaldır. YZ
                       dengesi gibi kutulara koyalım."*).
@@ -3584,6 +4248,74 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         ? ''
                         : `Pencerede biten oyun: ${durationSummary.finished_games}`}
                     </p>
+                  </div>
+
+                  {/* Oyun Dağılımı — 22 Eylül 2026, kullanıcı isteği:
+                      *"Admin Oyun altına 2 pie chart yanyana. 1. Yapay zeka
+                      vs Arkadaşınla  2. 2 player vs 4 player (biten count)"*
+
+                      Yeri bilinçli: üstündeki dört panel (Oyun Sayısı ·
+                      Aktif Saatler · Aktif Günler · Oyun Süresi) hep AYNI
+                      kümeyi — pencerede biten oyunları — farklı eksenlerden
+                      anlatıyor; pastalar o dizinin son halkası ("o oyunlar
+                      NEYDİ"). Beğeni/Paylaşma ve YZ Dengesi başka sorular,
+                      bu yüzden altta kalıyor.
+
+                      ⚠ İKİ PASTA TEK RPC'den besleniyor ve toplamları
+                      TUTMAK ZORUNDA — alttaki satır bunu ekranda ölçüyor,
+                      çünkü `game_finishes.player_count`te CHECK yok. */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={sectionTitleCls}>Oyun Dağılımı (Son 30 Gün)</span>
+                      <InfoHint id="oyun-dagilimi" onOpen={setHint} />
+                    </div>
+                    {gameMix === null ? (
+                      <div className="text-xs font-mono text-muted text-center py-4">Yükleniyor…</div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-3">
+                          <SplitPieChart
+                            title="Oyun Tipi"
+                            slices={[
+                              {
+                                key: 'ai',
+                                label: 'Yapay Zeka',
+                                value: gameMix.ai_finished,
+                                color: '#2a78d6',
+                              },
+                              {
+                                key: 'friend',
+                                label: 'Arkadaşınla',
+                                value: gameMix.friend_finished,
+                                color: '#D97706',
+                              },
+                            ]}
+                          />
+                          <SplitPieChart
+                            title="Masa"
+                            slices={[
+                              {
+                                key: 'p2',
+                                label: '2 Kişilik',
+                                value: gameMix.p2_finished,
+                                color: '#2a78d6',
+                              },
+                              {
+                                key: 'p4',
+                                label: '4 Kişilik',
+                                value: gameMix.p4_finished,
+                                color: '#D97706',
+                              },
+                            ]}
+                          />
+                        </div>
+                        <p className={captionCls}>
+                          Pencerede biten oyun: {gameMix.finished_total}
+                          {gameMix.p2_finished + gameMix.p4_finished !== gameMix.finished_total &&
+                            ` — ⚠ masa kırılımı ${gameMix.p2_finished + gameMix.p4_finished} ediyor, yani 2/4 dışında oyuncu sayısı var`}
+                        </p>
+                      </>
+                    )}
                   </div>
 
                   {/* ⚠ Beğeni/Paylaşma GRAFİĞİ 16 Eylül 2026'da kullanıcı
