@@ -260,6 +260,13 @@ Eşleşme yoksa merge sürüm durumuna DOKUNMAZ, uyarıya gerek yok.
 `mobile-build.yml`in kendisi DAHİL. Kök `CLAUDE.md`/`README.md`/`docs/` gibi
 depo kökündeki dosyalar tetiklemez.
 
+**Mobil sürüm TRENİ — 2 haftada bir (25 Eylül 2026, kullanıcı kararı).**
+`mobile/` (docs/`.md` hariç) dokunan bir iş, acil değilse, **taslak PR**
+olarak açılır (`[Sonraki sürüm] …`) ve MERGE EDİLMEZ; hepsi kesim günü
+(Pazartesi) birlikte merge edilir. Web+port birlikte değişiyorsa iki PR'a
+böl, web yarısı hemen gider. Acil istisnanın tanımı, takvim ve ilk kesim:
+`mobile/docs/surumler.md` → "SÜRÜM TRENİ".
+
 **Bir dal PR'sız BIRAKILMAZ (4 Eylül 2026, kullanıcı isteği).** Oturum
 biterken dalda iş varsa iki seçenek vardır: PR aç, ya da dalı sil. Üçüncü
 seçenek — "dursun, sonra bakarız" — bu depoda İKİ gerçek işi kaybetti:
