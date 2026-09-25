@@ -59,6 +59,49 @@
      `main`'e girdi (#578); bu dal port ikizi ve inceleme dondurması
      yüzünden ayrı bırakıldı.
 
+## Parça 211 — Kayıt onayı: kırmızı uyarı BÜYÜK+kalın · onay linki pencereyi kapatıyor
+
+   - ✅ **Parça 211 — Kayıt onayı: kırmızı uyarı BÜYÜK+kalın · onay linki
+     pencereyi kapatıyor (16 Eylül 2026):** Kullanıcı iki şey bildirdi.
+     (1) Kayıt sonrası çıkan kırmızı satırın eylem cümlesi büyük harf ve
+     kalın olsun. (2) *"Onay verdikten sonra app açılıyor ve kişi login
+     oluyor ama Onay verin popup açık kalıyor. X ile kapatmak gerekiyor."*
+
+     **Kök sebep (ikisinde de aynı):** onay bağlantısı uygulamanın AÇIK
+     örneğini açıyor, Supabase oturumu kuruluyor — ama `AuthModal`ı hiçbir
+     şey kapatmıyor. Web'de pencereyi açan ALTI yer kendi state'ini tutuyor
+     ve hiçbiri oturumu dinlemiyor; portta da pencere `showDialog` rotası
+     olarak duruyor.
+
+     **Port tarafında yapılan:** `auth_modal.dart` → `AuthService`
+     (ChangeNotifier) dinleniyor, oturum AÇILDIĞI anda `Navigator.pop`.
+     Mesaj `Text.rich`e çevrildi: `_info` normal, yeni `_infoStrong` kalın
+     (`'E-POSTANIZI KONTROL EDİP ONAY VERİN.'`).
+
+     ⚠ **Port farkı BİLİNÇLİ:** web'de düzeltme bir efekt ("oturum varsa
+     kapat"), portta yalnızca GEÇİŞ ("oturum yokken açıldı" →
+     `_oturumVardi`). Sebep: pencere portta bir ROTA ve widget testleri onu
+     doğrudan bir `Scaffold` gövdesine gömüyor — mount anında koşulsuz bir
+     `pop` orada pencereyi değil SAYFAYI kapatırdı. `canPop()` ikinci kemer.
+     Kullanıcıya görünen davranış aynı: web'de de hiçbir çağıran pencereyi
+     giriş YAPMIŞ kullanıcıya açmıyor.
+
+     ⚠ **Metin ELDE büyük harfle yazıldı**, `toUpperCase()` ile DEĞİL:
+     Dart'ın varsayılanı Türkçe'de i→I yapıyor ("EDİP" → "EDIP"). Aynı tuzak
+     web'de CSS `uppercase` sınıfında — `trUpper` refleksinin iki platformdaki
+     karşılığı.
+
+     **Kapılar:** `signup_test.dart`a İKİ widget testi — oturum açılınca
+     pencerenin kapanması, ve duyarlılık için oturumSUZ bir bildirimin
+     pencereyi KAPATMAMASI. Dinleyici susturularak birincinin gerçekten
+     düştüğü ölçüldü. `flutter analyze` temiz (tek `info` önceden vardı:
+     `live_games_test.dart`, bu dal o dosyaya dokunmuyor).
+
+     ⚠ **Web yarısı AYRI PR (#561) ve MERGE EDİLDİ** — yani hata web'de
+     düzeldi, mobilde ancak bu PR merge edilip sürüm çıkınca düzelir. Play
+     production incelemesi (665) sürerken mobil derlemeyi tetiklememek için
+     bekliyor.
+
 ## Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
 
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
