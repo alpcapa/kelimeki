@@ -55,7 +55,7 @@ npm run generate-logo-paths  # LogoMark.tsx + portun logo_mark_data.dart'ı (tek
 npm run generate-klig-paths  # KLigMark.tsx + portun klig_mark_data.dart'ı
 npm run generate-icons       # favicon / app icon (public/) — og-image DEĞİL
 npm run generate-og-image    # public/og-image.png (sosyal paylaşım kartı)
-npm run generate-play-assets # Play mağaza ikonu + öne çıkan görsel
+npm run generate-play-assets # Play mağaza ikonu + öne çıkan görsel + Promotional content kartı (1920×1080)
 npm run generate-store-header # marketing/store/ — mağaza başlık görseli (4096×2304, ≤1 MB)
 npm run preview-store-frames  # App Store karelerinin YEREL önizlemesi (iPhone + iPad, ~14 sn, Linux) — mağazaya giden set yine CI'ın
 npm run generate-golden-vectors  # Flutter portu parite fixture'ları (motor değişince ZORUNLU)

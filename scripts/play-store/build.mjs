@@ -2,9 +2,11 @@
 //
 //   npm run build && node scripts/play-store/build.mjs
 //
-// İKİ çıktı:
+// ÜÇ çıktı:
 //   marketing/play-store/store-icon-512.png   — 512×512, mağaza ikonu
 //   marketing/play-store/feature-graphic.png  — 1024×500, öne çıkan görsel
+//   marketing/play-store/promo-1920x1080.png  — 16:9, Promotional content kartı
+//                                               (metinsiz; bkz. promo-graphic.tsx)
 //
 // Ekran görüntüleri BURADA ÜRETİLMEZ ve üretilemez: Play'e giden telefon
 // görüntülerinin uygulamanın GERÇEK görüntüsü olması gerekiyor, yani gerçek
@@ -67,6 +69,16 @@ async function main() {
   const { renderFeatureGraphicHtml } = await import(`file://${outMjs}?t=${Date.now()}`);
   writeFileSync(path.join(DIST, 'play-feature.html'), renderFeatureGraphicHtml(`/assets/${cssFile}`), 'utf8');
 
+  const promoMjs = path.join(ROOT, 'node_modules', '.cache', 'kelimeki', 'play-promo.mjs');
+  await esbuild({
+    entryPoints: [path.join(ROOT, 'scripts', 'play-store', 'promo-graphic.tsx')],
+    bundle: true, platform: 'node', format: 'esm', jsx: 'automatic',
+    external: ['react', 'react-dom', 'react-dom/server'],
+    loader: { '.css': 'empty' }, outfile: promoMjs, logLevel: 'error',
+  });
+  const { renderPromoGraphicHtml, PROMO_W, PROMO_H } = await import(`file://${promoMjs}?t=${Date.now()}`);
+  writeFileSync(path.join(DIST, 'play-promo.html'), renderPromoGraphicHtml(`/assets/${cssFile}`), 'utf8');
+
   const server = createServer(async (req, res) => {
     const f = path.join(DIST, decodeURIComponent((req.url ?? '/').split('?')[0]));
     try {
@@ -105,8 +117,25 @@ async function main() {
       tasmaX: de.scrollWidth - de.clientWidth, tasmaY: de.scrollHeight - de.clientHeight,
     };
   });
+
+  // ── 3) Promotional content kartı (16:9) ─────────────────────────────────
+  const promoPage = await browser.newPage({ viewport: { width: PROMO_W, height: PROMO_H }, deviceScaleFactor: 2 });
+  await promoPage.goto(`http://127.0.0.1:${server.address().port}/play-promo.html`, { waitUntil: 'networkidle' });
+  await promoPage.evaluate(() => document.fonts.ready);
+  const promo2x = await promoPage.screenshot();
+  const promoOlcum = await promoPage.evaluate(() => {
+    const b = document.querySelector('[data-guvenli-kutu]').getBoundingClientRect();
+    const de = document.documentElement;
+    return { ust: Math.round(b.top), alt: Math.round(b.bottom), sol: Math.round(b.left), sag: Math.round(b.right),
+      tasmaX: de.scrollWidth - de.clientWidth, tasmaY: de.scrollHeight - de.clientHeight };
+  });
   await browser.close();
   server.close();
+  console.log(`  promo tahta: x ${promoOlcum.sol}–${promoOlcum.sag}, y ${promoOlcum.ust}–${promoOlcum.alt} (kadraj ${PROMO_W}×${PROMO_H})`);
+  // Tahta kadrajın içinde kalmalı; alt bant Play'in başlık bindirmesine ayrılı.
+  if (promoOlcum.tasmaX || promoOlcum.tasmaY || promoOlcum.ust < 0 || promoOlcum.alt > PROMO_H) {
+    console.error('✗ promo: ana tahta kadraja sığmıyor'); process.exit(1);
+  }
 
   console.log(`  güvenli kutu: x ${olcum.sol}–${olcum.sag}, y ${olcum.ust}–${olcum.alt} (kadraj ${W}×${H})`);
   console.log(`  taşma: x ${olcum.tasmaX}, y ${olcum.tasmaY}`);
@@ -122,6 +151,15 @@ async function main() {
   await sharp(png2x).resize(W, H, { kernel: 'lanczos3' })
     .flatten({ background: '#ffffff' })   // Play alfa istemiyor (24-bit PNG)
     .png({ compressionLevel: 9 }).toFile(featureOut);
+
+  const promoOut = path.join(OUT_DIR, 'promo-1920x1080.png');
+  await sharp(promo2x).flatten({ background: '#ffffff' }).png({ compressionLevel: 9 }).toFile(promoOut);
+  const promoMeta = await sharp(promoOut).metadata();
+  console.log(`  promo   : ${promoMeta.width}×${promoMeta.height}  ${promoMeta.hasAlpha ? 'ALFA VAR ✗' : 'opak ✓'}`);
+  if (promoMeta.width !== PROMO_W * 2 || promoMeta.height !== PROMO_H * 2 || promoMeta.hasAlpha) {
+    console.error('✗ promo 1920×1080 opak değil'); process.exit(1);
+  }
+  console.log(`✓ ${path.relative(ROOT, promoOut)}`);
 
   const iconMeta = await sharp(iconOut).metadata();
   const featMeta = await sharp(featureOut).metadata();
