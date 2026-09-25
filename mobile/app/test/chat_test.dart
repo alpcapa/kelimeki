@@ -12,7 +12,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/chat_api.dart';
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/ui/chat/chat_modal.dart';
+import 'package:kelimeki/src/ui/chat/chat_rules_modal.dart';
 import 'package:kelimeki/src/ui/chat/chat_settings_modal.dart';
+import 'package:kelimeki/src/util/chat_rules.dart';
+import 'package:kelimeki_core/kelimeki_core.dart' show trUpper;
 
 import 'support/fake_online_gateway.dart';
 import 'support/test_fonts.dart';
@@ -263,6 +266,118 @@ void main() {
       await tester.tap(find.text('Kendi mesajım'));
       await tester.pump();
       expect(opened, isNull);
+    });
+  });
+
+  // Sohbet Kuralları onayı (25 Eylül 2026) — ilk gönderimden önce BİR KEZ,
+  // hesaba bağlı. Web eşi `ChatModal.tsx`in `handleSend`/`handleAcceptRules`.
+  group('ChatModal — Sohbet Kuralları kapısı', () {
+    setUp(resetChatRulesCacheForTest);
+
+    Future<List<String>> pumpGated(
+      WidgetTester tester, {
+      required int? serverVersion,
+      List<int>? acceptedCalls,
+      Object? acceptFailWith,
+    }) async {
+      await setPhoneViewSize(tester, const Size(420, 900));
+      final sent = <String>[];
+      var version = serverVersion;
+      await tester.pumpWidget(MaterialApp(
+        theme: kelimekiTheme(),
+        home: Scaffold(
+          body: Center(
+            child: ChatModal(
+              messages: const [],
+              participants: const [
+                ChatParticipant(userId: 'me', name: 'Ironman', colorIndex: 0),
+              ],
+              myUserId: 'me',
+              onSend: (t) async => sent.add(t),
+              onOpenSettings: () {},
+              mutedUserIds: const {},
+              reportedUserIds: const {},
+              onOpenParticipantSettings: (_) {},
+              loadChatRulesVersion: () async => version,
+              acceptChatRules: (v) async {
+                if (acceptFailWith != null) throw acceptFailWith;
+                acceptedCalls?.add(v);
+                version = v;
+              },
+            ),
+          ),
+        ),
+      ));
+      await tester.pump();
+      return sent;
+    }
+
+    Future<void> yazGonder(WidgetTester tester, String metin) async {
+      await tester.enterText(find.byType(TextField).first, metin);
+      await tester.pump();
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Gönder'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('hiç kabul edilmemiş → pencere çıkar, mesaj GİTMEZ',
+        (tester) async {
+      final sent = await pumpGated(tester, serverVersion: null);
+      await yazGonder(tester, 'Selam');
+      expect(find.byType(ChatRulesModal), findsOneWidget);
+      for (final madde in kChatRulesItems) {
+        expect(find.text(madde), findsOneWidget);
+      }
+      expect(sent, isEmpty);
+    });
+
+    testWidgets('Vazgeç → mesaj gitmez, metin kutuda KALIR', (tester) async {
+      final sent = await pumpGated(tester, serverVersion: null);
+      await yazGonder(tester, 'Selam');
+      await tester.tap(find.text(trUpper(kChatRulesCancel)));
+      await tester.pumpAndSettle();
+      expect(find.byType(ChatRulesModal), findsNothing);
+      expect(sent, isEmpty);
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.controller!.text, 'Selam');
+    });
+
+    testWidgets(
+        'Kabul ediyorum → kayıt yazılır, mesaj HEMEN gider, ikinci mesajda '
+        'pencere çıkmaz', (tester) async {
+      final kabuller = <int>[];
+      final sent =
+          await pumpGated(tester, serverVersion: null, acceptedCalls: kabuller);
+      await yazGonder(tester, 'Selam');
+      await tester.tap(find.text(trUpper(kChatRulesAccept)));
+      await tester.pumpAndSettle();
+      expect(kabuller, [kChatRulesVersion]);
+      expect(sent, ['Selam']);
+      expect(find.byType(ChatRulesModal), findsNothing);
+
+      await yazGonder(tester, 'İkinci');
+      expect(find.byType(ChatRulesModal), findsNothing);
+      expect(sent, ['Selam', 'İkinci']);
+      expect(kabuller, [kChatRulesVersion]);
+    });
+
+    testWidgets('sunucuda zaten kabul edilmiş → pencere HİÇ çıkmaz',
+        (tester) async {
+      final sent = await pumpGated(tester, serverVersion: kChatRulesVersion);
+      await yazGonder(tester, 'Selam');
+      expect(find.byType(ChatRulesModal), findsNothing);
+      expect(sent, ['Selam']);
+    });
+
+    testWidgets(
+        'kayıt yazılamazsa pencere açık kalır, hata gösterilir, '
+        'mesaj gitmez', (tester) async {
+      final sent = await pumpGated(tester,
+          serverVersion: null, acceptFailWith: Exception('network'));
+      await yazGonder(tester, 'Selam');
+      await tester.tap(find.text(trUpper(kChatRulesAccept)));
+      await tester.pumpAndSettle();
+      expect(find.byType(ChatRulesModal), findsOneWidget);
+      expect(sent, isEmpty);
     });
   });
 

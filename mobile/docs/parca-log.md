@@ -25,6 +25,34 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 215 — Sohbet Kuralları onayı + Kullanım Koşulları §3/§5 (25 Eylül 2026)
+
+Kullanıcı isteği: mesajlaşmadan önce sorumluluğun gönderende olduğunu ve
+cinsel/rencide edici içeriğin yasak olduğunu söyleyen bir onay + bunun
+Kullanım Koşulları'na yazılması.
+
+- **Web ikizi AYRI PR ve önce gitti** (onay penceresi + `accept_chat_rules`
+  migration'ı, canlıda). Bu PR: port penceresi (`ui/chat/chat_rules_modal.dart`
+  + `util/chat_rules.dart`), `ChatModal`'da kapı, `ChatRepo`'ya iki uç, ve
+  Kullanım Koşulları §3/§5 + Gizlilik'teki yeni veri satırı — **web
+  `LegalContent.tsx` ile AYNI PR'da**, çünkü `legal_text_test.dart` web
+  tarihini okuyor (web CI'ın `parite` işi).
+- **Kapı `ChatModal`'da, iki opsiyonel geri çağrıyla** (`loadChatRulesVersion`
+  / `acceptChatRules`); verilmezse kapı yok — mevcut bileşen testleri olduğu
+  gibi kaldı. `OnlineGameScreen` gerçek `ChatRepo`'ya bağlıyor; entegrasyon
+  testi (`online_game_chat_test` → "storage null") bunu kanıtlıyor.
+- **Okuma başarısızsa pencere GÖSTERİLİR** (`ChatRepo.chatRulesVersion` →
+  `null`) — web `undefined` ile aynı.
+- ⚠ **`toUpperCase()` tuzağı yakalandı:** buton etiketi ilk yazımda
+  `'Kabul ediyorum'.toUpperCase()` idi → "EDIYORUM". `trUpper` kullanılıyor.
+- Kapılar: `chat_rules_parity_test.dart` (metin + sürüm web'den okunur;
+  duyarlılık web'de sürüm ve bir madde bozularak kanıtlandı, iki test
+  düştü) · `chat_test.dart` beş yeni vaka (göster/Vazgeç metni korur/kabul
+  → hemen gönder + ikinci mesajda sormaz/sunucuda kabul varsa hiç sormaz/
+  kayıt yazılamazsa açık kalır). Tam takım yeşil.
+- **Doğrulama sınırı:** gerçek RPC ve web↔mobil hesap paylaşımı ancak
+  cihazda → `mobile/docs/testing-arkadaslar-canli.md` → Mesajlaşma.
+
 ## Parça 214 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
 
    > ⚠ **25 Eylül 2026, merge anında:** aşağıda anlatılan WEB yarısı

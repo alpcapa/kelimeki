@@ -79,6 +79,15 @@ class _P extends StatelessWidget {
   Widget build(BuildContext context) => Text(text, style: _pStyle);
 }
 
+/// Kalın bir cümle taşıyan paragraf (web `<P>` içinde `<strong>`).
+class _PRich extends StatelessWidget {
+  final List<InlineSpan> spans;
+  const _PRich(this.spans);
+  @override
+  Widget build(BuildContext context) =>
+      Text.rich(TextSpan(style: _pStyle, children: spans));
+}
+
 class _Bullets extends StatelessWidget {
   final List<String> items;
   const _Bullets(this.items);
@@ -183,7 +192,7 @@ class TermsModal extends StatelessWidget {
       child: _StackedSections([
         const _P(
             "Kelimeki'ye kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul "
-            'ettiğinizi beyan edersiniz. Son güncelleme: 25 Ağustos 2026.'),
+            'ettiğinizi beyan edersiniz. Son güncelleme: 25 Eylül 2026.'),
         const _Section('1. Hizmet Sağlayıcı ve Kapsam', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -206,17 +215,30 @@ class TermsModal extends StatelessWidget {
               'açıklanmıştır.'),
         ]),
         const _Section('3. Kabul Edilemez Kullanım', [
-          _P('Aşağıdaki eylemler kesinlikle yasaktır:'),
+          _P("Kelimeki'de aşağıdaki davranışlara sıfır tolerans uygulanır:"),
           _Bullets([
             'Otomatik araçlar veya botlar aracılığıyla oyun oynamak',
-            'Diğer kullanıcıları rahatsız edecek içerik paylaşmak',
             'Sistemi manipüle etmeye veya güvenlik açıklarını istismar '
                 'etmeye çalışmak',
             'Başkasının hesabına yetkisiz erişim sağlamaya çalışmak',
             'Arkadaşlık isteklerini veya davet linkini spam, taciz ya da '
                 'istenmeyen toplu davet amacıyla kullanmak',
-            'Oyun içi mesajlaşmayı taciz, spam, hukuka aykırı ya da '
-                'uygunsuz içerik paylaşmak amacıyla kullanmak',
+            // Web'de iç içe bir liste (`list-[circle]`); burada alt
+            // maddeler aynı madde içinde ◦ ile satır satır.
+            'Oyun içi mesajlaşmada, takma adda veya profil fotoğrafında '
+                'şunları paylaşmak:\n'
+                '◦ cinsel ya da müstehcen içerik,\n'
+                '◦ hakaret, aşağılama, küfür,\n'
+                '◦ din, dil, ırk, etnik köken, cinsiyet, cinsel yönelim ya da '
+                'engellilik temelinde nefret söylemi veya ayrımcılık,\n'
+                '◦ tehdit, şiddete teşvik, taciz ya da ısrarlı rahatsız '
+                'etme,\n'
+                '◦ başkasına ait kişisel bilgileri (adres, telefon, fotoğraf '
+                'vb.) izinsiz paylaşmak,\n'
+                '◦ reşit olmayanlara yönelik her türlü uygunsuz içerik ya da '
+                'iletişim,\n'
+                '◦ spam, reklam, dolandırıcılık veya hukuka aykırı herhangi '
+                'bir içerik.',
           ]),
         ]),
         const _Section('4. Hesap Askıya Alma', [
@@ -228,14 +250,24 @@ class TermsModal extends StatelessWidget {
           _P('Kelimeki, hizmet kesintileri, veri kayıpları veya üçüncü taraf '
               'hizmetlerinden kaynaklanan zararlardan sorumlu değildir. '
               'Hizmet "olduğu gibi" sunulmaktadır.'),
-          _P('Oyun içi mesajlaşma özelliğiyle gönderilen mesajlar önceden '
-              'denetlenmez (moderasyona tabi değildir); kullanıcılar arasında '
-              'gönderilen mesajların içeriğinden Kelimeki hiçbir şekilde '
-              'sorumlu tutulamaz, sorumluluk tamamen mesajı gönderen '
-              'kullanıcıya aittir. Uygunsuz bir mesajla karşılaşan '
-              'kullanıcılar, sohbet ekranındaki ayarlar üzerinden ilgili '
-              'kişiyi sessize alabilir ve/veya yönetici ekibine şikayet '
-              'edebilir.'),
+          _PRich([
+            TextSpan(
+                text: 'Oyun içi mesajlaşma yalnızca birbirini arkadaş olarak '
+                    'kabul etmiş kullanıcılar arasında açıktır. Mesajlar '
+                    'gönderilmeden önce denetlenmez. '),
+            TextSpan(
+                text: 'Bir mesajın içeriğinden ve doğurabileceği her türlü '
+                    'hukuki sonuçtan mesajı gönderen kullanıcı sorumludur.',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            TextSpan(
+                text: ' Uygunsuz bir mesajla karşılaşan kullanıcı, sohbet '
+                    'ekranındaki ayarlardan o kişiyi sessize alabilir ve '
+                    'şikâyet edebilir. Bize ulaşan şikâyetler incelenir. 3. '
+                    'bölüme aykırı içerik kaldırılabilir ve gönderenin '
+                    'hesabı önceden bildirim yapılmaksızın askıya alınabilir '
+                    'veya silinebilir. Yasal olarak zorunlu hâllerde ilgili '
+                    'bilgiler yetkili mercilerle paylaşılabilir.'),
+          ]),
         ]),
         const _Section('6. Değişiklikler', [
           _P('Bu koşullar zaman zaman güncellenebilir. Değişiklikler '
@@ -263,7 +295,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 24 Eylül 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 25 Eylül 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -292,6 +324,8 @@ class PrivacyModal extends StatelessWidget {
                 'gönderdiğiniz/aldığınız arkadaşlık istekleri, davet '
                 'linkinizin kullanım verisi)',
             'Canlı oyunlarda gönderdiğiniz oyun içi sohbet mesajları',
+            "Sohbet Kuralları'nı kabul ettiğiniz tarih ve kabul ettiğiniz "
+                'kural sürümü',
             '"Görüş Bildir" formundan ilettiğiniz mesajlar ve size yanıt '
                 'verebilmemiz için formda belirttiğiniz e-posta adresi — '
                 'girişsiz (misafir) gönderdiğinizde de saklanır',

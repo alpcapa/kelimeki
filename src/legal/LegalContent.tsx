@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 24 Eylül 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 25 Eylül 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
@@ -77,6 +77,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
               arkadaşlık istekleri, davet linkinizin kullanım verisi)
             </li>
             <li>Canlı oyunlarda gönderdiğiniz oyun içi sohbet mesajları</li>
+            <li>Sohbet Kuralları'nı kabul ettiğiniz tarih ve kabul ettiğiniz kural sürümü</li>
             <li>
               "Görüş Bildir" formundan ilettiğiniz mesajlar ve size yanıt verebilmemiz için
               formda belirttiğiniz e-posta adresi — girişsiz (misafir) gönderdiğinizde de
@@ -282,7 +283,7 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki'ye kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
-          Son güncelleme: 25 Ağustos 2026.
+          Son güncelleme: 25 Eylül 2026.
         </P>
 
         <Section title="1. Hizmet Sağlayıcı ve Kapsam">
@@ -309,15 +310,25 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
 
         <Section title="3. Kabul Edilemez Kullanım">
           <P>
-            Aşağıdaki eylemler kesinlikle yasaktır:
+            Kelimeki'de aşağıdaki davranışlara sıfır tolerans uygulanır:
           </P>
           <ul className="text-xs font-sans text-text leading-relaxed list-disc list-inside flex flex-col gap-1">
             <li>Otomatik araçlar veya botlar aracılığıyla oyun oynamak</li>
-            <li>Diğer kullanıcıları rahatsız edecek içerik paylaşmak</li>
             <li>Sistemi manipüle etmeye veya güvenlik açıklarını istismar etmeye çalışmak</li>
             <li>Başkasının hesabına yetkisiz erişim sağlamaya çalışmak</li>
             <li>Arkadaşlık isteklerini veya davet linkini spam, taciz ya da istenmeyen toplu davet amacıyla kullanmak</li>
-            <li>Oyun içi mesajlaşmayı taciz, spam, hukuka aykırı ya da uygunsuz içerik paylaşmak amacıyla kullanmak</li>
+            <li>
+              Oyun içi mesajlaşmada, takma adda veya profil fotoğrafında şunları paylaşmak:
+              <ul className="list-[circle] list-inside pl-4 mt-1 flex flex-col gap-0.5">
+                <li>cinsel ya da müstehcen içerik,</li>
+                <li>hakaret, aşağılama, küfür,</li>
+                <li>din, dil, ırk, etnik köken, cinsiyet, cinsel yönelim ya da engellilik temelinde nefret söylemi veya ayrımcılık,</li>
+                <li>tehdit, şiddete teşvik, taciz ya da ısrarlı rahatsız etme,</li>
+                <li>başkasına ait kişisel bilgileri (adres, telefon, fotoğraf vb.) izinsiz paylaşmak,</li>
+                <li>reşit olmayanlara yönelik her türlü uygunsuz içerik ya da iletişim,</li>
+                <li>spam, reklam, dolandırıcılık veya hukuka aykırı herhangi bir içerik.</li>
+              </ul>
+            </li>
           </ul>
         </Section>
 
@@ -334,11 +345,17 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
             kaynaklanan zararlardan sorumlu değildir. Hizmet "olduğu gibi" sunulmaktadır.
           </P>
           <P>
-            Oyun içi mesajlaşma özelliğiyle gönderilen mesajlar önceden denetlenmez (moderasyona
-            tabi değildir); kullanıcılar arasında gönderilen mesajların içeriğinden Kelimeki hiçbir
-            şekilde sorumlu tutulamaz, sorumluluk tamamen mesajı gönderen kullanıcıya aittir.
-            Uygunsuz bir mesajla karşılaşan kullanıcılar, sohbet ekranındaki ayarlar üzerinden
-            ilgili kişiyi sessize alabilir ve/veya yönetici ekibine şikayet edebilir.
+            Oyun içi mesajlaşma yalnızca birbirini arkadaş olarak kabul etmiş kullanıcılar arasında
+            açıktır. Mesajlar gönderilmeden önce denetlenmez.{' '}
+            <strong>
+              Bir mesajın içeriğinden ve doğurabileceği her türlü hukuki sonuçtan mesajı gönderen
+              kullanıcı sorumludur.
+            </strong>{' '}
+            Uygunsuz bir mesajla karşılaşan kullanıcı, sohbet ekranındaki ayarlardan o kişiyi
+            sessize alabilir ve şikâyet edebilir. Bize ulaşan şikâyetler incelenir. 3. bölüme aykırı
+            içerik kaldırılabilir ve gönderenin hesabı önceden bildirim yapılmaksızın askıya
+            alınabilir veya silinebilir. Yasal olarak zorunlu hâllerde ilgili bilgiler yetkili
+            mercilerle paylaşılabilir.
           </P>
         </Section>
 

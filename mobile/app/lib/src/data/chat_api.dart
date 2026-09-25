@@ -67,6 +67,15 @@ abstract class ChatGateway {
   Future<void> setMute(String gameId, String targetUserId, bool muted);
   Future<void> report(String gameId, String targetUserId, String reason);
   Future<void> withdrawReports(String targetUserId);
+
+  /// Kabul edilen Sohbet Kuralları sürümü (`profiles.chat_rules_version`) —
+  /// hiç kabul etmediyse `null`. Okunamazsa FIRLATIR; çağıran `null` sayar.
+  /// Web `fetchChatRulesVersion`. Bkz. `util/chat_rules.dart`.
+  Future<int?> chatRulesVersion();
+
+  /// Kabulü sunucuya yazar (`accept_chat_rules` RPC'si; zaman damgası
+  /// sunucunun, yalnızca İLERİ yazar). Web `acceptChatRules`.
+  Future<void> acceptChatRules(int version);
 }
 
 class SupabaseChatGateway implements ChatGateway {
@@ -179,6 +188,24 @@ class SupabaseChatGateway implements ChatGateway {
       'p_target_user_id': targetUserId,
     });
   }
+
+  @override
+  Future<int?> chatRulesVersion() async {
+    final user = client.auth.currentUser;
+    if (user == null) throw Exception('Oturum açık değil.');
+    final row = await client
+        .from('profiles')
+        .select('chat_rules_version')
+        .eq('id', user.id)
+        .maybeSingle();
+    if (row == null) return null;
+    return (row['chat_rules_version'] as num?)?.toInt();
+  }
+
+  @override
+  Future<void> acceptChatRules(int version) async {
+    await client.rpc('accept_chat_rules', params: {'p_version': version});
+  }
 }
 
 /// Bir Canlı oyunun devam eden sohbeti + Faz 2 durumu için politika katmanı.
@@ -263,4 +290,17 @@ class ChatRepo {
 
   Future<void> withdrawReports(String targetUserId) =>
       gateway.withdrawReports(targetUserId);
+
+  /// Okunamazsa `null` — `needsChatRulesConsent` onu "pencereyi göster"
+  /// sayar (web `fetchChatRulesVersion`'ın `undefined`'ı).
+  Future<int?> chatRulesVersion() async {
+    try {
+      return await gateway.chatRulesVersion();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Hata FIRLATILIR — pencere kendi içinde gösterir.
+  Future<void> acceptChatRules(int version) => gateway.acceptChatRules(version);
 }

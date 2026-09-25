@@ -431,6 +431,14 @@
 
 ### Mesajlaşma (Faz 1 sohbet + Faz 2 sessize alma/raporlama)
 
+- [ ] **Sohbet Kuralları onayı (25 Eylül 2026, Parça 215).** Kuralları hiç
+      kabul etmemiş bir hesapla ilk mesajı gönder → mesaj GİTMEDEN "SOHBET
+      KURALLARI" penceresi. "VAZGEÇ" → metin kutuda kalmalı. "KABUL
+      EDİYORUM" (İ noktalı!) → mesaj hemen gitmeli. Aynı hesapla WEB'de
+      yaz → pencere ÇIKMAMALI (onay hesaba bağlı); tersi de. "Kullanım
+      Koşulları'nın tamamı" koşulları açmalı ve §3'te yasak listesi
+      görünmeli.
+
 - [ ] **Buton görünürlüğü.** Board altındaki "Mesajlaşma" butonu YALNIZCA
       Canlı oyun ekranında görünmeli; yerel/YZ oyun ekranında hiç
       çizilmemeli.
