@@ -859,3 +859,17 @@ Uygulama 20/10, Instagram 9/3, Direkt 7/5 — birebir).
 - [ ] **CSV:** Kanal, Kaynak ve beş sütun; TOPLAM satırı var.
 - [ ] **`?` popup'ı (`uye-kalitesi`)** "Neden güvenilir" ve "Misafir
       sütunları neden yok" paragraflarını taşımalı.
+
+## 9.25. Admin — "Kelime Süzgeci" + sohbet dökümünde süzgeç işareti (25 Eylül 2026, ROADMAP #37)
+
+- [ ] **Liste açılıyor.** Geri Bildirim → Şikayetler → sağ üstte "Kelime
+      Süzgeci →" → pencerede "N / N kelime" (tohum 685) ve arama kutusu.
+- [ ] **Ekle / çıkar.** Listede olmayan bir test kelimesi yaz → "Ekle" →
+      satırda "EKLENDİ" rozeti. Bir Canlı oyunda o kelimeyi içeren mesaj
+      gönder → karşı tarafta `*` ile görünmeli. Kelimeyi ✕ → "Çıkar" ile
+      kaldır → aynı mesaj artık maskesiz gitmeli (değişiklik anında geçerli).
+- [ ] **Tam kelime.** "am" listede; "ama" ya da "amaç" içeren mesaj
+      MASKELENMEMELİ.
+- [ ] **Kanıt.** Süzgece takılmış bir mesajın olduğu oyun bittikten sonra
+      Şikayetler → "Sohbeti Görüntüle": o mesaj `[süzgeç]` önekiyle ve
+      ORİJİNAL metniyle görünmeli (katılımcıların arşivinde maskeli).

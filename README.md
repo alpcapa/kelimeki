@@ -131,6 +131,7 @@ src/
 │   ├── FeedbackModal.tsx        # görüş/şikayet bildirme formu
 │   ├── AdminDashboard.tsx       # admin paneli: üyeler, oyunlar, büyüme (aktif oyuncu/aktivasyon/retention/kaynak hunisi/tanıtım turu/oyun dağılımı/YZ dengesi), geri bildirim + şikayetler (yalnızca is_admin); metrik tanımları "?" rozetlerinin açtığı popup'ta
 │   ├── MemberMessageModal.tsx   # admin panelinden bir üyeye serbest metinli mesaj gönderme compose modalı
+│   ├── AdminBlockedWordsModal.tsx   # admin paneli Şikayetler → "Kelime Süzgeci": küfür süzgecinin listesi (ekle/çıkar; süzgeç SUNUCUDA, ROADMAP #37)
 │   ├── AdminChatTranscriptModal.tsx # admin paneli Şikayetler sekmesi: bitmiş bir Canlı oyunun tam sohbet dökümü
 │   ├── PlayerScoreCard.tsx      # bir oyuncunun ScoreCard'ının salt-okunur görünümü (admin panelinden ve k-lig'den açılır)
 │   ├── GrowthChart.tsx          # admin büyüme grafiği (generic zaman serisi çizgi grafiği)

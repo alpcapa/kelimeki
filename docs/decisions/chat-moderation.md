@@ -100,3 +100,40 @@ olduğunu ve cinsel/rencide edici içeriğin yasak olduğunu söyleyen bir onay.
 - **Açık kalan:** otomatik küfür/müstehcenlik filtresi YOK (Apple 1.2
   "filtreleme yöntemi" istiyor). Sohbetin yalnızca kabul edilmiş arkadaşlar
   arasında olması riski bugün sınırlıyor; ayrı bir iş.
+
+## Küfür / müstehcenlik süzgeci (25 Eylül 2026, ROADMAP #37)
+
+Kullanıcı kararları: **maskele** · **takma isim dahil** (orada RET) ·
+**hazır liste** · kanıt korunur · geçmiş mesajlara dokunulmaz.
+
+- **Sunucuda, istemcide DEĞİL:** `online_game_messages` BEFORE INSERT
+  trigger'ı (`mask_online_game_message` → `_chat_profanity_mask`). Mağazadaki
+  eski paketler dahil herkese aynı anda işledi; Realtime maskeli satırı
+  yayınlar, arşiv (`games.messages`) canlıdan kopyalandığı için maskeli.
+- **Tam kelime, Türkçe küçük harfe göre** (`tr_lower`; uzunluk koruyor,
+  ölçüldü — bu yüzden maske karakter karakter orijinale uygulanıyor ve
+  büyük/küçük harf korunuyor). Sınır = Türkçe harf OLMAYAN her karakter
+  (rakam dahil: `ipne123` yakalanır). **Kelime içinde arama BİLEREK yok:**
+  kuru ölçümde "am" 320 mesajın 22'sinde "ama/amaç"ı kesiyordu.
+- **Liste** `chat_blocked_words` (685): ooguz/turkce-kufur-karaliste
+  (CC BY-SA 4.0) + LDNOOBW `tr` (CC BY 4.0) = 815, 130'u elle ayıklandı
+  (ana · mal · allah · meme · saksofon · sokarım · ç'siz "sikici"="sıkıcı" ·
+  etnik ad "çingene" …; tam liste migration'ın başında). BY-SA gereği türev
+  liste de BY-SA. Admin panelinden düzenlenir (`AdminBlockedWordsModal`).
+- **Kanıt:** maskelenen mesajın orijinali `online_game_message_originals`e
+  (RLS: yalnız admin; FK `deferrable initially deferred` çünkü satır BEFORE
+  trigger'ında, mesajdan önce yazılıyor). `admin_get_finished_game_chat`
+  orijinali `filtered: true` ile döndürür, döküm `[süzgeç]` önekiyle gösterir.
+- **Takma isim:** `trg_reject_blocked_nickname` (profiles BEFORE
+  INSERT/UPDATE OF display_name) → P0001 "Bu takma isim kullanılamaz.".
+  Yeni `nickname_status` RPC'si ok/taken/blocked ayırır (web
+  `useNicknameAvailability`); `check_nickname_available` eski paketler için
+  `blocked`ı da false döner (orada "kullanımda" görünür). Canlıda eşleşen
+  takma isim 0'dı.
+- **Doğrulama (canlı, hepsi rollback):** gerçek insert → `***** hamle`,
+  orijinal ayrı tabloda; admin olmayan kullanıcı orijinalleri GÖREMİYOR (0);
+  takma isim güncellemesi reddedildi; masum kelimeler (ama, amaç, ana, mal,
+  sıkıcı, emin) dokunulmadı. Hız: temiz mesajda ~0,5 ms.
+- **Kapsam dışı (v1):** harf tekrarı (`salaaak`) ve araya konan karakter
+  (`s.a.l.a.k`) normalizasyonu — maskenin orijinale hizalanmasını bozar;
+  listede yaygın varyantlar zaten var. Gerekirse ayrı iş.

@@ -1011,6 +1011,97 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
+## 37. Küfür / müstehcenlik filtresi — **KISMEN: sunucu + web CANLIDA · koşul metni + port #640'ta** (25 Eylül 2026)
+
+**Durum (25 Eylül 2026 akşamı):** süzgeç canlıda (`20260925183810_chat_profanity_filter`
++ `…184216_nickname_blocked_message`), web'de takma isim uyarısı + admin
+"Kelime Süzgeci" + dökümde `[süzgeç]` işareti. **Kalan:** Kullanım Koşulları
+§5'in "mesajlar denetlenmez" cümlesi + Gizlilik'te orijinalin saklanması +
+portun takma isim uyarısı → #640 (sürüm treni). Uygulama kaydı:
+`docs/decisions/chat-moderation.md` → "Küfür / müstehcenlik süzgeci".
+#640 merge edilince bu madde arşive taşınır.
+
+Kullanıcı: *"Küfür filtresi işini konuşalım. Onu roadmap'e yaz."* Sohbet
+Kuralları onayının (#639 web ✅, #640 port taslak) devamı. Bugün mesajlar
+hiçbir otomatik süzgeçten geçmiyor; tek savunma kişinin sessize alıp şikâyet
+etmesi.
+
+**Neden:** Apple kuralı 1.2 kullanıcı içeriği olan uygulamadan dört şey
+istiyor: kabul edilen kurallar (✅ onay penceresi), şikâyet (✅), engelleme
+(✅ sessize alma) ve **uygunsuz içeriği süzme yöntemi (❌ YOK)**. Sohbetin
+yalnızca kabul edilmiş arkadaşlar arasında olması riski bugün sınırlıyor ve
+bir incelemede savunma olarak anlatılabilir, ama bu bir süzgeç değil.
+
+**Önerilen yön — süzgeç SUNUCUDA, `online_game_messages` insert'ünde
+(trigger):**
+- Mağazadaki ESKİ paketler dahil (1.1.0/1.1.1) herkese aynı gün işler. İstemci
+  süzgeci web + port + iki mağaza turu isterdi ve atlatılabilirdi.
+- Liste bir tabloda (`blocked_words`), admin panelinden düzenlenir; kodda
+  gömülü liste YOK (liste değiştikçe sürüm çıkmasın).
+- Eşleştirme Türkçe'ye göre: `tr_lower` (İ/ı), harf tekrarı (`aaa` → `a`),
+  araya konan boşluk/nokta/yıldız, sık rakam-harf değişimi (`0`→`o`, `1`→`i`).
+  ⚠ **Yanlış pozitif** asıl risk: kelime İÇİNDE arama masum kelimeleri de
+  keser. Yalnızca kelime sınırı + bilinen ek kalıpları.
+
+**Kullanıcının vermesi gereken kararlar:**
+1. **Maskele mi, reddet mi?** Maskele (`****`, mesaj gider) daha yumuşak ve
+   yaygın; reddet ("Mesajın uygunsuz ifade içeriyor") gönderene net ama
+   kelime avına iter. Reddedilen/maskelenen mesaj ayrıca admin'e düşsün mü?
+2. **Kapsam:** yalnızca sohbet mi, **takma ad** da mı? Takma ad k-lig
+   listesinde HERKESE görünüyor, yani risk orada daha geniş.
+3. **Listeyi kim kuracak:** hazır bir Türkçe liste mi, elle mi?
+
+**KARARLAR (25 Eylül 2026, kullanıcı):** (1) **maskele** · (2) **takma ad
+DAHİL** · (3) **hazır liste**.
+
+**Hazır liste:** `ooguz/turkce-kufur-karaliste` (697 madde, CC BY-SA 4.0) +
+LDNOOBW `tr` (142 madde, CC BY 4.0) → birleşik **815** madde (83'ü çok
+kelimeli). ⚠ BY-SA: listenin türevi aynı lisansla ve atıfla tutulur.
+
+**Kuru ölçüm (25 Eylül 2026, canlı, yalnızca SAYIM — mesaj içeriği
+okunmadı):** 320 canlı mesaj · 578 arşiv satırı (her oyunun mesajları
+oyuncu başına bir `games` satırında, yani arşiv ≈ canlının iki katı) · 64
+takma ad.
+
+| Eşleştirme | Canlı mesajda yakalanan | Yorum |
+|---|---|---|
+| **Kelimenin BAŞI** (önek) | `am` 22 · `emi` 4 · `cim` 1 … | ❌ KULLANILAMAZ — `ama`, `emin`, `…cim` gibi masum kelimeleri kesiyor |
+| **Tam kelime** | ~11 mesaj (%3): `bok`/`boktan` 4 · `ibne`/`ipne` 2 · `siktir` · `amk` · `salak` · **`ana` 1** | ✅ kullanılabilir; tek şüpheli `ana` (masum anlamı çok yaygın) |
+| Takma ad, tam kelime | **0** | önek modunda 1 (`emi` → masum) |
+
+**Sonuç:** yalnızca TAM KELİME. Ölçümde çıkmayan ama listede duran masum/
+nötr maddeler de ayıklanmalı — en açıkları: `ana` · `mal` · `allah` ·
+`oğlan` · `meme` · `kaka` · `dönek` · `düdük` · `kayyum` · `revizyonist` ·
+`saksofon` · `dinsiz` · `çingene*` (etnik ad, küfür değil) · `cikar`
+(ç'siz "çıkar") · `diktim` · `sokam`/`sokarım` (sokmak) · `koyum`/`koyarm` ·
+`azdım`/`azdır` · `emi` · `cim` · `ag` · `cif` · `sie` · `krar` · `sekis`.
+
+**Önerilen tasarım (ölçümden sonra):**
+- **Sohbet:** `online_game_messages`e BEFORE INSERT trigger, eşleşen kelime
+  harf sayısı kadar `*` olur. Arşiv (`games.messages`) canlıdan kopyalandığı
+  için kendiliğinden maskeli gelir. Eski paketler dahil herkese aynı gün.
+- ⚠ **Kanıt kaybolmasın:** şikâyeti inceleyen admin ORİJİNALİ görmeli.
+  Orijinal ayrı, yalnız admin'in okuyabildiği bir tabloya yazılır
+  (`online_game_message_originals`); katılımcılar maskeli metni görür.
+- **Takma ad:** maskelenmez (`****` bir ad olamaz) — kayıt/değişiklikte
+  **reddedilir** ("Bu takma ad kullanılamaz"). Bugün eşleşen ad 0, geriye
+  dönük iş yok.
+- **Geçmiş mesajlara dokunulmaz** (kanıt + kullanıcı görmüş).
+
+**Uygulamadan ÖNCE ölçüm (değişmez):** mevcut mesajları (`online_game_messages`
++ `games.messages` arşivi) ve takma adları listeye karşı KURU koştur, kaç
+tanesinin yakalanacağına ve kaçının yanlış pozitif olduğuna bak. Eşik o
+sayılara göre ayarlanır.
+
+**Dokunacağı yerler:** migration (tablo + trigger + `grant`) · admin
+paneline liste düzenleme · `TermsModal`/`PrivacyModal` (otomatik süzgeç
+cümlesi, web + port BİRLİKTE, `legal_text_test.dart`) · reddetme seçilirse
+`friendlyErrorMessage`in P0001 yolu sunucunun Türkçe mesajını zaten
+gösterir (web ✅; portta `error_message.dart` 1.1.0'da YOK, 1.1.1 ile
+iniyor — eski pakette ret metni ham görünebilir, maskelemenin bir artısı
+daha). Kayıt: `docs/decisions/chat-moderation.md` →
+"Sohbet Kuralları onayı" → "Açık kalan".
+
 ## Her iş için değişmeyen kurallar
 
 1. **Önce etki analizi** (kök `CLAUDE.md` → "Çalışma İlkesi"): bu kodun
