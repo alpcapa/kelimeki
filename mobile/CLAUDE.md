@@ -85,6 +85,20 @@ tersine bir tuzak: sunucu değişikliği anında canlıdır, yani istemci
 düzeltmesi henüz yokken sunucu davranışı değişmiş olabilir.
 (29 Ağustos 2026 vakası: `mobile/docs/deploy-verification.md`.)
 
+⚠ **MAĞAZADA YAYINLANMIŞ BİR SÜRÜM NUMARASI TESTFLIGHT'A BİR DAHA
+YÜKLENEMEZ.** Apple bir sürüm onaylanıp yayınlandığı anda o "pre-release
+train"i kapatır; aynı `CFBundleShortVersionString` ile gelen her yükleme
+**90186** + **90062** ile reddedilir. `--build-number`ı artırmak YETMEZ
+(o `CFBundleVersion`). Yani **bir sürüm yayına alındıktan sonraki İLK mobil
+merge'den ÖNCE** `mobile/app/pubspec.yaml`in `version`ı ve
+`lib/src/config/env.dart`in `appVersion`ı bir üst numaraya çekilir (ikisi
+birden — `test/app_version_parity_test.dart` ayrışmayı düşürür).
+⚠ Bunu hatırlatan bir CI kapısı YOK ve arıza SESSİZ görünüyor: düşen adım
+`iOS (imzasız)` işinin EN SONUNCUSU, ondan önceki her şey (Android paketleri,
+`mobile-latest`, Appetize, Pages, imzalı `.ipa`) yeşil tamamlanıyor.
+25 Eylül 2026'da 1.1.0 treni kapalıyken altı koşu arka arkaya bu yüzden
+düştü; vaka ve düzeltme: `mobile/docs/surumler.md` → "1.1.0 TRENİ KAPANDI".
+
 ### Derleme kimliği — ekran görüntüsü sorunun cevabını taşır
 
 - **Flutter:** Setup'ın teşhis satırı `Derleme a1b2c3d · 15.08 11:42` ile

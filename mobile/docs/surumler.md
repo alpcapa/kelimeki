@@ -31,6 +31,57 @@ açıldı) anlatır; `docs/decisions/roadmap-arsiv.md` kapanmış turları sakla
 
 ---
 
+## 1.1.0 TRENİ KAPANDI — sürüm 1.1.1'e çekildi (25 Eylül 2026)
+
+**Belirti:** `main`'e mobil bir iş girdiği her turda `mobile-build.yml`
+KIRMIZI. Düşen tek adım `iOS (imzasız)` işinin SONUNCUSU —
+*"TestFlight'a yükle (imzalı .ipa)"*. Öncesindeki her şey (Android `.apk`
++ `.aab`, `mobile-latest`, Appetize, Pages, imzalı `.ipa`nın kendisi)
+başarıyla tamamlanıyor, yani **arıza bir derleme hatası DEĞİL**, yüklemenin
+Apple tarafından reddi.
+
+Apple'ın iki hata kodu:
+
+```
+90186  Invalid Pre-Release Train. The train version '1.1.0' is closed
+       for new build submissions
+90062  This bundle is invalid. The value for key CFBundleShortVersionString
+       [1.1.0] ... must contain a higher version than that of the
+       previously approved version [1.1.0]
+```
+
+**Kök sebep:** 1.1.0 App Store'da YAYINLANDI (15 Eylül). Apple bir sürüm
+onaylanıp yayınlandığı anda o "treni" kapatır — aynı `CFBundleShortVersionString`
+ile artık hiçbir build kabul edilmez. `--build-number`ı artırmak YETMEZ
+(o `CFBundleVersion`, yani 665/710; kapanan tren SÜRÜM ADI).
+
+⚠ **Bu yüzden arıza 12 Eylül'den 25 Eylül'e kadar GÖRÜNMEDİ:** o aralıkta
+`main`'e mobil bir iş girmedi (kod donmuştu). Dondurma kalkıp altı port
+PR'ı arka arkaya merge edilince altı koşu birden aynı yerden düştü
+(#698 · #700 · #702 · #704 · #706 · #708), hiçbiri ayrıca bildirilmedi
+çünkü düşen adım işin EN SONUNCUSU ve öteki üç iş yeşil.
+
+**Düzeltme — İKİ satır, ikisi de aynı PR'da (parite testi zorluyor):**
+
+| Dosya | Eski | Yeni |
+|---|---|---|
+| `mobile/app/pubspec.yaml` | `version: 1.1.0+1` | `version: 1.1.1+1` |
+| `mobile/app/lib/src/config/env.dart` | `appVersion = '1.1.0'` | `appVersion = '1.1.1'` |
+
+Kapı `test/app_version_parity_test.dart` — ikisi ayrışırsa düşer
+(duyarlılık kanıtlandı: tek taraflı değişiklikte kırmızı).
+
+⚠ **KURAL, bundan sonrası için:** *mağazada YAYINLANMIŞ bir sürüm numarası
+bir daha TestFlight'a yüklenemez.* Bir sürüm yayına alındığı anda sıradaki
+mobil merge'den ÖNCE `pubspec.yaml` + `env.dart` bir üst numaraya çekilir.
+Bunu hatırlatan bir CI kapısı YOK — hata yalnızca Apple'ın sunucusundan,
+yüklemenin son saniyesinde dönüyor.
+
+⚠ **1.1.1 SAHADA DEĞİL.** Bu PR yalnızca treni açar; paketin mağazaya
+gitmesi yine "SÜRÜM SENKRONU"nun üç cümlesine tabi (ASC'ye son derleme
+iliştirilir, Play aynı numarayla takip eder).
+
+
 ## SÜRÜM SENKRONU — kural (12 Eylül 2026, kullanıcı kararı)
 
 Sözleri: *"ASC'yi 665 yapayım, yarın yeni aab yükleriz Play'e, ikisi de aynı
