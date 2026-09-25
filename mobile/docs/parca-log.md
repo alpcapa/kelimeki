@@ -217,6 +217,164 @@
      ceza yazdığından **kullanıcı bunları elle bitirip listeden düşürmeli**
      (vakadaki gibi "tekrar bitirmek" satırı siliyor).
 
+## Parça 206 — Taş değiştirme sınırı: torbada kalandan fazlası değiştirilemez
+
+   - ✅ **Parça 206 — Taş değiştirme sınırı: torbada kalandan fazlası
+     değiştirilemez (14 Eylül 2026):** Kullanıcı raporu (Asnmzr): *"torbada
+     4 harf kalmışken 7 harf değiştirdim"*. Doğruydu; web'in ÜRETİM
+     reducer'ıyla birebir yeniden üretildi (torba 4 → seçim 7 → *"7 taş
+     değiştirdi"*, torba yine 4, raf yine 7, ne hata ne uyarı).
+
+     **Neden golden vector'lar görmedi — ve bu bu projede İKİNCİ kez:**
+     fixture'lar web ile Dart'ı KARŞILAŞTIRIR, yani ikisinde BİRDEN var olan
+     bir kuralsızlığa kördür. Üstelik `verify-swap-invariants`in taş korunumu
+     kontrolü de göremezdi, çünkü dört motor da *önce seçilenleri torbaya koy,
+     SONRA en fazla o kadar çek* sırasını uyguluyor — toplam taş sayısı hep
+     doğru kalıyordu. Arıza tamamen sessizdi. (Aynı körlük Parça 112'de
+     `remainingTiles` için yaşanmıştı; ders tekrarlandı.)
+
+     **Port tarafında yapılan:** `constants.dart`a `maxSwapCount` +
+     `swapLimitMessage`; `reducer.dart`ta üç nokta — `ToggleSwapTileAction`
+     sınırı SEÇİM anında uyguluyor, `_confirmSwap` TEKRAR kontrol ediyor
+     (kuralın sahibi UI değil reducer; `swapSelection` kayıttan devam ya da
+     araya giren senkronla da dolabiliyor), `_aiPlay` rafı dilimliyor.
+
+     ⚠ **Mesaj temizlemesi DAR tutuldu.** İlk yazımda `ToggleSwapTile`
+     koşulsuz `message: ''` yazıyordu; web tarafında golden'lar bunu anında
+     gösterdi — swap modunun kendi ipucu (*"Değiştireceğin taşları seç…"*)
+     ilk dokunuşta siliniyordu. Artık yalnızca KENDİ sınır uyarısı düşüyor.
+     Port ikizi aynı daraltmayı taşıyor.
+
+     **İki ayrı kapı, ikisi de gerekli:**
+     `kelimeki_core/test/run_all.dart` → `testSwapLimit` DAVRANIŞI Dart
+     motorunda oynatıyor (6883 → **6890** kontrol); `app/test/
+     swap_limit_parity_test.dart` web KAYNAĞINI okuyup metni, `maxSwapCount`i,
+     iki kapıyı ve **YZ dilimini üç kopyada birden** karşılaştırıyor.
+
+     **Duyarlılık kanıtlandı:** sınır geçici olarak kaldırıldığında
+     `testSwapLimit` 5 hatayla düştü, geri alınınca yeşile döndü — "yeşil ama
+     hiçbir şey kanıtlamayan test" değil.
+
+     **Doğrulama:** Dart core 6890 kontrol · `flutter test` tam takım ·
+     `flutter analyze` temiz. Golden vector'lar DEĞİŞMEDİ (web yarısında da
+     bayt-eş kaldı) — mevcut senaryoların hiçbiri bu yola girmiyordu.
+
+     ⚠ **Web + sunucu yarısı AYRI PR'da ve zaten CANLIDA** (#553): migration
+     `20260914152808` uygulandı, `play-ai-turn` v10 deploy edildi. Sıra
+     önemliydi — **önce Edge, sonra migration**: tersi olsaydı YZ'nin tam
+     rafı sunucuda reddedilir ve `play-ai-turn`ün `catch`i sessizce pas
+     geçmeye düşerdi (`verify-edge-engine-parity`nin doğuş sebebiyle aynı
+     sınıf). Dilimlenmiş istek eski SQL'de de geçerli olduğundan kırık
+     pencere sıfır.
+
+     ⚠ **Bu PR merge edilene kadar mobilin YEREL oyunu eski kuralla
+     oynuyor** — sunucu kapısı yalnızca Canlı oyunu kapsıyor, yerel oyun
+     tamamen istemcide. Mağaza incelemesi (1.1.0/665) bitene kadar bekliyor.
+
+## Parça 212 — Zoom tanıtım balonu kendi kendine kapanıyor
+
+   - ✅ **Parça 212 — Zoom balonu 4 sn sonra kapanır (16 Eylül 2026):** Bir
+     oyuncu bildirdi: *"tanıtımdan sonra zoom özelliği için sürekli kalan
+     uyarı mesajının oyun oynamayı zorlaştırdığından bahsetmiş. Onu sürekli
+     değil. 3-5 saniye sonra gidecek şekle getirelim. İnsanlar okumuyor."*
+     Öncesinde balonu kapatan TEK şey zoom'u DENEMEKTİ — yani denemeyen
+     oyuncuda balon oyun boyunca merkez karenin üstünde duruyordu ve tam da
+     taş konacak bölgeyi örtüyordu. Süre `kZoomHintAutoHide`
+     (`ui/game/board_zoom.dart`) ↔ web `ZOOM_HINT_AUTO_HIDE_MS`.
+     ⚠ **Kendi kendine kapanma "denedi" SAYILMAZ:** `markZoomTried`
+     çağrılmıyor ve gösterim sayacı ayrıca artmıyor (karar anında arttı).
+     Yani Parça 1 Eylül'ün kuralı DEĞİŞMEDİ: hiç denemeyen oyuncu balonu
+     ikinci oyun açılışında bir kez daha görür (tavan 2). Kapanmayı "deneme"
+     saymak kuralı sessizce tek gösterime indirirdi.
+     ⚠ Zamanlayıcı İKİ yerde iptal ediliyor: `dispose` (sökülmüş State'te
+     `setState` olmasın) ve `_zoomDenendiIsaretle` (denenince zaten kapandı).
+     Alan adı `_zoomHintTimer` — `game_screen.dart`ta ZATEN bir `_hintTimer`
+     var (bağlamsal ipuçları), ikisi karıştırılmamalı.
+     ⚠ **İki ekran da:** `game_screen.dart` + `online_game_screen.dart`
+     (aynı deseni paylaşıyorlar, bu projenin kayıtlı ayrışma sınıfı).
+     Kapı: `zoom_hint_test.dart` → "balon KENDİ KENDİNE kapanır — ve bu
+     'denedi' SAYILMAZ"; test erken kapanmayı DA ölçüyor (süre − 500 ms'de
+     hâlâ ekranda). Web ikizi `tests/smoke.spec.ts` → "balon kendi kendine
+     kapanır", web yarısı aynı gün `main`'e girdi; bu PR inceleme
+     dondurması yüzünden ayrı bırakıldı.
+
+## Parça 213 — 504 "sunucunun reddi" sayılıyordu + oturum kapısı
+
+   - ✅ **Parça 213 — Geçici sunucu hatası yeniden denenir (17 Eylül 2026):**
+     Kullanıcı admin panelinde yığılma fark etti (*"android online games repo
+     load hatası çok sık çıkmış"*); tüm `client_errors` tablosu okundu (62
+     kayıt / 34 cihaz). En büyük küme `online_games_repo.load` →
+     `PostgrestException(code: 504)`: **11 kayıt** (android 9 · ios 2, 8
+     cihaz), 12-14 Eylül'de yoğunlaşmış.
+     ⚠ **Önce sunucu ELENDİ:** `list_my_online_games` en ağır kullanıcıda
+     (97 oyun) `EXPLAIN ANALYZE` ile **12,7 ms**, planı indeksli, veri küçük
+     (130 oyun / 136 davet) — yani 504 yavaş sorgudan DEĞİL, ağ geçidinden.
+     **Kusur sınıflandırmadaydı:** `_fetchWithRetry` yalnızca `isNetworkError`
+     doğruysa tekrarlıyordu, o da TAŞIMA istisnalarının metnine bakıyor. 504
+     hiçbirine uymuyor → "sunucunun kendi reddi" sayılıyor, yani ne
+     tekrarlanıyor ne de kullanıcıdan gizleniyordu. Yeni yüklem
+     `isTransientServerError` (`util/offline_notice.dart` ↔ web
+     `utils/offlineNotice.ts`): **408/502/503/504/522/524** ya da ağ
+     geçidinin İngilizce metni. ⚠ `500` ve `429` BİLEREK dışarıda — biri
+     gerçek sunucu kusurunu maskeler, öteki hız sınırını zorlar.
+     **İKİNCİ iş — oturum kapısı (web paritesi):** `load()`in catch'i
+     `isNetworkError` dışındaki HER şeyi raporluyordu; web'in
+     `reportLiveListError`inde olan "oturum düşmüşse yetki hatası BUG değil"
+     kapısı portta YOKTU (panelde bu sınıftan 6 kayıt: Invalid Refresh
+     Token). Arayüze `hasValidSession` eklendi — **varsayılanı `true`**,
+     böylece geçersiz kılmayan sahte uçlar kırılmıyor;
+     `SupabaseOnlineGamesGateway` onu `client.auth.currentSession` ile
+     dolduruyor (ağa GİTMEZ). ⚠ Oturum VARKEN gelen aynı "permission denied"
+     YİNE raporlanır — o gerçek bir grant hatasının yüzü olabilir.
+     Kapılar: `live_games_test.dart` dört yeni vaka (504 kurtarması · mesajı
+     boş 504 · 500 tekrarlanmıyor · yetki hatasının iki dalı); duyarlılık
+     kanıtlandı (yüklem `false` → iki vaka düşüyor). Web yarısı AYNI GÜN
+     `main`'e girdi (#578); bu dal port ikizi ve inceleme dondurması
+     yüzünden ayrı bırakıldı.
+
+## Parça 211 — Kayıt onayı: kırmızı uyarı BÜYÜK+kalın · onay linki pencereyi kapatıyor
+
+   - ✅ **Parça 211 — Kayıt onayı: kırmızı uyarı BÜYÜK+kalın · onay linki
+     pencereyi kapatıyor (16 Eylül 2026):** Kullanıcı iki şey bildirdi.
+     (1) Kayıt sonrası çıkan kırmızı satırın eylem cümlesi büyük harf ve
+     kalın olsun. (2) *"Onay verdikten sonra app açılıyor ve kişi login
+     oluyor ama Onay verin popup açık kalıyor. X ile kapatmak gerekiyor."*
+
+     **Kök sebep (ikisinde de aynı):** onay bağlantısı uygulamanın AÇIK
+     örneğini açıyor, Supabase oturumu kuruluyor — ama `AuthModal`ı hiçbir
+     şey kapatmıyor. Web'de pencereyi açan ALTI yer kendi state'ini tutuyor
+     ve hiçbiri oturumu dinlemiyor; portta da pencere `showDialog` rotası
+     olarak duruyor.
+
+     **Port tarafında yapılan:** `auth_modal.dart` → `AuthService`
+     (ChangeNotifier) dinleniyor, oturum AÇILDIĞI anda `Navigator.pop`.
+     Mesaj `Text.rich`e çevrildi: `_info` normal, yeni `_infoStrong` kalın
+     (`'E-POSTANIZI KONTROL EDİP ONAY VERİN.'`).
+
+     ⚠ **Port farkı BİLİNÇLİ:** web'de düzeltme bir efekt ("oturum varsa
+     kapat"), portta yalnızca GEÇİŞ ("oturum yokken açıldı" →
+     `_oturumVardi`). Sebep: pencere portta bir ROTA ve widget testleri onu
+     doğrudan bir `Scaffold` gövdesine gömüyor — mount anında koşulsuz bir
+     `pop` orada pencereyi değil SAYFAYI kapatırdı. `canPop()` ikinci kemer.
+     Kullanıcıya görünen davranış aynı: web'de de hiçbir çağıran pencereyi
+     giriş YAPMIŞ kullanıcıya açmıyor.
+
+     ⚠ **Metin ELDE büyük harfle yazıldı**, `toUpperCase()` ile DEĞİL:
+     Dart'ın varsayılanı Türkçe'de i→I yapıyor ("EDİP" → "EDIP"). Aynı tuzak
+     web'de CSS `uppercase` sınıfında — `trUpper` refleksinin iki platformdaki
+     karşılığı.
+
+     **Kapılar:** `signup_test.dart`a İKİ widget testi — oturum açılınca
+     pencerenin kapanması, ve duyarlılık için oturumSUZ bir bildirimin
+     pencereyi KAPATMAMASI. Dinleyici susturularak birincinin gerçekten
+     düştüğü ölçüldü. `flutter analyze` temiz (tek `info` önceden vardı:
+     `live_games_test.dart`, bu dal o dosyaya dokunmuyor).
+
+     ⚠ **Web yarısı AYRI PR (#561) ve MERGE EDİLDİ** — yani hata web'de
+     düzeldi, mobilde ancak bu PR merge edilip sürüm çıkınca düzelir. Play
+     production incelemesi (665) sürerken mobil derlemeyi tetiklememek için
+     bekliyor.
+
 ## Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
 
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan

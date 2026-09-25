@@ -429,7 +429,9 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
       altında olmalı. 3. ve 4. sahnenin balonları ortada.
 - [ ] **Üç balon TEK ölçüde:** tanıtım balonu, gerçek oyundaki zoom ipucu
       ("Boş kareye… çift tıklama") ve "Buradan başla" aynı büyüklükte
-      okunuyor (7 Eylül 2026 akşamı, ikinci tur).
+      okunuyor (7 Eylül 2026 akşamı, ikinci tur). ⚠ **Zoom ipucu artık yalnızca
+      4 saniye duruyor** (16 Eylül 2026) — ölçümü oyun açılır açılmaz yap;
+      kaçırırsan uygulamayı silip yeniden kur (tavan 2).
 - [ ] **OYNA balonunun oku BUTONU gösteriyor:** hamle tamamlanınca çıkan
       "Hamleni tamamlamak için OYNA'ya bas" balonunun kuyruğu rafın
       ortasını değil OYNA butonunu işaret ediyor.
@@ -492,7 +494,11 @@ buradakiler ekranın gerçek bir oyundaki hâli.
       ~4 sn kalmalı. Cümleler webdekiyle BİREBİR aynı olmalı.
 - [ ] **Aynı anda tek balon:** Vergi ödeyen hamlede önce **Sınır İhlali!**
       penceresi, kapandıktan SONRA balon. İpucu görünürken merkezdeki zoom
-      balonu gizlenmeli, sonra geri gelmeli.
+      balonu gizlenmeli. ⚠ **"Sonra geri gelmeli" ARTIK GEÇERLİ DEĞİL**
+      (16 Eylül 2026): zoom balonu ekrana geldiği andan itibaren 4 saniye
+      yaşıyor (`kZoomHintAutoHide`) ve süre balon gizliyken de işliyor, yani
+      bir hamleden sonra çıkan bağlamsal ipucu sırasında zoom balonu çoktan
+      kapanmış olur.
 - [ ] **Tavan 2:** Aynı ipucu üçüncü kez hak edildiğinde çıkmamalı.
 - [ ] **Tekrar oynama:** Setup → "Nasıl oynanır?" → pencerenin EN BAŞINDA
       **"Tanıtım turunu oyna (1 dk)"**. Bas → tanıtım açılıyor; bitir →
@@ -1585,6 +1591,13 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
       ve uygulamanın sürümü orada olmalı. Sürüm `—` çıkıyorsa `logGameStart`
       platform/sürüm göndermiyor demektir. (Tablo 16 Eylül 2026'da açılır
       hâle geldi — üst satır artık PLATFORM.)
+- [ ] **Aynı oyunu BİTİR** (16 Eylül 2026) → Büyüme > Oyun'daki "Oyun Sayısı"
+      grafiğinde `iOS`/`Android` serisi o günün kovasında **1 artmalı**.
+      Artmıyor ve artış "Diğer"e gidiyorsa `logGameFinish` `platform`
+      alanını göndermiyor demektir (`data/games_api.dart`) — grafiğin
+      platform kırılımını besleyen TEK alan bu. ⚠ Mağazadaki ESKİ pakette
+      bu alan yok, yani oradan biten oyunların "Diğer"e düşmesi BEKLENEN;
+      testi bu değişikliği içeren bir derlemeyle koş.
 - [ ] **Ekran adı:** oyun ekranındayken bir hata oluştur (ör. uçak modunda
       Canlı bir oyuna gir) → hata kaydının "Yol" alanı `game` /
       `online-game` / `intro` olmalı, `app` DEĞİL. `app` görünüyorsa ya
@@ -1734,6 +1747,55 @@ için düzen eklemek, (b) `TARGETED_DEVICE_FAMILY`yi `"1"`e çekip iPad
 desteğini bırakmak (ama mağaza vitrininde iPad seti var, o da düşer),
 (c) manzarada bilgilendirici bir ekran göstermek (web'in `LandscapeHint`
 deseninin portu). Karar ölçümden SONRA verilir.
+
+## 30. Kayıt onayı — kırmızı uyarı + onay linkinin pencereyi kapatması (16 Eylül 2026, Parça 211)
+
+⚠ **Numara geçici:** §27'yi #547 ve #554 ayrı ayrı, §28-§29'u #557
+kullanıyor; dördü de merge bekliyor. Bu bölüm merge SIRASINA göre yeniden
+numaralandırılmalı — çakışma `main`'de değil, bekleyen PR'lar arasında.
+
+Web yarısı (#561) `main`'de ve CANLIDA; buradaki kontroller **portun**
+aynı davranışı kazandığını doğrular. Gerçek bir e-posta kutusu gerekiyor.
+
+- [ ] **Kırmızı uyarının metni.** Kayıt formunu doldur → "KAYIT OL".
+      Pencere giriş moduna döner ve kırmızı satır çıkar: *"Hesap
+      oluşturuldu. **E-POSTANIZI KONTROL EDİP ONAY VERİN.**"* — eylem
+      cümlesi **KALIN ve BÜYÜK HARF**, öncesi normal.
+- [ ] ⚠ **Türkçe harflere bak:** `EDİP` ve `VERİN` noktalı **İ**
+      taşımalı. `EDIP`/`VERIN` görüyorsan biri metni `toUpperCase()`e
+      bağlamış demektir (Dart'ın varsayılanı Türkçe'de i→I yapar).
+- [ ] **Onay linki pencereyi KAPATIR (asıl madde).** Yukarıdaki kırmızı
+      uyarı EKRANDAYKEN uygulamayı kapatma; telefonun mail uygulamasından
+      onay bağlantısına bas. Uygulama öne gelip oturum kurulduğunda
+      *"onay verin"* penceresi **kendiliğinden kapanmalı** — elle
+      kapatmak GEREKMEMELİ ve arkada Setup görünmeli, adın üst şeritte
+      belirmeli.
+- [ ] **Ters yön (kapanma fazla hevesli olmasın):** pencere açıkken
+      uygulamayı arka plana al, geri dön — oturum AÇILMADIĞI için pencere
+      YERİNDE durmalı. Aynı şekilde "Şifremi Unuttum" → "Bağlantı Gönder"
+      sonrası altın renkli bilgi satırı çıkar ve pencere kapanmaz.
+## 27. Taş değiştirme sınırı — torbada kalan kadar (14 Eylül 2026, Parça 206)
+
+Kullanıcı raporuyla (Asnmzr) bulundu. ⚠ **Sunucu yarısı 14 Eylül'den beri
+CANLIDA, port yarısı bu PR'da** — yani Canlı oyun eski pakette bile doğru
+davranır, YEREL oyun ancak bu sürümle düzelir. İkisini ayrı ayrı sına.
+
+Kurulum: torbanın 7'nin altına inmesi için oyunu sona doğru götür (Torba
+penceresi kalan sayıyı yazıyor).
+
+- [ ] **Yerel/YZ oyunu (bu sürümün asıl kanıtı):** torbada 4 taş varken
+      "Değiştir" → 5. taşa dokunulduğunda taş SEÇİLMİYOR ve *"Torbada 4 taş
+      var — en fazla 4 taş değiştirebilirsin."* çıkıyor.
+- [ ] Seçimi 4'ten 3'e düşür → uyarı kayboluyor, "Değiştir (3)" çalışıyor.
+      ⚠ Ters yön: swap modunun kendi ipucu (*"Değiştireceğin taşları seç…"*)
+      ilk dokunuşta SİLİNMEMELİ — dar temizleme tam bunun için.
+- [ ] Değişim sonrası Torba sayısı DEĞİŞMİYOR (4 kalmalı), raf 7 taş.
+- [ ] **Canlı oyun:** aynı senaryo, aynı metin. ⚠ Sınırın ALTINDAKİ bir
+      değişim (torba 4, seçim 2) sunucuda REDDEDİLMEMELİ.
+- [ ] **YZ (Canlı):** torba 7'nin altındayken YZ'nin tıkandığı bir tur
+      yakalanırsa YZ **pas geçmiyor**, taş değiştiriyor (hamle geçmişinde
+      `Değiştirme`). ⚠ Bu, `play-ai-turn`ün dilimleyen sürümünün sahadaki
+      tek kanıtı — eksik olsaydı YZ sessizce pas geçerdi, hata görünmezdi.
 
 ## 24. Push bildirimleri + derin bağlantılar → `mobile/docs/testing-bildirimler.md`
 
