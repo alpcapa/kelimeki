@@ -124,6 +124,10 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
         setError('Bu takma isim zaten kullanılıyor.');
         return;
       }
+      if (nicknameStatus === 'blocked') {
+        setError('Bu takma isim kullanılamaz.');
+        return;
+      }
     }
     let birthDateIso: string | null;
     try {
@@ -273,6 +277,9 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
           {nicknameStatus === 'taken' && (
             <p className="text-[10px] text-red font-mono mt-1">Bu takma isim kullanımda.</p>
           )}
+          {nicknameStatus === 'blocked' && (
+            <p className="text-[10px] text-red font-mono mt-1">Bu takma isim kullanılamaz.</p>
+          )}
           {nicknameStatus === 'error' && (
             // Kontrol başarısız olsa bile submit engellenmiyor (DB'deki unique
             // kısıt zaten gerçek doğruluk kaynağı, friendlyNicknameError ile
@@ -361,7 +368,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
 
         <button
           type="submit"
-          disabled={busy || nicknameStatus === 'checking' || nicknameStatus === 'taken'}
+          disabled={busy || nicknameStatus === 'checking' || nicknameStatus === 'taken' || nicknameStatus === 'blocked'}
           className="btn-raised bg-accent text-white rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
         >
           {busy ? '...' : 'Kaydet'}

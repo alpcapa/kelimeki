@@ -1011,7 +1011,15 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
-## 37. Küfür / müstehcenlik filtresi — **AÇIK, konuşuluyor** (25 Eylül 2026)
+## 37. Küfür / müstehcenlik filtresi — **KISMEN: sunucu + web CANLIDA · koşul metni + port #640'ta** (25 Eylül 2026)
+
+**Durum (25 Eylül 2026 akşamı):** süzgeç canlıda (`20260925183810_chat_profanity_filter`
++ `…184216_nickname_blocked_message`), web'de takma isim uyarısı + admin
+"Kelime Süzgeci" + dökümde `[süzgeç]` işareti. **Kalan:** Kullanım Koşulları
+§5'in "mesajlar denetlenmez" cümlesi + Gizlilik'te orijinalin saklanması +
+portun takma isim uyarısı → #640 (sürüm treni). Uygulama kaydı:
+`docs/decisions/chat-moderation.md` → "Küfür / müstehcenlik süzgeci".
+#640 merge edilince bu madde arşive taşınır.
 
 Kullanıcı: *"Küfür filtresi işini konuşalım. Onu roadmap'e yaz."* Sohbet
 Kuralları onayının (#639 web ✅, #640 port taslak) devamı. Bugün mesajlar

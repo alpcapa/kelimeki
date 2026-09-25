@@ -260,7 +260,18 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       bağlı). Sunucuda: `select chat_rules_version, chat_rules_accepted_at
       from profiles where id = …` → `1` ve kabul anı. "Kullanım
       Koşulları'nın tamamı" bağlantısı koşulları pencerenin ÜSTÜNDE açmalı.
-- [ ] **Gönderme.** 200 karakter sınırı ve canlı "x/200" sayacı çalışmalı.
+- [ ] **Küfür süzgeci (25 Eylül 2026, ROADMAP #37).** Listede olan bir
+      kelimeyi içeren mesaj gönder ("bu hamle salak" gibi) → İKİ tarafta da
+      `bu hamle *****` görünmeli, mesajın geri kalanı ve büyük/küçük harfi
+      aynen kalmalı. "ama" / "amaç" / "sıkıcı" gibi masum kelimeler
+      MASKELENMEMELİ. Mağazadaki ESKİ mobil paketten gönderilen mesaj da
+      maskeli gitmeli (süzgeç sunucuda). Admin dökümü: `docs/testing-admin.md`
+      §9.25.
+- [ ] **Takma isim süzgeci.** Kayıt formunda ya da Hesap Ayarları'nda
+      listede olan bir kelimeyi takma isim olarak yaz (ör. `Salak_Test`) →
+      "Bu takma isim kullanılamaz." ve buton pasif. Mağazadaki eski mobil
+      pakette aynı ad "kullanımda" görünür (bilinen, #640 düzeltir).
+ ve canlı "x/200" sayacı çalışmalı.
       Kendi mesajın sağda/kendi renginde, karşınınki solda.
 - [ ] **Yönlendirme etiketi (2 Eylül 2026, kullanıcı isteği).** Mesaj
       kutusunun HEMEN ÜSTÜNDE "Oyunculara buradan mesaj gönder" yazmalı;

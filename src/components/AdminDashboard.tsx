@@ -71,6 +71,7 @@ import type {
 import { PlayerScoreCard } from './PlayerScoreCard';
 import { MemberMessageModal } from './MemberMessageModal';
 import { AdminChatTranscriptModal } from './AdminChatTranscriptModal';
+import { AdminBlockedWordsModal } from './AdminBlockedWordsModal';
 import { CountBadge } from './CountBadge';
 import { GrowthChart, type ChartSeriesDef } from './GrowthChart';
 import { SplitPieChart } from './SplitPieChart';
@@ -2730,6 +2731,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [replySendingId, setReplySendingId] = useState<string | null>(null);
   const [replyError, setReplyError] = useState<string | null>(null);
   const [feedbackSubTab, setFeedbackSubTab] = useState<FeedbackSubTab>('inbox');
+  const [showBlockedWords, setShowBlockedWords] = useState(false);
   const [chatReports, setChatReports] = useState<AdminChatReportRow[] | null>(null);
   const [clientErrors, setClientErrors] = useState<AdminClientErrorRow[] | null>(null);
   /**
@@ -4657,6 +4659,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
               {feedbackSubTab === 'flags' && (
                 <div className="flex flex-col gap-2">
+                  {/* Küfür süzgecinin listesi (ROADMAP #37) — ayrı bir SEKME
+                      değil: sekme satırı dar ekranda zaten sınırda. */}
+                  <button
+                    onClick={() => setShowBlockedWords(true)}
+                    className="self-end text-[10px] font-mono text-accent hover:underline"
+                  >
+                    Kelime Süzgeci →
+                  </button>
                   {chatReports === null ? (
                     <div className="text-xs font-mono text-muted text-center py-6">Yükleniyor…</div>
                   ) : chatReports.length === 0 ? (
@@ -4765,6 +4775,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       {transcriptGameId && (
         <AdminChatTranscriptModal onlineGameId={transcriptGameId} onClose={() => setTranscriptGameId(null)} />
       )}
+      {showBlockedWords && <AdminBlockedWordsModal onClose={() => setShowBlockedWords(false)} />}
 
       {messageTarget?.email && (
         <MemberMessageModal
