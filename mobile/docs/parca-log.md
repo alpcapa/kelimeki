@@ -915,7 +915,7 @@
      puanı/rozet üç kartta (6 Eylül 2026, ROADMAP #23 Faz 4 — web Faz 3'ün
      ikizi):** kaynak `Setup.tsx` / `AiLevelBadge.tsx` / `aiLevel.ts` /
      `gameRecord.ts` / `HelpModal.tsx` (Faz 3 PR'ı). Ne yapıldı ve neden:
-     `docs/decisions/roadmap-arsiv.md` → "23 · Faz 4" (tek kopya orada).
+     `docs/decisions/roadmap-arsiv-cilt-1.md` → "23 · Faz 4" (tek kopya orada).
      - **Bilinçli eksik YOK; dokunulmayanlar:** `kelimeki_core` (motor Faz
        2'de bitti — golden'lar aynen), Canlı ekranlar/kartlar (seviye yok),
        `devam_eden_govde.dart` (rozet sol sütuna girdi, ortak gövde aynen),

@@ -21,12 +21,27 @@ export async function tanitimiAtla(page: Page): Promise<void> {
   // ve pencere "ATLA →"nın üstünde duruyor — önce o kapatılmalı, yoksa
   // tıklama perdeye düşer.
   const devam = page.getByRole('button', { name: 'Devam', exact: true });
-  await devam.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
+  const atla = page.getByRole('button', { name: 'ATLA →' });
+  // ⚠ BEKLEME BİR YARIŞ, iki ayrı zaman aşımı DEĞİL (16 Eylül 2026'da
+  // ölçüldü). Eskiden tanıtımın HİÇ çıkmadığı akışlarda (kayıttan devam eden
+  // dönen kullanıcı) bu iki `waitFor` üst üste 10 saniye ölü bekliyordu.
+  // Yalnızca yavaşlık olsa katlanılırdı; ama zoom tanıtım balonu artık
+  // `ZOOM_HINT_AUTO_HIDE_MS` (4 sn) sonra kendi kendine kapandığından balonu
+  // ölçen testler tam o ölü beklemede balonu KAÇIRIYORDU — yani fikstür
+  // ürünü yanlış gösteriyordu. Çözüm: tanıtımın düğmeleri YA DA gerçek oyun
+  // ekranının "Pas Geç"i — hangisi önce görünürse bekleme orada biter
+  // ("Pas Geç" `TutorialGame`de YOK, yalnızca gerçek oyun ekranında var).
+  const oyunHazir = page.getByRole('button', { name: 'Pas Geç' });
+  await devam
+    .or(atla)
+    .or(oyunHazir)
+    .first()
+    .waitFor({ state: 'visible', timeout: 5_000 })
+    .catch(() => {});
   if (await devam.isVisible().catch(() => false)) {
     await devam.click();
+    await atla.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
   }
-  const atla = page.getByRole('button', { name: 'ATLA →' });
-  await atla.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
   if (await atla.isVisible().catch(() => false)) {
     await atla.click();
   }

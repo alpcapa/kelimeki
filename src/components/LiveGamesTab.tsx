@@ -848,7 +848,7 @@ export function LiveGamesTab({
       if (reloadTimeoutRef.current != null) window.clearTimeout(reloadTimeoutRef.current);
       clearAutoRetry();
     };
-  }, [user]);
+  }, [user?.id]);
 
   // Varsayılan tab: SUNUCUDAN taze liste geldiğinde bekleyen bir davet varsa
   // "Oyun Davetleri", yoksa "Devam Edenler" açık gelsin. `hasFreshGames`
@@ -873,7 +873,7 @@ export function LiveGamesTab({
   useEffect(() => {
     if (!user || games === null) return;
     liveGamesCache.set(user.id, { games, turns, glances });
-  }, [user, games, turns, glances]);
+  }, [user?.id, games, turns, glances]);
 
   // ⚠ AŞAĞIDAKİ İKİ HOOK ERKEN `return`LERİN ÜSTÜNDE KALMAK ZORUNDA.
   // 3 Eylül 2026: eklendikleri turda dosyanın SONUNA, yani `if (creating)` /
