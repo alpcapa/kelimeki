@@ -1580,9 +1580,11 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
 - [ ] **Sürüm satırı doğru:** Setup'ın altındaki `Sürüm 1.0.0` metni
       `pubspec.yaml`taki sürümle aynı olmalı. (Ayrışırsa CI zaten düşer —
       `app_version_parity_test.dart` — ama cihazda bir kez gözle bak.)
-- [ ] **Bir YZ oyunu aç** → panelde Sürüm Dağılımı tablosunda `ios · 1.0.0`
-      (ya da `android · …`) satırı belirmeli. Satır `bilinmiyor` çıkıyorsa
-      `logGameStart` platform/sürüm göndermiyor demektir.
+- [ ] **Bir YZ oyunu aç** → panelde Sürüm Dağılımı tablosunda `iOS` (ya da
+      `Android`) satırı belirmeli; satıra dokununca sürüm kırılımı açılmalı
+      ve uygulamanın sürümü orada olmalı. Sürüm `—` çıkıyorsa `logGameStart`
+      platform/sürüm göndermiyor demektir. (Tablo 16 Eylül 2026'da açılır
+      hâle geldi — üst satır artık PLATFORM.)
 - [ ] **Ekran adı:** oyun ekranındayken bir hata oluştur (ör. uçak modunda
       Canlı bir oyuna gir) → hata kaydının "Yol" alanı `game` /
       `online-game` / `intro` olmalı, `app` DEĞİL. `app` görünüyorsa ya

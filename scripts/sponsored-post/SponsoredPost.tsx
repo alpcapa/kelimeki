@@ -36,6 +36,14 @@ import { PLAYER_COLORS } from '../../src/game/constants';
 import { DEMO_TILES_2, DEMO_TILES_4 } from '../../src/landing/demoBoard';
 import { IkiKisiIkon, RobotIkon, SohbetIkon } from '../../src/landing/OzellikIkonlari';
 
+import {
+  BADGE_GAP_PX,
+  BADGE_MIN_HEIGHT_PX,
+  BADGE_HEIGHT_PX,
+  visibleStoreBadges,
+  visibleStoreNamesTr,
+} from '../../src/utils/storeLinks';
+
 const SLIDE = 1080;
 const PAD_X = 64;
 /** `Board`un kendi `max-w` değeri — ölçek hesabının paydası. */
@@ -114,9 +122,16 @@ function Footer({ no }: { no: number }) {
         justifyContent: 'space-between',
       }}
     >
-      <span style={{ fontFamily: MONO, fontSize: 26, fontWeight: 700, color: C.accent }}>
-        kelimeki.com
-      </span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
+        <span style={{ fontFamily: MONO, fontSize: 26, fontWeight: 700, color: C.accent }}>
+          kelimeki.com
+        </span>
+        {visibleStoreNamesTr() && (
+          <span style={{ fontFamily: MONO, fontSize: 22, color: C.muted }}>
+            · {visibleStoreNamesTr()}
+          </span>
+        )}
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {[1, 2, 3, 4, 5].map((i) => (
           <span
@@ -369,26 +384,71 @@ function Rozet({ renk, metin }: { renk: string; metin: string }) {
   );
 }
 
-/** Slide 5'teki ana çağrı — uygulamadaki "HEMEN OYNA" düğmesinin poster ölçeği. */
-function CtaButon({ etiket }: { etiket: string }) {
+/**
+ * Instagram karesinin telefonda çizildiği ölçek — ölçünün paydası.
+ * Kare feed'de ekranın neredeyse tamamını kaplıyor; 390 pt modern bir iPhone'un
+ * mantıksal genişliği (Pro Max'te 430, yani bu DAR olanı — güvenli taraf).
+ *
+ * ⚠ `ROZET_H`den ÖNCE durmak zorunda: modül yüklenirken hesaplanıyor ve bu
+ * sabiti okuyor (bildirimi sonraya alınırsa TDZ hatası).
+ */
+const TELEFON_OLCEK = 390 / SLIDE;
+
+/**
+ * Rozetin bu karelerdeki YÜKSEKLİĞİ (1080 px'lik tasarım uzayında) — iki
+ * rozet de bu yükseklikte (24 Eylül 2026, kullanıcı kararı: eşit yükseklik;
+ * gerekçe `storeLinks.ts`).
+ *
+ * ⚠ Apple'ın alt sınırı (`BADGE_MIN_HEIGHT_PX` = 40) EKRANDA ölçülür, dosyada
+ * değil — ve bu kareler bir ekran değil, bir GÖRSEL. Instagram kareyi telefonun
+ * neredeyse tam genişliğinde çiziyor (~390 pt), yani 1080 px'lik tasarım orada
+ * ×0,36 küçülüyor: 40 pt'yi GERÇEKTEN geçmek için rozetin bu karede
+ * 40 / 0,36 ≈ 111 px yüksek olması gerekiyor.
+ *
+ * ⚠ **Rozet bu yüzden HER kareye konmadı.** Alt şeride sığacak bir rozet
+ * (~50 px) telefonda ~18 pt'ye düşer, yani Apple'ın sınırının ALTINDA kalırdı.
+ * İçerik kareleri (2-4) alt şeritte rozet yerine düz metin taşıyor
+ * (`visibleStoreNamesTr`); rozet yalnızca kanca (1) ve çağrı (5) karelerinde.
+ */
+const ROZET_H = Math.ceil(BADGE_MIN_HEIGHT_PX / TELEFON_OLCEK);
+
+/**
+ * Mağaza rozetleri — ÜRETİM kapısından geçerek (`visibleStoreBadges`).
+ *
+ * ⚠ **Rozet ÇİZİLMİYOR:** `public/`teki resmî dosyalar `<img>` ile basılıyor.
+ * Inline SVG yasak — Illustrator ihracatlarının `.st0` gibi jenerik sınıfları
+ * sayfaya sızıp iki rozetin rengini birbirine eziyor (`storeLinks.ts`).
+ *
+ * ⚠ **Yayında olmayan mağazanın rozeti HİÇ çıkmaz** ve sıra `STORE_BADGES`ten
+ * gelir (App Store önce — Apple'ın yazılı kuralı). Play yayına girip
+ * `storeLinks.ts`teki `null` dolduğunda kareler yeniden üretildiğinde ikinci
+ * rozet kendiliğinden gelir; burada yapılacak bir iş YOK.
+ *
+ * ⚠ **Eşit YÜKSEKLİK** (24 Eylül 2026, kullanıcı kararı; 15-24 Eyl arası eşit
+ * genişlikti) — gerekçesi `storeLinks.ts`te.
+ * Aradaki clear space, web'deki denetlenmiş (`BADGE_HEIGHT_PX`, `BADGE_GAP_PX`)
+ * çiftinin oranıyla ölçekleniyor — yani kapının (`verify-store-badges`)
+ * doğruladığı sayıdan türüyor, elle seçilmiş bir boşluk değil.
+ */
+function MagazaRozetleri({ yukseklik = ROZET_H }: { yukseklik?: number }) {
+  const rozetler = visibleStoreBadges();
+  if (rozetler.length === 0) return null;
   return (
     <div
-      className="btn-raised"
       style={{
-        background: C.accent,
-        border: `1px solid ${C.accent}`,
-        borderRadius: 26,
-        color: '#FFFFFF',
-        fontFamily: MONO,
-        fontWeight: 700,
-        fontSize: 34,
-        letterSpacing: 2,
-        textTransform: 'uppercase',
-        textAlign: 'center',
-        padding: '30px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: Math.round((yukseklik * BADGE_GAP_PX) / BADGE_HEIGHT_PX),
       }}
     >
-      {etiket}
+      {rozetler.map((b) => (
+        <img
+          key={b.key}
+          src={b.asset}
+          alt={b.alt}
+          style={{ height: yukseklik, width: 'auto', display: 'block' }}
+        />
+      ))}
     </div>
   );
 }
@@ -470,9 +530,16 @@ export function SponsoredPost() {
             <Kutu sayi="2–4" etiket="Oyuncu" />
             <Kutu sayi="Ücretsiz" etiket="Fiyat" />
           </div>
-          <span style={{ fontFamily: MONO, fontSize: 22, color: C.muted }}>
-            Kurulum yok · Üyelik gerekmez · Tarayıcıda çalışır
-          </span>
+          {/* ⚠ Eski satır "Kurulum yok · Üyelik gerekmez · Tarayıcıda çalışır"
+              idi; uygulama App Store'a çıkınca "kurulum yok" cümlesi rozetle
+              ÇELİŞİR oldu. Tarayıcı hâlâ gerçek bir yol, o yüzden eleniyor
+              değil ikincilleşiyor. */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <MagazaRozetleri />
+            <span style={{ fontFamily: MONO, fontSize: 22, color: C.muted }}>
+              Ücretsiz · Reklam yok · Tarayıcıda da oynanır
+            </span>
+          </div>
         </div>
       </Slide>
 
@@ -670,7 +737,13 @@ export function SponsoredPost() {
         </ul>
 
         <div style={{ marginTop: 22, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <CtaButon etiket="kelimeki.com — hemen oyna" />
+          {/* ⚠ Burada eskiden mavi bir `CtaButon` ("kelimeki.com — hemen oyna")
+              vardı. Rozet ARTIK çağrının kendisi; iki güçlü çağrıyı yan yana
+              koymak son karede hedefi ikiye bölerdi. Rozet tek başına ve
+              clear space'iyle duruyor — üstüne yazı/çerçeve konmaz. */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <MagazaRozetleri />
+          </div>
           <span
             style={{
               fontFamily: MONO,
@@ -679,7 +752,7 @@ export function SponsoredPost() {
               textAlign: 'center',
             }}
           >
-            Ücretsiz · Kurulum yok · Reklam yok
+            Ücretsiz · Reklam yok · Tarayıcıda: kelimeki.com
           </span>
         </div>
       </Slide>

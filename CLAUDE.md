@@ -33,12 +33,13 @@ npm run verify-rematch-slots     # Rövanş kadrosu: ilk koltuk çağıran, YZ'l
 npm run verify-head-to-head      # Kafa kafaya oran çubuğu: üç dilim TAM 100 eder mi (kümülatif yuvarlama)
 npm run verify-fetch-my-games    # Oyun geçmişi: ağ hatası ↔ boş liste ayrımı (sahte Supabase ucu)
 npm run verify-device-labels     # Admin cihaz tabloları: model KODU → marka öneki + cihaz→OS sürümü ağacı (canlıdan alınmış gerçek kodlar)
+npm run verify-admin-groups      # Admin AÇILIR tabloları: `?ref=` → kanal öneki (fbi Facebook DEĞİL) + (platform, sürüm) ağacı ve sürümün SAYISAL sıralaması
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ leagueRank.ts
 npm run verify-league-points     # k-lig PUAN tablosu (seviyeye göre): league_points_for SQL ↔ leaguePoints.ts ↔ league_points.dart
 npm run verify-sql-engine-parity # motorun DÖRDÜNCÜ (SQL) kopyası ↔ src/ sabitleri ve hata metinleri
 npm run simulate-ai-levels       # YZ↔YZ kadran ölçümü (ROADMAP #23): üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal; `-- --oyun 200 --n 2,3,4`
 npm run generate-initial-main-view-golden # Giriş sekmesi kuralı: web→port davranış golden'ı (CI tazeliği zorluyor)
-npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz)
+npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz) — ağ hatası VE geçici sunucu hatası (504/503/502/408); 500 ve 429 bilerek DIŞARIDA
 npm run verify-shared-realtime    # Canlı oyun aboneliği: üç çağıran → TEK Realtime kanalı (sunucu maliyeti çarpanı)
 npm run verify-tutorial-script   # "Oynayarak öğren" tanıtımı: senaryo GERÇEK motorda oynatılır (ekrandaki puanlar dahil)
 npm run verify-demo-board        # Karşılama katmanındaki tanıtım tahtası sözlüğe karşı doğrulanır
@@ -48,9 +49,15 @@ npm run verify-draft-rescue      # ıskalanan dokunuşun en yakın taslak taşı
 npm run verify-hook-order        # React hook sırası: erken `return` altında hook YOK (React #300 kapısı)
 npm run verify-error-reporting   # istemci hata telemetrisi: ne kaydedilir/kaydedilmez, tekrar bastırma, hız sınırı
 npm run verify-error-messages    # kullanıcıya gösterilen hata metni: ham makine çıktısı (504 gövdesi, SQLSTATE dökümü) ekrana DÜŞMÜYOR mu
-npm run verify-store-badges      # mağaza rozetleri: App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT GENİŞLİK (yükseklik değil — Türkçe Apple rozeti 3.78:1, Play 3.37:1), App Store yüksekliği ≥40px, clear space en yüksek olanın 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor
+npm run verify-auth-user-identity # oturum kimliği: aynı içerik → aynı nesne + `null` olay DEPOYA sorulmadan çıkış sayılmaz + KAYNAK TARAMASI (hiçbir effect bağımlılığı bare `user` değil — port'un `AccountScope` değişmezi)
+npm run verify-sw-update-loop    # service worker güncellemesi: yeniden yükleme DÖNGÜSÜ kapısı (derleme değişmediyse ikinci kez yükleme YOK) + çağrı yerinin kaynak taraması
+npm run verify-invite-queue      # davet kuyruğu: token RPC'den ÖNCE alınıyor mu (çift çağrı) + geçici arızada geri konuyor mu + ÇİFT YOL duruyor mu
+npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT YÜKSEKLİK (24 Eyl 2026 kullanıcı kararı; 15-24 Eyl arası eşit genişlikti — oranlar farklı, Apple 3.78:1 ↔ Play 3.37:1, ikisi birden eşit olamaz), yükseklik ≥40px, clear space yüksekliğin 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + "ana ekrana ekle" kutusu YOK (24 Eyl 2026'da kaldırıldı; telefonda tek çağrı mağaza şeridi)
 npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
+npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ
+npm run verify-funnel-events     # Huni v2: eski cihaz → `mevcut`, İstanbul günü, gizlilik metni bayrağı + olay listesi ↔ migration SQL'i
+npm run verify-web-journey       # Web ziyaretçi yolculuğu (admin → "Ziyaretçi Yolculuğu"): misafir/üye kapısı, adım tekrarı + adım listesi ↔ migration SQL'i
 npm run augment-dictionary       # Sözlüğe elle madde ekleme (GTS'siz — bkz. "Sözlüğe Kelime/Anlam Ekleme")
 npm run build:dict               # Sözlüğün TAM üretimi — 100 MB'lık GTS kaynağını ister
 npm run generate-logo-paths      # LogoMark.tsx + portun logo_mark_data.dart'ını birlikte üretir
@@ -174,14 +181,19 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | `mobile/app/` ya da `mobile/kelimeki_core/` altında HERHANGİ bir dosya | `ROADMAP.md` → "Sıradaki sürüme binecekler" tablosuna bir satır — **kendi PR'ını da say**; bu tablo DÖRT kez eksik yakalandı ve bir kez sürümü bir gün geciktirdi. Refleks: `git log --oneline <mağazadaki-paketin-commiti>..origin/main -- mobile/app mobile/kelimeki_core` |
 | Konsol/CI KURULUMU (secret girildi, depo açıldı, token üretildi, sözleşme imzalandı) | İlgili `console-formlari.md`'nin **durum tablosu**. Dokümanlar neyin GEREKTİĞİNİ yazar; neyin YAPILDIĞINI yazan bir yer yoksa her oturum aynı soruyu baştan sorar (9 Eylül 2026'da yaşandı: bir gün önce açılmış depo kullanıcıya tekrar soruldu). Değerler gizli, **durum değil** |
 | Migration | Canlıya uygula + doğrula + `list_migrations` ile dosya adını eşleştir |
+| Migration bir tablo YARATIYOR | Aynı migration'da `grant` (30 Ekim 2026'dan sonra Supabase otomatik vermiyor; istemciler tabloları doğrudan okuyor) |
 | Migration bir kolonu **nullable** yapıyor (ya da FK'yi `cascade`→`set null` çeviriyor) | `database.types.ts` **ve** portun `fromJson`'ı — bu bir SÖZLEŞME değişikliği (bkz. `docs/decisions/account-deletion.md` → "SET NULL'ın bedeli") |
 | Yeni kullanıcı verisi ya da görünürlük değişikliği | `TermsModal`/`PrivacyModal` |
 | Tanıtım senaryosu (`src/utils/tutorialScript.ts`), `TutorialGame.tsx`in metin/süreleri, `utils/onboarding.ts`in kapısı **ya da bağlamsal ipucu metinleri/sırası/tavanı** ya da motorun puan/vergi/çarpan kuralı | `npm run verify-tutorial-script` (CI'da) — tanıtım EKRANDA puan yazıyor, kural değişince metin sessizce bayatlar. **Port ikizi AYNI PR'da:** `mobile/app/lib/src/ui/tutorial/*` + `util/onboarding.dart`; `tutorial_parity_test.dart` web kaynağını okur (metin/sayı ayrışırsa web CI'ın `parite` işi düşer), `tutorial_script_test.dart` senaryoyu Dart motorunda oynatır |
+| `src/lib/pwa.ts` — güncelleme/yeniden yükleme yolu | `npm run verify-sw-update-loop` (CI'da). ⚠ **Sayfayı yeniden yükleyen her kod, yüklemeler ARASINDA bir sınır taşımak zorunda:** modül içindeki bir bayrak (`applyUpdate = null` gibi) yalnızca tek bir sayfa ömrü içinde çalışır, `reload` o ömrü bitirdiği için döngüyü HİÇ görmez. 19 Eylül 2026'da ana ekrandan açılan iOS PWA'sı sonsuz döngüye girdi ve arıza ÜÇ tur boyunca auth katmanında arandı. Sınır `sessionStorage` + derleme kimliğinde (`utils/swUpdate.ts`) |
+| Oturuma bağlı YENİ bir `useEffect` | Bağımlılık **`user?.id`** olmalı, `user` NESNESİ ASLA — port'un yazılı değişmezi (`mobile/app/lib/src/auth/account_scope.dart`, PORT_BRIEF §7). Supabase her auth olayında taze bir `User` nesnesi verir; nesneye bağlanan effect bir olayı tam bir veri turuna çevirir. 19 Eylül 2026'da 20 effect birden ihlal ediyordu ve uygulama saniyede ~19 istek atıyordu. Kapı: `npm run verify-auth-user-identity` (kaynak taraması, CI'da) |
 | Kullanıcıya hata metni gösteren YENİ bir `catch` | `friendlyErrorMessage` (`utils/errorMessage.ts` ↔ `util/error_message.dart`) — ham `err.message` EKRANA BASMA. 13 Eylül 2026'da ham bir 504 gövdesi (`{"message":"Gateway Timeout"}`) giriş penceresinde göründü, üstelik App Store ekran kaydı çekilirken. Kapı: `npm run verify-error-messages` (CI'da). ⚠ **Port ikizi 14 Eylül 2026'da `main`'de DEĞİL** — mobil yarısı inceleme dondurması yüzünden ayrı bir PR'da bekliyor, yani parite kapısı (`error_message_parity_test.dart`) henüz yok; `errorMessage.ts`i değiştiren o PR'ı da güncellemeli. ⚠ Supabase hatasını yeniden fırlatırken `code`'u DÜŞÜRME (`rethrowSupabase`, `api.ts`) — "sunucunun Türkçe reddi" (P0001) ile "makine hatası" ayrımı ona dayanıyor. Admin paneli bilerek dışarıda |
+| `logGameFinish` (`src/lib/api.ts`) | Port ikizi `mobile/app/lib/src/data/games_api.dart` — iki istemci AYNI tabloya (`game_finishes`) yazıyor, biri bir alanı atlarsa admin panelinde o platform sessizce "Diğer"e düşer. ⚠ **`platform` alanının port yarısı 16 Eylül 2026'da `main`'de DEĞİL** (kullanıcı kararı: *"Mobile dokunma"*, inceleme dondurması) — `claude/oyun-bitis-platform-port` dalında bekliyor; bu dosyayı değiştiren o PR'ı da güncellemeli |
 | `App.tsx`'teki joker/mesaj/raf desenleri | `OnlineGameScreen.tsx` (ikisi deseni paylaşıyor) |
 | `Setup.tsx`'in "devam eden oyun" kartı | `LiveGamesTab.tsx`'in aktif oyun kartı — ikisi AYNI düzeni paylaşıyor ve kullanıcı onları iki sekmede yan yana görüyor (2 Eylül 2026: biri düzeltilip öteki unutuldu, kart ayrıştı; port ikizi `ui/devam_eden_govde.dart`) |
 | Bir Dart↔Kotlin/Swift MethodChannel adı ya da bildirim kanalı kimliği | Parite testi (`notification_*_parity_test.dart`) — derleyici görmez, uyuşmazlık SESSİZ arızadır |
 | `register_push_token` gibi bir RPC'ye parametre EKLEME | Eski imzayı `drop` et, `create or replace` YETMEZ — iki imza yan yana kalır ve eski istemcinin çağrısı "function is not unique" (42725) verir |
+| Bir RPC'nin **dönüş tipini** değiştirme (`returns table`a sütun ekleme) | `create or replace` YETMEZ → `drop` + `create`. ⚠ **Sonra `proacl`i OKU** (`select proacl from pg_proc where proname = …`) ve merge ÖNCESİYLE karşılaştır: Supabase yeni fonksiyona varsayılan olarak **`anon`a da execute veriyor** ve `revoke ... from public` doğrudan verilmiş bir grant'i DÜŞÜRMEZ — 16 Eylül 2026'da `admin_list_members`te canlıda ölçüldü, `anon` geri gelmişti. `security definer` / `search_path` / grant'lerin tamamı da drop ile düşer, ELLE geri kur |
 | `mobile/` DIŞINDA bir dosya (port işi sırasında) | kök `CLAUDE.md`/`README.md` — port dokümanı TEK BAŞINA yetmez |
 | `ROADMAP.md`'deki bir madde/faz KAPANDI (✅ · YAPILDI · CANLIDA · SAHADA) | Aynı PR'da `docs/decisions/roadmap-arsiv.md`'ye TAŞI — ROADMAP yalnızca AÇIK maddeleri tutar. Başlığı/numarayı/satırları değiştirme (atıflar kırılır); dosyanın kendi kuralıydı, uygulanmayınca %45'i kapanmış işe döndü (2 Eylül 2026) |
 
@@ -202,7 +214,7 @@ Temizlik geçişinde (5 Eylül 2026) iki yönde de ihlal bulundu ve düzeltildi:
 edilmiyordu (fontlar repoda duruyor, bkz. "Font Yükleme Stratejisi";
 paketlere yalnızca derleme-zamanı görsel üreticileri erişiyor), buna karşılık
 14 npm script'in çağırdığı `esbuild` hiç bildirilmemişti. Ölçümler:
-`docs/decisions/roadmap-arsiv.md` → "Temizlik geçişi".
+`docs/decisions/roadmap-arsiv-cilt-1.md` → "Temizlik geçişi".
 
 ## Git / Branch Kuralı
 
@@ -389,11 +401,9 @@ sürekli hata alıyor ve senin işlerin takılıyordu. Dosyaları böldük ve
 düzeldi. Bundan sonra tekrar aynı şeyin yaşanmaması için gerekli kontrolleri
 koyup ona göre zamanında önlem alalım."*
 
-Aynı gün bu ders İKİ kez alındı: (1) `CLAUDE.md` her turu yiyordu →
-bölündü; (2) **bölünme sorunu çözmedi, YER DEĞİŞTİRDİ** —
-`mobile/docs/parca-log.md` sessizce 714 KB'a, yani eski `CLAUDE.md`'nin
-YEDİ katına çıkmıştı. Yani "bir gün fark ederiz" işe yaramıyor; ölçüm
-otomatik olmak zorunda.
+Ders aynı gün İKİ kez alındı ve ikincisi belirleyici: bölmek sorunu
+çözmedi, YER DEĞİŞTİRDİ. Yani "bir gün fark ederiz" işe yaramıyor, ölçüm
+otomatik olmak zorunda. Vaka: bölme günlüğü.
 
 `npm run check-doc-size` (bağımlılıksız node betiği) repodaki her `.md`
 dosyasını ölçüp üç sınıfa ayırır — çünkü maliyetleri farklı:
@@ -402,7 +412,7 @@ dosyasını ölçüp üç sınıfa ayırır — çünkü maliyetleri farklı:
 |---|---|---|
 | **auto** | Her turda bağlama YÜKLENİR: `CLAUDE.md`, `mobile/CLAUDE.md` | 80 KB / **120 KB** |
 | **active** | BAŞTAN SONA okunur ve büyümeye devam eder: `TESTING*`, `README`, `ROADMAP` | 120 KB / **200 KB** |
-| **reference** | Yalnızca GREP'lenir: `docs/decisions/*`, `mobile/docs/parca-log*` | 200 KB / **300 KB** |
+| **reference** | Yalnızca GREP'lenir: `docs/decisions/*`, `mobile/docs/parca-log*` | 260 KB / **400 KB** (15 Eyl 2026'da 200/300'den yükseltildi — aşağı bkz.) |
 | **frozen** | Dondurulmuş arşiv; okuması opt-in, tek kural BÜYÜMEMESİ | kendi tavanı |
 
 **Sınır aşılınca ne yapılır** (betik zaten yazdırıyor):
@@ -431,11 +441,26 @@ değiştiğinde. `npm install` ve derleme YOK (saniyeler) — bu repoda
 çarpmadan önce hareket etme fırsatıdır; biriktirilirse kontrolün anlamı
 kalmaz.
 
-⚠ **Alt sınır da var (7 Eylül 2026):** betik 0 baytlık her `.md`'yi ve
-tabanının altına düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki
-`CLAUDE`, `README`, iki `TESTING`) da düşürür — bir dosyanın BOŞALMASI da
-bir arıza. Ders, betik yazana: bir dosyayı yazma modunda AÇMADAN önce
-içeriğini oku (vaka: bölme günlüğü).
+⚠ **İKİNCİ bir ölçü var: EN BÜYÜK BÖLÜM (15 Eylül 2026).** `reference`
+sınıfında dosya boyutu VEKİL bir sayıdır — kimse baştan sona okumaz, grep
+bir bölüme düşürür ve okunan o bölümdür. Betik bu yüzden her `reference`
+dosyasının en büyük **yaprak bölümünü** de ölçüyor ve **40 KB**'ı aşanı
+yazdırıyor. Bu bir UYARI, kapı DEĞİL (CI'ı düşürseydi ilgisiz her PR'ı bir
+doküman ameliyatına rehin alırdı) ve **ilacı bölmek değil, bloğa ALT BAŞLIK
+koymak** — dosya aynı kalır, grep'in düştüğü parça küçülür.
+
+Bölüm ölçüsü `##`'den `######`'ya kadar HER seviyede kesiyor (kod çiti
+içindeki `# ...` başlık sayılmaz) — grep seni en yakın başlıktan sonraki
+parçaya bırakır, o başlık hangi seviyede olursa olsun. **Ders, yeni bir ölçü
+eklerken: ölçünün kestiği şey ile reçetenin değiştirdiği şey AYNI olmalı;**
+değilse kontrol bir iş emri değil sabit bir gürültü üretir ve gürültü
+okunmaz. Bandın 260/400'e çıkarılması, ilk (yalnızca `##` kesen) sürümün
+sekiz dosyalık gürültü duvarına dönüşmesi ve düzeltmenin ölçümleri: bölme
+günlüğü.
+
+⚠ **Alt sınır da var:** betik 0 baytlık her `.md`'yi ve tabanının altına
+düşen altı baştan sona okunan dosyayı (`ROADMAP`, iki `CLAUDE`, `README`,
+iki `TESTING`) da düşürür — bir dosyanın BOŞALMASI da bir arıza.
 
 **Bölme günlüğü — hangi dosya ne zaman, hangi kuralla bölündü:**
 `docs/decisions/doc-size-history.md` (26 Ağustos'ta beş dosyanın birden
@@ -500,7 +525,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | Karşılama katmanı (`/`, landing/) — statik SEO sayfası, kapı script'i, tanıtım tahtası | `docs/decisions/landing-page.md` |
 | Bileşen post-mortem'leri — **hesap/kimlik** (RemainingTilesModal, GameOver, CountBadge, UserMenu, RelationIcons, AuthModal, AccountSettingsModal, avatar) | `docs/decisions/components-account.md` |
 | Bileşen post-mortem'leri — **skor/k-lig** (ScoreCard, k-lig rebrand'i, Leaderboard) | `docs/decisions/components-score.md` |
-| Bileşen post-mortem'leri — **oyun ekranı/kabuk** (Setup, PlayerAvatarRow, LandscapeHint, AddToHomeScreen, useAppIconBadge, Board, GameHeader, HelpModal, LogoMark, useModalA11y, TermsModal/PrivacyModal) + port dalı teslim dersi | `docs/decisions/components.md` |
+| Bileşen post-mortem'leri — **oyun ekranı/kabuk** (Setup, PlayerAvatarRow, LandscapeHint, AddToHomeScreen/AppStoreStrip, useAppIconBadge, Board, GameHeader, HelpModal, LogoMark, useModalA11y, TermsModal/PrivacyModal) + port dalı teslim dersi | `docs/decisions/components.md` |
 | Dokunmatik/hover hata sınıfları (ghost click, drag threshold, sticky hover) + iOS Safari form zoom post-mortem'i + **tahta yakınlaştırması ve joker düzenleme yolunun tam kaydı** (15 Eyl 2026'da `CLAUDE.md`'den taşındı) | `docs/decisions/touch-ux-bugs.md` |
 | PWA servis çalışanı / Android uyumluluğu | `docs/decisions/pwa-and-android.md` |
 | Sözlüğe kelime/anlam ekleme prosedürü + kelime listesi code-splitting | `docs/decisions/dictionary.md` |
@@ -517,11 +542,12 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | Uygulama içinden hesap silme (kaskad, anonimleştirme, `delete-my-account`) | `docs/decisions/account-deletion.md` |
 | SEO (GSC/Bing, reindex adımları) | `docs/decisions/seo.md` |
 | İstemci hata telemetrisi (`client_errors`, admin "Hatalar" sekmesi) | `docs/decisions/telemetry.md` |
+| Ölçüm v2: `funnel_events`, tüm platformlar, kohort hunisi (PR 1 sunucu+web yayında; gizlilik metni yarısı ROADMAP #36, mobil PR 2) | `docs/decisions/funnel-v2.md` |
 | Yerel oyunun kalıcılığı, terk-edilme cezası, offline kuyruk | `docs/decisions/local-game-persistence.md` |
 | E-posta gönderenleri (`noreply@` ↔ `destek@`), Zoho rozeti, inbound webhook kurulumu | `docs/decisions/support-email.md` |
 | Supabase işletimi: Brevo SMTP/teslimat geçmişi, SPF-DKIM-DMARC'ın gerçek hâli, migration geçmişinin kopması, dal temizliği, Edge Function deploy tuzakları + **"bu dal merge edilmiş mi" üç tuzağı** (15 Eyl 2026'da `CLAUDE.md`'den taşındı) | `docs/decisions/supabase-ops.md` |
 | Sonraya bırakılan ürün fikirleri (karar verildi, henüz yapılmadı) | `docs/decisions/product-backlog.md` |
-| ROADMAP arşivi — kapanmış maddeler, fazlar ve sürüm turları (grep'lenir, baştan sona okunmaz) | `docs/decisions/roadmap-arsiv.md` |
+| ROADMAP arşivi — kapanmış maddeler, fazlar ve sürüm turları (grep'lenir, baştan sona okunmaz) | `docs/decisions/roadmap-arsiv.md` (aktif cilt — YENİ kapananlar buraya) · `roadmap-arsiv-cilt-1.md` (27 Ağu – 12 Eyl, DONDURULDU) |
 | App Store Connect — kapanmış vaka anlatıları (`.p8` sagası, 24.2 zincirinin koşuları, kare boru hattının kuruluşu). ⚠ Cevap kağıdı `marketing/app-store/console-formlari.md`'de KALDI | `docs/decisions/app-store-gecmis.md` |
 | Doküman boyutu — bölme günlüğü (hangi dosya ne zaman, hangi kuralla bölündü) | `docs/decisions/doc-size-history.md` |
 
@@ -560,7 +586,7 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, aiLevel, tutorialScript, scoreLine, deviceLabels, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, webJourney, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan
@@ -608,9 +634,14 @@ mobile/         # Flutter portu — kelimeki_core (saf Dart motor) + üretilmiş
   `src/hooks/useBoardZoom.ts`; iki oyun ekranı da aynı hook'u kullanır.
   **Port ile AYNI davranış** (kullanıcı kararı: *"her yerde aynı deneyim
   olsun"*) — `mobile/app/lib/src/ui/game/board_zoom.dart`; biri değişirse
-  öteki de. Açılış balonunun kuralı (`shouldShowZoomHint`, tavan 2 + "denedi
-  mi"), metnin iki tarafta BİREBİR aynı olma zorunluluğu, kabul edilen yan
-  etki ve ölçümler: `docs/decisions/touch-ux-bugs.md`.
+  öteki de. **Açılış balonu 4 sn sonra KENDİ KENDİNE kapanır**
+  (`ZOOM_HINT_AUTO_HIDE_MS` ↔ port `kZoomHintAutoHide`; 16 Eylül 2026,
+  oyuncu bildirdi: *"sürekli kalan uyarı oyun oynamayı zorlaştırıyor"*)
+  ⚠ ama bu kapanma **"denedi" SAYILMAZ**: `markZoomTried` çağrılmaz, yani
+  hiç denemeyen oyuncu balonu ikinci açılışta yine görür. Balonun kuralı
+  (`shouldShowZoomHint`, tavan 2 + "denedi mi"), metnin iki tarafta BİREBİR
+  aynı olma zorunluluğu, kabul edilen yan etki ve ölçümler:
+  `docs/decisions/touch-ux-bugs.md`.
 - **Joker (`?`):** 2 adet, 0 puan, oynanırken herhangi bir Türkçe harfe dönüşür. **Tahtaya konmuş bir jokerin `0` puanı KIRMIZI yazılır** (token `red`/`kRed`, 28 Ağustos 2026 kullanıcı isteği) — jokerin nereye harcandığı tahtada görünsün diye; RAF taşı bilinçli olarak dışarıda (orada ★ zaten ayırt ediyor). `Tile.tsx` ↔ `tile_widget.dart`, ikisi de testli. Tahtaya bu turda konmuş (henüz "Oyna" ile onaylanmamış) bir jokere tekrar dokunmak artık onu geri almaz — `WildcardModal` tekrar açılır (başlık "Jokeri Hangi Harfe Çevir?") ve seçilen yeni harf `SET_WILD_LETTER` action'ıyla (`src/game/gameReducer.ts`) hücredeki `wildLetter`'ı günceller; taş geri alınmaz. Geri alma bu modda hâlâ iki yoldan mümkün: modaldeki "Geri Al" butonu (`RECALL_CELL` dispatch eder) ya da taşı doğrudan rafa sürükleyerek (mevcut sürükle-bırak `RECALL_CELL` yolu, dokunmadan ayrışır — sürükleme hâlâ eski davranışı korur, yalnızca hareketsiz dokunuş/tık yeni davranışa geçti). Sıradan (joker olmayan) yerleştirilmiş bir taşa dokunmak hâlâ doğrudan geri alır, davranış değişmedi. `App.tsx` (yerel/YZ oyun) ve `OnlineGameScreen.tsx` (Canlı oyun) aynı deseni birebir paylaşıyor (`pendingWild.editing` bayrağı) — biri değişirse diğeri de güncellenmeli.
   ⚠ **Dokunmatikte joker dalı `swallowNextClick()` KURMAK ZORUNDA** (`src/utils/ghostClick.ts`). **Kural: Sınıf 1'de "bu click zaten hiçbir şey yapmıyor" gerekçesiyle yutmayı ATLAMA** — bu varsayım bir kez geçersiz kalıp iki taşı birden geri aldırdı. Flutter portu ETKİLENMEZ (compat click yok). Olay zinciri, ölçümler ve üç vakanın tamamı: `docs/decisions/touch-ux-bugs.md` → "Joker düzenleme yolu".
 - **YZ seviyesi (Kolay / Normal / Zor — ROADMAP #23):** `findAIMove(..., level)` (`src/utils/ai.ts`); en iyi N `AI_LEVEL_TOP_N`, arama genişliği `AI_LEVEL_SEARCH` (`src/game/constants.ts`). Seviye `GameState.aiLevel?` — **Normal JSON'a YAZILMAZ**. Terminoloji tek: **Zorluk: Kolay · Normal · Zor**. ⚠ **Rakibin rafına bakan hiçbir yol YOK** (kullanıcı kararı, 7 Eylül 2026: hiledir). ⚠ **Motorun üç kopyası + port ikizi AYNI PR'da:** Dart `aiLevelTopN`/`aiLevelSearch`, Edge `_game/constants.ts`, `util/ai_level.dart` + `ui/ai_level_badge.dart` (`ai_level_parity_test.dart` kilitler). ⚠ `leaguePoints`in `level`ine JS varsayılanı VERME — `verify-league-points` ariteyi `.length`le okuyor. **TASARIM KAYDI, bir şey değiştirmeden ÖNCE oku:** `docs/decisions/ai-levels.md` (motor sözleşmesinin tam dökümü, rastgelelik, yüzeyler, ölçümler, parite kapıları).
@@ -625,16 +656,15 @@ mobile/         # Flutter portu — kelimeki_core (saf Dart motor) + üretilmiş
   ve e-postası, `cloudSaveMirror` offline aynası, `gameSync` kuyruğu).
 ## Font Yükleme Stratejisi
 
-Tüm fontlar (`src/fonts/*.css`, `main.tsx`'te import edilir) kendi sunucumuzdan `.woff2` olarak servis edilir, `font-display: swap` ile. 23 Temmuz 2026'da (PageSpeed'in render-blocking uyarısı yüzünden hepsi base64-gömülü tek bir CSS'ten bu yapıya geçirildiğinde) bu, logoda (Caveat) ve daha az belirgin biçimde Space Grotesk/Space Mono'da görünür bir FOUT'a yol açtı. Bu tek seferlik bir sorun değil: uygulama sık deploy edildiğinden ve PWA service worker'ı (`src/lib/pwa.ts`) her deploy sonrası arka planda güncelleyip sayfayı yeniden yüklediğinden, bir sonraki açılışta hâlâ eski (düzeltilmemiş) kod bir kez daha çalışıp sıçramayı tekrarlıyor — bu, herhangi bir düzeltmenin "işe yaramadığı" izlenimi verebilir, aslında düzeltme sonraki (arka plandaki güncelleme sonrası) açılışta devrede.
-
-- **Logo (Caveat)** — tamamen kaldırıldı, statik SVG path'lere çevrildi (bkz. `LogoMark`, yukarıdaki "Bileşen Notları").
-- **Space Grotesk 700 / Space Mono 400 / Space Mono 700** — Setup ekranında ilk boyamada görünen kalın buton etiketleri/açıklama paragrafı (700/400) ve `GameHeader`'daki skor kutuları (700) bu ağırlıkları kullanır; kullanıcı ikisindeki FOUT'u da ayrı ayrı bizzat bildirdi. `public/fonts/`'a taşınıp `index.html`'den `<link rel="preload">` ile öncelikli indirilir (bkz. ilgili `src/fonts/space-grotesk-inline.css`/`space-mono-inline.css` dosyalarındaki notlar). Bunlar canlı/değişken metin (skor, kullanıcı adı) render ettiğinden logodaki gibi statik path'e çevrilemez — preload en iyi pratik çözüm, garantili değil.
-  **1 Ağustos 2026 — Space Mono 700 örneği (yanlış teşhis dersi):**
-  "kısa süre görünüp kendiliğinden düzeliyor" tarifi güçlü bir FOUT sinyali;
-  yeni bir yerde görülünce önce BU listeye (preload edilmemiş ağırlıklar)
-  bak, layout/CSS hesaplarına dalmadan önce. Vaka kaydı:
-  `docs/decisions/components.md` → "Space Mono 700 — yanlış teşhis".
-- **Diğer ağırlıklar (Space Grotesk 400/500/600) ve Nunito (taş harfi fontu)** — henüz raporlanmadığından ve kritik ilk-boyama yolunda olmadığından dokunulmadı, hâlâ eski `./files/` + yalnızca-swap yolunda. Aynı şikayet başka bir ağırlıkta/yerde görülürse aynı desen uygulanmalı: dosyayı `public/fonts/`'a taşı, `index.html`'e `<link rel="preload">` ekle, `vite.config.ts`'teki `includeAssets`'e ekle (PWA precache için).
+Fontlar kendi sunucumuzdan `.woff2` + `font-display: swap`. Logo bir font
+DEĞİL (statik SVG path, `LogoMark`); ilk boyamada görünen Space Grotesk 700
+/ Space Mono 400-700 `public/fonts/`'tan `<link rel="preload">` ile iner.
+⚠ **"Kısa süre görünüp kendiliğinden düzeliyor" tarifi = FOUT sinyali** —
+yeni bir yerde görülürse önce preload edilmemiş ağırlıklara bak; desen:
+dosyayı `public/fonts/`'a taşı, `index.html`'e preload, `vite.config.ts`
+`includeAssets`'e ekle. Tam kayıt (PWA güncellemesinin FOUT'u neden bir
+açılış daha tekrarlattığı, 1 Ağustos yanlış teşhisi):
+`docs/decisions/components.md` → "Font Yükleme Stratejisi".
 
 ## Form Input'ları — iOS Safari Zoom Kuralı
 
@@ -696,6 +726,27 @@ Kullanıcı iPad'den çalışıyor; bunu tetikleyecek bir CLI/CI erişimi yok.
    adındaki zaman damgasıyla karşılaştır; tutmuyorsa `git mv` ile düzelt ve
    commit'e dahil et. (Bu adım atlandığı için 23 Temmuz 2026'da ayrı bir PR
    açmak gerekti.)
+
+⚠ **TABLO YARATAN migration `grant` da yazmak ZORUNDA (30 Ekim 2026'dan
+itibaren).** Supabase `public`te yaratılan YENİ tablolara Data API iznini
+otomatik vermeyi bırakıyor; izinsiz doğan tablo PostgREST'ten
+`permission denied` verir. Bizi ilgilendiriyor çünkü istemciler RPC'lerin
+yanında **tabloları doğrudan da okuyor** (`.from('games')` gibi; web 25,
+port 22, Edge 15 tablo).
+
+```sql
+grant select on public.<tablo> to anon;                              -- misafir okuyacaksa
+grant select, insert, update, delete on public.<tablo> to authenticated;
+grant select, insert, update, delete on public.<tablo> to service_role;
+```
+
+⚠ Bu bir şablon değil ÜST SINIR — **ihtiyaca göre daralt** (canlıda 35
+tablonun 6'sında `authenticated` select bile YOK, bilerek). `grant` RLS'in
+YERİNE geçmez. **Mevcut tablolar etkilenmiyor, geriye dönük iş yok;** tek
+istisna migration'ların sıfırdan oynatıldığı yer (yeni proje, preview
+branch, `db reset`) — 28 migration'ın yalnızca 5'inde açık `grant` var.
+Duyuru, ölçümler ve o istisnanın bugünkü riski:
+`docs/decisions/supabase-ops.md` → "Data API izinleri".
 
 ### Edge Function deploy — `deploy_edge_function`'ın İKİ tuzağı
 

@@ -713,6 +713,20 @@ export interface LeagueReward {
 export interface AdminMember {
   id: string;
   email: string | null;
+  /**
+   * E-posta onayının anı; `null` = HENÜZ ONAYLAMADI (16 Eylül 2026,
+   * ROADMAP #9). `auth.users.email_confirmed_at` istemciye kapalı, bu alan
+   * yalnızca `admin_list_members`in security-definer bağlamından geliyor.
+   *
+   * ⚠ **Pencere yapısı gereği 48 SAAT.** `sweep-unconfirmed-accounts` cron'u
+   * 48. saatte onaysız hesabı SİLİYOR (bkz. `docs/decisions/friends.md` →
+   * "Onaylanmamış hesap süpürmesi"), yani burada `null` görülen bir satır
+   * her zaman son iki günün kaydıdır. Canlıda ölçüldü (16 Eylül 2026):
+   * 56 hesabın 4'ü onaysız ve dördü de 1 günden yeni. Uzun süredir bekleyen
+   * bir "onaysız" listesi GÖRMEK bir arıza işareti olur — süpürme durmuş
+   * demektir.
+   */
+  email_confirmed_at: string | null;
   username: string | null;
   first_name: string | null;
   last_name: string | null;
@@ -763,111 +777,52 @@ export interface AdminUserActivityPoint {
 }
 
 /**
- * admin_source_funnel RPC çıktısındaki tek satır (Büyüme > Kullanıcı) —
- * kaynak başına gelen → üye → başlayan → biten hunisi.
- *
- * TABLO BAŞTAN SONA MİSAFİR HUNİSİ (22 Ağustos 2026): "bir kanaldan gelip
- * HENÜZ ÜYE OLMADAN ürünü deneyen insanlar". `visitors` zaten öyleydi
- * (ziyaret kaydı yalnızca oturum kapalıyken yazılır); `starts`/`starters`
- * (`game_starts.is_guest is true`) ve `finishes` (`game_finishes.user_id is
- * null`) o gün aynı kitleye indi. Üye tarafı yalnızca `member_games`/
- * `players`ta ve o AYRI bir dimension (kayıt damgası).
- *
- * İki AYRI dimension yan yana duruyor, aralarında JOIN YOK: `visitors`/
- * `starts`/`starters`/`finishes` anonim cihaz tablolarının (`guest_visits`,
- * `game_starts`, `game_finishes`) kendi `utm_source`'undan, `signups`/
- * `member_games`/`players` ise kayıt anında profile damgalanan
- * `profiles.signup_utm_source`'tan geliyor (bkz. `20260816…_source_funnel`
- * ve `20260822…_source_funnel_finishes` migration'ları). Bu yüzden bir
- * kaynağın yalnızca ziyaretçisi ya da yalnızca üyesi olabilir.
- *
- * `'bilinmiyor'` = profil damgalanmamış (bu özellikten önceki üyeler ve
- * bugün Flutter portundan gelen kayıtlar); `'direkt'` = `?ref=` olmadan
- * web'den geliş. İkisi bilinçli olarak AYRI.
- *
- * Pencere her adıma KENDİ olay tarihinden uygulanır (kohort değil).
+ * `admin_funnel` RPC çıktısındaki tek satır — Huni v2 (Büyüme > Kullanıcı),
+ * (platform, kanal) başına. KOHORT: bütün sayılar pencerede İLK KEZ gelen
+ * (`land`) AYNI cihaz kümesinden, yani her oran ≤ %100. Olaylar pencere
+ * sonuna kadar izlenir. Kanal `'mevcut'` = ölçüm v2'den önce de bu cihazda
+ * iz vardı; istemci onu kohort toplamına KATMAZ. Sözleşme ve gerekçe:
+ * `supabase/migrations/20260924141953_funnel_events.sql`,
+ * `docs/decisions/funnel-v2.md`.
  */
-export interface AdminSourceFunnelRow {
+export interface AdminFunnelRow {
+  platform: 'web' | 'ios' | 'android';
+  channel: string;
+  /** Kohorttaki cihaz (pencerede ilk geliş). */
+  land: number;
+  /** Land gününden SONRA en az bir başka gün açan ("2+ gün"). */
+  returned: number;
+  /** Hesap açan. ⚠ Gizlilik metni güncellenene kadar web YAZMIYOR (`FUNNEL_MEMBER_EVENTS_ENABLED`). */
+  signed_up: number;
+  /** En az bir oyun başlatan. */
+  started: number;
+  /** En az bir oyun bitiren (bugün web'de yalnızca misafir bitişi). */
+  finished: number;
+  games_started: number;
+  games_finished: number;
+}
+
+/**
+ * `admin_member_quality` RPC çıktısındaki tek satır — "Kanal → Üye Kalitesi"
+ * (Büyüme > Kullanıcı; 24 Eylül 2026'da Kaynak Hunisi'nin yerini aldı).
+ * KOHORT: pencerede hesap açan üyeler, kayıt anındaki etikete
+ * (`profiles.signup_utm_source`) göre. Oyunlar (`games`, yalnızca bitmiş)
+ * bugüne kadar izlenir; her sayı ≤ `members`. Misafir sütunu YOK — o soru
+ * Huni v2'nin (`AdminFunnelRow`). Sözleşme:
+ * `supabase/migrations/20260924151205_admin_member_quality.sql`.
+ */
+export interface AdminMemberQualityRow {
+  /** Ham kayıt etiketi; `'bilinmiyor'` = etiketsiz (16 Ağu 2026 öncesi), `'app'` = mobil. */
   source: string;
-  visitors: number;
-  /**
-   * Pencerede o kaynaktan ÜYE OLMADAN başlatılan yerel (YZ) oyun ADEDİ —
-   * `game_starts`, `is_guest is true` (ROADMAP #9 + 22 Ağustos 2026 misafir
-   * indirmesi). NULL bayrak (22 Ağustos öncesi satır ya da damgalamayan
-   * istemci) misafir SAYILMAZ ve geriye dönük doldurulamaz.
-   * `games`ten (BİTMİŞ oyun) bilinçli olarak ayrı: yerel oyunun
-   * medyan süresi 18,1 dakika olduğundan reklamdan gelen soğuk bir ziyaretçi
-   * çoğu zaman oynar ama BİTİRMEZ; ayrıca `games` misafir oyunlarını tanım
-   * gereği hiç görmez (o satır yalnızca girişli kullanıcı için açılır).
-   */
-  starts: number;
-  /**
-   * O oyunları başlatan BENZERSİZ MİSAFİR CİHAZ sayısı
-   * (`game_starts.anon_id`, aynı `is_guest` filtresiyle — aksi halde oranın
-   * payı ile paydası farklı kitlelerden gelirdi).
-   * `visitors` ile AYNI kimlikten sayıldığından `starters / visitors` bu
-   * tablodaki TEK gerçek cihaz-bazlı dönüşüm oranıdır — `signups`/`players`
-   * ise `profiles.signup_utm_source` üzerinden gelir, yani ayrı bir dimension.
-   * Tabloda yalnızca yüzde modunda (ve CSV'de) görünür.
-   */
-  starters: number;
-  signups: number;
-  /**
-   * Pencerede o kaynaktan ÜYE OLMADAN bitirilen yerel (YZ) oyun ADEDİ —
-   * `game_finishes`, `user_id is null` (22 Ağustos 2026). Tabloda "Biten"
-   * sütunu; `starts` ("Başlayan") ile
-   * çifttir ve ikisi AYNI popülasyonu ölçer (misafir dahil, cihaz bazlı,
-   * `utm_source` damgalı), yani "başlayanların yüzde kaçı bitirdi" sorusu
-   * ancak bu ikisiyle sorulabilir.
-   *
-   * ⚠ `member_games` ile KARIŞTIRMA: o, `profiles.signup_utm_source`
-   * üzerinden gelen bambaşka bir dimension (yalnızca ÜYELERİN oyunları) ve
-   * bu kolon eklenene kadar tablodaki "Oyun" sütunu oydu — bu yüzden
-   * reklamdan gelen soğuk trafikte hep 0 görünüyordu (bkz. 22 Ağustos 2026,
-   * Instagram: 47 başlayan / 3 üye / 0 üye-oyunu).
-   *
-   * Kolon 22 Ağustos 2026'da eklendi, GERİYE DÖNÜK DOLDURULAMAZ — ondan
-   * önceki tüm bitişler `'bilinmiyor'` satırında toplanır.
-   */
-  finishes: number;
-  /**
-   * O oyunları bitiren BENZERSİZ MİSAFİR CİHAZ sayısı
-   * (`game_finishes.anon_id`, aynı `user_id is null` filtresiyle) —
-   * `starters`ın bitmiş taraftaki eşi (31 Ağustos 2026). `starters`/`finishers`
-   * ikilisi tablonun tek gerçek CİHAZ-BAZLI tamamlanma oranını verir; oyun
-   * adedi üzerinden hesaplanan oran, tek bir cihazın açtığı onlarca oyunla
-   * çarpılabiliyordu (ölçüldü: 117 oyunun 64 cihazdan geldiği bir pencerede
-   * İKİ cihaz tek başına 47 oyun başlatmıştı).
-   *
-   * ⚠ KOLON YENİ, GERİYE DÖNÜK DOLDURULAMAZ. `count(distinct)` NULL saymaz,
-   * yani 31 Ağustos 2026 öncesi bitişler ve damgalamayan istemciler (bugün
-   * Flutter portu — `anon_id` katmanı porta hiç girmedi) buraya girmez ve
-   * `finishes`ten küçük kalır. Panel bu durumda **0% göstermez, "—" gösterir**:
-   * "hiç cihaz bitirmedi" ile "cihaz bilgisi yok" farklı şeyler.
-   *
-   * ⚠ GİZLİLİK: `anon_id` bu tabloya YALNIZCA `user_id` NULL iken yazılır
-   * (sunucuda BEFORE INSERT trigger + CHECK). İkisi aynı satırda hiçbir zaman
-   * bulunmaz, yani `PrivacyModal` 6. bölümdeki "anonim kod hesabınızla ASLA
-   * eşleştirilmez" taahhüdü ayakta.
-   */
-  finishers: number;
-  /**
-   * ÜYELERİN (profil damgası olanların) pencerede bitirdiği oyun ADEDİ —
-   * eski "Oyun" sütunu. Tabloda GÖSTERİLMEZ, yalnızca CSV'de. `finishes` ile
-   * çakışmıyor: bu, üyenin KAYIT damgasından gelir (hesabı takip eder), o
-   * ise cihaz etiketinden ve yalnızca misafiri sayar. Üye tarafının kaynak
-   * kırılımı bilinçli olarak yalnızca burada — cihaz etiketiyle ikinci bir
-   * üye ölçüsü üretmek aynı sorunun iki farklı yanıtını doğururdu.
-   */
-  member_games: number;
-  /**
-   * O kaynağın damgasını taşıyan, pencerede EN AZ BİR oyun bitirmiş BENZERSİZ
-   * kullanıcı sayısı — `member_games` (oyun ADEDİ) ile karıştırılmamalı.
-   * "Üyelerin yüzde kaçı oyun oynamış" sorusu ancak bununla yanıtlanabilir;
-   * oyun adedi bir kişinin 50 oyun oynamasıyla %100'ü kolayca aşardı. Tabloda
-   * yalnızca CSV'de görünür.
-   */
+  members: number;
+  /** En az bir oyun bitiren. */
   players: number;
+  /** Kayıttan sonraki 7 gün içinde oyun bitiren. */
+  players_7d: number;
+  /** En az iki farklı İstanbul gününde oyun bitiren. */
+  returning_players: number;
+  /** Bu üyelerin bitirdiği oyun adedi. */
+  games: number;
 }
 
 /**
@@ -916,13 +871,34 @@ export interface AdminAppVersionRow {
  * DOLDURULAMAZ: bir cihaz 1.0.4+ ile açılana kadar `bilinmiyor` kalır.
  */
 export interface AdminPushVersionRow {
-  /** `android` / `ios` / `bilinmiyor`. */
+  /**
+   * Satırın ağaçtaki düzeyi (16 Eylül 2026):
+   *   `'surum'`    → (platform, sürüm) yaprağı
+   *   `'platform'` → o platformun toplamı
+   *   `'toplam'`   → genel toplam
+   *
+   * ⚠ **Platform ve genel toplam istemcide TOPLANARAK bulunamaz** ve mesele
+   * estetik değil doğruluk: değerler `count(distinct user_id)`, yani iki
+   * gruba birden düşen bir kişi (iki telefon, ya da pencere içinde sürüm
+   * atlama) toplamada İKİ KEZ sayılır. Sunucu üç düzeyi de `grouping sets`
+   * ile ayrı ayrı `distinct` sayıyor.
+   */
+  level: 'surum' | 'platform' | 'toplam';
+  /** `android` / `ios` / `bilinmiyor`. `level: 'toplam'` satırında boş. */
   platform: string;
-  /** Mobil sürüm; 1.0.4 öncesi hizalanmış satırlarda `bilinmiyor`. */
+  /**
+   * Mobil sürüm; 1.0.4 öncesi hizalanmış satırlarda `bilinmiyor`.
+   * `level` `'surum'` DEĞİLSE boş.
+   */
   app_version: string;
   /** Benzersiz kişi (`count(distinct user_id)`). */
   kisi: number;
-  /** Token satırı sayısı — bir kişinin birden çok cihazı olabilir. */
+  /**
+   * Token SATIRI sayısı — "cihaz" DEĞİL. Uygulama yeniden kurulunca ya da
+   * token yenilenince yeni satır açılır; canlıda ölçüldü (16 Eylül 2026),
+   * tek bir iPhone 30 günde 5 satır üretmişti. Hiçbir ekranda
+   * gösterilmiyor, adı tarihsel.
+   */
   cihaz: number;
   last_seen: string;
 }
@@ -1063,16 +1039,166 @@ export type AdminGameSourceType = 'total' | 'online' | 'local';
  * "Aynı Oturum / Çok Oturumlu kırılımı") — süre tarafında ise kırılım
  * kalıyor, yalnızca etiketi "Tek Oturumda / Günlere Yayılan" oldu.
  */
+/**
+ * `admin_game_duration_summary` RPC çıktısı — TEK satır (Büyüme > Oyun,
+ * "Oyun Süresi" kutuları).
+ *
+ * ⚠ **Neden ayrı bir RPC:** `AdminGameActivityPoint` kova başına medyan
+ * taşır ve **medyanlar toplanamaz** — pencerenin medyanı, kova medyanlarından
+ * hesaplanamaz. 16 Eylül 2026'da grafik kutulara çevrilirken (kullanıcı
+ * isteği) bu yüzden sunucuda ayrı bir sorgu açıldı.
+ *
+ * Filtreler (periyot/granülerlik/kapsam/oyuncu sayısı/kaynak) seriyle BİREBİR
+ * aynı; biri değişirse öteki de değişmeli — ikisi aynı ekranda yan yana.
+ *
+ * Hiç biten oyun yoksa süre alanları `null` döner (0 DEĞİL: "0 dakika" çok
+ * hızlı biten bir oyun gibi okunurdu). `finished_games` o durumda 0'dır ve
+ * kutunun "veri yok" ile "gerçekten 0" ayrımını yapmasını sağlar.
+ */
+export interface AdminGameDurationSummary {
+  med_duration_seconds: number | null;
+  med_duration_same_session_seconds: number | null;
+  med_duration_multi_session_seconds: number | null;
+  p90_duration_seconds: number | null;
+  finished_games: number;
+}
+
 export interface AdminGameActivityPoint {
   bucket: string;
   games_finished: number;
   games_finished_same_session: number;
   games_finished_multi_session: number;
   games_surrendered: number;
+  /**
+   * Platform kırılımı (16 Eylül 2026, kullanıcı isteği: *"Oyun sayısına
+   * genel, ios, android, web kırılımı ekleyebilir miyiz? Terk genel olarak
+   * kalsın."*).
+   *
+   * ⚠ **Dördü HER ZAMAN `games_finished`e TAM olarak toplanır** — kırılımın
+   * tek anlamlı okuması bu, ve `_other` bu yüzden var. `games_surrendered`
+   * bilerek KIRILMADI: terk bir platformun değil, 7 günlük/48 saatlik
+   * pencerenin sonucu.
+   *
+   * Platform iki kaynaktan çözülür: yerel oyun `game_finishes.platform`
+   * (16 Eylül 2026'da eklendi, `games`ten geriye dolduruldu), Canlı oyun
+   * `online_game_clients` — ve yalnızca oyunun TÜM istemcileri aynı
+   * platformdaysa. `_other` DÖRT şeyi toplar: misafir yerel oyun
+   * (`games` satırı hiç açılmaz), 17 Ağustos 2026 öncesi (kolon yoktu),
+   * karma Canlı oyun (canlıda ölçüldü: Canlı oyunların %40'ı karma) — ve
+   * şimdilik MOBİL UYGULAMADAN biten oyunlar.
+   *
+   * ⚠ Sonuncusu GEÇİCİ: portun `logGameFinish`i damgayı yazmıyor, çünkü o
+   * değişiklik inceleme dondurması yüzünden AYRI bir PR'da bekliyor
+   * (16 Eylül 2026, kullanıcı kararı: *"Mobile dokunma"*). O PR merge edilip
+   * yeni bir mağaza paketi çıkana kadar `_ios`/`_android` yalnızca Canlı
+   * oyunları sayar.
+   */
+  games_finished_web: number;
+  games_finished_ios: number;
+  games_finished_android: number;
+  games_finished_other: number;
   med_duration_seconds: number | null;
   med_duration_same_session_seconds: number | null;
   med_duration_multi_session_seconds: number | null;
   p90_duration_seconds: number | null;
+}
+
+/**
+ * `admin_active_hours` RPC çıktısındaki tek dilim — "Aktif Saatler" grafiği
+ * (Büyüme > Oyun, 18 Eylül 2026, kullanıcı isteği: *"Admin oyun sayfasına
+ * Aktif Saatler bar grafiği eklemek istiyorum. 2 saatlik dilimler olsun.
+ * Web, ios ve android kırılımları olursa iyi olur. Oyun bitişleri baz
+ * alalım."*).
+ *
+ * `hour_start` dilimin BAŞLANGIÇ saati (0 · 2 · … · 22), **Europe/Istanbul**.
+ * Sunucu her zaman 12 satır döndürür — boş saatler 0 olarak gelir, eksik
+ * satır olarak DEĞİL (yoksa çubuklar kayardı).
+ *
+ * ⚠ **Dördü HER ZAMAN `finished`e TAM olarak toplanır** — grafiğin yığılmış
+ * çubukları buna dayanıyor, `_other` bu yüzden var.
+ *
+ * ⚠ **Teslim satırları HARİÇ.** Gerekçe bu grafiğe özgü ve `Oyun Sayısı`
+ * grafiğininkinden farklı: teslim satırı 7 günlük/48 saatlik zaman aşımının
+ * DOLDUĞU anı taşır, bir insanın oyun bitirdiği anı değil — dahil edilseydi
+ * dağılıma insan davranışıyla ilgisi olmayan bir saat deseni karışırdı.
+ * (Son 30 günde 152 teslim / 1199 bitirilen, canlıda ölçüldü.)
+ *
+ * ⚠ `_other` = `platform is null or platform = 'app-web'` — tanım
+ * `AdminGameActivityPoint._other` ile BİREBİR aynı tutuldu; iki grafik aynı
+ * sekmede yan yana ve kovaların anlamı ayrışırsa sayılar birbirini tutmaz.
+ * Aynı geçici boşluk burada da geçerli: portun `logGameFinish`i damgayı
+ * yazmadığı sürece app'ten biten oyunlar `_other`a düşer.
+ */
+export interface AdminActiveHoursRow {
+  hour_start: number;
+  finished: number;
+  finished_web: number;
+  finished_ios: number;
+  finished_android: number;
+  finished_other: number;
+}
+
+/**
+ * admin_active_days RPC çıktısındaki tek satır (Büyüme > Oyun, "Aktif
+ * Günler"). 20 Eylül 2026, kullanıcı isteği: *"Admin oyunda saatler gibi
+ * Aktif Günler bar chartı da koyabilir miyiz?"*
+ *
+ * `AdminActiveHoursRow`ın İKİZİ — aynı kaynak (`game_finishes`), aynı
+ * pencere (30 gün), aynı saat dilimi (**Europe/Istanbul**), aynı platform
+ * kovaları, aynı teslim kuralı. Yukarıdaki üç ⚠ notunun HEPSİ buraya da
+ * aynen geçerli; biri değişirse İKİSİ BİRLİKTE değişmeli, yoksa iki grafik
+ * aynı popülasyonu iki farklı sayıyla anlatır. (Değişmez canlıda ölçüldü,
+ * 20 Eylül 2026: ham pencere = saat toplamı = gün toplamı = 1279.)
+ *
+ * ⚠ `dow` = **`isodow`** — `1` Pazartesi … `7` Pazar. Postgres'in kendi
+ * `dow`u DEĞİL (o 0=Pazar ile başlar ve grafikte hafta sonunu iki uca
+ * dağıtır). Sunucu her zaman 7 satır döndürür — bitişi olmayan gün 0 olarak
+ * gelir, eksik satır olarak DEĞİL.
+ *
+ * ⚠ Teslimin dışarıda bırakılma gerekçesi bu kovada DAHA GÜÇLÜ: 7 günlük
+ * gecikme haftanın gününü KORUR, yani her teslim satırı terk edildiği günün
+ * kovasına düşüp dağılıma ikinci bir desen bindirirdi.
+ */
+export interface AdminActiveDaysRow {
+  dow: number;
+  finished: number;
+  finished_web: number;
+  finished_ios: number;
+  finished_android: number;
+  finished_other: number;
+}
+
+/**
+ * admin_game_mix RPC çıktısındaki TEK satır (Büyüme > Oyun, "Oyun Dağılımı")
+ * — 22 Eylül 2026, kullanıcı isteği: *"Admin Oyun altına 2 pie chart yanyana.
+ * 1. Yapay zeka vs Arkadaşınla  2. 2 player vs 4 player (biten count)"*.
+ *
+ * ⚠ İKİ PASTA, TEK SATIR ve bu bilinçli: ikisi de AYNI popülasyonu (pencerede
+ * biten oyun) bölüyor, yani `ai_finished + friend_finished` ile
+ * `p2_finished + p4_finished` birbirine EŞİT olmak zorunda. İki ayrı RPC
+ * olsaydı pencereler sessizce ayrışır ve yan yana duran iki pasta iki farklı
+ * toplam gösterirdi.
+ *
+ * "Biten"in tanımı `AdminGameActivityPoint.games_finished` ile BİREBİR aynı:
+ * teslimle biten oyun hiçbir dilimde sayılmaz.
+ *
+ * ⚠ `friend_finished` OYUN TİPİDİR ("Arkadaşınla" sekmesi), "rakip insandı"
+ * DEĞİL — canlı bir oyunun boş koltuğu YZ ile doldurulabiliyor (22 Eylül
+ * 2026'da canlıda ölçüldü: 4 kişilik 8 canlı oyunun 5'inde bir YZ koltuğu
+ * var). "Rakiplerin kaçı insandı" ayrı bir soru ve `online_games.slots`
+ * okunmasını gerektirir.
+ *
+ * ⚠ `finished_total` ÖLÇÜM DEĞİL SAĞLAMA: `game_finishes.player_count`te
+ * CHECK yok (`games`/`online_games`te var — 2 ya da 4), yani bir gün 3
+ * kişilik bir satır düşerse ikinci pasta onu sessizce yutardı. Ekran bu
+ * sütunu kullanıp farkı GÖRÜNÜR yapıyor.
+ */
+export interface AdminGameMix {
+  ai_finished: number;
+  friend_finished: number;
+  p2_finished: number;
+  p4_finished: number;
+  finished_total: number;
 }
 
 /**
@@ -1289,9 +1415,18 @@ export interface AdminFeedbackRow {
  * oranını yukarı çeker.
  *
  * `starts`/`finishes` ADET, `starters`/`finishers` BENZERSİZ CİHAZ sayar —
- * `AdminSourceFunnelRow`'daki aynı ayrım ve aynı gerekçe. `anon_id`
+ * eski Kaynak Hunisi'ndeki (`admin_source_funnel`) aynı ayrım. `anon_id`
  * okunamayan (depolaması kapalı) bir istemcinin satırı adette sayılır,
  * benzersizde sayılmaz.
+ *
+ * ⚠ **Kartın oranı ADET üzerinden** (15 Eylül 2026'da cihazdan çevrildi):
+ * port `anon_id` YAZMIYOR (`mobile/app/lib/src/data/games_api.dart` →
+ * `'anon_id': null`) ve `count(distinct anon_id)` NULL saymaz, yani cihaz
+ * paydası yalnızca web'i görüyordu — kart son 30 gün için %50 diyordu, 13
+ * `auto` başlangıcının 11'i iOS'tan geliyordu ve gerçek bitirme %85'ti.
+ * `starters`/`finishers` DURUYOR (ikincil sayı olarak kartta parantez
+ * içinde) ama "yalnızca web" diye okunmalı; port damgalamayı eklerse
+ * (ROADMAP → "Port anonim cihaz damgası") cihaz paydasına dönülebilir.
  */
 export interface AdminTutorialFunnelRow {
   /** 'auto' | 'replay' — sunucu `check` kısıtıyla bu ikisiyle sınırlı. */
@@ -1308,4 +1443,40 @@ export interface AdminTutorialFunnelRow {
    * `skips`e girer ama buraya girmez, yani toplamları eşit OLMAYABİLİR.
    */
   skip_steps: Record<string, number>;
+}
+
+/**
+ * `admin_signup_funnel` — kayıt hunisi (Büyüme > Kullanıcı → "Kayıt Hunisi").
+ *
+ * Kanal başına bir satır: kayıt FORMUNU açan (`starts`) ve hesabı OLUŞTURAN
+ * (`completions`) ADET. Kimlik yok, yani "benzersiz kişi" sayısı YOK —
+ * `signup_events` bilerek kimliksiz (bkz. migration `signup_events_funnel`
+ * ve `logSignupEvent`). Bir kişi formu iki kez açarsa iki kez sayılır.
+ *
+ * ⚠ **Yalnızca WEB.** Port aynı olayları Firebase Analytics'e yazıyor, bu
+ * tabloya değil — oranı `profiles` sayısıyla kurmak paydası web, payı
+ * web+mobil olan sahte bir yüzde üretirdi, o yüzden `completions` da bu
+ * tablodan okunuyor.
+ */
+export interface AdminSignupFunnelRow {
+  /** 'direct' | 'form' | 'bilinmiyor' (kanal yazmayan satırlar). */
+  channel: string;
+  starts: number;
+  completions: number;
+}
+
+/**
+ * `admin_web_journey` RPC'sinin satırı — Ziyaretçi Yolculuğu kartı. Adım
+ * başına bir satır, `JOURNEY_STEPS` (`src/utils/webJourney.ts`) sırasıyla.
+ */
+export interface AdminWebJourneyRow {
+  step: string;
+  /** Bu adıma ulaşan oturum. */
+  reached: number;
+  /** SON adımı bu olan oturum — "burada ayrıldı". */
+  left_here: number;
+  /** Burada ayrılanların oturum süresi (saniye, medyan); ayrılan yoksa null. */
+  median_seconds: number | null;
+  /** Burada ayrılanların karşılamadaki kaydırma derinliği (%, medyan). */
+  median_scroll: number | null;
 }

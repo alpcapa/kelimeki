@@ -103,7 +103,7 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
   useEffect(() => {
     if (!user) return;
     fetchMyLeaderboardRank(user.id).then(setMyRank);
-  }, [user]);
+  }, [user?.id]);
 
   // rows'un en güncel uzunluğunu bir ref'te tutmak loadMore'u (dolayısıyla
   // aşağıdaki IntersectionObserver effect'ini) rows'tan bağımsız/stabil

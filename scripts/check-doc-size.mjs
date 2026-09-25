@@ -38,7 +38,7 @@
 // bayat anlatıyı budamak ya da bir cilt dondurmak. Yeni giriş aktif cilde yazılır.
 //
 // Koşum: npm run check-doc-size   (CI: .github/workflows/docs-size.yml)
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
@@ -48,10 +48,24 @@ const KB = 1000;
 const BUTCE = {
   auto: { uyar: 80 * KB, sinir: 120 * KB },
   active: { uyar: 120 * KB, sinir: 200 * KB },
-  // Grep'lenen başvuru dokümanları: tavan geniş ama SONSUZ değil — 300 KB'ı
+  // Grep'lenen başvuru dokümanları: tavan geniş ama SONSUZ değil — 400 KB'ı
   // aşan bir dosya artık dondurulup ciltlenmeli, yoksa baştan sona okumak
   // gereken nadir durumda (ör. bir bölümü yeniden yazarken) bağlamı yakar.
-  reference: { uyar: 200 * KB, sinir: 300 * KB },
+  //
+  // ⚠ 15 Eylül 2026'da 200/300'den 260/400'e ÇIKARILDI (kullanıcı sorusu:
+  // *"bir daha aktif kullanılmayacak dosyaların limitlerini arttırmaya ne
+  // diyorsun? 200 kb biraz az sanki"*). Ölçüm haklı çıkardı: bu sınıf
+  // grep'leniyor, yani okunan şey DOSYA değil BÖLÜM. `roadmap-arsiv.md`
+  // 235 KB ama 29 bölüme dağılmış, ORTANCA bölüm 5 KB (~1,3K token) —
+  // "uyarı" demek burada gerçek bir maliyeti değil, vekil bir sayıyı
+  // ölçüyordu. 400 KB ≈ 100K token: tamamını okumak gereken nadir durumda
+  // bile çalışılabilir bir pencere kalır.
+  //
+  // ⚠ Bu gevşetme TEK BAŞINA yapılmadı ve yapılmamalıydı — sınıra çarpınca
+  // sınırı yükseltmek kontrolü süse çevirir. Karşılığında aşağıdaki BÖLÜM
+  // ölçüsü eklendi: asıl riski (grep'in seni 100 KB'lık tek bir bloğun
+  // içine düşürmesi) ilk kez o ölçüyor.
+  reference: { uyar: 260 * KB, sinir: 400 * KB },
 };
 
 // Her turda bağlama yüklenen dosyalar.
@@ -68,6 +82,9 @@ const FROZEN = {
   // 7 Eylül 2026: aktif cilt 200 KB'a (reference uyarı bandı) çıkınca
   // Parça 139-174 donduruldu.
   'mobile/docs/parca-log-139-174.md': 135 * KB,
+  // 25 Eylül 2026: ROADMAP arşivi 258 KB'a (reference uyarısına ~2 KB)
+  // gelince İçindekiler'in altındaki gövde (27 Ağustos – 12 Eylül) donduruldu.
+  'docs/decisions/roadmap-arsiv-cilt-1.md': 210 * KB,
 };
 
 // Yalnızca GREP'lenen başvuru dokümanları. Kural DOSYA ADINA değil, dosyanın
@@ -93,6 +110,68 @@ function walk(dir, out = []) {
   return out;
 }
 
+// ── BÖLÜM ölçüsü (15 Eylül 2026) ──────────────────────────────────────────
+// `reference` dosyalarında dosya boyutu VEKİL bir sayı: kimse baştan sona
+// okumuyor, grep bir bölüme düşürüyor ve okunan o bölüm oluyor. Asıl maliyet
+// bu yüzden "en büyük `##` bölümü". Ölçüldü (15 Eylül 2026):
+//
+//   roadmap-arsiv.md  235 KB · 29 bölüm · ortanca  5 KB · en büyük  39 KB
+//   admin-panel.md    123 KB ·  6 bölüm · ortanca  3 KB · en büyük 108 KB  ←
+//   live-game.md      109 KB · 12 bölüm · ortanca  3 KB · en büyük  50 KB  ←
+//
+// Yani "bütçe içinde" görünen `admin-panel.md` tek bir 108 KB'lık bloktan
+// ibaret ve bir grep isabeti seni 27K token'ın içine bırakıyor; 235 KB'lık
+// arşiv ise 5 KB'lık parçalar hâlinde okunuyor. Kontrol ikisini de dosya
+// boyutuna göre yargılıyordu ve ikisinde de yanılıyordu.
+//
+// ⚠ Bu ölçü UYARI, kapı DEĞİL (bilerek): CI'ı düşürseydi bugün iki dosyayı
+// birden kırmızıya çevirir ve ilgisiz her PR'ı bir doküman ameliyatına
+// rehin alırdı. İlacı da bölmek değil: bloğa ALT BAŞLIK koymak yeter —
+// dosya aynı kalır, grep'in düştüğü parça küçülür.
+//
+// ⚠ `frozen` DIŞARIDA: o ciltlerin kendi başlığı baştan sona okumayı zaten
+// yasaklıyor (parca-log-1-48.md tek bir 284 KB'lık bölüm — orada uyarı
+// gürültüden başka bir şey değil).
+const BOLUM_UYAR = 40 * KB;
+
+// ⚠ 16 Eylül 2026 — ÖLÇÜ DÜZELTİLDİ: yalnızca `## ` sayılıyordu.
+// Betiğin kendi reçetesi "ilaç bölmek değil ALT BAŞLIK" diyordu, ama ölçü
+// `###`/`####` başlıklarını HİÇ görmediğinden alt başlık eklemek yazdırdığı
+// sayıyı bir bayt bile değiştirmiyordu. Yani uyarıyı temizleyecek tek eylem,
+// kuralın açıkça yasakladığı şeydi (bölmek) — uyarı bu yüzden sürekliydi ve
+// sekiz dosyalık sabit bir gürültü duvarına dönüşmüştü (kullanıcı, 16 Eylül
+// 2026: *"Sürekli dosya bölme uyarısı mantıklı değil"*).
+//
+// Doğrusu YAPRAK bölüm: grep bir isabette seni EN YAKIN başlıktan sonraki
+// parçaya bırakır, o başlık hangi seviyede olursa olsun. Ölçü artık `##`'den
+// `######`'ya kadar her seviyede kesiyor. Düzeltme tek başına iki yanlış
+// pozitifi temizledi (live-game.md 52 → 24 KB, local-game-persistence.md
+// 41 → 38 KB — ikisinde alt başlık ZATEN vardı, ölçü onları görmüyordu).
+//
+// ⚠ Kod çiti (```) içindeki `# ...` satırı başlık DEĞİL, kabuk yorumudur —
+// eski ölçü de bunu gözden kaçırıyordu. Çit takibi bu yüzden zorunlu.
+function enBuyukBolum(mutlakYol) {
+  const metin = readFileSync(mutlakYol, 'utf8');
+  const parcalar = [];
+  let cur = [];
+  let cit = null; // açık kod çitinin karakteri (` ya da ~)
+  for (const satir of metin.split('\n')) {
+    const c = satir.match(/^ {0,3}(`{3,}|~{3,})/);
+    if (c) {
+      if (!cit) cit = c[1][0];
+      else if (satir.trimStart().startsWith(cit)) cit = null;
+    }
+    if (!cit && /^#{2,6}\s/.test(satir)) {
+      parcalar.push(cur.join('\n'));
+      cur = [satir];
+    } else {
+      cur.push(satir);
+    }
+  }
+  parcalar.push(cur.join('\n'));
+  return parcalar.reduce((enb, p) => Math.max(enb, Buffer.byteLength(p, 'utf8')), 0);
+}
+
 const tok = (b) => `~${Math.round(b / 4 / 1000)}K token`;
 const kb = (b) => `${(b / KB).toFixed(0)} KB`;
 
@@ -109,7 +188,8 @@ const rows = walk(ROOT)
           : 'active';
     const sinir = sinif === 'frozen' ? FROZEN[rel] : BUTCE[sinif].sinir;
     const uyar = sinif === 'frozen' ? Infinity : BUTCE[sinif].uyar;
-    return { rel, size, sinif, sinir, uyar };
+    const bolum = sinif === 'reference' ? enBuyukBolum(p) : 0;
+    return { rel, size, sinif, sinir, uyar, bolum };
   })
   .sort((a, b) => b.size - a.size);
 
@@ -152,6 +232,22 @@ if (uyarilar.length) {
       ? 'bayat anlatıyı buda ya da cilt dondur'
       : 'bir sonraki dokunuşta böl';
     console.log(`  • ${r.rel} — ${kb(r.size)} / ${kb(r.sinir)} [${r.sinif}] → ${ne}`);
+  }
+}
+
+const bolumUyarilari = rows
+  .filter((r) => r.bolum > BOLUM_UYAR)
+  .sort((a, b) => b.bolum - a.bolum);
+if (bolumUyarilari.length) {
+  console.log(
+    '\nBÖLÜM UYARISI — grep bu dosyalarda BÜYÜK bir bloğa düşürüyor' +
+      ' (kapı DEĞİL; ilaç bölmek değil ALT BAŞLIK):',
+  );
+  for (const r of bolumUyarilari.slice(0, 5)) {
+    console.log(`  • ${r.rel} — en büyük bölüm ${kb(r.bolum)} (${tok(r.bolum)})`);
+  }
+  if (bolumUyarilari.length > 5) {
+    console.log(`    … ve ${bolumUyarilari.length - 5} dosya daha (eşik ${kb(BOLUM_UYAR)}).`);
   }
 }
 
