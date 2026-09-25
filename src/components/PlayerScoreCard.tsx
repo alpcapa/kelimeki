@@ -264,7 +264,7 @@ export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCar
     return () => {
       iptal = true;
     };
-  }, [user, member.id]);
+  }, [user?.id, member.id]);
   const [rank, setRank] = useState<MyLeaderboardRank | null>(null);
   // "Y:59/C:E" satırı — `profiles` RLS'i başkasının satırını okutmadığından
   // ayrı bir RPC'den gelir (bkz. `fetchProfileAgeGender`); yüklenene kadar
@@ -320,7 +320,7 @@ export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCar
     return () => {
       cancelled = true;
     };
-  }, [user, member.id]);
+  }, [user?.id, member.id]);
 
   const showFriendButton = !!user && user.id !== member.id && relation !== undefined;
   // `relation === undefined` (henüz yüklenmedi) dalında buton zaten

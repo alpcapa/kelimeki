@@ -2,6 +2,12 @@
 
 > docs/decisions/'e taşındı (context split, 24 Ağustos 2026). scripts/sponsored-post, scripts/play-store, scripts/kapak, scripts/reel.
 
+**Bu dosya GÖRSELLERİ anlatır; kanal başına GÖNDERİ metinleri ayrı durur**
+(16 Eylül lansman turu üç kanalda birden çıktı, üçünün metni/linki/etiketi
+farklı): `marketing/app-store/instagram-lansman.md` ·
+`linkedin-lansman.md` · `facebook-lansman.md`. Her biri kendi `?ref=`
+etiketini, kare setini ve yayın kütüğünü taşır.
+
 ## Reklam Görselleri (`scripts/sponsored-post/`, 20 Ağustos 2026)
 
 Kullanıcının kendi network'üne yaptığı organik paylaşım beğeni aldı ama tek
@@ -22,6 +28,34 @@ yılda birkaç kez koşuluyor) — yani `npm run` listesinde aramayın. Özellik
 `generate-klig-logo.mjs`, `KLigMark.tsx`'ten ALREADY-TRACED path verisini
 okuyup `sharp` ile rasterize eder; font/tarayıcı gerektirmez, `LogoMark`
 tarafının `generate-logo.mjs`'iyle aynı rolü oynar.
+
+### Mağaza rozeti karelere girdi (16 Eylül 2026)
+
+Uygulama 15 Eylül'de App Store'a çıktı; kareler hâlâ yalnızca `kelimeki.com`
+diyordu ve 1. karenin alt satırı *"Kurulum yok"* iddiasını taşıyordu — rozetle
+açıkça çelişen bir cümle. Kare 1 ve 5 artık resmî App Store rozetini taşıyor,
+her karenin alt şeridi `kelimeki.com · App Store'da` diyor, 5. karedeki mavi
+`CtaButon` kaldırıldı (rozet çağrının kendisi; iki güçlü çağrı son karede
+hedefi ikiye bölüyordu).
+
+- **Rozet ÇİZİLMİYOR, `public/`teki resmî dosya `<img>` ile basılıyor** —
+  inline SVG yasağının gerekçesi `src/utils/storeLinks.ts`te (Illustrator
+  ihracatının `.st0` sınıfları sayfaya sızıyor).
+- **Kapı paylaşılıyor:** kareler `visibleStoreBadges()` çağırıyor, yani
+  "yayında değilse çizme" kuralı ve rozet SIRASI (App Store önce) tek
+  kaynaktan geliyor. Play yayına girip `storeLinks.ts`teki `null` dolduğunda
+  ikinci rozet, kareler yeniden üretildiğinde kendiliğinden gelir — burada
+  yapılacak iş yok. Alt şeridin cümlesi de (`visibleStoreNamesTr`, `storeLinks.ts`) aynı listeden
+  türüyor, üçüncü bir yerde tekrarlanmıyor.
+- **⚠ Ölçü EKRANA göre, dosyaya göre değil.** Apple'ın 40 px alt sınırı
+  render edilmiş boyutu bağlar. Instagram karesi telefonda ~390 pt genişlikte
+  çizildiğinden 1080 px'lik tasarım orada ×0,36 küçülüyor: rozetin karede
+  40 / 0,36 ≈ 111 px yüksek olması gerekiyor → ≈420 px geniş. Genişlik elle
+  yazılmıyor, `rozetGenisligi()` rozet SVG'sinin `viewBox`ından oranı okuyup
+  hesaplıyor (aynı dosyada `~3.0` varsayımının nasıl çöktüğü yazılı).
+- **⚠ Bu yüzden rozet her kareye konmadı.** Alt şeride sığacak bir rozet
+  (~50 px) telefonda ~18 pt'ye düşerdi, yani kuralın altında. İçerik kareleri
+  (2-4) alt şeritte düz metin taşıyor.
 
 - **Görseller çizim DEĞİL, üretim bileşenlerinin sunucuda render'ı** —
   tahtalar `GameBoardPreview`→`Board` (`compact={false}`, `demoBoard.ts`),
@@ -139,6 +173,28 @@ taşan dekor": okunması gereken her şey ortadaki 480 px'lik şeritte, iki yand
 tahtalar bilerek kadraj dışına taşıyor. **Ölçüldü:** güvenli kutu x 170–650,
 telefon kırpması x 90–730 → tamamen içeride. Betik bu kontrolü her çalıştırmada
 tekrar ediyor, "sığdı" varsayılmıyor.
+
+### LinkedIn kişisel profil kapağı (`scripts/kapak/linkedin.tsx`, 16 Eylül 2026)
+
+`marketing/app-store/kelimeki-linkedin-kapak.png` (1584×396).
+`npm run generate-linkedin-cover` — FB kapağıyla **aynı boru hattı**,
+`build.mjs --linkedin` bayrağı.
+
+**Neden ayrı bir dosya:** oran ve kırpma kuralları başka. LinkedIn kişisel
+kapak **4:1** (FB'ninki 2.63:1) ve yükseklik yalnızca 198 CSS px — metni
+dikeyde ortalarsan profil fotoğrafının örttüğü banda giriyor. Üç kısıt
+birden: avatar SOL ALT'ı örter · telefonda kapak yanlardan kırpılır · ad
+kartı kapağın hemen altında başlar. Çözüm FB'dekiyle aynı ilke, farklı
+sayılar: güvenli kutu 440 px, dikeyde 26 px yukarı kaydırılmış.
+
+**Ölçüldü (üretimde her koşuda tekrar ediliyor):** güvenli kutu x 176–616,
+y 35–137 · telefon kırpması x 116–676 → içeride · avatar bölgesi (sol %22,
+alt %45) → uzakta.
+
+⚠ **Mağaza cümlesi ELLE YAZILMIYOR** — `visibleStoreNamesTr()`ten geliyor
+(`storeLinks.ts`). Play yayına girip URL dolduğunda kapak yeniden
+üretilirse satır kendiliğinden "App Store ve Google Play'de" olur; bu,
+16 Eylül 2026'da SSS metninin bayatlamasıyla alınan dersin aynısı.
 
 ### Reel (`scripts/reel/`, 20 Ağustos 2026)
 

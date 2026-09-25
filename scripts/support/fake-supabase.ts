@@ -45,6 +45,16 @@ export interface FakeSpec {
    * "geçici" düşmeyi (ağ değişiminde iptal edilen fetch) temsil ediyor.
    */
   failCalls?: number[];
+  /**
+   * `failCalls`/`offline` ile düşen çağrıların DÖNDÜRECEĞİ hata. Verilmezse
+   * taşıma hatası (`TypeError: Failed to fetch`) kullanılır.
+   *
+   * NEDEN VAR (17 Eylül 2026): 504 gibi GEÇİCİ SUNUCU hataları taşıma
+   * kalıplarına uymuyor ve ayrı bir yeniden deneme dalından geçiyor
+   * (`isTransientServerError`). Sahte uç yalnızca taşıma hatası
+   * üretebildiği sürece o dal ölçülemezdi.
+   */
+  failError?: Err;
 }
 
 const NET: Err = { message: 'TypeError: Failed to fetch' };
@@ -79,7 +89,7 @@ export function __setFake(next: FakeSpec): void {
 
 function builder() {
   const result = () =>
-    shouldFail() ? { data: null, error: NET } : { data: spec.rows ?? [], error: null };
+    shouldFail() ? { data: null, error: spec.failError ?? NET } : { data: spec.rows ?? [], error: null };
   const chain: Record<string, unknown> = {};
   for (const m of ['select', 'eq', 'is', 'not', 'order', 'range', 'in', 'limit']) {
     chain[m] = () => chain;
@@ -179,7 +189,7 @@ const client = {
     return 'ok';
   },
   rpc: async (name: string) => {
-    if (shouldFail()) return { data: null, error: NET };
+    if (shouldFail()) return { data: null, error: spec.failError ?? NET };
     const err = spec.rpcError?.[name];
     if (err) return { data: null, error: err };
     return { data: spec.rpcData?.[name] ?? [], error: null };

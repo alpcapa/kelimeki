@@ -70,3 +70,35 @@ sayfaya pencerede olmayan bir bölüm eklenince parite testi GERÇEKTEN düşüy
 `navigateFallbackDenylist` ve `vercel.json` redirect'i de güncelle. Üçü elle
 senkron; biri atlanırsa sayfa ya indekslenmez ya da SW tarafından yutulur.
 
+
+## Smart App Banner statik sayfalara da eklendi (19 Eylül 2026)
+
+Kullanıcı bildirdi: *"Web'de en üstte çıkan apple app yönlendirmesi burada
+da çıkmalı."*
+
+`<meta name="apple-itunes-app">` `index.html`de vardı, yani SPA'nın TAMAMI
+kapsanıyordu — karşılama katmanı, `/davet/:token`, `/game/:id`, hepsi o tek
+dosyadan servis ediliyor. Dışarıda kalan tek yüzey `STATIC_PAGES`'ti:
+`/gizlilik/` · `/kullanim-kosullari/` · `/hesap-silme/` · `/nasil-oynanir/`
+kendi HTML'ini `render.tsx` ile ürettiğinden `index.html`in hiçbir etiketini
+miras almıyor.
+
+**En kritik olanı `/nasil-oynanir/`:** Google'dan gelen yeni ziyaretçinin
+indiği SEO sayfası tam da orası — yani uygulamayı hiç bilmeyen kitleye
+banner'ı gösterecek sayfa, banner'ı olmayan tek sayfaydı.
+
+**Tek kaynak kuruldu:** `APPLE_APP_ID` + `appleSmartAppBannerMeta()`
+(`utils/storeLinks.ts`). Vitrin adresi de artık o sabitten türüyor.
+Fonksiyon rozetlerle AYNI kapıya bağlı — App Store `url`i `null` olduğu
+sürece banner da basılmaz; yayında olmayan bir uygulamaya banner koymak
+kullanıcıyı boş bir App Store sayfasına yollar.
+
+⚠ Sayı `index.html`de elle duruyor (statik HTML import edemez). Kapı
+(`npm run verify-store-badges`) üçünü birden kilitliyor: `index.html` banner
+taşıyor mu, app-id'si `storeLinks` ile aynı mı, ve `render.tsx` fonksiyonu
+gerçekten çağırıyor mu. "İki kopya sessizce ayrışır" bu projenin en sık
+tekrarlayan hata sınıfı.
+
+⚠ Banner YALNIZCA Safari'de çıkar — uygulama içi tarayıcılarda
+(Instagram/Facebook) ve Chrome'da görünmez. Mağaza rozetlerinin YERİNİ
+TUTMAZ, onlara ek bir katmandır.

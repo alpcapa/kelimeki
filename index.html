@@ -37,6 +37,21 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Kelimeki" />
+    <!-- iOS Smart App Banner (ROADMAP #26). Safari bunu sayfanın EN ÜSTÜNDE
+         çizer: uygulama kuruluysa "AÇ", değilse "GÖRÜNTÜLE" → App Store.
+         Gerekçe (19 Eylül 2026): davet linkinden gelen bir oyuncu web'de
+         oynayıp uygulamanın varlığını hiç görmeden ayrılıyordu — mağaza
+         rozeti yalnızca sayfanın DİBİNDE duruyor ve scroll etmeyen kimse
+         görmüyor. Bu etiket o boşluğu ekranın üstünden kapatır.
+         ⚠ Yalnızca iOS SAFARI'de çıkar: WhatsApp/Instagram gibi uygulama-içi
+         tarayıcılarda ÇIKMAZ ve davet linkleri tam da oralardan açılıyor —
+         bu yüzden `/davet` sayfasının kendi rozeti de gerekli, biri ötekinin
+         yerine geçmiyor.
+         ⚠ Bugünkü Universal Links bandının yerine GEÇMEZ, onu kapsar: bant
+         yalnızca "uygulama kurulu" hâlini yapıyor, bu etiket kurulu olmayana
+         da mağazayı gösteriyor.
+         App ID `marketing/app-store/console-formlari.md` §1'den. -->
+    <meta name="apple-itunes-app" content="app-id=6809809788" />
     <meta
       name="description"
       content="2 veya 4 kişi, yapay zekaya ve arkadaşlarına karşı oynanan stratejik bir kelime oyunu — hemen ücretsiz oyna."
