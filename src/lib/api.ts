@@ -1905,6 +1905,34 @@ export async function sendOnlineGameMessage(gameId: string, message: string): Pr
 }
 
 /**
+ * Oturumdaki kullanıcının kabul ettiği Sohbet Kuralları sürümü
+ * (`profiles.chat_rules_version`). Hiç kabul etmediyse `null`, okunamadıysa
+ * (ağ hatası, Supabase yok) `undefined` — `needsChatRulesConsent` ikisini de
+ * "pencereyi göster" sayar. Bkz. `utils/chatRules.ts`.
+ */
+export async function fetchChatRulesVersion(userId: string): Promise<number | null | undefined> {
+  if (!supabase) return undefined;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('chat_rules_version')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error || !data) return undefined;
+  return (data as { chat_rules_version: number | null }).chat_rules_version;
+}
+
+/**
+ * Sohbet Kuralları'nın kabulünü sunucuya yazar (`accept_chat_rules` RPC'si;
+ * zaman damgası sunucunun `now()`ı, yalnızca İLERİ yazar — tekrar çağrılması
+ * zararsız).
+ */
+export async function acceptChatRules(version: number): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.rpc('accept_chat_rules', { p_version: version });
+  if (error) rethrowSupabase(error);
+}
+
+/**
  * `online_game_messages`'a yeni bir satır eklendiğinde `onInsert`'i tetikler
  * (Realtime) — `subscribeOnlineGameState`'in birebir aynı deseni, ayrı bir
  * tablo/kanal üzerinde. Yalnızca INSERT dinlenir (mesajlar düzenlenmiyor/

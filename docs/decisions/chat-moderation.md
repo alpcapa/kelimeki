@@ -67,3 +67,36 @@ alma/şikayetin kişi bazlı olması.
 - **Kapsam dışı (bilinçli, v1):** Bitmemiş oyunun canlı sohbet dökümünü admin'e gösterme; raporlanan kişiye herhangi bir bildirim/görünürlük/savunma mekanizması (yukarıdaki "endüstri standardı" gerekçesiyle bilinçli); rapor EDENE "şikayetiniz alındı/inceleniyor" e-postası — 3 Ağustos 2026'da kullanıcı sordu, birlikte GÖNDERMEME kararı verildi: mevcut altı bildirimin hepsi alıcının başka türlü KAÇIRACAĞI bir şeyi haber veriyor, bu ise kişinin saniyeler önce kendi yaptığı şeyi ona söylerdi (sıfır yeni bilgi); "inceliyoruz" kapanışı olmayan bir söz olurdu (ne SLA ne planlanmış bir "sonuç" maili var) ve "ne oldu peki?" dönüşleri üretirdi; 2 Ağustos'taki `email_notifications_enabled` işi zaten "artan mail sayısı rahatsız edebilir" kaygısıyla yapılmıştı. Bunun yerine mailin örtmeye çalıştığı asıl boşluk (kişide hiç kayıt kalmaması) yukarıdaki iki UI işiyle kapatıldı.
 - **Doğrulama sınırı:** Faz 1'deki aynı sebeple (bu ortamda iki gerçek oturumlu tarayıcı arasında canlı test mümkün değil) RLS/RPC davranışı yalnızca migration uygulaması ve fonksiyon varlığı doğrulamasıyla teyit edildi (`information_schema.routines` sorgusu) — gerçek çok kullanıcılı akış (sessize alma sonrası popup'ın gerçekten bastırılması, rapor/withdraw'ın admin panelinde doğru rozetle göründüğü) kullanıcının kendi gerçek hesaplarıyla teyit edilmesi gerekiyor.
 
+
+## Sohbet Kuralları onayı (25 Eylül 2026)
+
+Kullanıcı isteği: mesajlaşmadan önce, içeriğin sorumluluğunun gönderene ait
+olduğunu ve cinsel/rencide edici içeriğin yasak olduğunu söyleyen bir onay.
+
+- **Tek seferlik, HESABA bağlı.** İlk mesaj GÖNDERİLMEYE çalışıldığında çıkar
+  (pencere açılınca değil — okuyan engellenmez). Kabul `accept_chat_rules`
+  RPC'siyle `profiles.chat_rules_version` + `chat_rules_accepted_at`'e yazılır;
+  web ve mobil aynı satırı okur. Kurallar ESASLI değişirse
+  `CHAT_RULES_VERSION` (`src/utils/chatRules.ts`) artırılır, herkese bir kez
+  daha sorulur.
+- **Kayıt bir kanıt, istemci yazamaz.** `profiles`'ta tablo düzeyinde update
+  izni var; `trg_keep_chat_rules_consent` (BEFORE insert/update) iki kolonu,
+  RPC'nin transaction'a özel `kelimeki.chat_rules_accept` işareti yoksa geri
+  alır (`keep_signup_utm_source` deseni). Canlıda rol simülasyonuyla
+  doğrulandı: doğrudan update → değişmedi; RPC → `1` + zaman; RPC sonrası
+  doğrudan `null` denemesi → `1` kaldı. RPC yalnızca İLERİ yazar.
+- **Kapı yalnızca istemcide — bilerek.** Sunucu `online_game_messages`
+  insert'ünü onaya bağlamıyor: mağazadaki 1.1.0/1.1.1 paketleri pencereyi
+  bilmiyor, bağlasaydık o kullanıcılar sohbet edemezdi. Sahadaki tüm
+  paketler pencereyi taşıdığında sunucu kapısı (RLS `with check`)
+  düşünülebilir.
+- **Okuma başarısızsa pencere GÖSTERİLİR** (`needsChatRulesConsent`) —
+  fazladan bir onay hiçbir kaydı bozmaz.
+- **Bölünme:** web penceresi hemen yayında; Kullanım Koşulları §3 (açık yasak
+  listesi, "sıfır tolerans") + §5 (mutlak muafiyet cümlesi → "sorumluluk
+  gönderene ait; bildirilen içerik incelenir ve kaldırılır") + Gizlilik'teki
+  yeni veri satırı, port penceresiyle birlikte SÜRÜM TRENİNDE — çünkü
+  `legal_text_test.dart` web metninin tarihini okuyor (web ↔ port aynı PR).
+- **Açık kalan:** otomatik küfür/müstehcenlik filtresi YOK (Apple 1.2
+  "filtreleme yöntemi" istiyor). Sohbetin yalnızca kabul edilmiş arkadaşlar
+  arasında olması riski bugün sınırlıyor; ayrı bir iş.
