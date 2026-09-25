@@ -63,6 +63,21 @@ int jokerFinishBonus(int jokerCount) {
   return 0;
 }
 
+/// Taş değiştirmenin ÜST SINIRI: torbada kalan taş sayısı.
+/// (TS ikizi: `maxSwapCount`, src/game/constants.ts)
+///
+/// 14 Eylül 2026, kullanıcı raporu (Asnmzr): torbada 4 taş kalmışken 7 taş
+/// değiştirilebiliyordu. Motorun dördü de (src · BURASI · SQL · play-ai-turn)
+/// "önce seçilenleri torbaya koy, SONRA en fazla o kadar çek" sırasını
+/// uyguladığından taş korunumu bozulmuyordu — arıza SESSİZDİ. Vaka kaydı:
+/// docs/decisions/game-rules.md.
+int maxSwapCount(int bagCount) => bagCount;
+
+/// Sınır aşıldığında gösterilen tek metin. (TS ikizi: `swapLimitMessage`)
+/// ⚠ Web ile BİREBİR aynı olmalı — `swap_limit_parity_test.dart` kilitler.
+String swapLimitMessage(int bagCount) =>
+    'Torbada $bagCount taş var — en fazla $bagCount taş değiştirebilirsin.';
+
 typedef CornerBoundsRec = ({int r0, int r1, int c0, int c1});
 
 /// Köşe indeksinin satır/sütun aralığı. 0=sol-üst, 1=sağ-üst, 2=sol-alt,

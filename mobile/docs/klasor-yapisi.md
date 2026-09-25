@@ -341,6 +341,16 @@ mobile/
                              # ⚠ Boşluk ÖLÇMEZ — kenar/alt boşluğu bilinçli
                              # kabul (kullanıcı kararı); soru "iyi mi" değil
                              # "kırılmıyor mu"
+      swap_limit_parity_test.dart # taş değiştirme SINIRI web ↔ port:
+                             # uyarı metni (TS `${bagCount}` ↔ Dart
+                             # `$bagCount` normalize edilir), `maxSwapCount`,
+                             # İKİ kapı (seçim anı + onay) ve YZ dilimi ÜÇ
+                             # kopyada (web · port · play-ai-turn). ⚠ Son
+                             # iddia kritik: Edge dilimi düşerse sunucu
+                             # kapısı YZ'nin hamlesini reddeder ve
+                             # play-ai-turn SESSİZCE pas geçer (Parça 206).
+                             # DAVRANIŞ kapısı ayrı: kelimeki_core'un
+                             # run_all.dart → testSwapLimit
       support/vector_parity.dart # web SVG path'i ↔ portun Path()..lineTo
                              # zinciri: ikisini kanonik çizim listesine
                              # indiren ORTAK ayrıştırıcı. İki parite testi

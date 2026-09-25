@@ -1711,6 +1711,28 @@ aynı davranışı kazandığını doğrular. Gerçek bir e-posta kutusu gerekiy
       uygulamayı arka plana al, geri dön — oturum AÇILMADIĞI için pencere
       YERİNDE durmalı. Aynı şekilde "Şifremi Unuttum" → "Bağlantı Gönder"
       sonrası altın renkli bilgi satırı çıkar ve pencere kapanmaz.
+## 27. Taş değiştirme sınırı — torbada kalan kadar (14 Eylül 2026, Parça 206)
+
+Kullanıcı raporuyla (Asnmzr) bulundu. ⚠ **Sunucu yarısı 14 Eylül'den beri
+CANLIDA, port yarısı bu PR'da** — yani Canlı oyun eski pakette bile doğru
+davranır, YEREL oyun ancak bu sürümle düzelir. İkisini ayrı ayrı sına.
+
+Kurulum: torbanın 7'nin altına inmesi için oyunu sona doğru götür (Torba
+penceresi kalan sayıyı yazıyor).
+
+- [ ] **Yerel/YZ oyunu (bu sürümün asıl kanıtı):** torbada 4 taş varken
+      "Değiştir" → 5. taşa dokunulduğunda taş SEÇİLMİYOR ve *"Torbada 4 taş
+      var — en fazla 4 taş değiştirebilirsin."* çıkıyor.
+- [ ] Seçimi 4'ten 3'e düşür → uyarı kayboluyor, "Değiştir (3)" çalışıyor.
+      ⚠ Ters yön: swap modunun kendi ipucu (*"Değiştireceğin taşları seç…"*)
+      ilk dokunuşta SİLİNMEMELİ — dar temizleme tam bunun için.
+- [ ] Değişim sonrası Torba sayısı DEĞİŞMİYOR (4 kalmalı), raf 7 taş.
+- [ ] **Canlı oyun:** aynı senaryo, aynı metin. ⚠ Sınırın ALTINDAKİ bir
+      değişim (torba 4, seçim 2) sunucuda REDDEDİLMEMELİ.
+- [ ] **YZ (Canlı):** torba 7'nin altındayken YZ'nin tıkandığı bir tur
+      yakalanırsa YZ **pas geçmiyor**, taş değiştiriyor (hamle geçmişinde
+      `Değiştirme`). ⚠ Bu, `play-ai-turn`ün dilimleyen sürümünün sahadaki
+      tek kanıtı — eksik olsaydı YZ sessizce pas geçerdi, hata görünmezdi.
 
 ## 24. Push bildirimleri + derin bağlantılar → `mobile/docs/testing-bildirimler.md`
 
