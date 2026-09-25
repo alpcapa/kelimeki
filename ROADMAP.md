@@ -1011,6 +1011,52 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
+## 37. Küfür / müstehcenlik filtresi — **AÇIK, konuşuluyor** (25 Eylül 2026)
+
+Kullanıcı: *"Küfür filtresi işini konuşalım. Onu roadmap'e yaz."* Sohbet
+Kuralları onayının (#639 web ✅, #640 port taslak) devamı. Bugün mesajlar
+hiçbir otomatik süzgeçten geçmiyor; tek savunma kişinin sessize alıp şikâyet
+etmesi.
+
+**Neden:** Apple kuralı 1.2 kullanıcı içeriği olan uygulamadan dört şey
+istiyor: kabul edilen kurallar (✅ onay penceresi), şikâyet (✅), engelleme
+(✅ sessize alma) ve **uygunsuz içeriği süzme yöntemi (❌ YOK)**. Sohbetin
+yalnızca kabul edilmiş arkadaşlar arasında olması riski bugün sınırlıyor ve
+bir incelemede savunma olarak anlatılabilir, ama bu bir süzgeç değil.
+
+**Önerilen yön — süzgeç SUNUCUDA, `online_game_messages` insert'ünde
+(trigger):**
+- Mağazadaki ESKİ paketler dahil (1.1.0/1.1.1) herkese aynı gün işler. İstemci
+  süzgeci web + port + iki mağaza turu isterdi ve atlatılabilirdi.
+- Liste bir tabloda (`blocked_words`), admin panelinden düzenlenir; kodda
+  gömülü liste YOK (liste değiştikçe sürüm çıkmasın).
+- Eşleştirme Türkçe'ye göre: `tr_lower` (İ/ı), harf tekrarı (`aaa` → `a`),
+  araya konan boşluk/nokta/yıldız, sık rakam-harf değişimi (`0`→`o`, `1`→`i`).
+  ⚠ **Yanlış pozitif** asıl risk: kelime İÇİNDE arama masum kelimeleri de
+  keser. Yalnızca kelime sınırı + bilinen ek kalıpları.
+
+**Kullanıcının vermesi gereken kararlar:**
+1. **Maskele mi, reddet mi?** Maskele (`****`, mesaj gider) daha yumuşak ve
+   yaygın; reddet ("Mesajın uygunsuz ifade içeriyor") gönderene net ama
+   kelime avına iter. Reddedilen/maskelenen mesaj ayrıca admin'e düşsün mü?
+2. **Kapsam:** yalnızca sohbet mi, **takma ad** da mı? Takma ad k-lig
+   listesinde HERKESE görünüyor, yani risk orada daha geniş.
+3. **Listeyi kim kuracak:** hazır bir Türkçe liste mi, elle mi?
+
+**Uygulamadan ÖNCE ölçüm (değişmez):** mevcut mesajları (`online_game_messages`
++ `games.messages` arşivi) ve takma adları listeye karşı KURU koştur, kaç
+tanesinin yakalanacağına ve kaçının yanlış pozitif olduğuna bak. Eşik o
+sayılara göre ayarlanır.
+
+**Dokunacağı yerler:** migration (tablo + trigger + `grant`) · admin
+paneline liste düzenleme · `TermsModal`/`PrivacyModal` (otomatik süzgeç
+cümlesi, web + port BİRLİKTE, `legal_text_test.dart`) · reddetme seçilirse
+`friendlyErrorMessage`in P0001 yolu sunucunun Türkçe mesajını zaten
+gösterir (web ✅; portta `error_message.dart` 1.1.0'da YOK, 1.1.1 ile
+iniyor — eski pakette ret metni ham görünebilir, maskelemenin bir artısı
+daha). Kayıt: `docs/decisions/chat-moderation.md` →
+"Sohbet Kuralları onayı" → "Açık kalan".
+
 ## Her iş için değişmeyen kurallar
 
 1. **Önce etki analizi** (kök `CLAUDE.md` → "Çalışma İlkesi"): bu kodun
