@@ -1585,6 +1585,13 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
       ve uygulamanın sürümü orada olmalı. Sürüm `—` çıkıyorsa `logGameStart`
       platform/sürüm göndermiyor demektir. (Tablo 16 Eylül 2026'da açılır
       hâle geldi — üst satır artık PLATFORM.)
+- [ ] **Aynı oyunu BİTİR** (16 Eylül 2026) → Büyüme > Oyun'daki "Oyun Sayısı"
+      grafiğinde `iOS`/`Android` serisi o günün kovasında **1 artmalı**.
+      Artmıyor ve artış "Diğer"e gidiyorsa `logGameFinish` `platform`
+      alanını göndermiyor demektir (`data/games_api.dart`) — grafiğin
+      platform kırılımını besleyen TEK alan bu. ⚠ Mağazadaki ESKİ pakette
+      bu alan yok, yani oradan biten oyunların "Diğer"e düşmesi BEKLENEN;
+      testi bu değişikliği içeren bir derlemeyle koş.
 - [ ] **Ekran adı:** oyun ekranındayken bir hata oluştur (ör. uçak modunda
       Canlı bir oyuna gir) → hata kaydının "Yol" alanı `game` /
       `online-game` / `intro` olmalı, `app` DEĞİL. `app` görünüyorsa ya
