@@ -1,7 +1,7 @@
 # Ölçüm v2 — tek olay tablosu, tüm platformlar (PLAN, 24 Eylül 2026)
 
-> Durum: **PR 1 (sunucu + web) YAPILDI, gizlilik metni yarısı ve mobil
-> BEKLİYOR** (24 Eylül 2026). Kullanıcı kararı: *"Kendi tablomuz ve (a),
+> Durum: **PR 1 (sunucu + web) YAPILDI; gizlilik metni yarısı PR #626'da
+> (dondurmayı bekliyor), mobil (PR 2) BEKLİYOR** (24 Eylül 2026). Kullanıcı kararı: *"Kendi tablomuz ve (a),
 > planı yaz. Ayrıca tabloda revisit de görmek istiyorum. 2+ kaç kişi?"* Bu
 > dosya uygulanırken güncellenir; bittiğinde "PLAN" başlığı kalkar ve dosya
 > bir karar kaydına döner. Uygulamanın kaydı: aşağıda "PR 1 — ne yapıldı".
@@ -161,7 +161,11 @@ duvara çarpmıştı). Çözüm: web YALNIZCA metnin bugün zaten saydığı ola
 yazar — (1) her ziyaret → `land`/`visit`, (2) YZ oyunu başlangıcı (girişli
 dahil) → `game_start`, (4) misafir bitişi → `game_finish`. `signup` ve üye
 bitişi `FUNNEL_MEMBER_EVENTS_ENABLED` bayrağının arkasında; çağrı yerleri
-(`AuthModal`, `App.tsx`) hazır. Kalan iş: ROADMAP **#36**.
+(`AuthModal`, `App.tsx`) hazır. Kalan iş: ROADMAP **#36** → **PR #626**
+(24 Eylül 2026): Gizlilik 6. bölüme (6) hesap açılışı + (7) girişli YZ
+bitişi eklendi (olay türü, platform, sürüm, GÜN; hesap kimliği ve saat YOK),
+(4)'ün "anonim kod ORAYA yazılmaz" cümlesi "o kayda" diye daraltıldı ki (7)
+ile çelişmesin, bayrak `true`. Merge'ü Play #19'u bekliyor (`legal_modals.dart`).
 ⚠ Bu arada admin tablosunun **Üye** sütunu "—" gösterir ve **Bitiren**
 yalnızca misafir bitişini sayar (tablonun altındaki not ve `?` metni söylüyor).
 
