@@ -96,7 +96,7 @@ hedefi ikiye bölüyordu).
 başlık/kısa/tam açıklama ve cihazdan alınacak ekran görüntülerinin çekim
 listesi). `npm run generate-play-assets`.
 
-- **Promotional content kartı (`promo-1920x1080.png`, 25 Eylül 2026):**
+- **Promotional content kartı (`promo-1920x1080.jpg`, 25 Eylül 2026):**
   aynı komut üretir (`promo-graphic.tsx`). Görselde **metin ve logo YOK** —
   Play kartın başlığını/açıklamasını görselin alt kısmına kendisi bindiriyor
   ve kartı yüzeye göre kırpıyor; söylenecek her şey Console alanlarında.
