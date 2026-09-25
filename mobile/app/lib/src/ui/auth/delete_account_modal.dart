@@ -21,13 +21,13 @@
 //   sıfır olan satırlar iki tarafta da gizleniyor.
 import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart' show trUpper;
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 
 import '../../data/auth_service.dart';
 import '../game/modal_shell.dart';
 import '../game/neo_button.dart';
 import '../form_input.dart';
 import '../tokens.dart';
+import '../../util/error_message.dart';
 
 const String _onayKelimesi = 'SİL';
 
@@ -89,7 +89,8 @@ class _DeleteAccountModalState extends State<DeleteAccountModal> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is AuthException ? e.message : 'Hesap bilgileri okunamadı.';
+        _error = friendlyErrorMessage(e,
+            surface: 'hesap-silme-ozet', fallback: 'Hesap bilgileri okunamadı.');
         _yukleniyor = false;
       });
     }
@@ -113,7 +114,8 @@ class _DeleteAccountModalState extends State<DeleteAccountModal> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e is AuthException ? e.message : 'Hesap silinemedi.';
+        _error = friendlyErrorMessage(e,
+            surface: 'hesap-silme', fallback: 'Hesap silinemedi.');
         _busy = false;
       });
     }

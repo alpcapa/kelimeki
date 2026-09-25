@@ -17,7 +17,6 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 
 import '../../data/analytics.dart';
 import '../../data/auth_service.dart';
@@ -29,6 +28,7 @@ import '../game/neo_button.dart';
 import 'legal_modals.dart';
 import '../tokens.dart';
 import '../form_input.dart';
+import '../../util/error_message.dart';
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -235,9 +235,11 @@ class _AuthModalState extends State<AuthModal> {
     final friendly = friendlyAuthMessage(e);
     if (friendly != null) return friendly;
     if (e is FormatException) return e.message; // trDateToIso Türkçe mesajları
-    if (e is AuthException) return e.message;
     if (e is _FormError) return e.message;
-    return e.toString();
+    // ⚠ AuthException'ın `message`ı da buradan geçer: 13 Eylül 2026'da
+    // doğrudan gösteriliyordu ve ham `{"message":"Gateway Timeout"}` ekrana
+    // düştü (App Store ekran kaydı sırasında).
+    return friendlyErrorMessage(e, surface: 'giris');
   }
 
   Future<void> _submit() async {

@@ -34,8 +34,7 @@
 #
 # ⚠ `paths` LİSTESİ BU İŞİN DE KAPSAMI. Mobil testlerin okuduğu depo
 # dosyaları (13 Eylül 2026'da sayıldı): `src/**` (14 bileşen/util —
-# sonuncusu `src/utils/errorMessage.ts` — onu okuyan
-# `error_message_parity_test.dart` port PR'ıyla birlikte gelecek),
+# sonuncusu `src/utils/errorMessage.ts`, `error_message_parity_test.dart`),
 # `scripts/verify-error-reporting.ts`, `supabase/migrations/**`,
 # `tailwind.config.js` — dördü de yukarıdaki listede VAR. Mobil testlere
 # `mobile/` DIŞINDAN yeni bir dosya okutulursa o yolun burada karşılığı

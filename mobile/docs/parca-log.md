@@ -25,6 +25,66 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 205 — Ham hata metni kullanıcıya gösteriliyordu
+
+   - ✅ **Parça 205 — Ham hata metni kullanıcıya gösteriliyordu
+     (13 Eylül 2026):** Kullanıcı App Store için ekran kaydı çekerken giriş
+     penceresinde `{"message":"Gateway Timeout"}` gördü ve fotoğrafladı —
+     ham bir HTTP 504 gövdesi, Türkçe bir uygulamada, giriş formunun
+     altında. İkinci denemede giriş çalıştı, yani arıza geçiciydi ama
+     ekrandaki metin bunu SÖYLEMİYORDU. Kullanıcı isteği: *"kullanıcıya
+     gösterilen tüm mesajları kontrol et."*
+
+     **Tek bir unutulmuş satır DEĞİL, bir POLİTİKANIN sonucu.**
+     `friendlyAuthMessage` (4 Ağustos 2026) ve `isNetworkError` ikisi de
+     bilerek *"eşleşmeyen hata HAM hâliyle geçsin"* diyordu; gerekçe de
+     sağlamdı: *"bilinmeyen bir hatayı uydurma bir Türkçe cümleyle
+     gizlemek, hata ayıklamayı imkânsız kılardı."* O gerekçe artık geçerli
+     değil — arada `client_errors` telemetrisi var (30 Ağustos 2026). Ham
+     metni kullanıcıya BASMAK ile onu KAYBETMEK aynı şey değil.
+
+     **Yeni kapı:** `util/error_message.dart` ↔ `src/utils/errorMessage.ts`.
+     Dört dal, SIRASI davranışın parçası: (1) `P0001` → sunucunun Türkçe
+     reddi, olduğu gibi · (2) geçici arıza → *"birkaç saniye sonra tekrar
+     dene"* · (3) makine metni → jenerik · (4) kalan → olduğu gibi.
+     ⚠ **2 mutlaka 3'ten ÖNCE:** `Gateway Timeout` düz metin olarak da
+     geliyor ve o hâliyle hiçbir makine kalıbına takılmaz; sıra ters olsaydı
+     4. dala düşüp yine ham görünürdü. Desen yeni değil —
+     `inviteAcceptErrorText` (25 Ağustos) tam bunu yapıyordu ama TEK uçta.
+
+     **En büyük regresyon riski 1. daldı ve kapatıldı:** web `api.ts` 45
+     yerde `throw new Error(error.message)` diyordu, yani SQLSTATE yolda
+     DÜŞÜYORDU — o hâliyle "sunucunun Türkçe reddi" ile "makine hatası"
+     ayırt edilemezdi ve `submit_move`un *"Sıra sende değil."* mesajı
+     jenerikleşirdi. Hepsi `rethrowSupabase()`e çevrildi (portta
+     `ServerRejection` zaten `code` taşıyordu).
+
+     **Telemetri ENJEKTE ediliyor, import EDİLMİYOR** (ilk deneme geri
+     alındı): `errorReporting` Supabase istemcisini çekiyor, istemci de
+     `import.meta.env` okuyor — doğrulama betiği daha ilk satırda düşmüştü.
+     Bağlama yeri `main.dart` / `boot.tsx`.
+
+     **Bilinçli kapsam dışı:** admin paneli (`AdminDashboard`,
+     `MemberMessageModal`) ham metni göstermeye devam ediyor — oranın tek
+     kullanıcısı geliştiricinin kendisi ve ham hata orada bir ARAÇ.
+     `trDateToIso`nun `FormatException`ı da doğrudan geçiyor (yerel
+     doğrulama, sunucu yok).
+
+     **Dokunulan port dosyaları:** yeni `util/error_message.dart` +
+     `auth_modal` · `reset_password_modal` · `account_settings_modal` ·
+     `delete_account_modal` · `chat_modal` · `feedback_modal` ·
+     `online_game_screen` · `friends_api` · `main.dart`.
+
+     **Kapılar:** `npm run verify-error-messages` (66 kontrol, yeni) ·
+     `error_message_parity_test.dart` (22 test, web dosyasını OKUR:
+     metinler birebir + kalıp sayıları). **868 Flutter testi · 72 Playwright
+     · `flutter analyze` temiz · `npm run lint` temiz.**
+
+     **Doğrulama sınırı:** gerçek bir 504 üretilemedi — kalıplar ölçülmüş
+     metinlerden (kullanıcının ekran görüntüsü + PostgREST/GoTrue biçimleri)
+     türetildi. Kara listenin yanılması GÜVENLİ tarafta: tanımadığı metin
+     geçer, sessizce jenerikleşmez. Cihaz maddesi: `mobile/TESTING.md`.
+
 ## Parça 210 — YZ robot avatarı iPhone/iPad'de ortalı değildi: Apple Color Emoji'nin mürekkebi kutusunda ortalı DEĞİL
 
    - ✅ **Parça 210 — YZ robot avatarı iPhone/iPad'de ortalı değildi: Apple
