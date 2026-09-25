@@ -56,6 +56,13 @@
 > tablosu burada kaldı: tablodaki bir satırın gövdesi bu dosyada yoksa
 > cilt 1'dedir. ⚠ **Yeni kapanan maddeler YALNIZCA bu dosyaya** — cilt 1
 > büyürse CI düşer. Bir atıfı ararken: `grep -n "X" docs/decisions/roadmap-arsiv*.md`.
+>
+> **Beşinci taşıma: 25 Eylül 2026 (merge turu sonu).** Taşınanlar: **#33 +
+> #36** (gizlilik metni, PR #626), **merge turunun planı** (sıra, dal ↔ PR
+> eşlemesi, ölçümler), "Sıradaki sürüme binecekler"in 12 Eylül paragrafları
+> + 665'le çıkmış üç satır, ve **madde 0 — FAZ B'nin tamamı** (Play
+> production 24 Eylül'de yayında). ROADMAP 125 → ~104 KB (uyarı bandından
+> çıktı).
 
 ### Sayaç — nerede okunur, 14. gün ne zaman
 
@@ -114,6 +121,513 @@ Closed testing → (track) → Testers** (izin listesi) ve **Statistics**
 
 Kaynak kayıt: `marketing/play-store/console-formlari.md` §7.
 
+
+## 33 · 36. Gizlilik metni: "dört → yedi" + Huni v2 üye olayları — ✅ **KAPANDI** (PR #626, 25 Eylül 2026)
+
+**#33 — gizlilik metni kendi içinde çelişiyor: "dört durumda" diyor, BEŞ
+madde sayıyor** → 🔒 **PR #626 AÇIK, dondurmayı bekliyor** (24 Eylül 2026;
+#36 ile aynı PR, sayı artık "yedi"). (21 Eylül 2026, kod
+okunurken bulundu — kullanıcı bildirmedi, yani sahada kimse fark etmemiş
+olabilir ama metin CANLIDA yanlış).
+
+`src/legal/LegalContent.tsx`: *"Bu kod **dört** durumda sunucuya iletilir:
+(1)… (2)… (3)… (4)… **(5)** Oyunu tanıtan kısa turu…"* ve paragraf
+*"**Bu beş kaydın** hiçbirinde…"* diye bitiyor. Tanıtım turu (5) 8 Eylül'de
+eklenirken açılış cümlesindeki sayı güncellenmemiş. Aynı hata portun birebir
+kopyasında da var (`mobile/app/lib/src/ui/auth/legal_modals.dart`: satır 417
+"dört durumda", 442 "(5)", 447 "Bu beş kaydın") — kopya sadık, hatayı da
+taşımış. `/gizlilik/` statik sayfası aynı kaynaktan üretildiği için hata
+yayında.
+
+**Düzeltme tek kelime** (`dört` → `beş`), ama ⚠ **iki dosyada birden ve
+`Son güncelleme` tarihiyle**: `mobile/app/test/legal_text_test.dart` port
+kopyasının tarihini doğrudan web kaynağını okuyarak karşılaştırıyor, yani
+tek taraflı düzeltme web CI'ın `parite` işini düşürür. `mobile/app/` dosyası
+olduğu için **mobil derlemeyi tetikler** → dondurma bitmeden yapılmaz;
+**port merge turuyla AYNI PR'da** halledilmeli (bkz. "Dondurulmuş port
+PR'ları — merge turu SIRASI").
+
+⚠ **Ders (aynı gün ikinci kez):** bir listeye madde eklerken listeyi SAYAN
+cümle de güncellenmeli — bu, rozet zincirinin metindeki karşılığı.
+
+**#36 — Huni v2'nin gizlilik metni yarısı: "Üye" sütunu + üye bitişi** →
+🔒 **PR #626 AÇIK, dondurmayı bekliyor** (24 Eylül 2026: metin (6)+(7),
+tarih, port kopyası, bayrak `true`; #33 aynı PR'da. Merge = kapanış → arşive
+taşı). (24 Eylül 2026, kullanıcı kararı: *"ikiye
+böl"*). Sunucu + web yarısı (`funnel_events`, admin "Huni v2") bu tarihte
+yayında, ama web yalnızca gizlilik metninin BUGÜN saydığı olayları yazıyor
+(ziyaret, YZ oyunu başlangıcı, misafir bitişi). `signup` ve üye oyun bitişi
+`FUNNEL_MEMBER_EVENTS_ENABLED` (`src/utils/funnelEvents.ts`) bayrağının
+arkasında, çağrı yerleri hazır. Yapılacak TEK PR: 6. bölüme yeni durumları
+ekle (anonim kodla, hesap kimliği OLMADAN, yalnızca GÜN: "hesap açtığınızda"
++ "girişliyken oyun bitirdiğinizde") + tarihi güncelle + port kopyası
+(`legal_modals.dart`) + bayrağı `true` yap. `npm run verify-funnel-events`
+bayrağın metin güncellenmeden açılmasını engelliyor. **#33'ün "dört → beş"
+düzeltmesiyle AYNI PR** (ikisi de aynı paragraf, aynı tarih, aynı port
+dosyası). Mobil derlemeyi tetikler → merge turunda; Huni v2'nin mobil yarısı
+(PR 2, `docs/decisions/funnel-v2.md`) ile birleştirilebilir.
+
+## Dondurulmuş port PR'ları — merge turu SIRASI (21 Eylül 2026) — ✅ **TAMAMLANDI** (25 Eylül 2026)
+
+> Tur 25 Eylül'de on PR'la (sıraya #601 · #611 · #626 eklendi) bitti; özet
+> `ROADMAP.md` → "merge turu ✅ TAMAMLANDI". Aşağısı planın kendisi.
+
+Play production incelemesi (#19) kapanınca girecek yedi PR (+ 24 Eylül'de
+eklenen #626, sekizinci — aşağıda). Önerilen sıra:
+**#565 → #562 → #579 → #576 → #554 → #557 → #547**.
+
+⚠ **Dondurmanın artık YAZILI bir dayanağı var (22 Eylül 2026).** Play
+destek talebine gelen cevap: *"each new submission will reset the review
+turnaround time, as the evaluation period is counted from the date of the
+most recent change"* — yani Play'e yeni bir paket yüklemek #19'un saatini
+SIFIRLAR. ⚠ Ama kapsamı karıştırma: bağlayıcı olan **Play'e yükleme**,
+`main`'e merge değil (merge yalnızca `mobile-build` + TestFlight'ı
+tetikler, Play kuyruğuna dokunmaz). Merge dondurması yine de duruyor,
+çünkü merge incelemedeki paketin `.aab`sini `mobile-latest`ten siliyor.
+Cevabın tamamı ve talebin künyesi:
+`marketing/play-store/console-formlari.md` → "Google cevapladı".
+
+Sıra tahmin DEĞİL, ölçüldü (`main` = `3a55492`): yedisinin başı çekilip
+`merge-tree` ile tek tek denendi, sonra ayrı bir çalışma ağacında *"her
+adımda temiz birleşenler arasından, sonrasında en çok PR'ı temiz bırakanı
+seç"* diyen ileriye bakan bir simülasyon koşuldu.
+
+⚠ **"Çakışmasızları öne al" İŞE YARAMIYOR — denendi ve elendi.** Bugünkü
+`main`'e karşı üçü temiz (#557, #576, #579), ama bu özellik ilk merge'ü
+yaşamıyor: altı PR `mobile/docs/parca-log.md`'ye, altısı
+`mobile/TESTING.md`'ye ekleme yapıyor. Hangisi önce girerse KALAN ALTISI
+çakışıyor — simülasyonda en iyi adayın skoru bile **0**. Yani sıra
+çakışmayı önlemiyor, yalnızca kimin bedava geçeceğini seçiyor. Ölçüt bu
+yüzden "çakışmasız" değil, **küçükten büyüğe**: her çözüm olabildiğince
+küçük kalsın, en geniş iki PR temiz zemine otursun.
+
+⚠ **"Mobil tetiklemeyenleri öne al" seçeneği de YOK:** yedisi de
+`mobile/app` ya da `mobile/kelimeki_core` altında KOD değiştiriyor, yani
+her merge ayrı bir `mobile-build` + TestFlight yüklemesi demek.
+
+| Sıra | PR | Dosya | Neden burada |
+|---|---|---|---|
+| 1 | **#565** oyun bitiş `platform` damgası | 3 | `parca-log`'a hiç dokunmuyor — turun tek gerçekten temiz halkası |
+| 2 | **#562** kayıt onayı | 5 | küçük; tek dart dosyası + testi. ⚠ #32'nin E/F alternatifleri bunun SAHAYA inmesini bekliyor |
+| 3 | **#579** 504 yeniden deneme | 6 | `mobile/TESTING.md`'ye dokunmuyor, yalnızca `parca-log` |
+| 4 | **#576** zoom balonu otomatik kapanma | 8 | kapsam dar |
+| 5 | **#554** taş değiştirme sınırı | 9 | MOTOR dosyası (`constants.dart` + `reducer.dart`) → golden vector'lar + `dart run test/run_all.dart` aynı turda |
+| 6 | **#557** oyun ortasında giriş | 22 | en geniş; `Runner.xcodeproj` + `pubspec.lock` taşıyor |
+| 7 | **#547** ham hata metinleri | 20 | turun tek **web** dosyasını (`src/utils/errorMessage.ts`) ve `web-ci.yml`i o taşıyor; parite kapısı `error_message_parity_test.dart` onunla geliyor → en son, temiz zeminde. `npm run lint` + `verify-error-messages` |
+| 8 | **#626** gizlilik 6. bölüm + Huni v2 üye olayları (ROADMAP #33 + #36) | 8 | 24 Eyl'de eklendi, `merge-tree` ile ÖLÇÜLMEDİ. Tek mobil dosya `legal_modals.dart` (öteki yedisi dokunmuyor); `parca-log`/`mobile/TESTING.md`'ye dokunmuyor. Huni v2 PR 2 (mobil) ile birleştirilebilir. `verify-funnel-events` + `legal_text_test.dart` |
+
+### Dal ↔ PR eşlemesi — ⚠ İKİ DALIN ADI İÇERİĞİYLE UYUŞMUYOR
+
+⚠ **Merge turunda seçimi DAL ADINA göre yapma, PR NUMARASINA göre yap.**
+Aşağıdaki son iki satır bunun nedeni: dal adları o dalın taşıdığı işi
+tarif etmiyor (iş, adı başka bir konuya göre konmuş bir dalın üstüne
+yazılmış). Ada güvenen biri sırayı sessizce karıştırır ve — daha kötüsü —
+"bu dal zaten şu işti" diye yanlış PR'ı merge eder.
+
+| Sıra | PR | Dal |
+|---|---|---|
+| 1 | #565 oyun bitiş `platform` damgası | `claude/oyun-bitis-platform-port` |
+| 2 | #562 kayıt onayı | `claude/kayit-onay-port` |
+| 3 | #579 504 yeniden deneme | `claude/gecici-sunucu-hatasi-retry-port` |
+| 4 | #576 zoom balonu otomatik kapanma | `claude/zoom-balonu-otomatik-kapanma-port` |
+| 5 | #554 taş değiştirme sınırı | `claude/tas-degistirme-siniri-port` |
+| 6 | #557 oyun ortasında giriş | ⚠ `claude/mobile-latest-merge-conflict-lf2og7` |
+| 7 | #547 ham hata metinleri | ⚠ `claude/app-store-play-review-status-9wecvh` |
+| 8 | #626 gizlilik 6. bölüm + Huni v2 üye olayları | `claude/funnel-v2-privacy-text-853ycj` |
+| 8 | #601 kaynak hunisi (`app` kanalı) | `claude/frozen-port-prs-merge-cis79o` |
+| 9 | #611 filigran tavanı (#609'un port ikizi) | `claude/ipad-filigran-tasmasi` |
+
+⚠ **#601 bu turun SEKİZİNCİSİ.** Yukarıdaki yedili sıra 21 Eylül'de
+ölçüldüğünde #601 henüz yoktu; o da aynı dondurmayı bekliyor ve en sona
+biniyor (`mobile/app/` altında yedi dosya taşıyor, yani o da mobil
+derlemeyi tetikler).
+
+⚠ **#611 DOKUZUNCU** (23 Eylül 2026, kullanıcı: *"diğerleriyle sonraki
+sürüme dahil et"*). Web ikizi #609 zaten canlıda; #611 `board_widget.dart`e
+dokunuyor, yani ROADMAP #26 (portta yükseklik bütçesi) aynı dosyada
+başlayacağı için #26'dan ÖNCE merge edilmeli.
+
+**Eşleme 22 Eylül 2026'da canlıdan ölçüldü** (`git ls-remote --heads
+origin 'refs/heads/claude/*'` + açık PR listesi): `origin`'de sekiz
+`claude/*` dalı var ve **sekizinin de açık bir PR'ı var** — öksüz dal YOK.
+Bu kontrol tekrarlanmaya değer, çünkü bu depoda PR'sız bırakılmış dallar
+iki kez gerçek iş kaybetti (kök `CLAUDE.md` → "Git / Branch Kuralı").
+
+**Çakışmaların tamamı EKLEME çakışması** (`parca-log.md`,
+`mobile/TESTING.md`, bir kez kök `CLAUDE.md`): iki tarafı da tut, sırala,
+içerik kaybı yok. ⚠ `mobile/TESTING.md`'de bölüm NUMARALARI var —
+birleştirdikten sonra yeniden sırala. `ROADMAP.md` bugünkü ölçümde yedisinde
+de otomatik birleşiyor, ama sıra ilerledikçe bu değişebilir.
+
+⚠ **`mobile/docs/surumler.md` → "SÜRÜM SENKRONU" tur SONUNDA bir kez**
+güncellenir, her merge'de değil — yedi merge yedi build tetikler, anlamlı
+olan sonuncusudur.
+
+**Dokuzlu yeniden ölçüm (23 Eylül 2026, `main` = `184dba1`, TAM geçmişle):**
+dokuz PR sırayla, arka arkaya birleştirildi — dokuzu da birleşiyor, her
+dosyada TEK blok. Tek KOD çakışması **#565 ↔ #601**
+(`mobile/app/lib/src/data/games_api.dart`, `game_finishes` satırı): #565
+`platform`, #601 `utm_source: d.source` + misafirde `anon_id` ekliyor —
+**üçü de tutulur**. Geri kalanı ekleme çakışması (`ROADMAP.md`,
+`parca-log.md`, `mobile/TESTING.md`, #547'de iki `CLAUDE.md`). ⚠ Sığ klonda
+#547 13 dosyada çakışıyor GÖRÜNÜYOR — yanlış alarm, önce
+`git fetch --unshallow`.
+
+
+
+⚠ **Ölçüm `main` = `3a55492`'ye ait.** `main` ilerlediyse sıra yeniden
+ölçülmeli:
+
+```
+git fetch origin main $(for n in 547 554 557 562 565 576 579; do \
+  echo "refs/pull/$n/head:refs/remotes/pr/$n"; done)
+git merge-tree --write-tree --name-only origin/main refs/remotes/pr/<n>
+```
+
+## Sıradaki sürüme binecekler — 12 Eylül durum notları + 665'te çıkan üç satır (25 Eylül 2026'da taşındı)
+
+> `ROADMAP.md`'deki tablo 665 (`9c62289`) yayındaki paket olunca yeniden
+> kuruldu; aşağısı eski başlık paragrafları ve 665'le sahaya inmiş üç satır.
+
+⚠ **GÜNCELLEME (12 Eylül 2026, akşam): aşağıdaki üç satır ARTIK PAKETTE.**
+PR #533'ün merge'i koşu **#665**'i tetikledi; `mobile-latest` ezildi ve
+TestFlight'a 665 yüklendi. Kullanıcı kararı: **ASC'de her zaman son derleme
+iliştirili olur, Play aynı numarayla takip eder** — ASC 665'e çekiliyor,
+Play'e 13 Eylül'de 665'in `.aab`si yüklenecek. Kural ve aradaki pencerenin
+riski: `mobile/docs/surumler.md` → "SÜRÜM SENKRONU". Senkron bitince bu
+tablo yeniden BOŞALIR ve tur arşive taşınır.
+
+⚠ **DURUM (12 Eylül 2026): 1.1.0 (659) SAHADA.** `7bccbf7` Play'in kapalı
+testinde (Alpha) yayınlandı — gönderim ≤ 12:24, yayın ~13:42 (kullanıcı
+bildirdi). Aynı kod App Store Connect'in 1.1.0 sürüm kaydında da iliştirili,
+yani **iki mağaza ilk kez tek NUMARADA ve tek PAKETTE**. Turun tablosu
+kuralı gereği aynı gün `docs/decisions/roadmap-arsiv-cilt-1.md` → **"1.1.0 sürüm
+turu"**na taşındı (ROADMAP yalnızca AÇIK maddeleri tutar). Paket künyesi ve
+sürüm notları: `mobile/docs/surumler.md` → "1.1.0 (659)".
+
+⚠ **Liste yayın GÜNÜ yeniden doldu — üç satır** (aşağıda). 8 Eylül'ün
+tıpatıp tekrarı: bu tablonun "boş" hâli bir DURUM değil, bir AN. Doğrulama
+komutu (yayındaki paketin sha'sıyla):
+`git log --oneline 7bccbf7..origin/main -- mobile/app mobile/kelimeki_core`
+
+⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
+adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
+değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
+derleme sha'sını `main`'in başıyla karşılaştır.
+
+**Kapalı testteki paket:** 1.1.0 (659) = commit `7bccbf7` (#529),
+12 Eylül 2026'da yayınlandı. Bir öncekisi: 1.1.0 (627) = `a4c809b` (#514).
+
+**YAYINDAKİ PAKETTEN (659, `7bccbf7`) SONRA porta dokunan işler — sıradaki
+sürümün içeriği:**
+
+| Commit / PR | Ne | Neden porta dokunuyor |
+|---|---|---|
+| (12 Eyl) | **Oyun sonu kutlaması** — ilk galibiyet (girişli) / ilk puan + giriş çağrısı (misafir) | ⚠ **SÜRÜME BİNİYOR:** `util/onboarding.dart` · `storage/flags_store.dart` · `data/stats_api.dart` (`wins` alanı) · `ui/game/game_over_modal.dart` · iki oyun ekranı (+ web ikizi `utils/onboarding.ts` · `GameOver.tsx` · `App.tsx` · `OnlineGameScreen.tsx`). Karar saf fonksiyonda, İKİ dal AYNI şeyi ölçmüyor (girişli: GALİBİYET + hesabın `wins`i; misafir: PUAN + cihaz bayrağı) — gerekçe `docs/decisions/onboarding.md`. Kapılar: `npm run verify-tutorial-script` (dokuz vaka + CTA içermesi) · `tutorial_parity_test.dart` (metin paritesi); **846 test yeşil**. ⚠ Port farkı: portta oyun ekranından açılan giriş penceresi yok → misafir metni düz, web'de buton. Cihaz listesi `TESTING.md` §13.7 |
+| (12 Eyl) | **Bağlamsal ipucu tavanı 2 → 1** (ipucu başına) | ⚠ **SÜRÜME BİNİYOR:** `util/onboarding.dart` (+ web ikizi `src/utils/onboarding.ts`). Kullanıcı kararı: *"İlk defa oynayan kişiye oyun sırasında çıkan max 6 gösterim iyi bir deneyim değil. Onu her bir mesaj için 1 kere olacak şekilde düzelteceğiz."* Üç ipucu × tavan 2 = **6 balon**du, artık en fazla **3**. Tavanın ipucu BAŞINA olması ve sıranın sabitliği (`vergi › carpan › bolge`) DEĞİŞMEDİ. Değer iki tarafta da sabitten okunuyor (testler/doğrulayıcı hard-code etmiyor), parite `tutorial_parity_test.dart` ile kilitli. Kapı: `npm run verify-tutorial-script` yeşil |
+| (12 Eyl) | Canlı oyunda rafın üstündeki **mesaj satırı yazı ölçeğinde kesiliyordu** | ⚠ **SÜRÜME BİNİYOR:** `ui/live/online_game_screen.dart` — `SizedBox(height: 30)` + `maxLines: 2` → `ConstrainedBox(minHeight: 30)`, `maxLines`/`ellipsis` kaldırıldı. Kullanıcı iPhone'da ekran görüntüsüyle bildirdi (2. satır yarım). ⚠ **Android'de de vardı** — dosya tek, `textScaler` iki platformda da sistemden geliyor. ⚠ **Aynı hata 2 Eylül 2026'da YEREL ekranda düzeltilmişti** (`game_screen.dart` + `message_line_test.dart`); Canlı ikizi o turda atlandı — kök `CLAUDE.md`'nin "ikisi deseni paylaşıyor" çiftinin bir kez daha kaçırılması. Web ikizi ZATEN doğruydu (`min-h-[30px]`, iki ekranda da), yani web'de değişiklik YOK. Kapı: `online_game_screen_test.dart` → "mesaj satırı ölçekte kesilmez" (ölçek 1,0 + `kMaxTextScale`), duyarlılığı kanıtlandı (+10 px ile düşüyor); **845 test yeşil**. Kayıt: Parça 203, cihaz maddesi `mobile/docs/testing-ux-turlari.md` §25 |
+
+## 0. FAZ B — Google Play yayını — ✅ **KAPANDI: PLAY PRODUCTION'DA YAYINDA** (24 Eylül 2026; eski başlık: SIRA OMURGASI)
+
+**Durum eki (13 Eylül 2026, 00:14):** Bu fazın takvimini belirleyen kısıt
+— aşağıdaki "12 tester × 14 gün" — **tamamen kapandı**: production erişimi
+onaylandı (`console-formlari.md` §7). Fazın kalanı artık takvim değil karar
+işi: 665 paketi hangi kanala yüklenecek (kapalı test ↔ production) ve
+production sürümünün kendi incelemesi.
+
+**Durum (22 Ağustos 2026):** Play Console hesabı açıldı ve kayıt işlemleri
+bitti (*Personal account*, Account ID `5939732949280610022`), henüz **sıfır**
+uygulama var. Aşağıdaki 1, 2 ve 4 numaralı maddeler bu fazın parçaları —
+bu bölüm onların **hangi sırayla** yapılacağını söyler.
+
+**TAKVİMİ BELİRLEYEN TEK ŞEY:** Kasım 2023'ten sonra açılan **kişisel**
+hesaplarda Play, production'a başvurmadan önce kapalı testte **en az 12
+tester'ın 14 gün boyunca kesintisiz kayıtlı** kalmasını istiyor. Yani
+"her şey bitince yayınlarım" MÜMKÜN DEĞİL — ortada daha başlamamış 14
+günlük bir sayaç var. Sol menüdeki **Android developer verification**
+(kimlik doğrulama) da tamamlanmalı.
+
+**Bu yüzden sıra "kolaydan zora" değil: ÖNCE SAYACI BAŞLAT.** Ağır işler
+(hesap silme, deep link) o 14 gün içinde paralel yürür.
+
+### 0.A — Sayacı başlatan minimum (bunlar olmadan dosya YÜKLENEMEZ)
+
+**Model: Opus 5, efor `high`.** Tasarım kararı az, ama 0.A1'in kaybı
+telafi edilemez (aşağı bkz.) — Sonnet'e verme.
+
+Dördü de **ölçülmüş** eksikler, tahmin değil:
+
+| | Eksik | Kanıt | Yapılacak |
+|---|---|---|---|
+| 0.A1 | ✅ **BİTTİ** (22 Ağu 2026) — release DEBUG anahtarıyla imzalanıyordu | `build.gradle.kts:31` → `signingConfigs.getByName("debug")` + `// TODO` | Upload keystore üretildi (RSA 4096, 2054'e kadar); `key.properties` varsa release, yoksa **bilerek** debug'a düşüyor |
+| 0.A2 | ✅ **BİTTİ** (22 Ağu 2026) — CI yalnızca `.apk` üretiyordu | `mobile-build.yml:157` → `flutter build apk --release` | `android` işine `.aab` adımı eklendi; secret yoksa sessizce atlar, varsa paketin imzasını **geri okuyup** doğrular |
+| 0.A3 | ✅ **BİTTİ** (22 Ağu 2026) — sürüm `0.1.0+1`di | `pubspec.yaml` + `env.dart` (`appVersion`) | İkisi de **`1.0.0`**; senkron artık `test/app_version_parity_test.dart` ile ZORLANIYOR. `versionCode`'u CI `--build-number=run_number` ile veriyor |
+| 0.A4 | ✅ **BİTTİ** (23 Ağu 2026) | `marketing/play-store/` | İkon (512) + öne çıkan görsel (1024×500) + başlık/kısa/tam açıklama üretildi (`npm run generate-play-assets`). Telefon ekran görüntüleri **gerçek cihazdan alındı** (7 kare, 1080×2400) ve Play'in 2:1 oran tavanına sokmak için **1080×2072'ye kırpıldı**; dosyalar kullanıcıda. Kırpmanın neden zorunlu olduğu `marketing/play-store/metin.md` → "Teknik gereksinim" |
+| 0.A5 | ✅ **BİTTİ** (23 Ağu 2026) — politika YALNIZCA SPA modalıydı | `?gizlilik=1` | `/gizlilik/` · `/kullanim-kosullari/` · `/hesap-silme/` derleme zamanı statik sayfa; metin tek kaynakta. Sonuncusu Data safety formunun istediği **web silme adresi** |
+
+**0.A1 + 0.A2 + 0.A3 BİTTİ (22 Ağustos 2026).** GitHub secret'ları
+(`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`) kullanıcı
+tarafından girildi. Ayrıntı, ölçümler ve negatif eşler: `mobile/CLAUDE.md`
+→ "Play Store İmzalama ve `.aab`".
+
+**CI'DA DOĞRULANDI (23 Ağustos 2026, koşu 32644482976, sha `a22cea6`):**
+`.aab` gerçekten üretildi (60.9 MB, artefakt `kelimeki-aab`) ve log'daki
+`beklenen:` / `paket   :` parmak izleri hem birbirine hem üretilen upload
+anahtarına eşit — yani secret'lar okundu, Gradle `key.properties`i gördü,
+paket debug değil upload anahtarıyla imzalandı. `.apk` artefaktı da
+yerinde (Appetize akışı bozulmadı).
+
+**ÖLÇÜLDÜ (24 Ağustos 2026) — ikisi de temiz, aksiyon GEREKMİYOR.** Kaynağa
+değil YAYINLANMIŞ pakete bakıldı: `mobile-latest`teki `kelimeki.apk`
+(sha `18689eb`) indirilip derlenmiş `AndroidManifest.xml`i çözüldü.
+
+| | Ölçülen | Sonuç |
+|---|---|---|
+| `minSdkVersion` | **24** (Android 7.0) | — |
+| `targetSdkVersion` | **36** | Android'in en yeni API seviyesi; Play'in asgarisinin ALTINDA olması mümkün değil → **pinlemeye gerek yok** |
+| İzinler | **3 adet** (aşağı) — Play'in `.aab`'de gösterdiği **4** (bkz. not) | Data safety beyanı etkilenmiyor |
+
+İzinlerin tamamı: `INTERNET` (Parça 131 düzeltmesi — pakette olduğu böylece
+ikinci bir yoldan da doğrulandı), `ACCESS_NETWORK_STATE` (connectivity_plus)
+ve `com.kelimeki.kelimeki.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`
+(AndroidX'in kendi ürettiği iç izin — kullanıcıya görünmez, beyan edilmez).
+
+**DÜZELTME (25 Ağustos 2026):** yukarıdaki "3 izin" YAYINLANMIŞ `.apk`'dan
+ölçülmüştü; Play Console'un paket ayrıntısı `.aab` için **4** gösteriyor.
+Fark `com.android.vending.CHECK_LICENSE` — beyanı değiştirmiyor (çalışma
+zamanı izni değil, veri toplamıyor). Ders: `.apk` ölçümü `.aab`'yi
+kanıtlamıyor, Play bundle'ı işlerken manifeste ekleme yapabiliyor. Ayrıntı:
+`marketing/play-store/console-formlari.md` § 6.
+
+**`image_picker` HİÇBİR izin eklememiş** — bu dosyanın beklediği risk
+gerçekleşmedi. Modern Android'de Photo Picker/SAF üzerinden çalıştığı için
+depolama/medya izni istemiyor. Yani Data safety formunda medya erişimi
+beyan edilmeyecek.
+
+**0.A bölümünün TAMAMI bitti.** Sıradaki: ilk `.aab` yüklemesi → kapalı test
+kanalı → 12 tester → 14 günlük sayaç başlar.
+
+**Console'a girilecek her formun cevabı yazıldı (24 Ağustos 2026):**
+`marketing/play-store/console-formlari.md` — adım sırası, Data safety veri
+türü eşlemesi (her satırın kodda karşılığıyla), IARC anketi, App access test
+hesabı, kapalı test kanalı ve tester metni. Vitrin METİNLERİ hâlâ
+`metin.md`'de.
+
+**ÖLÇÜLDÜ (24 Ağustos 2026) — `.aab` indirilebilir DEĞİLDİ, düzeltildi:**
+0.A2 paketi yalnızca `actions/upload-artifact` ile bırakıyordu; artefakt
+bağlantısı oturum istiyor ve dosyayı ZIP'liyor — yani iPad'den yükleyecek
+kişi için `.apk`nın 7 Ağustos'ta çözülen probleminin aynısı hâlâ açıktı
+(`build-and-distribution-log.md` → Appetize). `mobile-build.yml`'in release
+adımı artık `kelimeki.aab`'yi de `mobile-latest`e koyuyor:
+`https://github.com/alpcapa/kelimeki/releases/download/mobile-latest/kelimeki.aab`.
+Artefakt DURUYOR. **DOĞRULANDI (25 Ağustos 2026, koşu 349, sha `5eddf3d`):**
+dosya release'te, 60.929.323 bayt. Kanıt PR'da alınamazdı — release adımı
+PR'da bilerek atlanıyor (workflow başlığındaki "YAYINLAMA" notu) — bu yüzden
+merge sonrası ilk `main` koşusunda okundu.
+**Play'e YÜKLENEN: 372** (26 Ağustos 2026 sabahı, kapalı test — Release name
+`372 (1.0.0)`). Uygulama içi hesap silmeyi İÇEREN ilk paket bu.
+Console'un paket ayrıntısından ölçüldü: `targetSdk` **36**, `minSdk` **24+**,
+**4 izin**, ABI 3, ekran düzeni 4, gerekli özellik 2 — yani 349'un satırıyla
+her sütunda aynı.
+
+**Yüklenmeye hazır EN YENİ paket: 374** (koşu 374, sha `42a1f67`, `.aab`
+26 Ağustos 05:42'de `mobile-latest`e yüklendi — 60.972.640 bayt). 372'den
+tek farkı silme onayındaki uyarı cümlesinin kırmızı/kalın olması (#341) —
+**kozmetik**, bu yüzden 372 için ayrı bir yükleme turu harcanmadı. Bir
+sonraki mobil sürüm bu tabandan gider.
+
+**370 neden atlandı:** aynı akşam Kullanım Koşulları §2'ye hesabı kendin
+silme cümlesi eklendi (#338) ve hukuki metnin tarihi portu da zorunlu kıldı
+(`legal_text_test.dart`) — yani 370 daha yüklenmeden bayatladı.
+**Kalıcı ders: hukuki metne dokunmak her zaman bir paket turudur**, "tek
+cümle" diye ucuz sayma. **İkinci ders — koşu numarası ardışık DEĞİL:** sayaç
+PR koşularında da ilerliyor, 371'i #338'in kendi koşusu yedi. Bir sonraki
+paketin numarasını önceden yazma, merge sonrası `main` koşusundan OKU.
+
+**Tuzaklar — 0.A1:**
+- **Keystore repoya GİRMEZ.** `*.jks`/`key.properties` gitignore'a; CI'a
+  base64 GitHub secret olarak. Bu dosyayı **kullanıcı kendi tarafında da
+  yedeklemeli** — Claude'un ürettiği bir dosyanın tek kopyası CI'da kalırsa
+  iş kaybedilebilir.
+- **Play App Signing'e kaydol.** Kaydolursan upload anahtarı kaybedilse
+  bile sıfırlanabilir; kaydolmazsan anahtarın kaybı = uygulamanın bir daha
+  asla güncellenememesi.
+- **`assetlinks.json`'a hangi parmak izinin gireceği bu kararla değişiyor:**
+  Play App Signing kullanılıyorsa oraya **Play'in ürettiği** SHA-256 girer,
+  senin upload anahtarınınki DEĞİL. Yanlışını koymak App Links'i sessizce
+  kırar (madde 1 ile aynı iş).
+  **YAPILDI (25 Ağustos 2026):** dosya `public/.well-known/assetlinks.json`
+  olarak yazıldı, içinde Play'in ürettiği parmak izi var (`2B:7D:26:11…`) —
+  upload anahtarı (`B6:CD:FB:A9…`) DEĞİL. ⚠ Değer, App signing sayfasının
+  anahtar TABLOSUNDAN değil, aynı sayfanın **"Digital Asset Links JSON"**
+  panelinden okunur; ilk tur tablodan okunup yanlış parmak iziyle canlıya
+  çıktı ve aynı gün düzeltildi. Ayrıntı ve ölçümler:
+  `marketing/play-store/console-formlari.md` → §6.6.
+
+**Tuzaklar — 0.A2/0.A3:**
+- `targetSdk` hâlâ `flutter.targetSdkVersion`'dan geliyor
+  (`build.gradle.kts:47`), yani pinli DEĞİL — ama ölçüldüğünde **36** çıktı
+  (yukarı), o yüzden bugün pinlemeye gerek yok. Flutter kanalı geri giderse
+  bu sessizce düşebilir; sürüm yükseltmelerinde yeniden ölç.
+- `image_picker`'ın izin eklemediği **ölçüldü** (yukarı) — paket yalnızca 3
+  izin taşıyor ve hiçbiri medya/depolama değil.
+- **Paket adı `com.kelimeki.kelimeki` ilk yüklemeden sonra KALICI**
+  (`mobile/CLAUDE.md`). Değişecekse bu adımdan ÖNCE.
+
+**0.A5 NEDEN 0.B'DEN BURAYA TAŞINDI (23 Ağustos 2026, ölçüldü):** Play'in
+kendi dokümanı, **Data safety formunun kapalı/açık test kanallarındaki
+uygulamalar için de zorunlu** olduğunu ve **formu tamamlamak için gizlilik
+politikası URL'inin gerektiğini** söylüyor. Yani politika sayfası "14 gün
+işlerken paralelde" yapılacak bir iş DEĞİL — onsuz ilk kapalı test
+yayınlanamaz, dolayısıyla sayaç hiç başlamaz. Bu dosya 22 Ağustos'ta onu
+0.B'ye koymuştu; o sıralama YANLIŞTI.
+
+**Çıkış kriteri:** imzalı AAB kapalı test kanalına yüklendi, 12 tester
+kaydoldu, **sayaç işlemeye başladı.**
+
+**DURUM (25 Ağustos 2026):** Console'daki her form dolduruldu, kapalı test
+sürümü incelemeye gönderildi ve **YAYINLANDI** — Submission 1 durumu
+`Published`. Adım adım ne girildiği ve neden:
+`marketing/play-store/console-formlari.md` § 6.5.
+26 Ağustos'ta uygulama içi hesap silmeyi içeren **372** yüklendi.
+
+**Kriter HENÜZ karşılanmadı:** Dashboard **`0 testers currently opted-in`**
+diyor — listede olmak opt-in sayılmıyor, kişinin linke tıklayıp testi kabul
+etmesi gerekiyor ve bugüne kadar kimseye link gönderilmemişti.
+
+**26 Ağustos 09:03'te opt-in linkleri Console'da BELİRDİ** (Join on Android
++ Join on the web), liste 11 kişiyken. Bir gün önce yoklardı; kapısının ne
+olduğu ölçülmedi (bkz. `console-formlari.md` §6.5 — o tabloda yalnızca
+GÖRÜLEN kaydedildi, sebep uydurulmadı).
+
+**26 Ağustos (öğleden sonra) — liste 11 → 54 KİŞİ.** Kullanıcı bildirdi;
+Console'dan okunan sayı. §7'nin "15-20 kişi topla, biri çıkarsa sayaç
+kırılır" tavsiyesinin çok üstünde, yani yedek payı bol.
+
+⚠ **Listede olmak ≠ opt-in — ve aradaki fark ÖLÇÜLDÜ (26 Ağustos 2026):**
+liste **54 kişi**, gerçekten opt-in olan **10 kişi**. Yani davetlilerin
+%80'i linke tıklamamış. Sayaç için kişilerin linke tıklayıp testi KABUL
+etmesi gerekiyor; `testers currently opted-in` bunu sayıyor.
+
+**Eşik 12 ise 2 kişi eksik.** Buradan çıkan iki pratik sonuç:
+- Yapılacak iş yeni adres toplamak DEĞİL (54 zaten fazlasıyla yeter),
+  mevcut davetlilere *"linke tıklayıp 'Testçi ol' demen gerekiyor"* diye
+  hatırlatmak.
+- **Geliştiricinin kendi cihazından uygulamayı kaldırması artık RİSKLİ:**
+  10 sayısı eşiğin altındayken tek bir düşüş oransal olarak büyük. Native
+  `.apk` ile performans testi yapılacaksa opt-in OLMAYAN bir cihaz
+  kullanılmalı. (Kaldırmanın opt-in'i gerçekten düşürüp düşürmediği
+  ÖLÇÜLMEDİ — Play davranışı çıkarımla yazılmıyor.)
+
+⚠ **Ve bugün ölçülen asıl darboğaz opt-in değil:** davetliler uygulamayı
+kurup açsalar bile **tanıtım ekranında takılıyorlardı** (kaydırmayı
+anlamıyorlar, atlama da yok → çıkmaz). 3 günde yalnızca 2 kayıt olmasının
+sebebi buydu. Düzeltildi (Parça 143, "DEVAM ›" düğmesi) ama **uygulamaya
+ancak yeni bir paket yüklenince ulaşır** — 54 kişi bekliyorsa bu yükleme
+sıradaki en öncelikli iş.
+
+### 0.B — 14 gün işlerken paralelde
+
+Sırası önemli olan tek bağ: **#4, #2'den SONRA** (hesap silme kaskadı
+çıkmadan test hesaplarını silmek aynı analizi iki kez yaptırır).
+
+1. ✅ **BİTTİ (25 Ağustos 2026) — Madde 2, uygulama içinden hesap silme.**
+   Play'in hesap açtıran uygulamalardan istediği İKİ şeyin ikisi de yerinde:
+   web silme talep URL'i (`/hesap-silme/`, 0.A5) **ve** uygulama içi yol
+   (Hesap Ayarları › Hesabımı Sil, web + port). Kaskad service-role bir Edge
+   Function'da (`delete-my-account`) + `delete_account_cascade` RPC'sinde;
+   `dryRun` bayrağıyla hiçbir şey silmeden sayan bir kuru çalıştırma modu
+   var ve onay penceresi bunu gösteriyor. Karar/ölçüm/tuzaklar:
+   `docs/decisions/account-deletion.md`.
+   ✅ **Console'da yapılacak iş de YOK** (2 Eylül 2026'da düzeltildi).
+   Burada *"App content › Data deletion formunda artık 'uygulama içi silme
+   yolu VAR' seçilmeli"* yazıyordu; **böyle bir form alanı YOK.** Silme
+   sorusunun cevabı `Evet → kelimeki.com/hesap-silme/` ve öyle kalıyor —
+   Play'in uygulama içi şartı bir form alanı değil, **uygulamanın
+   kendisinde** aranan bir politika şartı ve 372'de karşılandı.
+   `console-formlari.md` §3.8 bunu 26 Ağustos'ta *"ENGEL KALKTI, beyanda
+   değişen bir şey YOK"* diye kapatmıştı; bu satır o güne kadar geriye
+   dönük olarak bayat kaldı.
+3. ✅ **Madde 1 — deep link: KAPANDI** (30 Ağustos 2026, Faz 3'te ölçüldü;
+   SAHADA 1.0.3 ile). Madde arşivde: `docs/decisions/roadmap-arsiv-cilt-1.md` →
+   *"1. `kelimeki://` deep link kanalı"*. **Numara bilerek duruyor** —
+   arşivdeki madde buraya (`0.B/3`) atıf yapıyor.
+   ⚠ Bu satır 2 Eylül 2026'ya kadar bayat kaldı: hâlâ *"kayıt onayı maili
+   uygulamayı değil web'i açıyor"* ve *"intent filter, Supabase redirect
+   allow-list, e-posta şablonları, Flutter yönlendirme duruyor"* diyordu.
+   Dördü de bitmişti — kayıt onayı 28 Ağustos'ta https'e geçti, intent
+   filtreleri Parça 87/158'de zaten yazılmıştı, yönlendirmeyi Faz 3 ekledi.
+   Açık kalan TEK parça **iOS Associated Domains**, o da bu maddenin değil
+   **#24 FAZ C**'in (24.4). 8 Eylül 2026'da bloke kalktı; dosyanın içeriği
+   Apple **Team ID**'sine bağlı, o gelmeden yazılamaz.
+4. **0.C — App content formları** (aşağı).
+5. ~~Test hesaplarının silinmesi~~ — **madde KALDIRILDI** (26 Ağustos 2026,
+   kullanıcı kararı: *"gerekirse daha sonra hesabımı silden ben yaparım,
+   önemli bir konu değil"*). Kalan test hesapları duruyor; büyüme
+   metriklerini bir miktar kirletmeleri kabul edildi. ⚠ **`T2` ve
+   `Ironman` hiçbir koşulda silinmez** — gerekçeleri
+   `docs/decisions/account-deletion.md` → "ASLA SİLİNMEYECEK İKİ HESAP".
+
+### 0.C — Play Console'da doldurulacak formlar (kod işi değil, zorunlu)
+
+**Cevapların TAMAMI `marketing/play-store/console-formlari.md`'de** (24
+Ağustos 2026). Aşağısı yalnızca hangi formun neden riskli olduğunun özeti.
+
+- **Data safety — en dikkatli iş.** Beyan ile gerçek ayrışırsa askıya alma
+  sebebi. Toplananlar: e-posta, ad/soyad, takma isim, cinsiyet, doğum
+  tarihi, profil fotoğrafı, **oyun içi mesajlar**, anonim cihaz kodu
+  (`anon_id`), hata telemetrisi (`client_errors`), ziyaret/oyun başlangıç
+  olayları. **Kaynak metin hazır:** `PrivacyModal`'ın "Toplanan Veriler"
+  bölümü satır satır forma eşlenmeli. Üçüncü taraflar: Supabase, Brevo,
+  Vercel (19 Ağustos'ta politikaya eklendi). **"Paylaşılıyor" her satırda
+  HAYIR** — hizmet sağlayıcı ve kullanıcının başlattığı görünürlük
+  istisnalarıyla; 24 Ağustos 2026'da kullanıcı onayladı, gerekçe
+  `console-formlari.md` §3.8'de.
+- **Content rating (IARC):** ✅ **BİTTİ (25 Ağustos 2026).** Sohbet beyan
+  edildi. Bu satır "yaş derecesini yükseltir" diyordu — **ölçüm bunu
+  doğrulamadı:** sonuç en düşük bant (PEGI 3, USK 0, ESRB Everyone,
+  IARC 3+). Sebebi, sohbete yalnızca kabul edilen arkadaşın girebilmesi ve
+  sessize alma/şikayetin var olması.
+- **UGC / moderasyon:** sohbet olduğu için gerekiyor. Karşılayacak
+  mekanizma ZATEN var — sessize alma, şikayet, hesap dondurma, admin
+  paneli; yalnızca beyan edilecek.
+- **App access:** Canlı oyun/arkadaş özellikleri giriş istiyor →
+  incelemeciye **çalışan bir test hesabı** verilmeli (bkz. 0.B/5).
+  **Hesap seçildi: `T2` (`kelimekitest2`), 24 Ağustos 2026.** `T1`
+  kullanılmıyor — e-postası geliştiricinin kişisel adresi. T2'nin durumu
+  üretim veritabanından ölçüldü: doğrulanmış, dondurulmamış, 3 arkadaş,
+  1 aktif Canlı oyun, 11 bitmiş oyun — yani incelemecinin göreceği dört
+  ekran da boş değil.
+- **Ads:** yok · **Advertising ID:** kullanılmıyor · **Government /
+  Financial / Health:** hayır.
+- **Target audience:** **13+ öner** — 13 yaş altı hedeflenirse "Families"
+  politikası devreye girer, çok daha ağır bir rejim.
+
+### 0.D — Vitrin varlıkları
+
+**23 Ağustos 2026'da üretildi** (`npm run generate-play-assets`,
+`marketing/play-store/`) — bu bölüm artık yalnızca kalanı listeliyor:
+
+- İkon **512×512** ✓ — cihazdaki başlatıcı ikonun KAYNAĞINDAN küçültüldü
+- **Feature graphic 1024×500** ✓ — üretim bileşenlerinden render edildi
+- Başlık (29/30) · kısa açıklama (79/80) · tam açıklama (1906/4000) ✓ —
+  `marketing/play-store/metin.md`
+- ✅ **Telefon ekran görüntüleri** — 7 kare, gerçek cihazdan, 1080×2072'ye
+  kırpıldı (23 Ağu 2026, dosyalar kullanıcıda). Çekim listesi + gizlilik
+  uyarıları + oran kuralı `metin.md`'de. Tablet desteği iddia edilecekse
+  tablet görselleri ayrıca gerekir.
+- ✅ Kategori **Games → Word** (25 Ağustos), iletişim e-postası
+  `destek@kelimeki.com`, web sitesi `https://kelimeki.com` — üçü de
+  Console'a girildi.
+  ⚠ Bu satır 2 Eylül'e kadar ⬜ duruyordu ve BAYATTI; aynı üç madde
+  yukarıdaki "Console (elle)" düzeltme tablosunda 31 Ağustos'ta zaten
+  kapatılmıştı. Kaydın iki yerde durmasının bu dosyadaki dördüncü örneği.
+
+**Görseller elle çizilmez:** reklam kareleri (`scripts/sponsored-post/`) ve
+reel (`scripts/reel/`) zaten ÜRETİM bileşenlerini sunucuda render eden bir
+desen kurdu — mağaza görselleri de aynı yoldan üretilmeli, yoksa vitrin ile
+ürün sessizce ayrışır. **Tuzak:** o betiklerde Tailwind sınıfı çalışmaz
+(`content` yalnızca `index.html` + `src/**` tarar), yalnızca inline `style`.
 
 ## 31. Davet linki `use_count`'u gerçeğin ~12 katı — ✅ **YAPILDI** (sunucu 18 Eylül · istemci 19 Eylül 2026)
 
@@ -805,12 +1319,15 @@ kabul edilebilir değil.
 
 ## İçindekiler
 
-> Madde 31, madde 24 (FAZ C), güvenlik #19-#20 ve madde 25'in gövdesi bu
-> dosyada (yukarıda); tablonun geri kalanının gövdesi
+> Madde 0 (FAZ B), merge turu, #33/#36, madde 31, madde 24 (FAZ C),
+> güvenlik #19-#20 ve madde 25'in gövdesi bu dosyada (yukarıda); tablonun geri kalanının gövdesi
 > **`roadmap-arsiv-cilt-1.md`**'de (dondurulmuş, 25 Eylül 2026).
 
 | Ne | Kapanış |
 |---|---|
+| Madde 0 · **FAZ B — Google Play yayını** (0.A-0.D); Play production #19, `1.1.0 (665)` | 24 Eylül 2026 |
+| Dondurulmuş port PR'ları — **merge turu** (on PR: #565 … #626) | 25 Eylül 2026 |
+| #33 + #36 · gizlilik 6. bölüm "dört → yedi" + Huni v2 üye olayları (PR #626) | 25 Eylül 2026 |
 | Madde 31 · **Davet linki `use_count`'u gerçeğin ~12 katı** — `accept_friend_invite` idempotent (iki migration) + `/davet` kuyruğu çağrıdan ÖNCE temizleniyor; kapı `verify-invite-queue` | 18-19 Eylül 2026 |
 | Madde 24 · **FAZ C — App Store yayını**, altı fazın tamamı (hesap/kimlik · Mac'siz imzalama + TestFlight · APNs · Universal Links · vitrin + kare boru hattı · gönderim); `1.1.0 (665)` yayında | 15 Eylül 2026 |
 | Güvenlik geçişi #19-#20 — `anon` telemetri yazımı · `CRON_SECRET` fail-open (ikisi de ölçülüp kabul edildi; #18 ve #22 ROADMAP'te AÇIK) | 5 Eylül 2026 |
