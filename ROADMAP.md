@@ -1043,6 +1043,43 @@ bir incelemede savunma olarak anlatılabilir, ama bu bir süzgeç değil.
    listesinde HERKESE görünüyor, yani risk orada daha geniş.
 3. **Listeyi kim kuracak:** hazır bir Türkçe liste mi, elle mi?
 
+**KARARLAR (25 Eylül 2026, kullanıcı):** (1) **maskele** · (2) **takma ad
+DAHİL** · (3) **hazır liste**.
+
+**Hazır liste:** `ooguz/turkce-kufur-karaliste` (697 madde, CC BY-SA 4.0) +
+LDNOOBW `tr` (142 madde, CC BY 4.0) → birleşik **815** madde (83'ü çok
+kelimeli). ⚠ BY-SA: listenin türevi aynı lisansla ve atıfla tutulur.
+
+**Kuru ölçüm (25 Eylül 2026, canlı, yalnızca SAYIM — mesaj içeriği
+okunmadı):** 320 canlı mesaj · 578 arşiv satırı (her oyunun mesajları
+oyuncu başına bir `games` satırında, yani arşiv ≈ canlının iki katı) · 64
+takma ad.
+
+| Eşleştirme | Canlı mesajda yakalanan | Yorum |
+|---|---|---|
+| **Kelimenin BAŞI** (önek) | `am` 22 · `emi` 4 · `cim` 1 … | ❌ KULLANILAMAZ — `ama`, `emin`, `…cim` gibi masum kelimeleri kesiyor |
+| **Tam kelime** | ~11 mesaj (%3): `bok`/`boktan` 4 · `ibne`/`ipne` 2 · `siktir` · `amk` · `salak` · **`ana` 1** | ✅ kullanılabilir; tek şüpheli `ana` (masum anlamı çok yaygın) |
+| Takma ad, tam kelime | **0** | önek modunda 1 (`emi` → masum) |
+
+**Sonuç:** yalnızca TAM KELİME. Ölçümde çıkmayan ama listede duran masum/
+nötr maddeler de ayıklanmalı — en açıkları: `ana` · `mal` · `allah` ·
+`oğlan` · `meme` · `kaka` · `dönek` · `düdük` · `kayyum` · `revizyonist` ·
+`saksofon` · `dinsiz` · `çingene*` (etnik ad, küfür değil) · `cikar`
+(ç'siz "çıkar") · `diktim` · `sokam`/`sokarım` (sokmak) · `koyum`/`koyarm` ·
+`azdım`/`azdır` · `emi` · `cim` · `ag` · `cif` · `sie` · `krar` · `sekis`.
+
+**Önerilen tasarım (ölçümden sonra):**
+- **Sohbet:** `online_game_messages`e BEFORE INSERT trigger, eşleşen kelime
+  harf sayısı kadar `*` olur. Arşiv (`games.messages`) canlıdan kopyalandığı
+  için kendiliğinden maskeli gelir. Eski paketler dahil herkese aynı gün.
+- ⚠ **Kanıt kaybolmasın:** şikâyeti inceleyen admin ORİJİNALİ görmeli.
+  Orijinal ayrı, yalnız admin'in okuyabildiği bir tabloya yazılır
+  (`online_game_message_originals`); katılımcılar maskeli metni görür.
+- **Takma ad:** maskelenmez (`****` bir ad olamaz) — kayıt/değişiklikte
+  **reddedilir** ("Bu takma ad kullanılamaz"). Bugün eşleşen ad 0, geriye
+  dönük iş yok.
+- **Geçmiş mesajlara dokunulmaz** (kanıt + kullanıcı görmüş).
+
 **Uygulamadan ÖNCE ölçüm (değişmez):** mevcut mesajları (`online_game_messages`
 + `games.messages` arşivi) ve takma adları listeye karşı KURU koştur, kaç
 tanesinin yakalanacağına ve kaçının yanlış pozitif olduğuna bak. Eşik o
