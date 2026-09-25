@@ -17,7 +17,6 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 
 import '../../data/analytics.dart';
 import '../../data/auth_service.dart';
@@ -29,6 +28,7 @@ import '../game/neo_button.dart';
 import 'legal_modals.dart';
 import '../tokens.dart';
 import '../form_input.dart';
+import '../../util/error_message.dart';
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -85,6 +85,11 @@ class _AuthModalState extends State<AuthModal> {
   @override
   void initState() {
     super.initState();
+    // Başlangıç değeri MOUNT anındaki gerçek durum — sıfır varsayılsaydı,
+    // zaten oturum açıkken gelen ilk bildirim (profil tazelenmesi gibi)
+    // "oturum yeni açıldı" sanılıp pencereyi kapatırdı.
+    _oturumVardi = widget.auth.user != null;
+    widget.auth.addListener(_oturumDegisti);
     // GA4 `signup_started` — kayıt FORMUNUN görülmesi (dönüşüm hunisinin
     // üst ucu; alt ucu `signup_completed`). İki giriş yolu var ve ikisi de
     // sayılmalı: modal doğrudan kayıt modunda açılabiliyor (startInSignup —
@@ -107,6 +112,11 @@ class _AuthModalState extends State<AuthModal> {
   bool _busy = false;
   String? _error;
   String? _info; // "hesap oluşturuldu" / "sıfırlama bağlantısı gönderildi"
+  // Bilginin KALIN + BÜYÜK HARF yazılan eylem cümlesi (web'de `<strong>`).
+  // ⚠ Metin ELDE büyük harfle yazılır, `toUpperCase()` ile DEĞİL: Dart'ın
+  // varsayılan `toUpperCase()`i Türkçe'de i→I yapar ("EDİP" → "EDIP").
+  // Aynı sebeple bir `TextStyle` dönüşümü de kullanılmaz.
+  String? _infoStrong;
   bool _infoGold = false; // web infoTone: 'gold' | 'red'
 
   // ── useNicknameAvailability portu (400ms debounce + sıra sayacı) ────────
@@ -133,8 +143,32 @@ class _AuthModalState extends State<AuthModal> {
         source: FeedbackSource.general);
   }
 
+  // ── Oturum açılınca pencere KENDİ kapanır (16 Eylül 2026) ──────────────
+  // Kullanıcı web'de bildirdi, port aynı davranışı taşıyordu: kayıt sonrası
+  // "onay verin" penceresi AÇIKKEN e-postadaki onay bağlantısına basılıyor,
+  // bağlantı uygulamayı açıyor, Supabase oturumu kuruluyor — kişi giriş
+  // YAPMIŞ oluyor ama pencere kapanmıyor ve elle kapatmak gerekiyor.
+  //
+  // Web ikizi `AuthModal.tsx`'te aynı düzeltme bir efektle yapıldı; burada
+  // pencere bir ROTA olduğu için `pop` gerekiyor.
+  //
+  // ⚠ Yalnızca oturumun AÇILDIĞI ana bakar (`_oturumVardi`), "şu an oturum
+  // var mı"ya değil: bu pencere doğrudan bir Scaffold gövdesine de
+  // gömülebiliyor (widget testleri öyle kuruyor) ve mount anında koşulsuz
+  // bir `pop` orada pencereyi değil SAYFAYI kapatırdı. `canPop` ikinci kemer.
+  bool _oturumVardi = false;
+  void _oturumDegisti() {
+    final varMi = widget.auth.user != null;
+    final acildi = varMi && !_oturumVardi;
+    _oturumVardi = varMi;
+    if (!acildi || !mounted) return;
+    final nav = Navigator.of(context);
+    if (nav.canPop()) nav.pop();
+  }
+
   @override
   void dispose() {
+    widget.auth.removeListener(_oturumDegisti);
     _nickTimer?.cancel();
     _termsRec.dispose();
     _privacyRec.dispose();
@@ -159,6 +193,7 @@ class _AuthModalState extends State<AuthModal> {
       _mode = next;
       _error = null;
       _info = null;
+      _infoStrong = null;
     });
   }
 
@@ -200,15 +235,18 @@ class _AuthModalState extends State<AuthModal> {
     final friendly = friendlyAuthMessage(e);
     if (friendly != null) return friendly;
     if (e is FormatException) return e.message; // trDateToIso Türkçe mesajları
-    if (e is AuthException) return e.message;
     if (e is _FormError) return e.message;
-    return e.toString();
+    // ⚠ AuthException'ın `message`ı da buradan geçer: 13 Eylül 2026'da
+    // doğrudan gösteriliyordu ve ham `{"message":"Gateway Timeout"}` ekrana
+    // düştü (App Store ekran kaydı sırasında).
+    return friendlyErrorMessage(e, surface: 'giris');
   }
 
   Future<void> _submit() async {
     setState(() {
       _error = null;
       _info = null;
+      _infoStrong = null;
       _busy = true;
     });
     try {
@@ -232,6 +270,7 @@ class _AuthModalState extends State<AuthModal> {
           setState(() {
             _infoGold = true;
             _info = 'Şifre sıfırlama bağlantısı e-postana gönderildi.';
+            _infoStrong = null;
           });
         }
         return;
@@ -287,7 +326,8 @@ class _AuthModalState extends State<AuthModal> {
         setState(() {
           _mode = _Mode.login;
           _infoGold = false;
-          _info = 'Hesap oluşturuldu. E-postanı doğrulayıp giriş yap.';
+          _info = 'Hesap oluşturuldu.';
+          _infoStrong = 'E-POSTANIZI KONTROL EDİP ONAY VERİN.';
         });
       }
     } catch (e) {
@@ -476,11 +516,22 @@ class _AuthModalState extends State<AuthModal> {
             ],
             if (_info != null) ...[
               const SizedBox(height: 10),
-              Text(_info!,
+              Text.rich(
+                TextSpan(
                   style: TextStyle(
                       fontFamily: 'SpaceMono',
                       fontSize: 11,
-                      color: _infoGold ? _gold : _red)),
+                      color: _infoGold ? _gold : _red),
+                  children: [
+                    TextSpan(text: _info!),
+                    if (_infoStrong != null)
+                      TextSpan(
+                          text: ' ${_infoStrong!}',
+                          style:
+                              const TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
             ],
             const SizedBox(height: 16),
             NeoButton(

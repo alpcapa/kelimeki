@@ -457,12 +457,15 @@ Kapılar: `npm run verify-error-messages` (66 kontrol) ve
 `error_message_parity_test.dart` (22 test; web dosyasını OKUR — metinler
 birebir, kalıp sayıları eşit).
 
-⚠ **PORT YARISI `main`'DE DEĞİL (14 Eylül 2026).** Yazıldı, 868 testle
-doğrulandı, ama ayrı bir PR'da BEKLETİLİYOR: 1.1.0 (665) kodu donduruldu ve
-iki mağaza da aynı anda inceliyor; `mobile/` altına giren her merge
-`mobile-latest`i ezip TestFlight'a yeni build yolluyor. Kullanıcı kararı:
-*"mobile dokunmadan web tarafını yayına alalım ama yanlışlıkla mobil
-gitmesin."* Sonuç: **bugün düzeltme yalnızca web'de canlı**; mağazadaki 665
-paketi hâlâ ham metni gösterebilir ve bu bilinçli bir takas. İnceleme
-kapanınca port PR'ı merge edilir; o ana kadar `errorMessage.ts`i değiştiren
-bekleyen PR'ı da güncellemek zorunda (parite kapısı henüz yok).
+### ⚠ İki yarı AYRI günlerde yayınlandı — telemetriyi okurken bunu bil
+
+Web yarısı 14 Eylül 2026'da tek başına merge edildi (`d584f3f`), port yarısı
+bekletildi: 1.1.0 (665) kodu donduruldu ve iki mağaza da aynı anda
+inceliyordu; `mobile/` altına giren her merge `mobile-latest`i ezip
+TestFlight'a yeni build yolluyor. Kullanıcı kararı: *"Mobile dokunmadan web
+tarafını yayına alabiliyorsak alalım ama yanlışlıkla mobil gitmesin."*
+
+**Sonucu telemetriye yansıyor:** web yayını ile port sürümünün MAĞAZAYA
+inmesi arasındaki pencerede `hata-metni:*` bağlamlı kayıtlar yalnızca
+web'den gelir. O aralıkta mobil sessizliği *"mobilde bu hata yok"* diye
+OKUNMAMALI — mobilde kapı henüz kullanıcıdaki pakette değildi.

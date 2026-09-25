@@ -50,7 +50,7 @@ test('Setup ekranı açılır, 2 kişilik oyun başlar, YZ hamle yapar', async (
   }
 
   // İlk ziyarette otomatik açılan "Hızlı Başlangıç" modalı. Sayfada
-  // aria-label="Kapat" başka bir yerde de var (AddToHomeScreen banner'ı),
+  // aria-label="Kapat" başka bir yerde de olabilir (telefonda AppStoreStrip),
   // o yüzden yalnızca bu modal gerçekten açıksa ve onun içindeki kapat
   // butonunu (son eklenen portal — .last()) hedefleyerek kapatıyoruz.
   await tanitimiAtla(page);

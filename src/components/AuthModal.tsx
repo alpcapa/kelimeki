@@ -4,12 +4,14 @@ import { Modal } from './Modal';
 import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PrivacyModal';
 import { signIn, signUp, sendPasswordReset, friendlyAuthMessage, logSignupEvent } from '../lib/api';
+import { journeyStep } from '../utils/webJourney';
 import { useAuth } from '../hooks/useAuth';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import { GENDER_OPTIONS, formatTrDateInput, trDateToIso } from '../utils/profileFields';
 import type { ReactNode } from 'react';
 import type { Gender } from '../lib/database.types';
 import { friendlyErrorMessage, GENERIC_ERROR_NOTICE } from '../utils/errorMessage';
+import { funnelEvent } from '../utils/funnelEvents';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -101,11 +103,13 @@ export function AuthModal({
     if (initialMode !== 'signup' || basladiYazildi.current) return;
     basladiYazildi.current = true;
     void logSignupEvent('started', signupChannel);
+    journeyStep('signup_form');
   }, [initialMode, signupChannel]);
 
   const switchMode = (next: Mode) => {
     if (next === 'signup' && mode !== 'signup') {
       void logSignupEvent('started', signupChannel);
+      journeyStep('signup_form');
     }
     setMode(next);
     setError(null);
@@ -121,6 +125,9 @@ export function AuthModal({
       if (mode === 'login') {
         const { error } = await signIn(email, password);
         if (error) throw error;
+        // Ziyaretçi yolculuğu: misafir oturumu girişle kapanır (girişli
+        // başlamış oturumda `webJourney` hiçbir şey yazmaz).
+        journeyStep('login');
         await refreshProfile();
         onClose();
       } else if (mode === 'forgot') {
@@ -155,6 +162,11 @@ export function AuthModal({
         // AYRI bir soru; onu #32'nin A maddesi (sunucu tarafı sayaç)
         // ölçecek, bu satır değil.
         void logSignupEvent('completed', signupChannel);
+        journeyStep('signup_done');
+        // Huni v2 "Üye" sütunu. ⚠ Gizlilik metni güncellenene kadar KAPALI
+        // (`FUNNEL_MEMBER_EVENTS_ENABLED`) — çağrı burada duruyor ki bayrağı
+        // açan PR yalnızca bayrağı ve metni değiştirsin.
+        funnelEvent('signup', true);
         if (data.session) {
           await refreshProfile();
           onClose();

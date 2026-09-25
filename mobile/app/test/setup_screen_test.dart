@@ -16,6 +16,7 @@ import 'package:kelimeki/src/config/env.dart';
 import 'package:kelimeki/src/ui/route_observer.dart';
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
+import 'package:kelimeki/src/data/cloud_save_repo.dart';
 import 'package:kelimeki/src/data/meaning_store.dart';
 import 'package:kelimeki/src/config/version_gate.dart';
 import 'package:kelimeki/src/data/friends_api.dart';
@@ -45,7 +46,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show User;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import 'support/fake_cloud_save_gateway.dart';
 import 'support/fake_online_gateway.dart';
+import 'support/real_io.dart';
 import 'support/test_fonts.dart';
 import 'package:kelimeki/src/data/analytics.dart';
 import 'support/fake_analytics.dart';
@@ -63,7 +66,10 @@ Future<AppStorage> openTestStorage() async {
   );
 }
 
-AppServices services({Future<AppStorage>? storage, AuthService? auth}) =>
+AppServices services(
+        {Future<AppStorage>? storage,
+        AuthService? auth,
+        CloudSaveRepo? cloudSaves}) =>
     AppServices(
       onlineStatus: OnlineStatus.fake(),
       dictionary: Future.value(words),
@@ -72,6 +78,7 @@ AppServices services({Future<AppStorage>? storage, AuthService? auth}) =>
       supabase: null,
       versionGate: VersionGateStatus.ok,
       storage: storage,
+      cloudSaves: cloudSaves,
     );
 
 /// "Arkadaşınla (N)" rozeti/girişte otomatik sekme testleri için — girişli,
@@ -533,6 +540,90 @@ void main() {
     final screen = tester.widget<GameScreen>(find.byType(GameScreen));
     expect(screen.controller.state.turnCount, savedTurn);
     expect(screen.controller.state.multiSession, isTrue);
+    await tester.runAsync(() => storage.close());
+  });
+
+  testWidgets(
+      'oyun ekranı AÇIKKEN giriş yapılırsa TEK bulut satırı doğar '
+      '(migrasyon kapısı — 15 Eylül 2026 hayalet satırı)', (tester) async {
+    // Vakanın uçtan uca hâli: misafir oyunun ORTASINDA giriş yapıyor.
+    // Setup route'u oyun ekranının ALTINDA ayakta kaldığından auth
+    // dinleyicisi hâlâ çalışıyor ve `migrateGuestSave` misafir slotunu
+    // buluta taşımaya kalkıyordu; devri `GameSessionHost` de yaptığından
+    // AYNI oyun İKİ satır olup biri bir daha güncellenmeyen bir "Devam Eden
+    // Oyun" olarak kalıyordu. Kapı (`_gameRouteOpen`) migrasyonu susturur.
+    await setPhoneViewSize(tester, const Size(420, 900));
+    late AppStorage storage;
+    await tester.runAsync(() async {
+      storage = await openTestStorage();
+      final repo = LocalGameRepo(storage);
+      final c = GameController(
+          words: words, autoPlayAi: false, nowIso: () => '', rng: Mulberry32(7));
+      final session = repo.attach(c);
+      c.dispatch(StartAction(const [
+        PlayerSetup(name: guestPlayerName, isAI: false),
+        PlayerSetup(name: 'Yapay Zeka 2', isAI: true),
+      ]));
+      c.dispatch(const PassAction());
+      c.dispatch(const AiPlayAction());
+      await session.end();
+    });
+
+    final gw = FakeSaveGateway();
+    final auth = AuthService.fake(
+        profile: const KProfile(id: 'me', displayName: 'Ironman'));
+    await pumpSetup(
+        tester,
+        services(
+            storage: Future.value(storage),
+            auth: auth,
+            cloudSaves: CloudSaveRepo(gw)));
+    for (var i = 0;
+        i < 50 && tester.any(find.text('KAYITLAR KONTROL EDİLİYOR…'));
+        i++) {
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump();
+    }
+    await tester.tap(find.textContaining('SIRA SENDE'));
+    for (var i = 0; i < 50 && !tester.any(find.byType(GameScreen)); i++) {
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump();
+    }
+    expect(find.byType(GameScreen), findsOneWidget);
+
+    // ——— OYUN İÇİNDE GİRİŞ (oyun ekranının GİRİŞ düğmesi) ———
+    auth.debugSetUser(fakeUser('me'));
+    // ⚠ İKİ ayrı saat ilerletilmek zorunda: bulut yazmasının 600 ms'lik
+    // debounce'u testin SAHTE saatinde yaşıyor (`pump(süre)` ilerletir,
+    // süresiz `pump()` İLERLETMEZ — ilk yazımda satır bu yüzden hiç
+    // doğmadı), depolama/ağ I/O'su ise GERÇEK async (`runAsync`).
+    for (var i = 0; i < 30 && gw.rows.isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)));
+    }
+    // Migrasyonun ikinci satırı açması için fazladan zaman tanı — testin
+    // iddiası "henüz açmadı" değil, "AÇMIYOR".
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)));
+    }
+
+    expect(gw.rows, hasLength(1),
+        reason: 'devir + migrasyon aynı oyunu iki satıra bölmemeli');
+    final satir = gameStateFromJson(
+        (gw.rows.values.single['state'] as Map).cast<String, Object?>());
+    final ekran = tester.widget<GameScreen>(find.byType(GameScreen));
+    expect(satir.turnCount, ekran.controller.state.turnCount);
+    expect(satir.players[0].name, 'Ironman');
+    // Devirde başlatılan misafir-slotu silmesi GERÇEK sqflite I/O'su ve bu
+    // test rotayı hiç pop etmediğinden `host.end()` onu beklemiyor —
+    // `drainRealIo` olmadan yük altındaki CI'da "A Timer is still pending"
+    // riski kalır (bkz. support/real_io.dart).
+    await drainRealIo(tester);
     await tester.runAsync(() => storage.close());
   });
 

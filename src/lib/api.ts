@@ -44,8 +44,10 @@ import type {
   AdminPushVersionRow,
   AdminClientErrorRow,
   AdminSignupFunnelRow,
+  AdminWebJourneyRow,
   AdminTutorialFunnelRow,
-  AdminSourceFunnelRow,
+  AdminMemberQualityRow,
+  AdminFunnelRow,
   AdminDeviceBreakdownRow,
   AdminDeviceModelRow,
   AdminOsVersionRow,
@@ -429,6 +431,28 @@ export async function logGameStart(
  * `getOsVersion`/`getDeviceModel`) iyi niyetle (best-effort) okunan,
  * şimdilik hiçbir ekranda gösterilmeyen ek alanlar — `null` gelmesi normal.
  */
+/**
+ * Bu hesap uygulamaya (iOS/Android) en az bir cihazda giriş yapmış mı —
+ * `push_tokens`ta satırı var mı. `AppStoreStrip` buna göre SUSAR: uygulamayı
+ * zaten kurmuş birine "indir" demenin anlamı yok (24 Eylül 2026, kullanıcı
+ * isteği). RLS: kullanıcı yalnızca KENDİ satırlarını görür
+ * (`push_tokens_select_own`). ⚠ Uygulamayı silen birinin satırı hemen
+ * silinmez → ona şerit çıkmaz; kabul edilen tek sızıntı.
+ * `null` = bilinmiyor (Supabase yok ya da hata) → çağıran "yüklü değil" sayar.
+ */
+export async function userHasAppInstall(userId: string): Promise<boolean | null> {
+  if (!supabase) return null;
+  const { count, error } = await supabase
+    .from('push_tokens')
+    .select('token', { count: 'exact', head: true })
+    .eq('user_id', userId);
+  if (error) {
+    console.error('[Kelimeki] userHasAppInstall hatası:', error.message);
+    return null;
+  }
+  return (count ?? 0) > 0;
+}
+
 export async function logGuestVisit(
   anonId: string,
   utmSource: string | null,
@@ -2765,6 +2789,28 @@ export async function fetchAdminSignupFunnel(days = 30): Promise<AdminSignupFunn
 }
 
 /**
+ * Ziyaretçi yolculuğu: son `days` gün içindeki misafir web oturumlarının adım
+ * başına ulaşan / burada ayrılan sayısı (yalnızca admin — Büyüme >
+ * Kullanıcı). `device` null → tüm cihazlar; `entry` 'landing' → yeni
+ * ziyaretçi, 'app' → karşılamayı atlayan (çoğunlukla dönen), null → hepsi.
+ * Yazan taraf `utils/webJourney.ts`.
+ */
+export async function fetchAdminWebJourney(
+  days = 30,
+  device: 'ios' | 'android' | 'desktop' | null = null,
+  entry: 'landing' | 'app' | null = null,
+): Promise<AdminWebJourneyRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_web_journey', {
+    p_days: days,
+    p_device: device,
+    p_entry: entry,
+  });
+  if (error) rethrowSupabase(error);
+  return (data as AdminWebJourneyRow[]) ?? [];
+}
+
+/**
  * Tanıtım hunisi: son `days` gün içinde kaynak (`auto`/`replay`) başına
  * başlatan → bitiren → atlayan (yalnızca admin — Büyüme > Kullanıcı).
  * Sözleşme: `AdminTutorialFunnelRow`.
@@ -2781,20 +2827,29 @@ export async function fetchAdminTutorialFunnel(days = 30): Promise<AdminTutorial
 }
 
 /**
- * Kaynak hunisi: son `days` gün içinde kaynak başına kişi → üye → oyun
- * (yalnızca admin — Büyüme > Kullanıcı). `admin_guest_source_breakdown`
- * RPC'sinin yerini aldı (o RPC veritabanında duruyor ama artık çağrılmıyor); ilk sütun onunla AYNI sayıyı taşır, üzerine iki adım ekler.
- * Ayrıntılı sözleşme: `AdminSourceFunnelRow`.
+ * Huni v2 (`admin_funnel`, yalnızca admin): son `days` günde ilk kez gelen
+ * cihazların kohortu, (platform, kanal) başına. Sözleşme: `AdminFunnelRow`.
  */
-export async function fetchAdminSourceFunnel(days = 30): Promise<AdminSourceFunnelRow[]> {
+export async function fetchAdminFunnel(days = 30): Promise<AdminFunnelRow[]> {
   if (!supabase) return [];
-  const { data, error } = await supabase.rpc('admin_source_funnel', { p_days: days });
-  if (error) {
-    // Admin panelindeki .catch(setError) zinciri buna güveniyor — hatayı
-    // yutup boş dizi dönmek gerçek bir RPC/izin hatasını gizlerdi.
-    rethrowSupabase(error);
-  }
-  return (data as AdminSourceFunnelRow[]) ?? [];
+  const { data, error } = await supabase.rpc('admin_funnel', { p_days: days });
+  if (error) rethrowSupabase(error);
+  return (data as AdminFunnelRow[]) ?? [];
+}
+
+/**
+ * "Kanal → Üye Kalitesi": son `days` günde hesap açan üyelerin kohortu,
+ * kayıt etiketine göre (yalnızca admin — Büyüme > Kullanıcı). 24 Eylül
+ * 2026'da `admin_source_funnel`in (Kaynak Hunisi) yerini aldı. Sözleşme:
+ * `AdminMemberQualityRow`.
+ */
+export async function fetchAdminMemberQuality(days = 30): Promise<AdminMemberQualityRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_member_quality', { p_days: days });
+  // Admin panelindeki .catch(setError) zinciri buna güveniyor — hatayı
+  // yutup boş dizi dönmek gerçek bir RPC/izin hatasını gizlerdi.
+  if (error) rethrowSupabase(error);
+  return (data as AdminMemberQualityRow[]) ?? [];
 }
 
 /**
@@ -2862,9 +2917,9 @@ export async function fetchAdminDeviceModelBreakdown(days = 30): Promise<AdminDe
  * (yalnızca admin — Büyüme > Kullanıcı, "İşletim Sistemi" tablosu).
  *
  * ⚠ `device_type` ile birlikte okunmalı: aynı sürüm dizesi iki ayrı
- * platformda farklı şey demek (canlıda ölçüldü — `ios` + `10.15.7`
- * satırları aslında masaüstü User-Agent'ı veren cihazlar, o dize macOS'un
- * dondurulmuş sürümü).
+ * platformda farklı şey demek olabilir. `ios` + `10.15.7` satırları
+ * masaüstü kipindeki iPad'lerdi (macOS'un dondurulmuş dizesi); 23 Eylül
+ * 2026'da kaynağı kapatılıp geçmişi düzeltildi.
  */
 export async function fetchAdminOsVersionBreakdown(days = 30): Promise<AdminOsVersionRow[]> {
   if (!supabase) return [];

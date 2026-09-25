@@ -435,6 +435,50 @@ null gönderdiğinden o satırlar zaten 'bilinmiyor' kaynağında toplanıyor ve
 reklam kampanyalarının baktığı satırlarda yalnızca web var. Port damgalamayı
 eklerse burası da güncellenmeli.
 
+## Kaynak Hunisi: Kişi / Oyun görünümleri — 24 Eylül 2026
+
+Kullanıcı sordu: *"Direkt başlayan 267, biten 204 ama yüzdeleri 6.4% ve
+10.5% — biten yüzdesi nasıl daha yüksek olabilir?"* Veri doğruydu, sunum
+yanlıştı: `% / Sayı` düğmesinin sayı kipi oyun ADEDİ, yüzde kipi CİHAZ
+oranı gösteriyordu ve yüzdenin tabanı sütuna göre değişiyordu ("Başlayan" →
+`starters / visitors`, "Biten" → `finishers / starters`). Canlıda ölçülen
+(son 30 gün, `direkt`): 229 oyun 29 cihazdan, 172 bitiş yalnızca 4-5
+cihazdan — oyun ile kişi arasında ~8 kat fark var, yan yana okunamazlar.
+
+Kullanıcı kararı: *"Bence bu tablo elma armut karışmış. Burada görmek
+istediğimiz hangi kaynaktan kaç kişi gelmiş, kaçı üye olmuş, kaçı oyun
+başlatmış, kaçı oyun bitirmiş… Ayrıca başlayan, biten oyun ve ortalama oyun
+(kişi başı) kolonları da olabilir alternatif olarak."*
+
+- **`% / Sayı` → `Kişi / Oyun`.** Kişi: Gelen · Üye · Başlatan · Bitiren,
+  her hücrede sayı + o satırın GELEN'ine göre yüzde (tek taban → soldan sağa
+  okunan huni). Oyun: Başlayan Oyun · Biten Oyun · Oyun / Kişi
+  (`starts / starters`).
+- **RPC DEĞİŞMEDİ** (`admin_source_funnel`) — bütün sayılar zaten dönüyordu.
+  CSV de aynı (ham, iki birim birden).
+- **"—" kuralı korundu ve Başlatan'a da yayıldı:** oyun > 0 ama cihaz = 0
+  ise "bilinmiyor". Port iki tarafa da `anon_id` yazmıyor (`app` satırı: 73
+  oyun, 0 cihaz), bitiş tarafı 31 Ağustos'tan önce hiç yazmıyordu.
+
+**Aynı gün ikinci tur — "Oynayan Üye" (`signup_players`, migration
+`20260924125439_source_funnel_signup_players`).** Kullanıcı: *"arkadaş
+davetinden gelen 31 kişinin 26'sı üye olmuş fakat 4'ü oyun başlatıp hiçbiri
+bitirmemiş — bu mümkün mü?"* Mümkün: davetle gelen ÖNCE üye olur (isteği
+kabul etmek hesap ister), SONRA oynar; misafir sütunları onu hiç görmez.
+Ölçüldü (90 gün): 26 üyenin 17'si oynamış, 1.348 oyun.
+
+- **Mevcut `players` KULLANILAMADI:** pencere OYUN tarihine uygulanıyor,
+  yani pencerede oynayan eski üyeleri de sayıyor (30 gün Arkadaş: 6 üye /
+  15 players → %250). Yeni kolon bir KOHORT: pencerede üye olanlardan
+  bugüne kadar en az bir oyun (`games`, bitmiş) bitirmiş olan →
+  `signup_players <= signups`.
+- **Yüzdesinin tabanı ÜYE**, tablodaki tek istisna (öteki sütunlar Gelen'e
+  göre) — "gelenlerin yüzde kaçı oynayan üye oldu" değil "üye olanların
+  yüzde kaçı oynadı" sorusu soruldu.
+- Dönüş tipi değiştiği için drop + create; `proacl` öncesi/sonrası birebir
+  (`postgres, authenticated, service_role` — `anon` YOK), `security
+  definer` + `search_path` elle geri kuruldu.
+
 ## Tanıtım Turu kartı (Onboarding Faz 5, 8 Eylül 2026)
 
 Büyüme > Kullanıcı → Kaynak Hunisi'nin hemen altında. Kaynak
@@ -750,6 +794,8 @@ anında): *"Pr aç merge et. Mobile dokunma"* — inceleme dondurması sürüyor
 **yayınlar** (`mobile-latest` ezilir, TestFlight'a build gider). `games_api.dart`in
 tek satırlık `'platform': currentPlatform` eklentisi bu yüzden ayrı bir PR'da
 bekliyor (`claude/oyun-bitis-platform-port`).
+**25 Eylül 2026:** o PR (#565) dondurma kalkınca merge edildi; bedel bir
+sonraki mağaza paketi sahaya inene kadar sürer.
 
 **Bunun ÖLÇÜLEBİLİR bedeli var ve gizlenmemeli:** o PR merge edilip yeni bir
 mağaza paketi çıkana kadar **iOS/Android serileri yalnızca Canlı oyunları
@@ -796,7 +842,7 @@ Kullanıcı isteği: *"üyeler tablosuna onay kolonu ekleyecektik"*. ROADMAP #9
 ("onaylanmamış filtresi", 23 Ağustos 2026'da onaylanmış ama kapsam dışı
 bırakılmış) aynı işin öteki yarısıydı — filtre zaten bu kolon olmadan
 kurulamıyordu, ikisi birlikte kapandı. Maddenin tam metni ve kapanış kaydı:
-`docs/decisions/roadmap-arsiv.md`.
+`docs/decisions/roadmap-arsiv-cilt-1.md`.
 
 ### Kolon neden `ConsentCell` kullanmıyor
 
@@ -1116,3 +1162,178 @@ telefonda ~150px sütuna düşüyor ve orada *"Yapay …"* ile *"Arkadaşı…"*
 edilemiyordu. Etiket artık sarıyor — satırın iki satıra çıkması, etiketin
 okunamamasından iyi. Etiketin kendisi de kısaldı (yukarı bkz.), yani sarma
 artık normal değil SON ÇARE.
+
+## Ziyaretçi Yolculuğu — web'de "nerede ayrıldı" (23 Eylül 2026)
+
+Kullanıcı isteği: *"Bizim web tarafında bounce rate'leri görmemiz lazım.
+Ziyaretçiler hangi noktalarda bounce ediyor."* Büyüme > Kullanıcı →
+Kaynak Hunisi'nin hemen üstünde. Yazan `src/utils/webJourney.ts`, sunucu
+`web_sessions` + `record_web_session` / `admin_web_journey`
+(`20260923103044_web_sessions_journey.sql`), kapı `npm run verify-web-journey`.
+
+### Neden vardı
+
+Mevcut tablolar huninin UÇLARINI görüyordu, ARASINI görmüyordu. Canlıdan
+ölçüldü (21-23 Eylül, 34 web cihazı): masaüstündeki 14 cihazın hiçbiri oyun
+başlatmamıştı, ama karşılama sayfasında mı yoksa kurulum ekranında mı
+çıktıkları BİLİNEMİYORDU. 8 başlangıçtan 1'i bitmişti, ama öteki 7'nin
+ilk hamlede mi yoksa 15. dakikada mı bıraktığı BİLİNEMİYORDU.
+
+### Şekil: sekme başına tek satır
+
+Her yeni adımda ve sekme gizlenirken (`visibilitychange`/`pagehide`) aynı
+satır güncellenir. `steps` ulaşılan adımların KÜMESİ, `last_step` ise
+kronolojik olarak SON adım, yani "burada ayrıldı". Kart adım başına Ulaşan /
+Ayrılan / Ayrılma % / medyan süre gösterir ve en çok kaybettiren adımı
+kırmızıyla vurgular. Karşılamada ayrılanlar için medyan kaydırma derinliği
+ayrıca yazılır (`#karsilama` kendi kaydırma kabı, belge değil).
+
+### Kimlik yok (kullanıcı kararı: *"Gizlilik metnine dokunmadan başla"*)
+
+`anon_id` ve `user_id` yok. Satır kodu sekmeye özel bir koddur
+(`sessionStorage`), sekme kapanınca silinir. `signup_events` ile aynı duruş:
+gizlilik metni anonim kodun gittiği durumları SAYIYOR, bu tablo o kodu
+taşımadığı için listeye madde eklemiyor. Bedeli: ölçü KİŞİ değil OTURUM
+bazlıdır. Kişi bazlı huni gerekirse metin değişikliği (#33 ile birlikte) +
+port kopyası gerekir, yani iş dondurma sonrasına kalır.
+
+### Tuzaklar (kodda da yazılı)
+
+- **Adımlı pingler SIRAYLA gider** (tek bir promise zinciri). `landing_cta`
+  ile `app` milisaniyeler içinde ateşleniyor, sunucu da `last_step`i geliş
+  sırasıyla yazıyor. Paralel gitseler ziyaretçiyi yanlış adımda "ayrılmış"
+  gösterirdi. Adımsız pingler `last_step`e dokunmadığı için sıra beklemez.
+- **Auth olayı ↔ AuthModal yarışı:** giriş/kayıt sonrası `useAuth` olayı
+  AuthModal'ın `login`/`signup_done` çağrısından önce gelebiliyor. Oturum
+  "üye" olunca adım yazımı durur, ama bu İKİ kapanış adımı yine geçer.
+- **Hamle adımları yalnızca bu sekmede BAŞLATILAN oyunu sayar.** Kayıttan
+  devam ettirilen oyunun eski hamleleri sayılmaz (`journeyGameRef`, `App.tsx`).
+- **Tablo istemciye kapalı:** RLS açık, politika yok, `anon`/`authenticated`
+  grant'leri revoke edildi. Yazma yalnızca security definer RPC'den (upsert
+  için select+update vermek, herkesin başkasının satırını okuması demekti).
+  Bir günden eski satır güncellenmez. Canlıda ölçüldü: `anon` yalnızca
+  `record_web_session`i çağırabiliyor, admin RPC'sinde `anon` yok.
+- `navigator.webdriver` taşıyan tarayıcılar sayılmaz (botlar + Playwright).
+- **Adım listesi İKİ yerde:** `JOURNEY_STEPS` ↔ migration'daki iki `v_steps`.
+  `verify-web-journey` üçünü sıra dahil karşılaştırır. Yeni adım ekleyen
+  ikisini birden güncellemeli, yoksa sunucu adımı SESSİZCE yok sayar.
+
+### Yeni ↔ Dönen süzgeci (aynı gün, `20260923135848_admin_web_journey_entry_filter.sql`)
+
+Karta düşen İLK gerçek satır bir Android web misafiriydi: app → oyun → 5.
+hamle → oyun bitti, 594 sn. Kullanıcı fark etti: *"önceki android test
+grubundan düzenli oyuncu olmalı çünkü android hala Play Store'da yok."*
+Canlıdan doğrulandı: aynı cihaz 22 Ağustos'tan beri 205 oyunu MİSAFİR
+olarak başlatmış. Yani "misafir" iki ayrı kitleyi birleştiriyordu: bounce
+sorusunun konusu olan YENİ ziyaretçi ve hesapsız düzenli oyuncu. İkincisi
+uzun oyunlarıyla "oyun bitti" payını şişirip yeni gelenin kaybını gizler.
+
+**Veri zaten vardı:** `web_sessions.entry`. Karşılama sayfası yalnızca ilk
+kez gelene gösteriliyor, bu yüzden `landing` = yeni, `app` = karşılama
+atlandı. Kartın varsayılanı **Yeni**. Yazan tarafa dokunulmadı, geçmiş
+satırlar da doğru ayrılıyor.
+
+⚠ **`app` ≠ "dönen", birebir değil.** Kapı (`scripts/landing-plugin.js` →
+`kapiScript`) karşılamayı şunlarda da atlıyor: `/` dışındaki her yol
+(paylaşılan oyun `/game/:id`, davet `/davet/:token`, yani linkle gelen YENİ
+ziyaretçi) ve ana ekrana eklenmiş PWA. Tersi de var: `?tanitim=1` dönen
+kullanıcıya karşılamayı bilerek yeniden gösteriyor. Etiket bu yüzden `?`
+metninde açıklanıyor. Linkle gelen yeniyi ayırmak gerekirse satıra giriş
+YOLU yazılmalı (bugün yazılmıyor).
+
+`p_entry` bir parametre EKLEMESİ olduğu için eski `(integer, text)` imzası
+`drop` edildi. `proacl` sonrasında okundu ve öncekiyle aynı çıktı
+(`authenticated` + `service_role`, `anon` YOK). Eski istemci iki
+parametreyle çağırıyor, üçüncünün varsayılanı `null` olduğu için yayın
+sırası önemsiz. `verify-web-journey` artık adım dizisi taşıyan İKİ
+migration'ı da okuyor.
+
+
+## Masaüstü kipindeki iPad: iOS altında sahte "10.15.7" (23 Eylül 2026)
+
+Kullanıcı fark etti: *"Admin Cihaz ios altında 10.15.7 gözüken 27 kişi var.
+Bu masaüstünde de olan bir versiyon."* iPadOS 13+ Safari varsayılan olarak
+"masaüstü sitesi" kipinde açılıyor ve User-Agent'ı bir Mac'inkiyle birebir
+aynı (`Macintosh; Intel Mac OS X 10_15_7`). `getDeviceType` bu cihazları
+dokunmatik oldukları için doğru biçimde `ios`a ayırıyordu. Ama
+`getOsVersion` `Mac OS X` dalına düşüp Apple'ın bütün Mac'lerde
+SABİTLEDİĞİ `10.15.7`yi yazıyordu, `getDeviceModel` de boş dönüyordu.
+Gerçek iPadOS sürümü bu kipte hiç gönderilmiyor.
+
+- **Kaynak:** `visitTracking.ts` → `isDesktopModeIPad`. Bu kipte sürüm
+  artık `null` ("sürüm yok"), model `'iPad'`. Bilinmeyen sürüm, yanlış
+  sürümden iyidir. `verify-device-labels` üç UA'yı sınıyor: masaüstü
+  kipindeki iPad, gerçek Mac (değişmedi) ve iPhone.
+- **Geçmiş:** `20260923141944_ipad_desktop_mode_os_version.sql`,
+  `device_visits` + `guest_visits`. Eşleşme kesin, çünkü `ios` + `10.15…`
+  yalnızca bu kipten gelebilir (iOS 10'un son sürümü 10.3.4). Canlıda
+  eşleşen satırların hepsi modelsizdi.
+- ⚠ **Masaüstü `10.15.7` de aynı dondurmanın ürünü:** Safari ve Chrome
+  bütün Mac'lerde bu diziyi gönderiyor, yani "Masaüstü → 10.15.7" satırı
+  "bir Mac" demek, sürüm bilgisi değil. Satıra dokunulmadı: platform
+  doğru, yanıltıcı olan yalnızca sürüm. Aynısı Windows'ta `10.0` için de
+  geçerli (Windows 11 de `NT 10.0` gönderiyor).
+- **Masaüstü satırlarına aile adı (aynı gün, kullanıcı isteği: *"MacOS ve
+  windows başına yazılsa iyi olur, yoksa sayılardan neyin ne olduğu
+  anlaşılmayacak"*):** `osVersionLabel` → `desktopOsLabel`. Aile, sürüm
+  dizesinin şeklinden okunuyor: Windows iki parçalı bir NT numarası
+  (`10.0` → **Windows 10/11**, `6.1` → Windows 7), macOS üç parçalı
+  (`macOS 10.15.7`). Tanınmayan iki parçalı dize ham kalır ("Masaüstü
+  7.9"). Veri DEĞİŞMEDİ, yalnızca etiket. Canlıdaki her masaüstü sürümü
+  eşlendi (son 90 gün: `10.0` 67, `10.15.7` 21, `15.7.2` 2, `10.7.2` 1
+  cihaz). Kartın `?` metni sayının sürüm bilgisi olmadığını söylüyor.
+
+### Masaüstü "sürüm yok" kovası: bot mu, Linux mu? Önce ÖLÇ (aynı gün)
+
+Masaüstünde sürümsüz 115 cihaz vardı (son 90 gün). 107'si tek seferlik, 1'i
+oyun başlatmış, 112'sinin kaynak etiketi yok ve günün her saatine
+yayılmışlardı. Bu örüntü tarayıcı botlarına uyuyor. İlk öneri satırı "bot"
+diye etiketlemekti. **Kullanıcı itiraz etti ve haklıydı:** *"Bunların gerçek
+ziyaretçi olma ihtimali de var… bunları bot olarak değerlendirmek tahmin olur
+ancak."* Ayrıca bilinen botların zaten dışarıda tutulduğunu sanıyordu. Kod
+okundu: ziyaret ve cihaz sayaçlarında HİÇBİR bot süzgeci yoktu, yalnızca
+Ziyaretçi Yolculuğu `navigator.webdriver`ı eliyordu.
+
+Kesin olan tek şey şuydu: Windows ve Mac tarayıcıları sürüm bildirir, yani
+bu kovaya yalnızca Linux, ChromeOS ya da kendini tanıtmayan istemci düşebilir.
+Reklamdan gelip oynamadan çıkan bir Windows/Mac kullanıcısı buraya düşmez.
+Ama kovanın içini bölmek için veri yoktu.
+
+**Karar: süzme yok, sınıflama var** (`visitTracking.ts`):
+- `isBotUserAgent` (açık liste) → `os_version = 'bot'`, model `null`.
+  Bot yine SAYILIYOR. Etiket: "bot (kendini tanıtan)".
+- `CrOS` → `'ChromeOS'`, kalan `Linux` → `'Linux'`.
+- Boş kalan masaüstü artık "Masaüstü · bilinmiyor". "Bot" DENMEZ.
+
+⚠ **İki tuzak, ikisi de `verify-device-labels`ta:** (1) Bot kontrolü işletim
+sistemi okumadan ÖNCE yapılmalı, çünkü Googlebot'un telefon tarayıcısı kendini
+`Linux; Android 6.0.1; Nexus 5X` olarak tanıtıyor ve Android sayılırdı.
+(2) `/bot/` ile eşleştirilmez: `CUBOT` gerçek bir Android markası.
+
+Geçmiş satırlar DEĞİŞTİRİLMEDİ, çünkü o satırlar için elde tarayıcı kimliği
+yok. **Sonraki adım:** bir hafta sonra kovanın dökümüne bak. Süzmeye
+("bilinen botları hiç sayma") ancak o sayılar varken karar verilir.
+
+## Kaynak Hunisi → "Kanal → Üye Kalitesi" — 24 Eylül 2026
+
+Kullanıcı: *"V1'i de farklı bir bakış açısı için modifiye edip tutmak mümkün
+mü? Rakamların anlamlı olduğu başka bir versiyon gibi."* Huni v2
+(`funnel_events`, `docs/decisions/funnel-v2.md`) misafir hunisini sıfırdan
+ölçmeye başlayınca Kaynak Hunisi'nin misafir sütunları (Gelen / Başlatan /
+Bitiren — üç ayrı anonim tablo, farklı başlangıç tarihleri) emekliye ayrıldı;
+üye yarısı yeni bir RPC'ye (`admin_member_quality`,
+`20260924151205_admin_member_quality.sql`) KOHORT olarak taşındı: pencerede
+hesap açanlar × kayıt etiketi → Üye · Oynayan · 7 Günde · 2+ Gün (iki
+farklı İstanbul gününde oyun bitiren) · Oyun / Üye.
+
+- Yukarıdaki iki Kaynak Hunisi bölümü ("Bitiren Cihaz", "Kişi / Oyun
+  görünümleri") bu tarihten itibaren TARİHÇE.
+- `app` etiketi (mobil kayıtlar) artık kendi kanalında: "Mobil Uygulama"
+  (`sourceChannel`, TAM eşleşme — `apple`/`app-store` yutulmasın;
+  `verify-admin-groups` kilitliyor).
+- Bilinen kanallar (`MEMBER_QUALITY_ALWAYS`: Instagram, Facebook,
+  LinkedIn, Arkadaş, Mobil Uygulama, Direkt) üye getirmese de 0 ile
+  çiziliyor (kullanıcı isteği) — ölçüldüğü gün Facebook hiç üye
+  getirmemişti ve satırın yokluğu "ölçülmedi" gibi okunuyordu.
+- `admin_source_funnel` veritabanında DURUYOR ama çağrılmıyor (geri dönüş
+  yolu).

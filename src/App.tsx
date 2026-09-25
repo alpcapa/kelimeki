@@ -10,7 +10,6 @@ import { TermsModal } from './components/TermsModal';
 import { PrivacyModal } from './components/PrivacyModal';
 import { AuthModal } from './components/AuthModal';
 import { Setup } from './components/Setup';
-import { AddToHomeScreen } from './components/AddToHomeScreen';
 import { AppStoreStrip } from './components/AppStoreStrip';
 import { LeagueRewardsHost, requestLeagueRewardCheck } from './components/LeagueRewardsHost';
 import { MeaningModal } from './components/MeaningModal';
@@ -99,6 +98,8 @@ import {
   getOsVersion,
   isStandaloneDisplay,
 } from './utils/visitTracking';
+import { journeyMoves, journeyStart, journeyStep } from './utils/webJourney';
+import { funnelEvent } from './utils/funnelEvents';
 import type { LocalGameSave, OnlineGame, WordMeaning } from './lib/database.types';
 import { OnlineGameScreen } from './components/OnlineGameScreen';
 import { useAuth } from './hooks/useAuth';
@@ -560,6 +561,31 @@ export default function App() {
     void logDeviceVisit(anonId, getDeviceType(), getOsVersion(), getDeviceModel());
   }, [authLoading]);
 
+  // Ziyaretçi yolculuğu (`utils/webJourney.ts`, admin → "Ziyaretçi
+  // Yolculuğu"): uygulama açıldı. Karşılamadan gelindiyse aynı sekme
+  // oturumu sürer; girişli oturum hiç yazılmaz. Oturum durumu netleşmeden
+  // göndermiyoruz (misafir-ziyaret effect'iyle aynı gerekçe).
+  useEffect(() => {
+    if (!isSupabaseConfigured || authLoading) return;
+    journeyStart('app', !!user, getDeviceType(), getStoredUtmSource());
+  }, [authLoading, user?.id]);
+
+  // Yolculuğun hamle adımları (`first_move`/`move_5`): yalnızca BU oturumda
+  // başlatılan oyun sayılır — kayıttan devam ettirilen bir oyunun eski
+  // hamleleri "bu ziyaretçi 5 hamle oynadı" demek değil. `startLocalGame`
+  // ref'i 'pending'e çeker, START'ın ürettiği `startedAt` burada sabitlenir.
+  const journeyGameRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (state.phase !== 'play') return;
+    if (journeyGameRef.current === 'pending') journeyGameRef.current = state.startedAt;
+    if (journeyGameRef.current !== state.startedAt) return;
+    const hamle = state.moveHistory.filter(
+      (h) => h.invasionFrom === undefined && h.action !== 'surrender' && !state.players[h.player]?.isAI,
+    ).length;
+    if (hamle > 0) journeyMoves(hamle);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.moveHistory.length, state.startedAt, state.phase]);
+
   // Devam eden oyunu (phase==='play', bitmemiş) her değişiklikte kaydeder.
   // Girişli kullanıcı için hedef `local_game_saves` (sunucu — cihazlar arası,
   // çoklu oyun); misafir için (ya da Supabase yapılandırılmamışsa) mevcut
@@ -855,6 +881,10 @@ export default function App() {
     // `!user` = misafir başlangıcı — huninin "Başlayan" adımı yalnızca bunları
     // sayıyor (bkz. `logGameStart` ve `game_starts.is_guest`).
     void logGameStart(players.length, getOrCreateAnonId(), getStoredUtmSource(), !user);
+    // Huni v2 (`utils/funnelEvents.ts`) — misafir de üye de sayılır.
+    funnelEvent('game_start', !user);
+    journeyGameRef.current = 'pending';
+    journeyStep('game_start');
   };
 
   // Setup'taki "Devam Eden Oyun" satırına tıklanınca: kaydı reducer'a
@@ -1305,6 +1335,11 @@ export default function App() {
       state.endReason === 'surrender',
       user?.id ?? null,
     );
+    // Huni v2: gizlilik metni bugün bitiş kaydını yalnızca MİSAFİR için
+    // sayıyor — üye bitişini `funnelEvent` kendisi süzer (bayrak kapalıyken).
+    // 7 günlük terk yolu BİLEREK dahil değil: süre dolması "bitirdi" demek değil.
+    funnelEvent('game_finish', !user);
+    journeyStep('game_finish');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);
 
@@ -1454,7 +1489,10 @@ export default function App() {
     return (
       <TutorialGame
         playerName={tekrar ? tutorialReplayName : (tutorial as { players: PlayerSetup[] }).players[0]?.name ?? ''}
-        onFinish={kapat}
+        onFinish={() => {
+          journeyStep('tutorial_done');
+          kapat();
+        }}
         onSkip={kapat}
         source={tekrar ? 'replay' : 'auto'}
       />
@@ -1469,11 +1507,10 @@ export default function App() {
     const showTanitimLink = !authLoading && !user;
     return (
       <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
-        {/* Ana ekrandan açılan uygulamada "yerel uygulama mağazada" şeridi.
-            AKIŞIN EN ÜSTÜNDE: içeriği aşağı iter, logoyu ÖRTMEZ (bkz.
-            AppStoreStrip'in başlığı). `AddToHomeScreen`in tam TERSİ koşula
-            baktığından ikisi asla aynı anda görünmez. */}
-        <AppStoreStrip />
+        {/* "Yerel uygulama mağazada" şeridi — telefonda (iOS/Android) HER
+            yerde, tarayıcıda da ana ekrandan açılışta da. AKIŞIN EN ÜSTÜNDE:
+            içeriği aşağı iter, logoyu ÖRTMEZ (bkz. AppStoreStrip'in başlığı). */}
+        <AppStoreStrip userId={user?.id ?? null} authLoading={authLoading} />
         <div
           className={`w-full max-w-[460px] flex items-center px-3.5 pt-3 ${
             showTanitimLink ? 'justify-between' : 'justify-end'
@@ -1538,6 +1575,7 @@ export default function App() {
                yardımı OKUMAK tanıtımı tüketmez, ama OYNAMAK tüketir. */
             onReplayTutorial={() => {
               markTutorialSeen();
+              journeyStep('tutorial_start');
               setTutorial({ replay: true });
             }}
             onStart={(players, showTutorial, aiLevel) => {
@@ -1549,6 +1587,7 @@ export default function App() {
                 // "bir kere gösterilecek" ve yarıda kapatılan bir tanıtım
                 // sonsuz döngüye dönüşmemeli.
                 markTutorialSeen();
+                journeyStep('tutorial_start');
                 setTutorial({ players, aiLevel });
                 return;
               }
@@ -1556,7 +1595,6 @@ export default function App() {
             }}
           />
         </main>
-        <AddToHomeScreen />
         {/* k-lig kutlama banner'ı — Setup'ta her zaman gösterilebilir
             (girişte/geçmişe dönük backfill'de bekleyen ödüller burada çıkar). */}
         <LeagueRewardsHost />

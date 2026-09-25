@@ -60,16 +60,16 @@
  * ham metni göstermeye devam eder: oranın tek kullanıcısı geliştiricinin
  * kendisi ve ham hata orada bir ARAÇ, arıza değil.
  *
- * ⚠ **PORT İKİZİ HENÜZ `main`'DE DEĞİL (14 Eylül 2026).** Yazıldı ve test
- * edildi, ama mobil yarısı AYRI bir PR'da BEKLETİLİYOR: 1.1.0 (665) kodu
- * donduruldu ve Apple/Google aynı anda inceliyor — `mobile/` altına giren
- * her merge `mobile-latest`i ezip TestFlight'a yeni build yolluyor
- * (kullanıcı kararı: *"mobile dokunmadan web tarafını yayına alalım"*).
- * İnceleme kapanınca port PR'ı merge edilir ve `util/error_message.dart` +
- * `error_message_parity_test.dart` (metinleri ve kalıp sayılarını BU
- * dosyadan okur) devreye girer. **O ana kadar bu dosyayı değiştirirsen
- * bekleyen port PR'ını da güncelle** — parite kapısı henüz yok, ayrışmayı
- * hiçbir şey yakalamaz.
+ * Port ikizi: `mobile/app/lib/src/util/error_message.dart` — metinler ve
+ * kalıplar BİREBİR aynı, `error_message_parity_test.dart` bu dosyayı okuyup
+ * karşılaştırır.
+ *
+ * ⚠ **İkisi AYRI günlerde `main`'e girdi** (web 14 Eylül, port sonrası):
+ * 1.1.0 (665) kodu donduğu ve iki mağaza da incelediği için web yarısı
+ * tek başına yayınlandı, port yarısı inceleme kapanana kadar bekletildi.
+ * Yani `client_errors`ta 14 Eylül ile port sürümünün yayını arasındaki
+ * pencerede `hata-metni:*` kayıtları YALNIZCA web'den gelir — mobil
+ * sessizliği "mobilde hata yok" diye okunmamalı.
  */
 
 /**

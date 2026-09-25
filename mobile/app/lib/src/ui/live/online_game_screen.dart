@@ -80,6 +80,7 @@ import '../../util/uuid.dart';
 import '../../util/online_status.dart';
 import '../../util/onboarding.dart';
 import '../../data/error_reporter.dart';
+import '../../util/error_message.dart';
 
 const Color _muted = kMuted;
 const Color _red = kRed;
@@ -334,6 +335,9 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
 
   /// Zoom tanıtım balonu (1 Eylül 2026) — `game_screen.dart` ile aynı kural.
   bool _zoomHint = false;
+  /// Balonun kendi kendine kapanma zamanlayıcısı — `dispose`'da ve "zoom
+  /// denendi" dalında iptal edilir (sökülmüş State'te `setState` olmasın).
+  Timer? _zoomHintTimer;
 
   /// Tahta dokunuş ADAYI: `_dragRef` yokken inen parmağın konumu. Eşik
   /// aşılırsa (pan/scroll/sürükleme) düşer; kalkışta hücre kutusu DIŞINA
@@ -443,6 +447,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     _controller.dispose();
     _chatState.dispose();
     _dragNotifier.dispose();
+    _zoomHintTimer?.cancel();
     _zoom.dispose();
     super.dispose();
   }
@@ -1063,8 +1068,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     // 11 Eylül 2026'ya kadar ham `PostgrestException` dökümü ekrana
     // düşüyordu: *"PostgrestException(message: Sıra sende değil., code:
     // P0001, details: Bad Request…)"* — kullanıcı iPhone'da gördü.
-    final msg = e.toString();
-    return msg.isEmpty ? 'Hamle gönderilemedi.' : msg;
+    return friendlyErrorMessage(e,
+        surface: 'hamle', fallback: 'Hamle gönderilemedi.');
   }
 
   /// Bekleyen gönderimin idempotency anahtarı ve hangi hamleye ait olduğu.
@@ -1282,9 +1287,18 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     await flags.bumpZoomHintShown();
     if (!mounted) return;
     setState(() => _zoomHint = true);
+    // Balon kendi kendine kapanır (16 Eylül 2026) — gerekçe ve "denedi
+    // SAYILMAZ" kuralı `kZoomHintAutoHide`ın başında.
+    _zoomHintTimer?.cancel();
+    _zoomHintTimer = Timer(kZoomHintAutoHide, () {
+      if (!mounted) return;
+      setState(() => _zoomHint = false);
+    });
   }
 
   void _zoomDenendiIsaretle() {
+    _zoomHintTimer?.cancel();
+    _zoomHintTimer = null;
     if (_zoomHint) setState(() => _zoomHint = false);
     final storageFuture = widget.storage;
     if (storageFuture == null) return;
