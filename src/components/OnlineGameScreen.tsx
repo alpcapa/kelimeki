@@ -1538,7 +1538,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
               <span className="font-mono text-[11px] font-bold uppercase tracking-[1px] text-red">
                 {isAiTurn
                   ? `${state.players[state.current]?.name ?? 'Yapay Zeka'} hamlesini hesaplıyor…`
-                  : `Sıra: ${state.players[state.current]?.name ?? 'Rakip'} — oynaması bekleniyor`}
+                  : `Sıra: ${state.players[state.current]?.name ?? 'Rakip'} bekleniyor`}
               </span>
             </div>
           ) : (
