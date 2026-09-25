@@ -23,6 +23,7 @@ import '../game/neo_button.dart';
 import '../auth/auth_modal.dart';
 import '../tokens.dart';
 import '../form_input.dart';
+import '../../util/error_message.dart';
 
 const Color _text = kText;
 const Color _muted = kMuted;
@@ -131,8 +132,8 @@ class _FeedbackModalState extends State<FeedbackModal> {
       }
     } catch (e) {
       if (mounted) {
-        final msg = e.toString();
-        setState(() => _error = msg.trim().isEmpty ? 'Bir hata oluştu.' : msg);
+        setState(
+            () => _error = friendlyErrorMessage(e, surface: 'gorus-bildir'));
       }
     } finally {
       if (mounted) setState(() => _busy = false);

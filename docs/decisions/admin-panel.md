@@ -794,6 +794,8 @@ anında): *"Pr aç merge et. Mobile dokunma"* — inceleme dondurması sürüyor
 **yayınlar** (`mobile-latest` ezilir, TestFlight'a build gider). `games_api.dart`in
 tek satırlık `'platform': currentPlatform` eklentisi bu yüzden ayrı bir PR'da
 bekliyor (`claude/oyun-bitis-platform-port`).
+**25 Eylül 2026:** o PR (#565) dondurma kalkınca merge edildi; bedel bir
+sonraki mağaza paketi sahaya inene kadar sürer.
 
 **Bunun ÖLÇÜLEBİLİR bedeli var ve gizlenmemeli:** o PR merge edilip yeni bir
 mağaza paketi çıkana kadar **iOS/Android serileri yalnızca Canlı oyunları

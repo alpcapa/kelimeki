@@ -26,7 +26,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 
 import '../../data/auth_service.dart';
 import '../../data/profile_fields.dart';
@@ -39,6 +38,7 @@ import 'k_avatar.dart';
 import '../tokens.dart';
 import '../form_input.dart';
 import '../tap_target.dart';
+import '../../util/error_message.dart';
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -207,8 +207,7 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     final friendly = friendlyAuthMessage(e);
     if (friendly != null) return friendly;
     if (e is FormatException) return e.message; // trDateToIso Türkçe mesajları
-    if (e is AuthException) return e.message;
-    return e.toString();
+    return friendlyErrorMessage(e, surface: 'hesap-ayarlari');
   }
 
   /// Web `onPickFile` portu: seç → doğrula (AuthService.uploadAvatar zaten

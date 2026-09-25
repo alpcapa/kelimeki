@@ -149,6 +149,14 @@ mobile/
                              # Android/iOS DIŞI platformlarda `false` döner
                              # (GitHub Pages web derlemesi açılışta ölmesin)
       game/game_controller.dart # ChangeNotifier motor kabuğu + otomatik YZ turu
+      game/game_session_host.dart # çalışan yerel oyunun OTURUMA tepki veren
+                             # kabuğu: kayıt hedefini (misafir slotu ↔ bulut
+                             # satırı) giriş/çıkışta DEVREDER ve 1. oyuncunun
+                             # adını hesap adıyla eşitler — web App.tsx'teki
+                             # iki effect'in ikizi (Parça 207).
+                             # ⚠ İkizi `SetupScreen._gameRouteOpen`: oyun
+                             # ekranı açıkken `migrateGuestSave` KOŞMAZ,
+                             # yoksa aynı oyun iki satıra bölünür
       storage/               # SQLite + prefs katmanı (bkz. "Depolama Katmanı"):
                              # app_database (şema), app_storage (giriş kapısı),
                              # local_save_store (karantinalı kayıt), pending_queue_store,
@@ -324,6 +332,18 @@ mobile/
                              # yuvarlama 33+33+33=99 verir), web `headToHead.ts`
                              # ikizi; `test/head_to_head_test.dart` ↔
                              # `npm run verify-head-to-head` aynı vakalar
+      util/error_message.dart # kullanıcıya gösterilecek hata metninin SON
+                             # KAPISI (web `src/utils/errorMessage.ts` ikizi).
+                             # 13 Eylül 2026: ham `{"message":"Gateway
+                             # Timeout"}` giriş penceresinde göründü — üstelik
+                             # App Store ekran kaydı çekilirken. Dört dal,
+                             # SIRASI davranışın parçası: P0001 (sunucunun
+                             # Türkçe reddi) → olduğu gibi · geçici arıza →
+                             # "birkaç saniye sonra" · makine metni → jenerik ·
+                             # kalan → olduğu gibi. ⚠ Ham metin KAYBOLMAZ,
+                             # telemetriye yazılır (raporlayıcı ENJEKTE edilir,
+                             # `main.dart` bağlar — dosya saf kalsın diye).
+                             # Kapı: `error_message_parity_test.dart`
       util/away_return.dart  # "uzun aradan sonra öne dönüş = ekrana yeniden
                              # giriş" eşiği (5 dk); web `src/utils/awayReturn.ts`
                              # ile ELLE senkron — `away_return_test.dart` eşiği
@@ -349,12 +369,37 @@ mobile/
                              # ⚠ Boşluk ÖLÇMEZ — kenar/alt boşluğu bilinçli
                              # kabul (kullanıcı kararı); soru "iyi mi" değil
                              # "kırılmıyor mu"
+      swap_limit_parity_test.dart # taş değiştirme SINIRI web ↔ port:
+                             # uyarı metni (TS `${bagCount}` ↔ Dart
+                             # `$bagCount` normalize edilir), `maxSwapCount`,
+                             # İKİ kapı (seçim anı + onay) ve YZ dilimi ÜÇ
+                             # kopyada (web · port · play-ai-turn). ⚠ Son
+                             # iddia kritik: Edge dilimi düşerse sunucu
+                             # kapısı YZ'nin hamlesini reddeder ve
+                             # play-ai-turn SESSİZCE pas geçer (Parça 206).
+                             # DAVRANIŞ kapısı ayrı: kelimeki_core'un
+                             # run_all.dart → testSwapLimit
       support/vector_parity.dart # web SVG path'i ↔ portun Path()..lineTo
                              # zinciri: ikisini kanonik çizim listesine
                              # indiren ORTAK ayrıştırıcı. İki parite testi
                              # kullanıyor (icon_parity, relation_icon_parity)
                              # — üçüncü bir elle-senkron vektör çifti
                              # eklenirse kopyalama, buradan tüket
+      avatar_emoji_nudge_test.dart # YZ robotunun Apple Color Emoji
+                             # telafisi: doğru platform + em tabanlı büyüklük
+                             # + layout'a dokunmama. ⚠ Piksel ÖLÇMEZ (Apple
+                             # fontu bu ortamda yok) — Parça 210
+      localization_test.dart # İKİ yerelleştirme birden: Flutter'ın kendi
+                             # metinleri (Material + CUPERTINO — ikincisi
+                             # olmadan hata yalnız iPhone'da görünür) ve
+                             # iOS paketinin App Store'a bildirdiği dil
+                             # (Info.plist + pbxproj). Parça 208-209
+      game_session_host_test.dart # oyun ORTASINDA giriş/çıkış: devir, isim,
+                             # oyun bitince satırın silinmesi (hayalet "Devam
+                             # Eden Oyun" regresyonu, Parça 207)
+      support/fake_cloud_save_gateway.dart # sahte local_game_saves ucu —
+                             # `cloud_save_test.dart`inkinden ayrı, sade:
+                             # "kaç satır ve içinde ne var" sorusu için
       support/fake_analytics.dart # sahte GA4 ucu — configure eden test
                              # tearDown'da analytics.reset() çağırmak
                              # ZORUNDA (global tek örnek, sızıntı)

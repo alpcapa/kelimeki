@@ -483,10 +483,41 @@ class GameEngine {
               !state.swapMode) {
             return state;
           }
-          final swapSelection = state.swapSelection.contains(index)
-              ? [for (final i in state.swapSelection) if (i != index) i]
-              : [...state.swapSelection, index];
-          return state.copyWith(swapSelection: swapSelection);
+          final limit = maxSwapCount(state.bag.length);
+          // Ekranda BİZİM sınır uyarımız duruyorsa seçim değişince düşsün;
+          // swap modunun kendi ipucu KALSIN — koşulsuz temizlemek onu ilk
+          // dokunuşta siliyordu (web'de golden vector'lar gösterdi).
+          final temizle = state.message == swapLimitMessage(limit);
+          if (state.swapSelection.contains(index)) {
+            final kalan = [
+              for (final i in state.swapSelection)
+                if (i != index) i,
+            ];
+            return temizle
+                ? state.copyWith(
+                    swapSelection: kalan,
+                    message: '',
+                    messageType: MessageKind.none,
+                  )
+                : state.copyWith(swapSelection: kalan);
+          }
+          // Torbada kalandan fazla taş seçilemez (bkz. `maxSwapCount`).
+          // Uyarı SEÇİM anında çıkar — "Değiştir"e basılana kadar beklemek,
+          // sınırı ancak reddedildiğinde öğrenmek olurdu.
+          if (state.swapSelection.length >= limit) {
+            return state.copyWith(
+              message: swapLimitMessage(limit),
+              messageType: MessageKind.err,
+            );
+          }
+          final eklenmis = [...state.swapSelection, index];
+          return temizle
+              ? state.copyWith(
+                  swapSelection: eklenmis,
+                  message: '',
+                  messageType: MessageKind.none,
+                )
+              : state.copyWith(swapSelection: eklenmis);
         }
 
       case ConfirmSwapAction():
@@ -626,6 +657,18 @@ class GameEngine {
         messageType: MessageKind.err,
       );
     }
+    // Sınır ToggleSwapTileAction'da da uygulanıyor, ama burada TEKRAR
+    // kontrol ediliyor: `swapSelection` state'e başka yollardan da
+    // girebilir (kayıttan devam, araya giren senkron torbayı küçültebilir)
+    // ve kuralın sahibi UI değil reducer olmalı — taş korunumu notundaki
+    // dersin aynısı.
+    final swapLimit = maxSwapCount(state.bag.length);
+    if (state.swapSelection.length > swapLimit) {
+      return state.copyWith(
+        message: swapLimitMessage(swapLimit),
+        messageType: MessageKind.err,
+      );
+    }
     // Taş korunumu REDUCER'ın sorumluluğu — bkz. gameReducer.ts'teki aynı
     // yerdeki uzun not (5 Eylül 2026 hata avı geçişi). Kısaca:
     // `ToggleSwapModeAction` swap moduna GİRERKEN `_recallAll` çağırıyordu,
@@ -702,8 +745,12 @@ class GameEngine {
       final consecutivePasses = state.consecutivePasses + 1;
       GameState moved;
       if (state.bag.isNotEmpty) {
+        // YZ de aynı sınıra tabi (`maxSwapCount`): torbada kalandan fazla
+        // taş değiştiremez. Eskiden rafın TAMAMINI atıyordu; torba 7'nin
+        // altına düştüğünde bu, insan oyuncuya kapalı olan bir tazeleme
+        // olurdu. Web ikizi: gameReducer.ts'in AI_PLAY dalı.
         final returned = [
-          for (final t in me.rack)
+          for (final t in me.rack.take(maxSwapCount(state.bag.length)))
             Tile(letter: t.wild ? '?' : t.letter, pts: t.pts),
         ];
         final bag = shuffleList([...state.bag, ...returned], rng);

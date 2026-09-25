@@ -463,6 +463,10 @@ class SupabaseGamesGateway implements GamesGateway {
       // göndermemeli: sunucunun sessiz düzeltmesine güvenmek, bir gün
       // kısıtın kalkması hâlinde taahhüdü kırar.
       if (userId == null) 'anon_id': d.anonId,
+      // 16 Eylül 2026: admin panelindeki "Oyun Sayısı" grafiğinin platform
+      // kırılımı (web ikizi: `logGameFinish`, `src/lib/api.ts`). Damgalamayan
+      // istemcinin satırı sunucuda "Diğer" kovasına düşer.
+      'platform': currentPlatform,
     });
   }
 
