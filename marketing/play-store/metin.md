@@ -10,7 +10,7 @@ ile üretilir (ekran görüntüleri HARİÇ — aşağı bkz.).
 |---|---|---|
 | Mağaza ikonu 512×512 | `store-icon-512.png` | ✅ üretildi |
 | Öne çıkan görsel 1024×500 | `feature-graphic.png` | ✅ üretildi |
-| Promotional content kartı 1920×1080 (Major update) | `promo-1920x1080.jpg` | ✅ üretildi (25 Eyl 2026) — kart henüz Console'da AÇILMADI |
+| Promotional content kartı 1920×1080 (Major update) | `promo-1920x1080.png` | ✅ üretildi (25 Eyl 2026) — kart henüz Console'da AÇILMADI |
 | Telefon ekran görüntüleri (7) | kullanıcıda | ✅ cihazdan alındı, 1080×2072'ye kırpıldı (23 Ağu 2026) |
 
 ---

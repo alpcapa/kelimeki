@@ -5,7 +5,7 @@
 // ÜÇ çıktı:
 //   marketing/play-store/store-icon-512.png   — 512×512, mağaza ikonu
 //   marketing/play-store/feature-graphic.png  — 1024×500, öne çıkan görsel
-//   marketing/play-store/promo-1920x1080.jpg  — 16:9 (≤200 KB), Promotional content kartı
+//   marketing/play-store/promo-1920x1080.png  — 16:9, Promotional content kartı
 //                                               (metinsiz; bkz. promo-graphic.tsx)
 //
 // Ekran görüntüleri BURADA ÜRETİLMEZ ve üretilemez: Play'e giden telefon
@@ -152,23 +152,12 @@ async function main() {
     .flatten({ background: '#ffffff' })   // Play alfa istemiyor (24-bit PNG)
     .png({ compressionLevel: 9 }).toFile(featureOut);
 
-  // Play bu alan için EN FAZLA 200 KB kabul ediyor (Console'da ölçüldü,
-  // 25 Eylül 2026) — PNG ~600 KB çıkıyordu. JPEG kalitesi sınıra sığana kadar
-  // düşürülür; 1000 tabanı bilerek (KiB değil KB), sınırın altında kalmak için.
-  const PROMO_MAX_BAYT = 200 * 1000;
-  const promoOut = path.join(OUT_DIR, 'promo-1920x1080.jpg');
-  let promoJpg; let kalite = 90;
-  for (; kalite >= 50; kalite -= 5) {
-    promoJpg = await sharp(promo2x).flatten({ background: '#ffffff' })
-      .jpeg({ quality: kalite, mozjpeg: true, chromaSubsampling: '4:4:4' }).toBuffer();
-    if (promoJpg.length <= PROMO_MAX_BAYT) break;
-  }
-  if (promoJpg.length > PROMO_MAX_BAYT) { console.error('✗ promo 200 KB sınırına sığmıyor'); process.exit(1); }
-  writeFileSync(promoOut, promoJpg);
+  const promoOut = path.join(OUT_DIR, 'promo-1920x1080.png');
+  await sharp(promo2x).flatten({ background: '#ffffff' }).png({ compressionLevel: 9 }).toFile(promoOut);
   const promoMeta = await sharp(promoOut).metadata();
-  console.log(`  promo   : ${promoMeta.width}×${promoMeta.height}  JPEG q${kalite}  ${(promoJpg.length / 1000).toFixed(0)} KB`);
-  if (promoMeta.width !== PROMO_W * 2 || promoMeta.height !== PROMO_H * 2) {
-    console.error('✗ promo 1920×1080 değil'); process.exit(1);
+  console.log(`  promo   : ${promoMeta.width}×${promoMeta.height}  ${promoMeta.hasAlpha ? 'ALFA VAR ✗' : 'opak ✓'}`);
+  if (promoMeta.width !== PROMO_W * 2 || promoMeta.height !== PROMO_H * 2 || promoMeta.hasAlpha) {
+    console.error('✗ promo 1920×1080 opak değil'); process.exit(1);
   }
   console.log(`✓ ${path.relative(ROOT, promoOut)}`);
 

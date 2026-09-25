@@ -96,7 +96,7 @@ hedefi ikiye bölüyordu).
 başlık/kısa/tam açıklama ve cihazdan alınacak ekran görüntülerinin çekim
 listesi). `npm run generate-play-assets`.
 
-- **Promotional content kartı (`promo-1920x1080.jpg`, 25 Eylül 2026):**
+- **Promotional content kartı (`promo-1920x1080.png`, 25 Eylül 2026):**
   aynı komut üretir (`promo-graphic.tsx`). Görselde **metin ve logo YOK** —
   Play kartın başlığını/açıklamasını görselin alt kısmına kendisi bindiriyor
   ve kartı yüzeye göre kırpıyor; söylenecek her şey Console alanlarında.
@@ -105,6 +105,10 @@ listesi). `npm run generate-play-assets`.
   öğren tanıtımı): k-lig'de sezon yok, yani **Event** türü gerçek bir
   etkinliğe dayanmaz ve politikaya aykırı olur. Gerekçe (trafiğin tamamı
   "Paid and direct", Play aramasından sıfır): `marketing/play-store/metin.md`.
+  ⚠ Console'daki **200 KB sınırı ANIMATION (JSON) alanı için**, Primary
+  image için DEĞİL — 25 Eylül'de yanlış okunup görsel bir kez JPEG'e
+  çevrildi, sonra geri alındı; Console'a PNG (~600 KB) yüklendi ve kabul
+  edildi.
 
 - **Mağaza ikonu ELLE ÇİZİLMEZ, cihazdaki başlatıcı ikonun KAYNAĞINDAN
   küçültülür** (`mobile/app/assets/icon/icon-source.png`, yani
