@@ -27,6 +27,7 @@ import { PrivacyBody, TermsBody, Section, P, SILME_SURESI_GUN } from './LegalCon
 // bir kopya yazmak hem o testi anlamsızlaştırır hem de bu projenin en sık
 // tekrarlayan hata sınıfını (iki kopya sessizce ayrışır) geri getirir.
 import { QuickStart, DetailedRules } from '../components/HelpModal';
+import { appleSmartAppBannerMeta } from '../utils/storeLinks';
 
 import { type StaticPagePath } from '../../scripts/static-pages.js';
 
@@ -248,6 +249,13 @@ function oz(metin: string): string {
 // WhatsApp/X'te çıplak URL olarak çıkıyordu. Görsel kök sayfayla ORTAK
 // (`npm run generate-og-image`) — başlık/açıklama zaten sayfaya özel.
 //
+// Safari'nin Smart App Banner'ı (`apple-itunes-app`) 19 Eylül 2026'da
+// eklendi. `index.html` onu zaten taşıyordu, yani SPA'nın tamamı (karşılama
+// katmanı, /davet/:token, /game/:id) kapsanıyordu — ama bu DÖRT statik sayfa
+// kendi HTML'ini ürettiğinden dışarıda kalmıştı. Kullanıcı bildirdi.
+// `/nasil-oynanir/` bunların en önemlisi: Google'dan gelen yeni ziyaretçinin
+// indiği SEO sayfası tam da orası.
+//
 // ⚠ Gövde bir TEMPLATE LITERAL: içine yazılacak açıklama BURAYA yazılır,
 // dizenin içine DEĞİL. Aynı gün bir HTML yorumuna backtick yazıldı ve dize
 // erken kapanıp derleme düştü (TS1005) — üstelik o yorum üretilen DÖRT
@@ -263,6 +271,7 @@ export function renderLegalPage(sayfa: Sayfa, cssHref: string): string {
 <meta name="description" content="${oz(sayfa.aciklama)}" />
 <link rel="canonical" href="${SITE}${sayfa.yol}" />
 <meta name="robots" content="index,follow" />
+${appleSmartAppBannerMeta() ?? ''}
 
 <meta property="og:type" content="article" />
 <meta property="og:site_name" content="Kelimeki" />

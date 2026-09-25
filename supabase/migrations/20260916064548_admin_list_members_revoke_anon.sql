@@ -1,0 +1,22 @@
+-- Kelimeki — `admin_list_members`in `anon` grant'ini geri al (16 Eylül 2026)
+--
+-- ⚠ BU DOSYA BİR DÜZELTMENİN KAYDI, ayrı bir iş DEĞİL. Bir önceki
+-- migration (`admin_list_members_email_confirmed`) fonksiyonu drop+create
+-- ettiğinde ACL canlıda `{postgres, ANON, authenticated, service_role}`
+-- çıktı — oysa drop'tan ÖNCE `anon` YOKTU.
+--
+-- Sebep: Supabase yeni fonksiyonlara varsayılan olarak `anon`a da execute
+-- veriyor ve `revoke ... from public` DOĞRUDAN verilmiş bir grant'i
+-- düşürmüyor. Veri sızmazdı (fonksiyon girişte `is_admin()` kontrol ediyor)
+-- ama bu depo yüzeyi bilerek daraltıyor (`revoke_anon_identity_leak`,
+-- 5 Eylül 2026; `head_to_head_stats_revoke_anon` da aynı sınıf).
+--
+-- Satır bir önceki dosyaya da eklendi (temiz bir veritabanında `anon`
+-- penceresi hiç açılmasın diye); burada tekrarı zararsız ve canlı geçmişin
+-- gerçekten ne olduğunu gösteriyor.
+--
+-- **Ders: dönüş tipi değişen HER fonksiyonda drop+create'ten sonra ACL'i
+-- OKU** (`select proacl from pg_proc where proname = …`) — "grant'leri geri
+-- kur" demek yetmiyor, geri GELEN bir grant de olabiliyor.
+
+revoke all on function public.admin_list_members () from anon;

@@ -1,4 +1,12 @@
 import { registerSW } from 'virtual:pwa-register';
+import {
+  markSwUpdateReported,
+  readSwUpdateKaydi,
+  shouldApplySwUpdate,
+  shouldReportSwUpdateFailure,
+  writeSwUpdateKaydi,
+} from '../utils/swUpdate';
+import { reportClientError } from '../utils/errorReporting';
 
 // App.tsx bu bayrağı, kullanıcı GERÇEKTEN o an bir oyun ekranında (yerel
 // 'play' fazında ya da bir Canlı oyun ekranında) iken true'ya çekiyor —
@@ -66,13 +74,51 @@ export function setupPwaUpdates(): void {
 
   const tryApplyUpdate = () => {
     if (!applyUpdate || isAuthRedirect || activelyPlaying) return;
+    // ⚠ YENİDEN YÜKLEME DÖNGÜSÜ KAPISI — bu satırlar olmadan aşağıdaki
+    // `apply()` sonsuz bir döngü kurabiliyor:
+    //   pageshow → update() → bekleyen SW → onNeedRefresh → reload → pageshow
+    // Yukarıdaki `applyUpdate = null` koruması YALNIZCA tek bir sayfa ömrü
+    // içinde çalışır; `reload` o ömrü bitirdiğinden döngüyü hiç görmez.
+    // 19 Eylül 2026'da ana ekrandan açılan iOS PWA'sında gerçekleşti ve
+    // üç tur boyunca auth katmanında arandı. Gerekçe: utils/swUpdate.ts.
+    const swKaydi = readSwUpdateKaydi();
+    if (!shouldApplySwUpdate(swKaydi, __KELIMEKI_BUILD__)) {
+      applyUpdate = null;
+      // DERLEME BAŞINA BİR KEZ bildir: bu, bekleyen SW'nin ETKİNLEŞEMEDİĞİ
+      // anlamına gelir — kullanıcı eski sürümde kalıyor demektir, birinin
+      // bakması gerekir. ⚠ Her AÇILIŞTA yazmak gürültüdür ve canlıda ölçüldü
+      // (bkz. `SwUpdateKaydi.reported`); `reportClientError`in kendi
+      // tekilleştirmesi sayfa ömrüyle sınırlı olduğundan burada yetmiyor.
+      if (swKaydi && shouldReportSwUpdateFailure(swKaydi)) {
+        markSwUpdateReported(swKaydi);
+        reportClientError(
+          `service worker güncellemesi TUTMADI — derleme ${__KELIMEKI_BUILD__} değişmedi, döngü kesildi`,
+          'manual',
+          'sw-update-loop',
+        );
+      }
+      return;
+    }
     const apply = applyUpdate;
     applyUpdate = null;
+    writeSwUpdateKaydi(__KELIMEKI_BUILD__, Date.now());
     apply();
   };
 
+  // `registration.update()` KISILIR. iOS'ta ana ekrandan açılan bir PWA'da
+  // `visibilitychange`, `focus` ve `pageshow` her uygulama geçişinde ÜÇÜ
+  // BİRDEN ateşliyor — yani her geçiş üç ayrı sw.js çekimi demekti. Kısma
+  // tazeliği anlamlı biçimde geciktirmiyor (saatlik tetikleyici zaten duruyor
+  // ve 5 dakikadan uzun her dönüş yine kontrol ediyor), ama gereksiz
+  // service worker kurulumlarını kesiyor.
+  const UPDATE_KISMA_MS = 5 * 60 * 1000;
+  let sonKontrol = 0;
   const checkForUpdate = () => {
-    registration?.update().catch(() => {});
+    const simdi = Date.now();
+    if (simdi - sonKontrol >= UPDATE_KISMA_MS) {
+      sonKontrol = simdi;
+      registration?.update().catch(() => {});
+    }
     tryApplyUpdate();
   };
 

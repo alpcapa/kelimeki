@@ -166,3 +166,267 @@
   **Uçtan uca doğrulandı (13 Ağustos 2026):** kullanıcı düzeltmeden sonra hem web'de hem mobil uygulamada profil fotoğrafını birkaç kez değiştirdi — 403 bir daha görülmedi ve yeni boyut sınırı/küçültme de sorunsuz çalıştı. **Aynı gün kovadan ÖLÇÜLDÜ** (`storage.objects`, iki nesne): 83.815 B (82 KB) ve 126.095 B (123 KB) — ikisi de öngörülen 50-150 KB bandında, **ve ikisi de `image/jpeg`**. Bu ikinci alan asıl kanıt: `shrinkAvatar` yeniden kodlarken JPEG'e çeviriyor, küçültme koşmasaydı orijinalin türü (PNG/HEIC) korunurdu — yani dosyalar yalnızca küçük değil, gerçekten bu kod yolundan geçmiş. Zaman damgaları ayrıca RLS düzeltmesini de doğruluyor: 123 KB'lık nesne **28 Haziran'da oluşmuş ama 13 Ağustos'ta güncellenmiş**, yani 20 Temmuz'dan beri 403 veren "var olanın üzerine yaz" işlemi gerçekten çalışıyor; öteki nesne de önce oluşturulup iki dakika sonra güncellenmiş, yani ilk yükleme ve üzerine yazma AYRI AYRI kanıtlı. Bir regresyonda bu sayılar taban çizgisi: kovada ~1 MB'ı aşan ya da `image/jpeg` olmayan bir avatar görülürse küçültme yolu kırılmış demektir.
 
   **Ders — bir politikayı "gereksiz" diye düşürürken YALNIZCA okuma yolunu düşünme:** `public` bir kova okuma için RLS'i atlar ama `upsert` yazma yolu satırı GÖRMEYİ gerektirir. Aynı sınıf bir soru bu projede daha önce de yanlış cevaplanmıştı (bkz. `CountBadge`'in "şu filtre zaten eler" dersi ve `games.messages`'ın "bu satır zaten herkese açık" dersi) — "bu erişim başka bir yoldan zaten var" gerekçesi, o erişimin KULLANILDIĞI tüm yolları tek tek saymadan geçerli sayılmamalı.
+
+## `useAuth` — `user` nesnesinin kimliği (19 Eylül 2026)
+
+Kullanıcı bildirdi: *"Web masaüstünü açınca sürekli her şey yüklemeye
+çalışıyor, ekran deli gibi hareket ediyor, bir türlü durmuyor."* Aynı gün bir
+ekran kaydı da geldi: iPhone'da Setup'ta "Yükleniyor…" hiç bitmiyordu.
+
+**Canlıdan ölçüldü** (Supabase edge logları, tek `session_id`, iPhone Safari):
+
+| | |
+|---|---|
+| Süre | 11:19:29.968 → 11:20:11.279 (41 sn) |
+| İstek | **782** → saniyede ~19 |
+| Farklı uç | 12 |
+| Durum kodları | **hepsi 200** — tek hata yok |
+| `session_id` | **sabit** — oturum yeniden kurulmuyor |
+| `client_errors` | son 6 saatte **boş** |
+
+Tur saniyede bir tekrarlıyordu ve her turun başında `/auth/v1/user` vardı:
+`list_my_online_games` ×2 · `list_incoming_friend_requests` ×2 ·
+`local_game_saves` · `leaderboard` · `league_rewards` · `profiles` ·
+`online_game_states` ×2 · `unseen_finished_online_games` ×2 + admin HEAD'leri.
+
+**Sebep.** `applyUser` `setUser(u)`yu KOŞULSUZ çağırıyordu. Supabase her
+`onAuthStateChange` olayında alanları birebir aynı ama **kimliği yeni** bir
+`User` nesnesi üretir. React için bu "değişti" demek, ve `user` NESNESİNE
+bağlı dokuz effect birden yeniden koşuyordu: `Setup:490` · `Leaderboard:106` ·
+`LiveGamesTab:851` · `UserMenu:96` · `ScoreCard:43` ·
+`AccountSettingsModal:68` · `App` ×3. Bu liste loglardaki turla BİREBİR
+örtüştü — teşhisi kesinleştiren şey bu örtüşme oldu.
+
+**Düzeltme** (`utils/authUser.ts` → `sameAuthUser`): nesne YALNIZCA içeriği
+birebir aynıysa korunur. Bir alan bile değiştiyse yeni nesne aynen geçer, yani
+düzeltme hiçbir GÜNCELLEMEYİ yutmaz — sadece gereksiz kimlik değişimini yutar.
+
+⚠ **`id` karşılaştırması YETMEZDİ.** Uygulama `user.email`i de okuyor (ölçüldü:
+`user.id` 86, `user.email` 22 kullanım) ve e-posta değişiminde ekran
+bayatlardı. Karşılaştırma bu yüzden tek tek alanlara değil nesnenin tamamına
+bakıyor; anahtar sırası farklı gelirse `false` döner ve bugünkü davranışa
+düşeriz — başarısızlık yönü GÜVENLİ taraf.
+
+⚠ **TETİKLEYİCİ KANITLANMADI.** `onAuthStateChange`'i saniyede bir kez
+tetikleyen şeyin ne olduğu bulunamadı. Elenen hipotezler: kopya Supabase
+istemcisi (paketin tek chunk'ında), oturum yenilenmesi (`session_id` sabit),
+sunucu hatası (hepsi 200), service worker döngüsü (`sw.js` 6 istekte aynı,
+30 precache dosyası da 200), Vercel'in farklı sürüm servisi (10 istekte de
+aynı sha), yoklama (tek aralıklar 10 dk/60 dk), o gün merge edilen PR'lar
+(#582'nin effect'i `[]` bağımlılıklı, #586'nınki yalnızca yorum). Düzeltme
+tetikleyiciden BAĞIMSIZ çalışır: olay gelmeye devam etse bile artık bir tam
+veri turu doğurmuyor. Tetikleyici bulunursa bu not güncellenmeli.
+
+### İkinci tur — oturum TİTREMESİ (aynı gün, düzeltme yetmeyince)
+
+İlk düzeltme (`sameAuthUser`) yayına çıktı ve **ölçüldü: 632 istek/dk → 282**,
+yani yarısı gitti ama döngü sürdü. Sebep tasarım gereğiydi: `sameAuthUser`
+yalnızca *"aynı kullanıcı, yeni nesne"* durumunu bastırır; `null → kullanıcı`
+ise GERÇEK bir değişimdir ve bastırılmaz.
+
+Kalan turda `/auth/v1/user` + `profiles` hâlâ tur başına koşuyordu — oysa
+`applyUser` profili yalnızca kimlik DEĞİŞİNCE çeker. Tek açıklama: oturum
+`kullanıcı → null → kullanıcı` diye titriyordu.
+
+**İkinci semptom teşhisi kesinleştirdi.** Kullanıcı: *"Uzunca süre yükleniyor
+yazıp oyunları getirdi ama avatar, isim soyad vb gelmedi."* Ekran
+görüntüsünde Ad/Soyad/Takma İsim boş, menüde isim yerine e-posta öneki,
+avatar baş harfler. Yani `profile` hiç dolmamıştı — ve bunun sebebi aynı
+titreme:
+
+```js
+fetchMyProfile().then((p) => {
+  if (currentUserId === u.id) { setProfile(p); setProfileLoading(false); }
+})
+```
+
+Arada `applyUser(null)` gelince `currentUserId` null'a düşüyor, UÇAN istek
+dönünce koruma tutmuyor ve **sonuç çöpe atılıyor**; `profileLoading` sonsuza
+dek `true` kalıyor. Bir sonraki tur da aynı şekilde çöpe gidiyor. Tek
+mekanizma iki şikayeti birden açıklıyor.
+
+**Düzeltme** (`shouldApplyAuthSession`): oturumu yalnızca GERÇEK bir çıkış
+düşürür. `SIGNED_OUT` ve `INITIAL_SESSION` dışındaki bir olayda `session`
+`null` geldiyse yok sayılır — oturum gerçekten bittiyse arkasından zaten
+`SIGNED_OUT` gelir.
+
+⚠ **`SIGNED_OUT`'u listeden çıkarma:** çıkış yapan kullanıcı ekranda girişli
+kalır ve bir sonraki isteğinde anlamsız bir hata görür.
+
+⚠ **`null` olayların KAYNAĞI hâlâ bilinmiyor.** Bu düzeltme tetikleyiciyi
+değil, ETKİSİNİ kesiyor: titreme sürse bile artık ne effect turu ne de
+çöpe atılan profil isteği doğuruyor. Kaynak bulunursa bu not güncellenmeli.
+
+### Sonuç — ÖLÇÜLDÜ (19 Eylül 2026, iki düzeltme de canlıda)
+
+Her satır aynı kullanıcının (Ironman) iPhone Safari oturumundan, Supabase edge
+loglarından okundu:
+
+| Ölçüm | Düzeltme yokken (11:19) | `sameAuthUser` sonrası (11:52) | + `shouldApplyAuthSession` sonrası (12:11) |
+|---|---|---|---|
+| İstek/dk | **632** | 282 | **24** |
+| `fetchMyProfile` (auth+profiles)/dk | 18 | 18 | **~1,5** |
+| Realtime websocket/dk | ~19 | 20 | **~1,5** |
+
+**Asıl kanıt sayı değil, tek bir satır:** düzeltmeden sonraki logda
+`storage/.../avatars/<id>/avatar.jpg` isteği belirdi — yani profil gerçekten
+çözüldü. O istek profil dolmadan hiç oluşmaz; önceki turda avatar baş
+harflerdi. Kullanıcı da aynı anda *"düzelmiş görünüyor"* dedi.
+
+⚠ **İki düzeltmenin İKİSİ de gerekliydi.** Ara ölçüm (282) bunu tek başına
+kanıtlıyor: olayların ~yarısı "aynı kullanıcı, yeni nesne" tekrarıydı
+(`sameAuthUser` onu kesti), ~yarısı oturum titremesiydi
+(`shouldApplyAuthSession` onu kesti). Biri ötekinin yerine geçmez; ilki
+"gereksizdi" diye geri alınmamalı.
+
+⚠ **Geçiş anı yanıltır.** Düzeltme yayına çıktıktan SONRA da bir süre eski
+rakamlar görülür (12:07'de hâlâ 122 istek/dk): service worker yeni paketi
+indirip sayfayı yenileyene kadar eski paket koşmaya devam eder. Ölçümü
+`kelimeki-build` sha'sı yeni sürümü gösterdikten sonra al.
+
+### Yükselteç ne zaman girdi — ve neden iki ay patlamadı
+
+`applyUser`'daki koşulsuz `setUser` **21 Temmuz 2026**'da geldi (`d7b68452`),
+üstelik adı *"Sayfa yüklenirken hesap adının bir anlığına e-posta önekine
+düşmesini düzelt"* olan commit'le. O gün BİR ANLIK e-posta öneki sorununu
+çözmek için konan desen, 19 Eylül'de KALICI e-posta öneki sorununu doğurdu.
+
+İki ay zararsız kaldı çünkü zarar için auth olaylarının sıklaşması gerekiyor:
+desen barut, tetikleyici kıvılcım. **Kıvılcımın ne olduğu bulunamadı** (elenen
+hipotezler yukarıda). `supabase-js` sürümü şüpheli değil — kilitte
+**2.108.2**, 28 Haziran'dan 19 Eylül'e altı ayrı commit'te okundu, hiç
+değişmemiş.
+
+⚠ **Tarih ararken sığ klon tuzağı:** ilk bakışta `git log` "her şey 11
+Eylül'de değişti" diyordu — oturumun klonu sığdı (56 commit). Gerçek tarih
+`git fetch --unshallow` sonrası çıktı (1766 commit). Kök `CLAUDE.md` bu
+tuzağı zaten uyarıyor; burada ikinci kez ödendi.
+
+⚠ **Kapı: `npm run verify-auth-user-identity`** (CI'da). Duman testiyle
+sınanamaz — gerçek bir oturum ve arka arkaya gelen auth olayları gerekiyor.
+Kapı iki yönü de sınıyor: yalnızca "aynıysa true" sınansaydı fonksiyon
+`() => true` yazılarak da geçerdi ve o zaman gerçek güncellemeler yutulurdu.
+
+### Üçüncü tur — olay ADINA bakmayı bırakmak (19 Eylül 2026, aynı gün)
+
+İki düzeltme de canlıdayken (derleme `7353b50`, `curl` ile doğrulandı)
+kullanıcı döngünün geri geldiğini bildirdi: *"Şimdi gene loop yapıyor. Bu
+konu acil hale geldi. App tarafı düzgün çalışıyor, o nedenle, o tarafı
+incele ve oradaki gibi olması sağla."*
+
+**Ölçüm (edge logs, 13:17–13:19, tek oturum, iPhone Safari 18.7):**
+
+| Yol | 2 dakikada | Tur başına |
+|---|---|---|
+| `rpc/list_my_online_games` | 125 | ~2 |
+| `online_game_states` | 112 | ~2 |
+| `rpc/list_incoming_friend_requests` | 109 | ~2 |
+| `leaderboard` | 61 | ~1 |
+| `rpc/unseen_finished_online_games` | 59 | ~1 |
+| `league_rewards` · `local_game_saves` | 54 | ~1 |
+| **`/auth/v1/user` + `profiles`** | **52 + 51** | **~1** |
+
+Son satır teşhisi tek başına veriyor: `fetchMyProfile` yalnızca
+`currentUserId` DEĞİŞİNCE koşar, yani `user` iki dakikada ~52 kez `null`a
+düşüp geri geliyordu. Ve o `null`lar `shouldApplyAuthSession`'ın elemesine
+rağmen geçtiğine göre, titreten olay `SIGNED_OUT` ya da `INITIAL_SESSION`
+adıyla geliyordu: **olay adı bir filtre değil.**
+
+⚠ Elenen ilk hipotez, ölçümle: *"service worker sayfayı yeniden yükleme
+döngüsüne soktu"* (`pwa.ts` → `onNeedRefresh` → `updateSW(true)`). Bir tam
+sayfa yüklemesi her uçtan BİRER istek üretir; yukarıdaki tabloda uçlar
+1×–2,4× arası ayrışıyor. Yani bunlar yeniden yükleme değil, **bağımsız
+effect koşuları**. Sayfa yenilense sayılar birbirine eşit olurdu.
+
+**İki değişiklik — biri karar, biri yapı.**
+
+1. **Karar artık ada değil DEPOYA bakıyor** (`shouldApplyAuthSession`, yeni
+   imza). `null` oturumlu bir olay geldiğinde kalıcı oturum okunuyor: depo da
+   boşsa çıkış gerçektir, depoda oturum duruyorsa olay gürültüdür ve YOK
+   SAYILIR. Olayın neden `null` yaydığı hâlâ BİLİNMİYOR — ama artık önemi de
+   yok: karar tahmin edilen bir ada değil ölçülebilir bir duruma dayanıyor.
+   ⚠ Okuma `setTimeout(…, 0)` ile erteleniyor; geri çağrı Supabase'in auth
+   kilidini tutarken ikinci bir auth çağrısı yapmak kilitlenme üretir
+   (Supabase'in kendi uyarısı). ⚠ Hata yönü de seçildi: depo okunamazsa
+   oturum DÜŞÜRÜLMEZ — girişli kullanıcıyı çıkmış saymak düzeltilen arızanın
+   ta kendisi.
+
+2. **Yükselteç yapısal olarak kaldırıldı — portun değişmezi web'e taşındı.**
+   Kullanıcının isteği buydu ve portun kuralı zaten yazılıydı
+   (`mobile/app/lib/src/auth/account_scope.dart`, PORT_BRIEF §7): *"karar auth
+   NESNESİNE değil `user.id`'ye bakmalı"*. Web'de **21 effect** `user`
+   nesnesine bağlıydı. Hepsi `user?.id`'ye çevrildi (e-postayı okuyan ikisine
+   `user?.email` de eklendi). Artık bir auth olayı `user` nesnesini
+   değiştirse bile hiçbir veri turu doğmuyor.
+
+   ⚠ Port'un döngüye girmemesinin sebebi olayları farklı almak DEĞİL —
+   `_applyUser` orada da her olayda koşuyor. Fark mimari: Flutter'da
+   `notifyListeners()` bir YENİDEN ÇİZİM'dir, veri çekimi değil. React'te
+   `[user]`e bağlı bir effect için yeniden render = yeniden çekim. Aynı
+   olay akışı iki tarafta iki farklı maliyet üretiyor.
+
+   Taramayı yazınca 21. ihlal ortaya çıktı: `FriendInvitePage.tsx`in davet
+   kabul effect'i (`[authLoading, user, status, token]`) — elle yapılan grep
+   bunu kaçırmıştı, çünkü `user` dört bağımlılığın ortasındaydı.
+
+**Kapı genişledi:** `npm run verify-auth-user-identity` artık saf fonksiyon
+kontrollerine ek olarak `src/` altındaki 136 dosyayı tarayıp bare `user`
+bağımlılığı arıyor. Derleyici bunu göremez, ESLint bu repoda kurulu değil
+(`npm run lint` = `tsc --noEmit`) — yani kural ancak bir kaynak taramasıyla
+korunabilir.
+
+### Dördüncü tur — sebebe değil FREKANSA bakmak (19 Eylül 2026, aynı gün)
+
+Üçüncü düzeltme de yayına çıktı (`444c829`) ve kullanıcı yine bildirdi:
+*"Aç kapa yapınca loop yaptı, kapatıp açtım, düzeldi. Tekrar kapatıp açınca
+yine yaptı."* — yani arıza **açılış başına ~%50 olasılıkla** doğuyor.
+
+**Saniye saniye ölçüm (13:44–13:46) iki şeyi kesinleştirdi:**
+
+| Gözlem | Sonuç |
+|---|---|
+| Patlamalar 13–15 sn sürüp kesiliyor, aralarda boşluk | Kullanıcının aç-kapa turları |
+| Patlama içinde **saniyede ~2 profil çekimi + ~2 websocket**, ~20 istek/sn | Tur başına ~10 istek |
+| Bir iPhone saniyede iki kez 400 KB paketi indirip React'i kuramaz | **Sayfa YENİLENMİYOR** — döngü sayfa İÇİNDE |
+| `client_errors` 4 saattir BOŞ | Uygulama çökmüyor, `ErrorBoundary` hiç girmiyor |
+| `sw.js`in ETag'i ardışık 8 istekte aynı | İki dağıtımın farklı SW servis etmesi DEĞİL |
+
+⚠ **Üçüncü turda elenen "sayfa yeniden yükleniyor" hipotezi YANLIŞ
+gerekçeyle elenmişti.** O tur "tam sayfa yüklemesi her uçtan BİRER istek
+üretir, oysa uçlar 1×–2,4× ayrışıyor" demişti — bu yanlış: `Setup` ve
+`LiveGamesTab` aynı ucu ikisi birden çağırdığından tek bir yükleme de 2×
+üretir. Hipotezi gerçekten eleyen şey oran değil **HIZ** oldu (saniyede iki
+tam açılış fiziksel olarak mümkün değil). Ders: bir hipotezi elerken
+gerekçenin kendisini de sına — yanlış gerekçeyle elenen doğru hipotez, bir
+sonraki turda geri gelir.
+
+**Kabul: kök sebep hâlâ bulunamadı.** Dört turdur aranıyor (nesne kimliği →
+olay adı → depo doğrulaması → bu). Sunucu logları tetikleyiciyi
+GÖSTEREMİYOR. O yüzden bu tur iki farklı şey yapıyor:
+
+1. **ÖLÇÜM — cihazdan.** `null` oturumlu her olayda `client_errors`'a tek
+   satır: *olay adı* + *o anda kalıcı oturum duruyor muydu*. Bu ikisi kök
+   sebebi ikiye indiriyor: **depo DOLU** ise olay sahtedir (supabase-js
+   gürültüsü), **depo BOŞ** ise oturum gerçekten siliniyordur ve teşhis
+   `_removeSession`'a kayar.
+
+2. **DEVRE KESİCİ — sebebe değil frekansa bakar.** Kesin bildiğimiz tek şey:
+   *gerçek bir çıkış saniyede iki kez olmaz.* `AUTH_NULL_BURST_MS` (10 sn)
+   içinde `AUTH_NULL_BURST_LIMIT` (3) kez `null` uygulandıysa, o sayfa ömrü
+   boyunca `null` bir daha uygulanmaz. İlk `null` her zaman uygulanır, yani
+   gerçek çıkış bozulmaz; bedel dar ve bilinçli: oturumu saniyeler içinde üç
+   kez düşen bir sayfa, bir sonraki yüklemeye kadar girişli görünür.
+
+   ⚠ Kesici kök sebep bulununca da KALIR. Bu sınıf bir hata bir kez daha
+   doğarsa kullanıcı yine sonsuz döngü görmemeli.
+
+**Ayrıca — `fetchMyProfile` artık `getUser()` çağırmıyor.** Çağıran kimliği
+biliyorsa (`useAuth` biliyor) `fetchMyProfile(u.id)` geçiyor. Öncesinde her
+profil çekimi bir AĞ TURU (`/auth/v1/user`) **ve bir AUTH KİLİDİ** demekti;
+döngü sırasında bu saniyede ~2 kez oluyordu ve ekrandaki öteki auth
+çağrılarıyla yarışıyordu. **Portun `_fetchProfile`'ı zaten böyle**
+(`auth_service.dart` — doğrudan `userId` ile sorgular, kimlik doğrulamaz);
+yani bu da web'i porta yaklaştıran bir değişiklik.
+
+⚠ Bu, kilit yarışının kök sebep OLDUĞU iddiası DEĞİL — sınanmamış bir
+hipotez. Kanıtı telemetri verecek.

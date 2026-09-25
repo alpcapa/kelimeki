@@ -90,3 +90,133 @@ yanlış hata verdi. Yerelde dal değiştirip derleme davranışı ölçerken
 
 **Ölçüm yöntemi (tekrarlanabilir):** önbelleği sil → `npm run lint`.
 Bozuk hâlde TS6305, düzeltilmiş hâlde temiz — ikisi de koşuldu.
+
+## Yeniden yükleme döngüsü — ana ekrandan açılan iOS PWA'sı (19 Eylül 2026)
+
+Kullanıcı bildirdi: *"Web'i açınca sürekli her şey yüklemeye çalışıyor, ekran
+deli gibi hareket ediyor, bir türlü durmuyor."* Sonra: *"Aç kapa yapınca loop
+yaptı, kapatıp açtım düzeldi, tekrar açınca yine yaptı."* Ve teşhisi açan tek
+cümle: ***"Bunu 'add to home screen' ikonuyla yapıyorum."***
+
+### Mekanik
+
+```
+pageshow → checkForUpdate() → registration.update()
+         → bekleyen SW hâlâ orada → onNeedRefresh() → updateSW(true)
+         → skipWaiting → controllerchange → location.reload()
+         → pageshow → (baştan)
+```
+
+`pwa.ts`in tek koruması `applyUpdate = null` idi ve o **yalnızca tek bir
+sayfa ömrü içinde** çalışıyor; `reload` o ömrü bitirdiği için döngüyü hiç
+görmüyordu. Bekleyen service worker bir sebeple etkinleşemezse (iOS
+standalone'da `skipWaiting`/`controllerchange` zinciri güvenilmez) döngü
+sonsuz: yalnızca uygulamayı tamamen kapatmak kırıyor.
+
+### Neden üç tur boyunca yanlış yerde arandı
+
+Sunucudan görünen şey "oturum saniyede iki kez `null`a düşüyor"du ve bu bir
+BELİRTİYDİ: sayfa her seferinde sıfırdan açılıyordu. Auth katmanında üç ayrı
+düzeltme yayına çıktı (`sameAuthUser` · olay adı filtresi · depo
+doğrulaması), üçü de döngüyü durdurmadı.
+
+⚠ **"Sayfa yenileniyor" hipotezi bir kez YANLIŞ gerekçeyle elendi:** *"bir
+iPhone saniyede iki kez 400 KB paketi indirip React'i kuramaz"*. Doğru
+görünüyordu ve yanlıştı — **ana ekrandan açılan bir PWA'da HTML/JS/font
+tamamen service worker ÖNBELLEĞİNDEN gelir, ağdan hiçbir şey inmez.**
+Saniyede iki açılış o koşulda gayet mümkün.
+
+**İki ders, ikisi de genel:**
+
+1. **Bir hipotezi elerken gerekçenin KENDİSİNİ de sına.** Yanlış gerekçeyle
+   elenen doğru hipotez geri gelir — burada üç tur kaybettirdi.
+2. **Yüzeyi sor.** "Web'i açıyorum" ile "ana ekran ikonuyla açıyorum" iki
+   ayrı çalışma ortamı (önbellek, service worker, storage, yaşam döngüsü).
+   Bir tarayıcı hatasında **hangi yüzey** sorusu, tarayıcı/sürüm sorusu kadar
+   erken sorulmalı.
+
+### Kural
+
+**Bir uygulama oturumunda güncelleme en fazla BİR KEZ uygulanır**; ikinci
+deneme yalnızca derleme kimliği gerçekten değiştiyse serbest. Kayıt
+`sessionStorage`da tutuluyor: yeniden yüklemeleri aşar, uygulamayı kapatıp
+açmak sıfırlar — yani gerçek bir güncelleme bir sonraki açılışta normal
+şekilde uygulanır, kalıcı olarak bloklanmaz.
+
+Kapı `npm run verify-sw-update-loop` (CI'da): saf fonksiyonun dört durumu +
+`pwa.ts`in kapıyı gerçekten çağırdığının ve kaydı `apply()`den ÖNCE
+yazdığının kaynak taraması.
+
+Güncelleme tutmazsa `client_errors`'a `sw-update-loop` bağlamıyla tek satır
+düşüyor — kullanıcı eski sürümde kalıyor demektir, birinin bakması gerekir.
+
+### İkinci ölçüm — kapı çalıştı, ama deneme AÇILIŞ başınaydı (aynı gün)
+
+Düzeltme yayına çıktı (`d7816d7`) ve `client_errors` ÜÇ satır yazdı —
+14:09:28 · 14:09:40 · 14:10:19, üçü de:
+
+```
+[sw-update-loop] service worker güncellemesi TUTMADI — derleme d7816d7 değişmedi, döngü kesildi
+```
+
+**Bu üç satır iki şeyi birden kanıtladı:** (1) teşhis doğru — bekleyen
+service worker gerçekten etkinleşemiyor; (2) kapı çalışıyor — sonsuz döngü
+kırıldı. Ama kayıt `sessionStorage`daydı, yani **her açılış bir boş yeniden
+yükleme harcıyordu**. Kullanıcı bunu *"sanki her seferinde 2 kere refresh
+yapıyor"* diye tarif etti: ilk açılış + bir reload.
+
+⚠ **Bu turda bir ölçüm aracı bedavaya çıktı:** aynı PR `fetchMyProfile`'ın
+`getUser()` çağrısını kaldırdığı için, edge loglarında **`/auth/v1/user` = 0
+olması artık "kullanıcı yeni derlemede" demek.** Sunucudan derleme
+tespitinin en ucuz yolu; yeni bir sürümün sahaya inip inmediği bundan
+okunabiliyor.
+
+**Değişiklik:** kayıt `localStorage`a alındı → deneme **derleme başına bir**.
+Bir kez denenir, tutmazsa o derleme için bir daha denenmez. Güncelleme
+kaybolmuyor: bekleyen worker, tüm istemciler kapanınca normal yaşam
+döngüsüyle kendiliğinden etkinleşir — biz yalnızca onu ZORLAMAYI bırakıyoruz.
+Derleme gerçekten değiştiği an kayıt eskiyor ve kapı kendiliğinden yeniden
+kuruluyor.
+
+⚠ Bedeli bilinçli: bir güncelleme geçici bir sebeple tutmazsa o derleme için
+otomatik yeniden deneme yok.
+
+**Ayrıca `registration.update()` kısıldı (5 dk).** iOS standalone'da
+`visibilitychange` + `focus` + `pageshow` her uygulama geçişinde ÜÇÜ BİRDEN
+ateşliyor, yani her geçiş üç ayrı `sw.js` çekimi demekti. Saatlik tetikleyici
+duruyor ve 5 dakikadan uzun her dönüş yine kontrol ediyor.
+
+⚠ **Hâlâ BİLİNMEYEN:** bekleyen worker'ın neden etkinleşmediği. Üretilen
+`sw.js`te `SKIP_WAITING` dinleyicisi ve `skipWaiting()` var, ama
+`clientsClaim` YOK (vite-plugin-pwa'nın `prompt` modundaki varsayılanı).
+Dağıtım karışması elendi: canlıdaki `index.html`in yüklediği iki paket de
+(`boot-*.js`, `index-*.js`) aynı `sw.js`in precache manifest'inde duruyor,
+yani HTML ile service worker AYNI dağıtımdan geliyor. Bu soru açık; ama
+artık kullanıcıya bir maliyeti yok.
+
+### Üçüncü ölçüm — telemetri AÇILIŞ başına yazıyordu (aynı gün)
+
+`localStorage`a geçildikten sonra yeniden yükleme derleme başına bire indi,
+**ama telemetri inmedi.** Canlıda görüldü: kapı her açılışta yeniden
+değerlendiğinden `client_errors`'a her açılış bir satır düşüyordu (aynı
+derleme `ae9b247` için art arda kayıtlar).
+
+Kaydın İLK yazılması değerli — "bekleyen worker etkinleşemiyor, kullanıcı
+eski sürümde kalıyor, birinin bakması gerekir". Tekrarı gürültü, ve
+`errorReporting.ts`in kendi kuralını çiğniyor: *"bir kayıt 'birinin bakması
+gereken bir şey' demek olmalı; gürültü sinyali boğarsa panel bir daha
+açılmaz."*
+
+⚠ **`reportClientError`in kendi tekilleştirmesi burada YETMEZ** — o pencere
+sayfa ömrüyle sınırlı, bu arıza ise her AÇILIŞTA yeniden doğuyor. Bu yüzden
+işaret kalıcı kayda kondu: `SwUpdateKaydi.reported`. Telemetri artık
+**derleme başına bir**; derleme değişince kayıt tazelenir ve yeni bir arıza
+yine bir kez bildirilir.
+
+Kapı üç yeni kontrolle genişledi (kayıt yok → bildirme · ilk bastırma →
+bildir · aynı derleme ikinci kez → bildirme) + çağrı yeri taraması: işaret
+rapordan ÖNCE konmalı. Duyarlılığı düzeltme geri alınarak kanıtlandı.
+
+**Ders:** bir "sessize alma" mekanizması eklerken sessize alınan ŞEYİ de say.
+Yeniden yükleme susturuldu, telemetri susturulmadı — ikisi aynı kapıdan
+geçiyor görünüyordu ama ömürleri farklıydı (biri sayfa, öteki cihaz).

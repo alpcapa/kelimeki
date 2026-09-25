@@ -155,7 +155,7 @@ export function RecentGamesSection({
     return () => {
       cancelled = true;
     };
-  }, [user, onlineOnly]);
+  }, [user?.id, onlineOnly]);
 
   // Girişsiz kullanıcı için oyun geçmişi hiç yok; henüz yüklenmediyse ya da
   // hiç bitmiş oyun yoksa da bilerek sessizce gizleniyor — boş bir bölüm
