@@ -10,7 +10,7 @@ ile üretilir (ekran görüntüleri HARİÇ — aşağı bkz.).
 |---|---|---|
 | Mağaza ikonu 512×512 | `store-icon-512.png` | ✅ üretildi |
 | Öne çıkan görsel 1024×500 | `feature-graphic.png` | ✅ üretildi |
-| Promotional content kartı 1920×1080 (Major update) | `promo-1920x1080.png` | ✅ üretildi (25 Eyl 2026) — kart henüz Console'da AÇILMADI |
+| Promotional content kartı 1920×1080 (Major update) | `promo-1920x1080.png` | ✅ üretildi ve yüklendi — kart **oluşturuldu** (25 Eyl 2026), bkz. "Promotional content" |
 | Telefon ekran görüntüleri (7) | kullanıcıda | ✅ cihazdan alındı, 1080×2072'ye kırpıldı (23 Ağu 2026) |
 
 ---
@@ -97,6 +97,43 @@ metni arama terimini kullanıyor, uygulama yüzeyi değil (sürüm notlarındaki
 
 **Uzunluk kontrolü:** `python3 - <<'P'` ile ölç (aşağıdaki komut) — Play 4000
 karakterde kesiyor ve kesilen metin sessizce kayboluyor.
+
+---
+
+## Promotional content — Major update kartı (25 Eylül 2026)
+
+**AS-BUILT — Console'da oluşturuldu, incelemede.**
+
+| Alan | Değer |
+|---|---|
+| Event name (iç kimlik, değiştirilemez) | `major-update-1.1-zorluk-tanitim-2026-10` |
+| Tür | Major update – Features & announcements |
+| Ülke / süre | Türkiye · 3 Eki 2026 12:49 UTC → 31 Eki 2026 12:49 UTC (28 gün) |
+| Önizleme | başlangıçtan 3 gün önce (30 Eyl) |
+| Primary image | `promo-1920x1080.png` (metinsiz; `npm run generate-play-assets`) |
+| Animation / Video | yok |
+
+Önerilen metin (tagline ≤80, description ≤500). ⚠ İlk denemede Console
+"Some languages have errors" verdi; tagline'ın büyük harfle başlaması ya
+da "yeni" kelimesi şüpheliydi — **Console'daki SON hâli bundan farklı
+olabilir**, bir sonraki kartta oradan okuyup buraya işle.
+
+```
+Yeni: yapay zekaya karşı üç zorluk seviyesi ve oynayarak öğrenme
+```
+```
+Kelimeki'de yapay zekaya karşı oynarken artık zorluğu sen seçiyorsun: Kolay'la ısın, Normal'de dengeli bir rakiple karşılaş, Zor'da en iyi hamleleri arayan yapay zekayı yenmeye çalış. Seçim oyun kurulumunda, her oyunda değiştirilebilir.
+
+Oyuna yeni başlıyorsan ilk oyunun kısa bir tanıtımla açılır: kelime kurmayı, bölgeni büyütmeyi ve bölge vergisini bir dakikada oynayarak öğrenirsin.
+
+Güncellemeyi yükle ya da uygulamayı aç, hemen oyna. İnternet gerekmez.
+```
+
+**Neden Major update, Event değil:** k-lig'de sezon yok; gerçekte olmayan
+bir etkinliği duyurmak politika ihlali. Duyurulan iki özellik de 1.1.0
+(665) ile production'da. **Ölçüm:** kart bittikten sonra (Kasım başı)
+Grow users → Acquire → Traffic source'ta "Google Play explore/search"
+satırı çıktı mı bak.
 
 ---
 
