@@ -64,7 +64,7 @@ npm run generate-logo-paths      # LogoMark.tsx + portun logo_mark_data.dart'ın
 npm run generate-klig-paths      # KLigMark.tsx + portun klig_mark_data.dart'ını birlikte üretir
 npm run generate-icons           # favicon / app icon (public/) — og-image DEĞİL
 npm run generate-og-image        # public/og-image.png (sosyal paylaşım kartı)
-npm run generate-play-assets     # Play mağaza ikonu (512) + öne çıkan görsel (1024×500)
+npm run generate-play-assets     # Play mağaza ikonu (512) + öne çıkan görsel (1024×500) + Promotional content kartı (1920×1080, metinsiz)
 npm run generate-store-header    # marketing/store/ — mağaza başlık görseli (4096×2304, ≤1 MB)
 npm run preview-store-frames     # App Store karelerinin YEREL önizlemesi (iPhone + iPad, ~14 sn, Linux) — mağazaya giden set yine CI'ın
 # Öteki pazarlama üreticileri (generate-reel, generate-fb-cover) bu listede

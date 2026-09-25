@@ -96,6 +96,16 @@ hedefi ikiye bölüyordu).
 başlık/kısa/tam açıklama ve cihazdan alınacak ekran görüntülerinin çekim
 listesi). `npm run generate-play-assets`.
 
+- **Promotional content kartı (`promo-1920x1080.png`, 25 Eylül 2026):**
+  aynı komut üretir (`promo-graphic.tsx`). Görselde **metin ve logo YOK** —
+  Play kartın başlığını/açıklamasını görselin alt kısmına kendisi bindiriyor
+  ve kartı yüzeye göre kırpıyor; söylenecek her şey Console alanlarında.
+  Ana tahta (`DEMO_TILES_2`, tam opak) üst-ortada, iki yanda soluk 4 kişilik
+  tahtalar. Kart türü **Major update** (1.1.0'ın zorluk seçimi + oynayarak
+  öğren tanıtımı): k-lig'de sezon yok, yani **Event** türü gerçek bir
+  etkinliğe dayanmaz ve politikaya aykırı olur. Gerekçe (trafiğin tamamı
+  "Paid and direct", Play aramasından sıfır): `marketing/play-store/metin.md`.
+
 - **Mağaza ikonu ELLE ÇİZİLMEZ, cihazdaki başlatıcı ikonun KAYNAĞINDAN
   küçültülür** (`mobile/app/assets/icon/icon-source.png`, yani
   `flutter_launcher_icons.image_path`) — ayrı bir kaynaktan üretilse
