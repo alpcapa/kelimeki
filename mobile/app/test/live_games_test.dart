@@ -23,6 +23,7 @@ import 'package:kelimeki/src/config/version_gate.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
 import 'package:kelimeki/src/data/friends_api.dart';
 import 'package:kelimeki/src/data/error_reporter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:kelimeki/src/data/meaning_store.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
 import 'package:kelimeki/src/ui/live/live_game_create_form.dart';
@@ -355,6 +356,89 @@ void main() {
       final repo = OnlineGamesRepo(gw, nowMs: () => nowMs, delay: noDelay);
       expect(await repo.load(), isNull);
       expect(gw.listCalls, 1);
+    });
+
+    // 17 Eylül 2026 — admin panelindeki `client_errors` yığılması: 62 kaydın
+    // 11'i `online_games_repo.load` → `PostgrestException(code: 504)`
+    // (android 9 · ios 2, 8 cihaz). Sunucu ELENDİ: aynı RPC en ağır
+    // kullanıcıda 12,7 ms. Kusur sınıflandırmadaydı — 504 taşıma
+    // kalıplarına uymadığı için "sunucunun reddi" sayılıyor, yani ne
+    // tekrarlanıyor ne de kullanıcıdan gizleniyordu.
+    // Web ikizi: `scripts/verify-live-games-load.ts`.
+    test('load: GEÇİCİ sunucu hatası (504) sessizce tekrarlanır', () async {
+      final gw = FakeOnlineGamesGateway()
+        ..netFailFirst = 1
+        ..netFailError = const PostgrestException(
+            message: 'Gateway Timeout', code: '504')
+        ..rows = [gameRow(id: 'g1', myId: 'me', status: 'active')]
+        ..turnRows = [
+          {'online_game_id': 'g1', 'current': 0},
+        ];
+      final repo = OnlineGamesRepo(gw, nowMs: () => nowMs, delay: noDelay);
+      final snap = await repo.load();
+      expect(snap, isNotNull, reason: '504 boş liste gibi okunmamalı');
+      expect(snap!.games, hasLength(1));
+      expect(gw.listCalls, 2, reason: 'bir kez tekrar denendi');
+    });
+
+    test('load: mesajı BOŞ 504 de tekrarlanır (kod yeter)', () async {
+      final gw = FakeOnlineGamesGateway()
+        ..netFailFirst = 1
+        ..netFailError = const PostgrestException(message: '', code: '504')
+        ..rows = [gameRow(id: 'g1', myId: 'me', status: 'active')]
+        ..turnRows = [
+          {'online_game_id': 'g1', 'current': 0},
+        ];
+      final repo = OnlineGamesRepo(gw, nowMs: () => nowMs, delay: noDelay);
+      expect((await repo.load())!.games, hasLength(1));
+      expect(gw.listCalls, 2);
+    });
+
+    // ⚠ SINIR: 500 ve 429 BİLEREK bu sınıfın DIŞINDA — biri gerçek bir
+    // sunucu kusuru olabilir (tekrar onu maskeler), öteki hız sınırıdır.
+    test('load: 500 tekrarlanMAZ', () async {
+      final gw = FakeOnlineGamesGateway()
+        ..failWith = const PostgrestException(
+            message: 'Internal Server Error', code: '500');
+      final repo = OnlineGamesRepo(gw, nowMs: () => nowMs, delay: noDelay);
+      expect(await repo.load(), isNull);
+      expect(gw.listCalls, 1);
+    });
+
+    // Oturum kapısı (web `reportLiveListError` ikizi): oturumu düşmüş
+    // istemcinin yetki hatası BUG değil — panelde bu sınıftan 6 kayıt vardı.
+    // ⚠ Ama oturum VARKEN gelen aynı mesaj gerçek bir grant hatasının yüzü
+    // olabilir; o RAPORLANMALI.
+    test('load: yetki hatası — oturumsuz RAPORLANMAZ, oturum VARKEN raporlanır',
+        () async {
+      final sink = _FakeErrorSink();
+      errorReporter.resetForTests();
+      errorReporter.configure(sink: sink, anonId: Future.value('anon-1'));
+      addTearDown(errorReporter.resetForTests);
+
+      const yetkiHatasi = PostgrestException(
+          message: 'permission denied for function list_my_online_games',
+          code: '42501');
+
+      final dusmus = FakeOnlineGamesGateway()
+        ..sessionValid = false
+        ..failWith = yetkiHatasi;
+      expect(
+          await OnlineGamesRepo(dusmus, nowMs: () => nowMs, delay: noDelay)
+              .load(),
+          isNull);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(sink.sent, isEmpty, reason: 'oturum düşmüş — beklenen durum');
+
+      final acik = FakeOnlineGamesGateway()
+        ..sessionValid = true
+        ..failWith = yetkiHatasi;
+      expect(
+          await OnlineGamesRepo(acik, nowMs: () => nowMs, delay: noDelay)
+              .load(),
+          isNull);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(sink.sent, hasLength(1), reason: 'grant hatası gizlenmemeli');
     });
 
     test('subscribe: kanal kopup yeniden bağlanınca tazeleme sinyali gelir',
