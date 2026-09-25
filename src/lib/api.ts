@@ -64,6 +64,7 @@ import type {
   FriendRow,
   FriendSearchResult,
   GameChatMessage,
+  ChatBlockedWord,
   GameHistoryEntry,
   GameLiker,
   Gender,
@@ -3219,6 +3220,28 @@ export async function fetchAdminFinishedGameChat(onlineGameId: string): Promise<
   return (data as GameChatMessage[]) ?? [];
 }
 
+/** Sohbet/takma ad süzgecinin kelime listesi (yalnızca admin). */
+export async function fetchAdminChatBlockedWords(): Promise<ChatBlockedWord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_list_chat_blocked_words');
+  if (error) rethrowSupabase(error);
+  return (data as ChatBlockedWord[]) ?? [];
+}
+
+/** Listeye kelime ekler (tam kelime eşleşir; sunucu Türkçe küçük harfe çevirir). */
+export async function addAdminChatBlockedWord(word: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.rpc('admin_add_chat_blocked_word', { p_word: word });
+  if (error) rethrowSupabase(error);
+}
+
+/** Listeden kelime çıkarır. */
+export async function removeAdminChatBlockedWord(word: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.rpc('admin_remove_chat_blocked_word', { p_word: word });
+  if (error) rethrowSupabase(error);
+}
+
 /** Bir geri bildirim mesajını siler (yalnızca admin). */
 export async function deleteFeedback(id: string): Promise<void> {
   if (!supabase) return;
@@ -3385,13 +3408,17 @@ export async function submitFeedback(
  * index'i — bu kontrolü atlatan bir yarış durumu olsa bile kayıt sırasında
  * gerçek kısıt devreye girer.
  */
-export async function checkNicknameAvailable(nickname: string): Promise<boolean> {
+/**
+ * Takma ismin durumu: `ok` · `taken` (başkası kullanıyor) · `blocked`
+ * (küfür/müstehcenlik süzgecine takıldı — `chat_blocked_words`, ROADMAP
+ * #37). Yeni istemciler bunu kullanır; `check_nickname_available` mağazadaki
+ * eski paketler için duruyor (orada `blocked` da "alınmış" görünür).
+ */
+export async function fetchNicknameStatus(nickname: string): Promise<'ok' | 'taken' | 'blocked'> {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
-  const { data, error } = await supabase.rpc('check_nickname_available', {
-    p_nickname: nickname,
-  });
+  const { data, error } = await supabase.rpc('nickname_status', { p_nickname: nickname });
   if (error) rethrowSupabase(error);
-  return data === true;
+  return data === 'blocked' ? 'blocked' : data === 'taken' ? 'taken' : 'ok';
 }
 
 /** Postgres'in unique-violation hatasını takma isim için okunur bir mesaja çevirir. */
@@ -3545,7 +3572,7 @@ export async function signUp(
       .update({ agreed_to_terms: termsAccepted })
       .eq('id', result.data.session.user.id);
   }
-  // AuthModal kayıttan önce checkNicknameAvailable ile kontrol ediyor; bu
+  // AuthModal kayıttan önce fetchNicknameStatus ile kontrol ediyor; bu
   // yalnızca eşzamanlı bir yarış durumunda (iki kişi aynı anda aynı ismi
   // kapmaya çalışırsa) devreye giren bir güvenlik ağı.
   const friendlyErr = result.error ? friendlyNicknameError(result.error.message) : null;

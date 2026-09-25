@@ -282,6 +282,20 @@ export interface GameChatMessage {
   colorIndex: number;
   message: string;
   created_at: string;
+  /**
+   * Yalnızca ADMIN dökümünde (`admin_get_finished_game_chat`): mesaj
+   * küfür süzgecine takıldı, `message` ORİJİNAL metin — katılımcılar
+   * maskeli hâlini gördü (ROADMAP #37).
+   */
+  filtered?: boolean;
+}
+
+/** `admin_list_chat_blocked_words` satırı — sohbet/takma ad süzgecinin listesi. */
+export interface ChatBlockedWord {
+  word: string;
+  /** `ooguz+ldnoobw` (tohum listesi) ya da `admin` (panelden eklenen). */
+  source: string;
+  created_at: string;
 }
 
 /** Bir oyunun bitişindeki tek bir oyuncu satırı (final sıralamasında). */

@@ -141,6 +141,7 @@ export function AuthModal({
         if (!nickname.trim()) throw new Error('Takma isim zorunludur.');
         if (nicknameStatus === 'checking') throw new Error('Takma isim kontrol ediliyor, birazdan tekrar dene.');
         if (nicknameStatus === 'taken') throw new Error('Bu takma isim zaten kullanılıyor.');
+        if (nicknameStatus === 'blocked') throw new Error('Bu takma isim kullanılamaz.');
         if (!termsAccepted) throw new Error('Kullanım Koşulları ve Gizlilik Politikası\'nı kabul etmelisiniz.');
         const birthDateIso = trDateToIso(birthDate);
         const { data, error } = await signUp(
@@ -256,6 +257,9 @@ export function AuthModal({
               )}
               {nicknameStatus === 'taken' && (
                 <p className="text-[10px] text-red font-mono mt-1">Bu takma isim kullanımda.</p>
+              )}
+              {nicknameStatus === 'blocked' && (
+                <p className="text-[10px] text-red font-mono mt-1">Bu takma isim kullanılamaz.</p>
               )}
               {nicknameStatus === 'error' && (
                 // Kontrol başarısız olsa bile kayıt engellenmiyor — DB'deki
@@ -403,7 +407,7 @@ export function AuthModal({
         <button
           type="submit"
           disabled={
-            busy || (mode === 'signup' && (nicknameStatus === 'checking' || nicknameStatus === 'taken'))
+            busy || (mode === 'signup' && (nicknameStatus === 'checking' || nicknameStatus === 'taken' || nicknameStatus === 'blocked'))
           }
           className="btn-raised bg-accent text-white rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
         >
