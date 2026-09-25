@@ -1679,6 +1679,33 @@ desteğini bırakmak (ama mağaza vitrininde iPad seti var, o da düşer),
 (c) manzarada bilgilendirici bir ekran göstermek (web'in `LandscapeHint`
 deseninin portu). Karar ölçümden SONRA verilir.
 
+## 30. Kayıt onayı — kırmızı uyarı + onay linkinin pencereyi kapatması (16 Eylül 2026, Parça 211)
+
+⚠ **Numara geçici:** §27'yi #547 ve #554 ayrı ayrı, §28-§29'u #557
+kullanıyor; dördü de merge bekliyor. Bu bölüm merge SIRASINA göre yeniden
+numaralandırılmalı — çakışma `main`'de değil, bekleyen PR'lar arasında.
+
+Web yarısı (#561) `main`'de ve CANLIDA; buradaki kontroller **portun**
+aynı davranışı kazandığını doğrular. Gerçek bir e-posta kutusu gerekiyor.
+
+- [ ] **Kırmızı uyarının metni.** Kayıt formunu doldur → "KAYIT OL".
+      Pencere giriş moduna döner ve kırmızı satır çıkar: *"Hesap
+      oluşturuldu. **E-POSTANIZI KONTROL EDİP ONAY VERİN.**"* — eylem
+      cümlesi **KALIN ve BÜYÜK HARF**, öncesi normal.
+- [ ] ⚠ **Türkçe harflere bak:** `EDİP` ve `VERİN` noktalı **İ**
+      taşımalı. `EDIP`/`VERIN` görüyorsan biri metni `toUpperCase()`e
+      bağlamış demektir (Dart'ın varsayılanı Türkçe'de i→I yapar).
+- [ ] **Onay linki pencereyi KAPATIR (asıl madde).** Yukarıdaki kırmızı
+      uyarı EKRANDAYKEN uygulamayı kapatma; telefonun mail uygulamasından
+      onay bağlantısına bas. Uygulama öne gelip oturum kurulduğunda
+      *"onay verin"* penceresi **kendiliğinden kapanmalı** — elle
+      kapatmak GEREKMEMELİ ve arkada Setup görünmeli, adın üst şeritte
+      belirmeli.
+- [ ] **Ters yön (kapanma fazla hevesli olmasın):** pencere açıkken
+      uygulamayı arka plana al, geri dön — oturum AÇILMADIĞI için pencere
+      YERİNDE durmalı. Aynı şekilde "Şifremi Unuttum" → "Bağlantı Gönder"
+      sonrası altın renkli bilgi satırı çıkar ve pencere kapanmaz.
+
 ## 24. Push bildirimleri + derin bağlantılar → `mobile/docs/testing-bildirimler.md`
 
 Bildirim izni akışı, `push_tokens` yaşam döngüsü, bildirimin düşmesi/dokunma
