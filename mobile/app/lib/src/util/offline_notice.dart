@@ -96,6 +96,52 @@ bool isNetworkError(Object? e) {
       s.contains('timeoutexception');
 }
 
+/// Sunucudan GELEN ama GEÇİCİ olan hata — ağ geçidi cevabı zamanında
+/// alamamış demektir, sunucu bir karar vermiş değildir.
+///
+/// ⚠ **`isNetworkError`'dan neden ayrı:** o yüklem isteğin hiç gitmediği
+/// durumu tanıyor (taşıma istisnası). Bu ise sunucunun DÖNDÜĞÜ bir durum
+/// kodunu tanıyor. Bir `PostgrestException(code: 504)` ikisinin arasına
+/// düşüyordu: taşıma kalıplarına uymadığı için "sunucunun kendi reddi"
+/// sayılıyor, yani ne yeniden deneniyor ne de kullanıcıdan gizleniyordu.
+///
+/// **Ölçüm (17 Eylül 2026):** `client_errors`taki 62 kaydın 11'i bu sınıftı
+/// (`online_games_repo.load` → 504; android 9 · ios 2, 8 cihaz). Sunucu
+/// elendi: `list_my_online_games` en ağır kullanıcıda 12,7 ms sürüyor.
+///
+/// ⚠ **Liste BİLEREK dar:** `500` YOK (gerçek sunucu kusurunu maskeler),
+/// `429` YOK (hız sınırını hemen zorlamak durumu kötüleştirir).
+///
+/// Web ikizi: `isTransientServerError` (`src/utils/offlineNotice.ts`).
+const _geciciDurumKodlari = {'408', '502', '503', '504', '522', '524'};
+
+bool isTransientServerError(Object? e) {
+  final kod = _durumKodu(e);
+  if (kod != null && _geciciDurumKodlari.contains(kod)) return true;
+  // Kalıplar İngilizce ağ geçidi metinleri; sunucunun Türkçe reddi
+  // ("Sıra sende değil.") bunların hiçbirine denk gelmez.
+  final s = e.toString().toLowerCase();
+  return s.contains('gateway time') ||
+      s.contains('bad gateway') ||
+      s.contains('service unavailable') ||
+      s.contains('request time');
+}
+
+/// `PostgrestException.code` gibi bir alanı, tipi İTHAL ETMEDEN okur —
+/// web ikizindeki `(err as {code?}).code` erişiminin aynısı. Alan yoksa
+/// `NoSuchMethodError` düşer ve null döneriz.
+String? _durumKodu(Object? e) {
+  try {
+    final dynamic d = e;
+    final kod = d?.code;
+    if (kod is String) return kod;
+    if (kod is int) return kod.toString();
+  } catch (_) {
+    // alan yok — sorun değil
+  }
+  return null;
+}
+
 /// Kelime anlamı penceresi — sözlük AÇILAMADIĞINDA (kelime bulunamadı'dan
 /// farklı). Flutter WEB derlemesinde sözlük asset'i HTTP ile çekildiğinden
 /// uçak modunda ulaşılamıyor; native'de asset pakette olduğu için bu dal

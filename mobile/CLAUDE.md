@@ -628,7 +628,9 @@ sunucu `coalesce` ile ortak, bkz. ROADMAP #23):
    k-lig kademeleri, `platform.dart`in değer kümesi ↔ sunucu kısıtı, yardım
    metni, giriş sekmesi kuralı, `appVersion` ↔ `pubspec`, YZ zorluğunun
    etiket/seçilebilir liste/seviye açıklamaları (hitap cümlesi + puan)/yardım paragrafı —
-   `ai_level_parity_test`, 6 Eylül 2026; kullanıcıya gösterilen hata
+   `ai_level_parity_test`, 6 Eylül 2026; **taş değiştirme sınırı** —
+   uyarı metni + `maxSwapCount` + İKİ kapı + YZ dilimi,
+   `swap_limit_parity_test`, 14 Eylül 2026; kullanıcıya gösterilen hata
    metninin kapısı — metinler + kalıp sayıları, `error_message_parity_test`,
    13 Eylül 2026) — **yeni bir
    elle-senkron çift eklerken testini de yaz**, desen hazır (web kaynağını/

@@ -634,7 +634,8 @@ tablolar + üç grafiğin kaldırılması".
       yapısal: misafirin `games` satırı hiç açılmıyor.
 - [ ] ⚠ **Uygulamadan biten oyunlar ŞU AN "Diğer"e düşüyor ve bu BEKLENEN.**
       Portun `logGameFinish`i damgayı henüz yazmıyor — o değişiklik inceleme
-      dondurması yüzünden ayrı bir PR'da (`claude/oyun-bitis-platform-port`).
+      dondurması yüzünden ayrı bir PR'daydı (#565, 25 Eylül 2026'da
+      `main`'e girdi — 1.1.0 (665)'ten SONRAKİ paketle sahaya iner).
       **iOS/Android serileri bugün yalnızca Canlı oyunları sayıyor.**
 - [ ] **O PR merge edilip yeni paket çıkınca:** uygulamadan bir oyun bitir
       (iOS ve Android ayrı ayrı) → ilgili platform serisi 1 artmalı. Hâlâ

@@ -85,6 +85,356 @@
      türetildi. Kara listenin yanılması GÜVENLİ tarafta: tanımadığı metin
      geçer, sessizce jenerikleşmez. Cihaz maddesi: `mobile/TESTING.md`.
 
+## Parça 210 — YZ robot avatarı iPhone/iPad'de ortalı değildi: Apple Color Emoji'nin mürekkebi kutusunda ortalı DEĞİL
+
+   - ✅ **Parça 210 — YZ robot avatarı iPhone/iPad'de ortalı değildi: Apple
+     Color Emoji'nin mürekkebi kutusunda ortalı DEĞİL (15 Eylül 2026):**
+     Kullanıcı bildirdi: *"YZ robot avatarı iPhone ve iPad'de ortalı
+     değil."* Eksen söylenmemişti; ikisi de sapmış çıktı.
+
+     **ÖLÇÜM — kullanıcının 1170×2532 ekran görüntüsünden** (PNG elle
+     çözüldü; bu ortamda PIL yok, `zlib` + unfilter yeterli). İlk pencereler
+     komşu öğeleri (turuncu "Normal" rozeti, bitişik avatarın halkası, puan
+     satırı) kaptı ve sayılar tutarsız çıktı; **daire maskesine** geçilince
+     (mühür testinin yöntemi, `league_rewards_test.dart`) dört yalıtık
+     robotun dördü de BİREBİR aynı dedi:
+     mürekkep **42×43 px** (font 42 px = 14 pt), merkezi daireye göre
+     **yatay −0,131 em · dikey +0,083 em**.
+
+     ⚠ **Ders (ölçüm yönteminin kendisi):** bir ekran görüntüsünden ölçüm
+     yaparken dikdörtgen pencere YETMEZ — bitişik öğeler mürekkep sanılır.
+     Yuvarlak bir kaptaki mürekkebi ölçerken maske de yuvarlak olmalı.
+
+     **Kök sebep:** `Container(alignment: center)` metnin KUTUSUNU ortalar;
+     kutu = glif'in advance genişliği + satır kutusu. Apple Color Emoji'de
+     ikisi de mürekkebe göre asimetrik (advance ≈ 1,26 em, mürekkep 1,0 em
+     ve SOLA yaslı). **Linux/Noto Color Emoji'de aynı ölçüm 0,00 em** (300
+     px kutuda 1 px) — yani Android'de sapma YOK, hata Apple fontuna özgü ve
+     `flutter test` bunu ASLA göremezdi (test ortamında Apple fontu yok).
+
+     **Düzeltme:** `player_avatar_row.dart`ta ölçülen değerin tersi kadar
+     `Transform.translate` — `kAppleEmojiNudgeXEm = 0.131`,
+     `kAppleEmojiNudgeYEm = -0.083`, **yalnızca Apple platformlarında**
+     (`defaultTargetPlatform`). Transform yalnızca BOYAR, yani daire/satır
+     adımı/puan sütunu bitine kadar aynı kalıyor (test bunu da ölçüyor).
+
+     ⚠ **Bu "boşluk ayarı" değil, ölçülmüş bir font metriği telafisi** —
+     `RankSeal`in `sealBaselineEm`i ile aynı sınıf (orada da harfin
+     mürekkebi font metriğiyle ortalanmıyordu, 12 Ağustos 2026). Kural
+     "yapısal farkı değer ayarıyla kapatma" hâlâ geçerli; buradaki fark
+     yapısal DEĞİL, üçüncü tarafın font metriği.
+
+     **Kapı:** `test/avatar_emoji_nudge_test.dart` (3 test) — doğru
+     platformda doğru büyüklük (em tabanlı, daire büyüyünce kaydırma da
+     büyür), Android'de SIFIR, ve layout'un iki platformda birebir aynı
+     kalması. ⚠ **Testin sınırı açıkça yazılı:** pikselleri ölçemez (Apple
+     fontu yok), yalnızca sabitlerin sessizce silinmesini/sürüklenmesini
+     engeller; mürekkebin gerçekten ortalandığı **cihazda** doğrulanır
+     (`mobile/TESTING.md` §29). **858 test yeşil**, `flutter analyze` temiz.
+
+     ⚠ **`debugDefaultTargetPlatformOverride`u `addTearDown`la geri alma** —
+     foundation'ın "debug değişkeni sıfırlandı mı" kontrolü test GÖVDESİ
+     biter bitmez koşuyor, tearDown'dan ÖNCE (bekleyen-timer dersinin
+     aynısı, `support/real_io.dart`). Gövdenin sonunda elle `null`la.
+
+     **Web ikizi BİLEREK dokunulmadı:** aynı emoji `PlayerAvatarRow.tsx`te
+     de dairede duruyor ve iOS Safari'de büyük ihtimalle aynı sapma var, ama
+     ÖLÇÜLMEDİ — ve tarayıcıda telafi CSS'e girer, portun `Transform`una
+     değil. Ölçülürse ayrı bir iş.
+
+## Parça 209 — Flutter'ın KENDİ metinleri de Türkçe (`flutter_localizations`)
+
+   - ✅ **Parça 209 — Flutter'ın KENDİ metinleri de Türkçe
+     (`flutter_localizations`, 15 Eylül 2026):** Parça 208 mağaza
+     etiketini düzeltti ve orada *"uygulama içi yerelleştirme ayrı bir iş,
+     kapsam dışı"* denmişti; kullanıcı aynı sürüme yetişmesini istedi.
+     Öncesinde `MaterialApp`in `localizationsDelegates`ı YOKTU, yani
+     Flutter `DefaultMaterialLocalizations`a (İngilizce) düşüyordu: metin
+     seçme menüsü *Cut/Copy/Paste*, semantik etiketler, tarih/saat seçici.
+     Uygulamanın kendi metinlerinin tamamı Türkçe olduğundan ekranda
+     KARIŞIK dil çıkıyordu.
+     **Yapılan:** `flutter_localizations` (SDK bağımlılığı, ağ gerektirmez)
+     + `MaterialApp`e üç delege ve `supportedLocales: [Locale('tr')]`.
+     ⚠ **`GlobalCupertinoLocalizations` DA gerekli:** iOS'ta metin seçme
+     araç çubuğunu Cupertino çiziyor; yalnız Material delegesi konsaydı
+     menü **yalnızca iPhone'da** İngilizce kalırdı — yani hata Linux
+     testlerinde de Android'de de görünmezdi. Test bunu ayrıca sınıyor.
+     ⚠ **`locale` BİLEREK sabitlenmedi:** desteklenen tek dil `tr` olduğu
+     için çözümleyici cihaz dili ne olursa olsun ona düşüyor
+     (`supportedLocales.first`); sabitlemek ilerde ikinci bir dil
+     eklenirse cihaz seçimini sessizce yok sayardı. Kullanıcının iPad'i
+     İngilizce olduğundan "cihaz Türkçe değil" yanlış teşhisi mümkündü —
+     ikinci test tam o dalı (cihaz `en-US`/`de`) oynatıyor.
+     **Kapı:** `test/localization_test.dart` (3 test) — Material +
+     Cupertino metinleri, desteklenmeyen cihaz dili dalı, ve **Parça
+     208'in plist/pbxproj iddiası** (mağaza etiketi ile uygulama içi
+     yerelleştirme aynı dosyada kilitli ki biri düzeltilip öteki
+     unutulmasın). Duyarlılık: delegeler çıkarılınca ilk iki test düşüyor.
+     **855 test yeşil**, `flutter analyze` temiz, mevcut testlerin hiçbiri
+     etkilenmedi.
+
+## Parça 208 — App Store ürün sayfası "EN English" diyordu; dil PAKETTEN okunuyor
+
+   - ✅ **Parça 208 — App Store ürün sayfası "EN English" diyordu; dil
+     paketten okunuyor (15 Eylül 2026):** Kullanıcı yayınlanan sayfanın
+     ekran görüntüsüyle sordu: **LANGUAGE → EN English**, oysa uygulama
+     tamamen Türkçe. Apple bu satırı **Connect'ten değil yüklenen
+     paketten** okuyor: önce `CFBundleLocalizations`, yoksa
+     `CFBundleDevelopmentRegion`. Depoda ölçüldü — `CFBundleLocalizations`
+     anahtarı HİÇ yoktu, region ise `$(DEVELOPMENT_LANGUAGE)` →
+     pbxproj'deki `developmentRegion = en`. Yani `flutter create`in
+     varsayılanı sahaya çıkmıştı.
+     **Düzeltme:** `ios/Runner/Info.plist` → `CFBundleDevelopmentRegion` =
+     `tr` + `CFBundleLocalizations` = `[tr]`; `project.pbxproj` →
+     `developmentRegion = tr`, `knownRegions`a `tr`.
+     ⚠ **Yeni derleme gerektirir** — yayındaki sürümün sayfası değişmez.
+     ⚠ **Flutter'ın KENDİ metinleri hâlâ İngilizce** (metin seçme menüsü,
+     semantik etiketler, tarih seçici): `MaterialApp`te
+     `localizationsDelegates`/`supportedLocales` yok ve
+     `flutter_localizations` bağımlılığı eklenmedi. Mağaza etiketi ile
+     uygulama içi yerelleştirme AYRI işler; ikincisi bu parçanın dışında
+     bırakılmıştı ve **AYNI GÜN Parça 209'da yapıldı** (kullanıcı isteği:
+     aynı sürüme yetişsin).
+     **Doğrulama sınırı:** iOS derlemesi bu ortamda koşturulamıyor;
+     `Info.plist` `plistlib` ile ayrıştırılıp iki anahtar okundu, gerçek
+     kanıt CI'ın "iOS (imzasız)" işi ve sonrasında mağaza sayfası.
+     Kayıt: `marketing/app-store/console-formlari.md` §17.
+
+## Parça 207 — Oyun ORTASINDA giriş: ad "Misafir" kalıyordu ve bulutta HAYALET bir "Devam Eden Oyun" doğuyordu
+
+   - ✅ **Parça 207 — Oyun ORTASINDA giriş: ad "Misafir" kalıyordu ve
+     bulutta HAYALET bir "Devam Eden Oyun" doğuyordu (15 Eylül 2026):**
+     Kullanıcı cihazda bildirdi (TestFlight 1.1.0/665, `Derleme 9c62289`):
+     *"Misafir olarak 4 kişilik oyun başlattım. Oyunun ortasında giriş
+     yaptım. Oyunu bitirdim ama oyun sonu ekranı Misafir olarak gösterdi.
+     Sonra geri yaptım ve bekleyen oyunlar arasında gördüm. Oyunun girişten
+     sonraki kısmı hiç oynanmamış gibi duruyordu. Tekrar oyunu bitirdim. Bu
+     sefer Ironman olarak gözüktü ve bekleyen oyunlar arasından çıktı."*
+     Ekran görüntüleri tarifle birebir: bitiş ekranı `Misafir 97 · YZ2 122`,
+     listedeki kart ise `74 95 66 71` — yani girişin yapıldığı ANIN skoru.
+
+     **İKİ ayrı kusur, tek tetikleyici; ikisi de web'de VAR olan bir
+     effect'in portta hiç yazılmamış olması** (kural: "sorun bildirildiğinde
+     İLK ADIM web'de bu nasıl yapılmış"):
+
+     1. **Ad.** Web'in `App.tsx`'inde *"Oyun devam ederken giriş yapılırsa
+        1. oyuncunun adını güncelle"* effect'i var (`RENAME_PLAYER`).
+        Portta `RenamePlayerAction` MOTORDA duruyordu ama `mobile/app`
+        içinde onu dispatch eden tek bir satır yoktu — `grep -rn
+        "RenamePlayer" mobile/` yalnızca motoru ve action codec'ini
+        buluyordu. Oyun `Setup`ta `players[0].name: 'Misafir'` literal'iyle
+        kuruluyor ve state'e gömülüyor, yani giriş sonrası ekranda görünen
+        her yer (oyun sonu modalı dahil) "Misafir" diyordu.
+     2. **Kayıt hedefi.** Web'in autosave effect'i `[state, savedGame,
+        user]`e bağlı: `user` dolduğu an hedef localStorage'dan
+        `local_game_saves`e GEÇİYOR. Port hedefi oyun AÇILIRKEN bir kez
+        seçiyordu (`SetupScreen._openGame` → `GameSession` ya da
+        `CloudGameSession`). Giriş sonrası oyun misafir slotuna yazmaya
+        devam ediyor, bu arada **Setup'ın auth dinleyicisi hâlâ ayakta**
+        (oyun rotası onun ÜSTÜNDE açılıyor, Setup dispose olmuyor) ve
+        `_syncCloud` → `migrateGuestSave` o slotun O ANKİ kopyasını buluta
+        taşıyordu. Bulut satırı bir daha GÜNCELLENMİYOR; oyun bitince
+        misafir slotu siliniyor ama satır kalıyor. Hayalet tam olarak bu.
+
+     **Düzeltme — hedefi oturuma CANLI bağlamak:** yeni
+     `game/game_session_host.dart` (`GameSessionHost`) auth'u dinler,
+     misafir ↔ bulut oturumunu devreder ve 1. oyuncunun adını hesap adıyla
+     eşitler; web'de de ikisi tek dosyada (App.tsx) yaşıyor. Devir SIRALI:
+     önce bulut oturumu kurulur (yapıcısı mevcut state'i hemen kuyruğa
+     alır), sonra misafir slotu silinir — tersi, giriş ile ilk yazma
+     arasındaki pencerede uygulama öldürülürse oyunun TEK kopyasını
+     silerdi. Çıkış (logout) simetrik: bulut satırına DOKUNULMAZ (web'de de
+     autosave yalnızca yazmayı bırakır), oyun misafir slotundan devam eder.
+
+     ⚠ **Devir tek başına YETMEZ — ikinci bir kural gerekti:** iki dinleyici
+     (Setup'ınki ve host'unki) aynı bildirimde aynı slota koşuyor ve sıra
+     garanti edilemiyor. `SetupScreen`'e `_gameRouteOpen` bayrağı kondu:
+     **oyun ekranı açıkken `migrateGuestSave` KOŞMAZ** — o slot çalışan
+     oyunun kendi defteridir, devri host yapar. Ölçüldü: kapı olmadan sıra
+     deterministik biçimde migrasyon LEHİNE çıkıyor (Setup'ın dinleyicisi
+     `initState`'te, yani ÖNCE kayıtlı) ve widget testi iki satır görüyor.
+
+     **Kapılar (6 yeni test):** `test/game_session_host_test.dart` (5) —
+     devir + isim + hamlelerin AYNI satırı güncellemesi + oyun bitince
+     satırın silinmesi; aynı hesabın tekrar bildirimi (token tazelenmesi)
+     yeni satır AÇMAZ; çıkış yolu; `turnCount<2` iken önceki misafir kaydı
+     silinmez; buluttan devam edilen BAYAT "Misafir" kaydının adı ilk karede
+     düzelir (sahadaki kalıntıyı da onarır). Artı `setup_screen_test.dart`
+     → *"oyun ekranı AÇIKKEN giriş yapılırsa TEK bulut satırı doğar"*:
+     vakanın uçtan uca hâli, gerçek ekran + gerçek SQLite ile.
+     **Duyarlılık kanıtlandı:** host'un dinleyicisi susturulunca 5 testin
+     4'ü düşüyor, migrasyon kapısı kaldırılınca widget testi iki satır
+     görüp düşüyor. **852 test yeşil**, `flutter analyze` temiz.
+
+     ⚠ **Testte İKİ saat var:** bulut yazmasının 600 ms debounce'u testin
+     SAHTE saatinde (`pump(süre)` ilerletir, süresiz `pump()` İLERLETMEZ),
+     depolama/ağ I/O'su GERÇEK async (`runAsync`). İlk yazımda satır bu
+     yüzden hiç doğmadı ve test yanlışlıkla "yazma yok" diyordu.
+
+     **Web'de değişiklik YOK** — iki effect de orada zaten doğru; bu bir
+     port eksiğiydi. Sahadaki kalıntı: bu sürümden önce doğmuş hayalet
+     satırlar 7 günlük süpürmeye takılır; süpürme `turnCount>=2` satıra -2
+     ceza yazdığından **kullanıcı bunları elle bitirip listeden düşürmeli**
+     (vakadaki gibi "tekrar bitirmek" satırı siliyor).
+
+## Parça 206 — Taş değiştirme sınırı: torbada kalandan fazlası değiştirilemez
+
+   - ✅ **Parça 206 — Taş değiştirme sınırı: torbada kalandan fazlası
+     değiştirilemez (14 Eylül 2026):** Kullanıcı raporu (Asnmzr): *"torbada
+     4 harf kalmışken 7 harf değiştirdim"*. Doğruydu; web'in ÜRETİM
+     reducer'ıyla birebir yeniden üretildi (torba 4 → seçim 7 → *"7 taş
+     değiştirdi"*, torba yine 4, raf yine 7, ne hata ne uyarı).
+
+     **Neden golden vector'lar görmedi — ve bu bu projede İKİNCİ kez:**
+     fixture'lar web ile Dart'ı KARŞILAŞTIRIR, yani ikisinde BİRDEN var olan
+     bir kuralsızlığa kördür. Üstelik `verify-swap-invariants`in taş korunumu
+     kontrolü de göremezdi, çünkü dört motor da *önce seçilenleri torbaya koy,
+     SONRA en fazla o kadar çek* sırasını uyguluyor — toplam taş sayısı hep
+     doğru kalıyordu. Arıza tamamen sessizdi. (Aynı körlük Parça 112'de
+     `remainingTiles` için yaşanmıştı; ders tekrarlandı.)
+
+     **Port tarafında yapılan:** `constants.dart`a `maxSwapCount` +
+     `swapLimitMessage`; `reducer.dart`ta üç nokta — `ToggleSwapTileAction`
+     sınırı SEÇİM anında uyguluyor, `_confirmSwap` TEKRAR kontrol ediyor
+     (kuralın sahibi UI değil reducer; `swapSelection` kayıttan devam ya da
+     araya giren senkronla da dolabiliyor), `_aiPlay` rafı dilimliyor.
+
+     ⚠ **Mesaj temizlemesi DAR tutuldu.** İlk yazımda `ToggleSwapTile`
+     koşulsuz `message: ''` yazıyordu; web tarafında golden'lar bunu anında
+     gösterdi — swap modunun kendi ipucu (*"Değiştireceğin taşları seç…"*)
+     ilk dokunuşta siliniyordu. Artık yalnızca KENDİ sınır uyarısı düşüyor.
+     Port ikizi aynı daraltmayı taşıyor.
+
+     **İki ayrı kapı, ikisi de gerekli:**
+     `kelimeki_core/test/run_all.dart` → `testSwapLimit` DAVRANIŞI Dart
+     motorunda oynatıyor (6883 → **6890** kontrol); `app/test/
+     swap_limit_parity_test.dart` web KAYNAĞINI okuyup metni, `maxSwapCount`i,
+     iki kapıyı ve **YZ dilimini üç kopyada birden** karşılaştırıyor.
+
+     **Duyarlılık kanıtlandı:** sınır geçici olarak kaldırıldığında
+     `testSwapLimit` 5 hatayla düştü, geri alınınca yeşile döndü — "yeşil ama
+     hiçbir şey kanıtlamayan test" değil.
+
+     **Doğrulama:** Dart core 6890 kontrol · `flutter test` tam takım ·
+     `flutter analyze` temiz. Golden vector'lar DEĞİŞMEDİ (web yarısında da
+     bayt-eş kaldı) — mevcut senaryoların hiçbiri bu yola girmiyordu.
+
+     ⚠ **Web + sunucu yarısı AYRI PR'da ve zaten CANLIDA** (#553): migration
+     `20260914152808` uygulandı, `play-ai-turn` v10 deploy edildi. Sıra
+     önemliydi — **önce Edge, sonra migration**: tersi olsaydı YZ'nin tam
+     rafı sunucuda reddedilir ve `play-ai-turn`ün `catch`i sessizce pas
+     geçmeye düşerdi (`verify-edge-engine-parity`nin doğuş sebebiyle aynı
+     sınıf). Dilimlenmiş istek eski SQL'de de geçerli olduğundan kırık
+     pencere sıfır.
+
+     ⚠ **Bu PR merge edilene kadar mobilin YEREL oyunu eski kuralla
+     oynuyor** — sunucu kapısı yalnızca Canlı oyunu kapsıyor, yerel oyun
+     tamamen istemcide. Mağaza incelemesi (1.1.0/665) bitene kadar bekliyor.
+
+## Parça 212 — Zoom tanıtım balonu kendi kendine kapanıyor
+
+   - ✅ **Parça 212 — Zoom balonu 4 sn sonra kapanır (16 Eylül 2026):** Bir
+     oyuncu bildirdi: *"tanıtımdan sonra zoom özelliği için sürekli kalan
+     uyarı mesajının oyun oynamayı zorlaştırdığından bahsetmiş. Onu sürekli
+     değil. 3-5 saniye sonra gidecek şekle getirelim. İnsanlar okumuyor."*
+     Öncesinde balonu kapatan TEK şey zoom'u DENEMEKTİ — yani denemeyen
+     oyuncuda balon oyun boyunca merkez karenin üstünde duruyordu ve tam da
+     taş konacak bölgeyi örtüyordu. Süre `kZoomHintAutoHide`
+     (`ui/game/board_zoom.dart`) ↔ web `ZOOM_HINT_AUTO_HIDE_MS`.
+     ⚠ **Kendi kendine kapanma "denedi" SAYILMAZ:** `markZoomTried`
+     çağrılmıyor ve gösterim sayacı ayrıca artmıyor (karar anında arttı).
+     Yani Parça 1 Eylül'ün kuralı DEĞİŞMEDİ: hiç denemeyen oyuncu balonu
+     ikinci oyun açılışında bir kez daha görür (tavan 2). Kapanmayı "deneme"
+     saymak kuralı sessizce tek gösterime indirirdi.
+     ⚠ Zamanlayıcı İKİ yerde iptal ediliyor: `dispose` (sökülmüş State'te
+     `setState` olmasın) ve `_zoomDenendiIsaretle` (denenince zaten kapandı).
+     Alan adı `_zoomHintTimer` — `game_screen.dart`ta ZATEN bir `_hintTimer`
+     var (bağlamsal ipuçları), ikisi karıştırılmamalı.
+     ⚠ **İki ekran da:** `game_screen.dart` + `online_game_screen.dart`
+     (aynı deseni paylaşıyorlar, bu projenin kayıtlı ayrışma sınıfı).
+     Kapı: `zoom_hint_test.dart` → "balon KENDİ KENDİNE kapanır — ve bu
+     'denedi' SAYILMAZ"; test erken kapanmayı DA ölçüyor (süre − 500 ms'de
+     hâlâ ekranda). Web ikizi `tests/smoke.spec.ts` → "balon kendi kendine
+     kapanır", web yarısı aynı gün `main`'e girdi; bu PR inceleme
+     dondurması yüzünden ayrı bırakıldı.
+
+## Parça 213 — 504 "sunucunun reddi" sayılıyordu + oturum kapısı
+
+   - ✅ **Parça 213 — Geçici sunucu hatası yeniden denenir (17 Eylül 2026):**
+     Kullanıcı admin panelinde yığılma fark etti (*"android online games repo
+     load hatası çok sık çıkmış"*); tüm `client_errors` tablosu okundu (62
+     kayıt / 34 cihaz). En büyük küme `online_games_repo.load` →
+     `PostgrestException(code: 504)`: **11 kayıt** (android 9 · ios 2, 8
+     cihaz), 12-14 Eylül'de yoğunlaşmış.
+     ⚠ **Önce sunucu ELENDİ:** `list_my_online_games` en ağır kullanıcıda
+     (97 oyun) `EXPLAIN ANALYZE` ile **12,7 ms**, planı indeksli, veri küçük
+     (130 oyun / 136 davet) — yani 504 yavaş sorgudan DEĞİL, ağ geçidinden.
+     **Kusur sınıflandırmadaydı:** `_fetchWithRetry` yalnızca `isNetworkError`
+     doğruysa tekrarlıyordu, o da TAŞIMA istisnalarının metnine bakıyor. 504
+     hiçbirine uymuyor → "sunucunun kendi reddi" sayılıyor, yani ne
+     tekrarlanıyor ne de kullanıcıdan gizleniyordu. Yeni yüklem
+     `isTransientServerError` (`util/offline_notice.dart` ↔ web
+     `utils/offlineNotice.ts`): **408/502/503/504/522/524** ya da ağ
+     geçidinin İngilizce metni. ⚠ `500` ve `429` BİLEREK dışarıda — biri
+     gerçek sunucu kusurunu maskeler, öteki hız sınırını zorlar.
+     **İKİNCİ iş — oturum kapısı (web paritesi):** `load()`in catch'i
+     `isNetworkError` dışındaki HER şeyi raporluyordu; web'in
+     `reportLiveListError`inde olan "oturum düşmüşse yetki hatası BUG değil"
+     kapısı portta YOKTU (panelde bu sınıftan 6 kayıt: Invalid Refresh
+     Token). Arayüze `hasValidSession` eklendi — **varsayılanı `true`**,
+     böylece geçersiz kılmayan sahte uçlar kırılmıyor;
+     `SupabaseOnlineGamesGateway` onu `client.auth.currentSession` ile
+     dolduruyor (ağa GİTMEZ). ⚠ Oturum VARKEN gelen aynı "permission denied"
+     YİNE raporlanır — o gerçek bir grant hatasının yüzü olabilir.
+     Kapılar: `live_games_test.dart` dört yeni vaka (504 kurtarması · mesajı
+     boş 504 · 500 tekrarlanmıyor · yetki hatasının iki dalı); duyarlılık
+     kanıtlandı (yüklem `false` → iki vaka düşüyor). Web yarısı AYNI GÜN
+     `main`'e girdi (#578); bu dal port ikizi ve inceleme dondurması
+     yüzünden ayrı bırakıldı.
+
+## Parça 211 — Kayıt onayı: kırmızı uyarı BÜYÜK+kalın · onay linki pencereyi kapatıyor
+
+   - ✅ **Parça 211 — Kayıt onayı: kırmızı uyarı BÜYÜK+kalın · onay linki
+     pencereyi kapatıyor (16 Eylül 2026):** Kullanıcı iki şey bildirdi.
+     (1) Kayıt sonrası çıkan kırmızı satırın eylem cümlesi büyük harf ve
+     kalın olsun. (2) *"Onay verdikten sonra app açılıyor ve kişi login
+     oluyor ama Onay verin popup açık kalıyor. X ile kapatmak gerekiyor."*
+
+     **Kök sebep (ikisinde de aynı):** onay bağlantısı uygulamanın AÇIK
+     örneğini açıyor, Supabase oturumu kuruluyor — ama `AuthModal`ı hiçbir
+     şey kapatmıyor. Web'de pencereyi açan ALTI yer kendi state'ini tutuyor
+     ve hiçbiri oturumu dinlemiyor; portta da pencere `showDialog` rotası
+     olarak duruyor.
+
+     **Port tarafında yapılan:** `auth_modal.dart` → `AuthService`
+     (ChangeNotifier) dinleniyor, oturum AÇILDIĞI anda `Navigator.pop`.
+     Mesaj `Text.rich`e çevrildi: `_info` normal, yeni `_infoStrong` kalın
+     (`'E-POSTANIZI KONTROL EDİP ONAY VERİN.'`).
+
+     ⚠ **Port farkı BİLİNÇLİ:** web'de düzeltme bir efekt ("oturum varsa
+     kapat"), portta yalnızca GEÇİŞ ("oturum yokken açıldı" →
+     `_oturumVardi`). Sebep: pencere portta bir ROTA ve widget testleri onu
+     doğrudan bir `Scaffold` gövdesine gömüyor — mount anında koşulsuz bir
+     `pop` orada pencereyi değil SAYFAYI kapatırdı. `canPop()` ikinci kemer.
+     Kullanıcıya görünen davranış aynı: web'de de hiçbir çağıran pencereyi
+     giriş YAPMIŞ kullanıcıya açmıyor.
+
+     ⚠ **Metin ELDE büyük harfle yazıldı**, `toUpperCase()` ile DEĞİL:
+     Dart'ın varsayılanı Türkçe'de i→I yapıyor ("EDİP" → "EDIP"). Aynı tuzak
+     web'de CSS `uppercase` sınıfında — `trUpper` refleksinin iki platformdaki
+     karşılığı.
+
+     **Kapılar:** `signup_test.dart`a İKİ widget testi — oturum açılınca
+     pencerenin kapanması, ve duyarlılık için oturumSUZ bir bildirimin
+     pencereyi KAPATMAMASI. Dinleyici susturularak birincinin gerçekten
+     düştüğü ölçüldü. `flutter analyze` temiz (tek `info` önceden vardı:
+     `live_games_test.dart`, bu dal o dosyaya dokunmuyor).
+
+     ⚠ **Web yarısı AYRI PR (#561) ve MERGE EDİLDİ** — yani hata web'de
+     düzeldi, mobilde ancak bu PR merge edilip sürüm çıkınca düzelir. Play
+     production incelemesi (665) sürerken mobil derlemeyi tetiklememek için
+     bekliyor.
+
 ## Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan
 
    - ✅ **Parça 204 — Oyun sonu kutlaması: ilk galibiyet / ilk puan

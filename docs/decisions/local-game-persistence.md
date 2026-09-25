@@ -125,6 +125,80 @@ isteniyorsa tek seferlik bir temizlik sorgusu gerekir.
 
 - **Bitmiş oyunların offline/misafir kuyruğu (`src/utils/gameSync.ts`):** `saveGameDurable`, `buildGameRecord`'un (`src/utils/gameRecord.ts`) ürettiği kaydı önce hemen göndermeyi dener; bu başarısız olursa — çevrimdışıyken, ağ hatasında ya da bu cihazda hiç giriş yapılmamışken (misafir) — kaydı `localStorage`'a (`kelimeki:pending-games`, en fazla `MAX_PENDING_GAMES=300`, aşılırsa en eskiler düşer) kuyruklar. Her kayıt istemcide üretilen bir `id` (uuid) ve gerçek bitiş anını taşıyan bir `created_at` (ISO) içerir: `id`, kaybolan bir cevaptan sonra aynı kaydın tekrar denenmesi sunucuda ikinci bir satır açmasın diye — `saveGame` (`src/lib/api.ts`) bu durumda dönen "23505" (unique violation) hatasını başarı sayar; `created_at`, kayıt günler sonra senkronlanabildiğinden sunucunun `insert` anındaki varsayılan `now()`'ı yerine geçer, böylece oyun geçmişinde doğru kronolojik yere yerleşir. `flushPendingGames`, uygulama açılışında/`online` olayında/giriş durumu değişince (`App.tsx`'teki `useEffect([user])`) çağrılır; bu cihazda **daha önce hiç oturum yoksa** (saf misafir) ağa hiç dokunmadan hemen çıkar, kuyruk kişi bu cihazda giriş/kayıt yapana kadar sessizce bekler — o an geldiğinde tüm kuyruk o hesaba aktarılır. Kuyruk yalnızca tutulduğu cihaza özeldir; farklı cihazlarda ayrı ayrı birikir ve her biri kendi cihazında oturum açıldığında kendi kuyruğunu gönderir. Bir kayıt `created_at`'ten itibaren `PENDING_EXPIRY_MS` (7 gün — `gameStorage.ts`'teki `ABANDON_TIMEOUT_MS` ile aynı süre/gerekçe) içinde bu cihazda talep edilmezse (giriş/kayıt olunmazsa) `readQueue` onu sessizce düşürür; misafir 7 gün içinde giriş yaparsa tüm bekleyen oyunlar sanki baştan giriş yapmış gibi hesabına işlenir. 20 Temmuz 2026 rebrand'i (Harfik→Kelimeki) `PENDING_KEY`'i taşımadan yeniden adlandırdığından, o deploy'dan önce kuyruklanmış kayıtlar eski `harfik:pending-games` anahtarında mahsur kalmıştı — `migrateLegacyQueue` bunları bir kereliğine yeni anahtara taşıyıp bu sorunu giderdi.
 
+## ⚠ OYUN ORTASINDA GİRİŞ — hedef DEVREDİLMELİ (15 Eylül 2026, PORT)
+
+Bir kullanıcı cihazda bildirdi (TestFlight 1.1.0/665, `Derleme 9c62289`),
+sözleri birebir: *"Misafir olarak 4 kişilik oyun başlattım. Oyunun ortasında
+giriş yaptım. Oyunu bitirdim ama oyun sonu ekranı Misafir olarak gösterdi.
+Sonra geri yaptım ve bekleyen oyunlar arasında gördüm. Oyunun girişten
+sonraki kısmı hiç oynanmamış gibi duruyordu. Tekrar oyunu bitirdim. Bu sefer
+Ironman olarak gözüktü ve bekleyen oyunlar arasından çıktı."* Ekran
+görüntüleri tarifi birebir doğruladı: bitiş ekranı `Misafir 97`, listedeki
+kart `74 95 66 71` — yani girişin yapıldığı ANIN skoru.
+
+**Hata PORTA ÖZGÜ; web'de iki taraf da zaten doğru.** Web'in `App.tsx`'inde
+bu akışı iki ayrı effect taşıyor ve ikisi de `user`a bağlı olduğu için giriş
+anında KENDİLİĞİNDEN yeniden koşuyor:
+
+1. *"Oyun devam ederken giriş yapılırsa 1. oyuncunun adını güncelle"* →
+   `RENAME_PLAYER` (bu kuralın kendisi 1 Ağustos 2026'da, "Sıra: Misafir"
+   vakasında yazılmıştı).
+2. Autosave effect'i `[state, savedGame, user]`e bağlı: `user` dolduğu an
+   hedef `localStorage`'dan `local_game_saves`e geçiyor ve misafir kaydı
+   siliniyor (`if (user && isSupabaseConfigured) clearGameState()`).
+
+Portta birincisi HİÇ yazılmamıştı (`RenamePlayerAction` motorda vardı,
+`mobile/app` içinde dispatch eden satır yoktu), ikincisi ise oyun
+AÇILIRKEN tek sefer karar veriliyordu (`SetupScreen._openGame` → ya
+`GameSession` ya `CloudGameSession`).
+
+**Hayalet satır nasıl doğuyordu — iki dinleyici, tek slot:** oyun rotası
+Setup'ın ÜSTÜNDE açılıyor, yani Setup dispose olmuyor ve auth dinleyicisi
+çalışmaya devam ediyor. Giriş anında `_syncCloud` → `migrateGuestSave`
+misafir slotunun O ANKİ kopyasını buluta yeni bir satır olarak taşıyor;
+bu arada çalışan oyun (hâlâ misafir oturumunda) aynı slota yazmaya devam
+ediyor. Bulut satırı bir daha güncellenmiyor. Oyun bitince misafir slotu
+siliniyor — ama satırı kimse silmiyor, çünkü onu yazan oturum yok.
+
+**Düzeltme iki parçalı:**
+
+- **`mobile/app/lib/src/game/game_session_host.dart` (YENİ)** — web'deki iki
+  effect'in tek dosyadaki ikizi: auth'u dinler, kayıt oturumunu devreder
+  (misafir → bulut ve tersi) ve 1. oyuncunun adını hesap adıyla eşitler.
+  Devir SIRALI: önce bulut oturumu kurulur (yapıcısı mevcut state'i hemen
+  kuyruğa alır), SONRA misafir slotu silinir — tersi, giriş ile ilk yazma
+  arasındaki debounce penceresinde uygulama öldürülürse oyunun TEK kopyasını
+  silerdi. Slot yalnızca çalışan oyun onu gerçekten yazmışsa (`turnCount>=2`)
+  silinir.
+- **`SetupScreen._gameRouteOpen`** — oyun ekranı açıkken `migrateGuestSave`
+  KOŞMAZ. Bu bir "kemer + askı" değil, yarışın TEK yapısal çözümü: iki
+  dinleyici aynı bildirimde aynı slota koşuyor ve sıra garanti edilemez.
+  Ölçüldü: kapı olmadan sıra deterministik olarak migrasyon lehine çıkıyor
+  (Setup'ın dinleyicisi `initState`'te, yani önce kayıtlı) ve uçtan uca
+  widget testi bulutta İKİ satır görüyor.
+
+**Çıkış (logout) yönü bilinçli olarak asimetrik:** bulut satırına
+DOKUNULMAZ (web'de de autosave yalnızca yazmayı bırakır; satır "Devam Eden
+Oyunlar"da kalır ve 7 günlük süpürmeye tabidir), oyun misafir slotundan
+devam eder.
+
+**Kapılar:** `mobile/app/test/game_session_host_test.dart` (5 test) +
+`setup_screen_test.dart` → *"oyun ekranı AÇIKKEN giriş yapılırsa TEK bulut
+satırı doğar"*. Duyarlılık İKİ yönde de kanıtlandı: host'un dinleyicisi
+susturulunca 5 testin 4'ü düşüyor, migrasyon kapısı kaldırılınca widget
+testi iki satır görüp düşüyor.
+
+⚠ **Sahadaki kalıntı:** bu sürümden önce doğmuş hayalet satırlar duruyor.
+Kendiliğinden yok olmazlar; 7 günlük süpürme onları `turnCount>=2` oldukları
+için **-2 cezalı teslim** olarak kapatır. Kullanıcının kaçınma yolu vakada
+kendiliğinden bulduğu şey: oyunu açıp bitirmek satırı düşürür.
+
+**DERS (bu dosyanın ÜÇÜNCÜ kez öğrettiği şey):** bir kuralın web'deki
+gövdesi bir React effect'inin BAĞIMLILIK LİSTESİNDE saklı olabilir. Portta
+`useEffect` yok; `[user]` bağımlılığı "giriş olunca bunu yeniden yap"
+demektir ve bu, kodu okurken kolayca gözden kaçan bir DAVRANIŞTIR. Bir
+effect'i port ederken gövdesi kadar **ne zaman yeniden koştuğunu** da taşı.
+
 ## ⚠ Terk kaydı SÜPÜRME anına yazılıyordu — "dün 38 teslim" (4 Eylül 2026)
 
 Kullanıcı admin panelinde gördü: *"Dün 38 terk gözüküyor. Bu mümkün mü?"*

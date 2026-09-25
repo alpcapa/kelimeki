@@ -4,8 +4,20 @@
 	<dict>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
+		<!-- ⚠ App Store ürün sayfasındaki "LANGUAGE" satırı BURADAN okunuyor,
+		     App Store Connect'teki bir ayardan DEĞİL (15 Eylül 2026: sayfa
+		     "EN English" diyordu, oysa uygulama tamamen Türkçe). Apple önce
+		     CFBundleLocalizations'a bakar, yoksa development region'a düşer;
+		     `$(DEVELOPMENT_LANGUAGE)` pbxproj'deki `developmentRegion = en`e
+		     çözülüyordu, yani paket kendini İngilizce ilan ediyordu.
+		     ⚠ Bu satır yalnızca YENİ bir derleme işlendiğinde etkisini
+		     gösterir — mevcut sürümün sayfası değişmez. -->
 		<key>CFBundleDevelopmentRegion</key>
-		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<string>tr</string>
+		<key>CFBundleLocalizations</key>
+		<array>
+			<string>tr</string>
+		</array>
 		<key>CFBundleDisplayName</key>
 		<string>Kelimeki</string>
 		<key>CFBundleExecutable</key>

@@ -14,6 +14,7 @@ import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/data/profile_fields.dart';
 import 'package:kelimeki/src/ui/auth/auth_modal.dart';
 
+import 'support/fake_online_gateway.dart' show fakeUser;
 import 'support/test_fonts.dart';
 import 'support/fake_analytics.dart';
 import 'support/test_view.dart';
@@ -260,5 +261,68 @@ void main() {
       out.parent.createSync(recursive: true);
       out.writeAsBytesSync(bytes!.buffer.asUint8List());
     });
+  });
+
+  // ── Onay linkiyle oturum açılınca pencere KENDİ kapanır (16 Eylül 2026) ──
+  // Kullanıcı bildirdi (web'de görüldü, port aynı davranışı taşıyordu):
+  // kayıt sonrası "onay verin" penceresi AÇIKKEN e-postadaki onay
+  // bağlantısına basılıyor, uygulama açılıyor, oturum kuruluyor — kişi giriş
+  // YAPMIŞ oluyor ama pencere kapanmıyor. Burada oturumun açılması
+  // `debugSetUser` ile ağsız tetikleniyor (fake'te gerçek onAuthStateChange
+  // akışı yok).
+  testWidgets('oturum açılınca AuthModal kendini kapatır (onay linki yolu)',
+      (tester) async {
+    await setPhoneViewSize(tester, const Size(420, 900));
+    final auth = AuthService.fake();
+    await tester.pumpWidget(MaterialApp(
+      theme: kelimekiTheme(),
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => AuthModal(auth: auth),
+            ),
+            child: const Text('aç'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('aç'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AuthModal), findsOneWidget);
+
+    // Onay linki: oturum açılıyor.
+    auth.debugSetUser(fakeUser('yeni-uye'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AuthModal), findsNothing,
+        reason: 'oturum açıldığında pencere kendini kapatmalı');
+  });
+
+  // Duyarlılık: oturum AÇILMADAN gelen bir bildirim (profil tazelenmesi gibi)
+  // pencereyi kapatmamalı — aksi hâlde kapanma "herhangi bir bildirim"e
+  // bağlanmış olurdu.
+  testWidgets('oturumsuz bildirim pencereyi kapatmaz', (tester) async {
+    await setPhoneViewSize(tester, const Size(420, 900));
+    final auth = AuthService.fake();
+    await tester.pumpWidget(MaterialApp(
+      theme: kelimekiTheme(),
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => AuthModal(auth: auth),
+            ),
+            child: const Text('aç'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('aç'));
+    await tester.pumpAndSettle();
+    auth.debugSetUser(null);
+    await tester.pumpAndSettle();
+    expect(find.byType(AuthModal), findsOneWidget);
   });
 }
