@@ -1594,7 +1594,7 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
       çıkmalı; geri al → normal açılmalı. (Sürüm sabiti bu kapının girdisi;
       parite testi tam bunu koruyor.)
 
-## 27. Hata metinleri — ham makine çıktısı ekrana düşmüyor (13 Eylül 2026, Parça 205)
+## 31. Hata metinleri — ham makine çıktısı ekrana düşmüyor (13 Eylül 2026, Parça 205)
 
 Vaka: kullanıcı App Store ekran kaydı çekerken giriş penceresinde ham
 `{"message":"Gateway Timeout"}` gördü. `friendlyErrorMessage`
