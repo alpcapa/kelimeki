@@ -14,7 +14,10 @@ import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/data/chat_api.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
 import 'package:kelimeki/src/storage/app_storage.dart';
+import 'package:kelimeki/src/ui/chat/chat_modal.dart' show resetChatRulesCacheForTest;
+import 'package:kelimeki/src/ui/chat/chat_rules_modal.dart';
 import 'package:kelimeki/src/ui/live/online_game_screen.dart';
+import 'package:kelimeki/src/util/chat_rules.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -145,6 +148,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   sqfliteFfiInit();
 
+  setUp(resetChatRulesCacheForTest);
+
   setUpAll(() async {
     await loadAppFonts();
     final f = File('assets/dictionary/words_tr.txt');
@@ -230,6 +235,14 @@ void main() {
       await tester.pump();
       await tester.tap(find.widgetWithText(ElevatedButton, 'Gönder'));
       await tester.pumpAndSettle();
+      // İlk mesaj → Sohbet Kuralları onayı (sunucuda kayıt yok). Ekran
+      // kapıyı GERÇEK ChatRepo'ya bağlamış olmalı: kabul sunucuya yazılır,
+      // mesaj ondan sonra gider.
+      expect(find.byType(ChatRulesModal), findsOneWidget);
+      expect(h.chatGw.sent, isEmpty);
+      await tester.tap(find.text(trUpper(kChatRulesAccept)));
+      await tester.pumpAndSettle();
+      expect(h.chatGw.acceptedRulesCalls, [kChatRulesVersion]);
       expect(h.chatGw.sent.single, ('g1', 'Selam!'));
       await unmount(tester);
     });

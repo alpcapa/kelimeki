@@ -47,7 +47,7 @@ const Color _green = kGreen;
 Future<void> showAccountSettingsModal(
   BuildContext context,
   AuthService auth, {
-  Future<bool> Function(String nickname)? nicknameChecker,
+  Future<NicknameStatus> Function(String nickname)? nicknameChecker,
   PickAvatarFn? pickAvatar,
   ShrinkAvatarFn? shrinkAvatar,
 }) {
@@ -62,14 +62,14 @@ Future<void> showAccountSettingsModal(
   );
 }
 
-enum _NickStatus { idle, checking, available, taken, error }
+enum _NickStatus { idle, checking, available, taken, blocked, error }
 
 class AccountSettingsModal extends StatefulWidget {
   final AuthService auth;
 
   /// Test injection'ı — `AuthModal.nicknameChecker` ile aynı desen;
-  /// üretimde `auth.checkNicknameAvailable`.
-  final Future<bool> Function(String nickname)? nicknameChecker;
+  /// üretimde `auth.nicknameStatus`.
+  final Future<NicknameStatus> Function(String nickname)? nicknameChecker;
 
   /// Test injection'ı — verilmezse gerçek `pickAvatarImage` (galeri).
   final PickAvatarFn? pickAvatar;
@@ -189,11 +189,14 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     _nickTimer = Timer(const Duration(milliseconds: 400), () async {
       try {
         final checker =
-            widget.nicknameChecker ?? widget.auth.checkNicknameAvailable;
-        final available = await checker(trimmed);
+            widget.nicknameChecker ?? widget.auth.nicknameStatus;
+        final durum = await checker(trimmed);
         if (mounted && _nickSeq == mySeq) {
-          setState(() => _nickStatus =
-              available ? _NickStatus.available : _NickStatus.taken);
+          setState(() => _nickStatus = switch (durum) {
+                NicknameStatus.ok => _NickStatus.available,
+                NicknameStatus.taken => _NickStatus.taken,
+                NicknameStatus.blocked => _NickStatus.blocked,
+              });
         }
       } catch (_) {
         if (mounted && _nickSeq == mySeq) {
@@ -293,6 +296,10 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
       }
       if (_nickStatus == _NickStatus.taken) {
         setState(() => _error = 'Bu takma isim zaten kullanılıyor.');
+        return;
+      }
+      if (_nickStatus == _NickStatus.blocked) {
+        setState(() => _error = 'Bu takma isim kullanılamaz.');
         return;
       }
     }
@@ -526,6 +533,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
               const _StatusLine('Kullanılabilir', _green, icon: Icons.check),
             if (_nickStatus == _NickStatus.taken)
               const _StatusLine('Bu takma isim kullanımda.', _red),
+            if (_nickStatus == _NickStatus.blocked)
+              const _StatusLine('Bu takma isim kullanılamaz.', _red),
             if (_nickStatus == _NickStatus.error)
               const _StatusLine(
                   'Kullanılabilirlik kontrol edilemedi, kaydederken tekrar denenecek.',
@@ -607,7 +616,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               onPressed: (_busy ||
                       _nickStatus == _NickStatus.checking ||
-                      _nickStatus == _NickStatus.taken)
+                      _nickStatus == _NickStatus.taken ||
+                      _nickStatus == _NickStatus.blocked)
                   ? null
                   : _save,
             ),

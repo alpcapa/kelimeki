@@ -245,7 +245,11 @@ mobile/
                              # arşiv VE canlı sohbet ikisi de kullanır) +
                              # game_chat_history_modal (bitmiş oyunun arşivi) +
                              # chat_modal (Canlı sohbet penceresi) +
-                             # chat_settings_modal (sessize alma/raporlama)
+                             # chat_settings_modal (sessize alma/raporlama) +
+                             # chat_rules_modal (Sohbet Kuralları onayı —
+                             # ilk mesajdan önce BİR KEZ, hesaba bağlı; metin
+                             # util/chat_rules.dart, web ile kilitli:
+                             # chat_rules_parity_test)
       ui/setup/              # kurulum ekranı (yeni oyun / devam edenler) +
                              # recent_games_section ("Son Oynadıklarım") +
                              # membership_perks_box (misafir "Neden Üye
@@ -312,6 +316,7 @@ mobile/
                              # (davet · auth dönüşü · Canlı oyun push linki)
       util/push_rules.dart   # "izin sorulsun mu?" saf kararı (en çok 3 kez,
                              # 7 gün arayla) + platform adı doğrulaması
+      util/chat_rules.dart   # Sohbet Kuralları metni + sürüm — web src/utils/chatRules.ts ikizi
       util/semver.dart, util/uuid.dart, util/share_board.dart,
       util/game_list_order.dart # devam eden oyun/davet listelerinin sıralaması
                              # (web `gameListOrder.ts` ikizi) — ⚠ Dart `List.sort`

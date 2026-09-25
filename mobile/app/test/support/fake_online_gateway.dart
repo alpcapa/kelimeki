@@ -400,6 +400,27 @@ class FakeChatGateway implements ChatGateway {
     if (f != null) throw f;
     withdrawnCalls.add(targetUserId);
   }
+
+  /// Sunucudaki `chat_rules_version` — `null` = hiç kabul edilmemiş.
+  int? rulesVersion;
+  Object? rulesVersionFailWith;
+  Object? acceptRulesFailWith;
+  final acceptedRulesCalls = <int>[];
+
+  @override
+  Future<int?> chatRulesVersion() async {
+    final f = rulesVersionFailWith;
+    if (f != null) throw f;
+    return rulesVersion;
+  }
+
+  @override
+  Future<void> acceptChatRules(int version) async {
+    final f = acceptRulesFailWith;
+    if (f != null) throw f;
+    acceptedRulesCalls.add(version);
+    rulesVersion = version;
+  }
 }
 
 Map<String, Object?> chatRow({

@@ -335,6 +335,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
 
   /// Zoom tanıtım balonu (1 Eylül 2026) — `game_screen.dart` ile aynı kural.
   bool _zoomHint = false;
+
   /// Balonun kendi kendine kapanma zamanlayıcısı — `dispose`'da ve "zoom
   /// denendi" dalında iptal edilir (sökülmüş State'te `setState` olmasın).
   Timer? _zoomHintTimer;
@@ -608,6 +609,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           mutedUserIds: _chatState.mutedUserIds,
           reportedUserIds: _chatState.reportedUserIds,
           onOpenParticipantSettings: (id) => _openChatSettings(id),
+          loadChatRulesVersion: () => widget.chat!.chatRulesVersion(),
+          acceptChatRules: (v) => widget.chat!.acceptChatRules(v),
         ),
       ),
     ).then((_) {
