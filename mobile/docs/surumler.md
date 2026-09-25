@@ -414,7 +414,7 @@ ve cihaz test planı: `ROADMAP.md` → "Sıradaki sürüme binecekler" +
 `git log --oneline 9c62289..origin/main -- mobile/app mobile/kelimeki_core`.
 
 ⚠ **Neden 1.1.1 — tur sırasında ÖLÇÜLDÜ.** Turun `main` derlemeleri
-(**698 · 700 · 702 · 704 · 706 · 708**) Android, `.aab`, `mobile-latest` ve
+(**698 · 700 · 702 · 704 · 706 · 708 · 720**) Android, `.aab`, `mobile-latest` ve
 Appetize adımlarını GEÇTİ, ama hepsi **TestFlight yüklemesinde** düştü:
 `90186 — Invalid Pre-Release Train. The train version '1.1.0' is closed for
 new build submissions` + `90062 — CFBundleShortVersionString [1.1.0] must
@@ -429,8 +429,10 @@ mobil iş SÜRÜM NUMARASINI da yükseltmeli, yoksa her `main` derlemesi
 kırmızı biter. PR'larda bu görünmez: PR derlemesi TestFlight'a
 yüklemiyor, adım yalnızca `main`'de koşuyor.
 
-- [ ] Bu PR merge edilince çıkan `main` derlemesi YEŞİL mi (TestFlight
-      adımı dahil) — derleme numarasını buraya yaz.
+- [x] 1.1.1'in ilk `main` derlemesi **YEŞİL: #723** (`8c1828f`, #632) —
+      TestFlight yüklemesi dahil bütün adımlar geçti. `mobile-latest` ve
+      TestFlight'taki geçerli paket bu. (#720 = `fe3a25b`, #626'nın merge'i:
+      hâlâ 1.1.0 taşıdığı için aynı `90186`/`90062` ile düştü — beklenen.)
 - [ ] Android `.apk` ile tam tur + iPhone'da #557 duman turu
       (`ROADMAP.md` → "Tur sonu TEST PLANI").
 - [ ] Play'e `.aab` (~27-28 Eyl, kullanıcı kararı) + ASC'de 1.1.1 sürüm
