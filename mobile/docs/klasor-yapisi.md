@@ -82,6 +82,14 @@ mobile/
       data/games_api.dart    # games/game_finishes + dayanıklı kuyruk/flush +
                              # beğeni (toggle/stats/likers/list_liked_games) +
                              # dondurulmuş sohbet (messages/chat_flags)
+      data/device_stamp.dart # anon_id + kaynak etiketi ('app', ya da deep
+                             # link'ten gelen gerçek ?ref=) — huninin DÖRT
+                             # adımı da BU TEK damgadan besleniyor, yani bir
+                             # ekranın unutması mümkün değil (22 Eyl 2026)
+      data/visits_api.dart   # guest_visits pingi — huninin "Gelen" adımı.
+                             # ⚠ Üç değişmez REPO'nun içinde (yalnız oturum
+                             # KAPALIYKEN + günde bir kez + fire-and-forget);
+                             # çağıran (ui/app.dart) koşul YAZMAZ
       data/stats_api.dart    # player_stats / leaderboard / my_leaderboard_rank
       data/league_rewards_api.dart # k-lig ödül/rütbe kayıtları (league_rewards
                              # + mark_league_rewards_seen) — kutlama banner'ı

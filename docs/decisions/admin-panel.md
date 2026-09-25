@@ -1337,3 +1337,18 @@ farklı İstanbul gününde oyun bitiren) · Oyun / Üye.
   getirmemişti ve satırın yokluğu "ölçülmedi" gibi okunuyordu.
 - `admin_source_funnel` veritabanında DURUYOR ama çağrılmıyor (geri dönüş
   yolu).
+
+## Port kaynak damgası (#601) — web yarısı #625'le aşıldı (25 Eylül 2026)
+
+#601 (22 Eylül) iki yarıydı: port artık huninin dört tablosuna da kaynak
+damgası yazıyor (`data/device_stamp.dart` → `'app'`, deep link'ten gerçek
+`?ref=` gelirse o) ve web'de `app` için ayrı bir "Uygulama" kanalı +
+"Bilinmiyor satırında oran hesaplanmaz" kapısı. PR dondurmayı beklerken
+#621/#622/#625 Kaynak Hunisi'ni baştan kurdu: misafir sütunları Huni v2'ye
+gitti, kalan üye kohortu (`admin_member_quality`) `app`i "Mobil Uygulama"
+kanalına TAM eşleşmeyle zaten topluyor. Merge anında web dosyaları
+`main`'in hâliyle bırakıldı; port yarısı ve iki migration (ikisi de 22
+Eylül'den beri canlıda) girdi. Port damgası hâlâ gerekli: `backfill`
+yalnızca geçmişi `'app'` yaptı, damgasız yeni app kayıtları Üye
+Kalitesi'nde `Bilinmiyor`a düşer.
+
