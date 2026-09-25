@@ -502,7 +502,7 @@ tablo yeniden BOŞALIR ve tur arşive taşınır.
 testinde (Alpha) yayınlandı — gönderim ≤ 12:24, yayın ~13:42 (kullanıcı
 bildirdi). Aynı kod App Store Connect'in 1.1.0 sürüm kaydında da iliştirili,
 yani **iki mağaza ilk kez tek NUMARADA ve tek PAKETTE**. Turun tablosu
-kuralı gereği aynı gün `docs/decisions/roadmap-arsiv.md` → **"1.1.0 sürüm
+kuralı gereği aynı gün `docs/decisions/roadmap-arsiv-cilt-1.md` → **"1.1.0 sürüm
 turu"**na taşındı (ROADMAP yalnızca AÇIK maddeleri tutar). Paket künyesi ve
 sürüm notları: `mobile/docs/surumler.md` → "1.1.0 (659)".
 
@@ -554,7 +554,7 @@ git log --oneline <mağazadaki-paketin-commiti>..origin/main -- mobile/app mobil
 Console erişimi YOK. 6 Eylül 2026'da iki yanlış hüküm kuruldu (uydurma bir
 "14 gün sayacı sıfırlanır mı" gönderim kapısı ve "12 tavan mı" sorusu için
 gerçekleşmesi imkânsız bir ayırt etme yöntemi). Kayıt:
-`docs/decisions/roadmap-arsiv.md` → "1.0.7 sürüm turu".
+`docs/decisions/roadmap-arsiv-cilt-1.md` → "1.0.7 sürüm turu".
 
 **Test penceresi:** 7 Eylül itibarıyla **12. gün**, 14. gün ≈ 10 Eylül.
 "Kalan günlere ne konsun" tartışması KAPANDI: seviyeli YZ (#23 Faz 0-4) aynı
@@ -722,7 +722,7 @@ yanlış red. Vergide ham 10 sapmanın 7'si harness'ın kendi varsayımı (tesli
 bayrağını oyun sonu snapshot'ından okuyordum), 3'ü 24 Ağustos "iletken hücre"
 kural değişikliğinden önceki hamleler — üçünde de ESKİ kural kayıtlı değeri
 birebir üretiyor. Açıklanamayan sapma: **0**. Ayrıntı:
-`docs/decisions/roadmap-arsiv.md` → "Temizlik geçişi"nin ardındaki bölüm.
+`docs/decisions/roadmap-arsiv-cilt-1.md` → "Temizlik geçişi"nin ardındaki bölüm.
 
 **AÇIK KALAN İŞ — zorlama fazı:**
 1. `move_shadow_diffs`i **`move_shadow_coverage` ile BİRLİKTE** oku. Boş
@@ -821,7 +821,7 @@ YOK (arandı) — yani düzeltme tek noktada.
 
 2. geçişin (**hata avı**), 3. geçişin (**performans**) ve 4. geçişin
 (**temizlik**) tam anlatıları — bulgular, ölçümler, "zemin sağlam"
-listeleri ve dersleri — `docs/decisions/roadmap-arsiv.md`'ye taşındı;
+listeleri ve dersleri — `docs/decisions/roadmap-arsiv-cilt-1.md`'ye taşındı;
 başlıklar ("Hata avı geçişi — KAPANDI", "Performans geçişi — KAPANDI",
 "Temizlik geçişi — KAPANDI") değiştirilmedi. Yukarıdaki geçiş tablosu canlı
 indeks olarak burada kaldı. **Dört geçiş de kapandı**; incelemeden açık
@@ -1081,7 +1081,7 @@ Sırası önemli olan tek bağ: **#4, #2'den SONRA** (hesap silme kaskadı
    değişen bir şey YOK"* diye kapatmıştı; bu satır o güne kadar geriye
    dönük olarak bayat kaldı.
 3. ✅ **Madde 1 — deep link: KAPANDI** (30 Ağustos 2026, Faz 3'te ölçüldü;
-   SAHADA 1.0.3 ile). Madde arşivde: `docs/decisions/roadmap-arsiv.md` →
+   SAHADA 1.0.3 ile). Madde arşivde: `docs/decisions/roadmap-arsiv-cilt-1.md` →
    *"1. `kelimeki://` deep link kanalı"*. **Numara bilerek duruyor** —
    arşivdeki madde buraya (`0.B/3`) atıf yapıyor.
    ⚠ Bu satır 2 Eylül 2026'ya kadar bayat kaldı: hâlâ *"kayıt onayı maili
@@ -1598,7 +1598,7 @@ verilen yerler ölçüm, "tahmin" yazanlar tahmin).
 ### 23.1-23.4 ve 23.6 → **ARŞİVDE** (8 Eylül 2026)
 
 Etki haritası, karar noktası (B), Faz 0-5 özetleri, tuzaklar ve Faz 5
-başlangıç kiti `docs/decisions/roadmap-arsiv.md` → *"23 · Plan gövdesi"*ne
+başlangıç kiti `docs/decisions/roadmap-arsiv-cilt-1.md` → *"23 · Plan gövdesi"*ne
 taşındı. Hepsi kapandı: karar verildi, kod yazıldı, canlıya çıktı.
 Tasarım kaydı: `docs/decisions/ai-levels.md`.
 

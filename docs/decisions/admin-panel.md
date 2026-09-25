@@ -840,7 +840,7 @@ Kullanıcı isteği: *"üyeler tablosuna onay kolonu ekleyecektik"*. ROADMAP #9
 ("onaylanmamış filtresi", 23 Ağustos 2026'da onaylanmış ama kapsam dışı
 bırakılmış) aynı işin öteki yarısıydı — filtre zaten bu kolon olmadan
 kurulamıyordu, ikisi birlikte kapandı. Maddenin tam metni ve kapanış kaydı:
-`docs/decisions/roadmap-arsiv.md`.
+`docs/decisions/roadmap-arsiv-cilt-1.md`.
 
 ### Kolon neden `ConsentCell` kullanmıyor
 
