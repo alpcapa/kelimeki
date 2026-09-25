@@ -434,6 +434,7 @@ yüklemiyor, adım yalnızca `main`'de koşuyor.
       TestFlight'taki geçerli paket bu. (#720 = `fe3a25b`, #626'nın merge'i:
       hâlâ 1.1.0 taşıdığı için aynı `90186`/`90062` ile düştü — beklenen.)
 - [ ] Android `.apk` ile tam tur + iPhone'da #557 duman turu
+      — adım adım liste: `mobile/docs/testing-1-1-1-turu.md`
       (`ROADMAP.md` → "Tur sonu TEST PLANI").
 - [ ] Play'e `.aab` (~27-28 Eyl, kullanıcı kararı) + ASC'de 1.1.1 sürüm
       kaydı, AYNI paket ("SÜRÜM SENKRONU").

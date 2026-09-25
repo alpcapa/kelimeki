@@ -350,6 +350,7 @@ SON derlemede yapılır. Sürüm "tamam" sayılmadan ÖNCE üçü birden:
 Function'ın CANLIDA olduğunu da doğrula — istemci alanı gönderir, sunucuda
 karşılığı yoksa sessizce düşer. Adım adım test listesi tur sonunda,
 derleme hazır olunca verilecek.
+✅ Liste hazır (25 Eylül 2026): `mobile/docs/testing-1-1-1-turu.md`.
 ✅ #601'in iki migration'ı canlıda (`list_migrations`, 25 Eylül 2026).
 ⚠ **Test, 1.1.1 derlemesi üzerinde koşulur** — 1.1.0 numaralı tur
 derlemeleri TestFlight'a yüklenemedi (`mobile/docs/surumler.md` → "1.1.1").
