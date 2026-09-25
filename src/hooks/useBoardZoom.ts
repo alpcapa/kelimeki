@@ -12,6 +12,7 @@ import {
   PAN_SWALLOW_MS,
   panZoom,
   toggleZoom,
+  ZOOM_HINT_AUTO_HIDE_MS,
   ZOOM_OFF,
   type ZoomState,
 } from '../utils/boardZoom';
@@ -82,6 +83,16 @@ export function useBoardZoom(
   // gösterimi kaybediyordu. Aynı kilit deseni App.tsx'te de var
   // (`migratingSavedGameRef`); sayaç artıran her effect buna muhtaç.
   const hintDecided = useRef(false);
+  // Balonun kendi kendine kapanma zamanlayıcısı (16 Eylül 2026, kullanıcı
+  // isteği: balon sürekli kalınca oyun oynamayı zorlaştırıyor). Ref'te
+  // tutuluyor çünkü hem sökülmede hem de "zoom denendi" dalında iptal
+  // edilmeli — aksi hâlde sökülmüş bileşende `setHint` çağrılırdı.
+  const hintTimer = useRef<number | null>(null);
+  const clearHintTimer = useCallback(() => {
+    if (hintTimer.current === null) return;
+    clearTimeout(hintTimer.current);
+    hintTimer.current = null;
+  }, []);
   useEffect(() => {
     // Tahta görünene kadar KARAR VERİLMEZ: "gösterim" balonun ekrana
     // gelmesidir (yukarıdaki `boardVisible` notu — ölçülmüş hata).
@@ -90,7 +101,15 @@ export function useBoardZoom(
     if (!shouldShowZoomHint()) return;
     bumpZoomHintShown();
     setHint(true);
+    // ⚠ Kapanma "denedi" SAYILMAZ: `markZoomTried` çağrılmıyor, sayaç da
+    // artmıyor (karar anında arttı) — hiç denemeyen kullanıcı balonu ikinci
+    // açılışta yine görür. Bkz. `ZOOM_HINT_AUTO_HIDE_MS`.
+    hintTimer.current = window.setTimeout(() => {
+      hintTimer.current = null;
+      setHint(false);
+    }, ZOOM_HINT_AUTO_HIDE_MS);
   }, [boardVisible]);
+  useEffect(() => clearHintTimer, [clearHintTimer]);
   const [panning, setPanning] = useState(false);
   const detector = useRef(new DoubleTapDetector());
   const panRef = useRef<{ x: number; y: number; moved: boolean } | null>(null);
@@ -121,9 +140,10 @@ export function useBoardZoom(
     });
     // Kullanıcı zoom'u DENEDİ: balon anında kapanır ve kalıcı olarak susar
     // (kullanıcı isteği: "Deneme gösterimi bitirir").
+    clearHintTimer();
     setHint(false);
     markZoomTried();
-  }, []);
+  }, [clearHintTimer]);
 
   const registerCellTap = useCallback(
     (x: number, y: number) => {

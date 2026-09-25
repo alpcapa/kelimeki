@@ -47,6 +47,7 @@ export type SourceChannel =
   | 'facebook'
   | 'linkedin'
   | 'arkadas'
+  | 'uygulama'
   | 'direkt'
   | 'diger'
   | 'bilinmiyor';
@@ -56,6 +57,7 @@ export const SOURCE_CHANNEL_LABEL: Record<SourceChannel, string> = {
   facebook: 'Facebook',
   linkedin: 'LinkedIn',
   arkadas: 'Arkadaş Daveti',
+  uygulama: 'Mobil Uygulama',
   direkt: 'Direkt',
   diger: 'Diğer',
   bilinmiyor: 'Bilinmiyor',
@@ -78,6 +80,10 @@ export function sourceChannel(source: string | null): SourceChannel {
   if (s === '' || s === 'bilinmiyor' || s === '--sanitized--') return 'bilinmiyor';
   if (s === 'direkt') return 'direkt';
   if (s === 'arkadas') return 'arkadas';
+  // `app` = mobil uygulamadan açılan hesap (`profiles.signup_utm_source`,
+  // `backfill_app_source_history`). TAM eşleşme, önek DEĞİL: `apple`,
+  // `app-store` gibi bir web etiketi yutulmasın.
+  if (s === 'app') return 'uygulama';
   if (hasPrefix(s, 'ig') || hasPrefix(s, 'instagram')) return 'instagram';
   if (hasPrefix(s, 'fb') || hasPrefix(s, 'facebook')) return 'facebook';
   // ⚠ `li` iki harf — sınır kuralı burada daha da kritik: `link`, `lig`,
@@ -87,67 +93,181 @@ export function sourceChannel(source: string | null): SourceChannel {
   return 'diger';
 }
 
-/** Gruplanmış huni satırı — alan adları `AdminSourceFunnelRow` ile birebir. */
-export interface SourceFunnelTotals {
-  visitors: number;
-  starts: number;
-  starters: number;
-  signups: number;
-  finishes: number;
-  finishers: number;
-  member_games: number;
+/** Üye Kalitesi sayıları — alan adları `AdminMemberQualityRow` ile birebir. */
+export interface MemberQualityTotals {
+  members: number;
   players: number;
+  players_7d: number;
+  returning_players: number;
+  games: number;
 }
 
-export interface SourceChannelGroup extends SourceFunnelTotals {
+export interface MemberQualityChannelGroup extends MemberQualityTotals {
   channel: SourceChannel;
   label: string;
   /** Ham etiketler — satır açılınca gösterilir. */
-  sources: (SourceFunnelTotals & { source: string })[];
+  sources: (MemberQualityTotals & { source: string })[];
 }
 
-const EMPTY_TOTALS: SourceFunnelTotals = {
-  visitors: 0,
-  starts: 0,
-  starters: 0,
-  signups: 0,
-  finishes: 0,
-  finishers: 0,
-  member_games: 0,
-  players: 0,
-};
+const MEMBER_QUALITY_KEYS = [
+  'members',
+  'players',
+  'players_7d',
+  'returning_players',
+  'games',
+] as const satisfies readonly (keyof MemberQualityTotals)[];
 
-const TOTAL_KEYS = Object.keys(EMPTY_TOTALS) as (keyof SourceFunnelTotals)[];
+/** Üye getirmese de satırı her zaman çizilen kanallar. */
+export const MEMBER_QUALITY_ALWAYS: readonly SourceChannel[] = [
+  'instagram',
+  'facebook',
+  'linkedin',
+  'arkadas',
+  'uygulama',
+  'direkt',
+];
 
 /**
- * Huni satırlarını kanal gruplarına toplar.
+ * Üye Kalitesi satırlarını kanal gruplarına toplar.
  *
- * ⚠ **Grubun sayısı alt satırların TOPLAMI** — cihaz tablolarındaki gibi
- * "benzersiz sayım" tuzağı burada YOK: `starters`/`finishers` benzersiz cihaz
- * sayar ama bir cihazın `utm_source`u ilk temasta DONDURULUYOR
- * (`captureUtmSource`), yani aynı cihaz iki kaynak satırında birden
- * görünemez. Bu bir varsayım değil, huninin veri modelinin kendisi;
- * değişirse (çok-temas attribution) bu toplama da bozulur.
+ * Toplamak GÜVENLİ: her üyenin TEK bir kayıt etiketi var (kayıt anında bir
+ * kez yazılır, sonra değişmez), yani bir üye iki etiket satırında birden
+ * görünemez ve benzersiz sayılar toplanabilir.
  */
-export function groupSourceFunnel(
-  rows: ReadonlyArray<SourceFunnelTotals & { source: string }>,
-): SourceChannelGroup[] {
-  const gruplar = new Map<SourceChannel, SourceChannelGroup>();
+export function groupMemberQuality(
+  rows: ReadonlyArray<MemberQualityTotals & { source: string }>,
+): MemberQualityChannelGroup[] {
+  const gruplar = new Map<SourceChannel, MemberQualityChannelGroup>();
+  const bos = (ch: SourceChannel): MemberQualityChannelGroup => ({
+    members: 0, players: 0, players_7d: 0, returning_players: 0, games: 0,
+    channel: ch, label: SOURCE_CHANNEL_LABEL[ch], sources: [],
+  });
+  // Bilinen pazarlama kanalları üye getirmese de 0 ile GÖRÜNÜR (24 Eylül
+  // 2026, kullanıcı isteği) — satırın yokluğu "ölçülmedi" gibi okunuyordu,
+  // oysa "bu kanal hiç üye getirmedi" bir bulgu. `diger`/`bilinmiyor` bir
+  // kanal değil, yalnızca veri varsa çıkar.
+  for (const ch of MEMBER_QUALITY_ALWAYS) gruplar.set(ch, bos(ch));
   for (const r of rows) {
     const ch = sourceChannel(r.source);
-    const g =
-      gruplar.get(ch) ??
-      ({ ...EMPTY_TOTALS, channel: ch, label: SOURCE_CHANNEL_LABEL[ch], sources: [] } as SourceChannelGroup);
-    for (const k of TOTAL_KEYS) g[k] += r[k];
+    let g = gruplar.get(ch);
+    if (!g) {
+      g = bos(ch);
+      gruplar.set(ch, g);
+    }
+    for (const k of MEMBER_QUALITY_KEYS) g[k] += r[k];
     g.sources.push(r);
-    gruplar.set(ch, g);
   }
   for (const g of gruplar.values()) {
-    g.sources.sort((a, b) => b.visitors - a.visitors || trCompare(a.source, b.source));
+    g.sources.sort((a, b) => b.members - a.members || trCompare(a.source, b.source));
   }
-  return [...gruplar.values()].sort(
-    (a, b) => b.visitors - a.visitors || trCompare(a.label, b.label),
-  );
+  return [...gruplar.values()].sort((a, b) => b.members - a.members || trCompare(a.label, b.label));
+}
+
+/* ─────────────────── Huni v2 (kohort, platform × kanal) ──────────────── */
+
+/** Huni v2 sayıları — alan adları `AdminFunnelRow` ile birebir. */
+export interface FunnelV2Totals {
+  land: number;
+  returned: number;
+  signed_up: number;
+  started: number;
+  finished: number;
+  games_started: number;
+  games_finished: number;
+}
+
+export interface FunnelV2ChannelGroup extends FunnelV2Totals {
+  channel: SourceChannel;
+  label: string;
+  /** Ham etiketler (`?ref=` değeri) — satır açılınca gösterilir. */
+  sources: (FunnelV2Totals & { source: string })[];
+}
+
+export interface FunnelV2PlatformGroup extends FunnelV2Totals {
+  platform: string;
+  label: string;
+  channels: FunnelV2ChannelGroup[];
+}
+
+export interface FunnelV2Grouped {
+  platforms: FunnelV2PlatformGroup[];
+  /** Kohort toplamı — `mevcut` HARİÇ. */
+  total: FunnelV2Totals;
+  /** Ölçüm v2'den önce de izi olan cihazlar: kohortun DIŞINDA, yalnızca bilgi. */
+  existing: number;
+}
+
+const FUNNEL_V2_KEYS = [
+  'land',
+  'returned',
+  'signed_up',
+  'started',
+  'finished',
+  'games_started',
+  'games_finished',
+] as const satisfies readonly (keyof FunnelV2Totals)[];
+
+function emptyFunnelV2(): FunnelV2Totals {
+  return { land: 0, returned: 0, signed_up: 0, started: 0, finished: 0, games_started: 0, games_finished: 0 };
+}
+
+function addFunnelV2(into: FunnelV2Totals, r: FunnelV2Totals): void {
+  for (const k of FUNNEL_V2_KEYS) into[k] += r[k];
+}
+
+const FUNNEL_V2_PLATFORM_ORDER = ['web', 'android', 'ios'];
+
+/**
+ * Huni v2 satırlarını platform → kanal → ham etiket ağacına toplar.
+ *
+ * Toplamak GÜVENLİ: sayılar benzersiz cihaz ama her cihazın TEK bir `land`
+ * satırı var (sunucuda unique), yani bir cihaz tek bir (platform, kanal)
+ * satırında görünür. `mevcut` kanalı kohorttan çıkarılır ve ayrıca sayılır.
+ */
+export function groupFunnelV2(
+  rows: ReadonlyArray<FunnelV2Totals & { platform: string; channel: string }>,
+  existingChannel: string,
+): FunnelV2Grouped {
+  const total = emptyFunnelV2();
+  let existing = 0;
+  const platforms = new Map<string, FunnelV2PlatformGroup>();
+  for (const r of rows) {
+    if (r.channel === existingChannel) {
+      existing += r.land;
+      continue;
+    }
+    addFunnelV2(total, r);
+    const p =
+      platforms.get(r.platform) ??
+      ({ ...emptyFunnelV2(), platform: r.platform, label: clientPlatformLabel(r.platform), channels: [] } as FunnelV2PlatformGroup);
+    addFunnelV2(p, r);
+    const ch = sourceChannel(r.channel);
+    let g = p.channels.find((x) => x.channel === ch);
+    if (!g) {
+      g = { ...emptyFunnelV2(), channel: ch, label: SOURCE_CHANNEL_LABEL[ch], sources: [] };
+      p.channels.push(g);
+    }
+    addFunnelV2(g, r);
+    const src = { ...emptyFunnelV2(), source: r.channel };
+    addFunnelV2(src, r);
+    g.sources.push(src);
+    platforms.set(r.platform, p);
+  }
+  for (const p of platforms.values()) {
+    for (const g of p.channels) {
+      g.sources.sort((a, b) => b.land - a.land || trCompare(a.source, b.source));
+    }
+    p.channels.sort((a, b) => b.land - a.land || trCompare(a.label, b.label));
+  }
+  const order = (x: string) => {
+    const i = FUNNEL_V2_PLATFORM_ORDER.indexOf(x);
+    return i < 0 ? FUNNEL_V2_PLATFORM_ORDER.length : i;
+  };
+  return {
+    platforms: [...platforms.values()].sort((a, b) => order(a.platform) - order(b.platform)),
+    total,
+    existing,
+  };
 }
 
 /* ─────────────────── Platform + sürüm (iki sürüm tablosu) ─────────────── */

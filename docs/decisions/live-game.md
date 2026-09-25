@@ -981,3 +981,47 @@ sarmalayıcısı VAR, o yüzden davranışı farklı), `create`, `respondInvite`
 BEKLİYOR mu?* Bekliyorsa tavan şart — ve tavanı eklemek yetmez, çağıranın
 zaman aşımını "sunucuya ulaşılamadı" olarak ele aldığından emin ol.
 
+## 504, "sunucunun reddi" sayılıyordu — liste sessizce düşüyordu (17 Eylül 2026)
+
+Kullanıcı admin panelindeki **Hatalar** sekmesinde bir yığılma fark etti:
+*"android online games repo load hatası çok sık çıkmış"*. Tüm tablo okundu —
+62 kayıt, 34 cihaz — ve en büyük küme buydu: `online_games_repo.load` →
+`PostgrestException(code: 504)`, **11 kayıt** (android 9 · ios 2, 8 cihaz),
+**12-14 Eylül'de yoğunlaşmış** (Android'de günde 50+ oyun başlayan yüklü
+günler).
+
+**Önce sunucu elendi.** `list_my_online_games` en ağır kullanıcıda (97 oyun)
+`EXPLAIN ANALYZE` ile **12,7 ms**; plan indeksli, veri küçük (130 oyun / 136
+davet). Yani 504 yavaş sorgudan DEĞİL, ağ geçidinden geliyor.
+
+**Asıl kusur sınıflandırmadaydı.** İki istemcide de yeniden deneme yalnızca
+`isNetworkError` doğruysa çalışıyor; o yüklem TAŞIMA istisnalarının metnine
+bakıyor (`Failed to fetch`, `SocketException`, `TimeoutException`…). Bir
+`PostgrestException(code: 504)` hiçbirine uymuyor, dolayısıyla "sunucunun
+KENDİ reddi" kovasına düşüyordu:
+
+1. istek **yeniden denenmiyordu** → kullanıcı "liste yüklenemedi" görüyordu,
+2. hata **telemetriye yazılıyordu** → panelde gürültü.
+
+Oysa 504 tam olarak "cevap zamanında gelmedi" demek, yani tekrarlanması
+gereken sınıf.
+
+**Çözüm:** `isTransientServerError` (`utils/offlineNotice.ts` ↔ port
+`util/offline_notice.dart`) — durum kodu **408/502/503/504/522/524** ya da
+ağ geçidinin İngilizce metni. `retryOnNetworkFailure` → `retryOnTransientFailure`
+oldu ve artık bu sınıfı da tekrarlıyor (aynı `RETRY_DELAYS_MS` merdiveni).
+
+⚠ **Liste bilerek dar:** `500` YOK (gerçek bir sunucu kusuru olabilir, tekrar
+onu maskeler), `429` YOK (hız sınırını hemen zorlamak durumu kötüleştirir).
+Kalıcı ret (401/403/RLS/iş kuralı) zaten bir KARAR — asla tekrarlanmaz.
+⚠ **Rapor kapısı kapatılmadı:** üç deneme de düşerse hata YİNE yazılır —
+"geçici" diye tümden susturmak, kalıcı bir arızayı görünmez yapardı.
+
+**Kapı:** `npm run verify-live-games-load` (beş yeni vaka: 504 kurtarması,
+mesajı boş 504, kalıcı 504 → `null` + 3 deneme, 500/429'un tekrarlanmaması).
+Duyarlılığı kanıtlandı: yüklem `false` döndürülünce dört vaka düşüyor.
+
+**Port ikizi AYRI PR'da** (inceleme dondurması) — orada ek olarak web'in
+`isAuthStateError` + oturum kontrolü kapısı da yok; portun raporladığı
+"Invalid Refresh Token" satırları (6 kayıt) o yüzden panele düşüyor.
+

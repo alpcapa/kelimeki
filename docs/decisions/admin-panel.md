@@ -435,6 +435,50 @@ null gönderdiğinden o satırlar zaten 'bilinmiyor' kaynağında toplanıyor ve
 reklam kampanyalarının baktığı satırlarda yalnızca web var. Port damgalamayı
 eklerse burası da güncellenmeli.
 
+## Kaynak Hunisi: Kişi / Oyun görünümleri — 24 Eylül 2026
+
+Kullanıcı sordu: *"Direkt başlayan 267, biten 204 ama yüzdeleri 6.4% ve
+10.5% — biten yüzdesi nasıl daha yüksek olabilir?"* Veri doğruydu, sunum
+yanlıştı: `% / Sayı` düğmesinin sayı kipi oyun ADEDİ, yüzde kipi CİHAZ
+oranı gösteriyordu ve yüzdenin tabanı sütuna göre değişiyordu ("Başlayan" →
+`starters / visitors`, "Biten" → `finishers / starters`). Canlıda ölçülen
+(son 30 gün, `direkt`): 229 oyun 29 cihazdan, 172 bitiş yalnızca 4-5
+cihazdan — oyun ile kişi arasında ~8 kat fark var, yan yana okunamazlar.
+
+Kullanıcı kararı: *"Bence bu tablo elma armut karışmış. Burada görmek
+istediğimiz hangi kaynaktan kaç kişi gelmiş, kaçı üye olmuş, kaçı oyun
+başlatmış, kaçı oyun bitirmiş… Ayrıca başlayan, biten oyun ve ortalama oyun
+(kişi başı) kolonları da olabilir alternatif olarak."*
+
+- **`% / Sayı` → `Kişi / Oyun`.** Kişi: Gelen · Üye · Başlatan · Bitiren,
+  her hücrede sayı + o satırın GELEN'ine göre yüzde (tek taban → soldan sağa
+  okunan huni). Oyun: Başlayan Oyun · Biten Oyun · Oyun / Kişi
+  (`starts / starters`).
+- **RPC DEĞİŞMEDİ** (`admin_source_funnel`) — bütün sayılar zaten dönüyordu.
+  CSV de aynı (ham, iki birim birden).
+- **"—" kuralı korundu ve Başlatan'a da yayıldı:** oyun > 0 ama cihaz = 0
+  ise "bilinmiyor". Port iki tarafa da `anon_id` yazmıyor (`app` satırı: 73
+  oyun, 0 cihaz), bitiş tarafı 31 Ağustos'tan önce hiç yazmıyordu.
+
+**Aynı gün ikinci tur — "Oynayan Üye" (`signup_players`, migration
+`20260924125439_source_funnel_signup_players`).** Kullanıcı: *"arkadaş
+davetinden gelen 31 kişinin 26'sı üye olmuş fakat 4'ü oyun başlatıp hiçbiri
+bitirmemiş — bu mümkün mü?"* Mümkün: davetle gelen ÖNCE üye olur (isteği
+kabul etmek hesap ister), SONRA oynar; misafir sütunları onu hiç görmez.
+Ölçüldü (90 gün): 26 üyenin 17'si oynamış, 1.348 oyun.
+
+- **Mevcut `players` KULLANILAMADI:** pencere OYUN tarihine uygulanıyor,
+  yani pencerede oynayan eski üyeleri de sayıyor (30 gün Arkadaş: 6 üye /
+  15 players → %250). Yeni kolon bir KOHORT: pencerede üye olanlardan
+  bugüne kadar en az bir oyun (`games`, bitmiş) bitirmiş olan →
+  `signup_players <= signups`.
+- **Yüzdesinin tabanı ÜYE**, tablodaki tek istisna (öteki sütunlar Gelen'e
+  göre) — "gelenlerin yüzde kaçı oynayan üye oldu" değil "üye olanların
+  yüzde kaçı oynadı" sorusu soruldu.
+- Dönüş tipi değiştiği için drop + create; `proacl` öncesi/sonrası birebir
+  (`postgres, authenticated, service_role` — `anon` YOK), `security
+  definer` + `search_path` elle geri kuruldu.
+
 ## Tanıtım Turu kartı (Onboarding Faz 5, 8 Eylül 2026)
 
 Büyüme > Kullanıcı → Kaynak Hunisi'nin hemen altında. Kaynak
@@ -796,7 +840,7 @@ Kullanıcı isteği: *"üyeler tablosuna onay kolonu ekleyecektik"*. ROADMAP #9
 ("onaylanmamış filtresi", 23 Ağustos 2026'da onaylanmış ama kapsam dışı
 bırakılmış) aynı işin öteki yarısıydı — filtre zaten bu kolon olmadan
 kurulamıyordu, ikisi birlikte kapandı. Maddenin tam metni ve kapanış kaydı:
-`docs/decisions/roadmap-arsiv.md`.
+`docs/decisions/roadmap-arsiv-cilt-1.md`.
 
 ### Kolon neden `ConsentCell` kullanmıyor
 
@@ -862,3 +906,432 @@ doğrulandı.
 **Ders (kök `CLAUDE.md`'ye de yazıldı):** dönüş tipi değişen her fonksiyonda
 drop+create'ten SONRA `proacl`i OKU. "Grant'leri geri kur" yetmiyor — geri
 GELEN bir grant de olabiliyor.
+
+## "Aktif Saatler" — günün ritmi (18 Eylül 2026)
+
+Kullanıcı isteği: *"Admin oyun sayfasına Aktif Saatler bar grafiği eklemek
+istiyorum. 2 saatlik dilimler olsun. Web, ios ve android kırılımları olursa
+iyi olur. Oyun bitişleri baz alalım."*
+
+Büyüme > Oyun sekmesinde, "Oyun Sayısı"nın hemen altında. İkisi de oyun
+bitişlerini sayıyor ama farklı soruları yanıtlıyor: biri **zaman içindeki
+hacmi**, öteki **günün içindeki ritmi**.
+
+`admin_active_hours(p_days)` · `StackedBucketChart.tsx` · `AdminActiveHoursRow`
+
+⚠ Bileşen 20 Eylül 2026'da `ActiveHoursChart.tsx`ten `StackedBucketChart.tsx`e
+TAŞINDI ve kovadan bağımsız hale geldi — "Aktif Günler" aynı dosyayı
+kullanıyor (aşağı bkz.).
+
+### Kararlar
+
+| Karar | Gerekçe |
+|---|---|
+| Kaynak `game_finishes` | MİSAFİR oyunlarını da kapsayan tek bitiş tablosu. `games`ten okunsaydı grafiğin misafir kolu tamamen kör kalırdı (`games` satırı yalnızca girişli kullanıcı için açılıyor) |
+| Saat dilimi `Europe/Istanbul` | Deponun tamamının kuralı. Burada süs değil **metriğin kendisi**: UTC dağılımı 3 saat kaydırıp grafiği sessizce yanlış okuturdu |
+| **Teslim satırları HARİÇ** | Teslim satırı 7 günlük/48 saatlik zaman aşımının DOLDUĞU anı taşır, bir insanın oyun bitirdiği anı değil. Dahil edilseydi dağılıma insan davranışıyla ilgisi olmayan bir saat deseni karışırdı. Son 30 günde **152 teslim / 1199 bitirilen** — %11, yuvarlama hatası değil |
+| Kombolardan BAĞIMSIZ, sabit 30 gün | Kullanıcı kararı. Kendi `useEffect`'i var ve bağımlılık dizisi boş — yukarıdaki effect'e eklenseydi her kombo değişiminde gereksiz bir RPC daha koşardı |
+| Efsane TIKLANABİLİR DEĞİL | `GrowthChart`tan bilinçli ayrım: orada çizgiler bağımsız, açıp kapatmak anlamlı. Burada segmentler `finished`e TAM toplanıyor; bir segmenti gizlemek çubuğu sessizce yalan söyletirdi (toplam aynı kalır, parçalar tutmaz) |
+| "Diğer" en ÜSTTE | Bugün şişkin (aşağı bkz.); en üste konunca çubuğun TABANI kararlı kalıyor ve boşluk kapandıkça grafik alttan değil üstten inceliyor |
+
+### Neden `GrowthChart` kullanılmadı
+
+`GrowthChart` bir ZAMAN SERİSİ çizgi grafiği: x ekseni tarih
+(`bucket: string`), etiketleri `toLocaleDateString` ile biçimliyor, serileri
+üst üste BİNEN çizgiler olarak çiziyor. Buradaki soru başka: 12 sabit kova ve
+segmentleri TOPLANAN tek bir çubuk. Zorlanarak uydurulsaydı tarih
+biçimlendirmesi de çizgi mantığı da yolda bozulurdu. Görsel dil yine de
+birebir aynı (viewBox, kenar boşlukları, ızgara/metin renkleri, CSV + Tablo
+Görünümü + `?` üçlüsü, padding-top oranı tekniği).
+
+**Tek bilinçli sapma — `niceCeil`'in merdiveni.** `GrowthChart` 1·2·5·10
+kullanıyor; burada 1·1,5·2·2,5·3·4·5·6·8·10. Sebep grafik türü: çizgi
+ŞEKİLDEN okunur, çubuk YÜKSEKLİKTEN. Kaba merdivende 236'lık tepe 500'e
+yuvarlanıyordu ve en yüksek çubuk çizim alanının **%47**'sinde kalıyordu —
+gerçek 30 günlük veriyle ekran görüntüsü alınarak ölçüldü. İnce merdivende
+aynı tepe 250'ye yuvarlanıyor: **%94**.
+
+### ⚠ Platform kırılımı bugün YARIM — geçici ve beklenen
+
+`game_finishes.platform` damgasını **yalnızca web istemcisi** yazıyor;
+portun aynı satırı (`games_api.dart`) inceleme dondurması yüzünden AYRI bir
+PR'da bekliyor (#565). Canlıda ölçüldü (18 Eylül 2026):
+
+| Gün | web | android | ios | boş |
+|---|---|---|---|---|
+| 17 Eyl | 35 | 0 | 0 | **54** |
+| 15 Eyl | 9 | 21 | 5 | 5 |
+
+android/ios 16 Eylül'de sıfırlandı. ⚠ **Öncesindeki android/ios satırları
+CANLI VERİ DEĞİL** — `20260916054513`'ün `games`ten geriye doldurduğu
+satırlar. O PR merge edilip yeni mağaza paketi dağılana kadar app'ten biten
+oyunlar "Diğer"e düşer.
+
+**Toplam çubuk yüksekliği bundan ETKİLENMEZ** — yalnızca rengin dağılımı
+eksik. Grafiğin asıl sorusu (günün hangi saatinde oynanıyor) bugün de doğru
+cevaplanıyor.
+
+⚠ "Diğer"in tanımı `admin_game_activity_series` ile BİREBİR aynı tutuldu
+(`platform is null or platform = 'app-web'`). İki grafik aynı sekmede yan
+yana; kovaların anlamı ayrışırsa sayılar birbirini tutmaz.
+
+### SQL tuzağı — `left join`de `count(*)` boş kovayı 1 gösterir
+
+12 dilim `generate_series` ile HER ZAMAN üretiliyor (boş saatler 0 olarak
+gelmeli, eksik satır olarak değil — yoksa çubuklar kayar). Ama `left join`
+sonrası eşleşme olmayan dilim için `count(*)` **1** döndürür. İki yerde
+tuzağa düşülebilirdi ve ikisi de kapatıldı:
+
+- `finished` → `count(*)` değil **`count(b.hour_start)`**.
+- "Diğer" filtresi → `b.platform is null` tek başına YETMEZ (eşleşmeyen
+  dilimde de doğrudur); filtreye **`b.hour_start is not null`** şartı eklendi.
+
+Değişmez canlıda 12 dilimde de doğrulandı: web + ios + android + other =
+finished.
+
+## "Aktif Günler" — haftanın ritmi (20 Eylül 2026)
+
+Kullanıcı isteği: *"Admin oyunda saatler gibi Aktif Günler bar chartı da
+koyabilir miyiz?"*
+
+Büyüme > Oyun sekmesinde, "Aktif Saatler"in hemen altında. Üçlü artık şöyle
+okunuyor: **Oyun Sayısı** = zaman içindeki hacim · **Aktif Saatler** = günün
+içindeki ritim · **Aktif Günler** = haftanın içindeki ritim.
+
+`admin_active_days(p_days)` · `StackedBucketChart.tsx` · `AdminActiveDaysRow`
+(migration `20260920151346_admin_active_days`)
+
+### Bu bir İKİZ — ve ikizliği korumak kuralın kendisi
+
+"Aktif Saatler"in TÜM kararları (kaynak `game_finishes` · saat dilimi
+`Europe/Istanbul` · teslim satırları hariç · kombolardan bağımsız sabit 30
+gün · efsane tıklanamaz · "Diğer" en üstte · `niceCeil`'in ince merdiveni)
+buraya **aynen** geçti. Yukarıdaki bölümdeki tablo tekrar edilmiyor; iki
+grafik aynı sekmede yan yana duruyor ve bir karar değişirse **İKİSİ
+BİRLİKTE** değişmeli.
+
+**Değişmez, canlıda ölçüldü (20 Eylül 2026):**
+
+```
+ham pencere (30 gün, teslim hariç) = 1279
+saat kovalarının toplamı           = 1279
+gün kovalarının toplamı            = 1279
+```
+
+Bu üç sayı ayrışırsa kovalardan biri sessizce başka bir popülasyonu
+sayıyordur. Kontrol listesine de girdi (`docs/testing-admin.md` §9.20).
+
+İlk ölçümün gün dağılımı: Pzt 191 · Sal 158 · Çar 154 · **Per 234** · Cum 179
+· Cmt 199 · Paz 164. Yedi günün hepsinde `web + ios + android + other =
+finished` doğrulandı.
+
+### `isodow`, `dow` DEĞİL
+
+Postgres'in `extract(dow)`u **0 = Pazar** ile başlar. Onunla çizilen grafik
+Türkçe bir panelde haftayı Pazar'dan açar ve **hafta sonu çubukları grafiğin
+iki ucuna dağılır** (Pazar en solda, Cumartesi en sağda) — "hafta sonu daha
+mı yoğun" sorusu grafiğe bakılarak cevaplanamaz hale gelir. `isodow`
+(1 = Pazartesi … 7 = Pazar) ile Cmt+Paz yan yana, sağ uçta duruyor.
+
+### Teslim kuralının gerekçesi burada DAHA GÜÇLÜ
+
+Saat kovasında teslim satırlarını dışarıda bırakmanın sebebi "zaman aşımının
+dolduğu an insan davranışı değil"di. Gün kovasında aynı satır **daha zararlı**:
+7 günlük terk-edilme gecikmesi haftanın gününü **KORUR** (7 ≡ 0 mod 7), yani
+her teslim, terk edildiği günün kovasına düşer ve dağılıma insan
+davranışıyla ilgisi olmayan, birebir kopyalanmış ikinci bir desen bindirir.
+%11'lik bir kirlilik burada gürültü değil, sistematik sapma olurdu.
+
+### İkinci bir bileşen YAZILMADI
+
+`ActiveHoursChart.tsx` → `StackedBucketChart.tsx` olarak taşındı ve kovadan
+bağımsız hale getirildi (`bucketKey` · `bucketLabel` · `axisLabel` ·
+`bucketHeader` prop'ları). Kopyalanmış 300 satırlık ikinci bir çizim kodu,
+bu depoda tam olarak cezalandırılan şeydi — `Setup.tsx` ile
+`LiveGamesTab.tsx`in aynı kartı ayrışmış ve kullanıcı ikisini iki sekmede
+yan yana görmüştü (kök `CLAUDE.md`, eş-dosya tablosu).
+
+Seri sabiti de TEK: `ACTIVE_HOURS_SERIES` → **`FINISH_PLATFORM_SERIES`**.
+İkiye ayrılsaydı "Web" iki grafikte iki renge kayabilir ve yan yana duran iki
+çubuk okunamaz hale gelirdi.
+
+**Kova sözlükleri bilerek bileşenin yanında** (`StackedBucketChart.tsx`
+altı): grafiğin genel olması etiket kurallarının dağılması anlamına gelmesin.
+Gün adları **elde** yazılı, `toLocaleDateString('tr-TR', { weekday })` ile
+DEĞİL — o yol bir tarih nesnesi uydurmayı ve tarayıcının ICU verisine
+güvenmeyi gerektirirdi; aynı panelde iki tarayıcıda iki farklı kısaltma
+çıkabilirdi.
+
+### Eksen etiketleri: saatte atlanır, günde atlanmaz
+
+`axisLabel` `null` dönerse o kova etiketsiz çizilir. Saat ekseninde 12 etiket
+640 px'de kalabalık, o yüzden yalnızca dört saatlik adımlar yazılıyor; gün
+ekseninde yedi kısaltma (Pzt…Paz) rahat sığdığından **hiçbiri atlanmıyor**.
+
+## Oyun Dağılımı — iki pasta, tek RPC (22 Eylül 2026)
+
+Kullanıcı isteği, birebir: *"Admin Oyun altına 2 pie chart yanyana.
+1. Yapay zeka vs Arkadaşınla  2. 2 player vs 4 player (biten count)"*
+
+`admin_game_mix(p_days)` · `SplitPieChart.tsx` · `AdminGameMix`
+
+Yeri: Büyüme > Oyun, "Oyun Süresi (Medyan)" ile "Beğeni / Paylaşma"
+arasında. Üstündeki dört panel (Oyun Sayısı · Aktif Saatler · Aktif Günler ·
+Oyun Süresi) hep AYNI kümeyi — pencerede biten oyunları — farklı eksenlerden
+anlatıyor; pastalar o dizinin son halkası: *o oyunlar NEYDİ*.
+
+### Tek RPC, çünkü toplamlar tutmak zorunda
+
+İki pasta aynı popülasyonu iki farklı eksende bölüyor, yani
+`ai_finished + friend_finished` ile `p2_finished + p4_finished` **eşit olmak
+zorunda**. İki ayrı RPC olsaydı pencereler sessizce ayrışabilirdi — Aktif
+Saatler ↔ Aktif Günler için yazılmış kuralın aynısı, burada daha bağlayıcı
+çünkü iki pasta tek satırda, yan yana.
+
+"Biten" tanımı `admin_game_activity_series`in `games_finished`iyle birebir:
+yerel taraf `game_finishes`ten `not ended_by_surrender`, canlı taraf
+`games`ten `online_game_id` **başına tekilleştirilmiş** ve
+`not bool_or(surrendered)`. Teslimle biten oyun hiçbir dilimde sayılmaz.
+
+⚠ **`online_game_states` JOIN'i süs değil:** seri RPC'si canlı oyunları o
+join'in içinden sayıyor. Düşürülürse state satırı olmayan bir canlı oyun
+pastada görünür, grafikte görünmez — fark "biten oyun" sayısında sessiz bir
+sapma olarak kalır.
+
+### "Arkadaşınla" OYUN TİPİDİR, "rakip insandı" DEĞİL
+
+Canlı bir oyunun boş koltuğu YZ ile doldurulabiliyor — **22 Eylül 2026'da
+canlıdan sayıldı: 4 kişilik 8 canlı oyunun 5'inde bir `{"type":"ai"}` koltuğu
+var.** Ayrım, oyunun Setup'ta hangi sekmeden başlatıldığıdır — üçüncü bir terim
+üretilmedi.
+
+**Etiket 22 Eylül 2026'da "Yapay Zeka ile" → "Yapay Zeka" olarak kısaldı**
+(kullanıcı: *"uzama sorunu kalksın"*) — dar telefonda efsane satırı iki satıra
+sarıyordu. Kısaltma tesadüfen bir tutarlılık da kazandırdı: aynı sekmedeki
+**Kaynak** kombosu zaten `Toplam · Canlı · Yapay Zeka` diyor, yani pastanın
+sol dilimi artık kombonun kelimesiyle birebir aynı.
+
+⚠ **Sağ dilimde bu hizalama YOK ve bu bilinçli:** kombo "Canlı" derken pasta
+"Arkadaşınla" diyor (kullanıcının istediği kelime, Setup'ın sekme adı). İkisi
+AYNI ayrımı iki kelimeyle anlatıyor; birleştirilecekse ikisi BİRLİKTE
+değişmeli. Sarma güvenliği (`break-words`) yine de duruyor — etiket bir gün
+uzarsa kırpılmak yerine sarar. *"Rakiplerin kaçı insandı"* başka bir soru ve
+`online_games.slots` okunmasını gerektirir; bu RPC onu yanıtlamaz. `?`
+rozetinin metni bunu açıkça yazıyor.
+
+### Üçüncü sütun ölçüm değil, sağlama
+
+`game_finishes.player_count`te CHECK **yok** (`games`/`online_games`te var —
+2 ya da 4). Bir gün 3 kişilik bir satır düşerse ikinci pasta onu sessizce
+yutardı. `finished_total` ayrıca döndüğünden pastaların altındaki satır
+`2 + 4 <> toplam` durumunu ekranda söylüyor.
+
+### Pencere sabit, kombolara bağlı DEĞİL
+
+Aktif Saatler/Günler ile aynı karar (`p_days`, varsayılan 30, ayrı effect,
+boş bağımlılık dizisi) ama gerekçe burada daha güçlü: **pastaların kırdığı
+boyutlar, üstteki kombolarla aynı boyutlar.** Kaynak "Canlı" seçiliyken
+soldaki pasta %100 tek dilime, "2 kişilik" seçiliyken sağdaki pasta tek
+dilime düşerdi — yani filtre, grafiğin ölçtüğü şeyi yok ederdi.
+
+### Pasta bilinçli bir seçim (ve bilinen itiraz)
+
+İki dilimlik pasta, veri görselleştirme literatüründe yığılmış tek çubuğa
+göre zayıf bir formdur — açı, uzunluktan zor okunur. Burada yine de pasta:
+kullanıcı açıkça pasta istedi ve soru *"kabaca hangi oranda"* düzeyinde.
+Okunabilirlik iki ek kanalla kurtarılıyor: dilimin İÇİNDE yüzde (yalnızca
+≥%8 dilimlerde — altında etiket komşusuna biner) ve altında etiket + **ham
+sayı**.
+
+**Renkler yeniden seçilmedi:** `USER_SERIES`/`ACTIVE_PLAYER_SERIES`in
+mavi+amber çifti (protan ΔE 27,0 · tritan 28,8 · normal 32,9). İki pasta da
+aynı çifti kullanıyor çünkü yan yana duruyorlar ve her birinin KENDİ efsanesi
+var — renk, pastalar arasında değil pastanın içinde anlam taşır.
+
+⚠ **Amberin panel zeminine (`bg-panel` #F5F7FA) kontrastı 2,97:1**, yani 3:1
+eşiğinin hemen altında (ölçüldü). Renk tek başına taşıyıcı olamaz: yüzde
+dilimin içinde, etiket ve ham sayı efsanede yazıyor, dilimler arasında 2px
+zemin boşluğu var — sınır renkten değil boşluktan okunuyor.
+
+### Efsanede KIRPMA yok
+
+İlk sürüm `truncate` kullanıyordu; önizlemede ölçüldü: iki pasta dar bir
+telefonda ~150px sütuna düşüyor ve orada *"Yapay …"* ile *"Arkadaşı…"* ayırt
+edilemiyordu. Etiket artık sarıyor — satırın iki satıra çıkması, etiketin
+okunamamasından iyi. Etiketin kendisi de kısaldı (yukarı bkz.), yani sarma
+artık normal değil SON ÇARE.
+
+## Ziyaretçi Yolculuğu — web'de "nerede ayrıldı" (23 Eylül 2026)
+
+Kullanıcı isteği: *"Bizim web tarafında bounce rate'leri görmemiz lazım.
+Ziyaretçiler hangi noktalarda bounce ediyor."* Büyüme > Kullanıcı →
+Kaynak Hunisi'nin hemen üstünde. Yazan `src/utils/webJourney.ts`, sunucu
+`web_sessions` + `record_web_session` / `admin_web_journey`
+(`20260923103044_web_sessions_journey.sql`), kapı `npm run verify-web-journey`.
+
+### Neden vardı
+
+Mevcut tablolar huninin UÇLARINI görüyordu, ARASINI görmüyordu. Canlıdan
+ölçüldü (21-23 Eylül, 34 web cihazı): masaüstündeki 14 cihazın hiçbiri oyun
+başlatmamıştı, ama karşılama sayfasında mı yoksa kurulum ekranında mı
+çıktıkları BİLİNEMİYORDU. 8 başlangıçtan 1'i bitmişti, ama öteki 7'nin
+ilk hamlede mi yoksa 15. dakikada mı bıraktığı BİLİNEMİYORDU.
+
+### Şekil: sekme başına tek satır
+
+Her yeni adımda ve sekme gizlenirken (`visibilitychange`/`pagehide`) aynı
+satır güncellenir. `steps` ulaşılan adımların KÜMESİ, `last_step` ise
+kronolojik olarak SON adım, yani "burada ayrıldı". Kart adım başına Ulaşan /
+Ayrılan / Ayrılma % / medyan süre gösterir ve en çok kaybettiren adımı
+kırmızıyla vurgular. Karşılamada ayrılanlar için medyan kaydırma derinliği
+ayrıca yazılır (`#karsilama` kendi kaydırma kabı, belge değil).
+
+### Kimlik yok (kullanıcı kararı: *"Gizlilik metnine dokunmadan başla"*)
+
+`anon_id` ve `user_id` yok. Satır kodu sekmeye özel bir koddur
+(`sessionStorage`), sekme kapanınca silinir. `signup_events` ile aynı duruş:
+gizlilik metni anonim kodun gittiği durumları SAYIYOR, bu tablo o kodu
+taşımadığı için listeye madde eklemiyor. Bedeli: ölçü KİŞİ değil OTURUM
+bazlıdır. Kişi bazlı huni gerekirse metin değişikliği (#33 ile birlikte) +
+port kopyası gerekir, yani iş dondurma sonrasına kalır.
+
+### Tuzaklar (kodda da yazılı)
+
+- **Adımlı pingler SIRAYLA gider** (tek bir promise zinciri). `landing_cta`
+  ile `app` milisaniyeler içinde ateşleniyor, sunucu da `last_step`i geliş
+  sırasıyla yazıyor. Paralel gitseler ziyaretçiyi yanlış adımda "ayrılmış"
+  gösterirdi. Adımsız pingler `last_step`e dokunmadığı için sıra beklemez.
+- **Auth olayı ↔ AuthModal yarışı:** giriş/kayıt sonrası `useAuth` olayı
+  AuthModal'ın `login`/`signup_done` çağrısından önce gelebiliyor. Oturum
+  "üye" olunca adım yazımı durur, ama bu İKİ kapanış adımı yine geçer.
+- **Hamle adımları yalnızca bu sekmede BAŞLATILAN oyunu sayar.** Kayıttan
+  devam ettirilen oyunun eski hamleleri sayılmaz (`journeyGameRef`, `App.tsx`).
+- **Tablo istemciye kapalı:** RLS açık, politika yok, `anon`/`authenticated`
+  grant'leri revoke edildi. Yazma yalnızca security definer RPC'den (upsert
+  için select+update vermek, herkesin başkasının satırını okuması demekti).
+  Bir günden eski satır güncellenmez. Canlıda ölçüldü: `anon` yalnızca
+  `record_web_session`i çağırabiliyor, admin RPC'sinde `anon` yok.
+- `navigator.webdriver` taşıyan tarayıcılar sayılmaz (botlar + Playwright).
+- **Adım listesi İKİ yerde:** `JOURNEY_STEPS` ↔ migration'daki iki `v_steps`.
+  `verify-web-journey` üçünü sıra dahil karşılaştırır. Yeni adım ekleyen
+  ikisini birden güncellemeli, yoksa sunucu adımı SESSİZCE yok sayar.
+
+### Yeni ↔ Dönen süzgeci (aynı gün, `20260923135848_admin_web_journey_entry_filter.sql`)
+
+Karta düşen İLK gerçek satır bir Android web misafiriydi: app → oyun → 5.
+hamle → oyun bitti, 594 sn. Kullanıcı fark etti: *"önceki android test
+grubundan düzenli oyuncu olmalı çünkü android hala Play Store'da yok."*
+Canlıdan doğrulandı: aynı cihaz 22 Ağustos'tan beri 205 oyunu MİSAFİR
+olarak başlatmış. Yani "misafir" iki ayrı kitleyi birleştiriyordu: bounce
+sorusunun konusu olan YENİ ziyaretçi ve hesapsız düzenli oyuncu. İkincisi
+uzun oyunlarıyla "oyun bitti" payını şişirip yeni gelenin kaybını gizler.
+
+**Veri zaten vardı:** `web_sessions.entry`. Karşılama sayfası yalnızca ilk
+kez gelene gösteriliyor, bu yüzden `landing` = yeni, `app` = karşılama
+atlandı. Kartın varsayılanı **Yeni**. Yazan tarafa dokunulmadı, geçmiş
+satırlar da doğru ayrılıyor.
+
+⚠ **`app` ≠ "dönen", birebir değil.** Kapı (`scripts/landing-plugin.js` →
+`kapiScript`) karşılamayı şunlarda da atlıyor: `/` dışındaki her yol
+(paylaşılan oyun `/game/:id`, davet `/davet/:token`, yani linkle gelen YENİ
+ziyaretçi) ve ana ekrana eklenmiş PWA. Tersi de var: `?tanitim=1` dönen
+kullanıcıya karşılamayı bilerek yeniden gösteriyor. Etiket bu yüzden `?`
+metninde açıklanıyor. Linkle gelen yeniyi ayırmak gerekirse satıra giriş
+YOLU yazılmalı (bugün yazılmıyor).
+
+`p_entry` bir parametre EKLEMESİ olduğu için eski `(integer, text)` imzası
+`drop` edildi. `proacl` sonrasında okundu ve öncekiyle aynı çıktı
+(`authenticated` + `service_role`, `anon` YOK). Eski istemci iki
+parametreyle çağırıyor, üçüncünün varsayılanı `null` olduğu için yayın
+sırası önemsiz. `verify-web-journey` artık adım dizisi taşıyan İKİ
+migration'ı da okuyor.
+
+
+## Masaüstü kipindeki iPad: iOS altında sahte "10.15.7" (23 Eylül 2026)
+
+Kullanıcı fark etti: *"Admin Cihaz ios altında 10.15.7 gözüken 27 kişi var.
+Bu masaüstünde de olan bir versiyon."* iPadOS 13+ Safari varsayılan olarak
+"masaüstü sitesi" kipinde açılıyor ve User-Agent'ı bir Mac'inkiyle birebir
+aynı (`Macintosh; Intel Mac OS X 10_15_7`). `getDeviceType` bu cihazları
+dokunmatik oldukları için doğru biçimde `ios`a ayırıyordu. Ama
+`getOsVersion` `Mac OS X` dalına düşüp Apple'ın bütün Mac'lerde
+SABİTLEDİĞİ `10.15.7`yi yazıyordu, `getDeviceModel` de boş dönüyordu.
+Gerçek iPadOS sürümü bu kipte hiç gönderilmiyor.
+
+- **Kaynak:** `visitTracking.ts` → `isDesktopModeIPad`. Bu kipte sürüm
+  artık `null` ("sürüm yok"), model `'iPad'`. Bilinmeyen sürüm, yanlış
+  sürümden iyidir. `verify-device-labels` üç UA'yı sınıyor: masaüstü
+  kipindeki iPad, gerçek Mac (değişmedi) ve iPhone.
+- **Geçmiş:** `20260923141944_ipad_desktop_mode_os_version.sql`,
+  `device_visits` + `guest_visits`. Eşleşme kesin, çünkü `ios` + `10.15…`
+  yalnızca bu kipten gelebilir (iOS 10'un son sürümü 10.3.4). Canlıda
+  eşleşen satırların hepsi modelsizdi.
+- ⚠ **Masaüstü `10.15.7` de aynı dondurmanın ürünü:** Safari ve Chrome
+  bütün Mac'lerde bu diziyi gönderiyor, yani "Masaüstü → 10.15.7" satırı
+  "bir Mac" demek, sürüm bilgisi değil. Satıra dokunulmadı: platform
+  doğru, yanıltıcı olan yalnızca sürüm. Aynısı Windows'ta `10.0` için de
+  geçerli (Windows 11 de `NT 10.0` gönderiyor).
+- **Masaüstü satırlarına aile adı (aynı gün, kullanıcı isteği: *"MacOS ve
+  windows başına yazılsa iyi olur, yoksa sayılardan neyin ne olduğu
+  anlaşılmayacak"*):** `osVersionLabel` → `desktopOsLabel`. Aile, sürüm
+  dizesinin şeklinden okunuyor: Windows iki parçalı bir NT numarası
+  (`10.0` → **Windows 10/11**, `6.1` → Windows 7), macOS üç parçalı
+  (`macOS 10.15.7`). Tanınmayan iki parçalı dize ham kalır ("Masaüstü
+  7.9"). Veri DEĞİŞMEDİ, yalnızca etiket. Canlıdaki her masaüstü sürümü
+  eşlendi (son 90 gün: `10.0` 67, `10.15.7` 21, `15.7.2` 2, `10.7.2` 1
+  cihaz). Kartın `?` metni sayının sürüm bilgisi olmadığını söylüyor.
+
+### Masaüstü "sürüm yok" kovası: bot mu, Linux mu? Önce ÖLÇ (aynı gün)
+
+Masaüstünde sürümsüz 115 cihaz vardı (son 90 gün). 107'si tek seferlik, 1'i
+oyun başlatmış, 112'sinin kaynak etiketi yok ve günün her saatine
+yayılmışlardı. Bu örüntü tarayıcı botlarına uyuyor. İlk öneri satırı "bot"
+diye etiketlemekti. **Kullanıcı itiraz etti ve haklıydı:** *"Bunların gerçek
+ziyaretçi olma ihtimali de var… bunları bot olarak değerlendirmek tahmin olur
+ancak."* Ayrıca bilinen botların zaten dışarıda tutulduğunu sanıyordu. Kod
+okundu: ziyaret ve cihaz sayaçlarında HİÇBİR bot süzgeci yoktu, yalnızca
+Ziyaretçi Yolculuğu `navigator.webdriver`ı eliyordu.
+
+Kesin olan tek şey şuydu: Windows ve Mac tarayıcıları sürüm bildirir, yani
+bu kovaya yalnızca Linux, ChromeOS ya da kendini tanıtmayan istemci düşebilir.
+Reklamdan gelip oynamadan çıkan bir Windows/Mac kullanıcısı buraya düşmez.
+Ama kovanın içini bölmek için veri yoktu.
+
+**Karar: süzme yok, sınıflama var** (`visitTracking.ts`):
+- `isBotUserAgent` (açık liste) → `os_version = 'bot'`, model `null`.
+  Bot yine SAYILIYOR. Etiket: "bot (kendini tanıtan)".
+- `CrOS` → `'ChromeOS'`, kalan `Linux` → `'Linux'`.
+- Boş kalan masaüstü artık "Masaüstü · bilinmiyor". "Bot" DENMEZ.
+
+⚠ **İki tuzak, ikisi de `verify-device-labels`ta:** (1) Bot kontrolü işletim
+sistemi okumadan ÖNCE yapılmalı, çünkü Googlebot'un telefon tarayıcısı kendini
+`Linux; Android 6.0.1; Nexus 5X` olarak tanıtıyor ve Android sayılırdı.
+(2) `/bot/` ile eşleştirilmez: `CUBOT` gerçek bir Android markası.
+
+Geçmiş satırlar DEĞİŞTİRİLMEDİ, çünkü o satırlar için elde tarayıcı kimliği
+yok. **Sonraki adım:** bir hafta sonra kovanın dökümüne bak. Süzmeye
+("bilinen botları hiç sayma") ancak o sayılar varken karar verilir.
+
+## Kaynak Hunisi → "Kanal → Üye Kalitesi" — 24 Eylül 2026
+
+Kullanıcı: *"V1'i de farklı bir bakış açısı için modifiye edip tutmak mümkün
+mü? Rakamların anlamlı olduğu başka bir versiyon gibi."* Huni v2
+(`funnel_events`, `docs/decisions/funnel-v2.md`) misafir hunisini sıfırdan
+ölçmeye başlayınca Kaynak Hunisi'nin misafir sütunları (Gelen / Başlatan /
+Bitiren — üç ayrı anonim tablo, farklı başlangıç tarihleri) emekliye ayrıldı;
+üye yarısı yeni bir RPC'ye (`admin_member_quality`,
+`20260924151205_admin_member_quality.sql`) KOHORT olarak taşındı: pencerede
+hesap açanlar × kayıt etiketi → Üye · Oynayan · 7 Günde · 2+ Gün (iki
+farklı İstanbul gününde oyun bitiren) · Oyun / Üye.
+
+- Yukarıdaki iki Kaynak Hunisi bölümü ("Bitiren Cihaz", "Kişi / Oyun
+  görünümleri") bu tarihten itibaren TARİHÇE.
+- `app` etiketi (mobil kayıtlar) artık kendi kanalında: "Mobil Uygulama"
+  (`sourceChannel`, TAM eşleşme — `apple`/`app-store` yutulmasın;
+  `verify-admin-groups` kilitliyor).
+- Bilinen kanallar (`MEMBER_QUALITY_ALWAYS`: Instagram, Facebook,
+  LinkedIn, Arkadaş, Mobil Uygulama, Direkt) üye getirmese de 0 ile
+  çiziliyor (kullanıcı isteği) — ölçüldüğü gün Facebook hiç üye
+  getirmemişti ve satırın yokluğu "ölçülmedi" gibi okunuyordu.
+- `admin_source_funnel` veritabanında DURUYOR ama çağrılmıyor (geri dönüş
+  yolu).

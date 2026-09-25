@@ -3,13 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PrivacyModal';
-import { signIn, signUp, sendPasswordReset, friendlyAuthMessage } from '../lib/api';
+import { signIn, signUp, sendPasswordReset, friendlyAuthMessage, logSignupEvent } from '../lib/api';
+import { journeyStep } from '../utils/webJourney';
 import { useAuth } from '../hooks/useAuth';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
 import { GENDER_OPTIONS, formatTrDateInput, trDateToIso } from '../utils/profileFields';
 import type { ReactNode } from 'react';
 import type { Gender } from '../lib/database.types';
 import { friendlyErrorMessage, GENERIC_ERROR_NOTICE } from '../utils/errorMessage';
+import { funnelEvent } from '../utils/funnelEvents';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -83,9 +85,32 @@ export function AuthModal({
     if (!user || kapandi.current) return;
     kapandi.current = true;
     onClose();
-  }, [user, onClose]);
+  }, [user?.id, onClose]);
+
+  // ── Kayıt hunisinin üst ucu (ROADMAP #32) ───────────────────────────────
+  // `'started'` = kayıt FORMU görüldü. İki giriş yolu var ve İKİSİ de
+  // sayılmalı: pencere doğrudan kayıt modunda açılabiliyor (`initialMode`,
+  // ör. "Neden Üye Olmalıyım?" kutusu ve davet sayfası) ya da giriş
+  // ekranından sekmeyle geçiliyor (`switchMode`). Port da tam bu iki yolu
+  // sayıyor (`auth_modal.dart` → `initState` + `_switchMode`).
+  //
+  // ⚠ Hook, erken `return`ların ÜSTÜNDE (React #300 kapısı,
+  // `npm run verify-hook-order`). `yazildi` bayrağı StrictMode'un çift
+  // çağrısına karşı: geliştirmede efekt iki kez koşuyor, sayaç ikiye
+  // katlanırdı.
+  const basladiYazildi = useRef(false);
+  useEffect(() => {
+    if (initialMode !== 'signup' || basladiYazildi.current) return;
+    basladiYazildi.current = true;
+    void logSignupEvent('started', signupChannel);
+    journeyStep('signup_form');
+  }, [initialMode, signupChannel]);
 
   const switchMode = (next: Mode) => {
+    if (next === 'signup' && mode !== 'signup') {
+      void logSignupEvent('started', signupChannel);
+      journeyStep('signup_form');
+    }
     setMode(next);
     setError(null);
     setInfo(null);
@@ -100,6 +125,9 @@ export function AuthModal({
       if (mode === 'login') {
         const { error } = await signIn(email, password);
         if (error) throw error;
+        // Ziyaretçi yolculuğu: misafir oturumu girişle kapanır (girişli
+        // başlamış oturumda `webJourney` hiçbir şey yazmaz).
+        journeyStep('login');
         await refreshProfile();
         onClose();
       } else if (mode === 'forgot') {
@@ -128,6 +156,17 @@ export function AuthModal({
           marketingConsent,
         );
         if (error) throw error;
+        // Hesap OLUŞTU. İki dal da başarı sayılır: oturum açıldıysa da,
+        // e-posta onayı bekleniyorsa da huni için "kayıt tamamlandı" —
+        // portla aynı karar (`auth_modal.dart`). Onayın gelip gelmediği
+        // AYRI bir soru; onu #32'nin A maddesi (sunucu tarafı sayaç)
+        // ölçecek, bu satır değil.
+        void logSignupEvent('completed', signupChannel);
+        journeyStep('signup_done');
+        // Huni v2 "Üye" sütunu. ⚠ Gizlilik metni güncellenene kadar KAPALI
+        // (`FUNNEL_MEMBER_EVENTS_ENABLED`) — çağrı burada duruyor ki bayrağı
+        // açan PR yalnızca bayrağı ve metni değiştirsin.
+        funnelEvent('signup', true);
         if (data.session) {
           await refreshProfile();
           onClose();

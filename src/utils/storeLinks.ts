@@ -44,11 +44,21 @@
  * Yani eşit yükseklikte Apple DAHA GENİŞ kalıyordu (44 px'te 166 ↔ 148) ve
  * Google'ın *"same size or larger"* kuralı ÇİĞNENİYORDU.
  *
- * **Çözüm: hizalama yükseklikten GENİŞLİĞE çevrildi.** İkisi de aynı
- * genişlikte çizilir (`BADGE_WIDTH_PX`), yükseklik orandan gelir. Sonuç:
- * Play biraz daha YÜKSEK durur (~50 px ↔ Apple ~44 px) — bu bir kusur
- * değil, Google'ın kuralının ta kendisi. Apple'ın tek boyut kuralı
- * "≥ 40 px yükseklik" ve o da sağlanıyor.
+ * **15 Eylül çözümü: hizalama yükseklikten GENİŞLİĞE çevrilmişti** — Play
+ * ~50 px, Apple ~44 px yüksekliğinde duruyordu.
+ *
+ * ⚠ **24 Eylül 2026 — EŞİT YÜKSEKLİĞE GERİ DÖNÜLDÜ (kullanıcı kararı).**
+ * İki rozet yan yana yayına girince (Play'in URL'si doldu) kullanıcı iPad'de
+ * gördü: *"Google Play banner'ı daha büyük duruyor. Aynı boy olmaları
+ * gerekmiyor mu?"* Oranlar farklı olduğundan iki rozet hem yükseklikte hem
+ * genişlikte eşit OLAMAZ; biri seçilmeli. Kılavuzlar yeniden okundu:
+ * Apple'da eşitlik kuralı YOK (yalnızca "ilk sırada", "≥ 40 px", "1/4 clear
+ * space" — sayfa 24 Eyl'de çekildi). Google *"same size or larger"* diyor ve
+ * "size" yükseklik olarak okunduğunda eşit yükseklik onu SAĞLIYOR; genişlik
+ * olarak okunursa Play ~%11 dar kalıyor. 15 Eylül'deki "çiğniyordu" tespiti
+ * ikinci okumaya dayanıyordu; kullanıcı görsel dengeyi seçti.
+ * Sonuç: ikisi `BADGE_HEIGHT_PX` yüksekliğinde, genişlik orandan (44 px'te
+ * Apple ~166, Play ~148). ⚠ Genişliğe geri çevirmeden önce bu kararı OKU.
  *
  * ⚠ **Ders: iki rozeti KARŞILAŞTIRAN bir kural, iki dosya da elde olmadan
  * kanıtlanamaz.** Kapı (`verify-store-badges`) eskiden yalnızca Play'in
@@ -73,25 +83,21 @@
 export const BADGE_MIN_HEIGHT_PX = 40;
 
 /**
- * Rozetlerin ekranda çizileceği GENİŞLİK (px); yükseklik orandan gelir.
- *
- * ⚠ Hizalama bilerek genişlikten yapılıyor — gerekçe yukarıdaki ölçümde.
- * Eşit genişlik, Google'ın "same size or larger"ını tanım gereği sağlar.
- * Değer, Apple rozetinin yüksekliğini 40'ın altına DÜŞÜRMEYECEK kadar
- * büyük olmalı: 166 / 3.78 ≈ 43.9 px. Kapı bunu her koşuda doğruluyor.
+ * Rozetlerin ekranda çizileceği YÜKSEKLİK (px) — İKİSİ DE; genişlik orandan
+ * gelir. 24 Eylül 2026 kullanıcı kararı, gerekçe yukarıda. Apple'ın
+ * "≥ 40 px" sınırının üstünde; kapı bunu her koşuda doğruluyor.
  */
-export const BADGE_WIDTH_PX = 166;
+export const BADGE_HEIGHT_PX = 44;
 
 /**
  * Rozetler arası boşluk (px) — clear space kuralının karşılığı.
  *
- * İki kılavuz da "yüksekliğin 1/4'ü" diyor. İki rozet artık AYNI yükseklikte
- * olmadığından ölçüt YÜKSEK OLANI (Play, ~50 px): 50/4 ≈ 13.
+ * İki kılavuz da "yüksekliğin 1/4'ü" diyor: 44/4 = 11.
  * ⚠ Elle yazılmış görünüyor ama denetimsiz DEĞİL — `verify-store-badges`
  * bu sayıyı gerçek SVG'lerden hesaplayıp karşılaştırıyor; rozet dosyası
  * ya da genişlik değişirse kapı düşer.
  */
-export const BADGE_GAP_PX = 13;
+export const BADGE_GAP_PX = 11;
 
 export type StoreKey = 'appStore' | 'googlePlay';
 
@@ -110,6 +116,35 @@ export type StoreBadge = {
  *
  * ⚠ App Store ÖNCE. Bu Apple'ın yazılı kuralı; yeniden sıralama.
  */
+/**
+ * App Store uygulama kimliği — **tek kaynak**.
+ *
+ * İKİ yerde kullanılıyor: aşağıdaki vitrin adresi ve Safari'nin kendi
+ * "Smart App Banner"ı (`<meta name="apple-itunes-app">`). Banner statik
+ * HTML'e yazıldığından (`index.html` ve `src/legal/render.tsx`) sayı orada
+ * elle duruyor; `npm run verify-store-badges` ikisinin de buradaki değerle
+ * eşleştiğini kilitliyor — bu projede "iki kopya sessizce ayrışır" en sık
+ * tekrarlayan hata sınıfı.
+ */
+export const APPLE_APP_ID = '6809809788';
+
+/**
+ * Safari'nin Smart App Banner `<meta>` etiketi — yayında DEĞİLSE `null`.
+ *
+ * Rozetlerle AYNI kapıya bağlı (`url === null` → hiç render etme): yayında
+ * olmayan bir uygulamaya banner koymak kullanıcıyı boş bir App Store
+ * sayfasına yollar.
+ *
+ * ⚠ Banner YALNIZCA Safari'de çıkar — uygulama içi tarayıcılarda
+ * (Instagram/Facebook) ve Chrome'da görünmez, bu yüzden mağaza rozetlerinin
+ * YERİNİ TUTMAZ, onlara ek bir katmandır.
+ */
+export function appleSmartAppBannerMeta(): string | null {
+  const appStore = STORE_BADGES.find((b) => b.key === 'appStore');
+  if (!appStore?.url) return null;
+  return `<meta name="apple-itunes-app" content="app-id=${APPLE_APP_ID}" />`;
+}
+
 export const STORE_BADGES: StoreBadge[] = [
   {
     key: 'appStore',
@@ -124,18 +159,87 @@ export const STORE_BADGES: StoreBadge[] = [
     // ⚠ Marketing Tools'un verdiği `?itscg=…&itsct=apps_box_link&…` izleme
     // kuyruğu BİLEREK atıldı — o token aracın kendi bağlamı için üretildi,
     // sitedeki kalıcı bir rozetin bağlamı değil (kullanıcı kararı).
-    url: 'https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id6809809788',
+    url: `https://apps.apple.com/app/kelimeki-t%C3%BCrk%C3%A7e-kelime-oyunu/id${APPLE_APP_ID}`,
     asset: '/app-store-badge.svg',
     alt: "App Store'dan indirin",
   },
   {
     key: 'googlePlay',
-    // Play production sürümü incelemede (13 Eylül 2026'da gönderildi).
-    url: null,
+    // ✅ 24 Eylül 2026: production gönderimi #19 (1.1.0/665) 17:44'te yayında;
+    // vitrin OTURUM AÇMADAN (gizli sekme) açılıyor ve "Erken Erişim" etiketi
+    // YOK — kullanıcı ölçtü (bu ortamın vekili play.google.com'u engelliyor).
+    // ⚠ Adres bilerek `hl=` parametresiz: Play dili ziyaretçiye göre seçer.
+    url: 'https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki',
     asset: '/google-play-badge.svg',
     alt: "Google Play'den indirin",
   },
 ];
+
+/**
+ * Bu CİHAZIN mağazası — yayında değilse (ya da masaüstüyse) `null`.
+ *
+ * `AppStoreStrip` (standalone moddaki kendi şeridimiz) bunu kullanıyor:
+ * iOS'ta App Store, Android'de Play. **Masaüstünde `null`** — orada kurulacak
+ * yerel bir uygulama yok, kurulu PWA zaten son hâli.
+ *
+ * Play'in URL'si 24 Eylül 2026'ya kadar `null`dı ve şerit Android'de hiç
+ * çizilmiyordu; URL dolunca kendiliğinden belirdi (rozetlerle AYNI kapı).
+ *
+ * ⚠ Cihaz tespiti `getDeviceType()`ten gelir, KENDİ UA testİNİ YAZMA —
+ * iPadOS 13+ Safari kendini `Macintosh` diye tanıtıyor ve elle yazılan bir
+ * `/iPhone|iPad/` testi iPad'i KAÇIRIYOR (vaka: silinen `AddToHomeScreen`in
+ * başlığı, 14 Eylül 2026 — bkz. docs/decisions/components.md).
+ */
+export function storeForDevice(cihaz: 'ios' | 'android' | 'desktop'): StoreBadge | null {
+  if (cihaz === 'desktop') return null;
+  const key: StoreKey = cihaz === 'ios' ? 'appStore' : 'googlePlay';
+  const badge = STORE_BADGES.find((b) => b.key === key);
+  return badge?.url ? badge : null;
+}
+
+/**
+ * Bu sayfa iOS'un GERÇEK Safari'sinde mi açık — yani Apple'ın Smart App
+ * Banner'ının (`<meta name="apple-itunes-app">`) çıkacağı tek yer mi?
+ *
+ * 24 Eylül 2026, kullanıcı: *"Apple'ın kendi banner'ı ile ikisi birlikte
+ * fazla olacak… İkisi de aynı şeyi söylüyor."* Banner tarayıcının kendi
+ * parçası, sayfa onu GÖREMEZ; ama nerede çıktığı belli: yalnızca iOS
+ * Safari'de. Ana ekrandan açılışta (standalone), Chrome/Firefox/Edge/
+ * Opera/Google uygulamasında ve uygulama-içi tarayıcılarda (Instagram,
+ * Facebook… — bunlar WKWebView, UA'larında `Safari/` bile YOK) çıkmaz.
+ *
+ * ⚠ **İki bilinen kör nokta, ikisi de "uyarı YOK" yönünde:** (1) bazı
+ * uygulamalar linki `SFSafariViewController`da açıyor; UA'sı Safari'yle
+ * BİREBİR aynı, ama Smart App Banner orada çıkmayabilir. (2) Apple'ın
+ * banner'ını ✕ ile kapatana Apple onu bir süre göstermiyor; biz de. Kullanıcı
+ * "fazla uyarı"yı "eksik uyarı"dan kötü saydı.
+ * ⚠ iPadOS 13+ Safari kendini `Macintosh` diye tanıtır — o yüzden cihaz
+ * `getDeviceType()`ten gelir, burada ayrıca iPhone/iPad ARANMAZ.
+ */
+export function isIosSafari(cihaz: 'ios' | 'android' | 'desktop', standalone: boolean, ua: string): boolean {
+  if (cihaz !== 'ios' || standalone) return false;
+  if (!/Safari\//.test(ua)) return false; // WKWebView (uygulama-içi tarayıcı)
+  return !/CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|Twitter|Snapchat|LinkedInApp|Pinterest|TikTok|musical_ly|Bytedance/.test(ua);
+}
+
+/**
+ * Mağaza şeridi (`AppStoreStrip`) gösterilsin mi — tek karar, saf.
+ * `hasAppInstall`: girişli kullanıcının `push_tokens`ta satırı var mı
+ * (`null` = bilinmiyor/misafir → yüklü DEĞİL sayılır).
+ */
+export function shouldShowStoreStrip(opts: {
+  cihaz: 'ios' | 'android' | 'desktop';
+  standalone: boolean;
+  ua: string;
+  hasAppInstall: boolean | null;
+  badges?: StoreBadge[];
+}): boolean {
+  const key: StoreKey | null = opts.cihaz === 'ios' ? 'appStore' : opts.cihaz === 'android' ? 'googlePlay' : null;
+  if (!key || !(opts.badges ?? STORE_BADGES).find((b) => b.key === key)?.url) return false;
+  if (isIosSafari(opts.cihaz, opts.standalone, opts.ua)) return false; // Apple'ınki zaten orada
+  if (opts.hasAppInstall === true) return false; // uygulama bu hesapta en az bir cihazda kurulu
+  return true;
+}
 
 /**
  * Yayındaki mağazaların Türkçe adı, bulunma ekiyle — "App Store'da",

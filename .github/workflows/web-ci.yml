@@ -217,6 +217,16 @@ jobs:
       # sınanamıyor: Setup'ın varsayılan-sekme effect'i yalnızca giriş
       # yapılmış kullanıcıda ve Supabase yapılandırılmışken çalışıyor.
       - run: npm run verify-away-return
+      - run: npm run verify-chat-read
+      # Ziyaretçi yolculuğu (`src/utils/webJourney.ts`): misafir/üye kapısı,
+      # yeniden yüklemede adım tekrarı + adım listesinin SQL kopyasıyla
+      # birebirliği (biri yeni adım alıp öteki almazsa sunucu SESSİZCE yok sayar).
+      - run: npm run verify-web-journey
+      # Huni v2 (`src/utils/funnelEvents.ts`): eski cihaz → `mevcut`, land
+      # kanalının donması, İstanbul günü, gizlilik metni sınırı (bayrak metin
+      # güncellenmeden açılamaz) + olay/platform listelerinin SQL kopyasıyla
+      # birebirliği (biri yeni olay alıp öteki almazsa sunucu SESSİZCE yok sayar).
+      - run: npm run verify-funnel-events
 
       # Kullanıcıya gösterilen hata metninin son kapısı: ham makine çıktısı
       # (504 gövdesi, SQLSTATE dökümü, PostgREST İngilizcesi) ekrana DÜŞMEZ,
@@ -232,6 +242,17 @@ jobs:
       # bugün hiç render edilmiyor (iki URL de null), tarayıcıda görülecek
       # bir şey yok.
       - run: npm run verify-store-badges
+
+      # Oturum kullanıcısının KİMLİK sabitleyicisi (`utils/authUser.ts`).
+      # 19 Eylül 2026'da canlıda ölçülen döngünün kapısı: Supabase her auth
+      # olayında alanları aynı ama kimliği YENİ bir `User` nesnesi üretiyor;
+      # koşulsuz `setUser` edilince `[user]`e bağlı dokuz effect birden
+      # koşuyor ve uygulama saniyede ~19 istek atıyordu. Duman testiyle
+      # sınanamaz: gerçek bir oturum ve arka arkaya gelen auth olayları
+      # gerekiyor, CI'da ikisi de yok.
+      - run: npm run verify-auth-user-identity
+      - run: npm run verify-sw-update-loop
+      - run: npm run verify-invite-queue
 
       - run: npm run build
 

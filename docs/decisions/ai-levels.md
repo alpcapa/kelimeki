@@ -2,7 +2,7 @@
 
 Bu dosya seviyeli YZ'nin **tasarım kaydı**: nasıl çalışıyor, hangi
 algoritma, hangi puan, neden böyle, neyle ölçüldü, neyle kilitli. Faz
-kayıtları (ne zaman ne yapıldı) `roadmap-arsiv.md` → "23 · Faz N"de;
+kayıtları (ne zaman ne yapıldı) `roadmap-arsiv-cilt-1.md` → "23 · Faz N"de;
 açık iş (saha ölçümü) `ROADMAP.md` #23'te. **Bir şey değiştirmeden önce
 buradaki "Değişmezler" ve "Kadranlar" bölümlerini oku.**
 

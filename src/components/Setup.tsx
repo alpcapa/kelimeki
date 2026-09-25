@@ -487,7 +487,7 @@ export function Setup({
     // `cloudSaves`i ile ESKİ hesabın Canlı sayılarını eşleştirip yanlış
     // sekmeyi açardı (aynı bayat-veri sınıfı).
     setLiveCounts(null);
-  }, [user]);
+  }, [user?.id]);
   // ...ve "bir kez" GİRİŞ BAŞINA değil, EKRANA GİRİŞ başına bir kez olmalı.
   // Arka planda açık kalan bir sekme/masaüstü penceresi hiç unmount olmadığı
   // için ref aylar boyunca dolu kalıyordu: kullanıcı uygulamayı öne
@@ -574,7 +574,7 @@ export function Setup({
       window.removeEventListener("focus", onForeground);
       window.removeEventListener("online", onForeground);
     };
-  }, [user, onMainViewChange]);
+  }, [user?.id, onMainViewChange]);
 
   // "Giriş Yap" / "Oyna" ikisi de anlamlı birer karar, gerçek bir "vazgeç"
   // değil — bu yüzden Escape/X, oyunu misafir olarak başlatmadan ("Oyna"
@@ -629,7 +629,7 @@ export function Setup({
     if (hedef === null) return;
     appliedLoginDefaultRef.current = true;
     if (hedef === "live") onMainViewChange("live");
-  }, [user, liveCounts, cloudSaves, onMainViewChange]);
+  }, [user?.id, liveCounts, cloudSaves, onMainViewChange]);
 
   // `shareKelimekiLink` (`src/utils/shareLink.ts`) — Setup.tsx VE karşılama
   // katmanının main.tsx'i (React DEĞİL, düz JS) AYNI fonksiyonu paylaşıyor;

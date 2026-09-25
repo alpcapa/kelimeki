@@ -44,7 +44,7 @@ taşıyor. Ölçü `SponsoredPost.tsx`te hesaplanıyor, elle yazılmıyor.
 **⚠ Play rozeti için yapılacak bir iş YOK.** Kareler `visibleStoreBadges()`
 kapısını kullanıyor: Play yayına girip `src/utils/storeLinks.ts`teki `null`
 dolduğunda kareler yeniden üretildiğinde ikinci rozet doğru sırayla (App
-Store önce) ve eşit genişlikte kendiliğinden gelir.
+Store önce) ve eşit yükseklikte kendiliğinden gelir (24 Eyl 2026'dan önce eşit genişlikti).
 
 ---
 
