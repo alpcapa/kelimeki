@@ -115,7 +115,7 @@ reddedildiğinde öğrenmek olurdu. Metin tek kaynakta (`swapLimitMessage`)
 **Sınırın sahibi UI değil reducer.** `CONFIRM_SWAP` kontrolü TEKRAR yapıyor
 — `swapSelection` state'e başka yollardan da girebiliyor (kayıttan devam,
 araya giren senkron torbayı küçültebilir). Aynı ders `docs/decisions/
-roadmap-arsiv.md`'deki taş korunumu vakasında da alınmıştı: bir değişmez,
+roadmap-arsiv-cilt-1.md`'deki taş korunumu vakasında da alınmıştı: bir değişmez,
 onu hiç bilmeyen UI koduna emanet edilmez.
 
 **⚠ YZ ve sıralama.** `play-ai-turn` tıkandığı turda rafın TAMAMINI

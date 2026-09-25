@@ -1210,7 +1210,7 @@ dondurmayı gevşetmek isterse tartışılacak şey budur.
 
 ⚠ **Bu, kapalı testin "14 gün sayacı" ile AYNI ŞEY DEĞİL** (o, test
 kullanıcısı penceresiydi; kullanıcı 6 Eylül'de haklı olarak itiraz
-etmişti — `docs/decisions/roadmap-arsiv.md` → "1.0.7 sürüm turu"). Bu,
+etmişti — `docs/decisions/roadmap-arsiv-cilt-1.md` → "1.0.7 sürüm turu"). Bu,
 inceleme süresinin kendi saati; ikisini aynı cümlede anma.
 
 ⚠ **Apple'ın onayı bu turda ağa GİRDİ — ve BİLEREK.** Yukarıdaki *"Apple'ın
