@@ -160,6 +160,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   /// Zoom tanıtım balonu (1 Eylül 2026) — açılışta bir kez karar verilir;
   /// zoom denenirse ANINDA kapanır ve bir daha hiç gösterilmez.
   bool _zoomHint = false;
+  /// Balonun kendi kendine kapanma zamanlayıcısı — `dispose`'da ve "zoom
+  /// denendi" dalında iptal edilir (sökülmüş State'te `setState` olmasın).
+  Timer? _zoomHintTimer;
 
   /// GameOver modalı bu isGameOver geçişi için zaten gösterildi mi
   /// (web gameOverDismissed'in eşleniği — kapatınca tahta görünür kalır).
@@ -314,6 +317,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     controller.removeListener(_ipucuKontrol);
     _hintTimer?.cancel();
     _dragNotifier.dispose();
+    _zoomHintTimer?.cancel();
     _zoom.dispose();
     super.dispose();
   }
@@ -716,10 +720,19 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     await flags.bumpZoomHintShown();
     if (!mounted) return;
     setState(() => _zoomHint = true);
+    // Balon kendi kendine kapanır (16 Eylül 2026) — gerekçe ve "denedi
+    // SAYILMAZ" kuralı `kZoomHintAutoHide`ın başında.
+    _zoomHintTimer?.cancel();
+    _zoomHintTimer = Timer(kZoomHintAutoHide, () {
+      if (!mounted) return;
+      setState(() => _zoomHint = false);
+    });
   }
 
   /// Kullanıcı zoom'u DENEDİ — balon kapanır ve kalıcı olarak susar.
   void _zoomDenendiIsaretle() {
+    _zoomHintTimer?.cancel();
+    _zoomHintTimer = null;
     if (_zoomHint) setState(() => _zoomHint = false);
     final storageFuture = widget.storage;
     if (storageFuture == null) return;

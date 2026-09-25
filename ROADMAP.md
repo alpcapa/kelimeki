@@ -406,11 +406,17 @@ yazılmış). Ada güvenen biri sırayı sessizce karıştırır ve — daha kö
 | 7 | #547 ham hata metinleri | ⚠ `claude/app-store-play-review-status-9wecvh` |
 | 8 | #626 gizlilik 6. bölüm + Huni v2 üye olayları | `claude/funnel-v2-privacy-text-853ycj` |
 | 8 | #601 kaynak hunisi (`app` kanalı) | `claude/frozen-port-prs-merge-cis79o` |
+| 9 | #611 filigran tavanı (#609'un port ikizi) | `claude/ipad-filigran-tasmasi` |
 
 ⚠ **#601 bu turun SEKİZİNCİSİ.** Yukarıdaki yedili sıra 21 Eylül'de
 ölçüldüğünde #601 henüz yoktu; o da aynı dondurmayı bekliyor ve en sona
 biniyor (`mobile/app/` altında yedi dosya taşıyor, yani o da mobil
 derlemeyi tetikler).
+
+⚠ **#611 DOKUZUNCU** (23 Eylül 2026, kullanıcı: *"diğerleriyle sonraki
+sürüme dahil et"*). Web ikizi #609 zaten canlıda; #611 `board_widget.dart`e
+dokunuyor, yani ROADMAP #26 (portta yükseklik bütçesi) aynı dosyada
+başlayacağı için #26'dan ÖNCE merge edilmeli.
 
 **Eşleme 22 Eylül 2026'da canlıdan ölçüldü** (`git ls-remote --heads
 origin 'refs/heads/claude/*'` + açık PR listesi): `origin`'de sekiz
@@ -508,7 +514,7 @@ tablo yeniden BOŞALIR ve tur arşive taşınır.
 testinde (Alpha) yayınlandı — gönderim ≤ 12:24, yayın ~13:42 (kullanıcı
 bildirdi). Aynı kod App Store Connect'in 1.1.0 sürüm kaydında da iliştirili,
 yani **iki mağaza ilk kez tek NUMARADA ve tek PAKETTE**. Turun tablosu
-kuralı gereği aynı gün `docs/decisions/roadmap-arsiv.md` → **"1.1.0 sürüm
+kuralı gereği aynı gün `docs/decisions/roadmap-arsiv-cilt-1.md` → **"1.1.0 sürüm
 turu"**na taşındı (ROADMAP yalnızca AÇIK maddeleri tutar). Paket künyesi ve
 sürüm notları: `mobile/docs/surumler.md` → "1.1.0 (659)".
 
@@ -532,7 +538,18 @@ sürümün içeriği:**
 |---|---|---|
 | (12 Eyl) | **Oyun sonu kutlaması** — ilk galibiyet (girişli) / ilk puan + giriş çağrısı (misafir) | ⚠ **SÜRÜME BİNİYOR:** `util/onboarding.dart` · `storage/flags_store.dart` · `data/stats_api.dart` (`wins` alanı) · `ui/game/game_over_modal.dart` · iki oyun ekranı (+ web ikizi `utils/onboarding.ts` · `GameOver.tsx` · `App.tsx` · `OnlineGameScreen.tsx`). Karar saf fonksiyonda, İKİ dal AYNI şeyi ölçmüyor (girişli: GALİBİYET + hesabın `wins`i; misafir: PUAN + cihaz bayrağı) — gerekçe `docs/decisions/onboarding.md`. Kapılar: `npm run verify-tutorial-script` (dokuz vaka + CTA içermesi) · `tutorial_parity_test.dart` (metin paritesi); **846 test yeşil**. ⚠ Port farkı: portta oyun ekranından açılan giriş penceresi yok → misafir metni düz, web'de buton. Cihaz listesi `TESTING.md` §13.7 |
 | (12 Eyl) | **Bağlamsal ipucu tavanı 2 → 1** (ipucu başına) | ⚠ **SÜRÜME BİNİYOR:** `util/onboarding.dart` (+ web ikizi `src/utils/onboarding.ts`). Kullanıcı kararı: *"İlk defa oynayan kişiye oyun sırasında çıkan max 6 gösterim iyi bir deneyim değil. Onu her bir mesaj için 1 kere olacak şekilde düzelteceğiz."* Üç ipucu × tavan 2 = **6 balon**du, artık en fazla **3**. Tavanın ipucu BAŞINA olması ve sıranın sabitliği (`vergi › carpan › bolge`) DEĞİŞMEDİ. Değer iki tarafta da sabitten okunuyor (testler/doğrulayıcı hard-code etmiyor), parite `tutorial_parity_test.dart` ile kilitli. Kapı: `npm run verify-tutorial-script` yeşil |
+| (15 Eyl) | **YZ robot avatarı iPhone/iPad'de ortalı değildi** | ⚠ **SÜRÜME BİNİYOR:** `ui/game/player_avatar_row.dart`. Apple Color Emoji'nin mürekkebi kendi kutusunda ortalı değil (advance ≈ 1,26 em, mürekkep 1,0 em ve sola yaslı); `Container(alignment: center)` kutuyu ortalıyor, mürekkebi değil. Kullanıcının ekran görüntüsünden daire maskesiyle ÖLÇÜLDÜ, dört yalıtık robotta birebir: **yatay −0,131 em · dikey +0,083 em**. Telafi aynı değerin tersi, YALNIZCA Apple platformlarında (Linux/Noto ölçümü 0,00 em → Android'de sapma yok). Kapı: `avatar_emoji_nudge_test.dart` (3 test; ⚠ piksel ölçmez — cihaz maddesi `mobile/TESTING.md` §29). **858 test yeşil**. Web ikizi bilerek dışarıda (ölçülmedi, telafisi CSS'e girer). Kayıt: Parça 210 |
+| (15 Eyl) | **App Store ürün sayfası dili "EN English" görünüyordu** | ⚠ **SÜRÜME BİNİYOR:** `ios/Runner/Info.plist` + `Runner.xcodeproj/project.pbxproj`. Apple bu satırı Connect'ten değil PAKETTEN okuyor (`CFBundleLocalizations`, yoksa `CFBundleDevelopmentRegion`); ikisi de `flutter create` varsayılanındaydı (`en`). Artık `tr`. ⚠ Yalnızca YENİ derleme işlenince etkisini gösterir; Connect'te tıklanacak düğme yok. ⚠ Uygulama İÇİ yerelleştirme ayrı iş ve AYNI GÜN yapıldı: `flutter_localizations` + `MaterialApp` delegeleri + `supportedLocales: [tr]` (Parça 209) — öncesinde metin seçme menüsü/semantik etiketler İngilizceydi; `GlobalCupertinoLocalizations` olmadan hata YALNIZCA iPhone'da görünürdü. Kapı: `test/localization_test.dart` (3 test, ikisi duyarlılık kanıtlı); **855 test yeşil**. Kayıt: Parça 208-209 + `marketing/app-store/console-formlari.md` §17 |
+| (15 Eyl) | **Oyun ORTASINDA giriş: ad "Misafir" kalıyor + bulutta HAYALET "Devam Eden Oyun"** | ⚠ **SÜRÜME BİNİYOR:** `game/game_session_host.dart` (YENİ) + `ui/setup/setup_screen.dart`. Kullanıcı cihazda bildirdi (1.1.0/665, `Derleme 9c62289`): bitiş ekranı "Misafir" diyor, Setup'ta aynı oyun girişin yapıldığı ANIN skorlarıyla listede kalıyor. Kök sebep web'de VAR olan iki effect'in portta hiç yazılmamış olması (mid-game `RENAME_PLAYER` + autosave hedefinin `user`a bağlı olması); ayrıca Setup'ın auth dinleyicisi oyun ekranı açıkken `migrateGuestSave` koşturup ikinci satırı doğuruyordu (kapı: `_gameRouteOpen`). **Web'de değişiklik YOK.** Kapılar: `game_session_host_test.dart` (5 test) + `setup_screen_test.dart` → "oyun ekranı AÇIKKEN giriş… TEK bulut satırı"; duyarlılık iki yönde de kanıtlandı; **852 test yeşil**. Kayıt: Parça 207 + `docs/decisions/local-game-persistence.md`. Cihaz maddesi: `mobile/TESTING.md` §28 |
+| (13 Eyl) | **Ham hata metinleri kullanıcıya gösteriliyordu** — `{"message":"Gateway Timeout"}` | ⚠ **SÜRÜME BİNİYOR:** yeni `util/error_message.dart` + sekiz çağrı yeri (`auth_modal` · `reset_password_modal` · `account_settings_modal` · `delete_account_modal` · `chat_modal` · `feedback_modal` · `online_game_screen` · `friends_api`) + `main.dart` (telemetri bağı). Kullanıcı App Store ekran kaydı çekerken giriş penceresinde YAKALADI. Web ikizi aynı PR'da (`src/utils/errorMessage.ts` + `api.ts`'te 45 satır `rethrowSupabase`e çevrildi — SQLSTATE yolda düşüyordu). ⚠ Sunucunun Türkçe redleri (P0001: "Sıra sende değil.") KORUNUYOR, en büyük regresyon riski oydu. Kapılar: `npm run verify-error-messages` (66 kontrol) · `error_message_parity_test.dart` (22 test); **868 test yeşil**. Kayıt: `docs/decisions/telemetry.md` → "Ham hata metni" |
 | (12 Eyl) | Canlı oyunda rafın üstündeki **mesaj satırı yazı ölçeğinde kesiliyordu** | ⚠ **SÜRÜME BİNİYOR:** `ui/live/online_game_screen.dart` — `SizedBox(height: 30)` + `maxLines: 2` → `ConstrainedBox(minHeight: 30)`, `maxLines`/`ellipsis` kaldırıldı. Kullanıcı iPhone'da ekran görüntüsüyle bildirdi (2. satır yarım). ⚠ **Android'de de vardı** — dosya tek, `textScaler` iki platformda da sistemden geliyor. ⚠ **Aynı hata 2 Eylül 2026'da YEREL ekranda düzeltilmişti** (`game_screen.dart` + `message_line_test.dart`); Canlı ikizi o turda atlandı — kök `CLAUDE.md`'nin "ikisi deseni paylaşıyor" çiftinin bir kez daha kaçırılması. Web ikizi ZATEN doğruydu (`min-h-[30px]`, iki ekranda da), yani web'de değişiklik YOK. Kapı: `online_game_screen_test.dart` → "mesaj satırı ölçekte kesilmez" (ölçek 1,0 + `kMaxTextScale`), duyarlılığı kanıtlandı (+10 px ile düşüyor); **845 test yeşil**. Kayıt: Parça 203, cihaz maddesi `mobile/docs/testing-ux-turlari.md` §25 |
+| (16 Eyl) | **Oyun bitiş telemetrisine `platform` damgası** | ⚠ **SÜRÜME BİNİYOR:** `data/games_api.dart` → `logGameFinish` artık `game_finishes`e `'platform': currentPlatform` yazıyor. Web yarısı + sunucu 16 Eylül'de `main`'e girdi (PR: admin paneli açılır tabloları); bu PR o işin **port ikizi** ve kullanıcı kararıyla AYRI bırakıldı — *"Mobile dokunma"*, inceleme dondurması sürüyor. Admin panelindeki "Oyun Sayısı" grafiğinin platform kırılımını (Web/iOS/Android/Diğer) besleyen tek alan — **bu PR merge edilene kadar app'ten biten her oyun "Diğer" kovasında görünür**, sunucu tarafı hazır olmasına rağmen. Kolon + geriye doldurma canlıda uygulandı (`20260916054513_game_finishes_platform`; geçmişin %71'i `games`ten kurtarıldı). Davranış değişikliği YOK, yeni izin/veri sınıfı YOK (`games.platform` aynı değeri zaten aylardır yazıyor). Kararlar: `docs/decisions/admin-panel.md` → "Açılır tablolar + üç grafiğin kaldırılması"; cihaz maddeleri `docs/testing-admin.md` §9.17 |
+| (16 Eyl) | **Kayıt onayı: kırmızı uyarı BÜYÜK+kalın · onay linki pencereyi kapatıyor** — port yarısı | ⚠ **SÜRÜME BİNİYOR** (⛔ PR henüz merge EDİLMEDİ — Play production incelemesi/665 dondurması): `ui/auth/auth_modal.dart` (mesajın eylem cümlesi `Text.rich` ile kalın+BÜYÜK; `AuthService` dinleyicisiyle oturum açılınca pencere kendini `pop` ediyor) · `app/test/signup_test.dart` (İKİ yeni widget testi). **Web yarısı AYRI PR (#561) ve merge edildi**, yani hata web'de düzeldi, mobilde ancak bu sürümle düzelir. ⚠ Port farkı bilinçli: web'de pencere bir BİLEŞEN (efekt kapatıyor), portta bir ROTA — kapanma yalnızca *"oturum yokken açıldı"* geçişinde tetikleniyor (`_oturumVardi`), çünkü mount anında koşulsuz bir `pop` pencereyi değil SAYFAYI kapatırdı (widget testleri modalı doğrudan `Scaffold` gövdesine gömüyor). Duyarlılık kanıtlandı: dinleyici susturulunca yeni test düşüyor. Kayıt: Parça 211, cihaz maddesi `mobile/TESTING.md` §30 |
+| (17 Eyl) | **504 geçici sunucu hatası yeniden denenir + oturum kapısı** | ⚠ **SÜRÜME BİNİYOR:** `util/offline_notice.dart` (`isTransientServerError`) + `data/online_games_api.dart` (`_fetchWithRetry` · `load()` rapor kapısı · gateway `hasValidSession`). Admin panelindeki `client_errors` yığılmasından çıktı: 62 kaydın 11'i `online_games_repo.load` → 504 (android 9 · ios 2, 8 cihaz). Sunucu ELENDİ (aynı RPC en ağır kullanıcıda 12,7 ms), kusur sınıflandırmadaydı — 504 taşıma kalıplarına uymadığı için tekrarlanmıyor ve telemetriye düşüyordu. İkinci iş: oturumu düşmüş istemcinin yetki hatası artık raporlanmıyor (web `reportLiveListError` paritesi); oturum VARKEN gelen aynısı raporlanmaya devam ediyor. Web yarısı 17 Eyl'de `main`'e girdi (#578). Kapı: `live_games_test.dart` dört yeni vaka, duyarlılığı kanıtlandı |
+| (16 Eyl) | **Zoom tanıtım balonu 4 sn sonra kendi kendine kapanır** | ⚠ **SÜRÜME BİNİYOR:** `ui/game/board_zoom.dart` (`kZoomHintAutoHide`) + iki oyun ekranı (`game_screen.dart` · `online_game_screen.dart`). Oyuncu bildirdi: *"tanıtımdan sonra zoom özelliği için sürekli kalan uyarı mesajı oyun oynamayı zorlaştırıyor... 3-5 saniye sonra gidecek şekle getirelim. İnsanlar okumuyor."* Öncesinde balonu kapatan TEK şey zoom'u denemekti. ⚠ Kapanma **"denedi" SAYILMAZ** (`markZoomTried` çağrılmaz), yani tavan 2 kuralı DEĞİŞMEDİ — denemeyen oyuncu balonu ikinci açılışta yine görür. Web yarısı ayrı PR'da (`ZOOM_HINT_AUTO_HIDE_MS`, aynı gün `main`'e girdi); bu PR port ikizi ve inceleme dondurması yüzünden AYRI bırakıldı. Kapı: `zoom_hint_test.dart` → "balon KENDİ KENDİNE kapanır" (erken kapanmayı da ölçüyor) |
+| (14 Eyl) | **Taş değiştirme sınırı: torbada kalandan fazlası değiştirilemez** — port yarısı | ⚠ **SÜRÜME BİNİYOR** (⛔ PR henüz merge EDİLMEDİ — mağaza incelemesi/665 dondurması): `kelimeki_core/lib/src/constants.dart` (`maxSwapCount` + `swapLimitMessage`) · `kelimeki_core/lib/src/engine/reducer.dart` (seçim anı + `_confirmSwap` ikinci kapısı + `_aiPlay` dilimi) · `app/test/swap_limit_parity_test.dart` (YENİ) · `kelimeki_core/test/run_all.dart` (`testSwapLimit`). Kullanıcı raporu (Asnmzr): torbada 4 taş kalmışken 7 taş değiştirilebiliyordu. ⚠ **Web + sunucu yarısı AYRI PR (#553) ve sunucu ZATEN CANLIDA** (migration `20260914152808` + `play-ai-turn` v10) — yani **Canlı oyun eski pakette bile doğru davranıyor, YEREL oyun ancak bu sürümle düzeliyor**. Golden vector'lar DEĞİŞMEDİ (mevcut senaryoların hiçbiri bu yola girmiyordu); Dart core 6883 → **6890** kontrol, duyarlılık düzeltme geri alınarak kanıtlandı (5 hata). Kayıt: Parça 206, cihaz maddesi `mobile/TESTING.md` §27 |
+| (22 Eyl) | **Kaynak Hunisi'nde app görünür oldu** — huninin DÖRT adımı da damgalanıyor | ⚠ **SÜRÜME BİNİYOR:** `data/device_stamp.dart` (YENİ) · `data/visits_api.dart` (YENİ) · `data/games_api.dart` (`game_starts`/`game_finishes` artık `anon_id`+`utm_source` yazıyor) · `data/auth_service.dart` (kayıtta `utmSource`) · `bootstrap.dart` · `ui/app.dart`. Kullanıcı bildirdi (*"bilinmeyen 1, üye 20 — %2000 conversion not possible"*) ve asıl işi istedi: *"Kaynak belliyse onun altına girecek… bilinmemesi mümkün olmamalı çünkü ya web'den direkt gelmiştir ya da app'den"*. Öncesinde port dört adımın HİÇBİRİNDE damgalamıyordu; app'in tabloya kattığı tek şey 20 damgasız üyeydi. Kaynak `'app'` (deep link'ten gerçek `?ref=` gelirse O kazanır). Web ikizi bu PR'dan DÜŞTÜ: #625 (24 Eyl) `app`i zaten **Mobil Uygulama** kanalına eşliyor ve huniyi Üye Kalitesi kohortuna indirdi; port damgası olmazsa yeni app kayıtları orada `Bilinmiyor`a düşer. Sunucu: `20260922070950_guest_visits_app_rows_out_of_web_breakdowns` CANLIYA UYGULANDI (app satırları web'e özgü iki dökümden eleniyor). ⚠ Gizlilik metni değişmedi — zaten platform-nötr kapsıyor (gerekçe: `docs/decisions/admin-panel.md`). Kapı: `test/source_stamp_test.dart` (9 vaka). Cihaz maddesi `mobile/TESTING.md` §32 |
+| (23 Eyl) | **iPad yatayda filigranlar tahtadan taşıyordu** (köşe rakamı + "X2") | ⚠ **SÜRÜME BİNİYOR:** `ui/game/board_widget.dart` — punto ekran genişliğinden geliyordu, iPad yatayda tahta YÜKSEKLİĞE sığdırıldığı için punto tavanda (220/165) kalırken tahta küçülüyordu. Punto artık tahtanın kendi genişliğiyle de sınırlı (oran web'in 320 px'teki oranı: 0,371 / 0,279), telefonda tavan devreye girmiyor → web paritesi aynen. Web ikizi #609'da CANLIDA (taşma web'de görülmüştü: ana ekran uygulaması, iPad yatay). Portta bugün tahta yalnızca genişlikten boyutlandığı için etkisi Split View'le sınırlı; asıl işlevi **#26'nın (yükseklik bütçesi) ön koşulu** olmak. Kapı: `board_render_test.dart` → "filigran tahtadan taşmaz — iPad yatay" (düzeltme olmadan düşüyor); **847 test yeşil** |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
@@ -560,7 +577,7 @@ git log --oneline <mağazadaki-paketin-commiti>..origin/main -- mobile/app mobil
 Console erişimi YOK. 6 Eylül 2026'da iki yanlış hüküm kuruldu (uydurma bir
 "14 gün sayacı sıfırlanır mı" gönderim kapısı ve "12 tavan mı" sorusu için
 gerçekleşmesi imkânsız bir ayırt etme yöntemi). Kayıt:
-`docs/decisions/roadmap-arsiv.md` → "1.0.7 sürüm turu".
+`docs/decisions/roadmap-arsiv-cilt-1.md` → "1.0.7 sürüm turu".
 
 **Test penceresi:** 7 Eylül itibarıyla **12. gün**, 14. gün ≈ 10 Eylül.
 "Kalan günlere ne konsun" tartışması KAPANDI: seviyeli YZ (#23 Faz 0-4) aynı
@@ -728,7 +745,7 @@ yanlış red. Vergide ham 10 sapmanın 7'si harness'ın kendi varsayımı (tesli
 bayrağını oyun sonu snapshot'ından okuyordum), 3'ü 24 Ağustos "iletken hücre"
 kural değişikliğinden önceki hamleler — üçünde de ESKİ kural kayıtlı değeri
 birebir üretiyor. Açıklanamayan sapma: **0**. Ayrıntı:
-`docs/decisions/roadmap-arsiv.md` → "Temizlik geçişi"nin ardındaki bölüm.
+`docs/decisions/roadmap-arsiv-cilt-1.md` → "Temizlik geçişi"nin ardındaki bölüm.
 
 **AÇIK KALAN İŞ — zorlama fazı:**
 1. `move_shadow_diffs`i **`move_shadow_coverage` ile BİRLİKTE** oku. Boş
@@ -827,7 +844,7 @@ YOK (arandı) — yani düzeltme tek noktada.
 
 2. geçişin (**hata avı**), 3. geçişin (**performans**) ve 4. geçişin
 (**temizlik**) tam anlatıları — bulgular, ölçümler, "zemin sağlam"
-listeleri ve dersleri — `docs/decisions/roadmap-arsiv.md`'ye taşındı;
+listeleri ve dersleri — `docs/decisions/roadmap-arsiv-cilt-1.md`'ye taşındı;
 başlıklar ("Hata avı geçişi — KAPANDI", "Performans geçişi — KAPANDI",
 "Temizlik geçişi — KAPANDI") değiştirilmedi. Yukarıdaki geçiş tablosu canlı
 indeks olarak burada kaldı. **Dört geçiş de kapandı**; incelemeden açık
@@ -1087,7 +1104,7 @@ Sırası önemli olan tek bağ: **#4, #2'den SONRA** (hesap silme kaskadı
    değişen bir şey YOK"* diye kapatmıştı; bu satır o güne kadar geriye
    dönük olarak bayat kaldı.
 3. ✅ **Madde 1 — deep link: KAPANDI** (30 Ağustos 2026, Faz 3'te ölçüldü;
-   SAHADA 1.0.3 ile). Madde arşivde: `docs/decisions/roadmap-arsiv.md` →
+   SAHADA 1.0.3 ile). Madde arşivde: `docs/decisions/roadmap-arsiv-cilt-1.md` →
    *"1. `kelimeki://` deep link kanalı"*. **Numara bilerek duruyor** —
    arşivdeki madde buraya (`0.B/3`) atıf yapıyor.
    ⚠ Bu satır 2 Eylül 2026'ya kadar bayat kaldı: hâlâ *"kayıt onayı maili
@@ -1604,7 +1621,7 @@ verilen yerler ölçüm, "tahmin" yazanlar tahmin).
 ### 23.1-23.4 ve 23.6 → **ARŞİVDE** (8 Eylül 2026)
 
 Etki haritası, karar noktası (B), Faz 0-5 özetleri, tuzaklar ve Faz 5
-başlangıç kiti `docs/decisions/roadmap-arsiv.md` → *"23 · Plan gövdesi"*ne
+başlangıç kiti `docs/decisions/roadmap-arsiv-cilt-1.md` → *"23 · Plan gövdesi"*ne
 taşındı. Hepsi kapandı: karar verildi, kod yazıldı, canlıya çıktı.
 Tasarım kaydı: `docs/decisions/ai-levels.md`.
 
@@ -1641,7 +1658,7 @@ değişir (web · Dart · Edge) ve `verify-edge-engine-parity` ayrışmayı yaka
 
 ---
 
-## 26. Web'den mağazalara yönlendirme — **APPLE YARISI ✅ YAPILDI · ANDROID YARISI BEKLİYOR** (15 Eylül 2026)
+## 26. Web'den mağazalara yönlendirme — **APPLE YARISI ✅ (15 Eyl) · ANDROID YARISI ✅ · PWA kutusu KALDIRILDI (24 Eyl 2026) · manifest satırı AÇIK**
 
 Kullanıcı isteği: *"web'de çıkan 'Add to homescreen' sadece web'de kalmalı.
 Android ve iOS'dan gelenleri Store'lara yönlendirmek gerekecek. Bir de
@@ -1699,9 +1716,14 @@ Apple'ın oranı `~3.0` diye VARSAYILMIŞTI ama Türkçe rozet **3.78:1**.
 Hizalama genişliğe çevrildi, kapı iki dosyayı da okuyacak şekilde yeniden
 yazıldı. Ayrıntı: `src/utils/storeLinks.ts`.
 
-**ANDROID YARISI HÂLÂ AÇIK** — Play production sürümü incelemede. Vitrin
-açılınca `googlePlay.url` doldurulur, rozet kendiliğinden yanına gelir
-(bileşen tek rozetle de çalışıyor, kapıda ölçülü). Kayıt:
+**✅ ANDROID YARISI YAPILDI (24 Eylül 2026)** — Play production #19
+(1.1.0/665) 17:44'te yayında; vitrin gizli sekmede açıldı, *Erken Erişim*
+etiketi yok (kullanıcı ölçtü, bu ortamın vekili Play'i engelliyor).
+`googlePlay.url` dolduruldu: rozet App Store'un yanına geldi, Android'de
+üstteki mağaza şeridi çıkıyor ve aşağıdaki `AddToHomeScreen` satırının
+Android yarısı AYNI PR'da yapıldı (`decideAppPromo`). Pixel 7
+emülasyonunda ölçüldü: şerit 1, PWA kutusu 0, iki rozet 166 px genişlikte
+(Apple 44 · Play 49 px yükseklik). Kayıt:
 `mobile/docs/surumler/gonderimler-ios.csv` satır 12-13.
 
 ⚠ **Ve ölçümü KENDİ Play hesabınla yapma** (13 Eyl 2026, yaşandı): geliştirici
@@ -1754,7 +1776,7 @@ ilerlemiyor (10 Eylül ölçümü); o yarı yayını bekliyor.
 | Kural | Kaynak |
 |---|---|
 | App Store **ilk** (solda) | Apple, yazılı: *"Place the App Store badge first in the lineup of badges."* |
-| Play rozeti **aynı boy ya da daha büyük** | Google, yazılı: *"make sure the Google Play badge is the same size or larger"* |
+| Play rozeti **aynı boy ya da daha büyük** | Google, yazılı: *"make sure the Google Play badge is the same size or larger"*. ⚠ 24 Eyl 2026: iki rozet **eşit YÜKSEKLİKTE** (kullanıcı: *"Aynı boy olmaları gerekmiyor mu?"*); "size" yükseklik olarak okunuyor, genişlikte Play ~%11 dar. 15-24 Eyl arası eşit genişlikti. Gerekçe `storeLinks.ts` |
 | Clear space = yüksekliğin **1/4**'ü | İKİSİ DE aynı sayıyı veriyor |
 | Ekranda min **40 px** | Apple |
 
@@ -1771,10 +1793,11 @@ sızıyor — Apple'ın dosyası da aynı adları taşıyacağından ikisi inlin
 edilirse renkleri birbirini ezer.
 
 ### Kalan yapılacaklar
-| **Yayın gelince: `storeLinks.ts`'te `null` → URL** | ⚠ Ölçüt "onay geldi" ya da Console'un "Active"i DEĞİL, vitrinin 404 vermeyi bırakması — ve ölçüm OTURUM AÇMADAN (gizli sekme). `verify-store-badges`in "bugün hiçbir rozet çizilmiyor" satırı o an bilerek DÜŞER, bakanı uyarır |
+| ✅ ~~**Yayın gelince: `storeLinks.ts`'te `null` → URL**~~ (App Store 15 Eyl · Play 24 Eyl) | ⚠ Ölçüt "onay geldi" ya da Console'un "Active"i DEĞİL, vitrinin 404 vermeyi bırakması — ve ölçüm OTURUM AÇMADAN (gizli sekme). `verify-store-badges`in "bugün hiçbir rozet çizilmiyor" satırı o an bilerek DÜŞER, bakanı uyarır |
 | Apple rozet dosyası (`public/app-store-badge.svg`) | Yayından sonra Marketing Tools'tan; yedek yol 336 MB arşivden yalnızca Türkçe SİYAH dosya |
-| `AddToHomeScreen.tsx` platforma göre dallansın | **Asıl iş burada.** Bugün `detectPlatform()` zaten `ios`/`android`/`other` ayırıyor ama üçü de aynı PWA talimatına düşüyor. Mağaza yayındaysa o platform mağazaya, değilse bugünkü PWA şeridine düşmeli — hiçbir aşamada boş ekran olmamalı. ⚠ **14 Eylül 2026'da ÖLÇÜLDÜ ve gerekçe somutlaştı:** şerit `fixed bottom-4 … z-[60]`, yani sayfa akışında DEĞİL — footer'ın üstüne biniyor ve hukuki satır ile `© Kelimeki`yi ÖRTÜYOR (390×844'te üretim derlemesinde görüldü). Bu bugün de böyle, rozetten bağımsız; ama rozet çıkınca Android kullanıcısı aynı anda **hem** *"ana ekrana ekle"* şeridini **hem** Play rozetini görecek — biri PWA'ya, öteki mağazaya, üstelik üst üste. Yani bu madde rozetlerle birlikte açılmalı, sonraya bırakılırsa çelişkili bir ekran doğar |
+| `AddToHomeScreen.tsx` platforma göre dallansın | ✅ **ANDROID YAPILDI (24 Eyl 2026):** karar tek saf fonksiyonda (`decideAppPromo`, `storeLinks.ts`) — Android tarayıcıda Play yayındaysa PWA kutusu ÇEKİLİR, yerine üstteki mağaza şeridi çıkar; kapı `verify-store-badges`. ✅ **iOS DE YAPILDI, üstelik kutu TAMAMEN kaldırıldı (24 Eyl 2026 akşam, kullanıcı: *"Ios'da da çıkmamalı, sadece app store çıkmalı… tamamen kaldırmak gerekir"*):** `AddToHomeScreen.tsx` silindi, masaüstü dahil; telefonda (tarayıcı + standalone) tek çağrı `AppStoreStrip`, `decideAppPromo` da gereksiz kaldığı için silindi. Eski açık soru: App Store yayında olduğu hâlde iOS tarayıcısında PWA kutusu hâlâ çıkıyor (Safari'nin Smart App Banner'ı üstte, yani iki zıt çağrı); bilerek dokunulmadı, çünkü Smart App Banner uygulama-içi tarayıcılarda (WhatsApp/Instagram) çizilmiyor ve orada şerit mi kutu mu sorusu ayrı. Eski metin: **Asıl iş burada.** Bugün `detectPlatform()` zaten `ios`/`android`/`other` ayırıyor ama üçü de aynı PWA talimatına düşüyor. Mağaza yayındaysa o platform mağazaya, değilse bugünkü PWA şeridine düşmeli — hiçbir aşamada boş ekran olmamalı. ⚠ **14 Eylül 2026'da ÖLÇÜLDÜ ve gerekçe somutlaştı:** şerit `fixed bottom-4 … z-[60]`, yani sayfa akışında DEĞİL — footer'ın üstüne biniyor ve hukuki satır ile `© Kelimeki`yi ÖRTÜYOR (390×844'te üretim derlemesinde görüldü). Bu bugün de böyle, rozetten bağımsız; ama rozet çıkınca Android kullanıcısı aynı anda **hem** *"ana ekrana ekle"* şeridini **hem** Play rozetini görecek — biri PWA'ya, öteki mağazaya, üstelik üst üste. Yani bu madde rozetlerle birlikte açılmalı, sonraya bırakılırsa çelişkili bir ekran doğar |
 | iOS Smart App Banner | ✅ **YAPILDI (19 Eyl 2026)** — `index.html`e eklendi. Koşulu (App Store'da yayında olmak) 15 Eylül'de §24 kapanınca sağlanmıştı ama madde dört gün açık kaldı; tetikleyen şey davetle gelen gerçek bir oyuncunun web'de oynayıp ayrılması oldu (`platform='web'`, push token yok). ⚠ Yalnızca iOS **Safari**'de çıkar — WhatsApp/Instagram'ın uygulama-içi tarayıcılarında ÇİZİLMEZ ve davet linkleri tam da oradan açılıyor; bu yüzden `/davet/:token` sayfasına AYRICA mağaza rozeti kondu (aynı PR), üstelik footer'a değil davet kartının hemen ALTINA — footer ölçümü 1153 px vermişti, kart altı 378 px (390×844, geçerli davet ekranı). ⚠ Statik SEO/hukuki sayfalar (`src/legal/render.tsx`) kendi `<head>`ini üretiyor, etiket oraya GİRMEDİ — `/nasil-oynanir/` bir kazanım sayfası, istenirse tek satır. Önceki not: `<meta name="apple-itunes-app" content="app-id=6809809788">`, App ID `marketing/app-store/console-formlari.md` §1'den. ⚠ Bu etiket bugünkü Universal Links bandının yerine geçmez, onu KAPSAR: uygulama yoksa *GET* (mağazaya), varsa *OPEN* — bugünkü bant yalnızca ikinci hâli yapıyor (bkz. 24.4) |
+| ⏳ **Android misafirde "uygulama yüklü mü"** (24 Eyl 2026, kullanıcı: *"app yüklü insanlara çıkartmama şansımız var mı?"*) | Mağaza şeridi bugün iOS Safari'de (Apple'ınki var) ve `push_tokens`ı olan üyede susuyor (`shouldShowStoreStrip`). Kalan boşluk: uygulaması yüklü **misafir**. iOS'ta web'den sormanın yolu YOK. Android'de Chrome'un `navigator.getInstalledRelatedApps()`i var: web manifestine `related_applications` (Play kimliği `com.kelimeki.kelimeki`, `prefer_related_applications` AÇILMADAN — alttaki satır) + Android uygulamasının `AndroidManifest.xml`ine `asset_statements` meta-data'sı. İkincisi `mobile/app/` → mobil derleme → **merge turundan sonra**, sıradaki mobil PR'a binebilir. Etkisi küçük: uygulaması yüklü olan kelimeki.com linkinde zaten App Links ile uygulamaya düşüyor |
 | Manifest `related_applications` + `prefer_related_applications` | ⚠ **ÖLÇMEDEN AÇMA.** Chrome'un PWA kurulumunu Play'e yönlendirmesinin standart yolu, ama masaüstü kurulumunu da bastırıp bastırmadığı bu depoda ÖLÇÜLMEDİ — açılırsa masaüstündeki çalışan davranış sessizce kaybedilebilir |
 | Doküman senkronu | `docs/decisions/components.md` → `AddToHomeScreen` notu |
 

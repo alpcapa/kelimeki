@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../bootstrap.dart';
 import '../config/version_gate.dart';
@@ -32,6 +33,26 @@ class KelimekiApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Kelimeki',
+      // Uygulama TEK dilli: Türkçe. Bu üç delege olmadan Flutter'ın kendi
+      // metinleri İngilizce kalıyordu (metin seçme menüsü "Paste", semantik
+      // etiketler, tarih/saat seçici) — uygulamanın kendi metinlerinin
+      // tamamı zaten Türkçe olduğundan ekranda karışık bir dil çıkıyordu.
+      // ⚠ `GlobalCupertinoLocalizations` DA gerekli: iOS'ta metin seçme
+      // araç çubuğunu Cupertino çiziyor ve yalnız Material delegesi
+      // konulursa menü iPhone'da İngilizce kalır.
+      // ⚠ `locale` BİLEREK sabitlenmiyor: desteklenen tek dil `tr` olduğu
+      // için Flutter'ın çözümleyicisi cihaz dili ne olursa olsun zaten ona
+      // düşüyor (eşleşme yoksa `supportedLocales.first`). Sabitlemek,
+      // ilerde ikinci bir dil eklenirse cihaz seçimini sessizce yok sayardı.
+      // ⚠ Bu, App Store ürün sayfasındaki "LANGUAGE" satırıyla AYNI ŞEY
+      // DEĞİL — o satır paketin `CFBundleLocalizations`ından okunuyor
+      // (`ios/Runner/Info.plist`, Parça 208).
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('tr')],
       // Hata telemetrisinin "hangi ekranda?" alanı — rota adları push
       // yerlerinde veriliyor, adsız rota kök sayılır (bkz.
       // `ErrorReporterRouteObserver`).
@@ -397,6 +418,12 @@ class _HomeGateState extends State<_HomeGate> with WidgetsBindingObserver {
     // kullanıcıda rozet olduğu gibi kalırdı.
     _bildirimleriTemizle();
     _guncellemeKontrol();
+    // Misafir ziyaret pingi — Kaynak Hunisi'nin "Gelen" adımı. KOŞUL YOK:
+    // "girişli mi" ve "bugün yazıldı mı" kararlarının tamamı `VisitsRepo`nun
+    // içinde, tek yerde (bir ekranın koşulu yanlış kopyalaması bu sayede
+    // imkânsız). Fire-and-forget: açılışı ASLA geciktirmez.
+    final visits = widget.services.visits;
+    if (visits != null) unawaited(visits.pingGuestVisit());
     // ⚠ `_oyunLinkiniIsle` BURADA çağrılmıyor: `_showIntro` hâlâ null
     // (karar verilmedi) ve işleyici bilerek bekletirdi. Çağrı, kararın
     // verildiği HER dalda — aşağıdaki üçü + `_finishIntro` + dinleyiciler.

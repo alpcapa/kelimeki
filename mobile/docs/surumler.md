@@ -546,7 +546,7 @@ commit var, ama mağazaya giden ikiliye dokunan tek iş **#525**:
 - [x] Kütük + "Gönderim geçmişi" + "İnceleme süresi" tabloları ve iki
       Android CSV'si güncellendi; **1.1.0 (627)** pasife çekildi.
 - [x] `ROADMAP.md` → "Sıradaki sürüme binecekler" tablosu
-      `docs/decisions/roadmap-arsiv.md` → **"1.1.0 sürüm turu"**na taşındı
+      `docs/decisions/roadmap-arsiv-cilt-1.md` → **"1.1.0 sürüm turu"**na taşındı
       (satırlar değişmeden).
 - [ ] **Console'un KENDİ saatleri ve Submission ID** — okunmadı. Okunursa
       yukarıdaki üç tablodaki `~` ve `≤` işaretleri gerçek ölçüme çevrilir.
@@ -748,7 +748,7 @@ Store önbelleği, sonra Internal testing kanalı (bkz.
 `build-and-distribution-log.md` → "ÇARE").
 
 **Tur kapandı:** "İnceleme süresi" tablosuna satır eklendi, 1.0.8 pasife
-çekildi, ROADMAP'teki tur `docs/decisions/roadmap-arsiv.md` → "1.0.9 sürüm
+çekildi, ROADMAP'teki tur `docs/decisions/roadmap-arsiv-cilt-1.md` → "1.0.9 sürüm
 turu"na taşındı. ⚠ Kalan TEK ölçüm cihazda: testçinin telefonunda
 `Derleme 1abde38` göründü mü (kanala girmek ≠ cihaza inmek).
 
@@ -854,7 +854,7 @@ Console'dan okunmadı**, bu yüzden "İnceleme süresi" tablosunda satırı yok.
 
 ⚠ Bu satır kütüğe **geç yazıldı** (6 Eyl akşamı, 1.0.8 hazırlanırken): 1.0.7
 PR'ı (#461) ROADMAP'i güncellemiş ama bu dosyaya dokunmamıştı; tur arşive
-taşınırken de (`docs/decisions/roadmap-arsiv.md` → "1.0.7 sürüm turu") kütük
+taşınırken de (`docs/decisions/roadmap-arsiv-cilt-1.md` → "1.0.7 sürüm turu") kütük
 atlanmıştı. "Bir sürüm yüklendiğinde ne yapılır" listesinin 1. adımı tam
 bunu önlemek için var — arşive taşımak kütüğe yazmanın yerine geçmez.
 

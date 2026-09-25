@@ -20,6 +20,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../storage/profile_cache_store.dart';
 
 import '../config/env.dart' show authRedirectUri, resetRedirectUri;
+import 'device_stamp.dart';
 
 /// `profiles` satırının bu fazda kullanılan alt kümesi (web `Profile`
 /// tipinin eşleniği; skor/lig alanları sonraki parçaların işi).
@@ -104,11 +105,18 @@ class AuthService extends ChangeNotifier {
   /// push token'ında iki kez gerçek hataya yol açtı).
   final Future<Map<String, Object?>?> Function(String userId)? _profileFetcher;
 
+  /// Kayıt damgası (`signup_utm_source`) — 22 Eylül 2026. null = damgasız,
+  /// yani ESKİ davranış (sunucu null yazar, panel `bilinmiyor` sayar);
+  /// üretimde her zaman dolu (`bootstrap.dart`).
+  final Future<DeviceStamp>? _signupStamp;
+
   AuthService(SupabaseClient? client,
       {Future<ProfileCacheStore>? profileCache,
+      Future<DeviceStamp>? signupStamp,
       Future<Map<String, Object?>?> Function(String userId)? profileFetcher})
       : _client = client,
         _profileCache = profileCache,
+        _signupStamp = signupStamp,
         _profileFetcher = profileFetcher,
         _loading = client != null,
         _profileLoading = client != null {
@@ -142,9 +150,11 @@ class AuthService extends ChangeNotifier {
     bool profileLoading = false,
     Future<ProfileCacheStore>? profileCache,
     Future<Map<String, Object?>?> Function(String userId)? profileFetcher,
+    Future<DeviceStamp>? signupStamp,
   })
       : _client = null,
         _profileCache = profileCache,
+        _signupStamp = signupStamp,
         _profileFetcher = profileFetcher,
         _user = user,
         _profile = profile,
@@ -267,6 +277,15 @@ class AuthService extends ChangeNotifier {
   }) async {
     final c = _client;
     if (c == null) throw const AuthException('Supabase yapılandırılmadı.');
+    // Damga okunamazsa kayıt AKMAYA DEVAM EDER (null → eski davranış): bir
+    // telemetri alanı bir kaydı asla düşürmemeli.
+    String? kaynak;
+    try {
+      final f = _signupStamp;
+      if (f != null) kaynak = (await f).source;
+    } catch (_) {
+      kaynak = null;
+    }
     try {
       final res = await c.auth.signUp(
         // Onay linki UYGULAMAYA dönsün — web istemcisi DEĞİŞMEZ (o zaten
@@ -284,6 +303,14 @@ class AuthService extends ChangeNotifier {
             'gender': gender,
             'birthDate': birthDate,
             'marketingConsent': marketingConsent,
+            // Kaynak Hunisi'nin "Üye" adımı (22 Eylül 2026). Web `signUp`
+            // buraya `getStoredUtmSource() ?? 'direkt'` yazıyor; port
+            // `?? 'app'` yazıyor — ikisi bilerek AYRI, yoksa app kayıtları
+            // web'in gerçek doğrudan trafiğini şişirirdi.
+            // ⚠ Anahtar adı `utmSource` (camelCase): `handle_new_user`
+            // trigger'ı metadata'yı bu adla okuyor, `utm_source` yazmak
+            // alanı SESSİZCE boş bırakır.
+            if (kaynak != null) 'utmSource': kaynak,
           },
           'signup_channel': signupChannel,
           'display_name': nickname,

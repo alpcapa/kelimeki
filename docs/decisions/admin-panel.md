@@ -794,6 +794,8 @@ anında): *"Pr aç merge et. Mobile dokunma"* — inceleme dondurması sürüyor
 **yayınlar** (`mobile-latest` ezilir, TestFlight'a build gider). `games_api.dart`in
 tek satırlık `'platform': currentPlatform` eklentisi bu yüzden ayrı bir PR'da
 bekliyor (`claude/oyun-bitis-platform-port`).
+**25 Eylül 2026:** o PR (#565) dondurma kalkınca merge edildi; bedel bir
+sonraki mağaza paketi sahaya inene kadar sürer.
 
 **Bunun ÖLÇÜLEBİLİR bedeli var ve gizlenmemeli:** o PR merge edilip yeni bir
 mağaza paketi çıkana kadar **iOS/Android serileri yalnızca Canlı oyunları
@@ -840,7 +842,7 @@ Kullanıcı isteği: *"üyeler tablosuna onay kolonu ekleyecektik"*. ROADMAP #9
 ("onaylanmamış filtresi", 23 Ağustos 2026'da onaylanmış ama kapsam dışı
 bırakılmış) aynı işin öteki yarısıydı — filtre zaten bu kolon olmadan
 kurulamıyordu, ikisi birlikte kapandı. Maddenin tam metni ve kapanış kaydı:
-`docs/decisions/roadmap-arsiv.md`.
+`docs/decisions/roadmap-arsiv-cilt-1.md`.
 
 ### Kolon neden `ConsentCell` kullanmıyor
 
@@ -1335,3 +1337,18 @@ farklı İstanbul gününde oyun bitiren) · Oyun / Üye.
   getirmemişti ve satırın yokluğu "ölçülmedi" gibi okunuyordu.
 - `admin_source_funnel` veritabanında DURUYOR ama çağrılmıyor (geri dönüş
   yolu).
+
+## Port kaynak damgası (#601) — web yarısı #625'le aşıldı (25 Eylül 2026)
+
+#601 (22 Eylül) iki yarıydı: port artık huninin dört tablosuna da kaynak
+damgası yazıyor (`data/device_stamp.dart` → `'app'`, deep link'ten gerçek
+`?ref=` gelirse o) ve web'de `app` için ayrı bir "Uygulama" kanalı +
+"Bilinmiyor satırında oran hesaplanmaz" kapısı. PR dondurmayı beklerken
+#621/#622/#625 Kaynak Hunisi'ni baştan kurdu: misafir sütunları Huni v2'ye
+gitti, kalan üye kohortu (`admin_member_quality`) `app`i "Mobil Uygulama"
+kanalına TAM eşleşmeyle zaten topluyor. Merge anında web dosyaları
+`main`'in hâliyle bırakıldı; port yarısı ve iki migration (ikisi de 22
+Eylül'den beri canlıda) girdi. Port damgası hâlâ gerekli: `backfill`
+yalnızca geçmişi `'app'` yaptı, damgasız yeni app kayıtları Üye
+Kalitesi'nde `Bilinmiyor`a düşer.
+

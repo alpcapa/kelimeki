@@ -9,6 +9,7 @@ import '../game/modal_shell.dart';
 import '../tap_target.dart';
 import '../tokens.dart';
 import '../form_input.dart';
+import '../../util/error_message.dart';
 
 const _accent = kAccent;
 const _muted = kMuted;
@@ -129,7 +130,8 @@ class _ChatModalState extends State<ChatModal> {
       await widget.onSend(trimmed);
       _controller.clear();
     } catch (e) {
-      setState(() => _error = e.toString());
+      setState(() => _error = friendlyErrorMessage(e,
+          surface: 'mesaj', fallback: 'Mesaj gönderilemedi.'));
     } finally {
       if (mounted) setState(() => _sending = false);
     }

@@ -15,6 +15,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Flutter'ın KENDİ widget metinleri Türkçe olsun diye (15 Eylül 2026).
+  # Bu olmadan `MaterialApp` yalnızca `DefaultMaterialLocalizations`a
+  # (İngilizce) düşüyordu: metin seçme menüsü "Cut/Copy/Paste", semantik
+  # etiketler, tarih/saat seçici. ⚠ iOS'ta metin seçme araç çubuğu
+  # CUPERTINO tarafından çizildiğinden `GlobalCupertinoLocalizations` da
+  # şart — yalnız Material delegesi konursa iPhone'da menü İngilizce kalır.
+  # ⚠ Bu, App Store ürün sayfasındaki "LANGUAGE" satırıyla AYNI ŞEY DEĞİL;
+  # o satır paketin `CFBundleLocalizations`ından okunuyor (Parça 208).
+  flutter_localizations:
+    sdk: flutter
   # Zaten flutter_test'in transitive bağımlılığı — tahta zoom'unun çift
   # dokunuş algılayıcısı için doğrudan bağımlılığa alındı (board_zoom.dart):
   # `clock.now()` testlerde fake_async'in sahte saatini izler, yani

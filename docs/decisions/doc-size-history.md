@@ -325,3 +325,22 @@ yasaklıyor.
 tabanının altına düşen altı baştan sona okunan dosyayı da düşürür, çünkü bir
 dosyanın BOŞALMASI da bir arıza. Ders, betik yazana: bir dosyayı yazma
 modunda AÇMADAN önce içeriğini oku — vaka bu günlüğün kendisiydi.
+
+## 25 Eylül 2026 — `docs/decisions/roadmap-arsiv.md`: cilt donduruldu (258 → 56 KB)
+
+Arşiv `reference` uyarısına (260 KB) ~2 KB uzaktaydı ve merge turu (#565 →
+… → #626) yeni kapanan maddeleri oraya taşıyacaktı. Reçetenin ilk adımı
+(bayat anlatıyı buda) yerine ikinci adım seçildi, çünkü arşivin tamamı
+kapanmış iş — "bayat" diye ayıklanacak bir katman yok, her satır bir atıfın
+hedefi. Kesme noktası dosyanın kendi yapısından geldi: İçindekiler
+tablosunun ALTI (2 Eylül'deki ilk taşımanın gövdesi, 1.0.3-1.1.0 sürüm
+turları, madde 23 fazları, incelemenin geçişleri) artık hiç değişmiyordu;
+üstü (15-24 Eylül taşımaları) değişiyordu. Alt katman satırı değişmeden
+`roadmap-arsiv-cilt-1.md`'ye gitti ve `FROZEN` listesine girdi (tavan 210
+KB). Taşınan bölümlere işaret eden 16 atıf (ROADMAP, CLAUDE, `surumler.md`,
+parça günlüğü, dört karar kaydı, Play cevap kağıdı) yeni cilde çevrildi;
+aktif ciltte kalanlara (§25, "24. FAZ C", güvenlik #19-#20, "Sayaç") işaret
+edenler bilerek DOKUNULMADI. Tek istisna `src/game/gameReducer.ts`'teki bir
+yorum (hata avı #24): motor dosyası, yalnızca bir yorum için golden/parite
+turuna sokulmadı — ciltlerin başlığındaki `grep … roadmap-arsiv*.md`
+reçetesi onu da buluyor.

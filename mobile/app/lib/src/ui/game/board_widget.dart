@@ -150,7 +150,10 @@ class BoardCoach {
   final String text;
   final String yon;
   const BoardCoach(
-      {required this.r, required this.c, required this.text, required this.yon});
+      {required this.r,
+      required this.c,
+      required this.text,
+      required this.yon});
 }
 
 class BoardWidget extends StatelessWidget {
@@ -347,8 +350,7 @@ class BoardWidget extends StatelessWidget {
                 ? ClipPath(
                     clipper: const _CardClipper(),
                     child: Transform(
-                        transform: m!,
-                        child: Padding(padding: pad, child: u)),
+                        transform: m!, child: Padding(padding: pad, child: u)),
                   )
                 : ClipPath(
                     clipper: const _BadgeCardClipper(),
@@ -601,38 +603,38 @@ class BoardWidget extends StatelessWidget {
                       ),
                     ),
                     // Zoom tanıtım balonu — MERKEZ kareyi işaret eder. Ayrı bir
-                // katman: "Buradan başla"dan bağımsız (ikisi aynı anda
-                // görünebilir, farklı köşelerdeler) ve sürükleme başlayınca
-                // ikisi de kaybolur.
-                if (zoomHint)
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: dragListenable == null
-                          ? _zoomHintBubble(screenWidth)
-                          : ValueListenableBuilder<Object?>(
-                              valueListenable: dragListenable!,
-                              builder: (context, drag, _) => drag != null
-                                  ? const SizedBox.shrink()
-                                  : _zoomHintBubble(screenWidth),
-                            ),
-                    ),
-                  ),
-                // Tanıtım balonu — zoom balonuyla AYNI geometri
-                // (`_coachBubble`), yalnızca çapa/yön/metin farklı.
-                if (coach != null)
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: dragListenable == null
-                          ? _coachLayer(coach!, screenWidth)
-                          : ValueListenableBuilder<Object?>(
-                              valueListenable: dragListenable!,
-                              builder: (context, drag, _) => drag != null
-                                  ? const SizedBox.shrink()
-                                  : _coachLayer(coach!, screenWidth),
-                            ),
-                    ),
-                  ),
-                if (startHint != null)
+                    // katman: "Buradan başla"dan bağımsız (ikisi aynı anda
+                    // görünebilir, farklı köşelerdeler) ve sürükleme başlayınca
+                    // ikisi de kaybolur.
+                    if (zoomHint)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: dragListenable == null
+                              ? _zoomHintBubble(screenWidth)
+                              : ValueListenableBuilder<Object?>(
+                                  valueListenable: dragListenable!,
+                                  builder: (context, drag, _) => drag != null
+                                      ? const SizedBox.shrink()
+                                      : _zoomHintBubble(screenWidth),
+                                ),
+                        ),
+                      ),
+                    // Tanıtım balonu — zoom balonuyla AYNI geometri
+                    // (`_coachBubble`), yalnızca çapa/yön/metin farklı.
+                    if (coach != null)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: dragListenable == null
+                              ? _coachLayer(coach!, screenWidth)
+                              : ValueListenableBuilder<Object?>(
+                                  valueListenable: dragListenable!,
+                                  builder: (context, drag, _) => drag != null
+                                      ? const SizedBox.shrink()
+                                      : _coachLayer(coach!, screenWidth),
+                                ),
+                        ),
+                      ),
+                    if (startHint != null)
                       Positioned.fill(
                         child: IgnorePointer(
                           child: dragListenable == null
@@ -764,7 +766,9 @@ class BoardWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(9),
             boxShadow: const [
               BoxShadow(
-                  color: Color(0x470F172A), offset: Offset(0, 2), blurRadius: 6),
+                  color: Color(0x470F172A),
+                  offset: Offset(0, 2),
+                  blurRadius: 6),
             ],
           ),
           child: Text(
@@ -1418,12 +1422,55 @@ class BoardWidget extends StatelessWidget {
   /// "X2" (en fazla %69) ve "X3" (en fazla %84) tavanda taşmıyordu ama
   /// %30 büyüyorlardı; üçü de aynı sınıf olduğundan üçü de sabitlendi —
   /// yalnızca taşanı düzeltmek, ikisini web'den ayrık bırakmak olurdu.
+  ///
+  /// ⚠ **Tavan: tahtanın KENDİ genişliği (23 Eylül 2026).** Punto ekran
+  /// genişliğinden geliyor, yani tahtanın ekran genişliğiyle orantılı
+  /// olduğunu VARSAYIYOR. Web'de bu varsayım #607'nin yükseklik bütçesiyle
+  /// bozuldu: iPad yatayda (ana ekran web uygulaması) punto tavanda
+  /// (220/165) kalırken tahta küçüldü ve "2" tahtanın alt kenarından, "X2"
+  /// 5×5 bölgeden taştı (kullanıcı ekran görüntüsüyle bildirdi). Web ikizi
+  /// #609'da (`Board.tsx`, `WM_*_FONT_PER_GRID` — orada `scale()` ile,
+  /// çünkü `clamp` satırı `layout_parity_test.dart`e kilitli).
+  /// Portta tahta BUGÜN yalnızca genişlikten boyutlanıyor, yani tavan
+  /// tahtanın ekrandan dar kaldığı her yerde (Split View, ROADMAP #26'nın
+  /// yükseklik bütçesi geldiğinde iPad yatay) devreye girer — #26'nın ön
+  /// koşulu. Oranlar web'in desteklediği EN DAR ekrandan (320 px: 102,4 /
+  /// 276 ve 76,8 / 276, ızgara = ekran − 44) alındı; web'in orana en çok
+  /// yaklaştığı yer orası, yani telefonda tavan hiç devreye girmez ve web
+  /// paritesi (`board_render_test` 390 px → 124,8 / 93,6) aynen kalır.
+  static const double _cornerFontPerGrid = 0.371;
+  static const double _zoneFontPerGrid = 0.279;
+
   Widget _watermarks(List<PlayerColor?> cornerColor, List<int?> cornerNumber,
       double screenWidth) {
     const cornerFrac = cornerSize / boardSize;
     const zoneFrac = (boardSize - 2 * cornerSize) / boardSize;
     final cornerFont = fluidSize(screenWidth, 80, 0, 32, 220);
     final zoneFont = fluidSize(screenWidth, 60, 0, 24, 165);
+    return LayoutBuilder(builder: (context, constraints) {
+      final grid = constraints.maxWidth;
+      final cornerFs = grid.isFinite
+          ? (cornerFont < grid * _cornerFontPerGrid
+              ? cornerFont
+              : grid * _cornerFontPerGrid)
+          : cornerFont;
+      final zoneFs = grid.isFinite
+          ? (zoneFont < grid * _zoneFontPerGrid
+              ? zoneFont
+              : grid * _zoneFontPerGrid)
+          : zoneFont;
+      return _watermarkStack(
+          cornerColor, cornerNumber, cornerFrac, zoneFrac, cornerFs, zoneFs);
+    });
+  }
+
+  Widget _watermarkStack(
+      List<PlayerColor?> cornerColor,
+      List<int?> cornerNumber,
+      double cornerFrac,
+      double zoneFrac,
+      double cornerFont,
+      double zoneFont) {
     return Stack(
       children: [
         for (var i = 0; i < 4; i++)

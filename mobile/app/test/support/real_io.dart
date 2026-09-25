@@ -42,6 +42,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// * `setup_cloud_test.dart` — `_syncCloud` → `GamesRepo.flushPending` →
 ///   `PendingQueueStore.readAll`'ın TTL süpürmesi.
 /// * `intro_screen_test.dart` — açılış bayraklarının okunması.
+/// * `setup_screen_test.dart` — "oyun ekranı AÇIKKEN giriş" testi:
+///   `GameSessionHost`un devirde başlattığı misafir-slotu silmesi (test
+///   rotayı pop etmediğinden `host.end()` onu beklemiyor, Parça 207).
 ///
 /// **`tearDown`'da depoyu kapatmak ÇÖZMEZ:** bekleyen-timer kontrolü test
 /// GÖVDESİ biter bitmez, `tearDown`'dan ÖNCE çalışıyor — gerçek zaman

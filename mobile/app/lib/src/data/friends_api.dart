@@ -29,6 +29,7 @@ import 'package:supabase_flutter/supabase_flutter.dart'
 import '../config/env.dart' show webOrigin;
 import '../util/deep_link.dart' show KFriendInviteLink, parseDeepLink;
 import '../util/offline_notice.dart' show isNetworkError;
+import '../util/error_message.dart';
 
 /// Web `FriendRelation` — iki kullanıcı arasındaki mevcut ilişki.
 enum FriendRelation { accepted, pendingOutgoing, pendingIncoming }
@@ -406,6 +407,9 @@ bool inviteAcceptKaliciRet(Object e) =>
 /// arkadaşlık uçları için web'in console.error+jenerik davranışının
 /// mobil karşılığı.
 String friendErrorText(Object e) {
-  if (e is PostgrestException) return e.message;
-  return 'Bir hata oluştu.';
+  // ⚠ `e.message` ARTIK doğrudan dönmüyor: PostgREST'in kendi İngilizce
+  // metinleri (RLS reddi, kolon hatası) ve 5xx gövdeleri de oradan geliyordu.
+  // Sunucunun bilerek yazdığı Türkçe ret (P0001) `friendlyErrorMessage`in
+  // 1. dalından zaten olduğu gibi geçiyor.
+  return friendlyErrorMessage(e, surface: 'arkadas');
 }

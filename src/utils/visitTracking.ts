@@ -229,9 +229,9 @@ export function getDeviceModel(): string | null {
  * Sayfa şu anda ana ekrana eklenip bağımsız (standalone) modda mı açık,
  * yoksa normal bir tarayıcı sekmesinde mi çalışıyor. iOS Safari
  * `navigator.standalone`, diğerleri `display-mode: standalone` media
- * query'siyle raporlar. `AddToHomeScreen` banner'ının gösterilip
- * gösterilmeyeceğine karar vermek ve misafir ziyaretlerine bu bilgiyi
- * etiketlemek (`logGuestVisit`) için ortak kullanılır.
+ * query'siyle raporlar. Misafir ziyaretlerini bu bilgiyle etiketler
+ * (`logGuestVisit`; admin "Ana Ekrana Ekleme" tablosu). "Ana ekrana ekle"
+ * kutusu 24 Eylül 2026'da kaldırıldı, yani bu artık yalnızca ÖLÇÜM.
  */
 export function isStandaloneDisplay(): boolean {
   try {

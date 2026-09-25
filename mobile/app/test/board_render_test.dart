@@ -232,6 +232,33 @@ void main() {
     expect(styleOf('X3').fontSize, closeTo(10.14, 0.01));
   });
 
+  // iPad yatay: ekran geniş (punto tavanda) ama tahta YÜKSEKLİĞE sığdırılmış
+  // küçük bir kare — web'de olmayan bir durum (web tahtası yüksekliğe göre
+  // küçülmez). 23 Eylül 2026, kullanıcı cihazda bildirdi: "2" tahtanın alt
+  // kenarından, "X2" 5×5 bölgeden taşıyordu. Punto artık tahtanın kendi
+  // genişliğiyle de sınırlı.
+  testWidgets('filigran tahtadan taşmaz — geniş ekran, küçük tahta (iPad yatay)',
+      (tester) async {
+    await setPhoneViewSize(tester, const Size(1180, 820));
+    await pumpBoardSized(tester, emptyBoardState(), 370);
+    expect(tester.takeException(), isNull);
+
+    final wm = tester.getSize(find.byKey(const ValueKey('board-watermarks')));
+    TextStyle styleOf(String s) => tester.widget<Text>(find.text(s)).style!;
+
+    final corner = styleOf('1').fontSize!;
+    final zone = styleOf('X2').fontSize!;
+    expect(corner, lessThan(220));
+    expect(zone, lessThan(165));
+    // Punto ↔ ızgara oranı web'in en dar ekranındaki (320 px) orandan büyük
+    // olamaz: 102,4 / 276 ve 76,8 / 276.
+    expect(corner / wm.width, lessThanOrEqualTo(0.3711));
+    expect(zone / wm.width, lessThanOrEqualTo(0.2791));
+    // Çizilen "X2" 5×5 bölgenin içinde kalıyor.
+    final x2 = tester.getSize(find.text('X2'));
+    expect(x2.width, lessThan(wm.width * 5 / 13));
+  });
+
   // Web'de taşlar `relative z-[5]` ile filigranın ÜSTÜNDE boyanır; portta
   // filigran ızgaradan sonra çizildiğinden taşların üstüne biniyordu
   // (17 Ağustos 2026, kullanıcı iki ekranı yan yana koyup bildirdi).
