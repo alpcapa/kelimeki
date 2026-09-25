@@ -102,6 +102,9 @@ tarayıcıda görülebilecek olanlar. **Admin hesabı gerekiyor.**
 
 ## 9.9. Admin — Kaynak Hunisi (16 Ağustos 2026)
 
+> ⚠ **24 Eylül 2026'dan beri bu tablo YOK** — yerini "Kanal → Üye Kalitesi"
+> aldı (§9.24), misafir sütunları Huni v2'ye (§9.23) geçti. Aşağısı tarihçe.
+
 "Ziyaretçi Kaynağı" tablosunun yerini aldı: kaynak → **Kişi** → **Başlayan**
 → **Üye** → **Oyun**. İlk sütun eskisiyle aynı sayı. Sunucu tarafı canlıda
 rollback'li senaryolarla doğrulandı (yetki matrisi, damgalama, write-once
@@ -115,9 +118,9 @@ gerekenler.
       "Başlayan" değeri 1 ARTMALI, "Oyun" değeri DEĞİŞMEMELİ. Bu ayrım işin
       bütün sebebi: "Oyun" yalnızca BİTMİŞ ve yalnızca GİRİŞLİ kullanıcının
       oyununu sayıyor.
-- [ ] **Aynı cihazda ikinci oyun: "Başlayan" 2, ama yüzde modunda cihaz
-      sayısı 1 kalmalı.** `%` düğmesine bas — "Başlayan" yüzdesi başlatan
-      benzersiz CİHAZ / kişi oranıdır, oyun adedi değil.
+- [ ] **Aynı cihazda ikinci oyun: Oyun görünümünde "Başlayan Oyun" 2, Kişi
+      görünümünde "Başlatan" 1 kalmalı** (24 Eylül 2026'dan beri iki görünüm
+      var; eskiden bu `%` modunun işiydi). "Oyun / Kişi" o satırda 2.0 olmalı.
 - [ ] **"Tekrar Oyna" da bir başlangıçtır.** Bir oyunu bitirip kartın
       altındaki "Tekrar Oyna"ya bas → "Başlayan" yine artmalı. (Web'de her
       iki yol da tek bir `startLocalGame` yardımcısından geçiyor; portta iki
@@ -125,36 +128,15 @@ gerekenler.
 - [ ] **Devam eden oyuna DÖNMEK bir başlangıç DEĞİL.** Yarım bırakılmış bir
       oyunu "Devam Eden Oyun" satırından sürdür → "Başlayan" ARTMAMALI.
       Artıyorsa aynı oyun her oturum dönüşünde tekrar sayılıyor demektir.
-- [ ] **"Biten" yüzdesi artık CİHAZ oranı (31 Ağustos 2026).** MİSAFİRKEN bir
-      YZ oyununu BİTİR → `%` modunda "Biten" hücresi `bitiren cihaz /
-      başlatan cihaz` göstermeli. Aynı cihazda ikinci bir oyunu daha bitir →
-      sayı modunda "Biten" 2 olmalı ama yüzde DEĞİŞMEMELİ (cihaz hâlâ 1).
-      Yüzde de artıyorsa oran yine oyun adedinden hesaplanıyor demektir.
-- [ ] ⚠ **"Biten" dolu ama yüzdesi "—" ise bu DOĞRU davranış, hata değil.**
+- [ ] **"Bitiren" KİŞİ sayar (31 Ağustos 2026 cihaz kodu, 24 Eylül 2026 sütun).**
+      MİSAFİRKEN bir YZ oyununu BİTİR → Kişi görünümünde "Bitiren" 1 artmalı.
+      Aynı cihazda ikinci bir oyunu daha bitir → Oyun görünümünde "Biten Oyun"
+      2 olmalı, Kişi görünümünde "Bitiren" DEĞİŞMEMELİ (cihaz hâlâ 1).
+- [ ] ⚠ **Oyun VAR ama "Başlatan"/"Bitiren" "—" ise bu DOĞRU davranış.**
       Cihaz kodu bitmiş tarafa 31 Ağustos 2026'da eklendi ve geriye dönük
-      doldurulamaz; o tarihten önceki bitişlerde cihaz bilgisi YOK. "0%"
-      yazmak "hiçbir cihaz bitirmedi" derdi. Aynısı mobil uygulamadan gelen
-      satırlar için de geçerli (port damgalamıyor, o satırlar zaten
-      "bilinmiyor" kaynağında). İkisi de 0 ise oran gerçekten 0'dır ve
-      "0.0%" yazar.
-- [ ] ⚠ **"Bilinmiyor" satırında "Üye" ve "Başlayan" yüzdeleri HER ZAMAN "—"
-      (22 Eylül 2026).** `%` moduna geç → o satırda iki hücre de `—` olmalı,
-      "Gelen" 0 OLMASA BİLE. Sebep: o satırın üyeleri mobil uygulamadan gelir
-      (port kayıtta damga yazmıyor), ziyaretleri ise gelemez (port
-      `guest_visits`e hiç yazmıyor) — pay ile payda ayrı kitleler. Bir sayı
-      görürsen kapı düşmüş demektir: panel bir gün **%2000,0** yazdı (20 üye /
-      `?ref=--sanitized--` ile gelmiş 1 çöp ziyaret). **Sayı modunda 20 hâlâ 20
-      görünmeli** — düzeltme veriyi gizlemiyor, yalnızca bölmeyi kapatıyor.
-- [ ] **"Uygulama" satırı (22 Eylül 2026).** Port damgalayan sürümü sahaya
-      indikten sonra: app'ten gelen kayıtlar/ziyaretler/oyunlar bu satırda
-      toplanmalı ve `%` modunda oranlar HESAPLANMALI (`—` değil — o yalnızca
-      `Bilinmiyor` satırının kuralı). ⚠ Instagram'dan gelip uygulamayı kuran
-      biri Instagram satırında KALMALI (deep link kaynağı `app`i ezer).
-      ⚠ Ana ekrana eklenen web (PWA) buraya DÜŞMEZ — o normal bir web
-      ziyareti; "Cihaz/Sürüm" tablosundaki `Uygulama (web)` başka bir şey.
-- [ ] **TOPLAM satırının "Üye" yüzdesi o 20 kaydı İÇERİR ve bu bilinçli** —
-      genel dönüşüm bir ÜST sınırdır (InfoHint yazıyor). Buradaki sayı
-      satırların ölçülebilir altkümesinden büyük çıkabilir, bu bir hata değil.
+      doldurulamaz; mobil uygulama da iki tarafa henüz yazmıyor (bugün `app`
+      satırı: 73 oyun, 0 cihaz). "0" yazmak "kimse oynamadı" derdi. Oyun da 0
+      ise hücre gerçekten 0 yazar.
 - [ ] **CSV'de "Bitiren Cihaz" sütunu var** ve ham sayı veriyor; "Biten Oyun"
       sütunundan küçük ya da ona eşit olmalı (büyükse bir şey yanlıştır).
 - [ ] **GİZLİLİK — girişliyken bitirilen oyunda cihaz kodu YAZILMAMALI.**
@@ -200,23 +182,29 @@ gerekenler.
 - [ ] **TOPLAM satırı tutuyor mu.** Üç sütunun toplamı, satırların toplamına
       eşit olmalı; "Üye" toplamı o dönemdeki yeni üye sayısıyla (Yeni Üye/Ziyaret
       grafiği) tutarlı olmalı.
-- [ ] **`% / Sayı` düğmesi dönüşümlü çalışmalı.** Tablonun sağ üstünde, "CSV
-      İndir"in yanında. Bas → üç sütun birden yüzdeye dönmeli; tekrar bas →
-      sayılara dönmeli. Aktif mod her zaman vurgulu (mavi/kalın) olmalı, yani
-      hangi moddasın bakınca anlaşılmalı.
-- [ ] **Yüzdelerin TABANI sütuna göre farklı.** "Kişi" sütunu SÜTUN payı
-      (TOPLAM satırı **100.0%**); "Üye" ve "Oyun" ise o SATIRIN "Kişi"sine
-      göre dönüşüm. Doğrulaması kolay: kişi=40, üye=6 olan bir satırda "Üye"
-      **%15.0** göstermeli.
-- [ ] **"Oyun" yüzdesi oyun ADEDİNDEN değil, OYNAYAN KİŞİDEN hesaplanmalı.**
-      Aynı satırda oyun=25 ama oynayan kişi=4 ise "Oyun" yüzdesi %62.5 DEĞİL
-      **%10.0** (4/40) olmalı. Oynayan kişi sayısını CSV'den doğrula.
-- [ ] **Kişi = 0 olan satırda oran "—" olmalı** (0.0% ya da sonsuz DEĞİL).
-      Backfill sonrası bu durumda bir satır KALMADI; kontrol etmek için
-      damgalamayan bir istemciden (mobil uygulama) bir kayıt bekle ya da
-      SQL'de tek satırlık bir örnekle rollback içinde dene.
-- [ ] **CSV düğmeden bağımsız.** Yüzde modundayken "CSV İndir" → dosyada yine
-      HAM SAYILAR olmalı (yüzde değil).
+- [ ] **`Kişi / Oyun` düğmesi dönüşümlü çalışmalı (24 Eylül 2026 — eski `% /
+      Sayı` düğmesinin yerine).** Tablonun sağ üstünde, "CSV İndir"in
+      yanında. Kişi → sütunlar Gelen · Üye · Başlatan · Bitiren; bas → Başlayan
+      Oyun · Biten Oyun · Oyun / Kişi; tekrar bas → geri. Aktif görünüm her
+      zaman vurgulu olmalı. İki birim (kişi ↔ oyun) AYNI ekranda yan yana
+      GÖRÜNMEMELİ — tablonun yeniden yapılmasının sebebi buydu.
+- [ ] **Kişi görünümünde yüzdenin tabanı HER sütunda o satırın "Gelen"i.**
+      Doğrulaması kolay: gelen=260, başlatan=29 olan bir satırda "Başlatan"ın
+      yanında **11.2%**, bitiren=4 ise "Bitiren"in yanında **1.5%** yazmalı.
+      Bir sütunun yüzdesi solundakinden büyükse (Üye hariç — ayrı ölçüm) bir
+      şey yanlıştır.
+- [ ] **"Oynayan Üye" sütunu (24 Eylül 2026) — yüzdesi ÜYE'ye göre, Gelen'e
+      değil.** Kişi görünümünde Üye ile Başlatan arasında. Arkadaş satırı
+      (90 gün) bugün **26 üye / 17 oynayan → 65.4%** gösteriyordu. Yüzde
+      ASLA %100'ü aşmamalı (kohort: pencerede üye olanlardan oynayanlar);
+      aşıyorsa sütun yine pencerede oynayan ESKİ üyeleri sayan `players`tan
+      besleniyor demektir (30 gün Arkadaş: 6 üye / 15 → %250 olurdu).
+      Yeni bir hesap aç, bir YZ oyunu BİTİR → o kaynağın "Oynayan Üye"si 1
+      artmalı; oyunu yarıda bırakırsan ARTMAMALI (`games` = bitmiş oyun).
+- [ ] **Gelen = 0 olan satırda yüzde YAZILMAZ** (yalnızca sayı; `app` satırı
+      bugün böyle — port ziyaret kaydetmiyor).
+- [ ] **CSV görünümden bağımsız.** Hangi görünümde olursan ol "CSV İndir" →
+      dosyada bütün ham sayılar (oyun VE cihaz sütunları) olmalı.
 - [ ] **CSV İndir** çalışmalı; dosyada Kaynak/Kişi/Üye/Oyun/**Oynayan Kişi**
       sütunları ve bir TOPLAM satırı olmalı.
 - [ ] **`?` popup'ı okunuyor mu.** Tanım artık tablonun altında paragraf
@@ -824,3 +812,49 @@ yalnızca ilk kez gelene gösteriliyor.
 - [ ] **`?` popup'ı (`ziyaretci-yolculugu`)** "OTURUM sayar, kişi değil",
       "adımlar bir sıra DEĞİL, bir küme" ve "Dönen = karşılama atlandı; linkle
       gelen yeni ziyaretçi de burada" uyarılarını taşımalı.
+
+## 9.23. Admin — "Huni v2" tablosu (24 Eylül 2026)
+
+Gerekçe ve kararlar: `docs/decisions/funnel-v2.md`. Kendi cihazını "yeni"
+olarak üretmek için **gizli sekme** kullan (depo boş başlar → `mevcut`
+sayılmaz). Sayılar İstanbul GÜNÜNE göre; "2+ Gün" ertesi gün kontrol edilir.
+
+- [ ] **Tablo yerinde:** Büyüme > Kullanıcı, "Kanal → Üye Kalitesi"nin ÜSTÜNDE,
+      başlık "Huni v2 (Son 30 Gün)". Satırlar platform (kalın) → kanal.
+- [ ] **Yeni cihaz:** gizli sekmede `kelimeki.com/?ref=test-huni` aç → Web
+      altında "Diğer" kanalında Land +1; kanala tıklayınca `test-huni`
+      etiketi açılmalı.
+- [ ] **Eski cihaz kohort DIŞI:** daha önce kullanılmış normal tarayıcıda
+      siteyi aç → TOPLAM değişmemeli, alttaki "Eski cihaz (kohort dışı)" +1.
+- [ ] **Oyun:** aynı gizli sekmede YZ oyunu başlat → Başlatan +1; oyunu
+      bitir → Bitiren +1 (yüzdesi Başlatan'a göre). Oyun görünümünde
+      Başlayan/Biten Oyun adetleri artmalı.
+- [ ] **Üye sütunu "—":** gizlilik metni güncellenene kadar (ROADMAP #36)
+      kayıt olmak Üye sütununu DOLDURMAMALI; tablonun altında "Üye sütunu
+      gizlilik metni güncellenince dolacak" yazmalı.
+- [ ] **2+ Gün:** gizli sekme kapanınca depo silinir, bu yüzden YENİ bir
+      tarayıcı profiliyle ilk kez gel, ertesi gün aynı profille yeniden aç →
+      o kanalın 2+ Gün'ü +1 (aynı gün ikinci açılış SAYILMAMALI).
+- [ ] **`?` popup'ı (`huni-v2`)** "KOHORT", "Eski cihaz (kohort dışı)" ve
+      "Şimdilik eksik olanlar" paragraflarını taşımalı.
+
+## 9.24. Admin — "Kanal → Üye Kalitesi" tablosu (24 Eylül 2026)
+
+Kaynak Hunisi'nin yerini aldı: yalnızca ÜYE tarafı, kohort (pencerede hesap
+açanlar, kayıt etiketine göre). Sunucu fonksiyonu canlıda çağrılıp 90 günlük
+sonuç profillerden bağımsız bir sorguyla karşılaştırıldı (Arkadaş 26/17,
+Uygulama 20/10, Instagram 9/3, Direkt 7/5 — birebir).
+
+- [ ] **Tablo yerinde:** Büyüme > Kullanıcı, Huni v2'nin ALTINDA, başlık
+      "Kanal → Üye Kalitesi (Son N …)". Sütunlar: Üye · Oynayan · 7 Günde ·
+      2+ Gün · Oyun / Üye. Gelen/Başlatan/Bitiren sütunları GÖRÜNMEMELİ.
+- [ ] **Yüzdeler Üye'ye göre** ve hiçbiri %100'ü aşmıyor.
+- [ ] **`app` etiketi "Mobil Uygulama" satırında** (Diğer'de DEĞİL).
+- [ ] **Üye getirmeyen kanal 0 ile görünüyor:** Facebook satırı (bugün hiç
+      üye getirmedi) Üye 0, Oyun / Üye "—" ile en altta; Diğer/Bilinmiyor
+      yalnızca veri varsa çıkıyor.
+- [ ] **Yeni üye:** misafirken bir oyun bitirip kayıt ol → kendi etiketinin
+      satırında Üye +1; hesapla bir oyun bitirince Oynayan ve 7 Günde +1.
+- [ ] **CSV:** Kanal, Kaynak ve beş sütun; TOPLAM satırı var.
+- [ ] **`?` popup'ı (`uye-kalitesi`)** "Neden güvenilir" ve "Misafir
+      sütunları neden yok" paragraflarını taşımalı.

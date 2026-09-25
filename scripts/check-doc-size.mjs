@@ -82,6 +82,9 @@ const FROZEN = {
   // 7 Eylül 2026: aktif cilt 200 KB'a (reference uyarı bandı) çıkınca
   // Parça 139-174 donduruldu.
   'mobile/docs/parca-log-139-174.md': 135 * KB,
+  // 25 Eylül 2026: ROADMAP arşivi 258 KB'a (reference uyarısına ~2 KB)
+  // gelince İçindekiler'in altındaki gövde (27 Ağustos – 12 Eylül) donduruldu.
+  'docs/decisions/roadmap-arsiv-cilt-1.md': 210 * KB,
 };
 
 // Yalnızca GREP'lenen başvuru dokümanları. Kural DOSYA ADINA değil, dosyanın

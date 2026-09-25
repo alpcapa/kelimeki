@@ -777,111 +777,52 @@ export interface AdminUserActivityPoint {
 }
 
 /**
- * admin_source_funnel RPC çıktısındaki tek satır (Büyüme > Kullanıcı) —
- * kaynak başına gelen → üye → başlayan → biten hunisi.
- *
- * TABLO BAŞTAN SONA MİSAFİR HUNİSİ (22 Ağustos 2026): "bir kanaldan gelip
- * HENÜZ ÜYE OLMADAN ürünü deneyen insanlar". `visitors` zaten öyleydi
- * (ziyaret kaydı yalnızca oturum kapalıyken yazılır); `starts`/`starters`
- * (`game_starts.is_guest is true`) ve `finishes` (`game_finishes.user_id is
- * null`) o gün aynı kitleye indi. Üye tarafı yalnızca `member_games`/
- * `players`ta ve o AYRI bir dimension (kayıt damgası).
- *
- * İki AYRI dimension yan yana duruyor, aralarında JOIN YOK: `visitors`/
- * `starts`/`starters`/`finishes` anonim cihaz tablolarının (`guest_visits`,
- * `game_starts`, `game_finishes`) kendi `utm_source`'undan, `signups`/
- * `member_games`/`players` ise kayıt anında profile damgalanan
- * `profiles.signup_utm_source`'tan geliyor (bkz. `20260816…_source_funnel`
- * ve `20260822…_source_funnel_finishes` migration'ları). Bu yüzden bir
- * kaynağın yalnızca ziyaretçisi ya da yalnızca üyesi olabilir.
- *
- * `'bilinmiyor'` = profil damgalanmamış (bu özellikten önceki üyeler ve
- * bugün Flutter portundan gelen kayıtlar); `'direkt'` = `?ref=` olmadan
- * web'den geliş. İkisi bilinçli olarak AYRI.
- *
- * Pencere her adıma KENDİ olay tarihinden uygulanır (kohort değil).
+ * `admin_funnel` RPC çıktısındaki tek satır — Huni v2 (Büyüme > Kullanıcı),
+ * (platform, kanal) başına. KOHORT: bütün sayılar pencerede İLK KEZ gelen
+ * (`land`) AYNI cihaz kümesinden, yani her oran ≤ %100. Olaylar pencere
+ * sonuna kadar izlenir. Kanal `'mevcut'` = ölçüm v2'den önce de bu cihazda
+ * iz vardı; istemci onu kohort toplamına KATMAZ. Sözleşme ve gerekçe:
+ * `supabase/migrations/20260924141953_funnel_events.sql`,
+ * `docs/decisions/funnel-v2.md`.
  */
-export interface AdminSourceFunnelRow {
+export interface AdminFunnelRow {
+  platform: 'web' | 'ios' | 'android';
+  channel: string;
+  /** Kohorttaki cihaz (pencerede ilk geliş). */
+  land: number;
+  /** Land gününden SONRA en az bir başka gün açan ("2+ gün"). */
+  returned: number;
+  /** Hesap açan. ⚠ Gizlilik metni güncellenene kadar web YAZMIYOR (`FUNNEL_MEMBER_EVENTS_ENABLED`). */
+  signed_up: number;
+  /** En az bir oyun başlatan. */
+  started: number;
+  /** En az bir oyun bitiren (bugün web'de yalnızca misafir bitişi). */
+  finished: number;
+  games_started: number;
+  games_finished: number;
+}
+
+/**
+ * `admin_member_quality` RPC çıktısındaki tek satır — "Kanal → Üye Kalitesi"
+ * (Büyüme > Kullanıcı; 24 Eylül 2026'da Kaynak Hunisi'nin yerini aldı).
+ * KOHORT: pencerede hesap açan üyeler, kayıt anındaki etikete
+ * (`profiles.signup_utm_source`) göre. Oyunlar (`games`, yalnızca bitmiş)
+ * bugüne kadar izlenir; her sayı ≤ `members`. Misafir sütunu YOK — o soru
+ * Huni v2'nin (`AdminFunnelRow`). Sözleşme:
+ * `supabase/migrations/20260924151205_admin_member_quality.sql`.
+ */
+export interface AdminMemberQualityRow {
+  /** Ham kayıt etiketi; `'bilinmiyor'` = etiketsiz (16 Ağu 2026 öncesi), `'app'` = mobil. */
   source: string;
-  visitors: number;
-  /**
-   * Pencerede o kaynaktan ÜYE OLMADAN başlatılan yerel (YZ) oyun ADEDİ —
-   * `game_starts`, `is_guest is true` (ROADMAP #9 + 22 Ağustos 2026 misafir
-   * indirmesi). NULL bayrak (22 Ağustos öncesi satır ya da damgalamayan
-   * istemci) misafir SAYILMAZ ve geriye dönük doldurulamaz.
-   * `games`ten (BİTMİŞ oyun) bilinçli olarak ayrı: yerel oyunun
-   * medyan süresi 18,1 dakika olduğundan reklamdan gelen soğuk bir ziyaretçi
-   * çoğu zaman oynar ama BİTİRMEZ; ayrıca `games` misafir oyunlarını tanım
-   * gereği hiç görmez (o satır yalnızca girişli kullanıcı için açılır).
-   */
-  starts: number;
-  /**
-   * O oyunları başlatan BENZERSİZ MİSAFİR CİHAZ sayısı
-   * (`game_starts.anon_id`, aynı `is_guest` filtresiyle — aksi halde oranın
-   * payı ile paydası farklı kitlelerden gelirdi).
-   * `visitors` ile AYNI kimlikten sayıldığından `starters / visitors` bu
-   * tablodaki TEK gerçek cihaz-bazlı dönüşüm oranıdır — `signups`/`players`
-   * ise `profiles.signup_utm_source` üzerinden gelir, yani ayrı bir dimension.
-   * Tabloda yalnızca yüzde modunda (ve CSV'de) görünür.
-   */
-  starters: number;
-  signups: number;
-  /**
-   * Pencerede o kaynaktan ÜYE OLMADAN bitirilen yerel (YZ) oyun ADEDİ —
-   * `game_finishes`, `user_id is null` (22 Ağustos 2026). Tabloda "Biten"
-   * sütunu; `starts` ("Başlayan") ile
-   * çifttir ve ikisi AYNI popülasyonu ölçer (misafir dahil, cihaz bazlı,
-   * `utm_source` damgalı), yani "başlayanların yüzde kaçı bitirdi" sorusu
-   * ancak bu ikisiyle sorulabilir.
-   *
-   * ⚠ `member_games` ile KARIŞTIRMA: o, `profiles.signup_utm_source`
-   * üzerinden gelen bambaşka bir dimension (yalnızca ÜYELERİN oyunları) ve
-   * bu kolon eklenene kadar tablodaki "Oyun" sütunu oydu — bu yüzden
-   * reklamdan gelen soğuk trafikte hep 0 görünüyordu (bkz. 22 Ağustos 2026,
-   * Instagram: 47 başlayan / 3 üye / 0 üye-oyunu).
-   *
-   * Kolon 22 Ağustos 2026'da eklendi, GERİYE DÖNÜK DOLDURULAMAZ — ondan
-   * önceki tüm bitişler `'bilinmiyor'` satırında toplanır.
-   */
-  finishes: number;
-  /**
-   * O oyunları bitiren BENZERSİZ MİSAFİR CİHAZ sayısı
-   * (`game_finishes.anon_id`, aynı `user_id is null` filtresiyle) —
-   * `starters`ın bitmiş taraftaki eşi (31 Ağustos 2026). `starters`/`finishers`
-   * ikilisi tablonun tek gerçek CİHAZ-BAZLI tamamlanma oranını verir; oyun
-   * adedi üzerinden hesaplanan oran, tek bir cihazın açtığı onlarca oyunla
-   * çarpılabiliyordu (ölçüldü: 117 oyunun 64 cihazdan geldiği bir pencerede
-   * İKİ cihaz tek başına 47 oyun başlatmıştı).
-   *
-   * ⚠ KOLON YENİ, GERİYE DÖNÜK DOLDURULAMAZ. `count(distinct)` NULL saymaz,
-   * yani 31 Ağustos 2026 öncesi bitişler ve damgalamayan istemciler (bugün
-   * Flutter portu — `anon_id` katmanı porta hiç girmedi) buraya girmez ve
-   * `finishes`ten küçük kalır. Panel bu durumda **0% göstermez, "—" gösterir**:
-   * "hiç cihaz bitirmedi" ile "cihaz bilgisi yok" farklı şeyler.
-   *
-   * ⚠ GİZLİLİK: `anon_id` bu tabloya YALNIZCA `user_id` NULL iken yazılır
-   * (sunucuda BEFORE INSERT trigger + CHECK). İkisi aynı satırda hiçbir zaman
-   * bulunmaz, yani `PrivacyModal` 6. bölümdeki "anonim kod hesabınızla ASLA
-   * eşleştirilmez" taahhüdü ayakta.
-   */
-  finishers: number;
-  /**
-   * ÜYELERİN (profil damgası olanların) pencerede bitirdiği oyun ADEDİ —
-   * eski "Oyun" sütunu. Tabloda GÖSTERİLMEZ, yalnızca CSV'de. `finishes` ile
-   * çakışmıyor: bu, üyenin KAYIT damgasından gelir (hesabı takip eder), o
-   * ise cihaz etiketinden ve yalnızca misafiri sayar. Üye tarafının kaynak
-   * kırılımı bilinçli olarak yalnızca burada — cihaz etiketiyle ikinci bir
-   * üye ölçüsü üretmek aynı sorunun iki farklı yanıtını doğururdu.
-   */
-  member_games: number;
-  /**
-   * O kaynağın damgasını taşıyan, pencerede EN AZ BİR oyun bitirmiş BENZERSİZ
-   * kullanıcı sayısı — `member_games` (oyun ADEDİ) ile karıştırılmamalı.
-   * "Üyelerin yüzde kaçı oyun oynamış" sorusu ancak bununla yanıtlanabilir;
-   * oyun adedi bir kişinin 50 oyun oynamasıyla %100'ü kolayca aşardı. Tabloda
-   * yalnızca CSV'de görünür.
-   */
+  members: number;
+  /** En az bir oyun bitiren. */
   players: number;
+  /** Kayıttan sonraki 7 gün içinde oyun bitiren. */
+  players_7d: number;
+  /** En az iki farklı İstanbul gününde oyun bitiren. */
+  returning_players: number;
+  /** Bu üyelerin bitirdiği oyun adedi. */
+  games: number;
 }
 
 /**
@@ -1474,7 +1415,7 @@ export interface AdminFeedbackRow {
  * oranını yukarı çeker.
  *
  * `starts`/`finishes` ADET, `starters`/`finishers` BENZERSİZ CİHAZ sayar —
- * `AdminSourceFunnelRow`'daki aynı ayrım ve aynı gerekçe. `anon_id`
+ * eski Kaynak Hunisi'ndeki (`admin_source_funnel`) aynı ayrım. `anon_id`
  * okunamayan (depolaması kapalı) bir istemcinin satırı adette sayılır,
  * benzersizde sayılmaz.
  *

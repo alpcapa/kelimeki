@@ -435,6 +435,50 @@ null gönderdiğinden o satırlar zaten 'bilinmiyor' kaynağında toplanıyor ve
 reklam kampanyalarının baktığı satırlarda yalnızca web var. Port damgalamayı
 eklerse burası da güncellenmeli.
 
+## Kaynak Hunisi: Kişi / Oyun görünümleri — 24 Eylül 2026
+
+Kullanıcı sordu: *"Direkt başlayan 267, biten 204 ama yüzdeleri 6.4% ve
+10.5% — biten yüzdesi nasıl daha yüksek olabilir?"* Veri doğruydu, sunum
+yanlıştı: `% / Sayı` düğmesinin sayı kipi oyun ADEDİ, yüzde kipi CİHAZ
+oranı gösteriyordu ve yüzdenin tabanı sütuna göre değişiyordu ("Başlayan" →
+`starters / visitors`, "Biten" → `finishers / starters`). Canlıda ölçülen
+(son 30 gün, `direkt`): 229 oyun 29 cihazdan, 172 bitiş yalnızca 4-5
+cihazdan — oyun ile kişi arasında ~8 kat fark var, yan yana okunamazlar.
+
+Kullanıcı kararı: *"Bence bu tablo elma armut karışmış. Burada görmek
+istediğimiz hangi kaynaktan kaç kişi gelmiş, kaçı üye olmuş, kaçı oyun
+başlatmış, kaçı oyun bitirmiş… Ayrıca başlayan, biten oyun ve ortalama oyun
+(kişi başı) kolonları da olabilir alternatif olarak."*
+
+- **`% / Sayı` → `Kişi / Oyun`.** Kişi: Gelen · Üye · Başlatan · Bitiren,
+  her hücrede sayı + o satırın GELEN'ine göre yüzde (tek taban → soldan sağa
+  okunan huni). Oyun: Başlayan Oyun · Biten Oyun · Oyun / Kişi
+  (`starts / starters`).
+- **RPC DEĞİŞMEDİ** (`admin_source_funnel`) — bütün sayılar zaten dönüyordu.
+  CSV de aynı (ham, iki birim birden).
+- **"—" kuralı korundu ve Başlatan'a da yayıldı:** oyun > 0 ama cihaz = 0
+  ise "bilinmiyor". Port iki tarafa da `anon_id` yazmıyor (`app` satırı: 73
+  oyun, 0 cihaz), bitiş tarafı 31 Ağustos'tan önce hiç yazmıyordu.
+
+**Aynı gün ikinci tur — "Oynayan Üye" (`signup_players`, migration
+`20260924125439_source_funnel_signup_players`).** Kullanıcı: *"arkadaş
+davetinden gelen 31 kişinin 26'sı üye olmuş fakat 4'ü oyun başlatıp hiçbiri
+bitirmemiş — bu mümkün mü?"* Mümkün: davetle gelen ÖNCE üye olur (isteği
+kabul etmek hesap ister), SONRA oynar; misafir sütunları onu hiç görmez.
+Ölçüldü (90 gün): 26 üyenin 17'si oynamış, 1.348 oyun.
+
+- **Mevcut `players` KULLANILAMADI:** pencere OYUN tarihine uygulanıyor,
+  yani pencerede oynayan eski üyeleri de sayıyor (30 gün Arkadaş: 6 üye /
+  15 players → %250). Yeni kolon bir KOHORT: pencerede üye olanlardan
+  bugüne kadar en az bir oyun (`games`, bitmiş) bitirmiş olan →
+  `signup_players <= signups`.
+- **Yüzdesinin tabanı ÜYE**, tablodaki tek istisna (öteki sütunlar Gelen'e
+  göre) — "gelenlerin yüzde kaçı oynayan üye oldu" değil "üye olanların
+  yüzde kaçı oynadı" sorusu soruldu.
+- Dönüş tipi değiştiği için drop + create; `proacl` öncesi/sonrası birebir
+  (`postgres, authenticated, service_role` — `anon` YOK), `security
+  definer` + `search_path` elle geri kuruldu.
+
 ## Tanıtım Turu kartı (Onboarding Faz 5, 8 Eylül 2026)
 
 Büyüme > Kullanıcı → Kaynak Hunisi'nin hemen altında. Kaynak
@@ -796,7 +840,7 @@ Kullanıcı isteği: *"üyeler tablosuna onay kolonu ekleyecektik"*. ROADMAP #9
 ("onaylanmamış filtresi", 23 Ağustos 2026'da onaylanmış ama kapsam dışı
 bırakılmış) aynı işin öteki yarısıydı — filtre zaten bu kolon olmadan
 kurulamıyordu, ikisi birlikte kapandı. Maddenin tam metni ve kapanış kaydı:
-`docs/decisions/roadmap-arsiv.md`.
+`docs/decisions/roadmap-arsiv-cilt-1.md`.
 
 ### Kolon neden `ConsentCell` kullanmıyor
 
@@ -1268,181 +1312,41 @@ Geçmiş satırlar DEĞİŞTİRİLMEDİ, çünkü o satırlar için elde tarayı
 yok. **Sonraki adım:** bir hafta sonra kovanın dökümüne bak. Süzmeye
 ("bilinen botları hiç sayma") ancak o sayılar varken karar verilir.
 
-## Kaynak Hunisi: "Bilinmiyor" satırında yüzde YOK — %2000 vakası (22 Eylül 2026)
+## Kaynak Hunisi → "Kanal → Üye Kalitesi" — 24 Eylül 2026
 
-Kullanıcı bildirdi: *"Admin kaynak hunisinde bilinmeyen 1, üye 20 gözüküyor.
-(%2000 conversion not possible)"*. Doğru — ama **sayım değil, BÖLME hatasıydı**;
-iki sayının ikisi de gerçekti.
+Kullanıcı: *"V1'i de farklı bir bakış açısı için modifiye edip tutmak mümkün
+mü? Rakamların anlamlı olduğu başka bir versiyon gibi."* Huni v2
+(`funnel_events`, `docs/decisions/funnel-v2.md`) misafir hunisini sıfırdan
+ölçmeye başlayınca Kaynak Hunisi'nin misafir sütunları (Gelen / Başlatan /
+Bitiren — üç ayrı anonim tablo, farklı başlangıç tarihleri) emekliye ayrıldı;
+üye yarısı yeni bir RPC'ye (`admin_member_quality`,
+`20260924151205_admin_member_quality.sql`) KOHORT olarak taşındı: pencerede
+hesap açanlar × kayıt etiketi → Üye · Oynayan · 7 Günde · 2+ Gün (iki
+farklı İstanbul gününde oyun bitiren) · Oyun / Üye.
 
-**Ölçüm (canlı, son 30 gün):**
+- Yukarıdaki iki Kaynak Hunisi bölümü ("Bitiren Cihaz", "Kişi / Oyun
+  görünümleri") bu tarihten itibaren TARİHÇE.
+- `app` etiketi (mobil kayıtlar) artık kendi kanalında: "Mobil Uygulama"
+  (`sourceChannel`, TAM eşleşme — `apple`/`app-store` yutulmasın;
+  `verify-admin-groups` kilitliyor).
+- Bilinen kanallar (`MEMBER_QUALITY_ALWAYS`: Instagram, Facebook,
+  LinkedIn, Arkadaş, Mobil Uygulama, Direkt) üye getirmese de 0 ile
+  çiziliyor (kullanıcı isteği) — ölçüldüğü gün Facebook hiç üye
+  getirmemişti ve satırın yokluğu "ölçülmedi" gibi okunuyordu.
+- `admin_source_funnel` veritabanında DURUYOR ama çağrılmıyor (geri dönüş
+  yolu).
 
-| Kaynak | Gelen (cihaz) | Üye |
-|---|---|---|
-| `--sanitized--` | **1** | 0 |
-| NULL (`signup_utm_source`) | 0 | **20** |
+## Port kaynak damgası (#601) — web yarısı #625'le aşıldı (25 Eylül 2026)
 
-İkisi de `sourceChannel` ile **Bilinmiyor** kanalına düşüyor (doğru davranış),
-sonra `conversionCell` `20 / 1` hesaplayıp **%2000,0** yazıyor.
+#601 (22 Eylül) iki yarıydı: port artık huninin dört tablosuna da kaynak
+damgası yazıyor (`data/device_stamp.dart` → `'app'`, deep link'ten gerçek
+`?ref=` gelirse o) ve web'de `app` için ayrı bir "Uygulama" kanalı +
+"Bilinmiyor satırında oran hesaplanmaz" kapısı. PR dondurmayı beklerken
+#621/#622/#625 Kaynak Hunisi'ni baştan kurdu: misafir sütunları Huni v2'ye
+gitti, kalan üye kohortu (`admin_member_quality`) `app`i "Mobil Uygulama"
+kanalına TAM eşleşmeyle zaten topluyor. Merge anında web dosyaları
+`main`'in hâliyle bırakıldı; port yarısı ve iki migration (ikisi de 22
+Eylül'den beri canlıda) girdi. Port damgası hâlâ gerekli: `backfill`
+yalnızca geçmişi `'app'` yaptı, damgasız yeni app kayıtları Üye
+Kalitesi'nde `Bilinmiyor`a düşer.
 
-**Kök neden: pay ile payda AYRI kitleler.**
-
-- **Üye = 20** → `profiles.signup_utm_source is null`. Web bunu ASLA yazmaz,
-  `?ref=` yokken bile açıkça `'direkt'` gönderir (`api.ts` → `signUp`, yorumu:
-  *"uygulama kayıtları 'Direkt'i şişirmesin"*). NULL yalnızca damgalamayan bir
-  istemciden gelir → **mobil uygulama** (`auth_service.dart`in kayıt
-  metadata'sında `utmSource` yok). 26 Ağustos–20 Eylül arası, kapalı test
-  dönemiyle birebir örtüşüyor. **Yani bu satır TASARIM GEREĞİ dolu.**
-- **Gelen = 1** → `guest_visits`e port HİÇ yazmıyor, dolayısıyla bu kanalın
-  ziyareti olamaz. O tek satır 23 Ağustos'ta `?ref=--sanitized--` ile gelmiş
-  bir masaüstü ziyaretçi (bot/temizleyici); pencereden çıkınca taban 0'a
-  dönerdi ve arıza kendiliğinden "düzelmiş" görünürdü.
-
-**Mevcut kapı neden tutmadı:** `conversionCell` "taban 0 ise `—`" diyordu ve
-yazıldığı gün yeterliydi — yorumu bunu açıkça söylüyordu: *"bugün 'bilinmiyor'
-satırı tam bu durumda"*. Varsayım **tabanın hep 0 kalacağıydı**; tek bir çöp
-ziyaret onu bozdu. Ders: bir oranı `base <= 0` ile korumak, PAYDANIN PAYLA AYNI
-KİTLEDEN geldiğini varsayar — o varsayım yazılı değilse kontrol geçicidir.
-
-**Düzeltme (yalnızca web, sunucu/port DEĞİŞMEDİ):**
-`channelHasVisitorBase(channel)` (`adminGroups.ts`) — `bilinmiyor` için
-`false`. Tablo o satırda "Üye" ve "Başlayan" yüzdelerini hiç hesaplamaz, `—`
-yazar. **Sayı modu değişmedi:** 20 üye hâlâ 20 görünüyor, veri gizlenmiyor.
-Kapı: `npm run verify-admin-groups` (CI'da) — `--sanitized--`ın hâlâ
-Bilinmiyor'a düştüğünü de kilitliyor, çünkü düzeltme etiketi taşımak değil o
-satırda oranı kapatmaktı.
-
-⚠ **"Başlayan" da aynı sebeple kapandı:** port `game_starts`a `anon_id: null`
-yazıyor → `starters` 0 kalıyor, oran `0/1` = **%0,0** olurdu ve bu *"hiçbir
-cihaz başlamadı"* DERDİ; gerçek *"cihaz bilgisi yok"*. "Biten" tabanını
-`starters`tan aldığı için kendi kapısıyla (`completionCell`) zaten korunuyordu.
-
-⚠ **AÇIK KALAN, bilerek:** TOPLAM satırının "Üye" yüzdesi bu 20 kaydı İÇERİR
-(34 üye / 1.194 ziyaret ≈ %2,8; ölçülebilir altküme 14 / 1.194 ≈ %1,2). Yani
-genel dönüşüm oranı bir **üst sınır**. Düzeltilmedi çünkü TOPLAM'ı alt
-kümeden hesaplamak sütunun elle toplanabilirliğini bozar — kararı gerektirir,
-sessizce değiştirilmemeli. InfoHint bunu yazıyor.
-
-### Düzeltme YETMEDİ — kullanıcı asıl işi istedi (aynı gün)
-
-Yukarıdaki değişiklik yalnızca imkânsız yüzdeyi susturuyordu. Kullanıcı amacı
-hatırlattı: *"kim nereden gelmiş, kaç üye getirmiş, kaçı oyun başlatmış, kaçı
-bitirmiş görmek. Bu kadar komplike olmamalı. Kaynak belliyse onun altına
-girecek, değilse 'bilinmiyor'da yazacak (ki bilinmemesi mümkün olmamalı çünkü
-ya web'den direkt gelmiştir ya da app'den)"*.
-
-Teşhis doğruydu: **"Bilinmiyor" bir hesap hatası değil, portun hiç
-damgalamamasının adıydı.** Ölçüm:
-
-| | Gelen | Üye | Başlayan | Bitiren |
-|---|---|---|---|---|
-| Web | ✅ `?ref=` damgalı | ✅ | ✅ | ✅ |
-| App | ❌ hiç yazmıyor | ❌ damgasız | ❌ damgasız | ❌ damgasız |
-
-App'in tabloya kattığı TEK şey o 20 damgasız üyeydi; diğer üç adımda app hiç
-görünmüyordu. **Kullanıcı kararı: app huniye TAM sokulacak** — satırın adı
-`Uygulama`, dört adımı da dolu.
-
-⚠ **Portta altyapı VARDI ama ÖLÜYDÜ:** `flags_store.dart` `anonId()`,
-`captureUtmSource`, `anonVisitDate` taşıyor ve **hiçbir yer çağırmıyordu**;
-`games_api.dart` `anon_id`/`utm_source`'u bilerek `null` yazıyordu.
-
-⚠ **Gizlilik metni bu işi ZATEN kapsıyor — değişiklik GEREKMEDİ.**
-`LegalContent.tsx`in "anonim kod şu durumlarda iletilir" listesi
-platform-nötr yazılmış: (1) *"HER ziyarette — oturum açık olsun olmasın —
-işletim sistemi tipiyle (iOS/Android/masaüstü)… misafir ziyaretteyseniz varsa
-kaynak etiketi"*, (2) oyun başlatma, (4) misafir oyun bitirme. Portun aynı üç
-kaydı yazması yeni bir durum AÇMIYOR. `signup_events` migration'ının uyarısı
-BEŞİNCİ bir durum (kayıt olayına `anon_id`) eklemekle ilgiliydi, bununla değil.
-
-⚠ **Yan bulgu, AYRI iş:** metin *"Bu kod **dört** durumda iletilir"* diyor ama
-BEŞ madde sayıyor ve sonra *"Bu **beş** kaydın"* diyor — tanıtım turu (5)
-eklenirken sayı güncellenmemiş. Düzeltmek "Son güncelleme" tarihini
-değiştirmeyi gerektirir, `legal_text_test.dart` tam metni değil O TARİHİ
-karşılaştırdığı için port ikizi aynı PR'da güncellenmeli → mobil dosya →
-sürüm dondurmasını bekler.
-
-**`app` bir PLATFORM değil, burada bir KAYNAK.** Port `flags.utmSource ??
-'app'` yazıyor, yani deep link'ten gerçek bir `?ref=` yakalanırsa O kazanır:
-Instagram'dan gelip uygulamayı kuran kişi Instagram satırında KALIR.
-⚠ Eşleşme TAM, önek DEĞİL — `appstore`/`app-ios` gibi bir etiket uydurma bir
-kanala atanmaz, `Diğer`de görünür kalır (kapı ölçüyor).
-
-⚠ **Ana ekrana eklenen web (PWA) bu satıra GİRMEZ** — o normal bir web
-ziyareti, geldiği kaynağa/`direkt`e düşer. "Cihaz/Sürüm" tablosundaki
-`Uygulama (web)` satırı BAŞKA bir şeyi ölçüyor (`app-web` platformu); iki
-tablo yan yana durduğu için InfoHint bunu açıkça yazıyor.
-
-**`bilinmiyor` kanalı ve kapısı KALDI** — geçmiş silinmiyor: 26 Ağustos–20
-Eylül 2026 arası 20 damgasız kayıt ve damgasız eski oyun başlangıçları orada.
-Port sürümü sahaya inince yeni satır düşmez.
-
-#### Yapılan iş — üç yarım, aynı PR
-
-1. **Web:** `SourceChannel`e `app` (etiket **Uygulama**), tam eşleşme,
-   `channelHasVisitorBase('app') = true`. Kapı `verify-admin-groups`.
-2. **Port:** damga TEK yerde (`data/device_stamp.dart`), dört tüketici —
-   `guest_visits` pingi (YENİ `data/visits_api.dart`) · `game_starts` ·
-   `game_finishes` · kayıt metadata'sı. Gateway'lere ENJEKTE ediliyor,
-   çağıranlardan İSTENMİYOR (`is_guest`in gerekçesi: çağrı yeri çok, biri
-   atlarsa sayım sessizce eksilir). Kapı `test/source_stamp_test.dart`,
-   855 test yeşil. Kayıt: `mobile/docs/parca-log.md` → Parça 205.
-3. **Sunucu:** `20260922070950_guest_visits_app_rows_out_of_web_breakdowns`
-   — CANLIYA UYGULANDI.
-
-⚠ **ÜÇÜNCÜ HALKA, az kalsın kaçıyordu:** `guest_visits`i huniden başka İKİ
-döküm daha okuyor. App satırları eklenince `admin_guest_standalone_breakdown`
-her app açılışını *"ana ekrana eklememiş"* sayıp PWA oranını seyreltecekti
-(`coalesce(is_standalone, false)`), `admin_guest_device_breakdown` ise
-`device_visits` tabanlı "Cihaz" tablosunun kötü bir kopyasına dönüşecekti.
-Migration ikisinden de `utm_source = 'app'` satırlarını eliyor. **Bugün
-NO-OP** (uygulamadan önce ölçüldü: `app` satırı 0) ve bilerek ÖNCE uygulandı
-— sonra uygulansaydı port sahadayken iki tablo bir süre yanlış sayardı.
-Doğrulama: her ad için tek fonksiyon (mükerrer overload yok), `proacl`
-değişmedi (`anon` YOK), `security definer`/`search_path` yerinde.
-
-⚠ **`create or replace` seçildi, `drop + create` DEĞİL:** imza birebir aynı
-olduğundan bu kod tabanının bildiği "sessiz ikinci overload" tuzağı
-oluşamaz, ve `create or replace` grant'leri KORUR — drop, `security
-definer`/`search_path`/grant'lerin hepsini düşürür ve Supabase yeni
-fonksiyona `anon`a da execute verebiliyor (16 Eylül 2026'da
-`admin_list_members`te canlıda ölçülmüştü).
-
-#### Geçmiş de hizalandı — `20260922072629_backfill_app_source_history`
-
-Kullanıcı onayıyla (*"Hepsi"*) CANLIYA UYGULANDI. Damga yalnızca BUNDAN
-SONRASINI düzeltiyordu; geçmiş dokunulmasa "Bilinmiyor" satırı aylarca dolu
-görünecekti.
-
-| Tablo | Çevrildi | Dokunulmadı |
-|---|---|---|
-| `profiles.signup_utm_source` | **20** | 0 |
-| `game_starts.utm_source` | **868** | 0 |
-| `game_finishes.utm_source` | **723** | **310** (kolon yoktu) |
-
-**Dayanak `NULL ⟺ app` ve ÖLÇÜLDÜ, varsayılmadı:** web istemcisi hiçbir
-zaman NULL yazmaz — üç çağrı yerinin üçü de `?? 'direkt'` gönderiyor
-(`signUp` · `logGameStart` · `logGameFinish`, kaynak okundu). Ayrıca 20
-damgasız kaydın **8'inin App oyunu var, 0'ının web oyunu var**, 11'i hiç
-oynamamış; damgalı her grupta ise web oyunu var. Tek karşı örnek yok.
-
-⚠ **`game_finishes`in 310 satırı BİLEREK DIŞARIDA.** Damgalama
-`2026-08-22 15:10:05.39781+00`'da başladı; öncesindeki NULL "app" değil
-*"kolon henüz yoktu"* demek ve onları çevirmek uydurma olurdu. Kesim
-timestamp'i migration'da SABİT yazılı — `min(created_at)` alt sorgusu
-backfill'den sonra başka bir değer döndüreceği için tekrar koşulamaz olurdu.
-
-⚠ **Tuzak: `trg_keep_signup_utm_source` BEFORE UPDATE'te eski değeri geri
-yazıyor** (kullanıcı kendi kaynağını değiştiremesin diye). Düz bir `update`
-SESSİZCE hiçbir şey yapardı — denenmeden "çalıştı" sanılabilirdi. Migration
-tetikleyiciyi kendi işleminin içinde kapatıp geri açıyor; uygulama sonrası
-`tgenabled = 'O'` (açık) doğrulandı.
-
-**Sonuç (canlıdan, son 30 gün):** `bilinmiyor` satırı huniden TAMAMEN
-kayboldu, yerine `app` geldi — Üye 20 · Başlayan 91 · Biten 10. ⚠ "Gelen"i
-0, çünkü geçmiş ziyaretler geriye dönük üretilemez (port o kaydı hiç
-yazmamıştı); port sürümü sahaya inince dolmaya başlar. O yüzden bu satırın
-yüzdeleri bir süre `—` gösterecek — `conversionCell`in "taban 0" kuralı,
-doğru davranış.
-
-⚠ Panelde **Bilinmiyor** grubu yine de görünür: `--sanitized--` ile gelen
-tek çöp ziyaret orada duruyor (Gelen 1, gerisi 0).

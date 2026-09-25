@@ -146,6 +146,51 @@ test('iPad Safari yatay (kısa sayfa): blok ÇIKMAZ', async ({ browser }) => {
   await ctx.close();
 });
 
+// ⚠ Bütçe OYUN EKRANINA ait — 23 Eylül 2026, kullanıcı iPad Safari yatayda
+// bildirdi: *"tanıtım bölümü de sorunlu hale gelmiş, eskisi gibi görünmeli"*.
+// Karşılama katmanının vitrin tahtasının ALTINDA raf/buton şeridi yok, yani
+// bütçenin çıkardığı 308px'in orada karşılığı da yok; Safari'nin çubukları
+// sayfayı ~619px'e indirince tahta TABANA (324px) düşüyordu. Filigran puntosu
+// ekran GENİŞLİĞİNDEN geldiği için tavanda kalıp taşıyordu ve #609'un
+// `scale()` düzeltmesi orayı kurtaramaz: karşılama katmanı derleme zamanında
+// statik HTML'e basılıyor, `useLayoutEffect` HİÇ koşmuyor.
+//
+// Ölçülen: düzeltme öncesi 300px, sonrası 656px (aynı viewport).
+test('karşılama katmanı: vitrin tahtası yükseklik bütçesinden ETKİLENMEZ', async ({
+  browser,
+}) => {
+  const ctx = await browser.newContext({
+    viewport: { width: 1180, height: 619 },
+    screen: { width: 820, height: 1180 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  const page = await ctx.newPage();
+  expect(619).toBeLessThan(BOTTOM_STRIP_MIN_HEIGHT_PX); // bütçe bağlayıcı OLURDU
+  await page.goto('/');
+
+  const tahta = page.locator('[data-board-viewport]').first();
+  await tahta.scrollIntoViewIfNeeded();
+  const kutu = await tahta.boundingBox();
+  // Genişlikten boyutlanan tahta bu viewport'ta doyuyor; bütçe devreye
+  // girseydi TABANA inerdi. Aradaki fark ölçüyü kesin yapıyor.
+  expect(
+    Math.round(kutu!.width),
+    'vitrin tahtası yükseklik bütçesine takılmış (eskisi gibi görünmüyor)',
+  ).toBeGreaterThan(BOARD_MIN_PX);
+
+  // Filigran statik HTML'de ölçeklenemiyor, o yüzden tek güvence tahtanın
+  // kendi genişliği: "X2" merkez bölgesinin içinde kalmalı.
+  const x2W = await page.evaluate(() => {
+    const el = document.querySelector('[data-watermark-x2]') as HTMLElement;
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    return r.getBoundingClientRect().width;
+  });
+  expect(x2W, '"X2" merkez bölgesinden taşıyor').toBeLessThan((kutu!.width * 5) / 13);
+  await ctx.close();
+});
+
 test('dikey telefon: düzen DEĞİŞMEDİ (yükseklik sınırı hiç devreye girmiyor)', async ({
   page,
 }) => {

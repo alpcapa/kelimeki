@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getDeviceType, isStandaloneDisplay } from '../utils/visitTracking';
-import { storeForDevice } from '../utils/storeLinks';
+import { shouldShowStoreStrip, storeForDevice } from '../utils/storeLinks';
+import { userHasAppInstall } from '../lib/api';
 
 /**
  * Ana ekrandan açılan uygulamada (standalone PWA) üstte çıkan "yerel uygulama
@@ -22,10 +23,21 @@ import { storeForDevice } from '../utils/storeLinks';
  *
  * ## Üç kural
  *
- * 1. **Yalnızca standalone.** Tarayıcıda zaten Apple'ın kendi banner'ı var;
- *    ikisini birden göstermek gürültü olur. `AddToHomeScreen` bunun TAM
- *    TERSİ koşula bakıyor (`isStandaloneDisplay()` → `return`), yani ikisi
- *    yapısal olarak asla aynı anda çıkamaz.
+ * 1. **Telefonda HER YERDE — tarayıcıda da, ana ekrandan açılışta da**
+ *    (24 Eylül 2026, kullanıcı kararı: *"Ios'da da çıkmamalı, sadece app
+ *    store çıkmalı… Web'den de gelse herkesin cep telefonu var, gidip
+ *    indirebilir."*). Aynı gün "ana ekrana ekle" kutusu (`AddToHomeScreen`)
+ *    TAMAMEN kaldırıldı, masaüstü dahil; şerit telefondaki TEK uygulama
+ *    çağrısı. İlk sürümde yalnızca standalone'daydı, çünkü iOS Safari'de
+ *    Apple'ın kendi Smart App Banner'ı var — ikisi artık üst üste
+ *    görünebilir, ama ikisi de AYNI yere (App Store) gönderiyor, çelişki
+ *    yok; Apple'ınki uygulama-içi tarayıcılarda (WhatsApp/Instagram)
+ *    çizilmiyor, davet linkleri de tam oradan açılıyor.
+ *    **Aynı akşam iki istisna** (kullanıcı: *"ikisi birlikte fazla
+ *    olacak"* + *"app yüklü insanlara çıkartmama şansımız var mı?"*):
+ *    iOS'un GERÇEK Safari'sinde ÇIKMAZ (Apple'ınki orada — `isIosSafari`),
+ *    ve girişli kullanıcının `push_tokens`ta satırı varsa ÇIKMAZ
+ *    (`userHasAppInstall`). Karar saf: `shouldShowStoreStrip`.
  * 2. **Yalnızca o cihazın mağazası YAYINDAYSA** (`storeForDevice`). Play
  *    yayına girene kadar Android'de hiç çizilmez; URL dolunca kendiliğinden
  *    belirir. Masaüstünde hiç çıkmaz — kurulacak yerel uygulama yok.
@@ -39,9 +51,9 @@ import { storeForDevice } from '../utils/storeLinks';
  * 4. **✕ KALICI DEĞİL** (kullanıcı kararı: *"X olmalı ama her seferinde
  *    çıksın ki app'e gitsin sonunda"*). Kapatma `sessionStorage`da tutuluyor:
  *    o açılış boyunca bir daha görünmez, uygulama kapanıp açılınca yeniden
- *    çıkar. ⚠ `localStorage` KULLANMA — `AddToHomeScreen` onu bilerek
- *    kullanıyor (oraya bir kez "hayır" demek kalıcı bir karar), burada tam
- *    tersi isteniyor.
+ *    çıkar. ⚠ `localStorage` KULLANMA — silinen `AddToHomeScreen` onu
+ *    kullanıyordu (orada bir kez "hayır" demek kalıcı bir karardı), burada
+ *    tam tersi isteniyor.
  */
 const DISMISSED_KEY = 'kelimeki_app_strip_dismissed';
 
@@ -54,17 +66,44 @@ function dismissedThisSession(): boolean {
   }
 }
 
-export function AppStoreStrip() {
+/**
+ * `userId`/`authLoading` App.tsx'ten — ⚠ bağımlılık `user` NESNESİ değil
+ * `user?.id` (kök CLAUDE.md, `verify-auth-user-identity`).
+ */
+export function AppStoreStrip({ userId, authLoading }: { userId: string | null; authLoading: boolean }) {
   const [visible, setVisible] = useState(false);
   const [store] = useState(() => storeForDevice(getDeviceType()));
 
   useEffect(() => {
-    if (!isStandaloneDisplay() || !store || dismissedThisSession()) return;
-    // İlk boyamada sıçramasın diye kısa gecikme (AddToHomeScreen'le aynı
-    // desen); açılışta zaten sözlük/oturum yükleniyor.
-    const t = setTimeout(() => setVisible(true), 900);
-    return () => clearTimeout(t);
-  }, [store]);
+    if (!store || dismissedThisSession()) return;
+    // Oturum henüz bilinmiyorsa BEKLE: uygulaması kurulu bir üyeye şerit
+    // bir an görünüp kaybolmasın.
+    if (authLoading) return;
+    let iptal = false;
+    let t: ReturnType<typeof setTimeout> | undefined;
+    const karar = (hasAppInstall: boolean | null) => {
+      if (iptal) return;
+      const goster = shouldShowStoreStrip({
+        cihaz: getDeviceType(),
+        standalone: isStandaloneDisplay(),
+        ua: typeof navigator === 'undefined' ? '' : navigator.userAgent || '',
+        hasAppInstall,
+      });
+      if (!goster) {
+        setVisible(false);
+        return;
+      }
+      // İlk boyamada sıçramasın diye kısa gecikme; açılışta zaten
+      // sözlük/oturum yükleniyor.
+      t = setTimeout(() => setVisible(true), 900);
+    };
+    if (userId) void userHasAppInstall(userId).then(karar);
+    else karar(null);
+    return () => {
+      iptal = true;
+      if (t) clearTimeout(t);
+    };
+  }, [store, userId, authLoading]);
 
   const dismiss = () => {
     setVisible(false);

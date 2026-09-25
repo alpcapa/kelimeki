@@ -47,6 +47,7 @@ npm run verify-edge-engine-parity # motorun üçüncü kopyası (Edge Function) 
 npm run verify-error-reporting   # istemci hata telemetrisi: ne kaydedilir/kaydedilmez, tekrar bastırma, hız sınırı
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı (sunucu ↔ cihaz damgası)
+npm run verify-funnel-events     # Huni v2: eski cihaz → `mevcut`, İstanbul günü, gizlilik metni bayrağı + olay listesi ↔ SQL
 npm run verify-web-journey       # Web ziyaretçi yolculuğu: misafir/üye kapısı + adım listesi ↔ SQL
 
 # Üretilmiş dosyalar — kaynağı değişince ELLE yeniden üretilir:
@@ -154,7 +155,6 @@ src/
 │   ├── LandscapeBlock.tsx       # TAM EKRAN, kapatılamaz "Telefonunuzu dikeye çevirin" bloğu — ölçüt YATAY DEĞİL yetersiz YÜKSEKLİK (iPad bloklanmaz), metin alanı odaktayken bastırılır (klavye viewport'u kısaltıyor); TEK mount noktası boot.tsx
 │   ├── ErrorBoundary.tsx        # kök seviye React crash yakalayıcı
 │   ├── LoadingNote.tsx          # ortak "Yükleniyor…" göstergesi (Flutter portundaki KLoadingNote ile birebir)
-│   ├── AddToHomeScreen.tsx      # PWA ana ekrana ekle (tarayıcıda)
 │   └── AppStoreStrip.tsx        # ana ekrandan açılan uygulamada "mağazada" şeridi
 ├── game/
 │   ├── types.ts       # GameState, Player, Tile tipleri
@@ -198,6 +198,7 @@ src/
 │   ├── errorReporting.ts # istemci hata telemetrisi (client_errors) — beklenen durumlar BİLEREK kaydedilmez, saatte 10 kayıt tavanı (zaman penceresi, süreç ömrü DEĞİL)
 │   ├── errorMessage.ts  # kullanıcıya gösterilen hata metninin son kapısı: ham makine çıktısı (504 gövdesi, SQLSTATE dökümü) yerine Türkçe cümle, ham metin telemetriye (Flutter portuyla testli olarak senkron)
 │   ├── chatRead.ts      # Canlı sohbetin okundu kararı — sunucu (`online_game_chat_reads`) ↔ cihaz damgasının büyüğü; kapı `verify-chat-read`
+│   ├── funnelEvents.ts  # Huni v2 — cihaz başına anonim olaylar (`funnel_events`: land/visit/signup/game_start/game_finish), admin'de kohort tablosu; kapı `verify-funnel-events`
 │   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına kimliksiz oturum (`web_sessions`), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
 │   ├── storeLinks.ts    # mağaza rozetleri (ROADMAP #26): URL'ler (`null` = yayında değil → rozet HİÇ çizilmez), sıra (App Store önce — Apple'ın yazılı kuralı) ve yerleşim ölçüleri
 │   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı için tek seferlik localStorage kuyruğu

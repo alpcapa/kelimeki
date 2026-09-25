@@ -10,7 +10,6 @@ import { TermsModal } from './components/TermsModal';
 import { PrivacyModal } from './components/PrivacyModal';
 import { AuthModal } from './components/AuthModal';
 import { Setup } from './components/Setup';
-import { AddToHomeScreen } from './components/AddToHomeScreen';
 import { AppStoreStrip } from './components/AppStoreStrip';
 import { LeagueRewardsHost, requestLeagueRewardCheck } from './components/LeagueRewardsHost';
 import { MeaningModal } from './components/MeaningModal';
@@ -100,6 +99,7 @@ import {
   isStandaloneDisplay,
 } from './utils/visitTracking';
 import { journeyMoves, journeyStart, journeyStep } from './utils/webJourney';
+import { funnelEvent } from './utils/funnelEvents';
 import type { LocalGameSave, OnlineGame, WordMeaning } from './lib/database.types';
 import { OnlineGameScreen } from './components/OnlineGameScreen';
 import { useAuth } from './hooks/useAuth';
@@ -881,6 +881,8 @@ export default function App() {
     // `!user` = misafir başlangıcı — huninin "Başlayan" adımı yalnızca bunları
     // sayıyor (bkz. `logGameStart` ve `game_starts.is_guest`).
     void logGameStart(players.length, getOrCreateAnonId(), getStoredUtmSource(), !user);
+    // Huni v2 (`utils/funnelEvents.ts`) — misafir de üye de sayılır.
+    funnelEvent('game_start', !user);
     journeyGameRef.current = 'pending';
     journeyStep('game_start');
   };
@@ -1333,6 +1335,10 @@ export default function App() {
       state.endReason === 'surrender',
       user?.id ?? null,
     );
+    // Huni v2: gizlilik metni bugün bitiş kaydını yalnızca MİSAFİR için
+    // sayıyor — üye bitişini `funnelEvent` kendisi süzer (bayrak kapalıyken).
+    // 7 günlük terk yolu BİLEREK dahil değil: süre dolması "bitirdi" demek değil.
+    funnelEvent('game_finish', !user);
     journeyStep('game_finish');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver]);
@@ -1501,11 +1507,10 @@ export default function App() {
     const showTanitimLink = !authLoading && !user;
     return (
       <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
-        {/* Ana ekrandan açılan uygulamada "yerel uygulama mağazada" şeridi.
-            AKIŞIN EN ÜSTÜNDE: içeriği aşağı iter, logoyu ÖRTMEZ (bkz.
-            AppStoreStrip'in başlığı). `AddToHomeScreen`in tam TERSİ koşula
-            baktığından ikisi asla aynı anda görünmez. */}
-        <AppStoreStrip />
+        {/* "Yerel uygulama mağazada" şeridi — telefonda (iOS/Android) HER
+            yerde, tarayıcıda da ana ekrandan açılışta da. AKIŞIN EN ÜSTÜNDE:
+            içeriği aşağı iter, logoyu ÖRTMEZ (bkz. AppStoreStrip'in başlığı). */}
+        <AppStoreStrip userId={user?.id ?? null} authLoading={authLoading} />
         <div
           className={`w-full max-w-[460px] flex items-center px-3.5 pt-3 ${
             showTanitimLink ? 'justify-between' : 'justify-end'
@@ -1590,7 +1595,6 @@ export default function App() {
             }}
           />
         </main>
-        <AddToHomeScreen />
         {/* k-lig kutlama banner'ı — Setup'ta her zaman gösterilebilir
             (girişte/geçmişe dönük backfill'de bekleyen ödüller burada çıkar). */}
         <LeagueRewardsHost />

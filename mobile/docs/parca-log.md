@@ -25,7 +25,13 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
-## Parça 205 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
+## Parça 214 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
+
+   > ⚠ **25 Eylül 2026, merge anında:** aşağıda anlatılan WEB yarısı
+   > (`adminGroups.ts` → `app` kanalı "Uygulama", `channelHasVisitorBase`)
+   > merge'e girmedi — #625 (24 Eylül) huniyi "Kanal → Üye Kalitesi"
+   > kohortuna indirdi ve `app`i kendi "Mobil Uygulama" kanalına zaten
+   > eşliyor. Port damgası ve iki migration olduğu gibi duruyor.
 
 **Kullanıcı bildirdi** (22 Eylül 2026): *"Admin kaynak hunisinde bilinmeyen
 1, üye 20 gözüküyor. (%2000 conversion not possible) Bir hata var galiba."*
@@ -785,7 +791,7 @@ satır düştü mü" CEVAPLANMADI. Cihaz maddesi `mobile/TESTING.md`'de.
      puanı/rozet üç kartta (6 Eylül 2026, ROADMAP #23 Faz 4 — web Faz 3'ün
      ikizi):** kaynak `Setup.tsx` / `AiLevelBadge.tsx` / `aiLevel.ts` /
      `gameRecord.ts` / `HelpModal.tsx` (Faz 3 PR'ı). Ne yapıldı ve neden:
-     `docs/decisions/roadmap-arsiv.md` → "23 · Faz 4" (tek kopya orada).
+     `docs/decisions/roadmap-arsiv-cilt-1.md` → "23 · Faz 4" (tek kopya orada).
      - **Bilinçli eksik YOK; dokunulmayanlar:** `kelimeki_core` (motor Faz
        2'de bitti — golden'lar aynen), Canlı ekranlar/kartlar (seviye yok),
        `devam_eden_govde.dart` (rozet sol sütuna girdi, ortak gövde aynen),

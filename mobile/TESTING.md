@@ -1680,7 +1680,7 @@ maddelerin çoğu **Play kanalından kurulmuş imzalı bir derleme** istiyor, ya
 CI'nın debug-imzalı `.apk`'sıyla koşulamaz. Hangi maddenin hangi derlemede
 test edilebildiği o dosyanın başındaki tabloda.
 
-## 26. Kaynak Hunisi — app'in damgası (Parça 205, 22 Eylül 2026)
+## 32. Kaynak Hunisi — app'in damgası (Parça 214, 22 Eylül 2026)
 
 ⚠ **Bu bölüm SUNUCUYA yazılanı doğrular** — `flutter test` sahte uçlarla
 koşuyor, yani "satır gerçekten düştü mü" sorusunu YALNIZCA burası
@@ -1698,7 +1698,8 @@ cevaplıyor. Kontroller admin panelinden (web) ya da Supabase'den okunur.
       burada istemcinin hiç denemediğini doğruluyoruz.)
 - [ ] **Yeni kayıt `Uygulama` satırına düşer.** Uygulamadan yeni bir hesap
       aç → `profiles.signup_utm_source = 'app'` olmalı, admin panelinde
-      Kaynak Hunisi'nde **Uygulama** satırının "Üye"si artmalı.
+      Büyüme > Kullanıcı > **Kanal → Üye Kalitesi**'nde **Mobil Uygulama**
+      satırının "Üye"si artmalı.
       ⚠ `bilinmiyor` satırı ARTMAMALI — artıyorsa damga metadata'ya
       girmemiş demektir (anahtar adı `utmSource`, camelCase).
 - [ ] **YZ oyunu başlat/bitir → `game_starts`/`game_finishes`.** Misafirken
@@ -1706,10 +1707,11 @@ cevaplıyor. Kontroller admin panelinden (web) ya da Supabase'den okunur.
       `game_starts.anon_id` dolu. ⚠ **Girişliyken bitirilen oyunda
       `game_finishes.anon_id` NULL olmalı** (gizlilik: anonim kod ile hesap
       kimliği aynı satırda ASLA bulunmaz).
-- [ ] **Huninin dört adımı da aynı satırda dolu.** Admin → Büyüme >
-      Kullanıcı > Kaynak Hunisi → **Uygulama** satırında Gelen/Üye/
-      Başlayan/Biten sayıları birlikte artmalı; `%` modunda oranlar
-      hesaplanmalı (`—` DEĞİL — o yalnızca `Bilinmiyor` satırının kuralı).
+- ⚠ **Eski "dört adım aynı satırda" maddesi DÜŞTÜ (25 Eylül 2026):** bu
+      bölüm yazıldığında panelde Gelen/Üye/Başlayan/Biten sütunlu bir
+      Kaynak Hunisi vardı; #625 onu yalnızca üye kohortuna (Üye Kalitesi)
+      indirdi, misafir adımları Huni v2'nin işi. Damganın kendisi
+      yukarıdaki satır kontrolleriyle doğrulanır.
 - [ ] **"Ana Ekrana Ekleme" dökümü app'ten ETKİLENMEZ.** App açılışlarından
       sonra o tablodaki toplam ziyaretçi sayısı artmamalı (migration
       `20260922070950` app satırlarını eliyor). Artıyorsa filtre düşmüş.

@@ -299,3 +299,48 @@ DEĞİŞTİRDİĞİ şey aynı olmalı. Değilse kontrol bir iş emri değil sab
 gürültü üretir — ve gürültü okunmaz. Bu, 15 Eylül'ün *"sınıra çarpınca
 sınırı yükseltmek kontrolü süse çevirir"* dersinin ikizi: bir kontrolü süse
 çeviren ikinci yol, temizlenmesi imkânsız bir uyarı bastırmaktır.
+
+## 23 Eylül 2026 — kök `CLAUDE.md` (81 → 79,6 KB), `auto` uyarı bandından çıkarıldı
+
+Supabase'in Data API izin kuralı (`docs/decisions/supabase-ops.md` → "Data
+API izinleri") `CLAUDE.md`in "Migration'lar" bölümüne bir kural olarak
+eklendi ve dosyayı 79,5 → 81 KB'a, yani `auto` sınıfının 80 KB'lık uyarı
+bandına taşıdı. Kuralın kendisi kalması gereken yerde (her migration turunda
+okunuyor), o yüzden karşılığı **"Doküman Boyutu Bütçesi" bölümünün kendi
+tarihli anlatısından** çıkarıldı — bölümün kuralları, tabloları ve reçeteleri
+olduğu gibi duruyor. Buraya taşınan üç kayıt:
+
+**1. 24 Ağustos 2026'nın ikinci dersi, sayıyla.** O gün `CLAUDE.md` bölündü,
+ama bölünme sorunu çözmedi, YER DEĞİŞTİRDİ: `mobile/docs/parca-log.md`
+sessizce **714 KB**'a, yani o tarihteki `CLAUDE.md`'nin YEDİ katına çıkmıştı.
+Ölçümün otomatik olma gerekçesi bu tek sayı.
+
+**2. `reference` bandının 200/300 → 260/400 yükseltilmesi (15 Eylül 2026).**
+400 KB ≈ 100K token. Gevşetme TEK BAŞINA yapılmadı: sınıra çarpınca sınırı
+yükseltmek kontrolü süse çevirir, o yüzden karşılığında bölüm ölçüsü eklendi.
+`frozen` bu ölçünün DIŞINDA — o ciltlerin başlığı baştan sona okumayı zaten
+yasaklıyor.
+
+**3. Alt sınırın gerekçesi (7 Eylül 2026).** Betik 0 baytlık her `.md`'yi ve
+tabanının altına düşen altı baştan sona okunan dosyayı da düşürür, çünkü bir
+dosyanın BOŞALMASI da bir arıza. Ders, betik yazana: bir dosyayı yazma
+modunda AÇMADAN önce içeriğini oku — vaka bu günlüğün kendisiydi.
+
+## 25 Eylül 2026 — `docs/decisions/roadmap-arsiv.md`: cilt donduruldu (258 → 56 KB)
+
+Arşiv `reference` uyarısına (260 KB) ~2 KB uzaktaydı ve merge turu (#565 →
+… → #626) yeni kapanan maddeleri oraya taşıyacaktı. Reçetenin ilk adımı
+(bayat anlatıyı buda) yerine ikinci adım seçildi, çünkü arşivin tamamı
+kapanmış iş — "bayat" diye ayıklanacak bir katman yok, her satır bir atıfın
+hedefi. Kesme noktası dosyanın kendi yapısından geldi: İçindekiler
+tablosunun ALTI (2 Eylül'deki ilk taşımanın gövdesi, 1.0.3-1.1.0 sürüm
+turları, madde 23 fazları, incelemenin geçişleri) artık hiç değişmiyordu;
+üstü (15-24 Eylül taşımaları) değişiyordu. Alt katman satırı değişmeden
+`roadmap-arsiv-cilt-1.md`'ye gitti ve `FROZEN` listesine girdi (tavan 210
+KB). Taşınan bölümlere işaret eden 16 atıf (ROADMAP, CLAUDE, `surumler.md`,
+parça günlüğü, dört karar kaydı, Play cevap kağıdı) yeni cilde çevrildi;
+aktif ciltte kalanlara (§25, "24. FAZ C", güvenlik #19-#20, "Sayaç") işaret
+edenler bilerek DOKUNULMADI. Tek istisna `src/game/gameReducer.ts`'teki bir
+yorum (hata avı #24): motor dosyası, yalnızca bir yorum için golden/parite
+turuna sokulmadı — ciltlerin başlığındaki `grep … roadmap-arsiv*.md`
+reçetesi onu da buluyor.

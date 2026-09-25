@@ -11,6 +11,7 @@ import { GENDER_OPTIONS, formatTrDateInput, trDateToIso } from '../utils/profile
 import type { ReactNode } from 'react';
 import type { Gender } from '../lib/database.types';
 import { friendlyErrorMessage, GENERIC_ERROR_NOTICE } from '../utils/errorMessage';
+import { funnelEvent } from '../utils/funnelEvents';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -162,6 +163,10 @@ export function AuthModal({
         // ölçecek, bu satır değil.
         void logSignupEvent('completed', signupChannel);
         journeyStep('signup_done');
+        // Huni v2 "Üye" sütunu. ⚠ Gizlilik metni güncellenene kadar KAPALI
+        // (`FUNNEL_MEMBER_EVENTS_ENABLED`) — çağrı burada duruyor ki bayrağı
+        // açan PR yalnızca bayrağı ve metni değiştirsin.
+        funnelEvent('signup', true);
         if (data.session) {
           await refreshProfile();
           onClose();
