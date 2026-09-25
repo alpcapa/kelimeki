@@ -31,6 +31,39 @@ açıldı) anlatır; `docs/decisions/roadmap-arsiv.md` kapanmış turları sakla
 
 ---
 
+## SÜRÜM TRENİ — 2 haftada bir (25 Eylül 2026, kullanıcı kararı)
+
+Sözleri: *"Bundan sonra sürüm arası süre standardı belirlememiz lazım
+(acil işler hariç)"* → **2 hafta**. Web bu trene BAĞLI DEĞİL: her merge
+anında yayında.
+
+**Takvim (her tur):**
+
+| Gün | Ne |
+|---|---|
+| **Kesim** — Pazartesi | Biriken "Sonraki sürüm" taslak PR'ları TEK SEFERDE merge edilir → sürüm numarası artırılır → `main` derlemesi alınır |
+| Salı–Çarşamba | Android `.apk` cihaz turu (`mobile/docs/testing-<sürüm>-turu.md`) + düzeltmeler |
+| Perşembe | App Store'a gönderim (elle yayın); `.aab` hazır tutulur |
+| Apple onayı | İki mağaza AYNI GÜN yayına (aşağıdaki "SÜRÜM SENKRONU") |
+| Arada (~10 gün) | Mobil işler **taslak PR** olarak birikir, başlık `[Sonraki sürüm] …`; `main`'e mobil kod GİRMEZ |
+
+**İlk kesim:** 1.1.1 iki mağazada yayına alındıktan sonraki ilk Pazartesi.
+
+**Mobil + web birlikte değişen iş:** iki PR'a böl — web yarısı hemen
+merge edilir (parite testi web kaynağını okumuyorsa; okuyorsa ikisi
+birlikte trene biner), port yarısı taslak PR olarak treni bekler.
+İlk örnek: #636 (web, merge) ↔ #637 (port, taslak).
+
+**Acil istisna — tren beklenmez, ayrı düzeltme sürümü çıkar:** çökme /
+açılmama · veri kaybı · güvenlik açığı · temel oyun akışı kırık (hamle
+yapılamıyor, oyun başlamıyor) · mağazanın zorunlu kıldığı değişiklik.
+Görsel/metin düzeltmesi acil DEĞİLDİR, trene biner.
+
+**Neden:** trensiz dönemde dondurma süresi belirsiz uzuyordu, port işleri
+dallarda bekliyordu ("Sıradaki sürüme binecekler" tablosu dört kez eksik
+yakalandı). Tren, `mobile-latest`in ezilme riskini kesim→yayın arasındaki
+birkaç güne indiriyor ve inceleme+cihaz turu emeğini ayda ikiyle sınırlıyor.
+
 ## SÜRÜM SENKRONU — kural (12 Eylül 2026, kullanıcı kararı)
 
 Sözleri: *"ASC'yi 665 yapayım, yarın yeni aab yükleriz Play'e, ikisi de aynı
