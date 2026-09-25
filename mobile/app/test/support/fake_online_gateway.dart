@@ -73,6 +73,18 @@ class FakeOnlineGamesGateway implements OnlineGamesGateway {
   int netFailFirst = 0;
   int netFailCalls = 0;
 
+  /// `netFailFirst` düşüşlerinin FIRLATACAĞI hata. Verilmezse taşıma
+  /// istisnası. 504 gibi GEÇİCİ SUNUCU hataları ayrı bir daldan geçiyor
+  /// (`isTransientServerError`), sahte uç yalnızca taşıma hatası
+  /// üretebildiği sürece o dal ölçülemezdi (17 Eylül 2026).
+  Object? netFailError;
+
+  /// Web `hasValidSession` ikizi — oturum kapısı testleri için.
+  bool sessionValid = true;
+
+  @override
+  bool get hasValidSession => sessionValid;
+
   @override
   Future<List<Map<String, Object?>>> listMine() async {
     // Sayaç EN BAŞTA: "tekrar denendi mi?" testleri düşen denemeleri de
@@ -81,7 +93,7 @@ class FakeOnlineGamesGateway implements OnlineGamesGateway {
     _maybeFail();
     if (netFailCalls < netFailFirst) {
       netFailCalls++;
-      throw Exception('ClientException: Failed to fetch');
+      throw netFailError ?? Exception('ClientException: Failed to fetch');
     }
     if (listHangs) return Completer<List<Map<String, Object?>>>().future;
     return [for (final r in rows) Map<String, Object?>.of(r)];
