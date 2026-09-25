@@ -1,4 +1,4 @@
-# Google Play — mağaza vitrini (22–23 Ağustos 2026)
+# Google Play — mağaza vitrini (22–23 Ağustos 2026; açıklama 25 Eylül 2026)
 
 Bu dosya Play Console'a ELLE girilecek METİNLERİ ve cihazdan alınacak ekran
 görüntülerinin çekim listesini taşıyor. Metin dışındaki her form (Data
@@ -23,55 +23,76 @@ Kelimeki: Türkçe Kelime Oyunu
 
 ## Kısa açıklama (≤80 karakter)
 
+**AS-BUILT — 25 Eylül 2026'da Console'a girildi, incelemeye gönderildi.**
+
 ```
-Kelime kur, bölgeni büyüt, tahtayı ele geçir. Yapay zekaya ve arkadaşına karşı.
+Türkçe kelime oyunu: kelime kur, bölgeni büyüt. İnternetsiz ya da arkadaşınla.
 ```
-79 karakter (ölçüldü).
+78 karakter (ölçüldü).
 
 ## Tam açıklama (≤4000 karakter)
 
-```
-Kelimeki, Türkçe için sıfırdan tasarlanmış bir kelime oyunu. Klasik kelime
-oyunlarından farkı tek bir kuralda: tahtada bir bölgen var ve oyun, kelime
-kurarak o bölgeyi büyütmek üzerine kurulu.
+**AS-BUILT — 25 Eylül 2026** (kısa açıklamayla aynı gönderim). 2462
+karakter (ölçüldü). ⚠ Paragraflar kod bloğunda da TEK SATIR — Console'a
+aynen böyle yapıştırılır; satırı elle kırmak mağazada da satırı kırar.
 
-13×13'lük tahtada her oyuncu bir köşeden başlar. Kurduğun her kelime bölgeni
-biraz daha genişletir; rakibinin bölgesine girersen puanın bir kısmı ona
-gider — "bölge vergisi". Yani her hamlede iki soru var: kaç puan alıyorum ve
-tahtanın neresini elimde tutuyorum?
+```
+Kelimeki, Türkçe için sıfırdan tasarlanmış bir kelime oyunu. Harflerle kelime kurarsın, tahtada kendi bölgeni büyütürsün. Yapay zekaya karşı internetsiz oyna ya da arkadaşınla online, sırayla oyna.
+
+Klasik kelime oyunlarından farkı tek bir kuralda: tahtada bir bölgen var ve oyun, kelime kurarak o bölgeyi büyütmek üzerine kurulu. 13×13'lük tahtada her oyuncu bir köşeden başlar. Kurduğun her kelime bölgeni biraz daha genişletir; rakibinin bölgesine girersen puanın bir kısmı ona gider — "bölge vergisi". Yani her hamlede iki soru var: kaç puan alıyorum ve tahtanın neresini elimde tutuyorum? Kelime bilgisi kadar strateji de isteyen bir zeka oyunu.
 
 NASIL OYNANIR
 • Kendi köşendeki başlangıç karesinden başla, kelimelerle merkeze doğru ilerle.
 • Ortadaki bölgeye taş koyarsan kelimenin puanı ikiye, tam merkezde üçe katlanır.
 • Rakibin bölgesine değen ya da giren hamlelerde puanın bir kısmı ona aktarılır.
-• Rafındaki yedi taşın hepsini tek hamlede kullanırsan bingo bonusu kazanırsın.
-• Torba ve raflar bittiğinde oyun biter; elinde kalan taşlar puanından düşülür.
+• Rafındaki yedi harfin hepsini tek hamlede kullanırsan bingo bonusu kazanırsın.
+• Torba ve raflar bittiğinde oyun biter; elinde kalan harfler puanından düşülür.
+• İlk oyununda kısa bir tanıtım, kuralları oynayarak öğretir.
 
-İKİ OYUN MODU
-• Yapay zekaya karşı: 2 veya 4 kişilik, anında başlar. İnternet bağlantısı
-  gerekmez — sözlük uygulamanın içinde.
-• Arkadaşınla canlı: arkadaşını davet et, sırayla oyna. Sıra sana geçtiğinde
-  haberin olur; hamle için 48 saatin var, oyun ekranından yazışabilirsin.
+YAPAY ZEKAYA KARŞI — İNTERNETSİZ
+• Üç zorluk seviyesi: Kolay, Normal, Zor.
+• 2 veya 4 kişilik oyun, anında başlar.
+• İnternet bağlantısı gerekmez; sözlük uygulamanın içinde. Uçakta, yolda, çevrimdışı oyna.
 
-SÖZLÜK
-TDK sözlüğüne dayalı, 63 binden fazla kelimelik bir liste (bulmacalarda sık
-geçen birkaç madde ayrıca eklendi). Tahtadaki bir kelimeye dokunarak anlamına
-bakabilirsin.
+ARKADAŞINLA ONLINE
+• Arkadaşını davet et, sırayla oyna; 2 veya 4 kişilik online kelime oyunu.
+• Sıra sana geçtiğinde bildirim gelir; hamle için 48 saatin var.
+• Oyun ekranından rakiplerinle mesajlaşabilirsin.
 
-k-lig
-Oynadığın her oyun k-lig puanına işler. Puan biriktikçe rütben yükselir:
-Çaylak'tan başlayıp Meraklı, Oyuncu, Usta, Şampiyon, Destan, Efsane, Uzaylı ve
-en tepede Kozmik. Belirli eşikleri geçtiğinde ek puan ödülü kazanırsın.
-Sıralamayı, istatistiklerini ve geçmiş oyunlarının tahtalarını skor kartından
-görebilirsin.
+SÖZLÜK VE KELİME ANLAMLARI
+TDK sözlüğüne dayalı, 63 binden fazla kelimelik bir liste (bulmacalarda sık geçen birkaç madde ayrıca eklendi). Tahtadaki bir kelimeye dokunarak anlamına bakabilirsin — oynarken kelime dağarcığın da gelişir.
+
+k-lig: SIRALAMA VE RÜTBELER
+Oynadığın her oyun k-lig puanına işler. Puan biriktikçe rütben yükselir: Çaylak'tan başlayıp Meraklı, Oyuncu, Usta, Şampiyon, Destan, Efsane, Uzaylı ve en tepede Kozmik. Belirli eşikleri geçtiğinde ek puan ödülü kazanırsın. Sıralamayı, istatistiklerini ve geçmiş oyunlarının tahtalarını skor kartından görebilirsin.
 
 ÜCRETSİZ VE REKLAMSIZ
-Kelimeki tamamen ücretsiz. Reklam yok, uygulama içi satın alma yok.
-Hesap açmadan da yapay zekaya karşı oynayabilirsin; hesap yalnızca canlı
-oyun, k-lig ve oyun geçmişi için gerekiyor.
+Kelimeki tamamen ücretsiz. Reklam yok, uygulama içi satın alma yok. Hesap açmadan da yapay zekaya karşı oynayabilirsin; hesap yalnızca online oyun, k-lig ve oyun geçmişi için gerekiyor.
 
-Tarayıcıdan oynamak istersen: kelimeki.com
+Kelime oyunlarını, bulmacaları ve harf oyunlarını seviyorsan Kelimeki'yi dene. Tarayıcıdan oynamak istersen: kelimeki.com
 ```
+
+### Neden bu metin — bulunabilirlik (25 Eylül 2026)
+
+Grow users → Acquire → **Traffic source** ölçüldü: son 28 günün 12
+edinmesinin **tamamı "Paid and direct"**, Google Play search'ten SIFIR;
+buna karşılık mağaza sayfasının dönüşümü **%60,38** (son 90 gün). Yani
+sayfa iyi dönüştürüyor, sorun Play içinde BULUNMAMAK. Önceki metin
+(22 Ağustos) "kelime oyunu"yu kısa açıklamada hiç, "online"ı hiçbir yerde
+kullanmıyordu ("canlı" diyordu — kimse öyle aramıyor); "internetsiz"
+bir cümlenin içinde kalmıştı; sonradan gelen zorluk seviyeleri ve
+tanıtım hiç yoktu. Eklenen arama ifadeleri: kelime oyunu · online ·
+internetsiz/çevrimdışı · bulmaca · harf oyunu · zeka oyunu.
+
+⚠ **Bilerek YOK:** rakip adları (Scrabble, Kelimelik — Play meta veri
+politikası: başka markayı izinsiz anmak) ve anahtar kelime listesi/tekrarı
+(keyword stuffing cezası). Başlık değişmedi.
+
+⚠ **Terim sapması:** uygulama içinde "Canlı", vitrinde "online" — vitrin
+metni arama terimini kullanıyor, uygulama yüzeyi değil (sürüm notlarındaki
+"seviye" ↔ "Zorluk" kararıyla aynı gerekçe).
+
+**Ölçüm:** ~3-4 hafta sonra aynı ekranda (Acquire → Traffic source)
+"Google Play search" satırı çıktı mı bak.
 
 **Uzunluk kontrolü:** `python3 - <<'P'` ile ölç (aşağıdaki komut) — Play 4000
 karakterde kesiyor ve kesilen metin sessizce kayboluyor.
