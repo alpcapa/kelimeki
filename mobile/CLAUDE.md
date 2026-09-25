@@ -763,6 +763,13 @@ gördüğü, 1.0.0'ın butonsuz ekranının neden geriye dönük düzeltilemedi�
 SIRA: 4. adımı 3'ten önce yapmak, herkesi indirilemeyen bir güncellemeye
 yönlendirmek demek.
 
+⚠ **App Store bir sürümü ONAYLADIKTAN sonra o numaraya yeni build almaz**
+(`90186` "train is closed" + `90062`); `+N` build numarası yetmez. Onaydan
+sonra `main`'e giren İLK mobil iş sürümü de yükseltmeli, yoksa her `main`
+derlemesi TestFlight adımında kırmızı biter. PR derlemesi TestFlight'a
+yüklemediği için bu PR'da GÖRÜNMEZ (25 Eylül 2026: altı derleme; kayıt
+`mobile/docs/surumler.md` → "1.1.1").
+
 ### Neden `UpdateRequiredScreen`'in butonu da In-App Update'e bağlı
 
 Kapı fırladıysa güncellemek EN ÇOK orada gerekiyor. Buton önce uygulama
