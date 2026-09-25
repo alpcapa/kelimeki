@@ -50,6 +50,15 @@ Kullanım Koşulları'na yazılması.
   düştü) · `chat_test.dart` beş yeni vaka (göster/Vazgeç metni korur/kabul
   → hemen gönder + ikinci mesajda sormaz/sunucuda kabul varsa hiç sormaz/
   kayıt yazılamazsa açık kalır). Tam takım yeşil.
+- **Aynı PR, ikinci iş — küfür süzgecinin port/metin yarısı (ROADMAP #37):**
+  süzgeç SUNUCUDA canlı (#641), yani mesaj maskesi eski pakette de çalışıyor.
+  Buraya düşen: `AuthService.nicknameStatus` (`nickname_status` RPC'si,
+  `NicknameStatus { ok, taken, blocked }`) — `checkNicknameAvailable`
+  kaldırıldı; süzgece takılan ad artık "Bu takma isim kullanılamaz."
+  (eski paket "kullanımda" der). `nicknameChecker` enjeksiyon tipi bool'dan
+  enum'a döndü, üç test dosyası buna uyarlandı. Koşullar §5'teki
+  "denetlenmez" cümlesi süzgeç cümlesiyle değişti, Gizlilik'e orijinalin
+  saklanması eklendi (web + port birlikte, `legal_text_test`).
 - **Doğrulama sınırı:** gerçek RPC ve web↔mobil hesap paylaşımı ancak
   cihazda → `mobile/docs/testing-arkadaslar-canli.md` → Mesajlaşma.
 

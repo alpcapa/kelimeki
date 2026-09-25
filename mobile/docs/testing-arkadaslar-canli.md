@@ -438,6 +438,11 @@
       yaz → pencere ÇIKMAMALI (onay hesaba bağlı); tersi de. "Kullanım
       Koşulları'nın tamamı" koşulları açmalı ve §3'te yasak listesi
       görünmeli.
+- [ ] **Küfür süzgeci + takma isim (25 Eylül 2026, ROADMAP #37).** Listede
+      olan bir kelimeyi içeren mesaj → iki tarafta da `*` ile görünmeli
+      (süzgeç sunucuda; eski paket de aynı). Kayıt/Hesap Ayarları'nda süzgece
+      takılan takma isim (ör. `Salak_Test`) → "Bu takma isim kullanılamaz."
+      ve buton pasif (eski pakette "kullanımda" yazardı).
 
 - [ ] **Buton görünürlüğü.** Board altındaki "Mesajlaşma" butonu YALNIZCA
       Canlı oyun ekranında görünmeli; yerel/YZ oyun ekranında hiç

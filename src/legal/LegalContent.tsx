@@ -79,6 +79,10 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             <li>Canlı oyunlarda gönderdiğiniz oyun içi sohbet mesajları</li>
             <li>Sohbet Kuralları'nı kabul ettiğiniz tarih ve kabul ettiğiniz kural sürümü</li>
             <li>
+              Otomatik süzgecin yıldızla gizlediği sohbet mesajlarının orijinal hâli — yalnızca
+              şikâyet incelemesi için saklanır ve yalnızca yöneticiler görebilir
+            </li>
+            <li>
               "Görüş Bildir" formundan ilettiğiniz mesajlar ve size yanıt verebilmemiz için
               formda belirttiğiniz e-posta adresi — girişsiz (misafir) gönderdiğinizde de
               saklanır
@@ -346,7 +350,9 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
           </P>
           <P>
             Oyun içi mesajlaşma yalnızca birbirini arkadaş olarak kabul etmiş kullanıcılar arasında
-            açıktır. Mesajlar gönderilmeden önce denetlenmez.{' '}
+            açıktır. Mesajlar bir kişi tarafından önceden okunmaz; 3. bölümde sayılan
+            uygunsuz ifadeler otomatik bir süzgeçle yıldızla (*) gizlenir ve süzgece
+            takılan takma isimler kabul edilmez. Hiçbir süzgeç kusursuz değildir.{' '}
             <strong>
               Bir mesajın içeriğinden ve doğurabileceği her türlü hukuki sonuçtan mesajı gönderen
               kullanıcı sorumludur.

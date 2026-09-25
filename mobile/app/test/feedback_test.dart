@@ -407,7 +407,7 @@ void main() {
           body: AuthModal(
               auth: AuthService.fake(),
               feedback: repo,
-              nicknameChecker: (_) async => true),
+              nicknameChecker: (_) async => NicknameStatus.ok),
         ),
       ));
       await tester.pump();

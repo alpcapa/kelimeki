@@ -253,8 +253,11 @@ class TermsModal extends StatelessWidget {
           _PRich([
             TextSpan(
                 text: 'Oyun içi mesajlaşma yalnızca birbirini arkadaş olarak '
-                    'kabul etmiş kullanıcılar arasında açıktır. Mesajlar '
-                    'gönderilmeden önce denetlenmez. '),
+                    'kabul etmiş kullanıcılar arasında açıktır. Mesajlar bir '
+                    'kişi tarafından önceden okunmaz; 3. bölümde sayılan '
+                    'uygunsuz ifadeler otomatik bir süzgeçle yıldızla (*) '
+                    'gizlenir ve süzgece takılan takma isimler kabul edilmez. '
+                    'Hiçbir süzgeç kusursuz değildir. '),
             TextSpan(
                 text: 'Bir mesajın içeriğinden ve doğurabileceği her türlü '
                     'hukuki sonuçtan mesajı gönderen kullanıcı sorumludur.',
@@ -326,6 +329,9 @@ class PrivacyModal extends StatelessWidget {
             'Canlı oyunlarda gönderdiğiniz oyun içi sohbet mesajları',
             "Sohbet Kuralları'nı kabul ettiğiniz tarih ve kabul ettiğiniz "
                 'kural sürümü',
+            'Otomatik süzgecin yıldızla gizlediği sohbet mesajlarının orijinal '
+                'hâli — yalnızca şikâyet incelemesi için saklanır ve yalnızca '
+                'yöneticiler görebilir',
             '"Görüş Bildir" formundan ilettiğiniz mesajlar ve size yanıt '
                 'verebilmemiz için formda belirttiğiniz e-posta adresi — '
                 'girişsiz (misafir) gönderdiğinizde de saklanır',
