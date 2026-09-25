@@ -429,7 +429,9 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
       altında olmalı. 3. ve 4. sahnenin balonları ortada.
 - [ ] **Üç balon TEK ölçüde:** tanıtım balonu, gerçek oyundaki zoom ipucu
       ("Boş kareye… çift tıklama") ve "Buradan başla" aynı büyüklükte
-      okunuyor (7 Eylül 2026 akşamı, ikinci tur).
+      okunuyor (7 Eylül 2026 akşamı, ikinci tur). ⚠ **Zoom ipucu artık yalnızca
+      4 saniye duruyor** (16 Eylül 2026) — ölçümü oyun açılır açılmaz yap;
+      kaçırırsan uygulamayı silip yeniden kur (tavan 2).
 - [ ] **OYNA balonunun oku BUTONU gösteriyor:** hamle tamamlanınca çıkan
       "Hamleni tamamlamak için OYNA'ya bas" balonunun kuyruğu rafın
       ortasını değil OYNA butonunu işaret ediyor.
@@ -492,7 +494,11 @@ buradakiler ekranın gerçek bir oyundaki hâli.
       ~4 sn kalmalı. Cümleler webdekiyle BİREBİR aynı olmalı.
 - [ ] **Aynı anda tek balon:** Vergi ödeyen hamlede önce **Sınır İhlali!**
       penceresi, kapandıktan SONRA balon. İpucu görünürken merkezdeki zoom
-      balonu gizlenmeli, sonra geri gelmeli.
+      balonu gizlenmeli. ⚠ **"Sonra geri gelmeli" ARTIK GEÇERLİ DEĞİL**
+      (16 Eylül 2026): zoom balonu ekrana geldiği andan itibaren 4 saniye
+      yaşıyor (`kZoomHintAutoHide`) ve süre balon gizliyken de işliyor, yani
+      bir hamleden sonra çıkan bağlamsal ipucu sırasında zoom balonu çoktan
+      kapanmış olur.
 - [ ] **Tavan 2:** Aynı ipucu üçüncü kez hak edildiğinde çıkmamalı.
 - [ ] **Tekrar oynama:** Setup → "Nasıl oynanır?" → pencerenin EN BAŞINDA
       **"Tanıtım turunu oyna (1 dk)"**. Bas → tanıtım açılıyor; bitir →

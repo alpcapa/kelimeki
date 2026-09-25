@@ -65,6 +65,21 @@ const double kDoubleTapRadius = 40.0;
 /// parmak gecikmesiz takip edilmeli.
 const Duration kZoomAnimDuration = Duration(milliseconds: 180);
 
+/// Tanıtım balonunun KENDİ KENDİNE kapanma süresi (16 Eylül 2026, oyuncu
+/// bildirdi: *"tanıtımdan sonra zoom özelliği için sürekli kalan uyarı
+/// mesajı oyun oynamayı zorlaştırıyor... 3-5 saniye sonra gidecek şekle
+/// getirelim. İnsanlar okumuyor."*). Öncesinde balonu kapatan TEK şey
+/// zoom'u denemekti.
+///
+/// ⚠ Kendi kendine kapanma "denedi" SAYILMAZ: `markZoomTried` çağrılmaz ve
+/// gösterim sayacı da artmaz (karar anında arttı) — hiç denemeyen oyuncu
+/// balonu ikinci oyun açılışında bir kez daha görür
+/// (`FlagsStore.shouldShowZoomHint`, tavan 2).
+///
+/// Web ikizi `ZOOM_HINT_AUTO_HIDE_MS` (`src/utils/boardZoom.ts`) ile AYNI
+/// olmalı.
+const Duration kZoomHintAutoHide = Duration(seconds: 4);
+
 /// Aktif tahta kaydırması (pan) — yalnızca zoom açıkken kurulur. Ekranlar
 /// scroll kilidini buna bağladığından atamalar setState içinde yapılır
 /// (`_DragRef` ile aynı sözleşme).
