@@ -32,6 +32,8 @@ import 'data/meaning_store.dart';
 import 'data/supabase_client.dart';
 import 'storage/app_storage.dart';
 import 'util/online_status.dart';
+import 'data/device_stamp.dart';
+import 'data/visits_api.dart';
 
 class AppServices {
   /// Sözlük — açılışta fire-and-forget başlar, oyun başlatma bekler
@@ -68,6 +70,11 @@ class AppServices {
   /// depolama açıldıktan sonra kurulur (kuyruk deposuna ihtiyaç duyar),
   /// bu yüzden Future. Supabase yoksa null (kayıt tutulmaz).
   final Future<GamesRepo>? games;
+
+  /// Misafir ziyaret pingi (`guest_visits`) — Kaynak Hunisi'nin "Gelen"
+  /// adımı (22 Eylül 2026). Supabase yoksa null. Çağıran tek yer
+  /// `ui/app.dart`ın `initState`i; koşulların tamamı repo'nun içinde.
+  final VisitsRepo? visits;
 
   /// Skor kartı / k-lig verisi — Supabase yoksa null (menüde bu satırlar
   /// hiç çizilmez).
@@ -139,6 +146,7 @@ class AppServices {
     this.storage,
     this.cloudSaves,
     this.games,
+    this.visits,
     this.stats,
     this.leagueRewards,
     this.feedback,
@@ -160,8 +168,13 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   final meanings = MeaningStore(bundle: bundle);
   final storage = AppStorage.open();
   final supabase = await initSupabase();
+  // `anon_id` + kaynak etiketi — huninin DÖRT adımı da (ziyaret · kayıt ·
+  // oyun başlatma · oyun bitirme) bu TEK damgadan besleniyor, yani bir
+  // ekranın onu unutması mümkün değil (22 Eylül 2026).
+  final stamp = storage.then((s) => DeviceStamp(s.flags));
   final auth = AuthService(supabase,
-      profileCache: storage.then((s) => s.profileCache));
+      profileCache: storage.then((s) => s.profileCache),
+      signupStamp: stamp);
   // Firebase açılışı BEKLETİLİYOR ama fırlatmıyor (bkz. push_init.dart):
   // web/masaüstünde ve yapılandırma yoksa sessizce false döner. Maliyeti
   // native'de birkaç ms; sonrasında `push` alanının dolu olup olmadığı
@@ -218,7 +231,11 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
                 deleteQueue: storage.then((s) => s.cloudDeletes))
             : null,
     games: supabase != null
-        ? storage.then((s) => GamesRepo(SupabaseGamesGateway(supabase), s.queue))
+        ? storage.then((s) =>
+            GamesRepo(SupabaseGamesGateway(supabase, stamp: stamp), s.queue))
+        : null,
+    visits: supabase != null
+        ? VisitsRepo(SupabaseVisitsGateway(supabase), stamp)
         : null,
     stats: supabase != null ? StatsRepo(SupabaseStatsGateway(supabase)) : null,
     leagueRewards: supabase != null

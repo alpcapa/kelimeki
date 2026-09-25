@@ -1826,6 +1826,42 @@ maddelerin çoğu **Play kanalından kurulmuş imzalı bir derleme** istiyor, ya
 CI'nın debug-imzalı `.apk`'sıyla koşulamaz. Hangi maddenin hangi derlemede
 test edilebildiği o dosyanın başındaki tabloda.
 
+## 32. Kaynak Hunisi — app'in damgası (Parça 214, 22 Eylül 2026)
+
+⚠ **Bu bölüm SUNUCUYA yazılanı doğrular** — `flutter test` sahte uçlarla
+koşuyor, yani "satır gerçekten düştü mü" sorusunu YALNIZCA burası
+cevaplıyor. Kontroller admin panelinden (web) ya da Supabase'den okunur.
+
+- [ ] **Girişsiz açılışta `guest_visits`e satır düşer.** Uygulamayı
+      ÇIKIŞ YAPMIŞ hâlde aç → `guest_visits` tablosunda en yeni satır
+      `utm_source = 'app'`, `anon_id` dolu, `device_type` = `ios`/`android`
+      olmalı. ⚠ `is_standalone` NULL olmalı (native uygulama "ana ekrana
+      ekleme" sorusunun dışında).
+- [ ] **Aynı gün ikinci açılış YENİ satır yazmaz.** Uygulamayı kapat/aç →
+      satır sayısı artmamalı (günde bir kez kuralı).
+- [ ] **GİRİŞLİYKEN hiç yazmaz.** Giriş yap, uygulamayı kapat/aç →
+      `guest_visits`e yeni satır DÜŞMEMELİ. (Sunucu da RLS ile reddeder;
+      burada istemcinin hiç denemediğini doğruluyoruz.)
+- [ ] **Yeni kayıt `Uygulama` satırına düşer.** Uygulamadan yeni bir hesap
+      aç → `profiles.signup_utm_source = 'app'` olmalı, admin panelinde
+      Büyüme > Kullanıcı > **Kanal → Üye Kalitesi**'nde **Mobil Uygulama**
+      satırının "Üye"si artmalı.
+      ⚠ `bilinmiyor` satırı ARTMAMALI — artıyorsa damga metadata'ya
+      girmemiş demektir (anahtar adı `utmSource`, camelCase).
+- [ ] **YZ oyunu başlat/bitir → `game_starts`/`game_finishes`.** Misafirken
+      bir YZ oyunu başlat ve bitir → iki satırda da `utm_source = 'app'`,
+      `game_starts.anon_id` dolu. ⚠ **Girişliyken bitirilen oyunda
+      `game_finishes.anon_id` NULL olmalı** (gizlilik: anonim kod ile hesap
+      kimliği aynı satırda ASLA bulunmaz).
+- ⚠ **Eski "dört adım aynı satırda" maddesi DÜŞTÜ (25 Eylül 2026):** bu
+      bölüm yazıldığında panelde Gelen/Üye/Başlayan/Biten sütunlu bir
+      Kaynak Hunisi vardı; #625 onu yalnızca üye kohortuna (Üye Kalitesi)
+      indirdi, misafir adımları Huni v2'nin işi. Damganın kendisi
+      yukarıdaki satır kontrolleriyle doğrulanır.
+- [ ] **"Ana Ekrana Ekleme" dökümü app'ten ETKİLENMEZ.** App açılışlarından
+      sonra o tablodaki toplam ziyaretçi sayısı artmamalı (migration
+      `20260922070950` app satırlarını eliyor). Artıyorsa filtre düşmüş.
+
 ## Test ortamları ve derleme dağıtımı → `mobile/docs/test-ortamlari.md`
 
 Web derlemesi (tarayıcı test ortamı), **FAZ B — cihaza özel tur (iOS +

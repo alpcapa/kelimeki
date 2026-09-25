@@ -418,6 +418,12 @@ class _HomeGateState extends State<_HomeGate> with WidgetsBindingObserver {
     // kullanıcıda rozet olduğu gibi kalırdı.
     _bildirimleriTemizle();
     _guncellemeKontrol();
+    // Misafir ziyaret pingi — Kaynak Hunisi'nin "Gelen" adımı. KOŞUL YOK:
+    // "girişli mi" ve "bugün yazıldı mı" kararlarının tamamı `VisitsRepo`nun
+    // içinde, tek yerde (bir ekranın koşulu yanlış kopyalaması bu sayede
+    // imkânsız). Fire-and-forget: açılışı ASLA geciktirmez.
+    final visits = widget.services.visits;
+    if (visits != null) unawaited(visits.pingGuestVisit());
     // ⚠ `_oyunLinkiniIsle` BURADA çağrılmıyor: `_showIntro` hâlâ null
     // (karar verilmedi) ve işleyici bilerek bekletirdi. Çağrı, kararın
     // verildiği HER dalda — aşağıdaki üçü + `_finishIntro` + dinleyiciler.
