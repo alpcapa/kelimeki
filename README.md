@@ -115,6 +115,7 @@ src/
 │   ├── MoveHistoryModal.tsx     # oyun geçmişi (hamle hamle)
 │   ├── ChatThread.tsx           # oyun içi mesajlaşma: paylaşılan sohbet baloncuğu listesi (canlı + arşiv)
 │   ├── ChatModal.tsx            # oyun içi mesajlaşma: Canlı oyunda gerçek sohbet penceresi (yalnızca Canlı oyunlar)
+│   ├── ChatRulesModal.tsx       # Sohbet Kuralları onayı: ilk mesajdan önce BİR KEZ (metin `utils/chatRules.ts`te)
 │   ├── ChatSettingsModal.tsx    # oyun içi mesajlaşma Faz 2: kişi sessize alma / rapor etme ayarları (ChatModal'ın dişli ikonundan açılır)
 │   ├── GameChatHistoryModal.tsx # oyun içi mesajlaşma: bitmiş bir oyunun dondurulmuş sohbet kaydının salt-okunur görünümü
 │   ├── Leaderboard.tsx          # lider tablosu (k-lig)
@@ -198,6 +199,7 @@ src/
 │   ├── errorReporting.ts # istemci hata telemetrisi (client_errors) — beklenen durumlar BİLEREK kaydedilmez, saatte 10 kayıt tavanı (zaman penceresi, süreç ömrü DEĞİL)
 │   ├── errorMessage.ts  # kullanıcıya gösterilen hata metninin son kapısı: ham makine çıktısı (504 gövdesi, SQLSTATE dökümü) yerine Türkçe cümle, ham metin telemetriye (Flutter portuyla testli olarak senkron)
 │   ├── chatRead.ts      # Canlı sohbetin okundu kararı — sunucu (`online_game_chat_reads`) ↔ cihaz damgasının büyüğü; kapı `verify-chat-read`
+│   ├── chatRules.ts     # Sohbet Kuralları onayı — metin + sürüm (`CHAT_RULES_VERSION`) tek kaynak; ilk mesajdan önce BİR KEZ, hesaba bağlı (`accept_chat_rules`)
 │   ├── funnelEvents.ts  # Huni v2 — cihaz başına anonim olaylar (`funnel_events`: land/visit/signup/game_start/game_finish), admin'de kohort tablosu; kapı `verify-funnel-events`
 │   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına kimliksiz oturum (`web_sessions`), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
 │   ├── storeLinks.ts    # mağaza rozetleri (ROADMAP #26): URL'ler (`null` = yayında değil → rozet HİÇ çizilmez), sıra (App Store önce — Apple'ın yazılı kuralı) ve yerleşim ölçüleri

@@ -35,6 +35,14 @@ export interface Profile {
    * hiç etkisi yok, onlar bu bayrağa bakmadan her zaman gönderilir.
    */
   email_notifications_enabled: boolean;
+  /**
+   * Kabul edilen Sohbet Kuralları sürümü (`utils/chatRules.ts` →
+   * `CHAT_RULES_VERSION`) — hiç kabul etmediyse null. Yalnızca
+   * `accept_chat_rules` RPC'si yazar; doğrudan update'i trigger geri alır.
+   */
+  chat_rules_version: number | null;
+  /** Sohbet Kuralları'nın kabul edildiği andaki sunucu zaman damgası. */
+  chat_rules_accepted_at: string | null;
 }
 
 // ── Arkadaşlık sistemi ──────────────────────────────────────────────────────

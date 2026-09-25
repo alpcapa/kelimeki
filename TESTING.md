@@ -251,6 +251,15 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
 - [ ] **İlk açılış.** Tahtanın altındaki "Mesajlaşma" → hoşgeldin popup'ı
       ("Devam") → sohbet penceresi. Buton yalnızca Canlı oyunlarda görünmeli,
       YZ oyununda hiç olmamalı.
+- [ ] **Sohbet Kuralları onayı (25 Eylül 2026).** Kuralları hiç kabul
+      etmemiş bir hesapla ilk mesajı gönder → mesaj GİTMEDEN "Sohbet
+      Kuralları" penceresi çıkmalı. "Vazgeç" → mesaj gitmemeli, yazdığın
+      metin kutuda KALMALI. Tekrar gönder → "Kabul ediyorum" → pencere
+      kapanıp mesaj HEMEN gitmeli. Sayfayı yenile, başka bir oyunda ve
+      mobilde aynı hesapla yaz → pencere bir daha ÇIKMAMALI (onay hesaba
+      bağlı). Sunucuda: `select chat_rules_version, chat_rules_accepted_at
+      from profiles where id = …` → `1` ve kabul anı. "Kullanım
+      Koşulları'nın tamamı" bağlantısı koşulları pencerenin ÜSTÜNDE açmalı.
 - [ ] **Gönderme.** 200 karakter sınırı ve canlı "x/200" sayacı çalışmalı.
       Kendi mesajın sağda/kendi renginde, karşınınki solda.
 - [ ] **Yönlendirme etiketi (2 Eylül 2026, kullanıcı isteği).** Mesaj
