@@ -1335,8 +1335,8 @@ export default function App() {
       state.endReason === 'surrender',
       user?.id ?? null,
     );
-    // Huni v2: gizlilik metni bugün bitiş kaydını yalnızca MİSAFİR için
-    // sayıyor — üye bitişini `funnelEvent` kendisi süzer (bayrak kapalıyken).
+    // Huni v2: misafir bitişi Gizlilik 6. bölümün (4), üye bitişi (7) numaralı
+    // durumu — `funnelEvent` `FUNNEL_MEMBER_EVENTS_ENABLED`e göre süzer.
     // 7 günlük terk yolu BİLEREK dahil değil: süre dolması "bitirdi" demek değil.
     funnelEvent('game_finish', !user);
     journeyStep('game_finish');

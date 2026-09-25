@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 8 Eylül 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 24 Eylül 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
@@ -211,7 +211,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             veya pazarlama amaçlı herhangi bir çerez ya da izleme teknolojisi kullanılmamaktadır.
             Kaç benzersiz ziyaretçimiz olduğunu, hangi cihaz/işletim sistemlerinden geldiğimizi
             ve kaç kişinin oyuna başladığını anlayabilmek için cihazınızda rastgele, kimliğinizle
-            hiçbir şekilde ilişkilendirilmeyen anonim bir kod üretilir. Bu kod dört durumda
+            hiçbir şekilde ilişkilendirilmeyen anonim bir kod üretilir. Bu kod yedi durumda
             sunucuya iletilir: (1) HER ziyarette — oturum açık olsun olmasın — işletim sistemi
             tipiyle (iOS/Android/masaüstü) ve, tarayıcınızdan elde edilebiliyorsa, işletim
             sistemi sürümü/cihaz modeliyle birlikte (bu ikisi bazı tarayıcı ve cihazlarda hiç
@@ -227,12 +227,19 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             parçasını içerebilir. (4) Yapay zekaya karşı bir oyunu BİTİRDİĞİNİZDE — yalnızca
             girişsiz (misafir) oynuyorsanız — oyunun süresi, oyuncu sayısı ve varsa kaynak
             etiketiyle birlikte; böylece kaç FARKLI cihazın oyunu tamamladığını sayabiliyoruz.
-            Girişliyken bu kayıt hesabınıza bağlı tutulduğundan anonim kod ORAYA HİÇ YAZILMAZ
-            (ikisi aynı kayıtta asla bulunmaz; bunu sunucu da zorunlu kılar). (5) Oyunu
+            Girişliyken oyun kaydı hesabınıza bağlı tutulduğundan anonim kod O KAYDA HİÇ
+            YAZILMAZ (ikisi aynı kayıtta asla bulunmaz; bunu sunucu da zorunlu kılar); girişli
+            bitiş için anonim kodla yalnızca aşağıdaki (7) numaralı, hesaptan bağımsız kayıt
+            tutulur. (5) Oyunu
             tanıtan kısa turu açtığınızda, bitirdiğinizde ya da atladığınızda: turun hangi
             adımında ayrıldığınız, turu kendinizin mi başlattığı ve platform bilgisi anonim
             kodla birlikte kaydedilir; böylece tanıtımın işe yarayıp yaramadığını
-            ölçebiliyoruz. Bu beş kaydın
+            ölçebiliyoruz. (6) Hesap açtığınızda ve (7) girişliyken yapay zekaya karşı bir
+            oyunu bitirdiğinizde: yalnızca olayın türü, platform (web/iOS/Android), uygulamadan
+            geliyorsa uygulama sürümü ve olayın GÜNÜ anonim kodla birlikte kaydedilir. Bu iki
+            kayda hesap kimliğiniz YAZILMAZ ve saat tutulmaz — yalnızca gün tutulduğu için kayıt,
+            hesabınızın açıldığı anla da eşleştirilemez; böylece yeni gelenlerin kaçının üye
+            olup oynamayı sürdürdüğünü kişileri tanımadan sayabiliyoruz. Bu yedi kaydın
             hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA YER ALMAZ: girişli
             olsanız bile bu veriler hiçbir üçüncü tarafla paylaşılmaz ve hesabınızla asla
             eşleştirilmez. Yazı tipleri de dahil tüm statik

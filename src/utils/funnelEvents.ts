@@ -12,10 +12,11 @@
 // ⚠ GİZLİLİK METNİ SINIRI (24 Eylül 2026, kullanıcı kararı "ikiye böl"):
 // metnin güncellenmesi port kopyasını (`legal_modals.dart`) da değiştirmeyi,
 // yani mobil derlemeyi gerektiriyor → sürüm dondurması bitene kadar YAPILAMAZ.
-// O güne kadar yalnızca metnin BUGÜN zaten saydığı olaylar yazılır:
-// ziyaret (land/visit), YZ oyunu başlangıcı ve MİSAFİR oyun bitişi. `signup`
-// ve üye oyun bitişi `FUNNEL_MEMBER_EVENTS_ENABLED` bayrağının arkasında;
-// metin güncellenen PR'da bayrak da `true` olur.
+// PR 1 yalnızca metnin o gün zaten saydığı olayları yazdı: ziyaret
+// (land/visit), YZ oyunu başlangıcı ve MİSAFİR oyun bitişi. `signup` ve üye
+// oyun bitişi `FUNNEL_MEMBER_EVENTS_ENABLED` bayrağının arkasındaydı; metin
+// (Gizlilik 6. bölüm, (6) ve (7)) 24 Eylül 2026'da güncellendi ve bayrak
+// açıldı (ROADMAP #36). Bayrak KALIR: metinden geri adım atılırsa kapı o.
 //
 // Dosya iki katmanlı: üstteki fonksiyonlar SAF (`npm run verify-funnel-events`
 // doğrudan koşar), alttaki kabuk onları `localStorage` + `fetch`'e bağlar.
@@ -48,11 +49,11 @@ export const FUNNEL_EXISTING_CHANNEL = 'mevcut';
 export const FUNNEL_DIRECT_CHANNEL = 'direkt';
 
 /**
- * `signup` ve ÜYE oyun bitişi gizlilik metni güncellenene kadar KAPALI
- * (başlıktaki "GİZLİLİK METNİ SINIRI"). Metni güncelleyen PR bunu `true`
- * yapar; admin tablosu da "Üye" sütununu bu bayrağa göre "bekliyor" gösterir.
+ * `signup` ve ÜYE oyun bitişi — gizlilik metni bunları 24 Eylül 2026'dan
+ * beri sayıyor (başlıktaki "GİZLİLİK METNİ SINIRI"). `npm run
+ * verify-funnel-events` bayrağın metin güncellenmeden açılmasını engelliyor.
  */
-export const FUNNEL_MEMBER_EVENTS_ENABLED: boolean = false;
+export const FUNNEL_MEMBER_EVENTS_ENABLED: boolean = true;
 
 /** Kanal etiketini sunucunun beklediği biçime getirir; boşsa `null`. */
 export function normalizeFunnelChannel(raw: string | null | undefined): string | null {
