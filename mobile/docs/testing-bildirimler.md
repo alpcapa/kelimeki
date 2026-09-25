@@ -515,6 +515,99 @@ yazılıyor.
       tabloda hiç görünmemeli (kapsam bilerek dar), ama bildirimlerin
       çalıştığı başka bir hesapta hiçbir şey bozulmamalı.
 
+## 3g. iOS'ta bildirim HİÇ düşmüyor — önce APNs anahtarının ORTAMINA bak
+
+✅ **VAKA KAPANDI (15 Eylül 2026, aynı gün).** Yeni anahtar `V85TL79C5R`
+(*Kelimeki APNs Prod* · Team Scoped (All topics) · **Sandbox &
+Production**) üretilip Firebase'in development+production satırlarının
+İKİSİNE de yüklendi; bildirim ilk denemede iPhone'a düştü ve push log'unda
+yüklemeden sonra **sıfır hata** var. İstemcide tek satır değişmedi, sürüm
+çıkılmadı. Aşağısı teşhis yöntemi — bir daha aynı belirti görülürse buradan
+yürünür.
+
+⚠ **Bir okuma tuzağı, aynı turda yaşandı:** Supabase log'u **UTC**,
+konsol/cihaz ekran görüntüleri **yerel saat** (UTC+3). Düzeltmeden sonra
+"hâlâ hata var" sanıldı; hata yığını aslında yüklemeden 10 dakika ÖNCEYDİ.
+Bir düzeltmenin işe yarayıp yaramadığını log'dan okurken **saati UTC'ye
+çevirip öyle karşılaştır.**
+
+15 Eylül 2026, kullanıcı bildirdi: *"Apple bildirimleri açayım mı diye
+sordu, izin verdim ama bildirim gelmiyor."* Uygulamada değişecek tek satır
+yoktu; arıza Apple ile Firebase arasındaydı ve **belirtisi cihazda tamamen
+sessiz**: izin diyaloğu çıkıyor, token yazılıyor, sunucu gönderiyor, hiçbir
+şey olmuyor.
+
+**Teşhis SIRASI — üç adım, ikisi bu ortamdan okunabiliyor:**
+
+1. **Token gerçekten yazılmış mı** (cihaz yarısı):
+   ```sql
+   select platform, app_version, count(*), max(updated_at)
+   from push_tokens group by 1,2;
+   ```
+   `ios` satırı VARSA izin + `getToken()` + `register_push_token` zincirinin
+   tamamı çalışıyor demektir; `aps-environment` entitlement'ı ve
+   `GoogleService-Info.plist` de yerindedir (biri eksik olsa `getToken()`
+   fırlatır ve `PushRepo` onu yutar → satır hiç doğmaz).
+2. **Gönderim ne diyor** (sunucu yarısı) — `sendPush` FCM'in reddini
+   `console.error`a yazıyor, yani Supabase log'unda duruyor:
+   ```sql
+   select timestamp, event_message from logs
+   where source = 'function_logs' and event_message ilike '%[push]%'
+   order by timestamp desc limit 20
+   ```
+   ⚠ **Başarılı gönderim LOGLANMIYOR** — sessizlik "gitti" demek, hata
+   satırı ise gitmediğini KANITLAR. Android satırları çalışırken iOS
+   satırlarının hepsi hata veriyorsa arıza platforma özgüdür.
+3. Ancak bundan sonra cihaza/uygulamaya bak.
+
+**O gün çıkan cevap:**
+
+```
+[push] FCM hatası: 401 "Invalid APNs credential."
+  errorCode: THIRD_PARTY_AUTH_ERROR
+  ApnsError: statusCode 403, reason "BadEnvironmentKeyInToken"
+```
+
+`BadEnvironmentKeyInToken` = **anahtarın ortamı ile token'ın ortamı
+uyuşmuyor.** TestFlight/App Store derlemesinin token'ı *production* APNs'ten
+gelir; Firebase'deki `.p8` ise yalnızca *Sandbox* için üretilmişti (Apple
+Developer → Keys → `RL4JLXL389` → **Environment: Sandbox**). ROADMAP'e
+8 Eylül'de *"Sandbox & Production"* diye yazılmıştı — konsoldan
+okunmamış bir ayar "yapıldı" diye kaydedilmişti ve bir hafta boyunca yanlış
+kaldı, çünkü o sürede kimse iOS'ta bildirim beklemiyordu.
+
+⚠ **Ortam SONRADAN DEĞİŞTİRİLEMEZ — konsolda denendi ve ölçüldü** (15 Eyl
+2026): anahtar sayfasındaki `Edit` → APNs satırının `Edit`i → *Configure
+Key* açılıyor, ama orada **Environment ve Key Restriction düz METİN olarak
+gösteriliyor** (seçim kontrolü yok; `Save` düğmesi var ama değiştirilecek
+bir şey yok). Yani "önce düzenlemeyi dene" bir çıkış yolu DEĞİL, yalnızca
+iki tık.
+
+**Tek çözüm YENİ anahtar:** All Keys → **+** → APNs işaretle → *Configure*
+→ **Environment: Sandbox & Production** · **Key Restriction: Team Scoped
+(All topics)** → Register → `.p8` indir (⚠ bir kez; ⚠ depo PUBLIC, girmez)
+→ Firebase → Project settings → General → Cloud Messaging → iOS uygulaması
+→ *APNs Authentication Key*: yeni `.p8` + yeni Key ID + Team ID
+`8277D85FY9`. ⚠ Takım başına en fazla **2** APNs anahtarı tutulabilir —
+eskisini, yenisinin çalıştığı DOĞRULANDIKTAN sonra revoke et.
+
+⚠ **Bu arıza sürüm gerektirmez.** Anahtar değişince sahadaki paket
+(1.1.0/665) olduğu gibi bildirim almaya başlar; istemcide düzeltilecek bir
+şey yok.
+
+⚠ **Yan etki — bayat iOS satırları temizlenmiyor.** Gönderim APNs kimlik
+doğrulamasında düştüğü için FCM `UNREGISTERED` dönemiyor, yani
+`sendPush`'un bayat token silme dalı hiç çalışmıyor (15 Eylül'de 2 kişiye
+6 satır). Anahtar düzelince ilk gönderimlerde kendiliğinden elenir.
+
+- [x] **3g.1 GEÇTİ (15 Eylül 2026).** Yeni anahtar yüklendikten sonra bir
+      "sıra sende" tetiklendi → bildirim iPhone'a düştü **ve** log sorgusu
+      yüklemeden sonrası için sıfır hata verdi (ikisi birlikte; yalnız
+      cihaza bakmak yetmez, sessizlik iki şeyi birden anlatabiliyor).
+      ⚠ Bayat iOS satırları (o gün 2 kişiye 6 satır) artık kendiliğinden
+      elenir: gönderim APNs'e ulaştığı için FCM ölü token'lara
+      `UNREGISTERED` dönüyor ve `sendPush`un silme dalı çalışıyor.
+
 ## 4. Kayıt onayı ve şifre sıfırlama (derin bağlantı kanalı)
 
 `authRedirectUri` = `https://kelimeki.com/auth` (App Link),

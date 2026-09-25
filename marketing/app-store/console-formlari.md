@@ -22,7 +22,7 @@ karar bu dosyadan okunur. Play tarafında bunun tersi bir kez yaşandı ve
 | Üyelik | Apple Developer Program, **Bireysel** | ✅ aynı gün aktif (ödeme→aktivasyon ~12 dk) |
 | Team ID | `8277D85FY9` | ✅ |
 | App ID | `com.kelimeki.kelimeki`, **Explicit** + Push Notifications + Associated Domains | ✅ |
-| APNs anahtarı | Key ID `RL4JLXL389`, Team Scoped (All Topics), Sandbox & Production | ✅ Firebase'de iki satır da dolu |
+| APNs anahtarı | Key ID `V85TL79C5R`, *Kelimeki APNs Prod*, Team Scoped (All topics) + **Sandbox & Production** | ✅ **ÇALIŞIYOR** (15 Eyl 2026, cihazda + logda doğrulandı). ⚠ İlk anahtar `RL4JLXL389` **Sandbox-only**du ve iOS'ta bildirim HİÇ düşmüyordu (`403 BadEnvironmentKeyInToken`); ortam kısıtı düzenlenemediği için yenisi üretildi. Firebase'de *development* + *production* satırlarının İKİSİ de yeni anahtarla dolu. Eski anahtar aynı gün **revoke edildi** (takım başına 2 anahtar sınırı; bir slot boşta), `.p8` kullanıcının bulut deposunda — bir daha indirilemez |
 | Uygulama kaydı | `Kelimeki` · iOS · Türkçe · SKU `kelimeki-ios` | ✅ *Prepare for Submission* |
 | Free Apps Agreement | Tüm ülkeler, `Sep 8, 2026 – Sep 8, 2027` | ✅ **Active** (üyelikle otomatik) |
 | App Store Connect API | Key ID `7ARZF96LAK`, **Admin** | ✅ `.p8` **9 Eylül 2026 akşamı bir Mac'ten indirildi** ve üç secret girildi; zincir #614/#616'da uçtan uca koştu (§3) |
@@ -1024,6 +1024,30 @@ boru hattının ölçüsü (6.9" = `1320×2868`) yanlış sanıldı. **Media Man
 Sayfanın kendi açıklaması da bunu söylüyor: verilen kareler öteki ekran
 boyutları için ölçekleniyor.
 
+### ⚠ ARAMA SONUCUNDA KARE ÇIKMAMASI ≠ KARE EKSİKLİĞİ (15 Eylül 2026)
+
+Kullanıcı sordu: iPhone'da App Store'da "Kelimeki" aratınca sonuç satırında
+ekran görüntüleri ÇIKMIYOR, iPad'de çıkıyor.
+
+**Ölçüldü ve elendi:** satıra basılınca ürün sayfasında kareler **geliyor**.
+Yani 6.9" seti yüklü ve sağlam; fark yalnızca Apple'ın **arama sonucu
+düzeninde**. iPhone'da zengin kart (kare şeridi) her sonuca verilmiyor —
+o turda üstteki zengin kartı bir **reklam** kapmıştı ve bizim organik
+sonucumuz kompakt satıra düşmüştü. iPad'de sonuçlar iki sütunlu kart
+ızgarası olduğundan her sonuç kartla çiziliyor.
+
+**Kural:** "aramada kare yok" bildirimi geldiğinde ÖNCE ürün sayfasını
+açtır. Sayfada varsa Connect'te yapılacak bir şey YOKTUR; yoksa iki yere
+bakılır — yayındaki SÜRÜMÜN lokalizasyonu ve 6.9" slotunun o sürüm için
+dolu olup olmadığı (yukarıdaki slot doğrulaması 1.1.0 kaydı içindi).
+
+⚠ Aynı ekran görüntüsünden çıkan, kare sorunuyla İLGİSİZ ama daha önemli
+bulgu: **rakip bir uygulama (Kelimo, Codivion LLC) "Kelimeki" marka
+kelimesine Apple Search Ads veriyor** ve iPhone'da bizim sonucumuzun
+ÜSTÜNDE tam kartla duruyor (iPad'de Words With Friends aynısını yapıyor).
+Apple bunu engellemiyor; tek karşılığı kendi marka kelimene reklam vermek.
+Karar verilmedi, kayda geçiriliyor.
+
 ### 🔴 ALFA KANALI — kareler yüklenemeyecekti (11 Eylül 2026, ölçüldü)
 
 **App Store Connect ekran görüntüsünde saydamlık kabul etmiyor** ("flattened"
@@ -1476,6 +1500,45 @@ içeriği göremez; içerik kapıları (`pencereyiBekle` · `zoomKapisi` ·
 `animasyonBitsin`) tek tek, hep bir arıza YAŞANDIKTAN sonra eklendi. Yeni
 bir kare eklerken sıra şu: *ekranda olması gereken neyse onu `find` ile
 iddia et, sonra animasyonun bittiğini bekle.*
+
+
+---
+
+## 17. Ürün sayfasındaki "LANGUAGE" — Connect'te DEĞİL, `Info.plist`'te (15 Eylül 2026)
+
+Kullanıcı ekran görüntüsüyle sordu: yayınlanan sayfada **LANGUAGE → "EN
+English"** yazıyordu, oysa uygulama tamamen Türkçe (adı, altyazısı, ekran
+görüntüsü başlıkları, arayüzün tamamı).
+
+**Bu satır App Store Connect'teki hiçbir alandan gelmiyor** — ne "Primary
+Language" ne metadata yerelleştirmeleri. Apple onu YÜKLENEN PAKETTEN okur:
+önce `CFBundleLocalizations`, o yoksa `CFBundleDevelopmentRegion`.
+
+**Bizdeki durum (depodan ölçüldü):** `CFBundleLocalizations` anahtarı HİÇ
+YOKTU ve `CFBundleDevelopmentRegion` `$(DEVELOPMENT_LANGUAGE)` idi; o değişken
+`Runner.xcodeproj/project.pbxproj` → `developmentRegion = en`e çözülüyor.
+Yani paket kendini İngilizce ilan ediyordu. Bu, `flutter create`in
+varsayılanı — kimsenin bilinçli bir kararı değildi.
+
+**Düzeltme:** `Info.plist`'te `CFBundleDevelopmentRegion` = `tr` + yeni
+`CFBundleLocalizations` = `[tr]`; pbxproj'de `developmentRegion = tr`,
+`knownRegions`a `tr` eklendi.
+
+⚠ **YENİ BİR DERLEME gerektirir.** Yayındaki sürümün sayfası değişmez;
+satır ancak yeni derleme işlenip o sürüm yayınlandığında "TR Turkish"e
+döner. Connect'te tıklanacak bir düğme YOK — bunu arayan zaman kaybeder.
+
+⚠ **Uygulama İÇİNDEKİ Flutter metinleri AYRI bir iş — ikisi birbirinin
+yerine geçmez.** Bu anahtarlar yalnızca mağaza etiketini düzeltir.
+Flutter'ın kendi widget metinleri (metin seçme menüsü "Paste", semantik
+etiketler, tarih seçici) İngilizceydi; **aynı gün o da yapıldı**
+(`flutter_localizations` + `MaterialApp` delegeleri +
+`supportedLocales: [tr]`, Parça 209). Kapı `mobile/app/test/
+localization_test.dart` ikisini birlikte kilitliyor — biri düzeltilip
+öteki unutulmasın diye plist iddiası da o dosyada.
+
+**Play tarafında karşılığı yok:** Play'de dil listesi mağaza listelemesinin
+yerelleştirmelerinden geliyor (Console'da girilen), paketten değil.
 
 
 ---

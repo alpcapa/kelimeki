@@ -1607,6 +1607,69 @@ Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
       çıkmalı; geri al → normal açılmalı. (Sürüm sabiti bu kapının girdisi;
       parite testi tam bunu koruyor.)
 
+## 29. YZ robot avatarı — daire içinde ortalı mı (15 Eylül 2026, Parça 210)
+
+Kullanıcı bildirdi: *"YZ robot avatarı iPhone ve iPad'de ortalı değil."*
+Ekran görüntüsünden ölçüldü (daire maskesi): mürekkep **yatayda 0,131 em
+sola, dikeyde 0,083 em aşağı** kaçıyordu — Apple Color Emoji'nin glif
+kutusu mürekkebe göre asimetrik. Telafi ölçülen değerin tersi ve YALNIZCA
+Apple platformlarında uygulanıyor.
+
+⚠ **Otomatik test bunu KANITLAYAMAZ** — Apple Color Emoji `flutter test`
+ortamında yok; `avatar_emoji_nudge_test.dart` yalnızca telafinin doğru
+platformda, doğru büyüklükte ve layout'a dokunmadan uygulandığını kilitler.
+**Gözle doğrulama tek yol.**
+
+⬜ **29.1** Setup → "SON OYNANANLAR": robot avatarları dairenin içinde
+**yatayda ve dikeyde ortalı** görünmeli (kart listesini yakınlaştırarak bak).
+⬜ **29.2** Aynı kontrol **oyun ekranının üst şeridinde** ve **oyun sonu
+modalında** (aynı `PlayerAvatarRow`, farklı boyut — telafi em tabanlı,
+yani boyutla ölçeklenmeli).
+⬜ **29.3** iPad'de tekrarla (aynı font, farklı yoğunluk).
+⬜ **29.4** ⚠ **Android'de de bak** — orada telafi UYGULANMAZ (Noto Color
+Emoji zaten ortalı). Android'de robot kaymış görünüyorsa telafi yanlışlıkla
+her platforma açılmış demektir.
+⬜ **29.5** Avatarın yanındaki **puan sütunu** (`122 97 93 87`) her avatarın
+tam altında kalmalı — telafi yalnızca boyama; hizayı bozarsa `Transform`
+yerine layout'a sızmış bir değişiklik var demektir.
+
+## 28. Oyun ORTASINDA giriş — ad + "Devam Eden Oyunlar" (15 Eylül 2026, Parça 207)
+
+Kullanıcı cihazda buldu (1.1.0/665): misafir olarak başlanan oyunun
+ortasında giriş yapılınca (a) oyun sonu ekranı hâlâ **"Misafir"** diyordu,
+(b) Setup'ta AYNI oyun, girişin yapıldığı ANIN skorlarıyla, bir daha
+güncellenmeyen bir "Devam Eden Oyun" olarak kalıyordu.
+
+⚠ **Otomatik testler bu akışın İSKELETİNİ kapatıyor**
+(`game_session_host_test.dart` + `setup_screen_test.dart`), ama gerçek giriş
+penceresi, gerçek Supabase oturumu ve gerçek `local_game_saves` satırı
+yalnızca cihazda görülür — özellikle **bulut satırının BAŞKA bir yüzeyde
+(web) de kaybolduğu** kısmı.
+
+⬜ **28.1** Misafir olarak (girişsiz) 2 kişilik bir YZ oyunu başlat, en az
+iki tam hamle oyna.
+⬜ **28.2** Oyun ekranındaki **GİRİŞ** düğmesinden giriş yap. Oyun ekranı
+kapanmamalı, tahta/raf/skorlar aynı kalmalı.
+⬜ **28.3** Üstteki skor kutusunda adın **"Misafir" değil hesap adın**
+olmalı (anında, profil yüklenir yüklenmez).
+⬜ **28.4** Oyunu bitir. Oyun sonu ekranında sıralama satırında **hesap
+adın** görünmeli.
+⬜ **28.5** "← Geri" ile Setup'a dön: **"Devam Eden Oyunlar" listesinde bu
+oyundan HİÇBİR iz olmamalı** (asıl regresyon buydu — oyun listede "sıra
+sende" olarak duruyordu).
+⬜ **28.6** Aynısını yarıda bırakarak: giriş yaptıktan sonra birkaç hamle
+daha oyna, sonra "← Geri" ile çık. Listede **TEK** satır olmalı ve skorlar
+**son** hamleyi göstermeli (girişin anını değil).
+⬜ **28.7** Aynı hesapla **web'de** (kelimeki.com) Setup'a bak: 28.6'daki
+oyun orada da tek satır ve aynı skorlarla görünmeli — `local_game_saves`
+cihazlar arası.
+⬜ **28.8** Ters yön: girişliyken oyuna gir, oyunun ortasında **çıkış** yap.
+Oyun devam etmeli; Setup'a dönünce misafir "Devam Eden Oyun" satırı
+görünmeli. (Web ile aynı bilinçli davranış: hesabın bulut satırına
+dokunulmaz, 7 günlük süpürmeye kalır.)
+⬜ **28.9** Sahadaki kalıntı: bu sürümden ÖNCE doğmuş hayalet satır varsa
+listede duruyor olabilir — açıp bitirmek onu düşürür.
+
 ## 26. iPad'de MANZARA (9 Eylül 2026 — App Store'un dayattığı yeni yüzey)
 
 🔴 **ÖNCELİK: iPad birinci sınıf yüzey.** Kullanıcı kararı, sözleri
