@@ -11,6 +11,8 @@
 > ⚠ Bir bileşen atfı ararken önce hangi cilde ait olduğuna bak; `grep` üç
 > dosyada birden çalıştırılabilir.
 
+## `RemainingTilesModal` — 10 Eylül 2026 turu
+
 - **`RemainingTilesModal` — 10 Eylül 2026: iki ayrı iş, biri düzeltildi biri ÜRETİLEMEDİ.**
   Bir testçi (karakafa, Android 1.0.9) şunu bildirdi: *"Elimde Ö vardı, torbaya
   bastım, Ö soluk değildi — dışarıda bir tane daha varmış gibi."* İddia
@@ -39,6 +41,8 @@
   şikâyetle ilgisi yok. Sınıfın genel kaydı: `mobile/CLAUDE.md` → *"JS'in
   bağışladığını Dart AFFETMEZ"*.
 
+## `RemainingTilesModal` / "Kalan Taşlar" (TORBA)
+
 - **`RemainingTilesModal` / "Kalan Taşlar" (TORBA)** (`src/components/RemainingTilesModal.tsx` + `remainingTiles`, `src/utils/bag.ts`) — alt şeritteki `TORBA N` düğmesinin açtığı döküm: "tahtada olmayan ve sende bulunmayan taşlar (torba + rakipler)". Hesap `dağılım − tahta − kendi rafım − bekleyen taşlar`; **doğru sonuç vermesi state'in fiziksel olarak tutarlı olmasına bağlı** (100 taşın tamamı ya tahtada, ya bir rafta, ya torbada) — bir test fixture'ı kurarken torbayı boşaltıp dağılımın kalanını hiçbir yere koymamak dökümü anlamsız kılar (doğrulama betiği ilk yazımında tam bu hataya düştü: 3 taş beklenirken 94 çıktı).
   **BULUNAN HATA (18 Ağustos 2026, kullanıcı bildirdi) — bekleyen taşlar rakibin eline yazılıyordu:** Kullanıcı torba boşken, son hamlesini onaylamadan önce YZ'nin elinde kalan taşları sayıp **10 puan** buldu; bitiş kartında **-7** gördü. Kart DOĞRUYDU (`endGame`, `gameReducer.ts` — rakibin gerçek rafını toplar), yanlış olan DÖKÜMDÜ. Kök sebep bir kova boşluğu: `PLACE_TILE` taşı raftan ÇIKARIP `state.placed`e koyuyor, `state.board`a ancak `PLAY` onayı yazıyor; `remainingTiles` yalnızca `board` ve `myRack`i düştüğünden o aradaki taşlar hiçbir kovada görünmeyip "dışarıda" — yani rakibin elinde — sayılıyordu. Fark tam olarak masadaki bekleyen taşların puanı kadardı (10 − 7 = 3).
   **Düzeltme:** `remainingTiles(board, myRack, placedTiles = [])` üçüncü bir parametre alıyor, modal `Object.values(state.placed)` geçiyor. **Jokerde de doğru:** `tileKey` bir jokeri her zaman `'?'`e çözdüğünden, `A`ya çevrilip masaya konan bir joker dökümdeki `A` sayısını artırmıyor (düzeltmeden önce hem fazladan bir joker hem fazladan bir `A` görünüyordu).
@@ -46,6 +50,9 @@
   **Doğrulama:** `npm run verify-remaining-tiles` (`scripts/verify-remaining-tiles.ts` — esbuild+node, `verify-cloud-save-mirror`in aynı deseni) ÜRETİM reducer'ını gerçek `RESUME_SAVED`/`PLACE_TILE`/`PLAY` action'larıyla koşturuyor: fiziksel olarak tutarlı bir oyun sonu (93 tahta + 4 raf + 3 YZ = 100 taş) kurup her yerleştirmeden sonra dökümün DEĞİŞMEDİĞİNİ, jokerin sızmadığını ve **bitişte düşülen puanın dökümdeki puanla birebir aynı olduğunu** ölçüyor — 13 kontrol. **Negatif eş:** `placedTiles` döngüsü kaldırılınca 7 kontrol GERÇEKTEN düşüyor ve kullanıcının bildirdiği semptomu birebir üretiyor (`bitişte düşülen 7 puan, dökümdeki 11 puanla eşleşmiyor`). CI'a eklendi (`web-ci.yml`, lint'in hemen yanında).
   **Parite artık testli:** bu fonksiyonun bugüne kadar HİÇ golden vector'ı yoktu — `remaining_tiles.json` (60 durum, bekleyen taşlı ve jokerli) eklendi, `mobile/kelimeki_core/test/run_all.dart` onu tüketiyor; mobil app tarafında da bir widget regresyon testi var (taş koy → TORBA → 93 kalmalı, 94 değil). Mevcut golden fixture'ların HİÇBİRİ değişmedi (reducer davranışı aynı) — ölçüldü.
   **Ders:** bu state makinesinde bir taşın bulunabileceği kova sayısı ÜÇ değil (torba / raf / tahta) **DÖRT** — arada `state.placed` var. Envanter sayan her yeni kod (döküm, istatistik, doğrulama) dört kovayı da saymalı; yalnızca üçünü sayan bir formül farkı sessizce yanlış tarafa yazar.
+
+## `GameOver` — sabit px sütunlar IZGARAYA çevrildi
+
 - **`GameOver` — sabit px sütunlar IZGARAYA çevrildi (2 Eylül 2026, kullanıcı: *"fontlarını büyüten kişilerde bitirme modalı puanları bölüyor… Her koşulda modallar, butonlar, vb genel olarak hiç bir şey patlamamalı"*):** Mobil portta 1 Eylül'de bulunan SINIF 3'ün (SARMA) web eşleniği. **Web'de yazı ölçeğinin karşılığı tarayıcı zoom'u DEĞİL** — zoom kutuları da büyütür, yani hatayı üretmez; karşılığı **asgari yazı boyutu** erişilebilirlik ayarı: yalnızca eşiğin altındaki puntoları yukarı çeker, `w-[29px]` gibi px kutular yerinde kalır.
   - **ÖLÇÜLDÜ** (390 px, `--blink-settings=minimumFontSize=16`, `tests/text-scale.spec.ts`): `Kalan` başlığı **50,4 px metin / 29 px kutu** (%74 taşma), `Toplam` **63,3 / 37** (%71 taşma), `k-lig` başlığı 20 px kutuda **İKİ SATIRA sarıyor**, skorlar (`-17`, `254`) kıl payı sığıyor. Yani web'de asıl zarar başlıkların isim alanının üstüne binmesiydi; portta bildirilen "sayıyı bölme" ise burada k-lig başlığında görünüyordu.
   - **Çözüm:** kart `flex flex-col` yerine `grid grid-cols-[minmax(0,1fr)_auto_auto_auto]`; başlık ve satır hücreleri AYNI ızgaranın çocukları (satır sarmalayıcı yok — olsaydı sütunlar satırlar arasında hizalanmazdı, `Fragment key` bu yüzden). `auto` sütun "her kutu kendi en geniş içeriğine eşit" demek, yani 29/37/20'nin TÜRETİLDİĞİ kuralın kendisi — fark yalnızca metin büyüyünce ortaya çıkıyor.
@@ -54,6 +61,8 @@
   - **Bedeli bilinçli:** `auto` sütunlar büyürken payı isim sütunu veriyor (sınıf 2). İsim zaten `truncate`, yani zarar "…" ile sınırlı — portun `ScaledCell`'inde ödenen bedelin aynısı.
   - **Kardeş modaller (`Leaderboard`, `GameHistoryModal`) ızgaraya ÇEVRİLMEDİ, `min-w-* whitespace-nowrap` yapıldı.** Gerekçe: oradaki genişlikler içeriğe tıpatıp oturmuyor (ör. `k-lig` için `w-8` = 32 px, içeriği ~20 px — "5 karakter 24 px'e sığmıyor" diye seçilmişti), yani `auto`'ya çevirmek NORMAL ölçekte görünümü kaydırırdı. `min-w` ise kanıtlanabilir biçimde etkisiz: kutu içerikten geniş olduğu sürece `min-width` aynı sayıyı verir, ancak metin büyüyünce açılır. **Bu ikisi otomatik ölçülemiyor** (gerçek Supabase oturumu istiyorlar) — elle kontrol `TESTING.md` §24'te.
   - **Test yolu:** bitirme modalına ulaşmak için oyun `consecutivePasses: 3` ile kaydediliyor (2 oyuncu × `MAX_PASS_ROUNDS` = 4), yani TEK "Pas Geç" oyunu bitiriyor. Daha önce denenen "bitmiş bir state'i localStorage'a koy" yolu ÇALIŞMAZ: `loadGameState` `isGameOver` olan kaydı reddediyor.
+
+## `GameOver` — "Kalan"ın yanına k-lig sütunu
 
 - **`GameOver` — oyun sonu kartı: "Kalan"ın yanına k-lig sütunu (20 Ağustos 2026, kullanıcı isteği; İKİ platformda birden):** Kullanıcı bitmiş bir oyunun kartında kaybedenin yanındaki **-2**'yi k-lig cezası sanıp "kazanan neden puan almamış?" diye sordu. **Hata YOKTU ve bu ölçüldü:** o -2, `p.rack`ta kalan taşların düşümü (başlığı zaten "KALAN"dı) ve veritabanında kazanan `rank 1`/`win`/**+2** almıştı (121 → 123). Ama karışıklık meşru: kart, oyunun k-lig'e KATKISINI hiçbir yerde göstermiyordu, dolayısıyla tek görünen eksi sayı ceza gibi okunuyordu.
   - **Sütun ELLE hesaplanmıyor:** `leaguePoints(rank, players.length, surrendered)` + `formatLeaguePoints` — oyun kartlarının (`GameHistoryModal`/`SharedGamePage`) kullandığı AYNI fonksiyonlar, yani kart ile Skor Kartı/k-lig listesi sessizce ayrışamaz. Başlık `normal-case` ŞART (satır `uppercase`; markanın küçük harf olması "SL" sütununda öğrenilmişti).
@@ -65,6 +74,9 @@
   - **320px + teslim uç durumu BİLİNÇLİ olduğu gibi bırakıldı** (kullanıcı kararı): orada ad + "(Teslim)" rozeti + üç sütun aynı satırda, ad erken kırpılıyor; taşma yok, bilgi kaybı yok.
   - **"KALAN TAŞ" iki satıra bölünmesi DENENDİ ve GERİ ALINDI** (kullanıcı: "altlı üstlü kötü duruyor") — başlık tek satır "Kalan" kaldı.
   - Flutter portu (`mobile/app/lib/src/ui/game/game_over_modal.dart`) AYNI PR'da birebir güncellendi; genişlik/punto sayıları iki tarafta ELLE senkron — biri değişirse öteki de değişmeli (**genişlikler artık `layout_parity_test.dart` ile testli**, bkz. `mobile/CLAUDE.md` Parça 127).
+
+## `CountBadge`
+
 - **`CountBadge`** (`src/components/CountBadge.tsx`, 1 Ağustos 2026) — kırmızı yuvarlak sayaç rozeti (Setup'taki "Oyun Tipi"/alt sekmeler, `UserMenu`'deki "Arkadaşlar" ve "Admin Paneli" satırları, `FriendsModal` ve `AdminDashboard`'un sekme başlıkları). Önceden üç yerde birebir aynı `<span>`/class kopyalanmıştı; aynı görsel öğenin TÜM kullanım yerlerini tek kaynağa bağlamak için ortak bileşene çıkarıldı.
   **Ne anlama geldiği ve toplama kuralı (4 Ağustos 2026'da iki eksik bulununca netleştirildi):** Rozet HER ZAMAN "bekleyen iş" sayısıdır — kullanıcının/admin'in yapması gereken ama henüz yapılmamış şeylerin adedi (okunmamış geri bildirim, bekleyen arkadaşlık isteği, sırası kendisinde olan oyun…). Bir durum/ilerleme sayacı DEĞİL: `Değiştir (N)` (o an seçili taş sayısı, `App.tsx`/`OnlineGameScreen.tsx`) ve `Arkadaşlarını Seç (N/3)` (`LiveGameCreateForm.tsx`) bilerek metin içinde parantezle duruyor, bunlar rozete çevrilMEmeli — "bekleyen iş" değiller. **Toplama kuralı:** bir sekme başka sekmeleri KAPSIYORSA, kapsayanın rozeti kapsananların TOPLAMI olmak zorunda; zincir hiçbir yerde kopmamalı. Somut zincir: `Gelen Kutusu` + `Şikayetler` (alt sekmeler) → `Geri Bildirim` (üst tab) → `UserMenu`'deki "Admin Paneli" satırı (`fetchAdminPendingCount`, zaten baştan iki tablonun toplamıydı). `Üyeler`/`Büyüme` sekmelerinde hiç rozet YOK ve bu doğru — orada bir kuyruk/bekleyen iş kavramı yok (durum sütunu ve istatistik grafikleri).
   **Bulunan iki hata (kullanıcı bildirdi):** (1) üstteki `Geri Bildirim` tab'ının rozeti yalnızca `unhandledFeedbackCount`'u gösteriyor, şikayetleri hiç toplamıyordu — `UserMenu`'deki sayı ikisinin toplamı olduğundan ikisi görünür şekilde ayrışıyordu (kullanıcı "menüde 2 yazıyor, tab'da hiç sayı yok" diye fark etti); (2) `Şikayetler` alt sekmesinin kendi rozeti vardı ama `Gelen Kutusu`'nunki hiç yoktu. İkisinin de kök sebebi aynı: `Şikayetler` alt sekmesi 2 Ağustos 2026'da eklenirken kendi rozetiyle geldi ama onu KAPSAYAN üst tab'ın toplamı güncellenmedi, kardeşi olan `Gelen Kutusu`'na da simetrik rozet eklenmedi. **Yeni bir sayaç/sekme eklerken zinciri yukarı doğru takip et** — kendi rozetini eklemek yetmez, onu kapsayan her seviyenin toplamı da güncellenmeli. Bu ayrışma bölüm bölüm test edilirken görünmediğinden `TESTING.md`'ye ayrı bir bölüm olarak da eklendi (bölüm 7, "Bildirim rozetleri").
@@ -100,13 +112,21 @@
 
   ⚠ **Kurtarma notu (4 Eylül 2026):** bu düzeltme 21 Ağustos'ta yazılmış ama PR açılmadığı için `main`'e hiç girmemişti (dal `claude/friend-tab-not-opening-04aa9o`, commit `f5f81ad`). Dal temizliği sırasında fark edildi. Uyarlama gerekti: o gün karar `applyLoginDefaultOnce` adlı tek bir yardımcıydı, bugün üç sinyalli `decideInitialMainView` — yeniden silahlanma mekanizması aynı kaldı, yalnızca kararı veren taraf değişti.
   **Dikey ortalama — ilk teşhis YANLIŞTI, 3 Ağustos 2026'da ölçülerek düzeltildi:** Bileşen ilk çıkarıldığında buraya "'1' gibi ince gövdeli rakamlar Space Grotesk'te dairenin merkezine göre optik olarak biraz yukarıda duruyor (dolgun '2' gibi rakamlarda görünmüyordu)" diye yazılmış ve bir `relative top-px` nudge eklenmişti. Kullanıcı rozetin hâlâ ortalı olmadığını bildirince Chromium'da gerçek fontlarla (canvas `measureText`) ölçüldü ve bu teşhisin tutmadığı görüldü: **1, 2 ve 8'in ink metrikleri birebir aynı** (hepsi lining rakam, 9px/700'de asc 7 / desc 0) — yani sorun hiçbir zaman rakamda değildi. Gerçek sebep FONT: `CountBadge` kendi font ailesini belirtmediğinden ebeveyninden miras alıyordu ve kullanım yerleri farklı fontlardaydı (`UserMenu` satırları `font-mono` → Space Mono; Setup sekmeleri Grotesk). İki fontun ascent'i farklı (10 vs 9), dolayısıyla tek bir sabit piksel nudge ikisinde birden doğru olamıyordu — Grotesk'te +0.5px gerekiyordu, Space Mono'da ise HİÇ gerekmiyordu ama yine de 1px aşağı itiliyordu. **Çözüm sihirli sayı içermiyor:** font bileşende sabitlendi (`font-mono`) ve nudge tamamen kaldırıldı; Space Mono'da 9px/700 rakamların taban çizgisi 16px kutuda 11.5px'e, ink 4.5–11.5 arasına düşüyor, yani ink merkezi tam olarak 8.0px = kutunun merkezi. Ebeveyn hangi fontu kullanırsa kullansın sonuç aynı. **Ders:** "optik olarak biraz yukarıda duruyor" gibi bir teşhisi ölçmeden yazmayın — bu proje zaten `dist/assets/*.css` + Playwright ile bağımsız görsel doğrulama yapabiliyor (bkz. `ActionSheet` ve `centerEntryInView` notları), font metrikleri için `canvas.measureText`'in `actualBoundingBox*`/`fontBoundingBox*` alanları kesin sonuç veriyor.
+
+## `UserMenu`
+
 - **`UserMenu`** — Giriş yapmamış kullanıcıya sadece "Giriş" butonu gösterir. Giriş yapılmışsa dropdown menüde üstte avatar/isimle birlikte tıklanabilir bir "Sanal Lig" satırı (rank + puan, `Leaderboard`'ı açar) bulunur, altında Hesap Ayarları / Skor Kartı / Nasıl Oynanır? / Çıkış Yap. Supabase yapılandırılmamışsa bileşen `null` döner.
   **"Çıkış Yap" ikonu kapı emojisine çevrildi (9 Ağustos 2026, mobil porttan geldi):** Kullanıcı, mobil portu (`mobile/app/lib/src/ui/auth/account_button.dart`) web ile yan yana koyup geri-ok karakterinin (`↩`) kapı emojisiyle (`🚪`) değiştirilmesini istedi — mobil portun kullandığı ikon; anlam olarak "çıkış"a çok daha yakın. Tek kullanım yeri, başka bir menüde çıkış butonu yok.
   **Avatar butonunda tooltip YOK — eklenip AYNI GÜN kaldırıldı (9 Ağustos 2026):** Aynı karşılaştırma turunda avatar butonuna `title="Hesap menüsü"` eklenmişti (mobildeki `PopupMenuButton.tooltip`'in karşılığı), ama kullanıcı bir sonraki turda bundan vazgeçip "hem web hem app'ten kaldır" dedi. Web'de `title` kaldırıldı, **`aria-label` DURUYOR** — ikisi farklı şeyler: `aria-label` ekran okuyucu için gerekli ve görünür bir ipucu üretmez, kaldırılan yalnızca hover/uzun-basma balonu. Mobil tarafta parametreyi tamamen silmek YANLIŞ olurdu (`PopupMenuButton` null gelince MaterialLocalizations'ın İngilizce "Show menu" metnine düşüyor); doğru yol boş dize — `Tooltip.build` boş mesajda çocuğu olduğu gibi döndürüp hiç overlay kurmuyor (SDK kaynağından doğrulandı). Yeniden eklenmek istenirse iki taraf birlikte değişmeli.
   **Avatar butonu `flex` OLMAK ZORUNDA — fotoğraflı hesapta 3.5px yukarıda duruyordu (17 Ağustos 2026, cihaz turu Blok 6):** Kullanıcı web ile mobil portu yan yana koyup avatarın skor kutularının merkezine göre yukarıda durduğunu bildirdi; **port doğruydu, web'in hizası bozuktu.** Kök sebep bir CSS satır kutusu: `<button>` varsayılan olarak `inline-block` ve profil fotoğrafı olan hesapta `Avatar` bir `<img>` (inline-level) döndürüyor — araya bir satır kutusu girip resmin ALTINA taban çizgisi iniş payı ekliyor, yani buton 32px değil **39px** oluyor ve resim o kutunun ÜSTÜNE yaslanıyor. `GameHeader`'ın `items-center`'ı 39px'lik kabı ortaladığından fotoğraf, 37px'lik skor kutularının merkezinden **3.5px yukarıda** kalıyordu. Butona `flex` eklendi — satır kutusu tamamen kalkıyor. **ÖLÇÜLDÜ, tahmin edilmedi** (derlenmiş `dist/assets/*.css` + Chromium, 390/834/1194 genişliklerde): önce kutu merkezi 29.5 / avatar 26; sonra üç genişlikte de birebir eşit. **Ölçüm ayrıca "hangi avatar" sorusunu da cevapladı:** hata YALNIZCA profil fotoğrafı olan hesaplarda görünüyor — baş harf yedeği (`display:flex`, blok seviyesi) ve rozetli sarmalayıcı (`inline-flex`, taban çizgisi metnin kendi taban çizgisi) 32px kalıyor; `<img>`in taban çizgisi ALT KENARI olduğundan strut'ın tüm iniş payı (7px) altına ekleniyor. **Ders:** iki platform arasındaki birkaç piksellik bir dikey kaymada, ilk şüpheli hizalama özelliği (`items-center`) değil, kabın İÇİNDEKİ elemanın INLINE olup olmadığıdır — ve bu ancak gerçek CSS'le ölçülerek görülüyor.
   **k-lig puanı menü AÇILDIKÇA tazeleniyor — oturum başına bir kez DEĞİL (5 Eylül 2026, kullanıcı bildirdi: *"k-lig puanım 200 ama menüde 198 gözüküyor"*):** Kullanıcı aynı ekranda üç farklı sayı görüyordu — menü **198**, k-lig tablosu **200**, Skor Kartı **200**. İlk şüphe formül ayrışmasıydı ve YANLIŞ çıktı: `my_leaderboard_rank` RPC'si `k_lig_siralama`yı, tablo ise `leaderboard` view'ını okuyor ama `k_lig_siralama` zaten `leaderboard`'ın üstüne kurulu bir sarmalayıcı (`select … from leaderboard l`), yani ikisi BİREBİR aynı sayıyı veriyor; canlıda doğrulandı (gerçek değer 200). Sebep **bayatlıktı**: `UserMenu`'nün `fetchMyLeaderboardRank` effect'i yalnızca `[user]`e bağlıydı, yani istek oturum başına BİR KEZ atılıyordu. Puan ise oyun bitince, k-lig ödülü düşünce ya da başka bir cihazda oynanınca değişiyor ve bu bileşene kimse haber vermiyor — `Leaderboard` ile `ScoreCard` açılışta taze çektiğinden onlar doğruyu, menü donmuş değeri gösteriyordu. **Düzeltme `open`i effect bağımlılığına eklemek:** `myRank` zaten yalnızca `{open && …}` bloğunda render ediliyor (puan satırı + `RankSeal` rütbe mührü — yani bayat değer yanlış RÜTBE de gösterebilirdi), dolayısıyla kapalı menü için istek atmak boşa gider, açılışta atmak ise değişimin SEBEBİNDEN bağımsız olarak her zaman taze gösterir. **Port ikizi aynı hatayı taşıyordu ama farklı bir kılıkta:** `account_button.dart`ın `onOpened`ı zaten vardı, fakat `if (_myRank.value == null)` koşuluyla — yani EKSİK değeri tamamlıyor, MEVCUT ama bayat değeri hiç sorgulamıyordu (koşul 26 Ağustos'ta "açılıştaki tek istek düşerse tekrar dene" için yazılmıştı ve o amaç için doğruydu). Koşul kaldırıldı; "normal durumda menü açmak ağa çıkmasın" kaygısı bilerek terk edildi — menü açılışı seyrek bir eylem ve istek tek satırlık bir RPC, donmuş puan göstermenin bedeli daha ağır. **Regresyon:** `account_button_test.dart` 10 → **11 test** — sunucudaki puanı iki açılış arasında 47→49 değiştiren bir sahte uç; negatif eşle sınandı (eski koşul geri konunca test düşüyor). Web tarafında karşılık gelen bir test YOK: `tests/smoke.spec.ts` gerçek Supabase oturumu gerektirdiğinden hesap menüsüne hiç girmiyor, davranışın kanıtı port testinde duruyor.
   **"Admin Paneli" satırında bekleyen iş rozeti (3 Ağustos 2026):** Admin hesaplarda, bekleyen bir iş varsa "Arkadaşlar" satırındakiyle aynı `CountBadge` gösteriliyor — kullanıcı isteği: "Admin'i bekleyen bir mesaj varsa her yerde kullandığımız kırmızı yuvarlak uyarı çıksın". Sayı `fetchAdminPendingCount` (`src/lib/api.ts`) ile geliyor ve İKİ kaynağın toplamı: okunmamış geri bildirim (`feedback`, "Gelen Kutusu") + okunmamış şikayet (`online_game_chat_reports`, "Şikayetler") — yani paneldeki iki alt sekmenin kendi sayaçlarının toplamı. (Şikayetler ilk sürümde bilerek dışarıda bırakılmıştı — istek "mesaj" diyordu — kullanıcı aynı gün "Şikayetleri de dahil et" deyince eklendi.) Fonksiyon `fetchAdminFeedback`/`fetchAdminChatReports`'un aksine satırları indirmiyor; iki paralel `select('id', { count: 'exact', head: true }).eq('handled', false)` sorgusuyla yalnızca sayıları istiyor. Filtreler `AdminDashboard`'daki `unhandledFeedbackCount` ve `chatReports.filter(r => !r.handled)` ile BİREBİR aynı ki rozetteki sayı panelin içindekilerle hiçbir zaman ayrışmasın; admin'in kendi gönderdiği mesajlar (`origin='admin'`) `handled: true` ile eklendiğinden kendiliğinden sayılmıyor. **Geri çekilen şikayetler ise SAYILMAYA DEVAM EDER** — bu satır bir dönem "onlar da sayılmıyor (`withdraw_online_game_chat_reports` aynı anda `handled=true` yaptığından)" diyordu ve o gün doğruydu, ama ertesi gün bu bilinçli olarak değiştirildi (bkz. aşağıdaki "Rapor geri çekilebilir" maddesinin 4 Ağustos notu: geri çekme raporlayanın kararıdır, admin'in İNCELEMESİ değildir — admin ne olduğunu görüp kendi iradesiyle okundu işaretlemeli). Düzeltme 14 Ağustos'a kadar yanlış bir overload'da mahsur kaldığından bu cümle bugüne dek kazara doğru göründü; artık gerçekten geçerli. Yeni bir RPC/migration gerekmedi — `feedback`'in SELECT RLS'i `is_admin()`'e, `online_game_chat_reports`'unki `is_admin() OR reporter_user_id = auth.uid()`'e kilitli; production'da `set local role authenticated` simülasyonuyla doğrulandı (admin geçici olarak bekleyen hâle getirilen satırları gerçekten sayıyor, admin olmayan `feedback`'te 0 görüyor, mevcut tek şikayet geri çekilmiş+`handled` olduğu için doğru şekilde sayılmıyor — hepsi `rollback` ile geri alındı). **Bu yüzden fonksiyon YALNIZCA admin için çağrılmalı** (`UserMenu` `profile.is_admin` ile güvenceye alıyor): şikayet politikası kişinin KENDİ gönderdiği şikayetleri görmesine izin verdiğinden, admin olmayan bir çağıran burada kendi bekleyen şikayetlerini sayardı — rozetin anlamı bu değil. Tazeleme deseni arkadaşlık isteği sayacıyla aynı: yalnızca kullanıcı/rol değişince ve `AdminDashboard` kapanınca (içeride okundu işaretlenmiş olabilir) — iki tablo da Realtime publication'ında olmadığından ayrı bir abonelik bilinçli olarak eklenmedi. Avatardaki nokta (`Avatar`'ın `dot` prop'u) artık iki sinyalin BİRLEŞİMİ (bekleyen arkadaşlık isteği VEYA admin'i bekleyen iş) — aksi halde admin, menüyü açmadan bekleyeni hiç fark edemezdi.
+
+## Arkadaşlık ilişkisi ikonları (`RelationIcons`)
+
 - **Arkadaşlık ilişkisi ikonları (`src/components/RelationIcons.tsx`, 11 Ağustos 2026)** — `FriendsModal`'ın "Ara & Ekle"/"Arkadaşlarım" sekmelerindeki metin butonları (Ekle / İstek Gönderildi / Kabul Et / Arkadaşsınız / Çıkar) ve `PlayerScoreCard`'daki simge tek bir ikon diline indirildi (kullanıcı isteği). **Kural: ikon, DOKUNUŞUN NE YAPACAĞINI söyler, ilişkinin adını değil** — bu yüzden "arkadaşsınız" durumu yeşil `check_circle` DEĞİL kırmızı `person_remove`; dokunulunca yapılan şey çıkarmak. (Yeşil onay 9 Ağustos'ta eklenmişti ve durumu doğru anlatıyordu, ama eylemi anlatmadığından "çıkarmayı bulamama" riski taşıyordu; `check_circle` artık hiçbir yerde kullanılmıyor.) Dört durum, dört glyph: `person_add_alt_1` (accent) · `hourglass_top` (muted, dokun → iptal) · `how_to_reg` (accent, gelen isteği kabul) · `person_remove` (red, çıkar). **"İstekler" sekmesindeki Kabul Et/Reddet butonlarına DOKUNULMADI** — orası bir durum değil, iki ayrı karar. Yan etki olarak yeni bir yol açıldı: "Ara & Ekle"deki `accepted` satırı eskiden tıklanamaz bir metindi, artık oradan da arkadaşlıktan çıkılabiliyor (aynı onay state'i yapısal bir tiple paylaşıldı, ikinci bir diyalog açılmadı; sonrasında `patchRelation` ikonu anında `person_add`'e çeviriyor). **Path verisi elle çizilmedi**, Flutter SDK'sının `MaterialIcons-Regular.otf`'undan çıkarıldı — Flutter portu aynı glyph'leri `Icons.*` ile doğrudan çiziyor, yani iki platform BENZER değil AYNI vektörü gösteriyor. **Codepoint'leri hafızadan yazma:** bu iş sırasında tam bunu deneyip tamamen başka glyph'ler (saat yerine hamburger çizgi, `person_remove` yerine `<>`) çizdirdim; `cmap`'te "o kodda bir glyph var" demek aradığın ikon olduğu anlamına gelmiyor, tek doğru kaynak Flutter'ın `packages/flutter/lib/src/material/icons.dart` dosyası — hata yalnızca önizleme render edildiği için yakalandı. Metin kalktığından `aria-label` artık ekran okuyucunun TEK bilgi kaynağı (boş bırakılamaz) ve 20px ikon 44px'lik görünmez dokunma alanı içine alındı (iOS asgarisi; metin butonu bunu doğal olarak sağlıyordu). Yeni bir ilişki ikonu gerekirse `RelationIcons.tsx`'e ekle — tüketiciler path'i kendi içine KOPYALAMASIN.
+
+## İlişki ikonlarında İKİ düzeltme (30 Ağustos 2026)
 
 - **İlişki ikonlarında İKİ düzeltme (30 Ağustos 2026, kullanıcı bildirdi)** — ikisi de yukarıdaki maddenin devamı, biri hata biri tasarım:
 
@@ -114,14 +134,26 @@
 
   **(b) Kum saati aileden kopuktu — ELLE ÇİZİLEN İLK ilişki ikonu.** Kullanıcı isteği: *"Kum saatini de diğer ikonlar gibi adamın yanında (+, - ve check gibi) küçük kum saati veya saat yapsak diğerleriyle bütünlük olacak."* Dört ikonun üçü kişi+rozetken (`+` / `−` / `✓`) dördüncüsü kişisiz, tek başına duran büyük bir `hourglass_top`tu. **Material'da "kişi + kum saati" diye bir glyph YOK**, yani bu maddenin "fonttan çıkar, port `Icons.*` ile aynı vektörü çizsin" kuralı burada uygulanamıyor; `hourglass_top`u rozet kutusuna küçültmek de çare değil (glyph'in çizgileri ~1 birim, yarıya inince 20 px'lik ikonda 0,42 px kalıyor). **Sapma bilinçli olarak minimum:** kişi gövdesi `person_add_alt_1`in AYNISI (artı işareti çıkarılmış, tek koordinat oynatılmadan), elle çizilen tek şey rozet ve o da artının durduğu kutuda (x 15→23, y 6,98→15) — yani ailedeki fark tam olarak "+ yerine kum saati" kadar. Saat de denendi ve ELENDİ: halka + iki ibre 20 px'te çok inceliyor, kum saatinin dolu üçgenleri o boyutta daha okunaklı. **Elle senkron bir kopya senkronu zorlayan bir şey olmadan bayatlar**, bu yüzden `OzellikIkonlari` çiftindeki mekanizma ikinci kez kuruldu: `relation_icon_parity_test.dart` iki dosyayı da okuyup geometriyi kanonik listeye indirip karşılaştırıyor (ortak ayrıştırıcı `mobile/app/test/support/vector_parity.dart`'a çıkarıldı — kopyalanmadı). Negatif eş ölçüldü: portta tek bir koordinatı 16,4 → 16,5 yapmak testi düşürüyor.
   **Aynı gün, kullanıcının üç düzeltmesi (ikisi yukarıdaki kararları kısmen geri alıyor — kayda geçsin):** (1) **"Ara & Ekle" artık zaten arkadaş olunanları HİÇ göstermiyor** ("onlar Arkadaşlarım altında var"), yani yukarıda "yan etki olarak açılan yol" diye yazılan *"Ara & Ekle'deki `accepted` satırından çıkma"* pratikte ortadan kalktı — `accepted` dalı savunma amaçlı duruyor ama ulaşılamaz. Eleme fetch'te DEĞİL **render'da**: `allUsers.length` sayfalama offset'i olduğundan diziden atmak sayfaları kaydırıp üye atlatırdı; ayrıca bir sayfanın tamamı arkadaş çıkarsa sentinel görünür kalıp sonraki sayfayı çekmeye devam ediyor (boş mesajı yalnızca liste GERÇEKTEN tükendiğinde). (2) **`PlayerScoreCard`'da arkadaş durumu yeşil `how_to_reg`** (kişi+onay), kırmızı `person_remove` DEĞİL — kullanıcı kararı, bilinçli bir istisna: listede ikon bir AKSİYON sütununda durur, skor kartında ismin hemen yanında durup kimliğin parçası/durum rozeti gibi okunur ve "adam-" orada bir uyarı gibi görünüyordu; dokunuş yine çıkarma onayını açtığından "ikon eylemi söyler" kuralı onay diyaloğuyla korunuyor. **Aynı glyph artık iki şey anlatıyor** — listede mavi "gelen isteği kabul et", kartta yeşil "arkadaşsınız"; renk ayrımı bu yüzden zorunlu, ikisini aynı renge çekme. (3) **Denetim — "bütün ikon dokunuşları onay soruyor mu?"**: hayır, sormuyordu. `FriendsModal`'da "ekle" ve "kabul et" ANINDA iş yapıyordu, oysa `PlayerScoreCard` dört ilişki dalının HEPSİNDE onay soruyordu; asimetri tek bir `confirmAdd` state'iyle kapatıldı (metin `relation`dan türetiliyor) ve sonrasında sonuç mesajı gösteriliyor. **Bilinçli kapsam dışı:** "İstekler" sekmesindeki metin butonlu "Kabul Et" — orası etiketli iki ayrı karar, kazara dokunma riski etiketsiz bir ikon kadar yüksek değil ("Reddet"in onayı zaten var). **Ders:** etiketli bir butonu etiketsiz bir ikona indirirken "bu dokunuş kazara yapılırsa ne olur?" sorusu yeniden sorulmalı — metin varken kabul edilebilir olan doğrudan aksiyon, ikon olunca kabul edilemez hale geliyor.
+
+## Auth hata mesajları Türkçe (`friendlyAuthMessage`)
+
 - **Auth hata mesajları Türkçe (`friendlyAuthMessage`, `src/lib/api.ts`, 4 Ağustos 2026)** — `AuthModal`/`ResetPasswordModal`/`AccountSettingsModal` yakaladıkları hatanın `message`'ını OLDUĞU GİBİ ekrana basıyordu; Türkçe bir uygulamada kullanıcı "User is banned", "Invalid login credentials", "Email not confirmed" gibi ham İngilizce metinler görüyordu. Dondurulmuş bir hesapla giriş denenirken fark edildi ama sorun TÜM auth hatalarını kapsıyordu. Fonksiyon önce GoTrue'nun `error_code`'una bakar (mesaj metinleri sürümler arasında değişebilir, kod daha kararlı), tutmazsa mesaj metnine göre eşler; **ikisi de tutmazsa `null` döner ve çağıran orijinal mesajı gösterir** — bilmediğimiz bir hatayı uydurma bir Türkçe cümleyle gizlemek hata ayıklamayı imkânsız kılardı. Bunun ikinci bir faydası: formların KENDİ doğrulama hataları (`throw new Error('Ad zorunludur.')`) aynı `catch`'ten geçiyor ve eşleşmedikleri için bozulmadan kalıyorlar — yeni bir eşleme eklerken bu değişmezi bozmamaya dikkat et (Türkçe bir metne uyacak kadar geniş bir regex yazma).
   **Dondurulmuş hesapta bilgi sızıntısı — ÖLÇÜLDÜ ve bilinçli olarak KALDI:** Gerçek uçla (pg_net ile `/auth/v1/token`) dört senaryo denendi: kayıtlı olmayan e-posta ve kayıtlı-ama-yanlış-şifre `invalid_credentials` dönerken, DONDURULMUŞ bir hesap **şifre doğru da yanlış da olsa** `user_banned` dönüyor. Yani hedefin e-postasını bilen biri, şifresini bilmeden hesabın dondurulduğunu öğrenebilir. Kullanıcının önerdiği "önce şifreyi doğrula, sonra ban'a bak" sırası **istemcide kurulamaz** — GoTrue şifreyi hiç doğrulamadan `user_banned` döndürdüğünden bize ulaşan yanıtta şifrenin doğru olup olmadığı bilgisi yok. Üç seçenek değerlendirildi: (1) olduğu gibi bırakmak, (2) dondurulmuşta da genel "e-posta ya da şifre hatalı" göstermek, (3) service-role bir Edge Function'da pgcrypto `crypt()` ile kendi bcrypt doğrulamamızı yazmak. Kullanıcı (1)'i seçti: (2) gerçekten dondurulmuş kullanıcıyı yanıltırdı (şifresini yanlış yazdığını sanıp defalarca denerdi), (3) ise kimlik doğrulamasız bir şifre-doğrulama ucu açıp GoTrue'nun rate limiting'ini devre dışı bırakacağından kapattığı sızıntıdan daha büyük bir risk üretirdi. Sızıntının değeri düşük: sıradan hesap sayımı (enumeration) hâlâ engelli, yalnızca "kayıtlı + dondurulmuş" ayırt edilebiliyor. Mesaj kullanıcıyı "Görüş Bildir"e DEĞİL e-postasına yönlendiriyor — o form girişsiz ziyaretçiye Setup'ta hiç görünmüyor (yalnızca Terms/Privacy modallerine gömülü), oysa `notify-account-banned` zaten gerekçeyi ve çalışan bir `?contact=1` bağlantısını içeren bir mail gönderiyor.
+
+## `AuthModal`
+
 - **`AuthModal`** — Kayıt formu artık Ad/Soyad/E-posta/Şifre gibi zorunlu alanları kırmızı `*` ile işaretliyor, altta "* Zorunlu alan" notu var; Cinsiyet/Doğum Tarihi opsiyonel (27 Temmuz 2026), **Takma isim ise 29 Temmuz 2026'dan beri zorunlu ve benzersiz** (bkz. aşağıdaki "Takma isim zorunlu ve benzersiz" notu). Cinsiyet ve Doğum Tarihi alanları öncesinde yalnızca `AccountSettingsModal`'da (kayıt sonrası) girilebiliyordu — artık kayıt formunda da var, `signUp()`'a (`src/lib/api.ts`) iletilip `sharedxp_pending_profile` metadata'sına eklenir; `handle_new_user` trigger'ı (`signup_gender_birth_date` migration'ı) bunları okuyup `profiles` satırını daha ilk oluşturulduğu anda doldurur — `first_name`/`last_name`/`display_name` ile aynı yöntem, e-posta doğrulaması açıkken (oturum hemen açılmadığında) bile çalışır. `GENDER_OPTIONS`/`isoToTrDate`/`trDateToIso` artık `AccountSettingsModal`'a gömülü değil, `src/utils/profileFields.ts`'te ortak — iki bileşen de oradan import ediyor.
   **İkinci (opsiyonel) onay kutusu — pazarlama iletişimi (29 Temmuz 2026, `marketing_consent` migration'ı):** Kullanım Koşulları/Gizlilik onayının hemen altına, AYRI ve zorunlu OLMAYAN bir "Pazarlama iletişimi almayı kabul ediyorum." checkbox'ı eklendi (metnin sonundaki "(opsiyonel)" ibaresi 31 Temmuz 2026'da kullanıcı isteğiyle kaldırıldı — checkbox zaten zorunlu değil, `submit()` hiç doğrulamıyor, ayrıca yazıyla belirtmeye gerek görülmedi) — `submit()` bunu (terms'ün aksine) hiç doğrulamıyor, işaretlenmese de kayıt tamamlanır. `profiles.agreed_to_terms`'ün aksine (düz boolean, NE ZAMAN kabul edildiği hiç tutulmuyor — üstelik yalnızca signUp() hemen oturum açtıysa, yani e-posta doğrulaması KAPALIYKEN, `signUp()`'un client-side `if (session) update` dalıyla yazılıyor; doğrulama açıkken bu satır hiç çalışmıyor, `agreed_to_terms` o durumda sessizce `false` kalan ÖNCEDEN VAR OLAN bir eksiklik) `marketing_consent` baştan daha sağlam tasarlandı: `marketing_consent`/`marketing_consent_at` (timestamptz, false ise/hiç işaretlenmediyse null) çifti, gender/birth_date ile AYNI yöntemle — `sharedxp_pending_profile.marketingConsent` → `handle_new_user` trigger'ı — dolduruluyor, yani e-posta doğrulaması açık/kapalı fark etmeksizin her durumda doğru çalışıyor (`agreed_to_terms`'ün bu iki durumu ayırt edemeyen zaafını miras almadı). `PrivacyModal`'ın "Toplanan Veriler" ve "Veri Paylaşımı" bölümleri buna göre güncellendi (aşağı bkz.).
   **Aynı gün ikinci değişiklik — `AccountSettingsModal`'da sonradan aç/kapa:** Kullanıcı isteğiyle aynı checkbox `AccountSettingsModal`'a da eklendi (kayıt formundakiyle birebir aynı metin/stil) — mevcut durumu `profile.marketing_consent`'ten okuyup gösterir, işaretliyse altında küçük bir "Kabul tarihi: GG.AA.YYYY SS:DD" notu da (`profile.marketing_consent_at`, `toLocaleDateString`/`toLocaleTimeString('tr-TR')`) çıkar. Diğer alanlarla (Ad/Soyad/Cinsiyet/Doğum Tarihi) AYNI "Kaydet" formunun bir parçası — ayrı bir kaydet butonu yok, `save()`'teki `profilePatch`'e `marketing_consent` de (değiştiyse) eklenir. **`marketing_consent_at`'i ASLA client göndermiyor** — `updateProfile()`'ın patch tipinde bilerek yok; bunun yerine yeni bir `trg_set_marketing_consent_at` (BEFORE UPDATE, `marketing_consent_toggle_trigger` migration'ı) `marketing_consent` GERÇEKTEN değiştiğinde (`new.marketing_consent is distinct from old.marketing_consent`) zaman damgasını sunucu tarafında (`now()`, true→şimdi / false→null) otomatik yazıyor — client'ın (varsa) gönderdiği herhangi bir `marketing_consent_at` değerini bilerek YOK SAYAR, tek doğruluk kaynağı bu trigger. İlgisiz bir profil güncellemesinde (`marketing_consent` değişmiyorsa) `marketing_consent_at`'e dokunmuyor. Production'da gerçek bir test hesabıyla üç senaryo doğrulandı: (1) `true`'ya çekme + BİLEREK bozuk bir `marketing_consent_at` (`'2000-01-01'`) gönderme → trigger bunu yok sayıp gerçek `now()`'ı yazdı; (2) ilgisiz bir alan (`updated_at`) güncellemesi → `marketing_consent_at` değişmedi; (3) `false`'a çekme → `marketing_consent_at` `null`'a döndü. `PrivacyModal`'daki "bu onayı ... geri çekebilirsiniz" cümlesi de bu gerçek toggle'a işaret edecek şekilde güncellendi (önceki commit'te "Görüş Bildir" başvuru akışına yönlendiriyordu — henüz bu toggle yokken doğruydu, artık kendi kendine yeten bir mekanizma var).
+
+## `AccountSettingsModal`
+
 - **`AccountSettingsModal`** — Ad/soyad/takma isim/e-posta yanında `profiles.gender` (`'female'|'male'|'unspecified'`, seçilmezse `null`) ve `profiles.birth_date` (`date`, `<input type="date">` — GG/AA/YYYY etiketiyle ama değer her zaman ISO `yyyy-mm-dd`) düzenlenebilir; ikisi de opsiyonel (`profiles_gender_birth_date` migration'ı, 25 Temmuz 2026). Daha önce burada bir "Şifre Değiştir" bloğu (mevcut/yeni/yeni tekrar şifre alanları) vardı — kullanıcı geri bildirimine göre insanlar bu alanları görünce şifrelerini değiştirmeleri GEREKTİĞİNİ sanıyordu, bu yüzden kaldırıldı; `updatePassword` (`src/lib/api.ts`) de artık hiçbir yerde kullanılmadığından silindi. Yerine tek satırlık bir "Şifremi değiştir — sıfırlama e-postası gönder" linki geldi (`sendPasswordReset`, giriş ekranındaki "Şifremi unuttum" akışıyla aynı fonksiyon) — oturum açıkken de çalışır, çıkış yapmaya gerek yok. **2 Ağustos 2026 — bu link de tamamen kaldırıldı:** Kullanıcı, oturumu zaten açık olan birinin şifresini "unutmuş" gibi sıfırlamasının anlamsız bir senaryo olduğunu belirtti — gerçek "şifremi unuttum" durumu zaten oturum KAPALIYKEN yaşanıyor ve giriş ekranındaki ayrı akış bunu karşılıyor. Buton ve `onClick` içindeki `sendPasswordReset` çağrısı silindi; `sendPasswordReset`'in kendisi (`src/lib/api.ts`) hâlâ `AuthModal`'ın "Şifremi unuttum" akışında kullanıldığından dokunulmadı. **Takma isim (`display_name`) boşluk kabul etmiyor** (27 Temmuz 2026, `display_name_no_whitespace` migration'ı) — burada ve `AuthModal`'ın kayıt formundaki takma isim alanında girilen boşluklar `onChange` sırasında anında silinir (`.replace(/\s+/g, '')`), veritabanında da bir `check` kısıtı aynı kuralı zorlar. Sebep: bazı kullanıcılar bu alana kendi gerçek ad-soyadını yazıyordu (`ScoreCard`/`PlayerScoreCard`'daki `display_name || first_name` mantığı zaten yalnızca nickname'i gösterip soyadı hiç okumuyor, yani bu bir kod hatası değildi) — skor kartlarında bu, nickname değil tam ad gibi görünüyordu. Boşluk zorunluluğu bunu tam çözmüyor (biri hâlâ "İsimSoyad" yazabilir) ama en azından "İsim Soyad" gibi normal bir isim görünümünü kırıp nickname izlenimi veriyor. Migration, mevcut kayıtlardaki boşlukları da geriye dönük temizledi (ör. "Zeynep Esiner" → "ZeynepEsiner").
   **Takma isim zorunlu ve benzersiz (29 Temmuz 2026, `nickname_required_unique` migration'ı):** İki farklı hesabın (`deniz@gmail.com`, `saglam.de@gmail.com`) aynı görünen "deniz" takma ismiyle kayıt olabildiği, arkadaş aramasında ayırt edilemez iki satır olarak çıktığı fark edilince eklendi. `profiles.display_name` artık `NOT NULL` ve `public.tr_lower(display_name)` (yeni bir immutable SQL fonksiyonu — `src/utils/turkish.ts:trLower()` ile birebir aynı İ→i/I→ı normalleştirmesi) üzerinde bir unique index taşıyor, yani "Deniz" ile "deniz" de artık çakışır. Bu migration uygulanmadan önce mevcut 18 profilde ne null ne çakışma olduğu elle doğrulandı, backfill gerekmedi — ayrıca o anda gerçekten var olan iki "deniz" hesabından hiç giriş yapılmamış olanı (`deniz@gmail.com`, hiçbir oyuna/geri bildirime/arkadaşlığa bağlı değildi) migration'dan önce elle silindi. Yeni `check_nickname_available(p_nickname)` RPC'si (security definer, anon+authenticated'e açık — kayıt formunda henüz oturum yokken de çalışması gerekiyor) `auth.uid()` doluysa çağıranın kendi mevcut ismini otomatik hariç tutar; asıl doğruluk kaynağı yine unique index'in kendisi, RPC yalnızca canlı UX geri bildirimi için. Ortak `useNicknameAvailability` hook'u (`src/hooks/useNicknameAvailability.ts`) 400ms debounce ile bu RPC'yi çağırıp "Kontrol ediliyor…" / "✓ Kullanılabilir" / "Bu takma isim kullanımda." durumlarını döner — hem `AuthModal`'ın kayıt formunda (oturum yok, tüm profillere karşı kontrol) hem `AccountSettingsModal`'da (oturum var, `currentValue` parametresiyle kendi mevcut ismiyle aynıysa kontrolü atlar) kullanılıyor. Her iki form da submit anında `nicknameStatus==='taken'|'checking'` ise engelliyor (buton da devre dışı kalıyor); yine de bir yarış durumunda (iki kişi aynı anda aynı ismi kapmaya çalışırsa) DB'nin unique-violation hatası `src/lib/api.ts`'teki `friendlyNicknameError()` ile "Bu takma isim zaten kullanılıyor." mesajına çevriliyor — hem `signUp()` hem `updateProfile()` bunu kullanıyor. `AccountSettingsModal`'daki placeholder da "Girilmezse oyunda sadece adın görünür (boşluksuz)"tan "Herkese görünen ismin (boşluksuz)"a güncellendi (artık girilmemesi bir seçenek değil).
   **İşlemsel bildirim e-postaları için ayrı bir opt-out anahtarı (2 Ağustos 2026, `profiles_email_notifications_enabled` migration'ı):** Kullanıcı, artan mail sayısının (arkadaşlık isteği/hatırlatması, Canlı oyun daveti, süre uyarısı, süre aşımı/terk-edilme ceza bildirimi — altı ayrı Edge Function) alıcıları rahatsız etme riskini fark edip zorunlu/iptal edilemez mailler ile tercih edilebilir olanları ayırmak istedi. `marketing_consent`'ten TAMAMEN ayrı yeni bir `profiles.email_notifications_enabled` (`not null default true`, yani opt-OUT — opt-in olan pazarlamadan farklı) eklendi; `AccountSettingsModal`'a marketing consent checkbox'ının hemen altına ikinci bir checkbox geldi ("Arkadaşlık isteği, oyun daveti ve süre uyarısı gibi e-posta bildirimlerini almak istiyorum") — aynı "Kaydet" formunun parçası, ayrı bir buton yok. Hesap güvenliği/admin yazışması gibi ZORUNLU mailler (Auth, `notify-account-banned`/`notify-account-unbanned`, `feedback-reply`, `admin-send-message`) bu bayrağa hiç bakmıyor. Tercih edilebilir altı Edge Function'ın (`notify-friend-request`, `notify-friend-request-reminders`, `notify-game-invite`, `notify-deadline-warnings`, `notify-turn-timeout-surrender`, `notify-local-game-abandoned`) her biri, ALICININ (gönderenin değil) `email_notifications_enabled`'ını göndermeden hemen önce kontrol edip `false` ise sessizce atlıyor — çoklu alıcılı fonksiyonlarda (`notify-game-invite`, `notify-deadline-warnings`'in iki döngüsü, `notify-turn-timeout-surrender`) yalnızca o alıcı atlanıyor, diğerlerine gönderim devam ediyor; cron tabanlı hatırlatmalarda (`notify-friend-request-reminders`, `notify-deadline-warnings`) atomik "iddia" (`reminder_sent_at`/`deadline_warning_sent_at`) yine de işaretleniyor, yalnızca gerçek gönderim atlanıyor — bir sonraki çalıştırmada tekrar denenmiyor. `PrivacyModal`'ın "Toplanan Veriler" listesine de bu tercih eklendi.
+
+## Profil fotoğrafı yükleme — `avatars` kovası
+
 - **Profil fotoğrafı yükleme — `avatars` kovası (`uploadAvatar`, `src/lib/api.ts`)** — dosya `<uid>/avatar.<ext>` yoluna `upsert: true` ile yüklenir, ardından `profiles.avatar_url` önbellek kırıcı bir `?v=<epoch>` ile güncellenir. Kova `public: true` (okuma RLS'e hiç takılmaz), yazma yolu `storage.objects` RLS'iyle sahibin kendi klasörüne kilitli.
   **BULUNAN HATA (13 Ağustos 2026, cihaz testinde) — avatar DEĞİŞTİRME 20 Temmuz'dan beri İKİ İSTEMCİDE DE kırıktı (`avatars_owner_read_for_upsert` migration'ı):** Kullanıcı mobil portta fotoğraf güncellerken `StorageException(message: new row violates row-level security policy, statusCode: 403)` aldı. Bu bir port hatası DEĞİLDİ — web'de de aynı şekilde kırıktı, yalnızca kimse o tarihten beri avatarını değiştirmediği için fark edilmemişti.
   **Zincir:** `profile_avatar` (28 Haziran) kovayı DÖRT politikayla kurdu (`avatars_public_read` SELECT + insert/update/delete) ve yükleme/değiştirme o gün çalışıyordu (üretimdeki tek nesne 28 Haziran'da oluşup 29 Haziran'da güncellenmiş — ikisi de başarılı). `security_hardening` (20 Temmuz) `avatars_public_read`i düşürdü; yazılı gerekçesi *"kova zaten public, objeler RLS'e takılmadan servis ediliyor; bu SELECT politikası nesne erişimi için gereksizdi, yalnızca bucket'taki TÜM dosya adlarının storage list endpoint'iyle sayılmasına izin veriyordu"* idi. **Gerekçe OKUMA için doğruydu, YAZMA için değil:** `upsert: true`, storage-api tarafında `INSERT ... ON CONFLICT DO UPDATE` demek ve çakışan satırın çağırana GÖRÜNÜR olmasını gerektiriyor. SELECT politikası kalkınca kullanıcı KENDİ avatar satırını bile göremez oldu (üretimde ölçüldü: sahibi olan kullanıcı için `count = 0`), dolayısıyla mevcut avatarın üzerine yazma reddediliyordu. İlk yükleme (çakışacak satır YOK → düz INSERT) çalışmaya devam ediyordu — hatayı bu kadar geç fark ettiren şey de buydu.
@@ -134,3 +166,267 @@
   **Uçtan uca doğrulandı (13 Ağustos 2026):** kullanıcı düzeltmeden sonra hem web'de hem mobil uygulamada profil fotoğrafını birkaç kez değiştirdi — 403 bir daha görülmedi ve yeni boyut sınırı/küçültme de sorunsuz çalıştı. **Aynı gün kovadan ÖLÇÜLDÜ** (`storage.objects`, iki nesne): 83.815 B (82 KB) ve 126.095 B (123 KB) — ikisi de öngörülen 50-150 KB bandında, **ve ikisi de `image/jpeg`**. Bu ikinci alan asıl kanıt: `shrinkAvatar` yeniden kodlarken JPEG'e çeviriyor, küçültme koşmasaydı orijinalin türü (PNG/HEIC) korunurdu — yani dosyalar yalnızca küçük değil, gerçekten bu kod yolundan geçmiş. Zaman damgaları ayrıca RLS düzeltmesini de doğruluyor: 123 KB'lık nesne **28 Haziran'da oluşmuş ama 13 Ağustos'ta güncellenmiş**, yani 20 Temmuz'dan beri 403 veren "var olanın üzerine yaz" işlemi gerçekten çalışıyor; öteki nesne de önce oluşturulup iki dakika sonra güncellenmiş, yani ilk yükleme ve üzerine yazma AYRI AYRI kanıtlı. Bir regresyonda bu sayılar taban çizgisi: kovada ~1 MB'ı aşan ya da `image/jpeg` olmayan bir avatar görülürse küçültme yolu kırılmış demektir.
 
   **Ders — bir politikayı "gereksiz" diye düşürürken YALNIZCA okuma yolunu düşünme:** `public` bir kova okuma için RLS'i atlar ama `upsert` yazma yolu satırı GÖRMEYİ gerektirir. Aynı sınıf bir soru bu projede daha önce de yanlış cevaplanmıştı (bkz. `CountBadge`'in "şu filtre zaten eler" dersi ve `games.messages`'ın "bu satır zaten herkese açık" dersi) — "bu erişim başka bir yoldan zaten var" gerekçesi, o erişimin KULLANILDIĞI tüm yolları tek tek saymadan geçerli sayılmamalı.
+
+## `useAuth` — `user` nesnesinin kimliği (19 Eylül 2026)
+
+Kullanıcı bildirdi: *"Web masaüstünü açınca sürekli her şey yüklemeye
+çalışıyor, ekran deli gibi hareket ediyor, bir türlü durmuyor."* Aynı gün bir
+ekran kaydı da geldi: iPhone'da Setup'ta "Yükleniyor…" hiç bitmiyordu.
+
+**Canlıdan ölçüldü** (Supabase edge logları, tek `session_id`, iPhone Safari):
+
+| | |
+|---|---|
+| Süre | 11:19:29.968 → 11:20:11.279 (41 sn) |
+| İstek | **782** → saniyede ~19 |
+| Farklı uç | 12 |
+| Durum kodları | **hepsi 200** — tek hata yok |
+| `session_id` | **sabit** — oturum yeniden kurulmuyor |
+| `client_errors` | son 6 saatte **boş** |
+
+Tur saniyede bir tekrarlıyordu ve her turun başında `/auth/v1/user` vardı:
+`list_my_online_games` ×2 · `list_incoming_friend_requests` ×2 ·
+`local_game_saves` · `leaderboard` · `league_rewards` · `profiles` ·
+`online_game_states` ×2 · `unseen_finished_online_games` ×2 + admin HEAD'leri.
+
+**Sebep.** `applyUser` `setUser(u)`yu KOŞULSUZ çağırıyordu. Supabase her
+`onAuthStateChange` olayında alanları birebir aynı ama **kimliği yeni** bir
+`User` nesnesi üretir. React için bu "değişti" demek, ve `user` NESNESİNE
+bağlı dokuz effect birden yeniden koşuyordu: `Setup:490` · `Leaderboard:106` ·
+`LiveGamesTab:851` · `UserMenu:96` · `ScoreCard:43` ·
+`AccountSettingsModal:68` · `App` ×3. Bu liste loglardaki turla BİREBİR
+örtüştü — teşhisi kesinleştiren şey bu örtüşme oldu.
+
+**Düzeltme** (`utils/authUser.ts` → `sameAuthUser`): nesne YALNIZCA içeriği
+birebir aynıysa korunur. Bir alan bile değiştiyse yeni nesne aynen geçer, yani
+düzeltme hiçbir GÜNCELLEMEYİ yutmaz — sadece gereksiz kimlik değişimini yutar.
+
+⚠ **`id` karşılaştırması YETMEZDİ.** Uygulama `user.email`i de okuyor (ölçüldü:
+`user.id` 86, `user.email` 22 kullanım) ve e-posta değişiminde ekran
+bayatlardı. Karşılaştırma bu yüzden tek tek alanlara değil nesnenin tamamına
+bakıyor; anahtar sırası farklı gelirse `false` döner ve bugünkü davranışa
+düşeriz — başarısızlık yönü GÜVENLİ taraf.
+
+⚠ **TETİKLEYİCİ KANITLANMADI.** `onAuthStateChange`'i saniyede bir kez
+tetikleyen şeyin ne olduğu bulunamadı. Elenen hipotezler: kopya Supabase
+istemcisi (paketin tek chunk'ında), oturum yenilenmesi (`session_id` sabit),
+sunucu hatası (hepsi 200), service worker döngüsü (`sw.js` 6 istekte aynı,
+30 precache dosyası da 200), Vercel'in farklı sürüm servisi (10 istekte de
+aynı sha), yoklama (tek aralıklar 10 dk/60 dk), o gün merge edilen PR'lar
+(#582'nin effect'i `[]` bağımlılıklı, #586'nınki yalnızca yorum). Düzeltme
+tetikleyiciden BAĞIMSIZ çalışır: olay gelmeye devam etse bile artık bir tam
+veri turu doğurmuyor. Tetikleyici bulunursa bu not güncellenmeli.
+
+### İkinci tur — oturum TİTREMESİ (aynı gün, düzeltme yetmeyince)
+
+İlk düzeltme (`sameAuthUser`) yayına çıktı ve **ölçüldü: 632 istek/dk → 282**,
+yani yarısı gitti ama döngü sürdü. Sebep tasarım gereğiydi: `sameAuthUser`
+yalnızca *"aynı kullanıcı, yeni nesne"* durumunu bastırır; `null → kullanıcı`
+ise GERÇEK bir değişimdir ve bastırılmaz.
+
+Kalan turda `/auth/v1/user` + `profiles` hâlâ tur başına koşuyordu — oysa
+`applyUser` profili yalnızca kimlik DEĞİŞİNCE çeker. Tek açıklama: oturum
+`kullanıcı → null → kullanıcı` diye titriyordu.
+
+**İkinci semptom teşhisi kesinleştirdi.** Kullanıcı: *"Uzunca süre yükleniyor
+yazıp oyunları getirdi ama avatar, isim soyad vb gelmedi."* Ekran
+görüntüsünde Ad/Soyad/Takma İsim boş, menüde isim yerine e-posta öneki,
+avatar baş harfler. Yani `profile` hiç dolmamıştı — ve bunun sebebi aynı
+titreme:
+
+```js
+fetchMyProfile().then((p) => {
+  if (currentUserId === u.id) { setProfile(p); setProfileLoading(false); }
+})
+```
+
+Arada `applyUser(null)` gelince `currentUserId` null'a düşüyor, UÇAN istek
+dönünce koruma tutmuyor ve **sonuç çöpe atılıyor**; `profileLoading` sonsuza
+dek `true` kalıyor. Bir sonraki tur da aynı şekilde çöpe gidiyor. Tek
+mekanizma iki şikayeti birden açıklıyor.
+
+**Düzeltme** (`shouldApplyAuthSession`): oturumu yalnızca GERÇEK bir çıkış
+düşürür. `SIGNED_OUT` ve `INITIAL_SESSION` dışındaki bir olayda `session`
+`null` geldiyse yok sayılır — oturum gerçekten bittiyse arkasından zaten
+`SIGNED_OUT` gelir.
+
+⚠ **`SIGNED_OUT`'u listeden çıkarma:** çıkış yapan kullanıcı ekranda girişli
+kalır ve bir sonraki isteğinde anlamsız bir hata görür.
+
+⚠ **`null` olayların KAYNAĞI hâlâ bilinmiyor.** Bu düzeltme tetikleyiciyi
+değil, ETKİSİNİ kesiyor: titreme sürse bile artık ne effect turu ne de
+çöpe atılan profil isteği doğuruyor. Kaynak bulunursa bu not güncellenmeli.
+
+### Sonuç — ÖLÇÜLDÜ (19 Eylül 2026, iki düzeltme de canlıda)
+
+Her satır aynı kullanıcının (Ironman) iPhone Safari oturumundan, Supabase edge
+loglarından okundu:
+
+| Ölçüm | Düzeltme yokken (11:19) | `sameAuthUser` sonrası (11:52) | + `shouldApplyAuthSession` sonrası (12:11) |
+|---|---|---|---|
+| İstek/dk | **632** | 282 | **24** |
+| `fetchMyProfile` (auth+profiles)/dk | 18 | 18 | **~1,5** |
+| Realtime websocket/dk | ~19 | 20 | **~1,5** |
+
+**Asıl kanıt sayı değil, tek bir satır:** düzeltmeden sonraki logda
+`storage/.../avatars/<id>/avatar.jpg` isteği belirdi — yani profil gerçekten
+çözüldü. O istek profil dolmadan hiç oluşmaz; önceki turda avatar baş
+harflerdi. Kullanıcı da aynı anda *"düzelmiş görünüyor"* dedi.
+
+⚠ **İki düzeltmenin İKİSİ de gerekliydi.** Ara ölçüm (282) bunu tek başına
+kanıtlıyor: olayların ~yarısı "aynı kullanıcı, yeni nesne" tekrarıydı
+(`sameAuthUser` onu kesti), ~yarısı oturum titremesiydi
+(`shouldApplyAuthSession` onu kesti). Biri ötekinin yerine geçmez; ilki
+"gereksizdi" diye geri alınmamalı.
+
+⚠ **Geçiş anı yanıltır.** Düzeltme yayına çıktıktan SONRA da bir süre eski
+rakamlar görülür (12:07'de hâlâ 122 istek/dk): service worker yeni paketi
+indirip sayfayı yenileyene kadar eski paket koşmaya devam eder. Ölçümü
+`kelimeki-build` sha'sı yeni sürümü gösterdikten sonra al.
+
+### Yükselteç ne zaman girdi — ve neden iki ay patlamadı
+
+`applyUser`'daki koşulsuz `setUser` **21 Temmuz 2026**'da geldi (`d7b68452`),
+üstelik adı *"Sayfa yüklenirken hesap adının bir anlığına e-posta önekine
+düşmesini düzelt"* olan commit'le. O gün BİR ANLIK e-posta öneki sorununu
+çözmek için konan desen, 19 Eylül'de KALICI e-posta öneki sorununu doğurdu.
+
+İki ay zararsız kaldı çünkü zarar için auth olaylarının sıklaşması gerekiyor:
+desen barut, tetikleyici kıvılcım. **Kıvılcımın ne olduğu bulunamadı** (elenen
+hipotezler yukarıda). `supabase-js` sürümü şüpheli değil — kilitte
+**2.108.2**, 28 Haziran'dan 19 Eylül'e altı ayrı commit'te okundu, hiç
+değişmemiş.
+
+⚠ **Tarih ararken sığ klon tuzağı:** ilk bakışta `git log` "her şey 11
+Eylül'de değişti" diyordu — oturumun klonu sığdı (56 commit). Gerçek tarih
+`git fetch --unshallow` sonrası çıktı (1766 commit). Kök `CLAUDE.md` bu
+tuzağı zaten uyarıyor; burada ikinci kez ödendi.
+
+⚠ **Kapı: `npm run verify-auth-user-identity`** (CI'da). Duman testiyle
+sınanamaz — gerçek bir oturum ve arka arkaya gelen auth olayları gerekiyor.
+Kapı iki yönü de sınıyor: yalnızca "aynıysa true" sınansaydı fonksiyon
+`() => true` yazılarak da geçerdi ve o zaman gerçek güncellemeler yutulurdu.
+
+### Üçüncü tur — olay ADINA bakmayı bırakmak (19 Eylül 2026, aynı gün)
+
+İki düzeltme de canlıdayken (derleme `7353b50`, `curl` ile doğrulandı)
+kullanıcı döngünün geri geldiğini bildirdi: *"Şimdi gene loop yapıyor. Bu
+konu acil hale geldi. App tarafı düzgün çalışıyor, o nedenle, o tarafı
+incele ve oradaki gibi olması sağla."*
+
+**Ölçüm (edge logs, 13:17–13:19, tek oturum, iPhone Safari 18.7):**
+
+| Yol | 2 dakikada | Tur başına |
+|---|---|---|
+| `rpc/list_my_online_games` | 125 | ~2 |
+| `online_game_states` | 112 | ~2 |
+| `rpc/list_incoming_friend_requests` | 109 | ~2 |
+| `leaderboard` | 61 | ~1 |
+| `rpc/unseen_finished_online_games` | 59 | ~1 |
+| `league_rewards` · `local_game_saves` | 54 | ~1 |
+| **`/auth/v1/user` + `profiles`** | **52 + 51** | **~1** |
+
+Son satır teşhisi tek başına veriyor: `fetchMyProfile` yalnızca
+`currentUserId` DEĞİŞİNCE koşar, yani `user` iki dakikada ~52 kez `null`a
+düşüp geri geliyordu. Ve o `null`lar `shouldApplyAuthSession`'ın elemesine
+rağmen geçtiğine göre, titreten olay `SIGNED_OUT` ya da `INITIAL_SESSION`
+adıyla geliyordu: **olay adı bir filtre değil.**
+
+⚠ Elenen ilk hipotez, ölçümle: *"service worker sayfayı yeniden yükleme
+döngüsüne soktu"* (`pwa.ts` → `onNeedRefresh` → `updateSW(true)`). Bir tam
+sayfa yüklemesi her uçtan BİRER istek üretir; yukarıdaki tabloda uçlar
+1×–2,4× arası ayrışıyor. Yani bunlar yeniden yükleme değil, **bağımsız
+effect koşuları**. Sayfa yenilense sayılar birbirine eşit olurdu.
+
+**İki değişiklik — biri karar, biri yapı.**
+
+1. **Karar artık ada değil DEPOYA bakıyor** (`shouldApplyAuthSession`, yeni
+   imza). `null` oturumlu bir olay geldiğinde kalıcı oturum okunuyor: depo da
+   boşsa çıkış gerçektir, depoda oturum duruyorsa olay gürültüdür ve YOK
+   SAYILIR. Olayın neden `null` yaydığı hâlâ BİLİNMİYOR — ama artık önemi de
+   yok: karar tahmin edilen bir ada değil ölçülebilir bir duruma dayanıyor.
+   ⚠ Okuma `setTimeout(…, 0)` ile erteleniyor; geri çağrı Supabase'in auth
+   kilidini tutarken ikinci bir auth çağrısı yapmak kilitlenme üretir
+   (Supabase'in kendi uyarısı). ⚠ Hata yönü de seçildi: depo okunamazsa
+   oturum DÜŞÜRÜLMEZ — girişli kullanıcıyı çıkmış saymak düzeltilen arızanın
+   ta kendisi.
+
+2. **Yükselteç yapısal olarak kaldırıldı — portun değişmezi web'e taşındı.**
+   Kullanıcının isteği buydu ve portun kuralı zaten yazılıydı
+   (`mobile/app/lib/src/auth/account_scope.dart`, PORT_BRIEF §7): *"karar auth
+   NESNESİNE değil `user.id`'ye bakmalı"*. Web'de **21 effect** `user`
+   nesnesine bağlıydı. Hepsi `user?.id`'ye çevrildi (e-postayı okuyan ikisine
+   `user?.email` de eklendi). Artık bir auth olayı `user` nesnesini
+   değiştirse bile hiçbir veri turu doğmuyor.
+
+   ⚠ Port'un döngüye girmemesinin sebebi olayları farklı almak DEĞİL —
+   `_applyUser` orada da her olayda koşuyor. Fark mimari: Flutter'da
+   `notifyListeners()` bir YENİDEN ÇİZİM'dir, veri çekimi değil. React'te
+   `[user]`e bağlı bir effect için yeniden render = yeniden çekim. Aynı
+   olay akışı iki tarafta iki farklı maliyet üretiyor.
+
+   Taramayı yazınca 21. ihlal ortaya çıktı: `FriendInvitePage.tsx`in davet
+   kabul effect'i (`[authLoading, user, status, token]`) — elle yapılan grep
+   bunu kaçırmıştı, çünkü `user` dört bağımlılığın ortasındaydı.
+
+**Kapı genişledi:** `npm run verify-auth-user-identity` artık saf fonksiyon
+kontrollerine ek olarak `src/` altındaki 136 dosyayı tarayıp bare `user`
+bağımlılığı arıyor. Derleyici bunu göremez, ESLint bu repoda kurulu değil
+(`npm run lint` = `tsc --noEmit`) — yani kural ancak bir kaynak taramasıyla
+korunabilir.
+
+### Dördüncü tur — sebebe değil FREKANSA bakmak (19 Eylül 2026, aynı gün)
+
+Üçüncü düzeltme de yayına çıktı (`444c829`) ve kullanıcı yine bildirdi:
+*"Aç kapa yapınca loop yaptı, kapatıp açtım, düzeldi. Tekrar kapatıp açınca
+yine yaptı."* — yani arıza **açılış başına ~%50 olasılıkla** doğuyor.
+
+**Saniye saniye ölçüm (13:44–13:46) iki şeyi kesinleştirdi:**
+
+| Gözlem | Sonuç |
+|---|---|
+| Patlamalar 13–15 sn sürüp kesiliyor, aralarda boşluk | Kullanıcının aç-kapa turları |
+| Patlama içinde **saniyede ~2 profil çekimi + ~2 websocket**, ~20 istek/sn | Tur başına ~10 istek |
+| Bir iPhone saniyede iki kez 400 KB paketi indirip React'i kuramaz | **Sayfa YENİLENMİYOR** — döngü sayfa İÇİNDE |
+| `client_errors` 4 saattir BOŞ | Uygulama çökmüyor, `ErrorBoundary` hiç girmiyor |
+| `sw.js`in ETag'i ardışık 8 istekte aynı | İki dağıtımın farklı SW servis etmesi DEĞİL |
+
+⚠ **Üçüncü turda elenen "sayfa yeniden yükleniyor" hipotezi YANLIŞ
+gerekçeyle elenmişti.** O tur "tam sayfa yüklemesi her uçtan BİRER istek
+üretir, oysa uçlar 1×–2,4× ayrışıyor" demişti — bu yanlış: `Setup` ve
+`LiveGamesTab` aynı ucu ikisi birden çağırdığından tek bir yükleme de 2×
+üretir. Hipotezi gerçekten eleyen şey oran değil **HIZ** oldu (saniyede iki
+tam açılış fiziksel olarak mümkün değil). Ders: bir hipotezi elerken
+gerekçenin kendisini de sına — yanlış gerekçeyle elenen doğru hipotez, bir
+sonraki turda geri gelir.
+
+**Kabul: kök sebep hâlâ bulunamadı.** Dört turdur aranıyor (nesne kimliği →
+olay adı → depo doğrulaması → bu). Sunucu logları tetikleyiciyi
+GÖSTEREMİYOR. O yüzden bu tur iki farklı şey yapıyor:
+
+1. **ÖLÇÜM — cihazdan.** `null` oturumlu her olayda `client_errors`'a tek
+   satır: *olay adı* + *o anda kalıcı oturum duruyor muydu*. Bu ikisi kök
+   sebebi ikiye indiriyor: **depo DOLU** ise olay sahtedir (supabase-js
+   gürültüsü), **depo BOŞ** ise oturum gerçekten siliniyordur ve teşhis
+   `_removeSession`'a kayar.
+
+2. **DEVRE KESİCİ — sebebe değil frekansa bakar.** Kesin bildiğimiz tek şey:
+   *gerçek bir çıkış saniyede iki kez olmaz.* `AUTH_NULL_BURST_MS` (10 sn)
+   içinde `AUTH_NULL_BURST_LIMIT` (3) kez `null` uygulandıysa, o sayfa ömrü
+   boyunca `null` bir daha uygulanmaz. İlk `null` her zaman uygulanır, yani
+   gerçek çıkış bozulmaz; bedel dar ve bilinçli: oturumu saniyeler içinde üç
+   kez düşen bir sayfa, bir sonraki yüklemeye kadar girişli görünür.
+
+   ⚠ Kesici kök sebep bulununca da KALIR. Bu sınıf bir hata bir kez daha
+   doğarsa kullanıcı yine sonsuz döngü görmemeli.
+
+**Ayrıca — `fetchMyProfile` artık `getUser()` çağırmıyor.** Çağıran kimliği
+biliyorsa (`useAuth` biliyor) `fetchMyProfile(u.id)` geçiyor. Öncesinde her
+profil çekimi bir AĞ TURU (`/auth/v1/user`) **ve bir AUTH KİLİDİ** demekti;
+döngü sırasında bu saniyede ~2 kez oluyordu ve ekrandaki öteki auth
+çağrılarıyla yarışıyordu. **Portun `_fetchProfile`'ı zaten böyle**
+(`auth_service.dart` — doğrudan `userId` ile sorgular, kimlik doğrulamaz);
+yani bu da web'i porta yaklaştıran bir değişiklik.
+
+⚠ Bu, kilit yarışının kök sebep OLDUĞU iddiası DEĞİL — sınanmamış bir
+hipotez. Kanıtı telemetri verecek.

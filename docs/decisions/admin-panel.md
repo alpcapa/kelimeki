@@ -42,6 +42,9 @@ notunda da yazılı.
 
 - **Erişim:** `profiles.is_admin = true` olan hesaplarda `UserMenu`'de bir "Admin Paneli" girişi açılır (yoksa hiç görünmez). Tüm admin verisi `is_admin()` (security definer) ile korunan RPC'ler üzerinden gelir; `anon`/`authenticated` rollerinden doğrudan `revoke`, yalnızca `authenticated`'e `grant execute` verilir, RPC içinde de ayrıca `is_admin()` kontrolü yapılır (yetkisizse exception fırlatır).
 - **Sekmeler (`AdminDashboard.tsx`):**
+
+### Üyeler sekmesi
+
   - **Üyeler** — `admin_list_members` RPC'si tüm kayıtlı kullanıcıları listeler, arama+sıralama var; **21 Ağustos 2026'dan beri kayıt formunun TÜM alanları + izinler tabloda** (bkz. hemen aşağıdaki madde); bir satıra tıklayınca `PlayerScoreCard` (`ScoreCard`'ın salt-okunur genel görünümü, `fetchPlayerStats`/`fetchMyGames`'in opsiyonel `userId` parametresiyle) açılır — bu bileşen 25 Temmuz 2026'ya kadar yalnızca admin panelinden erişilebilen `AdminPlayerDetail` idi; artık `Leaderboard`'daki (Sanal Lig) herhangi bir satıra tıklanınca da aynı bileşen (aynı dosya, `PlayerScoreCard.tsx`) açılıyor, bu yüzden admin'e özgü olmayan bir isim aldı. İsim altında ayrıca bir e-posta satırı gösteriliyordu, bu da aynı gün kaldırıldı — e-posta artık hiçbir skor kartında görünmüyor, yalnızca Üyeler tablosunun kendi sütununda kalıyor.
 
     **Kayıt alanlarının tamamı tabloda (21 Ağustos 2026, kullanıcı isteği:
@@ -171,8 +174,14 @@ notunda da yazılı.
     - **"Bizimle temasa geçin" linki mevcut `?contact=1` akışını kullanıyor** — yeni bir sayfa/form icat edilmedi; `App.tsx`'in zaten okuduğu `?contact=1` parametresi (bkz. "Geri bildirim yanıtları" bölümü) genel "Görüş Bildir" formunu girişsiz de açabildiğinden (dondurulmuş hesap muhtemelen giriş yapamayacağından bu önemli), buton doğrudan `https://kelimeki.com/?contact=1`'e gidiyor.
     - **Doğrulama sınırı:** Bu ortamdan gerçek bir kullanıcı JWT'siyle Edge Function'a doğrudan HTTP isteği atılamadığından (`play-ai-turn`'ün aynı notuna bkz.), uçtan uca gönderim (gerçek bir Brevo maili) test edilmedi — yalnızca fonksiyonun production'a `ACTIVE` durumda deploy edildiği ve dosya içeriğinin (`index.ts` + `_shared/email.ts`) beklenenle birebir eşleştiği doğrulandı. Gerçek bir dondurma işlemiyle uçtan uca teyit kullanıcıdan bekleniyor.
     **Dondurma kaldırılınca da bir e-posta (aynı gün, kullanıcı isteğiyle, `notify-account-unbanned` Edge Function'ı):** Kullanıcının gerçek bir senaryo tarif etmesiyle eklendi — dondurulan kişi giriş yapamadığından itirazını yalnızca genel "Görüş Bildir" formundan (`?contact=1`) iletebiliyor; admin bu itirazı haklı bulup dondurmayı kaldırırsa, kişi hesabının tekrar açıldığından habersiz kalıyordu (giriş deneyip başarılı olana kadar). `setUserBanned(userId, false)` artık aynı fire-and-forget desenle bu yeni fonksiyonu çağırıyor — metin sabit: "Sayın {isim}, Durumunuzu tekrar değerlendirdik ve hesabınızı aktif hale getirdik. İyi Oyunlar! Kelimeki Müşteri Hizmetleri" + bir **"Giriş Yapın"** butonu (`https://kelimeki.com`, `notify-friend-request`'teki "Kelimeki'yi Aç" butonuyla aynı desen — siteye özel bir "otomatik giriş modalı aç" query param'ı yok, kullanıcı ana sayfadaki normal "Giriş" butonunu kendisi kullanıyor). Ban e-postasının aksine burada tarih/şikayet referansı yok — metin kullanıcı tarafından sabit verildi, koşullu bir cümle gerekmiyor. `notify-account-banned` ile neredeyse birebir aynı dosya iskeleti (auth/is_admin kontrolü, service-role client, `online_game_chat_reports` sorgusu hariç) kasıtlı olarak ayrı bir fonksiyona çıkarıldı — projedeki `notify-friend-request`/`notify-game-invite` gibi her bildirim türünün kendi küçük, tek işi yapan Edge Function'ı olması deseniyle tutarlı, tek bir fonksiyona `p_banned` gibi bir dallanma parametresi eklemek yerine.
+
+### Oyunlar ve Büyüme sekmeleri
+
   - **Oyunlar** — `admin_game_counts` RPC'si Toplam/2/4 Kişilik için yalnızca biten oyun sayısını verir (`games` tablosu — yalnızca girişli kullanıcıların skor kayıtları). Daha önce `game_starts`'a göre bir "Başlatılan" sayısı da gösteriliyordu; kaç oyunun bittiği önemli olup kaçının başladığı önemli görülmediğinden bu kaldırıldı (20 Temmuz 2026, `admin_game_counts_drop_started` migration'ı — RPC artık yalnızca `player_count, finished` döner). Aynı gün `game_starts` tablosu (RLS politikaları/index'leriyle birlikte) ve `logGameStart` çağrısı da tamamen kaldırıldı (`remove_game_starts_add_session_split_counts` migration'ı) — "başlatılan" verisine hiçbir yerde ihtiyaç görülmedi.
   - **Büyüme** — Kullanıcı/Oyun alt sekmeleri, aşağıya bakın.
+
+### Geri Bildirim sekmesi
+
   - **Geri Bildirim** — `feedback` tablosu (`FeedbackModal`'dan girişli/misafir gönderilir, oyun bitince `GameOver`'dan açılır); admin okundu/okunmadı işaretleyebilir. 26 Temmuz 2026'da eklenen **yanıt** özelliği: `email` alanı dolu olan (girişliyse hesap e-postası, misafirse formda girilen e-posta) bir geri bildirime admin panelinden yazılan yanıt, `feedback-reply` Edge Function'ı üzerinden Brevo Transactional API ile gönderenin adresine e-posta olarak gönderilir ve `feedback.reply`/`replied_at`/`replied_by` kolonlarına (`feedback_reply_columns` migration'ı) kaydedilir — kart üzerinde daha önce yanıtlanmışsa yanıt metni gösterilir, yoksa bir "Yanıtla" toggle'ı açılır; `email` boşsa (anonim, e-postasız gönderim) buton yerine "E-posta yok, yanıtlanamaz" notu çıkar, çünkü gidecek bir adres yok. Kartlar varsayılan olarak kapalı (özet) gelir, tıklanınca tam mesaj + yanıt + aksiyon butonları tek bir "diyalog" olarak açılır (`expandedFeedbackId`, `AdminDashboard.tsx`).
 
     **Kart başlığı İKİ SATIR — gönderenin adı ARTIK KIRPILMIYOR (23 Ağustos
@@ -211,9 +220,18 @@ notunda da yazılı.
     porta hiç girmedi.
     **26 Temmuz 2026'nın üçüncü değişikliği — `origin`/`subject`/`related_to` (`feedback_origin_subject_related_to` migration'ı):** İki eksik giderildi. (1) `admin-send-message`'ın gönderdiği mesajlar artık `feedback`'e `origin: 'admin'`, `subject` ile kaydediliyor (`handled: true`) — önceden hiçbir iz bırakmıyordu, admin "kime ne yazdım" sorusuna cevap veremiyordu. Kartta bu satırlar "Gönderilen" rozetiyle ve `→ {alıcı}` başlığıyla (normal `origin: 'user'` satırlarındaki "kimden geldi" anlamının tersi) ayrışır; bu satırlarda "Yanıtla" gösterilmez (zaten gönderilmiş, cevap verilecek bir şey yok). (2) Hem `feedback-reply` hem `admin-send-message`'ın gönderdiği maildeki noreply notu artık linke gömülü bir referans taşıyor (`?contact=1&re=<id>`, `buildNoreplyNoticeHtml`, `_shared/email.ts`) — kişi bu linkten forma yeni bir mesaj yazarsa (`FeedbackModal`'ın yeni `relatedTo` prop'u → `submitFeedback`), yeni satır `related_to = <id>` ile kaydedilir; admin panelinde bu satırlar "↳ Cevaben" rozetiyle görünür, genişletilince üstte hangi mesaja cevaben geldiği (o mesajın konusu + yanıtı/metni) kısa bir alıntı olarak gösterilir (`feedback?.find(x => x.id === f.related_to)` — sayfalama olmadığından tüm liste zaten client'ta yüklü). **Bunun sınırı hâlâ aynı:** yalnızca kişi GERÇEKTEN o linke tıklayıp siteden yazarsa çalışır — mail programında doğrudan "Yanıtla"ya basarsa yine `noreply@kelimeki.com`'a gider ve hiçbir yere düşmez, gerçek bir e-posta thread'i değildir. `feedback_insert_any` RLS politikası da bu değişiklikte gevşetildi (`user_id is null or auth.uid() = user_id or is_admin()`) — admin artık "Mesaj Gönder" ile BAŞKA bir kullanıcı adına satır ekleyebiliyor.
     Detay için aşağıdaki "Geri bildirim yanıtları" bölümüne bakın.
+
+### CSV export
+
   - **CSV export** (25 Temmuz 2026) — Üyeler tablosu, Geri Bildirim listesi, Büyüme > Kullanıcı'daki Ziyaretçi Kaynağı/Cihaz dökümleri (Ana Ekrana Ekleme ve Platform tabloları 15 Ağustos 2026'da kaldırıldı) ve tüm `GrowthChart` grafikleri (Yeni Üye/Ziyaret, Oyun Sayısı, Oyun Süresi (Medyan), Beğeni/Paylaşma) için "CSV İndir" linki var — ekranda görünen (arama/sıralama/kaynak filtresi uygulanmış) veriyi indirir. Yeni kütüphane eklenmedi; `src/utils/csvExport.ts`'teki `downloadCsv` UTF-8 BOM'lu bir CSV Blob'u üretip `<a download>` ile indiriyor (BOM olmadan Excel Türkçe karakterleri bozuk açardı). PDF/print kapsam dışı bırakıldı — kullanıcı gerekirse tarayıcının kendi "Yazdır → PDF olarak kaydet"ini kullanabilir, ama modal `fixed`/`overflow-y-auto` olduğundan düzgün basılması için ayrı bir `@media print` CSS'i gerekir, henüz eklenmedi.
+
+### Büyüme > Kullanıcı
+
 - **Büyüme > Kullanıcı** — `admin_user_activity_series(p_periods, p_granularity)`: günlük/haftalık/aylık/yıllık kovalarda yeni kayıt (signup, `auth.users`) sayısı (**Kayıtlı**) ve misafir (girişsiz) benzersiz ziyaretçi sayısı (**M. Ziyaret**). **16 Ağustos 2026 — etiket ve varsayılan değişti (kullanıcı isteği):** seri eskiden yalnızca "Ziyaret" diyordu ve legend'da KAPALI geliyordu. Kullanıcı "ziyaret rakamları var ama kayıtlı mı misafir mi belli olmuyor, üste Kayıtlı/Misafir filtresi eklesek?" diye sordu — o filtre YANILTICI olurdu: `guest_visits` satırı yalnızca oturum KAPALIYKEN yazıldığından (`App.tsx`'teki `if (... || authLoading || user) return;` + insert izninin yalnız `anon` rolünde olması) "Kayıtlı" her zaman 0 çıkardı, üstelik "kayıtlı üye siteye girmiyor" gibi YANLIŞ bir sonuca götürürdü; girişli kullanıcının "uygulamayı açtı" sinyali bu şemada HİÇ YOK (bkz. aşağıdaki "Bu bilerek 'MAU' DEĞİL" maddesi). Bunun yerine etiket kendini anlatır hâle getirildi (`M.` = misafir) ve İKİ seri de varsayılan açık geliyor — "yeni üye 0 ama ziyaret var" ilişkisi ancak birlikte çizilince okunuyor. Gerçekten Kayıtlı/Misafir kırılımı istenirse append-only bir `app_opens` olayı gerekir ve o YENİ bir kişisel veridir (`PrivacyModal` + port `legal_modals.dart` ile birlikte karara bağlanmalı). İkincisi `guest_visits` tablosundaki bucket başına DISTINCT `anon_id` sayısıdır — `anon_id`, `localStorage`'da üretilen rastgele bir uuid (bkz. `src/utils/visitTracking.ts`), App.tsx yalnızca oturum açık DEĞİLKEN ve günde bir kez `logGuestVisit` ile gönderir; sunucu tarafında da yalnızca `anon` rolünden insert'e izin verilerek zorlanır (`guest_visits_insert_anon` RLS politikası). Hiçbir kişisel veri taşımaz ama gerçek benzersiz İNSAN sayısı değildir — aynı kişi farklı cihaz/tarayıcı/gizli sekme kullanırsa ayrı sayılır; kayıt olmadan gelip hiç oynamadan bakıp gidenleri de (game_finishes'in hiç yakalamadığı bir kesimi) görünür kılmak için 22 Temmuz 2026'da eklendi (`guest_visits_admin_user_series` migration'ı).
   **Kaynak (UTM) etiketleme:** Sosyal medya tanıtım sprinti (23 Temmuz 2026) için `guest_visits`'e `utm_source` sütunu eklendi (`guest_visits_utm_source` migration'ı). Paylaşım/bio linklerine eklenen `?ref=tiktok` gibi bir parametre `captureUtmSource` (`src/utils/visitTracking.ts`) ile sayfa her yüklendiğinde okunur ve cihazda **ilk temas** (first-touch) olarak `localStorage`'a yazılır — üzerine bir daha yazılmaz, `?ref=` olmadan gelen sonraki ziyaretlerde de aynı kaynak etiketiyle gönderilmeye devam eder. `logGuestVisit` bunu `getStoredUtmSource()`'tan okuyup her ziyaret pingine ekler; `?ref=` ile hiç gelinmemişse `null` gider. Admin panelinde Büyüme > Kullanıcı altında ayrı bir "Ziyaretçi Kaynağı" tablosu (`admin_guest_source_breakdown(p_days)` RPC'si) kaynak başına benzersiz ziyaretçi sayısını gösteriyordu — zaman serisine kaynak kırılımı eklemek yerine bilinçli olarak ayrı/basit bir toplam döküm tercih edilmişti. **16 Ağustos 2026'da bu tablo "Kaynak Hunisi"ne dönüştü (bkz. bir alttaki madde);** RPC veritabanında duruyor ama artık hiçbir yerden çağrılmıyor, istemci sarmalayıcısı (`fetchAdminGuestSourceBreakdown`) ve tipi (`AdminGuestSourceRow`) silindi.
+
+### Büyüme > Oyun
+
 - **Büyüme > Oyun** — `admin_game_activity_series(p_periods, p_granularity, p_scope, p_player_count, p_source)`: aynı granülerlik + Toplam/Kayıtlı/Misafir (`p_scope`, `user_id is/is not null`'a göre) + Toplam/2/4 Kişilik (`p_player_count`) + Toplam/Canlı/Yapay Zeka (`p_source`) filtreleriyle tamamlanan (`game_finishes` where `not ended_by_surrender`, ayrıca aynı oturum/çok oturumlu kırılımıyla `games_finished_same_session`/`games_finished_multi_session`) / teslim olarak biten (`games_surrendered`) oyun sayıları ve **süre MEDYANI** döner (genel + aynı oturum/çok oturumlu kırılımı, artı `p90_duration_seconds` — 16 Ağustos 2026'da ortalamadan medyana geçildi, bkz. aşağıdaki madde; **sunucu üç kırılımı da döndürmeye devam ediyor ama 16 Ağustos 2026'dan beri Oyun Sayısı grafiği bu kırılımı ÇİZMİYOR, yalnızca süre grafiği çiziyor ve orada "Tek Oturumda / Günlere Yayılan" adıyla**, bkz. aşağıdaki madde). Bucket'lar `now()`/`created_at`'i `at time zone 'Europe/Istanbul'`e çevirip `date_trunc` ile kesiyor (`admin_game_istanbul_tz_and_surrender_split` migration'ı, 22 Temmuz 2026) — öncesinde veritabanının kendi (UTC) saat dilimini kullanıyordu, yani "bugün" kovası aslında İstanbul saatiyle 03:00-03:00 arasıydı; `admin_user_activity_series` de aynı düzeltmeyi aldı.
   - **"Bitirilen" ile "Teslim" ayrımı:** Bir `game_finishes` satırının iki farklı geliş yolu var — bag+raf boşalarak ya da pas turuyla GERÇEKTEN sonuna kadar oynanmış olmak, ya da teslim (`endGame`'in hangi yoldan çağrıldığı `GameState.endReason: 'normal'|'surrender'` olarak tutulur, `src/game/gameReducer.ts`; `logGameFinish`'e `endedBySurrender` olarak iletilir, `game_finishes.ended_by_surrender`). İkincisi gerçek bir oyun süresini yansıtmaz; RPC bunu `games_finished`/`avg_duration_*`'a değil ayrı `games_surrendered` sayacına koyar, "Teslim" oyunları ortalama süreye hiç katılmaz. 22 Temmuz 2026'dan önce kaydedilmiş satırlarda bu sütun yok (varsayılan `false`) — o kayıtlar teslimle bitmiş olsa bile geriye dönük olarak ayrıştırılamıyor, hepsi "Bitirilen"de kalıyor. 3 Ağustos 2026'dan beri yerelde teslimin TEK kaynağı 7 günlük süre aşımıdır (manuel/anlık teslim 29 Temmuz'da, ondan ayrı bir "Terk" serisi de 3 Ağustos'ta kaldırıldı — bkz. "Terk edilen oyunun otomatik temizliği"); Canlı'da ise 48 saatlik sıra aşımı (`check_turn_timeout`) aynı işi görüyor ve `games`+`online_game_states` üzerinden ayrıca sayılıyor.
   - "Başlatılan" (eski `game_starts` tablosu/serisi) 20 Temmuz 2026'da tamamen kaldırıldı — hiçbir yerde ihtiyaç görülmedi. `game_finishes` tamamen anonim bir sayaç tablosudur (skor/kelime gibi kişisel veri yok) — misafir oyunlar için de `user_id=null` satır alır (`game_finishes_insert_anon` RLS politikası). `GrowthChart.tsx` tek bir generic bileşen; tıklanabilir legend'larla seri açıp kapatma, tablo görünümü ve (süre grafiğinde) `formatDuration` ile sn/dk/sa/gün/hafta/ay/yıl kademeli biçimlendirme sağlar.
@@ -224,10 +242,16 @@ notunda da yazılı.
     - **Karar — sayı grafiğinden kaldır, SÜRE grafiğinde tut:** süre tarafında ayrım gerçek iş yapıyor; Canlı oyunlar 48 saatlik sıra penceresi yüzünden günlere yayılıyor ve tek bir ortalamaya katılırlarsa "bir oyun ne kadar sürer" sayısı anlamsızlaşıyor. Yalan söyleyen ETİKETTİ: `Aynı Oturum`→**`Tek Oturumda`**, `Çok Oturumlu`→**`Günlere Yayılan`**. Grafiğin altına projenin kendi kuralıyla (tanım ekranın KENDİSİNDE yazar — aktif oyuncu grafiğindeki aynı refleks) tek satırlık bir açıklama eklendi; **ertesi gün (17 Ağustos) o metin `?` popup'ına taşındı** (bkz. "Grafik altındaki açıklama paragrafları `?` popup'ına taşındı") — kural değişmedi, yalnızca nerede durduğu değişti.
     - **Reddedilen alternatif:** bulut devamını da `multiSession` işaretlemek (metriğin niyetini kurtarırdı). Elendi çünkü asıl soruyu ("insanlar yarım oyuna dönüyor mu?") 14 Ağustos'ta eklenen retention kohortları + aktif oyuncu serisi zaten daha temiz cevaplıyor; ayrıca `handleResumeCloudSave` hem "az önce çıkıp döndüm" hem "başka cihazdan açtım" durumunda çalıştığından ayırmak "bu satır bu uygulama oturumunda mı oluşturuldu" gibi bir ek mekanizma isterdi (iki istemcide birden). **"Geriye dönük doldurulamaz, o hâlde şimdi düzelt" argümanı burada `games.platform`taki kadar güçlü DEĞİL** — orada yerine geçecek hiçbir sinyal yoktu, burada var.
     - **Sunucu tarafı BİLİNÇLİ olarak değişmedi:** `admin_game_activity_series` üç sütunu (`games_finished_same_session`/`_multi_session` + iki ortalama) döndürmeye devam ediyor ve `game_finishes.multi_session` yazılmaya devam ediyor — istemci sayı grafiğinde ikisini okumayı bıraktı, o kadar. Geri alması tek satır; ileride gerçek bir "oturum" tanımı kurulursa veri kaybı olmadan geri açılabilir.
+
+#### Oyun süresi — medyan + p90
+
   - **Ortalama süre → MEDYAN + p90 (16 Ağustos 2026, `admin_game_duration_median` + `admin_game_duration_median_fix_ambiguous_bucket` migration'ları):** Yukarıdaki denetimin ikinci bulgusu — grafiğin kendisi doğru veriyi çiziyordu ama YANLIŞ İSTATİSTİKLE. Dağılım aşırı çarpık: "tek oturumda" biten 200 yerel oyunda **ortalama 246,6 dk iken medyan 18,1 dk** (13 kat fark); 49 oyun 1 saatten, **7 oyun 1 GÜNDEN** uzun (açık unutulmuş ya da Setup'a çıkılıp günler sonra dönülmüş oyunlar). Yani panel "ortalama oyun süresi ≈ 4 saat" diyordu, tipik oyun 18 dakikaydı — sayı yanlış değil, TEMSİL ETMİYORDU. Üç `avg_duration_*` sütunu `med_duration_*`ile değiştirildi, üstüne `p90_duration_seconds` eklendi (medyanın gizlediği kuyruk; grafikte gri, varsayılan KAPALI legend — açılınca "uzun oyunlar ne kadar uzun" sorusunu yanıtlıyor).
     - **Medyan iki kaynaktan BİRLEŞTİRİLEMEZ, ortalama birleştirilebiliyordu.** Eski hesap yerel (`game_finishes`) ve Canlı (`games`+`online_game_states`) tarafını ayrı ayrı `sum`/`count` ile toplayıp bölüyordu — `percentile_cont` böyle çalışmaz. RPC artık iki kaynağın HAM sürelerini tek bir `durations` CTE'sinde `union all` ile toplayıp yüzdelikleri orada hesaplıyor. Aynı/çok oturumlu kırılımı `filter (where ...)` ile — **`FILTER` sıralı-küme agregalarıyla (`within group`) çalışıyor**, canlıda ölçülerek doğrulandı.
     - **BULUNAN HATA — migration temiz uygulandı, İLK ÇAĞRIDA patladı (`42702`):** yeni `dur_agg` CTE'si çıplak `bucket` seçip `group by bucket` yapıyordu; `bucket` aynı zamanda fonksiyonun bir OUT parametresi olduğundan Postgres `column reference "bucket" is ambiguous` verdi. Mevcut CTE'ler bu tuzağa hiç düşmemişti çünkü onlar bir İFADEYİ adlandırıyor (`date_trunc(...) as bucket`) ve konumsal `group by 1` kullanıyor — kolona ÇIPLAK referans vermiyorlar. Üçüncü bir migration her şeyi `dd.bucket`/`dd.dur`/`dd.is_multi` diye niteledi. **Bu, bu projede geçerli SQL'in temiz uygulanıp ilk çağrıda düştüğü İKİNCİ vaka** (öncesi: `admin_game_activity_include_online_fix_numeric_cast`) — ders aynı: bir migration'ı uyguladıktan sonra "uygulandı" yetmez, **fonksiyonu GERÇEKTEN çağır**.
     - **Doğrulama:** canlıda gerçek admin JWT'siyle (`set local role authenticated`) koşuldu — yıllık/yerel kova **18,1 / 841,9 dakika** döndü, yani migration'dan ÖNCE bağımsız olarak yapılan doğrudan ölçümle BİREBİR aynı; admin olmayan çağrı `Yetkisiz erişim.` ile reddedildi; grant'ler diğer admin RPC'leriyle aynı (`authenticated`+`service_role`, `anon` YOK) ve her ad tek bir overload taşıyor.
+
+#### "YZ Dengesi" paneli
+
   - **"YZ Dengesi" paneli (16 Ağustos 2026, `admin_ai_balance` migration'ı)** — aynı denetimin üçüncü bulgusu: veri `games`te BAŞTAN BERİ vardı ve hiçbir yerde gösterilmiyordu, oysa bu, YZ'ye (`src/utils/ai.ts` ve onun Dart kopyası) dokunan her değişikliğin regresyonunu yakalayan tek sayı. `admin_ai_balance()` yerel (`online_game_id is null`) oyunlarda İNSANIN sonuç dağılımını oyuncu sayısı bazında döner (`games`/`wins`/`ties`/`losses`/`second_places`); Büyüme > Oyun'un tepesindeki angajman kutularının altında kutu olarak gösteriliyor.
     - **Teslim satırları HARİÇ** (`not surrendered`) — onlar bir beceri sonucu değil, 7 günlük terk-edilme cezasının kaydı (bkz. "Terk edilen oyunun otomatik temizliği"); dahil edilselerdi YZ olduğundan güçlü görünürdü.
     - **Rastgele referansı EKRANDA yazıyor, dokümanda değil:** kutunun altında "rastgele %50" / "rastgele %25". Onsuz 4 kişilikteki **%31** alarm verici görünürken aslında rastgelenin (%25) ÜSTÜNDE. Ölçüm anındaki değerler: 2 kişilik **%57** (95/167), 4 kişilik **%31** (29/93) — insan iki modda da rastgelenin biraz üstünde, yani denge makul.
@@ -240,6 +264,9 @@ notunda da yazılı.
       - **Etiketler `Kazanma` → `Birincilik` oldu** (iki mevcut kutuda da), yeni `İkincilik` kutusuyla aynı eksende okunsun ve `ScoreCard`'ın kendi sözlüğüyle (Birincilik/İkincilik) örtüşsün diye. Anlam değişmedi.
       - **Sütun sayısı inline `style` ile veriliyor** (`repeat(min(n,3), minmax(0,1fr))`), Tailwind sınıfıyla değil: çalışma anında kurulan bir `grid-cols-${n}` SESSİZCE uygulanmaz (Tailwind yalnızca kaynakta geçen sınıfları üretir — bkz. `CountBadge`'in ölçüm tuzağı). Böylece kutu sayısı 1/2/3 olduğunda ızgara kendiliğinden uyuyor.
       - **Ölçüldü** (derlenmiş CSS + Chromium): 390px'te üç kutu 100px, yükseklikleri eşit (grid stretch), etiket/detay taşması 0, sayfada yatay taşma yok; 834px'te 194px ve etiketler tek satır.
+
+#### Kaynak kombosu ve filtre denetimi
+
   - **Toplam/Canlı/Yapay Zeka kaynak kombosu + biten Canlı oyunların grafiklere dahil edilmesi (31 Temmuz 2026, `admin_game_activity_include_online` migration'ı):** Kullanıcı biten Canlı (online) oyunların Büyüme > Oyun grafiklerinde hiç görünmediğini fark etti. Kök sebep: `game_finishes` yalnızca YEREL (Yapay Zeka'ya karşı, aynı cihaz) oyunlar bitince `logGameFinish()` ile yazılıyordu (`App.tsx`, yalnızca yerel `useReducer`/`state.isGameOver` efektlerine bağlı) — Canlı oyunlar tamamen sunucu tarafında `_finish_online_game_records()` üzerinden `games`'e yazılıyor, `game_finishes`'e hiç dokunmuyordu. **Sanal Lig puanları bundan etkilenmiyordu** — `player_stats`/`player_stats_overall` view'ları zaten `games` tablosunu okuduğundan, `_finish_online_game_records`'ın yazdığı satırlar (her insan koltuk için ayrı, `result`/`rank`/`surrendered` dolu) otomatik doğru sayılıyordu; production'da gerçek bir kullanıcının online-oyun katkısı (`games` üzerinden elle hesaplanan puan) `player_stats_overall.total_score`'a dahil olduğu sorgu ile doğrulandı. Düzeltme yalnızca admin telemetri tarafındaydı: `admin_game_activity_series`'e yeni bir `p_source` (`'total'|'local'|'online'`) parametresi eklendi — `'local'` dalı eskisi gibi `game_finishes`'i okuyor, yeni `'online'` dalı `games`+`online_game_states`'i `online_game_id` bazında gruplayıp (Canlı'da `games`'e koltuk başına bir satır yazıldığından, tek oyunu bir kez saymak için önce oyun bazında `bool_or(surrendered)`/süre hesaplanıyor) katıyor; `'total'` ikisinin toplamı. Online oyunların "Aynı Oturum"/"Çok Oturumlu" ayrımı yok — hepsi "Çok Oturumlu" tarafına yazılıyor (toplam = aynı+çok oturumlu değişmezliği korunuyor); "Terk" kavramı da yok (misafir yok, süresi dolan sıra otomatik teslime dönüşüyor — bkz. Faz 3.6), `games_abandoned` yalnızca yerelden geliyor. Süre `online_game_states.started_at` (oyun gerçekten aktif olduğu an) ile `games.created_at` (bitiş anı) farkından hesaplanıyor. Admin panelinde (`AdminDashboard.tsx`) Büyüme > Oyun'un filtre satırının EN BAŞINA yeni bir **Toplam/Canlı/Yapay Zeka** kombosu (`gameSource` state) eklendi; Canlı seçilince hemen yanındaki Toplam/Kayıtlı/Misafir kombosu tek seçeneğe (**Kayıtlı**) düşüp devre dışı kalıyor ve `gameScope` otomatik `'registered'`e sabitleniyor (`selectGameSource`) — Canlı oyunda misafir kavramı yok. **16 Ağustos 2026 — kilit TEK YÖNLÜYDÜ, simetriği eklendi (kullanıcı fark etti):** Misafir seçiliyken kaynak kombosu hâlâ "Canlı"yı gösteriyor, seçilince de `gameScope` SESSİZCE `'registered'`e atlıyordu — yani kullanıcının az önce kurduğu filtre habersizce değişiyordu. Artık `gameScope==='guest'` iken kaynak kombosu tek seçeneğe (**Yapay Zeka**) düşüp devre dışı kalıyor (`selectGameScope`); misafir bir Canlı oyun olamayacağından o kombinasyon zaten her zaman 0 satır dönüyordu. İkisi aynı anda kilitlenemez: biri seçildiğinde öteki zaten geçerli tek değere çekiliyor. Diğer tüm kombolar (2/4 kişilik, granülerlik, periyot) ve alttaki iki grafik (Oyun Sayısı, Oyun Süresi (Medyan)) zaten aynı `gameActivity` state'ini paylaştığından yeni kombo otomatik olarak hepsiyle interaktif çalışıyor, ayrı bir bağlama gerekmedi. **Uygulama sırasında bir hata yakalandı:** ilk migration denemesinde `sum(integer)/count(bigint)` bigint/bigint tamsayı bölmesine düşüp fonksiyonun bildirdiği `numeric` dönüş tipiyle uyuşmadığından production'da anında hata verdi (`structure of query does not match function result type`) — üç ortalama-süre ifadesinin payına `::numeric` cast'i eklenen ikinci bir migration'la (`admin_game_activity_include_online_fix_numeric_cast`) düzeltildi; iki migration da (ilk hatalı + düzeltme) gerçek uygulanan versiyon numaralarıyla ayrı dosyalar olarak repoda tutuluyor (bkz. "Migration'lar" bölümündeki dosya adı/versiyon eşleştirme kuralı). Production'da `total`/`local`/`online` üç kaynağın da toplamlarının doğru eklendiği (`total = local + online`, kova kova) doğrulandı.
   - **Aynı gün ikinci değişiklik — "0 gösteriyor" şüphesi üzerine tam denetim + filtre kombolarının kompaktlaştırılması:** Kullanıcı Canlı+4 Kişilik filtresinde 30 Temmuz için "0 Bitirilen" görünce ("dün bir çok Canlı 2 ve 4 kişilik oyun bitirdim, veri yanlış") tüm oynanmış oyunları (kayıtlı+misafir, yerel+Canlı) baştan denetleyip admin'e kıyaslamam istendi. Gerçek hesabıyla (`Ironman`, admin) `online_games`/`online_game_states` production'da tek tek incelendi: 30 Temmuz'da başlattığı İKİ 4 kişilik Canlı oyun da (`e7e97fcd-...`, `990cf25d-...`) hâlâ `status='active'` — bag/rack'ler tam boşalmadığından oyun kuralına göre GERÇEKTEN bitmemiş, yalnızca "oynanmış" ("son turdayım" hissi ile "sunucuya göre bitti" farklı şeyler). Kullanıcının tek gerçekten bitmiş 4 kişilik Canlı oyunu 28-29 Temmuz'dan (eski test oyunu) — grafikteki "0" DOĞRUYDU, bir veri hatası değildi. 2 kişilik tarafında ise 30 Temmuz'da gerçekten 2 oyun bitirmişti (`37e47591-...` 16:49, `2316b655-...` 16:52 İstanbul) ve bunlar "Canlı+Kayıtlı+2 Kişilik" filtresinde doğru gözüküyordu — kullanıcı büyük ihtimalle 4 kişilik sekmesindeyken bunu görüp genellemişti.
     Bu denetim sırasında ayrı, gerçek ama küçük bir tarihsel boşluk da bulundu: `games` (yerel, kayıtlı, `online_game_id is null`) ile `game_finishes`'i (aynı kullanıcı, ±15 dk eşleşme) 19 Temmuz'dan bugüne kova kova karşılaştırınca, **yalnızca 19-26 Temmuz arasında** toplam ~10 satırlık bir fark bulundu (`game_finishes` tablosu `admin_growth_user_game_split` migration'ıyla tam 19 Temmuz'da oluşturulmuştu — o günün bir kısmı özellik canlıya alınmadan önceydi; `ended_by_surrender` kolonu da 22 Temmuz'da `admin_game_istanbul_tz_and_surrender_split` ile geldiğinden, o migration'dan (19:04 UTC) ÖNCE teslim olup biten 4 oyun `completed=true/ended_by_surrender=false` ile yanlış "Bitirilen"e düşmüş, "Teslim"e değil). **27 Temmuz'dan bugüne (31 Temmuz) her gün tam eşleşme — sıfır fark** — yani bu, sürüp giden bir hata değil, `game_finishes` özelliğinin ilk hafta rollout'undan kalma, kendiliğinden kapanmış bir iz. `games`'in aksine `game_finishes`'e giden `logGameFinish()` çağrısının (`App.tsx`) `saveGameDurable`'daki (`gameSync.ts`) gibi bir offline/yeniden-deneme kuyruğu yok — ama son 5 gündür sıfır kayıp gözlendiğinden şu an için ek bir dayanıklılık katmanı eklenmedi (gerekirse aynı `pending-games` deseni tekrarlanabilir). Bu ~10 eski satır geriye dönük DOLDURULMADI — `games` tablosu `duration_seconds` tutmadığından (yalnızca `game_finishes`'te var) gerçek süreyi kurtarmanın yolu yok, uydurma bir değer yazmak veri bütünlüğünü bozardı; kullanıcıya bu sınır açıkça belirtildi.
@@ -248,14 +275,23 @@ notunda da yazılı.
     2. `box-sizing:border-box` + `height:28px!important` + dikey dolguyu sıfırlama — kutunun DIŞ boyutu bu sefer gerçekten küçüldü (gerçek cihazda doğrulandı), ama kullanıcı bu sefer "yazılar çok büyük, Kullanıcı/Oyun butonlarındaki boyda olmalı" dedi — asıl sorun kutu boyutu değil, METNİN KENDİSİYDİ: `tabBtn`'in (Kullanıcı/Oyun sekme butonları) `text-[11px]`'i gerçekten 11px render ediyordu çünkü `<button>` zoom-önleme kuralının kapsamı DIŞINDA — ama select'in `text-[11px]`'i her zaman 16px!important tarafından eziliyordu (aynı proje içinde defalarca doğrulanmış "class specificity input/select/textarea element selector'ına karşı hiçbir zaman kazanamaz" dersiyle birebir aynı mekanizma). Yani gerçek `<select>`'in METNİ 16px'in altına ASLA çekilemez (zoom bug'ı geri gelir) — kutu boyutunu ne kadar küçültürsen küçült, punto farkı `tabBtn`'e göre hep göze batacaktı.
     3. **Asıl çözüm — görsel/erişilebilir ayrımı:** Yeni bir `AdminSelect` bileşeni (`AdminDashboard.tsx`, module-level) gerçek `<select>`'i `opacity-0` ile TAMAMEN görünmez ama hâlâ odaklanabilir/tıklanabilir/native-picker-tetikleyebilir bırakıyor (bu yüzden hesaplanan font-size'ı hâlâ 16px — zoom bug'ı hâlâ engelleniyor, opacity görünürlüğü etkiler font-size hesaplamasını etkilemez) — üstüne `aria-hidden` bağımsız, tamamen ayrı bir `<div>` `tabBtn` ile BİREBİR AYNI görsel stili (`text-[11px] font-bold uppercase tracking-[1px]`, artı küçük bir SVG ok ikonu) taşıyıp seçili option'ın etiketini gösteriyor. Yedi çağrı yeri de (`selectCls`'i kullanan TÜM select'ler — Kullanıcı sekmesindeki 2 + Oyun sekmesindeki 5) buna geçirildi; artık hem doğru boyutta hem hem `tabBtn` ile birebir aynı punto/kalınlıkta görünüyorlar. `selectCls`/`.admin-select` (önceki iki denemenin kalıntıları) tamamen kaldırıldı — artık kullanılmıyorlar.
     **Ders:** iOS zoom-önleme kuralı (`font-size:16px!important` on input/textarea/select) sadece o ÜÇ element türünü hedefliyor — `<button>`/`<div>` gibi diğer form-benzeri elementler bu kısıtlamaya hiç tabi değil. Bir `<select>`'i küçük punto ile göstermek gerektiğinde CSS'le küçültmeye çalışmak (appearance/padding/height) asla işe yaramaz çünkü METİN her zaman ≥16px kalmak zorunda — gerçek çözüm select'i görünmez bırakıp AYRI bir küçük-punto `<button>`/`<div>` ile görsel olarak temsil etmek (native davranış/erişilebilirlik gerçek select'te kalır).
+
+#### Beğeni/paylaşma ve arkadaşlık istatistikleri
+
   - **Beğeni/Paylaşma istatistikleri** (25 Temmuz 2026, `game_engagement_admin_stats` migration'ı) — bu tarihe kadar admin panelinde beğeni (`game_likes`) ve paylaşma (`games.shared`) için hiçbir toplu istatistik yoktu, yalnızca oyuncunun kendi kartında oyun başına sayı görünüyordu. İki parça eklendi: (1) `admin_engagement_totals()` — tüm zamanların toplam beğeni sayısı ve toplam paylaşılan oyun sayısı (`shared=true`, tarihten bağımsız), Büyüme > Oyun sekmesinin tepesinde iki sabit kutu (`ScoreCard`'daki `btn-raised-neutral` istatistik hücreleriyle aynı görsel dil) olarak gösterilir — sekme her açıldığında değil, panel ilk yüklenirken bir kez çekilir. (2) `admin_engagement_activity_series(p_periods, p_granularity)` — diğer `admin_*_activity_series` fonksiyonlarıyla aynı İstanbul saat dilimi kova mantığıyla günlük/haftalık/aylık/yıllık beğeni ve paylaşma SAYISI, "Oyun Sayısı"/"Oyun Süresi (Medyan)" grafikleriyle aynı periyot/granülerlik kontrollerini paylaşan üçüncü bir `GrowthChart` olarak render edilir (kendi scope/oyuncu sayısı filtresi yok — RPC yalnızca `p_periods`/`p_granularity` alıyor). Paylaşma sayısı `games.shared_at` (yeni kolon) üzerinden hesaplanır — `shared` eskiden yalnızca bir bayraktı, NE ZAMAN paylaşıldığı hiç tutulmuyordu; `set_game_shared` artık ilk paylaşımda `shared_at`'i de dolduruyor (`coalesce` ile idempotent — sonraki paylaşımlarda üzerine yazmıyor). Bu migration'dan ÖNCE paylaşılmış oyunlarda `shared_at` null kalır (geriye dönük doldurulamaz) — bu eskiler zaman serisinde hiçbir kovaya düşmez ama `admin_engagement_totals`'taki toplam paylaşılan oyun sayısına (tarihten bağımsız `shared=true` sayımı olduğundan) yine dahildir.
   - **Arkadaşlık istatistikleri** (27 Temmuz 2026, `admin_friend_stats` migration'ı) — Arkadaşlık Sistemi (bkz. aşağıdaki bölüm) eklendiğinden beri admin panelinde bu konuda hiçbir toplu istatistik yoktu; `profiles.invited_by` o migration'da zaten "ileride kullanılabilir" notuyla eklenmişti, ilk kez burada gerçek bir metriğe bağlanıyor. Büyüme > Kullanıcı'nın en altına, Ana Ekrana Ekleme dökümünden sonra eklendi: (1) `admin_friend_activity_series(p_periods, p_granularity)` — diğer `admin_*_activity_series` fonksiyonlarıyla aynı İstanbul saat dilimi kova mantığıyla, Kullanıcı sekmesinin granülerlik/periyot kontrollerini paylaşan bir `GrowthChart` — gönderilen istek sayısı (`friend_requests.created_at`) ve o kovada kurulan (accepted olan, `responded_at`) arkadaşlık sayısı. (2) `admin_friend_totals()` — tüm zamanların toplam arkadaşlık (`status='accepted'`), bekleyen istek (`status='pending'`), oluşturulan davet linki (`friend_invite_links` satır sayısı) ve davetle katılan üye sayısı (`profiles.invited_by is not null`) — panel ilk yüklenirken bir kez çekilip dört sabit kutuda gösterilir.
+
+#### Grafik açıklamaları — `?` popup'ı
+
   - **Grafik altındaki açıklama paragrafları `?` popup'ına taşındı (17 Ağustos 2026, kullanıcı isteği: *"bazı grafiklerin altına yazılan açıklamalar hikaye gibi olmuş… tüm CSV'lerin yanına ? koyup tıklanınca popupda ne olduklarını verelim"*):** Beş uzun paragraf (Aktif Oyuncu, Aktivasyon, Retention, Kaynak Hunisi, Oyun Süresi) + YZ Dengesi'ninki paneli "hikaye" gibi gösteriyordu. **Tanımın ekranın KENDİSİNDE yaşaması kararı DEĞİŞMEDİ** (dokümanda kalsa ilk yanlış yorum kaçınılmazdı — retention/aktif oyuncu/huni panellerinde bu gerekçe yazılıydı); değişen yalnızca nerede durduğu: metinler `AdminDashboard.tsx`'teki tek bir `HINTS` kayıt defterine taşındı, ekranda 13px'lik bir `?` rozeti duruyor, dokununca tek bir popup açılıyor.
     - **Kapsam — `?` yalnızca açıklaması olan yerlerde DEĞİL, HER CSV'nin yanında** (kullanıcı isteği: "tüm CSV'lerin"): tanımı olmayan altı yere (Yeni Üye/Ziyaret, Cihaz, Arkadaşlık, Oyun Sayısı, Beğeni/Paylaşma, Üyeler, Geri Bildirim) de yazıldı — panel tek tip olsun diye. **CSV'si OLMAYAN iki panelde (Aktivasyon, YZ Dengesi) `?` bölüm başlığının yanında:** yalnızca CSV'lere bakılsaydı o ikisinin açıklaması hiçbir yere düşmeden KAYBOLURDU.
     - **Aktivasyonun paragrafı bir AÇIKLAMA değil kısmen VERİYDİ** (üçlü dağılım: aynı gün / 1-3 gün / sonra) — tamamını popup'a gömmek canlı veriyi bir tıklamanın arkasına saklardı. Tanım `?`e taşındı, sayılar tek satırlık bir veri notu olarak ekranda kaldı (`captionCls` artık YALNIZCA bunun için var).
     - **`?` veri boşken de çizilir** (grafiklerde ve üç tabloda da) — "bu grafik neyi sayıyor?" sorusu tam da hiç veri yokken sorulur; CSV ise indirilecek satır olmadığından gizleniyor. Bunun için `GuestBreakdownTable`/`RetentionCohortTable`/`SourceFunnelTable`'ın erken dönüşleri de rozeti taşıyacak şekilde yeniden düzenlendi.
     - **Görsel dil icat EDİLMEDİ:** rozet `ScoreCard`/`PlayerScoreCard`'daki k-lig "?" rozetinden alındı (yuvarlak, `border-muted`); boyut oradaki 14px yerine 13px, çünkü kardeşi olan "CSV İndir" 9px'lik bir satır. **Daire İÇ `span`'de** — dolgu doğrudan butona verilseydi `rounded-full` 15×23'lük bir ELİPS üretirdi (ilk sürümde tam bu yapıldı, ölçümde yakalandı). `p-1 -m-1` dokunma alanını 13→21px yaparken layout ayak izini değiştirmiyor (`SourceFunnelTable`'ın "% / Sayı" düğmesindeki aynı desen).
     - **Ölçüldü** (derlenmiş CSS + Chromium, 390/834px): rozet tam daire (13×13), dokunma hedefi 21×21, kontrol satırının yüksekliği DEĞİŞMEDİ (15px), yatay taşma yok. Popup en uzun metinle (Kaynak Hunisi) iPhone'da 668px — `max-h-[80vh]` (675px) sınırına DAYANMIYOR, yani kaydırma bir güvenlik ağı; daha kısa ekranlarda devreye giriyor.
+
+#### Kaynak Hunisi
+
   - **Kaynak Hunisi — MİSAFİR hunisi: kaynak → gelen → üye → başlayan → biten (16 Ağustos 2026, `source_funnel` migration'ı; sütun adları/ölçüleri 22 Ağustos 2026'da değişti, bkz. aşağıdaki "Biten" maddesi)** — kullanıcı isteği: *"Admin ziyaretçi kaynağı tablosunu funnel şeklinde yapabilir miyiz? … kaynak > kişi > üye > oyun … yukarıdaki zaman filtrelerine göre çalışabilir."* Zaman filtresi kısmı ZATEN öyleydi (tablo baştan beri Kullanıcı grafiğinin granülerlik+periyodunu `GRANULARITY_TO_DAYS` ile gün sayısına çevirip kullanıyor); asıl iş son iki adımdı.
     - **Funnel'ın son iki adımı HESAPLANAMIYORDU ve bu şemanın bilinçli bir kararıydı:** `guest_visits` tamamen anonim ve bir ziyaretçiyi sonradan açtığı hesaba bağlayacak hiçbir alan YOK — olsaydı `PrivacyModal`'daki "hiçbir kişisel veri içermez" taahhüdünü bozardı (bkz. "Kayıtlar" bölümündeki aynı gerekçeyle reddedilen "ilk siteye geliş" olayı). Ölçüldü: 266 benzersiz ziyaretçi, 23 üye, aralarında SIFIR bağ.
     - **Çözüm ziyaret satırlarını hesaba BAĞLAMAK DEĞİL:** kayıt anında profilin KENDİSİNE ilk-temas kaynağı damgalanıyor (`profiles.signup_utm_source`) — gender/birth_date/marketing_consent ile birebir aynı yol (`sharedxp_pending_profile` → `handle_new_user`), yani e-posta doğrulaması AÇIKKEN de çalışıyor. Funnel iki AYRI dimension'ı yan yana koyuyor, `guest_visits` ile `profiles` arasında JOIN YOK. Bu yüzden **dönüşüm oranı sütunu bilerek YOK** — "Kişi" ile "Üye" farklı ölçümler, oranları yanıltıcı olurdu.
@@ -297,6 +333,9 @@ notunda da yazılı.
     - **`signup_utm_source` write-once:** `trg_keep_signup_utm_source` (BEFORE UPDATE) alanı her UPDATE'te eski değerine geri çeviriyor. `profiles`in UPDATE grant'i tablo düzeyinde `authenticated`'e açık olduğundan bu olmadan kullanıcı kendi kaynağını değiştirebilir, ya da ileride tüm profili yayan bir `updateProfile` yaması onu sessizce silebilirdi (`marketing_consent_at`i koruyan trigger ile aynı gerekçe). **Yan etki:** yanlış bir değeri düzeltmek için trigger'ı geçici olarak `disable` etmek gerekir.
     - **Doğrulama (canlı, hepsi rollback):** admin RPC gerçek admin JWT'siyle koştu (246 direkt / 22 arkadas ziyaretçi, 23 üye + 337 oyun "bilinmiyor"da); admin olmayan `Yetkisiz erişim.` aldı; sahte bir `auth.users` insert'i `handle_new_user`'ın alanı trim'leyip 32 karaktere kırparak yazdığını, `utmSource` gönderilmezse null kaldığını gösterdi; write-once trigger UPDATE'i engelledi ama AYNI update'in ilgisiz alanını (display_name) yazmaya devam etti; iki profile 'instagram' damgalanınca funnel satırı 2 üye/6 oyun ile ayrıştı ve toplamlar korundu (23=21+2, 337=331+6). Tablo ayrıca derlenmiş CSS + Chromium ile 390px'te render edilip ölçüldü (yatay taşma yok; `lang="tr"` sayesinde başlık "KİŞİ" olarak büyüyor). **16 Ağustos 2026 — gerçek cihazda admin hesabıyla uçtan uca teyit edildi** (tablo, `% / Sayı` düğmesi, tabanlar, CSV); pencere tuzağı da orada doğrulandı: hesap sahibi 28 Haziran'da üye olduğundan "Son 30 Gün"de `direkt` üyesi 0 görünüyor, "Son 3 Ay"da 1 — kullanıcı bunu bir hata sanıp sordu, davranış tasarlandığı gibiydi.
     - **`PrivacyModal` güncellendi** (yeni kişisel veri → proje kuralı) ve Flutter portunun `legal_modals.dart`'ı aynı commit'te senkronlandı — `legal_text_test.dart` "Son güncelleme" tarihlerini karşılaştırdığından port bayat kalsa test düşerdi.
+
+#### Aktif oyuncu · Retention · Aktivasyon
+
   - **Aktif oyuncu / Retention / Aktivasyon (14 Ağustos 2026, `admin_growth_retention_activation` migration'ı)** — kullanıcı sorusuyla başladı ("elimizdeki veriyle başka hangi istatistikleri izleyebiliriz, mesela MAU?"). Denetim gerçek bir boşluk gösterdi: panel yalnızca "kaç yeni üye/ziyaret geldi" ve "kaç oyun bitti" sorularını yanıtlıyordu, yani **en pahalı soru (kazanım) ölçülüyor, en değerlisi (elde tutma) hiç ölçülmüyordu.** Üç panel Büyüme > Kullanıcı'ya eklendi (sıra bilinçli — kazanım → aktivasyon → retention → kaynak/cihaz → sosyal).
     - **"Aktif oyuncu" TANIMI, TEK KAYNAK: `_admin_user_activity` view'ı** (istemciye kapalı — Supabase yeni view'lara varsayılan anon+authenticated GRANT verdiğinden migration içinde açıkça `revoke` edildi; yalnızca SECURITY DEFINER fonksiyonlar okuyor, canlıda admin'in bile doğrudan `select` edemediği doğrulandı). Kullanıcı şu ÜRÜN eylemlerinden birini yaptığı an aktiftir: oyun bitirme, Canlı hamle, Canlı sohbet mesajı, beğeni, arkadaşlık isteği, Canlı oyun kurma. **Aktif oyuncu serisi ve retention kohortları AYNI view'dan besleniyor** — aynı metriğin iki yerde sessizce ayrışması bu projenin en sık tekrarlayan hata sınıfı (bkz. `CountBadge` rozet zinciri, `player_stats_overall_second_places`).
     - **Bu bilerek "MAU" DEĞİL ve gerekçesi ÖLÇÜLDÜ (14 Ağustos 2026, canlıda):** girişli kullanıcı için "uygulamayı açtı" sinyali BU ŞEMADA YOK. Dört aday tek tek elendi — (1) `auth.users.last_sign_in_at` token yenilemede güncellenMİYOR (yani gerçek giriş anı; 15 kullanıcıda son refresh ondan >2 saat yeni), ama tek bir ÜZERİNE YAZILAN kolon: "şu an son 28 günde giriş yapmış mı" sorusunu yanıtlar, geçmiş bir ay için asla — seri üretilemez; (2) `auth.refresh_tokens` ~saatlik bir "uygulama açıktı" nabzı (427 satır) ama **~26 günde budanıyor** (en eski satır 26 günlük, ilk hesap 28 Haziran'dan) ve auth'un iç tablosu, sessizce kırılır; (3) `auth.audit_log_entries` **SIFIR satır** (kapalı/budanıyor); (4) `guest_visits` tasarım gereği yalnızca oturum KAPALIYKEN yazılıyor (RLS insert'i yalnız `anon` rolüne veriyor) ve hesapla eşleştirilemez (PrivacyModal taahhüdü). **Bir metriğin MAU sayılabilmesinin şartı penceresinin herhangi bir geçmiş tarih için YENİDEN hesaplanabilmesidir** — bunu yalnızca append-only ürün olayları sağlıyor. Gerçek MAU istenirse append-only bir `app_opens` olayı (anon_id + nullable `user_id`, kullanıcı başına günde bir satır) eklenmeli; o yeni bir kişisel veri olduğundan `PrivacyModal` de güncellenmek zorunda. Tanım ekranın KENDİSİNDE de yazıyor (17 Ağustos 2026'dan beri grafiğin altındaki paragrafta değil, "CSV İndir"in solundaki `?` popup'ında) — dokümanda kalsa ilk yanlış yorum kaçınılmazdı.
@@ -310,6 +349,9 @@ notunda da yazılı.
     - **Aynı gün ikinci migration (`admin_growth_metrics_turkish_error_text`) — dosya↔üretim ayrışması:** ilk uygulamada üç fonksiyonun hata mesajı "temkinli olsun diye" ASCII'ye indirilmişti (`Yetkisiz erisim.`), oysa repodaki migration dosyası Türkçesini taşıyordu ve projedeki DİĞER TÜM admin RPC'leri `Yetkisiz erişim.` kullanıyor. MCP kanalı Türkçeyi sorunsuz taşıyor (düzeltmenin kendisi kanıt) — indirgeme yalnızca sessiz bir fark üretti. **Ders: uygularken SQL'i "sadeleştirme"; dosyada ne yazıyorsa o uygulanmalı, aksi halde repo bir daha asla üretimin aynası olmaz.**
     - **Doğrulama:** üç RPC de canlıda gerçek admin JWT'siyle (`set local role authenticated`) koşuldu; admin olmayan çağrı `Yetkisiz erişim.` ile reddedildi; `_admin_user_activity`'ye doğrudan `select` admin kimliğiyle bile `permission denied` verdi; EXECUTE grant'leri mevcut admin RPC'leriyle birebir aynı (`authenticated`+`service_role`, `anon` YOK). Kohort tablosu derlenmiş Tailwind CSS + Chromium ile GERÇEK üretim verisiyle render edilip gözle incelendi (bu tur, kaption metnindeki bir Türkçe ek hatasını — "2'i" — tam bu adımda yakaladı; sayıya iyelik eki takmayan kalıba çevrildi, bkz. "Sıra: {isim}" kararı).
     - **Bilinen sınır — test hesapları her metriği kirletiyor:** 23 profilin 4'ü test hesabı (%17) ve 325 oyunun 27'si onlara ait; bunları eleyecek bir bayrak YOK. Kullanıcı kararı (14 Ağustos 2026): bayrak eklemek yerine iş bittikten sonra test verisi silinecek — silme, metrikleri kendiliğinden düzeltir. **Hangileri olduğu ÖLÇÜLDÜ (aynı gün, tahmin değil) — dördü bunlar, başkası DEĞİL:** `T1` (alp.capa@hotmail.com, 11 oyun), `T2` (kelimekitest2@…testinator.email, 7), `T5` (kelimekitest5@…, 8), `T3` (kelimekitest3@…, 1). **17 Ağustos 2026'da BEŞİNCİSİ eklendi: `T4` (kelimekitest4@…testinator.email, 1 oyun)** — `mobile/TESTING.md` bölüm 9'un "üyelik teklifi → kayıt" maddesi gereği açıldı, `signup_channel='form'` olan ikinci üye; silinecekler listesine o da dahil. (Bu satır bir dönem "T4 diye bir hesap hiç yok" diyordu, o gün doğruydu.) **`Ironman` (alprcapa@gmail.com, 100 oyun) HİÇBİR KOŞULDA SİLİNMEZ** — hesap sahibinin gerçek ana/admin hesabı ve öyle KALACAK (kullanıcı kararı, 14 Ağustos 2026). İçindeki oyunların bir kısmı fiilen test olsa da ayırmanın yolu yok; o oyunlar da budanMAyacak, metriklerde gerçek kullanım olarak kalıyorlar. **Silme ZAMANI önemli:** T1/T2 hâlâ aktif kullanımda (14 Ağustos'ta giriş yapmışlar) ve `mobile/TESTING.md`'nin bitmemiş bölümleri (bölüm 11 mesajlaşma + tekil/SQL maddeleri, platform maddeleri) İKİ gerçek hesap gerektiriyor — testler bitmeden silmek test edecek hesabı bırakmaz. **T1 kullanıcının KENDİ kişisel e-postası**, ötekiler tek kullanımlık testinator adresleri. Silmeden önce kaskad zinciri (`games`, `friend_requests`, `local_game_saves`, sohbet mesajları, devam eden Canlı oyunlar; bazıları cascade bazıları değil — ayrıca bu hesaplar gerçek kullanıcıların oyunlarında rakip olarak görünüyor olabilir) tek tek çıkarılıp kullanıcıya gösterilmeli: geri dönüşü yok. Ayrıca 23 hesap/325 oyun ölçeğinde kohort eğrileri istatistiksel olarak gürültüdür; buradaki amaç ENSTRÜMANTASYONU şimdi kurmak (özellikle geriye dönük doldurulamayan kısmı), eğrileri şimdiden ürün kararına çevirmek değil.
+
+#### Platform dökümü
+
   - **Platform dökümü — "app mi web mi" (14 Ağustos 2026, `games_platform` migration'ı)** — kullanıcı isteği ("Platform column'u da ekle"). Panel bugüne kadar girişli bir kullanıcının hangi İSTEMCİDEN oynadığını hiç bilmiyordu; **bu kolon eklenmeden mobil lansmanı ölçmek İMKÂNSIZDI** ve geriye dönük doldurulamaz — o yüzden Flutter portu yayına çıkmadan önce eklendi.
     - **15 Ağustos 2026 — tablo panelden KALDIRILDI, veri toplama SÜRÜYOR (kullanıcı kararı).** Kullanıcı Büyüme > Kullanıcı'daki dört dökümü sorguladı ("bazıları tekrar veya benzer gibi duruyor, Platformda Bilinmiyor açık ara önde, datalar doğru mu?"). **Veri doğruydu ve bu ÖLÇÜLDÜ:** kolon canlıya çıktıktan SONRA biten 11 oyunun 11'i platformu doğru çözüyor (yereli `games.platform`, Canlı'yı `online_game_clients` üzerinden), ÖNCEKİ 326 satırın hiçbiri çözmüyor — yani "Bilinmiyor"un ezici üstünlüğü bir kayıt hatası değil, geriye dönük doldurulamayan geçmiş. Buna rağmen tablo bugün karar verdirecek bir şey söylemediğinden (ve uygulamalar henüz mağazada olmadığından) UI'dan kaldırıldı; `games.platform`/`online_game_clients` yazılmaya DEVAM EDİYOR. Uygulamalar çıkınca döküm **web/iOS/Android/diğer** olarak yeniden yapılandırılacak. `fetchAdminPlatformBreakdown` + `AdminPlatformRow` (`src/lib/api.ts`) bu yüzden BİLEREK duruyor ve şu an hiçbir yerden çağrılmıyor — kullanılmayan export olduğundan üretim paketine de girmiyor (`dist`te `admin_platform_breakdown` dizesi YOK, ölçüldü). **Ölü kod sanıp silme.**
     - **Aynı kararla "Ana Ekrana Ekleme" dökümü de kaldırıldı — gerekçesi metrik değil YAPISAL:** `guest_visits` yalnızca GİRİŞSİZKEN yazılıyor, oysa PWA'yı ana ekrana ekleyenler tipik olarak GİRİŞLİ kullanıcılar; yani o tablo hedef kitleyi hiçbir zaman ölçemezdi (canlı veri bunu doğruluyor: App 9 / Browser 219 benzersiz ziyaretçi). Doğru ölçüm kurulum bilgisini girişli kullanıcı için de kaydetmeyi gerektirir — yeni bir kişisel veri alanı, dolayısıyla `PrivacyModal` ile birlikte ayrıca karara bağlanmalı. `is_standalone` yazılmaya devam ediyor, `fetchAdminGuestStandaloneBreakdown` de aynı gerekçeyle duruyor. **"Ziyaretçi Kaynağı" ve "Cihaz" tabloları DEĞİŞMEDİ** (kullanıcı kararı: kaynak ileride UTM pazarlama linkleri için, cihaz şimdilik olduğu gibi).
@@ -321,6 +363,9 @@ notunda da yazılı.
     - **Değer kümesi ÜÇ yerde elle senkron** (`games.platform` kısıtı, `online_game_clients.platform` kısıtı, RPC girdi doğrulaması) + iki istemci sabiti (`src/utils/platform.ts`, `mobile/app/lib/src/util/platform.dart`). Kısıtta olmayan bir değer yollamak `games` insert'ini DÜŞÜRÜR — yani bir telemetri alanı yüzünden oyun KAYDI kaybolur; portta `test/client_platform_parity_test.dart` migration SQL'ini okuyup bu kümeyi karşılaştırıyor. Masaüstü gibi yayınlanmayan hedeflerde port `null` döner (sütun nullable — satır kaydedilir, yalnızca ölçülmez); uydurma bir değer YOLLANMAZ.
     - **Fikstür karşılaştırması `platform` HARİÇ:** `web_game_record.json` iki istemcinin AYNI satırı ürettiğini kanıtlıyor, ama `platform` tanımı gereği farklı olmak ZORUNDA — test onu ayırıp kalan 20 sütunu bayt bayt karşılaştırıyor ve ayrıca "iki taraf da yazıyor + değerler kümede + BİRBİRİNDEN farklı" diyor (sonuncusu olmadan port web'in sabitini kopyalasa test geçerdi).
     - **Doğrulama (canlı, hepsi rollback):** admin RPC gerçek admin JWT'siyle koşuldu (300 oyun, hepsi `bilinmiyor` — kolon yeni); bir yerel satıra `ios`, bir Canlı oyuna `android` yazılınca döküm İKİ kaynağı da doğru çözdü ve toplam korundu (298+1+1); RPC gerçek katılımcı kimliğiyle satırı açtı, geçersiz değerde satır değişmedi, katılımcı olmayanda hiç satır açılmadı; yetki matrisi ölçüldü (istemci `platform`'a INSERT var/SELECT yok, `online_game_clients` okunamıyor, `anon` admin RPC'sini çağıramıyor).
+
+#### Cihaz tablosu — `device_visits`
+
   - **"Cihaz" tablosu artık HERKESİ sayıyor — `device_visits` (24 Ağustos 2026, `device_visits_all_users` migration'ı, kullanıcı isteği).** İlk turda (`guest_visits_os_breakdown`, aynı gün) yalnızca "Cihaz" tablosunun mobile/desktop kabalığı iOS/Android/masaüstüne ayrıştırılmıştı — hâlâ `guest_visits` üzerinden, yani hâlâ MİSAFİR-ONLY. Kullanıcı bunu sorguladı ("Logged in don't count? Don't we need all the data?") ve netleştirdi: *"Funnel'ın amacı değişik kaynaklardan gelen kişilerin hareketlerini takip etmekti… Bu tamamen misafir (girişsiz) datası. Cihaz datası ise gelen tüm insanların (girişli veya girişsiz) hangi cihazlardan, işletim sistemlerinden vb geldiğini görmek. Girişliler için kişisel bilgi olarak ilişkilendirilmeleri gerekmiyor. Anonim olsunlar."* — yani iki soru KASITLI olarak farklı kapsamlı: Kaynak Hunisi misafir-only KALMALI (22 Ağustos'ta tam bunun için daraltılmıştı, bkz. `source_funnel_guest_only`), Cihaz ise herkesi kapsamalı.
     - **`guest_visits`e DOKUNULMADI** — genişletmek RLS'ini (`guest_visits_insert_anon`, yalnızca `anon` rolü) değiştirmeyi ve huniyi üye trafiğiyle geri karıştırmayı gerektirirdi. Bunun yerine TAMAMEN AYRI, bağımsız bir tablo: `device_visits` — `game_starts`in aynı deseni (anonim `anon_id`, BİLEREK `user_id` YOK — anonim kodu hesapla aynı satırda birleştirmek `PrivacyModal` bölüm 6'nın "asla eşleştirilmez" taahhüdünü bozardı; okuma yalnızca yeni `admin_device_breakdown` RPC'sinden, client'a SELECT hiç açık değil).
     - **İKİ yazıcı, `guest_visits`in İKİ-yazarlı desenini birebir tekrarlıyor** ama BAĞIMSIZ bir günlük damgayla (`deviceVisitAlreadyLoggedToday`/`markDeviceVisitLoggedToday`, `visitTracking.ts`) — `misafirZiyaretiBildir`in damgasıyla PAYLAŞILSAYDI biri ötekini bastırabilirdi (ör. girişliyken atılan cihaz pingi misafir damgasını da doldurup o gün sonradan gerçekleşen girişsiz bir ziyareti huniden düşürürdü). (1) `main.tsx`'in karşılama-katmanı dalı (`cihazZiyaretiBildir`, düz `fetch`, Supabase SDK'sı DEĞİL — bundle boyutu gerekçesi `misafirZiyaretiBildir` ile aynı) — yalnızca App.tsx'in HİÇ mount olmadığı (henüz "uygulama moduna" geçmemiş) ziyaretçide çalışır. (2) `App.tsx`'in kendi effect'i (`logDeviceVisit`, `src/lib/api.ts`) — `authLoading` bitince, **`user` kontrolü OLMADAN** (yukarıdaki misafir-only effect'in hemen ALTINDA, bilerek AYRI bir effect — ikisi aynı efekte birleştirilmedi, biri `user`e bakıyor biri bakmıyor).
@@ -389,6 +434,50 @@ girer `finishers`a girmez. Pratikte sapma yaratmıyor — port `utm_source`u da
 null gönderdiğinden o satırlar zaten 'bilinmiyor' kaynağında toplanıyor ve
 reklam kampanyalarının baktığı satırlarda yalnızca web var. Port damgalamayı
 eklerse burası da güncellenmeli.
+
+## Kaynak Hunisi: Kişi / Oyun görünümleri — 24 Eylül 2026
+
+Kullanıcı sordu: *"Direkt başlayan 267, biten 204 ama yüzdeleri 6.4% ve
+10.5% — biten yüzdesi nasıl daha yüksek olabilir?"* Veri doğruydu, sunum
+yanlıştı: `% / Sayı` düğmesinin sayı kipi oyun ADEDİ, yüzde kipi CİHAZ
+oranı gösteriyordu ve yüzdenin tabanı sütuna göre değişiyordu ("Başlayan" →
+`starters / visitors`, "Biten" → `finishers / starters`). Canlıda ölçülen
+(son 30 gün, `direkt`): 229 oyun 29 cihazdan, 172 bitiş yalnızca 4-5
+cihazdan — oyun ile kişi arasında ~8 kat fark var, yan yana okunamazlar.
+
+Kullanıcı kararı: *"Bence bu tablo elma armut karışmış. Burada görmek
+istediğimiz hangi kaynaktan kaç kişi gelmiş, kaçı üye olmuş, kaçı oyun
+başlatmış, kaçı oyun bitirmiş… Ayrıca başlayan, biten oyun ve ortalama oyun
+(kişi başı) kolonları da olabilir alternatif olarak."*
+
+- **`% / Sayı` → `Kişi / Oyun`.** Kişi: Gelen · Üye · Başlatan · Bitiren,
+  her hücrede sayı + o satırın GELEN'ine göre yüzde (tek taban → soldan sağa
+  okunan huni). Oyun: Başlayan Oyun · Biten Oyun · Oyun / Kişi
+  (`starts / starters`).
+- **RPC DEĞİŞMEDİ** (`admin_source_funnel`) — bütün sayılar zaten dönüyordu.
+  CSV de aynı (ham, iki birim birden).
+- **"—" kuralı korundu ve Başlatan'a da yayıldı:** oyun > 0 ama cihaz = 0
+  ise "bilinmiyor". Port iki tarafa da `anon_id` yazmıyor (`app` satırı: 73
+  oyun, 0 cihaz), bitiş tarafı 31 Ağustos'tan önce hiç yazmıyordu.
+
+**Aynı gün ikinci tur — "Oynayan Üye" (`signup_players`, migration
+`20260924125439_source_funnel_signup_players`).** Kullanıcı: *"arkadaş
+davetinden gelen 31 kişinin 26'sı üye olmuş fakat 4'ü oyun başlatıp hiçbiri
+bitirmemiş — bu mümkün mü?"* Mümkün: davetle gelen ÖNCE üye olur (isteği
+kabul etmek hesap ister), SONRA oynar; misafir sütunları onu hiç görmez.
+Ölçüldü (90 gün): 26 üyenin 17'si oynamış, 1.348 oyun.
+
+- **Mevcut `players` KULLANILAMADI:** pencere OYUN tarihine uygulanıyor,
+  yani pencerede oynayan eski üyeleri de sayıyor (30 gün Arkadaş: 6 üye /
+  15 players → %250). Yeni kolon bir KOHORT: pencerede üye olanlardan
+  bugüne kadar en az bir oyun (`games`, bitmiş) bitirmiş olan →
+  `signup_players <= signups`.
+- **Yüzdesinin tabanı ÜYE**, tablodaki tek istisna (öteki sütunlar Gelen'e
+  göre) — "gelenlerin yüzde kaçı oynayan üye oldu" değil "üye olanların
+  yüzde kaçı oynadı" sorusu soruldu.
+- Dönüş tipi değiştiği için drop + create; `proacl` öncesi/sonrası birebir
+  (`postgres, authenticated, service_role` — `anon` YOK), `security
+  definer` + `search_path` elle geri kuruldu.
 
 ## Tanıtım Turu kartı (Onboarding Faz 5, 8 Eylül 2026)
 
@@ -586,3 +675,663 @@ User-Agent'ı yalnızca `iPhone` diyor. Ancak kurulu uygulamadan ölçülebilir
 `docs/decisions/product-backlog.md`'de; App Store gönderimi kapıdayken
 YAPILMADI, çünkü yeni veri sınıfı App Privacy/Data safety beyanlarını
 yeniden açardı.
+
+## Açılır tablolar + üç grafiğin kaldırılması (16 Eylül 2026)
+
+Kullanıcı isteği, yedi madde hâlinde: *"Kaynak hunisini expandible ana
+kategorilere getirip detayları altlarına topla · Sürüm dağılımını expandible
+ana kategorilere getirip detayları altlarına topla · Kurulu sürümler datası
+hatalı gibi. Düzelt onları da expandible kategori yap. · Arkadaşlık grafiğini
+kaldır · Oyun sayısına genel, ios, android, web kırılımı ekleyebilir miyiz?
+Terk genel olarak kalsın. · Oyun süresi grafiğini kaldır. YZ dengesi gibi
+kutulara koyalım · Beğeni/Paylaşma grafiğini kaldıralım"*
+
+Desen YENİ DEĞİL: "Cihaz" (12 Eylül) ve "Cihaz Markası" (11 Eylül) tabloları
+zaten açılır. Bu tur o deseni panelin geri kalanına yaydı ve yolda iki
+DOĞRULUK hatası çıkardı — asıl kayıt onlar.
+
+### Gruplama kuralları tek bir saf dosyada
+
+`src/utils/adminGroups.ts` (`deviceLabels.ts`in kardeşi) + `npm run
+verify-admin-groups` (CI'da). Vakaların tamamı canlıdan alınmış GERÇEK
+etiketler.
+
+⚠ **`?ref=` etiketlerinin merkezî bir kaydı YOK** — pazarlama malzemesine elle
+yazılıyor (`ig-bio`, `fb-reel`, `fb-btn`, …). Kural bu yüzden önek-bazlı:
+`ig`/`instagram` → Instagram, `fb`/`facebook` → Facebook, `li`/`linkedin` →
+LinkedIn (16 Eylül 2026'da eklendi; lansman turu dört etiket birden üretti:
+`li-sayfa`, `li-profil`, `li-hakkinda`, `li-buton` — beşincisi `li-deneyim`
+profil deneyim girişinde). **Önek eşleşmesi sınır karakteri arar** (`-`, `_`,
+`.` ya da dize sonu); yoksa `fb` öneki `fbi`yi, `ig` öneki `ignore`u yutardı —
+ve iki harflik `li` bunu daha da kritik yapıyor: `link`, `lig`, `liste`
+LinkedIn DEĞİL, üçü de kapıda ölçülüyor. Tanınmayan etiket UYDURMA bir kanala
+atanmaz, **Diğer**'de GÖRÜNÜR kalır — yeni bir kanal açılırsa (TikTok) fark
+edilir.
+
+⚠ **`direkt` ile `bilinmiyor` birleştirilmedi** — 16 Ağustos 2026'nın kararı
+aynen duruyor: `direkt` = `?ref=` olmadan geliş, `bilinmiyor` = istemcinin hiç
+damgalamaması (bugün Flutter portu).
+
+⚠ **`verify-device-labels` aynı turda CI'a bağlandı.** 11 Eylül 2026'da
+yazılmıştı ama hiçbir iş akışında koşmuyordu — yani bir gerileme yakalayacak
+kapı vardı, kapıda kimse yoktu. Kardeş betiği eklerken fark edildi.
+
+### Hata 1 — "Kurulu Sürümler" başlığı yalan söylüyordu
+
+Kullanıcının *"datası hatalı gibi"* sezgisi doğruydu ama sorun sayıda değil
+BAŞLIKTAYDI. Canlıda ölçüldü (16 Eylül 2026, son 30 gün):
+
+| | |
+|---|---|
+| Tablonun gösterdiği | 8 kişi (ios 1.1.0 → 2, android 1.1.0 → 4, android 1.0.9 → 2) |
+| Aynı pencerede android 1.1.0'dan oyun açılışı | **134** |
+
+Sayılar doğruydu: tablo `push_tokens`tan besleniyor, yani **yalnızca giriş
+yapmış VE bildirim izni vermiş** kişiyi görüyor. Ama "Kurulu Sürümler — Kişi"
+başlığı "kaç kişide hangi sürüm KURULU" vaat ediyordu. Kullanıcı kararı:
+**"Bildirim izni verenler yap"** — başlık artık ölçtüğü şeyi söylüyor, kapsam
+`?` metninde ölçümüyle birlikte yazılı.
+
+Ders: bir sayının "hatalı görünmesi" çoğu zaman sayının değil, ona verilen
+ADIN hatası. Panelde bir tabloyu yeniden adlandırırken sorulacak soru "bu
+başlık neyi vaat ediyor" olmalı.
+
+### Hata 2 — platform/genel toplam istemcide TOPLANAMAZ
+
+Tabloyu açılır yapmak platform düzeyinde bir sayı gerektiriyor ve o sayıyı
+yaprakları toplayarak bulmak **yanlış**: değerler `count(distinct user_id)`,
+yani iki telefonu olan (ya da pencere içinde sürüm atlayan) biri iki yaprakta
+birden görünür ve toplamada İKİ KEZ sayılır.
+
+Canlıda bugün kimse iki gruba birden düşmüyor, yani **eski TOPLAM tesadüfen
+doğruydu**. Kural tesadüfe bırakılmadı: `admin_push_version_breakdown` artık
+`grouping sets` ile üç düzeyi de (`surum` / `platform` / `toplam`) ayrı ayrı
+`distinct` sayıyor ve satırın düzeyini `level` sütunuyla söylüyor.
+
+⚠ **"Sürüm Dağılımı"nda durum FARKLI** — orada ölçü oyun AÇILIŞI, yani
+toplanabilir; gruplar istemcide kuruluyor. İki tablo yan yana duruyor ve aynı
+gövdeyi (`PlatformVersionTable`) paylaşıyor, bu yüzden toplam ÇAĞIRANDAN
+parametre olarak alınıyor — bileşen asla kendi toplamasını yapmıyor.
+
+⚠ Yan bulgu: RPC'nin `cihaz` sütunu **cihaz değil token SATIRI** sayıyor.
+Uygulama yeniden kurulunca yeni satır açılıyor; canlıda tek bir iPhone 30
+günde **5 satır** üretmişti. Hiçbir ekranda gösterilmiyor, adı tarihsel —
+`AdminPushVersionRow`de bu notla birlikte duruyor.
+
+### "Oyun Sayısı" platform kırılımı — kolon eklemek YETMEZDİ
+
+`game_finishes` tablosunda `platform` kolonu YOKTU. Kolonu eklemek tek başına
+bu depoda zaten denenmiş ve geri alınmış bir hata: "Platform" tablosu 15
+Ağustos 2026'da tam bu yüzden kaldırılmıştı (337 oyunun 326'sı "Bilinmiyor").
+
+Bu yüzden kolon **geriye dönük dolduruldu** — `games` tablosundan, `(user_id,
+player_count, ±120 sn)` üçlüsüyle. Doldurmadan ÖNCE ölçüldü (1.468 satır):
+
+| | |
+|---|---|
+| Doldurulabilen | **1.037** (çelişkili eşleşme: **0**) |
+| Misafir — yapısal olarak bilinemez (`games` satırı hiç açılmaz) | 240 |
+| 17 Ağustos 2026 öncesi — `games.platform` da yoktu | 191 |
+
+Yani geçmişin **%71'i** kurtarıldı. Çelişkili eşleşme (aynı pencerede iki
+FARKLI platform) NULL bırakılıyor — bugün sıfır vaka var ama kural ölçüme
+değil sorgunun `n = 1` koşuluna yazıldı.
+
+**Canlı oyunun platformu ayrı çözülüyor:** `online_game_clients`, ve yalnızca
+oyunun TÜM istemcileri aynı platformdaysa. Karma bir oyunu tek bir platforma
+yazmak uydurma olurdu — ölçüldü, **Canlı oyunların %40'ı karma** (34/85).
+
+⚠ **Dört seri (Web/iOS/Android/Diğer) HER ZAMAN "Bitirilen"e TAM olarak
+toplanır** — sunucunun değişmezi, canlıda doğrulandı (429+10+484+477 = 1400).
+"Diğer" tam da bunun için var ve DÖRT farklı şeyi toplar (misafir · kolondan
+önce · karma Canlı · şimdilik mobil uygulama); ayrım `?` metninde.
+**"Teslim" bilerek kırılmadı** (kullanıcı kararı): terk bir platformun değil,
+7 günlük/48 saatlik pencerenin sonucu.
+
+⚠ **PORT İKİZİ `main`'DE DEĞİL.** Kullanıcı kararı (16 Eylül 2026, merge
+anında): *"Pr aç merge et. Mobile dokunma"* — inceleme dondurması sürüyor ve
+`mobile/app/**` altındaki tek bir dosya bile `main`'e girse `mobile-build.yml`
+**yayınlar** (`mobile-latest` ezilir, TestFlight'a build gider). `games_api.dart`in
+tek satırlık `'platform': currentPlatform` eklentisi bu yüzden ayrı bir PR'da
+bekliyor (`claude/oyun-bitis-platform-port`).
+
+**Bunun ÖLÇÜLEBİLİR bedeli var ve gizlenmemeli:** o PR merge edilip yeni bir
+mağaza paketi çıkana kadar **iOS/Android serileri yalnızca Canlı oyunları
+sayar**; app'ten biten YZ oyunları "Diğer"e düşer. Bu yüzden ayrım üç yere
+birden yazıldı — `?` metni, `AdminGameActivityPoint` doc'u ve `logGameFinish`in
+yanı (`errorMessage.ts`in aynı durumdaki deseni). Panelde bir sayıyı
+"bilinmiyor"dan ayırt edilemez hâlde bırakmak, bu depoda kaydı olan bir hata
+sınıfı.
+
+### "Oyun Süresi" grafikten kutulara — MEDYANLAR TOPLANMAZ
+
+İstek sunumla ilgiliydi ama kaynağı da değiştirmek zorunda bıraktı: seri
+KOVA BAŞINA medyan taşıyor ve kova medyanlarının medyanı (ya da son kova)
+pencerenin medyanı DEĞİLDİR. Bu yüzden `admin_game_duration_summary` RPC'si
+açıldı — tek satır, filtreleri seriyle **birebir aynı** (ikisi aynı ekranda
+yan yana; gövde oradan kopyalandı, biri değişirse öteki de değişmeli).
+
+Aynı gerekçe 16 Ağustos 2026'da ortalamadan medyana geçilirken de yaşanmıştı
+(seriler tek bir `union`da birleştirilmişti) — aynı tuzağa ikinci kez
+düşülmedi.
+
+p90 artık "varsayılan kapalı bir seri" değil, dördüncü kutu: dört sayı bir
+grafiği kalabalıklaştırmıyor.
+
+### Kaldırılan iki grafik — RPC'ler DURUYOR
+
+**Arkadaşlık** ve **Beğeni / Paylaşma** grafikleri kaldırıldı, kutuları kaldı.
+İki serinin zaman içindeki şekli bir karar değiştirmiyordu; sorulan soru "kaç
+arkadaşlık var / kaç beğeni var" ve onu kutular zaten yazıyor.
+
+⚠ Sunucu RPC'leri (`admin_friend_activity_series`,
+`admin_engagement_activity_series`) ve `api.ts`teki sarmalayıcıları **DURUYOR**
+— yalnızca admin ekranı artık çağırmıyor. `fetchAdminPlatformBreakdown` ile
+aynı bilinçli bekleme deseni; grafiği geri getirmek tek bileşenlik iş.
+
+⚠ Kutuların sayıları **TÜM zamanlar**, üstteki periyot kombosuna bağlı DEĞİL
+(`admin_friend_totals`/`admin_engagement_totals` parametresiz). Grafik
+varken bu ayrım görünürdü (grafik pencereli, kutular değil); grafik kalkınca
+görünmez oldu, bu yüzden `?` metinlerine AÇIKÇA yazıldı.
+
+## Üyeler tablosuna "Onay" kolonu + onaylanmamış filtresi (16 Eylül 2026)
+
+Kullanıcı isteği: *"üyeler tablosuna onay kolonu ekleyecektik"*. ROADMAP #9
+("onaylanmamış filtresi", 23 Ağustos 2026'da onaylanmış ama kapsam dışı
+bırakılmış) aynı işin öteki yarısıydı — filtre zaten bu kolon olmadan
+kurulamıyordu, ikisi birlikte kapandı. Maddenin tam metni ve kapanış kaydı:
+`docs/decisions/roadmap-arsiv-cilt-1.md`.
+
+### Kolon neden `ConsentCell` kullanmıyor
+
+Tablodaki öteki üç onay hücresi (`Koşullar`, `Pazarlama`, `E-posta
+Bildirimi`) `ConsentCell` ile çiziliyor: "evet" yeşil, "hayır" SOLUK
+(`text-muted`). O soluklaştırma bilinçli — orada "hayır" bir eksik değil,
+**kullanıcının tercihi**.
+
+Onay kolonunda durum tam tersi: onaysız hesap **48 saat içinde silinecek**,
+yani bakılması gereken geçici bir durum. `Bekliyor` bu yüzden TURUNCU
+(`text-orange`) ve `ConsentCell` bilerek kullanılmadı. Soluk bir "Hayır"
+tam da görülmesi gereken satırı gizlerdi.
+
+`Onaylı` tarafında onay TARİHİ `title`da duruyor (kolon dar); CSV'de ise
+sütun ya tarihi ya `Bekliyor` yazıyor.
+
+### Pencere yapısı gereği 48 SAAT — "boş liste" iyi haberdir
+
+`sweep-unconfirmed-accounts` 48. saatte onaysız hesabı siliyor (zincirin
+tamamı: `docs/decisions/friends.md` → "Onaylanmamış hesap süpürmesi").
+Dolayısıyla bu kolonda `Bekliyor` görülen her satır **son iki günün**
+kaydıdır.
+
+Ölçüldü (16 Eylül 2026): 56 hesabın 52'si onaylı, 4'ü onaysız ve **dördü de
+1 günden yeni**. Bu tesadüf değil, süpürmenin çalıştığının kanıtı —
+⚠ **eskimiş bir "Bekliyor" satırı görmek bir ARIZA işaretidir.** Bu cümle
+`?` metnine de yazıldı, çünkü kolonu okuyanın ilk refleksi "demek ki 4 kişi
+kayıp" olur; asıl okuma "süpürme ayakta".
+
+### Filtre — düğme yokken çizilmiyor
+
+"Yalnızca onaylanmamışlar (N)" arama kutusunun altında ve **aramayla
+BİRLİKTE** daraltıyor (önce arama, sonra onay) — "şu isim onaylamış mı?"
+sorusu ancak böyle sorulabiliyor.
+
+⚠ Onaysız hesap YOKKEN düğme hiç çizilmiyor: basılabilen ama hiçbir şey
+yapmayan bir kontrol "bozuk" hissi verir (`DeviceOsTable`teki *"sürüm satırı
+yoksa ok da yok"* kuralının aynısı). Sayı zaten düğmenin kendisinde.
+
+⚠ Alt sayacın koşulu da düzeltildi: eskiden yalnızca ARAMA doluyken
+`N / M üye` yazıyordu, filtre açıkken "Toplam N üye" demeye devam edip
+ekrandaki satır sayısıyla çelişirdi. Koşul artık aramaya değil DARALTMAYA
+bakıyor.
+
+⚠ **Sıralama anahtarı EKLENMEDİ** — ROADMAP #9'un kendi kararı ve 21 Ağustos
+2026'daki yedi-anahtar gerekçesiyle aynı: onaysızları toplamanın yolu
+sıralama değil, filtre.
+
+### ⚠ Beklenmeyen bulgu — drop+create `anon` grant'ini GERİ GETİRDİ
+
+ROADMAP #9 "dönüş tipi değişince drop+create + grant'leri elle geri kur"
+diyordu. Eksik olan şey bunun TERSİYDİ: canlıda drop+create sonrası ACL
+`{postgres, ANON, authenticated, service_role}` çıktı — oysa öncesinde
+`anon` YOKTU.
+
+Supabase yeni fonksiyonlara varsayılan olarak `anon`a da execute veriyor ve
+`revoke ... from public` **doğrudan verilmiş** bir grant'i düşürmüyor. Veri
+sızmazdı (fonksiyon girişte `is_admin()` kontrol ediyor) ama bu depo yüzeyi
+bilerek dar tutuyor (`revoke_anon_identity_leak` · `head_to_head_stats_revoke_anon`).
+Ayrı bir migration'la geri alındı ve ACL merge öncesiyle birebir aynı
+doğrulandı.
+
+**Ders (kök `CLAUDE.md`'ye de yazıldı):** dönüş tipi değişen her fonksiyonda
+drop+create'ten SONRA `proacl`i OKU. "Grant'leri geri kur" yetmiyor — geri
+GELEN bir grant de olabiliyor.
+
+## "Aktif Saatler" — günün ritmi (18 Eylül 2026)
+
+Kullanıcı isteği: *"Admin oyun sayfasına Aktif Saatler bar grafiği eklemek
+istiyorum. 2 saatlik dilimler olsun. Web, ios ve android kırılımları olursa
+iyi olur. Oyun bitişleri baz alalım."*
+
+Büyüme > Oyun sekmesinde, "Oyun Sayısı"nın hemen altında. İkisi de oyun
+bitişlerini sayıyor ama farklı soruları yanıtlıyor: biri **zaman içindeki
+hacmi**, öteki **günün içindeki ritmi**.
+
+`admin_active_hours(p_days)` · `StackedBucketChart.tsx` · `AdminActiveHoursRow`
+
+⚠ Bileşen 20 Eylül 2026'da `ActiveHoursChart.tsx`ten `StackedBucketChart.tsx`e
+TAŞINDI ve kovadan bağımsız hale geldi — "Aktif Günler" aynı dosyayı
+kullanıyor (aşağı bkz.).
+
+### Kararlar
+
+| Karar | Gerekçe |
+|---|---|
+| Kaynak `game_finishes` | MİSAFİR oyunlarını da kapsayan tek bitiş tablosu. `games`ten okunsaydı grafiğin misafir kolu tamamen kör kalırdı (`games` satırı yalnızca girişli kullanıcı için açılıyor) |
+| Saat dilimi `Europe/Istanbul` | Deponun tamamının kuralı. Burada süs değil **metriğin kendisi**: UTC dağılımı 3 saat kaydırıp grafiği sessizce yanlış okuturdu |
+| **Teslim satırları HARİÇ** | Teslim satırı 7 günlük/48 saatlik zaman aşımının DOLDUĞU anı taşır, bir insanın oyun bitirdiği anı değil. Dahil edilseydi dağılıma insan davranışıyla ilgisi olmayan bir saat deseni karışırdı. Son 30 günde **152 teslim / 1199 bitirilen** — %11, yuvarlama hatası değil |
+| Kombolardan BAĞIMSIZ, sabit 30 gün | Kullanıcı kararı. Kendi `useEffect`'i var ve bağımlılık dizisi boş — yukarıdaki effect'e eklenseydi her kombo değişiminde gereksiz bir RPC daha koşardı |
+| Efsane TIKLANABİLİR DEĞİL | `GrowthChart`tan bilinçli ayrım: orada çizgiler bağımsız, açıp kapatmak anlamlı. Burada segmentler `finished`e TAM toplanıyor; bir segmenti gizlemek çubuğu sessizce yalan söyletirdi (toplam aynı kalır, parçalar tutmaz) |
+| "Diğer" en ÜSTTE | Bugün şişkin (aşağı bkz.); en üste konunca çubuğun TABANI kararlı kalıyor ve boşluk kapandıkça grafik alttan değil üstten inceliyor |
+
+### Neden `GrowthChart` kullanılmadı
+
+`GrowthChart` bir ZAMAN SERİSİ çizgi grafiği: x ekseni tarih
+(`bucket: string`), etiketleri `toLocaleDateString` ile biçimliyor, serileri
+üst üste BİNEN çizgiler olarak çiziyor. Buradaki soru başka: 12 sabit kova ve
+segmentleri TOPLANAN tek bir çubuk. Zorlanarak uydurulsaydı tarih
+biçimlendirmesi de çizgi mantığı da yolda bozulurdu. Görsel dil yine de
+birebir aynı (viewBox, kenar boşlukları, ızgara/metin renkleri, CSV + Tablo
+Görünümü + `?` üçlüsü, padding-top oranı tekniği).
+
+**Tek bilinçli sapma — `niceCeil`'in merdiveni.** `GrowthChart` 1·2·5·10
+kullanıyor; burada 1·1,5·2·2,5·3·4·5·6·8·10. Sebep grafik türü: çizgi
+ŞEKİLDEN okunur, çubuk YÜKSEKLİKTEN. Kaba merdivende 236'lık tepe 500'e
+yuvarlanıyordu ve en yüksek çubuk çizim alanının **%47**'sinde kalıyordu —
+gerçek 30 günlük veriyle ekran görüntüsü alınarak ölçüldü. İnce merdivende
+aynı tepe 250'ye yuvarlanıyor: **%94**.
+
+### ⚠ Platform kırılımı bugün YARIM — geçici ve beklenen
+
+`game_finishes.platform` damgasını **yalnızca web istemcisi** yazıyor;
+portun aynı satırı (`games_api.dart`) inceleme dondurması yüzünden AYRI bir
+PR'da bekliyor (#565). Canlıda ölçüldü (18 Eylül 2026):
+
+| Gün | web | android | ios | boş |
+|---|---|---|---|---|
+| 17 Eyl | 35 | 0 | 0 | **54** |
+| 15 Eyl | 9 | 21 | 5 | 5 |
+
+android/ios 16 Eylül'de sıfırlandı. ⚠ **Öncesindeki android/ios satırları
+CANLI VERİ DEĞİL** — `20260916054513`'ün `games`ten geriye doldurduğu
+satırlar. O PR merge edilip yeni mağaza paketi dağılana kadar app'ten biten
+oyunlar "Diğer"e düşer.
+
+**Toplam çubuk yüksekliği bundan ETKİLENMEZ** — yalnızca rengin dağılımı
+eksik. Grafiğin asıl sorusu (günün hangi saatinde oynanıyor) bugün de doğru
+cevaplanıyor.
+
+⚠ "Diğer"in tanımı `admin_game_activity_series` ile BİREBİR aynı tutuldu
+(`platform is null or platform = 'app-web'`). İki grafik aynı sekmede yan
+yana; kovaların anlamı ayrışırsa sayılar birbirini tutmaz.
+
+### SQL tuzağı — `left join`de `count(*)` boş kovayı 1 gösterir
+
+12 dilim `generate_series` ile HER ZAMAN üretiliyor (boş saatler 0 olarak
+gelmeli, eksik satır olarak değil — yoksa çubuklar kayar). Ama `left join`
+sonrası eşleşme olmayan dilim için `count(*)` **1** döndürür. İki yerde
+tuzağa düşülebilirdi ve ikisi de kapatıldı:
+
+- `finished` → `count(*)` değil **`count(b.hour_start)`**.
+- "Diğer" filtresi → `b.platform is null` tek başına YETMEZ (eşleşmeyen
+  dilimde de doğrudur); filtreye **`b.hour_start is not null`** şartı eklendi.
+
+Değişmez canlıda 12 dilimde de doğrulandı: web + ios + android + other =
+finished.
+
+## "Aktif Günler" — haftanın ritmi (20 Eylül 2026)
+
+Kullanıcı isteği: *"Admin oyunda saatler gibi Aktif Günler bar chartı da
+koyabilir miyiz?"*
+
+Büyüme > Oyun sekmesinde, "Aktif Saatler"in hemen altında. Üçlü artık şöyle
+okunuyor: **Oyun Sayısı** = zaman içindeki hacim · **Aktif Saatler** = günün
+içindeki ritim · **Aktif Günler** = haftanın içindeki ritim.
+
+`admin_active_days(p_days)` · `StackedBucketChart.tsx` · `AdminActiveDaysRow`
+(migration `20260920151346_admin_active_days`)
+
+### Bu bir İKİZ — ve ikizliği korumak kuralın kendisi
+
+"Aktif Saatler"in TÜM kararları (kaynak `game_finishes` · saat dilimi
+`Europe/Istanbul` · teslim satırları hariç · kombolardan bağımsız sabit 30
+gün · efsane tıklanamaz · "Diğer" en üstte · `niceCeil`'in ince merdiveni)
+buraya **aynen** geçti. Yukarıdaki bölümdeki tablo tekrar edilmiyor; iki
+grafik aynı sekmede yan yana duruyor ve bir karar değişirse **İKİSİ
+BİRLİKTE** değişmeli.
+
+**Değişmez, canlıda ölçüldü (20 Eylül 2026):**
+
+```
+ham pencere (30 gün, teslim hariç) = 1279
+saat kovalarının toplamı           = 1279
+gün kovalarının toplamı            = 1279
+```
+
+Bu üç sayı ayrışırsa kovalardan biri sessizce başka bir popülasyonu
+sayıyordur. Kontrol listesine de girdi (`docs/testing-admin.md` §9.20).
+
+İlk ölçümün gün dağılımı: Pzt 191 · Sal 158 · Çar 154 · **Per 234** · Cum 179
+· Cmt 199 · Paz 164. Yedi günün hepsinde `web + ios + android + other =
+finished` doğrulandı.
+
+### `isodow`, `dow` DEĞİL
+
+Postgres'in `extract(dow)`u **0 = Pazar** ile başlar. Onunla çizilen grafik
+Türkçe bir panelde haftayı Pazar'dan açar ve **hafta sonu çubukları grafiğin
+iki ucuna dağılır** (Pazar en solda, Cumartesi en sağda) — "hafta sonu daha
+mı yoğun" sorusu grafiğe bakılarak cevaplanamaz hale gelir. `isodow`
+(1 = Pazartesi … 7 = Pazar) ile Cmt+Paz yan yana, sağ uçta duruyor.
+
+### Teslim kuralının gerekçesi burada DAHA GÜÇLÜ
+
+Saat kovasında teslim satırlarını dışarıda bırakmanın sebebi "zaman aşımının
+dolduğu an insan davranışı değil"di. Gün kovasında aynı satır **daha zararlı**:
+7 günlük terk-edilme gecikmesi haftanın gününü **KORUR** (7 ≡ 0 mod 7), yani
+her teslim, terk edildiği günün kovasına düşer ve dağılıma insan
+davranışıyla ilgisi olmayan, birebir kopyalanmış ikinci bir desen bindirir.
+%11'lik bir kirlilik burada gürültü değil, sistematik sapma olurdu.
+
+### İkinci bir bileşen YAZILMADI
+
+`ActiveHoursChart.tsx` → `StackedBucketChart.tsx` olarak taşındı ve kovadan
+bağımsız hale getirildi (`bucketKey` · `bucketLabel` · `axisLabel` ·
+`bucketHeader` prop'ları). Kopyalanmış 300 satırlık ikinci bir çizim kodu,
+bu depoda tam olarak cezalandırılan şeydi — `Setup.tsx` ile
+`LiveGamesTab.tsx`in aynı kartı ayrışmış ve kullanıcı ikisini iki sekmede
+yan yana görmüştü (kök `CLAUDE.md`, eş-dosya tablosu).
+
+Seri sabiti de TEK: `ACTIVE_HOURS_SERIES` → **`FINISH_PLATFORM_SERIES`**.
+İkiye ayrılsaydı "Web" iki grafikte iki renge kayabilir ve yan yana duran iki
+çubuk okunamaz hale gelirdi.
+
+**Kova sözlükleri bilerek bileşenin yanında** (`StackedBucketChart.tsx`
+altı): grafiğin genel olması etiket kurallarının dağılması anlamına gelmesin.
+Gün adları **elde** yazılı, `toLocaleDateString('tr-TR', { weekday })` ile
+DEĞİL — o yol bir tarih nesnesi uydurmayı ve tarayıcının ICU verisine
+güvenmeyi gerektirirdi; aynı panelde iki tarayıcıda iki farklı kısaltma
+çıkabilirdi.
+
+### Eksen etiketleri: saatte atlanır, günde atlanmaz
+
+`axisLabel` `null` dönerse o kova etiketsiz çizilir. Saat ekseninde 12 etiket
+640 px'de kalabalık, o yüzden yalnızca dört saatlik adımlar yazılıyor; gün
+ekseninde yedi kısaltma (Pzt…Paz) rahat sığdığından **hiçbiri atlanmıyor**.
+
+## Oyun Dağılımı — iki pasta, tek RPC (22 Eylül 2026)
+
+Kullanıcı isteği, birebir: *"Admin Oyun altına 2 pie chart yanyana.
+1. Yapay zeka vs Arkadaşınla  2. 2 player vs 4 player (biten count)"*
+
+`admin_game_mix(p_days)` · `SplitPieChart.tsx` · `AdminGameMix`
+
+Yeri: Büyüme > Oyun, "Oyun Süresi (Medyan)" ile "Beğeni / Paylaşma"
+arasında. Üstündeki dört panel (Oyun Sayısı · Aktif Saatler · Aktif Günler ·
+Oyun Süresi) hep AYNI kümeyi — pencerede biten oyunları — farklı eksenlerden
+anlatıyor; pastalar o dizinin son halkası: *o oyunlar NEYDİ*.
+
+### Tek RPC, çünkü toplamlar tutmak zorunda
+
+İki pasta aynı popülasyonu iki farklı eksende bölüyor, yani
+`ai_finished + friend_finished` ile `p2_finished + p4_finished` **eşit olmak
+zorunda**. İki ayrı RPC olsaydı pencereler sessizce ayrışabilirdi — Aktif
+Saatler ↔ Aktif Günler için yazılmış kuralın aynısı, burada daha bağlayıcı
+çünkü iki pasta tek satırda, yan yana.
+
+"Biten" tanımı `admin_game_activity_series`in `games_finished`iyle birebir:
+yerel taraf `game_finishes`ten `not ended_by_surrender`, canlı taraf
+`games`ten `online_game_id` **başına tekilleştirilmiş** ve
+`not bool_or(surrendered)`. Teslimle biten oyun hiçbir dilimde sayılmaz.
+
+⚠ **`online_game_states` JOIN'i süs değil:** seri RPC'si canlı oyunları o
+join'in içinden sayıyor. Düşürülürse state satırı olmayan bir canlı oyun
+pastada görünür, grafikte görünmez — fark "biten oyun" sayısında sessiz bir
+sapma olarak kalır.
+
+### "Arkadaşınla" OYUN TİPİDİR, "rakip insandı" DEĞİL
+
+Canlı bir oyunun boş koltuğu YZ ile doldurulabiliyor — **22 Eylül 2026'da
+canlıdan sayıldı: 4 kişilik 8 canlı oyunun 5'inde bir `{"type":"ai"}` koltuğu
+var.** Ayrım, oyunun Setup'ta hangi sekmeden başlatıldığıdır — üçüncü bir terim
+üretilmedi.
+
+**Etiket 22 Eylül 2026'da "Yapay Zeka ile" → "Yapay Zeka" olarak kısaldı**
+(kullanıcı: *"uzama sorunu kalksın"*) — dar telefonda efsane satırı iki satıra
+sarıyordu. Kısaltma tesadüfen bir tutarlılık da kazandırdı: aynı sekmedeki
+**Kaynak** kombosu zaten `Toplam · Canlı · Yapay Zeka` diyor, yani pastanın
+sol dilimi artık kombonun kelimesiyle birebir aynı.
+
+⚠ **Sağ dilimde bu hizalama YOK ve bu bilinçli:** kombo "Canlı" derken pasta
+"Arkadaşınla" diyor (kullanıcının istediği kelime, Setup'ın sekme adı). İkisi
+AYNI ayrımı iki kelimeyle anlatıyor; birleştirilecekse ikisi BİRLİKTE
+değişmeli. Sarma güvenliği (`break-words`) yine de duruyor — etiket bir gün
+uzarsa kırpılmak yerine sarar. *"Rakiplerin kaçı insandı"* başka bir soru ve
+`online_games.slots` okunmasını gerektirir; bu RPC onu yanıtlamaz. `?`
+rozetinin metni bunu açıkça yazıyor.
+
+### Üçüncü sütun ölçüm değil, sağlama
+
+`game_finishes.player_count`te CHECK **yok** (`games`/`online_games`te var —
+2 ya da 4). Bir gün 3 kişilik bir satır düşerse ikinci pasta onu sessizce
+yutardı. `finished_total` ayrıca döndüğünden pastaların altındaki satır
+`2 + 4 <> toplam` durumunu ekranda söylüyor.
+
+### Pencere sabit, kombolara bağlı DEĞİL
+
+Aktif Saatler/Günler ile aynı karar (`p_days`, varsayılan 30, ayrı effect,
+boş bağımlılık dizisi) ama gerekçe burada daha güçlü: **pastaların kırdığı
+boyutlar, üstteki kombolarla aynı boyutlar.** Kaynak "Canlı" seçiliyken
+soldaki pasta %100 tek dilime, "2 kişilik" seçiliyken sağdaki pasta tek
+dilime düşerdi — yani filtre, grafiğin ölçtüğü şeyi yok ederdi.
+
+### Pasta bilinçli bir seçim (ve bilinen itiraz)
+
+İki dilimlik pasta, veri görselleştirme literatüründe yığılmış tek çubuğa
+göre zayıf bir formdur — açı, uzunluktan zor okunur. Burada yine de pasta:
+kullanıcı açıkça pasta istedi ve soru *"kabaca hangi oranda"* düzeyinde.
+Okunabilirlik iki ek kanalla kurtarılıyor: dilimin İÇİNDE yüzde (yalnızca
+≥%8 dilimlerde — altında etiket komşusuna biner) ve altında etiket + **ham
+sayı**.
+
+**Renkler yeniden seçilmedi:** `USER_SERIES`/`ACTIVE_PLAYER_SERIES`in
+mavi+amber çifti (protan ΔE 27,0 · tritan 28,8 · normal 32,9). İki pasta da
+aynı çifti kullanıyor çünkü yan yana duruyorlar ve her birinin KENDİ efsanesi
+var — renk, pastalar arasında değil pastanın içinde anlam taşır.
+
+⚠ **Amberin panel zeminine (`bg-panel` #F5F7FA) kontrastı 2,97:1**, yani 3:1
+eşiğinin hemen altında (ölçüldü). Renk tek başına taşıyıcı olamaz: yüzde
+dilimin içinde, etiket ve ham sayı efsanede yazıyor, dilimler arasında 2px
+zemin boşluğu var — sınır renkten değil boşluktan okunuyor.
+
+### Efsanede KIRPMA yok
+
+İlk sürüm `truncate` kullanıyordu; önizlemede ölçüldü: iki pasta dar bir
+telefonda ~150px sütuna düşüyor ve orada *"Yapay …"* ile *"Arkadaşı…"* ayırt
+edilemiyordu. Etiket artık sarıyor — satırın iki satıra çıkması, etiketin
+okunamamasından iyi. Etiketin kendisi de kısaldı (yukarı bkz.), yani sarma
+artık normal değil SON ÇARE.
+
+## Ziyaretçi Yolculuğu — web'de "nerede ayrıldı" (23 Eylül 2026)
+
+Kullanıcı isteği: *"Bizim web tarafında bounce rate'leri görmemiz lazım.
+Ziyaretçiler hangi noktalarda bounce ediyor."* Büyüme > Kullanıcı →
+Kaynak Hunisi'nin hemen üstünde. Yazan `src/utils/webJourney.ts`, sunucu
+`web_sessions` + `record_web_session` / `admin_web_journey`
+(`20260923103044_web_sessions_journey.sql`), kapı `npm run verify-web-journey`.
+
+### Neden vardı
+
+Mevcut tablolar huninin UÇLARINI görüyordu, ARASINI görmüyordu. Canlıdan
+ölçüldü (21-23 Eylül, 34 web cihazı): masaüstündeki 14 cihazın hiçbiri oyun
+başlatmamıştı, ama karşılama sayfasında mı yoksa kurulum ekranında mı
+çıktıkları BİLİNEMİYORDU. 8 başlangıçtan 1'i bitmişti, ama öteki 7'nin
+ilk hamlede mi yoksa 15. dakikada mı bıraktığı BİLİNEMİYORDU.
+
+### Şekil: sekme başına tek satır
+
+Her yeni adımda ve sekme gizlenirken (`visibilitychange`/`pagehide`) aynı
+satır güncellenir. `steps` ulaşılan adımların KÜMESİ, `last_step` ise
+kronolojik olarak SON adım, yani "burada ayrıldı". Kart adım başına Ulaşan /
+Ayrılan / Ayrılma % / medyan süre gösterir ve en çok kaybettiren adımı
+kırmızıyla vurgular. Karşılamada ayrılanlar için medyan kaydırma derinliği
+ayrıca yazılır (`#karsilama` kendi kaydırma kabı, belge değil).
+
+### Kimlik yok (kullanıcı kararı: *"Gizlilik metnine dokunmadan başla"*)
+
+`anon_id` ve `user_id` yok. Satır kodu sekmeye özel bir koddur
+(`sessionStorage`), sekme kapanınca silinir. `signup_events` ile aynı duruş:
+gizlilik metni anonim kodun gittiği durumları SAYIYOR, bu tablo o kodu
+taşımadığı için listeye madde eklemiyor. Bedeli: ölçü KİŞİ değil OTURUM
+bazlıdır. Kişi bazlı huni gerekirse metin değişikliği (#33 ile birlikte) +
+port kopyası gerekir, yani iş dondurma sonrasına kalır.
+
+### Tuzaklar (kodda da yazılı)
+
+- **Adımlı pingler SIRAYLA gider** (tek bir promise zinciri). `landing_cta`
+  ile `app` milisaniyeler içinde ateşleniyor, sunucu da `last_step`i geliş
+  sırasıyla yazıyor. Paralel gitseler ziyaretçiyi yanlış adımda "ayrılmış"
+  gösterirdi. Adımsız pingler `last_step`e dokunmadığı için sıra beklemez.
+- **Auth olayı ↔ AuthModal yarışı:** giriş/kayıt sonrası `useAuth` olayı
+  AuthModal'ın `login`/`signup_done` çağrısından önce gelebiliyor. Oturum
+  "üye" olunca adım yazımı durur, ama bu İKİ kapanış adımı yine geçer.
+- **Hamle adımları yalnızca bu sekmede BAŞLATILAN oyunu sayar.** Kayıttan
+  devam ettirilen oyunun eski hamleleri sayılmaz (`journeyGameRef`, `App.tsx`).
+- **Tablo istemciye kapalı:** RLS açık, politika yok, `anon`/`authenticated`
+  grant'leri revoke edildi. Yazma yalnızca security definer RPC'den (upsert
+  için select+update vermek, herkesin başkasının satırını okuması demekti).
+  Bir günden eski satır güncellenmez. Canlıda ölçüldü: `anon` yalnızca
+  `record_web_session`i çağırabiliyor, admin RPC'sinde `anon` yok.
+- `navigator.webdriver` taşıyan tarayıcılar sayılmaz (botlar + Playwright).
+- **Adım listesi İKİ yerde:** `JOURNEY_STEPS` ↔ migration'daki iki `v_steps`.
+  `verify-web-journey` üçünü sıra dahil karşılaştırır. Yeni adım ekleyen
+  ikisini birden güncellemeli, yoksa sunucu adımı SESSİZCE yok sayar.
+
+### Yeni ↔ Dönen süzgeci (aynı gün, `20260923135848_admin_web_journey_entry_filter.sql`)
+
+Karta düşen İLK gerçek satır bir Android web misafiriydi: app → oyun → 5.
+hamle → oyun bitti, 594 sn. Kullanıcı fark etti: *"önceki android test
+grubundan düzenli oyuncu olmalı çünkü android hala Play Store'da yok."*
+Canlıdan doğrulandı: aynı cihaz 22 Ağustos'tan beri 205 oyunu MİSAFİR
+olarak başlatmış. Yani "misafir" iki ayrı kitleyi birleştiriyordu: bounce
+sorusunun konusu olan YENİ ziyaretçi ve hesapsız düzenli oyuncu. İkincisi
+uzun oyunlarıyla "oyun bitti" payını şişirip yeni gelenin kaybını gizler.
+
+**Veri zaten vardı:** `web_sessions.entry`. Karşılama sayfası yalnızca ilk
+kez gelene gösteriliyor, bu yüzden `landing` = yeni, `app` = karşılama
+atlandı. Kartın varsayılanı **Yeni**. Yazan tarafa dokunulmadı, geçmiş
+satırlar da doğru ayrılıyor.
+
+⚠ **`app` ≠ "dönen", birebir değil.** Kapı (`scripts/landing-plugin.js` →
+`kapiScript`) karşılamayı şunlarda da atlıyor: `/` dışındaki her yol
+(paylaşılan oyun `/game/:id`, davet `/davet/:token`, yani linkle gelen YENİ
+ziyaretçi) ve ana ekrana eklenmiş PWA. Tersi de var: `?tanitim=1` dönen
+kullanıcıya karşılamayı bilerek yeniden gösteriyor. Etiket bu yüzden `?`
+metninde açıklanıyor. Linkle gelen yeniyi ayırmak gerekirse satıra giriş
+YOLU yazılmalı (bugün yazılmıyor).
+
+`p_entry` bir parametre EKLEMESİ olduğu için eski `(integer, text)` imzası
+`drop` edildi. `proacl` sonrasında okundu ve öncekiyle aynı çıktı
+(`authenticated` + `service_role`, `anon` YOK). Eski istemci iki
+parametreyle çağırıyor, üçüncünün varsayılanı `null` olduğu için yayın
+sırası önemsiz. `verify-web-journey` artık adım dizisi taşıyan İKİ
+migration'ı da okuyor.
+
+
+## Masaüstü kipindeki iPad: iOS altında sahte "10.15.7" (23 Eylül 2026)
+
+Kullanıcı fark etti: *"Admin Cihaz ios altında 10.15.7 gözüken 27 kişi var.
+Bu masaüstünde de olan bir versiyon."* iPadOS 13+ Safari varsayılan olarak
+"masaüstü sitesi" kipinde açılıyor ve User-Agent'ı bir Mac'inkiyle birebir
+aynı (`Macintosh; Intel Mac OS X 10_15_7`). `getDeviceType` bu cihazları
+dokunmatik oldukları için doğru biçimde `ios`a ayırıyordu. Ama
+`getOsVersion` `Mac OS X` dalına düşüp Apple'ın bütün Mac'lerde
+SABİTLEDİĞİ `10.15.7`yi yazıyordu, `getDeviceModel` de boş dönüyordu.
+Gerçek iPadOS sürümü bu kipte hiç gönderilmiyor.
+
+- **Kaynak:** `visitTracking.ts` → `isDesktopModeIPad`. Bu kipte sürüm
+  artık `null` ("sürüm yok"), model `'iPad'`. Bilinmeyen sürüm, yanlış
+  sürümden iyidir. `verify-device-labels` üç UA'yı sınıyor: masaüstü
+  kipindeki iPad, gerçek Mac (değişmedi) ve iPhone.
+- **Geçmiş:** `20260923141944_ipad_desktop_mode_os_version.sql`,
+  `device_visits` + `guest_visits`. Eşleşme kesin, çünkü `ios` + `10.15…`
+  yalnızca bu kipten gelebilir (iOS 10'un son sürümü 10.3.4). Canlıda
+  eşleşen satırların hepsi modelsizdi.
+- ⚠ **Masaüstü `10.15.7` de aynı dondurmanın ürünü:** Safari ve Chrome
+  bütün Mac'lerde bu diziyi gönderiyor, yani "Masaüstü → 10.15.7" satırı
+  "bir Mac" demek, sürüm bilgisi değil. Satıra dokunulmadı: platform
+  doğru, yanıltıcı olan yalnızca sürüm. Aynısı Windows'ta `10.0` için de
+  geçerli (Windows 11 de `NT 10.0` gönderiyor).
+- **Masaüstü satırlarına aile adı (aynı gün, kullanıcı isteği: *"MacOS ve
+  windows başına yazılsa iyi olur, yoksa sayılardan neyin ne olduğu
+  anlaşılmayacak"*):** `osVersionLabel` → `desktopOsLabel`. Aile, sürüm
+  dizesinin şeklinden okunuyor: Windows iki parçalı bir NT numarası
+  (`10.0` → **Windows 10/11**, `6.1` → Windows 7), macOS üç parçalı
+  (`macOS 10.15.7`). Tanınmayan iki parçalı dize ham kalır ("Masaüstü
+  7.9"). Veri DEĞİŞMEDİ, yalnızca etiket. Canlıdaki her masaüstü sürümü
+  eşlendi (son 90 gün: `10.0` 67, `10.15.7` 21, `15.7.2` 2, `10.7.2` 1
+  cihaz). Kartın `?` metni sayının sürüm bilgisi olmadığını söylüyor.
+
+### Masaüstü "sürüm yok" kovası: bot mu, Linux mu? Önce ÖLÇ (aynı gün)
+
+Masaüstünde sürümsüz 115 cihaz vardı (son 90 gün). 107'si tek seferlik, 1'i
+oyun başlatmış, 112'sinin kaynak etiketi yok ve günün her saatine
+yayılmışlardı. Bu örüntü tarayıcı botlarına uyuyor. İlk öneri satırı "bot"
+diye etiketlemekti. **Kullanıcı itiraz etti ve haklıydı:** *"Bunların gerçek
+ziyaretçi olma ihtimali de var… bunları bot olarak değerlendirmek tahmin olur
+ancak."* Ayrıca bilinen botların zaten dışarıda tutulduğunu sanıyordu. Kod
+okundu: ziyaret ve cihaz sayaçlarında HİÇBİR bot süzgeci yoktu, yalnızca
+Ziyaretçi Yolculuğu `navigator.webdriver`ı eliyordu.
+
+Kesin olan tek şey şuydu: Windows ve Mac tarayıcıları sürüm bildirir, yani
+bu kovaya yalnızca Linux, ChromeOS ya da kendini tanıtmayan istemci düşebilir.
+Reklamdan gelip oynamadan çıkan bir Windows/Mac kullanıcısı buraya düşmez.
+Ama kovanın içini bölmek için veri yoktu.
+
+**Karar: süzme yok, sınıflama var** (`visitTracking.ts`):
+- `isBotUserAgent` (açık liste) → `os_version = 'bot'`, model `null`.
+  Bot yine SAYILIYOR. Etiket: "bot (kendini tanıtan)".
+- `CrOS` → `'ChromeOS'`, kalan `Linux` → `'Linux'`.
+- Boş kalan masaüstü artık "Masaüstü · bilinmiyor". "Bot" DENMEZ.
+
+⚠ **İki tuzak, ikisi de `verify-device-labels`ta:** (1) Bot kontrolü işletim
+sistemi okumadan ÖNCE yapılmalı, çünkü Googlebot'un telefon tarayıcısı kendini
+`Linux; Android 6.0.1; Nexus 5X` olarak tanıtıyor ve Android sayılırdı.
+(2) `/bot/` ile eşleştirilmez: `CUBOT` gerçek bir Android markası.
+
+Geçmiş satırlar DEĞİŞTİRİLMEDİ, çünkü o satırlar için elde tarayıcı kimliği
+yok. **Sonraki adım:** bir hafta sonra kovanın dökümüne bak. Süzmeye
+("bilinen botları hiç sayma") ancak o sayılar varken karar verilir.
+
+## Kaynak Hunisi → "Kanal → Üye Kalitesi" — 24 Eylül 2026
+
+Kullanıcı: *"V1'i de farklı bir bakış açısı için modifiye edip tutmak mümkün
+mü? Rakamların anlamlı olduğu başka bir versiyon gibi."* Huni v2
+(`funnel_events`, `docs/decisions/funnel-v2.md`) misafir hunisini sıfırdan
+ölçmeye başlayınca Kaynak Hunisi'nin misafir sütunları (Gelen / Başlatan /
+Bitiren — üç ayrı anonim tablo, farklı başlangıç tarihleri) emekliye ayrıldı;
+üye yarısı yeni bir RPC'ye (`admin_member_quality`,
+`20260924151205_admin_member_quality.sql`) KOHORT olarak taşındı: pencerede
+hesap açanlar × kayıt etiketi → Üye · Oynayan · 7 Günde · 2+ Gün (iki
+farklı İstanbul gününde oyun bitiren) · Oyun / Üye.
+
+- Yukarıdaki iki Kaynak Hunisi bölümü ("Bitiren Cihaz", "Kişi / Oyun
+  görünümleri") bu tarihten itibaren TARİHÇE.
+- `app` etiketi (mobil kayıtlar) artık kendi kanalında: "Mobil Uygulama"
+  (`sourceChannel`, TAM eşleşme — `apple`/`app-store` yutulmasın;
+  `verify-admin-groups` kilitliyor).
+- Bilinen kanallar (`MEMBER_QUALITY_ALWAYS`: Instagram, Facebook,
+  LinkedIn, Arkadaş, Mobil Uygulama, Direkt) üye getirmese de 0 ile
+  çiziliyor (kullanıcı isteği) — ölçüldüğü gün Facebook hiç üye
+  getirmemişti ve satırın yokluğu "ölçülmedi" gibi okunuyordu.
+- `admin_source_funnel` veritabanında DURUYOR ama çağrılmıyor (geri dönüş
+  yolu).

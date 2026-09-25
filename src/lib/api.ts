@@ -34,13 +34,20 @@ import type {
   AdminFriendActivityPoint,
   AdminFriendTotals,
   AdminGameActivityPoint,
+  AdminActiveHoursRow,
+  AdminActiveDaysRow,
+  AdminGameMix,
+  AdminGameDurationSummary,
   AdminGameScope,
   AdminGameSourceType,
   AdminAppVersionRow,
   AdminPushVersionRow,
   AdminClientErrorRow,
+  AdminSignupFunnelRow,
+  AdminWebJourneyRow,
   AdminTutorialFunnelRow,
-  AdminSourceFunnelRow,
+  AdminMemberQualityRow,
+  AdminFunnelRow,
   AdminDeviceBreakdownRow,
   AdminDeviceModelRow,
   AdminOsVersionRow,
@@ -81,7 +88,7 @@ import { getLocalMeaning } from '../data/meanings';
 import { CLIENT_PLATFORM } from '../utils/platform';
 import { trCompare, trLower } from '../utils/turkish';
 import { getOrCreateAnonId, getStoredUtmSource } from '../utils/visitTracking';
-import { isNetworkError } from '../utils/offlineNotice';
+import { isNetworkError, isTransientServerError } from '../utils/offlineNotice';
 import { reportClientError } from '../utils/errorReporting';
 import type { GameState, HistoryEntry, Tile } from '../game/types';
 
@@ -105,9 +112,15 @@ import type { GameState, HistoryEntry, Tile } from '../game/types';
 // olayıydı — ekrana bakıp bekleyen birinde ikisi de olmuyor. Nadir bir olay
 // böylece KALICI bir yanlış ekrana dönüşüyordu.
 //
-// KURAL: yalnızca ağ katmanı hataları (cevabın hiç gelmediği durum)
-// tekrarlanır. Sunucunun KENDİ reddi (401/403/RLS/iş kuralı) ASLA — o bir
-// karar, hata değil (aynı ilke: `friendlyAuthMessage`, `isNetworkError`).
+// KURAL: yalnızca CEVABIN GELMEDİĞİ durumlar tekrarlanır — ağ katmanı
+// hataları (istek hiç gitmedi) ve ağ geçidinin geçici hataları (504/503/502/
+// 408; bkz. `isTransientServerError`). Sunucunun KENDİ reddi (401/403/RLS/iş
+// kuralı) ASLA — o bir karar, hata değil (aynı ilke: `friendlyAuthMessage`).
+//
+// ⚠ 504 bu listeye 17 Eylül 2026'da EKLENDİ: `PostgrestException(code: 504)`
+// taşıma kalıplarına uymadığı için "sunucunun reddi" sayılıyor, yani ne
+// yeniden deneniyor ne de kullanıcıdan gizleniyordu. Ölçüm ve gerekçe
+// `isTransientServerError`in başında.
 // Yalnızca OKUMA yollarında kullanılır; `submit_move` gibi yazmalar buradan
 // GEÇMEZ (yazma idempotensi ayrı bir iş, bkz. `p_move_id`).
 const RETRY_DELAYS_MS = [400, 1200];
@@ -124,6 +137,14 @@ const RETRY_DELAYS_MS = [400, 1200];
 function isNetworkFailure(error: { message?: string } | null | undefined): boolean {
   if (!error) return false;
   return isNetworkError(error.message ?? '');
+}
+
+/** Yeniden denenmeye DEĞER mi — ağ düşmesi ya da geçici bir ağ geçidi hatası. */
+function isRetryableFailure(
+  error: { message?: string; code?: string } | null | undefined,
+): boolean {
+  if (!error) return false;
+  return isNetworkFailure(error) || isTransientServerError(error);
 }
 
 /**
@@ -143,13 +164,13 @@ function rethrowSupabase(error: { message?: string; code?: string }): never {
   throw hata;
 }
 
-/** Ağ katmanında düşen bir okumayı `RETRY_DELAYS_MS` kadar yeniden dener. */
-async function retryOnNetworkFailure<T extends { error: { message?: string } | null }>(
-  islem: () => PromiseLike<T>,
-): Promise<T> {
+/** Geçici olarak düşen bir okumayı `RETRY_DELAYS_MS` kadar yeniden dener. */
+async function retryOnTransientFailure<
+  T extends { error: { message?: string; code?: string } | null },
+>(islem: () => PromiseLike<T>): Promise<T> {
   let sonuc = await islem();
   for (const gecikme of RETRY_DELAYS_MS) {
-    if (!isNetworkFailure(sonuc.error)) return sonuc;
+    if (!isRetryableFailure(sonuc.error)) return sonuc;
     await new Promise((r) => setTimeout(r, gecikme));
     sonuc = await islem();
   }
@@ -315,6 +336,17 @@ export async function logGameFinish(
       multi_session: multiSession,
       ended_by_surrender: endedBySurrender,
       utm_source: getStoredUtmSource() ?? 'direkt',
+      // 16 Eylül 2026: admin panelindeki "Oyun Sayısı" grafiğinin platform
+      // kırılımı. `utm_source`/`anon_id` ile aynı gerekçe — ÇAĞIRANDAN
+      // değil buradan okunuyor, fonksiyonun üç çağrı yeri var ve birini
+      // atlamak sessizce "Diğer" kovasını şişirirdi.
+      //
+      // ⚠ PORT İKİZİ `main`'DE DEĞİL (16 Eylül 2026, kullanıcı kararı:
+      // *"Mobile dokunma"* — inceleme dondurması). `games_api.dart`in aynı
+      // satırı AYRI bir PR'da bekliyor; o merge edilene kadar app'ten biten
+      // her oyun sunucuda "Diğer" kovasına düşer. Bu dosyayı değiştiren o
+      // PR'ı da güncellemeli (`errorMessage.ts` ile aynı durum).
+      platform: CLIENT_PLATFORM,
       ...(finishedAtMs != null
         ? { created_at: new Date(finishedAtMs).toISOString() }
         : {}),
@@ -399,6 +431,28 @@ export async function logGameStart(
  * `getOsVersion`/`getDeviceModel`) iyi niyetle (best-effort) okunan,
  * şimdilik hiçbir ekranda gösterilmeyen ek alanlar — `null` gelmesi normal.
  */
+/**
+ * Bu hesap uygulamaya (iOS/Android) en az bir cihazda giriş yapmış mı —
+ * `push_tokens`ta satırı var mı. `AppStoreStrip` buna göre SUSAR: uygulamayı
+ * zaten kurmuş birine "indir" demenin anlamı yok (24 Eylül 2026, kullanıcı
+ * isteği). RLS: kullanıcı yalnızca KENDİ satırlarını görür
+ * (`push_tokens_select_own`). ⚠ Uygulamayı silen birinin satırı hemen
+ * silinmez → ona şerit çıkmaz; kabul edilen tek sızıntı.
+ * `null` = bilinmiyor (Supabase yok ya da hata) → çağıran "yüklü değil" sayar.
+ */
+export async function userHasAppInstall(userId: string): Promise<boolean | null> {
+  if (!supabase) return null;
+  const { count, error } = await supabase
+    .from('push_tokens')
+    .select('token', { count: 'exact', head: true })
+    .eq('user_id', userId);
+  if (error) {
+    console.error('[Kelimeki] userHasAppInstall hatası:', error.message);
+    return null;
+  }
+  return (count ?? 0) > 0;
+}
+
 export async function logGuestVisit(
   anonId: string,
   utmSource: string | null,
@@ -1068,18 +1122,35 @@ export async function fetchSharedGame(gameId: string): Promise<SharedGameData | 
   return (row as SharedGameData | null) ?? null;
 }
 
-/** Oturum açan oyuncunun profilini döner. */
-export async function fetchMyProfile(): Promise<Profile | null> {
+/**
+ * Oturum açan oyuncunun profilini döner.
+ *
+ * ⚠ `userId` VERİLEBİLİYORSA VER (19 Eylül 2026). Parametresiz çağrıda
+ * fonksiyon kimliği `supabase.auth.getUser()` ile soruyor; bu hem bir AĞ TURU
+ * (`/auth/v1/user`) hem de bir AUTH KİLİDİ demek. Oturum döngüsü turunda
+ * ölçüldü: profil çekimi saniyede ~2 kez koşarken bu çağrı da saniyede ~2 kez
+ * kilit alıyordu ve ekrandaki öteki auth çağrılarıyla yarışıyordu.
+ *
+ * Çağıran kimliği zaten biliyorsa (ki `useAuth` biliyor — `applyUser` onu
+ * `u.id` olarak elinde tutuyor) sormanın hiçbir faydası yok: satırı RLS
+ * zaten koruyor. **Portun `_fetchProfile`'ı da böyle** (`auth_service.dart`)
+ * — doğrudan `userId` ile sorguluyor, kimlik doğrulamıyor.
+ */
+export async function fetchMyProfile(userId?: string): Promise<Profile | null> {
   if (!supabase) return null;
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  let id = userId;
+  if (!id) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    id = user.id;
+  }
 
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', user.id)
+    .eq('id', id)
     .maybeSingle();
   if (error) {
     console.error('[Kelimeki] fetchMyProfile hatası:', error.message);
@@ -1317,6 +1388,14 @@ export async function fetchFriendInviteInfo(token: string): Promise<string | nul
  * doğrudan `accepted` olarak açar (link tıklaması zaten bilinçli bir onay,
  * pending beklemeye gerek yok), linkin `use_count`'unu artırır ve ilk kezse
  * `profiles.invited_by`'ı doldurur. Davet edenin adını döner.
+ *
+ * ⚠ **18 Eylül 2026'dan beri İDEMPOTENT** (ROADMAP #31): taraflar ZATEN
+ * arkadaşsa çağrı tam no-op olur — sayaç artmaz, `responded_at` tazelenmez.
+ * Bu yüzden burayı BİRDEN ÇOK kez çağırmak güvenlidir ve gerçekten öyle
+ * oluyor: `FriendInvitePage`'in kendi otomatik kabulü ile `App.tsx`'teki
+ * `localStorage` kuyruğu fallback'i aynı token'ı arka arkaya işleyebiliyor
+ * (ikisi de bilerek var, bkz. `docs/decisions/friends.md`). Çift çağrı
+ * sayacı 18 Eylül'e kadar şişiriyordu.
  */
 export async function acceptFriendInvite(token: string): Promise<string | null> {
   if (!supabase) return null;
@@ -1445,7 +1524,7 @@ export async function listMyOnlineGames(): Promise<OnlineGame[] | null> {
   // hâli — `fetchMyGames`'in `failed:false` kararıyla aynı (14 Ağustos 2026).
   if (!supabase) return [];
   const client = supabase;
-  const { data, error } = await retryOnNetworkFailure(() => client.rpc('list_my_online_games'));
+  const { data, error } = await retryOnTransientFailure(() => client.rpc('list_my_online_games'));
   if (error) {
     console.error('[Kelimeki] listMyOnlineGames hatası:', error.message);
     reportLiveListError(error, 'list_my_online_games');
@@ -1533,7 +1612,7 @@ export async function fetchFinishedGameSlots(
 export async function fetchOnlineGameTurns(gameIds: string[]): Promise<Record<string, number> | null> {
   if (!supabase || gameIds.length === 0) return {};
   const client = supabase;
-  const { data, error } = await retryOnNetworkFailure(() =>
+  const { data, error } = await retryOnTransientFailure(() =>
     client.from('online_game_states').select('online_game_id, current').in('online_game_id', gameIds),
   );
   if (error) {
@@ -1580,7 +1659,7 @@ export async function fetchOnlineGameGlances(
 ): Promise<Record<string, OnlineGameGlance> | null> {
   if (!supabase || gameIds.length === 0) return {};
   const client = supabase;
-  const { data, error } = await retryOnNetworkFailure(() =>
+  const { data, error } = await retryOnTransientFailure(() =>
     client
       .from('online_game_states')
       .select('online_game_id, turn_deadline, players')
@@ -1765,6 +1844,40 @@ export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGam
     return [];
   }
   return (data as OnlineGameMessageRow[]) ?? [];
+}
+
+/**
+ * Bu oyun için SUNUCUDAKİ okundu damgam (`online_game_chat_reads`, RLS ile
+ * yalnızca kendi satırım). `null` = satır yok (kesin), `undefined` = istek
+ * düştü (bilinmiyor) — ayrım `decideChatRead`e (`utils/chatRead.ts`) gerekli.
+ */
+export async function fetchChatLastReadAt(gameId: string): Promise<string | null | undefined> {
+  if (!supabase) return undefined;
+  const { data, error } = await supabase
+    .from('online_game_chat_reads')
+    .select('last_read_at')
+    .eq('online_game_id', gameId)
+    .maybeSingle();
+  if (error) {
+    console.error('[Kelimeki] fetchChatLastReadAt hatası:', error.message);
+    return undefined;
+  }
+  return (data as { last_read_at: string } | null)?.last_read_at ?? null;
+}
+
+/**
+ * Okundu damgasını sunucuya yazar (`mark_online_game_chat_read`). Sunucu
+ * yalnızca İLERİ gider (`greatest`), yani geç ulaşan eski bir çağrı zararsız.
+ * Hata yutulur: damga cihazda da duruyor ve bir sonraki yüklemede
+ * (`decideChatRead` → `pushToServer`) yeniden denenir.
+ */
+export async function markChatReadRemote(gameId: string, readAt: string): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('mark_online_game_chat_read', {
+    p_online_game_id: gameId,
+    p_read_at: readAt,
+  });
+  if (error) console.error('[Kelimeki] markChatReadRemote hatası:', error.message);
 }
 
 /**
@@ -2297,6 +2410,116 @@ export async function fetchAdminGameActivitySeries(
 }
 
 /**
+ * "Aktif Saatler" — oyun bitişlerinin 2 saatlik dilimlere dağılımı
+ * (yalnızca admin — Büyüme > Oyun). 18 Eylül 2026, kullanıcı isteği.
+ *
+ * Sunucu HER ZAMAN 12 satır döndürür (boş saatler 0), yani çağıran tarafın
+ * eksik dilimi doldurması gerekmez — `[]` yalnızca Supabase yapılandırılmamışsa
+ * döner.
+ *
+ * ⚠ Bu grafik, sekmedeki kaynak/kapsam/oyuncu sayısı kombolarına BİLEREK
+ * bağlı değil (kullanıcı kararı): kendi başına duran, sabit pencereli bir
+ * günlük ritim dağılımı. Bir gün kombolara bağlanacaksa `admin_active_hours`
+ * imzası da büyümeli — `fetchAdminGameActivitySeries` ile aynı desen.
+ */
+export async function fetchAdminActiveHours(days = 30): Promise<AdminActiveHoursRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_active_hours', { p_days: days });
+  if (error) {
+    // `fetchAdminGameActivitySeries` ile aynı gerekçe: hatayı yutup boş dizi
+    // dönmek admin'e gerçek bir RPC/izin hatasını asla göstermezdi.
+    rethrowSupabase(error);
+  }
+  return (data as AdminActiveHoursRow[]) ?? [];
+}
+
+/**
+ * "Aktif Günler" — oyun bitişlerinin HAFTANIN GÜNLERİNE dağılımı (yalnızca
+ * admin — Büyüme > Oyun). 20 Eylül 2026, kullanıcı isteği.
+ *
+ * `fetchAdminActiveHours`ın İKİZİ ve bilerek birebir aynı imza/desen: aynı
+ * kaynak, aynı 30 günlük pencere, aynı platform kovaları, aynı teslim
+ * kuralı — tek fark kova. Biri değişirse ötekini de değiştir; ayrışırlarsa
+ * iki grafik aynı popülasyonu iki farklı toplamla gösterir.
+ *
+ * Sunucu HER ZAMAN 7 satır döndürür (`dow` = `isodow`, 1=Pazartesi), yani
+ * çağıran tarafın eksik günü doldurması gerekmez — `[]` yalnızca Supabase
+ * yapılandırılmamışsa döner.
+ *
+ * ⚠ Bu grafik de sekmedeki kaynak/kapsam/oyuncu sayısı kombolarına BİLEREK
+ * bağlı değil — `admin_active_hours` ile aynı karar.
+ */
+export async function fetchAdminActiveDays(days = 30): Promise<AdminActiveDaysRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_active_days', { p_days: days });
+  if (error) {
+    // `fetchAdminActiveHours` ile aynı gerekçe: hatayı yutup boş dizi dönmek
+    // admin'e gerçek bir RPC/izin hatasını asla göstermezdi.
+    rethrowSupabase(error);
+  }
+  return (data as AdminActiveDaysRow[]) ?? [];
+}
+
+/**
+ * "Oyun Dağılımı" — pencerede biten oyunların İKİ kırılımı, tek satırda
+ * (yalnızca admin — Büyüme > Oyun). 22 Eylül 2026, kullanıcı isteği.
+ *
+ * ⚠ Sunucu TEK satır döndürür, boş pencerede bile (hepsi 0) — yani çağıran
+ * "satır yok" durumunu ayrıca ele almak zorunda değil. `null` yalnızca
+ * Supabase yapılandırılmamışsa döner ve ekran onu "Yükleniyor…" değil
+ * "veri yok" olarak çizer.
+ *
+ * ⚠ `fetchAdminActiveHours`/`_Days` ile AYNI desen ve aynı gerekçe: pencere
+ * sabit (`p_days`), sekmenin kaynak/kapsam/oyuncu sayısı kombolarına BAĞLI
+ * DEĞİL. Bağlansaydı filtreler grafiğin ölçtüğü şeyi yok ederdi — "Canlı"
+ * seçili bir pencerede birinci pasta tek dilim olurdu.
+ */
+export async function fetchAdminGameMix(days = 30): Promise<AdminGameMix | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.rpc('admin_game_mix', { p_days: days });
+  if (error) {
+    // `fetchAdminActiveDays` ile aynı gerekçe: hatayı yutmak admin'e gerçek
+    // bir RPC/izin hatasını asla göstermezdi.
+    rethrowSupabase(error);
+  }
+  // `returns table` bir DİZİ verir; tek satırlık sözleşme burada açılıyor ki
+  // çağıran her yerde `[0]` yazmasın (bkz. `fetchAdminGameDurationSummary`).
+  return (data as AdminGameMix[] | null)?.[0] ?? null;
+}
+
+/**
+ * Aynı pencerenin süre ÖZETİ — tek satır (yalnızca admin — Büyüme > Oyun).
+ * Parametreler `fetchAdminGameActivitySeries` ile BİREBİR aynı: iki sayı aynı
+ * ekranda yan yana duruyor.
+ *
+ * ⚠ **Bu, serinin son kovası ya da kova medyanlarının ortalaması DEĞİL** —
+ * medyanlar toplanamaz, o yüzden sunucuda ayrı bir sorgu var. 16 Eylül
+ * 2026'da "Oyun Süresi" grafiği kutulara çevrilirken (kullanıcı isteği)
+ * eklendi; grafik olmadan pencerenin gerçek medyanını verecek başka bir yol
+ * yoktu.
+ */
+export async function fetchAdminGameDurationSummary(
+  periods: number,
+  granularity: AdminActivityGranularity,
+  scope: AdminGameScope,
+  playerCount: number | null,
+  source: AdminGameSourceType,
+): Promise<AdminGameDurationSummary | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.rpc('admin_game_duration_summary', {
+    p_periods: periods,
+    p_granularity: granularity,
+    p_scope: scope,
+    p_player_count: playerCount,
+    p_source: source,
+  });
+  if (error) {
+    rethrowSupabase(error);
+  }
+  return ((data as AdminGameDurationSummary[]) ?? [])[0] ?? null;
+}
+
+/**
  * Son `periods` kova için beğeni (game_likes) ve paylaşma (games.shared_at —
  * yalnızca ilk paylaşım anı) sayılarını döner (yalnızca admin — Büyüme >
  * Oyun). `shared_at` eklenmeden önce paylaşılmış oyunlar bu seride hiçbir
@@ -2513,6 +2736,81 @@ export async function logTutorialEvent(
 }
 
 /**
+ * Kayıt hunisinin anonim sayacı (ROADMAP #32'nin ölçüm boşluğu).
+ *
+ * `'started'` = kayıt FORMU görüldü, `'completed'` = hesap OLUŞTU (oturum
+ * açıldıysa da, e-posta onayı bekleniyorsa da). Adlar ve anlamları portun
+ * Firebase Analytics olaylarıyla (`signup_started`/`signup_completed`,
+ * `ui/auth/auth_modal.dart`) BİREBİR aynı tutuldu — port bir gün bu tabloya
+ * da yazarsa iki taraf tek huniye düşsün diye.
+ *
+ * ⚠ **Kimlik YOK, bilerek:** `anon_id` de `user_id` de yazılmıyor. Gizlilik
+ * metni (`src/legal/LegalContent.tsx`) anonim cihaz kodunun sunucuya "DÖRT
+ * durumda" gönderildiğini SAYIYOR; beşinci bir durum o metni, dolayısıyla
+ * portun birebir kopyasını (`legal_modals.dart`, tazeliği
+ * `test/legal_text_test.dart` ile ölçülüyor) değiştirmeyi gerektirirdi.
+ * Kimliksiz sayaç aynı soruyu metne hiç dokunmadan cevaplıyor.
+ *
+ * Telemetri asla akışı bozmaz: hata yalnızca konsola yazılır (`logGameStart`
+ * ile aynı sözleşme) — kayıt olmaya çalışan biri bizim sayacımız yüzünden
+ * hata görmemeli.
+ */
+export async function logSignupEvent(
+  event: 'started' | 'completed',
+  channel: 'direct' | 'form',
+): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.from('signup_events').insert({
+    event,
+    channel,
+    // `logTutorialEvent` ile aynı sözleşme: web'de `app_version` BİLEREK
+    // null (web'in sürümü derleme sha'sıyla zaten tekil).
+    platform: CLIENT_PLATFORM,
+    app_version: null,
+  });
+  if (error) {
+    console.error('[Kelimeki] logSignupEvent hatası:', error.message);
+  }
+}
+
+/**
+ * Kayıt hunisi: son `days` gün içinde kanal başına form açan → hesap kuran
+ * (yalnızca admin — Büyüme > Kullanıcı). Sözleşme: `AdminSignupFunnelRow`.
+ */
+export async function fetchAdminSignupFunnel(days = 30): Promise<AdminSignupFunnelRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_signup_funnel', { p_days: days });
+  if (error) {
+    // Admin panelindeki .catch(setError) zinciri buna güveniyor — hatayı
+    // yutup boş dizi dönmek gerçek bir RPC/izin hatasını gizlerdi.
+    rethrowSupabase(error);
+  }
+  return (data as AdminSignupFunnelRow[]) ?? [];
+}
+
+/**
+ * Ziyaretçi yolculuğu: son `days` gün içindeki misafir web oturumlarının adım
+ * başına ulaşan / burada ayrılan sayısı (yalnızca admin — Büyüme >
+ * Kullanıcı). `device` null → tüm cihazlar; `entry` 'landing' → yeni
+ * ziyaretçi, 'app' → karşılamayı atlayan (çoğunlukla dönen), null → hepsi.
+ * Yazan taraf `utils/webJourney.ts`.
+ */
+export async function fetchAdminWebJourney(
+  days = 30,
+  device: 'ios' | 'android' | 'desktop' | null = null,
+  entry: 'landing' | 'app' | null = null,
+): Promise<AdminWebJourneyRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_web_journey', {
+    p_days: days,
+    p_device: device,
+    p_entry: entry,
+  });
+  if (error) rethrowSupabase(error);
+  return (data as AdminWebJourneyRow[]) ?? [];
+}
+
+/**
  * Tanıtım hunisi: son `days` gün içinde kaynak (`auto`/`replay`) başına
  * başlatan → bitiren → atlayan (yalnızca admin — Büyüme > Kullanıcı).
  * Sözleşme: `AdminTutorialFunnelRow`.
@@ -2529,20 +2827,29 @@ export async function fetchAdminTutorialFunnel(days = 30): Promise<AdminTutorial
 }
 
 /**
- * Kaynak hunisi: son `days` gün içinde kaynak başına kişi → üye → oyun
- * (yalnızca admin — Büyüme > Kullanıcı). `admin_guest_source_breakdown`
- * RPC'sinin yerini aldı (o RPC veritabanında duruyor ama artık çağrılmıyor); ilk sütun onunla AYNI sayıyı taşır, üzerine iki adım ekler.
- * Ayrıntılı sözleşme: `AdminSourceFunnelRow`.
+ * Huni v2 (`admin_funnel`, yalnızca admin): son `days` günde ilk kez gelen
+ * cihazların kohortu, (platform, kanal) başına. Sözleşme: `AdminFunnelRow`.
  */
-export async function fetchAdminSourceFunnel(days = 30): Promise<AdminSourceFunnelRow[]> {
+export async function fetchAdminFunnel(days = 30): Promise<AdminFunnelRow[]> {
   if (!supabase) return [];
-  const { data, error } = await supabase.rpc('admin_source_funnel', { p_days: days });
-  if (error) {
-    // Admin panelindeki .catch(setError) zinciri buna güveniyor — hatayı
-    // yutup boş dizi dönmek gerçek bir RPC/izin hatasını gizlerdi.
-    rethrowSupabase(error);
-  }
-  return (data as AdminSourceFunnelRow[]) ?? [];
+  const { data, error } = await supabase.rpc('admin_funnel', { p_days: days });
+  if (error) rethrowSupabase(error);
+  return (data as AdminFunnelRow[]) ?? [];
+}
+
+/**
+ * "Kanal → Üye Kalitesi": son `days` günde hesap açan üyelerin kohortu,
+ * kayıt etiketine göre (yalnızca admin — Büyüme > Kullanıcı). 24 Eylül
+ * 2026'da `admin_source_funnel`in (Kaynak Hunisi) yerini aldı. Sözleşme:
+ * `AdminMemberQualityRow`.
+ */
+export async function fetchAdminMemberQuality(days = 30): Promise<AdminMemberQualityRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_member_quality', { p_days: days });
+  // Admin panelindeki .catch(setError) zinciri buna güveniyor — hatayı
+  // yutup boş dizi dönmek gerçek bir RPC/izin hatasını gizlerdi.
+  if (error) rethrowSupabase(error);
+  return (data as AdminMemberQualityRow[]) ?? [];
 }
 
 /**
@@ -2610,9 +2917,9 @@ export async function fetchAdminDeviceModelBreakdown(days = 30): Promise<AdminDe
  * (yalnızca admin — Büyüme > Kullanıcı, "İşletim Sistemi" tablosu).
  *
  * ⚠ `device_type` ile birlikte okunmalı: aynı sürüm dizesi iki ayrı
- * platformda farklı şey demek (canlıda ölçüldü — `ios` + `10.15.7`
- * satırları aslında masaüstü User-Agent'ı veren cihazlar, o dize macOS'un
- * dondurulmuş sürümü).
+ * platformda farklı şey demek olabilir. `ios` + `10.15.7` satırları
+ * masaüstü kipindeki iPad'lerdi (macOS'un dondurulmuş dizesi); 23 Eylül
+ * 2026'da kaynağı kapatılıp geçmişi düzeltildi.
  */
 export async function fetchAdminOsVersionBreakdown(days = 30): Promise<AdminOsVersionRow[]> {
   if (!supabase) return [];

@@ -102,6 +102,50 @@ export function isNetworkError(err: unknown): boolean {
 }
 
 /**
+ * Sunucudan GELEN ama GEÇİCİ olan hata — ağ geçidi cevabı zamanında
+ * alamamış demektir, sunucu bir karar vermiş değildir.
+ *
+ * ⚠ **`isNetworkError`'dan neden ayrı:** o yüklem isteğin hiç gitmediği
+ * durumu (taşıma istisnası) tanıyor ve mesaja bakıyor; bu ise sunucunun
+ * DÖNDÜĞÜ bir durum kodunu tanıyor. Bir `PostgrestException(code: 504)`
+ * ikisinin arasına düşüyordu: taşıma kalıplarına uymadığı için "sunucunun
+ * kendi reddi" sayılıyor, yani ne yeniden deneniyor ne de kullanıcıdan
+ * gizleniyordu.
+ *
+ * **Ölçüm (17 Eylül 2026):** `client_errors`taki 62 kaydın 11'i bu sınıftı
+ * (`online_games_repo.load` → 504, android 9 · ios 2, 8 cihaz, 12-14
+ * Eylül'de yoğunlaşmış). Sunucu tarafı elendi: `list_my_online_games` en
+ * ağır kullanıcıda (97 oyun) **12,7 ms** sürüyor, planı indeksli — yani
+ * 504 yavaş sorgudan değil, ağ geçidinden geliyor ve tam da yeniden
+ * denenmesi gereken şey.
+ *
+ * ⚠ **Liste BİLEREK dar.** `500` YOK (gerçek bir sunucu kusuru olabilir,
+ * tekrar onu maskeler) ve `429` YOK (hız sınırını hemen tekrar zorlamak
+ * durumu kötüleştirir). Kalıcı ret (401/403/RLS/iş kuralı) zaten bir
+ * KARAR — o asla tekrarlanmaz.
+ *
+ * Port ikizi: `isTransientServerError` (`util/offline_notice.dart`).
+ */
+const GECICI_DURUM_KODLARI = ['408', '502', '503', '504', '522', '524'];
+
+export function isTransientServerError(err: unknown): boolean {
+  const kod = (err as { code?: unknown } | null | undefined)?.code;
+  if ((typeof kod === 'string' || typeof kod === 'number') &&
+      GECICI_DURUM_KODLARI.includes(String(kod))) {
+    return true;
+  }
+  const mesaj =
+    err instanceof Error
+      ? err.message
+      : typeof err === 'string'
+        ? err
+        : String((err as { message?: unknown } | null | undefined)?.message ?? '');
+  // Kalıplar İngilizce ağ geçidi metinleri; sunucunun Türkçe reddi
+  // ("Sıra sende değil.") bunların hiçbirine denk gelmez.
+  return /gateway time-?out|bad gateway|service unavailable|request time-?out/i.test(mesaj);
+}
+
+/**
  * Kelime anlamı penceresi — sözlük YÜKLENEMEDİĞİNDE ("kelime bulunamadı"dan
  * farklı). Web'de `meanings.json` 6.3 MB ve precache'e bilerek alınmıyor
  * (herkese 6 MB'lık ön indirme yüklemek bir oyun için orantısız).

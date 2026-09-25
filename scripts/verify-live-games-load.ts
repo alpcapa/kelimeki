@@ -102,6 +102,46 @@ async function main() {
   check('sunucu reddi → null', (await listMyOnlineGames()) === null);
   check('sunucu reddi YENİDEN DENENMEZ (tek çağrı)', __netCalls() === 1, `${__netCalls()} çağrı`);
 
+  // ── 5b) GEÇİCİ SUNUCU HATASI (504) da yeniden denenmeli (17 Eylül 2026)
+  //      Vaka: admin panelindeki `client_errors` kayıtlarının 11'i
+  //      `online_games_repo.load` → `PostgrestException(code: 504)` idi
+  //      (android 9 · ios 2, 8 cihaz). 504 taşıma kalıplarına uymadığı için
+  //      "sunucunun kendi reddi" sayılıyor, yani ne tekrarlanıyor ne de
+  //      kullanıcıdan gizleniyordu. Sunucu tarafı ELENDİ: aynı RPC en ağır
+  //      kullanıcıda 12,7 ms sürüyor, yani 504 yavaş sorgudan değil ağ
+  //      geçidinden geliyor.
+  const GATEWAY_504 = { message: 'Gateway Timeout', code: '504' };
+  __setFake(healthy({ failCalls: [1], failError: GATEWAY_504 }));
+  const kurtarilan504 = await listMyOnlineGames();
+  check(
+    '504 düşer, ikinci deneme tutar → oyun GELİR',
+    Array.isArray(kurtarilan504) && kurtarilan504.length === 1,
+    `gelen ${JSON.stringify(kurtarilan504)}`,
+  );
+  check('504 kurtarması tam 2 çağrı sürer', __netCalls() === 2, `${__netCalls()} çağrı`);
+
+  // Gövdesi boş, durumu `details`e düşmüş 504 de aynı sınıfa girmeli —
+  // sahadaki iki biçimin ikincisi buydu.
+  __setFake(healthy({ failCalls: [1], failError: { message: '', code: '504' } }));
+  const kurtarilan504b = await listMyOnlineGames();
+  check(
+    'mesajı BOŞ 504 de yeniden denenir (kod yeter)',
+    Array.isArray(kurtarilan504b) && kurtarilan504b.length === 1,
+  );
+
+  // Kalıcı 504: üç deneme de düşerse `null` — "oyunun yok" YALANI üretilmez.
+  __setFake({ ...healthy(), offline: true, failError: GATEWAY_504 });
+  check('kalıcı 504 → null (boş dizi DEĞİL)', (await listMyOnlineGames()) === null);
+  check('kalıcı 504 → 3 çağrı denendi', __netCalls() === 3, `${__netCalls()} çağrı`);
+
+  // ⚠ SINIR: 500 ve 429 BİLEREK bu sınıfın DIŞINDA — biri gerçek bir sunucu
+  //   kusuru olabilir (tekrar onu maskeler), öteki hız sınırıdır (hemen
+  //   zorlamak durumu kötüleştirir).
+  __setFake({ rpcError: { list_my_online_games: { message: 'Internal Server Error', code: '500' } } });
+  check('500 YENİDEN DENENMEZ (tek çağrı)', ((await listMyOnlineGames()), __netCalls() === 1), `${__netCalls()} çağrı`);
+  __setFake({ rpcError: { list_my_online_games: { message: 'Too Many Requests', code: '429' } } });
+  check('429 YENİDEN DENENMEZ (tek çağrı)', ((await listMyOnlineGames()), __netCalls() === 1), `${__netCalls()} çağrı`);
+
   // ── 6) Yapılandırılmamış istemci bir hata DEĞİL (misafir/offline hâli)
   __setFake({ noClient: true });
   const yapilandirilmamis = await listMyOnlineGames();

@@ -39,6 +39,22 @@ export const DOUBLE_TAP_RADIUS = 40;
  *  takip edilmeli) — port `kZoomAnimDuration`. */
 export const ZOOM_ANIM_MS = 180;
 
+/**
+ * Tanıtım balonunun KENDİ KENDİNE kapanma süresi (16 Eylül 2026, kullanıcı
+ * isteği; bir oyuncu bildirdi: *"tanıtımdan sonra zoom özelliği için sürekli
+ * kalan uyarı mesajı oyun oynamayı zorlaştırıyor... 3-5 saniye sonra gidecek
+ * şekle getirelim. İnsanlar okumuyor."*). Öncesinde balon YALNIZCA zoom
+ * denenince kapanıyordu — yani denemeyen kullanıcıda oyun boyunca duruyordu.
+ *
+ * ⚠ **Kendi kendine kapanma "denedi" SAYILMAZ.** `markZoomTried` çağrılmaz ve
+ * gösterim sayacı da artmaz (o zaten karar anında arttı), yani kural
+ * değişmiyor: hiç denemeyen kullanıcı balonu ikinci oyun açılışında bir kez
+ * daha görür (`shouldShowZoomHint`, tavan 2).
+ *
+ * Port `kZoomHintAutoHide` ile AYNI olmalı.
+ */
+export const ZOOM_HINT_AUTO_HIDE_MS = 4000;
+
 /** Pan'in ARTIĞI olan click'i yutma penceresi (port'takiyle aynı gerekçe:
  *  10-18 px'lik bir pan tarayıcının tap eşiğinin altında kalıp ayrıca bir
  *  `click` üretir). */

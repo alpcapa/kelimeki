@@ -15,10 +15,36 @@ koşturulacak).
 | 2 | Gerçek 2 kişilik tahta + X2/X3 | Kanıt: ekran görüntüsü değil, oyunun kendisi |
 | 3 | Dört adım (köşe → bölge → merkez → vergi) | **Asıl fark** — neden başka bir kelime oyunu değil |
 | 4 | 4 kişilik tahta + YZ / canlı / sohbet | Kiminle oynanır (48 saat kuralı itirazı kapatıyor) |
-| 5 | Dokuz k-lig rütbesi + "kelimeki.com — hemen oyna" | Üyelik sebebi + net çağrı |
+| 5 | Dokuz k-lig rütbesi + App Store rozeti | Üyelik sebebi + net çağrı |
 
 Adres **her karenin altında** duruyor: carousel'de kullanıcı son kareye kadar
 gitmeyebiliyor, 3. karede bırakan da adresi görmüş oluyor.
+
+### ⚠ 16 Eylül 2026 — kareler App Store rozetiyle yeniden üretildi
+
+Uygulama 15 Eylül'de App Store'a çıkınca kareler bayatlamıştı: hepsi yalnızca
+`kelimeki.com` diyordu, 1. karenin alt satırı ise *"Kurulum yok · Üyelik
+gerekmez · Tarayıcıda çalışır"* — yani artık var olan bir kurulum yolunu
+YOK sayıyordu. Değişiklikler:
+
+| Yer | Önce | Sonra |
+|---|---|---|
+| Kare 1 alt satırı | "Kurulum yok · Üyelik gerekmez · Tarayıcıda çalışır" | **App Store rozeti** + "Ücretsiz · Reklam yok · Tarayıcıda da oynanır" |
+| Kare 5 çağrısı | mavi `KELİMEKİ.COM — HEMEN OYNA` düğmesi | **App Store rozeti** + "Ücretsiz · Reklam yok · Tarayıcıda: kelimeki.com" |
+| Her karenin alt şeridi | `kelimeki.com` | `kelimeki.com · App Store'da` |
+
+**⚠ Rozet neden yalnızca 1. ve 5. karede:** Apple'ın alt sınırı (40 px)
+EKRANDA ölçülür. Instagram karesi telefonda ~390 pt genişlikte çizildiğinden
+1080 px'lik tasarım orada ×0,36 küçülüyor — sınırı gerçekten geçmek için
+rozetin karede ~111 px yüksek (≈420 px geniş) olması gerekiyor. Alt şeride
+sığacak bir rozet (~50 px) telefonda ~18 pt'ye düşer, yani kuralın ALTINDA
+kalırdı; o yüzden içerik kareleri (2-4) alt şeritte rozet değil düz metin
+taşıyor. Ölçü `SponsoredPost.tsx`te hesaplanıyor, elle yazılmıyor.
+
+**⚠ Play rozeti için yapılacak bir iş YOK.** Kareler `visibleStoreBadges()`
+kapısını kullanıyor: Play yayına girip `src/utils/storeLinks.ts`teki `null`
+dolduğunda kareler yeniden üretildiğinde ikinci rozet doğru sırayla (App
+Store önce) ve eşit yükseklikte kendiliğinden gelir (24 Eyl 2026'dan önce eşit genişlikti).
 
 ---
 

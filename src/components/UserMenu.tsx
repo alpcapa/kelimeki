@@ -72,7 +72,7 @@ export function UserMenu() {
     return () => {
       cancelled = true;
     };
-  }, [user, open]);
+  }, [user?.id, open]);
 
   const refreshIncomingRequestCount = () => {
     if (!user) return;
@@ -93,7 +93,7 @@ export function UserMenu() {
     // gereksizdi. FriendsModal kapanınca (isteğe yanıt verilmiş olabilir)
     // `refreshIncomingRequestCount` ayrıca çağrılıyor (aşağıda).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user?.id]);
 
   // Admin'i bekleyen okunmamış geri bildirim + şikayet sayısı — "Admin
   // Paneli" satırının yanındaki kırmızı rozet için. Arkadaşlık isteği
@@ -121,7 +121,7 @@ export function UserMenu() {
     return () => {
       cancelled = true;
     };
-  }, [user, isAdmin]);
+  }, [user?.id, isAdmin]);
 
   // Dışarı tıklayınca / Esc ile menüyü kapat.
   useEffect(() => {
