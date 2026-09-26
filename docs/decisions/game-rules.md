@@ -133,6 +133,25 @@ dokuz yeni kontrol eklendi (sınırın kendisi + "sınırın altını engelleme"
 reducer'ın kendi kapısı), `verify-sql-engine-parity` metin şablonunu
 kilitliyor.
 
+### Sınırın yan etkisi: YZ'nin değişimi elde kalan taşları siliyordu (26 Eylül 2026)
+
+Sınır YZ'ye de uygulanınca (`AI_PLAY`'in "hamle yok → değiştir" dalı) raf
+YALNIZCA yeni çekilen taşlardan kuruluyordu. Sınırdan önce dilim hep rafın
+tamamıydı, yani "elde kalan" diye bir küme yoktu ve hata görünmüyordu;
+sınırla birlikte torba 7'nin altındayken YZ `limit` kadar taş değiştirip
+kalan `7 - limit` taşı OYUNDAN siliyordu (torba 4 → raf 7'den 4'e). Canlı
+oyun ETKİLENMEDİ: orada `play-ai-turn` yalnızca harfleri gönderir, rafı
+`submit_move` kurar ve elde kalanları korur.
+
+İnceleme bir oyuncu bildiriminden çıktı ama o vakayla ilgisizdi (torba
+81'di; oyuncu YZ'nin ilk turdaki 7 taşlık değişimini fark etmemişti). Aynı
+PR'da YZ'nin değişim mesajı insanınkiyle ve Canlı ekranınkiyle eşitlendi:
+`"<ad> <n> taş değiştirdi ve sırasını kullandı."` — eski `"harflerini
+değiştirdi."` tahtada iz bırakmayan bu turu yeterince anlatmıyordu.
+Kapı: `npm run verify-swap-invariants` §7 (düzeltme geri alınınca üç
+kontrol düşüyor). Web ve port AYRI PR (sürüm treni): web hemen, port +
+golden'lar sonraki trende.
+
 ## Torba neden 100 taş (ve 186 denemesi neden geri alındı)
 
 Torba oyuncu sayısından bağımsız olarak sabit **100** taş (Türkçe dağılım,
