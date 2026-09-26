@@ -343,7 +343,8 @@ Play production (#21) 16:13'te gönderildi, 16:42'de yayında; App Store aynı
 gün elle `Release This Version` ile yayına alındı — senkron kapandı
 (`mobile/docs/surumler.md` → "1.1.1"). 1.1.1'e binen 13 satır arşivde.
 Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
-28 Eylül 2026 — `surumler.md` → "SÜRÜM TRENİ").
+**5 Ekim 2026** — 28 Eylül kullanıcı kararıyla atlandı, `surumler.md` →
+"SÜRÜM TRENİ").
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de

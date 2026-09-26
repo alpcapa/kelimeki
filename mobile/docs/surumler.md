@@ -47,7 +47,7 @@ anında yayında.
 | Apple onayı | İki mağaza AYNI GÜN yayına (aşağıdaki "SÜRÜM SENKRONU") |
 | Arada (~10 gün) | Mobil işler **taslak PR** olarak birikir, başlık `[Sonraki sürüm] …`; `main`'e mobil kod GİRMEZ |
 
-**İlk kesim:** 1.1.1 iki mağazada yayına alındıktan sonraki ilk Pazartesi → 1.1.1 26 Eyl'de yayında, yani **Pazartesi 28 Eylül 2026**.
+**İlk kesim:** 1.1.1 iki mağazada yayına alındıktan sonraki ilk Pazartesi → 1.1.1 26 Eyl'de yayında; kullanıcı kararı (26 Eyl): *"Daha yeni update geçtik"* → 28 Eylül ATLANDI, ilk kesim **Pazartesi 5 Ekim 2026**.
 
 **Mobil + web birlikte değişen iş:** iki PR'a böl — web yarısı hemen
 merge edilir (parite testi web kaynağını okumuyorsa; okuyorsa ikisi
