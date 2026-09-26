@@ -8,6 +8,28 @@ atıf verilen bölümlerde; burada yalnızca SIRA ve KAPSAM var.
 `.apk` ve TestFlight'taki 1.1.1 bu. ✅ Plan adım 1 (CI + bütün derleme
 adımları yeşil) 25 Eylül'de doğrulandı.
 
+## Sonuç (26 Eylül 2026, kullanıcı)
+
+A–D ✅, **tek bulgu:** D'nin ilk maddesi — uçak modunda Canlı oyun mesajı
+ham `Failed host lookup: 'xvq….supabase.co'` gösterdi (girişte Türkçe
+çıktı). Düzeltme taslak PR, **sonraki trende**; 1.1.1'i durdurmuyor (metin
+düzeltmesi, acil istisna değil). **E ✅** (26 Eyl, kullanıcı) — ek istek:
+"Hesap oluşturuldu." kaldırıldı, satır artık yalnızca *"LÜTFEN E-POSTANIZI
+KONTROL EDİP DOĞRULAMA YAPIN."* (web #644 hemen; port sonraki trende).
+
+**G ✅ (26 Eyl, ajan Supabase'den okudu — hepsi beklendiği gibi):**
+- `guest_visits`: 05:33 UTC `utm_source='app'`, `device_type='android'`,
+  `is_standalone` NULL, anon `d0611…`. Girişten sonra o cihazdan yeni satır YOK.
+- `game_starts` (`app_version='1.1.1'`, android, `utm_source='app'`, anon
+  dolu): 10:18 misafir (`is_guest=true`) · 11:02 girişli.
+- `game_finishes` (android, `utm_source='app'`, **`anon_id` NULL**, `user_id`
+  dolu): 10:52 · 11:02 · 11:24 — 10:52 misafir başlayıp girişle biten oyun (B).
+- Yeni hesap (12:46): `profiles.signup_utm_source='app'` (metadata
+  `utmSource`), onay bekliyor (`.apk`'da link koşulamaz — beklenen).
+- `client_errors`: `hata-metni:*` satırı YOK — **beklenen**: çevrimdışı
+  cihaz yazamaz, `error_reporter.dart` ağ hatalarını zaten kaydetmiyor. Bu
+  madde uçak modu testiyle kanıtlanamaz.
+
 ## A. Kurulum (Android)
 
 - [ ] Play'den kurulu Kelimeki'yi **kaldır** (imza farklı, `.apk` üstüne
