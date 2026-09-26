@@ -83,6 +83,23 @@ void main() {
         '2026-09-23T07:00:00.500000+00:00');
   });
 
+  test('9 — mesajlar okunamadı → karar verilmez, hiçbir yazma yok', () {
+    for (final (server, local) in <(ServerChatRead?, String?)>[
+      ((at: null), null),
+      (null, '2026-09-23T07:00:00Z'),
+    ]) {
+      final d = decideChatRead(
+          server: server,
+          localAt: local,
+          rows: null,
+          myUserId: me,
+          nowIso: now);
+      expect(d.unread, isNull);
+      expect(d.writeLocal, isNull);
+      expect(d.pushToServer, isNull);
+    }
+  });
+
   // ── Port'a özgü: cihaz damgası milisaniye (int) ─────────────────────────
 
   test(

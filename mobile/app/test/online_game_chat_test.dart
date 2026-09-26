@@ -534,6 +534,30 @@ void main() {
       await unmount(tester);
     });
 
+    // 26 Eylül 2026'ya kadar düşen tazeleme sohbeti BOŞ listeyle
+    // değiştiriyordu. Negatif eş: `_fetchChat`te `rows == null` dalı
+    // kaldırılırsa mesaj kaybolur ve test düşer.
+    testWidgets('ön plana dönüş tazelemesi düşerse sohbet SİLİNMEZ',
+        (tester) async {
+      final chatGw = FakeChatGateway()..rows = threeRows();
+      await pumpScreen(tester, chat: chatGw);
+      await tester.pumpAndSettle();
+      final callsBefore = chatGw.markReadCalls.length;
+
+      chatGw.messagesFailWith = Exception('ağ yok');
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(chatGw.messagesCalls, greaterThan(1));
+      expect(chatGw.markReadCalls.length, callsBefore);
+
+      await tester.tap(find.text('Mesajlaşma'));
+      await tester.pumpAndSettle();
+      expect(find.text('yeni 2'), findsOneWidget);
+      await unmount(tester);
+    });
+
     testWidgets('sunucuya yazma düşerse ekran bozulmaz (hata yutulur)',
         (tester) async {
       final chatGw = FakeChatGateway()

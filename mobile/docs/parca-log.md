@@ -43,14 +43,19 @@
   mikro saniye → eşitlik milisaniyeyle (yoksa her yüklemede boşuna bir
   yazma); sunucuya mesajın KENDİ `created_at`i gider. (2) Mesaj listesi
   okunamazsa (`null`) karar verilmez — eski kod boş listeyle "şimdi"
-  tohumu atıyordu, sunucuya taşınsaydı geri alınamazdı. (3) Boş sohbet
+  tohumu atıyordu, sunucuya taşınsaydı geri alınamazdı; üstelik ekrandaki
+  sohbeti de SİLİYORDU (`ChatRepo.messages`in "eski liste korunur"
+  sözleşmesi ekranda tutulmuyordu) — artık liste korunuyor ve
+  `decideChatRead` `rows: null`da hiçbir şey yazmıyor. Web ikizi ayrı PR
+  (#650, web'de de aynı iki hata vardı). (3) Boş sohbet
   açılınca saatten gelen damga yalnızca cihaza.
 - ⚠ **Kesimde çakışma beklenir:** #640 de `chat_api.dart`e ve bu dosyanın
   başına (Parça 215) ekleme yapıyor; yöntemler bilerek FARKLI yere
   (`myActiveReports`in altına) kondu, günlük girişi ise el ile birleşir.
-- **Doğrulama:** `chat_read_test.dart` (web'in 8 vakası + 2 porta özgü),
-  `online_game_chat_test.dart` 8 yeni test — eski ekranla 5'i düşüyor
-  (kullanıcının vakası dahil). App **919 test yeşil**, `flutter analyze`
+- **Doğrulama:** `chat_read_test.dart` (web'in 9 vakası + 2 porta özgü),
+  `online_game_chat_test.dart` 9 yeni test — eski ekranla 5'i düşüyor
+  (kullanıcının vakası dahil); "tazeleme düşerse sohbet silinmez" testi
+  `rows == null` dalı bozulunca düşüyor. App **921 test yeşil**, `flutter analyze`
   yeni bulgu yok. Cihaz maddesi: `mobile/docs/testing-arkadaslar-canli.md`
   → "Okundu bilgisi cihazlar arasında".
 

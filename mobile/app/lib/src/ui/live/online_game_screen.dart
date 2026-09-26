@@ -490,20 +490,23 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     final reported = results[1] as Set<String>;
     final rows = results[2] as List<OnlineGameMessageRow>?;
     final server = results[3] as ServerChatRead?;
-    final msgs = [
-      for (final r in rows ?? const <OnlineGameMessageRow>[])
-        ChatMessage(
-            id: r.id,
-            senderUserId: r.senderUserId,
-            message: r.message,
-            createdAt: r.createdAt),
-    ];
+    // Mesaj listesi okunamadıysa (null) eski liste KORUNUR ve okundu kararı
+    // verilmez (`decideChatRead` → `rows: null`). 26 Eylül 2026'ya kadar
+    // boş listeyle değiştiriliyordu: ön plana dönüş tazelemesi düşünce
+    // ekrandaki sohbet siliniyordu (`ChatRepo.messages`in "UI eski listeyi
+    // korur" sözleşmesi burada tutulmuyordu). Web ikizi aynı düzeltme.
+    final msgs = rows == null
+        ? null
+        : [
+            for (final r in rows)
+              ChatMessage(
+                  id: r.id,
+                  senderUserId: r.senderUserId,
+                  message: r.message,
+                  createdAt: r.createdAt),
+          ];
     _chatState.update(
         messages: msgs, mutedUserIds: mutes, reportedUserIds: reported);
-    // Mesaj listesi okunamadıysa (null) karar VERİLMEZ: boş listeyle tohum
-    // "şimdi" olur ve — sunucu kesin boşsa — sunucuya da yazılırdı, yani
-    // aradaki gerçek yeni mesajlar okunmuş sayılırdı.
-    if (rows == null) return;
     await _applyChatRead(msgs, server);
   }
 
@@ -519,7 +522,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   /// vektörü olan şey popup; alttaki nokta rahatsız etmiyor ve kullanıcı
   /// susturduğu kişinin ne yazdığını görmek isteyebilir (şikayet için bile).
   Future<void> _applyChatRead(
-      List<ChatMessage> msgs, ServerChatRead? server) async {
+      List<ChatMessage>? msgs, ServerChatRead? server) async {
     final storageFuture = widget.storage;
     final store = storageFuture == null ? null : (await storageFuture).chatRead;
     final localMs =
@@ -527,10 +530,13 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     final d = decideChatRead(
       server: server,
       localAt: localStampIso(localMs),
-      rows: [
-        for (final m in msgs)
-          ChatReadRow(senderUserId: m.senderUserId, createdAt: m.createdAt)
-      ],
+      rows: msgs == null
+          ? null
+          : [
+              for (final m in msgs)
+                ChatReadRow(
+                    senderUserId: m.senderUserId, createdAt: m.createdAt)
+            ],
       myUserId: widget.myUserId,
       nowIso: clock.now().toUtc().toIso8601String(),
     );
@@ -543,7 +549,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     if (push != null) {
       unawaited(widget.chat?.markChatRead(widget.game.id, push));
     }
-    if (mounted) _chatState.update(unreadCount: d.unread);
+    final unread = d.unread;
+    if (unread != null && mounted) _chatState.update(unreadCount: unread);
   }
 
   void _onChatMessage(OnlineGameMessageRow row) {

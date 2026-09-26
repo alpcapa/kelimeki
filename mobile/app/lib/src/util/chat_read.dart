@@ -35,8 +35,9 @@ class ChatReadRow {
 typedef ServerChatRead = ({String? at});
 
 class ChatReadDecision {
-  /// Okunmamış sayısı (kendi mesajlarım hariç).
-  final int unread;
+  /// Okunmamış sayısı (kendi mesajlarım hariç); `null` = karar verilmedi
+  /// (mesajlar okunamadı), çağıran mevcut sayacı korur.
+  final int? unread;
 
   /// Cihaza yazılacak damga, yazılmayacaksa `null`.
   final String? writeLocal;
@@ -89,13 +90,21 @@ String? localStampIso(int? ms) => ms == null
     : DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true).toIso8601String();
 
 /// [server] `null` = sunucu BİLİNMİYOR; `(at: null)` = sunucuda satır yok.
+/// [rows] `null` = mesajlar okunamadı (web vaka 9).
 ChatReadDecision decideChatRead({
   required ServerChatRead? server,
   required String? localAt,
-  required List<ChatReadRow> rows,
+  required List<ChatReadRow>? rows,
   required String myUserId,
   required String nowIso,
 }) {
+  // Mesaj listesi OKUNAMADI (istek düştü) → karar VERİLMEZ: boş listeyle
+  // tohum "şimdi" olur ve — sunucu kesin boşsa — sunucuya da yazılırdı;
+  // aradaki gerçek yeni mesajlar geri dönüşsüz okunmuş sayılırdı.
+  if (rows == null) {
+    return const ChatReadDecision(
+        unread: null, writeLocal: null, pushToServer: null);
+  }
   final serverAt = server?.at;
   final known = laterOf(serverAt, localAt);
 
