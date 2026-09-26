@@ -22,7 +22,10 @@ void main() {
   });
 
   test('"Hesap oluşturuldu." iki tarafta da YOK', () {
-    expect(web.contains('Hesap oluşturuldu.'), isFalse);
+    // Yorumlar cümleyi tırnak içinde anıyor; aranan JSX/string hâli.
+    expect(web.contains("Hesap oluşturuldu.{' '}"), isFalse);
+    expect(web.contains(RegExp(r'^\s*Hesap oluşturuldu\.', multiLine: true)),
+        isFalse);
     expect(port.contains("'Hesap oluşturuldu.'"), isFalse);
   });
 
