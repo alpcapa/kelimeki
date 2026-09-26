@@ -5,6 +5,8 @@
 // Çıktı: marketing/play-store/lansman/
 //   kelimeki-google-play-kare-1080.png        — Instagram/Facebook feed (1:1)
 //   kelimeki-google-play-story-1080x1920.png  — Instagram/Facebook story (9:16)
+//   kelimeki-google-play-dikey-720x1280.png   — dikey banner (Apple setinin "Portrait")
+//   kelimeki-google-play-yatay-1280x720.png   — yatay banner (X/YouTube/site kapağı)
 //   kelimeki-google-play-link-1200x628.png    — link kartı (LinkedIn/Facebook)
 //
 // ⚠ `npm run build` ÖNCE koşmuş olmalı (stiller dist CSS'inden gelir) ve
@@ -29,6 +31,8 @@ const ROZET_SRC = path.join(ROOT, 'public', 'google-play-badge.svg');
 const DOSYA = {
   kare: 'kelimeki-google-play-kare-1080.png',
   story: 'kelimeki-google-play-story-1080x1920.png',
+  dikey: 'kelimeki-google-play-dikey-720x1280.png',
+  yatay: 'kelimeki-google-play-yatay-1280x720.png',
   link: 'kelimeki-google-play-link-1200x628.png',
 };
 
@@ -76,7 +80,13 @@ async function main() {
       const b = document.querySelector('[data-guvenli-kutu]').getBoundingClientRect();
       const de = document.documentElement;
       return { sol: Math.round(b.left), sag: Math.round(b.right), ust: Math.round(b.top), alt: Math.round(b.bottom),
-        tasmaX: de.scrollWidth - de.clientWidth, tasmaY: de.scrollHeight - de.clientHeight };
+        tasmaX: de.scrollWidth - de.clientWidth, tasmaY: de.scrollHeight - de.clientHeight,
+        // Kutunun içindeki en geniş öğe (tahtaya binen metin kutuyu değil öğeyi taşırır).
+        icSag: Math.round(Math.max(...[...document.querySelectorAll('[data-guvenli-kutu] > *')].map((e) => e.getBoundingClientRect().right))),
+        tahtalar: [...document.querySelectorAll('[data-tahta] .grid, [data-tahta] > div > *')].slice(0, 1).map((e) => {
+          const r = e.getBoundingClientRect();
+          return { sol: Math.round(r.left), sag: Math.round(r.right), ust: Math.round(r.top), alt: Math.round(r.bottom) };
+        }) };
     });
     // Story: Instagram üstte profil/ilerleme çubuğunu, altta yanıt kutusunu
     // bindiriyor — içerik dikeyde ortadaki güvenli bantta kalmalı (~%14 / %20).
@@ -84,6 +94,13 @@ async function main() {
     const payAlt = duzen === 'story' ? h * 0.2 : 16;
     console.log(`  ${duzen}: kutu x ${olcum.sol}–${olcum.sag}, y ${olcum.ust}–${olcum.alt} (kadraj ${w}×${h})`);
     if (olcum.tasmaX || olcum.tasmaY) hatalar.push(`${duzen}: sayfa taşıyor`);
+    // Yan düzenlerde tahta TAMAMEN kadrajda olmalı ve metin tahtaya binmemeli.
+    if (['yatay', 'link'].includes(duzen)) {
+      const t = olcum.tahtalar[0];
+      console.log(`    tahta x ${t.sol}–${t.sag}, y ${t.ust}–${t.alt}; metin sağ kenarı ${olcum.icSag}`);
+      if (t.sol < 0 || t.ust < 0 || t.sag > w || t.alt > h) hatalar.push(`${duzen}: tahta kadrajdan taşıyor`);
+      if (olcum.icSag > t.sol - 8) hatalar.push(`${duzen}: metin tahtaya biniyor`);
+    }
     if (olcum.sol < 16 || olcum.sag > w - 16 || olcum.ust < payUst || olcum.alt > h - payAlt) {
       hatalar.push(`${duzen}: içerik güvenli alanın dışında`);
     }

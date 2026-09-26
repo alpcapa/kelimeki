@@ -263,8 +263,9 @@ cevabını veriyor.
 ## "Artık Google Play'de" lansman görselleri (`scripts/play-lansman/`, 26 Eylül 2026)
 
 `npm run build && npm run generate-play-lansman` →
-`marketing/play-store/lansman/` altında üç kare: kare 1080×1080 (IG/FB
-feed), story 1080×1920, link kartı 1200×628 (LinkedIn/FB).
+`marketing/play-store/lansman/` altında Apple setinin beş boyu: kare
+1080×1080 (IG/FB feed), story 1080×1920, dikey 720×1280, yatay 1280×720,
+link kartı 1200×628 (LinkedIn/FB).
 
 **Neden elle üretiliyor:** App Store lansmanında görseller Apple Marketing
 Tools'tan HAZIR geldi (`marketing/app-store/instagram-lansman.md`). Google'ın
@@ -278,3 +279,7 @@ yalnızca "Device art generator" ve "Legal line generator" var.
   "kelimeki" yazısını taşıdığı için kare/story'de ayrıca logo YOK.
 - Story'de içerik Instagram'ın bindirme bantlarının (üst ~%14, alt ~%20)
   dışında kalmak zorunda; betik ölçer, taşarsa dosya yazmadan düşer.
+- Yatay ve link kartında 4 kişilik tahta TAMAMEN kadrajda (ilk taslakta
+  kenardan taşıyordu, kullanıcı istemedi); betik tahtanın kadrajda
+  kaldığını ve metnin ona binmediğini ölçer. Kare/story/dikeydeki silik
+  arka plan tahtaları ise bilerek kenardan taşan dekor.
