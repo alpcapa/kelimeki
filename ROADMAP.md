@@ -95,7 +95,7 @@ kod girmez.
 | | #37 | Küfür / müstehcenlik süzgeci | Sunucu + web canlıda; koşul metni + portun takma isim uyarısı #640'ta. #640 merge edilince arşive |
 | | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Taslak PR'da (26 Eyl, #30 ile birlikte). Sahaya inince arşive |
 | | #30 | Port `anon_id` — `tutorial_events` | Taslak PR'da (26 Eyl, #35 ile birlikte). Kapanınca Tanıtım Turu kartının cihaz paydası kararı (`admin-panel.md`) |
-| **Sıradaki mobil işler** | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port açık |
+| **Sıradaki mobil işler** | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port açık. **5 Ekim trenine GİRMİYOR** (26 Eyl kullanıcı kararı) — hedef 19 Ekim treni |
 | | #34 | Canlı sohbet okundu bilgisi — port yarısı | Web + sunucu `main`'de; port açık |
 | | — | Huni v2'nin MOBİL yarısı (PR 2) | Numarasız; `docs/decisions/funnel-v2.md` |
 | | #26 | Web → mağaza yönlendirmesi: kalan iki satır | Android'de uygulaması yüklü misafir (`asset_statements`, mobil) · manifest `related_applications` (ÖLÇMEDEN AÇMA) |
