@@ -483,6 +483,20 @@ yüklemiyor, adım yalnızca `main`'de koşuyor.
       publishing KAPALI: onaylanınca KENDİLİĞİNDEN yayına girer (hafta sonu
       dahil).
 - [ ] Play `Published` → aynı gün ASC'de `Release This Version`.
+
+**App Store "What's New" — AS-BUILT (25 Eyl, onaylandı, artık kilitli):**
+```
+• Oyunun ortasında giriş yapınca adın artık hemen görünüyor; aynı oyun listede ikinci kez kalmıyor.
+• Torbada kalandan fazla taş değiştirilemiyor.
+• Tahtayı büyütme ipucu birkaç saniye sonra kendiliğinden kapanıyor.
+• Kayıt onayı mesajı daha belirgin; onay linkine basınca pencere kendiliğinden kapanıyor.
+• Bağlantı hatalarında teknik metin yerine anlaşılır bir mesaj çıkıyor.
+• iPhone'da metin seçme menüsü Türkçe, YZ avatarı ortalı.
+```
+⚠ 5. madde 1.1.1'de KISMEN doğru: sunucu hataları (504 vb.) Türkçe, ama
+cihaz çevrimdışıyken Canlı oyun mesajı hâlâ ham `Failed host lookup`
+gösteriyor (tur bulgusu, düzeltmesi sonraki trende — #642). Onaylı metin
+değiştirilemediği için bilerek bırakıldı.
       ⚠ O güne kadar `main`'e mobil merge YOK (`mobile-latest` ezilir).
 - [x] **Apple onayı geldi: 25 Eyl 22:49 TSİ** (e-posta "Review of your
       submission is complete", 1.1.1 for iOS, Submission ID `6df19844-…`).
