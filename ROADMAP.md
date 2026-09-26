@@ -155,6 +155,13 @@ taşma).
   önce cihazda ya da bir Flutter testinde ölçülmeli. Ölçüler
   `boardFit.ts`teki üç sabitten gelmeli (301 krom · 680 tavan · 324 taban) —
   web↔port ayrışırsa iki platform aynı tahtayı iki boyda çizer.
+- **Taş puntosu da tahtaya bağlanmalı** (26 Eylül 2026) — web'de yükseklik
+  bütçesi tahtayı küçültünce taş harfi `vw` tavanında (24 px) kalıp hücreyi
+  taşırdı (iPad Safari'de ölçüldü: %128). Web'in düzeltmesi `index.css` →
+  `.tile-board-letter` (`5.08cqw` / puan `2.18cqw`, ızgaranın iç genişliği).
+  Port `tile_widget.dart` bugün `fluidSize(screenWidth…)` — tahta
+  yükseklikten boyutlanmaya başladığı anda aynı hata porta gelir.
+  Ayrıntı: `docs/decisions/components.md` → "Taş harfi/puanı tavanı".
 - **`LandscapeHint` ikizi** — web'de kural `(orientation: landscape)`ten
   YÜKSEKLİĞE taşındı (eski kural açık katlanabilirde de tetikleniyor ve
   *"dikeye dön"* orada yanlış tavsiye oluyordu). Portun karşılığı varsa aynı

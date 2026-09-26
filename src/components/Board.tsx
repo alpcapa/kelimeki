@@ -487,7 +487,10 @@ export function Board({
           // `board_widget.dart` (`fluidSize(screenWidth, 9, 0, 2.6, 16)`) —
           // İKİSİ BİRLİKTE DEĞİŞİR, punto ikisinde de hücreye değil EKRAN
           // genişliğine bağlı.
-          classes.push(CENTER_TEXT, 'text-[clamp(9px,2.6vw,16px)]');
+          // `board-x3-label`: tahtaya göre tavan (`index.css`, 26 Eylül 2026).
+          // ⚠ clamp dizesi AYNEN kalmalı — `layout_parity_test.dart` bu
+          // satırı okuyor; tavan ayrı bir sınıf.
+          classes.push(CENTER_TEXT, 'text-[clamp(9px,2.6vw,16px)]', 'board-x3-label');
           content = BONUS_LABELS[bonus];
         }
       } else if (zone) {
@@ -733,7 +736,9 @@ export function Board({
       >
       <div
         data-board-grid=""
-        className="relative grid gap-[3px] p-[10px] w-full h-full"
+        // `container-type`: taş harfinin/puanının tavanı bu ızgaranın
+        // genişliğine bağlı (`cqw`, bkz. `index.css` → `.tile-board-letter`).
+        className="relative grid gap-[3px] p-[10px] w-full h-full [container-type:inline-size]"
         style={{
           gridTemplateColumns: `repeat(${SIZE}, 1fr)`,
           gridTemplateRows: `repeat(${SIZE}, 1fr)`,
