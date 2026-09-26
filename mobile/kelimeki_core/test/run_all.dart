@@ -349,6 +349,44 @@ void testSwapLimit() {
         () => 'reducer sınırı aşan değişimi kabul etti: "${after.message}"');
     check(after.current == onceki, () => 'reddedilen değişimde sıra ilerledi');
   }
+
+  // ── YZ'nin zorunlu değişimi elde KALAN taşları silmemeli (26 Eyl 2026) ──
+  // Torba 4 iken hamle bulamayan YZ 4 taş değiştiriyor; raf 7'de kalmalı ve
+  // oyundaki toplam taş sayısı değişmemeli. Web ikizi: verify-swap §7.
+  {
+    var s = engine.reduce(
+      createInitialState(),
+      const StartAction([
+        PlayerSetup(name: 'Ben', isAI: false),
+        PlayerSetup(name: 'YZ', isAI: true),
+      ]),
+    );
+    const g = Tile(letter: 'Ğ', pts: 8); // hiçbir kelime kuramayan raf
+    s = s.copyWith(
+      current: 1,
+      bag: s.bag.sublist(0, 4),
+      players: [
+        s.players[0],
+        s.players[1].copyWith(rack: List.filled(7, g)),
+      ],
+    );
+    int toplam(GameState x) =>
+        x.bag.length +
+        x.players.fold<int>(0, (n, p) => n + p.rack.length) +
+        x.board.expand((r) => r).where((t) => t != null).length;
+    final once = toplam(s);
+    final after = engine.reduce(s, const AiPlayAction());
+    check(after.moveHistory.last.action == 'exchange',
+        () => 'YZ değişim senaryosu kurulamadı: ${after.moveHistory.last.action}');
+    check(after.moveHistory.last.tileCount == 4,
+        () => 'YZ değişimi: ${after.moveHistory.last.tileCount} taş, 4 olmalı');
+    check(after.players[1].rack.length == 7,
+        () => 'YZ rafı ${after.players[1].rack.length} taşa düştü, 7 olmalı');
+    check(toplam(after) == once,
+        () => 'YZ değişiminde taş kayboldu: $once → ${toplam(after)}');
+    check(after.message == 'YZ 4 taş değiştirdi ve sırasını kullandı.',
+        () => 'YZ değişim mesajı: "${after.message}"');
+  }
 }
 
 void testReducerScenario(String name) {

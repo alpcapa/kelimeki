@@ -232,7 +232,8 @@ void main() {
   // tahtada kaldı) ve ileride bir dokunuş yolu eklenirse sessizce
   // kaymasını engelliyor. Web'deki eşi: `tests/smoke.spec.ts` → "taslak taşa
   // dokunmak YALNIZCA o taşı geri alır".
-  testWidgets('taslak taşa dokunmak YALNIZCA o taşı geri alır (komşusunu değil)',
+  testWidgets(
+      'taslak taşa dokunmak YALNIZCA o taşı geri alır (komşusunu değil)',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     final controller = await pumpGame(tester, GlobalKey());
@@ -278,7 +279,8 @@ void main() {
   // Artık iki AYRI karar var: hayalet 10 px'te belirir, bırakma ise jest
   // gerçekten bir yere gittiyse "bırakma" sayılır.
   for (final kayma in const [6.0, 12.0, 20.0]) {
-    testWidgets('titreşimli dokunuş (${kayma.toInt()} px) taslak taşı GERİ ALIR',
+    testWidgets(
+        'titreşimli dokunuş (${kayma.toInt()} px) taslak taşı GERİ ALIR',
         (tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       final controller = await pumpGame(tester, GlobalKey());
@@ -411,8 +413,7 @@ void main() {
   // gözle görülür — hiçbir derleyici/analiz sapmayı yakalamaz, bu yüzden
   // teste bağlı. Web ikizleri: `Tile.tsx` (`text-red`) ve `GameHeader.tsx`
   // (`text-text`); biri değişirse öteki de değişmeli.
-  testWidgets(
-      'tahtadaki JOKER\'in puanı KIRMIZI, sıradan taşınki accent kalır',
+  testWidgets('tahtadaki JOKER\'in puanı KIRMIZI, sıradan taşınki accent kalır',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     final controller = await pumpGame(tester, GlobalKey());
@@ -437,8 +438,8 @@ void main() {
         .style!
         .color!;
 
-    final jokerTile = find.byWidgetPredicate((w) =>
-        w is TileWidget && w.variant != TileVariant.rack && w.tile.wild);
+    final jokerTile = find.byWidgetPredicate(
+        (w) => w is TileWidget && w.variant != TileVariant.rack && w.tile.wild);
     expect(jokerTile, findsOneWidget);
     expect(ptsColorOf(jokerTile, '0'), kRed,
         reason: 'jokerin 0 puanı token kırmızısı olmalı (tailwind `red`)');
@@ -521,8 +522,7 @@ void main() {
   testWidgets(
       'joker seçici dar (yatay mod benzeri) yükseklikte taşmıyor '
       '(Parça 20\'de bottom sheet\'in %56 sınırı kırpıyordu; Parça 47\'de '
-      'yapı KModal\'a geçti — bu kontrat İKİSİNDE de geçerli)',
-      (tester) async {
+      'yapı KModal\'a geçti — bu kontrat İKİSİNDE de geçerli)', (tester) async {
     // Oyun ekranının KENDİ sorumluluğundaki (Parça 15-17) kaydırma/genişlik
     // davranışından bilerek izole — yalnızca showWildLetterSheet'in kendi
     // yükseklik/kaydırma sözleşmesini sınıyor. Geniş/kısa yüzey (iPad yatay
@@ -655,14 +655,18 @@ void main() {
     // artık Material değil NeoButton (web `btn-raised`/`btn-raised-neutral`,
     // 15 Ağustos 2026 diyalog kabuğu) ve kabul olanın accent varyantı
     // taşıması da sözleşmenin parçası.
-    final acceptBtn = find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'PAS GEÇ'));
-    final cancelBtn = find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'VAZGEÇ'));
+    final acceptBtn = find.descendant(
+        of: find.byType(KDialogCard),
+        matching: find.widgetWithText(NeoButton, 'PAS GEÇ'));
+    final cancelBtn = find.descendant(
+        of: find.byType(KDialogCard),
+        matching: find.widgetWithText(NeoButton, 'VAZGEÇ'));
     expect(acceptBtn, findsOneWidget);
     expect(cancelBtn, findsOneWidget);
-    expect(tester.widget<NeoButton>(acceptBtn).variant,
-        NeoButtonVariant.accent);
-    expect(tester.widget<NeoButton>(cancelBtn).variant,
-        NeoButtonVariant.neutral);
+    expect(
+        tester.widget<NeoButton>(acceptBtn).variant, NeoButtonVariant.accent);
+    expect(
+        tester.widget<NeoButton>(cancelBtn).variant, NeoButtonVariant.neutral);
     expect(
       tester.getTopLeft(acceptBtn).dx,
       lessThan(tester.getTopLeft(cancelBtn).dx),
@@ -742,8 +746,8 @@ void main() {
 
     final card = find.descendant(
       of: find.byType(RemainingTilesModal),
-      matching: find.byWidgetPredicate((w) =>
-          w is ConstrainedBox && w.constraints.maxWidth == 360),
+      matching: find.byWidgetPredicate(
+          (w) => w is ConstrainedBox && w.constraints.maxWidth == 360),
     );
     expect(card, findsOneWidget, reason: 'web Modal 360px kartı');
 
@@ -771,7 +775,9 @@ void main() {
     final finalState = gameStateFromJson(
         (steps.last as Map<String, dynamic>)['state'] as Map<String, dynamic>);
     final c = GameController(
-        words: SetWordSource(const ['ab']), autoPlayAi: false, nowIso: () => '');
+        words: SetWordSource(const ['ab']),
+        autoPlayAi: false,
+        nowIso: () => '');
     c.restore(finalState);
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
@@ -821,7 +827,8 @@ void main() {
 
   testWidgets(
       'tahta alt şeridinde "Çevrimdışı" uyarısı: bağlantı gidince ANINDA '
-      'çıkar, gelince kalkar; puntosu kardeş kontrollerle aynı', (tester) async {
+      'çıkar, gelince kalkar; puntosu kardeş kontrollerle aynı',
+      (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     final status = _ToggleOnlineStatus();
     final controller =
@@ -922,15 +929,14 @@ void main() {
     // Modal kapanınca tahta görünür kalır, raf satırında TEKRAR OYNA çıkar.
     expect(find.text('TEKRAR OYNA'), findsOneWidget);
 
-    // Web App.tsx (~1514-1517): GameOver'ı KAPATMAK "Görüş Bildir" formunu
-    // AÇAR (`onClose` hem gameOverDismissed hem showFeedback set ediyor).
-    // Port yalnızca modalın içindeki linki taşımıştı; kullanıcı 10 Ağustos
-    // 2026'da bölüm 9'u koşarken fark etti (bkz. Parça 48).
-    expect(find.text(trUpper('Görüşleriniz Bizim İçin Önemli')),
-        findsOneWidget);
+    // GameOver'ı KAPATMAK "Görüş Bildir" formunu AÇMAZ (26 Eylül 2026,
+    // kullanıcı kararı — Parça 48'in otomatik açılışı kaldırıldı). Form
+    // yalnızca modalın içindeki linkle açılır.
+    expect(find.text(trUpper('Görüşleriniz Bizim İçin Önemli')), findsNothing);
   });
 
-  testWidgets('GameOver modalı KModal kabuğunu kullanır — 360px sınırı, ham '
+  testWidgets(
+      'GameOver modalı KModal kabuğunu kullanır — 360px sınırı, ham '
       'Dialog DEĞİL', (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     final golden = jsonDecode(
@@ -943,7 +949,8 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
       home: Scaffold(
-        body: Center(child: GameOverModal(state: finished, onOpenHistory: () {})),
+        body:
+            Center(child: GameOverModal(state: finished, onOpenHistory: () {})),
       ),
     ));
     await tester.pumpAndSettle();
@@ -1158,12 +1165,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Kapat')); // GameOver modalı
     await tester.pumpAndSettle();
-    // Parça 48: GameOver'ı kapatmak "Görüş Bildir" formunu açıyor — o da
-    // kapatılmazsa modal bariyeri aşağıdaki dokunuşları yutar.
-    if (find.byTooltip('Kapat').evaluate().isNotEmpty) {
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
-    }
 
     expect(find.text('TEKRAR OYNA'), findsOneWidget);
     expect(find.text('YENİ OYUN AÇ'), findsNothing);
@@ -1179,7 +1180,9 @@ void main() {
 
     await tester.tap(find.text('TEKRAR OYNA'));
     await tester.pumpAndSettle();
-    await tester.tap(find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
+    await tester.tap(find.descendant(
+        of: find.byType(KDialogCard),
+        matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
     await tester.pumpAndSettle();
 
     expect(controller.state.isGameOver, isFalse);
@@ -1300,17 +1303,18 @@ void main() {
             '(tahta tek boyamada ~340 blur eder).');
 
     final sinir = tester.renderObject<RenderRepaintBoundary>(
-      find.ancestor(
-        of: find.byType(BoardWidget),
-        matching: find.byType(RepaintBoundary),
-      ).first,
+      find
+          .ancestor(
+            of: find.byType(BoardWidget),
+            matching: find.byType(RepaintBoundary),
+          )
+          .first,
     );
     // ÖNCE ARACIN CANLI OLDUĞUNU KANITLA. Bu sayaçlar yalnızca debug'da,
     // framework sınırı boyarken artıyor; hiç artmıyorlarsa aşağıdaki iddia
     // BOŞUNA geçer ve hiçbir şey kanıtlamaz. Tahta sürükleme başlamadan
     // önce en az bir kez boyandığından toplam >= 1 olmak ZORUNDA.
-    expect(
-        sinir.debugSymmetricPaintCount + sinir.debugAsymmetricPaintCount,
+    expect(sinir.debugSymmetricPaintCount + sinir.debugAsymmetricPaintCount,
         greaterThanOrEqualTo(1),
         reason: 'boyama sayaçları hiç artmamış — bu testin ölçtüğü şey '
             'çalışmıyor demektir (aşağıdaki iddia boşuna geçerdi).');
@@ -1463,7 +1467,8 @@ void main() {
         key: key,
         child: ColoredBox(
           color: Colors.white,
-          child: Center(child: GameOverModal(state: finished, onOpenHistory: () {})),
+          child: Center(
+              child: GameOverModal(state: finished, onOpenHistory: () {})),
         ),
       ),
     ));
@@ -1487,8 +1492,7 @@ void main() {
       'kırpılıyordu)', (tester) async {
     // İçerik sığmasın (kaydırılabilir olsun) ve viewport 680'den GENİŞ olsun.
     await setPhoneViewSize(tester, const Size(900, 620));
-    final c =
-        GameController(words: words, autoPlayAi: false, nowIso: () => '');
+    final c = GameController(words: words, autoPlayAi: false, nowIso: () => '');
     c.dispatch(ResumeSavedAction(craftedState()));
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
@@ -1508,8 +1512,8 @@ void main() {
     // kenara gerilir).
     final inner = find.descendant(
         of: scroll,
-        matching: find.byWidgetPredicate((w) =>
-            w is ConstrainedBox && w.constraints.maxWidth == 680));
+        matching: find.byWidgetPredicate(
+            (w) => w is ConstrainedBox && w.constraints.maxWidth == 680));
     expect(inner, findsWidgets, reason: 'içerik sütunu 680e sınırlı olmalı');
   });
 
@@ -1539,8 +1543,8 @@ void main() {
         reason: 'web ortalanmış Modal kullanıyor, alttan sayfa DEĞİL');
     final card = find.descendant(
       of: find.byType(Dialog),
-      matching: find.byWidgetPredicate((w) =>
-          w is ConstrainedBox && w.constraints.maxWidth == 360),
+      matching: find.byWidgetPredicate(
+          (w) => w is ConstrainedBox && w.constraints.maxWidth == 360),
     );
     expect(card, findsWidgets, reason: 'web Modal 360px kart');
 
@@ -1649,7 +1653,9 @@ void main() {
     expect(controller.state.placed, isEmpty);
     final turnBefore = controller.state.turnCount;
     expect(
-      tester.widget<NeoButton>(find.widgetWithText(NeoButton, 'OYNA')).onPressed,
+      tester
+          .widget<NeoButton>(find.widgetWithText(NeoButton, 'OYNA'))
+          .onPressed,
       isNotNull,
     );
     expect(
@@ -1670,7 +1676,8 @@ void main() {
   // legend'ı kalktı, yerine "Hamleler"/"Mesajlaşma" ile AYNI stilde bir
   // "Nasıl Oynanır?" linki geldi. Legend'ın taşıdığı bilgi kaybolmuyor —
   // bonus renkleri tahtada zaten büyük filigranlarla yazılı.
-  testWidgets('board alt şeridi: X2/X3 legend YOK, "Yardım" VAR ve '
+  testWidgets(
+      'board alt şeridi: X2/X3 legend YOK, "Yardım" VAR ve '
       'kurallar modalını açıyor', (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await pumpGame(tester, GlobalKey());
