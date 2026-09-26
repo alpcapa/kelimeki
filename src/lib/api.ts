@@ -1833,7 +1833,14 @@ export function subscribeOnlineGameState(gameId: string, onChange: () => void): 
  * yeniye döner (`online_game_messages`) — `OnlineGameScreen`'in ilk yüklemesi
  * için. Oyun İçi Mesajlaşma — Faz 1, yalnızca Canlı oyunlarda kullanılır.
  */
-export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGameMessageRow[]> {
+/**
+ * İstek DÜŞERSE `null` (boş liste DEĞİL): çağıran eski listeyi korur ve okundu
+ * kararını vermez. Boş liste dönseydi ekrandaki sohbet silinir ve "ilk ziyaret"
+ * tohumu "şimdi"ye oturup aradaki gerçek yeni mesajları okunmuş sayardı —
+ * sunucu kesin boşsa oraya da yazılır, sunucu yalnızca ileri gittiği için
+ * GERİ ALINAMAZDI (26 Eylül 2026; port ikizi `ChatRepo.messages` zaten `null`).
+ */
+export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGameMessageRow[] | null> {
   if (!supabase) return [];
   const { data, error } = await supabase
     .from('online_game_messages')
@@ -1842,7 +1849,7 @@ export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGam
     .order('created_at', { ascending: true });
   if (error) {
     console.error('[Kelimeki] fetchOnlineGameMessages hatası:', error.message);
-    return [];
+    return null;
   }
   return (data as OnlineGameMessageRow[]) ?? [];
 }
