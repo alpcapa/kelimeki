@@ -1505,7 +1505,7 @@ gerektiriyor. `tests/board-fit.spec.ts` yalnızca YEREL oyun ekranını ölçüy
 ⚠ **Telefon YATAYDA tahta zaten küçük kalır (324px taban) ve bu bilinçli:**
 o boyda krom tek başına ~308px, viewport 375–430 — hiçbir sınır değeri oyunu
 oynanabilir yapmaz. Doğru davranış banner'ın "dikeye dön" demesi. Telefon
-yatayı gerçekten açmak YAN YANA bir düzen ister (ROADMAP #26).
+yatayı gerçekten açmak YAN YANA bir düzen ister (ROADMAP #38 — eski #26).
 
 ## 14+ — Tarihli turlar → `docs/testing-turlari.md`
 

@@ -1443,7 +1443,7 @@ Krom (tahta dışındaki her şey) tek başına **301px**, iPhone yatay viewport
 durup "dikeye dön" önerisini göstermek.
 
 ⚠ Telefon yatayı gerçekten oynanabilir yapmak **ayrı bir iş**: tahta solda,
-raf + butonlar sağda bir YAN YANA düzen. Karar verilmedi (ROADMAP #26'nın
+raf + butonlar sağda bir YAN YANA düzen. Karar verilmedi (ROADMAP #38'in — eski #26 —
 sonundaki not).
 
 ### `LandscapeHint` ölçütü YATAY değil, YÜKSEKLİK
@@ -1464,7 +1464,7 @@ telefon vakası geçti. Yani test bir sayıyı değil davranışı kilitliyor.
 
 ⚠ **Port ikizi bu PR'da YOK** (kullanıcı kararı: *"Sadece web'de yap. Ama
 port'u roadmap'e yaz."*) — `board_widget.dart` aynı deseni taşıyor ama
-ÖLÇÜLMEDİ. ROADMAP #26.
+ÖLÇÜLMEDİ. ROADMAP #38 (26 Eylül 2026'ya kadar #26).
 
 ### Kaçış kapısı Canlı ekranda TAKILI DEĞİLDİ (22 Eylül 2026, aynı gün)
 

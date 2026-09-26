@@ -75,64 +75,66 @@ Yani maddeleri "konu"ya göre değil **paketlenebilirliğe** göre grupladım.
 Sonuç: kalan HER ŞEY **iki sürüm turuna** sığıyor — bildirim işinin yarısı
 sunucu tarafında olduğu için sürüm beklemiyor.
 
-### Kalan işlerin tamamı — tek bakışta (2 Eylül 2026'da güncellendi)
+### Kalan işlerin tamamı — tek bakışta (26 Eylül 2026'da yeniden yazıldı)
 
-✅ **O BLOKER DÜŞTÜ — ve 13 Eylül 2026, 00:14'te ONAYLANDI.** Aylardır
-sırayı belirleyen şey koda değil takvime bağlıydı: kişisel hesaplarda
-**12 tester × 14 gün kesintisiz**. Sayaç doldu, kartın üç şartı da çizildi,
-başvuru 10 Eylül 15:26'da gönderildi ve Google **kabul etti**
-(*"Congratulations! Your app has been granted Google Play production
-access"*, `com.kelimeki.kelimeki`) — Console *"7 gün ya da daha az"*
-demişti, **~2,5 günde** geldi. Cevaplar, ölçümler ve soruların tam metni:
-`marketing/play-store/console-formlari.md` §7.
+Bu tablo bir İNDEKS: yalnızca AÇIK maddeler, gövdeleri aşağıda (ya da
+belirtilen dosyada). Bir madde kapanınca satırı buradan, gövdesi de
+arşive gider. Önceki sürüm (2 Eylül 2026; 1.0.4-1.0.6 turları, Play
+sayacı, Console kovaları — hepsi kapanmıştı):
+`docs/decisions/roadmap-arsiv.md` → "Kalan işlerin tamamı — tek bakışta
+(2 Eylül 2026 sürümü)".
 
-⚠ **ERİŞİM ≠ SÜRÜM.** Onaylanan şey production KANALINI kullanma hakkı;
-mağaza vitrini (`play.google.com/store/apps/details?id=com.kelimeki.kelimeki`)
-o kanala bir sürüm yayınlanıp KENDİ incelemesinden geçene kadar **404**
-vermeye devam eder. Yani §26'nın (mağaza rozetleri) Android yarısı bu
-e-postayla AÇILMADI.
+**Durum (26 Eylül 2026):** iki mağazada `1.1.1 (723)` = `8c1828f`. Sonraki
+tren dört taslak PR (#637 · #640 · #642 · #647), ilk kesim **5 Ekim 2026**
+(`mobile/docs/surumler.md` → "SÜRÜM TRENİ"). O güne kadar `main`'e mobil
+kod girmez.
 
-| Kova | Ne | Durum |
-|---|---|---|
-| **Sayaç** | 12 tester × 14 gün | ✅ **KAPANDI — production ERİŞİMİ ONAYLANDI 13 Eyl 2026, 00:14** (başvuru 10 Eyl 15:26, ~2,5 gün). ⚠ Erişim ≠ sürüm: vitrin, production kanalına sürüm yayınlanana kadar 404 · ⚠ karttaki **12**'nin gerçek adet mi şartın tavanı mı olduğu ÖLÇÜLMEDİ (2 Eylül, kullanıcı itirazı — aşağıda) · *Android developer verification* ✅ **BİTTİ** (Console'dan doğrulandı 31 Ağustos: `com.kelimeki.kelimeki` Registered, 3 anahtar, Identity dolu) |
-| **Console (elle)** | — | ✅ **KAPANDI** (bu satır 31 Ağustos'a kadar bayat kaldı; ayrıntı aşağıda) |
-| **1.0.4'e binecek kod** | Faz 6 istemci yarısı (rozet sıfırlama + sürüm damgası) · Faz 7 (iki çökme) · **+ #10 hata hız sınırı** (1 Eylül'de eklendi) | ✅ **1.0.4 (467) Play'e YÜKLENDİ, incelemede** (1 Eylül 2026) |
-| **1.0.5'e binen kod** | Tahta zoom'u (+2 APK turu) · zoom tanıtım balonu · yazı ölçeği (sınıf 3+2) · mesaj kutusu etiketi · **cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar)** | ✅ **TUR KAPANDI** — `1.0.5 (501) — 4a0a29b` kapalı testte yayında (~15:03) ve üç işin cihaz doğrulaması da alındı (2 Eylül, kullanıcı). Ayrıntı: arşiv → "1.0.5 SÜRÜM TURU" |
-| **1.0.6'ya binen kod** | Biten Canlı oyunun haberi (`OYUN BİTTİ`/`TESLİM OLDUN` + `YENİ` rozeti + sekme sayacı) · skor kartında kafa kafaya oran çubuğu · `Tüm Oyunlar` etiketinin tekleşmesi · **oyun geçmişine "Tekrar Oyna" (rövanş)** | ⏳ **`1.0.6 (525) — 711eaaa`** 4 Eylül'de kapalı teste çıktı (Submission 12; inceleme ≤29 dk), **6 Eylül'de `1.0.7 (545) — 78383eb` devraldı; 1.0.8 gönderilmeyi bekliyor** (kütük: `mobile/docs/surumler.md`). Kullanıcı kuralı sağlandı: APK önce cihazda koşuldu (§0-§4'ün koşulabilir maddeleri geçti). **TUR HENÜZ KAPANMADI.** Play imzalı paket 4 Eylül'de cihaza kuruldu ve §7'nin "güncelleme yokken pencere çıkmamalı" dalı geçti. §4.5 (davet linki uygulamayı açıyor) da geçti ve App Links doğrulamasını kanıtladı. Kalanlar: §4.1 (kayıt onayı) + kabul akışının uygulama içi maddeleri — ikisi de **YENİ bir hesap** ister (Ironman ↔ T3 zaten arkadaş, T2 Play'in test hesabı) · §1.4 ("ŞİMDİ DEĞİL") de KAPANDI (4 Eylül, kullanıcı gözlemi) · §7'nin "güncelleme VARKEN" dalı — ancak 1.0.6 kuruluyken 1.0.7 yayınlanınca koşulabilir. Kanonik paket kütüğü: `mobile/docs/surumler.md` |
-| **Cihazda denenmemiş** | §3c'nin davete özgü dalları · GA4 DebugView | ⏳ bildirim→tahta DOĞRULANDI (sıcak+soğuk, 31 Ağustos); **1.0.5'in tamamı 2 Eylül'de onaylandı** (zoom turu, çevrimdışı şerit, filigranlar, balon, yazı ölçeği, mesaj etiketi) — kalan iki kalem bu ikisi |
-| **Karar verilmiş, yapılmamış** | — | ✅ Kova BOŞ: **#3** hatırlatma, **#8** iPad paylaşımı (3 Eylül cihazda doğrulandı) ve **#16** kart düzeni kapandı; üçü de arşivde |
-| **Ertelendi** | #2 zorunlu güncelleme | ✅ **KAPANDI/ARŞİVDE** (2 Eylül 2026, kullanıcı: *"Artık app'de güncelleme çıkıyor, bunu görünce zaten yapar"*). ⚠ Sürüm kapısı DURUYOR ve artık KULLANILABİLİR — acil fren olarak `app_config.mobile_min_supported_version` |
-| **Seviyeli YZ** | **#23** Kolay/Normal/Zor + seviyeye göre k-lig puanı — 5 faz (sunucu → motor → web → port → Zor motoru) | ⬜ **Faz 0-5 kod ✅ (Faz 5 = Zor motoru, 7 Eylül 2026: GENİŞ arama, YZ↔YZ %70/%72 — web'de canlı, portta 1.0.8 sürümüyle); kalan: Faz 5 SAHA ölçümü** (`admin_ai_balance` seviye kırılımı iki hafta: Kolay ~%30 · Normal ~%51 · Zor ~%70). Faz 0 ölçtü: **Kolay = N=4** (200 oyun/N; N=3 %36, N=4 %33, N=5 %22 — backlog notu) |
-| **İsteğe bağlı** | #5 k-lig grafiği · #9 admin filtre · #14 tembel liste | ⬜ hiçbiri yolu tıkamıyor · **#10 hata hız sınırı ✅** ve **#11 platform filtresi ✅ YAPILDI** (31 Ağustos 2026) |
-| **Yapıldı** | #6 taranabilir `/nasil-oynanir/` sayfası | ✅ 31 Ağustos 2026 |
-| **Play Store'a girdikten sonra** | **#17 Google ile giriş** — sunucu → web → mobil; migration BLOKER (OAuth bugün `handle_new_user`'da patlar) | ⏳ ERTELENDİ — acelesi yok, çalışan kimlik akışına şimdi dokunulmuyor (2 Eylül, kullanıcı). ⚠ Sayaçla İLİŞKİSİ YOK; o bağ aynı gün koptu, gerekçe #17'de |
-| **iOS/App Store** | **#24 FAZ C** — hesap/kimlik · Mac'siz imzalama + TestFlight · APNs · Universal Links · vitrin · gönderim | ✅ **KAPANDI: `1.1.0 (665)` 15 Eylül 2026'da App Store'da YAYINDA.** Bölümün tamamı arşivde (`docs/decisions/roadmap-arsiv.md` → "24. FAZ C — App Store yayını"); işletim kaynağı `marketing/app-store/console-formlari.md` |
+| Kova | # | Ne | Durum |
+|---|---|---|---|
+| **Trende (taslak PR)** | #25 | iOS simgesinde rozet SAYISI | #647'de; DB yarısı canlıda. Merge sonrası beş bildirim fonksiyonu yeniden deploy (`verify_jwt` korunarak), 1.1.2 TestFlight'ta `mobile/docs/testing-bildirimler.md` §3h |
+| | #37 | Küfür / müstehcenlik süzgeci | Sunucu + web canlıda; koşul metni + portun takma isim uyarısı #640'ta. #640 merge edilince arşive |
+| **Sıradaki mobil işler** | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port açık |
+| | #34 | Canlı sohbet okundu bilgisi — port yarısı | Web + sunucu `main`'de; port açık |
+| | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Açık |
+| | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, bu kaldı |
+| | — | Huni v2'nin MOBİL yarısı (PR 2) | Numarasız; `docs/decisions/funnel-v2.md` |
+| | #26 | Web → mağaza yönlendirmesi: kalan iki satır | Android'de uygulaması yüklü misafir (`asset_statements`, mobil) · manifest `related_applications` (ÖLÇMEDEN AÇMA) |
+| **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅; `admin_ai_balance` seviye kırılımı (Kolay ~%30 · Normal ~%51 · Zor ~%70) |
+| | #18 | `submit_move` puan hakemliği | GÖLGE FAZINDA (`move_shadow_diffs`) |
+| | #14 | Uzun modal listeleri tembel inşa | Eşiğe bağlı izleme |
+| **Güvenlik** | #21 | Advisor gürültüsü + Auth ayarları | Kısmen yapıldı |
+| | #22 | `feedback` hız sınırı XFF ile atlanabilir | Açık, ölçülmedi |
+| **Ertelendi (kullanıcı kararı)** | #32 | E-posta onayı bir kullanıcı kaybı kapısı | "Daha sonra bakalım" (20 Eyl) |
+| | #39 | Takma isim değişince geçmiş oyunlarda eski isim | "Sonra bakılacak" (23 Eyl) |
+| | #17 | Google ile giriş/kayıt | Sunucu → web → mobil; migration BLOKER |
+| **İsteğe bağlı** | #5 | k-lig puan grafiği | — |
+| | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
 
-⚠ **"Console (elle)" satırı 31 Ağustos'a kadar BAYAT kaldı** — dört maddesi
-de aslında 25-26 Ağustos'ta bitmişti ve bu tablo onları hâlâ "kullanıcıda"
-gösteriyordu. Kullanıcı akşam "formları şimdi güncelleyelim" dediğinde
-yapılacak iş olmadığı anlaşıldı. Tek tek:
-
-| Satırın dediği | Gerçek |
-|---|---|
-| Data deletion → "uygulama içi yol VAR" seçimi | **Böyle bir form alanı YOK.** Silme sorusunun cevabı `Evet → kelimeki.com/hesap-silme/` ve öyle kalıyor; Play'in uygulama içi şartı bir form alanı değil, uygulamanın KENDİSİNDE aranan politika şartı — 372'de karşılandı. `marketing/play-store/console-formlari.md` §3.8 bunu 26 Ağustos'ta "ENGEL KALKTI, beyanda değişen bir şey YOK" diye kapatmıştı |
-| Kategori (Oyunlar → Kelime) | ✅ Games → Word, 25 Ağustos |
-| İletişim e-postası | ✅ `destek@kelimeki.com` |
-| Web sitesi | ✅ `https://kelimeki.com` |
-
-**Ders:** bir işin kaydı İKİ yerde durursa (burada özet tablo, orada cevap
-kâğıdı) biri kapanırken öteki kapanmıyor. Bu tablo bir İNDEKS — bir kova
-kapandığında kaynağı `console-formlari.md`'dir, karar oradan okunur.
+**Madde numarası kuralı (26 Eylül 2026):** yeni madde **bir sonraki boş
+numarayı** alır — şu an **#40**. Numara hiçbir zaman yeniden kullanılmaz,
+kapanmış (arşivdeki) maddelerinki de. 26 Eylül'de iki AKTİF çakışma
+bulundu ve sonradan gelen maddeye yeni numara verildi: tahta yükseklik
+bütçesi **#26 → #38** (mağaza yönlendirmesi #26 olarak kaldı; kodda ve
+dokümanlarda onun atıfı çok daha fazla) ve takma isim geçmişi
+**#36 → #39** (#36 Huni v2'nin gizlilik metni, kapalı, arşivde).
+⚠ Arşivde eski, KAPALI çakışmalar da var (madde 24 = FAZ C ↔ onboarding;
+25 = iPad manzarası ↔ bugünkü #25; hata avı geçişinin #23-#25'i) —
+atıflar kırılmasın diye bilerek dokunulmadı; arşivde bir numara ararken
+başlığa da bak.
 
 ### Sonra / bloke
 
-**#26 — Tahtanın yükseklik bütçesi PORTA da gerekli** → ⏳ **AÇIK, freeze'i
-bekliyor** (22 Eylül 2026; web yarısı `main`'de).
+**#38 — Tahtanın yükseklik bütçesi PORTA da gerekli** (26 Eylül 2026'ya kadar
+**#26** numarasını taşıyordu — mağaza yönlendirmesiyle çakışıyordu; arşivde,
+`touch-ux-bugs.md`de ve `board_widget.dart` yorumunda eski adıyla geçer) →
+⏳ **AÇIK — dondurma kalktı, sıradaki mobil işlerden** (22 Eylül 2026; web
+yarısı `main`'de).
 
 ⚠ **Sıra: #611 merge edilmeden BAŞLAMA** (23 Eylül 2026). #611 (filigran
 tavanı, #609'un port ikizi, merge turunun dokuzuncusu) da
 `board_widget.dart`e dokunuyor ve tavanı bu maddenin ön koşulu olarak
-yazıldı; #26'yı onun üstüne kur, yan yana değil.
+yazıldı; #38'i onun üstüne kur, yan yana değil. (#611 25 Eylül merge
+turunda girdi, 1.1.1'de yayında — ön koşul sağlandı.)
 
 Kullanıcı bildirdi: *"Kelimeki'yi Samsung katlanabilirde denedim, tahta yatay
 iPad gibi görünüyordu, raf ve butonlar ekranın altında kalıyordu. Görmek için
@@ -206,9 +208,6 @@ düşünmek lazım"* → aynı gün: *"Şu anda mobilde 7 update var. Bu zaten
 oldukça fazla. Roadmap'e yaz, daha sonra bakalım."*). İki saha vakası, yedi
 alternatif, önerilen sıra ve dondurma uyumluluğu aşağıda, #32'de.
 
-**#33 — gizlilik metnindeki "dört durumda" sayısı** → ✅ **KAPANDI** (25 Eylül
-2026, PR #626 ile; metin artık "yedi"). Arşivde: `docs/decisions/roadmap-arsiv.md`.
-
 **#34 — Canlı sohbet okundu bilgisinin PORT yarısı** → ⏳ **AÇIK — dondurma
 kalktı (25 Eylül 2026), sıradaki mobil işlerden** (23 Eylül 2026; web yarısı #610 ile `main`'de).
 
@@ -250,8 +249,9 @@ notu ve `docs/decisions/admin-panel.md`. Port da yazmaya başlayınca oran
 yine AYNI tablodan kurulabilir, `profiles`a geçmeye gerek yok. `mobile/app/`
 dosyası olduğu için mobil derlemeyi tetikler, merge turu bitince yapılır.
 
-**#36 — Takma isim değişince geçmiş oyunlar ESKİ ismi göstermeye devam
-ediyor** → ⏳ **AÇIK, sonra bakılacak** (23 Eylül 2026, kullanıcı: *"Geçmiş
+**#39 — Takma isim değişince geçmiş oyunlar ESKİ ismi göstermeye devam
+ediyor** (26 Eylül 2026'ya kadar **#36** numarasını taşıyordu — Huni v2'nin
+gizlilik metniyle çakışıyordu) → ⏳ **AÇIK, sonra bakılacak** (23 Eylül 2026, kullanıcı: *"Geçmiş
 oyunları da yeni isme döndürmek mantıklı gözüküyor ama bu anlık olabilecek
 bir değişiklik değil… roadmap'e koyalım"*).
 
@@ -282,30 +282,6 @@ ve `database.types.ts` ↔ portun `fromJson`'ı (sözleşme değişikliği).
 Hesap silme de aynı jsonb'yi İSİMDEN eşleyerek yeniden yazıyor
 (`delete_account_cascade` → `name`i "Silinmiş oyuncu" yapar); (a) seçilirse
 o da kimliğe geçmeli, (b) onunla aynı kırılganlığı taşır.
-
-**#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
-✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
-doğrulandı; arşivde.
-**#11** (hata panelinde platform filtresi) ✅ **KAPANDI** 31 Ağustos 2026
-— bu satır 2 Eylül'e kadar onu hâlâ bekleyen iş gibi gösteriyordu, oysa
-aynı gün yukarıdaki özet tablo ✅ diyordu (kaydın iki yerde durması).
-**#12** (sürüm dağılımı kapsamı) ✅ **KAPANDI** 31 Ağustos 2026 — bkz.
-arşivde "Faz 6".
-**#15 — uygulama öne gelince bildirim panelini temizle** → ✅ **KOD TAMAM**
-(31 Ağustos 2026), sıradaki mobil sürümle çıkar. Ayrıntı arşivde: "Faz 6".
-**iOS/App Store** → ✅ **KAPANDI** (15 Eylül 2026, `1.1.0 (665)` yayında);
-**#24 FAZ C** arşivde. Push tasarımı bilerek FCM üzerinden
-yazıldığı için **ikinci bir gönderici YAZILMAYACAK** — bu karar duruyor ve
-sunucu tarafı ölçülünce zaten iOS-hazır çıktı (`apns-collapse-id` yazılmış,
-`push_tokens.platform` `'ios'` kabul ediyor; kanıtlar #24.0'da). ⚠ Bu satır
-uzun süre kalan işi *"APNs anahtarını yükle + Push capability"* kadar
-gösterdi; ölçüm daha büyük çıktı (imzalama zinciri, entitlements, AASA,
-vitrin) — tahmin, kaynak okunarak düzeltildi.
-
-**#36 — Huni v2'nin gizlilik metni yarısı** → ✅ **KAPANDI** (25 Eylül 2026,
-PR #626: metin (6)+(7), port kopyası, `FUNNEL_MEMBER_EVENTS_ENABLED = true`).
-Arşivde: `docs/decisions/roadmap-arsiv.md`. Huni v2'nin MOBİL yarısı (PR 2,
-`docs/decisions/funnel-v2.md`) hâlâ açık.
 
 ## Dondurulmuş port PR'ları — merge turu ✅ TAMAMLANDI (25 Eylül 2026)
 
