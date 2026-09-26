@@ -124,6 +124,11 @@ Kullanıcı kararları: **maskele** · **takma isim dahil** (orada RET) ·
   (RLS: yalnız admin; FK `deferrable initially deferred` çünkü satır BEFORE
   trigger'ında, mesajdan önce yazılıyor). `admin_get_finished_game_chat`
   orijinali `filtered: true` ile döndürür, döküm `[süzgeç]` önekiyle gösterir.
+  ⚠ **Admin orijinali YALNIZCA şikâyet üzerinden ve oyun bittikten sonra
+  görür** — süzgece takılanların şikâyetsiz bir listesi YOK. 26 Eylül 2026
+  kullanıcı kararı (*"şikayet olunca gözüksün"*), denemede admin'de
+  görünmemesi soruldu ve bu yüzden bilerek bırakıldı: kapsamı genişletmek
+  Gizlilik metnini de değiştirir.
 - **Takma isim:** `trg_reject_blocked_nickname` (profiles BEFORE
   INSERT/UPDATE OF display_name) → P0001 "Bu takma isim kullanılamaz.".
   Yeni `nickname_status` RPC'si ok/taken/blocked ayırır (web
