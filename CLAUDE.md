@@ -53,7 +53,7 @@ npm run verify-auth-user-identity # oturum kimliği: aynı içerik → aynı nes
 npm run verify-sw-update-loop    # service worker güncellemesi: yeniden yükleme DÖNGÜSÜ kapısı (derleme değişmediyse ikinci kez yükleme YOK) + çağrı yerinin kaynak taraması
 npm run verify-invite-queue      # davet kuyruğu: token RPC'den ÖNCE alınıyor mu (çift çağrı) + geçici arızada geri konuyor mu + ÇİFT YOL duruyor mu
 npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT YÜKSEKLİK (24 Eyl 2026 kullanıcı kararı; 15-24 Eyl arası eşit genişlikti — oranlar farklı, Apple 3.78:1 ↔ Play 3.37:1, ikisi birden eşit olamaz), yükseklik ≥40px, clear space yüksekliğin 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + "ana ekrana ekle" kutusu YOK (24 Eyl 2026'da kaldırıldı; telefonda tek çağrı mağaza şeridi)
-npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
+npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu + iOS rozeti (`aps.badge`) ve sürüm kapısı (`ROZET_ILK_SURUM`)
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ
 npm run verify-funnel-events     # Huni v2: eski cihaz → `mevcut`, İstanbul günü, gizlilik metni bayrağı + olay listesi ↔ migration SQL'i

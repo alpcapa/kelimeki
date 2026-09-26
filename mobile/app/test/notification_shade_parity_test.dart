@@ -124,4 +124,15 @@ void main() {
     expect(swift, contains('removeAllDeliveredNotifications()'),
         reason: 'AppDelegate bildirimleri kaldırmıyor');
   });
+
+  test('Swift simge rozetini de sıfırlıyor (ROADMAP #25)', () {
+    // Sunucu 1.1.2'den itibaren `aps.badge` gönderiyor (`_shared/push.ts` →
+    // `ROZET_ILK_SURUM`). iOS rozeti MUTLAK bir sayı: bu satır düşerse sayı
+    // simgede asılı kalır — Android'in "9'da takılı kaldı" hatasının eşi.
+    // İki API de aranıyor: iOS 16+ yolu ve 13-15 yedeği.
+    expect(swift, contains('setBadgeCount(0)'),
+        reason: 'AppDelegate iOS 16+ rozetini sıfırlamıyor');
+    expect(swift, contains('applicationIconBadgeNumber = 0'),
+        reason: 'AppDelegate iOS 13-15 rozetini sıfırlamıyor');
+  });
 }
