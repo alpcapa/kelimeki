@@ -26,13 +26,28 @@ satırı istiyor (Partner Marketing Hub → Tools → **Legal line generator**
 ile teyit et, Türkçesini oradan al):
 
 ```
-Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
 ```
 
 Metinlerin en altına, etiketlerden SONRA konuldu. ⚠ Bu satırın üretici
 çıktısıyla birebir aynı olduğu DOĞRULANMADI (ajan siteye erişemiyor,
 vekil engelliyor) — farklıysa üreticinin metni geçerli, buradakiler
 güncellenir.
+
+**26 Eylül 2026 — satıra "Android" eklendi.** Metinlerin hepsinde
+"Android" kelimesi (ve IG/LinkedIn'de `#android` etiketi) geçiyor; Android
+marka kılavuzu (developer.android.com → Brand guidelines) kelimenin her
+pazarlama kullanımında *"Android is a trademark of Google LLC."* atfını
+istiyor — rozet atfı bunu KAPSAMIYOR. Birleşik Türkçe biçim
+(*"Android, Google Play ve Google Play logosu…"*) üçüncü taraf
+belgelerinde bu haliyle geçiyor, ama üretici çıktısı değil. **Üreticide
+hem "Android" hem "Google Play"i işaretleyip çıkan metni buraya yapıştır.**
+
+Kılavuzun iki kuralı daha — bilerek UYGULANMADI, kullanıcı kararı bekler:
+- **İlk kullanımda `Android™`**: sosyal gönderide alışılmış değil; üretici
+  ya da Play rozet sayfası sosyal için istiyorsa eklenir.
+- **"iyelik/çoğul yapma"**: İngilizce kuralı; Türkçede `Android'de` hâl
+  eki, iyelik değil — kaçınmanın yolu yok, dokunulmadı.
 
 ---
 
@@ -74,7 +89,7 @@ iPhone'da da App Store'da. Tarayıcıda: kelimeki.com
 
 #kelimeoyunu #zekaoyunu #bulmaca #türkçe #ücretsizoyun #googleplay #android #yeniuygulama
 
-Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
 ```
 
 **App Store metninden farkı:** "iPhone'daki arkadaşınla da" — Canlı oyun
@@ -122,7 +137,7 @@ https://kelimeki.com/?ref=fb-sayfa-play
 
 #kelimeoyunu #zekaoyunu #türkçe
 
-Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
 ```
 
 **Neden App Store linki de var:** App Store gönderisi 16 Eylül'de
@@ -161,7 +176,7 @@ Tarayıcıda: https://kelimeki.com/?ref=li-sayfa-play
 
 #kelimeoyunu #türkçe #googleplay #mobiluygulama
 
-Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
 ```
 
 ### Kişisel profil (sıfırdan gönderi, sayfadan birkaç saat SONRA)
@@ -180,7 +195,7 @@ iPhone'da App Store'da, bilgisayarda https://kelimeki.com/?ref=li-profil-play
 
 @Kelimeki
 
-Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
 ```
 
 ⚠ "Tek bir kod tabanından" iddiası mobil uygulama için doğru (Flutter,
