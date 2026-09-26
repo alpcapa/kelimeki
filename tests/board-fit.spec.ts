@@ -142,23 +142,28 @@ async function tasOlculeri(page: Page) {
     const hucre = (g.firstElementChild as HTMLElement).getBoundingClientRect().width;
     const px = (sel: string) =>
       parseFloat(getComputedStyle(g.querySelector(sel) as HTMLElement).fontSize);
-    return { hucre, harf: px('.tile-board-letter'), puan: px('.tile-board-pts') };
+    return {
+      hucre,
+      harf: px('.tile-board-letter'),
+      puan: px('.tile-board-pts'),
+      x3: px('.board-x3-label'),
+    };
   });
 }
 
 const TAS_GORUNUMLERI = [
   // Kullanıcının vakası — tavan BURADA bağlamalı.
-  { ad: 'iPad Safari yatay, sekmeler + bant', w: 1194, h: 630, harf: null, puan: null },
-  ...GENIS_AMA_KISA.map((c) => ({ ...c, harf: null, puan: null })),
+  { ad: 'iPad Safari yatay, sekmeler + bant', w: 1194, h: 630, harf: null, puan: null, x3: null },
+  ...GENIS_AMA_KISA.map((c) => ({ ...c, harf: null, puan: null, x3: null })),
   // Tavanın hiç BAĞLAMAMASI gereken yerler: punto eskisiyle birebir aynı
   // (vw clamp'i — port ikiziyle kilitli, `tile_font_size_test.dart`).
-  { ad: 'dikey telefon 320', w: 320, h: 640, harf: 14, puan: 6 },
-  { ad: 'dikey telefon 390', w: 390, h: 844, harf: 14.82, puan: 6.24 },
-  { ad: 'iPad ana ekran uygulaması', w: 1194, h: 834, harf: 24, puan: 10 },
+  { ad: 'dikey telefon 320', w: 320, h: 640, harf: 14, puan: 6, x3: 9 },
+  { ad: 'dikey telefon 390', w: 390, h: 844, harf: 14.82, puan: 6.24, x3: 10.14 },
+  { ad: 'iPad ana ekran uygulaması', w: 1194, h: 834, harf: 24, puan: 10, x3: 16 },
 ];
 
 for (const c of TAS_GORUNUMLERI) {
-  test(`${c.ad}: taş harfi hücreye sığıyor`, async ({ page }) => {
+  test(`${c.ad}: taş harfi ve X3 hücreye sığıyor`, async ({ page }) => {
     await page.setViewportSize({ width: c.w, height: c.h });
     await oyunaGir(page);
     const o = await tasOlculeri(page);
@@ -166,6 +171,10 @@ for (const c of TAS_GORUNUMLERI) {
     expect(o.harf / o.hucre, 'taş harfi hücreye göre fazla büyük').toBeLessThanOrEqual(0.78);
     if (c.harf !== null) expect(o.harf).toBeCloseTo(c.harf, 1);
     if (c.puan !== null) expect(o.puan).toBeCloseTo(c.puan, 1);
+    // Merkezdeki X3 etiketi — aynı sınıf (en dar telefonda %49, iPad
+    // ana ekranında %47; tavansız iPad Safari'de %85'ti).
+    expect(o.x3 / o.hucre, 'X3 etiketi hücreye göre fazla büyük').toBeLessThanOrEqual(0.52);
+    if (c.x3 !== null) expect(o.x3).toBeCloseTo(c.x3, 1);
   });
 }
 

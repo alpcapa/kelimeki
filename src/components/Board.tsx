@@ -487,7 +487,10 @@ export function Board({
           // `board_widget.dart` (`fluidSize(screenWidth, 9, 0, 2.6, 16)`) —
           // İKİSİ BİRLİKTE DEĞİŞİR, punto ikisinde de hücreye değil EKRAN
           // genişliğine bağlı.
-          classes.push(CENTER_TEXT, 'text-[clamp(9px,2.6vw,16px)]');
+          // `board-x3-label`: tahtaya göre tavan (`index.css`, 26 Eylül 2026).
+          // ⚠ clamp dizesi AYNEN kalmalı — `layout_parity_test.dart` bu
+          // satırı okuyor; tavan ayrı bir sınıf.
+          classes.push(CENTER_TEXT, 'text-[clamp(9px,2.6vw,16px)]', 'board-x3-label');
           content = BONUS_LABELS[bonus];
         }
       } else if (zone) {
