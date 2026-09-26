@@ -21,27 +21,27 @@ rozeti Google'ın — rozetin kendisine dokunulmaz.
 
 ## 0 · Legal satırı — rozetli HER gönderide
 
-Görsellerde Google Play rozeti var; Google'ın marka kuralı gönderiye şu
-satırı istiyor (Partner Marketing Hub → Tools → **Legal line generator**
-ile teyit et, Türkçesini oradan al):
+Görsellerde Google Play rozeti, metinlerde "Android" kelimesi (ve
+IG/LinkedIn'de `#android` etiketi) var; ikisi de ayrı atıf istiyor:
 
 ```
-Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google LLC'nin ticari markasıdır.
+Google Play, Google LLC'nin ticari markasıdır.
 ```
 
-Metinlerin en altına, etiketlerden SONRA konuldu. ⚠ Bu satırın üretici
-çıktısıyla birebir aynı olduğu DOĞRULANMADI (ajan siteye erişemiyor,
-vekil engelliyor) — farklıysa üreticinin metni geçerli, buradakiler
-güncellenir.
+✅ **Üretici çıktısı, 27 Eylül 2026** (kullanıcı, Partner Marketing Hub →
+Tools → Legal line generator; dil Turkish, iki marka öğesi AYRI satır
+veriyor, Featured ↔ Incidental çıktıyı değiştirmiyor). Önceki taslaktaki
+birleşik *"Google Play ve Google Play logosu Google LLC'nin ticari
+markalarıdır"* üçüncü taraf belgelerinden geliyordu, üreticinin biçimi
+DEĞİL. Metinlerin en altına, etiketlerden SONRA, iki satır olarak konuldu.
 
-**26 Eylül 2026 — satıra "Android" eklendi.** Metinlerin hepsinde
-"Android" kelimesi (ve IG/LinkedIn'de `#android` etiketi) geçiyor; Android
-marka kılavuzu (developer.android.com → Brand guidelines) kelimenin her
-pazarlama kullanımında *"Android is a trademark of Google LLC."* atfını
-istiyor — rozet atfı bunu KAPSAMIYOR. Birleşik Türkçe biçim
-(*"Android, Google Play ve Google Play logosu…"*) üçüncü taraf
-belgelerinde bu haliyle geçiyor, ama üretici çıktısı değil. **Üreticide
-hem "Android" hem "Google Play"i işaretleyip çıkan metni buraya yapıştır.**
+⚠ **Marka ekibi onayı — açık soru.** Üretici sayfası "creatives must be
+approved before starting production" diyor (Partner Marketing Hub →
+Asset approval). Organik gönderi / mağaza rozeti için muafiyet olup
+olmadığı teyit edilmedi. Onay gerekiyorsa iki yol: onaya gönder (≥1
+hafta) ya da rozetsiz görselle paylaş ("Google Play" yalnızca metinde →
+incidental kullanım).
 
 Kılavuzun iki kuralı daha — bilerek UYGULANMADI, kullanıcı kararı bekler:
 - **İlk kullanımda `Android™`**: sosyal gönderide alışılmış değil; üretici
@@ -89,7 +89,8 @@ iPhone'da da App Store'da. Tarayıcıda: kelimeki.com
 
 #kelimeoyunu #zekaoyunu #bulmaca #türkçe #ücretsizoyun #googleplay #android #yeniuygulama
 
-Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google LLC'nin ticari markasıdır.
+Google Play, Google LLC'nin ticari markasıdır.
 ```
 
 **App Store metninden farkı:** "iPhone'daki arkadaşınla da" — Canlı oyun
@@ -137,7 +138,8 @@ https://kelimeki.com/?ref=fb-sayfa-play
 
 #kelimeoyunu #zekaoyunu #türkçe
 
-Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google LLC'nin ticari markasıdır.
+Google Play, Google LLC'nin ticari markasıdır.
 ```
 
 **Neden App Store linki de var:** App Store gönderisi 16 Eylül'de
@@ -176,7 +178,8 @@ Tarayıcıda: https://kelimeki.com/?ref=li-sayfa-play
 
 #kelimeoyunu #türkçe #googleplay #mobiluygulama
 
-Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google LLC'nin ticari markasıdır.
+Google Play, Google LLC'nin ticari markasıdır.
 ```
 
 ### Kişisel profil (sıfırdan gönderi, sayfadan birkaç saat SONRA)
@@ -195,7 +198,8 @@ iPhone'da App Store'da, bilgisayarda https://kelimeki.com/?ref=li-profil-play
 
 @Kelimeki
 
-Android, Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+Android, Google LLC'nin ticari markasıdır.
+Google Play, Google LLC'nin ticari markasıdır.
 ```
 
 ⚠ "Tek bir kod tabanından" iddiası mobil uygulama için doğru (Flutter,
