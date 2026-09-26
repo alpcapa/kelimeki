@@ -33,15 +33,24 @@ export interface ChatReadInput {
   serverAt: string | null | undefined;
   /** Bu cihazdaki damga (`localStorage`), yoksa `null`. */
   localAt: string | null;
-  rows: readonly ChatReadRow[];
+  /**
+   * Sohbetin mesajları; `null` = liste OKUNAMADI (istek düştü). O durumda
+   * karar VERİLMEZ: boş listeyle tohum "şimdi" olur ve — sunucu kesin boşsa —
+   * sunucuya da yazılırdı; aradaki gerçek yeni mesajlar geri dönüşsüz okunmuş
+   * sayılırdı (26 Eylül 2026).
+   */
+  rows: readonly ChatReadRow[] | null;
   myUserId: string;
   /** Tohum için "şimdi" — testte sabitlenebilsin diye dışarıdan. */
   nowIso: string;
 }
 
 export interface ChatReadDecision {
-  /** Okunmamış sayısı (kendi mesajlarım hariç). */
-  unread: number;
+  /**
+   * Okunmamış sayısı (kendi mesajlarım hariç); `null` = karar verilmedi
+   * (mesajlar okunamadı), çağıran mevcut sayacı korur.
+   */
+  unread: number | null;
   /** Cihaza yazılacak damga, yazılmayacaksa `null`. */
   writeLocal: string | null;
   /** Sunucuya gönderilecek damga, gönderilmeyecekse `null`. */
@@ -69,6 +78,7 @@ export function latestMessageAt(rows: readonly ChatReadRow[]): string | null {
 
 export function decideChatRead(input: ChatReadInput): ChatReadDecision {
   const { serverAt, localAt, rows, myUserId, nowIso } = input;
+  if (rows === null) return { unread: null, writeLocal: null, pushToServer: null };
   const known = laterOf(serverAt ?? null, localAt);
 
   // Hiçbir yerde damga yok → oyunu hiç açmamış sayılmaz, ÖZELLİK yeni

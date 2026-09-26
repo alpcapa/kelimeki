@@ -106,6 +106,20 @@ console.log('chatRead — okundu kararı');
   check('laterOf biçimden bağımsız', laterOf('2026-09-23T07:00:00Z', '2026-09-23T07:00:00.500000+00:00') === '2026-09-23T07:00:00.500000+00:00');
 }
 
+// 9 — mesaj listesi OKUNAMADI (istek düştü): karar verilmez. Eski davranış
+// boş listeyle "şimdi" tohumunu iki yere birden yazıyordu; sunucu yalnızca
+// ileri gittiğinden aradaki yeni mesajlar geri dönüşsüz okunmuş sayılırdı.
+{
+  const d = decideChatRead({ serverAt: null, localAt: null, rows: null, myUserId: ME, nowIso: NOW });
+  check('mesajlar okunamadı → sunucuya yazılmaz', d.pushToServer === null);
+  check('mesajlar okunamadı → cihaza yazılmaz', d.writeLocal === null);
+  check('mesajlar okunamadı → sayaç korunur (null)', d.unread === null);
+}
+{
+  const d = decideChatRead({ serverAt: undefined, localAt: '2026-09-23T07:00:00Z', rows: null, myUserId: ME, nowIso: NOW });
+  check('mesajlar okunamadı + cihaz damgası → yine hiçbir yazma yok', d.pushToServer === null && d.writeLocal === null);
+}
+
 if (failures > 0) {
   console.error(`\n${failures} kontrol BAŞARISIZ`);
   process.exit(1);
