@@ -259,3 +259,22 @@ cevabını veriyor.
 - **ffmpeg bu ortamda apt ile kuruldu** — Playwright'ın kendi ffmpeg'i
   (`/opt/pw-browsers/ffmpeg-1011`) yalnızca VP8/webm derlenmiş, H.264 yok.
 
+
+## "Artık Google Play'de" lansman görselleri (`scripts/play-lansman/`, 26 Eylül 2026)
+
+`npm run build && npm run generate-play-lansman` →
+`marketing/play-store/lansman/` altında üç kare: kare 1080×1080 (IG/FB
+feed), story 1080×1920, link kartı 1200×628 (LinkedIn/FB).
+
+**Neden elle üretiliyor:** App Store lansmanında görseller Apple Marketing
+Tools'tan HAZIR geldi (`marketing/app-store/instagram-lansman.md`). Google'ın
+karşılığı yok — Partner Marketing Hub → Tools 26 Eylül 2026'da okundu,
+yalnızca "Device art generator" ve "Legal line generator" var.
+
+- Rozet `public/google-play-badge.svg` (sitedeki resmî dosya) — çizilmez,
+  oranı değiştirilmez. Rozet kullanıldığı için gönderi metnine Google'ın
+  legal satırı girer (Legal line generator).
+- Simge cihazdaki başlatıcı ikonla aynı kaynak (`icon-source.png`); simge
+  "kelimeki" yazısını taşıdığı için kare/story'de ayrıca logo YOK.
+- Story'de içerik Instagram'ın bindirme bantlarının (üst ~%14, alt ~%20)
+  dışında kalmak zorunda; betik ölçer, taşarsa dosya yazmadan düşer.
