@@ -36,12 +36,15 @@ birleşik *"Google Play ve Google Play logosu Google LLC'nin ticari
 markalarıdır"* üçüncü taraf belgelerinden geliyordu, üreticinin biçimi
 DEĞİL. Metinlerin en altına, etiketlerden SONRA, iki satır olarak konuldu.
 
-⚠ **Marka ekibi onayı — açık soru.** Üretici sayfası "creatives must be
-approved before starting production" diyor (Partner Marketing Hub →
-Asset approval). Organik gönderi / mağaza rozeti için muafiyet olup
-olmadığı teyit edilmedi. Onay gerekiyorsa iki yol: onaya gönder (≥1
-hafta) ya da rozetsiz görselle paylaş ("Google Play" yalnızca metinde →
-incidental kullanım).
+**Marka ekibi onayı — kullanıcı kararıyla GÖNDERİLMEDİ (27 Eylül 2026).**
+Üretici sayfası "creatives must be approved before starting production"
+diyor; kullanıcı organik mağaza lansmanı için gerekmediği kanısında,
+Asset approval sayfası ayrıca okunmadı. Google itiraz ederse geri dönüş
+yolu: rozetsiz görsel ("Google Play" yalnızca metinde → incidental).
+
+Satırlar sosyal metinde küçük yazılamaz (platformlar boyut vermiyor);
+en alttaki konum small print'in karşılığı. Unicode "küçük harf" hilesi
+KULLANILMAZ — ekran okuyucu okuyamıyor, Türkçe harflerin çoğu yok.
 
 Kılavuzun iki kuralı daha — bilerek UYGULANMADI, kullanıcı kararı bekler:
 - **İlk kullanımda `Android™`**: sosyal gönderide alışılmış değil; üretici
