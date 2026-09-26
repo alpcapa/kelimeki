@@ -654,7 +654,9 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       if (cancelled) return;
       setMutedUserIds(mutes);
       setReportedUserIds(reported);
-      setChatMessages(rows);
+      // İstek düştüyse (`null`) eski liste KORUNUR ve okundu kararı
+      // verilmez — bkz. `fetchOnlineGameMessages` ve `decideChatRead`.
+      if (rows) setChatMessages(rows);
       // Okundu damgası 23 Eylül 2026'dan beri SUNUCUDA da (bkz.
       // `utils/chatRead.ts` — iki kaynağın büyüğü alınır, geride kalan
       // yetiştirilir). Eskiden yalnızca cihazdaydı: oyun bir cihazda ilk kez
@@ -674,7 +676,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       });
       if (d.writeLocal) markChatReadLocal(game.id, d.writeLocal);
       if (d.pushToServer) void markChatReadRemote(game.id, d.pushToServer);
-      setUnreadCount(d.unread);
+      if (d.unread !== null) setUnreadCount(d.unread);
       });
     };
     loadMessages();
