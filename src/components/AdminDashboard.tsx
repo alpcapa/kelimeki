@@ -418,10 +418,12 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         durumda gönderilir" cümlesine beşinci bir durum eklemek istemedik. Aynı
         kişi formu iki kez açarsa iki kez sayılır.
         <br />
-        ⚠ <b>Yalnızca web.</b> Port aynı olayları (<code>signup_started</code>/
-        <code>signup_completed</code>) Firebase Analytics'e yazıyor, bu tabloya
-        değil — bu yüzden "Tamamlama" da <code>profiles</code>tan değil aynı
-        tablodan okunuyor (payda web, pay web+mobil olsaydı oran sahte çıkardı).
+        ⚠ <b>Web + uygulama 1.1.2 ve sonrası.</b> Uygulama bu tabloya 1.1.2'den
+        beri yazıyor (ROADMAP #35); 1.1.1 ve öncesi yalnızca Firebase
+        Analytics'e yazdığı için 5 Ekim 2026 öncesi ve güncellemeyen cihazlar
+        EKSİK. "Tamamlama" bu yüzden <code>profiles</code>tan değil aynı
+        tablodan okunuyor — pay ve payda aynı kitleden gelsin, oran sahte
+        çıkmasın. Kart platforma göre ayırmıyor.
         <br />
         ⚠ "Tamamladı" = hesap oluştu demek, <b>e-postasını onayladı demek
         DEĞİL</b>. Onay kaybı ayrı bir soru (ROADMAP #32).

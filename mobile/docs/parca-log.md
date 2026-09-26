@@ -25,6 +25,30 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 217 — Kayıt Hunisi uygulamayı da sayıyor + `tutorial_events.anon_id` (26 Eylül 2026, ROADMAP #35 + #30)
+
+- **#35:** admin "Kayıt Hunisi" kartı (#600) yalnızca web'i sayıyordu; port
+  `signup_started`/`signup_completed`'ı yalnızca Firebase'e yazıyordu.
+  `data/signup_events.dart` (YENİ): global `signupEvents` + `configure`
+  (`analytics` deseni — `AuthModal`ı açan üç çağrı yerine parametre
+  açılmadı), `bootstrap.dart` Supabase'e bağlıyor. `auth_modal.dart`taki
+  üç `analytics.log` noktasının yanına birer satır; Firebase KALDI.
+  ⚠ Kimlik YOK (ne `anon_id` ne `user_id`) — tablo bilerek kimliksiz,
+  gizlilik metnine beşinci bir durum eklememek için. Sunucu kümesi dışındaki
+  kanal `null` gider (satır check'e takılıp düşmesin).
+- **#30'un son halkası:** `tutorial_events` `'anon_id': null` yazıyordu;
+  artık `_damga()` (web de oturumdan bağımsız yazıyor, gizlilik metni
+  tanıtım turunu sayıyor). Satır saf bir `tutorialEventRow`a çıkarıldı ki
+  istemcisiz sınansın. Tanıtım Turu kartının cihaz paydasına dönüşü
+  BİLEREK ertelendi (1.1.1 sahada durdukça yine kısmi olur).
+- **Web yarısı yalnızca metin, aynı PR'da:** kartın `?`'i ("Yalnızca web" →
+  "web + 1.1.2") uygulama yazmaya başlamadan canlıya çıkarsa yanlış
+  olurdu, bu yüzden trenle gidiyor.
+- ⚠ `auth_modal.dart`e #640 ve #642 de dokunuyor — kesimde metin çakışması
+  olabilir (farklı satırlar).
+- **Doğrulama:** `signup_events_test.dart` 7 test (satır şekli, kimliksizlik,
+  kanal süzgeci, no-op, hata yutma, iki giriş yolu, tanıtım satırı).
+
 ## Parça 214 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
 
    > ⚠ **25 Eylül 2026, merge anında:** aşağıda anlatılan WEB yarısı

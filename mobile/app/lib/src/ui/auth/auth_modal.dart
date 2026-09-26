@@ -19,6 +19,7 @@ import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart';
 
 import '../../data/analytics.dart';
+import '../../data/signup_events.dart';
 import '../../data/auth_service.dart';
 import '../../data/feedback_api.dart';
 import '../../data/profile_fields.dart';
@@ -94,8 +95,12 @@ class _AuthModalState extends State<AuthModal> {
     // üst ucu; alt ucu `signup_completed`). İki giriş yolu var ve ikisi de
     // sayılmalı: modal doğrudan kayıt modunda açılabiliyor (startInSignup —
     // "Neden Üye Olmalıyım?" kutusu) ya da girişten sekmeyle geçiliyor
-    // (`_switchMode`).
-    if (widget.startInSignup) analytics.log('signup_started');
+    // (`_switchMode`). Sunucudaki `signup_events` sayacı AYNI noktalarda
+    // (ROADMAP #35 — admin "Kayıt Hunisi" kartı; web `logSignupEvent`).
+    if (widget.startInSignup) {
+      analytics.log('signup_started');
+      signupEvents.log(kSignupStarted, widget.signupChannel);
+    }
   }
 
   late final _email = TextEditingController(text: widget.initialEmail ?? '');
@@ -188,6 +193,7 @@ class _AuthModalState extends State<AuthModal> {
   void _switchMode(_Mode next) {
     if (next == _Mode.signup && _mode != _Mode.signup) {
       analytics.log('signup_started');
+      signupEvents.log(kSignupStarted, widget.signupChannel);
     }
     setState(() {
       _mode = next;
@@ -317,6 +323,7 @@ class _AuthModalState extends State<AuthModal> {
       // doğrulaması kapalıysa oturum açıldı, açıksa onay bekleniyor; huni
       // için ikisi de "kayıt tamamlandı").
       analytics.log('signup_completed');
+      signupEvents.log(kSignupCompleted, widget.signupChannel);
       if (!mounted) return;
       if (sessionOpened) {
         Navigator.of(context).pop();

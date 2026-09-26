@@ -2787,6 +2787,10 @@ export async function logTutorialEvent(
  * `test/legal_text_test.dart` ile ölçülüyor) değiştirmeyi gerektirirdi.
  * Kimliksiz sayaç aynı soruyu metne hiç dokunmadan cevaplıyor.
  *
+ * Port ikizi `mobile/app/lib/src/data/signup_events.dart` (ROADMAP #35,
+ * 1.1.2'den itibaren) — AYNI tabloya, aynı iki olayla ve aynı kanal
+ * kümesiyle yazıyor; biri değişirse öteki de.
+ *
  * Telemetri asla akışı bozmaz: hata yalnızca konsola yazılır (`logGameStart`
  * ile aynı sözleşme) — kayıt olmaya çalışan biri bizim sayacımız yüzünden
  * hata görmemeli.

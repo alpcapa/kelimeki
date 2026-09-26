@@ -93,10 +93,10 @@ kod girmez.
 |---|---|---|---|
 | **Trende (taslak PR)** | #25 | iOS simgesinde rozet SAYISI | #647'de; DB yarısı canlıda. Merge sonrası beş bildirim fonksiyonu yeniden deploy (`verify_jwt` korunarak), 1.1.2 TestFlight'ta `mobile/docs/testing-bildirimler.md` §3h |
 | | #37 | Küfür / müstehcenlik süzgeci | Sunucu + web canlıda; koşul metni + portun takma isim uyarısı #640'ta. #640 merge edilince arşive |
+| | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Taslak PR'da (26 Eyl, #30 ile birlikte). Sahaya inince arşive |
+| | #30 | Port `anon_id` — `tutorial_events` | Taslak PR'da (26 Eyl, #35 ile birlikte). Kapanınca Tanıtım Turu kartının cihaz paydası kararı (`admin-panel.md`) |
 | **Sıradaki mobil işler** | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port açık |
 | | #34 | Canlı sohbet okundu bilgisi — port yarısı | Web + sunucu `main`'de; port açık |
-| | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Açık |
-| | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, bu kaldı |
 | | — | Huni v2'nin MOBİL yarısı (PR 2) | Numarasız; `docs/decisions/funnel-v2.md` |
 | | #26 | Web → mağaza yönlendirmesi: kalan iki satır | Android'de uygulaması yüklü misafir (`asset_statements`, mobil) · manifest `related_applications` (ÖLÇMEDEN AÇMA) |
 | **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅; `admin_ai_balance` seviye kırılımı (Kolay ~%30 · Normal ~%51 · Zor ~%70) |
@@ -224,8 +224,13 @@ SUNUCUDA". `mobile/app/` dosyası → mobil derlemeyi tetikler, merge turu
 bitince.
 
 **#35 — Kayıt Hunisi'nin PORT yarısı: uygulama da `signup_events`e
-yazsın** → ⏳ **AÇIK — dondurma kalktı (25 Eylül 2026)** (23 Eylül 2026, kullanıcı
-isteği: *"Roadmap'e ekle"*).
+yazsın** → 🚆 **TRENDE — taslak PR (26 Eylül 2026, #30 ile aynı PR), 5 Ekim
+kesiminde merge** (23 Eylül 2026, kullanıcı isteği: *"Roadmap'e ekle"*).
+Yapıldı: `data/signup_events.dart` (YENİ) + `auth_modal.dart`taki üç
+`analytics.log` noktası + `bootstrap.dart`; kartın `?` metni ve
+`logSignupEvent` yorumu güncellendi. Migration'daki "yalnızca web" notuna
+BİLEREK dokunulmadı (uygulanmış dosya). Ayrıntı: Parça 217. Aşağıdaki
+metin işin ÖNCEKİ tarifi.
 
 Admin → Büyüme → Kullanıcı'daki "Kayıt Hunisi" kartı (#600) **yalnızca
 web'i** sayıyor: port aynı iki olayı (`signup_started`/`signup_completed`,
@@ -336,6 +341,7 @@ sürümün içeriği:**
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
+| (26 Eyl, taslak PR) | **Kayıt Hunisi uygulamayı da sayıyor + tanıtım olayları cihaz kodunu taşıyor** (ROADMAP #35 + #30) | `data/signup_events.dart` (YENİ, kimliksiz; web `logSignupEvent` ikizi) + `ui/auth/auth_modal.dart` (üç `analytics.log`in yanına) + `bootstrap.dart`; `data/games_api.dart` `tutorial_events` → `anon_id` artık `_damga()`dan. Web yarısı AYNI PR'da ama yalnızca metin: admin kartının `?`'i + `logSignupEvent` yorumu. Kapı: `signup_events_test.dart` (7). Sunucu değişmedi, migration YOK |
 | (26 Eyl, taslak PR) | **Uçak modunda Canlı oyun mesajı ham `Failed host lookup: '…supabase.co'` gösteriyordu** | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `util/error_message.dart`: makine kalıbına Dart'ın taşıma metinleri eklendi (`Failed host lookup` · `Connection refused/reset/closed/timed out` · `Network is unreachable` · `OS Error`). 1.1.1 cihaz turunda (D, §31 ilk madde) bulundu: `ClientException.message` sınıf adını taşımıyor, `SocketException` kalıbı `toString()`e bakıyordu. Web'de bu metinler oluşmuyor, web değişmedi; kalıp SAYISI parite için aynı (tek regex). Kapı: `error_message_parity_test.dart` üç yeni vaka; **904 test yeşil**. Metin düzeltmesi → acil istisna DEĞİL (`surumler.md` → "SÜRÜM TRENİ") |
 | (26 Eyl, taslak PR) | **Oyun sonunda kendiliğinden açılan "Görüş Bildir" formu kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/game/game_screen.dart` + `ui/live/online_game_screen.dart`: GameOver kapanınca `openFeedback()` artık çağrılmıyor; modalın içindeki "GÖRÜŞ BİLDİR" linki DURUYOR. Kullanıcı: *"Oyun sonlarında çıkan görüş bildir popup'ı kaldıralım artık."* (Parça 48'in otomatik açılışının geri alınması.) Web yarısı AYRI PR, hemen merge. Kapı: `game_screen_test.dart` + `online_game_screen_test.dart` ters çevrildi (form AÇILMAZ); **904 test yeşil**. Cihaz maddesi `mobile/TESTING.md` "Kapatmak formu AÇMAZ" |
 | (26 Eyl, taslak PR) | **Kayıt sonrası satır: "Hesap oluşturuldu." kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/auth/auth_modal.dart`: satır artık yalnızca *"LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN."* (tamamı kalın). Kullanıcı: insanlar hesabın hazır olduğunu sanıyor. Web yarısı #644. Kapı: `signup_info_parity_test.dart` (web kaynağını OKUR). Cihaz maddesi `mobile/TESTING.md` §30 |
@@ -738,6 +744,12 @@ gerekçeyle 27 Ağustos'ta Sürüm A'ya alınmadı.
 ---
 
 ## 30. Port anonim cihaz damgası (`anon_id`) — **KISMEN: `game_starts`/`game_finishes`/`guest_visits` ✅ (#601) · `tutorial_events` AÇIK** (15 Eylül 2026)
+
+🚆 **Durum (26 Eylül 2026): son halka TRENDE** — `tutorial_events` da
+`anon_id` yazıyor (`SupabaseGamesGateway._damga()`, taslak PR, #35 ile
+birlikte; Parça 217). Cihaz paydasına dönüş BİLEREK ertelendi, karar
+1.1.2'nin sahadaki payı ölçülünce (`docs/decisions/admin-panel.md` →
+"Tanıtım Turu kartı" → Güncelleme). Sahaya inince madde arşive.
 
 ⚠ **Durum (25 Eylül 2026):** #601 `main`'e girdi — port artık cihaz kodunu
 (`FlagsStore.anonId()`, uygulama dizini; Keychain DEĞİL) `game_starts`,

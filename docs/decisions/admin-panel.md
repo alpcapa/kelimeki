@@ -533,6 +533,15 @@ açıkça yazıyor; port damgalamayı eklerse burası da güncellenmeli. ⚠ Bu
 günde 618 uygulama satırı (`android` 587 · `ios` 16 · `app-web` 15)
 `anon_id` NULL taşıyor.
 
+**Güncelleme (26 Eylül 2026, ROADMAP #30):** `game_starts` boşluğu #601 ile
+kapandı; `tutorial_events` de artık 1.1.2'den itibaren `anon_id` yazıyor
+(`logGameStart`ın aynı `DeviceStamp`'i). Sahaya 5 Ekim treniyle iner; 1.1.1
+ve öncesi hâlâ NULL. **Cihaz paydasına dönüş BİLEREK ertelendi:** eski
+paketler sahada durdukça cihaz paydası yine kitlenin bir kısmını görür.
+Karar, 1.1.2'nin payı ölçülünce (`tutorial_events.app_version`) verilmeli;
+dönülürse bu bölüm, `docs/decisions/onboarding.md` ve
+`docs/testing-admin.md`'deki notlar birlikte güncellenmeli.
+
 ⚠ `skips` ile döküm toplamı EŞİT OLMAYABİLİR: sahne yazmayan bir istemcinin
 satırı `skips`e girer, döküme girmez.
 

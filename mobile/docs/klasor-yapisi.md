@@ -134,6 +134,9 @@ mobile/
                              # DEĞİL (bildirime dokunmak anlık niyet;
                              # bayat tahta açılmaz). İki kaynak: app_links
                              # akışı + push dokunuşları. Tüketen _HomeGate
+      data/signup_events.dart # Kayıt Hunisi sayacı (`signup_events`, ROADMAP
+                             # #35) — web `logSignupEvent` ikizi, analytics
+                             # deseni (global + configure); KİMLİKSİZ
       data/analytics.dart    # GA4 olay kanalı — errorReporter deseni
                              # (global tek örnek, fire-and-forget,
                              # yapılandırılmamışken no-op). Olay adları
