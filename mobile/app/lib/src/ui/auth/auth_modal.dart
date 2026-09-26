@@ -29,6 +29,7 @@ import 'legal_modals.dart';
 import '../tokens.dart';
 import '../form_input.dart';
 import '../../util/error_message.dart';
+
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -326,8 +327,11 @@ class _AuthModalState extends State<AuthModal> {
         setState(() {
           _mode = _Mode.login;
           _infoGold = false;
-          _info = 'Hesap oluşturuldu.';
-          _infoStrong = 'E-POSTANIZI KONTROL EDİP ONAY VERİN.';
+          // "Hesap oluşturuldu." 26 Eylül 2026'da kaldırıldı (kullanıcı:
+          // insanlar hesabın HAZIR olduğunu sanıyor) — yalnızca eylem
+          // cümlesi, tamamı kalın. Web AuthModal.tsx ile AYNI metin.
+          _info = '';
+          _infoStrong = 'LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN.';
         });
       }
     } catch (e) {
@@ -526,9 +530,10 @@ class _AuthModalState extends State<AuthModal> {
                     TextSpan(text: _info!),
                     if (_infoStrong != null)
                       TextSpan(
-                          text: ' ${_infoStrong!}',
-                          style:
-                              const TextStyle(fontWeight: FontWeight.bold)),
+                          text: _info!.isEmpty
+                              ? _infoStrong!
+                              : ' ${_infoStrong!}',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
