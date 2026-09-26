@@ -466,7 +466,9 @@ yüklemiyor, adım yalnızca `main`'de koşuyor.
       TestFlight yüklemesi dahil bütün adımlar geçti. `mobile-latest` ve
       TestFlight'taki geçerli paket bu. (#720 = `fe3a25b`, #626'nın merge'i:
       hâlâ 1.1.0 taşıdığı için aynı `90186`/`90062` ile düştü — beklenen.)
-- [ ] Android `.apk` ile tam tur + iPhone'da #557 duman turu
+- [x] Android `.apk` ile tam tur ✅ (26 Eyl, kullanıcı; G sunucu kayıtları
+      ajan tarafından okundu, temiz). Tek bulgu (uçak modunda ham ağ metni)
+      metin düzeltmesi → sonraki tren, 1.1.1'i durdurmuyor. + iPhone'da #557 duman turu
       — adım adım liste: `mobile/docs/testing-1-1-1-turu.md`
       (`ROADMAP.md` → "Tur sonu TEST PLANI").
 - [x] iPhone duman turu ✅ (TestFlight 1.1.1, 25 Eyl — kullanıcı).

@@ -1778,11 +1778,11 @@ Web yarısı (#561) `main`'de ve CANLIDA; buradaki kontroller **portun**
 aynı davranışı kazandığını doğrular. Gerçek bir e-posta kutusu gerekiyor.
 
 - [ ] **Kırmızı uyarının metni.** Kayıt formunu doldur → "KAYIT OL".
-      Pencere giriş moduna döner ve kırmızı satır çıkar: *"Hesap
-      oluşturuldu. **E-POSTANIZI KONTROL EDİP ONAY VERİN.**"* — eylem
-      cümlesi **KALIN ve BÜYÜK HARF**, öncesi normal.
-- [ ] ⚠ **Türkçe harflere bak:** `EDİP` ve `VERİN` noktalı **İ**
-      taşımalı. `EDIP`/`VERIN` görüyorsan biri metni `toUpperCase()`e
+      Pencere giriş moduna döner ve kırmızı satır çıkar, tamamı **KALIN ve
+      BÜYÜK HARF**: *"**LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN.**"*
+      ("Hesap oluşturuldu." 26 Eylül 2026'da kaldırıldı).
+- [ ] ⚠ **Türkçe harflere bak:** `EDİP` noktalı **İ**, `LÜTFEN`/`DOĞRULAMA`
+      Türkçe harfleriyle. `EDIP` görüyorsan biri metni `toUpperCase()`e
       bağlamış demektir (Dart'ın varsayılanı Türkçe'de i→I yapar).
 - [ ] **Onay linki pencereyi KAPATIR (asıl madde).** Yukarıdaki kırmızı
       uyarı EKRANDAYKEN uygulamayı kapatma; telefonun mail uygulamasından
