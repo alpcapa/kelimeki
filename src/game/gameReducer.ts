@@ -813,14 +813,21 @@ export function gameReducer(state: GameState, action: Action): GameState {
           // altına düştüğünde bu, insan oyuncuya kapalı olan bir tazeleme
           // olurdu — üstelik Canlı oyunda `submit_move` artık bu hamleyi
           // REDDEDER (bkz. play-ai-turn'ün aynı dilimi).
+          //
+          // ⚠ Rafın dilimin DIŞINDA kalan kısmı (`kept`) rafta KALIR. 26 Eylül
+          // 2026'ya kadar raf yalnızca yeni çekilenlerden kuruluyordu: torba
+          // 4 iken YZ 4 taş değiştirip 3 taşını OYUNDAN SİLİYORDU (raf 7 → 4).
+          // Sınır gelmeden önce dilim hep rafın tamamıydı, hata görünmüyordu.
+          // Kapı: `npm run verify-swap-invariants` §7.
           const returned = me.rack
             .slice(0, maxSwapCount(state.bag.length))
             .map((t) => ({
               letter: t.wild ? '?' : t.letter,
               pts: t.pts,
             }));
+          const kept = me.rack.slice(returned.length);
           const bag = shuffle([...state.bag, ...returned]);
-          const rack = drawTiles(bag, returned.length);
+          const rack = [...kept, ...drawTiles(bag, returned.length)];
           moved = {
             ...state,
             bag,
@@ -837,7 +844,11 @@ export function gameReducer(state: GameState, action: Action): GameState {
                 tileCount: returned.length,
               },
             ],
-            message: `${me.name} harflerini değiştirdi.`,
+            // İnsanın değişimi ve Canlı ekranın metniyle AYNI cümle (26 Eylül
+            // 2026): eski "harflerini değiştirdi." tahtada iz bırakmayan bu
+            // turu yeterince anlatmıyordu — oyuncu YZ'nin hâlâ düşündüğünü
+            // sanıp oyunu "takıldı" diye bildirdi.
+            message: `${me.name} ${returned.length} taş değiştirdi ve sırasını kullandı.`,
             messageType: 'warn',
           };
         } else {
