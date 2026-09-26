@@ -733,7 +733,9 @@ export function Board({
       >
       <div
         data-board-grid=""
-        className="relative grid gap-[3px] p-[10px] w-full h-full"
+        // `container-type`: taş harfinin/puanının tavanı bu ızgaranın
+        // genişliğine bağlı (`cqw`, bkz. `index.css` → `.tile-board-letter`).
+        className="relative grid gap-[3px] p-[10px] w-full h-full [container-type:inline-size]"
         style={{
           gridTemplateColumns: `repeat(${SIZE}, 1fr)`,
           gridTemplateRows: `repeat(${SIZE}, 1fr)`,

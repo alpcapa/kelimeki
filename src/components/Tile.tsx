@@ -65,7 +65,7 @@ export function Tile({ tile, variant, color, selected = false, onClick, compact 
             ? 'text-[24px]'
             : compact
               ? 'text-[clamp(8px,2.4vw,14px)] text-tile-letter'
-              : 'text-[clamp(14px,3.8vw,24px)] text-tile-letter',
+              : 'tile-board-letter text-tile-letter',
         ].join(' ')}
       >
         {display}
@@ -86,7 +86,7 @@ export function Tile({ tile, variant, color, selected = false, onClick, compact 
             'absolute font-mono font-bold leading-none',
             isRack
               ? 'top-[3px] right-[4px] text-[10px] text-[#8B5E00]'
-              : `top-[1px] right-[1.5px] text-[clamp(6px,1.6vw,10px)] ${
+              : `top-[1px] right-[1.5px] tile-board-pts ${
                   tile.wild ? 'text-red' : 'text-accent'
                 }`,
           ].join(' ')}
