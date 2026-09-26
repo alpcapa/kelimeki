@@ -563,9 +563,10 @@ kopyanın da güncellendiğini doğrula.
 - [ ] Kayıt onayı, şifre sıfırlama, e-posta değişikliği — üçü de marka kartıyla
       gelmeli, gönderen "Kelimeki &lt;noreply@kelimeki.com&gt;" olmalı.
 - [ ] **Kayıt sonrası kırmızı uyarı** (16 Eylül 2026): "Kayıt Ol"a basınca
-      pencere giriş moduna döner ve kırmızı satır çıkar — eylem cümlesi
-      **BÜYÜK HARF ve KALIN**: *"Hesap oluşturuldu. **E-POSTANIZI KONTROL
-      EDİP ONAY VERİN.**"*. ⚠ Türkçe harflere bak: `EDİP`/`VERİN`
+      pencere giriş moduna döner ve kırmızı satır çıkar — tamamı
+      **BÜYÜK HARF ve KALIN**: *"**LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA
+      YAPIN.**"* ("Hesap oluşturuldu." 26 Eylül 2026'da kaldırıldı — hesabın
+      hazır olduğu sanılıyordu). ⚠ Türkçe harflere bak: `LÜTFEN`/`EDİP`
       noktalı **İ** taşımalı (`I` görüyorsan biri metni CSS `uppercase`
       sınıfına bağlamış demektir — `trUpper` kuralının CSS'teki eşi).
 - [ ] **Onay linki pencereyi KAPATIR** (16 Eylül 2026, kullanıcı bildirdi):
