@@ -164,9 +164,32 @@ sınır değeri oyunu oynanabilir yapmaz — krom tek başına 301px, viewport
 açmak tahta solda / raf+butonlar sağda bir YAN YANA düzen ister; karar
 verilmedi, bu maddenin kapsamında değil.
 
-**#25 — iOS uygulama simgesinde rozet SAYISI çıkmıyor** → ⏳ **AÇIK, freeze'i
-bekliyor** (18 Eylül 2026, kullanıcı bildirdi: *"Apple uyarılar geliyor ama
+**#25 — iOS uygulama simgesinde rozet SAYISI çıkmıyor** → 🔧 **KOD HAZIR,
+1.1.2 trenine biniyor** (18 Eylül 2026, kullanıcı bildirdi: *"Apple uyarılar geliyor ama
 ikon üzerinde numara çıkmıyor"*).
+
+**26 Eylül 2026 — yapıldı** (kullanıcı tekrar sordu; sayının tanımı
+kararı: *"Bildirimlerde ne varsa onlar. Her bildirim sayıyı arttırmalı."*):
+- Sayaç CİHAZ başına: `push_tokens.badge_count` — `bump_push_badge`
+  (yalnızca service_role) artırır, `register_push_token` (her açılış/öne
+  dönüş) sıfırlar. Migration `20260926182535_push_badge_count` **CANLIDA**
+  (proacl doğrulandı: `bump_push_badge` → yalnızca postgres + service_role).
+- `_shared/push.ts`: `apns.payload.aps.badge` yalnızca **iOS ≥ 1.1.2**
+  cihaza (`ROZET_ILK_SURUM`). Aşağıdaki "iki yarım AYNI PR" kuralı bu
+  sürüm kapısıyla GEREKSİZ kaldı: sunucu yarımı eski sürüme hiç sayı
+  göndermiyor. Kapı: `npm run verify-push-payload` (42 kontrol).
+- `AppDelegate.swift`: `hepsiniTemizle` artık rozeti de sıfırlıyor
+  (iOS 16+ `setBadgeCount(0)`, 13-15 `applicationIconBadgeNumber = 0`);
+  kapı `notification_shade_parity_test.dart`.
+- ⏳ **KALAN TEK ADIM — beş push fonksiyonunun yeniden deploy'u**
+  (`notify-your-turn`, `notify-game-invite`, `notify-friend-request`,
+  `notify-friend-request-reminders`, `notify-deadline-warnings`;
+  `verify_jwt` deploy ÖNCESİ `list_edge_functions`tan okunmalı — 26 Eylül'de
+  your-turn/reminders/deadline `false`, friend-request/game-invite `true`). 1.1.2
+  mağazaya çıkmadan yapılmalı; öncesinde yapmak da zararsız (kapı).
+- Cihaz maddeleri: `mobile/docs/testing-bildirimler.md` → §3h.
+
+Aşağısı 18 Eylül'ün teşhisi, tarihçe olarak duruyor:
 
 Bildirimler geliyor, yalnızca sayı yok. Sebep bir regresyon DEĞİL, dayanağı
 geçersizleşmiş bilinçli bir erteleme — kod üç yerde yazmış
@@ -360,6 +383,8 @@ sürümün içeriği:**
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
+| (26 Eyl, taslak #647) | **iOS simge rozeti sayısı (#25)** — `AppDelegate.swift` açılışta rozeti sıfırlıyor | Sunucu 1.1.2+ iOS cihazlara `aps.badge` gönderiyor (her bildirim +1); sıfırlayan kod bu pakette. Kapı: `notification_shade_parity_test.dart`. ⚠ Beş push fonksiyonunun deploy'u ayrıca gerekli (ROADMAP #25) |
+| (26 Eyl, taslak PR) | **Sürüm numarası 1.1.2** (`pubspec.yaml` `1.1.2+1` + `config/env.dart` `appVersion`) | Kesim günü (5 Ekim) trenin öteki taslaklarıyla BİRLİKTE merge edilir, tek başına DEĞİL. Kapı: `app_version_parity_test.dart` yeşil |
 | (26 Eyl, taslak PR) | **Uçak modunda Canlı oyun mesajı ham `Failed host lookup: '…supabase.co'` gösteriyordu** | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `util/error_message.dart`: makine kalıbına Dart'ın taşıma metinleri eklendi (`Failed host lookup` · `Connection refused/reset/closed/timed out` · `Network is unreachable` · `OS Error`). 1.1.1 cihaz turunda (D, §31 ilk madde) bulundu: `ClientException.message` sınıf adını taşımıyor, `SocketException` kalıbı `toString()`e bakıyordu. Web'de bu metinler oluşmuyor, web değişmedi; kalıp SAYISI parite için aynı (tek regex). Kapı: `error_message_parity_test.dart` üç yeni vaka; **904 test yeşil**. Metin düzeltmesi → acil istisna DEĞİL (`surumler.md` → "SÜRÜM TRENİ") |
 | (26 Eyl, taslak PR) | **Oyun sonunda kendiliğinden açılan "Görüş Bildir" formu kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/game/game_screen.dart` + `ui/live/online_game_screen.dart`: GameOver kapanınca `openFeedback()` artık çağrılmıyor; modalın içindeki "GÖRÜŞ BİLDİR" linki DURUYOR. Kullanıcı: *"Oyun sonlarında çıkan görüş bildir popup'ı kaldıralım artık."* (Parça 48'in otomatik açılışının geri alınması.) Web yarısı AYRI PR, hemen merge. Kapı: `game_screen_test.dart` + `online_game_screen_test.dart` ters çevrildi (form AÇILMAZ); **904 test yeşil**. Cihaz maddesi `mobile/TESTING.md` "Kapatmak formu AÇMAZ" |
 | (26 Eyl, taslak PR) | **Kayıt sonrası satır: "Hesap oluşturuldu." kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/auth/auth_modal.dart`: satır artık yalnızca *"LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN."* (tamamı kalın). Kullanıcı: insanlar hesabın hazır olduğunu sanıyor. Web yarısı #644. Kapı: `signup_info_parity_test.dart` (web kaynağını OKUR). Cihaz maddesi `mobile/TESTING.md` §30 |

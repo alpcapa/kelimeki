@@ -218,14 +218,15 @@ export async function sendPushToUser(
 
     const { data: tokens } = await db
       .from('push_tokens')
-      .select('token')
+      .select('token, platform, app_version')
       .eq('user_id', userId);
     if (!tokens || tokens.length === 0) return 0;
 
     let gonderilen = 0;
     const bayat: string[] = [];
-    for (const row of tokens as { token: string }[]) {
-      const res = await sendPush({ token: row.token, ...msg });
+    for (const row of tokens as PushTokenRow[]) {
+      const badge = rozetTasir(row) ? await rozetiArtir(db, row.token) : undefined;
+      const res = await sendPush({ token: row.token, ...msg, badge });
       if (res.ok) gonderilen += 1;
       if (res.unregistered) bayat.push(row.token);
     }
@@ -236,6 +237,77 @@ export async function sendPushToUser(
   } catch (err) {
     console.error('[push] kullanıcıya gönderilemedi:', userId, err);
     return 0;
+  }
+}
+
+/** `push_tokens`ten okunan satır — rozet kararı için platform + sürüm. */
+export interface PushTokenRow {
+  token: string;
+  platform: string;
+  app_version: string | null;
+}
+
+/**
+ * iOS simge rozetini (`aps.badge`) taşıyan İLK sürüm (ROADMAP #25).
+ *
+ * **Neden bir sürüm kapısı:** iOS rozeti MUTLAK bir sayı ve yeni bir push
+ * gelene kadar simgede asılı kalır — onu açılışta SIFIRLAYAN kod
+ * (`AppDelegate.swift` → `setBadgeCount(0)`) ancak bu sürümle geliyor. Kapı
+ * olmasaydı sunucu yarımı yayına girdiği an 1.1.1 kullanıcılarının simgesi
+ * *"9'da takılı kaldı"* hatasının (31 Ağustos, Android) iOS kopyasına
+ * dönerdi. Kapı sayesinde sunucu yarımı mağaza sürümünden BAĞIMSIZ
+ * yayınlanabiliyor.
+ */
+export const ROZET_ILK_SURUM = '1.1.2';
+
+/**
+ * `a >= b` mi — `1.1.10` > `1.1.9` (SAYISAL, dizgi karşılaştırması DEĞİL).
+ * Ayrıştırılamayan / null sürüm `false`: bilinmeyen bir istemciye rozet
+ * göndermek, sıfırlayamayan birine göndermek demek olabilir.
+ */
+export function surumEnAz(a: string | null | undefined, b: string): boolean {
+  if (!a) return false;
+  const pa = a.trim().split('.').map((x) => Number.parseInt(x, 10));
+  const pb = b.split('.').map((x) => Number.parseInt(x, 10));
+  if (pa.some((n) => Number.isNaN(n))) return false;
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const x = pa[i] ?? 0;
+    const y = pb[i] ?? 0;
+    if (x !== y) return x > y;
+  }
+  return true;
+}
+
+/**
+ * Bu cihaza rozet sayısı gönderilir mi? Yalnızca iOS ve yalnızca rozeti
+ * sıfırlayabilen sürüm (`ROZET_ILK_SURUM`).
+ *
+ * Android BİLEREK dışarıda: One UI rozeti panelde DURAN bildirimlerden
+ * kendisi türetiyor (`notification_shade.dart`, ROADMAP #15); bir sayı
+ * göndermek o mekanizmayla yarışırdı.
+ */
+export function rozetTasir(row: Pick<PushTokenRow, 'platform' | 'app_version'>): boolean {
+  return row.platform === 'ios' && surumEnAz(row.app_version, ROZET_ILK_SURUM);
+}
+
+/**
+ * Cihazın rozet sayacını 1 artırıp YENİ değeri döndürür (kullanıcı kararı,
+ * 26 Eylül 2026: *"Her bildirim sayıyı arttırmalı"*). Sayaç
+ * `push_tokens.badge_count`ta, CİHAZ başına: iPhone'da açılan uygulama
+ * iPad'in simgesini sıfırlamamalı. Sıfırlama `register_push_token`da —
+ * uygulama her açılışta/öne dönüşte onu zaten çağırıyor.
+ *
+ * Hata olursa `undefined` → bildirim ROZETSİZ gider; sayaç arızası
+ * bildirimi düşüremez.
+ */
+async function rozetiArtir(db: PushDb, token: string): Promise<number | undefined> {
+  try {
+    const { data, error } = await db.rpc('bump_push_badge', { p_token: token });
+    if (error) throw error;
+    return typeof data === 'number' && data > 0 ? data : undefined;
+  } catch (err) {
+    console.error('[push] rozet sayacı artırılamadı:', err);
+    return undefined;
   }
 }
 
@@ -272,6 +344,11 @@ export interface PushMessage {
    * Verilmezse davranış eskisi gibi: her bildirim ayrı satır.
    */
   tag?: string;
+  /**
+   * iOS simge rozeti (`apns.payload.aps.badge`) — MUTLAK sayı. Yalnızca
+   * `sendPushToUser` doldurur, o da `rozetTasir` kapısından geçen cihaz için.
+   */
+  badge?: number;
 }
 
 /**
@@ -302,12 +379,19 @@ export function buildFcmMessage(
         ...(params.tag ? { tag: params.tag } : {}),
       },
     },
-    // iOS henüz CANLI DEĞİL (APNs anahtarı Firebase'e yüklenmedi), ama
-    // başlık şimdiden doğru: `apns-collapse-id` Android'in `tag`inin
-    // birebir karşılığı ve o gün geldiğinde ayrıca bir iş çıkmasın diye
-    // burada duruyor. Yükü (`payload`) BİLEREK vermiyoruz — üstteki
-    // `notification` varken FCM aps gövdesini kendisi üretiyor.
-    ...(params.tag ? { apns: { headers: { 'apns-collapse-id': params.tag } } } : {}),
+    // iOS: `apns-collapse-id` Android'in `tag`inin birebir karşılığı.
+    // `payload.aps` YALNIZCA `badge` taşır — `alert` VERİLMEZ, üstteki
+    // `notification`dan FCM kendisi üretip bu gövdeyle birleştiriyor.
+    ...(params.tag || params.badge !== undefined
+      ? {
+        apns: {
+          ...(params.tag ? { headers: { 'apns-collapse-id': params.tag } } : {}),
+          ...(params.badge !== undefined
+            ? { payload: { aps: { badge: params.badge } } }
+            : {}),
+        },
+      }
+      : {}),
   };
 }
 

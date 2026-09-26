@@ -19,7 +19,11 @@
 // Bu ortamdan Deno indirilemiyor (proxy 403), yani `_shared/push_test.ts`
 // burada koşamıyor — bu betik onun Node'da koşabilen tamamlayıcısı.
 // Çalıştırma: `npm run verify-push-payload`.
-import { buildFcmMessage } from '../supabase/functions/_shared/push.ts';
+import {
+  buildFcmMessage,
+  rozetTasir,
+  surumEnAz,
+} from '../supabase/functions/_shared/push.ts';
 
 let pass = 0;
 const fails: string[] = [];
@@ -119,6 +123,58 @@ const OYUN = '11111111-2222-3333-4444-555555555555';
   }) as any).android.notification.tag;
   check(ilk === hatirlatma,
     'hatırlatma ilk isteğin bildiriminin YERİNE geçmeli — etiketler aynı olmalı');
+}
+
+// ── 5) iOS simge rozeti (ROADMAP #25, 26 Eylül 2026) ─────────────────────
+// `aps.badge` YANLIŞ seviyeye yazılırsa (ör. `message.badge`,
+// `apns.aps.badge`) FCM yine 200 döner ve rozet sessizce hiç çıkmaz —
+// #25'in kendisi tam bu belirtiydi.
+{
+  const m = buildFcmMessage({
+    token: 't', title: 'T', body: 'B', tag: `sira:${OYUN}`, badge: 3,
+  }) as any;
+  check(m.apns?.payload?.aps?.badge === 3,
+    'rozet `apns.payload.aps.badge` altında olmalı');
+  check(m.apns?.headers?.['apns-collapse-id'] === `sira:${OYUN}`,
+    'rozet eklemek çakıştırma başlığını düşürmemeli');
+  check(m.apns?.payload?.aps?.alert === undefined,
+    '`aps.alert` VERİLMEMELİ — FCM onu `notification`dan üretiyor');
+  check(m.badge === undefined && m.notification?.badge === undefined,
+    'rozet yanlış seviyelere sızmamalı');
+  check(m.android?.notification?.notification_count === undefined,
+    'Android\'e sayı GÖNDERİLMEMELİ — One UI rozeti paneldan türetiyor');
+
+  const etiketsiz = buildFcmMessage({ token: 't', title: 'T', body: 'B', badge: 1 }) as any;
+  check(etiketsiz.apns?.payload?.aps?.badge === 1,
+    'etiketsiz bildirimde de rozet gitmeli');
+  check(etiketsiz.apns?.headers === undefined,
+    'etiket yoksa BOŞ bir `headers` bloğu yazılmamalı');
+
+  const rozetsiz = buildFcmMessage({ token: 't', title: 'T', body: 'B', tag: 'x:1' }) as any;
+  check(rozetsiz.apns?.payload === undefined,
+    'rozet verilmediyse `payload` HİÇ yazılmamalı');
+}
+
+// ── 6) Rozet KAPISI: yalnızca iOS + sıfırlayabilen sürüm ──────────────────
+// Sıfırlayamayan (1.1.1 ve öncesi) bir cihaza sayı gitmesi, simgede asılı
+// kalan bir sayı demek. Kapı SAYISAL olmalı: dizgi karşılaştırmasında
+// '1.1.10' < '1.1.2' çıkar ve gelecekteki sürümler rozeti kaybeder.
+{
+  check(surumEnAz('1.1.2', '1.1.2'), '1.1.2 ≥ 1.1.2');
+  check(surumEnAz('1.1.10', '1.1.2'), '1.1.10 ≥ 1.1.2 (sayısal karşılaştırma)');
+  check(surumEnAz('1.2', '1.1.2'), '1.2 ≥ 1.1.2');
+  check(surumEnAz('2.0.0', '1.1.2'), '2.0.0 ≥ 1.1.2');
+  check(!surumEnAz('1.1.1', '1.1.2'), '1.1.1 < 1.1.2');
+  check(!surumEnAz('1.0.9', '1.1.2'), '1.0.9 < 1.1.2');
+  check(!surumEnAz(null, '1.1.2'), 'null sürüm rozet ALMAZ (1.0.4 öncesi satırlar)');
+  check(!surumEnAz('', '1.1.2'), 'boş sürüm rozet ALMAZ');
+  check(!surumEnAz('abc', '1.1.2'), 'ayrıştırılamayan sürüm rozet ALMAZ');
+
+  check(rozetTasir({ platform: 'ios', app_version: '1.1.2' }), 'iOS 1.1.2 rozet alır');
+  check(!rozetTasir({ platform: 'ios', app_version: '1.1.1' }),
+    'iOS 1.1.1 rozet ALMAZ — sıfırlayan kod o pakette yok');
+  check(!rozetTasir({ platform: 'android', app_version: '9.9.9' }),
+    'Android hiçbir sürümde rozet ALMAZ');
 }
 
 if (fails.length > 0) {
