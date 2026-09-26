@@ -1932,10 +1932,9 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         celebration={celebration}
         onOpenHistory={() => setShowHistory(true)}
         onOpenFeedback={() => setShowFeedback(true)}
-        onClose={() => {
-          setGameOverDismissed(true);
-          setShowFeedback(true);
-        }}
+        // "Görüş Bildir" yalnızca modalın içindeki linkle açılır — kapatınca
+        // kendiliğinden açılması 26 Eylül 2026'da kaldırıldı (kullanıcı kararı).
+        onClose={() => setGameOverDismissed(true)}
       />
 
       {showFeedback && <FeedbackModal source="game_end" onClose={() => setShowFeedback(false)} />}
