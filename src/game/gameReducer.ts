@@ -819,12 +819,13 @@ export function gameReducer(state: GameState, action: Action): GameState {
           // 4 iken YZ 4 taş değiştirip 3 taşını OYUNDAN SİLİYORDU (raf 7 → 4).
           // Sınır gelmeden önce dilim hep rafın tamamıydı, hata görünmüyordu.
           // Kapı: `npm run verify-swap-invariants` §7.
-          const limit = maxSwapCount(state.bag.length);
-          const returned = me.rack.slice(0, limit).map((t) => ({
-            letter: t.wild ? '?' : t.letter,
-            pts: t.pts,
-          }));
-          const kept = me.rack.slice(limit);
+          const returned = me.rack
+            .slice(0, maxSwapCount(state.bag.length))
+            .map((t) => ({
+              letter: t.wild ? '?' : t.letter,
+              pts: t.pts,
+            }));
+          const kept = me.rack.slice(returned.length);
           const bag = shuffle([...state.bag, ...returned]);
           const rack = [...kept, ...drawTiles(bag, returned.length)];
           moved = {
