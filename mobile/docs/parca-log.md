@@ -25,6 +25,35 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 216 — Canlı sohbetin okundu damgası SUNUCUDA: port yarısı (26 Eylül 2026, ROADMAP #34)
+
+- **Neden:** kullanıcı bildirdi (23 Eylül): *"Android app'i açıp Danyal ile
+  devam eden oyuna girince mesajlaşma üstünde numara yoktu ama tıkladığımda
+  yeni yazdığı 2 mesaj olduğunu gördüm."* Web yarısı + sunucu (#610,
+  `online_game_chat_reads` + `mark_online_game_chat_read`) o gün girdi;
+  uygulama dondurma yüzünden hâlâ yalnızca cihazdaki `chat_read_store`'u
+  kullanıyordu.
+- **Ne:** `util/chat_read.dart` (YENİ) — web `decideChatRead`in ikizi; web'in
+  `null`/`undefined` ayrımı Dart'ta `ServerChatRead?` (`null` = bilinmiyor,
+  `(at: null)` = satır yok). `ChatGateway`/`ChatRepo`'ya `chatLastReadAt`
+  (hata → bilinmiyor) + `markChatRead` (hata yutulur). Ekran:
+  `_seedInitialUnread` → `_applyChatRead`; `_markChatReadTo` cihaza ve
+  sunucuya yazıyor.
+- **Porta özgü üç karar:** (1) cihaz damgası int milisaniye, sunucununki
+  mikro saniye → eşitlik milisaniyeyle (yoksa her yüklemede boşuna bir
+  yazma); sunucuya mesajın KENDİ `created_at`i gider. (2) Mesaj listesi
+  okunamazsa (`null`) karar verilmez — eski kod boş listeyle "şimdi"
+  tohumu atıyordu, sunucuya taşınsaydı geri alınamazdı. (3) Boş sohbet
+  açılınca saatten gelen damga yalnızca cihaza.
+- ⚠ **Kesimde çakışma beklenir:** #640 de `chat_api.dart`e ve bu dosyanın
+  başına (Parça 215) ekleme yapıyor; yöntemler bilerek FARKLI yere
+  (`myActiveReports`in altına) kondu, günlük girişi ise el ile birleşir.
+- **Doğrulama:** `chat_read_test.dart` (web'in 8 vakası + 2 porta özgü),
+  `online_game_chat_test.dart` 8 yeni test — eski ekranla 5'i düşüyor
+  (kullanıcının vakası dahil). App **919 test yeşil**, `flutter analyze`
+  yeni bulgu yok. Cihaz maddesi: `mobile/docs/testing-arkadaslar-canli.md`
+  → "Okundu bilgisi cihazlar arasında".
+
 ## Parça 214 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
 
    > ⚠ **25 Eylül 2026, merge anında:** aşağıda anlatılan WEB yarısı

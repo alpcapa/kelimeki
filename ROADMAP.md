@@ -92,9 +92,9 @@ kod girmez.
 | Kova | # | Ne | Durum |
 |---|---|---|---|
 | **Trende (taslak PR)** | #25 | iOS simgesinde rozet SAYISI | #647'de; DB yarısı canlıda. Merge sonrası beş bildirim fonksiyonu yeniden deploy (`verify_jwt` korunarak), 1.1.2 TestFlight'ta `mobile/docs/testing-bildirimler.md` §3h |
+| | #34 | Canlı sohbet okundu bilgisi — port yarısı | Taslak PR'da (26 Eyl); web + sunucu zaten `main`'de. 1.1.2 cihaz turu: `mobile/docs/testing-arkadaslar-canli.md` → "Okundu bilgisi cihazlar arasında". Sahaya inince arşive |
 | | #37 | Küfür / müstehcenlik süzgeci | Sunucu + web canlıda; koşul metni + portun takma isim uyarısı #640'ta. #640 merge edilince arşive |
 | **Sıradaki mobil işler** | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port açık |
-| | #34 | Canlı sohbet okundu bilgisi — port yarısı | Web + sunucu `main`'de; port açık |
 | | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Açık |
 | | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, bu kaldı |
 | | — | Huni v2'nin MOBİL yarısı (PR 2) | Numarasız; `docs/decisions/funnel-v2.md` |
@@ -208,8 +208,12 @@ düşünmek lazım"* → aynı gün: *"Şu anda mobilde 7 update var. Bu zaten
 oldukça fazla. Roadmap'e yaz, daha sonra bakalım."*). İki saha vakası, yedi
 alternatif, önerilen sıra ve dondurma uyumluluğu aşağıda, #32'de.
 
-**#34 — Canlı sohbet okundu bilgisinin PORT yarısı** → ⏳ **AÇIK — dondurma
-kalktı (25 Eylül 2026), sıradaki mobil işlerden** (23 Eylül 2026; web yarısı #610 ile `main`'de).
+**#34 — Canlı sohbet okundu bilgisinin PORT yarısı** → 🚆 **TRENDE — taslak
+PR (26 Eylül 2026), 5 Ekim kesiminde merge** (23 Eylül 2026; web yarısı #610 ile `main`'de).
+Port yarısı yazıldı: `util/chat_read.dart` (web'in sekiz vakası
+`chat_read_test.dart`te birebir) + `ChatRepo.chatLastReadAt`/`markChatRead`
++ `online_game_screen.dart`. Ayrıntı: Parça 216. Aşağıdaki metin işin
+ÖNCEKİ tarifi; madde 1.1.2 sahaya inince arşive gider.
 
 Okundu damgası artık sunucuda (`online_game_chat_reads` +
 `mark_online_game_chat_read` RPC'si), ama uygulama hâlâ yalnızca cihazdaki
@@ -336,6 +340,7 @@ sürümün içeriği:**
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
+| (26 Eyl, taslak PR) | **Canlı sohbetin okundu bilgisi artık SUNUCUDA — uygulamada okunan web'e, web'de okunan uygulamaya yansıyor** (ROADMAP #34) | ⚠ **1.1.1'DE HATA VAR, sonraki trende düzelir.** `util/chat_read.dart` (YENİ, web `chatRead.ts` ikizi) + `data/chat_api.dart` (`chatLastReadAt`/`markChatRead`) + `ui/live/online_game_screen.dart`; `chat_read_store.dart` yedek kaldı. Kullanıcının vakası: oyun bir cihazda ilk kez açılınca "ilk ziyaret" tohumu yeni mesajları da okunmuş sayıyordu (rozet 0, içeride 2 yeni mesaj). Sunucu tarafı canlıda, migration YOK. Kapı: `chat_read_test.dart` (10) + `online_game_chat_test.dart` (8 yeni; eski ekranla 5'i düşüyor); app **919 test yeşil**. Cihaz maddesi `mobile/docs/testing-arkadaslar-canli.md` → "Okundu bilgisi cihazlar arasında" |
 | (26 Eyl, taslak PR) | **Uçak modunda Canlı oyun mesajı ham `Failed host lookup: '…supabase.co'` gösteriyordu** | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `util/error_message.dart`: makine kalıbına Dart'ın taşıma metinleri eklendi (`Failed host lookup` · `Connection refused/reset/closed/timed out` · `Network is unreachable` · `OS Error`). 1.1.1 cihaz turunda (D, §31 ilk madde) bulundu: `ClientException.message` sınıf adını taşımıyor, `SocketException` kalıbı `toString()`e bakıyordu. Web'de bu metinler oluşmuyor, web değişmedi; kalıp SAYISI parite için aynı (tek regex). Kapı: `error_message_parity_test.dart` üç yeni vaka; **904 test yeşil**. Metin düzeltmesi → acil istisna DEĞİL (`surumler.md` → "SÜRÜM TRENİ") |
 | (26 Eyl, taslak PR) | **Oyun sonunda kendiliğinden açılan "Görüş Bildir" formu kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/game/game_screen.dart` + `ui/live/online_game_screen.dart`: GameOver kapanınca `openFeedback()` artık çağrılmıyor; modalın içindeki "GÖRÜŞ BİLDİR" linki DURUYOR. Kullanıcı: *"Oyun sonlarında çıkan görüş bildir popup'ı kaldıralım artık."* (Parça 48'in otomatik açılışının geri alınması.) Web yarısı AYRI PR, hemen merge. Kapı: `game_screen_test.dart` + `online_game_screen_test.dart` ters çevrildi (form AÇILMAZ); **904 test yeşil**. Cihaz maddesi `mobile/TESTING.md` "Kapatmak formu AÇMAZ" |
 | (26 Eyl, taslak PR) | **Kayıt sonrası satır: "Hesap oluşturuldu." kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/auth/auth_modal.dart`: satır artık yalnızca *"LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN."* (tamamı kalın). Kullanıcı: insanlar hesabın hazır olduğunu sanıyor. Web yarısı #644. Kapı: `signup_info_parity_test.dart` (web kaynağını OKUR). Cihaz maddesi `mobile/TESTING.md` §30 |
