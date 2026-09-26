@@ -8,6 +8,13 @@ atıf verilen bölümlerde; burada yalnızca SIRA ve KAPSAM var.
 `.apk` ve TestFlight'taki 1.1.1 bu. ✅ Plan adım 1 (CI + bütün derleme
 adımları yeşil) 25 Eylül'de doğrulandı.
 
+## Sonuç (26 Eylül 2026, kullanıcı)
+
+A–D ✅, **tek bulgu:** D'nin ilk maddesi — uçak modunda Canlı oyun mesajı
+ham `Failed host lookup: 'xvq….supabase.co'` gösterdi (girişte Türkçe
+çıktı). Düzeltme taslak PR, **sonraki trende**; 1.1.1'i durdurmuyor (metin
+düzeltmesi, acil istisna değil). **E koşulmadı** (yeni e-posta gerekiyor).
+
 ## A. Kurulum (Android)
 
 - [ ] Play'den kurulu Kelimeki'yi **kaldır** (imza farklı, `.apk` üstüne
