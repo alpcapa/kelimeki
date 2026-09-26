@@ -1,0 +1,242 @@
+# Sosyal medya — Google Play lansman gönderileri (27 Eylül 2026 turu)
+
+**Kanallar:** Instagram · Facebook sayfası · LinkedIn (sayfa + kişisel
+profil), organik. **Amaç:** Play indirmesi + siteye trafik.
+**Kardeş dosyalar (App Store turu, 16 Eylül):**
+`marketing/app-store/instagram-lansman.md` · `facebook-lansman.md` ·
+`linkedin-lansman.md` — platform kuralları (otomatik FB paylaşımı KAPALI,
+LinkedIn'de görsel ↔ link önizlemesi, etiket sayıları, kişisel profilde
+sıfırdan gönderi) ORADA gerekçeleriyle yazılı; burada tekrar edilmiyor,
+yalnızca farklar var.
+
+⚠ Metinler **kod bloğunda** — iPad'den kopyalanıyor (App Store turundaki
+biçim).
+
+**Bu turun App Store turundan farkı:** Görseller Apple'ın değil, bizim
+(`marketing/play-store/lansman/`, üreticisi `scripts/play-lansman/`).
+Tescilli Apple artwork'ü kısıtı burada YOK, ama içindeki Google Play
+rozeti Google'ın — rozetin kendisine dokunulmaz.
+
+---
+
+## 0 · Legal satırı — rozetli HER gönderide
+
+Görsellerde Google Play rozeti var; Google'ın marka kuralı gönderiye şu
+satırı istiyor (Partner Marketing Hub → Tools → **Legal line generator**
+ile teyit et, Türkçesini oradan al):
+
+```
+Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+```
+
+Metinlerin en altına, etiketlerden SONRA konuldu. ⚠ Bu satırın üretici
+çıktısıyla birebir aynı olduğu DOĞRULANMADI (ajan siteye erişemiyor,
+vekil engelliyor) — farklıysa üreticinin metni geçerli, buradakiler
+güncellenir.
+
+---
+
+## 1 · Görsel → kanal eşlemesi
+
+| Dosya | Nereye |
+|---|---|
+| `kelimeki-google-play-kare-1080.png` | Instagram feed · Facebook gönderisi · LinkedIn (sayfa + profil) |
+| `kelimeki-google-play-story-1080x1920.png` | Instagram story · Facebook story |
+| `kelimeki-google-play-link-1200x628.png` | Yalnızca ÇIPLAK link paylaşımı gerekirse (LinkedIn kurgu C) |
+| `kelimeki-google-play-yatay-1280x720.png` | X / YouTube topluluk / site kapağı — bu turda kullanılmıyor |
+| `kelimeki-google-play-dikey-720x1280.png` | Apple setinin eşi için var; feed'e girmez (4:5'ten dar) |
+
+**Carousel (Instagram, isteğe bağlı):** 1. kare bizim kare, 2–4.
+`marketing/sponsored-2026-08/kelimeki-03 · 02 · 05.png` — App Store
+turundaki sıranın aynısı. Facebook albümü dörtte durur (2×2 ızgara).
+
+---
+
+## 2 · Instagram
+
+### Ana gönderi
+
+```
+Kelimeki artık Google Play'de 🎉
+
+Türkçe için sıfırdan tasarlanmış kelime oyunu artık Android'de de. Farkı tek bir kuralda: tahtada bir bölgen var ve oyun, kelime kurarak o bölgeyi büyütmek üzerine kurulu.
+
+13×13'lük tahtanın dört köşesi oyuncuların. Kendi köşenden başlıyorsun, koyduğun her taşla bölgen genişliyor. Rakibinin bölgesine oynayabilirsin — ama vergisini ödersin 😏
+
+🧩 63.000+ kelime (TDK kaynaklı), anlamlarıyla
+🤖 Yapay zekaya karşı üç zorluk: Kolay, Normal, Zor
+✈️ İnternetsiz oynanır — sözlük uygulamanın içinde
+👥 Arkadaşınla sırayla: her hamle için 48 saat — iPhone'daki arkadaşınla da
+🆓 Ücretsiz · reklam yok · uygulama içi satın alma yok
+
+Google Play'de "Kelimeki" diye ara ya da profildeki linke dokun 👆
+iPhone'da da App Store'da. Tarayıcıda: kelimeki.com
+
+#kelimeoyunu #zekaoyunu #bulmaca #türkçe #ücretsizoyun #googleplay #android #yeniuygulama
+
+Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+```
+
+**App Store metninden farkı:** "iPhone'daki arkadaşınla da" — Canlı oyun
+platformlar arası (aynı sunucu); Android'e yeni gelen için en güçlü satır
+bu, çünkü arkadaşının hangi telefonu kullandığı artık önemsiz. Lansmana
+özgü üç etiket `#googleplay #android #yeniuygulama`.
+
+### Story (bizim story karesinin üstüne, IG yazı aracıyla)
+
+```
+Kelimeki artık Google Play'de 🎉
+Android'de indir, iPhone'daki arkadaşınla oyna.
+```
+
+**Link sticker:** Play adresi (§5) — story'de bio'ya gitmeden mağazaya
+götüren tek yol. Sticker'ı rozetin ALTINA, dip satırın üstüne koy;
+karenin üst %14'ü ve alt %20'si IG arayüzünün altında kalıyor (üretici
+içeriği bu bantların dışında tutuyor, sticker'ı sen koyuyorsun).
+
+---
+
+## 3 · Facebook (Business Suite, IG'den AYRI yazılır)
+
+```
+Kelimeki artık Google Play'de 🎉
+
+Türkçe için sıfırdan tasarlanmış kelime oyunu artık Android'de de. Farkı tek bir kuralda: tahtada bir bölgen var ve oyun, kelime kurarak o bölgeyi büyütmek üzerine kurulu.
+
+13×13'lük tahtanın dört köşesi oyuncuların. Kendi köşenden başlıyorsun, koyduğun her taşla bölgen genişliyor. Rakibinin bölgesine oynayabilirsin — ama vergisini ödersin 😏
+
+🧩 63.000+ kelime (TDK kaynaklı), anlamlarıyla
+🤖 Yapay zekaya karşı üç zorluk: Kolay, Normal, Zor
+✈️ İnternetsiz oynanır — sözlük uygulamanın içinde
+👥 Arkadaşınla sırayla: her hamle için 48 saat — iPhone'daki arkadaşınla da
+🆓 Ücretsiz · reklam yok · uygulama içi satın alma yok
+
+🤖 Android için Google Play:
+https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki&referrer=utm_source%3Dfb-sayfa-play
+
+📱 iPhone ve iPad için App Store:
+https://apps.apple.com/app/id6809809788?ct=fb-sayfa-play
+
+💻 Tarayıcıda hemen oyna:
+https://kelimeki.com/?ref=fb-sayfa-play
+
+#kelimeoyunu #zekaoyunu #türkçe
+
+Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+```
+
+**Neden App Store linki de var:** App Store gönderisi 16 Eylül'de
+Android'den bilerek söz etmemişti (Play incelemedeydi); bu gönderi ikisini
+birden veren İLK gönderi. Sayfanın gönderisini gören iPhone'lu da boşa
+düşmesin.
+
+---
+
+## 4 · LinkedIn
+
+Kurgu App Store turundaki **B**: kare görsel yüklenir, link gövdede düz
+metin olarak tıklanabilir kalır (önizleme kartı çıkmaz — bilinen bedel).
+
+### Sayfa sesi
+
+```
+Kelimeki bugün Google Play'de.
+
+16 Eylül'de App Store'a çıkan Türkçe kelime oyunumuz artık Android'de de. Tahtada senin bir bölgen var; kelime kurarak onu büyütüyorsun, rakibinin bölgesine oynarsan puanının bir kısmı ona gidiyor. Bir süre sonra "hangi kelimeyi kurayım" sorusunun yerini "bu kelimeyi nereye koyayım" alıyor.
+
+Kutunun içinde:
+• 63.905 kelimelik sözlük (TDK Güncel Türkçe Sözlük kaynaklı), hepsi anlamıyla
+• Üç zorluk seviyesinde yapay zekâ rakip: Kolay, Normal, Zor
+• Platformlar arası oyun: Android'deki oyuncu iPhone'daki arkadaşıyla aynı oyunu oynuyor
+• İnternetsiz oynanır — sözlük cihazın içinde
+• Ücretsiz; reklam yok, uygulama içi satın alma yok
+
+Android için Google Play:
+https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki&referrer=utm_source%3Dli-sayfa-play
+
+iPhone ve iPad için App Store:
+https://apps.apple.com/app/id6809809788
+
+Tarayıcıda: https://kelimeki.com/?ref=li-sayfa-play
+
+#kelimeoyunu #türkçe #googleplay #mobiluygulama
+
+Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+```
+
+### Kişisel profil (sıfırdan gönderi, sayfadan birkaç saat SONRA)
+
+**@Kelimeki** elle yazılıp listeden seçilir (yapıştırınca düz metin kalır).
+
+```
+Kelimeki artık Google Play'de de 🎉
+
+Üzerinde çalıştığım Türkçe kelime oyunu 16 Eylül'de App Store'a çıkmıştı; bugün Android sürümü de yayında. Tek bir kod tabanından iki mağazaya — ve en sevdiğim kısmı: Android'deki oyuncu iPhone'daki arkadaşıyla aynı oyunu oynuyor.
+
+Denemek isteyene:
+https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki&referrer=utm_source%3Dli-profil-play
+
+iPhone'da App Store'da, bilgisayarda https://kelimeki.com/?ref=li-profil-play
+
+@Kelimeki
+
+Google Play ve Google Play logosu Google LLC'nin ticari markalarıdır.
+```
+
+⚠ "Tek bir kod tabanından" iddiası mobil uygulama için doğru (Flutter,
+iOS + Android aynı kod); web ayrı bir kod tabanı. Metin yalnızca iki
+mağazadan söz ediyor, yani doğru — "üç platform, tek kod" diye
+GENİŞLETME.
+
+---
+
+## 5 · Link ve ölçüm
+
+| Nereye | Link |
+|---|---|
+| Instagram bio | `https://kelimeki.com/?ref=ig-bio` (mevcut — DEĞİŞTİRME) |
+| IG story sticker | `https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki&referrer=utm_source%3Dig-story-play` |
+| Facebook (site / Play / App Store) | `?ref=fb-sayfa-play` · `referrer=utm_source%3Dfb-sayfa-play` · `?ct=fb-sayfa-play` |
+| LinkedIn sayfa | `?ref=li-sayfa-play` · `referrer=utm_source%3Dli-sayfa-play` |
+| LinkedIn profil | `?ref=li-profil-play` · `referrer=utm_source%3Dli-profil-play` |
+
+**Neden yeni etiketler (`-play` soneki):** `?ref=` ilk temasta
+sabitleniyor; 16 Eylül'ün `fb-sayfa`/`li-sayfa`/`li-profil`
+etiketleri tekrar kullanılırsa iki lansman Kaynak Hunisi'nde tek satıra
+karışır. Kod değişikliği GEREKMİYOR: `sourceChannel`
+(`src/utils/adminGroups.ts`) `fb-`/`li-`/`ig-` önekli her etiketi kendi
+kanal grubuna topluyor.
+
+**Play linkindeki `referrer=`:** Play'in Install Referrer parametresi —
+indirme Play Console → Kullanıcı edinme'de UTM kampanyası olarak görünür.
+⚠ **Bu hesapta ÖLÇÜLMEDİ** (ajan `play.google.com`'a erişemiyor). Console'da
+görünmezse parametre zararsızdır, link aynen mağazaya gider. Değer
+URL-kodlu (`%3D` = `=`); elle düzeltip `=` yazma, Play onu ayrı parametre
+sanar.
+
+**Sonucu nereden okursun:** site ziyaretleri admin paneli → Kaynak Hunisi
+(Facebook / LinkedIn grupları, `-play` satırları); Play indirmeleri Play
+Console → Grow users → Acquire (UTM satırları, görünürse). Mağazaya
+doğrudan giden tıklama Kaynak Hunisi'nde GÖRÜNMEZ.
+
+---
+
+## 6 · Yapma listesi
+
+- ❌ App Store turunun etiketlerini (`fb-sayfa`, `li-sayfa`, `li-profil`)
+  tekrar kullanma — iki lansman karışır (§5).
+- ❌ Legal satırını atlama (§0).
+- ❌ Google Play rozetini kırpma, yeniden renklendirme ya da ikinci bir
+  rozet bindirme. Rozet dışındaki her şey bizim, değiştirilebilir —
+  üreticiden (`npm run build && npm run generate-play-lansman`).
+- ❌ Instagram'ın otomatik Facebook paylaşımını açma (gerekçe:
+  `app-store/facebook-lansman.md` §1).
+- ❌ Bio linkini doğrudan Play'e çevirme — o trafik hunide hiç görünmez.
+
+---
+
+## 7 · Yayın kütüğü
+
+| Ne zaman | Ne | Ölçüm |
+|---|---|---|
+| 27 Eyl 2026 (plan) | Paylaşım turu kullanıcıyla birlikte | — |
