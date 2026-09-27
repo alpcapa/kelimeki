@@ -297,4 +297,5 @@ doğrudan giden tıklama Kaynak Hunisi'nde GÖRÜNMEZ.
 
 | Ne zaman | Ne | Ölçüm |
 |---|---|---|
+| 27 Eyl 2026 12:15 | Instagram feed — carousel (kare görsel + `sponsored-2026-08/` 03 · 02 · 05, iki rozetli), §2 metni (marka satırsız) | Admin → Kaynak Hunisi (`ig-bio`) |
 | 27 Eyl 2026 12:20 | Instagram story — yalnızca Play rozetli görsel, "Hemen İndir!" link sticker'ı (`ig-story-play`) | Play Console → Acquire (UTM `ig-story-play`, görünürse) |
