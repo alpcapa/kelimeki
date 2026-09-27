@@ -155,14 +155,14 @@ içeriği bu bantların dışında tutuyor, sticker'ı sen koyuyorsun).
 ```
 Kelimeki artık Google Play'de 🎉
 
-Türkçe için sıfırdan tasarlanmış kelime oyunu artık Android'de de. Farkı tek bir kuralda: tahtada bir bölgen var ve oyun, kelime kurarak o bölgeyi büyütmek üzerine kurulu.
+Türkçe için sıfırdan tasarlanmış kelime oyunu artık Android'de de. Farkı tek bir kuralda: tahtada bir bölgen var ve oyun, kelime kurarak o bölgeyi büyütmek üzerine kurulu. Bölgen ne kadar büyürse, vergi kazancın o kadar artar.
 
 13×13'lük tahtanın dört köşesi oyuncuların. Kendi köşenden başlıyorsun, koyduğun her taşla bölgen genişliyor. Rakibinin bölgesine oynayabilirsin — ama vergisini ödersin 😏
 
 🧩 63.000+ kelime (TDK kaynaklı), anlamlarıyla
 🤖 Yapay zekaya karşı üç zorluk: Kolay, Normal, Zor
-✈️ İnternetsiz oynanır — sözlük uygulamanın içinde
-👥 Arkadaşınla sırayla: her hamle için 48 saat — iPhone'daki arkadaşınla da
+✈️ İnternetsiz oynama imkanı
+👥 Arkadaşlarınla canlı oyun sırayla: her hamle için 48 saat
 🆓 Ücretsiz · reklam yok · uygulama içi satın alma yok
 
 🤖 Android için Google Play:
@@ -180,6 +180,8 @@ Android, Google LLC'nin ticari markasıdır.
 Google Play, Google LLC'nin ticari markasıdır.
 Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
+
+**27 Eylül 2026:** gövde Instagram'daki kullanıcı düzeltmeleriyle eşitlendi (vergi cümlesi, internetsiz ve canlı oyun satırları); linkler ve etiketler FB'nin kendi hâlinde kaldı.
 
 **Neden App Store linki de var:** App Store gönderisi 16 Eylül'de
 Android'den bilerek söz etmemişti (Play incelemedeydi); bu gönderi ikisini
