@@ -33,8 +33,19 @@ export const KESIT_RAKIP_HARFLERI: Readonly<Record<string, string>> = {
   '4,5': 'L',
 };
 
-/** Rakip bölgesinin sınırına DEĞEN taş (vergiyi doğuran). */
-export const KESIT_DEGEN = '1,4';
+/**
+ * Bu turda oynanan kelime (SAAT) — oyundaki gibi yeşil geçerlilik çerçevesi
+ * ve puan rozeti taşır. T'si rakip bölgesinin sınırına değiyor (vergiyi
+ * doğuran). 28 Eylül 2026'ya kadar yalnızca T'nin etrafında kırmızı bir
+ * halka vardı; kelimenin ortasında taşmış bir çizgi gibi okunuyordu
+ * (kullanıcı: *"SAAT'in etrafı yeşil ve kazanacağı puan tag'i"*).
+ */
+export const KESIT_HAMLE: readonly [number, number][] = [
+  [1, 1],
+  [1, 2],
+  [1, 3],
+  [1, 4],
+];
 
 /**
  * Rakip bölgesi kesitin SAĞ ve ALT kenarında kesiliyor — oradaki dış hat
@@ -44,7 +55,7 @@ export const KESIT_ACIK_KENARLAR = { sag: true, alt: true } as const;
 
 export type KesitHucre =
   | { tur: 'bos'; bolge: 'sen' | 'rakip' | null }
-  | { tur: 'tas'; sahip: 'sen' | 'rakip'; harf: string; degen: boolean };
+  | { tur: 'tas'; sahip: 'sen' | 'rakip'; harf: string };
 
 /** Haritayı hücre listesine çevirir (satır satır). Doğrulayıcı da bunu kullanır. */
 export function kesitHucreleri(): KesitHucre[][] {
@@ -52,11 +63,11 @@ export function kesitHucreleri(): KesitHucre[][] {
     Array.from(satir).map((ch, c): KesitHucre => {
       const k = `${r},${c}`;
       const rakipHarf = KESIT_RAKIP_HARFLERI[k];
-      if (rakipHarf) return { tur: 'tas', sahip: 'rakip', harf: rakipHarf, degen: false };
+      if (rakipHarf) return { tur: 'tas', sahip: 'rakip', harf: rakipHarf };
       if (ch === 'c') return { tur: 'bos', bolge: 'sen' };
       if (ch === 'r') return { tur: 'bos', bolge: 'rakip' };
       if (ch === '.') return { tur: 'bos', bolge: null };
-      return { tur: 'tas', sahip: 'sen', harf: ch, degen: k === KESIT_DEGEN };
+      return { tur: 'tas', sahip: 'sen', harf: ch };
     }),
   );
 }
