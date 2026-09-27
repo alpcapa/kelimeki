@@ -464,6 +464,14 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         tarayıcıları (<code>navigator.webdriver</code>) sayılmaz. Mobil Safari sekmeyi
         bazen son pingi göndermeden kapatıyor, bu yüzden Süre biraz eksik ölçülebilir.
         Adımlar bundan etkilenmez.
+        <br />
+        <br />
+        <b>Etkileşimsiz</b> oturumlar tablodan DÜŞÜLÜR, sayıları altta ayrıca yazar: sayfa
+        açılmış ama ikinci hiçbir ping (sekme kapanışı, arka plana alma, adım) gelmemiş
+        — süre 0, kaydırma yok. Bunların çoğu kendini otomasyon olarak bildirmeyen
+        önizleme/tarama botları (27 Eylül 2026'da ölçüldü: "Yeni" 20 oturumun 14'ü böyleydi,
+        çoğu ikişer ikişer aynı milisaniyede açılmış). ⚠ Kapanış pingini kaybeden gerçek
+        bir ziyaretçi de buraya düşebilir.
       </>
     ),
   },
@@ -1748,6 +1756,9 @@ function WebJourneyTable({
   infoHint?: ReactNode;
 }) {
   const toplam = rows ? rows.reduce((t, r) => t + r.left_here, 0) : 0;
+  // Etkileşimsiz (yalnızca ilk pingi gelmiş) oturumlar sunucuda satırlardan
+  // düşülüyor; sayı her satırda aynı, ilkinden okunur.
+  const etkilesimsiz = rows?.[0]?.idle ?? 0;
   const gorunen = rows ? rows.filter((r) => r.reached > 0) : [];
   const karsilama = rows?.find((r) => r.step === 'landing');
   const ust = (
@@ -1775,8 +1786,10 @@ function WebJourneyTable({
             { value: 'android', label: 'Android' },
           ]}
         />
-        {rows !== null && toplam > 0 && (
-          <span className="text-[11px] font-mono text-muted">{toplam} oturum</span>
+        {rows !== null && (toplam > 0 || etkilesimsiz > 0) && (
+          <span className="text-[11px] font-mono text-muted">
+            {toplam} oturum{etkilesimsiz > 0 && ` · ${etkilesimsiz} etkileşimsiz`}
+          </span>
         )}
       </div>
       {infoHint}

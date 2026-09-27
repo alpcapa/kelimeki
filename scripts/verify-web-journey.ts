@@ -178,6 +178,7 @@ console.log('webJourney — ziyaretçi yolculuğu');
   const dosyalar: [string, number][] = [
     ['supabase/migrations/20260923103044_web_sessions_journey.sql', 2], // record_web_session + ilk admin_web_journey
     ['supabase/migrations/20260923135848_admin_web_journey_entry_filter.sql', 1], // admin_web_journey + p_entry
+    ['supabase/migrations/20260927121128_admin_web_journey_idle.sql', 1], // admin_web_journey + idle
   ];
   for (const [dosya, beklenen] of dosyalar) {
     const sql = readFileSync(dosya, 'utf8');

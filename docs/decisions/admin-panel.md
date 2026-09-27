@@ -1249,6 +1249,38 @@ sırası önemsiz. `verify-web-journey` artık adım dizisi taşıyan İKİ
 migration'ı da okuyor.
 
 
+### Etkileşimsiz oturumlar ayrı sayılır (27 Eylül 2026, `20260927121128_admin_web_journey_idle.sql`)
+
+Kullanıcı sordu: *"20 kişinin anında bounce ettiğini söylüyor, hata olabilir
+mi?"* Kart "Yeni" süzgecinde 20 oturumdan 19'unu karşılamada, medyan **0 sn**
+ile ayrılmış gösteriyordu. Canlıda satır satır okundu:
+
+- **14/20** oturuma yalnızca İLK ping ulaşmıştı (`updated_at = created_at`):
+  süre 0, kaydırma `null`, kaynak yok, 12'si "masaüstü" (tanınmayan UA'nın
+  varsayılanı), çoğu **ikişer ikişer aynı milisaniyede** açılmış. Gerçek bir
+  ziyaretçi sekmeyi kapatınca/arka plana alınca `flush` süre ve kaydırmayı
+  taşıyan ikinci bir ping gönderir; bunlarda hiç gelmedi → kendini
+  `navigator.webdriver` ile bildirmeyen önizleme/tarama botları.
+- Kalan 6'nın biri (li-profil, iOS) tanıtımı ve oyunu bitirdi; beşi 1-32 sn
+  içinde, çoğu **%32 kaydırmada** (masaüstünde kaydırmadan görünen kısım) çıktı.
+  Yani gerçek kaçış var, ama 20'de 19 değil 6'da 5.
+
+**Çözüm:** `admin_web_journey` bu oturumları adım satırlarından DÜŞÜYOR ve
+yeni `idle` sütununda sayıyor (her satırda aynı değer); kart üstte
+`N oturum · M etkileşimsiz` yazıyor. Gizlenmedi, çünkü sayının kendisi de bir
+bilgi (bot trafiği ↔ gerçek ziyaret oranı).
+⚠ Bedeli: kapanış pingini kaybeden gerçek ziyaretçi (iOS'ta sekme
+öldürülürse `pagehide` gelmeyebilir) de "etkileşimsiz"e düşer — o kişi zaten
+hiç etkileşmeden ayrılan sınıfta.
+⚠ Dönüş tipi değişti → DROP + CREATE; `proacl` öncesiyle aynı (authenticated
++ service_role, anon YOK), `security definer` ve `search_path` doğrulandı.
+
+Aynı turda "Kayıt Hunisi boş" da okundu: **hata değil.** `signup_events` 21
+Eylül'den beri boş, ama o tarihten sonraki iki kaydın ikisi de uygulamadan
+(biri iOS push token'ı, öteki `signup_utm_source = 'app'`), web yolculuğunda
+da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
+(geri alındı), çalışıyor.
+
 ## Masaüstü kipindeki iPad: iOS altında sahte "10.15.7" (23 Eylül 2026)
 
 Kullanıcı fark etti: *"Admin Cihaz ios altında 10.15.7 gözüken 27 kişi var.
