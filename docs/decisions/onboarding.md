@@ -822,7 +822,7 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | # | Karar | Bugün | Nerede |
 |---|---|---|---|
 | 1 | Karşılama sade: tek soru-başlık, bölge dış hatlı küçük tahta kesiti, "HEMEN OYNA", mağaza rozetleri. Uzun SEO içeriği sayfada KALIR, ilk ekranın altına iner | ✅ KODLANDI (27 Eyl) — `landing-page.md` → "İlk ekran sadeleşti" | `src/landing/` |
-| 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** altta sabit | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `Setup.tsx` ↔ `setup_screen.dart` |
+| 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** zorluğun hemen altında, AKIŞTA (⚠ "altta sabit" denendi ve GERİ ALINDI — iOS yüzen çubuğu örtüyor, aşağı bkz.) | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `Setup.tsx` ↔ `setup_screen.dart` |
 | 3 | Setup'ta "1 dk'lık tanıtımla başlar" satırı YOK | — | — |
 | 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `handleStart` (`Setup.tsx`) ↔ `_showGuestWarning` (`setup_screen.dart`) |
 | 5 | Tanıtımın açılış penceresi ("Kelimeki Tanıtım Turu / Devam") KALKAR, 1. sahne doğrudan açılır | Var | `TutorialGame` ↔ `ui/tutorial/*` |
@@ -830,11 +830,28 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | ✅ WEB KODLANDI (27 Eyl, `defaultAiLevel`); port bilerek bekliyor | `Setup.tsx:340` ↔ port |
 | 8 | Rakibin adı **Yapay Zeka** (27 Eylül, kullanıcı: *"yapay zeka kalsın"*); oyun içi skor kutusundaki "YZ 2" kısaltması DEĞİŞMEZ | Aynı | — |
 | 9 | Arkadaşınla, girişsiz: alttan açılan giriş uyarısı (ÜYE OL · GİRİŞ YAP · YAPAY ZEKAYLA DEVAM ET) | ✅ WEB KODLANDI (27 Eyl, `GuestLiveSheet`) | `LiveGamesTab` |
-| 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | ✅ WEB KODLANDI (27 Eyl) — mevcut alt sekmeler kaldı, "Yeni Oyun Kur" altta sabit | `LiveGamesTab` + `LiveGameCreateForm` |
+| 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | ✅ WEB KODLANDI (27 Eyl) — mevcut alt sekmeler kaldı, "Yeni Oyun Kur" listenin ÜSTÜNDE, akışta | `LiveGamesTab` + `LiveGameCreateForm` |
 | 11 | Arkadaş seçici: arama kutusunun ALTINDA, listenin üstünde **+ ARKADAŞINI DAVET ET** (davet linki); listenin altındaki "Listede yok mu?" bağlantısı kalkar | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
 | 12 | Seçilen rakipler **koltuk kartı** olarak, oyuncu renginin zemininde (bilinçli değişiklik; avatar aynı kalır). 4 kişide boş 4. koltuk ekranda "Yapay Zeka" olarak görünür → "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi **KALKAR** | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
-| 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | ✅ WEB KODLANDI (27 Eyl) — girişli YZ tarafında liste üstte, "Yeni Oyun Kur" altta sabit | `Setup.tsx` ↔ `devam_eden_govde.dart` |
+| 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | ✅ WEB KODLANDI (27 Eyl) — girişli YZ tarafında liste üstte, OYUNU BAŞLAT akışta | `Setup.tsx` ↔ `devam_eden_govde.dart` |
 | 14 | Uygulamanın açılış tanıtımı (`IntroScreen`) da sadeleşir — AYRI iş, tanıtım PR'ından SONRA | — | port |
+| 15 | Koltuk kartında sağda, ✕'e değmeden oyuncu numarası FİLİGRANI (`{i+2}`, tahtadaki 1-4 filigranıyla aynı üslup: mono kalın, oyuncu rengi, opaklık 0.2) | ✅ WEB (#663) | `LiveGameCreateForm` |
+| 16 | "Davet Gönder" / "Vazgeç" koltukların HEMEN altında, akışta (ekrana sabit şerit iPad'de yarı örtülüyordu) | ✅ WEB (#663) | `LiveGameCreateForm` |
+| 17 | **"Arkadaşını davet et" pencere AÇMAZ, doğrudan paylaşır:** link açılışta önceden alınır (`navigator.share` taze dokunuş ister), destek yoksa WhatsApp + kopyala yedeği | ✅ WEB (#664) | `useInviteShare` + `InviteShareFallback` ↔ port `share_plus` |
+| 18 | **Boş koltuğa (+) dokunmak** arkadaş listesine kaydırır; odak VERİLMEZ (klavye açılmasın); YZ koltuğu dokunulmaz | ✅ WEB (#665) | `LiveGameCreateForm` |
+| 19 | **Kayan listelerde HER ZAMAN görünen kaydırma çubuğu** (iOS kendi çubuğunu yalnız kaydırırken çiziyor); içerik taşmıyorsa yok | ✅ WEB (#665) | `ScrollArea` ↔ port `Scrollbar(thumbVisibility: true)` |
+| 20 | **Formda "Tüm oyuncular →" / "← Arkadaşlar"** (başlığın sağında, dönüşümlü). Tüm oyuncularda arkadaş kutucukla seçilir, ötekine EKLE · İSTEK GİTTİ · KABUL ET (oyuna yalnız arkadaş çağrılır); KABUL ET sonrası hemen seçilebilir; arama bu görünümde sunucuda. Açılış HER ZAMAN arkadaşlar | ✅ WEB (#665) | `LiveGameCreateForm` + `usePlayerDirectory` |
+| 21 | **"Sık oynadıkların / Hızlı seç" şeridi** — arama kutusunun üstünde en fazla 5 avatar, kaydırmasız; dokunmak satırla aynı (seçer/bırakır), halka koltuk renginde. Sık oynanan <5 ise boşluklar form başına sabit RASTGELE arkadaşlarla dolar, başlık "Hızlı seç". Arkadaş <2, aramada ve "Tüm oyuncular"da YOK | ✅ WEB (#666) | `LiveGameCreateForm` ← RPC `my_frequent_opponents` |
+| 22 | **Arkadaşlar penceresi TEK EKRAN** (sekme yok): davet düğmesi → bekleyen istekler (gelen kart + GÖNDERDİĞİN satır/Geri al) → "Arkadaşların · N" başlığı [sağda "Tüm oyuncular →", o görünümde SAYI YOK] → arama → liste. Satır: rütbe, "3 haftadır", OYNA, ⋯ (skor kartı · 2 kişilik · 4 kişilik oyun kur · sessize alma/şikayet ayarları YALNIZ önceden varsa · arkadaşlıktan çıkar). Yalnız "çıkar" onay sorar | ✅ WEB (#665) — ayrıntı `friends.md` → "Tek ekran" | `FriendsModal` ↔ port `friends_sheet.dart` ← RPC `list_outgoing_friend_requests` |
+| 23 | **OYNA** (arkadaş satırı / ⋯ 2-4 kişilik): pencere kapanır, Canlı sekmesinde form O ARKADAŞ SEÇİLİ açılır; yerel oyun sürüyorsa önce Setup'a dönülür (oyun kayıtlı) | ✅ WEB (#665) | `utils/liveGameRequest.ts` (App ↔ LiveGamesTab) ↔ port: navigator/provider |
+| 24 | Arkadaşlıktan çıkarılan iki yönde de EKLE'ye döner; engelleme/link yenileme YOK (27 Eylül, kullanıcı: *"O an sinirlenip sonra affedebilir"*). Kalıcı davet linki çıkarılanı onaysız geri ekleyebilir — bilerek | Karar | — |
+
+⚠ **PORT İÇİN İKİ YENİ RPC CANLIDA HAZIR** (27 Eylül 2026, web kullanıyor):
+`list_outgoing_friend_requests()` (#22) ve `my_frequent_opponents(p_limit)`
+(#21) — ikisi de `authenticated`, `anon` YOK. Port istemcisi bunları
+çağırmadan #21/#22 yarım kalır. Port yarısı açılınca 15-24'ün HEPSİ Setup
++ Arkadaşlar port PR'ının kapsamında; `mobile/TESTING.md`'ye cihaz maddesi
+olarak girer (web maddeleri `TESTING.md`'de, aynı sırayla).
 
 ⚠ **Sunucu kuralları DEĞİŞMEZ** (`create_online_game`): 2 kişide tam 1
 arkadaş, YZ yok; 4 kişide 2-3 arkadaş, YZ yalnızca 4. koltukta. Davet 7

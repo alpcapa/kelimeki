@@ -14,6 +14,24 @@ Kök `CLAUDE.md`'nin "Web'de Yapılacak İşler" listesinin mobil karşılığı
 kararı verilmiş ama henüz yapılmamış işler. Bir madde uygulanınca buradan
 silinip kendi tarihli parça notuna taşınır.
 
+- **ROADMAP #41 port yarısı — Setup + Arkadaşınla + Arkadaşlar penceresi
+  (27 Eylül 2026, web'de BİTTİ, port BİLEREK bekliyor).** Kapsam listesi
+  TEK yerde: `docs/decisions/onboarding.md` → "İlk oyun akışı v2" →
+  karar tablosunun **2, 4, 7, 9-13 ve 15-24.** satırları (web PR'ları
+  #660-#666). Kısaca: tek Setup ekranı · misafir uyarısı yok · ilk oyun
+  Kolay · Arkadaşınla ekranları · koltuk kartı + filigran · doğrudan
+  davet paylaşımı · boş koltuk → listeye kaydır · her zaman görünen
+  kaydırma çubuğu · formda "Tüm oyuncular" · "Sık oynadıkların / Hızlı
+  seç" şeridi · Arkadaşlar penceresi tek ekran (gönderilen istekler, ⋯
+  menüsü, OYNA → form o arkadaş seçili).
+  **Sunucu HAZIR:** `list_outgoing_friend_requests()` ve
+  `my_frequent_opponents(p_limit)` canlıda (yalnız `authenticated`).
+  **Ne zaman:** ≥2 hafta web verisi (iOS kontrol grubu), tanıtımla aynı
+  trende, en erken 19 Ekim. ⚠ Alta sabit düğme YOK (iOS/iPad'de örtüldü,
+  web geri aldı); ⚠ `KModal` gövdesine ikinci kaydırılabilir koyma
+  ("`KModal`'ın gövdesi ZATEN kaydırılabilir"). Web'in elle kontrol
+  maddeleri `TESTING.md`'de — `mobile/TESTING.md`'ye aynı sırayla girecek.
+
 - ~~Sistem fontu büyütülünce düzen patlıyor~~ — **YAPILDI** (28 Ağustos
   2026, Parça 161): yazı ölçeği `kMaxTextScale`=1,3 ile sınırlandı
   (`ui/text_scale.dart` + `MaterialApp.builder`), tahtanın alt şeridi
