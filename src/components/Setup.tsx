@@ -19,6 +19,7 @@ import { AuthModal } from "./AuthModal";
 import { CountBadge } from "./CountBadge";
 import { HelpModal } from "./HelpModal";
 import { LiveGamesTab, TurnTriangle } from "./LiveGamesTab";
+import { STICKY_BAR, STICKY_PRIMARY_BTN } from "./stickyBar";
 import { orderByExpiry } from "../utils/gameListOrder";
 import { LogoMark } from "./LogoMark";
 import { AvatarScoreRow, PlayerAvatarRow, type AvatarRowPlayer } from "./PlayerAvatarRow";
@@ -88,10 +89,6 @@ function remainingTime(
 // kullanıldığı `else` dalı `count`'tan bağımsız olduğundan otomatik ikisinde
 // de çıkıyor); girişli kullanıcı "+ Yeni Yapay Zeka Oyunu" formunu açtığında
 // (aynı `else` dalına düşse de) `!user` koşuluyla gizli kalır.
-/** Altta sabit düğme şeridi — Setup'ın iki dalında aynı (ROADMAP #41). */
-const STICKY_BAR =
-  "sticky bottom-0 z-10 -mx-4 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] bg-bg border-t border-border shadow-[0_-8px_20px_rgba(163,177,198,0.25)]";
-
 const MEMBERSHIP_PERKS = [
   "Arkadaşlarınla çoklu canlı oyun oynama",
   "Skor takibi ve k-lig sıralaması",
@@ -851,6 +848,7 @@ export function Setup({
             onOpenGame={onOpenLiveGame}
             newlyFinishedIds={finishedUnseen}
             onFinishesSeen={handleFinishesSeen}
+            onSwitchToAi={() => onMainViewChange("local")}
           />
         ) : !user && savedGame ? (
           // Misafir, tekil localStorage kaydı — yeni oyun bu bitene/teslim
@@ -978,7 +976,7 @@ export function Setup({
             <div className={STICKY_BAR}>
               <button
                 onClick={() => setCreatingLocal(true)}
-                className="w-full btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform"
+                className={STICKY_PRIMARY_BTN}
               >
                 Yeni Oyun Kur
               </button>

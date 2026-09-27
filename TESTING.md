@@ -31,16 +31,32 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
 
 ## 1. Canlı oyun — davet akışı
 
-- [ ] **Davet gönderme.** "Arkadaşınla" → "+ Yeni Canlı Oyun" → 2 kişilik, bir
-      arkadaş seç → "Davet Gönder". **"Davetiniz gönderilmiştir."** ekranı
-      çıkmalı, kime gittiğini yazmalı. "Tamam"a basınca listeye dönmeli.
+- [ ] **Davet gönderme.** "Arkadaşınla" → altta sabit "Yeni Oyun Kur" → 2
+      kişi, bir arkadaş seç → seçilen arkadaş "RAKİBİN" altında kırmızı koltuk
+      kartında görünmeli (✕ ile boşalır) → "Davet Gönder". **"Davetin
+      gönderildi"** ekranı çıkmalı, kime gittiğini ve 7 gün notunu yazmalı.
+      "Oyunlarıma git"e basınca listeye dönmeli. (27 Eylül 2026'ya kadar:
+      listenin üstünde "+ Yeni Canlı Oyun Aç", onay "Davetiniz
+      gönderilmiştir." / "Tamam".)
 - [ ] **Tek davet = tek oyun.** Gönderimden sonra `online_games`'te o çift için
       TEK satır olmalı. (Onay ekranı eklenmeden önce, geri bildirim olmadığı
       için insanlar butona tekrar basıp 25-35 saniye arayla ikinci bir oyun
       açıyordu — iki farklı kullanıcıda görüldü.)
-- [ ] **4 kişilik + YZ.** 2 arkadaş seçip gönderince "4. koltuk Yapay Zeka ile
-      doldurulacak, tamam mı?" onayı çıkmalı; "Hayır" denince listede kalıcı
-      bir "🤖 Yapay Zeka" satırı belirmeli ve bir daha sorulmamalı.
+- [ ] **4 kişilik + YZ.** 4 Kişi → 2 arkadaş seçince üç koltuk kartından
+      ikisi arkadaşların (kırmızı, yeşil), üçüncüsü **"🤖 Yapay Zeka"** olmalı;
+      "Davet Gönder" ARA PENCERE SORMADAN göndermeli (27 Eylül 2026, ROADMAP
+      #41: eski "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onayı
+      kalktı). 3. arkadaşı seçince o koltuk mor karta dönmeli, 4. seçim
+      reddedilmeli (tavan 3). `online_games.slots`: 4 kişilik, sonda `ai`.
+- [ ] **Arkadaşını davet et (27 Eylül 2026).** Arkadaş seçicide arama
+      kutusunun HEMEN altında kesik çerçeveli "+ Arkadaşını davet et" düğmesi;
+      Arkadaşlar penceresini "Ara & Ekle"de açmalı (davet linki üstte).
+      Alttaki sabit şeritte artık "Arkadaş Ekle" satırı YOK.
+- [ ] **Girişsiz "Arkadaşınla" (27 Eylül 2026).** Çıkış yapmış hâlde
+      "Kime karşı" → Arkadaşınla: alttan "Arkadaşınla oynamak için giriş yap"
+      penceresi açılmalı. Üye Ol → kayıt formu, Giriş Yap → giriş formu;
+      "Yapay Zekayla devam et" ya da arka plana dokunmak pencereyi kapatıp
+      "Kime karşı"yı Yapay Zeka'ya çevirmeli.
 - [ ] **Davetlinin görünümü.** Karşı hesapta "Oyun Davetleri" sekmesinde kart
       görünmeli, katılımcıların yanında "Davet gönderen"/"Bekliyor" etiketleri
       ve "N gün M saat kaldı" satırı olmalı. (Metin iki kez değişti: 5 Ağustos
@@ -77,8 +93,8 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       bekleyen davet/hamle yokken 5+ dakika uzaklaşıp dön: "Yapay Zeka ile"
       sekmesinde kalmalısın.
 - [ ] **Kurma formunun arkadaş listesi hesap değişiminde tazelenmeli.** Bir
-      hesapla "+ Yeni Canlı Oyun"u aç (arkadaş listesi yüklensin), kapatmadan
-      çıkış yapıp BAŞKA bir hesapla gir, tekrar "+ Yeni Canlı Oyun"a bas.
+      hesapla "Yeni Oyun Kur"u aç (arkadaş listesi yüklensin), kapatmadan
+      çıkış yapıp BAŞKA bir hesapla gir, tekrar "Yeni Oyun Kur"a bas.
       Yeni hesabın KENDİ arkadaş listesi görünmeli — önceki hesabınki (hatta
       kendi adının listede belirmesi) DEĞİL. (5 Ağustos 2026: `LiveGameCreateForm`
       arkadaşları yalnızca mount'ta çekiyordu, bu form modal değil tam görünüm
@@ -602,7 +618,7 @@ tek turda, gerçekten bekleyen bir iş varken kontrol et.
       olmalı. Rozet avatarın sağ üst köşesinden taşar (bu doğru); GameHeader'ın
       yatay kaydırılan şeridinde **kırpılmamalı** — oyun ekranında da kontrol et.
 - [ ] **Rozet olMAması gerekenler.** "Değiştir (N)" (seçili taş sayısı) ve
-      "Arkadaşlarını Seç (N/3)" (seçim ilerlemesi) — bunlar bekleyen iş değil,
+      "Rakiplerin · N/3" (seçim ilerlemesi; 27 Eylül 2026'ya kadar "Arkadaşlarını Seç (N/3)") — bunlar bekleyen iş değil,
       metin içinde kalmalı.
 
 ## 8. "Bekleyen iş öne çıksın" — varsayılan sekmeler
@@ -621,7 +637,7 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       2026. Aynısı hesap değiştirmeden, sadece "Yapay Zeka ile"ye gidip
       dönerek de üretilebilir.)
 - [ ] **Arkadaşlar penceresi.** Bekleyen istek varsa "Davetler" açık gelmeli.
-      Ama "+ Yeni Canlı Oyun" içindeki "arkadaş eklemek için tıkla"
+      Ama "Yeni Oyun Kur" içindeki "Arkadaşını davet et"
       bağlantısından açılınca **"Ara & Ekle"de kalmalı** — o açık bir niyet,
       ezilmemeli.
 - [ ] **Arkadaşlık ikonları (11 Ağustos 2026).** Satır aksiyonları metin
@@ -969,7 +985,7 @@ gerekiyor).
       (18px) · Skor Kartı'ndaki kendi ismin (20px) · başka bir oyuncunun
       kartı (20px) · Setup'ta 1. koltuktaki hesap adı (18px) · Arkadaşlar
       penceresinin ÜÇ sekmesi de (18px — "Arkadaşlar", "Davetler",
-      "Ara & Ekle") · "+ Yeni Canlı Oyun"daki arkadaş seçici (18px) · Oyun
+      "Ara & Ekle") · "Yeni Oyun Kur"daki arkadaş seçici (18px) · Oyun
       davetleri kartındaki katılımcı isimleri (16px). **Skor kartlarında
       artık İKİ mühür var** — başlıktaki 34px'lik tıklanabilir mühür VE
       ismin yanındaki 20px'lik; ikisi AYNI kademeyi göstermeli.
