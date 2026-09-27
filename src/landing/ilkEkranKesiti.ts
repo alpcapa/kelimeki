@@ -19,22 +19,48 @@
 export const KESIT_SUTUN = 7;
 
 export const KESIT_HARITA: readonly string[] = [
-  'ccc....',
+  'FAc....',
   'cSAAT..',
   'c...rrr',
   '....rrr',
   '....rrr',
 ];
 
-/** Rakibin taşları — `"satır,sütun"` → harf. KUL, dikey. */
+/**
+ * Rakibin taşları — `"satır,sütun"` → harf. KUL dikey; yanındaki S/E ile
+ * yatayda US ve LE, dikeyde SE; K'nin solundaki A ile yatayda AK (28 Eylül
+ * 2026, kullanıcı isteği — rakibin bölgesi de dolu bir oyun gibi okunsun).
+ */
 export const KESIT_RAKIP_HARFLERI: Readonly<Record<string, string>> = {
+  '2,4': 'A',
   '2,5': 'K',
   '3,5': 'U',
   '4,5': 'L',
+  '3,6': 'S',
+  '4,6': 'E',
 };
 
-/** Rakip bölgesinin sınırına DEĞEN taş (vergiyi doğuran). */
-export const KESIT_DEGEN = '1,4';
+/**
+ * Bu turda oluşan kelimeler — oyundaki gibi hepsini saran TEK yeşil
+ * geçerlilik çerçevesi ve toplam puan rozeti taşır. Bu turda konan taşlar
+ * AAT: S önceki hamleden (dikey AS) — kural gereği yeni kelime tahtadaki bir
+ * harfe BAĞLANMAK zorunda. T, rakibin A'sının üstüne düştüğü için dikey TA da
+ * bu hamlenin kelimesi (oyunda `calcScore` onu da sayar). T rakip bölgesinin
+ * sınırına değiyor → vergi. 28 Eylül 2026, kullanıcı isteğiyle adım adım:
+ * T'deki kırmızı halka → yeşil çerçeve + rozet, AS bağlantısı, TA/AK.
+ */
+export const KESIT_HAMLE: readonly (readonly [number, number])[][] = [
+  [
+    [1, 1],
+    [1, 2],
+    [1, 3],
+    [1, 4],
+  ],
+  [
+    [1, 4],
+    [2, 4],
+  ],
+];
 
 /**
  * Rakip bölgesi kesitin SAĞ ve ALT kenarında kesiliyor — oradaki dış hat
@@ -44,7 +70,7 @@ export const KESIT_ACIK_KENARLAR = { sag: true, alt: true } as const;
 
 export type KesitHucre =
   | { tur: 'bos'; bolge: 'sen' | 'rakip' | null }
-  | { tur: 'tas'; sahip: 'sen' | 'rakip'; harf: string; degen: boolean };
+  | { tur: 'tas'; sahip: 'sen' | 'rakip'; harf: string };
 
 /** Haritayı hücre listesine çevirir (satır satır). Doğrulayıcı da bunu kullanır. */
 export function kesitHucreleri(): KesitHucre[][] {
@@ -52,11 +78,11 @@ export function kesitHucreleri(): KesitHucre[][] {
     Array.from(satir).map((ch, c): KesitHucre => {
       const k = `${r},${c}`;
       const rakipHarf = KESIT_RAKIP_HARFLERI[k];
-      if (rakipHarf) return { tur: 'tas', sahip: 'rakip', harf: rakipHarf, degen: false };
+      if (rakipHarf) return { tur: 'tas', sahip: 'rakip', harf: rakipHarf };
       if (ch === 'c') return { tur: 'bos', bolge: 'sen' };
       if (ch === 'r') return { tur: 'bos', bolge: 'rakip' };
       if (ch === '.') return { tur: 'bos', bolge: null };
-      return { tur: 'tas', sahip: 'sen', harf: ch, degen: k === KESIT_DEGEN };
+      return { tur: 'tas', sahip: 'sen', harf: ch };
     }),
   );
 }

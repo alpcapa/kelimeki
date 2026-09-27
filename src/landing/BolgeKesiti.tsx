@@ -14,6 +14,7 @@ import { buildRoundedOutlinePath } from '../utils/outline';
 import { OUTLINE_RADIUS, OUTLINE_STROKE } from '../components/Board';
 import {
   KESIT_ACIK_KENARLAR,
+  KESIT_HAMLE,
   KESIT_HARITA,
   KESIT_SUTUN,
   kesitHucreleri,
@@ -21,6 +22,9 @@ import {
 
 const SEN = PLAYER_COLORS[0];
 const RAKIP = PLAYER_COLORS[1];
+// Oyundaki "Oyna" öncesi geçerlilik çerçevesi ve puan rozetiyle AYNI renk
+// (`Board.tsx` → `moveColor`, geçerli dal).
+const GECERLI = '#1FA05C';
 
 export function BolgeKesiti() {
   const hucreler = kesitHucreleri();
@@ -40,10 +44,26 @@ export function BolgeKesiti() {
     (KESIT_ACIK_KENARLAR.sag && nc >= KESIT_SUTUN) || (KESIT_ACIK_KENARLAR.alt && nr >= satir),
   );
 
+  const hamleHucreleri = KESIT_HAMLE.flat() as [number, number][];
+  const hamleHat = buildRoundedOutlinePath(
+    [...new Map(hamleHucreleri.map((h) => [h.join(','), h])).values()],
+    OUTLINE_RADIUS,
+  );
+  // Rozet oyundaki gibi HAM puanı yazar (`calcScore`: her kelime ayrı sayılır,
+  // vergi öncesi) ve hücrelerin en üst-solundakine oturur (`Board.tsx` →
+  // `buildBadge`).
+  const hamlePuani = hamleHucreleri.reduce((t, [r, c]) => {
+    const h = hucreler[r][c];
+    return t + (h.tur === 'tas' ? (TILE_DATA[h.harf]?.pts ?? 0) : 0);
+  }, 0);
+  const [rozetR, rozetC] = hamleHucreleri.reduce((a, b) =>
+    b[0] < a[0] || (b[0] === a[0] && b[1] < a[1]) ? b : a,
+  );
+
   return (
     <div
       role="img"
-      aria-label="Tahta kesiti: solda senin camgöbeği bölgen ve SAAT kelimen, sağ altta rakibin kırmızı bölgesi ve KUL kelimesi. SAAT'in son harfi rakibin bölgesine değiyor; bu yüzden puanın üçte biri rakibe geçer."
+      aria-label="Tahta kesiti: solda senin camgöbeği bölgen; önceki hamlelerin FA ve AS, AS'nin S'sine bağlanan SAAT kelimen, sağ altta rakibin kırmızı bölgesi ve KUL, US, LE, SE, AK kelimeleri. SAAT ve rakibin A'sıyla kurulan TA 7 puan getiriyor, ama T rakibin bölgesine değdiği için puanın üçte biri rakibe geçer."
       className="relative w-full max-w-[340px] lg:max-w-[440px] mx-auto rounded-[18px] bg-[#DDE4EE] p-[10px] shadow-raised"
     >
       <div
@@ -83,7 +103,6 @@ export function BolgeKesiti() {
                   background: renk.tint,
                   border: `1px solid ${renk.base}`,
                   color: renk.text,
-                  boxShadow: h.degen ? `0 0 0 2px ${RAKIP.base}` : undefined,
                 }}
               >
                 <span
@@ -113,6 +132,7 @@ export function BolgeKesiti() {
           {[
             [seninHat, SEN.base],
             [rakipHat, RAKIP.base],
+            [hamleHat, GECERLI],
           ].map(([d, renk]) => (
             <path
               key={renk}
@@ -126,6 +146,19 @@ export function BolgeKesiti() {
             />
           ))}
         </svg>
+        <span
+          className="pointer-events-none absolute z-10 rounded-full font-sans text-[11px] font-bold leading-none text-white whitespace-nowrap"
+          style={{
+            top: `${(rozetR / satir) * 100}%`,
+            left: `${(rozetC / KESIT_SUTUN) * 100}%`,
+            transform: 'translate(-35%, -35%)',
+            background: GECERLI,
+            padding: '1.5px 3px',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.25)',
+          }}
+        >
+          +{hamlePuani}
+        </span>
       </div>
       <span className="absolute -right-1.5 -top-3.5 rounded-full bg-text px-2.5 py-1.5 font-mono text-[11px] font-bold leading-none tracking-[0.5px] text-white shadow-[0_6px_14px_rgba(27,36,48,0.3)]">
         Vergi: puanın 1/3'ü rakibe
