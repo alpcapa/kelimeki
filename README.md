@@ -109,7 +109,7 @@ src/
 │   ├── DeleteAccountModal.tsx   # hesabı uygulama içinden silme onayı (açılışta kuru çalıştırma raporu)
 │   ├── ScoreCard.tsx            # oyuncu istatistikleri
 │   ├── ScoreStatsSection.tsx    # "Oyuncu / Oyun İstatistikleri" kutu ızgarası (ScoreCard ve PlayerScoreCard ortak)
-│   ├── RecentGamesSection.tsx   # Setup'taki "Yapay Zeka ile"/"Arkadaşınla" sekmelerinde son 5 biten oyun listesi
+│   ├── RecentGamesSection.tsx   # Setup'taki "Yapay Zeka"/"Arkadaşınla" sekmelerinde son 5 biten oyun listesi
 │   ├── GameHistoryModal.tsx     # geçmiş oyunların listesi (kalp: favori · balon: sohbet arşivi · dosya: hamle dökümü · karta tıkla: tahta önizlemesi), Tümü/Favoriler filtresi
 │   ├── GameBoardPreview.tsx     # bir oyunun bitiş anındaki tahtasının salt-okunur önizlemesi
 │   ├── MoveHistoryModal.tsx     # oyun geçmişi (hamle hamle)

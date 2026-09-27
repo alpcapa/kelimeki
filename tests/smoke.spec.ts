@@ -692,10 +692,10 @@ test('Oyun ekranında logonun altında "← Geri" var ve Setup\'a döndürür', 
   ).toBeVisible();
 
   await geri.click();
-  // ⚠ DOM metni "Oyun Tipi" — ekranda büyük harf görünmesi CSS
+  // ⚠ DOM metni "Kime karşı" (27 Eylül 2026'ya kadar "Oyun Tipi") — ekranda büyük harf görünmesi CSS
   // `uppercase`inden geliyor ve `getByText` onu görmez (bu kod tabanında
   // kayıtlı tuzak, "Oyna"/"Nasıl Oynanır?" vakasının kardeşi).
-  await expect(page.getByText('Oyun Tipi')).toBeVisible();
+  await expect(page.getByText('Kime karşı')).toBeVisible();
 });
 
 // 22 Ağustos 2026 — bir kullanıcı (Android) tahtaya koyduğu jokere harfini
