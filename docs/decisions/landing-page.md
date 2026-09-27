@@ -1041,3 +1041,47 @@ testin GERÇEKTEN düştüğü ölçüldü.
 önizleme olarak kullanan HER yüzeye sızar. Yeni bir kural eklerken soru
 "bu tahtanın altında o şerit var mı?" — `GameBoardPreview`in üç çağıranında
 yok. Aynı aile: `compact` prop'u da tam bu yüzden var.
+
+## İlk ekran sadeleşti — kesit, tek düğme (27 Eylül 2026, ROADMAP #41)
+
+Karar ve tasarım: `docs/decisions/onboarding.md` → "İlk oyun akışı v2",
+karar 1. Bu bölüm yalnızca UYGULAMA notları.
+
+**Ne değişti:** ilk ekranda artık yalnızca şunlar var: logo (hâlâ `h1`, SEO
+başlığı `sr-only`), üst başlık "Türkçe kelime oyunu", soru-başlık
+*"Kelimeyi bilmek yetmez. Nereye koyduğun kazandırır."*, bir cümlelik
+kural, 7×5'lik tahta kesiti (`BolgeKesiti.tsx`), HEMEN OYNA, "Ücretsiz ·
+Reklam yok · Üyelik gerekmez", mağaza rozetleri ve "Nasıl oynanır ↓"
+(`#nasil-oynanir`e iç bağlantı). Eski kahraman cümlesi, açıklama paragrafı
+ve dört rakam kutusu SİLİNMEDİ — ilk ekranın hemen altına indi; sayfanın
+taranabilir metni değişmedi.
+
+**Kesit neden `demoBoard.ts`e girmedi:** o liste portun intro ekranına
+üretiliyor (`generate-demo-board-dart`) ve doğrulayıcı her oyuncunun
+taşlarını 13×13'te EV karesine bağlı arıyor; bir oyunun ortasından
+alınmış 7×5'lik kadraj ikisine de uymaz. Veri `ilkEkranKesiti.ts`te,
+`verify-demo-board` yalnızca kelime + torba harfi kontrolünü uyguluyor
+(SAAT · KUL). ⚠ Dosya adı bilerek `bolgeKesiti.ts` DEĞİL: `BolgeKesiti.tsx`
+ile yalnızca büyük/küçük harfte ayrışan bir import esbuild'de çözülemedi
+(ölçüldü) ve büyük/küçük harf duyarsız bir dosya sisteminde (macOS)
+çakışırdı.
+
+**Görsel dil kopyalanmadı:** dış hat oyunun `buildRoundedOutlinePath`i,
+yarıçap/kalınlık `Board.tsx`ten dışa açılan `OUTLINE_RADIUS` /
+`OUTLINE_STROKE`; renkler `PLAYER_COLORS`; puanlar `TILE_DATA`. Rakip
+bölgesi kesitin sağ ve alt kenarında `extraOpen` ile AÇIK bırakılıyor —
+kadrajın dışına sürüyor okunsun diye. Harf/puan boyutu `cqw` (kesit kendi
+`container-type`ı): 7 sütunda 13 sütunluk tahtanın `.tile-board-letter`
+oranı fazla küçük kalıyordu.
+
+**Yükseklik:** ilk ekran `min-h-[min(calc(100dvh-72px),760px)]`. Tavansız
+hâli 834×1112 dikey tablette kesit ile düğme arasında ~300px boşluk
+açıyordu (ekran görüntüsüyle ölçüldü). `lg` (≥1024px) iki sütun: solda
+metin + düğme, sağda 440px'lik kesit; şerit de `lg`de 1080px'e genişliyor,
+aksi hâlde GİRİŞ içeriğin ortasında kalıyordu.
+
+**Doğrulama:** `npm run verify-demo-board` (kesit dahil), `npm run test`
+(72/72), `layout_parity_test` + `tutorial_parity_test` + `icon_parity_test`
+(web kaynağını okuyan port testleri; `Board.tsx`e yalnızca iki `export`
+eklendi). 390 / 360 / 834 / 1280 / 1440 genişliğinde ekran görüntüsüyle
+bakıldı.
