@@ -146,6 +146,12 @@ Kelimeki artık Google Play'de 🎉
 Android'de indir, iPhone'daki arkadaşınla oyna.
 ```
 
+**27 Eylül 2026 — story'de YALNIZCA Play rozetli görsel** (kullanıcı
+kararı: *"Android lansmanı olduğu için özellikle bunu seçtim"*). Kullanılan
+dosya bugünkü üreticinin çıktısı DEĞİL, iki rozet eklenmeden önceki sürüm
+(`git show ab921a4:marketing/play-store/lansman/kelimeki-google-play-story-1080x1920.png`). Yayındaki yazı: *"Kelimeki artık Google Play'de 🎉 /
+Hemen indir, yapay zeka ile veya arkadaşınla oyna."*, sticker "Hemen İndir!".
+
 **Link sticker:** Play adresi (§5) — story'de bio'ya gitmeden mağazaya
 götüren tek yol. Sticker'ı rozetin ALTINA, dip satırın üstüne koy;
 karenin üst %14'ü ve alt %20'si IG arayüzünün altında kalıyor (üretici
