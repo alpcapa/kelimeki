@@ -41,7 +41,14 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       oyuncular →" → başlık "TÜM OYUNCULAR", bağlantı "← Arkadaşlar"; listede
       arkadaşlar seçilebilir (kutucuk), ötekilerde EKLE · İSTEK GİTTİ (dokun →
       iptal) · KABUL ET — KABUL ET'ten sonra kişi seçilebilir olmalı. Arama bu
-      görünümde tüm oyuncularda arar → "Davet Gönder". **"Davetin
+      görünümde tüm oyuncularda arar. **"SIK OYNADIKLARIN" şeridi**
+      (arama kutusunun üstü): son 90 günde en çok canlı oynanan en fazla 5
+      ARKADAŞ, çok oynanandan aza, kaydırma YOK. Sık oynanan 5'ten azsa boş
+      yerler RASTGELE arkadaşlarla dolmalı ve başlık "HIZLI SEÇ" olmalı
+      (formu kapatıp açınca sıra değişebilir, açıkken DEĞİŞMEMELİ). Avatara
+      dokunmak listedeki satırla aynı (seçer/bırakır, halka koltuk renginde,
+      listedeki kutucuk da işaretlenir). Arkadaş 2'den azsa, arama yazılınca
+      ve "Tüm oyuncular"da görünmemeli → "Davet Gönder". **"Davetin
       gönderildi"** ekranı çıkmalı, kime gittiğini ve 7 gün notunu yazmalı.
       "Oyunlarıma git"e basınca listeye dönmeli. (27 Eylül 2026'ya kadar:
       listenin üstünde "+ Yeni Canlı Oyun Aç", onay "Davetiniz

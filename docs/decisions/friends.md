@@ -44,6 +44,18 @@ hemen seçilebilir yapar. Arama ve sayfalı liste iki ekranda ORTAK:
 `FriendsModal` kısayolu kalktı (boş listede artık doğrudan paylaşım +
 "Tüm oyunculara göz at").
 
+**"Sık oynadıkların" şeridi** (formda, aynı gün, ayrı PR): arama kutusunun
+üstünde en fazla 5 avatar. Carousel DEĞİL — 390 px'e kaydırmasız sığıyor,
+yana kayan şerit "daha fazlası var" dedirtip kullanıcının "tam oturtamadım"
+dediği hissi verirdi. Kaynak `my_frequent_opponents` (son 90 gün, `active`
++ `finished` canlı oyunlar, yalnızca HÂLÂ arkadaş olanlar, eşitlikte en son
+oynanan önde); ad/avatar `list_friends`ten. Sık oynanan 5'ten azsa boş
+yerler RASTGELE arkadaşlarla dolar ve başlık "Hızlı seç" olur (kullanıcı:
+*"oynamasa bile random arkadaşlarından birilerini getirmek lazım"*); sıra
+form başına bir tohumla sabit — dokunurken avatar yer değiştirmesin.
+Arkadaş 2'den azsa HİÇ çizilmez (davet düğmesi zaten hemen altta; kullanıcı:
+*"belki hiç çıkmasın"*), aramada ve "Tüm oyuncular"da da çizilmez. Port ikizi Setup'ın port yarısıyla.
+
 **Kararlar:**
 - **Yalnızca "arkadaşlıktan çıkar" onay sorar.** Ekle/kabul/reddet/iptal tek
   dokunuş — geri alınabilir ya da zararsız; eski pencerenin her adımda
