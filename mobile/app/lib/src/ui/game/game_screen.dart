@@ -25,6 +25,7 @@ import '../../data/meaning_store.dart';
 import '../feedback/feedback_modal.dart';
 import '../../game/game_controller.dart';
 import '../../game/move_status.dart';
+import 'board_fit.dart';
 import 'board_widget.dart';
 import 'board_zoom.dart';
 import 'dialog_shell.dart';
@@ -1434,7 +1435,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                 constraints: const BoxConstraints(maxWidth: 680),
                                 child: Column(
                                   children: [
-                                    Padding(
+                                    ConstrainedBox(
+                                      // Yükseklik bütçesi (ROADMAP #38) — web `Board`un
+                                      // `fitHeight`i; gerekçe ve ölçümler `board_fit.dart`ta.
+                                      constraints: BoxConstraints(
+                                          maxWidth: boardMaxWidth(boardViewportHeight(context))),
+                                      child: Padding(
                                       // Web `Board.tsx`'in dış sarmalayıcısı:
                                       // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
                                       // taşımıştı, alttaki 12px hiç yoktu.
@@ -1501,6 +1507,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                         onTilePointerUp: _endTileDrag,
                                         onTilePointerCancel: _cancelTileDrag,
                                       ),
+                                    ),
                                     ),
                                     // Web: <main> içinde Board'dan hemen sonra mesaj
                                     // bloğu geliyor ve tek boşluk onun `pt-1`i (4px,

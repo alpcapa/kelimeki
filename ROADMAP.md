@@ -93,8 +93,8 @@ kod girmez.
 |---|---|---|---|
 | **Trende (taslak PR)** | #25 | iOS simgesinde rozet SAYISI | #647'de; DB yarısı canlıda. Merge sonrası beş bildirim fonksiyonu yeniden deploy (`verify_jwt` korunarak), 1.1.2 TestFlight'ta `mobile/docs/testing-bildirimler.md` §3h |
 | | #37 | Küfür / müstehcenlik süzgeci | Sunucu + web canlıda; koşul metni + portun takma isim uyarısı #640'ta. #640 merge edilince arşive |
-| **Sıradaki mobil işler** | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port açık |
-| | #34 | Canlı sohbet okundu bilgisi — port yarısı | Web + sunucu `main`'de; port açık |
+| | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port yarısı taslak PR'da (`claude/roadmap-38-board-widget-port-74tu7z`). Merge edilince arşive |
+| **Sıradaki mobil işler** | #34 | Canlı sohbet okundu bilgisi — port yarısı | Web + sunucu `main`'de; port açık |
 | | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Açık |
 | | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, bu kaldı |
 | | — | Huni v2'nin MOBİL yarısı (PR 2) | Numarasız; `docs/decisions/funnel-v2.md` |
@@ -127,8 +127,10 @@ başlığa da bak.
 **#38 — Tahtanın yükseklik bütçesi PORTA da gerekli** (26 Eylül 2026'ya kadar
 **#26** numarasını taşıyordu — mağaza yönlendirmesiyle çakışıyordu; arşivde,
 `touch-ux-bugs.md`de ve `board_widget.dart` yorumunda eski adıyla geçer) →
-⏳ **AÇIK — dondurma kalktı, sıradaki mobil işlerden** (22 Eylül 2026; web
-yarısı `main`'de).
+⏳ **PORT YARISI TASLAK PR'DA — 5 Ekim kesimini bekliyor** (27 Eylül 2026;
+dal `claude/roadmap-38-board-widget-port-74tu7z`, `[Sonraki sürüm]`). Üç
+kalemin üçü de yapıldı (aşağıdaki listede ✅); merge edilince madde
+arşive taşınır. Ayrıntı: `mobile/docs/parca-log.md` → Parça 215.
 
 ⚠ **Sıra: #611 merge edilmeden BAŞLAMA** (23 Eylül 2026). #611 (filigran
 tavanı, #609'un port ikizi, merge turunun dokuzuncusu) da
@@ -149,20 +151,33 @@ taşma).
 **Web yarısı yapıldı** (`src/utils/boardFit.ts` + `Board.tsx` + kapısı
 `tests/board-fit.spec.ts`; kullanıcı kararı: *"Sadece web'de yap"*). Kalan:
 
-- **Port ikizi** — `mobile/app/lib/src/ui/game/board_widget.dart` aynı deseni
+- ✅ **Port ikizi** (27 Eylül 2026, `ui/game/board_fit.dart`; üç sabit
+  web'den BİREBİR, `board_fit_test.dart` web kaynağını okuyup kilitliyor).
+  Ölçüldü: önce PAS GEÇ'in altı üç görünümde de 985 (217 · 165 · 185 px
+  taşma), sonra 765 · 817 · 797 — web'le AYNI tahta boyu. Portun başlığı
+  web'inkinden 25 px uzun ama web formülünün kendi payı onu yutuyor
+  (portta 3 px pay kalıyor). ⚠ Canlı ekranda sıra RAKİPTEYKEN bekleme
+  bandı PAS GEÇ'i 9 px taşırıyor — butonlar o an pasif, bilerek kabul
+  (porta özel terim tahtayı web'den küçük çizerdi). Eski metin:
+  `mobile/app/lib/src/ui/game/board_widget.dart` aynı deseni
   taşıyor (`MediaQuery.sizeOf(context).width` + `aspectRatio: 1`, yükseklik
   bütçesi yok). ⚠ **Ölçülmedi**, yalnızca kaynaktan okundu; işe başlarken
   önce cihazda ya da bir Flutter testinde ölçülmeli. Ölçüler
   `boardFit.ts`teki üç sabitten gelmeli (301 krom · 680 tavan · 324 taban) —
   web↔port ayrışırsa iki platform aynı tahtayı iki boyda çizer.
-- **Taş puntosu da tahtaya bağlanmalı** (26 Eylül 2026) — web'de yükseklik
+- ✅ **Taş puntosu da tahtaya bağlanmalı** (27 Eylül 2026: `TileWidget
+  .boardGridWidth` + X3 etiketi, oranlar `index.css`ten kilitli). Eski
+  metin: (26 Eylül 2026) — web'de yükseklik
   bütçesi tahtayı küçültünce taş harfi `vw` tavanında (24 px) kalıp hücreyi
   taşırdı (iPad Safari'de ölçüldü: %128). Web'in düzeltmesi `index.css` →
   `.tile-board-letter` (`5.08cqw` / puan `2.18cqw`, ızgaranın iç genişliği).
   Port `tile_widget.dart` bugün `fluidSize(screenWidth…)` — tahta
   yükseklikten boyutlanmaya başladığı anda aynı hata porta gelir.
   Ayrıntı: `docs/decisions/components.md` → "Taş harfi/puanı tavanı".
-- **`LandscapeHint` ikizi** — web'de kural `(orientation: landscape)`ten
+- ✅ **`LandscapeHint` ikizi — BİLEREK YOK** (27 Eylül 2026): web'in
+  bloğu yalnızca TELEFONDA çıkıyor, portta telefon portre kilitli; kilidin
+  tutmadığı iPad/açık katlanabilir web'de de bloklanmıyor. Gerekçe
+  `main.dart`in kilit yorumunda. Eski metin: web'de kural `(orientation: landscape)`ten
   YÜKSEKLİĞE taşındı (eski kural açık katlanabilirde de tetikleniyor ve
   *"dikeye dön"* orada yanlış tavsiye oluyordu). Portun karşılığı varsa aynı
   ölçüte geçmeli.
@@ -343,6 +358,7 @@ sürümün içeriği:**
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
+| (27 Eyl, taslak PR) | **Tahtanın yükseklik bütçesi — port ikizi (ROADMAP #38)**: açık katlanabilir / yatay iPad'de raf ve butonlar ekranın altında kalmıyor | ⚠ **Sonraki tren.** `ui/game/board_fit.dart` (yeni) + `board_widget.dart` · `tile_widget.dart` · `game_screen.dart` · `online_game_screen.dart` · `tutorial_game.dart` · `main.dart` (yorum). Web sabitleri birebir; taş harfi/puanı ve X3 tahtaya göre tavanlı. Telefon DİKEYDE davranış piksel piksel aynı (testli). Kapı: `board_fit_test.dart` + `online_game_screen_test.dart`; **917 test yeşil**. Cihaz maddesi `mobile/docs/testing-ux-turlari.md` §33 |
 | (26 Eyl, taslak PR) | **Uçak modunda Canlı oyun mesajı ham `Failed host lookup: '…supabase.co'` gösteriyordu** | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `util/error_message.dart`: makine kalıbına Dart'ın taşıma metinleri eklendi (`Failed host lookup` · `Connection refused/reset/closed/timed out` · `Network is unreachable` · `OS Error`). 1.1.1 cihaz turunda (D, §31 ilk madde) bulundu: `ClientException.message` sınıf adını taşımıyor, `SocketException` kalıbı `toString()`e bakıyordu. Web'de bu metinler oluşmuyor, web değişmedi; kalıp SAYISI parite için aynı (tek regex). Kapı: `error_message_parity_test.dart` üç yeni vaka; **904 test yeşil**. Metin düzeltmesi → acil istisna DEĞİL (`surumler.md` → "SÜRÜM TRENİ") |
 | (26 Eyl, taslak PR) | **Oyun sonunda kendiliğinden açılan "Görüş Bildir" formu kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/game/game_screen.dart` + `ui/live/online_game_screen.dart`: GameOver kapanınca `openFeedback()` artık çağrılmıyor; modalın içindeki "GÖRÜŞ BİLDİR" linki DURUYOR. Kullanıcı: *"Oyun sonlarında çıkan görüş bildir popup'ı kaldıralım artık."* (Parça 48'in otomatik açılışının geri alınması.) Web yarısı AYRI PR, hemen merge. Kapı: `game_screen_test.dart` + `online_game_screen_test.dart` ters çevrildi (form AÇILMAZ); **904 test yeşil**. Cihaz maddesi `mobile/TESTING.md` "Kapatmak formu AÇMAZ" |
 | (26 Eyl, taslak PR) | **Kayıt sonrası satır: "Hesap oluşturuldu." kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/auth/auth_modal.dart`: satır artık yalnızca *"LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN."* (tamamı kalın). Kullanıcı: insanlar hesabın hazır olduğunu sanıyor. Web yarısı #644. Kapı: `signup_info_parity_test.dart` (web kaynağını OKUR). Cihaz maddesi `mobile/TESTING.md` §30 |
