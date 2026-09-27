@@ -28,10 +28,11 @@ export const KESIT_HARITA: readonly string[] = [
 
 /**
  * Rakibin taşları — `"satır,sütun"` → harf. KUL dikey; yanındaki S/E ile
- * yatayda US ve LE, dikeyde SE (28 Eylül 2026, kullanıcı isteği — rakibin
- * bölgesi de dolu bir oyun gibi okunsun).
+ * yatayda US ve LE, dikeyde SE; K'nin solundaki A ile yatayda AK (28 Eylül
+ * 2026, kullanıcı isteği — rakibin bölgesi de dolu bir oyun gibi okunsun).
  */
 export const KESIT_RAKIP_HARFLERI: Readonly<Record<string, string>> = {
+  '2,4': 'A',
   '2,5': 'K',
   '3,5': 'U',
   '4,5': 'L',
@@ -40,20 +41,25 @@ export const KESIT_RAKIP_HARFLERI: Readonly<Record<string, string>> = {
 };
 
 /**
- * Bu turda oynanan kelime (SAAT) — oyundaki gibi yeşil geçerlilik çerçevesi
- * ve puan rozeti taşır. S önceki hamleden (dikey AS) — kural gereği yeni
- * kelime tahtadaki bir harfe BAĞLANMAK zorunda; 28 Eylül 2026'ya kadar SAAT
- * havada duruyordu (kullanıcı: *"S harfine yukarıdan değen bir hamle"*).
- * Bu turda konan taşlar AAT; puan yine SAAT'in tamamı. T'si rakip bölgesinin sınırına değiyor (vergiyi
- * doğuran). 28 Eylül 2026'ya kadar yalnızca T'nin etrafında kırmızı bir
- * halka vardı; kelimenin ortasında taşmış bir çizgi gibi okunuyordu
- * (kullanıcı: *"SAAT'in etrafı yeşil ve kazanacağı puan tag'i"*).
+ * Bu turda oluşan kelimeler — oyundaki gibi hepsini saran TEK yeşil
+ * geçerlilik çerçevesi ve toplam puan rozeti taşır. Bu turda konan taşlar
+ * AAT: S önceki hamleden (dikey AS) — kural gereği yeni kelime tahtadaki bir
+ * harfe BAĞLANMAK zorunda. T, rakibin A'sının üstüne düştüğü için dikey TA da
+ * bu hamlenin kelimesi (oyunda `calcScore` onu da sayar). T rakip bölgesinin
+ * sınırına değiyor → vergi. 28 Eylül 2026, kullanıcı isteğiyle adım adım:
+ * T'deki kırmızı halka → yeşil çerçeve + rozet, AS bağlantısı, TA/AK.
  */
-export const KESIT_HAMLE: readonly [number, number][] = [
-  [1, 1],
-  [1, 2],
-  [1, 3],
-  [1, 4],
+export const KESIT_HAMLE: readonly (readonly [number, number])[][] = [
+  [
+    [1, 1],
+    [1, 2],
+    [1, 3],
+    [1, 4],
+  ],
+  [
+    [1, 4],
+    [2, 4],
+  ],
 ];
 
 /**

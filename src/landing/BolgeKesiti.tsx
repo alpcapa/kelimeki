@@ -44,21 +44,26 @@ export function BolgeKesiti() {
     (KESIT_ACIK_KENARLAR.sag && nc >= KESIT_SUTUN) || (KESIT_ACIK_KENARLAR.alt && nr >= satir),
   );
 
-  const hamleHat = buildRoundedOutlinePath([...KESIT_HAMLE], OUTLINE_RADIUS);
-  // Rozet oyundaki gibi HAM puanı yazar (`calcScore`, vergi öncesi) ve
-  // kelimenin en üst-sol hücresine oturur (`Board.tsx` → `buildBadge`).
-  const hamlePuani = KESIT_HAMLE.reduce((t, [r, c]) => {
+  const hamleHucreleri = KESIT_HAMLE.flat() as [number, number][];
+  const hamleHat = buildRoundedOutlinePath(
+    [...new Map(hamleHucreleri.map((h) => [h.join(','), h])).values()],
+    OUTLINE_RADIUS,
+  );
+  // Rozet oyundaki gibi HAM puanı yazar (`calcScore`: her kelime ayrı sayılır,
+  // vergi öncesi) ve hücrelerin en üst-solundakine oturur (`Board.tsx` →
+  // `buildBadge`).
+  const hamlePuani = hamleHucreleri.reduce((t, [r, c]) => {
     const h = hucreler[r][c];
     return t + (h.tur === 'tas' ? (TILE_DATA[h.harf]?.pts ?? 0) : 0);
   }, 0);
-  const [rozetR, rozetC] = KESIT_HAMLE.reduce((a, b) =>
+  const [rozetR, rozetC] = hamleHucreleri.reduce((a, b) =>
     b[0] < a[0] || (b[0] === a[0] && b[1] < a[1]) ? b : a,
   );
 
   return (
     <div
       role="img"
-      aria-label="Tahta kesiti: solda senin camgöbeği bölgen; önceki hamlen AS'nin S'sine bağlanan SAAT kelimen, sağ altta rakibin kırmızı bölgesi ve KUL, US, LE, SE kelimeleri. SAAT 5 puan getiriyor, ama son harfi rakibin bölgesine değdiği için puanın üçte biri rakibe geçer."
+      aria-label="Tahta kesiti: solda senin camgöbeği bölgen; önceki hamlen AS'nin S'sine bağlanan SAAT kelimen, sağ altta rakibin kırmızı bölgesi ve KUL, US, LE, SE, AK kelimeleri. SAAT ve rakibin A'sıyla kurulan TA 7 puan getiriyor, ama T rakibin bölgesine değdiği için puanın üçte biri rakibe geçer."
       className="relative w-full max-w-[340px] lg:max-w-[440px] mx-auto rounded-[18px] bg-[#DDE4EE] p-[10px] shadow-raised"
     >
       <div
