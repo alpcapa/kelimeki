@@ -36,8 +36,12 @@ yarısıyla birlikte, web verisi okunduktan sonra.
   olayı; `App` sekmeyi değiştirir, `LiveGamesTab` isteği hem mount'ta hem
   olayda ALIR). Yerel oyun sürüyorsa `handleLogoClick` ile Setup'a dönülür
   (oyun kayıtlı, bir şey kaybolmaz).
-- **Giden istekler bölümü YOK** — listeleyen bir RPC yok; bekleyen istek
-  aramada "İstek gitti" hapıyla görünür. Gerekirse ayrı bir sunucu işi.
+- **Gönderdiğin istekler gelen isteklerin ALTINDA** (kullanıcı: *"davetler
+  altında göremez miyiz?"*) — küçük satır, "Cevap bekleniyor", onaysız
+  **Geri al**. Kaynak `list_outgoing_friend_requests` (27 Eylül 2026,
+  `list_incoming_…`in ayna ikizi): profiller yalnızca sahibine açık olduğu
+  için karşı tarafın adı/avatarı doğrudan tablodan OKUNAMAZ, security definer
+  RPC şart. Port henüz çağırmıyor (Setup port yarısıyla gelir).
 - Eski sekme adları (aşağıdaki bölüm) artık yüzeyde yok; kayıt tarihçe olarak kalıyor.
 
 ## Sekme adları: "Arkadaşlarım" → **Arkadaşlar**, "İstekler" → **Davetler** (10 Eylül 2026)

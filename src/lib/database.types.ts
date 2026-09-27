@@ -63,6 +63,14 @@ export interface IncomingFriendRequest {
   created_at: string;
 }
 
+/** `list_outgoing_friend_requests` — gönderdiğim, henüz cevaplanmamış istekler. */
+export interface OutgoingFriendRequest {
+  friend_id: string;
+  name: string;
+  avatar_url: string | null;
+  created_at: string;
+}
+
 /** İki kullanıcı arasındaki mevcut arkadaşlık ilişkisi — bkz. `fetchFriendRelation`. */
 export type FriendRelation = 'accepted' | 'pending_outgoing' | 'pending_incoming';
 

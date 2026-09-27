@@ -21,13 +21,19 @@ import {
   fetchFriends,
   fetchMyChatModeration,
   fetchIncomingFriendRequests,
+  fetchOutgoingFriendRequests,
   listUsersForFriend,
   removeFriend,
   respondFriendRequest,
   searchUsersForFriend,
   sendFriendRequest,
 } from '../lib/api';
-import type { FriendRow, FriendSearchResult, IncomingFriendRequest } from '../lib/database.types';
+import type {
+  FriendRow,
+  FriendSearchResult,
+  IncomingFriendRequest,
+  OutgoingFriendRequest,
+} from '../lib/database.types';
 import { useInviteShare } from '../hooks/useInviteShare';
 import { InviteShareFallback } from './InviteShareFallback';
 import { requestLiveGameWith } from '../utils/liveGameRequest';
@@ -160,12 +166,13 @@ export function friendSinceLabel(since: string | null, kisa = false, now = Date.
   return kisa ? sure : `${sure} arkadaşsınız`;
 }
 
-type PillKind = 'oyna' | 'ekle' | 'gonderildi' | 'kabul';
+type PillKind = 'oyna' | 'ekle' | 'gonderildi' | 'kabul' | 'geriAl';
 const PILL: Record<PillKind, { label: string; cls: string }> = {
   oyna: { label: 'Oyna', cls: 'bg-accent border-accent text-white' },
   ekle: { label: 'Ekle', cls: 'bg-[#EEF4FF] border-accent text-accent' },
   gonderildi: { label: 'İstek gitti', cls: 'bg-panel border-border text-muted' },
   kabul: { label: 'Kabul et', cls: 'bg-orange border-orange text-white' },
+  geriAl: { label: 'Geri al', cls: 'bg-panel border-border text-text' },
 };
 
 function Pill({
@@ -196,6 +203,7 @@ function Pill({
 export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalProps) {
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
   const [requests, setRequests] = useState<IncomingFriendRequest[] | null>(null);
+  const [sent, setSent] = useState<OutgoingFriendRequest[]>([]);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<FriendSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -215,6 +223,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
   const rankTierOf = useRankScores([
     ...(friends ?? []).map((f) => f.friend_id),
     ...(requests ?? []).map((r) => r.requester_id),
+    ...sent.map((r) => r.friend_id),
     ...results.map((u) => u.id),
     ...(allUsers ?? []).map((u) => u.id),
   ]);
@@ -223,6 +232,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
 
   const reloadFriends = () => void fetchFriends().then(setFriends);
   const reloadRequests = () => void fetchIncomingFriendRequests().then(setRequests);
+  const reloadSent = () => void fetchOutgoingFriendRequests().then(setSent);
 
   // Sohbet moderasyon durumu — sessize alınmış/şikayet edilmiş arkadaşın
   // adının yanında 🚫/🚩, ⋯ menüsünde "Sessize alma / şikayet ayarları".
@@ -236,6 +246,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
   useEffect(() => {
     reloadFriends();
     reloadRequests();
+    reloadSent();
     reloadModeration();
   }, []);
 
@@ -310,6 +321,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
       // doğrudan 'accepted'a çeviriyor.
       patchRelation(id, status === 'accepted' ? 'accepted' : 'pending_outgoing');
       if (status === 'accepted') reloadFriends();
+      reloadSent();
     } catch (err) {
       console.error('[Kelimeki] arkadaşlık isteği hatası:', err);
     } finally {
@@ -336,6 +348,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     try {
       await removeFriend(id); // gönderilen isteği iptal et
       patchRelation(id, null);
+      setSent((prev) => prev.filter((r) => r.friend_id !== id));
     } catch (err) {
       console.error('[Kelimeki] istek iptal hatası:', err);
     } finally {
@@ -552,6 +565,28 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Gönderdiğin, cevap bekleyen istekler — gelen isteklerin ALTINDA
+                (kullanıcı isteği). Yanıt SENDEN beklenmediği için küçük satır;
+                "Geri al" onaysız (tekrar eklemek tek dokunuş). */}
+            {sent.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className={sectionCls}>Gönderdiğin istekler · {sent.length}</span>
+                <div className={listCls}>
+                  {sent.map((r) => (
+                    <div key={r.friend_id} className={rowCls}>
+                      {personButton(r.friend_id, r.name, r.avatar_url, 'Cevap bekleniyor')}
+                      <Pill
+                        kind="geriAl"
+                        ariaLabel={`${r.name} — isteği geri al`}
+                        disabled={busyId === r.friend_id}
+                        onClick={() => void handleCancel(r.friend_id)}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

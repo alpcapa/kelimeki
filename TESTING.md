@@ -648,7 +648,10 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       turuncu "Arkadaşını davet et" (telefonda sistem paylaşım sayfası, WhatsApp
       orada) + arama kutusu. Gelen istek varsa "İSTEKLER" kartı en üstte;
       KABUL ET / REDDET **onaysız**, kart listeden düşmeli, KABUL'de kişi
-      "ARKADAŞLARIN"a eklenmeli. Arkadaş satırı: isim + rütbe + "3 haftadır"
+      "ARKADAŞLARIN"a eklenmeli. Altında "GÖNDERDİĞİN İSTEKLER" (yalnızca
+      cevap bekleyen istek varsa): "Cevap bekleniyor" + GERİ AL (onaysız,
+      satır düşmeli; aramada EKLE'ye dönmeli). Aramadan EKLE'ye basınca kişi
+      bu listede belirmeli. Arkadaş satırı: isim + rütbe + "3 haftadır"
       (arkadaşlık süresi), OYNA ve ⋯. **OYNA** → pencere kapanır, Setup →
       Arkadaşınla → form O ARKADAŞ SEÇİLİ, 2 kişi. Aynısını oyun ekranının
       başlığındaki hesap menüsünden dene: oyun kaydedilip kurulum ekranına
