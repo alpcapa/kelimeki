@@ -40,7 +40,7 @@ npm run verify-fetch-my-games    # oyun geçmişi: ağ hatası ↔ boş liste ay
 npm run verify-live-games-load    # canlı oyun listesi: düşen istek sessizce tekrarlanır
 npm run verify-shared-realtime    # canlı oyun aboneliği: üç çağıran → tek Realtime kanalı
 npm run verify-tutorial-script   # "oynayarak öğren" tanıtımı: senaryo gerçek motorda oynatılır (ekrandaki puanlar dahil)
-npm run verify-demo-board        # karşılama katmanındaki tanıtım tahtası sözlüğe karşı doğrulanır
+npm run verify-demo-board        # karşılama katmanındaki tanıtım tahtaları + ilk ekran kesiti sözlüğe karşı doğrulanır
 npm run verify-remaining-tiles   # "Kalan Taşlar" dökümü ↔ oyun sonu raf düşümü
 npm run verify-swap-invariants   # taş değiştirme: taslak taşlar yok olmuyor + senkron seçimi düşürüyor + torbada kalandan fazla taş değiştirilemiyor
 npm run verify-edge-engine-parity # motorun üçüncü kopyası (Edge Function) src/'den ayrışmadı mı
@@ -222,8 +222,10 @@ src/
 │                    # hem service worker'ın gezinme fallback muafiyet listesini besler
 ├── landing/
 │   ├── Landing.tsx     # karşılama katmanının tamamı (derleme/dev zamanında statik HTML'e render edilip index.html'e gömülür) — SUNUCUDA render edilir, hook/olay/tarayıcı globali YOK
+│   ├── BolgeKesiti.tsx # ilk ekrandaki 7×5 tahta kesiti — bölge dış hattı oyunun buildRoundedOutlinePath'iyle (ROADMAP #41)
 │   ├── LandingLogo.tsx # logoyu üç kez çizmek için SVG sprite'ı (path verisi LogoMark'tan; üç ham kopya gzip'te 10 KB yiyordu)
 │   ├── OzellikIkonlari.tsx # "Neler var" bölümündeki altı özellik ikonu — Material DEĞİL, ilkel şekillerden (portun ozellik_ikonlari.dart'ıyla ELLE senkron)
+│   ├── ilkEkranKesiti.ts # kesitin haritası/harfleri (SAAT · KUL) — npm run verify-demo-board sözlüğe karşı sınar; porta ÜRETİLMEZ
 │   ├── demoBoard.ts    # tanıtım tahtalarının (2 ve 4 kişilik) taşları — gerçek Board.tsx ile render edilir, npm run verify-demo-board ile sözlüğe karşı doğrulanır; ikisi de npm run generate-demo-board-dart ile porta üretilir
 │   └── render.tsx      # renderToStaticMarkup sarmalayıcısı — Vite eklentisi (scripts/landing-plugin.js) Node'da çağırır
 ├── fonts/
