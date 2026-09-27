@@ -1501,4 +1501,10 @@ export interface AdminWebJourneyRow {
   median_seconds: number | null;
   /** Burada ayrılanların karşılamadaki kaydırma derinliği (%, medyan). */
   median_scroll: number | null;
+  /**
+   * Etkileşimsiz oturum sayısı — yalnızca İLK pingi ulaşmış (sekme kapanış
+   * pingi hiç gelmemiş) oturumlar; çoğu önizleme/tarama botu. Adım
+   * satırlarından DÜŞÜLMÜŞTÜR, her satırda aynı değer (27 Eylül 2026).
+   */
+  idle: number;
 }

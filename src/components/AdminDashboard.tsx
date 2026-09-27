@@ -323,6 +323,34 @@ function AdminSelect({
 const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px] text-accent';
 
 /**
+ * Tek platformdan beslenen kartların başlık etiketi (27 Eylül 2026, kullanıcı
+ * isteği: *"sadece web olanlara Web yazalım, belli olsun"* + aynı gün
+ * *"sadece uygulama olanlara etiket koy"*).
+ * - **Web:** kaynak tabloya port hiç yazmıyor (ya da bilerek başka yere —
+ *   Firebase — yazıyor); kart iOS/Android kullanıcısını GÖRMEZ. Etiket
+ *   olmadan "uygulamada kimse X yapmıyor" diye yanlış okunuyordu.
+ * - **Uygulama:** kaynak yalnızca uygulamada dolu (sürüm numarası, push token).
+ * ⚠ Port bir gün bir "Web" kartının tablosuna yazmaya başlarsa etiketi
+ * KALDIR (Huni v2'nin mobil yarısı, cihaz kartları — ROADMAP).
+ * Kapsam denetimi: `docs/decisions/admin-panel.md` → "Web etiketi".
+ */
+function PlatformTag({ kind }: { kind: 'web' | 'app' }) {
+  const web = kind === 'web';
+  return (
+    <span
+      className="ml-1.5 inline-block align-middle normal-case rounded border border-accent/50 px-1 py-px text-[9px] leading-none tracking-[0.5px]"
+      title={
+        web
+          ? 'Bu kart yalnızca web verisi gösteriyor — iOS/Android uygulaması bu tabloya yazmıyor.'
+          : 'Bu kart yalnızca iOS/Android uygulamasının verisini gösteriyor — web bu tabloya yazmıyor.'
+      }
+    >
+      {web ? 'Web' : 'Uygulama'}
+    </span>
+  );
+}
+
+/**
  * Metrik tanımları — 16 Ağustos 2026'ya kadar grafiklerin ALTINDA paragraf
  * olarak duruyordu. Tanımın ekranın kendisinde yaşaması hâlâ doğru (dokümanda
  * kalsa ilk yanlış yorum kaçınılmaz olurdu) ama beş uzun paragraf paneli
@@ -464,6 +492,14 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         tarayıcıları (<code>navigator.webdriver</code>) sayılmaz. Mobil Safari sekmeyi
         bazen son pingi göndermeden kapatıyor, bu yüzden Süre biraz eksik ölçülebilir.
         Adımlar bundan etkilenmez.
+        <br />
+        <br />
+        <b>Etkileşimsiz</b> oturumlar tablodan DÜŞÜLÜR, sayıları altta ayrıca yazar: sayfa
+        açılmış ama ikinci hiçbir ping (sekme kapanışı, arka plana alma, adım) gelmemiş
+        — süre 0, kaydırma yok. Bunların çoğu kendini otomasyon olarak bildirmeyen
+        önizleme/tarama botları (27 Eylül 2026'da ölçüldü: "Yeni" 20 oturumun 14'ü böyleydi,
+        çoğu ikişer ikişer aynı milisaniyede açılmış). ⚠ Kapanış pingini kaybeden gerçek
+        bir ziyaretçi de buraya düşebilir.
       </>
     ),
   },
@@ -1748,6 +1784,9 @@ function WebJourneyTable({
   infoHint?: ReactNode;
 }) {
   const toplam = rows ? rows.reduce((t, r) => t + r.left_here, 0) : 0;
+  // Etkileşimsiz (yalnızca ilk pingi gelmiş) oturumlar sunucuda satırlardan
+  // düşülüyor; sayı her satırda aynı, ilkinden okunur.
+  const etkilesimsiz = rows?.[0]?.idle ?? 0;
   const gorunen = rows ? rows.filter((r) => r.reached > 0) : [];
   const karsilama = rows?.find((r) => r.step === 'landing');
   const ust = (
@@ -1775,8 +1814,10 @@ function WebJourneyTable({
             { value: 'android', label: 'Android' },
           ]}
         />
-        {rows !== null && toplam > 0 && (
-          <span className="text-[11px] font-mono text-muted">{toplam} oturum</span>
+        {rows !== null && (toplam > 0 || etkilesimsiz > 0) && (
+          <span className="text-[11px] font-mono text-muted">
+            {toplam} oturum{etkilesimsiz > 0 && ` · ${etkilesimsiz} etkileşimsiz`}
+          </span>
         )}
       </div>
       {infoHint}
@@ -3959,6 +4000,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Ziyaretçi Yolculuğu (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="web" />
                     </span>
                     <WebJourneyTable
                       rows={webJourney}
@@ -3972,6 +4014,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Huni v2 (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="web" />
                     </span>
                     <FunnelV2Table
                       rows={funnelV2}
@@ -3990,6 +4033,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Kayıt Hunisi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="web" />
                     </span>
                     <SignupFunnelTable
                       rows={signupFunnel}
@@ -4008,6 +4052,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Cihaz (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="web" />
                     </span>
                     <DeviceOsTable
                       rows={
@@ -4019,6 +4064,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Cihaz Markası (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="web" />
                     </span>
                     <DeviceBrandTable
                       rows={deviceModels && brandBreakdown(deviceModels)}
@@ -4028,6 +4074,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Sürüm Dağılımı (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="app" />
                     </span>
                     <PlatformVersionTable
                       groups={appVersionGroups}
@@ -4041,6 +4088,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Bildirim İzni Verenler (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="app" />
                     </span>
                     {/* ⚠ ÜSTTEKİ TABLONUN KOPYASI DEĞİL — farklı soru, farklı
                         kapsam (bkz. AdminPushVersionRow). "Sürüm Dağılımı"
