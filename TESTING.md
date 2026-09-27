@@ -31,16 +31,39 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
 
 ## 1. Canlı oyun — davet akışı
 
-- [ ] **Davet gönderme.** "Arkadaşınla" → "+ Yeni Canlı Oyun" → 2 kişilik, bir
-      arkadaş seç → "Davet Gönder". **"Davetiniz gönderilmiştir."** ekranı
-      çıkmalı, kime gittiğini yazmalı. "Tamam"a basınca listeye dönmeli.
+- [ ] **Davet gönderme.** "Arkadaşınla" → listenin üstündeki "Yeni Oyun Kur" → 2
+      kişi, bir arkadaş seç → seçilen arkadaş "RAKİBİN" altında kırmızı koltuk
+      kartında görünmeli (✕ ile boşalır) → "Davet Gönder". **"Davetin
+      gönderildi"** ekranı çıkmalı, kime gittiğini ve 7 gün notunu yazmalı.
+      "Oyunlarıma git"e basınca listeye dönmeli. (27 Eylül 2026'ya kadar:
+      listenin üstünde "+ Yeni Canlı Oyun Aç", onay "Davetiniz
+      gönderilmiştir." / "Tamam".)
 - [ ] **Tek davet = tek oyun.** Gönderimden sonra `online_games`'te o çift için
       TEK satır olmalı. (Onay ekranı eklenmeden önce, geri bildirim olmadığı
       için insanlar butona tekrar basıp 25-35 saniye arayla ikinci bir oyun
       açıyordu — iki farklı kullanıcıda görüldü.)
-- [ ] **4 kişilik + YZ.** 2 arkadaş seçip gönderince "4. koltuk Yapay Zeka ile
-      doldurulacak, tamam mı?" onayı çıkmalı; "Hayır" denince listede kalıcı
-      bir "🤖 Yapay Zeka" satırı belirmeli ve bir daha sorulmamalı.
+- [ ] **4 kişilik + YZ.** 4 Kişi → 2 arkadaş seçince üç koltuk kartından
+      ikisi arkadaşların (kırmızı, yeşil), üçüncüsü **"🤖 Yapay Zeka"** olmalı;
+      "Davet Gönder" ARA PENCERE SORMADAN göndermeli (27 Eylül 2026, ROADMAP
+      #41: eski "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onayı
+      kalktı). 3. arkadaşı seçince o koltuk mor karta dönmeli, 4. seçim
+      reddedilmeli (tavan 3). `online_games.slots`: 4 kişilik, sonda `ai`.
+- [ ] **Arkadaşını davet et (27 Eylül 2026).** Arkadaş seçicide arama
+      kutusunun HEMEN altında kesik çerçeveli "+ Arkadaşını davet et" düğmesi;
+      Arkadaşlar penceresini AÇMAMALI — telefonda doğrudan sistem paylaşım
+      sayfası (WhatsApp orada) açılmalı, ilk dokunuşta (link önceden
+      alınıyor; iOS'ta ikinci dokunuş gerekiyorsa izin düşüyor demektir).
+      Masaüstünde "WhatsApp'ta gönder" + "Linki kopyala" penceresi çıkmalı.
+      Paylaşılan link `/davet/<token>?ref=arkadas` olmalı.
+      "Arkadaş Ekle" satırı YOK. "Davet Gönder" + "Vazgeç" koltuk kartlarının
+      HEMEN altında, akışta (27 Eylül 2026'ya kadar ekranın altına `fixed`
+      sabitliydi ve iPad/iPhone tarayıcısının yüzen alt çubuğunun arkasına
+      yarı giriyordu — kullanıcı ekran görüntüsüyle gösterdi).
+- [ ] **Girişsiz "Arkadaşınla" (27 Eylül 2026).** Çıkış yapmış hâlde
+      "Kime karşı" → Arkadaşınla: alttan "Arkadaşınla oynamak için giriş yap"
+      penceresi açılmalı. Üye Ol → kayıt formu, Giriş Yap → giriş formu;
+      "Yapay Zekayla devam et" ya da arka plana dokunmak pencereyi kapatıp
+      "Kime karşı"yı Yapay Zeka'ya çevirmeli.
 - [ ] **Davetlinin görünümü.** Karşı hesapta "Oyun Davetleri" sekmesinde kart
       görünmeli, katılımcıların yanında "Davet gönderen"/"Bekliyor" etiketleri
       ve "N gün M saat kaldı" satırı olmalı. (Metin iki kez değişti: 5 Ağustos
@@ -77,8 +100,8 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       bekleyen davet/hamle yokken 5+ dakika uzaklaşıp dön: "Yapay Zeka ile"
       sekmesinde kalmalısın.
 - [ ] **Kurma formunun arkadaş listesi hesap değişiminde tazelenmeli.** Bir
-      hesapla "+ Yeni Canlı Oyun"u aç (arkadaş listesi yüklensin), kapatmadan
-      çıkış yapıp BAŞKA bir hesapla gir, tekrar "+ Yeni Canlı Oyun"a bas.
+      hesapla "Yeni Oyun Kur"u aç (arkadaş listesi yüklensin), kapatmadan
+      çıkış yapıp BAŞKA bir hesapla gir, tekrar "Yeni Oyun Kur"a bas.
       Yeni hesabın KENDİ arkadaş listesi görünmeli — önceki hesabınki (hatta
       kendi adının listede belirmesi) DEĞİL. (5 Ağustos 2026: `LiveGameCreateForm`
       arkadaşları yalnızca mount'ta çekiyordu, bu form modal değil tam görünüm
@@ -602,7 +625,7 @@ tek turda, gerçekten bekleyen bir iş varken kontrol et.
       olmalı. Rozet avatarın sağ üst köşesinden taşar (bu doğru); GameHeader'ın
       yatay kaydırılan şeridinde **kırpılmamalı** — oyun ekranında da kontrol et.
 - [ ] **Rozet olMAması gerekenler.** "Değiştir (N)" (seçili taş sayısı) ve
-      "Arkadaşlarını Seç (N/3)" (seçim ilerlemesi) — bunlar bekleyen iş değil,
+      "Rakiplerin · N/3" (seçim ilerlemesi; 27 Eylül 2026'ya kadar "Arkadaşlarını Seç (N/3)") — bunlar bekleyen iş değil,
       metin içinde kalmalı.
 
 ## 8. "Bekleyen iş öne çıksın" — varsayılan sekmeler
@@ -621,7 +644,7 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       2026. Aynısı hesap değiştirmeden, sadece "Yapay Zeka ile"ye gidip
       dönerek de üretilebilir.)
 - [ ] **Arkadaşlar penceresi.** Bekleyen istek varsa "Davetler" açık gelmeli.
-      Ama "+ Yeni Canlı Oyun" içindeki "arkadaş eklemek için tıkla"
+      Ama "Yeni Oyun Kur" içindeki "Arkadaşını davet et"
       bağlantısından açılınca **"Ara & Ekle"de kalmalı** — o açık bir niyet,
       ezilmemeli.
 - [ ] **Arkadaşlık ikonları (11 Ağustos 2026).** Satır aksiyonları metin
@@ -847,16 +870,16 @@ gerekiyor).
 
 - [ ] **Standart Setup — girişli YZ tarafı (27 Eylül 2026, ROADMAP #41).**
       Otomatik test misafir dalını kapsıyor; girişli dal gerçek oturum ister.
-      Girişli hesapla Setup → "KİME KARŞI" → Yapay Zeka: devam eden oyunlar
-      listesi ÜSTTE, "Yeni Oyun Kur" ALTTA sabit (turuncu, ekranın altına
-      yapışık; sayfanın sonuna inince footer'ın üstünde yerine oturur,
-      örtmez). Dokununca form: Oyuncu sayısı ("2 Kişi"/"4 Kişi") → altında tek
-      satır açıklama (koltuk listesi YOK) → Zorluk → altta sabit OYUNU BAŞLAT
-      + Vazgeç. iPhone'da şeridin altı ev çubuğuna binmiyor
-      (`env(safe-area-inset-bottom)`).
+      Girişli hesapla Setup → "KİME KARŞI" → Yapay Zeka: turuncu "Yeni Oyun
+      Kur" listenin ÜSTÜNDE. Dokununca form: Oyuncu sayısı ("2 Kişi"/"4
+      Kişi") → altında tek satır açıklama (koltuk listesi YOK) → Zorluk →
+      OYUNU BAŞLAT + Vazgeç. ⚠ iPhone Safari'de (yüzen alt çubuk) OYUNU
+      BAŞLAT ilk ekranda görünmeli — "altta sabit" şerit 27 Eylül 2026'da
+      tam burada çubuğun arkasına düştü ve geri alındı. Misafirde üyelik
+      kutusu düğmenin ALTINDA.
 
 - [ ] **Seviyeye göre puan — Kolay (6 Eylül 2026, ROADMAP #23 Faz 3).**
-      Girişli hesapla Yapay Zeka sekmesi → altta sabit "Yeni Oyun Kur" (27 Eylül 2026'ya kadar üstte "+ Yeni Yapay Zeka Oyunu Aç") →
+      Girişli hesapla Yapay Zeka sekmesi → listenin üstündeki "Yeni Oyun Kur" (27 Eylül 2026'ya kadar "+ Yeni Yapay Zeka Oyunu Aç") →
       "Oyuncu sayısı"nın ALTINDA **Zorluk** satırı: `Kolay` · `Normal` ·
       `Zor` (Zor Faz 5'le, 7 Eylül 2026'da girdi), Normal seçili (27 Eylül 2026'dan beri hiç oynamamış kullanıcıda Kolay seçili). Seçicinin altında
       seçili seviyenin açıklaması: Normal'de "Orta-iyi seviye bir
@@ -969,7 +992,7 @@ gerekiyor).
       (18px) · Skor Kartı'ndaki kendi ismin (20px) · başka bir oyuncunun
       kartı (20px) · Setup'ta 1. koltuktaki hesap adı (18px) · Arkadaşlar
       penceresinin ÜÇ sekmesi de (18px — "Arkadaşlar", "Davetler",
-      "Ara & Ekle") · "+ Yeni Canlı Oyun"daki arkadaş seçici (18px) · Oyun
+      "Ara & Ekle") · "Yeni Oyun Kur"daki arkadaş seçici (18px) · Oyun
       davetleri kartındaki katılımcı isimleri (16px). **Skor kartlarında
       artık İKİ mühür var** — başlıktaki 34px'lik tıklanabilir mühür VE
       ismin yanındaki 20px'lik; ikisi AYNI kademeyi göstermeli.

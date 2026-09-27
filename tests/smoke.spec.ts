@@ -209,6 +209,20 @@ test('İlk oyun: misafire giriş penceresi ÇIKMAZ, zorluk Kolay açılır (#41)
   await expect(page.getByLabel('Giriş uyarısı')).toHaveCount(0);
 });
 
+test('Girişsiz Arkadaşınla: alttan giriş penceresi, "Yapay Zekayla devam et" geri döndürür (#41)', async ({ page }) => {
+  // 27 Eylül 2026, ROADMAP #41 karar 9. Kapatmak da Yapay Zeka'ya döner —
+  // misafir boş bir sekmede kalmıyor.
+  await donenKullanici(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Arkadaşınla' }).click();
+  const pencere = page.getByRole('dialog', { name: 'Arkadaşınla oynamak için giriş yap' });
+  await expect(pencere).toBeVisible();
+  await expect(pencere.getByRole('button', { name: 'Üye Ol' })).toBeVisible();
+  await pencere.getByRole('button', { name: 'Yapay Zekayla devam et' }).click();
+  await expect(pencere).toHaveCount(0);
+  await expect(page.getByText('OYUNU BAŞLAT')).toBeVisible();
+});
+
 test('Zorluk: Normal (varsayılan) kayda aiLevel YAZMAZ — eski kayıt sözleşmesi', async ({ page }) => {
   page.on('dialog', (dialog) => dialog.accept());
   await donenKullanici(page);

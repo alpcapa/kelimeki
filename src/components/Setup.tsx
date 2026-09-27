@@ -19,6 +19,7 @@ import { AuthModal } from "./AuthModal";
 import { CountBadge } from "./CountBadge";
 import { HelpModal } from "./HelpModal";
 import { LiveGamesTab, TurnTriangle } from "./LiveGamesTab";
+import { PRIMARY_ACTION_BTN } from "./actionButton";
 import { orderByExpiry } from "../utils/gameListOrder";
 import { LogoMark } from "./LogoMark";
 import { AvatarScoreRow, PlayerAvatarRow, type AvatarRowPlayer } from "./PlayerAvatarRow";
@@ -88,10 +89,6 @@ function remainingTime(
 // kullanıldığı `else` dalı `count`'tan bağımsız olduğundan otomatik ikisinde
 // de çıkıyor); girişli kullanıcı "+ Yeni Yapay Zeka Oyunu" formunu açtığında
 // (aynı `else` dalına düşse de) `!user` koşuluyla gizli kalır.
-/** Altta sabit düğme şeridi — Setup'ın iki dalında aynı (ROADMAP #41). */
-const STICKY_BAR =
-  "sticky bottom-0 z-10 -mx-4 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] bg-bg border-t border-border shadow-[0_-8px_20px_rgba(163,177,198,0.25)]";
-
 const MEMBERSHIP_PERKS = [
   "Arkadaşlarınla çoklu canlı oyun oynama",
   "Skor takibi ve k-lig sıralaması",
@@ -851,6 +848,7 @@ export function Setup({
             onOpenGame={onOpenLiveGame}
             newlyFinishedIds={finishedUnseen}
             onFinishesSeen={handleFinishesSeen}
+            onSwitchToAi={() => onMainViewChange("local")}
           />
         ) : !user && savedGame ? (
           // Misafir, tekil localStorage kaydı — yeni oyun bu bitene/teslim
@@ -884,7 +882,15 @@ export function Setup({
           // formu yalnızca butona tıklanınca açılır. Devam Edenler/Son
           // Oynananlar tabı da `LiveGamesTab`'daki BİREBİR AYNI çözüm.
           <>
-
+            {/* 27 Eylül 2026 (ROADMAP #41 karar 13): önce "altta sabit"
+                denendi ve iOS Safari'nin yüzen alt çubuğunun ARKASINA düştü
+                (sayfa çubuğun altına kadar uzanıyor, `sticky bottom-0` oraya
+                yapışıyor — kullanıcı ekran görüntüsüyle bildirdi). Düğme
+                akışta, listenin ÜSTÜNDE; Arkadaşınla tarafıyla aynı
+                (`actionButton.ts`). */}
+            <button onClick={() => setCreatingLocal(true)} className={PRIMARY_ACTION_BTN}>
+              Yeni Oyun Kur
+            </button>
             <div className="flex gap-2">
               {[
                 {
@@ -971,18 +977,6 @@ export function Setup({
                 offlineNode={offlineAiNotice}
               />
             )}
-            {/* Devam eden oyunlar ÜSTTE, yeni oyun düğmesi altta SABİT
-                (27 Eylül 2026, ROADMAP #41 karar 13 — Arkadaşınla tarafıyla
-                aynı düzen). Eskiden listenin üstündeydi ("+ Yeni Yapay Zeka
-                Oyunu Aç"). */}
-            <div className={STICKY_BAR}>
-              <button
-                onClick={() => setCreatingLocal(true)}
-                className="w-full btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform"
-              >
-                Yeni Oyun Kur
-              </button>
-            </div>
           </>
         ) : (
           <>
@@ -1060,14 +1054,12 @@ export function Setup({
               </p>
             </div>
 
-            {!user && (
-              <MembershipPerksBox onSignup={() => setShowAuthModal(true)} />
-            )}
-            {/* OYUNU BAŞLAT altta SABİT (27 Eylül 2026, ROADMAP #41 karar 2).
-                `sticky bottom-0`: kaydırma kabı `#root`; düğme ekranın altına
-                yapışır, sayfanın sonunda kendi yerine oturur (footer'ı
-                örtmez). `-mx-4 px-4`: şerit kabın dolgusunu da kaplar. */}
-            <div className={STICKY_BAR}>
+            {/* OYUNU BAŞLAT zorluğun HEMEN altında, üyelik kutusu ONDAN SONRA
+                (27 Eylül 2026, ROADMAP #41 karar 2). "Altta sabit şerit" denendi
+                ve iOS Safari'nin yüzen alt çubuğunun arkasına düştü — misafirde
+                üyelik kutusu formu ekrandan uzun yaptığı için düğme görünmüyordu.
+                Bu sırayla 390×844'te ilk ekranda. */}
+            <div>
               <div className="flex gap-2">
                 <button
                   onClick={handleStart}
@@ -1095,8 +1087,10 @@ export function Setup({
                   </button>
                 )}
               </div>
-
             </div>
+            {!user && (
+              <MembershipPerksBox onSignup={() => setShowAuthModal(true)} />
+            )}
           </>
         )}
 

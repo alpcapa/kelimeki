@@ -829,10 +829,10 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | 6 | Ayrı bir "Hazırsın" ekranı YOK; mevcut bitiş penceresi yeni tasarıma geçer (onay mührü, tanıtım skoru, sıradaki oyun, turuncu düğme) | Düz pencere | aynı |
 | 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | ✅ WEB KODLANDI (27 Eyl, `defaultAiLevel`); port bilerek bekliyor | `Setup.tsx:340` ↔ port |
 | 8 | Rakibin adı **Yapay Zeka** (27 Eylül, kullanıcı: *"yapay zeka kalsın"*); oyun içi skor kutusundaki "YZ 2" kısaltması DEĞİŞMEZ | Aynı | — |
-| 9 | Arkadaşınla, girişsiz: alttan açılan giriş uyarısı (ÜYE OL · GİRİŞ YAP · YAPAY ZEKAYLA DEVAM ET) | Sekmede metin | `LiveGamesTab` |
-| 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | Liste + ayrı form | `LiveGamesTab` + `LiveGameCreateForm` |
-| 11 | Arkadaş seçici: arama kutusunun ALTINDA, listenin üstünde **+ ARKADAŞINI DAVET ET** (davet linki); listenin altındaki "Listede yok mu?" bağlantısı kalkar | Liste altında bağlantı | `LiveGameCreateForm` |
-| 12 | Seçilen rakipler **koltuk kartı** olarak, oyuncu renginin zemininde (bilinçli değişiklik; avatar aynı kalır). 4 kişide boş 4. koltuk ekranda "Yapay Zeka" olarak görünür → "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi **KALKAR** | Onay penceresi | `LiveGameCreateForm` |
+| 9 | Arkadaşınla, girişsiz: alttan açılan giriş uyarısı (ÜYE OL · GİRİŞ YAP · YAPAY ZEKAYLA DEVAM ET) | ✅ WEB KODLANDI (27 Eyl, `GuestLiveSheet`) | `LiveGamesTab` |
+| 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | ✅ WEB KODLANDI (27 Eyl) — mevcut alt sekmeler kaldı, "Yeni Oyun Kur" altta sabit | `LiveGamesTab` + `LiveGameCreateForm` |
+| 11 | Arkadaş seçici: arama kutusunun ALTINDA, listenin üstünde **+ ARKADAŞINI DAVET ET** (davet linki); listenin altındaki "Listede yok mu?" bağlantısı kalkar | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
+| 12 | Seçilen rakipler **koltuk kartı** olarak, oyuncu renginin zemininde (bilinçli değişiklik; avatar aynı kalır). 4 kişide boş 4. koltuk ekranda "Yapay Zeka" olarak görünür → "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi **KALKAR** | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
 | 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | ✅ WEB KODLANDI (27 Eyl) — girişli YZ tarafında liste üstte, "Yeni Oyun Kur" altta sabit | `Setup.tsx` ↔ `devam_eden_govde.dart` |
 | 14 | Uygulamanın açılış tanıtımı (`IntroScreen`) da sadeleşir — AYRI iş, tanıtım PR'ından SONRA | — | port |
 
@@ -889,17 +889,47 @@ uyarısı + ilk oyun Kolay, (B) tek standart ekran, (C) Arkadaşınla ekranları
 - "Oyuncular" koltuk listesi kalktı, yerine oyuncu sayısının altında tek
   satır ("Sen ve 1 yapay zeka…"). Koltuktaki rütbe mührü de gitti, dolayısıyla
   Setup `useRankScores` isteğini artık HİÇ atmıyor.
-- **OYUNU BAŞLAT altta sabit**, turuncu (`STICKY_BAR`). Girişli YZ
-  tarafında "+ Yeni Yapay Zeka Oyunu Aç" listenin üstünden kalkıp aynı
-  şeride "Yeni Oyun Kur" olarak indi (karar 13).
-- ⚠ **`overflow-x-hidden` → `overflow-x-clip`** (`App.tsx`, Setup
-  sarmalayıcısı): `hidden` kabı bir kaydırma kabına çeviriyordu ve
-  `sticky bottom-0` ekrana değil o kabın ~1000px'lik kutusuna yapışıyordu —
-  şerit ilk ekranda kesik duruyordu (ölçüldü: 781→858, ekran 844; sonra
-  767→844). `clip` taşmayı aynı keser, kaydırma kabı oluşturmaz; `supports-`
-  kapısıyla eski Safari `hidden`da kalır (şerit yapışmaz, zararsız). Oyun
-  ekranının sarmalayıcısına DOKUNULMADI.
+- ~~**OYUNU BAŞLAT altta sabit**~~ — **GERİ ALINDI (aynı gün, #664):**
+  kullanıcı iPhone Safari'den ekran görüntüsüyle bildirdi, Arkadaşınla'da
+  düğme görünmüyordu. Sebep: iOS Safari'nin YÜZEN alt çubuğunda sayfa
+  çubuğun arkasına kadar uzanıyor (`body { position: fixed; inset: 0 }`),
+  `sticky bottom-0` şerit de oraya — çubuğun arkasına — yapışıyor;
+  `env(safe-area-inset-bottom)` bu modda 0 ve çubuğun yüksekliği sayfadan
+  güvenilir ölçülemiyor. Liste kısa olduğunda şerit akıştaki yerinde durup
+  görünüyordu, uzayınca kayboluyordu; misafir formunda üyelik kutusu formu
+  uzattığı için OYUNU BAŞLAT da aynı riskteydi. **Şimdi:** OYUNU BAŞLAT
+  zorluğun hemen altında (üyelik kutusu ondan SONRA), "Yeni Oyun Kur"
+  listelerin ÜSTÜNDE, turuncu (`actionButton.ts`). `position: fixed;
+  bottom: 0` da denendi sayılır: yeni oyun formunun eski "Davet Gönder"
+  şeridi zaten böyleydi ve kullanıcının iPad ekran görüntüsünde çubuğun
+  arkasına YARI girmişti — o da koltuk kartlarının altına, akışa alındı.
+  ⚠ Ders: bu tarayıcılarda alta yapışan (sticky ya da fixed) bir öğe,
+  çubuğun arkasını cihazda ÖLÇMEDEN tasarlanmaz.
+- `App.tsx`teki `overflow-x-hidden` → `overflow-x-clip` değişikliği yalnızca
+  yapışkan şerit içindi; şeritle birlikte GERİ ALINDI (#664).
 - Test: duman testindeki "Oyun Tipi" beklentisi "Kime karşı" oldu; 94/94.
+
+### Setup'ın üçüncü web parçası — Arkadaşınla, kararlar 9-12 (27 Eylül 2026)
+
+- **Karar 9:** girişsiz "Arkadaşınla" → alttan `GuestLiveSheet` (Üye Ol ·
+  Giriş Yap · Yapay Zekayla devam et). Kapatmak = Yapay Zeka'ya dön
+  (`onSwitchToAi` → Setup'ın `onMainViewChange("local")`); misafir boş bir
+  sekmede bırakılmıyor. Sekmedeki eski tek satır + GİRİŞ YAP yedek olarak
+  duruyor (pencere Üye Ol/Giriş Yap ile kapanınca görünen şey o).
+- **Karar 10:** tasarımdaki "gelen davet kartı + süren oyunlar" düzeni
+  bugünkü alt sekmelerle (Devam Eden · Davetler · Son Oynananlar) ZATEN
+  karşılanıyor ve Davetler, bekleyen davet varsa kendiliğinden açılıyor —
+  yeniden yazılmadı. Değişen tek şey "+ Yeni Canlı Oyun Aç"ın turuncu "Yeni
+  Oyun Kur" olması (listenin üstünde; Yapay Zeka tarafıyla aynı
+  `actionButton.ts`).
+- **Karar 11:** "Arkadaşını davet et" arama kutusunun HEMEN altında; açtığı
+  pencere eskisi (Arkadaşlar → "Ara & Ekle", davet linki üstte).
+- **Karar 12:** seçilenler oyuncu renginde koltuk kartları
+  (`PLAYER_COLORS[i + 1]`, avatar uygulamanın `Avatar`ı); 4 kişide 2 seçim =
+  kartlarda "🤖 Yapay Zeka", onay penceresi ve kalıcı YZ satırı SİLİNDİ.
+  Onay ekranı "Davetin gönderildi" + 7 gün/ret notu + "Oyunlarıma git".
+- ⚠ Girişli dal otomatik test EDİLEMİYOR (gerçek oturum + arkadaş listesi);
+  `TESTING.md` §1'e dört madde yazıldı. Girişsiz pencere duman testinde.
 
 ### Taban ölçüm (27 Eylül 2026, kodlamadan ÖNCE)
 

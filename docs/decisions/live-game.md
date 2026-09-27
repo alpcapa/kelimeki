@@ -289,6 +289,17 @@ sorgu kullan.
   - **Bulunan hata (5 Ağustos 2026) — arkadaş listesi hesap değişimini atlatıyordu:** Kullanıcı, T1'den T2'ye geçip "+ Yeni Canlı Oyun"a basınca listede `Ironman` ve **`T2`**'yi (yani KENDİSİNİ) gördüğünü, başka bir sekmeye gidip dönünce `Ironman, T1`'e düzeldiğini bildirdi. Gösterilen aslında T1'in arkadaş listesiydi. Kök sebep: `reloadFriends` yalnızca mount'ta (`useEffect(..., [])`) çalışıyordu ve bu bileşen çıkış→giriş döngüsünü mount'ta kalarak atlatabiliyor — `LiveGamesTab`'ın `if (creating)` dalı `if (!user)` kontrolünden ÖNCE döndüğünden, form açıkken çıkış yapılsa bile bileşen sökülmüyor (bir modal değil, tam bir görünüm). Sekme değişimi `LiveGamesTab`'ı unmount edip `creating`'i sıfırladığından liste ancak öyle düzeliyordu. **Düzeltme:** bağımlılık `[user?.id]` — `user` REFERANSI değil, çünkü `useAuth` her `onAuthStateChange` olayında (`TOKEN_REFRESHED` dahil) yeni bir `User` nesnesi set ediyor (bkz. `CountBadge`'in "user referansı hesap değişimi değildir" notu). **Bilinçli olarak DOKUNULMAYAN:** `LiveGamesTab`'daki `creating`/`!user` render sırası — asıl yapısal sebep o, ama düzeltmek çıkış anında formu (ve doldurulmuş seçimleri) anında söktüğü için ayrı bir karar; bildirilen hata `[user?.id]` ile tamamen kapanıyor. **Kardeş tarama:** aynı "mount'a bağlı, kullanıcıya özel çekim" deseni `AdminDashboard`/`FriendsModal`/`GameHistoryModal`/`ScoreCard`'da da var ama hepsi MODAL — çıkış `UserMenu`'den yapıldığından bir modal açıkken çıkış yapılamıyor, yani hesap değişimini atlatamıyorlar; `LiveGameCreateForm` tam görünüm olduğu için tek istisnaydı.
 - **`FriendSuggestModal.tsx`** — bir daveti **kabul ettikten** sonra devreye girer: o oyundaki, çağıranın henüz arkadaşı olmadığı (relation `'self'`/`'accepted'` DIŞINDAKİ) katılımcıları önceden işaretli checkbox listesiyle gösterir — *"Bu kişileri arkadaşın olarak eklemek ister misin?"* İşaretli kalanlara `sendFriendRequest` çağrılır (tekil hata — ör. zaten bekleyen bir istek varsa gelen unique violation — sessizce yutulur, diğerlerini engellemez), sonra *"Arkadaşlık davetiniz iletilmiştir."* onayı gösterilir. İki taraf da birbirini işaretli bırakırsa `handle_friend_request_insert` trigger'ı (Faz 1) sayesinde otomatik karşılıklı `accepted` olurlar — ekstra bir mekanizma gerekmedi.
 
+⚠ **27 Eylül 2026 — yukarıdaki form metninin iki maddesi DEĞİŞTİ (ROADMAP
+#41, `onboarding.md` → "İlk oyun akışı v2" kararları 11-12):** 2 arkadaş
+seçiliyken sorulan "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onayı
+ve "Hayır"dan doğan kalıcı "🤖 Yapay Zeka" satırı KALKTI — seçilenler artık
+oyuncu renginde koltuk kartları, boş 4. koltuk ekranda "Yapay Zeka" olarak
+duruyor. "Davetiniz gönderilmiştir." ekranı "Davetin gönderildi" oldu (7 gün
+ve ret notuyla); "Arkadaş Ekle" alttaki şeritten arama kutusunun altına
+"Arkadaşını davet et" olarak taşındı. Sunucu kuralı (`create_online_game`)
+DEĞİŞMEDİ. Yalnızca web; port ikizi (`live_games_test.dart` eski onayı
+kilitliyor) #41'in port yarısıyla değişecek.
+
 ### Kapsam dışı (Faz 3'e bırakıldı, aşağıda anlatılıyor)
 
 Faz 2 yazıldığında burada "gerçek zamanlı senkron oynanış yok, Faz 3'ün işi" notu vardı — 28 Temmuz 2026'da Faz 3 (aşağıdaki bölüm) bunu büyük ölçüde tamamladı: tahta/raf/skor artık Supabase'de yaşıyor ve gerçekten oynanabiliyor.

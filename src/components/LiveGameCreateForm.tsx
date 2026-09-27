@@ -1,15 +1,19 @@
 // Kelimeki — Canlı oyun kurulumu: arkadaş seçip davet gönderme (Faz 2, 4. adım).
 // Kural (bkz. CLAUDE.md / online_game_ai_slot_rule migration'ı): 2 kişilikte
 // Yapay Zeka'ya hiç izin yok (iki koltuk da insan); 4 kişilikte yalnızca
-// 4. koltuk Yapay Zeka olabilir, en az 2 arkadaş seçilmesi zorunlu. 2 arkadaş
-// seçiliyken "Davet Gönder"e basınca önce bir onay sorulur ("4. koltuk Yapay
-// Zeka ile doldurulacak, tamam mı?") — Hayır denirse Yapay Zeka bir kez daha
-// sorulmasın diye normal bir liste satırı olarak kalıcı hâle gelir.
+// 4. koltuk Yapay Zeka olabilir, en az 2 arkadaş seçilmesi zorunlu.
+//
+// 27 Eylül 2026 (ROADMAP #41, kararlar 11-12): seçilen rakipler KOLTUK
+// KARTLARI olarak oyuncu renginde görünür; 4 kişide 2 arkadaş seçiliyken boş
+// 4. koltuk ekranda "Yapay Zeka" olarak durur. Bu yüzden eski "4. koltuk
+// Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi ve onun "Hayır"ından
+// doğan kalıcı Yapay Zeka satırı KALKTI — koltuk zaten görünüyor. "Arkadaşını
+// davet et" (davet linki) artık arama kutusunun hemen altında.
 import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useAuth } from '../hooks/useAuth';
+import { createFriendInviteLink, createOnlineGame, fetchFriends } from '../lib/api';
+import { buildInviteUrl, INVITE_SHARE_TEXT, whatsappShareUrl } from '../utils/friendInvite';
 import { useModalA11y } from '../hooks/useModalA11y';
-import { createOnlineGame, fetchFriends } from '../lib/api';
 import type { FriendRow, OnlineGameSlot } from '../lib/database.types';
 import { trLower } from '../utils/turkish';
 import { Avatar } from './Avatar';
@@ -17,6 +21,7 @@ import { FriendsModal } from './FriendsModal';
 import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
 import { friendlyErrorMessage } from '../utils/errorMessage';
+import { PLAYER_COLORS } from '../game/constants';
 
 interface LiveGameCreateFormProps {
   onCancel: () => void;
@@ -51,9 +56,6 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
   // Arkadaş seçicideki isimlerin rütbe mührü — tek toplu çekim.
   const rankTierOf = useRankScores((friends ?? []).map((f) => f.friend_id));
   const [selected, setSelected] = useState<string[]>([]);
-  const [showAiRow, setShowAiRow] = useState(false);
-  const [aiSelected, setAiSelected] = useState(false);
-  const [showAiConfirm, setShowAiConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
@@ -65,8 +67,6 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
   // Davet edilenlerin isimleri gönderim anında dondurulur: `onCreated` ile
   // listeye dönülene kadar `selected`/`friends` değişebilir.
   const [sentTo, setSentTo] = useState<{ names: string[]; withAi: boolean } | null>(null);
-
-  const aiConfirmRef = useModalA11y(showAiConfirm, () => setShowAiConfirm(false));
 
   const reloadFriends = () => {
     fetchFriends().then(setFriends);
@@ -84,12 +84,60 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
     reloadFriends();
   }, [user?.id]);
 
+  // "Arkadaşını davet et" → DOĞRUDAN paylaşım (27 Eylül 2026, kullanıcı:
+  // *"arkadaşlar modalı açmamalı, direkt paylaşma modalı çıkmalı ve
+  // whatsapp'dan direkt paylaşmalı"*). Link form açılırken ÖNCEDEN alınır:
+  // iOS Safari `navigator.share`i yalnızca dokunuşun hemen ardından açıyor,
+  // araya bir ağ isteği girerse izin düşebiliyor. Token kullanıcı başına
+  // kalıcı (`create_friend_invite_link` var olanı döner), önceden almak
+  // yeni bir şey yaratmıyor.
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [showShareFallback, setShowShareFallback] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shareFallbackRef = useModalA11y(showShareFallback, () => setShowShareFallback(false));
+  useEffect(() => {
+    if (!user?.id) return;
+    let iptal = false;
+    void createFriendInviteLink().then((token) => {
+      if (!iptal && token) setInviteUrl(buildInviteUrl(token));
+    });
+    return () => {
+      iptal = true;
+    };
+  }, [user?.id]);
+
+  const handleInviteShare = async () => {
+    let url = inviteUrl;
+    if (!url) {
+      const token = await createFriendInviteLink();
+      if (!token) return;
+      url = buildInviteUrl(token);
+      setInviteUrl(url);
+    }
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Kelimeki', text: INVITE_SHARE_TEXT, url });
+        return;
+      } catch (err) {
+        // Kullanıcı sayfayı kapattıysa sessiz geç; paylaşım AÇILAMADIYSA
+        // (ör. iOS'ta dokunuş izni düştü) yedek pencereye in.
+        if ((err as { name?: string })?.name === 'AbortError') return;
+      }
+    }
+    setShowShareFallback(true);
+  };
+
+  const copyInvite = async () => {
+    if (!inviteUrl || !navigator.clipboard) return;
+    await navigator.clipboard.writeText(`${INVITE_SHARE_TEXT}\n${inviteUrl}`);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  };
+
   // 2↔4 arası kural tamamen farklı (YZ izni yok / var) — sekme değişince
   // seçimleri sıfırlıyoruz ki eski bir seçim yeni kuralda geçersiz kalmasın.
   useEffect(() => {
     setSelected([]);
-    setShowAiRow(false);
-    setAiSelected(false);
   }, [playerCount]);
 
   const toggleFriend = (friendId: string) => {
@@ -99,8 +147,7 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
     }
     setSelected((s) => {
       if (s.includes(friendId)) return s.filter((id) => id !== friendId);
-      const cap = aiSelected ? 2 : 3; // YZ koltuğu ayrılmışsa insan için yalnızca 2 yer kalır
-      if (s.length >= cap) return s;
+      if (s.length >= 3) return s;
       return [...s, friendId];
     });
   };
@@ -133,45 +180,46 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
     }
   };
 
+  // 4 kişide 2 arkadaş = 4. koltuk Yapay Zeka; ekrandaki koltuk kartı bunu
+  // zaten gösteriyor, ayrıca sorulmaz (27 Eylül 2026, ROADMAP #41 karar 12).
   const handleSubmit = () => {
-    if (playerCount === 2 || selected.length === 3) {
-      void submit(false);
-      return;
-    }
-    // playerCount === 4 && selected.length === 2
-    if (aiSelected) {
-      void submit(true);
-      return;
-    }
-    setShowAiConfirm(true);
+    void submit(playerCount === 4 && selected.length === 2);
   };
 
   if (sentTo) {
     return (
-      <div className="w-full flex flex-col items-center gap-4 py-6 text-center">
+      <div className="w-full flex flex-col items-center gap-3 py-6 text-center">
         <span
-          className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center text-2xl leading-none"
+          className="w-16 h-16 rounded-full bg-[#D6F3E1] border-2 border-[#16A34A] text-[#16A34A] flex items-center justify-center text-3xl font-bold leading-none"
           aria-hidden
         >
           ✓
         </span>
-        <p className="text-sm text-text font-sans leading-relaxed">Davetiniz gönderilmiştir.</p>
-        <p className="text-xs text-muted font-mono leading-relaxed">
-          {sentTo.names.join(', ')} yanıt verince oyun başlayacak.
+        <h2 className="text-2xl font-bold text-text leading-tight" style={{ margin: 0 }}>
+          Davetin gönderildi
+        </h2>
+        <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
+          {sentTo.names.join(', ')} kabul edince oyun başlar ve ilk sıra sende olur.
           {sentTo.withAi && ' 4. koltuk Yapay Zeka.'}
+        </p>
+        <p className="text-xs text-muted font-mono leading-relaxed" style={{ margin: 0 }}>
+          Davet 7 gün içinde kabul edilmezse iptal olur. Biri reddederse oyun kurulmaz.
         </p>
         <button
           onClick={onCreated}
-          className="btn-raised py-2.5 px-8 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+          className="mt-2 btn-raised btn-raised-orange min-h-[52px] px-8 rounded-md bg-orange text-white text-sm font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
         >
-          Tamam
+          Oyunlarıma git
         </button>
       </div>
     );
   }
 
+  const byId = (id: string) => friends?.find((f) => f.friend_id === id);
+  const seatCount = playerCount - 1;
+
   return (
-    <div className="w-full flex flex-col gap-5 pb-32">
+    <div className="w-full flex flex-col gap-5">
       {showFriendsModal && (
         <FriendsModal
           initialTab="search"
@@ -181,6 +229,7 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
           }}
         />
       )}
+
       <div className="flex flex-col gap-2">
         <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
           Oyuncu Sayısı
@@ -188,15 +237,133 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
         <div className="flex gap-2">
           {([2, 4] as const).map((n) => (
             <button key={n} onClick={() => setPlayerCount(n)} className={toggleBtnCls(playerCount === n)}>
-              {n} Oyunculu
+              {n} Kişi
             </button>
           ))}
         </div>
       </div>
 
+      {/* Koltuklar (27 Eylül 2026, ROADMAP #41 karar 12): seçilen rakip,
+          oyunda oturacağı köşenin renginde — `PLAYER_COLORS[i + 1]` (0 sensin).
+          Avatar uygulamanın kendi `Avatar`ı (fotoğraf → iki harf). */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+            {playerCount === 2 ? 'Rakibin' : `Rakiplerin · ${selected.length}/3`}
+          </div>
+          {playerCount === 4 && (
+            <span className="text-[10px] text-muted font-mono">Boş 4. koltuk yapay zeka olur</span>
+          )}
+        </div>
+        <div className={playerCount === 2 ? 'flex flex-col' : 'grid grid-cols-3 gap-2'}>
+          {Array.from({ length: seatCount }, (_, i) => {
+            const col = PLAYER_COLORS[i + 1];
+            const f = selected[i] ? byId(selected[i]) : undefined;
+            const ai = playerCount === 4 && i === 2 && selected.length === 2;
+            const yatay = playerCount === 2;
+            if (f) {
+              return (
+                <div
+                  key={i}
+                  className={[
+                    'relative overflow-hidden flex items-center rounded-xl border',
+                    yatay ? 'gap-3 px-3 py-2.5' : 'flex-col gap-1.5 px-1.5 pt-3 pb-2.5',
+                  ].join(' ')}
+                  style={{ background: col.tint, borderColor: col.base }}
+                >
+                  {/* Oyuncu numarası filigranı (27 Eylül 2026, kullanıcı isteği):
+                      tahtadaki köşe filigranıyla AYNI dil — `Board.tsx` →
+                      `data-watermarks` (mono kalın, oyuncu rengi, %20 opaklık).
+                      Rakip i. koltukta = oyunda (i + 2). oyuncu, o köşede
+                      oynar. Yatay kartta ✕'in SOLUNDA, dikeyde sağ ALTTA —
+                      ✕'e değmesin diye. */}
+                  <span
+                    aria-hidden
+                    className={[
+                      'pointer-events-none absolute font-mono font-bold leading-none select-none',
+                      yatay ? 'right-12 top-1/2 -translate-y-1/2 text-[56px]' : 'right-1.5 bottom-0.5 text-[40px]',
+                    ].join(' ')}
+                    style={{ color: col.base, opacity: 0.2 }}
+                  >
+                    {i + 2}
+                  </span>
+                  <Avatar url={f.avatar_url} name={f.name} size={36} />
+                  <span
+                    className={['font-sans text-sm font-bold truncate max-w-full', yatay ? 'flex-1 min-w-0' : 'text-xs'].join(' ')}
+                    style={{ color: col.text }}
+                  >
+                    {f.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => toggleFriend(f.friend_id)}
+                    aria-label={`${f.name} koltuğunu boşalt`}
+                    className={[
+                      'w-7 h-7 flex items-center justify-center text-sm tap-expand',
+                      yatay ? 'relative' : 'absolute top-0.5 right-0.5',
+                    ].join(' ')}
+                    style={{ color: col.text }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              );
+            }
+            return (
+              <div
+                key={i}
+                className={[
+                  'flex items-center rounded-xl border-[1.5px] border-dashed border-[#C7D0DC] bg-bg',
+                  yatay ? 'gap-3 px-3 py-2.5' : 'flex-col justify-center gap-1.5 px-1.5 pt-3 pb-2.5',
+                ].join(' ')}
+              >
+                <span
+                  className="w-9 h-9 rounded-full bg-void border border-border flex items-center justify-center text-lg shrink-0"
+                  aria-hidden
+                >
+                  {ai ? '🤖' : '+'}
+                </span>
+                <span className="font-sans text-xs font-bold text-muted">
+                  {ai ? 'Yapay Zeka' : yatay ? 'Aşağıdan bir arkadaşını seç' : 'Boş koltuk'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Gönder/Vazgeç koltukların HEMEN altında, akışta (27 Eylül 2026).
+          Eskiden `createPortal` ile ekranın altına `position: fixed`
+          sabitlenmiş bir şeritti; kullanıcının iPad ekran görüntüsünde
+          tarayıcının yüzen alt çubuğunun arkasına YARI girmişti — Setup'ın
+          yapışkan şeridiyle aynı sorun (`actionButton.ts`). Burada seçilen
+          rakip kartı ile düğme aynı ekranda. */}
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <button
+            onClick={handleSubmit}
+            disabled={!canSubmit || busy}
+            className="flex-[1.5] btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+          >
+            {busy ? 'Gönderiliyor…' : 'Davet Gönder'}
+          </button>
+          <button
+            onClick={onCancel}
+            disabled={busy}
+            className="flex-1 btn-raised-neutral min-h-[52px] rounded-md font-sans text-sm font-bold uppercase tracking-[1px] bg-void border border-border text-text active:scale-[0.97] transition-transform disabled:opacity-50"
+          >
+            Vazgeç
+          </button>
+        </div>
+        <p className="text-center text-[11px] text-muted font-mono" style={{ margin: 0 }}>
+          {playerCount === 2 ? 'Arkadaşın' : 'Arkadaşların'} kabul edince oyun başlar · her hamle için 48 saat
+        </p>
+        {error && <p className="text-xs text-red font-mono text-center" style={{ margin: 0 }}>{error}</p>}
+      </div>
+
       <div className="flex flex-col gap-2">
         <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
-          {playerCount === 2 ? 'Arkadaşını Seç' : `Arkadaşlarını Seç (${selected.length}/3)`}
+          Arkadaşların
         </div>
         {friends === null ? (
           <p className="text-muted text-xs font-mono py-4 text-center">Yükleniyor…</p>
@@ -218,8 +385,20 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="İsim ya da takma ad ara…"
+              aria-label="Arkadaş ara"
               className="w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-text outline-none focus:border-accent transition-colors"
             />
+            {/* Arama kutusunun HEMEN altında (27 Eylül 2026, kullanıcı:
+                *"arkadaşlar listesinin üstüne arkadaşını davet et butonu
+                olsun. Aramanın altına"*). Arkadaşlar penceresini DEĞİL,
+                doğrudan paylaşımı açar (`handleInviteShare`). */}
+            <button
+              type="button"
+              onClick={() => void handleInviteShare()}
+              className="flex items-center justify-center gap-2 min-h-[44px] rounded-md border-[1.5px] border-dashed border-accent bg-[#EEF4FF] text-accent text-[13px] font-bold uppercase tracking-[1px] active:scale-[0.99] transition-transform"
+            >
+              <span aria-hidden className="text-base leading-none">+</span> Arkadaşını davet et
+            </button>
             <div className="flex flex-col gap-1.5 max-h-[280px] overflow-y-auto pr-0.5">
               {(() => {
                 const filtered = friends.filter((f) => trLower(f.name).includes(trLower(query.trim())));
@@ -235,6 +414,7 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
                       key={f.friend_id}
                       type="button"
                       onClick={() => toggleFriend(f.friend_id)}
+                      aria-pressed={isSelected}
                       className="shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border border-border bg-panel text-left transition-transform active:scale-[0.99] shrink-0"
                     >
                       <Avatar url={f.avatar_url} name={f.name} size={28} />
@@ -250,136 +430,48 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
                 });
               })()}
             </div>
-            {playerCount === 4 && showAiRow && (
-              <button
-                type="button"
-                disabled={selected.length >= 3}
-                onClick={() => {
-                  // 3 arkadaş zaten seçiliyken YZ'yi de işaretlemek "3/3
-                  // arkadaş" + "YZ ✓"nin aynı anda görünmesine (5 koltuklu
-                  // bir davet gönderiliyormuş izlenimine) yol açıyordu —
-                  // handleSubmit bu durumda zaten YZ'yi yok sayıyordu
-                  // (selected.length===3 dalı önce geliyor) ama görünüm
-                  // yanıltıcıydı. toggleFriend zaten aiSelected true iken 3.
-                  // arkadaşı eklemeyi engelliyor (cap=2); simetriyi
-                  // tamamlamak için burada da 3 arkadaş seçiliyken YZ
-                  // işaretlenemez.
-                  if (selected.length >= 3) return;
-                  setAiSelected((v) => !v);
-                }}
-                className={[
-                  'shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border border-border bg-panel text-left transition-transform active:scale-[0.99]',
-                  selected.length >= 3 ? 'opacity-40 cursor-not-allowed' : '',
-                ].join(' ')}
-              >
-                <span className="w-7 h-7 rounded-full bg-void border border-border flex items-center justify-center text-sm shrink-0" aria-hidden>
-                  🤖
-                </span>
-                <span className="flex-1 min-w-0 text-sm font-bold text-text truncate">Yapay Zeka</span>
-                <CheckMark checked={aiSelected} />
-              </button>
-            )}
           </div>
-        )}
-        {playerCount === 4 && (
-          <p className="text-[10px] text-muted font-mono">
-            En az 2 arkadaş seçmelisin. 3. oyuncuyu seçmeden Davet Gönder'e basarsan 4. oyuncu Yapay Zeka olur.
-          </p>
         )}
       </div>
 
-      {error && <p className="text-xs text-red font-mono text-center">{error}</p>}
-
-      {createPortal(
-        // İçerik (arkadaş listesi vb.) uzadıkça "Davet Gönder"/"Vazgeç"
-        // #root'un (asıl kaydırma konteyneri, bkz. index.css — body
-        // position:fixed) altına itilip görünmez oluyordu. Bunun yerine bu
-        // satır viewport'un altına sabitlendi (`fixed`, diğer popup'larla
-        // aynı `createPortal(..., document.body)` deseni — olası bir ata
-        // `transform`'undan bağımsız kalması için); üstteki `pb-32` de en
-        // alttaki içerik bu barın arkasında kalmasın diye var. "Arkadaş
-        // Ekle" de aynı sebeple (uzun listede aşağı itilmesin diye) bu bara,
-        // Davet Gönder/Vazgeç'in hemen üstüne taşındı. Playwright'ta #root'un
-        // kendi scrollTop'ı ile (window değil) doğrulandı.
-        <div className="fixed inset-x-0 bottom-0 z-30 flex justify-center bg-bg border-t border-border">
+      {showShareFallback && inviteUrl && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-[rgba(15,23,42,0.45)]" onClick={() => setShowShareFallback(false)} aria-hidden />
           <div
-            className="w-full max-w-[460px] px-4 pt-3 flex flex-col gap-2"
-            style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+            ref={shareFallbackRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Arkadaşını davet et"
+            tabIndex={-1}
+            className="relative w-full max-w-sm bg-panel rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-5 flex flex-col gap-3 outline-none"
           >
-            {friends !== null && friends.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setShowFriendsModal(true)}
-                className="flex items-center gap-2.5 rounded-md px-2.5 py-2 border border-dashed border-border text-left transition-transform active:scale-[0.99] bg-bg"
-              >
-                <span
-                  className="w-7 h-7 rounded-full border border-dashed border-border flex items-center justify-center text-accent text-base leading-none shrink-0"
-                  aria-hidden
-                >
-                  +
-                </span>
-                <span className="text-sm font-bold text-accent">Arkadaş Ekle</span>
-              </button>
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={handleSubmit}
-                disabled={!canSubmit || busy}
-                className="flex-1 btn-raised py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
-              >
-                {busy ? 'Gönderiliyor…' : 'Davet Gönder'}
-              </button>
-              <button
-                onClick={onCancel}
-                disabled={busy}
-                className="flex-1 btn-raised-neutral py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-void border border-border text-text active:scale-[0.97] transition-transform disabled:opacity-50"
-              >
-                Vazgeç
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
-
-      {showAiConfirm &&
-        createPortal(
-          <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-            <div
-              ref={aiConfirmRef}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Yapay Zeka onayı"
-              tabIndex={-1}
-              className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none"
+            <p className="text-base font-bold text-text" style={{ margin: 0 }}>
+              Arkadaşını davet et
+            </p>
+            <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
+              Linke dokunup üye olunca arkadaş listende belirir.
+            </p>
+            {/* Paylaşım sayfası olmayan tarayıcı (masaüstü) için YEDEK:
+                telefonda sistem paylaşım sayfası zaten açılıyor. */}
+            <a
+              href={whatsappShareUrl(inviteUrl)}
+              target="_blank"
+              rel="noopener"
+              onClick={() => setShowShareFallback(false)}
+              className="flex items-center justify-center min-h-[48px] rounded-md bg-[#25D366] text-white text-sm font-bold uppercase tracking-[1px] no-underline active:scale-[0.97] transition-transform"
             >
-              <p className="text-sm text-text font-sans leading-relaxed">
-                4. koltuk Yapay Zeka ile doldurulacak, tamam mı?
-              </p>
-              <div className="flex gap-2 mt-1">
-                <button
-                  onClick={() => {
-                    setShowAiConfirm(false);
-                    void submit(true);
-                  }}
-                  className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
-                >
-                  Evet
-                </button>
-                <button
-                  onClick={() => {
-                    setShowAiConfirm(false);
-                    setShowAiRow(true);
-                  }}
-                  className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
-                >
-                  Hayır
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+              WhatsApp'ta gönder
+            </a>
+            <button
+              type="button"
+              onClick={() => void copyInvite()}
+              className="min-h-[48px] rounded-md btn-raised-neutral bg-bg border border-border text-text text-sm font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+            >
+              {copied ? 'Link kopyalandı!' : 'Linki kopyala'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1505,15 +1505,8 @@ export default function App() {
     // yorum. `authLoading` sırasında da `false`: `UserMenu`'nün kendi
     // GİRİŞ/avatar kararıyla aynı "önce bilmeden gösterme" deseni.
     const showTanitimLink = !authLoading && !user;
-    // `overflow-x-clip` (27 Eylül 2026, ROADMAP #41): `hidden` bu kabı bir
-    // KAYDIRMA KABI yapıyordu (overflow-y `auto`ya düşer) ve Setup'ın altta
-    // sabit düğme şeridi (`sticky bottom-0`) ekrana değil bu kabın 1000px+
-    // yüksekliğine yapışıp ilk ekranda kesiliyordu (ölçüldü: şerit 781→858,
-    // ekran 844). `clip` yatay taşmayı aynı şekilde keser ama kaydırma kabı
-    // oluşturmaz. `supports-` kapısı: `clip`i bilmeyen eski Safari `hidden`da
-    // kalır — şerit orada yapışmaz, akıştaki yerinde durur (zararsız).
     return (
-      <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden supports-[overflow:clip]:overflow-x-clip">
+      <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
         {/* "Yerel uygulama mağazada" şeridi — telefonda (iOS/Android) HER
             yerde, tarayıcıda da ana ekrandan açılışta da. AKIŞIN EN ÜSTÜNDE:
             içeriği aşağı iter, logoyu ÖRTMEZ (bkz. AppStoreStrip'in başlığı). */}

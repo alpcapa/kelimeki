@@ -56,6 +56,8 @@ import {
 import { AvatarScoreRow, PlayerAvatarRow } from './PlayerAvatarRow';
 import { FriendSuggestModal } from './FriendSuggestModal';
 import { LiveGameCreateForm } from './LiveGameCreateForm';
+import { PRIMARY_ACTION_BTN } from './actionButton';
+import { useModalA11y } from '../hooks/useModalA11y';
 import { RecentGamesSection } from './RecentGamesSection';
 import { RankSeal } from './RankSeal';
 import { RankTierProvider, useRankTier } from '../hooks/useRankScores';
@@ -542,12 +544,83 @@ interface LiveGamesTabProps {
   newlyFinishedIds: readonly string[];
   /** Sekme ziyaret edilip sunucu işaretlemeyi ONAYLADIĞINDA çağrılır. */
   onFinishesSeen: () => void;
+  /**
+   * Girişsiz uyarının "Yapay Zekayla devam et"i ve pencerenin kapatılması
+   * (27 Eylül 2026, ROADMAP #41 karar 9) — Setup "Kime karşı"yı Yapay
+   * Zeka'ya çevirir. Verilmezse pencere yalnızca kapanır.
+   */
+  onSwitchToAi?: () => void;
+}
+
+/**
+ * Girişsiz kullanıcı "Arkadaşınla"yı seçince alttan açılan uyarı (27 Eylül
+ * 2026, ROADMAP #41 karar 9; tasarım: "Setup — girişsiz, Arkadaşınla").
+ * Eskiden sekmenin içinde tek satır metin + GİRİŞ YAP vardı; misafir o
+ * noktada zaten bir şey SEÇMİŞ oluyor, yani cevap bir karar anı. Metin
+ * kaldırılan OYUNU BAŞLAT penceresininkiyle aynı gerekçeyi taşıyor.
+ * Kapatmak (✕ yerine arka plana dokunmak / Esc) "Yapay Zekayla devam et"
+ * ile AYNI: misafiri boş bir sekmede bırakmıyoruz.
+ */
+function GuestLiveSheet({
+  onAuth,
+  onSwitchToAi,
+}: {
+  onAuth: (mode: 'signup' | 'login') => void;
+  onSwitchToAi: () => void;
+}) {
+  const ref = useModalA11y(true, onSwitchToAi);
+  return (
+    <div className="fixed inset-0 z-[200] flex items-end justify-center">
+      <div className="absolute inset-0 bg-[rgba(15,23,42,0.45)]" onClick={onSwitchToAi} aria-hidden />
+      <div
+        ref={ref}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="canli-giris-baslik"
+        tabIndex={-1}
+        className="relative w-full max-w-[460px] bg-panel rounded-t-[22px] shadow-[0_-20px_45px_rgba(15,23,42,0.35)] px-5 pt-3 flex flex-col gap-3.5 outline-none"
+        style={{ paddingBottom: 'calc(1.75rem + env(safe-area-inset-bottom))' }}
+      >
+        <span className="self-center w-10 h-[5px] rounded-full bg-[#C7D0DC]" aria-hidden />
+        <h2 id="canli-giris-baslik" className="text-xl font-bold leading-snug text-text" style={{ margin: '4px 0 0' }}>
+          Arkadaşınla oynamak için giriş yap
+        </h2>
+        <p className="text-sm leading-relaxed text-text" style={{ margin: 0 }}>
+          Oyunların istatistikleri, k-lig ve arkadaşınla canlı oyun için lütfen giriş yapın. Üyelik ücretsiz.
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onAuth('signup')}
+            className="flex-1 btn-raised min-h-[48px] rounded-md bg-accent border border-accent text-white text-[13px] font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+          >
+            Üye Ol
+          </button>
+          <button
+            type="button"
+            onClick={() => onAuth('login')}
+            className="flex-1 btn-raised-neutral min-h-[48px] rounded-md bg-bg border border-border text-text text-[13px] font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+          >
+            Giriş Yap
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={onSwitchToAi}
+          className="self-center min-h-[40px] font-mono text-[11px] font-bold uppercase tracking-[1px] text-muted active:opacity-70"
+        >
+          Yapay Zekayla devam et
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function LiveGamesTab({
   onOpenGame,
   newlyFinishedIds,
   onFinishesSeen,
+  onSwitchToAi,
 }: LiveGamesTabProps) {
   const { user, loading: authLoading } = useAuth();
   const online = useOnlineStatus();
@@ -575,6 +648,9 @@ export function LiveGamesTab({
   // diyordu — sunucunun gerçekten boş dediği durumdan ayırt edilemiyordu.
   const [loadFailed, setLoadFailed] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'signup' | 'login'>('login');
+  // Girişsiz uyarı sekme her açıldığında bir kez (bkz. `GuestLiveSheet`).
+  const [guestSheetOpen, setGuestSheetOpen] = useState(true);
   const [creating, setCreating] = useState(false);
   const [busyInviteId, setBusyInviteId] = useState<string | null>(null);
   // Bir daveti kabul ettikten sonra, o oyundaki henüz arkadaş olunmayan
@@ -942,13 +1018,30 @@ export function LiveGamesTab({
   if (!user) {
     return (
       <>
-        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+        {showAuthModal && (
+          <AuthModal initialMode={authMode} onClose={() => setShowAuthModal(false)} />
+        )}
+        {guestSheetOpen && !showAuthModal && (
+          <GuestLiveSheet
+            onAuth={(mode) => {
+              setAuthMode(mode);
+              setShowAuthModal(true);
+            }}
+            onSwitchToAi={() => {
+              setGuestSheetOpen(false);
+              onSwitchToAi?.();
+            }}
+          />
+        )}
         <div className="w-full flex flex-col items-center gap-4 text-center py-4">
           <p className="text-sm text-muted font-sans">
             Canlı oyun oynamak için giriş yapmalısın.
           </p>
           <button
-            onClick={() => setShowAuthModal(true)}
+            onClick={() => {
+              setAuthMode('login');
+              setShowAuthModal(true);
+            }}
             className="btn-raised py-2.5 px-6 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
           >
             Giriş Yap
@@ -1069,13 +1162,13 @@ export function LiveGamesTab({
         <FriendSuggestModal candidates={suggestCandidates} onDone={() => setSuggestCandidates(null)} />
       )}
 
-      <button
-        onClick={() => setCreating(true)}
-        className="btn-raised-orange py-2.5 rounded-md font-sans text-sm font-bold uppercase tracking-[1.5px] bg-orange text-white active:scale-[0.97] transition-transform"
-      >
-        + Yeni Canlı Oyun Aç
-      </button>
 
+      {/* "Yeni Oyun Kur" listenin ÜSTÜNDE (27 Eylül 2026, ROADMAP #41 karar
+          10; Yapay Zeka tarafıyla aynı düğme, `actionButton.ts`). "Altta
+          sabit" denendi, iOS Safari'nin yüzen alt çubuğunun arkasına düştü. */}
+      <button onClick={() => setCreating(true)} className={PRIMARY_ACTION_BTN}>
+        Yeni Oyun Kur
+      </button>
       <div className="flex gap-2">
         {SUB_TABS.map((tab) => (
           <button

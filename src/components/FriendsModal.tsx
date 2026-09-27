@@ -2,6 +2,7 @@
 // uygulama içi istek/kabul) + kalıcı davet linkini WhatsApp/SMS/DM gibi
 // kanallardan paylaşarak henüz üye olmayanları da davet etme (asıl büyüme
 // mekanizması — bkz. `docs/decisions/friends.md`).
+import { buildInviteUrl, INVITE_SHARE_TEXT } from '../utils/friendInvite';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { LoadingNote } from './LoadingNote';
 import { createPortal } from 'react-dom';
@@ -157,28 +158,9 @@ interface FriendsModalProps {
 
 type Tab = 'friends' | 'requests' | 'search';
 
-/**
- * Davet linki `?ref=arkadas` TAŞIMAK ZORUNDA (21 Ağustos 2026, ROADMAP #7) —
- * Setup'taki "Paylaş" linkiyle (`shareLink.ts`) AYNI etiket, çünkü ikisi de
- * aynı kanal: arkadaş daveti.
- *
- * NEDEN: admin panelindeki Kaynak Hunisi'nin iki ucu bu etiket olmadan AYNI
- * popülasyonu ölçmüyordu. Ziyaretçi ucu yalnızca Setup'ın paylaş linkiyle
- * gelenleri sayıyor, üye ucu ise ağırlıkla BU path'ten (`/davet/:token`)
- * gelenleri — o link etiketsiz olduğundan davetle gelip üye olan herkes
- * `direkt` satırına düşüyor, yani gerçek doğrudan trafiği şişiriyordu ve
- * `arkadas` satırının "%100 dönüşümü" bir ölçüm değil tesadüftü.
- *
- * ⚠ Tek başına yetmez: etiketi YAKALAYAN kod `boot.tsx`te, route'tan ÖNCE
- * olmak zorunda — bu route `App`'i hiç mount etmiyor (bkz. oradaki not).
- * Etiket first-touch olduğundan zaten `instagram` gibi bir kaynakla gelmiş
- * bir cihazın kaydını EZMEZ.
- */
-function buildInviteUrl(token: string): string {
-  return `${window.location.origin}/davet/${token}?ref=arkadas`;
-}
+// Davet linki ve paylaşım metni `utils/friendInvite.ts`te (27 Eylül 2026'dan
+// beri canlı oyun formunun "Arkadaşını davet et"i de kullanıyor).
 
-const INVITE_SHARE_TEXT = "Kelimeki'de birlikte kelime oyunu oynayalım!";
 
 // Arama kutusu boşken gösterilen tüm-üyeler listesinin sayfa boyutu —
 // `Leaderboard`'daki PAGE_SIZE ile aynı lazy-load deseni.
