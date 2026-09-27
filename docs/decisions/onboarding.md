@@ -899,8 +899,12 @@ uyarısı + ilk oyun Kolay, (B) tek standart ekran, (C) Arkadaşınla ekranları
   görünüyordu, uzayınca kayboluyordu; misafir formunda üyelik kutusu formu
   uzattığı için OYUNU BAŞLAT da aynı riskteydi. **Şimdi:** OYUNU BAŞLAT
   zorluğun hemen altında (üyelik kutusu ondan SONRA), "Yeni Oyun Kur"
-  listelerin ÜSTÜNDE, turuncu (`actionButton.ts`). ⚠ Ders: iOS Safari'de
-  alta yapışan bir öğe, çubuğun arkasını ÖLÇMEDEN tasarlanmaz.
+  listelerin ÜSTÜNDE, turuncu (`actionButton.ts`). `position: fixed;
+  bottom: 0` da denendi sayılır: yeni oyun formunun eski "Davet Gönder"
+  şeridi zaten böyleydi ve kullanıcının iPad ekran görüntüsünde çubuğun
+  arkasına YARI girmişti — o da koltuk kartlarının altına, akışa alındı.
+  ⚠ Ders: bu tarayıcılarda alta yapışan (sticky ya da fixed) bir öğe,
+  çubuğun arkasını cihazda ÖLÇMEDEN tasarlanmaz.
 - `App.tsx`teki `overflow-x-hidden` → `overflow-x-clip` değişikliği yalnızca
   yapışkan şerit içindi; şeritle birlikte GERİ ALINDI (#664).
 - Test: duman testindeki "Oyun Tipi" beklentisi "Kime karşı" oldu; 94/94.

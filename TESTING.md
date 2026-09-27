@@ -51,10 +51,10 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
 - [ ] **Arkadaşını davet et (27 Eylül 2026).** Arkadaş seçicide arama
       kutusunun HEMEN altında kesik çerçeveli "+ Arkadaşını davet et" düğmesi;
       Arkadaşlar penceresini "Ara & Ekle"de açmalı (davet linki üstte).
-      Alttaki sabit şeritte artık "Arkadaş Ekle" satırı YOK. ⚠ iPhone
-      Safari'de "Davet Gönder" şeridi alttaki yüzen çubuğun arkasında
-      KALMAMALI (Setup'ın sabit şeridi 27 Eylül'de tam bu yüzden geri alındı;
-      bu şerit `position: fixed` ve ondan önce de vardı, ayrı ölçülmeli).
+      "Arkadaş Ekle" satırı YOK. "Davet Gönder" + "Vazgeç" koltuk kartlarının
+      HEMEN altında, akışta (27 Eylül 2026'ya kadar ekranın altına `fixed`
+      sabitliydi ve iPad/iPhone tarayıcısının yüzen alt çubuğunun arkasına
+      yarı giriyordu — kullanıcı ekran görüntüsüyle gösterdi).
 - [ ] **Girişsiz "Arkadaşınla" (27 Eylül 2026).** Çıkış yapmış hâlde
       "Kime karşı" → Arkadaşınla: alttan "Arkadaşınla oynamak için giriş yap"
       penceresi açılmalı. Üye Ol → kayıt formu, Giriş Yap → giriş formu;

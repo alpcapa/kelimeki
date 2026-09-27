@@ -10,7 +10,6 @@
 // doğan kalıcı Yapay Zeka satırı KALKTI — koltuk zaten görünüyor. "Arkadaşını
 // davet et" (davet linki) artık arama kutusunun hemen altında.
 import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useAuth } from '../hooks/useAuth';
 import { createOnlineGame, fetchFriends } from '../lib/api';
 import type { FriendRow, OnlineGameSlot } from '../lib/database.types';
@@ -168,7 +167,7 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
   const seatCount = playerCount - 1;
 
   return (
-    <div className="w-full flex flex-col gap-5 pb-40">
+    <div className="w-full flex flex-col gap-5">
       {showFriendsModal && (
         <FriendsModal
           initialTab="search"
@@ -265,6 +264,35 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
         </div>
       </div>
 
+      {/* Gönder/Vazgeç koltukların HEMEN altında, akışta (27 Eylül 2026).
+          Eskiden `createPortal` ile ekranın altına `position: fixed`
+          sabitlenmiş bir şeritti; kullanıcının iPad ekran görüntüsünde
+          tarayıcının yüzen alt çubuğunun arkasına YARI girmişti — Setup'ın
+          yapışkan şeridiyle aynı sorun (`actionButton.ts`). Burada seçilen
+          rakip kartı ile düğme aynı ekranda. */}
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <button
+            onClick={handleSubmit}
+            disabled={!canSubmit || busy}
+            className="flex-[1.5] btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+          >
+            {busy ? 'Gönderiliyor…' : 'Davet Gönder'}
+          </button>
+          <button
+            onClick={onCancel}
+            disabled={busy}
+            className="flex-1 btn-raised-neutral min-h-[52px] rounded-md font-sans text-sm font-bold uppercase tracking-[1px] bg-void border border-border text-text active:scale-[0.97] transition-transform disabled:opacity-50"
+          >
+            Vazgeç
+          </button>
+        </div>
+        <p className="text-center text-[11px] text-muted font-mono" style={{ margin: 0 }}>
+          {playerCount === 2 ? 'Arkadaşın' : 'Arkadaşların'} kabul edince oyun başlar · her hamle için 48 saat
+        </p>
+        {error && <p className="text-xs text-red font-mono text-center" style={{ margin: 0 }}>{error}</p>}
+      </div>
+
       <div className="flex flex-col gap-2">
         <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
           Arkadaşların
@@ -339,37 +367,6 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
         )}
       </div>
 
-      {error && <p className="text-xs text-red font-mono text-center">{error}</p>}
-
-      {createPortal(
-        <div className="fixed inset-x-0 bottom-0 z-30 flex justify-center bg-bg border-t border-border shadow-[0_-8px_20px_rgba(163,177,198,0.25)]">
-          <div
-            className="w-full max-w-[460px] px-4 pt-3 flex flex-col gap-2"
-            style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
-          >
-            <div className="flex gap-2">
-              <button
-                onClick={handleSubmit}
-                disabled={!canSubmit || busy}
-                className="flex-[1.5] btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
-              >
-                {busy ? 'Gönderiliyor…' : 'Davet Gönder'}
-              </button>
-              <button
-                onClick={onCancel}
-                disabled={busy}
-                className="flex-1 btn-raised-neutral min-h-[52px] rounded-md font-sans text-sm font-bold uppercase tracking-[1px] bg-void border border-border text-text active:scale-[0.97] transition-transform disabled:opacity-50"
-              >
-                Vazgeç
-              </button>
-            </div>
-            <p className="text-center text-[11px] text-muted font-mono" style={{ margin: 0 }}>
-              {playerCount === 2 ? 'Arkadaşın' : 'Arkadaşların'} kabul edince oyun başlar · her hamle için 48 saat
-            </p>
-          </div>
-        </div>,
-        document.body,
-      )}
     </div>
   );
 }
