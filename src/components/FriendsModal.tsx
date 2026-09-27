@@ -134,7 +134,7 @@ interface FriendsModalProps {
   initialTab?: 'friends' | 'requests' | 'search';
 }
 
-// Arama kutusu boşken "Tüm üyelere göz at"ın sayfa boyutu —
+// Arama kutusu boşken "Tüm oyuncular" listesinin sayfa boyutu —
 // `Leaderboard`'daki PAGE_SIZE ile aynı lazy-load deseni.
 const ALL_USERS_PAGE_SIZE = 20;
 
@@ -477,19 +477,95 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
           </span>
         </div>
 
-        <input
-          className="w-full min-h-[46px] bg-panel border border-border rounded-md px-3.5 text-text outline-none focus:border-accent transition-colors"
-          type="search"
-          aria-label="Üye ara"
-          placeholder="Üye ara: isim ya da takma ad"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          autoFocus={initialTab === 'search'}
-        />
-
-        {searchActive ? (
+        {/* Bekleyen istekler EN ÜSTTE, davet düğmesinin hemen altında
+            (kullanıcı isteği, 27 Eylül 2026) — arama/"Tüm oyuncular"
+            görünümünde de kaybolmaz. Gelenler yanıt beklediği için büyük
+            kart; Reddet onaysız. */}
+        {requests && requests.length > 0 && (
           <div className="flex flex-col gap-2">
-            {searching ? (
+            <span className={sectionCls}>İstekler · {requests.length}</span>
+            {requests.map((r) => (
+              <div
+                key={r.requester_id}
+                className="flex flex-col gap-2.5 p-3 rounded-xl bg-[#FFF7ED] border-[1.5px] border-orange"
+              >
+                {personButton(r.requester_id, r.name, r.avatar_url, 'Seni arkadaş olarak eklemek istiyor')}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={busyId === r.requester_id}
+                    onClick={() => void handleRespond(r.requester_id, false)}
+                    className="flex-1 min-h-[42px] rounded-md btn-raised-neutral bg-panel border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-40"
+                  >
+                    Reddet
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busyId === r.requester_id}
+                    onClick={() => void handleRespond(r.requester_id, true)}
+                    className="flex-[1.5] min-h-[42px] rounded-md btn-raised btn-raised-orange bg-orange text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-40"
+                  >
+                    Kabul et
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Gönderdiğin, cevap bekleyen istekler — gelen isteklerin ALTINDA
+            (kullanıcı isteği). Yanıt SENDEN beklenmediği için küçük satır;
+            "Geri al" onaysız (tekrar eklemek tek dokunuş). */}
+        {sent.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <span className={sectionCls}>Gönderdiğin istekler · {sent.length}</span>
+            <div className={listCls}>
+              {sent.map((r) => (
+                <div key={r.friend_id} className={rowCls}>
+                  {personButton(r.friend_id, r.name, r.avatar_url, 'Cevap bekleniyor')}
+                  <Pill
+                    kind="geriAl"
+                    ariaLabel={`${r.name} — isteği geri al`}
+                    disabled={busyId === r.friend_id}
+                    onClick={() => void handleCancel(r.friend_id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Liste başlığı: sağda görünüm değiştirici. Arama hemen altında,
+            listenin yakınında (kullanıcı isteği). "Tüm oyuncular"da sayı
+            yazılmaz. */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className={sectionCls}>
+              {showAll
+                ? 'Tüm oyuncular'
+                : `Arkadaşların${friends && friends.length > 0 ? ` · ${friends.length}` : ''}`}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="shrink-0 min-h-[36px] text-xs font-bold text-accent active:opacity-70"
+            >
+              {showAll ? '← Arkadaşlarım' : 'Tüm oyuncular →'}
+            </button>
+          </div>
+
+          <input
+            className="w-full min-h-[46px] bg-panel border border-border rounded-md px-3.5 text-text outline-none focus:border-accent transition-colors"
+            type="search"
+            aria-label="Oyuncu ara"
+            placeholder="Oyuncu ara: isim ya da takma ad"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            autoFocus={initialTab === 'search'}
+          />
+
+          {searchActive ? (
+            searching ? (
               <LoadingNote py="py-4" />
             ) : results.length === 0 ? (
               <p className="text-sm text-muted text-center leading-relaxed py-2" style={{ margin: 0 }}>
@@ -497,30 +573,18 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
               </p>
             ) : (
               <>
-                <span className="text-xs text-muted">"{query.trim()}" için {results.length} üye</span>
+                <span className="text-xs text-muted">"{query.trim()}" için {results.length} oyuncu</span>
                 <div className={listCls}>{results.map(userRow)}</div>
               </>
-            )}
-          </div>
-        ) : showAll ? (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className={sectionCls}>Tüm üyeler</span>
-              <button
-                type="button"
-                onClick={() => setShowAll(false)}
-                className="min-h-[36px] text-xs font-bold text-accent active:opacity-70"
-              >
-                ← Arkadaşlarım
-              </button>
-            </div>
-            {allUsers === null ? (
+            )
+          ) : showAll ? (
+            allUsers === null ? (
               <LoadingNote py="py-4" />
             ) : (
               <div ref={allUsersScrollRef} className={`${listCls} max-h-[55vh] overflow-y-auto`}>
                 {allUsers.map(userRow)}
                 {allUsers.length === 0 && !allUsersHasMore && (
-                  <p className="text-muted text-xs font-mono py-4 text-center">Başka üye yok.</p>
+                  <p className="text-muted text-xs font-mono py-4 text-center">Başka oyuncu yok.</p>
                 )}
                 {allUsersHasMore && (
                   <div ref={allUsersSentinelRef} className="py-2 text-center">
@@ -530,102 +594,31 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        ) : (
-          <>
-            {/* Gelen istekler EN ÜSTTE (eski "Davetler" sekmesi); yanıt
-                beklediği için büyük kart. Reddet de artık onaysız. */}
-            {requests && requests.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className={sectionCls}>İstekler · {requests.length}</span>
-                {requests.map((r) => (
-                  <div
-                    key={r.requester_id}
-                    className="flex flex-col gap-2.5 p-3 rounded-xl bg-[#FFF7ED] border-[1.5px] border-orange"
-                  >
-                    {personButton(r.requester_id, r.name, r.avatar_url, 'Seni arkadaş olarak eklemek istiyor')}
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        disabled={busyId === r.requester_id}
-                        onClick={() => void handleRespond(r.requester_id, false)}
-                        className="flex-1 min-h-[42px] rounded-md btn-raised-neutral bg-panel border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-40"
-                      >
-                        Reddet
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busyId === r.requester_id}
-                        onClick={() => void handleRespond(r.requester_id, true)}
-                        className="flex-[1.5] min-h-[42px] rounded-md btn-raised btn-raised-orange bg-orange text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-40"
-                      >
-                        Kabul et
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Gönderdiğin, cevap bekleyen istekler — gelen isteklerin ALTINDA
-                (kullanıcı isteği). Yanıt SENDEN beklenmediği için küçük satır;
-                "Geri al" onaysız (tekrar eklemek tek dokunuş). */}
-            {sent.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className={sectionCls}>Gönderdiğin istekler · {sent.length}</span>
-                <div className={listCls}>
-                  {sent.map((r) => (
-                    <div key={r.friend_id} className={rowCls}>
-                      {personButton(r.friend_id, r.name, r.avatar_url, 'Cevap bekleniyor')}
-                      <Pill
-                        kind="geriAl"
-                        ariaLabel={`${r.name} — isteği geri al`}
-                        disabled={busyId === r.friend_id}
-                        onClick={() => void handleCancel(r.friend_id)}
-                      />
-                    </div>
-                  ))}
+            )
+          ) : friends === null ? (
+            <LoadingNote py="py-4" />
+          ) : friends.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-4 text-center">
+              <p className="text-lg font-bold text-text" style={{ margin: 0 }}>
+                Henüz arkadaşın yok
+              </p>
+              <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
+                Bir link gönder; arkadaşın linke dokunup üye olunca burada belirir ve hemen
+                oyuna çağırırsın.
+              </p>
+            </div>
+          ) : (
+            <div className={listCls}>
+              {friends.map((f) => (
+                <div key={f.friend_id} className={rowCls}>
+                  {personButton(f.friend_id, f.name, f.avatar_url, friendSinceLabel(f.since, true))}
+                  <Pill kind="oyna" ariaLabel={`${f.name} ile oyna`} onClick={() => play(f.friend_id, 2)} />
+                  {moreButton(f)}
                 </div>
-              </div>
-            )}
-
-            {friends === null ? (
-              <LoadingNote py="py-4" />
-            ) : friends.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-4 text-center">
-                <p className="text-lg font-bold text-text" style={{ margin: 0 }}>
-                  Henüz arkadaşın yok
-                </p>
-                <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
-                  Bir link gönder; arkadaşın linke dokunup üye olunca burada belirir ve hemen
-                  oyuna çağırırsın.
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <span className={sectionCls}>Arkadaşların · {friends.length}</span>
-                <div className={listCls}>
-                  {friends.map((f) => (
-                    <div key={f.friend_id} className={rowCls}>
-                      {personButton(f.friend_id, f.name, f.avatar_url, friendSinceLabel(f.since, true))}
-                      <Pill kind="oyna" ariaLabel={`${f.name} ile oyna`} onClick={() => play(f.friend_id, 2)} />
-                      {moreButton(f)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setShowAll(true)}
-              className="self-center min-h-[40px] text-[13px] font-bold text-accent active:opacity-70"
-            >
-              Tüm üyelere göz at →
-            </button>
-          </>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {invite.fallbackOpen && invite.inviteUrl && (
@@ -663,7 +656,9 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
                   label: 'Skor kartını gör',
                   act: () => setSelectedFriend(toPlayerSummary(menuFor.friend_id, menuFor.name, menuFor.avatar_url)),
                 },
-                { label: '4 kişilik oyuna çağır', act: () => play(menuFor.friend_id, 4) },
+                // OYNA düğmesi 2 kişilik kurar; menü ikisini de açıkça sunar.
+                { label: '2 kişilik oyun kur', act: () => play(menuFor.friend_id, 2) },
+                { label: '4 kişilik oyun kur', act: () => play(menuFor.friend_id, 4) },
                 // Moderasyon menüsü DEĞİL, "geri al" kısayolu — yalnızca bir
                 // durum varsa (yeni şikayet sohbette açılır, bkz.
                 // FriendModerationModal).

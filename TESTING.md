@@ -644,23 +644,24 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       varsayılanı bir kez yanlış uygulayıp kalıcılaştırıyordu — 5 Ağustos
       2026. Aynısı hesap değiştirmeden, sadece "Yapay Zeka ile"ye gidip
       dönerek de üretilebilir.)
-- [ ] **Arkadaşlar penceresi — tek ekran (27 Eylül 2026).** Sekme YOK. Üstte
-      turuncu "Arkadaşını davet et" (telefonda sistem paylaşım sayfası, WhatsApp
-      orada) + arama kutusu. Gelen istek varsa "İSTEKLER" kartı en üstte;
-      KABUL ET / REDDET **onaysız**, kart listeden düşmeli, KABUL'de kişi
-      "ARKADAŞLARIN"a eklenmeli. Altında "GÖNDERDİĞİN İSTEKLER" (yalnızca
-      cevap bekleyen istek varsa): "Cevap bekleniyor" + GERİ AL (onaysız,
-      satır düşmeli; aramada EKLE'ye dönmeli). Aramadan EKLE'ye basınca kişi
-      bu listede belirmeli. Arkadaş satırı: isim + rütbe + "3 haftadır"
-      (arkadaşlık süresi), OYNA ve ⋯. **OYNA** → pencere kapanır, Setup →
+- [ ] **Arkadaşlar penceresi — tek ekran (27 Eylül 2026).** Sekme YOK.
+      Sıra: turuncu "Arkadaşını davet et" (telefonda sistem paylaşım sayfası,
+      WhatsApp orada) → bekleyen istekler → "ARKADAŞLARIN · N" başlığı
+      (sağında "Tüm oyuncular →") → arama kutusu → liste. Gelen istek
+      kartında KABUL ET / REDDET **onaysız**, kart düşmeli, KABUL'de kişi
+      listeye eklenmeli. "GÖNDERDİĞİN İSTEKLER" (yalnızca bekleyen varsa):
+      "Cevap bekleniyor" + GERİ AL (onaysız, satır düşmeli). Aramadan EKLE'ye
+      basınca kişi o bölümde belirmeli. Arkadaş satırı: isim + rütbe +
+      "3 haftadır", OYNA ve ⋯. **OYNA** → pencere kapanır, Setup →
       Arkadaşınla → form O ARKADAŞ SEÇİLİ, 2 kişi. Aynısını oyun ekranının
       başlığındaki hesap menüsünden dene: oyun kaydedilip kurulum ekranına
-      dönmeli. **⋯** → Skor kartı · 4 kişilik oyuna çağır (form 4 kişi, o
-      arkadaş seçili) · (yalnızca sessize alınmış/şikayet edilmişse) ayarlar
-      · Arkadaşlıktan çıkar (TEK onaylı eylem). Aramada ("ay") her satırda
-      duruma göre TEK düğme: OYNA (arkadaş) · EKLE · İSTEK GİTTİ (dokun →
-      iptal, onaysız) · KABUL ET. "Tüm üyelere göz at →" sayfalı listeyi
-      açmalı, "← Arkadaşlarım" geri dönmeli.
+      dönmeli. **⋯** → Skor kartı · 2 kişilik oyun kur · 4 kişilik oyun kur
+      (form o kişi sayısıyla) · (yalnızca sessize alınmış/şikayet edilmişse)
+      ayarlar · Arkadaşlıktan çıkar (TEK onaylı eylem). Aramada ("ay") her
+      satırda duruma göre TEK düğme: OYNA · EKLE · İSTEK GİTTİ (dokun →
+      iptal) · KABUL ET. "Tüm oyuncular →" → başlık "TÜM OYUNCULAR" (SAYISIZ),
+      arkadaşlar dahil herkes alfabetik, kaydırdıkça yüklenmeli; "←
+      Arkadaşlarım" geri dönmeli. Bekleyen istekler bu görünümde de durmalı.
 - [ ] ~~**Arkadaşlık ikonları (11 Ağustos 2026).**~~ ⚠ 27 Eylül 2026'dan
       beri Arkadaşlar penceresinde ikon YOK (yazılı düğmeler, yukarıdaki
       madde); bu madde yalnızca Skor Kartı'nın ikonu için geçerli. Eski

@@ -15,17 +15,24 @@ göre elden geçir."* Tasarım canvas'ta onaylandı (*"arkadaşlar tasarımı da
 onaylı"*). **Yalnızca web** — port ikizi (`friends_sheet.dart`) Setup'ın port
 yarısıyla birlikte, web verisi okunduktan sonra.
 
-**Yukarıdan aşağı tek sütun, sekme YOK:**
+**Yukarıdan aşağı tek sütun, sekme YOK** (önizlemede ikinci tur, aynı gün):
 1. Turuncu **"Arkadaşını davet et"** — pencere değil DOĞRUDAN paylaşım
    (`useInviteShare`: link açılışta önceden alınır, çünkü `navigator.share`
    taze kullanıcı etkileşimi ister; destek yoksa `InviteShareFallback` →
    WhatsApp + kopyala). Aynı hook `LiveGameCreateForm`'daki davet düğmesinde.
-2. Arama kutusu — yazınca liste yerine sonuçlar; her satırın tek bir
-   durum hapı var: **OYNA** (arkadaş) · **EKLE** · **İSTEK GİTTİ** · **KABUL ET**.
-3. Gelen istekler (kart: Reddet / Kabul et).
-4. Arkadaşlar — satırda rütbe mührü, "3 haftadır", **OYNA** ve `⋯` menüsü
-   (skor kartı · 4 kişilik oyuna çağır · sessize alma/şikayet · arkadaşlıktan çıkar).
-5. "Tüm üyelere göz at →" (eski "Ara & Ekle"nin sayfalı listesi).
+2. Bekleyen istekler — önce gelenler (kart: Reddet / Kabul et), altında
+   gönderdiklerin. Arama ve "Tüm oyuncular" görünümünde de yerinde kalır.
+3. Liste başlığı: solda **Arkadaşların · N**, sağda **Tüm oyuncular →**
+   (basınca başlık "Tüm oyuncular" olur — SAYI YAZILMAZ — ve bağlantı
+   "← Arkadaşlarım"a döner). Tüm oyuncular = arkadaş olan/olmayan herkes,
+   alfabetik, sayfalı (`list_users_for_friend`).
+4. Arama kutusu listenin HEMEN üstünde (ikinci turda kullanıcı: *"arama da
+   yakınına gelsin"*); yazınca liste yerine sonuçlar, her satırda tek hap:
+   **OYNA** · **EKLE** · **İSTEK GİTTİ** · **KABUL ET**.
+5. Arkadaş satırı: rütbe mührü, "3 haftadır", **OYNA** (2 kişilik) ve `⋯`
+   (skor kartı · 2 kişilik oyun kur · 4 kişilik oyun kur · sessize
+   alma/şikayet ayarları — YALNIZCA önceden sessize alınmış/şikayet
+   edilmişse; yeni şikayet oyun içi sohbetten açılır · arkadaşlıktan çıkar).
 
 **Kararlar:**
 - **Yalnızca "arkadaşlıktan çıkar" onay sorar.** Ekle/kabul/reddet/iptal tek
