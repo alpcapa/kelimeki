@@ -251,6 +251,57 @@ GENİŞLETME.
 
 ---
 
+## 4b · Kişisel Facebook ve Instagram (27 Eylül 2026, 17:00 turu)
+
+Kullanıcı kararı: LinkedIn profiline ek olarak kişisel FB ve IG
+hesaplarından da paylaşılacak. Ses LinkedIn profil gönderisiyle aynı
+(birinci tekil, "üzerinde çalıştığım"), marka satırı YOK (§0). Görsel:
+kare + 03 · 02 · 05 (sayfa gönderileriyle aynı dört görsel).
+
+### Facebook — kişisel profil
+
+```
+Kelimeki artık Google Play'de de 🎉
+
+Üzerinde çalıştığım Türkçe kelime oyunu 16 Eylül'de App Store'a çıkmıştı; bugün Android sürümü de yayında. Tahtada senin bir bölgen var, kelime kurarak onu büyütüyorsun — rakibinin bölgesine oynarsan vergisini ödüyorsun 😏
+
+En sevdiğim kısmı: Android'deki oyuncu iPhone'daki arkadaşıyla aynı oyunu oynuyor. Ücretsiz, reklamsız.
+
+Android için Google Play:
+https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki&referrer=utm_source%3Dfb-profil-play
+
+iPhone ve iPad için App Store:
+https://apps.apple.com/app/id6809809788?ct=fb-profil-play
+
+Tarayıcıda: https://kelimeki.com/?ref=fb-profil-play
+
+Denerseniz fikrinizi yazın, çok sevinirim 🙏
+```
+
+### Instagram — kişisel hesap
+
+⚠ IG açıklamasındaki link TIKLANMAZ — mağaza adı ve arama yeter; isteyen
+kişisel story'ye Play link sticker'ı koyar (`ig-profil-play`).
+
+```
+Kelimeki artık Google Play'de de 🎉
+
+Üzerinde çalıştığım Türkçe kelime oyunu 16 Eylül'de App Store'a çıkmıştı; bugün Android sürümü de yayında. Tahtada senin bir bölgen var, kelime kurarak onu büyütüyorsun — rakibinin bölgesine oynarsan vergisini ödüyorsun 😏
+
+Android'deki oyuncu iPhone'daki arkadaşıyla aynı oyunu oynuyor. Ücretsiz, reklamsız.
+
+Google Play'de ya da App Store'da "Kelimeki" diye aratın. Tarayıcıda: kelimeki.com
+
+Denerseniz fikrinizi yazın 🙏
+
+#kelimeoyunu #türkçe #oyun
+```
+
+Kişisel story sticker'ı (isteğe bağlı):
+`https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki&referrer=utm_source%3Dig-profil-play`
+
+---
+
 ## 5 · Link ve ölçüm
 
 | Nereye | Link |
@@ -260,6 +311,8 @@ GENİŞLETME.
 | Facebook (site / Play / App Store) | `?ref=fb-sayfa-play` · `referrer=utm_source%3Dfb-sayfa-play` · `?ct=fb-sayfa-play` |
 | LinkedIn sayfa | `?ref=li-sayfa-play` · `referrer=utm_source%3Dli-sayfa-play` |
 | LinkedIn profil | `?ref=li-profil-play` · `referrer=utm_source%3Dli-profil-play` |
+| Facebook kişisel | `?ref=fb-profil-play` · `referrer=utm_source%3Dfb-profil-play` · `?ct=fb-profil-play` |
+| Instagram kişisel (story sticker) | `referrer=utm_source%3Dig-profil-play` |
 
 **Neden yeni etiketler (`-play` soneki):** `?ref=` ilk temasta
 sabitleniyor; 16 Eylül'ün `fb-sayfa`/`li-sayfa`/`li-profil`
