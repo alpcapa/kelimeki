@@ -323,6 +323,26 @@ function AdminSelect({
 const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px] text-accent';
 
 /**
+ * Yalnızca WEB'den beslenen kartların başlık etiketi (27 Eylül 2026,
+ * kullanıcı isteği: *"sadece web olanlara Web yazalım, belli olsun"*).
+ * Kaynak tablo port tarafından hiç yazılmıyorsa (ya da yazması bilerek başka
+ * yere — Firebase — gidiyorsa) kart iOS/Android kullanıcısını GÖRMEZ; etiket
+ * olmadan "uygulamada kimse X yapmıyor" diye yanlış okunuyordu.
+ * ⚠ Port bir gün o tabloya yazmaya başlarsa etiketi KALDIR (Huni v2'nin
+ * mobil yarısı bekliyor — ROADMAP).
+ */
+function WebOnlyTag() {
+  return (
+    <span
+      className="ml-1.5 inline-block align-middle normal-case rounded border border-accent/50 px-1 py-px text-[9px] leading-none tracking-[0.5px]"
+      title="Bu kart yalnızca web verisi gösteriyor — iOS/Android uygulaması bu tabloya yazmıyor."
+    >
+      Web
+    </span>
+  );
+}
+
+/**
  * Metrik tanımları — 16 Ağustos 2026'ya kadar grafiklerin ALTINDA paragraf
  * olarak duruyordu. Tanımın ekranın kendisinde yaşaması hâlâ doğru (dokümanda
  * kalsa ilk yanlış yorum kaçınılmaz olurdu) ama beş uzun paragraf paneli
@@ -3972,6 +3992,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Ziyaretçi Yolculuğu (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <WebOnlyTag />
                     </span>
                     <WebJourneyTable
                       rows={webJourney}
@@ -3985,6 +4006,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Huni v2 (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <WebOnlyTag />
                     </span>
                     <FunnelV2Table
                       rows={funnelV2}
@@ -4003,6 +4025,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Kayıt Hunisi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <WebOnlyTag />
                     </span>
                     <SignupFunnelTable
                       rows={signupFunnel}
@@ -4021,6 +4044,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Cihaz (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <WebOnlyTag />
                     </span>
                     <DeviceOsTable
                       rows={
@@ -4032,6 +4056,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Cihaz Markası (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <WebOnlyTag />
                     </span>
                     <DeviceBrandTable
                       rows={deviceModels && brandBreakdown(deviceModels)}

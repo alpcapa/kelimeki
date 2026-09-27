@@ -1281,6 +1281,32 @@ Eylül'den beri boş, ama o tarihten sonraki iki kaydın ikisi de uygulamadan
 da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
 (geri alındı), çalışıyor.
 
+### "Web" etiketi + iOS/Android kapsam denetimi (27 Eylül 2026)
+
+Kullanıcı isteği: *"sadece web olanlara Web yazalım, belli olsun"* ve *"ios ve
+android verilerini sağlıklı ölçmek için eklenmesi gereken bir kod var mı?"*
+Her admin RPC'sinin kaynak tablosu canlı `pg_proc`tan, portun yazdığı tablolar
+`mobile/app/lib`ten okundu. `WebOnlyTag` şu beş kartta:
+
+| Kart | Kaynak | Neden web |
+|---|---|---|
+| Ziyaretçi Yolculuğu | `web_sessions` | tanım gereği (tarayıcı sekmesi) |
+| Huni v2 | `funnel_events` | port yarısı (PR 2) henüz yok — gelince etiketi KALDIR |
+| Kayıt Hunisi | `signup_events` | port aynı olayları Firebase'e yazıyor |
+| Cihaz · Cihaz Markası | `device_visits` | port bu tabloya hiç yazmıyor (`device_info_plus` yok, `visits_api.dart` başlığı) |
+
+Öteki kartlar iki tarafı da görüyor (`games`, `game_starts`, `game_finishes`,
+`guest_visits`, `tutorial_events`, `profiles`); "Sürüm Dağılımı" ve "Bildirim
+İzni Verenler" tersine YALNIZCA uygulama.
+
+**Açık kalan tek ölçüm boşluğu `game_finishes.platform`:** son 7 günde üye
+bitişlerinin 251'i `null` (12 kişi) — hepsi platform damgası taşımayan 1.1.0
+paketinden (1.1.1 damgalıyor: o sürümdeki satırlar `ios`/`android` geliyor).
+Kod tarafında yapılacak iş yok, kullanıcılar güncelledikçe kendiliğinden
+kapanıyor; o zamana kadar "Oyun Sayısı" grafiğinde bu satırlar "Diğer"de.
+`games.platform`un `null`ları ise Canlı oyun satırları (sunucu yazıyor, tek bir
+platformu yok) — tasarım gereği.
+
 ## Masaüstü kipindeki iPad: iOS altında sahte "10.15.7" (23 Eylül 2026)
 
 Kullanıcı fark etti: *"Admin Cihaz ios altında 10.15.7 gözüken 27 kişi var.
