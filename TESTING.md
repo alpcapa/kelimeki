@@ -845,10 +845,20 @@ garantisi `league_rewards.seen_at` ile cihazdan bağımsızdır. Bu zincirin
 büyük kısmı otomatik test edilemiyor (gerçek oturum + gerçek oyun bitişi
 gerekiyor).
 
+- [ ] **Standart Setup — girişli YZ tarafı (27 Eylül 2026, ROADMAP #41).**
+      Otomatik test misafir dalını kapsıyor; girişli dal gerçek oturum ister.
+      Girişli hesapla Setup → "KİME KARŞI" → Yapay Zeka: devam eden oyunlar
+      listesi ÜSTTE, "Yeni Oyun Kur" ALTTA sabit (turuncu, ekranın altına
+      yapışık; sayfanın sonuna inince footer'ın üstünde yerine oturur,
+      örtmez). Dokununca form: Oyuncu sayısı ("2 Kişi"/"4 Kişi") → altında tek
+      satır açıklama (koltuk listesi YOK) → Zorluk → altta sabit OYUNU BAŞLAT
+      + Vazgeç. iPhone'da şeridin altı ev çubuğuna binmiyor
+      (`env(safe-area-inset-bottom)`).
+
 - [ ] **Seviyeye göre puan — Kolay (6 Eylül 2026, ROADMAP #23 Faz 3).**
-      Girişli hesapla Yapay Zeka sekmesi → "+ Yeni Yapay Zeka Oyunu Aç" →
+      Girişli hesapla Yapay Zeka sekmesi → altta sabit "Yeni Oyun Kur" (27 Eylül 2026'ya kadar üstte "+ Yeni Yapay Zeka Oyunu Aç") →
       "Oyuncu sayısı"nın ALTINDA **Zorluk** satırı: `Kolay` · `Normal` ·
-      `Zor` (Zor Faz 5'le, 7 Eylül 2026'da girdi), Normal seçili. Seçicinin altında
+      `Zor` (Zor Faz 5'le, 7 Eylül 2026'da girdi), Normal seçili (27 Eylül 2026'dan beri hiç oynamamış kullanıcıda Kolay seçili). Seçicinin altında
       seçili seviyenin açıklaması: Normal'de "Orta-iyi seviye bir
       oyuncuyum… birincilik 2 k-lig puanı kazandırır, ikincilik puan
       kazandırmaz.", Kolay'ı seçince "Çok iyi değilim… birincilik 1 k-lig

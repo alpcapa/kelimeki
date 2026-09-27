@@ -1,6 +1,6 @@
 // Kelimeki — oyun kurulum ekranı: oyuncu sayısı (2/4) seçimi
 import { useCallback, useEffect, useRef, useState } from "react";
-import { GUEST_PLAYER_NAME, PLAYER_COLORS } from "../game/constants";
+import { GUEST_PLAYER_NAME } from "../game/constants";
 import type { PlayerSetup } from "../game/gameReducer";
 import type { AiLevel } from "../game/types";
 import { AI_LEVEL_LABEL, SELECTABLE_AI_LEVELS, aiLevelDescription, aiLevelOf, defaultAiLevel } from "../utils/aiLevel";
@@ -15,7 +15,6 @@ import {
   type PendingLiveGameCounts,
 } from "../utils/pendingLiveGames";
 import { preloadWordSet, isWordSetReady } from "../data/wordSetLoader";
-import { Avatar } from "./Avatar";
 import { AuthModal } from "./AuthModal";
 import { CountBadge } from "./CountBadge";
 import { HelpModal } from "./HelpModal";
@@ -23,9 +22,6 @@ import { LiveGamesTab, TurnTriangle } from "./LiveGamesTab";
 import { orderByExpiry } from "../utils/gameListOrder";
 import { LogoMark } from "./LogoMark";
 import { AvatarScoreRow, PlayerAvatarRow, type AvatarRowPlayer } from "./PlayerAvatarRow";
-import { PlayerBadge } from "./PlayerBadge";
-import { RankSeal } from "./RankSeal";
-import { useRankScores } from "../hooks/useRankScores";
 import { RecentGamesSection } from "./RecentGamesSection";
 import { ShareIcon } from "./RelationIcons";
 import { StoreBadges } from './StoreBadges';
@@ -92,6 +88,10 @@ function remainingTime(
 // kullanıldığı `else` dalı `count`'tan bağımsız olduğundan otomatik ikisinde
 // de çıkıyor); girişli kullanıcı "+ Yeni Yapay Zeka Oyunu" formunu açtığında
 // (aynı `else` dalına düşse de) `!user` koşuluyla gizli kalır.
+/** Altta sabit düğme şeridi — Setup'ın iki dalında aynı (ROADMAP #41). */
+const STICKY_BAR =
+  "sticky bottom-0 z-10 -mx-4 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] bg-bg border-t border-border shadow-[0_-8px_20px_rgba(163,177,198,0.25)]";
+
 const MEMBERSHIP_PERKS = [
   "Arkadaşlarınla çoklu canlı oyun oynama",
   "Skor takibi ve k-lig sıralaması",
@@ -309,11 +309,9 @@ export function Setup({
   onReplayTutorial,
 }: SetupProps) {
   const { user, profile, profileLoading } = useAuth();
-  // 1. koltuktaki hesap sahibinin rütbe mührü. Puan `leaderboard`
-  // view'ından geliyor, yani ÖDÜL puanları dahil — 17 Ağustos 2026'da
-  // kaldırılan parantezli sayı `player_stats` mod toplamıydı ve o, ödülleri
-  // İÇERMEDİĞİ için gerçek k-lig puanından sapıyordu (bkz. kök CLAUDE.md).
-  const rankTierOf = useRankScores([user?.id]);
+  // (27 Eylül 2026: 1. koltuğun rütbe mührü koltuk listesiyle birlikte
+  // kalktı — ROADMAP #41 karar 2; `useRankScores` çağrısı da, yani Setup
+  // artık bu isteği hiç atmıyor. Rütbe hesap menüsünde ve Skor Kartı'nda.)
   // Oturum açıldıysa 1. oyuncu her zaman hesap sahibidir. Profil henüz
   // çekilmediyse (profileLoading) e-posta önekine düşmüyoruz — aksi halde
   // sayfa her açılışta profil gelene kadar bir anlık yanlış/geçici bir isim
@@ -771,12 +769,12 @@ export function Setup({
             farklı yerdeydi (misafir burada, girişli footer'da). */}
           {!user && (
             <>
-              <p className="text-muted text-xs font-mono mt-4">
-                Kelimeler kurarak bölgeni genişlet, rakiplerini kuşat. Ama
-                dikkat et: Hamlen rakibinin bölgesine temas ederse, kazandığın
-                puanın bir kısmını onunla paylaşmak zorunda kalırsın. Her hamle
-                bir strateji, her kelime bir mücadele.
-              </p>
+              {/* 27 Eylül 2026 (ROADMAP #41, karar 2): tanıtım paragrafı
+                ("Kelimeler kurarak bölgeni genişlet…") KALKTI — Setup artık
+                herkes için tek standart form; oyunun fikrini karşılamanın
+                ilk ekranı anlatıyor. "Nasıl oynanır?" duruyor. ⚠ Port ikizi
+                (`setup_screen.dart`) bilerek bekliyor: #41'in Setup yarısı
+                önce yalnız web. */}
               {/* 7 Eylül 2026 (kullanıcı: "alt ve üstündeki fazla boşlukları
                 makul hale getir"): `mt-3` + 48px'lik dokunma hedefi paragraf
                 ile "OYUN TİPİ" arasına ~30px'lik iki boş bant açıyordu. Hedef
@@ -806,13 +804,13 @@ export function Setup({
 
         <div className="flex flex-col gap-2">
           <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
-            Oyun Tipi
+            Kime karşı
           </div>
           <div className="flex gap-2">
             {[
               {
                 key: "local" as const,
-                label: "Yapay Zeka ile",
+                label: "Yapay Zeka",
                 badge: localSaveCount,
               },
               {
@@ -886,12 +884,6 @@ export function Setup({
           // formu yalnızca butona tıklanınca açılır. Devam Edenler/Son
           // Oynananlar tabı da `LiveGamesTab`'daki BİREBİR AYNI çözüm.
           <>
-            <button
-              onClick={() => setCreatingLocal(true)}
-              className="btn-raised-orange py-2.5 rounded-md font-sans text-sm font-bold uppercase tracking-[1.5px] bg-orange text-white active:scale-[0.97] transition-transform"
-            >
-              + Yeni Yapay Zeka Oyunu Aç
-            </button>
 
             <div className="flex gap-2">
               {[
@@ -979,6 +971,18 @@ export function Setup({
                 offlineNode={offlineAiNotice}
               />
             )}
+            {/* Devam eden oyunlar ÜSTTE, yeni oyun düğmesi altta SABİT
+                (27 Eylül 2026, ROADMAP #41 karar 13 — Arkadaşınla tarafıyla
+                aynı düzen). Eskiden listenin üstündeydi ("+ Yeni Yapay Zeka
+                Oyunu Aç"). */}
+            <div className={STICKY_BAR}>
+              <button
+                onClick={() => setCreatingLocal(true)}
+                className="w-full btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform"
+              >
+                Yeni Oyun Kur
+              </button>
+            </div>
           </>
         ) : (
           <>
@@ -998,10 +1002,19 @@ export function Setup({
                         : "btn-raised-neutral bg-panel text-text border-border",
                     ].join(" ")}
                   >
-                    {n} Oyunculu
+                    {n} Kişi
                   </button>
                 ))}
               </div>
+              {/* "Oyuncular" koltuk listesinin YERİNE tek satır (27 Eylül
+                  2026, ROADMAP #41 karar 2 — tasarımdaki standart Setup).
+                  Koltukların renkleri/adları oyun ekranında zaten var;
+                  kurulumda soru yalnızca "kaç rakip". */}
+              <p className="text-[11px] text-muted font-mono leading-relaxed">
+                {count === 2
+                  ? "Sen ve 1 yapay zeka. 4 kişide 3 yapay zekaya karşı oynarsın."
+                  : "Sen ve 3 yapay zeka; herkes kendi köşesinden başlar."}
+              </p>
             </div>
 
             {/* ZORLUK (ROADMAP #23 Faz 3, 6 Eylül 2026) — "Oyuncu sayısı"
@@ -1047,99 +1060,43 @@ export function Setup({
               </p>
             </div>
 
-            <div className="flex flex-col gap-2.5">
-              <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
-                Oyuncular
-              </div>
-              {Array.from({ length: count }, (_, i) => {
-                const col = PLAYER_COLORS[i];
-                // 1. oyuncu giriş yapan hesaptır: kilitli isim + avatar, YZ olamaz.
-                const isAccount = i === 0 && !!accountName;
-                const isPending = i === 0 && accountPending;
-                return (
-                  <div
-                    key={i}
-                    className="shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border"
-                    style={{ background: col.tint, borderColor: col.base }}
-                  >
-                    {isAccount ? (
-                      <Avatar
-                        url={profile?.avatar_url}
-                        name={accountName}
-                        size={20}
-                        className="shrink-0"
-                      />
-                    ) : isPending ? (
-                      <span className="w-5 h-5 rounded-full bg-panel border border-border shrink-0 animate-pulse" />
-                    ) : (
-                      <PlayerBadge index={i} />
-                    )}
-
-                    {isAccount ? (
-                      <span className="flex-1 min-w-0 flex items-center gap-1">
-                        <span className="font-sans text-sm font-bold text-text truncate">
-                          {accountName}
-                        </span>
-                        {rankTierOf(user?.id) && (
-                          <RankSeal
-                            tier={rankTierOf(user?.id)!}
-                            size={18}
-                            className="shrink-0"
-                          />
-                        )}
-                      </span>
-                    ) : isPending ? (
-                      <span className="flex-1 min-w-0 font-sans text-sm font-bold text-muted truncate animate-pulse">
-                        Yükleniyor…
-                      </span>
-                    ) : (
-                      <span className="flex-1 min-w-0 font-sans text-sm font-bold text-text truncate">
-                        {i === 0 ? GUEST_PLAYER_NAME : `Yapay Zeka ${i + 1}`}
-                      </span>
-                    )}
-
-                    <span
-                      className="text-[9px] font-mono uppercase tracking-[1px] shrink-0 px-1"
-                      style={{ color: col.base }}
-                    >
-                      {i === 0 ? "Sen" : `YZ${i + 1}`}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={handleStart}
-                disabled={!wordsReady || accountPending}
-                className="flex-1 btn-raised py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
-              >
-                {/* accountPending iken de "Hazırlanıyor…" gösterilir — girişli
-                  kullanıcı için profil gelmeden basılırsa oyuncu adı kısa
-                  süreliğine 'Misafir' kaydedilebiliyordu (RENAME_PLAYER
-                  sonradan düzeltiyordu ama önlemek daha temiz). */}
-                {wordsReady && !accountPending
-                  ? "Oyunu Başlat"
-                  : "Hazırlanıyor…"}
-              </button>
-              {/* Yalnızca girişli kullanıcı için (creatingLocal) — LiveGameCreateForm'un
-                "Vazgeç" butonuyla BİREBİR AYNI, Devam Eden Oyunlar listesine
-                dönmeyi sağlar. Misafirde bu form zaten tek/koşulsuz gösterilen
-                yol olduğundan (dönülecek bir liste yok) hiç render edilmez. */}
-              {creatingLocal && (
-                <button
-                  onClick={() => setCreatingLocal(false)}
-                  className="flex-1 btn-raised-neutral py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-void border border-border text-text active:scale-[0.97] transition-transform"
-                >
-                  Vazgeç
-                </button>
-              )}
-            </div>
-
             {!user && (
               <MembershipPerksBox onSignup={() => setShowAuthModal(true)} />
             )}
+            {/* OYUNU BAŞLAT altta SABİT (27 Eylül 2026, ROADMAP #41 karar 2).
+                `sticky bottom-0`: kaydırma kabı `#root`; düğme ekranın altına
+                yapışır, sayfanın sonunda kendi yerine oturur (footer'ı
+                örtmez). `-mx-4 px-4`: şerit kabın dolgusunu da kaplar. */}
+            <div className={STICKY_BAR}>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleStart}
+                  disabled={!wordsReady || accountPending}
+                  className="flex-1 btn-raised btn-raised-orange min-h-[52px] rounded-md font-sans text-base font-bold uppercase tracking-[1px] bg-orange text-white active:scale-[0.97] transition-transform disabled:opacity-35 disabled:cursor-not-allowed"
+                >
+                  {/* accountPending iken de "Hazırlanıyor…" gösterilir — girişli
+                    kullanıcı için profil gelmeden basılırsa oyuncu adı kısa
+                    süreliğine 'Misafir' kaydedilebiliyordu (RENAME_PLAYER
+                    sonradan düzeltiyordu ama önlemek daha temiz). */}
+                  {wordsReady && !accountPending
+                    ? "Oyunu Başlat"
+                    : "Hazırlanıyor…"}
+                </button>
+                {/* Yalnızca girişli kullanıcı için (creatingLocal) — LiveGameCreateForm'un
+                  "Vazgeç" butonuyla BİREBİR AYNI, Devam Eden Oyunlar listesine
+                  dönmeyi sağlar. Misafirde bu form zaten tek/koşulsuz gösterilen
+                  yol olduğundan (dönülecek bir liste yok) hiç render edilmez. */}
+                {creatingLocal && (
+                  <button
+                    onClick={() => setCreatingLocal(false)}
+                    className="flex-1 btn-raised-neutral py-3.5 rounded-md font-sans text-sm font-bold uppercase tracking-[2px] bg-void border border-border text-text active:scale-[0.97] transition-transform"
+                  >
+                    Vazgeç
+                  </button>
+                )}
+              </div>
+
+            </div>
           </>
         )}
 

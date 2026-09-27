@@ -822,7 +822,7 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | # | Karar | Bugün | Nerede |
 |---|---|---|---|
 | 1 | Karşılama sade: tek soru-başlık, bölge dış hatlı küçük tahta kesiti, "HEMEN OYNA", mağaza rozetleri. Uzun SEO içeriği sayfada KALIR, ilk ekranın altına iner | ✅ KODLANDI (27 Eyl) — `landing-page.md` → "İlk ekran sadeleşti" | `src/landing/` |
-| 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** altta sabit | Sekmeli | `Setup.tsx` ↔ `setup_screen.dart` |
+| 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** altta sabit | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `Setup.tsx` ↔ `setup_screen.dart` |
 | 3 | Setup'ta "1 dk'lık tanıtımla başlar" satırı YOK | — | — |
 | 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `handleStart` (`Setup.tsx`) ↔ `_showGuestWarning` (`setup_screen.dart`) |
 | 5 | Tanıtımın açılış penceresi ("Kelimeki Tanıtım Turu / Devam") KALKAR, 1. sahne doğrudan açılır | Var | `TutorialGame` ↔ `ui/tutorial/*` |
@@ -833,7 +833,7 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | Liste + ayrı form | `LiveGamesTab` + `LiveGameCreateForm` |
 | 11 | Arkadaş seçici: arama kutusunun ALTINDA, listenin üstünde **+ ARKADAŞINI DAVET ET** (davet linki); listenin altındaki "Listede yok mu?" bağlantısı kalkar | Liste altında bağlantı | `LiveGameCreateForm` |
 | 12 | Seçilen rakipler **koltuk kartı** olarak, oyuncu renginin zemininde (bilinçli değişiklik; avatar aynı kalır). 4 kişide boş 4. koltuk ekranda "Yapay Zeka" olarak görünür → "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi **KALKAR** | Onay penceresi | `LiveGameCreateForm` |
-| 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | Üstte | `Setup.tsx` ↔ `devam_eden_govde.dart` |
+| 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | ✅ WEB KODLANDI (27 Eyl) — girişli YZ tarafında liste üstte, "Yeni Oyun Kur" altta sabit | `Setup.tsx` ↔ `devam_eden_govde.dart` |
 | 14 | Uygulamanın açılış tanıtımı (`IntroScreen`) da sadeleşir — AYRI iş, tanıtım PR'ından SONRA | — | port |
 
 ⚠ **Sunucu kuralları DEĞİŞMEZ** (`create_online_game`): 2 kişide tam 1
@@ -880,6 +880,26 @@ uyarısı + ilk oyun Kolay, (B) tek standart ekran, (C) Arkadaşınla ekranları
   kendini `oynamisKullanici` ile işaretliyor. `.tap-expand` regresyon testi
   bu pencereyi ölçüyordu; misafirin açabildiği başka bir örnek kalmadığından
   aynı sınıf dizesiyle sayfaya eklenen bir kartı ölçüyor (değişmez CSS'te).
+
+### Setup'ın ikinci web parçası — tek standart ekran, kararlar 2 + 3 + 13 (27 Eylül 2026)
+
+- Etiketler: "Oyun Tipi" → **Kime karşı**, "Yapay Zeka ile" → **Yapay
+  Zeka**, "N Oyunculu" → **N Kişi**.
+- Misafirin logo altı tanıtım paragrafı kalktı ("Nasıl oynanır?" duruyor).
+- "Oyuncular" koltuk listesi kalktı, yerine oyuncu sayısının altında tek
+  satır ("Sen ve 1 yapay zeka…"). Koltuktaki rütbe mührü de gitti, dolayısıyla
+  Setup `useRankScores` isteğini artık HİÇ atmıyor.
+- **OYUNU BAŞLAT altta sabit**, turuncu (`STICKY_BAR`). Girişli YZ
+  tarafında "+ Yeni Yapay Zeka Oyunu Aç" listenin üstünden kalkıp aynı
+  şeride "Yeni Oyun Kur" olarak indi (karar 13).
+- ⚠ **`overflow-x-hidden` → `overflow-x-clip`** (`App.tsx`, Setup
+  sarmalayıcısı): `hidden` kabı bir kaydırma kabına çeviriyordu ve
+  `sticky bottom-0` ekrana değil o kabın ~1000px'lik kutusuna yapışıyordu —
+  şerit ilk ekranda kesik duruyordu (ölçüldü: 781→858, ekran 844; sonra
+  767→844). `clip` taşmayı aynı keser, kaydırma kabı oluşturmaz; `supports-`
+  kapısıyla eski Safari `hidden`da kalır (şerit yapışmaz, zararsız). Oyun
+  ekranının sarmalayıcısına DOKUNULMADI.
+- Test: duman testindeki "Oyun Tipi" beklentisi "Kime karşı" oldu; 94/94.
 
 ### Taban ölçüm (27 Eylül 2026, kodlamadan ÖNCE)
 
