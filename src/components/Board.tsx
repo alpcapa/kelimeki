@@ -23,6 +23,7 @@ import {
 import { computeAllTerritories } from '../utils/validator';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { BOARD_MAX_PX, boardMaxWidthCss } from '../utils/boardFit';
+import { ZOOM_HINT_TEXT, zoomHintTarget } from '../utils/boardZoom';
 import { AiLevelBadge } from './AiLevelBadge';
 import { CountBadge } from './CountBadge';
 import { Tile } from './Tile';
@@ -365,6 +366,13 @@ export function Board({
     const toRight = hc < SIZE / 2;
     return { hr, hc, col, toRight };
   }, [compact, coach, placed, board, players, current, tileLifted, state.selectedTile]);
+
+  // Zoom balonunun hedefi — taslak taşlar da "dolu" sayılır (balon onları
+  // "boş kare" diye göstermesin).
+  const zoomTarget = useMemo(
+    () => (zoomHint ? zoomHintTarget((r, c) => board[r][c] === null && !placed[key(r, c)]) : null),
+    [zoomHint, board, placed],
+  );
 
   // Merkezdeki x2 bonus bölgesinin tahtaya oranı ve konumu — köşe numarası
   // filigranıyla aynı mantıkla, tek büyük bir "X2" o bölgenin arkasına yazılır.
@@ -773,43 +781,55 @@ export function Board({
 
         </div>
 
-        {/* Zoom tanıtım balonu — MERKEZ karenin üstünde, kuyruğu aşağı
-            (kareye) bakan çok satırlı kutu. `inset-[10px]`: aşağıdaki
-            "Buradan başla" ile aynı gerekçe (grid'in kendi dolgusuyla
-            eşleşmezse yüzde koordinatları hücre alanından kayar).
-            Sürükleme başlayınca kaybolur — `tileLifted`, "Buradan başla"nın
-            aynı davranışı. Port ikizi: `board_widget.dart`
-            `_zoomHintBubble`; METİN İKİSİNDE DE BİREBİR aynı olmalı. */}
-        {zoomHint && !tileLifted && (
+        {/* Zoom tanıtım balonu — SOL-ALT köşe bloğunun ortasındaki boş
+            kareyi (`zoomHintTarget`) işaret eder, kuyruğu aşağı (kareye)
+            bakar. Geometri aşağıdaki `coach` balonuyla AYNI (üst kenardan
+            6 px, sol üçte birde sola yaslı, kuyruk karenin tam ortasında).
+            27 Eylül 2026'ya kadar merkez kareyi (X3) gösteriyordu — kullanıcı:
+            *"X3 üzerine göstermesi kafa karıştırıyor"*.
+            `inset-[10px]`: aşağıdaki "Buradan başla" ile aynı gerekçe.
+            Sürükleme başlayınca kaybolur — `tileLifted`. Port ikizi:
+            `board_widget.dart` `_zoomHintBubble`; metin tek kaynakta
+            (`ZOOM_HINT_TEXT` ↔ `kZoomHintText`). */}
+        {zoomHint && !tileLifted && zoomTarget && (
           <div className="pointer-events-none absolute inset-[10px] z-20">
             <div
               data-zoom-hint=""
-              className="absolute left-0 right-0 flex flex-col items-center"
+              data-zoom-hint-target={`${zoomTarget[0]},${zoomTarget[1]}`}
+              className="absolute left-0 right-0 flex flex-col"
               style={{
-                // Merkez karenin ÜST kenarı; kutu kendi yüksekliği kadar
-                // yukarı çekiliyor (punto akışkan, yükseklik bilinmiyor).
-                top: `calc(${CELL_W} * ${Math.floor(SIZE / 2)} + ${Math.floor(SIZE / 2) * GRID_GAP}px)`,
+                top: `calc(${CELL_W} * ${zoomTarget[0]} + ${zoomTarget[0] * GRID_GAP}px - 6px)`,
                 transform: 'translateY(-100%)',
+                alignItems:
+                  zoomTarget[1] <= 3
+                    ? 'flex-start'
+                    : zoomTarget[1] >= SIZE - 4
+                      ? 'flex-end'
+                      : 'center',
               }}
             >
-              <div
-                className="font-bold leading-snug text-center rounded-[9px] text-white"
+              <span
+                className="font-bold leading-snug text-center rounded-[9px] text-white whitespace-pre-line"
                 style={{
-                  maxWidth: '78%',
                   background: '#2563EB',
                   // Punto tanıtım balonlarıyla AYNI (7 Eylül 2026 akşamı,
                   // kullanıcı: *"zoom mesaj fontunu da diğer balonlar kadar
                   // büyüt"*) — üç balon tek ölçüde okunuyor.
                   fontSize: 'clamp(11px, 3.2vw, 16px)',
                   padding: '7px 10px',
+                  maxWidth: '78%',
                   boxShadow: '0 2px 6px rgba(15,23,42,0.28)',
                 }}
               >
-                Boş kareye veya çerçevesine çift tıklama tahtayı büyütür. Hemen dene!
-              </div>
-              {/* Kuyruk: merkez kareye bakan küçük üçgen. */}
+                {ZOOM_HINT_TEXT}
+              </span>
+              {/* Kuyruk: işaret edilen karenin TAM ortasında. */}
               <span
                 style={{
+                  position: 'absolute',
+                  left: `calc(${CELL_W} * ${zoomTarget[1] + 0.5} + ${zoomTarget[1] * GRID_GAP}px)`,
+                  transform: 'translateX(-50%)',
+                  top: '100%',
                   width: 0,
                   height: 0,
                   borderLeft: '5px solid transparent',
