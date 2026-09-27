@@ -133,17 +133,14 @@ for (const c of [...GENIS_AMA_KISA, { ad: 'dikey telefon', w: 393, h: 852 }]) {
 // 18,8 px, harf 24 px'e (hücrenin %128'i) çıkıyordu (kullanıcı ekran
 // görüntüsüyle bildirdi). Tavan `index.css` → `.tile-board-letter`.
 async function tasOlculeri(page: Page) {
-  // Raftan seç → tahtaya koy. `toPass`: CI yükü altında ilk dokunuşun
-  // kaçtığı bir kez görüldü (27 Eylül 2026, #664 — yerelde 8/8 geçti, ölçüm
-  // kodu ilgisiz). Yeniden deneme taşı zaten yerleşmişse tekrar koymaz:
-  // döngü harf görünür olunca biter.
+  // Joker OLMAYAN ilk raf taşı (27 Eylül 2026): torbadaki 100 taşın 2'si
+  // joker; raftaki ilk taş joker çıkınca tahtaya koymak "Joker Hangi Harf
+  // Olsun?" penceresini açıyor ve bu adım ~40 koşuda bir düşüyordu (CI'da
+  // iki kez, yerelde 42 koşuda bir; hata bağlamında pencere göründü).
+  await page.locator('[data-rack-tile]').filter({ hasNotText: '★' }).first().click();
+  await page.locator('[data-board-grid] > *').first().click();
   const harf = page.locator('[data-board-grid] .tile-board-letter').first();
-  await expect(async () => {
-    if (await harf.isVisible()) return;
-    await page.locator('[data-rack-tile]').first().click();
-    await page.locator('[data-board-grid] > *').first().click();
-    await expect(harf).toBeVisible({ timeout: 3000 });
-  }).toPass({ timeout: 20_000 });
+  await expect(harf).toBeVisible();
   return page.evaluate(() => {
     const g = document.querySelector('[data-board-grid]') as HTMLElement;
     const hucre = (g.firstElementChild as HTMLElement).getBoundingClientRect().width;
