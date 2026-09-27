@@ -26,11 +26,17 @@ export const KESIT_HARITA: readonly string[] = [
   '....rrr',
 ];
 
-/** Rakibin taşları — `"satır,sütun"` → harf. KUL, dikey. */
+/**
+ * Rakibin taşları — `"satır,sütun"` → harf. KUL dikey; yanındaki S/E ile
+ * yatayda US ve LE, dikeyde SE (28 Eylül 2026, kullanıcı isteği — rakibin
+ * bölgesi de dolu bir oyun gibi okunsun).
+ */
 export const KESIT_RAKIP_HARFLERI: Readonly<Record<string, string>> = {
   '2,5': 'K',
   '3,5': 'U',
   '4,5': 'L',
+  '3,6': 'S',
+  '4,6': 'E',
 };
 
 /**
