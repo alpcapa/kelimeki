@@ -1659,7 +1659,7 @@ test.describe('tahta zoom', () => {
   // Kural İKİ değere birden bakıyor: gösterim sayacı (tavan 2) VE "denedi
   // mi". Port ikizi: `mobile/app/test/zoom_hint_test.dart` — metin ikisinde
   // de BİREBİR aynı olmalı.
-  const HINT = 'Boş kareye veya çerçevesine çift tıklama tahtayı büyütür. Hemen dene!';
+  const HINT = 'Boş kareye çift tık tahtayı büyütür. Şimdi Dene!'; // `\n` getByText'te boşluğa iner
 
   /** Balon bayraklarını oyun açılmadan ÖNCE tohumlar. */
   async function tohumla(page: Page, v: { shown?: number; tried?: boolean }) {
@@ -1765,6 +1765,23 @@ test.describe('tahta zoom', () => {
     expect(balon.x + balon.width).toBeLessThanOrEqual(vp.x + vp.width + 1);
     // Ve gerçekten sarılmış olmalı: tek satır olsaydı bu metin taşardı.
     expect(balon.height).toBeGreaterThan(24);
+  });
+
+  // 27 Eylül 2026, kullanıcı: *"X3 üzerine göstermesi kafa karıştırıyor. Sol
+  // alt bölümün ortasına beyaz boş kareyi gösteren bir mesaj balonu olsun"*.
+  test('balon SOL-ALT bloğun ortasındaki boş kareyi gösterir, X3\'ü DEĞİL',
+      async ({ page }) => {
+    await oyunEkrani(page);
+    const balon = page.locator('[data-zoom-hint]');
+    await expect(balon).toHaveAttribute('data-zoom-hint-target', '10,1');
+    const kutu = (await balon.boundingBox())!;
+    const hedef = await hucreKutusu(page, 10, 1);
+    const x3 = await hucreKutusu(page, 6, 6);
+    // Balon hedef karenin hemen ÜSTÜNDE biter (kuyruk 6 px + pay)...
+    expect(kutu.y + kutu.height).toBeLessThanOrEqual(hedef.y + 1);
+    expect(kutu.y + kutu.height).toBeGreaterThan(hedef.y - 20);
+    // ...ve merkez kareyi (X3) örtmez.
+    expect(kutu.y).toBeGreaterThan(x3.y + x3.height);
   });
 
   test('boş kareye çift dokunuş zoom açar, tekrarı kapatır', async ({ page }) => {
