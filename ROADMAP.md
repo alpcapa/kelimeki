@@ -97,7 +97,8 @@ kod girmez.
 | | #34 | Canlı sohbet okundu bilgisi — port yarısı | Web + sunucu `main`'de; port açık |
 | | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Açık |
 | | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, bu kaldı |
-| | — | Huni v2'nin MOBİL yarısı (PR 2) | Numarasız; `docs/decisions/funnel-v2.md`. ⚠ Gelince admin kartındaki `WebOnlyTag`'i kaldır |
+| | — | Huni v2'nin MOBİL yarısı (PR 2) | **5 Ekim trenine alındı** (27 Eyl, kullanıcı: *"dahil edelim"*). `docs/decisions/funnel-v2.md` → "PR 2". ⚠ Gelince admin kartındaki `PlatformTag kind="web"`i kaldır |
+| | #40 | Cihaz · Cihaz Markası kartları uygulamayı da görsün | **2 haftalık trene alındı** (27 Eyl, kullanıcı kararı). Port `device_visits`e HİÇ yazmıyor, `guest_visits`e de `os_version`/`device_model` null (`visits_api.dart` başlığı: `device_info_plus` yok). İş: paketi ekle, iki alanı doldur, `device_visits`e yaz. ⚠ Gelince iki kartın `PlatformTag kind="web"`ini kaldır; Play Data safety / App Store gizlilik beyanını kontrol et (cihaz modeli yeni veri türü mü) |
 | | #26 | Web → mağaza yönlendirmesi: kalan iki satır | Android'de uygulaması yüklü misafir (`asset_statements`, mobil) · manifest `related_applications` (ÖLÇMEDEN AÇMA) |
 | **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅; `admin_ai_balance` seviye kırılımı (Kolay ~%30 · Normal ~%51 · Zor ~%70) |
 | | #18 | `submit_move` puan hakemliği | GÖLGE FAZINDA (`move_shadow_diffs`) |
@@ -111,7 +112,7 @@ kod girmez.
 | | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
 
 **Madde numarası kuralı (26 Eylül 2026):** yeni madde **bir sonraki boş
-numarayı** alır — şu an **#40**. Numara hiçbir zaman yeniden kullanılmaz,
+numarayı** alır — şu an **#41**. Numara hiçbir zaman yeniden kullanılmaz,
 kapanmış (arşivdeki) maddelerinki de. 26 Eylül'de iki AKTİF çakışma
 bulundu ve sonradan gelen maddeye yeni numara verildi: tahta yükseklik
 bütçesi **#26 → #38** (mağaza yönlendirmesi #26 olarak kaldı; kodda ve

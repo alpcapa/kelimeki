@@ -323,21 +323,29 @@ function AdminSelect({
 const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px] text-accent';
 
 /**
- * Yalnızca WEB'den beslenen kartların başlık etiketi (27 Eylül 2026,
- * kullanıcı isteği: *"sadece web olanlara Web yazalım, belli olsun"*).
- * Kaynak tablo port tarafından hiç yazılmıyorsa (ya da yazması bilerek başka
- * yere — Firebase — gidiyorsa) kart iOS/Android kullanıcısını GÖRMEZ; etiket
- * olmadan "uygulamada kimse X yapmıyor" diye yanlış okunuyordu.
- * ⚠ Port bir gün o tabloya yazmaya başlarsa etiketi KALDIR (Huni v2'nin
- * mobil yarısı bekliyor — ROADMAP).
+ * Tek platformdan beslenen kartların başlık etiketi (27 Eylül 2026, kullanıcı
+ * isteği: *"sadece web olanlara Web yazalım, belli olsun"* + aynı gün
+ * *"sadece uygulama olanlara etiket koy"*).
+ * - **Web:** kaynak tabloya port hiç yazmıyor (ya da bilerek başka yere —
+ *   Firebase — yazıyor); kart iOS/Android kullanıcısını GÖRMEZ. Etiket
+ *   olmadan "uygulamada kimse X yapmıyor" diye yanlış okunuyordu.
+ * - **Uygulama:** kaynak yalnızca uygulamada dolu (sürüm numarası, push token).
+ * ⚠ Port bir gün bir "Web" kartının tablosuna yazmaya başlarsa etiketi
+ * KALDIR (Huni v2'nin mobil yarısı, cihaz kartları — ROADMAP).
+ * Kapsam denetimi: `docs/decisions/admin-panel.md` → "Web etiketi".
  */
-function WebOnlyTag() {
+function PlatformTag({ kind }: { kind: 'web' | 'app' }) {
+  const web = kind === 'web';
   return (
     <span
       className="ml-1.5 inline-block align-middle normal-case rounded border border-accent/50 px-1 py-px text-[9px] leading-none tracking-[0.5px]"
-      title="Bu kart yalnızca web verisi gösteriyor — iOS/Android uygulaması bu tabloya yazmıyor."
+      title={
+        web
+          ? 'Bu kart yalnızca web verisi gösteriyor — iOS/Android uygulaması bu tabloya yazmıyor.'
+          : 'Bu kart yalnızca iOS/Android uygulamasının verisini gösteriyor — web bu tabloya yazmıyor.'
+      }
     >
-      Web
+      {web ? 'Web' : 'Uygulama'}
     </span>
   );
 }
@@ -3992,7 +4000,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Ziyaretçi Yolculuğu (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <WebOnlyTag />
+                      <PlatformTag kind="web" />
                     </span>
                     <WebJourneyTable
                       rows={webJourney}
@@ -4006,7 +4014,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Huni v2 (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <WebOnlyTag />
+                      <PlatformTag kind="web" />
                     </span>
                     <FunnelV2Table
                       rows={funnelV2}
@@ -4025,7 +4033,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Kayıt Hunisi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <WebOnlyTag />
+                      <PlatformTag kind="web" />
                     </span>
                     <SignupFunnelTable
                       rows={signupFunnel}
@@ -4044,7 +4052,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Cihaz (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <WebOnlyTag />
+                      <PlatformTag kind="web" />
                     </span>
                     <DeviceOsTable
                       rows={
@@ -4056,7 +4064,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Cihaz Markası (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <WebOnlyTag />
+                      <PlatformTag kind="web" />
                     </span>
                     <DeviceBrandTable
                       rows={deviceModels && brandBreakdown(deviceModels)}
@@ -4066,6 +4074,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Sürüm Dağılımı (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="app" />
                     </span>
                     <PlatformVersionTable
                       groups={appVersionGroups}
@@ -4079,6 +4088,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Bildirim İzni Verenler (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
+                      <PlatformTag kind="app" />
                     </span>
                     {/* ⚠ ÜSTTEKİ TABLONUN KOPYASI DEĞİL — farklı soru, farklı
                         kapsam (bkz. AdminPushVersionRow). "Sürüm Dağılımı"

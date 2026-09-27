@@ -1286,7 +1286,7 @@ da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
 Kullanıcı isteği: *"sadece web olanlara Web yazalım, belli olsun"* ve *"ios ve
 android verilerini sağlıklı ölçmek için eklenmesi gereken bir kod var mı?"*
 Her admin RPC'sinin kaynak tablosu canlı `pg_proc`tan, portun yazdığı tablolar
-`mobile/app/lib`ten okundu. `WebOnlyTag` şu beş kartta:
+`mobile/app/lib`ten okundu. `PlatformTag kind="web"` şu beş kartta:
 
 | Kart | Kaynak | Neden web |
 |---|---|---|
@@ -1297,7 +1297,9 @@ Her admin RPC'sinin kaynak tablosu canlı `pg_proc`tan, portun yazdığı tablol
 
 Öteki kartlar iki tarafı da görüyor (`games`, `game_starts`, `game_finishes`,
 `guest_visits`, `tutorial_events`, `profiles`); "Sürüm Dağılımı" ve "Bildirim
-İzni Verenler" tersine YALNIZCA uygulama.
+İzni Verenler" tersine YALNIZCA uygulama — aynı gün onlara da
+`PlatformTag kind="app"` ("Uygulama") kondu (kullanıcı: *"sadece uygulama
+olanlara etiket koy"*).
 
 **Açık kalan tek ölçüm boşluğu `game_finishes.platform`:** son 7 günde üye
 bitişlerinin 251'i `null` (12 kişi) — hepsi platform damgası taşımayan 1.1.0
