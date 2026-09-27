@@ -297,4 +297,4 @@ doğrudan giden tıklama Kaynak Hunisi'nde GÖRÜNMEZ.
 
 | Ne zaman | Ne | Ölçüm |
 |---|---|---|
-| 27 Eyl 2026 (plan) | Paylaşım turu kullanıcıyla birlikte | — |
+| 27 Eyl 2026 12:20 | Instagram story — yalnızca Play rozetli görsel, "Hemen İndir!" link sticker'ı (`ig-story-play`) | Play Console → Acquire (UTM `ig-story-play`, görünürse) |
