@@ -9,15 +9,23 @@
 // Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi ve onun "Hayır"ından
 // doğan kalıcı Yapay Zeka satırı KALKTI — koltuk zaten görünüyor. "Arkadaşını
 // davet et" (davet linki) artık arama kutusunun hemen altında.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ScrollArea } from './ScrollArea';
 import { useAuth } from '../hooks/useAuth';
-import { createFriendInviteLink, createOnlineGame, fetchFriends } from '../lib/api';
-import { buildInviteUrl, INVITE_SHARE_TEXT, whatsappShareUrl } from '../utils/friendInvite';
-import { useModalA11y } from '../hooks/useModalA11y';
-import type { FriendRow, OnlineGameSlot } from '../lib/database.types';
+import {
+  createOnlineGame,
+  fetchFriends,
+  removeFriend,
+  respondFriendRequest,
+  sendFriendRequest,
+} from '../lib/api';
+import { usePlayerDirectory } from '../hooks/usePlayerDirectory';
+import { useInviteShare } from '../hooks/useInviteShare';
+import { InviteShareFallback } from './InviteShareFallback';
+import type { FriendRow, FriendSearchResult, OnlineGameSlot } from '../lib/database.types';
 import { trLower } from '../utils/turkish';
 import { Avatar } from './Avatar';
-import { FriendsModal } from './FriendsModal';
+import { Pill } from './FriendsModal';
 import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
 import { friendlyErrorMessage } from '../utils/errorMessage';
@@ -26,6 +34,10 @@ import { PLAYER_COLORS } from '../game/constants';
 interface LiveGameCreateFormProps {
   onCancel: () => void;
   onCreated: () => void;
+  /** Arkadaşlar penceresinin OYNA'sından gelince: o arkadaş seçili açılır
+   * (`utils/liveGameRequest.ts`, 27 Eylül 2026). */
+  initialFriendId?: string;
+  initialPlayerCount?: 2 | 4;
 }
 
 const toggleBtnCls = (active: boolean) =>
@@ -49,17 +61,37 @@ function CheckMark({ checked }: { checked: boolean }) {
   );
 }
 
-export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormProps) {
+export function LiveGameCreateForm({
+  onCancel,
+  onCreated,
+  initialFriendId,
+  initialPlayerCount,
+}: LiveGameCreateFormProps) {
   const { user } = useAuth();
-  const [playerCount, setPlayerCount] = useState<2 | 4>(2);
+  const [playerCount, setPlayerCount] = useState<2 | 4>(initialPlayerCount ?? 2);
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
-  // Arkadaş seçicideki isimlerin rütbe mührü — tek toplu çekim.
-  const rankTierOf = useRankScores((friends ?? []).map((f) => f.friend_id));
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(initialFriendId ? [initialFriendId] : []);
+  // Sıfırlama yalnızca sayı GERÇEKTEN değişince — mount'ta (StrictMode'un
+  // çift koşusu dahil) koşarsa OYNA'dan gelen ön seçim silinirdi.
+  const oncekiSayiRef = useRef(playerCount);
+  // Boş koltuğa (+) dokununca aşağıdaki arkadaş listesine kaydırılır
+  // (27 Eylül 2026, kullanıcı isteği). Odak VERİLMEZ: arama kutusuna odak
+  // telefonda klavyeyi açıp listeyi örterdi.
+  const listeRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [query, setQuery] = useState('');
+  // "Tüm oyuncular" görünümü (arkadaş olmayana istek buradan) — arama bu
+  // görünümde sunucuda, arkadaş görünümünde yerel süzgeç.
+  const [showAll, setShowAll] = useState(false);
+  const dir = usePlayerDirectory(showAll ? query : '', showAll);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  // İsimlerin rütbe mührü — tek toplu çekim (tüm oyuncular dahil).
+  const rankTierOf = useRankScores([
+    ...(friends ?? []).map((f) => f.friend_id),
+    ...(dir.allUsers ?? []).map((u) => u.id),
+    ...dir.results.map((u) => u.id),
+  ]);
   // Davet gerçekten gönderildiğinde (3 Ağustos 2026, kullanıcı isteği) form
   // sessizce kapanıp listeye dönmek yerine önce bir onay ekranı gösterir —
   // `FriendSuggestModal`'ın "Arkadaşlık davetiniz iletilmiştir." ve
@@ -84,59 +116,14 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
     reloadFriends();
   }, [user?.id]);
 
-  // "Arkadaşını davet et" → DOĞRUDAN paylaşım (27 Eylül 2026, kullanıcı:
-  // *"arkadaşlar modalı açmamalı, direkt paylaşma modalı çıkmalı ve
-  // whatsapp'dan direkt paylaşmalı"*). Link form açılırken ÖNCEDEN alınır:
-  // iOS Safari `navigator.share`i yalnızca dokunuşun hemen ardından açıyor,
-  // araya bir ağ isteği girerse izin düşebiliyor. Token kullanıcı başına
-  // kalıcı (`create_friend_invite_link` var olanı döner), önceden almak
-  // yeni bir şey yaratmıyor.
-  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
-  const [showShareFallback, setShowShareFallback] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const shareFallbackRef = useModalA11y(showShareFallback, () => setShowShareFallback(false));
-  useEffect(() => {
-    if (!user?.id) return;
-    let iptal = false;
-    void createFriendInviteLink().then((token) => {
-      if (!iptal && token) setInviteUrl(buildInviteUrl(token));
-    });
-    return () => {
-      iptal = true;
-    };
-  }, [user?.id]);
-
-  const handleInviteShare = async () => {
-    let url = inviteUrl;
-    if (!url) {
-      const token = await createFriendInviteLink();
-      if (!token) return;
-      url = buildInviteUrl(token);
-      setInviteUrl(url);
-    }
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: 'Kelimeki', text: INVITE_SHARE_TEXT, url });
-        return;
-      } catch (err) {
-        // Kullanıcı sayfayı kapattıysa sessiz geç; paylaşım AÇILAMADIYSA
-        // (ör. iOS'ta dokunuş izni düştü) yedek pencereye in.
-        if ((err as { name?: string })?.name === 'AbortError') return;
-      }
-    }
-    setShowShareFallback(true);
-  };
-
-  const copyInvite = async () => {
-    if (!inviteUrl || !navigator.clipboard) return;
-    await navigator.clipboard.writeText(`${INVITE_SHARE_TEXT}\n${inviteUrl}`);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
-  };
+  // "Arkadaşını davet et" → DOĞRUDAN paylaşım (`useInviteShare`).
+  const invite = useInviteShare();
 
   // 2↔4 arası kural tamamen farklı (YZ izni yok / var) — sekme değişince
   // seçimleri sıfırlıyoruz ki eski bir seçim yeni kuralda geçersiz kalmasın.
   useEffect(() => {
+    if (oncekiSayiRef.current === playerCount) return;
+    oncekiSayiRef.current = playerCount;
     setSelected([]);
   }, [playerCount]);
 
@@ -151,6 +138,34 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
       return [...s, friendId];
     });
   };
+
+  // Arkadaşlık isteği — Arkadaşlar penceresindekiyle aynı, onaysız tek
+  // dokunuş. Kabul edilen (ya da karşılıklı isteğe dönen) kişi arkadaş
+  // listesine girer ve hemen seçilebilir.
+  const iliskiIslemi = async (id: string, is: () => Promise<FriendSearchResult['relation']>) => {
+    setBusyId(id);
+    try {
+      const yeni = await is();
+      dir.patchRelation(id, yeni);
+      if (yeni === 'accepted') reloadFriends();
+    } catch (err) {
+      console.error('[Kelimeki] arkadaşlık işlemi hatası:', err);
+    } finally {
+      setBusyId(null);
+    }
+  };
+  const handleSend = (id: string) =>
+    iliskiIslemi(id, async () => ((await sendFriendRequest(id)) === 'accepted' ? 'accepted' : 'pending_outgoing'));
+  const handleAccept = (id: string) =>
+    iliskiIslemi(id, async () => {
+      await respondFriendRequest(id, true);
+      return 'accepted';
+    });
+  const handleCancel = (id: string) =>
+    iliskiIslemi(id, async () => {
+      await removeFriend(id);
+      return null;
+    });
 
   const canSubmit = playerCount === 2 ? selected.length === 1 : selected.length >= 2;
 
@@ -220,16 +235,6 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
 
   return (
     <div className="w-full flex flex-col gap-5">
-      {showFriendsModal && (
-        <FriendsModal
-          initialTab="search"
-          onClose={() => {
-            setShowFriendsModal(false);
-            reloadFriends();
-          }}
-        />
-      )}
-
       <div className="flex flex-col gap-2">
         <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
           Oyuncu Sayısı
@@ -309,14 +314,8 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
                 </div>
               );
             }
-            return (
-              <div
-                key={i}
-                className={[
-                  'flex items-center rounded-xl border-[1.5px] border-dashed border-[#C7D0DC] bg-bg',
-                  yatay ? 'gap-3 px-3 py-2.5' : 'flex-col justify-center gap-1.5 px-1.5 pt-3 pb-2.5',
-                ].join(' ')}
-              >
+            const govde = (
+              <>
                 <span
                   className="w-9 h-9 rounded-full bg-void border border-border flex items-center justify-center text-lg shrink-0"
                   aria-hidden
@@ -326,7 +325,25 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
                 <span className="font-sans text-xs font-bold text-muted">
                   {ai ? 'Yapay Zeka' : yatay ? 'Aşağıdan bir arkadaşını seç' : 'Boş koltuk'}
                 </span>
+              </>
+            );
+            const kutuCls = [
+              'flex items-center rounded-xl border-[1.5px] border-dashed border-[#C7D0DC] bg-bg',
+              yatay ? 'gap-3 px-3 py-2.5' : 'flex-col justify-center gap-1.5 px-1.5 pt-3 pb-2.5',
+            ].join(' ');
+            return ai ? (
+              <div key={i} className={kutuCls}>
+                {govde}
               </div>
+            ) : (
+              <button
+                key={i}
+                type="button"
+                onClick={() => listeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className={`${kutuCls} w-full text-left active:scale-[0.98] transition-transform`}
+              >
+                {govde}
+              </button>
             );
           })}
         </div>
@@ -361,21 +378,44 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
         {error && <p className="text-xs text-red font-mono text-center" style={{ margin: 0 }}>{error}</p>}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
-          Arkadaşların
+      <div ref={listeRef} className="flex flex-col gap-2 scroll-mt-3">
+        {/* Başlığın sağında dönüşümlü bağlantı — Arkadaşlar penceresiyle aynı
+            (27 Eylül 2026, kullanıcı isteği). "Tüm oyuncular"da arkadaş
+            olmayana buradan istek gidilir; oyuna yalnızca ARKADAŞ çağrılır
+            (`create_online_game`: "Yalnızca arkadaşlarını davet edebilirsin."). */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+            {showAll ? 'Tüm oyuncular' : 'Arkadaşların'}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setShowAll((v) => !v);
+              setQuery('');
+            }}
+            className="shrink-0 min-h-[36px] text-xs font-bold text-accent active:opacity-70"
+          >
+            {showAll ? '← Arkadaşlar' : 'Tüm oyuncular →'}
+          </button>
         </div>
-        {friends === null ? (
+        {!showAll && friends === null ? (
           <p className="text-muted text-xs font-mono py-4 text-center">Yükleniyor…</p>
-        ) : friends.length === 0 ? (
+        ) : !showAll && friends!.length === 0 ? (
           <div className="flex flex-col items-center gap-2.5 py-4">
             <p className="text-muted text-xs font-mono text-center">Henüz hiç arkadaşın yok.</p>
             <button
               type="button"
-              onClick={() => setShowFriendsModal(true)}
+              onClick={() => void invite.share()}
               className="btn-raised bg-accent text-white rounded-md py-2 px-4 text-[11px] font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
             >
-              Arkadaş Ekle / Davet Et
+              Arkadaşını davet et
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="min-h-[36px] text-xs font-bold text-accent active:opacity-70"
+            >
+              Tüm oyunculara göz at →
             </button>
           </div>
         ) : (
@@ -385,29 +425,23 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="İsim ya da takma ad ara…"
-              aria-label="Arkadaş ara"
+              aria-label={showAll ? 'Oyuncu ara' : 'Arkadaş ara'}
               className="w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-text outline-none focus:border-accent transition-colors"
             />
             {/* Arama kutusunun HEMEN altında (27 Eylül 2026, kullanıcı:
                 *"arkadaşlar listesinin üstüne arkadaşını davet et butonu
                 olsun. Aramanın altına"*). Arkadaşlar penceresini DEĞİL,
-                doğrudan paylaşımı açar (`handleInviteShare`). */}
+                doğrudan paylaşımı açar (`useInviteShare`). */}
             <button
               type="button"
-              onClick={() => void handleInviteShare()}
+              onClick={() => void invite.share()}
               className="flex items-center justify-center gap-2 min-h-[44px] rounded-md border-[1.5px] border-dashed border-accent bg-[#EEF4FF] text-accent text-[13px] font-bold uppercase tracking-[1px] active:scale-[0.99] transition-transform"
             >
               <span aria-hidden className="text-base leading-none">+</span> Arkadaşını davet et
             </button>
-            <div className="flex flex-col gap-1.5 max-h-[280px] overflow-y-auto pr-0.5">
+            <ScrollArea scrollRef={dir.scrollRef} className="flex flex-col gap-1.5 max-h-[280px]">
               {(() => {
-                const filtered = friends.filter((f) => trLower(f.name).includes(trLower(query.trim())));
-                if (filtered.length === 0) {
-                  return (
-                    <p className="text-muted text-xs font-mono py-4 text-center">Kimse bulunamadı.</p>
-                  );
-                }
-                return filtered.map((f) => {
+                const friendRow = (f: { friend_id: string; name: string; avatar_url: string | null }) => {
                   const isSelected = selected.includes(f.friend_id);
                   return (
                     <button
@@ -427,50 +461,61 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
                       <CheckMark checked={isSelected} />
                     </button>
                   );
-                });
+                };
+                if (!showAll) {
+                  const filtered = friends!.filter((f) => trLower(f.name).includes(trLower(query.trim())));
+                  if (filtered.length === 0) {
+                    return <p className="text-muted text-xs font-mono py-4 text-center">Kimse bulunamadı.</p>;
+                  }
+                  return filtered.map(friendRow);
+                }
+                const liste = dir.searchActive ? dir.results : dir.allUsers;
+                if (liste === null || (dir.searchActive && dir.searching)) {
+                  return <p className="text-muted text-xs font-mono py-4 text-center">Yükleniyor…</p>;
+                }
+                if (liste.length === 0 && !(!dir.searchActive && dir.hasMore)) {
+                  return <p className="text-muted text-xs font-mono py-4 text-center">Kimse bulunamadı.</p>;
+                }
+                return (
+                  <>
+                    {liste.map((u) =>
+                      u.relation === 'accepted' ? (
+                        friendRow({ friend_id: u.id, name: u.name, avatar_url: u.avatar_url })
+                      ) : (
+                        <div
+                          key={u.id}
+                          className="flex items-center gap-2.5 rounded-md px-2.5 py-1.5 border border-border bg-bg shrink-0"
+                        >
+                          <Avatar url={u.avatar_url} name={u.name} size={28} />
+                          <span className="flex-1 min-w-0 flex items-center gap-1">
+                            <span className="min-w-0 text-sm font-bold text-text truncate">{u.name}</span>
+                            {rankTierOf(u.id) && <RankSeal tier={rankTierOf(u.id)!} size={18} className="shrink-0" />}
+                          </span>
+                          {u.relation === 'pending_outgoing' ? (
+                            <Pill kind="gonderildi" ariaLabel={`${u.name} — isteği iptal et`} disabled={busyId === u.id} onClick={() => void handleCancel(u.id)} />
+                          ) : u.relation === 'pending_incoming' ? (
+                            <Pill kind="kabul" ariaLabel={`${u.name} — isteği kabul et`} disabled={busyId === u.id} onClick={() => void handleAccept(u.id)} />
+                          ) : (
+                            <Pill kind="ekle" ariaLabel={`${u.name} — arkadaş ekle`} disabled={busyId === u.id} onClick={() => void handleSend(u.id)} />
+                          )}
+                        </div>
+                      ),
+                    )}
+                    {!dir.searchActive && dir.hasMore && (
+                      <div ref={dir.sentinelRef} className="py-2 text-center">
+                        <span className="text-muted text-[10px] font-mono">{dir.loadingMore ? 'Yükleniyor…' : ''}</span>
+                      </div>
+                    )}
+                  </>
+                );
               })()}
-            </div>
+            </ScrollArea>
           </div>
         )}
       </div>
 
-      {showShareFallback && inviteUrl && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-[rgba(15,23,42,0.45)]" onClick={() => setShowShareFallback(false)} aria-hidden />
-          <div
-            ref={shareFallbackRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Arkadaşını davet et"
-            tabIndex={-1}
-            className="relative w-full max-w-sm bg-panel rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-5 flex flex-col gap-3 outline-none"
-          >
-            <p className="text-base font-bold text-text" style={{ margin: 0 }}>
-              Arkadaşını davet et
-            </p>
-            <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
-              Linke dokunup üye olunca arkadaş listende belirir.
-            </p>
-            {/* Paylaşım sayfası olmayan tarayıcı (masaüstü) için YEDEK:
-                telefonda sistem paylaşım sayfası zaten açılıyor. */}
-            <a
-              href={whatsappShareUrl(inviteUrl)}
-              target="_blank"
-              rel="noopener"
-              onClick={() => setShowShareFallback(false)}
-              className="flex items-center justify-center min-h-[48px] rounded-md bg-[#25D366] text-white text-sm font-bold uppercase tracking-[1px] no-underline active:scale-[0.97] transition-transform"
-            >
-              WhatsApp'ta gönder
-            </a>
-            <button
-              type="button"
-              onClick={() => void copyInvite()}
-              className="min-h-[48px] rounded-md btn-raised-neutral bg-bg border border-border text-text text-sm font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
-            >
-              {copied ? 'Link kopyalandı!' : 'Linki kopyala'}
-            </button>
-          </div>
-        </div>
+      {invite.fallbackOpen && invite.inviteUrl && (
+        <InviteShareFallback url={invite.inviteUrl} onClose={invite.closeFallback} />
       )}
     </div>
   );

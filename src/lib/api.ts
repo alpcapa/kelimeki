@@ -69,6 +69,7 @@ import type {
   GameLiker,
   Gender,
   IncomingFriendRequest,
+  OutgoingFriendRequest,
   LeaderboardRow,
   LeagueReward,
   LocalGameSave,
@@ -1352,6 +1353,17 @@ export async function fetchIncomingFriendRequests(): Promise<IncomingFriendReque
     return [];
   }
   return (data as IncomingFriendRequest[]) ?? [];
+}
+
+/** Gönderdiğim, henüz cevaplanmamış istekler (Arkadaşlar penceresi, gelen isteklerin altı). */
+export async function fetchOutgoingFriendRequests(): Promise<OutgoingFriendRequest[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('list_outgoing_friend_requests');
+  if (error) {
+    console.error('[Kelimeki] fetchOutgoingFriendRequests hatası:', error.message);
+    return [];
+  }
+  return (data as OutgoingFriendRequest[]) ?? [];
 }
 
 /**

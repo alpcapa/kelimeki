@@ -33,7 +33,15 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
 
 - [ ] **Davet gönderme.** "Arkadaşınla" → listenin üstündeki "Yeni Oyun Kur" → 2
       kişi, bir arkadaş seç → seçilen arkadaş "RAKİBİN" altında kırmızı koltuk
-      kartında görünmeli (✕ ile boşalır) → "Davet Gönder". **"Davetin
+      kartında görünmeli (✕ ile boşalır). Boş koltuğa (+) dokununca sayfa
+      aşağıdaki "ARKADAŞLARIN" listesine kaymalı (klavye AÇILMAMALI; YZ
+      koltuğu dokunulmaz). Arkadaş listesi kendi içinde kayıyorsa SAĞ
+      kenarda ince bir kaydırma çubuğu HEP görünmeli ve kaydırdıkça
+      tutamaç inmeli (az arkadaşta çubuk YOK). Başlığın sağındaki "Tüm
+      oyuncular →" → başlık "TÜM OYUNCULAR", bağlantı "← Arkadaşlar"; listede
+      arkadaşlar seçilebilir (kutucuk), ötekilerde EKLE · İSTEK GİTTİ (dokun →
+      iptal) · KABUL ET — KABUL ET'ten sonra kişi seçilebilir olmalı. Arama bu
+      görünümde tüm oyuncularda arar → "Davet Gönder". **"Davetin
       gönderildi"** ekranı çıkmalı, kime gittiğini ve 7 gün notunu yazmalı.
       "Oyunlarıma git"e basınca listeye dönmeli. (27 Eylül 2026'ya kadar:
       listenin üstünde "+ Yeni Canlı Oyun Aç", onay "Davetiniz
@@ -613,8 +621,9 @@ tek turda, gerçekten bekleyen bir iş varken kontrol et.
       TOPLAMINI, `UserMenu`'deki "Admin Paneli" satırı da aynı toplamı
       göstermeli — üçü asla ayrışmamalı.
 - [ ] **Diğer rozetler.** `UserMenu` → "Arkadaşlar" (bekleyen istek), Setup →
-      "Yapay Zeka ile"/"Arkadaşınla" ve bunların alt sekmeleri, `FriendsModal`
-      → "Davetler". Hepsi sağ üst köşede yuvarlak rozet olmalı; başlığa
+      "Yapay Zeka ile"/"Arkadaşınla" ve bunların alt sekmeleri (`FriendsModal`in
+      "Davetler" rozeti 27 Eylül 2026'da sekmeyle birlikte kalktı; istekler
+      pencerenin en üstünde "İSTEKLER · N" başlığıyla). Hepsi sağ üst köşede yuvarlak rozet olmalı; başlığa
       gömülü " (N)" biçiminde bir sayı **hiçbir yerde kalmamalı**.
 - [ ] **Eski noktalar da artık sayı gösteriyor (16 Ağustos 2026).** Board
       footer'ındaki "Mesajlaşma" ve `UserMenu` avatarı — ikisi de sayısız
@@ -643,12 +652,28 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       varsayılanı bir kez yanlış uygulayıp kalıcılaştırıyordu — 5 Ağustos
       2026. Aynısı hesap değiştirmeden, sadece "Yapay Zeka ile"ye gidip
       dönerek de üretilebilir.)
-- [ ] **Arkadaşlar penceresi.** Bekleyen istek varsa "Davetler" açık gelmeli.
-      Ama "Yeni Oyun Kur" içindeki "Arkadaşını davet et"
-      bağlantısından açılınca **"Ara & Ekle"de kalmalı** — o açık bir niyet,
-      ezilmemeli.
-- [ ] **Arkadaşlık ikonları (11 Ağustos 2026).** Satır aksiyonları metin
-      değil ikon: kişi-ekle (mavi) · kum saati (gri, dokun → iptal) ·
+- [ ] **Arkadaşlar penceresi — tek ekran (27 Eylül 2026).** Sekme YOK.
+      Sıra: turuncu "Arkadaşını davet et" (telefonda sistem paylaşım sayfası,
+      WhatsApp orada) → bekleyen istekler → "ARKADAŞLARIN · N" başlığı
+      (sağında "Tüm oyuncular →") → arama kutusu → liste. Gelen istek
+      kartında KABUL ET / REDDET **onaysız**, kart düşmeli, KABUL'de kişi
+      listeye eklenmeli. "GÖNDERDİĞİN İSTEKLER" (yalnızca bekleyen varsa):
+      "Cevap bekleniyor" + GERİ AL (onaysız, satır düşmeli). Aramadan EKLE'ye
+      basınca kişi o bölümde belirmeli. Arkadaş satırı: isim + rütbe +
+      "3 haftadır", OYNA ve ⋯. **OYNA** → pencere kapanır, Setup →
+      Arkadaşınla → form O ARKADAŞ SEÇİLİ, 2 kişi. Aynısını oyun ekranının
+      başlığındaki hesap menüsünden dene: oyun kaydedilip kurulum ekranına
+      dönmeli. **⋯** → Skor kartı · 2 kişilik oyun kur · 4 kişilik oyun kur
+      (form o kişi sayısıyla) · (yalnızca sessize alınmış/şikayet edilmişse)
+      ayarlar · Arkadaşlıktan çıkar (TEK onaylı eylem). Aramada ("ay") her
+      satırda duruma göre TEK düğme: OYNA · EKLE · İSTEK GİTTİ (dokun →
+      iptal) · KABUL ET. "Tüm oyuncular →" → başlık "TÜM OYUNCULAR" (SAYISIZ),
+      arkadaşlar dahil herkes alfabetik, kaydırdıkça yüklenmeli; "←
+      Arkadaşlar" geri dönmeli. Bekleyen istekler bu görünümde de durmalı.
+- [ ] ~~**Arkadaşlık ikonları (11 Ağustos 2026).**~~ ⚠ 27 Eylül 2026'dan
+      beri Arkadaşlar penceresinde ikon YOK (yazılı düğmeler, yukarıdaki
+      madde); bu madde yalnızca Skor Kartı'nın ikonu için geçerli. Eski
+      metin: Satır aksiyonları metin değil ikon: kişi-ekle (mavi) · kum saati (gri, dokun → iptal) ·
       kişi-onay (mavi, gelen isteği kabul) · adam- (kırmızı, çıkar —
       yalnızca "Arkadaşlar"da). **Dördü de önce onay sorar**, hiçbiri
       dokunulduğu an iş yapmaz; onayı iptal edince karşı hesapta hiçbir şey
@@ -689,8 +714,8 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       harflerin biraz altına/üstüne tıkla: istediğin harf gelmeli, komşu
       satırdaki değil. Harflerin boyutu ve aralığı değişmemeli; konmuş bir
       jokeri düzenlerken "Geri Al" butonu tam eski yerinde olmalı.
-- [ ] **Kişiye tıklamak skor kartını açar — ÜÇ sekmede de (11 Ağustos
-      2026).** "Arkadaşlar", "Davetler" ve "Ara & Ekle" (arama + Tüm
+- [ ] **Kişiye tıklamak skor kartını açar (11 Ağustos 2026; 27 Eylül'den
+      beri sekme yok — istek kartı, arkadaş listesi, arama, tüm üyeler).** "Arkadaşlar", "Davetler" ve "Ara & Ekle" (arama + Tüm
       Üyeler) satırlarında **avatara/isme** tıkla → o kişinin skor kartı
       açılmalı. Aksiyon ikonu bundan ayrışık: ikona tıklamak kartı DEĞİL
       onay diyaloğunu açmalı. Kartın kendi arkadaşlık simgesinden bir işlem

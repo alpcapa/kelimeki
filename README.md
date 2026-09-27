@@ -142,7 +142,9 @@ src/
 │   ├── Modal.tsx                # paylaşılan modal kabuğu
 │   ├── ActionSheet.tsx          # iOS tarzı alttan açılan aksiyon menüsü (ör. tahta önizlemesi → Paylaş/Kapat)
 │   ├── SharedGamePage.tsx       # herkese açık /game/:id sayfası (girişsiz de erişilebilir)
-│   ├── FriendsModal.tsx         # arkadaş arama/ekleme, gelen istekler, kalıcı davet linki paylaşımı
+│   ├── FriendsModal.tsx         # Arkadaşlar penceresi — sekmesiz tek ekran: davet (doğrudan paylaşım), arama, gelen istek kartları, OYNA + ⋯ menüsü
+│   ├── InviteShareFallback.tsx  # paylaşım sayfası olmayan tarayıcıda "WhatsApp'ta gönder" + "Linki kopyala"
+│   ├── ScrollArea.tsx  # kendi içinde kayan liste + HER ZAMAN görünen ince kaydırma çubuğu (iOS çubuğu yalnızca kaydırırken gösteriyor)
 │   ├── FriendInvitePage.tsx     # herkese açık /davet/:token sayfası (girişsiz de erişilebilir) — davet kartı + oyunun tanıtımı (tahta/ikonlar landing/ ile tek kaynak)
 │   ├── LiveGamesTab.tsx         # Canlı sekmesi: davet bekleyen/aktif/rakip bekleyen oyun listesi + Kabul/Reddet + girişsiz uyarı penceresi
 │   ├── LiveGameCreateForm.tsx   # Canlı oyun kurulumu: oyuncu sayısı + oyuncu renginde koltuk kartları + arkadaş seçici + davet gönderme
@@ -205,7 +207,8 @@ src/
 │   ├── funnelEvents.ts  # Huni v2 — cihaz başına anonim olaylar (`funnel_events`: land/visit/signup/game_start/game_finish), admin'de kohort tablosu; kapı `verify-funnel-events`
 │   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına kimliksiz oturum (`web_sessions`), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
 │   ├── storeLinks.ts    # mağaza rozetleri (ROADMAP #26): URL'ler (`null` = yayında değil → rozet HİÇ çizilmez), sıra (App Store önce — Apple'ın yazılı kuralı) ve yerleşim ölçüleri
-│   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı için tek seferlik localStorage kuyruğu
+│   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı kuyruğu + davet linki/metni (`?ref=arkadas`) + WhatsApp adresi
+│   ├── liveGameRequest.ts # "bu arkadaşla oyun kur" isteği (Arkadaşlar → OYNA): App kurulum ekranına döner, LiveGamesTab formu ön seçimli açar
 │   ├── csvExport.ts    # admin paneli tabloları/grafikleri için CSV indirme yardımcısı
 │   ├── leaguePoints.ts # k-lig puanı hesaplama — (rank, count, surrendered, level); SQL league_points_for ↔ Dart ile verify-league-points kilitler
 │   ├── aiLevel.ts      # YZ zorluğunun ürün yüzü: etiketler, Setup'ta seçilebilir seviyeler (üçü de), null→Normal ayrıştırma
@@ -236,6 +239,8 @@ src/
 ├── hooks/
 │   ├── useAuth.tsx        # Supabase auth context
 │   ├── useModalA11y.ts    # modal odak hapsi, Escape, dialog yığını
+│   ├── useInviteShare.ts  # "Arkadaşını davet et": link önceden alınır, dokununca sistem paylaşım sayfası
+│   ├── usePlayerDirectory.ts  # oyuncu arama + "Tüm oyuncular" sayfalı listesi (Arkadaşlar penceresi ↔ canlı oyun formu ortak)
 │   ├── useOnlineStatus.ts # çevrimiçi/çevrimdışı durumu izler
 │   ├── useNicknameAvailability.ts # takma isim uygunluğu (debounce'lu RPC kontrolü, AuthModal + AccountSettingsModal ortak)
 │   ├── useAppIconBadge.ts # PWA ikonu üzerinde Badge API ile kırmızı yuvarlak/beyaz sayı rozeti

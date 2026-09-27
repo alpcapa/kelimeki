@@ -1,34 +1,45 @@
-// Kelimeki — Arkadaşlar modalı: mevcut kullanıcıyı arayıp ekleme (e-postasız,
+// Kelimeki — Arkadaşlar penceresi: mevcut kullanıcıyı arayıp ekleme (e-postasız,
 // uygulama içi istek/kabul) + kalıcı davet linkini WhatsApp/SMS/DM gibi
 // kanallardan paylaşarak henüz üye olmayanları da davet etme (asıl büyüme
 // mekanizması — bkz. `docs/decisions/friends.md`).
-import { buildInviteUrl, INVITE_SHARE_TEXT } from '../utils/friendInvite';
-import { useCallback, useEffect, useRef, useState } from 'react';
+//
+// 27 Eylül 2026 — SEKMESİZ tek ekrana yeniden yazıldı (kullanıcı: *"arkadaşlar
+// modalı çok kötü ve kullanışsız. Onu da yeni konsepte göre elden geçir"*;
+// tasarım: Claude Design tuvali → "Arkadaşlar penceresi — yeni konsept",
+// karar kaydı `docs/decisions/friends.md` → "Tek ekran"). Üç sekme (Arkadaşlar
+// · Davetler · Ara & Ekle) ve dört onay diyaloğu kalktı; yalnızca
+// "Arkadaşlıktan çıkar" onay soruyor. İkonlar yerine YAZILI düğmeler.
+import { useEffect, useState } from 'react';
 import { LoadingNote } from './LoadingNote';
 import { createPortal } from 'react-dom';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
-import { CountBadge } from './CountBadge';
 import { PlayerScoreCard, type PlayerSummary } from './PlayerScoreCard';
 import { useModalA11y } from '../hooks/useModalA11y';
 import {
-  createFriendInviteLink,
   fetchFriendRelation,
   fetchFriends,
   fetchMyChatModeration,
   fetchIncomingFriendRequests,
-  listUsersForFriend,
+  fetchOutgoingFriendRequests,
   removeFriend,
   respondFriendRequest,
-  searchUsersForFriend,
   sendFriendRequest,
 } from '../lib/api';
-import type { FriendRow, FriendSearchResult, IncomingFriendRequest } from '../lib/database.types';
-import { PersonAddIcon, PersonRemoveIcon, PersonPendingIcon, HowToRegIcon } from './RelationIcons';
+import type {
+  FriendRow,
+  FriendSearchResult,
+  IncomingFriendRequest,
+  OutgoingFriendRequest,
+} from '../lib/database.types';
+import { useInviteShare } from '../hooks/useInviteShare';
+import { InviteShareFallback } from './InviteShareFallback';
+import { requestLiveGameWith } from '../utils/liveGameRequest';
 import { FriendModerationModal, type FriendModerationTarget } from './FriendModerationModal';
-import { trCompare } from '../utils/turkish';
 import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
+import { usePlayerDirectory } from '../hooks/usePlayerDirectory';
+import { ScrollArea } from './ScrollArea';
 
 /** Bir arkadaşı `PlayerScoreCard` açabilecek şekle çevirir — henüz canlı oyun
  * olmadığından arkadaş eklemenin somut faydası şu an bu: kişinin skor
@@ -111,127 +122,120 @@ function ConfirmDialog({
   );
 }
 
-function InfoDialog({
-  dialogRef,
-  message,
-  onClose,
-}: {
-  dialogRef: React.RefObject<HTMLDivElement>;
-  message: string;
-  onClose: () => void;
-}) {
-  return createPortal(
-    <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Arkadaşlık durumu"
-        tabIndex={-1}
-        className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] px-6 pb-6 pt-12 flex flex-col gap-4 outline-none relative"
-      >
-        <button
-          onClick={onClose}
-          aria-label="Kapat"
-          className="absolute top-3 right-3 text-muted hover:text-text text-lg leading-none tap-expand w-7 h-7 flex items-center justify-center rounded active:scale-90 transition-transform"
-        >
-          ✕
-        </button>
-        <p className="text-sm text-text font-sans leading-relaxed">{message}</p>
-        <button
-          onClick={onClose}
-          className="btn-raised py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
-        >
-          Tamam
-        </button>
-      </div>
-    </div>,
-    document.body,
-  );
-}
 
 interface FriendsModalProps {
   onClose: () => void;
-  /** İlk açılışta hangi sekmenin görüneceği — `UserMenu`'den bir bekleyen istek rozetine tıklanınca "requests" ile açılır. */
-  initialTab?: Tab;
+  /**
+   * Eski sekmeli sürümden kalan imza — ÇAĞIRANLAR bozulmasın diye duruyor.
+   * `'search'` artık arama kutusuna odaklanmak demek; öteki değerler yok
+   * sayılır (gelen istekler zaten en üstte).
+   */
+  initialTab?: 'friends' | 'requests' | 'search';
 }
 
-type Tab = 'friends' | 'requests' | 'search';
 
-// Davet linki ve paylaşım metni `utils/friendInvite.ts`te (27 Eylül 2026'dan
-// beri canlı oyun formunun "Arkadaşını davet et"i de kullanıyor).
+const nameCls = 'min-w-0 text-[15px] text-text font-bold truncate';
+const sectionCls = 'text-[10px] uppercase tracking-[1.5px] text-muted font-mono';
+const listCls = 'flex flex-col border border-border rounded-xl overflow-hidden';
+const rowCls = 'flex items-center gap-3 min-h-[60px] pl-3.5 pr-2 py-2 bg-bg border-b border-border last:border-b-0';
 
+/**
+ * `list_friends`in `since`i → "3 haftadır arkadaşsınız" (`kisa`: "3 haftadır").
+ * Liste satırında KISA hâl: uzun metin OYNA + ⋯ yanında kesiliyordu (390px'te
+ * ölçüldü). Saf; bilinmiyorsa null.
+ */
+export function friendSinceLabel(since: string | null, kisa = false, now = Date.now()): string | null {
+  if (!since) return null;
+  const t = Date.parse(since);
+  if (!Number.isFinite(t)) return null;
+  const gun = Math.floor((now - t) / 86_400_000);
+  if (gun <= 0) return kisa ? 'Bugün eklendi' : 'Bugün arkadaş oldunuz';
+  if (gun === 1) return kisa ? 'Dün eklendi' : 'Dün arkadaş oldunuz';
+  const sure =
+    gun < 7
+      ? `${gun} gündür`
+      : gun < 30
+        ? `${Math.floor(gun / 7)} haftadır`
+        : gun < 365
+          ? `${Math.floor(gun / 30)} aydır`
+          : `${Math.floor(gun / 365)} yıldır`;
+  return kisa ? sure : `${sure} arkadaşsınız`;
+}
 
-// Arama kutusu boşken gösterilen tüm-üyeler listesinin sayfa boyutu —
-// `Leaderboard`'daki PAGE_SIZE ile aynı lazy-load deseni.
-const ALL_USERS_PAGE_SIZE = 20;
+type PillKind = 'oyna' | 'ekle' | 'gonderildi' | 'kabul' | 'geriAl';
+const PILL: Record<PillKind, { label: string; cls: string }> = {
+  oyna: { label: 'Oyna', cls: 'bg-accent border-accent text-white' },
+  ekle: { label: 'Ekle', cls: 'bg-[#EEF4FF] border-accent text-accent' },
+  gonderildi: { label: 'İstek gitti', cls: 'bg-panel border-border text-muted' },
+  kabul: { label: 'Kabul et', cls: 'bg-orange border-orange text-white' },
+  geriAl: { label: 'Geri al', cls: 'bg-panel border-border text-text' },
+};
 
-const rowCls = 'flex items-center gap-2.5 bg-bg rounded-md px-2.5 py-2';
-const listCls = 'flex flex-col gap-1.5';
-const nameCls = 'min-w-0 text-sm text-text font-bold truncate';
-const smallBtn =
-  'shrink-0 btn-raised rounded-md py-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.5px] active:scale-[0.97] transition-transform disabled:opacity-50';
+export function Pill({
+  kind,
+  onClick,
+  disabled,
+  ariaLabel,
+}: {
+  kind: PillKind;
+  onClick: () => void;
+  disabled?: boolean;
+  ariaLabel: string;
+}) {
+  const p = PILL[kind];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      className={`shrink-0 min-h-[36px] px-3.5 rounded-full border font-mono text-[11px] font-bold uppercase tracking-[0.5px] active:scale-[0.96] transition-transform disabled:opacity-40 ${p.cls}`}
+    >
+      {p.label}
+    </button>
+  );
+}
 
 export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalProps) {
-  const [tab, setTab] = useState<Tab>(initialTab);
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
   const [requests, setRequests] = useState<IncomingFriendRequest[] | null>(null);
+  const [sent, setSent] = useState<OutgoingFriendRequest[]>([]);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<FriendSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [inviteStatus, setInviteStatus] = useState<'idle' | 'busy' | 'copied'>('idle');
   const [selectedFriend, setSelectedFriend] = useState<PlayerSummary | null>(null);
-  // Hem "Arkadaşlar" satırı (FriendRow) hem "Ara & Ekle"deki `accepted`
-  // satırı (FriendSearchResult) aynı onayı kullansın diye yapısal tip —
-  // ikinci bir onay diyaloğu açmaya gerek yok.
+  const [menuFor, setMenuFor] = useState<FriendRow | null>(null);
+  const menuRef = useModalA11y(!!menuFor, () => setMenuFor(null));
   const [confirmRemove, setConfirmRemove] =
     useState<{ friend_id: string; name: string } | null>(null);
-  const [removeResultMsg, setRemoveResultMsg] = useState<string | null>(null);
   const confirmRemoveRef = useModalA11y(!!confirmRemove, () => setConfirmRemove(null));
-  const removeResultRef = useModalA11y(!!removeResultMsg, () => setRemoveResultMsg(null));
-  const [confirmReject, setConfirmReject] = useState<IncomingFriendRequest | null>(null);
-  const [rejectResultMsg, setRejectResultMsg] = useState<string | null>(null);
-  const confirmRejectRef = useModalA11y(!!confirmReject, () => setConfirmReject(null));
-  const rejectResultRef = useModalA11y(!!rejectResultMsg, () => setRejectResultMsg(null));
-  const [confirmCancel, setConfirmCancel] = useState<FriendSearchResult | null>(null);
-  const [cancelResultMsg, setCancelResultMsg] = useState<string | null>(null);
-  const confirmCancelRef = useModalA11y(!!confirmCancel, () => setConfirmCancel(null));
-  const cancelResultRef = useModalA11y(!!cancelResultMsg, () => setCancelResultMsg(null));
-  // "Ekle" ve "Kabul Et" de onaydan geçer — metin butonları ikonlara indiği
-  // için (11 Ağustos 2026) etiketsiz bir ikona kazara dokunmak artık çok daha
-  // kolay; `PlayerScoreCard` zaten dört ilişki dalının HEPSİNDE onay soruyordu,
-  // iki ekran arasındaki bu asimetri kapatıldı. Tek state: metin `relation`dan
-  // türetiliyor (gelen isteği kabul mü, yeni istek mi).
-  const [confirmAdd, setConfirmAdd] = useState<FriendSearchResult | null>(null);
-  const [addResultMsg, setAddResultMsg] = useState<string | null>(null);
-  const confirmAddRef = useModalA11y(!!confirmAdd, () => setConfirmAdd(null));
-  const addResultRef = useModalA11y(!!addResultMsg, () => setAddResultMsg(null));
+  const [showAll, setShowAll] = useState(false);
+  const invite = useInviteShare();
 
-  // Arama kutusu boşken gösterilen, tüm üyelerin alfabetik/sayfalı listesi —
-  // `Leaderboard`'daki IntersectionObserver tabanlı lazy-load deseniyle aynı.
-  const [allUsers, setAllUsers] = useState<FriendSearchResult[] | null>(null);
-  const [allUsersHasMore, setAllUsersHasMore] = useState(true);
-  const [allUsersLoadingMore, setAllUsersLoadingMore] = useState(false);
-  // Üç sekmedeki TÜM isimlerin rütbe mührü için tek toplu çekim
-  // (`personButton` hepsini bu tek yardımcıdan okuyor). Liste büyüdükçe
-  // (sonsuz kaydırma) anahtar değişip eksikler ekleniyor.
+  const {
+    searchActive,
+    results,
+    searching,
+    allUsers,
+    hasMore: allUsersHasMore,
+    loadingMore: allUsersLoadingMore,
+    scrollRef: allUsersScrollRef,
+    sentinelRef: allUsersSentinelRef,
+    patchRelation: patchDirectory,
+  } = usePlayerDirectory(query, showAll);
   const rankTierOf = useRankScores([
     ...(friends ?? []).map((f) => f.friend_id),
     ...(requests ?? []).map((r) => r.requester_id),
+    ...sent.map((r) => r.friend_id),
     ...results.map((u) => u.id),
     ...(allUsers ?? []).map((u) => u.id),
   ]);
-  const allUsersScrollRef = useRef<HTMLDivElement | null>(null);
-  const allUsersSentinelRef = useRef<HTMLDivElement | null>(null);
 
   const reloadFriends = () => void fetchFriends().then(setFriends);
   const reloadRequests = () => void fetchIncomingFriendRequests().then(setRequests);
+  const reloadSent = () => void fetchOutgoingFriendRequests().then(setSent);
 
-  // Sessize aldığım/şikayet ettiğim kişiler — "Arkadaşlar" satırındaki
-  // 🚫/🚩 ikonunu ve `FriendModerationModal`ı besliyor. Değerler kaynak
-  // oyun id'si: `mute_online_game_participant` sessizden ÇIKARIRKEN bile
-  // geçerli bir ortak oyun istiyor (bkz. `fetchMyChatModeration`).
+  // Sohbet moderasyon durumu — sessize alınmış/şikayet edilmiş arkadaşın
+  // adının yanında 🚫/🚩, ⋯ menüsünde "Sessize alma / şikayet ayarları".
   const [moderation, setModeration] = useState<{
     muted: Map<string, string>;
     reported: Map<string, string>;
@@ -242,106 +246,27 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
   useEffect(() => {
     reloadFriends();
     reloadRequests();
+    reloadSent();
     reloadModeration();
   }, []);
 
-  // Varsayılan tab: bekleyen bir arkadaşlık isteği varsa "Davetler" açık
-  // gelsin — `LiveGamesTab`'daki (bekleyen davet varsa "Oyun Davetleri")
-  // BİREBİR aynı desen ve gerekçe: bekleyen iş her zaman ön plana çıkmalı,
-  // kullanıcı onu bulmak için sekme aramak zorunda kalmamalı (kullanıcı
-  // isteği, 4 Ağustos 2026 — rozet zinciri doğru çalışıyordu ama modal yine
-  // de "Arkadaşlar"da açılıyordu).
-  //
-  // Çağıran AÇIKÇA bir tab belirtmişse (`LiveGameCreateForm`'un
-  // `initialTab="search"`'ü — "arkadaş eklemek için tıkla" akışı) o niyet
-  // ezilmemeli: ref o durumda baştan "uygulanmış" sayılır.
-  const appliedDefaultTabRef = useRef(initialTab !== 'friends');
-  useEffect(() => {
-    if (requests === null || appliedDefaultTabRef.current) return;
-    appliedDefaultTabRef.current = true;
-    if (requests.length > 0) setTab('requests');
-  }, [requests]);
+  const patchRelation = patchDirectory;
 
-  // Arama girdisini hafifçe geciktir (her tuş vuruşunda RPC çağırmamak için).
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      setSearching(false);
-      return;
-    }
-    setSearching(true);
-    const t = setTimeout(() => {
-      void searchUsersForFriend(query.trim()).then((r) => {
-        setResults(r);
-        setSearching(false);
-      });
-    }, 350);
-    return () => clearTimeout(t);
-  }, [query]);
-
-  // "Ara & Ekle" sekmesi ilk açıldığında (arama kutusu henüz boşken) tüm
-  // üyeler listesinin ilk sayfasını çek.
-  useEffect(() => {
-    if (tab !== 'search' || allUsers !== null) return;
-    void listUsersForFriend(0, ALL_USERS_PAGE_SIZE).then((page) => {
-      setAllUsers([...page].sort((a, b) => trCompare(a.name, b.name)));
-      setAllUsersHasMore(page.length === ALL_USERS_PAGE_SIZE);
-    });
-  }, [tab, allUsers]);
-
-  const loadMoreAllUsers = useCallback(() => {
-    if (allUsers === null) return;
-    setAllUsersLoadingMore((already) => {
-      if (already) return already;
-      void listUsersForFriend(allUsers.length, ALL_USERS_PAGE_SIZE).then((page) => {
-        // Sayfalar backend'in kendi sırasına göre çekiliyor ama Türkçe
-        // harflerin (ç/ğ/ı/ö/ş/ü) sayfa sınırlarında yanlış collation'a göre
-        // dağılmış olma ihtimaline karşı, her yeni sayfadan sonra TÜM birikmiş
-        // listeyi (yalnızca son sayfayı değil) yeniden alfabetik sıralıyoruz.
-        setAllUsers((cur) => [...(cur ?? []), ...page].sort((a, b) => trCompare(a.name, b.name)));
-        setAllUsersHasMore(page.length === ALL_USERS_PAGE_SIZE);
-        setAllUsersLoadingMore(false);
-      });
-      return true;
-    });
-  }, [allUsers]);
-
-  useEffect(() => {
-    if (tab !== 'search' || query.trim().length >= 2 || !allUsersHasMore || allUsers === null) return;
-    const sentinel = allUsersSentinelRef.current;
-    const root = allUsersScrollRef.current;
-    if (!sentinel || !root) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) loadMoreAllUsers();
-      },
-      { root, rootMargin: '80px' },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [tab, query, allUsersHasMore, allUsers, loadMoreAllUsers]);
-
-  // Bir kullanıcının ilişki durumu değiştiğinde (istek gönderildi/iptal
-  // edildi/kabul edildi) hem arama sonuçları hem tüm-üyeler listesi güncel
-  // kalsın — hangisi o an ekranda görünüyorsa görünsün.
-  const patchRelation = (id: string, relation: FriendSearchResult['relation']) => {
-    setResults((r) => r.map((u) => (u.id === id ? { ...u, relation } : u)));
-    setAllUsers((r) => (r ? r.map((u) => (u.id === id ? { ...u, relation } : u)) : r));
-  };
-
+  // Ekle / kabul et / isteği iptal et TEK DOKUNUŞ (27 Eylül 2026, onaysız):
+  // sonuç düğmenin kendisinde görünüyor ("İstek gitti", satırın "Arkadaşın"a
+  // dönmesi), ayrı bir bilgi penceresi gerekmiyor. Yalnızca "Arkadaşlıktan
+  // çıkar" onay soruyor — geri alınamaz tek eylem o.
   const handleSend = async (id: string) => {
     setBusyId(id);
     try {
       const status = await sendFriendRequest(id);
-      // Karşı taraftan zaten bekleyen bir istek varsa sunucu insert'i
-      // doğrudan 'accepted'a çeviriyor — bu durumda UI da "İstek
-      // Gönderildi" yerine gerçek durumu (arkadaş oldunuz) göstermeli.
+      // Karşı taraftan zaten bekleyen bir istek varsa sunucu ilişkiyi
+      // doğrudan 'accepted'a çeviriyor.
       patchRelation(id, status === 'accepted' ? 'accepted' : 'pending_outgoing');
       if (status === 'accepted') reloadFriends();
-      return status;
+      reloadSent();
     } catch (err) {
       console.error('[Kelimeki] arkadaşlık isteği hatası:', err);
-      return null;
     } finally {
       setBusyId(null);
     }
@@ -361,6 +286,19 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     }
   };
 
+  const handleCancel = async (id: string) => {
+    setBusyId(id);
+    try {
+      await removeFriend(id); // gönderilen isteği iptal et
+      patchRelation(id, null);
+      setSent((prev) => prev.filter((r) => r.friend_id !== id));
+    } catch (err) {
+      console.error('[Kelimeki] istek iptal hatası:', err);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const handleConfirmRemove = async () => {
     if (!confirmRemove) return;
     const friendId = confirmRemove.friend_id;
@@ -368,9 +306,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     try {
       await removeFriend(friendId);
       reloadFriends();
-      // Arama/tüm-üyeler listesinde de ikon anında person_add'e dönsün.
       patchRelation(friendId, null);
-      setRemoveResultMsg('Arkadaşlıktan çıkarıldı.');
     } catch (err) {
       console.error('[Kelimeki] arkadaş çıkarma hatası:', err);
     } finally {
@@ -379,156 +315,36 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     }
   };
 
-  const handleConfirmReject = async () => {
-    if (!confirmReject) return;
-    const requesterId = confirmReject.requester_id;
-    setBusyId(requesterId);
-    try {
-      await respondFriendRequest(requesterId, false);
-      reloadRequests();
-      setRejectResultMsg('Davet reddedildi.');
-    } catch (err) {
-      console.error('[Kelimeki] istek reddetme hatası:', err);
-    } finally {
-      setBusyId(null);
-      setConfirmReject(null);
-    }
+  // OYNA: bu arkadaşla Canlı oyun formu, o seçili. Pencere uygulamanın
+  // neresinden açıldıysa App kurulum ekranına döner (`liveGameRequest.ts`).
+  const play = (friendId: string, playerCount: 2 | 4) => {
+    requestLiveGameWith({ friendId, playerCount });
+    onClose();
   };
 
-  const handleConfirmAdd = async () => {
-    if (!confirmAdd) return;
-    const { id, relation } = confirmAdd;
-    if (relation === 'pending_incoming') {
-      await handleRespond(id, true);
-      setAddResultMsg('Arkadaş oldunuz.');
-    } else {
-      const status = await handleSend(id);
-      // Karşı taraftan zaten bekleyen bir istek varsa sunucu trigger'ı
-      // ilişkiyi anında 'accepted' yapar — mesaj bunu yansıtmalı.
-      setAddResultMsg(
-        status === 'accepted' ? 'Arkadaş oldunuz.' : 'Arkadaşlık davetiniz iletilmiştir.',
-      );
-    }
-    setConfirmAdd(null);
-  };
-
-  const handleConfirmCancel = async () => {
-    if (!confirmCancel) return;
-    const id = confirmCancel.id;
-    setBusyId(id);
-    try {
-      await removeFriend(id); // gönderilen isteği iptal et
-      patchRelation(id, null);
-      setCancelResultMsg('Arkadaşlık daveti iptal edildi.');
-    } catch (err) {
-      console.error('[Kelimeki] istek iptal hatası:', err);
-    } finally {
-      setBusyId(null);
-      setConfirmCancel(null);
-    }
-  };
-
-  const handleInvite = async () => {
-    setInviteStatus('busy');
-    const token = await createFriendInviteLink();
-    if (!token) {
-      setInviteStatus('idle');
-      return;
-    }
-    const url = buildInviteUrl(token);
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: 'Kelimeki', text: INVITE_SHARE_TEXT, url });
-      } catch {
-        // Kullanıcı paylaşım sayfasını iptal etti — sessizce geç.
-      }
-      setInviteStatus('idle');
-      return;
-    }
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(`${INVITE_SHARE_TEXT}\n${url}`);
-      setInviteStatus('copied');
-      setTimeout(() => setInviteStatus('idle'), 1800);
-      return;
-    }
-    setInviteStatus('idle');
-  };
-
-  // Arama sonuçlarında ve tüm-üyeler listesinde birebir aynı satır. Metin
-  // butonları 11 Ağustos 2026'da ikonlara indirildi (bkz. RelationIcons.tsx):
-  // ikon, dokunuşun NE YAPACAĞINI söyler. Dokunma hedefi 44px — ikon 20px,
-  // etrafındaki görünmez alan iOS kılavuzunun asgarisini karşılıyor. Metin
-  // kalktığı için `aria-label` artık tek bilgi kaynağı, boş bırakma.
-  //
-  // Dört dalın DÖRDÜ de önce bir onay diyaloğu açar, hiçbiri anında iş
-  // yapmaz — `PlayerScoreCard`'daki `friendDialogCopy` ile aynı sözleşme.
-  // `accepted` dalı pratikte ULAŞILAMAZ (bu satır yalnızca "Ara & Ekle"
-  // listelerinde çiziliyor ve orası arkadaşları eliyor, bkz. `notFriend`) —
-  // savunma amaçlı duruyor: silinirse bir gün eleme atlanınca arkadaşa
-  // "ekle" ikonu gösterilirdi. "Arkadaşlar" sekmesi bu satırı kullanmaz,
-  // kendi çıkarma butonu var.
-  const relationAction = (u: FriendSearchResult) => {
-    const props =
-      u.relation === 'accepted'
-        ? { label: 'Arkadaşlıktan çıkar', color: 'text-red', icon: <PersonRemoveIcon />, act: () => setConfirmRemove({ friend_id: u.id, name: u.name }) }
-        : u.relation === 'pending_outgoing'
-          ? { label: 'Davet gönderildi — iptal et', color: 'text-muted', icon: <PersonPendingIcon />, act: () => setConfirmCancel(u) }
-          : u.relation === 'pending_incoming'
-            ? { label: 'Arkadaşlık davetini kabul et', color: 'text-accent', icon: <HowToRegIcon />, act: () => setConfirmAdd(u) }
-            : { label: 'Arkadaş ekle', color: 'text-accent', icon: <PersonAddIcon />, act: () => setConfirmAdd(u) };
-    return (
-      <button
-        type="button"
-        aria-label={`${u.name} — ${props.label}`}
-        title={props.label}
-        disabled={busyId === u.id}
-        onClick={props.act}
-        className={`shrink-0 w-11 h-11 -my-2 -mr-2 flex items-center justify-center leading-none active:scale-90 transition-transform disabled:opacity-40 ${props.color}`}
-      >
-        {props.icon}
-      </button>
-    );
-  };
-
-  // "Ara & Ekle" zaten arkadaş olunanları GÖSTERMEZ (kullanıcı isteği,
-  // 11 Ağustos 2026) — onlar "Arkadaşlar" sekmesinde. Eleme fetch'te değil
-  // RENDER'da yapılıyor; iki sebep: (1) `allUsers.length` sayfalama offset'i
-  // olduğundan diziden atmak sayfaları kaydırıp üye atlatırdı; (2) satır
-  // ekrandayken arkadaş olunursa (kabul/karşılıklı istek) `patchRelation`
-  // ilişkiyi 'accepted' yapar ve satır kendiliğinden listeden düşer.
-  const notFriend = (u: FriendSearchResult) => u.relation !== 'accepted';
-  const visibleResults = results.filter(notFriend);
-  const visibleAllUsers = allUsers?.filter(notFriend) ?? null;
-
-  const renderFriendRow = (u: FriendSearchResult) => (
-    <div key={u.id} className={rowCls}>
-      {personButton(u.id, u.name, u.avatar_url)}
-      {relationAction(u)}
-    </div>
-  );
-
-  /** Avatar+isim: dokununca o kişinin skor kartı. "Arkadaşlar"da baştan
-   * beri vardı, ÜÇ listede de olmalı (kullanıcı isteği, 11 Ağustos 2026) —
-   * hele "Davetler"de, isteği yanıtlamadan önce kimin gönderdiğine bakmak
-   * tam da orada gerekiyor. Kart kapanınca ilişki yeniden okunuyor: kullanıcı
-   * kartın İÇİNDEN arkadaş ekleyip çıkabildiğinden (`PlayerScoreCard`'ın
-   * kendi simgesi) arkadaki satırın ikonu yoksa bayat kalırdı. */
-  const personButton = (id: string, name: string, avatarUrl: string | null) => {
+  /** Avatar+isim: dokununca skor kartı (her listede). Kart kapanınca ilişki
+   * yeniden okunuyor: kart İÇİNDEN arkadaş eklenip çıkarılabiliyor. */
+  const personButton = (id: string, name: string, avatarUrl: string | null, meta: string | null) => {
     const tier = rankTierOf(id);
+    const mod = moderation.reported.has(id) ? '🚩' : moderation.muted.has(id) ? '🚫' : null;
     return (
       <button
         type="button"
         onClick={() => setSelectedFriend(toPlayerSummary(id, name, avatarUrl))}
-        className="flex-1 min-w-0 flex items-center gap-2.5 text-left active:opacity-70 transition-opacity"
+        className="flex-1 min-w-0 flex items-center gap-3 text-left active:opacity-70 transition-opacity"
       >
-        <Avatar url={avatarUrl} name={name} size={32} />
-        <span className="flex-1 min-w-0 flex items-center gap-1">
-          <span className={nameCls}>{name}</span>
-          {/* Rütbe mührü — üç sekme de bu tek yardımcıyı kullandığından
-              (Arkadaşlar / Davetler / Ara & Ekle) tek yerde eklemek
-              üçünü birden kapsıyor. */}
-          {tier && <RankSeal tier={tier} size={18} className="shrink-0" />}
+        <Avatar url={avatarUrl} name={name} size={40} />
+        <span className="flex-1 min-w-0 flex flex-col gap-0.5">
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className={nameCls}>{name}</span>
+            {tier && <RankSeal tier={tier} size={16} className="shrink-0" />}
+            {mod && (
+              <span className="shrink-0 text-xs" title={mod === '🚩' ? 'Şikayet edildi' : 'Sessize alındı'}>
+                {mod}
+              </span>
+            )}
+          </span>
+          {meta && <span className="text-xs text-muted truncate">{meta}</span>}
         </span>
       </button>
     );
@@ -538,218 +354,298 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     const id = selectedFriend?.id;
     setSelectedFriend(null);
     if (!id) return;
-    // Kart içinden ilişki değişmiş olabilir — listeyi gerçeğe eşitle.
     void fetchFriendRelation(id).then((r) => patchRelation(id, r));
     reloadFriends();
     reloadRequests();
   };
 
-  const tabBtn = (t: Tab, label: string, badge?: number) => (
+  const moreButton = (f: FriendRow) => (
     <button
-      onClick={() => {
-        // Elle bir sekme seçilir seçilmez varsayılan-sekme effect'i devre
-        // dışı kalır — istekler henüz yüklenmemişken (null) dokunulursa,
-        // liste gelince effect seçimi ezerdi (`LiveGamesTab`'daki aynı guard).
-        appliedDefaultTabRef.current = true;
-        setTab(t);
-      }}
-      className={`relative flex-1 py-2 text-[11px] font-mono font-bold uppercase tracking-[0.5px] rounded-md transition-colors flex items-center justify-center ${
-        tab === t ? 'bg-accent text-white' : 'text-muted hover:text-text'
-      }`}
+      type="button"
+      aria-label={`${f.name} — diğer seçenekler`}
+      onClick={() => setMenuFor(f)}
+      className="shrink-0 w-10 h-10 flex items-center justify-center text-xl leading-none text-muted active:scale-90 transition-transform"
     >
-      {label}
-      {!!badge && <CountBadge count={badge} className="absolute -top-1 -right-1" />}
+      ⋯
     </button>
   );
 
-  return (
-    <Modal title="Arkadaşlar" onClose={onClose}>
-      <div className="flex flex-col gap-3">
-        <button
-          onClick={handleInvite}
-          disabled={inviteStatus === 'busy'}
-          /* TURUNCU ve `+` önekli (29 Ağustos 2026, kullanıcı isteği) — Canlı
-             sekmesindeki "+ Yeni Canlı Oyun Aç" ile AYNI dil. İkisi de
-             "yeni bir şey başlat" eylemi; mavi (accent) ise bu projede
-             onaylama/birincil eylem rengi. `btn-raised-orange` gölgeyi de
-             renge uyduruyor, tek başına `bg-orange` yetmez.
-             🔗 emoji KALDIRILDI ve bu bilinçli: `+` onun yerini alıyor,
-             kardeş butonda da emoji yok. Port zaten emojisizdi (bundled
-             fontta glyph yok dersi), yani bu aynı zamanda web↔port
-             ayrışmasını kapatıyor. */
-          className="btn-raised-orange bg-orange text-white rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform disabled:opacity-50 flex items-center justify-center"
-        >
-          {inviteStatus === 'copied' ? 'Link Kopyalandı!' : '+ Arkadaşını Davet Et'}
-        </button>
-        <p className="text-[10px] text-muted font-mono text-center -mt-1">
-          Kelimeki'de henüz olmayan arkadaşlarını davet et
-        </p>
-
-        <div className="flex gap-1 bg-bg border border-border rounded-md p-1">
-          {tabBtn('friends', 'Arkadaşlar', 0)}
-          {tabBtn('requests', 'Davetler', requests?.length ?? 0)}
-          {tabBtn('search', 'Ara & Ekle')}
-        </div>
-
-        {tab === 'friends' && (
-          <div className={listCls}>
-            {friends === null ? (
-              <LoadingNote py="py-4" />
-            ) : friends.length === 0 ? (
-              <p className="text-muted text-xs font-mono py-4 text-center">
-                Henüz arkadaşın yok — "Ara & Ekle" sekmesinden ya da yukarıdaki davet linkiyle ekleyebilirsin.
-              </p>
-            ) : (
-              friends.map((f) => (
-                <div key={f.friend_id} className={rowCls}>
-                  {personButton(f.friend_id, f.name, f.avatar_url)}
-                  {/* Moderasyon durumu VARSA yönetim ikonu — arkadaşlıktan
-                      çıkar ikonunun SOLUNDA (kullanıcı isteği, 14 Ağustos
-                      2026). Durum yoksa hiç çizilmez: bu bir "geri al"
-                      kısayolu, moderasyon menüsü değil (yeni şikayet
-                      sohbette açılır, bkz. FriendModerationModal). */}
-                  {(moderation.reported.has(f.friend_id) || moderation.muted.has(f.friend_id)) && (
-                    <button
-                      type="button"
-                      aria-label={`${f.name} — ${
-                        moderation.reported.has(f.friend_id) ? 'şikayet edildi' : 'sessize alındı'
-                      }, ayarları aç`}
-                      title={moderation.reported.has(f.friend_id) ? 'Şikayet edildi' : 'Sessize alındı'}
-                      className="shrink-0 w-11 h-11 -my-2 flex items-center justify-center text-sm leading-none active:scale-90 transition-transform"
-                      onClick={() =>
-                        setModerationTarget({
-                          userId: f.friend_id,
-                          name: f.name,
-                          avatarUrl: f.avatar_url,
-                          mutedGameId: moderation.muted.get(f.friend_id),
-                          reported: moderation.reported.has(f.friend_id),
-                        })
-                      }
-                    >
-                      {/* Bayrak, yasak işaretini EZER — sohbetteki rozet
-                          mantığının aynısı (şikayet otomatik sessize de
-                          alıyor, iki ikon birden göstermek gürültü). */}
-                      {moderation.reported.has(f.friend_id) ? '🚩' : '🚫'}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    aria-label={`${f.name} — arkadaşlıktan çıkar`}
-                    title="Arkadaşlıktan çıkar"
-                    className="shrink-0 w-11 h-11 -my-2 -mr-2 flex items-center justify-center leading-none text-red active:scale-90 transition-transform disabled:opacity-40"
-                    disabled={busyId === f.friend_id}
-                    onClick={() => setConfirmRemove(f)}
-                  >
-                    <PersonRemoveIcon />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {tab === 'requests' && (
-          <div className={listCls}>
-            {requests === null ? (
-              <LoadingNote py="py-4" />
-            ) : requests.length === 0 ? (
-              <p className="text-muted text-xs font-mono py-4 text-center">Bekleyen davet yok.</p>
-            ) : (
-              requests.map((r) => (
-                <div key={r.requester_id} className={rowCls}>
-                  {personButton(r.requester_id, r.name, r.avatar_url)}
-                  <div className="flex gap-1.5 shrink-0">
-                    <button
-                      className={`${smallBtn} bg-accent text-white`}
-                      disabled={busyId === r.requester_id}
-                      onClick={() => handleRespond(r.requester_id, true)}
-                    >
-                      Kabul Et
-                    </button>
-                    <button
-                      className={`${smallBtn} btn-raised-neutral bg-panel border border-border text-muted`}
-                      disabled={busyId === r.requester_id}
-                      onClick={() => setConfirmReject(r)}
-                    >
-                      Reddet
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {tab === 'search' && (
-          <div className="flex flex-col gap-2">
-            <input
-              className="w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-text outline-none focus:border-accent transition-colors"
-              type="text"
-              placeholder="İsim ya da takma ad ara…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              autoFocus
-            />
-            {query.trim().length >= 2 ? (
-              <div className={`${listCls} min-h-[40px]`}>
-                {searching ? (
-                  <p className="text-muted text-xs font-mono py-4 text-center">Aranıyor…</p>
-                ) : visibleResults.length === 0 ? (
-                  <p className="text-muted text-xs font-mono py-4 text-center">
-                    {results.length > 0
-                      ? 'Bulunanların hepsi zaten arkadaşın — "Arkadaşlar" sekmesine bak.'
-                      : "Kimse bulunamadı — Kelimeki'de değilse yukarıdaki davet linkini gönderebilirsin."}
-                  </p>
-                ) : (
-                  visibleResults.map((u) => renderFriendRow(u))
-                )}
-              </div>
-            ) : (
-              <>
-                <p className="text-[9px] uppercase tracking-[1px] text-muted font-mono px-0.5">
-                  Tüm Üyeler
-                </p>
-                {visibleAllUsers === null ? (
-                  <LoadingNote py="py-4" />
-                ) : (
-                  <div
-                    ref={allUsersScrollRef}
-                    className={`${listCls} max-h-[50vh] overflow-y-auto pr-1`}
-                  >
-                    {visibleAllUsers.map((u) => renderFriendRow(u))}
-                    {/* Boş mesajı yalnızca liste GERÇEKTEN tükendiyse göster —
-                        bir sayfanın tamamı arkadaş çıkarsa sentinel görünür
-                        kalıp bir sonraki sayfayı çekmeye devam etmeli. */}
-                    {visibleAllUsers.length === 0 && !allUsersHasMore && (
-                      <p className="text-muted text-xs font-mono py-4 text-center">
-                        Eklenecek başka üye yok.
-                      </p>
-                    )}
-                    {allUsersHasMore && (
-                      <div ref={allUsersSentinelRef} className="py-2 text-center">
-                        <span className="text-muted text-[10px] font-mono">
-                          {allUsersLoadingMore ? 'Yükleniyor…' : ''}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+  /** Arama / tüm üyeler satırı — ilişkiye göre TEK yazılı düğme. */
+  const userRow = (u: FriendSearchResult) => {
+    const busy = busyId === u.id;
+    const friend = friends?.find((f) => f.friend_id === u.id);
+    const meta =
+      u.relation === 'accepted'
+        ? 'Arkadaşın'
+        : u.relation === 'pending_outgoing'
+          ? 'Yanıt bekleniyor'
+          : u.relation === 'pending_incoming'
+            ? 'Seni eklemek istiyor'
+            : null;
+    return (
+      <div key={u.id} className={rowCls}>
+        {personButton(u.id, u.name, u.avatar_url, meta)}
+        {u.relation === 'accepted' ? (
+          <>
+            <Pill kind="oyna" ariaLabel={`${u.name} ile oyna`} onClick={() => play(u.id, 2)} />
+            {friend && moreButton(friend)}
+          </>
+        ) : u.relation === 'pending_outgoing' ? (
+          <Pill kind="gonderildi" ariaLabel={`${u.name} — isteği iptal et`} disabled={busy} onClick={() => void handleCancel(u.id)} />
+        ) : u.relation === 'pending_incoming' ? (
+          <Pill kind="kabul" ariaLabel={`${u.name} — isteği kabul et`} disabled={busy} onClick={() => void handleRespond(u.id, true)} />
+        ) : (
+          <Pill kind="ekle" ariaLabel={`${u.name} — arkadaş ekle`} disabled={busy} onClick={() => void handleSend(u.id)} />
         )}
       </div>
-      {selectedFriend && (
-        <PlayerScoreCard member={selectedFriend} onClose={closeSelectedFriend} />
+    );
+  };
+
+  return (
+    <Modal title="Arkadaşlar" onClose={onClose}>
+      <div className="flex flex-col gap-4">
+        {/* Doğrudan paylaşım — canlı oyun formundakiyle aynı (`useInviteShare`). */}
+        <div className="flex flex-col gap-1.5">
+          <button
+            type="button"
+            onClick={() => void invite.share()}
+            className="btn-raised btn-raised-orange min-h-[52px] rounded-md bg-orange text-white font-sans text-[15px] font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform flex items-center justify-center gap-2"
+          >
+            <span aria-hidden className="text-lg leading-none">+</span> Arkadaşını davet et
+          </button>
+          <span className="text-center text-[11px] text-muted">
+            WhatsApp ya da istediğin uygulamayla link gönder
+          </span>
+        </div>
+
+        {/* Bekleyen istekler EN ÜSTTE, davet düğmesinin hemen altında
+            (kullanıcı isteği, 27 Eylül 2026) — arama/"Tüm oyuncular"
+            görünümünde de kaybolmaz. Gelenler yanıt beklediği için büyük
+            kart; Reddet onaysız. */}
+        {requests && requests.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <span className={sectionCls}>İstekler · {requests.length}</span>
+            {requests.map((r) => (
+              <div
+                key={r.requester_id}
+                className="flex flex-col gap-2.5 p-3 rounded-xl bg-[#FFF7ED] border-[1.5px] border-orange"
+              >
+                {personButton(r.requester_id, r.name, r.avatar_url, 'Seni arkadaş olarak eklemek istiyor')}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={busyId === r.requester_id}
+                    onClick={() => void handleRespond(r.requester_id, false)}
+                    className="flex-1 min-h-[42px] rounded-md btn-raised-neutral bg-panel border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-40"
+                  >
+                    Reddet
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busyId === r.requester_id}
+                    onClick={() => void handleRespond(r.requester_id, true)}
+                    className="flex-[1.5] min-h-[42px] rounded-md btn-raised btn-raised-orange bg-orange text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-40"
+                  >
+                    Kabul et
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Gönderdiğin, cevap bekleyen istekler — gelen isteklerin ALTINDA
+            (kullanıcı isteği). Yanıt SENDEN beklenmediği için küçük satır;
+            "Geri al" onaysız (tekrar eklemek tek dokunuş). */}
+        {sent.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <span className={sectionCls}>Gönderdiğin istekler · {sent.length}</span>
+            <div className={listCls}>
+              {sent.map((r) => (
+                <div key={r.friend_id} className={rowCls}>
+                  {personButton(r.friend_id, r.name, r.avatar_url, 'Cevap bekleniyor')}
+                  <Pill
+                    kind="geriAl"
+                    ariaLabel={`${r.name} — isteği geri al`}
+                    disabled={busyId === r.friend_id}
+                    onClick={() => void handleCancel(r.friend_id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Liste başlığı: sağda görünüm değiştirici. Arama hemen altında,
+            listenin yakınında (kullanıcı isteği). "Tüm oyuncular"da sayı
+            yazılmaz. */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className={sectionCls}>
+              {showAll
+                ? 'Tüm oyuncular'
+                : `Arkadaşların${friends && friends.length > 0 ? ` · ${friends.length}` : ''}`}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="shrink-0 min-h-[36px] text-xs font-bold text-accent active:opacity-70"
+            >
+              {showAll ? '← Arkadaşlar' : 'Tüm oyuncular →'}
+            </button>
+          </div>
+
+          <input
+            className="w-full min-h-[46px] bg-panel border border-border rounded-md px-3.5 text-text outline-none focus:border-accent transition-colors"
+            type="search"
+            aria-label="Oyuncu ara"
+            placeholder="Oyuncu ara: isim ya da takma ad"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            autoFocus={initialTab === 'search'}
+          />
+
+          {searchActive ? (
+            searching ? (
+              <LoadingNote py="py-4" />
+            ) : results.length === 0 ? (
+              <p className="text-sm text-muted text-center leading-relaxed py-2" style={{ margin: 0 }}>
+                Kimse bulunamadı. Kelimeki'de değilse yukarıdan davet linki gönder.
+              </p>
+            ) : (
+              <>
+                <span className="text-xs text-muted">"{query.trim()}" için {results.length} oyuncu</span>
+                <div className={listCls}>{results.map(userRow)}</div>
+              </>
+            )
+          ) : showAll ? (
+            allUsers === null ? (
+              <LoadingNote py="py-4" />
+            ) : (
+              <div className={listCls}>
+                <ScrollArea scrollRef={allUsersScrollRef} className="max-h-[55vh]">
+                  {allUsers.map(userRow)}
+                  {allUsers.length === 0 && !allUsersHasMore && (
+                    <p className="text-muted text-xs font-mono py-4 text-center">Başka oyuncu yok.</p>
+                  )}
+                  {allUsersHasMore && (
+                    <div ref={allUsersSentinelRef} className="py-2 text-center">
+                      <span className="text-muted text-[10px] font-mono">
+                        {allUsersLoadingMore ? 'Yükleniyor…' : ''}
+                      </span>
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
+            )
+          ) : friends === null ? (
+            <LoadingNote py="py-4" />
+          ) : friends.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-4 text-center">
+              <p className="text-lg font-bold text-text" style={{ margin: 0 }}>
+                Henüz arkadaşın yok
+              </p>
+              <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
+                Bir link gönder; arkadaşın linke dokunup üye olunca burada belirir ve hemen
+                oyuna çağırırsın.
+              </p>
+            </div>
+          ) : (
+            <div className={listCls}>
+              {friends.map((f) => (
+                <div key={f.friend_id} className={rowCls}>
+                  {personButton(f.friend_id, f.name, f.avatar_url, friendSinceLabel(f.since, true))}
+                  <Pill kind="oyna" ariaLabel={`${f.name} ile oyna`} onClick={() => play(f.friend_id, 2)} />
+                  {moreButton(f)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {invite.fallbackOpen && invite.inviteUrl && (
+        <InviteShareFallback url={invite.inviteUrl} onClose={invite.closeFallback} />
       )}
+
+      {selectedFriend && <PlayerScoreCard member={selectedFriend} onClose={closeSelectedFriend} />}
+
+      {/* ⋯ kişi menüsü — alttan açılır. */}
+      {menuFor &&
+        createPortal(
+          <div className="fixed inset-0 z-[200] flex items-end justify-center">
+            <div className="absolute inset-0 bg-[rgba(15,23,42,0.45)]" onClick={() => setMenuFor(null)} aria-hidden />
+            <div
+              ref={menuRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={menuFor.name}
+              tabIndex={-1}
+              className="relative w-full max-w-[460px] bg-panel rounded-t-[22px] shadow-[0_-20px_45px_rgba(15,23,42,0.35)] px-5 pt-3 flex flex-col outline-none"
+              style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+            >
+              <span className="self-center w-10 h-[5px] rounded-full bg-[#C7D0DC] mb-3" aria-hidden />
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <Avatar url={menuFor.avatar_url} name={menuFor.name} size={44} />
+                <span className="flex flex-col gap-0.5 min-w-0">
+                  <span className="text-[17px] font-bold text-text truncate">{menuFor.name}</span>
+                  {friendSinceLabel(menuFor.since) && (
+                    <span className="text-xs text-muted">{friendSinceLabel(menuFor.since)}</span>
+                  )}
+                </span>
+              </div>
+              {[
+                {
+                  label: 'Skor kartını gör',
+                  act: () => setSelectedFriend(toPlayerSummary(menuFor.friend_id, menuFor.name, menuFor.avatar_url)),
+                },
+                // OYNA düğmesi 2 kişilik kurar; menü ikisini de açıkça sunar.
+                { label: '2 kişilik oyun kur', act: () => play(menuFor.friend_id, 2) },
+                { label: '4 kişilik oyun kur', act: () => play(menuFor.friend_id, 4) },
+                // Moderasyon menüsü DEĞİL, "geri al" kısayolu — yalnızca bir
+                // durum varsa (yeni şikayet sohbette açılır, bkz.
+                // FriendModerationModal).
+                ...(moderation.reported.has(menuFor.friend_id) || moderation.muted.has(menuFor.friend_id)
+                  ? [
+                      {
+                        label: 'Sessize alma / şikayet ayarları',
+                        act: () =>
+                          setModerationTarget({
+                            userId: menuFor.friend_id,
+                            name: menuFor.name,
+                            avatarUrl: menuFor.avatar_url,
+                            mutedGameId: moderation.muted.get(menuFor.friend_id),
+                            reported: moderation.reported.has(menuFor.friend_id),
+                          }),
+                      },
+                    ]
+                  : []),
+                { label: 'Arkadaşlıktan çıkar', danger: true, act: () => setConfirmRemove(menuFor) },
+              ].map((it) => (
+                <button
+                  key={it.label}
+                  type="button"
+                  onClick={() => {
+                    setMenuFor(null);
+                    it.act();
+                  }}
+                  className={`min-h-[52px] text-left text-[15px] font-bold border-b border-[#EEF1F5] last:border-b-0 active:opacity-70 ${
+                    'danger' in it && it.danger ? 'text-red' : 'text-text'
+                  }`}
+                >
+                  {it.label}
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {moderationTarget && (
         <FriendModerationModal
           target={moderationTarget}
           onClose={(changed) => {
             setModerationTarget(null);
-            // Durum değiştiyse ikon hemen kaybolmalı — aksi halde
-            // kullanıcı "geri çektim ama bayrak duruyor" görürdü.
             if (changed) reloadModeration();
           }}
         />
@@ -766,61 +662,6 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
           onConfirm={handleConfirmRemove}
           onCancel={() => setConfirmRemove(null)}
         />
-      )}
-      {removeResultMsg && (
-        <InfoDialog dialogRef={removeResultRef} message={removeResultMsg} onClose={() => setRemoveResultMsg(null)} />
-      )}
-
-      {confirmReject && (
-        <ConfirmDialog
-          dialogRef={confirmRejectRef}
-          ariaLabel="Daveti Reddet"
-          title="Daveti Reddet"
-          message={`${confirmReject.name} oyuncusunun arkadaşlık davetini reddetmek mi istiyorsunuz?`}
-          confirmLabel="Reddet"
-          busy={busyId === confirmReject.requester_id}
-          onConfirm={handleConfirmReject}
-          onCancel={() => setConfirmReject(null)}
-        />
-      )}
-      {rejectResultMsg && (
-        <InfoDialog dialogRef={rejectResultRef} message={rejectResultMsg} onClose={() => setRejectResultMsg(null)} />
-      )}
-
-      {confirmAdd && (
-        <ConfirmDialog
-          dialogRef={confirmAddRef}
-          ariaLabel={confirmAdd.relation === 'pending_incoming' ? 'Arkadaşlık Daveti' : 'Arkadaş Ekle'}
-          title={confirmAdd.relation === 'pending_incoming' ? 'Arkadaşlık Daveti' : 'Arkadaş Ekle'}
-          message={
-            confirmAdd.relation === 'pending_incoming'
-              ? `${confirmAdd.name} oyuncusu sana arkadaşlık daveti gönderdi. Kabul etmek istiyor musun?`
-              : `${confirmAdd.name} oyuncusunu arkadaş olarak eklemek istiyor musun?`
-          }
-          confirmLabel={confirmAdd.relation === 'pending_incoming' ? 'Kabul Et' : 'Ekle'}
-          busy={busyId === confirmAdd.id}
-          onConfirm={handleConfirmAdd}
-          onCancel={() => setConfirmAdd(null)}
-        />
-      )}
-      {addResultMsg && (
-        <InfoDialog dialogRef={addResultRef} message={addResultMsg} onClose={() => setAddResultMsg(null)} />
-      )}
-
-      {confirmCancel && (
-        <ConfirmDialog
-          dialogRef={confirmCancelRef}
-          ariaLabel="Daveti İptal Et"
-          title="Daveti İptal Et"
-          message={`${confirmCancel.name} oyuncusuna gönderdiğin arkadaşlık davetini iptal etmek istiyor musun?`}
-          confirmLabel="İptal Et"
-          busy={busyId === confirmCancel.id}
-          onConfirm={handleConfirmCancel}
-          onCancel={() => setConfirmCancel(null)}
-        />
-      )}
-      {cancelResultMsg && (
-        <InfoDialog dialogRef={cancelResultRef} message={cancelResultMsg} onClose={() => setCancelResultMsg(null)} />
       )}
     </Modal>
   );
