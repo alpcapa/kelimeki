@@ -201,6 +201,36 @@ yalnızca misafir bitişini sayar (tablonun altındaki not ve `?` metni söylüy
   listelerinin SQL ↔ TS birebirliği, bayrağın metin güncellenmeden açılamaması,
   `main.tsx`'te çağrının kapı kararından önce durması.
 
+## PR 2 — mobil (27 Eylül 2026, 5 Ekim treni)
+
+Kullanıcı: *"Huni v2 5 Ekim'de var mı? Yoksa dahil edelim"* — planda "Play
+#19'dan sonraki ilk güncelleme" diye bekliyordu, trene alındı. Kod:
+`mobile/app/lib/src/data/funnel_api.dart`; kayıt `mobile/docs/parca-log.md`
+→ Parça 216.
+
+**Plandan ayrılanlar:**
+
+- **Play Install Referrer YOK** (kullanıcı: *"önce kanalsız"*). Pazarlama
+  kapısı (3. adım) Android'de kanal kırılımı olmadan açılacaksa bu bilinçli.
+- **Kanal `app`, `app-store`/`play-organik` DEĞİL.** Panelin
+  `sourceChannel`ı (`adminGroups.ts`) yalnızca `app`i tanıyor ("Mobil
+  Uygulama"); plandaki iki etiket "Diğer"e düşerdi. Platform zaten ayrı
+  sütunda, bilgi kaybı yok. Deep link'ten bir `?ref=` yakalanırsa
+  (`DeviceStamp.source`) o kazanır — web `decideLandChannel` ile aynı.
+- **"Önceden iz" = oturum VAR ya da tanıtım görülmüş ya da anonim kod
+  ÜRETİLMİŞ** (`hasPriorAppTrace`). ⚠ Bootstrap'ta `errorReporter` anonim
+  kodu açılışta üretiyor; iz ondan ÖNCE okunmazsa her yeni kurulum
+  `mevcut` sayılırdı. Sıra `bootstrap.dart`ta yazılı ve testli.
+- **`visit` = açılış VE öne geliş** (İstanbul günü başına bir). Web'de her
+  sayfa yüklemesi; uygulamada arka planda günlerce açık kalan süreç de
+  ertesi gün "döndü" sayılabilsin diye.
+- `game_finish` yalnızca `GamesRepo.recordFinished` — 7 günlük terk
+  (`recordAbandoned`) web'deki gibi DIŞARIDA. Canlı oyun da dışarıda.
+
+**Beyan formları:** değişmedi (yukarıdaki "Beyan formları büyük ihtimalle
+DEĞİŞMEZ" okuması geçerli; Install Referrer eklenmediği için doğrulanacak
+tek madde de düştü).
+
 ## Açık sorular (uygulamaya başlarken)
 
 - "Land" web'de karşılama katmanı mı yoksa uygulama mı sayılır? Plan:

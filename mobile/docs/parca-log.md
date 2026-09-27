@@ -25,6 +25,45 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 216 — Huni v2 mobil yarısı + cihaz kartları (27 Eylül 2026)
+
+**Kullanıcı:** *"Huni v2 5 Ekim'de var mı? Yoksa dahil edelim"* ve *"Cihaz
+kartlarını 2 haftalık sürüme alalım"* (ROADMAP #40). Aynı gün admin
+panelindeki beş karta "Web" etiketi kondu (web PR #658); bu parça ikisinin
+uygulama yarısı. **Kanal kararı:** *"önce kanalsız"* — Play Install Referrer
+YOK.
+
+**Ne yapıldı:**
+- `data/funnel_api.dart` — web `src/utils/funnelEvents.ts`in ikizi: aynı
+  `log_funnel_event` RPC'si, `land` (bir kez, kanal ilk kararda donar) +
+  İstanbul günü başına `visit` (açılış VE öne geliş) + `signup` / YZ
+  `game_start` / `game_finish`. Kanal `DeviceStamp.source` (`app`); plandaki
+  `app-store`/`play-organik` bilerek kullanılmadı — panelin
+  `sourceChannel`'ı onları "Diğer"e atardı, platform zaten ayrı sütunda.
+- `data/device_info.dart` + `device_info_plus` — `device_visits`e
+  (girişli dahil, günde bir) ve `guest_visits`in iki null alanına OS
+  sürümü + model. iOS modeli `iPhone`/`iPad` GENEL kategorisi: Safari
+  gerçek modeli vermediğinden web satırları hep böyle, makine kodu
+  (`iPhone15,2`) yazılsaydı aynı cihaz "Cihaz Markası"nda iki satıra
+  düşerdi.
+
+**Bulunan tuzak — "önceden iz" okumasının SIRASI:** `bootstrap.dart`taki
+`errorReporter.configure(anonId: storage.then((s) => s.flags.anonId()))`
+anonim kodu açılışta ÜRETİYOR. Huni "bu cihaz ölçüm v2'den önce iz
+bırakmış mı" sorusunu ondan SONRA sorsaydı her yeni kurulum `mevcut`
+sayılır ve kohort sıfır görünürdü — hiçbir hata basmadan. Çözüm: huninin
+`storage.then`i ondan ÖNCE kaydediliyor (aynı future'ın dinleyicileri kayıt
+sırasıyla koşar) ve iz `FunnelRepo.create`te donuyor. Kapı:
+`funnel_events_parity_test` → *"iz OLUŞTURMA ANINDA donar"*.
+
+**Doğrulama:** `funnel_events_parity_test.dart` (olay/platform adları web
+kaynağı + migration SQL'inden OKUNUR; İstanbul günü sınırı; land/visit/
+olay davranışı), `source_stamp_test.dart`e cihaz pingi + söz dağarcığı.
+`dart analyze` temiz (tek `info` önceden vardı), **917 test yeşil** (yeni 16 dahil).
+**Doğrulama sınırı:** gerçek satırlar ancak cihazda — `mobile/docs/testing-olcum.md`
+§33 (aynı PR'da `mobile/TESTING.md`ten taşındı, doküman bütçesi). Beyan formları değişmedi: Play "Diagnostics" ve App Store "Other
+Diagnostic Data" satırları cihaz modeli + OS sürümünü zaten sayıyor.
+
 ## Parça 214 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
 
    > ⚠ **25 Eylül 2026, merge anında:** aşağıda anlatılan WEB yarısı

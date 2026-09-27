@@ -25,6 +25,7 @@ import '../util/platform.dart';
 import '../util/uuid.dart';
 import 'game_record.dart';
 import 'device_stamp.dart';
+import 'funnel_api.dart';
 
 /// Bir oyunu beğenen kullanıcı — web `GameLiker` (`game_likers` RPC'si).
 /// E-posta HİÇBİR ZAMAN dönmez (projenin genel ilkesi).
@@ -623,6 +624,10 @@ class GamesRepo {
   /// kaydedilmez (web'in `players[0].surrendered` koruması).
   Future<void> recordFinished(GameState state) async {
     if (state.players.isNotEmpty && state.players[0].surrendered) return;
+    // Huni v2 (web: oyun-bitti effect'i → `funnelEvent('game_finish', !user)`).
+    // ⚠ YALNIZCA burada — `recordAbandoned` BİLEREK dışarıda: 7 günlük terk
+    // "bitirdi" demek değil (web'in aynı kararı).
+    funnel.event('game_finish', isGuest: gateway.currentUserId == null);
     await logFinish(
       playerCount: state.players.length,
       durationSeconds: _durationSeconds(state, _now().millisecondsSinceEpoch),
@@ -919,7 +924,10 @@ class GamesRepo {
     try {
       final rows = await gateway.gameMoves(gameId);
       if (rows == null) return (ok: true, moves: null);
-      return (ok: true, moves: [for (final r in rows) HistoryEntry.fromJson(r)]);
+      return (
+        ok: true,
+        moves: [for (final r in rows) HistoryEntry.fromJson(r)]
+      );
     } catch (e) {
       debugPrint('[Kelimeki] hamle geçmişi alınamadı: $e');
       return (ok: false, moves: null);
@@ -934,6 +942,9 @@ class GamesRepo {
     } catch (e) {
       debugPrint('[Kelimeki] logGameStart hatası: $e');
     }
+    // Huni v2 (web `App.tsx` → `funnelEvent('game_start', !user)`). Aynı
+    // çağrı yeri: iki ekrandan (Setup + "Tekrar Oyna") tek kapı.
+    funnel.event('game_start', isGuest: gateway.currentUserId == null);
   }
 
   /// Tanıtım turu olayı (`tutorial_events`) — `logStart` ile aynı

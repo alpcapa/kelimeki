@@ -74,7 +74,7 @@ gerektiren akışların elle koşulan kontrol listesi: [`TESTING.md`](TESTING.md
 
 Flutter portunun kendi testleri `mobile/app`'te `flutter test` ile koşar
 (veri katmanı sahte uçlarla sınanır); gerçek Supabase/platform davranışının
-cihazda koşulan listesi: [`mobile/TESTING.md`](mobile/TESTING.md) (arkadaşlık + Canlı oyun turları: [`mobile/docs/testing-arkadaslar-canli.md`](mobile/docs/testing-arkadaslar-canli.md); tarihli etkileşim/görünüm turları: [`mobile/docs/testing-ux-turlari.md`](mobile/docs/testing-ux-turlari.md)). Derlemeyi
+cihazda koşulan listesi: [`mobile/TESTING.md`](mobile/TESTING.md) (arkadaşlık + Canlı oyun turları: [`mobile/docs/testing-arkadaslar-canli.md`](mobile/docs/testing-arkadaslar-canli.md); tarihli etkileşim/görünüm turları: [`mobile/docs/testing-ux-turlari.md`](mobile/docs/testing-ux-turlari.md); telemetri/huni satırları: [`mobile/docs/testing-olcum.md`](mobile/docs/testing-olcum.md); k-lig: [`mobile/docs/testing-klig.md`](mobile/docs/testing-klig.md)). Derlemeyi
 (imzasız iOS + Android APK + web) doğrulayan GitHub Actions iş akışı
 `mobile/**` dokunan her PR'da ve `main`e her push'ta otomatik koşar:
 `.github/workflows/mobile-build.yml`.
