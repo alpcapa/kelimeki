@@ -41,6 +41,7 @@ import { FriendModerationModal, type FriendModerationTarget } from './FriendMode
 import { trCompare } from '../utils/turkish';
 import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
+import { ScrollArea } from './ScrollArea';
 
 /** Bir arkadaşı `PlayerScoreCard` açabilecek şekle çevirir — henüz canlı oyun
  * olmadığından arkadaş eklemenin somut faydası şu an bu: kişinin skor
@@ -581,18 +582,20 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
             allUsers === null ? (
               <LoadingNote py="py-4" />
             ) : (
-              <div ref={allUsersScrollRef} className={`${listCls} max-h-[55vh] overflow-y-auto`}>
-                {allUsers.map(userRow)}
-                {allUsers.length === 0 && !allUsersHasMore && (
-                  <p className="text-muted text-xs font-mono py-4 text-center">Başka oyuncu yok.</p>
-                )}
-                {allUsersHasMore && (
-                  <div ref={allUsersSentinelRef} className="py-2 text-center">
-                    <span className="text-muted text-[10px] font-mono">
-                      {allUsersLoadingMore ? 'Yükleniyor…' : ''}
-                    </span>
-                  </div>
-                )}
+              <div className={listCls}>
+                <ScrollArea scrollRef={allUsersScrollRef} className="max-h-[55vh]">
+                  {allUsers.map(userRow)}
+                  {allUsers.length === 0 && !allUsersHasMore && (
+                    <p className="text-muted text-xs font-mono py-4 text-center">Başka oyuncu yok.</p>
+                  )}
+                  {allUsersHasMore && (
+                    <div ref={allUsersSentinelRef} className="py-2 text-center">
+                      <span className="text-muted text-[10px] font-mono">
+                        {allUsersLoadingMore ? 'Yükleniyor…' : ''}
+                      </span>
+                    </div>
+                  )}
+                </ScrollArea>
               </div>
             )
           ) : friends === null ? (

@@ -10,6 +10,7 @@
 // doğan kalıcı Yapay Zeka satırı KALKTI — koltuk zaten görünüyor. "Arkadaşını
 // davet et" (davet linki) artık arama kutusunun hemen altında.
 import { useEffect, useRef, useState } from 'react';
+import { ScrollArea } from './ScrollArea';
 import { useAuth } from '../hooks/useAuth';
 import { createOnlineGame, fetchFriends } from '../lib/api';
 import { useInviteShare } from '../hooks/useInviteShare';
@@ -382,7 +383,7 @@ export function LiveGameCreateForm({
             >
               <span aria-hidden className="text-base leading-none">+</span> Arkadaşını davet et
             </button>
-            <div className="flex flex-col gap-1.5 max-h-[280px] overflow-y-auto pr-0.5">
+            <ScrollArea className="flex flex-col gap-1.5 max-h-[280px]">
               {(() => {
                 const filtered = friends.filter((f) => trLower(f.name).includes(trLower(query.trim())));
                 if (filtered.length === 0) {
@@ -412,7 +413,7 @@ export function LiveGameCreateForm({
                   );
                 });
               })()}
-            </div>
+            </ScrollArea>
           </div>
         )}
       </div>

@@ -144,6 +144,7 @@ src/
 │   ├── SharedGamePage.tsx       # herkese açık /game/:id sayfası (girişsiz de erişilebilir)
 │   ├── FriendsModal.tsx         # Arkadaşlar penceresi — sekmesiz tek ekran: davet (doğrudan paylaşım), arama, gelen istek kartları, OYNA + ⋯ menüsü
 │   ├── InviteShareFallback.tsx  # paylaşım sayfası olmayan tarayıcıda "WhatsApp'ta gönder" + "Linki kopyala"
+│   ├── ScrollArea.tsx  # kendi içinde kayan liste + HER ZAMAN görünen ince kaydırma çubuğu (iOS çubuğu yalnızca kaydırırken gösteriyor)
 │   ├── FriendInvitePage.tsx     # herkese açık /davet/:token sayfası (girişsiz de erişilebilir) — davet kartı + oyunun tanıtımı (tahta/ikonlar landing/ ile tek kaynak)
 │   ├── LiveGamesTab.tsx         # Canlı sekmesi: davet bekleyen/aktif/rakip bekleyen oyun listesi + Kabul/Reddet + girişsiz uyarı penceresi
 │   ├── LiveGameCreateForm.tsx   # Canlı oyun kurulumu: oyuncu sayısı + oyuncu renginde koltuk kartları + arkadaş seçici + davet gönderme
