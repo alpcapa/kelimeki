@@ -58,7 +58,7 @@ export function BolgeKesiti() {
   return (
     <div
       role="img"
-      aria-label="Tahta kesiti: solda senin camgöbeği bölgen ve SAAT kelimen, sağ altta rakibin kırmızı bölgesi ve KUL kelimesi. SAAT 5 puan getiriyor, ama son harfi rakibin bölgesine değdiği için puanın üçte biri rakibe geçer."
+      aria-label="Tahta kesiti: solda senin camgöbeği bölgen; önceki hamlen AS'nin S'sine bağlanan SAAT kelimen, sağ altta rakibin kırmızı bölgesi ve KUL kelimesi. SAAT 5 puan getiriyor, ama son harfi rakibin bölgesine değdiği için puanın üçte biri rakibe geçer."
       className="relative w-full max-w-[340px] lg:max-w-[440px] mx-auto rounded-[18px] bg-[#DDE4EE] p-[10px] shadow-raised"
     >
       <div

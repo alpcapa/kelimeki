@@ -19,7 +19,7 @@
 export const KESIT_SUTUN = 7;
 
 export const KESIT_HARITA: readonly string[] = [
-  'ccc....',
+  'cAc....',
   'cSAAT..',
   'c...rrr',
   '....rrr',
@@ -35,7 +35,10 @@ export const KESIT_RAKIP_HARFLERI: Readonly<Record<string, string>> = {
 
 /**
  * Bu turda oynanan kelime (SAAT) — oyundaki gibi yeşil geçerlilik çerçevesi
- * ve puan rozeti taşır. T'si rakip bölgesinin sınırına değiyor (vergiyi
+ * ve puan rozeti taşır. S önceki hamleden (dikey AS) — kural gereği yeni
+ * kelime tahtadaki bir harfe BAĞLANMAK zorunda; 28 Eylül 2026'ya kadar SAAT
+ * havada duruyordu (kullanıcı: *"S harfine yukarıdan değen bir hamle"*).
+ * Bu turda konan taşlar AAT; puan yine SAAT'in tamamı. T'si rakip bölgesinin sınırına değiyor (vergiyi
  * doğuran). 28 Eylül 2026'ya kadar yalnızca T'nin etrafında kırmızı bir
  * halka vardı; kelimenin ortasında taşmış bir çizgi gibi okunuyordu
  * (kullanıcı: *"SAAT'in etrafı yeşil ve kazanacağı puan tag'i"*).
