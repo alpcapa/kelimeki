@@ -202,16 +202,18 @@ metin olarak tıklanabilir kalır (önizleme kartı çıkmaz — bilinen bedel).
 
 ### Sayfa sesi
 
+27 Eylül 2026: IG/FB'deki kullanıcı düzeltmeleri (vergi cümlesi, canlı oyun ve internetsiz satırları) buraya da işlendi.
+
 ```
 Kelimeki bugün Google Play'de.
 
-16 Eylül'de App Store'a çıkan Türkçe kelime oyunumuz artık Android'de de. Tahtada senin bir bölgen var; kelime kurarak onu büyütüyorsun, rakibinin bölgesine oynarsan puanının bir kısmı ona gidiyor. Bir süre sonra "hangi kelimeyi kurayım" sorusunun yerini "bu kelimeyi nereye koyayım" alıyor.
+16 Eylül'de App Store'a çıkan Türkçe kelime oyunumuz artık Android'de de. Tahtada senin bir bölgen var; kelime kurarak onu büyütüyorsun, rakibinin bölgesine oynarsan puanının bir kısmı ona gidiyor. Bölgen ne kadar büyürse, vergi kazancın o kadar artar. Bir süre sonra "hangi kelimeyi kurayım" sorusunun yerini "bu kelimeyi nereye koyayım" alıyor.
 
 Kutunun içinde:
 • 63.905 kelimelik sözlük (TDK Güncel Türkçe Sözlük kaynaklı), hepsi anlamıyla
 • Üç zorluk seviyesinde yapay zekâ rakip: Kolay, Normal, Zor
-• Platformlar arası oyun: Android'deki oyuncu iPhone'daki arkadaşıyla aynı oyunu oynuyor
-• İnternetsiz oynanır — sözlük cihazın içinde
+• Arkadaşlarınla canlı oyun, sırayla: her hamle için 48 saat — Android'deki oyuncu iPhone'daki arkadaşıyla aynı oyunu oynuyor
+• İnternetsiz oynama imkânı — sözlük cihazın içinde
 • Ücretsiz; reklam yok, uygulama içi satın alma yok
 
 Android için Google Play:
