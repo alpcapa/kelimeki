@@ -275,6 +275,14 @@ yalnızca "Device art generator" ve "Legal line generator" var.
 - Rozet `public/google-play-badge.svg` (sitedeki resmî dosya) — çizilmez,
   oranı değiştirilmez. Rozet kullanıldığı için gönderi metnine Google'ın
   legal satırı girer (Legal line generator).
+- **27 Eylül 2026: İKİ rozet** (kullanıcı: *"ikisinin de olması lazım"*).
+  App Store rozeti de eklendi; hangi rozetin çıktığı ve sırası üretimin
+  kapısından (`visibleStoreBadges` — App Store önce, eşit yükseklik).
+  Betik iki rozetin kadrajda ve eşit yükseklikte olduğunu ölçer. Aynı gün
+  fark edildi: kapıya bağlı carousel kareleri (`sponsored-2026-08/`) ve
+  LinkedIn kapakları Play yayına girdikten sonra yeniden üretilmemişti,
+  hâlâ yalnızca App Store diyorlardı — ⚠ `storeLinks.ts` değişince kapıya
+  bağlı üreticileri YENİDEN KOŞ (liste: `play-store/sosyal-lansman.md`).
 - Simge cihazdaki başlatıcı ikonla aynı kaynak (`icon-source.png`); simge
   "kelimeki" yazısını taşıdığı için kare/story'de ayrıca logo YOK.
 - Story'de içerik Instagram'ın bindirme bantlarının (üst ~%14, alt ~%20)

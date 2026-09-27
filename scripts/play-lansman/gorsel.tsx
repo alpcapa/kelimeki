@@ -7,21 +7,26 @@
 // Ölçüler CSS px, 2× çekilir: kare 540 → 1080, story 540×960 → 1080×1920,
 // link kartı 600×314 → 1200×628.
 //
-// Rozet `public/google-play-badge.svg` — sitede kullanılan RESMÎ dosya;
-// ÇİZİLMEZ, oranı/rengi değiştirilmez. Tahtalar üretimdeki
+// Rozetler `public/`teki RESMÎ dosyalar (sitede kullanılanlar); ÇİZİLMEZ,
+// oranı/rengi değiştirilmez. Hangi rozetin çıktığı ve SIRASI üretimin
+// kapısından gelir (`visibleStoreBadges` — App Store ÖNCE, Apple'ın yazılı
+// kuralı); ikisi EŞİT YÜKSEKLİKTE (24 Eylül 2026 kullanıcı kararı,
+// `storeLinks.ts`). 27 Eylül 2026'ya kadar yalnızca Play rozeti vardı —
+// kullanıcı: "ikisinin de olması lazım". Tahtalar üretimdeki
 // `GameBoardPreview`, logo `LandingLogo` (ikinci bir çizim sessiz ayrışır).
 // Tailwind SINIFI YOK — `scripts/` tailwind content'inde değil.
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LandingLogo, LandingLogoDefs } from '../../src/landing/LandingLogo';
 import { GameBoardPreview } from '../../src/components/GameBoardPreview';
 import { DEMO_TILES_2, DEMO_TILES_4 } from '../../src/landing/demoBoard';
+import { BADGE_GAP_PX, BADGE_HEIGHT_PX, visibleStoreBadges } from '../../src/utils/storeLinks';
 
 const BOARD_BASE_W = 680;
 const MONO = '"Space Mono", monospace';
 const SANS = '"Space Grotesk", sans-serif';
 const ACCENT = '#2563EB';
-/** Resmî rozetin viewBox oranı (238.96 × 70.87). */
-const ROZET_ORAN = 238.96 / 70.87;
+/** Rozet dosyası (`public/` yolu) → build'in gömdüğü data URI. */
+export type RozetKaynaklari = Record<string, string>;
 
 export type Duzen = 'kare' | 'story' | 'dikey' | 'yatay' | 'link';
 
@@ -57,16 +62,23 @@ function Tahta({ tiles, sayi, olcek, stil }: {
   );
 }
 
-/** Düzene göre tipografi/boyut tablosu — tek yerde, üç düzen yan yana. */
+/** Düzene göre tipografi/boyut tablosu — tek yerde, üç düzen yan yana.
+ *
+ *  `rozet` = iki rozetin ORTAK yüksekliği (CSS px). Yan yana iki rozet
+ *  (≈ 7,15 × yükseklik + boşluk) kutuya sığacak kadar: kare/story'de
+ *  kutu 443 px. Kare ve story telefonda ~390 pt'ye çizilir (×0,72) —
+ *  56/58 px orada 40 pt'nin üstünde kalır (Apple'ın alt sınırı,
+ *  `BADGE_MIN_HEIGHT_PX`). Yan düzenlerde (yatay/link) sütun dar, rozet
+ *  sütuna sığan en büyük değer. */
 const OLCU = {
-  kare: { ikon: 136, logo: 0, baslik: 46, alt: 20, rozet: 60, dip: 13, bosluk: 20 },
-  story: { ikon: 168, logo: 0, baslik: 56, alt: 23, rozet: 68, dip: 14, bosluk: 26 },
-  dikey: { ikon: 112, logo: 0, baslik: 37, alt: 16, rozet: 46, dip: 10, bosluk: 17 },
-  yatay: { ikon: 0, logo: 46, baslik: 34, alt: 16, rozet: 50, dip: 11, bosluk: 14 },
-  link: { ikon: 0, logo: 40, baslik: 33, alt: 14, rozet: 42, dip: 11, bosluk: 11 },
+  kare: { ikon: 136, logo: 0, baslik: 46, alt: 20, rozet: 56, dip: 13, bosluk: 20 },
+  story: { ikon: 168, logo: 0, baslik: 56, alt: 23, rozet: 58, dip: 14, bosluk: 26 },
+  dikey: { ikon: 112, logo: 0, baslik: 37, alt: 16, rozet: 38, dip: 10, bosluk: 17 },
+  yatay: { ikon: 0, logo: 46, baslik: 34, alt: 16, rozet: 33, dip: 11, bosluk: 14 },
+  link: { ikon: 0, logo: 40, baslik: 33, alt: 14, rozet: 34, dip: 11, bosluk: 11 },
 } as const;
 
-function Gorsel({ duzen, ikonSrc, rozetSrc }: { duzen: Duzen; ikonSrc: string; rozetSrc: string }) {
+function Gorsel({ duzen, ikonSrc, rozetler }: { duzen: Duzen; ikonSrc: string; rozetler: RozetKaynaklari }) {
   const { w, h } = OLCULER[duzen];
   const o = OLCU[duzen];
   const yan = YAN.includes(duzen);
@@ -74,7 +86,13 @@ function Gorsel({ duzen, ikonSrc, rozetSrc }: { duzen: Duzen; ikonSrc: string; r
   const pay = Math.round(h * 0.06);
   const tahtaKenar = h - 2 * pay;
   const rozet = (
-    <img src={rozetSrc} alt="Google Play'den alın" style={{ height: o.rozet, width: o.rozet * ROZET_ORAN, display: 'block' }} />
+    <div data-rozetler="" style={{ display: 'flex', alignItems: 'center', gap: Math.round((o.rozet * BADGE_GAP_PX) / BADGE_HEIGHT_PX) }}>
+      {visibleStoreBadges().map((b) => {
+        const src = rozetler[b.asset];
+        if (!src) throw new Error(`rozet dosyası gömülmedi: ${b.asset}`);
+        return <img key={b.key} src={src} alt={b.alt} style={{ height: o.rozet, width: 'auto', display: 'block' }} />;
+      })}
+    </div>
   );
   const baslik = (
     <p style={{ margin: 0, fontSize: o.baslik, lineHeight: 1.08, fontWeight: 700, letterSpacing: -0.8 }}>
@@ -148,10 +166,10 @@ function Gorsel({ duzen, ikonSrc, rozetSrc }: { duzen: Duzen; ikonSrc: string; r
   );
 }
 
-export function renderGorselHtml(duzen: Duzen, cssHref: string, ikonSrc: string, rozetSrc: string): string {
+export function renderGorselHtml(duzen: Duzen, cssHref: string, ikonSrc: string, rozetler: RozetKaynaklari): string {
   return `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><title>Kelimeki Google Play ${duzen}</title>
 <link rel="stylesheet" href="${cssHref}">
 <style>html,body{margin:0;padding:0;background:#fff}</style>
-</head><body>${renderToStaticMarkup(<Gorsel duzen={duzen} ikonSrc={ikonSrc} rozetSrc={rozetSrc} />)}</body></html>`;
+</head><body>${renderToStaticMarkup(<Gorsel duzen={duzen} ikonSrc={ikonSrc} rozetler={rozetler} />)}</body></html>`;
 }

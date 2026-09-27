@@ -14,15 +14,28 @@ biçim).
 
 **Bu turun App Store turundan farkı:** Görseller Apple'ın değil, bizim
 (`marketing/play-store/lansman/`, üreticisi `scripts/play-lansman/`).
-Tescilli Apple artwork'ü kısıtı burada YOK, ama içindeki Google Play
-rozeti Google'ın — rozetin kendisine dokunulmaz.
+Tescilli Apple artwork'ü kısıtı burada YOK, ama içindeki iki rozet
+Apple'ın ve Google'ın — rozetlerin kendisine dokunulmaz.
+
+**27 Eylül 2026 — HER görselde İKİ rozet** (kullanıcı: *"ikisinin de
+olması lazım"*). Lansman setine App Store rozeti eklendi (App Store ÖNCE,
+eşit yükseklik — sıra ve kapı `visibleStoreBadges`ten, `storeLinks.ts`);
+üretici artık iki rozeti ve eşit yüksekliklerini ölçüp doğruluyor. Carousel
+kareleri (`sponsored-2026-08/`) ve iki LinkedIn kapağı zaten mağaza
+kapısından besleniyordu ama Play yayına girdikten (24 Eylül) sonra
+YENİDEN ÜRETİLMEMİŞTİ — hâlâ yalnızca "App Store'da" diyorlardı; üçü de
+yeniden üretildi. ⚠ Ders: `storeLinks.ts`teki bir `null` dolunca kapıya
+bağlı her pazarlama üreticisi yeniden koşulmalı (`generate-play-lansman`,
+`sponsored-post/build.mjs`, `generate-linkedin-cover`,
+`generate-linkedin-page-cover`) — kapı kodu günceller, PNG'leri değil.
 
 ---
 
 ## 0 · Legal satırı — rozetli HER gönderide
 
 Görsellerde Google Play rozeti, metinlerde "Android" kelimesi (ve
-IG/LinkedIn'de `#android` etiketi) var; ikisi de ayrı atıf istiyor:
+IG/LinkedIn'de `#android` etiketi) var; ikisi de ayrı atıf istiyor.
+(Apple rozeti için bkz. §0.1 — karar bekliyor.)
 
 ```
 Android, Google LLC'nin ticari markasıdır.
@@ -51,6 +64,17 @@ Kılavuzun iki kuralı daha — bilerek UYGULANMADI, kullanıcı kararı bekler:
   ya da Play rozet sayfası sosyal için istiyorsa eklenir.
 - **"iyelik/çoğul yapma"**: İngilizce kuralı; Türkçede `Android'de` hâl
   eki, iyelik değil — kaçınmanın yolu yok, dokunulmadı.
+
+### 0.1 · Apple satırı — KULLANICI KARARI BEKLİYOR (27 Eylül 2026)
+
+Görsellere App Store rozeti girdi; metinler zaten "App Store", "iPhone",
+"iPad" diyor. 16 Eylül App Store turunda Apple atfı HİÇ konmamıştı (üç
+dosyada da yok). Apple'ın kılavuzundaki satır İngilizce; Türkçe resmî
+karşılığı bu ortamdan DOĞRULANMADI (ajan apple.com'dan okumadı):
+
+```
+Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
+```
 
 ---
 
@@ -248,8 +272,8 @@ doğrudan giden tıklama Kaynak Hunisi'nde GÖRÜNMEZ.
 - ❌ App Store turunun etiketlerini (`fb-sayfa`, `li-sayfa`, `li-profil`)
   tekrar kullanma — iki lansman karışır (§5).
 - ❌ Legal satırını atlama (§0).
-- ❌ Google Play rozetini kırpma, yeniden renklendirme ya da ikinci bir
-  rozet bindirme. Rozet dışındaki her şey bizim, değiştirilebilir —
+- ❌ Rozetleri kırpma, yeniden renklendirme, sırasını değiştirme (App
+  Store önce) ya da üçüncü bir rozet bindirme. Rozet dışındaki her şey bizim, değiştirilebilir —
   üreticiden (`npm run build && npm run generate-play-lansman`).
 - ❌ Instagram'ın otomatik Facebook paylaşımını açma (gerekçe:
   `app-store/facebook-lansman.md` §1).
