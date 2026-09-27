@@ -205,10 +205,21 @@ sayılar: güvenli kutu 440 px, dikeyde 26 px yukarı kaydırılmış.
 y 35–137 · telefon kırpması x 116–676 → içeride · avatar bölgesi (sol %22,
 alt %45) → uzakta.
 
-⚠ **Mağaza cümlesi ELLE YAZILMIYOR** — `visibleStoreNamesTr()`ten geliyor
-(`storeLinks.ts`). Play yayına girip URL dolduğunda kapak yeniden
-üretilirse satır kendiliğinden "App Store ve Google Play'de" olur; bu,
-16 Eylül 2026'da SSS metninin bayatlamasıyla alınan dersin aynısı.
+⚠ **Mağazalar KAPIDAN geliyor, elle yazılmıyor** (`storeLinks.ts`) — 16
+Eylül 2026'da SSS metninin bayatlamasıyla alınan dersin aynısı.
+
+**27 Eylül 2026: metin → ROZET, iki kapakta da** (kullanıcı isteği).
+`visibleStoreBadges()` (App Store önce, eşit yükseklik), `<img>` ile.
+Yükseklik Apple'ın 40 pt alt sınırından TÜRETİLİYOR: sınır EKRANDA
+ölçülür, en küçük ekran telefonun kırpması (kapağın orta `MOBIL_W`
+şeridi ~390 pt'ye yayılıyor) → kişisel kapakta 560 → **58 px**, sayfa
+kapağında 840 → **87 px**. Sayfa kapağı bu yüzden yatay dizilimden
+(logo | çizgi | metin) dikey yığına döndü — logo + iki rozet 840'a
+sığmıyordu — ve site adresi oradan çıktı (sayfanın "Web sitesi" düğmesi
+var); kişisel kapakta `kelimeki.com` rozetlerin altında kaldı. Betik iki
+rozetin kırpma şeridinde ve eşit yükseklikte olduğunu ölçer, değilse
+DÜŞER. Bilinen bedel: kapakta rozete dokunulamaz (LinkedIn link
+koydurmuyor).
 
 ### Reel (`scripts/reel/`, 20 Ağustos 2026)
 

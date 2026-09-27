@@ -84,7 +84,11 @@ async function main() {
   const olcum = await page.evaluate(() => {
     const kutu = document.querySelector('[data-guvenli-kutu]');
     const b = kutu.getBoundingClientRect();
-    return { sol: Math.round(b.left), sag: Math.round(b.right), ust: Math.round(b.top), alt: Math.round(b.bottom) };
+    return { sol: Math.round(b.left), sag: Math.round(b.right), ust: Math.round(b.top), alt: Math.round(b.bottom),
+      rozetler: [...document.querySelectorAll('[data-rozetler] img')].map((e) => {
+        const r = e.getBoundingClientRect();
+        return { sol: Math.round(r.left), sag: Math.round(r.right), ust: Math.round(r.top), alt: Math.round(r.bottom), h: Math.round(r.height) };
+      }) };
   });
   const mobilSol = (W - MOBIL_W) / 2;
   const mobilSag = W - mobilSol;
@@ -100,8 +104,20 @@ async function main() {
     console.log(`  avatar bölgesi: x < ${Math.round(avatarSag)} ve y > ${Math.round(avatarUst)}  →  ${cakisma ? 'ÇAKIŞIYOR ✗' : 'UZAKTA ✓'}`);
   }
 
+  // LinkedIn kapaklarında İKİ rozet (27 Eylül 2026): kırpma şeridinde,
+  // kadrajda ve eşit yükseklikte olmalı — değilse düşer.
+  const hatalar = [];
+  if (LINKEDIN) {
+    const rz = olcum.rozetler;
+    console.log(`  rozetler: ${rz.map((r) => `x ${r.sol}–${r.sag} y ${r.ust}–${r.alt} h ${r.h}`).join(' · ')}`);
+    if (rz.length !== 2) hatalar.push(`${rz.length} rozet (2 bekleniyordu)`);
+    if (new Set(rz.map((r) => r.h)).size > 1) hatalar.push('rozetler eşit yükseklikte değil');
+    if (rz.some((r) => r.sol < mobilSol || r.sag > mobilSag || r.ust < 0 || r.alt > H)) hatalar.push('rozet telefon kırpmasının dışında');
+  }
+
   await browser.close();
   server.close();
+  if (hatalar.length) { console.error('✗ ' + hatalar.join('; ')); process.exit(1); }
   console.log(`\n✓ ${path.relative(ROOT, OUT)}  ${W * 2}×${H * 2} px`);
 }
 
