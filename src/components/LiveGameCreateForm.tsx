@@ -11,7 +11,9 @@
 // davet et" (davet linki) artık arama kutusunun hemen altında.
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { createOnlineGame, fetchFriends } from '../lib/api';
+import { createFriendInviteLink, createOnlineGame, fetchFriends } from '../lib/api';
+import { buildInviteUrl, INVITE_SHARE_TEXT, whatsappShareUrl } from '../utils/friendInvite';
+import { useModalA11y } from '../hooks/useModalA11y';
 import type { FriendRow, OnlineGameSlot } from '../lib/database.types';
 import { trLower } from '../utils/turkish';
 import { Avatar } from './Avatar';
@@ -81,6 +83,56 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
   useEffect(() => {
     reloadFriends();
   }, [user?.id]);
+
+  // "Arkadaşını davet et" → DOĞRUDAN paylaşım (27 Eylül 2026, kullanıcı:
+  // *"arkadaşlar modalı açmamalı, direkt paylaşma modalı çıkmalı ve
+  // whatsapp'dan direkt paylaşmalı"*). Link form açılırken ÖNCEDEN alınır:
+  // iOS Safari `navigator.share`i yalnızca dokunuşun hemen ardından açıyor,
+  // araya bir ağ isteği girerse izin düşebiliyor. Token kullanıcı başına
+  // kalıcı (`create_friend_invite_link` var olanı döner), önceden almak
+  // yeni bir şey yaratmıyor.
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [showShareFallback, setShowShareFallback] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shareFallbackRef = useModalA11y(showShareFallback, () => setShowShareFallback(false));
+  useEffect(() => {
+    if (!user?.id) return;
+    let iptal = false;
+    void createFriendInviteLink().then((token) => {
+      if (!iptal && token) setInviteUrl(buildInviteUrl(token));
+    });
+    return () => {
+      iptal = true;
+    };
+  }, [user?.id]);
+
+  const handleInviteShare = async () => {
+    let url = inviteUrl;
+    if (!url) {
+      const token = await createFriendInviteLink();
+      if (!token) return;
+      url = buildInviteUrl(token);
+      setInviteUrl(url);
+    }
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Kelimeki', text: INVITE_SHARE_TEXT, url });
+        return;
+      } catch (err) {
+        // Kullanıcı sayfayı kapattıysa sessiz geç; paylaşım AÇILAMADIYSA
+        // (ör. iOS'ta dokunuş izni düştü) yedek pencereye in.
+        if ((err as { name?: string })?.name === 'AbortError') return;
+      }
+    }
+    setShowShareFallback(true);
+  };
+
+  const copyInvite = async () => {
+    if (!inviteUrl || !navigator.clipboard) return;
+    await navigator.clipboard.writeText(`${INVITE_SHARE_TEXT}\n${inviteUrl}`);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  };
 
   // 2↔4 arası kural tamamen farklı (YZ izni yok / var) — sekme değişince
   // seçimleri sıfırlıyoruz ki eski bir seçim yeni kuralda geçersiz kalmasın.
@@ -338,12 +390,11 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
             />
             {/* Arama kutusunun HEMEN altında (27 Eylül 2026, kullanıcı:
                 *"arkadaşlar listesinin üstüne arkadaşını davet et butonu
-                olsun. Aramanın altına"*). Eskiden alttaki sabit şeritte
-                "Arkadaş Ekle" satırıydı; açtığı pencere aynı (davet linki +
-                üye arama). */}
+                olsun. Aramanın altına"*). Arkadaşlar penceresini DEĞİL,
+                doğrudan paylaşımı açar (`handleInviteShare`). */}
             <button
               type="button"
-              onClick={() => setShowFriendsModal(true)}
+              onClick={() => void handleInviteShare()}
               className="flex items-center justify-center gap-2 min-h-[44px] rounded-md border-[1.5px] border-dashed border-accent bg-[#EEF4FF] text-accent text-[13px] font-bold uppercase tracking-[1px] active:scale-[0.99] transition-transform"
             >
               <span aria-hidden className="text-base leading-none">+</span> Arkadaşını davet et
@@ -383,6 +434,44 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
         )}
       </div>
 
+      {showShareFallback && inviteUrl && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-[rgba(15,23,42,0.45)]" onClick={() => setShowShareFallback(false)} aria-hidden />
+          <div
+            ref={shareFallbackRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Arkadaşını davet et"
+            tabIndex={-1}
+            className="relative w-full max-w-sm bg-panel rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-5 flex flex-col gap-3 outline-none"
+          >
+            <p className="text-base font-bold text-text" style={{ margin: 0 }}>
+              Arkadaşını davet et
+            </p>
+            <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
+              Linke dokunup üye olunca arkadaş listende belirir.
+            </p>
+            {/* Paylaşım sayfası olmayan tarayıcı (masaüstü) için YEDEK:
+                telefonda sistem paylaşım sayfası zaten açılıyor. */}
+            <a
+              href={whatsappShareUrl(inviteUrl)}
+              target="_blank"
+              rel="noopener"
+              onClick={() => setShowShareFallback(false)}
+              className="flex items-center justify-center min-h-[48px] rounded-md bg-[#25D366] text-white text-sm font-bold uppercase tracking-[1px] no-underline active:scale-[0.97] transition-transform"
+            >
+              WhatsApp'ta gönder
+            </a>
+            <button
+              type="button"
+              onClick={() => void copyInvite()}
+              className="min-h-[48px] rounded-md btn-raised-neutral bg-bg border border-border text-text text-sm font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+            >
+              {copied ? 'Link kopyalandı!' : 'Linki kopyala'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

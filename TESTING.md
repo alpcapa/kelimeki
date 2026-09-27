@@ -50,7 +50,11 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       reddedilmeli (tavan 3). `online_games.slots`: 4 kişilik, sonda `ai`.
 - [ ] **Arkadaşını davet et (27 Eylül 2026).** Arkadaş seçicide arama
       kutusunun HEMEN altında kesik çerçeveli "+ Arkadaşını davet et" düğmesi;
-      Arkadaşlar penceresini "Ara & Ekle"de açmalı (davet linki üstte).
+      Arkadaşlar penceresini AÇMAMALI — telefonda doğrudan sistem paylaşım
+      sayfası (WhatsApp orada) açılmalı, ilk dokunuşta (link önceden
+      alınıyor; iOS'ta ikinci dokunuş gerekiyorsa izin düşüyor demektir).
+      Masaüstünde "WhatsApp'ta gönder" + "Linki kopyala" penceresi çıkmalı.
+      Paylaşılan link `/davet/<token>?ref=arkadas` olmalı.
       "Arkadaş Ekle" satırı YOK. "Davet Gönder" + "Vazgeç" koltuk kartlarının
       HEMEN altında, akışta (27 Eylül 2026'ya kadar ekranın altına `fixed`
       sabitliydi ve iPad/iPhone tarayıcısının yüzen alt çubuğunun arkasına
