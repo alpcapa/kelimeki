@@ -140,8 +140,8 @@ export function LinkedInKapak() {
 // 1128×191 (≈5.9:1) — kişisel kapaktan bile alçak ve çok daha geniş, o
 // yüzden dikey yığın yerine YATAY dizilim: solda marka, sağda cümle.
 // Sayfa logosu kapağın SOL ALT köşesine oturuyor, bu yüzden içerik sağa
-// kaydırıldı. 2× ile 2256×382 basılır (LinkedIn oranı koruyup küçültür,
-// büyük dosya daha net görünür).
+// kaydırıldı. 1× basılır (1128×191) — 2× (2256×382) iPad Safari'de
+// LinkedIn'in düzenleyicisinde kaydedilemedi (27 Eylül 2026, `build.mjs`).
 export const SAYFA_W = 1128;
 export const SAYFA_H = 191;
 

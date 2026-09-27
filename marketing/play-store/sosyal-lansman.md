@@ -301,3 +301,4 @@ doğrudan giden tıklama Kaynak Hunisi'nde GÖRÜNMEZ.
 | 27 Eyl 2026 12:20 | Instagram story — yalnızca Play rozetli görsel, "Hemen İndir!" link sticker'ı (`ig-story-play`) | Play Console → Acquire (UTM `ig-story-play`, görünürse) |
 | 27 Eyl 2026 ~12:33 | Facebook gönderisi — 4 görselli albüm (IG carousel'inin aynısı), §3 metni (marka satırsız) | Kaynak Hunisi `fb-sayfa-play` · Play UTM `fb-sayfa-play` · App Store `ct=fb-sayfa-play` |
 | 27 Eyl 2026 ~13:03 | Facebook story — yalnızca Play rozetli görsel, yazı "Hemen yüklemek için yukarı kaydır 👆", "See more" linki | Play UTM `fb-story-play` (kullanıldıysa) |
+| 27 Eyl 2026 ~13:35 | LinkedIn sayfa kapağı yenilendi (iki rozetli, 1128×191 — 2× sürüm iPad Safari'de kaydedilemedi) | — |

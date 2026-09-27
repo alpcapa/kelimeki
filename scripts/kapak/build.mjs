@@ -12,6 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build as esbuild } from 'esbuild';
 import { chromium } from 'playwright';
+import sharp from 'sharp';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const DIST = path.join(ROOT, 'dist');
@@ -77,7 +78,12 @@ async function main() {
   await page.evaluate(() => document.fonts.ready);
 
   mkdirSync(path.dirname(OUT), { recursive: true });
-  await page.screenshot({ path: OUT });
+  // ⚠ Sayfa kapağı 1× (1128×191) yazılır, 2× DEĞİL (27 Eylül 2026): iPad
+  // Safari'deki LinkedIn düzenleyicisi 2256×382'yi kırpma kutusuna
+  // oturtamadı, "Apply" sessizce reddedildi (yalnızca uyarı sesi); tam
+  // önerilen ölçü ilk denemede kaydoldu.
+  if (SAYFA) await sharp(await page.screenshot()).resize(W, H).png().toFile(OUT);
+  else await page.screenshot({ path: OUT });
 
   // Güvenli kutu gerçekten telefon kırpmasının içinde mi? (mobil ~640/820'lik
   // orta şerit) — ölçmeden "sığdı" denemez.
@@ -118,7 +124,7 @@ async function main() {
   await browser.close();
   server.close();
   if (hatalar.length) { console.error('✗ ' + hatalar.join('; ')); process.exit(1); }
-  console.log(`\n✓ ${path.relative(ROOT, OUT)}  ${W * 2}×${H * 2} px`);
+  console.log(`\n✓ ${path.relative(ROOT, OUT)}  ${SAYFA ? W : W * 2}×${SAYFA ? H : H * 2} px`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
