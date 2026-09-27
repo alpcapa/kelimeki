@@ -120,6 +120,10 @@ export function LiveGameCreateForm({
   // "Sık oynadıkların" şeridi (27 Eylül 2026, ROADMAP #41) — yalnızca sıra;
   // ad/avatar arkadaş listesinden. Hesap değişince yeniden (`user?.id`).
   const [frequentIds, setFrequentIds] = useState<string[]>([]);
+  // Az oynamış (ya da hiç oynamamış) kullanıcıda şeridin boş yerleri RASTGELE
+  // arkadaşlarla dolar (kullanıcı isteği). Tohum form başına bir kez: her
+  // render'da karışsa avatarlar dokunurken yer değiştirirdi.
+  const karistirmaTohumu = useRef(Math.random());
   useEffect(() => {
     let iptal = false;
     void fetchFrequentOpponents(5).then((ids) => {
@@ -437,21 +441,35 @@ export function LiveGameCreateForm({
             {/* "Sık oynadıkların" — sabit en fazla 5 avatar, KAYDIRMA YOK
                 (390 px'e sığıyor; carousel "yana kaydır, daha var" dedirtirdi).
                 Dokunmak listedeki satırla AYNI: seçer/bırakır; seçilenin
-                halkası oturacağı koltuğun renginde. En az 2 kişi yoksa,
-                arama yapılırken ve "Tüm oyuncular"da çizilmez. */}
+                halkası oturacağı koltuğun renginde. Sık oynanan 5'ten azsa
+                boş yerler rastgele arkadaşlarla dolar ve başlık "Hızlı seç"
+                olur. Arkadaş 2'den azsa (davet düğmesi zaten altta), arama
+                yapılırken ve "Tüm oyuncular"da çizilmez. */}
             {(() => {
               if (showAll || query.trim() !== '') return null;
+              if (!friends || friends.length < 2) return null;
               const sik = frequentIds
-                .map((id) => friends?.find((f) => f.friend_id === id))
+                .map((id) => friends.find((f) => f.friend_id === id))
                 .filter((f): f is FriendRow => !!f);
-              if (sik.length < 2) return null;
+              // Boş yerler: sık oynanmayan arkadaşlar, form başına sabit
+              // rastgele sırayla (kimlik + tohum → kararlı sıra anahtarı).
+              const anahtar = (id: string) => {
+                let h = Math.floor(karistirmaTohumu.current * 2 ** 31);
+                for (let k = 0; k < id.length; k++) h = (h * 31 + id.charCodeAt(k)) | 0;
+                return h;
+              };
+              const dolgu = friends
+                .filter((f) => !sik.includes(f))
+                .sort((a, b) => anahtar(a.friend_id) - anahtar(b.friend_id))
+                .slice(0, Math.max(0, 5 - sik.length));
+              const serit = [...sik, ...dolgu];
               return (
                 <div className="flex flex-col gap-1.5 pb-1">
                   <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
-                    Sık oynadıkların
+                    {dolgu.length === 0 ? 'Sık oynadıkların' : 'Hızlı seç'}
                   </span>
                   <div className="grid grid-cols-5 gap-1">
-                    {sik.map((f) => {
+                    {serit.map((f) => {
                       const sira = selected.indexOf(f.friend_id);
                       const renk = sira >= 0 ? PLAYER_COLORS[sira + 1].base : null;
                       return (
