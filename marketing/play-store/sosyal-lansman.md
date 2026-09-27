@@ -40,6 +40,7 @@ IG/LinkedIn'de `#android` etiketi) var; ikisi de ayrı atıf istiyor.
 ```
 Android, Google LLC'nin ticari markasıdır.
 Google Play, Google LLC'nin ticari markasıdır.
+Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
 
 ✅ **Üretici çıktısı, 27 Eylül 2026** (kullanıcı, Partner Marketing Hub →
@@ -65,12 +66,15 @@ Kılavuzun iki kuralı daha — bilerek UYGULANMADI, kullanıcı kararı bekler:
 - **"iyelik/çoğul yapma"**: İngilizce kuralı; Türkçede `Android'de` hâl
   eki, iyelik değil — kaçınmanın yolu yok, dokunulmadı.
 
-### 0.1 · Apple satırı — KULLANICI KARARI BEKLİYOR (27 Eylül 2026)
+### 0.1 · Apple satırı — EKLENDİ (27 Eylül 2026, kullanıcı kararı)
 
 Görsellere App Store rozeti girdi; metinler zaten "App Store", "iPhone",
 "iPad" diyor. 16 Eylül App Store turunda Apple atfı HİÇ konmamıştı (üç
-dosyada da yok). Apple'ın kılavuzundaki satır İngilizce; Türkçe resmî
-karşılığı bu ortamdan DOĞRULANMADI (ajan apple.com'dan okumadı):
+dosyada da yok). Satır Apple'ın kılavuzundaki İngilizce metin — Türkçe
+resmî karşılığı bu ortamdan DOĞRULANMADI (ajan apple.com'dan okumadı),
+kullanıcı İngilizcesiyle eklenmesine karar verdi. Google'ın iki satırının
+ALTINA, üçüncü satır olarak (dört gönderinin hepsinde; story'de legal
+satırı yok):
 
 ```
 Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
@@ -118,6 +122,7 @@ iPhone'da da App Store'da. Tarayıcıda: kelimeki.com
 
 Android, Google LLC'nin ticari markasıdır.
 Google Play, Google LLC'nin ticari markasıdır.
+Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
 
 **App Store metninden farkı:** "iPhone'daki arkadaşınla da" — Canlı oyun
@@ -167,6 +172,7 @@ https://kelimeki.com/?ref=fb-sayfa-play
 
 Android, Google LLC'nin ticari markasıdır.
 Google Play, Google LLC'nin ticari markasıdır.
+Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
 
 **Neden App Store linki de var:** App Store gönderisi 16 Eylül'de
@@ -207,6 +213,7 @@ Tarayıcıda: https://kelimeki.com/?ref=li-sayfa-play
 
 Android, Google LLC'nin ticari markasıdır.
 Google Play, Google LLC'nin ticari markasıdır.
+Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
 
 ### Kişisel profil (sıfırdan gönderi, sayfadan birkaç saat SONRA)
@@ -227,6 +234,7 @@ iPhone'da App Store'da, bilgisayarda https://kelimeki.com/?ref=li-profil-play
 
 Android, Google LLC'nin ticari markasıdır.
 Google Play, Google LLC'nin ticari markasıdır.
+Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
 
 ⚠ "Tek bir kod tabanından" iddiası mobil uygulama için doğru (Flutter,
