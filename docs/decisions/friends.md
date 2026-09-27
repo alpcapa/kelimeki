@@ -24,7 +24,7 @@ yarısıyla birlikte, web verisi okunduktan sonra.
    gönderdiklerin. Arama ve "Tüm oyuncular" görünümünde de yerinde kalır.
 3. Liste başlığı: solda **Arkadaşların · N**, sağda **Tüm oyuncular →**
    (basınca başlık "Tüm oyuncular" olur — SAYI YAZILMAZ — ve bağlantı
-   "← Arkadaşlarım"a döner). Tüm oyuncular = arkadaş olan/olmayan herkes,
+   "← Arkadaşlar"a döner). Tüm oyuncular = arkadaş olan/olmayan herkes,
    alfabetik, sayfalı (`list_users_for_friend`).
 4. Arama kutusu listenin HEMEN üstünde (ikinci turda kullanıcı: *"arama da
    yakınına gelsin"*); yazınca liste yerine sonuçlar, her satırda tek hap:
@@ -33,6 +33,16 @@ yarısıyla birlikte, web verisi okunduktan sonra.
    (skor kartı · 2 kişilik oyun kur · 4 kişilik oyun kur · sessize
    alma/şikayet ayarları — YALNIZCA önceden sessize alınmış/şikayet
    edilmişse; yeni şikayet oyun içi sohbetten açılır · arkadaşlıktan çıkar).
+
+**Canlı oyun formunda da aynı bağlantı** (`LiveGameCreateForm`, aynı gün):
+"Arkadaşların" başlığının sağında "Tüm oyuncular →" / "← Arkadaşlar". Tüm
+oyuncularda arkadaşlar kutucukla SEÇİLİR, ötekilere EKLE / İSTEK GİTTİ /
+KABUL ET — oyuna çağırmak DEĞİL, çünkü `create_online_game` yalnızca
+arkadaşı kabul ediyor. KABUL ET (ya da karşılıklı isteğe dönen EKLE) kişiyi
+hemen seçilebilir yapar. Arama ve sayfalı liste iki ekranda ORTAK:
+`hooks/usePlayerDirectory.ts`. Formun eski "Arkadaş Ekle / Davet Et" →
+`FriendsModal` kısayolu kalktı (boş listede artık doğrudan paylaşım +
+"Tüm oyunculara göz at").
 
 **Kararlar:**
 - **Yalnızca "arkadaşlıktan çıkar" onay sorar.** Ekle/kabul/reddet/iptal tek

@@ -37,7 +37,11 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       aşağıdaki "ARKADAŞLARIN" listesine kaymalı (klavye AÇILMAMALI; YZ
       koltuğu dokunulmaz). Arkadaş listesi kendi içinde kayıyorsa SAĞ
       kenarda ince bir kaydırma çubuğu HEP görünmeli ve kaydırdıkça
-      tutamaç inmeli (az arkadaşta çubuk YOK) → "Davet Gönder". **"Davetin
+      tutamaç inmeli (az arkadaşta çubuk YOK). Başlığın sağındaki "Tüm
+      oyuncular →" → başlık "TÜM OYUNCULAR", bağlantı "← Arkadaşlar"; listede
+      arkadaşlar seçilebilir (kutucuk), ötekilerde EKLE · İSTEK GİTTİ (dokun →
+      iptal) · KABUL ET — KABUL ET'ten sonra kişi seçilebilir olmalı. Arama bu
+      görünümde tüm oyuncularda arar → "Davet Gönder". **"Davetin
       gönderildi"** ekranı çıkmalı, kime gittiğini ve 7 gün notunu yazmalı.
       "Oyunlarıma git"e basınca listeye dönmeli. (27 Eylül 2026'ya kadar:
       listenin üstünde "+ Yeni Canlı Oyun Aç", onay "Davetiniz
@@ -665,7 +669,7 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       satırda duruma göre TEK düğme: OYNA · EKLE · İSTEK GİTTİ (dokun →
       iptal) · KABUL ET. "Tüm oyuncular →" → başlık "TÜM OYUNCULAR" (SAYISIZ),
       arkadaşlar dahil herkes alfabetik, kaydırdıkça yüklenmeli; "←
-      Arkadaşlarım" geri dönmeli. Bekleyen istekler bu görünümde de durmalı.
+      Arkadaşlar" geri dönmeli. Bekleyen istekler bu görünümde de durmalı.
 - [ ] ~~**Arkadaşlık ikonları (11 Ağustos 2026).**~~ ⚠ 27 Eylül 2026'dan
       beri Arkadaşlar penceresinde ikon YOK (yazılı düğmeler, yukarıdaki
       madde); bu madde yalnızca Skor Kartı'nın ikonu için geçerli. Eski

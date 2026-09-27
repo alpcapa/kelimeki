@@ -9,7 +9,7 @@
 // karar kaydı `docs/decisions/friends.md` → "Tek ekran"). Üç sekme (Arkadaşlar
 // · Davetler · Ara & Ekle) ve dört onay diyaloğu kalktı; yalnızca
 // "Arkadaşlıktan çıkar" onay soruyor. İkonlar yerine YAZILI düğmeler.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LoadingNote } from './LoadingNote';
 import { createPortal } from 'react-dom';
 import { Modal } from './Modal';
@@ -22,10 +22,8 @@ import {
   fetchMyChatModeration,
   fetchIncomingFriendRequests,
   fetchOutgoingFriendRequests,
-  listUsersForFriend,
   removeFriend,
   respondFriendRequest,
-  searchUsersForFriend,
   sendFriendRequest,
 } from '../lib/api';
 import type {
@@ -38,9 +36,9 @@ import { useInviteShare } from '../hooks/useInviteShare';
 import { InviteShareFallback } from './InviteShareFallback';
 import { requestLiveGameWith } from '../utils/liveGameRequest';
 import { FriendModerationModal, type FriendModerationTarget } from './FriendModerationModal';
-import { trCompare } from '../utils/turkish';
 import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
+import { usePlayerDirectory } from '../hooks/usePlayerDirectory';
 import { ScrollArea } from './ScrollArea';
 
 /** Bir arkadaşı `PlayerScoreCard` açabilecek şekle çevirir — henüz canlı oyun
@@ -135,9 +133,6 @@ interface FriendsModalProps {
   initialTab?: 'friends' | 'requests' | 'search';
 }
 
-// Arama kutusu boşken "Tüm oyuncular" listesinin sayfa boyutu —
-// `Leaderboard`'daki PAGE_SIZE ile aynı lazy-load deseni.
-const ALL_USERS_PAGE_SIZE = 20;
 
 const nameCls = 'min-w-0 text-[15px] text-text font-bold truncate';
 const sectionCls = 'text-[10px] uppercase tracking-[1.5px] text-muted font-mono';
@@ -176,7 +171,7 @@ const PILL: Record<PillKind, { label: string; cls: string }> = {
   geriAl: { label: 'Geri al', cls: 'bg-panel border-border text-text' },
 };
 
-function Pill({
+export function Pill({
   kind,
   onClick,
   disabled,
@@ -206,8 +201,6 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
   const [requests, setRequests] = useState<IncomingFriendRequest[] | null>(null);
   const [sent, setSent] = useState<OutgoingFriendRequest[]>([]);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<FriendSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [selectedFriend, setSelectedFriend] = useState<PlayerSummary | null>(null);
   const [menuFor, setMenuFor] = useState<FriendRow | null>(null);
@@ -218,9 +211,17 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
   const [showAll, setShowAll] = useState(false);
   const invite = useInviteShare();
 
-  const [allUsers, setAllUsers] = useState<FriendSearchResult[] | null>(null);
-  const [allUsersHasMore, setAllUsersHasMore] = useState(true);
-  const [allUsersLoadingMore, setAllUsersLoadingMore] = useState(false);
+  const {
+    searchActive,
+    results,
+    searching,
+    allUsers,
+    hasMore: allUsersHasMore,
+    loadingMore: allUsersLoadingMore,
+    scrollRef: allUsersScrollRef,
+    sentinelRef: allUsersSentinelRef,
+    patchRelation: patchDirectory,
+  } = usePlayerDirectory(query, showAll);
   const rankTierOf = useRankScores([
     ...(friends ?? []).map((f) => f.friend_id),
     ...(requests ?? []).map((r) => r.requester_id),
@@ -228,8 +229,6 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     ...results.map((u) => u.id),
     ...(allUsers ?? []).map((u) => u.id),
   ]);
-  const allUsersScrollRef = useRef<HTMLDivElement | null>(null);
-  const allUsersSentinelRef = useRef<HTMLDivElement | null>(null);
 
   const reloadFriends = () => void fetchFriends().then(setFriends);
   const reloadRequests = () => void fetchIncomingFriendRequests().then(setRequests);
@@ -251,64 +250,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     reloadModeration();
   }, []);
 
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      setSearching(false);
-      return;
-    }
-    setSearching(true);
-    const t = setTimeout(() => {
-      void searchUsersForFriend(query.trim()).then((r) => {
-        setResults(r);
-        setSearching(false);
-      });
-    }, 350);
-    return () => clearTimeout(t);
-  }, [query]);
-
-  useEffect(() => {
-    if (!showAll || allUsers !== null) return;
-    void listUsersForFriend(0, ALL_USERS_PAGE_SIZE).then((page) => {
-      setAllUsers([...page].sort((a, b) => trCompare(a.name, b.name)));
-      setAllUsersHasMore(page.length === ALL_USERS_PAGE_SIZE);
-    });
-  }, [showAll, allUsers]);
-
-  const loadMoreAllUsers = useCallback(() => {
-    if (allUsers === null) return;
-    setAllUsersLoadingMore((already) => {
-      if (already) return already;
-      void listUsersForFriend(allUsers.length, ALL_USERS_PAGE_SIZE).then((page) => {
-        // Türkçe harflerin sayfa sınırlarında yanlış collation'a göre dağılmış
-        // olma ihtimaline karşı TÜM birikmiş liste yeniden sıralanıyor.
-        setAllUsers((cur) => [...(cur ?? []), ...page].sort((a, b) => trCompare(a.name, b.name)));
-        setAllUsersHasMore(page.length === ALL_USERS_PAGE_SIZE);
-        setAllUsersLoadingMore(false);
-      });
-      return true;
-    });
-  }, [allUsers]);
-
-  useEffect(() => {
-    if (!showAll || query.trim().length >= 2 || !allUsersHasMore || allUsers === null) return;
-    const sentinel = allUsersSentinelRef.current;
-    const root = allUsersScrollRef.current;
-    if (!sentinel || !root) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) loadMoreAllUsers();
-      },
-      { root, rootMargin: '80px' },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [showAll, query, allUsersHasMore, allUsers, loadMoreAllUsers]);
-
-  const patchRelation = (id: string, relation: FriendSearchResult['relation']) => {
-    setResults((r) => r.map((u) => (u.id === id ? { ...u, relation } : u)));
-    setAllUsers((r) => (r ? r.map((u) => (u.id === id ? { ...u, relation } : u)) : r));
-  };
+  const patchRelation = patchDirectory;
 
   // Ekle / kabul et / isteği iptal et TEK DOKUNUŞ (27 Eylül 2026, onaysız):
   // sonuç düğmenin kendisinde görünüyor ("İstek gitti", satırın "Arkadaşın"a
@@ -459,8 +401,6 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     );
   };
 
-  const searchActive = query.trim().length >= 2;
-
   return (
     <Modal title="Arkadaşlar" onClose={onClose}>
       <div className="flex flex-col gap-4">
@@ -551,7 +491,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
               onClick={() => setShowAll((v) => !v)}
               className="shrink-0 min-h-[36px] text-xs font-bold text-accent active:opacity-70"
             >
-              {showAll ? '← Arkadaşlarım' : 'Tüm oyuncular →'}
+              {showAll ? '← Arkadaşlar' : 'Tüm oyuncular →'}
             </button>
           </div>
 

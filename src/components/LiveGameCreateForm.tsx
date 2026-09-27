@@ -12,13 +12,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { ScrollArea } from './ScrollArea';
 import { useAuth } from '../hooks/useAuth';
-import { createOnlineGame, fetchFriends } from '../lib/api';
+import {
+  createOnlineGame,
+  fetchFriends,
+  removeFriend,
+  respondFriendRequest,
+  sendFriendRequest,
+} from '../lib/api';
+import { usePlayerDirectory } from '../hooks/usePlayerDirectory';
 import { useInviteShare } from '../hooks/useInviteShare';
 import { InviteShareFallback } from './InviteShareFallback';
-import type { FriendRow, OnlineGameSlot } from '../lib/database.types';
+import type { FriendRow, FriendSearchResult, OnlineGameSlot } from '../lib/database.types';
 import { trLower } from '../utils/turkish';
 import { Avatar } from './Avatar';
-import { FriendsModal } from './FriendsModal';
+import { Pill } from './FriendsModal';
 import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
 import { friendlyErrorMessage } from '../utils/errorMessage';
@@ -63,8 +70,6 @@ export function LiveGameCreateForm({
   const { user } = useAuth();
   const [playerCount, setPlayerCount] = useState<2 | 4>(initialPlayerCount ?? 2);
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
-  // Arkadaş seçicideki isimlerin rütbe mührü — tek toplu çekim.
-  const rankTierOf = useRankScores((friends ?? []).map((f) => f.friend_id));
   const [selected, setSelected] = useState<string[]>(initialFriendId ? [initialFriendId] : []);
   // Sıfırlama yalnızca sayı GERÇEKTEN değişince — mount'ta (StrictMode'un
   // çift koşusu dahil) koşarsa OYNA'dan gelen ön seçim silinirdi.
@@ -75,8 +80,18 @@ export function LiveGameCreateForm({
   const listeRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [query, setQuery] = useState('');
+  // "Tüm oyuncular" görünümü (arkadaş olmayana istek buradan) — arama bu
+  // görünümde sunucuda, arkadaş görünümünde yerel süzgeç.
+  const [showAll, setShowAll] = useState(false);
+  const dir = usePlayerDirectory(showAll ? query : '', showAll);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  // İsimlerin rütbe mührü — tek toplu çekim (tüm oyuncular dahil).
+  const rankTierOf = useRankScores([
+    ...(friends ?? []).map((f) => f.friend_id),
+    ...(dir.allUsers ?? []).map((u) => u.id),
+    ...dir.results.map((u) => u.id),
+  ]);
   // Davet gerçekten gönderildiğinde (3 Ağustos 2026, kullanıcı isteği) form
   // sessizce kapanıp listeye dönmek yerine önce bir onay ekranı gösterir —
   // `FriendSuggestModal`'ın "Arkadaşlık davetiniz iletilmiştir." ve
@@ -123,6 +138,34 @@ export function LiveGameCreateForm({
       return [...s, friendId];
     });
   };
+
+  // Arkadaşlık isteği — Arkadaşlar penceresindekiyle aynı, onaysız tek
+  // dokunuş. Kabul edilen (ya da karşılıklı isteğe dönen) kişi arkadaş
+  // listesine girer ve hemen seçilebilir.
+  const iliskiIslemi = async (id: string, is: () => Promise<FriendSearchResult['relation']>) => {
+    setBusyId(id);
+    try {
+      const yeni = await is();
+      dir.patchRelation(id, yeni);
+      if (yeni === 'accepted') reloadFriends();
+    } catch (err) {
+      console.error('[Kelimeki] arkadaşlık işlemi hatası:', err);
+    } finally {
+      setBusyId(null);
+    }
+  };
+  const handleSend = (id: string) =>
+    iliskiIslemi(id, async () => ((await sendFriendRequest(id)) === 'accepted' ? 'accepted' : 'pending_outgoing'));
+  const handleAccept = (id: string) =>
+    iliskiIslemi(id, async () => {
+      await respondFriendRequest(id, true);
+      return 'accepted';
+    });
+  const handleCancel = (id: string) =>
+    iliskiIslemi(id, async () => {
+      await removeFriend(id);
+      return null;
+    });
 
   const canSubmit = playerCount === 2 ? selected.length === 1 : selected.length >= 2;
 
@@ -192,16 +235,6 @@ export function LiveGameCreateForm({
 
   return (
     <div className="w-full flex flex-col gap-5">
-      {showFriendsModal && (
-        <FriendsModal
-          initialTab="search"
-          onClose={() => {
-            setShowFriendsModal(false);
-            reloadFriends();
-          }}
-        />
-      )}
-
       <div className="flex flex-col gap-2">
         <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
           Oyuncu Sayısı
@@ -346,20 +379,43 @@ export function LiveGameCreateForm({
       </div>
 
       <div ref={listeRef} className="flex flex-col gap-2 scroll-mt-3">
-        <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
-          Arkadaşların
+        {/* Başlığın sağında dönüşümlü bağlantı — Arkadaşlar penceresiyle aynı
+            (27 Eylül 2026, kullanıcı isteği). "Tüm oyuncular"da arkadaş
+            olmayana buradan istek gidilir; oyuna yalnızca ARKADAŞ çağrılır
+            (`create_online_game`: "Yalnızca arkadaşlarını davet edebilirsin."). */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+            {showAll ? 'Tüm oyuncular' : 'Arkadaşların'}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setShowAll((v) => !v);
+              setQuery('');
+            }}
+            className="shrink-0 min-h-[36px] text-xs font-bold text-accent active:opacity-70"
+          >
+            {showAll ? '← Arkadaşlar' : 'Tüm oyuncular →'}
+          </button>
         </div>
-        {friends === null ? (
+        {!showAll && friends === null ? (
           <p className="text-muted text-xs font-mono py-4 text-center">Yükleniyor…</p>
-        ) : friends.length === 0 ? (
+        ) : !showAll && friends!.length === 0 ? (
           <div className="flex flex-col items-center gap-2.5 py-4">
             <p className="text-muted text-xs font-mono text-center">Henüz hiç arkadaşın yok.</p>
             <button
               type="button"
-              onClick={() => setShowFriendsModal(true)}
+              onClick={() => void invite.share()}
               className="btn-raised bg-accent text-white rounded-md py-2 px-4 text-[11px] font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
             >
-              Arkadaş Ekle / Davet Et
+              Arkadaşını davet et
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="min-h-[36px] text-xs font-bold text-accent active:opacity-70"
+            >
+              Tüm oyunculara göz at →
             </button>
           </div>
         ) : (
@@ -369,13 +425,13 @@ export function LiveGameCreateForm({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="İsim ya da takma ad ara…"
-              aria-label="Arkadaş ara"
+              aria-label={showAll ? 'Oyuncu ara' : 'Arkadaş ara'}
               className="w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-text outline-none focus:border-accent transition-colors"
             />
             {/* Arama kutusunun HEMEN altında (27 Eylül 2026, kullanıcı:
                 *"arkadaşlar listesinin üstüne arkadaşını davet et butonu
                 olsun. Aramanın altına"*). Arkadaşlar penceresini DEĞİL,
-                doğrudan paylaşımı açar (`handleInviteShare`). */}
+                doğrudan paylaşımı açar (`useInviteShare`). */}
             <button
               type="button"
               onClick={() => void invite.share()}
@@ -383,15 +439,9 @@ export function LiveGameCreateForm({
             >
               <span aria-hidden className="text-base leading-none">+</span> Arkadaşını davet et
             </button>
-            <ScrollArea className="flex flex-col gap-1.5 max-h-[280px]">
+            <ScrollArea scrollRef={dir.scrollRef} className="flex flex-col gap-1.5 max-h-[280px]">
               {(() => {
-                const filtered = friends.filter((f) => trLower(f.name).includes(trLower(query.trim())));
-                if (filtered.length === 0) {
-                  return (
-                    <p className="text-muted text-xs font-mono py-4 text-center">Kimse bulunamadı.</p>
-                  );
-                }
-                return filtered.map((f) => {
+                const friendRow = (f: { friend_id: string; name: string; avatar_url: string | null }) => {
                   const isSelected = selected.includes(f.friend_id);
                   return (
                     <button
@@ -411,7 +461,53 @@ export function LiveGameCreateForm({
                       <CheckMark checked={isSelected} />
                     </button>
                   );
-                });
+                };
+                if (!showAll) {
+                  const filtered = friends!.filter((f) => trLower(f.name).includes(trLower(query.trim())));
+                  if (filtered.length === 0) {
+                    return <p className="text-muted text-xs font-mono py-4 text-center">Kimse bulunamadı.</p>;
+                  }
+                  return filtered.map(friendRow);
+                }
+                const liste = dir.searchActive ? dir.results : dir.allUsers;
+                if (liste === null || (dir.searchActive && dir.searching)) {
+                  return <p className="text-muted text-xs font-mono py-4 text-center">Yükleniyor…</p>;
+                }
+                if (liste.length === 0 && !(!dir.searchActive && dir.hasMore)) {
+                  return <p className="text-muted text-xs font-mono py-4 text-center">Kimse bulunamadı.</p>;
+                }
+                return (
+                  <>
+                    {liste.map((u) =>
+                      u.relation === 'accepted' ? (
+                        friendRow({ friend_id: u.id, name: u.name, avatar_url: u.avatar_url })
+                      ) : (
+                        <div
+                          key={u.id}
+                          className="flex items-center gap-2.5 rounded-md px-2.5 py-1.5 border border-border bg-bg shrink-0"
+                        >
+                          <Avatar url={u.avatar_url} name={u.name} size={28} />
+                          <span className="flex-1 min-w-0 flex items-center gap-1">
+                            <span className="min-w-0 text-sm font-bold text-text truncate">{u.name}</span>
+                            {rankTierOf(u.id) && <RankSeal tier={rankTierOf(u.id)!} size={18} className="shrink-0" />}
+                          </span>
+                          {u.relation === 'pending_outgoing' ? (
+                            <Pill kind="gonderildi" ariaLabel={`${u.name} — isteği iptal et`} disabled={busyId === u.id} onClick={() => void handleCancel(u.id)} />
+                          ) : u.relation === 'pending_incoming' ? (
+                            <Pill kind="kabul" ariaLabel={`${u.name} — isteği kabul et`} disabled={busyId === u.id} onClick={() => void handleAccept(u.id)} />
+                          ) : (
+                            <Pill kind="ekle" ariaLabel={`${u.name} — arkadaş ekle`} disabled={busyId === u.id} onClick={() => void handleSend(u.id)} />
+                          )}
+                        </div>
+                      ),
+                    )}
+                    {!dir.searchActive && dir.hasMore && (
+                      <div ref={dir.sentinelRef} className="py-2 text-center">
+                        <span className="text-muted text-[10px] font-mono">{dir.loadingMore ? 'Yükleniyor…' : ''}</span>
+                      </div>
+                    )}
+                  </>
+                );
               })()}
             </ScrollArea>
           </div>

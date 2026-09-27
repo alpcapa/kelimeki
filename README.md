@@ -240,6 +240,7 @@ src/
 │   ├── useAuth.tsx        # Supabase auth context
 │   ├── useModalA11y.ts    # modal odak hapsi, Escape, dialog yığını
 │   ├── useInviteShare.ts  # "Arkadaşını davet et": link önceden alınır, dokununca sistem paylaşım sayfası
+│   ├── usePlayerDirectory.ts  # oyuncu arama + "Tüm oyuncular" sayfalı listesi (Arkadaşlar penceresi ↔ canlı oyun formu ortak)
 │   ├── useOnlineStatus.ts # çevrimiçi/çevrimdışı durumu izler
 │   ├── useNicknameAvailability.ts # takma isim uygunluğu (debounce'lu RPC kontrolü, AuthModal + AccountSettingsModal ortak)
 │   ├── useAppIconBadge.ts # PWA ikonu üzerinde Badge API ile kırmızı yuvarlak/beyaz sayı rozeti

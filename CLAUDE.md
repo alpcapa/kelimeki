@@ -601,7 +601,7 @@ src/
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan
                 # mplus-rounded-1c-800-subset.woff2 ÜRETİLMİŞ, yalnızca RankSeal'ın harfi
                 # (yeniden üretimi: "k-lig Ödül & Rütbe Sistemi" → Rütbe Rozeti Fontu)
-  hooks/        # useAuth, useModalA11y, useOnlineStatus, useAppIconBadge, useNicknameAvailability, useRankScores, useBoardZoom, useInviteShare
+  hooks/        # useAuth, useModalA11y, useOnlineStatus, useAppIconBadge, useNicknameAvailability, useRankScores, useBoardZoom, useInviteShare, usePlayerDirectory
 .claude/        # oturum kurulumu: hooks/session-start.sh — npm install + Flutter
                 # stable + iki paketin pub get'i (bkz. mobile/CLAUDE.md, "Flutter
                 # SDK bu ortamda HAZIR"). Amacı: Dart testleri YERELDE koşsun,
