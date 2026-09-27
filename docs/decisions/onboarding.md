@@ -846,9 +846,15 @@ günde düşer, ret oyunu kurmaz, hamle başına 48 saat. Tuval bunları aynen
 1. **Karşılama** (yalnız web; `src/landing/` derleme zamanında statik
    HTML, mobil karşılığı yok) → hemen `main`. Kesit tahtanın kelimeleri
    `npm run verify-demo-board`e girer.
-2. **Setup** (#2, #3, #4, #7, #9-13) → web yarısı hemen; port yarısı
-   `[Sonraki sürüm]` taslağı.
-3. **Tanıtım** (#5, #6) → web + port **AYNI PR**, yani trene. Bölünemez:
+2. **Setup** (#2, #3, #4, #7, #9-13) → YALNIZ WEB. Port yarısı web
+   verisi görülene kadar AÇILMAZ (27 Eylül, kullanıcı: *"Şimdilik sadece
+   web'de yapıp emin olduktan sonra mı porta geçsek"*). Gerekçe: web
+   bedava ve geri alınabilir; değişmeyen uygulama da kendiliğinden
+   KONTROL GRUBU olur (Huni v2 platform kırılımlı). Ara dönemde misafir
+   uyarısı webde yok, uygulamada var — bilerek.
+3. **Tanıtım** (#5, #6) → web + port **AYNI PR**, yani trene; Setup'ın
+   web verisinden SONRA, Setup'ın port yarısıyla aynı trende (en erken
+   19 Ekim). Bölünemez:
    `tutorial_parity_test.dart` web kaynağını okur, yalnız web değişirse
    web CI'ın `parite` işi düşer. `npm run verify-tutorial-script` koşar.
 4. **`IntroScreen`** (#14) → port, tren.
