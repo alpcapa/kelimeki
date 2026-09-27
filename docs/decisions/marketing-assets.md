@@ -205,10 +205,18 @@ sayılar: güvenli kutu 440 px, dikeyde 26 px yukarı kaydırılmış.
 y 35–137 · telefon kırpması x 116–676 → içeride · avatar bölgesi (sol %22,
 alt %45) → uzakta.
 
-⚠ **Mağaza cümlesi ELLE YAZILMIYOR** — `visibleStoreNamesTr()`ten geliyor
-(`storeLinks.ts`). Play yayına girip URL dolduğunda kapak yeniden
-üretilirse satır kendiliğinden "App Store ve Google Play'de" olur; bu,
-16 Eylül 2026'da SSS metninin bayatlamasıyla alınan dersin aynısı.
+⚠ **Mağazalar KAPIDAN geliyor, elle yazılmıyor** (`storeLinks.ts`) — 16
+Eylül 2026'da SSS metninin bayatlamasıyla alınan dersin aynısı.
+
+**27 Eylül 2026: metin → ROZET, iki kapakta da** (kullanıcı isteği).
+`visibleStoreBadges()` (App Store önce, eşit yükseklik), `<img>` ile;
+`kelimeki.com` rozetlerin yanında. ⚠ Rozetler bilerek KÜÇÜK (30 CSS px)
+— ilk deneme yüksekliği Apple'ın 40 pt sınırından türetmişti (telefon
+kırpmasına göre 58 / 87 px), kapak rozetlere boğuldu ve kullanıcı
+reddetti: *"olmamış, küçültmek lazım"*. Bedel: telefonda ~21 / ~14 pt,
+Apple'ın ekran sınırının altında — kapakta rozete dokunulamadığı için
+(LinkedIn link koydurmuyor) kabul edildi. Betik iki rozetin kırpma
+şeridinde ve eşit yükseklikte olduğunu ölçer, değilse DÜŞER.
 
 ### Reel (`scripts/reel/`, 20 Ağustos 2026)
 
@@ -275,6 +283,14 @@ yalnızca "Device art generator" ve "Legal line generator" var.
 - Rozet `public/google-play-badge.svg` (sitedeki resmî dosya) — çizilmez,
   oranı değiştirilmez. Rozet kullanıldığı için gönderi metnine Google'ın
   legal satırı girer (Legal line generator).
+- **27 Eylül 2026: İKİ rozet** (kullanıcı: *"ikisinin de olması lazım"*).
+  App Store rozeti de eklendi; hangi rozetin çıktığı ve sırası üretimin
+  kapısından (`visibleStoreBadges` — App Store önce, eşit yükseklik).
+  Betik iki rozetin kadrajda ve eşit yükseklikte olduğunu ölçer. Aynı gün
+  fark edildi: kapıya bağlı carousel kareleri (`sponsored-2026-08/`) ve
+  LinkedIn kapakları Play yayına girdikten sonra yeniden üretilmemişti,
+  hâlâ yalnızca App Store diyorlardı — ⚠ `storeLinks.ts` değişince kapıya
+  bağlı üreticileri YENİDEN KOŞ (liste: `play-store/sosyal-lansman.md`).
 - Simge cihazdaki başlatıcı ikonla aynı kaynak (`icon-source.png`); simge
   "kelimeki" yazısını taşıdığı için kare/story'de ayrıca logo YOK.
 - Story'de içerik Instagram'ın bindirme bantlarının (üst ~%14, alt ~%20)

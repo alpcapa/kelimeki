@@ -26,7 +26,9 @@ const DIST = path.join(ROOT, 'dist');
 const OUT_DIR = path.join(ROOT, 'marketing', 'play-store', 'lansman');
 // Cihazdaki başlatıcı ikonla AYNI kaynak (play-store/build.mjs'teki gerekçe).
 const ICON_SRC = path.join(ROOT, 'mobile', 'app', 'assets', 'icon', 'icon-source.png');
-const ROZET_SRC = path.join(ROOT, 'public', 'google-play-badge.svg');
+// Rozetlerin hangisinin ve hangi sırayla çıktığına `gorsel.tsx` karar verir
+// (`visibleStoreBadges`); burası yalnızca `public/`teki iki dosyayı gömer.
+const ROZET_DOSYALARI = ['/app-store-badge.svg', '/google-play-badge.svg'];
 
 const DOSYA = {
   kare: 'kelimeki-google-play-kare-1080.png',
@@ -54,7 +56,8 @@ async function main() {
   const { renderGorselHtml, OLCULER } = await import(`file://${outMjs}?t=${Date.now()}`);
 
   const ikon = `data:image/png;base64,${(await sharp(ICON_SRC).resize(512, 512).png().toBuffer()).toString('base64')}`;
-  const rozet = `data:image/svg+xml;base64,${readFileSync(ROZET_SRC).toString('base64')}`;
+  const rozet = Object.fromEntries(ROZET_DOSYALARI.map((a) => [a,
+    `data:image/svg+xml;base64,${readFileSync(path.join(ROOT, 'public', a)).toString('base64')}`]));
 
   const server = createServer(async (req, res) => {
     const f = path.join(DIST, decodeURIComponent((req.url ?? '/').split('?')[0]));
@@ -82,6 +85,10 @@ async function main() {
       return { sol: Math.round(b.left), sag: Math.round(b.right), ust: Math.round(b.top), alt: Math.round(b.bottom),
         tasmaX: de.scrollWidth - de.clientWidth, tasmaY: de.scrollHeight - de.clientHeight,
         // Kutunun içindeki en geniş öğe (tahtaya binen metin kutuyu değil öğeyi taşırır).
+        rozetler: [...document.querySelectorAll('[data-rozetler] img')].map((e) => {
+          const r = e.getBoundingClientRect();
+          return { sol: Math.round(r.left), sag: Math.round(r.right), h: Math.round(r.height) };
+        }),
         icSag: Math.round(Math.max(...[...document.querySelectorAll('[data-guvenli-kutu] > *')].map((e) => e.getBoundingClientRect().right))),
         tahtalar: [...document.querySelectorAll('[data-tahta] .grid, [data-tahta] > div > *')].slice(0, 1).map((e) => {
           const r = e.getBoundingClientRect();
@@ -94,6 +101,12 @@ async function main() {
     const payAlt = duzen === 'story' ? h * 0.2 : 16;
     console.log(`  ${duzen}: kutu x ${olcum.sol}–${olcum.sag}, y ${olcum.ust}–${olcum.alt} (kadraj ${w}×${h})`);
     if (olcum.tasmaX || olcum.tasmaY) hatalar.push(`${duzen}: sayfa taşıyor`);
+    // İki rozet (App Store + Google Play) kadrajın içinde ve eşit yükseklikte.
+    const rz = olcum.rozetler;
+    console.log(`    rozetler: ${rz.map((r) => `x ${r.sol}–${r.sag} h ${r.h}`).join(' · ')}`);
+    if (rz.length !== 2) hatalar.push(`${duzen}: ${rz.length} rozet (2 bekleniyordu)`);
+    if (rz.some((r) => r.sol < 16 || r.sag > w - 16)) hatalar.push(`${duzen}: rozet kadrajdan taşıyor`);
+    if (new Set(rz.map((r) => r.h)).size > 1) hatalar.push(`${duzen}: rozetler eşit yükseklikte değil`);
     // Yan düzenlerde tahta TAMAMEN kadrajda olmalı ve metin tahtaya binmemeli.
     if (['yatay', 'link'].includes(duzen)) {
       const t = olcum.tahtalar[0];

@@ -14,7 +14,7 @@
 // iki yandan taşar, kırpılmaları bilgi kaybettirmez.
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LandingLogo, LandingLogoDefs } from '../../src/landing/LandingLogo';
-import { visibleStoreNamesTr } from '../../src/utils/storeLinks';
+import { BADGE_GAP_PX, BADGE_HEIGHT_PX, visibleStoreBadges } from '../../src/utils/storeLinks';
 import { GameBoardPreview } from '../../src/components/GameBoardPreview';
 import { DEMO_TILES_2, DEMO_TILES_4 } from '../../src/landing/demoBoard';
 
@@ -31,12 +31,30 @@ const SANS = '"Space Grotesk", sans-serif';
 const ACCENT = '#2563EB';
 
 /**
- * Mağaza cümlesi KAPIDAN türer (`storeLinks.ts`) — elle yazılmaz.
- * 16 Eylül 2026'nın dersi: mağaza durumu değişince elle yazılmış metin
- * sessizce bayatlıyor. Play yayına girdiğinde bu kapak yeniden üretilirse
- * satır kendiliğinden "App Store ve Google Play'de" olur.
+ * Mağazalar ROZET olarak (27 Eylül 2026, kullanıcı isteği — önceden düz
+ * metindi: "kelimeki.com · App Store ve Google Play'de"). Hangi rozetin
+ * çıktığı ve sırası KAPIDAN (`visibleStoreBadges` — App Store önce, eşit
+ * yükseklik); rozet dosyaları `<img>` ile, çizilmez.
+ *
+ * ⚠ Rozetler bilerek KÜÇÜK (kişisel 30 px, sayfa 30 px) — KULLANICI KARARI,
+ * 27 Eylül 2026. İlk deneme yüksekliği Apple'ın 40 pt alt sınırından
+ * türetmişti (telefon kırpmasına göre 58 / 87 px); kapak rozetlere boğuldu,
+ * kullanıcı "olmamış, küçültmek lazım" dedi. Bedel biliniyor: telefonda
+ * rozet ~21 / ~14 pt'ye iner, Apple'ın ekran sınırının ALTINDA. Kapakta
+ * rozete dokunulamaz zaten (LinkedIn link koydurmuyor); rozet burada bir
+ * çağrı düğmesi değil, "iki mağazada var" işareti.
  */
-const MAGAZA = visibleStoreNamesTr();
+const ROZET_H = 30;
+
+function Rozetler({ yukseklik }: { yukseklik: number }) {
+  return (
+    <div data-rozetler="" style={{ display: 'flex', alignItems: 'center', gap: Math.round((yukseklik * BADGE_GAP_PX) / BADGE_HEIGHT_PX) }}>
+      {visibleStoreBadges().map((b) => (
+        <img key={b.key} src={b.asset} alt={b.alt} style={{ height: yukseklik, width: 'auto', display: 'block' }} />
+      ))}
+    </div>
+  );
+}
 
 function Tahta({ tiles, sayi, stil }: { tiles: typeof DEMO_TILES_2; sayi: number; stil: React.CSSProperties }) {
   return (
@@ -105,9 +123,12 @@ export function LinkedInKapak() {
           <p style={{ margin: 0, fontSize: 17, lineHeight: 1.25, fontWeight: 700, letterSpacing: -0.2 }}>
             Kelime bul, bölgeni büyüt, tahtayı ele geçir.
           </p>
-          <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 700, color: ACCENT, letterSpacing: 0.5 }}>
-            {MAGAZA ? `kelimeki.com · ${MAGAZA}` : 'kelimeki.com'}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Rozetler yukseklik={ROZET_H} />
+            <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 700, color: ACCENT, letterSpacing: 0.5 }}>
+              kelimeki.com
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -119,8 +140,8 @@ export function LinkedInKapak() {
 // 1128×191 (≈5.9:1) — kişisel kapaktan bile alçak ve çok daha geniş, o
 // yüzden dikey yığın yerine YATAY dizilim: solda marka, sağda cümle.
 // Sayfa logosu kapağın SOL ALT köşesine oturuyor, bu yüzden içerik sağa
-// kaydırıldı. 2× ile 2256×382 basılır (LinkedIn oranı koruyup küçültür,
-// büyük dosya daha net görünür).
+// kaydırıldı. 1× basılır (1128×191) — 2× (2256×382) iPad Safari'de
+// LinkedIn'in düzenleyicisinde kaydedilemedi (27 Eylül 2026, `build.mjs`).
 export const SAYFA_W = 1128;
 export const SAYFA_H = 191;
 
@@ -165,13 +186,16 @@ export function LinkedInSayfaKapak() {
         <div data-guvenli-kutu="" style={{ display: 'flex', alignItems: 'center', gap: 26 }}>
           <LandingLogo height={46} />
           <span style={{ width: 1, height: 52, background: '#D8DEE6' }} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <p style={{ margin: 0, fontSize: 19, lineHeight: 1.2, fontWeight: 700, letterSpacing: -0.2 }}>
               Kelime bul, bölgeni büyüt, tahtayı ele geçir.
             </p>
-            <span style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: ACCENT, letterSpacing: 0.4 }}>
-              {MAGAZA ? `kelimeki.com · ${MAGAZA}` : 'kelimeki.com'}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <Rozetler yukseklik={ROZET_H} />
+              <span style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: ACCENT, letterSpacing: 0.4 }}>
+                kelimeki.com
+              </span>
+            </div>
           </div>
         </div>
       </div>
