@@ -792,6 +792,81 @@ koruma.
 
 ---
 
+## İlk oyun akışı v2 — karşılama → Setup → tanıtım (27 Eylül 2026, TASARIM KARARI)
+
+ROADMAP **#41**. Kod henüz YOK; bu bölüm kodlamanın sözleşmesi.
+
+Kullanıcı isteği: *"İnsanların ilk gelişinde hızlıca ilk oyunlarını
+oynamasını sağlamak lazım"*, ardından düzeltme: *"tanıtım sayfalarını daha
+sade ve merak uyandıran hale getirip, setup'a gelince hızlıca oyun
+başlatacak duruma getirelim, oyuna başlaya tıklayınca demo oyun gelsin
+(şu anki gibi)"*. Yani karşılamaya demo KONMAZ; raylı tanıtım
+(`TutorialGame`) aynen kalır, önündeki sürtünme kalkar.
+
+**Tasarım (Claude Design tuvali, sahibine özel):**
+https://claude.ai/artifact/GVCPCbsQjpw6pCjQcinAUK — 17 ekran: karşılama
+(telefon + masaüstü), Setup, dört tanıtım sahnesi, bitiş penceresi, ilk
+oyun, oyun sonu, altı "Arkadaşınla" ekranı. Tasarım sistemi:
+https://claude.ai/artifact/Nbhsf7B6b63YHeKgYXfe7V.
+
+⚠ **Tuval ne kadar bağlayıcı:** ekranların DÜZENİ, bölüm sırası, metinler
+ve akış bağlayıcı. Parçalar YENİDEN ÇİZİLMEZ — uygulamadaki bileşen
+kullanılır (`Avatar`, düğmeler, `PLAYER_COLORS`). Tuvaldeki bir detay
+mevcut bileşenden farklıysa ve aşağıda "bilinçli değişiklik" diye
+yazılmamışsa, uygulamadaki hâli geçerli. (Tuvalin ilk sürümü avatarları
+tek harf çizmişti; kullanıcı sordu, uygulamadaki kurala çevrildi:
+fotoğraf → yoksa iki harf → YZ'de 🤖.)
+
+### Kararlar
+
+| # | Karar | Bugün | Nerede |
+|---|---|---|---|
+| 1 | Karşılama sade: tek soru-başlık, bölge dış hatlı küçük tahta kesiti, "HEMEN OYNA", mağaza rozetleri. Uzun SEO içeriği sayfada KALIR, ilk ekranın altına iner | Uzun katman | `src/landing/` |
+| 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** altta sabit | Sekmeli | `Setup.tsx` ↔ `setup_screen.dart` |
+| 3 | Setup'ta "1 dk'lık tanıtımla başlar" satırı YOK | — | — |
+| 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | Her misafir başlatmada çıkıyor | `handleStart` (`Setup.tsx`) ↔ `_showGuestWarning` (`setup_screen.dart`) |
+| 5 | Tanıtımın açılış penceresi ("Kelimeki Tanıtım Turu / Devam") KALKAR, 1. sahne doğrudan açılır | Var | `TutorialGame` ↔ `ui/tutorial/*` |
+| 6 | Ayrı bir "Hazırsın" ekranı YOK; mevcut bitiş penceresi yeni tasarıma geçer (onay mührü, tanıtım skoru, sıradaki oyun, turuncu düğme) | Düz pencere | aynı |
+| 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | Hep Normal (`useState("normal")`) | `Setup.tsx:340` ↔ port |
+| 8 | Rakibin adı **Yapay Zeka** (27 Eylül, kullanıcı: *"yapay zeka kalsın"*); oyun içi skor kutusundaki "YZ 2" kısaltması DEĞİŞMEZ | Aynı | — |
+| 9 | Arkadaşınla, girişsiz: alttan açılan giriş uyarısı (ÜYE OL · GİRİŞ YAP · YAPAY ZEKAYLA DEVAM ET) | Sekmede metin | `LiveGamesTab` |
+| 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | Liste + ayrı form | `LiveGamesTab` + `LiveGameCreateForm` |
+| 11 | Arkadaş seçici: arama kutusunun ALTINDA, listenin üstünde **+ ARKADAŞINI DAVET ET** (davet linki); listenin altındaki "Listede yok mu?" bağlantısı kalkar | Liste altında bağlantı | `LiveGameCreateForm` |
+| 12 | Seçilen rakipler **koltuk kartı** olarak, oyuncu renginin zemininde (bilinçli değişiklik; avatar aynı kalır). 4 kişide boş 4. koltuk ekranda "Yapay Zeka" olarak görünür → "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi **KALKAR** | Onay penceresi | `LiveGameCreateForm` |
+| 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | Üstte | `Setup.tsx` ↔ `devam_eden_govde.dart` |
+| 14 | Uygulamanın açılış tanıtımı (`IntroScreen`) da sadeleşir — AYRI iş, tanıtım PR'ından SONRA | — | port |
+
+⚠ **Sunucu kuralları DEĞİŞMEZ** (`create_online_game`): 2 kişide tam 1
+arkadaş, YZ yok; 4 kişide 2-3 arkadaş, YZ yalnızca 4. koltukta. Davet 7
+günde düşer, ret oyunu kurmaz, hamle başına 48 saat. Tuval bunları aynen
+çiziyor; form sunucudan GEVŞEK olamaz.
+
+### Uygulama sırası — dört PR
+
+1. **Karşılama** (yalnız web; `src/landing/` derleme zamanında statik
+   HTML, mobil karşılığı yok) → hemen `main`. Kesit tahtanın kelimeleri
+   `npm run verify-demo-board`e girer.
+2. **Setup** (#2, #3, #4, #7, #9-13) → web yarısı hemen; port yarısı
+   `[Sonraki sürüm]` taslağı.
+3. **Tanıtım** (#5, #6) → web + port **AYNI PR**, yani trene. Bölünemez:
+   `tutorial_parity_test.dart` web kaynağını okur, yalnız web değişirse
+   web CI'ın `parite` işi düşer. `npm run verify-tutorial-script` koşar.
+4. **`IntroScreen`** (#14) → port, tren.
+
+Bu bölümün "Dört değişmez"i (motora dokunmaz · oyun değildir ·
+doğrulayıcı · port ikizi) aynen geçerli.
+
+### Taban ölçüm (27 Eylül 2026, kodlamadan ÖNCE)
+
+- **Huni v2, web** (`funnel_events`, `mevcut` hariç; yalnızca 25-27 Eylül,
+  tablo yeni): 15 `land` → 1 `game_start` → 1 `game_finish` → 0 `signup`.
+  Örneklem ÇOK küçük; karşılaştırma için en az iki hafta birikmeli.
+- **Tanıtım** (`tutorial_events`, son 30 gün): web 38 kişi başladı → 17
+  bitirdi (%45) → 4 atladı; iOS 39 başlama → 27 bitiş (%69) → 7 atlama
+  (port `anon_id` yazmıyor, ROADMAP #30 — kişi değil olay sayısı). Web'in
+  düşük bitirme oranı açılış penceresinin (#5) kaldırılmasıyla
+  karşılaştırılacak ilk sayı.
+
 ## İlk Oyun: Tanıtım Ekranı — tam bölüm (CLAUDE.md'den taşındı)
 
 ⚠ **Bu bölüm 15 Eylül 2026'da kök `CLAUDE.md`'den BİREBİR taşındı**
