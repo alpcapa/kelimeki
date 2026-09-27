@@ -1355,6 +1355,22 @@ export async function fetchIncomingFriendRequests(): Promise<IncomingFriendReque
   return (data as IncomingFriendRequest[]) ?? [];
 }
 
+/**
+ * Son 90 günde birlikte en çok canlı oyun oynanan, hâlâ arkadaş olan
+ * kişilerin kimlikleri — çok oynanandan aza (`my_frequent_opponents`).
+ * Canlı oyun formunun "Sık oynadıkların" şeridi; ad/avatar `fetchFriends`
+ * satırından. Hata ya da girişsizlikte boş dizi (şerit hiç çizilmez).
+ */
+export async function fetchFrequentOpponents(limit = 5): Promise<string[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('my_frequent_opponents', { p_limit: limit });
+  if (error) {
+    console.error('[Kelimeki] fetchFrequentOpponents hatası:', error.message);
+    return [];
+  }
+  return ((data as { friend_id: string }[]) ?? []).map((r) => r.friend_id);
+}
+
 /** Gönderdiğim, henüz cevaplanmamış istekler (Arkadaşlar penceresi, gelen isteklerin altı). */
 export async function fetchOutgoingFriendRequests(): Promise<OutgoingFriendRequest[]> {
   if (!supabase) return [];

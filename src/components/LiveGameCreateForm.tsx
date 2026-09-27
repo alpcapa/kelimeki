@@ -14,6 +14,7 @@ import { ScrollArea } from './ScrollArea';
 import { useAuth } from '../hooks/useAuth';
 import {
   createOnlineGame,
+  fetchFrequentOpponents,
   fetchFriends,
   removeFriend,
   respondFriendRequest,
@@ -114,6 +115,19 @@ export function LiveGameCreateForm({
   // bağlansa saatte bir gereksiz yere yeniden çekerdi.
   useEffect(() => {
     reloadFriends();
+  }, [user?.id]);
+
+  // "Sık oynadıkların" şeridi (27 Eylül 2026, ROADMAP #41) — yalnızca sıra;
+  // ad/avatar arkadaş listesinden. Hesap değişince yeniden (`user?.id`).
+  const [frequentIds, setFrequentIds] = useState<string[]>([]);
+  useEffect(() => {
+    let iptal = false;
+    void fetchFrequentOpponents(5).then((ids) => {
+      if (!iptal) setFrequentIds(ids);
+    });
+    return () => {
+      iptal = true;
+    };
   }, [user?.id]);
 
   // "Arkadaşını davet et" → DOĞRUDAN paylaşım (`useInviteShare`).
@@ -420,6 +434,53 @@ export function LiveGameCreateForm({
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">
+            {/* "Sık oynadıkların" — sabit en fazla 5 avatar, KAYDIRMA YOK
+                (390 px'e sığıyor; carousel "yana kaydır, daha var" dedirtirdi).
+                Dokunmak listedeki satırla AYNI: seçer/bırakır; seçilenin
+                halkası oturacağı koltuğun renginde. En az 2 kişi yoksa,
+                arama yapılırken ve "Tüm oyuncular"da çizilmez. */}
+            {(() => {
+              if (showAll || query.trim() !== '') return null;
+              const sik = frequentIds
+                .map((id) => friends?.find((f) => f.friend_id === id))
+                .filter((f): f is FriendRow => !!f);
+              if (sik.length < 2) return null;
+              return (
+                <div className="flex flex-col gap-1.5 pb-1">
+                  <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+                    Sık oynadıkların
+                  </span>
+                  <div className="grid grid-cols-5 gap-1">
+                    {sik.map((f) => {
+                      const sira = selected.indexOf(f.friend_id);
+                      const renk = sira >= 0 ? PLAYER_COLORS[sira + 1].base : null;
+                      return (
+                        <button
+                          key={f.friend_id}
+                          type="button"
+                          onClick={() => toggleFriend(f.friend_id)}
+                          aria-pressed={sira >= 0}
+                          aria-label={`${f.name} — ${sira >= 0 ? 'seçimi kaldır' : 'seç'}`}
+                          className="flex flex-col items-center gap-1 min-w-0 py-1 active:scale-[0.95] transition-transform"
+                        >
+                          <span
+                            className="rounded-full transition-shadow"
+                            style={{ boxShadow: renk ? `0 0 0 3px ${renk}` : undefined }}
+                          >
+                            <Avatar url={f.avatar_url} name={f.name} size={46} />
+                          </span>
+                          <span
+                            className={`w-full truncate text-center text-[11px] font-bold ${renk ? 'text-text' : 'text-muted'}`}
+                          >
+                            {f.name}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
             <input
               type="text"
               value={query}
