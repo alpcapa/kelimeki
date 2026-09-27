@@ -31,7 +31,14 @@ bağlı her pazarlama üreticisi yeniden koşulmalı (`generate-play-lansman`,
 
 ---
 
-## 0 · Legal satırı — rozetli HER gönderide
+## 0 · Legal satırı — KULLANILMIYOR (27 Eylül 2026, kullanıcı kararı)
+
+⚠ **Kullanıcı marka satırlarını gönderilerden BİLEREK çıkardı** (27 Eylül
+2026: *"Marka satırlarını bilerek çıkarttım"*). Dört gönderinin (IG, FB,
+LinkedIn sayfa + profil) metninde satır YOK. Aşağıdaki bölüm, satırların
+nasıl belirlendiğinin kaydı olarak duruyor — Google ya da Apple itiraz
+ederse eklenecek metin budur. Bir sonraki turda satırları kendiliğinden
+geri koyma; kullanıcıya sor.
 
 Görsellerde Google Play rozeti, metinlerde "Android" kelimesi (ve
 IG/LinkedIn'de `#android` etiketi) var; ikisi de ayrı atıf istiyor.
@@ -119,17 +126,13 @@ Google Play'de "Kelimeki" diye ara ya da profildeki linke dokun 👆
 iPhone'da da App Store'da. Tarayıcıda: kelimeki.com
 
 #kelimeoyunu #zekaoyunu #bulmaca #türkçe #oyun
-
-Android, Google LLC'nin ticari markasıdır.
-Google Play, Google LLC'nin ticari markasıdır.
-Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
 
 **27 Eylül 2026 — kullanıcının son hâli** (yayından önce elle düzeltildi):
 vergi kazancı cümlesi eklendi, internetsiz ve canlı oyun satırları yeniden
 yazıldı, "iPhone'daki arkadaşınla da" çıktı, etiketler
-`#googleplay #android #yeniuygulama` → `#oyun`. Legal satırlar korundu
-(metinde hâlâ Android / Google Play / App Store / iPhone geçiyor).
+`#googleplay #android #yeniuygulama` → `#oyun`. Legal satırları kullanıcı
+bilerek çıkardı (bkz. §0).
 
 **App Store metninden farkı:** "iPhone'daki arkadaşınla da" — Canlı oyun
 platformlar arası (aynı sunucu); Android'e yeni gelen için en güçlü satır
@@ -175,10 +178,6 @@ https://apps.apple.com/app/id6809809788?ct=fb-sayfa-play
 https://kelimeki.com/?ref=fb-sayfa-play
 
 #kelimeoyunu #zekaoyunu #türkçe
-
-Android, Google LLC'nin ticari markasıdır.
-Google Play, Google LLC'nin ticari markasıdır.
-Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
 
 **27 Eylül 2026:** gövde Instagram'daki kullanıcı düzeltmeleriyle eşitlendi (vergi cümlesi, internetsiz ve canlı oyun satırları); linkler ve etiketler FB'nin kendi hâlinde kaldı.
@@ -218,10 +217,6 @@ https://apps.apple.com/app/id6809809788
 Tarayıcıda: https://kelimeki.com/?ref=li-sayfa-play
 
 #kelimeoyunu #türkçe #googleplay #mobiluygulama
-
-Android, Google LLC'nin ticari markasıdır.
-Google Play, Google LLC'nin ticari markasıdır.
-Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
 
 ### Kişisel profil (sıfırdan gönderi, sayfadan birkaç saat SONRA)
@@ -239,10 +234,6 @@ https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki&referrer=utm
 iPhone'da App Store'da, bilgisayarda https://kelimeki.com/?ref=li-profil-play
 
 @Kelimeki
-
-Android, Google LLC'nin ticari markasıdır.
-Google Play, Google LLC'nin ticari markasıdır.
-Apple, the Apple logo, iPhone, and iPad are trademarks of Apple Inc., registered in the U.S. and other countries and regions. App Store is a service mark of Apple Inc.
 ```
 
 ⚠ "Tek bir kod tabanından" iddiası mobil uygulama için doğru (Flutter,
@@ -287,7 +278,6 @@ doğrudan giden tıklama Kaynak Hunisi'nde GÖRÜNMEZ.
 
 - ❌ App Store turunun etiketlerini (`fb-sayfa`, `li-sayfa`, `li-profil`)
   tekrar kullanma — iki lansman karışır (§5).
-- ❌ Legal satırını atlama (§0).
 - ❌ Rozetleri kırpma, yeniden renklendirme, sırasını değiştirme (App
   Store önce) ya da üçüncü bir rozet bindirme. Rozet dışındaki her şey bizim, değiştirilebilir —
   üreticiden (`npm run build && npm run generate-play-lansman`).
