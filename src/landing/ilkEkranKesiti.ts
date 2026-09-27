@@ -19,7 +19,7 @@
 export const KESIT_SUTUN = 7;
 
 export const KESIT_HARITA: readonly string[] = [
-  'cAc....',
+  'FAc....',
   'cSAAT..',
   'c...rrr',
   '....rrr',
