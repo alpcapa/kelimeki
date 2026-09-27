@@ -214,11 +214,27 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
                 <div
                   key={i}
                   className={[
-                    'relative flex items-center rounded-xl border',
+                    'relative overflow-hidden flex items-center rounded-xl border',
                     yatay ? 'gap-3 px-3 py-2.5' : 'flex-col gap-1.5 px-1.5 pt-3 pb-2.5',
                   ].join(' ')}
                   style={{ background: col.tint, borderColor: col.base }}
                 >
+                  {/* Oyuncu numarası filigranı (27 Eylül 2026, kullanıcı isteği):
+                      tahtadaki köşe filigranıyla AYNI dil — `Board.tsx` →
+                      `data-watermarks` (mono kalın, oyuncu rengi, %20 opaklık).
+                      Rakip i. koltukta = oyunda (i + 2). oyuncu, o köşede
+                      oynar. Yatay kartta ✕'in SOLUNDA, dikeyde sağ ALTTA —
+                      ✕'e değmesin diye. */}
+                  <span
+                    aria-hidden
+                    className={[
+                      'pointer-events-none absolute font-mono font-bold leading-none select-none',
+                      yatay ? 'right-12 top-1/2 -translate-y-1/2 text-[56px]' : 'right-1.5 bottom-0.5 text-[40px]',
+                    ].join(' ')}
+                    style={{ color: col.base, opacity: 0.2 }}
+                  >
+                    {i + 2}
+                  </span>
                   <Avatar url={f.avatar_url} name={f.name} size={36} />
                   <span
                     className={['font-sans text-sm font-bold truncate max-w-full', yatay ? 'flex-1 min-w-0' : 'text-xs'].join(' ')}
