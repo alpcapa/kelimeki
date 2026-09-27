@@ -8,6 +8,38 @@
 > `live-game.md` (Canlı oyun Faz 2-3.6, sunucu tarafı), `online-game-screen.md`
 > (`OnlineGameScreen.tsx` — canlı oyun ekranının UI kararları).
 
+## Tek ekran: sekmesiz Arkadaşlar penceresi (27 Eylül 2026, ROADMAP #41)
+
+Kullanıcı: *"arkadaşlar modalı çok kötü ve kullanışsız. Onu da yeni konsepte
+göre elden geçir."* Tasarım canvas'ta onaylandı (*"arkadaşlar tasarımı da
+onaylı"*). **Yalnızca web** — port ikizi (`friends_sheet.dart`) Setup'ın port
+yarısıyla birlikte, web verisi okunduktan sonra.
+
+**Yukarıdan aşağı tek sütun, sekme YOK:**
+1. Turuncu **"Arkadaşını davet et"** — pencere değil DOĞRUDAN paylaşım
+   (`useInviteShare`: link açılışta önceden alınır, çünkü `navigator.share`
+   taze kullanıcı etkileşimi ister; destek yoksa `InviteShareFallback` →
+   WhatsApp + kopyala). Aynı hook `LiveGameCreateForm`'daki davet düğmesinde.
+2. Arama kutusu — yazınca liste yerine sonuçlar; her satırın tek bir
+   durum hapı var: **OYNA** (arkadaş) · **EKLE** · **İSTEK GİTTİ** · **KABUL ET**.
+3. Gelen istekler (kart: Reddet / Kabul et).
+4. Arkadaşlar — satırda rütbe mührü, "3 haftadır", **OYNA** ve `⋯` menüsü
+   (skor kartı · 4 kişilik oyuna çağır · sessize alma/şikayet · arkadaşlıktan çıkar).
+5. "Tüm üyelere göz at →" (eski "Ara & Ekle"nin sayfalı listesi).
+
+**Kararlar:**
+- **Yalnızca "arkadaşlıktan çıkar" onay sorar.** Ekle/kabul/reddet/iptal tek
+  dokunuş — geri alınabilir ya da zararsız; eski pencerenin her adımda
+  `InfoDialog`/`ConfirmDialog` açması "kullanışsız" şikayetinin çekirdeğiydi.
+- **OYNA pencereyi kapatıp Canlı sekmesinde kurma formunu o arkadaş seçili
+  açar** — `utils/liveGameRequest.ts` (modül değişkeni + `kelimeki:canli-oyun-kur`
+  olayı; `App` sekmeyi değiştirir, `LiveGamesTab` isteği hem mount'ta hem
+  olayda ALIR). Yerel oyun sürüyorsa `handleLogoClick` ile Setup'a dönülür
+  (oyun kayıtlı, bir şey kaybolmaz).
+- **Giden istekler bölümü YOK** — listeleyen bir RPC yok; bekleyen istek
+  aramada "İstek gitti" hapıyla görünür. Gerekirse ayrı bir sunucu işi.
+- Eski sekme adları (aşağıdaki bölüm) artık yüzeyde yok; kayıt tarihçe olarak kalıyor.
+
 ## Sekme adları: "Arkadaşlarım" → **Arkadaşlar**, "İstekler" → **Davetler** (10 Eylül 2026)
 
 Kullanıcı isteği, kozmetik. `FriendsModal.tsx` ↔ `friends_modal.dart` aynı

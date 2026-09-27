@@ -56,6 +56,7 @@ import {
 import { AvatarScoreRow, PlayerAvatarRow } from './PlayerAvatarRow';
 import { FriendSuggestModal } from './FriendSuggestModal';
 import { LiveGameCreateForm } from './LiveGameCreateForm';
+import { LIVE_GAME_REQUEST_EVENT, takeLiveGameRequest, type LiveGameRequest } from '../utils/liveGameRequest';
 import { PRIMARY_ACTION_BTN } from './actionButton';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { RecentGamesSection } from './RecentGamesSection';
@@ -652,6 +653,22 @@ export function LiveGamesTab({
   // Girişsiz uyarı sekme her açıldığında bir kez (bkz. `GuestLiveSheet`).
   const [guestSheetOpen, setGuestSheetOpen] = useState(true);
   const [creating, setCreating] = useState(false);
+  // Arkadaşlar penceresinin OYNA'sı (27 Eylül 2026): formu o arkadaş seçili
+  // aç. Takılırken kuyruktakini al, takılıyken olayı dinle
+  // (`utils/liveGameRequest.ts`). `onKey`: aynı formdayken yeni bir istek
+  // gelirse (pencere formun içinden açılmıştı) form yeniden kurulsun.
+  const [preset, setPreset] = useState<(LiveGameRequest & { onKey: number }) | null>(null);
+  useEffect(() => {
+    const al = () => {
+      const r = takeLiveGameRequest();
+      if (!r) return;
+      setPreset({ ...r, onKey: Date.now() });
+      setCreating(true);
+    };
+    al();
+    window.addEventListener(LIVE_GAME_REQUEST_EVENT, al);
+    return () => window.removeEventListener(LIVE_GAME_REQUEST_EVENT, al);
+  }, []);
   const [busyInviteId, setBusyInviteId] = useState<string | null>(null);
   // Bir daveti kabul ettikten sonra, o oyundaki henüz arkadaş olunmayan
   // katılımcılara toplu istek gönderme önerisi (bkz. FriendSuggestModal).
@@ -1005,9 +1022,16 @@ export function LiveGamesTab({
     return (
       <div className="w-full flex flex-col gap-5">
         <LiveGameCreateForm
-          onCancel={() => setCreating(false)}
+          key={preset?.onKey ?? 0}
+          initialFriendId={preset?.friendId}
+          initialPlayerCount={preset?.playerCount}
+          onCancel={() => {
+            setCreating(false);
+            setPreset(null);
+          }}
           onCreated={() => {
             setCreating(false);
+            setPreset(null);
             reload();
           }}
         />

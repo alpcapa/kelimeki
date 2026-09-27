@@ -1516,7 +1516,7 @@ test('`.tap-expand` konumu utility ile ÇAKIŞMIYOR — modal ✕ sağ üst kö�
   // (kalan dördü Supabase ister). Ölçülen şey zaten bir CSS değişmezi, bir
   // bileşen değil — bu yüzden gerçek sayfaya (derlenmiş CSS yüklü) aynı sınıf
   // dizesini taşıyan bir kart ekleniyor. Dize `PlayerScoreCard.tsx` /
-  // `FriendsModal.tsx`teki ✕'lerle BİREBİR; Tailwind onları oradan derliyor.
+  // `OnlineGameScreen.tsx`teki ✕'lerle BİREBİR; Tailwind onları oradan derliyor.
   await donenKullanici(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');

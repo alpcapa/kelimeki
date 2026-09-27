@@ -9,11 +9,11 @@
 // Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi ve onun "Hayır"ından
 // doğan kalıcı Yapay Zeka satırı KALKTI — koltuk zaten görünüyor. "Arkadaşını
 // davet et" (davet linki) artık arama kutusunun hemen altında.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { createFriendInviteLink, createOnlineGame, fetchFriends } from '../lib/api';
-import { buildInviteUrl, INVITE_SHARE_TEXT, whatsappShareUrl } from '../utils/friendInvite';
-import { useModalA11y } from '../hooks/useModalA11y';
+import { createOnlineGame, fetchFriends } from '../lib/api';
+import { useInviteShare } from '../hooks/useInviteShare';
+import { InviteShareFallback } from './InviteShareFallback';
 import type { FriendRow, OnlineGameSlot } from '../lib/database.types';
 import { trLower } from '../utils/turkish';
 import { Avatar } from './Avatar';
@@ -26,6 +26,10 @@ import { PLAYER_COLORS } from '../game/constants';
 interface LiveGameCreateFormProps {
   onCancel: () => void;
   onCreated: () => void;
+  /** Arkadaşlar penceresinin OYNA'sından gelince: o arkadaş seçili açılır
+   * (`utils/liveGameRequest.ts`, 27 Eylül 2026). */
+  initialFriendId?: string;
+  initialPlayerCount?: 2 | 4;
 }
 
 const toggleBtnCls = (active: boolean) =>
@@ -49,13 +53,21 @@ function CheckMark({ checked }: { checked: boolean }) {
   );
 }
 
-export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormProps) {
+export function LiveGameCreateForm({
+  onCancel,
+  onCreated,
+  initialFriendId,
+  initialPlayerCount,
+}: LiveGameCreateFormProps) {
   const { user } = useAuth();
-  const [playerCount, setPlayerCount] = useState<2 | 4>(2);
+  const [playerCount, setPlayerCount] = useState<2 | 4>(initialPlayerCount ?? 2);
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
   // Arkadaş seçicideki isimlerin rütbe mührü — tek toplu çekim.
   const rankTierOf = useRankScores((friends ?? []).map((f) => f.friend_id));
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(initialFriendId ? [initialFriendId] : []);
+  // Sıfırlama yalnızca sayı GERÇEKTEN değişince — mount'ta (StrictMode'un
+  // çift koşusu dahil) koşarsa OYNA'dan gelen ön seçim silinirdi.
+  const oncekiSayiRef = useRef(playerCount);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
@@ -84,59 +96,14 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
     reloadFriends();
   }, [user?.id]);
 
-  // "Arkadaşını davet et" → DOĞRUDAN paylaşım (27 Eylül 2026, kullanıcı:
-  // *"arkadaşlar modalı açmamalı, direkt paylaşma modalı çıkmalı ve
-  // whatsapp'dan direkt paylaşmalı"*). Link form açılırken ÖNCEDEN alınır:
-  // iOS Safari `navigator.share`i yalnızca dokunuşun hemen ardından açıyor,
-  // araya bir ağ isteği girerse izin düşebiliyor. Token kullanıcı başına
-  // kalıcı (`create_friend_invite_link` var olanı döner), önceden almak
-  // yeni bir şey yaratmıyor.
-  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
-  const [showShareFallback, setShowShareFallback] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const shareFallbackRef = useModalA11y(showShareFallback, () => setShowShareFallback(false));
-  useEffect(() => {
-    if (!user?.id) return;
-    let iptal = false;
-    void createFriendInviteLink().then((token) => {
-      if (!iptal && token) setInviteUrl(buildInviteUrl(token));
-    });
-    return () => {
-      iptal = true;
-    };
-  }, [user?.id]);
-
-  const handleInviteShare = async () => {
-    let url = inviteUrl;
-    if (!url) {
-      const token = await createFriendInviteLink();
-      if (!token) return;
-      url = buildInviteUrl(token);
-      setInviteUrl(url);
-    }
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: 'Kelimeki', text: INVITE_SHARE_TEXT, url });
-        return;
-      } catch (err) {
-        // Kullanıcı sayfayı kapattıysa sessiz geç; paylaşım AÇILAMADIYSA
-        // (ör. iOS'ta dokunuş izni düştü) yedek pencereye in.
-        if ((err as { name?: string })?.name === 'AbortError') return;
-      }
-    }
-    setShowShareFallback(true);
-  };
-
-  const copyInvite = async () => {
-    if (!inviteUrl || !navigator.clipboard) return;
-    await navigator.clipboard.writeText(`${INVITE_SHARE_TEXT}\n${inviteUrl}`);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
-  };
+  // "Arkadaşını davet et" → DOĞRUDAN paylaşım (`useInviteShare`).
+  const invite = useInviteShare();
 
   // 2↔4 arası kural tamamen farklı (YZ izni yok / var) — sekme değişince
   // seçimleri sıfırlıyoruz ki eski bir seçim yeni kuralda geçersiz kalmasın.
   useEffect(() => {
+    if (oncekiSayiRef.current === playerCount) return;
+    oncekiSayiRef.current = playerCount;
     setSelected([]);
   }, [playerCount]);
 
@@ -394,7 +361,7 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
                 doğrudan paylaşımı açar (`handleInviteShare`). */}
             <button
               type="button"
-              onClick={() => void handleInviteShare()}
+              onClick={() => void invite.share()}
               className="flex items-center justify-center gap-2 min-h-[44px] rounded-md border-[1.5px] border-dashed border-accent bg-[#EEF4FF] text-accent text-[13px] font-bold uppercase tracking-[1px] active:scale-[0.99] transition-transform"
             >
               <span aria-hidden className="text-base leading-none">+</span> Arkadaşını davet et
@@ -434,43 +401,8 @@ export function LiveGameCreateForm({ onCancel, onCreated }: LiveGameCreateFormPr
         )}
       </div>
 
-      {showShareFallback && inviteUrl && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-[rgba(15,23,42,0.45)]" onClick={() => setShowShareFallback(false)} aria-hidden />
-          <div
-            ref={shareFallbackRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Arkadaşını davet et"
-            tabIndex={-1}
-            className="relative w-full max-w-sm bg-panel rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-5 flex flex-col gap-3 outline-none"
-          >
-            <p className="text-base font-bold text-text" style={{ margin: 0 }}>
-              Arkadaşını davet et
-            </p>
-            <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
-              Linke dokunup üye olunca arkadaş listende belirir.
-            </p>
-            {/* Paylaşım sayfası olmayan tarayıcı (masaüstü) için YEDEK:
-                telefonda sistem paylaşım sayfası zaten açılıyor. */}
-            <a
-              href={whatsappShareUrl(inviteUrl)}
-              target="_blank"
-              rel="noopener"
-              onClick={() => setShowShareFallback(false)}
-              className="flex items-center justify-center min-h-[48px] rounded-md bg-[#25D366] text-white text-sm font-bold uppercase tracking-[1px] no-underline active:scale-[0.97] transition-transform"
-            >
-              WhatsApp'ta gönder
-            </a>
-            <button
-              type="button"
-              onClick={() => void copyInvite()}
-              className="min-h-[48px] rounded-md btn-raised-neutral bg-bg border border-border text-text text-sm font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
-            >
-              {copied ? 'Link kopyalandı!' : 'Linki kopyala'}
-            </button>
-          </div>
-        </div>
+      {invite.fallbackOpen && invite.inviteUrl && (
+        <InviteShareFallback url={invite.inviteUrl} onClose={invite.closeFallback} />
       )}
     </div>
   );
