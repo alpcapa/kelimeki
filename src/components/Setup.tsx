@@ -19,7 +19,7 @@ import { AuthModal } from "./AuthModal";
 import { CountBadge } from "./CountBadge";
 import { HelpModal } from "./HelpModal";
 import { LiveGamesTab, TurnTriangle } from "./LiveGamesTab";
-import { STICKY_BAR, STICKY_PRIMARY_BTN } from "./stickyBar";
+import { PRIMARY_ACTION_BTN } from "./actionButton";
 import { orderByExpiry } from "../utils/gameListOrder";
 import { LogoMark } from "./LogoMark";
 import { AvatarScoreRow, PlayerAvatarRow, type AvatarRowPlayer } from "./PlayerAvatarRow";
@@ -882,7 +882,15 @@ export function Setup({
           // formu yalnızca butona tıklanınca açılır. Devam Edenler/Son
           // Oynananlar tabı da `LiveGamesTab`'daki BİREBİR AYNI çözüm.
           <>
-
+            {/* 27 Eylül 2026 (ROADMAP #41 karar 13): önce "altta sabit"
+                denendi ve iOS Safari'nin yüzen alt çubuğunun ARKASINA düştü
+                (sayfa çubuğun altına kadar uzanıyor, `sticky bottom-0` oraya
+                yapışıyor — kullanıcı ekran görüntüsüyle bildirdi). Düğme
+                akışta, listenin ÜSTÜNDE; Arkadaşınla tarafıyla aynı
+                (`actionButton.ts`). */}
+            <button onClick={() => setCreatingLocal(true)} className={PRIMARY_ACTION_BTN}>
+              Yeni Oyun Kur
+            </button>
             <div className="flex gap-2">
               {[
                 {
@@ -969,18 +977,6 @@ export function Setup({
                 offlineNode={offlineAiNotice}
               />
             )}
-            {/* Devam eden oyunlar ÜSTTE, yeni oyun düğmesi altta SABİT
-                (27 Eylül 2026, ROADMAP #41 karar 13 — Arkadaşınla tarafıyla
-                aynı düzen). Eskiden listenin üstündeydi ("+ Yeni Yapay Zeka
-                Oyunu Aç"). */}
-            <div className={STICKY_BAR}>
-              <button
-                onClick={() => setCreatingLocal(true)}
-                className={STICKY_PRIMARY_BTN}
-              >
-                Yeni Oyun Kur
-              </button>
-            </div>
           </>
         ) : (
           <>
@@ -1058,14 +1054,12 @@ export function Setup({
               </p>
             </div>
 
-            {!user && (
-              <MembershipPerksBox onSignup={() => setShowAuthModal(true)} />
-            )}
-            {/* OYUNU BAŞLAT altta SABİT (27 Eylül 2026, ROADMAP #41 karar 2).
-                `sticky bottom-0`: kaydırma kabı `#root`; düğme ekranın altına
-                yapışır, sayfanın sonunda kendi yerine oturur (footer'ı
-                örtmez). `-mx-4 px-4`: şerit kabın dolgusunu da kaplar. */}
-            <div className={STICKY_BAR}>
+            {/* OYUNU BAŞLAT zorluğun HEMEN altında, üyelik kutusu ONDAN SONRA
+                (27 Eylül 2026, ROADMAP #41 karar 2). "Altta sabit şerit" denendi
+                ve iOS Safari'nin yüzen alt çubuğunun arkasına düştü — misafirde
+                üyelik kutusu formu ekrandan uzun yaptığı için düğme görünmüyordu.
+                Bu sırayla 390×844'te ilk ekranda. */}
+            <div>
               <div className="flex gap-2">
                 <button
                   onClick={handleStart}
@@ -1093,8 +1087,10 @@ export function Setup({
                   </button>
                 )}
               </div>
-
             </div>
+            {!user && (
+              <MembershipPerksBox onSignup={() => setShowAuthModal(true)} />
+            )}
           </>
         )}
 

@@ -889,16 +889,20 @@ uyarısı + ilk oyun Kolay, (B) tek standart ekran, (C) Arkadaşınla ekranları
 - "Oyuncular" koltuk listesi kalktı, yerine oyuncu sayısının altında tek
   satır ("Sen ve 1 yapay zeka…"). Koltuktaki rütbe mührü de gitti, dolayısıyla
   Setup `useRankScores` isteğini artık HİÇ atmıyor.
-- **OYUNU BAŞLAT altta sabit**, turuncu (`STICKY_BAR`). Girişli YZ
-  tarafında "+ Yeni Yapay Zeka Oyunu Aç" listenin üstünden kalkıp aynı
-  şeride "Yeni Oyun Kur" olarak indi (karar 13).
-- ⚠ **`overflow-x-hidden` → `overflow-x-clip`** (`App.tsx`, Setup
-  sarmalayıcısı): `hidden` kabı bir kaydırma kabına çeviriyordu ve
-  `sticky bottom-0` ekrana değil o kabın ~1000px'lik kutusuna yapışıyordu —
-  şerit ilk ekranda kesik duruyordu (ölçüldü: 781→858, ekran 844; sonra
-  767→844). `clip` taşmayı aynı keser, kaydırma kabı oluşturmaz; `supports-`
-  kapısıyla eski Safari `hidden`da kalır (şerit yapışmaz, zararsız). Oyun
-  ekranının sarmalayıcısına DOKUNULMADI.
+- ~~**OYUNU BAŞLAT altta sabit**~~ — **GERİ ALINDI (aynı gün, #664):**
+  kullanıcı iPhone Safari'den ekran görüntüsüyle bildirdi, Arkadaşınla'da
+  düğme görünmüyordu. Sebep: iOS Safari'nin YÜZEN alt çubuğunda sayfa
+  çubuğun arkasına kadar uzanıyor (`body { position: fixed; inset: 0 }`),
+  `sticky bottom-0` şerit de oraya — çubuğun arkasına — yapışıyor;
+  `env(safe-area-inset-bottom)` bu modda 0 ve çubuğun yüksekliği sayfadan
+  güvenilir ölçülemiyor. Liste kısa olduğunda şerit akıştaki yerinde durup
+  görünüyordu, uzayınca kayboluyordu; misafir formunda üyelik kutusu formu
+  uzattığı için OYUNU BAŞLAT da aynı riskteydi. **Şimdi:** OYUNU BAŞLAT
+  zorluğun hemen altında (üyelik kutusu ondan SONRA), "Yeni Oyun Kur"
+  listelerin ÜSTÜNDE, turuncu (`actionButton.ts`). ⚠ Ders: iOS Safari'de
+  alta yapışan bir öğe, çubuğun arkasını ÖLÇMEDEN tasarlanmaz.
+- `App.tsx`teki `overflow-x-hidden` → `overflow-x-clip` değişikliği yalnızca
+  yapışkan şerit içindi; şeritle birlikte GERİ ALINDI (#664).
 - Test: duman testindeki "Oyun Tipi" beklentisi "Kime karşı" oldu; 94/94.
 
 ### Setup'ın üçüncü web parçası — Arkadaşınla, kararlar 9-12 (27 Eylül 2026)
@@ -911,9 +915,9 @@ uyarısı + ilk oyun Kolay, (B) tek standart ekran, (C) Arkadaşınla ekranları
 - **Karar 10:** tasarımdaki "gelen davet kartı + süren oyunlar" düzeni
   bugünkü alt sekmelerle (Devam Eden · Davetler · Son Oynananlar) ZATEN
   karşılanıyor ve Davetler, bekleyen davet varsa kendiliğinden açılıyor —
-  yeniden yazılmadı. Değişen tek şey "+ Yeni Canlı Oyun Aç"ın üstten alta,
-  sabit şeride "Yeni Oyun Kur" olarak inmesi (Yapay Zeka tarafıyla aynı
-  `stickyBar.ts`).
+  yeniden yazılmadı. Değişen tek şey "+ Yeni Canlı Oyun Aç"ın turuncu "Yeni
+  Oyun Kur" olması (listenin üstünde; Yapay Zeka tarafıyla aynı
+  `actionButton.ts`).
 - **Karar 11:** "Arkadaşını davet et" arama kutusunun HEMEN altında; açtığı
   pencere eskisi (Arkadaşlar → "Ara & Ekle", davet linki üstte).
 - **Karar 12:** seçilenler oyuncu renginde koltuk kartları

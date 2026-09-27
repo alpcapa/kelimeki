@@ -56,7 +56,7 @@ import {
 import { AvatarScoreRow, PlayerAvatarRow } from './PlayerAvatarRow';
 import { FriendSuggestModal } from './FriendSuggestModal';
 import { LiveGameCreateForm } from './LiveGameCreateForm';
-import { STICKY_BAR, STICKY_PRIMARY_BTN } from './stickyBar';
+import { PRIMARY_ACTION_BTN } from './actionButton';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { RecentGamesSection } from './RecentGamesSection';
 import { RankSeal } from './RankSeal';
@@ -1163,6 +1163,12 @@ export function LiveGamesTab({
       )}
 
 
+      {/* "Yeni Oyun Kur" listenin ÜSTÜNDE (27 Eylül 2026, ROADMAP #41 karar
+          10; Yapay Zeka tarafıyla aynı düğme, `actionButton.ts`). "Altta
+          sabit" denendi, iOS Safari'nin yüzen alt çubuğunun arkasına düştü. */}
+      <button onClick={() => setCreating(true)} className={PRIMARY_ACTION_BTN}>
+        Yeni Oyun Kur
+      </button>
       <div className="flex gap-2">
         {SUB_TABS.map((tab) => (
           <button
@@ -1279,14 +1285,6 @@ export function LiveGamesTab({
           )}
         </>
       )}
-      {/* Liste ÜSTTE, yeni oyun düğmesi altta SABİT (27 Eylül 2026, ROADMAP
-          #41 karar 10) — Yapay Zeka tarafıyla aynı şerit (`stickyBar.ts`).
-          Eskiden sekmenin en üstünde "+ Yeni Canlı Oyun Aç" vardı. */}
-      <div className={STICKY_BAR}>
-        <button onClick={() => setCreating(true)} className={STICKY_PRIMARY_BTN}>
-          Yeni Oyun Kur
-        </button>
-      </div>
     </div>
     </RankTierProvider>
   );
