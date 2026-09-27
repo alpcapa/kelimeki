@@ -33,7 +33,9 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
 
 - [ ] **Davet gönderme.** "Arkadaşınla" → listenin üstündeki "Yeni Oyun Kur" → 2
       kişi, bir arkadaş seç → seçilen arkadaş "RAKİBİN" altında kırmızı koltuk
-      kartında görünmeli (✕ ile boşalır) → "Davet Gönder". **"Davetin
+      kartında görünmeli (✕ ile boşalır). Boş koltuğa (+) dokununca sayfa
+      aşağıdaki "ARKADAŞLARIN" listesine kaymalı (klavye AÇILMAMALI; YZ
+      koltuğu dokunulmaz) → "Davet Gönder". **"Davetin
       gönderildi"** ekranı çıkmalı, kime gittiğini ve 7 gün notunu yazmalı.
       "Oyunlarıma git"e basınca listeye dönmeli. (27 Eylül 2026'ya kadar:
       listenin üstünde "+ Yeni Canlı Oyun Aç", onay "Davetiniz

@@ -68,6 +68,10 @@ export function LiveGameCreateForm({
   // Sıfırlama yalnızca sayı GERÇEKTEN değişince — mount'ta (StrictMode'un
   // çift koşusu dahil) koşarsa OYNA'dan gelen ön seçim silinirdi.
   const oncekiSayiRef = useRef(playerCount);
+  // Boş koltuğa (+) dokununca aşağıdaki arkadaş listesine kaydırılır
+  // (27 Eylül 2026, kullanıcı isteği). Odak VERİLMEZ: arama kutusuna odak
+  // telefonda klavyeyi açıp listeyi örterdi.
+  const listeRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
@@ -276,14 +280,8 @@ export function LiveGameCreateForm({
                 </div>
               );
             }
-            return (
-              <div
-                key={i}
-                className={[
-                  'flex items-center rounded-xl border-[1.5px] border-dashed border-[#C7D0DC] bg-bg',
-                  yatay ? 'gap-3 px-3 py-2.5' : 'flex-col justify-center gap-1.5 px-1.5 pt-3 pb-2.5',
-                ].join(' ')}
-              >
+            const govde = (
+              <>
                 <span
                   className="w-9 h-9 rounded-full bg-void border border-border flex items-center justify-center text-lg shrink-0"
                   aria-hidden
@@ -293,7 +291,25 @@ export function LiveGameCreateForm({
                 <span className="font-sans text-xs font-bold text-muted">
                   {ai ? 'Yapay Zeka' : yatay ? 'Aşağıdan bir arkadaşını seç' : 'Boş koltuk'}
                 </span>
+              </>
+            );
+            const kutuCls = [
+              'flex items-center rounded-xl border-[1.5px] border-dashed border-[#C7D0DC] bg-bg',
+              yatay ? 'gap-3 px-3 py-2.5' : 'flex-col justify-center gap-1.5 px-1.5 pt-3 pb-2.5',
+            ].join(' ');
+            return ai ? (
+              <div key={i} className={kutuCls}>
+                {govde}
               </div>
+            ) : (
+              <button
+                key={i}
+                type="button"
+                onClick={() => listeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className={`${kutuCls} w-full text-left active:scale-[0.98] transition-transform`}
+              >
+                {govde}
+              </button>
             );
           })}
         </div>
@@ -328,7 +344,7 @@ export function LiveGameCreateForm({
         {error && <p className="text-xs text-red font-mono text-center" style={{ margin: 0 }}>{error}</p>}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div ref={listeRef} className="flex flex-col gap-2 scroll-mt-3">
         <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
           Arkadaşların
         </div>
