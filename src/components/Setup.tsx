@@ -3,10 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { GUEST_PLAYER_NAME, PLAYER_COLORS } from "../game/constants";
 import type { PlayerSetup } from "../game/gameReducer";
 import type { AiLevel } from "../game/types";
-import { AI_LEVEL_LABEL, SELECTABLE_AI_LEVELS, aiLevelDescription, aiLevelOf } from "../utils/aiLevel";
+import { AI_LEVEL_LABEL, SELECTABLE_AI_LEVELS, aiLevelDescription, aiLevelOf, defaultAiLevel } from "../utils/aiLevel";
 import { AiLevelBadge } from "./AiLevelBadge";
 import { useAuth } from "../hooks/useAuth";
-import { useModalA11y } from "../hooks/useModalA11y";
 import { subscribeMyOnlineGames } from "../lib/api";
 import { hasSeenQuickStart, hasSeenTutorial, shouldShowTutorial } from "../utils/onboarding";
 import { ABANDON_TIMEOUT_MS, type SavedGame } from "../utils/gameStorage";
@@ -309,7 +308,7 @@ export function Setup({
   onResumeCloudSave,
   onReplayTutorial,
 }: SetupProps) {
-  const { user, profile, loading, profileLoading } = useAuth();
+  const { user, profile, profileLoading } = useAuth();
   // 1. koltuktaki hesap sahibinin rütbe mührü. Puan `leaderboard`
   // view'ından geliyor, yani ÖDÜL puanları dahil — 17 Ağustos 2026'da
   // kaldırılan parantezli sayı `player_stats` mod toplamıydı ve o, ödülleri
@@ -337,7 +336,15 @@ export function Setup({
   // oyun formu açılışında Normal'e döner; misafirde de var (misafir de YZ'ye
   // karşı oynuyor: kaydı/puanı yok ama seçim yine anlamlı). Zor, Faz 5'e
   // kadar seçenek listesinde YOK (`SELECTABLE_AI_LEVELS`).
-  const [level, setLevel] = useState<AiLevel>("normal");
+  //
+  // İLK OYUN KOLAY (27 Eylül 2026, ROADMAP #41 karar 7 — kullanıcı: *"Kolay
+  // olsun"*): hiç oynamamış kullanıcıda varsayılan Kolay, sonrası bugünkü
+  // gibi Normal. "Hiç oynamamış" = tanıtım kapısının kararı (`isFirstGame`,
+  // aşağıda) — aynı dört sinyal, ayrı bir tanım üretmemek için. Sinyaller
+  // (bulut kayıtları, profil) geç yüklenebildiğinden varsayılan TÜRETİLİYOR,
+  // `useState`in ilk değerine gömülmüyor; kullanıcı bir seviyeye dokunduğu
+  // an onun seçimi geçerli.
+  const [chosenLevel, setLevel] = useState<AiLevel | null>(null);
 
   // Kelime listesi main.tsx'te tetiklenen ayrı chunk'tan yükleniyor —
   // "Oyunu Başlat" hazır olana kadar devre dışı bırakılır (bkz.
@@ -372,7 +379,6 @@ export function Setup({
     };
   }, [wordsReady]);
 
-  const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -576,20 +582,6 @@ export function Setup({
     };
   }, [user?.id, onMainViewChange]);
 
-  // "Giriş Yap" / "Oyna" ikisi de anlamlı birer karar, gerçek bir "vazgeç"
-  // değil — bu yüzden Escape/X, oyunu misafir olarak başlatmadan ("Oyna"
-  // gibi) ya da giriş ekranını açmadan ("Giriş Yap" gibi) sadece popup'ı
-  // kapatıp kullanıcıyı kurulum ekranında bırakır.
-  //
-  // Buton "DEVAM" DEĞİL "OYNA" (18 Ağustos 2026, kullanıcı bildirdi):
-  // uyarı metni üyeliğin faydalarını anlattığından "Devam", cümlenin
-  // devamı gibi okunup "üyeliğe devam et" izlenimi veriyordu. "Oyna" ne
-  // olacağını söylüyor — misafir olarak oyun başlar. Flutter portundaki
-  // eşi (`setup_screen.dart`, `_showGuestWarning`) AYNI turda değişti;
-  // ikisi birlikte değişmeli.
-  const closeWarningPopup = () => setShowWarningPopup(false);
-  const warningPopupRef = useModalA11y(showWarningPopup, closeWarningPopup);
-
   // ⚠ Yardım penceresini kapatmak tanıtımı TÜKETMEZ (7 Eylül 2026'da
   // değişti). Eskiden burada `markQuickStartSeen()` çağrılıyordu: pencere
   // ilk oyunda KENDİLİĞİNDEN açıldığı için, elle okuyanı bir daha rahatsız
@@ -658,6 +650,14 @@ export function Setup({
   // kurulum satırının işi kadroyu göstermek, puanı değil; puan zaten hesap
   // menüsünde ve Skor Kartı'nda var. Flutter portunda bu gösterge hiç
   // OLMADIĞINDAN kaldırma aynı zamanda bir web↔port ayrışmasını da kapatıyor.
+  const isFirstGame = shouldShowTutorial({
+    seenTutorial: hasSeenTutorial(),
+    seenLegacyQuickStart: hasSeenQuickStart(),
+    hasPlayed: user ? (cloudSaves?.length ?? 0) > 0 : savedGame !== null,
+    accountCreatedAt: profile?.created_at ?? null,
+  });
+  const level: AiLevel = chosenLevel ?? defaultAiLevel(isFirstGame);
+
   const doStart = () => {
     const list: PlayerSetup[] = Array.from({ length: count }, (_, i) => {
       // 1. oyuncu her zaman gerçek kişidir (giriş yapıldıysa hesap adıyla,
@@ -680,25 +680,19 @@ export function Setup({
     //     kullanıcı bu satır olmadan "yeni" görünürdü).
     // `cloudSaves` henüz yüklenmemişse (null) bu sinyal sessizce "yok" der;
     // girişli kullanıcıda asıl koruma zaten hesap yaşı.
-    onStart(
-      list,
-      shouldShowTutorial({
-        seenTutorial: hasSeenTutorial(),
-        seenLegacyQuickStart: hasSeenQuickStart(),
-        hasPlayed: user ? (cloudSaves?.length ?? 0) > 0 : savedGame !== null,
-        accountCreatedAt: profile?.created_at ?? null,
-      }),
-      level,
-    );
+    onStart(list, isFirstGame, level);
   };
 
-  const handleStart = () => {
-    if (!loading && !user) {
-      setShowWarningPopup(true);
-    } else {
-      doStart();
-    }
-  };
+  // Misafire "giriş yapın" penceresi ARTIK YOK (27 Eylül 2026, ROADMAP #41
+  // karar 4 — kullanıcı: *"Kaldıralım"*). Her misafir başlatmada çıkıyor,
+  // yeni geleni OYUNU BAŞLAT ile tanıtım arasında bir dokunuş daha
+  // bekletiyordu. Verdiği bilgi üç yerde duruyor: zorluk açıklamasının
+  // "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox` ve oyun
+  // sonundaki kayıt önerisi. ⚠ Port ikizi (`setup_screen.dart`,
+  // `_showGuestWarning`) BİLEREK henüz değişmedi: #41'in Setup yarısı önce
+  // yalnız webde, uygulama ara dönemde kontrol grubu
+  // (`docs/decisions/onboarding.md` → "Uygulama sırası").
+  const handleStart = doStart;
 
   /**
    * "Yapay Zeka ile" sekmesinin çevrimdışı hâli — Canlı sekmesinin düz
@@ -740,58 +734,6 @@ export function Setup({
       )}
       {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
-
-      {showWarningPopup && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-          <div
-            ref={warningPopupRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Giriş uyarısı"
-            tabIndex={-1}
-            className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] px-6 pb-6 pt-12 flex flex-col gap-4 outline-none relative"
-          >
-            <button
-              onClick={closeWarningPopup}
-              aria-label="Kapat"
-              className="absolute top-3 right-3 text-muted hover:text-text text-lg leading-none tap-expand w-7 h-7 flex items-center justify-center rounded active:scale-90 transition-transform"
-            >
-              ✕
-            </button>
-            {/* ⚠ Üst dolgu `pt-12` (24 değil 48): ✕ mutlak konumlu ve kartın
-              SAĞ ÜST köşesini kaplıyor, metin onun ALTINDAN başlamalı.
-              Alternatif olarak metne sağ dolgu vermek denendi ve ÖLÇÜLDÜ:
-              `pr-8` cümleyi 2 satırdan 3 satıra çıkarıp kartı 153 → 176px
-              yapıyor ve ilk satırın sağında 38px'lik boşluk bırakıyordu.
-              Bu yol 2 satırı koruyor. Metnin `pr`'ı bilerek YOK — ✕ ile
-              artık aynı hizada değil. */}
-            <p className="text-sm text-text font-sans leading-relaxed">
-              Oyunların istatistikleri, k-lig ve arkadaşınla canlı oyun için
-              lütfen giriş yapın.
-            </p>
-            <div className="flex gap-2 mt-1">
-              <button
-                onClick={() => {
-                  setShowWarningPopup(false);
-                  setShowAuthModal(true);
-                }}
-                className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
-              >
-                Giriş Yap
-              </button>
-              <button
-                onClick={() => {
-                  setShowWarningPopup(false);
-                  doStart();
-                }}
-                className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
-              >
-                Oyna
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="w-full max-w-[460px] px-4 py-6 flex flex-col gap-5">
         {/* `-mt-5` (−20px), kaptaki `py-6`nın (24px) üst yarısını yiyerek

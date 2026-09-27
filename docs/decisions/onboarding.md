@@ -824,10 +824,10 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | 1 | Karşılama sade: tek soru-başlık, bölge dış hatlı küçük tahta kesiti, "HEMEN OYNA", mağaza rozetleri. Uzun SEO içeriği sayfada KALIR, ilk ekranın altına iner | ✅ KODLANDI (27 Eyl) — `landing-page.md` → "İlk ekran sadeleşti" | `src/landing/` |
 | 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** altta sabit | Sekmeli | `Setup.tsx` ↔ `setup_screen.dart` |
 | 3 | Setup'ta "1 dk'lık tanıtımla başlar" satırı YOK | — | — |
-| 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | Her misafir başlatmada çıkıyor | `handleStart` (`Setup.tsx`) ↔ `_showGuestWarning` (`setup_screen.dart`) |
+| 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `handleStart` (`Setup.tsx`) ↔ `_showGuestWarning` (`setup_screen.dart`) |
 | 5 | Tanıtımın açılış penceresi ("Kelimeki Tanıtım Turu / Devam") KALKAR, 1. sahne doğrudan açılır | Var | `TutorialGame` ↔ `ui/tutorial/*` |
 | 6 | Ayrı bir "Hazırsın" ekranı YOK; mevcut bitiş penceresi yeni tasarıma geçer (onay mührü, tanıtım skoru, sıradaki oyun, turuncu düğme) | Düz pencere | aynı |
-| 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | Hep Normal (`useState("normal")`) | `Setup.tsx:340` ↔ port |
+| 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | ✅ WEB KODLANDI (27 Eyl, `defaultAiLevel`); port bilerek bekliyor | `Setup.tsx:340` ↔ port |
 | 8 | Rakibin adı **Yapay Zeka** (27 Eylül, kullanıcı: *"yapay zeka kalsın"*); oyun içi skor kutusundaki "YZ 2" kısaltması DEĞİŞMEZ | Aynı | — |
 | 9 | Arkadaşınla, girişsiz: alttan açılan giriş uyarısı (ÜYE OL · GİRİŞ YAP · YAPAY ZEKAYLA DEVAM ET) | Sekmede metin | `LiveGamesTab` |
 | 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | Liste + ayrı form | `LiveGamesTab` + `LiveGameCreateForm` |
@@ -861,6 +861,25 @@ günde düşer, ret oyunu kurmaz, hamle başına 48 saat. Tuval bunları aynen
 
 Bu bölümün "Dört değişmez"i (motora dokunmaz · oyun değildir ·
 doğrulayıcı · port ikizi) aynen geçerli.
+
+### Setup'ın ilk web parçası — kararlar 4 + 7 (27 Eylül 2026)
+
+Setup üç web PR'ına bölündü, küçük ve ölçülebilir olan ÖNCE: (A) misafir
+uyarısı + ilk oyun Kolay, (B) tek standart ekran, (C) Arkadaşınla ekranları.
+
+- **Karar 4:** `handleStart` artık doğrudan `doStart`; pencere, state'i ve
+  `useModalA11y` çağrısı silindi. `loading` beklemesi de gitti — eskiden
+  auth çözülmeden basılan OYUNU BAŞLAT zaten doğrudan başlatıyordu.
+- **Karar 7:** `defaultAiLevel(ilkOyun)` (`utils/aiLevel.ts`); "ilk oyun"
+  tanıtım kapısının kararı (`isFirstGame` = `shouldShowTutorial(...)`),
+  ikinci bir tanım YOK. Varsayılan TÜRETİLİYOR (`chosenLevel ?? …`): bulut
+  kayıtları/profil geç yüklenince kendiliğinden düzelir, kullanıcı bir
+  seviyeye dokunduğu an onunki geçerli.
+- **Testler:** yeni duman testi (misafir → Kolay işaretli, OYUNU BAŞLAT →
+  oyun, "Giriş uyarısı" 0 adet). "Varsayılan Normal"i ölçen iki test artık
+  kendini `oynamisKullanici` ile işaretliyor. `.tap-expand` regresyon testi
+  bu pencereyi ölçüyordu; misafirin açabildiği başka bir örnek kalmadığından
+  aynı sınıf dizesiyle sayfaya eklenen bir kartı ölçüyor (değişmez CSS'te).
 
 ### Taban ölçüm (27 Eylül 2026, kodlamadan ÖNCE)
 
