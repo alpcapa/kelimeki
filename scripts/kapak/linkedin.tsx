@@ -14,9 +14,7 @@
 // iki yandan taşar, kırpılmaları bilgi kaybettirmez.
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LandingLogo, LandingLogoDefs } from '../../src/landing/LandingLogo';
-import {
-  BADGE_GAP_PX, BADGE_HEIGHT_PX, BADGE_MIN_HEIGHT_PX, visibleStoreBadges,
-} from '../../src/utils/storeLinks';
+import { BADGE_GAP_PX, BADGE_HEIGHT_PX, visibleStoreBadges } from '../../src/utils/storeLinks';
 import { GameBoardPreview } from '../../src/components/GameBoardPreview';
 import { DEMO_TILES_2, DEMO_TILES_4 } from '../../src/landing/demoBoard';
 
@@ -38,18 +36,15 @@ const ACCENT = '#2563EB';
  * çıktığı ve sırası KAPIDAN (`visibleStoreBadges` — App Store önce, eşit
  * yükseklik); rozet dosyaları `<img>` ile, çizilmez.
  *
- * ⚠ Yükseklik Apple'ın alt sınırından TÜRER, elle seçilmez: 40 pt EKRANDA
- * ölçülür ve en küçük ekran telefonun kırpması — kapağın orta `mobilW`
- * px'lik şeridi ~390 pt'lik ekrana yayılıyor (`build.mjs`teki `MOBIL_W`
- * ile AYNI sayılar). Kişisel kapakta 560 → 58 px, sayfa kapağında
- * 840 → 87 px.
- *
- * ⚠ Rozetlere dokunulamaz — LinkedIn kapağa link koydurmuyor; bilinen bedel.
+ * ⚠ Rozetler bilerek KÜÇÜK (kişisel 30 px, sayfa 30 px) — KULLANICI KARARI,
+ * 27 Eylül 2026. İlk deneme yüksekliği Apple'ın 40 pt alt sınırından
+ * türetmişti (telefon kırpmasına göre 58 / 87 px); kapak rozetlere boğuldu,
+ * kullanıcı "olmamış, küçültmek lazım" dedi. Bedel biliniyor: telefonda
+ * rozet ~21 / ~14 pt'ye iner, Apple'ın ekran sınırının ALTINDA. Kapakta
+ * rozete dokunulamaz zaten (LinkedIn link koydurmuyor); rozet burada bir
+ * çağrı düğmesi değil, "iki mağazada var" işareti.
  */
-const TELEFON_PT = 390;
-function rozetYuksekligi(mobilW: number): number {
-  return Math.ceil(BADGE_MIN_HEIGHT_PX / (TELEFON_PT / mobilW));
-}
+const ROZET_H = 30;
 
 function Rozetler({ yukseklik }: { yukseklik: number }) {
   return (
@@ -116,22 +111,24 @@ export function LinkedInKapak() {
           alignItems: 'center',
           justifyContent: 'center',
           // Dikeyde hafif yukarı: alt bant avatarın ve ad kartının bölgesi.
-          paddingBottom: 18,
+          paddingBottom: 26,
         }}
       >
         {/* Güvenli kutu: 440 px — telefonun dar kırpmasında da tamamen içeride. */}
         <div
           data-guvenli-kutu=""
-          style={{ width: 440, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}
+          style={{ width: 440, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9 }}
         >
-          <LandingLogo height={36} />
-          <p style={{ margin: 0, fontSize: 16, lineHeight: 1.2, fontWeight: 700, letterSpacing: -0.2 }}>
+          <LandingLogo height={44} />
+          <p style={{ margin: 0, fontSize: 17, lineHeight: 1.25, fontWeight: 700, letterSpacing: -0.2 }}>
             Kelime bul, bölgeni büyüt, tahtayı ele geçir.
           </p>
-          <Rozetler yukseklik={rozetYuksekligi(560)} />
-          <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: 0.5 }}>
-            kelimeki.com
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Rozetler yukseklik={ROZET_H} />
+            <span style={{ fontFamily: MONO, fontSize: 12, fontWeight: 700, color: ACCENT, letterSpacing: 0.5 }}>
+              kelimeki.com
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -186,16 +183,20 @@ export function LinkedInSayfaKapak() {
           paddingLeft: 150,
         }}
       >
-        {/* Dikey yığın (27 Eylül 2026'ya kadar yatay: logo | çizgi | metin).
-            Telefon kırpmasının 87 px istediği rozetlerin yanına logo artık
-            sığmıyor (logo + iki rozet ≈ 890 px > 840 px'lik şerit), üste alındı.
-            Site adresi bu kapakta YOK — sayfanın kendi "Web sitesi" düğmesi var. */}
-        <div data-guvenli-kutu="" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <LandingLogo height={32} />
-          <p style={{ margin: 0, fontSize: 18, lineHeight: 1.2, fontWeight: 700, letterSpacing: -0.2 }}>
-            Kelime bul, bölgeni büyüt, tahtayı ele geçir.
-          </p>
-          <Rozetler yukseklik={rozetYuksekligi(840)} />
+        <div data-guvenli-kutu="" style={{ display: 'flex', alignItems: 'center', gap: 26 }}>
+          <LandingLogo height={46} />
+          <span style={{ width: 1, height: 52, background: '#D8DEE6' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p style={{ margin: 0, fontSize: 19, lineHeight: 1.2, fontWeight: 700, letterSpacing: -0.2 }}>
+              Kelime bul, bölgeni büyüt, tahtayı ele geçir.
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <Rozetler yukseklik={ROZET_H} />
+              <span style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: ACCENT, letterSpacing: 0.4 }}>
+                kelimeki.com
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

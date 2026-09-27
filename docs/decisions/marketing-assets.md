@@ -209,17 +209,14 @@ alt %45) → uzakta.
 Eylül 2026'da SSS metninin bayatlamasıyla alınan dersin aynısı.
 
 **27 Eylül 2026: metin → ROZET, iki kapakta da** (kullanıcı isteği).
-`visibleStoreBadges()` (App Store önce, eşit yükseklik), `<img>` ile.
-Yükseklik Apple'ın 40 pt alt sınırından TÜRETİLİYOR: sınır EKRANDA
-ölçülür, en küçük ekran telefonun kırpması (kapağın orta `MOBIL_W`
-şeridi ~390 pt'ye yayılıyor) → kişisel kapakta 560 → **58 px**, sayfa
-kapağında 840 → **87 px**. Sayfa kapağı bu yüzden yatay dizilimden
-(logo | çizgi | metin) dikey yığına döndü — logo + iki rozet 840'a
-sığmıyordu — ve site adresi oradan çıktı (sayfanın "Web sitesi" düğmesi
-var); kişisel kapakta `kelimeki.com` rozetlerin altında kaldı. Betik iki
-rozetin kırpma şeridinde ve eşit yükseklikte olduğunu ölçer, değilse
-DÜŞER. Bilinen bedel: kapakta rozete dokunulamaz (LinkedIn link
-koydurmuyor).
+`visibleStoreBadges()` (App Store önce, eşit yükseklik), `<img>` ile;
+`kelimeki.com` rozetlerin yanında. ⚠ Rozetler bilerek KÜÇÜK (30 CSS px)
+— ilk deneme yüksekliği Apple'ın 40 pt sınırından türetmişti (telefon
+kırpmasına göre 58 / 87 px), kapak rozetlere boğuldu ve kullanıcı
+reddetti: *"olmamış, küçültmek lazım"*. Bedel: telefonda ~21 / ~14 pt,
+Apple'ın ekran sınırının altında — kapakta rozete dokunulamadığı için
+(LinkedIn link koydurmuyor) kabul edildi. Betik iki rozetin kırpma
+şeridinde ve eşit yükseklikte olduğunu ölçer, değilse DÜŞER.
 
 ### Reel (`scripts/reel/`, 20 Ağustos 2026)
 
