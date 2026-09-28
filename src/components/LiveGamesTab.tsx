@@ -40,6 +40,7 @@ import {
 } from '../lib/api';
 import { ABANDON_TIMEOUT_MS } from '../utils/gameStorage';
 import type { OnlineGame, OnlineGameSlot } from '../lib/database.types';
+import { countPendingActions } from '../utils/pendingLiveGames';
 import type { OnlineGameGlance } from '../lib/api';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
@@ -551,6 +552,14 @@ interface LiveGamesTabProps {
    * Zeka'ya çevirir. Verilmezse pencere yalnızca kapanır.
    */
   onSwitchToAi?: () => void;
+  /**
+   * Liste her BAŞARIYLA yüklendiğinde (liste + sıra bilgisi) "bekleyen iş"
+   * sayısıyla çağrılır — sahibi `Setup`in "Arkadaşınla (N)" rozeti. Sayı
+   * `countPendingActions`tan, yani rozet sorgusuyla AYNI hesaptan gelir;
+   * liste ile rozet artık birbiriyle çelişemez (28 Eylül 2026, gerekçe o
+   * fonksiyonun notunda). Port ikizi: `LiveGamesTab.onActionCount`.
+   */
+  onActionCount?: (count: number) => void;
 }
 
 /**
@@ -622,6 +631,7 @@ export function LiveGamesTab({
   newlyFinishedIds,
   onFinishesSeen,
   onSwitchToAi,
+  onActionCount,
 }: LiveGamesTabProps) {
   const { user, loading: authLoading } = useAuth();
   const online = useOnlineStatus();
@@ -747,6 +757,15 @@ export function LiveGamesTab({
   // listeyi bir kez daha tazeler — böylece asılı kalmış bir Canlı oyun,
   // kullanıcı bu sekmeyi her açtığında kendiliğinden çözülür (bkz. CLAUDE.md
   // "Canlı Oyun — Faz 3.6").
+  // Rozeti listeyle hizala — yalnızca sıra bilgisi de ELDEYKEN çağrılır
+  // (eksik sırayla sayım rozeti sessizce küçültürdü; `fetchPendingLiveGameCounts`in
+  // "bilmiyorsak son bilineni koru" doktriniyle aynı).
+  const reportActionCount = (rows: OnlineGame[], turnMap: Record<string, number>) => {
+    if (!onActionCount) return;
+    const { inviteCount, myTurnCount } = countPendingActions(rows, turnMap);
+    onActionCount(inviteCount + myTurnCount);
+  };
+
   const loadGames = async (cancelledRef?: { current: boolean }) => {
     const rows = await listMyOnlineGames();
     if (cancelledRef?.current) return;
@@ -769,6 +788,7 @@ export function LiveGamesTab({
     if (activeIds.length === 0 && expiredInviteIds.length === 0) {
       setTurns({});
       setGlances({});
+      reportActionCount(rows, {});
       return;
     }
 
@@ -790,7 +810,10 @@ export function LiveGamesTab({
       setLoadFailed(true);
       scheduleAutoRetry();
     }
-    if (turnMap !== null) setTurns(turnMap);
+    if (turnMap !== null) {
+      setTurns(turnMap);
+      reportActionCount(rows, turnMap);
+    }
     if (glanceMap !== null) setGlances(glanceMap);
 
     const expiredTurns = activeIds.filter((id) => {
@@ -815,6 +838,7 @@ export function LiveGamesTab({
     if (activeIds2.length === 0) {
       setTurns({});
       setGlances({});
+      reportActionCount(rows2, {});
       return;
     }
     const [turnMap2, glanceMap2] = await Promise.all([
@@ -826,7 +850,10 @@ export function LiveGamesTab({
       setLoadFailed(true);
       scheduleAutoRetry();
     }
-    if (turnMap2 !== null) setTurns(turnMap2);
+    if (turnMap2 !== null) {
+      setTurns(turnMap2);
+      reportActionCount(rows2, turnMap2);
+    }
     if (glanceMap2 !== null) setGlances(glanceMap2);
   };
   loadGamesRef.current = (t) => {

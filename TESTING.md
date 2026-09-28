@@ -88,6 +88,12 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
 - [ ] **Kabul.** Oyun `active` olmalı, tahta/torba kurulmalı, iki tarafta da
       "Devam Edenler"e geçmeli. Kabul sonrası arkadaş önerisi modalı çıkmalı
       (henüz arkadaş olunmayan katılımcılar varsa).
+- [ ] **Kabul sonrası rozet** (28 Eylül 2026). Sırası RAKİPTE olan bir
+      daveti kabul et: "Arkadaşınla (N)" rozeti liste tazelenir tazelenmez
+      düşmeli — sayfayı yenilemeden, sekme değiştirmeden. Öncesinde rozet
+      yalnızca Realtime olayıyla düşüyordu; olay kaçınca "1"de kalıyordu.
+      (Aynı hesap: sekmeye her dönüşte liste yeniden yüklenir, rozet onunla
+      hizalanır — `countPendingActions`.)
 - [ ] **Ret.** Kart, daveti GÖNDERENİN listesinden de **anında** kalkmalı
       (oyun `abandoned` olur). Hiçbir yerde "bekliyor" olarak durmamalı.
 - [ ] **Login varsayılanı.** Bekleyen bir davet varken çıkış yapıp tekrar gir:
