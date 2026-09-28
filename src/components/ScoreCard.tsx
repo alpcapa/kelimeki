@@ -125,7 +125,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
 
       <ScoreStatsSection
         stats={stats}
-        emptyText={tab === 'all' ? 'Henüz hiç oyun kaydın yok.' : `Henüz ${tab} oyunculu oyun kaydın yok.`}
+        emptyText={tab === 'all' ? 'Henüz hiç oyun kaydın yok.' : `Henüz ${tab} kişilik oyun kaydın yok.`}
       />
 
       {/* 3 Eylül 2026 (kullanıcı isteği: "Hepsinde Tüm oyunlar olsun / Ve

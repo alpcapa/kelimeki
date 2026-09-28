@@ -447,7 +447,7 @@ export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCar
         emptyText={
           tab === 'all'
             ? 'Bu oyuncunun hiç oyun kaydı yok.'
-            : `Bu oyuncunun ${tab} oyunculu oyun kaydı yok.`
+            : `Bu oyuncunun ${tab} kişilik oyun kaydı yok.`
         }
       />
 
@@ -524,7 +524,7 @@ export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCar
           playerCount={tab === 'all' ? null : tab}
           userId={member.id}
           targetName={name}
-          title={tab === 'all' ? name : `${name} · ${tab} Oyunculu`}
+          title={tab === 'all' ? name : `${name} · ${tab} Kişi`}
           onClose={() => setShowAllGames(false)}
         />
       )}

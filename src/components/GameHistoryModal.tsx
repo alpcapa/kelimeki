@@ -61,7 +61,7 @@ interface GameHistoryModalProps {
    * kullanıcı için gösterilmesi gerektiğinden (bkz. `fallbackPlayers`).
    */
   targetName?: string | null;
-  /** Verilirse varsayılan "Tüm Oyunlar · N Oyunculu" başlığının yerine geçer. */
+  /** Verilirse varsayılan "Tüm Oyunlar · N Kişi" başlığının yerine geçer. */
   title?: string;
   /**
    * Verilirse (ör. `RecentGamesSection`'daki "Son Oynadıklarım" satırlarından
@@ -616,7 +616,7 @@ export function GameHistoryModal({
   }, [hasMore, loading, loadMore]);
 
   return (
-    <Modal title={title ?? (playerCount === null ? 'Tüm Oyunlar' : `Tüm Oyunlar · ${playerCount} Oyunculu`)} onClose={onClose}>
+    <Modal title={title ?? (playerCount === null ? 'Tüm Oyunlar' : `Tüm Oyunlar · ${playerCount} Kişi`)} onClose={onClose}>
       {/* Tümü / Favoriler filtresi */}
       <div className="flex gap-1.5 mb-3 shrink-0">
         {([
