@@ -44,9 +44,9 @@ const ACCENT = '#2563EB';
  * rozete dokunulamaz zaten (LinkedIn link koydurmuyor); rozet burada bir
  * çağrı düğmesi değil, "iki mağazada var" işareti.
  */
-const ROZET_H = 30;
+export const ROZET_H = 30;
 
-function Rozetler({ yukseklik }: { yukseklik: number }) {
+export function Rozetler({ yukseklik }: { yukseklik: number }) {
   return (
     <div data-rozetler="" style={{ display: 'flex', alignItems: 'center', gap: Math.round((yukseklik * BADGE_GAP_PX) / BADGE_HEIGHT_PX) }}>
       {visibleStoreBadges().map((b) => (
