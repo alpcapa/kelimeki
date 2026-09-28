@@ -16,8 +16,9 @@ interface MoveHistoryModalProps {
 export interface MoveHistoryStats {
   /**
    * Oyunun TOPLAM hamlesi — sıranın geldiği her tur (kelime + pas + taş
-   * değiştirme), yani listedeki son numarayla aynı. Teslim olma ve vergi
-   * geliri satırları hariç.
+   * değiştirme + oyunu BİTİRMEYEN teslim). Oyunu bitiren teslim (aktif
+   * oyuncu 1'e düşüyor — 2 kişide ilk teslim) ve vergi geliri satırları
+   * hariç (kullanıcı kararı, 28 Eylül 2026).
    */
   moves: number;
   /** Oyunun TOPLAM puanı — bütün oyuncuların bütün satırları. */
@@ -43,13 +44,18 @@ export function moveHistoryStats(state: GameState, myIndex: number): MoveHistory
   let score = 0;
   let taxPaid = 0;
   let taxCollected = 0;
+  let surrenders = 0;
   for (const e of state.moveHistory) {
     score += e.points;
     if (e.invasionFrom !== undefined) {
       if (e.player === myIndex) taxCollected += e.points;
       continue;
     }
-    if (e.action === 'surrender') continue;
+    if (e.action === 'surrender') {
+      surrenders++;
+      // Kademeli teslim: oyun ancak aktif oyuncu 1'e düşünce biter.
+      if (surrenders >= state.players.length - 1) continue;
+    }
     moves++;
     if (e.player === myIndex) for (const s of e.lostShares ?? []) taxPaid += s.amount;
   }
