@@ -5,7 +5,83 @@ import type { GameState } from '../game/types';
 
 interface MoveHistoryModalProps {
   state: GameState;
+  /**
+   * Pencereyi açanın koltuğu — iki vergi kutusu ONUN rakamlarını gösterir.
+   * Bilinmiyorsa (`-1`/verilmemiş) vergi kutuları çizilmez.
+   */
+  myIndex?: number;
   onClose: () => void;
+}
+
+export interface MoveHistoryStats {
+  /**
+   * Oyunun TOPLAM hamlesi — sıranın geldiği her tur (kelime + pas + taş
+   * değiştirme + oyunu BİTİRMEYEN teslim). Oyunu bitiren teslim (aktif
+   * oyuncu 1'e düşüyor — 2 kişide ilk teslim) ve vergi geliri satırları
+   * hariç (kullanıcı kararı, 28 Eylül 2026).
+   */
+  moves: number;
+  /** Oyunun TOPLAM puanı — bütün oyuncuların bütün satırları. */
+  score: number;
+  /** Pencereyi açanın kendi hamlelerinde kaptırdığı toplam (`null` = koltuk bilinmiyor). */
+  taxPaid: number | null;
+  /** Pencereyi açanın bölgesine giren/değen hamlelerden ona gelen toplam. */
+  taxCollected: number | null;
+}
+
+/**
+ * Üstteki kutuların sayıları (28 Eylül 2026, kullanıcı isteği: *"toplam
+ * hamle, toplam puan, vergiler"*). Önceki "Bu oyunda kazanılan N hamle…
+ * Toplam X puan" satırının yerine geldi: N yalnızca puanlı hamleleri
+ * sayarken liste numarası (`turn + 1`) pas turlarını da saydığından
+ * "44 hamle" yazıp 45. hamleyi listeliyordu. Hamle ve puan OYUNUN toplamı;
+ * vergiler kişisel, çünkü oyun genelinde ödenen vergi toplanana HEP eşit
+ * olurdu. Port ikizi: `move_history_modal.dart`.
+ */
+export function moveHistoryStats(state: GameState, myIndex: number): MoveHistoryStats {
+  const known = myIndex >= 0 && myIndex < state.players.length;
+  let moves = 0;
+  let score = 0;
+  let taxPaid = 0;
+  let taxCollected = 0;
+  let surrenders = 0;
+  for (const e of state.moveHistory) {
+    score += e.points;
+    if (e.invasionFrom !== undefined) {
+      if (e.player === myIndex) taxCollected += e.points;
+      continue;
+    }
+    if (e.action === 'surrender') {
+      surrenders++;
+      // Kademeli teslim: oyun ancak aktif oyuncu 1'e düşünce biter.
+      if (surrenders >= state.players.length - 1) continue;
+    }
+    moves++;
+    if (e.player === myIndex) for (const s of e.lostShares ?? []) taxPaid += s.amount;
+  }
+  return {
+    moves,
+    score,
+    taxPaid: known ? taxPaid : null,
+    taxCollected: known ? taxCollected : null,
+  };
+}
+
+function StatBox({ label, value, tone }: { label: string; value: string; tone: 'text' | 'green' | 'red' }) {
+  return (
+    <div className="shadow-raised flex flex-col items-center gap-1 py-1.5 px-1 rounded-md bg-bg border border-border min-w-0">
+      <span className="text-[8px] font-mono text-muted uppercase tracking-[0.5px] whitespace-nowrap">
+        {label}
+      </span>
+      <span
+        className={`text-[15px] leading-none font-mono font-bold ${
+          tone === 'green' ? 'text-green' : tone === 'red' ? 'text-red' : 'text-text'
+        }`}
+      >
+        {value}
+      </span>
+    </div>
+  );
 }
 
 /** Standart hamle dışı durumlar (sınır ihlali vb.) için küçük renkli rozet. */
@@ -73,23 +149,29 @@ function BonusBadge({ tier }: { tier: 2 | 3 }) {
   );
 }
 
-export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
+export function MoveHistoryModal({ state, myIndex = -1, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory;
-  const total = entries.reduce((s, e) => s + e.points, 0);
+  const stats = moveHistoryStats(state, myIndex);
+  const hasTax = stats.taxPaid !== null && stats.taxCollected !== null;
   // Vergi geliri satırı ayrı bir kart olarak gösterilmez: aynı hamle zaten
   // hamleyi yapanın kendi satırında (kelime + net puan + kaptırılan pay
   // notu) tam olarak anlatılıyor, ikinci satır sadece tekrar olur. Aynı
   // sebeple bu satırlar hamle sayısına da katılmaz — yoksa bir bölge
   // vergisi paylaşımı tek hamleyi iki "hamle" gibi saydırır.
   const displayEntries = entries.filter((e) => e.invasionFrom === undefined);
-  const scoringMoveCount = displayEntries.filter((e) => !e.action).length;
 
   return (
     <Modal title="Oyun Geçmişi" onClose={onClose}>
-      <p className="text-[10px] font-mono text-muted mb-3 leading-relaxed">
-        Bu oyunda kazanılan {scoringMoveCount} hamle ve puanları. Toplam{' '}
-        <span className="font-bold text-accent text-[15px]">{total}</span> puan.
-      </p>
+      <div className={`grid ${hasTax ? 'grid-cols-4' : 'grid-cols-2'} gap-1.5 mb-3`}>
+        <StatBox label="Hamle" value={String(stats.moves)} tone="text" />
+        <StatBox label="Puan" value={String(stats.score)} tone="text" />
+        {hasTax && (
+          <>
+            <StatBox label="Vergi (−)" value={stats.taxPaid ? `−${stats.taxPaid}` : '0'} tone={stats.taxPaid ? 'red' : 'text'} />
+            <StatBox label="Vergi (+)" value={stats.taxCollected ? `+${stats.taxCollected}` : '0'} tone={stats.taxCollected ? 'green' : 'text'} />
+          </>
+        )}
+      </div>
 
       {displayEntries.length === 0 ? (
         <p className="text-[11px] font-mono text-muted text-center py-4">

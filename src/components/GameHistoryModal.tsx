@@ -1003,7 +1003,14 @@ export function GameHistoryModal({
           ...buildSnapshotGameState([], entry?.player_count ?? 2, entry?.players ?? []),
           moveHistory: rows,
         };
-        return <MoveHistoryModal state={state} onClose={close} />;
+        // Kutuların koltuğu: yalnızca satır GERÇEKTEN bana aitse (yukarıdaki
+        // liste ile aynı `isMyRow` kuralı). `players` final SIRALAMASI,
+        // `moveHistory` ise KOLTUK numarası taşıyor → sıradan koltuğa çevir.
+        const snap = entry?.players ?? [];
+        const mine = !!entry && !!user && entry.user_id === user.id && snap.length > 0;
+        const rankIdx = mine ? findMeIndex(entry!, snap) : -1;
+        const myIndex = rankIdx >= 0 ? seatIndexFor(snap[rankIdx], rankIdx, true) : -1;
+        return <MoveHistoryModal state={state} myIndex={myIndex} onClose={close} />;
       })()}
 
       {/*

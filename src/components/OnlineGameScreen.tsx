@@ -1785,7 +1785,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       {showTiles && (
         <RemainingTilesModal state={state} myIndex={mySlotIndex} onClose={() => setShowTiles(false)} />
       )}
-      {showHistory && <MoveHistoryModal state={historyState} onClose={() => setShowHistory(false)} />}
+      {showHistory && <MoveHistoryModal state={historyState} myIndex={mySlotIndex} onClose={() => setShowHistory(false)} />}
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
 
