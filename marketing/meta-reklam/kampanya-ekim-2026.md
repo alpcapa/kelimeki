@@ -199,7 +199,7 @@ Kelimeki — Google Play'de ücretsiz
 Türkçe strateji kelime oyunu
 ```
 
-**Harekete geçirici düğme:** `Şimdi Yükle` (listede yoksa `Daha Fazla Bilgi`).
+**Harekete geçirici düğme (Ads Manager: "Eylem çağrısı"):** `İndir`. Listede yoksa `Şimdi Yükle`, o da yoksa `Daha Fazla Bilgi`. Varsayılan `Detayları Gör` gelir, değiştir. **"Çok reklamverenli reklamlar" kutusu varsayılan olarak İŞARETLİ gelir, kaldır.**
 
 ### 4.2 · Metinler — Set B (iOS)
 
@@ -216,7 +216,7 @@ Kelimeki — App Store'da ücretsiz
 iPhone ve iPad için Türkçe kelime oyunu
 ```
 
-**Düğme:** `Şimdi Yükle`.
+**Düğme:** Set A ile aynı (`İndir`).
 
 ### 4.3 · Metin kuralları
 
