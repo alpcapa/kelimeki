@@ -25,7 +25,7 @@ export interface MoveHistoryStats {
 
 /**
  * Üstteki kutuların sayıları (28 Eylül 2026, kullanıcı isteği):
- * TOPLAM · (adın) · Vergi (−) · Vergi (+). Önceki "Bu oyunda kazanılan N
+ * TOPLAM · (adın) · Vergi(−) · Vergi(+). Önceki "Bu oyunda kazanılan N
  * hamle… Toplam X puan" satırının yerine geldi: N yalnızca puanlı hamleleri
  * sayarken liste numarası (`turn + 1`) pas turlarını da saydığından "44 hamle"
  * yazıp 45. hamleyi listeliyordu — hamle sayısı bu yüzden kutulardan da
@@ -146,8 +146,8 @@ export function MoveHistoryModal({ state, myIndex = -1, onClose }: MoveHistoryMo
         {me && (
           <>
             <StatBox label={me.name} value={String(me.score)} tone="text" />
-            <StatBox label="Vergi (−)" value={me.taxPaid ? `−${me.taxPaid}` : '0'} tone={me.taxPaid ? 'red' : 'text'} />
-            <StatBox label="Vergi (+)" value={me.taxCollected ? `+${me.taxCollected}` : '0'} tone={me.taxCollected ? 'green' : 'text'} />
+            <StatBox label="Vergi(−)" value={me.taxPaid ? `−${me.taxPaid}` : '0'} tone={me.taxPaid ? 'red' : 'text'} />
+            <StatBox label="Vergi(+)" value={me.taxCollected ? `+${me.taxCollected}` : '0'} tone={me.taxCollected ? 'green' : 'text'} />
           </>
         )}
       </div>
