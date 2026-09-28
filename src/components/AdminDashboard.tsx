@@ -1749,10 +1749,14 @@ const JOURNEY_LABEL: Record<string, string> = {
   signup_form: 'Kayıt formu',
   signup_done: 'Kayıt oldu',
   login: 'Giriş yaptı',
+  store: 'Mağazaya gitti',
 };
 
-/** Oturumu KAPATAN adımlar: orada "ayrılmak" bounce değil, başarı. */
-const JOURNEY_SUCCESS = new Set(['signup_done', 'login']);
+/**
+ * Orada "ayrılmak" bounce değil, başarı: oturumu kapatan iki adım + mağaza
+ * rozetine dokunmak (`store`, 28 Eylül 2026 — kişi uygulamayı kurmaya gitti).
+ */
+const JOURNEY_SUCCESS = new Set(['signup_done', 'login', 'store']);
 
 function formatJourneySeconds(sec: number | null): string {
   if (sec === null) return '—';

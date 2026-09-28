@@ -311,3 +311,13 @@ yalnızca "Device art generator" ve "Legal line generator" var.
   kenardan taşıyordu, kullanıcı istemedi); betik tahtanın kadrajda
   kaldığını ve metnin ona binmediğini ölçer. Kare/story/dikeydeki silik
   arka plan tahtaları ise bilerek kenardan taşan dekor.
+
+**28 Eylül 2026 — `--genel` varyantı (`npm run generate-meta-story`):** Meta
+kampanyası tek reklam setiyle iOS + Android'e birlikte gidiyor ve "Artık
+Google Play'de" başlığı iPhone'da yanlış olurdu. Aynı üretici yalnızca
+`story` düzeninde mağazadan bağımsız bir görsel çıkarıyor →
+`marketing/meta-reklam/kelimeki-story-1080x1920.png` (başlık "Kelime bul,
+bölgeni büyüt, tahtayı ele geçir.", punto 0,8× — 56 px'te "tahtayı ele
+geçir." güvenli kutuya sığmıyor). Play dosyalarına dokunmuyor. Kare için
+ayrı varyant yok: `sponsored-2026-08/kelimeki-01.png` zaten mağazadan
+bağımsız. Kampanya: `marketing/meta-reklam/kampanya-ekim-2026.md`.

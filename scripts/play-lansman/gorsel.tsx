@@ -30,6 +30,15 @@ export type RozetKaynaklari = Record<string, string>;
 
 export type Duzen = 'kare' | 'story' | 'dikey' | 'yatay' | 'link';
 
+/**
+ * Metin varyantı. `play` = "Artık Google Play'de" lansmanı (26 Eylül 2026).
+ * `genel` = mağazadan bağımsız (28 Eylül 2026, Meta kampanyası: tek reklam
+ * seti iOS + Android'e birlikte gidiyor; "Google Play'de" başlığı iPhone'da
+ * yanlış olurdu). Yalnızca `story` düzeninde üretiliyor — kare için
+ * `marketing/sponsored-2026-08/kelimeki-01.png` zaten mağazadan bağımsız.
+ */
+export type Metin = 'play' | 'genel';
+
 /** Apple Marketing Tools'un beş boyu (2× çekilince): 1080² · 1080×1920 ·
  *  720×1280 · 1280×720 · 1200×628. */
 export const OLCULER: Record<Duzen, { w: number; h: number }> = {
@@ -78,7 +87,7 @@ const OLCU = {
   link: { ikon: 0, logo: 40, baslik: 33, alt: 14, rozet: 34, dip: 11, bosluk: 11 },
 } as const;
 
-function Gorsel({ duzen, ikonSrc, rozetler }: { duzen: Duzen; ikonSrc: string; rozetler: RozetKaynaklari }) {
+function Gorsel({ duzen, ikonSrc, rozetler, metin }: { duzen: Duzen; ikonSrc: string; rozetler: RozetKaynaklari; metin: Metin }) {
   const { w, h } = OLCULER[duzen];
   const o = OLCU[duzen];
   const yan = YAN.includes(duzen);
@@ -94,12 +103,22 @@ function Gorsel({ duzen, ikonSrc, rozetler }: { duzen: Duzen; ikonSrc: string; r
       })}
     </div>
   );
-  const baslik = (
+  const baslik = metin === 'genel' ? (
+    // Üç satır, 56 px'te "tahtayı ele geçir." güvenli kutuya (%82) sığmıyor —
+    // punto 0,8× (build.mjs taşmayı ölçüp düşürüyor).
+    <p style={{ margin: 0, fontSize: Math.round(o.baslik * 0.8), lineHeight: 1.1, fontWeight: 700, letterSpacing: -0.8 }}>
+      Kelime bul,<br />bölgeni büyüt,<br /><span style={{ color: ACCENT }}>tahtayı ele geçir.</span>
+    </p>
+  ) : (
     <p style={{ margin: 0, fontSize: o.baslik, lineHeight: 1.08, fontWeight: 700, letterSpacing: -0.8 }}>
       Artık{duzen === 'kare' ? ' ' : <br />}<span style={{ color: ACCENT }}>Google Play</span>'de
     </p>
   );
-  const alt = (
+  const alt = metin === 'genel' ? (
+    <p style={{ margin: 0, fontSize: o.alt, lineHeight: 1.3, fontWeight: 500, color: '#3A4652' }}>
+      Strateji odaklı<br />Türkçe kelime oyunu
+    </p>
+  ) : (
     <p style={{ margin: 0, fontSize: o.alt, lineHeight: 1.3, fontWeight: 500, color: '#3A4652' }}>
       Kelime bul, bölgeni büyüt,{duzen === 'kare' ? ' ' : <br />}tahtayı ele geçir.
     </p>
@@ -166,10 +185,10 @@ function Gorsel({ duzen, ikonSrc, rozetler }: { duzen: Duzen; ikonSrc: string; r
   );
 }
 
-export function renderGorselHtml(duzen: Duzen, cssHref: string, ikonSrc: string, rozetler: RozetKaynaklari): string {
+export function renderGorselHtml(duzen: Duzen, cssHref: string, ikonSrc: string, rozetler: RozetKaynaklari, metin: Metin = 'play'): string {
   return `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><title>Kelimeki Google Play ${duzen}</title>
 <link rel="stylesheet" href="${cssHref}">
 <style>html,body{margin:0;padding:0;background:#fff}</style>
-</head><body>${renderToStaticMarkup(<Gorsel duzen={duzen} ikonSrc={ikonSrc} rozetler={rozetler} />)}</body></html>`;
+</head><body>${renderToStaticMarkup(<Gorsel duzen={duzen} ikonSrc={ikonSrc} rozetler={rozetler} metin={metin} />)}</body></html>`;
 }

@@ -1309,6 +1309,29 @@ kapanıyor; o zamana kadar "Oyun Sayısı" grafiğinde bu satırlar "Diğer"de.
 `games.platform`un `null`ları ise Canlı oyun satırları (sunucu yazıyor, tek bir
 platformu yok) — tasarım gereği.
 
+### `store` adımı — mağaza rozetine dokundu (28 Eylül 2026, `20260928100430_web_journey_store_step.sql`)
+
+Meta reklamı Trafik kampanyasında mağaza linkine izin vermediği için (#1487810)
+reklam `kelimeki.com/?ref=meta-…`e gidiyor; mağazaya sitedeki rozetten
+(`StoreBadges`) ya da telefon şeridinden (`AppStoreStrip`) geçiliyor. Bu adım
+olmadan "reklamdan gelen kaç kişi mağazaya gitti" hiçbir tabloda yoktu.
+
+- Adım listenin SONUNA eklendi (sıra admin kartının satır sırası; araya
+  girse mevcut satırlar kayardı). Oturum başına bir kez, oturumu KAPATMAZ.
+- Admin kartında "Mağazaya gitti", `JOURNEY_SUCCESS`te: orada ayrılmak
+  bounce değil.
+- Aynı değişiklik rozet linklerine ziyaretçinin `?ref=` etiketini ekliyor
+  (`taggedStoreUrl`): Play `utm_source=<etiket>&utm_medium=web`, App Store
+  `ct=<etiket>`. Karşılama katmanı sunucuda render edildiği için oradaki
+  linkler `main.tsx`te (`magazaLinkleriniKur`, `data-kelimeki-magaza`)
+  yeniden yazılıyor.
+- ⚠ `verify-web-journey` 28 Eylül'e kadar adım dizisi taşıyan HER migration'ı
+  okuyordu; liste ilk kez değişince eski (canlıya uygulanmış, değiştirilemez)
+  dosyalar düşerdi. Artık yalnızca iki fonksiyonu EN SON yeniden yazan dosya
+  okunuyor — fonksiyonlardan biri yeniden yazılırsa oradaki dosya adı
+  değişmeli.
+- Kampanya planı ve etiket başına sorgu: `marketing/meta-reklam/kampanya-ekim-2026.md` §5.
+
 ## Masaüstü kipindeki iPad: iOS altında sahte "10.15.7" (23 Eylül 2026)
 
 Kullanıcı fark etti: *"Admin Cihaz ios altında 10.15.7 gözüken 27 kişi var.
