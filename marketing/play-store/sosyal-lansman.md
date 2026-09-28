@@ -313,6 +313,8 @@ Kişisel story sticker'ı (isteğe bağlı):
 | LinkedIn profil | `?ref=li-profil-play` · `referrer=utm_source%3Dli-profil-play` |
 | Facebook kişisel | `?ref=fb-profil-play` · `referrer=utm_source%3Dfb-profil-play` · `?ct=fb-profil-play` |
 | Instagram kişisel (story sticker) | `referrer=utm_source%3Dig-profil-play` |
+| Facebook kişisel story sticker | `referrer=utm_source%3Dfb-profil-story-play` |
+| Facebook kişisel Intro linki (kalıcı) | `https://kelimeki.com/?ref=fb-profil-bio` |
 
 **Neden yeni etiketler (`-play` soneki):** `?ref=` ilk temasta
 sabitleniyor; 16 Eylül'ün `fb-sayfa`/`li-sayfa`/`li-profil`
@@ -359,3 +361,31 @@ doğrudan giden tıklama Kaynak Hunisi'nde GÖRÜNMEZ.
 | 27 Eyl 2026 ~13:35 | LinkedIn sayfa kapağı yenilendi (iki rozetli, 1128×191 — 2× sürüm iPad Safari'de kaydedilemedi) | — |
 | 27 Eyl 2026 | LinkedIn kişisel profil kapağı yenilendi (iki rozetli, 1584×396) | — |
 | 27 Eyl 2026 ~13:55 | LinkedIn sayfa gönderisi — 4 görsel (kare + 03 · 02 · 05), §4 "Sayfa sesi" metni (IG/FB düzeltmeleriyle, marka satırsız) | Kaynak Hunisi `li-sayfa-play` · Play UTM `li-sayfa-play` |
+| 28 Eyl 2026 ~08:50 | **Kişisel** Instagram feed — carousel (kare + 03 · 02 · 05), kullanıcının kendi metni (aşağıda) · "Also share on" ekranında FB ve story anahtarları KAPALI | Link yok (IG açıklaması) |
+| 28 Eyl 2026 ~08:55 | Kişisel Instagram story — Play rozetli story görseli, link sticker "Hemen İndir!" | Play UTM `ig-profil-play` |
+| 28 Eyl 2026 ~09:05 | Kişisel Facebook gönderisi — 4 görselli albüm, IG metni + üç link | Kaynak Hunisi `fb-profil-play` · Play UTM `fb-profil-play` · App Store `ct=fb-profil-play` |
+| 28 Eyl 2026 ~09:20 | Kişisel Facebook kapağı — `kelimeki-fb-kapak.png` (iki rozetli, blok yukarı; aşağı bkz.) | — |
+| 28 Eyl 2026 | Kişisel Facebook Intro linki | Kaynak Hunisi `fb-profil-bio` |
+| 28 Eyl 2026 | Kişisel Facebook story — Play rozetli story görseli, link sticker | Play UTM `fb-profil-story-play` |
+| 28 Eyl 2026 ~10:15 | Kişisel LinkedIn gönderisi — **LinkedIn WEB'inden** (iki uygulama denemesi yayına girmedi, aşağı bkz.) | Kaynak Hunisi `li-profil-play` · Play UTM `li-profil-play` |
+
+**28 Eylül 2026 — kişisel hesap turunun notları:**
+
+- **Kullanıcının IG metni** (§4b'nin yerine geçti, FB ve LinkedIn buna göre
+  uyarlandı): *"Kelimeki artık Google Play'de yayında! 🎉 / Yeni projem
+  Türkçe strateji kelime oyunu 16 Eylül'de App Store'a çıkmıştı; artık
+  Android sürümü de yayında. Tahtada senin bir bölgen var, kelime kurarak
+  onu büyütüyorsun — rakibinin bölgesine temas edersen vergisini ödersin.
+  😏 / Yapay zeka ile veya arkadaşlarınla canlı oyna. Ücretsiz, reklamsız.
+  / … / #kelimeoyunu #türkçe #oyun #bulmaca #kelime"*. §4b'deki "bugün"
+  bir gün sonra paylaşıldığı için çıktı.
+- ⚠ **LinkedIn uygulaması gönderiyi İKİ KEZ sessizce düşürdü** (biri
+  iPad'den, biri iPhone uygulamasından; profilde de sayfada da yoktu, hata
+  mesajı yok). **LinkedIn web'inden ilk denemede yayına girdi.** Sebep
+  ölçülmedi (link/görsel sayısı mı, uygulama mı ayrıştırılmadı). Bir
+  sonraki turda LinkedIn'e doğrudan WEB'den gir. Düşen iki deneme sonradan
+  ortaya çıkarsa kopya olur — profilde kontrol et, fazlayı sil.
+- **FB kapağı kişisel profilde avatarın ALTINA kaçtı** — sayfa kapağının
+  "sol alt" kuralı kişisel profile yetmiyor (mobilde avatar ALT ORTADA).
+  Üretici düzeltildi ve artık ölçüyor: `docs/decisions/marketing-assets.md`
+  → "Facebook sayfa kapağı".
