@@ -1297,7 +1297,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             await showGameOverModal(context, state,
                 // Yerel oyunda hamle geçmişi reducer'ın kendi state'inde —
                 // tahta altındaki "Hamleler" linkiyle AYNI kaynak.
-                onOpenHistory: () => showMoveHistoryModal(context, state),
+                onOpenHistory: () => showMoveHistoryModal(context, state, myIndex: 0),
                 onFeedback: auth == null ? null : openFeedback,
                 // Yerel oyun = YZ oyunu → rozet her seviyede; Canlı ekran
                 // bu parametreyi hiç geçirmez.
@@ -1475,7 +1475,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                         onBoardPointerUp: _boardPointerUp,
                                         onBoardPointerCancel: _endBoardPan,
                                         onOpenHistory: () =>
-                                            showMoveHistoryModal(context, state),
+                                            showMoveHistoryModal(context, state,
+                                                myIndex: 0),
                                         // Zorluk rozeti alt şeritte — yerel
                                         // oyun her zaman YZ oyunu (her seviye).
                                         aiLevel: aiLevelForBadge(state.aiLevel,

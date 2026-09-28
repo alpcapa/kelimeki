@@ -16,61 +16,111 @@ const Color _red = kRed;
 const Color _gold = kGold;
 const Color _border = kBorder;
 
-Future<void> showMoveHistoryModal(BuildContext context, GameState state) {
+/// [myIndex]: pencereyi açanın koltuğu — iki vergi kutusu ONUN rakamları;
+/// bilinmiyorsa (`-1`) vergi kutuları çizilmez.
+Future<void> showMoveHistoryModal(BuildContext context, GameState state,
+    {int myIndex = -1}) {
   return showDialog<void>(
     context: context,
-    builder: (context) => MoveHistoryModal(state: state),
+    builder: (context) => MoveHistoryModal(state: state, myIndex: myIndex),
+  );
+}
+
+/// Üstteki kutuların sayıları — web `moveHistoryStats`
+/// (`MoveHistoryModal.tsx`) ile BİREBİR (28 Eylül 2026, kullanıcı isteği:
+/// *"toplam hamle, toplam puan, vergiler"*). Önceki "Bu oyunda kazanılan N
+/// hamle… Toplam X puan" satırının yerine geldi: N yalnızca puanlı
+/// hamleleri sayarken liste numarası (`turn + 1`) pas turlarını da
+/// saydığından "44 hamle" yazıp 45. hamleyi listeliyordu.
+typedef MoveHistoryStats = ({
+  /// Oyunun TOPLAM hamlesi: kelime + pas + taş değiştirme + oyunu
+  /// BİTİRMEYEN teslim. Oyunu bitiren teslim (aktif oyuncu 1'e düşüyor —
+  /// 2 kişide ilk teslim) ve vergi geliri satırları hariç.
+  int moves,
+
+  /// Oyunun TOPLAM puanı — bütün oyuncuların bütün satırları.
+  int score,
+
+  /// Pencereyi açanın kaptırdığı / topladığı vergi; koltuk bilinmiyorsa
+  /// `null`. Kişisel, çünkü oyun genelinde ödenen = toplanan olurdu.
+  int? taxPaid,
+  int? taxCollected,
+});
+
+MoveHistoryStats moveHistoryStats(GameState state, int myIndex) {
+  final known = myIndex >= 0 && myIndex < state.players.length;
+  var moves = 0, score = 0, taxPaid = 0, taxCollected = 0, surrenders = 0;
+  for (final e in state.moveHistory) {
+    score += e.points;
+    if (e.invasionFrom != null) {
+      if (e.player == myIndex) taxCollected += e.points;
+      continue;
+    }
+    if (e.action == 'surrender') {
+      surrenders++;
+      // Kademeli teslim: oyun ancak aktif oyuncu 1'e düşünce biter.
+      if (surrenders >= state.players.length - 1) continue;
+    }
+    moves++;
+    if (e.player == myIndex) {
+      for (final s in e.lostShares ?? const <LostShare>[]) {
+        taxPaid += s.amount;
+      }
+    }
+  }
+  return (
+    moves: moves,
+    score: score,
+    taxPaid: known ? taxPaid : null,
+    taxCollected: known ? taxCollected : null,
   );
 }
 
 class MoveHistoryModal extends StatelessWidget {
   final GameState state;
-  const MoveHistoryModal({super.key, required this.state});
+  final int myIndex;
+  const MoveHistoryModal({super.key, required this.state, this.myIndex = -1});
 
   @override
   Widget build(BuildContext context) {
     final entries = state.moveHistory;
-    var total = 0;
-    for (final e in entries) {
-      total += e.points;
-    }
+    final stats = moveHistoryStats(state, myIndex);
+    final paid = stats.taxPaid;
+    final collected = stats.taxCollected;
     // Vergi geliri satırları ayrı kart olarak gösterilmez (web'deki aynı
-    // gerekçe: aynı hamle zaten oynayanın satırında anlatılıyor) ve hamle
-    // sayısına da katılmaz.
+    // gerekçe: aynı hamle zaten oynayanın satırında anlatılıyor).
     final display = [
       for (final e in entries)
         if (e.invasionFrom == null) e
     ];
-    final scoringMoveCount = display.where((e) => e.action == null).length;
 
+    Widget gap() => const SizedBox(width: 6);
     return KModal(
       title: 'Oyun Geçmişi',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text.rich(
-            TextSpan(
-              text: 'Bu oyunda kazanılan $scoringMoveCount hamle ve puanları. '
-                  'Toplam ',
-              children: [
-                TextSpan(
-                  text: '$total',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: _accent,
-                  ),
+          Row(
+            children: [
+              _StatBox(label: 'HAMLE', value: '${stats.moves}'),
+              gap(),
+              _StatBox(label: 'PUAN', value: '${stats.score}'),
+              if (paid != null && collected != null) ...[
+                gap(),
+                _StatBox(
+                  label: 'VERGİ (−)',
+                  value: paid > 0 ? '−$paid' : '0',
+                  color: paid > 0 ? _red : _text,
                 ),
-                const TextSpan(text: ' puan.'),
+                gap(),
+                _StatBox(
+                  label: 'VERGİ (+)',
+                  value: collected > 0 ? '+$collected' : '0',
+                  color: collected > 0 ? _green : _text,
+                ),
               ],
-            ),
-            style: const TextStyle(
-              fontFamily: 'SpaceMono',
-              fontSize: 10,
-              height: 1.6,
-              color: _muted,
-            ),
+            ],
           ),
           const SizedBox(height: 12),
           if (display.isEmpty)
@@ -104,6 +154,59 @@ class MoveHistoryModal extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Web `StatBox`: 8px büyük harf etiket + 15px kalın değer, satır kartıyla
+/// aynı zemin/çerçeve.
+class _StatBox extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  const _StatBox(
+      {required this.label, required this.value, this.color = _text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: _border),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: const TextStyle(
+                  fontFamily: 'SpaceMono',
+                  fontSize: 8,
+                  letterSpacing: 0.5,
+                  color: _muted,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'SpaceMono',
+                fontSize: 15,
+                height: 1,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
