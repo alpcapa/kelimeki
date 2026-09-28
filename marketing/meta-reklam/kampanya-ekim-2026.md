@@ -17,34 +17,34 @@ ve `marketing/app-store/*-lansman.md`. İlk ücretli deneme (Ağustos kareleri,
 | | |
 |---|---|
 | Kampanya | **1 kampanya**, hedef **Trafik** |
-| Reklam setleri | **2 set:** Android → doğrudan Google Play · iOS → doğrudan App Store |
+| Reklam setleri | **2 set:** Android · iOS. İkisi de `kelimeki.com/?ref=meta-…` adresine gider, mağazaya sitedeki rozetten geçilir (§3.0) |
 | Reklamlar | Her sette **3 reklam:** carousel · reel · tek kare |
 | Bütçe | Toplam **₺3.000**. Test: 5 gün × ₺200/gün. Ölçek: kazanan sete 5 gün × ₺400/gün |
 | Kurulum yeri | **Tarayıcıdan Ads Manager.** iOS uygulamasından verilen reklama Apple'ın %30 ücreti ekleniyor (§7) |
-| Başlangıç | **Kapı açılınca** (§1). Tahmini tarih 8-12 Ekim |
-| Başarı ölçüsü | Mağaza başına **kurulum başı maliyet**. Meta'nın tıklama sayısı ölçü DEĞİL (§2) |
+| Başlangıç | **Web PR'ı (#673) canlıya çıkınca** (§1). Huni v2'nin mobil yarısını beklemek artık gerekmiyor |
+| Başarı ölçüsü | Erken sinyal: **mağazaya giden oturum başı maliyet** (bizim tablo, anında). Asıl ölçü: **kurulum başı maliyet** (mağaza raporları, 1-2 gün gecikmeli). Meta'nın tıklama sayısı ölçü DEĞİL (§2, §6) |
 
 ---
 
-## 1 · Başlangıç kapısı — Huni v2'nin mobil yarısı
+## 1 · Başlangıç — web PR'ı canlıda olunca
 
-`docs/decisions/funnel-v2.md` → "Pazarlama kapısı" (kullanıcı kararı, 24
-Eylül 2026): **bütçe, Huni v2'nin mobil yarısı (PR 2) Play'de yayında olunca
-ve admin tablosunda Android `land` satırı görününce açılır.** PR 2 **5 Ekim
-treninde**. Play incelemesi 1-3 gün sürerse bütçe ~8-12 Ekim'de açılabilir.
+**28 Eylül 2026'da değişti.** İlk plan reklamı doğrudan mağazaya
+gönderiyordu. O durumda Android'de kurulumdan sonrasını (oyun, üyelik)
+görmek için Huni v2'nin mobil yarısı (PR 2, 5 Ekim treni) gerekiyordu, ve
+bu yüzden `docs/decisions/funnel-v2.md` → "Pazarlama kapısı" beklenecekti.
 
-**Neden beklenmeli:** PR 2 olmadan Android kurulumu Play Console'da görünür
-(UTM satırı), ama o kişinin oyuna girip girmediğini ve üye olup olmadığını
-bizim tablomuz göremez. PR 2 gelince Play Install Referrer uygulamanın ilk
-açılışında okunuyor, ve reklamdan gelen Android cihaz admin → Huni v2'de
-**kurulum → oyun → üyelik** zinciriyle görünüyor.
+Reklam artık siteye gidiyor (§3.0). Reklamdan gelen kişinin bütün yolu
+(karşılama → mağaza rozeti ya da tarayıcıda oyun → üyelik) **bizim web
+tablomuzda** reklam etiketiyle görünüyor. Kapının sorusu cevaplanmış oluyor.
 
-iOS'ta bu kapının karşılığı yok. Apple kişi bazında kaynak vermiyor, iOS
-kırılımını ancak App Store Connect'in toplu kampanya raporu veriyor
-(`funnel-v2.md` → "Kanal — platform platform"). Yani iOS seti kapıyı
-beklemeden de koşabilir. **Önerilen yol yine de ikisini birlikte
-başlatmak:** iki set aynı hafta, aynı kreatiflerle koşarsa sonuçları
-karşılaştırılabilir olur.
+**Başlangıç koşulu:** PR #673 `main`'e merge edildi **ve** `kelimeki.com`'un
+derleme kimliği o commit'i gösteriyor (`curl -s https://kelimeki.com/ | grep
+kelimeki-build`). Bu olmadan sitedeki rozet linkleri etiketi taşımaz ve
+mağazaya giden kurulum "organik" görünür.
+
+Huni v2'nin mobil yarısı gelince (5 Ekim treni) Android'de bir halka daha
+görünür: mağazadan kurulan uygulamanın ilk açılışı ve oyunu. Bu bir bonus,
+başlangıç için ön koşul değil.
 
 ---
 
@@ -73,6 +73,34 @@ Kesin olan iki şey var:
 ---
 
 ## 3 · Kampanya yapısı
+
+### 3.0 · ⚠ Meta, Trafik kampanyasında mağaza linkine İZİN VERMİYOR
+
+28 Eylül 2026, kurulum sırasında Ads Manager'ın kendi hatası:
+
+> *"Uygulama URL'si sadece Uygulama Yüklemeleri reklam verme amacında
+> destekleniyor… (#1487810)"*
+
+Bu belgenin ilk sürümü reklamı `play.google.com` / `apps.apple.com`
+adresine gönderiyordu. O kurgu çalışmaz. İki yol vardı:
+
+| Yol | Ne | Karar |
+|---|---|---|
+| **1** | Trafik kalır, reklam `kelimeki.com/?ref=meta-…`e gider. Mağazaya sitedeki rozetten ya da telefondaki mağaza şeridinden geçilir | ✅ **Seçildi** (kullanıcı, 28 Eyl) |
+| 2 | Yeni bir "Uygulama tanıtımı" kampanyası. Uygulamanın Meta for Developers'a kaydı gerekir, iOS'ta SKAdNetwork kısıtları var, SDK'sız davranışı doğrulanmadı | Elendi |
+
+Yol 1'in bedeli bir adım fazlalık (reklam → site → mağaza). Kazancı:
+yolun tamamı bizim tabloda ölçülüyor, ve telefondan gelen kişi kurulum
+yapmadan tarayıcıda hemen oynayabiliyor.
+
+**Bunu mümkün kılan web değişikliği (PR #673):**
+- Sitedeki mağaza rozetleri ve telefon şeridi ziyaretçinin `?ref=` etiketini
+  mağazaya taşıyor (`taggedStoreUrl`, `src/utils/storeLinks.ts`):
+  - Play: `referrer=utm_source%3D<etiket>%26utm_medium%3Dweb`
+  - App Store: `ct=<etiket>`
+- Rozete dokunmak ziyaretçi yolculuğuna **`store`** adımı yazıyor
+  (`web_sessions`, migration `20260928100430_web_journey_store_step`).
+  Admin → Ziyaretçi Yolculuğu kartında "Mağazaya gitti" satırı.
 
 ### 3.1 · Neden "Trafik" ve neden optimizasyon "Yönlendirme sayfası görüntülemeleri"
 
@@ -129,10 +157,14 @@ Kesin olan iki şey var:
 | Cihaz | Manuel alanlar → **Belirli mobil cihazlar ve işletim sistemleri** → **Yalnızca Android** | aynı yer → **Yalnızca iOS** |
 | Wi-Fi koşulu | Kapalı | Kapalı |
 
-⚠ **Cihaz filtresi bu kampanyanın omurgası.** Filtre unutulursa Android
-seti iPhone'a da gösterilir. O kişi Play linkine dokunur, tarayıcıda boş bir
-sayfa görür, ve para gider. Yayından önce iki setin özetinde "Android" ve
-"iOS" yazdığını gözle kontrol et.
+⚠ **Cihaz filtresi iki mağazayı karşılaştırmanın tek yolu.** Reklam artık
+siteye gittiği için yanlış cihaza giden tıklama boşa gitmiyor (site iki
+rozeti de gösteriyor), ama o zaman "Android mi iOS mu daha ucuz" sorusunun
+cevabı bulanıklaşır. Yayından önce iki setin özetinde "Android" ve "iOS"
+yazdığını gözle kontrol et.
+
+**Android setinin ek ayarı:** İşletim sistemi sürümü **Min. 7.0** — uygulama
+`minSdk = flutter.minSdkVersion` (24 = Android 7.0) istiyor.
 
 ---
 
@@ -247,36 +279,47 @@ reklam FB ve IG'de birlikte koşuyor. `ig-`/`fb-` öneki yanlış olur.
 | reel | `meta-and-reel` | `meta-ios-reel` |
 | kare | `meta-and-kare` | `meta-ios-kare` |
 
-**Set A — URL şablonu** (etiketi değiştir, gerisine dokunma):
+**Reklam URL'si — iki sette de aynı şablon** (etiketi değiştir):
 ```
-https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki&referrer=utm_source%3Dmeta-and-karusel
+https://kelimeki.com/?ref=meta-and-karusel
 ```
-`%3D` URL-kodlu `=` işaretidir. Elle `=` yapma, Play onu ayrı parametre sanar.
 
-**Set B — App Store kampanya linki: App Store Connect'İN ÜRETTİĞİ link olsun.**
-⚠ Şimdiye kadarki linkler (`…/id6809809788?ct=fb-sayfa`) yalnızca `ct=`
-taşıyordu. Apple'ın kampanya linkinde bir de **sağlayıcı numarası (`pt=`)**
-var, ve o olmadan kampanya raporuna düşmemesi muhtemel. Bu hesapta
-doğrulanmadı: ajan `apps.apple.com`'a erişemiyor ve Console kullanıcıda.
-Doğru yol şu:
+| Reklam | Set A · Android | Set B · iOS |
+|---|---|---|
+| karusel | `https://kelimeki.com/?ref=meta-and-karusel` | `https://kelimeki.com/?ref=meta-ios-karusel` |
+| reel | `https://kelimeki.com/?ref=meta-and-reel` | `https://kelimeki.com/?ref=meta-ios-reel` |
+| kare | `https://kelimeki.com/?ref=meta-and-kare` | `https://kelimeki.com/?ref=meta-ios-kare` |
 
-1. App Store Connect → **Uygulama Analizi** → Kelimeki → **Edinme** (Acquisition) →
-   **Kampanyalar** → **Kampanya bağlantısı oluştur**. Menü adları biraz
-   farklı olabilir; aranan şey "Campaign link" üreticisi.
-2. Kampanya adına etiketi yaz (`meta-ios-karusel`), üç link üret.
-3. Üretilen linkin şekli aşağı yukarı şöyle olmalı. `pt=` numarasını
-   sayfadaki linkten al, tahmin etme:
-   ```
-   https://apps.apple.com/app/apple-store/id6809809788?pt=<SAĞLAYICI_NO>&ct=meta-ios-karusel&mt=8
-   ```
-4. Üretilen linki bu dosyaya, §9'un altına yaz. Sonraki turlar aynı
-   `pt=`'yi kullanacak ve organik linkler de düzeltilebilir.
+Site etiketi ilk temasta saklıyor (`captureUtmSource`) ve mağaza rozetine
+kendisi ekliyor (§3.0). Reklamda mağaza linki YOK.
+
+**Etiketin nerede göründüğü:**
+- **Bizim tablo (anında):** `web_sessions.utm_source` = etiket. Oturumun
+  `steps`i karşılamayı, `store`u (mağazaya gitti), oyunu ve üyeliği içerir.
+  Admin kartı etikete göre süzmüyor; etiket başına sayı için:
+  ```sql
+  select utm_source, device_type, count(*) oturum,
+         count(*) filter (where 'store' = any (steps)) magazaya,
+         count(*) filter (where 'game_start' = any (steps)) oyun,
+         count(*) filter (where 'signup_done' = any (steps)) uye
+  from web_sessions
+  where utm_source like 'meta-%' and created_at > now() - interval '14 days'
+  group by 1, 2 order by 1, 2;
+  ```
+  ⚠ Yalnızca **misafir** oturumu yazılır; girişli ziyaretçi sayılmaz.
+- **Play Console → Kullanıcı edinme:** `utm_source=meta-and-*`,
+  `utm_medium=web`. Reklamdan siteye, oradan Play'e geçen kurulum.
+- **App Store Connect → Kampanyalar:** `ct=meta-ios-*`. ⚠ Apple'ın
+  kampanya linki büyük ihtimalle bir de **sağlayıcı numarası (`pt=`)**
+  istiyor; site bunu bilmiyor. `pt=` öğrenilirse `taggedStoreUrl`e eklenir.
+  Öğrenmenin yolu: App Store Connect → Uygulama Analizi → Edinme →
+  Kampanyalar → "Kampanya bağlantısı oluştur"; üretilen linkteki `pt=`
+  sayısını bu dosyaya (§9) yaz. Doğrulanmadı: ajan `apps.apple.com`'a
+  erişemiyor ve Console kullanıcıda.
 
 **Admin paneli notu:** `meta-` öneki admin'in kanal gruplamasında
 (`sourceChannel`, `src/utils/adminGroups.ts`) YOK. Bu etiketle gelen satır
-**"Diğer"** grubunda görünür, kaybolmaz. Bu kampanyada mağazalara doğrudan
-gidildiği için web tablosuna zaten neredeyse hiç satır düşmeyecek. Android
-satırları PR 2'den sonra Huni v2'ye düşer. Ayrı bir "Meta" grubu istenirse
+Kaynak/Kanal tablolarında **"Diğer"** grubunda görünür, kaybolmaz. Ayrı bir "Meta" grubu istenirse
 tek satırlık bir web değişikliği yeter (öneki + etiketi eklemek +
 `verify-admin-groups`).
 
@@ -286,8 +329,8 @@ tek satırlık bir web değişikliği yeter (öneki + etiketi eklemek +
 
 | Faz | Ne zaman | Ne |
 |---|---|---|
-| **0 · Hazırlık** | Bugünden kapıya kadar | §5'teki App Store linklerini üret · ödeme yöntemini tarayıcıdan ekle (§7) · kampanyayı **taslak** olarak kur, yayınlama · başlangıç ölçümü: kampanyadan önceki 7 günün Play "Mağaza girişi edinmeleri" ve ASC "İlk indirmeler" sayılarını §9'a yaz |
-| **1 · Test** | Kapı açılınca, 5 gün | İki set × ₺100/gün = ₺1.000 |
+| **0 · Hazırlık** | Bugünden PR #673 canlıya çıkana kadar | Ödeme yöntemi ve harcama limiti (§7) · kampanyayı **taslak** olarak kur, yayınlama · reklam URL'lerini §5'e göre `kelimeki.com/?ref=…` yap · başlangıç ölçümü: kampanyadan önceki 7 günün Play "Mağaza girişi edinmeleri" ve ASC "İlk indirmeler" sayılarını §9'a yaz · isteğe bağlı: App Store `pt=` numarasını öğren (§5) |
+| **1 · Test** | PR #673 canlıda (§1), 5 gün | İki set × ₺100/gün = ₺1.000 |
 | **Karar** | 6. gün (verinin gelmesi için +1-2 gün bekle) | Aşağıdaki kurallar |
 | **2 · Ölçek** | 5 gün | Kazanan set ₺400/gün. Kaybeden set kapatılır ya da ₺50/gün'e iner |
 | **Kapanış** | Bitişin ertesi haftası | §9'a sonuç satırları. Huni v2'den 7. gün geri dönüşü |
@@ -308,15 +351,19 @@ verisine bakıp değiştirme: Meta'nın "öğrenme" dönemi de bu kadar sürer.
 | Reklam düzeyinde: 3 günde bağlantı TO < %0,5 | O reklamı kapat |
 
 Kurulum başı = set harcaması ÷ o setin etiketlerinin mağaza raporundaki
-kurulum toplamı. **Meta'nın ekranındaki "sonuç başı maliyet" bu değil:** o,
+kurulum toplamı. **Erken sinyal** (mağaza raporları 1-2 gün gecikir): set
+harcaması ÷ o setin etiketlerinde `store` adımına ulaşan oturum sayısı
+(§5'teki sorgu). Mağazaya giden her kişi kurmaz; bu sayı kurulum başından
+her zaman DÜŞÜK çıkar, eşiklerle doğrudan karşılaştırma. **Meta'nın ekranındaki "sonuç başı maliyet" bu değil:** o,
 tıklama başı maliyet.
 
 ₺40 bir başlangıç tahmini, ölçülmüş bir referans değil. Faz 1'in ilk
 gerçek rakamı bu eşiği yeniden belirler; yeni değeri buraya yaz.
 
-**Kalite:** kurulum ucuz ama kimse oynamıyorsa kazanan sayılmaz. Android'de
-Huni v2 (PR 2'den sonra) `meta-and-*` cihazlarının kaçının oyun başlattığını
-gösterir. iOS'ta tek sinyal ASC'nin "Oturumlar" ve "Etkin cihazlar"
+**Kalite:** kurulum ucuz ama kimse oynamıyorsa kazanan sayılmaz. Tarayıcıda
+oynayanı §5'teki sorgunun `oyun` ve `uye` sütunları gösterir. Android'de
+Huni v2'nin mobil yarısı gelince (5 Ekim treni) mağazadan kurulan
+uygulamanın oyunu da görünür. iOS'ta tek sinyal ASC'nin "Oturumlar" ve "Etkin cihazlar"
 sayıları.
 
 ---
@@ -351,6 +398,8 @@ sayıları.
 - ❌ Gönderi altındaki **"Öne Çıkar"** düğmesi. Cihaz filtresi, reklam başına
   etiket ve set bütçesi orada yok, ve iOS uygulamasından Apple ücretiyle
   geliyor (§2, §7).
+- ❌ Reklam URL'sine mağaza linki (`play.google.com`, `apps.apple.com`)
+  koymak. Trafik kampanyası reddeder (#1487810, §3.0).
 - ❌ Android setinde iOS, iOS setinde Android. Cihaz filtresi olmadan kurma
   (§3.3).
 - ❌ iOS setinde "Artık Google Play'de" görselleri.
@@ -371,6 +420,8 @@ sayıları.
 | Ne zaman | Ne | Ölçüm |
 |---|---|---|
 | 28 Eyl 2026 | **Kurulum:** "Kelimeki" işletme portföyü + reklam hesabı `1089910146731962` açıldı (kişisel hesaptan AYRI; 16 Eylül boost'u kişisel hesaptaydı). Mastercard tanımlandı, otomatik ödeme, fatura eşiği ₺99. Meta'nın günlük tavanı ₺10.781,62. Hesap harcama limiti henüz KONMADI. Ads Manager "Hesaba Genel Bakış'ta birkaç detayı onaylayın" diyor | Kullanıcının ekran görüntüsünden okundu |
+| 28 Eyl 2026 | **Plan değişti:** Set A'nın `karusel` reklamına Play linki yazılınca Ads Manager #1487810 verdi (Trafik'te mağaza linki yok). Kullanıcı Yol 1'i seçti (§3.0). Web değişikliği PR #673'te; `store` adımının migration'ı (`20260928100430_web_journey_store_step`) **canlıya uygulandı** ve doğrulandı (iki fonksiyonda da `store` var, grant'ler ve `security definer` aynı) | `pg_get_functiondef` · `list_migrations` |
+| 28 Eyl 2026 | Set A kuruldu (taslak): Trafik · yönlendirme sayfası görüntülemeleri · ₺100/gün · 5-10 Ekim (Meta başlangıcı en fazla ~1 hafta ileri alıyor, yayından önce gerçek tarihe çekilecek) · yalnızca Android, min 7.0 · FB/IG akış, IG Keşfet, hikaye, reels · 18+ · Türkçe. `karusel` reklamının URL'si henüz Play linki → `kelimeki.com/?ref=meta-and-karusel` olacak | Kullanıcının ekran görüntülerinden okundu |
 | — | Başlangıç ölçümü (kampanya öncesi 7 gün): Play mağaza girişi edinmeleri = ? · ASC ilk indirmeler = ? | Play Console · ASC |
 | — | App Store kampanya linkleri üretildi (`pt=` = ?) | — |
 | — | Faz 1 başladı | — |

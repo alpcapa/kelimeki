@@ -45,6 +45,7 @@ import './index.css';
 
 import { SEEN_INTRO_KEY } from './utils/onboarding';
 import { shareKelimekiLink } from './utils/shareLink';
+import { taggedStoreUrl } from './utils/storeLinks';
 import {
   captureUtmSource,
   deviceVisitAlreadyLoggedToday,
@@ -321,6 +322,26 @@ function cihazZiyaretiBildir(): void {
   });
 }
 
+/**
+ * Karşılama katmanındaki mağaza rozetleri: `?ref=` etiketini mağazaya taşı +
+ * dokunuşu ziyaretçi yolculuğuna `store` adımı olarak yaz (28 Eylül 2026).
+ *
+ * Katman SUNUCUDA render edildiğinden `StoreBadges` orada etiketi okuyamıyor
+ * ve düz adres yazıyor; burada, `captureUtmSource`tan SONRA düzeltiliyor.
+ * Adresin kendisi (App Store / Play) HTML'den okunuyor, burada yeniden
+ * yazılmıyor — tek kaynak yine `storeLinks.ts`.
+ */
+function magazaLinkleriniKur(): void {
+  const source = getStoredUtmSource();
+  document.querySelectorAll<HTMLAnchorElement>('[data-kelimeki-magaza]').forEach((el) => {
+    const key = el.dataset.kelimekiMagaza;
+    if (key === 'appStore' || key === 'googlePlay') {
+      el.href = taggedStoreUrl(el.href, key, source);
+    }
+    el.addEventListener('click', () => journeyStep('store'));
+  });
+}
+
 // Huni v2 (`utils/funnelEvents.ts`): cihazın ilk gelişi (`land`) + günün
 // ziyareti (`visit`). Kapı kararından ÖNCE ve bu sayfada HİÇBİR ŞEY
 // yazılmadan önce — karşılama katmanı da uygulama da sayılsın, "bu cihazda
@@ -361,4 +382,5 @@ if (document.documentElement.classList.contains('uygulama-modu')) {
   logoParkiKur();
   tahtaNoktalariKur();
   paylasiKur();
+  magazaLinkleriniKur();
 }

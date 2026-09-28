@@ -41,6 +41,11 @@ export const JOURNEY_STEPS = [
   'signup_form', // kayıt formu açıldı
   'signup_done', // hesap oluştu — oturum kapanır
   'login', // mevcut hesaba giriş yaptı — oturum kapanır
+  // Mağaza rozetine / şeridine dokundu (28 Eylül 2026, Meta kampanyası:
+  // reklam `kelimeki.com/?ref=…`e gidiyor, mağazaya buradan geçiliyor).
+  // Oturumu KAPATMAZ — kişi dönüp tarayıcıda oynayabilir. SONA eklendi,
+  // çünkü sıra admin kartının satır sırası; araya girse eski satırlar kayardı.
+  'store',
 ] as const;
 
 export type JourneyStep = (typeof JOURNEY_STEPS)[number];
@@ -55,6 +60,7 @@ const ONCE: ReadonlySet<JourneyStep> = new Set<JourneyStep>([
   'move_5',
   'signup_done',
   'login',
+  'store',
 ]);
 
 /** Oturumu KAPATAN adımlar — misafir üye oldu, bundan sonrası bu soruyla ilgisiz. */

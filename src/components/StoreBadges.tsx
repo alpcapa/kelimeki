@@ -1,4 +1,6 @@
-import { BADGE_GAP_PX, BADGE_HEIGHT_PX, visibleStoreBadges } from '../utils/storeLinks';
+import { BADGE_GAP_PX, BADGE_HEIGHT_PX, taggedStoreUrl, visibleStoreBadges } from '../utils/storeLinks';
+import { getStoredUtmSource } from '../utils/visitTracking';
+import { journeyStep } from '../utils/webJourney';
 
 /**
  * Mağaza rozeti satırı (ROADMAP #26) — DÖRT yerde: Setup'ın footer'ında
@@ -41,10 +43,18 @@ import { BADGE_GAP_PX, BADGE_HEIGHT_PX, visibleStoreBadges } from '../utils/stor
  * ⚠ **`<img>` kullanılıyor, SVG inline EDİLMİYOR** — gerekçe `storeLinks.ts`
  * (Illustrator'ın `.st0` sınıfları sayfa geneline sızıp iki rozetin rengini
  * birbirine karıştırır).
+ *
+ * ⚠ **Link, ziyaretçinin `?ref=` etiketini mağazaya taşır** (`taggedStoreUrl`,
+ * 28 Eylül 2026) ve dokunuş ziyaretçi yolculuğuna `store` adımı yazar.
+ * Karşılama katmanı SUNUCUDA render edildiği için orada etiket okunamaz
+ * (`localStorage` yok → düz adres); katmandaki linkleri `main.tsx` açılışta
+ * `data-kelimeki-magaza` özniteliğinden bulup yeniden yazıyor ve dokunuşu
+ * bağlıyor. Özniteliği KALDIRMA, katmandaki rozetler sessizce etiketsiz kalır.
  */
 export function StoreBadges() {
   const badges = visibleStoreBadges();
   if (badges.length === 0) return null;
+  const source = getStoredUtmSource();
 
   return (
     <div
@@ -54,7 +64,9 @@ export function StoreBadges() {
       {badges.map((badge) => (
         <a
           key={badge.key}
-          href={badge.url}
+          href={taggedStoreUrl(badge.url, badge.key, source)}
+          data-kelimeki-magaza={badge.key}
+          onClick={() => journeyStep('store')}
           target="_blank"
           rel="noopener noreferrer"
           className="active:opacity-70 transition-opacity"
