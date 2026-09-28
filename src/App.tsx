@@ -2362,7 +2362,7 @@ export default function App() {
       />
 
       {showHistory && (
-        <MoveHistoryModal state={state} onClose={() => setShowHistory(false)} />
+        <MoveHistoryModal state={state} myIndex={0} onClose={() => setShowHistory(false)} />
       )}
 
       {showFeedback && (
