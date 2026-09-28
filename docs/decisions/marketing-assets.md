@@ -194,6 +194,11 @@ Eski *"Ücretsiz · Kurulum yok · Üyelik gerekmez"* satırı yalnızca web'i
 anlatıyordu — iki mağazada yayındayken yanıltıcıydı, *"Ücretsiz ·
 Reklamsız"* oldu. Rozetler `linkedin.tsx`'in `Rozetler`i (aynı kapı), 34
 CSS px; `build.mjs`in rozet ölçümü artık üç kapakta da koşuyor.
+⚠ **Aynı gün: blok YUKARI yaslandı.** Kişisel profilde (mobil) avatar
+kapağın ALT ORTASINI örtüyor (iPad önizlemesinde üst kenarı ~%71'de);
+ortalanmış blokta Play rozeti avatarın altında kaldı. Sayfa kapağının
+"sol alt" kuralı kişisel profile YETMİYOR. `build.mjs` artık içeriğin
+yüksekliğin %68'inin üstünde kaldığını ölçüyor, değilse düşer.
 
 ### LinkedIn kişisel profil kapağı (`scripts/kapak/linkedin.tsx`, 16 Eylül 2026)
 

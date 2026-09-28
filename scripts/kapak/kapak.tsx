@@ -72,7 +72,7 @@ function Kapak() {
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(ellipse 300px 190px at 50% 50%, rgba(255,255,255,0.98) 55%, rgba(255,255,255,0) 100%)',
+            'radial-gradient(ellipse 300px 170px at 50% 36%, rgba(255,255,255,0.98) 55%, rgba(255,255,255,0) 100%)',
         }}
       />
 
@@ -83,15 +83,18 @@ function Kapak() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: 14,
+          // 28 Eylül 2026: blok YUKARI yaslı — kişisel profilde (mobil)
+          // avatar kapağın ALT ORTASINI örtüyor (~alt %30); ortalanmış
+          // blokta Play rozeti avatarın altında kalıyordu.
+          justifyContent: 'flex-start',
+          paddingTop: 16,
           textAlign: 'center',
         }}
       >
         {/* Güvenli kutu: 480 px — telefonun dar kırpmasında da tamamen içeride. */}
-        <div data-guvenli-kutu="" style={{ width: 480, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 13 }}>
-          <LandingLogo height={62} />
-          <p style={{ margin: 0, fontSize: 23, lineHeight: 1.25, fontWeight: 700, letterSpacing: -0.3 }}>
+        <div data-guvenli-kutu="" style={{ width: 480, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9 }}>
+          <LandingLogo height={52} />
+          <p style={{ margin: 0, fontSize: 21, lineHeight: 1.2, fontWeight: 700, letterSpacing: -0.3 }}>
             Kelime bul, bölgeni büyüt,
             <br />
             tahtayı ele geçir.
@@ -101,7 +104,7 @@ function Kapak() {
               Eski "Kurulum yok · Üyelik gerekmez" satırı yalnızca web'i
               anlatıyordu; iki mağazada yayındayken yanıltıcıydı. */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <Rozetler yukseklik={34} />
+            <Rozetler yukseklik={30} />
             <span style={{ fontFamily: MONO, fontSize: 14, fontWeight: 700, color: ACCENT, letterSpacing: 0.5 }}>
               kelimeki.com
             </span>
