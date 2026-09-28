@@ -160,6 +160,14 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
   void _loadRelation() {
     final friends = widget.friends;
     if (friends == null) return;
+    // Kendi kartında (ya da oturum yokken) simge HİÇ çizilmez — web'in
+    // `!!user && user.id !== member.id` koşulu. `relationWith` bu durumda da
+    // null döndüğünden `_relationLoaded` kurulsaydı null = "ilişki yok" =
+    // "arkadaş ekle" çizilir, dokununca kişi kendine davet teklif edilirdi
+    // (28 Eylül 2026, kullanıcı bildirdi). Kimlik `auth`tan değil
+    // gateway'den: `auth` her çağrı yerinde geçmiyor (bkz. initState).
+    final me = friends.gateway.currentUserId;
+    if (me == null || me == widget.userId) return;
     friends.relationWith(widget.userId).then((r) {
       if (!mounted) return;
       setState(() {
