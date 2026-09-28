@@ -188,6 +188,13 @@ tahtalar bilerek kadraj dışına taşıyor. **Ölçüldü:** güvenli kutu x 17
 telefon kırpması x 90–730 → tamamen içeride. Betik bu kontrolü her çalıştırmada
 tekrar ediyor, "sığdı" varsayılmıyor.
 
+**28 Eylül 2026: iki rozet, FB kapağında da** (LinkedIn kapaklarından bir
+gün sonra; kişisel FB profili için istendi, aynı dosya sayfada da geçer).
+Eski *"Ücretsiz · Kurulum yok · Üyelik gerekmez"* satırı yalnızca web'i
+anlatıyordu — iki mağazada yayındayken yanıltıcıydı, *"Ücretsiz ·
+Reklamsız"* oldu. Rozetler `linkedin.tsx`'in `Rozetler`i (aynı kapı), 34
+CSS px; `build.mjs`in rozet ölçümü artık üç kapakta da koşuyor.
+
 ### LinkedIn kişisel profil kapağı (`scripts/kapak/linkedin.tsx`, 16 Eylül 2026)
 
 `marketing/app-store/kelimeki-linkedin-kapak.png` (1584×396).

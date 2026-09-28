@@ -110,10 +110,10 @@ async function main() {
     console.log(`  avatar bölgesi: x < ${Math.round(avatarSag)} ve y > ${Math.round(avatarUst)}  →  ${cakisma ? 'ÇAKIŞIYOR ✗' : 'UZAKTA ✓'}`);
   }
 
-  // LinkedIn kapaklarında İKİ rozet (27 Eylül 2026): kırpma şeridinde,
-  // kadrajda ve eşit yükseklikte olmalı — değilse düşer.
+  // Üç kapakta da İKİ rozet (LinkedIn 27 Eylül, FB 28 Eylül 2026): kırpma
+  // şeridinde, kadrajda ve eşit yükseklikte olmalı — değilse düşer.
   const hatalar = [];
-  if (LINKEDIN) {
+  {
     const rz = olcum.rozetler;
     console.log(`  rozetler: ${rz.map((r) => `x ${r.sol}–${r.sag} y ${r.ust}–${r.alt} h ${r.h}`).join(' · ')}`);
     if (rz.length !== 2) hatalar.push(`${rz.length} rozet (2 bekleniyordu)`);

@@ -15,6 +15,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { LandingLogo, LandingLogoDefs } from '../../src/landing/LandingLogo';
 import { GameBoardPreview } from '../../src/components/GameBoardPreview';
 import { DEMO_TILES_2, DEMO_TILES_4 } from '../../src/landing/demoBoard';
+import { Rozetler } from './linkedin';
 
 const W = 820;
 const H = 312;
@@ -95,11 +96,18 @@ function Kapak() {
             <br />
             tahtayı ele geçir.
           </p>
-          <span style={{ fontFamily: MONO, fontSize: 15, fontWeight: 700, color: ACCENT, letterSpacing: 0.5 }}>
-            kelimeki.com
-          </span>
+          {/* 28 Eylül 2026: mağaza rozetleri (LinkedIn kapaklarıyla aynı
+              kapı ve aynı küçük boy — bkz. `linkedin.tsx`, `ROZET_H`).
+              Eski "Kurulum yok · Üyelik gerekmez" satırı yalnızca web'i
+              anlatıyordu; iki mağazada yayındayken yanıltıcıydı. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Rozetler yukseklik={34} />
+            <span style={{ fontFamily: MONO, fontSize: 14, fontWeight: 700, color: ACCENT, letterSpacing: 0.5 }}>
+              kelimeki.com
+            </span>
+          </div>
           <span style={{ fontFamily: MONO, fontSize: 12, color: '#5A6673' }}>
-            Ücretsiz · Kurulum yok · Üyelik gerekmez
+            Ücretsiz · Reklamsız
           </span>
         </div>
       </div>
