@@ -849,6 +849,7 @@ export function Setup({
             newlyFinishedIds={finishedUnseen}
             onFinishesSeen={handleFinishesSeen}
             onSwitchToAi={() => onMainViewChange("local")}
+            onActionCount={setLiveActionCount}
           />
         ) : !user && savedGame ? (
           // Misafir, tekil localStorage kaydı — yeni oyun bu bitene/teslim
