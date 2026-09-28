@@ -37,7 +37,7 @@ typedef MyHistoryStats = ({
 
 /// Üstteki kutuların sayıları — web `moveHistoryStats`
 /// (`MoveHistoryModal.tsx`) ile BİREBİR (28 Eylül 2026, kullanıcı isteği):
-/// TOPLAM · (adın) · VERGİ (−) · VERGİ (+). Önceki "Bu oyunda kazanılan N
+/// TOPLAM · (adın) · VERGİ(−) · VERGİ(+). Önceki "Bu oyunda kazanılan N
 /// hamle… Toplam X puan" satırının yerine geldi: N yalnızca puanlı
 /// hamleleri sayarken liste numarası (`turn + 1`) pas turlarını da
 /// saydığından "44 hamle" yazıp 45. hamleyi listeliyordu — hamle sayısı bu
@@ -105,13 +105,13 @@ class MoveHistoryModal extends StatelessWidget {
                 _StatBox(label: trUpper(me.name), value: '${me.score}'),
                 gap(),
                 _StatBox(
-                  label: 'VERGİ (−)',
+                  label: 'VERGİ(−)',
                   value: me.taxPaid > 0 ? '−${me.taxPaid}' : '0',
                   color: me.taxPaid > 0 ? _red : _text,
                 ),
                 gap(),
                 _StatBox(
-                  label: 'VERGİ (+)',
+                  label: 'VERGİ(+)',
                   value: me.taxCollected > 0 ? '+${me.taxCollected}' : '0',
                   color: me.taxCollected > 0 ? _green : _text,
                 ),

@@ -140,9 +140,9 @@ void main() {
     expect(find.text('TOPLAM'), findsOneWidget);
     expect(find.text('63'), findsOneWidget);
     expect(find.text('IRONMAN'), findsOneWidget);
-    expect(find.text('VERGİ (−)'), findsOneWidget);
+    expect(find.text('VERGİ(−)'), findsOneWidget);
     expect(find.text('−5'), findsOneWidget);
-    expect(find.text('VERGİ (+)'), findsOneWidget);
+    expect(find.text('VERGİ(+)'), findsOneWidget);
 
     // Aksiyon satırları web metinleriyle birebir.
     expect(find.text('Pas geçti'), findsOneWidget);
@@ -196,7 +196,7 @@ void main() {
     // Koltuk verilmedi → yalnızca TOPLAM; ad ve vergi kutusu YOK.
     expect(find.text('TOPLAM'), findsOneWidget);
     expect(find.text('IRONMAN'), findsNothing);
-    expect(find.text('VERGİ (−)'), findsNothing);
+    expect(find.text('VERGİ(−)'), findsNothing);
   });
 
   test('moveHistoryStats: web ile aynı sayım', () {
