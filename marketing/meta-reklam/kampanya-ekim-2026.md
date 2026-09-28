@@ -74,7 +74,7 @@ Kesin olan iki şey var:
 
 ## 3 · Kampanya yapısı
 
-### 3.1 · Neden "Trafik" ve neden optimizasyon "Bağlantı tıklamaları"
+### 3.1 · Neden "Trafik" ve neden optimizasyon "Yönlendirme sayfası görüntülemeleri"
 
 - Sitede **Meta pixel'i yok**, uygulamada **Meta SDK'sı yok**. İkisi de
   bilinçli karar: üçüncü taraf izleyici kullanılmıyor. Eklemek gizlilik
@@ -82,14 +82,25 @@ Kesin olan iki şey var:
   Bu kampanya için değer değil.
 - Bu yüzden Meta kurulumu ya da üyeliği göremiyor ve onlara göre optimize
   edemiyor. **"Uygulama tanıtımı" hedefi** SDK olmadan kurulumu
-  ölçemeyeceği için kör optimize eder, seçme.
-- **"Açılış sayfası görüntülemeleri"** optimizasyonu pixel ister.
-  ⚠ `sponsored-2026-08/metin.md` §4 bunu öneriyordu, ama pixel olmadan o
-  seçenek çalışmaz. Boost'un "link tıklaması"yla koşması muhtemelen bu
-  yüzdendi.
-- Geriye **Trafik + Bağlantı tıklamaları** kalıyor. Kalite kontrolünü Meta
-  yapamadığı için biz yapıyoruz: hedef URL'ler doğrudan mağazaya gidiyor,
-  sonucu mağazanın kendi raporundan okuyoruz (§5).
+  ölçemeyeceği için kör optimize eder, seçme. Ads Manager'da "Uygulama"
+  dönüşüm konumu zaten gri geliyor, çünkü uygulama Meta'ya kayıtlı değil.
+- **Performans hedefi: "Yönlendirme sayfası görüntülemelerinin sayısını en
+  üst seviyeye çıkar"** (Türkçe arayüzün adı; eski adı "Açılış sayfası
+  görüntülemeleri").
+  - ⚠ **28 Eylül 2026 — bu belgenin ilk sürümü "pixel ister" diyordu,
+    YANLIŞTI.** Kurulum sırasında Ads Manager'ın kendisi okundu: *"Yönlendirme
+    sayfası görüntülemeleri artık Meta Pikseli entegrasyonu gerektirmiyor"*.
+    Aynı ekran, bağlantı tıklamalarına göre sonuç başına ~%23 daha düşük
+    ücret tahmin ediyordu.
+  - "Bağlantı tıklamaları"na göre farkı: sayfa gerçekten yüklenmeden çıkan
+    dokunuşları saymıyor. 16 Eylül'ün sorunu tam buydu.
+  - **Açık risk:** hedef URL'ler mağaza adresi. Play ya da App Store
+    uygulaması sayfayı Meta'nın tarayıcısından önce açarsa Meta görüntülemeyi
+    göremeyebilir. **İlk 48 saatte bağlantı tıklaması var ama yönlendirme
+    sayfası görüntülemesi ~0 ise** performans hedefini "Bağlantı tıklamaları"na
+    çevir. Bu değişiklik öğrenmeyi baştan başlatır, bir kez yapılır.
+- Kalite kontrolünü yine biz yapıyoruz: hedef URL'ler doğrudan mağazaya
+  gidiyor, sonucu mağazanın kendi raporundan okuyoruz (§5).
 
 ### 3.2 · Kampanya düzeyi
 
@@ -107,7 +118,7 @@ Kesin olan iki şey var:
 |---|---|---|
 | Set adı | `A · Android → Play` | `B · iOS → App Store` |
 | Dönüşüm konumu | Web sitesi | Web sitesi |
-| Performans hedefi | Bağlantı tıklamalarını en üst düzeye çıkar | aynı |
+| Performans hedefi | Yönlendirme sayfası görüntülemelerinin sayısını en üst seviyeye çıkar (§3.1'deki geri dönüş kuralıyla). Teklif stratejisi **En yüksek hacim**, ücret hedefi boş | aynı |
 | Günlük bütçe (test) | **₺100** | **₺100** |
 | Takvim | Başlangıç + bitiş tarihi gir (5 gün). Bitişsiz bırakma | aynı |
 | Konum | Türkiye · "Bu konumda yaşayan kişiler" | aynı |
