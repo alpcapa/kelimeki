@@ -166,7 +166,7 @@ tablo yan yana okunabilsin.
 | Reklam | Biçim | Görsel | Hikaye / Reels alanı |
 |---|---|---|---|
 | `karusel` | Carousel, 4 kart | `sponsored-2026-08/kelimeki-01 → 03 → 02 → 05.png` (2160², iki rozetli) | Meta 1:1 kartları kendisi yerleştirir |
-| `reel` | Tek video | `sponsored-2026-08/kelimeki-reel.mp4` (9:16, 9,4 sn) | Videonun kendisi |
+| `reel` | Tek video | `sponsored-2026-08/kelimeki-reel.mp4` (9:16, 9,4 sn; 28 Eyl'den beri alt şeritte iki rozet) | Videonun kendisi |
 | `kare` | Tek görsel | `sponsored-2026-08/kelimeki-01.png` | **Görseli değiştir →** `meta-reklam/kelimeki-story-1080x1920.png` |
 
 **Görseller mağazadan bağımsız olmalı.** `kelimeki-01…05` ve yeni hikaye
@@ -398,6 +398,8 @@ göstermeyebilir. İlk 2 günde bütçeye/metne dokunma (Meta'nın öğrenme dö
 | 28 Eyl 2026 | **Plan değişti:** Set A'nın `karusel` reklamına Play linki yazılınca Ads Manager #1487810 verdi (Trafik'te mağaza linki yok). Kullanıcı Yol 1'i seçti (§3.0). Web değişikliği PR #673'te; `store` adımının migration'ı (`20260928100430_web_journey_store_step`) **canlıya uygulandı** ve doğrulandı (iki fonksiyonda da `store` var, grant'ler ve `security definer` aynı) | `pg_get_functiondef` · `list_migrations` |
 | 28 Eyl 2026 | Set A kuruldu (taslak): Trafik · yönlendirme sayfası görüntülemeleri · ₺100/gün · 5-10 Ekim (Meta başlangıcı en fazla ~1 hafta ileri alıyor, yayından önce gerçek tarihe çekilecek) · yalnızca Android, min 7.0 · FB/IG akış, IG Keşfet, hikaye, reels · 18+ · Türkçe. `karusel` reklamının URL'si henüz Play linki → `kelimeki.com/?ref=meta-and-karusel` olacak | Kullanıcının ekran görüntülerinden okundu |
 | 28 Eyl 2026 | **Tek set kararı** (kullanıcı: *"2 store ortak bir hale getirelim, tüm ios ve android cihazlara çıkartalım"*). A/B setleri birleşti; etiketler `meta-and-*`/`meta-ios-*` → `meta-karusel`/`meta-reel`/`meta-kare`; mağazadan bağımsız hikaye görseli üretildi (`kelimeki-story-1080x1920.png`, `npm run generate-meta-story`) | — |
+| 28 Eyl 2026 | PR #673 merge edildi, `kelimeki.com` derleme kimliği `95767a4` (canlı HTML'de 4 rozette `data-kelimeki-magaza`, ana pakette etiketleme kodu) | `curl` |
+| 28 Eyl 2026 | Reel yeniden üretildi: alt şeritte iki mağaza rozeti, kapanışta "App Store ve Google Play'de" (kullanıcı: *"reel'de app store ve Play ikonları yok"*). Ads Manager'daki `reel` reklamında video YENİSİYLE değiştirilmeli | — |
 | — | Başlangıç ölçümü (kampanya öncesi 7 gün): Play mağaza girişi edinmeleri = ? · ASC ilk indirmeler = ? | Play Console · ASC |
 | — | App Store kampanya linkleri üretildi (`pt=` = ?) | — |
 | — | Faz 1 başladı | — |

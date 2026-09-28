@@ -280,6 +280,17 @@ cevabını veriyor.
   (`/opt/pw-browsers/ffmpeg-1011`) yalnızca VP8/webm derlenmiş, H.264 yok.
 
 
+**28 Eylül 2026 — iki mağaza rozeti (Meta kampanyası):** alt bant artık logo +
+adres yerine **iki rozet + adres** (`visibleStoreBadges`, App Store önce, eşit
+yükseklik); kapanış kartındaki mavi `kelimeki.com` düğmesi ve artık yanlış
+olan *"Kurulum yok · Üyelik gerekmez"* satırı kalktı, yerine *"App Store ve
+Google Play'de"* + *"Ücretsiz · Reklamsız · Tarayıcıda da oynanır"*.
+Kapanışa ayrıca rozet KONMADI: bant her karede duruyor, ikinci satır aynı
+karede rozeti iki kez gösterdi (denendi). Aynı turda betik düştü: Setup'taki
+satırın etiketi "Senin hamlen bekleniyor" → "SIRA SENDE" olmuştu; seçici
+ikisini de tanıyor. ⚠ ffmpeg bu ortamda kurulu gelmiyor, `apt-get install -y
+ffmpeg` gerekiyor (H.264 için; Playwright'ın ffmpeg'i yalnızca VP8).
+
 ## "Artık Google Play'de" lansman görselleri (`scripts/play-lansman/`, 26 Eylül 2026)
 
 `npm run build && npm run generate-play-lansman` →
