@@ -133,13 +133,13 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    // Kutular (web `moveHistoryStats`): HAMLE = oyunun bütün turları, pas ve
-    // değiştirme dahil (0-4 → 5); PUAN = oyunun toplamı, vergi geliri dahil
-    // (7 + 0 + 15 + 5 + 0 + 36 = 63); vergiler koltuk 0'ın: 5 kaptırdı,
-    // hiç toplamadı.
-    expect(find.text('HAMLE'), findsOneWidget);
-    expect(find.text('5'), findsOneWidget);
+    // Kutular (web `moveHistoryStats`): TOPLAM = oyunun toplamı, vergi
+    // geliri dahil (7 + 0 + 15 + 5 + 0 + 36 = 63); ikinci kutu koltuk 0'ın
+    // ADI ve skor tablosundaki puanı (fikstürde 0); vergiler koltuk 0'ın:
+    // 5 kaptırdı, hiç toplamadı.
+    expect(find.text('TOPLAM'), findsOneWidget);
     expect(find.text('63'), findsOneWidget);
+    expect(find.text('IRONMAN'), findsOneWidget);
     expect(find.text('VERGİ (−)'), findsOneWidget);
     expect(find.text('−5'), findsOneWidget);
     expect(find.text('VERGİ (+)'), findsOneWidget);
@@ -193,34 +193,20 @@ void main() {
     ));
     await tester.pumpAndSettle();
     expect(find.text('Henüz kazanılmış bir puan yok.'), findsOneWidget);
-    // Koltuk verilmedi → yalnızca HAMLE ve PUAN, vergi kutusu YOK.
-    expect(find.text('HAMLE'), findsOneWidget);
-    expect(find.text('PUAN'), findsOneWidget);
+    // Koltuk verilmedi → yalnızca TOPLAM; ad ve vergi kutusu YOK.
+    expect(find.text('TOPLAM'), findsOneWidget);
+    expect(find.text('IRONMAN'), findsNothing);
     expect(find.text('VERGİ (−)'), findsNothing);
   });
 
   test('moveHistoryStats: web ile aynı sayım', () {
     final s0 = moveHistoryStats(_stateWithHistory(), 0);
-    expect((s0.moves, s0.score, s0.taxPaid, s0.taxCollected), (5, 63, 5, 0));
+    expect(s0.total, 63);
+    expect(s0.me, (name: 'Ironman', score: 0, taxPaid: 5, taxCollected: 0));
     final s1 = moveHistoryStats(_stateWithHistory(), 1);
-    expect((s1.taxPaid, s1.taxCollected), (0, 5));
+    expect((s1.me!.taxPaid, s1.me!.taxCollected), (0, 5));
     final none = moveHistoryStats(_stateWithHistory(), -1);
-    expect((none.taxPaid, none.taxCollected), (null, null));
-
-    // Teslim: oyunu BİTİRMEYEN teslim hamle sayılır, bitiren sayılmaz.
-    HistoryEntry w(int p, int t) =>
-        HistoryEntry(turn: t, player: p, words: const ['X'], points: 1);
-    HistoryEntry sur(int p, int t) => HistoryEntry(
-        turn: t, player: p, words: const [], points: 0, action: 'surrender');
-    final two = _stateWithHistory()
-        .copyWith(moveHistory: [w(0, 0), w(1, 1), sur(0, 2)]);
-    expect(moveHistoryStats(two, 0).moves, 2);
-    final base4 = _stateWithHistory();
-    final four = base4.copyWith(
-      players: [...base4.players, ...base4.players],
-      moveHistory: [w(0, 0), sur(1, 1), w(2, 2), sur(3, 3), w(0, 4), sur(2, 5)],
-    );
-    expect(moveHistoryStats(four, 0).moves, 5);
+    expect((none.total, none.me), (63, null));
   });
 
   testWidgets('Board footer: "Hamleler" oynanan hamleyi gösterir',

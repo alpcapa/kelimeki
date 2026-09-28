@@ -26,53 +26,49 @@ Future<void> showMoveHistoryModal(BuildContext context, GameState state,
   );
 }
 
-/// Üstteki kutuların sayıları — web `moveHistoryStats`
-/// (`MoveHistoryModal.tsx`) ile BİREBİR (28 Eylül 2026, kullanıcı isteği:
-/// *"toplam hamle, toplam puan, vergiler"*). Önceki "Bu oyunda kazanılan N
-/// hamle… Toplam X puan" satırının yerine geldi: N yalnızca puanlı
-/// hamleleri sayarken liste numarası (`turn + 1`) pas turlarını da
-/// saydığından "44 hamle" yazıp 45. hamleyi listeliyordu.
-typedef MoveHistoryStats = ({
-  /// Oyunun TOPLAM hamlesi: kelime + pas + taş değiştirme + oyunu
-  /// BİTİRMEYEN teslim. Oyunu bitiren teslim (aktif oyuncu 1'e düşüyor —
-  /// 2 kişide ilk teslim) ve vergi geliri satırları hariç.
-  int moves,
-
-  /// Oyunun TOPLAM puanı — bütün oyuncuların bütün satırları.
+/// Pencereyi açanın kutusu: adı, skor tablosundaki puanı ve kaptırdığı /
+/// topladığı vergi.
+typedef MyHistoryStats = ({
+  String name,
   int score,
-
-  /// Pencereyi açanın kaptırdığı / topladığı vergi; koltuk bilinmiyorsa
-  /// `null`. Kişisel, çünkü oyun genelinde ödenen = toplanan olurdu.
-  int? taxPaid,
-  int? taxCollected,
+  int taxPaid,
+  int taxCollected,
 });
 
+/// Üstteki kutuların sayıları — web `moveHistoryStats`
+/// (`MoveHistoryModal.tsx`) ile BİREBİR (28 Eylül 2026, kullanıcı isteği):
+/// TOPLAM · (adın) · VERGİ (−) · VERGİ (+). Önceki "Bu oyunda kazanılan N
+/// hamle… Toplam X puan" satırının yerine geldi: N yalnızca puanlı
+/// hamleleri sayarken liste numarası (`turn + 1`) pas turlarını da
+/// saydığından "44 hamle" yazıp 45. hamleyi listeliyordu — hamle sayısı bu
+/// yüzden kutulardan da çıktı. Vergiler kişisel, çünkü oyun genelinde
+/// ödenen = toplanan olurdu. Koltuk bilinmiyorsa `me` `null`.
+typedef MoveHistoryStats = ({int total, MyHistoryStats? me});
+
 MoveHistoryStats moveHistoryStats(GameState state, int myIndex) {
-  final known = myIndex >= 0 && myIndex < state.players.length;
-  var moves = 0, score = 0, taxPaid = 0, taxCollected = 0, surrenders = 0;
+  var total = 0, taxPaid = 0, taxCollected = 0;
   for (final e in state.moveHistory) {
-    score += e.points;
+    total += e.points;
+    if (e.player != myIndex) continue;
     if (e.invasionFrom != null) {
-      if (e.player == myIndex) taxCollected += e.points;
-      continue;
-    }
-    if (e.action == 'surrender') {
-      surrenders++;
-      // Kademeli teslim: oyun ancak aktif oyuncu 1'e düşünce biter.
-      if (surrenders >= state.players.length - 1) continue;
-    }
-    moves++;
-    if (e.player == myIndex) {
+      taxCollected += e.points;
+    } else {
       for (final s in e.lostShares ?? const <LostShare>[]) {
         taxPaid += s.amount;
       }
     }
   }
+  final known = myIndex >= 0 && myIndex < state.players.length;
+  if (!known) return (total: total, me: null);
+  final p = state.players[myIndex];
   return (
-    moves: moves,
-    score: score,
-    taxPaid: known ? taxPaid : null,
-    taxCollected: known ? taxCollected : null,
+    total: total,
+    me: (
+      name: p.name,
+      score: p.score,
+      taxPaid: taxPaid,
+      taxCollected: taxCollected,
+    ),
   );
 }
 
@@ -85,8 +81,7 @@ class MoveHistoryModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final entries = state.moveHistory;
     final stats = moveHistoryStats(state, myIndex);
-    final paid = stats.taxPaid;
-    final collected = stats.taxCollected;
+    final me = stats.me;
     // Vergi geliri satırları ayrı kart olarak gösterilmez (web'deki aynı
     // gerekçe: aynı hamle zaten oynayanın satırında anlatılıyor).
     final display = [
@@ -103,21 +98,22 @@ class MoveHistoryModal extends StatelessWidget {
         children: [
           Row(
             children: [
-              _StatBox(label: 'HAMLE', value: '${stats.moves}'),
-              gap(),
-              _StatBox(label: 'PUAN', value: '${stats.score}'),
-              if (paid != null && collected != null) ...[
+              _StatBox(label: 'TOPLAM', value: '${stats.total}'),
+              if (me != null) ...[
+                gap(),
+                // Web'de CSS `uppercase` (lang=tr); burada Türkçe kural.
+                _StatBox(label: trUpper(me.name), value: '${me.score}'),
                 gap(),
                 _StatBox(
                   label: 'VERGİ (−)',
-                  value: paid > 0 ? '−$paid' : '0',
-                  color: paid > 0 ? _red : _text,
+                  value: me.taxPaid > 0 ? '−${me.taxPaid}' : '0',
+                  color: me.taxPaid > 0 ? _red : _text,
                 ),
                 gap(),
                 _StatBox(
                   label: 'VERGİ (+)',
-                  value: collected > 0 ? '+$collected' : '0',
-                  color: collected > 0 ? _green : _text,
+                  value: me.taxCollected > 0 ? '+${me.taxCollected}' : '0',
+                  color: me.taxCollected > 0 ? _green : _text,
                 ),
               ],
             ],
@@ -181,17 +177,16 @@ class _StatBox extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                label,
-                maxLines: 1,
-                style: const TextStyle(
-                  fontFamily: 'SpaceMono',
-                  fontSize: 8,
-                  letterSpacing: 0.5,
-                  color: _muted,
-                ),
+            // Oyuncu adı uzun olabilir — web `truncate` gibi üç nokta.
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontFamily: 'SpaceMono',
+                fontSize: 8,
+                letterSpacing: 0.5,
+                color: _muted,
               ),
             ),
             const SizedBox(height: 4),
