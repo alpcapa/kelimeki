@@ -14,7 +14,10 @@ interface MoveHistoryModalProps {
 }
 
 export interface MyMoveStats {
-  /** Kelime hamlesi sayısı — pas/değiştirme/teslim ve vergi geliri satırları hariç. */
+  /**
+   * Sıranın geldiği tur sayısı: kelime + pas + taş değiştirme (kullanıcı
+   * kararı, 28 Eylül 2026). Teslim olma ve vergi geliri satırları hariç.
+   */
   moves: number;
   /** Skor tablosundaki sayı (`players[i].score`). */
   score: number;
@@ -29,7 +32,8 @@ export interface MyMoveStats {
  * "Bu oyunda kazanılan N hamle… Toplam X puan" satırının yerine geldi:
  * N yalnızca puanlı hamleleri sayarken liste numarası (`turn + 1`) pas
  * turlarını da saydığından "44 hamle" yazıp 45. hamleyi listeliyordu, X de
- * bütün oyuncuların toplamıydı. Port ikizi: `move_history_modal.dart`.
+ * bütün oyuncuların toplamıydı — o toplam kutuların altında tek satır
+ * olarak KALDI (kullanıcı isteği). Port ikizi: `move_history_modal.dart`.
  */
 export function myMoveStats(state: GameState, myIndex: number): MyMoveStats {
   let moves = 0;
@@ -41,7 +45,7 @@ export function myMoveStats(state: GameState, myIndex: number): MyMoveStats {
       taxCollected += e.points;
       continue;
     }
-    if (e.action) continue;
+    if (e.action === 'surrender') continue;
     moves++;
     for (const s of e.lostShares ?? []) taxPaid += s.amount;
   }
@@ -132,6 +136,7 @@ function BonusBadge({ tier }: { tier: 2 | 3 }) {
 
 export function MoveHistoryModal({ state, myIndex = -1, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory;
+  const total = entries.reduce((s, e) => s + e.points, 0);
   const stats = myIndex >= 0 && myIndex < state.players.length ? myMoveStats(state, myIndex) : null;
   // Vergi geliri satırı ayrı bir kart olarak gösterilmez: aynı hamle zaten
   // hamleyi yapanın kendi satırında (kelime + net puan + kaptırılan pay
@@ -143,13 +148,16 @@ export function MoveHistoryModal({ state, myIndex = -1, onClose }: MoveHistoryMo
   return (
     <Modal title="Oyun Geçmişi" onClose={onClose}>
       {stats && (
-        <div className="grid grid-cols-4 gap-1.5 mb-3">
+        <div className="grid grid-cols-4 gap-1.5 mb-2">
           <StatBox label="Hamle" value={String(stats.moves)} tone="text" />
           <StatBox label="Puan" value={String(stats.score)} tone="text" />
           <StatBox label="Vergi (−)" value={stats.taxPaid ? `−${stats.taxPaid}` : '0'} tone={stats.taxPaid ? 'red' : 'text'} />
           <StatBox label="Vergi (+)" value={stats.taxCollected ? `+${stats.taxCollected}` : '0'} tone={stats.taxCollected ? 'green' : 'text'} />
         </div>
       )}
+      <p className="text-[10px] font-mono text-muted mb-3">
+        Oyunda toplam <span className="font-bold text-accent text-[13px]">{total}</span> puan.
+      </p>
 
       {displayEntries.length === 0 ? (
         <p className="text-[11px] font-mono text-muted text-center py-4">
