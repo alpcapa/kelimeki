@@ -256,6 +256,7 @@ src/
                            # pub get (Dart testleri yerelde koşabilsin)
 marketing/                 # reklam/tanıtım + mağaza çıktıları — üretilmiş görsel/metin;
                            # uygulamaya girmez (node scripts/sponsored-post/build.mjs)
+├── meta-reklam/           # ücretli Meta (IG+FB) kampanya planları — kurgu, metin, etiket, karar kuralı
 └── store/                 # mağaza listeleme görselleri (npm run generate-store-header)
 
 mobile/                    # Flutter (iOS+Android) portu — ayrıntı: mobile/CLAUDE.md

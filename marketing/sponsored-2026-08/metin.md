@@ -124,6 +124,12 @@ parametrelerini ayrıca eklemesi sorun değil, yeter ki `ref=` de olsun.)
 **"Açılış sayfası görüntüleme"** yap — "Link tıklaması" tıklayıp sayfa
 açılmadan çıkanları da sayıyor, aradaki fark bu bütçede ciddi.
 
+⚠ **28 Eylül 2026 düzeltmesi:** "Açılış sayfası görüntüleme"
+optimizasyonu **pixel ister**. Pixel olmadığı için bu seçenek çalışmaz,
+16 Eylül boost'u "link tıklaması" ile koştu. Yerine geçen kurgu (doğrudan
+mağazaya giden, cihaza göre bölünmüş iki set):
+`marketing/meta-reklam/kampanya-ekim-2026.md`.
+
 **3) CTA butonu:** "Oyna" varsa o; yoksa "Daha fazla bilgi".
 
 **4) Sonucu nereden okuyacaksın:** Admin paneli → **Büyüme › Kullanıcı ›
