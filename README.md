@@ -148,7 +148,7 @@ src/
 │   ├── FriendInvitePage.tsx     # herkese açık /davet/:token sayfası (girişsiz de erişilebilir) — davet kartı + oyunun tanıtımı (tahta/ikonlar landing/ ile tek kaynak)
 │   ├── LiveGamesTab.tsx         # Canlı sekmesi: davet bekleyen/aktif/rakip bekleyen oyun listesi + Kabul/Reddet + girişsiz uyarı penceresi
 │   ├── LiveGameCreateForm.tsx   # Canlı oyun kurulumu: oyuncu sayısı + oyuncu renginde koltuk kartları + arkadaş seçici + davet gönderme
-│   ├── actionButton.ts          # Setup'ın turuncu "Yeni Oyun Kur" düğmesi (YZ + Arkadaşınla listeleri) — "altta sabit" iOS Safari'de denendi, geri alındı
+│   ├── actionButton.ts          # Setup'ın turuncu "Yeni Oyun Başlat" düğmesi (YZ + Arkadaşınla listeleri) — "altta sabit" iOS Safari'de denendi, geri alındı
 │   ├── FriendSuggestModal.tsx   # bir Canlı davet kabul edildikten sonra, henüz arkadaş olunmayan katılımcılara toplu istek gönderme önerisi
 │   ├── FriendModerationModal.tsx # arkadaş satırındaki 🚫/🚩 rozetinden açılan geri alma paneli (sessizden çıkar / raporu geri çek)
 │   ├── OnlineGameScreen.tsx     # gerçek Canlı oyun ekranı — Board/Rack/GameHeader'ı Supabase state'ine (Realtime) bağlar

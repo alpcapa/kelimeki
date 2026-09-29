@@ -436,20 +436,18 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
     title: 'Kayıt Hunisi',
     body: (
       <>
-        Kayıt formunu AÇAN ile hesabı OLUŞTURAN sayısı, kanal başına
-        (<b>Doğrudan</b> = kayıt kapısı, <b>Form</b> = Görüş Bildir formundan
-        gelen). <b>Oran</b> = Tamamlama / Açılış.
+        Kayıt formunu AÇAN ile hesabı OLUŞTURAN sayısı, platform başına.{' '}
+        <b>Oran</b> = Tamamlama / Açılış. Sayaç 21 Eylül 2026'da başladı; pencere
+        ondan erkene gitmez (iki satır aynı günleri sayar).
         <br />
-        Bu kart <b>ADET</b> sayar, kişi değil: sayaç bilerek kimliksiz
-        (<code>signup_events</code> tablosunda ne <code>anon_id</code> ne{' '}
-        <code>user_id</code> var), çünkü gizlilik metnindeki "anonim kod DÖRT
-        durumda gönderilir" cümlesine beşinci bir durum eklemek istemedik. Aynı
-        kişi formu iki kez açarsa iki kez sayılır.
+        <b>Web:</b> ikisi de kimliksiz sayaçtan (<code>signup_events</code>; ne{' '}
+        <code>anon_id</code> ne <code>user_id</code> var, gizlilik metnine yeni bir durum
+        eklememek için). Kart <b>ADET</b> sayar: formu iki kez açan iki kez sayılır.
         <br />
-        ⚠ <b>Yalnızca web.</b> Port aynı olayları (<code>signup_started</code>/
-        <code>signup_completed</code>) Firebase Analytics'e yazıyor, bu tabloya
-        değil — bu yüzden "Tamamlama" da <code>profiles</code>tan değil aynı
-        tablodan okunuyor (payda web, pay web+mobil olsaydı oran sahte çıkardı).
+        <b>Uygulama:</b> Tamamlama = uygulamadan açılan hesap (<code>profiles</code>).
+        Açılış henüz <b>ölçülmüyor</b> ("—"): uygulama bu olayı yalnızca Firebase'e
+        yazıyor. iOS / Android ayrımı da o yüzden yok; uygulama bu sayaca yazmaya
+        başlayınca gelecek. Toplamın oranı yalnızca açılışı ölçülen satırlardan.
         <br />
         ⚠ "Tamamladı" = hesap oluştu demek, <b>e-postasını onayladı demek
         DEĞİL</b>. Onay kaybı ayrı bir soru (ROADMAP #32).
@@ -461,7 +459,8 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
     body: (
       <>
         Web'deki MİSAFİR ziyaretçinin <b>nerede ayrıldığı</b>. Her satır bir adım;{' '}
-        <b>Ulaşan</b> = o adıma gelen oturum, <b>Ayrılan</b> = SON adımı o olan oturum,{' '}
+        <b>Ulaşan</b> = o adıma gelen oturum, <b>Ayrılan</b> = EN İLERİ adımı o olan oturum (kayıt sırası değil: oyunu bitirenin geç gelen
+        "5. hamle" kaydı onu oyun bitişinden geri çekmez),{' '}
         <b>Ayrılma</b> = Ayrılan / Ulaşan. Bounce'un yeri, Ayrılma yüzdesinin en yüksek
         olduğu satırdır. <b>Süre</b> = orada ayrılanların oturumda kaldığı süre (medyan).
         <br />
@@ -485,8 +484,11 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         azalmak zorunda değil.
         <br />
         ⚠ <b>Kapsam:</b> yalnızca web ve yalnızca misafir. Girişli açılan oturum hiç
-        yazılmaz; <b>Kayıt oldu</b>/<b>Giriş yaptı</b> satırları ayrılma değil BAŞARI
-        (oturum orada kapanır). Karşılama sayfası yalnızca ilk kez gelenlere
+        yazılmaz; <b>Oyun bitti</b>/<b>Kayıt oldu</b>/<b>Giriş yaptı</b>/<b>Mağazaya
+        gitti</b> satırları ayrılma değil BAŞARI (✓). Giriş yapan misafirin oturumu
+        orada kapanır, sonrası üye olarak oynanır ve SAYILMAZ; bu yüzden ara adımlar
+        arasındaki fark "Ayrılan" toplamından büyük görünebilir, farkı Giriş yaptı
+        satırı taşır. <b>Dönen</b> görünümünde karşılama satırları gizlenir. Karşılama sayfası yalnızca ilk kez gelenlere
         gösterildiği için dönen misafir <b>Uygulama açıldı</b>'dan başlar (<b>Yeni</b>
         süzgecinde o satır "karşılamadan geçenler"i gösterir). Otomasyon
         tarayıcıları (<code>navigator.webdriver</code>) sayılmaz. Mobil Safari sekmeyi
@@ -555,6 +557,13 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <b>Bitiren</b> = en az bir oyun bitiren; yüzdesi <b>Başlatan</b>'a göredir
         ("başlayanların yüzde kaçı bitirdi"). <b>Oyun</b> görünümü aynı cihazların oyun
         ADETLERİNİ gösterir.
+        <br />
+        <br />
+        <b>Mağaza</b> = mağaza rozetine / şeridine dokunan web oturumu (yüzdesi <b>Land</b>'e
+        göre). ⚠ Kohortun DIŞINDAN, Ziyaretçi Yolculuğu kaydından gelir: birimi cihaz değil{' '}
+        <b>oturum</b>, kanala <code>?ref=</code> etiketiyle bağlanır ve yalnızca web
+        satırlarında doludur. Reklamdan gelen telefon ziyaretçisi sitede oynamaz, mağazaya
+        gider; öteki sütunlar bu trafiği hiç görmez, bu sütun görür (29 Eylül 2026).
         <br />
         <br />
         <b>"Kişi" = anonim cihaz kodu</b>, hesap değil: aynı insan web'de ve uygulamada iki
@@ -1699,8 +1708,20 @@ function SignupFunnelTable({
       </div>
     );
   }
-  const etiket = (channel: string) =>
-    channel === 'form' ? 'Form' : channel === 'direct' ? 'Doğrudan' : 'Bilinmiyor';
+  const etiket = (platform: string) => (platform === 'web' ? 'Web' : 'Uygulama');
+  // Uygulamanın form açılışı henüz ÖLÇÜLMÜYOR (port Firebase'e yazıyor):
+  // 0 "hiç açılmadı" değil "bilinmiyor" demek, "—" gösterilir.
+  const olculmuyor = (r: AdminSignupFunnelRow) => r.platform === 'app' && r.starts === 0;
+  const toplam = rows.reduce(
+    (t, r) => ({ starts: t.starts + r.starts, completions: t.completions + r.completions }),
+    { starts: 0, completions: 0 },
+  );
+  // Toplamın oranı yalnızca açılışı ölçülen satırlardan kurulabilir.
+  const olculen = rows.filter((r) => !olculmuyor(r));
+  const toplamOranTabani = olculen.reduce((t, r) => t + r.starts, 0);
+  const toplamOranPayi = olculen.reduce((t, r) => t + r.completions, 0);
+  const oranMetni = (pay: number, payda: number) =>
+    payda > 0 ? `%${Math.round((pay / payda) * 100)}` : '—';
   return (
     <div className="flex flex-col gap-1.5">
       {infoHint && <div className="self-end">{infoHint}</div>}
@@ -1708,27 +1729,33 @@ function SignupFunnelTable({
         <table className="w-full text-xs font-mono">
           <thead>
             <tr className="text-muted border-b border-border">
-              <th className="text-left py-1 pr-2 font-normal">Kanal</th>
+              <th className="text-left py-1 pr-2 font-normal">Platform</th>
               <th className="text-right py-1 px-2 font-normal">Açılış</th>
               <th className="text-right py-1 px-2 font-normal">Tamamlama</th>
               <th className="text-right py-1 pl-2 font-normal">Oran</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
-              const oran =
-                row.starts > 0 ? Math.round((row.completions / row.starts) * 100) : null;
-              return (
-                <tr key={row.channel} className="border-b border-border/50">
-                  <td className="text-left py-1 pr-2 text-text">{etiket(row.channel)}</td>
-                  <td className="text-right py-1 px-2 text-text">{row.starts}</td>
-                  <td className="text-right py-1 px-2 text-text">{row.completions}</td>
-                  <td className="text-right py-1 pl-2 text-text">
-                    {oran === null ? '—' : `%${oran}`}
-                  </td>
-                </tr>
-              );
-            })}
+            {rows.map((row) => (
+              <tr key={row.platform} className="border-b border-border/50">
+                <td className="text-left py-1 pr-2 text-text">{etiket(row.platform)}</td>
+                <td className="text-right py-1 px-2 text-text">
+                  {olculmuyor(row) ? '—' : row.starts}
+                </td>
+                <td className="text-right py-1 px-2 text-text">{row.completions}</td>
+                <td className="text-right py-1 pl-2 text-text">
+                  {olculmuyor(row) ? '—' : oranMetni(row.completions, row.starts)}
+                </td>
+              </tr>
+            ))}
+            <tr className="font-bold">
+              <td className="text-left py-1 pr-2 text-text">Toplam</td>
+              <td className="text-right py-1 px-2 text-text">{toplam.starts}</td>
+              <td className="text-right py-1 px-2 text-text">{toplam.completions}</td>
+              <td className="text-right py-1 pl-2 text-text">
+                {oranMetni(toplamOranPayi, toplamOranTabani)}
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -1754,9 +1781,19 @@ const JOURNEY_LABEL: Record<string, string> = {
 
 /**
  * Orada "ayrılmak" bounce değil, başarı: oturumu kapatan iki adım + mağaza
- * rozetine dokunmak (`store`, 28 Eylül 2026 — kişi uygulamayı kurmaya gitti).
+ * rozetine dokunmak (`store`, 28 Eylül 2026 — kişi uygulamayı kurmaya gitti)
+ * + oyunu bitirmek (`game_finish`, 29 Eylül 2026 — Dönen görünümünde
+ * "Oyun bitti — %100" en çok kaybettiren adım diye kırmızı yanıyordu).
  */
-const JOURNEY_SUCCESS = new Set(['signup_done', 'login', 'store']);
+const JOURNEY_SUCCESS = new Set(['game_finish', 'signup_done', 'login', 'store']);
+
+/**
+ * Dönen (uygulamadan giren) oturumda karşılama adımları anlamsız: oturum
+ * zaten uygulamada başladı; `landing_cta` orada yalnızca uygulama içindeki
+ * bir bağlantıdan sonra, akışın ORTASINDA düşüyor ve en üst satırda
+ * "Uygulamaya geçti 4" diye kafa karıştırıyordu (29 Eylül 2026).
+ */
+const JOURNEY_LANDING_ONLY = new Set(['landing', 'landing_cta']);
 
 function formatJourneySeconds(sec: number | null): string {
   if (sec === null) return '—';
@@ -1791,7 +1828,9 @@ function WebJourneyTable({
   // Etkileşimsiz (yalnızca ilk pingi gelmiş) oturumlar sunucuda satırlardan
   // düşülüyor; sayı her satırda aynı, ilkinden okunur.
   const etkilesimsiz = rows?.[0]?.idle ?? 0;
-  const gorunen = rows ? rows.filter((r) => r.reached > 0) : [];
+  const gorunen = rows
+    ? rows.filter((r) => r.reached > 0 && !(entry === 'app' && JOURNEY_LANDING_ONLY.has(r.step)))
+    : [];
   const karsilama = rows?.find((r) => r.step === 'landing');
   const ust = (
     <div className="flex items-center justify-between gap-2">
@@ -2026,16 +2065,17 @@ function FunnelV2Table({
       r.finished,
       r.games_started,
       r.games_finished,
+      r.store,
     ];
     downloadCsv(
       csvFilename('kelimeki-huni-v2'),
-      ['Platform', 'Kanal', 'Kaynak', 'Land', 'Geri Gelen (2+ gün)', 'Üye', 'Oyun Başlatan', 'Oyun Bitiren', 'Başlayan Oyun', 'Biten Oyun'],
+      ['Platform', 'Kanal', 'Kaynak', 'Land', 'Geri Gelen (2+ gün)', 'Üye', 'Oyun Başlatan', 'Oyun Bitiren', 'Başlayan Oyun', 'Biten Oyun', 'Mağaza (oturum)'],
       [
         ...g.platforms.flatMap((p) =>
           p.channels.flatMap((c) => c.sources.map((src) => satir(p.label, c.label, src.source, src))),
         ),
         satir('TOPLAM', '', '', g.total),
-        ['Eski cihaz (kohort dışı)', FUNNEL_EXISTING_CHANNEL, '', g.existing, '', '', '', '', '', ''],
+        ['Eski cihaz (kohort dışı)', FUNNEL_EXISTING_CHANNEL, '', g.existing, '', '', '', '', '', '', ''],
       ],
     );
   }
@@ -2055,13 +2095,17 @@ function FunnelV2Table({
 
   const basliklar =
     gorunum === 'kisi'
-      ? ['Land', '2+ Gün', 'Üye', 'Başlatan', 'Bitiren']
+      ? ['Land', 'Mağaza', '2+ Gün', 'Üye', 'Başlatan', 'Bitiren']
       : ['Başlayan Oyun', 'Biten Oyun', 'Oyun / Kişi'];
 
   function hucreler(r: FunnelV2Totals): ReactNode[] {
     if (gorunum === 'kisi') {
       return [
         String(r.land),
+        // Mağaza (29 Eylül 2026): reklamın telefon ziyaretçisi sitede
+        // oynamıyor, mağazaya gidiyor — öteki sütunlar onu hiç görmüyordu.
+        // Birim OTURUM (`web_sessions`), taban yine Land.
+        hucre(r.store, r.land),
         hucre(r.returned, r.land),
         hucre(uyeVar ? r.signed_up : null, r.land),
         hucre(r.started, r.land),
@@ -4037,7 +4081,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Kayıt Hunisi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <PlatformTag kind="web" />
                     </span>
                     <SignupFunnelTable
                       rows={signupFunnel}

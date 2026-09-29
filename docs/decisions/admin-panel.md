@@ -1281,18 +1281,66 @@ Eylül'den beri boş, ama o tarihten sonraki iki kaydın ikisi de uygulamadan
 da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
 (geri alındı), çalışıyor.
 
+### Kayıt Hunisi platform satırlarına geçti (29 Eylül 2026, `20260929091355_admin_signup_funnel_platform.sql`)
+
+Kullanıcı: *"Web ve App (ya da ios, android) diye 2 satırda göstersek, altta
+toplamla birlikte."* Kart kanal (Doğrudan/Form) yerine **Web · Uygulama ·
+Toplam** satırları gösteriyor; "Web" etiketi başlıktan kalktı.
+- **Web:** Açılış + Tamamlama `signup_events`ten, değişmedi.
+- **Uygulama:** Tamamlama `profiles`tan (`signup_utm_source = 'app'`, ya da
+  damgasız + push token'ı var: 1.1.0 bazı kayıtları damgasız bırakıyor,
+  24 Eylül vakası). Açılış "—": port `signup_started`ı yalnızca Firebase'e
+  yazıyor.
+- **Ortak başlangıç:** pencere 21 Eylül 12:40 UTC'den erkene gitmez. İlk
+  denemede web 0 · uygulama 11 çıktı, çünkü uygulama satırı 30 günü, web
+  sayacı 8 günü sayıyordu.
+- **iOS / Android ayrımı yok:** 30 günde uygulamadan açılan 11 hesabın
+  yalnızca 3'ünde platform izi (push token / oyun) vardı. Doğrusu portun
+  `signup_events`e `platform` ile yazması (mobil iş, tren kuralına tabi);
+  o gelince uygulama satırı ikiye bölünür ve Açılış dolar.
+
+
+### "Ayrılan" = en ileri adım, son kayıt değil (29 Eylül 2026, `20260929074711_admin_web_journey_furthest_step.sql`)
+
+Kullanıcı sordu: *"5 kişi uygulamaya geçmiş, 1 terk etmiş, kalan 4 olması
+lazım ama sadece 1 oyun bitirmiş."* Satır satır okundu: 2'si uygulamadan
+mağazaya, 1'i giriş yaptı (oturum kapanır), 1'i 52 sn'de çıktı, 1'i oyunu
+bitirdi. Kaybolan yoktu, ama kartta bir yanlış vardı: oyunu bitiren
+li-profil oturumu **"5. hamle — Ayrılan 1 — %100"** diye kırmızı
+görünüyordu. Adımlar `first_move, game_finish, move_5` sırasıyla gelmişti
+(hamle sayacı oyun bitişinden SONRA işlendi) ve `Ayrılan` `last_step`e
+bakıyordu. `last_step` ağ sırasına bağlı, en ileri adım değil.
+
+**Çözüm (yalnızca sunucu):** çıkış adımı = `steps` içinde `v_steps`
+sırasında en sonda duran adım. Okuma anında hesaplandığı için tarihsel
+satırlar da düzeldi (canlıda 30 gün: 5. hamle 1→0, Oyun bitti 17→18,
+`landing_cta` 1→0, Uygulama açıldı 12→13). İmza/dönüş tipi aynı → `create or
+replace`; `proacl` önce/sonra aynı. `record_web_session` ve `last_step`
+kolonu DEĞİŞMEDİ (ham kayıt olarak duruyor).
+⚠ Bilinen sonucu: `store` sırada en sonda; mağazaya gidip dönüp oynayan
+oturum "Mağazaya gitti"de sayılır (başarı satırı, ✓).
+
+Aynı gün Dönen görünümünden iki gösterim düzeltmesi daha (yalnızca web):
+**Oyun bitti** artık başarı satırı (✓) — oyunu bitiren doğal olarak orada
+"ayrılıyor", kart onu en çok kaybettiren adım diye kırmızı yakıyordu. Ve
+**Dönen**'de `landing` / `landing_cta` satırları gizleniyor: oturum zaten
+uygulamada başladı, `landing_cta` orada yalnızca uygulama içi bir bağlantıdan
+sonra akışın ORTASINDA düşüyor ("Uygulamaya geçti 4" en üst satırda
+kafa karıştırıyordu). Kullanıcının sorduğu "25 − 3 = 22 olmalı" türü farkların
+hepsi oyun sırasında giriş yapan misafirlerdi (oturum girişte kapanır);
+`?` metni bunu artık söylüyor.
+
 ### "Web" etiketi + iOS/Android kapsam denetimi (27 Eylül 2026)
 
 Kullanıcı isteği: *"sadece web olanlara Web yazalım, belli olsun"* ve *"ios ve
 android verilerini sağlıklı ölçmek için eklenmesi gereken bir kod var mı?"*
 Her admin RPC'sinin kaynak tablosu canlı `pg_proc`tan, portun yazdığı tablolar
-`mobile/app/lib`ten okundu. `PlatformTag kind="web"` şu beş kartta:
+`mobile/app/lib`ten okundu. `PlatformTag kind="web"` şu beş kartta (Kayıt Hunisi 29 Eylül 2026'da çıktı, aşağı bkz.):
 
 | Kart | Kaynak | Neden web |
 |---|---|---|
 | Ziyaretçi Yolculuğu | `web_sessions` | tanım gereği (tarayıcı sekmesi) |
 | Huni v2 | `funnel_events` | port yarısı (PR 2) henüz yok — gelince etiketi KALDIR |
-| Kayıt Hunisi | `signup_events` | port aynı olayları Firebase'e yazıyor |
 | Cihaz · Cihaz Markası | `device_visits` | port bu tabloya hiç yazmıyor (`device_info_plus` yok, `visits_api.dart` başlığı) |
 
 Öteki kartlar iki tarafı da görüyor (`games`, `game_starts`, `game_finishes`,
@@ -1322,7 +1370,7 @@ olmadan "reklamdan gelen kaç kişi mağazaya gitti" hiçbir tabloda yoktu.
   bounce değil.
 - Aynı değişiklik rozet linklerine ziyaretçinin `?ref=` etiketini ekliyor
   (`taggedStoreUrl`): Play `utm_source=<etiket>&utm_medium=web`, App Store
-  `ct=<etiket>`. Karşılama katmanı sunucuda render edildiği için oradaki
+  `pt=<sağlayıcı>&ct=<etiket>`. Karşılama katmanı sunucuda render edildiği için oradaki
   linkler `main.tsx`te (`magazaLinkleriniKur`, `data-kelimeki-magaza`)
   yeniden yazılıyor.
 - ⚠ `verify-web-journey` 28 Eylül'e kadar adım dizisi taşıyan HER migration'ı
