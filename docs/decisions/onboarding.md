@@ -830,7 +830,7 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | ✅ WEB KODLANDI (27 Eyl, `defaultAiLevel`); port bilerek bekliyor | `Setup.tsx:340` ↔ port |
 | 8 | Rakibin adı **Yapay Zeka** (27 Eylül, kullanıcı: *"yapay zeka kalsın"*); oyun içi skor kutusundaki "YZ 2" kısaltması DEĞİŞMEZ | Aynı | — |
 | 9 | Arkadaşınla, girişsiz: alttan açılan giriş uyarısı (ÜYE OL · GİRİŞ YAP · YAPAY ZEKAYLA DEVAM ET) | ✅ WEB KODLANDI (27 Eyl, `GuestLiveSheet`) | `LiveGamesTab` |
-| 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | ✅ WEB KODLANDI (27 Eyl) — mevcut alt sekmeler kaldı, "Yeni Oyun Kur" listenin ÜSTÜNDE, akışta | `LiveGamesTab` + `LiveGameCreateForm` |
+| 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | ✅ WEB KODLANDI (27 Eyl) — mevcut alt sekmeler kaldı, "Yeni Oyun Başlat" (29 Eyl'e kadar "Yeni Oyun Kur") listenin ÜSTÜNDE, akışta | `LiveGamesTab` + `LiveGameCreateForm` |
 | 11 | Arkadaş seçici: arama kutusunun ALTINDA, listenin üstünde **+ ARKADAŞINI DAVET ET** (davet linki); listenin altındaki "Listede yok mu?" bağlantısı kalkar | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
 | 12 | Seçilen rakipler **koltuk kartı** olarak, oyuncu renginin zemininde (bilinçli değişiklik; avatar aynı kalır). 4 kişide boş 4. koltuk ekranda "Yapay Zeka" olarak görünür → "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi **KALKAR** | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
 | 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | ✅ WEB KODLANDI (27 Eyl) — girişli YZ tarafında liste üstte, OYUNU BAŞLAT akışta | `Setup.tsx` ↔ `devam_eden_govde.dart` |
@@ -915,8 +915,9 @@ uyarısı + ilk oyun Kolay, (B) tek standart ekran, (C) Arkadaşınla ekranları
   güvenilir ölçülemiyor. Liste kısa olduğunda şerit akıştaki yerinde durup
   görünüyordu, uzayınca kayboluyordu; misafir formunda üyelik kutusu formu
   uzattığı için OYUNU BAŞLAT da aynı riskteydi. **Şimdi:** OYUNU BAŞLAT
-  zorluğun hemen altında (üyelik kutusu ondan SONRA), "Yeni Oyun Kur"
-  listelerin ÜSTÜNDE, turuncu (`actionButton.ts`). `position: fixed;
+  zorluğun hemen altında (üyelik kutusu ondan SONRA), "Yeni Oyun Başlat"
+  (29 Eylül 2026'ya kadar "Yeni Oyun Kur"; kullanıcı: *"yeni oyun kur yerine
+  başlat yap"* — port yarısı da bu metinle gelmeli) listelerin ÜSTÜNDE, turuncu (`actionButton.ts`). `position: fixed;
   bottom: 0` da denendi sayılır: yeni oyun formunun eski "Davet Gönder"
   şeridi zaten böyleydi ve kullanıcının iPad ekran görüntüsünde çubuğun
   arkasına YARI girmişti — o da koltuk kartlarının altına, akışa alındı.

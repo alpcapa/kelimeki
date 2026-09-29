@@ -31,7 +31,7 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
 
 ## 1. Canlı oyun — davet akışı
 
-- [ ] **Davet gönderme.** "Arkadaşınla" → listenin üstündeki "Yeni Oyun Kur" → 2
+- [ ] **Davet gönderme.** "Arkadaşınla" → listenin üstündeki "Yeni Oyun Başlat" → 2
       kişi, bir arkadaş seç → seçilen arkadaş "RAKİBİN" altında kırmızı koltuk
       kartında görünmeli (✕ ile boşalır). Boş koltuğa (+) dokununca sayfa
       aşağıdaki "ARKADAŞLARIN" listesine kaymalı (klavye AÇILMAMALI; YZ
@@ -121,8 +121,8 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       bekleyen davet/hamle yokken 5+ dakika uzaklaşıp dön: "Yapay Zeka ile"
       sekmesinde kalmalısın.
 - [ ] **Kurma formunun arkadaş listesi hesap değişiminde tazelenmeli.** Bir
-      hesapla "Yeni Oyun Kur"u aç (arkadaş listesi yüklensin), kapatmadan
-      çıkış yapıp BAŞKA bir hesapla gir, tekrar "Yeni Oyun Kur"a bas.
+      hesapla "Yeni Oyun Başlat"ı aç (arkadaş listesi yüklensin), kapatmadan
+      çıkış yapıp BAŞKA bir hesapla gir, tekrar "Yeni Oyun Başlat"a bas.
       Yeni hesabın KENDİ arkadaş listesi görünmeli — önceki hesabınki (hatta
       kendi adının listede belirmesi) DEĞİL. (5 Ağustos 2026: `LiveGameCreateForm`
       arkadaşları yalnızca mount'ta çekiyordu, bu form modal değil tam görünüm
@@ -917,7 +917,7 @@ gerekiyor).
       kutusu düğmenin ALTINDA.
 
 - [ ] **Seviyeye göre puan — Kolay (6 Eylül 2026, ROADMAP #23 Faz 3).**
-      Girişli hesapla Yapay Zeka sekmesi → listenin üstündeki "Yeni Oyun Kur" (27 Eylül 2026'ya kadar "+ Yeni Yapay Zeka Oyunu Aç") →
+      Girişli hesapla Yapay Zeka sekmesi → listenin üstündeki "Yeni Oyun Başlat" (29 Eylül 2026'ya kadar "Yeni Oyun Kur") (27 Eylül 2026'ya kadar "+ Yeni Yapay Zeka Oyunu Aç") →
       "Oyuncu sayısı"nın ALTINDA **Zorluk** satırı: `Kolay` · `Normal` ·
       `Zor` (Zor Faz 5'le, 7 Eylül 2026'da girdi), Normal seçili (27 Eylül 2026'dan beri hiç oynamamış kullanıcıda Kolay seçili). Seçicinin altında
       seçili seviyenin açıklaması: Normal'de "Orta-iyi seviye bir
@@ -1030,7 +1030,7 @@ gerekiyor).
       (18px) · Skor Kartı'ndaki kendi ismin (20px) · başka bir oyuncunun
       kartı (20px) · Setup'ta 1. koltuktaki hesap adı (18px) · Arkadaşlar
       penceresinin ÜÇ sekmesi de (18px — "Arkadaşlar", "Davetler",
-      "Ara & Ekle") · "Yeni Oyun Kur"daki arkadaş seçici (18px) · Oyun
+      "Ara & Ekle") · "Yeni Oyun Başlat"taki arkadaş seçici (18px) · Oyun
       davetleri kartındaki katılımcı isimleri (16px). **Skor kartlarında
       artık İKİ mühür var** — başlıktaki 34px'lik tıklanabilir mühür VE
       ismin yanındaki 20px'lik; ikisi AYNI kademeyi göstermeli.

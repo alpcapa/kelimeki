@@ -1214,11 +1214,11 @@ export function LiveGamesTab({
       )}
 
 
-      {/* "Yeni Oyun Kur" listenin ÜSTÜNDE (27 Eylül 2026, ROADMAP #41 karar
+      {/* "Yeni Oyun Başlat" listenin ÜSTÜNDE (27 Eylül 2026, ROADMAP #41 karar
           10; Yapay Zeka tarafıyla aynı düğme, `actionButton.ts`). "Altta
           sabit" denendi, iOS Safari'nin yüzen alt çubuğunun arkasına düştü. */}
       <button onClick={() => setCreating(true)} className={PRIMARY_ACTION_BTN}>
-        Yeni Oyun Kur
+        Yeni Oyun Başlat
       </button>
       <div className="flex gap-2">
         {SUB_TABS.map((tab) => (

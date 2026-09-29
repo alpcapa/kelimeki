@@ -1,5 +1,5 @@
 // Kelimeki — Setup'ın turuncu ana eylem düğmesi (27 Eylül 2026, ROADMAP #41):
-// girişli Yapay Zeka listesi ve Arkadaşınla listesindeki "Yeni Oyun Kur".
+// girişli Yapay Zeka listesi ve Arkadaşınla listesindeki "Yeni Oyun Başlat".
 //
 // ⚠ "Altta SABİT şerit" (`sticky bottom-0`) denendi ve geri alındı: iOS
 // Safari'nin yüzen alt çubuğunda sayfa çubuğun ARKASINA kadar uzanıyor ve
