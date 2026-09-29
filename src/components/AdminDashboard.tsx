@@ -436,20 +436,18 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
     title: 'Kayıt Hunisi',
     body: (
       <>
-        Kayıt formunu AÇAN ile hesabı OLUŞTURAN sayısı, kanal başına
-        (<b>Doğrudan</b> = kayıt kapısı, <b>Form</b> = Görüş Bildir formundan
-        gelen). <b>Oran</b> = Tamamlama / Açılış.
+        Kayıt formunu AÇAN ile hesabı OLUŞTURAN sayısı, platform başına.{' '}
+        <b>Oran</b> = Tamamlama / Açılış. Sayaç 21 Eylül 2026'da başladı; pencere
+        ondan erkene gitmez (iki satır aynı günleri sayar).
         <br />
-        Bu kart <b>ADET</b> sayar, kişi değil: sayaç bilerek kimliksiz
-        (<code>signup_events</code> tablosunda ne <code>anon_id</code> ne{' '}
-        <code>user_id</code> var), çünkü gizlilik metnindeki "anonim kod DÖRT
-        durumda gönderilir" cümlesine beşinci bir durum eklemek istemedik. Aynı
-        kişi formu iki kez açarsa iki kez sayılır.
+        <b>Web:</b> ikisi de kimliksiz sayaçtan (<code>signup_events</code>; ne{' '}
+        <code>anon_id</code> ne <code>user_id</code> var, gizlilik metnine yeni bir durum
+        eklememek için). Kart <b>ADET</b> sayar: formu iki kez açan iki kez sayılır.
         <br />
-        ⚠ <b>Yalnızca web.</b> Port aynı olayları (<code>signup_started</code>/
-        <code>signup_completed</code>) Firebase Analytics'e yazıyor, bu tabloya
-        değil — bu yüzden "Tamamlama" da <code>profiles</code>tan değil aynı
-        tablodan okunuyor (payda web, pay web+mobil olsaydı oran sahte çıkardı).
+        <b>Uygulama:</b> Tamamlama = uygulamadan açılan hesap (<code>profiles</code>).
+        Açılış henüz <b>ölçülmüyor</b> ("—"): uygulama bu olayı yalnızca Firebase'e
+        yazıyor. iOS / Android ayrımı da o yüzden yok; uygulama bu sayaca yazmaya
+        başlayınca gelecek. Toplamın oranı yalnızca açılışı ölçülen satırlardan.
         <br />
         ⚠ "Tamamladı" = hesap oluştu demek, <b>e-postasını onayladı demek
         DEĞİL</b>. Onay kaybı ayrı bir soru (ROADMAP #32).
@@ -1710,8 +1708,20 @@ function SignupFunnelTable({
       </div>
     );
   }
-  const etiket = (channel: string) =>
-    channel === 'form' ? 'Form' : channel === 'direct' ? 'Doğrudan' : 'Bilinmiyor';
+  const etiket = (platform: string) => (platform === 'web' ? 'Web' : 'Uygulama');
+  // Uygulamanın form açılışı henüz ÖLÇÜLMÜYOR (port Firebase'e yazıyor):
+  // 0 "hiç açılmadı" değil "bilinmiyor" demek, "—" gösterilir.
+  const olculmuyor = (r: AdminSignupFunnelRow) => r.platform === 'app' && r.starts === 0;
+  const toplam = rows.reduce(
+    (t, r) => ({ starts: t.starts + r.starts, completions: t.completions + r.completions }),
+    { starts: 0, completions: 0 },
+  );
+  // Toplamın oranı yalnızca açılışı ölçülen satırlardan kurulabilir.
+  const olculen = rows.filter((r) => !olculmuyor(r));
+  const toplamOranTabani = olculen.reduce((t, r) => t + r.starts, 0);
+  const toplamOranPayi = olculen.reduce((t, r) => t + r.completions, 0);
+  const oranMetni = (pay: number, payda: number) =>
+    payda > 0 ? `%${Math.round((pay / payda) * 100)}` : '—';
   return (
     <div className="flex flex-col gap-1.5">
       {infoHint && <div className="self-end">{infoHint}</div>}
@@ -1719,27 +1729,33 @@ function SignupFunnelTable({
         <table className="w-full text-xs font-mono">
           <thead>
             <tr className="text-muted border-b border-border">
-              <th className="text-left py-1 pr-2 font-normal">Kanal</th>
+              <th className="text-left py-1 pr-2 font-normal">Platform</th>
               <th className="text-right py-1 px-2 font-normal">Açılış</th>
               <th className="text-right py-1 px-2 font-normal">Tamamlama</th>
               <th className="text-right py-1 pl-2 font-normal">Oran</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => {
-              const oran =
-                row.starts > 0 ? Math.round((row.completions / row.starts) * 100) : null;
-              return (
-                <tr key={row.channel} className="border-b border-border/50">
-                  <td className="text-left py-1 pr-2 text-text">{etiket(row.channel)}</td>
-                  <td className="text-right py-1 px-2 text-text">{row.starts}</td>
-                  <td className="text-right py-1 px-2 text-text">{row.completions}</td>
-                  <td className="text-right py-1 pl-2 text-text">
-                    {oran === null ? '—' : `%${oran}`}
-                  </td>
-                </tr>
-              );
-            })}
+            {rows.map((row) => (
+              <tr key={row.platform} className="border-b border-border/50">
+                <td className="text-left py-1 pr-2 text-text">{etiket(row.platform)}</td>
+                <td className="text-right py-1 px-2 text-text">
+                  {olculmuyor(row) ? '—' : row.starts}
+                </td>
+                <td className="text-right py-1 px-2 text-text">{row.completions}</td>
+                <td className="text-right py-1 pl-2 text-text">
+                  {olculmuyor(row) ? '—' : oranMetni(row.completions, row.starts)}
+                </td>
+              </tr>
+            ))}
+            <tr className="font-bold">
+              <td className="text-left py-1 pr-2 text-text">Toplam</td>
+              <td className="text-right py-1 px-2 text-text">{toplam.starts}</td>
+              <td className="text-right py-1 px-2 text-text">{toplam.completions}</td>
+              <td className="text-right py-1 pl-2 text-text">
+                {oranMetni(toplamOranPayi, toplamOranTabani)}
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -4065,7 +4081,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Kayıt Hunisi (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <PlatformTag kind="web" />
                     </span>
                     <SignupFunnelTable
                       rows={signupFunnel}

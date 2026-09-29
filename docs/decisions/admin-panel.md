@@ -1281,6 +1281,24 @@ Eylül'den beri boş, ama o tarihten sonraki iki kaydın ikisi de uygulamadan
 da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
 (geri alındı), çalışıyor.
 
+### Kayıt Hunisi platform satırlarına geçti (29 Eylül 2026, `20260929090551_admin_signup_funnel_platform.sql`)
+
+Kullanıcı: *"Web ve App (ya da ios, android) diye 2 satırda göstersek, altta
+toplamla birlikte."* Kart kanal (Doğrudan/Form) yerine **Web · Uygulama ·
+Toplam** satırları gösteriyor; "Web" etiketi başlıktan kalktı.
+- **Web:** Açılış + Tamamlama `signup_events`ten, değişmedi.
+- **Uygulama:** Tamamlama `profiles`tan (`signup_utm_source = 'app'`, ya da
+  damgasız + push token'ı var: 1.1.0 bazı kayıtları damgasız bırakıyor,
+  24 Eylül vakası). Açılış "—": port `signup_started`ı yalnızca Firebase'e
+  yazıyor.
+- **Ortak başlangıç:** pencere 21 Eylül 12:40 UTC'den erkene gitmez. İlk
+  denemede web 0 · uygulama 11 çıktı, çünkü uygulama satırı 30 günü, web
+  sayacı 8 günü sayıyordu.
+- **iOS / Android ayrımı yok:** 30 günde uygulamadan açılan 11 hesabın
+  yalnızca 3'ünde platform izi (push token / oyun) vardı. Doğrusu portun
+  `signup_events`e `platform` ile yazması (mobil iş, tren kuralına tabi);
+  o gelince uygulama satırı ikiye bölünür ve Açılış dolar.
+
 
 ### "Ayrılan" = en ileri adım, son kayıt değil (29 Eylül 2026, `20260929074711_admin_web_journey_furthest_step.sql`)
 
@@ -1317,13 +1335,12 @@ hepsi oyun sırasında giriş yapan misafirlerdi (oturum girişte kapanır);
 Kullanıcı isteği: *"sadece web olanlara Web yazalım, belli olsun"* ve *"ios ve
 android verilerini sağlıklı ölçmek için eklenmesi gereken bir kod var mı?"*
 Her admin RPC'sinin kaynak tablosu canlı `pg_proc`tan, portun yazdığı tablolar
-`mobile/app/lib`ten okundu. `PlatformTag kind="web"` şu beş kartta:
+`mobile/app/lib`ten okundu. `PlatformTag kind="web"` şu beş kartta (Kayıt Hunisi 29 Eylül 2026'da çıktı, aşağı bkz.):
 
 | Kart | Kaynak | Neden web |
 |---|---|---|
 | Ziyaretçi Yolculuğu | `web_sessions` | tanım gereği (tarayıcı sekmesi) |
 | Huni v2 | `funnel_events` | port yarısı (PR 2) henüz yok — gelince etiketi KALDIR |
-| Kayıt Hunisi | `signup_events` | port aynı olayları Firebase'e yazıyor |
 | Cihaz · Cihaz Markası | `device_visits` | port bu tabloya hiç yazmıyor (`device_info_plus` yok, `visits_api.dart` başlığı) |
 
 Öteki kartlar iki tarafı da görüyor (`games`, `game_starts`, `game_finishes`,
