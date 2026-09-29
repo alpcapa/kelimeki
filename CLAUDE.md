@@ -731,6 +731,12 @@ insan konuşuyor (`_shared/email.ts` → `KELIMEKI_SENDER` ↔
 kullanılır. Yeni bir mail gönderen fonksiyon yazarken ikisinden birini SEÇ,
 üçüncü bir adres uydurma. Ayrıntı: `docs/decisions/support-email.md`.
 
+⚠ **Kurumsal ad tek: `Kelimeki Destek`** (29 Eylül 2026, kullanıcı:
+*"standartımız bu olacak"*). Mail imzası (`Saygılarımızla, Kelimeki Destek`)
+ve destek@'in gönderen adı bunu kullanır — "Müşteri Hizmetleri" gibi ikinci
+bir ad UYDURMA. Zoho'dan elle
+yazılan cevapların görünen adı da aynı (Zoho → Send Mail As, doğrulandı).
+
 ### Migration'lar — CI YOK, her migration ELLE uygulanır
 
 Kullanıcı iPad'den çalışıyor; bunu tetikleyecek bir CLI/CI erişimi yok.
