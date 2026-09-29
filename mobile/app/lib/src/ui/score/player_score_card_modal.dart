@@ -266,13 +266,67 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
           const Icon(Icons.how_to_reg, size: 20, color: kGreen),
         FriendRelation.pendingOutgoing =>
           const PersonPendingIcon(color: kMuted),
-        FriendRelation.pendingIncoming =>
-          const Icon(Icons.how_to_reg, size: 20, color: kAccent),
-        null => const Icon(Icons.person_add_alt_1, size: 20, color: kAccent),
+        // Bu iki dal 29 Eylül 2026'dan beri yazılı hap (`_relationPill`);
+        // switch tam kalsın diye boş.
+        FriendRelation.pendingIncoming || null => const SizedBox.shrink(),
       };
+
+  /// ⚠ 29 Eylül 2026 (web ikizi `PlayerScoreCard.tsx`, kullanıcı: *"o
+  /// ikonlar çok anlaşılmıyor, ekle … yazan butonlara dönüşsün. Check
+  /// işaretli 'zaten arkadaşsınız' ve bekliyor ikonları durabilir"*): EYLEM
+  /// çağıran iki dal (ilişki yok = ekle, gelen istek = kabul et) ikon değil
+  /// yazılı hap — web'in `Pill`i (`FriendsModal.tsx`) ile aynı biçim. DURUM
+  /// bildiren iki dal (✓ arkadaşsınız, ⌛ bekliyor) `_relationGlyph` olarak
+  /// kaldı; ✓'ye dokunmak yine çıkarma onayını açar (ayrı "Çıkar" YOK).
+  /// Dört dalın dördü de önce onay diyaloğu açar (`_onRelationTap`).
+  static String? _relationPillLabel(FriendRelation? r) => switch (r) {
+        null => 'EKLE',
+        FriendRelation.pendingIncoming => 'KABUL ET',
+        _ => null,
+      };
+
+  Widget _relationPill(String label) {
+    final kabul = _relation == FriendRelation.pendingIncoming;
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Semantics(
+        button: true,
+        label: kabul ? 'Arkadaşlık davetini kabul et' : 'Arkadaş ekle',
+        excludeSemantics: true,
+        child: TapTarget(
+          onTap: _onRelationTap,
+          minHeight: 36,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 36),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              // web `Pill`: ekle = bg-[#EEF4FF] border-accent text-accent,
+              // kabul = bg-orange border-orange text-white.
+              color: kabul ? kOrange : const Color(0xFFEEF4FF),
+              border: Border.all(color: kabul ? kOrange : kAccent),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'SpaceMono',
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: kabul ? Colors.white : kAccent,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget? _relationIcon() {
     if (widget.friends == null || !_relationLoaded) return null;
+    final pill = _relationPillLabel(_relation);
+    if (pill != null) return _relationPill(pill);
     return GestureDetector(
       onTap: _onRelationTap,
       behavior: HitTestBehavior.opaque,

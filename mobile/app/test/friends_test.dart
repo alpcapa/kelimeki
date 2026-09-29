@@ -813,7 +813,7 @@ void main() {
     });
 
     testWidgets(
-        'PlayerScoreCard: arkadaşsa yeşil how_to_reg → çıkar onayı; değilse person_add',
+        'PlayerScoreCard: arkadaşsa yeşil how_to_reg → çıkar onayı; değilse EKLE hapı',
         (tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       final gw = FakeFriendsGateway()
@@ -849,8 +849,8 @@ void main() {
       expect(find.text('Arkadaşlıktan çıkarıldı.'), findsOneWidget);
       await tester.tap(find.text('TAMAM'));
       await tester.pumpAndSettle();
-      // Simge artık "ekle"ye döner.
-      expect(find.byIcon(Icons.person_add_alt_1), findsOneWidget);
+      // Simge artık "EKLE" hapına döner (29 Eylül 2026'dan beri ikon değil).
+      expect(find.text('EKLE'), findsOneWidget);
     });
 
     // ⚠ REGRESYON (30 Ağustos 2026, kullanıcı bildirdi): *"Arkadaşlık daveti
@@ -867,16 +867,21 @@ void main() {
     // doluysa o Material glyph'i O RENKTE çizilmiş olmalı. Glyph'i de
     // ölçmek şart: "bana istek geldi" ile "ilişki yok" AYNI rengi (accent)
     // kullanıyor, yalnızca renge bakan bir test ikisini ayırt edemezdi.
+    //
+    // 29 Eylül 2026: EYLEM dalları (ilişki yok, gelen istek) artık yazılı hap
+    // ("EKLE" / "KABUL ET", web `Pill` ile aynı) — `hap` doluysa o metin
+    // çizilmeli ve HİÇBİR ilişki ikonu çizilmemeli. DURUM dalları (⌛, ✓)
+    // ikon kaldı.
     for (final (String ad, Map<String, Object?>? satir, IconData? glyph,
-            Color renk)
-        in <(String, Map<String, Object?>?, IconData?, Color)>[
+            Color? renk, String? hap)
+        in <(String, Map<String, Object?>?, IconData?, Color?, String?)>[
       ('istek gönderdim', {'user_id': 'me', 'status': 'pending'}, null,
-          kMuted),
-      ('bana istek geldi', {'user_id': 'u9', 'status': 'pending'},
-          Icons.how_to_reg, kAccent),
+          kMuted, null),
+      ('bana istek geldi', {'user_id': 'u9', 'status': 'pending'}, null,
+          null, 'KABUL ET'),
       ('arkadaşız', {'user_id': 'me', 'status': 'accepted'}, Icons.how_to_reg,
-          kGreen),
-      ('ilişki yok', null, Icons.person_add_alt_1, kAccent),
+          kGreen, null),
+      ('ilişki yok', null, null, null, 'EKLE'),
     ]) {
       testWidgets('PlayerScoreCard ilişki simgesi — $ad', (tester) async {
         await setPhoneViewSize(tester, const Size(420, 900));
@@ -895,15 +900,21 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        if (glyph == null) {
+        if (hap != null) {
+          expect(find.text(hap), findsOneWidget);
+          expect(find.byType(PersonPendingIcon), findsNothing);
+          expect(find.byIcon(Icons.how_to_reg), findsNothing);
+          expect(find.byIcon(Icons.person_add_alt_1), findsNothing);
+        } else if (glyph == null) {
           final ikon =
               tester.widget<PersonPendingIcon>(find.byType(PersonPendingIcon));
           expect(ikon.color, renk);
-          // "Ekle" ikonu ASLA aynı anda çizilmemeli — hatanın kendisi buydu.
-          expect(find.byIcon(Icons.person_add_alt_1), findsNothing);
+          // "Ekle" ASLA aynı anda çizilmemeli — 30 Ağustos hatasının kendisi.
+          expect(find.text('EKLE'), findsNothing);
         } else {
           expect(find.byType(PersonPendingIcon), findsNothing);
           expect(tester.widget<Icon>(find.byIcon(glyph)).color, renk);
+          expect(find.text('EKLE'), findsNothing);
         }
       });
     }
@@ -927,9 +938,9 @@ void main() {
       ));
       await tester.pump();
       await tester.pump();
-      expect(find.byIcon(Icons.person_add_alt_1), findsOneWidget);
+      expect(find.text('EKLE'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.person_add_alt_1));
+      await tester.tap(find.text('EKLE'));
       await tester.pumpAndSettle();
       expect(find.text('Arkadaş Ekle'), findsOneWidget);
       // Onay diyaloğunun kendi `constraints.maxWidth`i web'in max-w-sm'ine
@@ -955,7 +966,8 @@ void main() {
 
       // 11 Ağustos 2026: onay metni web `friendDialogCopy` ile hizalandı —
       // "Gönder" değil "Ekle" (FriendsModal'ın aynı diyaloğuyla da tek dil).
-      await tester.tap(find.text('EKLE'));
+      // Onay diyaloğunun düğmesi; ilk "EKLE" kartın hapı (29 Eylül 2026).
+      await tester.tap(find.text('EKLE').last);
       await tester.pumpAndSettle();
       // regresyon: gönderince web'in "Arkadaşlık isteğiniz iletilmiştir."
       // sonucu görünmeliydi, önceden HİÇBİR ŞEY çıkmıyordu.
