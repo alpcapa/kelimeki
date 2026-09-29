@@ -15,6 +15,7 @@ import { useAuth } from '../hooks/useAuth';
 import {
   createOnlineGame,
   fetchFrequentOpponents,
+  fetchFriendRelation,
   fetchFriends,
   removeFriend,
   respondFriendRequest,
@@ -27,6 +28,7 @@ import type { FriendRow, FriendSearchResult, OnlineGameSlot } from '../lib/datab
 import { trLower } from '../utils/turkish';
 import { Avatar } from './Avatar';
 import { Pill } from './FriendsModal';
+import { PlayerScoreCard, type PlayerSummary } from './PlayerScoreCard';
 import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
 import { friendlyErrorMessage } from '../utils/errorMessage';
@@ -184,6 +186,22 @@ export function LiveGameCreateForm({
       await removeFriend(id);
       return null;
     });
+
+  // "Tüm oyuncular"da arkadaş OLMAYAN kişiye dokununca skor kartı açılır
+  // (29 Eylül 2026, kullanıcı isteği) — arkadaş satırı dokununca oyuna
+  // seçtiği için orada kart YOK. Kart kapanınca ilişki yeniden okunur:
+  // kartın içinden "Ekle"/"Kabul et" yapılmış olabilir (Arkadaşlar
+  // penceresindeki `closeSelectedFriend` ile aynı).
+  const [kartKisi, setKartKisi] = useState<PlayerSummary | null>(null);
+  const kartiKapat = () => {
+    const id = kartKisi?.id;
+    setKartKisi(null);
+    if (!id) return;
+    void fetchFriendRelation(id).then((r) => {
+      dir.patchRelation(id, r);
+      if (r === 'accepted') reloadFriends();
+    });
+  };
 
   const canSubmit = playerCount === 2 ? selected.length === 1 : selected.length >= 2;
 
@@ -565,11 +583,27 @@ export function LiveGameCreateForm({
                           key={u.id}
                           className="flex items-center gap-2.5 rounded-md px-2.5 py-1.5 border border-border bg-bg shrink-0"
                         >
-                          <Avatar url={u.avatar_url} name={u.name} size={28} />
-                          <span className="flex-1 min-w-0 flex items-center gap-1">
-                            <span className="min-w-0 text-sm font-bold text-text truncate">{u.name}</span>
-                            {rankTierOf(u.id) && <RankSeal tier={rankTierOf(u.id)!} size={18} className="shrink-0" />}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setKartKisi({
+                                id: u.id,
+                                username: null,
+                                first_name: null,
+                                last_name: null,
+                                display_name: u.name,
+                                avatar_url: u.avatar_url,
+                              })
+                            }
+                            aria-label={`${u.name} — skor kartı`}
+                            className="flex-1 min-w-0 flex items-center gap-2.5 text-left active:opacity-70 transition-opacity"
+                          >
+                            <Avatar url={u.avatar_url} name={u.name} size={28} />
+                            <span className="flex-1 min-w-0 flex items-center gap-1">
+                              <span className="min-w-0 text-sm font-bold text-text truncate">{u.name}</span>
+                              {rankTierOf(u.id) && <RankSeal tier={rankTierOf(u.id)!} size={18} className="shrink-0" />}
+                            </span>
+                          </button>
                           {u.relation === 'pending_outgoing' ? (
                             <Pill kind="gonderildi" ariaLabel={`${u.name} — isteği iptal et`} disabled={busyId === u.id} onClick={() => void handleCancel(u.id)} />
                           ) : u.relation === 'pending_incoming' ? (
@@ -592,6 +626,8 @@ export function LiveGameCreateForm({
           </div>
         )}
       </div>
+
+      {kartKisi && <PlayerScoreCard member={kartKisi} onClose={kartiKapat} />}
 
       {invite.fallbackOpen && invite.inviteUrl && (
         <InviteShareFallback url={invite.inviteUrl} onClose={invite.closeFallback} />
