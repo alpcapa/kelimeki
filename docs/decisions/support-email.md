@@ -63,6 +63,10 @@ yazacağı bir adresi robot trafiğiyle doldururdu. `replyTo` ayrıca geçiliyor
   Cevabımız aşağıdaki gibidir:") da kaldırıldı — admin yanıtı kendi
   selamıyla başlıyor, şablon onu ikiliyordu; yanıt artık alıntı kutusu
   olmadan doğrudan gövdede.
+- **İmza standardı (29 Eylül 2026):** yedi mailin hepsinde (iki destek +
+  beş `notify-*`) imza `Saygılarımızla, Kelimeki Destek` — önceki
+  "Kelimeki Müşteri Hizmetleri" kaldırıldı, yedi fonksiyon aynı gün yeniden
+  deploy edildi. `MemberMessageModal`daki imza açıklaması da güncellendi.
 - ⚠ **Zoho kişi kartında "Alp Reşat Çapa" görünmesi** (29 Eylül 2026
   soruldu): mailin `From` adı `Kelimeki Destek` (kartın üst satırı). Büyük
   ad, Zoho uygulamasının destek@ hesabının KENDİ profil adını göstermesi —

@@ -38,7 +38,7 @@ function buildReplyHtml(originalMessage: string, reply: string): string {
   const body = `
     <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;white-space:pre-wrap;">${escapeHtml(reply)}</p>
     <p style="font-size:12px;color:#8A93A2;margin-top:20px;">Gönderdiğin mesaj:<br/><em style="white-space: pre-wrap;">${escapeHtml(originalMessage)}</em></p>
-    <p style="font-size:13px;color:#8A93A2;margin-top:12px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Müşteri Hizmetleri</span></p>
+    <p style="font-size:13px;color:#8A93A2;margin-top:12px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Destek</span></p>
   `;
   return buildBrandedEmailHtml('Geri bildiriminize yanıt', body);
 }

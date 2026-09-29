@@ -32,7 +32,7 @@ function buildMessageHtml(message: string, subject: string, toName?: string): st
   const body = `
     <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;">${greeting}</p>
     <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;white-space:pre-wrap;">${escapeHtml(message)}</p>
-    <p style="font-size:13px;color:#8A93A2;margin-top:20px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Müşteri Hizmetleri</span></p>
+    <p style="font-size:13px;color:#8A93A2;margin-top:20px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Destek</span></p>
   `;
   return buildBrandedEmailHtml(subject, body);
 }
