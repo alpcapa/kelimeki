@@ -895,6 +895,31 @@ void main() {
       await unmount(tester);
     });
 
+    // REGRESYON (29 Eylül 2026, kullanıcı web'de bildirdi): hamle sunucuya
+    // TEK kez yazılmıştı ama ekran yalnızca Realtime yankısını beklediğinden,
+    // soket düşmüşse OYNA etkin kalıyor, ikinci basış gerçek "Sıra sende
+    // değil." alıyordu. Sahte uç `submitMove`da `gameListener`ı ÇAĞIRMIYOR
+    // (= Realtime yankısı gelmiyor); ekran yine de durumu kendisi okumalı.
+    testWidgets(
+        'başarılı gönderimden sonra durum Realtime beklenmeden yeniden okunur',
+        (tester) async {
+      final gw = await pumpScreen(tester, current: 0);
+      final once = gw.gameStateCalls;
+
+      await tester.tap(find.text('PAS GEÇ'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.descendant(
+          of: find.byType(KDialogCard),
+          matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
+      await tester.pumpAndSettle();
+
+      expect(gw.submitted.single['action'], 'pass');
+      expect(gw.gameStateCalls, greaterThan(once),
+          reason: 'gönderimden sonra loadGame çağrılmadı — ekran Realtime '
+              'yankısına muhtaç kalıyor');
+      await unmount(tester);
+    });
+
     testWidgets('sunucu reddi mesaj satırına düşer', (tester) async {
       final gw = await pumpScreen(tester, current: 0);
       gw.submitFailWith = Exception('Sıra sende değil.');

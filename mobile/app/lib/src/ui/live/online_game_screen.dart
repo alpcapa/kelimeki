@@ -943,6 +943,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                 '${p['wildLetter'] ?? ''}').join(';')}'),
       );
       _moveIdTemizle();
+      await _syncAfterSubmit();
     } catch (e) {
       if (mounted) setState(() => _submitError = _errorText(e));
     } finally {
@@ -968,6 +969,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
         moveId: _moveIdFor('pass|${state.turnCount}'),
       );
       _moveIdTemizle();
+      await _syncAfterSubmit();
     } catch (e) {
       if (mounted) setState(() => _submitError = _errorText(e));
     } finally {
@@ -1049,8 +1051,11 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       );
       _moveIdTemizle();
       // Başarılı gönderimde swap modundan çık — sunucu senkronu zaten
-      // rafı yenileyecek (web aynı sırayı izliyor).
+      // rafı yenileyecek (web aynı sırayı izliyor). ⚠ Çıkış senkrondan
+      // ÖNCE: senkron swap modunu kendisi sıfırlıyorsa, sonradan gelen
+      // toggle modu yeniden AÇARDI.
       if (mounted) _controller.dispatch(const ToggleSwapModeAction());
+      await _syncAfterSubmit();
     } catch (e) {
       if (mounted) setState(() => _submitError = _errorText(e));
     } finally {
@@ -1093,6 +1098,19 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       _moveId = uuidV4();
     }
     return _moveId!;
+  }
+
+  /// Başarılı gönderimden SONRA sunucu durumunu hemen okur; `_busy` ancak
+  /// ondan sonra düşer (29 Eylül 2026, web ikizi `syncAfterSubmit`,
+  /// `OnlineGameScreen.tsx`). Kullanıcı web'de bildirdi: hamle sunucuya TEK
+  /// kez yazılmıştı ama ekran yalnızca Realtime yankısını beklediğinden,
+  /// soket arka planda düşmüşse taslak taşlar tahtada ve OYNA etkin
+  /// kalıyordu; ikinci basış (yeni `move_id`) gerçek bir "Sıra sende
+  /// değil." alıyordu. `_refresh` → `loadGame` kendi zaman aşımını taşıyor
+  /// ve hata fırlatmıyor, bekleme sonsuz olamaz.
+  Future<void> _syncAfterSubmit() async {
+    if (!mounted) return;
+    await _refresh();
   }
 
   void _moveIdTemizle() {
