@@ -197,6 +197,15 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | `mobile/` DIŞINDA bir dosya (port işi sırasında) | kök `CLAUDE.md`/`README.md` — port dokümanı TEK BAŞINA yetmez |
 | `ROADMAP.md`'deki bir madde/faz KAPANDI (✅ · YAPILDI · CANLIDA · SAHADA) | Aynı PR'da `docs/decisions/roadmap-arsiv.md`'ye TAŞI — ROADMAP yalnızca AÇIK maddeleri tutar. Başlığı/numarayı/satırları değiştirme (atıflar kırılır); dosyanın kendi kuralıydı, uygulanmayınca %45'i kapanmış işe döndü (2 Eylül 2026) |
 
+⚠ **Her iş ve KARAR aynı turda repoya yazılır — kod değişmese bile**
+(29 Eylül 2026, kullanıcı: *"tüm yapılan işler yazılmalı ki sürekli güncel
+kalalım"*). Oturumlar birbirini GÖRMEZ, ortak hafıza yalnızca repo. Sohbette
+verilen karar ya da repo dışında yapılan iş (Ads Manager, konsol, mağaza,
+Supabase paneli) ilgili kütüğe/durum tablosuna, yoksa `ROADMAP.md`'ye tarihli
+bir satır olur; "sonra yazarım" yok. Vaka: Meta'da `kare` reklamı bir oturumda
+kapatıldı, yazılmadı, ertesi oturum kullanıcıya "kapalı görünüyor, siz mi
+kapattınız?" diye sordu.
+
 Mobil portun kendi (daha ayrıntılı, Dart'a özgü) sürümü: `mobile/CLAUDE.md`,
 "Etki Analizi" ve "Parça Bitirme Kontrol Listesi" bölümleri — orada tek
 komutluk bir grep taraması da var.
