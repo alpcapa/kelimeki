@@ -1281,6 +1281,27 @@ Eylül'den beri boş, ama o tarihten sonraki iki kaydın ikisi de uygulamadan
 da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
 (geri alındı), çalışıyor.
 
+
+### "Ayrılan" = en ileri adım, son kayıt değil (29 Eylül 2026, `20260929074711_admin_web_journey_furthest_step.sql`)
+
+Kullanıcı sordu: *"5 kişi uygulamaya geçmiş, 1 terk etmiş, kalan 4 olması
+lazım ama sadece 1 oyun bitirmiş."* Satır satır okundu: 2'si uygulamadan
+mağazaya, 1'i giriş yaptı (oturum kapanır), 1'i 52 sn'de çıktı, 1'i oyunu
+bitirdi. Kaybolan yoktu, ama kartta bir yanlış vardı: oyunu bitiren
+li-profil oturumu **"5. hamle — Ayrılan 1 — %100"** diye kırmızı
+görünüyordu. Adımlar `first_move, game_finish, move_5` sırasıyla gelmişti
+(hamle sayacı oyun bitişinden SONRA işlendi) ve `Ayrılan` `last_step`e
+bakıyordu. `last_step` ağ sırasına bağlı, en ileri adım değil.
+
+**Çözüm (yalnızca sunucu):** çıkış adımı = `steps` içinde `v_steps`
+sırasında en sonda duran adım. Okuma anında hesaplandığı için tarihsel
+satırlar da düzeldi (canlıda 30 gün: 5. hamle 1→0, Oyun bitti 17→18,
+`landing_cta` 1→0, Uygulama açıldı 12→13). İmza/dönüş tipi aynı → `create or
+replace`; `proacl` önce/sonra aynı. `record_web_session` ve `last_step`
+kolonu DEĞİŞMEDİ (ham kayıt olarak duruyor).
+⚠ Bilinen sonucu: `store` sırada en sonda; mağazaya gidip dönüp oynayan
+oturum "Mağazaya gitti"de sayılır (başarı satırı, ✓).
+
 ### "Web" etiketi + iOS/Android kapsam denetimi (27 Eylül 2026)
 
 Kullanıcı isteği: *"sadece web olanlara Web yazalım, belli olsun"* ve *"ios ve
