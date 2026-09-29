@@ -461,7 +461,8 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
     body: (
       <>
         Web'deki MİSAFİR ziyaretçinin <b>nerede ayrıldığı</b>. Her satır bir adım;{' '}
-        <b>Ulaşan</b> = o adıma gelen oturum, <b>Ayrılan</b> = SON adımı o olan oturum,{' '}
+        <b>Ulaşan</b> = o adıma gelen oturum, <b>Ayrılan</b> = EN İLERİ adımı o olan oturum (kayıt sırası değil: oyunu bitirenin geç gelen
+        "5. hamle" kaydı onu oyun bitişinden geri çekmez),{' '}
         <b>Ayrılma</b> = Ayrılan / Ulaşan. Bounce'un yeri, Ayrılma yüzdesinin en yüksek
         olduğu satırdır. <b>Süre</b> = orada ayrılanların oturumda kaldığı süre (medyan).
         <br />
