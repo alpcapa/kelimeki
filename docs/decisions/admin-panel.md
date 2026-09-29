@@ -1281,7 +1281,7 @@ Eylül'den beri boş, ama o tarihten sonraki iki kaydın ikisi de uygulamadan
 da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
 (geri alındı), çalışıyor.
 
-### Kayıt Hunisi platform satırlarına geçti (29 Eylül 2026, `20260929090551_admin_signup_funnel_platform.sql`)
+### Kayıt Hunisi platform satırlarına geçti (29 Eylül 2026, `20260929091355_admin_signup_funnel_platform.sql`)
 
 Kullanıcı: *"Web ve App (ya da ios, android) diye 2 satırda göstersek, altta
 toplamla birlikte."* Kart kanal (Doğrudan/Form) yerine **Web · Uygulama ·
