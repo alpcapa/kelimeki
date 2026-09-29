@@ -168,6 +168,7 @@ tablo yan yana okunabilsin.
 | `karusel` | Carousel, 4 kart | `sponsored-2026-08/kelimeki-01 → 03 → 02 → 05.png` (2160², iki rozetli) | Meta 1:1 kartları kendisi yerleştirir |
 | `reel` | Tek video | `sponsored-2026-08/kelimeki-reel.mp4` (9:16, 9,4 sn; 28 Eyl'den beri alt şeritte iki rozet) | Videonun kendisi |
 | `kare` | Tek görsel | `sponsored-2026-08/kelimeki-01.png` | **Görseli değiştir →** `meta-reklam/kelimeki-story-1080x1920.png` |
+| `kare` v2 (29 Eyl, kullanılmadı henüz) | Tek görsel | `meta-reklam/kelimeki-sade-kare-1080.png` | `meta-reklam/kelimeki-sade-story-1080x1920.png` |
 
 **Görseller mağazadan bağımsız olmalı.** `kelimeki-01…05` ve yeni hikaye
 görseli iki rozeti birlikte taşıyor. ⚠ `play-store/lansman/*` görselleri
@@ -204,6 +205,8 @@ https://github.com/alpcapa/kelimeki/raw/main/marketing/sponsored-2026-08/kelimek
 https://github.com/alpcapa/kelimeki/raw/main/marketing/sponsored-2026-08/kelimeki-05.png
 https://github.com/alpcapa/kelimeki/raw/main/marketing/sponsored-2026-08/kelimeki-reel.mp4
 https://github.com/alpcapa/kelimeki/raw/main/marketing/meta-reklam/kelimeki-story-1080x1920.png
+https://github.com/alpcapa/kelimeki/raw/claude/kampanya-ekim-2026-ozeti-q91fxq/marketing/meta-reklam/kelimeki-sade-kare-1080.png
+https://github.com/alpcapa/kelimeki/raw/claude/kampanya-ekim-2026-ozeti-q91fxq/marketing/meta-reklam/kelimeki-sade-story-1080x1920.png
 ```
 
 ### 4.1 · Metinler — üç reklamda da aynı
