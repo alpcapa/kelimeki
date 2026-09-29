@@ -12,7 +12,6 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 import {
   CORS_HEADERS,
   escapeHtml,
-  buildSupportReplyNoticeHtml,
   sendBrevoEmail,
   buildBrandedEmailHtml,
   brevoErrorMessage,
@@ -30,18 +29,14 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-function buildReplyHtml(
-  originalMessage: string,
-  reply: string,
-  feedbackId: string,
-  recipientName?: string,
-): string {
-  const greeting = recipientName ? `Merhaba ${escapeHtml(recipientName)},` : 'Merhaba,';
+// Yanıt metni DOĞRUDAN gövdeye girer — önünde şablon selamı/teşekkürü, altında
+// "doğrudan yanıtlayabilirsin" notu YOK (29 Eylül 2026, kullanıcı: admin
+// yanıtı zaten kendi "Merhaba"sıyla başlıyor, şablonun selamı onu ikiliyordu).
+// `recipient_name` bu yüzden artık kullanılmıyor; istemci göndermeye devam
+// ediyor, zararsız.
+function buildReplyHtml(originalMessage: string, reply: string): string {
   const body = `
-    <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;">${greeting}</p>
-    <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;">Bizimle iletişime geçtiğin için çok teşekkürler. Cevabımız aşağıdaki gibidir:</p>
-    <blockquote style="margin:0 0 16px 0;padding:10px 14px;border-left:3px solid #DCE2EA;color:#1B2430;font-size:15px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(reply)}</blockquote>
-    ${buildSupportReplyNoticeHtml(feedbackId)}
+    <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;white-space:pre-wrap;">${escapeHtml(reply)}</p>
     <p style="font-size:12px;color:#8A93A2;margin-top:20px;">Gönderdiğin mesaj:<br/><em style="white-space: pre-wrap;">${escapeHtml(originalMessage)}</em></p>
     <p style="font-size:13px;color:#8A93A2;margin-top:12px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Müşteri Hizmetleri</span></p>
   `;
@@ -76,7 +71,7 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: 'Bu işlem için yetkin yok.' }, 403);
   }
 
-  let body: { feedback_id?: string; reply?: string; recipient_name?: string };
+  let body: { feedback_id?: string; reply?: string };
   try {
     body = await req.json();
   } catch {
@@ -85,7 +80,6 @@ Deno.serve(async (req: Request) => {
 
   const feedbackId = body.feedback_id;
   const replyText = body.reply?.trim();
-  const recipientName = body.recipient_name?.trim() || undefined;
 
   if (!feedbackId || !replyText || replyText.length > 5000) {
     return jsonResponse({ error: 'Geçersiz yanıt metni.' }, 400);
@@ -116,7 +110,7 @@ Deno.serve(async (req: Request) => {
   const brevoRes = await sendBrevoEmail(BREVO_API_KEY, {
     to: { email: row.email },
     subject: 'Kelimeki — Geri bildiriminize yanıt',
-    htmlContent: buildReplyHtml(row.message, replyText, feedbackId, recipientName),
+    htmlContent: buildReplyHtml(row.message, replyText),
     sender: KELIMEKI_SUPPORT_SENDER,
     replyTo: KELIMEKI_SUPPORT_SENDER,
   });

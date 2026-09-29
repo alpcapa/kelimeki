@@ -55,13 +55,27 @@ yazacağı bir adresi robot trafiğiyle doldururdu. `replyTo` ayrıca geçiliyor
   gönderilen yanıtlar okunmaz. Bize ulaşmak için destek@kelimeki.com."
   **Bu not olmadan madde 1 kullanıcıya düşman bir davranış olurdu**: cevap
   yazan kişi bir bounce alır ve nereye yazacağını bilmez.
-- `buildSupportReplyNoticeHtml(threadId?)` — "Bu e-postayı doğrudan
-  yanıtlayabilirsin… dilersen siteden de yazabilirsin." Eski hâli ("cevap
-  vermek için tıklayın") artık yanlıştı: adres gerçek bir kutu.
+- ~~`buildSupportReplyNoticeHtml(threadId?)`~~ — "Bu e-postayı doğrudan
+  yanıtlayabilirsin… dilersen siteden de yazabilirsin." **29 Eylül 2026'da
+  KALDIRILDI** (kullanıcı: *"gerek yok"*): destek maili bir insandan geliyor,
+  "Yanıtla" zaten destek@'e düşüyor. Aynı turda `feedback-reply`in şablon
+  açılışı ("Merhaba, Bizimle iletişime geçtiğin için çok teşekkürler.
+  Cevabımız aşağıdaki gibidir:") da kaldırıldı — admin yanıtı kendi
+  selamıyla başlıyor, şablon onu ikiliyordu; yanıt artık alıntı kutusu
+  olmadan doğrudan gövdede.
+- ⚠ **Zoho kişi kartında "Alp Reşat Çapa" görünmesi** (29 Eylül 2026
+  soruldu): mailin `From` adı `Kelimeki Destek` (kartın üst satırı). Büyük
+  ad, Zoho uygulamasının destek@ hesabının KENDİ profil adını göstermesi —
+  yalnızca kutu sahibinin ekranında. Ama aynı ad, Zoho'dan elle yanıt
+  yazıldığında `From` olarak alıcıya gider (gelen kutusundaki "Alp Resat
+  Ca…" satırı). Düzeltme Zoho'da: Settings → Mail → **Send Mail As** →
+  destek@ → görünen ad `Kelimeki Destek`.
 
 ⚠ **İki yolun VARDIĞI YER FARKLI ve bu bilinçli.** Doğrudan yanıt → Zoho
 (panelde okunmaz, yalnızca rozeti artırır). Sitedeki `?contact=1&re=<id>`
 linki → doğrudan `feedback` tablosu, panelde "↳ Cevaben" rozetiyle görünür.
+(29 Eylül 2026'dan beri destek maillerinde bu link YOK; yol `App.tsx`te ve
+ban mailinde duruyor.)
 
 ### "Zoho" rozeti
 
