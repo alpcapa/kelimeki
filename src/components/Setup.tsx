@@ -890,7 +890,7 @@ export function Setup({
                 akışta, listenin ÜSTÜNDE; Arkadaşınla tarafıyla aynı
                 (`actionButton.ts`). */}
             <button onClick={() => setCreatingLocal(true)} className={PRIMARY_ACTION_BTN}>
-              Yeni Oyun Kur
+              Yeni Oyun Başlat
             </button>
             <div className="flex gap-2">
               {[
