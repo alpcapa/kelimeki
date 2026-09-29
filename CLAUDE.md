@@ -735,7 +735,7 @@ kullanılır. Yeni bir mail gönderen fonksiyon yazarken ikisinden birini SEÇ,
 *"standartımız bu olacak"*). Mail imzası (`Saygılarımızla, Kelimeki Destek`)
 ve destek@'in gönderen adı bunu kullanır — "Müşteri Hizmetleri" gibi ikinci
 bir ad UYDURMA. Zoho'dan elle
-yazılan cevapların görünen adı da aynı olmalı (Zoho → Send Mail As).
+yazılan cevapların görünen adı da aynı (Zoho → Send Mail As, doğrulandı).
 
 ### Migration'lar — CI YOK, her migration ELLE uygulanır
 

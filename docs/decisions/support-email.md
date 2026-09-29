@@ -67,13 +67,14 @@ yazacağı bir adresi robot trafiğiyle doldururdu. `replyTo` ayrıca geçiliyor
   beş `notify-*`) imza `Saygılarımızla, Kelimeki Destek` — önceki
   "Kelimeki Müşteri Hizmetleri" kaldırıldı, yedi fonksiyon aynı gün yeniden
   deploy edildi. `MemberMessageModal`daki imza açıklaması da güncellendi.
-- ⚠ **Zoho kişi kartında "Alp Reşat Çapa" görünmesi** (29 Eylül 2026
+- **Zoho kişi kartında "Alp Reşat Çapa" görünmesi** (29 Eylül 2026
   soruldu): mailin `From` adı `Kelimeki Destek` (kartın üst satırı). Büyük
-  ad, Zoho uygulamasının destek@ hesabının KENDİ profil adını göstermesi —
-  yalnızca kutu sahibinin ekranında. Ama aynı ad, Zoho'dan elle yanıt
-  yazıldığında `From` olarak alıcıya gider (gelen kutusundaki "Alp Resat
-  Ca…" satırı). Düzeltme Zoho'da: Settings → Mail → **Send Mail As** →
-  destek@ → görünen ad `Kelimeki Destek`.
+  ad, Zoho uygulamasının destek@ hesabının KENDİ profil adını (Zoho
+  Accounts) göstermesi — yalnızca kutu sahibinin ekranında, alıcıya gitmez.
+  Zoho → Settings → Mail → **Send Mail As** → görünen ad zaten
+  `Kelimeki Destek` (aynı gün ekran görüntüsüyle doğrulandı), yani Zoho'dan
+  elle yazılan cevaplar da doğru adla gidiyor. Profil adını DEĞİŞTİRME —
+  o hesabın sahibi.
 
 ⚠ **İki yolun VARDIĞI YER FARKLI ve bu bilinçli.** Doğrudan yanıt → Zoho
 (panelde okunmaz, yalnızca rozeti artırır). Sitedeki `?contact=1&re=<id>`
