@@ -189,7 +189,11 @@ export function Pill({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`shrink-0 min-h-[36px] px-3.5 rounded-full border font-mono text-[11px] font-bold uppercase tracking-[0.5px] active:scale-[0.96] transition-transform disabled:opacity-40 ${p.cls}`}
+      // 29 Eylül 2026 (kullanıcı: *"çerçeveyi yazıya yakınlaştırıp genel boyu
+      // biraz düşürebiliriz"*): görünen hap 36 → 26 px, yatay dolgu 14 → 10
+      // px. Dokunma alanı KÜÇÜLMEDİ: `tap-expand-y` görünmez bir katmanla
+      // dikeyde 41 px'e tamamlıyor (kalp/mesaj ikonlarındaki aynı desen).
+      className={`tap-expand-y shrink-0 inline-flex items-center min-h-[26px] px-2.5 rounded-full border font-mono text-[11px] leading-none font-bold uppercase tracking-[0.5px] active:scale-[0.96] transition-transform disabled:opacity-40 ${p.cls}`}
     >
       {p.label}
     </button>
