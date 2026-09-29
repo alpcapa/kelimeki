@@ -1370,7 +1370,7 @@ olmadan "reklamdan gelen kaç kişi mağazaya gitti" hiçbir tabloda yoktu.
   bounce değil.
 - Aynı değişiklik rozet linklerine ziyaretçinin `?ref=` etiketini ekliyor
   (`taggedStoreUrl`): Play `utm_source=<etiket>&utm_medium=web`, App Store
-  `ct=<etiket>`. Karşılama katmanı sunucuda render edildiği için oradaki
+  `pt=<sağlayıcı>&ct=<etiket>`. Karşılama katmanı sunucuda render edildiği için oradaki
   linkler `main.tsx`te (`magazaLinkleriniKur`, `data-kelimeki-magaza`)
   yeniden yazılıyor.
 - ⚠ `verify-web-journey` 28 Eylül'e kadar adım dizisi taşıyan HER migration'ı
