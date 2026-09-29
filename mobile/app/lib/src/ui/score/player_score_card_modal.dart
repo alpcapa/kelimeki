@@ -23,9 +23,7 @@ import '../friends/friends_modal.dart'
     show confirmFriendAction, showFriendInfoDialog;
 import '../friends/relation_icons.dart';
 import '../game/modal_shell.dart';
-import '../rank/league_rank.dart';
 import '../rank/rank_header_seal.dart';
-import '../rank/rank_seal.dart';
 import 'game_history_modal.dart';
 import 'klig_mark.dart';
 import 'leaderboard_modal.dart';
@@ -436,16 +434,9 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
                                   fontWeight: FontWeight.bold,
                                   color: _text)),
                         ),
-                        // Rütbe mührü ismin YANINDA (Skor Kartı ile aynı
-                        // kural/boy) — arkadaşlık ikonundan ÖNCE, yani isme
-                        // bitişik. Başlıktaki 34px'lik mühür duruyor.
-                        if (_loaded.contains(StatsTab.all)) ...[
-                          const SizedBox(width: 4),
-                          RankSeal(
-                              tier: tierFor(
-                                  _statsByTab[StatsTab.all]?.totalScore ?? 0),
-                              size: 20),
-                        ],
+                        // İsmin yanındaki rütbe mührü 29 Eylül 2026'da
+                        // KALKTI (web ikizi, kullanıcı: "zaten üstte var").
+                        // Başlıktaki 34px'lik mühür duruyor.
                         if (_relationIcon() case final icon?) icon,
                       ],
                     ),
