@@ -830,6 +830,12 @@ export interface AdminFunnelRow {
   finished: number;
   games_started: number;
   games_finished: number;
+  /**
+   * Mağazaya giden web misafir OTURUMU (`web_sessions`, `store` adımı; 29 Eylül
+   * 2026). ⚠ Birim farklı: kohort cihazı değil oturum; kanala `utm_source`
+   * üzerinden bağlanır, yalnızca `web` satırlarında dolu.
+   */
+  store: number;
 }
 
 /**

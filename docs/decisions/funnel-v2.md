@@ -208,3 +208,25 @@ yalnızca misafir bitişini sayar (tablonun altındaki not ve `?` metni söylüy
   ayırıyor.
 - Bot/tarayıcı ön-yüklemesi (Instagram uygulama içi tarayıcı): ilk sürümde
   filtre YOK; `land` sayısı `guest_visits`'le kıyaslanarak izlenir.
+
+## "Mağaza" sütunu (29 Eylül 2026, `20260929084732_admin_funnel_store.sql`)
+
+Kullanıcı: *"bizdeki rakamlara göre kare en fazla insan getiren gözüküyor.
+Biz onu kapattık. Bu rakamlar doğru mu?"* Rakamlar doğruydu ama tablo yanlış
+soruyu cevaplıyordu: Meta reklamının telefon ziyaretçisi sitede oynamıyor,
+mağazaya gidiyor; Land dışındaki bütün sütunlar bu trafik için 0'dı.
+`meta-kare` Land'de açık ara birinciydi (54) ama telefon ziyaretlerinin
+yalnızca %2'si mağazaya gitmişti (`meta-karusel` %32).
+
+**Karar:** `admin_funnel`e `store` sütunu; kaynağı `web_sessions`
+(Ziyaretçi Yolculuğu'nun `store` adımı), `funnel_events` DEĞİL.
+- `funnel_events`e yeni olay eklemek gizlilik metnindeki "yedi durum"
+  listesini (+ portun hukuki metin paritesini) değiştirirdi; `web_sessions`
+  kimliksiz ve zaten yazılıyor.
+- Kampanyanın geçmişi de görünür (yeni olay ancak yayından SONRA dolardı).
+
+⚠ **Birim farkı:** sütun kohort CİHAZI değil web misafir OTURUMU sayar,
+kanala `utm_source` üzerinden bağlanır (etiketsiz → `direkt`), yalnızca web
+satırlarında dolu. Yüzdesi Land'e göre; reklam ziyaretçisinde oturum ≈ kişi.
+Kart metni (`?`) bunu söylüyor. Dönüş tipi değişti → DROP + CREATE,
+`proacl` öncesiyle aynı (authenticated + service_role).
