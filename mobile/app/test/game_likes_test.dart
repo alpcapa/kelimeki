@@ -20,6 +20,11 @@ import 'support/game_rows.dart';
 import 'support/test_fonts.dart';
 import 'support/test_view.dart';
 
+/// Satırdaki dolu beğeni kalbi — "Favoriler" sekmesinin kalbi (29 Eylül
+/// 2026, `kFavoritesTabHeartKey`) aynı glyph'i kullandığı için hariç.
+Finder _satirKalbi() => find.byWidgetPredicate((w) =>
+    w is Icon && w.icon == Icons.favorite && w.key != kFavoritesTabHeartKey);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   sqfliteFfiInit();
@@ -113,7 +118,7 @@ void main() {
     await pumpHistory(tester, repo);
 
     expect(find.byIcon(Icons.favorite_border), findsOneWidget);
-    expect(find.byIcon(Icons.favorite), findsNothing);
+    expect(_satirKalbi(), findsNothing);
     // Beğenilmemiş kalp gri kalmalı (renk yalnızca beğenildiğinde değişir).
     expect(tester.widget<Icon>(find.byIcon(Icons.favorite_border)).color,
         isNot(const Color(0xFFDC2626)));
@@ -121,11 +126,11 @@ void main() {
     await tester.tap(find.byIcon(Icons.favorite_border));
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.favorite), findsOneWidget);
+    expect(_satirKalbi(), findsOneWidget);
     // Web: `entry.liked_by_me ? 'text-red' : 'text-muted'` — beğenilen kalp
     // KIRMIZI. Port ikonu doldurup rengi koşulsuz gri bırakmıştı (9 Ağustos
     // 2026, cihaz testinde "like yapınca kalp gri/siyah kalıyor").
-    expect(tester.widget<Icon>(find.byIcon(Icons.favorite)).color,
+    expect(tester.widget<Icon>(_satirKalbi()).color,
         const Color(0xFFDC2626));
     // Sayı rozeti belirdi. Key ile aranıyor: düz '1' metni PlayerBadge'in
     // koltuk numarasıyla çakışıyor.
@@ -137,6 +142,16 @@ void main() {
             .data,
         '1');
     expect(gw.toggledLikes, ['a']);
+  });
+
+  testWidgets('Favoriler sekmesinde küçük dolu kalp var (29 Eylül 2026)',
+      (tester) async {
+    final gw = FakeGamesGateway(userId: 'u-me')..history = [gameRow(id: 'a')];
+    final repo = await newRepoForWidget(tester, gw);
+    await pumpHistory(tester, repo);
+    final kalp = tester.widget<Icon>(find.byKey(kFavoritesTabHeartKey));
+    expect(kalp.icon, Icons.favorite);
+    expect(kalp.color, const Color(0xFFDC2626)); // seçili değil → kırmızı
   });
 
   testWidgets('kalp: istek düşerse iyimser güncelleme GERİ ALINIR',
@@ -151,7 +166,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.favorite_border), findsOneWidget);
-    expect(find.byIcon(Icons.favorite), findsNothing);
+    expect(_satirKalbi(), findsNothing);
   });
 
   testWidgets('beğeni sayısına dokunmak Beğenenler listesini açar',
