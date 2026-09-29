@@ -296,9 +296,12 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
         child: TapTarget(
           onTap: _onRelationTap,
           minHeight: 36,
+          // Görünen hap 26 px, yatay dolgu 10 (web `Pill`, 29 Eylül 2026:
+          // *"çerçeveyi yazıya yakınlaştırıp genel boyu biraz düşürebiliriz"*);
+          // dokunma alanı `TapTarget`in 36 px'i olarak kaldı.
           child: Container(
-            constraints: const BoxConstraints(minHeight: 36),
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            constraints: const BoxConstraints(minHeight: 26),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               // web `Pill`: ekle = bg-[#EEF4FF] border-accent text-accent,
