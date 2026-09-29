@@ -1302,6 +1302,16 @@ kolonu DEĞİŞMEDİ (ham kayıt olarak duruyor).
 ⚠ Bilinen sonucu: `store` sırada en sonda; mağazaya gidip dönüp oynayan
 oturum "Mağazaya gitti"de sayılır (başarı satırı, ✓).
 
+Aynı gün Dönen görünümünden iki gösterim düzeltmesi daha (yalnızca web):
+**Oyun bitti** artık başarı satırı (✓) — oyunu bitiren doğal olarak orada
+"ayrılıyor", kart onu en çok kaybettiren adım diye kırmızı yakıyordu. Ve
+**Dönen**'de `landing` / `landing_cta` satırları gizleniyor: oturum zaten
+uygulamada başladı, `landing_cta` orada yalnızca uygulama içi bir bağlantıdan
+sonra akışın ORTASINDA düşüyor ("Uygulamaya geçti 4" en üst satırda
+kafa karıştırıyordu). Kullanıcının sorduğu "25 − 3 = 22 olmalı" türü farkların
+hepsi oyun sırasında giriş yapan misafirlerdi (oturum girişte kapanır);
+`?` metni bunu artık söylüyor.
+
 ### "Web" etiketi + iOS/Android kapsam denetimi (27 Eylül 2026)
 
 Kullanıcı isteği: *"sadece web olanlara Web yazalım, belli olsun"* ve *"ios ve
