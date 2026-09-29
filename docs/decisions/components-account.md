@@ -126,6 +126,20 @@
 
 - **Arkadaşlık ilişkisi ikonları (`src/components/RelationIcons.tsx`, 11 Ağustos 2026)** — `FriendsModal`'ın "Ara & Ekle"/"Arkadaşlarım" sekmelerindeki metin butonları (Ekle / İstek Gönderildi / Kabul Et / Arkadaşsınız / Çıkar) ve `PlayerScoreCard`'daki simge tek bir ikon diline indirildi (kullanıcı isteği). **Kural: ikon, DOKUNUŞUN NE YAPACAĞINI söyler, ilişkinin adını değil** — bu yüzden "arkadaşsınız" durumu yeşil `check_circle` DEĞİL kırmızı `person_remove`; dokunulunca yapılan şey çıkarmak. (Yeşil onay 9 Ağustos'ta eklenmişti ve durumu doğru anlatıyordu, ama eylemi anlatmadığından "çıkarmayı bulamama" riski taşıyordu; `check_circle` artık hiçbir yerde kullanılmıyor.) Dört durum, dört glyph: `person_add_alt_1` (accent) · `hourglass_top` (muted, dokun → iptal) · `how_to_reg` (accent, gelen isteği kabul) · `person_remove` (red, çıkar). **"İstekler" sekmesindeki Kabul Et/Reddet butonlarına DOKUNULMADI** — orası bir durum değil, iki ayrı karar. Yan etki olarak yeni bir yol açıldı: "Ara & Ekle"deki `accepted` satırı eskiden tıklanamaz bir metindi, artık oradan da arkadaşlıktan çıkılabiliyor (aynı onay state'i yapısal bir tiple paylaşıldı, ikinci bir diyalog açılmadı; sonrasında `patchRelation` ikonu anında `person_add`'e çeviriyor). **Path verisi elle çizilmedi**, Flutter SDK'sının `MaterialIcons-Regular.otf`'undan çıkarıldı — Flutter portu aynı glyph'leri `Icons.*` ile doğrudan çiziyor, yani iki platform BENZER değil AYNI vektörü gösteriyor. **Codepoint'leri hafızadan yazma:** bu iş sırasında tam bunu deneyip tamamen başka glyph'ler (saat yerine hamburger çizgi, `person_remove` yerine `<>`) çizdirdim; `cmap`'te "o kodda bir glyph var" demek aradığın ikon olduğu anlamına gelmiyor, tek doğru kaynak Flutter'ın `packages/flutter/lib/src/material/icons.dart` dosyası — hata yalnızca önizleme render edildiği için yakalandı. Metin kalktığından `aria-label` artık ekran okuyucunun TEK bilgi kaynağı (boş bırakılamaz) ve 20px ikon 44px'lik görünmez dokunma alanı içine alındı (iOS asgarisi; metin butonu bunu doğal olarak sağlıyordu). Yeni bir ilişki ikonu gerekirse `RelationIcons.tsx`'e ekle — tüketiciler path'i kendi içine KOPYALAMASIN.
 
+
+**29 Eylül 2026 — skor kartında eylem ikonları yazılı hap oldu (yalnızca web).**
+Kullanıcı: *"o ikonlar çok anlaşılmıyor, ekle … yazan butonlara dönüşsün.
+Check işaretli 'zaten arkadaşsınız' ve bekliyor ikonları durabilir."*
+`PlayerScoreCard`'da eylem çağıran iki dal (+ ekle, gelen isteği kabul et)
+Arkadaşlar penceresi / canlı oyun formundaki listeyle aynı `Pill`e döndü
+("Ekle" / "Kabul et", onay diyaloğu korunuyor). Durum bildiren iki dal (✓
+arkadaşsınız, ⌛ bekliyor) ikon kaldı; ✓'ye dokunmak yine "Arkadaşlıktan
+çıkar"ı soruyor (kullanıcı kararı: ayrı "Çıkar" düğmesi YOK). Aynı gün canlı
+oyun formunun "Tüm oyuncular" listesinde arkadaş OLMAYAN kişiye dokununca
+skor kartı açılıyor (arkadaş satırı oyuna seçtiği için orada kart yok).
+⚠ Port ikizi (`player_score_card_modal.dart`) henüz ikonlu: mobil iş, tren
+kuralına tabi.
+
 ## İlişki ikonlarında İKİ düzeltme (30 Ağustos 2026)
 
 - **İlişki ikonlarında İKİ düzeltme (30 Ağustos 2026, kullanıcı bildirdi)** — ikisi de yukarıdaki maddenin devamı, biri hata biri tasarım:

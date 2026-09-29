@@ -10,7 +10,8 @@ import { KLigMark } from './KLigMark';
 import { RankSeal } from './RankSeal';
 import { RankInfoModal } from './RankInfoModal';
 import { tierFor } from '../utils/leagueRank';
-import { HowToRegIcon, PersonAddIcon, PersonPendingIcon } from './RelationIcons';
+import { HowToRegIcon, PersonPendingIcon } from './RelationIcons';
+import { Pill } from './FriendsModal';
 import { useAuth } from '../hooks/useAuth';
 import {
   headToHeadBar,
@@ -108,16 +109,26 @@ function memberDisplayName(m: PlayerSummary) {
  * kırmızı `person_remove` değil) — 11 Ağustos 2026 kullanıcı kararı, gerekçe
  * RelationIcons.tsx'te. Öteki üç dal listeyle BİREBİR aynı.
  */
+/**
+ * ⚠ 29 Eylül 2026 (kullanıcı: *"o ikonlar çok anlaşılmıyor, ekle … yazan
+ * butonlara dönüşsün. Check işaretli 'zaten arkadaşsınız' ve bekliyor
+ * ikonları durabilir"*): EYLEM çağıran iki dal (`null` = ekle,
+ * `pending_incoming` = kabul et) artık ikon değil, Arkadaşlar penceresi ve
+ * canlı oyun formundaki listeyle AYNI yazılı hap (`Pill`, "Ekle" / "Kabul
+ * et"). DURUM bildiren iki dal (✓ arkadaşsınız, ⌛ bekliyor) ikon kaldı;
+ * ✓'ye dokunmak eskisi gibi "Arkadaşlıktan çıkar"ı sorar (kullanıcı kararı:
+ * ayrı bir "Çıkar" düğmesi YOK). `pill` doluysa hap çizilir.
+ */
 function friendIconFor(relation: FriendRelation | null) {
   switch (relation) {
     case 'accepted':
-      return { icon: <HowToRegIcon />, color: 'text-green', label: 'Arkadaşlıktan çıkar' };
+      return { icon: <HowToRegIcon />, color: 'text-green', label: 'Arkadaşlıktan çıkar', pill: null };
     case 'pending_outgoing':
-      return { icon: <PersonPendingIcon />, color: 'text-muted', label: 'Davet gönderildi — iptal et' };
+      return { icon: <PersonPendingIcon />, color: 'text-muted', label: 'Davet gönderildi — iptal et', pill: null };
     case 'pending_incoming':
-      return { icon: <HowToRegIcon />, color: 'text-accent', label: 'Arkadaşlık davetini kabul et' };
+      return { icon: null, color: '', label: 'Arkadaşlık davetini kabul et', pill: 'kabul' as const };
     default:
-      return { icon: <PersonAddIcon />, color: 'text-accent', label: 'Arkadaş ekle' };
+      return { icon: null, color: '', label: 'Arkadaş ekle', pill: 'ekle' as const };
   }
 }
 
@@ -394,7 +405,15 @@ export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCar
                   ismin yanındaki rozettir. */}
               {rankTier && <RankSeal tier={rankTier} size={20} className="shrink-0" />}
             </div>
-            {showFriendButton && (
+            {showFriendButton && friendIcon.pill && (
+              <Pill
+                kind={friendIcon.pill}
+                ariaLabel={friendIcon.label}
+                disabled={friendBusy}
+                onClick={() => setShowFriendConfirm(true)}
+              />
+            )}
+            {showFriendButton && !friendIcon.pill && (
             <button
               type="button"
               onClick={() => setShowFriendConfirm(true)}
