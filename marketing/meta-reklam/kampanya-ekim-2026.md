@@ -93,7 +93,7 @@ Etkileşim cihazı**.
 - Sitedeki mağaza rozetleri ve telefon şeridi ziyaretçinin `?ref=` etiketini
   mağazaya taşıyor (`taggedStoreUrl`, `src/utils/storeLinks.ts`):
   - Play: `referrer=utm_source%3D<etiket>%26utm_medium%3Dweb`
-  - App Store: `ct=<etiket>`
+  - App Store: `pt=129427325&ct=<etiket>` (`pt` 29 Eyl 2026'da eklendi; olmadan Apple kampanyaya atfetmiyor)
 - Rozete dokunmak ziyaretçi yolculuğuna **`store`** adımı yazıyor
   (`web_sessions`, migration `20260928100430_web_journey_store_step`).
   Admin → Ziyaretçi Yolculuğu kartında "Mağazaya gitti" satırı.
