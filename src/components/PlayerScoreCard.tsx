@@ -398,13 +398,10 @@ export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCar
                 2026): dıştaki `gap-2` arkadaşlık ikonunu ismin/mührün
                 grubundan ayırıyor — ikisi tek kapta olsaydı mührü isme
                 yaklaştırmak ikonu da yaklaştırırdı. */}
-            <div className="flex items-center gap-1 min-w-0">
-              <div className="text-base font-bold text-text truncate">{name}</div>
-              {/* Rütbe mührü — ScoreCard'daki aynı karar (18 Ağustos 2026):
-                  başlıktaki 34px'lik dokunulabilir mühür KALIR, bu yalnızca
-                  ismin yanındaki rozettir. */}
-              {rankTier && <RankSeal tier={rankTier} size={20} className="shrink-0" />}
-            </div>
+            {/* İsmin yanındaki rütbe mührü 29 Eylül 2026'da KALKTI (kullanıcı:
+                *"zaten üstte var"*) — `ScoreCard`la aynı karar. Başlıktaki
+                34px'lik mühür duruyor. */}
+            <div className="min-w-0 text-base font-bold text-text truncate">{name}</div>
             {showFriendButton && friendIcon.pill && (
               <Pill
                 kind={friendIcon.pill}
