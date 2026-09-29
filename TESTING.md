@@ -1607,6 +1607,13 @@ ama **gerçek ağ koşulunu** (yanıtı kaybolan istek) kanıtlayamaz.
       işlenmeli. (Anahtar başarıda temizlenmezse sunucu bunu "zaten
       işledim" sayıp yutardı — düzeltmenin ters yöndeki riski.)
 - [ ] Aynı üçü **PAS GEÇ** ve **DEĞİŞTİR** için de geçerli.
+- [ ] **Arka plandan dönüp hemen oyna (29 Eylül 2026).** Uygulamayı/sekmeyi
+      birkaç dakika arka planda tut (rakip bu arada oynasın), dön ve
+      hemen hamleni gönder. Beklenen: `OYNA`dan sonra taşlar yerleşir, raf
+      7'ye tamamlanır, düğme kapanır — Realtime soketi düşmüş olsa bile
+      (ekran sunucuyu kendisi okuyor). **OLMAMASI gereken:** taşlar taslak
+      gibi tahtada kalıp `OYNA`nın etkin kalması, ikinci basışta
+      `Sıra sende değil.` Web + uygulama.
 
 - [ ] **Yavaş/zayıf ağda bir Canlı oyuna gir.** Listeden bekleyen bir oyuna
       dokun. Beklenen: ya ekran açılır, ya **en geç ~20 sn içinde**

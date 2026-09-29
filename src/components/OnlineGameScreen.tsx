@@ -232,7 +232,30 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
   const loadedRef = useRef(false);
   // Panelin "Tekrar Dene"si effect'in içindeki refresh'i çağırabilsin diye
   // (App.tsx'teki `refreshCloudSavesRef` deseni).
-  const refreshRef = useRef<() => void>(() => {});
+  //
+  // 29 Eylül 2026'dan beri `Promise` döndürüyor: başarılı bir hamlenin
+  // ardından `syncAfterSubmit` onu BEKLİYOR (aşağı bkz.).
+  const refreshRef = useRef<() => Promise<void>>(async () => {});
+  /**
+   * Başarılı gönderimden SONRA sunucu durumunu hemen okur ve düğme ancak
+   * ondan sonra serbest kalır (29 Eylül 2026, kullanıcı bildirdi: *"Hamlemi
+   * koyup oynaya bastım. Hala oyna butonu aktif, tekrar bastığımda sıra
+   * sende değil mesajı gözüküyor … bekleyince düzeldi"*).
+   *
+   * Kök sebep: ekran kendi hamlesinin sonucunu YALNIZCA Realtime yankısından
+   * öğreniyordu. Soket sessizce düşmüşse (iOS arka plana alınan sekmenin
+   * websocket'ini askıya alıyor; bkz. "Realtime aboneliği arka plandan
+   * dönünce") yankı hiç gelmez: taslak taşlar tahtada, raf eksik, OYNA
+   * etkin kalır. İkinci basış yeni bir `move_id` taşıdığından (başarıda
+   * temizleniyor) sunucu onu yeni hamle sayar ve GERÇEK bir "Sıra sende
+   * değil." döner. Sunucu tarafında hamle TEK kez kaydedilmişti (15:18:44,
+   * `online_game_moves`), yani ağ değil senkron sorunuydu.
+   *
+   * `refresh` kendi içinde 20 sn'lik `withTimeout` taşıyor ve hata
+   * fırlatmıyor, yani bu bekleme sonsuz olamaz. Port ikizi:
+   * `online_game_screen.dart` → `_syncAfterSubmit`.
+   */
+  const syncAfterSubmit = () => refreshRef.current();
   const [busy, setBusy] = useState(false);
   /**
    * Bekleyen gönderimin idempotency anahtarı ve hangi hamleye ait olduğu —
@@ -599,7 +622,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       // baştan (3s) sürsün, 30s'lik son basamaktan değil.
       clearAutoRetry();
       autoRetryStep = 0;
-      void refresh();
+      return refresh();
     };
     document.addEventListener('visibilitychange', onForeground);
     window.addEventListener('focus', onForeground);
@@ -1285,6 +1308,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
           ),
         });
         clearMoveId();
+        await syncAfterSubmit();
       } catch (err) {
         // Ağ katmanı hatası → ne olduğunu anlatan metin; sunucunun KENDİ
         // reddi ("Sıra sende değil." gibi) olduğu gibi gösterilir.
@@ -1318,6 +1342,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         moveId: moveIdFor(`pass|${state.turnCount}`),
       });
       clearMoveId();
+      await syncAfterSubmit();
     } catch (err) {
       setSubmitError(
         isNetworkError(err)
@@ -1375,6 +1400,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       });
       clearMoveId();
       dispatch({ type: 'TOGGLE_SWAP_MODE' });
+      await syncAfterSubmit();
     } catch (err) {
       setSubmitError(
         isNetworkError(err)
@@ -1410,7 +1436,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
             <button
               onClick={() => {
                 setLoadFailed(false);
-                refreshRef.current();
+                void refreshRef.current();
               }}
               className="btn-raised w-full py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
             >
