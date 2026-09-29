@@ -486,8 +486,11 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         azalmak zorunda değil.
         <br />
         ⚠ <b>Kapsam:</b> yalnızca web ve yalnızca misafir. Girişli açılan oturum hiç
-        yazılmaz; <b>Kayıt oldu</b>/<b>Giriş yaptı</b> satırları ayrılma değil BAŞARI
-        (oturum orada kapanır). Karşılama sayfası yalnızca ilk kez gelenlere
+        yazılmaz; <b>Oyun bitti</b>/<b>Kayıt oldu</b>/<b>Giriş yaptı</b>/<b>Mağazaya
+        gitti</b> satırları ayrılma değil BAŞARI (✓). Giriş yapan misafirin oturumu
+        orada kapanır, sonrası üye olarak oynanır ve SAYILMAZ; bu yüzden ara adımlar
+        arasındaki fark "Ayrılan" toplamından büyük görünebilir, farkı Giriş yaptı
+        satırı taşır. <b>Dönen</b> görünümünde karşılama satırları gizlenir. Karşılama sayfası yalnızca ilk kez gelenlere
         gösterildiği için dönen misafir <b>Uygulama açıldı</b>'dan başlar (<b>Yeni</b>
         süzgecinde o satır "karşılamadan geçenler"i gösterir). Otomasyon
         tarayıcıları (<code>navigator.webdriver</code>) sayılmaz. Mobil Safari sekmeyi
@@ -1755,9 +1758,19 @@ const JOURNEY_LABEL: Record<string, string> = {
 
 /**
  * Orada "ayrılmak" bounce değil, başarı: oturumu kapatan iki adım + mağaza
- * rozetine dokunmak (`store`, 28 Eylül 2026 — kişi uygulamayı kurmaya gitti).
+ * rozetine dokunmak (`store`, 28 Eylül 2026 — kişi uygulamayı kurmaya gitti)
+ * + oyunu bitirmek (`game_finish`, 29 Eylül 2026 — Dönen görünümünde
+ * "Oyun bitti — %100" en çok kaybettiren adım diye kırmızı yanıyordu).
  */
-const JOURNEY_SUCCESS = new Set(['signup_done', 'login', 'store']);
+const JOURNEY_SUCCESS = new Set(['game_finish', 'signup_done', 'login', 'store']);
+
+/**
+ * Dönen (uygulamadan giren) oturumda karşılama adımları anlamsız: oturum
+ * zaten uygulamada başladı; `landing_cta` orada yalnızca uygulama içindeki
+ * bir bağlantıdan sonra, akışın ORTASINDA düşüyor ve en üst satırda
+ * "Uygulamaya geçti 4" diye kafa karıştırıyordu (29 Eylül 2026).
+ */
+const JOURNEY_LANDING_ONLY = new Set(['landing', 'landing_cta']);
 
 function formatJourneySeconds(sec: number | null): string {
   if (sec === null) return '—';
@@ -1792,7 +1805,9 @@ function WebJourneyTable({
   // Etkileşimsiz (yalnızca ilk pingi gelmiş) oturumlar sunucuda satırlardan
   // düşülüyor; sayı her satırda aynı, ilkinden okunur.
   const etkilesimsiz = rows?.[0]?.idle ?? 0;
-  const gorunen = rows ? rows.filter((r) => r.reached > 0) : [];
+  const gorunen = rows
+    ? rows.filter((r) => r.reached > 0 && !(entry === 'app' && JOURNEY_LANDING_ONLY.has(r.step)))
+    : [];
   const karsilama = rows?.find((r) => r.step === 'landing');
   const ust = (
     <div className="flex items-center justify-between gap-2">
