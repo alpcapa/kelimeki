@@ -18,6 +18,7 @@ seçtirmiyor).
 | Saat dilimi | İstanbul |
 | İletişim e-postası | destek@kelimeki.com (hizmet mailleri Zoho'ya düşer) |
 | Ödeme | Kart tanımlı (30 Eyl) |
+| Promosyon kredisi | **$100** — "Welcome to Apple Ads" maili, 30 Eyl 11:44, destek@. Panelde **işlendi**: Billing → Promo Credit → "Date Applied: September 30, 2026" (13:21, kullanıcı ekranı). Sayfa tutarı ve son kullanma tarihini GÖSTERMİYOR. $2/gün ile ~50 günlük bütçe → ilk okumaya (~14 Ekim) kadar harcama karttan ÇIKMAMALI, yani "ilk ekstreden TL kuru" adımı kredi bitene kadar ertelenir |
 
 ## Kampanya yapısı
 
@@ -65,7 +66,14 @@ Genel · kelime oyunu   (ID 2144785608) · Search Results · Türkiye · Manage 
 
 ## Açık sorular
 
-Şu an açık soru YOK.
+- **$100 kredisinin son kullanma tarihi BİLİNMİYOR.** Maildeki dipnot
+  yalnızca genel şartlara bağlantı ("Apple Ads promo credit terms and
+  conditions"); o şartlar kredinin "Apple'ın belirttiği bir tarihte ya da
+  sürede" bitebileceğini söylüyor, gün sayısı vermiyor. Kredi tek seferlik
+  (yeni hesap), devredilemez, nakde çevrilmez. Pratik kontrol: kampanya
+  onaylanınca Billing → **Invoices**'ta ilk karttan çekim ne zaman görünürse
+  kredi o gün bitmiş/düşmüş demektir — $2/gün ile ~50 günden ÖNCE görünürse
+  buraya yaz. (Ajan `ads.apple.com` yardım sayfasını okuyamıyor, ağ engeli.)
 
 - ~~Reklam önizlemesi "Uygulama İçi Satın Alımlar" yazıyor.~~ **KAPANDI
   (30 Eyl 2026):** iPhone'da gerçek ürün sayfasında ne "Aç" düğmesinin
@@ -79,3 +87,6 @@ Genel · kelime oyunu   (ID 2144785608) · Search Results · Türkiye · Manage 
 | 30 Eyl 2026 ~12:25 | Hesap + kampanya + iki grup kuruldu. Durum **"App pending review"**, iki grup **On hold** (Apple'ın ilk uygunluk incelemesi). ⚠ `Genel · exact`in grup varsayılan teklifi $0,50 kaldı → $1,00'a çekilecek, kelime düzeyindeki teklifler kontrol edilecek |
 | 30 Eyl 2026 ~12:35 | `Genel · exact` varsayılan teklif + kelime teklifleri **$1,00** yapıldı (kullanıcı bildirdi). Önizlemedeki "Uygulama İçi Satın Alımlar" sorusu hâlâ AÇIK |
 | 30 Eyl 2026 | "Uygulama İçi Satın Alımlar" sorusu **kapandı**: gerçek ürün sayfasında (iPhone) ibare YOK, ne düğme altında ne "Bilgi"de (kullanıcı kontrol etti) — önizleme şablonu |
+| 30 Eyl 2026 11:44 | "Welcome to Apple Ads" maili: **$100 promosyon kredisi** uygulandığı yazıyor (panelde doğrulanmadı) |
+| 30 Eyl 2026 13:18 | Hâlâ **App pending review**, iki grup **On hold**, harcama $0 (~1 sa inceleme sürüyor) |
+| 30 Eyl 2026 13:21 | Kredi panelde **doğrulandı**: Billing → Promo Credit, "Date Applied: September 30, 2026" |
