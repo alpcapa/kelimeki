@@ -93,3 +93,4 @@ Genel · kelime oyunu   (ID 2144785608) · Search Results · Türkiye · Manage 
 | 30 Eyl 2026 13:21 | Kredi panelde **doğrulandı**: Billing → Promo Credit, "Date Applied: September 30, 2026" |
 | 30 Eyl 2026 ~16:20 | **Giriş tuzağı:** normal sekmede (ASC kimliğiyle) panel yeni hesap sihirbazına düştü, mail linki de aynı yere gitti; **özel sekmede destek@ ile girince kampanya açıldı** (kullanıcı). Hesap destek@ kimliğinde. Durum tablosuna "Giriş kimliği" satırı eklendi |
 | 30 Eyl 2026 ~16:30 | Kullanıcı ASC kimliğini Apple Ads'e **Account Admin** olarak ekledi (User Management) — normal sekmeden giriş sorunu kapandı |
+| 30 Eyl 2026 ~16:35 | Kampanya hâlâ **On hold** (kurulumdan ~4 sa sonra; kullanıcı bildirdi), harcama yok |
