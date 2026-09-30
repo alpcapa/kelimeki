@@ -487,3 +487,51 @@ sonra Hatalar sekmesinin tepesinde **192 kez / 87 cihaz** duruyordu
 Karar: yalnızca **`depo=dolu`** yazılır (oturum dururken gelen `null` —
 titremenin imzası); fırtına kaydı ve devre kesici aynen duruyor. Normal
 durum hata değildir; trafik arttıkça sekmeyi şişirmesin.
+## Kritik hata uyarısı — admine push + e-posta (30 Eylül 2026)
+
+Kullanıcı: *"ben bunlara bakmazsam sorunu zamanında görmek zor. Kritik bir
+sorun olduğunda bana email veya başka şekilde bir uyarı gelse iyi olur.
+Bana özel app push da olabilir."* Kararlar (kullanıcı seçti): kanal
+**push + e-posta**; dört kural.
+
+| Kural | Eşik (son 1 saat) | Kanal |
+|---|---|---|
+| Çökme | `boundary`/`uncaught` imzası ≥3 cihaz | push + e-posta |
+| Ani artış | herhangi bir imza ≥10 cihaz | push + e-posta |
+| Oturum fırtınası | `auth null fırtınası` ya da `depo=dolu`, tek cihaz bile | push + e-posta |
+| Günlük özet | 09:00 İstanbul, son 24 saatin ilk 5'i (hata yoksa "sessiz gün") | YALNIZCA e-posta |
+
+- **Karar SQL'de** (`admin_alert_scan` / `admin_alert_daily`, yalnızca
+  `service_role`), **gönderim** Edge Function'da (`notify-admin-alerts`,
+  `verify_jwt:false`, pg_cron: tarama `*/15`, özet `0 6 * * *` UTC).
+- **Aynı imza 24 saatte BİR kez**, günlük özet günde bir kez —
+  `admin_alerts` tablosuna atomik iddia (`on conflict … do update … where`).
+  Gönderim düşerse o imza 24 saat susar; kaçanı günlük özet yakalar.
+- Alıcı: `profiles.is_admin` olan her hesap; push `sendPushToUser` (tercih
+  kapalıysa atlanır, etiket `alarm:kritik` — yeni uyarı eskisinin yerine),
+  e-posta auth adresine (`noreply@`). Adres koda gömülü DEĞİL. Uygulamada
+  değişiklik gerekmedi (bildirim yükü `notification` taşıyor).
+- İmza = `kind` + mesajın ilk 160 karakteri (Hatalar sekmesiyle aynı).
+- ⚠ **İlk çağrı 42702 verdi:** `on conflict (alert_key)` — ad hem OUT
+  parametresi hem tablo sütunu. `on conflict on constraint admin_alerts_pkey`
+  ile düzeltildi (`…_admin_error_alerts_fix.sql`). RETURNS TABLE'lı
+  plpgsql'de bu tuzak her `on conflict (<sütun>)`ta geçerli.
+- **Canlıda uçtan uca doğrulandı** (30 Eyl): test satırı → tarama
+  `alerts:1, push:2, mail:1`; ikinci tarama `alerts:0`; özet `mail:1`.
+  Test satırı ve iddiası silindi (`daily:2026-09-30` kaldı — bugünün özeti
+  gerçekten gönderildi).
+- **Bağlantı (aynı gün, kullanıcı: *"Buradan tıklayarak gidilebilecek bir
+  yer yok değil mi?"*):** e-postalarda "Hatalar sekmesini aç" düğmesi →
+  `kelimeki.com/?admin=hatalar`. `UserMenu` parametreyi yalnızca ADMİN
+  profili yüklenince okur, paneli `initialTab="errors"` ile açar ve URL'den
+  siler (`?contact=1` köprüsünün kalıbı); oturum yoksa parametre bekler,
+  giriş yapılınca açılır. `initialTab` verildiğinde "bekleyen iş varsa
+  Geri Bildirim'e geç" varsayılanı uygulanmaz. ⚠ İlk kez gelen (oturumsuz,
+  `seen-intro`suz) tarayıcıda karşılama katmanı görünür ve katmandan geçiş
+  URL'yi temizler — o durumda panel elle açılır. **Push'a bağlantı
+  EKLENMEDİ:** uygulama yalnızca `kelimeki://` biçimini tanıyor ve
+  uygulamada admin paneli yok; dokunmak uygulamayı açar.
+- Deploy notu: dağıtılan paketteki `_shared/push.ts` ve `_shared/email.ts`
+  yorumları kısaltılmış kopyalar (davranış aynı; kullanılmayan
+  `sanitizeForSubject`/`brevoErrorMessage` pakete girmedi). Bir sonraki
+  deploy repodaki tam dosyalarla yapılabilir.
