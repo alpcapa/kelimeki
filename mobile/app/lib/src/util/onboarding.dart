@@ -89,6 +89,12 @@ enum OnboardingHintId { anlam }
 /// ile kilitli.
 const int onboardingHintMaxShows = 1;
 
+/// Oyun ekranı açıldıktan sonra ipucundan ÖNCE geçmesi gereken en az hamle
+/// sayısı (tetikleyen hamle DAHİL; vergi satırı sayılmaz) — web
+/// `ONBOARDING_HINT_MIN_MOVES`. Kullanıcı (30 Eylül 2026): zoom balonuyla
+/// aynı anda çıkmasın, arada en az 2-3 hamle geçsin.
+const int onboardingHintMinMoves = 3;
+
 /// Balonun ekranda kalma süresi — web `ONBOARDING_HINT_MS`.
 const Duration onboardingHintDuration = Duration(milliseconds: 4000);
 
@@ -109,7 +115,13 @@ class OnboardingHintInput {
   /// hamlesi de sayılır).
   final bool wordPlaced;
 
-  const OnboardingHintInput({required this.wordPlaced});
+  /// Ekran açıldığından beri oynanan hamle sayısı, bu hamle DAHİL.
+  final int movesSinceOpen;
+
+  const OnboardingHintInput({
+    required this.wordPlaced,
+    required this.movesSinceOpen,
+  });
 }
 
 /// Bu hamlede hangi ipucu gösterilsin? Saf fonksiyon — sayaçlar çağırandan
@@ -121,6 +133,7 @@ OnboardingHintId? pickOnboardingHint(
   final hakEdilen = <OnboardingHintId, bool>{
     OnboardingHintId.anlam: input.wordPlaced,
   };
+  if (input.movesSinceOpen < onboardingHintMinMoves) return null;
   for (final id in onboardingHintOrder) {
     if ((hakEdilen[id] ?? false) && (shown[id] ?? 0) < onboardingHintMaxShows) {
       return id;

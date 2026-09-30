@@ -246,6 +246,19 @@ export type OnboardingHintId = 'anlam';
  */
 export const ONBOARDING_HINT_MAX_SHOWS = 1;
 
+/**
+ * Oyun ekranı açıldıktan sonra ipucundan ÖNCE geçmesi gereken en az hamle
+ * sayısı (tetikleyen hamle DAHİL; pas/değişim de sayılır, vergi satırı
+ * sayılmaz).
+ *
+ * 30 Eylül 2026, kullanıcı: *"zoom balonu ile aynı anda çıkmasın, aralarında
+ * en az 2-3 hamle geçsin"*. Zoom balonu yalnızca ekran AÇILIRKEN çıkıyor
+ * (`useBoardZoom`), yani açılıştan sayılan bir eşik ikisini her durumda
+ * ayırır — balonun o açılışta çıkıp çıkmadığına bakmaya gerek kalmaz, iki
+ * karar birbirine bağlanmaz.
+ */
+export const ONBOARDING_HINT_MIN_MOVES = 3;
+
 /** Balonun ekranda kalma süresi (ms) — tanıtımdaki `RAKIP_OKUMA`nın iki katı. */
 export const ONBOARDING_HINT_MS = 4000;
 
@@ -300,6 +313,11 @@ export interface OnboardingHintInput {
    * de sayılır: dokunulacak kelime tahtada, oyuncu o an zaten bekliyor).
    */
   wordPlaced: boolean;
+  /**
+   * Ekran açıldığından beri oynanan hamle sayısı, bu hamle DAHİL
+   * (`ONBOARDING_HINT_MIN_MOVES` ile karşılaştırılır).
+   */
+  movesSinceOpen: number;
 }
 
 /**
@@ -307,7 +325,8 @@ export interface OnboardingHintInput {
  * geliyor (depolama erişimi burada YOK, `verify-tutorial-script` tabloyu
  * doğrudan koşabilsin diye).
  *
- * `null` = gösterilecek ipucu yok (kelime oturmadı ya da tavanda).
+ * `null` = gösterilecek ipucu yok (kelime oturmadı, açılıştan beri yeterli
+ * hamle geçmedi ya da tavanda).
  */
 export function pickOnboardingHint(
   input: OnboardingHintInput,
@@ -316,6 +335,7 @@ export function pickOnboardingHint(
   const hakEdilen: Record<OnboardingHintId, boolean> = {
     anlam: input.wordPlaced,
   };
+  if (input.movesSinceOpen < ONBOARDING_HINT_MIN_MOVES) return null;
   for (const id of ONBOARDING_HINT_ORDER) {
     if (hakEdilen[id] && (shown[id] ?? 0) < ONBOARDING_HINT_MAX_SHOWS) return id;
   }

@@ -179,6 +179,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   /// İşlenmiş `moveHistory` uzunluğu — yalnızca YENİ satırlara bakılır.
   int _hintHistoryLen = 0;
 
+  /// Ekran açıldığı (ya da aynı controller'da yeni oyun başladığı) andaki
+  /// geçmiş uzunluğu — `onboardingHintMinMoves` buradan sayılıyor (web
+  /// `hintBaseRef`).
+  int _hintBaseLen = 0;
+
   // ── Sürükle-bırak (web App.tsx beginDrag/moveDrag/endDrag portu) ──────
   // Jestin HİSSİ (kaldırma payı, fare/parmak eşiği, bırakma eşiği, hayalet
   // ölçüsü) `drag_feel.dart`ta — üç ekranın ortak tek kaynağı (7 Eylül 2026;
@@ -276,6 +281,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _hintHistoryLen = controller.state.moveHistory.length;
+    _hintBaseLen = _hintHistoryLen;
     controller.addListener(_ipucuKontrol);
     unawaited(_zoomHintKarariVer());
     // `ModalRoute` yalnızca ilk kare SONRASI okunabilir (initState'te
@@ -550,6 +556,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       // çıkmaz (web'de `slice` sonrası koşulsuz atama bunu kendiliğinden
       // yapıyor; burada açıkça yazılıyor).
       _hintHistoryLen = s.moveHistory.length;
+      _hintBaseLen = _hintHistoryLen;
       return;
     }
     if (s.moveHistory.length <= _hintHistoryLen) {
@@ -576,10 +583,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     // YZ'nin hamlesi de SAYILIR (30 Eylül 2026): ipucu bir mekaniği değil
     // bir etkileşimi anlatıyor — "kelimeye dokun, anlamı açılsın" — ve YZ
     // oynadıktan sonra sıra oyuncuda (web `App.tsx` ile aynı).
-    unawaited(_ipucuGoster(s));
+    // Vergi satırı ayrı bir hamle değil; pas/değişim sayılır (web ile aynı).
+    final movesSinceOpen = s.moveHistory
+        .skip(_hintBaseLen)
+        .where((e) => e.invasionFrom == null)
+        .length;
+    unawaited(_ipucuGoster(s, movesSinceOpen));
   }
 
-  Future<void> _ipucuGoster(GameState s) async {
+  Future<void> _ipucuGoster(GameState s, int movesSinceOpen) async {
     final storageFuture = widget.storage;
     if (storageFuture == null) return;
     final storage = await storageFuture;
@@ -587,7 +599,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final flags = storage.flags;
 
     final secilen = pickOnboardingHint(
-      const OnboardingHintInput(wordPlaced: true),
+      OnboardingHintInput(wordPlaced: true, movesSinceOpen: movesSinceOpen),
       flags.onboardingHintShownCounts,
     );
     if (secilen == null) return;

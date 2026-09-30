@@ -1120,6 +1120,9 @@ export default function App() {
   // uydururdu: `RESUME_SAVED` fazı ve geçmişi AYNI ANDA değiştiriyor, yani
   // effect ilk koşumunda "az önce oynanmış" sanacağı DOLU bir geçmiş görürdü.
   const hintArmedRef = useRef(false);
+  // Ekran açıldığı andaki geçmiş uzunluğu — `ONBOARDING_HINT_MIN_MOVES`
+  // (zoom balonuyla arada en az 3 hamle) buradan sayılıyor.
+  const hintBaseRef = useRef(0);
   useEffect(() => {
     if (state.phase !== 'play') {
       hintArmedRef.current = false;
@@ -1130,6 +1133,7 @@ export default function App() {
     if (!hintArmedRef.current) {
       hintArmedRef.current = true;
       hintHistoryRef.current = state.moveHistory.length;
+      hintBaseRef.current = state.moveHistory.length;
       return;
     }
     const yeni = state.moveHistory.slice(hintHistoryRef.current);
@@ -1141,7 +1145,14 @@ export default function App() {
     // YZ'nin hamlesi de SAYILIR (30 Eylül 2026): ipucu bir mekaniği değil
     // bir etkileşimi anlatıyor — "kelimeye dokun, anlamı açılsın" — ve YZ
     // oynadıktan sonra sıra oyuncuda, yani balonu okuyacak an tam o.
-    const secilen = pickOnboardingHint({ wordPlaced: true }, onboardingHintShownCounts());
+    // Vergi satırı ayrı bir hamle değil (yukarıdaki not); pas/değişim sayılır.
+    const movesSinceOpen = state.moveHistory
+      .slice(hintBaseRef.current)
+      .filter((e) => !e.invasionFrom).length;
+    const secilen = pickOnboardingHint(
+      { wordPlaced: true, movesSinceOpen },
+      onboardingHintShownCounts(),
+    );
     if (!secilen) return;
     // Çapa: hamlenin ilk karesi — o hücreden geçen kelimenin anlamı açılır.
     const [capaR, capaC] = state.lastMoveCells[0] ?? [];

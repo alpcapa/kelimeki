@@ -49,6 +49,7 @@ import {
 } from '../src/utils/tutorialScript';
 import {
   ONBOARDING_HINT_MAX_SHOWS,
+  ONBOARDING_HINT_MIN_MOVES,
   pickFirstWinCelebration,
   FIRST_WIN_TEXTS,
   FIRST_WIN_GUEST_CTA,
@@ -334,7 +335,8 @@ for (const vaka of kapiVakalari) {
 // Kapının tablosuyla aynı gerekçe: karar SAF bir fonksiyonda. 30 Eylül
 // 2026'dan beri tek ipucu var (`anlam` — kelimeye tıkla, anlamı gelir; üç
 // mekanik ipucu kaldırıldı). Kilitlenen kural: kelime oturmadıysa balon
-// yok, tavana çarpınca bir daha yok.
+// yok, açılıştan beri 3 hamle geçmediyse yok (zoom balonuyla çakışmasın),
+// tavana çarpınca bir daha yok.
 const SIFIR: Record<OnboardingHintId, number> = { anlam: 0 };
 const TAVAN = ONBOARDING_HINT_MAX_SHOWS;
 
@@ -344,11 +346,23 @@ const ipucuVakalari: {
   sayac: Record<OnboardingHintId, number>;
   beklenen: OnboardingHintId | null;
 }[] = [
-  { ad: 'kelime oturmadı', girdi: { wordPlaced: false }, sayac: SIFIR, beklenen: null },
-  { ad: 'ilk kelime oturdu', girdi: { wordPlaced: true }, sayac: SIFIR, beklenen: 'anlam' },
+  { ad: 'kelime oturmadı', girdi: { wordPlaced: false, movesSinceOpen: 5 }, sayac: SIFIR, beklenen: null },
+  {
+    // Zoom balonu açılışta çıkıyor; arada en az ONBOARDING_HINT_MIN_MOVES hamle.
+    ad: 'kelime oturdu ama açılıştan beri az hamle — zoom balonuyla çakışmasın',
+    girdi: { wordPlaced: true, movesSinceOpen: ONBOARDING_HINT_MIN_MOVES - 1 },
+    sayac: SIFIR,
+    beklenen: null,
+  },
+  {
+    ad: 'kelime oturdu, eşik doldu',
+    girdi: { wordPlaced: true, movesSinceOpen: ONBOARDING_HINT_MIN_MOVES },
+    sayac: SIFIR,
+    beklenen: 'anlam',
+  },
   {
     ad: 'tavanda — bir daha gösterilmez',
-    girdi: { wordPlaced: true },
+    girdi: { wordPlaced: true, movesSinceOpen: ONBOARDING_HINT_MIN_MOVES },
     sayac: { anlam: TAVAN },
     beklenen: null,
   },

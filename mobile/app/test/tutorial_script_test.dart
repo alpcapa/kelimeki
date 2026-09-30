@@ -302,19 +302,28 @@ void main() {
     )>[
       (
         'kelime oturmadı',
-        const OnboardingHintInput(wordPlaced: false),
+        const OnboardingHintInput(wordPlaced: false, movesSinceOpen: 5),
         sifir,
         null
       ),
       (
-        'ilk kelime oturdu',
-        const OnboardingHintInput(wordPlaced: true),
+        'açılıştan beri az hamle — zoom balonuyla çakışmasın',
+        const OnboardingHintInput(
+            wordPlaced: true, movesSinceOpen: onboardingHintMinMoves - 1),
+        sifir,
+        null
+      ),
+      (
+        'kelime oturdu, eşik doldu',
+        const OnboardingHintInput(
+            wordPlaced: true, movesSinceOpen: onboardingHintMinMoves),
         sifir,
         OnboardingHintId.anlam
       ),
       (
         'tavanda — bir daha gösterilmez',
-        const OnboardingHintInput(wordPlaced: true),
+        const OnboardingHintInput(
+            wordPlaced: true, movesSinceOpen: onboardingHintMinMoves),
         {OnboardingHintId.anlam: onboardingHintMaxShows},
         null
       ),

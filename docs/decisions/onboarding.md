@@ -573,7 +573,16 @@ anlamı gelir'"*. Çift tık balonu için *"zaten varsa kalsın"* — DEĞİŞME
   `pickOnboardingHint`); girdi artık tek alan: `wordPlaced`. Eski sayaç
   anahtarları (`kelimeki:hint-shown:vergi` · portta `hint_shown_vergi`…)
   cihazlarda kalabilir, okunmuyor.
-- **Kapsam hâlâ yalnızca YEREL oyun** (Canlı'ya genişletme sorulmadı).
+- **Zoom balonuyla arada en az 3 hamle** (`ONBOARDING_HINT_MIN_MOVES` ↔
+  `onboardingHintMinMoves`, parite testiyle kilitli). Kullanıcı: *"zoom
+  balonu ile aynı anda çıkmasın, aralarında en az 2-3 hamle geçsin"*. Zoom
+  balonu yalnızca ekran AÇILIRKEN çıktığı için sayaç açılıştan sayılıyor
+  (tetikleyen hamle dahil; pas/değişim sayılır, vergi satırı sayılmaz) —
+  balonun o açılışta çıkıp çıkmadığına bakılmıyor, iki karar birbirine
+  bağlanmıyor. Bedeli: zoom balonu çıkmamış olsa da ipucu 3. hamleyi bekler.
+- **Canlı oyunda YOK — kullanıcı kararı** (30 Eylül 2026): *"Canlı
+  oyunlarda çıkmasın. Zaten canlı oynayacak kadar ilerlediyse biliyordur."*
+  Kapsam yalnızca YEREL (YZ/hotseat) oyun.
 - **Kapılar:** `verify-tutorial-script` §10 · `tutorial_script_test.dart`
   §10 · `tutorial_parity_test.dart` (metin/sıra/tavan web kaynağından).
 
