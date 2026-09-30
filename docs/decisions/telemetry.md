@@ -469,3 +469,21 @@ tarafını yayına alabiliyorsak alalım ama yanlışlıkla mobil gitmesin."*
 inmesi arasındaki pencerede `hata-metni:*` bağlamlı kayıtlar yalnızca
 web'den gelir. O aralıkta mobil sessizliği *"mobilde bu hata yok"* diye
 OKUNMAMALI — mobilde kapı henüz kullanıcıdaki pakette değildi.
+
+## `auth-null` teşhis kaydı daraltıldı (30 Eylül 2026)
+
+19 Eylül'deki oturum titremesini yakalamak için `useAuth` her `null` auth
+olayını `auth null olayı: <olay> · depo=<dolu|BOŞ>` diye yazıyordu. 11 gün
+sonra Hatalar sekmesinin tepesinde **192 kez / 87 cihaz** duruyordu
+(kullanıcı: *"Önemli bir sorun yoktur umarım"*). Canlıdan okundu:
+
+- Satırların tamamı `depo=BOŞ`: `INITIAL_SESSION` = girişsiz (misafir)
+  açılış, `SIGNED_OUT` = gerçek çıkış. İkisi de NORMAL durum.
+- Günlük cihaz sayısı 28 Eylül'e kadar 2-9, Meta reklamıyla 29 Eylül'de 49
+  — her reklam misafiri bir satır yazıyordu.
+- Aranan iki imza HİÇ görülmedi: `depo=dolu` (sahte olay) 0, fırtına
+  (`auth-null-burst`) 0.
+
+Karar: yalnızca **`depo=dolu`** yazılır (oturum dururken gelen `null` —
+titremenin imzası); fırtına kaydı ve devre kesici aynen duruyor. Normal
+durum hata değildir; trafik arttıkça sekmeyi şişirmesin.
