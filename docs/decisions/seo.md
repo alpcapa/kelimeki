@@ -182,7 +182,11 @@ yolu ücretli. Denenirse: Search kampanyası, Exact, ~$2/gün, `?ref=` etiketli
 link — App kampanyası DEĞİL (anahtar kelime seçtirmiyor).
 
 **Yeniden deneme (30 Eylül 2026):** `/nasil-oynanir/` için URL denetimi →
-"Test live URL" → "Request indexing" kullanıcıya verildi. Bir kez basılır;
+"Test live URL" → "Request indexing" **yapıldı (13:00)**: canlı test "URL is
+available to Google · Page can be indexed" — teknik engel YOK, karar
+tamamen Google'ın. Sonuç ~14 Ekim'de Pages → Indexed pages'tan okunacak.
+(Aynı turda URL yanlışlıkla "Add a new sitemap" kutusuna girildi → GSC
+"Sitemap is HTML" hatası verdi; zararsız, ⋮ → Remove sitemap ile silinir.) Bir kez basılır;
 tekrar basmak hızlandırmıyor (yukarı bkz.). Aynı turda `sitemap.xml`'de `/`
 için `lastmod` 2026-08-31 → 2026-09-30 düzeltildi (karşılama 27-30 Eyl'de
 değişti, #661/#668/#701). ⚠ `sitemap.xml` ELLE yazılıyor, üretici yok —
