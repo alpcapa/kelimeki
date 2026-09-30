@@ -346,6 +346,7 @@ sürümün içeriği:**
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
+| (1 Eki, taslak PR) | **Tanıtım olaylarına cihaz kodu (`tutorial_events.anon_id`)** | `data/games_api.dart`: `logTutorialEvent` sabit `null` yerine `_damga()`nın `anonId`sini yazıyor — ROADMAP #30'un son halkası. Tanıtım → ilk oyun bağlantısı ölçülebilir olsun diye (Meta kalite okuması, 1 Eki). Sunucu/şema değişmedi (kolon zaten nullable, web dolduruyor). Kapı: app **901 test yeşil** |
 | (26 Eyl, taslak PR) | **Uçak modunda Canlı oyun mesajı ham `Failed host lookup: '…supabase.co'` gösteriyordu** | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `util/error_message.dart`: makine kalıbına Dart'ın taşıma metinleri eklendi (`Failed host lookup` · `Connection refused/reset/closed/timed out` · `Network is unreachable` · `OS Error`). 1.1.1 cihaz turunda (D, §31 ilk madde) bulundu: `ClientException.message` sınıf adını taşımıyor, `SocketException` kalıbı `toString()`e bakıyordu. Web'de bu metinler oluşmuyor, web değişmedi; kalıp SAYISI parite için aynı (tek regex). Kapı: `error_message_parity_test.dart` üç yeni vaka; **904 test yeşil**. Metin düzeltmesi → acil istisna DEĞİL (`surumler.md` → "SÜRÜM TRENİ") |
 | (26 Eyl, taslak PR) | **Oyun sonunda kendiliğinden açılan "Görüş Bildir" formu kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/game/game_screen.dart` + `ui/live/online_game_screen.dart`: GameOver kapanınca `openFeedback()` artık çağrılmıyor; modalın içindeki "GÖRÜŞ BİLDİR" linki DURUYOR. Kullanıcı: *"Oyun sonlarında çıkan görüş bildir popup'ı kaldıralım artık."* (Parça 48'in otomatik açılışının geri alınması.) Web yarısı AYRI PR, hemen merge. Kapı: `game_screen_test.dart` + `online_game_screen_test.dart` ters çevrildi (form AÇILMAZ); **904 test yeşil**. Cihaz maddesi `mobile/TESTING.md` "Kapatmak formu AÇMAZ" |
 | (26 Eyl, taslak PR) | **Kayıt sonrası satır: "Hesap oluşturuldu." kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/auth/auth_modal.dart`: satır artık yalnızca *"LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN."* (tamamı kalın). Kullanıcı: insanlar hesabın hazır olduğunu sanıyor. Web yarısı #644. Kapı: `signup_info_parity_test.dart` (web kaynağını OKUR). Cihaz maddesi `mobile/TESTING.md` §30 |
@@ -747,7 +748,15 @@ gerekçeyle 27 Ağustos'ta Sürüm A'ya alınmadı.
 
 ---
 
-## 30. Port anonim cihaz damgası (`anon_id`) — **KISMEN: `game_starts`/`game_finishes`/`guest_visits` ✅ (#601) · `tutorial_events` AÇIK** (15 Eylül 2026)
+## 30. Port anonim cihaz damgası (`anon_id`) — **KISMEN: `game_starts`/`game_finishes`/`guest_visits` ✅ (#601) · `tutorial_events` taslak PR'da (1 Eki 2026)** (15 Eylül 2026)
+
+⚠ **Durum (1 Ekim 2026):** son halka yazıldı — `tutorial_events` insert'i
+artık `_damga()`nın cihaz kodunu gönderiyor (taslak PR, sürüm treni).
+Tetik: Meta kampanyası kalite okuması — mobilde 62 tanıtım başlangıcının
+hiçbirinde cihaz kodu yoktu, yani "tanıtımı bitiren ilk oyunu bitiriyor mu"
+ölçülemiyordu (kullanıcı onayı: *"5. Evet"*). Sahaya inince: Tanıtım Turu
+kartının cihaz paydası yeniden anlamlı olur (eski paketlerin satırları null
+kalır).
 
 ⚠ **Durum (25 Eylül 2026):** #601 `main`'e girdi — port artık cihaz kodunu
 (`FlagsStore.anonId()`, uygulama dizini; Keychain DEĞİL) `game_starts`,
