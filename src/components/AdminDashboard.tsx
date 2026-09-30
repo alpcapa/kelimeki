@@ -109,9 +109,17 @@ import { FUNNEL_EXISTING_CHANNEL, FUNNEL_MEMBER_EVENTS_ENABLED } from '../utils/
 
 interface AdminDashboardProps {
   onClose: () => void;
+  /**
+   * Açılış sekmesi — verilirse "bekleyen iş varsa Geri Bildirim'e geç"
+   * varsayılanı UYGULANMAZ (kullanıcı bir yere gitmek için geldi). Tek
+   * kullanıcısı kritik hata uyarısı mailindeki `?admin=hatalar` bağlantısı
+   * (`UserMenu`, 30 Eylül 2026).
+   */
+  initialTab?: AdminTab;
 }
 
-type Tab = 'members' | 'growth' | 'feedback' | 'errors';
+export type AdminTab = 'members' | 'growth' | 'feedback' | 'errors';
+type Tab = AdminTab;
 
 /**
  * `destek@kelimeki.com` gelen kutusu — "Zoho" rozeti buraya götürür.
@@ -2791,8 +2799,8 @@ function memberSortValue(m: AdminMember, key: MemberSortKey): string | number {
   }
 }
 
-export function AdminDashboard({ onClose }: AdminDashboardProps) {
-  const [tab, setTab] = useState<Tab>('growth');
+export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'growth');
   const [members, setMembers] = useState<AdminMember[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
@@ -2959,7 +2967,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   //
   // Yalnızca İKİ liste de yüklendikten sonra bir kez uygulanır; elle sekme
   // seçildiği anda devre dışı kalır (aşağıdaki `selectTab`).
-  const appliedDefaultTabRef = useRef(false);
+  const appliedDefaultTabRef = useRef(initialTab !== undefined);
   /**
    * Elle sekme seçimi — varsayılan-sekme effect'ini (aşağı) devre dışı
    * bırakır. Veri henüz yüklenmemişken bir sekmeye dokunulursa listeler

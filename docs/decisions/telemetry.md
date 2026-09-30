@@ -520,6 +520,18 @@ Bana özel app push da olabilir."* Kararlar (kullanıcı seçti): kanal
   `alerts:1, push:2, mail:1`; ikinci tarama `alerts:0`; özet `mail:1`.
   Test satırı ve iddiası silindi (`daily:2026-09-30` kaldı — bugünün özeti
   gerçekten gönderildi).
-- Deploy notu: dağıtılan paketteki `_shared/push.ts` yorumları kısaltılmış
-  bir kopya (davranış aynı; tek fark bayat token'da log satırı). Bir sonraki
-  deploy repodaki tam dosyayla yapılabilir.
+- **Bağlantı (aynı gün, kullanıcı: *"Buradan tıklayarak gidilebilecek bir
+  yer yok değil mi?"*):** e-postalarda "Hatalar sekmesini aç" düğmesi →
+  `kelimeki.com/?admin=hatalar`. `UserMenu` parametreyi yalnızca ADMİN
+  profili yüklenince okur, paneli `initialTab="errors"` ile açar ve URL'den
+  siler (`?contact=1` köprüsünün kalıbı); oturum yoksa parametre bekler,
+  giriş yapılınca açılır. `initialTab` verildiğinde "bekleyen iş varsa
+  Geri Bildirim'e geç" varsayılanı uygulanmaz. ⚠ İlk kez gelen (oturumsuz,
+  `seen-intro`suz) tarayıcıda karşılama katmanı görünür ve katmandan geçiş
+  URL'yi temizler — o durumda panel elle açılır. **Push'a bağlantı
+  EKLENMEDİ:** uygulama yalnızca `kelimeki://` biçimini tanıyor ve
+  uygulamada admin paneli yok; dokunmak uygulamayı açar.
+- Deploy notu: dağıtılan paketteki `_shared/push.ts` ve `_shared/email.ts`
+  yorumları kısaltılmış kopyalar (davranış aynı; kullanılmayan
+  `sanitizeForSubject`/`brevoErrorMessage` pakete girmedi). Bir sonraki
+  deploy repodaki tam dosyalarla yapılabilir.

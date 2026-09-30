@@ -37,7 +37,9 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const CRON_SECRET = Deno.env.get('CRON_SECRET');
 
-const PANEL_URL = 'https://kelimeki.com/';
+// Admin Paneli'ni doğrudan Hatalar sekmesinde açar (`UserMenu` okur;
+// oturum yoksa giriş yapılınca açılır).
+const PANEL_URL = 'https://kelimeki.com/?admin=hatalar';
 
 interface ScanRow {
   alert_key: string;
@@ -135,9 +137,10 @@ async function tara(db: ReturnType<typeof createClient>) {
   const body = `${ilk.devices} cihaz · ${ilk.hits} kez (son 1 sa) — ${kisalt(ilk.signature, 110)}`;
   const html = buildBrandedEmailHtml(
     'Kritik hata uyarısı',
-    `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;">Son 1 saatte eşiği aşan ${rows.length} hata var. Ayrıntı: Admin Paneli → <b>Hatalar</b>.</p>
+    `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;">Son 1 saatte eşiği aşan ${rows.length} hata var.</p>
+     <p style="margin:0 0 16px 0;"><a href="${PANEL_URL}" style="display:inline-block;background-color:#2563EB;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:8px;">Hatalar sekmesini aç</a></p>
      ${rows.map((r) => `<p style="margin:16px 0 4px 0;font-size:13px;font-weight:700;color:#DC2626;">${BASLIK[r.category]}</p><table role="presentation" width="100%" cellspacing="0" cellpadding="0">${satirHtml(r)}</table>`).join('')}
-     <p style="margin:24px 0 0 0;font-size:12px;color:#8A93A2;">Aynı hata için 24 saat içinde tekrar uyarı gönderilmez. <a href="${PANEL_URL}" style="color:#2563EB;">kelimeki.com</a></p>`,
+     <p style="margin:24px 0 0 0;font-size:12px;color:#8A93A2;">Aynı hata için 24 saat içinde tekrar uyarı gönderilmez.</p>`,
     buildNoReplyNoticeHtml(),
   );
   const sent = await gonder(
@@ -167,7 +170,7 @@ async function ozet(db: ReturnType<typeof createClient>) {
       ? `<p style="margin:0;font-size:15px;line-height:1.6;color:#1B2430;">Son 24 saatte hiç istemci hatası kaydedilmedi.</p>`
       : `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;">Son 24 saat: <b>${th}</b> kayıt, <b>${td}</b> cihaz. En çok cihazı etkileyen ${top.length} hata:</p>
          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">${top.map(satirHtml).join('')}</table>
-         <p style="margin:24px 0 0 0;font-size:12px;color:#8A93A2;">Ayrıntı: Admin Paneli → Hatalar · <a href="${PANEL_URL}" style="color:#2563EB;">kelimeki.com</a></p>`,
+         <p style="margin:24px 0 0 0;"><a href="${PANEL_URL}" style="display:inline-block;background-color:#2563EB;color:#FFFFFF;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:8px;">Hatalar sekmesini aç</a></p>`,
     buildNoReplyNoticeHtml(),
   );
   // Günlük özet PUSH GÖNDERMEZ — yalnızca e-posta. Telefonu her sabah
