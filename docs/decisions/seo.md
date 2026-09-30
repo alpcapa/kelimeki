@@ -180,3 +180,10 @@ henüz ölçülmedi); (3) üçüncü ücretli kanal atfı karıştırır. Organi
 tür aramalarına çıkmak uzun vadeli; kısa vadede o aramalarda görünmenin tek
 yolu ücretli. Denenirse: Search kampanyası, Exact, ~$2/gün, `?ref=` etiketli
 link — App kampanyası DEĞİL (anahtar kelime seçtirmiyor).
+
+**Yeniden deneme (30 Eylül 2026):** `/nasil-oynanir/` için URL denetimi →
+"Test live URL" → "Request indexing" kullanıcıya verildi. Bir kez basılır;
+tekrar basmak hızlandırmıyor (yukarı bkz.). Aynı turda `sitemap.xml`'de `/`
+için `lastmod` 2026-08-31 → 2026-09-30 düzeltildi (karşılama 27-30 Eyl'de
+değişti, #661/#668/#701). ⚠ `sitemap.xml` ELLE yazılıyor, üretici yok —
+karşılama ya da `/nasil-oynanir/` içeriği değişince `lastmod`u da güncelle.
