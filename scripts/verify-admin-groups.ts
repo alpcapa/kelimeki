@@ -34,6 +34,9 @@ for (const [tag, beklenen] of [
   // `li-buton` ve `li-deneyim` aynı turda sayfaya/profile girildi.
   ['li-sayfa', 'linkedin'], ['li-profil', 'linkedin'], ['li-hakkinda', 'linkedin'],
   ['li-buton', 'linkedin'], ['li-deneyim', 'linkedin'], ['linkedin', 'linkedin'],
+  // Meta reklam kampanyası (28 Eylül 2026) — dördü de canlıda GERÇEKTEN var.
+  ['meta-kare', 'meta'], ['meta-karusel', 'meta'], ['meta-reel', 'meta'],
+  ['meta-and-karusel', 'meta'],
   ['arkadas', 'arkadas'],
   ['direkt', 'direkt'],
   // Mobilden açılan hesabın kayıt etiketi (`backfill_app_source_history`).
@@ -58,6 +61,9 @@ check('li_post LinkedIn', sourceChannel('li_post') === 'linkedin');
 check('ig_story Instagram', sourceChannel('ig_story') === 'instagram');
 check('facebook.grup Facebook', sourceChannel('facebook.grup') === 'facebook');
 check('tanınmayan kanal UYDURULMAZ → Diğer', sourceChannel('tiktok') === 'diger');
+check('metin Meta DEĞİL (önek sınırı)', sourceChannel('metin') === 'diger', sourceChannel('metin'));
+check('metaverse Meta DEĞİL (önek sınırı)', sourceChannel('metaverse') === 'diger');
+check('organik ig/fb Meta\'ya KARIŞMAZ', sourceChannel('ig-bio') === 'instagram' && sourceChannel('fb-sayfa-play') === 'facebook');
 check('app TAM eşleşme: apple Uygulama DEĞİL', sourceChannel('apple') === 'diger');
 check('app TAM eşleşme: app-store Uygulama DEĞİL', sourceChannel('app-store') === 'diger');
 check('null → Bilinmiyor', sourceChannel(null) === 'bilinmiyor');

@@ -410,8 +410,9 @@ kaydı ve gerçek bir gelen kutusu gerekiyor.
 3. ⚠ **502 + "destek@kelimeki.com Brevo'da doğrulanmış gönderen değil"**
    hatası alırsan bu bir kod hatası DEĞİL: kurulum adım 1 yapılmamış.
    Brevo → Settings → Senders'a adresi ekle, doğrula, tekrar dene.
-4. Gelen mailde gönderen `Kelimeki Destek <destek@kelimeki.com>` olmalı ve
-   notta *"Bu e-postayı doğrudan yanıtlayabilirsin"* yazmalı.
+4. Gelen mailde gönderen `Kelimeki Destek <destek@kelimeki.com>` olmalı;
+   yanıt metni şablon selamı olmadan doğrudan gövdede, altında not YOK
+   (29 Eylül 2026'da kaldırıldı).
 5. **Maile doğrudan "Yanıtla" de.** Cevap `destek@` Zoho kutusuna düşmeli.
 
 ### 23.3 Rozet — cevap gelince admin haber alıyor mu

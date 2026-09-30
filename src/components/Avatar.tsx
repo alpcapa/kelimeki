@@ -23,6 +23,9 @@ interface AvatarProps {
   badgeCount?: number;
 }
 
+/** İlk yükleme hatasından sonra ikinci denemeye kadar beklenen süre. */
+const AVATAR_RETRY_DELAY_MS = 1500;
+
 /** İsim/e-postadan baş harf(ler)i türetir. */
 function initials(name?: string | null): string {
   const n = (name || '').trim();
@@ -36,6 +39,9 @@ function initials(name?: string | null): string {
 
 export function Avatar({ url, name, size = 32, className = '', badgeCount = 0 }: AvatarProps) {
   const [broken, setBroken] = useState(false);
+  // Kaçıncı deneme — `<img>`in `key`i. Değişince tarayıcı isteği YENİDEN
+  // başlatır (aynı adres, yani başarılıysa önbellekten gelir).
+  const [attempt, setAttempt] = useState(0);
   // `url` değişince (ör. kullanıcı yeni bir profil fotoğrafı yükleyince)
   // önceki bir yükleme hatasının `broken` bayrağı sıfırlanmıyordu — aynı
   // `Avatar` örneği (ör. UserMenu'deki, oturum boyunca hiç unmount olmayan)
@@ -43,7 +49,18 @@ export function Avatar({ url, name, size = 32, className = '', badgeCount = 0 }:
   // devam ediyordu (bkz. kod incelemesi).
   useEffect(() => {
     setBroken(false);
+    setAttempt(0);
   }, [url]);
+  // İlk hatada HEMEN baş harfe düşme, bir kez daha dene (29 Eylül 2026,
+  // kullanıcı: bekleyen oyunlardaki avatarlar "bazen hiç yüklenmiyor").
+  // Mobil ağda tek bir zaman aşımı, avatarı ekran yeniden açılana kadar
+  // kalıcı olarak baş harfe çeviriyordu; dosyalar sağlamdı (canlıda
+  // ölçüldü: 4 nesne, 68-123 KB, eksik yok). İkinci hata gerçek sayılır.
+  useEffect(() => {
+    if (attempt !== 1) return;
+    const t = window.setTimeout(() => setAttempt(2), AVATAR_RETRY_DELAY_MS);
+    return () => window.clearTimeout(t);
+  }, [attempt]);
   const style = { width: size, height: size, fontSize: Math.round(size * 0.4) };
   // Baş harf yedeğinin punto oranı İKİ harfe göre ayarlı (0.4) — dairenin
   // içine yatayda ancak öyle sığıyor. Tek karakterlik yedekte (misafirin
@@ -60,11 +77,14 @@ export function Avatar({ url, name, size = 32, className = '', badgeCount = 0 }:
   };
 
   const inner =
-    url && !broken ? (
+    // Bekleme arasında (attempt 1) baş harf görünür — boş bir daire değil.
+    url && !broken && attempt !== 1 ? (
       <img
+        key={attempt}
         src={url}
         alt={name || 'Avatar'}
-        onError={() => setBroken(true)}
+        decoding="async"
+        onError={() => (attempt === 0 ? setAttempt(1) : setBroken(true))}
         style={style}
         className={`rounded-full object-cover border border-border bg-panel ${className}`}
       />

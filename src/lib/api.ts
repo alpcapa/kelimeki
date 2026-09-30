@@ -69,6 +69,7 @@ import type {
   GameLiker,
   Gender,
   IncomingFriendRequest,
+  OutgoingFriendRequest,
   LeaderboardRow,
   LeagueReward,
   LocalGameSave,
@@ -1352,6 +1353,33 @@ export async function fetchIncomingFriendRequests(): Promise<IncomingFriendReque
     return [];
   }
   return (data as IncomingFriendRequest[]) ?? [];
+}
+
+/**
+ * Son 90 günde birlikte en çok canlı oyun oynanan, hâlâ arkadaş olan
+ * kişilerin kimlikleri — çok oynanandan aza (`my_frequent_opponents`).
+ * Canlı oyun formunun "Sık oynadıkların" şeridi; ad/avatar `fetchFriends`
+ * satırından. Hata ya da girişsizlikte boş dizi (şerit hiç çizilmez).
+ */
+export async function fetchFrequentOpponents(limit = 5): Promise<string[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('my_frequent_opponents', { p_limit: limit });
+  if (error) {
+    console.error('[Kelimeki] fetchFrequentOpponents hatası:', error.message);
+    return [];
+  }
+  return ((data as { friend_id: string }[]) ?? []).map((r) => r.friend_id);
+}
+
+/** Gönderdiğim, henüz cevaplanmamış istekler (Arkadaşlar penceresi, gelen isteklerin altı). */
+export async function fetchOutgoingFriendRequests(): Promise<OutgoingFriendRequest[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('list_outgoing_friend_requests');
+  if (error) {
+    console.error('[Kelimeki] fetchOutgoingFriendRequests hatası:', error.message);
+    return [];
+  }
+  return (data as OutgoingFriendRequest[]) ?? [];
 }
 
 /**
@@ -3780,7 +3808,11 @@ export async function uploadAvatar(file: File): Promise<string> {
 
   const { error: upErr } = await supabase.storage
     .from('avatars')
-    .upload(path, body, { upsert: true, contentType });
+    // Uzun önbellek güvenli: adres her yüklemede `?v=` ile DEĞİŞİYOR, yani
+    // eski resim asla "bayat" kalmaz. Varsayılan 1 saatti; proje Mumbai'de
+    // olduğundan her saat başı ilk istek oraya gidiyordu (29 Eylül 2026).
+    // Port ikizi: `auth_service.dart` → `uploadAvatar`.
+    .upload(path, body, { upsert: true, contentType, cacheControl: '31536000' });
   if (upErr) throw new Error(upErr.message);
 
   const { data } = supabase.storage.from('avatars').getPublicUrl(path);
