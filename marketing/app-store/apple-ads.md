@@ -75,3 +75,4 @@ Genel · kelime oyunu   (ID 2144785608) · Search Results · Türkiye · Manage 
 | Ne zaman | Ne |
 |---|---|
 | 30 Eyl 2026 ~12:25 | Hesap + kampanya + iki grup kuruldu. Durum **"App pending review"**, iki grup **On hold** (Apple'ın ilk uygunluk incelemesi). ⚠ `Genel · exact`in grup varsayılan teklifi $0,50 kaldı → $1,00'a çekilecek, kelime düzeyindeki teklifler kontrol edilecek |
+| 30 Eyl 2026 ~12:35 | `Genel · exact` varsayılan teklif + kelime teklifleri **$1,00** yapıldı (kullanıcı bildirdi). Önizlemedeki "Uygulama İçi Satın Alımlar" sorusu hâlâ AÇIK |
