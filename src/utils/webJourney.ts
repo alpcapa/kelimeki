@@ -35,7 +35,8 @@ export const JOURNEY_STEPS = [
   'landing_cta', // karşılamadan uygulamaya geçti (Oyna / Giriş / hukuki bağlantı)
   'app', // uygulama (kurulum ekranı) açıldı
   'tutorial_start', // "Oynayarak öğren" tanıtımı açıldı
-  'tutorial_done', // tanıtım sonuna kadar oynandı (atlama SAYILMAZ)
+  'tutorial_done', // tanıtım sonuna kadar oynandı (atlama SAYILMAZ; atlayanlar admin kartında
+  //                  türetilmiş `tutorial_skip` satırı — sunucu hesaplar, istemci GÖNDERMEZ)
   'game_start', // YZ'ye karşı oyun başladı
   'first_move', // oyuncu ilk hamlesini yaptı
   'move_5', // oyuncu 5. hamlesini yaptı

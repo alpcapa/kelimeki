@@ -1172,6 +1172,30 @@ Kaynak Hunisi'nin hemen üstünde. Yazan `src/utils/webJourney.ts`, sunucu
 `web_sessions` + `record_web_session` / `admin_web_journey`
 (`20260923103044_web_sessions_journey.sql`), kapı `npm run verify-web-journey`.
 
+### 30 Eylül 2026 — "Uygulamaya geçti" gizlendi, "Tanıtımı atladı" eklendi
+
+Kullanıcı soruları (ekran: Yeni, son 30 gün) ve canlıdan cevapları:
+
+- *"Uygulamaya geçti ile uygulama açıldı aynı değil mi?"* — pratikte evet:
+  53 = 53, geçip açılmayan 0 (tüm oturumlarda da 0). `landing_cta` kartta
+  GİZLİ (`JOURNEY_HIDDEN`), veri toplanmaya DEVAM ediyor.
+- *"53 açtı, neden 24 tanıtım?"* — tanıtım uygulama açılınca değil, Setup'ta
+  "Oyna"ya basınca açılır. 29'un 16'sı oynamadan mağazaya, 3'ü girişe
+  gitmiş, 9'u hiçbir şeye basmadan çıkmış (asıl kayıp).
+- *"24 açtı 13 bitirdi — 11 atladı mı?"* — 6'sı ATLAYIP oyuna geçmiş
+  (19 = 13 + 6), 5'i tanıtımda ayrılmış (4 gitti, 1 mağaza). Atlayanlar
+  hiçbir satırda görünmüyordu → türetilmiş **`tutorial_skip`** satırı
+  (`20260930110120_admin_web_journey_tutorial_skip.sql`): sunucu okuma
+  anında hesaplar (tutorial_start ∧ game_start ∧ ¬tutorial_done), istemci
+  GÖNDERMEZ, `v_steps`/`JOURNEY_STEPS` DEĞİŞMEDİ; `left_here` 0, kartta
+  Ayrılan/Ayrılma "—" (`JOURNEY_INFO`), en yüksek ayrılma vurgusuna girmez.
+- *"Oyun başlatan 19'dan 3 gitti, neden 16 değil 15?"* — hamle yapmayan
+  4'ün 1'i mağazaya/kayda gitmiş; Ayrılan EN İLERİ adıma göre sayıldığı
+  için o 1 sonraki satırda. Kart düz bir huni değil.
+- *"Oyun bitti'de ayrılan 3 gitti mi?"* — bitirdikten sonra kayıt/giriş/
+  mağaza yok; sekmeyi kapattı mı, aynı sekmede tekrar mı oynadı AYIRT
+  EDİLEMEZ (sekme başına tek satır, ikinci oyun yeni adım yazmaz).
+
 ### Neden vardı
 
 Mevcut tablolar huninin UÇLARINI görüyordu, ARASINI görmüyordu. Canlıdan
