@@ -191,3 +191,7 @@ tekrar basmak hızlandırmıyor (yukarı bkz.). Aynı turda `sitemap.xml`'de `/`
 için `lastmod` 2026-08-31 → 2026-09-30 düzeltildi (karşılama 27-30 Eyl'de
 değişti, #661/#668/#701). ⚠ `sitemap.xml` ELLE yazılıyor, üretici yok —
 karşılama ya da `/nasil-oynanir/` içeriği değişince `lastmod`u da güncelle.
+**13:04:** #704 yayında (`5b66704`), `sitemap.xml` GSC'ye yeniden gönderildi →
+Submitted/Last read 30 Eyl · Success · 5 sayfa. Hatalı `nasil-oynanir`
+sitemap kaydı silindi (listede yalnızca `sitemap.xml` var). Açık iş yok;
+sıradaki adım ~14 Ekim okuması.
