@@ -13,6 +13,7 @@ seçtirmiyor).
 |---|---|
 | Panel | `app-ads.apple.com` → **Advanced** (Basic anahtar kelime seçtirmiyor). ⚠ `ads.apple.com` ana sayfasındaki "Get started" Apple Maps'e / Apple Business kaydına (`business.apple.com`) götürüyor — o yanlış yol; üst menüden **App Store** seçilmeli |
 | Hesap | `Kelimeki_ads` · App Store Connect hesabına bağlı (Alp Resat Capa) |
+| Giriş kimliği | ⚠ **destek@kelimeki.com** Apple kimliği — geliştirici hesabının (App Store Connect) kimliği DEĞİL. ASC'nin kimliğiyle açık bir Safari sekmesinde `app-ads.apple.com` (ve hoş geldin mailindeki link) `ui.ads.apple.com`'daki **yeni hesap sihirbazına** düşer ("Confirm the App Store Connect accounts… Get Started") — **Get Started'a BASMA**, ikinci hesap açılır, kampanya ve $100 kredi eskisinde kalır. Geçici yol: özel sekmede destek@ ile gir. ✅ **Çözüldü (30 Eyl):** ASC kimliği User Management'tan **Account Admin** olarak eklendi — artık iki kimlik de hesabı görür |
 | Legal Entity Name | Alp Reşat Çapa — geliştirici hesabı **Bireysel**, "Kelimeki" diye kayıtlı bir tüzel kişi YOK |
 | Para birimi | **USD** — Türkiye hesabında TRY sunulmuyor; sonradan DEĞİŞTİRİLEMEZ. Gerçek TL maliyeti ilk kart ekstresinden okunup buraya yazılacak |
 | Saat dilimi | İstanbul |
@@ -90,3 +91,6 @@ Genel · kelime oyunu   (ID 2144785608) · Search Results · Türkiye · Manage 
 | 30 Eyl 2026 11:44 | "Welcome to Apple Ads" maili: **$100 promosyon kredisi** uygulandığı yazıyor (panelde doğrulanmadı) |
 | 30 Eyl 2026 13:18 | Hâlâ **App pending review**, iki grup **On hold**, harcama $0 (~1 sa inceleme sürüyor) |
 | 30 Eyl 2026 13:21 | Kredi panelde **doğrulandı**: Billing → Promo Credit, "Date Applied: September 30, 2026" |
+| 30 Eyl 2026 ~16:20 | **Giriş tuzağı:** normal sekmede (ASC kimliğiyle) panel yeni hesap sihirbazına düştü, mail linki de aynı yere gitti; **özel sekmede destek@ ile girince kampanya açıldı** (kullanıcı). Hesap destek@ kimliğinde. Durum tablosuna "Giriş kimliği" satırı eklendi |
+| 30 Eyl 2026 ~16:30 | Kullanıcı ASC kimliğini Apple Ads'e **Account Admin** olarak ekledi (User Management) — normal sekmeden giriş sorunu kapandı |
+| 30 Eyl 2026 ~16:35 | Kampanya hâlâ **On hold** (kurulumdan ~4 sa sonra; kullanıcı bildirdi), harcama yok |
