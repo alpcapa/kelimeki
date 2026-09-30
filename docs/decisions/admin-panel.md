@@ -1483,3 +1483,35 @@ Eylül'den beri canlıda) girdi. Port damgası hâlâ gerekli: `backfill`
 yalnızca geçmişi `'app'` yaptı, damgasız yeni app kayıtları Üye
 Kalitesi'nde `Bilinmiyor`a düşer.
 
+### Bir haftalık döküm ve karar: kendini tanıtan botlar sayılmıyor (30 Eylül 2026)
+
+Döküm (23 Eylül 14:49 → 30 Eylül, masaüstü, benzersiz cihaz): bot 16,
+Windows 14, **Linux 13**, bilinmiyor 3, macOS 1. Masaüstü dışında 7
+"Android" ve 4 "iOS" bot. 27 botun HİÇBİRİ oyun başlatmadı. Eski 115
+cihazlık "sürüm yok" kovasının yerini büyük ölçüde Linux aldı (tek ziyaret,
+kaynaksız, her saate yayılmış, yani aynı örüntü). 13 Linux cihazdan 1'i
+oyun başlattı, bu yüzden Linux'a dokunulmadı.
+
+**Kampanya bulgusu:** 28 Eylül'de Meta kampanyası kurulurken reklam
+inceleme botları etiketli linklere geldi. Aynı saniyede, aynı etiketle
+"Windows" cihazlar da geldi (ör. 11:10:24, `meta-kare`, 3 bot + 3 Windows);
+bunlar büyük olasılıkla Meta'nın normal tarayıcı gibi görünen inceleme
+sistemleri. `meta-reel` satırında 15 gelenin 3'ü bot. Bot ziyaretlerinin
+neredeyse hepsinin karşısında `web_sessions`ta bir "karşılamada ayrıldı"
+oturumu vardı, yani Ziyaretçi Yolculuğu da şişiyordu.
+
+**Karar (kullanıcı: *"Evet, botları sayımdan çıkar"*):**
+- `20260930063329_admin_visits_exclude_bots.sql`: `guest_visits`/`device_visits`
+  okuyan sekiz admin fonksiyonuna `os_version is distinct from 'bot'`.
+  `<>` DEĞİL, çünkü null sürümlü satırlar düşerdi. Satırlar SİLİNMEDİ,
+  karar filtre kaldırılarak geri alınabilir. İmza ve dönüş tipi aynı
+  (`create or replace`), `proacl` öncesiyle aynı (canlıda okundu).
+  Cihaz toplamı (30 gün) 602 → 576.
+- `webJourney.ts` → `isAutomated`: `webdriver`a ek olarak `isBotUserAgent`
+  (`funnelEvents.ts` ile aynı kapı). `web_sessions`ta bot işareti olmadığı
+  için geçmiş bot oturumları AYIKLANAMIYOR. Çoğu 0 sn'lik "boşta" oturum
+  ve kart onları zaten saymıyor, 3–33 sn'lik olanlar kalıyor.
+- Kendini TANITMAYAN botlar (Linux kimlikli olanlar, Windows gibi görünen
+  inceleme sistemleri) sayılmaya devam ediyor. Onları ayıracak işaret yok
+  ve tahmine dayalı süzgeç reddedildi.
+

@@ -23,6 +23,8 @@
 // (`main.tsx`) da bunu import ettiği için Supabase SDK'sı KULLANILMIYOR —
 // `misafirZiyaretiBildir` ile aynı bundle gerekçesi, düz `fetch`.
 
+import { isBotUserAgent } from './visitTracking';
+
 /**
  * Adımlar, admin kartındaki SIRAYLA. ⚠ Sunucudaki iki fonksiyonun
  * (`record_web_session`, `admin_web_journey`) `v_steps` dizisiyle BİREBİR
@@ -242,10 +244,17 @@ function randomId(): string {
   });
 }
 
-/** Otomasyon tarayıcıları (tarayıcı botları, Playwright) sayılmaz. */
+/**
+ * Otomasyon tarayıcıları (Playwright, `navigator.webdriver`) ve KENDİNİ bot
+ * olarak tanıtan istemciler sayılmaz — `funnelEvents.ts` ile aynı kapı.
+ * 30 Eylül 2026'ya kadar yalnızca `webdriver` bakılıyordu ve bir haftalık
+ * dökümde bot ziyaretlerinin neredeyse hepsinin karşısında bir "karşılamada
+ * ayrıldı" oturumu çıktı (Meta reklam inceleme botları dahil, kampanya
+ * etiketleriyle). Kullanıcı kararı: *"botları sayımdan çıkar"*.
+ */
 function isAutomated(): boolean {
   try {
-    return navigator.webdriver === true;
+    return navigator.webdriver === true || isBotUserAgent(navigator.userAgent || '');
   } catch {
     return false;
   }
