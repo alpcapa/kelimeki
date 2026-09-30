@@ -152,3 +152,22 @@ Doğrusu üretilmiş dosyaya bakmak (`dist/nasil-oynanir/index.html`) ya da
 **Aksiyon: beklemek.** Birkaç gün sonra aynı denetim tekrarlanır; "Referring
 page" satırının `kelimeki.com/` olması ya da sayfanın indekslenmesi
 beklenen sonuç.
+
+## GSC okuması + Google arama reklamı sorusu (30 Eylül 2026)
+
+**Ölçüm** (GSC → Performance, Web, son 3 ay, kullanıcının ekran görüntüsü):
+sorgu tablosunda TEK satır var — `kelimeki` · 26 tık · 30 gösterim. Yani site
+Google'da yalnızca KENDİ ADIYLA bulunuyor; "kelime oyunu" gibi tür
+aramalarında görünürlük yok denecek kadar az. (GSC düşük hacimli sorguları
+gizliyor; grafiğin toplam gösterimi 30'dan büyükse fark oradadır — toplamlar
+ayrıca okunmadı.)
+
+**Soru:** Apple Ads'in benzeri Google arama reklamı mantıklı mı?
+**Karar: şimdilik HAYIR, ~14 Ekim'de yeniden bak** (Apple Ads ilk okuması +
+Meta Faz 1 sonucu). Gerekçe: (1) tür aramalarının hacmi düşük — App Store'da
+dört genel kelime 1/5 (`marketing/app-store/apple-ads.md`); (2) Google trafiği
+web karşılamasına iner, orada ziyaretçinin %63'ü ayrılıyor (#701'in etkisi
+henüz ölçülmedi); (3) üçüncü ücretli kanal atfı karıştırır. Organik yoldan
+tür aramalarına çıkmak uzun vadeli; kısa vadede o aramalarda görünmenin tek
+yolu ücretli. Denenirse: Search kampanyası, Exact, ~$2/gün, `?ref=` etiketli
+link — App kampanyası DEĞİL (anahtar kelime seçtirmiyor).
