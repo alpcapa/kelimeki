@@ -2856,7 +2856,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [banError, setBanError] = useState<string | null>(null);
   const [highlightedMemberId, setHighlightedMemberId] = useState<string | null>(null);
 
-  const panelRef = useModalA11y(true, onClose);
+  // Panel YALNIZCA ✕ ile kapanır — arka plana dokunuş ve Escape kapatmaz
+  // (30 Eylül 2026, kullanıcı: "ekranın yanlışlıkla başka yerine dokununca
+  // kapanmasın"). Uzun bir tabloyu kaydırırken ya da filtre ararken kenara
+  // kaçan tek bir dokunuş bütün paneli (sekme, kaydırma, açık satırlar)
+  // sıfırlıyordu.
+  const panelRef = useModalA11y(true, onClose, false);
   const feedbackDeleteRef = useModalA11y(!!feedbackToDelete, () => setFeedbackToDelete(null));
   const banConfirmRef = useModalA11y(!!banTarget, () => setBanTarget(null));
   const hintRef = useModalA11y(!!hint, () => setHint(null));
@@ -3428,10 +3433,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   }
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[150] flex items-center justify-center p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
       <div
         ref={panelRef}
         role="dialog"
@@ -3439,7 +3441,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
         aria-label="Admin Paneli"
         tabIndex={-1}
         className="w-full max-w-[640px] bg-panel border border-[#B8C2D1] rounded-xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] max-h-[85vh] flex flex-col overflow-hidden outline-none"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="shrink-0 flex flex-col gap-3 px-5 pt-5 pb-4 border-b border-border">
           <div className="flex items-center justify-between">
