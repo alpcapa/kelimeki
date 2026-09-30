@@ -332,6 +332,31 @@ Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
 **5 Ekim 2026** — 28 Eylül kullanıcı kararıyla atlandı, `surumler.md` →
 "SÜRÜM TRENİ").
 
+⚠ **Tren incelemesi (1 Ekim 2026, ajan; kesimden önce OKU).** 17 taslak
+`[Sonraki sürüm]` PR + #675. `main` ile durum (yerelde deneme merge'ü):
+
+| Durum | PR'lar |
+|---|---|
+| Temiz | #642 · #649 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
+| Çakışma — yalnız doküman | #637, #640 (`ROADMAP.md`) · #647 (`CLAUDE.md`) · #659, #709 (`docs/decisions/funnel-v2.md`) |
+| Çakışma — KOD | #651 (`ROADMAP.md` + **`src/components/AdminDashboard.tsx`**) |
+| CI KIRMIZI | **#655** — web `test`: `tests/board-fit.spec.ts` "dizüstü 1440×800: taş harfi ve X3 hücreye sığıyor" (tahtada harf görünmüyor; 27 Eyl koşusu). `main`'de aynı test yeşil → büyük ihtimalle PR'ın kendi değişikliği (zoom balonu); kesimden önce düzeltilmeli |
+
+- **Sıra bağımlılığı:** #709, #659'un ÜSTÜNE kurulu (önce #659).
+- **Aynı dosyaya dokunanlar (kesimde metin çakışması beklenir):**
+  `online_game_screen.dart` 7 PR (#637 #640 #642 #649 #657 #670 #687) ·
+  `auth_modal.dart` 5 (#640 #642 #651 #659 #709) · `game_screen.dart` 4
+  (#642 #657 #670 #716) · `games_api.dart` 3 (#651 #659 #709) ·
+  `pubspec.yaml` 3 (#647 #659 #709). Her merge'den sonra sıradakine `main`'i
+  merge et, `flutter test` koş.
+- **#721 kapatıldı** — #651'in tekrarıydı (`tutorial_events.anon_id`).
+- **#675 taslak DEĞİL ve `main`'e girmemiş iş taşıyor** (başka oturum, 28-29
+  Eyl): kampanya kütüğünün 29 Eyl ara kesitleri (00:13 · 09:56 · 10:09 kare
+  teşhisi · 10:14 yerleşim kırılımı · 10:25 kare duraklatıldı · 17:51 · 18:00
+  · 18:03), `kare` v2 sade görselleri (iki PNG) + `scripts/play-lansman`
+  değişikliği + `marketing-assets.md`. Mobil dosyası YOK → trenle ilgisiz,
+  kütük çakışması çözülüp HEMEN merge edilebilir (kullanıcı kararı bekliyor).
+
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
 değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
