@@ -66,9 +66,14 @@ Genel · kelime oyunu   (ID 2144785608) · Search Results · Türkiye · Manage 
 
 ## Açık sorular
 
-- **$100 kredisinin koşulu ne?** İşlendiği doğrulandı, ama maildeki yıldızlı
-  dipnot (son kullanma tarihi / kapsam olabilir) okunmadı; Billing sayfası
-  bunu göstermiyor. Mailin altından okununca "Durum" tablosuna yaz.
+- **$100 kredisinin son kullanma tarihi BİLİNMİYOR.** Maildeki dipnot
+  yalnızca genel şartlara bağlantı ("Apple Ads promo credit terms and
+  conditions"); o şartlar kredinin "Apple'ın belirttiği bir tarihte ya da
+  sürede" bitebileceğini söylüyor, gün sayısı vermiyor. Kredi tek seferlik
+  (yeni hesap), devredilemez, nakde çevrilmez. Pratik kontrol: kampanya
+  onaylanınca Billing → **Invoices**'ta ilk karttan çekim ne zaman görünürse
+  kredi o gün bitmiş/düşmüş demektir — $2/gün ile ~50 günden ÖNCE görünürse
+  buraya yaz. (Ajan `ads.apple.com` yardım sayfasını okuyamıyor, ağ engeli.)
 
 - ~~Reklam önizlemesi "Uygulama İçi Satın Alımlar" yazıyor.~~ **KAPANDI
   (30 Eyl 2026):** iPhone'da gerçek ürün sayfasında ne "Aç" düğmesinin
