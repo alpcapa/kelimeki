@@ -354,7 +354,7 @@ Normal'de 3/10 galibiyet (~50 puan farkla kayıp), Kolay'da 3/5.
 - İlk oyunda Kolay — ZATEN VAR: web #662 (27 Eyl, ROADMAP #41 karar 7,
   `defaultAiLevel`); portu #41'in Setup yarısıyla trende. Ajan bunu
   hatırlamadan yeniden önerdi — önermeden önce `defaultAiLevel`'e bak.
-- Mobil tanıtım olaylarına cihaz kodu — YAPILIYOR: #721 (ROADMAP #30).
+- Mobil tanıtım olaylarına cihaz kodu — ZATEN TASLAKTA: #651 (26 Eyl, ROADMAP #30; ajanın açtığı #721 tekrar çıktı, kapatıldı).
 
 **Ertelenenler:**
 
@@ -366,7 +366,7 @@ Normal'de 3/10 galibiyet (~50 puan farkla kayıp), Kolay'da 3/5.
    izin tanıtımda DEĞİL, ilk oyundan çıkarken sorulur. Sunucu yok
    (`flutter_local_notifications` zamanlaması; bugün yalnızca
    `notification_shade.dart` kullanıyor). Hedef: ertesi gün dönüş (~%11).
-   Web karşılığı yok. ⚠ Ölçüm #721 sahaya inmeden temiz okunamaz.
+   Web karşılığı yok. ⚠ Ölçüm #651 sahaya inmeden temiz okunamaz.
 2. **Daha kısa ilk oyun.** Kullanıcı: *"Şimdilik zor ve riskli."*
    (a) ilk oyuna özel daha az taşlı "hızlı oyun" — MOTOR işi (torba/bitiş
    kuralı, dört motor kopyası + golden); önce `game-rules.md` → "Torba
@@ -381,7 +381,7 @@ Normal'de 3/10 galibiyet (~50 puan farkla kayıp), Kolay'da 3/5.
    "ertesi gün dönüş" eşiği — öneri olarak kampanya kütüğünde, karar 3
    Ekim'de kullanıcının.
 
-**Yeniden açarken:** önce #721 sahada mı bak (tanıtım → ilk oyun bağı
+**Yeniden açarken:** önce #651 sahada mı bak (tanıtım → ilk oyun bağı
 ölçülebilir mi), sonra aynı kohort sorgusunu (`game_starts` ilk görülen
 cihaz × `game_finishes` × ertesi gün dönüş) tekrar koş ve 1 Ekim
 rakamlarıyla karşılaştır — mobil Kolay varsayılanı sahaya inince ilk
