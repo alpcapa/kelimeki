@@ -30,6 +30,13 @@ import { trCompare } from './turkish';
  * `li`/`linkedin` ile başlayan her şey LinkedIn (16 Eylül 2026'da eklendi:
  * lansman turu dört etiket birden üretti — `li-sayfa`, `li-profil`,
  * `li-hakkinda`, `li-buton` — ve dördü de `Diğer`de dağınık duruyordu).
+ * `meta` 30 Eylül 2026'da eklendi (kullanıcı isteği: *"Admin'de Meta grubunu
+ * ekle ama ayrı tablo olmasın, aynı tablo içinde etiket değişsin sadece"*):
+ * Meta reklam kampanyasının etiketleri (`meta-kare`, `meta-karusel`,
+ * `meta-reel`, `meta-and-karusel`) Huni v2'de web trafiğinin ~%88'iydi ve
+ * hepsi "Diğer"de görünüyordu. ⚠ `ig`/`fb` önekleri ORGANİK paylaşımların
+ * (bio, sayfa, profil) — reklam etiketleri `meta-` ile başlıyor ve AYRI
+ * kalmalı, yoksa ücretli ile organik aynı satıra karışır.
  * Yeni bir kanal açılırsa (TikTok gibi) buraya bir önek eklenir; eklenmezse
  * etiket sessizce kaybolmaz, "Diğer" grubunda GÖRÜNÜR kalır.
  *
@@ -43,6 +50,7 @@ import { trCompare } from './turkish';
  * 2026) bilinçli olarak kurulmuştu.
  */
 export type SourceChannel =
+  | 'meta'
   | 'instagram'
   | 'facebook'
   | 'linkedin'
@@ -53,6 +61,7 @@ export type SourceChannel =
   | 'bilinmiyor';
 
 export const SOURCE_CHANNEL_LABEL: Record<SourceChannel, string> = {
+  meta: 'Meta',
   instagram: 'Instagram',
   facebook: 'Facebook',
   linkedin: 'LinkedIn',
@@ -84,6 +93,8 @@ export function sourceChannel(source: string | null): SourceChannel {
   // `backfill_app_source_history`). TAM eşleşme, önek DEĞİL: `apple`,
   // `app-store` gibi bir web etiketi yutulmasın.
   if (s === 'app') return 'uygulama';
+  // Reklam kampanyası (ücretli) — organik `ig`/`fb` etiketlerinden AYRI.
+  if (hasPrefix(s, 'meta')) return 'meta';
   if (hasPrefix(s, 'ig') || hasPrefix(s, 'instagram')) return 'instagram';
   if (hasPrefix(s, 'fb') || hasPrefix(s, 'facebook')) return 'facebook';
   // ⚠ `li` iki harf — sınır kuralı burada daha da kritik: `link`, `lig`,
@@ -174,6 +185,8 @@ export interface FunnelV2Totals {
   finished: number;
   games_started: number;
   games_finished: number;
+  /** Mağazaya giden web oturumu (birim: oturum, bkz. `AdminFunnelRow.store`). */
+  store: number;
 }
 
 export interface FunnelV2ChannelGroup extends FunnelV2Totals {
@@ -205,10 +218,11 @@ const FUNNEL_V2_KEYS = [
   'finished',
   'games_started',
   'games_finished',
+  'store',
 ] as const satisfies readonly (keyof FunnelV2Totals)[];
 
 function emptyFunnelV2(): FunnelV2Totals {
-  return { land: 0, returned: 0, signed_up: 0, started: 0, finished: 0, games_started: 0, games_finished: 0 };
+  return { land: 0, returned: 0, signed_up: 0, started: 0, finished: 0, games_started: 0, games_finished: 0, store: 0 };
 }
 
 function addFunnelV2(into: FunnelV2Totals, r: FunnelV2Totals): void {

@@ -792,6 +792,174 @@ koruma.
 
 ---
 
+## İlk oyun akışı v2 — karşılama → Setup → tanıtım (27 Eylül 2026, TASARIM KARARI)
+
+ROADMAP **#41**. Kod henüz YOK; bu bölüm kodlamanın sözleşmesi.
+
+Kullanıcı isteği: *"İnsanların ilk gelişinde hızlıca ilk oyunlarını
+oynamasını sağlamak lazım"*, ardından düzeltme: *"tanıtım sayfalarını daha
+sade ve merak uyandıran hale getirip, setup'a gelince hızlıca oyun
+başlatacak duruma getirelim, oyuna başlaya tıklayınca demo oyun gelsin
+(şu anki gibi)"*. Yani karşılamaya demo KONMAZ; raylı tanıtım
+(`TutorialGame`) aynen kalır, önündeki sürtünme kalkar.
+
+**Tasarım (Claude Design tuvali, sahibine özel):**
+https://claude.ai/artifact/GVCPCbsQjpw6pCjQcinAUK — 17 ekran: karşılama
+(telefon + masaüstü), Setup, dört tanıtım sahnesi, bitiş penceresi, ilk
+oyun, oyun sonu, altı "Arkadaşınla" ekranı. Tasarım sistemi:
+https://claude.ai/artifact/Nbhsf7B6b63YHeKgYXfe7V.
+
+⚠ **Tuval ne kadar bağlayıcı:** ekranların DÜZENİ, bölüm sırası, metinler
+ve akış bağlayıcı. Parçalar YENİDEN ÇİZİLMEZ — uygulamadaki bileşen
+kullanılır (`Avatar`, düğmeler, `PLAYER_COLORS`). Tuvaldeki bir detay
+mevcut bileşenden farklıysa ve aşağıda "bilinçli değişiklik" diye
+yazılmamışsa, uygulamadaki hâli geçerli. (Tuvalin ilk sürümü avatarları
+tek harf çizmişti; kullanıcı sordu, uygulamadaki kurala çevrildi:
+fotoğraf → yoksa iki harf → YZ'de 🤖.)
+
+### Kararlar
+
+| # | Karar | Bugün | Nerede |
+|---|---|---|---|
+| 1 | Karşılama sade: tek soru-başlık, bölge dış hatlı küçük tahta kesiti, "HEMEN OYNA", mağaza rozetleri. Uzun SEO içeriği sayfada KALIR, ilk ekranın altına iner | ✅ KODLANDI (27 Eyl) — `landing-page.md` → "İlk ekran sadeleşti" | `src/landing/` |
+| 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** zorluğun hemen altında, AKIŞTA (⚠ "altta sabit" denendi ve GERİ ALINDI — iOS yüzen çubuğu örtüyor, aşağı bkz.) | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `Setup.tsx` ↔ `setup_screen.dart` |
+| 3 | Setup'ta "1 dk'lık tanıtımla başlar" satırı YOK | — | — |
+| 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `handleStart` (`Setup.tsx`) ↔ `_showGuestWarning` (`setup_screen.dart`) |
+| 5 | Tanıtımın açılış penceresi ("Kelimeki Tanıtım Turu / Devam") KALKAR, 1. sahne doğrudan açılır | Var | `TutorialGame` ↔ `ui/tutorial/*` |
+| 6 | Ayrı bir "Hazırsın" ekranı YOK; mevcut bitiş penceresi yeni tasarıma geçer (onay mührü, tanıtım skoru, sıradaki oyun, turuncu düğme) | Düz pencere | aynı |
+| 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | ✅ WEB KODLANDI (27 Eyl, `defaultAiLevel`); port bilerek bekliyor | `Setup.tsx:340` ↔ port |
+| 8 | Rakibin adı **Yapay Zeka** (27 Eylül, kullanıcı: *"yapay zeka kalsın"*); oyun içi skor kutusundaki "YZ 2" kısaltması DEĞİŞMEZ | Aynı | — |
+| 9 | Arkadaşınla, girişsiz: alttan açılan giriş uyarısı (ÜYE OL · GİRİŞ YAP · YAPAY ZEKAYLA DEVAM ET) | ✅ WEB KODLANDI (27 Eyl, `GuestLiveSheet`) | `LiveGamesTab` |
+| 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | ✅ WEB KODLANDI (27 Eyl) — mevcut alt sekmeler kaldı, "Yeni Oyun Başlat" (29 Eyl'e kadar "Yeni Oyun Kur") listenin ÜSTÜNDE, akışta | `LiveGamesTab` + `LiveGameCreateForm` |
+| 11 | Arkadaş seçici: arama kutusunun ALTINDA, listenin üstünde **+ ARKADAŞINI DAVET ET** (davet linki); listenin altındaki "Listede yok mu?" bağlantısı kalkar | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
+| 12 | Seçilen rakipler **koltuk kartı** olarak, oyuncu renginin zemininde (bilinçli değişiklik; avatar aynı kalır). 4 kişide boş 4. koltuk ekranda "Yapay Zeka" olarak görünür → "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi **KALKAR** | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
+| 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | ✅ WEB KODLANDI (27 Eyl) — girişli YZ tarafında liste üstte, OYUNU BAŞLAT akışta | `Setup.tsx` ↔ `devam_eden_govde.dart` |
+| 14 | Uygulamanın açılış tanıtımı (`IntroScreen`) da sadeleşir — AYRI iş, tanıtım PR'ından SONRA | — | port |
+| 15 | Koltuk kartında sağda, ✕'e değmeden oyuncu numarası FİLİGRANI (`{i+2}`, tahtadaki 1-4 filigranıyla aynı üslup: mono kalın, oyuncu rengi, opaklık 0.2) | ✅ WEB (#663) | `LiveGameCreateForm` |
+| 16 | "Davet Gönder" / "Vazgeç" koltukların HEMEN altında, akışta (ekrana sabit şerit iPad'de yarı örtülüyordu) | ✅ WEB (#663) | `LiveGameCreateForm` |
+| 17 | **"Arkadaşını davet et" pencere AÇMAZ, doğrudan paylaşır:** link açılışta önceden alınır (`navigator.share` taze dokunuş ister), destek yoksa WhatsApp + kopyala yedeği | ✅ WEB (#664) | `useInviteShare` + `InviteShareFallback` ↔ port `share_plus` |
+| 18 | **Boş koltuğa (+) dokunmak** arkadaş listesine kaydırır; odak VERİLMEZ (klavye açılmasın); YZ koltuğu dokunulmaz | ✅ WEB (#665) | `LiveGameCreateForm` |
+| 19 | **Kayan listelerde HER ZAMAN görünen kaydırma çubuğu** (iOS kendi çubuğunu yalnız kaydırırken çiziyor); içerik taşmıyorsa yok | ✅ WEB (#665) | `ScrollArea` ↔ port `Scrollbar(thumbVisibility: true)` |
+| 20 | **Formda "Tüm oyuncular →" / "← Arkadaşlar"** (başlığın sağında, dönüşümlü). Tüm oyuncularda arkadaş kutucukla seçilir, ötekine EKLE · İSTEK GİTTİ · KABUL ET (oyuna yalnız arkadaş çağrılır); KABUL ET sonrası hemen seçilebilir; arama bu görünümde sunucuda. Açılış HER ZAMAN arkadaşlar | ✅ WEB (#665) | `LiveGameCreateForm` + `usePlayerDirectory` |
+| 21 | **"Sık oynadıkların / Hızlı seç" şeridi** — arama kutusunun üstünde en fazla 5 avatar, kaydırmasız; dokunmak satırla aynı (seçer/bırakır), halka koltuk renginde. Sık oynanan <5 ise boşluklar form başına sabit RASTGELE arkadaşlarla dolar, başlık "Hızlı seç". Arkadaş <2, aramada ve "Tüm oyuncular"da YOK | ✅ WEB (#666) | `LiveGameCreateForm` ← RPC `my_frequent_opponents` |
+| 22 | **Arkadaşlar penceresi TEK EKRAN** (sekme yok): davet düğmesi → bekleyen istekler (gelen kart + GÖNDERDİĞİN satır/Geri al) → "Arkadaşların · N" başlığı [sağda "Tüm oyuncular →", o görünümde SAYI YOK] → arama → liste. Satır: rütbe, "3 haftadır", OYNA, ⋯ (skor kartı · 2 kişilik · 4 kişilik oyun kur · sessize alma/şikayet ayarları YALNIZ önceden varsa · arkadaşlıktan çıkar). Yalnız "çıkar" onay sorar | ✅ WEB (#665) — ayrıntı `friends.md` → "Tek ekran" | `FriendsModal` ↔ port `friends_sheet.dart` ← RPC `list_outgoing_friend_requests` |
+| 23 | **OYNA** (arkadaş satırı / ⋯ 2-4 kişilik): pencere kapanır, Canlı sekmesinde form O ARKADAŞ SEÇİLİ açılır; yerel oyun sürüyorsa önce Setup'a dönülür (oyun kayıtlı) | ✅ WEB (#665) | `utils/liveGameRequest.ts` (App ↔ LiveGamesTab) ↔ port: navigator/provider |
+| 24 | Arkadaşlıktan çıkarılan iki yönde de EKLE'ye döner; engelleme/link yenileme YOK (27 Eylül, kullanıcı: *"O an sinirlenip sonra affedebilir"*). Kalıcı davet linki çıkarılanı onaysız geri ekleyebilir — bilerek | Karar | — |
+
+⚠ **PORT İÇİN İKİ YENİ RPC CANLIDA HAZIR** (27 Eylül 2026, web kullanıyor):
+`list_outgoing_friend_requests()` (#22) ve `my_frequent_opponents(p_limit)`
+(#21) — ikisi de `authenticated`, `anon` YOK. Port istemcisi bunları
+çağırmadan #21/#22 yarım kalır. Port yarısı açılınca 15-24'ün HEPSİ Setup
++ Arkadaşlar port PR'ının kapsamında; `mobile/TESTING.md`'ye cihaz maddesi
+olarak girer (web maddeleri `TESTING.md`'de, aynı sırayla).
+
+⚠ **Sunucu kuralları DEĞİŞMEZ** (`create_online_game`): 2 kişide tam 1
+arkadaş, YZ yok; 4 kişide 2-3 arkadaş, YZ yalnızca 4. koltukta. Davet 7
+günde düşer, ret oyunu kurmaz, hamle başına 48 saat. Tuval bunları aynen
+çiziyor; form sunucudan GEVŞEK olamaz.
+
+### Uygulama sırası — dört PR
+
+1. **Karşılama** (yalnız web; `src/landing/` derleme zamanında statik
+   HTML, mobil karşılığı yok) → hemen `main`. Kesit tahtanın kelimeleri
+   `npm run verify-demo-board`e girer.
+2. **Setup** (#2, #3, #4, #7, #9-13) → YALNIZ WEB. Port yarısı web
+   verisi görülene kadar AÇILMAZ (27 Eylül, kullanıcı: *"Şimdilik sadece
+   web'de yapıp emin olduktan sonra mı porta geçsek"*). Gerekçe: web
+   bedava ve geri alınabilir; değişmeyen uygulama da kendiliğinden
+   KONTROL GRUBU olur (Huni v2 platform kırılımlı). Ara dönemde misafir
+   uyarısı webde yok, uygulamada var — bilerek.
+3. **Tanıtım** (#5, #6) → web + port **AYNI PR**, yani trene; Setup'ın
+   web verisinden SONRA, Setup'ın port yarısıyla aynı trende (en erken
+   19 Ekim). Bölünemez:
+   `tutorial_parity_test.dart` web kaynağını okur, yalnız web değişirse
+   web CI'ın `parite` işi düşer. `npm run verify-tutorial-script` koşar.
+4. **`IntroScreen`** (#14) → port, tren.
+
+Bu bölümün "Dört değişmez"i (motora dokunmaz · oyun değildir ·
+doğrulayıcı · port ikizi) aynen geçerli.
+
+### Setup'ın ilk web parçası — kararlar 4 + 7 (27 Eylül 2026)
+
+Setup üç web PR'ına bölündü, küçük ve ölçülebilir olan ÖNCE: (A) misafir
+uyarısı + ilk oyun Kolay, (B) tek standart ekran, (C) Arkadaşınla ekranları.
+
+- **Karar 4:** `handleStart` artık doğrudan `doStart`; pencere, state'i ve
+  `useModalA11y` çağrısı silindi. `loading` beklemesi de gitti — eskiden
+  auth çözülmeden basılan OYUNU BAŞLAT zaten doğrudan başlatıyordu.
+- **Karar 7:** `defaultAiLevel(ilkOyun)` (`utils/aiLevel.ts`); "ilk oyun"
+  tanıtım kapısının kararı (`isFirstGame` = `shouldShowTutorial(...)`),
+  ikinci bir tanım YOK. Varsayılan TÜRETİLİYOR (`chosenLevel ?? …`): bulut
+  kayıtları/profil geç yüklenince kendiliğinden düzelir, kullanıcı bir
+  seviyeye dokunduğu an onunki geçerli.
+- **Testler:** yeni duman testi (misafir → Kolay işaretli, OYUNU BAŞLAT →
+  oyun, "Giriş uyarısı" 0 adet). "Varsayılan Normal"i ölçen iki test artık
+  kendini `oynamisKullanici` ile işaretliyor. `.tap-expand` regresyon testi
+  bu pencereyi ölçüyordu; misafirin açabildiği başka bir örnek kalmadığından
+  aynı sınıf dizesiyle sayfaya eklenen bir kartı ölçüyor (değişmez CSS'te).
+
+### Setup'ın ikinci web parçası — tek standart ekran, kararlar 2 + 3 + 13 (27 Eylül 2026)
+
+- Etiketler: "Oyun Tipi" → **Kime karşı**, "Yapay Zeka ile" → **Yapay
+  Zeka**, "N Oyunculu" → **N Kişi**.
+- Misafirin logo altı tanıtım paragrafı kalktı ("Nasıl oynanır?" duruyor).
+- "Oyuncular" koltuk listesi kalktı, yerine oyuncu sayısının altında tek
+  satır ("Sen ve 1 yapay zeka…"). Koltuktaki rütbe mührü de gitti, dolayısıyla
+  Setup `useRankScores` isteğini artık HİÇ atmıyor.
+- ~~**OYUNU BAŞLAT altta sabit**~~ — **GERİ ALINDI (aynı gün, #664):**
+  kullanıcı iPhone Safari'den ekran görüntüsüyle bildirdi, Arkadaşınla'da
+  düğme görünmüyordu. Sebep: iOS Safari'nin YÜZEN alt çubuğunda sayfa
+  çubuğun arkasına kadar uzanıyor (`body { position: fixed; inset: 0 }`),
+  `sticky bottom-0` şerit de oraya — çubuğun arkasına — yapışıyor;
+  `env(safe-area-inset-bottom)` bu modda 0 ve çubuğun yüksekliği sayfadan
+  güvenilir ölçülemiyor. Liste kısa olduğunda şerit akıştaki yerinde durup
+  görünüyordu, uzayınca kayboluyordu; misafir formunda üyelik kutusu formu
+  uzattığı için OYUNU BAŞLAT da aynı riskteydi. **Şimdi:** OYUNU BAŞLAT
+  zorluğun hemen altında (üyelik kutusu ondan SONRA), "Yeni Oyun Başlat"
+  (29 Eylül 2026'ya kadar "Yeni Oyun Kur"; kullanıcı: *"yeni oyun kur yerine
+  başlat yap"* — port yarısı da bu metinle gelmeli) listelerin ÜSTÜNDE, turuncu (`actionButton.ts`). `position: fixed;
+  bottom: 0` da denendi sayılır: yeni oyun formunun eski "Davet Gönder"
+  şeridi zaten böyleydi ve kullanıcının iPad ekran görüntüsünde çubuğun
+  arkasına YARI girmişti — o da koltuk kartlarının altına, akışa alındı.
+  ⚠ Ders: bu tarayıcılarda alta yapışan (sticky ya da fixed) bir öğe,
+  çubuğun arkasını cihazda ÖLÇMEDEN tasarlanmaz.
+- `App.tsx`teki `overflow-x-hidden` → `overflow-x-clip` değişikliği yalnızca
+  yapışkan şerit içindi; şeritle birlikte GERİ ALINDI (#664).
+- Test: duman testindeki "Oyun Tipi" beklentisi "Kime karşı" oldu; 94/94.
+
+### Setup'ın üçüncü web parçası — Arkadaşınla, kararlar 9-12 (27 Eylül 2026)
+
+- **Karar 9:** girişsiz "Arkadaşınla" → alttan `GuestLiveSheet` (Üye Ol ·
+  Giriş Yap · Yapay Zekayla devam et). Kapatmak = Yapay Zeka'ya dön
+  (`onSwitchToAi` → Setup'ın `onMainViewChange("local")`); misafir boş bir
+  sekmede bırakılmıyor. Sekmedeki eski tek satır + GİRİŞ YAP yedek olarak
+  duruyor (pencere Üye Ol/Giriş Yap ile kapanınca görünen şey o).
+- **Karar 10:** tasarımdaki "gelen davet kartı + süren oyunlar" düzeni
+  bugünkü alt sekmelerle (Devam Eden · Davetler · Son Oynananlar) ZATEN
+  karşılanıyor ve Davetler, bekleyen davet varsa kendiliğinden açılıyor —
+  yeniden yazılmadı. Değişen tek şey "+ Yeni Canlı Oyun Aç"ın turuncu "Yeni
+  Oyun Kur" olması (listenin üstünde; Yapay Zeka tarafıyla aynı
+  `actionButton.ts`).
+- **Karar 11:** "Arkadaşını davet et" arama kutusunun HEMEN altında; açtığı
+  pencere eskisi (Arkadaşlar → "Ara & Ekle", davet linki üstte).
+- **Karar 12:** seçilenler oyuncu renginde koltuk kartları
+  (`PLAYER_COLORS[i + 1]`, avatar uygulamanın `Avatar`ı); 4 kişide 2 seçim =
+  kartlarda "🤖 Yapay Zeka", onay penceresi ve kalıcı YZ satırı SİLİNDİ.
+  Onay ekranı "Davetin gönderildi" + 7 gün/ret notu + "Oyunlarıma git".
+- ⚠ Girişli dal otomatik test EDİLEMİYOR (gerçek oturum + arkadaş listesi);
+  `TESTING.md` §1'e dört madde yazıldı. Girişsiz pencere duman testinde.
+
+### Taban ölçüm (27 Eylül 2026, kodlamadan ÖNCE)
+
+- **Huni v2, web** (`funnel_events`, `mevcut` hariç; yalnızca 25-27 Eylül,
+  tablo yeni): 15 `land` → 1 `game_start` → 1 `game_finish` → 0 `signup`.
+  Örneklem ÇOK küçük; karşılaştırma için en az iki hafta birikmeli.
+- **Tanıtım** (`tutorial_events`, son 30 gün): web 38 kişi başladı → 17
+  bitirdi (%45) → 4 atladı; iOS 39 başlama → 27 bitiş (%69) → 7 atlama
+  (port `anon_id` yazmıyor, ROADMAP #30 — kişi değil olay sayısı). Web'in
+  düşük bitirme oranı açılış penceresinin (#5) kaldırılmasıyla
+  karşılaştırılacak ilk sayı.
+
 ## İlk Oyun: Tanıtım Ekranı — tam bölüm (CLAUDE.md'den taşındı)
 
 ⚠ **Bu bölüm 15 Eylül 2026'da kök `CLAUDE.md`'den BİREBİR taşındı**

@@ -31,8 +31,8 @@ import { Tile } from './Tile';
 // Dış hat köşe yarıçapı (ızgara birimi) — köşe bloğundaki dışbükey köşelerle
 // aynı hissi versin diye, ama artık içbükey (genişleyen kolların dönüşleri)
 // köşeler de aynı yarıçapla yuvarlanıyor.
-const OUTLINE_RADIUS = 0.16;
-const OUTLINE_STROKE = 2.5;
+export const OUTLINE_RADIUS = 0.16;
+export const OUTLINE_STROKE = 2.5;
 
 interface BoardProps {
   state: GameState;

@@ -23,6 +23,20 @@ async function donenKullanici(page: Page): Promise<void> {
   }, SEEN_INTRO_KEY);
 }
 
+// Daha önce oynamış (tanıtımı görmüş) kullanıcı — zorluk varsayılanı Normal.
+// Hiç oynamamış kullanıcının ilk oyunu Kolay açılıyor (27 Eylül 2026,
+// ROADMAP #41; `defaultAiLevel`), yani "varsayılan Normal"i ölçen testler
+// kendini bununla işaretliyor. Anahtar `onboarding.ts` → TUTORIAL_SEEN_KEY.
+async function oynamisKullanici(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('kelimeki:tutorial-seen', '1');
+    } catch {
+      // depolama kapalıysa kapı "yeni" der; test o durumu ölçmüyor
+    }
+  });
+}
+
 test('Setup ekranı açılır, 2 kişilik oyun başlar, YZ hamle yapar', async ({ page }) => {
   // Pas geçme onayı artık native window.confirm() DEĞİL, uygulama içi bir
   // modal (`aria-label="Pas geçme onayı"`, App.tsx `showPassConfirm`) — bu
@@ -105,9 +119,10 @@ test('Zorluk: Kolay seçilip 2 kişilik oyun başlar, YZ hamle yapar, seviye kay
 }) => {
   page.on('dialog', (dialog) => dialog.accept());
   await donenKullanici(page);
+  await oynamisKullanici(page);
   await page.goto('/');
 
-  // Seçici bir radyogrup; varsayılan Normal işaretli; Zor Faz 5'le (7 Eylül
+  // Seçici bir radyogrup; varsayılan Normal işaretli (oynamış kullanıcı); Zor Faz 5'le (7 Eylül
   // 2026) listeye girdi — üç seviye de görünmeli.
   const zorluk = page.getByRole('radiogroup', { name: 'Zorluk' });
   await expect(zorluk.getByRole('radio', { name: 'Normal' })).toHaveAttribute('aria-checked', 'true');
@@ -181,9 +196,37 @@ test('Zorluk: Zor seçilip oyun başlar, YZ geniş aramayla hamle yapar, seviye 
   await expect.poll(() => kayitliSeviye(page)).toBe('zor');
 });
 
+test('İlk oyun: misafire giriş penceresi ÇIKMAZ, zorluk Kolay açılır (#41)', async ({ page }) => {
+  // 27 Eylül 2026, ROADMAP #41 kararları 4 ve 7. Hiç oynamamış misafir:
+  // varsayılan Kolay, OYUNU BAŞLAT doğrudan tanıtımı açar — arada
+  // "Giriş uyarısı" penceresi YOK.
+  await donenKullanici(page);
+  await page.goto('/');
+  const zorluk = page.getByRole('radiogroup', { name: 'Zorluk' });
+  await expect(zorluk.getByRole('radio', { name: 'Kolay' })).toHaveAttribute('aria-checked', 'true');
+  await page.getByText('OYUNU BAŞLAT').click();
+  await expect(page.getByRole('main').getByRole('button', { name: 'Oyna', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Giriş uyarısı')).toHaveCount(0);
+});
+
+test('Girişsiz Arkadaşınla: alttan giriş penceresi, "Yapay Zekayla devam et" geri döndürür (#41)', async ({ page }) => {
+  // 27 Eylül 2026, ROADMAP #41 karar 9. Kapatmak da Yapay Zeka'ya döner —
+  // misafir boş bir sekmede kalmıyor.
+  await donenKullanici(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Arkadaşınla' }).click();
+  const pencere = page.getByRole('dialog', { name: 'Arkadaşınla oynamak için giriş yap' });
+  await expect(pencere).toBeVisible();
+  await expect(pencere.getByRole('button', { name: 'Üye Ol' })).toBeVisible();
+  await pencere.getByRole('button', { name: 'Yapay Zekayla devam et' }).click();
+  await expect(pencere).toHaveCount(0);
+  await expect(page.getByText('OYUNU BAŞLAT')).toBeVisible();
+});
+
 test('Zorluk: Normal (varsayılan) kayda aiLevel YAZMAZ — eski kayıt sözleşmesi', async ({ page }) => {
   page.on('dialog', (dialog) => dialog.accept());
   await donenKullanici(page);
+  await oynamisKullanici(page);
   await page.goto('/');
   await page.getByText('OYUNU BAŞLAT').click();
   const devamButton = page
@@ -514,8 +557,12 @@ test('Sayfa sonundaki OYNA da uygulamaya geçirir (öznitelikle bağlama)', asyn
   // koruyor: yeni bir düğme id ile eklenirse (öznitelik unutulursa) sessizce
   // ölü kalırdı.
   const oynaDugmeleri = page.locator('[data-kelimeki-oyna]');
-  await expect(oynaDugmeleri).toHaveCount(2); // kahraman + sayfa sonu
-  await oynaDugmeleri.last().click();
+  // kahraman + sayfa sonu + telefondaki sabit alt şerit (30 Eylül 2026).
+  // Şerit `lg:hidden` — bu testin masaüstü görünümünde gizli, o yüzden
+  // `.last()` değil, şeridin DIŞINDAKİ son düğme.
+  await expect(oynaDugmeleri).toHaveCount(3);
+  await expect(page.locator('#karsilama-alt-serit [data-kelimeki-oyna]')).toHaveCount(1);
+  await page.locator('main [data-kelimeki-oyna]').last().click();
 
   await expect(page.getByText('OYUNU BAŞLAT')).toBeVisible();
   await expect(page.locator('#karsilama')).toHaveCount(0);
@@ -663,10 +710,10 @@ test('Oyun ekranında logonun altında "← Geri" var ve Setup\'a döndürür', 
   ).toBeVisible();
 
   await geri.click();
-  // ⚠ DOM metni "Oyun Tipi" — ekranda büyük harf görünmesi CSS
+  // ⚠ DOM metni "Kime karşı" (27 Eylül 2026'ya kadar "Oyun Tipi") — ekranda büyük harf görünmesi CSS
   // `uppercase`inden geliyor ve `getByText` onu görmez (bu kod tabanında
   // kayıtlı tuzak, "Oyna"/"Nasıl Oynanır?" vakasının kardeşi).
-  await expect(page.getByText('Oyun Tipi')).toBeVisible();
+  await expect(page.getByText('Kime karşı')).toBeVisible();
 });
 
 // 22 Ağustos 2026 — bir kullanıcı (Android) tahtaya koyduğu jokere harfini
@@ -1467,11 +1514,31 @@ test('`.tap-expand` konumu utility ile ÇAKIŞMIYOR — modal ✕ sağ üst kö�
   // ⚠ İDDİA HEM KONUM HEM HEDEF: sınıf tamamen kaldırılarak "düzeltilirse"
   // konum testi geçer ama dokunma hedefi 28×28'e düşer — ikisi birlikte
   // ölçülüyor.
+  //
+  // 27 Eylül 2026: "Giriş uyarısı" penceresi KALDIRILDI (ROADMAP #41) ve
+  // misafirin açabildiği, bu sınıf dizesini taşıyan başka pencere kalmadı
+  // (kalan dördü Supabase ister). Ölçülen şey zaten bir CSS değişmezi, bir
+  // bileşen değil — bu yüzden gerçek sayfaya (derlenmiş CSS yüklü) aynı sınıf
+  // dizesini taşıyan bir kart ekleniyor. Dize `PlayerScoreCard.tsx` /
+  // `OnlineGameScreen.tsx`teki ✕'lerle BİREBİR; Tailwind onları oradan derliyor.
   await donenKullanici(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await page.getByText('OYUNU BAŞLAT').click();
-  const kart = page.getByLabel('Giriş uyarısı');
+  await expect(page.getByText('OYUNU BAŞLAT')).toBeVisible();
+  await page.evaluate(() => {
+    const k = document.createElement('div');
+    k.id = 'tap-expand-olcum';
+    k.className = 'fixed inset-x-4 top-20 z-[200] bg-panel rounded-2xl px-6 pb-6 pt-12';
+    const x = document.createElement('button');
+    x.setAttribute('aria-label', 'Kapat');
+    x.className =
+      'absolute top-3 right-3 text-muted hover:text-text text-lg leading-none tap-expand w-7 h-7 flex items-center justify-center rounded active:scale-90 transition-transform';
+    x.textContent = '✕';
+    k.appendChild(x);
+    k.appendChild(document.createTextNode('ölçüm kartı'));
+    document.body.appendChild(k);
+  });
+  const kart = page.locator('#tap-expand-olcum');
   await expect(kart).toBeVisible();
 
   const olcum = await kart.evaluate((k) => {

@@ -42,7 +42,7 @@ npm run generate-initial-main-view-golden # Giriş sekmesi kuralı: web→port d
 npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz) — ağ hatası VE geçici sunucu hatası (504/503/502/408); 500 ve 429 bilerek DIŞARIDA
 npm run verify-shared-realtime    # Canlı oyun aboneliği: üç çağıran → TEK Realtime kanalı (sunucu maliyeti çarpanı)
 npm run verify-tutorial-script   # "Oynayarak öğren" tanıtımı: senaryo GERÇEK motorda oynatılır (ekrandaki puanlar dahil)
-npm run verify-demo-board        # Karşılama katmanındaki tanıtım tahtası sözlüğe karşı doğrulanır
+npm run verify-demo-board        # Karşılama katmanındaki tanıtım tahtaları + ilk ekran kesiti sözlüğe karşı doğrulanır
 npm run verify-remaining-tiles   # "Kalan Taşlar" dökümü ↔ oyun sonu raf düşümü değişmezi
 npm run check-doc-size           # doküman boyutu bütçesi (bkz. "Doküman Boyutu Bütçesi")
 npm run verify-draft-rescue      # ıskalanan dokunuşun en yakın taslak taşına yönlendirilmesi
@@ -52,7 +52,7 @@ npm run verify-error-messages    # kullanıcıya gösterilen hata metni: ham mak
 npm run verify-auth-user-identity # oturum kimliği: aynı içerik → aynı nesne + `null` olay DEPOYA sorulmadan çıkış sayılmaz + KAYNAK TARAMASI (hiçbir effect bağımlılığı bare `user` değil — port'un `AccountScope` değişmezi)
 npm run verify-sw-update-loop    # service worker güncellemesi: yeniden yükleme DÖNGÜSÜ kapısı (derleme değişmediyse ikinci kez yükleme YOK) + çağrı yerinin kaynak taraması
 npm run verify-invite-queue      # davet kuyruğu: token RPC'den ÖNCE alınıyor mu (çift çağrı) + geçici arızada geri konuyor mu + ÇİFT YOL duruyor mu
-npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT YÜKSEKLİK (24 Eyl 2026 kullanıcı kararı; 15-24 Eyl arası eşit genişlikti — oranlar farklı, Apple 3.78:1 ↔ Play 3.37:1, ikisi birden eşit olamaz), yükseklik ≥40px, clear space yüksekliğin 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + "ana ekrana ekle" kutusu YOK (24 Eyl 2026'da kaldırıldı; telefonda tek çağrı mağaza şeridi)
+npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT YÜKSEKLİK (24 Eyl 2026 kullanıcı kararı; 15-24 Eyl arası eşit genişlikti — oranlar farklı, Apple 3.78:1 ↔ Play 3.37:1, ikisi birden eşit olamaz), yükseklik ≥40px, clear space yüksekliğin 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + "ana ekrana ekle" kutusu YOK (24 Eyl 2026'da kaldırıldı; telefonda tek çağrı mağaza şeridi) + rozet/şerit linki ziyaretçinin `?ref=` etiketini mağazaya taşıyor (`taggedStoreUrl`, 28 Eyl 2026 — Meta kampanyası)
 npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ
@@ -196,6 +196,15 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | Bir RPC'nin **dönüş tipini** değiştirme (`returns table`a sütun ekleme) | `create or replace` YETMEZ → `drop` + `create`. ⚠ **Sonra `proacl`i OKU** (`select proacl from pg_proc where proname = …`) ve merge ÖNCESİYLE karşılaştır: Supabase yeni fonksiyona varsayılan olarak **`anon`a da execute veriyor** ve `revoke ... from public` doğrudan verilmiş bir grant'i DÜŞÜRMEZ — 16 Eylül 2026'da `admin_list_members`te canlıda ölçüldü, `anon` geri gelmişti. `security definer` / `search_path` / grant'lerin tamamı da drop ile düşer, ELLE geri kur |
 | `mobile/` DIŞINDA bir dosya (port işi sırasında) | kök `CLAUDE.md`/`README.md` — port dokümanı TEK BAŞINA yetmez |
 | `ROADMAP.md`'deki bir madde/faz KAPANDI (✅ · YAPILDI · CANLIDA · SAHADA) | Aynı PR'da `docs/decisions/roadmap-arsiv.md`'ye TAŞI — ROADMAP yalnızca AÇIK maddeleri tutar. Başlığı/numarayı/satırları değiştirme (atıflar kırılır); dosyanın kendi kuralıydı, uygulanmayınca %45'i kapanmış işe döndü (2 Eylül 2026) |
+
+⚠ **Her iş ve KARAR aynı turda repoya yazılır — kod değişmese bile**
+(29 Eylül 2026, kullanıcı: *"tüm yapılan işler yazılmalı ki sürekli güncel
+kalalım"*). Oturumlar birbirini GÖRMEZ, ortak hafıza yalnızca repo. Sohbette
+verilen karar ya da repo dışında yapılan iş (Ads Manager, konsol, mağaza,
+Supabase paneli) ilgili kütüğe/durum tablosuna, yoksa `ROADMAP.md`'ye tarihli
+bir satır olur; "sonra yazarım" yok. Vaka: Meta'da `kare` reklamı bir oturumda
+kapatıldı, yazılmadı, ertesi oturum kullanıcıya "kapalı görünüyor, siz mi
+kapattınız?" diye sordu.
 
 Mobil portun kendi (daha ayrıntılı, Dart'a özgü) sürümü: `mobile/CLAUDE.md`,
 "Etki Analizi" ve "Parça Bitirme Kontrol Listesi" bölümleri — orada tek
@@ -583,6 +592,8 @@ src/
                 # sayfa oraya girmeden derleme geçmez). src/ altında olamaz: dosya iki
                 # composite projeye birden girip TS6305 veriyor — bkz. pwa-and-android.md
     Landing.tsx     # sayfanın tamamı; SUNUCUDA render edilir (hook/olay/tarayıcı globali YOK)
+    BolgeKesiti.tsx # ilk ekrandaki 7×5 tahta kesiti (bölge dış hattı `buildRoundedOutlinePath`, ROADMAP #41)
+    ilkEkranKesiti.ts # kesitin verisi — `verify-demo-board` sınar, porta ÜRETİLMEZ
     LandingLogo.tsx # logoyu üç kez çizmek için SVG sprite (path verisi LogoMark'tan)
     OzellikIkonlari.tsx # "Neler var" altı özellik ikonu (Material DEĞİL — ilkel şekiller; portun ozellik_ikonlari.dart'ıyla ELLE senkron, `icon_parity_test.dart` ile testli)
     demoBoard.ts    # tanıtım tahtasının taşları — `npm run verify-demo-board` ile doğrulanır;
@@ -593,13 +604,13 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, chatRules, webJourney, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, liveGameRequest, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, chatRules, webJourney, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan
                 # mplus-rounded-1c-800-subset.woff2 ÜRETİLMİŞ, yalnızca RankSeal'ın harfi
                 # (yeniden üretimi: "k-lig Ödül & Rütbe Sistemi" → Rütbe Rozeti Fontu)
-  hooks/        # useAuth, useModalA11y, useOnlineStatus, useAppIconBadge, useNicknameAvailability, useRankScores, useBoardZoom
+  hooks/        # useAuth, useModalA11y, useOnlineStatus, useAppIconBadge, useNicknameAvailability, useRankScores, useBoardZoom, useInviteShare, usePlayerDirectory
 .claude/        # oturum kurulumu: hooks/session-start.sh — npm install + Flutter
                 # stable + iki paketin pub get'i (bkz. mobile/CLAUDE.md, "Flutter
                 # SDK bu ortamda HAZIR"). Amacı: Dart testleri YERELDE koşsun,
@@ -719,6 +730,12 @@ insan konuşuyor (`_shared/email.ts` → `KELIMEKI_SENDER` ↔
 `KELIMEKI_SUPPORT_SENDER`). `sendBrevoEmail`'e `sender` verilmezse noreply@
 kullanılır. Yeni bir mail gönderen fonksiyon yazarken ikisinden birini SEÇ,
 üçüncü bir adres uydurma. Ayrıntı: `docs/decisions/support-email.md`.
+
+⚠ **Kurumsal ad tek: `Kelimeki Destek`** (29 Eylül 2026, kullanıcı:
+*"standartımız bu olacak"*). Mail imzası (`Saygılarımızla, Kelimeki Destek`)
+ve destek@'in gönderen adı bunu kullanır — "Müşteri Hizmetleri" gibi ikinci
+bir ad UYDURMA. Zoho'dan elle
+yazılan cevapların görünen adı da aynı (Zoho → Send Mail As, doğrulandı).
 
 ### Migration'lar — CI YOK, her migration ELLE uygulanır
 

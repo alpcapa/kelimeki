@@ -40,7 +40,7 @@ npm run verify-fetch-my-games    # oyun geçmişi: ağ hatası ↔ boş liste ay
 npm run verify-live-games-load    # canlı oyun listesi: düşen istek sessizce tekrarlanır
 npm run verify-shared-realtime    # canlı oyun aboneliği: üç çağıran → tek Realtime kanalı
 npm run verify-tutorial-script   # "oynayarak öğren" tanıtımı: senaryo gerçek motorda oynatılır (ekrandaki puanlar dahil)
-npm run verify-demo-board        # karşılama katmanındaki tanıtım tahtası sözlüğe karşı doğrulanır
+npm run verify-demo-board        # karşılama katmanındaki tanıtım tahtaları + ilk ekran kesiti sözlüğe karşı doğrulanır
 npm run verify-remaining-tiles   # "Kalan Taşlar" dökümü ↔ oyun sonu raf düşümü
 npm run verify-swap-invariants   # taş değiştirme: taslak taşlar yok olmuyor + senkron seçimi düşürüyor + torbada kalandan fazla taş değiştirilemiyor
 npm run verify-edge-engine-parity # motorun üçüncü kopyası (Edge Function) src/'den ayrışmadı mı
@@ -109,7 +109,7 @@ src/
 │   ├── DeleteAccountModal.tsx   # hesabı uygulama içinden silme onayı (açılışta kuru çalıştırma raporu)
 │   ├── ScoreCard.tsx            # oyuncu istatistikleri
 │   ├── ScoreStatsSection.tsx    # "Oyuncu / Oyun İstatistikleri" kutu ızgarası (ScoreCard ve PlayerScoreCard ortak)
-│   ├── RecentGamesSection.tsx   # Setup'taki "Yapay Zeka ile"/"Arkadaşınla" sekmelerinde son 5 biten oyun listesi
+│   ├── RecentGamesSection.tsx   # Setup'taki "Yapay Zeka"/"Arkadaşınla" sekmelerinde son 5 biten oyun listesi
 │   ├── GameHistoryModal.tsx     # geçmiş oyunların listesi (kalp: favori · balon: sohbet arşivi · dosya: hamle dökümü · karta tıkla: tahta önizlemesi), Tümü/Favoriler filtresi
 │   ├── GameBoardPreview.tsx     # bir oyunun bitiş anındaki tahtasının salt-okunur önizlemesi
 │   ├── MoveHistoryModal.tsx     # oyun geçmişi (hamle hamle)
@@ -142,10 +142,13 @@ src/
 │   ├── Modal.tsx                # paylaşılan modal kabuğu
 │   ├── ActionSheet.tsx          # iOS tarzı alttan açılan aksiyon menüsü (ör. tahta önizlemesi → Paylaş/Kapat)
 │   ├── SharedGamePage.tsx       # herkese açık /game/:id sayfası (girişsiz de erişilebilir)
-│   ├── FriendsModal.tsx         # arkadaş arama/ekleme, gelen istekler, kalıcı davet linki paylaşımı
+│   ├── FriendsModal.tsx         # Arkadaşlar penceresi — sekmesiz tek ekran: davet (doğrudan paylaşım), arama, gelen istek kartları, OYNA + ⋯ menüsü
+│   ├── InviteShareFallback.tsx  # paylaşım sayfası olmayan tarayıcıda "WhatsApp'ta gönder" + "Linki kopyala"
+│   ├── ScrollArea.tsx  # kendi içinde kayan liste + HER ZAMAN görünen ince kaydırma çubuğu (iOS çubuğu yalnızca kaydırırken gösteriyor)
 │   ├── FriendInvitePage.tsx     # herkese açık /davet/:token sayfası (girişsiz de erişilebilir) — davet kartı + oyunun tanıtımı (tahta/ikonlar landing/ ile tek kaynak)
-│   ├── LiveGamesTab.tsx         # Canlı sekmesi: davet bekleyen/aktif/rakip bekleyen oyun listesi + Kabul/Reddet
-│   ├── LiveGameCreateForm.tsx   # Canlı oyun kurulumu: oyuncu sayısı + arkadaş seçici + davet gönderme
+│   ├── LiveGamesTab.tsx         # Canlı sekmesi: davet bekleyen/aktif/rakip bekleyen oyun listesi + Kabul/Reddet + girişsiz uyarı penceresi
+│   ├── LiveGameCreateForm.tsx   # Canlı oyun kurulumu: oyuncu sayısı + oyuncu renginde koltuk kartları + arkadaş seçici + davet gönderme
+│   ├── actionButton.ts          # Setup'ın turuncu "Yeni Oyun Başlat" düğmesi (YZ + Arkadaşınla listeleri) — "altta sabit" iOS Safari'de denendi, geri alındı
 │   ├── FriendSuggestModal.tsx   # bir Canlı davet kabul edildikten sonra, henüz arkadaş olunmayan katılımcılara toplu istek gönderme önerisi
 │   ├── FriendModerationModal.tsx # arkadaş satırındaki 🚫/🚩 rozetinden açılan geri alma paneli (sessizden çıkar / raporu geri çek)
 │   ├── OnlineGameScreen.tsx     # gerçek Canlı oyun ekranı — Board/Rack/GameHeader'ı Supabase state'ine (Realtime) bağlar
@@ -204,7 +207,8 @@ src/
 │   ├── funnelEvents.ts  # Huni v2 — cihaz başına anonim olaylar (`funnel_events`: land/visit/signup/game_start/game_finish), admin'de kohort tablosu; kapı `verify-funnel-events`
 │   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına kimliksiz oturum (`web_sessions`), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
 │   ├── storeLinks.ts    # mağaza rozetleri (ROADMAP #26): URL'ler (`null` = yayında değil → rozet HİÇ çizilmez), sıra (App Store önce — Apple'ın yazılı kuralı) ve yerleşim ölçüleri
-│   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı için tek seferlik localStorage kuyruğu
+│   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı kuyruğu + davet linki/metni (`?ref=arkadas`) + WhatsApp adresi
+│   ├── liveGameRequest.ts # "bu arkadaşla oyun kur" isteği (Arkadaşlar → OYNA): App kurulum ekranına döner, LiveGamesTab formu ön seçimli açar
 │   ├── csvExport.ts    # admin paneli tabloları/grafikleri için CSV indirme yardımcısı
 │   ├── leaguePoints.ts # k-lig puanı hesaplama — (rank, count, surrendered, level); SQL league_points_for ↔ Dart ile verify-league-points kilitler
 │   ├── aiLevel.ts      # YZ zorluğunun ürün yüzü: etiketler, Setup'ta seçilebilir seviyeler (üçü de), null→Normal ayrıştırma
@@ -222,8 +226,10 @@ src/
 │                    # hem service worker'ın gezinme fallback muafiyet listesini besler
 ├── landing/
 │   ├── Landing.tsx     # karşılama katmanının tamamı (derleme/dev zamanında statik HTML'e render edilip index.html'e gömülür) — SUNUCUDA render edilir, hook/olay/tarayıcı globali YOK
+│   ├── BolgeKesiti.tsx # ilk ekrandaki 7×5 tahta kesiti — bölge dış hattı oyunun buildRoundedOutlinePath'iyle (ROADMAP #41)
 │   ├── LandingLogo.tsx # logoyu üç kez çizmek için SVG sprite'ı (path verisi LogoMark'tan; üç ham kopya gzip'te 10 KB yiyordu)
 │   ├── OzellikIkonlari.tsx # "Neler var" bölümündeki altı özellik ikonu — Material DEĞİL, ilkel şekillerden (portun ozellik_ikonlari.dart'ıyla ELLE senkron)
+│   ├── ilkEkranKesiti.ts # kesitin haritası/harfleri (SAAT · KUL) — npm run verify-demo-board sözlüğe karşı sınar; porta ÜRETİLMEZ
 │   ├── demoBoard.ts    # tanıtım tahtalarının (2 ve 4 kişilik) taşları — gerçek Board.tsx ile render edilir, npm run verify-demo-board ile sözlüğe karşı doğrulanır; ikisi de npm run generate-demo-board-dart ile porta üretilir
 │   └── render.tsx      # renderToStaticMarkup sarmalayıcısı — Vite eklentisi (scripts/landing-plugin.js) Node'da çağırır
 ├── fonts/
@@ -233,6 +239,8 @@ src/
 ├── hooks/
 │   ├── useAuth.tsx        # Supabase auth context
 │   ├── useModalA11y.ts    # modal odak hapsi, Escape, dialog yığını
+│   ├── useInviteShare.ts  # "Arkadaşını davet et": link önceden alınır, dokununca sistem paylaşım sayfası
+│   ├── usePlayerDirectory.ts  # oyuncu arama + "Tüm oyuncular" sayfalı listesi (Arkadaşlar penceresi ↔ canlı oyun formu ortak)
 │   ├── useOnlineStatus.ts # çevrimiçi/çevrimdışı durumu izler
 │   ├── useNicknameAvailability.ts # takma isim uygunluğu (debounce'lu RPC kontrolü, AuthModal + AccountSettingsModal ortak)
 │   ├── useAppIconBadge.ts # PWA ikonu üzerinde Badge API ile kırmızı yuvarlak/beyaz sayı rozeti
@@ -248,6 +256,7 @@ src/
                            # pub get (Dart testleri yerelde koşabilsin)
 marketing/                 # reklam/tanıtım + mağaza çıktıları — üretilmiş görsel/metin;
                            # uygulamaya girmez (node scripts/sponsored-post/build.mjs)
+├── meta-reklam/           # ücretli Meta (IG+FB) kampanya planları — kurgu, metin, etiket, karar kuralı
 └── store/                 # mağaza listeleme görselleri (npm run generate-store-header)
 
 mobile/                    # Flutter (iOS+Android) portu — ayrıntı: mobile/CLAUDE.md

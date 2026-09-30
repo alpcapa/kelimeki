@@ -171,13 +171,36 @@ console.log('webJourney — ziyaretçi yolculuğu');
   check('oturumsuz olaylar sessiz', steps.length === 0 && ids === 0);
 }
 
-// 10 — adım listesi SQL ile birebir. Fonksiyonun EN SON tanımı geçerli olduğu
-// için adım dizisi taşıyan HER migration okunur (yeni bir dosya
-// `admin_web_journey`i yeniden yazarsa buraya eklenmeli).
+// 9b — `store` (mağaza rozeti, 28 Eylül 2026): oturum başına bir kez, oturumu
+// KAPATMAZ — kişi mağazaya bakıp dönüp tarayıcıda oynayabilir.
+{
+  const { steps, s } = run([
+    { type: 'start', entry: 'landing', member: false },
+    { type: 'step', step: 'store' },
+    { type: 'step', step: 'store' },
+    { type: 'step', step: 'landing_cta' },
+    { type: 'start', entry: 'app', member: false },
+    { type: 'step', step: 'game_start' },
+  ]);
+  check(
+    'store bir kez yazılıyor ve oturumu kapatmıyor',
+    JSON.stringify(steps) === JSON.stringify(['landing', 'store', 'landing_cta', 'app', 'game_start']),
+    JSON.stringify(steps),
+  );
+  check('store sonrası oturum açık', s?.closed === false);
+}
+
+// 10 — adım listesi SQL ile birebir. Canlıda geçerli olan fonksiyonun EN SON
+// tanımıdır; o yüzden yalnızca iki fonksiyonu EN SON yeniden yazan migration
+// okunur. 28 Eylül 2026'ya kadar dizi taşıyan HER dosya okunuyordu — liste
+// hiç değişmediği için işliyordu, `store` adımı eklenince eski dosyalar
+// (değiştirilemez, canlıya uygulanmış geçmiş) yanlışlıkla düşerdi.
+// ⚠ Yeni bir migration iki fonksiyondan birini yeniden yazarsa buradaki dosya
+// o migration'la DEĞİŞTİRİLMELİ.
 {
   const dosyalar: [string, number][] = [
-    ['supabase/migrations/20260923103044_web_sessions_journey.sql', 2], // record_web_session + ilk admin_web_journey
-    ['supabase/migrations/20260923135848_admin_web_journey_entry_filter.sql', 1], // admin_web_journey + p_entry
+    ['supabase/migrations/20260928100430_web_journey_store_step.sql', 2], // record_web_session (`store`); admin_web_journey'yi aşağıdaki yeniden yazdı
+    ['supabase/migrations/20260929074711_admin_web_journey_furthest_step.sql', 1], // admin_web_journey (Ayrılan = en ileri adım)
   ];
   for (const [dosya, beklenen] of dosyalar) {
     const sql = readFileSync(dosya, 'utf8');
