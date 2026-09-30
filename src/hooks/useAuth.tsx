@@ -148,21 +148,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .getSession()
           .then(({ data }) => {
             const depodaki = data.session?.user ?? null;
-            // ── TEŞHİS ────────────────────────────────────────────────────
-            // Tetikleyici ÜÇ turdur bilinmiyor ve sunucu loglarından
-            // GÖRÜLEMİYOR (istemci konsolu bizde yok, kullanıcı iPhone
-            // Safari'de). Tek yol cihazdan kaydetmek: hangi olay adı geliyor
-            // ve o anda kalıcı oturum duruyor mu? İkisi birlikte kök sebebi
-            // ikiye indiriyor — "sahte olay" mı, "oturum gerçekten siliniyor"
-            // mu. `reportClientError` fire-and-forget, imzaya göre tekilliyor
-            // ve hız sınırlı; bir döngüde bile birkaç satır yazar.
-            reportClientError(
-              `auth null olayı: ${event} · depo=${depodaki ? 'dolu' : 'BOŞ'}`,
-              'manual',
-              'auth-null',
-            );
             // Depoda oturum duruyorsa olay gürültüydü: DOKUNMA.
-            if (!shouldApplyAuthSession(false, depodaki?.id ?? null)) return;
+            if (!shouldApplyAuthSession(false, depodaki?.id ?? null)) {
+              // ── TEŞHİS ──────────────────────────────────────────────────
+              // YALNIZCA anormal durum yazılır: `null` olay geldi ama kalıcı
+              // oturum DURUYOR ("sahte olay" — 19 Eylül titremesinin aranan
+              // imzası). `reportClientError` fire-and-forget, imzaya göre
+              // tekilliyor ve hız sınırlı.
+              // ⚠ `depo=BOŞ` (misafir açılışı `INITIAL_SESSION`, gerçek çıkış
+              // `SIGNED_OUT`) 30 Eylül 2026'dan beri YAZILMIYOR: 19 Eylül'den
+              // o güne HİÇ `depo=dolu` ya da fırtına görülmedi, ama her
+              // misafir açılışı bir satır yazıyordu ve Meta reklamıyla Hatalar
+              // sekmesinin tepesine 192 kez / 87 cihazla oturdu (kullanıcı:
+              // *"Önemli bir sorun yoktur umarım"*). Normal durum hata değil.
+              reportClientError(`auth null olayı: ${event} · depo=dolu`, 'manual', 'auth-null');
+              return;
+            }
             // ── DEVRE KESİCİ ──────────────────────────────────────────────
             // Gerçek bir çıkış saniyede iki kez olmaz. Kök sebep ne olursa
             // olsun, kısa pencerede tekrarlayan `null` gürültüdür — kesici
