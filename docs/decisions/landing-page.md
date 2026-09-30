@@ -1149,7 +1149,13 @@ iOS klavye açılınca odaklı alanı göstermek için WKWebView'in KENDİ kayd�
 görünümünü kaydırır — `body` sabit olsa bile. Instagram bunu "aşağı
 kaydırıldı" diye okuyup çubuğu küçültür; klavye kapanınca sayfa geri döner
 ama çubuğu geri açacak bir kullanıcı kaydırması bizde hiç oluşmaz.
-**Sıradaki adım: bu tekrarlanıyor mu** (Instagram → oyun → giriş penceresi →
+**Klavye denemesi (30 Eylül 2026, kullanıcı): TEKRARLANMADI** — giriş
+penceresi + klavye açılıp kapandı, X hep yerindeydi. Şüphe zayıfladı, sebep
+bilinmiyor; kullanıcı ileride aynı adımları yeniden deneyecek. Kod
+değişikliği YAPILMADI (kanıtsız bir düzeltme görünmeyen bir yüzeyi bozabilir).
+Yeniden görülürse ekran görüntüsüyle birlikte ADIM SIRASI istenmeli.
+
+İlk plan: **bu tekrarlanıyor mu** (Instagram → oyun → giriş penceresi →
 bir alana dokun → klavye kapansın). Tekrarlanırsa düzeltme uygulama içi
 tarayıcılara ÖZEL olmalı (`storeLinks.ts`teki UA kalıbı) — `body` kuralı
 iOS'taki çekip-yenileme koruması, herkes için değiştirilmez — ve Vercel
