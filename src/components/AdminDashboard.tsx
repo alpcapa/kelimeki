@@ -462,7 +462,10 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <b>Ulaşan</b> = o adıma gelen oturum, <b>Ayrılan</b> = EN İLERİ adımı o olan oturum (kayıt sırası değil: oyunu bitirenin geç gelen
         "5. hamle" kaydı onu oyun bitişinden geri çekmez),{' '}
         <b>Ayrılma</b> = Ayrılan / Ulaşan. Bounce'un yeri, Ayrılma yüzdesinin en yüksek
-        olduğu satırdır. <b>Süre</b> = orada ayrılanların oturumda kaldığı süre (medyan).
+        olduğu satırdır. <b>Süre</b> = orada ayrılanların oturumda kaldığı süre (medyan).{' '}
+        <b>Tanıtımı atladı</b> bir adım değil: tanıtımı açıp BİTİRMEDEN oyuna geçen oturum
+        (Tanıtımı bitirdi + Tanıtımı atladı = tanıtımdan oyuna gelen). Oyuna devam ettikleri için
+        orada ayrılan yok. Tanıtım uygulama açılınca değil, Setup'ta "Oyna"ya basınca açılır.
         <br />
         <br />
         Bu kart <b>OTURUM</b> sayar, kişi değil: sekme başına bir satır, kimliksiz (ne{' '}
@@ -1774,6 +1777,7 @@ const JOURNEY_LABEL: Record<string, string> = {
   app: 'Uygulama açıldı',
   tutorial_start: 'Tanıtımı açtı',
   tutorial_done: 'Tanıtımı bitirdi',
+  tutorial_skip: 'Tanıtımı atladı',
   game_start: 'Oyun başladı',
   first_move: 'İlk hamle',
   move_5: '5. hamle',
@@ -1799,6 +1803,22 @@ const JOURNEY_SUCCESS = new Set(['game_finish', 'signup_done', 'login', 'store']
  * "Uygulamaya geçti 4" diye kafa karıştırıyordu (29 Eylül 2026).
  */
 const JOURNEY_LANDING_ONLY = new Set(['landing', 'landing_cta']);
+
+/**
+ * Hiç gösterilmeyen adım: `landing_cta` ("Uygulamaya geçti") her zaman
+ * "Uygulama açıldı" ile aynı sayıyı veriyordu (30 Eylül 2026 ölçümü: Yeni,
+ * son 30 gün, 53 = 53; geçip açılmayan oturum 0) — aynı şeyi iki satır
+ * söylüyordu (kullanıcı: *"Uygulamaya geçtiyi kaldırabiliriz"*). Veri
+ * toplanmaya devam ediyor, yalnızca kartta yok.
+ */
+const JOURNEY_HIDDEN = new Set(['landing_cta']);
+
+/**
+ * Türetilmiş BİLGİ satırı — bir adım değil, sunucu okuma anında hesaplıyor
+ * (`tutorial_skip`: tanıtımı açıp bitirmeden oyuna geçen oturum, 30 Eylül
+ * 2026). Kimse orada "ayrılmıyor" (oyuna devam etti), Ayrılan/Ayrılma "—".
+ */
+const JOURNEY_INFO = new Set(['tutorial_skip']);
 
 function formatJourneySeconds(sec: number | null): string {
   if (sec === null) return '—';
@@ -1834,7 +1854,12 @@ function WebJourneyTable({
   // düşülüyor; sayı her satırda aynı, ilkinden okunur.
   const etkilesimsiz = rows?.[0]?.idle ?? 0;
   const gorunen = rows
-    ? rows.filter((r) => r.reached > 0 && !(entry === 'app' && JOURNEY_LANDING_ONLY.has(r.step)))
+    ? rows.filter(
+        (r) =>
+          r.reached > 0 &&
+          !JOURNEY_HIDDEN.has(r.step) &&
+          !(entry === 'app' && JOURNEY_LANDING_ONLY.has(r.step)),
+      )
     : [];
   const karsilama = rows?.find((r) => r.step === 'landing');
   const ust = (
@@ -1883,7 +1908,7 @@ function WebJourneyTable({
   }
   const enYuksek = Math.max(
     ...gorunen
-      .filter((r) => !JOURNEY_SUCCESS.has(r.step) && r.reached > 0)
+      .filter((r) => !JOURNEY_SUCCESS.has(r.step) && !JOURNEY_INFO.has(r.step) && r.reached > 0)
       .map((r) => r.left_here / r.reached),
     0,
   );
@@ -1904,18 +1929,19 @@ function WebJourneyTable({
           <tbody>
             {gorunen.map((row) => {
               const basari = JOURNEY_SUCCESS.has(row.step);
+              const bilgi = JOURNEY_INFO.has(row.step);
               const oran = row.left_here / row.reached;
               // En çok kaybettiren adım vurgulanır: kartın sorduğu tek soru bu.
-              const zirve = !basari && row.left_here > 0 && oran === enYuksek;
+              const zirve = !basari && !bilgi && row.left_here > 0 && oran === enYuksek;
               return (
                 <tr key={row.step} className="border-b border-border/50">
                   <td className={`text-left py-1 pr-2 ${zirve ? 'text-red font-bold' : 'text-text'}`}>
                     {JOURNEY_LABEL[row.step] ?? row.step}
                   </td>
                   <td className="text-right py-1 px-2 text-text">{row.reached}</td>
-                  <td className="text-right py-1 px-2 text-text">{row.left_here}</td>
+                  <td className="text-right py-1 px-2 text-text">{bilgi ? '—' : row.left_here}</td>
                   <td className={`text-right py-1 px-2 ${zirve ? 'text-red font-bold' : 'text-text'}`}>
-                    {basari ? '✓' : `%${Math.round(oran * 100)}`}
+                    {basari ? '✓' : bilgi ? '—' : `%${Math.round(oran * 100)}`}
                   </td>
                   <td className="text-right py-1 pl-2 text-muted">
                     {formatJourneySeconds(row.median_seconds)}
