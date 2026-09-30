@@ -156,11 +156,20 @@ beklenen sonuç.
 ## GSC okuması + Google arama reklamı sorusu (30 Eylül 2026)
 
 **Ölçüm** (GSC → Performance, Web, son 3 ay, kullanıcının ekran görüntüsü):
-sorgu tablosunda TEK satır var — `kelimeki` · 26 tık · 30 gösterim. Yani site
-Google'da yalnızca KENDİ ADIYLA bulunuyor; "kelime oyunu" gibi tür
-aramalarında görünürlük yok denecek kadar az. (GSC düşük hacimli sorguları
-gizliyor; grafiğin toplam gösterimi 30'dan büyükse fark oradadır — toplamlar
-ayrıca okunmadı.)
+sorgu tablosunda TEK satır var — `kelimeki` · 26 tık · 30 gösterim.
+Toplamlar: **50 tık · 72 gösterim · CTR %69,4 · ortalama konum 1,1** —
+yani 24 tık / 42 gösterim GSC'nin gizlediği düşük hacimli sorgulardan geliyor,
+ama ortalama konum 1,1 olduğu için onlar da neredeyse kesin marka varyantları
+(tür aramalarında gösterim olsaydı ortalama konum aşağı çekilirdi). Sonuç:
+site Google'da yalnızca KENDİ ADIYLA bulunuyor.
+
+**İndeks:** Pages → Indexed pages = **1 sayfa** (`https://kelimeki.com/`,
+son tarama 21 Eyl), Temmuz sonundan beri sabit. Sitemap'te 5 URL var;
+`/nasil-oynanir/` (tür aramaları için yazılan sayfa) 1 Eylül'deki "Crawled,
+currently not indexed" durumundan **bir ayda çıkmadı** — "birkaç gün bekle"
+notu (yukarıdaki bölüm) artık geçerli değil; bu Google'ın bir kalite/otorite
+kararı. Kod tarafında bilinen bir eksik yok (1 Eylül denetimi); kaldıraç
+dış bağlantılar (mağaza sayfaları, Meta sayfası vb.).
 
 **Soru:** Apple Ads'in benzeri Google arama reklamı mantıklı mı?
 **Karar: şimdilik HAYIR, ~14 Ekim'de yeniden bak** (Apple Ads ilk okuması +
