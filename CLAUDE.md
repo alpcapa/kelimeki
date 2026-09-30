@@ -781,11 +781,13 @@ Duyuru, ölçümler ve o istisnanın bugünkü riski:
 2. **`verify_jwt` sessizce sıfırlanır:** parametre geçilmezse araç `true`
    varsayar ve önceki değeri KORUMAZ. **Her deploy'dan ÖNCE
    `list_edge_functions` ile mevcut değeri oku ve AYNI değeri açıkça geçir.**
-   `false` olması gereken YEDİ fonksiyon (5 Eylül 2026'da canlıdan sayıldı):
+   `false` olması gereken SEKİZ fonksiyon (5 Eylül 2026'da canlıdan sayıldı,
+   30 Eylül'de `notify-admin-alerts` eklendi):
    `notify-deadline-warnings`, `notify-friend-request-reminders`,
    `notify-turn-timeout-surrender`, `notify-welcome`,
-   `sweep-unconfirmed-accounts`, `inbound-email`, `notify-your-turn`.
-   Yedisi de bir cron/webhook hedefi, yani gerçekten herkese açık bir POST
+   `sweep-unconfirmed-accounts`, `inbound-email`, `notify-your-turn`,
+   `notify-admin-alerts`.
+   Hepsi bir cron/webhook hedefi, yani gerçekten herkese açık bir POST
    ucu olmak zorunda; güvenlik geçişi (5 Eylül 2026) üçünü ayrıca okuyup
    doğru yazıldıklarını (atomik iddia, taze pencere, hedefi gövdeden değil
    canlı durumdan alma) kayda geçirdi.
