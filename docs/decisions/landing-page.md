@@ -1137,8 +1137,21 @@ Olası mekanizma (DOĞRULANMADI): Instagram çubuğu belge kaydırılınca
 küçültüp yukarı kaydırmada geri açıyor; bizde belge hiç kaymıyor
 (`index.css` → `body { position: fixed }`, kaydırma `#root`/`#karsilama`
 içinde), Setup da tek ekrana sığıyor → çubuğu geri açacak kaydırma yok.
-Küçülmenin neden olduğu bilinmiyor. **Yeniden görülürse:** önce küçük
-"kelimeki.com" yazısına dokunmanın çubuğu açıp açmadığını sor; açmıyorsa
-düzeltme uygulama içi tarayıcılara ÖZEL olmalı (`storeLinks.ts`teki UA
-kalıbı) — `body` kuralı iOS'taki çekip-yenileme koruması, herkes için
-değiştirilmez.
+Küçülmenin neden olduğu bilinmiyor.
+
+**Kullanıcı sonradan bildirdi (aynı gün): küçük "kelimeki.com" yazısına
+dokunmak çubuğu AÇMADI** — yani küçülen çubuktan sayfanın içinden çıkış yok,
+tek yol Instagram'a dönmek. Bu gerçek bir hata sayılır.
+
+**En güçlü şüpheli: giriş penceresinin KLAVYESİ.** İkinci denemede
+(giriş yapılmadı) X yerinde kaldı; ilkinde oyunun ortasında giriş yapıldı.
+iOS klavye açılınca odaklı alanı göstermek için WKWebView'in KENDİ kaydırma
+görünümünü kaydırır — `body` sabit olsa bile. Instagram bunu "aşağı
+kaydırıldı" diye okuyup çubuğu küçültür; klavye kapanınca sayfa geri döner
+ama çubuğu geri açacak bir kullanıcı kaydırması bizde hiç oluşmaz.
+**Sıradaki adım: bu tekrarlanıyor mu** (Instagram → oyun → giriş penceresi →
+bir alana dokun → klavye kapansın). Tekrarlanırsa düzeltme uygulama içi
+tarayıcılara ÖZEL olmalı (`storeLinks.ts`teki UA kalıbı) — `body` kuralı
+iOS'taki çekip-yenileme koruması, herkes için değiştirilmez — ve Vercel
+Preview linki Instagram DM'inden açılarak denenmeli (ajan Instagram'ı
+göremiyor).
