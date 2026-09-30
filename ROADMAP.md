@@ -355,7 +355,10 @@ Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
   teşhisi · 10:14 yerleşim kırılımı · 10:25 kare duraklatıldı · 17:51 · 18:00
   · 18:03), `kare` v2 sade görselleri (iki PNG) + `scripts/play-lansman`
   değişikliği + `marketing-assets.md`. Mobil dosyası YOK → trenle ilgisiz,
-  kütük çakışması çözülüp HEMEN merge edilebilir (kullanıcı kararı bekliyor).
+  kütük çakışması çözülüp HEMEN merge edilebilir. → **1 Eki MERGE EDİLDİ**
+  (kullanıcı onayı; kütük kronolojik birleştirildi, iki mükerrer satır
+  elendi). Aynı gün dal temizliği gerçek modda koştu: #675 ve #721'in dalları
+  silindi, uzakta yalnızca açık PR'ı olan dallar kaldı.
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
