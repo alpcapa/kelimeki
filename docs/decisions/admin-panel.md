@@ -41,6 +41,7 @@ notunda da yazılı.
 ## Admin Paneli
 
 - **Erişim:** `profiles.is_admin = true` olan hesaplarda `UserMenu`'de bir "Admin Paneli" girişi açılır (yoksa hiç görünmez). Tüm admin verisi `is_admin()` (security definer) ile korunan RPC'ler üzerinden gelir; `anon`/`authenticated` rollerinden doğrudan `revoke`, yalnızca `authenticated`'e `grant execute` verilir, RPC içinde de ayrıca `is_admin()` kontrolü yapılır (yetkisizse exception fırlatır).
+- **Kapanış YALNIZCA ✕ ile (30 Eylül 2026):** arka plana dokunuş ve Escape paneli kapatmaz (`useModalA11y(true, onClose, false)`, dış kapta `onClick` yok). Kullanıcı: *"ekranın yanlışlıkla başka yerine dokununca kapanmasın"* — kenara kaçan tek dokunuş sekmeyi, kaydırmayı ve açık satırları sıfırlıyordu. Panelin İÇİNDEKİ onay pencereleri (geri bildirim silme, engelleme) eskisi gibi dışarı dokununca kapanır; yalnızca kendilerini kapatırlar.
 - **Sekmeler (`AdminDashboard.tsx`):**
 
 ### Üyeler sekmesi
