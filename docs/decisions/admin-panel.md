@@ -1515,3 +1515,22 @@ oturumu vardı, yani Ziyaretçi Yolculuğu da şişiyordu.
   inceleme sistemleri) sayılmaya devam ediyor. Onları ayıracak işaret yok
   ve tahmine dayalı süzgeç reddedildi.
 
+### Kaynak grupları: "Meta" (30 Eylül 2026)
+
+Kullanıcı isteği: *"Admin'de Meta grubunu ekle ama ayrı tablo olmasın, aynı
+tablo içinde etiket değişsin sadece."* 28 Eylül'de başlayan Meta reklam
+kampanyasının etiketleri Huni v2'de web trafiğinin ~%88'iydi (`meta-karusel`
+165, `meta-kare` 54, `meta-reel` 12) ve tanınmadıkları için hepsi "Diğer"
+satırındaydı. `adminGroups.ts` → `sourceChannel`: `meta` öneki → **Meta**
+kanalı. Huni v2 ve Kanal → Üye Kalitesi aynı kuralı kullanır. Yeni tablo
+yok, yalnızca grup etiketi.
+
+- ⚠ **Meta ≠ Instagram/Facebook:** `ig-`/`fb-` etiketleri ORGANİK
+  paylaşımlar (bio, sayfa, profil). Reklam etiketleri `meta-` ile başlıyor
+  ve ayrı satırda kalmalı, yoksa ücretli ile organik aynı satıra karışır.
+- `hasPrefix` sınırı sayesinde `metin`, `metaverse` gibi etiketler Meta
+  SAYILMAZ (`verify-admin-groups`).
+- Meta, Üye Kalitesi'nin "her zaman görünür" listesine (`MEMBER_QUALITY_ALWAYS`)
+  bilerek EKLENMEDİ. İstek yalnızca etiketti, Meta satırı üye geldiğinde
+  kendiliğinden çıkar.
+

@@ -585,7 +585,10 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <br />
         <br />
         Satırlar platform → kanal gruplu; <b>kanala tıkla, ham <code>?ref=</code> etiketleri
-        açılır</b> (Üye Kalitesi ile aynı gruplama kuralı). CSV her zaman ham sayı indirir.
+        açılır</b> (Üye Kalitesi ile aynı gruplama kuralı). <b>Meta</b> = ücretli reklam
+        kampanyası (<code>meta-kare</code>, <code>meta-karusel</code>, <code>meta-reel</code>…);
+        Instagram ve Facebook satırları ORGANİK paylaşımların (bio, sayfa, profil). CSV her
+        zaman ham sayı indirir.
       </>
     ),
   },
