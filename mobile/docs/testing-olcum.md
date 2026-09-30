@@ -119,6 +119,14 @@ Kontroller admin panelinden (Büyüme > Kullanıcı) ya da Supabase'den okunur.
       `visit` satırı. ⚠ `channel = 'mevcut'` çıkıyorsa "önceden iz"
       okuması anonim kod üretildikten SONRA yapılmış demektir
       (`bootstrap.dart`taki sıra).
+- [ ] **Android, reklam etiketli kurulum → `land` kanalı etiket (Parça
+      218).** Uygulamayı SİL. Telefonun tarayıcısında
+      `kelimeki.com/?ref=test-referrer` aç → Google Play rozetine dokun →
+      Play'den kur → aç → `land` satırında `channel = 'test-referrer'`.
+      ⚠ Play referrer'ı yalnızca MAĞAZADAN kurulumda verir: sideload
+      edilmiş `.apk` ya da iç test dışı yollar `app` yazar (beklenen).
+      Mağazadaki paket yeni sürüme geçmeden bu madde koşulamaz — sürüm
+      yayına girince ilk iş. Rozetsiz, doğrudan Play'den kurulum → `app`.
 - [ ] **Güncelleyen eski kullanıcı → `mevcut`.** Önceki sürümü kurulu bir
       cihazı GÜNCELLE, aç → `land` satırı `channel = 'mevcut'`. Panelde
       "Eski cihaz (kohort dışı)" sayısı artar, kohort satırları ARTMAZ.

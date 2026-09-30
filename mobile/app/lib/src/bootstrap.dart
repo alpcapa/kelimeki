@@ -34,6 +34,7 @@ import 'storage/app_storage.dart';
 import 'util/online_status.dart';
 import 'data/device_stamp.dart';
 import 'data/funnel_api.dart';
+import 'data/install_referrer.dart';
 import 'data/visits_api.dart';
 
 class AppServices {
@@ -185,6 +186,8 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
             stamp: DeviceStamp(s.flags),
             signedIn: supabase.auth.currentSession != null,
             appVersion: appVersion,
+            // Yalnızca Android'de kullanılır (`FunnelRepo.create` süzer).
+            readInstallReferrer: readPlayInstallReferrer,
           )));
   final auth = AuthService(supabase,
       profileCache: storage.then((s) => s.profileCache), signupStamp: stamp);

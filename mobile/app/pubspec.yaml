@@ -89,6 +89,7 @@ dependencies:
   # (`device_visits`, ROADMAP #40, 27 Eylül 2026). Yalnızca OKUR; kimlik
   # (IDFV/Android ID) okunmuyor ve gönderilmiyor — bkz. data/device_info.dart.
   device_info_plus: ^12.4.0
+  play_install_referrer: ^0.5.0
 
 dev_dependencies:
   flutter_test:

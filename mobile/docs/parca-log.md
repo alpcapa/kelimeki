@@ -25,6 +25,31 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 218 — Huni v2: Play Install Referrer → `land` kanalı (30 Eylül 2026)
+
+Kullanıcı: *"Referrer'ı 5 Ekim trenine ekle"* — paralı kanallar (Meta)
+uygulama içinde de görünsün. 27 Eylül'deki *"önce kanalsız"* kararını
+kaldırıyor. Parça 216'nın (#659) ÜSTÜNE kurulu; o PR önce merge edilmeli.
+
+- **`play_install_referrer` paketi** + `data/install_referrer.dart`
+  (5 sn zaman aşımı). Yalnızca Android; `FunnelRepo.create` öteki
+  platformlarda okuyucuyu hiç tutmuyor (MethodChannel iOS'ta fırlatırdı).
+- **`channelFromInstallReferrer`** (saf): `utm_source`, web
+  `taggedStoreUrl`in kalıbına (`^[a-z0-9][a-z0-9._-]{0,39}$`) uymalı;
+  `google-play` / `utm_medium=organic` / bozuk dize → `null` → kanal `app`.
+  ⚠ Bozuk yüzde kodlaması `Uri.splitQueryString`te `ArgumentError`
+  fırlatıyor, `FormatException` DEĞİL — ilk sürüm onu yakalamıyordu, test
+  buldu.
+- **Sıra:** eski cihaz → `mevcut` (referrer okunmaz bile) · referrer
+  etiketi · `DeviceStamp.source` (deep link `?ref=`) · `app`. Kanal ilk
+  kararda donduğu için referrer TEK kez okunur (land düşse de).
+- Etiket yalnızca `funnel_events`e; `DeviceStamp` (öteki üç tablo)
+  bilerek dokunulmadı.
+- Kapı: `funnel_events_parity_test.dart` → kalıbı ve Play'e yazılan biçimi
+  web kaynağından OKUR + ayrıştırma + beş davranış testi. Cihaz:
+  `testing-olcum.md` §33 (mağazadan kurulum şart).
+- Beyan formları değişmez: `docs/decisions/funnel-v2.md` → "PR 2".
+
 ## Parça 216 — Huni v2 mobil yarısı + cihaz kartları (27 Eylül 2026)
 
 **Kullanıcı:** *"Huni v2 5 Ekim'de var mı? Yoksa dahil edelim"* ve *"Cihaz
