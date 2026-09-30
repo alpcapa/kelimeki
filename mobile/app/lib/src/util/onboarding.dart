@@ -70,61 +70,46 @@ bool shouldShowTutorial(TutorialGateInput input) {
 // `tutorial_parity_test.dart` metinleri ve sırayı web kaynağından okuyup
 // karşılaştırıyor — biri değişirse öteki AYNI PR'da değişmek zorunda.
 //
-// NEDEN VAR: tanıtım yalnızca YENİ gelene ve yalnızca BİR KEZ açılıyor,
-// üstelik her sahnesinde "ATLA →" duruyor. Atlayan — ya da hiç göremeyen —
-// oyuncu üç mekaniği hiç öğrenmeden oynuyordu; bu ipuçları o boşluğu GERÇEK
-// oyunda, mekanik YAŞANDIĞI anda kapatır.
+// NEDEN VAR: tanıtımın ANLATMADIĞI bir etkileşim var — tahtadaki bir
+// kelimeye dokununca anlamı açılıyor. Bu ipucu onu GERÇEK oyunda, tahtaya
+// ilk kelime oturduğu anda o kelimenin üstünde bir kez söyler.
+//
+// ⚠ **30 Eylül 2026 — mekanik ipuçları KALDIRILDI (kullanıcı kararı):** eski
+// üç balon (`vergi` · `carpan` · `bolge`) fazla bulundu; yerine tek `anlam`
+// balonu geldi. Çift tık (zoom) balonu ayrı ve DEĞİŞMEDİ. Eski
+// `hint_shown_vergi`… anahtarları cihazda kalabilir, artık okunmuyor.
 //
 // Desen zoom balonunun birebir aynısı: cihaz yerel sayaç, ipucu BAŞINA tavan,
 // "gösterim" balonun EKRANA GELMESİDİR, depolama yoksa varsayılan GÖSTERME
 // tarafında (`FlagsStore` yoksa ekran hiç sormaz).
-enum OnboardingHintId { vergi, carpan, bolge }
+enum OnboardingHintId { anlam }
 
 /// Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA).
-///
-/// ⚠ **2 → 1 (12 Eylül 2026, kullanıcı kararı):** üç ipucu × tavan 2 =
-/// oyuncunun görebileceği 6 balondu ve bu ilk oyunda fazlaydı; artık üçü de
-/// bir kez (en fazla 3). Web ikizi `ONBOARDING_HINT_MAX_SHOWS` — değer
-/// `tutorial_parity_test.dart` ile kilitli.
+/// Web ikizi `ONBOARDING_HINT_MAX_SHOWS` — değer `tutorial_parity_test.dart`
+/// ile kilitli.
 const int onboardingHintMaxShows = 1;
 
 /// Balonun ekranda kalma süresi — web `ONBOARDING_HINT_MS`.
 const Duration onboardingHintDuration = Duration(milliseconds: 4000);
 
-/// Aynı hamlede birden fazla ipucu hak edilebilir; ekranda AYNI ANDA TEK
-/// BALON olduğundan sıra sabit: en şaşırtıcı olan önce (web ile birebir).
+/// Aynı hamlede birden fazla ipucu hak edilirse gösterilme sırası (web ile
+/// birebir). Bugün tek ipucu var; yapı parite ve olası yeni ipuçları için.
 const List<OnboardingHintId> onboardingHintOrder = [
-  OnboardingHintId.vergi,
-  OnboardingHintId.carpan,
-  OnboardingHintId.bolge,
+  OnboardingHintId.anlam,
 ];
 
-/// ⚠ Terim `bölge`, `sınır` DEĞİL (bkz. kök CLAUDE.md → "Terminoloji").
+/// Metin kullanıcının kendi cümlesi (30 Eylül 2026).
 const Map<OnboardingHintId, String> onboardingHintTexts = {
-  OnboardingHintId.vergi:
-      'Rakibin bölgesine değdin — bu yüzden puanının bir kısmı ona gitti.',
-  OnboardingHintId.carpan:
-      'Sarı bölgede kelime puanı 2 katı, tam ortadaki karede 3 katı olur.',
-  OnboardingHintId.bolge:
-      'Bölgen büyüdü — kendi taşlarınla ilerledikçe köşenin dışına taşar.',
+  OnboardingHintId.anlam: 'Kelimenin üzerine tıklarsan anlamı gelir.',
 };
 
-/// Bir hamlenin HANGİ mekanikleri yaşattığı — çağıran motordan türetir.
+/// Bir hamlenin ne yaşattığı — çağıran motordan türetir.
 class OnboardingHintInput {
-  /// Bu hamlede bir ya da daha fazla rakip bölgesine vergi ödendi mi.
-  final bool paidTax;
+  /// Tahtaya bir kelime oturdu mu — KİM oynadığından bağımsız (YZ'nin
+  /// hamlesi de sayılır).
+  final bool wordPlaced;
 
-  /// Bu hamlede kurulan kelimelerden biri ×2 ya da ×3 aldı mı.
-  final bool gotMultiplier;
-
-  /// Hamleden SONRA oyuncunun bölgesi kendi 4×4 köşe bloğunun DIŞINA taşıyor mu.
-  final bool territoryOutsideCorner;
-
-  const OnboardingHintInput({
-    required this.paidTax,
-    required this.gotMultiplier,
-    required this.territoryOutsideCorner,
-  });
+  const OnboardingHintInput({required this.wordPlaced});
 }
 
 /// Bu hamlede hangi ipucu gösterilsin? Saf fonksiyon — sayaçlar çağırandan
@@ -134,9 +119,7 @@ OnboardingHintId? pickOnboardingHint(
   Map<OnboardingHintId, int> shown,
 ) {
   final hakEdilen = <OnboardingHintId, bool>{
-    OnboardingHintId.vergi: input.paidTax,
-    OnboardingHintId.carpan: input.gotMultiplier,
-    OnboardingHintId.bolge: input.territoryOutsideCorner,
+    OnboardingHintId.anlam: input.wordPlaced,
   };
   for (final id in onboardingHintOrder) {
     if ((hakEdilen[id] ?? false) && (shown[id] ?? 0) < onboardingHintMaxShows) {

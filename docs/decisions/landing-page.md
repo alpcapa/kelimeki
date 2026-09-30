@@ -1124,3 +1124,21 @@ açık). İkisi aynı yere gidiyor.
 **Ölçüm:** etkisi Ziyaretçi Yolculuğu'nun "karşılamada ayrıldı" oranı ve
 `store` adımıyla, kampanya kütüğünde okunacak.
 
+
+## Instagram uygulama içi tarayıcısında X görünmedi — tekrarlanmadı (30 Eylül 2026)
+
+Kullanıcı bio linkinden girdi → tanıtım → gerçek oyun → oyunun yarısında
+giriş → geri → Setup'ta kaldı; Instagram'ın üst çubuğu küçülmüş hâldeydi
+(yalnızca "🔒 kelimeki.com"), **X yoktu**. Instagram'a dönünce tarayıcıyı
+kendisi kapattı; bio linkinden yeniden girişte X göründü, oyuna girip
+çıkınca da yerinde kaldı — **tekrarlanmadı**.
+
+Olası mekanizma (DOĞRULANMADI): Instagram çubuğu belge kaydırılınca
+küçültüp yukarı kaydırmada geri açıyor; bizde belge hiç kaymıyor
+(`index.css` → `body { position: fixed }`, kaydırma `#root`/`#karsilama`
+içinde), Setup da tek ekrana sığıyor → çubuğu geri açacak kaydırma yok.
+Küçülmenin neden olduğu bilinmiyor. **Yeniden görülürse:** önce küçük
+"kelimeki.com" yazısına dokunmanın çubuğu açıp açmadığını sor; açmıyorsa
+düzeltme uygulama içi tarayıcılara ÖZEL olmalı (`storeLinks.ts`teki UA
+kalıbı) — `body` kuralı iOS'taki çekip-yenileme koruması, herkes için
+değiştirilmez.

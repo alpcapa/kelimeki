@@ -24,7 +24,7 @@ import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { createInitialState, gameReducer, isFirstMove } from './game/gameReducer';
 import type { PlayerSetup } from './game/gameReducer';
 import { preloadWordSet, isWordSetReady } from './data/wordSetLoader';
-import { calcScore, computeAllTerritories, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
+import { calcScore, computeInvasionSplit, formatInvalidWordsReason, validatePlacement, validatePlacementStructural } from './utils/validator';
 import { loadGameState, saveGameState, clearGameState, takePendingAbandonedGame, ABANDON_TIMEOUT_MS } from './utils/gameStorage';
 import type { SavedGame } from './utils/gameStorage';
 import type { MirroredSave, ServerRowLike } from './utils/cloudSaveMirror';
@@ -65,7 +65,7 @@ import type { AiLevel, GameState, Tile as TileModel } from './game/types';
 import { aiLevelOf } from './utils/aiLevel';
 import { Tile } from './components/Tile';
 import { trLower } from './utils/turkish';
-import { PLAYER_COLORS, SIZE, cornerBounds, inBonusZone } from './game/constants';
+import { PLAYER_COLORS, SIZE } from './game/constants';
 import {
   fetchMeaning,
   isValidWordRemote,
@@ -1105,9 +1105,10 @@ export default function App() {
     state.phase !== 'setup',
   );
 
-  // ── Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) ────────────────────
-  // Tanıtımı ATLAYAN ya da hiç göremeyen oyuncu üç mekaniği burada, GERÇEK
-  // oyunda ve mekanik yaşandığı anda öğrenir (bkz. `utils/onboarding.ts`).
+  // ── Bağlamsal ipucu (Onboarding Faz 2, 8 Eylül 2026) ───────────────────────
+  // Tahtaya ilk kelime oturduğunda "kelimeye tıkla, anlamı gelir" balonu,
+  // bir kez (bkz. `utils/onboarding.ts`; 30 Eylül 2026'da üç mekanik
+  // ipucunun yerine geçti).
   // Balon tahtanın kendi `coach` prop'unu kullanıyor — tanıtımın çizdiği
   // balonun aynısı, ikinci bir geometri yazılmadı.
   const [hint, setHint] = useState<{ id: OnboardingHintId; r: number; c: number } | null>(null);
@@ -1137,42 +1138,15 @@ export default function App() {
     // DEĞİL; ipucu yalnızca gerçek bir kelime hamlesinden doğar.
     const move = yeni.find((e) => !e.action && !e.invasionFrom && e.words.length > 0);
     if (!move) return;
-    const oynayan = state.players[move.player];
-    // YZ'nin hamlesi kullanıcıya bir şey ÖĞRETMİYOR: cümleler ikinci tekil
-    // ("değdin", "bölgen") ve oyuncunun kendi eylemini anlatıyor.
-    if (!oynayan || oynayan.isAI) return;
-    // Bölge, hamleden SONRAKİ tahtadan yeniden hesaplanıyor (motorun kendi
-    // fonksiyonu — ikinci bir "bölge büyüdü mü" kuralı yazılmadı).
-    const bolgeler = computeAllTerritories(state.board, state.players);
-    const bolge = bolgeler[move.player] ?? new Set<string>();
-    const bloklar = (oynayan.corners ?? []).map((k) => cornerBounds(k));
-    let disarida: { r: number; c: number } | null = null;
-    for (const k of bolge) {
-      const [r, c] = k.split(',').map(Number);
-      if (bloklar.some((b) => r >= b.r0 && r <= b.r1 && c >= b.c0 && c <= b.c1)) continue;
-      disarida = { r, c };
-      break;
-    }
-    const secilen = pickOnboardingHint(
-      {
-        paidTax: !!move.lostShares?.length,
-        gotMultiplier: !!move.wordScores?.some((w) => w.x2 || w.x3),
-        territoryOutsideCorner: disarida !== null,
-      },
-      onboardingHintShownCounts(),
-    );
+    // YZ'nin hamlesi de SAYILIR (30 Eylül 2026): ipucu bir mekaniği değil
+    // bir etkileşimi anlatıyor — "kelimeye dokun, anlamı açılsın" — ve YZ
+    // oynadıktan sonra sıra oyuncuda, yani balonu okuyacak an tam o.
+    const secilen = pickOnboardingHint({ wordPlaced: true }, onboardingHintShownCounts());
     if (!secilen) return;
-    // Çapa: cümlenin ANLATTIĞI kareyi göstermeli. Çarpanda bonus bölgesine
-    // düşen taş, bölge ipucunda köşe bloğunun dışına taşan hücre; ikisi de
-    // yoksa (vergi) hamlenin ilk karesi.
-    const hamleKareleri = state.lastMoveCells.map(([r, c]) => ({ r, c }));
-    const capa =
-      (secilen === 'carpan' ? hamleKareleri.find((h) => inBonusZone(h.r, h.c)) : null) ??
-      (secilen === 'bolge'
-        ? hamleKareleri.find((h) => !bloklar.some((b) => h.r >= b.r0 && h.r <= b.r1 && h.c >= b.c0 && h.c <= b.c1)) ?? disarida
-        : null) ??
-      hamleKareleri[0];
-    if (!capa) return;
+    // Çapa: hamlenin ilk karesi — o hücreden geçen kelimenin anlamı açılır.
+    const [capaR, capaC] = state.lastMoveCells[0] ?? [];
+    if (capaR === undefined || capaC === undefined) return;
+    const capa = { r: capaR, c: capaC };
     bumpOnboardingHintShown(secilen);
     setHint({ id: secilen, r: capa.r, c: capa.c });
   // eslint-disable-next-line react-hooks/exhaustive-deps
