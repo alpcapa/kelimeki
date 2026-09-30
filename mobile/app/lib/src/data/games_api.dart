@@ -234,10 +234,10 @@ abstract class GamesGateway {
   /// Admin panelindeki "Tanıtım Turu" kartını besler.
   ///
   /// ⚠ `game_starts` ile aynı gizlilik kararı: `user_id` YOK, tabloda da
-  /// böyle bir kolon yok. `anon_id` portta HENÜZ null (web'in
-  /// `visitTracking.ts` damgası porta hiç girmedi) — satır ADET'te sayılır,
-  /// BENZERSİZ CİHAZ'da sayılmaz; kart bunu `AdminTutorialFunnelRow`'da
-  /// açıkça yazıyor.
+  /// böyle bir kolon yok. `anon_id` 1 Ekim 2026'dan beri DOLU
+  /// (`FlagsStore.anonId()`, `game_starts` ile AYNI kod) — öncesindeki
+  /// paketlerin satırları null kalır ve yalnızca ADET'te sayılır
+  /// (`AdminTutorialFunnelRow`'un notu).
   Future<void> logTutorialEvent({
     required String event,
     required String source,
@@ -400,8 +400,14 @@ class SupabaseGamesGateway implements GamesGateway {
     required String source,
     int? step,
   }) async {
+    final d = await _damga();
     await client.from('tutorial_events').insert({
-      'anon_id': null,
+      // 1 Ekim 2026: cihaz kodu artık DOLU (ROADMAP #30'un son halkası).
+      // Öncesinde sabit null gidiyordu; tanıtımı bitiren cihazın ilk oyunu
+      // bitirip bitirmediği (`game_starts`/`game_finishes` ile birleştirme)
+      // ölçülemiyordu. `tutorial_events`te `user_id` kolonu YOK, yani cihaz
+      // kodu hesapla aynı satıra düşmez — web de aynı alanı dolduruyor.
+      'anon_id': d.anonId,
       'event': event,
       'step': step,
       'source': source,
