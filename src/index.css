@@ -373,6 +373,25 @@ select {
     }
   }
 
+  /* Sabit alt şerit (30 Eylül 2026, `Landing.tsx` → `#karsilama-alt-serit`):
+     ilk ekrandaki düğme+rozetler tamamen görünürken `main.tsx` sınıfı
+     ekliyor. `visibility` de gizleniyor ki saklıyken odak/dokunuş almasın. */
+  #karsilama-alt-serit {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  #karsilama-alt-serit.alt-serit-gizli {
+    transform: translateY(100%);
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #karsilama-alt-serit {
+      transition: none;
+    }
+  }
+
   /* İki mod birbirini dışlar. Sınıfı `<head>`'deki SENKRON kapı script'i
      (bkz. scripts/landing-plugin.js) gövde ayrıştırılmadan ekliyor, yani
      karar İLK BOYAMADAN ÖNCE veriliyor — titreme yok. Aynı no-FOUC kalıbı

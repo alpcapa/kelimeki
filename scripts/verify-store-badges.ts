@@ -334,8 +334,8 @@ console.log('Kaynak etiketi mağazaya taşınıyor (taggedStoreUrl, 28 Eylül 20
       `${play}&referrer=utm_source%3Dmeta-and-karusel%26utm_medium%3Dweb`,
     taggedStoreUrl(play, 'googlePlay', 'meta-and-karusel'),
   );
-  check('App Store: ?ct=', taggedStoreUrl(apple, 'appStore', 'meta-ios-reel') === `${apple}?ct=meta-ios-reel`);
-  check('App Store: adreste ? varsa &ct=', taggedStoreUrl(`${apple}?a=1`, 'appStore', 'x') === `${apple}?a=1&ct=x`);
+  check('App Store: ?pt=…&ct=', taggedStoreUrl(apple, 'appStore', 'meta-ios-reel') === `${apple}?pt=129427325&ct=meta-ios-reel`);
+  check('App Store: adreste ? varsa &ct=', taggedStoreUrl(`${apple}?a=1`, 'appStore', 'x') === `${apple}?a=1&pt=129427325&ct=x`);
   check('etiket yok → düz adres', taggedStoreUrl(play, 'googlePlay', null) === play);
   for (const kotu of ['<script>', 'a b', 'ÇİĞ', 'a&b=c', '-bas', 'x'.repeat(41)]) {
     check(`güvensiz etiket (${kotu.slice(0, 12)}) → düz adres`, taggedStoreUrl(play, 'googlePlay', kotu) === play);

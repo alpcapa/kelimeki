@@ -11,8 +11,8 @@ export type TabKey = 'all' | 2 | 4;
 
 export const SCORE_TABS: { key: TabKey; label: string }[] = [
   { key: 'all', label: 'Genel' },
-  { key: 2, label: '2 Oyunculu' },
-  { key: 4, label: '4 Oyunculu' },
+  { key: 2, label: '2 Kişi' },
+  { key: 4, label: '4 Kişi' },
 ];
 
 interface Cell {
