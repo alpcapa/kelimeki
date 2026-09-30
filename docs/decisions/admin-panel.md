@@ -992,6 +992,16 @@ tuzağa düşülebilirdi ve ikisi de kapatıldı:
 Değişmez canlıda 12 dilimde de doğrulandı: web + ios + android + other =
 finished.
 
+### Başlıkta "(Son 30 Gün)" — 30 Eylül 2026
+
+Kullanıcı bildirdi: *"üst kısımdaki 30/90 gün filtresi değişince veriler
+değişmiyor sanki"*. Filtre çalışıyordu (canlıda admin kimliğiyle ölçüldü:
+`admin_game_duration_summary` 30 gün → 1.534, 90 gün → 2.244 oyun; seri 30 ↔
+90 kova). Yanılgı, sabit pencereli üç panelin ikisinde pencerenin yalnızca
+`?` açıklamasında yazmasıydı — "Oyun Dağılımı (Son 30 Gün)" gibi. "Aktif
+Saatler" ve "Aktif Günler" başlıkları da artık "(Son 30 Gün)" taşıyor.
+**Kural:** kombolara BAĞLI OLMAYAN bir panel, penceresini BAŞLIĞINDA söyler.
+
 ## "Aktif Günler" — haftanın ritmi (20 Eylül 2026)
 
 Kullanıcı isteği: *"Admin oyunda saatler gibi Aktif Günler bar chartı da

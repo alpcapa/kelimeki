@@ -4302,7 +4302,7 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
                         bucketLabel={(row) => hourBucketLabel(row.hour_start)}
                         axisLabel={(row) => hourAxisLabel(row.hour_start)}
                         bucketHeader="Saat"
-                        controls={<span className={sectionTitleCls}>Aktif Saatler</span>}
+                        controls={<span className={sectionTitleCls}>Aktif Saatler (Son 30 Gün)</span>}
                         csvBaseName="kelimeki-aktif-saatler"
                         infoHint={<InfoHint id="aktif-saatler" onOpen={setHint} />}
                       />
@@ -4327,7 +4327,7 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
                         bucketLabel={(row) => dayBucketLabel(row.dow)}
                         axisLabel={(row) => dayAxisLabel(row.dow)}
                         bucketHeader="Gün"
-                        controls={<span className={sectionTitleCls}>Aktif Günler</span>}
+                        controls={<span className={sectionTitleCls}>Aktif Günler (Son 30 Gün)</span>}
                         csvBaseName="kelimeki-aktif-gunler"
                         infoHint={<InfoHint id="aktif-gunler" onOpen={setHint} />}
                       />
