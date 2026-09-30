@@ -65,10 +65,12 @@ Genel · kelime oyunu   (ID 2144785608) · Search Results · Türkiye · Manage 
 
 ## Açık sorular
 
-- **Reklam önizlemesi "Uygulama İçi Satın Alımlar" yazıyor.** Uygulamada IAP
-  YOK. Büyük ihtimalle Apple'ın önizleme şablonu (sayfa "önizleme gerçeği
-  birebir yansıtmayabilir" diyor); iPhone'da gerçek ürün sayfası kontrol
-  edilecek.
+Şu an açık soru YOK.
+
+- ~~Reklam önizlemesi "Uygulama İçi Satın Alımlar" yazıyor.~~ **KAPANDI
+  (30 Eyl 2026):** iPhone'da gerçek ürün sayfasında ne "Aç" düğmesinin
+  altında ne de "Bilgi" bölümünde bu ibare var — yalnızca Apple'ın reklam
+  önizleme şablonu. Uygulamada IAP yok, yapılacak iş yok.
 
 ## Kütük
 
@@ -76,3 +78,4 @@ Genel · kelime oyunu   (ID 2144785608) · Search Results · Türkiye · Manage 
 |---|---|
 | 30 Eyl 2026 ~12:25 | Hesap + kampanya + iki grup kuruldu. Durum **"App pending review"**, iki grup **On hold** (Apple'ın ilk uygunluk incelemesi). ⚠ `Genel · exact`in grup varsayılan teklifi $0,50 kaldı → $1,00'a çekilecek, kelime düzeyindeki teklifler kontrol edilecek |
 | 30 Eyl 2026 ~12:35 | `Genel · exact` varsayılan teklif + kelime teklifleri **$1,00** yapıldı (kullanıcı bildirdi). Önizlemedeki "Uygulama İçi Satın Alımlar" sorusu hâlâ AÇIK |
+| 30 Eyl 2026 | "Uygulama İçi Satın Alımlar" sorusu **kapandı**: gerçek ürün sayfasında (iPhone) ibare YOK, ne düğme altında ne "Bilgi"de (kullanıcı kontrol etti) — önizleme şablonu |
