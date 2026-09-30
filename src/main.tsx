@@ -331,6 +331,38 @@ function cihazZiyaretiBildir(): void {
  * Adresin kendisi (App Store / Play) HTML'den okunuyor, burada yeniden
  * yazılmıyor — tek kaynak yine `storeLinks.ts`.
  */
+/**
+ * Sabit alt şerit (`Landing.tsx` → `#karsilama-alt-serit`, 30 Eylül 2026).
+ *
+ * 1) Şeritte yalnızca CİHAZIN mağazası kalır: iPhone/iPad → App Store,
+ *    Android → Google Play. Masaüstünde (şerit zaten `lg:hidden`, ama dar
+ *    bir pencerede görünebilir) rozet hiç gösterilmez. İki rozet yan yana
+ *    düğmeye yer bırakmıyordu (360 px'te ~290 px rozet).
+ * 2) İlk ekrandaki düğme+rozet bloğu (`#karsilama-ilk-cta`) TAMAMEN
+ *    görünürken şerit saklanır — aynı düğme iki kez durmasın. Eşik 0.98:
+ *    alt piksel yuvarlaması 1.0'ı hiç göstermeyebiliyor.
+ */
+function altSeridiKur(): void {
+  const serit = document.getElementById('karsilama-alt-serit');
+  const katman = document.getElementById('karsilama');
+  if (!serit || !katman) return;
+  const tip = getDeviceType();
+  const istenen = tip === 'ios' ? 'appStore' : tip === 'android' ? 'googlePlay' : null;
+  serit.querySelectorAll<HTMLElement>('[data-kelimeki-magaza]').forEach((el) => {
+    if (el.dataset.kelimekiMagaza !== istenen) el.style.display = 'none';
+  });
+  if (!istenen) document.getElementById('karsilama-alt-serit-magaza')?.remove();
+
+  const cta = document.getElementById('karsilama-ilk-cta');
+  if (!cta || typeof IntersectionObserver === 'undefined') return;
+  new IntersectionObserver(
+    (girisler) => {
+      for (const g of girisler) serit.classList.toggle('alt-serit-gizli', g.intersectionRatio >= 0.98);
+    },
+    { root: katman, threshold: [0, 0.5, 0.98, 1] },
+  ).observe(cta);
+}
+
 function magazaLinkleriniKur(): void {
   const source = getStoredUtmSource();
   document.querySelectorAll<HTMLAnchorElement>('[data-kelimeki-magaza]').forEach((el) => {
@@ -383,4 +415,5 @@ if (document.documentElement.classList.contains('uygulama-modu')) {
   tahtaNoktalariKur();
   paylasiKur();
   magazaLinkleriniKur();
+  altSeridiKur();
 }
