@@ -25,6 +25,14 @@ Future<void> openOnlineGameScreen(
   final repo = services.onlineGames;
   final user = services.auth.user;
   if (repo == null || user == null) return;
+  // Canlı oyun açmak da "bu cihazda oynandı" demek: tanıtım bir daha "ilk
+  // oyun" sayılmaz (2 Ekim 2026 — web `App.tsx` `onlineGame` effect'i).
+  // Yalnız Canlı oynamış bir üye çıkış yapınca misafir olarak tanıtıma
+  // düşmesin. Fırlatmaz, beklenir ama oyunu açmayı engellemez.
+  try {
+    final storage = services.storage;
+    if (storage != null) await (await storage).flags.markTutorialSeen();
+  } catch (_) {}
   final words = await services.dictionary;
   if (!context.mounted) return;
   await Navigator.of(context).push(MaterialPageRoute<void>(

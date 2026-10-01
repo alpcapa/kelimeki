@@ -1130,11 +1130,26 @@ class _SetupScreenState extends State<SetupScreen>
       // Kolay/Zor state'e yazılır; oyun boyunca değişmez.
       aiLevel: level == AiLevel.normal ? null : level,
     ));
+    // Bu cihazda gerçek bir oyun oynandı → tanıtım bir daha "ilk oyun"
+    // sayılmaz (2 Ekim 2026, web `App.startLocalGame` ikizi). Kapı misafirde
+    // yalnızca cihaz bayrağına ve YARIM kayda bakıyor; üye olarak oynayıp
+    // (hesap eski → tanıtım yok, bayrak da konmuyordu) çıkış yapan biri
+    // misafir olarak tanıtımı görüyordu. Kayıt: `docs/decisions/onboarding.md`.
+    unawaited(_tanitimiGorulduSay());
     // Anonim başlangıç sayacı (web `logGameStart` paritesi, ROADMAP #9).
     // Fire-and-forget ve AWAIT EDİLMEZ: telemetri oyunun açılmasını
     // geciktiremez, hatası da `logStart`ın içinde yutuluyor.
     unawaited(_logGameStart(_count));
     await _openGame(controller, words);
+  }
+
+  Future<void> _tanitimiGorulduSay() async {
+    try {
+      final storage = widget.services.storage;
+      if (storage != null) await (await storage).flags.markTutorialSeen();
+    } catch (_) {
+      // Depo açılamadıysa kapı zaten "gösterme" tarafında.
+    }
   }
 
   Future<void> _resumeSavedGame(SetWordSource words) async {

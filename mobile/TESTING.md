@@ -340,6 +340,11 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
       penceresi de yok) doğrudan tanıtım EKRANI ("TANITIM · 1/4"). Setup
       teşhis satırındaki `Derleme` sha'sı bu PR'ın merge commit'iyle
       eşleşmeli — eşleşmiyorsa paket bayat.
+- [ ] **Üyeden misafire geçen cihaz tanıtıma DÜŞMEZ (2 Ekim 2026, 1.1.3):**
+      eski bir hesapla giriş yap, bir YZ oyunu başlat (tanıtım açılmaz) →
+      çıkış yap → misafir olarak "OYUNU BAŞLAT" → tanıtım AÇILMAMALI,
+      doğrudan oyun. 1.1.2'de açılıyordu (vaka: `docs/decisions/onboarding.md`).
+      Aynısı yalnızca bir Canlı oyun açıp çıkan üye için de.
 - [ ] **Kapanış penceresi (1 Ekim 2026, ROADMAP #41 karar 6):** yeşil onay
       mührü + "TANITIM TAMAM · 4/4", "Hazırsın!", SEN 80 / RAKİP 48 kutuları,
       gri şeritte "SIRADAKİ: YAPAY ZEKA · KOLAY · 2 KİŞİ" (Setup'taki seçim —
