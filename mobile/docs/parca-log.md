@@ -25,6 +25,39 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 219 — Tek standart Setup ekranı: port yarısı (1 Ekim 2026, ROADMAP #41 karar 2 + 13)
+
+Web #663/#664/#682'nin (27 Eylül) Setup yarısı `ui/setup/setup_screen.dart`a:
+
+- "OYUN TİPİ" → **"KİME KARŞI"**, "YAPAY ZEKA İLE" → **"YAPAY ZEKA"**,
+  "N OYUNCULU" → **"N KİŞİ"** (yalnızca Setup; canlı oyun formu Port 3'te).
+- **"OYUNCULAR" koltuk listesi KALKTI** (`_PlayerRow` sınıfı ve onu besleyen
+  `RankScores` silindi) → web'le BİREBİR tek satır: *"Sen ve 1 yapay zeka. 4
+  kişide 3 yapay zekaya karşı oynarsın."* / *"Sen ve 3 yapay zeka; herkes
+  kendi köşesinden başlar."*
+- **OYUNU BAŞLAT akışa döndü**, zorluğun hemen altında; turuncu, 52 yüksek,
+  16 punto (web `btn-raised-orange min-h-[52px] text-base tracking-[1px]`).
+  Üyelik kutusu ondan SONRA (`gap-5` = 20, testli). 10 Eylül'den beri
+  ekranın altına yapışık bir çubuktaydı (`_baslatCubugu`, `Key('baslat-cubugu')`)
+  — sebebi koltuk listesinin 375 pt'de formu uzatmasıydı; liste gidince
+  sebep de gitti. **Ölçüldü:** akıştaki düğme 375×812 @1,0 · 375×812 @1,3 ·
+  393×852 @1,3'te (güvenli alan payı 59/34 ile) ilk karede görünüyor — eski
+  kapı testi değiştirilmeden geçti.
+- Web'in `disabled={!wordsReady || accountPending}` yarısı da geldi: port
+  yalnızca sözlüğe bakıyordu.
+- Girişli YZ listesindeki "+ YENİ YAPAY ZEKA OYUNU AÇ" → **"YENİ OYUN
+  BAŞLAT"**, web `PRIMARY_ACTION_BTN` ölçüsünde (52/16/1). Liste zaten
+  formun üstündeydi (karar 13 portta önceden sağlanmıştı).
+
+**Bilinçli fark:** misafir link satırındaki "Tanıtım" duruyor (web'de yok —
+web'de karşılama ayrı bir sayfa); karar 14 (`IntroScreen`) ile birlikte ele
+alınacak.
+
+**Doğrulama:** `flutter analyze lib test` temiz; tam takım yeşil. Testler
+güncellendi: `setup_screen_test` (kadro özeti, sıra SAYI → ZORLUK → BAŞLAT →
+üyelik, kutu–düğme arası 20), `setup_cloud_test` (52/20/8/20, form koltuk
+göstermiyor) + etiket değişen beş test dosyası.
+
 ## Parça 216 — Canlı sohbetin okundu damgası SUNUCUDA: port yarısı (26 Eylül 2026, ROADMAP #34)
 
 - **Neden:** kullanıcı bildirdi (23 Eylül): *"Android app'i açıp Danyal ile

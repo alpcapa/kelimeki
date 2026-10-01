@@ -872,7 +872,7 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | # | Karar | Bugün | Nerede |
 |---|---|---|---|
 | 1 | Karşılama sade: tek soru-başlık, bölge dış hatlı küçük tahta kesiti, "HEMEN OYNA", mağaza rozetleri. Uzun SEO içeriği sayfada KALIR, ilk ekranın altına iner | ✅ KODLANDI (27 Eyl) — `landing-page.md` → "İlk ekran sadeleşti" | `src/landing/` |
-| 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** zorluğun hemen altında, AKIŞTA (⚠ "altta sabit" denendi ve GERİ ALINDI — iOS yüzen çubuğu örtüyor, aşağı bkz.) | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `Setup.tsx` ↔ `setup_screen.dart` |
+| 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** zorluğun hemen altında, AKIŞTA (⚠ "altta sabit" denendi ve GERİ ALINDI — iOS yüzen çubuğu örtüyor, aşağı bkz.) | ✅ WEB (27 Eyl) · ✅ PORT (1 Eki, 1.1.2 — Parça 219; misafir paragrafı aynı gün #737'de) | `Setup.tsx` ↔ `setup_screen.dart` |
 | 3 | Setup'ta "1 dk'lık tanıtımla başlar" satırı YOK | — | — |
 | 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | ✅ WEB (27 Eyl) · ✅ PORT (1 Eki, kontrol grubu iptal — aşağı bkz.) | `handleStart` (`Setup.tsx`) ↔ `_handleStart` (`setup_screen.dart`) |
 | 5 | Tanıtımın açılış penceresi ("Kelimeki Tanıtım Turu / Devam") KALKAR, 1. sahne doğrudan açılır | Var | `TutorialGame` ↔ `ui/tutorial/*` |
@@ -883,7 +883,7 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | ✅ WEB KODLANDI (27 Eyl) — mevcut alt sekmeler kaldı, "Yeni Oyun Başlat" (29 Eyl'e kadar "Yeni Oyun Kur") listenin ÜSTÜNDE, akışta | `LiveGamesTab` + `LiveGameCreateForm` |
 | 11 | Arkadaş seçici: arama kutusunun ALTINDA, listenin üstünde **+ ARKADAŞINI DAVET ET** (davet linki); listenin altındaki "Listede yok mu?" bağlantısı kalkar | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
 | 12 | Seçilen rakipler **koltuk kartı** olarak, oyuncu renginin zemininde (bilinçli değişiklik; avatar aynı kalır). 4 kişide boş 4. koltuk ekranda "Yapay Zeka" olarak görünür → "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onay penceresi **KALKAR** | ✅ WEB KODLANDI (27 Eyl) | `LiveGameCreateForm` |
-| 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | ✅ WEB KODLANDI (27 Eyl) — girişli YZ tarafında liste üstte, OYUNU BAŞLAT akışta | `Setup.tsx` ↔ `devam_eden_govde.dart` |
+| 13 | "Devam eden oyun" kartı Yapay Zeka tarafında da formun ÜSTÜNDE (arkadaş tarafıyla aynı) | ✅ WEB (27 Eyl) · ✅ PORT (1 Eki, 1.1.2 — Parça 219: "YENİ OYUN BAŞLAT" listenin üstünde, OYUNU BAŞLAT akışta) | `Setup.tsx` ↔ `devam_eden_govde.dart` |
 | 14 | Uygulamanın açılış tanıtımı (`IntroScreen`) da sadeleşir — AYRI iş, tanıtım PR'ından SONRA | — | port |
 | 15 | Koltuk kartında sağda, ✕'e değmeden oyuncu numarası FİLİGRANI (`{i+2}`, tahtadaki 1-4 filigranıyla aynı üslup: mono kalın, oyuncu rengi, opaklık 0.2) | ✅ WEB (#663) | `LiveGameCreateForm` |
 | 16 | "Davet Gönder" / "Vazgeç" koltukların HEMEN altında, akışta (ekrana sabit şerit iPad'de yarı örtülüyordu) | ✅ WEB (#663) | `LiveGameCreateForm` |

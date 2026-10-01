@@ -24,6 +24,7 @@ import 'package:kelimeki/src/data/online_games_api.dart';
 import 'package:kelimeki/src/game/game_controller.dart';
 import 'package:kelimeki/src/game/local_game_repo.dart';
 import 'package:kelimeki/src/ui/game/neo_button.dart';
+import 'package:kelimeki/src/ui/setup/membership_perks_box.dart';
 import 'package:kelimeki/src/storage/app_storage.dart';
 import 'package:kelimeki/src/ui/auth/auth_modal.dart';
 import 'package:kelimeki/src/ui/game/count_badge.dart';
@@ -143,8 +144,10 @@ void main() {
   // pt'de ×1,0 kurtuluyor ama ×1,3'te ikisi de düşüyordu. 375 pt gerçek bir
   // hedef: iPhone SE/mini ve Display Zoom açık HER iPhone.
   //
-  // Çözüm buton satırını kaydırılan gövdeden çıkarıp ekranın altına
-  // yapıştırmak oldu; bu test onu KAYDIRMADAN, ilk karede ölçüyor.
+  // İlk çözüm buton satırını ekranın altına yapıştırmaktı. 1 Ekim 2026'da
+  // (ROADMAP #41 karar 2) "Oyuncular" koltuk listesi tek satıra indi, form
+  // kısaldı ve düğme web'le aynı yere, AKIŞA döndü — bu test hâlâ onu
+  // KAYDIRMADAN, ilk karede ölçüyor; akıştaki düğme üç bileşimde de geçiyor.
   for (final (genislik, yukseklik, olcek) in const [
     (375.0, 812.0, 1.0),
     (375.0, 812.0, kMaxTextScale),
@@ -152,7 +155,7 @@ void main() {
   ]) {
     testWidgets(
         'OYUNU BAŞLAT ilk karede GÖRÜNÜR — ${genislik.toInt()} pt @$olcek '
-        '(yapışık çubuk)', (tester) async {
+        '(akışta, zorluğun altında)', (tester) async {
       const guvenli = EdgeInsets.only(top: 59, bottom: 34);
       await setPhoneViewSize(tester, Size(genislik, yukseklik));
       await tester.pumpWidget(MaterialApp(
@@ -193,15 +196,19 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    // Varsayılan 2 oyunculu: Misafir + Yapay Zeka 2.
-    expect(find.text('Misafir'), findsOneWidget);
-    expect(find.text('Yapay Zeka 2'), findsOneWidget);
-    expect(find.text('Yapay Zeka 4'), findsNothing);
+    // "Oyuncular" koltuk listesi YOK (ROADMAP #41 karar 2) — yerine web'le
+    // BİREBİR aynı tek satırlık kadro özeti.
+    expect(find.text('OYUNCULAR'), findsNothing);
+    expect(find.text('Yapay Zeka 2'), findsNothing);
+    expect(
+        find.text(
+            'Sen ve 1 yapay zeka. 4 kişide 3 yapay zekaya karşı oynarsın.'),
+        findsOneWidget);
 
-    await tester.tap(find.text('4 OYUNCULU'));
+    await tester.tap(find.text('4 KİŞİ'));
     await tester.pump();
-    expect(find.text('Yapay Zeka 3'), findsOneWidget);
-    expect(find.text('Yapay Zeka 4'), findsOneWidget);
+    expect(find.text('Sen ve 3 yapay zeka; herkes kendi köşesinden başlar.'),
+        findsOneWidget);
 
     await tester.runAsync(() async {
       final boundary =
@@ -226,12 +233,16 @@ void main() {
     expect(find.text('NORMAL'), findsOneWidget);
     // Zor Faz 5'le (7 Eylül 2026) seçiciye girdi (web `SELECTABLE_AI_LEVELS`).
     expect(find.text('ZOR'), findsOneWidget);
-    // Sıra web ile aynı: başlıklar OYUNCU SAYISI → ZORLUK → OYUNCULAR.
+    // Sıra web ile aynı: OYUNCU SAYISI → ZORLUK → OYUNU BAŞLAT → üyelik
+    // kutusu (ROADMAP #41 karar 2).
     final ySayi = tester.getTopLeft(find.text('OYUNCU SAYISI')).dy;
     final yZorluk = tester.getTopLeft(find.text('ZORLUK')).dy;
-    final yOyuncular = tester.getTopLeft(find.text('OYUNCULAR')).dy;
+    final yBaslat = tester.getTopLeft(find.text('OYUNU BAŞLAT')).dy;
+    final yUyelik =
+        tester.getTopLeft(find.text('Neden Ücretsiz Üye Olmalıyım?')).dy;
     expect(yZorluk, greaterThan(ySayi));
-    expect(yOyuncular, greaterThan(yZorluk));
+    expect(yBaslat, greaterThan(yZorluk));
+    expect(yUyelik, greaterThan(yBaslat));
 
     // Her seviyenin altında açıklama var. Bu test MİSAFİR (services()
     // girişsiz) → varsayılan Kolay (1 Ekim 2026, `defaultAiLevel`) ve
@@ -254,7 +265,7 @@ void main() {
     expect(find.textContaining('Orta-iyi seviye'), findsNothing);
     // 4 kişilik → Kolay'da ikincilik 0 → "puan kazandırmaz" kalır; Normal'de
     // "birincilik 2, ikincilik 1".
-    await tester.tap(find.text('4 OYUNCULU'));
+    await tester.tap(find.text('4 KİŞİ'));
     await tester.pump();
     expect(find.textContaining('ikincilik puan kazandırmaz'), findsOneWidget);
     await tester.tap(find.text('NORMAL'));
@@ -388,23 +399,20 @@ void main() {
     // kanıt (aradakiler aynı listeden geliyor, tek tek tekrar etmeye gerek yok).
     expect(find.text('Arkadaşlarınla çoklu canlı oyun oynama'), findsOneWidget);
     expect(find.text('Arkadaş ekleyip listende tutma'), findsOneWidget);
-    // ⚠ BU İDDİA 10 EYLÜL 2026'DA DEĞİŞTİ. Eskiden ölçtüğü şey "kutu
-    // üstündeki OYUNU BAŞLAT'a yapışık durmasın" (web'in `gap-5`i, bir
-    // dönem eksikti). Buton artık ekranın altına YAPIŞIK, yani kutu onun
-    // ÜSTÜNDE ve iki öğe arasındaki mesafe kaydırma konumuna göre değişiyor
-    // — o karşılaştırma anlamını yitirdi. Yerine yapışık çubuğun getirdiği
-    // YENİ değişmez ölçülüyor: **çubuk, kaydırılan içeriğin sonunu kalıcı
-    // olarak gizlememeli.** Sona kadar kaydırıldığında kutunun tamamı
-    // çubuğun üstünde kalmalı.
-    await tester.scrollUntilVisible(
-        find.text('Arkadaş ekleyip listende tutma'), 200);
-    await tester.pumpAndSettle();
-    final cubukUst = tester.getTopLeft(find.byKey(const Key('baslat-cubugu'))).dy;
-    final kutuAlt =
-        tester.getBottomLeft(find.text('Arkadaş ekleyip listende tutma')).dy;
-    expect(kutuAlt, lessThan(cubukUst),
-        reason: 'yapışık çubuk içeriğin sonunu gizlememeli: '
-            'kutu altı $kutuAlt, çubuk üstü $cubukUst');
+    // Kutu OYUNU BAŞLAT'ın ALTINDA ve ona yapışık değil — web'in `gap-5`i
+    // (20). 10 Eylül–1 Ekim 2026 arası düğme ekranın altına yapışıktı ve
+    // bu iddia "çubuk içeriği gizlemesin" ölçüyordu; düğme akışa döndü
+    // (ROADMAP #41 karar 2), eski iddia geri geldi.
+    final baslatAlt = tester
+        .getBottomLeft(find.widgetWithText(NeoButton, 'OYUNU BAŞLAT'))
+        .dy;
+    final kutuUst = tester
+        .getTopLeft(find.ancestor(
+            of: find.text('Neden Ücretsiz Üye Olmalıyım?'),
+            matching: find.byType(MembershipPerksBox)))
+        .dy;
+    expect(kutuUst - baslatAlt, closeTo(20, 0.5),
+        reason: 'web gap-5 = 20 (kutu üstü $kutuUst, düğme altı $baslatAlt)');
 
     // Zorluk açıklaması her seviyede göründüğünden (6 Eylül 2026) kutu 900
     // px'lik ekranın altına taşıyor; görünmeyen düğmeye dokunuş ulaşmaz.
@@ -428,7 +436,7 @@ void main() {
         find.text('Canlı oyun oynamak için giriş yapmalısın.'), findsOneWidget);
     expect(find.text('OYUNU BAŞLAT'), findsNothing);
 
-    await tester.tap(find.text('YAPAY ZEKA İLE'));
+    await tester.tap(find.text('YAPAY ZEKA'));
     await tester.pumpAndSettle();
     expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
   });
@@ -751,11 +759,11 @@ void main() {
     // Chromium'da render edilip `getComputedStyle`/`getBoundingClientRect`
     // ile okunarak alındı — Tailwind sınıflarından zihnen türetilmedi
     // (Parça 33'ün dersi).
-    final tipi = tester.widget<Text>(find.text('YAPAY ZEKA İLE'));
+    final tipi = tester.widget<Text>(find.text('YAPAY ZEKA'));
     expect(tipi.style!.fontSize, 14);
     expect(tipi.style!.height, moreOrLessEquals(20 / 14, epsilon: 0.001));
 
-    final sayi = tester.widget<Text>(find.text('2 OYUNCULU'));
+    final sayi = tester.widget<Text>(find.text('2 KİŞİ'));
     expect(sayi.style!.fontSize, 14);
 
     // Kutu yüksekliği: 12+12 dolgu + 20 satır = 44. Web'de 46 ölçülüyor;
@@ -802,7 +810,7 @@ void main() {
     // olsun"): link ALTI da 16 — web `-mb-3`, port `SizedBox(8)` (ikisi de
     // yalnızca misafir dalında; girişlide logo→"OYUN TİPİ" hâlâ 20, aşağıdaki
     // ayrı test onu kilitliyor). Üstteki ile AYNI sayı olması testin konusu.
-    final oyunTipi = tester.getRect(find.text('OYUN TİPİ'));
+    final oyunTipi = tester.getRect(find.text('KİME KARŞI'));
     expect(oyunTipi.top - link.bottom, closeTo(16, 1.5));
 
     // Web Setup'ın en altındaki hukuki linkler — port hiç taşımamıştı.
@@ -866,7 +874,7 @@ void main() {
     expect(find.text('Tanıtım'), findsNothing);
 
     final logo = tester.getRect(find.byType(LogoMark).first);
-    final oyunTipi = tester.getRect(find.text('OYUN TİPİ'));
+    final oyunTipi = tester.getRect(find.text('KİME KARŞI'));
     expect(oyunTipi.top - logo.bottom, closeTo(20, 1.5));
   });
 
@@ -1169,7 +1177,7 @@ void main() {
     // geldi ama olayı kaçtı; kullanıcı öteki sekmeye gidip geri geliyor.
     gw.rows = [davet()];
     gw.turnRows = [];
-    await tester.tap(find.text('YAPAY ZEKA İLE'));
+    await tester.tap(find.text('YAPAY ZEKA'));
     await tester.pumpAndSettle();
     expect(arkadaslaRozeti(), findsNothing,
         reason: 'olay gelmeden rozet zaten tazelenmiş — test bir şey '

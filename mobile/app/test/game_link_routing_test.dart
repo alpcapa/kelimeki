@@ -97,7 +97,7 @@ void main() {
     // link, sekmeyi GERİ getirmeli.
     await tester.pump();
     if (tester.any(find.byType(LiveGamesTab))) {
-      await tester.tap(find.text('YAPAY ZEKA İLE'));
+      await tester.tap(find.text('YAPAY ZEKA'));
       await tester.pump();
     }
     expect(find.byType(LiveGamesTab), findsNothing);

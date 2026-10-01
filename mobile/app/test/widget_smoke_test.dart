@@ -23,7 +23,7 @@ void main() {
       versionGate: VersionGateStatus.ok,
     );
     await tester.pumpWidget(KelimekiApp(services: services));
-    expect(find.text('OYUN TİPİ'), findsOneWidget);
+    expect(find.text('KİME KARŞI'), findsOneWidget);
     await tester.pump(); // FutureBuilder'lar çözülsün
     expect(find.textContaining('offline mod'), findsOneWidget);
     expect(find.textContaining('Sözlük: 3 kelime'), findsOneWidget);
@@ -42,6 +42,6 @@ void main() {
     );
     await tester.pumpWidget(KelimekiApp(services: services));
     expect(find.text('Güncelleme Gerekli'), findsOneWidget);
-    expect(find.text('OYUN TİPİ'), findsNothing);
+    expect(find.text('KİME KARŞI'), findsNothing);
   });
 }

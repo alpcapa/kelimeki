@@ -537,16 +537,15 @@ buradakiler ekranın gerçek bir oyundaki hâli.
       butonun hiç zemin vurgusu yok, yalnızca basınca hafif küçülüyor —
       portta dairesel bir vurgu OLMASI bilinçli bir fark, kare köşe ise
       hata.
-- [ ] **`OYUNU BAŞLAT` ekranın altına YAPIŞIK (10 Eylül 2026).** Setup'ta
-      yeni oyun formundayken buton, içerik ne kadar uzun olursa olsun
-      **kaydırmadan** görünmeli ve sayfa kaydırılırken yerinde kalmalı;
-      girişli kullanıcının "+ Yeni" formunda yanında `VAZGEÇ` de olmalı.
-      Sona kadar kaydırınca "Neden Ücretsiz Üye Olmalıyım?" kutusunun altı
-      çubuğun ARKASINDA kalmamalı. ⚠ Çubuk yalnızca form görünürken çıkar:
-      "Arkadaşınla" sekmesinde, "Devam Eden Oyun(lar)" görünümünde ve girişli
-      kullanıcının liste görünümünde OLMAMALI. *(Otomatik kapı 375/393 pt ×
-      1,0/1,3'ü ölçüyor; cihazda bakılacak şey Display Zoom açıkken de aynı
-      davranması.)*
+- [ ] **Tek standart Setup (1 Ekim 2026, ROADMAP #41).** Başlık "KİME
+      KARŞI", sekmeler "YAPAY ZEKA · ARKADAŞINLA", sayı butonları "2 KİŞİ ·
+      4 KİŞİ"; altında koltuk listesi YOK, tek satır özet ("Sen ve 1 yapay
+      zeka…" / "Sen ve 3 yapay zeka…"). Turuncu `OYUNU BAŞLAT` zorluğun
+      HEMEN altında, sayfayla birlikte kayar (artık altta yapışık çubuk
+      YOK); misafirde üyelik kutusu düğmenin ALTINDA. ⚠ iPhone'da **Display
+      Zoom açıkken** de düğme kaydırmadan görünmeli (otomatik kapı 375/393 pt
+      × 1,0/1,3'ü ölçüyor). Girişli kullanıcıda liste görünümünün üstünde
+      turuncu "YENİ OYUN BAŞLAT"; formda `OYUNU BAŞLAT` yanında `VAZGEÇ`.
 - [ ] **Misafir üyelik kutusu.** Setup ekranını misafir (girişsiz) olarak
       aç — hem boş kurulum formunun altında hem (bir oyun yarıda bırakılıp
       "Devam Eden Oyun" görünümüne düşünce) o görünümün altında "Neden

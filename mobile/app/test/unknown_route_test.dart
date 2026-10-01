@@ -73,7 +73,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(KelimekiApp(services: _services()));
     await tester.pump();
-    expect(find.text('OYUN TİPİ'), findsOneWidget);
+    expect(find.text('KİME KARŞI'), findsOneWidget);
 
     // `kelimeki://oyun/<id>` ya da `https://kelimeki.com/davet/<token>`
     // dokunuşunun platform tarafındaki karşılığı.
@@ -83,7 +83,7 @@ void main() {
     expect(tester.takeException(), isNull,
         reason: 'Dışarıdan gelen rota uygulamayı çökertti');
     // Kullanıcı olduğu yerde kalmalı — boş/yabancı bir ekrana düşmemeli.
-    expect(find.text('OYUN TİPİ'), findsOneWidget);
+    expect(find.text('KİME KARŞI'), findsOneWidget);
   });
 
   testWidgets('davet biçimindeki rota da aynı şekilde yok sayılır',
@@ -95,6 +95,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('OYUN TİPİ'), findsOneWidget);
+    expect(find.text('KİME KARŞI'), findsOneWidget);
   });
 }
