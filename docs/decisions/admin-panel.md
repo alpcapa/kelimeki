@@ -1332,9 +1332,10 @@ yazmaya başlayınca Uygulama satırı iki kaynaktan okunuyor olacaktı: Açıl�
 sayaçtan (yalnızca 1.1.2+), Tamamlama `profiles`tan (TÜM sürümler) → oran
 geçiş boyunca sahte yüksek. Karar: ikisi de sayaçtan (web'in baştan beri
 uyduğu ilke). Bedeli: güncellemeyen cihazların hesapları satırda görünmez;
-`?` metni söylüyor. Migration `20261005070000_admin_signup_funnel_app_same_source.sql`
-**#651 merge edilirken** uygulanır (erken uygulanırsa satır 1.1.2'ye kadar
-0 gösterir); 1 Ekim'de canlıda `begin … rollback` içinde derlenip denendi.
+`?` metni söylüyor. Migration `20261001104454_admin_signup_funnel_app_same_source.sql`
+**#651 merge edilirken uygulandı** (1 Ekim 2026, sürüm kesimi; hazırlanırken
+`20261005070000` adını taşıyordu, canlı sürüme göre değiştirildi; `proacl`
+öncesiyle aynı). Uygulama satırı 1.1.2 sahaya inene kadar düşük görünür.
 Ajan hazırladı, kullanıcı onayı: *"Hazırla"*.
 
 ### Kayıt Hunisi platform satırlarına geçti (29 Eylül 2026, `20260929091355_admin_signup_funnel_platform.sql`)
