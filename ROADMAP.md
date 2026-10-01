@@ -308,6 +308,18 @@ acil bir fren gerekirse eşiği yükseltmek YETER.
 aynı başlık; 24 Eylül 2026'da taşındı). Sayacın yeri, tester sayısının
 nereden okunacağı ve kartın "12" tavanı orada.
 
+## 1.1.3 treni — kesim Pazartesi 12 Ekim 2026 (taslak PR'lar, `main`'de DEĞİL)
+
+⚠ **Kesimde sürüm numarası da 1.1.3'e çıkmalı** (`pubspec.yaml` + `config/env.dart`,
+`app_version_parity_test`) — 1.1.2 App Store'da onaylanınca o trene yeni
+build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasında
+ÖLÇÜLDÜ").
+
+| Taslak PR | Ne | Dokunduğu yer |
+|---|---|---|
+| #756 (2 Eki) | **Tanıtımın vergi penceresi: "Rakip kullanıcısına" → "rakibine"** — port yarısı (web #755 ile hemen yayında) | `ui/tutorial/tutorial_game.dart` (tek metin; gerçek oyunun `invasion_confirm.dart`ı DEĞİŞMEDİ). Kayıt: `docs/decisions/onboarding.md` |
+| #757 (2 Eki) | **"Bildirimler kapalı" kartı** — yarım oyun çıkışında izin ayarlardan kapalıysa (Android `permanentlyDenied` · iOS `denied`) "AYARLARI AÇ"; ayarlardan dönüşte hatırlatma kurulur | `util/unfinished_reminder.dart` (`yarimOyunKartiSec`) · `data/unfinished_game_reminder.dart` · `ui/push/push_permission_flow.dart` · `setup_screen.dart` · `MainActivity.kt` + `AppDelegate.swift` (`bildirimAyarlariniAc`). Parça 228 · cihaz: `mobile/TESTING.md` §34 |
+
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
 ⚠ **DURUM (1 Ekim 2026 gece): 1.1.2 (831) PLAY'DE YAYINDA (2 Eki 00:56 TSİ), App Store İNCELEMEDE — iOS'ta yayındaki hâlâ `1.1.1 (723)`.** Play paketi yayında olduğu için `mobile-latest`in korunma gereği kalktı; ASC'deki build gönderime iliştirili, ezilmez. Mobil işler yine treni bekler (her Pazartesi, ilki 12 Ekim). Kayıt: `surumler.md` → "1.1.2 (831)".
