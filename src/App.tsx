@@ -1,4 +1,5 @@
 // Kelimeki — ana uygulama: kurulum, çok oyunculu sıra akışı ve düzen
+import { LIVE_GAME_REQUEST_EVENT } from './utils/liveGameRequest';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { GameHeader } from './components/GameHeader';
@@ -754,9 +755,9 @@ export default function App() {
   // Oyun bitince GameOver ekranından açılabilen "Görüş Bildir" formu.
   const [showFeedback, setShowFeedback] = useState(false);
 
-  // Admin'in gönderdiği e-postalardaki ("noreply — cevap için tıklayın")
-  // linkten (?contact=1) açılan genel "Görüş Bildir" formu — oyun fazından
-  // bağımsız (bkz. supabase/functions/_shared/email.ts, buildSupportReplyNoticeHtml).
+  // Ban mailindeki "Bizimle İletişime Geç" linkinden (?contact=1) açılan
+  // genel "Görüş Bildir" formu — oyun fazından bağımsız (destek maillerindeki
+  // aynı link 29 Eylül 2026'da kaldırıldı, eski mailler hâlâ taşıyor).
   // Link'e gömülü ?re=<id> varsa (hangi mesaja cevaben geldiği), yeni geri
   // bildirim o mesaja bağlanabilsin diye contactRelatedTo'da tutulur.
   const [showContactFeedback, setShowContactFeedback] = useState(false);
@@ -1009,6 +1010,24 @@ export default function App() {
   // Eden" bir oyuna dokununca dolar; doluyken tüm normal kurulum/yerel oyun
   // ağacının yerine OnlineGameScreen render edilir (aşağıya bkz.).
   const [onlineGame, setOnlineGame] = useState<OnlineGame | null>(null);
+
+  // Arkadaşlar penceresinin OYNA'sı (27 Eylül 2026, `utils/liveGameRequest.ts`):
+  // pencere oyun ekranının başlığından da açılabiliyor. İstek gelince açık
+  // Canlı oyundan çık, yerel oyundaysan logonun yaptığını yap (kayıt dahil),
+  // Arkadaşınla'yı seç — formu LiveGamesTab kuyruktan alıp açar. İsteği burada
+  // TÜKETMİYORUZ. Ref: effect bir kez bağlanır, en güncel `handleLogoClick`
+  // ve oyun durumunu okur.
+  const oynaIstegiRef = useRef<() => void>(() => {});
+  oynaIstegiRef.current = () => {
+    setOnlineGame(null);
+    if (state.phase === 'play') handleLogoClick();
+    setMainView('live');
+  };
+  useEffect(() => {
+    const dinle = () => oynaIstegiRef.current();
+    window.addEventListener(LIVE_GAME_REQUEST_EVENT, dinle);
+    return () => window.removeEventListener(LIVE_GAME_REQUEST_EVENT, dinle);
+  }, []);
 
   // Kullanıcı değişince (çıkış/farklı hesapla giriş — aynı sekmede hesap
   // değiştirme testlerinde ortaya çıktı) açık kalan bir Canlı oyun ekranı
@@ -2343,7 +2362,7 @@ export default function App() {
       />
 
       {showHistory && (
-        <MoveHistoryModal state={state} onClose={() => setShowHistory(false)} />
+        <MoveHistoryModal state={state} myIndex={0} onClose={() => setShowHistory(false)} />
       )}
 
       {showFeedback && (
