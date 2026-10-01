@@ -46,6 +46,7 @@ import '../game/rack_widget.dart';
 import '../game/tile_widget.dart';
 import '../tap_target.dart';
 import '../tokens.dart';
+import '../../util/ai_level.dart';
 import 'tutorial_script.dart';
 
 /// Rakibin taşları arasındaki bekleme (ms) — insan gibi "diziliyor" hissi.
@@ -119,6 +120,11 @@ class TutorialGame extends StatefulWidget {
   /// çağıranın hazır nesnesi geçiliyor — akış aynı, bağlanma noktası farklı.
   final Future<GamesRepo>? games;
 
+  /// Kapanışın başlatacağı GERÇEK oyun — bitiş kartının "SIRADAKİ: YAPAY
+  /// ZEKA · KOLAY · 2 KİŞİ" satırı (ROADMAP #41 karar 6; web `next`).
+  /// Yalnızca `auto`da; `replay`de oyun başlamadığından çizilmez.
+  final ({AiLevel aiLevel, int playerCount})? next;
+
   const TutorialGame({
     super.key,
     required this.playerName,
@@ -128,6 +134,7 @@ class TutorialGame extends StatefulWidget {
     this.auth,
     this.source = 'auto',
     this.games,
+    this.next,
   });
 
   @override
@@ -165,12 +172,8 @@ class _TutorialGameState extends State<TutorialGame> {
     _alive = true;
     _olayYaz('start');
     _controller.addListener(_onState);
-    // Karşılama penceresi — ilk sahneden ÖNCE (bkz. `tutorialIntroTitle`).
-    // `initState`te `showDialog` çağrılamaz (ağaç henüz kurulmadı), ilk
-    // kareden sonra açılıyor.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) unawaited(_showIntro());
-    });
+    // Açılış penceresi YOK (1 Ekim 2026, ROADMAP #41 karar 5) — 1. sahne
+    // doğrudan açılır.
   }
 
   // ── Telemetri (Onboarding Faz 5) ───────────────────────────────────────
@@ -193,30 +196,6 @@ class _TutorialGameState extends State<TutorialGame> {
     _olayYaz('skip', (_stepIndex + 1).clamp(1, tutorialSteps.length));
     widget.onSkip();
   }
-
-  /// Tanıtımın ne olduğunu ve ne kadar süreceğini söyleyen tek pencere.
-  /// Kapanış kartıyla AYNI kabuk; kapatmanın her yolu (buton, bariyer, geri
-  /// tuşu) tanıtımı başlatır — pencerenin kendi bayrağı YOK, tanıtım zaten
-  /// "bir kere" gösteriliyor.
-  Future<void> _showIntro() => showDialog<void>(
-        context: context,
-        builder: (context) => KDialogCard(
-          title: const Text(tutorialIntroTitle,
-              style: TextStyle(
-                  fontSize: 18,
-                  height: 28 / 18,
-                  fontWeight: FontWeight.bold,
-                  color: kText)),
-          content: const Text(tutorialIntroText, style: kDialogBodyStyle),
-          actions: [
-            kDialogButton(
-              label: tutorialIntroButton,
-              variant: NeoButtonVariant.accent,
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
-      );
 
   void _onState() {
     if (mounted) setState(() {});
@@ -539,25 +518,21 @@ class _TutorialGameState extends State<TutorialGame> {
   /// oyunu başlatır — web'de `useModalA11y(mode === 'bitti', onFinish)`.
   Future<void> _showFinish() async {
     _olayYaz('finish');
+    final next = widget.next;
     await showDialog<void>(
       context: context,
-      builder: (context) => KDialogCard(
-        title: const Text(tutorialFinishTitle,
-            style: TextStyle(
-                fontSize: 18,
-                height: 28 / 18,
-                fontWeight: FontWeight.bold,
-                color: kText)),
-        content: const Text(tutorialFinishText, style: kDialogBodyStyle),
-        actions: [
-          kDialogButton(
-            label: widget.source == 'replay'
-                ? tutorialReplayFinishButton
-                : tutorialFinishButton,
-            variant: NeoButtonVariant.accent,
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
+      barrierColor: const Color(0x800F172A),
+      builder: (context) => _BitisKarti(
+        me: _state.players[0].score,
+        rakip: _state.players.length > 1 ? _state.players[1].score : 0,
+        nextLine: widget.source == 'replay' || next == null
+            ? null
+            : tutorialNextLine(
+                aiLevelLabel[next.aiLevel]!, next.playerCount),
+        buttonLabel: widget.source == 'replay'
+            ? tutorialReplayFinishButton
+            : tutorialFinishButton,
+        onPressed: () => Navigator.of(context).pop(),
       ),
     );
     if (!mounted) return;
@@ -976,4 +951,165 @@ class _TailDownPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_TailDownPainter old) => old.color != color;
+}
+
+/// Kapanış penceresi — ROADMAP #41 karar 6 (tasarım tuvali "Tanıtım bitti",
+/// 1 Ekim 2026): onay mührü + etiket, "Hazırsın!", strateji cümlesi,
+/// tanıtım skoru (SEN / RAKİP, oyuncu renklerinde), gri şeritte sıradaki oyun
+/// + turuncu düğme. Web ikizi `TutorialGame.tsx`teki `mode === 'bitti'`
+/// bloğu; ölçüler oradan.
+class _BitisKarti extends StatelessWidget {
+  final int me;
+  final int rakip;
+  final String? nextLine;
+  final String buttonLabel;
+  final VoidCallback onPressed;
+  const _BitisKarti({
+    required this.me,
+    required this.rakip,
+    required this.nextLine,
+    required this.buttonLabel,
+    required this.onPressed,
+  });
+
+  Widget _kutu(String label, int score, PlayerColor col, {required bool ben}) =>
+      Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: col.tint,
+            border: Border.all(color: col.base, width: ben ? 2 : 1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label,
+                  style: TextStyle(
+                      fontFamily: 'SpaceMono',
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                      color: col.text)),
+              Text('$score',
+                  style: const TextStyle(
+                      fontFamily: 'SpaceMono',
+                      fontSize: 20,
+                      height: 1.2,
+                      fontWeight: FontWeight.bold,
+                      color: kText)),
+            ],
+          ),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      key: const Key('tanitim-bitti'),
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 384),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
+                child: Row(children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD6F3E1),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: kGreen, width: 2),
+                    ),
+                    child: const Icon(Icons.check_rounded,
+                        size: 28, color: Color(0xFF0B5128)),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(tutorialFinishLabel,
+                            style: TextStyle(
+                                fontFamily: 'SpaceMono',
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                                color: Color(0xFF0B5128))),
+                        SizedBox(height: 2),
+                        Text(tutorialFinishTitle,
+                            style: TextStyle(
+                                fontSize: 28,
+                                height: 32 / 28,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.5,
+                                color: kText)),
+                      ],
+                    ),
+                  ),
+                ]),
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: Text(tutorialFinishText,
+                    style: TextStyle(
+                        fontSize: 15, height: 23 / 15, color: kText)),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
+                child: Row(children: [
+                  _kutu(tutorialFinishMe, me, playerColors[0], ben: true),
+                  const SizedBox(width: 8),
+                  _kutu(tutorialFinishOpponent, rakip, playerColors[1],
+                      ben: false),
+                ]),
+              ),
+              const SizedBox(height: 22),
+              Container(
+                padding: const EdgeInsets.fromLTRB(24, 18, 24, 24),
+                decoration: const BoxDecoration(
+                  color: kPanel,
+                  border: Border(top: BorderSide(color: kBorder)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (nextLine != null) ...[
+                      Text(nextLine!,
+                          style: const TextStyle(
+                              fontFamily: 'SpaceMono',
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                              color: kMuted)),
+                      const SizedBox(height: 10),
+                    ],
+                    SizedBox(
+                      height: 54,
+                      child: NeoButton(
+                        label: buttonLabel,
+                        variant: NeoButtonVariant.orange,
+                        fontSize: 15,
+                        letterSpacing: 1,
+                        onPressed: onPressed,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

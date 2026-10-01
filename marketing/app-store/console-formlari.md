@@ -1631,8 +1631,8 @@ tek yolu uygulamayı silip yeniden kurmak olurdu — cihaz bayrakları ve yerel
 veri gider, baştan giriş gerekir. Tanıtımın kazancı (köşe-bölge mekaniğini
 60 saniyede anlatması) zaten İngilizce ANLATIMLA sağlanıyor.
 
-⚠ Başka bir sebeple yeniden kurulursa tanıtım açılır ve önünde bir karşılama
-penceresi çıkar (*"Kelimeki Tanıtım Turu"*). O durumda kesme — oynat ya da
+⚠ Başka bir sebeple yeniden kurulursa tanıtım açılır (1.1.2'den beri önünde
+bir karşılama penceresi YOK, doğrudan 1. sahne). O durumda kesme — oynat ya da
 atla, ama ne olduğunu söyle: *"this is the built-in tutorial that first-time
 players see."*
 

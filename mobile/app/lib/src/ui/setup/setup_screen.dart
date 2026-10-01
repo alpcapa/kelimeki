@@ -1070,7 +1070,7 @@ class _SetupScreenState extends State<SetupScreen>
   /// tanıtım AÇILIRKEN konur, bitince değil — kullanıcı isteği "bir kere"
   /// ve yarıda kapatılan tanıtım sonsuz döngüye dönüşmemeli.
   Future<void> _runTutorial(String me, SetWordSource words,
-      {String source = 'auto'}) async {
+      {String source = 'auto', ({AiLevel aiLevel, int playerCount})? next}) async {
     final storage = widget.services.storage;
     if (storage != null) {
       try {
@@ -1089,6 +1089,7 @@ class _SetupScreenState extends State<SetupScreen>
         auth: widget.services.auth,
         source: source,
         games: widget.services.games,
+        next: next,
         onFinish: () => Navigator.of(ctx).pop(),
         onSkip: () => Navigator.of(ctx).pop(),
       ),
@@ -1129,7 +1130,8 @@ class _SetupScreenState extends State<SetupScreen>
     // kapanmadan ÇAĞRILMAZ). Tanıtım bir oyun değildir — controller,
     // kayıt oturumu ve `game_starts` sayacı ancak buradan sonra kurulur.
     if (await _tanitimGosterilsinMi()) {
-      await _runTutorial(me, words);
+      await _runTutorial(me, words,
+          next: (aiLevel: level, playerCount: _count));
       if (!mounted) return;
     }
     final controller = GameController(words: words);

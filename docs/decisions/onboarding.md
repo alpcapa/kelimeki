@@ -386,6 +386,8 @@ ile üretilir; "portta canlı mı" sorusunun cevabı Setup'taki `Derleme` sha's�
 
 ## Tarayıcı turu — karşılama penceresi + balon düzeltmesi (7 Eylül 2026 akşamı)
 
+> ⚠ **1 Ekim 2026: aşağıdaki karşılama penceresi KALKTI** (ROADMAP #41 karar 5). Kayıt tarihçe olarak duruyor.
+
 Kullanıcı Faz 4'ün Pages derlemesini tarayıcıda denedi ve üç şey bildirdi.
 İkisi hataydı, biri eksik bir ürün adımı.
 
@@ -875,8 +877,8 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** zorluğun hemen altında, AKIŞTA (⚠ "altta sabit" denendi ve GERİ ALINDI — iOS yüzen çubuğu örtüyor, aşağı bkz.) | ✅ WEB (27 Eyl) · ✅ PORT (1 Eki, 1.1.2 — Parça 219; misafir paragrafı aynı gün #737'de) | `Setup.tsx` ↔ `setup_screen.dart` |
 | 3 | Setup'ta "1 dk'lık tanıtımla başlar" satırı YOK | — | — |
 | 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | ✅ WEB (27 Eyl) · ✅ PORT (1 Eki, kontrol grubu iptal — aşağı bkz.) | `handleStart` (`Setup.tsx`) ↔ `_handleStart` (`setup_screen.dart`) |
-| 5 | Tanıtımın açılış penceresi ("Kelimeki Tanıtım Turu / Devam") KALKAR, 1. sahne doğrudan açılır | Var | `TutorialGame` ↔ `ui/tutorial/*` |
-| 6 | Ayrı bir "Hazırsın" ekranı YOK; mevcut bitiş penceresi yeni tasarıma geçer (onay mührü, tanıtım skoru, sıradaki oyun, turuncu düğme) | Düz pencere | aynı |
+| 5 | Tanıtımın açılış penceresi ("Kelimeki Tanıtım Turu / Devam") KALKAR, 1. sahne doğrudan açılır | ✅ WEB + PORT (1 Eki, 1.1.2 — aynı PR, Parça 223) | `TutorialGame` ↔ `ui/tutorial/*` |
+| 6 | Ayrı bir "Hazırsın" ekranı YOK; mevcut bitiş penceresi yeni tasarıma geçer (onay mührü, tanıtım skoru, sıradaki oyun, turuncu düğme) | ✅ WEB + PORT (1 Eki, 1.1.2 — Parça 223): "TANITIM TAMAM · 4/4", SEN/RAKİP kutuları, "SIRADAKİ: YAPAY ZEKA · {zorluk} · {n} KİŞİ" (yalnız `auto`), turuncu düğme; metinler `tutorialScript.ts`te, `tutorial_parity_test` kilitler | aynı |
 | 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | ✅ WEB (27 Eyl, `defaultAiLevel`) · ✅ PORT (1 Eki, `defaultAiLevel` + `_ilkOyunMu`) | `Setup.tsx:340` ↔ `setup_screen.dart` |
 | 8 | Rakibin adı **Yapay Zeka** (27 Eylül, kullanıcı: *"yapay zeka kalsın"*); oyun içi skor kutusundaki "YZ 2" kısaltması DEĞİŞMEZ | Aynı | — |
 | 9 | Arkadaşınla, girişsiz: alttan açılan giriş uyarısı (ÜYE OL · GİRİŞ YAP · YAPAY ZEKAYLA DEVAM ET) | ✅ WEB (27 Eyl, `GuestLiveSheet`) · ✅ PORT (1 Eki, 1.1.2 — `ui/live/guest_live_sheet.dart`, Parça 220) | `LiveGamesTab` |
@@ -1060,10 +1062,10 @@ taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
 60 saniyelik bir mini oyun geliyor (`TutorialGame` + `utils/tutorialScript.ts`).
 Dört sahne: ev karesi → bölgenin büyümesi → merkezde ×2 → merkez karesinde
 ×3 + sınıra değme vergisi (dördüncüsü iki dersi tek hamlede verir); her
-hamleden sonra rakip de oynuyor. Tanıtım AÇILIRKEN tek bir karşılama
-penceresi çıkar (*"Kelimeki Tanıtım Turu"* + Devam) — oyuncu kendini gerçek
-oyunda sanmasın diye (7 Eylül 2026 akşamı, kullanıcı isteği); pencere
-kapının parçası DEĞİL, kendi bayrağı yok. Pencere SİLİNMEDİ —
+hamleden sonra rakip de oynuyor. Tanıtım AÇILIRKEN çıkan karşılama penceresi
+(*"Kelimeki Tanıtım Turu"* + Devam, 7 Eylül 2026) **1 Ekim 2026'da KALKTI**
+(ROADMAP #41 karar 5) — 1. sahne doğrudan açılır; kapanış penceresi yeni
+düzende (karar 6: onay mührü, tanıtım skoru, SIRADAKİ satırı, turuncu düğme). Pencere SİLİNMEDİ —
 kendiliğinden açılmıyor, "Yardım" linkinden ve `/nasil-oynanir/`ten erişilir.
 
 Her yerde geçerli dört kural:

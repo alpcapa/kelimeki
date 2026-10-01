@@ -2346,14 +2346,9 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
     await devamButton.click();
   }
 
-  // Karşılama penceresi (7 Eylül 2026 akşamı, kullanıcı isteği): tanıtım
-  // AÇILIR AÇILMAZ ne olduğunu söyler — oyuncu kendini gerçek oyunda
-  // sanmasın. "Devam" ile kapanır ve tanıtım başlar.
-  const karsilama = page.getByRole('dialog', { name: 'Kelimeki Tanıtım Turu' });
-  await expect(karsilama).toBeVisible();
-  await expect(karsilama).toContainText('Yaklaşık 1 dk');
-  await karsilama.getByRole('button', { name: 'Devam', exact: true }).click();
-  await expect(karsilama).toBeHidden();
+  // Açılış penceresi YOK (1 Ekim 2026, ROADMAP #41 karar 5) — 1. sahne
+  // doğrudan açılır.
+  await expect(page.getByRole('dialog', { name: 'Kelimeki Tanıtım Turu' })).toHaveCount(0);
 
   // Tanıtım ekranı: sahne sayacı + ilk sahnenin balonu.
   await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
@@ -2458,6 +2453,10 @@ test('Tanıtım: dört sahne oynanır, vergi onayı çıkar, gerçek oyun başla
   // Kapanış, dört sahnenin dersini tek stratejiye bağlıyor (bingo değil).
   await expect(bitis).toContainText('nereye koyduğun');
   await expect(bitis).toContainText('rakibin hareket alanını');
+  // Yeni düzen (ROADMAP #41 karar 6): etiket, tanıtım skoru (senaryonun son
+  // skoru), sıradaki oyun — Setup'taki seçim (misafir → Kolay, 2 kişi).
+  await expect(bitis).toContainText(/tanıtım tamam · 4\/4/i);
+  await expect(bitis).toContainText(/sıradaki: yapay zeka · kolay · 2 kişi/i);
   await bitis.getByRole('button', { name: 'Gerçek oyuna başla' }).click();
 
   // Gerçek oyun ekranı: tanıtımda olmayan kontroller burada var.
@@ -2531,8 +2530,7 @@ test('Faz 3: "Nasıl oynanır?" penceresinden tanıtım tekrar oynanır, oyun BA
   await expect(tekrar).toBeVisible();
   await tekrar.click();
 
-  // Tanıtım açıldı: karşılama penceresi + sahne sayacı.
-  await page.getByRole('button', { name: 'Devam', exact: true }).click();
+  // Tanıtım açıldı: açılış penceresi YOK (ROADMAP #41 karar 5), sahne sayacı.
   await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
 
   // Atla → Setup'a DÖNER (gerçek oyun başlamaz: "Pas Geç" yok, tahta yok).
@@ -2560,7 +2558,6 @@ test.describe('tanıtım sürükleme', () => {
     if (await devamButton.isVisible().catch(() => false)) {
       await devamButton.click();
     }
-    await page.getByRole('button', { name: 'Devam', exact: true }).click();
     await expect(page.getByText('TANITIM · 1/4')).toBeVisible();
 
     const vurgulu = page.locator('[data-rack-tile] div[style*="outline"]').first();

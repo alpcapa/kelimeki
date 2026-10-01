@@ -17,10 +17,8 @@ import { expect, type Page } from '@playwright/test';
  * devam eden akışlar bu satıra hiç uğramıyor ama uğrarsa takılmasınlar.
  */
 export async function tanitimiAtla(page: Page): Promise<void> {
-  // Tanıtım artık bir KARŞILAMA PENCERESİYLE açılıyor (7 Eylül 2026 akşamı)
-  // ve pencere "ATLA →"nın üstünde duruyor — önce o kapatılmalı, yoksa
-  // tıklama perdeye düşer.
-  const devam = page.getByRole('button', { name: 'Devam', exact: true });
+  // Tanıtımın açılış penceresi 1 Ekim 2026'da kalktı (ROADMAP #41 karar 5) —
+  // "ATLA →" doğrudan görünür.
   const atla = page.getByRole('button', { name: 'ATLA →' });
   // ⚠ BEKLEME BİR YARIŞ, iki ayrı zaman aşımı DEĞİL (16 Eylül 2026'da
   // ölçüldü). Eskiden tanıtımın HİÇ çıkmadığı akışlarda (kayıttan devam eden
@@ -32,16 +30,11 @@ export async function tanitimiAtla(page: Page): Promise<void> {
   // ekranının "Pas Geç"i — hangisi önce görünürse bekleme orada biter
   // ("Pas Geç" `TutorialGame`de YOK, yalnızca gerçek oyun ekranında var).
   const oyunHazir = page.getByRole('button', { name: 'Pas Geç' });
-  await devam
-    .or(atla)
+  await atla
     .or(oyunHazir)
     .first()
     .waitFor({ state: 'visible', timeout: 5_000 })
     .catch(() => {});
-  if (await devam.isVisible().catch(() => false)) {
-    await devam.click();
-    await atla.waitFor({ state: 'visible', timeout: 5_000 }).catch(() => {});
-  }
   if (await atla.isVisible().catch(() => false)) {
     await atla.click();
   }

@@ -1500,6 +1500,14 @@ export default function App() {
         }}
         onSkip={kapat}
         source={tekrar ? 'replay' : 'auto'}
+        next={
+          tekrar
+            ? undefined
+            : {
+                aiLevel: (tutorial as { aiLevel?: AiLevel }).aiLevel ?? 'normal',
+                playerCount: (tutorial as { players: PlayerSetup[] }).players.length,
+              }
+        }
       />
     );
   }
