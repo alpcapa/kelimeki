@@ -10,8 +10,8 @@
 // Oyun" satırı (avatarlar + Sıra: + kalan süre) ve 7 gün paragrafı; misafirin
 // her iki görünümünde de (Devam Eden Oyun / boş form) "Neden Ücretsiz Üye
 // Olmalıyım?" kutusu (`MembershipPerksBox`, 7 Ağustos 2026). "Nasıl oynanır?"
-// linki kurallar modalını açar; yanındaki "Tanıtım" `IntroScreen`'i yeniden
-// gösterir (bayrağa dokunmadan).
+// linki kurallar modalını açar (yanındaki "Tanıtım" linki 1 Ekim 2026'da
+// kalktı — açılış tek sayfa).
 //
 // 17 Ağustos 2026 — GİRİŞLİ/MİSAFİR ekranı ikiye ayrıldı (web'deki aynı gün
 // verilen kararla birebir): logonun altındaki tanıtım paragrafı + link satırı
@@ -58,7 +58,6 @@ import '../../util/share_board.dart';
 import '../game/count_badge.dart';
 import '../game/game_screen.dart';
 import '../game/help_modal.dart';
-import '../intro/intro_screen.dart';
 import '../game/logo_mark.dart';
 import '../game/neo_button.dart';
 import '../game/player_avatar_row.dart';
@@ -537,23 +536,6 @@ class _SetupScreenState extends State<SetupScreen>
       text: 'Hemen ücretsiz dene!',
       url: '$webOrigin/?ref=arkadas',
       origin: shareOriginFrom(_shareLinkKey.currentContext ?? context),
-    );
-  }
-
-  /// Tanıtım ekranını YENİDEN açar (19 Ağustos 2026, kullanıcı isteği:
-  /// menüdeki "Tanıtım" maddesi kaldırılıp logo altındaki link satırına
-  /// taşındı — "Arkadaşınla paylaş"ın yerine).
-  ///
-  /// `seenIntro` bayrağına DOKUNMAZ: bayrak "ilk açılışta gösterildi mi"
-  /// sorusunun cevabı, buradan açmak kullanıcının kendi isteği. `onDone`
-  /// bu yolda yalnızca pop eder — Setup'a "geçiş" yok, zaten Setup'tayız.
-  void _openIntro() {
-    Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        // Telemetrideki `route` alanı — bkz. `ErrorReporterRouteObserver`.
-        settings: const RouteSettings(name: 'intro'),
-        builder: (ctx) => IntroScreen(onDone: () => Navigator.of(ctx).pop()),
-      ),
     );
   }
 
@@ -1334,24 +1316,11 @@ class _SetupScreenState extends State<SetupScreen>
                                     },
                                   ),
                                 ),
-                                // Web'de ayraç `gap-2` (8+8) ile ayrılmış bir
-                                // `·`; buradaki boşluklu ' · ' ölçülerek aynı
-                                // yere düşüyor (19.8'e karşı web 19.67) —
-                                // yeniden yapılandırmaya gerek yok.
-                                const Text(' · ',
-                                    style: TextStyle(
-                                        fontFamily: 'SpaceMono',
-                                        fontSize: 11,
-                                        letterSpacing: 0,
-                                        color: _muted)),
-                                // 19 Ağustos 2026 (kullanıcı isteği):
-                                // buradaki "Arkadaşınla paylaş" footer'a
-                                // taşındı (aşağı bkz.), yerine tanıtıma
-                                // dönüş linki kondu. Bu yol `seenIntro`
-                                // bayrağına DOKUNMAZ — kullanıcının kendi
-                                // isteğiyle açılan bir tekrar gösterim,
-                                // "ilk açılış" değil (bkz. FlagsStore).
-                                _InlineLink('Tanıtım', onTap: _openIntro),
+                                // 1 Ekim 2026 (1.1.2 cihaz turu, kullanıcı):
+                                // yanındaki "Tanıtım" linki KALKTI — açılış
+                                // artık tek sayfa (ROADMAP #41 karar 14),
+                                // tekrar göstermeye gerek yok. Web de
+                                // yalnız "Nasıl oynanır?" taşıyor.
                               ],
                             ),
                           ),
@@ -2129,7 +2098,7 @@ class _ChoiceButton extends StatelessWidget {
 }
 
 /// Web'in `font-mono text-[11px] font-bold text-accent hover:underline`
-/// linkleri — "Nasıl oynanır?" / "Tanıtım" satırında paylaşılıyor.
+/// linkleri — "Nasıl oynanır?" satırı.
 /// Setup'ın en altındaki hukuki linkler — web `text-[10px] font-mono
 /// text-muted` (accent DEĞİL, `_InlineLink`'ten bu yüzden ayrı).
 class _LegalLink extends StatelessWidget {

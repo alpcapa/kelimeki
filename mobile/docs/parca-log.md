@@ -25,6 +25,34 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 225 — 1.1.2 cihaz turu bulguları: "Tanıtım" linki · "Kişi" etiketi · k-lig başlığı (1 Ekim 2026)
+
+Kullanıcı 1.1.2 (826) TestFlight turunda üç bulgu bildirdi:
+
+1. **Setup'ın "Tanıtım" linki kalktı** — *"Tek sayfa tanıtım çıktı.
+   Setup'daki tanıtım linkine gerek yok."* Misafir logo altı satırında
+   yalnız "Nasıl oynanır?" kaldı (web de yalnız onu taşıyor). `_openIntro`
+   silindi; `IntroScreen`e dönüş yolu YOK.
+2. **Skor kartı "2 OYUNCULU / 4 OYUNCULU" → "2 KİŞİ / 4 KİŞİ"** — web
+   27 Eylül'den beri "Kişi" diyordu (`ScoreStatsSection.tsx` `SCORE_TABS`),
+   port ayrışmıştı. Aynı turda iki boş liste metni ("… kişilik oyun
+   kaydın/kaydı yok") ve Tüm Oyunlar başlığı ("Tüm Oyunlar · N Kişi",
+   web `GameHistoryModal`) eşlendi. **Kök sebep kapısızlık:** yeni
+   `score_labels_parity_test.dart` etiketleri web kaynağından okuyor.
+3. **k-lig başlığı "SIRAOYUNCU"** — "SIRA" 28'lik kutuyu ~26 px
+   dolduruyordu, "OYUNCU" hemen ardından başlıyordu. Web'deki `gap-1`
+   (4px) eklendi. Kullanıcının *"1000'li rakamlar"* sorusu ölçüldü:
+   375 pt'de 4 haneli puan ölçek 1,0 VE 1,3'te tam boy sığıyor; 5 hane ve
+   OHP tavanda %10 kadar küçülüyor (hücreler bilerek en fazla ×1,15
+   büyüyor — `scaledWidth`). `score_card_test` iki ölçekte kilitliyor.
+
+Kapanan bir "bulgu" daha: yazılar web'den büyük görünüyordu — sebebi iPad
+Safari'nin masaüstü kipi (web küçültülerek çiziliyor); "Mobil Web Sitesi
+İste" ile aynı göründü, uygulamada değişiklik YOK.
+
+**Doğrulama:** `flutter analyze` temiz (bilinen tek info), `flutter test`
+tam takım yeşil. **Sınır:** cihazda bakılmadı (sonraki TestFlight).
+
 ## Parça 224 — `IntroScreen` TEK EKRAN: web'in yeni ilk ekranı (1 Ekim 2026, ROADMAP #41 karar 14)
 
 - **Kullanıcı kararı** (seçenekli soru, 1 Eki): *"Web'in yeni ilk ekranı

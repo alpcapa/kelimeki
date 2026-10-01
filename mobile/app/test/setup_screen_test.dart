@@ -32,7 +32,6 @@ import 'package:kelimeki/src/ui/auth/account_button.dart';
 import 'package:kelimeki/src/ui/game/logo_mark.dart';
 import 'package:kelimeki/src/ui/game/game_screen.dart';
 import 'package:kelimeki/src/ui/tutorial/tutorial_game.dart';
-import 'package:kelimeki/src/ui/intro/intro_screen.dart';
 import 'package:kelimeki/src/ui/live/guest_live_sheet.dart';
 import 'package:kelimeki/src/util/live_game_request.dart';
 import 'package:kelimeki/src/ui/live/live_games_tab.dart';
@@ -802,24 +801,18 @@ void main() {
     expect(find.byType(LiveGamesTab), findsOneWidget);
   });
 
-  // 19 Ağustos 2026: logo altındaki satırın ikinci linki "Arkadaşınla
-  // paylaş" DEĞİL "Tanıtım" (paylaşım footer'a taşındı, bkz. aşağıdaki
-  // footer testleri). Link `seenIntro` bayrağına DOKUNMAZ — bu, kapının
-  // "ilk açılış" kararından bağımsız, kullanıcının kendi isteğiyle
-  // açtığı bir tekrar gösterim.
-  testWidgets('"Tanıtım" linki IntroScreen\'i açar', (tester) async {
+  // 1 Ekim 2026 (1.1.2 cihaz turu, kullanıcı): "Tanıtım" linki KALKTI —
+  // açılış tek sayfa, tekrar göstermeye gerek yok.
+  testWidgets('misafirde "Tanıtım" linki YOK', (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await pumpSetup(tester, services());
-
-    expect(find.byType(IntroScreen), findsNothing);
-    await tester.tap(find.text('Tanıtım'));
-    await tester.pumpAndSettle();
-    expect(find.byType(IntroScreen), findsOneWidget,
-        reason: 'link bağlanmamış — kablo kopuk');
+    expect(find.text('Nasıl oynanır?'), findsOneWidget);
+    expect(find.text('Tanıtım'), findsNothing);
+    expect(find.text(' · '), findsNothing);
   });
 
   testWidgets(
-      '"Nasıl oynanır? · Tanıtım" satırı ORTALI (web text-center paritesi)',
+      '"Nasıl oynanır?" satırı ORTALI (web text-center paritesi)',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await tester.pumpWidget(MaterialApp(
@@ -950,7 +943,6 @@ void main() {
     double? trackingOf(Finder f) =>
         tester.renderObject<RenderParagraph>(f).text.style?.letterSpacing;
     expect(trackingOf(find.text('Nasıl oynanır?')), 0);
-    expect(trackingOf(find.text('Tanıtım')), 0);
   });
 
   // 17 Ağustos 2026 — girişli/misafir Setup ekranı ikiye ayrıldı: logonun
@@ -988,7 +980,6 @@ void main() {
     // Paragraf 1 Ekim 2026'da kalktı (ROADMAP #41 karar 2, web 27 Eylül).
     expect(find.textContaining('Kelimeler kurarak'), findsNothing);
     expect(find.text('Nasıl oynanır?'), findsOneWidget);
-    expect(find.text('Tanıtım'), findsOneWidget);
   });
 
   // 19 Ağustos 2026 (kullanıcı isteği): "Paylaş" artık GİRİŞTEN BAĞIMSIZ —

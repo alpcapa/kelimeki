@@ -24,8 +24,8 @@
 //   (`HelpModal`) açıyor.
 //
 // SETUP BAŞLIĞINA GERİ OKU KONMADI (web'de var, portta YOK — bkz.
-// mobile/CLAUDE.md "Karşılama Katmanı"). Bu ekrana dönüş Setup'ın logo
-// altındaki "Tanıtım" linkinden (yalnız misafirde).
+// mobile/CLAUDE.md "Karşılama Katmanı"). Bu ekrana DÖNÜŞ YOLU YOK: Setup'taki
+// "Tanıtım" linki 1 Ekim 2026'da (1.1.2 cihaz turu, kullanıcı) kalktı.
 import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart' show trUpper;
 
@@ -56,8 +56,7 @@ const double _kEnFazlaYukseklik = 760;
 
 class IntroScreen extends StatefulWidget {
   /// "HEMEN OYNA"ya basıldığında çağrılır — ekranın TEK çıkışı. İlk
-  /// açılışta bayrağı yazıp Setup'a geçmek çağıranın işi; Setup'taki
-  /// "Tanıtım" linkinden açıldığında yalnızca `Navigator.pop`.
+  /// açılışta bayrağı yazıp Setup'a geçmek çağıranın işi.
   final VoidCallback onDone;
 
   const IntroScreen({super.key, required this.onDone});

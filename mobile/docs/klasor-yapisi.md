@@ -212,8 +212,8 @@ mobile/
                              # karşılama İLK EKRANININ portu (ROADMAP #41
                              # karar 14, Parça 224; öncesi 5 slayt, Parça
                              # 116-119). Setup'ın ÖNÜNDE; ATLAMA YOK, tek
-                             # çıkış "HEMEN OYNA". Tekrar açma yolu Setup'ın
-                             # logo altı "Tanıtım" linki (yalnız misafir);
+                             # çıkış "HEMEN OYNA". Tekrar açma yolu YOK
+                             # (Setup'taki "Tanıtım" linki 1 Eki'de kalktı);
                              # kapısı app.dart'taki _HomeGate, bayrağı
                              # FlagsStore.seenIntro. Metinler Landing.tsx'e
                              # intro_screen_test ile KİLİTLİ.

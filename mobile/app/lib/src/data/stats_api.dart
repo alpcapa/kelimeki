@@ -18,8 +18,8 @@ import 'profile_fields.dart';
 /// Web `TabKey` ('all' | 2 | 4).
 enum StatsTab {
   all('Genel'),
-  two('2 Oyunculu'),
-  four('4 Oyunculu');
+  two('2 Kişi'),
+  four('4 Kişi');
 
   final String label;
   const StatsTab(this.label);

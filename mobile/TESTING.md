@@ -118,11 +118,9 @@ bir daha ÇIKMAZ.
       çıkmıyor** — uygulamayı tamamen kapatıp yeniden aç, doğrudan Setup
       gelmeli. (Bayrak yazılmıyorsa ekran her açılışta çıkar; bu
       maddenin asıl ölçtüğü şey o.)
-- [ ] **Setup'ın logo altındaki "Tanıtım" linki her zaman açıyor**
-      (yalnız misafirde). HEMEN OYNA orada yalnızca geri döner; açıp
-      kapattıktan SONRA uygulamayı yeniden başlat — ekran yine ÇIKMAMALI.
-- [ ] **O satır YALNIZCA MİSAFİRDE var** — girişli kullanıcının bu ekrana
-      dönüş yolu YOK (web ile parite).
+- [ ] **Setup'ta "Tanıtım" linki YOK** (1 Ekim 2026, 1.1.2 cihaz turu —
+      açılış tek sayfa, dönüş yolu bilerek kalktı). Misafirde logo altında
+      yalnız "Nasıl oynanır?" var, ortalı.
 - [ ] **Setup başlığında ok/geri düğmesi YOK** — bilinçli ayrışma
       (web'de `<` var). Bkz. mobile/CLAUDE.md "Karşılama Katmanı".
 - [ ] **Yatay taşma / sarı-siyah şerit yok**, 320-375 pt dar ekranda da.

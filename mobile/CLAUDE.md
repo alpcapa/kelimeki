@@ -638,7 +638,9 @@ sunucu `coalesce` ile ortak, bkz. ROADMAP #23):
    `swap_limit_parity_test`, 14 Eylül 2026; kullanıcıya gösterilen hata
    metninin kapısı — metinler + kalıp sayıları, `error_message_parity_test`,
    13 Eylül 2026; Huni v2 olay/platform adları + `mevcut` kanalı —
-   `funnel_events_parity_test`, 27 Eylül 2026) — **yeni bir
+   `funnel_events_parity_test`, 27 Eylül 2026; skor kartı sekme etiketleri
+   "2 Kişi/4 Kişi" + "kişilik" metinleri — `score_labels_parity_test`,
+   1 Ekim 2026) — **yeni bir
    elle-senkron çift eklerken testini de yaz**, desen hazır (web kaynağını/
    migration'ı okuyup karşılaştır). Bugün kapısı OLMAYAN tek çift: k-lig kademe
    tablosunun SQL yarısı (`_award_league_rewards`in güncel tanımı tek bir
