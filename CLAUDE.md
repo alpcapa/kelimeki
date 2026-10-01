@@ -197,6 +197,15 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | `mobile/` DIŞINDA bir dosya (port işi sırasında) | kök `CLAUDE.md`/`README.md` — port dokümanı TEK BAŞINA yetmez |
 | `ROADMAP.md`'deki bir madde/faz KAPANDI (✅ · YAPILDI · CANLIDA · SAHADA) | Aynı PR'da `docs/decisions/roadmap-arsiv.md`'ye TAŞI — ROADMAP yalnızca AÇIK maddeleri tutar. Başlığı/numarayı/satırları değiştirme (atıflar kırılır); dosyanın kendi kuralıydı, uygulanmayınca %45'i kapanmış işe döndü (2 Eylül 2026) |
 
+⚠ **Her iş ve KARAR aynı turda repoya yazılır — kod değişmese bile**
+(29 Eylül 2026, kullanıcı: *"tüm yapılan işler yazılmalı ki sürekli güncel
+kalalım"*). Oturumlar birbirini GÖRMEZ, ortak hafıza yalnızca repo. Sohbette
+verilen karar ya da repo dışında yapılan iş (Ads Manager, konsol, mağaza,
+Supabase paneli) ilgili kütüğe/durum tablosuna, yoksa `ROADMAP.md`'ye tarihli
+bir satır olur; "sonra yazarım" yok. Vaka: Meta'da `kare` reklamı bir oturumda
+kapatıldı, yazılmadı, ertesi oturum kullanıcıya "kapalı görünüyor, siz mi
+kapattınız?" diye sordu.
+
 Mobil portun kendi (daha ayrıntılı, Dart'a özgü) sürümü: `mobile/CLAUDE.md`,
 "Etki Analizi" ve "Parça Bitirme Kontrol Listesi" bölümleri — orada tek
 komutluk bir grep taraması da var.
@@ -286,14 +295,16 @@ oturumun klonu sığ olabiliyor (`git fetch --unshallow`), ve Türkçe metinde
 tek başına yetmez. Doğrusu: commit'in getirdiği İÇERİĞİ `main`'de ara. Üç
 tuzağın tam tablosu ve vakası: `docs/decisions/supabase-ops.md`.
 
-⚠ **Dal SİLMEYİ ajan yapamaz — üç kapı da kapalı** (4 Eylül 2026'da
-ölçüldü): `git push --delete` 403, GitHub MCP'de ref silen araç yok,
-`branch-cleanup.yml`i dispatch etmek de 403 (App'in `actions: write`i yok —
-10 Eylül 2026'da ölçüldü: bu HER `workflow_dispatch` için geçerli,
-`ios-screenshots.yml` de 403 verdi).
-Doğru davranış "ben hallederim" demek değil, kullanıcıya adımı vermek:
-**Actions → "Dal temizliği" → Run workflow**, önce `dry_run` AÇIK, liste
-doğrulanınca KAPALI ile tekrar. ⚠ Vaat etmeden ÖNCE dene.
+⚠ **Dal silme — `workflow_dispatch` ARTIK AÇIK (1 Ekim 2026).** Kullanıcı
+Claude GitHub App'ine "Read and write access to actions" verdi; aynı gece
+`branch-cleanup.yml` `dry_run: true` ile ajan tarafından tetiklendi ve
+**204** döndü (koşu 36786438571, başarılı). Yani ajan HER `workflow_dispatch`i
+(dal temizliği, `ios-screenshots.yml`…) artık kendisi başlatabilir. Öncesi:
+4 Eylül'de üç kapı da kapalıydı, 10 Eylül'de dispatch 403 ölçülmüştü.
+Hâlâ geçerli olanlar: GitHub MCP'de ref silen araç yok; `git push --delete`
+yeniden denenmedi. Dal temizliğinde sıra aynı: önce `dry_run` AÇIK, listeyi
+kullanıcıya göster, onay gelince KAPALI ile tekrar — silme geri alınamaz,
+dispatch yetkisi onay adımını KALDIRMAZ.
 
 ## Belgeleri Güncel Tutma
 
@@ -722,6 +733,12 @@ insan konuşuyor (`_shared/email.ts` → `KELIMEKI_SENDER` ↔
 kullanılır. Yeni bir mail gönderen fonksiyon yazarken ikisinden birini SEÇ,
 üçüncü bir adres uydurma. Ayrıntı: `docs/decisions/support-email.md`.
 
+⚠ **Kurumsal ad tek: `Kelimeki Destek`** (29 Eylül 2026, kullanıcı:
+*"standartımız bu olacak"*). Mail imzası (`Saygılarımızla, Kelimeki Destek`)
+ve destek@'in gönderen adı bunu kullanır — "Müşteri Hizmetleri" gibi ikinci
+bir ad UYDURMA. Zoho'dan elle
+yazılan cevapların görünen adı da aynı (Zoho → Send Mail As, doğrulandı).
+
 ### Migration'lar — CI YOK, her migration ELLE uygulanır
 
 Kullanıcı iPad'den çalışıyor; bunu tetikleyecek bir CLI/CI erişimi yok.
@@ -766,11 +783,13 @@ Duyuru, ölçümler ve o istisnanın bugünkü riski:
 2. **`verify_jwt` sessizce sıfırlanır:** parametre geçilmezse araç `true`
    varsayar ve önceki değeri KORUMAZ. **Her deploy'dan ÖNCE
    `list_edge_functions` ile mevcut değeri oku ve AYNI değeri açıkça geçir.**
-   `false` olması gereken YEDİ fonksiyon (5 Eylül 2026'da canlıdan sayıldı):
+   `false` olması gereken SEKİZ fonksiyon (5 Eylül 2026'da canlıdan sayıldı,
+   30 Eylül'de `notify-admin-alerts` eklendi):
    `notify-deadline-warnings`, `notify-friend-request-reminders`,
    `notify-turn-timeout-surrender`, `notify-welcome`,
-   `sweep-unconfirmed-accounts`, `inbound-email`, `notify-your-turn`.
-   Yedisi de bir cron/webhook hedefi, yani gerçekten herkese açık bir POST
+   `sweep-unconfirmed-accounts`, `inbound-email`, `notify-your-turn`,
+   `notify-admin-alerts`.
+   Hepsi bir cron/webhook hedefi, yani gerçekten herkese açık bir POST
    ucu olmak zorunda; güvenlik geçişi (5 Eylül 2026) üçünü ayrıca okuyup
    doğru yazıldıklarını (atomik iddia, taze pencere, hedefi gövdeden değil
    canlı durumdan alma) kayda geçirdi.

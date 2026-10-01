@@ -128,25 +128,12 @@ export function buildNoReplyNoticeHtml(): string {
   );
 }
 
-// DESTEK (destek@) mailleri için. Artık "cevap veremezsin, tıkla" demiyor —
-// adres gerçek bir kutu, doğrudan yanıtlamak ÇALIŞIYOR. Sitedeki form yine de
-// ikinci bir yol olarak duruyor: kelimeki.com'daki ?contact=1 parametresini
-// App.tsx okuyup genel "Görüş Bildir" formunu (source: 'general') otomatik
-// açar; threadId verilirse ?re=<id> olarak eklenir ve gönderilen mesaj
-// feedback.related_to ile bu mesaja bağlanır (admin panelinde "↳ Cevaben").
-//
-// ⚠ İki yolun VARDIĞI YER FARKLI ve bu bilinçli: doğrudan yanıt Zoho
-// kutusuna düşer (admin panelinde okunmaz, yalnızca "Zoho" rozetini artırır),
-// sitedeki form ise doğrudan admin paneline düşer.
-export function buildSupportReplyNoticeHtml(threadId?: string): string {
-  const url = threadId
-    ? `https://kelimeki.com/?contact=1&re=${encodeURIComponent(threadId)}`
-    : 'https://kelimeki.com/?contact=1';
-  return noticeShell(
-    `Bu e-postayı doğrudan yanıtlayabilirsin — cevabın ${SUPPORT_EMAIL} adresine ulaşır. ` +
-      `Dilersen <a href="${url}" style="color: #2563EB; text-decoration: underline;">siteden de yazabilirsin</a>.`,
-  );
-}
+// DESTEK (destek@) maillerinde not kutusu YOK (29 Eylül 2026, kullanıcı
+// kararı): eskiden "Bu e-postayı doğrudan yanıtlayabilirsin — … Dilersen
+// siteden de yazabilirsin" yazıyordu. Mail bir insandan geliyor, "Yanıtla"
+// zaten destek@'e (Zoho) düşüyor; notun söylediği şey kendiliğinden doğru.
+// Sitedeki ?contact=1&re=<id> yolu App.tsx'te duruyor (ban maili hâlâ
+// kullanıyor), yalnızca destek maillerinden link verilmiyor.
 
 /**
  * Brevo hatasını admin'in ANLAYACAĞI bir cümleye çevirir.

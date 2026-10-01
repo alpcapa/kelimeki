@@ -332,3 +332,16 @@ bölgeni büyüt, tahtayı ele geçir.", punto 0,8× — 56 px'te "tahtayı ele
 geçir." güvenli kutuya sığmıyor). Play dosyalarına dokunmuyor. Kare için
 ayrı varyant yok: `sponsored-2026-08/kelimeki-01.png` zaten mağazadan
 bağımsız. Kampanya: `marketing/meta-reklam/kampanya-ekim-2026.md`.
+
+**29 Eylül 2026 — `--sade` varyantı (`npm run generate-meta-sade`):** Meta
+kampanyasının `kare` reklamı (akış `kelimeki-01`, Reels/hikaye yukarıdaki
+story) mobilde 37 ziyaretten 1'ini mağazaya gönderdi (`karusel` 28'de 9) ve
+10:25'te duraklatıldı. Kullanıcının teşhisi: *"çok fazla yazı, kutu vb var.
+Logo çok büyük."* Sade varyant kahramanı değiştiriyor: GERÇEK 4 kişilik
+tahta tam görünür ve soluk değil; üstünde küçük logo + tek satır başlık
+("Kelime bul, bölgeni büyüt."), altında tek dip satırı. İstatistik kutusu,
+ikon ve rozet YOK (reklamın "İndir" düğmesi o işi yapıyor, link siteye
+gidiyor; görseldeki rozet dokunulabilir sanılıyor). Çıktı:
+`marketing/meta-reklam/kelimeki-sade-kare-1080.png` +
+`kelimeki-sade-story-1080x1920.png`. Betik story'de güvenli bandı ölçmeye
+devam ediyor, rozet kontrolü bu varyantta tersine döner (rozet varsa düşer).

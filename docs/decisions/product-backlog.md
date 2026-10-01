@@ -336,6 +336,57 @@ bölümün kendi tarihli notuna taşınır.
   ölçüm boşluğu da reklam harcamasından ÖNCE kapatılmalı.
 
 
+## İlk oyun deneyimi — ERTELENEN fikirler (1 Ekim 2026, ELENMEDİ)
+
+Kullanıcı: *"Karar dışı kalanları tamamen elemedik, daha sonra bakarız
+dedik."* Yani aşağıdakiler REDDEDİLMEDİ; tekrar önerilebilir, ama önce bu
+kaydı ve o günün verisini oku.
+
+**Tetik — Meta kampanyası kalite okuması** (`marketing/meta-reklam/
+kampanya-ekim-2026.md` → 1 Eki ~01:00 satırı): huninin üstü ucuz, zayıf
+halka DERİNLİK. Kampanya boyunca yeni mobil cihaz 57 → 2+ oyun başlatan 18 ·
+oyun bitiren 10 · ertesi gün oyuna dönen ~%11 (3/28). 56 cihaz 98 oyun
+başlattı, 20'si bitti (%20); biten oyunun medyanı ~13 dk. Mobil tanıtım
+sağlıklı (62 başlangıç → 39 bitiş, 10 atlama). Yeni üyelerin ilk oyunu
+Normal'de 3/10 galibiyet (~50 puan farkla kayıp), Kolay'da 3/5.
+
+**O gün alınan kararlar (kayıt için):**
+- İlk oyunda Kolay — ZATEN VAR: web #662 (27 Eyl, ROADMAP #41 karar 7,
+  `defaultAiLevel`); portu #41'in Setup yarısıyla trende. Ajan bunu
+  hatırlamadan yeniden önerdi — önermeden önce `defaultAiLevel`'e bak.
+- Mobil tanıtım olaylarına cihaz kodu — ZATEN TASLAKTA: #651 (26 Eyl, ROADMAP #30; ajanın açtığı #721 tekrar çıktı, kapatıldı).
+
+**Ertelenenler:**
+
+1. **Yarım kalan oyun için yerel hatırlatma bildirimi (yalnız mobil).**
+   Kullanıcı: *"Enteresan ama akışı tam anlamadım"* → akış anlatıldı, karar
+   verilmedi. Akış: oyun yarım bırakılınca telefona TEK yerel bildirim
+   kurulur (ör. ertesi gün 19:00, "Oyunun yarım kaldı, sıra sende");
+   uygulama o arada açılırsa iptal; yarım oyun başına en fazla bir kez;
+   izin tanıtımda DEĞİL, ilk oyundan çıkarken sorulur. Sunucu yok
+   (`flutter_local_notifications` zamanlaması; bugün yalnızca
+   `notification_shade.dart` kullanıyor). Hedef: ertesi gün dönüş (~%11).
+   Web karşılığı yok. ⚠ Ölçüm #651 sahaya inmeden temiz okunamaz.
+2. **Daha kısa ilk oyun.** Kullanıcı: *"Şimdilik zor ve riskli."*
+   (a) ilk oyuna özel daha az taşlı "hızlı oyun" — MOTOR işi (torba/bitiş
+   kuralı, dört motor kopyası + golden); önce `game-rules.md` → "Torba
+   neden 100" okunmalı. (b) kural değişmeden oyun ekranında kalan taş/tur
+   göstergesini belirginleştirmek — ucuz, "sonun ne kadar yakın olduğunu
+   bilmek" bırakmayı azaltabilir.
+3. **İlk galibiyet/bitiş anını güçlendirmek** (oyun sonu kutlamasına
+   "yarın yeni oyun?" çağrısı ya da bildirim izni). Kullanıcı: *"Hayır"* —
+   ama genel not gereği ELENMİŞ değil, ertelenmiş sayılır. 1. maddeyle
+   birleşebilir (izin anı).
+4. **Faz 2'ye kalite kapısı** (Meta kararı): kurulum başının yanına
+   "ertesi gün dönüş" eşiği — öneri olarak kampanya kütüğünde, karar 3
+   Ekim'de kullanıcının.
+
+**Yeniden açarken:** önce #651 sahada mı bak (tanıtım → ilk oyun bağı
+ölçülebilir mi), sonra aynı kohort sorgusunu (`game_starts` ilk görülen
+cihaz × `game_finishes` × ertesi gün dönüş) tekrar koş ve 1 Ekim
+rakamlarıyla karşılaştır — mobil Kolay varsayılanı sahaya inince ilk
+oyun galibiyeti değişmiş olmalı.
+
 ## Gerçek cihaz modeli — uygulamadan (11 Eylül 2026, Aşama 2)
 
 Kullanıcı *"iPhone 17, 14, Samsung"* kırılımı istedi. **Aşama 1 yapıldı**

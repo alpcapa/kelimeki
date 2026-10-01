@@ -1085,3 +1085,42 @@ aksi hâlde GİRİŞ içeriğin ortasında kalıyordu.
 (web kaynağını okuyan port testleri; `Board.tsx`e yalnızca iki `export`
 eklendi). 390 / 360 / 834 / 1280 / 1440 genişliğinde ekran görüntüsüyle
 bakıldı.
+
+## Sabit alt şerit — telefonda CTA hep görünür (30 Eylül 2026)
+
+**Neden:** Meta kampanyasının ilk ~2 günü (`marketing/meta-reklam/kampanya-ekim-2026.md`
+§9): yeni web oturumlarının **%63'ü karşılamada ayrıldı**, medyan kaydırma
+**%20**. iPhone 390×664 (Safari'nin araç çubukları düşülmüş gerçek görünüm)
+ilk ekranda HEMEN OYNA'nın yarısını gösteriyor, mağaza rozetini HİÇ
+göstermiyordu. Kullanıcı önce/sonra ekran görüntülerini görüp onayladı.
+
+**Ne:**
+- `#karsilama-alt-serit` (`Landing.tsx`, `</main>`den sonra): HEMEN OYNA +
+  `StoreBadges`. Yalnızca `lg` altı (`lg:hidden`) — masaüstünde yok.
+- **`sticky bottom-0`, `fixed` DEĞİL:** `#karsilama` kendi kaydırma kabı;
+  `sticky` o kabın içinde kalır, iOS'un adres çubuğu zıplamasında `fixed`in
+  bilinen titremesi yok. Güvenli alan: `env(safe-area-inset-bottom)`.
+- `main.tsx` → `altSeridiKur()`: şeritteki rozetlerden cihazınki kalır
+  (iOS → App Store, Android → Play); masaüstünde rozet kutusu kaldırılır.
+  `IntersectionObserver` (kök `#karsilama`) ilk ekrandaki CTA bloğu
+  (`#karsilama-ilk-cta`) **%98+ görünürken** şeridi gizler
+  (`.alt-serit-gizli`, `index.css`) — aynı düğme iki kez görünmesin.
+- **JS yoksa şerit GÖRÜNÜR kalır** — gizleme yalnızca JS'le eklenen bir
+  sınıf; düğmesiz ekran hiç oluşmaz.
+- Rozetler `StoreBadges` olduğundan `data-kelimeki-magaza` bağlaması,
+  `journeyStep('store')` ve `?ref=` etiketlemesi (`taggedStoreUrl`) şeritte
+  de çalışıyor; `verify-store-badges`in kuralları (App Store önce, eşit
+  yükseklik ≥40px) değişmedi.
+
+**Hafif sıkılaştırma (yalnızca mobil, `lg` değerleri aynı):** kahraman
+`gap-5` → `gap-3.5`, metin bloğu `gap-2.5 pt-1` → `gap-2`, kesit sarmalayıcısı
+`pt-2` → yalnızca `lg`. Android 360×800'de bununla CTA + iki rozet ilk
+ekrana tam sığıyor → şerit ilk ekranda gizli, kaydırınca çıkıyor.
+
+**Kabul edilen kusur:** iPhone 390×664'te asıl HEMEN OYNA'nın üst kenarı
+şeridin üstünden birkaç piksel görünüyor (%98 eşiğine varmadığı için şerit
+açık). İkisi aynı yere gidiyor.
+
+**Ölçüm:** etkisi Ziyaretçi Yolculuğu'nun "karşılamada ayrıldı" oranı ve
+`store` adımıyla, kampanya kütüğünde okunacak.
+
