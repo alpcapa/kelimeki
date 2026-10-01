@@ -33,6 +33,7 @@ import 'data/supabase_client.dart';
 import 'storage/app_storage.dart';
 import 'util/online_status.dart';
 import 'data/device_stamp.dart';
+import 'data/signup_events.dart';
 import 'data/funnel_api.dart';
 import 'data/install_referrer.dart';
 import 'data/visits_api.dart';
@@ -214,6 +215,10 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   // (testler ve web derlemesi hiç yapılandırmaz). errorReporter.configure
   // ile aynı desen ve aynı satır komşuluğu: ikisi de "açılışta bir kez".
   analytics.configure(firebaseHazir ? FirebaseAnalyticsLogger() : null);
+  // Kayıt Hunisi sayacı (`signup_events`, ROADMAP #35) — aynı "açılışta bir
+  // kez" deseni; Firebase'e DEĞİL Supabase'e bağlı.
+  signupEvents.configure(
+      supabase != null ? SupabaseSignupEventsSink(supabase) : null);
   final pushRepo = firebaseHazir && supabase != null
       ? PushRepo(
           messaging: FirebasePushMessaging(),

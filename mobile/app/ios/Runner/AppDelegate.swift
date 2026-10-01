@@ -32,12 +32,15 @@ import UserNotifications
   /// `notification_shade_parity_test.dart` bu yüzden hem Kotlin'i hem bu
   /// dosyayı okuyup karşılaştırıyor.
   ///
-  /// ⚠ **ROZET BİLEREK SIFIRLANMIYOR.** Android'de rozet panelde duran
-  /// bildirimlerden türüyor, bu yüzden orada `cancelAll()` rozeti de
-  /// düşürüyor. iOS'ta rozet `aps.badge`den geliyor ve sunucu onu HİÇ
-  /// göndermiyor (`_shared/push.ts`) — yani sıfırlanacak bir rozet yok.
-  /// Sunucu bir gün `badge` göndermeye başlarsa buraya `setBadgeCount(0)`
-  /// eklenir; o değişiklik `verify-push-payload` ile birlikte gelmeli.
+  /// **ROZET DE BURADA SIFIRLANIR (ROADMAP #25, 1.1.2).** Android'de rozet
+  /// panelde duran bildirimlerden türüyor, `cancelAll()` onu kendiliğinden
+  /// düşürüyor. iOS'ta ise rozet `aps.badge`den gelen MUTLAK bir sayı —
+  /// sunucu 1.1.2'den itibaren gönderiyor (`_shared/push.ts` →
+  /// `ROZET_ILK_SURUM`) ve sıfırlanmazsa simgede asılı kalır. Sunucudaki
+  /// sayaç aynı anda `register_push_token`da sıfırlanıyor (Dart her
+  /// açılışta/öne dönüşte ikisini birlikte çağırıyor).
+  /// ⚠ `ROZET_ILK_SURUM` bu satırı taşıyan İLK sürüm olmak zorunda — daha
+  /// eski bir sürüme rozet gönderilirse sayı simgede takılı kalır.
   private func kurBildirimKanali(_ registry: FlutterPluginRegistry) {
     // `registrar(forPlugin:)` uzun ömürlü ve kararlı bir API; messenger'ı
     // `window?.rootViewController` üzerinden almak bu projede ÇALIŞMAZDI —
@@ -55,6 +58,11 @@ import UserNotifications
       switch cagri.method {
       case "hepsiniTemizle":
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+        if #available(iOS 16.0, *) {
+          UNUserNotificationCenter.current().setBadgeCount(0)
+        } else {
+          UIApplication.shared.applicationIconBadgeNumber = 0
+        }
         sonuc(nil)
       default:
         sonuc(FlutterMethodNotImplemented)

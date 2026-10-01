@@ -146,6 +146,9 @@ mobile/
                              # DEĞİL (bildirime dokunmak anlık niyet;
                              # bayat tahta açılmaz). İki kaynak: app_links
                              # akışı + push dokunuşları. Tüketen _HomeGate
+      data/signup_events.dart # Kayıt Hunisi sayacı (`signup_events`, ROADMAP
+                             # #35) — web `logSignupEvent` ikizi, analytics
+                             # deseni (global + configure); KİMLİKSİZ
       data/analytics.dart    # GA4 olay kanalı — errorReporter deseni
                              # (global tek örnek, fire-and-forget,
                              # yapılandırılmamışken no-op). Olay adları
@@ -223,7 +226,10 @@ mobile/
                              # tamamı) + board_zoom.dart (çift dokunuşla 2×
                              # zoom + pan; algılayıcı `clock.now()` kullanır
                              # — DateTime.now() sahte saatte ilerlemez,
-                             # bkz. Parça 175) + PAYLAŞILAN küçük parçalar:
+                             # bkz. Parça 175) + board_fit.dart (tahtanın
+                             # YÜKSEKLİK bütçesi + taş puntosu tavanı; web
+                             # `boardFit.ts`/`index.css` ile birebir, kapı
+                             # board_fit_test.dart — Parça 215) + PAYLAŞILAN küçük parçalar:
                              # modal_shell (KModal — başlıklı 360px pencere),
                              # dialog_shell (KDialogCard — 384px onay/uyarı
                              # kartı; İKİSİ AYRI, web'de de öyle),
@@ -257,7 +263,11 @@ mobile/
                              # arşiv VE canlı sohbet ikisi de kullanır) +
                              # game_chat_history_modal (bitmiş oyunun arşivi) +
                              # chat_modal (Canlı sohbet penceresi) +
-                             # chat_settings_modal (sessize alma/raporlama)
+                             # chat_settings_modal (sessize alma/raporlama) +
+                             # chat_rules_modal (Sohbet Kuralları onayı —
+                             # ilk mesajdan önce BİR KEZ, hesaba bağlı; metin
+                             # util/chat_rules.dart, web ile kilitli:
+                             # chat_rules_parity_test)
       ui/setup/              # kurulum ekranı (yeni oyun / devam edenler) +
                              # recent_games_section ("Son Oynadıklarım") +
                              # membership_perks_box (misafir "Neden Üye
@@ -324,6 +334,7 @@ mobile/
                              # (davet · auth dönüşü · Canlı oyun push linki)
       util/push_rules.dart   # "izin sorulsun mu?" saf kararı (en çok 3 kez,
                              # 7 gün arayla) + platform adı doğrulaması
+      util/chat_rules.dart   # Sohbet Kuralları metni + sürüm — web src/utils/chatRules.ts ikizi
       util/semver.dart, util/uuid.dart, util/share_board.dart,
       util/game_list_order.dart # devam eden oyun/davet listelerinin sıralaması
                              # (web `gameListOrder.ts` ikizi) — ⚠ Dart `List.sort`
@@ -368,6 +379,11 @@ mobile/
                              # türetilir, 4 kişilikte ikincilik dahil), rozet metni
                              # (Normal → null) — `ai_level_parity_test` web
                              # kaynağıyla kilitler
+      util/chat_read.dart    # Canlı sohbetin okundu kararı (web `chatRead.ts`
+                             # ikizi, ROADMAP #34): sunucu (`online_game_chat_reads`)
+                             # ↔ cihaz (`chat_read_store`) damgasının büyüğü;
+                             # `chat_read_test.dart` web'in `verify-chat-read`
+                             # vakalarını birebir koşar
       util/platform.dart      # bu istemcinin platformu (ios/android/app-web) —
                              # telemetri; web `src/utils/platform.ts` karşılığı,
                              # değer kümesi sunucu kısıtıyla ELLE senkron

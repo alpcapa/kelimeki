@@ -53,7 +53,7 @@ npm run verify-auth-user-identity # oturum kimliği: aynı içerik → aynı nes
 npm run verify-sw-update-loop    # service worker güncellemesi: yeniden yükleme DÖNGÜSÜ kapısı (derleme değişmediyse ikinci kez yükleme YOK) + çağrı yerinin kaynak taraması
 npm run verify-invite-queue      # davet kuyruğu: token RPC'den ÖNCE alınıyor mu (çift çağrı) + geçici arızada geri konuyor mu + ÇİFT YOL duruyor mu
 npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT YÜKSEKLİK (24 Eyl 2026 kullanıcı kararı; 15-24 Eyl arası eşit genişlikti — oranlar farklı, Apple 3.78:1 ↔ Play 3.37:1, ikisi birden eşit olamaz), yükseklik ≥40px, clear space yüksekliğin 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + "ana ekrana ekle" kutusu YOK (24 Eyl 2026'da kaldırıldı; telefonda tek çağrı mağaza şeridi) + rozet/şerit linki ziyaretçinin `?ref=` etiketini mağazaya taşıyor (`taggedStoreUrl`, 28 Eyl 2026 — Meta kampanyası)
-npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
+npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu + iOS rozeti (`aps.badge`) ve sürüm kapısı (`ROZET_ILK_SURUM`)
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ
 npm run verify-funnel-events     # Huni v2: eski cihaz → `mevcut`, İstanbul günü, gizlilik metni bayrağı + olay listesi ↔ migration SQL'i
@@ -295,14 +295,16 @@ oturumun klonu sığ olabiliyor (`git fetch --unshallow`), ve Türkçe metinde
 tek başına yetmez. Doğrusu: commit'in getirdiği İÇERİĞİ `main`'de ara. Üç
 tuzağın tam tablosu ve vakası: `docs/decisions/supabase-ops.md`.
 
-⚠ **Dal SİLMEYİ ajan yapamaz — üç kapı da kapalı** (4 Eylül 2026'da
-ölçüldü): `git push --delete` 403, GitHub MCP'de ref silen araç yok,
-`branch-cleanup.yml`i dispatch etmek de 403 (App'in `actions: write`i yok —
-10 Eylül 2026'da ölçüldü: bu HER `workflow_dispatch` için geçerli,
-`ios-screenshots.yml` de 403 verdi).
-Doğru davranış "ben hallederim" demek değil, kullanıcıya adımı vermek:
-**Actions → "Dal temizliği" → Run workflow**, önce `dry_run` AÇIK, liste
-doğrulanınca KAPALI ile tekrar. ⚠ Vaat etmeden ÖNCE dene.
+⚠ **Dal silme — `workflow_dispatch` ARTIK AÇIK (1 Ekim 2026).** Kullanıcı
+Claude GitHub App'ine "Read and write access to actions" verdi; aynı gece
+`branch-cleanup.yml` `dry_run: true` ile ajan tarafından tetiklendi ve
+**204** döndü (koşu 36786438571, başarılı). Yani ajan HER `workflow_dispatch`i
+(dal temizliği, `ios-screenshots.yml`…) artık kendisi başlatabilir. Öncesi:
+4 Eylül'de üç kapı da kapalıydı, 10 Eylül'de dispatch 403 ölçülmüştü.
+Hâlâ geçerli olanlar: GitHub MCP'de ref silen araç yok; `git push --delete`
+yeniden denenmedi. Dal temizliğinde sıra aynı: önce `dry_run` AÇIK, listeyi
+kullanıcıya göster, onay gelince KAPALI ile tekrar — silme geri alınamaz,
+dispatch yetkisi onay adımını KALDIRMAZ.
 
 ## Belgeleri Güncel Tutma
 
@@ -781,11 +783,13 @@ Duyuru, ölçümler ve o istisnanın bugünkü riski:
 2. **`verify_jwt` sessizce sıfırlanır:** parametre geçilmezse araç `true`
    varsayar ve önceki değeri KORUMAZ. **Her deploy'dan ÖNCE
    `list_edge_functions` ile mevcut değeri oku ve AYNI değeri açıkça geçir.**
-   `false` olması gereken YEDİ fonksiyon (5 Eylül 2026'da canlıdan sayıldı):
+   `false` olması gereken SEKİZ fonksiyon (5 Eylül 2026'da canlıdan sayıldı,
+   30 Eylül'de `notify-admin-alerts` eklendi):
    `notify-deadline-warnings`, `notify-friend-request-reminders`,
    `notify-turn-timeout-surrender`, `notify-welcome`,
-   `sweep-unconfirmed-accounts`, `inbound-email`, `notify-your-turn`.
-   Yedisi de bir cron/webhook hedefi, yani gerçekten herkese açık bir POST
+   `sweep-unconfirmed-accounts`, `inbound-email`, `notify-your-turn`,
+   `notify-admin-alerts`.
+   Hepsi bir cron/webhook hedefi, yani gerçekten herkese açık bir POST
    ucu olmak zorunda; güvenlik geçişi (5 Eylül 2026) üçünü ayrıca okuyup
    doğru yazıldıklarını (atomik iddia, taze pencere, hedefi gövdeden değil
    canlı durumdan alma) kayda geçirdi.

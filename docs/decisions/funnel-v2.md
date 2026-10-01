@@ -201,6 +201,18 @@ yalnızca misafir bitişini sayar (tablonun altındaki not ve `?` metni söylüy
   listelerinin SQL ↔ TS birebirliği, bayrağın metin güncellenmeden açılamaması,
   `main.tsx`'te çağrının kapı kararından önce durması.
 
+## "Üye" sütunu 0 — okuma (30 Eylül 2026)
+
+Kullanıcı: *"Bu tablodaki üye satırı çalışıyor mu? 0 olması normal mi?"*
+Canlıdan: 24 Eyl'den beri açılan 11 hesabın 10'u `signup_utm_source='app'`
+(uygulamadan; oyunları iOS/Android), 1'i yalnızca iOS izli. Web'de
+`signup_events` 4 `started`, 0 `completed` — yani web'den TAMAMLANAN kayıt
+yok, 0 DOĞRU. Uygulamanın kayıtları #659 (5 Ekim treni) gelene kadar bu
+tabloda görünmez. ⚠ Web `signup` satırının yazıldığı canlıda HENÜZ
+GÖRÜLMEDİ (hiç web kaydı olmadı); kod yolu (`AuthModal` → `funnelEvent`)
+ve sunucu kabulü okundu. Kullanıcı kararı: *"Gerek yok çalışıyordur. Daha
+sonra bakarım tekrar"* — ilk web kaydında satırın düştüğüne bakılacak.
+
 ## PR 2 — mobil (27 Eylül 2026, 5 Ekim treni)
 
 Kullanıcı: *"Huni v2 5 Ekim'de var mı? Yoksa dahil edelim"* — planda "Play

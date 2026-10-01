@@ -1488,9 +1488,11 @@ export interface AdminTutorialFunnelRow {
  * FORMUNU açan (`starts`) ve hesabı OLUŞTURAN (`completions`) ADET.
  * - `web`: ikisi de `signup_events`ten (kimliksiz sayaç, bkz.
  *   `logSignupEvent`). Bir kişi formu iki kez açarsa iki kez sayılır.
- * - `app`: `starts` `signup_events`ten (platform ios/android) — port bu
- *   olayları henüz Firebase'e yazıyor, yani bugün 0 = ÖLÇÜLMÜYOR (kart "—"
- *   gösterir). `completions` `profiles`tan (uygulamadan açılan hesap).
+ * - `app`: ikisi de `signup_events`ten (platform ios/android) — port bu
+ *   sayaca 1.1.2'den beri yazıyor (#651); `starts` 0 ise ÖLÇÜLMÜYOR (kart
+ *   "—" gösterir). ⚠ `completions` migration
+ *   `admin_signup_funnel_app_same_source` canlıya uygulanana kadar
+ *   `profiles`tan gelir (uygulamadan açılan TÜM hesaplar).
  * Pencere en erken 21 Eylül 2026 (sayacın doğduğu an): iki satır aynı
  * günleri sayar. iOS / Android ayrımı yok — bkz. migration
  * `admin_signup_funnel_platform`.

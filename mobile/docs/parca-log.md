@@ -25,6 +25,210 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 216 — Canlı sohbetin okundu damgası SUNUCUDA: port yarısı (26 Eylül 2026, ROADMAP #34)
+
+- **Neden:** kullanıcı bildirdi (23 Eylül): *"Android app'i açıp Danyal ile
+  devam eden oyuna girince mesajlaşma üstünde numara yoktu ama tıkladığımda
+  yeni yazdığı 2 mesaj olduğunu gördüm."* Web yarısı + sunucu (#610,
+  `online_game_chat_reads` + `mark_online_game_chat_read`) o gün girdi;
+  uygulama dondurma yüzünden hâlâ yalnızca cihazdaki `chat_read_store`'u
+  kullanıyordu.
+- **Ne:** `util/chat_read.dart` (YENİ) — web `decideChatRead`in ikizi; web'in
+  `null`/`undefined` ayrımı Dart'ta `ServerChatRead?` (`null` = bilinmiyor,
+  `(at: null)` = satır yok). `ChatGateway`/`ChatRepo`'ya `chatLastReadAt`
+  (hata → bilinmiyor) + `markChatRead` (hata yutulur). Ekran:
+  `_seedInitialUnread` → `_applyChatRead`; `_markChatReadTo` cihaza ve
+  sunucuya yazıyor.
+- **Porta özgü üç karar:** (1) cihaz damgası int milisaniye, sunucununki
+  mikro saniye → eşitlik milisaniyeyle (yoksa her yüklemede boşuna bir
+  yazma); sunucuya mesajın KENDİ `created_at`i gider. (2) Mesaj listesi
+  okunamazsa (`null`) karar verilmez — eski kod boş listeyle "şimdi"
+  tohumu atıyordu, sunucuya taşınsaydı geri alınamazdı; üstelik ekrandaki
+  sohbeti de SİLİYORDU (`ChatRepo.messages`in "eski liste korunur"
+  sözleşmesi ekranda tutulmuyordu) — artık liste korunuyor ve
+  `decideChatRead` `rows: null`da hiçbir şey yazmıyor. Web ikizi ayrı PR
+  (#650, web'de de aynı iki hata vardı). (3) Boş sohbet
+  açılınca saatten gelen damga yalnızca cihaza.
+- ⚠ **Kesimde çakışma beklenir:** #640 de `chat_api.dart`e ve bu dosyanın
+  başına (Parça 215) ekleme yapıyor; yöntemler bilerek FARKLI yere
+  (`myActiveReports`in altına) kondu, günlük girişi ise el ile birleşir.
+- **Doğrulama:** `chat_read_test.dart` (web'in 9 vakası + 2 porta özgü),
+  `online_game_chat_test.dart` 9 yeni test — eski ekranla 5'i düşüyor
+  (kullanıcının vakası dahil); "tazeleme düşerse sohbet silinmez" testi
+  `rows == null` dalı bozulunca düşüyor. App **921 test yeşil**, `flutter analyze`
+  yeni bulgu yok. Cihaz maddesi: `mobile/docs/testing-arkadaslar-canli.md`
+  → "Okundu bilgisi cihazlar arasında".
+
+## Parça 215 — Tahtanın yükseklik bütçesi: port ikizi (ROADMAP #38)
+
+**27 Eylül 2026 · taslak PR `[Sonraki sürüm]`, 5 Ekim kesimi.** Web yarısı
+(`src/utils/boardFit.ts` · `Board.tsx` · `index.css` · `tests/board-fit.spec.ts`)
+22-26 Eylül'de `main`'e girmişti; bu parça üç kalemin port ikizi.
+
+**Önce ölçüldü** (gerçek `GameScreen`, dolu tahta; web aynı görünümlerde
+Playwright'la ölçüldü):
+
+| | web | port (önce) |
+|---|---|---|
+| kartın üstü (başlık) | 63 | 88 |
+| kart (tahta 656 + alt şerit 48) | 704 | 704 |
+| kartın altı → PAS GEÇ'in altı | 196 | 193 |
+| PAS GEÇ'in altı, 1104×768 | 743 (bütçeyle) | **985** (217 px taşma) |
+
+1. **Bütçe — `ui/game/board_fit.dart`:** `min(680, max(324, boy − 308))`,
+   üç sabit web'den BİREBİR (`board_fit_test.dart` `boardFit.ts`i okuyor).
+   Uygulandığı yer web'le aynı: tahta sarmalayıcısı (`Padding(12,6,12,12)`)
+   üç ekranda — yerel, Canlı, tanıtım. Karşılama/intro tahtası dışarıda
+   (web'de de `fitHeight={false}`). "Boy" = ekran − güvenli alan
+   (`boardViewportHeight`, `SafeArea`nın DIŞINDAKİ context'le).
+   ⚠ **Porta özel terim eklenmedi ve bu ölçülerek karar verildi:** portun
+   başlığı 25 px uzun, ama web formülü kendi içinde ~25 px pay taşıyor
+   (bütçe sarmalayıcının GENİŞLİĞİNE uygulanıyor: kart + 24; krom dikeyde
+   18 dolguyla ölçülmüş). Sonuç: aynı ekranda AYNI tahta boyu, PAS GEÇ
+   web'de `boy − 25`, portta `boy − 3` (765 · 817 · 797).
+   ⚠ **Canlı ekranda sıra rakipteyken 9 px taşma — bilerek kabul.**
+   `_TurnBanner` mesaj satırının (30) yerine ~42 px geliyor; o anda
+   butonlar pasif, raf görünür. Kapatmak için tahtayı yalnızca portta
+   küçültmek gerekirdi — işin "iki platform aynı tahta" şartına aykırı.
+   `online_game_screen_test.dart` taşmanın 9 px'i AŞMADIĞINI kilitliyor.
+2. **Taş puntosu tavanı:** `TileWidget.boardGridWidth` (yalnız
+   `BoardWidget` geçirir) → harf `min(vw-clamp, ızgara × 5,08 %)`, puan
+   `× 2,18 %`, X3 etiketi `× 3,33 %` — oranlar `index.css`ten kilitli.
+   Izgara genişliği `BoardWidget`ın kökündeki `LayoutBuilder`dan (kart −
+   2 × `kBoardPad`, web `cqw` = ızgaranın İÇ genişliği). Parça 23'ün
+   "sürüklemede yeniden inşa yok" kuralı korunuyor (LayoutBuilder yalnız
+   kısıt değişince kurar; build sayacı testi yeşil).
+3. **`LandscapeHint` ikizi — BİLEREK YOK.** Web bloğu yükseklik + TELEFON
+   şartı arıyor; portta telefon portre kilitli. Kilidin tutmadığı iPad
+   (çoklu görev) ve açık katlanabilir web'de de bloklanmayan sınıf. Karar
+   `main.dart`in kilit yorumunda.
+
+**Doğrulama:** `dart analyze` temiz (tek `info` önceden vardı), **917 test
+yeşil**. Kapının duyarlılığı: `boardMaxWidth` 680'e sabitlenince
+`board_fit_test` 5 test düşürüyor. Telefon dikey (390×844) ve iPad portre
+(1376×1032 manzara dahil) tahta boyu değişmedi (366 · 656, testli).
+
+**Doğrulama SINIRI:** gerçek cihaz yok — Android 16'nın büyük ekranda
+yönelim kilidini gerçekten yok sayıp saymadığı (hedef SDK'ya bağlı) ve
+katlanma anındaki geçiş ölçülmedi → `mobile/docs/testing-ux-turlari.md` §33. Canlı ekranın
+kromu sahte uçla ölçüldü; gerçek sunucuyla bant/başlık farkı çıkarsa §33'ün
+iPad maddesi yakalar.
+
+## Parça 215 — Kendi skor kartında "arkadaş ekle" simgesi
+
+28 Eylül 2026, kullanıcı ekran görüntüsüyle bildirdi: *"bakan kişinin skor
+kartında arkadaş ekle çıkmamalı. Üstelik basınca 'kendine arkadaşlık daveti
+göndereyim mi' dememeli."*
+
+**Web'de nasıl:** `PlayerScoreCard.tsx` → `showFriendButton = !!user &&
+user.id !== member.id && relation !== undefined`. Web'de hata yok.
+
+**Kök sebep (port):** `FriendsRepo.relationWith` kendi id'si (ve oturumsuz)
+için `null` döner — "ilişki yok" ile aynı değer. Kart `_relationLoaded`
+kurulduktan sonra `null`ı `person_add` olarak çiziyordu; dokunuş "Arkadaş
+Ekle" onayını açıyordu. Web'in `user.id !== member.id` yarısı portta hiç
+yoktu.
+
+**Düzeltme:** `_loadRelation` gateway'in `currentUserId`si null ya da kartın
+sahibiyse ilişkiyi hiç yüklemiyor → `_relationLoaded` false kalır, simge
+çizilmez. Kimlik bilerek `auth`tan değil gateway'den: `auth` bir dönem her
+çağrı yerinde geçmiyordu (bkz. `initState`teki kafa kafaya notu).
+
+**Doğrulama:** `friends_test.dart` → *"ilişki simgesi YOK — kendi kartı /
+misafir"*; düzeltme geri alınınca ikisi de DÜŞÜYOR. Tam takım 903 yeşil.
+**Sınır:** cihazda bakılmadı (sonraki tren).
+
+## Parça 216 — "Arkadaşınla" rozeti listeyle çelişiyordu (davet kabulü)
+
+28 Eylül 2026, kullanıcı bildirdi: *"Arkadaşınla tabında 1 görünüyordu oyun
+olmamasına rağmen. Yapay zeka tabına basıp geri geldim ama değişmedi.
+Uygulamayı kapatıp açtım düzeldi."*
+
+**Canlıda ölçüldü (UTC):** 20:39:24'te önceki Canlı oyun bitti, 14 sn
+sonra rakip rövanş daveti yolladı, 20:44:23'te bitiş "görüldü" işaretlendi,
+20:45:53'te davet KABUL edildi; yeni oyunda sıra rakipte. Doğru rozet 0,
+ekranda 1 → rozette kalan şey kabul edilmiş davetti.
+
+**Web'de nasıl:** aynı açık orada da var — `LiveGamesTab.handleRespond`
+yalnızca listeyi yeniden yüklüyor, `Setup`in rozeti Realtime/öne dönüş
+bekliyor, sekme değişimi rozeti tazelemiyor. Web yarısı ayrı PR (hemen).
+
+**Kök sebep:** rozetin "bekleyen iş" yarısının tek dayanağı Realtime olayı
+(+ öne dönüş, bağlantı dönüşü, `didPopNext`). Kullanıcının KENDİ eylemi
+(kabul/ret) ve sekmeye dönüş listeyi yüklüyor ama rozete ulaşmıyordu. Olay
+kaçınca (27 Ağustos'un aynı sınıfı) liste ile rozet çelişti.
+
+**Düzeltme:** `LiveGamesTab.onActionCount` — liste her BAŞARILI yüklemede
+`inviteBucket(games).length + myTurnCount(games, turns)` bildiriyor
+(`pendingCounts()`un aynı fonksiyonları, ek istek YOK); Setup
+`_liveActionCount`u buna hizalıyor. `_liveCounts` (giriş varsayılanının
+girdisi) ve bitiş haberleri bilerek dokunulmadı.
+
+**Doğrulama:** `setup_screen_test.dart` → *"LİSTEYLE hizalanır"* (kabul +
+sekme dönüşü, Realtime olayı YOK); düzeltme geri alınınca kabul adımında
+DÜŞÜYOR. **Sınır:** cihazda bakılmadı (5 Ekim treni).
+
+## Parça 215 — Sohbet Kuralları onayı + Kullanım Koşulları §3/§5 (25 Eylül 2026)
+
+Kullanıcı isteği: mesajlaşmadan önce sorumluluğun gönderende olduğunu ve
+cinsel/rencide edici içeriğin yasak olduğunu söyleyen bir onay + bunun
+Kullanım Koşulları'na yazılması.
+
+- **Web ikizi AYRI PR ve önce gitti** (onay penceresi + `accept_chat_rules`
+  migration'ı, canlıda). Bu PR: port penceresi (`ui/chat/chat_rules_modal.dart`
+  + `util/chat_rules.dart`), `ChatModal`'da kapı, `ChatRepo`'ya iki uç, ve
+  Kullanım Koşulları §3/§5 + Gizlilik'teki yeni veri satırı — **web
+  `LegalContent.tsx` ile AYNI PR'da**, çünkü `legal_text_test.dart` web
+  tarihini okuyor (web CI'ın `parite` işi).
+- **Kapı `ChatModal`'da, iki opsiyonel geri çağrıyla** (`loadChatRulesVersion`
+  / `acceptChatRules`); verilmezse kapı yok — mevcut bileşen testleri olduğu
+  gibi kaldı. `OnlineGameScreen` gerçek `ChatRepo`'ya bağlıyor; entegrasyon
+  testi (`online_game_chat_test` → "storage null") bunu kanıtlıyor.
+- **Okuma başarısızsa pencere GÖSTERİLİR** (`ChatRepo.chatRulesVersion` →
+  `null`) — web `undefined` ile aynı.
+- ⚠ **`toUpperCase()` tuzağı yakalandı:** buton etiketi ilk yazımda
+  `'Kabul ediyorum'.toUpperCase()` idi → "EDIYORUM". `trUpper` kullanılıyor.
+- Kapılar: `chat_rules_parity_test.dart` (metin + sürüm web'den okunur;
+  duyarlılık web'de sürüm ve bir madde bozularak kanıtlandı, iki test
+  düştü) · `chat_test.dart` beş yeni vaka (göster/Vazgeç metni korur/kabul
+  → hemen gönder + ikinci mesajda sormaz/sunucuda kabul varsa hiç sormaz/
+  kayıt yazılamazsa açık kalır). Tam takım yeşil.
+- **Aynı PR, ikinci iş — küfür süzgecinin port/metin yarısı (ROADMAP #37):**
+  süzgeç SUNUCUDA canlı (#641), yani mesaj maskesi eski pakette de çalışıyor.
+  Buraya düşen: `AuthService.nicknameStatus` (`nickname_status` RPC'si,
+  `NicknameStatus { ok, taken, blocked }`) — `checkNicknameAvailable`
+  kaldırıldı; süzgece takılan ad artık "Bu takma isim kullanılamaz."
+  (eski paket "kullanımda" der). `nicknameChecker` enjeksiyon tipi bool'dan
+  enum'a döndü, üç test dosyası buna uyarlandı. Koşullar §5'teki
+  "denetlenmez" cümlesi süzgeç cümlesiyle değişti, Gizlilik'e orijinalin
+  saklanması eklendi (web + port birlikte, `legal_text_test`).
+- **Doğrulama sınırı:** gerçek RPC ve web↔mobil hesap paylaşımı ancak
+  cihazda → `mobile/docs/testing-arkadaslar-canli.md` → Mesajlaşma.
+
+## Parça 217 — Kayıt Hunisi uygulamayı da sayıyor + `tutorial_events.anon_id` (26 Eylül 2026, ROADMAP #35 + #30)
+
+- **#35:** admin "Kayıt Hunisi" kartı (#600) yalnızca web'i sayıyordu; port
+  `signup_started`/`signup_completed`'ı yalnızca Firebase'e yazıyordu.
+  `data/signup_events.dart` (YENİ): global `signupEvents` + `configure`
+  (`analytics` deseni — `AuthModal`ı açan üç çağrı yerine parametre
+  açılmadı), `bootstrap.dart` Supabase'e bağlıyor. `auth_modal.dart`taki
+  üç `analytics.log` noktasının yanına birer satır; Firebase KALDI.
+  ⚠ Kimlik YOK (ne `anon_id` ne `user_id`) — tablo bilerek kimliksiz,
+  gizlilik metnine beşinci bir durum eklememek için. Sunucu kümesi dışındaki
+  kanal `null` gider (satır check'e takılıp düşmesin).
+- **#30'un son halkası:** `tutorial_events` `'anon_id': null` yazıyordu;
+  artık `_damga()` (web de oturumdan bağımsız yazıyor, gizlilik metni
+  tanıtım turunu sayıyor). Satır saf bir `tutorialEventRow`a çıkarıldı ki
+  istemcisiz sınansın. Tanıtım Turu kartının cihaz paydasına dönüşü
+  BİLEREK ertelendi (1.1.1 sahada durdukça yine kısmi olur).
+- **Web yarısı yalnızca metin, aynı PR'da:** kartın `?`'i ("Yalnızca web" →
+  "web + 1.1.2") uygulama yazmaya başlamadan canlıya çıkarsa yanlış
+  olurdu, bu yüzden trenle gidiyor.
+- ⚠ `auth_modal.dart`e #640 ve #642 de dokunuyor — kesimde metin çakışması
+  olabilir (farklı satırlar).
+- **Doğrulama:** `signup_events_test.dart` 7 test (satır şekli, kimliksizlik,
+  kanal süzgeci, no-op, hata yutma, iki giriş yolu, tanıtım satırı).
+
 ## Parça 218 — Huni v2: Play Install Referrer → `land` kanalı (30 Eylül 2026)
 
 Kullanıcı: *"Referrer'ı 5 Ekim trenine ekle"* — paralı kanallar (Meta)

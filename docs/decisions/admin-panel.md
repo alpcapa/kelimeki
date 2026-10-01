@@ -534,6 +534,15 @@ açıkça yazıyor; port damgalamayı eklerse burası da güncellenmeli. ⚠ Bu
 günde 618 uygulama satırı (`android` 587 · `ios` 16 · `app-web` 15)
 `anon_id` NULL taşıyor.
 
+**Güncelleme (26 Eylül 2026, ROADMAP #30):** `game_starts` boşluğu #601 ile
+kapandı; `tutorial_events` de artık 1.1.2'den itibaren `anon_id` yazıyor
+(`logGameStart`ın aynı `DeviceStamp`'i). Sahaya 5 Ekim treniyle iner; 1.1.1
+ve öncesi hâlâ NULL. **Cihaz paydasına dönüş BİLEREK ertelendi:** eski
+paketler sahada durdukça cihaz paydası yine kitlenin bir kısmını görür.
+Karar, 1.1.2'nin payı ölçülünce (`tutorial_events.app_version`) verilmeli;
+dönülürse bu bölüm, `docs/decisions/onboarding.md` ve
+`docs/testing-admin.md`'deki notlar birlikte güncellenmeli.
+
 ⚠ `skips` ile döküm toplamı EŞİT OLMAYABİLİR: sahne yazmayan bir istemcinin
 satırı `skips`e girer, döküme girmez.
 
@@ -992,6 +1001,16 @@ tuzağa düşülebilirdi ve ikisi de kapatıldı:
 Değişmez canlıda 12 dilimde de doğrulandı: web + ios + android + other =
 finished.
 
+### Başlıkta "(Son 30 Gün)" — 30 Eylül 2026
+
+Kullanıcı bildirdi: *"üst kısımdaki 30/90 gün filtresi değişince veriler
+değişmiyor sanki"*. Filtre çalışıyordu (canlıda admin kimliğiyle ölçüldü:
+`admin_game_duration_summary` 30 gün → 1.534, 90 gün → 2.244 oyun; seri 30 ↔
+90 kova). Yanılgı, sabit pencereli üç panelin ikisinde pencerenin yalnızca
+`?` açıklamasında yazmasıydı — "Oyun Dağılımı (Son 30 Gün)" gibi. "Aktif
+Saatler" ve "Aktif Günler" başlıkları da artık "(Son 30 Gün)" taşıyor.
+**Kural:** kombolara BAĞLI OLMAYAN bir panel, penceresini BAŞLIĞINDA söyler.
+
 ## "Aktif Günler" — haftanın ritmi (20 Eylül 2026)
 
 Kullanıcı isteği: *"Admin oyunda saatler gibi Aktif Günler bar chartı da
@@ -1172,6 +1191,30 @@ Kaynak Hunisi'nin hemen üstünde. Yazan `src/utils/webJourney.ts`, sunucu
 `web_sessions` + `record_web_session` / `admin_web_journey`
 (`20260923103044_web_sessions_journey.sql`), kapı `npm run verify-web-journey`.
 
+### 30 Eylül 2026 — "Uygulamaya geçti" gizlendi, "Tanıtımı atladı" eklendi
+
+Kullanıcı soruları (ekran: Yeni, son 30 gün) ve canlıdan cevapları:
+
+- *"Uygulamaya geçti ile uygulama açıldı aynı değil mi?"* — pratikte evet:
+  53 = 53, geçip açılmayan 0 (tüm oturumlarda da 0). `landing_cta` kartta
+  GİZLİ (`JOURNEY_HIDDEN`), veri toplanmaya DEVAM ediyor.
+- *"53 açtı, neden 24 tanıtım?"* — tanıtım uygulama açılınca değil, Setup'ta
+  "Oyna"ya basınca açılır. 29'un 16'sı oynamadan mağazaya, 3'ü girişe
+  gitmiş, 9'u hiçbir şeye basmadan çıkmış (asıl kayıp).
+- *"24 açtı 13 bitirdi — 11 atladı mı?"* — 6'sı ATLAYIP oyuna geçmiş
+  (19 = 13 + 6), 5'i tanıtımda ayrılmış (4 gitti, 1 mağaza). Atlayanlar
+  hiçbir satırda görünmüyordu → türetilmiş **`tutorial_skip`** satırı
+  (`20260930110120_admin_web_journey_tutorial_skip.sql`): sunucu okuma
+  anında hesaplar (tutorial_start ∧ game_start ∧ ¬tutorial_done), istemci
+  GÖNDERMEZ, `v_steps`/`JOURNEY_STEPS` DEĞİŞMEDİ; `left_here` 0, kartta
+  Ayrılan/Ayrılma "—" (`JOURNEY_INFO`), en yüksek ayrılma vurgusuna girmez.
+- *"Oyun başlatan 19'dan 3 gitti, neden 16 değil 15?"* — hamle yapmayan
+  4'ün 1'i mağazaya/kayda gitmiş; Ayrılan EN İLERİ adıma göre sayıldığı
+  için o 1 sonraki satırda. Kart düz bir huni değil.
+- *"Oyun bitti'de ayrılan 3 gitti mi?"* — bitirdikten sonra kayıt/giriş/
+  mağaza yok; sekmeyi kapattı mı, aynı sekmede tekrar mı oynadı AYIRT
+  EDİLEMEZ (sekme başına tek satır, ikinci oyun yeni adım yazmaz).
+
 ### Neden vardı
 
 Mevcut tablolar huninin UÇLARINI görüyordu, ARASINI görmüyordu. Canlıdan
@@ -1281,6 +1324,18 @@ Eylül'den beri boş, ama o tarihten sonraki iki kaydın ikisi de uygulamadan
 (biri iOS push token'ı, öteki `signup_utm_source = 'app'`), web yolculuğunda
 da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
 (geri alındı), çalışıyor.
+
+### Kayıt Hunisi — Uygulama satırının Tamamlaması da sayaçtan (1 Ekim 2026, #651)
+
+#651 (port, 1.1.2) uygulamanın kayıt açılışı/tamamlanmasını `signup_events`e
+yazmaya başlayınca Uygulama satırı iki kaynaktan okunuyor olacaktı: Açılış
+sayaçtan (yalnızca 1.1.2+), Tamamlama `profiles`tan (TÜM sürümler) → oran
+geçiş boyunca sahte yüksek. Karar: ikisi de sayaçtan (web'in baştan beri
+uyduğu ilke). Bedeli: güncellemeyen cihazların hesapları satırda görünmez;
+`?` metni söylüyor. Migration `20261005070000_admin_signup_funnel_app_same_source.sql`
+**#651 merge edilirken** uygulanır (erken uygulanırsa satır 1.1.2'ye kadar
+0 gösterir); 1 Ekim'de canlıda `begin … rollback` içinde derlenip denendi.
+Ajan hazırladı, kullanıcı onayı: *"Hazırla"*.
 
 ### Kayıt Hunisi platform satırlarına geçti (29 Eylül 2026, `20260929091355_admin_signup_funnel_platform.sql`)
 
