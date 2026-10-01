@@ -138,6 +138,36 @@ sahibiyse ilişkiyi hiç yüklemiyor → `_relationLoaded` false kalır, simge
 misafir"*; düzeltme geri alınınca ikisi de DÜŞÜYOR. Tam takım 903 yeşil.
 **Sınır:** cihazda bakılmadı (sonraki tren).
 
+## Parça 216 — "Arkadaşınla" rozeti listeyle çelişiyordu (davet kabulü)
+
+28 Eylül 2026, kullanıcı bildirdi: *"Arkadaşınla tabında 1 görünüyordu oyun
+olmamasına rağmen. Yapay zeka tabına basıp geri geldim ama değişmedi.
+Uygulamayı kapatıp açtım düzeldi."*
+
+**Canlıda ölçüldü (UTC):** 20:39:24'te önceki Canlı oyun bitti, 14 sn
+sonra rakip rövanş daveti yolladı, 20:44:23'te bitiş "görüldü" işaretlendi,
+20:45:53'te davet KABUL edildi; yeni oyunda sıra rakipte. Doğru rozet 0,
+ekranda 1 → rozette kalan şey kabul edilmiş davetti.
+
+**Web'de nasıl:** aynı açık orada da var — `LiveGamesTab.handleRespond`
+yalnızca listeyi yeniden yüklüyor, `Setup`in rozeti Realtime/öne dönüş
+bekliyor, sekme değişimi rozeti tazelemiyor. Web yarısı ayrı PR (hemen).
+
+**Kök sebep:** rozetin "bekleyen iş" yarısının tek dayanağı Realtime olayı
+(+ öne dönüş, bağlantı dönüşü, `didPopNext`). Kullanıcının KENDİ eylemi
+(kabul/ret) ve sekmeye dönüş listeyi yüklüyor ama rozete ulaşmıyordu. Olay
+kaçınca (27 Ağustos'un aynı sınıfı) liste ile rozet çelişti.
+
+**Düzeltme:** `LiveGamesTab.onActionCount` — liste her BAŞARILI yüklemede
+`inviteBucket(games).length + myTurnCount(games, turns)` bildiriyor
+(`pendingCounts()`un aynı fonksiyonları, ek istek YOK); Setup
+`_liveActionCount`u buna hizalıyor. `_liveCounts` (giriş varsayılanının
+girdisi) ve bitiş haberleri bilerek dokunulmadı.
+
+**Doğrulama:** `setup_screen_test.dart` → *"LİSTEYLE hizalanır"* (kabul +
+sekme dönüşü, Realtime olayı YOK); düzeltme geri alınınca kabul adımında
+DÜŞÜYOR. **Sınır:** cihazda bakılmadı (5 Ekim treni).
+
 ## Parça 214 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
 
    > ⚠ **25 Eylül 2026, merge anında:** aşağıda anlatılan WEB yarısı
