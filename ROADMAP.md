@@ -400,7 +400,11 @@ adı ona çevrildi, `proacl` öncesiyle aynı.
 **Sıradaki adımlar:** 1.1.2 `main` derlemesi (Android `.apk` + TestFlight) →
 cihaz turu: `testing-bildirimler.md` §3h (rozet), `mobile/TESTING.md` §34
 (yarım oyun — #731 cihazda HİÇ denenmedi), `testing-arkadaslar-canli.md` →
-"Okundu bilgisi cihazlar arasında", `testing-admin.md` → Kayıt Hunisi →
+"Okundu bilgisi cihazlar arasında", `testing-admin.md` → Kayıt Hunisi,
+**#41 tasarım portu** (temiz kurulumla, sırayla): `mobile/TESTING.md` §0.4
+(tek açılış ekranı) → satır 177 (misafir uyarısı yok) → §1.9 kapanış
+penceresi → "Tek standart Setup" · "Girişsiz Arkadaşınla" · "Canlı oyun
+formu" maddeleri → `testing-arkadaslar-canli.md` "Tek ekran" + OYNA →
 App Store gönderimi + Play, aynı gün yayın ("SÜRÜM SENKRONU").
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
