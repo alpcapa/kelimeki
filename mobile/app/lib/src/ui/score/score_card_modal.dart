@@ -11,9 +11,7 @@ import '../../data/profile_fields.dart';
 import '../../data/stats_api.dart';
 import '../auth/k_avatar.dart';
 import '../game/modal_shell.dart';
-import '../rank/league_rank.dart';
 import '../rank/rank_header_seal.dart';
-import '../rank/rank_seal.dart';
 import 'game_history_modal.dart';
 import 'klig_mark.dart';
 import 'leaderboard_modal.dart';
@@ -119,10 +117,10 @@ class _ScoreCardModalState extends State<ScoreCardModal> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Rütbe mührü ismin YANINDA (18 Ağustos 2026, kullanıcı
-                    // isteği). Başlıktaki 34px'lik mühür DURUYOR — o
-                    // tıklanabilir (RankInfoModal'ı açar), bu yalnızca
-                    // kimliğin parçası. Boy 20, satırın 16px puntosuna göre.
+                    // İsmin yanındaki 20px'lik rütbe mührü 29 Eylül 2026'da
+                    // KALKTI (kullanıcı: "Skor kartlarda ismin yanına rütbe
+                    // olmasına gerek yok, zaten üstte var"; 18 Ağustos'ta
+                    // eklenmişti). Başlıktaki 34px'lik mühür DURUYOR.
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -134,10 +132,6 @@ class _ScoreCardModalState extends State<ScoreCardModal> {
                                   fontWeight: FontWeight.bold,
                                   color: _text)),
                         ),
-                        if (_loaded.contains(StatsTab.all)) ...[
-                          const SizedBox(width: 4),
-                          RankSeal(tier: tierFor(totalScore), size: 20),
-                        ],
                       ],
                     ),
                     if (ageGender.isNotEmpty)

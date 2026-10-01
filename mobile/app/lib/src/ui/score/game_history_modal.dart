@@ -554,6 +554,7 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
             Expanded(
                 child: _FilterTab(
                     label: 'Favoriler',
+                    heart: true,
                     selected: _favoritesOnly,
                     onTap: () => _selectTab(true))),
           ]),
@@ -658,14 +659,27 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
   }
 }
 
+/// "Favoriler" sekmesindeki kalbin anahtarı — testler satırlardaki beğeni
+/// kalbini (aynı `Icons.favorite`) bundan ayırt etmek için kullanır.
+const kFavoritesTabHeartKey = ValueKey('favorites-tab-heart');
+
 /// Tümü / Favoriler sekmesi — web'deki iki butonun aynı görsel dili.
 class _FilterTab extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
 
+  /// Etiketin önüne küçük dolu kalp (29 Eylül 2026, web ikizi
+  /// `GameHistoryModal.tsx`): satırlardaki kalbin bu sekmeyi doldurduğu
+  /// belli olsun. Seçili değilken satırdaki gibi kırmızı, seçiliyken mavi
+  /// zeminde okunsun diye beyaz.
+  final bool heart;
+
   const _FilterTab(
-      {required this.label, required this.selected, required this.onTap});
+      {required this.label,
+      required this.selected,
+      required this.onTap,
+      this.heart = false});
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -679,15 +693,27 @@ class _FilterTab extends StatelessWidget {
             border: selected ? null : Border.all(color: _border),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Text(
-            trUpper(label),
-            style: TextStyle(
-              fontFamily: 'SpaceMono',
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-              color: selected ? Colors.white : _muted,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (heart) ...[
+                Icon(Icons.favorite,
+                    key: kFavoritesTabHeartKey,
+                    size: 12,
+                    color: selected ? Colors.white : kRed),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                trUpper(label),
+                style: TextStyle(
+                  fontFamily: 'SpaceMono',
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                  color: selected ? Colors.white : _muted,
+                ),
+              ),
+            ],
           ),
         ),
       );
