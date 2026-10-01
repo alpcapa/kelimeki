@@ -611,6 +611,29 @@ yeniden kurulur. Canlı'da ilk senkron sayacı kurar.
 TORBA'nın üstünde ve kapanıyor, girişliye ilk menü), `tests/smoke.spec.ts`
 "tahta zoom" (aynı akış, gerçek paslarla).
 
+#### "Geri" için balon — EKLENMEDİ (1 Ekim 2026, kullanıcı kararı, ölçümle)
+
+Soru (kullanıcı): *"Geri tuşuna da balon çıkartmak gerekir mi? Yeni gelenler
+nasıl çıkacağını bulabiliyor mu?"* Karar: **balon eklenmez.** Gerekçe:
+"← Geri" logonun altında YAZIYLA duruyor (gizli bir simge değil), sıra zaten
+6 balon/~22 tur ve çıkış ihtiyacı balonun çıkabileceği turdan önce doğuyor.
+
+Ölçüm (son 30 gün; "Geri'ye basıldı" olayı YOK, dolaylı iz):
+- `game_starts` + `game_finishes`, `anon_id` başına ilk oyun (154 yeni
+  oyuncu): Android 60 → 9 bitirdi · 15 bitirmeden YENİ oyun başlattı (8'i
+  30 dk içinde) · 36 bir daha başlatmadı; iOS 25 → 4 · 8 (5) · 13; web 69 →
+  9 · 9 (4) · 51. Bitirmeden yeni oyun başlatan 32 kişi kurulum ekranına
+  dönebilmiş (uygulamayı kapatıp açma da bu sayıya karışabilir).
+- `web_sessions` (bitmemiş oyun oturumları): 0 hamlede çıkan 11 oturum
+  (medyan 2 dk), 1-2 hamle 6, 3-5 hamle 3, 6-10 hamle 10 (medyan ~9 dk),
+  11+ 2. Dokuzu oyun ekranından `login`/`store`/`signup_form` adımına geçmiş
+  (menü bulunuyor).
+
+Sonuç: "çıkamadım" izi yok; asıl kayıp **0 hamlede bırakanlar** — bu
+"nasıl oynanır"ın sorusu. 1.1.2 sahaya inince aynı sorgularla tekrar
+karşılaştırılır. Kesin ölçü gerekirse yol: Geri'ye basışı sayan bir adım
+(şimdilik gerek görülmedi).
+
 ### 30 Eylül 2026 — üç mekanik ipucu KALDIRILDI, yerine `anlam`
 
 Kullanıcı Instagram bio linkinden gelen bir ziyaretçi gibi uçtan uca oynadı
