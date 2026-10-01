@@ -651,7 +651,7 @@ export function Setup({
     hasPlayed: user ? (cloudSaves?.length ?? 0) > 0 : savedGame !== null,
     accountCreatedAt: profile?.created_at ?? null,
   });
-  const level: AiLevel = chosenLevel ?? defaultAiLevel(isFirstGame);
+  const level: AiLevel = chosenLevel ?? defaultAiLevel(isFirstGame, !user);
 
   const doStart = () => {
     const list: PlayerSetup[] = Array.from({ length: count }, (_, i) => {
@@ -769,9 +769,8 @@ export function Setup({
               {/* 27 Eylül 2026 (ROADMAP #41, karar 2): tanıtım paragrafı
                 ("Kelimeler kurarak bölgeni genişlet…") KALKTI — Setup artık
                 herkes için tek standart form; oyunun fikrini karşılamanın
-                ilk ekranı anlatıyor. "Nasıl oynanır?" duruyor. ⚠ Port ikizi
-                (`setup_screen.dart`) bilerek bekliyor: #41'in Setup yarısı
-                önce yalnız web. */}
+                ilk ekranı anlatıyor. "Nasıl oynanır?" duruyor. Port ikizi
+                (`setup_screen.dart`) 1 Ekim 2026'da aynı şeyi yaptı. */}
               {/* 7 Eylül 2026 (kullanıcı: "alt ve üstündeki fazla boşlukları
                 makul hale getir"): `mt-3` + 48px'lik dokunma hedefi paragraf
                 ile "OYUN TİPİ" arasına ~30px'lik iki boş bant açıyordu. Hedef

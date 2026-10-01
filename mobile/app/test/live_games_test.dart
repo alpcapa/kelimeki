@@ -1099,9 +1099,11 @@ void main() {
       expect(h.created, [true]);
     });
 
-    testWidgets(
-        '4 oyunculu + 2 arkadaş: YZ onayı; HAYIR → kalıcı YZ satırı; '
-        'işaretle → YZ koltuklu gönderim', (tester) async {
+    // 1 Ekim 2026 (ROADMAP #41 karar 12, web 27 Eylül): onay penceresi ve
+    // "Hayır"dan sonra açılan kalıcı YZ satırı KALKTI — 2 arkadaşla gönderim
+    // 4. koltuğu doğrudan Yapay Zeka yapar.
+    testWidgets('4 oyunculu + 2 arkadaş: onay SORULMADAN 4. koltuk YZ',
+        (tester) async {
       final h = await pumpForm(tester);
       await tester.tap(find.text('4 OYUNCULU'));
       await tester.pump();
@@ -1112,18 +1114,8 @@ void main() {
       await tester.tap(find.text('DAVET GÖNDER'));
       await tester.pumpAndSettle();
       expect(find.text('4. koltuk Yapay Zeka ile doldurulacak, tamam mı?'),
-          findsOneWidget);
-      await tester.tap(find.text('HAYIR'));
-      await tester.pumpAndSettle();
-      // Hayır: gönderim YOK, YZ artık kalıcı bir liste satırı.
-      expect(h.gw.createdCounts, isEmpty);
-      expect(find.byKey(const ValueKey('ai-row')), findsOneWidget);
-
-      await tester.tap(find.byKey(const ValueKey('ai-row')));
-      await tester.pump();
-      await tester.tap(find.text('DAVET GÖNDER'));
-      await tester.pumpAndSettle();
-      // YZ işaretliyken onay bir daha sorulmaz, 4. koltuk YZ gider.
+          findsNothing);
+      expect(find.byKey(const ValueKey('ai-row')), findsNothing);
       expect(h.gw.createdCounts, [4]);
       expect(h.gw.createdSlots.single.last, {'type': 'ai'});
       expect(find.textContaining('4. koltuk Yapay Zeka.'), findsOneWidget);

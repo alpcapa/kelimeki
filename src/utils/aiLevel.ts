@@ -109,13 +109,15 @@ export const AI_LEVEL_BADGE_CLASS: Record<AiLevel, string> = {
 };
 
 /**
- * Setup'taki zorluk seçicisinin VARSAYILANI (27 Eylül 2026, ROADMAP #41
- * karar 7 — kullanıcı: *"Kolay olsun"*): hiç oynamamış kullanıcının ilk
- * oyunu Kolay, sonrası Normal. `ilkOyun` tanıtım kapısının kararı
+ * Setup'taki zorluk seçicisinin VARSAYILANI (ROADMAP #41 karar 7):
+ * **misafire HER ZAMAN Kolay**, girişli kullanıcıya yalnızca ilk oyunda
+ * Kolay, sonrası Normal. `ilkOyun` tanıtım kapısının kararı
  * (`shouldShowTutorial`) — "yeni kullanıcı" için ikinci bir tanım yok.
- * ⚠ Yalnızca webde (#41'in Setup yarısı önce web); port bugün hep Normal
- * açıyor, ikizi Setup'ın port yarısıyla gelecek.
+ *
+ * 27 Eylül 2026: yalnız ilk oyun Kolay (kullanıcı: *"Kolay olsun"*).
+ * 1 Ekim 2026: *"Misafir her zaman kolay olsun bence. İlk oyun şart değil."*
+ * Port ikizi `defaultAiLevel` (`util/ai_level.dart`) — iki taraf aynı gün.
  */
-export function defaultAiLevel(ilkOyun: boolean): AiLevel {
-  return ilkOyun ? 'kolay' : 'normal';
+export function defaultAiLevel(ilkOyun: boolean, misafir: boolean): AiLevel {
+  return ilkOyun || misafir ? 'kolay' : 'normal';
 }

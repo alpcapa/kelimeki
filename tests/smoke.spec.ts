@@ -23,10 +23,11 @@ async function donenKullanici(page: Page): Promise<void> {
   }, SEEN_INTRO_KEY);
 }
 
-// Daha önce oynamış (tanıtımı görmüş) kullanıcı — zorluk varsayılanı Normal.
-// Hiç oynamamış kullanıcının ilk oyunu Kolay açılıyor (27 Eylül 2026,
-// ROADMAP #41; `defaultAiLevel`), yani "varsayılan Normal"i ölçen testler
-// kendini bununla işaretliyor. Anahtar `onboarding.ts` → TUTORIAL_SEEN_KEY.
+// Daha önce oynamış (tanıtımı görmüş) kullanıcı — tanıtım açılmaz. Zorluk
+// varsayılanı GİRİŞLİDE Normal; MİSAFİRDE her zaman Kolay (1 Ekim 2026,
+// ROADMAP #41; `defaultAiLevel`). Bu dosyadaki testler misafir koştuğundan
+// Normal'i ölçen testler onu AÇIKÇA seçiyor. Anahtar `onboarding.ts` →
+// TUTORIAL_SEEN_KEY.
 async function oynamisKullanici(page: Page): Promise<void> {
   await page.addInitScript(() => {
     try {
@@ -122,11 +123,13 @@ test('Zorluk: Kolay seçilip 2 kişilik oyun başlar, YZ hamle yapar, seviye kay
   await oynamisKullanici(page);
   await page.goto('/');
 
-  // Seçici bir radyogrup; varsayılan Normal işaretli (oynamış kullanıcı); Zor Faz 5'le (7 Eylül
-  // 2026) listeye girdi — üç seviye de görünmeli.
+  // Seçici bir radyogrup; misafirde varsayılan HER ZAMAN Kolay (1 Ekim 2026,
+  // oynamış olsa bile); Zor Faz 5'le (7 Eylül 2026) listeye girdi — üç
+  // seviye de görünmeli.
   const zorluk = page.getByRole('radiogroup', { name: 'Zorluk' });
-  await expect(zorluk.getByRole('radio', { name: 'Normal' })).toHaveAttribute('aria-checked', 'true');
+  await expect(zorluk.getByRole('radio', { name: 'Kolay' })).toHaveAttribute('aria-checked', 'true');
   await expect(zorluk.getByRole('radio', { name: 'Zor' })).toHaveCount(1);
+  await zorluk.getByRole('radio', { name: 'Normal' }).click();
   // Seçili seviyenin açıklaması + puanı (birincilik ve ikincilik; misafir
   // olduğundan "(Puan takibi üyelik gerektirir)" eki). Tam metinler portun
   // ai_level_parity_test'iyle aynı — iki taraf ayrışırsa biri burada, öteki
@@ -223,11 +226,16 @@ test('Girişsiz Arkadaşınla: alttan giriş penceresi, "Yapay Zekayla devam et"
   await expect(page.getByText('OYUNU BAŞLAT')).toBeVisible();
 });
 
-test('Zorluk: Normal (varsayılan) kayda aiLevel YAZMAZ — eski kayıt sözleşmesi', async ({ page }) => {
+test('Zorluk: Normal kayda aiLevel YAZMAZ — eski kayıt sözleşmesi', async ({ page }) => {
   page.on('dialog', (dialog) => dialog.accept());
   await donenKullanici(page);
   await oynamisKullanici(page);
   await page.goto('/');
+  // Misafirde varsayılan Kolay (1 Ekim 2026) — Normal açıkça seçiliyor.
+  await page
+    .getByRole('radiogroup', { name: 'Zorluk' })
+    .getByRole('radio', { name: 'Normal' })
+    .click();
   await page.getByText('OYUNU BAŞLAT').click();
   const devamButton = page
     .getByLabel('Giriş uyarısı')

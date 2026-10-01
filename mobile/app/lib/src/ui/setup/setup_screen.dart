@@ -81,9 +81,7 @@ import '../tap_target.dart';
 import '../tokens.dart';
 import '../route_observer.dart';
 import '../game/neo_box.dart';
-import '../auth/auth_modal.dart';
 import '../auth/legal_modals.dart';
-import '../game/dialog_shell.dart';
 import '../feedback/feedback_modal.dart';
 import '../../data/feedback_api.dart';
 import '../../util/offline_notice.dart';
@@ -138,13 +136,22 @@ class _SetupScreenState extends State<SetupScreen>
     with WidgetsBindingObserver, RouteAware {
   int _count = 2;
 
-  /// ZORLUK (ROADMAP #23 Faz 4 — web `Setup.tsx`in `level` state'i): varsayılan
-  /// Normal (bugünkü motor), her yeni oyun formu açılışında Normal'e döner;
-  /// misafirde de var (misafir de YZ'ye karşı oynuyor: kaydı/puanı yok ama
-  /// seçim yine anlamlı). Zor, Faz 5'e kadar seçenek listesinde YOK
-  /// (`selectableAiLevels`). Oyun BAŞINDA kilitlenir, 4 kişilikte üç YZ'ye
-  /// birden uygulanır.
-  AiLevel _level = AiLevel.normal;
+  /// ZORLUK (ROADMAP #23 Faz 4 — web `Setup.tsx`in `level` state'i).
+  /// Kullanıcının SEÇTİĞİ seviye; seçmediyse `null` ve varsayılan TÜRETİLİR
+  /// (`_level`): misafire her zaman, girişliye ilk oyunda Kolay; sonrası
+  /// Normal (ROADMAP #41 karar 7, web `chosenLevel ?? defaultAiLevel(…)`
+  /// ile aynı — bulut
+  /// kayıtları geç gelince kendiliğinden düzelir). Misafirde de var. Oyun
+  /// BAŞINDA kilitlenir, 4 kişilikte üç YZ'ye birden uygulanır.
+  AiLevel? _chosenLevel;
+
+  AiLevel get _level => _chosenLevel ??
+      defaultAiLevel(_ilkOyunMu(),
+          misafir: widget.services.auth.user == null);
+
+  /// Depo açılınca doldurulur — zorluk varsayılanının "ilk oyun mu"
+  /// sorusunu build içinde (senkron) cevaplayabilmek için.
+  FlagsStore? _flags;
 
   /// Web `mainView` ('local' | 'live') — OYUN TİPİ sekmeleri. Canlı sekme
   /// yalnızca görünümü değiştirir; YZ tarafının state'i (kayıtlar/form)
@@ -296,7 +303,12 @@ class _SetupScreenState extends State<SetupScreen>
     }));
     if (storage != null) {
       storage.then((s) async {
-        if (mounted) setState(() => _diagStorage = 'depo ok');
+        if (mounted) {
+          setState(() {
+            _diagStorage = 'depo ok';
+            _flags = s.flags;
+          });
+        }
         final repo = LocalGameRepo(s);
         _repo = repo;
         await _refreshSaveStatus(); // load süresi dolanı olaya çevirir
@@ -992,70 +1004,11 @@ class _SetupScreenState extends State<SetupScreen>
     await hatirlatici.oyundanAyrildi(s);
   }
 
-  /// Web `handleStart` paritesi (14 Ağustos 2026 — porta hiç geçmemişti):
-  /// misafir "OYUNU BAŞLAT"a bastığında önce bir giriş uyarısı çıkar.
-  /// `loading` (kimlik henüz çözülüyor) iken uyarı GÖSTERİLMEZ — web'in
-  /// `!loading && !user` koşulu; aksi halde girişli kullanıcı, oturum
-  /// okunurken bastığında haksız yere uyarı görürdü.
-  Future<void> _handleStart(SetWordSource words) async {
-    final auth = widget.services.auth;
-    if (!auth.loading && auth.user == null) {
-      final proceed = await _showGuestWarning();
-      if (!proceed || !mounted) return;
-    }
-    await _startNewGame(words);
-  }
-
-  /// `true` → "Oyna" (misafir olarak başlat).
-  ///
-  /// ÜÇ ayrı sonuç var ve ikisi de oyunu başlatMIYOR, o yüzden `bool`
-  /// yetmiyor: "Giriş Yap" giriş penceresini açar, ✕/dışarı dokunuş ise
-  /// kullanıcıyı sessizce kurulum ekranında bırakır (web'de de Escape/✕
-  /// ne oyunu başlatıyor ne giriş açıyor).
-  Future<bool> _showGuestWarning() async {
-    final auth = widget.services.auth;
-    final choice = await showDialog<_GuestChoice>(
-      context: context,
-      // `KModal` DEĞİL `KDialogCard` — 17 Ağustos 2026, cihaz testinde
-      // bulundu (kullanıcı: *"çıkan popup başlıksız"*). Web'de İKİ ayrı
-      // kabuk var (bkz. `dialog_shell.dart` başlığı) ve bu uyarı ortak
-      // `Modal.tsx`'i KULLANMIYOR: `Setup.tsx` içinde elle kurulmuş
-      // 384px'lik onay kartı (`max-w-sm`/`rounded-2xl`/`p-6`, ✕ köşede
-      // `absolute`). Port başlangıçta `KModal`a `title: ''` geçmişti —
-      // niyet doğruydu ("web'de başlıksız") ama kabuk başlık bandını yine
-      // de çizdiğinden üstte boş bir alan + ayraç kalıyordu.
-      builder: (ctx) => KDialogCard(
-        onClose: () => Navigator.of(ctx).pop(_GuestChoice.dismiss),
-        content: const Text(
-          'Oyunların istatistikleri, k-lig ve arkadaşınla canlı oyun '
-          'için lütfen giriş yapın.',
-          style: kDialogBodyStyle,
-        ),
-        // Kabul butonu SOLDA — web'in düz flex sırası (Parça 25).
-        actions: [
-          kDialogButton(
-            label: 'GİRİŞ YAP',
-            variant: NeoButtonVariant.accent,
-            onPressed: () => Navigator.of(ctx).pop(_GuestChoice.login),
-          ),
-          kDialogButton(
-            // "DEVAM" DEĞİL "OYNA" (18 Ağustos 2026, kullanıcı bildirdi;
-            // web `Setup.tsx` ile AYNI turda değişti): uyarı metni
-            // üyeliğin faydalarını anlattığından "Devam" cümlenin devamı
-            // gibi okunup "üyeliğe devam et" izlenimi veriyordu.
-            label: 'OYNA',
-            onPressed: () => Navigator.of(ctx).pop(_GuestChoice.proceed),
-          ),
-        ],
-      ),
-    );
-    // "Giriş Yap" dalı: popup kapandıktan SONRA giriş penceresini aç (web
-    // de önce uyarıyı kapatıp sonra AuthModal'ı açıyor).
-    if (choice == _GuestChoice.login && mounted) {
-      await showLoginModal(context, auth, feedback: widget.services.feedback);
-    }
-    return choice == _GuestChoice.proceed;
-  }
+  /// OYUNU BAŞLAT — doğrudan başlatır. Misafire giriş uyarısı penceresi
+  /// YOK (ROADMAP #41 karar 4; web 27 Eylül'de, port 1 Ekim 2026'da —
+  /// kullanıcı: *"Biz insanların bir an evvel oyun başlatmasını istiyoruz"*).
+  /// Üyeliğin faydaları zaten zorluk açıklamasında ve oyun sonunda anlatılıyor.
+  Future<void> _handleStart(SetWordSource words) => _startNewGame(words);
 
   /// `game_starts` sayaç satırı. `StartAction` dispatch eden İKİ ekran var
   /// (burası ve oyun sonu "Tekrar Oyna" → `game_screen.dart`); ikisi de
@@ -1091,10 +1044,19 @@ class _SetupScreenState extends State<SetupScreen>
     } catch (_) {
       return false;
     }
+    return _ilkOyunMu(flags);
+  }
+
+  /// Tanıtım kapısının SENKRON hâli — hem tanıtım hem zorluk varsayılanı
+  /// (`_level`) aynı "ilk oyun" tanımını kullansın diye tek yerde. Depo
+  /// henüz açılmadıysa `false` (varsayılan GÖSTERME/Normal tarafı).
+  bool _ilkOyunMu([FlagsStore? flags]) {
+    final f = flags ?? _flags;
+    if (f == null) return false;
     final user = widget.services.auth.user;
     return shouldShowTutorial(TutorialGateInput(
-      seenTutorial: flags.seenTutorial,
-      seenLegacyQuickStart: flags.seenQuickstart,
+      seenTutorial: f.seenTutorial,
+      seenLegacyQuickStart: f.seenQuickstart,
       hasPlayed:
           user != null ? (_cloudSaves?.length ?? 0) > 0 : _savedState != null,
       accountCreatedAt: user?.createdAt,
@@ -1157,6 +1119,10 @@ class _SetupScreenState extends State<SetupScreen>
     // açıksa hesap sahibi (accountName), değilse misafir; diğerleri
     // "Yapay Zeka N" adıyla YZ.
     final me = widget.services.auth.accountName ?? guestPlayerName;
+    // Zorluk BASILDIĞI ANDA sabitlenir (web `onStart(list, isFirstGame,
+    // level)` ile aynı): tanıtım açılırken "gördü" bayrağını yazdığından,
+    // sonradan okunan `_level` ilk oyunu Kolay yerine Normal'e düşürürdü.
+    final level = _level;
     // İlk oyun: ÖNCE tanıtım (web `App.onStart`: `startLocalGame` tanıtım
     // kapanmadan ÇAĞRILMAZ). Tanıtım bir oyun değildir — controller,
     // kayıt oturumu ve `game_starts` sayacı ancak buradan sonra kurulur.
@@ -1176,7 +1142,7 @@ class _SetupScreenState extends State<SetupScreen>
       // kayıtlar, golden'lar, bulut kaydı, `games.ai_level` null). `normal`
       // yazmak aynı şeyi ikinci bir biçimde söylemek olurdu. Yalnızca
       // Kolay/Zor state'e yazılır; oyun boyunca değişmez.
-      aiLevel: _level == AiLevel.normal ? null : _level,
+      aiLevel: level == AiLevel.normal ? null : level,
     ));
     // Anonim başlangıç sayacı (web `logGameStart` paritesi, ROADMAP #9).
     // Fire-and-forget ve AWAIT EDİLMEZ: telemetri oyunun açılmasını
@@ -1351,37 +1317,12 @@ class _SetupScreenState extends State<SetupScreen>
                         // `gap-1` (4px) + paragrafın `mt-4`ü (16px) üst üste
                         // binerek 20px veriyor (Chromium'da ölçüldü).
                         if (auth.user == null) ...[
-                          const SizedBox(height: 20),
-                          const Text(
-                            'Kelimeler kurarak bölgeni genişlet, rakiplerini kuşat. '
-                            'Ama dikkat et: Hamlen rakibinin bölgesine temas ederse, '
-                            'kazandığın puanın bir kısmını onunla paylaşmak zorunda '
-                            'kalırsın. Her hamle bir strateji, her kelime bir mücadele.',
-                            // Web'de bu blok `text-center flex flex-col items-center`
-                            // içinde — paragraf da altındaki link satırı da ORTALI.
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'SpaceMono',
-                              fontSize: 12,
-                              // Web `text-xs` = 12px/16px satır (1.333) — 1.5
-                              // dört satırlık bu blokta 8px fazla yer kaplıyordu.
-                              height: 16 / 12,
-                              // Material 3'ün `bodyMedium` varsayılanı 0.25 harf
-                              // aralığı taşıyor ve `letterSpacing` yazmayan HER
-                              // metne miras kalıyor; web'de bu paragrafta
-                              // tracking YOK (`text-xs font-mono` hiçbir
-                              // letter-spacing kurmuyor, hesaplanan değer
-                              // `normal`). 0.25 × ~57 karakter = ~14px, yani
-                              // "Ama" alt satıra düşüp blok 4 yerine 5 satır
-                              // oluyordu (ölçüldü: 80px'e karşı web'de 64px).
-                              letterSpacing: 0,
-                              color: _muted,
-                            ),
-                          ),
-                          // Web: `gap-1` (4px) + link satırının `mt-1`i (4px).
-                          // 7 Eylül 2026: 16→8 ve link hedefi 48→32 (web ile
-                          // birlikte; kullanıcı: "fazla boşlukları makul hale
-                          // getir").
+                          // 1 Ekim 2026 (ROADMAP #41 karar 2, web 27 Eylül):
+                          // tanıtım paragrafı ("Kelimeler kurarak bölgeni
+                          // genişlet…") KALKTI — oyunun fikrini karşılama ve
+                          // tanıtım anlatıyor; Setup hızlıca oyuna götürmeli.
+                          // Link satırı duruyor. Web: logo ile link arası
+                          // `gap-1` (4px) + `mt-1` (4px) = 8.
                           const SizedBox(height: 8),
                           // Web Setup'taki "Nasıl oynanır?" · <ikinci link>
                           // satırı — ikisi de font-mono/11px/kalın/accent
@@ -1938,7 +1879,7 @@ class _SetupScreenState extends State<SetupScreen>
     final active = _level == lv;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _level = lv),
+        onTap: () => setState(() => _chosenLevel = lv),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: ShapeDecorationWithCssShadows(
@@ -2505,7 +2446,3 @@ class _SavedGameRow extends StatelessWidget {
     );
   }
 }
-
-/// Misafir giriş uyarısının üç sonucu — ikisi de oyunu başlatmıyor, bu
-/// yüzden `bool` yetmiyor (bkz. `_showGuestWarning`).
-enum _GuestChoice { login, proceed, dismiss }

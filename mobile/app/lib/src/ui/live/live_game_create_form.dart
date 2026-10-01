@@ -1,10 +1,12 @@
 // Canlı oyun kurulumu — src/components/LiveGameCreateForm.tsx portu.
 // Kompozisyon kuralı (online_game_ai_slot_rule migration'ı, sunucu da
 // zorluyor): 2 kişilikte YZ'ye hiç izin yok (tam 1 arkadaş); 4 kişilikte
-// en az 2 arkadaş, yalnızca 4. koltuk YZ olabilir. 2 arkadaşla gönderimde
-// önce "4. koltuk Yapay Zeka ile doldurulacak, tamam mı?" onayı — Hayır
-// denirse YZ kalıcı bir liste satırı olur (bir daha sorulmaz, web'in aynı
-// akışı). Gönderim sonrası "Davetiniz gönderilmiştir." onay ekranı
+// en az 2 arkadaş, yalnızca 4. koltuk YZ olabilir. 2 arkadaşla gönderim
+// 4. koltuğu DOĞRUDAN Yapay Zeka yapar — eskiden önce "4. koltuk Yapay Zeka
+// ile doldurulacak, tamam mı?" onayı soruluyordu; web'de 27 Eylül'de, portta
+// 1 Ekim 2026'da kalktı (ROADMAP #41 karar 12). Bilgi formun altındaki
+// "3. oyuncuyu seçmeden … 4. oyuncu Yapay Zeka olur" notunda ve gönderim
+// sonrası onay ekranında ("4. koltuk Yapay Zeka.") duruyor. Gönderim sonrası "Davetiniz gönderilmiştir." onay ekranı
 // (isimler gönderim anında dondurulur — web sentTo).
 //
 // Bilinçli sapma: web'in viewport'a sabitlenmiş alt barı (Davet Gönder/
@@ -78,8 +80,6 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
   int _playerCount = 2;
   List<FriendRow>? _friends;
   final List<String> _selected = [];
-  bool _showAiRow = false;
-  bool _aiSelected = false;
   bool _busy = false;
   String? _error;
   final _query = TextEditingController();
@@ -146,8 +146,6 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
       _playerCount = n;
       // 2↔4 kuralı tamamen farklı — seçimler sıfırlanır (web).
       _selected.clear();
-      _showAiRow = false;
-      _aiSelected = false;
     });
   }
 
@@ -167,7 +165,7 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
         _selected.remove(friendId);
         return;
       }
-      final cap = _aiSelected ? 2 : 3; // YZ koltuğu insan yerini kapatır
+      const cap = 3;
       if (_selected.length >= cap) return;
       _selected.add(friendId);
     });
@@ -214,69 +212,10 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
     }
   }
 
-  Future<void> _handleSubmit() async {
-    if (_playerCount == 2 || _selected.length == 3) {
-      await _submit(withAiLastSlot: false);
-      return;
-    }
-    // 4 kişilik + 2 arkadaş
-    if (_aiSelected) {
-      await _submit(withAiLastSlot: true);
-      return;
-    }
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: _panel,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFB8C2D1)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text('4. koltuk Yapay Zeka ile doldurulacak, tamam mı?',
-                  style: TextStyle(fontSize: 13, height: 1.5, color: _text)),
-              const SizedBox(height: 16),
-              Row(children: [
-                Expanded(
-                  child: NeoButton(
-                    label: 'EVET',
-                    variant: NeoButtonVariant.accent,
-                    fontSize: 11,
-                    letterSpacing: 1,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    onPressed: () => Navigator.of(context).pop(true),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: NeoButton(
-                    label: 'HAYIR',
-                    variant: NeoButtonVariant.neutral,
-                    fontSize: 11,
-                    letterSpacing: 1,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    onPressed: () => Navigator.of(context).pop(false),
-                  ),
-                ),
-              ]),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (!mounted) return;
-    if (ok == true) {
-      await _submit(withAiLastSlot: true);
-    } else {
-      // Hayır: YZ satırı kalıcı görünür olur, bir daha sorulmaz (web).
-      setState(() => _showAiRow = true);
-    }
-  }
+  /// 2 kişilik ya da 3 arkadaş: YZ yok. 4 kişilik + 2 arkadaş: 4. koltuk
+  /// Yapay Zeka — onay SORULMADAN (ROADMAP #41 karar 12).
+  Future<void> _handleSubmit() => _submit(
+      withAiLastSlot: _playerCount == 4 && _selected.length == 2);
 
   void _openFriendsModal() {
     showFriendsModal(
@@ -420,19 +359,6 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
                       ),
                   ];
                 })(),
-                if (_playerCount == 4 && _showAiRow)
-                  _selectableRow(
-                    key: const ValueKey('ai-row'),
-                    avatar: _robotAvatar(28),
-                    name: 'Yapay Zeka',
-                    checked: _aiSelected,
-                    // 3 arkadaş seçiliyken YZ işaretlenemez (web simetri notu).
-                    enabled: _selected.length < 3,
-                    onTap: () {
-                      if (_selected.length >= 3) return;
-                      setState(() => _aiSelected = !_aiSelected);
-                    },
-                  ),
               ]),
             ),
           ),
@@ -568,19 +494,6 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
     );
   }
 }
-
-/// Robot avatarı — PendingGameCard/PlayerAvatarRow'daki aynı görsel dil.
-Widget _robotAvatar(double size) => Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: _border),
-      ),
-      child: Icon(Icons.smart_toy_outlined,
-          size: size * 0.6, color: _muted),
-    );
 
 class _SectionLabel extends StatelessWidget {
   final String text;
