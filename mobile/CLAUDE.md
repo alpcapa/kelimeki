@@ -539,6 +539,8 @@ Bütçeyi `npm run check-doc-size` ölçüyor, sınıra gelince yeni cilt açıl
 | Cihaz testi — web ile yan yana GÖRSEL karşılaştırma (parite denetimi, §0.5) | `mobile/docs/testing-gorsel-karsilastirma.md` |
 | Cihaz testi — etkileşim/görünüm turları (tarihli: dokunma hedefleri, sürükleme eşiği, yazı boyutu, akıcılık, zoom) | `mobile/docs/testing-ux-turlari.md` |
 | Cihaz testi — push bildirimleri + derin bağlantılar + **güncelleme** (çoğu Play imzalı derleme ister) | `mobile/docs/testing-bildirimler.md` |
+| Cihaz testi — ölçüm/telemetri: sunucuya düşen satırlar (`client_errors`, huniler, `device_visits`; §14·18·32·33) | `mobile/docs/testing-olcum.md` |
+| Cihaz testi — k-lig ödül & rütbe sistemi (§13) | `mobile/docs/testing-klig.md` |
 | Deploy doğrulaması — tarihli post-mortem'ler (dal hijyeni, "koşu yok" filtresi, PR #267, sınıf 2 risk kütüğü) **+ 31 Ağustos 2026'da buradan taşınan gerekçeler: 15/29 Ağustos deploy vakaları, güncelleme modelinin 1.0.1 ölçümü ve 1.0.0 süpürmesi, yazı boyutu envanteri** | `mobile/docs/deploy-verification.md` |
 | Sonraya bırakılan mobil işler (karar verildi, henüz yapılmadı — KGP uyarısı, iOS borçları) | `mobile/docs/sonraya-birakilanlar.md` |
 
@@ -635,7 +637,8 @@ sunucu `coalesce` ile ortak, bkz. ROADMAP #23):
    uyarı metni + `maxSwapCount` + İKİ kapı + YZ dilimi,
    `swap_limit_parity_test`, 14 Eylül 2026; kullanıcıya gösterilen hata
    metninin kapısı — metinler + kalıp sayıları, `error_message_parity_test`,
-   13 Eylül 2026) — **yeni bir
+   13 Eylül 2026; Huni v2 olay/platform adları + `mevcut` kanalı —
+   `funnel_events_parity_test`, 27 Eylül 2026) — **yeni bir
    elle-senkron çift eklerken testini de yaz**, desen hazır (web kaynağını/
    migration'ı okuyup karşılaştır). Bugün kapısı OLMAYAN iki çift:
    `intro_screen.dart` metinleri ↔ `Landing.tsx`, ve k-lig kademe

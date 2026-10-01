@@ -85,6 +85,10 @@ dependencies:
   sqflite: ^2.4.2
   sqflite_common_ffi_web: ^1.0.2
   supabase_flutter: ^2.10.2
+  # OS sürümü + cihaz modeli — admin "Cihaz"/"Cihaz Markası" kartları
+  # (`device_visits`, ROADMAP #40, 27 Eylül 2026). Yalnızca OKUR; kimlik
+  # (IDFV/Android ID) okunmuyor ve gönderilmiyor — bkz. data/device_info.dart.
+  device_info_plus: ^12.4.0
 
 dev_dependencies:
   flutter_test:

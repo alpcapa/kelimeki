@@ -24,13 +24,17 @@
 // sunucu tarafında eleniyor (bkz. `admin_guest_device_breakdown`
 // migration'ı, 22 Eylül 2026).
 //
-// ⚠ `os_version`/`device_model` de null: portta `device_info_plus` YOK ve
-// bir telemetri alanı için yeni bir native bağımlılık eklemek bu işin
-// kapsamı değil. Kolonlar nullable, web'de de sık sık null geliyor.
+// ⚠ `os_version`/`device_model` 27 Eylül 2026'ya kadar null gidiyordu
+// (portta `device_info_plus` yoktu). ROADMAP #40 ile paket eklendi ve ikisi
+// artık dolu — `device_info.dart` web'in söz dağarcığını birebir üretiyor.
+// Aynı gün ikinci bir tablo da eklendi: `device_visits` (aşağıda,
+// `pingDeviceVisit`) — admin "Cihaz"/"Cihaz Markası" kartları ONDAN
+// besleniyor ve port oraya hiç yazmıyordu.
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../util/platform.dart';
+import 'device_info.dart';
 import 'device_stamp.dart';
 
 /// Gerçek uç ya da testin sahtesi (`GamesGateway` deseninin aynısı).
@@ -43,6 +47,17 @@ abstract class VisitsGateway {
     required String anonId,
     required String? utmSource,
     required String? deviceType,
+    String? osVersion,
+    String? deviceModel,
+  });
+
+  /// `device_visits`e bir satır ekler — girişli DAHİL (web `logDeviceVisit`).
+  /// `user_id` BİLEREK yok: satır hiçbir hesapla eşleştirilemez.
+  Future<void> insertDeviceVisit({
+    required String anonId,
+    required String deviceType,
+    String? osVersion,
+    String? deviceModel,
   });
 }
 
@@ -58,15 +73,32 @@ class SupabaseVisitsGateway implements VisitsGateway {
     required String anonId,
     required String? utmSource,
     required String? deviceType,
+    String? osVersion,
+    String? deviceModel,
   }) async {
     await client.from('guest_visits').insert({
       'anon_id': anonId,
       'utm_source': utmSource,
       'device_type': deviceType,
-      // Yukarıdaki başlıktaki iki karar: PWA sorusu ve native bağımlılık.
+      // Yukarıdaki başlıktaki PWA kararı.
       'is_standalone': null,
-      'os_version': null,
-      'device_model': null,
+      'os_version': osVersion,
+      'device_model': deviceModel,
+    });
+  }
+
+  @override
+  Future<void> insertDeviceVisit({
+    required String anonId,
+    required String deviceType,
+    String? osVersion,
+    String? deviceModel,
+  }) async {
+    await client.from('device_visits').insert({
+      'anon_id': anonId,
+      'device_type': deviceType,
+      'os_version': osVersion,
+      'device_model': deviceModel,
     });
   }
 }
@@ -98,8 +130,16 @@ class VisitsRepo {
   /// Yerel "bugün" — testler sabitliyor.
   final String Function() today;
 
-  VisitsRepo(this.gateway, this.stamp, {String Function()? today})
-      : today = today ?? _bugun;
+  /// Cihaz bilgisi — testler sahtesini veriyor. Bir kez okunur, önbellekte.
+  final Future<DeviceDetails> Function() _details;
+  Future<DeviceDetails>? _detailsCache;
+  Future<DeviceDetails> get details => _detailsCache ??= _details();
+
+  VisitsRepo(this.gateway, this.stamp,
+      {String Function()? today, Future<DeviceDetails> Function()? details})
+      : today = today ?? _bugun,
+        _details =
+            details ?? (() => readDeviceDetails(platform: currentPlatform));
 
   static String _bugun() => DateTime.now().toIso8601String().substring(0, 10);
 
@@ -115,10 +155,13 @@ class VisitsRepo {
       // 2. Günde bir kez.
       final gun = today();
       if (s.flags.anonVisitDate == gun) return false;
+      final d = await details;
       await gateway.insertGuestVisit(
         anonId: await s.anonId(),
         utmSource: s.source,
         deviceType: deviceTypeForVisit(currentPlatform),
+        osVersion: d.osVersion,
+        deviceModel: d.model,
       );
       // Damga YAZMADAN SONRA: insert düşerse yarın tekrar denenir. (Tersi
       // olsaydı düşen bir istek o günü sessizce yakardı.)
@@ -127,6 +170,30 @@ class VisitsRepo {
     } catch (e) {
       // 3. Fire-and-forget.
       debugPrint('[Kelimeki] guest_visits pingi düştü: $e');
+      return false;
+    }
+  }
+
+  /// Cihaz pingi — `device_visits`, GİRİŞLİ DAHİL günde bir (web App.tsx'in
+  /// ikinci effect'i). `pingGuestVisit`ten BİLEREK AYRI damga: paylaşılsaydı
+  /// misafir pingi girişliyken hiç atılmadığından biri ötekini bastırırdı.
+  /// Dönüş yalnızca testler için.
+  Future<bool> pingDeviceVisit() async {
+    try {
+      final s = await stamp;
+      final gun = today();
+      if (s.flags.deviceVisitDate == gun) return false;
+      final d = await details;
+      await gateway.insertDeviceVisit(
+        anonId: await s.anonId(),
+        deviceType: deviceTypeForVisit(currentPlatform),
+        osVersion: d.osVersion,
+        deviceModel: d.model,
+      );
+      await s.flags.setDeviceVisitDate(gun);
+      return true;
+    } catch (e) {
+      debugPrint('[Kelimeki] device_visits pingi düştü: $e');
       return false;
     }
   }

@@ -31,6 +31,8 @@ import '../tokens.dart';
 import '../form_input.dart';
 import '../../util/error_message.dart';
 
+import '../../data/funnel_api.dart';
+
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -331,6 +333,9 @@ class _AuthModalState extends State<AuthModal> {
       // için ikisi de "kayıt tamamlandı").
       analytics.log('signup_completed');
       signupEvents.log(kSignupCompleted, widget.signupChannel);
+      // Huni v2 (web `AuthModal` → `funnelEvent('signup', true)`) — Gizlilik
+      // 6. bölüm (6): olay türü + gün, hesap kimliği YOK.
+      funnel.event('signup', isGuest: true);
       if (!mounted) return;
       if (sessionOpened) {
         Navigator.of(context).pop();

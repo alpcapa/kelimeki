@@ -344,3 +344,18 @@ edenler bilerek DOKUNULMADI. Tek istisna `src/game/gameReducer.ts`'teki bir
 yorum (hata avı #24): motor dosyası, yalnızca bir yorum için golden/parite
 turuna sokulmadı — ciltlerin başlığındaki `grep … roadmap-arsiv*.md`
 reçetesi onu da buluyor.
+
+## 27 Eylül 2026 — `mobile/TESTING.md` (131 → 106 KB), `active` uyarı bandından çıkarıldı
+
+Huni v2 mobil yarısının cihaz maddeleri (§33) eklenirken dosya uyarı
+bandındaydı; kural "bir sonraki dokunuşta böl". İki kesim, ikisi de İÇERİK
+TÜRÜNE göre, hiçbir satır değişmedi, bölüm numaraları korundu:
+
+- `mobile/docs/testing-olcum.md` ← §14, §18, §32, §33: ekrandaki davranışı
+  değil SUNUCUYA düşen telemetri/ölçüm satırını doğrulayan bölümler
+  (kontrol admin panelinden/Supabase'den okunuyor).
+- `mobile/docs/testing-klig.md` ← §13 (15 KB, dosyanın en büyük bölümü):
+  kendi içinde bütün bir tur, ötekilerle ortak adımı yok.
+
+`mobile/TESTING.md`te her bölümün yerinde bir yönlendirme satırı kaldı.
+
