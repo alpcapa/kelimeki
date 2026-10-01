@@ -247,8 +247,9 @@ Bu bölüm anahtarsız da koşulabilir; sunucuyla ilgisi yok.
       oyun (ya da ilk oyunsa tanıtım) DOĞRUDAN açılır; *"…lütfen giriş
       yapın"* penceresi görünüyorsa derleme bayat (sha'yı kontrol et).
       Aynı turda: misafirin logo altındaki tanıtım paragrafı YOK ("Nasıl
-      oynanır? · Tanıtım" satırı duruyor) · hiç oynamamış cihazda zorluk
-      **Kolay** seçili açılır, ilk oyun da Kolay kurulur · 4 kişilik Canlı
+      oynanır? · Tanıtım" satırı duruyor) · zorluk MİSAFİRDE her zaman,
+      girişlide yalnız ilk oyunda **Kolay** seçili açılır (girişli + oynamış
+      → Normal) ve oyun da öyle kurulur · 4 kişilik Canlı
       oyunu 2 arkadaşla kurarken "4. koltuk Yapay Zeka…, tamam mı?" sorusu
       ÇIKMAZ, davet doğrudan gider ve onay ekranında "4. koltuk Yapay Zeka."
       yazar.

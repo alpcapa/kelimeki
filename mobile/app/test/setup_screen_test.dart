@@ -218,7 +218,7 @@ void main() {
 
   testWidgets(
       'ZORLUK (ROADMAP #23 Faz 4-5): OYUNCU SAYISI\'nın altında Kolay/Normal/'
-      'Zor, varsayılan Normal, seçili seviyenin açıklaması ve puanı',
+      'Zor, misafirde varsayılan Kolay, seçili seviyenin açıklaması ve puanı',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 950));
     await pumpSetup(tester, services());
@@ -235,10 +235,14 @@ void main() {
     expect(yZorluk, greaterThan(ySayi));
     expect(yOyuncular, greaterThan(yZorluk));
 
-    // Her seviyenin altında açıklama var; varsayılan Normal, 2 kişilik →
-    // birincilik + "ikincilik puan kazandırmaz"; bu test MİSAFİR (services()
-    // girişsiz) → "(Puan takibi üyelik gerektirir)" eki. Tam metinler
+    // Her seviyenin altında açıklama var. Bu test MİSAFİR (services()
+    // girişsiz) → varsayılan Kolay (1 Ekim 2026, `defaultAiLevel`) ve
+    // "(Puan takibi üyelik gerektirir)" eki. Normal'e geçip 2 kişilik →
+    // birincilik + "ikincilik puan kazandırmaz". Tam metinler
     // `ai_level_parity_test`te.
+    expect(find.textContaining('Çok iyi değilim'), findsOneWidget);
+    await tester.tap(find.text('NORMAL'));
+    await tester.pump();
     expect(find.textContaining('Orta-iyi seviye'), findsOneWidget);
     expect(
         find.textContaining('birincilik 2 k-lig puanı kazandırır, ikincilik '
@@ -293,13 +297,14 @@ void main() {
   // Negatif eş — AYRI test: aynı testte ikinci bir pumpSetup, ilk oyunun
   // "devam eden oyun" kartını gösterip formu gizliyor (OYUNU BAŞLAT yok).
   testWidgets(
-      'ZORLUK: Normal (varsayılan) ile başlayan oyunda aiLevel alanı HİÇ '
+      'ZORLUK: Normal ile başlayan oyunda aiLevel alanı HİÇ '
       'yazılmaz — `normal` değeri de değil', (tester) async {
     await setPhoneViewSize(tester, const Size(420, 950));
     await pumpSetup(tester, services());
+    // Misafirde varsayılan Kolay (1 Ekim 2026) — Normal açıkça seçiliyor.
+    await tester.tap(find.text('NORMAL'));
+    await tester.pump();
     await tester.tap(find.text('OYUNU BAŞLAT'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('OYNA')); // misafir uyarısı
     await tester.pumpAndSettle();
     final screen = tester.widget<GameScreen>(find.byType(GameScreen));
     expect(screen.controller.state.aiLevel, isNull);
@@ -1426,6 +1431,23 @@ void tanitimKapisiTestleri() {
       await tester.runAsync(() => storage.close());
     });
 
+    // 1 Ekim 2026, kullanıcı: *"Misafir her zaman kolay olsun bence. İlk
+    // oyun şart değil."* — tanıtımı görmüş (oynamış) misafir de Kolay ile
+    // başlar; girişli oynamış kullanıcı Normal (negatif eş aşağıda).
+    testWidgets('oynamış MİSAFİR yine Kolay; oynamış GİRİŞLİ Normal',
+        (tester) async {
+      await setPhoneViewSize(tester, const Size(420, 900));
+      final storage = (await tester
+          .runAsync(() => openStorageWith({'seen_tutorial': true})))!;
+      await pumpSetup(tester, services(storage: Future.value(storage)));
+      await formuBekle(tester);
+      await tester.tap(find.text('OYUNU BAŞLAT'));
+      await gorunmesiniBekle(tester, find.byType(GameScreen));
+      final screen = tester.widget<GameScreen>(find.byType(GameScreen));
+      expect(screen.controller.state.aiLevel, AiLevel.kolay);
+      await tester.runAsync(() => storage.close());
+    });
+
     testWidgets('tanıtımı görmüş depoda doğrudan GameScreen', (tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       final storage =
@@ -1433,8 +1455,6 @@ void tanitimKapisiTestleri() {
       await pumpSetup(tester, services(storage: Future.value(storage)));
       await formuBekle(tester);
       await tester.tap(find.text('OYUNU BAŞLAT'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OYNA'));
       await gorunmesiniBekle(tester, find.byType(GameScreen));
       expect(find.byType(TutorialGame), findsNothing);
       await tester.runAsync(() => storage.close());
@@ -1455,6 +1475,10 @@ void tanitimKapisiTestleri() {
       await gorunmesiniBekle(tester, find.byType(GameScreen));
       expect(find.byType(TutorialGame), findsNothing);
       expect(storage.flags.seenTutorial, isFalse);
+      // Negatif eş: oynamış (ilk oyun değil) GİRİŞLİ kullanıcı Normal
+      // (alan yazılmaz) — misafirdeki "her zaman Kolay" ona sızmamalı.
+      expect(tester.widget<GameScreen>(find.byType(GameScreen))
+          .controller.state.aiLevel, isNull);
       await tester.runAsync(() => storage.close());
     });
 

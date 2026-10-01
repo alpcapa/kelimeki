@@ -651,7 +651,7 @@ export function Setup({
     hasPlayed: user ? (cloudSaves?.length ?? 0) > 0 : savedGame !== null,
     accountCreatedAt: profile?.created_at ?? null,
   });
-  const level: AiLevel = chosenLevel ?? defaultAiLevel(isFirstGame);
+  const level: AiLevel = chosenLevel ?? defaultAiLevel(isFirstGame, !user);
 
   const doStart = () => {
     const list: PlayerSetup[] = Array.from({ length: count }, (_, i) => {

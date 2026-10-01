@@ -138,13 +138,16 @@ class _SetupScreenState extends State<SetupScreen>
 
   /// ZORLUK (ROADMAP #23 Faz 4 — web `Setup.tsx`in `level` state'i).
   /// Kullanıcının SEÇTİĞİ seviye; seçmediyse `null` ve varsayılan TÜRETİLİR
-  /// (`_level`): hiç oynamamışa Kolay, sonrası Normal (ROADMAP #41 karar 7,
-  /// web `chosenLevel ?? defaultAiLevel(isFirstGame)` ile aynı — bulut
+  /// (`_level`): misafire her zaman, girişliye ilk oyunda Kolay; sonrası
+  /// Normal (ROADMAP #41 karar 7, web `chosenLevel ?? defaultAiLevel(…)`
+  /// ile aynı — bulut
   /// kayıtları geç gelince kendiliğinden düzelir). Misafirde de var. Oyun
   /// BAŞINDA kilitlenir, 4 kişilikte üç YZ'ye birden uygulanır.
   AiLevel? _chosenLevel;
 
-  AiLevel get _level => _chosenLevel ?? defaultAiLevel(_ilkOyunMu());
+  AiLevel get _level => _chosenLevel ??
+      defaultAiLevel(_ilkOyunMu(),
+          misafir: widget.services.auth.user == null);
 
   /// Depo açılınca doldurulur — zorluk varsayılanının "ilk oyun mu"
   /// sorusunu build içinde (senkron) cevaplayabilmek için.

@@ -87,9 +87,11 @@ String? aiLevelBadgeLabel(AiLevel? level) =>
     level == null ? null : aiLevelLabel[level];
 
 /// Setup'taki zorluk seçicisinin VARSAYILANI — web `defaultAiLevel`
-/// (`utils/aiLevel.ts`, ROADMAP #41 karar 7): hiç oynamamış kullanıcının ilk
-/// oyunu Kolay, sonrası Normal. `ilkOyun` tanıtım kapısının kararı
-/// (`shouldShowTutorial`) — "yeni kullanıcı" için ikinci bir tanım yok.
-/// 1 Ekim 2026: web'den 4 gün sonra porta geldi (kullanıcı: kontrol grubu
-/// iptal, *"insanların bir an evvel oyun başlatmasını istiyoruz"*).
-AiLevel defaultAiLevel(bool ilkOyun) => ilkOyun ? AiLevel.kolay : AiLevel.normal;
+/// (`utils/aiLevel.ts`, ROADMAP #41 karar 7): **misafire HER ZAMAN Kolay**,
+/// girişliye yalnızca ilk oyunda Kolay, sonrası Normal. `ilkOyun` tanıtım
+/// kapısının kararı (`shouldShowTutorial`).
+/// 1 Ekim 2026: porta geldi (kontrol grubu iptal) ve aynı gün kural
+/// genişledi — kullanıcı: *"Misafir her zaman kolay olsun bence. İlk oyun
+/// şart değil."*
+AiLevel defaultAiLevel(bool ilkOyun, {required bool misafir}) =>
+    ilkOyun || misafir ? AiLevel.kolay : AiLevel.normal;

@@ -940,7 +940,12 @@ kontrol grubu kalsın" planı (yukarı, "Uygulama sırası" 2. madde) iptal.
 
 - **Karar 4 — misafir giriş uyarısı YOK:** `_handleStart` doğrudan
   `_startNewGame`; `_showGuestWarning` + `_GuestChoice` silindi.
-- **Karar 7 — ilk oyun Kolay:** `defaultAiLevel` (`util/ai_level.dart`),
+- **Karar 7 — Kolay varsayılanı GENİŞLEDİ: misafire HER ZAMAN, girişliye
+  ilk oyunda** (aynı gün, kullanıcı: *"Misafir her zaman kolay olsun bence.
+  İlk oyun şart değil."*) — web `defaultAiLevel(ilkOyun, misafir)` ve port
+  `defaultAiLevel(ilkOyun, misafir:)` birlikte değişti; web duman testleri
+  Normal'i artık AÇIKÇA seçiyor (misafir koşuyorlar). İlk sürüm:
+  `defaultAiLevel` (`util/ai_level.dart`),
   "ilk oyun" tanıtım kapısıyla AYNI tanım (`_ilkOyunMu`, senkron; depo
   açılmadıysa `false`). Seçim `_chosenLevel`, varsayılan TÜRETİLİYOR (web
   `chosenLevel ?? …`). ⚠ **Tuzak, testle kilitli:** tanıtım AÇILIRKEN
