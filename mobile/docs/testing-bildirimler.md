@@ -515,6 +515,34 @@ yazılıyor.
       tabloda hiç görünmemeli (kapsam bilerek dar), ama bildirimlerin
       çalıştığı başka bir hesapta hiçbir şey bozulmamalı.
 
+## 3h. iOS simge rozeti SAYISI (ROADMAP #25 — 1.1.2 İSTER + Edge deploy)
+
+Kural (kullanıcı kararı, 26 Eylül 2026): *"Bildirimlerde ne varsa onlar.
+Her bildirim sayıyı arttırmalı."* Sayı = uygulama son açıldığından beri o
+CİHAZA gelen bildirim sayısı (`push_tokens.badge_count`). Rozet yalnızca
+iOS ≥ 1.1.2 cihazlara gönderilir (`ROZET_ILK_SURUM`, `_shared/push.ts`).
+
+⚠ **Önce iki şeyi doğrula, yoksa bu bölüm yalan söyler:** (1) teşhis
+satırında 1.1.2 derlemesi; (2) beş push fonksiyonu (`notify-your-turn`,
+`notify-game-invite`, `notify-friend-request`,
+`notify-friend-request-reminders`, `notify-deadline-warnings`) bu kodla
+yeniden deploy edilmiş (`get_edge_function` → `_shared/push.ts` içinde
+`ROZET_ILK_SURUM` geçiyor mu).
+
+- [ ] Uygulamayı KAPAT (arka plana at), ikinci hesapla iki hamle yap → simgede
+      önce **1**, sonra **2** görünmeli.
+- [ ] Farklı türde bir bildirim (arkadaşlık isteği) → sayı **3** olmalı.
+- [ ] Uygulamayı **simgeden** aç → rozet KALKMALI. Tekrar arka plana at, bir
+      bildirim daha → **1** görünmeli (5 değil — sunucu sayacı da sıfırlandı).
+- [ ] Bildirime **dokunarak** aç → rozet kalkmalı VE doğru tahta açılmalı.
+- [ ] **İki iOS cihazı** (iPhone + iPad) aynı hesapla: birinde aç → ötekinin
+      rozeti KALMALI (sayaç cihaz başına).
+- [ ] **Bildirim izni kapalı** cihaz: rozet hiç çıkmamalı (satır yok).
+- [ ] **Regresyon — Android:** hiçbir şey değişmemeli; rozet yine paneldeki
+      bildirimlerden türüyor (§3e/§3f).
+- [ ] **Regresyon — 1.1.1 iOS:** rozet HİÇ çıkmamalı (kapı); çıkıyorsa
+      simgede takılı kalır — hemen bildir.
+
 ## 3g. iOS'ta bildirim HİÇ düşmüyor — önce APNs anahtarının ORTAMINA bak
 
 ✅ **VAKA KAPANDI (15 Eylül 2026, aynı gün).** Yeni anahtar `V85TL79C5R`
