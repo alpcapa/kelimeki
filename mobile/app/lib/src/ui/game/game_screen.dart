@@ -181,6 +181,11 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   /// İşlenmiş `moveHistory` uzunluğu — yalnızca YENİ satırlara bakılır.
   int _hintHistoryLen = 0;
 
+  /// Ekran açıldığı (ya da aynı controller'da yeni oyun başladığı) andaki
+  /// geçmiş uzunluğu — `onboardingHintMinMoves` buradan sayılıyor (web
+  /// `hintBaseRef`).
+  int _hintBaseLen = 0;
+
   // ── Sürükle-bırak (web App.tsx beginDrag/moveDrag/endDrag portu) ──────
   // Jestin HİSSİ (kaldırma payı, fare/parmak eşiği, bırakma eşiği, hayalet
   // ölçüsü) `drag_feel.dart`ta — üç ekranın ortak tek kaynağı (7 Eylül 2026;
@@ -278,6 +283,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _hintHistoryLen = controller.state.moveHistory.length;
+    _hintBaseLen = _hintHistoryLen;
     controller.addListener(_ipucuKontrol);
     unawaited(_zoomHintKarariVer());
     // `ModalRoute` yalnızca ilk kare SONRASI okunabilir (initState'te
@@ -555,6 +561,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       // çıkmaz (web'de `slice` sonrası koşulsuz atama bunu kendiliğinden
       // yapıyor; burada açıkça yazılıyor).
       _hintHistoryLen = s.moveHistory.length;
+      _hintBaseLen = _hintHistoryLen;
       return;
     }
     if (s.moveHistory.length <= _hintHistoryLen) {
@@ -578,82 +585,40 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       }
     }
     if (move == null) return;
-    if (move.player < 0 || move.player >= s.players.length) return;
-    final oynayan = s.players[move.player];
-    // YZ'nin hamlesi kullanıcıya bir şey ÖĞRETMİYOR: cümleler ikinci tekil
-    // ("değdin", "bölgen") ve oyuncunun kendi eylemini anlatıyor.
-    if (oynayan.isAI) return;
-    unawaited(_ipucuGoster(s, move, oynayan));
+    // YZ'nin hamlesi de SAYILIR (30 Eylül 2026): ipucu bir mekaniği değil
+    // bir etkileşimi anlatıyor — "kelimeye dokun, anlamı açılsın" — ve YZ
+    // oynadıktan sonra sıra oyuncuda (web `App.tsx` ile aynı).
+    // Vergi satırı ayrı bir hamle değil; pas/değişim sayılır (web ile aynı).
+    final movesSinceOpen = s.moveHistory
+        .skip(_hintBaseLen)
+        .where((e) => e.invasionFrom == null)
+        .length;
+    unawaited(_ipucuGoster(s, movesSinceOpen));
   }
 
-  Future<void> _ipucuGoster(
-    GameState s,
-    HistoryEntry move,
-    Player oynayan,
-  ) async {
+  Future<void> _ipucuGoster(GameState s, int movesSinceOpen) async {
     final storageFuture = widget.storage;
     if (storageFuture == null) return;
     final storage = await storageFuture;
     if (!mounted) return;
     final flags = storage.flags;
 
-    // Bölge, hamleden SONRAKİ tahtadan yeniden hesaplanıyor (motorun kendi
-    // fonksiyonu — ikinci bir "bölge büyüdü mü" kuralı yazılmadı).
-    final bolgeler = computeAllTerritories(s.board, s.players);
-    final bolge =
-        move.player < bolgeler.length ? bolgeler[move.player] : <String>{};
-    final bloklar = [for (final k in oynayan.corners) cornerBounds(k)];
-    bool blokIcinde(int r, int c) =>
-        bloklar.any((b) => r >= b.r0 && r <= b.r1 && c >= b.c0 && c <= b.c1);
-    List<int>? disarida;
-    for (final k in bolge) {
-      final parts = k.split(',');
-      final r = int.parse(parts[0]);
-      final c = int.parse(parts[1]);
-      if (blokIcinde(r, c)) continue;
-      disarida = [r, c];
-      break;
-    }
-
     final secilen = pickOnboardingHint(
-      OnboardingHintInput(
-        paidTax: (move.lostShares ?? const []).isNotEmpty,
-        gotMultiplier: (move.wordScores ?? const []).any((w) => w.x2 || w.x3),
-        territoryOutsideCorner: disarida != null,
-      ),
+      OnboardingHintInput(wordPlaced: true, movesSinceOpen: movesSinceOpen),
       flags.onboardingHintShownCounts,
     );
     if (secilen == null) return;
 
-    // Çapa: cümlenin ANLATTIĞI kare. Çarpanda bonus bölgesine düşen taş,
-    // bölge ipucunda köşe bloğunun dışına taşan hücre; ikisi de yoksa
-    // (vergi) hamlenin ilk karesi.
-    List<int>? capa;
-    for (final cell in s.lastMoveCells) {
-      // `Cell` bir kayıt tipi (`(int, int)`), indeksle okunmaz.
-      final r = cell.$1;
-      final c = cell.$2;
-      if (secilen == OnboardingHintId.carpan && inBonusZone(r, c)) {
-        capa = [r, c];
-        break;
-      }
-      if (secilen == OnboardingHintId.bolge && !blokIcinde(r, c)) {
-        capa = [r, c];
-        break;
-      }
-    }
-    capa ??= secilen == OnboardingHintId.bolge ? disarida : null;
-    if (capa == null && s.lastMoveCells.isNotEmpty) {
-      capa = [s.lastMoveCells.first.$1, s.lastMoveCells.first.$2];
-    }
-    if (capa == null) return;
+    // Çapa: hamlenin ilk karesi — o hücreden geçen kelimenin anlamı açılır.
+    if (s.lastMoveCells.isEmpty) return;
+    final capa = [s.lastMoveCells.first.$1, s.lastMoveCells.first.$2];
 
     await flags.bumpOnboardingHintShown(secilen);
     if (!mounted) return;
     _hintTimer?.cancel();
     setState(() {
       _hintCoach = BoardCoach(
-        r: capa![0],
+        r: capa[0],
         c: capa[1],
         text: onboardingHintTexts[secilen]!,
         // Balon işaret ettiği karenin ÜSTÜNDE durur; 0. satırda üstte yer

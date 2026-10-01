@@ -288,66 +288,43 @@ void main() {
         isTrue);
   });
 
-  // ── 10. Bağlamsal ipuçları (Onboarding Faz 2) ──────────────────────────
-  // Web `verify-tutorial-script`in aynı numaralı bölümünün eşi. En kolay
-  // kaçırılan iki kural: (a) aynı hamlede birden fazla ipucu hak edilirse
-  // SIRA sabittir (ekranda tek balon), (b) tavana çarpan bir ipucu
-  // ötekileri SUSTURMAZ.
-  test('bağlamsal ipuçları: sıra sabit, tavan ipucu BAŞINA', () {
-    const yok = OnboardingHintInput(
-        paidTax: false, gotMultiplier: false, territoryOutsideCorner: false);
-    const hepsi = OnboardingHintInput(
-        paidTax: true, gotMultiplier: true, territoryOutsideCorner: true);
-    const sifir = <OnboardingHintId, int>{
-      OnboardingHintId.vergi: 0,
-      OnboardingHintId.carpan: 0,
-      OnboardingHintId.bolge: 0,
-    };
-    final vakalar = <(String, OnboardingHintInput, Map<OnboardingHintId, int>,
-        OnboardingHintId?)>[
-      ('mekanik yaşanmadı', yok, sifir, null),
+  // ── 10. Bağlamsal ipucu (Onboarding Faz 2) ─────────────────────────────
+  // Web `verify-tutorial-script`in aynı numaralı bölümünün eşi. 30 Eylül
+  // 2026'dan beri tek ipucu (`anlam`): kelime oturmadıysa balon yok,
+  // tavana çarpınca bir daha yok.
+  test('bağlamsal ipucu: kelime oturunca bir kez', () {
+    const sifir = <OnboardingHintId, int>{OnboardingHintId.anlam: 0};
+    final vakalar = <(
+      String,
+      OnboardingHintInput,
+      Map<OnboardingHintId, int>,
+      OnboardingHintId?
+    )>[
       (
-        'yalnızca vergi ödendi',
-        const OnboardingHintInput(
-            paidTax: true,
-            gotMultiplier: false,
-            territoryOutsideCorner: false),
+        'kelime oturmadı',
+        const OnboardingHintInput(wordPlaced: false, movesSinceOpen: 5),
         sifir,
-        OnboardingHintId.vergi
+        null
       ),
       (
-        'yalnızca çarpan alındı',
+        'açılıştan beri az hamle — zoom balonuyla çakışmasın',
         const OnboardingHintInput(
-            paidTax: false,
-            gotMultiplier: true,
-            territoryOutsideCorner: false),
+            wordPlaced: true, movesSinceOpen: onboardingHintMinMoves - 1),
         sifir,
-        OnboardingHintId.carpan
+        null
       ),
       (
-        'yalnızca bölge büyüdü',
+        'kelime oturdu, eşik doldu',
         const OnboardingHintInput(
-            paidTax: false,
-            gotMultiplier: false,
-            territoryOutsideCorner: true),
+            wordPlaced: true, movesSinceOpen: onboardingHintMinMoves),
         sifir,
-        OnboardingHintId.bolge
-      ),
-      // Tanıtımın 4. sahnesi TAM OLARAK böyle: hem ×3 hem vergi.
-      ('üçü birden — sıra sabit, vergi kazanır', hepsi, sifir,
-          OnboardingHintId.vergi),
-      (
-        'vergi tavanda — sıradaki hak edilmiş ipucu gösterilir',
-        hepsi,
-        {...sifir, OnboardingHintId.vergi: onboardingHintMaxShows},
-        OnboardingHintId.carpan
+        OnboardingHintId.anlam
       ),
       (
-        'hepsi tavanda — hiçbiri gösterilmez',
-        hepsi,
-        {
-          for (final id in OnboardingHintId.values) id: onboardingHintMaxShows
-        },
+        'tavanda — bir daha gösterilmez',
+        const OnboardingHintInput(
+            wordPlaced: true, movesSinceOpen: onboardingHintMinMoves),
+        {OnboardingHintId.anlam: onboardingHintMaxShows},
         null
       ),
     ];
