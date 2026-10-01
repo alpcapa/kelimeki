@@ -9,8 +9,12 @@
 //      cihazda "yeni" görünüyordu.
 // Damga artık sunucuda da (`online_game_chat_reads`, yalnızca İLERİ gider).
 // Cihazdaki damga YEDEK olarak kalıyor: sunucuya ulaşılamazsa davranış
-// bugünkünden kötü olmaz, ve port (henüz sunucuyu kullanmıyor) dönemindeki
-// eski damgalar kaybolmaz.
+// bugünkünden kötü olmaz, ve port'un yalnızca-cihaz dönemindeki (1.1.1 ve
+// öncesi) eski damgalar kaybolmaz.
+//
+// PORT İKİZİ: `mobile/app/lib/src/util/chat_read.dart` (ROADMAP #34) —
+// `chat_read_test.dart` aşağıdaki doğrulayıcının vakalarını birebir koşar;
+// karar değişirse ikisi AYNI PR'da.
 //
 // Karar burada, bileşende DEĞİL — `npm run verify-chat-read` bunu sınıyor.
 

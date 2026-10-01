@@ -137,8 +137,9 @@ arkadaşsınız, ⌛ bekliyor) ikon kaldı; ✓'ye dokunmak yine "Arkadaşlıkta
 çıkar"ı soruyor (kullanıcı kararı: ayrı "Çıkar" düğmesi YOK). Aynı gün canlı
 oyun formunun "Tüm oyuncular" listesinde arkadaş OLMAYAN kişiye dokununca
 skor kartı açılıyor (arkadaş satırı oyuna seçtiği için orada kart yok).
-⚠ Port ikizi (`player_score_card_modal.dart`) henüz ikonlu: mobil iş, tren
-kuralına tabi.
+Port ikizi (`player_score_card_modal.dart`) aynı haplarla sonraki trende
+(taslak PR, ROADMAP "Sıradaki sürüme binecekler"); "Tüm oyuncular" listesi
+portta henüz yok (ROADMAP #41'in port yarısı).
 
 ## İlişki ikonlarında İKİ düzeltme (30 Ağustos 2026)
 

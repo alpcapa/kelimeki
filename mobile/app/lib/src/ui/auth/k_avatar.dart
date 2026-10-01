@@ -57,6 +57,14 @@ class _KAvatarState extends State<KAvatar> {
   // harflerde takılı kalırdı (web'in kod incelemesiyle düzelttiği hata).
   bool _broken = false;
 
+  /// Kaçıncı deneme — `Image`in anahtarı. İlk hatada kalıcı baş harfe
+  /// düşmek yerine BİR KEZ daha denenir (29 Eylül 2026, kullanıcı: bekleyen
+  /// oyunlardaki avatarlar "bazen hiç yüklenmiyor"). Web'in `Avatar.tsx`i
+  /// 1,5 sn bekleyip deniyor; burada bekleme YOK, çünkü bir `Timer` widget
+  /// testlerinde bekleyen zamanlayıcı hatası verir ve yeniden deneme zaten
+  /// yeni bir `ImageStream` (yeni istek) başlatıyor. İkinci hata gerçek.
+  int _attempt = 0;
+
   /// Bir önceki karede çevrimdışı mıydık? Geçişi (çevrimdışı → çevrimiçi)
   /// yakalamak için; her bildirimde körlemesine sıfırlamak, gerçekten BOZUK
   /// bir URL'de sonsuz yeniden denemeye dönerdi.
@@ -67,6 +75,7 @@ class _KAvatarState extends State<KAvatar> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.url != widget.url) {
       _broken = false;
+      _attempt = 0;
     }
   }
 
@@ -83,7 +92,10 @@ class _KAvatarState extends State<KAvatar> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final online = OnlineScope.maybeOf(context)?.online ?? true;
-    if (online && _wasOffline && _broken) _broken = false;
+    if (online && _wasOffline && _broken) {
+      _broken = false;
+      _attempt = 0;
+    }
     _wasOffline = !online;
   }
 
@@ -151,9 +163,24 @@ class _KAvatarState extends State<KAvatar> {
           ? ClipOval(
               child: Image.network(
               u,
+              key: ValueKey(_attempt),
               width: widget.size - _borderWidth * 2,
               height: widget.size - _borderWidth * 2,
               fit: BoxFit.cover,
+              // Yüklenirken BOŞ gri daire yerine baş harf (29 Eylül 2026) —
+              // eskiden ilk kare gelene kadar çember içi boş kalıyordu ve
+              // "yarım yüklenmiş" gibi görünüyordu. Bellekten eşzamanlı
+              // gelen görselde yer tutucu hiç çizilmez (titreme yok).
+              frameBuilder: (_, child, frame, sync) {
+                if (sync || frame != null) return child;
+                return Stack(fit: StackFit.expand, children: [
+                  ColoredBox(
+                    color: _accent,
+                    child: Center(child: _initialsText(text, fontSize)),
+                  ),
+                  child,
+                ]);
+              },
               // Ağ hatasında baş harflere düş (web <img> onError eşleniği).
               // `errorBuilder` build sırasında çağrıldığından `setState`'i
               // doğrudan burada tetiklemek "called during build" hatası
@@ -161,8 +188,10 @@ class _KAvatarState extends State<KAvatar> {
               // sonraki kareye ertelenir.
               errorBuilder: (_, __, ___) {
                 if (!_broken) {
+                  final retry = _attempt == 0;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted && !_broken) setState(() => _broken = true);
+                    if (!mounted || _broken) return;
+                    setState(() => retry ? _attempt = 1 : _broken = true);
                   });
                 }
                 return _initialsText(text, fontSize);

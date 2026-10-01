@@ -334,8 +334,9 @@ void main() {
       bool isGameOver = false,
       OnlineStatus? onlineStatus,
       double textScale = 1.0,
+      Size view = const Size(420, 900),
     }) async {
-      await setPhoneViewSize(tester, const Size(420, 900));
+      await setPhoneViewSize(tester, view);
       final s = _baseState(opponentIsAi: opponentIsAi);
       final gw = FakeOnlineGamesGateway()
         ..stateRow = stateJson(s, current: current, isGameOver: isGameOver)
@@ -383,6 +384,49 @@ void main() {
     Future<void> unmount(WidgetTester tester) async {
       await tester.pumpWidget(const SizedBox());
       await tester.pump();
+    }
+
+    // Yükseklik bütçesi (ROADMAP #38) — yerel ekranın kapısı
+    // `board_fit_test.dart`ta. Canlı ekranın başlığı web'de 6 px UZUNDU
+    // (`BOARD_CHROME_PX`in +7 payı); portta ayrıca ölçülüyor.
+    //
+    // ⚠ İKİ DURUM, İKİ İDDİA (27 Eylül 2026'da ölçüldü):
+    //  - SIRA BENDE: alt şerit TAMAMEN ekranın içinde (1104×768 → PAS GEÇ'in
+    //    altı 765, 1180×820 → 817). Oynanabilirliğin ölçüsü bu.
+    //  - SIRA RAKİPTE / YZ'DE: mesaj satırının yerine bekleme bandı geliyor
+    //    (`_TurnBanner`, web'de de 30 → ~43 px) ve PAS GEÇ'in altı 9 px
+    //    taşıyor (777 · 829). Bilerek KABUL: o anda butonlar zaten pasif,
+    //    raf ve bant görünür; sıra gelince bant kalkar ve şerit sığar.
+    //    Kapatmak porta özel bir krom terimi (tahtayı web'dekinden küçük
+    //    çizmek) demekti — `board_fit.dart`ın "üç sabit birebir" kararı.
+    //    Burada yalnızca taşmanın 9 px'i AŞMADIĞI ve rafın tam göründüğü
+    //    kilitli: başlık/bant büyürse bu test düşer.
+    for (final (ad, current, ai) in const [
+      ('sıra bende', 0, false),
+      ('sıra rakipte', 1, false),
+      ('sıra YZ\'de', 1, true),
+    ]) {
+      for (final view in const [Size(1104, 768), Size(1180, 820)]) {
+        testWidgets(
+            'yükseklik bütçesi — $ad, ${view.width.toInt()}×${view.height.toInt()}',
+            (tester) async {
+          await pumpScreen(tester,
+              current: current, opponentIsAi: ai, view: view);
+          expect(tester.takeException(), isNull);
+          final pas = tester.getRect(find
+              .ancestor(
+                  of: find.text('PAS GEÇ').first,
+                  matching: find.byType(GestureDetector))
+              .first);
+          final raf = tester.getRect(find.byType(RackWidget));
+          expect(raf.bottom, lessThanOrEqualTo(view.height),
+              reason: 'raf ekranın altına taşıyor');
+          expect(pas.bottom,
+              lessThanOrEqualTo(view.height + (current == 0 ? 0 : 9)),
+              reason: 'alt şerit ekranın altına taşıyor: ${pas.bottom}');
+          await unmount(tester);
+        });
+      }
     }
 
     testWidgets('katılımcı değilsen dürüst uyarı', (tester) async {
@@ -895,6 +939,31 @@ void main() {
       await unmount(tester);
     });
 
+    // REGRESYON (29 Eylül 2026, kullanıcı web'de bildirdi): hamle sunucuya
+    // TEK kez yazılmıştı ama ekran yalnızca Realtime yankısını beklediğinden,
+    // soket düşmüşse OYNA etkin kalıyor, ikinci basış gerçek "Sıra sende
+    // değil." alıyordu. Sahte uç `submitMove`da `gameListener`ı ÇAĞIRMIYOR
+    // (= Realtime yankısı gelmiyor); ekran yine de durumu kendisi okumalı.
+    testWidgets(
+        'başarılı gönderimden sonra durum Realtime beklenmeden yeniden okunur',
+        (tester) async {
+      final gw = await pumpScreen(tester, current: 0);
+      final once = gw.gameStateCalls;
+
+      await tester.tap(find.text('PAS GEÇ'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.descendant(
+          of: find.byType(KDialogCard),
+          matching: find.widgetWithText(NeoButton, 'PAS GEÇ')));
+      await tester.pumpAndSettle();
+
+      expect(gw.submitted.single['action'], 'pass');
+      expect(gw.gameStateCalls, greaterThan(once),
+          reason: 'gönderimden sonra loadGame çağrılmadı — ekran Realtime '
+              'yankısına muhtaç kalıyor');
+      await unmount(tester);
+    });
+
     testWidgets('sunucu reddi mesaj satırına düşer', (tester) async {
       final gw = await pumpScreen(tester, current: 0);
       gw.submitFailWith = Exception('Sıra sende değil.');
@@ -1040,10 +1109,10 @@ void main() {
       await unmount(tester);
     });
 
-    // Web OnlineGameScreen.tsx (~1306-1316), App.tsx'in (~1512-1517) BİREBİR
-    // aynısı: GameOver'ı kapatmak "Görüş Bildir" formunu AÇAR. Port yalnızca
-    // modalın İÇİNDEKİ linki taşımıştı — iki ekranda da eksikti (Parça 48).
-    testWidgets('GameOver kapatılınca Görüş Bildir formu açılır (web onClose)',
+    // GameOver'ı kapatmak "Görüş Bildir" formunu AÇMAZ — Parça 48'in
+    // otomatik açılışı 26 Eylül 2026'da kullanıcı kararıyla kaldırıldı
+    // (web + port birlikte). Form yalnızca modalın içindeki linkle açılır.
+    testWidgets('GameOver kapatılınca Görüş Bildir formu AÇILMAZ',
         (tester) async {
       await pumpScreen(tester, isGameOver: true);
       await tester.pumpAndSettle();
@@ -1052,11 +1121,8 @@ void main() {
       await tester.tap(find.byTooltip('Kapat'));
       await tester.pumpAndSettle();
       expect(
-          find.text(trUpper('Görüşleriniz Bizim İçin Önemli')), findsOneWidget);
-
-      // Formu da kapat ki dispose'da bekleyen bir route kalmasın.
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
+          find.text(trUpper('Görüşleriniz Bizim İçin Önemli')), findsNothing);
+      expect(find.byTooltip('Kapat'), findsNothing);
       await unmount(tester);
     });
 
@@ -1097,9 +1163,6 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Kapat')); // GameOver
       await tester.pumpAndSettle();
-      // GameOver kapanışı "Görüş Bildir" formunu açıyor (bkz. üstteki test).
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
       await unmount(tester);
     });
 
@@ -1107,9 +1170,7 @@ void main() {
         (tester) async {
       final gw = await pumpScreen(tester, isGameOver: true);
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Kapat')); // GameOver + Görüş Bildir
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Kapat'));
+      await tester.tap(find.byTooltip('Kapat')); // GameOver
       await tester.pumpAndSettle();
 
       expect(find.text('TEKRAR OYNA'), findsOneWidget);
@@ -1150,9 +1211,7 @@ void main() {
       gw.createError = PostgrestException(
           message: 'Yalnızca arkadaşlarını davet edebilirsin.');
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Kapat'));
+      await tester.tap(find.byTooltip('Kapat')); // GameOver
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('TEKRAR OYNA'));
