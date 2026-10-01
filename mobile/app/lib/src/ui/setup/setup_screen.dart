@@ -87,6 +87,7 @@ import '../game/dialog_shell.dart';
 import '../feedback/feedback_modal.dart';
 import '../../data/feedback_api.dart';
 import '../../util/offline_notice.dart';
+import '../push/push_permission_flow.dart' show yarimOyunIzniAkisi;
 
 const _panel = kPanel;
 const _border = kBorder;
@@ -892,9 +893,24 @@ class _SetupScreenState extends State<SetupScreen>
       if (recorded) return;
       recorded = true;
       unawaited(_recordFinishedGame(controller.state));
+      // Biten oyun yarım değil — bekleyen hatırlatma (varsa) düşer.
+      final hatirlatici = widget.services.yarimOyun;
+      if (hatirlatici != null) unawaited(hatirlatici.oyunBitti());
     }
 
     controller.addListener(recordOnGameOver);
+
+    // Yarım kalan oyun hatırlatması (1 Ekim 2026): oyun ekranı AÇIKKEN
+    // uygulama arka plana giderse de kurulur — kullanıcıların çoğu oyunu
+    // logoyla değil, telefonu bırakarak yarıda bırakıyor. Öne dönüşte
+    // `_HomeGate` iptal eder. `onHide` iki platformda da arka plana gidişin
+    // ortak olayı (Android: inactive→hidden→paused, iOS: inactive→hidden).
+    final yarimOyun = widget.services.yarimOyun;
+    final yasamDongusu = yarimOyun == null
+        ? null
+        : AppLifecycleListener(
+            onHide: () => unawaited(yarimOyun.oyundanAyrildi(controller.state)),
+          );
 
     // Kayıt oturumu (misafir slotu ↔ bulut satırı) ve 1. oyuncunun adı artık
     // OTURUMA CANLI bağlı — oyun ekranından giriş yapılabildiği için ikisi de
@@ -932,8 +948,10 @@ class _SetupScreenState extends State<SetupScreen>
       ),
     ));
     _gameRouteOpen = false;
+    yasamDongusu?.dispose();
     await host.end();
     controller.removeListener(recordOnGameOver);
+    await _yarimOyunCikisi(controller.state);
     // Güvenlik ağı: dinleyici bir şekilde kaçırdıysa (ör. restore edilmiş
     // zaten bitmiş bir state) çıkışta bir kez daha denenir — `recorded`
     // bayrağı çift kaydı engeller (her çağrı YENİ bir id üretirdi).
@@ -945,6 +963,33 @@ class _SetupScreenState extends State<SetupScreen>
     if (mounted && _creatingLocal) setState(() => _creatingLocal = false);
     await _refreshSaveStatus();
     await _syncCloud();
+  }
+
+  /// Yarım bir oyundan logoyla çıkıldı: gerekirse önce izin kartı (misafir
+  /// dahil — `yarimOyunIzniAkisi`), sonra hatırlatma kurulur. Sıra önemli:
+  /// izin bu turda verildiyse hatırlatma AYNI çıkışta kurulabilsin.
+  /// Kurma kararının tamamı `YarimOyunHatirlatici`de (bitmiş/hiç
+  /// oynanmamış/zaten hatırlatılmış oyun için hiçbir şey yapmaz).
+  Future<void> _yarimOyunCikisi(GameState s) async {
+    final hatirlatici = widget.services.yarimOyun;
+    if (hatirlatici == null) return;
+    final yarim =
+        s.phase == GamePhase.play && !s.isGameOver && s.turnCount >= 2;
+    if (!yarim) return;
+    final messaging = widget.services.pushMessaging;
+    final storage = widget.services.storage;
+    if (messaging != null && storage != null && mounted) {
+      try {
+        final flags = (await storage).flags;
+        if (mounted) {
+          await yarimOyunIzniAkisi(context,
+              messaging: messaging, flags: flags);
+        }
+      } catch (_) {
+        // Depo açılamadıysa kart çıkmaz — akış durmaz.
+      }
+    }
+    await hatirlatici.oyundanAyrildi(s);
   }
 
   /// Web `handleStart` paritesi (14 Ağustos 2026 — porta hiç geçmemişti):

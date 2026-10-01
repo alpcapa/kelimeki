@@ -1546,6 +1546,41 @@ Taşındı (27 Eylül 2026, doküman bütçesi) — bkz. `mobile/docs/testing-ol
 
 Taşındı (27 Eylül 2026, doküman bütçesi) — bkz. `mobile/docs/testing-olcum.md`.
 
+## 34. Yarım kalan oyun hatırlatması (1 Ekim 2026, `[Sonraki sürüm]` taslak PR)
+
+Telefonun KENDİSİNE kurulan tek yerel bildirim (sunucu yok) — misafire de
+çalışır. Kurallar `util/unfinished_reminder.dart`, akış
+`data/unfinished_game_reminder.dart`, native uç `YarimOyunHatirlatmasi.kt` +
+`AppDelegate.swift` (`kelimeki/hatirlatma`). Zaman: ayrılıştan en az 12 saat
+sonraki ilk 19:00. ⚠ Bu turu beklemeden koşmak için 19:00'u test sırasında
+geçici olarak öne çekme; aşağıdaki maddeler ayrılış saatini seçerek koşulur
+(ör. 07:00'de ayrıl → aynı gün 19:00).
+
+- [ ] **İzin kartı — MİSAFİR:** bildirim izni hiç verilmemiş cihazda misafir
+      olarak YZ oyununda en az 2 tur oyna, logoyla çık → *"Oyunun yarım
+      kaldı — Yarın akşam bir kez hatırlatalım mı?"* kartı. **ŞİMDİ DEĞİL**
+      sistem diyaloğunu AÇMAZ; **HATIRLAT** açar.
+- [ ] **Hiç oynanmamış oyun (turnCount < 2)** çıkışında kart ÇIKMAZ.
+- [ ] **Kart sayacı Canlı kartıyla ORTAK:** iki kart toplamda en fazla üç kez,
+      aralarında yedi gün.
+- [ ] **Bildirim düşüyor:** izin verilmiş cihazda yarım oyundan çık, uygulamayı
+      KAPATMADAN arka plana al ve saati bekle → panelde *"Oyunun yarım kaldı"*.
+      Dokununca uygulama açılır, Setup'ta "Devam Eden Oyun" kartı görünür.
+- [ ] **Telefonu bırakarak ayrılmak da kurar:** oyun ekranındayken (logoya
+      basmadan) ana ekrana dön → bildirim yine düşer.
+- [ ] **Erken dönüş iptal eder:** kurulduktan sonra saatinden ÖNCE uygulamayı
+      aç → bildirim GELMEZ.
+- [ ] **İzin diyaloğu kendi hatırlatmasını iptal ETMEZ:** ilk izin verişte
+      (sistem diyaloğundan dönüşte) kurulan hatırlatma yine düşmeli
+      (`_HomeGate._gizlendi` koşulu).
+- [ ] **Aynı oyun bir kez:** bildirim düştükten sonra uygulamayı açıp aynı
+      oyundan tekrar çık → ikinci bildirim YOK. Yeni bir oyunda yine var.
+- [ ] **Oyun bitince iptal:** hatırlatma kuruluyken oyuna dön ve bitir → GELMEZ.
+- [ ] **Bilinen sınır (Android):** cihaz yeniden başlatılırsa bekleyen
+      hatırlatma silinir — hata DEĞİL, bilinçli (BOOT_COMPLETED alıcısı yok).
+- [ ] **iOS:** aynı maddeler; uygulama ÖNDEYKEN zamanı gelirse iOS bildirimi
+      göstermez (beklenen — kullanıcı zaten oyunda).
+
 ## Test ortamları ve derleme dağıtımı → `mobile/docs/test-ortamlari.md`
 
 Web derlemesi (tarayıcı test ortamı), **FAZ B — cihaza özel tur (iOS +

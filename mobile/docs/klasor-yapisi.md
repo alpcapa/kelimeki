@@ -127,6 +127,11 @@ mobile/
       # ⚠ Linkleri YALNIZCA app_links yakalar; Flutter'ın kendi rota yolu
       #   KAPALI (manifest + onUnknownRoute — 11 cihazda çöküyordu, ROADMAP
       #   Faz 7). İkinci bir yönlendirme kaynağı EKLEME.
+      data/unfinished_game_reminder.dart # yarım kalan oyun hatırlatması:
+                             # telefona kurulan TEK yerel bildirim (misafir dahil);
+                             # native uç `kelimeki/hatirlatma` (Kotlin+Swift),
+                             # adlar unfinished_reminder_parity_test'te kilitli.
+      util/unfinished_reminder.dart # ↑ saf kararları (saat, "bir kez", izin)
       data/notification_shade.dart # panelde DURAN bildirimleri temizler
                              # (ROADMAP #15) — MethodChannel
                              # `kelimeki/bildirimler`, Kotlin ucu

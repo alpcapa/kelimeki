@@ -44,6 +44,31 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        // Yarım kalan oyun hatırlatması (1 Ekim 2026) — Dart:
+        // `data/unfinished_game_reminder.dart`. ⚠ Kanal/metot adları
+        // `unfinished_reminder_parity_test.dart` ile kilitli.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "kelimeki/hatirlatma")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "yarimOyunKur" -> {
+                        val zamanMs = call.argument<Number>("zamanMs")?.toLong()
+                        val baslik = call.argument<String>("baslik")
+                        val govde = call.argument<String>("govde")
+                        if (zamanMs == null || baslik == null || govde == null) {
+                            result.error("arguman", "zamanMs/baslik/govde eksik", null)
+                        } else {
+                            YarimOyunHatirlatmasi.kur(this, zamanMs, baslik, govde)
+                            result.success(null)
+                        }
+                    }
+                    "yarimOyunIptal" -> {
+                        YarimOyunHatirlatmasi.iptal(this)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
     }
 
     /**

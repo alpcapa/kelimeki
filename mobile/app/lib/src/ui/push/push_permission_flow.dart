@@ -113,3 +113,56 @@ Future<void> pushIzniAkisi(
     debugPrint('[Kelimeki] push izin akışı hatası: $e');
   }
 }
+
+/// "Oyunun yarım kalırsa hatırlatalım mı?" — yarım bir oyundan ÇIKARKEN
+/// sorulan izin kartı (1 Ekim 2026; akış `data/unfinished_game_reminder.dart`).
+///
+/// **NEDEN AYRI BİR KART:** `pushIzniAkisi` yalnızca girişli kullanıcıya ve
+/// Canlı oyun bağlamında soruyor; misafir izni HİÇ görmüyordu, yani yerel
+/// hatırlatma da ona hiç ulaşamazdı. Bu kartın tetikleyicisi bir DURUM
+/// (yarım kalmış, en az bir tur oynanmış oyun) — Canlı kartıyla aynı ilke:
+/// bildirimin işe yarayacağı an.
+///
+/// ⚠ Sayaç ve kalıcı-ret kuralı Canlı kartıyla ORTAK (`pushIzniSorulmali`,
+/// en fazla üç kez, arada yedi gün): ikisi AYNI sistem iznini istiyor, ayrı
+/// sayaç tutmak kullanıcıya toplamda altı kez sormak olurdu.
+///
+/// Token BURADA yazılmıyor: girişli kullanıcının token'ı bir sonraki öne
+/// dönüşte `_HomeGate._pushHizala` ile zaten hizalanıyor (tek kaynak).
+/// Fırlatmaz.
+Future<void> yarimOyunIzniAkisi(
+  BuildContext context, {
+  required PushMessaging messaging,
+  required FlagsStore flags,
+  DateTime? simdi,
+}) async {
+  try {
+    final izin = await messaging.permission();
+    final sorulmali = pushIzniSorulmali(
+      aktifOyunVar: true,
+      izinZatenVerildi: izin == PushPermission.granted,
+      kaliciReddedildi: izin == PushPermission.permanentlyDenied,
+      soruldu: flags.pushSorulmaSayisi,
+      sonSorulma: flags.pushSonSorulma,
+      simdi: simdi ?? DateTime.now(),
+    );
+    if (!sorulmali || !context.mounted) return;
+
+    // Sayaç kartı GÖSTERMEDEN önce artıyor — `pushIzniAkisi`ndeki gerekçe.
+    await flags.pushSorulduIsaretle(simdi ?? DateTime.now());
+    if (!context.mounted) return;
+
+    final kabul = await showKConfirm(
+      context,
+      title: 'Oyunun yarım kaldı',
+      message: 'Yarın akşam bir kez hatırlatalım mı? Kaldığın yerden devam '
+          'edersin. İstediğin zaman telefonunun ayarlarından kapatabilirsin.',
+      confirmLabel: 'HATIRLAT',
+      cancelLabel: 'ŞİMDİ DEĞİL',
+    );
+    if (!kabul) return;
+    await messaging.requestPermission();
+  } catch (e) {
+    debugPrint('[Kelimeki] yarım oyun izin akışı hatası: $e');
+  }
+}

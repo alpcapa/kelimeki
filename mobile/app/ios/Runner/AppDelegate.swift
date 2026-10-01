@@ -14,6 +14,7 @@ import UserNotifications
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     kurBildirimKanali(engineBridge.pluginRegistry)
+    kurHatirlatmaKanali(engineBridge.pluginRegistry)
   }
 
   /// Bildirim panelini temizleyen kanal — `MainActivity.kt`teki Kotlin
@@ -63,6 +64,55 @@ import UserNotifications
         } else {
           UIApplication.shared.applicationIconBadgeNumber = 0
         }
+        sonuc(nil)
+      default:
+        sonuc(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  /// Yarım kalan oyun hatırlatması (1 Ekim 2026) — `MainActivity.kt`teki
+  /// `kelimeki/hatirlatma` işleyicisinin iOS ikizi. Dart ucu:
+  /// `data/unfinished_game_reminder.dart`. ⚠ Kanal/metot adları
+  /// `unfinished_reminder_parity_test.dart` ile kilitli.
+  ///
+  /// Android'den farkı: `UNTimeIntervalNotificationTrigger` yeniden
+  /// başlatmaya dayanıklı; izin yoksa iOS isteği sessizce düşürür.
+  private static let yarimOyunKimligi = "kelimeki.yarimOyun"
+
+  private func kurHatirlatmaKanali(_ registry: FlutterPluginRegistry) {
+    guard let registrar = registry.registrar(forPlugin: "KelimekiHatirlatma") else { return }
+
+    let kanal = FlutterMethodChannel(
+      name: "kelimeki/hatirlatma",
+      binaryMessenger: registrar.messenger()
+    )
+
+    kanal.setMethodCallHandler { cagri, sonuc in
+      let merkez = UNUserNotificationCenter.current()
+      switch cagri.method {
+      case "yarimOyunKur":
+        guard let arg = cagri.arguments as? [String: Any],
+              let zamanMs = (arg["zamanMs"] as? NSNumber)?.doubleValue,
+              let baslik = arg["baslik"] as? String,
+              let govde = arg["govde"] as? String
+        else {
+          sonuc(FlutterError(code: "arguman", message: "zamanMs/baslik/govde eksik", details: nil))
+          return
+        }
+        let icerik = UNMutableNotificationContent()
+        icerik.title = baslik
+        icerik.body = govde
+        icerik.sound = .default
+        let saniye = max(1, zamanMs / 1000 - Date().timeIntervalSince1970)
+        let tetik = UNTimeIntervalNotificationTrigger(timeInterval: saniye, repeats: false)
+        // Aynı kimlik → bekleyen istek YENİSİYLE değişir (en fazla bir tane).
+        let istek = UNNotificationRequest(
+          identifier: AppDelegate.yarimOyunKimligi, content: icerik, trigger: tetik)
+        merkez.add(istek) { _ in }
+        sonuc(nil)
+      case "yarimOyunIptal":
+        merkez.removePendingNotificationRequests(withIdentifiers: [AppDelegate.yarimOyunKimligi])
         sonuc(nil)
       default:
         sonuc(FlutterMethodNotImplemented)

@@ -385,8 +385,30 @@ class _HomeGateState extends State<_HomeGate> with WidgetsBindingObserver {
     }));
   }
 
+  /// Kullanıcı döndü — bekleyen "oyunun yarım kaldı" hatırlatması düşer
+  /// (1 Ekim 2026; akış `data/unfinished_game_reminder.dart`). Açılışta da
+  /// çağrılır: bildirime dokunarak gelen soğuk başlangıçta yaşam döngüsü
+  /// olayı HİÇ tetiklenmez (`_bildirimleriTemizle` ile aynı gerekçe).
+  /// Fırlatmaz ve beklenmez.
+  ///
+  /// ⚠ Yalnızca uygulama gerçekten GİZLENDİYSE (`hidden`/`paused`) sayılır.
+  /// Sistem izin diyaloğu da `inactive → resumed` üretiyor ve çıkışta kurulan
+  /// hatırlatma tam o diyalogdan hemen sonra kuruluyor
+  /// (`SetupScreen._yarimOyunCikisi`) — bu koşul olmasaydı diyalogdan dönüş
+  /// az önce kurulan hatırlatmayı iptal ederdi.
+  void _yarimOyunDondu() {
+    final h = widget.services.yarimOyun;
+    if (h != null) unawaited(h.uygulamaAcildi());
+  }
+
+  bool _gizlendi = false;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.paused) {
+      _gizlendi = true;
+    }
     if (state == AppLifecycleState.resumed) {
       // Huni v2: öne geliş = ziyaret (günde bir; plan "PR 2"). Açık kalan
       // uygulamada ertesi gün "döndü" sütunu ancak burada dolar.
@@ -394,6 +416,10 @@ class _HomeGateState extends State<_HomeGate> with WidgetsBindingObserver {
       _pushHizala();
       _bildirimleriTemizle();
       _guncellemeKontrol();
+      if (_gizlendi) {
+        _gizlendi = false;
+        _yarimOyunDondu();
+      }
     }
   }
 
@@ -422,6 +448,7 @@ class _HomeGateState extends State<_HomeGate> with WidgetsBindingObserver {
     // kullanıcıda rozet olduğu gibi kalırdı.
     _bildirimleriTemizle();
     _guncellemeKontrol();
+    _yarimOyunDondu();
     // Misafir ziyaret pingi — Kaynak Hunisi'nin "Gelen" adımı. KOŞUL YOK:
     // "girişli mi" ve "bugün yazıldı mı" kararlarının tamamı `VisitsRepo`nun
     // içinde, tek yerde (bir ekranın koşulu yanlış kopyalaması bu sayede
