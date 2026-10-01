@@ -50,6 +50,8 @@ import {
 import {
   ONBOARDING_HINT_MAX_SHOWS,
   ONBOARDING_HINT_MIN_MOVES,
+  ONBOARDING_HINT_ALT_ROWS,
+  onboardingHintYon,
   pickFirstWinCelebration,
   FIRST_WIN_TEXTS,
   FIRST_WIN_GUEST_CTA,
@@ -367,6 +369,16 @@ const ipucuVakalari: {
     beklenen: null,
   },
 ];
+
+// Balonun yönü (1 Ekim 2026): ilk satırlarda üstte yer yok → altına.
+console.log('\nBağlamsal ipucu balonunun yönü');
+for (const [r, beklenen] of [
+  [0, 'alt'], [ONBOARDING_HINT_ALT_ROWS - 1, 'alt'], [ONBOARDING_HINT_ALT_ROWS, 'ust'], [12, 'ust'],
+] as const) {
+  const sonuc = onboardingHintYon(r);
+  if (sonuc !== beklenen) bildir(`ipucu yönü r=${r}: beklenen ${beklenen}, gerçek ${sonuc}`);
+  else ok(`r=${r} → ${sonuc}`);
+}
 
 console.log('\nBağlamsal ipuçları — hangi hamlede hangi balon');
 for (const vaka of ipucuVakalari) {

@@ -50,6 +50,7 @@ import {
 import {
   ONBOARDING_HINT_MS,
   ONBOARDING_HINT_TEXTS,
+  onboardingHintYon,
   bumpOnboardingHintShown,
   markTutorialSeen,
   onboardingHintShownCounts,
@@ -1190,9 +1191,9 @@ export default function App() {
           r: hint.r,
           c: hint.c,
           text: ONBOARDING_HINT_TEXTS[hint.id],
-          // Balon işaret ettiği karenin ÜSTÜNDE durur; 0. satırda üstte yer
-          // yoktur (tanıtımın 1. sahnesindeki kuralın aynısı).
-          yon: (hint.r === 0 ? 'alt' : 'ust') as 'ust' | 'alt',
+          // Balon işaret ettiği karenin ÜSTÜNDE durur; ilk satırlarda üstte
+          // yer yok → altına (`ONBOARDING_HINT_ALT_ROWS`, 1 Ekim 2026).
+          yon: onboardingHintYon(hint.r),
         }
       : null;
   const dragRef = useRef<{
