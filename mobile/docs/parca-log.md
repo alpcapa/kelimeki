@@ -59,6 +59,61 @@
   yeni bulgu yok. Cihaz maddesi: `mobile/docs/testing-arkadaslar-canli.md`
   → "Okundu bilgisi cihazlar arasında".
 
+## Parça 215 — Tahtanın yükseklik bütçesi: port ikizi (ROADMAP #38)
+
+**27 Eylül 2026 · taslak PR `[Sonraki sürüm]`, 5 Ekim kesimi.** Web yarısı
+(`src/utils/boardFit.ts` · `Board.tsx` · `index.css` · `tests/board-fit.spec.ts`)
+22-26 Eylül'de `main`'e girmişti; bu parça üç kalemin port ikizi.
+
+**Önce ölçüldü** (gerçek `GameScreen`, dolu tahta; web aynı görünümlerde
+Playwright'la ölçüldü):
+
+| | web | port (önce) |
+|---|---|---|
+| kartın üstü (başlık) | 63 | 88 |
+| kart (tahta 656 + alt şerit 48) | 704 | 704 |
+| kartın altı → PAS GEÇ'in altı | 196 | 193 |
+| PAS GEÇ'in altı, 1104×768 | 743 (bütçeyle) | **985** (217 px taşma) |
+
+1. **Bütçe — `ui/game/board_fit.dart`:** `min(680, max(324, boy − 308))`,
+   üç sabit web'den BİREBİR (`board_fit_test.dart` `boardFit.ts`i okuyor).
+   Uygulandığı yer web'le aynı: tahta sarmalayıcısı (`Padding(12,6,12,12)`)
+   üç ekranda — yerel, Canlı, tanıtım. Karşılama/intro tahtası dışarıda
+   (web'de de `fitHeight={false}`). "Boy" = ekran − güvenli alan
+   (`boardViewportHeight`, `SafeArea`nın DIŞINDAKİ context'le).
+   ⚠ **Porta özel terim eklenmedi ve bu ölçülerek karar verildi:** portun
+   başlığı 25 px uzun, ama web formülü kendi içinde ~25 px pay taşıyor
+   (bütçe sarmalayıcının GENİŞLİĞİNE uygulanıyor: kart + 24; krom dikeyde
+   18 dolguyla ölçülmüş). Sonuç: aynı ekranda AYNI tahta boyu, PAS GEÇ
+   web'de `boy − 25`, portta `boy − 3` (765 · 817 · 797).
+   ⚠ **Canlı ekranda sıra rakipteyken 9 px taşma — bilerek kabul.**
+   `_TurnBanner` mesaj satırının (30) yerine ~42 px geliyor; o anda
+   butonlar pasif, raf görünür. Kapatmak için tahtayı yalnızca portta
+   küçültmek gerekirdi — işin "iki platform aynı tahta" şartına aykırı.
+   `online_game_screen_test.dart` taşmanın 9 px'i AŞMADIĞINI kilitliyor.
+2. **Taş puntosu tavanı:** `TileWidget.boardGridWidth` (yalnız
+   `BoardWidget` geçirir) → harf `min(vw-clamp, ızgara × 5,08 %)`, puan
+   `× 2,18 %`, X3 etiketi `× 3,33 %` — oranlar `index.css`ten kilitli.
+   Izgara genişliği `BoardWidget`ın kökündeki `LayoutBuilder`dan (kart −
+   2 × `kBoardPad`, web `cqw` = ızgaranın İÇ genişliği). Parça 23'ün
+   "sürüklemede yeniden inşa yok" kuralı korunuyor (LayoutBuilder yalnız
+   kısıt değişince kurar; build sayacı testi yeşil).
+3. **`LandscapeHint` ikizi — BİLEREK YOK.** Web bloğu yükseklik + TELEFON
+   şartı arıyor; portta telefon portre kilitli. Kilidin tutmadığı iPad
+   (çoklu görev) ve açık katlanabilir web'de de bloklanmayan sınıf. Karar
+   `main.dart`in kilit yorumunda.
+
+**Doğrulama:** `dart analyze` temiz (tek `info` önceden vardı), **917 test
+yeşil**. Kapının duyarlılığı: `boardMaxWidth` 680'e sabitlenince
+`board_fit_test` 5 test düşürüyor. Telefon dikey (390×844) ve iPad portre
+(1376×1032 manzara dahil) tahta boyu değişmedi (366 · 656, testli).
+
+**Doğrulama SINIRI:** gerçek cihaz yok — Android 16'nın büyük ekranda
+yönelim kilidini gerçekten yok sayıp saymadığı (hedef SDK'ya bağlı) ve
+katlanma anındaki geçiş ölçülmedi → `mobile/docs/testing-ux-turlari.md` §33. Canlı ekranın
+kromu sahte uçla ölçüldü; gerçek sunucuyla bant/başlık farkı çıkarsa §33'ün
+iPad maddesi yakalar.
+
 ## Parça 214 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
 
    > ⚠ **25 Eylül 2026, merge anında:** aşağıda anlatılan WEB yarısı

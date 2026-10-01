@@ -211,7 +211,10 @@ mobile/
                              # tamamı) + board_zoom.dart (çift dokunuşla 2×
                              # zoom + pan; algılayıcı `clock.now()` kullanır
                              # — DateTime.now() sahte saatte ilerlemez,
-                             # bkz. Parça 175) + PAYLAŞILAN küçük parçalar:
+                             # bkz. Parça 175) + board_fit.dart (tahtanın
+                             # YÜKSEKLİK bütçesi + taş puntosu tavanı; web
+                             # `boardFit.ts`/`index.css` ile birebir, kapı
+                             # board_fit_test.dart — Parça 215) + PAYLAŞILAN küçük parçalar:
                              # modal_shell (KModal — başlıklı 360px pencere),
                              # dialog_shell (KDialogCard — 384px onay/uyarı
                              # kartı; İKİSİ AYRI, web'de de öyle),

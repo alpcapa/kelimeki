@@ -526,3 +526,25 @@ kural aynen duruyor.
 
 - [ ] **Tahtada parmak sürüklemek** tahtayı OYNATMAZ (sayfa kaydırma
       çalışır), taş sürükleme normal.
+
+## 33. Tahtanın yükseklik bütçesi — geniş ama kısa ekran (27 Eylül 2026, Parça 215)
+
+⚠ Düzen yarısı OTOMATİK (`board_fit_test.dart`, gerçek `GameScreen`,
+web'in üç görünümü). Cihazda görülecek olan: gerçek güvenli alan, gerçek
+katlanma/dönme anı ve Android'in büyük ekranda portre kilidini gerçekten
+yok sayıp saymadığı (ölçülmedi, hedef SDK'ya bağlı).
+
+- [ ] **Açık katlanabilir, yatay** (Samsung Fold vb.) — yerel oyunda raf +
+      OYNA/PAS GEÇ kaydırmadan görünür; tahta kare ve ortalı. ⚠ Uygulama
+      yataya DÖNMÜYORSA madde başarısız değil: not al (Android kilidi
+      tutuyor demektir, aranacak şey düzen değil).
+- [ ] **Katla/aç anında** tahta yeni boya geçer, eski boyda donup kalmaz
+      (bütçe her çizimde `MediaQuery`den okunuyor — web'in CSS-only
+      kararının karşılığı).
+- [ ] **iPad yatay** — aynı kontrol; Canlı oyunda sıra BENDEYKEN şerit tam
+      görünür. Sıra rakipteyken bekleme bandı PAS GEÇ'in altını birkaç
+      piksel kesebilir — BİLİNEN, kabul edildi (butonlar o an pasif).
+- [ ] **Telefon dikey — DEĞİŞMEMİŞ olmalı.** Tahta ve taş harfleri önceki
+      sürümle aynı boyda (bütçe orada bağlamıyor; testli, gözle de bak).
+- [ ] **Küçülmüş tahtada taş harfi hücreye sığıyor** (iPad yatay / Fold):
+      harf ve köşedeki puan hücreden taşmıyor, X3 etiketi okunuyor.

@@ -25,6 +25,7 @@ import '../../data/meaning_store.dart';
 import '../feedback/feedback_modal.dart';
 import '../../game/game_controller.dart';
 import '../../game/move_status.dart';
+import 'board_fit.dart';
 import 'board_widget.dart';
 import 'board_zoom.dart';
 import 'dialog_shell.dart';
@@ -1432,79 +1433,89 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                       const BoxConstraints(maxWidth: 680),
                                   child: Column(
                                     children: [
-                                      Padding(
-                                        // Web `Board.tsx`'in dış sarmalayıcısı:
-                                        // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
-                                        // taşımıştı, alttaki 12px hiç yoktu.
-                                        padding: const EdgeInsets.fromLTRB(
-                                            12, 6, 12, 12),
-                                        child: BoardWidget(
-                                          state: state,
-                                          // "Buradan başla" balonu, taş
-                                          // KALDIRILDIĞI anda kaybolsun diye
-                                          // sürükleme sinyalini alıyor. Bool
-                                          // bir prop olsaydı sürüklemenin
-                                          // başında/sonunda tüm ekranı
-                                          // setState'lemek gerekirdi; böyle
-                                          // yalnızca balon katmanı dinliyor
-                                          // (Parça 23'ün kuralı korunuyor).
-                                          dragListenable: _dragNotifier,
-                                          moveOverlay: moveStatus == null
-                                              ? null
-                                              : MoveOverlay(
-                                                  valid: moveStatus.valid,
-                                                  cells: moveStatus.cells,
-                                                  score: moveStatus.score,
-                                                ),
-                                          onCellTap: _handleCellTap,
-                                          gridKey: _gridKey,
-                                          // ÖNCELİK — ekranda aynı anda TEK
-                                          // balon (web App.tsx'teki aynı
-                                          // gerekçe): zoom balonu DENENENE
-                                          // KADAR duruyor, yani ipucuna sıra
-                                          // hiç gelmezdi. İpucu geçici (4 sn),
-                                          // zoom balonu sonra geri gelir.
-                                          coach: _hintCoach,
-                                          zoomHint:
-                                              _zoomHint && _hintCoach == null,
-                                          zoom: _zoom,
-                                          viewportKey: _viewportKey,
-                                          onBoardPointerDown: _boardPointerDown,
-                                          onBoardPointerMove: _boardPointerMove,
-                                          onBoardPointerUp: _boardPointerUp,
-                                          onBoardPointerCancel: _endBoardPan,
-                                          onOpenHistory: () =>
-                                              showMoveHistoryModal(
-                                                  context, state),
-                                          // Zorluk rozeti alt şeritte — yerel
-                                          // oyun her zaman YZ oyunu (her seviye).
-                                          aiLevel: aiLevelForBadge(
-                                              state.aiLevel,
-                                              isAiGame: true),
-                                          onOpenHelp: () =>
-                                              showHelpModal(context),
-                                          onlineStatus: widget.onlineStatus,
-                                          dragHiddenKey:
-                                              _hiddenSource is _PlacedSource
-                                                  ? cellKey(
-                                                      (_hiddenSource
-                                                              as _PlacedSource)
-                                                          .r,
-                                                      (_hiddenSource
-                                                              as _PlacedSource)
-                                                          .c)
-                                                  : null,
-                                          onTilePointerDown: (r, c, e) {
-                                            final t =
-                                                state.placed[cellKey(r, c)];
-                                            if (t != null) {
-                                              _beginTileDrag(
-                                                  _PlacedSource(r, c, t), e);
-                                            }
-                                          },
-                                          onTilePointerMove: _moveTileDrag,
-                                          onTilePointerUp: _endTileDrag,
-                                          onTilePointerCancel: _cancelTileDrag,
+                                      ConstrainedBox(
+                                        // Yükseklik bütçesi (ROADMAP #38) — web `Board`un
+                                        // `fitHeight`i; gerekçe ve ölçümler `board_fit.dart`ta.
+                                        constraints: BoxConstraints(
+                                            maxWidth: boardMaxWidth(
+                                                boardViewportHeight(context))),
+                                        child: Padding(
+                                          // Web `Board.tsx`'in dış sarmalayıcısı:
+                                          // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
+                                          // taşımıştı, alttaki 12px hiç yoktu.
+                                          padding: const EdgeInsets.fromLTRB(
+                                              12, 6, 12, 12),
+                                          child: BoardWidget(
+                                            state: state,
+                                            // "Buradan başla" balonu, taş
+                                            // KALDIRILDIĞI anda kaybolsun diye
+                                            // sürükleme sinyalini alıyor. Bool
+                                            // bir prop olsaydı sürüklemenin
+                                            // başında/sonunda tüm ekranı
+                                            // setState'lemek gerekirdi; böyle
+                                            // yalnızca balon katmanı dinliyor
+                                            // (Parça 23'ün kuralı korunuyor).
+                                            dragListenable: _dragNotifier,
+                                            moveOverlay: moveStatus == null
+                                                ? null
+                                                : MoveOverlay(
+                                                    valid: moveStatus.valid,
+                                                    cells: moveStatus.cells,
+                                                    score: moveStatus.score,
+                                                  ),
+                                            onCellTap: _handleCellTap,
+                                            gridKey: _gridKey,
+                                            // ÖNCELİK — ekranda aynı anda TEK
+                                            // balon (web App.tsx'teki aynı
+                                            // gerekçe): zoom balonu DENENENE
+                                            // KADAR duruyor, yani ipucuna sıra
+                                            // hiç gelmezdi. İpucu geçici (4 sn),
+                                            // zoom balonu sonra geri gelir.
+                                            coach: _hintCoach,
+                                            zoomHint:
+                                                _zoomHint && _hintCoach == null,
+                                            zoom: _zoom,
+                                            viewportKey: _viewportKey,
+                                            onBoardPointerDown:
+                                                _boardPointerDown,
+                                            onBoardPointerMove:
+                                                _boardPointerMove,
+                                            onBoardPointerUp: _boardPointerUp,
+                                            onBoardPointerCancel: _endBoardPan,
+                                            onOpenHistory: () =>
+                                                showMoveHistoryModal(
+                                                    context, state),
+                                            // Zorluk rozeti alt şeritte — yerel
+                                            // oyun her zaman YZ oyunu (her seviye).
+                                            aiLevel: aiLevelForBadge(
+                                                state.aiLevel,
+                                                isAiGame: true),
+                                            onOpenHelp: () =>
+                                                showHelpModal(context),
+                                            onlineStatus: widget.onlineStatus,
+                                            dragHiddenKey: _hiddenSource
+                                                    is _PlacedSource
+                                                ? cellKey(
+                                                    (_hiddenSource
+                                                            as _PlacedSource)
+                                                        .r,
+                                                    (_hiddenSource
+                                                            as _PlacedSource)
+                                                        .c)
+                                                : null,
+                                            onTilePointerDown: (r, c, e) {
+                                              final t =
+                                                  state.placed[cellKey(r, c)];
+                                              if (t != null) {
+                                                _beginTileDrag(
+                                                    _PlacedSource(r, c, t), e);
+                                              }
+                                            },
+                                            onTilePointerMove: _moveTileDrag,
+                                            onTilePointerUp: _endTileDrag,
+                                            onTilePointerCancel:
+                                                _cancelTileDrag,
+                                          ),
                                         ),
                                       ),
                                       // Web: <main> içinde Board'dan hemen sonra mesaj

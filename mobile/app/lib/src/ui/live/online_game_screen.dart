@@ -53,6 +53,7 @@ import '../auth/k_avatar.dart';
 import '../chat/chat_modal.dart';
 import '../chat/chat_settings_modal.dart';
 import '../feedback/feedback_modal.dart';
+import '../game/board_fit.dart';
 import '../game/board_widget.dart';
 import '../game/board_zoom.dart';
 import '../game/dialog_shell.dart';
@@ -1916,7 +1917,12 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                       const BoxConstraints(maxWidth: 680),
                                   child: Column(
                                     children: [
-                                      Padding(
+                                      ConstrainedBox(
+                                        // Yükseklik bütçesi (ROADMAP #38) — web `Board`un
+                                        // `fitHeight`i; gerekçe ve ölçümler `board_fit.dart`ta.
+                                        constraints: BoxConstraints(
+                                            maxWidth: boardMaxWidth(boardViewportHeight(context))),
+                                        child: Padding(
                                         // Web `Board.tsx`'in dış sarmalayıcısı:
                                         // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
                                         // taşımıştı, alttaki 12px hiç yoktu.
@@ -1982,6 +1988,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                           onTilePointerUp: _endTileDrag,
                                           onTilePointerCancel: _cancelTileDrag,
                                         ),
+                                      ),
                                       ),
                                       // Web: <main> içinde Board'dan hemen sonra mesaj
                                       // bloğu geliyor ve tek boşluk onun `pt-1`i (4px,

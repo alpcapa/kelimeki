@@ -43,6 +43,17 @@ Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
     // Portre kilidi — web'deki LandscapeHint banner'ının yerini alan kesin
     // çözüm (mobile/CLAUDE.md, "yeniden yazılanlar": native API yalan söylemez).
+    //
+    // ⚠ Web'in bugünkü `LandscapeBlock`u (22-23 Eylül 2026) yönelime değil
+    // YÜKSEKLİĞE + TELEFONA bakıyor; portta ikizi BİLEREK YOK (ROADMAP
+    // #38): o kapının tek tetiklendiği yer (yatay telefon) burada kilitle
+    // zaten oluşmuyor. Kilidin tutmadığı yerler — iPad çoklu görev,
+    // Android 16'da sw ≥ 600 dp (açık katlanabilir; hedef SDK 36 ise —
+    // ölçülmedi, `flutter.targetSdkVersion`e bağlı) — web'de de
+    // bloklanmayan tablet sınıfı; orada işi tahtanın yükseklik bütçesi
+    // görüyor (`ui/game/board_fit.dart`). Telefonda bölünmüş ekran da
+    // "dikeye çevir" demenin YANLIŞ olacağı bir durum: tahta tabanına
+    // (324) iner, şerit kaydırılarak ulaşılır.
     await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     final services = await bootstrap(rootBundle);
     runApp(KelimekiApp(services: services));

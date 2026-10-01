@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
 
+import 'board_fit.dart';
 import 'board_zoom.dart';
 
 import 'count_badge.dart';
@@ -530,134 +531,158 @@ class BoardWidget extends StatelessWidget {
             (r: r, c: c),
     ];
 
-    // Web: kart (zemin + gölge) ızgarayı VE alt bilgi şeridini birlikte
-    // sarar — şerit ayrı/asılı bir beyaz bant değil, kartın alt bölümü.
-    return Container(
-      decoration: const ShapeDecorationWithCssShadows(
-        color: _boardBg,
-        radius: _cardRadius,
-        // Web Board.tsx'in gölge üçlüsü — CSS değerleriyle: koyu sağ-alt,
-        // beyaz sol-üst parlama, altta geniş yumuşak gölge. Flutter'ın
-        // BoxShadow'u CSS'ten hem daha koyu/kısa boyuyor hem katman sırası
-        // ters; bu decoration gölgeleri CSS matematiğiyle (sigma=blur/2,
-        // ilk yazılan en üstte) kendisi çizer — kullanıcı web/app
-        // karşılaştırması, 6 Ağustos 2026.
-        shadows: [
-          CssShadow(color: Color(0xB3A3B1C6), offset: Offset(8, 8), blur: 20),
-          CssShadow(color: Color(0xE6FFFFFF), offset: Offset(-4, -4), blur: 14),
-          CssShadow(color: Color(0x80A3B1C6), offset: Offset(0, 20), blur: 60),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: _zoomWrap(
-                unclipped: moveOverlay != null && moveOverlay!.cells.isNotEmpty
-                    ? _moveBadge()
-                    : null,
-                Stack(
-                  key: gridKey,
-                  children: [
-                    GridView.count(
-                      crossAxisCount: boardSize,
-                      mainAxisSpacing: 3,
-                      crossAxisSpacing: 3,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        for (var r = 0; r < boardSize; r++)
-                          for (var c = 0; c < boardSize; c++)
-                            _buildCell(r, c, territoryOwner, homeCellColor,
-                                lastMoveSet, currentColor, screenWidth),
-                      ],
-                    ),
-                    // KATMAN SIRASI web'in z-index'lerinden geliyor (Board.tsx):
-                    // hücre arka planları → filigran (z-auto) → TAŞLAR
-                    // (`relative z-[5]`) → dış hatlar (`z-10`). Flutter'da
-                    // z-index yok, sıra boyama sırasıdır; filigran ızgaradan
-                    // SONRA çizildiğinden taşların üstüne biniyordu (kullanıcı
-                    // 17 Ağustos 2026'da iki ekranı yan yana koyup bildirdi).
-                    // Taşları ayrı bir katmana taşımak yerine filigran, taş
-                    // bulunan hücreler KESİLEREK çiziliyor — sonuç "taşın
-                    // altında" ile görsel olarak aynı, ızgara tek geçişte
-                    // kalıyor (169 hücre iki kez inşa edilmiyor).
-                    if (!compact)
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: ClipPath(
-                            key: const ValueKey('board-watermarks'),
-                            clipper: _WatermarkClipper(occupiedCells),
-                            child: _watermarks(
-                                cornerColor, cornerNumber, screenWidth),
+    // Izgaranın İÇ genişliği (kart − iki yanda `kBoardPad`) — web'in `cqw`
+    // birimi tam bunu ölçüyor (`[data-board-grid]`, `container-type:
+    // inline-size`, `p-[10px]`). Taş harfi/puanı ve X3 etiketi bununla
+    // tavanlı (`board_fit.dart`). Zoom BUNU DEĞİŞTİRMEZ: web'de transform
+    // düzen genişliğine dokunmaz, portta da ölçek boyamada.
+    //
+    // ⚠ LayoutBuilder yalnızca KISIT değişince yeniden kurar — sürükleme
+    // boyunca tahtanın yeniden inşa EDİLMEMESİ (Parça 23) korunuyor.
+    return LayoutBuilder(builder: (context, constraints) {
+      final gridWidth = constraints.maxWidth.isFinite
+          ? constraints.maxWidth - 2 * kBoardPad
+          : null;
+      // Web: kart (zemin + gölge) ızgarayı VE alt bilgi şeridini birlikte
+      // sarar — şerit ayrı/asılı bir beyaz bant değil, kartın alt bölümü.
+      return Container(
+        decoration: const ShapeDecorationWithCssShadows(
+          color: _boardBg,
+          radius: _cardRadius,
+          // Web Board.tsx'in gölge üçlüsü — CSS değerleriyle: koyu sağ-alt,
+          // beyaz sol-üst parlama, altta geniş yumuşak gölge. Flutter'ın
+          // BoxShadow'u CSS'ten hem daha koyu/kısa boyuyor hem katman sırası
+          // ters; bu decoration gölgeleri CSS matematiğiyle (sigma=blur/2,
+          // ilk yazılan en üstte) kendisi çizer — kullanıcı web/app
+          // karşılaştırması, 6 Ağustos 2026.
+          shadows: [
+            CssShadow(color: Color(0xB3A3B1C6), offset: Offset(8, 8), blur: 20),
+            CssShadow(
+                color: Color(0xE6FFFFFF), offset: Offset(-4, -4), blur: 14),
+            CssShadow(
+                color: Color(0x80A3B1C6), offset: Offset(0, 20), blur: 60),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: _zoomWrap(
+                  unclipped:
+                      moveOverlay != null && moveOverlay!.cells.isNotEmpty
+                          ? _moveBadge()
+                          : null,
+                  Stack(
+                    key: gridKey,
+                    children: [
+                      GridView.count(
+                        crossAxisCount: boardSize,
+                        mainAxisSpacing: 3,
+                        crossAxisSpacing: 3,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [
+                          for (var r = 0; r < boardSize; r++)
+                            for (var c = 0; c < boardSize; c++)
+                              _buildCell(
+                                  r,
+                                  c,
+                                  territoryOwner,
+                                  homeCellColor,
+                                  lastMoveSet,
+                                  currentColor,
+                                  screenWidth,
+                                  gridWidth),
+                        ],
+                      ),
+                      // KATMAN SIRASI web'in z-index'lerinden geliyor (Board.tsx):
+                      // hücre arka planları → filigran (z-auto) → TAŞLAR
+                      // (`relative z-[5]`) → dış hatlar (`z-10`). Flutter'da
+                      // z-index yok, sıra boyama sırasıdır; filigran ızgaradan
+                      // SONRA çizildiğinden taşların üstüne biniyordu (kullanıcı
+                      // 17 Ağustos 2026'da iki ekranı yan yana koyup bildirdi).
+                      // Taşları ayrı bir katmana taşımak yerine filigran, taş
+                      // bulunan hücreler KESİLEREK çiziliyor — sonuç "taşın
+                      // altında" ile görsel olarak aynı, ızgara tek geçişte
+                      // kalıyor (169 hücre iki kez inşa edilmiyor).
+                      if (!compact)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: ClipPath(
+                              key: const ValueKey('board-watermarks'),
+                              clipper: _WatermarkClipper(occupiedCells),
+                              child: _watermarks(
+                                  cornerColor, cornerNumber, screenWidth),
+                            ),
                           ),
                         ),
-                      ),
-                    // Bölge/hamle dış hatları — ızgara alanının tamamını kaplayan
-                    // tek katman (web'deki tek SVG'nin eşleniği), dokunuşları
-                    // engellemez. Web'de `z-10`, yani taşların VE filigranın
-                    // üstünde; bu yüzden filigrandan SONRA geliyor.
-                    Positioned.fill(
-                      child: IgnorePointer(
-                        child: CustomPaint(painter: _OutlinesPainter(outlines)),
-                      ),
-                    ),
-                    // Zoom tanıtım balonu — sol-alt bloğun boş karesini işaret eder. Ayrı bir
-                    // katman: "Buradan başla"dan bağımsız (ikisi aynı anda
-                    // görünebilir, farklı köşelerdeler) ve sürükleme başlayınca
-                    // ikisi de kaybolur.
-                    if (zoomHint)
+                      // Bölge/hamle dış hatları — ızgara alanının tamamını kaplayan
+                      // tek katman (web'deki tek SVG'nin eşleniği), dokunuşları
+                      // engellemez. Web'de `z-10`, yani taşların VE filigranın
+                      // üstünde; bu yüzden filigrandan SONRA geliyor.
                       Positioned.fill(
                         child: IgnorePointer(
-                          child: dragListenable == null
-                              ? _zoomHintBubble(screenWidth)
-                              : ValueListenableBuilder<Object?>(
-                                  valueListenable: dragListenable!,
-                                  builder: (context, drag, _) => drag != null
-                                      ? const SizedBox.shrink()
-                                      : _zoomHintBubble(screenWidth),
-                                ),
+                          child:
+                              CustomPaint(painter: _OutlinesPainter(outlines)),
                         ),
                       ),
-                    // Tanıtım balonu — zoom balonuyla AYNI geometri
-                    // (`_coachBubble`), yalnızca çapa/yön/metin farklı.
-                    if (coach != null)
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: dragListenable == null
-                              ? _coachLayer(coach!, screenWidth)
-                              : ValueListenableBuilder<Object?>(
-                                  valueListenable: dragListenable!,
-                                  builder: (context, drag, _) => drag != null
-                                      ? const SizedBox.shrink()
-                                      : _coachLayer(coach!, screenWidth),
-                                ),
+                      // Zoom tanıtım balonu — sol-alt bloğun boş karesini işaret eder. Ayrı bir
+                      // katman: "Buradan başla"dan bağımsız (ikisi aynı anda
+                      // görünebilir, farklı köşelerdeler) ve sürükleme başlayınca
+                      // ikisi de kaybolur.
+                      if (zoomHint)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: dragListenable == null
+                                ? _zoomHintBubble(screenWidth)
+                                : ValueListenableBuilder<Object?>(
+                                    valueListenable: dragListenable!,
+                                    builder: (context, drag, _) => drag != null
+                                        ? const SizedBox.shrink()
+                                        : _zoomHintBubble(screenWidth),
+                                  ),
+                          ),
                         ),
-                      ),
-                    if (startHint != null)
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: dragListenable == null
-                              ? _startHint(startHint, screenWidth)
-                              : ValueListenableBuilder<Object?>(
-                                  valueListenable: dragListenable!,
-                                  // Sürükleme başlayınca balon kaybolur.
-                                  // Yalnızca BU katman dinliyor — tahtanın
-                                  // kendisi sürükleme boyunca hiç yeniden
-                                  // inşa edilmiyor (Parça 23).
-                                  builder: (context, drag, _) => drag != null
-                                      ? const SizedBox.shrink()
-                                      : _startHint(startHint, screenWidth),
-                                ),
+                      // Tanıtım balonu — zoom balonuyla AYNI geometri
+                      // (`_coachBubble`), yalnızca çapa/yön/metin farklı.
+                      if (coach != null)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: dragListenable == null
+                                ? _coachLayer(coach!, screenWidth)
+                                : ValueListenableBuilder<Object?>(
+                                    valueListenable: dragListenable!,
+                                    builder: (context, drag, _) => drag != null
+                                        ? const SizedBox.shrink()
+                                        : _coachLayer(coach!, screenWidth),
+                                  ),
+                          ),
                         ),
-                      ),
-                  ],
-                )),
-          ),
-          if (!hideFooter) _footer(),
-        ],
-      ),
-    );
+                      if (startHint != null)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: dragListenable == null
+                                ? _startHint(startHint, screenWidth)
+                                : ValueListenableBuilder<Object?>(
+                                    valueListenable: dragListenable!,
+                                    // Sürükleme başlayınca balon kaybolur.
+                                    // Yalnızca BU katman dinliyor — tahtanın
+                                    // kendisi sürükleme boyunca hiç yeniden
+                                    // inşa edilmiyor (Parça 23).
+                                    builder: (context, drag, _) => drag != null
+                                        ? const SizedBox.shrink()
+                                        : _startHint(startHint, screenWidth),
+                                  ),
+                          ),
+                        ),
+                    ],
+                  )),
+            ),
+            if (!hideFooter) _footer(),
+          ],
+        ),
+      );
+    });
   }
 
   /// "Buradan başla" balonunun hedefi: (satır, sütun, renk, sağa mı uzasın).
@@ -1185,6 +1210,7 @@ class BoardWidget extends StatelessWidget {
     Set<String> lastMoveSet,
     PlayerColor currentColor,
     double screenWidth,
+    double? gridWidth,
   ) {
     final k = cellKey(r, c);
     final boardTile = state.board[r][c];
@@ -1207,6 +1233,7 @@ class BoardWidget extends StatelessWidget {
         tile: boardTile,
         variant: TileVariant.board,
         compact: compact,
+        boardGridWidth: gridWidth,
         color: isLastMove
             ? PlayerColor(
                 base: darken(tileColor.base, 0.12),
@@ -1220,6 +1247,7 @@ class BoardWidget extends StatelessWidget {
       content = TileWidget(
         tile: placedTile,
         variant: TileVariant.placed,
+        boardGridWidth: gridWidth,
         color: placedTile.owner != null
             ? _colorOfIndex(placedTile.owner!)
             : currentColor,
@@ -1287,7 +1315,11 @@ class BoardWidget extends StatelessWidget {
               color: _centerText,
               fontFamily: 'SpaceMono',
               fontWeight: FontWeight.bold,
-              fontSize: fluidSize(screenWidth, 9, 0, 2.6, 16),
+              // Tahtaya göre tavan (`kX3LabelPerGrid`, web `3.33cqw`,
+              // 26 Eylül 2026) — yükseklik bütçesi tahtayı küçültünce
+              // ekranın tavanında kalıp hücreyi taşmasın (ROADMAP #38).
+              fontSize: capToGrid(fluidSize(screenWidth, 9, 0, 2.6, 16),
+                  gridWidth, kX3LabelPerGrid),
             ),
           ),
         );
@@ -1430,10 +1462,10 @@ class BoardWidget extends StatelessWidget {
   /// 5×5 bölgeden taştı (kullanıcı ekran görüntüsüyle bildirdi). Web ikizi
   /// #609'da (`Board.tsx`, `WM_*_FONT_PER_GRID` — orada `scale()` ile,
   /// çünkü `clamp` satırı `layout_parity_test.dart`e kilitli).
-  /// Portta tahta BUGÜN yalnızca genişlikten boyutlanıyor, yani tavan
-  /// tahtanın ekrandan dar kaldığı her yerde (Split View, ROADMAP #26'nın
-  /// yükseklik bütçesi geldiğinde iPad yatay) devreye girer — #26'nın ön
-  /// koşulu. Oranlar web'in desteklediği EN DAR ekrandan (320 px: 102,4 /
+  /// Tavan tahtanın ekrandan dar kaldığı her yerde devreye girer: Split
+  /// View ve — 27 Eylül 2026'dan beri — yükseklik bütçesinin tahtayı
+  /// küçülttüğü "geniş ama kısa" ekranlar (ROADMAP #38, eski #26;
+  /// `board_fit.dart`). Bu tavan o işin ön koşuluydu. Oranlar web'in desteklediği EN DAR ekrandan (320 px: 102,4 /
   /// 276 ve 76,8 / 276, ızgara = ekran − 44) alındı; web'in orana en çok
   /// yaklaştığı yer orası, yani telefonda tavan hiç devreye girmez ve web
   /// paritesi (`board_render_test` 390 px → 124,8 / 93,6) aynen kalır.
