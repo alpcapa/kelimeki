@@ -875,6 +875,12 @@ export default function App() {
     // biçimde söylemek olurdu. Yalnızca Kolay/Zor state'e yazılır; oyun
     // boyunca değişmez (değiştiren action YOK).
     dispatch({ type: 'START', players, ...(aiLevel && aiLevel !== 'normal' ? { aiLevel } : {}) });
+    // Bu cihazda gerçek bir oyun oynandı → tanıtım bir daha "ilk oyun"
+    // sayılmaz (2 Ekim 2026). Kapı misafirde yalnızca cihaz bayrağına ve
+    // YARIM kayda bakıyordu; üye olarak oynayıp (hesap eski → tanıtım yok,
+    // bayrak da konmuyordu) çıkış yapan biri misafir olarak tanıtımı
+    // görüyordu. Port ikizi: `setup_screen.dart` `_startNewGame`.
+    markTutorialSeen();
     // Yeni oyun/rövanş zoom'u sıfırlar (port `_handleRematch` ile aynı).
     boardZoom.reset();
     // Fire-and-forget: telemetri hatası oyunu etkilemez.
@@ -1009,6 +1015,12 @@ export default function App() {
   // Eden" bir oyuna dokununca dolar; doluyken tüm normal kurulum/yerel oyun
   // ağacının yerine OnlineGameScreen render edilir (aşağıya bkz.).
   const [onlineGame, setOnlineGame] = useState<OnlineGame | null>(null);
+  // Canlı oyun açmak da "bu cihazda oynandı" demek (yukarıdaki
+  // `startLocalGame` notu) — yalnız Canlı oynamış bir üye çıkış yapınca
+  // misafir olarak tanıtıma düşmesin.
+  useEffect(() => {
+    if (onlineGame) markTutorialSeen();
+  }, [onlineGame]);
 
   // Arkadaşlar penceresinin OYNA'sı (27 Eylül 2026, `utils/liveGameRequest.ts`):
   // pencere oyun ekranının başlığından da açılabiliyor. İstek gelince açık
