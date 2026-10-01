@@ -30,6 +30,7 @@ import 'data/stats_api.dart';
 import 'data/store_update.dart';
 import 'data/meaning_store.dart';
 import 'data/supabase_client.dart';
+import 'data/unfinished_game_reminder.dart';
 import 'storage/app_storage.dart';
 import 'util/online_status.dart';
 import 'data/device_stamp.dart';
@@ -129,6 +130,11 @@ class AppServices {
   /// Android dışında uç zaten `bilinmiyor` döner (bkz. `store_update.dart`).
   final StoreUpdateGateway? storeUpdate;
 
+  /// Yarım kalan oyun hatırlatması (1 Ekim 2026) — telefona kurulan TEK bir
+  /// yerel bildirim; misafire de çalışır (sunucu yok). Firebase yoksa
+  /// (web derlemesi, testler) null: izin okunamaz, hatırlatma hiç kurulmaz.
+  final YarimOyunHatirlatici? yarimOyun;
+
   /// "Görüş Bildir" — GamesRepo'nun aksine Supabase YOKKEN de dolu
   /// (gateway'i null olur, mesajlar kuyrukta bekler — web feedbackSync'in
   /// "Supabase hiç yapılandırılmamışken de kuyrukla" davranışı); yalnızca
@@ -159,6 +165,7 @@ class AppServices {
     this.gameLinks,
     ValueNotifier<int>? liveTabRequests,
     this.storeUpdate,
+    this.yarimOyun,
   }) : liveTabRequests = liveTabRequests ?? ValueNotifier<int>(0);
 }
 
@@ -223,6 +230,13 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
     push: pushRepo,
     pushMessaging: firebaseHazir ? FirebasePushMessaging() : null,
     storeUpdate: const PlayStoreUpdateGateway(),
+    yarimOyun: firebaseHazir
+        ? YarimOyunHatirlatici(
+            storage: storage,
+            zamanlayici: const PlatformHatirlatmaZamanlayici(),
+            messaging: FirebasePushMessaging(),
+          )
+        : null,
     cloudSaves:
         supabase != null
             ? CloudSaveRepo(SupabaseCloudSaveGateway(supabase),

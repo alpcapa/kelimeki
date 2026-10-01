@@ -359,6 +359,12 @@ Normal'de 3/10 galibiyet (~50 puan farkla kayıp), Kolay'da 3/5.
 **Ertelenenler:**
 
 1. **Yarım kalan oyun için yerel hatırlatma bildirimi (yalnız mobil).**
+   → **1 Eki 2026 KARAR: yapılıyor** (kullanıcı: *"sonraki trene taslak PR
+   olarak hazırla"*). Taslak PR `[Sonraki sürüm]` — ROADMAP "Sıradaki sürüme
+   binecekler". Mevcut `notify-deadline-warnings`'ten farkı: o yalnız üyeye ve
+   7 günlük sürenin SON gününde; bu misafire de, ertesi akşam. Uygulanan
+   ayrıntılar aşağıdakinden iki noktada ayrıldı: saat "ayrılıştan ≥12 sa
+   sonraki ilk 19:00"; izin kartının sayacı Canlı kartıyla ORTAK.
    Kullanıcı: *"Enteresan ama akışı tam anlamadım"* → akış anlatıldı, karar
    verilmedi. Akış: oyun yarım bırakılınca telefona TEK yerel bildirim
    kurulur (ör. ertesi gün 19:00, "Oyunun yarım kaldı, sıra sende");

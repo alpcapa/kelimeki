@@ -136,6 +136,13 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2"/>
+        <!-- Yarım kalan oyun hatırlatması (1 Ekim 2026) — AlarmManager'ın
+             tetiklediği alıcı (`YarimOyunHatirlatmasi.kt`). Dışa KAPALI:
+             yalnızca kendi PendingIntent'imiz çağırır. Yeni bir izin
+             GEREKMİYOR (tam zamanlı alarm yok, açılışta yeniden kurulum yok). -->
+        <receiver
+            android:name=".YarimOyunAlicisi"
+            android:exported="false"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

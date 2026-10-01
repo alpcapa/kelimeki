@@ -148,6 +148,37 @@ class FlagsStore {
     await prefs.setInt(_pushSonSorulma, an.millisecondsSinceEpoch);
   }
 
+  // ── Yarım kalan oyun hatırlatması (1 Ekim 2026) ─────────────────────────
+  // Karar `util/unfinished_reminder.dart`ta; burada yalnızca durum. Cihazda
+  // en fazla BİR bekleyen hatırlatma olur, bu üç anahtar onu tarif eder.
+  static const _yarimOyunKurulanOyun = 'yarim_oyun_kurulan_oyun';
+  static const _yarimOyunKurulanZaman = 'yarim_oyun_kurulan_zaman';
+  static const _yarimOyunHatirlatilan = 'yarim_oyun_hatirlatilan';
+
+  /// Bekleyen hatırlatmanın oyunu (`startedAt`) — yoksa null.
+  String? get yarimOyunKurulanOyun => prefs.getString(_yarimOyunKurulanOyun);
+
+  /// Bekleyen hatırlatmanın zamanı — yoksa null.
+  DateTime? get yarimOyunKurulanZaman {
+    final ms = prefs.getInt(_yarimOyunKurulanZaman);
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  Future<void> yarimOyunKuruldu(String oyun, DateTime zaman) async {
+    await prefs.setString(_yarimOyunKurulanOyun, oyun);
+    await prefs.setInt(_yarimOyunKurulanZaman, zaman.millisecondsSinceEpoch);
+  }
+
+  Future<void> yarimOyunKurulanTemizle() async {
+    await prefs.remove(_yarimOyunKurulanOyun);
+    await prefs.remove(_yarimOyunKurulanZaman);
+  }
+
+  /// Hatırlatması TESLİM edilmiş son oyun — aynı oyun bir daha hatırlatılmaz.
+  String? get yarimOyunHatirlatilan => prefs.getString(_yarimOyunHatirlatilan);
+  Future<void> yarimOyunHatirlatildi(String oyun) =>
+      prefs.setString(_yarimOyunHatirlatilan, oyun);
+
   // NOT: burada bir "sistem reddi sayacı" VARDI ve 28 Ağustos 2026'da
   // KALDIRILDI. Gerekçesi "firebase_messaging kalıcı reddi bildirmiyor"du;
   // ölçünce YANLIŞ çıktı — eklentinin `AuthorizationStatus` enum'unda
