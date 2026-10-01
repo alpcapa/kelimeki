@@ -57,10 +57,14 @@ void main() {
         final d = bd!.buffer.asUint8List();
         for (var y = 0; y < img.height; y++) {
           for (var x = 0; x < img.width; x++) {
-            final icerde = x >= tahta.left &&
-                x <= tahta.right &&
-                y >= tahta.top &&
-                y <= tahta.bottom;
+            // Piksel MERKEZİ karşılaştırılır: tahtanın kenarı kesirli
+            // olabiliyor (1 Ekim 2026'dan beri başlık logonun akıcı boyundan
+            // geliyor — 58,0000x), tam sayı köşe kenar satırını "dışarıda"
+            // sayıp 8 sahte piksel üretiyordu.
+            final icerde = x + 0.5 >= tahta.left &&
+                x + 0.5 <= tahta.right &&
+                y + 0.5 >= tahta.top &&
+                y + 0.5 <= tahta.bottom;
             if (icerde) continue;
             final i = (y * img.width + x) * 4;
             if (_rozetRengi(d[i], d[i + 1], d[i + 2])) n++;
@@ -81,10 +85,14 @@ void main() {
         final tint = playerColors[0].tint;
         for (var y = 0; y < img.height; y++) {
           for (var x = 0; x < img.width; x++) {
-            final icerde = x >= tahta.left &&
-                x <= tahta.right &&
-                y >= tahta.top &&
-                y <= tahta.bottom;
+            // Piksel MERKEZİ karşılaştırılır: tahtanın kenarı kesirli
+            // olabiliyor (1 Ekim 2026'dan beri başlık logonun akıcı boyundan
+            // geliyor — 58,0000x), tam sayı köşe kenar satırını "dışarıda"
+            // sayıp 8 sahte piksel üretiyordu.
+            final icerde = x + 0.5 >= tahta.left &&
+                x + 0.5 <= tahta.right &&
+                y + 0.5 >= tahta.top &&
+                y + 0.5 <= tahta.bottom;
             if (icerde) continue;
             final i = (y * img.width + x) * 4;
             if (((tint.r * 255).round() - d[i]).abs() < 12 &&

@@ -134,15 +134,10 @@ void main() {
       expect(e.left, closeTo(12, 0.5), reason: '$w px: tahtanın sol kenarı');
       expect(logo.left, closeTo(12, 0.5));
 
-      // "Hemen altında" — ve HER ZAMAN logonun ALTINDA (çakışma yok).
-      // Sabit bir sayı DEĞİL: etiket artık logonun kutusuna değil header
-      // SATIRININ altına çapalı (24 Ağustos 2026, ikinci tur — bkz.
-      // game_header.dart'taki not), satırın boyunu da 48 px'lik dokunma
-      // hedefleri belirliyor. Aralık hem çakışmayı hem kopmayı yakalar.
-      expect(e.top - logo.bottom, greaterThan(0),
-          reason: '$w px: etiket logonun ÜSTÜNE binmemeli');
-      expect(e.top - logo.bottom, lessThan(24),
-          reason: '$w px: etiket logodan kopmamalı');
+      // "Hemen altında": web `BACK_GAP` (3 px), logonun kutusuna çapalı
+      // (1 Ekim 2026'dan beri yine web'deki yapı — bkz. game_header.dart).
+      expect(e.top - logo.bottom, closeTo(kBackGap, 0.5),
+          reason: '$w px: etiket logonun 3 px altında');
 
       // Kaçış yolu HEM logo HEM etiket — webde de tek bir `<button>` ikisini
       // birden kapsıyor (etiket `<span className="absolute top-full">`).
@@ -153,14 +148,15 @@ void main() {
           reason: '$w px: "← Geri" etiketine dokunmak da Setup\'a dönmeli — '
               'kullanıcının 24 Ağustos 2026\'da bildirdiği hata tam buydu');
 
-      // ...ve yazının BİRAZ ALTINA dokunmak da çalışmalı: kullanıcı ilk
-      // düzeltmeden sonra *"tam üstüne basarsan ok ama biraz altına
-      // gelirse çalışmıyor"* dedi. Kutunun alt payı (`kBackBottomPad`)
-      // tam olarak bunun için var.
-      await tester.tapAt(Offset(e.center.dx, e.bottom + kBackBottomPad / 2));
-      expect(tiklandi, 3,
-          reason: '$w px: etiketin hemen altı da dokunma hedefinin parçası '
-              'olmalı');
+      // Etiketin ÜST yarısı ve logonun ÜSTÜ de aynı hedef: logo öğesi
+      // başlığın tam boyuna gerili (dokunma alanı kutudan değil satırdan).
+      // ⚠ 24 Ağustos'un "yazının biraz ALTINA dokununca çalışmıyor"
+      // şikayetindeki boşluk artık YOK: etiketin altında web'deki gibi
+      // doğrudan tahta başlıyor (aradaki ~2,5 px tahtanın dolgusu).
+      await tester.tapAt(Offset(e.center.dx, e.top + 1));
+      expect(tiklandi, 3, reason: '$w px: etiketin üst kenarı');
+      await tester.tapAt(Offset(logo.center.dx, logo.top - 5));
+      expect(tiklandi, 4, reason: '$w px: logonun hemen üstü (dolgu)');
     }
   });
 

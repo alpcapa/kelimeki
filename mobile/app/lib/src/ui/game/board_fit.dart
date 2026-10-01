@@ -57,27 +57,23 @@ const double kBoardMinPx = 324;
 // ya o uzamayı geri al ya da buraya ölçülmüş bir port terimi ekle (ve
 // ayrışmayı `ROADMAP.md`ye yaz).
 
-/// PORTA ÖZEL güvenlik payı (1 Ekim 2026, 1.1.2 cihaz turu). Yukarıdaki
-/// "3 px'lik pay" CİHAZDA YETMEDİ: kullanıcı yatay iPad'de (1180×820, Canlı
-/// oyun, sıra kendisinde) alt düğmelerin ~10 pt ekranın altına taştığını
-/// bildirdi (*"alttaki butonlar çok az ekran dışına taşıyor. Scroll
-/// edilebiliyor"*). Test ortamında (güvenli alan yok, test fontu metrikleri)
-/// PAS GEÇ'in altı 817'de kalıyordu; gerçek cihazdaki güvenli alan + metin
-/// metrikleri o 3 px'i yiyor. Bu dosyanın kendi reçetesi uygulandı: ölçülmüş
-/// bir port terimi. Bedeli: geniş-kısa ekranlarda tahta web'dekinden 16 px
-/// küçük (yatay iPad'de kart 488 → 472); dikey telefonda/iPad portrede
-/// bütçe bağlamadığından HİÇBİR şey değişmez. Ayrışma `ROADMAP.md`de yazılı.
-const double kBoardPortPadPx = 16;
+// ⚠ 1 Ekim 2026 — yukarıdaki "port başlığı 25 px uzun, pay 3 px" durumu
+// CİHAZDA YETMEDİ (yatay iPad, Canlı oyun: alt düğmeler ~10 pt ekran
+// dışında). Önce tahtaya 16 px'lik bir port payı denendi (tahtayı web'den
+// küçük çizmek — yama); kullanıcı *"Web'e baktın mı? Orada düzgün"* dedi ve
+// asıl fark KAPATILDI: port başlığı web geometrisine indi (`game_header.dart`,
+// kartın üstü 88 → web'deki 63). Port payı geri alındı, sabitler yine
+// web'den birebir; pay artık ~28 px ve `board_fit_test` ≥16 px istiyor.
 
 /// Tahta sarmalayıcısının (`Padding(12, 6, 12, 12)` + kart) azami genişliği —
-/// web `boardMaxWidthCss()`in sayısal karşılığı + port payı:
-/// `min(680, max(324, yükseklik − 308 − 16))`.
+/// web `boardMaxWidthCss()`in sayısal karşılığı:
+/// `min(680, max(324, yükseklik − 308))`.
 ///
 /// [viewportHeight] web'in `100dvh`i: güvenli alanın İÇİNDE kalan boy
 /// ([boardViewportHeight]).
 double boardMaxWidth(double viewportHeight) => math.min(
       kBoardMaxPx,
-      math.max(kBoardMinPx, viewportHeight - kBoardChromePx - kBoardPortPadPx),
+      math.max(kBoardMinPx, viewportHeight - kBoardChromePx),
     );
 
 /// Web `100dvh`inin port karşılığı: ekran boyu eksi güvenli alan (çentik,

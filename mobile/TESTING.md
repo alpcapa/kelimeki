@@ -1218,9 +1218,16 @@ Taşındı (27 Eylül 2026, doküman bütçesi) — bkz. `mobile/docs/testing-ol
 
 - [ ] **Görünür:** Oyun ekranında logonun hemen altında ince, koyu bir
       "← Geri" yazıyor ve tahtanın sol kenarıyla hizalı duruyor.
-- [ ] **Dokunuş:** Logoya dokunmak Setup'a döndürüyor. (Uygulamada etiketin
-      KENDİSİ dokunuş almaz — webden bilinçli sapma, kod yorumunda gerekçesi
-      yazılı; etiket logoyu gösteren bir ipucu.)
+- [ ] **Dokunuş:** Logoya, logonun hemen üstüne ve "← Geri" yazısına
+      dokunmak Setup'a döndürüyor (1 Ekim 2026'dan beri başlık web
+      geometrisinde; dokunma alanı başlığın tam boyu — Parça 227).
+- [ ] **Başlık dokunuşları (1 Ekim 2026, YENİ GEOMETRİ):** skor kutusuna
+      (Canlı oyunda rakibin skor kartı) ve avatara kutunun hafif üstüne/
+      altına basınca da açılıyor; "← Geri" yazısının hemen altında artık
+      tahta başlıyor (web'deki gibi).
+- [ ] **Yatay iPad (1180×820):** raf ve alt düğmeler (PAS GEÇ … TORBA)
+      KAYDIRMADAN tam görünüyor — Canlı oyunda sıra sendeyken de, rakipteyken
+      de. Tahta web'deki boyunda.
 - [ ] **Header bozulmadı:** Skor kutuları logoyla aynı hizada; tahta
       eskisine göre gözle görülür şekilde aşağı kaymadı.
 - [ ] **4 kişilik + girişli hesap:** Avatar/GİRİŞ ile etiket çakışmıyor,

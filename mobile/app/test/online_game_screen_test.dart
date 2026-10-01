@@ -402,8 +402,8 @@ void main() {
     //    Burada yalnızca taşmanın 9 px'i AŞMADIĞI ve rafın tam göründüğü
     //    kilitli: başlık/bant büyürse bu test düşer.
     //  ⚠ 1 Ekim 2026: cihazda (yatay iPad, sıra bende) 3 px'lik pay YETMEDİ;
-    //    port payı 16 px eklendi (`board_fit.dart` → `kBoardPortPadPx`).
-    //    Artık iki durumda da şerit ekranın içinde.
+    //    port başlığı web geometrisine indi (kartın üstü 88 → 63,
+    //    `game_header.dart`). Artık iki durumda da şerit ekranın içinde.
     for (final (ad, current, ai) in const [
       ('sıra bende', 0, false),
       ('sıra rakipte', 1, false),
@@ -424,9 +424,9 @@ void main() {
           final raf = tester.getRect(find.byType(RackWidget));
           expect(raf.bottom, lessThanOrEqualTo(view.height),
               reason: 'raf ekranın altına taşıyor');
-          // 1 Ekim 2026: port payı (`kBoardPortPadPx` = 16) sonrası sıra
-          // bende 16 px, bekleme bandıyla bile (eskiden +9 taşıyordu) şerit
-          // ekranın İÇİNDE — iPad cihaz turunda 3 px'lik pay yetmedi.
+          // 1 Ekim 2026: başlık web'e inince sıra bende ≥16 px pay,
+          // bekleme bandıyla bile (eskiden +9 taşıyordu) şerit ekranın
+          // İÇİNDE — iPad cihaz turunda 3 px'lik pay yetmedi.
           expect(pas.bottom,
               lessThanOrEqualTo(view.height - (current == 0 ? 16 : 0)),
               reason: 'alt şerit ekranın altına taşıyor: ${pas.bottom}');

@@ -25,22 +25,36 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
-## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: tahta bütçesine 16 px port payı (1 Ekim 2026)
+## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
 - **Bildirim (1.1.2 cihaz turu, Canlı oyun, sıra kendisinde):** *"ipad'de
   yatay modda alttaki butonlar çok az ekran dışına taşıyor. Scroll
-  edilebiliyor."* Ekran görüntüsünden ölçüldü: ~10 pt.
-- **Sebep:** `board_fit.dart`ın kendi notu — web formülünün payı portta
-  yalnız 3 px kalıyordu (test: 1180×820'de PAS GEÇ'in altı 817). Testte
-  güvenli alan yok ve metin metrikleri cihazdakinden farklı; cihazda pay
-  tükendi.
-- **Düzeltme:** dosyanın reçetesi — ölçülmüş bir port terimi:
-  `kBoardPortPadPx = 16` (`boardMaxWidth = min(680, max(324, boy − 308 −
-  16))`). Yatay iPad'de kart 488 → 472; portre telefon/iPad'de bütçe
-  bağlamadığı için değişiklik YOK. Web aynı kaldı (orada pay 25 px).
-- **Kapılar sıkılaştı:** `board_fit_test` alt şeridin altında ≥16 px boşluk
-  istiyor; `online_game_screen_test`teki "sıra rakipte 9 px taşma kabul"
-  istisnası kalktı — iki durumda da şerit ekranın içinde.
+  edilebiliyor."* (~10 pt). İlk düzeltme tahtayı 16 px küçültmekti (YAMA,
+  web'e bakılmadan yapıldı); kullanıcı web'in ekran görüntüsünü gönderdi:
+  *"Web'e baktın mı? Orada düzgün"*.
+- **Web ÖLÇÜLDÜ (Playwright, 1180×820):** başlık 57, logo 10,5–46,5,
+  "← Geri" 49,5–60,5 (logonun altına TAŞAN, yer kaplamayan `absolute`
+  etiket), kart 63'te, 488 geniş, PAS GEÇ'in altı 795. Port: kart 88'de —
+  tahtanın altındaki kısım iki tarafta aynı (194 ↔ 193), fark YALNIZ
+  başlıktaydı: 48'lik `TapTarget`ler satırı 48'e çekiyor + "← Geri" ayrı
+  bir 24'lük satır.
+- **Düzeltme (yapısal):** `GameHeader` web'in geometrisiyle yeniden kuruldu
+  — `px-3 py-2.5` + öğelerin doğal boyu, "← Geri" logo öğesinin İÇİNDE
+  taşan etiket (`kBackGap` = web `BACK_GAP` 3). Dokunma alanı 48'lik
+  kutulardan değil SATIRDAN: `IntrinsicHeight` + `stretch` her öğeyi
+  başlığın tam boyuna (~56) geriyor; YENİ `TapTargetScope` (tap_target.dart)
+  başlık içindeki `TapTarget`lerin 48'lik asgari YÜKSEKLİĞİNİ kaldırıyor.
+  Sonuç 1180×820: logo 10–46, Geri 49–60, kart 62/488, PAS GEÇ 791 — web'le
+  aynı tahta, alt şeritte 29 px pay. 16 px'lik tahta küçültmesi GERİ
+  alındı (`board_fit.dart` sabitleri yine web'den birebir).
+- **Bilinçli bedel:** 24 Ağustos'un "Geri yazısının biraz ALTINA basınca
+  çalışmıyor" şikayetinin alanı artık yok — etiketin altında web'deki gibi
+  doğrudan tahta başlıyor (~2,5 px). Logo+etiket öğesi başlığın tam boyunda
+  dokunulabilir. Cihazda yeniden denenmeli (TESTING).
+- **Kapılar:** `board_fit_test` alt şeridin altında ≥16 px boşluk istiyor;
+  `online_game_screen_test`teki "sıra rakipte 9 px taşma kabul" kalktı;
+  `layout_parity_test` artık `BACK_GAP`ı web'le karşılaştırıyor;
+  `game_header_test` etiketi logonun 3 px altında bekliyor.
 
 ## Parça 226 — Eğitim balonu SIRASI: menü · anlam · zoom · hamleler · torba · mesaj (1 Ekim 2026) — web + port aynı PR
 
