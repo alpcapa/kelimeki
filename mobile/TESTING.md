@@ -554,6 +554,22 @@ buradakiler ekranın gerçek bir oyundaki hâli.
       açmalı; o formu kapatınca alt pencere geri gelmeli; giriş yapınca canlı
       liste görünmeli. Girişliyken listenin üstünde turuncu "YENİ OYUN
       BAŞLAT".
+- [ ] **Canlı oyun formu (1 Ekim 2026, ROADMAP #41).** Arkadaşınla → "YENİ
+      OYUN BAŞLAT":
+      - 2 kişide tek koltuk *"Aşağıdan bir arkadaşını seç"*; arkadaş seçince
+        koltuk KIRMIZI zeminde, adı ve sağda soluk "2"; ✕ boşaltır. 4 kişide
+        üç koltuk (kırmızı/yeşil/sarı); 2 arkadaşla üçüncü koltuk "Yapay
+        Zeka". Boş koltuğa dokunmak listeye kaydırmalı, klavye AÇILMAMALI.
+      - "HIZLI SEÇ" / "SIK OYNADIKLARIN" şeridi (en az 2 arkadaşın varsa):
+        en çok oynadığın kişi solda; dokununca seçilmeli, halkası koltuğun
+        renginde. Arama kutusuna yazınca şerit kaybolmalı.
+      - "+ ARKADAŞINI DAVET ET" doğrudan paylaşım sayfasını açmalı (WhatsApp
+        orada); iPad'de sayfa düğmenin yanından açılmalı ve asılı kalmamalı.
+      - Liste kaydırılabiliyorsa sağda kaydırma çubuğu HEP görünmeli.
+      - "Tüm oyuncular →": arkadaş olmayanlarda EKLE → İSTEK GİTTİ; sana
+        istek atmış birinde KABUL ET → satır kutucuklu olmalı ve seçilebilmeli.
+        Arkadaş olmayanın adına dokununca skor kartı açılmalı.
+      - Gönderince "Davetin gönderildi" + "OYUNLARIMA GİT".
 - [ ] **Misafir üyelik kutusu.** Setup ekranını misafir (girişsiz) olarak
       aç — hem boş kurulum formunun altında hem (bir oyun yarıda bırakılıp
       "Devam Eden Oyun" görünümüne düşünce) o görünümün altında "Neden

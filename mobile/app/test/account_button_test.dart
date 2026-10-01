@@ -113,6 +113,8 @@ class _FakeFriendsGateway implements FriendsGateway {
   Future<String?> inviteInfo(String token) async => null;
   @override
   Future<String?> acceptInvite(String token) async => null;
+  @override
+  Future<List<String>> frequentOpponents(int limit) async => const [];
 }
 
 void main() {
