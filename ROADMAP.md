@@ -310,7 +310,7 @@ nereden okunacağı ve kartın "12" tavanı orada.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **DURUM (1 Ekim 2026 akşamı): 1.1.2 (831) İKİ MAĞAZADA İNCELEMEDE — yayındaki hâlâ `1.1.1 (723)`. Onaya kadar `main`'e mobil merge YOK** (`mobile-latest` korunur; `surumler.md` → "1.1.2 (831)").
+⚠ **DURUM (1 Ekim 2026 gece): 1.1.2 (831) PLAY'DE YAYINDA (≤ 21:58 UTC), App Store İNCELEMEDE — iOS'ta yayındaki hâlâ `1.1.1 (723)`.** Play paketi yayında olduğu için `mobile-latest`in korunma gereği kalktı; ASC'deki build gönderime iliştirili, ezilmez. Mobil işler yine treni bekler (her Pazartesi, ilki 12 Ekim). Kayıt: `surumler.md` → "1.1.2 (831)".
 ⚠ **1 Ekim 2026 akşamı, kullanıcı kararı: #41'in port yarısının TAMAMI
 (tasarım) 1.1.2'ye girer, 1.1.2 ancak o bitip test edilince TEK paket olarak
 gönderilir** — *"Arka arkaya güncelleme iyi fikir değil … Hepsini koyalım,
