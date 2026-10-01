@@ -452,10 +452,16 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <code>anon_id</code> ne <code>user_id</code> var, gizlilik metnine yeni bir durum
         eklememek için). Kart <b>ADET</b> sayar: formu iki kez açan iki kez sayılır.
         <br />
-        <b>Uygulama:</b> Tamamlama = uygulamadan açılan hesap (<code>profiles</code>).
-        Açılış henüz <b>ölçülmüyor</b> ("—"): uygulama bu olayı yalnızca Firebase'e
-        yazıyor. iOS / Android ayrımı da o yüzden yok; uygulama bu sayaca yazmaya
-        başlayınca gelecek. Toplamın oranı yalnızca açılışı ölçülen satırlardan.
+        <b>Uygulama:</b> Açılış ve Tamamlama AYNI kimliksiz sayaçtan (
+        <code>signup_events</code>, iOS/Android satırları) — pay ve payda aynı
+        kitleden gelsin, oran sahte çıkmasın. Uygulama bu tabloya{' '}
+        <b>1.1.2'den beri</b> yazıyor (ROADMAP #35); 1.1.1 ve öncesi yalnızca
+        Firebase'e yazdığı için güncellemeyen cihazların kaydı bu satırda YOK.
+        Açılış 0 ise satır "—" gösterir (ölçülmüyor, "hiç" değil). 5 Ekim'e kadar
+        bu satırın Tamamlaması <code>profiles</code>tan (uygulamadan açılan TÜM
+        hesaplar) okunuyordu; 1.1.2 yaygınlaşana kadar yeni satır o sayıdan DÜŞÜK
+        görünür, bu bir kayıp değil kapsam farkı.
+        Toplamın oranı yalnızca açılışı ölçülen satırlardan.
         <br />
         ⚠ "Tamamladı" = hesap oluştu demek, <b>e-postasını onayladı demek
         DEĞİL</b>. Onay kaybı ayrı bir soru (ROADMAP #32).
@@ -1725,8 +1731,9 @@ function SignupFunnelTable({
     );
   }
   const etiket = (platform: string) => (platform === 'web' ? 'Web' : 'Uygulama');
-  // Uygulamanın form açılışı henüz ÖLÇÜLMÜYOR (port Firebase'e yazıyor):
-  // 0 "hiç açılmadı" değil "bilinmiyor" demek, "—" gösterilir.
+  // Uygulama bu sayaca 1.1.2'den beri yazıyor (ROADMAP #35, #651); o sürüm
+  // sahaya inene kadar açılış 0 gelir ve 0 "hiç açılmadı" değil "bilinmiyor"
+  // demektir, "—" gösterilir.
   const olculmuyor = (r: AdminSignupFunnelRow) => r.platform === 'app' && r.starts === 0;
   const toplam = rows.reduce(
     (t, r) => ({ starts: t.starts + r.starts, completions: t.completions + r.completions }),

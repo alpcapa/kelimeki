@@ -103,6 +103,35 @@ class FlagsStore {
     return id;
   }
 
+  /// Anonim kod ÜRETİLMİŞ mi — ÜRETMEDEN okur (Huni v2'nin "önceden iz"
+  /// sorusu, `hasPriorAppTrace`; `anonId()` çağırmak cevabı bozardı).
+  bool get hasAnonId => prefs.getString(_anonId) != null;
+
+  // ── Huni v2 (`funnel_api.dart`) ─────────────────────────────────────────
+  // Web `funnel-v2:land` / `funnel-v2:visit-day` karşılığı. ⚠ `hasPriorAppTrace`
+  // bu anahtarlara BAKMAZ: iz sayılsalardı yarıda kalan bir `land` ikinci
+  // açılışta "mevcut"a dönerdi (web'in bilerek öneksiz anahtar kararı).
+  static const _funnelLandChannel = 'funnel_v2_land_channel';
+  static const _funnelLandSent = 'funnel_v2_land_sent';
+  static const _funnelVisitDay = 'funnel_v2_visit_day';
+
+  String? get funnelLandChannel => prefs.getString(_funnelLandChannel);
+  Future<void> setFunnelLandChannel(String channel) =>
+      prefs.setString(_funnelLandChannel, channel);
+  bool get funnelLandSent => prefs.getBool(_funnelLandSent) ?? false;
+  Future<void> setFunnelLandSent() => prefs.setBool(_funnelLandSent, true);
+  String? get funnelVisitDay => prefs.getString(_funnelVisitDay);
+  Future<void> setFunnelVisitDay(String day) =>
+      prefs.setString(_funnelVisitDay, day);
+
+  /// `device_visits` günlük damgası — web `kelimeki:device-visit-date`.
+  /// `anonVisitDate`ten AYRI (web'in aynı gerekçesi: paylaşılsaydı biri
+  /// ötekini bastırırdı; misafir pingi girişliyken hiç atılmıyor).
+  static const _deviceVisitDate = 'device_visit_date';
+  String? get deviceVisitDate => prefs.getString(_deviceVisitDate);
+  Future<void> setDeviceVisitDate(String yyyymmdd) =>
+      prefs.setString(_deviceVisitDate, yyyymmdd);
+
   String? get anonVisitDate => prefs.getString(_anonVisitDate);
   Future<void> setAnonVisitDate(String yyyymmdd) =>
       prefs.setString(_anonVisitDate, yyyymmdd);
@@ -127,9 +156,8 @@ class FlagsStore {
           .whereType<int>()
           .toList();
 
-  Future<void> setFeedbackSubmissionTimes(List<int> times) =>
-      prefs.setStringList(
-          _feedbackTimes, [for (final t in times) t.toString()]);
+  Future<void> setFeedbackSubmissionTimes(List<int> times) => prefs
+      .setStringList(_feedbackTimes, [for (final t in times) t.toString()]);
 
   static const _pushSorulmaSayisi = 'push_sorulma_sayisi';
   static const _pushSonSorulma = 'push_son_sorulma';

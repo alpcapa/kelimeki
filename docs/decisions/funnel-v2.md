@@ -213,6 +213,54 @@ GÖRÜLMEDİ (hiç web kaydı olmadı); kod yolu (`AuthModal` → `funnelEvent`)
 ve sunucu kabulü okundu. Kullanıcı kararı: *"Gerek yok çalışıyordur. Daha
 sonra bakarım tekrar"* — ilk web kaydında satırın düştüğüne bakılacak.
 
+## PR 2 — mobil (27 Eylül 2026, 5 Ekim treni)
+
+Kullanıcı: *"Huni v2 5 Ekim'de var mı? Yoksa dahil edelim"* — planda "Play
+#19'dan sonraki ilk güncelleme" diye bekliyordu, trene alındı. Kod:
+`mobile/app/lib/src/data/funnel_api.dart`; kayıt `mobile/docs/parca-log.md`
+→ Parça 216.
+
+**Plandan ayrılanlar:**
+
+- ~~**Play Install Referrer YOK** (kullanıcı: *"önce kanalsız"*).~~
+  **DEĞİŞTİ (30 Eylül 2026, kullanıcı: *"Referrer'ı 5 Ekim trenine
+  ekle"*):** Android'de yeni cihazın `land` kanalı Play Install
+  Referrer'daki `utm_source` (`data/install_referrer.dart` +
+  `channelFromInstallReferrer`, Parça 218). Zincir: kullanıcı reklamdan
+  `kelimeki.com/?ref=meta-reel`e gelir → mağaza rozeti etiketi Play linkine
+  `referrer=utm_source%3Dmeta-reel%26utm_medium%3Dweb` olarak ekler
+  (`taggedStoreUrl`) → kurulum sonrası ilk açılışta uygulama okur. Organik
+  (`google-play`/`organic`), bozuk ya da web kalıbına uymayan etiket → `app`.
+  Okuma düşerse (Play Hizmetleri yok, 5 sn zaman aşımı) → `app`, açılış
+  bozulmaz. Eski cihaz referrer'a BAKILMADAN `mevcut`. ⚠ Etiket YALNIZCA
+  `funnel_events`e yazılır, `DeviceStamp`e DEĞİL (öteki üç tablo — kayıt/
+  oyun satırları — `app` kalır; kapsamı bilerek dar tutuldu). ⚠ Yalnızca
+  YAYINDAN SONRAKİ kurulumlar ölçülür, geriye dönük veri yok.
+- **Kanal `app`, `app-store`/`play-organik` DEĞİL.** Panelin
+  `sourceChannel`ı (`adminGroups.ts`) yalnızca `app`i tanıyor ("Mobil
+  Uygulama"); plandaki iki etiket "Diğer"e düşerdi. Platform zaten ayrı
+  sütunda, bilgi kaybı yok. Deep link'ten bir `?ref=` yakalanırsa
+  (`DeviceStamp.source`) o kazanır — web `decideLandChannel` ile aynı.
+- **"Önceden iz" = oturum VAR ya da tanıtım görülmüş ya da anonim kod
+  ÜRETİLMİŞ** (`hasPriorAppTrace`). ⚠ Bootstrap'ta `errorReporter` anonim
+  kodu açılışta üretiyor; iz ondan ÖNCE okunmazsa her yeni kurulum
+  `mevcut` sayılırdı. Sıra `bootstrap.dart`ta yazılı ve testli.
+- **`visit` = açılış VE öne geliş** (İstanbul günü başına bir). Web'de her
+  sayfa yüklemesi; uygulamada arka planda günlerce açık kalan süreç de
+  ertesi gün "döndü" sayılabilsin diye.
+- `game_finish` yalnızca `GamesRepo.recordFinished` — 7 günlük terk
+  (`recordAbandoned`) web'deki gibi DIŞARIDA. Canlı oyun da dışarıda.
+
+**Beyan formları:** değişmedi (yukarıdaki "Beyan formları büyük ihtimalle
+DEĞİŞMEZ" okuması geçerli). **Install Referrer (30 Eyl) için okuma:**
+yazılan tek şey kurulumun KAMPANYA ETİKETİ (`meta-reel` gibi), aynı
+`land` satırında, hesaba bağlı değil, amaç Analytics — zaten beyan edilmiş
+"App interactions (Analytics, not linked)" türünün içinde; ham referrer
+dizesi, tıklama/kurulum zamanları SAKLANMIYOR. Yeni bir veri türü YOK →
+Play Data safety değişmez. (Kütüphane `BIND_GET_INSTALL_REFERRER_SERVICE`
+iznini manifest'e kendisi ekliyor — "tehlikeli" izin değil, kullanıcıya
+sorulmaz.)
+
 ## Açık sorular (uygulamaya başlarken)
 
 - "Land" web'de karşılama katmanı mı yoksa uygulama mı sayılır? Plan:

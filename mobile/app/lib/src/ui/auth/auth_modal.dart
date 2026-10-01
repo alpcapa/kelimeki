@@ -19,6 +19,7 @@ import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart';
 
 import '../../data/analytics.dart';
+import '../../data/signup_events.dart';
 import '../../data/auth_service.dart';
 import '../../data/feedback_api.dart';
 import '../../data/profile_fields.dart';
@@ -29,6 +30,9 @@ import 'legal_modals.dart';
 import '../tokens.dart';
 import '../form_input.dart';
 import '../../util/error_message.dart';
+
+import '../../data/funnel_api.dart';
+
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -45,14 +49,14 @@ Future<void> showLoginModal(BuildContext context, AuthService auth,
 
 enum _Mode { login, signup, forgot }
 
-enum _NickStatus { idle, checking, available, taken, error }
+enum _NickStatus { idle, checking, available, taken, blocked, error }
 
 class AuthModal extends StatefulWidget {
   final AuthService auth;
 
   /// Takma isim kontrolü — testler ağsız sahte bir denetleyici enjekte eder;
-  /// üretimde `auth.checkNicknameAvailable`.
-  final Future<bool> Function(String nickname)? nicknameChecker;
+  /// üretimde `auth.nicknameStatus`.
+  final Future<NicknameStatus> Function(String nickname)? nicknameChecker;
 
   /// Web AuthModal'ın aynı üç prop'u — Görüş Bildir'in "üyeliğine devam"
   /// teklifi modalı doğrudan kayıt modunda, e-posta önceden dolu ve
@@ -94,8 +98,12 @@ class _AuthModalState extends State<AuthModal> {
     // üst ucu; alt ucu `signup_completed`). İki giriş yolu var ve ikisi de
     // sayılmalı: modal doğrudan kayıt modunda açılabiliyor (startInSignup —
     // "Neden Üye Olmalıyım?" kutusu) ya da girişten sekmeyle geçiliyor
-    // (`_switchMode`).
-    if (widget.startInSignup) analytics.log('signup_started');
+    // (`_switchMode`). Sunucudaki `signup_events` sayacı AYNI noktalarda
+    // (ROADMAP #35 — admin "Kayıt Hunisi" kartı; web `logSignupEvent`).
+    if (widget.startInSignup) {
+      analytics.log('signup_started');
+      signupEvents.log(kSignupStarted, widget.signupChannel);
+    }
   }
 
   late final _email = TextEditingController(text: widget.initialEmail ?? '');
@@ -188,6 +196,7 @@ class _AuthModalState extends State<AuthModal> {
   void _switchMode(_Mode next) {
     if (next == _Mode.signup && _mode != _Mode.signup) {
       analytics.log('signup_started');
+      signupEvents.log(kSignupStarted, widget.signupChannel);
     }
     setState(() {
       _mode = next;
@@ -217,11 +226,14 @@ class _AuthModalState extends State<AuthModal> {
     _nickTimer = Timer(const Duration(milliseconds: 400), () async {
       try {
         final checker =
-            widget.nicknameChecker ?? widget.auth.checkNicknameAvailable;
-        final available = await checker(trimmed);
+            widget.nicknameChecker ?? widget.auth.nicknameStatus;
+        final durum = await checker(trimmed);
         if (mounted && _nickSeq == mySeq) {
-          setState(() => _nickStatus =
-              available ? _NickStatus.available : _NickStatus.taken);
+          setState(() => _nickStatus = switch (durum) {
+                NicknameStatus.ok => _NickStatus.available,
+                NicknameStatus.taken => _NickStatus.taken,
+                NicknameStatus.blocked => _NickStatus.blocked,
+              });
         }
       } catch (_) {
         if (mounted && _nickSeq == mySeq) {
@@ -292,6 +304,9 @@ class _AuthModalState extends State<AuthModal> {
       if (_nickStatus == _NickStatus.taken) {
         throw const _FormError('Bu takma isim zaten kullanılıyor.');
       }
+      if (_nickStatus == _NickStatus.blocked) {
+        throw const _FormError('Bu takma isim kullanılamaz.');
+      }
       if (_email.text.trim().isEmpty) {
         throw const _FormError('E-posta zorunludur.');
       }
@@ -317,6 +332,10 @@ class _AuthModalState extends State<AuthModal> {
       // doğrulaması kapalıysa oturum açıldı, açıksa onay bekleniyor; huni
       // için ikisi de "kayıt tamamlandı").
       analytics.log('signup_completed');
+      signupEvents.log(kSignupCompleted, widget.signupChannel);
+      // Huni v2 (web `AuthModal` → `funnelEvent('signup', true)`) — Gizlilik
+      // 6. bölüm (6): olay türü + gün, hesap kimliği YOK.
+      funnel.event('signup', isGuest: true);
       if (!mounted) return;
       if (sessionOpened) {
         Navigator.of(context).pop();
@@ -326,8 +345,11 @@ class _AuthModalState extends State<AuthModal> {
         setState(() {
           _mode = _Mode.login;
           _infoGold = false;
-          _info = 'Hesap oluşturuldu.';
-          _infoStrong = 'E-POSTANIZI KONTROL EDİP ONAY VERİN.';
+          // "Hesap oluşturuldu." 26 Eylül 2026'da kaldırıldı (kullanıcı:
+          // insanlar hesabın HAZIR olduğunu sanıyor) — yalnızca eylem
+          // cümlesi, tamamı kalın. Web AuthModal.tsx ile AYNI metin.
+          _info = '';
+          _infoStrong = 'LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN.';
         });
       }
     } catch (e) {
@@ -344,7 +366,8 @@ class _AuthModalState extends State<AuthModal> {
     final submitDisabled = _busy ||
         (signup &&
             (_nickStatus == _NickStatus.checking ||
-                _nickStatus == _NickStatus.taken));
+                _nickStatus == _NickStatus.taken ||
+                _nickStatus == _NickStatus.blocked));
     return KModal(
       title: signup
           ? 'Kayıt'
@@ -387,6 +410,8 @@ class _AuthModalState extends State<AuthModal> {
                 const _StatusLine('Kullanılabilir', _green, icon: Icons.check),
               if (_nickStatus == _NickStatus.taken)
                 const _StatusLine('Bu takma isim kullanımda.', _red),
+              if (_nickStatus == _NickStatus.blocked)
+                const _StatusLine('Bu takma isim kullanılamaz.', _red),
               const SizedBox(height: 12),
             ],
             _labeled('E-POSTA',
@@ -526,9 +551,10 @@ class _AuthModalState extends State<AuthModal> {
                     TextSpan(text: _info!),
                     if (_infoStrong != null)
                       TextSpan(
-                          text: ' ${_infoStrong!}',
-                          style:
-                              const TextStyle(fontWeight: FontWeight.bold)),
+                          text: _info!.isEmpty
+                              ? _infoStrong!
+                              : ' ${_infoStrong!}',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),

@@ -1,7 +1,9 @@
 // Oyun başına "son görülen sohbet mesajı" damgası — web'deki
 // kelimeki:chat-last-read:<gameId> anahtarlarının tablo karşılığı.
-// Tamamen cihaza özel/tek taraflı bir işaret; sunucuya okundu bilgisi
-// gitmez (web'deki aynı bilinçli sınır).
+// 23 Eylül 2026'dan (port: ROADMAP #34) beri asıl damga SUNUCUDA
+// (`online_game_chat_reads`); bu tablo YEDEK — sunucuya ulaşılamazsa davranış
+// eskisinden kötü olmaz. İki kaynağın büyüğünü `decideChatRead`
+// (`util/chat_read.dart`) seçiyor.
 import 'package:sqflite/sqflite.dart';
 
 class ChatReadStore {

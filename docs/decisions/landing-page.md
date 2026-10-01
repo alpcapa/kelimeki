@@ -1124,3 +1124,40 @@ açık). İkisi aynı yere gidiyor.
 **Ölçüm:** etkisi Ziyaretçi Yolculuğu'nun "karşılamada ayrıldı" oranı ve
 `store` adımıyla, kampanya kütüğünde okunacak.
 
+
+## Instagram uygulama içi tarayıcısında X görünmedi — tekrarlanmadı (30 Eylül 2026)
+
+Kullanıcı bio linkinden girdi → tanıtım → gerçek oyun → oyunun yarısında
+giriş → geri → Setup'ta kaldı; Instagram'ın üst çubuğu küçülmüş hâldeydi
+(yalnızca "🔒 kelimeki.com"), **X yoktu**. Instagram'a dönünce tarayıcıyı
+kendisi kapattı; bio linkinden yeniden girişte X göründü, oyuna girip
+çıkınca da yerinde kaldı — **tekrarlanmadı**.
+
+Olası mekanizma (DOĞRULANMADI): Instagram çubuğu belge kaydırılınca
+küçültüp yukarı kaydırmada geri açıyor; bizde belge hiç kaymıyor
+(`index.css` → `body { position: fixed }`, kaydırma `#root`/`#karsilama`
+içinde), Setup da tek ekrana sığıyor → çubuğu geri açacak kaydırma yok.
+Küçülmenin neden olduğu bilinmiyor.
+
+**Kullanıcı sonradan bildirdi (aynı gün): küçük "kelimeki.com" yazısına
+dokunmak çubuğu AÇMADI** — yani küçülen çubuktan sayfanın içinden çıkış yok,
+tek yol Instagram'a dönmek. Bu gerçek bir hata sayılır.
+
+**En güçlü şüpheli: giriş penceresinin KLAVYESİ.** İkinci denemede
+(giriş yapılmadı) X yerinde kaldı; ilkinde oyunun ortasında giriş yapıldı.
+iOS klavye açılınca odaklı alanı göstermek için WKWebView'in KENDİ kaydırma
+görünümünü kaydırır — `body` sabit olsa bile. Instagram bunu "aşağı
+kaydırıldı" diye okuyup çubuğu küçültür; klavye kapanınca sayfa geri döner
+ama çubuğu geri açacak bir kullanıcı kaydırması bizde hiç oluşmaz.
+**Klavye denemesi (30 Eylül 2026, kullanıcı): TEKRARLANMADI** — giriş
+penceresi + klavye açılıp kapandı, X hep yerindeydi. Şüphe zayıfladı, sebep
+bilinmiyor; kullanıcı ileride aynı adımları yeniden deneyecek. Kod
+değişikliği YAPILMADI (kanıtsız bir düzeltme görünmeyen bir yüzeyi bozabilir).
+Yeniden görülürse ekran görüntüsüyle birlikte ADIM SIRASI istenmeli.
+
+İlk plan: **bu tekrarlanıyor mu** (Instagram → oyun → giriş penceresi →
+bir alana dokun → klavye kapansın). Tekrarlanırsa düzeltme uygulama içi
+tarayıcılara ÖZEL olmalı (`storeLinks.ts`teki UA kalıbı) — `body` kuralı
+iOS'taki çekip-yenileme koruması, herkes için değiştirilmez — ve Vercel
+Preview linki Instagram DM'inden açılarak denenmeli (ajan Instagram'ı
+göremiyor).

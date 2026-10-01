@@ -1489,6 +1489,14 @@ class _SetupScreenState extends State<SetupScreen>
                                 setState(() => _finishedUnseen = const []);
                               }
                             },
+                            // Liste taze veriyle yüklendi → rozetin "bekleyen
+                            // iş" yarısı ONUNLA hizalanır (gerekçe:
+                            // `LiveGamesTab.onActionCount`).
+                            onActionCount: (n) {
+                              if (mounted && _liveActionCount != n) {
+                                setState(() => _liveActionCount = n);
+                              }
+                            },
                           )
                         else
                           FutureBuilder<SetWordSource>(

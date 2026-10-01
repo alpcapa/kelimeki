@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../bootstrap.dart';
 import '../config/version_gate.dart';
+import '../data/funnel_api.dart';
 import '../data/error_reporter.dart';
 import '../data/notification_shade.dart';
 import '../data/online_games_api.dart';
@@ -148,61 +149,61 @@ class KelimekiApp extends StatelessWidget {
           // durunca `showGameHistory`nin üç çağrı yeri ve aradaki widget'lar
           // hiç değişmiyor (bkz. `online_games_scope.dart` başlığı).
           child: OnlineGamesScope(
-          repo: services.onlineGames,
-          child: ListenableBuilder(
-          listenable: services.auth,
-          builder: (context, _) {
-            final app = child ?? const SizedBox.shrink();
-            if (!services.auth.passwordRecovery) return app;
-            return Stack(
-              children: [
-                app,
-                const ModalBarrier(color: Colors.white, dismissible: false),
-                // Bariyerin üstünde LOGO — arka plan bomboş DEĞİL (29 Ağustos
-                // 2026, kullanıcı cihazda bildirdi: *"Şifre değiştirme
-                // modalının arkası boş ekran. En azından kelimeki logosu
-                // görünmeli."*). Web'de de böyleydi ve orada da düzeltildi
-                // (`App.tsx`, `passwordRecovery` dalı) — bu bir port farkı
-                // değildi, iki tarafın ORTAK eksiğiydi.
-                //
-                // Gerekçe kozmetikten fazlası: bu ekrana kullanıcı bir
-                // E-POSTA LİNKİNDEN düşüyor, yani uygulamayı henüz hiç
-                // görmemiş olabilir. Beyaz bir sayfada şifre isteyen bir
-                // kutu, kimlik avı ekranından ayırt edilemez.
-                //
-                // Logo modalın ARKASINDA, üst tarafta: `Overlay` bunun
-                // üstüne biniyor ve modal zaten dikeyde ortalı olduğundan
-                // çakışma yok. Boyut Setup'la AYNI (52).
-                const Positioned.fill(
-                  child: SafeArea(
-                    child: Align(
-                      alignment: Alignment(0, -0.62),
-                      // ⚠ Anahtar TESTİN İHTİYACI ve LOGONUN KENDİSİNDE
-                      // olmalı: (a) arkadaki Setup ekranı da bir `LogoMark`
-                      // çiziyor, yani `find.byType(LogoMark)` bu logo hiç
-                      // olmasa BİLE eşleşir; (b) anahtar `Positioned.fill`e
-                      // konursa ölçülen kutu TÜM EKRAN olur ve konum testi
-                      // her zaman ekran merkezini görür. İkisi de ölçüldü,
-                      // ikisi de testi sessizce anlamsız kılıyordu.
-                      child: LogoMark(
-                          key: ValueKey('recovery-logo'), height: 52),
-                    ),
-                  ),
-                ),
-                Overlay(
-                  initialEntries: [
-                    OverlayEntry(
-                      builder: (context) => ResetPasswordModal(
-                        auth: services.auth,
-                        onDone: services.auth.clearPasswordRecovery,
+            repo: services.onlineGames,
+            child: ListenableBuilder(
+              listenable: services.auth,
+              builder: (context, _) {
+                final app = child ?? const SizedBox.shrink();
+                if (!services.auth.passwordRecovery) return app;
+                return Stack(
+                  children: [
+                    app,
+                    const ModalBarrier(color: Colors.white, dismissible: false),
+                    // Bariyerin üstünde LOGO — arka plan bomboş DEĞİL (29 Ağustos
+                    // 2026, kullanıcı cihazda bildirdi: *"Şifre değiştirme
+                    // modalının arkası boş ekran. En azından kelimeki logosu
+                    // görünmeli."*). Web'de de böyleydi ve orada da düzeltildi
+                    // (`App.tsx`, `passwordRecovery` dalı) — bu bir port farkı
+                    // değildi, iki tarafın ORTAK eksiğiydi.
+                    //
+                    // Gerekçe kozmetikten fazlası: bu ekrana kullanıcı bir
+                    // E-POSTA LİNKİNDEN düşüyor, yani uygulamayı henüz hiç
+                    // görmemiş olabilir. Beyaz bir sayfada şifre isteyen bir
+                    // kutu, kimlik avı ekranından ayırt edilemez.
+                    //
+                    // Logo modalın ARKASINDA, üst tarafta: `Overlay` bunun
+                    // üstüne biniyor ve modal zaten dikeyde ortalı olduğundan
+                    // çakışma yok. Boyut Setup'la AYNI (52).
+                    const Positioned.fill(
+                      child: SafeArea(
+                        child: Align(
+                          alignment: Alignment(0, -0.62),
+                          // ⚠ Anahtar TESTİN İHTİYACI ve LOGONUN KENDİSİNDE
+                          // olmalı: (a) arkadaki Setup ekranı da bir `LogoMark`
+                          // çiziyor, yani `find.byType(LogoMark)` bu logo hiç
+                          // olmasa BİLE eşleşir; (b) anahtar `Positioned.fill`e
+                          // konursa ölçülen kutu TÜM EKRAN olur ve konum testi
+                          // her zaman ekran merkezini görür. İkisi de ölçüldü,
+                          // ikisi de testi sessizce anlamsız kılıyordu.
+                          child: LogoMark(
+                              key: ValueKey('recovery-logo'), height: 52),
+                        ),
                       ),
                     ),
+                    Overlay(
+                      initialEntries: [
+                        OverlayEntry(
+                          builder: (context) => ResetPasswordModal(
+                            auth: services.auth,
+                            onDone: services.auth.clearPasswordRecovery,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                ),
-              ],
-            );
-            },
-          ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -409,6 +410,9 @@ class _HomeGateState extends State<_HomeGate> with WidgetsBindingObserver {
       _gizlendi = true;
     }
     if (state == AppLifecycleState.resumed) {
+      // Huni v2: öne geliş = ziyaret (günde bir; plan "PR 2"). Açık kalan
+      // uygulamada ertesi gün "döndü" sütunu ancak burada dolar.
+      funnel.open();
       _pushHizala();
       _bildirimleriTemizle();
       _guncellemeKontrol();
@@ -450,7 +454,14 @@ class _HomeGateState extends State<_HomeGate> with WidgetsBindingObserver {
     // içinde, tek yerde (bir ekranın koşulu yanlış kopyalaması bu sayede
     // imkânsız). Fire-and-forget: açılışı ASLA geciktirmez.
     final visits = widget.services.visits;
-    if (visits != null) unawaited(visits.pingGuestVisit());
+    if (visits != null) {
+      unawaited(visits.pingGuestVisit());
+      // Cihaz pingi (`device_visits`, ROADMAP #40) — girişli DAHİL; kararlar
+      // yine `VisitsRepo`nun içinde.
+      unawaited(visits.pingDeviceVisit());
+    }
+    // Huni v2: `land` (bir kez) + günün `visit`i. Kararlar `FunnelRepo`da.
+    funnel.open();
     // ⚠ `_oyunLinkiniIsle` BURADA çağrılmıyor: `_showIntro` hâlâ null
     // (karar verilmedi) ve işleyici bilerek bekletirdi. Çağrı, kararın
     // verildiği HER dalda — aşağıdaki üçü + `_finishIntro` + dinleyiciler.

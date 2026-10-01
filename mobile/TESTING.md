@@ -1108,12 +1108,11 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
       "{e-posta} ile üyeliğine devam etmek ister misin?" teklifi çıkmalı.
       Web admin panelinde (Geri Bildirim sekmesi) mesaj o e-postayla,
       kaynağı oyun-sonu olarak görünmeli.
-- [ ] **Kapatmak da formu açar.** Aynı GameOver ekranında "GÖRÜŞ BİLDİR"e
-      DOKUNMADAN ✕ ile (ya da Android'de geri tuşuyla / dışarı dokunarak)
-      kapat → "Görüş Bildir" formu KENDİLİĞİNDEN açılmalı. Web'de kapatmanın
-      her yolu bunu yapıyor (`onClose` hem modalı kapatıyor hem formu
-      açıyor); portta 10 Ağustos 2026'ya kadar hiç yoktu (bkz. Parça 48).
-      Yerel/YZ oyununda ve Canlı oyunda AYRI AYRI dene.
+- [ ] **Kapatmak formu AÇMAZ** (26 Eylül 2026, kullanıcı kararı — eski
+      "kapatmak da formu açar" maddesi, Parça 48, kaldırıldı). GameOver'ı
+      "GÖRÜŞ BİLDİR"e dokunmadan ✕ / geri tuşu / dışarı dokunarak kapat →
+      form ÇIKMAMALI, tahta ve TEKRAR OYNA görünmeli. Yerel/YZ ve Canlı
+      oyunda AYRI AYRI dene.
 - [ ] **Üyelik teklifi → kayıt.** Teklifte EVET → kayıt formu doğrudan
       açılmalı, e-posta önceden dolu; kayıt tamamlanınca admin panelinde
       Üyeler tablosunda kanal "Form" görünmeli (`signup_channel='form'`).
@@ -1224,275 +1223,13 @@ Hiçbir madde değişmedi, numaralar korundu.
       uygulamanın donduğundan ayırt edilemezdi. İzni geri açıp tekrar
       dene: normal akış çalışmalı.
 
-## 13. k-lig ödül & rütbe sistemi (Parça 61-62)
+## 13. k-lig ödül & rütbe sistemi → `mobile/docs/testing-klig.md`
 
-Ödül/rütbe kayıtları SUNUCUDA, `games`e satır ekleyen bir trigger'la
-(`games_award_league_rewards`) açılır — yani mobilde bitirilen bir oyun da
-ödülü kendiliğinden kazanır. Kutlamanın "bir kez göster" garantisi
-`league_rewards.seen_at` ile CİHAZDAN BAĞIMSIZ: webde görülen bir kutlama
-mobilde tekrar ÇIKMAMALI (ve tersi). Bu zincirin büyük kısmı otomatik test
-edilemiyor (gerçek oturum + gerçek oyun bitişi gerekiyor); web'in aynı
-listesi kök `TESTING.md` bölüm 10.
+Taşındı (27 Eylül 2026, doküman bütçesi) — bkz. `mobile/docs/testing-klig.md`.
 
-- [ ] **Dokuz kademe, doğru eşik/ödül/renk (Parça 62).** Bilgi popup'ında
-      ve mühürde gösterilen kademe şu tabloyla BİREBİR uyuşmalı — üç kopya
-      (SQL / `leagueRank.ts` / `league_rank.dart`) elle senkron olduğundan
-      biri sapmışsa burada görünür:
+## 14. Hata telemetrisi → `mobile/docs/testing-olcum.md`
 
-      | Kademe | Harf | Eşik | Ödül | Renk |
-      |---|---|---|---|---|
-      | Çaylak | Ç | 0 | — | gri |
-      | Meraklı | M | 50 | +5 | mavi |
-      | Oyuncu | O | 100 | +10 | yeşil |
-      | Usta | U | **250** | +25 | altın |
-      | Şampiyon | Ş | 500 | +50 | turuncu |
-      | Destan | D | 1000 | +100 | kırmızı |
-      | Efsane | E | 2500 | +250 | çivit |
-      | Uzaylı | **Z** | 5000 | +500 | camgöbeği |
-      | Kozmik | K | 10000 | +1000 | parlak altın |
-
-      Üç şeye ayrıca bak: (a) Uzaylı'nın harfi **Z** (U DEĞİL — o Usta'da);
-      (b) üç yeni rengin (çivit/camgöbeği/parlak altın) mühürde ve ilerleme
-      çubuğunda birbirinden ayırt edilebildiği; (c) **Kozmik EN ÜST** —
-      o kademede ilerleme çubuğu HİÇ çizilmemeli, Destan'da ise Efsane
-      (2500) hedefiyle çizilmeli.
-- [ ] **"Nasıl Oynanır?" ekranında rütbe bölümü (Parça 66).** Detaylı
-      Kurallar'da, "Skor Kartı ve Puanlama"nın hemen altında **"Rütbeler ve
-      Ödüller"** başlıklı bir bölüm olmalı: dokuz kademe alt alta, her
-      satırda kademe renginde harf + ad + eşik + (Çaylak hariç) yeşil
-      "(ödül +N)". Tablo `league_rank.dart`'tan ÜRETİLİYOR, elle
-      yazılmıyor — yukarıdaki tabloyla BİREBİR aynı olmalı; ayrışırsa
-      biri elle yazılmış demektir. Bölümde ödülün hayatta bir kez
-      verildiği, rütbenin düşebileceği ve Kozmik'in en üst kademe olduğu
-      yazmalı; "Skor Kartı ve Puanlama"nın sonunda da -2 cezasının iki
-      kaynağı (Canlı 48 saat, yerel 7 gün) geçmeli. **Web'de birebir aynı
-      bölüm var** (kök `TESTING.md` bölüm 10) — iki ekran ayrışmamalı.
-- [ ] **Bölüm başlıkları BÜYÜK HARF (aynı turda düzeltildi).** Detaylı
-      Kurallar'daki ON bölüm başlığı da ("PUAN TABLOSU", "BÖLGE VERGİSİ",
-      "RÜTBELER VE ÖDÜLLER"…) web gibi büyük harfli olmalı — port bunu
-      Parça 10'dan beri küçük harf çiziyordu. Türkçe kurala dikkat:
-      "NASIL OYNANIR?" (noktalı İ DEĞİL) ve "BÖLGE VERGİSİ" (sondaki İ
-      noktalı) — biri ters çıkarsa `trUpper` yerine native `toUpperCase`
-      kullanılmış demektir.
-- [ ] **Başlık emojileri (12 Ağustos 2026, Parça 70).** Rütbe
-      yükselince **👏** ("Yeni rütben: X! 👏"), 100'lük kilometre
-      taşında **🎉**, düşüşte **😔**. Üçü de GERÇEK emoji olmalı, boş
-      kare (tofu) DEĞİL. (Yalnızca "Eşik ödülü kazandın!" varyantı
-      emojisiz — bilinçli.)
-- [ ] **Kart HER varyantta aynı genişlikte (280) ve ✕ kartın İÇİNDE.**
-      Kutlama, kilometre taşı ve düşüş banner'larını yan yana koy:
-      kart genişliği değişmemeli ve ✕ hiçbirinde kartın dışına
-      taşmamalı. (İlk sürümde kutlama kartı içeriğe göre 238px'e
-      büzülüyor ve ✕ dışarıda kalıyordu — web'de kart her zaman 280.)
-- [ ] **Kutlama banner'ı bir kez çıkar.** Görülmemiş bir ödülün varken
-      (test için bir satırın `seen_at`'i SQL'le null'a çekilebilir)
-      uygulamayı aç: mühür damgalı, konfetili banner ekranın ORTASINDA,
-      karartılmış arka planla çıkmalı. "DEVAM"dan sonra uygulama yeniden
-      başlatılsa da, **web'den girilse de** bir daha çıkmamalı.
-- [ ] **Banner oyun ortasında çıkmaz.** Devam eden bir YZ/Canlı oyunun
-      tahtasındayken banner asla belirmemeli. Oyun bitince (GameOver
-      modalı + Görüş Bildir formu kapatıldıktan sonra — banner onların
-      ALTINDA duruyor, web'de de öyle) kendiliğinden görünmeli.
-- [ ] **Setup'a dönünce de görünür.** Oyunu bitirmeden logoya basıp
-      Setup'a dön: orada bekleyen kutlama varsa çıkmalı (Setup'ın host'u
-      oyun ekranı pop edilince yeniden etkinleşir).
-- [ ] **Birleşik özet.** Aynı anda birden fazla görülmemiş kayıt varken
-      TEK banner çıkmalı: rütbe varsa başlık rütbe, ödül puanı yeşil
-      satırda TOPLAM olarak.
-- [ ] **Mühür üç yerde ve aynı kademede.** k-lig listesi satırları (18px),
-      Skor Kartı ve başka bir oyuncunun kartı (34px, başlık ile ✕ ARASINDA
-      ortalı, yazısız). Üçü de GÜNCEL toplam puandan türetildiğinden aynı
-      kademeyi göstermeli.
-- [ ] **Mühür artık İSİMLERİN yanında da — yedi yüzey (18 Ağustos 2026,
-      Parça 115).** Hepsinde ismin SAĞINDA, isimle aynı dikey merkezde ve
-      satırın puntosuna göre boyutlanmış olmalı: hesap menüsünün başlığı
-      (18px) · Skor Kartı'ndaki kendi ismin (20px) · başka bir oyuncunun
-      kartı (20px) · Setup'ta 1. koltuktaki hesap adı (18px) · Arkadaşlar
-      modalının ÜÇ sekmesi de (18px — "Arkadaşlar", "Davetler",
-      "Ara & Ekle") · "+ Yeni Canlı Oyun" arkadaş seçici (18px) · Oyun
-      davetleri kartındaki katılımcı isimleri (16px). **Skor kartlarında
-      artık İKİ mühür var** — başlıktaki 34px'lik tıklanabilir mühür VE
-      ismin yanındaki 20px'lik; ikisi AYNI kademeyi göstermeli.
-- [ ] **"Puan bilinmiyor" ile "0 puan" AYRI (aynı parça).** Hiç oyun
-      bitirmemiş bir kullanıcının yanında **Çaylak (Ç)** mührü çıkmalı
-      (o gerçekten 0 puan). Ama liste ilk açılırken, puanlar gelmeden bir
-      an için HERKESİN yanında Çaylak mührü BELİRMEMELİ — mühür yalnızca
-      puan bilindikten sonra çizilir. YZ koltuklarında ve misafirde mühür
-      HİÇ olmamalı.
-- [ ] **Rozet: dalgalı disk + iki kurdele kuyruğu (18 Ağustos 2026 — eski
-      tırtıklı/noter mührü TAMAMEN bırakıldı).** Her boyda AYNI siluet:
-      dolu, dalgalı kenarlı bir disk + altında V kesikli iki kurdele;
-      kurdele diskten bir tık KOYU. Testere dişli eski mühür HİÇBİR yerde
-      kalmamalı. Fark yalnızca iç halkada: 34/76px'te harfin etrafında
-      açık renkli ince bir halka VAR, 18px'lik k-lig satırında YOK (harf
-      orada daha büyük). Banner'ın rakamlı glyph'lerinde ("+1000") halka
-      hiçbir boyda çizilmez. **Web'deki rozetle yan yana bak — ikisi
-      BİREBİR aynı olmalı** (aynı sabitler iki dosyada elle senkron).
-- [ ] **Harfin yazı tipi: M PLUS Rounded 1c 800 (18 Ağustos 2026 — öncesi
-      Space Grotesk).** Harf yuvarlak hatlı ve basık görünmeli. **Portta
-      asıl risk TOFU:** Flutter otomatik font fallback YAPMAZ, yani alt
-      kümede olmayan bir glyph BOŞ KARE olarak çizilir — özellikle Ç ve Ş
-      mühürlerine bak. Rakamlı banner glyph'i ("+1000") madalyonun dışına
-      TAŞMAMALI. Web'deki rozetle yan yana bak: aynı font, aynı punto.
-- [ ] **Harf dikeyde ortalı — kuyruklu olanlar dahil.** Ç ve Ş (sedillalı)
-      mühürlerde harf, dairenin dikey ORTASINDA durmalı — alta kaçmış
-      GÖRÜNMEMELİ. Ç ile M/O/U/D aynı hizada olmalı. Üç boyu da kontrol et
-      (18px k-lig satırı, 34px kart başlığı, 88px banner). Web'deki aynı
-      mühürle yan yana bak: iki platform BİREBİR aynı hizada olmalı
-      (`sealBaselineEm` ↔ web `baselineY`, ikisi elle senkron).
-- [ ] **Mühür popup'ı.** Skor Kartı başlığındaki mühre dokun: damga
-      animasyonuyla bilgi popup'ı açılmalı (kademe adı + puan + "+N eşik
-      ödülü dahil" + sıradaki rütbe hedefi + hedefe AKAN ilerleme çubuğu;
-      en üst kademede çubuk yok). İstendiği kadar tekrar açılabilmeli —
-      kutlamanın aksine "bir kez göster" kuralı YOK.
-- [ ] **✕ var, "KAPAT"/"DEVAM" butonu YOK — popup'ta DA banner'da DA.**
-      (12 Ağustos 2026, kullanıcı: "bu banner'larda kapat, devam vb
-      olmamalı, sadece X". Önce yalnızca popup'a uygulanmıştı, aynı gün
-      kutlama/düşüş banner'ına da genişletildi.) Kapatma yalnızca sağ
-      üstteki ✕ ile; kartın altında tam genişlikte bir buton OLMAMALI.
-      **KRİTİK — ✕ yalnızca kapatmıyor:** banner'da ödülleri "görüldü"
-      işaretleyen tek yol o. Kapattıktan sonra uygulamayı yeniden başlat:
-      banner **BİR DAHA ÇIKMAMALI**. Çıkıyorsa ✕ `markSeen`'e bağlanmamış
-      demektir (bilgi popup'ında ise tam tersi doğru: o hiçbir şeye
-      dokunmaz, istendiği kadar açılır).
-- [ ] **Kart gölgesinde beyaz hale yok.** Hem bilgi popup'ının hem
-      kutlama/düşüş banner'ının kartı karartılmış zeminde yalnızca
-      yumuşak, koyu bir düşen gölge taşımalı — sol/üst kenarda beyaz bir
-      parıltı GÖRÜNMEMELİ. Mührün kendi 88px'lik dairesi nömorfik
-      kalmaya devam eder (o doğru). İkisi aynı kart: biri değişirse öteki
-      de kontrol edilmeli.
-- [ ] **Rozet renk kuralı.** İlerleme çubuğunun altında: ALINMIŞ ödül
-      YEŞİL "(+5)" + onay işareti, henüz alınmamış hedef ödülü GRİ "(+10)"
-      ve onay işareti YOK. Onay işareti gerçekten bir tik olarak
-      görünmeli — boş kutu (tofu) DEĞİL (Space Mono bu glyph'i içermiyor,
-      port Material ikonunu kullanıyor).
-- [ ] **Rütbe düşmeli.** -2 ceza alıp eşiğin altına inen hesabın mührü üç
-      yerde de bir alt kademeye İNMELİ. Puan tekrar eşiği aşarsa damga
-      geri gelir ama kutlama İKİNCİ kez ÇIKMAMALI, ödül İKİNCİ kez
-      VERİLMEMELİ.
-- [ ] **Rütbe düşüş banner'ı.** Konfetisiz, üzgün banner ("Rütben
-      geriledi! 😔 … Kazandıkça geri yükselirsin!") — **başlıktaki üzgün
-      emoji GERÇEK emoji olmalı, boş kare (tofu) DEĞİL.** Boş kare
-      görürsen `fontFamilyFallback` düşmüş demektir. Not: web test
-      derlemesinde (CanvasKit) emoji ağdan çekilir; ağ kısıtlıysa boş
-      görünebilir — bu native'de YAŞANMAZ, FAZ B'de kesin doğrula.
-      Banner'da ayrıca kaybedilen eşiğe geri
-      dönüş çubuğu; hedef etiketi YALNIZCA SAYI ("100" — "puan" kelimesi
-      yok, o zaten bir üstteki "Sıradaki rütbe" satırında geçiyor) ve
-      altında yeşil "(+10)"+tik (ödül zaten alındı). Görülmemiş OLUMLU
-      bir kutlamayla çakışırsa yalnızca olumlu olan gösterilmeli.
-      **Test satırını uygulama KAPALIYKEN ekle** — açıkken eklersen host
-      bir sonraki öne-dönüş/kontrolünde banner'ı beklenmedik bir anda
-      gösterir, refleksle kapatılır ve kayıt "görüldü" işaretlenir
-      (12 Ağustos 2026'da tam bu oldu: satır 20:50'de eklendi, 20:51'de
-      kapatıldı, sonra "banner çıkmadı" diye raporlandı — kayıt çoktan
-      harcanmıştı). Kod tarafında SESSİZ bir işaretleme yolu yok:
-      `markSeen` yalnızca gösterilen bir banner kapatılınca çağrılıyor.
-- [ ] **Misafirde hiç çıkmaz.** Girişsizken oyun bitir: banner
-      görünmemeli, hiçbir ağ isteği atılmamalı. Sonradan giriş yapınca
-      (kuyruk sunucuya işlendikten sonraki ilk kontrolde) kutlama
-      çıkabilir.
-- [ ] **Uçak modu.** Ağ yokken banner çıkmamalı ve uygulama hiç
-      takılmamalı; ağ dönüp uygulama öne alınınca (arka plandan dönüş)
-      bekleyen kutlama kendiliğinden gösterilmeli.
-- [ ] **Seviyeye göre puan — Kolay (6 Eylül 2026, ROADMAP #23 Faz 4;
-      web'in aynı listesi kök `TESTING.md` §10).** Girişli hesapla Yapay
-      Zeka sekmesi → "+ Yeni" → `OYUNCU SAYISI`nın ALTINDA **ZORLUK**
-      satırı: `KOLAY` · `NORMAL` · `ZOR` (Zor Faz 5'le, 7 Eylül 2026'da
-      girdi — web ile aynı PR; **1.0.8 turunda ZOR'la bir oyun oyna:** YZ
-      hamleleri gözle görülür takılma olmadan gelmeli, şeritte ve oyun
-      sonunda KIRMIZI `Zor`, birincilik k-lig **+4**), varsayılan NORMAL
-      seçili. Seçicinin altında seçili seviyenin açıklaması, web ile
-      BİREBİR: Normal'de "Orta-iyi seviye bir oyuncuyum… birincilik 2 k-lig
-      puanı kazandırır, ikincilik puan kazandırmaz.", KOLAY'a dokununca "Çok
-      iyi değilim… birincilik 1 k-lig puanı kazandırır, ikincilik puan
-      kazandırmaz."; 4 OYUNCULU'ya geçince Normal: "birincilik 2, ikincilik 1
-      k-lig puanı kazandırır" (7 Eylül 2026: her bileşimde ikincilik de
-      yazılır). **Girişsiz** açınca puan cümlesinin ardında AYRI bir not var:
-      "(Puan takibi üyelik gerektirir)" — nokta parantezin ÖNÜNDE, Zor'da
-      "Bol şans!" en sonda; girişli hesapta not YOK (`ai_level_parity_test`
-      kilitliyor). Misafir Setup'ında "Nasıl oynanır? · Tanıtım" satırının
-      üstü/altı web ile birlikte daraltıldı ve EŞİTLENDİ: paragraf→link ve
-      link→"OYUN TİPİ" arası ikisi de 16px (SizedBox 16→8 üstte, 20→8
-      altta; dokunma hedefi 48→32).
-      Oyunu başlat, "← Geri" ile Setup'a dön: "DEVAM
-      EDEN OYUNLAR" kartında avatarların hemen SAĞINDA küçük YEŞİL `Kolay` rozeti
-      (Normal oyun kartında TURUNCU `Normal`; kural: Kolay yeşil · Normal
-      turuncu · Zor kırmızı, YZ oyununda her seviyede; Canlı kartında HİÇ
-      rozet yok — web ile aynı). ZORLUK butonları Arkadaşınla sekmesinin
-      DEVAM EDENLER / OYUN DAVETLERİ / SON OYNANANLAR pilleriyle AYNI boy ve
-      puntoda, OYUNCU SAYISI'nın büyük butonu gibi DEĞİL. Oyun içinde
-      tahtanın altındaki şeritte "Hamleler · Kolay" (Canlı oyunda orada
-      "· Mesajlaşma" var, rozet yok; şerit tek satırda kalmalı). Oyunu
-      birinci bitir: oyun sonu penceresinde başlığın altında `Kolay` rozeti
-      ve k-lig sütununda **+1** (Normal'de turuncu rozet, +2). "Son Oynadıklarım"da tarihin yanında
-      rozet ve +1; "Tüm Oyunlarım"da "Yapay Zeka" rozetinin sağında `Kolay`
-      ve +1; kartı beğenip **Favoriler**'de de aç (ayrı RPC,
-      `list_liked_games`) — orada da +1. Skor Kartı/k-lig listesindeki
-      toplam da +1 artmalı (sunucu `league_points_for` ile aynı sayı; kart
-      +1 gösterirken liste +2 artıyorsa iki kopya ayrışmış demektir). Oyun
-      sonu "TEKRAR OYNA" → yeni oyun da Kolay (devam eden kartında rozet).
-      **Web ↔ port (ROADMAP 23.5 kapanış ölçütü):** portta Kolay bitirilen
-      oyun web'de aynı puan ve rozetle görünmeli, tersi de (aynı hesap, iki
-      cihaz); portta Kolay başlatılıp bulut kaydına düşen oyun web'de devam
-      ettirilince YZ Kolay oynamalı (Setup kartında rozet) ve tersi. Canlı
-      oyun kartlarında rozet HİÇBİR koşulda çıkmaz.
-- [ ] **Kart altı PUAN SATIRI — HİZA** (6 Eylül 2026, kullanıcı isteği; web
-      ile birebir): Yapay Zeka ↔ Arkadaşınla sekmelerindeki devam eden oyun
-      kartlarında avatarların hemen altında koltuk sırasıyla anlık puanlar,
-      **her sayı KENDİ AVATARININ TAM ALTINDA** (ayırıcı tire YOK).
-      ⚠ **Asıl kontrol 4 KİŞİLİK + üç haneli puanlar**: dört sayı da kendi
-      yüzünün altında ve birbirine değmiyor olmalı — ilk tur tek dizeydi ve
-      kullanıcı tam burada kaymayı yakaladı. ⚠ Canlı kartında **"X açtı"
-      satırı ARTIK YOK**. Rakip hamle yapınca puan oyuna girmeden
-      tazelenmeli (Realtime → `_reload`). "Son Oynadıklarım"da tarih
-      (+ zorluk rozeti) avatarların ÜSTÜNDE, bitiş puanları altında; sağdaki
-      puan/k-lig sütunları (`ScaledCell`) yerinde.
-      ⚠ **Yazı boyutunu %130'a al ve hizayı TEKRAR bak:** avatarlar
-      ölçekle büyümediğinden puan hücreleri de büyümüyor (bilinçli — bkz.
-      `AvatarScoreRow`); sayılar yine kendi yüzlerinin altında kalmalı.
-- [ ] **Yardım → zorluk paragrafı** (6 Eylül 2026, kullanıcı düzeltmesi):
-      *"4 kişilik oyunda; Kolay'da birinci +1 k-lig puanı alır, ikinci puan
-      almaz; Zor'da birinci +4, ikinci +2 k-lig puanı kazanır."* — cümle
-      web `HelpModal` ile BİREBİR (`ai_level_parity_test` kilitliyor).
-- [ ] **Web ↔ mobil aynı toplam.** Aynı hesabın "Genel" lig puanı iki
-      platformda BİREBİR aynı olmalı ("Genel = 2 kişilik + 4 kişilik +
-      eşik ödülü" — mod bazlı sekmelerin toplamı ödül kadar EKSİK olur,
-      bu doğru; fark popup'taki "+N eşik ödülü dahil" satırıdır).
-
----
-
-## 14. Hata telemetrisi (Parça 123)
-
-Uygulamada doğan hatalar anonim olarak `client_errors` tablosuna yazılıyor
-(hesap kimliği YOK). Portta okuma yüzeyi HİÇ YOK — kontrol web'deki Admin
-Paneli → **Hatalar** sekmesinden yapılır (kök `TESTING.md` bölüm 9.12).
-
-Bu bölümün tamamı **telemetrinin ÜRÜNÜ BOZMADIĞINI** doğrulamak içindir;
-kayıtların panelde görünmesi ikincil.
-
-- [ ] **Uçak modunda uygulama normal çalışıyor.** Çevrimdışıyken yerel/YZ
-      oyunu oyna, Setup'a çık, gir — hiçbir yavaşlama/donma/ek uyarı
-      olmamalı. Telemetri ağ hatasında sessizce vazgeçmek zorunda.
-- [ ] **Çevrimdışı hamleler panelde İZ BIRAKMIYOR.** Uçak modunda bir Canlı
-      oyunda hamle dene (ekranda "sunucuya ulaşılamıyor" uyarısı çıkar) →
-      web panelinde bu yüzden YENİ bir hata satırı ÇIKMAMALI. Bu BEKLENEN
-      bir durum; çıkıyorsa filtre bozulmuştur ve panel kısa sürede
-      okunamaz hâle gelir.
-- [ ] **Sunucunun kendi reddi de iz bırakmıyor.** Sırası sende değilken bir
-      hamle göndermeye çalış ("Sıra sende değil.") → yeni satır olmamalı.
-- [ ] **Panelde görünen kayıtların platformu doğru.** Gerçek bir hata
-      düştüyse `ios`/`android` (Flutter web'de `app-web`) olmalı, `web`
-      DEĞİL — `web` React uygulamasına ait.
-- [ ] **Derleme kimliği dolu.** CI'dan kurulan bir derlemede kayıttaki
-      `build`, Setup teşhis satırındaki sha ile AYNI olmalı. Boşsa
-      "hangi sürümde?" sorusu cevapsız kalır — telemetrinin yarısı gider.
-- [ ] **Yol her kayıtta `app`.** Portta ekran adı/token taşınmıyor.
-- [ ] **Kırmızı ekran hâlâ çalışıyor** (debug derlemede): `FlutterError`
-      yakalayıcısı raporu gönderirken ÖNCEKİ davranışı da çağırmalı, yani
-      konsol logu/kırmızı ekran kaybolmamalı.
-
----
+Taşındı (27 Eylül 2026, doküman bütçesi) — bkz. `mobile/docs/testing-olcum.md`.
 
 ## 15. Canlı liste — düşen istek (21 Ağustos 2026)
 
@@ -1578,34 +1315,9 @@ kullanıcı bilerek oturduğu sekmeden koparılır, o yüzden negatif eşleri de
       planda kalıp dön: tahta/sıra normal tazelenmeli, hiçbir sekme/ekran
       değişimi olmamalı (bu kural yalnızca Setup ve Canlı sekmesinde).
 
-## 18. Telemetri — sürüm ve ekran adı (23 Ağustos 2026, Parça 130)
+## 18. Telemetri → `mobile/docs/testing-olcum.md`
 
-Cihazda koşulur; karşılığı admin panelinin "Hatalar" sekmesi ve
-Büyüme > Kullanıcı > "Sürüm Dağılımı" tablosu.
-
-- [ ] **Sürüm satırı doğru:** Setup'ın altındaki `Sürüm 1.0.0` metni
-      `pubspec.yaml`taki sürümle aynı olmalı. (Ayrışırsa CI zaten düşer —
-      `app_version_parity_test.dart` — ama cihazda bir kez gözle bak.)
-- [ ] **Bir YZ oyunu aç** → panelde Sürüm Dağılımı tablosunda `iOS` (ya da
-      `Android`) satırı belirmeli; satıra dokununca sürüm kırılımı açılmalı
-      ve uygulamanın sürümü orada olmalı. Sürüm `—` çıkıyorsa `logGameStart`
-      platform/sürüm göndermiyor demektir. (Tablo 16 Eylül 2026'da açılır
-      hâle geldi — üst satır artık PLATFORM.)
-- [ ] **Aynı oyunu BİTİR** (16 Eylül 2026) → Büyüme > Oyun'daki "Oyun Sayısı"
-      grafiğinde `iOS`/`Android` serisi o günün kovasında **1 artmalı**.
-      Artmıyor ve artış "Diğer"e gidiyorsa `logGameFinish` `platform`
-      alanını göndermiyor demektir (`data/games_api.dart`) — grafiğin
-      platform kırılımını besleyen TEK alan bu. ⚠ Mağazadaki ESKİ pakette
-      bu alan yok, yani oradan biten oyunların "Diğer"e düşmesi BEKLENEN;
-      testi bu değişikliği içeren bir derlemeyle koş.
-- [ ] **Ekran adı:** oyun ekranındayken bir hata oluştur (ör. uçak modunda
-      Canlı bir oyuna gir) → hata kaydının "Yol" alanı `game` /
-      `online-game` / `intro` olmalı, `app` DEĞİL. `app` görünüyorsa ya
-      gözlemci takılı değil ya push'ta `RouteSettings(name: …)` unutulmuş.
-- [ ] **Zorunlu güncelleme kapısı hâlâ çalışıyor:** `app_config`taki eşiği
-      geçici olarak uygulamanın sürümünün ÜSTÜNE çek → güncelleme ekranı
-      çıkmalı; geri al → normal açılmalı. (Sürüm sabiti bu kapının girdisi;
-      parite testi tam bunu koruyor.)
+Taşındı (27 Eylül 2026, doküman bütçesi) — bkz. `mobile/docs/testing-olcum.md`.
 
 ## 29. YZ robot avatarı — daire içinde ortalı mı (15 Eylül 2026, Parça 210)
 
@@ -1779,11 +1491,11 @@ Web yarısı (#561) `main`'de ve CANLIDA; buradaki kontroller **portun**
 aynı davranışı kazandığını doğrular. Gerçek bir e-posta kutusu gerekiyor.
 
 - [ ] **Kırmızı uyarının metni.** Kayıt formunu doldur → "KAYIT OL".
-      Pencere giriş moduna döner ve kırmızı satır çıkar: *"Hesap
-      oluşturuldu. **E-POSTANIZI KONTROL EDİP ONAY VERİN.**"* — eylem
-      cümlesi **KALIN ve BÜYÜK HARF**, öncesi normal.
-- [ ] ⚠ **Türkçe harflere bak:** `EDİP` ve `VERİN` noktalı **İ**
-      taşımalı. `EDIP`/`VERIN` görüyorsan biri metni `toUpperCase()`e
+      Pencere giriş moduna döner ve kırmızı satır çıkar, tamamı **KALIN ve
+      BÜYÜK HARF**: *"**LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN.**"*
+      ("Hesap oluşturuldu." 26 Eylül 2026'da kaldırıldı).
+- [ ] ⚠ **Türkçe harflere bak:** `EDİP` noktalı **İ**, `LÜTFEN`/`DOĞRULAMA`
+      Türkçe harfleriyle. `EDIP` görüyorsan biri metni `toUpperCase()`e
       bağlamış demektir (Dart'ın varsayılanı Türkçe'de i→I yapar).
 - [ ] **Onay linki pencereyi KAPATIR (asıl madde).** Yukarıdaki kırmızı
       uyarı EKRANDAYKEN uygulamayı kapatma; telefonun mail uygulamasından
@@ -1826,41 +1538,13 @@ maddelerin çoğu **Play kanalından kurulmuş imzalı bir derleme** istiyor, ya
 CI'nın debug-imzalı `.apk`'sıyla koşulamaz. Hangi maddenin hangi derlemede
 test edilebildiği o dosyanın başındaki tabloda.
 
-## 32. Kaynak Hunisi — app'in damgası (Parça 214, 22 Eylül 2026)
+## 32. Kaynak Hunisi → `mobile/docs/testing-olcum.md`
 
-⚠ **Bu bölüm SUNUCUYA yazılanı doğrular** — `flutter test` sahte uçlarla
-koşuyor, yani "satır gerçekten düştü mü" sorusunu YALNIZCA burası
-cevaplıyor. Kontroller admin panelinden (web) ya da Supabase'den okunur.
+Taşındı (27 Eylül 2026, doküman bütçesi) — bkz. `mobile/docs/testing-olcum.md`.
 
-- [ ] **Girişsiz açılışta `guest_visits`e satır düşer.** Uygulamayı
-      ÇIKIŞ YAPMIŞ hâlde aç → `guest_visits` tablosunda en yeni satır
-      `utm_source = 'app'`, `anon_id` dolu, `device_type` = `ios`/`android`
-      olmalı. ⚠ `is_standalone` NULL olmalı (native uygulama "ana ekrana
-      ekleme" sorusunun dışında).
-- [ ] **Aynı gün ikinci açılış YENİ satır yazmaz.** Uygulamayı kapat/aç →
-      satır sayısı artmamalı (günde bir kez kuralı).
-- [ ] **GİRİŞLİYKEN hiç yazmaz.** Giriş yap, uygulamayı kapat/aç →
-      `guest_visits`e yeni satır DÜŞMEMELİ. (Sunucu da RLS ile reddeder;
-      burada istemcinin hiç denemediğini doğruluyoruz.)
-- [ ] **Yeni kayıt `Uygulama` satırına düşer.** Uygulamadan yeni bir hesap
-      aç → `profiles.signup_utm_source = 'app'` olmalı, admin panelinde
-      Büyüme > Kullanıcı > **Kanal → Üye Kalitesi**'nde **Mobil Uygulama**
-      satırının "Üye"si artmalı.
-      ⚠ `bilinmiyor` satırı ARTMAMALI — artıyorsa damga metadata'ya
-      girmemiş demektir (anahtar adı `utmSource`, camelCase).
-- [ ] **YZ oyunu başlat/bitir → `game_starts`/`game_finishes`.** Misafirken
-      bir YZ oyunu başlat ve bitir → iki satırda da `utm_source = 'app'`,
-      `game_starts.anon_id` dolu. ⚠ **Girişliyken bitirilen oyunda
-      `game_finishes.anon_id` NULL olmalı** (gizlilik: anonim kod ile hesap
-      kimliği aynı satırda ASLA bulunmaz).
-- ⚠ **Eski "dört adım aynı satırda" maddesi DÜŞTÜ (25 Eylül 2026):** bu
-      bölüm yazıldığında panelde Gelen/Üye/Başlayan/Biten sütunlu bir
-      Kaynak Hunisi vardı; #625 onu yalnızca üye kohortuna (Üye Kalitesi)
-      indirdi, misafir adımları Huni v2'nin işi. Damganın kendisi
-      yukarıdaki satır kontrolleriyle doğrulanır.
-- [ ] **"Ana Ekrana Ekleme" dökümü app'ten ETKİLENMEZ.** App açılışlarından
-      sonra o tablodaki toplam ziyaretçi sayısı artmamalı (migration
-      `20260922070950` app satırlarını eliyor). Artıyorsa filtre düşmüş.
+## 33. Huni v2 + Cihaz kartları → `mobile/docs/testing-olcum.md`
+
+Taşındı (27 Eylül 2026, doküman bütçesi) — bkz. `mobile/docs/testing-olcum.md`.
 
 ## 34. Yarım kalan oyun hatırlatması (1 Ekim 2026, `[Sonraki sürüm]` taslak PR)
 

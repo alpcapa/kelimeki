@@ -534,6 +534,15 @@ açıkça yazıyor; port damgalamayı eklerse burası da güncellenmeli. ⚠ Bu
 günde 618 uygulama satırı (`android` 587 · `ios` 16 · `app-web` 15)
 `anon_id` NULL taşıyor.
 
+**Güncelleme (26 Eylül 2026, ROADMAP #30):** `game_starts` boşluğu #601 ile
+kapandı; `tutorial_events` de artık 1.1.2'den itibaren `anon_id` yazıyor
+(`logGameStart`ın aynı `DeviceStamp`'i). Sahaya 5 Ekim treniyle iner; 1.1.1
+ve öncesi hâlâ NULL. **Cihaz paydasına dönüş BİLEREK ertelendi:** eski
+paketler sahada durdukça cihaz paydası yine kitlenin bir kısmını görür.
+Karar, 1.1.2'nin payı ölçülünce (`tutorial_events.app_version`) verilmeli;
+dönülürse bu bölüm, `docs/decisions/onboarding.md` ve
+`docs/testing-admin.md`'deki notlar birlikte güncellenmeli.
+
 ⚠ `skips` ile döküm toplamı EŞİT OLMAYABİLİR: sahne yazmayan bir istemcinin
 satırı `skips`e girer, döküme girmez.
 
@@ -1315,6 +1324,18 @@ Eylül'den beri boş, ama o tarihten sonraki iki kaydın ikisi de uygulamadan
 (biri iOS push token'ı, öteki `signup_utm_source = 'app'`), web yolculuğunda
 da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
 (geri alındı), çalışıyor.
+
+### Kayıt Hunisi — Uygulama satırının Tamamlaması da sayaçtan (1 Ekim 2026, #651)
+
+#651 (port, 1.1.2) uygulamanın kayıt açılışı/tamamlanmasını `signup_events`e
+yazmaya başlayınca Uygulama satırı iki kaynaktan okunuyor olacaktı: Açılış
+sayaçtan (yalnızca 1.1.2+), Tamamlama `profiles`tan (TÜM sürümler) → oran
+geçiş boyunca sahte yüksek. Karar: ikisi de sayaçtan (web'in baştan beri
+uyduğu ilke). Bedeli: güncellemeyen cihazların hesapları satırda görünmez;
+`?` metni söylüyor. Migration `20261005070000_admin_signup_funnel_app_same_source.sql`
+**#651 merge edilirken** uygulanır (erken uygulanırsa satır 1.1.2'ye kadar
+0 gösterir); 1 Ekim'de canlıda `begin … rollback` içinde derlenip denendi.
+Ajan hazırladı, kullanıcı onayı: *"Hazırla"*.
 
 ### Kayıt Hunisi platform satırlarına geçti (29 Eylül 2026, `20260929091355_admin_signup_funnel_platform.sql`)
 

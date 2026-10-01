@@ -217,64 +217,66 @@ export const SEEN_INTRO_KEY = 'kelimeki:seen-intro';
 // ── Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) ─────────────────────
 //
 // NEDEN VAR: tanıtım ("Oynayarak öğren") yalnızca YENİ gelene ve yalnızca BİR
-// KEZ açılıyor, üstelik her sahnesinde "Atla" duruyor. Atlayan — ya da hiç
-// göremeyen (mevcut cihaz bayrağı taşıyan, bkz. `shouldShowTutorial`) —
-// oyuncu, Kelimeki'yi klasik kelime oyunlarından ayıran üç mekaniği hiç
-// öğrenmeden oynuyordu. Bu ipuçları o boşluğu GERÇEK oyunda, mekanik
-// YAŞANDIĞI anda kapatır: oyuncu hamlesini yapar, hemen ardından ne olduğunu
-// tek cümlede okur.
+// KEZ açılıyor. Tanıtımın ANLATMADIĞI bir etkileşim var: tahtadaki bir
+// kelimeye dokununca anlamı açılıyor. Bu ipucu onu GERÇEK oyunda, tahtaya ilk
+// kelime oturduğu anda o kelimenin üstünde bir kez söyler.
+//
+// ⚠ **30 Eylül 2026 — mekanik ipuçları KALDIRILDI (kullanıcı kararı):** eski
+// üç balon (`vergi` · `carpan` · `bolge`: "rakibin bölgesine değdin",
+// "sarı bölgede ×2", "bölgen büyüdü") kullanıcı Instagram'dan gelen bir
+// ziyaretçi gibi oynarken fazla bulundu — *"bence olmamalı. Onun yerine bir
+// kere bir kelimeyi gösterip, 'üzerine tıklarsan kelimenin anlamı gelir'"*.
+// Mekanikler tanıtımda zaten anlatılıyor; çift tık balonu (`ZOOM_HINT_TEXT`)
+// ayrı ve DEĞİŞMEDİ. Eski sayaç anahtarları (`kelimeki:hint-shown:vergi`…)
+// cihazlarda kalabilir, artık okunmuyor — zararsız.
 //
 // Desen zoom balonunun BİREBİR aynısı (1 Eylül 2026) ve bilerek öyle: cihaz
 // yerel sayaç, tavan `ONBOARDING_HINT_MAX_SHOWS`, "gösterim" balonun EKRANA
 // GELMESİDİR (nasıl kapandığı sayacı etkilemez), depolama kapalıysa varsayılan
-// GÖSTERME tarafında. Her ipucunun kendi sayacı var — biri tavana çarpınca
-// ötekiler susmaz, çünkü üçü farklı mekaniği anlatıyor ve oyuncu ikisini bir
-// oyunda, üçüncüsünü haftalar sonra yaşayabilir.
-export type OnboardingHintId = 'vergi' | 'carpan' | 'bolge';
+// GÖSTERME tarafında. Kimlik/sıra/sayaç yapısı tek ipucuyla da korunuyor —
+// yeni bir ipucu eklemek bir satırlık iş kalsın.
+export type OnboardingHintId = 'anlam';
 
 /**
  * Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA).
  *
  * ⚠ **2 → 1 (12 Eylül 2026, kullanıcı kararı):** *"İlk defa oynayan kişiye
  * oyun sırasında çıkan max 6 gösterim iyi bir deneyim değil. Onu her bir
- * mesaj için 1 kere olacak şekilde düzelteceğiz."* Üç ipucu × tavan 2 =
- * oyuncunun görebileceği **6 balon**du; artık üçü de bir kez, yani en fazla
- * **3**. Tavanın ipucu BAŞINA olması DEĞİŞMEDİ — üçü farklı mekaniği
- * anlatıyor ve biri susunca ötekiler susmaz.
+ * mesaj için 1 kere olacak şekilde düzelteceğiz."*
  */
 export const ONBOARDING_HINT_MAX_SHOWS = 1;
 
-/** Balonun ekranda kalma süresi (ms) — tanıtımdaki `RAKIP_OKUMA`nın iki katı:
- *  orada cümle "Rakip hamlesini yaptı", burada bir KURAL anlatılıyor. */
+/**
+ * Oyun ekranı açıldıktan sonra ipucundan ÖNCE geçmesi gereken en az hamle
+ * sayısı (tetikleyen hamle DAHİL; pas/değişim de sayılır, vergi satırı
+ * sayılmaz).
+ *
+ * 30 Eylül 2026, kullanıcı: *"zoom balonu ile aynı anda çıkmasın, aralarında
+ * en az 2-3 hamle geçsin"*. Zoom balonu yalnızca ekran AÇILIRKEN çıkıyor
+ * (`useBoardZoom`), yani açılıştan sayılan bir eşik ikisini her durumda
+ * ayırır — balonun o açılışta çıkıp çıkmadığına bakmaya gerek kalmaz, iki
+ * karar birbirine bağlanmaz.
+ */
+export const ONBOARDING_HINT_MIN_MOVES = 3;
+
+/** Balonun ekranda kalma süresi (ms) — tanıtımdaki `RAKIP_OKUMA`nın iki katı. */
 export const ONBOARDING_HINT_MS = 4000;
 
 /**
  * İpucu metinleri — her biri TEK cümle (kullanıcı kararı, 7 Eylül 2026:
- * tanıtımın "tek cümle bütçesi" burada da geçerli).
- *
- * ⚠ Terim `bölge`, `sınır` DEĞİL (bkz. kök `CLAUDE.md` → "Terminoloji"):
- * `sınır ihlali` EYLEMİN adı, `bölge vergisi` BEDELİN adı. Tanıtımın 2.
- * sahnesi de aynı turda `sınırın büyür` → `bölgeni büyütürsün` diye
- * düzeltilmişti; üç ipucu o dille aynı hizada.
+ * tanıtımın "tek cümle bütçesi" burada da geçerli). `anlam` metni kullanıcının
+ * kendi cümlesi (30 Eylül 2026); fiil `tıkla`, çift tık balonuyla aynı dil.
  */
 export const ONBOARDING_HINT_TEXTS: Record<OnboardingHintId, string> = {
-  vergi: 'Rakibin bölgesine değdin — bu yüzden puanının bir kısmı ona gitti.',
-  carpan: 'Sarı bölgede kelime puanı 2 katı, tam ortadaki karede 3 katı olur.',
-  bolge: 'Bölgen büyüdü — kendi taşlarınla ilerledikçe köşenin dışına taşar.',
+  anlam: 'Kelimenin üzerine tıklarsan anlamı gelir.',
 };
 
 /**
- * Aynı hamlede birden fazla ipucu hak edilebilir (4. tanıtım sahnesi tam
- * olarak böyleydi: hem ×3 hem vergi). Ekranda AYNI ANDA TEK BALON olacağından
- * sıra sabit ve bu sırayla: en şaşırtıcı olan önce.
- *
- *   vergi  → "puanım neden eksildi?" — sorulmadan cevaplanmazsa oyuncu bunu
- *            bir hata sanır (kayıtlı gerçek şikâyet sınıfı).
- *   carpan → puan zaten büyüdü; cümle o büyümenin ADINI koyar.
- *   bolge  → tahtada zaten GÖRÜNÜYOR (dış hat çizgisi büyüyor), yani en az
- *            açıklamaya muhtaç olan.
+ * Aynı hamlede birden fazla ipucu hak edilirse gösterilme sırası (ekranda
+ * AYNI ANDA TEK BALON). Bugün tek ipucu var; sıra yapısı port paritesi
+ * (`tutorial_parity_test.dart`) ve olası yeni ipuçları için duruyor.
  */
-export const ONBOARDING_HINT_ORDER: readonly OnboardingHintId[] = ['vergi', 'carpan', 'bolge'];
+export const ONBOARDING_HINT_ORDER: readonly OnboardingHintId[] = ['anlam'];
 
 function hintKey(id: OnboardingHintId): string {
   return `kelimeki:hint-shown:${id}`;
@@ -290,9 +292,9 @@ function hintShown(id: OnboardingHintId): number {
   }
 }
 
-/** Üç sayacın tamamı — `pickOnboardingHint`e verilecek saf girdi. */
+/** Sayaçların tamamı — `pickOnboardingHint`e verilecek saf girdi. */
 export function onboardingHintShownCounts(): Record<OnboardingHintId, number> {
-  return { vergi: hintShown('vergi'), carpan: hintShown('carpan'), bolge: hintShown('bolge') };
+  return { anlam: hintShown('anlam') };
 }
 
 /** Gösterime KARAR VERİLDİĞİNDE çağrılır (zoom balonundaki kuralın aynısı). */
@@ -304,14 +306,18 @@ export function bumpOnboardingHintShown(id: OnboardingHintId): void {
   }
 }
 
-/** Bir hamlenin HANGİ mekanikleri yaşattığı — çağıran motordan türetir. */
+/** Bir hamlenin ne yaşattığı — çağıran motordan türetir. */
 export interface OnboardingHintInput {
-  /** Bu hamlede bir ya da daha fazla rakip bölgesine vergi ödendi mi. */
-  paidTax: boolean;
-  /** Bu hamlede kurulan kelimelerden biri ×2 ya da ×3 aldı mı. */
-  gotMultiplier: boolean;
-  /** Hamleden SONRA oyuncunun bölgesi kendi 4×4 köşe bloğunun DIŞINA taşıyor mu. */
-  territoryOutsideCorner: boolean;
+  /**
+   * Tahtaya bir kelime oturdu mu — KİM oynadığından bağımsız (YZ'nin hamlesi
+   * de sayılır: dokunulacak kelime tahtada, oyuncu o an zaten bekliyor).
+   */
+  wordPlaced: boolean;
+  /**
+   * Ekran açıldığından beri oynanan hamle sayısı, bu hamle DAHİL
+   * (`ONBOARDING_HINT_MIN_MOVES` ile karşılaştırılır).
+   */
+  movesSinceOpen: number;
 }
 
 /**
@@ -319,17 +325,17 @@ export interface OnboardingHintInput {
  * geliyor (depolama erişimi burada YOK, `verify-tutorial-script` tabloyu
  * doğrudan koşabilsin diye).
  *
- * `null` = gösterilecek ipucu yok (mekanik yaşanmadı ya da hepsi tavanda).
+ * `null` = gösterilecek ipucu yok (kelime oturmadı, açılıştan beri yeterli
+ * hamle geçmedi ya da tavanda).
  */
 export function pickOnboardingHint(
   input: OnboardingHintInput,
   shown: Record<OnboardingHintId, number>,
 ): OnboardingHintId | null {
   const hakEdilen: Record<OnboardingHintId, boolean> = {
-    vergi: input.paidTax,
-    carpan: input.gotMultiplier,
-    bolge: input.territoryOutsideCorner,
+    anlam: input.wordPlaced,
   };
+  if (input.movesSinceOpen < ONBOARDING_HINT_MIN_MOVES) return null;
   for (const id of ONBOARDING_HINT_ORDER) {
     if (hakEdilen[id] && (shown[id] ?? 0) < ONBOARDING_HINT_MAX_SHOWS) return id;
   }

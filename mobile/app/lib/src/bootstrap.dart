@@ -34,6 +34,9 @@ import 'data/unfinished_game_reminder.dart';
 import 'storage/app_storage.dart';
 import 'util/online_status.dart';
 import 'data/device_stamp.dart';
+import 'data/signup_events.dart';
+import 'data/funnel_api.dart';
+import 'data/install_referrer.dart';
 import 'data/visits_api.dart';
 
 class AppServices {
@@ -123,7 +126,6 @@ class AppServices {
   /// "değişmedi" diye yutulurdu).
   final ValueNotifier<int> liveTabRequests;
 
-
   /// Play In-App Update dikişi — açılışta "daha yeni sürüm var mı" sorusu.
   /// Widget testleri null geçer (kontrol hiç koşmaz); gerçek uygulamada
   /// her zaman dolu, çünkü platform kararı burada DEĞİL uçta veriliyor:
@@ -179,9 +181,24 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   // oyun başlatma · oyun bitirme) bu TEK damgadan besleniyor, yani bir
   // ekranın onu unutması mümkün değil (22 Eylül 2026).
   final stamp = storage.then((s) => DeviceStamp(s.flags));
+  // Huni v2 (`funnel_events`, 27 Eylül 2026). ⚠ SIRA ÖNEMLİ: bu `then`
+  // aşağıdaki `errorReporter.configure`un `storage.then`inden ÖNCE
+  // kaydedilmeli — o çağrı açılışta anonim kodu ÜRETİYOR ve "ölçüm v2'den
+  // önce iz var mı" sorusu (`hasPriorAppTrace`) ondan önce cevaplanmazsa
+  // HER yeni kurulum "mevcut" sayılırdı. Aynı future'ın dinleyicileri kayıt
+  // sırasıyla koşar.
+  funnel.configure(supabase == null
+      ? null
+      : storage.then((s) => FunnelRepo.create(
+            gateway: SupabaseFunnelGateway(supabase),
+            stamp: DeviceStamp(s.flags),
+            signedIn: supabase.auth.currentSession != null,
+            appVersion: appVersion,
+            // Yalnızca Android'de kullanılır (`FunnelRepo.create` süzer).
+            readInstallReferrer: readPlayInstallReferrer,
+          )));
   final auth = AuthService(supabase,
-      profileCache: storage.then((s) => s.profileCache),
-      signupStamp: stamp);
+      profileCache: storage.then((s) => s.profileCache), signupStamp: stamp);
   // Firebase açılışı BEKLETİLİYOR ama fırlatmıyor (bkz. push_init.dart):
   // web/masaüstünde ve yapılandırma yoksa sessizce false döner. Maliyeti
   // native'de birkaç ms; sonrasında `push` alanının dolu olup olmadığı
@@ -205,6 +222,10 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   // (testler ve web derlemesi hiç yapılandırmaz). errorReporter.configure
   // ile aynı desen ve aynı satır komşuluğu: ikisi de "açılışta bir kez".
   analytics.configure(firebaseHazir ? FirebaseAnalyticsLogger() : null);
+  // Kayıt Hunisi sayacı (`signup_events`, ROADMAP #35) — aynı "açılışta bir
+  // kez" deseni; Firebase'e DEĞİL Supabase'e bağlı.
+  signupEvents.configure(
+      supabase != null ? SupabaseSignupEventsSink(supabase) : null);
   final pushRepo = firebaseHazir && supabase != null
       ? PushRepo(
           messaging: FirebasePushMessaging(),
@@ -237,13 +258,12 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
             messaging: FirebasePushMessaging(),
           )
         : null,
-    cloudSaves:
-        supabase != null
-            ? CloudSaveRepo(SupabaseCloudSaveGateway(supabase),
-                mirrorStore: storage.then((s) => s.cloudMirror),
-                cacheStore: storage.then((s) => s.cloudCache),
-                deleteQueue: storage.then((s) => s.cloudDeletes))
-            : null,
+    cloudSaves: supabase != null
+        ? CloudSaveRepo(SupabaseCloudSaveGateway(supabase),
+            mirrorStore: storage.then((s) => s.cloudMirror),
+            cacheStore: storage.then((s) => s.cloudCache),
+            deleteQueue: storage.then((s) => s.cloudDeletes))
+        : null,
     games: supabase != null
         ? storage.then((s) =>
             GamesRepo(SupabaseGamesGateway(supabase, stamp: stamp), s.queue))

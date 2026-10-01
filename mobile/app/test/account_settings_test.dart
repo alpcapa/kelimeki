@@ -39,7 +39,7 @@ void main() {
   Future<void> pumpSettings(
     WidgetTester tester,
     AuthService auth, {
-    Future<bool> Function(String)? checker,
+    Future<NicknameStatus> Function(String)? checker,
     PickAvatarFn? pickAvatar,
     ShrinkAvatarFn? shrinkAvatar,
   }) async {
@@ -104,7 +104,7 @@ void main() {
   testWidgets('doğrulama sırası: Ad → Soyad → Takma isim → doğum tarihi',
       (tester) async {
     final auth = AuthService.fake(user: fakeUser('me'));
-    await pumpSettings(tester, auth, checker: (_) async => true);
+    await pumpSettings(tester, auth, checker: (_) async => NicknameStatus.ok);
 
     Future<void> submitExpect(String msg) async {
       await tester.tap(find.text('KAYDET'));
@@ -147,7 +147,7 @@ void main() {
     );
     await pumpSettings(tester, auth, checker: (n) async {
       asked.add(n);
-      return true;
+      return NicknameStatus.ok;
     });
 
     // Aynı ismi yeniden yaz — "checking" hiç görünmemeli.
@@ -165,7 +165,7 @@ void main() {
       profile: const KProfile(
           id: 'me', firstName: 'D', lastName: 'C', displayName: 'eskiisim'),
     );
-    await pumpSettings(tester, auth, checker: (_) async => false);
+    await pumpSettings(tester, auth, checker: (_) async => NicknameStatus.taken);
 
     await tester.enterText(field('nickname'), 'ironman');
     await tester.pump(const Duration(milliseconds: 450));
