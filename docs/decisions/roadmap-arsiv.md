@@ -63,6 +63,13 @@
 > + 665'le çıkmış üç satır, ve **madde 0 — FAZ B'nin tamamı** (Play
 > production 24 Eylül'de yayında). ROADMAP 125 → ~104 KB (uyarı bandından
 > çıktı).
+>
+> **Altıncı taşıma: 1 Ekim 2026 (1.1.2 gönderimi).** Taşınanlar: **#37**
+> (küfür süzgecinin koşul metni + port yarısı #640'la `main`'de), **#38**
+> (tahtanın yükseklik bütçesi, port #657) ve **#41**'in indeks satırı (ilk
+> oyun akışı v2 — port #739-#746, 1.1.2 cihaz turu ✅; gövdesi
+> `onboarding.md`'de). Gövdeler İçindekiler'in hemen üstünde. ROADMAP 123 →
+> ~112 KB (uyarı bandından çıktı).
 
 ### Sayaç — nerede okunur, 14. gün ne zaman
 
@@ -1473,6 +1480,177 @@ PR #626: metin (6)+(7), port kopyası, `FUNNEL_MEMBER_EVENTS_ENABLED = true`).
 Arşivde: `docs/decisions/roadmap-arsiv.md`. Huni v2'nin MOBİL yarısı (PR 2,
 `docs/decisions/funnel-v2.md`) hâlâ açık.
 
+## Altıncı taşıma — #37 · #38 · #41 (1 Ekim 2026)
+
+> 1 Ekim 2026 kesiminde ilgili PR'lar `main`'e girdi (#640 · #657 · #739-#746),
+> 1.1.2 (831) cihaz turu kullanıcı tarafından onaylandı ve paket iki mağazaya
+> gönderildi. Gövdeler aşağıda DEĞİŞTİRİLMEDEN. #41'in gövdesi zaten
+> `docs/decisions/onboarding.md` → "İlk oyun akışı v2"de; ROADMAP'te yalnız
+> indeks satırı vardı: *"Port tamamlandı; kalan: 1.1.2 cihaz turu, sonra
+> arşive"* — tur 1 Eki akşamı ✅. #25 · #30 · #34 · #35 · #40 de `main`'de
+> ama kendi kuralları gereği SAHAYA İNİNCE taşınacak.
+
+### #38 — Tahtanın yükseklik bütçesi (port ikizi) — ✅ `main`'de (#657, 1 Eki 2026)
+
+**#38 — Tahtanın yükseklik bütçesi PORTA da gerekli** (26 Eylül 2026'ya kadar
+**#26** numarasını taşıyordu — mağaza yönlendirmesiyle çakışıyordu; arşivde,
+`touch-ux-bugs.md`de ve `board_widget.dart` yorumunda eski adıyla geçer) →
+⏳ **PORT YARISI TASLAK PR'DA — 5 Ekim kesimini bekliyor** (27 Eylül 2026;
+dal `claude/roadmap-38-board-widget-port-74tu7z`, `[Sonraki sürüm]`). Üç
+kalemin üçü de yapıldı (aşağıdaki listede ✅); merge edilince madde
+arşive taşınır. Ayrıntı: `mobile/docs/parca-log.md` → Parça 215.
+
+⚠ **Sıra: #611 merge edilmeden BAŞLAMA** (23 Eylül 2026). #611 (filigran
+tavanı, #609'un port ikizi, merge turunun dokuzuncusu) da
+`board_widget.dart`e dokunuyor ve tavanı bu maddenin ön koşulu olarak
+yazıldı; #38'i onun üstüne kur, yan yana değil. (#611 25 Eylül merge
+turunda girdi, 1.1.1'de yayında — ön koşul sağlandı.)
+
+Kullanıcı bildirdi: *"Kelimeki'yi Samsung katlanabilirde denedim, tahta yatay
+iPad gibi görünüyordu, raf ve butonlar ekranın altında kalıyordu. Görmek için
+aşağı kaydırmak gerekiyor, oynamak imkânsız."*
+
+Sebep: tahta YALNIZCA genişlikten boyutlanıyor, layout'ta "ne kadar boyum
+kaldı" sorusu hiç yok. ⚠ **Katlanabilire özel DEĞİL** — yatay tablet ve 800px
+yüksekliğindeki sıradan bir dizüstü tarayıcısı da aynı durumdaydı (webde
+ölçüldü: açık Fold yatay 195px · yatay iPad 143px · dizüstü 1440×800 163px
+taşma).
+
+**Web yarısı yapıldı** (`src/utils/boardFit.ts` + `Board.tsx` + kapısı
+`tests/board-fit.spec.ts`; kullanıcı kararı: *"Sadece web'de yap"*). Kalan:
+
+- ✅ **Port ikizi** (27 Eylül 2026, `ui/game/board_fit.dart`; üç sabit
+  web'den BİREBİR, `board_fit_test.dart` web kaynağını okuyup kilitliyor).
+  Ölçüldü: önce PAS GEÇ'in altı üç görünümde de 985 (217 · 165 · 185 px
+  taşma), sonra 765 · 817 · 797 — web'le AYNI tahta boyu. Portun başlığı
+  web'inkinden 25 px uzun ama web formülünün kendi payı onu yutuyor
+  (portta 3 px pay kalıyor). ⚠ Canlı ekranda sıra RAKİPTEYKEN bekleme
+  bandı PAS GEÇ'i 9 px taşırıyor — butonlar o an pasif, bilerek kabul
+  (porta özel terim tahtayı web'den küçük çizerdi). Eski metin:
+  `mobile/app/lib/src/ui/game/board_widget.dart` aynı deseni
+  taşıyor (`MediaQuery.sizeOf(context).width` + `aspectRatio: 1`, yükseklik
+  bütçesi yok). ⚠ **Ölçülmedi**, yalnızca kaynaktan okundu; işe başlarken
+  önce cihazda ya da bir Flutter testinde ölçülmeli. Ölçüler
+  `boardFit.ts`teki üç sabitten gelmeli (301 krom · 680 tavan · 324 taban) —
+  web↔port ayrışırsa iki platform aynı tahtayı iki boyda çizer.
+- ✅ **Taş puntosu da tahtaya bağlanmalı** (27 Eylül 2026: `TileWidget
+  .boardGridWidth` + X3 etiketi, oranlar `index.css`ten kilitli). Eski
+  metin: (26 Eylül 2026) — web'de yükseklik
+  bütçesi tahtayı küçültünce taş harfi `vw` tavanında (24 px) kalıp hücreyi
+  taşırdı (iPad Safari'de ölçüldü: %128). Web'in düzeltmesi `index.css` →
+  `.tile-board-letter` (`5.08cqw` / puan `2.18cqw`, ızgaranın iç genişliği).
+  Port `tile_widget.dart` bugün `fluidSize(screenWidth…)` — tahta
+  yükseklikten boyutlanmaya başladığı anda aynı hata porta gelir.
+  Ayrıntı: `docs/decisions/components.md` → "Taş harfi/puanı tavanı".
+- ✅ **`LandscapeHint` ikizi — BİLEREK YOK** (27 Eylül 2026): web'in
+  bloğu yalnızca TELEFONDA çıkıyor, portta telefon portre kilitli; kilidin
+  tutmadığı iPad/açık katlanabilir web'de de bloklanmıyor. Gerekçe
+  `main.dart`in kilit yorumunda. Eski metin: web'de kural `(orientation: landscape)`ten
+  YÜKSEKLİĞE taşındı (eski kural açık katlanabilirde de tetikleniyor ve
+  *"dikeye dön"* orada yanlış tavsiye oluyordu). Portun karşılığı varsa aynı
+  ölçüte geçmeli.
+
+⚠ **Bu bir "yatay düzen" işi DEĞİL, ayrı bir madde:** telefon YATAYDA hiçbir
+sınır değeri oyunu oynanabilir yapmaz — krom tek başına 301px, viewport
+375–430, yani tahtaya 56–111px kalıyor (13 hücreye 4–9px). Orayı gerçekten
+açmak tahta solda / raf+butonlar sağda bir YAN YANA düzen ister; karar
+verilmedi, bu maddenin kapsamında değil.
+
+
+### 37 → ✅ #640 `main`'de (1 Eki 2026)
+
+## 37. Küfür / müstehcenlik filtresi — **KISMEN: sunucu + web CANLIDA · koşul metni + port #640'ta** (25 Eylül 2026)
+
+**Durum (25 Eylül 2026 akşamı):** süzgeç canlıda (`20260925183810_chat_profanity_filter`
++ `…184216_nickname_blocked_message`), web'de takma isim uyarısı + admin
+"Kelime Süzgeci" + dökümde `[süzgeç]` işareti. **Kalan:** Kullanım Koşulları
+§5'in "mesajlar denetlenmez" cümlesi + Gizlilik'te orijinalin saklanması +
+portun takma isim uyarısı → #640 (sürüm treni). Uygulama kaydı:
+`docs/decisions/chat-moderation.md` → "Küfür / müstehcenlik süzgeci".
+#640 merge edilince bu madde arşive taşınır.
+
+Kullanıcı: *"Küfür filtresi işini konuşalım. Onu roadmap'e yaz."* Sohbet
+Kuralları onayının (#639 web ✅, #640 port taslak) devamı. Bugün mesajlar
+hiçbir otomatik süzgeçten geçmiyor; tek savunma kişinin sessize alıp şikâyet
+etmesi.
+
+**Neden:** Apple kuralı 1.2 kullanıcı içeriği olan uygulamadan dört şey
+istiyor: kabul edilen kurallar (✅ onay penceresi), şikâyet (✅), engelleme
+(✅ sessize alma) ve **uygunsuz içeriği süzme yöntemi (❌ YOK)**. Sohbetin
+yalnızca kabul edilmiş arkadaşlar arasında olması riski bugün sınırlıyor ve
+bir incelemede savunma olarak anlatılabilir, ama bu bir süzgeç değil.
+
+**Önerilen yön — süzgeç SUNUCUDA, `online_game_messages` insert'ünde
+(trigger):**
+- Mağazadaki ESKİ paketler dahil (1.1.0/1.1.1) herkese aynı gün işler. İstemci
+  süzgeci web + port + iki mağaza turu isterdi ve atlatılabilirdi.
+- Liste bir tabloda (`blocked_words`), admin panelinden düzenlenir; kodda
+  gömülü liste YOK (liste değiştikçe sürüm çıkmasın).
+- Eşleştirme Türkçe'ye göre: `tr_lower` (İ/ı), harf tekrarı (`aaa` → `a`),
+  araya konan boşluk/nokta/yıldız, sık rakam-harf değişimi (`0`→`o`, `1`→`i`).
+  ⚠ **Yanlış pozitif** asıl risk: kelime İÇİNDE arama masum kelimeleri de
+  keser. Yalnızca kelime sınırı + bilinen ek kalıpları.
+
+**Kullanıcının vermesi gereken kararlar:**
+1. **Maskele mi, reddet mi?** Maskele (`****`, mesaj gider) daha yumuşak ve
+   yaygın; reddet ("Mesajın uygunsuz ifade içeriyor") gönderene net ama
+   kelime avına iter. Reddedilen/maskelenen mesaj ayrıca admin'e düşsün mü?
+2. **Kapsam:** yalnızca sohbet mi, **takma ad** da mı? Takma ad k-lig
+   listesinde HERKESE görünüyor, yani risk orada daha geniş.
+3. **Listeyi kim kuracak:** hazır bir Türkçe liste mi, elle mi?
+
+**KARARLAR (25 Eylül 2026, kullanıcı):** (1) **maskele** · (2) **takma ad
+DAHİL** · (3) **hazır liste**.
+
+**Hazır liste:** `ooguz/turkce-kufur-karaliste` (697 madde, CC BY-SA 4.0) +
+LDNOOBW `tr` (142 madde, CC BY 4.0) → birleşik **815** madde (83'ü çok
+kelimeli). ⚠ BY-SA: listenin türevi aynı lisansla ve atıfla tutulur.
+
+**Kuru ölçüm (25 Eylül 2026, canlı, yalnızca SAYIM — mesaj içeriği
+okunmadı):** 320 canlı mesaj · 578 arşiv satırı (her oyunun mesajları
+oyuncu başına bir `games` satırında, yani arşiv ≈ canlının iki katı) · 64
+takma ad.
+
+| Eşleştirme | Canlı mesajda yakalanan | Yorum |
+|---|---|---|
+| **Kelimenin BAŞI** (önek) | `am` 22 · `emi` 4 · `cim` 1 … | ❌ KULLANILAMAZ — `ama`, `emin`, `…cim` gibi masum kelimeleri kesiyor |
+| **Tam kelime** | ~11 mesaj (%3): `bok`/`boktan` 4 · `ibne`/`ipne` 2 · `siktir` · `amk` · `salak` · **`ana` 1** | ✅ kullanılabilir; tek şüpheli `ana` (masum anlamı çok yaygın) |
+| Takma ad, tam kelime | **0** | önek modunda 1 (`emi` → masum) |
+
+**Sonuç:** yalnızca TAM KELİME. Ölçümde çıkmayan ama listede duran masum/
+nötr maddeler de ayıklanmalı — en açıkları: `ana` · `mal` · `allah` ·
+`oğlan` · `meme` · `kaka` · `dönek` · `düdük` · `kayyum` · `revizyonist` ·
+`saksofon` · `dinsiz` · `çingene*` (etnik ad, küfür değil) · `cikar`
+(ç'siz "çıkar") · `diktim` · `sokam`/`sokarım` (sokmak) · `koyum`/`koyarm` ·
+`azdım`/`azdır` · `emi` · `cim` · `ag` · `cif` · `sie` · `krar` · `sekis`.
+
+**Önerilen tasarım (ölçümden sonra):**
+- **Sohbet:** `online_game_messages`e BEFORE INSERT trigger, eşleşen kelime
+  harf sayısı kadar `*` olur. Arşiv (`games.messages`) canlıdan kopyalandığı
+  için kendiliğinden maskeli gelir. Eski paketler dahil herkese aynı gün.
+- ⚠ **Kanıt kaybolmasın:** şikâyeti inceleyen admin ORİJİNALİ görmeli.
+  Orijinal ayrı, yalnız admin'in okuyabildiği bir tabloya yazılır
+  (`online_game_message_originals`); katılımcılar maskeli metni görür.
+- **Takma ad:** maskelenmez (`****` bir ad olamaz) — kayıt/değişiklikte
+  **reddedilir** ("Bu takma ad kullanılamaz"). Bugün eşleşen ad 0, geriye
+  dönük iş yok.
+- **Geçmiş mesajlara dokunulmaz** (kanıt + kullanıcı görmüş).
+
+**Uygulamadan ÖNCE ölçüm (değişmez):** mevcut mesajları (`online_game_messages`
++ `games.messages` arşivi) ve takma adları listeye karşı KURU koştur, kaç
+tanesinin yakalanacağına ve kaçının yanlış pozitif olduğuna bak. Eşik o
+sayılara göre ayarlanır.
+
+**Dokunacağı yerler:** migration (tablo + trigger + `grant`) · admin
+paneline liste düzenleme · `TermsModal`/`PrivacyModal` (otomatik süzgeç
+cümlesi, web + port BİRLİKTE, `legal_text_test.dart`) · reddetme seçilirse
+`friendlyErrorMessage`in P0001 yolu sunucunun Türkçe mesajını zaten
+gösterir (web ✅; portta `error_message.dart` 1.1.0'da YOK, 1.1.1 ile
+iniyor — eski pakette ret metni ham görünebilir, maskelemenin bir artısı
+daha). Kayıt: `docs/decisions/chat-moderation.md` →
+"Sohbet Kuralları onayı" → "Açık kalan".
+
+
 ## İçindekiler
 
 > Madde 0 (FAZ B), merge turu, #33/#36, madde 31, madde 24 (FAZ C),
@@ -1481,6 +1659,7 @@ Arşivde: `docs/decisions/roadmap-arsiv.md`. Huni v2'nin MOBİL yarısı (PR 2,
 
 | Ne | Kapanış |
 |---|---|
+| ROADMAP #37 (küfür süzgeci — koşul metni + port #640) · #38 (tahta yükseklik bütçesi, port #657) · #41 (ilk oyun akışı v2 — port #739-#746, 1.1.2 cihaz turu ✅) | 1 Ekim 2026 |
 | ROADMAP'in 2 Eylül tarihli "tek bakışta" özet tablosu (kovaların hepsi kapanmıştı) + "Sonra / bloke"daki kapalı satırlar (#8 · #11 · #12 · #15 · #33 · #36 · iOS/App Store) | 26 Eylül 2026 |
 | Madde 0 · **FAZ B — Google Play yayını** (0.A-0.D); Play production #19, `1.1.0 (665)` | 24 Eylül 2026 |
 | Dondurulmuş port PR'ları — **merge turu** (on PR: #565 … #626) | 25 Eylül 2026 |
