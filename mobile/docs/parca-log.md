@@ -25,6 +25,47 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 222 — Arkadaşlar penceresi TEK EKRAN + OYNA: port yarısı (1 Ekim 2026, ROADMAP #41 karar 22-24)
+
+`ui/friends/friends_modal.dart` web #665'e göre yeniden yazıldı (dosya adı ve
+`showFriendsModal` imzası çağıranlar için korundu; `FriendsTab` yalnızca
+`search` → arama kutusuna odak anlamında yaşıyor):
+
+- **Sekme yok, tek sütun:** turuncu "+ ARKADAŞINI DAVET ET" (doğrudan
+  paylaşım) → "İSTEKLER · N" kartları (REDDET / KABUL ET) → "GÖNDERDİĞİN
+  İSTEKLER · N" (GERİ AL; RPC `list_outgoing_friend_requests` —
+  `FriendsRepo.outgoingRequests`, YENİ) → "ARKADAŞLARIN · N" / "TÜM
+  OYUNCULAR" + dönüşümlü bağlantı → arama → liste.
+- **Onaylar kalktı:** ekle/kabul/reddet/iptal tek dokunuş, sonuç diyaloğu
+  da yok; yalnızca "Arkadaşlıktan çıkar" onay sorar.
+- **Satır:** avatar 40, ad 15 + rütbe 16 + 🚫/🚩, alt satır "3 haftadır"
+  (`util/friend_since.dart`, YENİ — `list_friends.since`, `FriendRow.since`
+  YENİ), `KPill` (OYNA · EKLE · İSTEK GİTTİ · KABUL ET · GERİ AL), ⋯.
+- **⋯ menüsü** alttan: skor kartı · 2/4 kişilik oyun kur · sessize alma /
+  şikayet ayarları (YALNIZ durum varsa — eski satır ikonunun yerini aldı) ·
+  arkadaşlıktan çıkar.
+- **OYNA (karar 23):** `util/live_game_request.dart` (YENİ). Pencere kapanır;
+  `SetupScreen` `seq` değişimine bakıp üstteki ekranları kapatır (oyun
+  kayıtlı) ve "Arkadaşınla"ya geçer; `LiveGamesTab` isteği TÜKETİR ve formu
+  o arkadaş seçili, istenen kişi sayısıyla açar (Parça 221'in
+  `initialFriendId`/`initialPlayerCount`ı).
+- **Bilinçli fark:** web "Tüm oyuncular"ı `max-h-[55vh]` iç kaydırmada
+  tutuyor; portta tek kaydırılabilir (KModal gövdesi) kuralı korundu,
+  sayfalama gövdeden besleniyor.
+
+⚠ Bu parçada `dart format lib test` bir kez TÜM pakete koşuldu ve 125
+ilgisiz dosyayı yeniden biçimlendirdi (paket format-temiz değil). Commit'ten
+ÖNCE geri alındı; ders: formatı yalnızca DOKUNDUĞUN dosyalara koş.
+
+**Doğrulama:** `friends_test` "FriendsModal" grubu yeniden yazıldı (16 test:
+istek kartı konumu + onaysız kabul/ret, gönderilenler + GERİ AL, sayı +
+"3 haftadır" + OYNA → kuyruk, ⋯ menüsü (4 kişilik + onaylı çıkar), boş hâl,
+Tüm oyuncular EKLE/KABUL ET, arama sayısı/boş metni, skor kartı, rütbe,
+paylaşım + ekran görüntüsü, moderasyon ×3, tek kaydırılabilir, web metin
+paritesi) + `friendSinceLabel` eşikleri; `live_games_test` "OYNA isteği"
+(takılıyken ve takılmadan önce); `setup_screen_test` "OYNA isteği: üstteki
+ekran kapanır". Tam takım **1.035 yeşil**.
+
 ## Parça 221 — Canlı oyun formu: port yarısı (1 Ekim 2026, ROADMAP #41 karar 11, 12, 15-21)
 
 `ui/live/live_game_create_form.dart` web #663-#666'ya göre yeniden yazıldı:

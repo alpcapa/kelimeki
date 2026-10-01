@@ -67,6 +67,7 @@ import '../devam_eden_govde.dart';
 import '../ai_level_badge.dart';
 import '../../util/ai_level.dart';
 import '../live/live_games_tab.dart';
+import '../../util/live_game_request.dart';
 import '../rank/league_rewards_host.dart';
 import '../auth/account_button.dart';
 import 'membership_perks_box.dart';
@@ -261,6 +262,21 @@ class _SetupScreenState extends State<SetupScreen>
   bool _cloudSavesFailed = false;
   String? _previewedInviteToken;
 
+  int _lastLiveRequestSeq = 0;
+
+  void _onLiveGameRequest() {
+    if (liveGameRequests.seq == _lastLiveRequestSeq || !mounted) return;
+    _lastLiveRequestSeq = liveGameRequests.seq;
+    final route = ModalRoute.of(context);
+    if (route != null && !route.isCurrent) {
+      Navigator.of(context).popUntil((r) => r == route);
+    }
+    setState(() {
+      _liveView = true;
+      _localSubTab = _LocalSubTab.active;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -268,6 +284,11 @@ class _SetupScreenState extends State<SetupScreen>
     _lastAuthUserIdForLiveViewReset =
         _lastUserId; // React'in mount-anı effect'i
     widget.services.auth.addListener(_onAuthEvent);
+    // Arkadaşlar penceresinin OYNA'sı (ROADMAP #41 karar 23): oyun ekranı
+    // açıksa Setup'a dön (oyun kayıtlı) ve "Arkadaşınla"ya geç. İsteği
+    // TÜKETMEZ — formu `LiveGamesTab` açar.
+    _lastLiveRequestSeq = liveGameRequests.seq;
+    liveGameRequests.addListener(_onLiveGameRequest);
     // "Canlı sekmesini aç" istekleri (Faz 3): bildirimdeki oyun tahta
     // olarak açılamadığında (davet beklemede / listede yok) _HomeGate bu
     // sayacı artırıyor — kullanıcı en azından doğru sekmeye insin.
@@ -661,6 +682,7 @@ class _SetupScreenState extends State<SetupScreen>
     kRouteObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     widget.services.auth.removeListener(_onAuthEvent);
+    liveGameRequests.removeListener(_onLiveGameRequest);
     widget.services.liveTabRequests.removeListener(_onLiveTabRequest);
     widget.services.onlineStatus.removeListener(_onConnectivity);
     widget.services.inviteInbox?.removeListener(_onInviteEvent);

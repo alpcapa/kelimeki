@@ -12,8 +12,9 @@
 
 Kullanıcı: *"arkadaşlar modalı çok kötü ve kullanışsız. Onu da yeni konsepte
 göre elden geçir."* Tasarım canvas'ta onaylandı (*"arkadaşlar tasarımı da
-onaylı"*). **Yalnızca web** — port ikizi (`friends_sheet.dart`) Setup'ın port
-yarısıyla birlikte, web verisi okunduktan sonra.
+onaylı"*). **Port ikizi 1 Ekim 2026'da geldi** (`friends_modal.dart` yeniden yazıldı —
+ayrı bir `friends_sheet.dart` açılmadı, dosya adı ve `showFriendsModal`
+imzası çağıranlar bozulmasın diye korundu; Parça 222).
 
 **Yukarıdan aşağı tek sütun, sekme YOK** (önizlemede ikinci tur, aynı gün):
 1. Turuncu **"Arkadaşını davet et"** — pencere değil DOĞRUDAN paylaşım
@@ -54,7 +55,7 @@ yerler RASTGELE arkadaşlarla dolar ve başlık "Hızlı seç" olur (kullanıcı
 *"oynamasa bile random arkadaşlarından birilerini getirmek lazım"*); sıra
 form başına bir tohumla sabit — dokunurken avatar yer değiştirmesin.
 Arkadaş 2'den azsa HİÇ çizilmez (davet düğmesi zaten hemen altta; kullanıcı:
-*"belki hiç çıkmasın"*), aramada ve "Tüm oyuncular"da da çizilmez. Port ikizi Setup'ın port yarısıyla.
+*"belki hiç çıkmasın"*), aramada ve "Tüm oyuncular"da da çizilmez. Port ikizi 1 Ekim 2026 (`live_game_create_form.dart`, Parça 221).
 
 **Kararlar:**
 - **Yalnızca "arkadaşlıktan çıkar" onay sorar.** Ekle/kabul/reddet/iptal tek
@@ -70,8 +71,18 @@ Arkadaş 2'den azsa HİÇ çizilmez (davet düğmesi zaten hemen altta; kullanı
   **Geri al**. Kaynak `list_outgoing_friend_requests` (27 Eylül 2026,
   `list_incoming_…`in ayna ikizi): profiller yalnızca sahibine açık olduğu
   için karşı tarafın adı/avatarı doğrudan tablodan OKUNAMAZ, security definer
-  RPC şart. Port henüz çağırmıyor (Setup port yarısıyla gelir).
+  RPC şart. Port 1 Ekim 2026'dan beri çağırıyor (`FriendsRepo.outgoingRequests`).
 - Eski sekme adları (aşağıdaki bölüm) artık yüzeyde yok; kayıt tarihçe olarak kalıyor.
+- **Port farkı — "Tüm oyuncular" iç kaydırma DEĞİL (1 Ekim 2026):** web
+  listeyi `max-h-[55vh]` bir `ScrollArea`da tutuyor; portta pencerede TEK
+  kaydırılabilir var (`KModal` gövdesi), sayfalama gövdenin kaydırmasından
+  besleniyor — Flutter iç içe kaydırmayı zincirlemediği için (27 Ağustos
+  2026 vakası, `mobile/CLAUDE.md`). Moderasyon (🚫/🚩) durumu adın yanında,
+  ayarlar ⋯ menüsünde (eski ayrı ikon düğmesi kalktı).
+- **Port OYNA yolu:** `util/live_game_request.dart` (web modül değişkeni +
+  olayın karşılığı `ChangeNotifier`). `SetupScreen` `seq` değişimine bakıp
+  üstteki ekranları kapatır ve "Arkadaşınla"ya geçer (isteği TÜKETMEZ);
+  `LiveGamesTab` isteği hem açılışta hem dinleyerek ALIR.
 
 ## Sekme adları: "Arkadaşlarım" → **Arkadaşlar**, "İstekler" → **Davetler** (10 Eylül 2026)
 

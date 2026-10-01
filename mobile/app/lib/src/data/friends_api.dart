@@ -38,7 +38,22 @@ class FriendRow {
   final String friendId;
   final String name;
   final String? avatarUrl;
+
+  /// Arkadaşlığın başladığı an (`list_friends.since`, ISO) — Arkadaşlar
+  /// penceresindeki "3 haftadır" satırı (`util/friend_since.dart`).
+  final String? since;
   const FriendRow(
+      {required this.friendId, required this.name, this.avatarUrl, this.since});
+}
+
+/// Gönderdiğim, henüz cevaplanmamış istek (RPC
+/// `list_outgoing_friend_requests`, 27 Eylül 2026 — Arkadaşlar penceresinde
+/// gelen isteklerin altı, ROADMAP #41 karar 22).
+class OutgoingFriendRequest {
+  final String friendId;
+  final String name;
+  final String? avatarUrl;
+  const OutgoingFriendRequest(
       {required this.friendId, required this.name, this.avatarUrl});
 }
 
@@ -128,6 +143,9 @@ abstract class FriendsGateway {
   /// oynadıkların / Hızlı seç" şeridi, ROADMAP #41 karar 21). Yalnızca
   /// sıra döner; ad/avatar arkadaş listesinden.
   Future<List<String>> frequentOpponents(int limit);
+
+  /// Gönderdiğim bekleyen istekler (`list_outgoing_friend_requests`).
+  Future<List<Map<String, Object?>>> listOutgoingRequests();
 }
 
 class SupabaseFriendsGateway implements FriendsGateway {
@@ -233,6 +251,10 @@ class SupabaseFriendsGateway implements FriendsGateway {
   }
 
   @override
+  Future<List<Map<String, Object?>>> listOutgoingRequests() async =>
+      _rows(await client.rpc('list_outgoing_friend_requests'));
+
+  @override
   Future<List<String>> frequentOpponents(int limit) async => [
         for (final r in _rows(await client
             .rpc('my_frequent_opponents', params: {'p_limit': limit})))
@@ -285,6 +307,7 @@ class FriendsRepo {
             friendId: r['friend_id'] as String,
             name: (r['name'] as String?) ?? 'Anonim',
             avatarUrl: r['avatar_url'] as String?,
+            since: r['since'] as String?,
           ),
       ]..sort((a, b) => trCompare(a.name, b.name));
     } catch (e) {
@@ -381,6 +404,24 @@ class FriendsRepo {
   /// token'ı kuyruğa geri koymaya karar verebilsin diye) — yalnızca
   /// "geçersiz token" sınıfı sunucu retleri değil ağ hataları da.
   Future<String?> acceptInvite(String token) => gateway.acceptInvite(token);
+
+  /// Web `fetchOutgoingFriendRequests` — hata → null (çağıran eskiyi korur).
+  Future<List<OutgoingFriendRequest>?> outgoingRequests() async {
+    try {
+      final rows = await gateway.listOutgoingRequests();
+      return [
+        for (final r in rows)
+          OutgoingFriendRequest(
+            friendId: r['friend_id'] as String,
+            name: (r['name'] as String?) ?? 'Anonim',
+            avatarUrl: r['avatar_url'] as String?,
+          ),
+      ];
+    } catch (e) {
+      debugPrint('[Kelimeki] gönderilen istekler alınamadı: $e');
+      return null;
+    }
+  }
 
   /// Web `fetchFrequentOpponents` — hata → boş liste (şerit rastgele
   /// arkadaşlarla dolar, form çalışmaya devam eder).

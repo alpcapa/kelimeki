@@ -511,6 +511,11 @@ class FakeFriendsGateway implements FriendsGateway {
   @override
   Future<String?> acceptInvite(String token) async => null;
 
+  List<Map<String, Object?>> outgoingRows = [];
+  @override
+  Future<List<Map<String, Object?>>> listOutgoingRequests() async =>
+      outgoingRows;
+
   /// Canlı formun "Sık oynadıkların" şeridi — testler doldurur.
   List<String> frequent = const [];
   @override

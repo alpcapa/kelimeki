@@ -29,10 +29,22 @@
       gösteren rozet** (16 Ağustos 2026'ya kadar sayısız bir noktaydı)
       çıkmalı (tazelenme: uygulamayı yeniden açınca ya da modalı açıp
       kapatınca — Realtime bilinçli yok, web'de de yok).
-- [ ] **Varsayılan sekme.** Bekleyen istek varken modal "Davetler"
-      sekmesiyle açılmalı; Kabul Et → kişi "Arkadaşlar"a düşmeli,
-      web tarafında da arkadaş görünmeli.
-- [ ] **Ara & Ekle — liste SONUNA KADAR kaydırılabiliyor (27 Ağustos 2026,
+- [ ] **Tek ekran (1 Ekim 2026, ROADMAP #41).** Sekme YOK. Yukarıdan
+      aşağı: turuncu "+ ARKADAŞINI DAVET ET" (doğrudan paylaşım sayfası) →
+      gelen istek kartları (REDDET / KABUL ET — ONAY SORMADAN) → "GÖNDERDİĞİN
+      İSTEKLER" (GERİ AL) → "ARKADAŞLARIN · N" + "Tüm oyuncular →" → arama →
+      liste. Kabul edilen kişi listeye düşmeli, web'de de arkadaş görünmeli.
+      Satırda "N haftadır" + OYNA + ⋯.
+- [ ] **OYNA.** Arkadaş satırında OYNA → pencere kapanmalı, Setup
+      "Arkadaşınla"ya geçip canlı oyun formunu O ARKADAŞ SEÇİLİ (2 kişi)
+      açmalı. ⋯ → "4 kişilik oyun kur" → form 4 kişide, arkadaş ilk
+      koltukta. **Oyun ekranındayken** (hesap menüsünden) aynısını dene:
+      oyun ekranı kapanmalı (oyun kayıtlı, Devam Edenler'de), form açılmalı.
+- [ ] **⋯ menüsü.** Skor kartı · 2/4 kişilik oyun kur · arkadaşlıktan
+      çıkar (ONAY sorar). Sessize aldığın/şikayet ettiğin birinde adın
+      yanında 🚫/🚩 ve menüde "Sessize alma / şikayet ayarları" çıkmalı;
+      öteki satırlarda o madde OLMAMALI.
+- [ ] **Tüm oyuncular (eski "Ara & Ekle") — liste SONUNA KADAR kaydırılabiliyor (27 Ağustos 2026,
       kullanıcı bildirdi).** Klavye açıkken (kutu `autofocus`, yani modal
       açılır açılmaz açık) parmağını doğrudan BİR ÜYE SATIRININ üzerine koy
       ve yukarı sürükle: modal kaymalı ve listenin sonuna (son üye +

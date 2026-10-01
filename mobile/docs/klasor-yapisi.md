@@ -318,7 +318,8 @@ mobile/
                              # "Tüm oyuncular", web `usePlayerDirectory`) —
                              # ikisi de #41 (Parça 221); canlı form
                              # kullanıyor, Arkadaşlar penceresi de geçecek +
-                             # friends_modal (3 sekme + davet paylaşımı +
+                             # friends_modal (TEK EKRAN, #41 karar 22 —
+                             # Parça 222; eskiden 3 sekme) + davet paylaşımı +
                              # paylaşılan onay/sonuç diyalogları) +
                              # friend_moderation_sheet (satırdaki 🚫/🚩
                              # ikonundan açılan GERİ ALMA paneli) +
@@ -351,6 +352,10 @@ mobile/
       util/push_rules.dart   # "izin sorulsun mu?" saf kararı (en çok 3 kez,
                              # 7 gün arayla) + platform adı doğrulaması
       util/chat_rules.dart   # Sohbet Kuralları metni + sürüm — web src/utils/chatRules.ts ikizi
+      util/friend_since.dart # "3 haftadır arkadaşsınız" (web friendSinceLabel)
+      util/live_game_request.dart # Arkadaşlar → OYNA isteği kuyruğu (web
+                             # liveGameRequest.ts; Setup sekmeyi açar,
+                             # LiveGamesTab TÜKETİR — #41 karar 23)
       util/semver.dart, util/uuid.dart, util/share_board.dart,
       util/game_list_order.dart # devam eden oyun/davet listelerinin sıralaması
                              # (web `gameListOrder.ts` ikizi) — ⚠ Dart `List.sort`

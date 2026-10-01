@@ -42,6 +42,7 @@ import '../friends/friends_modal.dart'
     show showFriendInfoDialog, kFriendActionFailed;
 import 'friend_suggest_modal.dart';
 import 'guest_live_sheet.dart';
+import '../../util/live_game_request.dart';
 import 'live_game_create_form.dart';
 import 'open_online_game.dart';
 import '../tokens.dart';
@@ -140,6 +141,12 @@ class _LiveGamesTabState extends State<LiveGamesTab>
   int _autoRetryStep = 0;
   Timer? _autoRetryTimer;
   bool _creating = false;
+
+  /// Arkadaşlar penceresinin OYNA'sından gelen istek (ROADMAP #41 karar 23)
+  /// — form bu arkadaş seçili açılır. `_formSeq` her istekte artar ki aynı
+  /// açık form yeni istekle YENİDEN kurulsun.
+  LiveGameRequest? _istek;
+  int _formSeq = 0;
   String? _busyInviteId;
   String? _lastUserId;
   Timer? _reloadDebounce;
@@ -165,6 +172,10 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     _lastUserId = user?.id;
     if (user != null) _snapshot = _liveGamesCache[user.id];
     services.auth.addListener(_onAuthEvent);
+    // OYNA isteği: sekme o an takılıysa olaydan, değilse takıldığında
+    // kuyruktan alınır (web `takeLiveGameRequest`).
+    liveGameRequests.addListener(_takeLiveRequest);
+    _takeLiveRequest();
     // Bağlantı durumu değişince mesaj ANINDA görünsün/kalksın (web
     // `useOnlineStatus`un yeniden render'ı).
     services.onlineStatus.addListener(_onConnectivity);
@@ -201,6 +212,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     services.auth.removeListener(_onAuthEvent);
+    liveGameRequests.removeListener(_takeLiveRequest);
     services.onlineStatus.removeListener(_onConnectivity);
     _reloadDebounce?.cancel();
     _autoRetryTimer?.cancel();
@@ -208,6 +220,17 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     _rankScores.removeListener(_onRankScores);
     _rankScores.dispose();
     super.dispose();
+  }
+
+  void _takeLiveRequest() {
+    if (services.auth.user == null || services.friends == null) return;
+    final r = liveGameRequests.take();
+    if (r == null || !mounted) return;
+    setState(() {
+      _istek = r;
+      _formSeq++;
+      _creating = true;
+    });
   }
 
   void _onAuthEvent() {
@@ -445,6 +468,9 @@ class _LiveGamesTabState extends State<LiveGamesTab>
 
     if (_creating) {
       return LiveGameCreateForm(
+        key: ValueKey('canli-form-$_formSeq'),
+        initialFriendId: _istek?.friendId,
+        initialPlayerCount: _istek?.playerCount,
         auth: auth,
         friends: services.friends!,
         onlineGames: repo,
@@ -452,9 +478,15 @@ class _LiveGamesTabState extends State<LiveGamesTab>
         games: services.games,
         feedback: services.feedback,
         chat: services.chat,
-        onCancel: () => setState(() => _creating = false),
+        onCancel: () => setState(() {
+          _creating = false;
+          _istek = null;
+        }),
         onCreated: () {
-          setState(() => _creating = false);
+          setState(() {
+            _creating = false;
+            _istek = null;
+          });
           _reload();
         },
       );
@@ -494,7 +526,11 @@ class _LiveGamesTabState extends State<LiveGamesTab>
             variant: NeoButtonVariant.orange,
             fontSize: 16,
             letterSpacing: 1,
-            onPressed: () => setState(() => _creating = true),
+            onPressed: () => setState(() {
+              _istek = null;
+              _formSeq++;
+              _creating = true;
+            }),
           ),
         ),
         const SizedBox(height: 20),
