@@ -449,7 +449,7 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
-## 1.1.2 (831) — GÖNDERİME HAZIR (1 Eki 2026)
+## 1.1.2 (831) — İKİ MAĞAZADA İNCELEMEDE (1 Eki 2026)
 
 **İçerik:** 1 Eki kesiminin 17 PR'ı + #41 tasarım portunun tamamı (#739-#744)
 + 826 cihaz turunun bulguları (#746). Liste: `ROADMAP.md` → "Sıradaki sürüme
@@ -459,13 +459,14 @@ binecekler". Paket: koşu **#831**, `05f1c1f`; `.aab` `mobile-latest`te
 - [x] TestFlight 826 cihaz turu → bulgular #746'da düzeltildi.
 - [x] TestFlight **831** turu ✅ (1 Eki akşamı, kullanıcı: *"Herşey ok,
       review'a gönderelim"*).
-- [ ] **ASC:** `+ Version` → **1.1.2** · build **831** · What's New (aşağıda) ·
-      Notes 1.1.0'dan AYNEN (§16 kalıcı cevabı) · **Manually release** →
-      `Add for Review` → `Submit`. Submission ID'yi buraya yaz.
-- [ ] **Play:** `mobile-latest` → `kelimeki.aab` indir, Console'da sürüm
-      kodunun **831** olduğunu GÖR, sürüm adı `1.1.2 (831)`, notlar (aşağıda)
-      → production. ⚠ İki yükleme arasında `main`'e mobil merge YOK
-      ("SÜRÜM SENKRONU").
+- [x] **ASC: 1.1.2 + build 831 incelemeye GÖNDERİLDİ** (1 Eki akşamı,
+      kullanıcı: *"Apple gitti"*; ≤ 21:20 UTC). Manually release. Submission
+      ID henüz yazılmadı.
+- [x] **Play: `.aab` 831 YÜKLENDİ** (1 Eki ~21:28 UTC, kullanıcı; *"13 dk
+      sonra incelemeye gidiyor"* — Console'un hazırlık süresi). İndirilen
+      paketin SHA-256'sı `dd5fef32c126b7a893c20d803a7f7a3b6ad4e080b5faa75c1994e24148bfe233`
+      (64.728.949 bayt, `mobile-latest` yüklemesi 20:16 UTC — ölçüldü).
+      ⚠ İki mağaza onaylanana kadar `main`'e mobil merge YOK.
 - [ ] Onaylar gelince yayın — Apple önce gelirse beklemeden ("YAYIN SIRASI").
 
 **App Store "What's New" (726 karakter):**
