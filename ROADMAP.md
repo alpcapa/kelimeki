@@ -337,12 +337,17 @@ Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
 
 | Durum | PR'lar |
 |---|---|
-| Temiz | #642 · #649 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
+| Temiz | #642 · #649 · #655 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
 | Çakışma — yalnız doküman | #637, #640 (`ROADMAP.md`) · #647 (`CLAUDE.md`) · #659, #709 (`docs/decisions/funnel-v2.md`) |
 | Çakışma — KOD | #651 (`ROADMAP.md` + **`src/components/AdminDashboard.tsx`**) |
-| CI KIRMIZI | **#655** — web `test`: `tests/board-fit.spec.ts` "dizüstü 1440×800: taş harfi ve X3 hücreye sığıyor" (tahtada harf görünmüyor; 27 Eyl koşusu). `main`'de aynı test yeşil → büyük ihtimalle PR'ın kendi değişikliği (zoom balonu); kesimden önce düzeltilmeli |
 
 - **Sıra bağımlılığı:** #709, #659'un ÜSTÜNE kurulu (önce #659).
+- **#655 YEŞİL (1 Eki, ajan doğruladı).** 27 Eyl'deki kırmızı web `test`
+  (`board-fit.spec.ts`) koşusu, PR'ın web yarısı #654 henüz `main`'e
+  girmemişken alınmıştı. #654 aynı gün merge edildi; #655'in diff'i artık
+  yalnızca port dosyaları + doküman, web CI bu PR'da tetiklenmiyor. Başı
+  `72f0e63` (`main` c212e70 birleştirilmiş): Analiz + testler · Android APK ·
+  iOS · Bütçe yeşil, çakışma yok.
 - **Aynı dosyaya dokunanlar (kesimde metin çakışması beklenir):**
   `online_game_screen.dart` 7 PR (#637 #640 #642 #649 #657 #670 #687) ·
   `auth_modal.dart` 5 (#640 #642 #651 #659 #709) · `game_screen.dart` 4
