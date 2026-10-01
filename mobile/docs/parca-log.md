@@ -25,6 +25,31 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 223 — Tanıtım: açılış penceresi YOK + yeni kapanış penceresi (1 Ekim 2026, ROADMAP #41 karar 5 + 6) — web + port aynı PR
+
+- **Açılış penceresi kalktı** ("Kelimeki Tanıtım Turu / Devam", 7 Eylül
+  2026 — Parça 195): 1. sahne doğrudan açılır. `tutorialIntro*` sabitleri ve
+  web `TUTORIAL_INTRO_*` silindi; parite testi ikisinin de YOKLUĞUNU
+  kilitliyor.
+- **Kapanış penceresi tasarım tuvaline göre** (`_BitisKarti`, web
+  `TutorialGame.tsx` `mode === 'bitti'` bloğu): beyaz kart, yeşil onay
+  mührü + "TANITIM TAMAM · 4/4", "Hazırsın!" 28 pt, strateji cümlesi, SEN /
+  RAKİP skor kutuları (`playerColors[0/1]`, sende 2 px çerçeve), gri şeritte
+  "SIRADAKİ: YAPAY ZEKA · {zorluk} · {n} KİŞİ" ve turuncu 54 px düğme.
+- **SIRADAKİ satırı** Setup'ın seçiminden: `TutorialGame.next` (web
+  `next` prop'u) — `_startNewGame` zorluğu OYUNU BAŞLAT anında sabitliyor
+  (Parça #737'nin kuralı), aynı değer buraya da gidiyor. Tekrar turunda
+  (`source: replay`) satır yok, düğme "KAPAT".
+- Metinler `tutorialScript.ts`te tek kaynak (`TUTORIAL_FINISH_LABEL/_ME/
+  _OPPONENT`, `tutorialNextLine`); port `trUpper` ile.
+
+**Doğrulama:** web `npm run lint` + `verify-tutorial-script` + Playwright
+tanıtım testleri (5/5; bitiş penceresinin yeni metinleri dahil); port
+`tutorial_parity_test` (açılışın yokluğu + kapanış etiketleri + şablon),
+`tutorial_game_test` (kart içeriği 80/48 + SIRADAKİ + ekran görüntüsü
+`build/screenshots/tutorial_finish.png`), `setup_screen_test` (Setup →
+tanıtım: pencere yok, `next` = Kolay/2). Playwright 95/95, flutter test 1.035 yeşil.
+
 ## Parça 222 — Arkadaşlar penceresi TEK EKRAN + OYNA: port yarısı (1 Ekim 2026, ROADMAP #41 karar 22-24)
 
 `ui/friends/friends_modal.dart` web #665'e göre yeniden yazıldı (dosya adı ve

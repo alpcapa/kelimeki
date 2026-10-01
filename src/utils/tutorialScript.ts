@@ -273,26 +273,14 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/**
- * Tanıtım AÇILIRKEN çıkan karşılama penceresi (metin kullanıcı kararı,
- * 7 Eylül 2026 akşamı — cihaz/tarayıcı turu).
- *
- * NEDEN VAR: kullanıcı *"insanlar setup'dan hemen oyna'ya basınca kendisini
- * oyunda sanıyor. Girer girmez 'BÜYÜ kelimesini taşı' deyince oyunun öyle
- * olduğunu düşünebilir ve kafası karışabilir"* dedi. Tanıtım ekranı gerçek
- * oyun ekranına birebir benziyor (aynı tahta, aynı raf, aynı başlık), yani
- * "burası bir tur" bilgisini ekranın KENDİSİ taşımıyordu — sahne sayacı
- * (TANITIM · 1/4) küçük ve üstte. Pencere o bilgiyi ilk saniyede veriyor:
- * ne olduğu, ne kadar süreceği, ve tek bir "Devam".
- *
- * ⚠ Pencere kapının BİR PARÇASI DEĞİL — tanıtım zaten gösterilmeye karar
- * verildikten sonra çıkar (`shouldShowTutorial` değişmedi) ve kendi bayrağı
- * YOKTUR: tanıtım "bir kere" gösterildiğinden pencere de bir kere görünür.
+/*
+ * Tanıtımın AÇILIŞ penceresi ("Kelimeki Tanıtım Turu / Devam", 7 Eylül 2026)
+ * 1 Ekim 2026'da KALKTI — ROADMAP #41 karar 5 (27 Eylül tasarım kararı):
+ * 1. sahne doğrudan açılır. Penceresinin işini ("burası bir tur") artık
+ * sahne sayacı (TANITIM · 1/4) ve ATLA taşıyor; Setup'tan buraya bir dokunuş
+ * daha koymak #41'in "hızlıca ilk oyun" amacına ters düşüyordu. Port ikizi
+ * (`tutorial_game.dart`) aynı PR'da.
  */
-export const TUTORIAL_INTRO_TITLE = 'Kelimeki Tanıtım Turu';
-export const TUTORIAL_INTRO_TEXT =
-  'Yaklaşık 1 dk sürecek ve size oyunu gösterecek kısa tanıtım turuna hoş geldiniz.';
-export const TUTORIAL_INTRO_BUTTON = 'Devam';
 
 /**
  * Kapanış (metin kullanıcı kararı, 7 Eylül 2026). Önceki hâli bingo
@@ -331,6 +319,27 @@ export const TUTORIAL_REPLAY_CTA = 'Tanıtım turunu oyna (1 dk)';
 
 export const TUTORIAL_FINISH_BUTTON = 'Gerçek oyuna başla';
 export const TUTORIAL_REPLAY_FINISH_BUTTON = 'Kapat';
+
+/**
+ * Kapanış penceresinin yeni düzeni (ROADMAP #41 karar 6, tasarım tuvali
+ * "Tanıtım bitti"; 1 Ekim 2026): onay mührünün yanında küçük etiket, altında
+ * tanıtım skoru (SEN / RAKİP kutuları, oyuncu renklerinde) ve gri şeritte
+ * SIRADAKİ oyunun özeti + turuncu düğme. Ayrı bir "Hazırsın" ekranı YOK.
+ * Ekranda CSS `uppercase` ile büyür; port `trUpper` uygular.
+ */
+export const TUTORIAL_FINISH_LABEL = 'Tanıtım tamam · 4/4';
+export const TUTORIAL_FINISH_ME = 'Sen';
+export const TUTORIAL_FINISH_OPPONENT = 'Rakip';
+
+/**
+ * "Sıradaki: Yapay Zeka · Kolay · 2 Kişi" — yalnızca `auto` kaynakta (kapanış
+ * gerçek oyunu başlatıyorsa). Seviye ve kişi sayısı Setup'ta seçilenler;
+ * tanıtım bunları DEĞİŞTİRMEZ, yalnızca söyler. Port `tutorialNextLine` ile
+ * birebir (`tutorial_parity_test.dart`).
+ */
+export function tutorialNextLine(levelLabel: string, playerCount: number): string {
+  return `Sıradaki: Yapay Zeka · ${levelLabel} · ${playerCount} Kişi`;
+}
 
 /**
  * Rafların TAM olarak hangi sırayla dolacağı. `drawTiles` torbanın SONUNDAN

@@ -407,14 +407,16 @@ göremediği şeyler: SÜRE, okunabilirlik ve gerçek parmak. **Uygulama verisi
 silinmiş** (tertemiz kurulum) bir cihazla koş.
 
 - [ ] **Kendiliğinden açılıyor:** Hiç oyun oynanmamış cihazda misafir olarak
-      "OYUNU BAŞLAT" → (1 Eki 2026'dan beri giriş uyarısı yok) Hızlı Başlangıç değil,
-      **"Kelimeki Tanıtım Turu"** karşılama penceresi; "Devam" → tanıtım
-      EKRANI ("TANITIM · 1/4"). Setup teşhis satırındaki `Derleme`
-      sha'sı bu PR'ın merge commit'iyle eşleşmeli — eşleşmiyorsa APK bayat.
-- [ ] **Karşılama penceresi (7 Eylül 2026 akşamı):** metin *"Yaklaşık 1 dk
-      sürecek…"*, tek buton "Devam". Pencere kapanmadan tahtaya
-      dokunulamıyor; kapatınca bir daha ÇIKMIYOR (tanıtımı bitir/atla,
-      uygulamayı kapat-aç → tanıtım da pencere de yok).
+      "OYUNU BAŞLAT" → (1 Eki 2026'dan beri giriş uyarısı da açılış
+      penceresi de yok) doğrudan tanıtım EKRANI ("TANITIM · 1/4"). Setup
+      teşhis satırındaki `Derleme` sha'sı bu PR'ın merge commit'iyle
+      eşleşmeli — eşleşmiyorsa paket bayat.
+- [ ] **Kapanış penceresi (1 Ekim 2026, ROADMAP #41 karar 6):** yeşil onay
+      mührü + "TANITIM TAMAM · 4/4", "Hazırsın!", SEN 80 / RAKİP 48 kutuları,
+      gri şeritte "SIRADAKİ: YAPAY ZEKA · KOLAY · 2 KİŞİ" (Setup'taki seçim —
+      4 KİŞİ / ZOR seçip dene) ve turuncu "GERÇEK OYUNA BAŞLA". Tekrar turunda
+      ("Nasıl oynanır?" → "Tanıtım turunu oyna") SIRADAKİ satırı yok, düğme
+      "KAPAT". Dar ekranda (Display Zoom) kart kesilmemeli.
 - [ ] **Süre:** Kronometreyle — dört sahne + kapanış **60-90 sn**.
 - [ ] **Taş raftan geliyor:** Boş kareye dokunmak TEK BAŞINA taş getirmiyor.
       Vurgulu harfe dokunup kareye dokunmak koyuyor; harfi kareye

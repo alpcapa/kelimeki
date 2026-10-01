@@ -120,20 +120,31 @@ void main() {
     expect(tutorialStartRacks, webRacks);
   });
 
-  test('karşılama penceresi: başlık · metin · buton birebir', () {
-    expect(tutorialIntroTitle,
-        pick(scriptTs, RegExp(r"TUTORIAL_INTRO_TITLE = '([^']*)'"), 'INTRO_TITLE'));
-    final textStmt = pick(
+  // 1 Ekim 2026 — ROADMAP #41 karar 5 + 6: açılış penceresi KALKTI, kapanış
+  // penceresi yeni düzende (etiket, SEN/RAKİP skoru, SIRADAKİ satırı).
+  test('açılış penceresi iki tarafta da YOK; kapanış etiketleri birebir', () {
+    expect(scriptTs.contains('TUTORIAL_INTRO_TITLE'), isFalse);
+    expect(gameTsx.contains('TUTORIAL_INTRO'), isFalse);
+    String webConst(String name) =>
+        pick(scriptTs, RegExp("$name = '([^']*)'"), name);
+    expect(tutorialFinishLabel, trUpper(webConst('TUTORIAL_FINISH_LABEL')));
+    expect(tutorialFinishMe, trUpper(webConst('TUTORIAL_FINISH_ME')));
+    expect(tutorialFinishOpponent, trUpper(webConst('TUTORIAL_FINISH_OPPONENT')));
+    // `tutorialNextLine` şablonu: web template literal'i Dart'a çevrilip
+    // aynı girdiyle karşılaştırılıyor.
+    final sablon = pick(
         scriptTs,
-        RegExp(r'TUTORIAL_INTRO_TEXT =([\s\S]*?);', multiLine: true),
-        'INTRO_TEXT');
-    expect(tutorialIntroText,
-        RegExp(r"'([^']*)'").allMatches(textStmt).map((m) => m.group(1)!).join());
-    expect(tutorialIntroButton,
-        pick(scriptTs, RegExp(r"TUTORIAL_INTRO_BUTTON = '([^']*)'"), 'INTRO_BUTTON'));
-    // Pencere GERÇEKTEN çiziliyor mu (sabit tanımlanıp kullanılmamış olmasın).
-    expect(gameTsx.contains('TUTORIAL_INTRO_TITLE'), isTrue);
-    expect(gameTsx.contains('TUTORIAL_INTRO_BUTTON'), isTrue);
+        RegExp(r'export function tutorialNextLine[^{]*\{\s*return `([^`]*)`'),
+        'tutorialNextLine');
+    final web = sablon
+        .replaceAll(r'${levelLabel}', 'Kolay')
+        .replaceAll(r'${playerCount}', '2');
+    expect(tutorialNextLine('Kolay', 2), trUpper(web));
+    // Kapanış penceresi GERÇEKTEN bu sabitleri çiziyor mu.
+    for (final c in ['TUTORIAL_FINISH_LABEL', 'TUTORIAL_FINISH_ME',
+        'TUTORIAL_FINISH_OPPONENT', 'tutorialNextLine']) {
+      expect(gameTsx.contains(c), isTrue, reason: c);
+    }
   });
 
   test('balon tipografisi: punto ve genişlik kapağı iki tarafta AYNI', () {

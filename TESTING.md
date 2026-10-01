@@ -1342,11 +1342,15 @@ maddeler otomatik testin göremediği şeyler: SÜRE, okunabilirlik ve gerçek
 parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
 
 - [ ] **Kendiliğinden açılıyor:** Hiç oyun oynamamış bir cihazda "OYUNU
-      BAŞLAT" → Hızlı Başlangıç PENCERESİ değil, **"Kelimeki Tanıtım Turu"**
-      karşılama penceresi; "Devam" → tanıtım EKRANI ("TANITIM · 1/4").
-- [ ] **Karşılama penceresi (7 Eylül 2026 akşamı):** *"Yaklaşık 1 dk
-      sürecek…"* metni + tek "Devam" butonu; kapanmadan tahta kullanılamıyor,
-      kapanınca bir daha çıkmıyor.
+      BAŞLAT" → doğrudan tanıtım EKRANI ("TANITIM · 1/4"). Açılış penceresi
+      ("Kelimeki Tanıtım Turu / Devam") 1 Ekim 2026'dan beri YOK (ROADMAP
+      #41 karar 5).
+- [ ] **Kapanış penceresi (1 Ekim 2026, ROADMAP #41 karar 6):** yeşil onay
+      mührü + "TANITIM TAMAM · 4/4", "Hazırsın!", strateji cümlesi, SEN 80 /
+      RAKİP 48 kutuları (oyuncu renklerinde), gri şeritte "SIRADAKİ: YAPAY
+      ZEKA · KOLAY · 2 KİŞİ" (Setup'ta ne seçildiyse) ve turuncu "GERÇEK
+      OYUNA BAŞLA". "Nasıl oynanır?"dan açılan tekrar turunda SIRADAKİ
+      satırı YOK, düğme "KAPAT".
 - [ ] **Süre:** Kronometreyle ölç — dört sahne + kapanış **60-90 sn**
       içinde bitmeli. Uzunsa: sahne 2'nin kelimesi (ÜZENGİ, 5 taş) bir
       taş kısaltılabilir, ya da rakip animasyonu (260 ms) düşürülebilir.

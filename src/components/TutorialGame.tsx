@@ -24,6 +24,8 @@
 // tanıtımda "yanlış yaptım" duygusu olmamalı. Konan taşa dokunmak geri alır.
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { PLAYER_COLORS } from '../game/constants';
+import type { AiLevel } from '../game/types';
+import { AI_LEVEL_LABEL } from '../utils/aiLevel';
 import { gameReducer } from '../game/gameReducer';
 import type { Tile as TileModel } from '../game/types';
 import { getFormedWords, key } from '../utils/board';
@@ -39,12 +41,13 @@ import {
 import { isWordSetReady, preloadWordSet } from '../data/wordSetLoader';
 import {
   TUTORIAL_FINISH_BUTTON,
+  TUTORIAL_FINISH_LABEL,
+  TUTORIAL_FINISH_ME,
+  TUTORIAL_FINISH_OPPONENT,
   TUTORIAL_FINISH_TEXT,
   TUTORIAL_FINISH_TITLE,
-  TUTORIAL_INTRO_BUTTON,
-  TUTORIAL_INTRO_TEXT,
-  TUTORIAL_INTRO_TITLE,
   TUTORIAL_REPLAY_FINISH_BUTTON,
+  tutorialNextLine,
   TUTORIAL_STEPS,
   createTutorialState,
 } from '../utils/tutorialScript';
@@ -165,9 +168,15 @@ interface TutorialGameProps {
    * oranı meraklı tekrar izleyenlerle karışırdı (bkz. `AdminTutorialFunnelRow`).
    */
   source?: 'auto' | 'replay';
+  /**
+   * Kapanışın başlatacağı GERÇEK oyun — bitiş penceresinin "Sıradaki: Yapay
+   * Zeka · Kolay · 2 Kişi" satırı (ROADMAP #41 karar 6). Yalnızca `auto`;
+   * `replay`de oyun başlamadığından satır çizilmez.
+   */
+  next?: { aiLevel: AiLevel; playerCount: number };
 }
 
-export function TutorialGame({ playerName, onFinish, onSkip, source = 'auto' }: TutorialGameProps) {
+export function TutorialGame({ playerName, onFinish, onSkip, source = 'auto', next }: TutorialGameProps) {
   const [state, dispatch] = useReducer(gameReducer, playerName, createTutorialState);
   const [stepIndex, setStepIndex] = useState(0);
   // 'oyna' = sıra oyuncuda, raylar açık · 'bekle' = hamle/rakip animasyonu
@@ -178,9 +187,6 @@ export function TutorialGame({ playerName, onFinish, onSkip, source = 'auto' }: 
   // 'bitti' = hamle oynandı, balon 2,6 sn "Rakip hamlesini yaptı" der.
   const [rakipEvre, setRakipEvre] = useState<'yok' | 'diziyor' | 'bitti'>('yok');
   const [confirmOpen, setConfirmOpen] = useState(false);
-  // Karşılama penceresi — tanıtım AÇILIRKEN, ilk sahneden önce (bkz.
-  // `TUTORIAL_INTRO_TITLE`). Kapanınca bir daha açılmaz.
-  const [introOpen, setIntroOpen] = useState(true);
   const [note, setNote] = useState<string | null>(null);
   const [wordsReady, setWordsReady] = useState(isWordSetReady());
 
@@ -501,7 +507,6 @@ export function TutorialGame({ playerName, onFinish, onSkip, source = 'auto' }: 
     };
   }, [state.placed, state.board, state.players, state.current, state.bonuses, wordsReady]);
 
-  const introRef = useModalA11y(introOpen, () => setIntroOpen(false));
   const confirmRef = useModalA11y(confirmOpen, () => setConfirmOpen(false));
   const finishRef = useModalA11y(mode === 'bitti', onFinish);
 
@@ -697,49 +702,72 @@ export function TutorialGame({ playerName, onFinish, onSkip, source = 'auto' }: 
         </div>
       )}
 
-      {/* Karşılama penceresi: tanıtımın ne olduğunu ve ne kadar süreceğini
-          ilk saniyede söyler — kullanıcı isteği (7 Eylül 2026 akşamı).
-          Kapanış kartıyla AYNI kabuk (384px onay kartı). */}
-      {introOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-          <div
-            ref={introRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={TUTORIAL_INTRO_TITLE}
-            tabIndex={-1}
-            className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-3 outline-none"
-          >
-            <p className="text-lg font-bold text-text font-sans">{TUTORIAL_INTRO_TITLE}</p>
-            <p className="text-sm text-text font-sans leading-relaxed">{TUTORIAL_INTRO_TEXT}</p>
-            <button
-              onClick={() => setIntroOpen(false)}
-              className="btn-raised mt-1 py-3 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
-            >
-              {TUTORIAL_INTRO_BUTTON}
-            </button>
-          </div>
-        </div>
-      )}
-
+      {/* Kapanış penceresi — ROADMAP #41 karar 6 (tasarım tuvali "Tanıtım
+          bitti", 1 Ekim 2026): onay mührü + etiket, "Hazırsın!", strateji
+          cümlesi, tanıtım skoru (SEN / RAKİP, oyuncu renklerinde), gri
+          şeritte sıradaki oyun + turuncu düğme. Ayrı bir "Hazırsın" ekranı
+          YOK. Port ikizi `tutorial_game.dart` → `_BitisKarti`. */}
       {mode === 'bitti' && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-5 bg-[rgba(15,23,42,0.5)]">
           <div
             ref={finishRef}
             role="dialog"
             aria-modal="true"
             aria-label="Tanıtım tamamlandı"
             tabIndex={-1}
-            className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-3 outline-none"
+            className="w-full max-w-sm bg-white rounded-[22px] shadow-[0_24px_60px_rgba(15,23,42,0.55)] overflow-hidden flex flex-col outline-none"
           >
-            <p className="text-lg font-bold text-text font-sans">{TUTORIAL_FINISH_TITLE}</p>
-            <p className="text-sm text-text font-sans leading-relaxed">{TUTORIAL_FINISH_TEXT}</p>
-            <button
-              onClick={onFinish}
-              className="btn-raised mt-1 py-3 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
-            >
-              {source === 'replay' ? TUTORIAL_REPLAY_FINISH_BUTTON : TUTORIAL_FINISH_BUTTON}
-            </button>
+            <div className="flex items-center gap-3 px-6 pt-[22px]">
+              <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden className="shrink-0">
+                <circle cx="22" cy="22" r="21" fill="#D6F3E1" stroke="#16A34A" strokeWidth="2" />
+                <path d="M13 22.5 L19.5 29 L31 16" fill="none" stroke="#0B5128" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-mono text-[10px] font-bold uppercase tracking-[1.5px] text-[#0B5128]">
+                  {TUTORIAL_FINISH_LABEL}
+                </span>
+                <p className="text-[28px] leading-[32px] font-bold tracking-[-0.5px] text-text font-sans" style={{ margin: 0 }}>
+                  {TUTORIAL_FINISH_TITLE}
+                </p>
+              </div>
+            </div>
+            <p className="px-6 pt-4 text-[15px] leading-[23px] text-text font-sans" style={{ margin: 0 }}>
+              {TUTORIAL_FINISH_TEXT}
+            </p>
+            <div className="flex gap-2 px-6 pt-[18px]">
+              {[
+                { label: TUTORIAL_FINISH_ME, score: state.players[0]?.score ?? 0, col: PLAYER_COLORS[0], me: true },
+                { label: TUTORIAL_FINISH_OPPONENT, score: state.players[1]?.score ?? 0, col: PLAYER_COLORS[1], me: false },
+              ].map((b) => (
+                <div
+                  key={b.label}
+                  className="flex-1 flex items-center justify-between px-3 py-2.5 rounded-[10px]"
+                  style={{
+                    background: b.col.tint,
+                    outline: `${b.me ? 2 : 1}px solid ${b.col.base}`,
+                    outlineOffset: b.me ? -2 : -1,
+                  }}
+                >
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-[1px]" style={{ color: b.col.text }}>
+                    {b.label}
+                  </span>
+                  <span className="font-mono text-[20px] font-bold text-text">{b.score}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-[22px] px-6 pt-[18px] pb-6 bg-panel border-t border-border flex flex-col gap-2.5">
+              {source === 'auto' && next && (
+                <span className="font-mono text-[10px] font-bold uppercase tracking-[1px] text-muted">
+                  {tutorialNextLine(AI_LEVEL_LABEL[next.aiLevel], next.playerCount)}
+                </span>
+              )}
+              <button
+                onClick={onFinish}
+                className="btn-raised btn-raised-orange min-h-[54px] rounded-md bg-orange text-white text-[15px] font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+              >
+                {source === 'replay' ? TUTORIAL_REPLAY_FINISH_BUTTON : TUTORIAL_FINISH_BUTTON}
+              </button>
+            </div>
           </div>
         </div>
       )}

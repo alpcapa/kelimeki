@@ -132,7 +132,7 @@ ve **oyun sonu kutlaması** (`pickFirstWinCelebration`). Dördünün de kararı
 (kullanıcı isteği): `shouldShowTutorial` dört sinyali birden okur ve
 varsayılan GÖSTERME tarafındadır.
 
-Sahneler, karşılama penceresi, kapının dört sinyali, ipucu metinleri/sırası,
+Sahneler, kapanış penceresi, kapının dört sinyali, ipucu metinleri/sırası,
 ölçüm (`tutorial_events`) ve tuzaklar: `docs/decisions/onboarding.md`.
 
 ## Çalışma İlkesi: Önce Etki Analizi, Sonra Doküman Senkronu

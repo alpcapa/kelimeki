@@ -4,8 +4,10 @@
 // asset dosyasından; senaryonun kendisi `tutorial_script_test.dart`ta.
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/ui/game/board_widget.dart'
     show BoardCoach, BoardWidget;
@@ -43,15 +45,13 @@ int ilkVurguluIndeks(WidgetTester tester) {
   fail('rafta vurgulu taş yok');
 }
 
-/// Karşılama penceresini kapatır — tanıtım artık onunla açılıyor
-/// (7 Eylül 2026 akşamı). `pumpAndSettle` KULLANILAMAZ: raf/hedef
-/// vurgusunun nabız animasyonu sonsuz tekrar ediyor, asla "settle" olmaz.
+/// Açılış penceresi YOK (1 Ekim 2026, ROADMAP #41 karar 5) — tanıtım 1.
+/// sahneyle açılır. Eski çağrı yerleri bozulmasın diye yardımcı duruyor ve
+/// pencerenin GERÇEKTEN olmadığını doğruluyor. `pumpAndSettle` KULLANILAMAZ:
+/// raf/hedef vurgusunun nabız animasyonu sonsuz tekrar ediyor.
 Future<void> karsilamayiGec(WidgetTester tester) async {
-  expect(find.text(tutorialIntroTitle), findsOneWidget);
-  await tester.tap(find.text(tutorialIntroButton));
-  await tester.pump(const Duration(milliseconds: 400));
+  expect(find.text('Kelimeki Tanıtım Turu'), findsNothing);
   await tester.pump();
-  expect(find.text(tutorialIntroTitle), findsNothing);
 }
 
 Future<({bool finished, bool skipped})> pumpTutorial(WidgetTester tester,
@@ -122,14 +122,12 @@ void main() {
         words: words,
         onFinish: () => finished = true,
         onSkip: () {},
+        next: (aiLevel: AiLevel.kolay, playerCount: 2),
       ),
     ));
     await tester.pump();
 
-    // Karşılama penceresi ilk sahneden ÖNCE çıkar; kapanmadan tahta
-    // kullanılamaz.
-    expect(find.text(tutorialIntroTitle), findsOneWidget);
-    expect(find.textContaining('Yaklaşık 1 dk'), findsOneWidget);
+    // Açılış penceresi YOK — 1. sahne doğrudan (ROADMAP #41 karar 5).
     await karsilamayiGec(tester);
 
     expect(find.text('TANITIM · 1/4'), findsOneWidget);
@@ -174,9 +172,33 @@ void main() {
       await rakibiBekle(tester, step);
     }
 
-    // Kapanış kartı — kapatmak gerçek oyunu başlatır.
-    expect(find.text(tutorialFinishTitle), findsOneWidget);
-    expect(find.text(tutorialFinishText), findsOneWidget);
+    // Kapanış kartı — kapatmak gerçek oyunu başlatır. Yeni düzen (ROADMAP
+    // #41 karar 6): etiket, tanıtım skoru (senaryonun son skoru 80-48,
+    // tasarım tuvaliyle aynı), sıradaki oyun.
+    final kart = find.byKey(const Key('tanitim-bitti'));
+    expect(kart, findsOneWidget);
+    Finder icinde(Finder f) => find.descendant(of: kart, matching: f);
+    expect(icinde(find.text(tutorialFinishLabel)), findsOneWidget);
+    expect(icinde(find.text(tutorialFinishTitle)), findsOneWidget);
+    expect(icinde(find.text(tutorialFinishText)), findsOneWidget);
+    expect(icinde(find.text('SEN')), findsOneWidget);
+    expect(icinde(find.text('RAKİP')), findsOneWidget);
+    expect(icinde(find.text('80')), findsOneWidget);
+    expect(icinde(find.text('48')), findsOneWidget);
+    expect(icinde(find.text('SIRADAKİ: YAPAY ZEKA · KOLAY · 2 KİŞİ')),
+        findsOneWidget);
+    // Kartın kendi rota sınırı (diyalog ayrı bir rotada çiziliyor).
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.runAsync(() async {
+      final boundary = tester.renderObject<RenderRepaintBoundary>(find
+          .ancestor(of: kart, matching: find.byType(RepaintBoundary))
+          .last);
+      final image = await boundary.toImage(pixelRatio: 2);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      final out = File('build/screenshots/tutorial_finish.png');
+      out.parent.createSync(recursive: true);
+      out.writeAsBytesSync(bytes!.buffer.asUint8List());
+    });
     expect(finished, isFalse);
     await tester.tap(find.text('GERÇEK OYUNA BAŞLA'));
     await tester.pumpAndSettle();
