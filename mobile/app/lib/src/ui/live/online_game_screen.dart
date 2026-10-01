@@ -1774,8 +1774,9 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
             final kutlama = await _ilkKutlama();
             if (!mounted || !context.mounted) return;
             await showGameOverModal(context, state,
-                onOpenHistory: () =>
-                    showMoveHistoryModal(context, _historyState),
+                onOpenHistory: () => showMoveHistoryModal(
+                    context, _historyState,
+                    myIndex: _mySlot),
                 onFeedback: auth == null ? null : openFeedback,
                 celebration: kutlama);
           });
@@ -1957,7 +1958,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                           onBoardPointerCancel: _endBoardPan,
                                           onOpenHistory: () =>
                                               showMoveHistoryModal(
-                                                  context, _historyState),
+                                                  context, _historyState,
+                                                  myIndex: _mySlot),
                                           onOpenHelp: () =>
                                               showHelpModal(context),
                                           onOpenMessaging: widget.chat == null
