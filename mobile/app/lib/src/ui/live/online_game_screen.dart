@@ -336,6 +336,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
 
   /// Zoom tanıtım balonu (1 Eylül 2026) — `game_screen.dart` ile aynı kural.
   bool _zoomHint = false;
+
   /// Balonun kendi kendine kapanma zamanlayıcısı — `dispose`'da ve "zoom
   /// denendi" dalında iptal edilir (sökülmüş State'te `setState` olmasın).
   Timer? _zoomHintTimer;
@@ -1757,10 +1758,10 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             if (!mounted) return;
             final auth = widget.auth;
-            // Web OnlineGameScreen.tsx (~1306-1316) — game_screen.dart ile
-            // BİREBİR aynı kural: modalı kapatmak da "Görüş Bildir" formunu
-            // açıyor. İkisi bilinçli kod tekrarı çifti, biri değişirse
-            // öteki de (bkz. mobile/CLAUDE.md "Etki Analizi").
+            // game_screen.dart ile BİREBİR aynı kural: "Görüş Bildir" formu
+            // yalnızca modalın içindeki linkle açılır; kapatınca kendiliğinden
+            // açılması 26 Eylül 2026'da kaldırıldı (kullanıcı kararı). İkisi
+            // bilinçli kod tekrarı çifti, biri değişirse öteki de.
             void openFeedback() => showFeedbackModal(context,
                 auth: auth!,
                 feedback: widget.feedback,
@@ -1776,8 +1777,6 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                     showMoveHistoryModal(context, _historyState),
                 onFeedback: auth == null ? null : openFeedback,
                 celebration: kutlama);
-            if (!mounted || auth == null) return;
-            openFeedback();
           });
         }
 

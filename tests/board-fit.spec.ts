@@ -127,6 +127,61 @@ for (const c of [...GENIS_AMA_KISA, { ad: 'dikey telefon', w: 393, h: 852 }]) {
   });
 }
 
+// Taş harfi/puanı tavanı (26 Eylül 2026) — filigranla AYNI hata sınıfı:
+// punto ekran genişliğinden (vw), tahta yükseklikten boyutlanıyor. iPad
+// Safari'de sekme çubuğu + mağaza bandı sayfayı 1194×630'a indirince hücre
+// 18,8 px, harf 24 px'e (hücrenin %128'i) çıkıyordu (kullanıcı ekran
+// görüntüsüyle bildirdi). Tavan `index.css` → `.tile-board-letter`.
+async function tasOlculeri(page: Page) {
+  // Joker OLMAYAN ilk raf taşı (27 Eylül 2026): torbadaki 100 taşın 2'si
+  // joker; raftaki ilk taş joker çıkınca tahtaya koymak "Joker Hangi Harf
+  // Olsun?" penceresini açıyor ve bu adım ~40 koşuda bir düşüyordu (CI'da
+  // iki kez, yerelde 42 koşuda bir; hata bağlamında pencere göründü).
+  await page.locator('[data-rack-tile]').filter({ hasNotText: '★' }).first().click();
+  await page.locator('[data-board-grid] > *').first().click();
+  const harf = page.locator('[data-board-grid] .tile-board-letter').first();
+  await expect(harf).toBeVisible();
+  return page.evaluate(() => {
+    const g = document.querySelector('[data-board-grid]') as HTMLElement;
+    const hucre = (g.firstElementChild as HTMLElement).getBoundingClientRect().width;
+    const px = (sel: string) =>
+      parseFloat(getComputedStyle(g.querySelector(sel) as HTMLElement).fontSize);
+    return {
+      hucre,
+      harf: px('.tile-board-letter'),
+      puan: px('.tile-board-pts'),
+      x3: px('.board-x3-label'),
+    };
+  });
+}
+
+const TAS_GORUNUMLERI = [
+  // Kullanıcının vakası — tavan BURADA bağlamalı.
+  { ad: 'iPad Safari yatay, sekmeler + bant', w: 1194, h: 630, harf: null, puan: null, x3: null },
+  ...GENIS_AMA_KISA.map((c) => ({ ...c, harf: null, puan: null, x3: null })),
+  // Tavanın hiç BAĞLAMAMASI gereken yerler: punto eskisiyle birebir aynı
+  // (vw clamp'i — port ikiziyle kilitli, `tile_font_size_test.dart`).
+  { ad: 'dikey telefon 320', w: 320, h: 640, harf: 14, puan: 6, x3: 9 },
+  { ad: 'dikey telefon 390', w: 390, h: 844, harf: 14.82, puan: 6.24, x3: 10.14 },
+  { ad: 'iPad ana ekran uygulaması', w: 1194, h: 834, harf: 24, puan: 10, x3: 16 },
+];
+
+for (const c of TAS_GORUNUMLERI) {
+  test(`${c.ad}: taş harfi ve X3 hücreye sığıyor`, async ({ page }) => {
+    await page.setViewportSize({ width: c.w, height: c.h });
+    await oyunaGir(page);
+    const o = await tasOlculeri(page);
+    // En dar telefondaki oran %76 — hiçbir görünüm ondan büyük olmamalı.
+    expect(o.harf / o.hucre, 'taş harfi hücreye göre fazla büyük').toBeLessThanOrEqual(0.78);
+    if (c.harf !== null) expect(o.harf).toBeCloseTo(c.harf, 1);
+    if (c.puan !== null) expect(o.puan).toBeCloseTo(c.puan, 1);
+    // Merkezdeki X3 etiketi — aynı sınıf (en dar telefonda %49, iPad
+    // ana ekranında %47; tavansız iPad Safari'de %85'ti).
+    expect(o.x3 / o.hucre, 'X3 etiketi hücreye göre fazla büyük').toBeLessThanOrEqual(0.52);
+    if (c.x3 !== null) expect(o.x3).toBeCloseTo(c.x3, 1);
+  });
+}
+
 // iPad Safari yatay — 23 Eylül 2026, kullanıcının ekran görüntüsünden
 // ölçüldü: ekran 1180×820 ama adres + sekme çubuğu + mağaza bandı sayfayı
 // ~619px'e indiriyor (eşik 632). Blok HER açılışta çıkıyordu. Ekran (screen)

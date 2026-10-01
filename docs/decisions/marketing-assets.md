@@ -188,6 +188,18 @@ tahtalar bilerek kadraj dışına taşıyor. **Ölçüldü:** güvenli kutu x 17
 telefon kırpması x 90–730 → tamamen içeride. Betik bu kontrolü her çalıştırmada
 tekrar ediyor, "sığdı" varsayılmıyor.
 
+**28 Eylül 2026: iki rozet, FB kapağında da** (LinkedIn kapaklarından bir
+gün sonra; kişisel FB profili için istendi, aynı dosya sayfada da geçer).
+Eski *"Ücretsiz · Kurulum yok · Üyelik gerekmez"* satırı yalnızca web'i
+anlatıyordu — iki mağazada yayındayken yanıltıcıydı, *"Ücretsiz ·
+Reklamsız"* oldu. Rozetler `linkedin.tsx`'in `Rozetler`i (aynı kapı), 34
+CSS px; `build.mjs`in rozet ölçümü artık üç kapakta da koşuyor.
+⚠ **Aynı gün: blok YUKARI yaslandı.** Kişisel profilde (mobil) avatar
+kapağın ALT ORTASINI örtüyor (iPad önizlemesinde üst kenarı ~%71'de);
+ortalanmış blokta Play rozeti avatarın altında kaldı. Sayfa kapağının
+"sol alt" kuralı kişisel profile YETMİYOR. `build.mjs` artık içeriğin
+yüksekliğin %68'inin üstünde kaldığını ölçüyor, değilse düşer.
+
 ### LinkedIn kişisel profil kapağı (`scripts/kapak/linkedin.tsx`, 16 Eylül 2026)
 
 `marketing/app-store/kelimeki-linkedin-kapak.png` (1584×396).
@@ -205,10 +217,18 @@ sayılar: güvenli kutu 440 px, dikeyde 26 px yukarı kaydırılmış.
 y 35–137 · telefon kırpması x 116–676 → içeride · avatar bölgesi (sol %22,
 alt %45) → uzakta.
 
-⚠ **Mağaza cümlesi ELLE YAZILMIYOR** — `visibleStoreNamesTr()`ten geliyor
-(`storeLinks.ts`). Play yayına girip URL dolduğunda kapak yeniden
-üretilirse satır kendiliğinden "App Store ve Google Play'de" olur; bu,
-16 Eylül 2026'da SSS metninin bayatlamasıyla alınan dersin aynısı.
+⚠ **Mağazalar KAPIDAN geliyor, elle yazılmıyor** (`storeLinks.ts`) — 16
+Eylül 2026'da SSS metninin bayatlamasıyla alınan dersin aynısı.
+
+**27 Eylül 2026: metin → ROZET, iki kapakta da** (kullanıcı isteği).
+`visibleStoreBadges()` (App Store önce, eşit yükseklik), `<img>` ile;
+`kelimeki.com` rozetlerin yanında. ⚠ Rozetler bilerek KÜÇÜK (30 CSS px)
+— ilk deneme yüksekliği Apple'ın 40 pt sınırından türetmişti (telefon
+kırpmasına göre 58 / 87 px), kapak rozetlere boğuldu ve kullanıcı
+reddetti: *"olmamış, küçültmek lazım"*. Bedel: telefonda ~21 / ~14 pt,
+Apple'ın ekran sınırının altında — kapakta rozete dokunulamadığı için
+(LinkedIn link koydurmuyor) kabul edildi. Betik iki rozetin kırpma
+şeridinde ve eşit yükseklikte olduğunu ölçer, değilse DÜŞER.
 
 ### Reel (`scripts/reel/`, 20 Ağustos 2026)
 
@@ -259,3 +279,69 @@ cevabını veriyor.
 - **ffmpeg bu ortamda apt ile kuruldu** — Playwright'ın kendi ffmpeg'i
   (`/opt/pw-browsers/ffmpeg-1011`) yalnızca VP8/webm derlenmiş, H.264 yok.
 
+
+**28 Eylül 2026 — iki mağaza rozeti (Meta kampanyası):** alt bant artık logo +
+adres yerine **iki rozet + adres** (`visibleStoreBadges`, App Store önce, eşit
+yükseklik); kapanış kartındaki mavi `kelimeki.com` düğmesi ve artık yanlış
+olan *"Kurulum yok · Üyelik gerekmez"* satırı kalktı, yerine *"App Store ve
+Google Play'de"* + *"Ücretsiz · Reklamsız · Tarayıcıda da oynanır"*.
+Kapanışa ayrıca rozet KONMADI: bant her karede duruyor, ikinci satır aynı
+karede rozeti iki kez gösterdi (denendi). Aynı turda betik düştü: Setup'taki
+satırın etiketi "Senin hamlen bekleniyor" → "SIRA SENDE" olmuştu; seçici
+ikisini de tanıyor. ⚠ ffmpeg bu ortamda kurulu gelmiyor, `apt-get install -y
+ffmpeg` gerekiyor (H.264 için; Playwright'ın ffmpeg'i yalnızca VP8).
+
+## "Artık Google Play'de" lansman görselleri (`scripts/play-lansman/`, 26 Eylül 2026)
+
+`npm run build && npm run generate-play-lansman` →
+`marketing/play-store/lansman/` altında Apple setinin beş boyu: kare
+1080×1080 (IG/FB feed), story 1080×1920, dikey 720×1280, yatay 1280×720,
+link kartı 1200×628 (LinkedIn/FB).
+
+**Neden elle üretiliyor:** App Store lansmanında görseller Apple Marketing
+Tools'tan HAZIR geldi (`marketing/app-store/instagram-lansman.md`). Google'ın
+karşılığı yok — Partner Marketing Hub → Tools 26 Eylül 2026'da okundu,
+yalnızca "Device art generator" ve "Legal line generator" var.
+
+- Rozet `public/google-play-badge.svg` (sitedeki resmî dosya) — çizilmez,
+  oranı değiştirilmez. Rozet kullanıldığı için gönderi metnine Google'ın
+  legal satırı girer (Legal line generator).
+- **27 Eylül 2026: İKİ rozet** (kullanıcı: *"ikisinin de olması lazım"*).
+  App Store rozeti de eklendi; hangi rozetin çıktığı ve sırası üretimin
+  kapısından (`visibleStoreBadges` — App Store önce, eşit yükseklik).
+  Betik iki rozetin kadrajda ve eşit yükseklikte olduğunu ölçer. Aynı gün
+  fark edildi: kapıya bağlı carousel kareleri (`sponsored-2026-08/`) ve
+  LinkedIn kapakları Play yayına girdikten sonra yeniden üretilmemişti,
+  hâlâ yalnızca App Store diyorlardı — ⚠ `storeLinks.ts` değişince kapıya
+  bağlı üreticileri YENİDEN KOŞ (liste: `play-store/sosyal-lansman.md`).
+- Simge cihazdaki başlatıcı ikonla aynı kaynak (`icon-source.png`); simge
+  "kelimeki" yazısını taşıdığı için kare/story'de ayrıca logo YOK.
+- Story'de içerik Instagram'ın bindirme bantlarının (üst ~%14, alt ~%20)
+  dışında kalmak zorunda; betik ölçer, taşarsa dosya yazmadan düşer.
+- Yatay ve link kartında 4 kişilik tahta TAMAMEN kadrajda (ilk taslakta
+  kenardan taşıyordu, kullanıcı istemedi); betik tahtanın kadrajda
+  kaldığını ve metnin ona binmediğini ölçer. Kare/story/dikeydeki silik
+  arka plan tahtaları ise bilerek kenardan taşan dekor.
+
+**28 Eylül 2026 — `--genel` varyantı (`npm run generate-meta-story`):** Meta
+kampanyası tek reklam setiyle iOS + Android'e birlikte gidiyor ve "Artık
+Google Play'de" başlığı iPhone'da yanlış olurdu. Aynı üretici yalnızca
+`story` düzeninde mağazadan bağımsız bir görsel çıkarıyor →
+`marketing/meta-reklam/kelimeki-story-1080x1920.png` (başlık "Kelime bul,
+bölgeni büyüt, tahtayı ele geçir.", punto 0,8× — 56 px'te "tahtayı ele
+geçir." güvenli kutuya sığmıyor). Play dosyalarına dokunmuyor. Kare için
+ayrı varyant yok: `sponsored-2026-08/kelimeki-01.png` zaten mağazadan
+bağımsız. Kampanya: `marketing/meta-reklam/kampanya-ekim-2026.md`.
+
+**29 Eylül 2026 — `--sade` varyantı (`npm run generate-meta-sade`):** Meta
+kampanyasının `kare` reklamı (akış `kelimeki-01`, Reels/hikaye yukarıdaki
+story) mobilde 37 ziyaretten 1'ini mağazaya gönderdi (`karusel` 28'de 9) ve
+10:25'te duraklatıldı. Kullanıcının teşhisi: *"çok fazla yazı, kutu vb var.
+Logo çok büyük."* Sade varyant kahramanı değiştiriyor: GERÇEK 4 kişilik
+tahta tam görünür ve soluk değil; üstünde küçük logo + tek satır başlık
+("Kelime bul, bölgeni büyüt."), altında tek dip satırı. İstatistik kutusu,
+ikon ve rozet YOK (reklamın "İndir" düğmesi o işi yapıyor, link siteye
+gidiyor; görseldeki rozet dokunulabilir sanılıyor). Çıktı:
+`marketing/meta-reklam/kelimeki-sade-kare-1080.png` +
+`kelimeki-sade-story-1080x1920.png`. Betik story'de güvenli bandı ölçmeye
+devam ediyor, rozet kontrolü bu varyantta tersine döner (rozet varsa düşer).

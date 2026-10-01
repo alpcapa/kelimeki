@@ -134,9 +134,11 @@ function isDesktopModeIPad(ua: string): boolean {
 
 /**
  * Tarayıcı kimliğinde KENDİNİ bot olarak tanıtan istemciler (arama motoru,
- * önizleme, SEO ve performans araçları). Bunlar SAYILMAYA devam ediyor,
- * yalnızca `os_version`a `'bot'` olarak işaretleniyor (23 Eylül 2026,
- * kullanıcı kararı: tahmine göre süzmeden önce ÖLÇ). Admin "Cihaz"
+ * önizleme, SEO ve performans araçları). Satır YAZILIYOR ve `os_version`a
+ * `'bot'` olarak işaretleniyor (23 Eylül 2026, kullanıcı kararı: tahmine göre
+ * süzmeden önce ÖLÇ); 30 Eylül 2026'dan beri admin SORGULARI bu satırları
+ * saymıyor (`20260930063329_admin_visits_exclude_bots.sql`). Aynı kontrolü
+ * `funnelEvents.ts` ve `webJourney.ts` istemcide uyguluyor (hiç yazmıyor). Admin "Cihaz"
  * tablosundaki masaüstü "sürüm yok" kovasında tek seferlik, oyunsuz,
  * kaynaksız 115 cihaz vardı; kaçının bot, kaçının Linux/ChromeOS kullanıcısı
  * olduğu bilinemiyordu.

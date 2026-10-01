@@ -41,9 +41,8 @@ void main() {
       // farkları yüzünden yanlış alarm üretirdi (Dart ham string, JS literal).
       // Sayı eşitliği "biri eklenip öteki unutuldu"yu yakalar; DAVRANIŞ
       // eşitliğini aşağıdaki ortak vaka listesi kanıtlıyor.
-      int say(String blok) => RegExp(r'^\s*/', multiLine: true)
-          .allMatches(blok)
-          .length;
+      int say(String blok) =>
+          RegExp(r'^\s*/', multiLine: true).allMatches(blok).length;
       final geciciBlok = pick(
         web,
         RegExp(r'GECICI_KALIPLAR: RegExp\[\] = \[(.*?)\];', dotAll: true),
@@ -55,9 +54,11 @@ void main() {
         'MAKINE_KALIPLARI',
       );
       expect(say(geciciBlok), 10,
-          reason: 'web geçici kalıp sayısı değişti — Dart tarafını da güncelle');
+          reason:
+              'web geçici kalıp sayısı değişti — Dart tarafını da güncelle');
       expect(say(makineBlok), 12,
-          reason: 'web makine kalıp sayısı değişti — Dart tarafını da güncelle');
+          reason:
+              'web makine kalıp sayısı değişti — Dart tarafını da güncelle');
     });
   });
 
@@ -130,6 +131,11 @@ void main() {
       'permission denied for table profiles',
       'column "foo" does not exist',
       'duplicate key value violates unique constraint "profiles_pkey"',
+      // 1.1.1 cihaz turu (26 Eyl 2026): uçak modunda Canlı oyun mesajı —
+      // Dart'ın taşıma metinleri (web'de oluşmaz, yalnızca Dart'ta).
+      "Failed host lookup: 'xvqlizifakkkoqahaxsg.supabase.co'",
+      'Connection refused',
+      'Network is unreachable',
     ]) {
       test('elenir: "${msg.substring(0, msg.length.clamp(0, 32))}…"', () {
         expect(isMachineMessage(msg), isTrue);
@@ -145,7 +151,8 @@ void main() {
 
   group('boş ve garip girdiler', () {
     test('boş mesaj → fallback', () {
-      expect(friendlyErrorMessage(_Hata(''), report: false), kGenericErrorNotice);
+      expect(
+          friendlyErrorMessage(_Hata(''), report: false), kGenericErrorNotice);
     });
 
     test('null → fallback', () {

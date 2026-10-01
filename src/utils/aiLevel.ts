@@ -107,3 +107,15 @@ export const AI_LEVEL_BADGE_CLASS: Record<AiLevel, string> = {
   normal: 'text-orange border-orange/40 bg-orange/10',
   zor: 'text-red border-red/40 bg-red/10',
 };
+
+/**
+ * Setup'taki zorluk seçicisinin VARSAYILANI (27 Eylül 2026, ROADMAP #41
+ * karar 7 — kullanıcı: *"Kolay olsun"*): hiç oynamamış kullanıcının ilk
+ * oyunu Kolay, sonrası Normal. `ilkOyun` tanıtım kapısının kararı
+ * (`shouldShowTutorial`) — "yeni kullanıcı" için ikinci bir tanım yok.
+ * ⚠ Yalnızca webde (#41'in Setup yarısı önce web); port bugün hep Normal
+ * açıyor, ikizi Setup'ın port yarısıyla gelecek.
+ */
+export function defaultAiLevel(ilkOyun: boolean): AiLevel {
+  return ilkOyun ? 'kolay' : 'normal';
+}

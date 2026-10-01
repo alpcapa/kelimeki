@@ -1374,6 +1374,22 @@ taşı, orada yalnızca HER YERDE geçerli kural kalsın" diyor.
   değişmedi: hiç denemeyen oyuncu balonu ikinci oyun açılışında bir kez daha
   görür. Kapanmayı "deneme" saymak kuralı sessizce tek gösterime indirirdi.
 
+  **Balon SOL-ALT bloğa taşındı, metin kısaldı (27 Eylül 2026).** Kullanıcı:
+  *"Çift tık ile tahta büyütme mesajı çok uzun... X3 üzerine göstermesi
+  kafa karıştırıyor. Sol alt bölümün ortasına beyaz boş kareyi gösteren bir
+  mesaj balonu olsun. Mesaj: Boş kareye çift tık tahtayı büyütür. Şimdi
+  Dene!"* Merkez kare X3 olduğundan oyuncu balonu çarpan hakkında
+  sanıyordu. Hedef artık `zoomHintTarget` (`src/utils/boardZoom.ts` ↔ port
+  `board_zoom.dart`): köşe 2 bloğunun (satır 9-12 × sütun 0-3) ortasına en
+  yakın BOŞ kare — boş tahtada (10,1); taslak taş da dolu sayılır, blok
+  tamamen doluysa balon çizilmez. Metin tek sabitte (`ZOOM_HINT_TEXT` ↔
+  `kZoomHintText`), iki cümle `\n` ile iki satır — serbest sarmada 390 px'te
+  "Şimdi / Dene!" diye kırılıyordu. Geometri tanıtım balonunun (`coach`)
+  aynısı. ⚠ 4 kişilik oyunda o blok 3. oyuncunun köşesi, kare beyaz değil
+  onun renginde — "boş kare" hâlâ doğru, kabul edildi. Kapılar: smoke
+  "balon SOL-ALT bloğun ortasındaki boş kareyi gösterir" + port
+  `zoom_hint_test.dart` (metin web'den OKUNUR).
+
   ⚠ **Fikstür dersi (aynı gün):** süre gelince `tahta zoom` bloğundaki BEŞ
   test düştü ve sebep ürün DEĞİLDİ — `tanitimiAtla` (tests/gameOverFixture.ts)
   tanıtımın hiç çıkmadığı akışlarda iki `waitFor` ile 10 saniye ölü

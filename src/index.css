@@ -373,6 +373,25 @@ select {
     }
   }
 
+  /* Sabit alt şerit (30 Eylül 2026, `Landing.tsx` → `#karsilama-alt-serit`):
+     ilk ekrandaki düğme+rozetler tamamen görünürken `main.tsx` sınıfı
+     ekliyor. `visibility` de gizleniyor ki saklıyken odak/dokunuş almasın. */
+  #karsilama-alt-serit {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  #karsilama-alt-serit.alt-serit-gizli {
+    transform: translateY(100%);
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #karsilama-alt-serit {
+      transition: none;
+    }
+  }
+
   /* İki mod birbirini dışlar. Sınıfı `<head>`'deki SENKRON kapı script'i
      (bkz. scripts/landing-plugin.js) gövde ayrıştırılmadan ekliyor, yani
      karar İLK BOYAMADAN ÖNCE veriliyor — titreme yok. Aynı no-FOUC kalıbı
@@ -383,5 +402,55 @@ select {
 
   html:not(.uygulama-modu) #root {
     display: none;
+  }
+}
+
+/* Tahta taşının harf/puan puntosu (26 Eylül 2026).
+   Punto EKRAN genişliğinden geliyor (`vw`) — tahtanın ekranla orantılı
+   olduğu varsayımı. Yükseklik bütçesinden (`boardFit.ts`, #607) beri bu
+   yanlış: iPad Safari'de sekme çubuğu + Smart App Banner yüksekliği yiyince
+   tahta 1194×630'da 300 px'e iniyor (hücre 18,8 px) ama punto vw tavanında
+   (24 px) kalıyor → harf hücrenin %128'i (kullanıcı ekran görüntüsüyle
+   bildirdi; ana ekran uygulaması etkilenmedi, çünkü orada tahta büyük).
+   #609 filigranlar için aynı sınıfı çözmüştü; taşlar unutulmuştu.
+
+   Tavan ızgaranın İÇ genişliğine bağlı (`cqw`, kapsayıcı `[data-board-grid]`,
+   `container-type: inline-size`). Oran web'in desteklediği en dar ekrandan:
+   320 px'te iç genişlik 276 → 14 px harf ≈ 5.07cqw, 6 px puan ≈ 2.17cqw (yuvarlama bağlamasın diye 5.08 / 2.18). Yani
+   yükseklik bütçesi devrede DEĞİLKEN tavan hiç bağlamaz (390 px telefon ve
+   1194×834 ana ekran uygulaması ölçüldü: ikisi de değişmedi) — punto
+   yalnızca tahta en dar telefonunkinden de dar olduğunda küçülür.
+   ⚠ `vw` clamp'i port ikiziyle kilitli (`tile_font_size_test.dart`); tavan
+   bir EK, clamp'i değiştirmiyor. Port tahtası henüz yükseklikten
+   boyutlanmıyor (ROADMAP #38) — #38 yapılırken punto da tahtaya bağlanmalı.
+   Merkezdeki X3 etiketi (`clamp(9px,2.6vw,16px)`) aynı sınıftan ve aynı
+   gün yakalandı: iPad Safari'de 16 px / 18,8 px hücre. Tavan 3.33cqw: en
+   dar telefonda (9/276 = 3.26) ve iPad ana ekranında (16/482 = 3.32)
+   bağlamayan en küçük oran. O kural KATMANSIZ ve `[data-board-grid]` önekli: clamp
+   Tailwind utility'si olarak kalmak zorunda (port parite testi o dizeyi
+   okuyor), utilities katmanını ancak daha yüksek specificity ezer.
+   `@supports` yoksa (iOS < 16) ilk satır kalır, yani eski davranış.
+   Kapsayıcısı olmayan bir yerde `cqw` küçük viewport genişliğine düşer ve
+   tavan clamp'ten büyük kalır — o yüzeyler de değişmez. */
+@layer components {
+  .tile-board-letter {
+    font-size: clamp(14px, 3.8vw, 24px);
+  }
+  .tile-board-pts {
+    font-size: clamp(6px, 1.6vw, 10px);
+  }
+  @supports (width: 1cqw) {
+    .tile-board-letter {
+      font-size: min(clamp(14px, 3.8vw, 24px), 5.08cqw);
+    }
+    .tile-board-pts {
+      font-size: min(clamp(6px, 1.6vw, 10px), 2.18cqw);
+    }
+  }
+}
+
+@supports (width: 1cqw) {
+  [data-board-grid] .board-x3-label {
+    font-size: min(clamp(9px, 2.6vw, 16px), 3.33cqw);
   }
 }
