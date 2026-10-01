@@ -48,15 +48,13 @@ import {
   type FirstWinCelebrationId,
 } from './utils/onboarding';
 import {
-  ONBOARDING_HINT_MS,
   ONBOARDING_HINT_TEXTS,
   onboardingHintYon,
-  bumpOnboardingHintShown,
   markTutorialSeen,
-  onboardingHintShownCounts,
-  pickOnboardingHint,
-  type OnboardingHintId,
 } from './utils/onboarding';
+import { useOnboardingHints } from './hooks/useOnboardingHints';
+import { HintBubble } from './components/HintBubble';
+import { zoomHintTarget } from './utils/boardZoom';
 import { TutorialGame } from './components/TutorialGame';
 import { swallowNextClick } from './utils/ghostClick';
 import { useBoardZoom } from './hooks/useBoardZoom';
@@ -1099,81 +1097,37 @@ export default function App() {
   // Tahta yakınlaştırması (1 Eylül 2026, kullanıcı kararı: "her yerde aynı
   // deneyim"). Sürükleme sürerken pan HİÇ başlamaz — `dragRef` bayrağı
   // portun hit-test sırasının web karşılığı (bkz. useBoardZoom).
-  // İkinci argüman: tahta ŞU AN ekranda mı — `App` Setup'ı da render
-  // ettiğinden tanıtım balonunun sayacı orada artmamalı (bkz. useBoardZoom).
-  const boardZoom = useBoardZoom(
-    () => dragRef.current !== null,
-    state.phase !== 'setup',
-  );
+  const boardZoom = useBoardZoom(() => dragRef.current !== null);
 
-  // ── Bağlamsal ipucu (Onboarding Faz 2, 8 Eylül 2026) ───────────────────────
-  // Tahtaya ilk kelime oturduğunda "kelimeye tıkla, anlamı gelir" balonu,
-  // bir kez (bkz. `utils/onboarding.ts`; 30 Eylül 2026'da üç mekanik
-  // ipucunun yerine geçti).
-  // Balon tahtanın kendi `coach` prop'unu kullanıyor — tanıtımın çizdiği
-  // balonun aynısı, ikinci bir geometri yazılmadı.
-  const [hint, setHint] = useState<{ id: OnboardingHintId; r: number; c: number } | null>(null);
-  // İşlenmiş `moveHistory` uzunluğu. Ref, çünkü karar bir YAN ETKİ (sayaç
-  // artıyor) ve StrictMode'un çift çalıştırması ikinci turda boş dilim
-  // görmeli — `useBoardZoom`taki `hintDecided` ile aynı sınıf koruma.
-  const hintHistoryRef = useRef(0);
-  // Oyuna YENİ girildi mi. ⚠ Bu bayrak olmadan KAYITTAN DEVAM bir ipucu
-  // uydururdu: `RESUME_SAVED` fazı ve geçmişi AYNI ANDA değiştiriyor, yani
-  // effect ilk koşumunda "az önce oynanmış" sanacağı DOLU bir geçmiş görürdü.
-  const hintArmedRef = useRef(false);
-  // Ekran açıldığı andaki geçmiş uzunluğu — `ONBOARDING_HINT_MIN_MOVES`
-  // (zoom balonuyla arada en az 3 hamle) buradan sayılıyor.
-  const hintBaseRef = useRef(0);
-  useEffect(() => {
-    if (state.phase !== 'play') {
-      hintArmedRef.current = false;
-      hintHistoryRef.current = state.moveHistory.length;
-      setHint(null);
-      return;
-    }
-    if (!hintArmedRef.current) {
-      hintArmedRef.current = true;
-      hintHistoryRef.current = state.moveHistory.length;
-      hintBaseRef.current = state.moveHistory.length;
-      return;
-    }
-    const yeni = state.moveHistory.slice(hintHistoryRef.current);
-    hintHistoryRef.current = state.moveHistory.length;
-    // Vergi satırları (`invasionFrom`) ve pas/değişim/teslim satırları hamle
-    // DEĞİL; ipucu yalnızca gerçek bir kelime hamlesinden doğar.
-    const move = yeni.find((e) => !e.action && !e.invasionFrom && e.words.length > 0);
-    if (!move) return;
-    // YZ'nin hamlesi de SAYILIR (30 Eylül 2026): ipucu bir mekaniği değil
-    // bir etkileşimi anlatıyor — "kelimeye dokun, anlamı açılsın" — ve YZ
-    // oynadıktan sonra sıra oyuncuda, yani balonu okuyacak an tam o.
-    // Vergi satırı ayrı bir hamle değil (yukarıdaki not); pas/değişim sayılır.
-    const movesSinceOpen = state.moveHistory
-      .slice(hintBaseRef.current)
-      .filter((e) => !e.invasionFrom).length;
-    const secilen = pickOnboardingHint(
-      { wordPlaced: true, movesSinceOpen },
-      onboardingHintShownCounts(),
-    );
-    if (!secilen) return;
-    // Çapa: hamlenin ilk karesi — o hücreden geçen kelimenin anlamı açılır.
-    const [capaR, capaC] = state.lastMoveCells[0] ?? [];
-    if (capaR === undefined || capaC === undefined) return;
-    const capa = { r: capaR, c: capaC };
-    bumpOnboardingHintShown(secilen);
-    setHint({ id: secilen, r: capa.r, c: capa.c });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.moveHistory.length, state.phase]);
-
-  // Balon kendi kendine kapanır; oyuncu yeni bir taş koyduysa daha erken.
-  useEffect(() => {
-    if (!hint) return;
-    const t = setTimeout(() => setHint(null), ONBOARDING_HINT_MS);
-    return () => clearTimeout(t);
-  }, [hint]);
-  const hasDraft = Object.keys(state.placed).length > 0;
-  useEffect(() => {
-    if (hasDraft) setHint(null);
-  }, [hasDraft]);
+  // ── Eğitim balonları (Onboarding Faz 2; sıra 1 Ekim 2026) ──────────────────
+  // menü → anlam → zoom → hamleler → torba → mesaj, birer kez, 2. turdan
+  // sonra başlayıp 4'er tur arayla (`pickOnboardingHint`). Karar ortak hook'ta
+  // (`useOnboardingHints`, OnlineGameScreen de kullanıyor).
+  // Vergi satırları (`invasionFrom`) hamle DEĞİL; pas/değişim/teslim hamle.
+  const hintMoves = state.moveHistory.filter((e) => !e.invasionFrom);
+  const sonHamle = hintMoves[hintMoves.length - 1];
+  const sonKelime: [number, number] | null =
+    sonHamle && !sonHamle.action && sonHamle.words.length > 0 && state.lastMoveCells[0]
+      ? [state.lastMoveCells[0][0], state.lastMoveCells[0][1]]
+      : null;
+  const hint = useOnboardingHints({
+    active: state.phase === 'play',
+    moves: hintMoves.length,
+    playerCount: state.players.length,
+    lastWordCell: sonKelime,
+    available: {
+      // Misafirde sağ üstte avatar değil "Giriş" var — menü balonu ATLANIR.
+      menu: !!user,
+      anlam: true,
+      zoom: zoomHintTarget((r, c) => state.board[r][c] === null && !state.placed[key(r, c)]) !== null,
+      hamleler: true,
+      torba: true,
+      // Yerel/YZ oyununda mesajlaşma yok.
+      mesaj: false,
+    },
+    hasDraft: Object.keys(state.placed).length > 0,
+    onZoom: boardZoom.showHint,
+  });
 
   // ÖNCELİK — ekranda aynı anda TEK balon (Onboarding Faz 2):
   // Sınır İhlali penceresi › onboarding ipucu › zoom balonu.
@@ -1186,11 +1140,11 @@ export default function App() {
   // HİÇ görünmezdi. İpucu geçici (4 sn) ve oyuncunun AZ ÖNCE yaptığı şeyi
   // anlatıyor; zoom balonu o pencereden sonra geri geliyor.
   const hintCoach =
-    !invasionConfirm && hint
+    !invasionConfirm && hint?.id === 'anlam' && hint.r !== undefined && hint.c !== undefined
       ? {
           r: hint.r,
           c: hint.c,
-          text: ONBOARDING_HINT_TEXTS[hint.id],
+          text: ONBOARDING_HINT_TEXTS.anlam,
           // Balon işaret ettiği karenin ÜSTÜNDE durur; ilk satırlarda üstte
           // yer yok → altına (`ONBOARDING_HINT_ALT_ROWS`, 1 Ekim 2026).
           yon: onboardingHintYon(hint.r),
@@ -2015,7 +1969,7 @@ export default function App() {
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
-      <GameHeader state={state} onLogoClick={handleLogoClick} />
+      <GameHeader state={state} onLogoClick={handleLogoClick} menuHint={hint?.id === 'menu'} />
 
       <main className="w-full flex flex-col items-center">
       <Board
@@ -2043,6 +1997,7 @@ export default function App() {
         onTilePointerCancel={cancelDrag}
         coach={hintCoach}
         zoomHint={boardZoom.hint && !hint}
+        stripHint={hint?.id === 'hamleler' ? 'hamleler' : null}
         zoom={boardZoom.zoom}
         viewportRef={boardZoom.viewportRef}
         onBoardPointerDown={boardZoom.onPointerDown}
@@ -2162,9 +2117,12 @@ export default function App() {
             </button>
             <button
               onClick={() => setShowTiles(true)}
-              className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform"
+              className="btn-raised-neutral relative flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform"
             >
               Torba <span className="text-[13px] text-accent">{state.bag.length}</span>
+              {hint?.id === 'torba' && (
+                <HintBubble text={ONBOARDING_HINT_TEXTS.torba} yon="ust" hiza="son" />
+              )}
             </button>
           </div>
         )}

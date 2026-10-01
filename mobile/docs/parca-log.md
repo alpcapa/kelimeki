@@ -25,6 +25,96 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
+
+- **Bildirim (1.1.2 cihaz turu, Canlı oyun, sıra kendisinde):** *"ipad'de
+  yatay modda alttaki butonlar çok az ekran dışına taşıyor. Scroll
+  edilebiliyor."* (~10 pt). İlk düzeltme tahtayı 16 px küçültmekti (YAMA,
+  web'e bakılmadan yapıldı); kullanıcı web'in ekran görüntüsünü gönderdi:
+  *"Web'e baktın mı? Orada düzgün"*.
+- **Web ÖLÇÜLDÜ (Playwright, 1180×820):** başlık 57, logo 10,5–46,5,
+  "← Geri" 49,5–60,5 (logonun altına TAŞAN, yer kaplamayan `absolute`
+  etiket), kart 63'te, 488 geniş, PAS GEÇ'in altı 795. Port: kart 88'de —
+  tahtanın altındaki kısım iki tarafta aynı (194 ↔ 193), fark YALNIZ
+  başlıktaydı: 48'lik `TapTarget`ler satırı 48'e çekiyor + "← Geri" ayrı
+  bir 24'lük satır.
+- **Düzeltme (yapısal):** `GameHeader` web'in geometrisiyle yeniden kuruldu
+  — `px-3 py-2.5` + öğelerin doğal boyu, "← Geri" logo öğesinin İÇİNDE
+  taşan etiket (`kBackGap` = web `BACK_GAP` 3). Dokunma alanı 48'lik
+  kutulardan değil SATIRDAN: `IntrinsicHeight` + `stretch` her öğeyi
+  başlığın tam boyuna (~56) geriyor; YENİ `TapTargetScope` (tap_target.dart)
+  başlık içindeki `TapTarget`lerin 48'lik asgari YÜKSEKLİĞİNİ kaldırıyor.
+  Sonuç 1180×820: logo 10–46, Geri 49–60, kart 62/488, PAS GEÇ 791 — web'le
+  aynı tahta, alt şeritte 29 px pay. 16 px'lik tahta küçültmesi GERİ
+  alındı (`board_fit.dart` sabitleri yine web'den birebir).
+- **Bilinçli bedel:** 24 Ağustos'un "Geri yazısının biraz ALTINA basınca
+  çalışmıyor" şikayetinin alanı artık yok — etiketin altında web'deki gibi
+  doğrudan tahta başlıyor (~2,5 px). Logo+etiket öğesi başlığın tam boyunda
+  dokunulabilir. Cihazda yeniden denenmeli (TESTING).
+- **Kapılar:** `board_fit_test` alt şeridin altında ≥16 px boşluk istiyor;
+  `online_game_screen_test`teki "sıra rakipte 9 px taşma kabul" kalktı;
+  `layout_parity_test` artık `BACK_GAP`ı web'le karşılaştırıyor;
+  `game_header_test` etiketi logonun 3 px altında bekliyor.
+
+## Parça 226 — Eğitim balonu SIRASI: menü · anlam · zoom · hamleler · torba · mesaj (1 Ekim 2026) — web + port aynı PR
+
+- **Kullanıcı isteği (1.1.2 cihaz turu):** dört yeni balon (avatar menüsü,
+  Hamleler, Torba, Mesajlaşma) + mevcut anlam/zoom balonları TEK sırada,
+  birer kez, 2. turdan sonra başlayıp 4'er tur arayla; misafirde menü
+  atlanır, mesaj en sonda (yalnız Canlı oyunda çizilebilir). Kurallar ve
+  sözler: `docs/decisions/onboarding.md` → "1 Ekim 2026 — tek balon SIRAYA
+  dönüştü".
+- **Port:** `util/onboarding.dart` (enum 6 id, sıra, üç tur eşiği, metinler,
+  yeni `pickOnboardingHint`), `FlagsStore` (zoom sayacı sıraya bağlandı,
+  `shouldShowZoomHint` SİLİNDİ), YENİ `ui/game/onboarding_hints.dart`
+  (`OnboardingHintScheduler`, iki ekranın ortak sayacı) ve
+  `ui/game/hint_bubble.dart` (`HintAnchor`: `OverlayPortal` +
+  `CompositedTransformFollower`, `IgnorePointer`). `GameHeader.menuHint`,
+  `BoardWidget.stripHint`, iki ekranda TORBA düğmesi sarıldı. Zoom balonu
+  artık AÇILIŞTA çıkmıyor (`_zoomHintKarariVer` → `_zoomHintGoster`).
+- **Bulunan tuzak:** `OverlayPortalController.show()` build sırasında
+  çağrılınca assert veriyor (`didUpdateWidget`). Portal ilk kareden sonra bir
+  kez açılıyor; balonun görünürlüğü builder'da `show`a bakıyor.
+- **Canlı:** sayaç ilk senkronla KURULUYOR (geçmişin tamamı "az önce
+  oynanmış" sayılmaz); `anlam` çizilmez, `mesaj` yalnız burada.
+
+**Doğrulama:** `tutorial_script_test` (web `verify-tutorial-script` §10'un
+15 vakası birebir), `tutorial_parity_test` (sıra · 3 eşik · metinler web
+kaynağından), `zoom_hint_test` 11/11 (2. turdan sonra zoom, gösterildiyse
+hamleler, denediyse yok, torba balonu TORBA'nın üstünde + 4 sn'de kapanıyor,
+girişliye ilk menü). Web: `verify-tutorial-script` + Playwright "tahta zoom"
+18/18 (gerçek paslarla). **Sınır:** Canlı ekrandaki mesaj/torba balonu
+yalnızca birim düzeyinde (scheduler) sınandı, ekran testi yok — cihazda
+bakılmalı (TESTING §13.6 / mobil §1.9.1).
+
+## Parça 225 — 1.1.2 cihaz turu bulguları: "Tanıtım" linki · "Kişi" etiketi · k-lig başlığı (1 Ekim 2026)
+
+Kullanıcı 1.1.2 (826) TestFlight turunda üç bulgu bildirdi:
+
+1. **Setup'ın "Tanıtım" linki kalktı** — *"Tek sayfa tanıtım çıktı.
+   Setup'daki tanıtım linkine gerek yok."* Misafir logo altı satırında
+   yalnız "Nasıl oynanır?" kaldı (web de yalnız onu taşıyor). `_openIntro`
+   silindi; `IntroScreen`e dönüş yolu YOK.
+2. **Skor kartı "2 OYUNCULU / 4 OYUNCULU" → "2 KİŞİ / 4 KİŞİ"** — web
+   27 Eylül'den beri "Kişi" diyordu (`ScoreStatsSection.tsx` `SCORE_TABS`),
+   port ayrışmıştı. Aynı turda iki boş liste metni ("… kişilik oyun
+   kaydın/kaydı yok") ve Tüm Oyunlar başlığı ("Tüm Oyunlar · N Kişi",
+   web `GameHistoryModal`) eşlendi. **Kök sebep kapısızlık:** yeni
+   `score_labels_parity_test.dart` etiketleri web kaynağından okuyor.
+3. **k-lig başlığı "SIRAOYUNCU"** — "SIRA" 28'lik kutuyu ~26 px
+   dolduruyordu, "OYUNCU" hemen ardından başlıyordu. Web'deki `gap-1`
+   (4px) eklendi. Kullanıcının *"1000'li rakamlar"* sorusu ölçüldü:
+   375 pt'de 4 haneli puan ölçek 1,0 VE 1,3'te tam boy sığıyor; 5 hane ve
+   OHP tavanda %10 kadar küçülüyor (hücreler bilerek en fazla ×1,15
+   büyüyor — `scaledWidth`). `score_card_test` iki ölçekte kilitliyor.
+
+Kapanan bir "bulgu" daha: yazılar web'den büyük görünüyordu — sebebi iPad
+Safari'nin masaüstü kipi (web küçültülerek çiziliyor); "Mobil Web Sitesi
+İste" ile aynı göründü, uygulamada değişiklik YOK.
+
+**Doğrulama:** `flutter analyze` temiz (bilinen tek info), `flutter test`
+tam takım yeşil. **Sınır:** cihazda bakılmadı (sonraki TestFlight).
+
 ## Parça 224 — `IntroScreen` TEK EKRAN: web'in yeni ilk ekranı (1 Ekim 2026, ROADMAP #41 karar 14)
 
 - **Kullanıcı kararı** (seçenekli soru, 1 Eki): *"Web'in yeni ilk ekranı

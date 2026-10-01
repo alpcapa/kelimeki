@@ -49,13 +49,14 @@ import {
 } from '../src/utils/tutorialScript';
 import {
   ONBOARDING_HINT_MAX_SHOWS,
-  ONBOARDING_HINT_MIN_MOVES,
+  ONBOARDING_HINT_FIRST_ROUNDS,
+  ONBOARDING_HINT_GAP_ROUNDS,
+  ONBOARDING_HINT_ANLAM_MIN_ROUNDS,
   ONBOARDING_HINT_ALT_ROWS,
   onboardingHintYon,
   pickFirstWinCelebration,
   FIRST_WIN_TEXTS,
   FIRST_WIN_GUEST_CTA,
-  ONBOARDING_HINT_ORDER,
   ONBOARDING_HINT_TEXTS,
   TUTORIAL_LAUNCH_AT,
   pickOnboardingHint,
@@ -333,14 +334,35 @@ for (const vaka of kapiVakalari) {
   }
 }
 
-// ── 10. Bağlamsal ipucu (Onboarding Faz 2) ──────────────────────────────
-// Kapının tablosuyla aynı gerekçe: karar SAF bir fonksiyonda. 30 Eylül
-// 2026'dan beri tek ipucu var (`anlam` — kelimeye tıkla, anlamı gelir; üç
-// mekanik ipucu kaldırıldı). Kilitlenen kural: kelime oturmadıysa balon
-// yok, açılıştan beri 3 hamle geçmediyse yok (zoom balonuyla çakışmasın),
-// tavana çarpınca bir daha yok.
-const SIFIR: Record<OnboardingHintId, number> = { anlam: 0 };
+// ── 10. Eğitim balonları (Onboarding Faz 2; sıra 1 Ekim 2026) ───────────
+// Kapının tablosuyla aynı gerekçe: karar SAF bir fonksiyonda. Kilitlenen
+// kural: sıra menü → anlam → zoom → hamleler → torba → mesaj; ilki 2. turdan,
+// sonrakiler 4'er tur arayla; çizilemeyen ATLANIR; anlam kelime oturmadan ve
+// 6. turdan önce BEKLER; her biri bir kez.
+const SIFIR: Record<OnboardingHintId, number> = {
+  menu: 0, anlam: 0, zoom: 0, hamleler: 0, torba: 0, mesaj: 0,
+};
 const TAVAN = ONBOARDING_HINT_MAX_SHOWS;
+const HEPSI: Record<OnboardingHintId, boolean> = {
+  menu: true, anlam: true, zoom: true, hamleler: true, torba: true, mesaj: true,
+};
+const YEREL = { ...HEPSI, mesaj: false };
+const MISAFIR = { ...YEREL, menu: false };
+const CANLI = { ...HEPSI, anlam: false };
+const bitti = (...ids: OnboardingHintId[]) => ({
+  ...SIFIR,
+  ...Object.fromEntries(ids.map((id) => [id, TAVAN])),
+});
+const girdi = (
+  movesSinceOpen: number,
+  lastShownAt: number | null,
+  available: Record<OnboardingHintId, boolean>,
+  wordPlaced = true,
+  playerCount = 2,
+): OnboardingHintInput => ({ movesSinceOpen, playerCount, lastShownAt, wordPlaced, available });
+const ILK = ONBOARDING_HINT_FIRST_ROUNDS * 2;
+const ARA = ONBOARDING_HINT_GAP_ROUNDS * 2;
+const ANLAM = ONBOARDING_HINT_ANLAM_MIN_ROUNDS * 2;
 
 const ipucuVakalari: {
   ad: string;
@@ -348,24 +370,69 @@ const ipucuVakalari: {
   sayac: Record<OnboardingHintId, number>;
   beklenen: OnboardingHintId | null;
 }[] = [
-  { ad: 'kelime oturmadı', girdi: { wordPlaced: false, movesSinceOpen: 5 }, sayac: SIFIR, beklenen: null },
+  { ad: 'ilk turlarda balon yok', girdi: girdi(ILK - 1, null, YEREL), sayac: SIFIR, beklenen: null },
+  { ad: '2. tur → menü (girişli)', girdi: girdi(ILK, null, YEREL), sayac: SIFIR, beklenen: 'menu' },
   {
-    // Zoom balonu açılışta çıkıyor; arada en az ONBOARDING_HINT_MIN_MOVES hamle.
-    ad: 'kelime oturdu ama açılıştan beri az hamle — zoom balonuyla çakışmasın',
-    girdi: { wordPlaced: true, movesSinceOpen: ONBOARDING_HINT_MIN_MOVES - 1 },
+    ad: '4 kişide tur = 4 hamle: 7. hamlede henüz yok',
+    girdi: girdi(ONBOARDING_HINT_FIRST_ROUNDS * 4 - 1, null, YEREL, true, 4),
     sayac: SIFIR,
     beklenen: null,
   },
   {
-    ad: 'kelime oturdu, eşik doldu',
-    girdi: { wordPlaced: true, movesSinceOpen: ONBOARDING_HINT_MIN_MOVES },
-    sayac: SIFIR,
-    beklenen: 'anlam',
+    ad: 'menüden sonra aralık dolmadan yok',
+    girdi: girdi(ILK + ARA - 1, ILK, YEREL),
+    sayac: bitti('menu'),
+    beklenen: null,
+  },
+  { ad: 'aralık doldu → anlam', girdi: girdi(ILK + ARA, ILK, YEREL), sayac: bitti('menu'), beklenen: 'anlam' },
+  {
+    ad: 'anlamın sırası ama kelime oturmadı → BEKLER (atlanmaz)',
+    girdi: girdi(ILK + ARA, ILK, YEREL, false),
+    sayac: bitti('menu'),
+    beklenen: null,
   },
   {
-    ad: 'tavanda — bir daha gösterilmez',
-    girdi: { wordPlaced: true, movesSinceOpen: ONBOARDING_HINT_MIN_MOVES },
-    sayac: { anlam: TAVAN },
+    ad: 'misafir: menü atlanır, anlam 6. turdan önce BEKLER',
+    girdi: girdi(ILK, null, MISAFIR),
+    sayac: SIFIR,
+    beklenen: null,
+  },
+  { ad: 'misafir: 6. tur → anlam', girdi: girdi(ANLAM, null, MISAFIR), sayac: SIFIR, beklenen: 'anlam' },
+  { ad: 'anlamdan sonra → zoom', girdi: girdi(20, 12, YEREL), sayac: bitti('menu', 'anlam'), beklenen: 'zoom' },
+  {
+    ad: 'zoom çizilemiyor (köşe dolu) → hamleler',
+    girdi: girdi(20, 12, { ...YEREL, zoom: false }),
+    sayac: bitti('menu', 'anlam'),
+    beklenen: 'hamleler',
+  },
+  {
+    ad: 'yerel oyun: hamlelerden sonra torba, mesaj YOK',
+    girdi: girdi(36, 28, YEREL),
+    sayac: bitti('menu', 'anlam', 'zoom', 'hamleler'),
+    beklenen: 'torba',
+  },
+  {
+    ad: 'yerel oyun: yalnız mesaj kaldı → balon yok',
+    girdi: girdi(44, 36, YEREL),
+    sayac: bitti('menu', 'anlam', 'zoom', 'hamleler', 'torba'),
+    beklenen: null,
+  },
+  {
+    ad: 'Canlı: anlam atlanır, sıra zoom',
+    girdi: girdi(ILK + ARA, ILK, CANLI, false),
+    sayac: bitti('menu'),
+    beklenen: 'zoom',
+  },
+  {
+    ad: 'Canlı: yalnız mesaj kaldı → mesaj',
+    girdi: girdi(ILK, null, CANLI, false),
+    sayac: bitti('menu', 'anlam', 'zoom', 'hamleler', 'torba'),
+    beklenen: 'mesaj',
+  },
+  {
+    ad: 'hepsi gösterildi → bir daha yok',
+    girdi: girdi(100, null, HEPSI),
+    sayac: bitti('menu', 'anlam', 'zoom', 'hamleler', 'torba', 'mesaj'),
     beklenen: null,
   },
 ];
@@ -380,7 +447,7 @@ for (const [r, beklenen] of [
   else ok(`r=${r} → ${sonuc}`);
 }
 
-console.log('\nBağlamsal ipuçları — hangi hamlede hangi balon');
+console.log('\nEğitim balonları — hangi hamlede hangi balon');
 for (const vaka of ipucuVakalari) {
   const sonuc = pickOnboardingHint(vaka.girdi, vaka.sayac);
   if (sonuc !== vaka.beklenen) {
@@ -472,8 +539,7 @@ if (!FIRST_WIN_TEXTS.misafir.includes(FIRST_WIN_GUEST_CTA)) {
 
 // Metinler TEK cümle olmalı (tanıtımın "tek cümle bütçesi" kuralı) ve
 // terim `sınır` DEĞİL `bölge` (bkz. kök CLAUDE.md → "Terminoloji").
-for (const id of ONBOARDING_HINT_ORDER) {
-  const metin = ONBOARDING_HINT_TEXTS[id];
+for (const [id, metin] of Object.entries(ONBOARDING_HINT_TEXTS)) {
   if ((metin.match(/[.!?]/g) ?? []).length !== 1 || !metin.trim().endsWith('.')) {
     bildir(`ipucu metni "${id}" tek cümle değil: ${metin}`);
   }

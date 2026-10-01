@@ -292,10 +292,18 @@ void main() {
         int.parse(
             pick(onboardingTs, RegExp(r'ONBOARDING_HINT_MS = (\d+)'), 'süre')),
         onboardingHintDuration.inMilliseconds);
-    expect(
-        int.parse(pick(onboardingTs,
-            RegExp(r'ONBOARDING_HINT_MIN_MOVES = (\d+)'), 'hamle eşiği')),
-        onboardingHintMinMoves);
+    // Sıra akışının üç eşiği (1 Ekim 2026): ilk balon, aralık, anlamın
+    // en erken turu — üçü de TUR cinsinden.
+    for (final (ad, deger) in [
+      ('FIRST_ROUNDS', onboardingHintFirstRounds),
+      ('GAP_ROUNDS', onboardingHintGapRounds),
+      ('ANLAM_MIN_ROUNDS', onboardingHintAnlamMinRounds),
+    ]) {
+      expect(
+          int.parse(pick(onboardingTs,
+              RegExp('ONBOARDING_HINT_$ad = (\\d+)'), ad)),
+          deger);
+    }
     expect(
         int.parse(pick(onboardingTs,
             RegExp(r'ONBOARDING_HINT_ALT_ROWS = (\d+)'), 'alt satır')),
@@ -309,9 +317,12 @@ void main() {
     ], [
       for (final id in onboardingHintOrder) id.name
     ]);
+    // Zoom'un metni `ZOOM_HINT_TEXT` ↔ `kZoomHintText` (zoom_hint_test).
     for (final id in OnboardingHintId.values) {
+      if (id == OnboardingHintId.zoom) continue;
       expect(
-          pick(onboardingTs, RegExp("${id.name}: '([^']*)'"), '${id.name} metni'),
+          pick(onboardingTs, RegExp("  ${id.name}: '([^']*)'"),
+              '${id.name} metni'),
           onboardingHintTexts[id]);
     }
   });

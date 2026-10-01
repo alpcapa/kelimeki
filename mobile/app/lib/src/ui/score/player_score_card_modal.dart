@@ -476,7 +476,7 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
             loaded: _loaded.contains(_tab),
             emptyText: _tab == StatsTab.all
                 ? 'Bu oyuncunun henüz oyun kaydı yok.'
-                : 'Bu oyuncunun ${_tab.playerCount} oyunculu oyun kaydı yok.',
+                : 'Bu oyuncunun ${_tab.playerCount} kişilik oyun kaydı yok.',
           ),
           if (widget.games != null) ...[
             const SizedBox(height: 8),

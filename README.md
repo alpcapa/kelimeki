@@ -97,6 +97,7 @@ src/
 │   ├── Rack.tsx                 # oyuncunun harf kutusu
 │   ├── Tile.tsx                 # tek harf bileşeni
 │   ├── GameHeader.tsx           # skor, sıra göstergesi
+│   ├── HintBubble.tsx           # arayüz öğesine çapalı eğitim balonu (menü/hamleler/torba/mesaj)
 │   ├── GameOver.tsx             # oyun sonu ekranı
 │   ├── Setup.tsx                # oyun başlangıç / oyuncu kurulum ekranı
 │   ├── LogoMark.tsx             # "kelimeki" logosu — statik SVG path (üretilmiş, bkz. scripts/generate-logo-paths.mjs), font bağımsız
@@ -245,7 +246,8 @@ src/
 │   ├── useNicknameAvailability.ts # takma isim uygunluğu (debounce'lu RPC kontrolü, AuthModal + AccountSettingsModal ortak)
 │   ├── useAppIconBadge.ts # PWA ikonu üzerinde Badge API ile kırmızı yuvarlak/beyaz sayı rozeti
 │   ├── useRankScores.tsx  # isimlerin yanındaki rütbe mührü için k-lig puanı (toplu, leaderboard view'ı)
-│   └── useBoardZoom.ts    # tahta zoom'unun React tarafı (durum, tanıtım balonu kararı, sürükleme sırasında devre dışı)
+│   ├── useBoardZoom.ts    # tahta zoom'unun React tarafı (durum, tanıtım balonu gösterimi, sürükleme sırasında devre dışı)
+│   └── useOnboardingHints.ts # eğitim balonu SIRASI (menü → anlam → zoom → hamleler → torba → mesaj), iki oyun ekranı
 └── lib/
     ├── supabase.ts        # Supabase istemcisi
     ├── api.ts             # saveGame, fetchLeaderboard, auth, fetchMeaning

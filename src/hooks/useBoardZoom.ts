@@ -17,11 +17,7 @@ import {
   type ZoomState,
 } from '../utils/boardZoom';
 import { swallowNextClick } from '../utils/ghostClick';
-import {
-  bumpZoomHintShown,
-  markZoomTried,
-  shouldShowZoomHint,
-} from '../utils/onboarding';
+import { markZoomTried } from '../utils/onboarding';
 
 export type BoardZoom = {
   zoom: ZoomState;
@@ -44,8 +40,14 @@ export type BoardZoom = {
   reset: () => void;
   /** Pan sürerken sayfanın kaymaması için (dokunmatik). */
   panning: boolean;
-  /** Tanıtım balonu bu açılışta gösterilsin mi (bkz. utils/onboarding). */
+  /** Tanıtım balonu ŞU AN ekranda mı. */
   hint: boolean;
+  /**
+   * Balonu göster (4 sn sonra kendi kapanır). 1 Ekim 2026'dan beri KARARI
+   * çağıran verir — eğitim balonu sırasının (`pickOnboardingHint`) üçüncü
+   * halkası; sayacı da çağıran artırır.
+   */
+  showHint: () => void;
 };
 
 /**
@@ -55,34 +57,13 @@ export type BoardZoom = {
  *   taşın kendi handler'ına gittiğinden aynı sıra geçerli, ama bayrağı
  *   AÇIKÇA sormak daha okunur.)
  */
-/**
- * @param boardVisible Tahta ŞU AN ekranda mı — tanıtım balonunun gösterim
- *   sayacı yalnızca tahta görünürken artmalı. **Ölçüldü (1 Eylül 2026,
- *   kullanıcı preview'da fark etti: "misafirde çalışmıyor mu?"):** `App`
- *   bileşeni Setup ekranını da render ettiğinden hook Setup'ta da mount
- *   oluyordu ve sayaç tahta HİÇ GÖRÜNMEDEN 1 oluyordu; siteyi iki kez açıp
- *   oyun açmayan kullanıcıda tavan doluyor, balon bir daha hiç çıkmıyordu.
- *   Sorun misafir/girişli ayrımı DEĞİLDİ — herkeste vardı. Portta bu hata
- *   yok, çünkü `GameScreen` ayrı bir route ve karar `initState`'te veriliyor
- *   (tahta zaten görünür); web'de o "ekran sınırı" olmadığından açıkça
- *   sormak gerekiyor.
- */
-export function useBoardZoom(
-  dragActive: () => boolean,
-  boardVisible = true,
-): BoardZoom {
+export function useBoardZoom(dragActive: () => boolean): BoardZoom {
   const [zoom, setZoom] = useState<ZoomState>(ZOOM_OFF);
-  // Tanıtım balonu (1 Eylül 2026, kullanıcı isteği) — karar EKRAN AÇILIRKEN
-  // bir kez veriliyor ve o an sayaç artıyor: "gösterim" balonun ekrana
-  // gelmesidir, nasıl kapandığı sayacı etkilemez. Port ikizi: iki oyun
-  // ekranının `_zoomHintKarariVer`i.
+  // Tanıtım balonu (1 Eylül 2026, kullanıcı isteği). 1 Ekim 2026'ya kadar
+  // karar EKRAN AÇILIRKEN burada veriliyordu (tavan 2); artık eğitim balonu
+  // SIRASININ bir halkası — kararı ve sayacı çağıran ekran tutuyor
+  // (`pickOnboardingHint`), burada yalnızca gösterim + kendi kendine kapanma.
   const [hint, setHint] = useState(false);
-  // ⚠ MÜKERRER-ÇALIŞMA KİLİDİ: React StrictMode dev'de effect'i İKİ KEZ
-  // çalıştırıyor ve sayaç bir açılışta 2 artıyordu — Playwright ölçtü
-  // (beklenen 1, gelen 2), yani balon ilk oyunda tavana çarpıp ikinci
-  // gösterimi kaybediyordu. Aynı kilit deseni App.tsx'te de var
-  // (`migratingSavedGameRef`); sayaç artıran her effect buna muhtaç.
-  const hintDecided = useRef(false);
   // Balonun kendi kendine kapanma zamanlayıcısı (16 Eylül 2026, kullanıcı
   // isteği: balon sürekli kalınca oyun oynamayı zorlaştırıyor). Ref'te
   // tutuluyor çünkü hem sökülmede hem de "zoom denendi" dalında iptal
@@ -93,22 +74,15 @@ export function useBoardZoom(
     clearTimeout(hintTimer.current);
     hintTimer.current = null;
   }, []);
-  useEffect(() => {
-    // Tahta görünene kadar KARAR VERİLMEZ: "gösterim" balonun ekrana
-    // gelmesidir (yukarıdaki `boardVisible` notu — ölçülmüş hata).
-    if (!boardVisible || hintDecided.current) return;
-    hintDecided.current = true;
-    if (!shouldShowZoomHint()) return;
-    bumpZoomHintShown();
+  const showHint = useCallback(() => {
+    clearHintTimer();
     setHint(true);
-    // ⚠ Kapanma "denedi" SAYILMAZ: `markZoomTried` çağrılmıyor, sayaç da
-    // artmıyor (karar anında arttı) — hiç denemeyen kullanıcı balonu ikinci
-    // açılışta yine görür. Bkz. `ZOOM_HINT_AUTO_HIDE_MS`.
+    // Kapanma "denedi" SAYILMAZ (`markZoomTried` yalnız gerçek denemede).
     hintTimer.current = window.setTimeout(() => {
       hintTimer.current = null;
       setHint(false);
     }, ZOOM_HINT_AUTO_HIDE_MS);
-  }, [boardVisible]);
+  }, [clearHintTimer]);
   useEffect(() => clearHintTimer, [clearHintTimer]);
   const [panning, setPanning] = useState(false);
   const detector = useRef(new DoubleTapDetector());
@@ -260,5 +234,6 @@ export function useBoardZoom(
     reset,
     panning,
     hint,
+    showHint,
   };
 }

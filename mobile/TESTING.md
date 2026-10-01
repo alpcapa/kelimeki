@@ -118,11 +118,9 @@ bir daha ÇIKMAZ.
       çıkmıyor** — uygulamayı tamamen kapatıp yeniden aç, doğrudan Setup
       gelmeli. (Bayrak yazılmıyorsa ekran her açılışta çıkar; bu
       maddenin asıl ölçtüğü şey o.)
-- [ ] **Setup'ın logo altındaki "Tanıtım" linki her zaman açıyor**
-      (yalnız misafirde). HEMEN OYNA orada yalnızca geri döner; açıp
-      kapattıktan SONRA uygulamayı yeniden başlat — ekran yine ÇIKMAMALI.
-- [ ] **O satır YALNIZCA MİSAFİRDE var** — girişli kullanıcının bu ekrana
-      dönüş yolu YOK (web ile parite).
+- [ ] **Setup'ta "Tanıtım" linki YOK** (1 Ekim 2026, 1.1.2 cihaz turu —
+      açılış tek sayfa, dönüş yolu bilerek kalktı). Misafirde logo altında
+      yalnız "Nasıl oynanır?" var, ortalı.
 - [ ] **Setup başlığında ok/geri düğmesi YOK** — bilinçli ayrışma
       (web'de `<` var). Bkz. mobile/CLAUDE.md "Karşılama Katmanı".
 - [ ] **Yatay taşma / sarı-siyah şerit yok**, 320-375 pt dar ekranda da.
@@ -363,8 +361,9 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
 - [ ] **Üç balon TEK ölçüde:** tanıtım balonu, gerçek oyundaki zoom ipucu
       ("Boş kareye… çift tıklama") ve "Buradan başla" aynı büyüklükte
       okunuyor (7 Eylül 2026 akşamı, ikinci tur). ⚠ **Zoom ipucu artık yalnızca
-      4 saniye duruyor** (16 Eylül 2026) — ölçümü oyun açılır açılmaz yap;
-      kaçırırsan uygulamayı silip yeniden kur (tavan 2).
+      4 saniye duruyor** (16 Eylül 2026) ve 1 Ekim 2026'dan beri açılışta
+      değil, eğitim balonu sırasında (anlamdan sonra) BİR KEZ çıkıyor —
+      kaçırırsan uygulamayı silip yeniden kur.
 - [ ] **OYNA balonunun oku BUTONU gösteriyor:** hamle tamamlanınca çıkan
       "Hamleni tamamlamak için OYNA'ya bas" balonunun kuyruğu rafın
       ortasını değil OYNA butonunu işaret ediyor.
@@ -421,18 +420,18 @@ Web'in `TESTING.md` §13.6'sının port eşi. Karar tabloları
 `tutorial_parity_test.dart` (metin/sıra web ile birebir) ile kapalı;
 buradakiler ekranın gerçek bir oyundaki hâli.
 
-- [ ] **Üç ipucu, gerçek oyunda:** Bölgeni köşe bloğunun DIŞINA taşıyan ·
-      sarı bölgeye taş koyan · rakip bölgesine değen birer hamle yap;
-      her birinden sonra ilgili tek cümlelik mavi balon o karenin üstünde
-      ~4 sn kalmalı. Cümleler webdekiyle BİREBİR aynı olmalı.
-- [ ] **Aynı anda tek balon:** Vergi ödeyen hamlede önce **Sınır İhlali!**
-      penceresi, kapandıktan SONRA balon. İpucu görünürken merkezdeki zoom
-      balonu gizlenmeli. ⚠ **"Sonra geri gelmeli" ARTIK GEÇERLİ DEĞİL**
-      (16 Eylül 2026): zoom balonu ekrana geldiği andan itibaren 4 saniye
-      yaşıyor (`kZoomHintAutoHide`) ve süre balon gizliyken de işliyor, yani
-      bir hamleden sonra çıkan bağlamsal ipucu sırasında zoom balonu çoktan
-      kapanmış olur.
-- [ ] **Tavan 2:** Aynı ipucu üçüncü kez hak edildiğinde çıkmamalı.
+- [ ] **Eğitim balonu SIRASI (1 Ekim 2026, 1.1.2 cihaz turu):** web
+      `TESTING.md` §13.6'daki maddelerin AYNISI — menü (yalnız girişli,
+      avatarın altında) → anlam (kelimenin üstünde, 6. turdan önce değil) →
+      zoom (sol-alt boş kare; artık açılışta ÇIKMAZ) → hamleler (alt şerit) →
+      torba (TORBA düğmesinin üstünde) → mesaj (yalnız Canlı oyunda). Her biri
+      bir kez, ilki 2. turdan sonra, sonrakiler 4'er tur arayla; metinler
+      webdekiyle BİREBİR.
+- [ ] **Balon kırpılmıyor ve dokunuşu yutmuyor:** Hamleler balonu tahta
+      kartının üstüne, menü balonu başlığın altına taşabiliyor (overlay'de
+      çiziliyor); balon dururken altındaki düğme çalışıyor.
+- [ ] **iPad / dar telefon:** torba ve menü balonları ekranın kenarından
+      taşmıyor (sağa yaslı açılıyorlar).
 - [ ] **Tekrar oynama:** Setup → "Nasıl oynanır?" → pencerenin EN BAŞINDA
       **"Tanıtım turunu oyna (1 dk)"**. Bas → tanıtım açılıyor; bitir →
       kapanış butonu **"KAPAT"** ve gerçek oyun BAŞLAMIYOR, Setup'a dönüyor.
@@ -1219,9 +1218,16 @@ Taşındı (27 Eylül 2026, doküman bütçesi) — bkz. `mobile/docs/testing-ol
 
 - [ ] **Görünür:** Oyun ekranında logonun hemen altında ince, koyu bir
       "← Geri" yazıyor ve tahtanın sol kenarıyla hizalı duruyor.
-- [ ] **Dokunuş:** Logoya dokunmak Setup'a döndürüyor. (Uygulamada etiketin
-      KENDİSİ dokunuş almaz — webden bilinçli sapma, kod yorumunda gerekçesi
-      yazılı; etiket logoyu gösteren bir ipucu.)
+- [ ] **Dokunuş:** Logoya, logonun hemen üstüne ve "← Geri" yazısına
+      dokunmak Setup'a döndürüyor (1 Ekim 2026'dan beri başlık web
+      geometrisinde; dokunma alanı başlığın tam boyu — Parça 227).
+- [ ] **Başlık dokunuşları (1 Ekim 2026, YENİ GEOMETRİ):** skor kutusuna
+      (Canlı oyunda rakibin skor kartı) ve avatara kutunun hafif üstüne/
+      altına basınca da açılıyor; "← Geri" yazısının hemen altında artık
+      tahta başlıyor (web'deki gibi).
+- [ ] **Yatay iPad (1180×820):** raf ve alt düğmeler (PAS GEÇ … TORBA)
+      KAYDIRMADAN tam görünüyor — Canlı oyunda sıra sendeyken de, rakipteyken
+      de. Tahta web'deki boyunda.
 - [ ] **Header bozulmadı:** Skor kutuları logoyla aynı hizada; tahta
       eskisine göre gözle görülür şekilde aşağı kaymadı.
 - [ ] **4 kişilik + girişli hesap:** Avatar/GİRİŞ ile etiket çakışmıyor,

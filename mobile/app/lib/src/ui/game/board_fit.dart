@@ -57,6 +57,14 @@ const double kBoardMinPx = 324;
 // ya o uzamayı geri al ya da buraya ölçülmüş bir port terimi ekle (ve
 // ayrışmayı `ROADMAP.md`ye yaz).
 
+// ⚠ 1 Ekim 2026 — yukarıdaki "port başlığı 25 px uzun, pay 3 px" durumu
+// CİHAZDA YETMEDİ (yatay iPad, Canlı oyun: alt düğmeler ~10 pt ekran
+// dışında). Önce tahtaya 16 px'lik bir port payı denendi (tahtayı web'den
+// küçük çizmek — yama); kullanıcı *"Web'e baktın mı? Orada düzgün"* dedi ve
+// asıl fark KAPATILDI: port başlığı web geometrisine indi (`game_header.dart`,
+// kartın üstü 88 → web'deki 63). Port payı geri alındı, sabitler yine
+// web'den birebir; pay artık ~28 px ve `board_fit_test` ≥16 px istiyor.
+
 /// Tahta sarmalayıcısının (`Padding(12, 6, 12, 12)` + kart) azami genişliği —
 /// web `boardMaxWidthCss()`in sayısal karşılığı:
 /// `min(680, max(324, yükseklik − 308))`.

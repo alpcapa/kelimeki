@@ -339,6 +339,10 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
                     width: 28,
                     align: Alignment.centerLeft,
                     child: _HeadLabel('SIRA')),
+                // Web başlığı `gap-1` (4px). "SIRA" 28'lik kutuyu ~26 px
+                // dolduruyor; boşluksuz iPad'de "SIRAOYUNCU" diye bitişik
+                // okundu (1 Ekim 2026, 1.1.2 cihaz turu).
+                const SizedBox(width: 4),
                 const Expanded(child: _HeadLabel('OYUNCU')),
                 _buildOhpHeader(),
                 const ScaledCell(

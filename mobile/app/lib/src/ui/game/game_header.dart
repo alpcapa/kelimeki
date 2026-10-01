@@ -12,6 +12,8 @@ import '../../data/friends_api.dart';
 import '../../data/games_api.dart';
 import '../../data/stats_api.dart';
 import '../auth/account_button.dart';
+import '../../util/onboarding.dart';
+import 'hint_bubble.dart';
 import '../tap_target.dart';
 import '../tokens.dart';
 import 'fluid.dart';
@@ -23,11 +25,11 @@ import 'player_colors.dart';
 /// gri ve siyah varyantları yan yana görüp siyahı seçti (21 Ağustos 2026).
 /// Web'le ELLE senkron — biri değişirse öteki de değişmeli.
 const double kBackFontSize = 11;
-/// Etiketin ALTINDAKİ dokunma payı — header ile tahta arasında zaten var
-/// olan boşluğun tıklanabilir hâle gelmiş kısmı (bkz. build()'deki not).
-/// Web'de karşılığı YOK: orada etiket `<button>`ın içinde bir `<span>` ve
-/// tıklama ataya kabardığından ayrı bir paya ihtiyaç duymuyor.
-const double kBackBottomPad = 13;
+
+/// Logo ile "← Geri" arası — web `BACK_GAP`. 1 Ekim 2026'ya kadar etiket
+/// ayrı bir satırdı (`kBackBottomPad` = 13'lük dokunma payıyla) ve başlığı
+/// web'den 25 px uzatıyordu; artık web'deki gibi logonun altına taşıyor.
+const double kBackGap = 3;
 
 class GameHeader extends StatelessWidget {
   final GameState state;
@@ -57,11 +59,16 @@ class GameHeader extends StatelessWidget {
   /// skor kartı — web onPlayerClick'in eşleniği; yerel oyunda verilmez).
   final void Function(int index)? onPlayerTap;
 
+  /// Avatarı işaret eden eğitim balonu (1 Ekim 2026) — web
+  /// `GameHeader.menuHint`. Kararı ekran verir (`pickOnboardingHint`).
+  final bool menuHint;
+
   const GameHeader({
     super.key,
     required this.state,
     this.onLogoTap,
     this.onPlayerTap,
+    this.menuHint = false,
     this.auth,
     this.stats,
     this.games,
@@ -88,146 +95,131 @@ class GameHeader extends StatelessWidget {
     final girisPaddingX = fluidSize(w, 6, -2.33, 2.22, 8);
     final girisPaddingY = fluidSize(w, 8.7, -5.05, 3.67, 12);
 
-    // "← Geri" KENDİ SATIRI — header satırının ALTINDA, tahtanın hemen
-    // üstünde. Web'den bilinçli bir SAPMA ve gerekçesi yapısal:
+    // GEOMETRİ WEB'İN BİREBİR AYNISI (1 Ekim 2026, yatay iPad cihaz turu):
+    // `px-3 py-2.5` + öğelerin DOĞAL boyu, "← Geri" logonun altına taşan
+    // ve yer KAPLAMAYAN bir etiket (web `absolute top-full`, BACK_GAP 3).
+    // Ölçüldü (1180×820): web başlığı 57, kartın üstü 63; port eskiden 88'di
+    // (48'lik satır + ayrı "← Geri" satırı) ve alt düğmeler cihazda ekran
+    // dışına taşıyordu (kullanıcı: *"Web'e baktın mı? Orada düzgün"*).
     //
-    // ⚠ 24 AĞUSTOS 2026, İKİ TUR. Önce etiket bir `Stack(clipBehavior:
-    // Clip.none)` içinde `Positioned` ile logonun kutusunun DIŞINA
-    // taşırılmıştı; Flutter'da böyle bir çocuk hiç dokunuş ALMAZ
-    // (`RenderBox.hitTest` önce `size.contains`e bakar) — ölçülen kutu
-    // 90.8 × 29.3, yani sadece logo. Kullanıcı bildirdi: *"logo altındaki
-    // geri de basınca çalışmıyor"*. Webde AYNI yapı çalışıyor çünkü etiket
-    // `<button>`ın İÇİNDE bir `<span>` ve DOM'da tıklama ataya KABARIYOR.
+    // Dokunma alanı 48'lik kutulardan DEĞİL satırın kendisinden geliyor:
+    // `IntrinsicHeight` + `stretch` her öğeyi başlığın TAM boyuna (dolgu
+    // dahil ~56-57) geriyor, görsel ortada kalıyor; `TapTargetScope` başlık
+    // içindeki `TapTarget`lerin 48'lik asgari YÜKSEKLİĞİNİ kaldırıyor (yoksa
+    // satırı yine uzatırlardı). Böylece logo, skor kutuları ve avatar
+    // eskisinden DAHA uzun bir dokunma alanı alıyor (56 ≥ 48).
     //
-    // İkinci tur: etiketi logoyla aynı `TapTarget`e alan Column çözümü
-    // çalıştı ama pahalıydı — blok Row'da dikey ORTALANDIĞINDAN, logonun
-    // skor kutularıyla hizasını korumak için etiketin altta kapladığı kadar
-    // ÜSTTE de boşluk gerekiyordu; yani etiketin altına eklenen her 1 px
-    // header'a 2 px ekliyordu (ölçüldü: header 52 → 77 px). Kullanıcı
-    // cihazda bunu gördü: *"Geri tuşu tam üstüne basarsan ok ama biraz
-    // altına gelirse çalışmıyor. Geri ile board arasındaki boşluğu biraz
-    // kısarsak hem daha iyi çalışır hem de header'ı bu kadar büyütmüş
-    // olmayız"* — ve seçimi bu düzen oldu.
-    //
-    // Şimdi: logo satırı yalnızca logo + skor kutuları + hesap (48 px'lik
-    // hedefler, hiza korunuyor), etiket ise ayrı bir satır olarak tahtanın
-    // üstündeki boşluğu KULLANIYOR — o boşluk zaten vardı, artık
-    // tıklanabilir. Bedeli logo ↔ etiket arasının 3 px'ten ~9 px'e açılması
-    // (etiket artık logonun kutusuna değil SATIRIN altına çapalı; satırın
-    // boyunu 48'lik hedefler belirliyor).
-    //
-    // Etiketin dokunma kutusu 48 GENİŞ ama yalnızca ~24 YÜKSEK (bilinçli
-    // istisna, `TapTarget.minHeight`): 48'lik bir yükseklik header ile
-    // tahta arasına 20 px'lik boş bir bant açardı ve aynı eylem için hemen
-    // üstündeki logo zaten tam boy bir hedef.
-    //
-    // Sol kenar hâlâ tahtanınkiyle hizalı: 12 px, Board'unkiyle aynı.
-    // ⚠ Board'un yatay dolgusu değişirse hiza sessizce bozulur.
+    // "← Geri"nin geçmişi (24 Ağustos 2026, iki tur): Flutter'da bir
+    // kutunun DIŞINA taşan çocuk dokunuş ALMAZ — ilk denemede etiket hiç
+    // çalışmamıştı. Burada etiket logo öğesinin İÇİNDE ve o öğe başlığın
+    // tam boyuna gerildiğinden etiketin üst ~3/4'ü dokunma alanında; alt
+    // ~3,5 px'i (web'de de) başlığın altına, tahtanın 6 px'lik üst
+    // dolgusuna taşıyor. Logonun kendisi aynı eylem için tam boy bir hedef.
+    Widget dolgulu(Widget w) =>
+        Padding(padding: const EdgeInsets.symmetric(vertical: 10), child: w);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: TapTargetScope(
+        minHeight: 0,
+        child: IntrinsicHeight(
           child: Row(
-        children: [
-          TapTarget(
-            onTap: onLogoTap,
-            child: LogoMark(height: logoHeight),
-          ),
-          const SizedBox(width: 8),
-          // Web justify-between'in ikinci çocuğu tek bir SAĞ GRUP: kutular +
-          // GİRİŞ/avatar birbirine bitişik (gap-2) ve sağa yaslı — artan
-          // boşluk logo ile kutuların ARASINA düşer, kutuların sağına değil
-          // (kullanıcı iPhone karşılaştırmasıyla bildirdi).
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // Web güvenlik ağıyla aynı: sığmazsa şerit görünmez biçimde
-                // yatay kaydırılır (satır kırmak yerine), 0. kutu her zaman
-                // erişilebilir. GİRİŞ/avatar bu kaydırma kabının DIŞINDA —
-                // web'deki aynı ders (UserMenu overflow kabının içindeyken
-                // dropdown'ı kırpılıyordu).
-                Flexible(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    reverse: false,
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < state.players.length; i++) ...[
-                          if (i > 0) SizedBox(width: boxGap),
-                          _PlayerBox(
-                            player: state.players[i],
-                            index: i,
-                            active: i == state.current,
-                            width: state.players[i].isAI
-                                ? yzBoxWidth
-                                : playerBoxWidth,
-                            paddingX: boxPaddingX,
-                            paddingY: boxPaddingY,
-                            labelFontSize: labelFontSize,
-                            scoreFontSize: scoreFontSize,
-                            onTap:
-                                (onPlayerTap != null && !state.players[i].isAI)
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TapTarget(
+                key: const ValueKey('header-logo'),
+                onTap: onLogoTap,
+                child: dolgulu(Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    LogoMark(height: logoHeight),
+                    Positioned(
+                      left: 0,
+                      top: logoHeight + kBackGap,
+                      child: const Text(
+                        '← Geri',
+                        softWrap: false,
+                        style: TextStyle(
+                          fontFamily: 'SpaceMono',
+                          fontSize: kBackFontSize,
+                          height: 1,
+                          color: kText,
+                        ),
+                      ),
+                    ),
+                  ],
+                )),
+              ),
+              const SizedBox(width: 8),
+              // Web justify-between'in ikinci çocuğu tek bir SAĞ GRUP:
+              // kutular + GİRİŞ/avatar birbirine bitişik (gap-2) ve sağa
+              // yaslı — artan boşluk logo ile kutuların ARASINA düşer.
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Web güvenlik ağıyla aynı: sığmazsa şerit görünmez
+                    // biçimde yatay kaydırılır, 0. kutu her zaman
+                    // erişilebilir. GİRİŞ/avatar bu kaydırma kabının
+                    // DIŞINDA (web'de dropdown kırpılıyordu).
+                    Flexible(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (var i = 0; i < state.players.length; i++) ...[
+                              if (i > 0) SizedBox(width: boxGap),
+                              _PlayerBox(
+                                player: state.players[i],
+                                index: i,
+                                active: i == state.current,
+                                width: state.players[i].isAI
+                                    ? yzBoxWidth
+                                    : playerBoxWidth,
+                                paddingX: boxPaddingX,
+                                paddingY: boxPaddingY,
+                                labelFontSize: labelFontSize,
+                                scoreFontSize: scoreFontSize,
+                                onTap: (onPlayerTap != null &&
+                                        !state.players[i].isAI)
                                     ? () => onPlayerTap!(i)
                                     : null,
-                          ),
-                        ],
-                      ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                if (auth != null && auth!.configured) ...[
-                  const SizedBox(width: 8),
-                  AccountButton(
-                    auth: auth!,
-                    stats: stats,
-                    games: games,
-                    feedback: feedback,
-                    friends: friends,
-                    chat: chat,
-                    girisFontSize: girisFontSize,
-                    girisPaddingX: girisPaddingX,
-                    girisPaddingY: girisPaddingY,
-                    avatarSize: 32,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: TapTarget(
-              onTap: onLogoTap,
-              minHeight: 24,
-              // Sol kenar tahtanınkiyle (12 px) hizalı KALMALI — kutu 48 px
-              // geniş ama metin dar, ortalansa 4 px sağa kayardı.
-              alignment: Alignment.centerLeft,
-              child: const Padding(
-                // Alttaki pay, header ile tahta arasında ZATEN var olan
-                // boşluğun tıklanabilir hâle gelmiş kısmı.
-                padding: EdgeInsets.only(bottom: kBackBottomPad),
-                child: Text(
-                  '← Geri',
-                  style: TextStyle(
-                    fontFamily: 'SpaceMono',
-                    fontSize: kBackFontSize,
-                    height: 1,
-                    color: kText,
-                  ),
+                    if (auth != null && auth!.configured) ...[
+                      const SizedBox(width: 8),
+                      HintAnchor(
+                        show: menuHint,
+                        text: onboardingHintTexts[OnboardingHintId.menu]!,
+                        yon: HintBubbleYon.alt,
+                        hiza: HintBubbleHiza.son,
+                        child: AccountButton(
+                          auth: auth!,
+                          stats: stats,
+                          games: games,
+                          feedback: feedback,
+                          friends: friends,
+                          chat: chat,
+                          girisFontSize: girisFontSize,
+                          girisPaddingX: girisPaddingX,
+                          girisPaddingY: girisPaddingY,
+                          avatarSize: 32,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
@@ -337,13 +329,17 @@ class _PlayerBox extends StatelessWidget {
     final dimmed = player.surrendered
         ? Opacity(opacity: 0.45, child: box) // web'le aynı soluklaştırma
         : box;
-    // Kutu ~26 px yüksekliğinde ama header satırı zaten 48 (logo/avatar
-    // hedefleri belirliyor) — dokunma kutusunu 48'e çıkarmak BEDAVA, düzen
-    // değişmiyor. `minWidth: 0`: genişlik akıcı sistemden geliyor
-    // (`playerBoxWidth`/`yzBoxWidth`), 48 dayatmak web paritesini bozardı.
+    // Kutu doğal boyunda, başlığın dikey dolgusu (10/10) İÇİNDE ve ortada;
+    // başlık `stretch` ile her öğeyi tam boya gerdiğinden dokunma alanı
+    // kutunun değil SATIRIN boyu (~56) — 1 Ekim 2026'ya kadar 48'lik
+    // `TapTarget` satırı uzatıyordu (bkz. `GameHeader.build`). `minWidth: 0`:
+    // genişlik akıcı sistemden geliyor, 48 dayatmak web paritesini bozardı.
+    final slot = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Align(widthFactor: 1, heightFactor: 1, child: dimmed),
+    );
     return onTap == null
-        ? dimmed
-        : TapTarget(
-            onTap: onTap, minWidth: 0, minHeight: kMinTapTarget, child: dimmed);
+        ? slot
+        : TapTarget(onTap: onTap, minWidth: 0, child: slot);
   }
 }

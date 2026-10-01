@@ -24,6 +24,8 @@ import { computeAllTerritories } from '../utils/validator';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { BOARD_MAX_PX, boardMaxWidthCss } from '../utils/boardFit';
 import { ZOOM_HINT_TEXT, zoomHintTarget } from '../utils/boardZoom';
+import { ONBOARDING_HINT_TEXTS } from '../utils/onboarding';
+import { HintBubble } from './HintBubble';
 import { AiLevelBadge } from './AiLevelBadge';
 import { CountBadge } from './CountBadge';
 import { Tile } from './Tile';
@@ -139,6 +141,11 @@ interface BoardProps {
       seferlik ipucu. Gösterilip gösterilmeyeceğine `useBoardZoom` karar
       verir (`utils/onboarding.ts`); burada yalnızca çizim var. */
   zoomHint?: boolean;
+  /**
+   * Alt şeritteki bir öğeyi işaret eden eğitim balonu (1 Ekim 2026,
+   * `pickOnboardingHint`): "Hamleler" ya da "Mesajlaşma". Kararı ekran verir.
+   */
+  stripHint?: 'hamleler' | 'mesaj' | null;
   onBoardPointerDown?: (e: React.PointerEvent) => void;
   onBoardPointerMove?: (e: React.PointerEvent) => void;
   onBoardPointerUp?: () => void;
@@ -240,6 +247,7 @@ export function Board({
   zoom = ZOOM_OFF,
   viewportRef,
   zoomHint = false,
+  stripHint = null,
   onBoardPointerDown,
   onBoardPointerMove,
   onBoardPointerUp,
@@ -1120,10 +1128,13 @@ export function Board({
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={onOpenHistory}
-              className="flex items-center gap-1 min-h-[48px] text-[11px] font-mono font-bold tracking-[0.5px] text-accent shrink-0"
+              className="relative flex items-center gap-1 min-h-[48px] text-[11px] font-mono font-bold tracking-[0.5px] text-accent shrink-0"
             >
               <DocumentIcon />
               Hamleler
+              {stripHint === 'hamleler' && (
+                <HintBubble text={ONBOARDING_HINT_TEXTS.hamleler} yon="ust" hiza="bas" />
+              )}
             </button>
             {/* Zorluk rozeti — YZ oyununda (App.tsx) "Hamleler"in sağında, Canlı'daki
                 "· Mesajlaşma"nın yerinde; ayraç aynı görünümde. Rozet ve ayracı
@@ -1141,8 +1152,11 @@ export function Board({
                 <span className="text-muted text-[11px] flex items-center min-h-[48px] shrink-0">·</span>
                 <button
                   onClick={onOpenMessaging}
-                  className="flex items-center min-h-[48px] text-[11px] font-mono font-bold tracking-[0.5px] text-accent shrink-0"
+                  className="relative flex items-center min-h-[48px] text-[11px] font-mono font-bold tracking-[0.5px] text-accent shrink-0"
                 >
+                  {stripHint === 'mesaj' && (
+                    <HintBubble text={ONBOARDING_HINT_TEXTS.mesaj} yon="ust" hiza="bas" />
+                  )}
                   {/* `relative` iç span'de: rozet Flutter'daki gibi METİN
                       kutusuna çapalı kalsın diye (orada da Stack, TapTarget'ın
                       İÇİNDE). 48px'lik <button>'a çapalansaydı rozet

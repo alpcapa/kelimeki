@@ -1381,9 +1381,10 @@ parmakla kullanım. **Temiz bir profille** (localStorage boş) koş.
       rafın ortasında, OYNA balonu sağda.
 - [ ] **Üç balon TEK ölçüde + OYNA okunun hedefi:** tanıtım balonu, zoom
       ipucu ve "Buradan başla" aynı büyüklükte; ⚠ **zoom ipucu artık
-      yalnızca 4 saniye duruyor** (16 Eylül 2026) — ölçümü oyun açılır
-      açılmaz yap; kaçırdıysan `kelimeki:zoom-hint-shown`i sıfırlayıp
-      (tavan 2) yeni bir oyun aç. "Hamleni tamamlamak için
+      yalnızca 4 saniye duruyor** (16 Eylül 2026) ve 1 Ekim 2026'dan beri
+      açılışta değil, eğitim balonu sırasında (anlamdan sonra) BİR KEZ
+      çıkıyor; kaçırdıysan `kelimeki:zoom-hint-shown`i silip yeni oyunda
+      sıranın ona gelmesini bekle (§13.6). "Hamleni tamamlamak için
       OYNA'ya bas" balonunun kuyruğu OYNA butonunun üstünde (7 Eylül 2026
       akşamı, ikinci tur — önce rafın ortasını gösteriyordu).
 - [ ] **Balon okunabiliyor VE hedefi örtmüyor:** Dört sahnenin de balonu
@@ -1421,30 +1422,35 @@ kapalı; buradaki maddeler otomatik testin göremediği şeyler — balonun
 gerçek bir oyunda doğru anda/yerde çıkması ve sunucu satırlarının gerçekten
 yazılması. **Temiz bir profille** koş.
 
-- [ ] **`bolge` ipucu:** Yeni bir YZ oyununda kendi köşenden başlayıp
-      bölgeni 4×4 köşe bloğunun DIŞINA taşıyan bir hamle yap — hamleden
-      hemen sonra *"Bölgen büyüdü — …"* balonu, bloğun dışına taşan karenin
-      ÜSTÜNDE çıkmalı ve ~4 sn sonra kendiliğinden kaybolmalı.
-- [ ] **`carpan` ipucu:** Sarı bölgeye (5×5 merkez) yeni taş koyan bir
-      kelime kur — *"Sarı bölgede kelime puanı 2 katı…"* balonu, o karenin
-      üstünde.
-- [ ] **`vergi` ipucu:** Rakip bölgesine değen bir hamle yap. Önce gerçek
-      **Sınır İhlali!** penceresi çıkmalı; onaylayınca (pencere kapandıktan
-      SONRA) *"Rakibin bölgesine değdin — …"* balonu gelmeli. **İkisi asla
-      aynı anda ekranda olmamalı.**
-- [ ] **Aynı hamlede iki mekanik → TEK balon:** Hem çarpan alan hem vergi
-      ödeyen bir hamlede yalnızca `vergi` cümlesi çıkmalı.
-- [ ] **Tavan 2:** Aynı ipucunu üçüncü kez hak eden bir hamlede balon artık
-      ÇIKMAMALI (öteki iki ipucu hâlâ çalışıyor olmalı).
-- [ ] **Zoom balonuyla çakışma:** İpucu görünürken merkezdeki *"Boş kareye
-      … çift tıklama"* balonu gizlenmeli. ⚠ **"İpucu kaybolunca geri gelir"
-      ARTIK GEÇERLİ DEĞİL** (16 Eylül 2026): zoom balonu ekrana geldiği andan
-      itibaren 4 saniye yaşıyor (`ZOOM_HINT_AUTO_HIDE_MS`) ve süre balon
-      gizliyken de işliyor, yani bağlamsal ipucu bir hamleden sonra çıktığında
-      zoom balonu çoktan kapanmış olur. Kabul edilen davranış: iki balon asla
-      üst üste binmiyor, istenen de buydu.
-- [ ] **Taslak balonu susturuyor:** Balon dururken rafa/tahtaya yeni bir taş
-      koy — balon anında kaybolmalı.
+⚠ **1 Ekim 2026'dan beri balonlar bir SIRA** (`bolge`/`carpan`/`vergi`
+30 Eylül'de kalktı): **menü → anlam → zoom → hamleler → torba → mesaj**,
+her biri BİR KEZ, ilki 2. TURDAN sonra, sonrakiler 4'er tur arayla (2
+kişide: 4., 12., 20., 28., 36. hamle). Temiz profilde uzun bir YZ oyunu
+oyna (ya da birkaç oyuna böl — sıra kaldığı yerden sürer).
+
+- [ ] **Menü (yalnız girişli):** 2. turdan sonra sağ üstteki avatarın
+      ALTINDA *"Kullanıcı menüsü için tıkla."* ~4 sn. **Misafirde HİÇ
+      çıkmaz** (orada avatar değil "Giriş" var), sıra anlama geçer.
+- [ ] **Anlam:** 6. turdan sonra (girişliyse menüden 4 tur sonra), YZ ya da
+      sen bir KELİME oturttuğunda o kelimenin üstünde *"Kelimenin üzerine
+      tıklarsan anlamı gelir."* — pas/değişimden sonra çıkmaz, bekler.
+- [ ] **Zoom:** Sonraki aralıkta sol-alt köşe bloğunun boş karesinin
+      üstünde *"Boş kareye çift tık…"*. ⚠ Artık ekran AÇILIRKEN çıkmıyor.
+      Daha önce zoom'u denemişsen hiç çıkmaz, sıra hamlelere geçer.
+- [ ] **Hamleler:** Tahtanın alt şeridindeki "Hamleler"in ÜSTÜNDE *"Buradan
+      tüm hamleleri görebilirsin."*
+- [ ] **Torba:** Raf düğmelerinin sağındaki TORBA'nın ÜSTÜNDE *"Dışarıda
+      kalan taşlar burada."*
+- [ ] **Mesaj (yalnız Canlı oyun):** YZ oyununda HİÇ çıkmaz; bir Canlı
+      oyunda "Mesajlaşma"nın üstünde *"Buradan oyunculara mesaj
+      gönderebilirsin."* Canlı oyunda anlam balonu çıkmaz (sırası atlanır).
+- [ ] **Her balon BİR KEZ:** Çıkmış bir balon yeni oyunda/yeniden açılışta
+      bir daha gelmez; oyun erken biterse kalanlar sonraki oyunda, yine 2.
+      turdan sonra başlar.
+- [ ] **Aynı anda tek balon:** Vergi ödeyen hamlede önce **Sınır İhlali!**
+      penceresi; balonlar birbirinin üstüne binmez.
+- [ ] **Balon dokunuşu yutmaz:** Balon dururken altındaki düğmeye (Torba,
+      Hamleler, avatar) basmak o düğmeyi açar.
 - [ ] **Tekrar oynama (Faz 3):** Setup → "Nasıl oynanır?" → penceresinin EN
       BAŞINDA **"Tanıtım turunu oyna (1 dk)"**. Bas → tanıtım açılıyor;
       bitir → kapanış butonu **"Kapat"** diyor ve **gerçek oyun BAŞLAMIYOR**,

@@ -61,6 +61,8 @@ import '../game/drag_feel.dart';
 import '../game/game_header.dart';
 import '../game/game_over_modal.dart';
 import '../game/help_modal.dart';
+import '../game/hint_bubble.dart';
+import '../game/onboarding_hints.dart';
 import '../game/meaning_modal.dart';
 import '../game/move_history_modal.dart';
 import '../game/neo_box.dart';
@@ -335,8 +337,17 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   final GlobalKey _viewportKey = GlobalKey();
   BoardPanRef? _panRef;
 
-  /// Zoom tanıtım balonu (1 Eylül 2026) — `game_screen.dart` ile aynı kural.
+  /// Zoom tanıtım balonu (1 Eylül 2026) — `game_screen.dart` ile aynı kural;
+  /// 1 Ekim 2026'dan beri eğitim balonu SIRASININ bir halkası (`_hints`).
   bool _zoomHint = false;
+
+  // ── Eğitim balonları (sıra 1 Ekim 2026) — `game_screen.dart` ile AYNI
+  // sayaç ve kural (`OnboardingHintScheduler`). Canlı'da `anlam` ÇİZİLMEZ
+  // (sırası burada atlanır, yerel oyunda çıkar), `mesaj` yalnız burada
+  // çizilebilir. Web ikizi: `OnlineGameScreen.tsx` + `useOnboardingHints`.
+  final _hints = OnboardingHintScheduler();
+  OnboardingHintId? _uiHint;
+  Timer? _hintTimer;
 
   /// Balonun kendi kendine kapanma zamanlayıcısı — `dispose`'da ve "zoom
   /// denendi" dalında iptal edilir (sökülmüş State'te `setState` olmasın).
@@ -383,7 +394,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   @override
   void initState() {
     super.initState();
-    unawaited(_zoomHintKarariVer());
+    _controller.addListener(_taslakKontrol);
     // NÖBETÇİ (27 Ağustos 2026) — 27 Ağustos'ta `list_my_online_games` bir
     // slotu ÇOĞALTIYORDU (`friend_requests` karşılıklı çift → `jsonb_agg`
     // aynı slotu iki kez yazıyordu) ve sonraki TÜM koltuk indeksleri
@@ -451,8 +462,58 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     _chatState.dispose();
     _dragNotifier.dispose();
     _zoomHintTimer?.cancel();
+    _hintTimer?.cancel();
     _zoom.dispose();
     super.dispose();
+  }
+
+  /// Oyuncu taş koymaya başladı — eğitim balonu o an kalksın (web
+  /// `hasDraft` effect'i).
+  void _taslakKontrol() {
+    if (_uiHint != null && _controller.state.placed.isNotEmpty) {
+      _hintTimer?.cancel();
+      setState(() => _uiHint = null);
+    }
+  }
+
+  /// Yeni senkron geldi: hamle sayısı arttıysa eğitim balonu sırasına sor.
+  /// İLK senkron sayacı KURAR (geçmişin tamamı "az önce oynanmış" sayılmaz).
+  Future<void> _ipucuKarar() async {
+    final s = _controller.state;
+    if (s.isGameOver) {
+      _hints.disarm();
+      return;
+    }
+    final storageFuture = widget.storage;
+    if (storageFuture == null) return;
+    final flags = (await storageFuture).flags;
+    if (!mounted) return;
+    final secilen = await _hints.onMoves(
+      moves: _moves.length,
+      playerCount: s.players.length,
+      wordPlaced: false,
+      available: {
+        OnboardingHintId.menu,
+        if (zoomHintTarget((r, c) =>
+                s.board[r][c] == null && s.placed[cellKey(r, c)] == null) !=
+            null)
+          OnboardingHintId.zoom,
+        OnboardingHintId.hamleler,
+        OnboardingHintId.torba,
+        OnboardingHintId.mesaj,
+      },
+      flags: flags,
+    );
+    if (secilen == null || !mounted) return;
+    if (secilen == OnboardingHintId.zoom) {
+      _zoomHintGoster();
+      return;
+    }
+    _hintTimer?.cancel();
+    setState(() => _uiHint = secilen);
+    _hintTimer = Timer(onboardingHintDuration, () {
+      if (mounted) setState(() => _uiHint = null);
+    });
   }
 
   // ── Oyun İçi Mesajlaşma — veri yükleme + Realtime ────────────────────────
@@ -784,6 +845,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       _loaded = true;
       _loadFailed = false;
     });
+    unawaited(_ipucuKarar());
 
     if (snap.state.isGameOver) return;
 
@@ -1326,15 +1388,9 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     return true;
   }
 
-  /// Zoom tanıtım balonu — kural/gerekçe `game_screen.dart`'ın aynı
-  /// dalında (iki ekran deseni paylaşıyor).
-  Future<void> _zoomHintKarariVer() async {
-    final storageFuture = widget.storage;
-    if (storageFuture == null) return;
-    final flags = (await storageFuture).flags;
-    if (!mounted || !flags.shouldShowZoomHint) return;
-    await flags.bumpZoomHintShown();
-    if (!mounted) return;
+  /// Zoom balonunu göster — karar ve sayaç eğitim balonu sırasında
+  /// (`_ipucuKarar`); `game_screen.dart`'ın aynı dalı.
+  void _zoomHintGoster() {
     setState(() => _zoomHint = true);
     // Balon kendi kendine kapanır (16 Eylül 2026) — gerekçe ve "denedi
     // SAYILMAZ" kuralı `kZoomHintAutoHide`ın başında.
@@ -1906,6 +1962,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                             constraints: const BoxConstraints(maxWidth: 680),
                             child: GameHeader(
                               state: state,
+                              menuHint: _uiHint == OnboardingHintId.menu,
                               auth: widget.auth,
                               stats: widget.stats,
                               games: widget.games,
@@ -1970,6 +2027,13 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                           onCellTap: _handleCellTap,
                                           gridKey: _gridKey,
                                           zoomHint: _zoomHint,
+                                          stripHint:
+                                              _uiHint == OnboardingHintId
+                                                          .hamleler ||
+                                                      _uiHint ==
+                                                          OnboardingHintId.mesaj
+                                                  ? _uiHint
+                                                  : null,
                                           zoom: _zoom,
                                           viewportKey: _viewportKey,
                                           onBoardPointerDown: _boardPointerDown,
@@ -2301,7 +2365,17 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                                     ),
                                                     const SizedBox(width: 6),
                                                     Expanded(
-                                                      child: NeoButton(
+                                                      child: HintAnchor(
+                                                        show: _uiHint ==
+                                                            OnboardingHintId
+                                                                .torba,
+                                                        text: onboardingHintTexts[
+                                                            OnboardingHintId
+                                                                .torba]!,
+                                                        yon: HintBubbleYon.ust,
+                                                        hiza:
+                                                            HintBubbleHiza.son,
+                                                        child: NeoButton(
                                                         letterSpacing: 1.2,
                                                         lineHeight: 1.5,
                                                         label:
@@ -2331,6 +2405,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                                                 context,
                                                                 state,
                                                                 _mySlot),
+                                                      ),
                                                       ),
                                                     ),
                                                   ])),

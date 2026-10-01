@@ -160,23 +160,21 @@ export function markChatRead(gameId: string, lastMessageAt: string): void {
 // import EDEMEZ; adı orada elle tekrarlanıyor ve bu sabitle senkron
 // tutulmak zorunda (eklentinin kendi yorumunda da yazılı).
 // Tahta zoom'u tanıtım balonu (1 Eylül 2026, kullanıcı isteği) — port
-// ikizi: `FlagsStore.zoomHintShown` / `zoomTried` / `shouldShowZoomHint`.
-// Kural İKİ değere birden bakıyor, tek bayrak yetmez: *"Deneyip
-// büyütenlere bir daha gösterme. Hiç denememişse bir daha sefer tekrar
-// göster."* — yani gösterim sayacı (tavan 2) VE "denedi mi" ayrı ayrı.
+// ikizi: `FlagsStore.zoomHintShown` / `zoomTried`.
+// ⚠ 1 Ekim 2026'dan beri balon AÇILIŞTA değil, aşağıdaki ipucu SIRASININ
+// üçüncü halkası olarak çıkıyor ve tavanı 1 (kullanıcı: *"hepsi 1 kere
+// gösterim"*). İki anahtar duruyor: eski cihazlardaki sayaç "gösterildi"
+// sayılıyor, zoom'u kendi DENEMİŞ oyuncuya da balon gösterilmiyor.
 const ZOOM_HINT_SHOWN_KEY = 'kelimeki:zoom-hint-shown';
 const ZOOM_TRIED_KEY = 'kelimeki:zoom-tried';
-
-/** Balonun görüneceği en fazla oyun açılışı sayısı. */
-export const ZOOM_HINT_MAX_SHOWS = 2;
 
 function zoomHintShown(): number {
   try {
     return Number(localStorage.getItem(ZOOM_HINT_SHOWN_KEY) ?? '0') || 0;
   } catch {
-    // Depolama kapalıysa "tavana ulaşıldı" varsayılır — aynı balonu her
-    // açılışta göstermek, hiç göstermemekten kötü (quickstart ile aynı ilke).
-    return ZOOM_HINT_MAX_SHOWS;
+    // Depolama kapalıysa "gösterildi" varsayılır — aynı balonu her açılışta
+    // göstermek, hiç göstermemekten kötü (quickstart ile aynı ilke).
+    return 1;
   }
 }
 
@@ -186,11 +184,6 @@ function zoomTried(): boolean {
   } catch {
     return true;
   }
-}
-
-/** Balon bu açılışta gösterilsin mi? (Port `shouldShowZoomHint`.) */
-export function shouldShowZoomHint(): boolean {
-  return !zoomTried() && zoomHintShown() < ZOOM_HINT_MAX_SHOWS;
 }
 
 /** Gösterime KARAR VERİLDİĞİNDE çağrılır — "gösterim" balonun ekrana
@@ -214,31 +207,52 @@ export function markZoomTried(): void {
 
 export const SEEN_INTRO_KEY = 'kelimeki:seen-intro';
 
-// ── Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) ─────────────────────
+// ── Eğitim balonları (Onboarding Faz 2; akış 1 Ekim 2026'da yeniden kuruldu) ──
 //
 // NEDEN VAR: tanıtım ("Oynayarak öğren") yalnızca YENİ gelene ve yalnızca BİR
-// KEZ açılıyor. Tanıtımın ANLATMADIĞI bir etkileşim var: tahtadaki bir
-// kelimeye dokununca anlamı açılıyor. Bu ipucu onu GERÇEK oyunda, tahtaya ilk
-// kelime oturduğu anda o kelimenin üstünde bir kez söyler.
+// KEZ açılıyor; oyunun ARAYÜZÜNÜ (menü, hamle geçmişi, torba, mesajlaşma) ve
+// iki gizli etkileşimi (kelimeye dokununca anlam, çift dokununca zoom)
+// anlatmıyor. Bu balonlar onları GERÇEK oyunda, birer kez söyler.
 //
-// ⚠ **30 Eylül 2026 — mekanik ipuçları KALDIRILDI (kullanıcı kararı):** eski
-// üç balon (`vergi` · `carpan` · `bolge`: "rakibin bölgesine değdin",
-// "sarı bölgede ×2", "bölgen büyüdü") kullanıcı Instagram'dan gelen bir
-// ziyaretçi gibi oynarken fazla bulundu — *"bence olmamalı. Onun yerine bir
-// kere bir kelimeyi gösterip, 'üzerine tıklarsan kelimenin anlamı gelir'"*.
-// Mekanikler tanıtımda zaten anlatılıyor; çift tık balonu (`ZOOM_HINT_TEXT`)
-// ayrı ve DEĞİŞMEDİ. Eski sayaç anahtarları (`kelimeki:hint-shown:vergi`…)
-// cihazlarda kalabilir, artık okunmuyor — zararsız.
+// ⚠ **1 Ekim 2026 — tek balon SIRAYA dönüştü (kullanıcı, 1.1.2 cihaz turu):**
+// *"Eğitim balonlarına eklemeler var … Hepsi 1 kere gösterim … Zoom ve anlam
+// balonlarını da bu gruba ekleyip akışı düşünmek lazım. Bence 2-3 hamle sonra
+// Avatar menü ile başlasın. Sonra 4-5 hamle arayla … O kadar devam
+// etmezlerse sorun yok. Yeniden geldiklerinde görürler."* Netleştirme:
+// sayım TUR (herkes bir kez oynadı), mesaj EN SONA (misafir/YZ oyununda
+// mesajlaşma yok), menü misafirde ATLANIR (sağ üstte avatar değil "Giriş").
 //
-// Desen zoom balonunun BİREBİR aynısı (1 Eylül 2026) ve bilerek öyle: cihaz
-// yerel sayaç, tavan `ONBOARDING_HINT_MAX_SHOWS`, "gösterim" balonun EKRANA
-// GELMESİDİR (nasıl kapandığı sayacı etkilemez), depolama kapalıysa varsayılan
-// GÖSTERME tarafında. Kimlik/sıra/sayaç yapısı tek ipucuyla da korunuyor —
-// yeni bir ipucu eklemek bir satırlık iş kalsın.
-export type OnboardingHintId = 'anlam';
+// Kurallar (saf — `pickOnboardingHint`):
+//   • sıra `ONBOARDING_HINT_ORDER`; her balon EN FAZLA BİR KEZ (cihaz sayacı);
+//   • ekran açılışından `ONBOARDING_HINT_FIRST_ROUNDS` tur sonra ilki, sonra
+//     bu ekranda gösterilen son balondan `ONBOARDING_HINT_GAP_ROUNDS` tur
+//     sonra bir sonraki — oyun biterse kalanlar SONRAKİ açılışa kalır;
+//   • bu ekranda ÇİZİLEMEYEN balon (Canlı'da menü/anlam, YZ oyununda mesaj,
+//     misafirde menü, dolu köşede zoom) ATLANIR ve beklemez: sıradaki çizilebilir
+//     balon gelir, atlanan ileride çizilebildiği bir yerde çıkar;
+//   • `anlam` yalnızca tahtaya KELİME oturan hamlede ve açılıştan en az
+//     `ONBOARDING_HINT_ANLAM_MIN_ROUNDS` tur sonra çıkar; sırası daha önce
+//     gelmişse BEKLER, atlanmaz.
+//
+// Desen eski tek balonun aynısı: "gösterim" balonun EKRANA GELMESİDİR (nasıl
+// kapandığı sayacı etkilemez), depolama kapalıysa varsayılan GÖSTERME.
+export type OnboardingHintId = 'menu' | 'anlam' | 'zoom' | 'hamleler' | 'torba' | 'mesaj';
 
 /**
- * Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA).
+ * Gösterim sırası. ⚠ Port `onboardingHintOrder` ile BİREBİR
+ * (`tutorial_parity_test.dart` okuyor).
+ */
+export const ONBOARDING_HINT_ORDER: readonly OnboardingHintId[] = [
+  'menu',
+  'anlam',
+  'zoom',
+  'hamleler',
+  'torba',
+  'mesaj',
+];
+
+/**
+ * Bir balonun görüneceği en fazla sayı (balon BAŞINA).
  *
  * ⚠ **2 → 1 (12 Eylül 2026, kullanıcı kararı):** *"İlk defa oynayan kişiye
  * oyun sırasında çıkan max 6 gösterim iyi bir deneyim değil. Onu her bir
@@ -247,29 +261,36 @@ export type OnboardingHintId = 'anlam';
 export const ONBOARDING_HINT_MAX_SHOWS = 1;
 
 /**
- * Oyun ekranı açıldıktan sonra ipucundan ÖNCE geçmesi gereken en az hamle
- * sayısı (tetikleyen hamle DAHİL; pas/değişim de sayılır, vergi satırı
- * sayılmaz).
- *
- * 30 Eylül 2026, kullanıcı: *"zoom balonu ile aynı anda çıkmasın, aralarında
- * en az 2-3 hamle geçsin"*. Zoom balonu yalnızca ekran AÇILIRKEN çıkıyor
- * (`useBoardZoom`), yani açılıştan sayılan bir eşik ikisini her durumda
- * ayırır — balonun o açılışta çıkıp çıkmadığına bakmaya gerek kalmaz, iki
- * karar birbirine bağlanmaz.
+ * Ekran açıldıktan sonra İLK balondan önce geçmesi gereken TUR sayısı
+ * (bir tur = oyuncu sayısı kadar hamle; pas/değişim de hamle, vergi satırı
+ * değil). Kullanıcı: *"2-3 hamle sonra Avatar menü ile başlasın"* — "hamle"
+ * onun dilinde TUR (30 Eylül'de "karşılıklı 6-7 hamle = toplam 12-14").
  */
-export const ONBOARDING_HINT_MIN_MOVES = 12;
+export const ONBOARDING_HINT_FIRST_ROUNDS = 2;
+
+/**
+ * İki balon arasında geçmesi gereken TUR sayısı (aynı ekranda). Kullanıcı:
+ * *"4-5 hamle arayla"*. 2 kişilik oyunda sıra: menü 4. · anlam 12. (eski
+ * `ONBOARDING_HINT_MIN_MOVES` = 12 ile AYNI yer, tahta artık orta dolu) ·
+ * zoom 20. · hamleler 28. · torba 36. hamle — ilk oyun ~33 hamlede biter,
+ * torba ve mesaj sonraki oyunlara kalır (kullanıcı: *"sorun yok"*).
+ */
+export const ONBOARDING_HINT_GAP_ROUNDS = 4;
+
+/**
+ * `anlam` balonunun açılıştan sayılan EN ERKEN turu — sıra ona erken gelse
+ * de (misafirde menü atlanınca 2. tur) bekler. 30 Eylül 2026 kararının
+ * korunması: *"karşılıklı 6-7 hamle … 12-14 toplam hamle sonra"* — tahta o
+ * zaman ortaya doğru dolmuş olur, balon en üst satırda kesilmez.
+ */
+export const ONBOARDING_HINT_ANLAM_MIN_ROUNDS = 6;
 
 /**
  * ⚠ **3 → 12 (1 Ekim 2026, kullanıcı, 1.1.2 cihaz turu):** iki hamleden sonra
- * çıkan balon tahtanın en üstündeydi — *"Bu balonu 6-7. hamlelerde çıkartmak
- * lazım bence, o zaman oyun ortaya doğru gelmiş olur."* ve netleştirme:
- * *"karşılıklı 6-7 hamle … 12-14 toplam hamle sonra"*. YZ'nin hamleleri de
- * sayıldığından 2 kişilik oyunda 12 = iki tarafın 6'şar hamlesi.
- *
- * Balonun ÜSTTE yer bulamayacağı satır sayısı: çapa bu satırlardaysa balon
- * karenin ALTINA konur. Aynı turda: 1. satırdaki bir kelimenin balonu
- * üstte tahtanın kenarına taşıp KESİLDİ (eskiden yalnız 0. satır alta
- * alınıyordu). Balon dar ekranda iki satır (~1,5 hücre) + kuyruk tutuyor.
+ * çıkan balon tahtanın en üstündeydi. Balonun ÜSTTE yer bulamayacağı satır
+ * sayısı: çapa bu satırlardaysa balon karenin ALTINA konur (yalnız `anlam`,
+ * tahtaya çapalı tek balon). Balon dar ekranda iki satır (~1,5 hücre) +
+ * kuyruk tutuyor.
  */
 export const ONBOARDING_HINT_ALT_ROWS = 3;
 
@@ -278,24 +299,23 @@ export function onboardingHintYon(r: number): 'ust' | 'alt' {
   return r < ONBOARDING_HINT_ALT_ROWS ? 'alt' : 'ust';
 }
 
-/** Balonun ekranda kalma süresi (ms) — tanıtımdaki `RAKIP_OKUMA`nın iki katı. */
+/** Balonun ekranda kalma süresi (ms) — tanıtımdaki `RAKIP_OKUMA`nın iki katı.
+ *  Zoom balonu kendi `ZOOM_HINT_AUTO_HIDE_MS`ini kullanır (aynı değer). */
 export const ONBOARDING_HINT_MS = 4000;
 
 /**
- * İpucu metinleri — her biri TEK cümle (kullanıcı kararı, 7 Eylül 2026:
- * tanıtımın "tek cümle bütçesi" burada da geçerli). `anlam` metni kullanıcının
- * kendi cümlesi (30 Eylül 2026); fiil `tıkla`, çift tık balonuyla aynı dil.
+ * Balon metinleri — her biri TEK cümle (kullanıcı kararı, 7 Eylül 2026:
+ * tanıtımın "tek cümle bütçesi"). Menü/hamleler/torba/mesaj kullanıcının
+ * kendi cümleleri (1 Ekim 2026). Zoom'un metni `boardZoom.ts`
+ * `ZOOM_HINT_TEXT`te (tahta balonu, iki satır) — burada tekrarlanmıyor.
  */
-export const ONBOARDING_HINT_TEXTS: Record<OnboardingHintId, string> = {
+export const ONBOARDING_HINT_TEXTS: Record<Exclude<OnboardingHintId, 'zoom'>, string> = {
+  menu: 'Kullanıcı menüsü için tıkla.',
   anlam: 'Kelimenin üzerine tıklarsan anlamı gelir.',
+  hamleler: 'Buradan tüm hamleleri görebilirsin.',
+  torba: 'Dışarıda kalan taşlar burada.',
+  mesaj: 'Buradan oyunculara mesaj gönderebilirsin.',
 };
-
-/**
- * Aynı hamlede birden fazla ipucu hak edilirse gösterilme sırası (ekranda
- * AYNI ANDA TEK BALON). Bugün tek ipucu var; sıra yapısı port paritesi
- * (`tutorial_parity_test.dart`) ve olası yeni ipuçları için duruyor.
- */
-export const ONBOARDING_HINT_ORDER: readonly OnboardingHintId[] = ['anlam'];
 
 function hintKey(id: OnboardingHintId): string {
   return `kelimeki:hint-shown:${id}`;
@@ -305,19 +325,31 @@ function hintShown(id: OnboardingHintId): number {
   try {
     return Number(localStorage.getItem(hintKey(id)) ?? '0') || 0;
   } catch {
-    // Depolama kapalıysa "tavana ulaşıldı" varsayılır — zoom balonuyla aynı
-    // ilke: aynı cümleyi her hamlede göstermek, hiç göstermemekten kötü.
+    // Depolama kapalıysa "tavana ulaşıldı" varsayılır — aynı cümleyi her
+    // hamlede göstermek, hiç göstermemekten kötü.
     return ONBOARDING_HINT_MAX_SHOWS;
   }
 }
 
-/** Sayaçların tamamı — `pickOnboardingHint`e verilecek saf girdi. */
+/** Sayaçların tamamı — `pickOnboardingHint`e verilecek saf girdi. Zoom eski
+ *  anahtarlarından okunur: gösterilmiş YA DA kendisi denenmiş = tamam. */
 export function onboardingHintShownCounts(): Record<OnboardingHintId, number> {
-  return { anlam: hintShown('anlam') };
+  return {
+    menu: hintShown('menu'),
+    anlam: hintShown('anlam'),
+    zoom: zoomTried() ? ONBOARDING_HINT_MAX_SHOWS : zoomHintShown(),
+    hamleler: hintShown('hamleler'),
+    torba: hintShown('torba'),
+    mesaj: hintShown('mesaj'),
+  };
 }
 
-/** Gösterime KARAR VERİLDİĞİNDE çağrılır (zoom balonundaki kuralın aynısı). */
+/** Gösterime KARAR VERİLDİĞİNDE çağrılır. */
 export function bumpOnboardingHintShown(id: OnboardingHintId): void {
+  if (id === 'zoom') {
+    bumpZoomHintShown();
+    return;
+  }
   try {
     localStorage.setItem(hintKey(id), String(hintShown(id) + 1));
   } catch {
@@ -325,38 +357,48 @@ export function bumpOnboardingHintShown(id: OnboardingHintId): void {
   }
 }
 
-/** Bir hamlenin ne yaşattığı — çağıran motordan türetir. */
+/** Bir hamlenin ve ekranın durumu — çağıran türetir. */
 export interface OnboardingHintInput {
-  /**
-   * Tahtaya bir kelime oturdu mu — KİM oynadığından bağımsız (YZ'nin hamlesi
-   * de sayılır: dokunulacak kelime tahtada, oyuncu o an zaten bekliyor).
-   */
-  wordPlaced: boolean;
-  /**
-   * Ekran açıldığından beri oynanan hamle sayısı, bu hamle DAHİL
-   * (`ONBOARDING_HINT_MIN_MOVES` ile karşılaştırılır).
-   */
+  /** Ekran açıldığından beri oynanan hamle sayısı, bu hamle DAHİL (vergi
+   *  satırı hariç; pas/değişim/teslim dahil — kimin oynadığından bağımsız). */
   movesSinceOpen: number;
+  /** Oyuncu sayısı (tur = bu kadar hamle). */
+  playerCount: number;
+  /** Bu ekranda son balonun gösterildiği andaki `movesSinceOpen`; bu ekranda
+   *  henüz balon çıkmadıysa `null`. */
+  lastShownAt: number | null;
+  /** Bu hamle tahtaya bir KELİME oturttu mu (`anlam`ın koşulu). */
+  wordPlaced: boolean;
+  /** Bu ekranda çizilebilen balonlar — çizilemeyen ATLANIR. */
+  available: Readonly<Record<OnboardingHintId, boolean>>;
 }
 
 /**
- * Bu hamlede hangi ipucu gösterilsin? Saf fonksiyon — sayaçlar çağırandan
+ * Bu hamlede hangi balon gösterilsin? Saf fonksiyon — sayaçlar çağırandan
  * geliyor (depolama erişimi burada YOK, `verify-tutorial-script` tabloyu
- * doğrudan koşabilsin diye).
- *
- * `null` = gösterilecek ipucu yok (kelime oturmadı, açılıştan beri yeterli
- * hamle geçmedi ya da tavanda).
+ * doğrudan koşabilsin diye). `null` = bu hamlede balon yok.
  */
 export function pickOnboardingHint(
   input: OnboardingHintInput,
   shown: Record<OnboardingHintId, number>,
 ): OnboardingHintId | null {
-  const hakEdilen: Record<OnboardingHintId, boolean> = {
-    anlam: input.wordPlaced,
-  };
-  if (input.movesSinceOpen < ONBOARDING_HINT_MIN_MOVES) return null;
+  const n = Math.max(1, input.playerCount);
+  const acilistanTur = Math.floor(input.movesSinceOpen / n);
+  const tur =
+    input.lastShownAt === null
+      ? Math.floor(input.movesSinceOpen / n)
+      : Math.floor((input.movesSinceOpen - input.lastShownAt) / n);
+  const esik = input.lastShownAt === null ? ONBOARDING_HINT_FIRST_ROUNDS : ONBOARDING_HINT_GAP_ROUNDS;
+  if (tur < esik) return null;
   for (const id of ONBOARDING_HINT_ORDER) {
-    if (hakEdilen[id] && (shown[id] ?? 0) < ONBOARDING_HINT_MAX_SHOWS) return id;
+    if ((shown[id] ?? 0) >= ONBOARDING_HINT_MAX_SHOWS) continue;
+    if (!input.available[id]) continue;
+    // Anlam sırası geldiyse BEKLER: kelime oturmayan hamlede dokunulacak bir
+    // kelime yok, ama atlamak da onu sona iterdi.
+    if (id === 'anlam' && (!input.wordPlaced || acilistanTur < ONBOARDING_HINT_ANLAM_MIN_ROUNDS)) {
+      return null;
+    }
+    return id;
   }
   return null;
 }

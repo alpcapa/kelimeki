@@ -82,24 +82,43 @@ bool shouldShowTutorial(TutorialGateInput input) {
 // Desen zoom balonunun birebir aynısı: cihaz yerel sayaç, ipucu BAŞINA tavan,
 // "gösterim" balonun EKRANA GELMESİDİR, depolama yoksa varsayılan GÖSTERME
 // tarafında (`FlagsStore` yoksa ekran hiç sormaz).
-enum OnboardingHintId { anlam }
+// ⚠ **1 Ekim 2026 — tek balon SIRAYA dönüştü (kullanıcı, 1.1.2 cihaz turu).**
+// Web ikizi `src/utils/onboarding.ts` → "Eğitim balonları"; kurallar orada
+// yazılı, burada BİREBİR (`tutorial_parity_test.dart` sabitleri, sırayı ve
+// metinleri web kaynağından okuyup karşılaştırıyor):
+//   • sıra menü → anlam → zoom → hamleler → torba → mesaj; her biri BİR KEZ;
+//   • ilki açılıştan 2 TUR, sonrakiler bu ekrandaki son balondan 4 tur sonra;
+//   • bu ekranda çizilemeyen balon ATLANIR (Canlı'da anlam, YZ oyununda
+//     mesaj, misafirde menü, dolu köşede zoom);
+//   • anlam kelime oturmadan ve 6. turdan önce BEKLER.
+enum OnboardingHintId { menu, anlam, zoom, hamleler, torba, mesaj }
 
-/// Bir ipucunun görüneceği en fazla hamle sayısı (ipucu BAŞINA).
-/// Web ikizi `ONBOARDING_HINT_MAX_SHOWS` — değer `tutorial_parity_test.dart`
-/// ile kilitli.
+/// Gösterim sırası — web `ONBOARDING_HINT_ORDER` ile BİREBİR.
+const List<OnboardingHintId> onboardingHintOrder = [
+  OnboardingHintId.menu,
+  OnboardingHintId.anlam,
+  OnboardingHintId.zoom,
+  OnboardingHintId.hamleler,
+  OnboardingHintId.torba,
+  OnboardingHintId.mesaj,
+];
+
+/// Bir balonun görüneceği en fazla sayı (balon BAŞINA) — web
+/// `ONBOARDING_HINT_MAX_SHOWS`.
 const int onboardingHintMaxShows = 1;
 
-/// Oyun ekranı açıldıktan sonra ipucundan ÖNCE geçmesi gereken en az hamle
-/// sayısı (tetikleyen hamle DAHİL; vergi satırı sayılmaz) — web
-/// `ONBOARDING_HINT_MIN_MOVES`. Kullanıcı (30 Eylül 2026): zoom balonuyla
-/// aynı anda çıkmasın, arada en az 2-3 hamle geçsin.
-/// ⚠ 3 → 12 (1 Ekim 2026, kullanıcı, 1.1.2 cihaz turu): *"karşılıklı 6-7
-/// hamle … 12-14 toplam hamle sonra"* — oyun ortaya doğru gelmiş olur.
-const int onboardingHintMinMoves = 12;
+/// İlk balondan önceki TUR sayısı — web `ONBOARDING_HINT_FIRST_ROUNDS`.
+const int onboardingHintFirstRounds = 2;
+
+/// İki balon arasındaki TUR sayısı — web `ONBOARDING_HINT_GAP_ROUNDS`.
+const int onboardingHintGapRounds = 4;
+
+/// `anlam`ın açılıştan en erken turu — web `ONBOARDING_HINT_ANLAM_MIN_ROUNDS`
+/// (30 Eylül kararı: tahta ortaya doğru dolmuş olsun).
+const int onboardingHintAnlamMinRounds = 6;
 
 /// Balonun ÜSTTE yer bulamayacağı satır sayısı — web
-/// `ONBOARDING_HINT_ALT_ROWS` (aynı turda 1. satırdaki balon tahtanın üst
-/// kenarında kesildi; eskiden yalnız 0. satır alta alınıyordu).
+/// `ONBOARDING_HINT_ALT_ROWS` (yalnız tahtaya çapalı `anlam` balonu).
 const int onboardingHintAltRows = 3;
 
 /// Balon çapanın üstünde mi altında mı — web `onboardingHintYon`.
@@ -108,46 +127,61 @@ String onboardingHintYon(int r) => r < onboardingHintAltRows ? 'alt' : 'ust';
 /// Balonun ekranda kalma süresi — web `ONBOARDING_HINT_MS`.
 const Duration onboardingHintDuration = Duration(milliseconds: 4000);
 
-/// Aynı hamlede birden fazla ipucu hak edilirse gösterilme sırası (web ile
-/// birebir). Bugün tek ipucu var; yapı parite ve olası yeni ipuçları için.
-const List<OnboardingHintId> onboardingHintOrder = [
-  OnboardingHintId.anlam,
-];
-
-/// Metin kullanıcının kendi cümlesi (30 Eylül 2026).
+/// Metinler — web `ONBOARDING_HINT_TEXTS`. Zoom'un metni `kZoomHintText`te
+/// (`board_zoom.dart`, tahta balonu).
 const Map<OnboardingHintId, String> onboardingHintTexts = {
+  OnboardingHintId.menu: 'Kullanıcı menüsü için tıkla.',
   OnboardingHintId.anlam: 'Kelimenin üzerine tıklarsan anlamı gelir.',
+  OnboardingHintId.hamleler: 'Buradan tüm hamleleri görebilirsin.',
+  OnboardingHintId.torba: 'Dışarıda kalan taşlar burada.',
+  OnboardingHintId.mesaj: 'Buradan oyunculara mesaj gönderebilirsin.',
 };
 
-/// Bir hamlenin ne yaşattığı — çağıran motordan türetir.
+/// Bir hamlenin ve ekranın durumu — web `OnboardingHintInput`.
 class OnboardingHintInput {
-  /// Tahtaya bir kelime oturdu mu — KİM oynadığından bağımsız (YZ'nin
-  /// hamlesi de sayılır).
+  /// Ekran açıldığından beri oynanan hamle sayısı (vergi satırı HARİÇ).
+  final int movesSinceOpen;
+  final int playerCount;
+
+  /// Bu ekranda son balonun gösterildiği andaki `movesSinceOpen`; yoksa null.
+  final int? lastShownAt;
+
+  /// Bu hamle tahtaya bir KELİME oturttu mu (`anlam`ın koşulu).
   final bool wordPlaced;
 
-  /// Ekran açıldığından beri oynanan hamle sayısı, bu hamle DAHİL.
-  final int movesSinceOpen;
+  /// Bu ekranda çizilebilen balonlar — listede olmayan ATLANIR.
+  final Set<OnboardingHintId> available;
 
   const OnboardingHintInput({
-    required this.wordPlaced,
     required this.movesSinceOpen,
+    required this.playerCount,
+    required this.lastShownAt,
+    required this.wordPlaced,
+    required this.available,
   });
 }
 
-/// Bu hamlede hangi ipucu gösterilsin? Saf fonksiyon — sayaçlar çağırandan
-/// (`FlagsStore`) geliyor. `null` = gösterilecek ipucu yok.
+/// Bu hamlede hangi balon gösterilsin? Saf fonksiyon — sayaçlar çağırandan
+/// (`FlagsStore`) geliyor. `null` = bu hamlede balon yok.
 OnboardingHintId? pickOnboardingHint(
   OnboardingHintInput input,
   Map<OnboardingHintId, int> shown,
 ) {
-  final hakEdilen = <OnboardingHintId, bool>{
-    OnboardingHintId.anlam: input.wordPlaced,
-  };
-  if (input.movesSinceOpen < onboardingHintMinMoves) return null;
+  final n = input.playerCount < 1 ? 1 : input.playerCount;
+  final acilistanTur = input.movesSinceOpen ~/ n;
+  final last = input.lastShownAt;
+  final tur = last == null ? acilistanTur : (input.movesSinceOpen - last) ~/ n;
+  final esik =
+      last == null ? onboardingHintFirstRounds : onboardingHintGapRounds;
+  if (tur < esik) return null;
   for (final id in onboardingHintOrder) {
-    if ((hakEdilen[id] ?? false) && (shown[id] ?? 0) < onboardingHintMaxShows) {
-      return id;
+    if ((shown[id] ?? 0) >= onboardingHintMaxShows) continue;
+    if (!input.available.contains(id)) continue;
+    if (id == OnboardingHintId.anlam &&
+        (!input.wordPlaced || acilistanTur < onboardingHintAnlamMinRounds)) {
+      return null;
     }
+    return id;
   }
   return null;
 }

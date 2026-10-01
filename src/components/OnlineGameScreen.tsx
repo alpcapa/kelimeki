@@ -59,11 +59,15 @@ import {
   getChatLastReadAt,
   markChatRead as markChatReadLocal,
   pickFirstWinCelebration,
+  ONBOARDING_HINT_TEXTS,
   type FirstWinCelebrationId,
 } from '../utils/onboarding';
+import { zoomHintTarget } from '../utils/boardZoom';
 import { decideChatRead } from '../utils/chatRead';
 import { swallowNextClick } from '../utils/ghostClick';
 import { useBoardZoom } from '../hooks/useBoardZoom';
+import { useOnboardingHints } from '../hooks/useOnboardingHints';
+import { HintBubble } from './HintBubble';
 import {
   checkOnlineGameTurnTimeout,
   createOnlineGame,
@@ -426,6 +430,27 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
   // Tahta yakınlaştırması — App.tsx ile AYNI hook, aynı davranış
   // (bkz. src/utils/boardZoom.ts; iki ekranın deseni paylaşma kuralı).
   const boardZoom = useBoardZoom(() => dragRef.current !== null);
+  // Eğitim balonları (1 Ekim 2026) — App.tsx ile AYNI hook ve sıra
+  // (`pickOnboardingHint`). Canlı'da `anlam` ÇİZİLMEZ (tahta balonu yalnız
+  // yerel oyunda; sırası burada atlanır, yerel oyunda çıkar) ve `mesaj`
+  // yalnız burada çizilebilir. Yüklenmeden önce SAYILMAZ: ilk senkron
+  // geçmişin tamamını getirir, "az önce oynanmış" sanılmamalı.
+  const hint = useOnboardingHints({
+    active: loaded && !state.isGameOver,
+    moves: moveRows.length,
+    playerCount: state.players.length,
+    lastWordCell: null,
+    available: {
+      menu: true,
+      anlam: false,
+      zoom: zoomHintTarget((r, c) => state.board[r][c] === null && !state.placed[key(r, c)]) !== null,
+      hamleler: true,
+      torba: true,
+      mesaj: true,
+    },
+    hasDraft: Object.keys(state.placed).length > 0,
+    onZoom: boardZoom.showHint,
+  });
   const [ghost, setGhost] = useState<{
     x: number;
     y: number;
@@ -1524,7 +1549,12 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
           (App.tsx) bu prop'u hiç geçmediğinden orada kutular eskisi gibi
           tıklanamaz kalıyor. YZ koltukları GameHeader'ın kendi `isAI`
           kontrolüyle zaten dışarıda. */}
-      <GameHeader state={state} onLogoClick={onBack} onPlayerClick={handlePlayerBoxClick} />
+      <GameHeader
+        state={state}
+        onLogoClick={onBack}
+        onPlayerClick={handlePlayerBoxClick}
+        menuHint={hint?.id === 'menu'}
+      />
 
       <main className="w-full flex flex-col items-center">
         <Board
@@ -1543,6 +1573,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
           onTilePointerUp={endDrag}
           onTilePointerCancel={cancelDrag}
           zoomHint={boardZoom.hint}
+          stripHint={hint?.id === 'hamleler' || hint?.id === 'mesaj' ? hint.id : null}
           zoom={boardZoom.zoom}
           viewportRef={boardZoom.viewportRef}
           onBoardPointerDown={boardZoom.onPointerDown}
@@ -1674,9 +1705,12 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
               </button>
               <button
                 onClick={() => setShowTiles(true)}
-                className="btn-raised-neutral flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform"
+                className="btn-raised-neutral relative flex-1 py-2.5 px-1.5 rounded-md font-sans text-[11px] font-bold uppercase tracking-[1.2px] bg-panel text-text border border-border active:scale-[0.97] transition-transform"
               >
                 Torba <span className="text-[13px] text-accent">{state.bag.length}</span>
+                {hint?.id === 'torba' && (
+                  <HintBubble text={ONBOARDING_HINT_TEXTS.torba} yon="ust" hiza="son" />
+                )}
               </button>
             </div>
           )}

@@ -256,8 +256,8 @@ void main() {
     expect(find.text('(%70)'), findsOneWidget); // Yapay Zeka ile 7/10
     expect(find.text('%70'), findsNothing);
 
-    // 4 Oyunculu sekmesine geç — kutular o sekmenin verisine döner.
-    await tester.tap(find.text('4 OYUNCULU'));
+    // 4 Kişi sekmesine geç — kutular o sekmenin verisine döner.
+    await tester.tap(find.text('4 KİŞİ'));
     await tester.pumpAndSettle();
     expect(find.text('(%75)'), findsOneWidget); // Arkadaşınla 3/4
 
@@ -423,6 +423,64 @@ void main() {
     expect(find.text('(0 puan)'), findsNWidgets(3));
     expect(find.text('—'), findsOneWidget); // En Uzun Kelime
   });
+
+  // 1 Ekim 2026, 1.1.2 cihaz turu: başlık "SIRAOYUNCU" diye bitişik
+  // okunuyordu + kullanıcı sordu: "1000'li rakamlara gelince tablo nasıl
+  // olacak?". PUAN sütunu 44 px; 4 haneli puan dar telefonda ve yazı ölçeği
+  // tavanında da KÜÇÜLMEDEN sığmalı.
+  for (final scale in [1.0, kMaxTextScale]) {
+    testWidgets(
+        'k-lig: SIRA↔OYUNCU arası boşluk + 4-5 haneli puan sığar '
+        '(ölçek $scale)', (tester) async {
+      final gw = FakeStatsGateway(
+        rows: [
+          {
+            'user_id': 'u-0',
+            'display_name': 'Çokuzunisimlioyuncu',
+            'total_score': 12345,
+            'avg_move_score': 18.27,
+          },
+          {
+            'user_id': 'u-1',
+            'display_name': 'Asnmzr',
+            'total_score': 1234,
+            'avg_move_score': 12.08,
+          },
+        ],
+      );
+      final auth = AuthService.fake(user: fakeUser(), profile: ironman);
+      await setPhoneViewSize(tester, const Size(375, 812));
+      await tester.pumpWidget(MaterialApp(
+        theme: kelimekiTheme(),
+        home: MediaQuery.withClampedTextScaling(
+          minScaleFactor: scale,
+          maxScaleFactor: scale,
+          child: Scaffold(
+            body: LeaderboardModal(auth: auth, stats: StatsRepo(gw)),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      final sira = tester.getRect(find.text('SIRA'));
+      final oyuncu = tester.getRect(find.text('OYUNCU'));
+      expect(oyuncu.left - sira.right, greaterThanOrEqualTo(4));
+
+      // FittedBox küçültmediyse metnin ekrandaki eni kendi doğal enine eşit
+      // kalır. Hücreler ölçekle KISMEN büyüyor (`scaledWidth`, en fazla
+      // ×1,15 — bilinçli, isim sütunu sıkışmasın); tavanda (1,3) 5 hane ve
+      // OHP bu yüzden biraz küçülür, ama 4 haneli puan tam boy kalmalı.
+      double oran(String t) =>
+          tester.getRect(find.text(t)).width /
+          tester.renderObject<RenderParagraph>(find.text(t)).size.width;
+      expect(oran('1234'), closeTo(1, 0.01), reason: '4 hane küçültüldü');
+      for (final t in ['12345', '18.27']) {
+        expect(oran(t), scale == 1.0 ? closeTo(1, 0.01) : greaterThan(0.85),
+            reason: '"$t" okunmayacak kadar küçüldü');
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('k-lig: ilk 10 + kaydırınca sonraki sayfa + ekran görüntüsü',
       (tester) async {

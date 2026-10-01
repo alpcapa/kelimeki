@@ -28,6 +28,8 @@ import '../../game/move_status.dart';
 import 'board_fit.dart';
 import 'board_widget.dart';
 import 'board_zoom.dart';
+import 'hint_bubble.dart';
+import 'onboarding_hints.dart';
 import 'dialog_shell.dart';
 import 'drag_feel.dart';
 import 'game_header.dart';
@@ -158,8 +160,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   GameController get controller => widget.controller;
   GameState get state => controller.state;
 
-  /// Zoom tanıtım balonu (1 Eylül 2026) — açılışta bir kez karar verilir;
-  /// zoom denenirse ANINDA kapanır ve bir daha hiç gösterilmez.
+  /// Zoom tanıtım balonu (1 Eylül 2026) — 1 Ekim 2026'dan beri eğitim
+  /// balonu SIRASININ bir halkası (`_hints`); zoom denenirse ANINDA kapanır.
   bool _zoomHint = false;
 
   /// Balonun kendi kendine kapanma zamanlayıcısı — `dispose`'da ve "zoom
@@ -170,21 +172,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   /// (web gameOverDismissed'in eşleniği — kapatınca tahta görünür kalır).
   bool _gameOverShown = false;
 
-  // ── Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) ────────────────
-  // Tanıtımı ATLAYAN ya da hiç göremeyen oyuncu üç mekaniği burada, GERÇEK
-  // oyunda ve mekanik yaşandığı anda öğrenir. Balon tahtanın kendi `coach`
-  // slotunu kullanıyor (tanıtımın çizdiği balonun aynısı) — ikinci bir
-  // geometri yazılmadı. Web ikizi: `App.tsx`'in `hint`/`hintCoach` çifti.
+  // ── Eğitim balonları (Onboarding Faz 2; sıra 1 Ekim 2026) ──────────────
+  // menü → anlam → zoom → hamleler → torba → mesaj, birer kez, 2. turdan
+  // sonra başlayıp 4'er tur arayla (`pickOnboardingHint`). Web ikizi:
+  // `App.tsx` + `useOnboardingHints`. `anlam` tahtanın `coach` slotunu,
+  // zoom `zoomHint`i, ötekiler öğeye çapalı `HintAnchor`ı kullanır.
+  final _hints = OnboardingHintScheduler();
   BoardCoach? _hintCoach;
+  OnboardingHintId? _uiHint;
   Timer? _hintTimer;
-
-  /// İşlenmiş `moveHistory` uzunluğu — yalnızca YENİ satırlara bakılır.
-  int _hintHistoryLen = 0;
-
-  /// Ekran açıldığı (ya da aynı controller'da yeni oyun başladığı) andaki
-  /// geçmiş uzunluğu — `onboardingHintMinMoves` buradan sayılıyor (web
-  /// `hintBaseRef`).
-  int _hintBaseLen = 0;
 
   // ── Sürükle-bırak (web App.tsx beginDrag/moveDrag/endDrag portu) ──────
   // Jestin HİSSİ (kaldırma payı, fare/parmak eşiği, bırakma eşiği, hayalet
@@ -282,10 +278,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _hintHistoryLen = controller.state.moveHistory.length;
-    _hintBaseLen = _hintHistoryLen;
+    if (controller.state.phase == GamePhase.play) {
+      _hints.arm(_hintMoveCount(controller.state));
+    }
     controller.addListener(_ipucuKontrol);
-    unawaited(_zoomHintKarariVer());
     // `ModalRoute` yalnızca ilk kare SONRASI okunabilir (initState'te
     // context henüz ağaca bağlı değil).
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -546,88 +542,94 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     return true;
   }
 
-  /// Hamleden sonra bağlamsal ipucu gösterilsin mi (Onboarding Faz 2).
-  /// `controller`ın her bildiriminde koşar; yalnızca `moveHistory`ye YENİ
-  /// düşen gerçek bir kelime hamlesi ilgilendiriyor.
+  /// Vergi satırı HARİÇ hamle sayısı (pas/değişim/teslim dahil) — web
+  /// `App.tsx`in `hintMoves`ı.
+  static int _hintMoveCount(GameState s) =>
+      s.moveHistory.where((e) => e.invasionFrom == null).length;
+
+  /// Ekrandaki eğitim balonunu (anlam ya da öğeye çapalı) kaldırır.
+  void _balonuKapat() {
+    _hintTimer?.cancel();
+    if (_hintCoach != null || _uiHint != null) {
+      setState(() {
+        _hintCoach = null;
+        _uiHint = null;
+      });
+    }
+  }
+
+  /// `controller`ın her bildiriminde koşar: yeni bir hamle düştüyse eğitim
+  /// balonu sırasına sorar (Onboarding Faz 2; sıra 1 Ekim 2026).
   void _ipucuKontrol() {
     final s = controller.state;
     if (s.phase != GamePhase.play) {
-      _hintHistoryLen = s.moveHistory.length;
+      _hints.disarm();
+      _balonuKapat();
       return;
     }
-    if (s.moveHistory.length < _hintHistoryLen) {
-      // Geçmiş KISALDI: yeni oyun/rövanş aynı controller üzerinde başladı.
-      // Senkronlanmazsa sayaç eski uzunlukta takılır ve ipucu bir daha hiç
-      // çıkmaz (web'de `slice` sonrası koşulsuz atama bunu kendiliğinden
-      // yapıyor; burada açıkça yazılıyor).
-      _hintHistoryLen = s.moveHistory.length;
-      _hintBaseLen = _hintHistoryLen;
-      return;
-    }
-    if (s.moveHistory.length <= _hintHistoryLen) {
-      // Taslak değişimi/geri alma da bildirim üretiyor; balon o an kalksın
-      // (web'deki `hasDraft` effect'inin eşleniği).
-      if (s.placed.isNotEmpty && _hintCoach != null) {
-        _hintTimer?.cancel();
-        setState(() => _hintCoach = null);
-      }
-      return;
-    }
-    final yeni = s.moveHistory.sublist(_hintHistoryLen);
-    _hintHistoryLen = s.moveHistory.length;
-    // Vergi satırları (`invasionFrom`) ve pas/değişim/teslim satırları hamle
-    // DEĞİL; ipucu yalnızca gerçek bir kelime hamlesinden doğar.
-    HistoryEntry? move;
-    for (final e in yeni) {
-      if (e.action == null && e.invasionFrom == null && e.words.isNotEmpty) {
-        move = e;
-        break;
-      }
-    }
-    if (move == null) return;
-    // YZ'nin hamlesi de SAYILIR (30 Eylül 2026): ipucu bir mekaniği değil
-    // bir etkileşimi anlatıyor — "kelimeye dokun, anlamı açılsın" — ve YZ
-    // oynadıktan sonra sıra oyuncuda (web `App.tsx` ile aynı).
-    // Vergi satırı ayrı bir hamle değil; pas/değişim sayılır (web ile aynı).
-    final movesSinceOpen = s.moveHistory
-        .skip(_hintBaseLen)
-        .where((e) => e.invasionFrom == null)
-        .length;
-    unawaited(_ipucuGoster(s, movesSinceOpen));
+    // Taslak başladı — balon o an kalksın (web `hasDraft` effect'i).
+    if (s.placed.isNotEmpty) _balonuKapat();
+    final hamleler = s.moveHistory.where((e) => e.invasionFrom == null);
+    final son = hamleler.isEmpty ? null : hamleler.last;
+    final kelime = son != null &&
+        son.action == null &&
+        son.words.isNotEmpty &&
+        s.lastMoveCells.isNotEmpty;
+    unawaited(_ipucuKarar(s, hamleler.length, kelime));
   }
 
-  Future<void> _ipucuGoster(GameState s, int movesSinceOpen) async {
+  Future<void> _ipucuKarar(GameState s, int moves, bool kelime) async {
     final storageFuture = widget.storage;
     if (storageFuture == null) return;
     final storage = await storageFuture;
     if (!mounted) return;
-    final flags = storage.flags;
-
-    final secilen = pickOnboardingHint(
-      OnboardingHintInput(wordPlaced: true, movesSinceOpen: movesSinceOpen),
-      flags.onboardingHintShownCounts,
+    final secilen = await _hints.onMoves(
+      moves: moves,
+      playerCount: s.players.length,
+      wordPlaced: kelime,
+      available: {
+        // Misafirde sağ üstte avatar değil "Giriş" — menü balonu ATLANIR.
+        if (widget.auth?.user != null) OnboardingHintId.menu,
+        OnboardingHintId.anlam,
+        if (zoomHintTarget((r, c) =>
+                s.board[r][c] == null && s.placed[cellKey(r, c)] == null) !=
+            null)
+          OnboardingHintId.zoom,
+        OnboardingHintId.hamleler,
+        OnboardingHintId.torba,
+        // Yerel/YZ oyununda mesajlaşma yok.
+      },
+      flags: storage.flags,
     );
-    if (secilen == null) return;
-
-    // Çapa: hamlenin ilk karesi — o hücreden geçen kelimenin anlamı açılır.
-    if (s.lastMoveCells.isEmpty) return;
-    final capa = [s.lastMoveCells.first.$1, s.lastMoveCells.first.$2];
-
-    await flags.bumpOnboardingHintShown(secilen);
-    if (!mounted) return;
+    if (secilen == null || !mounted) return;
+    if (secilen == OnboardingHintId.zoom) {
+      _zoomHintGoster();
+      return;
+    }
     _hintTimer?.cancel();
     setState(() {
-      _hintCoach = BoardCoach(
-        r: capa[0],
-        c: capa[1],
-        text: onboardingHintTexts[secilen]!,
-        // Balon işaret ettiği karenin ÜSTÜNDE durur; ilk satırlarda üstte
-        // yer yok → altına (`onboardingHintAltRows`, 1 Ekim 2026).
-        yon: onboardingHintYon(capa[0]),
-      );
+      if (secilen == OnboardingHintId.anlam) {
+        // Çapa: hamlenin ilk karesi — o hücreden geçen kelimenin anlamı açılır.
+        final capa = s.lastMoveCells.first;
+        _hintCoach = BoardCoach(
+          r: capa.$1,
+          c: capa.$2,
+          text: onboardingHintTexts[OnboardingHintId.anlam]!,
+          // Balon işaret ettiği karenin ÜSTÜNDE durur; ilk satırlarda üstte
+          // yer yok → altına (`onboardingHintAltRows`, 1 Ekim 2026).
+          yon: onboardingHintYon(capa.$1),
+        );
+      } else {
+        _uiHint = secilen;
+      }
     });
     _hintTimer = Timer(onboardingHintDuration, () {
-      if (mounted) setState(() => _hintCoach = null);
+      if (mounted) {
+        setState(() {
+          _hintCoach = null;
+          _uiHint = null;
+        });
+      }
     });
   }
 
@@ -675,18 +677,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     return karar;
   }
 
-  /// Balon gösterilsin mi — kararı `FlagsStore` veriyor (tek kaynak, web
-  /// `onboarding.ts` ile aynı kural: denenmişse asla, denenmemişse en çok
-  /// iki oyun açılışında). Gösterime KARAR VERİLDİĞİ anda sayaç artıyor:
-  /// "gösterim" balonun ekrana gelmesidir, kapanma biçimi değil.
-  Future<void> _zoomHintKarariVer() async {
-    final storageFuture = widget.storage;
-    if (storageFuture == null) return;
-    final storage = await storageFuture;
-    final flags = storage.flags;
-    if (!mounted || !flags.shouldShowZoomHint) return;
-    await flags.bumpZoomHintShown();
-    if (!mounted) return;
+  /// Zoom balonunu göster — karar ve sayaç eğitim balonu sırasında
+  /// (`_ipucuKarar`); burada yalnızca gösterim + kendi kendine kapanma.
+  void _zoomHintGoster() {
     setState(() => _zoomHint = true);
     // Balon kendi kendine kapanır (16 Eylül 2026) — gerekçe ve "denedi
     // SAYILMAZ" kuralı `kZoomHintAutoHide`ın başında.
@@ -1365,6 +1358,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                             constraints: const BoxConstraints(maxWidth: 680),
                             child: GameHeader(
                               state: state,
+                              menuHint: _uiHint == OnboardingHintId.menu,
                               auth: widget.auth,
                               stats: widget.stats,
                               games: widget.games,
@@ -1440,6 +1434,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                             coach: _hintCoach,
                                             zoomHint:
                                                 _zoomHint && _hintCoach == null,
+                                            stripHint: _uiHint ==
+                                                    OnboardingHintId.hamleler
+                                                ? _uiHint
+                                                : null,
                                             zoom: _zoom,
                                             viewportKey: _viewportKey,
                                             onBoardPointerDown:
@@ -1800,7 +1798,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                                     ),
                                                     const SizedBox(width: 6),
                                                     Expanded(
-                                                      child: NeoButton(
+                                                      child: HintAnchor(
+                                                        show: _uiHint ==
+                                                            OnboardingHintId
+                                                                .torba,
+                                                        text: onboardingHintTexts[
+                                                            OnboardingHintId
+                                                                .torba]!,
+                                                        yon: HintBubbleYon.ust,
+                                                        hiza:
+                                                            HintBubbleHiza.son,
+                                                        child: NeoButton(
                                                         letterSpacing: 1.2,
                                                         lineHeight: 1.5,
                                                         label:
@@ -1835,6 +1843,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                                                 context,
                                                                 state,
                                                                 _rackIndex),
+                                                      ),
                                                       ),
                                                     ),
                                                   ],

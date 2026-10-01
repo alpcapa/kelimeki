@@ -212,8 +212,8 @@ mobile/
                              # karşılama İLK EKRANININ portu (ROADMAP #41
                              # karar 14, Parça 224; öncesi 5 slayt, Parça
                              # 116-119). Setup'ın ÖNÜNDE; ATLAMA YOK, tek
-                             # çıkış "HEMEN OYNA". Tekrar açma yolu Setup'ın
-                             # logo altı "Tanıtım" linki (yalnız misafir);
+                             # çıkış "HEMEN OYNA". Tekrar açma yolu YOK
+                             # (Setup'taki "Tanıtım" linki 1 Eki'de kalktı);
                              # kapısı app.dart'taki _HomeGate, bayrağı
                              # FlagsStore.seenIntro. Metinler Landing.tsx'e
                              # intro_screen_test ile KİLİTLİ.
@@ -239,6 +239,12 @@ mobile/
                              # YÜKSEKLİK bütçesi + taş puntosu tavanı; web
                              # `boardFit.ts`/`index.css` ile birebir, kapı
                              # board_fit_test.dart — Parça 215) + PAYLAŞILAN küçük parçalar:
+                             # hint_bubble.dart — öğeye çapalı eğitim
+                             #   balonu (`HintAnchor`, OverlayPortal; web
+                             #   HintBubble.tsx) + onboarding_hints.dart —
+                             #   iki oyun ekranının balon SIRASI sayacı
+                             #   (`OnboardingHintScheduler`; web
+                             #   useOnboardingHints) — 1 Ekim 2026.
                              # modal_shell (KModal — başlıklı 360px pencere),
                              # dialog_shell (KDialogCard — 384px onay/uyarı
                              # kartı; İKİSİ AYRI, web'de de öyle),

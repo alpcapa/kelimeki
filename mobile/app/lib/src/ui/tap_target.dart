@@ -29,6 +29,27 @@ const double kMinTapTarget = 48.0;
 /// ortalanır); yalnızca dokunulabilir kutuyu büyütür. [onTap] verilmezse
 /// salt bir boşluk ayırıcıdır — aynı satırdaki tıklanamaz öğeler (ayraç,
 /// "Çevrimdışı" rozeti) hizada kalsın diye.
+/// Bir alt ağaçta `TapTarget`in VARSAYILAN asgari yüksekliğini değiştirir
+/// (açıkça verilen `minHeight`/`minWidth`e dokunmaz).
+///
+/// Tek kullanıcısı oyun başlığı (1 Ekim 2026, `game_header.dart`): orada
+/// dokunma alanını 48'lik kutular değil SATIRIN KENDİSİ veriyor — her öğe
+/// başlığın tam boyuna (üst/alt 10 px dolgu dahil, ~57) gerilir, görseli
+/// ortada kalır. 48'lik kutular satırı web'den 18 pt uzatıyor ve yatay
+/// iPad'de alt düğmeleri ekran dışına itiyordu. Açılan menüler/pencereler
+/// başka bir rotada çizildiğinden kapsamın DIŞINDA kalır.
+class TapTargetScope extends InheritedWidget {
+  final double minHeight;
+  const TapTargetScope(
+      {super.key, required this.minHeight, required super.child});
+
+  static double? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<TapTargetScope>()?.minHeight;
+
+  @override
+  bool updateShouldNotify(TapTargetScope old) => old.minHeight != minHeight;
+}
+
 class TapTarget extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -66,12 +87,10 @@ class TapTarget extends StatelessWidget {
     // bir `Row` içinde bu genişliği sonsuza götürür.
     final box = ConstrainedBox(
       constraints: BoxConstraints(
-          minWidth: minWidth ?? min, minHeight: minHeight ?? min),
+          minWidth: minWidth ?? min,
+          minHeight: minHeight ?? TapTargetScope.of(context) ?? min),
       child: Align(
-          alignment: alignment,
-          widthFactor: 1,
-          heightFactor: 1,
-          child: child),
+          alignment: alignment, widthFactor: 1, heightFactor: 1, child: child),
     );
     if (onTap == null) return box;
     return GestureDetector(

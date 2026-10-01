@@ -424,12 +424,14 @@ kopyayı yasaklıyor. Jestin MANTIĞI ise hâlâ ekran başına: bir ekranda
 mantık değişirse yukarıdaki kural üç ekran için geçerli.
 
 **Onboarding Faz 2·3·5 (8 Eylül 2026) — üç dosya web'e karşı kilitli:**
-`util/onboarding.dart`ın bağlamsal ipuçları (30 Eyl 2026'dan beri tek ipucu `anlam`; `pickOnboardingHint`, metinler,
+`util/onboarding.dart`ın eğitim balonları (1 Eki 2026'dan beri SIRA: menü →
+anlam → zoom → hamleler → torba → mesaj; `pickOnboardingHint`, metinler,
 sıra, tavan) `tutorial_parity_test.dart` tarafından `src/utils/onboarding.ts`
 ile SATIR SATIR karşılaştırılıyor; `tutorial_script.dart`ın kapanış/tekrar
 buton etiketleri (`tutorialFinishButton` · `tutorialReplayFinishButton` ·
 `tutorialReplayCta`) `src/utils/tutorialScript.ts`ten okunuyor. İpucu balonu
-`BoardWidget.coach` slotunu kullanıyor (ikinci bir geometri YOK), ölçüm
+`BoardWidget.coach` slotunu, öğeye çapalı olanlar `ui/game/hint_bubble.dart`ı
+kullanıyor; iki oyun ekranının sayacı `ui/game/onboarding_hints.dart`. Ölçüm
 `GamesRepo.logTutorial` → `tutorial_events`. Biri webde değişirse port AYNI
 PR'da değişmek zorunda — testler bunu düşürerek söyler.
 
@@ -638,7 +640,9 @@ sunucu `coalesce` ile ortak, bkz. ROADMAP #23):
    `swap_limit_parity_test`, 14 Eylül 2026; kullanıcıya gösterilen hata
    metninin kapısı — metinler + kalıp sayıları, `error_message_parity_test`,
    13 Eylül 2026; Huni v2 olay/platform adları + `mevcut` kanalı —
-   `funnel_events_parity_test`, 27 Eylül 2026) — **yeni bir
+   `funnel_events_parity_test`, 27 Eylül 2026; skor kartı sekme etiketleri
+   "2 Kişi/4 Kişi" + "kişilik" metinleri — `score_labels_parity_test`,
+   1 Ekim 2026) — **yeni bir
    elle-senkron çift eklerken testini de yaz**, desen hazır (web kaynağını/
    migration'ı okuyup karşılaştır). Bugün kapısı OLMAYAN tek çift: k-lig kademe
    tablosunun SQL yarısı (`_award_league_rewards`in güncel tanımı tek bir

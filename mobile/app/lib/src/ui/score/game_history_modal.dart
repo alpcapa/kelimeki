@@ -539,7 +539,11 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
   Widget build(BuildContext context) {
     final entries = _entries;
     return KModal(
-      title: 'Tüm Oyunlar',
+      // Web `GameHistoryModal`: "Tüm Oyunlar · N Kişi" (1.1.2 cihaz turu,
+      // "2 oyunculu" yerine "2 Kişi" düzeltmesiyle birlikte eşlendi).
+      title: widget.playerCount == null
+          ? 'Tüm Oyunlar'
+          : 'Tüm Oyunlar · ${widget.playerCount} Kişi',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

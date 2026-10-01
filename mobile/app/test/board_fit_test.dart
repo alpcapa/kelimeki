@@ -136,6 +136,11 @@ void main() {
         // `boy − 308`, kart ondan 2×12 dar.
         final kart = tester.getRect(find.byType(BoardWidget)).width;
         expect(kart, view.height - kBoardChromePx - 24);
+        // 1 Ekim 2026: alt şeridin altında en az 16 px boşluk — cihazda
+        // (güvenli alan/metin metrikleri) eski 3 px'lik pay tükendi. Payı
+        // başlığın web geometrisine inmesi sağlıyor, tahtayı küçültmek DEĞİL.
+        expect(view.height - pas.bottom, greaterThanOrEqualTo(16),
+            reason: 'pay tükendi: ${view.height - pas.bottom}');
         expect(kart, greaterThanOrEqualTo(kBoardMinPx - 24));
       });
     }
