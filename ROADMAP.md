@@ -371,48 +371,30 @@ nereden okunacağı ve kartın "12" tavanı orada.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **DURUM (26 Eylül 2026): İKİ MAĞAZADA `1.1.1 (723)` = `8c1828f`.**
-Play production (#21) 16:13'te gönderildi, 16:42'de yayında; App Store aynı
-gün elle `Release This Version` ile yayına alındı — senkron kapandı
-(`mobile/docs/surumler.md` → "1.1.1"). 1.1.1'e binen 13 satır arşivde.
-Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
-**5 Ekim 2026** — 28 Eylül kullanıcı kararıyla atlandı, `surumler.md` →
-"SÜRÜM TRENİ").
+⚠ **DURUM (1 Ekim 2026): 1.1.2 KESİLDİ — mağazalarda hâlâ `1.1.1 (723)`.**
+Kullanıcı kararı (1 Eki): *"Bizim gibi yeni uygulamalar daha sık güncelleme
+geçiyorlardır"* → 5 Ekim beklenmedi, kesim 1 Ekim'de yapıldı ve tren
+**haftalık** oldu (bir sonraki kesim ~8 Ekim; `surumler.md` → "SÜRÜM TRENİ").
+Aşağıdaki tablonun TAMAMI 1.1.2'nin içeriği.
 
-⚠ **Tren incelemesi (1 Ekim 2026, ajan; kesimden önce OKU).** 17 taslak
-`[Sonraki sürüm]` PR + #675. `main` ile durum (yerelde deneme merge'ü):
+**Kesim (1 Eki, ajan):** 17 PR sırayla squash-merge edildi — #642 #649 #655
+#657 #670 #676 #678 #687 #697 #716 #637 #640 #647 #651 #659 #709 #731; son
+`main` = `927e7bc`. Önce yerelde tek tek birleştirildi, çakışmalar orada
+çözüldü (kod: `game_screen.dart` ×3, `board_widget.dart`, `bootstrap.dart`
+×2, `auth_modal.dart`; geri kalanı doküman) ve birleşik ağaçta **app 1.020
+test · core 6.895 kontrol · web lint + 9 doğrulayıcı** yeşil; her PR'a o
+adımın ağacı merge commit'iyle kondu, `main`'in son ağacı test edilenle
+BİREBİR aynı. Sunucu adımları: #647'nin migration'ı (`push_badge_count`)
+26 Eyl'den beri canlıdaydı; #647 sonrası beş bildirim fonksiyonu yeni
+`_shared/push.ts` ile deploy edildi (`verify_jwt` her birinde korundu);
+#651'in migration'ı canlıya uygulandı → canlı sürüm `20261001104454`, dosya
+adı ona çevrildi, `proacl` öncesiyle aynı.
 
-| Durum | PR'lar |
-|---|---|
-| Temiz | #642 · #649 · #655 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
-| Çakışma — yalnız doküman | #637, #640 (`ROADMAP.md`) · #647 (`CLAUDE.md`) · #659, #709 (`docs/decisions/funnel-v2.md`) |
-| Çakışma — KOD | #651 (`ROADMAP.md` + **`src/components/AdminDashboard.tsx`**) |
-
-- **Sıra bağımlılığı:** #709, #659'un ÜSTÜNE kurulu (önce #659).
-- **#655 YEŞİL (1 Eki).** 27 Eyl'de düşen web `test`i (`board-fit.spec.ts`)
-  RASTGELEYDİ: raftaki ilk taş joker çıkınca "Joker Hangi Harf" penceresi
-  açılıyor, harf tahtada belirmiyor (yerelde 56 koşuda 1). Düzeltme
-  `main`'de zaten var (test joker olmayan taşı seçiyor, 27 Eyl); #655'e
-  `main` merge edildi. Web yarısı #654 `main`'de olduğundan diff artık
-  yalnız port + doküman (web CI tetiklenmiyor). Başı `72f0e63`: Analiz +
-  testler · Android APK · iOS · Bütçe yeşil, çakışma yok.
-- **Aynı dosyaya dokunanlar (kesimde metin çakışması beklenir):**
-  `online_game_screen.dart` 7 PR (#637 #640 #642 #649 #657 #670 #687) ·
-  `auth_modal.dart` 5 (#640 #642 #651 #659 #709) · `game_screen.dart` 4
-  (#642 #657 #670 #716) · `games_api.dart` 3 (#651 #659 #709) ·
-  `pubspec.yaml` 3 (#647 #659 #709). Her merge'den sonra sıradakine `main`'i
-  merge et, `flutter test` koş.
-- **#731 (1 Eki, sonradan eklendi):** yarım kalan oyun hatırlatması — `setup_screen.dart`, `app.dart`, `bootstrap.dart`, `flags_store.dart`, `MainActivity.kt`, `AppDelegate.swift`, `AndroidManifest.xml`a dokunuyor; çakışma beklenen: `app.dart`/`setup_screen.dart` (#651 #659 #709 ile aynı dosyalar olabilir — kesimde sırada SONA koy, `main`'i merge edip `flutter test` koş).
-- **#721 kapatıldı** — #651'in tekrarıydı (`tutorial_events.anon_id`).
-- **#675 taslak DEĞİL ve `main`'e girmemiş iş taşıyor** (başka oturum, 28-29
-  Eyl): kampanya kütüğünün 29 Eyl ara kesitleri (00:13 · 09:56 · 10:09 kare
-  teşhisi · 10:14 yerleşim kırılımı · 10:25 kare duraklatıldı · 17:51 · 18:00
-  · 18:03), `kare` v2 sade görselleri (iki PNG) + `scripts/play-lansman`
-  değişikliği + `marketing-assets.md`. Mobil dosyası YOK → trenle ilgisiz,
-  kütük çakışması çözülüp HEMEN merge edilebilir. → **1 Eki MERGE EDİLDİ**
-  (kullanıcı onayı; kütük kronolojik birleştirildi, iki mükerrer satır
-  elendi). Aynı gün dal temizliği gerçek modda koştu: #675 ve #721'in dalları
-  silindi, uzakta yalnızca açık PR'ı olan dallar kaldı.
+**Sıradaki adımlar:** 1.1.2 `main` derlemesi (Android `.apk` + TestFlight) →
+cihaz turu: `testing-bildirimler.md` §3h (rozet), `mobile/TESTING.md` §34
+(yarım oyun — #731 cihazda HİÇ denenmedi), `testing-arkadaslar-canli.md` →
+"Okundu bilgisi cihazlar arasında", `testing-admin.md` → Kayıt Hunisi →
+App Store gönderimi + Play, aynı gün yayın ("SÜRÜM SENKRONU").
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de

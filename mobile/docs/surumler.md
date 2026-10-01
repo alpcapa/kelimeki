@@ -31,7 +31,16 @@ açıldı) anlatır; `docs/decisions/roadmap-arsiv.md` kapanmış turları sakla
 
 ---
 
-## SÜRÜM TRENİ — 2 haftada bir (25 Eylül 2026, kullanıcı kararı)
+## SÜRÜM TRENİ — HAFTADA bir (1 Ekim 2026; 25 Eyl–1 Eki arası 2 haftaydı)
+
+⚠ **1 Ekim 2026, kullanıcı kararı:** *"Bence bizim gibi yeni uygulamalar
+daha sık güncelleme geçiyorlardır. … 19 Ekim'i de haftaya bu günlere çekme
+taraftarıyım."* → 1.1.2 kesimi 5 Ekim beklenmeden **1 Ekim (Perşembe)**
+yapıldı (17 PR, ayrıntı `ROADMAP.md` → "Sıradaki sürüme binecekler") ve
+tren **haftalık** oldu: bir sonraki kesim **~8 Ekim**. Aşağıdaki takvimin
+gün adları 2 haftalık düzenden kaldı; aralık artık 1 hafta, gün kesimle
+birlikte kayar. Kesimden önceki 2 haftalık gerekçe tarihçe olarak aşağıda.
+
 
 Sözleri: *"Bundan sonra sürüm arası süre standardı belirlememiz lazım
 (acil işler hariç)"* → **2 hafta**. Web bu trene BAĞLI DEĞİL: her merge
@@ -45,9 +54,9 @@ anında yayında.
 | Salı–Çarşamba | Android `.apk` cihaz turu (`mobile/docs/testing-<sürüm>-turu.md`) + düzeltmeler |
 | Perşembe | App Store'a gönderim (elle yayın); `.aab` hazır tutulur |
 | Apple onayı | İki mağaza AYNI GÜN yayına (aşağıdaki "SÜRÜM SENKRONU") |
-| Arada (~10 gün) | Mobil işler **taslak PR** olarak birikir, başlık `[Sonraki sürüm] …`; `main`'e mobil kod GİRMEZ |
+| Arada (~3-4 gün, haftalık trende) | Mobil işler **taslak PR** olarak birikir, başlık `[Sonraki sürüm] …`; `main`'e mobil kod GİRMEZ |
 
-**İlk kesim:** 1.1.1 iki mağazada yayına alındıktan sonraki ilk Pazartesi → 1.1.1 26 Eyl'de yayında; kullanıcı kararı (26 Eyl): *"Daha yeni update geçtik"* → 28 Eylül ATLANDI, ilk kesim **Pazartesi 5 Ekim 2026**.
+**İlk kesim:** 1.1.1 iki mağazada yayına alındıktan sonraki ilk Pazartesi → 1.1.1 26 Eyl'de yayında; kullanıcı kararı (26 Eyl): *"Daha yeni update geçtik"* → 28 Eylül ATLANDI, ilk kesim **Pazartesi 5 Ekim 2026** olarak planlandı → 1 Ekim'e çekildi (yukarı bkz.).
 
 **Mobil + web birlikte değişen iş:** iki PR'a böl — web yarısı hemen
 merge edilir (parite testi web kaynağını okumuyorsa; okuyorsa ikisi
