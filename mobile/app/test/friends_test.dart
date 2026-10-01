@@ -142,6 +142,9 @@ class FakeFriendsGateway implements FriendsGateway {
     acceptedInvites.add(token);
     return 'Ironman';
   }
+
+  @override
+  Future<List<String>> frequentOpponents(int limit) async => const [];
 }
 
 User fakeUser() => User(

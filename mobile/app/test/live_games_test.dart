@@ -22,6 +22,8 @@ import 'package:kelimeki/src/bootstrap.dart';
 import 'package:kelimeki/src/config/version_gate.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
 import 'package:kelimeki/src/data/friends_api.dart';
+import 'package:kelimeki/src/ui/friends/k_pill.dart';
+import 'package:kelimeki/src/ui/game/player_colors.dart';
 import 'package:kelimeki/src/data/error_reporter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:kelimeki/src/data/meaning_store.dart';
@@ -40,6 +42,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'push_repo_test.dart' show FakeMessaging, FakeStore;
 import 'package:kelimeki/src/data/analytics.dart';
+import 'support/web_source.dart';
 import 'support/fake_analytics.dart';
 import 'support/fake_online_gateway.dart';
 import 'support/test_fonts.dart';
@@ -369,8 +372,8 @@ void main() {
     test('load: GEÇİCİ sunucu hatası (504) sessizce tekrarlanır', () async {
       final gw = FakeOnlineGamesGateway()
         ..netFailFirst = 1
-        ..netFailError = const PostgrestException(
-            message: 'Gateway Timeout', code: '504')
+        ..netFailError =
+            const PostgrestException(message: 'Gateway Timeout', code: '504')
         ..rows = [gameRow(id: 'g1', myId: 'me', status: 'active')]
         ..turnRows = [
           {'online_game_id': 'g1', 'current': 0},
@@ -1052,10 +1055,13 @@ void main() {
               List<bool> cancelled
             })>
         pumpForm(WidgetTester tester,
-            {List<Map<String, Object?>>? friendsRows}) async {
-      await setPhoneViewSize(tester, const Size(420, 900));
+            {List<Map<String, Object?>>? friendsRows,
+            FakeFriendsGateway? friendsGateway,
+            InviteSharer? sharer,
+            Size size = const Size(420, 900)}) async {
+      await setPhoneViewSize(tester, size);
       final gw = FakeOnlineGamesGateway();
-      final fgw = FakeFriendsGateway(currentUserId: 'me')
+      final fgw = (friendsGateway ?? FakeFriendsGateway(currentUserId: 'me'))
         ..friendsRows = friendsRows ??
             [
               {'friend_id': 'f1', 'name': 'Bobola', 'avatar_url': null},
@@ -1075,6 +1081,7 @@ void main() {
               onlineGames: OnlineGamesRepo(gw),
               onCancel: () => cancelled.add(true),
               onCreated: () => created.add(true),
+              sharer: sharer,
             ),
           ),
         ),
@@ -1115,9 +1122,13 @@ void main() {
       expect(
           fakeAnalytics.names, ['live_game_form_opened', 'live_game_created']);
       expect(fakeAnalytics.events.last.$2, {'player_count': 2, 'with_ai': 0});
-      expect(find.text('Davetiniz gönderilmiştir.'), findsOneWidget);
-      expect(find.textContaining('Esiner yanıt verince'), findsOneWidget);
-      await tester.tap(find.text('TAMAM'));
+      // ROADMAP #41: "Davetin gönderildi" ekranı (web #663).
+      expect(find.text(kLiveFormSentTitle), findsOneWidget);
+      expect(
+          find.text('Esiner kabul edince oyun başlar ve ilk sıra sende olur.'),
+          findsOneWidget);
+      expect(find.text(kLiveFormSentNote), findsOneWidget);
+      await tester.tap(find.text('OYUNLARIMA GİT'));
       await tester.pump();
       expect(h.created, [true]);
     });
@@ -1128,7 +1139,7 @@ void main() {
     testWidgets('4 oyunculu + 2 arkadaş: onay SORULMADAN 4. koltuk YZ',
         (tester) async {
       final h = await pumpForm(tester);
-      await tester.tap(find.text('4 OYUNCULU'));
+      await tester.tap(find.text('4 KİŞİ'));
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('friend-f1')));
       await tester.tap(find.byKey(const ValueKey('friend-f2')));
@@ -1147,7 +1158,7 @@ void main() {
     testWidgets('4 oyunculu + 3 arkadaş: onay yok, tam insan kadrosu',
         (tester) async {
       final h = await pumpForm(tester);
-      await tester.tap(find.text('4 OYUNCULU'));
+      await tester.tap(find.text('4 KİŞİ'));
       await tester.pump();
       for (final k in const ['friend-f1', 'friend-f2', 'friend-f3']) {
         await tester.tap(find.byKey(ValueKey(k)));
@@ -1166,10 +1177,199 @@ void main() {
         (tester) async {
       final h = await pumpForm(tester, friendsRows: const []);
       expect(find.text('Henüz hiç arkadaşın yok.'), findsOneWidget);
-      expect(find.text('ARKADAŞ EKLE / DAVET ET'), findsOneWidget);
+      expect(find.text('ARKADAŞINI DAVET ET'), findsOneWidget);
+      expect(find.text(kLiveFormBrowseAll), findsOneWidget);
       await tester.tap(find.text('VAZGEÇ'));
       await tester.pump();
       expect(h.cancelled, [true]);
+    });
+
+    // ── ROADMAP #41 (web #663-#666, port 1 Ekim 2026) ──────────────────
+
+    testWidgets(
+        'koltuk kartları: renkli dolu koltuk + filigran, ✕ boşaltır; '
+        '4 kişide 2 arkadaşla 3. koltuk "Yapay Zeka"', (tester) async {
+      await pumpForm(tester);
+      // 2 kişi: tek yatay boş koltuk.
+      expect(find.text('RAKİBİN'), findsOneWidget);
+      expect(find.text(kLiveFormEmptySeat2), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('friend-f1')));
+      await tester.pump();
+      final dolu = find.byKey(const ValueKey('koltuk-dolu-0'));
+      expect(dolu, findsOneWidget);
+      expect(find.descendant(of: dolu, matching: find.text('Bobola')),
+          findsOneWidget);
+      // Rakip 1. koltukta = oyunda 2. oyuncu → filigran "2", kırmızı zemin.
+      expect(
+          find.descendant(of: dolu, matching: find.text('2')), findsOneWidget);
+      final kutu = tester.widget<Container>(dolu);
+      expect((kutu.decoration! as BoxDecoration).color, playerColors[1].tint);
+      // ✕ koltuğu boşaltır.
+      await tester
+          .tap(find.descendant(of: dolu, matching: find.byIcon(Icons.close)));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('koltuk-dolu-0')), findsNothing);
+
+      // 4 kişi: üç dikey koltuk; 2 arkadaşla üçüncüsü Yapay Zeka.
+      await tester.tap(find.text('4 KİŞİ'));
+      await tester.pump();
+      expect(find.text('RAKİPLERİN · 0/3'), findsOneWidget);
+      expect(find.text(kLiveFormAiNote), findsOneWidget);
+      expect(find.text(kLiveFormEmptySeat4), findsNWidgets(3));
+      await tester.tap(find.byKey(const ValueKey('friend-f1')));
+      await tester.tap(find.byKey(const ValueKey('friend-f2')));
+      await tester.pump();
+      expect(find.text('RAKİPLERİN · 2/3'), findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('koltuk-bos-2')),
+              matching: find.text(kLiveFormAiSeat)),
+          findsOneWidget);
+      expect(find.text('Arkadaşların $kLiveFormHintTail'), findsOneWidget);
+    });
+
+    testWidgets(
+        '"Hızlı seç": sık oynanan önde, boşluklar arkadaşla dolar; '
+        'dokunmak seçer; aramada gizlenir', (tester) async {
+      final fgw = FakeFriendsGateway(currentUserId: 'me')..frequent = ['f3'];
+      await pumpForm(tester, friendsGateway: fgw);
+      await tester.pump();
+      // 3 arkadaş, 1 sık oynanan → dolgu var → "HIZLI SEÇ".
+      expect(find.text('HIZLI SEÇ'), findsOneWidget);
+      final ilk = tester.getTopLeft(find.byKey(const ValueKey('hizli-f3')));
+      for (final id in const ['f1', 'f2']) {
+        expect(tester.getTopLeft(find.byKey(ValueKey('hizli-$id'))).dx,
+            greaterThan(ilk.dx),
+            reason: 'sık oynanan şeridin başında');
+      }
+      await tester.tap(find.byKey(const ValueKey('hizli-f3')));
+      await tester.pump();
+      expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('koltuk-dolu-0')),
+              matching: find.text('Tuna')),
+          findsOneWidget);
+      // Arama yapılırken şerit çizilmez.
+      await tester.enterText(find.byType(TextField), 'bo');
+      await tester.pump();
+      expect(find.text('HIZLI SEÇ'), findsNothing);
+    });
+
+    testWidgets(
+        '5 sık oynanan → başlık "SIK OYNADIKLARIN"; arkadaş <2 → şerit yok',
+        (tester) async {
+      final rows = [
+        for (var i = 1; i <= 6; i++)
+          {'friend_id': 'f$i', 'name': 'Kişi $i', 'avatar_url': null},
+      ];
+      final fgw = FakeFriendsGateway(currentUserId: 'me')
+        ..frequent = ['f6', 'f5', 'f4', 'f3', 'f2'];
+      await pumpForm(tester, friendsGateway: fgw, friendsRows: rows);
+      await tester.pump();
+      expect(find.text('SIK OYNADIKLARIN'), findsOneWidget);
+      expect(find.byKey(const ValueKey('hizli-f1')), findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      await pumpForm(tester, friendsRows: [rows.first]);
+      expect(find.text('HIZLI SEÇ'), findsNothing);
+      expect(find.text('SIK OYNADIKLARIN'), findsNothing);
+    });
+
+    testWidgets('"+ ARKADAŞINI DAVET ET" doğrudan paylaşır (pencere açmaz)',
+        (tester) async {
+      final paylasilan = <String>[];
+      final fgw = FakeFriendsGateway(currentUserId: 'me')..inviteToken = 'tok9';
+      await pumpForm(tester,
+          friendsGateway: fgw, sharer: (t, o) async => paylasilan.add(t));
+      await tester.tap(find.text('+  ARKADAŞINI DAVET ET'));
+      await tester.pumpAndSettle();
+      expect(paylasilan, hasLength(1));
+      expect(paylasilan.single, contains(inviteShareText));
+      expect(paylasilan.single, contains('/davet/tok9'));
+      expect(find.byType(Dialog), findsNothing);
+    });
+
+    testWidgets(
+        '"Tüm oyuncular →": arkadaş satırı seçilir, ötekine EKLE → '
+        'İSTEK GİTTİ; KABUL ET sonrası seçilebilir', (tester) async {
+      final fgw = FakeFriendsGateway(currentUserId: 'me')
+        ..usersRows = [
+          {
+            'id': 'f1',
+            'name': 'Bobola',
+            'avatar_url': null,
+            'relation': 'accepted'
+          },
+          {'id': 'u1', 'name': 'Yabancı', 'avatar_url': null, 'relation': null},
+          {
+            'id': 'u2',
+            'name': 'İstekçi',
+            'avatar_url': null,
+            'relation': 'pending_incoming'
+          },
+        ];
+      await pumpForm(tester, friendsGateway: fgw);
+      await tester.tap(find.text(kLiveFormToAll));
+      await tester.pumpAndSettle();
+      expect(find.text('TÜM OYUNCULAR'), findsOneWidget);
+      expect(find.text(kLiveFormToFriends), findsOneWidget);
+      expect(find.text('HIZLI SEÇ'), findsNothing);
+      // Arkadaş satırı kutucukla seçilir.
+      await tester.tap(find.byKey(const ValueKey('friend-f1')));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('koltuk-dolu-0')), findsOneWidget);
+      // Arkadaş olmayana EKLE → istek gider, hap "İSTEK GİTTİ"ye döner.
+      await tester.tap(find.descendant(
+          of: find.byKey(const ValueKey('other-u1')),
+          matching: find.text('EKLE')));
+      await tester.pumpAndSettle();
+      expect(fgw.sentRequests, ['u1']);
+      expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('other-u1')),
+              matching: find.text('İSTEK GİTTİ')),
+          findsOneWidget);
+      // KABUL ET → arkadaş satırına döner (kutucuklu).
+      await tester.tap(find.descendant(
+          of: find.byKey(const ValueKey('other-u2')),
+          matching: find.text('KABUL ET')));
+      await tester.pumpAndSettle();
+      expect(fgw.acceptedRequests, ['u2']);
+      expect(find.byKey(const ValueKey('friend-u2')), findsOneWidget);
+      // Geri dönüş: açılış HER ZAMAN arkadaşlar.
+      await tester.tap(find.text(kLiveFormToFriends));
+      await tester.pumpAndSettle();
+      expect(find.text('ARKADAŞLARIN'), findsOneWidget);
+    });
+
+    test('form metinleri web `LiveGameCreateForm.tsx` ile BİREBİR', () {
+      final web = readRepoFile('src/components/LiveGameCreateForm.tsx');
+      for (final t in [
+        kLiveFormSentTitle,
+        kLiveFormSentNote,
+        kLiveFormEmptySeat2,
+        kLiveFormEmptySeat4,
+        kLiveFormAiSeat,
+        kLiveFormAiNote,
+        kLiveFormHintTail,
+        kLiveFormNoFriends,
+        kLiveFormBrowseAll,
+        kLiveFormToAll,
+        kLiveFormToFriends,
+        kLiveFormSearchHint,
+        kLiveFormNobody,
+        'kabul edince oyun başlar ve ilk sıra sende olur.',
+        "'Sık oynadıkların' : 'Hızlı seç'",
+        'Arkadaşını davet et',
+        'Oyunlarıma git',
+      ]) {
+        expect(web.contains(t), isTrue, reason: 'web metni ayrıştı: "$t"');
+      }
+      final pill = readRepoFile('src/components/FriendsModal.tsx');
+      for (final k in KPillKind.values) {
+        expect(pill.contains("label: '${kPillWebLabel[k]}'"), isTrue,
+            reason: 'hap etiketi ayrıştı: ${kPillWebLabel[k]}');
+      }
     });
   });
 

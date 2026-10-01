@@ -482,25 +482,40 @@ class FakeFriendsGateway implements FriendsGateway {
   @override
   Future<void> notifyFriendRequest(String friendId) async {}
 
+  /// "Tüm oyuncular" (`list_users_for_friend`) ve arama satırları —
+  /// `{'id','name','avatar_url','relation'}` biçiminde.
+  List<Map<String, Object?>> usersRows = [];
+  List<Map<String, Object?>> searchRows = [];
+  final acceptedRequests = <String>[];
+
   @override
-  Future<List<Map<String, Object?>>> searchUsers(String query) async => [];
+  Future<List<Map<String, Object?>>> searchUsers(String query) async =>
+      searchRows;
   @override
   Future<List<Map<String, Object?>>> listUsers(int offset, int limit) async =>
-      [];
+      usersRows.skip(offset).take(limit).toList();
   @override
-  Future<void> acceptRequest(String requesterId) async {}
+  Future<void> acceptRequest(String requesterId) async =>
+      acceptedRequests.add(requesterId);
   @override
   Future<void> deleteRelation(String otherId) async {}
   @override
   Future<List<Map<String, Object?>>> listIncomingRequests() async => [];
   @override
   Future<Map<String, Object?>?> relationRow(String targetId) async => null;
+  String? inviteToken;
   @override
-  Future<String?> createInviteToken() async => null;
+  Future<String?> createInviteToken() async => inviteToken;
   @override
   Future<String?> inviteInfo(String token) async => null;
   @override
   Future<String?> acceptInvite(String token) async => null;
+
+  /// Canlı formun "Sık oynadıkların" şeridi — testler doldurur.
+  List<String> frequent = const [];
+  @override
+  Future<List<String>> frequentOpponents(int limit) async =>
+      frequent.take(limit).toList();
 }
 
 // ── Satır kurucuları (list_my_online_games şekli) ───────────────────────────

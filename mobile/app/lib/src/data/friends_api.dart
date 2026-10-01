@@ -122,6 +122,12 @@ abstract class FriendsGateway {
   Future<String?> createInviteToken();
   Future<String?> inviteInfo(String token);
   Future<String?> acceptInvite(String token);
+
+  /// En çok birlikte oynadığın arkadaşların kimlikleri, çoktan aza (RPC
+  /// `my_frequent_opponents`, 27 Eylül 2026 — canlı oyun formunun "Sık
+  /// oynadıkların / Hızlı seç" şeridi, ROADMAP #41 karar 21). Yalnızca
+  /// sıra döner; ad/avatar arkadaş listesinden.
+  Future<List<String>> frequentOpponents(int limit);
 }
 
 class SupabaseFriendsGateway implements FriendsGateway {
@@ -225,6 +231,13 @@ class SupabaseFriendsGateway implements FriendsGateway {
     final row = (data is List && data.isNotEmpty) ? data.first as Map : null;
     return row?['inviter_name'] as String?;
   }
+
+  @override
+  Future<List<String>> frequentOpponents(int limit) async => [
+        for (final r in _rows(await client
+            .rpc('my_frequent_opponents', params: {'p_limit': limit})))
+          r['friend_id'] as String,
+      ];
 }
 
 class FriendsRepo {
@@ -368,6 +381,17 @@ class FriendsRepo {
   /// token'ı kuyruğa geri koymaya karar verebilsin diye) — yalnızca
   /// "geçersiz token" sınıfı sunucu retleri değil ağ hataları da.
   Future<String?> acceptInvite(String token) => gateway.acceptInvite(token);
+
+  /// Web `fetchFrequentOpponents` — hata → boş liste (şerit rastgele
+  /// arkadaşlarla dolar, form çalışmaya devam eder).
+  Future<List<String>> frequentOpponents([int limit = 5]) async {
+    try {
+      return await gateway.frequentOpponents(limit);
+    } catch (e) {
+      debugPrint('[Kelimeki] sık oynananlar alınamadı: $e');
+      return const [];
+    }
+  }
 }
 
 /// Davet kabulü düştüğünde kullanıcıya NE denir — web `FriendInvitePage`'in

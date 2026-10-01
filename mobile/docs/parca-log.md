@@ -25,6 +25,49 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 221 — Canlı oyun formu: port yarısı (1 Ekim 2026, ROADMAP #41 karar 11, 12, 15-21)
+
+`ui/live/live_game_create_form.dart` web #663-#666'ya göre yeniden yazıldı:
+
+- **Koltuk kartları (12, 15, 18):** seçilen rakip oyunda oturacağı köşenin
+  renginde (`playerColors[i + 1]`, tint zemin + base çerçeve), oyuncu
+  numarası filigranı (`i + 2`, mono kalın, %20). 2 kişide tek yatay kart, 4
+  kişide üç dikey kart; 2 arkadaşla 3. koltuk "Yapay Zeka" (🤖). Boş koltuğa
+  dokunmak listeye kaydırır (`Scrollable.ensureVisible`), odak VERMEZ. ✕
+  gömülü fontlarda olmadığından `Icons.close`.
+- **DAVET GÖNDER / VAZGEÇ (16)** koltukların hemen altında, 3:2 (web
+  `flex-[1.5]`/`flex-1`), turuncu 52; altında "Arkadaşın(ların) kabul edince
+  oyun başlar · her hamle için 48 saat". Eski 4 kişilik açıklama notu kalktı.
+- **"+ ARKADAŞINI DAVET ET" (11, 17)** arama kutusunun altında, kesikli
+  çerçeve; Arkadaşlar penceresini AÇMAZ, doğrudan paylaşım sayfası (ankraj
+  düğmenin kendi kutusu, `shareOriginFrom`). Eski "Arkadaş Ekle" satırı ve
+  arkadaşsız hâldeki "ARKADAŞ EKLE / DAVET ET" → "ARKADAŞINI DAVET ET" +
+  "Tüm oyunculara göz at →".
+- **Kaydırma çubuğu (19):** liste 280 px içinde, `Scrollbar(thumbVisibility:
+  true)`.
+- **"Tüm oyuncular →" / "← Arkadaşlar" (20):** `ui/friends/player_directory.dart`
+  (YENİ, web `usePlayerDirectory`: 350 ms gecikmeli sunucu araması, 20'lik
+  sayfalar, her sayfada TÜM liste `trCompare`). Arkadaş satırı kutucukla
+  seçilir; ötekine `KPill` (YENİ `ui/friends/k_pill.dart`, web `Pill`):
+  EKLE → İSTEK GİTTİ (dokununca geri alır), KABUL ET → arkadaş satırına döner
+  ve seçilebilir. Arkadaş olmayana dokunmak skor kartını açar; kart kapanınca
+  ilişki yeniden okunur. Açılış her zaman arkadaşlar.
+- **"Sık oynadıkların / Hızlı seç" (21):** RPC `my_frequent_opponents`
+  (`FriendsGateway.frequentOpponents`, YENİ). En fazla 5 avatar, kaydırmasız;
+  eksikler form başına sabit tohumla rastgele arkadaşlarla dolar (başlık
+  "HIZLI SEÇ"); halka koltuk renginde. Arkadaş <2, arama ve "Tüm oyuncular"da
+  YOK.
+- **"Davetin gönderildi"** onay ekranı + "OYUNLARIMA GİT".
+- `initialFriendId` / `initialPlayerCount` parametreleri (karar 23 —
+  Arkadaşlar penceresinin OYNA'sı Port 4'te bağlanacak).
+
+**Doğrulama:** `live_games_test` → "LiveGameCreateForm" grubu 4 → 10 test
+(koltuk kartları + filigran + ✕ + Yapay Zeka koltuğu; Hızlı seç sırası/
+seçimi/aramada gizlenmesi; "SIK OYNADIKLARIN" ve arkadaş <2; doğrudan
+paylaşım; Tüm oyuncular EKLE/KABUL ET; metinlerin + hap etiketlerinin web
+kaynağıyla birebir eşliği). Sahte `FakeFriendsGateway` "Tüm oyuncular",
+arama ve davet linki verebiliyor. Tam takım **1.031 yeşil**.
+
 ## Parça 220 — Arkadaşınla ekranları: port yarısı (1 Ekim 2026, ROADMAP #41 karar 9 + 10)
 
 Web #664'ün (27 Eylül) `LiveGamesTab` yarısı:

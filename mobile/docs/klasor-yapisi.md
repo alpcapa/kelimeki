@@ -312,7 +312,13 @@ mobile/
                              # Web'in "route değişince remount" davranışının
                              # port karşılığı; SetupScreen oyundan DÖNÜŞTE
                              # rozetini bununla tazeliyor (Parça 153)
-      ui/friends/            # friends_modal (3 sekme + davet paylaşımı +
+      ui/friends/            # k_pill (EKLE · İSTEK GİTTİ · KABUL ET… hapı,
+                             # web `Pill` — etiketler testle web'den) +
+                             # player_directory (sunucuda arama + sayfalı
+                             # "Tüm oyuncular", web `usePlayerDirectory`) —
+                             # ikisi de #41 (Parça 221); canlı form
+                             # kullanıyor, Arkadaşlar penceresi de geçecek +
+                             # friends_modal (3 sekme + davet paylaşımı +
                              # paylaşılan onay/sonuç diyalogları) +
                              # friend_moderation_sheet (satırdaki 🚫/🚩
                              # ikonundan açılan GERİ ALMA paneli) +
@@ -328,6 +334,8 @@ mobile/
       ui/live/               # Canlı oyun: live_games_tab (3 alt sekme +
                              # kartlar), live_game_create_form,
                              # friend_suggest_modal (kabul sonrası öneri),
+                             # live_game_create_form: koltuk kartları,
+                             # Tüm oyuncular, Hızlı seç (#41, Parça 221),
                              # guest_live_sheet (girişsiz "Arkadaşınla"
                              # alt penceresi, #41 karar 9 — metinleri web
                              # `GuestLiveSheet`ten testle okunur),
