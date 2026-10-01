@@ -474,8 +474,9 @@ binecekler". Paket: koşu **#831**, `05f1c1f`; `.aab` `mobile-latest`te
       paketin SHA-256'sı `dd5fef32c126b7a893c20d803a7f7a3b6ad4e080b5faa75c1994e24148bfe233`
       (64.728.949 bayt, `mobile-latest` yüklemesi 20:16 UTC — ölçüldü).
       ⚠ İki mağaza onaylanana kadar `main`'e mobil merge YOK.
-- [x] **Play: YAYINDA** — 1 Eki ≤ 21:58 UTC (kullanıcı: *"Android canlıda"*;
-      Console'un yayın saati OKUNMADI). Gönderim ~21:41 → inceleme **≤ ~17 dk**.
+- [x] **Play: YAYINDA** — **2 Eki 00:56 TSİ = 1 Eki 21:56 UTC** (Console'un
+      yayın saati, kullanıcı okudu). Gönderim ~21:41 UTC (yükleme ~21:28 +
+      "13 dk") → inceleme **~15 dk**.
 - [ ] **App Store:** onay gelince beklemeden `Release This Version`
       ("YAYIN SIRASI").
 
@@ -1514,7 +1515,7 @@ yardım ekranına zorluk paragrafı. Normal'de hiçbir şey değişmedi
 | 1.0.9 (581) | 8 Eyl 08:41 | ≤ 09:10 | **≤ 29 dk** | Console (gönderim) + 09:10'da "Published" bildirildi (Console'un yayın saati okunmadı) |
 | **1.1.0 (627)** | 11 Eyl 08:01 | ≤ 08:33 | **≤ 32 dk** | Console (gönderim) + 08:33'te "Published" bildirildi (Console'un yayın saati okunmadı) |
 | **1.1.0 (659)** | 12 Eyl ≤ 12:24 | ~13:42 | **~78 dk** | ⚠ İKİ UÇ DA KULLANICININ BİLDİRİMİ, Console'un kendi kaydı OKUNMADI: 12:24'te `In review` görüldü, 14:12'de *"yarım saat önce canlıda"* dendi. Bu satır bir ÖLÇÜM değil, iki bildirimin arası — diğer satırlarla aynı güvende DEĞİL |
-| **1.1.2 (831)** | 1 Eki ~21:41 UTC | ≤ 21:58 UTC | **≤ ~17 dk** | ⚠ iki uç da kullanıcı bildirimi (yükleme ~21:28 + "13 dk sonra incelemeye gidiyor" · 21:58'de "Android canlıda"), Console kaydı OKUNMADI |
+| **1.1.2 (831)** | 1 Eki ~21:41 UTC | 21:56 UTC (00:56 TSİ) | **~15 dk** | Yayın: Console (kullanıcı okudu) · gönderim: yükleme ~21:28 + "13 dk sonra incelemeye gidiyor" (kullanıcı bildirimi, tahmini) |
 
 ⚠ **DÜZELTME (4 Eylül 2026):** bu bölüm daha önce 1.0.5 için **"≈23 dakika
 (~14:40 → ~15:03)"** diyordu. O rakam Console'dan değil kullanıcının
