@@ -640,10 +640,11 @@ sunucu `coalesce` ile ortak, bkz. ROADMAP #23):
    13 Eylül 2026; Huni v2 olay/platform adları + `mevcut` kanalı —
    `funnel_events_parity_test`, 27 Eylül 2026) — **yeni bir
    elle-senkron çift eklerken testini de yaz**, desen hazır (web kaynağını/
-   migration'ı okuyup karşılaştır). Bugün kapısı OLMAYAN iki çift:
-   `intro_screen.dart` metinleri ↔ `Landing.tsx`, ve k-lig kademe
+   migration'ı okuyup karşılaştır). Bugün kapısı OLMAYAN tek çift: k-lig kademe
    tablosunun SQL yarısı (`_award_league_rewards`in güncel tanımı tek bir
    migration dosyasında durmadığından ancak canlıda doğrulanır).
+   (`intro_screen.dart` ↔ `Landing.tsx` 1 Ekim 2026'dan beri
+   `intro_screen_test`le kilitli — metinler + kesit verisi.)
 
 Henüz OLMAYANLAR (sıradaki fazlar): Setup'taki "Arkadaşınla (N)" rozeti +
 girişte Canlı sekmesi varsayılanı, "Arkadaşınla paylaş" butonu, Hesap

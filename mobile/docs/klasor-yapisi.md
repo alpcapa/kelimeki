@@ -207,26 +207,30 @@ mobile/
                              # delete_account_modal.dart (uygulama içinden
                              # hesap silme — ROADMAP madde 2, mağaza
                              # blokeri; bkz. docs/decisions/account-deletion.md)
-      ui/intro/              # intro_screen.dart — İLK AÇILIŞ tanıtımı
-                             # (Parça 116/117/118): 4 sayfalık PageView,
-                             # Setup'ın ÖNÜNDE; ATLAMA YOK, tek çıkış son
-                             # sayfadaki "HEMEN OYNA". Tekrar açma yolu
-                             # Setup'ın logo altı link satırı ("Tanıtım",
-                             # yalnız misafir); kapısı app.dart'taki
-                             # _HomeGate, bayrağı FlagsStore.seenIntro.
-                             # Metinler web'in karşılama katmanından
-                             # (Landing.tsx) BİREBİR — web metni değişirse
-                             # buraya elle taşınmalı (bunu zorlayan bir test
-                             # YOK). Yanındaki iki dosya:
+      ui/intro/              # intro_screen.dart — İLK AÇILIŞ ekranı:
+                             # 1 Ekim 2026'dan beri TEK ekran, web'in
+                             # karşılama İLK EKRANININ portu (ROADMAP #41
+                             # karar 14, Parça 224; öncesi 5 slayt, Parça
+                             # 116-119). Setup'ın ÖNÜNDE; ATLAMA YOK, tek
+                             # çıkış "HEMEN OYNA". Tekrar açma yolu Setup'ın
+                             # logo altı "Tanıtım" linki (yalnız misafir);
+                             # kapısı app.dart'taki _HomeGate, bayrağı
+                             # FlagsStore.seenIntro. Metinler Landing.tsx'e
+                             # intro_screen_test ile KİLİTLİ.
+                             #   bolge_kesiti.dart — ilk ekrandaki 7×5 tahta
+                             #     kesiti (web BolgeKesiti.tsx); verisi
+                             #     ilkEkranKesiti.ts'e testle kilitli, dış
+                             #     hat buildRoundedOutlinePath.
                              #   demo_board_data.dart — ÜRETİLMİŞ (kaynak
-                             #     src/landing/demoBoard.ts, DEMO_TILES_2
-                             #     + DEMO_TILES_4;
-                             #     npm run generate-demo-board-dart)
-                             #   ozellik_ikonlari.dart — "Neler var" altı
-                             #     özellik ikonu; web'in OzellikIkonlari.tsx'i
-                             #     ile ELLE senkron (Material DEĞİL, ilkel
-                             #     şekiller — Icons.* iki platformda FARKLI
-                             #     vektör demek olurdu)
+                             #     src/landing/demoBoard.ts;
+                             #     npm run generate-demo-board-dart). ⚠ 1 Eki
+                             #     2026'dan beri tanıtım ekranı KULLANMIYOR;
+                             #     üretici + parite testi ayakta.
+                             #   ozellik_ikonlari.dart — "Neler var"
+                             #     özellik ikonları; web OzellikIkonlari.tsx
+                             #     ile ELLE senkron (icon_parity_test). ⚠ 1
+                             #     Eki 2026'dan beri tanıtım ekranı
+                             #     KULLANMIYOR.
       ui/game/               # tahta/raf/header/modaller (oyun ekranının
                              # tamamı) + board_zoom.dart (çift dokunuşla 2×
                              # zoom + pan; algılayıcı `clock.now()` kullanır

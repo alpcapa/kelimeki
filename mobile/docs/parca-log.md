@@ -25,6 +25,39 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 224 — `IntroScreen` TEK EKRAN: web'in yeni ilk ekranı (1 Ekim 2026, ROADMAP #41 karar 14)
+
+- **Kullanıcı kararı** (seçenekli soru, 1 Eki): *"Web'in yeni ilk ekranı
+  gibi tek ekran"*. 19 Ağustos'tan beri duran beş slayt (kahraman + 2
+  kişilik tahta, rakamlar + 4 kişilik tahta, nasıl oynanır, neler var,
+  k-lig) kalktı; oyunu öğretmek 60 sn'lik `TutorialGame`in işi.
+- **Web kaynağı:** `Landing.tsx` ilk ekran bloğu (27 Eyl, karar 1) +
+  `BolgeKesiti.tsx` + `ilkEkranKesiti.ts`. Yeni `ui/intro/bolge_kesiti.dart`
+  web kesitinin birebir portu: 7×5, `kRaisedShadows`, iki bölge dış hattı
+  `buildRoundedOutlinePath` (yarıçap 0.16, kalınlık 2.5), yeşil hamle
+  çerçevesi + "+7" rozeti (puan `tileData`dan HESAPLANIR — `kesitHamlePuani`),
+  koyu vergi etiketi.
+- **Bilinçli farklar:** mağaza rozeti YOK; web'in "Nasıl oynanır ↓"ı sayfa
+  altına kaydırıyor, burada alt bölüm olmadığından "NASIL OYNANIR?" kural
+  penceresini (`showHelpModal`) açıyor. GA4 `intro_slide_viewed` korundu
+  (`index: 0`) — huni kesintisiz.
+- **Düzen:** `LayoutBuilder` → `SingleChildScrollView` → `minHeight =
+  min(ekran, 760)` (web `min-h-[min(calc(100dvh-72px),760px)]`) → üst grup
+  ile CTA grubu `spaceBetween` (web'in `flex-1` boşluğu). ⚠ `Spacer` +
+  `SliverFillRemaining(hasScrollBody:false)` ya da `IntrinsicHeight`
+  DENENDİ ve FIRLATTI: kesit kendi içinde `LayoutBuilder` kullanıyor, o da
+  içsel boyut sorgusunu desteklemiyor.
+- `demo_board_data.dart` + `ozellik_ikonlari.dart` artık tanıtımda
+  kullanılmıyor; üreticileri ve parite testleri ayakta (silinmesi ayrı
+  karar).
+
+**Doğrulama:** `intro_screen_test` 11/11 — tek ekran içeriği, 390×844 /
+375×812 / 412×915'te güvenli alan paylarıyla kaydırmasız sığma (düğme 54 pt,
+güvenli alanın içinde), 320×568'de kayma, NASIL OYNANIR → Dialog, metinlerin
+`Landing.tsx`/`BolgeKesiti.tsx`te birebir bulunması, kesit verisinin
+`ilkEkranKesiti.ts`le eşitliği, +7. Ekran görüntüsü 390×844 + 375×667'de
+gözle kontrol edildi; flutter test 1.032 yeşil (silinen slayt testleri düştü). **Sınır:** gerçek cihazda bakılmadı (TESTING §0.4).
+
 ## Parça 223 — Tanıtım: açılış penceresi YOK + yeni kapanış penceresi (1 Ekim 2026, ROADMAP #41 karar 5 + 6) — web + port aynı PR
 
 - **Açılış penceresi kalktı** ("Kelimeki Tanıtım Turu / Devam", 7 Eylül

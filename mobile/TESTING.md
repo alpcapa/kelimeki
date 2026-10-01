@@ -85,116 +85,47 @@ sözleşmesi — tek taraflı bakmak bir hatayı gizleyebilir.
       test etmek istersen o satırı geçici olarak `99.0.0` yapıp uygulamayı
       yeniden aç: "güncelleme gerekli" ekranı çıkmalı — sonra geri al.)
 
-## 0.4 İlk açılış tanıtımı — `IntroScreen` (Parça 116 + 117 + 118)
+## 0.4 İlk açılış ekranı — `IntroScreen` (Parça 224; 1 Ekim 2026'dan beri TEK ekran)
 
-Web'in karşılama katmanının porttaki karşılığı. **Temiz bir kurulum
-gerekiyor:** uygulamayı silip yeniden kur (ya da web test derlemesinde
-site verisini temizle) — bayrak (`seen_intro`, SharedPreferences) bir kez
-yazıldıktan sonra tanıtım bir daha ÇIKMAZ.
+Web'in karşılama katmanının İLK EKRANININ porttaki karşılığı (ROADMAP #41
+karar 14 — beş slayt kalktı). **Temiz bir kurulum gerekiyor:** uygulamayı
+silip yeniden kur — bayrak (`seen_intro`) bir kez yazıldıktan sonra ekran
+bir daha ÇIKMAZ.
 
-- [ ] **İlk açılışta Setup'tan ÖNCE tanıtım çıkıyor.** BEŞ sayfa
-      (19 Ağustos 2026'da yeniden düzenlendi — Parça 118 + 119):
-      (1) "Kelime bul, bölgeni büyüt, tahtayı ele geçir." + tanım
-      paragrafı + **"TAHTAYA BİR BAK"** bölümü (2 kişilik tahta, X2/X3
-      legend'ı ve altındaki açıklama),
-      (2) **dört rakam kutusu** (63.000+ / 13×13 / 2–4 / Ücretsiz) +
-      **4 kişilik tahta** + altındaki açıklama (X2/X3 legend'ı burada
-      TEKRARLANMAZ), (3) "Nasıl oynanır?" DÖRT adım birden, (4) "Neler
-      var" ALTI özellik kutusu, (5) dokuz k-lig rütbesi.
-      **Rakam kutuları 19 Ağustos 2026'da 1. slayttan 2.'ye TAŞINDI**
-      (Parça 119) — 1. slayt tek ekrana sığmayıp kayıyordu, 2. slayt ise
-      yalnızca tahtadan ibaret olduğu için boş duruyordu.
-- [ ] **1. slayttaki X2/X3 legend'i YAN YANA** (web'de de öyle; port
-      19 Ağustos 2026'ya kadar bunu alt alta çiziyordu — `Wrap` değil elle
-      dikey `Column` kodlanmıştı). Çok dar bir telefonda (≈375px ve altı)
-      alta sarması DOĞRU davranış; web de 320px'te sarıyor.
-- [ ] **1. ve 2. slayt KAYDIRMADAN tamamen sığıyor** — parmakla aşağı
-      çekince slayt İÇİNDE dikey bir kayma OLMAMALI (yatay geçiş elbette
-      var), açıklamanın son satırı alt kenarda kesilmemeli. Bu maddeyi
-      birden fazla ekran boyunda dene (küçük telefon + büyük telefon) ve
-      **GitHub Pages web derlemesini iOS Safari'de de** aç: orada durum
-      çubuğu + alt adres çubuğu görünür yüksekliği ~150px kısaltıyor ve
-      1. slayt 19 Ağustos 2026'da tam bu yüzden bir satır taşıyordu
-      (widget testi o gün 420×900'de yeşildi). Test artık 420×900 VE
-      430×740 boylarında koşuyor; bunlardan da dar/kısa bir yüzeyde
-      kaydırma fallback'i bilerek duruyor.
-- [ ] **Logo BEŞ sayfada da var** ve BEŞİNDE de içerikle BİRLİKTE
-      dikeyde ortalanıyor (logo ile başlık arası her sayfada aynı; logo
-      yukarıda asılı kalıp aralarında boşluk açılmamalı). 1. sayfa Parça
-      119'a kadar bunun DIŞINDAYDI (orası ekranı dolduruyordu); rakam
-      kutuları 2. slayda taşınınca o istisna kalktı.
-- [ ] **Alt şeritte BEŞ nokta + ara sayfalarda küçük bir "DEVAM ›"**;
-      **HEMEN OYNA yalnızca 5. sayfada** çıkıyor ve orada DEVAM görünmüyor.
-      **Düğmeye basınca bir sonraki slayta geçmeli** ve parmakla kaydırma
-      da AYNEN çalışmaya devam etmeli (düğme kaydırmanın yerine geçmiyor).
-      ⚠ Bu düğme 19 Ağustos 2026'da kullanıcı isteğiyle KALDIRILMIŞTI
-      ("alttaki kocaman Devam butonu çok gereksiz… herkes parmakla
-      ilerleyeceğini bilir"); 26 Ağustos'ta kapalı testin ilk gerçek
-      kullanıcıları o varsayımı çürütünce GERİ KONDU — tanıtımda takılıp
-      Setup'a hiç ulaşamıyorlardı. Bu yüzden geri konan düğme eskisi gibi
-      tam genişlikte DEĞİL, metin genişliğinde.
-- [ ] **Masaüstü tarayıcıda da (GitHub Pages test ortamı) FARE ile
-      sürüklenebiliyor** — beş sayfa da gezilip son sayfaya
-      ulaşılabilmeli. Flutter'ın varsayılan davranışı fareyi kaydırma
-      cihazı SAYMAZ; bu olmazsa DEVAM düğmesi de kalktığı için tanıtımda
-      kilitli kalınır.
-- [ ] **1. slayttaki tahta gerçek oyun tahtasıyla AYNI görünüyor** —
-      web'in "Tahtaya bir bak" bölümüyle yan yana koy: harfler ve hücreler
-      aynı oranda, köşe rakamı/X2 filigranı ve X3 hücresi görünür, taşlar
-      taşların ALTINDA kalan filigranlarla doğru katmanda. **Harfler
-      belirgin şekilde küçük/büyük görünüyorsa sebep font değil KABIN
-      GENİŞLİĞİDİR** (tahta 680'lik kendi kabında olmalı, 460'lık metin
-      sütununda değil — web bu tuzağa iki kez düştü).
-- [ ] **2. slayttaki 4 kişilik tahtada DÖRT köşe de dolu** ve dört ayrı
-      oyuncu rengi görünüyor (bölge dış hatları dahil) — web'in aynı
-      görseliyle yan yana koy.
-- [ ] **4. slaytta altı kutunun ALTISI da ikonlu** (robot, iki kişi,
-      konuşma balonu, üstü çizili wifi, tahta, madalya) ve ikon başlığın
-      SOLUNDA, başlıkla aynı boyda. Boş kare/eksik ikon OLMAMALI.
-- [ ] **5. slaytta dokuz rütbe kutusu var** ve her birinde mühür + ad +
-      eşik puanı okunuyor.
-- [ ] **Üst başlıklar TÜRKÇE büyük harfle:** `KELİME` · `FİYAT` ·
-      `TAHTAYA BİR BAK` · `K-LİG` — noktasız `I` görürsen (`KELIME`,
-      `K-LIG`) `trUpper` yerine `toUpperCase()` sızmış demektir (web CSS
-      + `lang="tr"` ile doğrusunu basıyor, yan yana koyunca ayrışır).
-- [ ] **ATLAMA YOK.** Beş sayfanın HİÇBİRİNDE "Atla" (ya da başka bir
-      geçme/kapatma) düğmesi olmamalı — tanıtımın tek çıkışı son
-      sayfadaki **HEMEN OYNA**. (19 Ağustos 2026 kullanıcı kararı.)
-- [ ] **"HEMEN OYNA" Setup'a düşürüyor** ve tanıtım **bir daha ASLA
+- [ ] **İlk açılışta Setup'tan ÖNCE tek bir ekran çıkıyor:** logo ·
+      `TÜRKÇE KELİME OYUNU` · "Kelimeyi bilmek yetmez. Nereye koyduğun
+      kazandırır." · kural cümlesi · 7×5 tahta kesiti · **HEMEN OYNA** ·
+      "Ücretsiz · Reklam yok · Üyelik gerekmez" · **NASIL OYNANIR?**.
+      Slayt, nokta, DEVAM YOK. kelimeki.com'un telefondaki ilk ekranıyla
+      yan yana koy — metinler ve kesit aynı olmalı (mağaza rozetleri
+      uygulamada bilerek YOK).
+- [ ] **Kesit:** mavi bölge (FA + SAAT) ve kırmızı bölge (AKUSLE) dış
+      hatlı, yeşil çerçeve SAAT+A hamlesini sarıyor, sol üstünde yeşil
+      **+7** rozeti, sağ üstte koyu "Vergi: puanın 1/3'ü rakibe" etiketi;
+      harflerin puanları köşede okunuyor.
+- [ ] **Telefonda KAYDIRMADAN sığıyor** ve HEMEN OYNA alt güvenli alanın
+      (ev çubuğu) üstünde tam görünüyor — küçük telefonda (SE / Display
+      Zoom) da dene; orada sığmazsa ekran kayar ve düğmeye kaydırarak
+      ulaşılır (doğru davranış). Uzun telefonda düğme kesitin altında,
+      arada boşlukla duruyor (web'deki gibi; ekran 760 pt'den uzunsa alt
+      kısım boş kalır).
+- [ ] **NASIL OYNANIR? kural penceresini açıyor**, kapatınca aynı ekrana
+      dönülüyor.
+- [ ] **Üst başlık TÜRKÇE büyük harfle:** `KELİME` — noktasız `I`
+      görürsen `trUpper` yerine `toUpperCase()` sızmış demektir.
+- [ ] **ATLAMA YOK** — ekranın tek çıkışı HEMEN OYNA.
+- [ ] **"HEMEN OYNA" Setup'a düşürüyor** ve ekran **bir daha ASLA
       çıkmıyor** — uygulamayı tamamen kapatıp yeniden aç, doğrudan Setup
-      gelmeli. (Bayrak yazılmıyorsa tanıtım her açılışta çıkar; bu
+      gelmeli. (Bayrak yazılmıyorsa ekran her açılışta çıkar; bu
       maddenin asıl ölçtüğü şey o.)
 - [ ] **Setup'ın logo altındaki "Tanıtım" linki her zaman açıyor**
-      ("Nasıl oynanır? · Tanıtım" satırı). Açıp kapattıktan SONRA
-      uygulamayı yeniden başlat — tanıtım yine ÇIKMAMALI (bu yol bayrağa
-      dokunmaz).
-- [ ] **O satır YALNIZCA MİSAFİRDE var** — giriş yaptıktan sonra logo
-      altındaki paragraf ve link satırı hiç çizilmiyor, yani girişli
-      kullanıcının tanıtıma dönüş yolu YOK. Bu bilinçli ve web ile
-      PARİTE (orada `<` düğmesi de yalnızca girişsizde çiziliyor).
-- [ ] **Hesap menüsünde "Tanıtım" maddesi YOK** — 19 Ağustos 2026'da
-      oradan kaldırılıp Setup'ın link satırına taşındı.
-- [ ] **Footer üç madde + telif:** `Kullanım Koşulları · Gizlilik
-      Politikası · Paylaş` (aralarında iki `·`) ve HEMEN ALTINDA
-      "© Kelimeki" — telif satırı ORTALI olmalı, sola yapışmamalı
-      (19 Ağustos 2026'da öyleydi: `textAlign` unutulmuştu).
-      **"Paylaş" MİSAFİRDE DE görünmeli** (web'de de
-      girişten bağımsız) ve dokununca sistem paylaş sayfasını
-      `?ref=arkadas` linkiyle açmalı.
-- [ ] **Setup başlığında ok/geri düğmesi YOK** — bu bilinçli bir ayrışma
+      (yalnız misafirde). HEMEN OYNA orada yalnızca geri döner; açıp
+      kapattıktan SONRA uygulamayı yeniden başlat — ekran yine ÇIKMAMALI.
+- [ ] **O satır YALNIZCA MİSAFİRDE var** — girişli kullanıcının bu ekrana
+      dönüş yolu YOK (web ile parite).
+- [ ] **Setup başlığında ok/geri düğmesi YOK** — bilinçli ayrışma
       (web'de `<` var). Bkz. mobile/CLAUDE.md "Karşılama Katmanı".
-- [ ] **Görsel:** 2. ve 3. sayfadaki 5×5 mini ızgaralar renkli çiziliyor
-      (boş/bonus/merkez + iki oyuncu rengi); son sayfadaki dokuz mührün
-      harfleri (Ç M O U Ş D E Z T) TOFU (boş kare) DEĞİL — mühür fontu
-      ayrı bir alt küme, eksik glyph riski gerçek (bkz. Parça 114).
-- [ ] **Dar ekran (320-360 px):** 2. slayttaki dört rakam kutusunun
-      metinleri küçülerek sığmalı ("Ücretsiz" dahil; kutular Parça 119'da
-      1. slayttan buraya taşındı), altı özellik kutusu ve dokuz
-      rütbe kutusu kırpılmamalı; sarı-siyah "RenderFlex overflowed"
-      çubuğu HİÇBİR slaytta GÖRÜNMEMELİ.
-- [ ] **Yatay taşma yok:** beş slaydın hiçbirinde sağa/sola kaydırma
-      oluşmamalı (tahta slaydı dahil — o 680'lik kabıyla ekrandan geniş
-      OLMAMALI, dar ekranda küçülmeli).
+- [ ] **Yatay taşma / sarı-siyah şerit yok**, 320-375 pt dar ekranda da.
 
 ## 0.5 Web ile yan yana görsel karşılaştırma → `mobile/docs/testing-gorsel-karsilastirma.md`
 
