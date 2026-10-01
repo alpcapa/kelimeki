@@ -842,6 +842,18 @@ uydurma bir kayıt fixture'ı gerektirirdi. Karar saf fonksiyonda ve iki
 platformda yedişer vakayla kilitli; ekrandaki hâli elle koşuluyor
 (`TESTING.md` §13.6, `mobile/TESTING.md` §1.9).
 
+### Tanıtımın vergi penceresi: "Rakip kullanıcısına" → "rakibine" (2 Ekim 2026)
+
+Kullanıcı 1.1.2'de (iPhone) gördü: *"Burada 'rakip kullanıcısına' yanlış
+'rakibine' yaz."* Tanıtımda rakibin ADI "Rakip" olduğu için gerçek oyunun
+kalıbı (`<ad> kullanıcısına`) burada "Rakip kullanıcısına" diye okunuyordu.
+Tanıtımın penceresi artık *"… N puanı rakibine vergi olarak gidecek."*
+(ad yok). **Gerçek oyunların penceresi DEĞİŞMEDİ** (`App.tsx`,
+`OnlineGameScreen.tsx`, `invasion_confirm.dart` — orada gerçek bir isim var:
+*"Esiner kullanıcısına"*). Web hemen yayında; port yarısı
+(`tutorial_game.dart`) 12 Ekim trenine taslak PR. İki taraf arasında metni
+kilitleyen parite testi YOK — bu yüzden web tek başına gidebildi.
+
 ## Faz 3 — tanıtımı tekrar oynama (8 Eylül 2026)
 
 "Nasıl oynanır?" penceresinin **en başında** bir buton:

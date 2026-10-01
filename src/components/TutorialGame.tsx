@@ -679,7 +679,7 @@ export function TutorialGame({ playerName, onFinish, onSkip, source = 'auto', ne
               Bu hamleden kazanacağın{' '}
               <strong className="text-green">{step.move.points + step.move.tax}</strong> puanın{' '}
               <strong className="text-red">{step.move.tax}</strong> puanı{' '}
-              <strong>{state.players[1].name}</strong> kullanıcısına vergi olarak gidecek.
+              rakibine vergi olarak gidecek.
             </p>
             <p className="text-xs text-muted font-sans leading-relaxed">
               Rakibin bölgesine değen veya giren bir hamle yaparsan vergisini ödersin.
