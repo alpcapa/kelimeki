@@ -458,7 +458,6 @@ class _TutorialGameState extends State<TutorialGame> {
   /// veriyor — `tutorial_script_test` kilitler).
   Future<bool> _showInvasionConfirm() async {
     final move = _step.move;
-    final rakip = _state.players[1].name;
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => KDialogCard(
@@ -480,11 +479,10 @@ class _TutorialGameState extends State<TutorialGame> {
                     text: '${move.tax}',
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, color: kRed)),
-                const TextSpan(text: ' puanı '),
-                TextSpan(
-                    text: rakip,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                const TextSpan(text: ' kullanıcısına vergi olarak gidecek.'),
+                // Tanıtımda rakibin ADI "Rakip" — gerçek oyunun "<ad>
+                // kullanıcısına" kalıbı "Rakip kullanıcısına" okunuyordu
+                // (2 Eki 2026, kullanıcı). Web `TutorialGame.tsx` ikizi.
+                const TextSpan(text: ' puanı rakibine vergi olarak gidecek.'),
               ],
             )),
             const SizedBox(height: 8),
