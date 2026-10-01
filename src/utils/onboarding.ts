@@ -257,7 +257,26 @@ export const ONBOARDING_HINT_MAX_SHOWS = 1;
  * ayırır — balonun o açılışta çıkıp çıkmadığına bakmaya gerek kalmaz, iki
  * karar birbirine bağlanmaz.
  */
-export const ONBOARDING_HINT_MIN_MOVES = 3;
+export const ONBOARDING_HINT_MIN_MOVES = 12;
+
+/**
+ * ⚠ **3 → 12 (1 Ekim 2026, kullanıcı, 1.1.2 cihaz turu):** iki hamleden sonra
+ * çıkan balon tahtanın en üstündeydi — *"Bu balonu 6-7. hamlelerde çıkartmak
+ * lazım bence, o zaman oyun ortaya doğru gelmiş olur."* ve netleştirme:
+ * *"karşılıklı 6-7 hamle … 12-14 toplam hamle sonra"*. YZ'nin hamleleri de
+ * sayıldığından 2 kişilik oyunda 12 = iki tarafın 6'şar hamlesi.
+ *
+ * Balonun ÜSTTE yer bulamayacağı satır sayısı: çapa bu satırlardaysa balon
+ * karenin ALTINA konur. Aynı turda: 1. satırdaki bir kelimenin balonu
+ * üstte tahtanın kenarına taşıp KESİLDİ (eskiden yalnız 0. satır alta
+ * alınıyordu). Balon dar ekranda iki satır (~1,5 hücre) + kuyruk tutuyor.
+ */
+export const ONBOARDING_HINT_ALT_ROWS = 3;
+
+/** Balon çapanın üstünde mi altında mı — `ONBOARDING_HINT_ALT_ROWS` kuralı. */
+export function onboardingHintYon(r: number): 'ust' | 'alt' {
+  return r < ONBOARDING_HINT_ALT_ROWS ? 'alt' : 'ust';
+}
 
 /** Balonun ekranda kalma süresi (ms) — tanıtımdaki `RAKIP_OKUMA`nın iki katı. */
 export const ONBOARDING_HINT_MS = 4000;

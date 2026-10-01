@@ -580,6 +580,18 @@ anlamı gelir'"*. Çift tık balonu için *"zaten varsa kalsın"* — DEĞİŞME
   (tetikleyen hamle dahil; pas/değişim sayılır, vergi satırı sayılmaz) —
   balonun o açılışta çıkıp çıkmadığına bakılmıyor, iki karar birbirine
   bağlanmıyor. Bedeli: zoom balonu çıkmamış olsa da ipucu 3. hamleyi bekler.
+- **1 Ekim 2026, 1.1.2 cihaz turu (kullanıcı, iPhone): eşik 3 → 12, balon ilk
+  3 satırda ALTA.** İki hamleden sonra çıkan balonun çapası tahtanın 1.
+  satırındaydı; kural yalnız 0. satırı alta aldığından balon üstte tahtanın
+  kenarına taştı ve KESİLDİ. Kullanıcı: *"Bu balonu 6-7. hamlelerde
+  çıkartmak lazım bence, o zaman oyun ortaya doğru gelmiş olur."*;
+  netleştirme: *"karşılıklı 6-7 hamle … 12-14 toplam hamle sonra"* →
+  `ONBOARDING_HINT_MIN_MOVES = 12` (YZ hamleleri dahil: 2 kişilikte iki
+  tarafın 6'şar hamlesi) + `ONBOARDING_HINT_ALT_ROWS = 3` /
+  `onboardingHintYon(r)` (r < 3 → `alt`; balon dar ekranda iki satır ≈ 1,5
+  hücre + kuyruk). Port ikizi `onboardingHintMinMoves` /
+  `onboardingHintAltRows` / `onboardingHintYon`, parite testi ikisini de
+  web kaynağından okuyor. Tanıtımın KENDİ balonu (sabit senaryo) değişmedi.
 - **Canlı oyunda YOK — kullanıcı kararı** (30 Eylül 2026): *"Canlı
   oyunlarda çıkmasın. Zaten canlı oynayacak kadar ilerlediyse biliyordur."*
   Kapsam yalnızca YEREL (YZ/hotseat) oyun.

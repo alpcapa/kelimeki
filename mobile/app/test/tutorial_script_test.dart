@@ -331,6 +331,11 @@ void main() {
     for (final (ad, girdi, sayac, beklenen) in vakalar) {
       expect(pickOnboardingHint(girdi, sayac), beklenen, reason: 'ipucu "$ad"');
     }
+    // Balonun yönü (1 Ekim 2026): ilk satırlarda üstte yer yok → altına.
+    expect(onboardingHintYon(0), 'alt');
+    expect(onboardingHintYon(onboardingHintAltRows - 1), 'alt');
+    expect(onboardingHintYon(onboardingHintAltRows), 'ust');
+    expect(onboardingHintYon(12), 'ust');
     // Metinler TEK cümle ve terim `bölge` (bkz. kök CLAUDE.md → Terminoloji).
     for (final id in OnboardingHintId.values) {
       final metin = onboardingHintTexts[id]!;

@@ -621,9 +621,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         r: capa[0],
         c: capa[1],
         text: onboardingHintTexts[secilen]!,
-        // Balon işaret ettiği karenin ÜSTÜNDE durur; 0. satırda üstte yer
-        // yoktur (tanıtımın 1. sahnesindeki kuralın aynısı).
-        yon: capa[0] == 0 ? 'alt' : 'ust',
+        // Balon işaret ettiği karenin ÜSTÜNDE durur; ilk satırlarda üstte
+        // yer yok → altına (`onboardingHintAltRows`, 1 Ekim 2026).
+        yon: onboardingHintYon(capa[0]),
       );
     });
     _hintTimer = Timer(onboardingHintDuration, () {
