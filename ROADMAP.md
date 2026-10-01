@@ -337,12 +337,18 @@ Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
 
 | Durum | PR'lar |
 |---|---|
-| Temiz | #642 · #649 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
+| Temiz | #642 · #649 · #655 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
 | Çakışma — yalnız doküman | #637, #640 (`ROADMAP.md`) · #647 (`CLAUDE.md`) · #659, #709 (`docs/decisions/funnel-v2.md`) |
 | Çakışma — KOD | #651 (`ROADMAP.md` + **`src/components/AdminDashboard.tsx`**) |
-| ~~CI KIRMIZI~~ → ✅ | **#655** — 1 Eki ÇÖZÜLDÜ: düşen `board-fit.spec.ts` testi rastgeleydi (raftaki ilk taş joker çıkınca "Joker hangi harf" penceresi açılıyor, harf belirmiyor; yerelde 56 koşuda 1). Düzeltme `main`'de zaten vardı (#664, joker olmayan taşı seçiyor); dalına `main` merge edildi, CI yeşil (Android · iOS · analiz). Web yarısı `main`'de olduğundan diff artık yalnız mobil |
 
 - **Sıra bağımlılığı:** #709, #659'un ÜSTÜNE kurulu (önce #659).
+- **#655 YEŞİL (1 Eki).** 27 Eyl'de düşen web `test`i (`board-fit.spec.ts`)
+  RASTGELEYDİ: raftaki ilk taş joker çıkınca "Joker Hangi Harf" penceresi
+  açılıyor, harf tahtada belirmiyor (yerelde 56 koşuda 1). Düzeltme
+  `main`'de zaten var (test joker olmayan taşı seçiyor, 27 Eyl); #655'e
+  `main` merge edildi. Web yarısı #654 `main`'de olduğundan diff artık
+  yalnız port + doküman (web CI tetiklenmiyor). Başı `72f0e63`: Analiz +
+  testler · Android APK · iOS · Bütçe yeşil, çakışma yok.
 - **Aynı dosyaya dokunanlar (kesimde metin çakışması beklenir):**
   `online_game_screen.dart` 7 PR (#637 #640 #642 #649 #657 #670 #687) ·
   `auth_modal.dart` 5 (#640 #642 #651 #659 #709) · `game_screen.dart` 4
