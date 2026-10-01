@@ -109,9 +109,17 @@ import { FUNNEL_EXISTING_CHANNEL, FUNNEL_MEMBER_EVENTS_ENABLED } from '../utils/
 
 interface AdminDashboardProps {
   onClose: () => void;
+  /**
+   * Açılış sekmesi — verilirse "bekleyen iş varsa Geri Bildirim'e geç"
+   * varsayılanı UYGULANMAZ (kullanıcı bir yere gitmek için geldi). Tek
+   * kullanıcısı kritik hata uyarısı mailindeki `?admin=hatalar` bağlantısı
+   * (`UserMenu`, 30 Eylül 2026).
+   */
+  initialTab?: AdminTab;
 }
 
-type Tab = 'members' | 'growth' | 'feedback' | 'errors';
+export type AdminTab = 'members' | 'growth' | 'feedback' | 'errors';
+type Tab = AdminTab;
 
 /**
  * `destek@kelimeki.com` gelen kutusu — "Zoho" rozeti buraya götürür.
@@ -462,7 +470,10 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <b>Ulaşan</b> = o adıma gelen oturum, <b>Ayrılan</b> = EN İLERİ adımı o olan oturum (kayıt sırası değil: oyunu bitirenin geç gelen
         "5. hamle" kaydı onu oyun bitişinden geri çekmez),{' '}
         <b>Ayrılma</b> = Ayrılan / Ulaşan. Bounce'un yeri, Ayrılma yüzdesinin en yüksek
-        olduğu satırdır. <b>Süre</b> = orada ayrılanların oturumda kaldığı süre (medyan).
+        olduğu satırdır. <b>Süre</b> = orada ayrılanların oturumda kaldığı süre (medyan).{' '}
+        <b>Tanıtımı atladı</b> bir adım değil: tanıtımı açıp BİTİRMEDEN oyuna geçen oturum
+        (Tanıtımı bitirdi + Tanıtımı atladı = tanıtımdan oyuna gelen). Oyuna devam ettikleri için
+        orada ayrılan yok. Tanıtım uygulama açılınca değil, Setup'ta "Oyna"ya basınca açılır.
         <br />
         <br />
         Bu kart <b>OTURUM</b> sayar, kişi değil: sekme başına bir satır, kimliksiz (ne{' '}
@@ -585,7 +596,10 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <br />
         <br />
         Satırlar platform → kanal gruplu; <b>kanala tıkla, ham <code>?ref=</code> etiketleri
-        açılır</b> (Üye Kalitesi ile aynı gruplama kuralı). CSV her zaman ham sayı indirir.
+        açılır</b> (Üye Kalitesi ile aynı gruplama kuralı). <b>Meta</b> = ücretli reklam
+        kampanyası (<code>meta-kare</code>, <code>meta-karusel</code>, <code>meta-reel</code>…);
+        Instagram ve Facebook satırları ORGANİK paylaşımların (bio, sayfa, profil). CSV her
+        zaman ham sayı indirir.
       </>
     ),
   },
@@ -708,9 +722,11 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         Windows" sorusunu yanıtlar, sürümü yanıtlamaz.{' '}
         <b>Masaüstü "bilinmiyor"</b> = işletim sistemi hiç tanınmadı: Windows ve Mac her zaman
         tanınır, <b>Linux</b> / <b>ChromeOS</b> 23 Eylül 2026'dan beri adıyla yazılıyor.{' '}
-        <b>"bot (kendini tanıtan)"</b> = tarayıcı kimliğinde Googlebot, bingbot gibi bir bot
-        adı geçiyor; bunlar SAYILMAYA devam ediyor, yalnızca ayrı satırda. Kendini tanıtmayan
-        bot "bilinmiyor"da kalır, o satır "bot" diye etiketlenmez (kanıt yok).{' '}
+        <b>Botlar sayılmıyor (30 Eylül 2026'dan beri):</b> tarayıcı kimliğinde Googlebot,
+        bingbot, Meta'nın reklam inceleme botu gibi bir bot adı geçen ziyaretler bu tablonun,
+        ziyaret serisinin ve huninin DIŞINDA; kayıtları silinmedi, yalnızca sayılmıyor.
+        Kendini tanıtmayan botlar (Linux kimliğiyle gelenler, Windows gibi görünen reklam
+        inceleme sistemleri) ayırt edilemediği için sayılmaya devam ediyor.{' '}
         <b>iPad "sürüm yok":</b> iPad Safari varsayılan olarak "masaüstü sitesi" kipinde
         açılıp kendini Mac gibi tanıtıyor ve gerçek sürümünü göndermiyor (23 Eylül 2026'ya
         kadar bu satırlar yanlışlıkla <code>iOS 10.15.7</code> görünüyordu). <b>Açılan sürüm satırlarının
@@ -1769,6 +1785,7 @@ const JOURNEY_LABEL: Record<string, string> = {
   app: 'Uygulama açıldı',
   tutorial_start: 'Tanıtımı açtı',
   tutorial_done: 'Tanıtımı bitirdi',
+  tutorial_skip: 'Tanıtımı atladı',
   game_start: 'Oyun başladı',
   first_move: 'İlk hamle',
   move_5: '5. hamle',
@@ -1794,6 +1811,22 @@ const JOURNEY_SUCCESS = new Set(['game_finish', 'signup_done', 'login', 'store']
  * "Uygulamaya geçti 4" diye kafa karıştırıyordu (29 Eylül 2026).
  */
 const JOURNEY_LANDING_ONLY = new Set(['landing', 'landing_cta']);
+
+/**
+ * Hiç gösterilmeyen adım: `landing_cta` ("Uygulamaya geçti") her zaman
+ * "Uygulama açıldı" ile aynı sayıyı veriyordu (30 Eylül 2026 ölçümü: Yeni,
+ * son 30 gün, 53 = 53; geçip açılmayan oturum 0) — aynı şeyi iki satır
+ * söylüyordu (kullanıcı: *"Uygulamaya geçtiyi kaldırabiliriz"*). Veri
+ * toplanmaya devam ediyor, yalnızca kartta yok.
+ */
+const JOURNEY_HIDDEN = new Set(['landing_cta']);
+
+/**
+ * Türetilmiş BİLGİ satırı — bir adım değil, sunucu okuma anında hesaplıyor
+ * (`tutorial_skip`: tanıtımı açıp bitirmeden oyuna geçen oturum, 30 Eylül
+ * 2026). Kimse orada "ayrılmıyor" (oyuna devam etti), Ayrılan/Ayrılma "—".
+ */
+const JOURNEY_INFO = new Set(['tutorial_skip']);
 
 function formatJourneySeconds(sec: number | null): string {
   if (sec === null) return '—';
@@ -1829,7 +1862,12 @@ function WebJourneyTable({
   // düşülüyor; sayı her satırda aynı, ilkinden okunur.
   const etkilesimsiz = rows?.[0]?.idle ?? 0;
   const gorunen = rows
-    ? rows.filter((r) => r.reached > 0 && !(entry === 'app' && JOURNEY_LANDING_ONLY.has(r.step)))
+    ? rows.filter(
+        (r) =>
+          r.reached > 0 &&
+          !JOURNEY_HIDDEN.has(r.step) &&
+          !(entry === 'app' && JOURNEY_LANDING_ONLY.has(r.step)),
+      )
     : [];
   const karsilama = rows?.find((r) => r.step === 'landing');
   const ust = (
@@ -1878,7 +1916,7 @@ function WebJourneyTable({
   }
   const enYuksek = Math.max(
     ...gorunen
-      .filter((r) => !JOURNEY_SUCCESS.has(r.step) && r.reached > 0)
+      .filter((r) => !JOURNEY_SUCCESS.has(r.step) && !JOURNEY_INFO.has(r.step) && r.reached > 0)
       .map((r) => r.left_here / r.reached),
     0,
   );
@@ -1899,18 +1937,19 @@ function WebJourneyTable({
           <tbody>
             {gorunen.map((row) => {
               const basari = JOURNEY_SUCCESS.has(row.step);
+              const bilgi = JOURNEY_INFO.has(row.step);
               const oran = row.left_here / row.reached;
               // En çok kaybettiren adım vurgulanır: kartın sorduğu tek soru bu.
-              const zirve = !basari && row.left_here > 0 && oran === enYuksek;
+              const zirve = !basari && !bilgi && row.left_here > 0 && oran === enYuksek;
               return (
                 <tr key={row.step} className="border-b border-border/50">
                   <td className={`text-left py-1 pr-2 ${zirve ? 'text-red font-bold' : 'text-text'}`}>
                     {JOURNEY_LABEL[row.step] ?? row.step}
                   </td>
                   <td className="text-right py-1 px-2 text-text">{row.reached}</td>
-                  <td className="text-right py-1 px-2 text-text">{row.left_here}</td>
+                  <td className="text-right py-1 px-2 text-text">{bilgi ? '—' : row.left_here}</td>
                   <td className={`text-right py-1 px-2 ${zirve ? 'text-red font-bold' : 'text-text'}`}>
-                    {basari ? '✓' : `%${Math.round(oran * 100)}`}
+                    {basari ? '✓' : bilgi ? '—' : `%${Math.round(oran * 100)}`}
                   </td>
                   <td className="text-right py-1 pl-2 text-muted">
                     {formatJourneySeconds(row.median_seconds)}
@@ -2760,8 +2799,8 @@ function memberSortValue(m: AdminMember, key: MemberSortKey): string | number {
   }
 }
 
-export function AdminDashboard({ onClose }: AdminDashboardProps) {
-  const [tab, setTab] = useState<Tab>('growth');
+export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'growth');
   const [members, setMembers] = useState<AdminMember[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
@@ -2851,7 +2890,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [banError, setBanError] = useState<string | null>(null);
   const [highlightedMemberId, setHighlightedMemberId] = useState<string | null>(null);
 
-  const panelRef = useModalA11y(true, onClose);
+  // Panel YALNIZCA ✕ ile kapanır — arka plana dokunuş ve Escape kapatmaz
+  // (30 Eylül 2026, kullanıcı: "ekranın yanlışlıkla başka yerine dokununca
+  // kapanmasın"). Uzun bir tabloyu kaydırırken ya da filtre ararken kenara
+  // kaçan tek bir dokunuş bütün paneli (sekme, kaydırma, açık satırlar)
+  // sıfırlıyordu.
+  const panelRef = useModalA11y(true, onClose, false);
   const feedbackDeleteRef = useModalA11y(!!feedbackToDelete, () => setFeedbackToDelete(null));
   const banConfirmRef = useModalA11y(!!banTarget, () => setBanTarget(null));
   const hintRef = useModalA11y(!!hint, () => setHint(null));
@@ -2923,7 +2967,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   //
   // Yalnızca İKİ liste de yüklendikten sonra bir kez uygulanır; elle sekme
   // seçildiği anda devre dışı kalır (aşağıdaki `selectTab`).
-  const appliedDefaultTabRef = useRef(false);
+  const appliedDefaultTabRef = useRef(initialTab !== undefined);
   /**
    * Elle sekme seçimi — varsayılan-sekme effect'ini (aşağı) devre dışı
    * bırakır. Veri henüz yüklenmemişken bir sekmeye dokunulursa listeler
@@ -3423,10 +3467,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   }
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[150] flex items-center justify-center p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
       <div
         ref={panelRef}
         role="dialog"
@@ -3434,7 +3475,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
         aria-label="Admin Paneli"
         tabIndex={-1}
         className="w-full max-w-[640px] bg-panel border border-[#B8C2D1] rounded-xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] max-h-[85vh] flex flex-col overflow-hidden outline-none"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="shrink-0 flex flex-col gap-3 px-5 pt-5 pb-4 border-b border-border">
           <div className="flex items-center justify-between">
@@ -4262,7 +4302,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         bucketLabel={(row) => hourBucketLabel(row.hour_start)}
                         axisLabel={(row) => hourAxisLabel(row.hour_start)}
                         bucketHeader="Saat"
-                        controls={<span className={sectionTitleCls}>Aktif Saatler</span>}
+                        controls={<span className={sectionTitleCls}>Aktif Saatler (Son 30 Gün)</span>}
                         csvBaseName="kelimeki-aktif-saatler"
                         infoHint={<InfoHint id="aktif-saatler" onOpen={setHint} />}
                       />
@@ -4287,7 +4327,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         bucketLabel={(row) => dayBucketLabel(row.dow)}
                         axisLabel={(row) => dayAxisLabel(row.dow)}
                         bucketHeader="Gün"
-                        controls={<span className={sectionTitleCls}>Aktif Günler</span>}
+                        controls={<span className={sectionTitleCls}>Aktif Günler (Son 30 Gün)</span>}
                         csvBaseName="kelimeki-aktif-gunler"
                         infoHint={<InfoHint id="aktif-gunler" onOpen={setHint} />}
                       />

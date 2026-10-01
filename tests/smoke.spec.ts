@@ -557,8 +557,12 @@ test('Sayfa sonundaki OYNA da uygulamaya geçirir (öznitelikle bağlama)', asyn
   // koruyor: yeni bir düğme id ile eklenirse (öznitelik unutulursa) sessizce
   // ölü kalırdı.
   const oynaDugmeleri = page.locator('[data-kelimeki-oyna]');
-  await expect(oynaDugmeleri).toHaveCount(2); // kahraman + sayfa sonu
-  await oynaDugmeleri.last().click();
+  // kahraman + sayfa sonu + telefondaki sabit alt şerit (30 Eylül 2026).
+  // Şerit `lg:hidden` — bu testin masaüstü görünümünde gizli, o yüzden
+  // `.last()` değil, şeridin DIŞINDAKİ son düğme.
+  await expect(oynaDugmeleri).toHaveCount(3);
+  await expect(page.locator('#karsilama-alt-serit [data-kelimeki-oyna]')).toHaveCount(1);
+  await page.locator('main [data-kelimeki-oyna]').last().click();
 
   await expect(page.getByText('OYUNU BAŞLAT')).toBeVisible();
   await expect(page.locator('#karsilama')).toHaveCount(0);

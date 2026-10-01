@@ -53,6 +53,7 @@
     "generate-play-assets": "node scripts/play-store/build.mjs",
     "generate-play-lansman": "node scripts/play-lansman/build.mjs",
     "generate-meta-story": "node scripts/play-lansman/build.mjs --genel",
+    "generate-meta-sade": "node scripts/play-lansman/build.mjs --sade",
     "generate-store-header": "node scripts/store-header/build.mjs",
     "preview-store-frames": "npm run preview-store-frames:iphone && npm run preview-store-frames:ipad",
     "preview-store-frames:iphone": "cd mobile/app && KARE_ONIZLEME=1 flutter test test/store_frames_preview_test.dart",

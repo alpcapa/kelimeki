@@ -200,7 +200,7 @@ console.log('webJourney — ziyaretçi yolculuğu');
 {
   const dosyalar: [string, number][] = [
     ['supabase/migrations/20260928100430_web_journey_store_step.sql', 2], // record_web_session (`store`); admin_web_journey'yi aşağıdaki yeniden yazdı
-    ['supabase/migrations/20260929074711_admin_web_journey_furthest_step.sql', 1], // admin_web_journey (Ayrılan = en ileri adım)
+    ['supabase/migrations/20260930110120_admin_web_journey_tutorial_skip.sql', 1], // admin_web_journey (en ileri adım + türetilmiş `tutorial_skip`, v_steps'e GİRMEZ)
   ];
   for (const [dosya, beklenen] of dosyalar) {
     const sql = readFileSync(dosya, 'utf8');

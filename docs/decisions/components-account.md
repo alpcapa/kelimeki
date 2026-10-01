@@ -137,8 +137,9 @@ arkadaşsınız, ⌛ bekliyor) ikon kaldı; ✓'ye dokunmak yine "Arkadaşlıkta
 çıkar"ı soruyor (kullanıcı kararı: ayrı "Çıkar" düğmesi YOK). Aynı gün canlı
 oyun formunun "Tüm oyuncular" listesinde arkadaş OLMAYAN kişiye dokununca
 skor kartı açılıyor (arkadaş satırı oyuna seçtiği için orada kart yok).
-⚠ Port ikizi (`player_score_card_modal.dart`) henüz ikonlu: mobil iş, tren
-kuralına tabi.
+Port ikizi (`player_score_card_modal.dart`) aynı haplarla sonraki trende
+(taslak PR, ROADMAP "Sıradaki sürüme binecekler"); "Tüm oyuncular" listesi
+portta henüz yok (ROADMAP #41'in port yarısı).
 
 ## İlişki ikonlarında İKİ düzeltme (30 Ağustos 2026)
 
@@ -180,6 +181,26 @@ kuralına tabi.
   **Uçtan uca doğrulandı (13 Ağustos 2026):** kullanıcı düzeltmeden sonra hem web'de hem mobil uygulamada profil fotoğrafını birkaç kez değiştirdi — 403 bir daha görülmedi ve yeni boyut sınırı/küçültme de sorunsuz çalıştı. **Aynı gün kovadan ÖLÇÜLDÜ** (`storage.objects`, iki nesne): 83.815 B (82 KB) ve 126.095 B (123 KB) — ikisi de öngörülen 50-150 KB bandında, **ve ikisi de `image/jpeg`**. Bu ikinci alan asıl kanıt: `shrinkAvatar` yeniden kodlarken JPEG'e çeviriyor, küçültme koşmasaydı orijinalin türü (PNG/HEIC) korunurdu — yani dosyalar yalnızca küçük değil, gerçekten bu kod yolundan geçmiş. Zaman damgaları ayrıca RLS düzeltmesini de doğruluyor: 123 KB'lık nesne **28 Haziran'da oluşmuş ama 13 Ağustos'ta güncellenmiş**, yani 20 Temmuz'dan beri 403 veren "var olanın üzerine yaz" işlemi gerçekten çalışıyor; öteki nesne de önce oluşturulup iki dakika sonra güncellenmiş, yani ilk yükleme ve üzerine yazma AYRI AYRI kanıtlı. Bir regresyonda bu sayılar taban çizgisi: kovada ~1 MB'ı aşan ya da `image/jpeg` olmayan bir avatar görülürse küçültme yolu kırılmış demektir.
 
   **Ders — bir politikayı "gereksiz" diye düşürürken YALNIZCA okuma yolunu düşünme:** `public` bir kova okuma için RLS'i atlar ama `upsert` yazma yolu satırı GÖRMEYİ gerektirir. Aynı sınıf bir soru bu projede daha önce de yanlış cevaplanmıştı (bkz. `CountBadge`'in "şu filtre zaten eler" dersi ve `games.messages`'ın "bu satır zaten herkese açık" dersi) — "bu erişim başka bir yoldan zaten var" gerekçesi, o erişimin KULLANILDIĞI tüm yolları tek tek saymadan geçerli sayılmamalı.
+
+### Yavaş / hiç yüklenmeyen avatar (29 Eylül 2026)
+
+Kullanıcı: bekleyen oyunlardaki avatarlar *"bazen tam yüklenmiyor, bazen
+yavaş"*. **Sunucu temizdi** (canlıda ölçüldü: 4 nesne, hepsi JPEG, 68-123 KB,
+`profiles.avatar_url`'in işaret ettiği nesnelerin hiçbiri eksik değil; adres
+`list_my_online_games`le AYNI sorguda geliyor, ikinci istek yok). Neden
+yükleme davranışıydı:
+
+- **Tek hata = kalıcı baş harf.** `onError` `broken`ı kalıcı yapıyordu;
+  mobil ağda tek zaman aşımı avatarı ekran yeniden açılana kadar düşürüyordu.
+  Web: bir kez, 1,5 sn sonra yeniden deneniyor (`AVATAR_RETRY_DELAY_MS`),
+  beklerken baş harf görünüyor; ikinci hata gerçek sayılıyor.
+- **1 saatlik önbellek.** Yükleme `cacheControl` vermiyordu → `max-age=3600`;
+  proje Mumbai'de (ap-south-1). Adres her yüklemede `?v=` ile değiştiği için
+  bir yıl güvenli → `cacheControl: '31536000'`. ⚠ YALNIZCA yeni yüklemelere
+  uygulanır; mevcut 4 nesne sahibi yeniden yükleyene kadar 1 saatte kalır.
+- **Port (sürüm treni, ayrı PR):** `KAvatar` yüklenirken BOŞ gri daire
+  çiziyor (`loadingBuilder` yok), kalıcı disk önbelleği yok, 26 px için
+  512 px çözüyor (`cacheWidth` yok) ve aynı tek-hata-kalıcı davranış.
 
 ## `useAuth` — `user` nesnesinin kimliği (19 Eylül 2026)
 

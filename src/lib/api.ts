@@ -3804,7 +3804,11 @@ export async function uploadAvatar(file: File): Promise<string> {
 
   const { error: upErr } = await supabase.storage
     .from('avatars')
-    .upload(path, body, { upsert: true, contentType });
+    // Uzun önbellek güvenli: adres her yüklemede `?v=` ile DEĞİŞİYOR, yani
+    // eski resim asla "bayat" kalmaz. Varsayılan 1 saatti; proje Mumbai'de
+    // olduğundan her saat başı ilk istek oraya gidiyordu (29 Eylül 2026).
+    // Port ikizi: `auth_service.dart` → `uploadAvatar`.
+    .upload(path, body, { upsert: true, contentType, cacheControl: '31536000' });
   if (upErr) throw new Error(upErr.message);
 
   const { data } = supabase.storage.from('avatars').getPublicUrl(path);

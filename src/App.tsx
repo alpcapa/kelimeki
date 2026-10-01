@@ -755,9 +755,9 @@ export default function App() {
   // Oyun bitince GameOver ekranından açılabilen "Görüş Bildir" formu.
   const [showFeedback, setShowFeedback] = useState(false);
 
-  // Admin'in gönderdiği e-postalardaki ("noreply — cevap için tıklayın")
-  // linkten (?contact=1) açılan genel "Görüş Bildir" formu — oyun fazından
-  // bağımsız (bkz. supabase/functions/_shared/email.ts, buildSupportReplyNoticeHtml).
+  // Ban mailindeki "Bizimle İletişime Geç" linkinden (?contact=1) açılan
+  // genel "Görüş Bildir" formu — oyun fazından bağımsız (destek maillerindeki
+  // aynı link 29 Eylül 2026'da kaldırıldı, eski mailler hâlâ taşıyor).
   // Link'e gömülü ?re=<id> varsa (hangi mesaja cevaben geldiği), yeni geri
   // bildirim o mesaja bağlanabilsin diye contactRelatedTo'da tutulur.
   const [showContactFeedback, setShowContactFeedback] = useState(false);
