@@ -1040,10 +1040,10 @@ void main() {
       await unmount(tester);
     });
 
-    // Web OnlineGameScreen.tsx (~1306-1316), App.tsx'in (~1512-1517) BİREBİR
-    // aynısı: GameOver'ı kapatmak "Görüş Bildir" formunu AÇAR. Port yalnızca
-    // modalın İÇİNDEKİ linki taşımıştı — iki ekranda da eksikti (Parça 48).
-    testWidgets('GameOver kapatılınca Görüş Bildir formu açılır (web onClose)',
+    // GameOver'ı kapatmak "Görüş Bildir" formunu AÇMAZ — Parça 48'in
+    // otomatik açılışı 26 Eylül 2026'da kullanıcı kararıyla kaldırıldı
+    // (web + port birlikte). Form yalnızca modalın içindeki linkle açılır.
+    testWidgets('GameOver kapatılınca Görüş Bildir formu AÇILMAZ',
         (tester) async {
       await pumpScreen(tester, isGameOver: true);
       await tester.pumpAndSettle();
@@ -1052,11 +1052,8 @@ void main() {
       await tester.tap(find.byTooltip('Kapat'));
       await tester.pumpAndSettle();
       expect(
-          find.text(trUpper('Görüşleriniz Bizim İçin Önemli')), findsOneWidget);
-
-      // Formu da kapat ki dispose'da bekleyen bir route kalmasın.
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
+          find.text(trUpper('Görüşleriniz Bizim İçin Önemli')), findsNothing);
+      expect(find.byTooltip('Kapat'), findsNothing);
       await unmount(tester);
     });
 
@@ -1097,9 +1094,6 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Kapat')); // GameOver
       await tester.pumpAndSettle();
-      // GameOver kapanışı "Görüş Bildir" formunu açıyor (bkz. üstteki test).
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
       await unmount(tester);
     });
 
@@ -1107,9 +1101,7 @@ void main() {
         (tester) async {
       final gw = await pumpScreen(tester, isGameOver: true);
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Kapat')); // GameOver + Görüş Bildir
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Kapat'));
+      await tester.tap(find.byTooltip('Kapat')); // GameOver
       await tester.pumpAndSettle();
 
       expect(find.text('TEKRAR OYNA'), findsOneWidget);
@@ -1150,9 +1142,7 @@ void main() {
       gw.createError = PostgrestException(
           message: 'Yalnızca arkadaşlarını davet edebilirsin.');
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Kapat'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Kapat'));
+      await tester.tap(find.byTooltip('Kapat')); // GameOver
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('TEKRAR OYNA'));
