@@ -854,6 +854,27 @@ Tanıtımın penceresi artık *"… N puanı rakibine vergi olarak gidecek."*
 (`tutorial_game.dart`) 12 Ekim trenine taslak PR. İki taraf arasında metni
 kilitleyen parite testi YOK — bu yüzden web tek başına gidebildi.
 
+### Kapı açığı: üye olarak oynayıp çıkış yapan cihaz tanıtıma düşüyordu (2 Ekim 2026)
+
+**Vaka (ölçüldü):** kullanıcı 1.1.2'ye güncellenen Android telefonda,
+çıkış yapmış hâlde YZ oyunu başlatınca tanıtım açıldı. `tutorial_events` →
+`anon_id 35a435b1-…` 1 Eki 22:04 UTC `start/auto` (1.1.2); aynı cihazın
+`game_starts`ında 26-30 Eylül arası **üye olarak** (`is_guest=false`) 3 oyun.
+
+**Sebep:** `shouldShowTutorial`in dört sinyalinden üyeyi "hesap yaşı"
+durduruyordu, ama o dal cihaza "görüldü" BAYRAĞI koymuyordu. Misafirde
+kapının baktığı oyun sinyali (`hasPlayed`) yalnızca YARIM kayıt — bitmiş
+oyunlar sayılmıyor. Sonuç: aynı cihaz çıkış yapınca "yeni gelen" sayıldı.
+
+**Düzeltme (kullanıcı: *"Yap"*):** cihazda GERÇEK bir oyun başladığı an
+`markTutorialSeen()` — web `startLocalGame` + Canlı oyun açılışı
+(`onlineGame` dolunca), port `setup_screen.dart`. Kapının saf fonksiyonu
+DEĞİŞMEDİ (dört sinyal aynı); değişen, bayrağın konduğu yerlerin sayısı.
+Bilinçli sınır: bu düzeltmeden ÖNCE oynamış ve hiç tanıtım görmemiş bir
+cihaz, bir sonraki oyununa kadar yine tanıtımı görebilir (geriye dönük
+bayrak yok — o cihazın "oynadı" bilgisi yerelde durmuyor). Web hemen
+yayında, port 12 Ekim treninde.
+
 ## Faz 3 — tanıtımı tekrar oynama (8 Eylül 2026)
 
 "Nasıl oynanır?" penceresinin **en başında** bir buton:
