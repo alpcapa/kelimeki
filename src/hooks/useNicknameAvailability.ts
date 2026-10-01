@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { checkNicknameAvailable } from '../lib/api';
+import { fetchNicknameStatus } from '../lib/api';
 
-export type NicknameAvailabilityStatus = 'idle' | 'checking' | 'available' | 'taken' | 'error';
+export type NicknameAvailabilityStatus = 'idle' | 'checking' | 'available' | 'taken' | 'blocked' | 'error';
 
 /**
  * Girilen takma ismin (debounce'lu) uygunluğunu kontrol eder — RPC oturum
@@ -10,6 +10,9 @@ export type NicknameAvailabilityStatus = 'idle' | 'checking' | 'available' | 'ta
  * oturum yok) hem hesap ayarları (AccountSettingsModal, oturum var) aynı
  * hook'u kullanabilir. `currentValue` verilirse (hesap ayarlarında kişinin
  * hâlihazırda sahip olduğu isim) o değere eşitken kontrol atlanır.
+ *
+ * `blocked`: isim küfür/müstehcenlik süzgecine takıldı (ROADMAP #37) —
+ * sunucu `profiles` trigger'ı zaten reddeder, bu yalnızca erken uyarı.
  */
 export function useNicknameAvailability(
   nickname: string,
@@ -29,8 +32,10 @@ export function useNicknameAvailability(
     const mySeq = ++seqRef.current;
     const timer = setTimeout(async () => {
       try {
-        const available = await checkNicknameAvailable(trimmed);
-        if (seqRef.current === mySeq) setStatus(available ? 'available' : 'taken');
+        const durum = await fetchNicknameStatus(trimmed);
+        if (seqRef.current === mySeq) {
+          setStatus(durum === 'ok' ? 'available' : durum);
+        }
       } catch {
         if (seqRef.current === mySeq) setStatus('error');
       }

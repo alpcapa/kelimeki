@@ -48,7 +48,7 @@ kapısıdır, ezbere değil ona bakılır.
 | Ne | Ölçü | Dosya |
 |---|---|---|
 | Logo | 300×300 (min) | Mevcut daire logo yerinde kalsın — değişecekse `marketing/play-store/store-icon-512.png` |
-| Kapak | **1128×191** | `marketing/app-store/kelimeki-linkedin-sayfa-kapak.png` (2256×382 basılır, LinkedIn oranı koruyup küçültür) · `npm run build && npm run generate-linkedin-page-cover` |
+| Kapak | **1128×191** | `marketing/app-store/kelimeki-linkedin-sayfa-kapak.png` (1128×191 — ⚠ 2× olan 2256×382 iPad Safari'de LinkedIn düzenleyicisinde kaydedilemedi, "Apply" sessizce reddedildi; 27 Eylül 2026) · `npm run build && npm run generate-linkedin-page-cover` |
 
 ⚠ **Kişisel profil kapağıyla AYNI DOSYA DEĞİL** (o 1584×396). İkisinin
 oranı ve örtülen bölgeleri farklı; karıştırılırsa sayfa logosu metnin

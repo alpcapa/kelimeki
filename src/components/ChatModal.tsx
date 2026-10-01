@@ -6,8 +6,16 @@ import { Modal } from './Modal';
 import { ChatThread, type ChatThreadMessage } from './ChatThread';
 import type { OnlineGameMessageRow } from '../lib/database.types';
 import { friendlyErrorMessage } from '../utils/errorMessage';
+import { ChatRulesModal } from './ChatRulesModal';
+import { acceptChatRules, fetchChatRulesVersion } from '../lib/api';
+import { CHAT_RULES_VERSION, needsChatRulesConsent } from '../utils/chatRules';
 
 const MAX_LENGTH = 200;
+
+// Sohbet Kuralları'nı kabul ettiği bilinen kullanıcılar — sayfa ömrü boyunca
+// her gönderimde sunucuya sormamak için. Asıl kayıt sunucuda
+// (`profiles.chat_rules_version`); bu küme yalnızca bir önbellek.
+const chatRulesAcceptedFor = new Set<string>();
 
 export interface ChatParticipant {
   userId: string;
@@ -68,9 +76,11 @@ export function ChatModal({
     if (el) el.scrollTop = 0;
   }, [messages.length]);
 
-  const handleSend = async () => {
-    const trimmed = text.trim();
-    if (trimmed.length === 0 || sending) return;
+  const [showRules, setShowRules] = useState(false);
+  const [rulesBusy, setRulesBusy] = useState(false);
+  const [rulesError, setRulesError] = useState<string | null>(null);
+
+  const send = async (trimmed: string) => {
     setSending(true);
     setError(null);
     try {
@@ -83,6 +93,44 @@ export function ChatModal({
     } finally {
       setSending(false);
     }
+  };
+
+  // İlk mesajdan önce BİR KEZ Sohbet Kuralları onayı (bkz. `utils/chatRules.ts`).
+  // Pencere mesajı göndermeden çıkar; "Vazgeç" yazılan metni kutuda bırakır.
+  const handleSend = async () => {
+    const trimmed = text.trim();
+    if (trimmed.length === 0 || sending) return;
+    if (!chatRulesAcceptedFor.has(myUserId)) {
+      setSending(true);
+      const surum = await fetchChatRulesVersion(myUserId);
+      setSending(false);
+      if (needsChatRulesConsent(surum)) {
+        setRulesError(null);
+        setShowRules(true);
+        return;
+      }
+      chatRulesAcceptedFor.add(myUserId);
+    }
+    await send(trimmed);
+  };
+
+  const handleAcceptRules = async () => {
+    setRulesBusy(true);
+    setRulesError(null);
+    try {
+      await acceptChatRules(CHAT_RULES_VERSION);
+    } catch (err) {
+      setRulesError(
+        friendlyErrorMessage(err, { surface: 'sohbet-kurallari', fallback: 'Onay kaydedilemedi, tekrar dene.' }),
+      );
+      setRulesBusy(false);
+      return;
+    }
+    chatRulesAcceptedFor.add(myUserId);
+    setRulesBusy(false);
+    setShowRules(false);
+    const trimmed = text.trim();
+    if (trimmed.length > 0) await send(trimmed);
   };
 
   // `messages` (chatMessages, OnlineGameScreen.tsx) eskiden-yeniye
@@ -121,6 +169,7 @@ export function ChatModal({
     .reverse();
 
   return (
+    <>
     <Modal
       title="Mesajlaşma"
       onClose={onClose}
@@ -173,5 +222,14 @@ export function ChatModal({
         />
       </div>
     </Modal>
+    {showRules && (
+      <ChatRulesModal
+        onAccept={() => void handleAcceptRules()}
+        onCancel={() => setShowRules(false)}
+        busy={rulesBusy}
+        error={rulesError}
+      />
+    )}
+    </>
   );
 }

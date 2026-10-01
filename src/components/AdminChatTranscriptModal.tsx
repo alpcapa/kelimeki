@@ -36,7 +36,9 @@ export function AdminChatTranscriptModal({ onlineGameId, onClose }: AdminChatTra
       key: `${m.created_at}-${i}`,
       name: m.name,
       colorIndex: m.colorIndex,
-      message: m.message,
+      // Süzgece takılan mesaj (ROADMAP #37): admin ORİJİNALİ görür, katılımcılar
+      // maskeli hâlini gördü — işaret bunu ayırt ettiriyor.
+      message: m.filtered ? `[süzgeç] ${m.message}` : m.message,
       createdAt: m.created_at,
       mine: false,
     }))

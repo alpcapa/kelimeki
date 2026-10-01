@@ -402,11 +402,11 @@ void main() {
     expect(find.byWidgetPredicate((w) => w is RankSeal && w.size == 34),
         findsOneWidget,
         reason: 'başlık mührü kaybolmamalı');
-    final name = find.byWidgetPredicate((w) => w is RankSeal && w.size == 20);
-    expect(name, findsOneWidget, reason: 'isim yanında mühür çizilmemiş');
-    expect(tester.getTopLeft(name).dx,
-        greaterThanOrEqualTo(tester.getTopRight(find.text('Ironman')).dx),
-        reason: 'mühür ismin SAĞINDA olmalı');
+    // 29 Eylül 2026: isim yanındaki 20px'lik mühür KALKTI (kullanıcı:
+    // "zaten üstte var") — yalnızca başlıktaki mühür kalmalı.
+    expect(find.byWidgetPredicate((w) => w is RankSeal && w.size == 20),
+        findsNothing,
+        reason: 'isim yanında mühür artık çizilmemeli');
   });
 
   testWidgets('Skor Kartı: hiç kaydı yoksa boş metin + sıfır kutular',

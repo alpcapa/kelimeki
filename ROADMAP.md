@@ -75,64 +75,71 @@ Yani maddeleri "konu"ya göre değil **paketlenebilirliğe** göre grupladım.
 Sonuç: kalan HER ŞEY **iki sürüm turuna** sığıyor — bildirim işinin yarısı
 sunucu tarafında olduğu için sürüm beklemiyor.
 
-### Kalan işlerin tamamı — tek bakışta (2 Eylül 2026'da güncellendi)
+### Kalan işlerin tamamı — tek bakışta (26 Eylül 2026'da yeniden yazıldı)
 
-✅ **O BLOKER DÜŞTÜ — ve 13 Eylül 2026, 00:14'te ONAYLANDI.** Aylardır
-sırayı belirleyen şey koda değil takvime bağlıydı: kişisel hesaplarda
-**12 tester × 14 gün kesintisiz**. Sayaç doldu, kartın üç şartı da çizildi,
-başvuru 10 Eylül 15:26'da gönderildi ve Google **kabul etti**
-(*"Congratulations! Your app has been granted Google Play production
-access"*, `com.kelimeki.kelimeki`) — Console *"7 gün ya da daha az"*
-demişti, **~2,5 günde** geldi. Cevaplar, ölçümler ve soruların tam metni:
-`marketing/play-store/console-formlari.md` §7.
+Bu tablo bir İNDEKS: yalnızca AÇIK maddeler, gövdeleri aşağıda (ya da
+belirtilen dosyada). Bir madde kapanınca satırı buradan, gövdesi de
+arşive gider. Önceki sürüm (2 Eylül 2026; 1.0.4-1.0.6 turları, Play
+sayacı, Console kovaları — hepsi kapanmıştı):
+`docs/decisions/roadmap-arsiv.md` → "Kalan işlerin tamamı — tek bakışta
+(2 Eylül 2026 sürümü)".
 
-⚠ **ERİŞİM ≠ SÜRÜM.** Onaylanan şey production KANALINI kullanma hakkı;
-mağaza vitrini (`play.google.com/store/apps/details?id=com.kelimeki.kelimeki`)
-o kanala bir sürüm yayınlanıp KENDİ incelemesinden geçene kadar **404**
-vermeye devam eder. Yani §26'nın (mağaza rozetleri) Android yarısı bu
-e-postayla AÇILMADI.
+**Durum (26 Eylül 2026):** iki mağazada `1.1.1 (723)` = `8c1828f`. Sonraki
+tren dört taslak PR (#637 · #640 · #642 · #647), ilk kesim **5 Ekim 2026**
+(`mobile/docs/surumler.md` → "SÜRÜM TRENİ"). O güne kadar `main`'e mobil
+kod girmez.
 
-| Kova | Ne | Durum |
-|---|---|---|
-| **Sayaç** | 12 tester × 14 gün | ✅ **KAPANDI — production ERİŞİMİ ONAYLANDI 13 Eyl 2026, 00:14** (başvuru 10 Eyl 15:26, ~2,5 gün). ⚠ Erişim ≠ sürüm: vitrin, production kanalına sürüm yayınlanana kadar 404 · ⚠ karttaki **12**'nin gerçek adet mi şartın tavanı mı olduğu ÖLÇÜLMEDİ (2 Eylül, kullanıcı itirazı — aşağıda) · *Android developer verification* ✅ **BİTTİ** (Console'dan doğrulandı 31 Ağustos: `com.kelimeki.kelimeki` Registered, 3 anahtar, Identity dolu) |
-| **Console (elle)** | — | ✅ **KAPANDI** (bu satır 31 Ağustos'a kadar bayat kaldı; ayrıntı aşağıda) |
-| **1.0.4'e binecek kod** | Faz 6 istemci yarısı (rozet sıfırlama + sürüm damgası) · Faz 7 (iki çökme) · **+ #10 hata hız sınırı** (1 Eylül'de eklendi) | ✅ **1.0.4 (467) Play'e YÜKLENDİ, incelemede** (1 Eylül 2026) |
-| **1.0.5'e binen kod** | Tahta zoom'u (+2 APK turu) · zoom tanıtım balonu · yazı ölçeği (sınıf 3+2) · mesaj kutusu etiketi · **cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar)** | ✅ **TUR KAPANDI** — `1.0.5 (501) — 4a0a29b` kapalı testte yayında (~15:03) ve üç işin cihaz doğrulaması da alındı (2 Eylül, kullanıcı). Ayrıntı: arşiv → "1.0.5 SÜRÜM TURU" |
-| **1.0.6'ya binen kod** | Biten Canlı oyunun haberi (`OYUN BİTTİ`/`TESLİM OLDUN` + `YENİ` rozeti + sekme sayacı) · skor kartında kafa kafaya oran çubuğu · `Tüm Oyunlar` etiketinin tekleşmesi · **oyun geçmişine "Tekrar Oyna" (rövanş)** | ⏳ **`1.0.6 (525) — 711eaaa`** 4 Eylül'de kapalı teste çıktı (Submission 12; inceleme ≤29 dk), **6 Eylül'de `1.0.7 (545) — 78383eb` devraldı; 1.0.8 gönderilmeyi bekliyor** (kütük: `mobile/docs/surumler.md`). Kullanıcı kuralı sağlandı: APK önce cihazda koşuldu (§0-§4'ün koşulabilir maddeleri geçti). **TUR HENÜZ KAPANMADI.** Play imzalı paket 4 Eylül'de cihaza kuruldu ve §7'nin "güncelleme yokken pencere çıkmamalı" dalı geçti. §4.5 (davet linki uygulamayı açıyor) da geçti ve App Links doğrulamasını kanıtladı. Kalanlar: §4.1 (kayıt onayı) + kabul akışının uygulama içi maddeleri — ikisi de **YENİ bir hesap** ister (Ironman ↔ T3 zaten arkadaş, T2 Play'in test hesabı) · §1.4 ("ŞİMDİ DEĞİL") de KAPANDI (4 Eylül, kullanıcı gözlemi) · §7'nin "güncelleme VARKEN" dalı — ancak 1.0.6 kuruluyken 1.0.7 yayınlanınca koşulabilir. Kanonik paket kütüğü: `mobile/docs/surumler.md` |
-| **Cihazda denenmemiş** | §3c'nin davete özgü dalları · GA4 DebugView | ⏳ bildirim→tahta DOĞRULANDI (sıcak+soğuk, 31 Ağustos); **1.0.5'in tamamı 2 Eylül'de onaylandı** (zoom turu, çevrimdışı şerit, filigranlar, balon, yazı ölçeği, mesaj etiketi) — kalan iki kalem bu ikisi |
-| **Karar verilmiş, yapılmamış** | — | ✅ Kova BOŞ: **#3** hatırlatma, **#8** iPad paylaşımı (3 Eylül cihazda doğrulandı) ve **#16** kart düzeni kapandı; üçü de arşivde |
-| **Ertelendi** | #2 zorunlu güncelleme | ✅ **KAPANDI/ARŞİVDE** (2 Eylül 2026, kullanıcı: *"Artık app'de güncelleme çıkıyor, bunu görünce zaten yapar"*). ⚠ Sürüm kapısı DURUYOR ve artık KULLANILABİLİR — acil fren olarak `app_config.mobile_min_supported_version` |
-| **Seviyeli YZ** | **#23** Kolay/Normal/Zor + seviyeye göre k-lig puanı — 5 faz (sunucu → motor → web → port → Zor motoru) | ⬜ **Faz 0-5 kod ✅ (Faz 5 = Zor motoru, 7 Eylül 2026: GENİŞ arama, YZ↔YZ %70/%72 — web'de canlı, portta 1.0.8 sürümüyle); kalan: Faz 5 SAHA ölçümü** (`admin_ai_balance` seviye kırılımı iki hafta: Kolay ~%30 · Normal ~%51 · Zor ~%70). Faz 0 ölçtü: **Kolay = N=4** (200 oyun/N; N=3 %36, N=4 %33, N=5 %22 — backlog notu) |
-| **İsteğe bağlı** | #5 k-lig grafiği · #9 admin filtre · #14 tembel liste | ⬜ hiçbiri yolu tıkamıyor · **#10 hata hız sınırı ✅** ve **#11 platform filtresi ✅ YAPILDI** (31 Ağustos 2026) |
-| **Yapıldı** | #6 taranabilir `/nasil-oynanir/` sayfası | ✅ 31 Ağustos 2026 |
-| **Play Store'a girdikten sonra** | **#17 Google ile giriş** — sunucu → web → mobil; migration BLOKER (OAuth bugün `handle_new_user`'da patlar) | ⏳ ERTELENDİ — acelesi yok, çalışan kimlik akışına şimdi dokunulmuyor (2 Eylül, kullanıcı). ⚠ Sayaçla İLİŞKİSİ YOK; o bağ aynı gün koptu, gerekçe #17'de |
-| **iOS/App Store** | **#24 FAZ C** — hesap/kimlik · Mac'siz imzalama + TestFlight · APNs · Universal Links · vitrin · gönderim | ✅ **KAPANDI: `1.1.0 (665)` 15 Eylül 2026'da App Store'da YAYINDA.** Bölümün tamamı arşivde (`docs/decisions/roadmap-arsiv.md` → "24. FAZ C — App Store yayını"); işletim kaynağı `marketing/app-store/console-formlari.md` |
+| Kova | # | Ne | Durum |
+|---|---|---|---|
+| **Trende (taslak PR)** | #25 | iOS simgesinde rozet SAYISI | #647'de; DB yarısı canlıda. Merge sonrası beş bildirim fonksiyonu yeniden deploy (`verify_jwt` korunarak), 1.1.2 TestFlight'ta `mobile/docs/testing-bildirimler.md` §3h |
+| | #34 | Canlı sohbet okundu bilgisi — port yarısı | Taslak PR'da (26 Eyl); web + sunucu zaten `main`'de. 1.1.2 cihaz turu: `mobile/docs/testing-arkadaslar-canli.md` → "Okundu bilgisi cihazlar arasında". Sahaya inince arşive |
+| | #37 | Küfür / müstehcenlik süzgeci | Sunucu + web canlıda; koşul metni + portun takma isim uyarısı #640'ta. #640 merge edilince arşive |
+| **Sıradaki mobil işler** | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port yarısı taslak PR'da (`claude/roadmap-38-board-widget-port-74tu7z`). Merge edilince arşive |
+| | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Açık |
+| | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, bu kaldı |
+| | — | Huni v2'nin MOBİL yarısı (PR 2) | **5 Ekim trenine alındı** (27 Eyl, kullanıcı: *"dahil edelim"*). `docs/decisions/funnel-v2.md` → "PR 2". ⚠ Gelince admin kartındaki `PlatformTag kind="web"`i kaldır · **30 Eyl 2026, kullanıcı kararı: Play Install Referrer da 5 Ekim trenine** (27 Eyl'deki "önce kanalsız" kararı kaldırıldı) — Android kurulumunun `meta-*` etiketi `land` olayına yazılsın, paralı kanal uygulama içinde görünsün. Treni öne çekme önerisi REDDEDİLDİ (kazanç ~4 gün, 14 PR'lık paket, referrer'sız paket kanal göstermiyordu) |
+| | #41 | İlk oyun akışı v2 — sade karşılama, tek Setup ekranı, tanıtımın önündeki pencereler, misafir uyarısının kaldırılması, Arkadaşınla ekranları | Tasarım + kararlar ✅ (27 Eyl): `docs/decisions/onboarding.md` → "İlk oyun akışı v2". Web ✅ (27 Eyl, #660-#666): karşılama, Setup, Arkadaşınla ekranları, **Arkadaşlar penceresi (tek ekran)**, canlı oyun formu (Tüm oyuncular, kaydırma çubuğu, Hızlı seç şeridi). ⚠ **PORT KAPSAMI = karar tablosunun 2, 4, 7, 9-13 ve 15-24. satırları** + iki yeni RPC (`list_outgoing_friend_requests`, `my_frequent_opponents`, canlıda hazır). Sıra: karşılama (web, ✅ kodlandı) → Setup (YALNIZ web) → ≥2 hafta web verisi (iOS kontrol grubu) → Setup port yarısı + tanıtım (web+port aynı PR) aynı trende, en erken 19 Ekim → `IntroScreen` (port) |
+| | #40 | Cihaz · Cihaz Markası kartları uygulamayı da görsün | **2 haftalık trene alındı** (27 Eyl, kullanıcı kararı). Port `device_visits`e HİÇ yazmıyor, `guest_visits`e de `os_version`/`device_model` null (`visits_api.dart` başlığı: `device_info_plus` yok). İş: paketi ekle, iki alanı doldur, `device_visits`e yaz. ⚠ Gelince iki kartın `PlatformTag kind="web"`ini kaldır; Play Data safety / App Store gizlilik beyanını kontrol et (cihaz modeli yeni veri türü mü) |
+| | #26 | Web → mağaza yönlendirmesi: kalan iki satır | Android'de uygulaması yüklü misafir (`asset_statements`, mobil) · manifest `related_applications` (ÖLÇMEDEN AÇMA) |
+| | #42 | Uygulama içi puan isteği (App Store + Play) | **30 Eyl 2026, kullanıcı kararı: #41 (tasarım) yayına girdikten SONRAKİ bir trene.** App Store'da hiç yorum yok. Kendi uygulamana yorum yazmak YASAK (Review Guidelines 5.6, geliştirici hesabı riski), bu yüzden ilk yorumların yolu işletim sisteminin kendi penceresi: `in_app_review` paketi (iOS `SKStoreReviewController` — yılda en fazla 3 gösterim, Apple kısıtı; Android In-App Review API). Tetik bir KAZANÇ anında (ör. 3.-5. biten oyun ya da bir galibiyet sonrası), tanıtımda/ilk oyunda ASLA. Karar `utils/onboarding.ts` desenindeki gibi saf fonksiyonda. Web'de karşılığı yok (yalnızca port). Gelen yorumlara ASC'de `Kelimeki Destek` adıyla cevap verilebilir |
+| **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅; `admin_ai_balance` seviye kırılımı (Kolay ~%30 · Normal ~%51 · Zor ~%70) |
+| | #18 | `submit_move` puan hakemliği | GÖLGE FAZINDA (`move_shadow_diffs`) |
+| | #14 | Uzun modal listeleri tembel inşa | Eşiğe bağlı izleme |
+| **Güvenlik** | #21 | Advisor gürültüsü + Auth ayarları | Kısmen yapıldı |
+| | #22 | `feedback` hız sınırı XFF ile atlanabilir | Açık, ölçülmedi |
+| **Ertelendi (kullanıcı kararı)** | #32 | E-posta onayı bir kullanıcı kaybı kapısı | "Daha sonra bakalım" (20 Eyl) |
+| | #39 | Takma isim değişince geçmiş oyunlarda eski isim | "Sonra bakılacak" (23 Eyl) |
+| | #17 | Google ile giriş/kayıt | Sunucu → web → mobil; migration BLOKER |
+| **İsteğe bağlı** | #5 | k-lig puan grafiği | — |
+| | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
 
-⚠ **"Console (elle)" satırı 31 Ağustos'a kadar BAYAT kaldı** — dört maddesi
-de aslında 25-26 Ağustos'ta bitmişti ve bu tablo onları hâlâ "kullanıcıda"
-gösteriyordu. Kullanıcı akşam "formları şimdi güncelleyelim" dediğinde
-yapılacak iş olmadığı anlaşıldı. Tek tek:
-
-| Satırın dediği | Gerçek |
-|---|---|
-| Data deletion → "uygulama içi yol VAR" seçimi | **Böyle bir form alanı YOK.** Silme sorusunun cevabı `Evet → kelimeki.com/hesap-silme/` ve öyle kalıyor; Play'in uygulama içi şartı bir form alanı değil, uygulamanın KENDİSİNDE aranan politika şartı — 372'de karşılandı. `marketing/play-store/console-formlari.md` §3.8 bunu 26 Ağustos'ta "ENGEL KALKTI, beyanda değişen bir şey YOK" diye kapatmıştı |
-| Kategori (Oyunlar → Kelime) | ✅ Games → Word, 25 Ağustos |
-| İletişim e-postası | ✅ `destek@kelimeki.com` |
-| Web sitesi | ✅ `https://kelimeki.com` |
-
-**Ders:** bir işin kaydı İKİ yerde durursa (burada özet tablo, orada cevap
-kâğıdı) biri kapanırken öteki kapanmıyor. Bu tablo bir İNDEKS — bir kova
-kapandığında kaynağı `console-formlari.md`'dir, karar oradan okunur.
+**Madde numarası kuralı (26 Eylül 2026):** yeni madde **bir sonraki boş
+numarayı** alır — şu an **#42**. Numara hiçbir zaman yeniden kullanılmaz,
+kapanmış (arşivdeki) maddelerinki de. 26 Eylül'de iki AKTİF çakışma
+bulundu ve sonradan gelen maddeye yeni numara verildi: tahta yükseklik
+bütçesi **#26 → #38** (mağaza yönlendirmesi #26 olarak kaldı; kodda ve
+dokümanlarda onun atıfı çok daha fazla) ve takma isim geçmişi
+**#36 → #39** (#36 Huni v2'nin gizlilik metni, kapalı, arşivde).
+⚠ Arşivde eski, KAPALI çakışmalar da var (madde 24 = FAZ C ↔ onboarding;
+25 = iPad manzarası ↔ bugünkü #25; hata avı geçişinin #23-#25'i) —
+atıflar kırılmasın diye bilerek dokunulmadı; arşivde bir numara ararken
+başlığa da bak.
 
 ### Sonra / bloke
 
-**#26 — Tahtanın yükseklik bütçesi PORTA da gerekli** → ⏳ **AÇIK, freeze'i
-bekliyor** (22 Eylül 2026; web yarısı `main`'de).
+**#38 — Tahtanın yükseklik bütçesi PORTA da gerekli** (26 Eylül 2026'ya kadar
+**#26** numarasını taşıyordu — mağaza yönlendirmesiyle çakışıyordu; arşivde,
+`touch-ux-bugs.md`de ve `board_widget.dart` yorumunda eski adıyla geçer) →
+⏳ **PORT YARISI TASLAK PR'DA — 5 Ekim kesimini bekliyor** (27 Eylül 2026;
+dal `claude/roadmap-38-board-widget-port-74tu7z`, `[Sonraki sürüm]`). Üç
+kalemin üçü de yapıldı (aşağıdaki listede ✅); merge edilince madde
+arşive taşınır. Ayrıntı: `mobile/docs/parca-log.md` → Parça 215.
 
 ⚠ **Sıra: #611 merge edilmeden BAŞLAMA** (23 Eylül 2026). #611 (filigran
 tavanı, #609'un port ikizi, merge turunun dokuzuncusu) da
 `board_widget.dart`e dokunuyor ve tavanı bu maddenin ön koşulu olarak
-yazıldı; #26'yı onun üstüne kur, yan yana değil.
+yazıldı; #38'i onun üstüne kur, yan yana değil. (#611 25 Eylül merge
+turunda girdi, 1.1.1'de yayında — ön koşul sağlandı.)
 
 Kullanıcı bildirdi: *"Kelimeki'yi Samsung katlanabilirde denedim, tahta yatay
 iPad gibi görünüyordu, raf ve butonlar ekranın altında kalıyordu. Görmek için
@@ -147,13 +154,33 @@ taşma).
 **Web yarısı yapıldı** (`src/utils/boardFit.ts` + `Board.tsx` + kapısı
 `tests/board-fit.spec.ts`; kullanıcı kararı: *"Sadece web'de yap"*). Kalan:
 
-- **Port ikizi** — `mobile/app/lib/src/ui/game/board_widget.dart` aynı deseni
+- ✅ **Port ikizi** (27 Eylül 2026, `ui/game/board_fit.dart`; üç sabit
+  web'den BİREBİR, `board_fit_test.dart` web kaynağını okuyup kilitliyor).
+  Ölçüldü: önce PAS GEÇ'in altı üç görünümde de 985 (217 · 165 · 185 px
+  taşma), sonra 765 · 817 · 797 — web'le AYNI tahta boyu. Portun başlığı
+  web'inkinden 25 px uzun ama web formülünün kendi payı onu yutuyor
+  (portta 3 px pay kalıyor). ⚠ Canlı ekranda sıra RAKİPTEYKEN bekleme
+  bandı PAS GEÇ'i 9 px taşırıyor — butonlar o an pasif, bilerek kabul
+  (porta özel terim tahtayı web'den küçük çizerdi). Eski metin:
+  `mobile/app/lib/src/ui/game/board_widget.dart` aynı deseni
   taşıyor (`MediaQuery.sizeOf(context).width` + `aspectRatio: 1`, yükseklik
   bütçesi yok). ⚠ **Ölçülmedi**, yalnızca kaynaktan okundu; işe başlarken
   önce cihazda ya da bir Flutter testinde ölçülmeli. Ölçüler
   `boardFit.ts`teki üç sabitten gelmeli (301 krom · 680 tavan · 324 taban) —
   web↔port ayrışırsa iki platform aynı tahtayı iki boyda çizer.
-- **`LandscapeHint` ikizi** — web'de kural `(orientation: landscape)`ten
+- ✅ **Taş puntosu da tahtaya bağlanmalı** (27 Eylül 2026: `TileWidget
+  .boardGridWidth` + X3 etiketi, oranlar `index.css`ten kilitli). Eski
+  metin: (26 Eylül 2026) — web'de yükseklik
+  bütçesi tahtayı küçültünce taş harfi `vw` tavanında (24 px) kalıp hücreyi
+  taşırdı (iPad Safari'de ölçüldü: %128). Web'in düzeltmesi `index.css` →
+  `.tile-board-letter` (`5.08cqw` / puan `2.18cqw`, ızgaranın iç genişliği).
+  Port `tile_widget.dart` bugün `fluidSize(screenWidth…)` — tahta
+  yükseklikten boyutlanmaya başladığı anda aynı hata porta gelir.
+  Ayrıntı: `docs/decisions/components.md` → "Taş harfi/puanı tavanı".
+- ✅ **`LandscapeHint` ikizi — BİLEREK YOK** (27 Eylül 2026): web'in
+  bloğu yalnızca TELEFONDA çıkıyor, portta telefon portre kilitli; kilidin
+  tutmadığı iPad/açık katlanabilir web'de de bloklanmıyor. Gerekçe
+  `main.dart`in kilit yorumunda. Eski metin: web'de kural `(orientation: landscape)`ten
   YÜKSEKLİĞE taşındı (eski kural açık katlanabilirde de tetikleniyor ve
   *"dikeye dön"* orada yanlış tavsiye oluyordu). Portun karşılığı varsa aynı
   ölçüte geçmeli.
@@ -206,11 +233,12 @@ düşünmek lazım"* → aynı gün: *"Şu anda mobilde 7 update var. Bu zaten
 oldukça fazla. Roadmap'e yaz, daha sonra bakalım."*). İki saha vakası, yedi
 alternatif, önerilen sıra ve dondurma uyumluluğu aşağıda, #32'de.
 
-**#33 — gizlilik metnindeki "dört durumda" sayısı** → ✅ **KAPANDI** (25 Eylül
-2026, PR #626 ile; metin artık "yedi"). Arşivde: `docs/decisions/roadmap-arsiv.md`.
-
-**#34 — Canlı sohbet okundu bilgisinin PORT yarısı** → ⏳ **AÇIK — dondurma
-kalktı (25 Eylül 2026), sıradaki mobil işlerden** (23 Eylül 2026; web yarısı #610 ile `main`'de).
+**#34 — Canlı sohbet okundu bilgisinin PORT yarısı** → 🚆 **TRENDE — taslak
+PR (26 Eylül 2026), 5 Ekim kesiminde merge** (23 Eylül 2026; web yarısı #610 ile `main`'de).
+Port yarısı yazıldı: `util/chat_read.dart` (web'in sekiz vakası
+`chat_read_test.dart`te birebir) + `ChatRepo.chatLastReadAt`/`markChatRead`
++ `online_game_screen.dart`. Ayrıntı: Parça 216. Aşağıdaki metin işin
+ÖNCEKİ tarifi; madde 1.1.2 sahaya inince arşive gider.
 
 Okundu damgası artık sunucuda (`online_game_chat_reads` +
 `mark_online_game_chat_read` RPC'si), ama uygulama hâlâ yalnızca cihazdaki
@@ -250,8 +278,9 @@ notu ve `docs/decisions/admin-panel.md`. Port da yazmaya başlayınca oran
 yine AYNI tablodan kurulabilir, `profiles`a geçmeye gerek yok. `mobile/app/`
 dosyası olduğu için mobil derlemeyi tetikler, merge turu bitince yapılır.
 
-**#36 — Takma isim değişince geçmiş oyunlar ESKİ ismi göstermeye devam
-ediyor** → ⏳ **AÇIK, sonra bakılacak** (23 Eylül 2026, kullanıcı: *"Geçmiş
+**#39 — Takma isim değişince geçmiş oyunlar ESKİ ismi göstermeye devam
+ediyor** (26 Eylül 2026'ya kadar **#36** numarasını taşıyordu — Huni v2'nin
+gizlilik metniyle çakışıyordu) → ⏳ **AÇIK, sonra bakılacak** (23 Eylül 2026, kullanıcı: *"Geçmiş
 oyunları da yeni isme döndürmek mantıklı gözüküyor ama bu anlık olabilecek
 bir değişiklik değil… roadmap'e koyalım"*).
 
@@ -283,77 +312,10 @@ Hesap silme de aynı jsonb'yi İSİMDEN eşleyerek yeniden yazıyor
 (`delete_account_cascade` → `name`i "Silinmiş oyuncu" yapar); (a) seçilirse
 o da kimliğe geçmeli, (b) onunla aynı kırılganlığı taşır.
 
-**#8** (FAZ A1 Bölüm 6 — Paylaşma, iPad popover)
-✅ **KAPANDI** 3 Eylül 2026 — hata bulunup düzeltildi ve Appetize/iPad'de
-doğrulandı; arşivde.
-**#11** (hata panelinde platform filtresi) ✅ **KAPANDI** 31 Ağustos 2026
-— bu satır 2 Eylül'e kadar onu hâlâ bekleyen iş gibi gösteriyordu, oysa
-aynı gün yukarıdaki özet tablo ✅ diyordu (kaydın iki yerde durması).
-**#12** (sürüm dağılımı kapsamı) ✅ **KAPANDI** 31 Ağustos 2026 — bkz.
-arşivde "Faz 6".
-**#15 — uygulama öne gelince bildirim panelini temizle** → ✅ **KOD TAMAM**
-(31 Ağustos 2026), sıradaki mobil sürümle çıkar. Ayrıntı arşivde: "Faz 6".
-**iOS/App Store** → ✅ **KAPANDI** (15 Eylül 2026, `1.1.0 (665)` yayında);
-**#24 FAZ C** arşivde. Push tasarımı bilerek FCM üzerinden
-yazıldığı için **ikinci bir gönderici YAZILMAYACAK** — bu karar duruyor ve
-sunucu tarafı ölçülünce zaten iOS-hazır çıktı (`apns-collapse-id` yazılmış,
-`push_tokens.platform` `'ios'` kabul ediyor; kanıtlar #24.0'da). ⚠ Bu satır
-uzun süre kalan işi *"APNs anahtarını yükle + Push capability"* kadar
-gösterdi; ölçüm daha büyük çıktı (imzalama zinciri, entitlements, AASA,
-vitrin) — tahmin, kaynak okunarak düzeltildi.
-
-**#36 — Huni v2'nin gizlilik metni yarısı** → ✅ **KAPANDI** (25 Eylül 2026,
-PR #626: metin (6)+(7), port kopyası, `FUNNEL_MEMBER_EVENTS_ENABLED = true`).
-Arşivde: `docs/decisions/roadmap-arsiv.md`. Huni v2'nin MOBİL yarısı (PR 2,
-`docs/decisions/funnel-v2.md`) hâlâ açık.
-
 ## Dondurulmuş port PR'ları — merge turu ✅ TAMAMLANDI (25 Eylül 2026)
 
-On PR tek günde, sırayla merge edildi: **#565 → #562 → #579 → #576 → #554
-→ #557 → #547 → #601 → #611 → #626**. Her birinde `main` dala birleştirildi
-(çakışmaların hepsi `ROADMAP.md`/`parca-log.md`/`mobile/TESTING.md`
-eklemesiydi, bir de beklenen `games_api.dart` satırı), CI'ın yedi/dokuz
-kontrolü (iOS derlemesi dahil) yeşilken squash edildi. Sıra planı, dal ↔ PR
-eşlemesi ve çakışma ölçümleri arşivde: `docs/decisions/roadmap-arsiv.md` →
-*"Dondurulmuş port PR'ları — merge turu SIRASI"*.
-
-Turda alınan üç karar (kayıt için):
-- **#601'in WEB yarısı merge'e girmedi** — #621/#622/#625 Kaynak Hunisi'ni
-  bu arada "Kanal → Üye Kalitesi"ne indirmiş, `app`i "Mobil Uygulama"
-  kanalına zaten eşliyordu. Port damgası + iki migration girdi (gerekçe:
-  `docs/decisions/admin-panel.md` → "Port kaynak damgası (#601)").
-- **Numara çakışmaları:** `mobile/TESTING.md` #547 → §31, #601 → §32;
-  `parca-log` #601 → Parça 214 (205 #547'nindi).
-- **`mobile-build` `cancel-in-progress`**: arka arkaya merge'lerde `main`'in
-  önceki derlemesi iptal olur, yani TestFlight'a her PR için ayrı build
-  GİTMEDİ; bağlayıcı olan SONUNCUSU (`fe3a25b`).
-
-### Tur sonu TEST PLANI — son derleme üzerinde, BİR kez (23 Eylül 2026)
-
-Kullanıcı kararı: dokuz PR tek sürümle çıkıyor, test her merge'de değil
-SON derlemede yapılır. Sürüm "tamam" sayılmadan ÖNCE üçü birden:
-
-1. **Son `main` commit'inde CI yeşil** (web CI'ın `parite` işi dahil) **ve
-   son `mobile-build` koşusu BÜTÜN adımlarını bitirmiş** — CI yeşilken
-   TestFlight yüklemesi ya da `.aab` imzası ayrıca düşebilir.
-2. **Android `.apk` ile tam tur** — dokuz PR'ın `mobile/TESTING.md`
-   maddeleri. Sekiz PR (#565 #562 #579 #576 #554 #547 #601 #611) yalnızca
-   ortak Dart kodu değiştiriyor, yani APK'da doğrulanan iOS'ta da doğrudur.
-3. **iPhone'da (TestFlight) KISA kontrol — yalnızca #557 için:** #557
-   APK'nın hiç taşımadığı iOS dosyalarına dokunuyor (`Info.plist` +
-   `Runner.xcodeproj` → paket dili `tr`; `flutter_localizations` → iOS'ta
-   metin seçme menüsünü Cupertino çiziyor). Uygulama açılıyor mu, metin
-   seçme menüsü Türkçe mi, kısa bir duman turu. Tam listeyi iOS'ta
-   TEKRARLAMA.
-
-⚠ Sunucuya dayanan PR'larda (ör. #601 huni damgası) ilgili migration/Edge
-Function'ın CANLIDA olduğunu da doğrula — istemci alanı gönderir, sunucuda
-karşılığı yoksa sessizce düşer. Adım adım test listesi tur sonunda,
-derleme hazır olunca verilecek.
-✅ Liste hazır (25 Eylül 2026): `mobile/docs/testing-1-1-1-turu.md`.
-✅ #601'in iki migration'ı canlıda (`list_migrations`, 25 Eylül 2026).
-⚠ **Test, 1.1.1 derlemesi üzerinde koşulur** — 1.1.0 numaralı tur
-derlemeleri TestFlight'a yüklenemedi (`mobile/docs/surumler.md` → "1.1.1").
+✅ **1.1.1 İKİ MAĞAZADA YAYINDA (26 Eylül 2026) → ARŞİVDE** (`docs/decisions/roadmap-arsiv.md`,
+aynı başlık; tur kararları ve "Tur sonu TEST PLANI" dahil).
 
 ## Sürüm sıralaması, force update ve davetliler (27 Ağustos 2026)
 
@@ -381,41 +343,78 @@ nereden okunacağı ve kartın "12" tavanı orada.
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
-⚠ **DURUM (25 Eylül 2026): İKİ MAĞAZADA `1.1.0 (665)` = `9c62289`.** App
-Store 15 Eylül'de, Play production (#19) 24 Eylül'de yayına aldı; senkron
-kapandı (`mobile/docs/surumler.md` → "1.1.0 (665)"). Aşağıdaki tablo
-merge turunun (25 Eylül) on PR'ı — `main`'de, mağazada YOK. Kullanıcı
-kararı: Play'e yeni paket hemen gönderilmez, önce canlıdaki 665 birkaç gün
-izlenir (~27-28 Eylül); iOS aynı paketle gider. Önceki durum paragrafları
-(12 Eylül: 659/665 senkronu) arşivde.
+⚠ **DURUM (26 Eylül 2026): İKİ MAĞAZADA `1.1.1 (723)` = `8c1828f`.**
+Play production (#21) 16:13'te gönderildi, 16:42'de yayında; App Store aynı
+gün elle `Release This Version` ile yayına alındı — senkron kapandı
+(`mobile/docs/surumler.md` → "1.1.1"). 1.1.1'e binen 13 satır arşivde.
+Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
+**5 Ekim 2026** — 28 Eylül kullanıcı kararıyla atlandı, `surumler.md` →
+"SÜRÜM TRENİ").
+
+⚠ **Tren incelemesi (1 Ekim 2026, ajan; kesimden önce OKU).** 17 taslak
+`[Sonraki sürüm]` PR + #675. `main` ile durum (yerelde deneme merge'ü):
+
+| Durum | PR'lar |
+|---|---|
+| Temiz | #642 · #649 · #655 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
+| Çakışma — yalnız doküman | #637, #640 (`ROADMAP.md`) · #647 (`CLAUDE.md`) · #659, #709 (`docs/decisions/funnel-v2.md`) |
+| Çakışma — KOD | #651 (`ROADMAP.md` + **`src/components/AdminDashboard.tsx`**) |
+
+- **Sıra bağımlılığı:** #709, #659'un ÜSTÜNE kurulu (önce #659).
+- **#655 YEŞİL (1 Eki).** 27 Eyl'de düşen web `test`i (`board-fit.spec.ts`)
+  RASTGELEYDİ: raftaki ilk taş joker çıkınca "Joker Hangi Harf" penceresi
+  açılıyor, harf tahtada belirmiyor (yerelde 56 koşuda 1). Düzeltme
+  `main`'de zaten var (test joker olmayan taşı seçiyor, 27 Eyl); #655'e
+  `main` merge edildi. Web yarısı #654 `main`'de olduğundan diff artık
+  yalnız port + doküman (web CI tetiklenmiyor). Başı `72f0e63`: Analiz +
+  testler · Android APK · iOS · Bütçe yeşil, çakışma yok.
+- **Aynı dosyaya dokunanlar (kesimde metin çakışması beklenir):**
+  `online_game_screen.dart` 7 PR (#637 #640 #642 #649 #657 #670 #687) ·
+  `auth_modal.dart` 5 (#640 #642 #651 #659 #709) · `game_screen.dart` 4
+  (#642 #657 #670 #716) · `games_api.dart` 3 (#651 #659 #709) ·
+  `pubspec.yaml` 3 (#647 #659 #709). Her merge'den sonra sıradakine `main`'i
+  merge et, `flutter test` koş.
+- **#721 kapatıldı** — #651'in tekrarıydı (`tutorial_events.anon_id`).
+- **#675 taslak DEĞİL ve `main`'e girmemiş iş taşıyor** (başka oturum, 28-29
+  Eyl): kampanya kütüğünün 29 Eyl ara kesitleri (00:13 · 09:56 · 10:09 kare
+  teşhisi · 10:14 yerleşim kırılımı · 10:25 kare duraklatıldı · 17:51 · 18:00
+  · 18:03), `kare` v2 sade görselleri (iki PNG) + `scripts/play-lansman`
+  değişikliği + `marketing-assets.md`. Mobil dosyası YOK → trenle ilgisiz,
+  kütük çakışması çözülüp HEMEN merge edilebilir. → **1 Eki MERGE EDİLDİ**
+  (kullanıcı onayı; kütük kronolojik birleştirildi, iki mükerrer satır
+  elendi). Aynı gün dal temizliği gerçek modda koştu: #675 ve #721'in dalları
+  silindi, uzakta yalnızca açık PR'ı olan dallar kaldı.
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
 değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
 derleme sha'sını `main`'in başıyla karşılaştır.
 
-**Yayındaki paket:** 1.1.0 (665) = commit `9c62289` (#533). Doğrulama:
-`git log --oneline 9c62289..origin/main -- mobile/app mobile/kelimeki_core`
-(25 Eylül'de tam olarak aşağıdaki on PR'ı veriyor).
+**Yayındaki paket:** 1.1.1 (723) = commit `8c1828f` (#632). Doğrulama:
+`git log --oneline 8c1828f..origin/main -- mobile/app mobile/kelimeki_core`
+(26 Eylül'de BOŞ — sonraki trenin işleri henüz taslak PR'da, `main`'de değil).
 
-**YAYINDAKİ PAKETTEN (665, `9c62289`) SONRA porta dokunan işler — sıradaki
+**YAYINDAKİ PAKETTEN (723, `8c1828f`) SONRA porta dokunan işler — sıradaki
 sürümün içeriği:**
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
-| (15 Eyl) | **YZ robot avatarı iPhone/iPad'de ortalı değildi** | ⚠ **SÜRÜME BİNİYOR:** `ui/game/player_avatar_row.dart`. Apple Color Emoji'nin mürekkebi kendi kutusunda ortalı değil (advance ≈ 1,26 em, mürekkep 1,0 em ve sola yaslı); `Container(alignment: center)` kutuyu ortalıyor, mürekkebi değil. Kullanıcının ekran görüntüsünden daire maskesiyle ÖLÇÜLDÜ, dört yalıtık robotta birebir: **yatay −0,131 em · dikey +0,083 em**. Telafi aynı değerin tersi, YALNIZCA Apple platformlarında (Linux/Noto ölçümü 0,00 em → Android'de sapma yok). Kapı: `avatar_emoji_nudge_test.dart` (3 test; ⚠ piksel ölçmez — cihaz maddesi `mobile/TESTING.md` §29). **858 test yeşil**. Web ikizi bilerek dışarıda (ölçülmedi, telafisi CSS'e girer). Kayıt: Parça 210 |
-| (15 Eyl) | **App Store ürün sayfası dili "EN English" görünüyordu** | ⚠ **SÜRÜME BİNİYOR:** `ios/Runner/Info.plist` + `Runner.xcodeproj/project.pbxproj`. Apple bu satırı Connect'ten değil PAKETTEN okuyor (`CFBundleLocalizations`, yoksa `CFBundleDevelopmentRegion`); ikisi de `flutter create` varsayılanındaydı (`en`). Artık `tr`. ⚠ Yalnızca YENİ derleme işlenince etkisini gösterir; Connect'te tıklanacak düğme yok. ⚠ Uygulama İÇİ yerelleştirme ayrı iş ve AYNI GÜN yapıldı: `flutter_localizations` + `MaterialApp` delegeleri + `supportedLocales: [tr]` (Parça 209) — öncesinde metin seçme menüsü/semantik etiketler İngilizceydi; `GlobalCupertinoLocalizations` olmadan hata YALNIZCA iPhone'da görünürdü. Kapı: `test/localization_test.dart` (3 test, ikisi duyarlılık kanıtlı); **855 test yeşil**. Kayıt: Parça 208-209 + `marketing/app-store/console-formlari.md` §17 |
-| (15 Eyl) | **Oyun ORTASINDA giriş: ad "Misafir" kalıyor + bulutta HAYALET "Devam Eden Oyun"** | ⚠ **SÜRÜME BİNİYOR:** `game/game_session_host.dart` (YENİ) + `ui/setup/setup_screen.dart`. Kullanıcı cihazda bildirdi (1.1.0/665, `Derleme 9c62289`): bitiş ekranı "Misafir" diyor, Setup'ta aynı oyun girişin yapıldığı ANIN skorlarıyla listede kalıyor. Kök sebep web'de VAR olan iki effect'in portta hiç yazılmamış olması (mid-game `RENAME_PLAYER` + autosave hedefinin `user`a bağlı olması); ayrıca Setup'ın auth dinleyicisi oyun ekranı açıkken `migrateGuestSave` koşturup ikinci satırı doğuruyordu (kapı: `_gameRouteOpen`). **Web'de değişiklik YOK.** Kapılar: `game_session_host_test.dart` (5 test) + `setup_screen_test.dart` → "oyun ekranı AÇIKKEN giriş… TEK bulut satırı"; duyarlılık iki yönde de kanıtlandı; **852 test yeşil**. Kayıt: Parça 207 + `docs/decisions/local-game-persistence.md`. Cihaz maddesi: `mobile/TESTING.md` §28 |
-| (13 Eyl) | **Ham hata metinleri kullanıcıya gösteriliyordu** — `{"message":"Gateway Timeout"}` | ⚠ **SÜRÜME BİNİYOR:** yeni `util/error_message.dart` + sekiz çağrı yeri (`auth_modal` · `reset_password_modal` · `account_settings_modal` · `delete_account_modal` · `chat_modal` · `feedback_modal` · `online_game_screen` · `friends_api`) + `main.dart` (telemetri bağı). Kullanıcı App Store ekran kaydı çekerken giriş penceresinde YAKALADI. Web ikizi aynı PR'da (`src/utils/errorMessage.ts` + `api.ts`'te 45 satır `rethrowSupabase`e çevrildi — SQLSTATE yolda düşüyordu). ⚠ Sunucunun Türkçe redleri (P0001: "Sıra sende değil.") KORUNUYOR, en büyük regresyon riski oydu. Kapılar: `npm run verify-error-messages` (66 kontrol) · `error_message_parity_test.dart` (22 test); **868 test yeşil**. Kayıt: `docs/decisions/telemetry.md` → "Ham hata metni" |
-| (16 Eyl) | **Oyun bitiş telemetrisine `platform` damgası** | ⚠ **SÜRÜME BİNİYOR:** `data/games_api.dart` → `logGameFinish` artık `game_finishes`e `'platform': currentPlatform` yazıyor. Web yarısı + sunucu 16 Eylül'de `main`'e girdi (PR: admin paneli açılır tabloları); bu PR o işin **port ikizi** ve kullanıcı kararıyla AYRI bırakıldı — *"Mobile dokunma"*, inceleme dondurması sürüyor. Admin panelindeki "Oyun Sayısı" grafiğinin platform kırılımını (Web/iOS/Android/Diğer) besleyen tek alan — **bu PR merge edilene kadar app'ten biten her oyun "Diğer" kovasında görünür**, sunucu tarafı hazır olmasına rağmen. Kolon + geriye doldurma canlıda uygulandı (`20260916054513_game_finishes_platform`; geçmişin %71'i `games`ten kurtarıldı). Davranış değişikliği YOK, yeni izin/veri sınıfı YOK (`games.platform` aynı değeri zaten aylardır yazıyor). Kararlar: `docs/decisions/admin-panel.md` → "Açılır tablolar + üç grafiğin kaldırılması"; cihaz maddeleri `docs/testing-admin.md` §9.17 |
-| (16 Eyl) | **Kayıt onayı: kırmızı uyarı BÜYÜK+kalın · onay linki pencereyi kapatıyor** — port yarısı | ⚠ **SÜRÜME BİNİYOR** (⛔ PR henüz merge EDİLMEDİ — Play production incelemesi/665 dondurması): `ui/auth/auth_modal.dart` (mesajın eylem cümlesi `Text.rich` ile kalın+BÜYÜK; `AuthService` dinleyicisiyle oturum açılınca pencere kendini `pop` ediyor) · `app/test/signup_test.dart` (İKİ yeni widget testi). **Web yarısı AYRI PR (#561) ve merge edildi**, yani hata web'de düzeldi, mobilde ancak bu sürümle düzelir. ⚠ Port farkı bilinçli: web'de pencere bir BİLEŞEN (efekt kapatıyor), portta bir ROTA — kapanma yalnızca *"oturum yokken açıldı"* geçişinde tetikleniyor (`_oturumVardi`), çünkü mount anında koşulsuz bir `pop` pencereyi değil SAYFAYI kapatırdı (widget testleri modalı doğrudan `Scaffold` gövdesine gömüyor). Duyarlılık kanıtlandı: dinleyici susturulunca yeni test düşüyor. Kayıt: Parça 211, cihaz maddesi `mobile/TESTING.md` §30 |
-| (17 Eyl) | **504 geçici sunucu hatası yeniden denenir + oturum kapısı** | ⚠ **SÜRÜME BİNİYOR:** `util/offline_notice.dart` (`isTransientServerError`) + `data/online_games_api.dart` (`_fetchWithRetry` · `load()` rapor kapısı · gateway `hasValidSession`). Admin panelindeki `client_errors` yığılmasından çıktı: 62 kaydın 11'i `online_games_repo.load` → 504 (android 9 · ios 2, 8 cihaz). Sunucu ELENDİ (aynı RPC en ağır kullanıcıda 12,7 ms), kusur sınıflandırmadaydı — 504 taşıma kalıplarına uymadığı için tekrarlanmıyor ve telemetriye düşüyordu. İkinci iş: oturumu düşmüş istemcinin yetki hatası artık raporlanmıyor (web `reportLiveListError` paritesi); oturum VARKEN gelen aynısı raporlanmaya devam ediyor. Web yarısı 17 Eyl'de `main`'e girdi (#578). Kapı: `live_games_test.dart` dört yeni vaka, duyarlılığı kanıtlandı |
-| (16 Eyl) | **Zoom tanıtım balonu 4 sn sonra kendi kendine kapanır** | ⚠ **SÜRÜME BİNİYOR:** `ui/game/board_zoom.dart` (`kZoomHintAutoHide`) + iki oyun ekranı (`game_screen.dart` · `online_game_screen.dart`). Oyuncu bildirdi: *"tanıtımdan sonra zoom özelliği için sürekli kalan uyarı mesajı oyun oynamayı zorlaştırıyor... 3-5 saniye sonra gidecek şekle getirelim. İnsanlar okumuyor."* Öncesinde balonu kapatan TEK şey zoom'u denemekti. ⚠ Kapanma **"denedi" SAYILMAZ** (`markZoomTried` çağrılmaz), yani tavan 2 kuralı DEĞİŞMEDİ — denemeyen oyuncu balonu ikinci açılışta yine görür. Web yarısı ayrı PR'da (`ZOOM_HINT_AUTO_HIDE_MS`, aynı gün `main`'e girdi); bu PR port ikizi ve inceleme dondurması yüzünden AYRI bırakıldı. Kapı: `zoom_hint_test.dart` → "balon KENDİ KENDİNE kapanır" (erken kapanmayı da ölçüyor) |
-| (14 Eyl) | **Taş değiştirme sınırı: torbada kalandan fazlası değiştirilemez** — port yarısı | ⚠ **SÜRÜME BİNİYOR** (⛔ PR henüz merge EDİLMEDİ — mağaza incelemesi/665 dondurması): `kelimeki_core/lib/src/constants.dart` (`maxSwapCount` + `swapLimitMessage`) · `kelimeki_core/lib/src/engine/reducer.dart` (seçim anı + `_confirmSwap` ikinci kapısı + `_aiPlay` dilimi) · `app/test/swap_limit_parity_test.dart` (YENİ) · `kelimeki_core/test/run_all.dart` (`testSwapLimit`). Kullanıcı raporu (Asnmzr): torbada 4 taş kalmışken 7 taş değiştirilebiliyordu. ⚠ **Web + sunucu yarısı AYRI PR (#553) ve sunucu ZATEN CANLIDA** (migration `20260914152808` + `play-ai-turn` v10) — yani **Canlı oyun eski pakette bile doğru davranıyor, YEREL oyun ancak bu sürümle düzeliyor**. Golden vector'lar DEĞİŞMEDİ (mevcut senaryoların hiçbiri bu yola girmiyordu); Dart core 6883 → **6890** kontrol, duyarlılık düzeltme geri alınarak kanıtlandı (5 hata). Kayıt: Parça 206, cihaz maddesi `mobile/TESTING.md` §27 |
-| (22 Eyl) | **Kaynak Hunisi'nde app görünür oldu** — huninin DÖRT adımı da damgalanıyor | ⚠ **SÜRÜME BİNİYOR:** `data/device_stamp.dart` (YENİ) · `data/visits_api.dart` (YENİ) · `data/games_api.dart` (`game_starts`/`game_finishes` artık `anon_id`+`utm_source` yazıyor) · `data/auth_service.dart` (kayıtta `utmSource`) · `bootstrap.dart` · `ui/app.dart`. Kullanıcı bildirdi (*"bilinmeyen 1, üye 20 — %2000 conversion not possible"*) ve asıl işi istedi: *"Kaynak belliyse onun altına girecek… bilinmemesi mümkün olmamalı çünkü ya web'den direkt gelmiştir ya da app'den"*. Öncesinde port dört adımın HİÇBİRİNDE damgalamıyordu; app'in tabloya kattığı tek şey 20 damgasız üyeydi. Kaynak `'app'` (deep link'ten gerçek `?ref=` gelirse O kazanır). Web ikizi bu PR'dan DÜŞTÜ: #625 (24 Eyl) `app`i zaten **Mobil Uygulama** kanalına eşliyor ve huniyi Üye Kalitesi kohortuna indirdi; port damgası olmazsa yeni app kayıtları orada `Bilinmiyor`a düşer. Sunucu: `20260922070950_guest_visits_app_rows_out_of_web_breakdowns` CANLIYA UYGULANDI (app satırları web'e özgü iki dökümden eleniyor). ⚠ Gizlilik metni değişmedi — zaten platform-nötr kapsıyor (gerekçe: `docs/decisions/admin-panel.md`). Kapı: `test/source_stamp_test.dart` (9 vaka). Cihaz maddesi `mobile/TESTING.md` §32 |
-| (23 Eyl) | **iPad yatayda filigranlar tahtadan taşıyordu** (köşe rakamı + "X2") | ⚠ **SÜRÜME BİNİYOR:** `ui/game/board_widget.dart` — punto ekran genişliğinden geliyordu, iPad yatayda tahta YÜKSEKLİĞE sığdırıldığı için punto tavanda (220/165) kalırken tahta küçülüyordu. Punto artık tahtanın kendi genişliğiyle de sınırlı (oran web'in 320 px'teki oranı: 0,371 / 0,279), telefonda tavan devreye girmiyor → web paritesi aynen. Web ikizi #609'da CANLIDA (taşma web'de görülmüştü: ana ekran uygulaması, iPad yatay). Portta bugün tahta yalnızca genişlikten boyutlandığı için etkisi Split View'le sınırlı; asıl işlevi **#26'nın (yükseklik bütçesi) ön koşulu** olmak. Kapı: `board_render_test.dart` → "filigran tahtadan taşmaz — iPad yatay" (düzeltme olmadan düşüyor); **847 test yeşil** |
-| (24 Eyl) | **Gizlilik 6. bölüm: Huni v2 üye olayları + "dört → yedi"** (#626, ROADMAP #33 + #36) | ⚠ **SÜRÜME BİNİYOR:** `ui/auth/legal_modals.dart` — web `LegalContent.tsx`in birebir kopyası (metin (6)+(7) + `Son güncelleme` tarihi); `legal_text_test.dart` iki tarafın tarihini karşılaştırıyor. Web yarısı (üye olaylarının bayrağı) merge anında canlı. |
-| (25 Eyl) | **Sürüm 1.1.0 → 1.1.1** (tur sonu PR'ı) | ⚠ **SÜRÜME BİNİYOR:** `pubspec.yaml` + `config/env.dart`. App Store onaylanmış 1.1.0 trenine yeni build almıyor (`90186`/`90062`); turun altı `main` derlemesi TestFlight adımında bu yüzden düştü. Kayıt: `mobile/docs/surumler.md` → "1.1.1" |
+| (26 Eyl, taslak PR) | **Canlı sohbetin okundu bilgisi artık SUNUCUDA — uygulamada okunan web'e, web'de okunan uygulamaya yansıyor** (ROADMAP #34) | ⚠ **1.1.1'DE HATA VAR, sonraki trende düzelir.** `util/chat_read.dart` (YENİ, web `chatRead.ts` ikizi) + `data/chat_api.dart` (`chatLastReadAt`/`markChatRead`) + `ui/live/online_game_screen.dart`; `chat_read_store.dart` yedek kaldı. Kullanıcının vakası: oyun bir cihazda ilk kez açılınca "ilk ziyaret" tohumu yeni mesajları da okunmuş sayıyordu (rozet 0, içeride 2 yeni mesaj). Sunucu tarafı canlıda, migration YOK. Aynı PR'da: tazeleme düşünce sohbet artık SİLİNMİYOR (web ikizi #650). Kapı: `chat_read_test.dart` (11) + `online_game_chat_test.dart` (9 yeni; eski ekranla 5'i düşüyor); app **921 test yeşil**. Cihaz maddesi `mobile/docs/testing-arkadaslar-canli.md` → "Okundu bilgisi cihazlar arasında" |
+| (27 Eyl, taslak PR) | **Tahtanın yükseklik bütçesi — port ikizi (ROADMAP #38)**: açık katlanabilir / yatay iPad'de raf ve butonlar ekranın altında kalmıyor | ⚠ **Sonraki tren.** `ui/game/board_fit.dart` (yeni) + `board_widget.dart` · `tile_widget.dart` · `game_screen.dart` · `online_game_screen.dart` · `tutorial_game.dart` · `main.dart` (yorum). Web sabitleri birebir; taş harfi/puanı ve X3 tahtaya göre tavanlı. Telefon DİKEYDE davranış piksel piksel aynı (testli). Kapı: `board_fit_test.dart` + `online_game_screen_test.dart`; **917 test yeşil**. Cihaz maddesi `mobile/docs/testing-ux-turlari.md` §33 |
+| (30 Eyl, taslak PR) | **Oyun içi ipuçları: vergi/×2-×3/bölge balonları kaldırıldı, yerine "Kelimenin üzerine tıklarsan anlamı gelir."** — web + port AYNI PR | `util/onboarding.dart` + `ui/game/game_screen.dart`: tek ipucu `anlam`, tahtaya kelime oturunca (YZ'nin hamlesi dahil) bir kez — ama ekran açılışından (= zoom balonundan) en az 3 hamle sonra (`onboardingHintMinMoves`); Canlı oyunda YOK (kullanıcı kararı). Kullanıcı kararı (Instagram'dan uçtan uca deneme). Çift tık balonu DEĞİŞMEDİ. `tutorial_parity_test.dart` web kaynağını okuduğundan web yarısı ayrılamadı → PR bütünüyle trende (5 Ekim). Kapı: `tutorial_script_test` + `tutorial_parity_test` (hamle eşiği dahil) yeşil, app **901 test yeşil**, `verify-tutorial-script` yeşil. Kayıt: `docs/decisions/onboarding.md` → "30 Eylül 2026" |
+| (26 Eyl, taslak PR) | **Uçak modunda Canlı oyun mesajı ham `Failed host lookup: '…supabase.co'` gösteriyordu** | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `util/error_message.dart`: makine kalıbına Dart'ın taşıma metinleri eklendi (`Failed host lookup` · `Connection refused/reset/closed/timed out` · `Network is unreachable` · `OS Error`). 1.1.1 cihaz turunda (D, §31 ilk madde) bulundu: `ClientException.message` sınıf adını taşımıyor, `SocketException` kalıbı `toString()`e bakıyordu. Web'de bu metinler oluşmuyor, web değişmedi; kalıp SAYISI parite için aynı (tek regex). Kapı: `error_message_parity_test.dart` üç yeni vaka; **904 test yeşil**. Metin düzeltmesi → acil istisna DEĞİL (`surumler.md` → "SÜRÜM TRENİ") |
+| (26 Eyl, taslak PR) | **Oyun sonunda kendiliğinden açılan "Görüş Bildir" formu kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/game/game_screen.dart` + `ui/live/online_game_screen.dart`: GameOver kapanınca `openFeedback()` artık çağrılmıyor; modalın içindeki "GÖRÜŞ BİLDİR" linki DURUYOR. Kullanıcı: *"Oyun sonlarında çıkan görüş bildir popup'ı kaldıralım artık."* (Parça 48'in otomatik açılışının geri alınması.) Web yarısı AYRI PR, hemen merge. Kapı: `game_screen_test.dart` + `online_game_screen_test.dart` ters çevrildi (form AÇILMAZ); **904 test yeşil**. Cihaz maddesi `mobile/TESTING.md` "Kapatmak formu AÇMAZ" |
+| (26 Eyl, taslak PR) | **Kayıt sonrası satır: "Hesap oluşturuldu." kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/auth/auth_modal.dart`: satır artık yalnızca *"LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN."* (tamamı kalın). Kullanıcı: insanlar hesabın hazır olduğunu sanıyor. Web yarısı #644. Kapı: `signup_info_parity_test.dart` (web kaynağını OKUR). Cihaz maddesi `mobile/TESTING.md` §30 |
+| (26 Eyl, taslak PR) | **YZ taş değişimi elde kalan taşları siliyordu + daha açık mesaj** — port yarısı | ⚠ **1.1.1'DE DE VAR, sonraki trende düzelir.** `kelimeki_core/lib/src/engine/reducer.dart` `_aiPlay`: torba 7'nin altındayken hamle bulamayan YZ `maxSwapCount` kadar taş değiştirip rafını yalnızca yeni çektiklerinden kuruyordu → elde kalan taşlar oyundan siliniyordu (torba 4 → raf 7'den 4'e). Raf artık elde kalanlar + yeni çekilenler; mesaj insan/Canlı ile aynı: *"<ad> <n> taş değiştirdi ve sırasını kullandı."* Yalnızca yerel YZ oyunu (Canlı'da rafı `submit_move` kuruyor). Web yarısı #645 (canlıda). Kapı: `run_all.dart` `testSwapLimit` (yeni blok) + golden `reducer_crafted_ai_exchange.json` yeniden üretildi; Dart core **0 hata**, app **907 test yeşil**. Vaka: `docs/decisions/game-rules.md` |
+| (27 Eyl, taslak PR) | **Zoom ipucu balonu: kısa metin + SOL-ALT bloğun boş karesini gösteriyor** — port yarısı | ⚠ **Sonraki tren.** `ui/game/board_zoom.dart` (`kZoomHintText` + `zoomHintTarget`) + `ui/game/board_widget.dart` (`_zoomHintBubble`). Kullanıcı: *"X3 üzerine göstermesi kafa karıştırıyor"*; yeni metin *"Boş kareye çift tık tahtayı büyütür. Şimdi Dene!"* (iki satır). Web yarısı AYRI PR, hemen merge — port PR'ı o merge'e BAĞLI (`zoom_hint_test.dart` metni web'in `ZOOM_HINT_TEXT`inden okuyor). Metin düzeltmesi → acil istisna DEĞİL. Cihaz maddesi `mobile/docs/testing-ux-turlari.md` |
+| (28 Eyl, taslak PR) | **Oyun Geçmişi: üstte TOPLAM · (adın) · VERGİ(−) · VERGİ(+) kutuları** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/game/move_history_modal.dart`: *"Bu oyunda kazanılan N hamle… Toplam X puan"* satırının yerine dört kutu (N pas turlarını saymadığından 44 yazıp 45. hamleyi listeliyordu): TOPLAM (oyunun puanı) · açanın ADI (skor tablosundaki puanı) · VERGİ(−) · VERGİ(+) (açanın kendisi; `moveHistoryStats`, web ile birebir). Çağrı yerleri koltuğu geçiriyor: `game_screen.dart` (0), `online_game_screen.dart` (`_mySlot`), `score/game_history_modal.dart` (sıradan koltuğa). Web yarısı #669 + #671. Kapı: `move_history_test.dart` |
+| (28 Eyl, taslak PR) | **Kendi skor kartında "arkadaş ekle" simgesi çıkıyordu** — yalnızca port | `ui/score/player_score_card_modal.dart`: `relationWith` kendisi (ve misafir) için null dönüyor, kart null'ı "ilişki yok" diye çizip dokununca kişiye kendine davet teklif ediyordu. Artık gateway'in `currentUserId`si yoksa ya da kartın sahibiyse simge HİÇ çizilmez (web'in `!!user && user.id !== member.id` koşulu; web'de hata YOK). Kapı: `friends_test.dart` → *"ilişki simgesi YOK — kendi kartı / misafir"* (düzeltmesiz DÜŞÜYOR); **903 test yeşil**. Acil istisna DEĞİL → sonraki tren |
+| (28 Eyl, taslak PR) | **"Arkadaşınla" rozeti davet kabulünden sonra "1"de takılı kalıyordu** — port yarısı | `ui/live/live_games_tab.dart` + `ui/setup/setup_screen.dart`: liste her başarılı yüklemede davet + sırası sende sayısını (`inviteBucket` + `myTurnCount`, rozet sorgusuyla AYNI fonksiyonlar) `onActionCount` ile Setup'a bildiriyor; liste ile rozet artık çelişemez. Öncesinde kabulden sonra liste tazeleniyor, rozet yalnızca Realtime olayını bekliyordu; olay kaçınca sekme değiştirmek düzeltmiyordu, uygulamayı yeniden açmak düzeltiyordu (kullanıcı bildirdi, canlıda ölçüldü: yeni oyunda sıra rakipteydi). Web yarısı AYRI PR, hemen merge. Kapı: `setup_screen_test.dart` → *"LİSTEYLE hizalanır"* (düzeltmesiz DÜŞÜYOR). Acil istisna DEĞİL → 5 Ekim treni |
+| (29 Eyl, taslak PR) | **Skor kartında "Ekle" / "Kabul et" yazılı buton** — port yarısı | Sonraki tren. `ui/score/player_score_card_modal.dart`: eylem çağıran iki dal (ilişki yok, gelen istek) ikon yerine web `Pill` biçiminde hap ("EKLE" / "KABUL ET"); ✓ ve ⌛ ikon kaldı, ✓'ye dokunmak yine çıkarma onayı. Kullanıcı: *"o ikonlar çok anlaşılmıyor"*. Web yarısı #686 (canlıda). "Tüm oyuncular → skor kartı" kısmı portta YOK: o liste ROADMAP #41'in port yarısıyla gelecek. Kapı: `friends_test.dart` dört dal hap/ikon olarak yeniden çivilendi; **901 test yeşil** |
+| (29 Eyl, taslak PR #687) | **Tüm Oyunlar → "Favoriler" sekmesinde küçük dolu kalp** — port yarısı | Sonraki tren. `ui/score/game_history_modal.dart` `_FilterTab`: `heart` bayrağı; seçili değilken kırmızı, seçiliyken beyaz (web ile aynı). Kullanıcı: *"oyunlardaki kalbin o işe yaradığı belli olsun"*. Kapı: `game_likes_test.dart` (sekme kalbi `kFavoritesTabHeartKey` ile satır kalbinden ayrılıyor + yeni test); **902 test yeşil** |
+| (29 Eyl, taslak PR #687) | **Canlı oyun: hamle kabul edildikten sonra ekran Realtime'ı beklemeden kendini tazeliyor** — port yarısı | Sonraki tren. `ui/live/online_game_screen.dart` `_syncAfterSubmit`: üç gönderim dalında (oyna/pas/değiştir) `_moveIdTemizle()`'den sonra `_refresh()` BEKLENİYOR, `_busy` ancak sonra düşüyor. Kullanıcı web'de bildirdi: hamle sunucuya tek kez yazılmıştı (15:18:44), soket düşmüş olduğundan yankı gelmedi, OYNA etkin kaldı, ikinci basış gerçek "Sıra sende değil." aldı. Değiştir dalında swap modundan çıkış senkrondan ÖNCEYE alındı. Web yarısı ayrı PR. Kapı: `online_game_screen_test.dart` yeni regresyon (düzeltmesiz koşulda DÜŞTÜĞÜ doğrulandı); **903 test yeşil** |
+| (29 Eyl, taslak PR #687) | **Skor kartları: ismin yanındaki rütbe mührü kalktı** + arkadaşlık hapı 26 px — port yarısı | Sonraki tren. `ui/score/score_card_modal.dart` + `player_score_card_modal.dart`: isim yanındaki 20px `RankSeal` çıktı, başlıktaki 34px mühür duruyor. Kullanıcı: *"zaten üstte var"*. Hap: görünen 26 px, dolgu 10 (web #690). Kapı: `score_card_test.dart` (20px mühür artık YOK); **903 test yeşil** |
+| (29 Eyl, taslak PR) | **Avatar bazen hiç yüklenmiyor / yüklenirken boş gri daire** — port yarısı | ⚠ **Sonraki tren.** `ui/auth/k_avatar.dart`: yüklenirken boş gri daire yerine baş harf (`frameBuilder`); ilk hatada kalıcı baş harfe düşmek yerine BİR KEZ anında yeniden deneme (ikinci hata gerçek). `data/auth_service.dart` `uploadAvatar`: `cacheControl: '31536000'` (adres `?v=` ile sürümlü). Web yarısı #696. Sunucu temizdi (4 nesne, 68-123 KB, eksik yok). Kapı: `avatar_retry_test.dart` yeni vaka; **app 902 test yeşil**. Kalıcı disk önbelleği bilerek eklenmedi (yeni paket ister). Vaka: `docs/decisions/components-account.md` |
 | (25 Eyl) | **Canlı oyunda sıra bandı kısaldı:** "Sıra: X — oynaması bekleniyor" → "Sıra: X bekleniyor" | ⚠ **1.1.1'e BİNMİYOR — sonraki sürüm** (1.1.1/723 incelemede; ⛔ Play'e 723 yüklenmeden MERGE ETME, `mobile-latest` ezilir): `ui/live/online_game_screen.dart` (yalnızca metin). Kullanıcı bildirdi: dar/kısa Android ekranında büyük yazıyla bant iki satıra sarıyor, raf altındaki buton şeridi ekranın altına itiliyordu. Web ikizi AYRI PR'da ve önden gitti (`OnlineGameScreen.tsx`, dal `claude/sira-bandi-kisa-web`). Tam çözüm değil — kalan alan seçenekleri (bant boyu, kısa ekranda sıkıştırma) karar bekliyor |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
@@ -1011,6 +1010,97 @@ merge mobil derlemeyi TETİKLER** (`mobile-latest` ezilir, TestFlight'a build
 gider); sürüm dondurması bitmeden başlama.
 
 ---
+
+## 37. Küfür / müstehcenlik filtresi — **KISMEN: sunucu + web CANLIDA · koşul metni + port #640'ta** (25 Eylül 2026)
+
+**Durum (25 Eylül 2026 akşamı):** süzgeç canlıda (`20260925183810_chat_profanity_filter`
++ `…184216_nickname_blocked_message`), web'de takma isim uyarısı + admin
+"Kelime Süzgeci" + dökümde `[süzgeç]` işareti. **Kalan:** Kullanım Koşulları
+§5'in "mesajlar denetlenmez" cümlesi + Gizlilik'te orijinalin saklanması +
+portun takma isim uyarısı → #640 (sürüm treni). Uygulama kaydı:
+`docs/decisions/chat-moderation.md` → "Küfür / müstehcenlik süzgeci".
+#640 merge edilince bu madde arşive taşınır.
+
+Kullanıcı: *"Küfür filtresi işini konuşalım. Onu roadmap'e yaz."* Sohbet
+Kuralları onayının (#639 web ✅, #640 port taslak) devamı. Bugün mesajlar
+hiçbir otomatik süzgeçten geçmiyor; tek savunma kişinin sessize alıp şikâyet
+etmesi.
+
+**Neden:** Apple kuralı 1.2 kullanıcı içeriği olan uygulamadan dört şey
+istiyor: kabul edilen kurallar (✅ onay penceresi), şikâyet (✅), engelleme
+(✅ sessize alma) ve **uygunsuz içeriği süzme yöntemi (❌ YOK)**. Sohbetin
+yalnızca kabul edilmiş arkadaşlar arasında olması riski bugün sınırlıyor ve
+bir incelemede savunma olarak anlatılabilir, ama bu bir süzgeç değil.
+
+**Önerilen yön — süzgeç SUNUCUDA, `online_game_messages` insert'ünde
+(trigger):**
+- Mağazadaki ESKİ paketler dahil (1.1.0/1.1.1) herkese aynı gün işler. İstemci
+  süzgeci web + port + iki mağaza turu isterdi ve atlatılabilirdi.
+- Liste bir tabloda (`blocked_words`), admin panelinden düzenlenir; kodda
+  gömülü liste YOK (liste değiştikçe sürüm çıkmasın).
+- Eşleştirme Türkçe'ye göre: `tr_lower` (İ/ı), harf tekrarı (`aaa` → `a`),
+  araya konan boşluk/nokta/yıldız, sık rakam-harf değişimi (`0`→`o`, `1`→`i`).
+  ⚠ **Yanlış pozitif** asıl risk: kelime İÇİNDE arama masum kelimeleri de
+  keser. Yalnızca kelime sınırı + bilinen ek kalıpları.
+
+**Kullanıcının vermesi gereken kararlar:**
+1. **Maskele mi, reddet mi?** Maskele (`****`, mesaj gider) daha yumuşak ve
+   yaygın; reddet ("Mesajın uygunsuz ifade içeriyor") gönderene net ama
+   kelime avına iter. Reddedilen/maskelenen mesaj ayrıca admin'e düşsün mü?
+2. **Kapsam:** yalnızca sohbet mi, **takma ad** da mı? Takma ad k-lig
+   listesinde HERKESE görünüyor, yani risk orada daha geniş.
+3. **Listeyi kim kuracak:** hazır bir Türkçe liste mi, elle mi?
+
+**KARARLAR (25 Eylül 2026, kullanıcı):** (1) **maskele** · (2) **takma ad
+DAHİL** · (3) **hazır liste**.
+
+**Hazır liste:** `ooguz/turkce-kufur-karaliste` (697 madde, CC BY-SA 4.0) +
+LDNOOBW `tr` (142 madde, CC BY 4.0) → birleşik **815** madde (83'ü çok
+kelimeli). ⚠ BY-SA: listenin türevi aynı lisansla ve atıfla tutulur.
+
+**Kuru ölçüm (25 Eylül 2026, canlı, yalnızca SAYIM — mesaj içeriği
+okunmadı):** 320 canlı mesaj · 578 arşiv satırı (her oyunun mesajları
+oyuncu başına bir `games` satırında, yani arşiv ≈ canlının iki katı) · 64
+takma ad.
+
+| Eşleştirme | Canlı mesajda yakalanan | Yorum |
+|---|---|---|
+| **Kelimenin BAŞI** (önek) | `am` 22 · `emi` 4 · `cim` 1 … | ❌ KULLANILAMAZ — `ama`, `emin`, `…cim` gibi masum kelimeleri kesiyor |
+| **Tam kelime** | ~11 mesaj (%3): `bok`/`boktan` 4 · `ibne`/`ipne` 2 · `siktir` · `amk` · `salak` · **`ana` 1** | ✅ kullanılabilir; tek şüpheli `ana` (masum anlamı çok yaygın) |
+| Takma ad, tam kelime | **0** | önek modunda 1 (`emi` → masum) |
+
+**Sonuç:** yalnızca TAM KELİME. Ölçümde çıkmayan ama listede duran masum/
+nötr maddeler de ayıklanmalı — en açıkları: `ana` · `mal` · `allah` ·
+`oğlan` · `meme` · `kaka` · `dönek` · `düdük` · `kayyum` · `revizyonist` ·
+`saksofon` · `dinsiz` · `çingene*` (etnik ad, küfür değil) · `cikar`
+(ç'siz "çıkar") · `diktim` · `sokam`/`sokarım` (sokmak) · `koyum`/`koyarm` ·
+`azdım`/`azdır` · `emi` · `cim` · `ag` · `cif` · `sie` · `krar` · `sekis`.
+
+**Önerilen tasarım (ölçümden sonra):**
+- **Sohbet:** `online_game_messages`e BEFORE INSERT trigger, eşleşen kelime
+  harf sayısı kadar `*` olur. Arşiv (`games.messages`) canlıdan kopyalandığı
+  için kendiliğinden maskeli gelir. Eski paketler dahil herkese aynı gün.
+- ⚠ **Kanıt kaybolmasın:** şikâyeti inceleyen admin ORİJİNALİ görmeli.
+  Orijinal ayrı, yalnız admin'in okuyabildiği bir tabloya yazılır
+  (`online_game_message_originals`); katılımcılar maskeli metni görür.
+- **Takma ad:** maskelenmez (`****` bir ad olamaz) — kayıt/değişiklikte
+  **reddedilir** ("Bu takma ad kullanılamaz"). Bugün eşleşen ad 0, geriye
+  dönük iş yok.
+- **Geçmiş mesajlara dokunulmaz** (kanıt + kullanıcı görmüş).
+
+**Uygulamadan ÖNCE ölçüm (değişmez):** mevcut mesajları (`online_game_messages`
++ `games.messages` arşivi) ve takma adları listeye karşı KURU koştur, kaç
+tanesinin yakalanacağına ve kaçının yanlış pozitif olduğuna bak. Eşik o
+sayılara göre ayarlanır.
+
+**Dokunacağı yerler:** migration (tablo + trigger + `grant`) · admin
+paneline liste düzenleme · `TermsModal`/`PrivacyModal` (otomatik süzgeç
+cümlesi, web + port BİRLİKTE, `legal_text_test.dart`) · reddetme seçilirse
+`friendlyErrorMessage`in P0001 yolu sunucunun Türkçe mesajını zaten
+gösterir (web ✅; portta `error_message.dart` 1.1.0'da YOK, 1.1.1 ile
+iniyor — eski pakette ret metni ham görünebilir, maskelemenin bir artısı
+daha). Kayıt: `docs/decisions/chat-moderation.md` →
+"Sohbet Kuralları onayı" → "Açık kalan".
 
 ## Her iş için değişmeyen kurallar
 

@@ -64,10 +64,12 @@ import type {
   FriendRow,
   FriendSearchResult,
   GameChatMessage,
+  ChatBlockedWord,
   GameHistoryEntry,
   GameLiker,
   Gender,
   IncomingFriendRequest,
+  OutgoingFriendRequest,
   LeaderboardRow,
   LeagueReward,
   LocalGameSave,
@@ -1354,6 +1356,33 @@ export async function fetchIncomingFriendRequests(): Promise<IncomingFriendReque
 }
 
 /**
+ * Son 90 günde birlikte en çok canlı oyun oynanan, hâlâ arkadaş olan
+ * kişilerin kimlikleri — çok oynanandan aza (`my_frequent_opponents`).
+ * Canlı oyun formunun "Sık oynadıkların" şeridi; ad/avatar `fetchFriends`
+ * satırından. Hata ya da girişsizlikte boş dizi (şerit hiç çizilmez).
+ */
+export async function fetchFrequentOpponents(limit = 5): Promise<string[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('my_frequent_opponents', { p_limit: limit });
+  if (error) {
+    console.error('[Kelimeki] fetchFrequentOpponents hatası:', error.message);
+    return [];
+  }
+  return ((data as { friend_id: string }[]) ?? []).map((r) => r.friend_id);
+}
+
+/** Gönderdiğim, henüz cevaplanmamış istekler (Arkadaşlar penceresi, gelen isteklerin altı). */
+export async function fetchOutgoingFriendRequests(): Promise<OutgoingFriendRequest[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('list_outgoing_friend_requests');
+  if (error) {
+    console.error('[Kelimeki] fetchOutgoingFriendRequests hatası:', error.message);
+    return [];
+  }
+  return (data as OutgoingFriendRequest[]) ?? [];
+}
+
+/**
  * Oturum açan kullanıcının kalıcı/reusable davet linkinin token'ını döner —
  * ilk çağrıda oluşturur, sonrakilerde aynı token'ı geri verir
  * (`create_friend_invite_link` RPC'si). Bu link WhatsApp/SMS/DM gibi
@@ -1832,7 +1861,14 @@ export function subscribeOnlineGameState(gameId: string, onChange: () => void): 
  * yeniye döner (`online_game_messages`) — `OnlineGameScreen`'in ilk yüklemesi
  * için. Oyun İçi Mesajlaşma — Faz 1, yalnızca Canlı oyunlarda kullanılır.
  */
-export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGameMessageRow[]> {
+/**
+ * İstek DÜŞERSE `null` (boş liste DEĞİL): çağıran eski listeyi korur ve okundu
+ * kararını vermez. Boş liste dönseydi ekrandaki sohbet silinir ve "ilk ziyaret"
+ * tohumu "şimdi"ye oturup aradaki gerçek yeni mesajları okunmuş sayardı —
+ * sunucu kesin boşsa oraya da yazılır, sunucu yalnızca ileri gittiği için
+ * GERİ ALINAMAZDI (26 Eylül 2026; port ikizi `ChatRepo.messages` zaten `null`).
+ */
+export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGameMessageRow[] | null> {
   if (!supabase) return [];
   const { data, error } = await supabase
     .from('online_game_messages')
@@ -1841,7 +1877,7 @@ export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGam
     .order('created_at', { ascending: true });
   if (error) {
     console.error('[Kelimeki] fetchOnlineGameMessages hatası:', error.message);
-    return [];
+    return null;
   }
   return (data as OnlineGameMessageRow[]) ?? [];
 }
@@ -1901,6 +1937,34 @@ export async function sendOnlineGameMessage(gameId: string, message: string): Pr
   const { error } = await supabase
     .from('online_game_messages')
     .insert({ online_game_id: gameId, sender_user_id: user.id, message: trimmed });
+  if (error) rethrowSupabase(error);
+}
+
+/**
+ * Oturumdaki kullanıcının kabul ettiği Sohbet Kuralları sürümü
+ * (`profiles.chat_rules_version`). Hiç kabul etmediyse `null`, okunamadıysa
+ * (ağ hatası, Supabase yok) `undefined` — `needsChatRulesConsent` ikisini de
+ * "pencereyi göster" sayar. Bkz. `utils/chatRules.ts`.
+ */
+export async function fetchChatRulesVersion(userId: string): Promise<number | null | undefined> {
+  if (!supabase) return undefined;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('chat_rules_version')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error || !data) return undefined;
+  return (data as { chat_rules_version: number | null }).chat_rules_version;
+}
+
+/**
+ * Sohbet Kuralları'nın kabulünü sunucuya yazar (`accept_chat_rules` RPC'si;
+ * zaman damgası sunucunun `now()`ı, yalnızca İLERİ yazar — tekrar çağrılması
+ * zararsız).
+ */
+export async function acceptChatRules(version: number): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.rpc('accept_chat_rules', { p_version: version });
   if (error) rethrowSupabase(error);
 }
 
@@ -3191,6 +3255,28 @@ export async function fetchAdminFinishedGameChat(onlineGameId: string): Promise<
   return (data as GameChatMessage[]) ?? [];
 }
 
+/** Sohbet/takma ad süzgecinin kelime listesi (yalnızca admin). */
+export async function fetchAdminChatBlockedWords(): Promise<ChatBlockedWord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_list_chat_blocked_words');
+  if (error) rethrowSupabase(error);
+  return (data as ChatBlockedWord[]) ?? [];
+}
+
+/** Listeye kelime ekler (tam kelime eşleşir; sunucu Türkçe küçük harfe çevirir). */
+export async function addAdminChatBlockedWord(word: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.rpc('admin_add_chat_blocked_word', { p_word: word });
+  if (error) rethrowSupabase(error);
+}
+
+/** Listeden kelime çıkarır. */
+export async function removeAdminChatBlockedWord(word: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.rpc('admin_remove_chat_blocked_word', { p_word: word });
+  if (error) rethrowSupabase(error);
+}
+
 /** Bir geri bildirim mesajını siler (yalnızca admin). */
 export async function deleteFeedback(id: string): Promise<void> {
   if (!supabase) return;
@@ -3357,13 +3443,17 @@ export async function submitFeedback(
  * index'i — bu kontrolü atlatan bir yarış durumu olsa bile kayıt sırasında
  * gerçek kısıt devreye girer.
  */
-export async function checkNicknameAvailable(nickname: string): Promise<boolean> {
+/**
+ * Takma ismin durumu: `ok` · `taken` (başkası kullanıyor) · `blocked`
+ * (küfür/müstehcenlik süzgecine takıldı — `chat_blocked_words`, ROADMAP
+ * #37). Yeni istemciler bunu kullanır; `check_nickname_available` mağazadaki
+ * eski paketler için duruyor (orada `blocked` da "alınmış" görünür).
+ */
+export async function fetchNicknameStatus(nickname: string): Promise<'ok' | 'taken' | 'blocked'> {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
-  const { data, error } = await supabase.rpc('check_nickname_available', {
-    p_nickname: nickname,
-  });
+  const { data, error } = await supabase.rpc('nickname_status', { p_nickname: nickname });
   if (error) rethrowSupabase(error);
-  return data === true;
+  return data === 'blocked' ? 'blocked' : data === 'taken' ? 'taken' : 'ok';
 }
 
 /** Postgres'in unique-violation hatasını takma isim için okunur bir mesaja çevirir. */
@@ -3517,7 +3607,7 @@ export async function signUp(
       .update({ agreed_to_terms: termsAccepted })
       .eq('id', result.data.session.user.id);
   }
-  // AuthModal kayıttan önce checkNicknameAvailable ile kontrol ediyor; bu
+  // AuthModal kayıttan önce fetchNicknameStatus ile kontrol ediyor; bu
   // yalnızca eşzamanlı bir yarış durumunda (iki kişi aynı anda aynı ismi
   // kapmaya çalışırsa) devreye giren bir güvenlik ağı.
   const friendlyErr = result.error ? friendlyNicknameError(result.error.message) : null;
@@ -3714,7 +3804,11 @@ export async function uploadAvatar(file: File): Promise<string> {
 
   const { error: upErr } = await supabase.storage
     .from('avatars')
-    .upload(path, body, { upsert: true, contentType });
+    // Uzun önbellek güvenli: adres her yüklemede `?v=` ile DEĞİŞİYOR, yani
+    // eski resim asla "bayat" kalmaz. Varsayılan 1 saatti; proje Mumbai'de
+    // olduğundan her saat başı ilk istek oraya gidiyordu (29 Eylül 2026).
+    // Port ikizi: `auth_service.dart` → `uploadAvatar`.
+    .upload(path, body, { upsert: true, contentType, cacheControl: '31536000' });
   if (upErr) throw new Error(upErr.message);
 
   const { data } = supabase.storage.from('avatars').getPublicUrl(path);

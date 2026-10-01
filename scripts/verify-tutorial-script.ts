@@ -49,6 +49,7 @@ import {
 } from '../src/utils/tutorialScript';
 import {
   ONBOARDING_HINT_MAX_SHOWS,
+  ONBOARDING_HINT_MIN_MOVES,
   pickFirstWinCelebration,
   FIRST_WIN_TEXTS,
   FIRST_WIN_GUEST_CTA,
@@ -330,14 +331,13 @@ for (const vaka of kapiVakalari) {
   }
 }
 
-// ── 10. Bağlamsal ipuçları (Onboarding Faz 2) ────────────────────────────
-// Kapının tablosuyla aynı gerekçe: karar SAF bir fonksiyonda ve üç sayaç
-// birden okunuyor. En kolay kaçırılan iki kural burada kilitleniyor —
-// (a) aynı hamlede birden fazla ipucu hak edilirse SIRA sabittir (ekranda
-// aynı anda tek balon olabilir), (b) tavana çarpan bir ipucu ötekileri
-// SUSTURMAZ, sıradaki hak edilmiş ipucu gösterilir.
-const IPUCU_YOK = { paidTax: false, gotMultiplier: false, territoryOutsideCorner: false };
-const SIFIR: Record<OnboardingHintId, number> = { vergi: 0, carpan: 0, bolge: 0 };
+// ── 10. Bağlamsal ipucu (Onboarding Faz 2) ──────────────────────────────
+// Kapının tablosuyla aynı gerekçe: karar SAF bir fonksiyonda. 30 Eylül
+// 2026'dan beri tek ipucu var (`anlam` — kelimeye tıkla, anlamı gelir; üç
+// mekanik ipucu kaldırıldı). Kilitlenen kural: kelime oturmadıysa balon
+// yok, açılıştan beri 3 hamle geçmediyse yok (zoom balonuyla çakışmasın),
+// tavana çarpınca bir daha yok.
+const SIFIR: Record<OnboardingHintId, number> = { anlam: 0 };
 const TAVAN = ONBOARDING_HINT_MAX_SHOWS;
 
 const ipucuVakalari: {
@@ -346,42 +346,24 @@ const ipucuVakalari: {
   sayac: Record<OnboardingHintId, number>;
   beklenen: OnboardingHintId | null;
 }[] = [
-  { ad: 'mekanik yaşanmadı', girdi: IPUCU_YOK, sayac: SIFIR, beklenen: null },
+  { ad: 'kelime oturmadı', girdi: { wordPlaced: false, movesSinceOpen: 5 }, sayac: SIFIR, beklenen: null },
   {
-    ad: 'yalnızca vergi ödendi',
-    girdi: { ...IPUCU_YOK, paidTax: true },
+    // Zoom balonu açılışta çıkıyor; arada en az ONBOARDING_HINT_MIN_MOVES hamle.
+    ad: 'kelime oturdu ama açılıştan beri az hamle — zoom balonuyla çakışmasın',
+    girdi: { wordPlaced: true, movesSinceOpen: ONBOARDING_HINT_MIN_MOVES - 1 },
     sayac: SIFIR,
-    beklenen: 'vergi',
+    beklenen: null,
   },
   {
-    ad: 'yalnızca çarpan alındı',
-    girdi: { ...IPUCU_YOK, gotMultiplier: true },
+    ad: 'kelime oturdu, eşik doldu',
+    girdi: { wordPlaced: true, movesSinceOpen: ONBOARDING_HINT_MIN_MOVES },
     sayac: SIFIR,
-    beklenen: 'carpan',
+    beklenen: 'anlam',
   },
   {
-    ad: 'yalnızca bölge büyüdü',
-    girdi: { ...IPUCU_YOK, territoryOutsideCorner: true },
-    sayac: SIFIR,
-    beklenen: 'bolge',
-  },
-  {
-    // Tanıtımın 4. sahnesi TAM OLARAK böyle: hem ×3 hem vergi.
-    ad: 'üçü birden — sıra sabit, vergi kazanır',
-    girdi: { paidTax: true, gotMultiplier: true, territoryOutsideCorner: true },
-    sayac: SIFIR,
-    beklenen: 'vergi',
-  },
-  {
-    ad: 'vergi tavanda — sıradaki hak edilmiş ipucu gösterilir',
-    girdi: { paidTax: true, gotMultiplier: true, territoryOutsideCorner: true },
-    sayac: { ...SIFIR, vergi: TAVAN },
-    beklenen: 'carpan',
-  },
-  {
-    ad: 'hepsi tavanda — hiçbiri gösterilmez',
-    girdi: { paidTax: true, gotMultiplier: true, territoryOutsideCorner: true },
-    sayac: { vergi: TAVAN, carpan: TAVAN, bolge: TAVAN },
+    ad: 'tavanda — bir daha gösterilmez',
+    girdi: { wordPlaced: true, movesSinceOpen: ONBOARDING_HINT_MIN_MOVES },
+    sayac: { anlam: TAVAN },
     beklenen: null,
   },
 ];

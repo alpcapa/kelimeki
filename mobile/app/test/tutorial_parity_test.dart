@@ -281,6 +281,10 @@ void main() {
         int.parse(
             pick(onboardingTs, RegExp(r'ONBOARDING_HINT_MS = (\d+)'), 'süre')),
         onboardingHintDuration.inMilliseconds);
+    expect(
+        int.parse(pick(onboardingTs,
+            RegExp(r'ONBOARDING_HINT_MIN_MOVES = (\d+)'), 'hamle eşiği')),
+        onboardingHintMinMoves);
     // Sıra DAVRANIŞIN parçası: aynı hamlede birden fazla ipucu hak
     // edilirse ilk hak edilen gösterilir.
     final sira = pick(onboardingTs,

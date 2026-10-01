@@ -35,6 +35,14 @@ export interface Profile {
    * hiç etkisi yok, onlar bu bayrağa bakmadan her zaman gönderilir.
    */
   email_notifications_enabled: boolean;
+  /**
+   * Kabul edilen Sohbet Kuralları sürümü (`utils/chatRules.ts` →
+   * `CHAT_RULES_VERSION`) — hiç kabul etmediyse null. Yalnızca
+   * `accept_chat_rules` RPC'si yazar; doğrudan update'i trigger geri alır.
+   */
+  chat_rules_version: number | null;
+  /** Sohbet Kuralları'nın kabul edildiği andaki sunucu zaman damgası. */
+  chat_rules_accepted_at: string | null;
 }
 
 // ── Arkadaşlık sistemi ──────────────────────────────────────────────────────
@@ -50,6 +58,14 @@ export interface FriendRow {
 /** `list_incoming_friend_requests` RPC çıktısındaki tek satır (bana gelen, bekleyen istek). */
 export interface IncomingFriendRequest {
   requester_id: string;
+  name: string;
+  avatar_url: string | null;
+  created_at: string;
+}
+
+/** `list_outgoing_friend_requests` — gönderdiğim, henüz cevaplanmamış istekler. */
+export interface OutgoingFriendRequest {
+  friend_id: string;
   name: string;
   avatar_url: string | null;
   created_at: string;
@@ -273,6 +289,20 @@ export interface GameChatMessage {
   name: string;
   colorIndex: number;
   message: string;
+  created_at: string;
+  /**
+   * Yalnızca ADMIN dökümünde (`admin_get_finished_game_chat`): mesaj
+   * küfür süzgecine takıldı, `message` ORİJİNAL metin — katılımcılar
+   * maskeli hâlini gördü (ROADMAP #37).
+   */
+  filtered?: boolean;
+}
+
+/** `admin_list_chat_blocked_words` satırı — sohbet/takma ad süzgecinin listesi. */
+export interface ChatBlockedWord {
+  word: string;
+  /** `ooguz+ldnoobw` (tohum listesi) ya da `admin` (panelden eklenen). */
+  source: string;
   created_at: string;
 }
 
@@ -800,6 +830,12 @@ export interface AdminFunnelRow {
   finished: number;
   games_started: number;
   games_finished: number;
+  /**
+   * Mağazaya giden web misafir OTURUMU (`web_sessions`, `store` adımı; 29 Eylül
+   * 2026). ⚠ Birim farklı: kohort cihazı değil oturum; kanala `utm_source`
+   * üzerinden bağlanır, yalnızca `web` satırlarında dolu.
+   */
+  store: number;
 }
 
 /**
@@ -1448,19 +1484,19 @@ export interface AdminTutorialFunnelRow {
 /**
  * `admin_signup_funnel` — kayıt hunisi (Büyüme > Kullanıcı → "Kayıt Hunisi").
  *
- * Kanal başına bir satır: kayıt FORMUNU açan (`starts`) ve hesabı OLUŞTURAN
- * (`completions`) ADET. Kimlik yok, yani "benzersiz kişi" sayısı YOK —
- * `signup_events` bilerek kimliksiz (bkz. migration `signup_events_funnel`
- * ve `logSignupEvent`). Bir kişi formu iki kez açarsa iki kez sayılır.
- *
- * ⚠ **Yalnızca WEB.** Port aynı olayları Firebase Analytics'e yazıyor, bu
- * tabloya değil — oranı `profiles` sayısıyla kurmak paydası web, payı
- * web+mobil olan sahte bir yüzde üretirdi, o yüzden `completions` da bu
- * tablodan okunuyor.
+ * PLATFORM başına bir satır (29 Eylül 2026'dan önce kanal başınaydı): kayıt
+ * FORMUNU açan (`starts`) ve hesabı OLUŞTURAN (`completions`) ADET.
+ * - `web`: ikisi de `signup_events`ten (kimliksiz sayaç, bkz.
+ *   `logSignupEvent`). Bir kişi formu iki kez açarsa iki kez sayılır.
+ * - `app`: `starts` `signup_events`ten (platform ios/android) — port bu
+ *   olayları henüz Firebase'e yazıyor, yani bugün 0 = ÖLÇÜLMÜYOR (kart "—"
+ *   gösterir). `completions` `profiles`tan (uygulamadan açılan hesap).
+ * Pencere en erken 21 Eylül 2026 (sayacın doğduğu an): iki satır aynı
+ * günleri sayar. iOS / Android ayrımı yok — bkz. migration
+ * `admin_signup_funnel_platform`.
  */
 export interface AdminSignupFunnelRow {
-  /** 'direct' | 'form' | 'bilinmiyor' (kanal yazmayan satırlar). */
-  channel: string;
+  platform: 'web' | 'app';
   starts: number;
   completions: number;
 }
@@ -1479,4 +1515,10 @@ export interface AdminWebJourneyRow {
   median_seconds: number | null;
   /** Burada ayrılanların karşılamadaki kaydırma derinliği (%, medyan). */
   median_scroll: number | null;
+  /**
+   * Etkileşimsiz oturum sayısı — yalnızca İLK pingi ulaşmış (sekme kapanış
+   * pingi hiç gelmemiş) oturumlar; çoğu önizleme/tarama botu. Adım
+   * satırlarından DÜŞÜLMÜŞTÜR, her satırda aynı değer (27 Eylül 2026).
+   */
+  idle: number;
 }

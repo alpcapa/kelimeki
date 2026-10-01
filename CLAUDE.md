@@ -42,7 +42,7 @@ npm run generate-initial-main-view-golden # Giriş sekmesi kuralı: web→port d
 npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz) — ağ hatası VE geçici sunucu hatası (504/503/502/408); 500 ve 429 bilerek DIŞARIDA
 npm run verify-shared-realtime    # Canlı oyun aboneliği: üç çağıran → TEK Realtime kanalı (sunucu maliyeti çarpanı)
 npm run verify-tutorial-script   # "Oynayarak öğren" tanıtımı: senaryo GERÇEK motorda oynatılır (ekrandaki puanlar dahil)
-npm run verify-demo-board        # Karşılama katmanındaki tanıtım tahtası sözlüğe karşı doğrulanır
+npm run verify-demo-board        # Karşılama katmanındaki tanıtım tahtaları + ilk ekran kesiti sözlüğe karşı doğrulanır
 npm run verify-remaining-tiles   # "Kalan Taşlar" dökümü ↔ oyun sonu raf düşümü değişmezi
 npm run check-doc-size           # doküman boyutu bütçesi (bkz. "Doküman Boyutu Bütçesi")
 npm run verify-draft-rescue      # ıskalanan dokunuşun en yakın taslak taşına yönlendirilmesi
@@ -52,7 +52,7 @@ npm run verify-error-messages    # kullanıcıya gösterilen hata metni: ham mak
 npm run verify-auth-user-identity # oturum kimliği: aynı içerik → aynı nesne + `null` olay DEPOYA sorulmadan çıkış sayılmaz + KAYNAK TARAMASI (hiçbir effect bağımlılığı bare `user` değil — port'un `AccountScope` değişmezi)
 npm run verify-sw-update-loop    # service worker güncellemesi: yeniden yükleme DÖNGÜSÜ kapısı (derleme değişmediyse ikinci kez yükleme YOK) + çağrı yerinin kaynak taraması
 npm run verify-invite-queue      # davet kuyruğu: token RPC'den ÖNCE alınıyor mu (çift çağrı) + geçici arızada geri konuyor mu + ÇİFT YOL duruyor mu
-npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT YÜKSEKLİK (24 Eyl 2026 kullanıcı kararı; 15-24 Eyl arası eşit genişlikti — oranlar farklı, Apple 3.78:1 ↔ Play 3.37:1, ikisi birden eşit olamaz), yükseklik ≥40px, clear space yüksekliğin 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + "ana ekrana ekle" kutusu YOK (24 Eyl 2026'da kaldırıldı; telefonda tek çağrı mağaza şeridi)
+npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT YÜKSEKLİK (24 Eyl 2026 kullanıcı kararı; 15-24 Eyl arası eşit genişlikti — oranlar farklı, Apple 3.78:1 ↔ Play 3.37:1, ikisi birden eşit olamaz), yükseklik ≥40px, clear space yüksekliğin 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + "ana ekrana ekle" kutusu YOK (24 Eyl 2026'da kaldırıldı; telefonda tek çağrı mağaza şeridi) + rozet/şerit linki ziyaretçinin `?ref=` etiketini mağazaya taşıyor (`taggedStoreUrl`, 28 Eyl 2026 — Meta kampanyası)
 npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ
@@ -197,6 +197,15 @@ koptu" (bkz. "Belgeleri Güncel Tutma").
 | `mobile/` DIŞINDA bir dosya (port işi sırasında) | kök `CLAUDE.md`/`README.md` — port dokümanı TEK BAŞINA yetmez |
 | `ROADMAP.md`'deki bir madde/faz KAPANDI (✅ · YAPILDI · CANLIDA · SAHADA) | Aynı PR'da `docs/decisions/roadmap-arsiv.md`'ye TAŞI — ROADMAP yalnızca AÇIK maddeleri tutar. Başlığı/numarayı/satırları değiştirme (atıflar kırılır); dosyanın kendi kuralıydı, uygulanmayınca %45'i kapanmış işe döndü (2 Eylül 2026) |
 
+⚠ **Her iş ve KARAR aynı turda repoya yazılır — kod değişmese bile**
+(29 Eylül 2026, kullanıcı: *"tüm yapılan işler yazılmalı ki sürekli güncel
+kalalım"*). Oturumlar birbirini GÖRMEZ, ortak hafıza yalnızca repo. Sohbette
+verilen karar ya da repo dışında yapılan iş (Ads Manager, konsol, mağaza,
+Supabase paneli) ilgili kütüğe/durum tablosuna, yoksa `ROADMAP.md`'ye tarihli
+bir satır olur; "sonra yazarım" yok. Vaka: Meta'da `kare` reklamı bir oturumda
+kapatıldı, yazılmadı, ertesi oturum kullanıcıya "kapalı görünüyor, siz mi
+kapattınız?" diye sordu.
+
 Mobil portun kendi (daha ayrıntılı, Dart'a özgü) sürümü: `mobile/CLAUDE.md`,
 "Etki Analizi" ve "Parça Bitirme Kontrol Listesi" bölümleri — orada tek
 komutluk bir grep taraması da var.
@@ -260,6 +269,13 @@ Eşleşme yoksa merge sürüm durumuna DOKUNMAZ, uyarıya gerek yok.
 `mobile-build.yml`in kendisi DAHİL. Kök `CLAUDE.md`/`README.md`/`docs/` gibi
 depo kökündeki dosyalar tetiklemez.
 
+**Mobil sürüm TRENİ — 2 haftada bir (25 Eylül 2026, kullanıcı kararı).**
+`mobile/` (docs/`.md` hariç) dokunan bir iş, acil değilse, **taslak PR**
+olarak açılır (`[Sonraki sürüm] …`) ve MERGE EDİLMEZ; hepsi kesim günü
+(Pazartesi) birlikte merge edilir. Web+port birlikte değişiyorsa iki PR'a
+böl, web yarısı hemen gider. Acil istisnanın tanımı, takvim ve ilk kesim:
+`mobile/docs/surumler.md` → "SÜRÜM TRENİ".
+
 **Bir dal PR'sız BIRAKILMAZ (4 Eylül 2026, kullanıcı isteği).** Oturum
 biterken dalda iş varsa iki seçenek vardır: PR aç, ya da dalı sil. Üçüncü
 seçenek — "dursun, sonra bakarız" — bu depoda İKİ gerçek işi kaybetti:
@@ -279,14 +295,16 @@ oturumun klonu sığ olabiliyor (`git fetch --unshallow`), ve Türkçe metinde
 tek başına yetmez. Doğrusu: commit'in getirdiği İÇERİĞİ `main`'de ara. Üç
 tuzağın tam tablosu ve vakası: `docs/decisions/supabase-ops.md`.
 
-⚠ **Dal SİLMEYİ ajan yapamaz — üç kapı da kapalı** (4 Eylül 2026'da
-ölçüldü): `git push --delete` 403, GitHub MCP'de ref silen araç yok,
-`branch-cleanup.yml`i dispatch etmek de 403 (App'in `actions: write`i yok —
-10 Eylül 2026'da ölçüldü: bu HER `workflow_dispatch` için geçerli,
-`ios-screenshots.yml` de 403 verdi).
-Doğru davranış "ben hallederim" demek değil, kullanıcıya adımı vermek:
-**Actions → "Dal temizliği" → Run workflow**, önce `dry_run` AÇIK, liste
-doğrulanınca KAPALI ile tekrar. ⚠ Vaat etmeden ÖNCE dene.
+⚠ **Dal silme — `workflow_dispatch` ARTIK AÇIK (1 Ekim 2026).** Kullanıcı
+Claude GitHub App'ine "Read and write access to actions" verdi; aynı gece
+`branch-cleanup.yml` `dry_run: true` ile ajan tarafından tetiklendi ve
+**204** döndü (koşu 36786438571, başarılı). Yani ajan HER `workflow_dispatch`i
+(dal temizliği, `ios-screenshots.yml`…) artık kendisi başlatabilir. Öncesi:
+4 Eylül'de üç kapı da kapalıydı, 10 Eylül'de dispatch 403 ölçülmüştü.
+Hâlâ geçerli olanlar: GitHub MCP'de ref silen araç yok; `git push --delete`
+yeniden denenmedi. Dal temizliğinde sıra aynı: önce `dry_run` AÇIK, listeyi
+kullanıcıya göster, onay gelince KAPALI ile tekrar — silme geri alınamaz,
+dispatch yetkisi onay adımını KALDIRMAZ.
 
 ## Belgeleri Güncel Tutma
 
@@ -576,6 +594,8 @@ src/
                 # sayfa oraya girmeden derleme geçmez). src/ altında olamaz: dosya iki
                 # composite projeye birden girip TS6305 veriyor — bkz. pwa-and-android.md
     Landing.tsx     # sayfanın tamamı; SUNUCUDA render edilir (hook/olay/tarayıcı globali YOK)
+    BolgeKesiti.tsx # ilk ekrandaki 7×5 tahta kesiti (bölge dış hattı `buildRoundedOutlinePath`, ROADMAP #41)
+    ilkEkranKesiti.ts # kesitin verisi — `verify-demo-board` sınar, porta ÜRETİLMEZ
     LandingLogo.tsx # logoyu üç kez çizmek için SVG sprite (path verisi LogoMark'tan)
     OzellikIkonlari.tsx # "Neler var" altı özellik ikonu (Material DEĞİL — ilkel şekiller; portun ozellik_ikonlari.dart'ıyla ELLE senkron, `icon_parity_test.dart` ile testli)
     demoBoard.ts    # tanıtım tahtasının taşları — `npm run verify-demo-board` ile doğrulanır;
@@ -586,13 +606,13 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, webJourney, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, liveGameRequest, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, chatRules, webJourney, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan
                 # mplus-rounded-1c-800-subset.woff2 ÜRETİLMİŞ, yalnızca RankSeal'ın harfi
                 # (yeniden üretimi: "k-lig Ödül & Rütbe Sistemi" → Rütbe Rozeti Fontu)
-  hooks/        # useAuth, useModalA11y, useOnlineStatus, useAppIconBadge, useNicknameAvailability, useRankScores, useBoardZoom
+  hooks/        # useAuth, useModalA11y, useOnlineStatus, useAppIconBadge, useNicknameAvailability, useRankScores, useBoardZoom, useInviteShare, usePlayerDirectory
 .claude/        # oturum kurulumu: hooks/session-start.sh — npm install + Flutter
                 # stable + iki paketin pub get'i (bkz. mobile/CLAUDE.md, "Flutter
                 # SDK bu ortamda HAZIR"). Amacı: Dart testleri YERELDE koşsun,
@@ -713,6 +733,12 @@ insan konuşuyor (`_shared/email.ts` → `KELIMEKI_SENDER` ↔
 kullanılır. Yeni bir mail gönderen fonksiyon yazarken ikisinden birini SEÇ,
 üçüncü bir adres uydurma. Ayrıntı: `docs/decisions/support-email.md`.
 
+⚠ **Kurumsal ad tek: `Kelimeki Destek`** (29 Eylül 2026, kullanıcı:
+*"standartımız bu olacak"*). Mail imzası (`Saygılarımızla, Kelimeki Destek`)
+ve destek@'in gönderen adı bunu kullanır — "Müşteri Hizmetleri" gibi ikinci
+bir ad UYDURMA. Zoho'dan elle
+yazılan cevapların görünen adı da aynı (Zoho → Send Mail As, doğrulandı).
+
 ### Migration'lar — CI YOK, her migration ELLE uygulanır
 
 Kullanıcı iPad'den çalışıyor; bunu tetikleyecek bir CLI/CI erişimi yok.
@@ -757,11 +783,13 @@ Duyuru, ölçümler ve o istisnanın bugünkü riski:
 2. **`verify_jwt` sessizce sıfırlanır:** parametre geçilmezse araç `true`
    varsayar ve önceki değeri KORUMAZ. **Her deploy'dan ÖNCE
    `list_edge_functions` ile mevcut değeri oku ve AYNI değeri açıkça geçir.**
-   `false` olması gereken YEDİ fonksiyon (5 Eylül 2026'da canlıdan sayıldı):
+   `false` olması gereken SEKİZ fonksiyon (5 Eylül 2026'da canlıdan sayıldı,
+   30 Eylül'de `notify-admin-alerts` eklendi):
    `notify-deadline-warnings`, `notify-friend-request-reminders`,
    `notify-turn-timeout-surrender`, `notify-welcome`,
-   `sweep-unconfirmed-accounts`, `inbound-email`, `notify-your-turn`.
-   Yedisi de bir cron/webhook hedefi, yani gerçekten herkese açık bir POST
+   `sweep-unconfirmed-accounts`, `inbound-email`, `notify-your-turn`,
+   `notify-admin-alerts`.
+   Hepsi bir cron/webhook hedefi, yani gerçekten herkese açık bir POST
    ucu olmak zorunda; güvenlik geçişi (5 Eylül 2026) üçünü ayrıca okuyup
    doğru yazıldıklarını (atomik iddia, taze pencere, hedefi gövdeden değil
    canlı durumdan alma) kayda geçirdi.

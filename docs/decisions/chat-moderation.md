@@ -30,7 +30,7 @@ alma/şikayetin kişi bazlı olması.
 - **Geç girişte de okunmamış mesaj noktası (1 Ağustos 2026):** İlk sürümde "yeni mesaj" popup'ı/kırmızı nokta yalnızca o an ekran zaten AÇIKKEN gelen canlı bir Realtime `INSERT` olayında tetikleniyordu (`subscribeOnlineGameMessages`'ın callback'i) — biri mesaj attığında karşı taraf o an oyun ekranında değilse (uygulama kapalı, başka bir oyunda/sekmede), daha sonra (ör. 1 gün sonra) oyunu tekrar açtığında `fetchOnlineGameMessages` geçmişi sessizce `chatMessages`'a dolduruyordu — ne popup ne "Mesajlaşma" butonunda bir işaret çıkıyordu, mesaj yalnızca elle sohbeti açınca fark ediliyordu. Kullanıcı isteğiyle (rozet/sayı değil, yalnızca nokta yeterli) düzeltildi: `onboarding.ts`'teki `hasSeenChatIntro` ile aynı desende, cihaza özel (`kelimeki:chat-last-read:<gameId>`) bir "en son görülen mesaj" zaman damgası eklendi (`getChatLastReadAt`/`markChatRead`). Mesaj listesi ilk yüklendiğinde, bu damgadan SONRA gelen ve kendisinin GÖNDERMEDİĞİ bir mesaj varsa `unreadCount` buna göre baştan dolduruluyor (`hasUnreadMessage` → Board footer'daki kırmızı nokta) — sohbet ne zaman açık olursa (ilk açılışta ya da açıkken yeni mesaj gelirse) görülen en son mesajın zaman damgası ayrı bir effect'le sürekli güncelleniyor. Sunucuda hiçbir şey değişmedi, gönderen tarafına "okundu" bilgisi hâlâ gitmiyor — bu tamamen tek taraflı/cihaza özel bir "bunu daha önce gördüm mü" işareti, aşağıdaki "okundu bilgisi" kapsam-dışı maddesiyle çelişmiyor (o madde karşı tarafa görünen bir okundu bilgisini kapsıyor).
   **Bulunan hata, aynı gün — ilk çıkışta yanlış pozitif kırmızı nokta:** Kullanıcı özellik canlıya alındıktan az sonra bildirdi: hiç yeni mesaj yokken bile bir Canlı oyuna girince kırmızı nokta çıkıyor, tıklanınca da zaten çoktan okunmuş eski mesajlar görünüyordu. Kök sebep, `getChatLastReadAt(game.id)`'nin `null` döndüğü (bu cihaz/oyun kombinasyonu için hiç damga yazılmamış) HER durumda satır 319'daki `!lastReadAt ||` koşulunun TÜM geçmiş mesajları (kendi göndermedikleri) "okunmamış" saymasıydı — bu özellik o gün ilk kez devreye girdiğinden, önceden (bu özellik yokken) zaten sohbeti açıp okumuş olan HER kullanıcı için bu damga baştan hiç yoktu, yani üzerlerinde halihazırda mesajı olan her Canlı oyun ilk girişte yanlış pozitif üretiyordu. **Düzeltme:** `lastReadAt === null` artık özel olarak ele alınıyor — mevcut mesajları "okunmamış" saymak yerine, o an var olan son mesaja (hiç mesaj yoksa `now()`'a) damga baştan orada oturtuluyor (`markChatRead` hemen çağrılıyor) ve `unreadCount` bu ilk hesaplamada koşulsuz `0` kalıyor; kırmızı nokta yalnızca BUNDAN SONRA (damga bir kez oturduktan sonra) gelecek gerçek yeni mesajlar için çıkıyor. Bu, orijinal "geç giriş" özelliğini bozmuyor — hiç mesajı olmayan taze bir oyunda da ilk ziyarette damga `now()`'a oturur, bir sonraki ziyarette (araya gerçekten yeni bir mesaj girmişse) normal `r.created_at > lastReadAt` karşılaştırması devreye girip doğru şekilde işaretler.
 - **Mesaj kutusunun üstünde yönlendirme etiketi (2 Eylül 2026, kullanıcı isteği: *"Mesaj modalında mesaj kutusunun hemen üstüne 'Oyunculara buradan mesaj gönder' yaz"*):** Pencerede zaten bir yer tutucu vardı (`Mesajınızı girin`) ama o **yazmaya başlayınca kayboluyor**; ayrıca pencere açıldığında görsel ağırlığın çoğu mesaj LİSTESİNDE olduğundan giriş kutusunun ne işe yaradığı ilk bakışta ikinci planda kalıyordu. Etiket yer tutucunun YERİNE geçmedi, ona EK — ikisi bir arada duruyor. **Web ve port aynı PR'da**, punto/renk/boşluk birebir (11 px, `muted`, SpaceMono, altında 4 px): `src/components/ChatModal.tsx` ↔ `mobile/app/lib/src/ui/chat/chat_modal.dart`. Port tarafı testli (`chat_test.dart`) ve test yalnızca metni değil KONUMU da tutuyor — sadece metin aransaydı etiket yanlışlıkla listenin altına düşse bile geçerdi. Web tarafı otomatik ölçülemiyor (pencere gerçek bir Canlı oyun + Supabase oturumu istiyor), elle kontrol `TESTING.md` §3'te.
-- **Okundu damgası SUNUCUDA (23 Eylül 2026, web yarısı):** Yukarıdaki cihaza özel damga iki arıza üretiyordu (kullanıcı bildirdi): (1) oyun bir cihazda İLK kez açılınca "ilk ziyaret" tohumu mevcut her şeyi okunmuş sayıyordu, gerçekten yeni gelmiş mesajlar dahil — Android'de rozet 0, içeride iki yeni mesaj; (2) bir cihazda okumak ötekine ulaşmıyordu, okunmuş mesajlar başka cihazda "yeni" görünüyordu. Damga artık `online_game_chat_reads`ta (kişi × oyun, `20260923071510_online_game_chat_reads.sql`): yazma yalnızca `mark_online_game_chat_read` RPC'siyle ve yalnızca İLERİ (`greatest`, gelecek zaman `now()`a kırpılır), okuma RLS ile yalnızca kendi satırın — karşı taraf senin ne zaman okuduğunu GÖREMEZ, yani aşağıdaki "karşı tarafa görünen okundu bilgisi" kapsam dışı maddesi hâlâ geçerli. Cihazdaki damga YEDEK olarak kaldı; iki kaynağın büyüğünü `decideChatRead` (`utils/chatRead.ts`, kapı `npm run verify-chat-read`) seçiyor ve geride kalanı yetiştiriyor. ⚠ Tuzak: sunucu isteği DÜŞTÜYSE (`undefined`) ve cihazda damga yoksa tohum sunucuya YAZILMAZ — sunucu yalnızca ileri gittiği için "hepsi okundu" damgası geri alınamazdı. ⚠ **Port yarısı YOK** (inceleme dondurması, kullanıcı: *"mobile dokunma"*): uygulama hâlâ `chat_read_store.dart` ile yalnızca cihazda çalışıyor, yani uygulamada okumak web'e yansımıyor; port bu tabloyu okuyup yazana kadar iki taraf ayrık. Canlıda doğrulandı (geri alınan bir işlemde): ileri yazım kabul, geri yazım yok sayıldı, gelecek zaman kırpıldı, başkası satırı göremedi, katılımcı olmayan reddedildi; `proacl`da `anon` yok.
+- **Okundu damgası SUNUCUDA (23 Eylül 2026, web yarısı):** Yukarıdaki cihaza özel damga iki arıza üretiyordu (kullanıcı bildirdi): (1) oyun bir cihazda İLK kez açılınca "ilk ziyaret" tohumu mevcut her şeyi okunmuş sayıyordu, gerçekten yeni gelmiş mesajlar dahil — Android'de rozet 0, içeride iki yeni mesaj; (2) bir cihazda okumak ötekine ulaşmıyordu, okunmuş mesajlar başka cihazda "yeni" görünüyordu. Damga artık `online_game_chat_reads`ta (kişi × oyun, `20260923071510_online_game_chat_reads.sql`): yazma yalnızca `mark_online_game_chat_read` RPC'siyle ve yalnızca İLERİ (`greatest`, gelecek zaman `now()`a kırpılır), okuma RLS ile yalnızca kendi satırın — karşı taraf senin ne zaman okuduğunu GÖREMEZ, yani aşağıdaki "karşı tarafa görünen okundu bilgisi" kapsam dışı maddesi hâlâ geçerli. Cihazdaki damga YEDEK olarak kaldı; iki kaynağın büyüğünü `decideChatRead` (`utils/chatRead.ts`, kapı `npm run verify-chat-read`) seçiyor ve geride kalanı yetiştiriyor. ⚠ Tuzak: sunucu isteği DÜŞTÜYSE (`undefined`) ve cihazda damga yoksa tohum sunucuya YAZILMAZ — sunucu yalnızca ileri gittiği için "hepsi okundu" damgası geri alınamazdı. ⚠ **Aynı tuzağın ikinci kapısı (26 Eylül 2026):** MESAJ isteği düştüyse de karar verilmez — `fetchOnlineGameMessages` o zamana kadar boş liste dönüyordu, bu da hem ekrandaki sohbeti siliyor hem de tohumu "şimdi"ye oturtup (sunucu kesin boşsa) sunucuya yazıyordu. Artık `null` dönüyor, `decideChatRead` `rows: null`da hiçbir şey yazmıyor (kapı: `verify-chat-read` vaka 9), ekran eski listeyi koruyor. Port ikizi aynı kuralı taşıyor. ⚠ **Port yarısı (26 Eylül 2026, ROADMAP #34, 1.1.2 treninde taslak PR):** karar `util/chat_read.dart`e taşındı (web'in sekiz vakası `chat_read_test.dart`te birebir), uygulama tabloyu okuyor ve RPC ile yazıyor; `chat_read_store.dart` YEDEK kaldı. Porta özgü iki ayrıntı: (1) cihaz damgası milisaniye (int), sunucununki mikro saniye — eşitlik milisaniyeyle ölçülüyor, yoksa her yüklemede boşuna bir yazma çıkardı; sunucuya ise mesajın KENDİ `created_at`i gidiyor. (2) Mesaj listesi okunamazsa karar HİÇ verilmiyor — boş listeyle tohum "şimdi" olur ve sunucu kesin boşsa oraya da yazılırdı. Sohbet boşken açılışta saatten gelen damga sunucuya GİTMEZ (web de boş sohbette yazmıyor). Mağazadaki 1.1.1 ve öncesi hâlâ yalnızca cihazda çalışıyor; o sürümdeki okumalar web'e yansımaz, ama 1.1.2'ye geçen cihazın eski damgası ilk açılışta sunucuya taşınır. Canlıda doğrulandı (geri alınan bir işlemde): ileri yazım kabul, geri yazım yok sayıldı, gelecek zaman kırpıldı, başkası satırı göremedi, katılımcı olmayan reddedildi; `proacl`da `anon` yok.
 - **Kapsam dışı (bilinçli):** Yerel/YZ oyunlarda mesajlaşma; gerçek moderasyon/raporlama aracı (yalnızca Terms'de sorumluluk reddi + `games.messages`'ın ileride admin panelinden okunabilir olma temeli); mesaj düzenleme/silme; karşı tarafa görünen okundu bilgisi; "yazıyor…" göstergesi; otomatik kapanan popup (yalnızca "Kapat"/"✕" ile manuel kapanır).
 - **Doğrulama sınırı:** Bu ortamda iki ayrı gerçek oturum açmış tarayıcı arasında gerçek zamanlı Realtime mesaj popup'ını uçtan uca test etmek mümkün değil (`play-ai-turn`'ün benzer "Doğrulama sınırı" notuna bkz.) — RLS/insert/select davranışı ve `_finish_online_game_records`'ın mesaj dondurma mantığı disposable test verisiyle SQL üzerinden doğrulandı, çok kullanıcılı canlı deneyim kullanıcının kendi gerçek hesaplarıyla teyit edilmesi gerekiyor.
 
@@ -67,3 +67,78 @@ alma/şikayetin kişi bazlı olması.
 - **Kapsam dışı (bilinçli, v1):** Bitmemiş oyunun canlı sohbet dökümünü admin'e gösterme; raporlanan kişiye herhangi bir bildirim/görünürlük/savunma mekanizması (yukarıdaki "endüstri standardı" gerekçesiyle bilinçli); rapor EDENE "şikayetiniz alındı/inceleniyor" e-postası — 3 Ağustos 2026'da kullanıcı sordu, birlikte GÖNDERMEME kararı verildi: mevcut altı bildirimin hepsi alıcının başka türlü KAÇIRACAĞI bir şeyi haber veriyor, bu ise kişinin saniyeler önce kendi yaptığı şeyi ona söylerdi (sıfır yeni bilgi); "inceliyoruz" kapanışı olmayan bir söz olurdu (ne SLA ne planlanmış bir "sonuç" maili var) ve "ne oldu peki?" dönüşleri üretirdi; 2 Ağustos'taki `email_notifications_enabled` işi zaten "artan mail sayısı rahatsız edebilir" kaygısıyla yapılmıştı. Bunun yerine mailin örtmeye çalıştığı asıl boşluk (kişide hiç kayıt kalmaması) yukarıdaki iki UI işiyle kapatıldı.
 - **Doğrulama sınırı:** Faz 1'deki aynı sebeple (bu ortamda iki gerçek oturumlu tarayıcı arasında canlı test mümkün değil) RLS/RPC davranışı yalnızca migration uygulaması ve fonksiyon varlığı doğrulamasıyla teyit edildi (`information_schema.routines` sorgusu) — gerçek çok kullanıcılı akış (sessize alma sonrası popup'ın gerçekten bastırılması, rapor/withdraw'ın admin panelinde doğru rozetle göründüğü) kullanıcının kendi gerçek hesaplarıyla teyit edilmesi gerekiyor.
 
+
+## Sohbet Kuralları onayı (25 Eylül 2026)
+
+Kullanıcı isteği: mesajlaşmadan önce, içeriğin sorumluluğunun gönderene ait
+olduğunu ve cinsel/rencide edici içeriğin yasak olduğunu söyleyen bir onay.
+
+- **Tek seferlik, HESABA bağlı.** İlk mesaj GÖNDERİLMEYE çalışıldığında çıkar
+  (pencere açılınca değil — okuyan engellenmez). Kabul `accept_chat_rules`
+  RPC'siyle `profiles.chat_rules_version` + `chat_rules_accepted_at`'e yazılır;
+  web ve mobil aynı satırı okur. Kurallar ESASLI değişirse
+  `CHAT_RULES_VERSION` (`src/utils/chatRules.ts`) artırılır, herkese bir kez
+  daha sorulur.
+- **Kayıt bir kanıt, istemci yazamaz.** `profiles`'ta tablo düzeyinde update
+  izni var; `trg_keep_chat_rules_consent` (BEFORE insert/update) iki kolonu,
+  RPC'nin transaction'a özel `kelimeki.chat_rules_accept` işareti yoksa geri
+  alır (`keep_signup_utm_source` deseni). Canlıda rol simülasyonuyla
+  doğrulandı: doğrudan update → değişmedi; RPC → `1` + zaman; RPC sonrası
+  doğrudan `null` denemesi → `1` kaldı. RPC yalnızca İLERİ yazar.
+- **Kapı yalnızca istemcide — bilerek.** Sunucu `online_game_messages`
+  insert'ünü onaya bağlamıyor: mağazadaki 1.1.0/1.1.1 paketleri pencereyi
+  bilmiyor, bağlasaydık o kullanıcılar sohbet edemezdi. Sahadaki tüm
+  paketler pencereyi taşıdığında sunucu kapısı (RLS `with check`)
+  düşünülebilir.
+- **Okuma başarısızsa pencere GÖSTERİLİR** (`needsChatRulesConsent`) —
+  fazladan bir onay hiçbir kaydı bozmaz.
+- **Bölünme:** web penceresi hemen yayında; Kullanım Koşulları §3 (açık yasak
+  listesi, "sıfır tolerans") + §5 (mutlak muafiyet cümlesi → "sorumluluk
+  gönderene ait; bildirilen içerik incelenir ve kaldırılır") + Gizlilik'teki
+  yeni veri satırı, port penceresiyle birlikte SÜRÜM TRENİNDE — çünkü
+  `legal_text_test.dart` web metninin tarihini okuyor (web ↔ port aynı PR).
+- **Açık kalan:** otomatik küfür/müstehcenlik filtresi YOK (Apple 1.2
+  "filtreleme yöntemi" istiyor). Sohbetin yalnızca kabul edilmiş arkadaşlar
+  arasında olması riski bugün sınırlıyor; ayrı bir iş.
+
+## Küfür / müstehcenlik süzgeci (25 Eylül 2026, ROADMAP #37)
+
+Kullanıcı kararları: **maskele** · **takma isim dahil** (orada RET) ·
+**hazır liste** · kanıt korunur · geçmiş mesajlara dokunulmaz.
+
+- **Sunucuda, istemcide DEĞİL:** `online_game_messages` BEFORE INSERT
+  trigger'ı (`mask_online_game_message` → `_chat_profanity_mask`). Mağazadaki
+  eski paketler dahil herkese aynı anda işledi; Realtime maskeli satırı
+  yayınlar, arşiv (`games.messages`) canlıdan kopyalandığı için maskeli.
+- **Tam kelime, Türkçe küçük harfe göre** (`tr_lower`; uzunluk koruyor,
+  ölçüldü — bu yüzden maske karakter karakter orijinale uygulanıyor ve
+  büyük/küçük harf korunuyor). Sınır = Türkçe harf OLMAYAN her karakter
+  (rakam dahil: `ipne123` yakalanır). **Kelime içinde arama BİLEREK yok:**
+  kuru ölçümde "am" 320 mesajın 22'sinde "ama/amaç"ı kesiyordu.
+- **Liste** `chat_blocked_words` (685): ooguz/turkce-kufur-karaliste
+  (CC BY-SA 4.0) + LDNOOBW `tr` (CC BY 4.0) = 815, 130'u elle ayıklandı
+  (ana · mal · allah · meme · saksofon · sokarım · ç'siz "sikici"="sıkıcı" ·
+  etnik ad "çingene" …; tam liste migration'ın başında). BY-SA gereği türev
+  liste de BY-SA. Admin panelinden düzenlenir (`AdminBlockedWordsModal`).
+- **Kanıt:** maskelenen mesajın orijinali `online_game_message_originals`e
+  (RLS: yalnız admin; FK `deferrable initially deferred` çünkü satır BEFORE
+  trigger'ında, mesajdan önce yazılıyor). `admin_get_finished_game_chat`
+  orijinali `filtered: true` ile döndürür, döküm `[süzgeç]` önekiyle gösterir.
+  ⚠ **Admin orijinali YALNIZCA şikâyet üzerinden ve oyun bittikten sonra
+  görür** — süzgece takılanların şikâyetsiz bir listesi YOK. 26 Eylül 2026
+  kullanıcı kararı (*"şikayet olunca gözüksün"*), denemede admin'de
+  görünmemesi soruldu ve bu yüzden bilerek bırakıldı: kapsamı genişletmek
+  Gizlilik metnini de değiştirir.
+- **Takma isim:** `trg_reject_blocked_nickname` (profiles BEFORE
+  INSERT/UPDATE OF display_name) → P0001 "Bu takma isim kullanılamaz.".
+  Yeni `nickname_status` RPC'si ok/taken/blocked ayırır (web
+  `useNicknameAvailability`); `check_nickname_available` eski paketler için
+  `blocked`ı da false döner (orada "kullanımda" görünür). Canlıda eşleşen
+  takma isim 0'dı.
+- **Doğrulama (canlı, hepsi rollback):** gerçek insert → `***** hamle`,
+  orijinal ayrı tabloda; admin olmayan kullanıcı orijinalleri GÖREMİYOR (0);
+  takma isim güncellemesi reddedildi; masum kelimeler (ama, amaç, ana, mal,
+  sıkıcı, emin) dokunulmadı. Hız: temiz mesajda ~0,5 ms.
+- **Kapsam dışı (v1):** harf tekrarı (`salaaak`) ve araya konan karakter
+  (`s.a.l.a.k`) normalizasyonu — maskenin orijinale hizalanmasını bozar;
+  listede yaygın varyantlar zaten var. Gerekirse ayrı iş.

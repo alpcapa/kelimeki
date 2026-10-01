@@ -12,7 +12,7 @@
 // `tag` yanlış seviyeye (örneğin `message.tag` ya da `message.notification.
 // tag`) yazılırsa FCM 400 DÖNDÜRMEZ, bilinmeyen alanı yok sayar ve hata
 // ancak "rozet hâlâ birikiyor" olarak, haftalar sonra fark edilir. Ayrıca
-// önek şeması (`sira:` / `davet:` / `sure:` / `sure-yerel:` / `arkadas:`)
+// önek şeması (`sira:` / `davet:` / `sure:` / `sure-yerel:` / `arkadas:` / `alarm:`)
 // tek bir düz isim alanını paylaşıyor: önek unutulursa aynı oyunun daveti
 // ile "sıra sende"si birbirini siler.
 //
