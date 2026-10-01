@@ -239,6 +239,12 @@ mobile/
                              # YÜKSEKLİK bütçesi + taş puntosu tavanı; web
                              # `boardFit.ts`/`index.css` ile birebir, kapı
                              # board_fit_test.dart — Parça 215) + PAYLAŞILAN küçük parçalar:
+                             # hint_bubble.dart — öğeye çapalı eğitim
+                             #   balonu (`HintAnchor`, OverlayPortal; web
+                             #   HintBubble.tsx) + onboarding_hints.dart —
+                             #   iki oyun ekranının balon SIRASI sayacı
+                             #   (`OnboardingHintScheduler`; web
+                             #   useOnboardingHints) — 1 Ekim 2026.
                              # modal_shell (KModal — başlıklı 360px pencere),
                              # dialog_shell (KDialogCard — 384px onay/uyarı
                              # kartı; İKİSİ AYRI, web'de de öyle),

@@ -288,43 +288,106 @@ void main() {
         isTrue);
   });
 
-  // ── 10. Bağlamsal ipucu (Onboarding Faz 2) ─────────────────────────────
-  // Web `verify-tutorial-script`in aynı numaralı bölümünün eşi. 30 Eylül
-  // 2026'dan beri tek ipucu (`anlam`): kelime oturmadıysa balon yok,
-  // tavana çarpınca bir daha yok.
-  test('bağlamsal ipucu: kelime oturunca bir kez', () {
-    const sifir = <OnboardingHintId, int>{OnboardingHintId.anlam: 0};
+  // ── 10. Eğitim balonları (Onboarding Faz 2; sıra 1 Ekim 2026) ──────────
+  // Web `verify-tutorial-script`in aynı numaralı bölümünün eşi — vakalar
+  // BİREBİR aynı: sıra menü → anlam → zoom → hamleler → torba → mesaj;
+  // ilki 2. turdan, sonrakiler 4'er tur arayla; çizilemeyen ATLANIR; anlam
+  // kelime oturmadan ve 6. turdan önce BEKLER; her biri bir kez.
+  test('eğitim balonları: sıra · tur eşikleri · atlama · bir kez', () {
+    final sifir = {for (final id in OnboardingHintId.values) id: 0};
+    Map<OnboardingHintId, int> bitti(List<OnboardingHintId> ids) => {
+          ...sifir,
+          for (final id in ids) id: onboardingHintMaxShows,
+        };
+    const hepsi = {...OnboardingHintId.values};
+    final yerel = {...hepsi}..remove(OnboardingHintId.mesaj);
+    final misafir = {...yerel}..remove(OnboardingHintId.menu);
+    final canli = {...hepsi}..remove(OnboardingHintId.anlam);
+    OnboardingHintInput girdi(int moves, int? last, Set<OnboardingHintId> av,
+            {bool word = true, int n = 2}) =>
+        OnboardingHintInput(
+            movesSinceOpen: moves,
+            playerCount: n,
+            lastShownAt: last,
+            wordPlaced: word,
+            available: av);
+    const ilk = onboardingHintFirstRounds * 2;
+    const ara = onboardingHintGapRounds * 2;
+    const anlam = onboardingHintAnlamMinRounds * 2;
+    const m = OnboardingHintId.menu;
+    const a = OnboardingHintId.anlam;
+    const z = OnboardingHintId.zoom;
+    const h = OnboardingHintId.hamleler;
+    const t = OnboardingHintId.torba;
     final vakalar = <(
       String,
       OnboardingHintInput,
       Map<OnboardingHintId, int>,
       OnboardingHintId?
     )>[
+      ('ilk turlarda balon yok', girdi(ilk - 1, null, yerel), sifir, null),
+      ('2. tur → menü (girişli)', girdi(ilk, null, yerel), sifir, m),
       (
-        'kelime oturmadı',
-        const OnboardingHintInput(wordPlaced: false, movesSinceOpen: 5),
+        '4 kişide tur = 4 hamle: 7. hamlede henüz yok',
+        girdi(onboardingHintFirstRounds * 4 - 1, null, yerel, n: 4),
         sifir,
         null
       ),
       (
-        'açılıştan beri az hamle — zoom balonuyla çakışmasın',
-        const OnboardingHintInput(
-            wordPlaced: true, movesSinceOpen: onboardingHintMinMoves - 1),
-        sifir,
+        'menüden sonra aralık dolmadan yok',
+        girdi(ilk + ara - 1, ilk, yerel),
+        bitti([m]),
+        null
+      ),
+      ('aralık doldu → anlam', girdi(ilk + ara, ilk, yerel), bitti([m]), a),
+      (
+        'anlamın sırası ama kelime oturmadı → BEKLER',
+        girdi(ilk + ara, ilk, yerel, word: false),
+        bitti([m]),
         null
       ),
       (
-        'kelime oturdu, eşik doldu',
-        const OnboardingHintInput(
-            wordPlaced: true, movesSinceOpen: onboardingHintMinMoves),
+        'misafir: menü atlanır, anlam 6. turdan önce BEKLER',
+        girdi(ilk, null, misafir),
         sifir,
-        OnboardingHintId.anlam
+        null
+      ),
+      ('misafir: 6. tur → anlam', girdi(anlam, null, misafir), sifir, a),
+      ('anlamdan sonra → zoom', girdi(20, 12, yerel), bitti([m, a]), z),
+      (
+        'zoom çizilemiyor (köşe dolu) → hamleler',
+        girdi(20, 12, {...yerel}..remove(z)),
+        bitti([m, a]),
+        h
       ),
       (
-        'tavanda — bir daha gösterilmez',
-        const OnboardingHintInput(
-            wordPlaced: true, movesSinceOpen: onboardingHintMinMoves),
-        {OnboardingHintId.anlam: onboardingHintMaxShows},
+        'yerel oyun: hamlelerden sonra torba, mesaj YOK',
+        girdi(36, 28, yerel),
+        bitti([m, a, z, h]),
+        t
+      ),
+      (
+        'yerel oyun: yalnız mesaj kaldı → balon yok',
+        girdi(44, 36, yerel),
+        bitti([m, a, z, h, t]),
+        null
+      ),
+      (
+        'Canlı: anlam atlanır, sıra zoom',
+        girdi(ilk + ara, ilk, canli, word: false),
+        bitti([m]),
+        z
+      ),
+      (
+        'Canlı: yalnız mesaj kaldı → mesaj',
+        girdi(ilk, null, canli, word: false),
+        bitti([m, a, z, h, t]),
+        OnboardingHintId.mesaj
+      ),
+      (
+        'hepsi gösterildi → bir daha yok',
+        girdi(100, null, hepsi),
+        bitti(OnboardingHintId.values),
         null
       ),
     ];
@@ -337,8 +400,7 @@ void main() {
     expect(onboardingHintYon(onboardingHintAltRows), 'ust');
     expect(onboardingHintYon(12), 'ust');
     // Metinler TEK cümle ve terim `bölge` (bkz. kök CLAUDE.md → Terminoloji).
-    for (final id in OnboardingHintId.values) {
-      final metin = onboardingHintTexts[id]!;
+    for (final MapEntry(key: id, value: metin) in onboardingHintTexts.entries) {
       expect('.'.allMatches(metin).length, 1, reason: '$id tek cümle olmalı');
       expect(metin.toLowerCase().contains('sınır'), isFalse,
           reason: '$id "sınır" diyor — verginin/alanın adı "bölge"');

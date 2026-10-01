@@ -1730,17 +1730,25 @@ test.describe('tahta zoom', () => {
     return (await page.locator(`[data-cell="${r},${c}"]`).boundingBox())!;
   }
 
-  // ── Tanıtım balonu (1 Eylül 2026, kullanıcı isteği) ─────────────────
-  // Kural İKİ değere birden bakıyor: gösterim sayacı (tavan 2) VE "denedi
-  // mi". Port ikizi: `mobile/app/test/zoom_hint_test.dart` — metin ikisinde
-  // de BİREBİR aynı olmalı.
+  // ── Tanıtım balonu (1 Eylül 2026; 1 Ekim 2026'dan beri eğitim SIRASINDA) ─
+  // Balon artık açılışta değil, eğitim balonu sırasının üçüncü halkası olarak
+  // çıkıyor (menü → anlam → zoom → hamleler → torba → mesaj; ilki 2. turdan
+  // sonra, `pickOnboardingHint`) ve BİR KEZ. Misafirde menü atlanır; testler
+  // `anlam`ı "gösterildi" tohumlayarak zoom'u sıranın başına alıyor. Port
+  // ikizi: `mobile/app/test/zoom_hint_test.dart` — metin BİREBİR aynı.
   const HINT = 'Boş kareye çift tık tahtayı büyütür. Şimdi Dene!'; // `\n` getByText'te boşluğa iner
 
   /** Balon bayraklarını oyun açılmadan ÖNCE tohumlar. */
-  async function tohumla(page: Page, v: { shown?: number; tried?: boolean }) {
+  async function tohumla(
+    page: Page,
+    v: { shown?: number; tried?: boolean; bitenler?: string[] },
+  ) {
     await page.addInitScript((val) => {
-      const o = val as { shown?: number; tried?: boolean };
+      const o = val as { shown?: number; tried?: boolean; bitenler?: string[] };
       try {
+        for (const id of o.bitenler ?? ['anlam']) {
+          localStorage.setItem(`kelimeki:hint-shown:${id}`, '1');
+        }
         if (o.shown !== undefined) {
           localStorage.setItem('kelimeki:zoom-hint-shown', String(o.shown));
         }
@@ -1757,52 +1765,72 @@ test.describe('tahta zoom', () => {
     );
   }
 
+  /** Bir tur: oyuncu pas geçer, YZ oynar. */
+  async function pasGec(page: Page): Promise<void> {
+    const pas = page.getByRole('main').getByRole('button', { name: 'Pas Geç' });
+    await expect(pas).toBeEnabled({ timeout: 20_000 });
+    await pas.click();
+    await page.getByLabel('Pas geçme onayı').getByRole('button', { name: 'Pas Geç' }).click();
+    await expect(pas).toBeDisabled();
+    await expect(pas).toBeEnabled({ timeout: 20_000 });
+  }
+
+  /** Sıranın ilk balonuna kadar oyna: 2 tur (2 kişide 4 hamle). */
+  async function ilkBalonaKadar(page: Page): Promise<void> {
+    await pasGec(page);
+    await pasGec(page);
+  }
+
   // ⚠ REGRESYON (1 Eylül 2026, kullanıcı preview'da fark etti: *"misafirde
-  // çalışmıyor mu?"*): sayaç Setup ekranında da artıyordu — `App` bileşeni
-  // Setup'ı DA render ettiğinden hook orada mount oluyor ve balon tahta HİÇ
-  // GÖRÜNMEDEN "gösterildi" sayılıyordu. Siteyi iki kez açıp oyun açmayan
-  // kullanıcıda tavan doluyor, balon bir daha hiç çıkmıyordu. (Misafir/
-  // girişli ayrımı DEĞİLDİ — herkeste vardı. Portta yok: orada oyun ekranı
-  // ayrı bir route.) Ölçüldü: Setup'ta `kelimeki:zoom-hint-shown` = "1".
-  test('Setup ekranında sayaç ARTMAZ — gösterim tahta görününce sayılır',
-      async ({ page }) => {
+  // çalışmıyor mu?"*): sayaç Setup ekranında da artıyordu — balon tahta HİÇ
+  // GÖRÜNMEDEN "gösterildi" sayılıyordu. Karar artık hamleye bağlı olduğu
+  // için yapısal olarak imkânsız, ama sayım hâlâ kilitli.
+  test('Setup ekranında sayaç ARTMAZ', async ({ page }) => {
     await donenKullanici(page);
     await page.goto('/');
     await expect(page.getByText('OYUNU BAŞLAT')).toBeVisible();
     expect(await sayac(page)).toBe(0);
   });
 
-  test('ilk oyun açılışında balon ÇIKAR, sayaç 1 olur', async ({ page }) => {
+  test('açılışta balon YOK; 2. turdan sonra ÇIKAR, sayaç 1 olur', async ({ page }) => {
+    await tohumla(page, {});
     await oyunEkrani(page);
+    await expect(page.getByText(HINT)).toHaveCount(0);
+    expect(await sayac(page)).toBe(0);
+    await ilkBalonaKadar(page);
     await expect(page.getByText(HINT)).toBeVisible();
     expect(await sayac(page)).toBe(1);
   });
 
-  test('hiç denemeyene İKİNCİ açılışta bir kez daha çıkar, üçüncüde çıkmaz',
+  test('zoom balonu gösterildiyse bir daha çıkmaz — sıra HAMLELER\'e geçer',
       async ({ page }) => {
     await tohumla(page, { shown: 1 });
     await oyunEkrani(page);
-    await expect(page.getByText(HINT)).toBeVisible();
-    expect(await sayac(page)).toBe(2);
-  });
-
-  test('tavana ulaşınca (2) balon çıkmaz', async ({ page }) => {
-    await tohumla(page, { shown: 2 });
-    await oyunEkrani(page);
+    await ilkBalonaKadar(page);
     await expect(page.getByText(HINT)).toHaveCount(0);
-    expect(await sayac(page)).toBe(2);
+    expect(await sayac(page)).toBe(1);
+    // Alt şeritteki "Hamleler"e çapalı balon.
+    const balon = page.locator('[data-hint-bubble]');
+    await expect(balon).toHaveText('Buradan tüm hamleleri görebilirsin.');
+    const hedef = (await page.getByRole('button', { name: /Hamleler/ }).boundingBox())!;
+    const kutu = (await balon.boundingBox())!;
+    expect(kutu.y + kutu.height).toBeLessThanOrEqual(hedef.y);
+    expect(kutu.x).toBeGreaterThanOrEqual(hedef.x - 1);
   });
 
-  test('zoom DENEYENE bir daha çıkmaz (sayaç 0 olsa bile)', async ({ page }) => {
+  test('zoom DENEYENE balon çıkmaz (sayaç 0 olsa bile)', async ({ page }) => {
     await tohumla(page, { tried: true });
     await oyunEkrani(page);
+    await ilkBalonaKadar(page);
     await expect(page.getByText(HINT)).toHaveCount(0);
     expect(await sayac(page)).toBe(0);
   });
 
   test('zoom denenince balon anında kapanır ve bayrak kalıcı yazılır',
       async ({ page }) => {
+    await tohumla(page, {});
     await oyunEkrani(page);
+    await ilkBalonaKadar(page);
     await expect(page.getByText(HINT)).toBeVisible();
 
     const b = await hucreKutusu(page, 6, 6);
@@ -1815,25 +1843,24 @@ test.describe('tahta zoom', () => {
 
   // 16 Eylül 2026 — bir oyuncu bildirdi: *"tanıtımdan sonra zoom özelliği için
   // sürekli kalan uyarı mesajı oyun oynamayı zorlaştırıyor... 3-5 saniye sonra
-  // gidecek şekle getirelim. İnsanlar okumuyor."* Öncesinde balonu kapatan TEK
-  // şey zoom'u denemekti. Süre: `ZOOM_HINT_AUTO_HIDE_MS`.
+  // gidecek şekle getirelim. İnsanlar okumuyor."* Süre: `ZOOM_HINT_AUTO_HIDE_MS`.
   test('balon kendi kendine kapanır — ve bu "denedi" SAYILMAZ', async ({ page }) => {
+    await tohumla(page, {});
     await oyunEkrani(page);
+    await ilkBalonaKadar(page);
     await expect(page.getByText(HINT)).toBeVisible();
 
     // Hiçbir dokunuş yok: yalnızca zaman geçiyor.
     await expect(page.getByText(HINT)).toHaveCount(0, { timeout: 10_000 });
-
-    // ⚠ Kural DEĞİŞMEDİ: kendi kendine kapanma "denendi" yazmaz ve sayacı
-    // ayrıca artırmaz — hiç denemeyen kullanıcı balonu ikinci oyun
-    // açılışında bir kez daha görür (tavan 2).
     expect(await page.evaluate(() => localStorage.getItem('kelimeki:zoom-tried')))
       .toBeNull();
     expect(await sayac(page)).toBe(1);
   });
 
   test('balon tahtadan TAŞMAZ (dar telefonda metin sarılır)', async ({ page }) => {
+    await tohumla(page, {});
     await oyunEkrani(page);
+    await ilkBalonaKadar(page);
     const balon = (await page.locator('[data-zoom-hint]').boundingBox())!;
     const vp = (await page.locator('[data-board-viewport]').boundingBox())!;
     expect(balon.x).toBeGreaterThanOrEqual(vp.x - 1);
@@ -1846,7 +1873,9 @@ test.describe('tahta zoom', () => {
   // alt bölümün ortasına beyaz boş kareyi gösteren bir mesaj balonu olsun"*.
   test('balon SOL-ALT bloğun ortasındaki boş kareyi gösterir, X3\'ü DEĞİL',
       async ({ page }) => {
+    await tohumla(page, {});
     await oyunEkrani(page);
+    await ilkBalonaKadar(page);
     const balon = page.locator('[data-zoom-hint]');
     await expect(balon).toHaveAttribute('data-zoom-hint-target', '10,1');
     const kutu = (await balon.boundingBox())!;

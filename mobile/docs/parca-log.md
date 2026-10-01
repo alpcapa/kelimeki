@@ -25,6 +25,37 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 226 — Eğitim balonu SIRASI: menü · anlam · zoom · hamleler · torba · mesaj (1 Ekim 2026) — web + port aynı PR
+
+- **Kullanıcı isteği (1.1.2 cihaz turu):** dört yeni balon (avatar menüsü,
+  Hamleler, Torba, Mesajlaşma) + mevcut anlam/zoom balonları TEK sırada,
+  birer kez, 2. turdan sonra başlayıp 4'er tur arayla; misafirde menü
+  atlanır, mesaj en sonda (yalnız Canlı oyunda çizilebilir). Kurallar ve
+  sözler: `docs/decisions/onboarding.md` → "1 Ekim 2026 — tek balon SIRAYA
+  dönüştü".
+- **Port:** `util/onboarding.dart` (enum 6 id, sıra, üç tur eşiği, metinler,
+  yeni `pickOnboardingHint`), `FlagsStore` (zoom sayacı sıraya bağlandı,
+  `shouldShowZoomHint` SİLİNDİ), YENİ `ui/game/onboarding_hints.dart`
+  (`OnboardingHintScheduler`, iki ekranın ortak sayacı) ve
+  `ui/game/hint_bubble.dart` (`HintAnchor`: `OverlayPortal` +
+  `CompositedTransformFollower`, `IgnorePointer`). `GameHeader.menuHint`,
+  `BoardWidget.stripHint`, iki ekranda TORBA düğmesi sarıldı. Zoom balonu
+  artık AÇILIŞTA çıkmıyor (`_zoomHintKarariVer` → `_zoomHintGoster`).
+- **Bulunan tuzak:** `OverlayPortalController.show()` build sırasında
+  çağrılınca assert veriyor (`didUpdateWidget`). Portal ilk kareden sonra bir
+  kez açılıyor; balonun görünürlüğü builder'da `show`a bakıyor.
+- **Canlı:** sayaç ilk senkronla KURULUYOR (geçmişin tamamı "az önce
+  oynanmış" sayılmaz); `anlam` çizilmez, `mesaj` yalnız burada.
+
+**Doğrulama:** `tutorial_script_test` (web `verify-tutorial-script` §10'un
+15 vakası birebir), `tutorial_parity_test` (sıra · 3 eşik · metinler web
+kaynağından), `zoom_hint_test` 11/11 (2. turdan sonra zoom, gösterildiyse
+hamleler, denediyse yok, torba balonu TORBA'nın üstünde + 4 sn'de kapanıyor,
+girişliye ilk menü). Web: `verify-tutorial-script` + Playwright "tahta zoom"
+18/18 (gerçek paslarla). **Sınır:** Canlı ekrandaki mesaj/torba balonu
+yalnızca birim düzeyinde (scheduler) sınandı, ekran testi yok — cihazda
+bakılmalı (TESTING §13.6 / mobil §1.9.1).
+
 ## Parça 225 — 1.1.2 cihaz turu bulguları: "Tanıtım" linki · "Kişi" etiketi · k-lig başlığı (1 Ekim 2026)
 
 Kullanıcı 1.1.2 (826) TestFlight turunda üç bulgu bildirdi:

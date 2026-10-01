@@ -15,6 +15,7 @@ import 'board_fit.dart';
 import 'board_zoom.dart';
 
 import 'count_badge.dart';
+import 'hint_bubble.dart';
 import 'fluid.dart';
 import 'neo_box.dart';
 import 'outline.dart';
@@ -25,6 +26,7 @@ import '../ai_level_badge.dart';
 import '../tap_target.dart';
 import '../tokens.dart';
 import '../../util/online_status.dart';
+import '../../util/onboarding.dart';
 
 /// Yalnızca testler için: `build()` her çağrıldığında bir artar. Sürükleme
 /// sırasında `BoardWidget`'ın gereksiz yere yeniden inşa EDİLMEDİĞİNİ
@@ -217,10 +219,15 @@ class BoardWidget extends StatelessWidget {
   /// zoom'da değişmeden doğru kalmasının sebebi tam olarak bu.
   final GlobalKey? gridKey;
 
-  /// Zoom tanıtım balonu (1 Eylül 2026, kullanıcı isteği) — MERKEZ kareyi
-  /// işaret eden tek seferlik ipucu. Ne zaman çizileceğine ekranlar karar
-  /// verir (`FlagsStore.shouldShowZoomHint`); burada yalnızca çizim var.
+  /// Zoom tanıtım balonu (1 Eylül 2026, kullanıcı isteği) — SOL-ALT bloğun
+  /// boş karesini işaret eden tek seferlik ipucu. Ne zaman çizileceğine
+  /// ekranlar karar verir (eğitim balonu sırası, `pickOnboardingHint`);
+  /// burada yalnızca çizim var.
   final bool zoomHint;
+
+  /// Alt şeritteki bir öğeyi işaret eden eğitim balonu (1 Ekim 2026):
+  /// `hamleler` ya da `mesaj` — web `Board.stripHint`. Kararı ekran verir.
+  final OnboardingHintId? stripHint;
 
   /// Tahta yakınlaştırması (1.0.5). Verilmezse davranış eski hâliyle
   /// birebir aynı — hiçbir sarmalayıcı kurulmaz.
@@ -428,6 +435,7 @@ class BoardWidget extends StatelessWidget {
     this.dragListenable,
     this.gridKey,
     this.zoomHint = false,
+    this.stripHint,
     this.targets,
     this.coach,
     this.zoom,
@@ -1030,7 +1038,12 @@ class BoardWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (onOpenHistory != null)
-                TapTarget(
+                HintAnchor(
+                  show: stripHint == OnboardingHintId.hamleler,
+                  text: onboardingHintTexts[OnboardingHintId.hamleler]!,
+                  yon: HintBubbleYon.ust,
+                  hiza: HintBubbleHiza.bas,
+                  child: TapTarget(
                   onTap: onOpenHistory,
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1050,6 +1063,7 @@ class BoardWidget extends StatelessWidget {
                     ],
                   ),
                 ),
+                ),
               // Zorluk rozeti — YZ oyununda "Hamleler"in sağında, Canlı'daki
               // "· Mesajlaşma"nın yerinde; ayraç aynı görünümde (web
               // `Board.tsx` ikizi).
@@ -1067,7 +1081,12 @@ class BoardWidget extends StatelessWidget {
                   child:
                       Text('·', style: TextStyle(fontSize: 11, color: kMuted)),
                 ),
-                TapTarget(
+                HintAnchor(
+                  show: stripHint == OnboardingHintId.mesaj,
+                  text: onboardingHintTexts[OnboardingHintId.mesaj]!,
+                  yon: HintBubbleYon.ust,
+                  hiza: HintBubbleHiza.bas,
+                  child: TapTarget(
                   onTap: onOpenMessaging,
                   // Rozet `Positioned(top: -4, right: -4)` ile Row'un
                   // kutusuna çapalı — TapTarget çocuğu ORTALADIĞI için
@@ -1128,6 +1147,7 @@ class BoardWidget extends StatelessWidget {
                         ),
                     ],
                   ),
+                ),
                 ),
               ],
             ],

@@ -2,6 +2,8 @@
 import { PLAYER_COLORS } from '../game/constants';
 import type { GameState } from '../game/types';
 import { LogoMark } from './LogoMark';
+import { HintBubble } from './HintBubble';
+import { ONBOARDING_HINT_TEXTS } from '../utils/onboarding';
 import { UserMenu } from './UserMenu';
 
 // Skor kutuları akıcı/duyarlı: dar ekranlarda küçülüp genişte tam boya
@@ -87,9 +89,11 @@ interface GameHeaderProps {
    * `div` kalır, görünüm ve davranış hiç değişmez.
    */
   onPlayerClick?: (index: number) => void;
+  /** Avatarı işaret eden eğitim balonu (1 Ekim 2026, `pickOnboardingHint`). */
+  menuHint?: boolean;
 }
 
-export function GameHeader({ state, onLogoClick, onPlayerClick }: GameHeaderProps) {
+export function GameHeader({ state, onLogoClick, onPlayerClick, menuHint = false }: GameHeaderProps) {
   const { players, current } = state;
   return (
     <header className="w-full max-w-[680px] flex items-center justify-between gap-2 px-3 py-2.5">
@@ -236,7 +240,10 @@ export function GameHeader({ state, onLogoClick, onPlayerClick }: GameHeaderProp
           })}
         </div>
 
-        <UserMenu />
+        <div className="relative shrink-0">
+          <UserMenu />
+          {menuHint && <HintBubble text={ONBOARDING_HINT_TEXTS.menu} yon="alt" hiza="son" />}
+        </div>
       </div>
     </header>
   );

@@ -107,7 +107,9 @@ Projenin geri kalanının çok büyük bölümü (Canlı oyun, mesajlaşma, e-po
 
 İlk oyunda Hızlı Başlangıç PENCERESİ açılmaz; yerine raylı, 60 saniyelik bir
 mini oyun gelir (`TutorialGame` + `utils/tutorialScript.ts`). Aynı kural
-kümesine bağlı üç yüzey daha var: **bağlamsal ipuçları** (`pickOnboardingHint`),
+kümesine bağlı üç yüzey daha var: **eğitim balonları** (`pickOnboardingHint` —
+1 Ekim 2026'dan beri SIRA: menü → anlam → zoom → hamleler → torba → mesaj,
+birer kez, 2. turdan sonra 4'er tur arayla),
 **tekrar oynama** (`TUTORIAL_REPLAY_CTA`, yalnızca Setup'tan açılan pencerede)
 ve **oyun sonu kutlaması** (`pickFirstWinCelebration`). Dördünün de kararı
 `utils/onboarding.ts`'te SAF FONKSİYON — koşula bileşen içinde karar verme.
@@ -612,7 +614,7 @@ src/
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan
                 # mplus-rounded-1c-800-subset.woff2 ÜRETİLMİŞ, yalnızca RankSeal'ın harfi
                 # (yeniden üretimi: "k-lig Ödül & Rütbe Sistemi" → Rütbe Rozeti Fontu)
-  hooks/        # useAuth, useModalA11y, useOnlineStatus, useAppIconBadge, useNicknameAvailability, useRankScores, useBoardZoom, useInviteShare, usePlayerDirectory
+  hooks/        # useAuth, useModalA11y, useOnlineStatus, useAppIconBadge, useNicknameAvailability, useRankScores, useBoardZoom, useOnboardingHints, useInviteShare, usePlayerDirectory
 .claude/        # oturum kurulumu: hooks/session-start.sh — npm install + Flutter
                 # stable + iki paketin pub get'i (bkz. mobile/CLAUDE.md, "Flutter
                 # SDK bu ortamda HAZIR"). Amacı: Dart testleri YERELDE koşsun,

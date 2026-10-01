@@ -553,6 +553,64 @@ kanıtlandı (balon eski yerine konunca port testi 565 > 545 ile düştü).
 
 ## Faz 2 — bağlamsal ipuçları (8 Eylül 2026)
 
+### 1 Ekim 2026 — tek balon SIRAYA dönüştü (menü · anlam · zoom · hamleler · torba · mesaj)
+
+1.1.2 (826) cihaz turunda kullanıcı: *"Eğitim balonlarına eklemeler var: 1.
+Hamleleri gösteren "Buradan tüm hamleleri görebilirsin" yazsın. 2. Mesajlaşma
+balonu "Buradan oyunculara mesaj gönderebilirsin" 3. Üstte avatarı gösteren
+"Kullanıcı menüsü için tıkla" 4. Torba "Dışarıda Kalan taşlar burada" (Hepsi
+1 kere gösterim) Hepsini 5-6 hamle arayla gösterelim. Zoom ve anlam
+balonlarını da bu gruba ekleyip akışı düşünmek lazım. Bence 2-3 hamle sonra
+Avatar menü ile başlasın. Sonra 4-5 hamle arayla, kelime anlam uyarısı, zoom,
+Hamleler, mesaj ve torba. O kadar devam etmezlerse sorun yok. Yeniden
+geldiklerinde görürler."* İki soruya cevap: sayım **TUR** (herkes bir kez
+oynadı); misafirde menü **ATLANIR**; ve *"Balonlar misafir YZ oyunlarda da
+çıkacak değil mi? Öyleyse mesaj gösterilmemeli. Mesajı en sona koyalım.
+Onun yerine torba gelsin."*
+
+**Sonuç — `pickOnboardingHint` (`utils/onboarding.ts` ↔
+`util/onboarding.dart`, saf):**
+
+| Kural | Değer |
+|---|---|
+| Sıra | menü → anlam → zoom → hamleler → torba → mesaj |
+| İlk balon | ekran açılışından `ONBOARDING_HINT_FIRST_ROUNDS` = 2 tur sonra |
+| Aralık | bu ekranda son balondan `ONBOARDING_HINT_GAP_ROUNDS` = 4 tur sonra |
+| Tavan | her balon BİR KEZ (cihaz sayacı; zoom eski `zoom-hint-shown`/`zoom-tried` anahtarlarından) |
+| Atlanır | bu ekranda çizilemeyen: misafirde menü, Canlı'da anlam, YZ oyununda mesaj, köşe bloğu doluyken zoom |
+| Bekler | anlam: kelime oturmayan hamlede ve açılıştan 6 turdan önce (30 Eylül'ün "12-14 toplam hamle" kararı korundu — misafirde menü atlanınca anlam yoksa 2. turda çıkardı) |
+
+2 kişilik YZ oyununda: menü 4. · anlam 12. · zoom 20. · hamleler 28. · torba
+36. hamle. İlk oyun ~33 hamlede bittiği için torba ve mesaj sonraki oyunlara
+kalır — kullanıcı: *"sorun yok"*.
+
+**Zoom balonu artık AÇILIŞTA çıkmıyor.** 1 Eylül'den beri ekran açılırken
+karar veriliyordu (tavan 2, `shouldShowZoomHint`); o yol silindi, balonu
+sıra açıyor (`useBoardZoom.showHint` ↔ `_zoomHintGoster`). Zoom'u kendi
+denemiş oyuncuya yine hiç gösterilmez.
+
+**Yeni yüzey — öğeye çapalı balon:** `HintBubble.tsx` ↔
+`ui/game/hint_bubble.dart` (`HintAnchor`). Görsel dil tahta balonlarıyla aynı
+(mavi, beyaz kalın, `clamp(11px,3.2vw,16px)`). Web'de hedefin ÇOCUĞU
+(`relative` hedef, `pointer-events-none`); portta `OverlayPortal` +
+`CompositedTransformFollower` (kart `ClipRRect`i kırpmasın, `IgnorePointer`).
+⚠ `OverlayPortalController.show()` build sırasında ÇAĞRILAMAZ — portal ilk
+kareden sonra bir kez açılıyor, görünürlüğü builder'daki `show` taşıyor
+(ilk deneme `didUpdateWidget`ta aç/kapa idi, assert verdi).
+
+**Sayaç ortak:** web `hooks/useOnboardingHints.ts` (App.tsx +
+OnlineGameScreen.tsx) ↔ port `ui/game/onboarding_hints.dart`
+(`OnboardingHintScheduler`, iki oyun ekranı). Açılıştaki geçmiş SAYILMAZ
+(kayıttan devam balon uydurmasın), geçmiş kısalırsa (aynı ekranda yeni oyun)
+yeniden kurulur. Canlı'da ilk senkron sayacı kurar.
+
+**Kilitler:** `npm run verify-tutorial-script` §10 (15 vaka) ↔
+`tutorial_script_test.dart` (aynı vakalar), `tutorial_parity_test.dart`
+(sıra · üç eşik · metinler web kaynağından), `zoom_hint_test.dart` (ekranda:
+2. turdan sonra zoom, gösterildiyse hamleler, denediyse yok, torba balonu
+TORBA'nın üstünde ve kapanıyor, girişliye ilk menü), `tests/smoke.spec.ts`
+"tahta zoom" (aynı akış, gerçek paslarla).
+
 ### 30 Eylül 2026 — üç mekanik ipucu KALDIRILDI, yerine `anlam`
 
 Kullanıcı Instagram bio linkinden gelen bir ziyaretçi gibi uçtan uca oynadı

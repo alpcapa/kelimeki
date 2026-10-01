@@ -61,7 +61,8 @@ class FlagsStore {
   /// Tahta zoom'u tanıtım balonu (1 Eylül 2026, kullanıcı isteği) — İKİ
   /// değer, çünkü kural iki şeye birden bakıyor: *"Deneyip büyütenlere bir
   /// daha gösterme. Hiç denememişse bir daha sefer tekrar göster."*
-  ///   • `zoomHintShown`: balon kaç oyun açılışında GÖSTERİLDİ (tavan 2).
+  ///   • `zoomHintShown`: balon kaç kez GÖSTERİLDİ (1 Ekim 2026'dan beri
+  ///     eğitim balonu sırasının bir halkası, tavan 1 — `onboarding.dart`).
   ///   • `zoomTried`: kullanıcı çift dokunuşla zoom'u BİR KEZ bile yaptı mı
   ///     — yaptıysa balon bir daha hiç çıkmaz (sayaç ne olursa olsun).
   /// Web ikizi: `src/utils/onboarding.ts` (`kelimeki:zoom-hint-shown` /
@@ -73,9 +74,6 @@ class FlagsStore {
   bool get zoomTried => prefs.getBool(_zoomTried) ?? false;
   Future<void> markZoomTried() => prefs.setBool(_zoomTried, true);
 
-  /// Balon gösterilsin mi? Tek karar noktası — iki ekran da bunu sorar.
-  bool get shouldShowZoomHint => !zoomTried && zoomHintShown < 2;
-
   /// Bağlamsal ipuçları (Onboarding Faz 2, 8 Eylül 2026) — ipucu BAŞINA bir
   /// sayaç. Web ikizi `kelimeki:hint-shown:<id>`; kural zoom balonununkiyle
   /// aynı: "gösterim" balonun EKRANA GELMESİDİR, nasıl kapandığı sayacı
@@ -84,14 +82,20 @@ class FlagsStore {
   /// yaşayabilir. Karar `util/onboarding.dart`taki saf fonksiyonda.
   static String _hintKey(OnboardingHintId id) => 'hint_shown_${id.name}';
 
-  int hintShown(OnboardingHintId id) => prefs.getInt(_hintKey(id)) ?? 0;
+  int hintShown(OnboardingHintId id) => id == OnboardingHintId.zoom
+      // Zoom eski anahtarlarından: gösterilmiş YA DA kendisi denenmiş = tamam
+      // (web `onboardingHintShownCounts` ile aynı).
+      ? (zoomTried ? onboardingHintMaxShows : zoomHintShown)
+      : prefs.getInt(_hintKey(id)) ?? 0;
 
   Map<OnboardingHintId, int> get onboardingHintShownCounts => {
         for (final id in OnboardingHintId.values) id: hintShown(id),
       };
 
   Future<void> bumpOnboardingHintShown(OnboardingHintId id) =>
-      prefs.setInt(_hintKey(id), hintShown(id) + 1);
+      id == OnboardingHintId.zoom
+          ? bumpZoomHintShown()
+          : prefs.setInt(_hintKey(id), hintShown(id) + 1);
 
   /// Anonim ziyaretçi kimliği — ilk erişimde bir kez üretilir, sonra sabit
   /// (web visitTracking.ts anon-id davranışı).

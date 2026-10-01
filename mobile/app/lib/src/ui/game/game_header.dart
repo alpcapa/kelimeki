@@ -12,6 +12,8 @@ import '../../data/friends_api.dart';
 import '../../data/games_api.dart';
 import '../../data/stats_api.dart';
 import '../auth/account_button.dart';
+import '../../util/onboarding.dart';
+import 'hint_bubble.dart';
 import '../tap_target.dart';
 import '../tokens.dart';
 import 'fluid.dart';
@@ -57,11 +59,16 @@ class GameHeader extends StatelessWidget {
   /// skor kartı — web onPlayerClick'in eşleniği; yerel oyunda verilmez).
   final void Function(int index)? onPlayerTap;
 
+  /// Avatarı işaret eden eğitim balonu (1 Ekim 2026) — web
+  /// `GameHeader.menuHint`. Kararı ekran verir (`pickOnboardingHint`).
+  final bool menuHint;
+
   const GameHeader({
     super.key,
     required this.state,
     this.onLogoTap,
     this.onPlayerTap,
+    this.menuHint = false,
     this.auth,
     this.stats,
     this.games,
@@ -181,7 +188,12 @@ class GameHeader extends StatelessWidget {
                 ),
                 if (auth != null && auth!.configured) ...[
                   const SizedBox(width: 8),
-                  AccountButton(
+                  HintAnchor(
+                    show: menuHint,
+                    text: onboardingHintTexts[OnboardingHintId.menu]!,
+                    yon: HintBubbleYon.alt,
+                    hiza: HintBubbleHiza.son,
+                    child: AccountButton(
                     auth: auth!,
                     stats: stats,
                     games: games,
@@ -192,6 +204,7 @@ class GameHeader extends StatelessWidget {
                     girisPaddingX: girisPaddingX,
                     girisPaddingY: girisPaddingY,
                     avatarSize: 32,
+                  ),
                   ),
                 ],
               ],
