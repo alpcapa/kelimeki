@@ -31,15 +31,22 @@ açıldı) anlatır; `docs/decisions/roadmap-arsiv.md` kapanmış turları sakla
 
 ---
 
-## SÜRÜM TRENİ — HAFTADA bir (1 Ekim 2026; 25 Eyl–1 Eki arası 2 haftaydı)
+## SÜRÜM TRENİ — HER PAZARTESİ (1 Ekim 2026; 25 Eyl–1 Eki arası 2 haftaydı)
 
-⚠ **1 Ekim 2026, kullanıcı kararı:** *"Bence bizim gibi yeni uygulamalar
+⚠ **1 Ekim 2026 gece, kullanıcı kararı — SABİT GÜN:** *"Bir sonraki tren 12
+Ekim Pazartesi ve sonraki her Pzt diyelim. İşler azaldıkça 2 haftaya
+çıkartırız. Şimdilik hala bir çok şey çıkıyor."* → kesim **her Pazartesi**,
+ilki **12 Ekim 2026** (1.1.3). Gün artık kaymıyor; aşağıdaki takvim
+tablosu (Pazartesi kesim · Salı–Çarşamba tur · Perşembe gönderim) yeniden
+birebir geçerli, yalnızca aralık 1 hafta. **2 haftaya dönüş ölçütü:**
+kullanıcı kararı, iş akışı azalınca — ajan önerebilir, kendisi değiştirmez.
+
+⚠ **Aynı gün, daha önce (1 Ekim):** *"Bence bizim gibi yeni uygulamalar
 daha sık güncelleme geçiyorlardır. … 19 Ekim'i de haftaya bu günlere çekme
 taraftarıyım."* → 1.1.2 kesimi 5 Ekim beklenmeden **1 Ekim (Perşembe)**
 yapıldı (17 PR, ayrıntı `ROADMAP.md` → "Sıradaki sürüme binecekler") ve
-tren **haftalık** oldu: bir sonraki kesim **~8 Ekim**. Aşağıdaki takvimin
-gün adları 2 haftalık düzenden kaldı; aralık artık 1 hafta, gün kesimle
-birlikte kayar. Kesimden önceki 2 haftalık gerekçe tarihçe olarak aşağıda.
+tren **haftalık** oldu. Kesimden önceki 2 haftalık gerekçe tarihçe olarak
+aşağıda.
 
 
 Sözleri: *"Bundan sonra sürüm arası süre standardı belirlememiz lazım

@@ -86,8 +86,8 @@ sayacı, Console kovaları — hepsi kapanmıştı):
 
 **Durum (1 Ekim 2026 akşamı):** mağazalarda `1.1.1 (723)` = `8c1828f`;
 **1.1.2 (831) = `05f1c1f` iki mağazada incelemede** (`mobile/docs/surumler.md`
-→ "1.1.2 (831)"). Tren artık HAFTALIK, sonraki kesim ~8 Ekim ("SÜRÜM
-TRENİ"). Onaya kadar `main`'e mobil kod girmez. 1 Ekim'de kapanıp arşive
+→ "1.1.2 (831)"). Tren HER PAZARTESİ (1 Eki gece kullanıcı kararı), sonraki kesim
+**12 Ekim 2026** = 1.1.3 ("SÜRÜM TRENİ"). Onaya kadar `main`'e mobil kod girmez. 1 Ekim'de kapanıp arşive
 taşınanlar: #37, #38, #41 (`docs/decisions/roadmap-arsiv.md` → "Altıncı
 taşıma").
 
@@ -320,7 +320,7 @@ gönderim, #41 port parçaları `main`'e girene kadar BEKLER; parçalar taslak
 değil, doğrudan `main`e merge edilir (1.1.2 henüz gönderilmedi).
 Kullanıcı kararı (1 Eki): *"Bizim gibi yeni uygulamalar daha sık güncelleme
 geçiyorlardır"* → 5 Ekim beklenmedi, kesim 1 Ekim'de yapıldı ve tren
-**haftalık** oldu (bir sonraki kesim ~8 Ekim; `surumler.md` → "SÜRÜM TRENİ").
+**haftalık** oldu; aynı gece sabit gün kondu: **her Pazartesi, ilki 12 Ekim** (`surumler.md` → "SÜRÜM TRENİ").
 Aşağıdaki tablonun TAMAMI 1.1.2'nin içeriği.
 
 **Kesim (1 Eki, ajan):** 17 PR sırayla squash-merge edildi — #642 #649 #655
