@@ -1,10 +1,12 @@
 // Yarım kalan oyun hatırlatması — saf kurallar + akış (1 Ekim 2026).
 // Platform ucu sahte; adların Kotlin/Swift paritesi ayrı dosyada
 // (`unfinished_reminder_parity_test.dart`).
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/push_repo.dart';
 import 'package:kelimeki/src/data/unfinished_game_reminder.dart';
 import 'package:kelimeki/src/storage/app_storage.dart';
+import 'package:kelimeki/src/ui/push/push_permission_flow.dart';
 import 'package:kelimeki/src/util/unfinished_reminder.dart';
 import 'package:kelimeki_core/kelimeki_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,6 +27,15 @@ class _FakeZamanlayici implements HatirlatmaZamanlayici {
 
   @override
   Future<void> iptal() async => iptalSayisi += 1;
+
+  int ayarAcmaSayisi = 0;
+  bool ayarAcilabilir = true;
+
+  @override
+  Future<bool> bildirimAyarlariniAc() async {
+    ayarAcmaSayisi += 1;
+    return ayarAcilabilir;
+  }
 }
 
 class _FakeMessaging implements PushMessaging {
@@ -210,11 +221,157 @@ void main() {
       expect(zamanlayici.iptalSayisi, 0);
     });
 
+    test('ayarlardan dönüş: izin açıldıysa hatırlatma DÖNÜŞTE kurulur',
+        () async {
+      messaging.izin = PushPermission.permanentlyDenied;
+      await h.ayarlaraGonder(_oyun());
+      expect(zamanlayici.ayarAcmaSayisi, 1);
+      expect(zamanlayici.kurulanlar, isEmpty);
+      // Kullanıcı ayarlardan bildirimleri açıp döndü.
+      messaging.izin = PushPermission.granted;
+      await h.uygulamaAcildi();
+      expect(zamanlayici.kurulanlar, [DateTime(2026, 10, 2, 19)]);
+      expect(storage.flags.yarimOyunKurulanOyun, _oyun().startedAt);
+      // Bekleyen TEK kullanımlık: sonraki dönüş kurulanı iptal eder, yeniden
+      // KURMAZ (normal "erken dönüş" kuralı).
+      await h.uygulamaAcildi();
+      expect(zamanlayici.kurulanlar, hasLength(1));
+      expect(zamanlayici.iptalSayisi, 1);
+    });
+
+    test('ayarlardan izin AÇILMADAN dönüş: hiçbir şey kurulmaz', () async {
+      messaging.izin = PushPermission.permanentlyDenied;
+      await h.ayarlaraGonder(_oyun());
+      await h.uygulamaAcildi();
+      expect(zamanlayici.kurulanlar, isEmpty);
+    });
+
+    test('ayarlar açılamadıysa dönüşte deneme yapılmaz', () async {
+      zamanlayici.ayarAcilabilir = false;
+      messaging.izin = PushPermission.permanentlyDenied;
+      await h.ayarlaraGonder(_oyun());
+      messaging.izin = PushPermission.granted;
+      await h.uygulamaAcildi();
+      expect(zamanlayici.kurulanlar, isEmpty);
+    });
+
     test('bitmiş ya da hiç oynanmamış oyun kurmaz', () async {
       await h.oyundanAyrildi(_oyun(bitti: true));
       await h.oyundanAyrildi(_oyun(turnCount: 1));
       await h.oyundanAyrildi(_oyun(phase: GamePhase.setup));
       expect(zamanlayici.kurulanlar, isEmpty);
+    });
+  });
+
+  group('yarimOyunKartiSec (2 Ekim 2026 — "Bildirimler kapalı" kartı)', () {
+    final simdi = DateTime(2026, 10, 2, 10);
+    YarimOyunKarti? sec({
+      bool izinVerildi = false,
+      bool sistemTekrarSoramaz = false,
+      int soruldu = 0,
+      DateTime? sonSorulma,
+    }) =>
+        yarimOyunKartiSec(
+          izinVerildi: izinVerildi,
+          sistemTekrarSoramaz: sistemTekrarSoramaz,
+          soruldu: soruldu,
+          sonSorulma: sonSorulma,
+          simdi: simdi,
+        );
+
+    test('izin verilmişse kart yok', () {
+      expect(sec(izinVerildi: true), isNull);
+      expect(sec(izinVerildi: true, sistemTekrarSoramaz: true), isNull);
+    });
+
+    test('sistem sorabiliyorsa izin kartı, soramıyorsa AYAR kartı', () {
+      expect(sec(), YarimOyunKarti.izinIste);
+      expect(sec(sistemTekrarSoramaz: true), YarimOyunKarti.ayaraGonder);
+    });
+
+    test('ayar kartı da ORTAK sayaca tabi (3 kez, arada 7 gün)', () {
+      expect(sec(sistemTekrarSoramaz: true, soruldu: 3), isNull);
+      expect(
+          sec(
+              sistemTekrarSoramaz: true,
+              soruldu: 1,
+              sonSorulma: simdi.subtract(const Duration(days: 2))),
+          isNull);
+      expect(
+          sec(
+              sistemTekrarSoramaz: true,
+              soruldu: 1,
+              sonSorulma: simdi.subtract(const Duration(days: 8))),
+          YarimOyunKarti.ayaraGonder);
+    });
+  });
+
+  group('yarimOyunIzniAkisi — hangi kart (2 Ekim 2026)', () {
+    late AppStorage storage;
+
+    setUp(() async {
+      sqfliteFfiInit();
+      SharedPreferences.setMockInitialValues({});
+      storage = await AppStorage.open(
+        factory: databaseFactoryFfi,
+        path: inMemoryDatabasePath,
+        prefs: await SharedPreferences.getInstance(),
+      );
+    });
+
+    Future<bool?> calistir(WidgetTester tester, PushPermission izin,
+        {required bool ios, String? bas}) async {
+      bool? sonuc;
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () async {
+              sonuc = await yarimOyunIzniAkisi(context,
+                  messaging: _FakeMessaging(izin),
+                  flags: storage.flags,
+                  ios: ios);
+            },
+            child: const Text('çık'),
+          ),
+        ),
+      ));
+      await tester.tap(find.text('çık'));
+      await tester.pumpAndSettle();
+      if (bas != null) {
+        await tester.tap(find.text(bas));
+        await tester.pumpAndSettle();
+      }
+      return sonuc;
+    }
+
+    testWidgets('Android kalıcı ret → "Bildirimler kapalı", AYARLARI AÇ true',
+        (tester) async {
+      final sonuc = await calistir(tester, PushPermission.permanentlyDenied,
+          ios: false, bas: 'AYARLARI AÇ');
+      expect(find.text(kYarimOyunAyarBaslik), findsNothing);
+      expect(sonuc, isTrue);
+      expect(storage.flags.pushSorulmaSayisi, 1,
+          reason: 'ayar kartı da ORTAK sayaçtan yer');
+    });
+
+    testWidgets('iOS ret (denied) → ayar kartı (iOS bir daha SORMAZ)',
+        (tester) async {
+      await calistir(tester, PushPermission.denied, ios: true);
+      expect(find.text(kYarimOyunAyarBaslik), findsOneWidget);
+      expect(find.text('Oyunun yarım kaldı'), findsNothing);
+    });
+
+    testWidgets('Android denied (sistem yine sorabilir) → izin kartı',
+        (tester) async {
+      final sonuc = await calistir(tester, PushPermission.denied,
+          ios: false, bas: 'HATIRLAT');
+      expect(sonuc, isFalse);
+    });
+
+    testWidgets('ayar kartında ŞİMDİ DEĞİL → false', (tester) async {
+      final sonuc = await calistir(tester, PushPermission.permanentlyDenied,
+          ios: false, bas: 'ŞİMDİ DEĞİL');
+      expect(sonuc, isFalse);
     });
   });
 }

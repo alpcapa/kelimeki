@@ -11,11 +11,13 @@
 // bir aktif oyun/bekleyen davet var". Konum değil DURUM — oyunu olmayan
 // birine, olmayan oyunlar için bildirim sorulmuyor. Aynı kontrol oyun
 // kurma/kabul anında da çalışır (hangisi önce gelirse).
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/push_repo.dart';
 import '../../storage/flags_store.dart';
 import '../../util/push_rules.dart';
+import '../../util/unfinished_reminder.dart';
 import '../game/dialog_shell.dart';
 
 /// Gerekiyorsa izin kartını gösterir ve sonucuna göre token'ı senkronlar.
@@ -129,28 +131,44 @@ Future<void> pushIzniAkisi(
 ///
 /// Token BURADA yazılmıyor: girişli kullanıcının token'ı bir sonraki öne
 /// dönüşte `_HomeGate._pushHizala` ile zaten hizalanıyor (tek kaynak).
-/// Fırlatmaz.
-Future<void> yarimOyunIzniAkisi(
+/// Dönüş: kullanıcı "Bildirimler kapalı" kartında AYARLARI AÇ dediyse
+/// `true` (2 Ekim 2026) — çağıran ayarları açar. Fırlatmaz.
+Future<bool> yarimOyunIzniAkisi(
   BuildContext context, {
   required PushMessaging messaging,
   required FlagsStore flags,
   DateTime? simdi,
+  bool? ios,
 }) async {
   try {
     final izin = await messaging.permission();
-    final sorulmali = pushIzniSorulmali(
-      aktifOyunVar: true,
-      izinZatenVerildi: izin == PushPermission.granted,
-      kaliciReddedildi: izin == PushPermission.permanentlyDenied,
+    final apple = ios ?? defaultTargetPlatform == TargetPlatform.iOS;
+    final kart = yarimOyunKartiSec(
+      izinVerildi: izin == PushPermission.granted,
+      sistemTekrarSoramaz: izin == PushPermission.permanentlyDenied ||
+          (apple && izin == PushPermission.denied),
       soruldu: flags.pushSorulmaSayisi,
       sonSorulma: flags.pushSonSorulma,
       simdi: simdi ?? DateTime.now(),
     );
-    if (!sorulmali || !context.mounted) return;
+    if (kart == null || !context.mounted) return false;
 
     // Sayaç kartı GÖSTERMEDEN önce artıyor — `pushIzniAkisi`ndeki gerekçe.
     await flags.pushSorulduIsaretle(simdi ?? DateTime.now());
-    if (!context.mounted) return;
+    if (!context.mounted) return false;
+
+    if (kart == YarimOyunKarti.ayaraGonder) {
+      // Sistem diyaloğu bir daha açılamıyor — tek yol telefonun ayarları.
+      // Ayarları açan ve dönüşte hatırlatmayı yeniden deneyen çağıran
+      // (`YarimOyunHatirlatici.ayarlaraGonder`); burası yalnızca soruyor.
+      return await showKConfirm(
+        context,
+        title: kYarimOyunAyarBaslik,
+        message: kYarimOyunAyarMetni,
+        confirmLabel: 'AYARLARI AÇ',
+        cancelLabel: 'ŞİMDİ DEĞİL',
+      );
+    }
 
     final kabul = await showKConfirm(
       context,
@@ -160,9 +178,16 @@ Future<void> yarimOyunIzniAkisi(
       confirmLabel: 'HATIRLAT',
       cancelLabel: 'ŞİMDİ DEĞİL',
     );
-    if (!kabul) return;
-    await messaging.requestPermission();
+    if (kabul) await messaging.requestPermission();
+    return false;
   } catch (e) {
     debugPrint('[Kelimeki] yarım oyun izin akışı hatası: $e');
+    return false;
   }
 }
+
+/// "Bildirimler kapalı" kartının metni (2 Ekim 2026).
+const String kYarimOyunAyarBaslik = 'Bildirimler kapalı';
+const String kYarimOyunAyarMetni =
+    'Oyunun yarım kaldı. Yarın akşam hatırlatabilmemiz için telefonunun '
+    'ayarlarından Kelimeki bildirimlerini açman gerekiyor.';
