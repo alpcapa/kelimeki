@@ -602,7 +602,7 @@ class BoardWidget extends StatelessWidget {
                         child: CustomPaint(painter: _OutlinesPainter(outlines)),
                       ),
                     ),
-                    // Zoom tanıtım balonu — MERKEZ kareyi işaret eder. Ayrı bir
+                    // Zoom tanıtım balonu — sol-alt bloğun boş karesini işaret eder. Ayrı bir
                     // katman: "Buradan başla"dan bağımsız (ikisi aynı anda
                     // görünebilir, farklı köşelerdeler) ve sürükleme başlayınca
                     // ikisi de kaybolur.
@@ -681,27 +681,26 @@ class BoardWidget extends StatelessWidget {
     return (cc.$1, cc.$2, _colorOfIndex(state.current), cc.$2 < boardSize / 2);
   }
 
-  /// Zoom tanıtım balonu: tahtanın MERKEZ karesinin (6,6) hemen ÜSTÜNDE,
-  /// kuyruğu aşağı (kareye) bakan çok satırlı bir kutu.
+  /// Zoom tanıtım balonu: SOL-ALT köşe bloğunun ortasındaki boş kareyi
+  /// (`zoomHintTarget`) işaret eder, kuyruğu aşağı (kareye) bakar. Hedef
+  /// yoksa (blok dolu) hiçbir şey çizilmez.
   ///
-  /// "Buradan başla"dan üç farkı var ve üçü de bilinçli: (1) metin uzun,
-  /// tek satıra sığmaz → kutu genişliği tahtanın %78'iyle sınırlı ve metin
-  /// sarılıyor; (2) oyuncuya özgü değil → renk oyuncu rengi değil `kAccent`;
-  /// (3) hedefi ev karesi değil merkez, çünkü ipucu "herhangi bir boş kare"
-  /// hakkında ve merkez her düzende görünür.
+  /// 27 Eylül 2026'ya kadar merkez kareyi (6,6 — X3) gösteriyordu; kullanıcı:
+  /// *"X3 üzerine göstermesi kafa karıştırıyor"*. Taslak taşlar da "dolu"
+  /// sayılır — balon onları "boş kare" diye göstermesin.
   ///
-  /// Geometri `_coachBubble`ta (tanıtım balonuyla ORTAK — 7 Eylül 2026,
-  /// Onboarding Faz 4: üçüncü bir balon geometrisi yazmak yerine bu
-  /// genelleştirildi). Merkez sütun (6) "orta" hizasına düştüğünden balon
-  /// eskisi gibi yatayda ortalanır, kuyruk merkez kareye bakar.
+  /// Renk oyuncu rengi değil `kAccent` (oyuncuya özgü değil), kutu tahtanın
+  /// %78'iyle sınırlı. Geometri `_coachBubble`ta (tanıtım balonuyla ORTAK);
+  /// hedef sol üçte birde olduğundan balon sola yaslanır.
   Widget _zoomHintBubble(double screenWidth) {
-    const merkez = boardSize ~/ 2; // 6 — X3 karesi
+    final hedef = zoomHintTarget((r, c) =>
+        state.board[r][c] == null && state.placed[cellKey(r, c)] == null);
+    if (hedef == null) return const SizedBox.shrink();
     return _coachBubble(
-      r: merkez,
-      c: merkez,
+      r: hedef.$1,
+      c: hedef.$2,
       yon: 'ust',
-      text: 'Boş kareye veya çerçevesine çift tıklama tahtayı '
-          'büyütür. Hemen dene!',
+      text: kZoomHintText,
       screenWidth: screenWidth,
       maxWidthFactor: 0.78,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
