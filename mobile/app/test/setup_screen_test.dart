@@ -24,8 +24,6 @@ import 'package:kelimeki/src/data/online_games_api.dart';
 import 'package:kelimeki/src/game/game_controller.dart';
 import 'package:kelimeki/src/game/local_game_repo.dart';
 import 'package:kelimeki/src/ui/game/neo_button.dart';
-import 'package:kelimeki/src/ui/game/dialog_shell.dart';
-import 'package:kelimeki/src/ui/game/modal_shell.dart';
 import 'package:kelimeki/src/storage/app_storage.dart';
 import 'package:kelimeki/src/ui/auth/auth_modal.dart';
 import 'package:kelimeki/src/ui/game/count_badge.dart';
