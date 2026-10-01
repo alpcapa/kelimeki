@@ -546,6 +546,14 @@ buradakiler ekranın gerçek bir oyundaki hâli.
       Zoom açıkken** de düğme kaydırmadan görünmeli (otomatik kapı 375/393 pt
       × 1,0/1,3'ü ölçüyor). Girişli kullanıcıda liste görünümünün üstünde
       turuncu "YENİ OYUN BAŞLAT"; formda `OYUNU BAŞLAT` yanında `VAZGEÇ`.
+- [ ] **Girişsiz "Arkadaşınla" penceresi (1 Ekim 2026, ROADMAP #41).**
+      Çıkış yapmış hâlde Setup → "ARKADAŞINLA": alttan *"Arkadaşınla oynamak
+      için giriş yap"* penceresi açılmalı. "YAPAY ZEKAYLA DEVAM ET" de, zemine
+      dokunmak da, aşağı sürüklemek de pencereyi kapatıp **Yapay Zeka**
+      sekmesine döndürmeli. "ÜYE OL" kayıt formunu, "GİRİŞ YAP" giriş formunu
+      açmalı; o formu kapatınca alt pencere geri gelmeli; giriş yapınca canlı
+      liste görünmeli. Girişliyken listenin üstünde turuncu "YENİ OYUN
+      BAŞLAT".
 - [ ] **Misafir üyelik kutusu.** Setup ekranını misafir (girişsiz) olarak
       aç — hem boş kurulum formunun altında hem (bir oyun yarıda bırakılıp
       "Devam Eden Oyun" görünümüne düşünce) o görünümün altında "Neden

@@ -25,6 +25,34 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 220 — Arkadaşınla ekranları: port yarısı (1 Ekim 2026, ROADMAP #41 karar 9 + 10)
+
+Web #664'ün (27 Eylül) `LiveGamesTab` yarısı:
+
+- **Girişsiz alt pencere** (`ui/live/guest_live_sheet.dart`, YENİ — web
+  `GuestLiveSheet`): misafir "ARKADAŞINLA"yı seçince alttan *"Arkadaşınla
+  oynamak için giriş yap"* + gövde metni + ÜYE OL · GİRİŞ YAP + "YAPAY
+  ZEKAYLA DEVAM ET". Kapatmak (zemin, aşağı sürükleme, geri) "Yapay Zekayla
+  devam et" ile AYNI: `LiveGamesTab.onSwitchToAi` → Setup "Kime karşı"yı
+  Yapay Zeka'ya çevirir. Giriş penceresinden vazgeçilirse alt pencere geri
+  gelir (web `guestSheetOpen && !showAuthModal`) — `showGuestLiveSheet`
+  bir döngü. ÜYE OL giriş penceresini KAYIT modunda açar
+  (`showLoginModal(startInSignup:)` yeni parametre). Sekme ömründe bir kez
+  (web `useState(true)`). Auth yapılandırılmamışsa (offline derleme)
+  pencere YOK, eski düz metin kalır.
+- **"+ YENİ CANLI OYUN AÇ" → "YENİ OYUN BAŞLAT"** (karar 10, web #682),
+  listenin üstünde; Yapay Zeka tarafıyla aynı düğme (52/16/1).
+
+⚠ İlk sürümde pencere `isScrollControlled` + tam ekran `Align` ile
+çiziliyordu: panelin üstündeki saydam alan sayfanın kendisiydi, zemine
+dokunuş KAPATMIYORDU. Test yakaladı; panel artık içeriği kadar
+(`constraints: maxWidth 460`).
+
+**Doğrulama:** `setup_screen_test` → "girişsiz Arkadaşınla penceresi" (5
+test: AI'ya dönüş ×2, giriş/vazgeç döngüsü, kayıt modu, metinlerin web
+kaynağıyla birebir eşliği), `live_games_test` → "YENİ OYUN BAŞLAT"
+(52, sekmelerin üstünde, formu açar). Tam takım **1.025 yeşil**.
+
 ## Parça 219 — Tek standart Setup ekranı: port yarısı (1 Ekim 2026, ROADMAP #41 karar 2 + 13)
 
 Web #663/#664/#682'nin (27 Eylül) Setup yarısı `ui/setup/setup_screen.dart`a:

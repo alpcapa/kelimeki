@@ -38,8 +38,10 @@ import '../rank/league_rank.dart';
 import '../rank/rank_scores.dart';
 import '../rank/rank_seal.dart';
 import '../setup/recent_games_section.dart';
-import '../friends/friends_modal.dart' show showFriendInfoDialog, kFriendActionFailed;
+import '../friends/friends_modal.dart'
+    show showFriendInfoDialog, kFriendActionFailed;
 import 'friend_suggest_modal.dart';
+import 'guest_live_sheet.dart';
 import 'live_game_create_form.dart';
 import 'open_online_game.dart';
 import '../tokens.dart';
@@ -90,12 +92,18 @@ class LiveGamesTab extends StatefulWidget {
   /// (`LiveGamesTab.tsx`).
   final ValueChanged<int>? onActionCount;
 
+  /// Girişsiz pencerenin "Yapay Zekayla devam et"i ve pencerenin kapatılması
+  /// (ROADMAP #41 karar 9) — Setup "Kime karşı"yı Yapay Zeka'ya çevirir.
+  /// Web ikizi `onSwitchToAi`. Verilmezse pencere yalnızca kapanır.
+  final VoidCallback? onSwitchToAi;
+
   const LiveGamesTab({
     super.key,
     required this.services,
     this.newlyFinishedIds = const [],
     required this.onFinishesSeen,
     this.onActionCount,
+    this.onSwitchToAi,
   });
 
   @override
@@ -106,7 +114,11 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     with WidgetsBindingObserver {
   OnlineGamesSnapshot? _snapshot;
   LiveSubTab _subTab = LiveSubTab.active;
+
+  /// Girişsiz pencere bu sekme ömründe gösterildi mi (bkz. build).
+  bool _guestSheetShown = false;
   bool _appliedDefaultTab = false;
+
   /// Öne dönüşte "bu bir yeniden giriş mi?" sorusunu yanıtlar.
   final AwayTracker _awayTracker = AwayTracker();
 
@@ -313,7 +325,8 @@ class _LiveGamesTabState extends State<LiveGamesTab>
   ///
   /// Kaç kez sorulacağı ve sistem diyaloğunun ne zaman açılacağı BURADA
   /// değil `util/push_rules.dart`ta — burada yalnızca "durum uygun mu".
-  Future<void> _pushIzniniSorMaybe(OnlineGamesSnapshot snap, String userId) async {
+  Future<void> _pushIzniniSorMaybe(
+      OnlineGamesSnapshot snap, String userId) async {
     final push = services.push;
     final messaging = services.pushMessaging;
     final storage = services.storage;
@@ -395,7 +408,22 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     final repo = services.onlineGames;
 
     if (user == null || repo == null || services.friends == null) {
-      // Web: "Canlı oyun oynamak için giriş yapmalısın." + Giriş Yap.
+      // Girişsiz pencere sekme her açıldığında BİR kez (web `guestSheetOpen`
+      // ilk değeri true, bileşen ömrü boyunca). Auth yapılandırılmamışsa
+      // (offline derleme) giriş yolu yok → pencere de yok.
+      if (user == null && auth.configured && !_guestSheetShown) {
+        _guestSheetShown = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          showGuestLiveSheet(context,
+              auth: auth,
+              feedback: services.feedback,
+              onSwitchToAi: () => widget.onSwitchToAi?.call());
+        });
+      }
+      // Web: "Canlı oyun oynamak için giriş yapmalısın." + Giriş Yap —
+      // pencerenin arkasında ve kapatıldıktan sonra (onSwitchToAi verilmemişse)
+      // görünen düz hâl.
       return Column(children: [
         const SizedBox(height: 16),
         const Text('Canlı oyun oynamak için giriş yapmalısın.',
@@ -409,8 +437,8 @@ class _LiveGamesTabState extends State<LiveGamesTab>
             fontSize: 12,
             letterSpacing: 1,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            onPressed: () => showLoginModal(context, auth,
-                feedback: services.feedback),
+            onPressed: () =>
+                showLoginModal(context, auth, feedback: services.feedback),
           ),
       ]);
     }
@@ -454,17 +482,20 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Web: `text-sm` (14) + `py-2.5` (10) + satır 20 → kutu tam 40;
-        // aradaki boşluklar kapsayıcının `gap-5`inden (20) geliyor,
-        // sekmelerin kendi arası `gap-2` (8). Üçü de ölçüldü (Parça 80).
-        NeoButton(
-          label: '+ YENİ CANLI OYUN AÇ',
-          variant: NeoButtonVariant.orange,
-          fontSize: 14,
-          lineHeight: 20 / 14,
-          letterSpacing: 1.5,
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          onPressed: () => setState(() => _creating = true),
+        // ROADMAP #41 karar 10 (web #664/#682): "+ Yeni Canlı Oyun Aç" →
+        // "Yeni Oyun Başlat", listenin ÜSTÜNDE; Yapay Zeka tarafıyla AYNI
+        // düğme (web `PRIMARY_ACTION_BTN`: 52 yüksek, 16 punto, tracking 1).
+        // Aradaki boşluklar kapsayıcının `gap-5`i (20), sekmeler arası
+        // `gap-2` (8) — Parça 80.
+        SizedBox(
+          height: 52,
+          child: NeoButton(
+            label: 'YENİ OYUN BAŞLAT',
+            variant: NeoButtonVariant.orange,
+            fontSize: 16,
+            letterSpacing: 1,
+            onPressed: () => setState(() => _creating = true),
+          ),
         ),
         const SizedBox(height: 20),
         Row(children: [
@@ -539,46 +570,45 @@ class _LiveGamesTabState extends State<LiveGamesTab>
                         onOpen: () => _openGame(g),
                       ),
                   ]),
-            LiveSubTab.invites => (invites.isEmpty &&
-                    acceptedWaiting.isEmpty &&
-                    waiting.isEmpty)
-                ? _empty('Bekleyen bir davet ya da oyunun yok.')
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (invites.isNotEmpty)
-                        _section('Davet Bekliyor', [
-                          for (final g in invites)
-                            _PendingGameCard(
-                              key: ValueKey('invite-${g.id}'),
-                              game: g,
-                              title:
-                                  '${g.creatorSlot?.name ?? 'Bir arkadaşın'} seni ${g.playerCount} kişilik oyuna davet etti',
-                              busy: _busyInviteId == g.myInviteId,
-                              onRespond: (a) => _handleRespond(g, a),
-                              tierOf: _rankScores.tierOf,
-                            ),
-                        ]),
-                      if (acceptedWaiting.isNotEmpty)
-                        _section('Kabul Ettin — Diğerleri Bekleniyor', [
-                          for (final g in acceptedWaiting)
-                            _PendingGameCard(
-                                key: ValueKey('aw-${g.id}'),
+            LiveSubTab.invites =>
+              (invites.isEmpty && acceptedWaiting.isEmpty && waiting.isEmpty)
+                  ? _empty('Bekleyen bir davet ya da oyunun yok.')
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (invites.isNotEmpty)
+                          _section('Davet Bekliyor', [
+                            for (final g in invites)
+                              _PendingGameCard(
+                                key: ValueKey('invite-${g.id}'),
                                 game: g,
+                                title:
+                                    '${g.creatorSlot?.name ?? 'Bir arkadaşın'} seni ${g.playerCount} kişilik oyuna davet etti',
+                                busy: _busyInviteId == g.myInviteId,
+                                onRespond: (a) => _handleRespond(g, a),
                                 tierOf: _rankScores.tierOf,
-                                title: '${g.playerCount} Kişilik Oyun'),
-                        ]),
-                      if (waiting.isNotEmpty)
-                        _section('Bekleyen Oyunlar', [
-                          for (final g in waiting)
-                            _PendingGameCard(
-                                key: ValueKey('w-${g.id}'),
-                                game: g,
-                                tierOf: _rankScores.tierOf,
-                                title: '${g.playerCount} Kişilik Oyun'),
-                        ]),
-                    ],
-                  ),
+                              ),
+                          ]),
+                        if (acceptedWaiting.isNotEmpty)
+                          _section('Kabul Ettin — Diğerleri Bekleniyor', [
+                            for (final g in acceptedWaiting)
+                              _PendingGameCard(
+                                  key: ValueKey('aw-${g.id}'),
+                                  game: g,
+                                  tierOf: _rankScores.tierOf,
+                                  title: '${g.playerCount} Kişilik Oyun'),
+                          ]),
+                        if (waiting.isNotEmpty)
+                          _section('Bekleyen Oyunlar', [
+                            for (final g in waiting)
+                              _PendingGameCard(
+                                  key: ValueKey('w-${g.id}'),
+                                  game: g,
+                                  tierOf: _rankScores.tierOf,
+                                  title: '${g.playerCount} Kişilik Oyun'),
+                          ]),
+                      ],
+                    ),
             LiveSubTab.recent => services.games != null
                 ? FutureBuilder(
                     future: services.games,
@@ -607,8 +637,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
                                 for (final sl in g.slots)
                                   AvatarSlot(
                                       name: sl.isAi ? null : sl.name,
-                                      avatarUrl:
-                                          sl.isAi ? null : sl.avatarUrl),
+                                      avatarUrl: sl.isAi ? null : sl.avatarUrl),
                               ],
                             ),
                         ],
@@ -692,7 +721,8 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          _appliedDefaultTab = true; // elle seçim varsayılanı devre dışı bırakır
+          _appliedDefaultTab =
+              true; // elle seçim varsayılanı devre dışı bırakır
           _setSubTab(t);
         },
         // Rozet web'deki gibi SEKME KUTUSUNUN sağ üst köşesinde (`absolute
@@ -838,8 +868,7 @@ class _GameRow extends StatelessWidget {
               ? null
               : Text(
                   trUpper(remaining.text),
-                  style: devamEdenSureStil(
-                      remaining.urgent ? _red : _muted),
+                  style: devamEdenSureStil(remaining.urgent ? _red : _muted),
                 ),
         ),
       ),
@@ -1108,7 +1137,8 @@ class _PendingGameCard extends StatelessWidget {
                   ),
                   child: const Icon(Icons.smart_toy_outlined,
                       // Kutuyla orantılı: 13/22 ≈ 15/26.
-                      size: 15, color: _muted),
+                      size: 15,
+                      color: _muted),
                 ),
                 const SizedBox(width: 8),
                 const Expanded(

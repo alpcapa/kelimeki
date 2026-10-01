@@ -40,10 +40,11 @@ const Color _green = kGreen;
 const Color _gold = kGold; // web text-gold (tailwind.config)
 
 Future<void> showLoginModal(BuildContext context, AuthService auth,
-    {FeedbackRepo? feedback}) {
+    {FeedbackRepo? feedback, bool startInSignup = false}) {
   return showDialog<void>(
     context: context,
-    builder: (context) => AuthModal(auth: auth, feedback: feedback),
+    builder: (context) =>
+        AuthModal(auth: auth, feedback: feedback, startInSignup: startInSignup),
   );
 }
 
@@ -225,8 +226,7 @@ class _AuthModalState extends State<AuthModal> {
     final mySeq = ++_nickSeq;
     _nickTimer = Timer(const Duration(milliseconds: 400), () async {
       try {
-        final checker =
-            widget.nicknameChecker ?? widget.auth.nicknameStatus;
+        final checker = widget.nicknameChecker ?? widget.auth.nicknameStatus;
         final durum = await checker(trimmed);
         if (mounted && _nickSeq == mySeq) {
           setState(() => _nickStatus = switch (durum) {
