@@ -95,8 +95,8 @@ kod girmez.
 | | #34 | Canlı sohbet okundu bilgisi — port yarısı | Taslak PR'da (26 Eyl); web + sunucu zaten `main`'de. 1.1.2 cihaz turu: `mobile/docs/testing-arkadaslar-canli.md` → "Okundu bilgisi cihazlar arasında". Sahaya inince arşive |
 | | #37 | Küfür / müstehcenlik süzgeci | Sunucu + web canlıda; koşul metni + portun takma isim uyarısı #640'ta. #640 merge edilince arşive |
 | **Sıradaki mobil işler** | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port yarısı taslak PR'da (`claude/roadmap-38-board-widget-port-74tu7z`). Merge edilince arşive |
-| | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Açık |
-| | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, bu kaldı |
+| | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Taslak **#651** (sürüm treni); sunucu yarısı migration'ı merge'de uygulanacak |
+| | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, son halka taslak **#651**'de |
 | | — | Huni v2'nin MOBİL yarısı (PR 2) | **5 Ekim trenine alındı** (27 Eyl, kullanıcı: *"dahil edelim"*). `docs/decisions/funnel-v2.md` → "PR 2". ⚠ Gelince admin kartındaki `PlatformTag kind="web"`i kaldır · **30 Eyl 2026, kullanıcı kararı: Play Install Referrer da 5 Ekim trenine** (27 Eyl'deki "önce kanalsız" kararı kaldırıldı) — Android kurulumunun `meta-*` etiketi `land` olayına yazılsın, paralı kanal uygulama içinde görünsün. Treni öne çekme önerisi REDDEDİLDİ (kazanç ~4 gün, 14 PR'lık paket, referrer'sız paket kanal göstermiyordu) |
 | | #41 | İlk oyun akışı v2 — sade karşılama, tek Setup ekranı, tanıtımın önündeki pencereler, misafir uyarısının kaldırılması, Arkadaşınla ekranları | Tasarım + kararlar ✅ (27 Eyl): `docs/decisions/onboarding.md` → "İlk oyun akışı v2". Web ✅ (27 Eyl, #660-#666): karşılama, Setup, Arkadaşınla ekranları, **Arkadaşlar penceresi (tek ekran)**, canlı oyun formu (Tüm oyuncular, kaydırma çubuğu, Hızlı seç şeridi). ⚠ **PORT KAPSAMI = karar tablosunun 2, 4, 7, 9-13 ve 15-24. satırları** + iki yeni RPC (`list_outgoing_friend_requests`, `my_frequent_opponents`, canlıda hazır). Sıra: karşılama (web, ✅ kodlandı) → Setup (YALNIZ web) → ≥2 hafta web verisi (iOS kontrol grubu) → Setup port yarısı + tanıtım (web+port aynı PR) aynı trende, en erken 19 Ekim → `IntroScreen` (port) |
 | | #40 | Cihaz · Cihaz Markası kartları uygulamayı da görsün | **2 haftalık trene alındı** (27 Eyl, kullanıcı kararı). Port `device_visits`e HİÇ yazmıyor, `guest_visits`e de `os_version`/`device_model` null (`visits_api.dart` başlığı: `device_info_plus` yok). İş: paketi ekle, iki alanı doldur, `device_visits`e yaz. ⚠ Gelince iki kartın `PlatformTag kind="web"`ini kaldır; Play Data safety / App Store gizlilik beyanını kontrol et (cihaz modeli yeni veri türü mü) |
@@ -276,8 +276,13 @@ SUNUCUDA". `mobile/app/` dosyası → mobil derlemeyi tetikler, merge turu
 bitince.
 
 **#35 — Kayıt Hunisi'nin PORT yarısı: uygulama da `signup_events`e
-yazsın** → ⏳ **AÇIK — dondurma kalktı (25 Eylül 2026)** (23 Eylül 2026, kullanıcı
-isteği: *"Roadmap'e ekle"*).
+yazsın** → 🚆 **TRENDE — taslak PR (26 Eylül 2026, #30 ile aynı PR), 5 Ekim
+kesiminde merge** (23 Eylül 2026, kullanıcı isteği: *"Roadmap'e ekle"*).
+Yapıldı: `data/signup_events.dart` (YENİ) + `auth_modal.dart`taki üç
+`analytics.log` noktası + `bootstrap.dart`; kartın `?` metni ve
+`logSignupEvent` yorumu güncellendi. Migration'daki "yalnızca web" notuna
+BİLEREK dokunulmadı (uygulanmış dosya). Ayrıntı: Parça 217. Aşağıdaki
+metin işin ÖNCEKİ tarifi.
 
 Admin → Büyüme → Kullanıcı'daki "Kayıt Hunisi" kartı (#600) **yalnızca
 web'i** sayıyor: port aynı iki olayı (`signup_started`/`signup_completed`,
@@ -427,6 +432,7 @@ sürümün içeriği:**
 | (30 Eyl, taslak PR) | **Oyun içi ipuçları: vergi/×2-×3/bölge balonları kaldırıldı, yerine "Kelimenin üzerine tıklarsan anlamı gelir."** — web + port AYNI PR | `util/onboarding.dart` + `ui/game/game_screen.dart`: tek ipucu `anlam`, tahtaya kelime oturunca (YZ'nin hamlesi dahil) bir kez — ama ekran açılışından (= zoom balonundan) en az 3 hamle sonra (`onboardingHintMinMoves`); Canlı oyunda YOK (kullanıcı kararı). Kullanıcı kararı (Instagram'dan uçtan uca deneme). Çift tık balonu DEĞİŞMEDİ. `tutorial_parity_test.dart` web kaynağını okuduğundan web yarısı ayrılamadı → PR bütünüyle trende (5 Ekim). Kapı: `tutorial_script_test` + `tutorial_parity_test` (hamle eşiği dahil) yeşil, app **901 test yeşil**, `verify-tutorial-script` yeşil. Kayıt: `docs/decisions/onboarding.md` → "30 Eylül 2026" |
 | (26 Eyl, taslak #647) | **iOS simge rozeti sayısı (#25)** — `AppDelegate.swift` açılışta rozeti sıfırlıyor | Sunucu 1.1.2+ iOS cihazlara `aps.badge` gönderiyor (her bildirim +1); sıfırlayan kod bu pakette. Kapı: `notification_shade_parity_test.dart`. ⚠ Beş push fonksiyonunun deploy'u ayrıca gerekli (ROADMAP #25) |
 | (26 Eyl, taslak PR) | **Sürüm numarası 1.1.2** (`pubspec.yaml` `1.1.2+1` + `config/env.dart` `appVersion`) | Kesim günü (5 Ekim) trenin öteki taslaklarıyla BİRLİKTE merge edilir, tek başına DEĞİL. Kapı: `app_version_parity_test.dart` yeşil |
+| (26 Eyl, taslak PR) | **Kayıt Hunisi uygulamayı da sayıyor + tanıtım olayları cihaz kodunu taşıyor** (ROADMAP #35 + #30) | `data/signup_events.dart` (YENİ, kimliksiz; web `logSignupEvent` ikizi) + `ui/auth/auth_modal.dart` (üç `analytics.log`in yanına) + `bootstrap.dart`; `data/games_api.dart` `tutorial_events` → `anon_id` artık `_damga()`dan. Web yarısı AYNI PR'da ama yalnızca metin: admin kartının `?`'i + `logSignupEvent` yorumu. Kapı: `signup_events_test.dart` (7). Sunucu değişmedi, migration YOK |
 | (26 Eyl, taslak PR) | **Uçak modunda Canlı oyun mesajı ham `Failed host lookup: '…supabase.co'` gösteriyordu** | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `util/error_message.dart`: makine kalıbına Dart'ın taşıma metinleri eklendi (`Failed host lookup` · `Connection refused/reset/closed/timed out` · `Network is unreachable` · `OS Error`). 1.1.1 cihaz turunda (D, §31 ilk madde) bulundu: `ClientException.message` sınıf adını taşımıyor, `SocketException` kalıbı `toString()`e bakıyordu. Web'de bu metinler oluşmuyor, web değişmedi; kalıp SAYISI parite için aynı (tek regex). Kapı: `error_message_parity_test.dart` üç yeni vaka; **904 test yeşil**. Metin düzeltmesi → acil istisna DEĞİL (`surumler.md` → "SÜRÜM TRENİ") |
 | (26 Eyl, taslak PR) | **Oyun sonunda kendiliğinden açılan "Görüş Bildir" formu kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/game/game_screen.dart` + `ui/live/online_game_screen.dart`: GameOver kapanınca `openFeedback()` artık çağrılmıyor; modalın içindeki "GÖRÜŞ BİLDİR" linki DURUYOR. Kullanıcı: *"Oyun sonlarında çıkan görüş bildir popup'ı kaldıralım artık."* (Parça 48'in otomatik açılışının geri alınması.) Web yarısı AYRI PR, hemen merge. Kapı: `game_screen_test.dart` + `online_game_screen_test.dart` ters çevrildi (form AÇILMAZ); **904 test yeşil**. Cihaz maddesi `mobile/TESTING.md` "Kapatmak formu AÇMAZ" |
 | (26 Eyl, taslak PR) | **Kayıt sonrası satır: "Hesap oluşturuldu." kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/auth/auth_modal.dart`: satır artık yalnızca *"LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN."* (tamamı kalın). Kullanıcı: insanlar hesabın hazır olduğunu sanıyor. Web yarısı #644. Kapı: `signup_info_parity_test.dart` (web kaynağını OKUR). Cihaz maddesi `mobile/TESTING.md` §30 |
@@ -840,6 +846,12 @@ gerekçeyle 27 Ağustos'ta Sürüm A'ya alınmadı.
 ---
 
 ## 30. Port anonim cihaz damgası (`anon_id`) — **KISMEN: `game_starts`/`game_finishes`/`guest_visits` ✅ (#601) · `tutorial_events` AÇIK** (15 Eylül 2026)
+
+🚆 **Durum (26 Eylül 2026): son halka TRENDE** — `tutorial_events` da
+`anon_id` yazıyor (`SupabaseGamesGateway._damga()`, taslak PR, #35 ile
+birlikte; Parça 217). Cihaz paydasına dönüş BİLEREK ertelendi, karar
+1.1.2'nin sahadaki payı ölçülünce (`docs/decisions/admin-panel.md` →
+"Tanıtım Turu kartı" → Güncelleme). Sahaya inince madde arşive.
 
 ⚠ **Durum (25 Eylül 2026):** #601 `main`'e girdi — port artık cihaz kodunu
 (`FlagsStore.anonId()`, uygulama dizini; Keychain DEĞİL) `game_starts`,

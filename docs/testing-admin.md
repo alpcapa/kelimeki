@@ -567,6 +567,14 @@ tablolar + üç grafiğin kaldırılması".
 
 ### Büyüme > Kullanıcı
 
+- [ ] **Kayıt Hunisi uygulamayı da sayıyor (1.1.2, ROADMAP #35).** 1.1.2
+      yüklü bir telefonda giriş penceresinden "Kayıt ol"a geç → kartta
+      **Doğrudan / Açılış** 1 artmalı (sayfayı tazele). Görüş Bildir'in
+      "üyeliğe devam" teklifinden açılan form **Form** satırına düşmeli.
+      Hesabı gerçekten açarsan **Tamamlama** da 1 artmalı. `?` metni artık
+      "Yalnızca web" DEĞİL, "web + uygulama 1.1.2 ve sonrası" yazmalı.
+      Sağlama (SQL): `select platform, app_version, event from signup_events
+      order by created_at desc limit 5` → `android`/`ios` + `1.1.2`.
 - [ ] **Kaynak Hunisi artık KANAL satırları gösteriyor** — "Instagram",
       "Facebook", "Arkadaş Daveti", "Direkt", "Bilinmiyor". Ham `instagram`/
       `ig-bio`/`fb-reel` satırları ÜST düzeyde GÖRÜNMEMELİ.
