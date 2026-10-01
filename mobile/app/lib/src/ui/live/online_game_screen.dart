@@ -2364,7 +2364,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   }
 }
 
-/// "Sıra: X — oynaması bekleniyor" bandı; sıra bir YZ koltuğundaysa hamle
+/// "Sıra: X bekleniyor" bandı; sıra bir YZ koltuğundaysa hamle
 /// sunucuda hesaplandığından (birkaç saniye sürebilir) nabız atan bir nokta
 /// ile insan beklemesinden ayrışır (web aynı ayrım).
 class _TurnBanner extends StatefulWidget {
@@ -2447,7 +2447,7 @@ class _TurnBannerState extends State<_TurnBanner>
             child: Text(
               widget.isAiTurn
                   ? trUpper('${widget.name} hamlesini hesaplıyor…')
-                  : trUpper('Sıra: ${widget.name} — oynaması bekleniyor'),
+                  : trUpper('Sıra: ${widget.name} bekleniyor'),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontFamily: 'SpaceMono',
