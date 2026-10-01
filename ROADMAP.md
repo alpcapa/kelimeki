@@ -342,12 +342,13 @@ Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
 | Çakışma — KOD | #651 (`ROADMAP.md` + **`src/components/AdminDashboard.tsx`**) |
 
 - **Sıra bağımlılığı:** #709, #659'un ÜSTÜNE kurulu (önce #659).
-- **#655 YEŞİL (1 Eki, ajan doğruladı).** 27 Eyl'deki kırmızı web `test`
-  (`board-fit.spec.ts`) koşusu, PR'ın web yarısı #654 henüz `main`'e
-  girmemişken alınmıştı. #654 aynı gün merge edildi; #655'in diff'i artık
-  yalnızca port dosyaları + doküman, web CI bu PR'da tetiklenmiyor. Başı
-  `72f0e63` (`main` c212e70 birleştirilmiş): Analiz + testler · Android APK ·
-  iOS · Bütçe yeşil, çakışma yok.
+- **#655 YEŞİL (1 Eki).** 27 Eyl'de düşen web `test`i (`board-fit.spec.ts`)
+  RASTGELEYDİ: raftaki ilk taş joker çıkınca "Joker Hangi Harf" penceresi
+  açılıyor, harf tahtada belirmiyor (yerelde 56 koşuda 1). Düzeltme
+  `main`'de zaten var (test joker olmayan taşı seçiyor, 27 Eyl); #655'e
+  `main` merge edildi. Web yarısı #654 `main`'de olduğundan diff artık
+  yalnız port + doküman (web CI tetiklenmiyor). Başı `72f0e63`: Analiz +
+  testler · Android APK · iOS · Bütçe yeşil, çakışma yok.
 - **Aynı dosyaya dokunanlar (kesimde metin çakışması beklenir):**
   `online_game_screen.dart` 7 PR (#637 #640 #642 #649 #657 #670 #687) ·
   `auth_modal.dart` 5 (#640 #642 #651 #659 #709) · `game_screen.dart` 4
