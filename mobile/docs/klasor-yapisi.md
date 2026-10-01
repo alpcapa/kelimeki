@@ -328,6 +328,9 @@ mobile/
       ui/live/               # Canlı oyun: live_games_tab (3 alt sekme +
                              # kartlar), live_game_create_form,
                              # friend_suggest_modal (kabul sonrası öneri),
+                             # guest_live_sheet (girişsiz "Arkadaşınla"
+                             # alt penceresi, #41 karar 9 — metinleri web
+                             # `GuestLiveSheet`ten testle okunur),
                              # online_game_screen (TAHTA — game_screen.dart
                              # ile sürükleme/joker/mesaj desenini PAYLAŞIR,
                              # biri değişirse öteki de güncellenmeli),

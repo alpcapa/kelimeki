@@ -27,6 +27,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:kelimeki/src/data/meaning_store.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
 import 'package:kelimeki/src/ui/live/live_game_create_form.dart';
+import 'package:kelimeki/src/ui/game/neo_button.dart';
 import 'package:kelimeki/src/ui/devam_eden_govde.dart';
 import 'package:kelimeki/src/ui/live/live_games_tab.dart';
 import 'package:kelimeki/src/ui/game/player_avatar_row.dart';
@@ -660,6 +661,28 @@ void main() {
     // Burada sahte uç HİÇ CEVAP VERMİYOR (asılı future) — yani test ancak
     // karar bağlantı sinyalinden geliyorsa geçer.
     // Negatif eş: `!services.onlineStatus.online` koşulu kaldırılırsa düşer.
+    // ROADMAP #41 karar 10 (web #664/#682, port 1 Ekim 2026): "+ Yeni Canlı
+    // Oyun Aç" → "Yeni Oyun Başlat", listenin ÜSTÜNDE; Yapay Zeka tarafıyla
+    // AYNI düğme (web `PRIMARY_ACTION_BTN`, 52 yüksek). Sekmeler 20 altta.
+    testWidgets('"YENİ OYUN BAŞLAT" listenin üstünde, 52 yüksek, formu açar',
+        (tester) async {
+      // Ayrı kimlik ŞART: `_liveGamesCache` kullanıcı kimliğine göre GLOBAL —
+      // 'me' ile yüklenen boş liste sonraki testlere önbellekten sızıyordu.
+      final s = liveServices(
+          userId: 'yeni-oyun-dugmesi', gateway: FakeOnlineGamesGateway());
+      await pumpTab(tester, s);
+      await tester.pump();
+      expect(find.text('+ YENİ CANLI OYUN AÇ'), findsNothing);
+      final buton =
+          tester.getRect(find.widgetWithText(NeoButton, 'YENİ OYUN BAŞLAT'));
+      expect(buton.height, 52);
+      final sekme = tester.getRect(find.text('DEVAM EDENLER'));
+      expect(sekme.top, greaterThan(buton.bottom));
+      await tester.tap(find.text('YENİ OYUN BAŞLAT'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LiveGameCreateForm), findsOneWidget);
+    });
+
     testWidgets('çevrimdışıyken mesaj ağ cevabı BEKLENMEDEN çıkar',
         (tester) async {
       final gw = FakeOnlineGamesGateway()..listHangs = true;

@@ -35,6 +35,7 @@ import 'package:kelimeki/src/ui/tutorial/tutorial_game.dart';
 import 'package:kelimeki/src/ui/tutorial/tutorial_script.dart'
     show tutorialIntroButton, tutorialIntroTitle;
 import 'package:kelimeki/src/ui/intro/intro_screen.dart';
+import 'package:kelimeki/src/ui/live/guest_live_sheet.dart';
 import 'package:kelimeki/src/ui/live/live_games_tab.dart';
 import 'package:kelimeki/src/ui/setup/setup_screen.dart';
 import 'package:kelimeki/src/ui/devam_eden_govde.dart';
@@ -46,6 +47,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' show User;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'support/fake_cloud_save_gateway.dart';
+import 'support/web_source.dart';
 import 'support/fake_online_gateway.dart';
 import 'support/real_io.dart';
 import 'support/test_fonts.dart';
@@ -439,6 +441,75 @@ void main() {
     await tester.tap(find.text('YAPAY ZEKA'));
     await tester.pumpAndSettle();
     expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
+  });
+
+  // ROADMAP #41 karar 9 (web 27 Eylül, port 1 Ekim 2026): girişsiz kullanıcı
+  // "Arkadaşınla"yı seçince alttan pencere — Üye Ol · Giriş Yap · Yapay
+  // Zekayla devam et. Kapatmak Yapay Zeka'ya döndürür; giriş penceresinden
+  // vazgeçilirse pencere geri gelir (web `guestSheetOpen && !showAuthModal`).
+  group('girişsiz Arkadaşınla penceresi', () {
+    Future<void> arkadasinla(WidgetTester tester) async {
+      await setPhoneViewSize(tester, const Size(420, 900));
+      await pumpSetup(tester, services(auth: AuthService.fake()));
+      await tester.tap(find.text('ARKADAŞINLA'));
+      await tester.pumpAndSettle();
+      expect(find.text(kGuestLiveTitle), findsOneWidget);
+      expect(find.text(kGuestLiveBody), findsOneWidget);
+    }
+
+    testWidgets('"Yapay Zekayla devam et" → pencere kapanır, Yapay Zeka sekmesi',
+        (tester) async {
+      await arkadasinla(tester);
+      await tester.tap(find.text('YAPAY ZEKAYLA DEVAM ET'));
+      await tester.pumpAndSettle();
+      expect(find.text(kGuestLiveTitle), findsNothing);
+      expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
+    });
+
+    testWidgets('zemine dokunmak da Yapay Zeka\'ya döndürür', (tester) async {
+      await arkadasinla(tester);
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+      expect(find.text(kGuestLiveTitle), findsNothing);
+      expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
+    });
+
+    testWidgets('GİRİŞ YAP → giriş penceresi; vazgeçince alt pencere geri gelir',
+        (tester) async {
+      await arkadasinla(tester);
+      await tester.tap(find.descendant(
+          of: find.byType(BottomSheet), matching: find.text('GİRİŞ YAP')));
+      await tester.pumpAndSettle();
+      expect(find.byType(AuthModal), findsOneWidget);
+      expect(find.text(kGuestLiveTitle), findsNothing);
+      expect(find.textContaining('TAKMA İSİM', findRichText: true), findsNothing); // giriş modu
+      Navigator.of(tester.element(find.byType(AuthModal))).pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(AuthModal), findsNothing);
+      expect(find.text(kGuestLiveTitle), findsOneWidget);
+    });
+
+    testWidgets('ÜYE OL → giriş penceresi KAYIT modunda açılır', (tester) async {
+      await arkadasinla(tester);
+      await tester.tap(find.text('ÜYE OL'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AuthModal), findsOneWidget);
+      expect(find.textContaining('TAKMA İSİM', findRichText: true), findsOneWidget);
+    });
+
+    test('metinler web `GuestLiveSheet` ile BİREBİR', () {
+      final web = readRepoFile('src/components/LiveGamesTab.tsx');
+      // Web JSX'te gövde metni tek satır; başlık ayrı satırda.
+      for (final t in [
+        kGuestLiveTitle,
+        kGuestLiveBody,
+        kGuestLiveSignup,
+        kGuestLiveLogin,
+        kGuestLiveToAi,
+      ]) {
+        expect(web.contains(t), isTrue, reason: 'web metni ayrıştı: "$t"');
+      }
+    });
   });
 
   testWidgets(

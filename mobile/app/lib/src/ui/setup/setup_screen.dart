@@ -139,9 +139,9 @@ class _SetupScreenState extends State<SetupScreen>
   /// BAŞINDA kilitlenir, 4 kişilikte üç YZ'ye birden uygulanır.
   AiLevel? _chosenLevel;
 
-  AiLevel get _level => _chosenLevel ??
-      defaultAiLevel(_ilkOyunMu(),
-          misafir: widget.services.auth.user == null);
+  AiLevel get _level =>
+      _chosenLevel ??
+      defaultAiLevel(_ilkOyunMu(), misafir: widget.services.auth.user == null);
 
   /// Depo açılınca doldurulur — zorluk varsayılanının "ilk oyun mu"
   /// sorusunu build içinde (senkron) cevaplayabilmek için.
@@ -260,7 +260,6 @@ class _SetupScreenState extends State<SetupScreen>
   /// çizilir: devam eden YZ oyunları çevrimdışı da oynanabiliyor.)
   bool _cloudSavesFailed = false;
   String? _previewedInviteToken;
-
 
   @override
   void initState() {
@@ -976,8 +975,7 @@ class _SetupScreenState extends State<SetupScreen>
       try {
         final flags = (await storage).flags;
         if (mounted) {
-          await yarimOyunIzniAkisi(context,
-              messaging: messaging, flags: flags);
+          await yarimOyunIzniAkisi(context, messaging: messaging, flags: flags);
         }
       } catch (_) {
         // Depo açılamadıysa kart çıkmaz — akış durmaz.
@@ -1406,6 +1404,16 @@ class _SetupScreenState extends State<SetupScreen>
                             onActionCount: (n) {
                               if (mounted && _liveActionCount != n) {
                                 setState(() => _liveActionCount = n);
+                              }
+                            },
+                            // Girişsiz pencerenin "Yapay Zekayla devam et"i /
+                            // kapatılması → Kime karşı: Yapay Zeka (karar 9).
+                            onSwitchToAi: () {
+                              if (mounted) {
+                                setState(() {
+                                  _liveView = false;
+                                  _localSubTab = _LocalSubTab.active;
+                                });
                               }
                             },
                           )
