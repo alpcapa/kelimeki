@@ -13,13 +13,19 @@
 // (`legal_modals.dart`) 1.1.1'den beri aynı metni taşıyor. Hesap kimliği
 // ASLA gönderilmez, saat tutulmaz (gün sunucuda hesaplanıyor).
 //
-// ⚠ KANAL (kullanıcı kararı, 27 Eylül 2026: *"önce kanalsız"*): Play Install
-// Referrer BU SÜRÜMDE YOK. Yeni cihazın kanalı `DeviceStamp.source` —
-// deep link'ten yakalanmış bir `?ref=` varsa o, yoksa `app` (panelde
-// "Mobil Uygulama", `sourceChannel('app')`; öteki üç tabloyla AYNI damga).
+// ⚠ KANAL: yeni cihazın kanalı sırayla (1) Android'de **Play Install
+// Referrer**'daki `utm_source` (30 Eylül 2026, kullanıcı kararı: *"Referrer'ı
+// 5 Ekim trenine ekle"* — paralı kanallar uygulama içinde de görünsün; web
+// mağaza rozeti `?ref=` etiketini `referrer=utm_source%3D<etiket>` olarak
+// Play'e taşıyor, `taggedStoreUrl`), (2) `DeviceStamp.source` — deep link'ten
+// yakalanmış bir `?ref=` varsa o, yoksa `app` (panelde "Mobil Uygulama",
+// `sourceChannel('app')`). 27 Eylül'deki ilk karar *"önce kanalsız"*dı.
+// ⚠ Referrer YALNIZCA bu tabloya yazılır, `DeviceStamp`e (öteki üç tablo)
+// BİLEREK değil — o damga kayıt/oyun satırlarını da değiştirirdi, kapsam
+// dışı. iOS'ta Apple kişi bazında kanal vermiyor → `app`.
 // Plandaki `app-store`/`play-organik` BİLEREK kullanılmadı: panel onları
 // "Diğer"e atardı, platform ayrımı zaten `platform` sütununda. Eski cihaz
-// (ölçüm v2'den önce iz bırakmış) `mevcut`.
+// (ölçüm v2'den önce iz bırakmış) `mevcut` — referrer'dan ÖNCE gelir.
 //
 // ⚠ Olay/platform adları web kaynağından OKUNARAK kilitli:
 // `test/funnel_events_parity_test.dart` (`web-ci.yml` `parite` işi).
@@ -53,12 +59,39 @@ const bool kFunnelMemberEventsEnabled = true;
 String? funnelPlatformFor(String? platform) =>
     platform == 'ios' || platform == 'android' ? platform : null;
 
-/// `land` kanalı (web `decideLandChannel`). [source]: `DeviceStamp.source`.
+/// `land` kanalı (web `decideLandChannel`). [source]: `DeviceStamp.source`;
+/// [referrerChannel]: `channelFromInstallReferrer` (Android, yoksa `null`).
 String decideAppLandChannel({
   required bool hadPriorTrace,
   required String source,
+  String? referrerChannel,
 }) =>
-    hadPriorTrace ? kFunnelExistingChannel : source;
+    hadPriorTrace ? kFunnelExistingChannel : (referrerChannel ?? source);
+
+/// Web `taggedStoreUrl`in (`src/utils/storeLinks.ts`) mağazaya taşıdığı
+/// etiket kalıbı — web'den OKUNARAK kilitli (`funnel_events_parity_test`).
+final RegExp kInstallReferrerSourcePattern =
+    RegExp(r'^[a-z0-9][a-z0-9._-]{0,39}$');
+
+/// Play Install Referrer dizesinden (`utm_source=meta-reel&utm_medium=web`)
+/// kanal etiketi. Organik kurulum (`utm_source=google-play&utm_medium=organic`),
+/// boş/bozuk dize ya da kalıba uymayan etiket → `null` (kanal `app` kalır).
+String? channelFromInstallReferrer(String? referrer) {
+  if (referrer == null || referrer.trim().isEmpty) return null;
+  final Map<String, String> q;
+  try {
+    q = Uri.splitQueryString(referrer.trim());
+  } catch (_) {
+    // Bozuk yüzde kodlaması `ArgumentError` fırlatır (FormatException DEĞİL).
+    return null;
+  }
+  final source = q['utm_source'];
+  if (source == null || !kInstallReferrerSourcePattern.hasMatch(source)) {
+    return null;
+  }
+  if (source == 'google-play' || q['utm_medium'] == 'organic') return null;
+  return source;
+}
 
 /// Europe/Istanbul günü (YYYY-AA-GG) — web `istanbulDay` ile aynı: Türkiye
 /// 2016'dan beri sabit UTC+3. Yerel tarih KULLANILMAZ: 00:00-03:00 UTC arası
@@ -120,12 +153,13 @@ class FunnelRepo {
   final String platform;
   final String? appVersion;
   final bool hadPriorTrace;
+  final Future<String?> Function()? _readInstallReferrer;
   final DateTime Function() _now;
 
   FlagsStore get flags => stamp.flags;
 
   FunnelRepo._(this.gateway, this.stamp, this.platform, this.appVersion,
-      this.hadPriorTrace, this._now);
+      this.hadPriorTrace, this._readInstallReferrer, this._now);
 
   /// İz, oluşturma anında DONDURULUR. Platform iOS/Android değilse `null`.
   static FunnelRepo? create({
@@ -134,12 +168,19 @@ class FunnelRepo {
     required bool signedIn,
     String? platform,
     String? appVersion,
+    Future<String?> Function()? readInstallReferrer,
     DateTime Function()? now,
   }) {
     final p = funnelPlatformFor(platform ?? currentPlatform);
     if (p == null) return null;
-    return FunnelRepo._(gateway, stamp, p, appVersion,
-        hasPriorAppTrace(stamp.flags, signedIn: signedIn), now ?? DateTime.now);
+    return FunnelRepo._(
+        gateway,
+        stamp,
+        p,
+        appVersion,
+        hasPriorAppTrace(stamp.flags, signedIn: signedIn),
+        p == 'android' ? readInstallReferrer : null,
+        now ?? DateTime.now);
   }
 
   /// Açılış / öne geliş: `land` (henüz gönderilmediyse) + günün `visit`i.
@@ -154,7 +195,10 @@ class FunnelRepo {
       var channel = flags.funnelLandChannel;
       if (channel == null) {
         channel = decideAppLandChannel(
-            hadPriorTrace: hadPriorTrace, source: stamp.source);
+            hadPriorTrace: hadPriorTrace,
+            source: stamp.source,
+            referrerChannel:
+                hadPriorTrace ? null : await _installReferrerChannel());
         await flags.setFunnelLandChannel(channel);
       }
       if (!flags.funnelLandSent) {
@@ -185,6 +229,20 @@ class FunnelRepo {
     } catch (e) {
       debugPrint('[Kelimeki] funnel_events olayı düştü ($event): $e');
       return false;
+    }
+  }
+
+  // Referrer okuması düşerse (Play Hizmetleri yok, zaman aşımı, sideload
+  // edilmiş `.apk`) kanal `app`e düşer — ölçüm açılışı ASLA bozmaz. Kanal
+  // ilk kararda donduğu için bu tek bir denemedir.
+  Future<String?> _installReferrerChannel() async {
+    final read = _readInstallReferrer;
+    if (read == null) return null;
+    try {
+      return channelFromInstallReferrer(await read());
+    } catch (e) {
+      debugPrint('[Kelimeki] Install Referrer okunamadı: $e');
+      return null;
     }
   }
 

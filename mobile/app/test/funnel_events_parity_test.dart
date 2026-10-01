@@ -206,4 +206,105 @@ void main() {
       expect(g.calls.every((c) => c['channel'] == null), isTrue);
     });
   });
+
+  group('Play Install Referrer (30 Eylül 2026)', () {
+    test('etiket kalıbı web taggedStoreUrl ile BİREBİR', () {
+      final web = readRepoFile('src/utils/storeLinks.ts');
+      expect(web,
+          contains('/${kInstallReferrerSourcePattern.pattern}/.test(source)'));
+      // Web'in Play'e yazdığı biçim — ayrıştırıcı tam bunu okuyor.
+      expect(web, contains('utm_source=\${source}&utm_medium=web'));
+    });
+
+    test('ayrıştırma: reklam etiketi okunur, organik/bozuk olan düşer', () {
+      expect(channelFromInstallReferrer('utm_source=meta-reel&utm_medium=web'),
+          'meta-reel');
+      expect(channelFromInstallReferrer('utm_source=meta-karusel'),
+          'meta-karusel');
+      expect(
+          channelFromInstallReferrer(
+              'utm_source=google-play&utm_medium=organic'),
+          isNull);
+      expect(channelFromInstallReferrer('utm_source=x&utm_medium=organic'),
+          isNull);
+      expect(channelFromInstallReferrer(null), isNull);
+      expect(channelFromInstallReferrer(''), isNull);
+      expect(channelFromInstallReferrer('utm_medium=web'), isNull);
+      expect(channelFromInstallReferrer('utm_source=(not%20set)'), isNull);
+      expect(channelFromInstallReferrer('utm_source=Meta-Reel'), isNull);
+      expect(channelFromInstallReferrer('utm_source=${'a' * 41}'), isNull);
+      expect(channelFromInstallReferrer('%%%bozuk'), isNull);
+    });
+
+    Future<FunnelRepo> repoWith(FlagsStore flags, _FakeGateway g,
+            {required String platform,
+            Future<String?> Function()? read}) async =>
+        FunnelRepo.create(
+            gateway: g,
+            stamp: DeviceStamp(flags),
+            signedIn: false,
+            platform: platform,
+            readInstallReferrer: read)!;
+
+    test('Android yeni kurulum: land kanalı referrer etiketi', () async {
+      final g = _FakeGateway();
+      final repo = await repoWith(await _flags(), g,
+          platform: 'android',
+          read: () async => 'utm_source=meta-reel&utm_medium=web');
+      await repo.open();
+      expect(g.calls.first['event'], 'land');
+      expect(g.calls.first['channel'], 'meta-reel');
+    });
+
+    test('okuma düşerse kanal "app" (açılış bozulmaz)', () async {
+      final g = _FakeGateway();
+      final repo = await repoWith(await _flags(), g,
+          platform: 'android', read: () async => throw Exception('yok'));
+      expect(await repo.open(), ['land', 'visit']);
+      expect(g.calls.first['channel'], 'app');
+    });
+
+    test('eski cihaz referrer\'a BAKILMADAN "mevcut"', () async {
+      var okundu = false;
+      final g = _FakeGateway();
+      final repo = await repoWith(await _flags({'seen_intro': true}), g,
+          platform: 'android', read: () async {
+        okundu = true;
+        return 'utm_source=meta-reel';
+      });
+      await repo.open();
+      expect(g.calls.first['channel'], kFunnelExistingChannel);
+      expect(okundu, isFalse);
+    });
+
+    test('iOS referrer\'ı hiç çağırmaz', () async {
+      var okundu = false;
+      final g = _FakeGateway();
+      final repo =
+          await repoWith(await _flags(), g, platform: 'ios', read: () async {
+        okundu = true;
+        return 'utm_source=meta-reel';
+      });
+      await repo.open();
+      expect(g.calls.first['channel'], 'app');
+      expect(okundu, isFalse);
+    });
+
+    test('kanal donar: land düşse de ikinci açılış referrer\'ı yeniden okumaz',
+        () async {
+      var okuma = 0;
+      final flags = await _flags();
+      final g = _FakeGateway()..failWith = Exception('ağ');
+      final repo =
+          await repoWith(flags, g, platform: 'android', read: () async {
+        okuma++;
+        return 'utm_source=meta-reel';
+      });
+      await repo.open();
+      g.failWith = null;
+      await repo.open();
+      expect(okuma, 1);
+      expect(g.calls.first['channel'], 'meta-reel');
+    });
+  });
 }

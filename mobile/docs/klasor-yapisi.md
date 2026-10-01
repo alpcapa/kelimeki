@@ -99,6 +99,9 @@ mobile/
                              # visit · signup · game_start · game_finish.
                              # ⚠ "önceden iz" bootstrap'ta errorReporter'dan
                              # ÖNCE donar; parite: funnel_events_parity_test
+      data/install_referrer.dart # Play Install Referrer okuması (Android) →
+                             # land kanalı (`channelFromInstallReferrer`,
+                             # funnel_api.dart; Parça 218)
       data/stats_api.dart    # player_stats / leaderboard / my_leaderboard_rank
       data/league_rewards_api.dart # k-lig ödül/rütbe kayıtları (league_rewards
                              # + mark_league_rewards_seen) — kutlama banner'ı
