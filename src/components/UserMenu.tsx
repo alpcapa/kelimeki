@@ -24,6 +24,7 @@ import { KLigMark } from './KLigMark';
 import { FriendsModal } from './FriendsModal';
 import { RankSeal } from './RankSeal';
 import { tierFor } from '../utils/leagueRank';
+import type { AdminTab } from './AdminDashboard';
 
 type ActiveModal = 'auth' | 'account' | 'score' | 'help' | 'league' | 'admin' | 'friends' | null;
 
@@ -46,6 +47,9 @@ export function UserMenu() {
   const [adminPendingCount, setAdminPendingCount] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
   const isAdmin = !!profile?.is_admin;
+  // Kritik hata uyarısı mailindeki bağlantı (`?admin=hatalar`, 30 Eylül
+  // 2026) paneli doğrudan Hatalar sekmesinde açar.
+  const [adminInitialTab, setAdminInitialTab] = useState<AdminTab | undefined>(undefined);
 
   // Hızlı hesap değişiminde (ör. çıkış yapıp başka bir hesapla giriş) eski
   // kullanıcının isteği geç dönüp yeni kullanıcının verisini ezebilirdi —
@@ -122,6 +126,23 @@ export function UserMenu() {
       cancelled = true;
     };
   }, [user?.id, isAdmin]);
+
+  // `?admin=hatalar` — kritik hata uyarısı mailinin bağlantısı
+  // (`notify-admin-alerts`, 30 Eylül 2026). `?contact=1` köprüsüyle aynı
+  // kalıp: parametre okunur, pencere açılır, URL'den temizlenir. Parametre
+  // ADMİN profili yüklenene kadar URL'de BEKLER — oturumsuz açılışta giriş
+  // yapıldıktan sonra da çalışsın diye. Admin olmayan için hiçbir şey olmaz
+  // (panelin verisi zaten `is_admin()` kapılı RPC'lerden geliyor).
+  useEffect(() => {
+    if (!isAdmin) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') !== 'hatalar') return;
+    params.delete('admin');
+    const rest = params.toString();
+    window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : ''));
+    setAdminInitialTab('errors');
+    setModal('admin');
+  }, [isAdmin]);
 
   // Dışarı tıklayınca / Esc ile menüyü kapat.
   useEffect(() => {
@@ -356,8 +377,10 @@ export function UserMenu() {
       {modal === 'admin' && (
         <Suspense fallback={null}>
         <AdminDashboard
+          initialTab={adminInitialTab}
           onClose={() => {
             setModal(null);
+            setAdminInitialTab(undefined);
             // İçeride mesaj/şikayet okundu işaretlenmiş olabilir —
             // FriendsModal kapanışındaki aynı desen.
             refreshAdminPendingCount();

@@ -69,7 +69,7 @@ void main() {
 
   Future<void> pumpSignup(
     WidgetTester tester, {
-    required Future<bool> Function(String) checker,
+    required Future<NicknameStatus> Function(String) checker,
   }) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await tester.pumpWidget(MaterialApp(
@@ -91,7 +91,7 @@ void main() {
     final fake = FakeAnalytics();
     analytics.configure(fake);
     addTearDown(analytics.reset);
-    await pumpSignup(tester, checker: (_) async => true);
+    await pumpSignup(tester, checker: (_) async => NicknameStatus.ok);
     expect(fake.names, ['signup_started']);
     // login'e dön → tekrar signup: her form GÖRÜLMESİ ayrı sayılır (huni
     // tekil kullanıcıyı GA4 tarafında kendisi ayrıştırır).
@@ -114,7 +114,7 @@ void main() {
     final asked = <String>[];
     await pumpSignup(tester, checker: (n) async {
       asked.add(n);
-      return n != 'ironman';
+      return n != 'ironman' ? NicknameStatus.ok : NicknameStatus.taken;
     });
 
     final nick = fieldByLabel('TAKMA İSİM').first;
@@ -147,9 +147,26 @@ void main() {
     expect(find.text('Bu takma isim zaten kullanılıyor.'), findsNothing);
   });
 
+  // Küfür süzgeci (ROADMAP #37): süzgece takılan ad "kullanımda" DEĞİL,
+  // kendi mesajıyla reddedilir — web `useNicknameAvailability`'nin `blocked`ı.
+  testWidgets('takma isim süzgece takılırsa "kullanılamaz" + KAYIT OL pasif',
+      (tester) async {
+    await pumpSignup(tester, checker: (_) async => NicknameStatus.blocked);
+    final nick = fieldByLabel('TAKMA İSİM').first;
+    await tester.enterText(nick, 'kotuisim');
+    await tester.pump(const Duration(milliseconds: 450));
+    await tester.pump();
+    expect(find.text('Bu takma isim kullanılamaz.'), findsOneWidget);
+    expect(find.text('Bu takma isim kullanımda.'), findsNothing);
+    await tester.tap(find.text('KAYIT OL'), warnIfMissed: false);
+    await tester.pump();
+    // Buton pasif: form doğrulaması hiç çalışmadı ("Ad zorunludur." yok).
+    expect(find.text('Ad zorunludur.'), findsNothing);
+  });
+
   testWidgets('doğrulama sırası web ile aynı (Ad → ... → koşullar)',
       (tester) async {
-    await pumpSignup(tester, checker: (_) async => true);
+    await pumpSignup(tester, checker: (_) async => NicknameStatus.ok);
 
     Future<void> submitExpect(String msg) async {
       await tester.ensureVisible(find.text('KAYIT OL'));
@@ -190,7 +207,7 @@ void main() {
 
   testWidgets('koşullar linkleri Terms/Privacy portlarını açar (metin birebir)',
       (tester) async {
-    await pumpSignup(tester, checker: (_) async => true);
+    await pumpSignup(tester, checker: (_) async => NicknameStatus.ok);
 
     // Linkler TextSpan (recognizer'lı) — düz find.text bulamaz; tapOnText
     // metin aralığına dokunur.
@@ -234,7 +251,7 @@ void main() {
         key: key,
         child: Scaffold(
           body: AuthModal(
-              auth: AuthService.fake(), nicknameChecker: (_) async => true),
+              auth: AuthService.fake(), nicknameChecker: (_) async => NicknameStatus.ok),
         ),
       ),
     ));

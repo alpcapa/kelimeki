@@ -61,7 +61,7 @@ interface GameHistoryModalProps {
    * kullanıcı için gösterilmesi gerektiğinden (bkz. `fallbackPlayers`).
    */
   targetName?: string | null;
-  /** Verilirse varsayılan "Tüm Oyunlar · N Oyunculu" başlığının yerine geçer. */
+  /** Verilirse varsayılan "Tüm Oyunlar · N Kişi" başlığının yerine geçer. */
   title?: string;
   /**
    * Verilirse (ör. `RecentGamesSection`'daki "Son Oynadıklarım" satırlarından
@@ -616,7 +616,7 @@ export function GameHistoryModal({
   }, [hasMore, loading, loadMore]);
 
   return (
-    <Modal title={title ?? (playerCount === null ? 'Tüm Oyunlar' : `Tüm Oyunlar · ${playerCount} Oyunculu`)} onClose={onClose}>
+    <Modal title={title ?? (playerCount === null ? 'Tüm Oyunlar' : `Tüm Oyunlar · ${playerCount} Kişi`)} onClose={onClose}>
       {/* Tümü / Favoriler filtresi */}
       <div className="flex gap-1.5 mb-3 shrink-0">
         {([
@@ -626,12 +626,20 @@ export function GameHistoryModal({
           <button
             key={String(tab.key)}
             onClick={() => setFavoritesOnly(tab.key)}
-            className={`flex-1 text-[11px] font-mono font-bold uppercase tracking-[0.5px] py-1.5 rounded-md transition-colors ${
+            className={`flex-1 inline-flex items-center justify-center gap-1 text-[11px] font-mono font-bold uppercase tracking-[0.5px] py-1.5 rounded-md transition-colors ${
               favoritesOnly === tab.key
                 ? 'bg-accent text-white'
                 : 'bg-panel text-muted border border-border'
             }`}
           >
+            {/* Satırlardaki kalbin bu sekmeyi doldurduğu belli olsun (29 Eylül
+                2026, kullanıcı isteği). Seçili değilken satırdaki gibi kırmızı,
+                seçiliyken mavi zeminde okunsun diye beyaz. */}
+            {tab.key && (
+              <span className={favoritesOnly ? 'text-white' : 'text-red'}>
+                <HeartIcon filled size={11} />
+              </span>
+            )}
             {tab.label}
           </button>
         ))}
@@ -1003,7 +1011,14 @@ export function GameHistoryModal({
           ...buildSnapshotGameState([], entry?.player_count ?? 2, entry?.players ?? []),
           moveHistory: rows,
         };
-        return <MoveHistoryModal state={state} onClose={close} />;
+        // Kutuların koltuğu: yalnızca satır GERÇEKTEN bana aitse (yukarıdaki
+        // liste ile aynı `isMyRow` kuralı). `players` final SIRALAMASI,
+        // `moveHistory` ise KOLTUK numarası taşıyor → sıradan koltuğa çevir.
+        const snap = entry?.players ?? [];
+        const mine = !!entry && !!user && entry.user_id === user.id && snap.length > 0;
+        const rankIdx = mine ? findMeIndex(entry!, snap) : -1;
+        const myIndex = rankIdx >= 0 ? seatIndexFor(snap[rankIdx], rankIdx, true) : -1;
+        return <MoveHistoryModal state={state} myIndex={myIndex} onClose={close} />;
       })()}
 
       {/*

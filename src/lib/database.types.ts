@@ -63,6 +63,14 @@ export interface IncomingFriendRequest {
   created_at: string;
 }
 
+/** `list_outgoing_friend_requests` — gönderdiğim, henüz cevaplanmamış istekler. */
+export interface OutgoingFriendRequest {
+  friend_id: string;
+  name: string;
+  avatar_url: string | null;
+  created_at: string;
+}
+
 /** İki kullanıcı arasındaki mevcut arkadaşlık ilişkisi — bkz. `fetchFriendRelation`. */
 export type FriendRelation = 'accepted' | 'pending_outgoing' | 'pending_incoming';
 
@@ -822,6 +830,12 @@ export interface AdminFunnelRow {
   finished: number;
   games_started: number;
   games_finished: number;
+  /**
+   * Mağazaya giden web misafir OTURUMU (`web_sessions`, `store` adımı; 29 Eylül
+   * 2026). ⚠ Birim farklı: kohort cihazı değil oturum; kanala `utm_source`
+   * üzerinden bağlanır, yalnızca `web` satırlarında dolu.
+   */
+  store: number;
 }
 
 /**
@@ -1470,19 +1484,21 @@ export interface AdminTutorialFunnelRow {
 /**
  * `admin_signup_funnel` — kayıt hunisi (Büyüme > Kullanıcı → "Kayıt Hunisi").
  *
- * Kanal başına bir satır: kayıt FORMUNU açan (`starts`) ve hesabı OLUŞTURAN
- * (`completions`) ADET. Kimlik yok, yani "benzersiz kişi" sayısı YOK —
- * `signup_events` bilerek kimliksiz (bkz. migration `signup_events_funnel`
- * ve `logSignupEvent`). Bir kişi formu iki kez açarsa iki kez sayılır.
- *
- * ⚠ **Yalnızca WEB.** Port aynı olayları Firebase Analytics'e yazıyor, bu
- * tabloya değil — oranı `profiles` sayısıyla kurmak paydası web, payı
- * web+mobil olan sahte bir yüzde üretirdi, o yüzden `completions` da bu
- * tablodan okunuyor.
+ * PLATFORM başına bir satır (29 Eylül 2026'dan önce kanal başınaydı): kayıt
+ * FORMUNU açan (`starts`) ve hesabı OLUŞTURAN (`completions`) ADET.
+ * - `web`: ikisi de `signup_events`ten (kimliksiz sayaç, bkz.
+ *   `logSignupEvent`). Bir kişi formu iki kez açarsa iki kez sayılır.
+ * - `app`: ikisi de `signup_events`ten (platform ios/android) — port bu
+ *   sayaca 1.1.2'den beri yazıyor (#651); `starts` 0 ise ÖLÇÜLMÜYOR (kart
+ *   "—" gösterir). ⚠ `completions` migration
+ *   `admin_signup_funnel_app_same_source` canlıya uygulanana kadar
+ *   `profiles`tan gelir (uygulamadan açılan TÜM hesaplar).
+ * Pencere en erken 21 Eylül 2026 (sayacın doğduğu an): iki satır aynı
+ * günleri sayar. iOS / Android ayrımı yok — bkz. migration
+ * `admin_signup_funnel_platform`.
  */
 export interface AdminSignupFunnelRow {
-  /** 'direct' | 'form' | 'bilinmiyor' (kanal yazmayan satırlar). */
-  channel: string;
+  platform: 'web' | 'app';
   starts: number;
   completions: number;
 }
@@ -1501,4 +1517,10 @@ export interface AdminWebJourneyRow {
   median_seconds: number | null;
   /** Burada ayrılanların karşılamadaki kaydırma derinliği (%, medyan). */
   median_scroll: number | null;
+  /**
+   * Etkileşimsiz oturum sayısı — yalnızca İLK pingi ulaşmış (sekme kapanış
+   * pingi hiç gelmemiş) oturumlar; çoğu önizleme/tarama botu. Adım
+   * satırlarından DÜŞÜLMÜŞTÜR, her satırda aynı değer (27 Eylül 2026).
+   */
+  idle: number;
 }

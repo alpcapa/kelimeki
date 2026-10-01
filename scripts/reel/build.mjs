@@ -137,7 +137,9 @@ async function main() {
   // başlığa tıklayıp hiçbir şey olmamasıyla sonuçlandı). Tıklanacak olan
   // `SavedGameRow`; onu durum etiketinden buluyoruz. Büyük harf CSS'ten
   // geldiği için eşleşme büyük/küçük harfe duyarsız bir regex.
-  const satir = page.getByText(/senin hamlen bekleniyor/i);
+  // ⚠ Etiket Eylül 2026'da "Senin hamlen bekleniyor" → "SIRA SENDE" oldu
+  // (Setup.tsx); betik 28 Eylül'de tam burada düştü. İkisini de tanıyor.
+  const satir = page.getByText(/senin hamlen bekleniyor|SIRA SENDE/i).first();
   await satir.waitFor({ timeout: 15000 });
 
   // ── 2 · Oyuna gir — KAYIT BURADAN BAŞLIYOR ──────────────────────────────

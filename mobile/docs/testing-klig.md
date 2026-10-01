@@ -75,7 +75,7 @@ listesi kök `TESTING.md` bölüm 10.
       başlatılsa da, **web'den girilse de** bir daha çıkmamalı.
 - [ ] **Banner oyun ortasında çıkmaz.** Devam eden bir YZ/Canlı oyunun
       tahtasındayken banner asla belirmemeli. Oyun bitince (GameOver
-      modalı + Görüş Bildir formu kapatıldıktan sonra — banner onların
+      modalı kapatıldıktan sonra — banner onun
       ALTINDA duruyor, web'de de öyle) kendiliğinden görünmeli.
 - [ ] **Setup'a dönünce de görünür.** Oyunu bitirmeden logoya basıp
       Setup'a dön: orada bekleyen kutlama varsa çıkmalı (Setup'ın host'u

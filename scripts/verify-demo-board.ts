@@ -28,6 +28,7 @@ import { TILE_DATA } from '../src/data/tiles';
 import { trLower } from '../src/utils/turkish';
 import { SIZE, cornerCell, cornersFor } from '../src/game/constants';
 import { DEMO_BOARDS } from '../src/landing/demoBoard';
+import { kesitHucreleri } from '../src/landing/ilkEkranKesiti';
 import type { BoardSnapshotTile } from '../src/lib/database.types';
 
 const SOZLUK = new Set(WORD_LIST.map((w) => trLower(w)));
@@ -139,6 +140,34 @@ for (const { playerCount, tiles, bagimsizHucreler } of DEMO_BOARDS) {
     tiles,
     bagimsizHucreler,
   );
+}
+
+// ── İlk ekrandaki küçük kesit (`ilkEkranKesiti.ts`, 27 Eylül 2026) ──────────
+// 13×13 değil, ev karesi yok — yalnızca 2. ve 3. kontrol (kelime + torba
+// harfi) anlamlı. Ev bağlantısı bilerek kontrol EDİLMİYOR: kesit bir oyunun
+// ortasından alınmış bir kadraj.
+{
+  console.log('İlk ekran kesiti');
+  const g = kesitHucreleri().map((s) => s.map((h) => (h.tur === 'tas' ? h.harf : null)));
+  const bulunan: string[] = [];
+  const tara = (dizi: (string | null)[]) => {
+    let kelime = '';
+    for (const h of [...dizi, null]) {
+      if (h) kelime += h;
+      else {
+        if (kelime.length >= 2) bulunan.push(kelime);
+        kelime = '';
+      }
+    }
+  };
+  g.forEach((satir) => tara(satir));
+  for (let c = 0; c < g[0].length; c++) tara(g.map((satir) => satir[c]));
+  for (const satir of g) for (const h of satir) if (h && !(h in TILE_DATA)) { hata++; console.log(`  ✗ torbada olmayan harf "${h}"`); }
+  for (const k of bulunan) {
+    if (SOZLUK.has(trLower(k))) console.log(`  ✓ ${k}`);
+    else { hata++; console.log(`  ✗ sözlükte yok: ${k}`); }
+  }
+  if (bulunan.length === 0) { hata++; console.log('  ✗ kesitte hiç kelime yok'); }
 }
 
 if (hata) {
