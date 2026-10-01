@@ -77,11 +77,25 @@ class LiveGamesTab extends StatefulWidget {
   /// Sekme ziyaret edilip sunucu işaretlemeyi ONAYLADIĞINDA çağrılır.
   final VoidCallback onFinishesSeen;
 
+  /// Liste her BAŞARIYLA yüklendiğinde "bekleyen iş" sayısıyla (davet +
+  /// sırası sende) çağrılır — sahibi `SetupScreen`in "Arkadaşınla (N)"
+  /// rozeti. Sayı `pendingCounts()`un AYNI fonksiyonlarıyla, aynı veriden
+  /// hesaplanıyor; yani liste ile rozet artık birbiriyle ÇELİŞEMEZ.
+  ///
+  /// ⚠ Neden (28 Eylül 2026, kullanıcı bildirdi): daveti kabul ettikten
+  /// sonra liste kendini tazeliyordu (`_handleRespond` → `_reload`) ama
+  /// rozet YALNIZCA Realtime olayına bağlıydı. Olay kaçınca rozet "1"de
+  /// kaldı; sekme değiştirmek listeyi yeniden yükledi ama rozeti değil,
+  /// ancak uygulamayı yeniden açmak düzeltti. Web ikizi: `onActionCount`
+  /// (`LiveGamesTab.tsx`).
+  final ValueChanged<int>? onActionCount;
+
   const LiveGamesTab({
     super.key,
     required this.services,
     this.newlyFinishedIds = const [],
     required this.onFinishesSeen,
+    this.onActionCount,
   });
 
   @override
@@ -277,6 +291,8 @@ class _LiveGamesTabState extends State<LiveGamesTab>
         }
       }
     });
+    widget.onActionCount?.call(
+        inviteBucket(snap.games).length + myTurnCount(snap.games, snap.turns));
     unawaited(_pushIzniniSorMaybe(snap, user.id));
   }
 

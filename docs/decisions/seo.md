@@ -152,3 +152,46 @@ Doğrusu üretilmiş dosyaya bakmak (`dist/nasil-oynanir/index.html`) ya da
 **Aksiyon: beklemek.** Birkaç gün sonra aynı denetim tekrarlanır; "Referring
 page" satırının `kelimeki.com/` olması ya da sayfanın indekslenmesi
 beklenen sonuç.
+
+## GSC okuması + Google arama reklamı sorusu (30 Eylül 2026)
+
+**Ölçüm** (GSC → Performance, Web, son 3 ay, kullanıcının ekran görüntüsü):
+sorgu tablosunda TEK satır var — `kelimeki` · 26 tık · 30 gösterim.
+Toplamlar: **50 tık · 72 gösterim · CTR %69,4 · ortalama konum 1,1** —
+yani 24 tık / 42 gösterim GSC'nin gizlediği düşük hacimli sorgulardan geliyor,
+ama ortalama konum 1,1 olduğu için onlar da neredeyse kesin marka varyantları
+(tür aramalarında gösterim olsaydı ortalama konum aşağı çekilirdi). Sonuç:
+site Google'da yalnızca KENDİ ADIYLA bulunuyor.
+
+**İndeks:** Pages → Indexed pages = **1 sayfa** (`https://kelimeki.com/`,
+son tarama 21 Eyl), Temmuz sonundan beri sabit. Sitemap'te 5 URL var;
+`/nasil-oynanir/` (tür aramaları için yazılan sayfa) 1 Eylül'deki "Crawled,
+currently not indexed" durumundan **bir ayda çıkmadı** — "birkaç gün bekle"
+notu (yukarıdaki bölüm) artık geçerli değil; bu Google'ın bir kalite/otorite
+kararı. Kod tarafında bilinen bir eksik yok (1 Eylül denetimi); kaldıraç
+dış bağlantılar (mağaza sayfaları, Meta sayfası vb.).
+
+**Soru:** Apple Ads'in benzeri Google arama reklamı mantıklı mı?
+**Karar: şimdilik HAYIR, ~14 Ekim'de yeniden bak** (Apple Ads ilk okuması +
+Meta Faz 1 sonucu). Gerekçe: (1) tür aramalarının hacmi düşük — App Store'da
+dört genel kelime 1/5 (`marketing/app-store/apple-ads.md`); (2) Google trafiği
+web karşılamasına iner, orada ziyaretçinin %63'ü ayrılıyor (#701'in etkisi
+henüz ölçülmedi); (3) üçüncü ücretli kanal atfı karıştırır. Organik yoldan
+tür aramalarına çıkmak uzun vadeli; kısa vadede o aramalarda görünmenin tek
+yolu ücretli. Denenirse: Search kampanyası, Exact, ~$2/gün, `?ref=` etiketli
+link — App kampanyası DEĞİL (anahtar kelime seçtirmiyor).
+
+**Yeniden deneme (30 Eylül 2026):** `/nasil-oynanir/` için URL denetimi →
+"Test live URL" → "Request indexing" **yapıldı (13:00)**: canlı test "URL is
+available to Google · Page can be indexed" — teknik engel YOK, karar
+tamamen Google'ın. Sonuç ~14 Ekim'de Pages → Indexed pages'tan okunacak.
+(Aynı turda URL yanlışlıkla "Add a new sitemap" kutusuna girildi → GSC
+"Sitemap is HTML" hatası verdi; zararsız, ⋮ → Remove sitemap ile silinir.) Bir kez basılır;
+tekrar basmak hızlandırmıyor (yukarı bkz.). Aynı turda `sitemap.xml`'de `/`
+için `lastmod` 2026-08-31 → 2026-09-30 düzeltildi (karşılama 27-30 Eyl'de
+değişti, #661/#668/#701). ⚠ `sitemap.xml` ELLE yazılıyor, üretici yok —
+karşılama ya da `/nasil-oynanir/` içeriği değişince `lastmod`u da güncelle.
+**13:04:** #704 yayında (`5b66704`), `sitemap.xml` GSC'ye yeniden gönderildi →
+Submitted/Last read 30 Eyl · Success · 5 sayfa. Hatalı `nasil-oynanir`
+sitemap kaydı silindi (listede yalnızca `sitemap.xml` var). Açık iş yok;
+sıradaki adım ~14 Ekim okuması.

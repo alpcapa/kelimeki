@@ -232,7 +232,30 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
   const loadedRef = useRef(false);
   // Panelin "Tekrar Dene"si effect'in içindeki refresh'i çağırabilsin diye
   // (App.tsx'teki `refreshCloudSavesRef` deseni).
-  const refreshRef = useRef<() => void>(() => {});
+  //
+  // 29 Eylül 2026'dan beri `Promise` döndürüyor: başarılı bir hamlenin
+  // ardından `syncAfterSubmit` onu BEKLİYOR (aşağı bkz.).
+  const refreshRef = useRef<() => Promise<void>>(async () => {});
+  /**
+   * Başarılı gönderimden SONRA sunucu durumunu hemen okur ve düğme ancak
+   * ondan sonra serbest kalır (29 Eylül 2026, kullanıcı bildirdi: *"Hamlemi
+   * koyup oynaya bastım. Hala oyna butonu aktif, tekrar bastığımda sıra
+   * sende değil mesajı gözüküyor … bekleyince düzeldi"*).
+   *
+   * Kök sebep: ekran kendi hamlesinin sonucunu YALNIZCA Realtime yankısından
+   * öğreniyordu. Soket sessizce düşmüşse (iOS arka plana alınan sekmenin
+   * websocket'ini askıya alıyor; bkz. "Realtime aboneliği arka plandan
+   * dönünce") yankı hiç gelmez: taslak taşlar tahtada, raf eksik, OYNA
+   * etkin kalır. İkinci basış yeni bir `move_id` taşıdığından (başarıda
+   * temizleniyor) sunucu onu yeni hamle sayar ve GERÇEK bir "Sıra sende
+   * değil." döner. Sunucu tarafında hamle TEK kez kaydedilmişti (15:18:44,
+   * `online_game_moves`), yani ağ değil senkron sorunuydu.
+   *
+   * `refresh` kendi içinde 20 sn'lik `withTimeout` taşıyor ve hata
+   * fırlatmıyor, yani bu bekleme sonsuz olamaz. Port ikizi:
+   * `online_game_screen.dart` → `_syncAfterSubmit`.
+   */
+  const syncAfterSubmit = () => refreshRef.current();
   const [busy, setBusy] = useState(false);
   /**
    * Bekleyen gönderimin idempotency anahtarı ve hangi hamleye ait olduğu —
@@ -599,7 +622,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       // baştan (3s) sürsün, 30s'lik son basamaktan değil.
       clearAutoRetry();
       autoRetryStep = 0;
-      void refresh();
+      return refresh();
     };
     document.addEventListener('visibilitychange', onForeground);
     window.addEventListener('focus', onForeground);
@@ -654,7 +677,9 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       if (cancelled) return;
       setMutedUserIds(mutes);
       setReportedUserIds(reported);
-      setChatMessages(rows);
+      // İstek düştüyse (`null`) eski liste KORUNUR ve okundu kararı
+      // verilmez — bkz. `fetchOnlineGameMessages` ve `decideChatRead`.
+      if (rows) setChatMessages(rows);
       // Okundu damgası 23 Eylül 2026'dan beri SUNUCUDA da (bkz.
       // `utils/chatRead.ts` — iki kaynağın büyüğü alınır, geride kalan
       // yetiştirilir). Eskiden yalnızca cihazdaydı: oyun bir cihazda ilk kez
@@ -674,7 +699,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       });
       if (d.writeLocal) markChatReadLocal(game.id, d.writeLocal);
       if (d.pushToServer) void markChatReadRemote(game.id, d.pushToServer);
-      setUnreadCount(d.unread);
+      if (d.unread !== null) setUnreadCount(d.unread);
       });
     };
     loadMessages();
@@ -1283,6 +1308,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
           ),
         });
         clearMoveId();
+        await syncAfterSubmit();
       } catch (err) {
         // Ağ katmanı hatası → ne olduğunu anlatan metin; sunucunun KENDİ
         // reddi ("Sıra sende değil." gibi) olduğu gibi gösterilir.
@@ -1316,6 +1342,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         moveId: moveIdFor(`pass|${state.turnCount}`),
       });
       clearMoveId();
+      await syncAfterSubmit();
     } catch (err) {
       setSubmitError(
         isNetworkError(err)
@@ -1373,6 +1400,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       });
       clearMoveId();
       dispatch({ type: 'TOGGLE_SWAP_MODE' });
+      await syncAfterSubmit();
     } catch (err) {
       setSubmitError(
         isNetworkError(err)
@@ -1408,7 +1436,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
             <button
               onClick={() => {
                 setLoadFailed(false);
-                refreshRef.current();
+                void refreshRef.current();
               }}
               className="btn-raised w-full py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
             >
@@ -1783,7 +1811,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
       {showTiles && (
         <RemainingTilesModal state={state} myIndex={mySlotIndex} onClose={() => setShowTiles(false)} />
       )}
-      {showHistory && <MoveHistoryModal state={historyState} onClose={() => setShowHistory(false)} />}
+      {showHistory && <MoveHistoryModal state={historyState} myIndex={mySlotIndex} onClose={() => setShowHistory(false)} />}
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
 
@@ -1932,10 +1960,9 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         celebration={celebration}
         onOpenHistory={() => setShowHistory(true)}
         onOpenFeedback={() => setShowFeedback(true)}
-        onClose={() => {
-          setGameOverDismissed(true);
-          setShowFeedback(true);
-        }}
+        // "Görüş Bildir" yalnızca modalın içindeki linkle açılır — kapatınca
+        // kendiliğinden açılması 26 Eylül 2026'da kaldırıldı (kullanıcı kararı).
+        onClose={() => setGameOverDismissed(true)}
       />
 
       {showFeedback && <FeedbackModal source="game_end" onClose={() => setShowFeedback(false)} />}

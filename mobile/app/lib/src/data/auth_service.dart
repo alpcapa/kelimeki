@@ -579,7 +579,10 @@ class AuthService extends ChangeNotifier {
     await c.storage.from('avatars').uploadBinary(
           path,
           bytes,
-          fileOptions: FileOptions(upsert: true, contentType: mimeType),
+          // Web `uploadAvatar` ile aynı: adres `?v=` ile sürümlü olduğundan
+          // bir yıllık önbellek güvenli (varsayılan 1 saatti; 29 Eylül 2026).
+          fileOptions: FileOptions(
+              upsert: true, contentType: mimeType, cacheControl: '31536000'),
         );
     final publicUrl = c.storage.from('avatars').getPublicUrl(path);
     final url = '$publicUrl?v=${DateTime.now().millisecondsSinceEpoch}';

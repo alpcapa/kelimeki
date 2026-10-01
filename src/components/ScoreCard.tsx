@@ -83,15 +83,11 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
       <div className="mb-4 flex items-center gap-3">
         <Avatar url={profile?.avatar_url} name={name} size={44} />
         <div className="min-w-0 flex-1">
-          {/* Rütbe mührü ismin hemen yanında da duruyor (18 Ağustos 2026,
-              kullanıcı isteği: "Skor kartında ismin yanına koy"). Başlıktaki
-              34px'lik mühür KALDI — o dokunulabilir ve `RankInfoModal`ı
-              açıyor; buradaki yalnızca kimliğin yanındaki rozet. Boy 20,
-              çünkü isim 16px (k-lig listesindeki 14px isim için 18). */}
-          <div className="flex items-center gap-1 min-w-0">
-            <span className="text-base font-bold text-text truncate">{name}</span>
-            {rankTier && <RankSeal tier={rankTier} size={20} className="shrink-0" />}
-          </div>
+          {/* İsmin yanındaki 20px'lik rütbe mührü 29 Eylül 2026'da KALKTI
+              (kullanıcı: *"Skor kartlarda ismin yanına rütbe olmasına gerek
+              yok, zaten üstte var"*); 18 Ağustos'ta eklenmişti. Başlıktaki
+              34px'lik dokunulabilir mühür (`RankInfoModal`) duruyor. */}
+          <span className="block text-base font-bold text-text truncate">{name}</span>
           {ageGenderLabel && (
             <div className="text-xs font-mono text-muted">{ageGenderLabel}</div>
           )}
@@ -125,7 +121,7 @@ export function ScoreCard({ onClose }: ScoreCardProps) {
 
       <ScoreStatsSection
         stats={stats}
-        emptyText={tab === 'all' ? 'Henüz hiç oyun kaydın yok.' : `Henüz ${tab} oyunculu oyun kaydın yok.`}
+        emptyText={tab === 'all' ? 'Henüz hiç oyun kaydın yok.' : `Henüz ${tab} kişilik oyun kaydın yok.`}
       />
 
       {/* 3 Eylül 2026 (kullanıcı isteği: "Hepsinde Tüm oyunlar olsun / Ve

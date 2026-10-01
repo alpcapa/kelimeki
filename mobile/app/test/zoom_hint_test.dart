@@ -23,10 +23,10 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'board_zoom_test.dart' show doubleTapAt, isZoomedIn;
 import 'game_screen_test.dart' show craftedState, boardCell;
 import 'support/real_io.dart';
+import 'support/web_source.dart';
 import 'support/test_view.dart';
 
-const _metin =
-    'Boş kareye veya çerçevesine çift tıklama tahtayı büyütür. Hemen dene!';
+const _metin = kZoomHintText;
 
 Future<AppStorage> _storage(Map<String, Object> prefs) async {
   SharedPreferences.setMockInitialValues(prefs);
@@ -133,6 +133,42 @@ void main() {
     await drainRealIo(tester);
     expect(storage.flags.zoomTried, isFalse);
     expect(storage.flags.zoomHintShown, 1);
+  });
+
+  // 27 Eylül 2026, kullanıcı: *"X3 üzerine göstermesi kafa karıştırıyor. Sol
+  // alt bölümün ortasına beyaz boş kareyi gösteren bir mesaj balonu olsun.
+  // Mesaj: Boş kareye çift tık tahtayı büyütür. Şimdi Dene!"*
+  test('metin web ZOOM_HINT_TEXT ile BİREBİR aynı', () {
+    final web = pick(readRepoFile('src/utils/boardZoom.ts'),
+        RegExp(r"export const ZOOM_HINT_TEXT = '([^']*)';"), 'ZOOM_HINT_TEXT');
+    expect(web.replaceAll(r'\n', '\n'), kZoomHintText);
+    expect(kZoomHintText, 'Boş kareye çift tık tahtayı büyütür.\nŞimdi Dene!',
+        reason: 'kullanıcının verdiği metin');
+  });
+
+  test('hedef: sol-alt bloğun ortasındaki BOŞ kare; doluysa sıradaki', () {
+    expect(zoomHintTarget((r, c) => true), (10, 1));
+    expect(zoomHintTarget((r, c) => !(r == 10 && c == 1)), (10, 2));
+    // Ortadaki dört kare doluysa bloğun kenarına kayar, bloktan ÇIKMAZ.
+    final orta = {(10, 1), (10, 2), (11, 1), (11, 2)};
+    final h = zoomHintTarget((r, c) => !orta.contains((r, c)))!;
+    expect(h.$1, inInclusiveRange(9, 12));
+    expect(h.$2, inInclusiveRange(0, 3));
+    // Blok tamamen doluysa balon YOK.
+    expect(zoomHintTarget((r, c) => !(r >= 9 && c <= 3)), isNull);
+  });
+
+  testWidgets('balon (10,1)in hemen ÜSTÜNDE — X3 (6,6) karesini ÖRTMEZ',
+      (tester) async {
+    await _pump(tester);
+    final balon = tester.getRect(find.text(_metin));
+    final hedef = tester.getRect(boardCell(10, 1));
+    final x3 = tester.getRect(boardCell(6, 6));
+    expect(balon.bottom, lessThanOrEqualTo(hedef.top));
+    expect(balon.bottom, greaterThan(hedef.top - 30));
+    expect(balon.top, greaterThan(x3.bottom));
+    // Sola yaslı: balon tahtanın sol yarısında başlar.
+    expect(balon.left, lessThan(hedef.right));
   });
 
   testWidgets('storage verilmezse balon HİÇ çıkmaz (testler/önizlemeler)',

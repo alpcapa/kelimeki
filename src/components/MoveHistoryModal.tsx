@@ -5,7 +5,62 @@ import type { GameState } from '../game/types';
 
 interface MoveHistoryModalProps {
   state: GameState;
+  /**
+   * Pencereyi açanın koltuğu — adının kutusu ve iki vergi kutusu ONUN
+   * rakamları. Bilinmiyorsa (`-1`/verilmemiş) yalnızca TOPLAM çizilir.
+   */
+  myIndex?: number;
   onClose: () => void;
+}
+
+export interface MoveHistoryStats {
+  /** Oyunun TOPLAM puanı — bütün oyuncuların bütün satırları. */
+  total: number;
+  /**
+   * Pencereyi açanın adı ve skor tablosundaki puanı (`players[i].score`);
+   * vergiler onun kaptırdığı / topladığı. Koltuk bilinmiyorsa dördü de `null`.
+   */
+  me: { name: string; score: number; taxPaid: number; taxCollected: number } | null;
+}
+
+/**
+ * Üstteki kutuların sayıları (28 Eylül 2026, kullanıcı isteği):
+ * TOPLAM · (adın) · Vergi(−) · Vergi(+). Önceki "Bu oyunda kazanılan N
+ * hamle… Toplam X puan" satırının yerine geldi: N yalnızca puanlı hamleleri
+ * sayarken liste numarası (`turn + 1`) pas turlarını da saydığından "44 hamle"
+ * yazıp 45. hamleyi listeliyordu — hamle sayısı bu yüzden kutulardan da
+ * çıktı. Vergiler kişisel, çünkü oyun genelinde ödenen vergi toplanana HEP
+ * eşit olurdu. Port ikizi: `move_history_modal.dart`.
+ */
+export function moveHistoryStats(state: GameState, myIndex: number): MoveHistoryStats {
+  let total = 0;
+  let taxPaid = 0;
+  let taxCollected = 0;
+  for (const e of state.moveHistory) {
+    total += e.points;
+    if (e.player !== myIndex) continue;
+    if (e.invasionFrom !== undefined) taxCollected += e.points;
+    else for (const s of e.lostShares ?? []) taxPaid += s.amount;
+  }
+  const p = myIndex >= 0 ? state.players[myIndex] : undefined;
+  return { total, me: p ? { name: p.name, score: p.score, taxPaid, taxCollected } : null };
+}
+
+function StatBox({ label, value, tone }: { label: string; value: string; tone: 'text' | 'green' | 'red' }) {
+  return (
+    <div className="shadow-raised flex flex-col items-center gap-1 py-1.5 px-1 rounded-md bg-bg border border-border min-w-0">
+      <span className="text-[8px] font-mono text-muted uppercase tracking-[0.5px] whitespace-nowrap truncate max-w-full">
+        {label}
+      </span>
+      <span
+        className={`text-[15px] leading-none font-mono font-bold ${
+          tone === 'green' ? 'text-green' : tone === 'red' ? 'text-red' : 'text-text'
+        }`}
+      >
+        {value}
+      </span>
+    </div>
+  );
 }
 
 /** Standart hamle dışı durumlar (sınır ihlali vb.) için küçük renkli rozet. */
@@ -73,23 +128,29 @@ function BonusBadge({ tier }: { tier: 2 | 3 }) {
   );
 }
 
-export function MoveHistoryModal({ state, onClose }: MoveHistoryModalProps) {
+export function MoveHistoryModal({ state, myIndex = -1, onClose }: MoveHistoryModalProps) {
   const entries = state.moveHistory;
-  const total = entries.reduce((s, e) => s + e.points, 0);
+  const stats = moveHistoryStats(state, myIndex);
+  const me = stats.me;
   // Vergi geliri satırı ayrı bir kart olarak gösterilmez: aynı hamle zaten
   // hamleyi yapanın kendi satırında (kelime + net puan + kaptırılan pay
   // notu) tam olarak anlatılıyor, ikinci satır sadece tekrar olur. Aynı
   // sebeple bu satırlar hamle sayısına da katılmaz — yoksa bir bölge
   // vergisi paylaşımı tek hamleyi iki "hamle" gibi saydırır.
   const displayEntries = entries.filter((e) => e.invasionFrom === undefined);
-  const scoringMoveCount = displayEntries.filter((e) => !e.action).length;
 
   return (
     <Modal title="Oyun Geçmişi" onClose={onClose}>
-      <p className="text-[10px] font-mono text-muted mb-3 leading-relaxed">
-        Bu oyunda kazanılan {scoringMoveCount} hamle ve puanları. Toplam{' '}
-        <span className="font-bold text-accent text-[15px]">{total}</span> puan.
-      </p>
+      <div className={`grid ${me ? 'grid-cols-4' : 'grid-cols-1'} gap-1.5 mb-3`}>
+        <StatBox label="Toplam" value={String(stats.total)} tone="text" />
+        {me && (
+          <>
+            <StatBox label={me.name} value={String(me.score)} tone="text" />
+            <StatBox label="Vergi(−)" value={me.taxPaid ? `−${me.taxPaid}` : '0'} tone={me.taxPaid ? 'red' : 'text'} />
+            <StatBox label="Vergi(+)" value={me.taxCollected ? `+${me.taxCollected}` : '0'} tone={me.taxCollected ? 'green' : 'text'} />
+          </>
+        )}
+      </div>
 
       {displayEntries.length === 0 ? (
         <p className="text-[11px] font-mono text-muted text-center py-4">

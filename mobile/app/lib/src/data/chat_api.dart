@@ -2,7 +2,8 @@
 // Web `src/lib/api.ts`'in ilgili bölümünün portu: `fetchOnlineGameMessages`/
 // `sendOnlineGameMessage`/`subscribeOnlineGameMessages` + `fetchMyChatMutes`/
 // `fetchMyActiveChatReports`/`setChatMute`/`reportChatParticipant`/
-// `withdrawChatReports`. Yalnızca Canlı (online multiplayer) oyunlarda
+// `withdrawChatReports` + `fetchChatLastReadAt`/`markChatReadRemote` (okundu
+// damgası sunucuda, ROADMAP #34). Yalnızca Canlı (online multiplayer) oyunlarda
 // kullanılır — yerel/YZ oyunlarında bu dosyaya hiç dokunulmaz.
 //
 // Web'den taşınan sözleşmeler:
@@ -17,6 +18,8 @@
 import 'dart:async';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../util/chat_read.dart';
 
 class OnlineGameMessageRow {
   final String id;
@@ -50,6 +53,16 @@ abstract class ChatGateway {
 
   Future<List<String>> myMutes();
   Future<List<String>> myActiveReports();
+
+  /// Bu oyun için SUNUCUDAKİ okundu damgam (`online_game_chat_reads`, RLS
+  /// ile yalnızca kendi satırım) — satır yoksa `null`. Okunamazsa FIRLATIR
+  /// (çağıran "bilinmiyor" sayar). Web `fetchChatLastReadAt`.
+  Future<String?> chatLastReadAt(String gameId);
+
+  /// Okundu damgasını sunucuya yazar (`mark_online_game_chat_read`; sunucu
+  /// yalnızca İLERİ gider ve geleceği `now()`a kırpar). Web
+  /// `markChatReadRemote`.
+  Future<void> markChatRead(String gameId, String readAt);
 
   /// Sessize alınan/şikayet edilen kişi → KAYNAK oyun id'si.
   ///
@@ -138,6 +151,24 @@ class SupabaseChatGateway implements ChatGateway {
         .select('reported_user_id')
         .filter('withdrawn_at', 'is', null);
     return [for (final r in rows) r['reported_user_id'] as String];
+  }
+
+  @override
+  Future<String?> chatLastReadAt(String gameId) async {
+    final row = await client
+        .from('online_game_chat_reads')
+        .select('last_read_at')
+        .eq('online_game_id', gameId)
+        .maybeSingle();
+    return row?['last_read_at'] as String?;
+  }
+
+  @override
+  Future<void> markChatRead(String gameId, String readAt) async {
+    await client.rpc('mark_online_game_chat_read', params: {
+      'p_online_game_id': gameId,
+      'p_read_at': readAt,
+    });
   }
 
   @override
@@ -262,6 +293,26 @@ class ChatRepo {
     } catch (_) {
       return const {};
     }
+  }
+
+  /// Sunucudaki okundu damgası: `null` = BİLİNMİYOR (istek düştü),
+  /// `(at: null)` = sunucuda satır yok (kesin). Ayrım `decideChatRead`e
+  /// (`util/chat_read.dart`) gerekli — bilinmiyorken tohum sunucuya yazılmaz.
+  Future<ServerChatRead?> chatLastReadAt(String gameId) async {
+    try {
+      return (at: await gateway.chatLastReadAt(gameId));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Hata YUTULUR: damga cihazda da duruyor ve bir sonraki yüklemede
+  /// (`decideChatRead` → `pushToServer`) yeniden denenir. Web
+  /// `markChatReadRemote`'un aynı sözleşmesi.
+  Future<void> markChatRead(String gameId, String readAt) async {
+    try {
+      await gateway.markChatRead(gameId, readAt);
+    } catch (_) {}
   }
 
   /// Ağ hatasında boş haritalar — `myMutes` ile aynı gerekçe: eksik veri

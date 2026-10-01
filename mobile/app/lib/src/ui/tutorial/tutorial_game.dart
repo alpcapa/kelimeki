@@ -34,6 +34,7 @@ import '../../data/games_api.dart';
 import '../../data/auth_service.dart';
 import '../../game/game_controller.dart';
 import '../../game/move_status.dart';
+import '../game/board_fit.dart';
 import '../game/board_widget.dart';
 import '../game/dialog_shell.dart';
 import '../game/drag_feel.dart';
@@ -726,7 +727,12 @@ class _TutorialGameState extends State<TutorialGame> {
                         constraints: const BoxConstraints(maxWidth: 680),
                         child: Column(
                           children: [
-                            Padding(
+                            ConstrainedBox(
+                              // Yükseklik bütçesi (ROADMAP #38) — web `Board`un
+                              // `fitHeight`i; gerekçe ve ölçümler `board_fit.dart`ta.
+                              constraints: BoxConstraints(
+                                  maxWidth: boardMaxWidth(boardViewportHeight(context))),
+                              child: Padding(
                               padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
                               child: BoardWidget(
                                 state: state,
@@ -744,6 +750,7 @@ class _TutorialGameState extends State<TutorialGame> {
                                 coach: tahtaBalonu,
                                 dragListenable: _dragNotifier,
                               ),
+                            ),
                             ),
                             Padding(
                               // ⚠ Mesaj şeridi ve raf satırı TEK Stack'in

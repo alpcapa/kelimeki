@@ -128,17 +128,21 @@ void main() {
       theme: kelimekiTheme(),
       home: RepaintBoundary(
         key: key,
-        child: MoveHistoryModal(state: _stateWithHistory()),
+        child: MoveHistoryModal(state: _stateWithHistory(), myIndex: 0),
       ),
     ));
     await tester.pumpAndSettle();
 
-    // Puan toplamı TÜM satırlardan (vergi geliri dahil, web'deki gibi):
-    // 7 + 0 + 15 + 5 + 0 + 36 = 63. Hamle sayısı ise yalnızca gösterilen
-    // ve aksiyonsuz olanlar: KELİME, MASA, YILDIZ = 3.
-    // (Text.rich olduğundan düz metin üzerinden aranır.)
-    expect(find.textContaining('kazanılan 3 hamle'), findsOneWidget);
-    expect(find.textContaining('Toplam 63 puan.'), findsOneWidget);
+    // Kutular (web `moveHistoryStats`): TOPLAM = oyunun toplamı, vergi
+    // geliri dahil (7 + 0 + 15 + 5 + 0 + 36 = 63); ikinci kutu koltuk 0'ın
+    // ADI ve skor tablosundaki puanı (fikstürde 0); vergiler koltuk 0'ın:
+    // 5 kaptırdı, hiç toplamadı.
+    expect(find.text('TOPLAM'), findsOneWidget);
+    expect(find.text('63'), findsOneWidget);
+    expect(find.text('IRONMAN'), findsOneWidget);
+    expect(find.text('VERGİ(−)'), findsOneWidget);
+    expect(find.text('−5'), findsOneWidget);
+    expect(find.text('VERGİ(+)'), findsOneWidget);
 
     // Aksiyon satırları web metinleriyle birebir.
     expect(find.text('Pas geçti'), findsOneWidget);
@@ -189,7 +193,20 @@ void main() {
     ));
     await tester.pumpAndSettle();
     expect(find.text('Henüz kazanılmış bir puan yok.'), findsOneWidget);
-    expect(find.textContaining('kazanılan 0 hamle'), findsOneWidget);
+    // Koltuk verilmedi → yalnızca TOPLAM; ad ve vergi kutusu YOK.
+    expect(find.text('TOPLAM'), findsOneWidget);
+    expect(find.text('IRONMAN'), findsNothing);
+    expect(find.text('VERGİ(−)'), findsNothing);
+  });
+
+  test('moveHistoryStats: web ile aynı sayım', () {
+    final s0 = moveHistoryStats(_stateWithHistory(), 0);
+    expect(s0.total, 63);
+    expect(s0.me, (name: 'Ironman', score: 0, taxPaid: 5, taxCollected: 0));
+    final s1 = moveHistoryStats(_stateWithHistory(), 1);
+    expect((s1.me!.taxPaid, s1.me!.taxCollected), (0, 5));
+    final none = moveHistoryStats(_stateWithHistory(), -1);
+    expect((none.total, none.me), (63, null));
   });
 
   testWidgets('Board footer: "Hamleler" oynanan hamleyi gösterir',

@@ -16,6 +16,7 @@ import { gameReducer, createInitialState, type Action } from '../src/game/gameRe
 import type { GameState, Tile } from '../src/game/types';
 import { setRandomSource } from '../src/utils/random';
 import { swapLimitMessage } from '../src/game/constants';
+import { preloadWordSet } from '../src/data/wordSetLoader';
 
 let failures = 0;
 function check(name: string, cond: boolean, detail = ''): void {
@@ -253,6 +254,41 @@ console.log('\nTaş değiştirme değişmezleri\n');
     JSON.stringify(after.message));
   check('reddedilen değişimde taş sayısı korunuyor', tileTotal(after) === toplam);
   check('reddedilen değişimde sıra ilerlemedi', after.current === s.current);
+}
+
+// ── 7. YZ'nin zorunlu değişimi elde TUTTUĞU taşları silmemeli ────────────────
+// (AI_PLAY sözlüğü okur — üst düzey await, esbuild ESM çıktısı destekliyor.)
+await preloadWordSet();
+// 26 Eylül 2026: torba 7'nin altındayken hamle bulamayan YZ, `maxSwapCount`
+// kadar taşı değiştiriyor ama rafını YALNIZCA yeni çektiklerinden kuruyordu —
+// kalan taşlar oyundan sessizce siliniyordu (torba 4 → raf 7'den 4'e).
+{
+  let s = gameReducer(createInitialState(), {
+    type: 'START',
+    players: [
+      { name: 'Ben', isAI: false },
+      { name: 'YZ', isAI: true },
+    ],
+  } as Action);
+  // Hiçbir kelime kuramayan raf → YZ hamle bulamaz, değişime düşer.
+  const g = (): Tile => ({ letter: 'Ğ', pts: 8 });
+  s = {
+    ...s,
+    current: 1,
+    bag: s.bag.slice(0, 4),
+    players: s.players.map((p, i) => (i === 1 ? { ...p, rack: [g(), g(), g(), g(), g(), g(), g()] } : p)),
+  };
+  const toplam = tileTotal(s);
+  const after = gameReducer(s, { type: 'AI_PLAY' });
+  const son = after.moveHistory.at(-1);
+  check('YZ değişime düştü (senaryo kuruldu)', son?.action === 'exchange', JSON.stringify(son));
+  check('YZ torbadaki kadar (4) taş değiştirdi', son?.tileCount === 4, `tileCount=${son?.tileCount}`);
+  check('YZ rafı 7 taşta kaldı', after.players[1].rack.length === 7,
+    `raf=${after.players[1].rack.length}`);
+  check('YZ değişiminde taş sayısı korunuyor', tileTotal(after) === toplam,
+    `önce=${toplam} sonra=${tileTotal(after)}`);
+  check('mesaj kaç taş değiştiğini ve turun bittiğini söylüyor',
+    after.message === 'YZ 4 taş değiştirdi ve sırasını kullandı.', JSON.stringify(after.message));
 }
 
 console.log('');

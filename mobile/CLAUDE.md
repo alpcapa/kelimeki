@@ -141,7 +141,10 @@ işlemleri ve Flutter/Pages yüzeyi için doğru:
 - Koşu durumu GitHub MCP araçlarıyla **okunabilir** (ve yukarıdaki
   düzeltmeden beri `curl` ile de)
   (`actions_list` → `list_workflow_runs`, `pull_request_read`).
-- **Ama TETİKLENEMEZ (18 Ağustos 2026'da ölçüldü):** bu oturumun tokeni
+- ⚠ **DÜZELTME (1 Ekim 2026): artık TETİKLENEBİLİR.** Kullanıcı App'e
+  actions yazma izni verdi; `run_workflow` (dispatch) 204 döndü. Aşağıdaki
+  403 maddesi TARİHÇEDİR; `rerun_workflow_run` henüz ayrıca denenmedi.
+- **Ama TETİKLENEMEZ (18 Ağustos 2026'da ölçüldü — 1 Ekim'e kadar):** bu oturumun tokeni
   Actions'a yazamıyor — `rerun_workflow_run` ve `run_workflow` (dispatch)
   ikisi de **403 "Resource not accessible by integration"** döner. Yani
   iptal edilmiş/eksik kalmış bir koşuyu ben yeniden başlatamam; yeni bir
@@ -421,7 +424,7 @@ kopyayı yasaklıyor. Jestin MANTIĞI ise hâlâ ekran başına: bir ekranda
 mantık değişirse yukarıdaki kural üç ekran için geçerli.
 
 **Onboarding Faz 2·3·5 (8 Eylül 2026) — üç dosya web'e karşı kilitli:**
-`util/onboarding.dart`ın bağlamsal ipuçları (`pickOnboardingHint`, metinler,
+`util/onboarding.dart`ın bağlamsal ipuçları (30 Eyl 2026'dan beri tek ipucu `anlam`; `pickOnboardingHint`, metinler,
 sıra, tavan) `tutorial_parity_test.dart` tarafından `src/utils/onboarding.ts`
 ile SATIR SATIR karşılaştırılıyor; `tutorial_script.dart`ın kapanış/tekrar
 buton etiketleri (`tutorialFinishButton` · `tutorialReplayFinishButton` ·

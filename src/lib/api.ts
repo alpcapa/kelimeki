@@ -69,6 +69,7 @@ import type {
   GameLiker,
   Gender,
   IncomingFriendRequest,
+  OutgoingFriendRequest,
   LeaderboardRow,
   LeagueReward,
   LocalGameSave,
@@ -1355,6 +1356,33 @@ export async function fetchIncomingFriendRequests(): Promise<IncomingFriendReque
 }
 
 /**
+ * Son 90 günde birlikte en çok canlı oyun oynanan, hâlâ arkadaş olan
+ * kişilerin kimlikleri — çok oynanandan aza (`my_frequent_opponents`).
+ * Canlı oyun formunun "Sık oynadıkların" şeridi; ad/avatar `fetchFriends`
+ * satırından. Hata ya da girişsizlikte boş dizi (şerit hiç çizilmez).
+ */
+export async function fetchFrequentOpponents(limit = 5): Promise<string[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('my_frequent_opponents', { p_limit: limit });
+  if (error) {
+    console.error('[Kelimeki] fetchFrequentOpponents hatası:', error.message);
+    return [];
+  }
+  return ((data as { friend_id: string }[]) ?? []).map((r) => r.friend_id);
+}
+
+/** Gönderdiğim, henüz cevaplanmamış istekler (Arkadaşlar penceresi, gelen isteklerin altı). */
+export async function fetchOutgoingFriendRequests(): Promise<OutgoingFriendRequest[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('list_outgoing_friend_requests');
+  if (error) {
+    console.error('[Kelimeki] fetchOutgoingFriendRequests hatası:', error.message);
+    return [];
+  }
+  return (data as OutgoingFriendRequest[]) ?? [];
+}
+
+/**
  * Oturum açan kullanıcının kalıcı/reusable davet linkinin token'ını döner —
  * ilk çağrıda oluşturur, sonrakilerde aynı token'ı geri verir
  * (`create_friend_invite_link` RPC'si). Bu link WhatsApp/SMS/DM gibi
@@ -1833,7 +1861,14 @@ export function subscribeOnlineGameState(gameId: string, onChange: () => void): 
  * yeniye döner (`online_game_messages`) — `OnlineGameScreen`'in ilk yüklemesi
  * için. Oyun İçi Mesajlaşma — Faz 1, yalnızca Canlı oyunlarda kullanılır.
  */
-export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGameMessageRow[]> {
+/**
+ * İstek DÜŞERSE `null` (boş liste DEĞİL): çağıran eski listeyi korur ve okundu
+ * kararını vermez. Boş liste dönseydi ekrandaki sohbet silinir ve "ilk ziyaret"
+ * tohumu "şimdi"ye oturup aradaki gerçek yeni mesajları okunmuş sayardı —
+ * sunucu kesin boşsa oraya da yazılır, sunucu yalnızca ileri gittiği için
+ * GERİ ALINAMAZDI (26 Eylül 2026; port ikizi `ChatRepo.messages` zaten `null`).
+ */
+export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGameMessageRow[] | null> {
   if (!supabase) return [];
   const { data, error } = await supabase
     .from('online_game_messages')
@@ -1842,7 +1877,7 @@ export async function fetchOnlineGameMessages(gameId: string): Promise<OnlineGam
     .order('created_at', { ascending: true });
   if (error) {
     console.error('[Kelimeki] fetchOnlineGameMessages hatası:', error.message);
-    return [];
+    return null;
   }
   return (data as OnlineGameMessageRow[]) ?? [];
 }
@@ -3769,7 +3804,11 @@ export async function uploadAvatar(file: File): Promise<string> {
 
   const { error: upErr } = await supabase.storage
     .from('avatars')
-    .upload(path, body, { upsert: true, contentType });
+    // Uzun önbellek güvenli: adres her yüklemede `?v=` ile DEĞİŞİYOR, yani
+    // eski resim asla "bayat" kalmaz. Varsayılan 1 saatti; proje Mumbai'de
+    // olduğundan her saat başı ilk istek oraya gidiyordu (29 Eylül 2026).
+    // Port ikizi: `auth_service.dart` → `uploadAvatar`.
+    .upload(path, body, { upsert: true, contentType, cacheControl: '31536000' });
   if (upErr) throw new Error(upErr.message);
 
   const { data } = supabase.storage.from('avatars').getPublicUrl(path);

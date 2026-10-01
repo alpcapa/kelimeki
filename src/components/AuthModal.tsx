@@ -176,11 +176,11 @@ export function AuthModal({
           // ⚠ Metin ELDE büyük harfle yazılı, `uppercase` SINIFIYLA değil:
           // CSS `text-transform` Türkçe'de i→I yapar (`İ` yerine `I`), yani
           // "EDİP"/"VERİN" bozulurdu — `trUpper` refleksinin CSS'teki eşi.
+          // "Hesap oluşturuldu." 26 Eylül 2026'da kaldırıldı (kullanıcı:
+          // insanlar hesabın HAZIR olduğunu sanıyor) — yalnızca eylem cümlesi.
+          // Port `auth_modal.dart` AYNI metni taşır (signup_info_parity_test).
           setInfo(
-            <>
-              Hesap oluşturuldu.{' '}
-              <strong className="font-bold">E-POSTANIZI KONTROL EDİP ONAY VERİN.</strong>
-            </>,
+            <strong className="font-bold">LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN.</strong>,
           );
         }
       }

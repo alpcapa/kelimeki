@@ -275,3 +275,35 @@ export function visibleStoreBadges(
 ): (StoreBadge & { url: string })[] {
   return badges.filter((b): b is StoreBadge & { url: string } => Boolean(b.url));
 }
+
+/** App Store Connect sağlayıcı numarası — kampanya linkinin `pt=`'si. */
+export const APPLE_PROVIDER_TOKEN = '129427325';
+
+/**
+ * Mağaza adresi + ziyaretçinin kaynak etiketi (`?ref=`) — etiket yoksa ya da
+ * güvenli değilse DÜZ adres.
+ *
+ * 28 Eylül 2026: Meta, Trafik kampanyasında mağaza linkine izin vermiyor
+ * (`#1487810` — "uygulama URL'si yalnızca Uygulama Yüklemeleri amacında").
+ * Reklam bu yüzden `kelimeki.com/?ref=meta-…`e gidiyor ve mağazaya sitedeki
+ * rozetten geçiliyor. Etiket burada taşınmasa o kurulum mağazada "organik"
+ * görünür, kampanya ayırt edilemezdi. Kampanya planı:
+ * `marketing/meta-reklam/kampanya-ekim-2026.md`.
+ *
+ * - **Play:** Install Referrer — `referrer=utm_source%3D<etiket>%26utm_medium%3Dweb`.
+ *   `utm_medium=web`, reklamdaki doğrudan Play linkinden (medium YOK) ayırıyor.
+ * - **App Store:** `pt=<sağlayıcı>&ct=<etiket>`. Apple'ın kampanya raporu
+ *   (App Analytics → Acquisition → Campaigns) `pt` OLMADAN `ct`yi atfetmiyor;
+ *   29 Eylül 2026'ya kadar yalnızca `ct` gidiyordu. Numara ASC'nin kendi
+ *   kampanya linki üreticisinden alındı (gizli değil, herkese açık linkte durur).
+ *
+ * ⚠ Etiket kullanıcının yazdığı URL'den geliyor (`captureUtmSource`) —
+ * yalnızca `[a-z0-9._-]` geçer, gerisi düz adrese düşer.
+ */
+export function taggedStoreUrl(url: string, key: StoreKey, source: string | null): string {
+  if (!source || !/^[a-z0-9][a-z0-9._-]{0,39}$/.test(source)) return url;
+  if (key === 'googlePlay') {
+    return `${url}&referrer=${encodeURIComponent(`utm_source=${source}&utm_medium=web`)}`;
+  }
+  return `${url}${url.includes('?') ? '&' : '?'}pt=${APPLE_PROVIDER_TOKEN}&ct=${source}`;
+}

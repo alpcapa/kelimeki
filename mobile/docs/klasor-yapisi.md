@@ -211,7 +211,10 @@ mobile/
                              # tamamı) + board_zoom.dart (çift dokunuşla 2×
                              # zoom + pan; algılayıcı `clock.now()` kullanır
                              # — DateTime.now() sahte saatte ilerlemez,
-                             # bkz. Parça 175) + PAYLAŞILAN küçük parçalar:
+                             # bkz. Parça 175) + board_fit.dart (tahtanın
+                             # YÜKSEKLİK bütçesi + taş puntosu tavanı; web
+                             # `boardFit.ts`/`index.css` ile birebir, kapı
+                             # board_fit_test.dart — Parça 215) + PAYLAŞILAN küçük parçalar:
                              # modal_shell (KModal — başlıklı 360px pencere),
                              # dialog_shell (KDialogCard — 384px onay/uyarı
                              # kartı; İKİSİ AYRI, web'de de öyle),
@@ -361,6 +364,11 @@ mobile/
                              # türetilir, 4 kişilikte ikincilik dahil), rozet metni
                              # (Normal → null) — `ai_level_parity_test` web
                              # kaynağıyla kilitler
+      util/chat_read.dart    # Canlı sohbetin okundu kararı (web `chatRead.ts`
+                             # ikizi, ROADMAP #34): sunucu (`online_game_chat_reads`)
+                             # ↔ cihaz (`chat_read_store`) damgasının büyüğü;
+                             # `chat_read_test.dart` web'in `verify-chat-read`
+                             # vakalarını birebir koşar
       util/platform.dart      # bu istemcinin platformu (ios/android/app-web) —
                              # telemetri; web `src/utils/platform.ts` karşılığı,
                              # değer kümesi sunucu kısıtıyla ELLE senkron

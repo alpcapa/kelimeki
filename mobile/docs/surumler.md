@@ -47,7 +47,7 @@ anında yayında.
 | Apple onayı | İki mağaza AYNI GÜN yayına (aşağıdaki "SÜRÜM SENKRONU") |
 | Arada (~10 gün) | Mobil işler **taslak PR** olarak birikir, başlık `[Sonraki sürüm] …`; `main`'e mobil kod GİRMEZ |
 
-**İlk kesim:** 1.1.1 iki mağazada yayına alındıktan sonraki ilk Pazartesi.
+**İlk kesim:** 1.1.1 iki mağazada yayına alındıktan sonraki ilk Pazartesi → 1.1.1 26 Eyl'de yayında; kullanıcı kararı (26 Eyl): *"Daha yeni update geçtik"* → 28 Eylül ATLANDI, ilk kesim **Pazartesi 5 Ekim 2026**.
 
 **Mobil + web birlikte değişen iş:** iki PR'a böl — web yarısı hemen
 merge edilir (parite testi web kaynağını okumuyorsa; okuyorsa ikisi
@@ -372,7 +372,7 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
-| **1.1.1** | **723** | `8c1828f` | 25 Eyl 2026 (tur sonu PR'ı) | **App Store: 25 Eyl 13:21 incelemeye GÖNDERİLDİ** (`Waiting for Review`, elle yayın) · Play: ~27-28 Eyl (kullanıcı kararı) | ⏳ App Store incelemede | Merge turunun on PR'ı (#565 · #562 · #579 · #576 · #554 · #557 · #547 · #601 · #611 · #626); ayrıntı aşağıda |
+| **1.1.1** | **723** | `8c1828f` | 25 Eyl 2026 (tur sonu PR'ı) | **App Store: 25 Eyl 13:21 incelemeye GÖNDERİLDİ, 25 Eyl 22:49 ONAYLANDI** (`Pending Developer Release`, elle yayın — Play'le aynı gün) · **Play: 26 Eyl 16:13 gönderildi, 16:42 YAYINDA (#21)** · iOS aynı gün yayında | ✅ **İKİ MAĞAZADA YAYINDA** | Merge turunun on PR'ı (#565 · #562 · #579 · #576 · #554 · #557 · #547 · #601 · #611 · #626); ayrıntı aşağıda |
 | **1.1.0** | **665** (iOS ✅ + Play ⏳) | `9c62289` | 12 Eyl 2026 (PR #533 merge'i) | ✅ ASC: **665 iliştirildi + sürüm İNCELEMEDE** (12 Eyl 17:32, `Waiting for Review`, elle yayın) · ⏳ Play: 13 Eyl'de yüklenecek | ✅ **senkron KAPANDI** — Play production #19 yayında 24 Eyl 17:44, iki mağaza 665 | PR #533'ün merge'inin YAN ÜRÜNÜ (koşu #665). 659'dan farkı üç iş: mesaj satırı kırpması · ipucu tavanı 2→1 · oyun sonu kutlaması. Aşağı bkz. |
 | **1.1.0** | **659** (iOS + **Play**) | `7bccbf7` | 11 Eyl 2026 (`c7ac2e9`, #528) | **Play: 12 Eyl 2026, ≤ 12:24** (kapalı test/Alpha) · App Store: **— GÖNDERİLMEDİ** (11 Eyl 23:02'de ASC History'den ölçüldü: gönderim satırı YOK) | ✅ Play: **YAYINDA** (Alpha, ~13:42) · App Store: **Prepare for Submission** — metadata giriliyor | İki Canlı oyun düzeltmesi (sahte "Sıra sende değil." + sonsuz "Yükleniyor…") + mağaza kareleri. ⚠ **Bu satır 11 Eyl akşamı DÜZELTİLDİ:** önce *"654 · 16:08 · App Store incelemesine GÖNDERİLDİ · ⏳ incelemede"* diyordu. Gerçek: `Add for Review` basıldı ama ikinci adım (Review Submission → `Submit to App Review`) tamamlanmadı; Description/Keywords o saatte BOŞTU, yani gönderim zaten geçemezdi. İliştirilen build 629 → 654 → 656 → **659** (11 Eyl gecesi; kullanıcı: *"ASC'yi de 659 yaptım, sürümler aynı olsun istiyorum"*). **Dört numara, TEK kod:** `mobile/app/lib` altında 654'ten 659'a tek satır değişmedi (`git diff c22b757 7bccbf7 -- mobile/app/lib` boş) — aradaki her fark doküman/CSV/workflow. ⚠ 659'un doğuş sebebi: `mobile-build.yml`in `paths` düzeltmesi (#529) kendi merge'inde son kez tam derleme tetikledi ve `mobile-latest`teki `.aab`yi (656) ezdi; `mobile-latest` her mobil derlemede ezilir, yani 656'nın paketi artık indirilemiyor ve Play'e zorunlu olarak 659 gidiyor. ASC de 659'a çekilince **iki mağaza yine tek numarada**. ✅ **Play'de 12 Eyl 2026'da YAYINLANDI** (kapalı test/Alpha) — iki mağaza artık yalnızca tek NUMARADA değil, tek PAKETTE. Aşağı bkz. |
 | **1.1.0** | **627** (Play) | `a4c809b` | 10 Eyl 2026 (`a4c809b`, #514) | **11 Eyl 2026, 08:01** (Console) | yayınlandı → **pasif** (12 Eyl, 1.1.0/659 devraldı); Alpha'da ≤ 08:33'te "Published" olmuştu | İlk TestFlight turunun bulguları + onboarding Faz 2·3·5 + "Davetler" adlandırması. Aşağı bkz. |
@@ -439,7 +439,7 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
-## 1.1.1 — ⏳ HAZIRLANIYOR (25 Eyl 2026)
+## 1.1.1 (723) — ✅ İKİ MAĞAZADA YAYINDA (26 Eyl 2026)
 
 **İçerik:** merge turunun on PR'ı. Hepsi 25 Eylül'de `main`'e girdi. Liste
 ve cihaz test planı: `ROADMAP.md` → "Sıradaki sürüme binecekler" +
@@ -466,7 +466,9 @@ yüklemiyor, adım yalnızca `main`'de koşuyor.
       TestFlight yüklemesi dahil bütün adımlar geçti. `mobile-latest` ve
       TestFlight'taki geçerli paket bu. (#720 = `fe3a25b`, #626'nın merge'i:
       hâlâ 1.1.0 taşıdığı için aynı `90186`/`90062` ile düştü — beklenen.)
-- [ ] Android `.apk` ile tam tur + iPhone'da #557 duman turu
+- [x] Android `.apk` ile tam tur ✅ (26 Eyl, kullanıcı; G sunucu kayıtları
+      ajan tarafından okundu, temiz). Tek bulgu (uçak modunda ham ağ metni)
+      metin düzeltmesi → sonraki tren, 1.1.1'i durdurmuyor. + iPhone'da #557 duman turu
       — adım adım liste: `mobile/docs/testing-1-1-1-turu.md`
       (`ROADMAP.md` → "Tur sonu TEST PLANI").
 - [x] iPhone duman turu ✅ (TestFlight 1.1.1, 25 Eyl — kullanıcı).
@@ -476,9 +478,34 @@ yüklemiyor, adım yalnızca `main`'de koşuyor.
       yani onay gelince Play'le AYNI GÜN elle yayınlanır. Notes 1.1.0'dan
       aynen kaldı (§16'nın kalıcı cevabı). Android turunda hata çıkarsa:
       `Cancel Submission` → yeni build → yeniden gönder.
-- [ ] Play'e `.aab` (**723**, ~27-28 Eyl) — AYNI paket ("SÜRÜM SENKRONU").
+- [x] **Play'e `.aab` 723 YÜKLENDİ — 26 Eyl 16:13 TSİ, production,
+      Submission #21 `In review`.** Sürüm adı `1.1.1 (723)`. ⚠ Managed
+      publishing KAPALI: onaylanınca KENDİLİĞİNDEN yayına girer (hafta sonu
+      dahil).
+- [x] **İKİ MAĞAZADA YAYINDA — 26 Eyl 2026.** Play #21 `Published` 16:42 TSİ
+      (full rollout); App Store aynı gün `Release This Version` (kullanıcı).
+
+**App Store "What's New" — AS-BUILT (25 Eyl, onaylandı, artık kilitli):**
+```
+• Oyunun ortasında giriş yapınca adın artık hemen görünüyor; aynı oyun listede ikinci kez kalmıyor.
+• Torbada kalandan fazla taş değiştirilemiyor.
+• Tahtayı büyütme ipucu birkaç saniye sonra kendiliğinden kapanıyor.
+• Kayıt onayı mesajı daha belirgin; onay linkine basınca pencere kendiliğinden kapanıyor.
+• Bağlantı hatalarında teknik metin yerine anlaşılır bir mesaj çıkıyor.
+• iPhone'da metin seçme menüsü Türkçe, YZ avatarı ortalı.
+```
+⚠ 5. madde 1.1.1'de KISMEN doğru: sunucu hataları (504 vb.) Türkçe, ama
+cihaz çevrimdışıyken Canlı oyun mesajı hâlâ ham `Failed host lookup`
+gösteriyor (tur bulgusu, düzeltmesi sonraki trende — #642). Onaylı metin
+değiştirilemediği için bilerek bırakıldı.
       ⚠ O güne kadar `main`'e mobil merge YOK (`mobile-latest` ezilir).
-- [ ] Apple onayı → Play ile aynı gün `Release This Version`.
+- [x] **Apple onayı geldi: 25 Eyl 22:49 TSİ** (e-posta "Review of your
+      submission is complete", 1.1.1 for iOS, Submission ID `6df19844-…`).
+      Durum `Pending Developer Release` — BİLEREK henüz yayınlanmadı.
+- [ ] `Release This Version` → **Play'deki 1.1.1 (723) yayına girdiği
+      gün**, önce değil. Önkoşul: `.apk` turu A–E ✅. Turda hata çıkarsa
+      onaylı ama yayınlanmamış sürüm "Developer Reject" ile geri çekilip
+      yeni build'le yeniden gönderilebilir; yayınlanmış olan geri ALINAMAZ.
 
 ## 1.1.0 (665) — ✅ İKİ MAĞAZADA YAYINDA (Play production 24 Eyl 2026)
 

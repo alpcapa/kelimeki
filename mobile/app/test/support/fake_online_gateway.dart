@@ -364,6 +364,32 @@ class FakeChatGateway implements ChatGateway {
     return activeReports;
   }
 
+  /// Sunucudaki okundu damgası (`online_game_chat_reads`) — `null` = satır
+  /// yok. `markChatRead` sunucu gibi yalnızca İLERİ yazar.
+  String? serverLastReadAt;
+  Object? lastReadFailWith;
+  Object? markReadFailWith;
+  final markReadCalls = <(String, String)>[];
+
+  @override
+  Future<String?> chatLastReadAt(String gameId) async {
+    final f = lastReadFailWith;
+    if (f != null) throw f;
+    return serverLastReadAt;
+  }
+
+  @override
+  Future<void> markChatRead(String gameId, String readAt) async {
+    final f = markReadFailWith;
+    if (f != null) throw f;
+    markReadCalls.add((gameId, readAt));
+    final cur = serverLastReadAt;
+    if (cur == null ||
+        DateTime.parse(readAt).isAfter(DateTime.parse(cur))) {
+      serverLastReadAt = readAt;
+    }
+  }
+
   /// Kişi → kaynak oyun id'si. Sahte uç GERÇEK ucun sözleşmesini taklit
   /// etmek ZORUNDA (Parça 46'nın dersi): gerçek `myModeration` oyun id'sini
   /// de döndürüyor ve sessizden çıkarma o id'ye bağlı — sahte yalnızca
