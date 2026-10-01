@@ -46,7 +46,7 @@ function buildHtml(name: string | undefined): string {
     <p style="margin:0 0 24px 0;">
       <a href="https://kelimeki.com" style="display:inline-block;background-color:#2563EB;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;">Hemen Oyna</a>
     </p>
-    <p style="font-size:13px;color:#8A93A2;margin-top:20px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Müşteri Hizmetleri</span></p>
+    <p style="font-size:13px;color:#8A93A2;margin-top:20px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Destek</span></p>
   `;
   return buildBrandedEmailHtml('Kelimeki’ye Hoş Geldiniz', body, buildNoReplyNoticeHtml());
 }

@@ -1170,6 +1170,69 @@ void main() {
         reason: 'oyundan dönüş, listeninki gibi, rozet için de KESİN bir an');
   });
 
+  testWidgets(
+      'ARKADAŞINLA rozeti LİSTEYLE hizalanır: davet kabulünden ve sekme '
+      'dönüşünden sonra Realtime olayı gelmese de düşer (28 Eylül 2026 '
+      'saha hatası)', (tester) async {
+    // Kullanıcı bildirdi: *"Arkadaşınla tabında 1 görünüyordu oyun
+    // olmamasına rağmen. Yapay zeka tabına basıp geri geldim ama değişmedi.
+    // Uygulamayı kapatıp açtım düzeldi."* Canlıda ölçüldü: rövanş davetini
+    // kabul etmişti, yeni oyunda sıra rakipteydi — doğru rozet 0.
+    //
+    // Kök sebep: kabulden sonra liste kendini tazeliyordu
+    // (`_handleRespond` → `_reload`), rozet YALNIZCA Realtime olayını
+    // bekliyordu; sekme değiştirmek de yalnızca listeyi yeniden yüklüyordu.
+    await setPhoneViewSize(tester, const Size(420, 900));
+    Map<String, Object?> davet() => gameRow(
+        id: 'inv',
+        myId: 'me',
+        status: 'pending',
+        myRole: 'invitee',
+        myInviteStatus: 'pending',
+        myInviteId: 'i1');
+    final gw = FakeOnlineGamesGateway()..rows = [davet()];
+    await pumpSetup(
+        tester,
+        liveBadgeServices(
+            AuthService.fake(user: fakeUser('me')), OnlineGamesRepo(gw),
+            friends: FriendsRepo(FakeFriendsGateway())));
+    // Bekleyen iş var → giriş varsayılanı Canlı sekmesini zaten açtı.
+    expect(find.text('KABUL ET'), findsOneWidget);
+    expect(tester.widget<CountBadge>(arkadaslaRozeti()).count, 1);
+
+    // (1) Kabul: sunucuda oyun başladı, sıra RAKİPTE (koltuk 0 = Esiner).
+    // Sahte uç hiçbir Realtime olayı yayınlamıyor — kanal kopuk gibi.
+    gw.rows = [
+      gameRow(
+          id: 'inv',
+          myId: 'me',
+          myInviteStatus: 'accepted',
+          myInviteId: 'i1'),
+    ];
+    gw.turnRows = [
+      {'online_game_id': 'inv', 'current': 0},
+    ];
+    await tester.tap(find.text('KABUL ET'));
+    await tester.pumpAndSettle();
+    expect(gw.responded, [('i1', true)]);
+    expect(arkadaslaRozeti(), findsNothing,
+        reason: 'kabulden sonra liste tazelendi — rozet listeyle ÇELİŞEMEZ');
+
+    // (2) Sekme dönüşü: rozeti yeniden bayatlatıp ölçüyoruz. Yeni bir davet
+    // geldi ama olayı kaçtı; kullanıcı öteki sekmeye gidip geri geliyor.
+    gw.rows = [davet()];
+    gw.turnRows = [];
+    await tester.tap(find.text('YAPAY ZEKA İLE'));
+    await tester.pumpAndSettle();
+    expect(arkadaslaRozeti(), findsNothing,
+        reason: 'olay gelmeden rozet zaten tazelenmiş — test bir şey '
+            'kanıtlamıyor demektir');
+    await tester.tap(find.text('ARKADAŞINLA'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<CountBadge>(arkadaslaRozeti()).count, 1,
+        reason: 'sekmeye dönüş listeyi yeniden yükler, rozet onunla gelir');
+  });
+
   // ─────────────────────────────────────────────────────────────────────
   // SINIF 2 (sessiz sıkışma) — "Devam Eden Oyun" satırı.
   //

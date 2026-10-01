@@ -8,6 +8,42 @@ import {
   fetchUnseenFinishedGames,
   listMyOnlineGames,
 } from '../lib/api';
+import type { OnlineGame } from '../lib/database.types';
+
+/**
+ * "Bekleyen iş" sayısı — bekleyen davet + sırası çağıranda olan aktif oyun.
+ * TEK kaynak: hem `fetchPendingLiveGameCounts` (Setup rozeti, ikon rozeti)
+ * hem `LiveGamesTab`in liste yüklemesi (`onActionCount`) bunu çağırıyor.
+ *
+ * ⚠ Neden paylaşılıyor (28 Eylül 2026, kullanıcı bildirdi): daveti kabul
+ * edince liste kendini tazeliyordu ama "Arkadaşınla" rozeti yalnızca
+ * Realtime olayını bekliyordu; olay kaçınca rozet "1"de kaldı ve sekme
+ * değiştirmek de düzeltmedi (liste yüklendi, rozet yüklenmedi). Liste artık
+ * her yüklemede bu sayıyı Setup'a bildiriyor — hesap iki yerde olsaydı yine
+ * birbirinden sapabilirdi. Port ikizi: `inviteBucket` + `myTurnCount`.
+ *
+ * `turns` yalnızca aktif oyunlar için anlamlı; sıra BİLİNMİYORSA çağırma
+ * (eksik harita "sıra bende değil" sayılır ve rozeti sessizce küçültür).
+ */
+export function countPendingActions(
+  rows: readonly OnlineGame[],
+  turns: Readonly<Record<string, number>>,
+): { inviteCount: number; myTurnCount: number } {
+  // `g.status === 'pending'` şartı LiveGamesTab'daki `invites` kovasıyla
+  // BİREBİR aynı olmak zorunda — aksi halde süresi dolup iptal edilmiş
+  // (`abandoned`) bir davet rozetleri şişirir: Setup'taki "Arkadaşınla (N)",
+  // PWA ikon rozeti, ve girişte otomatik Canlı sekmesine geçiren
+  // `inviteCount > 0` koşulu (4 Ağustos 2026'da ikisi birlikte düzeltildi).
+  const inviteCount = rows.filter(
+    (g) => g.my_role === 'invitee' && g.my_invite_status === 'pending' && g.status === 'pending',
+  ).length;
+  const myTurnCount = rows.filter((g) => {
+    if (g.status !== 'active') return false;
+    const idx = g.slots.findIndex((s) => s.type === 'human' && s.relation === 'self');
+    return turns[g.id] === idx;
+  }).length;
+  return { inviteCount, myTurnCount };
+}
 
 export interface PendingLiveGameCounts {
   /** Henüz yanıtlanmamış, çağırana gönderilmiş davet sayısı. */
@@ -57,14 +93,7 @@ export interface PendingLiveGameCounts {
 export async function fetchPendingLiveGameCounts(): Promise<PendingLiveGameCounts | null> {
   const rows = await listMyOnlineGames();
   if (rows === null) return null;
-  // `g.status === 'pending'` şartı LiveGamesTab'daki `invites` kovasıyla
-  // BİREBİR aynı olmak zorunda — aksi halde süresi dolup iptal edilmiş
-  // (`abandoned`) bir davet rozetleri şişirir: Setup'taki "Arkadaşınla (N)",
-  // PWA ikon rozeti, ve girişte otomatik Canlı sekmesine geçiren
-  // `inviteCount > 0` koşulu (4 Ağustos 2026'da ikisi birlikte düzeltildi).
-  const inviteCount = rows.filter(
-    (g) => g.my_role === 'invitee' && g.my_invite_status === 'pending' && g.status === 'pending',
-  ).length;
+  const { inviteCount } = countPendingActions(rows, {});
   const activeIds = rows.filter((g) => g.status === 'active').map((g) => g.id);
   if (activeIds.length === 0) {
     return {
@@ -79,11 +108,7 @@ export async function fetchPendingLiveGameCounts(): Promise<PendingLiveGameCount
   // mümkündü ama eksik bir toplam rozeti sessizce KÜÇÜLTÜRDÜ; "bilmiyoruz"
   // deyip son bilineni korumak dürüst olan.
   if (turns === null) return null;
-  const myTurnCount = rows.filter((g) => {
-    if (g.status !== 'active') return false;
-    const idx = g.slots.findIndex((s) => s.type === 'human' && s.relation === 'self');
-    return turns[g.id] === idx;
-  }).length;
+  const { myTurnCount } = countPendingActions(rows, turns);
   return {
     inviteCount,
     myTurnCount,

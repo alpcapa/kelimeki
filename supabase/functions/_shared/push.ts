@@ -338,6 +338,7 @@ export interface PushMessage {
    *   `sure:<online_game_id>`       — notify-deadline-warnings (canlı)
    *   `sure-yerel:<save_id>`        — notify-deadline-warnings (YZ oyunu)
    *   `arkadas:<gonderen_user_id>`  — notify-friend-request + hatırlatıcısı
+   *   `alarm:kritik`                — notify-admin-alerts (yalnızca admine)
    * Son satır bilinçli: hatırlatma, ilk isteğin bildiriminin YERİNE
    * geçmeli — ikisi aynı işi anlatıyor.
    *

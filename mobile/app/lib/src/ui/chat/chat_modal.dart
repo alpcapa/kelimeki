@@ -4,11 +4,13 @@
 // gelir; bu widget yalnızca gönderim formunu ve `ChatThread`'i render eder.
 import 'package:flutter/material.dart';
 
+import 'chat_rules_modal.dart';
 import 'chat_thread.dart';
 import '../game/modal_shell.dart';
 import '../tap_target.dart';
 import '../tokens.dart';
 import '../form_input.dart';
+import '../../util/chat_rules.dart';
 import '../../util/error_message.dart';
 
 const _accent = kAccent;
@@ -16,6 +18,14 @@ const _muted = kMuted;
 const _red = kRed;
 
 const int kChatMaxLength = 200;
+
+/// Sohbet Kuralları'nı kabul ettiği bilinen kullanıcılar — uygulama ömrü
+/// boyunca her gönderimde sunucuya sormamak için (web `chatRulesAcceptedFor`).
+/// Asıl kayıt sunucuda; bu yalnızca bir önbellek.
+final Set<String> _chatRulesAcceptedFor = <String>{};
+
+@visibleForTesting
+void resetChatRulesCacheForTest() => _chatRulesAcceptedFor.clear();
 
 class ChatParticipant {
   final String userId;
@@ -79,6 +89,12 @@ class ChatModal extends StatefulWidget {
   final Set<String> reportedUserIds;
   final void Function(String userId) onOpenParticipantSettings;
 
+  /// Sohbet Kuralları kapısı (`util/chat_rules.dart`) — ikisi birlikte
+  /// verilirse ilk gönderimden önce BİR KEZ onay penceresi çıkar. Verilmezse
+  /// kapı YOK (bileşen testleri için).
+  final Future<int?> Function()? loadChatRulesVersion;
+  final Future<void> Function(int version)? acceptChatRules;
+
   const ChatModal({
     super.key,
     required this.messages,
@@ -89,6 +105,8 @@ class ChatModal extends StatefulWidget {
     required this.mutedUserIds,
     required this.reportedUserIds,
     required this.onOpenParticipantSettings,
+    this.loadChatRulesVersion,
+    this.acceptChatRules,
   });
 
   @override
@@ -122,6 +140,29 @@ class _ChatModalState extends State<ChatModal> {
   Future<void> _handleSend() async {
     final trimmed = _controller.text.trim();
     if (trimmed.isEmpty || _sending) return;
+    // İlk mesajdan önce BİR KEZ Sohbet Kuralları onayı (web ChatModal ile
+    // aynı akış). "Vazgeç" mesajı göndermez, yazılan metin kutuda kalır.
+    final load = widget.loadChatRulesVersion;
+    final accept = widget.acceptChatRules;
+    if (load != null &&
+        accept != null &&
+        !_chatRulesAcceptedFor.contains(widget.myUserId)) {
+      setState(() => _sending = true);
+      final surum = await load();
+      if (!mounted) return;
+      setState(() => _sending = false);
+      if (needsChatRulesConsent(surum)) {
+        final kabul = await showChatRulesModal(context,
+            onAccept: () => accept(kChatRulesVersion));
+        if (!kabul || !mounted) return;
+      }
+      _chatRulesAcceptedFor.add(widget.myUserId);
+    }
+    await _send(_controller.text.trim());
+  }
+
+  Future<void> _send(String trimmed) async {
+    if (trimmed.isEmpty) return;
     setState(() {
       _sending = true;
       _error = null;

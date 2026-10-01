@@ -26,6 +26,7 @@
 // düğme ayrıca id taşımaya devam ediyor (`tests/smoke.spec.ts` onları id ile
 // buluyor).
 import { LandingLogo, LandingLogoDefs } from './LandingLogo';
+import { BolgeKesiti } from './BolgeKesiti';
 import { GameBoardPreview } from '../components/GameBoardPreview';
 import { RankSeal } from '../components/RankSeal';
 import { ShareIcon } from '../components/RelationIcons';
@@ -152,13 +153,17 @@ export const SSS: { soru: string; cevap: string }[] = [
 
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function Oyna({ etiket, id }: { etiket: string; id?: string }) {
+function Oyna({ etiket, id, buyuk = false }: { etiket: string; id?: string; buyuk?: boolean }) {
+  // `buyuk`: ilk ekranın tek düğmesi (tasarım: 54px, 16px) — sayfanın
+  // altındaki "Oyuna Başla" eski ölçüsünde kalır.
   return (
     <button
       id={id}
       type="button"
       data-kelimeki-oyna=""
-      className="w-full btn-raised bg-accent border border-accent text-white font-mono font-bold uppercase tracking-[1px] rounded-xl px-5 py-3.5 text-[13px] leading-none active:scale-[0.97] transition-transform"
+      className={`w-full btn-raised bg-accent border border-accent text-white font-bold uppercase tracking-[1px] leading-none active:scale-[0.97] transition-transform ${
+        buyuk ? 'font-sans rounded-md min-h-[54px] px-5 text-[16px]' : 'font-mono rounded-xl px-5 py-3.5 text-[13px]'
+      }`}
     >
       {etiket}
     </button>
@@ -364,7 +369,7 @@ export function Landing() {
             Sticky sarmalayıcı TAM GENİŞLİK, iç şerit `max-w-[460px]` — ikisini
             tek elemanda birleştirmek şeridi ekranın soluna yapıştırırdı. */}
         <div id="karsilama-serit" className="sticky top-0 z-20 w-full flex justify-center bg-bg">
-          <div className="relative w-full max-w-[460px] flex items-center px-3.5 py-3">
+          <div className="relative w-full max-w-[460px] lg:max-w-[1080px] flex items-center px-3.5 py-3">
             {/* LOGO YUVASI — logonun "park ettiği" yer. Kullanıcı isteği (18
                 Ağustos 2026): "Kelimeki logosu … kaybolduğu anda … küçülmüş
                 olarak yerleşsin."
@@ -411,48 +416,91 @@ export function Landing() {
         </div>
 
         <main className="w-full flex flex-col items-center">
-          <div className="w-full max-w-[460px] px-4 pt-6 flex flex-col gap-9">
-            {/* ── Kahraman ─────────────────────────────────────────────────
-                `-mt-6` (−24px) kaptaki `py-6`nın üst yarısını yiyerek başlık
-                satırı ile logo arasını 0'a indirir — `Setup.tsx`'teki AYNI
-                kalıp (orada da logo GİRİŞ satırının hemen altına oturuyor). */}
-            <div className="flex flex-col items-center gap-4 text-center -mt-6">
-              <h1 id="karsilama-logo" className="flex flex-col items-center gap-1" style={{ margin: 0 }}>
-                <LandingLogo height={52} className="block" />
-                <span className="sr-only">
-                  Kelimeki — Ücretsiz Online Türkçe Stratejik Kelime Bulmaca Oyunu
-                </span>
-              </h1>
+          {/* ── İlk ekran (27 Eylül 2026, ROADMAP #41) ──────────────────────
+              Tasarım: `docs/decisions/onboarding.md` → "İlk oyun akışı v2",
+              karar 1. Kullanıcı: *"tanıtım sayfalarını daha sade ve merak
+              uyandıran hale getirip"* — ilk ekranda tek soru-başlık, bölge
+              kuralını tek bakışta anlatan küçük kesit, tek düğme. Uzun içerik
+              (tahtalar, kurallar, SSS) AYNEN duruyor, yalnızca ilk ekranın
+              ALTINA indi: arama motoru için sayfanın metni değişmedi.
 
-              <p className="text-[19px] font-bold leading-snug" style={{ margin: 0 }}>
-                Kelime bul, bölgeni büyüt, tahtayı ele geçir.
+              `min-h`: ilk ekranı doldurur, düğme parmağın altında kalır.
+              72px ≈ şeridin yüksekliği (akışkan, 390px'te ~65px). 760px
+              tavanı dikey tabletler için: tavansız, 1112px'lik bir ekranda
+              kesit ile düğme arasında ~300px boşluk açılıyordu (ölçüldü).
+              Telefonda (844 → 772) tavan neredeyse hiç devreye girmez. */}
+          {/* Masaüstünde (lg) iki sütun: solda metin + düğme, sağda kesit
+              (tuvaldeki "Karşılama, masaüstü" ekranı). Mobildeki sıra
+              (metin → kesit → düğme) `flex-col`un doğal sırası; ızgara
+              yerleşimi yalnızca `lg:` sınıflarında. */}
+          <div className="w-full max-w-[460px] px-4 min-h-[min(calc(100dvh-72px),760px)] flex flex-col gap-3.5 pb-4 lg:gap-5 lg:min-h-[calc(100dvh-72px)] lg:max-w-[1080px] lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:grid-rows-[auto_1fr_auto_auto_1fr] lg:gap-x-20 lg:gap-y-0">
+            {/* Logo `h1` olarak KALIR (SEO başlığı `sr-only` metinde) ve park
+                efektinin izlediği öğe bu (`#karsilama-logo`, bkz. şeritteki
+                not). `-mt-3`: şerit ile logo arasını daraltır. */}
+            <h1 id="karsilama-logo" className="flex flex-col items-center -mt-3 lg:col-span-2" style={{ margin: 0 }}>
+              <LandingLogo height={40} className="block" />
+              <span className="sr-only">
+                Kelimeki — Ücretsiz Online Türkçe Stratejik Kelime Bulmaca Oyunu
+              </span>
+            </h1>
+
+            <div className="flex flex-col gap-2 lg:gap-2.5 lg:pt-1 lg:col-start-1 lg:row-start-3">
+              <span className="font-mono text-[10px] font-bold uppercase tracking-[1.5px] text-accent">
+                Türkçe kelime oyunu
+              </span>
+              <p
+                className="text-[clamp(28px,8.7vw,36px)] lg:text-[52px] font-bold leading-[1.12] tracking-[-0.8px] [text-wrap:balance]"
+                style={{ margin: 0 }}
+              >
+                Kelimeyi bilmek yetmez. Nereye koyduğun kazandırır.
               </p>
-
-              <p className="text-[13px] leading-relaxed text-muted" style={{ margin: 0 }}>
-                Kelimeki, 2 veya 4 kişi yapay zekaya veya arkadaşlarına karşı
-                oynanabilen, strateji odaklı Türkçe kelime oyunudur.
+              <p className="text-[15px] lg:text-[18px] leading-[1.45] text-muted" style={{ margin: 0 }}>
+                Köşenden başla, bölgeni büyüt. Rakibinin bölgesine değersen
+                puanını onunla paylaşırsın.
               </p>
-
-              <div className="w-full flex flex-col gap-2 pt-1">
-                <Oyna etiket="Hemen Oyna" />
-                {/* ⚠ Bu satır "Ücretsiz · Kurulum yok · Üyelik gerekmez" idi;
-                    uygulama App Store'a çıkınca "kurulum yok" rozetle ÇELİŞTİ.
-                    Tarayıcı hâlâ gerçek bir yol, o yüzden eleniyor değil
-                    ikincilleşiyor. */}
-                <span className="font-mono text-[10px] text-muted">
-                  Ücretsiz · Reklam yok · Üyelik gerekmez
-                </span>
-                {/* Mağaza rozeti — `Setup.tsx`in footer'ıyla AYNI bileşen,
-                    yani sıra/genişlik/boşluk kuralları ve "yayında değilse
-                    çizme" kapısı tek kaynaktan. */}
-                <div className="pt-2">
-                  <StoreBadges />
-                </div>
-              </div>
             </div>
 
-            {/* ── Rakamlar ─────────────────────────────────────────────── */}
-            <div className="flex gap-2">
+            <div className="lg:pt-2 lg:col-start-2 lg:row-start-3 lg:row-span-2 lg:self-center">
+              <BolgeKesiti />
+            </div>
+
+            <div className="flex-1 lg:hidden" aria-hidden="true" />
+
+            <div id="karsilama-ilk-cta" className="w-full flex flex-col gap-2.5 lg:col-start-1 lg:row-start-4 lg:max-w-[380px] lg:pt-8">
+              <Oyna etiket="Hemen Oyna" buyuk />
+              {/* ⚠ Bu satır "Ücretsiz · Kurulum yok · Üyelik gerekmez" idi;
+                  uygulama App Store'a çıkınca "kurulum yok" rozetle ÇELİŞTİ.
+                  Tarayıcı hâlâ gerçek bir yol, o yüzden eleniyor değil
+                  ikincilleşiyor. */}
+              <span className="font-mono text-[10px] text-muted text-center lg:text-left">
+                Ücretsiz · Reklam yok · Üyelik gerekmez
+              </span>
+              {/* Mağaza rozeti — `Setup.tsx`in footer'ıyla AYNI bileşen,
+                  yani sıra/genişlik/boşluk kuralları ve "yayında değilse
+                  çizme" kapısı tek kaynaktan. */}
+              <div className="pt-1">
+                <StoreBadges />
+              </div>
+              <a
+                href="#nasil-oynanir"
+                className="self-center lg:self-start inline-flex items-center min-h-[32px] font-mono text-[10px] font-bold uppercase tracking-[1px] text-muted"
+              >
+                Nasıl oynanır ↓
+              </a>
+            </div>
+          </div>
+
+          {/* ── İlk ekranın altı: eski kahramanın açıklaması + rakamlar ────
+              İkisi de SEO metni; ilk ekrandan indi, sayfadan ÇIKMADI. */}
+          <div className="w-full max-w-[460px] px-4 pt-8 flex flex-col gap-4">
+            <p className="text-[19px] font-bold leading-snug text-center" style={{ margin: 0 }}>
+              Kelime bul, bölgeni büyüt, tahtayı ele geçir.
+            </p>
+            <p className="text-[13px] leading-relaxed text-muted text-center" style={{ margin: 0 }}>
+              Kelimeki, 2 veya 4 kişi yapay zekaya veya arkadaşlarına karşı
+              oynanabilen, strateji odaklı Türkçe kelime oyunudur.
+            </p>
+            <div className="flex gap-2 pt-1">
               <Kutu sayi={`${KELIME_SAYISI}+`} etiket="Kelime" />
               <Kutu sayi="13×13" etiket="Tahta" />
               <Kutu sayi="2–4" etiket="Oyuncu" />
@@ -776,6 +824,40 @@ export function Landing() {
             </section>
           </div>
         </main>
+
+        {/* ── Sabit alt şerit (30 Eylül 2026, yalnızca telefon/tablet) ─────
+            Kullanıcı kararı: *"Sabit alt şerit + hafif kısaltma"*. Ölçüm:
+            Meta reklamından gelenlerin %63'ü karşılamada, sayfanın medyan
+            %20'sini görüp çıkıyordu; iPhone'da (390×664 görünür alan)
+            "Hemen Oyna" YARIM, mağaza rozetleri HİÇ görünmüyordu — uygulama
+            içi tarayıcıda (Instagram/Facebook) alan daha da küçük. Şerit
+            ekran yüksekliğinden bağımsız olarak düğmeyi parmağın altında
+            tutar.
+
+            ⚠ `sticky`, `fixed` DEĞİL: kaydırma kabı belge değil `#karsilama`
+            (bkz. `index.css`), şerit o kabın sonunda durup alta yapışıyor ve
+            sayfa sonuna gelince kendi yerine oturuyor (altbilgiyi örtmez).
+            Rozet `StoreBadges`'in AYNISI (etiket, `store` adımı, sıra kuralı);
+            `main.tsx` → `altSeridiKur` cihazın OLMAYAN mağazasını gizler ve
+            ilk ekrandaki düğme+rozetler TAMAMEN görünürken şeridi saklar
+            (aynı düğme iki kez görünmesin). Script koşmazsa şerit görünür
+            kalır — yanlış tarafta kalmak düğmesiz kalmaktan iyidir. */}
+        <div
+          id="karsilama-alt-serit"
+          className="sticky bottom-0 z-20 w-full flex justify-center bg-bg border-t border-border lg:hidden"
+        >
+          <div
+            className="w-full max-w-[460px] px-4 pt-2.5 flex items-center gap-3"
+            style={{ paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}
+          >
+            <div className="flex-1 min-w-0">
+              <Oyna etiket="Hemen Oyna" buyuk />
+            </div>
+            <div id="karsilama-alt-serit-magaza" className="shrink-0">
+              <StoreBadges />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

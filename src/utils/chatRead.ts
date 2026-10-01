@@ -9,8 +9,12 @@
 //      cihazda "yeni" görünüyordu.
 // Damga artık sunucuda da (`online_game_chat_reads`, yalnızca İLERİ gider).
 // Cihazdaki damga YEDEK olarak kalıyor: sunucuya ulaşılamazsa davranış
-// bugünkünden kötü olmaz, ve port (henüz sunucuyu kullanmıyor) dönemindeki
-// eski damgalar kaybolmaz.
+// bugünkünden kötü olmaz, ve port'un yalnızca-cihaz dönemindeki (1.1.1 ve
+// öncesi) eski damgalar kaybolmaz.
+//
+// PORT İKİZİ: `mobile/app/lib/src/util/chat_read.dart` (ROADMAP #34) —
+// `chat_read_test.dart` aşağıdaki doğrulayıcının vakalarını birebir koşar;
+// karar değişirse ikisi AYNI PR'da.
 //
 // Karar burada, bileşende DEĞİL — `npm run verify-chat-read` bunu sınıyor.
 
@@ -29,15 +33,24 @@ export interface ChatReadInput {
   serverAt: string | null | undefined;
   /** Bu cihazdaki damga (`localStorage`), yoksa `null`. */
   localAt: string | null;
-  rows: readonly ChatReadRow[];
+  /**
+   * Sohbetin mesajları; `null` = liste OKUNAMADI (istek düştü). O durumda
+   * karar VERİLMEZ: boş listeyle tohum "şimdi" olur ve — sunucu kesin boşsa —
+   * sunucuya da yazılırdı; aradaki gerçek yeni mesajlar geri dönüşsüz okunmuş
+   * sayılırdı (26 Eylül 2026).
+   */
+  rows: readonly ChatReadRow[] | null;
   myUserId: string;
   /** Tohum için "şimdi" — testte sabitlenebilsin diye dışarıdan. */
   nowIso: string;
 }
 
 export interface ChatReadDecision {
-  /** Okunmamış sayısı (kendi mesajlarım hariç). */
-  unread: number;
+  /**
+   * Okunmamış sayısı (kendi mesajlarım hariç); `null` = karar verilmedi
+   * (mesajlar okunamadı), çağıran mevcut sayacı korur.
+   */
+  unread: number | null;
   /** Cihaza yazılacak damga, yazılmayacaksa `null`. */
   writeLocal: string | null;
   /** Sunucuya gönderilecek damga, gönderilmeyecekse `null`. */
@@ -65,6 +78,7 @@ export function latestMessageAt(rows: readonly ChatReadRow[]): string | null {
 
 export function decideChatRead(input: ChatReadInput): ChatReadDecision {
   const { serverAt, localAt, rows, myUserId, nowIso } = input;
+  if (rows === null) return { unread: null, writeLocal: null, pushToServer: null };
   const known = laterOf(serverAt ?? null, localAt);
 
   // Hiçbir yerde damga yok → oyunu hiç açmamış sayılmaz, ÖZELLİK yeni

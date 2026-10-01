@@ -28,6 +28,8 @@
 //      (aşağıdaki iki kaldırma notu). Stroke farkı duruyor, paya gerekçe
 //      olması bitti — ölçüldü ki dış hat zaten dolgunun 10 px'i içinde.
 
+import { CORNER, SIZE } from '../game/constants';
+
 /** Yakınlaştırma oranı — port `kBoardZoomScale` ile AYNI olmalı. */
 export const BOARD_ZOOM_SCALE = 2;
 
@@ -54,6 +56,48 @@ export const ZOOM_ANIM_MS = 180;
  * Port `kZoomHintAutoHide` ile AYNI olmalı.
  */
 export const ZOOM_HINT_AUTO_HIDE_MS = 4000;
+
+/**
+ * Tanıtım balonunun metni — port `kZoomHintText` ile BİREBİR aynı olmalı
+ * (27 Eylül 2026, kullanıcı: *"mesaj çok uzun... Boş kareye çift tık tahtayı
+ * büyütür. Şimdi Dene!"*). Önceki metin: "Boş kareye veya çerçevesine çift
+ * tıklama tahtayı büyütür. Hemen dene!".
+ */
+// ⚠ `\n` bilinçli: iki cümle iki satır. Serbest sarmada ikinci cümle
+// "Şimdi / Dene!" diye ortadan kırılıyordu (390 px'te ölçüldü). Web
+// `whitespace-pre-line` ile, port `Text` doğrudan uyguluyor.
+export const ZOOM_HINT_TEXT = 'Boş kareye çift tık tahtayı büyütür.\nŞimdi Dene!';
+
+/**
+ * Balonun işaret ettiği kare: SOL-ALT köşe bloğunun (köşe 2, satır 9-12 ×
+ * sütun 0-3) ortasına en yakın BOŞ kare. Uzaklık eşitse önce üstteki satır,
+ * sonra soldaki sütun — yani boş bir tahtada (10,1).
+ *
+ * Neden burası (27 Eylül 2026, kullanıcı: *"X3 üzerine göstermesi kafa
+ * karıştırıyor. Sol alt bölümün ortasına beyaz boş kareyi gösteren bir mesaj
+ * balonu olsun"*): balon önceden merkez kareyi (6,6) gösteriyordu, o da X3 —
+ * oyuncu balonu çarpan hakkında sanıyordu.
+ *
+ * Balon oyun ORTASINDA da açılabildiği için (tavan 2 açılış) kare dolu
+ * olabilir; o zaman bloğun bir sonraki boş karesi seçilir. Bloğun TAMAMI
+ * doluysa `null` → balon çizilmez (dolu bir kareyi "boş kare" diye
+ * göstermektense hiç göstermemek).
+ *
+ * Port ikizi `zoomHintTarget` (`board_zoom.dart`) — sıra ikisinde de aynı.
+ */
+export function zoomHintTarget(
+  isEmpty: (r: number, c: number) => boolean,
+): [number, number] | null {
+  const mr = SIZE - CORNER / 2 - 0.5; // 10.5
+  const mc = CORNER / 2 - 0.5; // 1.5
+  const adaylar: [number, number][] = [];
+  for (let r = SIZE - CORNER; r < SIZE; r++) {
+    for (let c = 0; c < CORNER; c++) adaylar.push([r, c]);
+  }
+  const d = ([r, c]: [number, number]) => (r - mr) ** 2 + (c - mc) ** 2;
+  adaylar.sort((a, b) => d(a) - d(b) || a[0] - b[0] || a[1] - b[1]);
+  return adaylar.find(([r, c]) => isEmpty(r, c)) ?? null;
+}
 
 /** Pan'in ARTIĞI olan click'i yutma penceresi (port'takiyle aynı gerekçe:
  *  10-18 px'lik bir pan tarayıcının tap eşiğinin altında kalıp ayrıca bir

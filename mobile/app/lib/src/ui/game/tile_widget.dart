@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart' show Tile, tileLetter;
 
+import 'board_fit.dart';
 import 'fluid.dart';
 import 'neo_box.dart';
 import 'player_colors.dart';
@@ -24,6 +25,12 @@ class TileWidget extends StatelessWidget {
   /// Küçük salt-okunur önizlemeler: harf küçük, puan üst simgesi yok.
   final bool compact;
 
+  /// Tahta ızgarasının İÇ genişliği — verilirse tahta/taslak taşının harfi
+  /// ve puanı ona göre tavanlı (web `.tile-board-letter` `5.08cqw`,
+  /// `.tile-board-pts` `2.18cqw`; `board_fit.dart`). Yalnızca `BoardWidget`
+  /// geçirir; raf ve compact önizleme web'de de tavansız.
+  final double? boardGridWidth;
+
   const TileWidget({
     super.key,
     required this.tile,
@@ -31,6 +38,7 @@ class TileWidget extends StatelessWidget {
     this.color,
     this.selected = false,
     this.compact = false,
+    this.boardGridWidth,
   });
 
   @override
@@ -86,9 +94,15 @@ class TileWidget extends StatelessWidget {
     // sabit 20px kullanıyordu — gerçek, ölçülebilir bir boyut farkı (bkz.
     // mobile/CLAUDE.md Parça 24). Rack sabit kalıyor (web de sabit).
     final screenWidth = MediaQuery.sizeOf(context).width;
+    //
+    // 27 Eylül 2026 (ROADMAP #38): yükseklik bütçesi tahtayı ekranın
+    // izin verdiğinden KÜÇÜK çizebildiği için punto ayrıca ızgaraya göre
+    // tavanlı — web'de tavansız harf iPad Safari'de hücrenin %128'iydi.
+    // Oran en dar telefondan; bütçe devrede değilken hiç bağlamaz.
     final boardLetterSize = compact
         ? fluidSize(screenWidth, 8, 0, 2.4, 14)
-        : fluidSize(screenWidth, 14, 0, 3.8, 24);
+        : capToGrid(fluidSize(screenWidth, 14, 0, 3.8, 24), boardGridWidth,
+            kTileLetterPerGrid);
     final letterStyle = TextStyle(
       color: letterColor,
       fontFamily: 'Nunito',
@@ -141,7 +155,10 @@ class TileWidget extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   // Web: rafta sabit 10px, tahtada `clamp(6px,1.6vw,10px)`
                   // (aynı vw-tabanlı sistem, bkz. yukarıdaki letterStyle notu).
-                  fontSize: isRack ? 10 : fluidSize(screenWidth, 6, 0, 1.6, 10),
+                  fontSize: isRack
+                      ? 10
+                      : capToGrid(fluidSize(screenWidth, 6, 0, 1.6, 10),
+                          boardGridWidth, kTilePtsPerGrid),
                   height: 1,
                 ),
               ),

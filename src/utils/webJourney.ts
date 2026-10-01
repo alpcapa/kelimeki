@@ -23,6 +23,8 @@
 // (`main.tsx`) da bunu import ettiği için Supabase SDK'sı KULLANILMIYOR —
 // `misafirZiyaretiBildir` ile aynı bundle gerekçesi, düz `fetch`.
 
+import { isBotUserAgent } from './visitTracking';
+
 /**
  * Adımlar, admin kartındaki SIRAYLA. ⚠ Sunucudaki iki fonksiyonun
  * (`record_web_session`, `admin_web_journey`) `v_steps` dizisiyle BİREBİR
@@ -33,7 +35,8 @@ export const JOURNEY_STEPS = [
   'landing_cta', // karşılamadan uygulamaya geçti (Oyna / Giriş / hukuki bağlantı)
   'app', // uygulama (kurulum ekranı) açıldı
   'tutorial_start', // "Oynayarak öğren" tanıtımı açıldı
-  'tutorial_done', // tanıtım sonuna kadar oynandı (atlama SAYILMAZ)
+  'tutorial_done', // tanıtım sonuna kadar oynandı (atlama SAYILMAZ; atlayanlar admin kartında
+  //                  türetilmiş `tutorial_skip` satırı — sunucu hesaplar, istemci GÖNDERMEZ)
   'game_start', // YZ'ye karşı oyun başladı
   'first_move', // oyuncu ilk hamlesini yaptı
   'move_5', // oyuncu 5. hamlesini yaptı
@@ -41,6 +44,11 @@ export const JOURNEY_STEPS = [
   'signup_form', // kayıt formu açıldı
   'signup_done', // hesap oluştu — oturum kapanır
   'login', // mevcut hesaba giriş yaptı — oturum kapanır
+  // Mağaza rozetine / şeridine dokundu (28 Eylül 2026, Meta kampanyası:
+  // reklam `kelimeki.com/?ref=…`e gidiyor, mağazaya buradan geçiliyor).
+  // Oturumu KAPATMAZ — kişi dönüp tarayıcıda oynayabilir. SONA eklendi,
+  // çünkü sıra admin kartının satır sırası; araya girse eski satırlar kayardı.
+  'store',
 ] as const;
 
 export type JourneyStep = (typeof JOURNEY_STEPS)[number];
@@ -55,6 +63,7 @@ const ONCE: ReadonlySet<JourneyStep> = new Set<JourneyStep>([
   'move_5',
   'signup_done',
   'login',
+  'store',
 ]);
 
 /** Oturumu KAPATAN adımlar — misafir üye oldu, bundan sonrası bu soruyla ilgisiz. */
@@ -236,10 +245,17 @@ function randomId(): string {
   });
 }
 
-/** Otomasyon tarayıcıları (tarayıcı botları, Playwright) sayılmaz. */
+/**
+ * Otomasyon tarayıcıları (Playwright, `navigator.webdriver`) ve KENDİNİ bot
+ * olarak tanıtan istemciler sayılmaz — `funnelEvents.ts` ile aynı kapı.
+ * 30 Eylül 2026'ya kadar yalnızca `webdriver` bakılıyordu ve bir haftalık
+ * dökümde bot ziyaretlerinin neredeyse hepsinin karşısında bir "karşılamada
+ * ayrıldı" oturumu çıktı (Meta reklam inceleme botları dahil, kampanya
+ * etiketleriyle). Kullanıcı kararı: *"botları sayımdan çıkar"*.
+ */
 function isAutomated(): boolean {
   try {
-    return navigator.webdriver === true;
+    return navigator.webdriver === true || isBotUserAgent(navigator.userAgent || '');
   } catch {
     return false;
   }

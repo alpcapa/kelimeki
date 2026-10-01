@@ -71,13 +71,25 @@ final List<RegExp> _makineKaliplari = [
   RegExp(
       r'duplicate key|violates (unique|foreign key|check|not-null) constraint|null value in column',
       caseSensitive: false),
-  RegExp(r'\bJWT\b|jwt (expired|malformed)|invalid claim', caseSensitive: false),
+  RegExp(r'\bJWT\b|jwt (expired|malformed)|invalid claim',
+      caseSensitive: false),
   RegExp(r'permission denied for (table|relation|schema|function)',
       caseSensitive: false),
   RegExp(r'relation ".*" does not exist|column ".*" does not exist',
       caseSensitive: false),
   RegExp(r'^\s*<!DOCTYPE', caseSensitive: false),
-  RegExp(r'Failed to fetch|Load failed|NetworkError|fetch failed|network request failed',
+  // ⚠ Web'in kalıbının ÜST KÜMESİ: ilk beşi tarayıcının fetch metinleri,
+  // gerisi Dart'ın (`dart:io`/`package:http`) taşıma metinleri — web'de hiç
+  // oluşmazlar, bu yüzden web'e eklenmedi. Kalıp SAYISI parite testi için
+  // aynı tutuldu (tek regex'e eklendi). 26 Eylül 2026, 1.1.1 cihaz turu:
+  // uçak modunda Canlı oyun mesajı ekrana ham
+  // "Failed host lookup: 'xvq….supabase.co'" bastı — `ClientException`in
+  // `message` alanı sınıf adını TAŞIMIYOR, yani `SocketException` kalıbı
+  // (`toString()`e bakan) onu göremiyordu.
+  RegExp(
+      r'Failed to fetch|Load failed|NetworkError|fetch failed|network request failed'
+      r'|Failed host lookup|Connection (refused|reset|closed|timed out)'
+      r'|Network is unreachable|No address associated|OS Error',
       caseSensitive: false),
 ];
 
