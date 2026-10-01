@@ -118,7 +118,7 @@ void main() {
     });
   });
 
-  testWidgets('Setup girişli: sağ üstte avatar, 1. koltuk hesap sahibi',
+  testWidgets('Setup girişli: sağ üstte avatar, oyunun 1. oyuncusu hesap sahibi',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     final auth = AuthService.fake(user: fakeUser(), profile: ironman);
@@ -131,15 +131,15 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    // 1. koltuk: takma ad + SEN etiketi; GİRİŞ butonu YOK (avatar var).
-    expect(find.text('Ironman'), findsOneWidget);
+    // GİRİŞ butonu YOK (avatar var). 1 Ekim 2026'dan beri formda koltuk
+    // listesi yok (ROADMAP #41 karar 2) — hesap sahibinin adı aşağıda,
+    // başlatılan oyunun başlığında doğrulanıyor.
     expect(find.text('Misafir'), findsNothing);
-    expect(find.text('SEN'), findsOneWidget);
     expect(find.text('GİRİŞ'), findsNothing);
-    // Avatar baş harfleri: hesap satırı (20px) + sağ üst köşe (32px).
-    // "Ironman" BÜYÜK I ile başlar → trUpper 'IR' üretir (İ değil — noktasız
-    // I zaten büyük, Türkçe kural yalnızca küçük i'yi İ yapar).
-    expect(find.text('IR'), findsNWidgets(2));
+    // Avatar baş harfleri: yalnızca sağ üst köşe (32px). "Ironman" BÜYÜK I
+    // ile başlar → trUpper 'IR' üretir (İ değil — noktasız I zaten büyük,
+    // Türkçe kural yalnızca küçük i'yi İ yapar).
+    expect(find.text('IR'), findsOneWidget);
 
     await tester.runAsync(() async {
       final boundary =
@@ -178,7 +178,6 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('Misafir'), findsOneWidget); // 1. koltuk hâlâ misafir
     await tester.tap(find.text('GİRİŞ'));
     await tester.pumpAndSettle();
     expect(find.text('E-POSTA'), findsOneWidget);
@@ -198,7 +197,7 @@ void main() {
   });
 
   testWidgets(
-      'profil beklenirken 1. koltuk nötr "Yükleniyor…" (kimlik sıçraması yok)',
+      'profil beklenirken OYUNU BAŞLAT kapalı — "HAZIRLANIYOR…" (kimlik sıçraması yok)',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     final auth = AuthService.fake(user: fakeUser(), profileLoading: true);
@@ -209,7 +208,13 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('Yükleniyor…'), findsOneWidget);
+    // 1 Ekim 2026 (ROADMAP #41 karar 2): "Oyuncular" koltuk listesi kalktı,
+    // yani 1. koltuğun "Yükleniyor…" gösterimi de yok. Korunan değişmez web
+    // `disabled={!wordsReady || accountPending}`: profil gelmeden oyun
+    // başlatılamaz, aksi hâlde oyuncu adı kısa süreliğine "Misafir"
+    // kaydedilebiliyordu.
+    expect(find.text('HAZIRLANIYOR…'), findsOneWidget);
+    expect(find.text('OYUNU BAŞLAT'), findsNothing);
     expect(find.text('Misafir'), findsNothing); // web: geçici kimlik yok
     expect(find.text('alp.capa'), findsNothing); // e-posta önekine düşülmez
   });

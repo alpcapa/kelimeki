@@ -215,7 +215,7 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    expect(find.text('+ YENİ YAPAY ZEKA OYUNU AÇ'), findsOneWidget);
+    expect(find.text('YENİ OYUN BAŞLAT'), findsOneWidget);
     expect(find.text('DEVAM EDEN OYUNLAR'), findsOneWidget);
     expect(find.textContaining('SIRA SENDE'), findsOneWidget);
     // "Sıra: X" alt satırı 2 Eylül 2026'da KALDIRILDI (kullanıcı isteği):
@@ -242,7 +242,7 @@ void main() {
   });
 
   testWidgets(
-      '"+ Yeni …" butonu ve alt sekme satırı web ölçüleriyle aynı (40/20/8/20)',
+      '"Yeni Oyun Başlat" butonu ve alt sekme satırı web ölçüleriyle aynı (52/20/8/20)',
       (tester) async {
     // 13 Ağustos 2026, kullanıcı bildirdi: "yeni oyun aç butonu ile
     // altındaki devam edenler butonları arasındaki fark web'den daha dar".
@@ -260,7 +260,7 @@ void main() {
     await pumpSetup(tester, gw);
 
     final buton = tester.getRect(
-        find.widgetWithText(NeoButton, '+ YENİ YAPAY ZEKA OYUNU AÇ'));
+        find.widgetWithText(NeoButton, 'YENİ OYUN BAŞLAT'));
     // Sekme KUTUSU (metin, kutunun 10px dolgusunun içinde ortalı — metin
     // kenarından boşluk ölçmek yanıltıcı olurdu).
     Rect kutu(String etiket) => tester.getRect(find
@@ -269,7 +269,9 @@ void main() {
     final sekme1 = kutu('DEVAM EDENLER');
     final sekme2 = kutu('SON OYNANANLAR');
 
-    expect(buton.height, 40, reason: 'web text-sm (14/20) + py-2.5 = 40');
+    // 1 Ekim 2026 (ROADMAP #41): web `PRIMARY_ACTION_BTN` — `min-h-[52px]
+    // text-base`; eski "+ Yeni Yapay Zeka Oyunu Aç" 40'tı.
+    expect(buton.height, 52, reason: 'web PRIMARY_ACTION_BTN min-h-[52px]');
     expect(sekme1.top - buton.bottom, 20, reason: 'web gap-5 = 20');
     expect(sekme2.left - sekme1.right, 8, reason: 'web gap-2 = 8');
     expect(sekme1.height, closeTo(38.5, 1),
@@ -282,13 +284,18 @@ void main() {
 
     expect(find.text('Devam eden bir Yapay Zeka oyunun yok.'), findsOneWidget);
 
-    await tester.tap(find.text('+ YENİ YAPAY ZEKA OYUNU AÇ'));
+    await tester.tap(find.text('YENİ OYUN BAŞLAT'));
     await tester.pumpAndSettle();
     expect(find.text('OYUNCU SAYISI'), findsOneWidget);
     expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
     expect(find.text('VAZGEÇ'), findsOneWidget);
-    // Form 1. koltuğu hesapla gösterir (parça 1 davranışı korunuyor).
-    expect(find.text('Ironman'), findsOneWidget);
+    // "Oyuncular" koltuk listesi YOK (ROADMAP #41 karar 2) — yerine tek
+    // satırlık kadro özeti.
+    expect(find.text('Ironman'), findsNothing);
+    expect(
+        find.text(
+            'Sen ve 1 yapay zeka. 4 kişide 3 yapay zekaya karşı oynarsın.'),
+        findsOneWidget);
 
     await tester.tap(find.text('VAZGEÇ'));
     await tester.pumpAndSettle();
@@ -320,7 +327,7 @@ void main() {
     // İkisi de 2 olmalı; alt sekmeninkini de ölçüyoruz ki "üstteki rozeti
     // ekledim" iddiası, ikisi ayrışsa da geçmesin.
     expect(badgeOf('DEVAM EDENLER'), 2);
-    expect(badgeOf('YAPAY ZEKA İLE'), 2);
+    expect(badgeOf('YAPAY ZEKA'), 2);
     await drainRealIo(tester);
   });
 
@@ -362,7 +369,7 @@ void main() {
     expect(find.text('SON OYNADIKLARIM'), findsOneWidget);
     await tester.tap(find.text('ARKADAŞINLA'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('YAPAY ZEKA İLE'));
+    await tester.tap(find.text('YAPAY ZEKA'));
     await tester.pumpAndSettle();
     expect(find.textContaining('SIRA SENDE'), findsOneWidget);
     expect(find.text('SON OYNADIKLARIM'), findsNothing);
@@ -453,7 +460,7 @@ void main() {
     final gamesRepo = await tester.runAsync(() => memGamesRepo(gamesGw));
     await pumpSetup(tester, gw, games: Future.value(gamesRepo));
 
-    await tester.tap(find.text('+ YENİ YAPAY ZEKA OYUNU AÇ'));
+    await tester.tap(find.text('YENİ OYUN BAŞLAT'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('OYUNU BAŞLAT'));
     await tester.pumpAndSettle();
@@ -490,7 +497,7 @@ void main() {
     final gamesRepo = await tester.runAsync(() => memGamesRepo(gamesGw));
     await pumpSetup(tester, gw, games: Future.value(gamesRepo));
 
-    await tester.tap(find.text('+ YENİ YAPAY ZEKA OYUNU AÇ'));
+    await tester.tap(find.text('YENİ OYUN BAŞLAT'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('OYUNU BAŞLAT'));
     await tester.pumpAndSettle();
@@ -537,7 +544,7 @@ void main() {
     final gw = MemGateway();
     await pumpSetup(tester, gw);
 
-    await tester.tap(find.text('+ YENİ YAPAY ZEKA OYUNU AÇ'));
+    await tester.tap(find.text('YENİ OYUN BAŞLAT'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('OYUNU BAŞLAT'));
     await tester.pumpAndSettle();

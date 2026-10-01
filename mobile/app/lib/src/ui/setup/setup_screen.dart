@@ -2,11 +2,11 @@
 // yerine geçer; kalıcılık akışı (LocalGameRepo süpürmesi, tek slot,
 // anti-kaçış) oradan buraya taşındı.
 //
-// Web paritesi: logo + tanıtım metni, "Oyun Tipi" sekmeleri (Arkadaşınla =
-// LiveGamesTab, davet/kabul akışı — 7 Ağustos 2026), Oyuncu Sayısı 2/4,
-// renkli Oyuncular
-// listesi (Misafir + "Yapay Zeka N"), sözlük hazır olana dek "HAZIRLANIYOR…"
-// gösteren Oyunu Başlat; misafirin tekil kaydı varsa form yerine "Devam Eden
+// Web paritesi: logo, "Kime karşı" sekmeleri (Arkadaşınla = LiveGamesTab,
+// davet/kabul akışı — 7 Ağustos 2026), Oyuncu sayısı 2/4 + tek satırlık
+// kadro özeti, Zorluk, sözlük hazır olana dek "HAZIRLANIYOR…" gösteren
+// turuncu Oyunu Başlat (1 Ekim 2026, ROADMAP #41 karar 2 — "Oyuncular"
+// koltuk listesi ve altta yapışık başlat çubuğu kalktı); misafirin tekil kaydı varsa form yerine "Devam Eden
 // Oyun" satırı (avatarlar + Sıra: + kalan süre) ve 7 gün paragrafı; misafirin
 // her iki görünümünde de (Devam Eden Oyun / boş form) "Neden Ücretsiz Üye
 // Olmalıyım?" kutusu (`MembershipPerksBox`, 7 Ağustos 2026). "Nasıl oynanır?"
@@ -15,7 +15,7 @@
 //
 // 17 Ağustos 2026 — GİRİŞLİ/MİSAFİR ekranı ikiye ayrıldı (web'deki aynı gün
 // verilen kararla birebir): logonun altındaki tanıtım paragrafı + link satırı
-// artık YALNIZCA MİSAFİRDE görünüyor; girişli kullanıcı doğrudan "OYUN TİPİ"
+// artık YALNIZCA MİSAFİRDE görünüyor; girişli kullanıcı doğrudan "KİME KARŞI"
 // başlığını görüyor.
 //
 // 19 Ağustos 2026 (kullanıcı isteği) — iki değişiklik: (a) misafir link
@@ -55,18 +55,13 @@ import '../../game/game_session_host.dart';
 import '../../storage/local_save_store.dart' show abandonTimeout;
 import '../../util/away_return.dart';
 import '../../util/share_board.dart';
-import '../rank/league_rank.dart';
-import '../rank/rank_scores.dart';
-import '../rank/rank_seal.dart';
 import '../game/count_badge.dart';
 import '../game/game_screen.dart';
 import '../game/help_modal.dart';
 import '../intro/intro_screen.dart';
 import '../game/logo_mark.dart';
 import '../game/neo_button.dart';
-import '../game/player_badge.dart';
 import '../game/player_avatar_row.dart';
-import '../game/player_colors.dart';
 import '../../util/game_list_order.dart';
 import '../devam_eden_govde.dart';
 import '../ai_level_badge.dart';
@@ -74,7 +69,6 @@ import '../../util/ai_level.dart';
 import '../live/live_games_tab.dart';
 import '../rank/league_rewards_host.dart';
 import '../auth/account_button.dart';
-import '../auth/k_avatar.dart';
 import 'membership_perks_box.dart';
 import 'recent_games_section.dart';
 import '../tap_target.dart';
@@ -153,7 +147,7 @@ class _SetupScreenState extends State<SetupScreen>
   /// sorusunu build içinde (senkron) cevaplayabilmek için.
   FlagsStore? _flags;
 
-  /// Web `mainView` ('local' | 'live') — OYUN TİPİ sekmeleri. Canlı sekme
+  /// Web `mainView` ('local' | 'live') — KİME KARŞI sekmeleri. Canlı sekme
   /// yalnızca görünümü değiştirir; YZ tarafının state'i (kayıtlar/form)
   /// mount'ta kaldığından geçişte kaybolmaz.
   bool _liveView = false;
@@ -267,16 +261,10 @@ class _SetupScreenState extends State<SetupScreen>
   bool _cloudSavesFailed = false;
   String? _previewedInviteToken;
 
-  /// Hesap sahibinin rütbe mührü için k-lig puanı (18 Ağustos 2026).
-  /// `leaderboard` view'ından toplu okunur — ödül puanı DAHİL; 17
-  /// Ağustos'ta kaldırılan parantezli `player_stats` toplamıyla
-  /// KARIŞTIRMA (o, ödülleri saymadığı için gerçek puandan kopmuştu).
-  late final RankScores _rankScores;
 
   @override
   void initState() {
     super.initState();
-    _rankScores = RankScores(widget.services.stats)..addListener(_onRankScores);
     _lastUserId = widget.services.auth.user?.id;
     _lastAuthUserIdForLiveViewReset =
         _lastUserId; // React'in mount-anı effect'i
@@ -681,13 +669,7 @@ class _SetupScreenState extends State<SetupScreen>
     _cloudSyncDebounce?.cancel();
     widget.services.onlineStatus.removeListener(_onLiveBadgeConnectivity);
     _unsubscribeLiveBadge?.call();
-    _rankScores.removeListener(_onRankScores);
-    _rankScores.dispose();
     super.dispose();
-  }
-
-  void _onRankScores() {
-    if (mounted) setState(() {});
   }
 
   /// Faz 3 — bildirim yönlendirmesinin sekme dalı. Sayaç her arttığında
@@ -1208,10 +1190,6 @@ class _SetupScreenState extends State<SetupScreen>
   @override
   Widget build(BuildContext context) {
     final auth = widget.services.auth;
-    // Rütbe mührü için puan iste — `ensure` yalnızca EKSİK id'ler için ağa
-    // gider ve `notifyListeners`ı bir sonraki microtask'a erteler, bu
-    // yüzden build içinden çağrılması güvenli.
-    _rankScores.ensure([auth.user?.id]);
     // k-lig kutlama banner'ı — Setup'ta bastırma YOK (girişte / geçmişe
     // dönük backfill'de bekleyen ödüller burada çıkar). Oyun ekranları bu
     // ekranın ÜZERİNE push edildiğinden ve host'lar yığının en üstekini
@@ -1223,14 +1201,6 @@ class _SetupScreenState extends State<SetupScreen>
       stats: widget.services.stats,
       child: Scaffold(
         backgroundColor: Colors.white,
-        // Oturum/profil değişimi çubuğun görünürlüğünü de etkiliyor (girişli
-        // kullanıcıda form yalnızca "+ Yeni"yle açılıyor), o yüzden gövdedeki
-        // ile aynı dinleyici burada da gerekli — Scaffold'un bu slotu ayrı
-        // bir alt ağaç.
-        bottomNavigationBar: ListenableBuilder(
-          listenable: auth,
-          builder: (context, _) => _baslatCubugu(),
-        ),
         body: SafeArea(
           // Oturum/profil değişince (giriş, çıkış, profil gelmesi) tüm ekran
           // tazelenir — web'de useAuth context'inin yeniden render etmesiyle
@@ -1365,9 +1335,9 @@ class _SetupScreenState extends State<SetupScreen>
                           ),
                         ],
                         // Girişli kullanıcıda yukarıdaki blok tamamen
-                        // KALKTIĞINDAN, logo ile "OYUN TİPİ" arasında kalan
+                        // KALKTIĞINDAN, logo ile "KİME KARŞI" arasında kalan
                         // TEK boşluk bu SizedBox — Chromium'da ÖLÇÜLDÜ: web'de
-                        // paragraf/link satırı kalkınca logo→"OYUN TİPİ" arası
+                        // paragraf/link satırı kalkınca logo→"KİME KARŞI" arası
                         // TAM 20.00px (kapsayıcının kendi `gap-5`i). Buraya
                         // TELAFİ EDİCİ bir marj EKLEMEDİK — çocukları kaldırmak
                         // otomatik olarak bu değeri veriyor, elle ayarlanmadı.
@@ -1379,13 +1349,13 @@ class _SetupScreenState extends State<SetupScreen>
                         // idi. 8 + 8 = 16 ile ikisi eşitlendi. Web ikizi aynı
                         // farkı `-mb-3` ile veriyor (yalnızca misafir dalında).
                         SizedBox(height: auth.user == null ? 8 : 20),
-                        const _SectionLabel('OYUN TİPİ'),
+                        const _SectionLabel('KİME KARŞI'),
                         const SizedBox(height: 8),
                         Row(
                           children: [
                             Expanded(
                               child: _ChoiceButton(
-                                label: 'YAPAY ZEKA İLE',
+                                label: 'YAPAY ZEKA',
                                 selected: !_liveView,
                                 badge: _localSaveCount,
                                 onTap: () => setState(() {
@@ -1725,14 +1695,18 @@ class _SetupScreenState extends State<SetupScreen>
         // (port 44'lük bir SizedBox'a sarıyordu); aradaki boşluklar
         // kapsayıcının `gap-5`inden (20), sekmelerin kendi arası `gap-2`
         // (8). `LiveGamesTab`'daki ikiziyle BİREBİR aynı (Parça 80).
-        NeoButton(
-          label: '+ YENİ YAPAY ZEKA OYUNU AÇ',
-          variant: NeoButtonVariant.orange,
-          fontSize: 14,
-          lineHeight: 20 / 14,
-          letterSpacing: 1.5,
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          onPressed: () => setState(() => _creatingLocal = true),
+        // ROADMAP #41 (web 27 Eylül 2026, #682): "+ Yeni Yapay Zeka Oyunu
+        // Aç" → "Yeni Oyun Başlat"; web `PRIMARY_ACTION_BTN` (`min-h-[52px]
+        // text-base tracking-[1px]`) — formdaki OYUNU BAŞLAT ile aynı kutu.
+        SizedBox(
+          height: 52,
+          child: NeoButton(
+            label: 'YENİ OYUN BAŞLAT',
+            variant: NeoButtonVariant.orange,
+            fontSize: 16,
+            letterSpacing: 1,
+            onPressed: () => setState(() => _creatingLocal = true),
+          ),
         ),
         const SizedBox(height: 20),
         Row(children: [
@@ -1907,11 +1881,8 @@ class _SetupScreenState extends State<SetupScreen>
   }
 
   /// Yerel (YZ) sekmesinde ŞU AN yeni oyun formu mu görünüyor, ve o formda
-  /// "VAZGEÇ" butonu var mı? Karar İKİ yerde okunuyor — gövde (hangi görünüm
-  /// çizilecek) ve ekranın altına yapışık başlat çubuğu (çizilecek mi) —, bu
-  /// yüzden TEK kaynak burası. İkisi ayrı ayrı yazılsaydı bir sonraki görünüm
-  /// eklendiğinde sessizce ayrışırlardı: çubuk formu olmayan bir görünümün
-  /// üstünde asılı kalır ya da formda hiç çıkmazdı.
+  /// "VAZGEÇ" butonu var mı? Gövde hangi görünümün çizileceğini buradan
+  /// okur, form da VAZGEÇ'i buradan alır — tek kaynak.
   ({bool form, bool cancel}) _formDurumu() {
     if (_liveView) return (form: false, cancel: false);
     final auth = widget.services.auth;
@@ -1924,88 +1895,56 @@ class _SetupScreenState extends State<SetupScreen>
     return (form: _savedState == null, cancel: false);
   }
 
-  /// Ekranın altına YAPIŞIK başlat çubuğu. Kaydırılan gövdenin DIŞINDA
-  /// durur, yani içerik ne kadar uzarsa uzasın birincil eylem hep görünür
-  /// (gerekçe ve ölçümler `_buildNewGameForm`in başındaki notta).
-  Widget _baslatCubugu() {
-    final durum = _formDurumu();
-    if (!durum.form) return const SizedBox.shrink();
-    return DecoratedBox(
-      // Testler çubuğun ÜST kenarını ölçüyor (kaydırılan içerik onun altında
-      // kalıcı olarak gizlenmemeli) — metinden değil bu anahtardan bulsunlar.
-      key: const Key('baslat-cubugu'),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: _border)),
-      ),
-      // `top: false` — üst güvenli alan gövdenin işi; burada yalnızca alt
-      // gösterge payı eklenmeli.
-      child: SafeArea(
-        top: false,
-        // ⚠ `heightFactor: 1` ŞART: `Center` gevşek kısıt altında izin
-        // verilen TÜM yüksekliği kaplar — `bottomNavigationBar` slotunda
-        // kısıt ekranın tamamı olduğundan çubuk bütün ekranı yiyip gövdeyi
-        // eziyordu (testler yakaladı: dokunuşlar formu değil çubuğu
-        // buluyordu). `heightFactor: 1` onu çocuğunun boyuna oturtur.
-        child: Center(
-          heightFactor: 1,
-          child: ConstrainedBox(
-            // Gövdedeki 460 + yatay 16 ile AYNI ölçü: buton kaydırılan
-            // formun altında duruyormuş gibi hizalı kalsın.
-            constraints: const BoxConstraints(maxWidth: 460),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-              child: FutureBuilder<SetWordSource>(
-                future: widget.services.dictionary,
-                builder: (context, snap) {
-                  final words = snap.data;
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 48,
-                          // Web: `btn-raised bg-accent ... disabled:opacity-35`
-                          // — NeoButton disabled durumu birebir aynı görünüm.
-                          child: NeoButton(
-                            label: words == null
-                                ? 'HAZIRLANIYOR…'
-                                : 'OYUNU BAŞLAT',
-                            variant: NeoButtonVariant.accent,
-                            fontSize: 14,
-                            letterSpacing: 2,
-                            onPressed: words == null
-                                ? null
-                                : () => _handleStart(words),
-                          ),
-                        ),
-                      ),
-                      // Yalnızca girişli kullanıcının "+ Yeni" ile açtığı
-                      // formda — web'in creatingLocal "Vazgeç" butonu (Devam
-                      // Eden Oyunlar listesine döner); misafirde form tek yol.
-                      if (durum.cancel) ...[
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: SizedBox(
-                            height: 48,
-                            child: NeoButton(
-                              label: 'VAZGEÇ',
-                              variant: NeoButtonVariant.neutral,
-                              fontSize: 14,
-                              letterSpacing: 2,
-                              onPressed: () =>
-                                  setState(() => _creatingLocal = false),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  );
-                },
-              ),
+  /// OYUNU BAŞLAT satırı — zorluğun HEMEN altında, AKIŞTA (ROADMAP #41
+  /// karar 2; web `Setup.tsx` 27 Eylül 2026). Turuncu, 52 yüksek, 16 punto —
+  /// web `btn-raised-orange min-h-[52px] text-base tracking-[1px]`.
+  ///
+  /// ⚠ 10 Eylül–1 Ekim 2026 arası bu düğme ekranın altına YAPIŞIK bir
+  /// çubuktaydı: 375 pt'de "OYUNCULAR" koltuk listesi formu uzatıp düğmeyi
+  /// ilk ekranın dışına itiyordu. Liste tek satırlık özete indi (karar 2),
+  /// form kısaldı ve düğme web'le aynı yere, akışa döndü. Web'de yapışık
+  /// şerit iOS Safari'nin yüzen çubuğunun arkasına düştüğü için zaten geri
+  /// alınmıştı; iki taraf yine aynı düzende. İlk ekranda göründüğünü
+  /// `setup_screen_test.dart` → *"375×812'de OYUNU BAŞLAT ilk ekranda"*
+  /// kilitliyor (güvenli alan payıyla).
+  Widget _baslatSatiri(SetWordSource? words, {required bool cancel}) {
+    // Web: `disabled={!wordsReady || accountPending}` — girişli kullanıcıda
+    // profil gelmeden basılırsa oyuncu adı kısa süreliğine "Misafir"
+    // kaydedilebiliyordu.
+    final hazir = words != null && !widget.services.auth.accountPending;
+    return Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 52,
+            child: NeoButton(
+              label: hazir ? 'OYUNU BAŞLAT' : 'HAZIRLANIYOR…',
+              variant: NeoButtonVariant.orange,
+              fontSize: 16,
+              letterSpacing: 1,
+              onPressed: hazir ? () => _handleStart(words) : null,
             ),
           ),
         ),
-      ),
+        // Yalnızca girişli kullanıcının "Yeni Oyun Başlat" ile açtığı
+        // formda — web'in creatingLocal "Vazgeç" butonu (Devam Eden Oyunlar
+        // listesine döner); misafirde form tek yol.
+        if (cancel) ...[
+          const SizedBox(width: 8),
+          Expanded(
+            child: SizedBox(
+              height: 52,
+              child: NeoButton(
+                label: 'VAZGEÇ',
+                variant: NeoButtonVariant.neutral,
+                fontSize: 14,
+                letterSpacing: 2,
+                onPressed: () => setState(() => _creatingLocal = false),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -2021,13 +1960,29 @@ class _SetupScreenState extends State<SetupScreen>
               if (n != 2) const SizedBox(width: 8),
               Expanded(
                 child: _ChoiceButton(
-                  label: '$n OYUNCULU',
+                  label: '$n KİŞİ',
                   selected: _count == n,
                   onTap: () => setState(() => _count = n),
                 ),
               ),
             ],
           ],
+        ),
+        const SizedBox(height: 8),
+        // "OYUNCULAR" koltuk listesinin YERİNE tek satır (ROADMAP #41 karar
+        // 2, web 27 Eylül 2026). Koltukların renkleri/adları oyun ekranında
+        // zaten var; kurulumda soru yalnızca "kaç rakip". Metin web'le
+        // BİREBİR (`setup_screen_test.dart` kilitliyor).
+        Text(
+          _count == 2
+              ? 'Sen ve 1 yapay zeka. 4 kişide 3 yapay zekaya karşı oynarsın.'
+              : 'Sen ve 3 yapay zeka; herkes kendi köşesinden başlar.',
+          style: const TextStyle(
+            fontFamily: 'SpaceMono',
+            fontSize: 11,
+            height: 1.5,
+            color: _muted,
+          ),
         ),
         const SizedBox(height: 20),
         // ZORLUK (ROADMAP #23 Faz 4, web Faz 3'ün ikizi) — `OYUNCU SAYISI`
@@ -2065,41 +2020,14 @@ class _SetupScreenState extends State<SetupScreen>
           ),
         ),
         const SizedBox(height: 20),
-        const _SectionLabel('OYUNCULAR'),
-        const SizedBox(height: 8),
-        for (var i = 0; i < _count; i++) ...[
-          if (i > 0) const SizedBox(height: 8),
-          _PlayerRow(
-            index: i,
-            accountName: widget.services.auth.accountName,
-            accountAvatarUrl: widget.services.auth.profile?.avatarUrl,
-            accountPending: widget.services.auth.accountPending,
-            accountRankTier: _rankScores.tierOf(widget.services.auth.user?.id),
-          ),
-        ],
-        // ⚠ "OYUNU BAŞLAT" ARTIK BURADA DEĞİL, EKRANIN ALTINA YAPIŞIK
-        // (10 Eylül 2026, kullanıcı isteği — iPhone'da bildirdi: *"setup
-        // tarafında oyna butonu ekran dışında kalıyor"*). Gerçek güvenli
-        // alan paylarıyla ÖLÇÜLDÜ (üst 59 · alt 34): 375 pt genişlikte
-        // **varsayılan yazı boyutunda bile** buton 769–786'ya düşüyordu,
-        // görünür alt sınır 778 — yani birincil eylem ilk ekranda kesikti.
-        // 393 pt'de ×1,0 kurtuluyordu ama ×1,3'te ikisi de düşüyordu.
-        //
-        // Alternatif ("dar ekranda ZORLUK açıklamasını gizle") bilerek
-        // ELENDİ: bir eşik oyunu ve bir sonraki uzayan içerikte aynı hata
-        // geri gelir. Yapışık çubuk sorunu SINIF olarak kapatıyor — her
-        // genişlikte, her yazı ölçeğinde, misafir/girişli ve 2/4 kişilik
-        // varyantların hepsinde.
-        //
-        // ⚠ Web'den bilinçli AYRIŞMA: orada buton akışın içinde (sayfa
-        // kaydırması doğal). Portta ekran yüksekliği sabit ve alt gösterge
-        // payı da yiyor.
+        // OYUNU BAŞLAT zorluğun HEMEN altında, üyelik kutusu ONDAN SONRA
+        // (ROADMAP #41 karar 2 — web `Setup.tsx` ile aynı sıra).
+        _baslatSatiri(words, cancel: _formDurumu().cancel),
         const SizedBox(height: 20),
         // Web: `!user && <MembershipPerksBox .../>` — bu fonksiyon hem
-        // misafirin boş formunda (showCancel:false) hem girişli kullanıcının
-        // "+ Yeni" formunda (showCancel:true) çağrıldığından gate widget'ın
-        // kendi içinde (`auth.user == null`); girişli çağrıda sessizce
-        // gizli kalır.
+        // misafirin boş formunda hem girişli kullanıcının "Yeni Oyun
+        // Başlat" formunda çağrıldığından gate widget'ın kendi içinde
+        // (`auth.user == null`); girişli çağrıda sessizce gizli kalır.
         MembershipPerksBox(
             auth: widget.services.auth, feedback: widget.services.feedback),
       ],
@@ -2195,7 +2123,7 @@ class _InlineLink extends StatelessWidget {
   Widget build(BuildContext context) {
     return TapTarget(
       onTap: onTap,
-      // Web `min-h-[32px]` (7 Eylül 2026) — 48 paragraf ile "OYUN TİPİ"
+      // Web `min-h-[32px]` (7 Eylül 2026) — 48 paragraf ile "KİME KARŞI"
       // arasına iki boş bant açıyordu.
       minHeight: 32,
       child: Text(
@@ -2209,98 +2137,6 @@ class _InlineLink extends StatelessWidget {
           letterSpacing: 0,
           color: kAccent,
         ),
-      ),
-    );
-  }
-}
-
-/// Oyuncular listesindeki renkli satır — web: tint zemin + base çerçeve,
-/// PlayerBadge + ad + sağda "Sen"/"YZN" etiketi.
-class _PlayerRow extends StatelessWidget {
-  final int index;
-
-  /// Oturum açıksa 1. koltuk hesap sahibidir (web isAccount): avatar +
-  /// kilitli isim. Profil beklenirken (accountPending) nötr "Yükleniyor…"
-  /// gösterilir — bir anlık "Misafir" yazıp gerçek adla değişmesin (web'de
-  /// yaşanmış kimlik-değişimi hatası).
-  final String? accountName;
-  final String? accountAvatarUrl;
-  final bool accountPending;
-
-  /// Hesap sahibinin rütbesi — puan henüz bilinmiyorsa null (mühür
-  /// çizilmez). "0 puan" ile "henüz yüklenmedi" AYRI şeyler.
-  final RankTier? accountRankTier;
-
-  const _PlayerRow({
-    required this.index,
-    this.accountName,
-    this.accountAvatarUrl,
-    this.accountPending = false,
-    this.accountRankTier,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final col = playerColors[index % playerColors.length];
-    final isAccount = index == 0 && accountName != null;
-    final isPending = index == 0 && accountPending;
-    final name = index == 0
-        ? (accountName ?? (isPending ? 'Yükleniyor…' : guestPlayerName))
-        : 'Yapay Zeka ${index + 1}';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: ShapeDecorationWithCssShadows(
-        color: col.tint, borderColor: col.base, radius: 6,
-        shadows: kRaisedShadows, // web shadow-raised
-      ),
-      child: Row(
-        children: [
-          if (isAccount)
-            KAvatar(url: accountAvatarUrl, name: accountName, size: 20)
-          else if (isPending)
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: _panel,
-                shape: BoxShape.circle,
-                border: Border.all(color: _border),
-              ),
-            )
-          else
-            PlayerBadge(index: index),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    name,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: isPending ? _muted : _text,
-                    ),
-                  ),
-                ),
-                if (isAccount && accountRankTier != null) ...[
-                  const SizedBox(width: 4),
-                  RankSeal(tier: accountRankTier!, size: 18),
-                ],
-              ],
-            ),
-          ),
-          Text(
-            index == 0 ? 'SEN' : 'YZ${index + 1}',
-            style: TextStyle(
-              fontFamily: 'SpaceMono',
-              fontSize: 9,
-              letterSpacing: 1,
-              color: col.base,
-            ),
-          ),
-        ],
       ),
     );
   }
