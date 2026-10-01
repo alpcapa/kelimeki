@@ -551,6 +551,44 @@ kanıtlandı (balon eski yerine konunca port testi 565 > 545 ile düştü).
 
 ## Faz 2 — bağlamsal ipuçları (8 Eylül 2026)
 
+### 30 Eylül 2026 — üç mekanik ipucu KALDIRILDI, yerine `anlam`
+
+Kullanıcı Instagram bio linkinden gelen bir ziyaretçi gibi uçtan uca oynadı
+(karşılama → tanıtım → gerçek oyun) ve kararı verdi: *"gerçek oyunda çıkan
+bölgeni büyüttün, x2/x3 hatırlatması, vergi hatırlatması vb bence olmamalı.
+Onun yerine bir kere bir kelimeyi gösterip, 'üzerine tıklarsan kelimenin
+anlamı gelir'"*. Çift tık balonu için *"zaten varsa kalsın"* — DEĞİŞMEDİ.
+
+| id | Ne zaman | Cümle |
+|---|---|---|
+| `anlam` | tahtaya kelime oturdu — **YZ'nin hamlesi de sayılır** (eskiden yalnızca insan) | *Kelimenin üzerine tıklarsan anlamı gelir.* |
+
+- **Çapa** hamlenin ilk karesi (`lastMoveCells[0]`): o hücreye dokununca
+  geçen kelime(ler)in anlamı açılıyor — web `Board.tsx`, port
+  `game_screen.dart` (`meanings` deposu).
+- **YZ neden sayılıyor:** eski cümleler oyuncunun KENDİ eylemini anlatıyordu
+  ("değdin", "bölgen"); bu cümle bir etkileşimi anlatıyor ve YZ oynadıktan
+  sonra sıra oyuncuda — okuyacağı an tam o.
+- **Yapı korundu** (kimlik · sıra · ipucu başına tavan 1 · 4 sn · saf
+  `pickOnboardingHint`); girdi artık tek alan: `wordPlaced`. Eski sayaç
+  anahtarları (`kelimeki:hint-shown:vergi` · portta `hint_shown_vergi`…)
+  cihazlarda kalabilir, okunmuyor.
+- **Zoom balonuyla arada en az 3 hamle** (`ONBOARDING_HINT_MIN_MOVES` ↔
+  `onboardingHintMinMoves`, parite testiyle kilitli). Kullanıcı: *"zoom
+  balonu ile aynı anda çıkmasın, aralarında en az 2-3 hamle geçsin"*. Zoom
+  balonu yalnızca ekran AÇILIRKEN çıktığı için sayaç açılıştan sayılıyor
+  (tetikleyen hamle dahil; pas/değişim sayılır, vergi satırı sayılmaz) —
+  balonun o açılışta çıkıp çıkmadığına bakılmıyor, iki karar birbirine
+  bağlanmıyor. Bedeli: zoom balonu çıkmamış olsa da ipucu 3. hamleyi bekler.
+- **Canlı oyunda YOK — kullanıcı kararı** (30 Eylül 2026): *"Canlı
+  oyunlarda çıkmasın. Zaten canlı oynayacak kadar ilerlediyse biliyordur."*
+  Kapsam yalnızca YEREL (YZ/hotseat) oyun.
+- **Kapılar:** `verify-tutorial-script` §10 · `tutorial_script_test.dart`
+  §10 · `tutorial_parity_test.dart` (metin/sıra/tavan web kaynağından).
+
+Aşağıdaki 8 Eylül anlatısı TARİHÇEDİR — üç ipucunun neden var olduğunu ve
+sıra/tavan kurallarını anlatır; bugünkü davranış yukarıdaki tablo.
+
 Tanıtım yalnızca YENİ gelene ve yalnızca BİR KEZ açılıyor, üstelik her
 sahnesinde "ATLA →" duruyor. Atlayan — ya da kapının hiç göstermediği mevcut
 oyuncu — Kelimeki'yi ayıran mekanikleri hiç öğrenmeden oynuyordu. İpuçları o
@@ -1014,7 +1052,10 @@ dosyaları AYNI PR'da güncellenir. `TUTORIAL_LAUNCH_AT` iki platformda AYNI
 **Tanıtım artık tek başına değil — üç yüzey, tek kural kümesi (8 Eylül
 2026, Faz 2·3·5 kapandı):**
 
-- **Bağlamsal ipuçları (Faz 2).** Atlayanın da öğrenmesi için, GERÇEK oyunda
+- **Bağlamsal ipuçları (Faz 2).** ⚠ **30 Eylül 2026'dan beri tek ipucu:
+  `anlam`** — tahtaya ilk kelime oturunca *"Kelimenin üzerine tıklarsan
+  anlamı gelir."* (üç mekanik ipucu kaldırıldı, bkz. "Faz 2" bölümünün
+  başı). Aşağısı 8 Eylül tarihçesi: atlayanın da öğrenmesi için, GERÇEK oyunda
   mekanik yaşandığı anda çıkan tek cümlelik balon: `vergi` · `carpan` ·
   `bolge`. Karar saf fonksiyonda (`pickOnboardingHint`, `utils/onboarding.ts`
   ↔ `util/onboarding.dart`), sayaç cihaz-yerel ve ipucu BAŞINA tavan **1**

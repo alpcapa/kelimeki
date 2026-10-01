@@ -2,7 +2,8 @@
 // Web `src/lib/api.ts`'in ilgili bölümünün portu: `fetchOnlineGameMessages`/
 // `sendOnlineGameMessage`/`subscribeOnlineGameMessages` + `fetchMyChatMutes`/
 // `fetchMyActiveChatReports`/`setChatMute`/`reportChatParticipant`/
-// `withdrawChatReports`. Yalnızca Canlı (online multiplayer) oyunlarda
+// `withdrawChatReports` + `fetchChatLastReadAt`/`markChatReadRemote` (okundu
+// damgası sunucuda, ROADMAP #34). Yalnızca Canlı (online multiplayer) oyunlarda
 // kullanılır — yerel/YZ oyunlarında bu dosyaya hiç dokunulmaz.
 //
 // Web'den taşınan sözleşmeler:
@@ -17,6 +18,8 @@
 import 'dart:async';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../util/chat_read.dart';
 
 class OnlineGameMessageRow {
   final String id;
@@ -51,6 +54,16 @@ abstract class ChatGateway {
   Future<List<String>> myMutes();
   Future<List<String>> myActiveReports();
 
+  /// Bu oyun için SUNUCUDAKİ okundu damgam (`online_game_chat_reads`, RLS
+  /// ile yalnızca kendi satırım) — satır yoksa `null`. Okunamazsa FIRLATIR
+  /// (çağıran "bilinmiyor" sayar). Web `fetchChatLastReadAt`.
+  Future<String?> chatLastReadAt(String gameId);
+
+  /// Okundu damgasını sunucuya yazar (`mark_online_game_chat_read`; sunucu
+  /// yalnızca İLERİ gider ve geleceği `now()`a kırpar). Web
+  /// `markChatReadRemote`.
+  Future<void> markChatRead(String gameId, String readAt);
+
   /// Sessize alınan/şikayet edilen kişi → KAYNAK oyun id'si.
   ///
   /// Arkadaş listesinden moderasyon durumunu yönetebilmek için (bkz.
@@ -67,6 +80,15 @@ abstract class ChatGateway {
   Future<void> setMute(String gameId, String targetUserId, bool muted);
   Future<void> report(String gameId, String targetUserId, String reason);
   Future<void> withdrawReports(String targetUserId);
+
+  /// Kabul edilen Sohbet Kuralları sürümü (`profiles.chat_rules_version`) —
+  /// hiç kabul etmediyse `null`. Okunamazsa FIRLATIR; çağıran `null` sayar.
+  /// Web `fetchChatRulesVersion`. Bkz. `util/chat_rules.dart`.
+  Future<int?> chatRulesVersion();
+
+  /// Kabulü sunucuya yazar (`accept_chat_rules` RPC'si; zaman damgası
+  /// sunucunun, yalnızca İLERİ yazar). Web `acceptChatRules`.
+  Future<void> acceptChatRules(int version);
 }
 
 class SupabaseChatGateway implements ChatGateway {
@@ -132,6 +154,24 @@ class SupabaseChatGateway implements ChatGateway {
   }
 
   @override
+  Future<String?> chatLastReadAt(String gameId) async {
+    final row = await client
+        .from('online_game_chat_reads')
+        .select('last_read_at')
+        .eq('online_game_id', gameId)
+        .maybeSingle();
+    return row?['last_read_at'] as String?;
+  }
+
+  @override
+  Future<void> markChatRead(String gameId, String readAt) async {
+    await client.rpc('mark_online_game_chat_read', params: {
+      'p_online_game_id': gameId,
+      'p_read_at': readAt,
+    });
+  }
+
+  @override
   Future<({Map<String, String> muted, Map<String, String> reported})>
       myModeration() async {
     final mutes = await client
@@ -178,6 +218,24 @@ class SupabaseChatGateway implements ChatGateway {
     await client.rpc('withdraw_online_game_chat_reports', params: {
       'p_target_user_id': targetUserId,
     });
+  }
+
+  @override
+  Future<int?> chatRulesVersion() async {
+    final user = client.auth.currentUser;
+    if (user == null) throw Exception('Oturum açık değil.');
+    final row = await client
+        .from('profiles')
+        .select('chat_rules_version')
+        .eq('id', user.id)
+        .maybeSingle();
+    if (row == null) return null;
+    return (row['chat_rules_version'] as num?)?.toInt();
+  }
+
+  @override
+  Future<void> acceptChatRules(int version) async {
+    await client.rpc('accept_chat_rules', params: {'p_version': version});
   }
 }
 
@@ -237,6 +295,26 @@ class ChatRepo {
     }
   }
 
+  /// Sunucudaki okundu damgası: `null` = BİLİNMİYOR (istek düştü),
+  /// `(at: null)` = sunucuda satır yok (kesin). Ayrım `decideChatRead`e
+  /// (`util/chat_read.dart`) gerekli — bilinmiyorken tohum sunucuya yazılmaz.
+  Future<ServerChatRead?> chatLastReadAt(String gameId) async {
+    try {
+      return (at: await gateway.chatLastReadAt(gameId));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Hata YUTULUR: damga cihazda da duruyor ve bir sonraki yüklemede
+  /// (`decideChatRead` → `pushToServer`) yeniden denenir. Web
+  /// `markChatReadRemote`'un aynı sözleşmesi.
+  Future<void> markChatRead(String gameId, String readAt) async {
+    try {
+      await gateway.markChatRead(gameId, readAt);
+    } catch (_) {}
+  }
+
   /// Ağ hatasında boş haritalar — `myMutes` ile aynı gerekçe: eksik veri
   /// en fazla ikonu geçici gizler.
   Future<({Map<String, String> muted, Map<String, String> reported})>
@@ -263,4 +341,17 @@ class ChatRepo {
 
   Future<void> withdrawReports(String targetUserId) =>
       gateway.withdrawReports(targetUserId);
+
+  /// Okunamazsa `null` — `needsChatRulesConsent` onu "pencereyi göster"
+  /// sayar (web `fetchChatRulesVersion`'ın `undefined`'ı).
+  Future<int?> chatRulesVersion() async {
+    try {
+      return await gateway.chatRulesVersion();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Hata FIRLATILIR — pencere kendi içinde gösterir.
+  Future<void> acceptChatRules(int version) => gateway.acceptChatRules(version);
 }

@@ -424,7 +424,7 @@ kopyayı yasaklıyor. Jestin MANTIĞI ise hâlâ ekran başına: bir ekranda
 mantık değişirse yukarıdaki kural üç ekran için geçerli.
 
 **Onboarding Faz 2·3·5 (8 Eylül 2026) — üç dosya web'e karşı kilitli:**
-`util/onboarding.dart`ın bağlamsal ipuçları (`pickOnboardingHint`, metinler,
+`util/onboarding.dart`ın bağlamsal ipuçları (30 Eyl 2026'dan beri tek ipucu `anlam`; `pickOnboardingHint`, metinler,
 sıra, tavan) `tutorial_parity_test.dart` tarafından `src/utils/onboarding.ts`
 ile SATIR SATIR karşılaştırılıyor; `tutorial_script.dart`ın kapanış/tekrar
 buton etiketleri (`tutorialFinishButton` · `tutorialReplayFinishButton` ·

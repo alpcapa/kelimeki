@@ -1,11 +1,11 @@
 -- Kayıt Hunisi — Uygulama satırının Tamamlaması da `signup_events`ten
 -- (1 Ekim 2026'da hazırlandı, #651 ile birlikte).
 --
--- ⛔ CANLIYA HENÜZ UYGULANMADI. Sürüm treninde #651 merge edilirken uygula
--- (MCP `apply_migration`), `execute_sql` ile doğrula, `list_migrations`in
--- verdiği gerçek sürümle bu dosyanın adındaki zaman damgasını eşle
--- (`git mv`). Erken uygulanırsa Uygulama satırının Tamamlaması 1.1.2
--- sahaya inene kadar 0 görünür (bugün `profiles`tan geliyor).
+-- ✅ CANLIYA UYGULANDI: 1 Ekim 2026, sürüm kesimi (#651 merge edilirken).
+-- Canlıdaki sürüm `20261001104454` — dosya adı buna göre değiştirildi
+-- (hazırlanırken `20261005070000` adını taşıyordu). Uygulamadan sonra
+-- `proacl` merge öncesiyle aynı: postgres, authenticated, service_role.
+-- Uygulama satırının Tamamlaması 1.1.2 sahaya inene kadar düşük görünür.
 --
 -- Neden: #651 ile uygulama (1.1.2+) kayıt formunun açılışını VE hesabın
 -- oluşmasını bu kimliksiz sayaca yazıyor. Açılış sayaçtan, Tamamlama

@@ -431,6 +431,19 @@
 
 ### Mesajlaşma (Faz 1 sohbet + Faz 2 sessize alma/raporlama)
 
+- [ ] **Sohbet Kuralları onayı (25 Eylül 2026, Parça 215).** Kuralları hiç
+      kabul etmemiş bir hesapla ilk mesajı gönder → mesaj GİTMEDEN "SOHBET
+      KURALLARI" penceresi. "VAZGEÇ" → metin kutuda kalmalı. "KABUL
+      EDİYORUM" (İ noktalı!) → mesaj hemen gitmeli. Aynı hesapla WEB'de
+      yaz → pencere ÇIKMAMALI (onay hesaba bağlı); tersi de. "Kullanım
+      Koşulları'nın tamamı" koşulları açmalı ve §3'te yasak listesi
+      görünmeli.
+- [ ] **Küfür süzgeci + takma isim (25 Eylül 2026, ROADMAP #37).** Listede
+      olan bir kelimeyi içeren mesaj → iki tarafta da `*` ile görünmeli
+      (süzgeç sunucuda; eski paket de aynı). Kayıt/Hesap Ayarları'nda süzgece
+      takılan takma isim (ör. `Salak_Test`) → "Bu takma isim kullanılamaz."
+      ve buton pasif (eski pakette "kullanımda" yazardı).
+
 - [ ] **Buton görünürlüğü.** Board altındaki "Mesajlaşma" butonu YALNIZCA
       Canlı oyun ekranında görünmeli; yerel/YZ oyun ekranında hiç
       çizilmemeli.
@@ -474,9 +487,20 @@
       kod incelemesinde bulundu (bkz. `mobile/CLAUDE.md`, Parça 104).
 - [ ] **Rozet kalıcılığı (uygulama yeniden başlatma).** Karşı taraf mesaj
       gönderdikten SONRA uygulamayı tamamen kapat, aç, aynı oyuna gir —
-      rozet hâlâ görünmeli (okundu damgası `chat_last_read` tablosunda,
-      cihaza özel). Sohbeti aç → rozet kaybolmalı; uygulamayı tekrar kapat/aç
-      → rozet bir daha ÇIKMAMALI (aynı mesajlar için).
+      rozet hâlâ görünmeli (okundu damgası sunucuda, `online_game_chat_reads`;
+      yedeği cihazda `chat_last_read`). Sohbeti aç → rozet kaybolmalı;
+      uygulamayı tekrar kapat/aç → rozet bir daha ÇIKMAMALI (aynı mesajlar
+      için).
+- [ ] **Okundu bilgisi cihazlar arasında (ROADMAP #34, 1.1.2).** Aynı hesap
+      iki cihazda (uygulama + web ya da iki telefon). (a) Karşı taraf 2 mesaj
+      göndersin → mesajları WEB'de oku → uygulamada aynı oyuna gir: rozet
+      ÇIKMAMALI. (b) Tersi: uygulamada oku → web'de aynı oyun: rozet
+      çıkmamalı. (c) **Kullanıcının asıl vakası:** oyunu bu cihazda HİÇ
+      açmamışken (ya da uygulamayı silip yeniden kurduktan sonra) karşı
+      taraf 2 mesaj göndersin → oyuna gir: rozet **2** göstermeli (eskiden
+      0 çıkıp mesajlar içeride "yeni" duruyordu). (d) Uçak modunda oyuna
+      gir → rozet saçmalamamalı; bağlantı gelince bir sonraki tazelemede
+      doğru sayıya dönmeli.
 - [ ] **Sessize alma.** Dişli ikonundan bir katılımcıyı seç → "Kişiyi
       Sessize Al" → onay → 🚫 rozeti hem ayarlar listesinde hem o kişinin
       mesaj balonlarının yanında görünmeli. O kişiden yeni bir mesaj
