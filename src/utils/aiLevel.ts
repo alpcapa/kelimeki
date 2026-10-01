@@ -113,8 +113,7 @@ export const AI_LEVEL_BADGE_CLASS: Record<AiLevel, string> = {
  * karar 7 — kullanıcı: *"Kolay olsun"*): hiç oynamamış kullanıcının ilk
  * oyunu Kolay, sonrası Normal. `ilkOyun` tanıtım kapısının kararı
  * (`shouldShowTutorial`) — "yeni kullanıcı" için ikinci bir tanım yok.
- * ⚠ Yalnızca webde (#41'in Setup yarısı önce web); port bugün hep Normal
- * açıyor, ikizi Setup'ın port yarısıyla gelecek.
+ * Port ikizi `defaultAiLevel` (`util/ai_level.dart`, 1 Ekim 2026).
  */
 export function defaultAiLevel(ilkOyun: boolean): AiLevel {
   return ilkOyun ? 'kolay' : 'normal';

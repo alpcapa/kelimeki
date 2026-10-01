@@ -242,17 +242,16 @@ Bu bölüm anahtarsız da koşulabilir; sunucuyla ilgisi yok.
       (köşe 0/1/2 de var) belirgin şekilde ayrışMADIĞINA bak. Negatif eş:
       YZ'nin ilk kelimesi HER ZAMAN evden sağa/aşağı gidiyorsa düzeltme
       deploy olmamış demektir (derleme sha'sını kontrol et).
-- [ ] **Girişsiz başlatınca uyarı (14 Ağustos 2026, Parça 92).** ÇIKIŞ
-      yapmış hâlde "Oyunu Başlat"a bas: web'dekiyle aynı uyarı çıkmalı
-      ("Oyunların istatistikleri, k-lig ve arkadaşınla canlı oyun için
-      lütfen giriş yapın." + GİRİŞ YAP / **OYNA**). **Üç yolu da dene:**
-      OYNA → oyun başlar; GİRİŞ YAP → giriş penceresi açılır ve oyun
-      BAŞLAMAZ; ✕ (ya da zemine dokunma) → hiçbir şey olmaz. Girişliyken
-      bu uyarı HİÇ çıkmamalı. **Butonun metni 18 Ağustos 2026'da "DEVAM"dan
-      "OYNA"ya çevrildi** (kullanıcı: uyarı metni üyeliği anlattığından
-      "Devam" üyeliğe götürecekmiş gibi okunuyordu) — ekranda "DEVAM"
-      görüyorsan derleme bayat demektir, sha'yı kontrol et. Web'de de aynı
-      etiket; ikisi birlikte değişmeli.
+- [ ] **Girişsiz başlatınca uyarı YOK (1 Ekim 2026 — 14 Ağustos'taki uyarı
+      KALKTI, ROADMAP #41 karar 4).** ÇIKIŞ yapmış hâlde "OYUNU BAŞLAT" →
+      oyun (ya da ilk oyunsa tanıtım) DOĞRUDAN açılır; *"…lütfen giriş
+      yapın"* penceresi görünüyorsa derleme bayat (sha'yı kontrol et).
+      Aynı turda: misafirin logo altındaki tanıtım paragrafı YOK ("Nasıl
+      oynanır? · Tanıtım" satırı duruyor) · hiç oynamamış cihazda zorluk
+      **Kolay** seçili açılır, ilk oyun da Kolay kurulur · 4 kişilik Canlı
+      oyunu 2 arkadaşla kurarken "4. koltuk Yapay Zeka…, tamam mı?" sorusu
+      ÇIKMAZ, davet doğrudan gider ve onay ekranında "4. koltuk Yapay Zeka."
+      yazar.
 - [ ] **Tahta alt şeridi — "Nasıl Oynanır?" (aynı parça).** Tahtanın
       altında SAĞDA "Nasıl Oynanır?" olmalı; eski `- kelime X2 · -
       kelime X3` açıklaması HİÇBİR yerde görünmemeli. Dokununca kurallar
@@ -407,7 +406,7 @@ göremediği şeyler: SÜRE, okunabilirlik ve gerçek parmak. **Uygulama verisi
 silinmiş** (tertemiz kurulum) bir cihazla koş.
 
 - [ ] **Kendiliğinden açılıyor:** Hiç oyun oynanmamış cihazda misafir olarak
-      "OYUNU BAŞLAT" → giriş uyarısında "OYNA" → Hızlı Başlangıç değil,
+      "OYUNU BAŞLAT" → (1 Eki 2026'dan beri giriş uyarısı yok) Hızlı Başlangıç değil,
       **"Kelimeki Tanıtım Turu"** karşılama penceresi; "Devam" → tanıtım
       EKRANI ("TANITIM · 1/4"). Setup teşhis satırındaki `Derleme`
       sha'sı bu PR'ın merge commit'iyle eşleşmeli — eşleşmiyorsa APK bayat.

@@ -348,14 +348,9 @@ void main() {
 
     await tester.tap(find.text('OYUNU BAŞLAT'));
     await tester.pumpAndSettle();
-    // Misafir artık önce giriş uyarısından geçiyor (web `handleStart`
-    // paritesi, 14 Ağustos 2026) — "OYNA" misafir olarak başlatır
-    // (18 Ağustos 2026'ya kadar "DEVAM"dı; web ile birlikte değişti).
-    expect(find.textContaining('lütfen giriş yapın'), findsOneWidget);
-    expect(find.byType(GameScreen), findsNothing);
-    expect(find.text('DEVAM'), findsNothing);
-    await tester.tap(find.text('OYNA'));
-    await tester.pumpAndSettle();
+    // Misafir giriş uyarısı YOK (1 Ekim 2026, ROADMAP #41 karar 4 — web
+    // 27 Eylül): OYUNU BAŞLAT doğrudan oyunu açar.
+    expect(find.textContaining('lütfen giriş yapın'), findsNothing);
 
     expect(find.byType(GameScreen), findsOneWidget);
     final screen = tester.widget<GameScreen>(find.byType(GameScreen));
@@ -367,9 +362,7 @@ void main() {
     expect(players[1].isAI, isTrue);
   });
 
-  // Negatif eş: uyarı KOŞULSUZ gösterilseydi yukarıdaki test de geçerdi.
-  // Girişli kullanıcı uyarıyı HİÇ görmemeli (web `!loading && !user`).
-  testWidgets('girişli kullanıcıda giriş uyarısı ÇIKMAZ — oyun doğrudan açılır',
+  testWidgets('girişli kullanıcıda da uyarı YOK — oyun doğrudan açılır',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await pumpSetup(
@@ -379,46 +372,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('lütfen giriş yapın'), findsNothing);
     expect(find.byType(GameScreen), findsOneWidget);
-  });
-
-  // 17 Ağustos 2026, cihaz testi — kullanıcı: *"çıkan popup başlıksız"*.
-  // Web'de bu uyarı ortak `Modal.tsx`'i KULLANMIYOR; `Setup.tsx` içinde elle
-  // kurulmuş 384px'lik onay kartı (`max-w-sm`/`rounded-2xl`/`p-6`, ✕ köşede
-  // `absolute`). Port `KModal`a `title: ''` geçmişti — niyet doğruydu ama
-  // kabuk başlık bandını yine de çizdiğinden üstte boş bir alan + ayraç
-  // kalıyordu. Bu test yanlış kabuğa dönüşü yakalar.
-  testWidgets('misafir uyarısı KModal DEĞİL web onay kartını kullanır',
-      (tester) async {
-    await setPhoneViewSize(tester, const Size(420, 900));
-    await pumpSetup(tester, services());
-
-    await tester.tap(find.text('OYUNU BAŞLAT'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(KDialogCard), findsOneWidget);
-    expect(find.byType(KModal), findsNothing,
-        reason: 'başlıklı/ayraçlı kabuk bu kartta üstte boş bir bant bırakır');
-    // ✕ kartın kendi köşesinde durmalı (web `absolute top-3 right-3`), yani
-    // gövde metniyle AYNI hizada değil onun ÜSTÜNDE ve SAĞINDA.
-    final kapat = tester.getCenter(find.byTooltip('Kapat'));
-    final govde = tester.getTopLeft(find.textContaining('lütfen giriş yapın'));
-    expect(kapat.dx, greaterThan(govde.dx),
-        reason: '✕ gövdenin sağında olmalı');
-  });
-
-  testWidgets('misafir uyarısında ✕ ne oyunu başlatır ne giriş açar',
-      (tester) async {
-    await setPhoneViewSize(tester, const Size(420, 900));
-    await pumpSetup(tester, services());
-
-    await tester.tap(find.text('OYUNU BAŞLAT'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Kapat'));
-    await tester.pumpAndSettle();
-
-    // Web'de de Escape/✕ üçüncü bir sonuç: kullanıcı kurulum ekranında kalır.
-    expect(find.byType(GameScreen), findsNothing);
-    expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
   });
 
   testWidgets(
@@ -758,8 +711,8 @@ void main() {
   });
 
   testWidgets(
-      'tanıtım paragrafı ve "Nasıl oynanır? · Tanıtım" '
-      'satırı ORTALI (web text-center paritesi)', (tester) async {
+      '"Nasıl oynanır? · Tanıtım" satırı ORTALI (web text-center paritesi)',
+      (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
@@ -767,18 +720,16 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    final para = find.textContaining('Kelimeler kurarak');
-    expect(tester.widget<Text>(para).textAlign, TextAlign.center);
-
-    // Paragraf içerik genişliğinin tamamını kapladığından merkezi = içerik
-    // merkezi; link satırı (mainAxisSize.min bir Row) onunla AYNI x'te
-    // olmalı — sola yaslıyken bu fark ~90px'e çıkıyordu.
+    // Tanıtım paragrafı 1 Ekim 2026'da kalktı (ROADMAP #41 karar 2); ölçü
+    // artık logonun merkezi — link satırı (mainAxisSize.min bir Row) onunla
+    // AYNI x'te olmalı, sola yaslıyken bu fark ~90px'e çıkıyordu.
     final links = find
         .ancestor(of: find.text('Nasıl oynanır?'), matching: find.byType(Row))
         .first;
     expect(
       tester.getCenter(links).dx,
-      moreOrLessEquals(tester.getCenter(para).dx, epsilon: 1),
+      moreOrLessEquals(
+          tester.getCenter(find.byType(LogoMark).first).dx, epsilon: 1),
     );
   });
 
@@ -836,11 +787,13 @@ void main() {
     // ⚠ 7 EYLÜL 2026 — 33 → 16 (kullanıcı: "fazla boşlukları makul hale
     // getir"): ayırıcı 16 → 8 (web `mt-3` → `mt-1`) ve hedef 48 → 32 (web
     // `min-h-[32px]`), yani 8 + (32-16)/2 = 16. Yine iki platform birlikte.
+    // ⚠ 1 EKİM 2026 — tanıtım paragrafı KALKTI (ROADMAP #41 karar 2, web
+    // 27 Eylül): logo → link metni = ayırıcı 8 (web `gap-1` + `mt-1`) +
+    // 32px'lik dokunma hedefinin üst yarısı (8) = 16.
     final logo = tester.getRect(find.byType(LogoMark).first);
-    final para = tester.getRect(find.textContaining('Kelimeler kurarak'));
     final link = tester.getRect(find.text('Nasıl oynanır?'));
-    expect(para.top - logo.bottom, closeTo(20, 1.5));
-    expect(link.top - para.bottom, closeTo(16, 1.5));
+    expect(find.textContaining('Kelimeler kurarak'), findsNothing);
+    expect(link.top - logo.bottom, closeTo(16, 1.5));
     // 7 EYLÜL 2026, ikinci tur (kullanıcı: "Oyun tipi ile nasıl oynanır
     // arasındaki fazla boşluğu da al, metinle nasıl oynanır arası kadar
     // olsun"): link ALTI da 16 — web `-mb-3`, port `SizedBox(8)` (ikisi de
@@ -849,11 +802,6 @@ void main() {
     final oyunTipi = tester.getRect(find.text('OYUN TİPİ'));
     expect(oyunTipi.top - link.bottom, closeTo(16, 1.5));
 
-    // Web `text-xs` = 12px/16px satır → 4 satırlık paragraf 64px.
-    final paraText = tester.widget<Text>(find.textContaining('Kelimeler kurarak'));
-    expect(paraText.style!.fontSize, 12);
-    expect(paraText.style!.height! * 12, closeTo(16, 0.01));
-
     // Web Setup'ın en altındaki hukuki linkler — port hiç taşımamıştı.
     await tester.scrollUntilVisible(find.text('Kullanım Koşulları'), 200,
         scrollable: find.byType(Scrollable).first);
@@ -861,8 +809,10 @@ void main() {
     expect(find.text('Gizlilik Politikası'), findsOneWidget);
   });
 
-  testWidgets('logo altındaki yazı bloğu web ile aynı: tracking YOK, '
-      'paragraf 4 satır', (tester) async {
+  testWidgets('logo altındaki link satırı web ile aynı: tracking YOK',
+      (tester) async {
+    // 1 Ekim 2026: tanıtım paragrafı kalktı (ROADMAP #41 karar 2); testin
+    // paragraf yarısı (4 satır × 16px) onunla gitti, link yarısı duruyor.
     // 13 Ağustos 2026, kullanıcı iki ekran görüntüsünü yan yana koyup
     // bildirdi: app'te paragraf 5 satıra düşüyor, web'de 4.
     //
@@ -888,16 +838,9 @@ void main() {
     await setPhoneViewSize(tester, const Size(1000, 900));
     await pumpSetup(tester, services());
 
-    final paraFinder = find.textContaining('Kelimeler kurarak');
-    final para = tester.getRect(paraFinder);
-    expect(para.width, 428, reason: 'içerik genişliği web ile aynı olmalı');
-    expect(para.height, 64,
-        reason: '4 satır × 16px — 80 çıkıyorsa M3 tracking\'i sızmış demektir');
-
     // Efektif stil (DefaultTextStyle ile birleşmiş hâli) — asıl değişmez.
     double? trackingOf(Finder f) =>
         tester.renderObject<RenderParagraph>(f).text.style?.letterSpacing;
-    expect(trackingOf(paraFinder), 0);
     expect(trackingOf(find.text('Nasıl oynanır?')), 0);
     expect(trackingOf(find.text('Tanıtım')), 0);
   });
@@ -929,12 +872,13 @@ void main() {
   // "logo altındaki yazı bloğu"/"tanıtım paragrafı … ORTALI" testleri zaten
   // bunu doğruluyor, burada yalnızca "OYUN TİPİ" doğrudan logonun altına
   // sızmadığını ekliyoruz).
-  testWidgets('misafirde logo altındaki paragraf/link satırı HÂLÂ görünür',
+  testWidgets('misafirde link satırı HÂLÂ görünür, tanıtım paragrafı YOK',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await pumpSetup(tester, services());
 
-    expect(find.textContaining('Kelimeler kurarak'), findsOneWidget);
+    // Paragraf 1 Ekim 2026'da kalktı (ROADMAP #41 karar 2, web 27 Eylül).
+    expect(find.textContaining('Kelimeler kurarak'), findsNothing);
     expect(find.text('Nasıl oynanır?'), findsOneWidget);
     expect(find.text('Tanıtım'), findsOneWidget);
   });
@@ -1439,9 +1383,15 @@ void tanitimKapisiTestleri() {
       await pumpSetup(tester, services(storage: Future.value(storage)));
       await formuBekle(tester);
 
+      // İlk oyun → zorluk varsayılanı Kolay (ROADMAP #41 karar 7).
+      expect(tester.widget<Text>(find.text('KOLAY')).style?.color,
+          isNot(tester.widget<Text>(find.text('NORMAL')).style?.color),
+          reason: 'ilk oyunda Kolay seçili görünmeli');
       await tester.tap(find.text('OYUNU BAŞLAT'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OYNA')); // misafir uyarısı
+      // Misafir giriş uyarısı YOK (1 Ekim 2026, ROADMAP #41 karar 4) —
+      // tanıtım doğrudan açılır; `pumpAndSettle` KULLANILAMAZ (tanıtımın
+      // nabız animasyonu hiç durmaz, aşağıdaki nota bkz.).
+      await tester.pump();
       await gorunmesiniBekle(tester, find.byType(TutorialGame));
 
       expect(find.byType(GameScreen), findsNothing);
@@ -1470,6 +1420,9 @@ void tanitimKapisiTestleri() {
       expect(find.byType(TutorialGame), findsNothing);
       final screen = tester.widget<GameScreen>(find.byType(GameScreen));
       expect(screen.controller.state.players[1].isAI, isTrue);
+      // Tanıtım "gördü" bayrağını yazdıktan SONRA kurulan oyun yine Kolay —
+      // seviye OYUNU BAŞLAT anında sabitlenir (web `onStart` ile aynı).
+      expect(screen.controller.state.aiLevel, AiLevel.kolay);
       await tester.runAsync(() => storage.close());
     });
 

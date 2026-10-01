@@ -874,10 +874,10 @@ fotoğraf → yoksa iki harf → YZ'de 🤖.)
 | 1 | Karşılama sade: tek soru-başlık, bölge dış hatlı küçük tahta kesiti, "HEMEN OYNA", mağaza rozetleri. Uzun SEO içeriği sayfada KALIR, ilk ekranın altına iner | ✅ KODLANDI (27 Eyl) — `landing-page.md` → "İlk ekran sadeleşti" | `src/landing/` |
 | 2 | Setup herkes için TEK standart ekran: **Kime karşı** (Yapay Zeka · Arkadaşınla) → **Oyuncu sayısı** → **Zorluk**; süre satırı YOK; **OYUNU BAŞLAT** zorluğun hemen altında, AKIŞTA (⚠ "altta sabit" denendi ve GERİ ALINDI — iOS yüzen çubuğu örtüyor, aşağı bkz.) | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `Setup.tsx` ↔ `setup_screen.dart` |
 | 3 | Setup'ta "1 dk'lık tanıtımla başlar" satırı YOK | — | — |
-| 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | ✅ WEB KODLANDI (27 Eyl); port bilerek bekliyor | `handleStart` (`Setup.tsx`) ↔ `_showGuestWarning` (`setup_screen.dart`) |
+| 4 | Girişsiz OYUNU BAŞLAT'taki giriş uyarısı penceresi **KALKAR** (27 Eylül, kullanıcı: *"Kaldıralım"*). Bilgi zaten üç yerde: zorluk açıklamasının "(Puan takibi üyelik gerektirir)" eki, `MembershipPerksBox`, ilk oyun sonundaki kayıt önerisi | ✅ WEB (27 Eyl) · ✅ PORT (1 Eki, kontrol grubu iptal — aşağı bkz.) | `handleStart` (`Setup.tsx`) ↔ `_handleStart` (`setup_screen.dart`) |
 | 5 | Tanıtımın açılış penceresi ("Kelimeki Tanıtım Turu / Devam") KALKAR, 1. sahne doğrudan açılır | Var | `TutorialGame` ↔ `ui/tutorial/*` |
 | 6 | Ayrı bir "Hazırsın" ekranı YOK; mevcut bitiş penceresi yeni tasarıma geçer (onay mührü, tanıtım skoru, sıradaki oyun, turuncu düğme) | Düz pencere | aynı |
-| 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | ✅ WEB KODLANDI (27 Eyl, `defaultAiLevel`); port bilerek bekliyor | `Setup.tsx:340` ↔ port |
+| 7 | İlk oyunun zorluğu **Kolay** (27 Eylül, kullanıcı). Kapsam: hiç oynamamış kullanıcıda varsayılan Kolay (`hasPlayed` sinyali, `shouldShowTutorial`in kullandığı); sonrası bugünkü gibi Normal. Seçimi hatırlamak AYRI bir karar, verilmedi | ✅ WEB (27 Eyl, `defaultAiLevel`) · ✅ PORT (1 Eki, `defaultAiLevel` + `_ilkOyunMu`) | `Setup.tsx:340` ↔ `setup_screen.dart` |
 | 8 | Rakibin adı **Yapay Zeka** (27 Eylül, kullanıcı: *"yapay zeka kalsın"*); oyun içi skor kutusundaki "YZ 2" kısaltması DEĞİŞMEZ | Aynı | — |
 | 9 | Arkadaşınla, girişsiz: alttan açılan giriş uyarısı (ÜYE OL · GİRİŞ YAP · YAPAY ZEKAYLA DEVAM ET) | ✅ WEB KODLANDI (27 Eyl, `GuestLiveSheet`) | `LiveGamesTab` |
 | 10 | Arkadaşınla, girişli: gelen davetler + süren oyunlar formun ÜSTÜNDE; yeni oyun "YENİ OYUN KUR" ile | ✅ WEB KODLANDI (27 Eyl) — mevcut alt sekmeler kaldı, "Yeni Oyun Başlat" (29 Eyl'e kadar "Yeni Oyun Kur") listenin ÜSTÜNDE, akışta | `LiveGamesTab` + `LiveGameCreateForm` |
@@ -928,6 +928,37 @@ günde düşer, ret oyunu kurmaz, hamle başına 48 saat. Tuval bunları aynen
 
 Bu bölümün "Dört değişmez"i (motora dokunmaz · oyun değildir ·
 doğrulayıcı · port ikizi) aynen geçerli.
+
+### Kontrol grubu İPTAL — dört sadeleştirme porta geldi (1 Ekim 2026)
+
+1.1.2 cihaz turunda kullanıcı girişsiz OYUNU BAŞLAT'ta uyarıyı hâlâ gördü:
+*"Ne için test ediyoruz? Biz insanların bir an evvel oyun başlatmasını
+istiyoruz, test edecek bir şey yok. Hemen kaldıralım, hatta web'de diğer
+kaldırdığımız başka yerler de vardı, onları da yapalım."* → "Uygulama
+kontrol grubu kalsın" planı (yukarı, "Uygulama sırası" 2. madde) iptal.
+1.1.2'ye binen dört parça (web'de 27 Eylül'den beri var):
+
+- **Karar 4 — misafir giriş uyarısı YOK:** `_handleStart` doğrudan
+  `_startNewGame`; `_showGuestWarning` + `_GuestChoice` silindi.
+- **Karar 7 — ilk oyun Kolay:** `defaultAiLevel` (`util/ai_level.dart`),
+  "ilk oyun" tanıtım kapısıyla AYNI tanım (`_ilkOyunMu`, senkron; depo
+  açılmadıysa `false`). Seçim `_chosenLevel`, varsayılan TÜRETİLİYOR (web
+  `chosenLevel ?? …`). ⚠ **Tuzak, testle kilitli:** tanıtım AÇILIRKEN
+  "gördü" bayrağını yazıyor; seviye oyun kurulurken okunsaydı ilk oyun
+  Normal'e düşerdi → `_startNewGame` seviyeyi OYUNU BAŞLAT anında sabitliyor
+  (web `onStart(list, isFirstGame, level)` ile aynı).
+- **Karar 2'nin bir parçası — misafirin logo altı tanıtım paragrafı YOK;**
+  "Nasıl oynanır? · Tanıtım" satırı duruyor (logo → link 16px, ölçülü).
+  Tek standart ekranın geri kalanı (etiketler, "Oyuncular" listesi) AYRI iş.
+- **Karar 12'nin bir parçası — 4. koltuk YZ onay penceresi YOK:** 4 kişilik
+  + 2 arkadaş gönderimi 4. koltuğu doğrudan Yapay Zeka yapar; "Hayır"dan
+  sonra açılan kalıcı YZ satırı da gitti. Web'de bilgiyi koltuk kartları
+  taşıyor; portta kart henüz yok, bilgi formun altındaki mevcut notta
+  ("3. oyuncuyu seçmeden … 4. oyuncu Yapay Zeka olur") ve gönderim sonrası
+  onay ekranında duruyor.
+
+Kalan port kapsamı (karar 2'nin geri kalanı, 9-11, 13, 15-24, Arkadaşlar
+penceresi) ROADMAP #41'de AÇIK.
 
 ### Setup'ın ilk web parçası — kararlar 4 + 7 (27 Eylül 2026)
 
