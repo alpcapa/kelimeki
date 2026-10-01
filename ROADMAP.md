@@ -372,6 +372,13 @@ nereden okunacağı ve kartın "12" tavanı orada.
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
 ⚠ **DURUM (1 Ekim 2026): 1.1.2 KESİLDİ — mağazalarda hâlâ `1.1.1 (723)`.**
+⚠ **1 Ekim 2026 akşamı, kullanıcı kararı: #41'in port yarısının TAMAMI
+(tasarım) 1.1.2'ye girer, 1.1.2 ancak o bitip test edilince TEK paket olarak
+gönderilir** — *"Arka arkaya güncelleme iyi fikir değil … Hepsini koyalım,
+test edelim, emin olunca review'a göndeririz. 90 gün süresi var nasılsa."*
+(TestFlight build'i 90 gün geçerli.) Yani aşağıdaki "sıradaki adımlar"daki
+gönderim, #41 port parçaları `main`'e girene kadar BEKLER; parçalar taslak
+değil, doğrudan `main`e merge edilir (1.1.2 henüz gönderilmedi).
 Kullanıcı kararı (1 Eki): *"Bizim gibi yeni uygulamalar daha sık güncelleme
 geçiyorlardır"* → 5 Ekim beklenmedi, kesim 1 Ekim'de yapıldı ve tren
 **haftalık** oldu (bir sonraki kesim ~8 Ekim; `surumler.md` → "SÜRÜM TRENİ").
