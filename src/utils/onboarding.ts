@@ -257,13 +257,14 @@ export const ONBOARDING_HINT_MAX_SHOWS = 1;
  * ayırır — balonun o açılışta çıkıp çıkmadığına bakmaya gerek kalmaz, iki
  * karar birbirine bağlanmaz.
  */
-export const ONBOARDING_HINT_MIN_MOVES = 6;
+export const ONBOARDING_HINT_MIN_MOVES = 12;
 
 /**
- * ⚠ **3 → 6 (1 Ekim 2026, kullanıcı, 1.1.2 cihaz turu):** iki hamleden sonra
+ * ⚠ **3 → 12 (1 Ekim 2026, kullanıcı, 1.1.2 cihaz turu):** iki hamleden sonra
  * çıkan balon tahtanın en üstündeydi — *"Bu balonu 6-7. hamlelerde çıkartmak
- * lazım bence, o zaman oyun ortaya doğru gelmiş olur."* YZ'nin hamleleri de
- * sayıldığından 6 = oyuncunun 3. hamlesinden sonraki YZ hamlesi.
+ * lazım bence, o zaman oyun ortaya doğru gelmiş olur."* ve netleştirme:
+ * *"karşılıklı 6-7 hamle … 12-14 toplam hamle sonra"*. YZ'nin hamleleri de
+ * sayıldığından 2 kişilik oyunda 12 = iki tarafın 6'şar hamlesi.
  *
  * Balonun ÜSTTE yer bulamayacağı satır sayısı: çapa bu satırlardaysa balon
  * karenin ALTINA konur. Aynı turda: 1. satırdaki bir kelimenin balonu

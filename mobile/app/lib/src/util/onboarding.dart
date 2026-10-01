@@ -93,9 +93,9 @@ const int onboardingHintMaxShows = 1;
 /// sayısı (tetikleyen hamle DAHİL; vergi satırı sayılmaz) — web
 /// `ONBOARDING_HINT_MIN_MOVES`. Kullanıcı (30 Eylül 2026): zoom balonuyla
 /// aynı anda çıkmasın, arada en az 2-3 hamle geçsin.
-/// ⚠ 3 → 6 (1 Ekim 2026, kullanıcı, 1.1.2 cihaz turu): *"6-7. hamlelerde
-/// çıkartmak lazım, o zaman oyun ortaya doğru gelmiş olur."*
-const int onboardingHintMinMoves = 6;
+/// ⚠ 3 → 12 (1 Ekim 2026, kullanıcı, 1.1.2 cihaz turu): *"karşılıklı 6-7
+/// hamle … 12-14 toplam hamle sonra"* — oyun ortaya doğru gelmiş olur.
+const int onboardingHintMinMoves = 12;
 
 /// Balonun ÜSTTE yer bulamayacağı satır sayısı — web
 /// `ONBOARDING_HINT_ALT_ROWS` (aynı turda 1. satırdaki balon tahtanın üst
