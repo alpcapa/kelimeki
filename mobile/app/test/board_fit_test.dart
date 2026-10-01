@@ -107,9 +107,9 @@ void main() {
           closeTo(_webCqw(css, '[data-board-grid] .board-x3-label'), 1e-9));
     });
 
-    test('formül: min(680, max(324, boy − 308))', () {
+    test('formül: min(680, max(324, boy − 308 − port payı 16))', () {
       expect(boardMaxWidth(2000), 680);
-      expect(boardMaxWidth(768), 460);
+      expect(boardMaxWidth(768), 444);
       expect(boardMaxWidth(400), 324);
     });
   });
@@ -135,7 +135,11 @@ void main() {
         // Tahta oynanabilir kalmalı — web ile AYNI boyda: sarmalayıcı
         // `boy − 308`, kart ondan 2×12 dar.
         final kart = tester.getRect(find.byType(BoardWidget)).width;
-        expect(kart, view.height - kBoardChromePx - 24);
+        expect(kart, view.height - kBoardChromePx - kBoardPortPadPx - 24);
+        // Port payı (1 Ekim 2026): alt şeridin altında en az 16 px boşluk —
+        // cihazın güvenli alanı/metin metrikleri yiyebilsin diye.
+        expect(view.height - pas.bottom, greaterThanOrEqualTo(16),
+            reason: 'pay tükendi: ${view.height - pas.bottom}');
         expect(kart, greaterThanOrEqualTo(kBoardMinPx - 24));
       });
     }

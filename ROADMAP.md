@@ -455,6 +455,7 @@ sürümün içeriği:**
 | (1 Eki) | **İlk açılış ekranı (`IntroScreen`) TEK EKRAN — web'in yeni ilk ekranı** (ROADMAP #41 karar 14; Parça 224) | **1.1.2.** `ui/intro/intro_screen.dart` yeniden yazıldı, `ui/intro/bolge_kesiti.dart` (YENİ, web `BolgeKesiti.tsx`); beş slayt + DEVAM kalktı. Cihaz: `mobile/TESTING.md` §0.4 |
 | (1 Eki) | **1.1.2 cihaz turu bulguları: Setup'ta "Tanıtım" linki YOK · skor kartında "2/4 KİŞİ" ("Oyunculu" değil) · k-lig başlığında SIRA↔OYUNCU boşluğu** (Parça 225) | **1.1.2.** `setup_screen.dart`, `stats_api.dart`, `score_card_modal`/`player_score_card_modal`/`game_history_modal`, `leaderboard_modal.dart`; yeni `score_labels_parity_test.dart` |
 | (1 Eki) | **Eğitim balonu SIRASI — menü · anlam · zoom · hamleler · torba · mesaj, birer kez, 2. turdan sonra 4'er tur arayla; zoom artık açılışta çıkmıyor** (Parça 226) — web + port AYNI PR | **1.1.2.** `util/onboarding.dart`, `storage/flags_store.dart`, YENİ `ui/game/onboarding_hints.dart` + `ui/game/hint_bubble.dart`, `game_header.dart`, `board_widget.dart`, iki oyun ekranı. Cihaz: `mobile/TESTING.md` §1.9.1 |
+| (1 Eki) | **Yatay iPad'de alt düğmeler ~10 pt taşıyordu → tahta bütçesine 16 px PORT payı** (Parça 227) — ⚠ bilinçli web↔port ayrışması: geniş-kısa ekranda tahta web'den 16 px küçük | **1.1.2.** `ui/game/board_fit.dart` (`kBoardPortPadPx`); testler `board_fit_test`, `online_game_screen_test` |
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,

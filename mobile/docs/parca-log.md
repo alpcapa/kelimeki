@@ -25,6 +25,23 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: tahta bütçesine 16 px port payı (1 Ekim 2026)
+
+- **Bildirim (1.1.2 cihaz turu, Canlı oyun, sıra kendisinde):** *"ipad'de
+  yatay modda alttaki butonlar çok az ekran dışına taşıyor. Scroll
+  edilebiliyor."* Ekran görüntüsünden ölçüldü: ~10 pt.
+- **Sebep:** `board_fit.dart`ın kendi notu — web formülünün payı portta
+  yalnız 3 px kalıyordu (test: 1180×820'de PAS GEÇ'in altı 817). Testte
+  güvenli alan yok ve metin metrikleri cihazdakinden farklı; cihazda pay
+  tükendi.
+- **Düzeltme:** dosyanın reçetesi — ölçülmüş bir port terimi:
+  `kBoardPortPadPx = 16` (`boardMaxWidth = min(680, max(324, boy − 308 −
+  16))`). Yatay iPad'de kart 488 → 472; portre telefon/iPad'de bütçe
+  bağlamadığı için değişiklik YOK. Web aynı kaldı (orada pay 25 px).
+- **Kapılar sıkılaştı:** `board_fit_test` alt şeridin altında ≥16 px boşluk
+  istiyor; `online_game_screen_test`teki "sıra rakipte 9 px taşma kabul"
+  istisnası kalktı — iki durumda da şerit ekranın içinde.
+
 ## Parça 226 — Eğitim balonu SIRASI: menü · anlam · zoom · hamleler · torba · mesaj (1 Ekim 2026) — web + port aynı PR
 
 - **Kullanıcı isteği (1.1.2 cihaz turu):** dört yeni balon (avatar menüsü,
