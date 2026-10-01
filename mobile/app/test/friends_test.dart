@@ -23,6 +23,9 @@ import 'package:kelimeki/src/util/offline_notice.dart' show isNetworkError;
 import 'package:kelimeki/src/ui/auth/account_button.dart';
 import 'package:kelimeki/src/ui/auth/k_avatar.dart';
 import 'package:kelimeki/src/ui/friends/friends_modal.dart';
+import 'package:kelimeki/src/ui/game/dialog_shell.dart';
+import 'package:kelimeki/src/util/friend_since.dart';
+import 'package:kelimeki/src/util/live_game_request.dart';
 import 'package:kelimeki/src/ui/friends/relation_icons.dart';
 import 'package:kelimeki/src/ui/score/player_score_card_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -145,6 +148,13 @@ class FakeFriendsGateway implements FriendsGateway {
 
   @override
   Future<List<String>> frequentOpponents(int limit) async => const [];
+
+  List<Map<String, Object?>> outgoingRows = [];
+  @override
+  Future<List<Map<String, Object?>>> listOutgoingRequests() async {
+    _maybeFail();
+    return outgoingRows;
+  }
 }
 
 User fakeUser() => User(
@@ -261,7 +271,13 @@ void main() {
     });
   });
 
+  // 1 Ekim 2026 — TEK EKRAN (ROADMAP #41 karar 22-24, web 27 Eylül). Sekme,
+  // varsayılan-sekme kuralı ve ekle/kabul/reddet/iptal onayları KALKTI;
+  // yalnızca "Arkadaşlıktan çıkar" onay soruyor.
   group('FriendsModal', () {
+    setUp(liveGameRequests.reset);
+
+    /// Pencere GERÇEK bir diyalog olarak açılır — OYNA onu `pop` ediyor.
     Future<FakeFriendsGateway> pumpModal(
       WidgetTester tester, {
       FakeFriendsGateway? gateway,
@@ -275,60 +291,175 @@ void main() {
       final gw = gateway ?? FakeFriendsGateway();
       await tester.pumpWidget(MaterialApp(
         theme: kelimekiTheme(),
-        home: Scaffold(
-          body: FriendsModal(
-            friends: FriendsRepo(gw),
-            auth: AuthService.fake(user: fakeUser()),
-            // stats yoksa isim/avatara dokunuş pasif kalır (offline dalı) —
-            // skor kartı testleri açıkça withStats: true geçiyor.
-            stats: withStats ? StatsRepo(_NullStatsGateway()) : null,
-            // chat yoksa moderasyon ikonu HİÇ çizilmez (web'de de aynı
-            // dal) — ikon testleri açıkça bir sahte uç geçiyor.
-            chat: chat == null ? null : ChatRepo(chat),
-            initialTab: initialTab,
-            sharer: sharer,
+        home: Builder(
+          builder: (ctx) => Scaffold(
+            body: Center(
+              child: TextButton(
+                onPressed: () => showFriendsModal(
+                  ctx,
+                  friends: FriendsRepo(gw),
+                  auth: AuthService.fake(user: fakeUser()),
+                  // stats yoksa isim/avatara dokunuş pasif (offline dalı).
+                  stats: withStats ? StatsRepo(_NullStatsGateway()) : null,
+                  // chat yoksa moderasyon durumu HİÇ çizilmez.
+                  chat: chat == null ? null : ChatRepo(chat),
+                  initialTab: initialTab,
+                  sharer: sharer,
+                ),
+                child: const Text('aç'),
+              ),
+            ),
           ),
         ),
       ));
+      await tester.tap(find.text('aç'));
       await tester.pump();
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       return gw;
     }
 
-    testWidgets(
-        'varsayılan sekme: bekleyen istek varsa Davetler + rozet; kabul akışı',
-        (tester) async {
+    Finder satirda(String key, Finder f) =>
+        find.descendant(of: find.byKey(ValueKey(key)), matching: f);
+
+    testWidgets('gelen istek kartı EN ÜSTTE; KABUL ET onaysız', (tester) async {
       final gw = FakeFriendsGateway()
         ..requestRows = [
           {'requester_id': 'r1', 'name': 'Esiner', 'avatar_url': null},
         ];
       await pumpModal(tester, gateway: gw);
-
-      // Bekleyen istek → Davetler sekmesi açık gelir (web deseni).
-      expect(find.text('Esiner'), findsOneWidget);
-      expect(find.text('KABUL ET'), findsOneWidget);
-      expect(find.text('1'), findsOneWidget); // CountBadge
-
-      await tester.tap(find.text('KABUL ET'));
+      expect(find.text('İSTEKLER · 1'), findsOneWidget);
+      expect(find.text(kFriendsIncomingMeta), findsOneWidget);
+      // Davet düğmesinin ALTINDA, liste başlığının ÜSTÜNDE.
+      expect(tester.getTopLeft(find.text('İSTEKLER · 1')).dy,
+          greaterThan(tester.getTopLeft(find.text(kFriendsInviteCaption)).dy));
+      expect(tester.getTopLeft(find.text('İSTEKLER · 1')).dy,
+          lessThan(tester.getTopLeft(find.text('ARKADAŞLARIN')).dy));
+      await tester.tap(satirda('request-r1', find.text('KABUL ET')));
       await tester.pumpAndSettle();
+      expect(find.byType(KDialogCard), findsNothing, reason: 'onay YOK');
       expect(gw.accepted, ['r1']);
     });
 
-    testWidgets('initialTab açıkça verilirse varsayılan kural ezmez',
-        (tester) async {
+    testWidgets('REDDET onaysız silme', (tester) async {
       final gw = FakeFriendsGateway()
         ..requestRows = [
           {'requester_id': 'r1', 'name': 'Esiner', 'avatar_url': null},
         ];
-      await pumpModal(tester, gateway: gw, initialTab: FriendsTab.friends);
-      // İstek beklese de "Arkadaşlar" açık (boş durum metni görünür).
-      expect(find.textContaining('Henüz arkadaşın yok'), findsOneWidget);
+      await pumpModal(tester, gateway: gw);
+      await tester.tap(find.text('REDDET'));
+      await tester.pumpAndSettle();
+      expect(find.byType(KDialogCard), findsNothing);
+      expect(gw.deleted, ['r1']);
+    });
+
+    testWidgets('gönderdiğin istekler gelenlerin ALTINDA; GERİ AL onaysız',
+        (tester) async {
+      final gw = FakeFriendsGateway()
+        ..requestRows = [
+          {'requester_id': 'r1', 'name': 'Esiner', 'avatar_url': null},
+        ]
+        ..outgoingRows = [
+          {'friend_id': 'o1', 'name': 'Tuna', 'avatar_url': null},
+        ];
+      await pumpModal(tester, gateway: gw);
+      expect(find.text('GÖNDERDİĞİN İSTEKLER · 1'), findsOneWidget);
+      expect(tester.getTopLeft(find.text('GÖNDERDİĞİN İSTEKLER · 1')).dy,
+          greaterThan(tester.getTopLeft(find.text('İSTEKLER · 1')).dy));
+      expect(
+          satirda('sent-o1', find.text(kFriendsOutgoingMeta)), findsOneWidget);
+      await tester.tap(satirda('sent-o1', find.text('GERİ AL')));
+      await tester.pumpAndSettle();
+      expect(gw.deleted, ['o1']);
+      expect(find.text('GÖNDERDİĞİN İSTEKLER · 1'), findsNothing);
     });
 
     testWidgets(
-        'Ara & Ekle: tüm üyeler listesi + ekle ikonu → bekliyor ikonu yaması',
+        'arkadaş satırı: sayı başlıkta, "N haftadır", OYNA → pencere '
+        'kapanır + 2 kişilik istek kuyruğa', (tester) async {
+      final ucHaftaOnce = DateTime.now()
+          .subtract(const Duration(days: 22))
+          .toUtc()
+          .toIso8601String();
+      final gw = FakeFriendsGateway()
+        ..friendsRows = [
+          {
+            'friend_id': 'a',
+            'name': 'Bobola',
+            'avatar_url': null,
+            'since': ucHaftaOnce
+          },
+          {'friend_id': 'b', 'name': 'Esiner', 'avatar_url': null},
+        ];
+      await pumpModal(tester, gateway: gw);
+      expect(find.text('ARKADAŞLARIN · 2'), findsOneWidget);
+      expect(satirda('friend-a', find.text('3 haftadır')), findsOneWidget);
+      await tester.tap(satirda('friend-a', find.text('OYNA')));
+      await tester.pumpAndSettle();
+      expect(find.byType(FriendsModal), findsNothing);
+      final r = liveGameRequests.take();
+      expect((r?.friendId, r?.playerCount), ('a', 2));
+    });
+
+    testWidgets('⋯ menüsü: 4 kişilik oyun kur → istek(4); çıkar → onay → silme',
         (tester) async {
       final gw = FakeFriendsGateway()
+        ..friendsRows = [
+          {'friend_id': 'a', 'name': 'Bobola', 'avatar_url': null},
+        ];
+      await pumpModal(tester, gateway: gw);
+      await tester.tap(find.byKey(const ValueKey('more-a')));
+      await tester.pumpAndSettle();
+      for (final t in const [
+        kFriendsMenuCard,
+        kFriendsMenuPlay2,
+        kFriendsMenuPlay4,
+        kFriendsMenuRemove,
+      ]) {
+        expect(find.text(t), findsOneWidget);
+      }
+      // chat yok → moderasyon maddesi YOK.
+      expect(find.text(kFriendsMenuModeration), findsNothing);
+
+      // Çıkar: onay sorar; VAZGEÇ hiçbir şey yapmaz.
+      await tester.tap(find.text(kFriendsMenuRemove));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Arkadaşlıktan çıkmak mı'), findsOneWidget);
+      await tester.tap(find.text('VAZGEÇ'));
+      await tester.pumpAndSettle();
+      expect(gw.deleted, isEmpty);
+
+      await tester.tap(find.byKey(const ValueKey('more-a')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kFriendsMenuRemove));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ÇIKAR').last);
+      await tester.pumpAndSettle();
+      expect(gw.deleted, ['a']);
+
+      await tester.tap(find.byKey(const ValueKey('more-a')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kFriendsMenuPlay4));
+      await tester.pumpAndSettle();
+      expect(find.byType(FriendsModal), findsNothing);
+      final r = liveGameRequests.take();
+      expect((r?.friendId, r?.playerCount), ('a', 4));
+    });
+
+    testWidgets('boş liste: "Henüz arkadaşın yok" + açıklama', (tester) async {
+      await pumpModal(tester);
+      expect(find.text(kFriendsEmptyTitle), findsOneWidget);
+      expect(find.text(kFriendsEmptyBody), findsOneWidget);
+      expect(find.text('ARKADAŞLARIN'), findsOneWidget); // sayı yok
+    });
+
+    testWidgets(
+        '"Tüm oyuncular →": başlıkta SAYI YOK; EKLE → İSTEK GİTTİ, '
+        'KABUL ET → OYNA', (tester) async {
+      final gw = FakeFriendsGateway()
+        ..friendsRows = [
+          {'friend_id': 'u2', 'name': 'Ali', 'avatar_url': null},
+        ]
         ..userRows = [
           {'id': 'u1', 'name': 'Bobola', 'avatar_url': null, 'relation': null},
           {
@@ -337,49 +468,6 @@ void main() {
             'avatar_url': null,
             'relation': 'accepted'
           },
-        ];
-      await pumpModal(tester, gateway: gw);
-      await tester.tap(find.text('ARA & EKLE'));
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.text('TÜM ÜYELER'), findsOneWidget);
-      // 11 Ağustos 2026: satır aksiyonları metin değil ikon (bkz.
-      // RelationIcons.tsx / _relationIconButton). Aynı gün ikinci karar:
-      // zaten arkadaş olanlar ("Ali") bu listede HİÇ görünmez — onlar
-      // "Arkadaşlar" sekmesinde.
-      expect(find.text('Ali'), findsNothing);
-      expect(find.byIcon(Icons.person_remove), findsNothing);
-      expect(find.text('Bobola'), findsOneWidget);
-
-      await tester.tap(find.byIcon(Icons.person_add_alt_1));
-      // pumpAndSettle DEĞİL: odaklı arama alanının imleç animasyonu hiç
-      // durmadığından settle asılır (feedback formunda görünmedi çünkü
-      // orada gönderim alanı söküyor) — sınırlı pump yeterli.
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      // Ekle artık ANINDA iş yapmıyor: önce onay, sonra sonuç diyaloğu.
-      expect(find.text('Arkadaş Ekle'), findsOneWidget);
-      expect(gw.notified, isEmpty);
-      await tester.tap(find.text('EKLE'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.text('Arkadaşlık davetiniz iletilmiştir.'), findsOneWidget);
-      await tester.tap(find.text('TAMAM'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(PersonPendingIcon), findsOneWidget); // patchRelation
-      // DİKKAT: testWidgets içinde `await Future.delayed(...)` fake-async
-      // bölgesinde ASILIR (timer pump'sız çözülmez) — bildirim fake'te
-      // senkron kaydedildiğinden doğrudan kontrol yeterli.
-      expect(gw.notified, ['u1']);
-    });
-
-    testWidgets(
-        'Ara & Ekle: gelen isteği kabul de onaydan geçer + satır listeden düşer',
-        (tester) async {
-      final gw = FakeFriendsGateway()
-        ..userRows = [
           {
             'id': 'u3',
             'name': 'Esiner',
@@ -388,59 +476,44 @@ void main() {
           },
         ];
       await pumpModal(tester, gateway: gw);
-      await tester.tap(find.text('ARA & EKLE'));
-      await tester.pump();
-      await tester.pump();
+      await tester.tap(find.text('Tüm oyuncular →'));
+      await tester.pumpAndSettle();
+      expect(find.text('TÜM OYUNCULAR'), findsOneWidget);
+      expect(find.text('← Arkadaşlar'), findsOneWidget);
+      // Arkadaş da listede (web: arkadaş olan/olmayan herkes) — OYNA ile.
+      expect(satirda('user-u2', find.text('OYNA')), findsOneWidget);
+      expect(satirda('user-u2', find.text('Arkadaşın')), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.how_to_reg));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      // Onay ekranı — henüz sunucuya HİÇBİR şey gitmedi.
-      expect(find.textContaining('Kabul etmek istiyor musun'), findsOneWidget);
-      expect(gw.accepted, isEmpty);
+      await tester.tap(satirda('user-u1', find.text('EKLE')));
+      await tester.pumpAndSettle();
+      expect(find.byType(KDialogCard), findsNothing, reason: 'onay YOK');
+      expect(gw.notified, ['u1']);
+      expect(satirda('user-u1', find.text('İSTEK GİTTİ')), findsOneWidget);
 
-      await tester.tap(find.text('KABUL ET'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(satirda('user-u3', find.text('KABUL ET')));
+      await tester.pumpAndSettle();
       expect(gw.accepted, ['u3']);
-      expect(find.text('Arkadaş oldunuz.'), findsOneWidget);
-      await tester.tap(find.text('TAMAM'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      // Artık arkadaş → "Ara & Ekle" listesinden düşer (Arkadaşlar'da).
-      expect(find.text('Esiner'), findsNothing);
+      expect(satirda('user-u3', find.text('OYNA')), findsOneWidget);
     });
 
-    testWidgets(
-        'Ara & Ekle: bir sayfanın tamamı arkadaş çıkarsa sonraki sayfa yine gelir',
-        (tester) async {
-      // Kaydırılamayan bir listede ScrollController dinleyicisi HİÇ
-      // ateşlenmez (Parça 31'deki k-lig hatası) — eleme bu durumu artık
-      // kendiliğinden üretebildiğinden `_autoLoadIfNotScrollable` şart.
+    testWidgets('arama: sonuç sayısı satırı + boş sonuç metni', (tester) async {
       final gw = FakeFriendsGateway()
         ..userRows = [
-          for (var i = 0; i < kAllUsersPageSize; i++)
-            {
-              'id': 'f\$i',
-              'name': 'Arkadas \$i',
-              'avatar_url': null,
-              'relation': 'accepted'
-            },
-          {'id': 'yeni', 'name': 'Zeynep', 'avatar_url': null, 'relation': null},
+          {'id': 'u1', 'name': 'Bobola', 'avatar_url': null, 'relation': null},
         ];
       await pumpModal(tester, gateway: gw);
-      await tester.tap(find.text('ARA & EKLE'));
+      await tester.enterText(find.byType(TextField), 'bob');
+      await tester.pump(const Duration(milliseconds: 400));
       await tester.pump();
+      expect(find.text('"bob" için 1 oyuncu'), findsOneWidget);
+      gw.userRows = [];
+      await tester.enterText(find.byType(TextField), 'xyz');
+      await tester.pump(const Duration(milliseconds: 400));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      await tester.pump();
-
-      expect(find.text('Zeynep'), findsOneWidget);
-      expect(find.byIcon(Icons.person_add_alt_1), findsOneWidget);
+      expect(find.text(kFriendsNobody), findsOneWidget);
     });
 
-    testWidgets(
-        'isim/avatara dokunmak ÜÇ listede de skor kartını açar (Ara & Ekle dahil)',
+    testWidgets('isim/avatara dokunmak skor kartını açar (istek kartı dahil)',
         (tester) async {
       final gw = FakeFriendsGateway()
         ..friendsRows = [
@@ -448,167 +521,75 @@ void main() {
         ]
         ..requestRows = [
           {'requester_id': 'r1', 'name': 'Esiner', 'avatar_url': null},
-        ]
-        ..userRows = [
-          {'id': 'u1', 'name': 'Zeynep', 'avatar_url': null, 'relation': null},
         ];
-      await pumpModal(tester,
-          gateway: gw, initialTab: FriendsTab.friends, withStats: true);
-
-      // 1) Arkadaşlar (baştan beri vardı — regresyon güvencesi)
+      await pumpModal(tester, gateway: gw, withStats: true);
       await tester.tap(find.text('Bobola'));
       await tester.pumpAndSettle();
       expect(find.byType(PlayerScoreCardModal), findsOneWidget);
       await tester.tap(find.byTooltip('Kapat').last);
       await tester.pumpAndSettle();
-
-      // 2) Davetler — isteği yanıtlamadan önce kime bakıyoruz?
-      await tester.tap(find.text('DAVETLER'));
-      await tester.pump();
       await tester.tap(find.text('Esiner'));
       await tester.pumpAndSettle();
       expect(find.byType(PlayerScoreCardModal), findsOneWidget);
-      await tester.tap(find.byTooltip('Kapat').last);
-      await tester.pumpAndSettle();
-
-      // 3) Ara & Ekle — kullanıcının istediği asıl yer.
-      await tester.tap(find.text('ARA & EKLE'));
-      await tester.pump();
-      await tester.pump();
-      await tester.tap(find.text('Zeynep'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(PlayerScoreCardModal), findsOneWidget);
     });
 
-    testWidgets(
-        'isimlerin yanında rütbe mührü (18 Ağustos 2026) — 18px, satırın '
-        '14px puntosuna göre; ekle/çıkar ikonunun SOLUNDA', (tester) async {
+    testWidgets('isimlerin yanında rütbe mührü — 16px, ismin SAĞINDA',
+        (tester) async {
       final gw = FakeFriendsGateway()
         ..friendsRows = [
           {'friend_id': 'f1', 'name': 'Bobola', 'avatar_url': null},
         ];
-      await pumpModal(tester,
-          gateway: gw, initialTab: FriendsTab.friends, withStats: true);
-      // Sahte uç boş liste döndürüyor → puan 0 → Çaylak (yine de BİLİNEN
-      // bir puan; "henüz yüklenmedi" ile karıştırılmamalı).
-      await tester.pump();
+      await pumpModal(tester, gateway: gw, withStats: true);
       await tester.pump(const Duration(milliseconds: 50));
-
       final seals = tester.widgetList<RankSeal>(find.byType(RankSeal)).toList();
       expect(seals, isNotEmpty, reason: 'isim yanında mühür çizilmemiş');
-      expect(seals.first.size, 18);
+      expect(seals.first.size, 16);
       expect(tester.getTopLeft(find.byType(RankSeal).first).dx,
-          greaterThanOrEqualTo(tester.getTopRight(find.text('Bobola')).dx),
-          reason: 'mühür ismin SAĞINDA olmalı');
+          greaterThanOrEqualTo(tester.getTopRight(find.text('Bobola')).dx));
     });
 
     testWidgets('davet butonu: link + metin paylaş ucuna gider + görüntü',
         (tester) async {
-      // GA4 `invite_link_shared` {source: friends_modal} — Faz 3.
+      // GA4 `invite_link_shared` {source: friends_modal}.
       final fakeAnalytics = FakeAnalytics();
       analytics.configure(fakeAnalytics);
       addTearDown(analytics.reset);
       final shared = <String>[];
-      final gw = await pumpModal(tester, sharer: (t) async => shared.add(t));
-      expect(gw, isNotNull);
-
-      final key = GlobalKey();
-      // Ekran görüntüsü için yeniden pump (RepaintBoundary ile).
-      await tester.pumpWidget(MaterialApp(
-        theme: kelimekiTheme(),
-        home: RepaintBoundary(
-          key: key,
-          child: Scaffold(
-            body: FriendsModal(
-              friends: FriendsRepo(FakeFriendsGateway()
-                ..friendsRows = [
-                  {'friend_id': 'a', 'name': 'Bobola', 'avatar_url': null},
-                  {'friend_id': 'b', 'name': 'Esiner', 'avatar_url': null},
-                ]),
-              auth: AuthService.fake(user: fakeUser()),
-              sharer: (t) async => shared.add(t),
-            ),
-          ),
-        ),
-      ));
-      await tester.pump();
-      await tester.pump();
-      await tester.tap(find.text('+ ARKADAŞINI DAVET ET'));
-      await tester.pumpAndSettle();
-      expect(shared.single,
-          '$inviteShareText\nhttps://kelimeki.com/davet/tok-123?ref=arkadas');
-      expect(fakeAnalytics.names, ['invite_link_shared']);
-      expect(fakeAnalytics.events.single.$2, {'source': 'friends_modal'});
-
+      final gw = FakeFriendsGateway()
+        ..friendsRows = [
+          {'friend_id': 'a', 'name': 'Bobola', 'avatar_url': null},
+          {'friend_id': 'b', 'name': 'Esiner', 'avatar_url': null},
+        ]
+        ..requestRows = [
+          {'requester_id': 'r1', 'name': 'Tuna', 'avatar_url': null},
+        ]
+        ..outgoingRows = [
+          {'friend_id': 'o1', 'name': 'Aszmer', 'avatar_url': null},
+        ];
+      await pumpModal(tester, gateway: gw, sharer: (t) async => shared.add(t));
       await tester.runAsync(() async {
-        final boundary =
-            key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final boundary = tester.renderObject<RenderRepaintBoundary>(find
+            .ancestor(
+                of: find.byType(FriendsModal),
+                matching: find.byType(RepaintBoundary))
+            .first);
         final image = await boundary.toImage(pixelRatio: 2);
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final out = File('build/screenshots/friends_modal.png');
         out.parent.createSync(recursive: true);
         out.writeAsBytesSync(bytes!.buffer.asUint8List());
       });
+      await tester.tap(find.text('+  ARKADAŞINI DAVET ET'));
+      await tester.pumpAndSettle();
+      expect(shared.single,
+          '$inviteShareText\nhttps://kelimeki.com/davet/tok-123?ref=arkadas');
+      expect(fakeAnalytics.names, ['invite_link_shared']);
+      expect(fakeAnalytics.events.single.$2, {'source': 'friends_modal'});
     });
 
-    testWidgets('Arkadaşlar: çıkar ikonu → onay → silme + sonuç diyaloğu',
-        (tester) async {
-      final gw = FakeFriendsGateway()
-        ..friendsRows = [
-          {'friend_id': 'f1', 'name': 'Bobola', 'avatar_url': null},
-        ];
-      await pumpModal(tester, gateway: gw);
-      expect(find.text('Bobola'), findsOneWidget);
-
-      await tester.tap(find.byIcon(Icons.person_remove));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Arkadaşlıktan çıkmak mı'), findsOneWidget);
-      await tester.tap(find.text('VAZGEÇ'));
-      await tester.pumpAndSettle();
-      expect(gw.deleted, isEmpty); // vazgeçildi
-
-      await tester.tap(find.byIcon(Icons.person_remove));
-      await tester.pumpAndSettle();
-      // Onay diyaloğunun butonu hâlâ METİN — yalnızca satır ikonlaştı.
-      await tester.tap(find.text('ÇIKAR').last);
-      await tester.pumpAndSettle();
-      expect(gw.deleted, ['f1']);
-      expect(find.text('Arkadaşlıktan çıkarıldı.'), findsOneWidget);
-    });
-
-    testWidgets(
-        'ağ hatasında SAHTE başarı gösterilmez — reddetme "İşlem başarısız '
-        'oldu." der (13 Ağustos 2026, Parça 89)', (tester) async {
-      final gw = FakeFriendsGateway()
-        ..requestRows = [
-          {'requester_id': 'r1', 'name': 'Esiner', 'avatar_url': null},
-        ];
-      await pumpModal(tester, gateway: gw, initialTab: FriendsTab.requests);
-      await tester.pumpAndSettle();
-
-      // Sunucu bu andan itibaren reddediyor (uçak modu / ağ hatası).
-      gw.failWith = Exception('ağ');
-
-      // Satırdaki buton ve onay diyaloğunun kabul butonu — ikisi de
-      // `trUpper`dan geçtiğinden BÜYÜK harf.
-      await tester.tap(find.text('REDDET'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('REDDET').last);
-      await tester.pumpAndSettle();
-
-      // Eskiden KOŞULSUZ "İstek reddedildi." gösteriliyordu — hata yutulup
-      // kullanıcıya GERÇEKLEŞMEMİŞ bir sonuç bildiriliyordu.
-      expect(find.text('Davet reddedildi.'), findsNothing);
-      expect(find.text('İşlem başarısız oldu.'), findsOneWidget);
-    });
-
-    // 14 Ağustos 2026 — moderasyon ikonu. Kullanıcı cihaz testinde şu duvara
-    // çarptı: sessize alma/şikayet 3 Ağustos'tan beri KİŞİ bazlı, ama geri
-    // almanın tek giriş noktası o kişiyle AKTİF bir oyunun sohbet ayarlarıydı
-    // — oyun bitince ulaşılamıyordu. İkon o kısayolu açıyor.
-    testWidgets(
-        'Arkadaşlar: yalnızca moderasyon durumu OLAN satırda ikon çıkar',
+    // 14 Ağustos 2026'dan beri sessize alma/şikayet KİŞİ bazlı geri
+    // alınabiliyor. Tek ekranda giriş noktası ⋯ menüsü; durum adın yanında.
+    testWidgets('yalnızca moderasyon durumu OLAN satırda 🚫/🚩 + menü maddesi',
         (tester) async {
       final gw = FakeFriendsGateway()
         ..friendsRows = [
@@ -619,57 +600,40 @@ void main() {
       final chat = FakeChatGateway()
         ..moderationMuted = const {'a': 'g1'}
         ..moderationReported = const {'b': 'g2'};
-
-      await pumpModal(
-          tester, gateway: gw, initialTab: FriendsTab.friends, chat: chat);
+      await pumpModal(tester, gateway: gw, chat: chat);
       await tester.pumpAndSettle();
+      expect(satirda('friend-a', find.text('🚫')), findsOneWidget);
+      expect(satirda('friend-b', find.text('🚩')), findsOneWidget);
+      expect(satirda('friend-c', find.text('🚫')), findsNothing);
+      expect(satirda('friend-c', find.text('🚩')), findsNothing);
 
-      // Sessize alınan → 🚫, şikayet edilen → 🚩, temiz satır → HİÇBİRİ.
-      // Üçü BİR ARADA: tek başına "ikon var" iddiası, ikonu KOŞULSUZ çizen
-      // yanlış bir kural altında da geçerdi.
-      expect(find.text('🚫'), findsOneWidget);
-      expect(find.text('🚩'), findsOneWidget);
-
-      // İkon "çıkar"ın SOLUNDA (kullanıcı isteği) — konum ölçülerek
-      // sabitleniyor, yorumla değil.
-      final flagX = tester.getCenter(find.text('🚩')).dx;
-      final removeX = tester
-          .getCenter(find.bySemanticsLabel('Ironman — arkadaşlıktan çıkar'))
-          .dx;
-      expect(flagX, lessThan(removeX));
+      await tester.tap(find.byKey(const ValueKey('more-c')));
+      await tester.pumpAndSettle();
+      expect(find.text(kFriendsMenuModeration), findsNothing);
     });
 
-    testWidgets(
-        'moderasyon ikonu → panel → şikayeti geri çek → ikon KAYBOLUR',
+    testWidgets('⋯ → ayarlar → şikayeti geri çek → 🚩 KAYBOLUR',
         (tester) async {
       final gw = FakeFriendsGateway()
         ..friendsRows = [
           {'friend_id': 'a', 'name': 'Esiner', 'avatar_url': null},
         ];
-      final chat = FakeChatGateway()
-        ..moderationReported = const {'a': 'g1'};
-
-      await pumpModal(
-          tester, gateway: gw, initialTab: FriendsTab.friends, chat: chat);
+      final chat = FakeChatGateway()..moderationReported = const {'a': 'g1'};
+      await pumpModal(tester, gateway: gw, chat: chat);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('🚩'));
+      await tester.tap(find.byKey(const ValueKey('more-a')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kFriendsMenuModeration));
       await tester.pumpAndSettle();
       expect(find.text('Bu kişiyi şikayet ettiniz.'), findsOneWidget);
-
       await tester.tap(find.text('Şikayeti Geri Çek'));
       await tester.pumpAndSettle();
       // Onay adımı ATLANMAZ — kazara dokunuş bir şikayeti düşürmemeli.
       expect(find.text('Emin misiniz?'), findsOneWidget);
       await tester.tap(find.text('Geri Çek'));
       await tester.pumpAndSettle();
-
-      // Geri çekme KİŞİ bazlı: RPC oyun id'si İSTEMİYOR.
       expect(chat.withdrawnCalls, ['a']);
-      expect(find.text('Şikayetiniz geri çekildi.'), findsOneWidget);
-
-      // Sunucu artık temiz — panel kapanınca ikon HEMEN gitmeli, aksi halde
-      // kullanıcı "geri çektim ama bayrak duruyor" görürdü.
       chat.moderationReported = const {};
       await tester.tap(find.text('Tamam'));
       await tester.pumpAndSettle();
@@ -682,53 +646,24 @@ void main() {
         ..friendsRows = [
           {'friend_id': 'a', 'name': 'Esiner', 'avatar_url': null},
         ];
-      // `mute_online_game_participant` katılımcılık kontrolünü `p_muted`
-      // dalından ÖNCE yapıyor — sessizden ÇIKARMAK bile geçerli bir ortak
-      // oyun id'si istiyor. Sahte uç bu bağı taşıdığından test onu ölçebiliyor.
       final chat = FakeChatGateway()..moderationMuted = const {'a': 'g7'};
-
-      await pumpModal(
-          tester, gateway: gw, initialTab: FriendsTab.friends, chat: chat);
+      await pumpModal(tester, gateway: gw, chat: chat);
       await tester.pumpAndSettle();
-
-      await tester.tap(find.text('🚫'));
+      await tester.tap(find.byKey(const ValueKey('more-a')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kFriendsMenuModeration));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sessizden Çıkar'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sessizden Çıkar').last);
       await tester.pumpAndSettle();
-
       expect(chat.mutedCalls, [('g7', 'a', false)]);
     });
 
-    testWidgets('chat verilmezse ikon HİÇ çizilmez (offline/dürüstlük dalı)',
-        (tester) async {
-      final gw = FakeFriendsGateway()
-        ..friendsRows = [
-          {'friend_id': 'a', 'name': 'Esiner', 'avatar_url': null},
-        ];
-      await pumpModal(tester, gateway: gw, initialTab: FriendsTab.friends);
-      await tester.pumpAndSettle();
-      expect(find.text('🚫'), findsNothing);
-      expect(find.text('🚩'), findsNothing);
-    });
-
-    // 27 Ağustos 2026 — kullanıcı bildirdi: "Ara & Ekle'de scroll down bir
-    // yerde takılıyor, sonuna kadar gitmiyor."
-    //
-    // ÖLÇÜLEN kök sebep (düzeltmeden önce): liste kendi `ListView`'ında,
-    // `maxHeight: 320` ile modalın gövde `SingleChildScrollView`'ının İÇİNE
-    // konmuştu. Klavye açıkken gövde 119→518 arasını gösterirken liste
-    // 326→646'ya uzanıyordu, yani alt 128 px ekranın altında kalıyordu — ve
-    // Flutter iç içe kaydırmayı ZİNCİRLEMEDİĞİNDEN parmağını listeye koyan
-    // kullanıcı dış gövdeyi hiç kaydıramıyordu (60 sürüklemeden sonra dış
-    // offset 0.0). Son satırlar ve "Yükleniyor…" nöbetçisi erişilemezdi.
-    //
-    // Bu testin NEGATİF EŞİ kanıtlandı: `friends_modal.dart`'taki düz
-    // `Column` eski `ConstrainedBox(maxHeight: 320) > ListView` hâline geri
-    // alınınca test DÜŞÜYOR (Uye46 dikey olarak 600–620'de, gövdenin 518
-    // olan alt kenarının dışında).
-    testWidgets('Ara & Ekle: parmak listenin ÜZERİNDEYKEN son üyeye kadar '
+    // 27 Ağustos 2026 vakası (kaydırma takılıyordu): modalda TEK
+    // kaydırılabilir. Tek ekranda "Tüm oyuncular" da gövdeyle kayar.
+    testWidgets(
+        'Tüm oyuncular: parmak listenin ÜZERİNDEYKEN son üyeye kadar '
         'kaydırılabilir (modalda tek kaydırılabilir)', (tester) async {
       final gw = FakeFriendsGateway()
         ..userRows = [
@@ -740,36 +675,72 @@ void main() {
               'relation': null,
             },
         ];
-      // Klavye `autofocus` ile zaten açık; 560 px o durumda kalan yüksekliği
-      // temsil ediyor. 900'de hata GÖRÜNMEZ (gövde taşmaz).
-      await pumpModal(tester,
-          gateway: gw,
-          initialTab: FriendsTab.search,
-          size: const Size(420, 560));
+      await pumpModal(tester, gateway: gw, size: const Size(420, 560));
+      await tester.tap(find.text('Tüm oyuncular →'));
       await tester.pumpAndSettle();
-
-      // Değişmez: modalın gövdesinde İÇ İÇE kaydırılabilir liste YOK — üç
-      // sekmenin üçü de düz Column. (Eski hâlde burada bir ListView vardı.)
       expect(find.byType(ListView), findsNothing);
-      expect(find.byType(SingleChildScrollView), findsOneWidget);
-
-      final govde = tester.getRect(find.byType(SingleChildScrollView));
-
-      // Parmak GERÇEK bir liste satırının üzerinde başlıyor — kullanıcının
-      // yaptığı hareket bu; hatanın görüldüğü tek yer de burası.
+      expect(
+          find.descendant(
+              of: find.byType(FriendsModal),
+              matching: find.byType(SingleChildScrollView)),
+          findsOneWidget);
+      final govde = tester.getRect(find.descendant(
+          of: find.byType(FriendsModal),
+          matching: find.byType(SingleChildScrollView)));
       final tutamak = tester.getRect(find.text('Uye03')).center;
       for (var i = 0; i < 60; i++) {
         await tester.dragFrom(tutamak, const Offset(0, -300));
         await tester.pumpAndSettle();
       }
-
-      // Sayfalama da bu kaydırmadan besleniyor: üç sayfanın hepsi geldi.
-      expect(gw.userRows.length, 46);
       final son = find.text('Uye46');
       expect(son, findsOneWidget);
       final sonRect = tester.getRect(son);
       expect(sonRect.top, greaterThanOrEqualTo(govde.top));
       expect(sonRect.bottom, lessThanOrEqualTo(govde.bottom));
+    });
+
+    test('metinler web `FriendsModal.tsx` ile BİREBİR', () {
+      final web =
+          File('../../src/components/FriendsModal.tsx').readAsStringSync();
+      for (final t in [
+        kFriendsInviteCaption,
+        kFriendsIncomingMeta,
+        kFriendsOutgoingMeta,
+        kFriendsSearchHint,
+        kFriendsNobody,
+        kFriendsEmptyTitle,
+        kFriendsNoMorePlayers,
+        kFriendsMenuCard,
+        kFriendsMenuPlay2,
+        kFriendsMenuPlay4,
+        kFriendsMenuModeration,
+        kFriendsMenuRemove,
+        'Gönderdiğin istekler',
+        'Tüm oyuncular →',
+        '← Arkadaşlar',
+      ]) {
+        expect(web.contains(t), isTrue, reason: 'web metni ayrıştı: "$t"');
+      }
+      // Gövde metni JSX'te iki satıra bölünmüş — boşlukları sıkıştırıp ara.
+      final sikistir = web.replaceAll(RegExp(r'\s+'), ' ');
+      expect(sikistir.contains(kFriendsEmptyBody), isTrue);
+    });
+  });
+
+  group('friendSinceLabel (web ile aynı eşikler)', () {
+    final now = DateTime.utc(2026, 10, 1, 12);
+    String gunOnce(int g) => now.subtract(Duration(days: g)).toIso8601String();
+    test('kısa ve uzun hâl', () {
+      expect(friendSinceLabel(null), isNull);
+      expect(friendSinceLabel('bozuk'), isNull);
+      expect(
+          friendSinceLabel(gunOnce(0), kisa: true, now: now), 'Bugün eklendi');
+      expect(friendSinceLabel(gunOnce(0), now: now), 'Bugün arkadaş oldunuz');
+      expect(friendSinceLabel(gunOnce(1), kisa: true, now: now), 'Dün eklendi');
+      expect(friendSinceLabel(gunOnce(5), kisa: true, now: now), '5 gündür');
+      expect(friendSinceLabel(gunOnce(22), kisa: true, now: now), '3 haftadır');
+      expect(friendSinceLabel(gunOnce(65), now: now), '2 aydır arkadaşsınız');
+      expect(friendSinceLabel(gunOnce(800), kisa: true, now: now), '2 yıldır');
     });
   });
 

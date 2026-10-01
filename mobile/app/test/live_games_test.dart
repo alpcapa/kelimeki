@@ -23,6 +23,7 @@ import 'package:kelimeki/src/config/version_gate.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
 import 'package:kelimeki/src/data/friends_api.dart';
 import 'package:kelimeki/src/ui/friends/k_pill.dart';
+import 'package:kelimeki/src/util/live_game_request.dart';
 import 'package:kelimeki/src/ui/game/player_colors.dart';
 import 'package:kelimeki/src/data/error_reporter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
@@ -684,6 +685,55 @@ void main() {
       await tester.tap(find.text('YENİ OYUN BAŞLAT'));
       await tester.pumpAndSettle();
       expect(find.byType(LiveGameCreateForm), findsOneWidget);
+    });
+
+    // ROADMAP #41 karar 23 — Arkadaşlar penceresinin OYNA'sı: sekme açıkken
+    // gelen istek formu O ARKADAŞ SEÇİLİ açar; açılmadan önce gelen istek
+    // de kuyruktan alınır.
+    testWidgets(
+        'OYNA isteği: form o arkadaş seçili ve istenen kişi sayısıyla '
+        'açılır (takılıyken de, takılmadan önce de)', (tester) async {
+      liveGameRequests.reset();
+      addTearDown(liveGameRequests.reset);
+      final fgw = FakeFriendsGateway(currentUserId: 'oyna-istegi')
+        ..friendsRows = [
+          {'friend_id': 'f1', 'name': 'Bobola', 'avatar_url': null},
+          {'friend_id': 'f2', 'name': 'Esiner', 'avatar_url': null},
+        ];
+      final s = liveServices(
+          userId: 'oyna-istegi',
+          gateway: FakeOnlineGamesGateway(),
+          friendsGateway: fgw);
+      await pumpTab(tester, s);
+      await tester.pump();
+      expect(find.byType(LiveGameCreateForm), findsNothing);
+
+      liveGameRequests
+          .request(const LiveGameRequest(friendId: 'f2', playerCount: 4));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(LiveGameCreateForm), findsOneWidget);
+      expect(find.text('RAKİPLERİN · 1/3'), findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('koltuk-dolu-0')),
+              matching: find.text('Esiner')),
+          findsOneWidget);
+      expect(liveGameRequests.hasPending, isFalse, reason: 'tüketildi');
+
+      // Sekme takılmadan ÖNCE gelen istek: açılışta kuyruktan alınır.
+      await tester.pumpWidget(const SizedBox.shrink());
+      liveGameRequests
+          .request(const LiveGameRequest(friendId: 'f1', playerCount: 2));
+      await pumpTab(tester, s);
+      await tester.pump();
+      expect(find.text('RAKİBİN'), findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('koltuk-dolu-0')),
+              matching: find.text('Bobola')),
+          findsOneWidget);
+      await tester.pumpWidget(const SizedBox.shrink());
     });
 
     testWidgets('çevrimdışıyken mesaj ağ cevabı BEKLENMEDEN çıkar',

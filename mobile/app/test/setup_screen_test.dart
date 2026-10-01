@@ -36,6 +36,7 @@ import 'package:kelimeki/src/ui/tutorial/tutorial_script.dart'
     show tutorialIntroButton, tutorialIntroTitle;
 import 'package:kelimeki/src/ui/intro/intro_screen.dart';
 import 'package:kelimeki/src/ui/live/guest_live_sheet.dart';
+import 'package:kelimeki/src/util/live_game_request.dart';
 import 'package:kelimeki/src/ui/live/live_games_tab.dart';
 import 'package:kelimeki/src/ui/setup/setup_screen.dart';
 import 'package:kelimeki/src/ui/devam_eden_govde.dart';
@@ -441,6 +442,33 @@ void main() {
     await tester.tap(find.text('YAPAY ZEKA'));
     await tester.pumpAndSettle();
     expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
+  });
+
+  // ROADMAP #41 karar 23: Arkadaşlar penceresinin OYNA'sı — Setup, üstte bir
+  // ekran (oyun) açıksa ona dönüp "Arkadaşınla"ya geçer; formu LiveGamesTab
+  // açar (isteği o tüketir, Setup TÜKETMEZ).
+  testWidgets('OYNA isteği: üstteki ekran kapanır, Arkadaşınla açılır',
+      (tester) async {
+    liveGameRequests.reset();
+    addTearDown(liveGameRequests.reset);
+    await setPhoneViewSize(tester, const Size(420, 900));
+    await pumpSetup(
+        tester, services(auth: AuthService.fake(user: fakeUser('me'))));
+    expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
+    final nav = tester.state<NavigatorState>(find.byType(Navigator));
+    nav.push(MaterialPageRoute<void>(
+        builder: (_) => const Scaffold(body: Text('oyun ekranı'))));
+    await tester.pumpAndSettle();
+    expect(find.text('oyun ekranı'), findsOneWidget);
+
+    liveGameRequests
+        .request(const LiveGameRequest(friendId: 'f1', playerCount: 2));
+    await tester.pumpAndSettle();
+    expect(find.text('oyun ekranı'), findsNothing);
+    // Arkadaşınla görünümü (bu sahte serviste canlı depo yok → düz metin).
+    expect(find.text('OYUNU BAŞLAT'), findsNothing);
+    expect(
+        find.text('Canlı oyun oynamak için giriş yapmalısın.'), findsOneWidget);
   });
 
   // ROADMAP #41 karar 9 (web 27 Eylül, port 1 Ekim 2026): girişsiz kullanıcı

@@ -1,25 +1,31 @@
-// Arkadaşlar modalı — src/components/FriendsModal.tsx portu: üç sekme
-// (Arkadaşlar / Davetler / Ara & Ekle) + kalıcı davet linkini sistem
-// paylaş sayfasıyla gönderme.
+// Arkadaşlar penceresi — src/components/FriendsModal.tsx portu.
 //
-// Web'den taşınan davranışlar:
-// - Varsayılan sekme: bekleyen istek varsa "Davetler" (appliedDefaultTabRef
-//   deseni — çağıran initialTab belirttiyse o niyet ezilmez).
-// - Arama 350ms debounce + en az 2 karakter; kutu boşken "Tüm Üyeler"
-//   sayfalı listesi (20'şer), HER yeni sayfadan sonra TÜM birikmiş liste
-//   trCompare ile yeniden sıralanır (Türkçe collation sayfa sınırı dersi).
-// - İlişki değişince arama + tüm-üyeler listesi birlikte yamalanır
-//   (patchRelation).
-// - Çıkar / Reddet / İptal üçlüsü onay diyaloğundan geçer, sonuç
-//   diyaloğuyla biter (web ConfirmDialog/InfoDialog).
+// 1 Ekim 2026 — SEKMESİZ tek ekrana yeniden yazıldı (web 27 Eylül 2026,
+// ROADMAP #41 karar 22-24; karar kaydı `docs/decisions/friends.md` → "Tek
+// ekran"). Üç sekme (Arkadaşlar · Davetler · Ara & Ekle) ve dört onay
+// diyaloğu kalktı; yalnızca "Arkadaşlıktan çıkar" onay soruyor. İkonlar
+// yerine YAZILI haplar (`KPill`).
 //
-// Bilinçli sapmalar: davet paylaşımı her zaman sistem paylaş sayfası
-// (web'in clipboard fallback'i mobilde gereksiz — paylaş sayfası her
-// platformda var); davet butonunda İKON/EMOJİ YOK — web'de 🔗 vardı ve
-// 29 Ağustos 2026'da o da kaldırıldı (yerini `+` öneki aldı, kardeş
-// "YENİ OYUN BAŞLAT" butonuyla aynı dil). Bu satır bir ara "🔗 yerine
-// Icons.link" diyordu ama koda hiç ikon konmamıştı — artık iki taraf da
-// gerçekten ikonsuz.
+// Yukarıdan aşağı tek sütun:
+// 1. Turuncu "+ ARKADAŞINI DAVET ET" — doğrudan paylaşım sayfası.
+// 2. Bekleyen istekler: gelenler (kart: REDDET / KABUL ET), altında
+//    gönderdiklerin (satır, GERİ AL). Arama ve "Tüm oyuncular"da da yerinde.
+// 3. "ARKADAŞLARIN · N" / "TÜM OYUNCULAR" başlığı + sağda dönüşümlü bağlantı.
+// 4. Arama kutusu listenin hemen üstünde; yazınca sonuçlar (sunucu).
+// 5. Arkadaş satırı: rütbe, "3 haftadır", OYNA (2 kişilik), ⋯ (skor kartı ·
+//    2/4 kişilik oyun kur · sessize alma/şikayet ayarları YALNIZ önceden
+//    varsa · arkadaşlıktan çıkar).
+//
+// OYNA / "N kişilik oyun kur": pencere kapanır, Canlı sekmesinde form o
+// arkadaş seçili açılır (`util/live_game_request.dart`; oyun ekranı açıksa
+// Setup'a dönülür).
+//
+// ⚠ Pencerede TEK kaydırılabilir var (`KModal` gövdesi) — "Tüm oyuncular"
+// sayfalaması gövdenin kaydırmasına bağlı (bkz. mobile/CLAUDE.md →
+// "KModal'ın gövdesi ZATEN kaydırılabilir"). Web'in `max-h-[55vh]` iç
+// kaydırması bilinçli olarak taşınmadı.
+//
+// Metinler web'le BİREBİR — `friends_test.dart` web kaynağını okur.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -32,41 +38,58 @@ import '../../data/chat_api.dart';
 import '../../data/friends_api.dart';
 import '../../data/games_api.dart';
 import '../../data/stats_api.dart';
+import '../../util/friend_since.dart';
+import '../../util/live_game_request.dart';
+import '../../util/share_board.dart' show shareOriginFrom;
 import '../auth/k_avatar.dart';
-import '../game/count_badge.dart';
 import '../game/dialog_shell.dart';
 import '../game/modal_shell.dart';
 import '../game/neo_button.dart';
-import '../rank/league_rank.dart';
 import '../rank/rank_scores.dart';
 import '../rank/rank_seal.dart';
 import '../score/player_score_card_modal.dart';
+import '../tap_target.dart';
 import '../tokens.dart';
 import '../loading_note.dart';
 import '../form_input.dart';
-import '../../util/share_board.dart' show shareOriginFrom;
 import 'friend_moderation_sheet.dart';
-import 'relation_icons.dart';
-import '../text_scale.dart';
+import 'k_pill.dart';
+import 'player_directory.dart';
 
 const Color _text = kText;
 const Color _muted = kMuted;
 const Color _accent = kAccent;
-// Web tailwind `red` — arkadaşlıktan çıkar ikonu.
-const Color _red = kRed;
 const Color _border = kBorder;
-const Color _bg = Colors.white;
 
+/// Eski sekmeli sürümden kalan imza — çağıranlar bozulmasın diye duruyor
+/// (web `initialTab`). `search` artık arama kutusuna odaklanmak demek;
+/// öteki değerler yok sayılır (gelen istekler zaten en üstte).
 enum FriendsTab { friends, requests, search }
 
-/// Web ALL_USERS_PAGE_SIZE.
-const int kAllUsersPageSize = 20;
+/// Web ALL_USERS_PAGE_SIZE — `PlayerDirectory` ile aynı.
+const int kAllUsersPageSize = kPlayerDirectoryPageSize;
 
 /// Onaydan sonra ağ işlemi düşerse gösterilen metin — `chat_settings_modal`
-/// aynı dizeyi kullanıyor, yenisi icat edilmedi. Bir onay diyaloğundan
-/// GEÇMİŞ bir eylemin sessizce (ya da daha kötüsü, sahte bir "başarılı"
-/// mesajıyla) düşmemesi için var.
+/// ve skor kartı aynı dizeyi kullanıyor.
 const String kFriendActionFailed = 'İşlem başarısız oldu.';
+
+// Web metinleri — `friends_test.dart` bunları `FriendsModal.tsx`te arar.
+const String kFriendsInviteCaption =
+    'WhatsApp ya da istediğin uygulamayla link gönder';
+const String kFriendsIncomingMeta = 'Seni arkadaş olarak eklemek istiyor';
+const String kFriendsOutgoingMeta = 'Cevap bekleniyor';
+const String kFriendsSearchHint = 'Oyuncu ara: isim ya da takma ad';
+const String kFriendsNobody =
+    "Kimse bulunamadı. Kelimeki'de değilse yukarıdan davet linki gönder.";
+const String kFriendsEmptyTitle = 'Henüz arkadaşın yok';
+const String kFriendsEmptyBody =
+    'Bir link gönder; arkadaşın linke dokunup üye olunca burada belirir ve hemen oyuna çağırırsın.';
+const String kFriendsNoMorePlayers = 'Başka oyuncu yok.';
+const String kFriendsMenuCard = 'Skor kartını gör';
+const String kFriendsMenuPlay2 = '2 kişilik oyun kur';
+const String kFriendsMenuPlay4 = '4 kişilik oyun kur';
+const String kFriendsMenuModeration = 'Sessize alma / şikayet ayarları';
+const String kFriendsMenuRemove = 'Arkadaşlıktan çıkar';
 
 Future<void> showFriendsModal(
   BuildContext context, {
@@ -96,17 +119,14 @@ class FriendsModal extends StatefulWidget {
   final FriendsRepo friends;
   final AuthService auth;
 
-  /// Arkadaş satırına dokununca açılan skor kartı için — null ise dokunuş
-  /// pasif (pratikte friends varsa stats de var, ikisi de Supabase ister).
+  /// Kişiye dokununca açılan skor kartı için — null ise dokunuş pasif.
   final StatsRepo? stats;
   final Future<GamesRepo>? games;
 
-  /// Arkadaş satırındaki 🚫/🚩 yönetim ikonu için. null ise ikon hiç
-  /// çizilmez — "çalışmayan kontrol koymuyoruz" deseni.
+  /// 🚫/🚩 durumu ve ⋯ menüsündeki ayarlar için. null ise hiç çizilmez.
   final ChatRepo? chat;
 
-  /// null: varsayılan-sekme kuralı çalışır (bekleyen istek → Davetler).
-  /// Açıkça verilirse (web `initialTab`) o niyet ezilmez.
+  /// Bkz. [FriendsTab] — yalnızca `search` anlamlı (arama kutusuna odak).
   final FriendsTab? initialTab;
 
   /// Davet metnini paylaşan uç — testler sahte geçer; üretimde share_plus.
@@ -128,77 +148,93 @@ class FriendsModal extends StatefulWidget {
 }
 
 class _FriendsModalState extends State<FriendsModal> {
-  late FriendsTab _tab = widget.initialTab ?? FriendsTab.friends;
-  late bool _appliedDefaultTab = widget.initialTab != null;
-
   List<FriendRow>? _friends;
   List<IncomingFriendRequest>? _requests;
-
+  List<OutgoingFriendRequest> _sent = const [];
   final _query = TextEditingController();
-  Timer? _searchTimer;
-  int _searchSeq = 0;
-  List<FriendCandidate> _results = const [];
-  bool _searching = false;
-
-  List<FriendCandidate>? _allUsers;
-  bool _allUsersHasMore = true;
-  bool _allUsersLoadingMore = false;
-
-  /// Modalın GÖVDE kaydırması (KModal'a `bodyController` olarak verilir) —
-  /// "Ara & Ekle" sayfalaması buna bakar. Eskiden listenin KENDİ
-  /// `ListView`'ıydı; 27 Ağustos 2026'da bir kullanıcı "scroll bir yerde
-  /// takılıyor, sonuna kadar gitmiyor" diye bildirdi ve ölçüldü: modal
-  /// gövdesi 119→518 arasını gösterirken 320 px'e sabitlenmiş iç liste
-  /// 326→646'ya uzanıyordu, yani alt 128 px (son ~2,5 satır + "Yükleniyor…"
-  /// nöbetçisi) ekranın altında kalıyordu. Flutter iç içe kaydırmayı
-  /// ZİNCİRLEMEDİĞİNDEN (tarayıcının aksine — web'in `max-h-[50vh]
-  /// overflow-y-auto`'su bu yüzden orada sorun çıkarmıyor) parmağını listeye
-  /// koyan kullanıcı dış gövdeyi HİÇ kaydıramıyordu: 60 sürüklemeden sonra
-  /// dış offset ölçülen değeriyle 0.0'dı. Çözüm iç kaydırılabiliri tamamen
-  /// KALDIRMAK — liste artık "Arkadaşlar"/"Davetler" gibi düz bir Column
-  /// ve modalda tek bir kaydırılabilir var.
-  final _bodyScroll = ScrollController();
-
+  bool _showAll = false;
   String? _busyId;
   bool _inviteBusy = false;
 
-  /// Üç sekmedeki isimlerin yanındaki rütbe mührü için k-lig puanı
-  /// (18 Ağustos 2026). `ensure` yalnızca eksik id'leri sorar.
+  late final PlayerDirectory _dir;
+
+  /// Modalın GÖVDE kaydırması — "Tüm oyuncular" sayfalaması buna bakar
+  /// (iç içe kaydırılabilir YOK, bkz. dosya başı).
+  final _bodyScroll = ScrollController();
+
+  /// İsimlerin yanındaki rütbe mührü.
   late final RankScores _rankScores;
 
-  void _onRankScores() {
+  /// Sessize aldığım/şikayet ettiğim kişiler → kaynak oyun id'si.
+  Map<String, String> _modMuted = const {};
+  Map<String, String> _modReported = const {};
+
+  /// "+ ARKADAŞINI DAVET ET"in kendi kutusu — iPad popover ankrajı BURADAN
+  /// (State.context modalın tamamını ankraj yapıyordu ve iPad'de paylaşım
+  /// asılı kalıyordu — 2 Eylül 2026, `shareOriginFrom`).
+  final GlobalKey _inviteButtonKey = GlobalKey();
+
+  void _onChange() {
     if (mounted) setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
-    _rankScores = RankScores(widget.stats)..addListener(_onRankScores);
+    _rankScores = RankScores(widget.stats)..addListener(_onChange);
+    _dir = PlayerDirectory(widget.friends)..addListener(_onDirChange);
     _reloadFriends();
     _reloadRequests();
+    _reloadSent();
     unawaited(_reloadModeration());
     _bodyScroll.addListener(() {
-      if (_bodyScroll.position.extentAfter < 80) _loadMoreAllUsers();
+      if (_bodyScroll.position.extentAfter < 80) _loadMore();
     });
   }
 
   @override
   void dispose() {
-    _searchTimer?.cancel();
     _query.dispose();
     _bodyScroll.dispose();
-    _rankScores.removeListener(_onRankScores);
+    _dir.removeListener(_onDirChange);
+    _dir.dispose();
+    _rankScores.removeListener(_onChange);
     _rankScores.dispose();
     super.dispose();
   }
 
+  void _onDirChange() {
+    _onChange();
+    _autoLoadIfNotScrollable();
+  }
+
+  void _loadMore() {
+    if (!_showAll || _dir.searchActive) return;
+    _dir.loadMore();
+  }
+
+  /// Liste kaydırılamayacak kadar kısaysa gövde dinleyicisi HİÇ ateşlenmez
+  /// ve sonraki sayfa asla istenmez (Parça 31'in dersi) — her yüklemeden
+  /// sonra bir kare bekleyip elle kontrol.
+  void _autoLoadIfNotScrollable() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_showAll || !_dir.hasMore) return;
+      if (!_bodyScroll.hasClients) return;
+      if (_bodyScroll.position.maxScrollExtent <= 0) _loadMore();
+    });
+  }
+
   void _reloadFriends() {
     widget.friends.friends().then((f) {
-      if (mounted && f != null) setState(() => _friends = f);
-      // null (ağ hatası): eski liste korunur — mobil null-on-error kararı.
-      if (mounted && f == null && _friends == null) {
-        setState(() => _friends = const []);
-      }
+      if (!mounted) return;
+      setState(() {
+        if (f != null) {
+          _friends = f;
+        } else {
+          _friends ??= const [];
+        }
+      });
+      _rankScores.ensure((_friends ?? const []).map((x) => x.friendId));
     });
   }
 
@@ -211,157 +247,108 @@ class _FriendsModalState extends State<FriendsModal> {
         } else {
           _requests ??= const [];
         }
-        // Varsayılan sekme: bekleyen istek varsa "Davetler" — yalnızca
-        // GERÇEK sunucu verisiyle ve bir kez (web hasFreshGames dersi:
-        // karar bayat/boş veriyle verilirse kalıcı yanlış kalır).
-        if (!_appliedDefaultTab && r != null) {
-          _appliedDefaultTab = true;
-          if (r.isNotEmpty) _tab = FriendsTab.requests;
-        }
       });
+      _rankScores.ensure((_requests ?? const []).map((x) => x.requesterId));
     });
   }
 
-  void _onQueryChanged(String raw) {
-    _searchTimer?.cancel();
-    final q = raw.trim();
-    if (q.length < 2) {
-      setState(() {
-        _results = const [];
-        _searching = false;
-      });
-      return;
-    }
-    setState(() => _searching = true);
-    final seq = ++_searchSeq;
-    _searchTimer = Timer(const Duration(milliseconds: 350), () async {
-      final r = await widget.friends.search(q);
-      if (mounted && _searchSeq == seq) {
-        setState(() {
-          _results = r ?? const [];
-          _searching = false;
-        });
-      }
+  void _reloadSent() {
+    widget.friends.outgoingRequests().then((s) {
+      if (!mounted || s == null) return;
+      setState(() => _sent = s);
+      _rankScores.ensure(s.map((x) => x.friendId));
     });
   }
 
-  void _ensureAllUsers() {
-    if (_allUsers != null) return;
-    widget.friends.listUsers(0, kAllUsersPageSize).then((page) {
-      if (!mounted || page == null) return;
-      setState(() {
-        _allUsers = [...page]..sort((a, b) => trCandidate(a, b));
-        _allUsersHasMore = page.length == kAllUsersPageSize;
-      });
-      _autoLoadIfNotScrollable();
-    });
-  }
-
-  void _loadMoreAllUsers() {
-    // Dinleyici artık MODALIN gövdesinde (bkz. `_bodyScroll`), yani üç
-    // sekmede de ateşleniyor — sayfayı yalnızca liste GERÇEKTEN ekrandayken
-    // iste: başka bir sekmedeyken ya da arama sonuçları gösterilirken
-    // "tüm üyeler" listesi hiç çizilmiyor, boşuna sayfa çekmenin anlamı yok.
-    if (_tab != FriendsTab.search) return;
-    if (_query.text.trim().length >= 2) return;
-    final cur = _allUsers;
-    if (cur == null || !_allUsersHasMore || _allUsersLoadingMore) return;
-    _allUsersLoadingMore = true;
-    widget.friends.listUsers(cur.length, kAllUsersPageSize).then((page) {
-      if (!mounted) return;
-      setState(() {
-        _allUsersLoadingMore = false;
-        if (page == null) return;
-        // Web dersi: her sayfadan sonra TÜM birikmiş liste yeniden sıralanır.
-        _allUsers = [...cur, ...page]..sort((a, b) => trCandidate(a, b));
-        _allUsersHasMore = page.length == kAllUsersPageSize;
-      });
-      _autoLoadIfNotScrollable();
-    });
-  }
-
-  void _patchRelation(String id, FriendRelation? relation) {
+  Future<void> _reloadModeration() async {
+    final chat = widget.chat;
+    if (chat == null) return;
+    final m = await chat.myModeration();
+    if (!mounted) return;
     setState(() {
-      _results = [
-        for (final u in _results) u.id == id ? u.withRelation(relation) : u
-      ];
-      final all = _allUsers;
-      if (all != null) {
-        _allUsers = [
-          for (final u in all) u.id == id ? u.withRelation(relation) : u
-        ];
-      }
+      _modMuted = m.muted;
+      _modReported = m.reported;
     });
   }
 
-  /// "Ara & Ekle" listeleri zaten arkadaş olunanları GÖSTERMEZ (kullanıcı
-  /// isteği, 11 Ağustos 2026) — onlar "Arkadaşlar" sekmesinde. Eleme
-  /// fetch'te değil RENDER'da: (1) `_allUsers.length` sayfalama offset'i
-  /// olduğundan diziden atmak sayfaları kaydırıp üye atlatırdı; (2) satır
-  /// ekrandayken arkadaş olunursa `_patchRelation` ilişkiyi accepted yapar
-  /// ve satır kendiliğinden düşer.
-  static bool _notFriend(FriendCandidate u) =>
-      u.relation != FriendRelation.accepted;
+  // ── İlişki eylemleri — TEK DOKUNUŞ (yalnızca "çıkar" onay sorar) ────────
 
-  List<FriendCandidate> get _visibleResults =>
-      _results.where(_notFriend).toList();
-
-  List<FriendCandidate>? get _visibleAllUsers =>
-      _allUsers?.where(_notFriend).toList();
-
-  /// Elemeden sonra liste kaydırılamayacak kadar kısaysa (ör. bir sayfanın
-  /// tamamı arkadaş çıktı) `_bodyScroll` dinleyicisi HİÇ ateşlenmez ve
-  /// sonraki sayfa asla istenmez — Parça 31'deki k-lig hatasının aynısı.
-  /// Her yüklemeden sonra bir kare bekleyip elle kontrol ediyoruz.
-  void _autoLoadIfNotScrollable() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_allUsersHasMore) return;
-      if (!_bodyScroll.hasClients) return;
-      if (_bodyScroll.position.maxScrollExtent <= 0) _loadMoreAllUsers();
-    });
-  }
-
-  Future<FriendRelation?> _handleSend(FriendCandidate u) async {
-    setState(() => _busyId = u.id);
+  Future<void> _handleSend(String id) async {
+    setState(() => _busyId = id);
     try {
-      final result = await widget.friends.sendRequest(u.id);
-      _patchRelation(u.id, result);
-      if (result == FriendRelation.accepted) _reloadFriends();
-      return result;
+      final r = await widget.friends.sendRequest(id);
+      // Karşı taraftan bekleyen istek varsa sunucu ilişkiyi doğrudan
+      // 'accepted'a çeviriyor.
+      _dir.patchRelation(id, r);
+      if (r == FriendRelation.accepted) _reloadFriends();
+      _reloadSent();
     } catch (e) {
       debugPrint('[Kelimeki] arkadaşlık isteği hatası: $e');
-      return null;
     } finally {
       if (mounted) setState(() => _busyId = null);
     }
   }
 
-  /// Başarılıysa `true`. Dönüş değeri ÖNEMLİ: çağıranlar sonuç diyaloğunu
-  /// buna göre seçiyor — eskiden hata yutulup "Arkadaş oldunuz."/"İstek
-  /// reddedildi." KOŞULSUZ gösteriliyordu, yani ağ hatasında kullanıcıya
-  /// gerçekleşmemiş bir sonuç bildiriliyordu (13 Ağustos 2026, Parça 89).
-  Future<bool> _handleRespond(String requesterId, {required bool accept}) async {
+  Future<void> _handleRespond(String requesterId,
+      {required bool accept}) async {
     setState(() => _busyId = requesterId);
     try {
       await widget.friends.respond(requesterId, accept: accept);
-      _patchRelation(requesterId, accept ? FriendRelation.accepted : null);
+      _dir.patchRelation(requesterId, accept ? FriendRelation.accepted : null);
       _reloadRequests();
       if (accept) _reloadFriends();
-      return true;
     } catch (e) {
       debugPrint('[Kelimeki] istek yanıtlama hatası: $e');
-      return false;
     } finally {
       if (mounted) setState(() => _busyId = null);
     }
   }
 
-  /// "+ ARKADAŞINI DAVET ET" butonunun kendi kutusu — iPad popover ankrajı
-  /// BURADAN alınmalı. `State.context` modalın TAMAMINI ankraj yapıyordu ve
-  /// iPad'de çağrı hiç dönmüyordu: buton `…` (meşgul) durumunda KİLİTLENİYOR,
-  /// çünkü `finally` ancak future dönünce koşuyor (2 Eylül 2026, ölçüldü —
-  /// bkz. `shareOriginFrom`).
-  final GlobalKey _inviteButtonKey = GlobalKey();
+  Future<void> _handleCancel(String id) async {
+    setState(() => _busyId = id);
+    try {
+      await widget.friends.removeOrCancel(id); // gönderilen isteği iptal et
+      _dir.patchRelation(id, null);
+      if (mounted) {
+        setState(() => _sent = [
+              for (final r in _sent)
+                if (r.friendId != id) r
+            ]);
+      }
+    } catch (e) {
+      debugPrint('[Kelimeki] istek iptal hatası: $e');
+    } finally {
+      if (mounted) setState(() => _busyId = null);
+    }
+  }
+
+  Future<void> _confirmRemove(String id, String name) async {
+    final ok = await confirmFriendAction(
+      context,
+      title: 'Arkadaşlıktan Çıkar',
+      message: '$name ile arkadaşsınız. Arkadaşlıktan çıkmak mı istiyorsunuz?',
+      confirmLabel: 'Çıkar',
+    );
+    if (!ok || !mounted) return;
+    setState(() => _busyId = id);
+    try {
+      await widget.friends.removeOrCancel(id);
+      _reloadFriends();
+      _dir.patchRelation(id, null);
+    } catch (e) {
+      debugPrint('[Kelimeki] arkadaş çıkarma hatası: $e');
+      if (mounted) await showFriendInfoDialog(context, kFriendActionFailed);
+    } finally {
+      if (mounted) setState(() => _busyId = null);
+    }
+  }
+
+  /// OYNA: pencere kapanır, Canlı sekmesinde form o arkadaş seçili açılır.
+  void _play(String friendId, int playerCount) {
+    Navigator.of(context).pop();
+    liveGameRequests
+        .request(LiveGameRequest(friendId: friendId, playerCount: playerCount));
+  }
 
   Future<void> _handleInvite() async {
     setState(() => _inviteBusy = true);
@@ -377,172 +364,34 @@ class _FriendsModalState extends State<FriendsModal> {
                 .share(ShareParams(text: text, sharePositionOrigin: anchor));
           };
       await share('$inviteShareText\n$url');
-      // GA4 `invite_link_shared` — "k-lig'de yükselenler daha çok davet mi
-      // gönderiyor?" sorusunun ham verisi. Ölçülen şey paylaşım SAYFASININ
-      // açılması: share_plus sonucu her platformda güvenilir bildirmiyor,
-      // "gerçekten gönderildi mi" burada bilinemez ve bilinirmiş gibi
-      // adlandırılmadı. İki yüzey aynı olay, `source` ile ayrışır
-      // (Setup footer'ındaki site paylaşımı = `setup_footer`).
+      // GA4 `invite_link_shared` — ölçülen paylaşım SAYFASININ açılması.
       analytics.log('invite_link_shared', {'source': 'friends_modal'});
     } finally {
       if (mounted) setState(() => _inviteBusy = false);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return KModal(
-      title: 'Arkadaşlar',
-      bodyController: _bodyScroll,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          NeoButton(
-            key: _inviteButtonKey,
-            // TURUNCU ve `+` önekli (29 Ağustos 2026, kullanıcı isteği) —
-            // Canlı sekmesindeki "YENİ OYUN BAŞLAT" ile AYNI dil: ikisi
-            // de "yeni bir şey başlat" eylemi. Mavi (accent) bu projede
-            // onaylama/birincil eylem rengi.
-            label: _inviteBusy ? '…' : '+ ARKADAŞINI DAVET ET',
-            variant: NeoButtonVariant.orange,
-            fontSize: 12,
-            letterSpacing: 1.5,
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
-            onPressed: _inviteBusy ? null : _handleInvite,
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            "Kelimeki'de henüz olmayan arkadaşlarını davet et",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontFamily: 'SpaceMono', fontSize: 10, color: _muted),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: _bg,
-              border: Border.all(color: _border),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Row(children: [
-              _tabBtn(FriendsTab.friends, 'Arkadaşlar'),
-              _tabBtn(FriendsTab.requests, 'Davetler',
-                  badge: _requests?.length ?? 0),
-              _tabBtn(FriendsTab.search, 'Ara & Ekle'),
-            ]),
-          ),
-          const SizedBox(height: 12),
-          switch (_tab) {
-            FriendsTab.friends => _friendsList(),
-            FriendsTab.requests => _requestsList(),
-            FriendsTab.search => _searchTab(),
-          },
-        ],
-      ),
+  Future<void> _openCard(String id, String name, String? avatarUrl) async {
+    final stats = widget.stats;
+    if (stats == null) return;
+    await showPlayerScoreCard(
+      context,
+      stats: stats,
+      userId: id,
+      name: name,
+      avatarUrl: avatarUrl,
+      games: widget.games,
+      friends: widget.friends,
+      auth: widget.auth,
     );
-  }
-
-  Widget _tabBtn(FriendsTab t, String label, {int badge = 0}) {
-    final active = _tab == t;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          // Elle seçim varsayılan-sekme kararını kalıcı devre dışı bırakır
-          // (web guard'ı: istekler sonradan gelince seçimi ezmesin).
-          _appliedDefaultTab = true;
-          setState(() => _tab = t);
-          if (t == FriendsTab.search) _ensureAllUsers();
-        },
-        // Rozet web'deki gibi SEKME KUTUSUNUN sağ üst köşesinde (`absolute
-        // -top-1 -right-1` = -4px) — Stack metni değil kutuyu sarmalı
-        // (LiveGamesTab'la aynı düzeltme, kullanıcı bildirdi).
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: active ? _accent : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                trUpper(label), // web tabBtn CSS `uppercase`
-                style: TextStyle(
-                  fontFamily: 'SpaceMono',
-                  fontSize: 11, // web text-[11px]
-                  height: 1.5, // web: gövdeden miras (16.5px satır)
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                  color: active ? Colors.white : _muted,
-                ),
-              ),
-            ),
-            if (badge > 0)
-              Positioned(top: -4, right: -4, child: CountBadge(count: badge)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _loading() => const KLoadingNote(vertical: 16);
-
-  Widget _emptyText(String s) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Text(s,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontFamily: 'SpaceMono', fontSize: 11, color: _muted)),
-      );
-
-  Widget _row({required Widget child}) => Container(
-        margin: const EdgeInsets.only(bottom: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: _bg,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: child,
-      );
-
-  /// Ad + (biliniyorsa) rütbe mührü. Boy 18, satırın 14px puntosuna göre —
-  /// ölçüm web tarafında yapıldı, iki platform aynı değeri kullanıyor.
-  Widget _name(String s, RankTier? tier) => Expanded(
-        child: Row(
-          children: [
-            Flexible(
-              child: Text(s,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: _text)),
-            ),
-            if (tier != null) ...[
-              const SizedBox(width: 4),
-              RankSeal(tier: tier, size: 18),
-            ],
-          ],
-        ),
-      );
-
-  /// Sessize aldığım/şikayet ettiğim kişiler → kaynak oyun id'si.
-  /// "Arkadaşlar" satırındaki 🚫/🚩 ikonunu besliyor.
-  Map<String, String> _modMuted = const {};
-  Map<String, String> _modReported = const {};
-
-  Future<void> _reloadModeration() async {
-    final chat = widget.chat;
-    if (chat == null) return;
-    final m = await chat.myModeration();
     if (!mounted) return;
-    setState(() {
-      _modMuted = m.muted;
-      _modReported = m.reported;
-    });
+    // Kart İÇİNDEN arkadaş eklenip çıkarılabiliyor — ilişki yeniden okunur.
+    final r = await widget.friends.relationWith(id);
+    if (!mounted) return;
+    _dir.patchRelation(id, r);
+    _reloadFriends();
+    _reloadRequests();
+    _reloadSent();
   }
 
   Future<void> _openModeration(FriendRow f) async {
@@ -559,459 +408,511 @@ class _FriendsModalState extends State<FriendsModal> {
         reported: _modReported.containsKey(f.friendId),
       ),
     );
-    // Durum değiştiyse ikon HEMEN kaybolmalı — aksi halde kullanıcı
-    // "geri çektim ama bayrak duruyor" görürdü.
     if (changed) await _reloadModeration();
   }
 
-  Widget _friendsList() {
-    final friends = _friends;
-    if (friends == null) return _loading();
-    if (friends.isEmpty) {
-      return _emptyText('Henüz arkadaşın yok — "Ara & Ekle" sekmesinden ya '
-          'da yukarıdaki davet linkiyle ekleyebilirsin.');
-    }
-    return Column(children: [
-      for (final f in friends)
-        _row(
-          child: Row(children: [
-            _personButton(f.friendId, f.name, f.avatarUrl),
-            // Moderasyon durumu VARSA yönetim ikonu — "arkadaşlıktan çıkar"
-            // ikonunun SOLUNDA (kullanıcı isteği, 14 Ağustos 2026). Durum
-            // yoksa hiç çizilmez: bu bir "geri al" kısayolu, moderasyon
-            // menüsü değil (yeni şikayet sohbette açılır).
-            if (widget.chat != null &&
-                (_modReported.containsKey(f.friendId) ||
-                    _modMuted.containsKey(f.friendId)))
-              _moderationIconButton(f),
-            _relationIconButton(
-              icon: const Icon(Icons.person_remove, size: 20, color: _red),
-              label: '${f.name} — arkadaşlıktan çıkar',
-              busy: _busyId == f.friendId,
-              onTap: () => _confirmThenRemoveFriend(f),
+  void _toggleShowAll() {
+    setState(() => _showAll = !_showAll);
+    if (_showAll) _dir.open();
+    _autoLoadIfNotScrollable();
+  }
+
+  // ── Çizim ────────────────────────────────────────────────────────────────
+
+  @override
+  Widget build(BuildContext context) {
+    _rankScores.ensure([
+      for (final u in _dir.results) u.id,
+      for (final u in _dir.allUsers ?? const <FriendCandidate>[]) u.id,
+    ]);
+    final requests = _requests ?? const <IncomingFriendRequest>[];
+    return KModal(
+      title: 'Arkadaşlar',
+      bodyController: _bodyScroll,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: 52,
+            child: NeoButton(
+              key: _inviteButtonKey,
+              label: _inviteBusy ? '…' : '+  ARKADAŞINI DAVET ET',
+              variant: NeoButtonVariant.orange,
+              fontSize: 15,
+              letterSpacing: 1,
+              onPressed: _inviteBusy ? null : _handleInvite,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(kFriendsInviteCaption,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, color: _muted)),
+          if (requests.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _SectionLabel('İSTEKLER · ${requests.length}'),
+            const SizedBox(height: 8),
+            for (final r in requests) _requestCard(r),
+          ],
+          if (_sent.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _SectionLabel('GÖNDERDİĞİN İSTEKLER · ${_sent.length}'),
+            const SizedBox(height: 8),
+            _listBox([
+              for (final r in _sent)
+                _row(
+                  key: ValueKey('sent-${r.friendId}'),
+                  children: [
+                    _person(
+                        r.friendId, r.name, r.avatarUrl, kFriendsOutgoingMeta),
+                    KPill(
+                      kind: KPillKind.geriAl,
+                      semanticLabel: '${r.name} — isteği geri al',
+                      onTap: _busyId == r.friendId
+                          ? null
+                          : () => _handleCancel(r.friendId),
+                    ),
+                  ],
+                ),
+            ]),
+          ],
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(
+              child: _SectionLabel(_showAll
+                  ? 'TÜM OYUNCULAR'
+                  : 'ARKADAŞLARIN${(_friends?.isNotEmpty ?? false) ? ' · ${_friends!.length}' : ''}'),
+            ),
+            TapTarget(
+              onTap: _toggleShowAll,
+              minHeight: 36,
+              child: Text(_showAll ? '← Arkadaşlar' : 'Tüm oyuncular →',
+                  style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: _accent)),
             ),
           ]),
-        ),
-    ]);
-  }
-
-  Widget _requestsList() {
-    final requests = _requests;
-    if (requests == null) return _loading();
-    if (requests.isEmpty) return _emptyText('Bekleyen davet yok.');
-    // ⚠ BÜYÜK YAZI ÖLÇEĞİNDE SATIR İKİYE BÖLÜNÜR (28 Ağustos 2026, kullanıcı
-    // cihazda bildirdi: *"arkadaşlık davetinde davetin kimden geldiği
-    // görünmüyor"* — ekran görüntüsünde avatar ve rütbe mührü duruyor, isim
-    // hiç yok). Sebep taşma DEĞİL: satırdaki tek esnek öğe isim
-    // (`_personButton` → `Expanded`), "Kabul Et"/"Reddet" ise METİN butonu,
-    // yani ölçekle BÜYÜYOR ve ismi eziyor. ÖLÇÜLDÜ (360 px ekran): isim
-    // ölçek 1,0'da 77,6 px · 1,3'te 53,2 px · 2,0'da **0,0 px**.
-    //
-    // Bir gelen kutusunda kırpılacak EN SON şey kimden geldiğidir — web'in
-    // `CARD_HEADER` düzeltmesinin (23 Ağustos 2026) taşıdığı ilke bu. Eşik
-    // aşılınca isim kendi satırını alıyor, butonlar altta sağa yaslanıyor.
-    //
-    // YALNIZCA BU LİSTE bölünüyor: "Arkadaşlar" ve "Ara & Ekle"
-    // satırlarının aksiyonu 44 px'lik SABİT ikon butonları, metin değil —
-    // onlar ölçekle büyümediğinden ismi de ezmiyorlar. Gereksiz yere
-    // bölmek o iki listeyi çirkinleştirirdi.
-    final genis = buyukOlcek(context);
-    return Column(children: [
-      for (final r in requests)
-        _row(
-          child: () {
-            final kisi = Row(children: [
-              _personButton(r.requesterId, r.name, r.avatarUrl),
-            ]);
-            final butonlar = [
-              _smallButton('Kabul Et',
-                  busy: _busyId == r.requesterId,
-                  onTap: () => _handleRespond(r.requesterId, accept: true)),
-              const SizedBox(width: 6),
-              _smallButton('Reddet',
-                  neutral: true,
-                  busy: _busyId == r.requesterId,
-                  onTap: () => _confirmThenReject(r)),
-            ];
-            if (!genis) {
-              return Row(children: [
-                _personButton(r.requesterId, r.name, r.avatarUrl),
-                const SizedBox(width: 6),
-                ...butonlar,
-              ]);
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                kisi,
-                const SizedBox(height: 8),
-                Row(mainAxisAlignment: MainAxisAlignment.end, children: butonlar),
-              ],
-            );
-          }(),
-        ),
-    ]);
-  }
-
-  Widget _searchTab() {
-    _ensureAllUsers();
-    final q = _query.text.trim();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextField(
-          controller: _query,
-          onChanged: _onQueryChanged,
-          autofocus: true,
-          style: kInputTextStyle,
-          decoration: kInputDecoration(hint: 'İsim ya da takma ad ara…'),
-        ),
-        const SizedBox(height: 10),
-        if (q.length >= 2)
-          _searching
-              ? _emptyText('Aranıyor…')
-              : _visibleResults.isEmpty
-                  ? _emptyText(_results.isEmpty
-                      ? "Kimse bulunamadı — Kelimeki'de değilse "
-                          'yukarıdaki davet linkini gönderebilirsin.'
-                      : 'Bulunanların hepsi zaten arkadaşın — '
-                          '"Arkadaşlar" sekmesine bak.')
-                  : Column(
-                      children: [
-                        for (final u in _visibleResults) _candidateRow(u)
-                      ])
-        else ...[
-          const Padding(
-            padding: EdgeInsets.only(bottom: 6),
-            child: Text('TÜM ÜYELER',
-                style: TextStyle(
-                    fontFamily: 'SpaceMono',
-                    fontSize: 9,
-                    letterSpacing: 1,
-                    color: _muted)),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _query,
+            autofocus: widget.initialTab == FriendsTab.search,
+            onChanged: (q) {
+              _dir.setQuery(q);
+              setState(() {});
+            },
+            style: kInputTextStyle,
+            decoration: kInputDecoration(hint: kFriendsSearchHint),
           ),
-          if (_visibleAllUsers == null)
-            _loading()
-          else
-            // Kendi kaydırması YOK (bkz. `_bodyScroll`) — modalın gövdesiyle
-            // birlikte kayar, tıpkı diğer iki sekmenin listeleri gibi.
-            Column(
-              children: [
-                for (final u in _visibleAllUsers!) _candidateRow(u),
-                // Boş mesajı yalnızca liste GERÇEKTEN tükendiyse — bir
-                // sayfanın tamamı arkadaş çıkarsa daha yüklenecek üye var.
-                if (_visibleAllUsers!.isEmpty && !_allUsersHasMore)
-                  _emptyText('Eklenecek başka üye yok.'),
-                if (_allUsersHasMore)
-                  _emptyText(_allUsersLoadingMore ? 'Yükleniyor…' : ''),
-              ],
-            ),
+          const SizedBox(height: 8),
+          ..._body(),
         ],
+      ),
+    );
+  }
+
+  List<Widget> _body() {
+    if (_dir.searchActive) {
+      if (_dir.searching) return [const KLoadingNote(vertical: 16)];
+      if (_dir.results.isEmpty) {
+        return [
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Text(kFriendsNobody,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, height: 1.6, color: _muted)),
+          ),
+        ];
+      }
+      return [
+        Text('"${_query.text.trim()}" için ${_dir.results.length} oyuncu',
+            style: const TextStyle(fontSize: 12, color: _muted)),
+        const SizedBox(height: 8),
+        _listBox([for (final u in _dir.results) _userRow(u)]),
+      ];
+    }
+    if (_showAll) {
+      final all = _dir.allUsers;
+      if (all == null) return [const KLoadingNote(vertical: 16)];
+      return [
+        _listBox([
+          for (final u in all) _userRow(u),
+          if (all.isEmpty && !_dir.hasMore)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Text(kFriendsNoMorePlayers,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontFamily: 'SpaceMono', fontSize: 12, color: _muted)),
+            ),
+          if (_dir.hasMore && _dir.loadingMore) const KLoadingNote(vertical: 8),
+        ]),
+      ];
+    }
+    final friends = _friends;
+    if (friends == null) return [const KLoadingNote(vertical: 16)];
+    if (friends.isEmpty) {
+      return [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Column(children: [
+            Text(kFriendsEmptyTitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold, color: _text)),
+            SizedBox(height: 8),
+            Text(kFriendsEmptyBody,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, height: 1.6, color: _muted)),
+          ]),
+        ),
+      ];
+    }
+    return [
+      _listBox([
+        for (final f in friends)
+          _row(
+            key: ValueKey('friend-${f.friendId}'),
+            children: [
+              _person(f.friendId, f.name, f.avatarUrl,
+                  friendSinceLabel(f.since, kisa: true)),
+              KPill(
+                kind: KPillKind.oyna,
+                semanticLabel: '${f.name} ile oyna',
+                onTap: () => _play(f.friendId, 2),
+              ),
+              _moreButton(f),
+            ],
+          ),
+      ]),
+    ];
+  }
+
+  /// Arama / tüm oyuncular satırı — ilişkiye göre TEK yazılı düğme.
+  Widget _userRow(FriendCandidate u) {
+    final busy = _busyId == u.id;
+    final friend = (_friends ?? const <FriendRow>[])
+        .where((f) => f.friendId == u.id)
+        .firstOrNull;
+    final meta = switch (u.relation) {
+      FriendRelation.accepted => 'Arkadaşın',
+      FriendRelation.pendingOutgoing => 'Yanıt bekleniyor',
+      FriendRelation.pendingIncoming => 'Seni eklemek istiyor',
+      null => null,
+    };
+    return _row(
+      key: ValueKey('user-${u.id}'),
+      children: [
+        _person(u.id, u.name, u.avatarUrl, meta),
+        ...switch (u.relation) {
+          FriendRelation.accepted => [
+              KPill(
+                kind: KPillKind.oyna,
+                semanticLabel: '${u.name} ile oyna',
+                onTap: () => _play(u.id, 2),
+              ),
+              if (friend != null) _moreButton(friend),
+            ],
+          FriendRelation.pendingOutgoing => [
+              KPill(
+                kind: KPillKind.gonderildi,
+                semanticLabel: '${u.name} — isteği iptal et',
+                onTap: busy ? null : () => _handleCancel(u.id),
+              ),
+            ],
+          FriendRelation.pendingIncoming => [
+              KPill(
+                kind: KPillKind.kabul,
+                semanticLabel: '${u.name} — isteği kabul et',
+                onTap: busy ? null : () => _handleRespond(u.id, accept: true),
+              ),
+            ],
+          null => [
+              KPill(
+                kind: KPillKind.ekle,
+                semanticLabel: '${u.name} — arkadaş ekle',
+                onTap: busy ? null : () => _handleSend(u.id),
+              ),
+            ],
+        },
       ],
     );
   }
 
-  /// Web renderFriendRow — ilişkiye göre ekle / bekliyor (iptal) / kabul /
-  /// çıkar. **Metin butonları 11 Ağustos 2026'da ikonlara indirildi**
-  /// (web `RelationIcons.tsx` ile aynı sözlük): ikon, dokunuşun NE YAPACAĞINI
-  /// söyler, ilişkinin adını değil — bu yüzden "arkadaşsınız" durumu yeşil
-  /// onay değil kırmızı `person_remove`. Flutter fontu gömülü taşıdığından
-  /// `Icons.*` doğrudan kullanılıyor; web aynı glyph'leri bu fonttan
-  /// çıkarılmış SVG path'leriyle çiziyor, yani iki platform BENZER değil
-  /// AYNI vektörü gösteriyor. TEK istisna `PersonPendingIcon` ("istek
-  /// gönderildi"): Material'da kişi+kum saati diye bir glyph olmadığından
-  /// elle çizildi, bkz. `relation_icons.dart`.
-  ///
-  /// Dört dalın DÖRDÜ de önce bir onay diyaloğu açar, hiçbiri anında iş
-  /// yapmaz. `accepted` dalı pratikte ULAŞILAMAZ (bu satır yalnızca
-  /// "Ara & Ekle" listelerinde çiziliyor ve orası arkadaşları eliyor, bkz.
-  /// `_notFriend`) — savunma amaçlı duruyor: silinirse bir gün eleme
-  /// atlanınca arkadaşa "ekle" ikonu gösterilirdi. "Arkadaşlar" sekmesi
-  /// bu satırı kullanmaz, kendi çıkarma butonu var.
-  Widget _candidateRow(FriendCandidate u) {
-    final (Widget ikon, String etiket, VoidCallback aksiyon) =
-        switch (u.relation) {
-      FriendRelation.accepted => (
-          const Icon(Icons.person_remove, size: 20, color: _red),
-          'Arkadaşlıktan çıkar',
-          () => _confirmThenRemoveCandidate(u),
-        ),
-      FriendRelation.pendingOutgoing => (
-          const PersonPendingIcon(color: _muted),
-          'Davet gönderildi — iptal et',
-          () => _confirmThenCancel(u),
-        ),
-      FriendRelation.pendingIncoming => (
-          const Icon(Icons.how_to_reg, size: 20, color: _accent),
-          'Arkadaşlık davetini kabul et',
-          () => _confirmThenAdd(u),
-        ),
-      null => (
-          const Icon(Icons.person_add_alt_1, size: 20, color: _accent),
-          'Arkadaş ekle',
-          () => _confirmThenAdd(u),
-        ),
-    };
-    final Widget action = _relationIconButton(
-      icon: ikon,
-      label: '${u.name} — $etiket',
-      busy: _busyId == u.id,
-      onTap: aksiyon,
-    );
-    return _row(
-      child: Row(children: [
-        _personButton(u.id, u.name, u.avatarUrl),
-        action,
-      ]),
+  Widget _requestCard(IncomingFriendRequest r) {
+    final busy = _busyId == r.requesterId;
+    return Container(
+      key: ValueKey('request-${r.requesterId}'),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7ED),
+        border: Border.all(color: kOrange, width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(children: [
+            _person(r.requesterId, r.name, r.avatarUrl, kFriendsIncomingMeta),
+          ]),
+          const SizedBox(height: 10),
+          Row(children: [
+            Expanded(
+              flex: 2,
+              child: SizedBox(
+                height: 42,
+                child: NeoButton(
+                  label: 'REDDET',
+                  variant: NeoButtonVariant.neutral,
+                  fontSize: 12,
+                  letterSpacing: 1,
+                  onPressed: busy
+                      ? null
+                      : () => _handleRespond(r.requesterId, accept: false),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              flex: 3,
+              child: SizedBox(
+                height: 42,
+                child: NeoButton(
+                  label: 'KABUL ET',
+                  variant: NeoButtonVariant.orange,
+                  fontSize: 12,
+                  letterSpacing: 1,
+                  onPressed: busy
+                      ? null
+                      : () => _handleRespond(r.requesterId, accept: true),
+                ),
+              ),
+            ),
+          ]),
+        ],
+      ),
     );
   }
 
-  /// Avatar+isim: dokununca o kişinin skor kartı. "Arkadaşlar"da baştan
-  /// beri vardı, ÜÇ listede de olmalı (kullanıcı isteği, 11 Ağustos 2026) —
-  /// hele "Davetler"de, isteği yanıtlamadan önce kimin gönderdiğine bakmak
-  /// tam da orada gerekiyor. Kart kapanınca ilişki yeniden okunuyor: kullanıcı
-  /// kartın İÇİNDEN arkadaş ekleyip çıkabildiğinden (`PlayerScoreCardModal`'ın
-  /// kendi simgesi) arkadaki satırın ikonu yoksa bayat kalırdı.
-  Widget _personButton(String id, String name, String? avatarUrl) {
-    final stats = widget.stats;
-    _rankScores.ensure([id]);
+  /// Avatar + isim (+ rütbe, + 🚩/🚫) + alt satır; dokununca skor kartı.
+  Widget _person(String id, String name, String? avatarUrl, String? meta) {
+    final tier = _rankScores.tierOf(id);
+    final mod = _modReported.containsKey(id)
+        ? '🚩'
+        : _modMuted.containsKey(id)
+            ? '🚫'
+            : null;
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: stats == null
-            ? null
-            : () async {
-                await showPlayerScoreCard(
-                  context,
-                  stats: stats,
-                  userId: id,
-                  name: name,
-                  avatarUrl: avatarUrl,
-                  games: widget.games,
-                  friends: widget.friends,
-                  auth: widget.auth,
-                );
-                if (!mounted) return;
-                final r = await widget.friends.relationWith(id);
-                if (!mounted) return;
-                _patchRelation(id, r);
-                _reloadFriends();
-                _reloadRequests();
-              },
+        onTap:
+            widget.stats == null ? null : () => _openCard(id, name, avatarUrl),
         child: Row(children: [
-          KAvatar(url: avatarUrl, name: name, size: 32),
-          const SizedBox(width: 10),
-          _name(name, _rankScores.tierOf(id)),
+          KAvatar(url: avatarUrl, name: name, size: 40),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(children: [
+                  Flexible(
+                    child: Text(name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: _text)),
+                  ),
+                  if (tier != null) ...[
+                    const SizedBox(width: 6),
+                    RankSeal(tier: tier, size: 16),
+                  ],
+                  if (mod != null) ...[
+                    const SizedBox(width: 6),
+                    Text(mod,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamilyFallback: [
+                            'Noto Color Emoji',
+                            'Apple Color Emoji'
+                          ],
+                        )),
+                  ],
+                ]),
+                if (meta != null) ...[
+                  const SizedBox(height: 2),
+                  Text(meta,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, color: _muted)),
+                ],
+              ],
+            ),
+          ),
         ]),
       ),
     );
   }
 
-  /// 44px dokunma hedefi (iOS asgarisi) içinde 20px ikon. Metin kalktığı
-  /// için `Semantics.label` artık ekran okuyucunun TEK bilgi kaynağı — boş
-  /// bırakma. Web'deki aynı buton `w-11 h-11` + `aria-label` taşıyor.
-  /// Bayrak, yasak işaretini EZER — sohbetteki rozet mantığının aynısı
-  /// (şikayet otomatik sessize de alıyor, iki ikon birden göstermek
-  /// gürültü). Emoji: gömülü fontta yok, fallback ŞART (bkz. Parça 70).
-  Widget _moderationIconButton(FriendRow f) {
-    final reported = _modReported.containsKey(f.friendId);
-    return Semantics(
-      button: true,
-      label: '${f.name} — ${reported ? 'şikayet edildi' : 'sessize alındı'},'
-          ' ayarları aç',
-      child: GestureDetector(
-        onTap: () => _openModeration(f),
-        behavior: HitTestBehavior.opaque,
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Center(
-            child: Text(
-              reported ? '🚩' : '🚫',
-              style: const TextStyle(
-                fontSize: 15,
-                fontFamilyFallback: ['Noto Color Emoji', 'Apple Color Emoji'],
+  Widget _moreButton(FriendRow f) => Semantics(
+        button: true,
+        label: '${f.name} — diğer seçenekler',
+        excludeSemantics: true,
+        child: TapTarget(
+          key: ValueKey('more-${f.friendId}'),
+          onTap: () => _openMenu(f),
+          minHeight: 40,
+          minWidth: 40,
+          child: const Icon(Icons.more_horiz, size: 22, color: _muted),
+        ),
+      );
+
+  /// Web `listCls` — çerçeveli, köşeleri yuvarlak, satırlar arası çizgi.
+  Widget _listBox(List<Widget> rows) => Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          border: Border.all(color: _border),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < rows.length; i++) ...[
+              if (i > 0) const Divider(height: 1, color: _border),
+              rows[i],
+            ],
+          ],
+        ),
+      );
+
+  /// Web `rowCls` — en az 60 yüksek, sol 14 sağ 8.
+  Widget _row({required Key key, required List<Widget> children}) => Container(
+        key: key,
+        constraints: const BoxConstraints(minHeight: 60),
+        padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+        color: kBg,
+        child: Row(children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
+            children[i],
+          ],
+        ]),
+      );
+
+  // ── ⋯ kişi menüsü — alttan açılır ────────────────────────────────────────
+
+  Future<void> _openMenu(FriendRow f) async {
+    final modVar = widget.chat != null &&
+        (_modReported.containsKey(f.friendId) ||
+            _modMuted.containsKey(f.friendId));
+    final items = <(String, bool, VoidCallback)>[
+      (
+        kFriendsMenuCard,
+        false,
+        () => _openCard(f.friendId, f.name, f.avatarUrl)
+      ),
+      // OYNA 2 kişilik kurar; menü ikisini de açıkça sunar.
+      (kFriendsMenuPlay2, false, () => _play(f.friendId, 2)),
+      (kFriendsMenuPlay4, false, () => _play(f.friendId, 4)),
+      // Moderasyon menüsü DEĞİL, "geri al" kısayolu — yalnızca bir durum
+      // varsa (yeni şikayet oyun içi sohbetten açılır).
+      if (modVar) (kFriendsMenuModeration, false, () => _openModeration(f)),
+      (kFriendsMenuRemove, true, () => _confirmRemove(f.friendId, f.name)),
+    ];
+    final secilen = await showModalBottomSheet<VoidCallback>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: const Color(0x730F172A),
+      constraints: const BoxConstraints(maxWidth: 460),
+      builder: (sheetCtx) {
+        final uzun = friendSinceLabel(f.since);
+        return Container(
+          decoration: const BoxDecoration(
+            color: kPanel,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+          ),
+          padding: EdgeInsets.fromLTRB(
+              20, 12, 20, 24 + MediaQuery.of(sheetCtx).viewPadding.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC7D0DC),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 12),
+              Row(children: [
+                KAvatar(url: f.avatarUrl, name: f.name, size: 44),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(f.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: _text)),
+                      if (uzun != null)
+                        Text(uzun,
+                            style:
+                                const TextStyle(fontSize: 12, color: _muted)),
+                    ],
+                  ),
+                ),
+              ]),
+              const SizedBox(height: 12),
+              const Divider(height: 1, color: _border),
+              for (var i = 0; i < items.length; i++) ...[
+                if (i > 0) const Divider(height: 1, color: Color(0xFFEEF1F5)),
+                InkWell(
+                  onTap: () => Navigator.of(sheetCtx).pop(items[i].$3),
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 52),
+                    alignment: Alignment.centerLeft,
+                    child: Text(items[i].$1,
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: items[i].$2 ? kRed : _text)),
+                  ),
+                ),
+              ],
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
-  }
-
-  /// ⚠ `icon` bir `IconData` DEĞİL `Widget` — çünkü ilişki ikonlarından biri
-  /// (`PersonPendingIcon`, "istek gönderildi") Material glyph'i değil, elle
-  /// çizilmiş bir `CustomPaint`. Renk/boy o yüzden çağıranda veriliyor.
-  Widget _relationIconButton({
-    required Widget icon,
-    required String label,
-    required bool busy,
-    VoidCallback? onTap,
-  }) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: GestureDetector(
-        onTap: busy ? null : onTap,
-        behavior: HitTestBehavior.opaque,
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Center(
-            child: Opacity(
-              opacity: busy ? 0.4 : 1,
-              child: icon,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _smallButton(String label,
-      {bool neutral = false, bool busy = false, VoidCallback? onTap}) {
-    return NeoButton(
-      // Web smallBtn CSS `uppercase` — Türkçe-farkındalı karşılığı trUpper.
-      label: busy ? '…' : trUpper(label),
-      variant: neutral ? NeoButtonVariant.neutral : NeoButtonVariant.accent,
-      fontSize: 10,
-      letterSpacing: 0.5,
-      // web `py-1.5 px-3`
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      onPressed: busy ? null : onTap,
-    );
-  }
-
-  // ── Onay/sonuç diyalogları (web ConfirmDialog/InfoDialog) ────────────────
-
-  /// "Ekle" ve "Kabul Et" de onaydan geçer (11 Ağustos 2026): metin butonları
-  /// ikonlara indiği için etiketsiz bir ikona kazara dokunmak çok daha kolay,
-  /// üstelik `PlayerScoreCard` dört ilişki dalının HEPSİNDE zaten onay
-  /// soruyordu — iki ekran arasındaki asimetri kapatıldı. Metin ilişkiden
-  /// türetiliyor; sözler `player_score_card_modal.dart` ile BİREBİR aynı.
-  Future<void> _confirmThenAdd(FriendCandidate u) async {
-    final incoming = u.relation == FriendRelation.pendingIncoming;
-    final ok = await confirmFriendAction(
-      context,
-      title: incoming ? 'Arkadaşlık Daveti' : 'Arkadaş Ekle',
-      message: incoming
-          ? '${u.name} oyuncusu sana arkadaşlık daveti gönderdi. '
-              'Kabul etmek istiyor musun?'
-          : '${u.name} oyuncusunu arkadaş olarak eklemek istiyor musun?',
-      confirmLabel: incoming ? 'Kabul Et' : 'Ekle',
-    );
-    if (!ok || !mounted) return;
-    String message;
-    if (incoming) {
-      message = await _handleRespond(u.id, accept: true)
-          ? 'Arkadaş oldunuz.'
-          : kFriendActionFailed;
-    } else {
-      final result = await _handleSend(u);
-      // Karşı taraftan zaten bekleyen bir istek varsa sunucu trigger'ı
-      // ilişkiyi anında accepted yapar — mesaj bunu yansıtmalı.
-      // `null` = istek HİÇ gitmedi (bkz. `_handleSend`'in catch dalı);
-      // "iletilmiştir" demek yalan olurdu.
-      message = switch (result) {
-        FriendRelation.accepted => 'Arkadaş oldunuz.',
-        null => kFriendActionFailed,
-        _ => 'Arkadaşlık davetiniz iletilmiştir.',
-      };
-    }
     if (!mounted) return;
-    await showFriendInfoDialog(context, message);
+    secilen?.call();
   }
+}
 
-  /// "Ara & Ekle" listesindeki `accepted` satırından çıkarma. Web'de bu satır
-  /// eskiden tıklanamaz bir "Arkadaşsınız" metniydi; ikona dönünce çıkarma
-  /// yolu buradan da açıldı. `_confirmThenRemoveFriend` FriendRow istediği
-  /// için ayrı bir sarmalayıcı — onay/sonuç metinleri BİREBİR aynı.
-  Future<void> _confirmThenRemoveCandidate(FriendCandidate u) async {
-    final ok = await confirmFriendAction(
-      context,
-      title: 'Arkadaşlıktan Çıkar',
-      message:
-          '${u.name} ile arkadaşsınız. Arkadaşlıktan çıkmak mı istiyorsunuz?',
-      confirmLabel: 'Çıkar',
-    );
-    if (!ok || !mounted) return;
-    setState(() => _busyId = u.id);
-    try {
-      await widget.friends.removeOrCancel(u.id);
-      // Listedeki ikon anında person_add'e dönsün + Arkadaşlar tazelensin.
-      _patchRelation(u.id, null);
-      _reloadFriends();
-      if (mounted) {
-        await showFriendInfoDialog(context, 'Arkadaşlıktan çıkarıldı.');
-      }
-    } catch (e) {
-      debugPrint('[Kelimeki] arkadaş çıkarma hatası: $e');
-    } finally {
-      if (mounted) setState(() => _busyId = null);
-    }
-  }
-
-  Future<void> _confirmThenRemoveFriend(FriendRow f) async {
-    final ok = await confirmFriendAction(
-      context,
-      title: 'Arkadaşlıktan Çıkar',
-      message:
-          '${f.name} ile arkadaşsınız. Arkadaşlıktan çıkmak mı istiyorsunuz?',
-      confirmLabel: 'Çıkar',
-    );
-    if (!ok || !mounted) return;
-    setState(() => _busyId = f.friendId);
-    try {
-      await widget.friends.removeOrCancel(f.friendId);
-      _reloadFriends();
-      if (mounted) {
-        await showFriendInfoDialog(context, 'Arkadaşlıktan çıkarıldı.');
-      }
-    } catch (e) {
-      debugPrint('[Kelimeki] arkadaş çıkarma hatası: $e');
-    } finally {
-      if (mounted) setState(() => _busyId = null);
-    }
-  }
-
-  Future<void> _confirmThenReject(IncomingFriendRequest r) async {
-    final ok = await confirmFriendAction(
-      context,
-      title: 'Daveti Reddet',
-      message:
-          '${r.name} oyuncusunun arkadaşlık davetini reddetmek mi istiyorsunuz?',
-      confirmLabel: 'Reddet',
-    );
-    if (!ok || !mounted) return;
-    final done = await _handleRespond(r.requesterId, accept: false);
-    if (mounted) {
-      await showFriendInfoDialog(
-          context, done ? 'Davet reddedildi.' : kFriendActionFailed);
-    }
-  }
-
-  Future<void> _confirmThenCancel(FriendCandidate u) async {
-    final ok = await confirmFriendAction(
-      context,
-      title: 'Daveti İptal Et',
-      message: '${u.name} oyuncusuna gönderdiğin arkadaşlık davetini iptal '
-          'etmek istiyor musun?',
-      confirmLabel: 'İptal Et',
-    );
-    if (!ok || !mounted) return;
-    setState(() => _busyId = u.id);
-    try {
-      await widget.friends.removeOrCancel(u.id);
-      _patchRelation(u.id, null);
-      if (mounted) {
-        await showFriendInfoDialog(context, 'Arkadaşlık daveti iptal edildi.');
-      }
-    } catch (e) {
-      debugPrint('[Kelimeki] istek iptal hatası: $e');
-    } finally {
-      if (mounted) setState(() => _busyId = null);
-    }
-  }
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+  @override
+  Widget build(BuildContext context) => Text(
+        text,
+        style: const TextStyle(
+          fontFamily: 'SpaceMono',
+          fontSize: 10,
+          letterSpacing: 1.5,
+          color: _muted,
+        ),
+      );
 }
 
 int trCandidate(FriendCandidate a, FriendCandidate b) =>
@@ -1025,11 +926,7 @@ Future<bool> confirmFriendAction(
   required String message,
   required String confirmLabel,
 }) {
-  // Web `ConfirmDialog` (FriendsModal.tsx) App.tsx'in onay popup'larıyla
-  // BİREBİR AYNI sınıfları taşıyor — yani tek kanonik kart var, o da
-  // `dialog_shell.dart`. Bu dosya bir dönem kartı ELLE çizdi ve değerleri
-  // sapmıştı (başlık 15/gövde 13/buton 11, gölge yok); 15 Ağustos 2026'da
-  // ortak kabuğa bağlandı.
+  // Tek kanonik kart `dialog_shell.dart` (15 Ağustos 2026).
   return showKConfirm(
     context,
     title: title,
