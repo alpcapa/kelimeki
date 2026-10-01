@@ -449,6 +449,55 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
+## 1.1.2 (831) — GÖNDERİME HAZIR (1 Eki 2026)
+
+**İçerik:** 1 Eki kesiminin 17 PR'ı + #41 tasarım portunun tamamı (#739-#744)
++ 826 cihaz turunun bulguları (#746). Liste: `ROADMAP.md` → "Sıradaki sürüme
+binecekler". Paket: koşu **#831**, `05f1c1f`; `.aab` `mobile-latest`te
+(yükleme 20:16 UTC, koşu #831'in içinde — ölçüldü).
+
+- [x] TestFlight 826 cihaz turu → bulgular #746'da düzeltildi.
+- [x] TestFlight **831** turu ✅ (1 Eki akşamı, kullanıcı: *"Herşey ok,
+      review'a gönderelim"*).
+- [ ] **ASC:** `+ Version` → **1.1.2** · build **831** · What's New (aşağıda) ·
+      Notes 1.1.0'dan AYNEN (§16 kalıcı cevabı) · **Manually release** →
+      `Add for Review` → `Submit`. Submission ID'yi buraya yaz.
+- [ ] **Play:** `mobile-latest` → `kelimeki.aab` indir, Console'da sürüm
+      kodunun **831** olduğunu GÖR, sürüm adı `1.1.2 (831)`, notlar (aşağıda)
+      → production. ⚠ İki yükleme arasında `main`'e mobil merge YOK
+      ("SÜRÜM SENKRONU").
+- [ ] Onaylar gelince yayın — Apple önce gelirse beklemeden ("YAYIN SIRASI").
+
+**App Store "What's New" (726 karakter):**
+```
+• Yeni, sade açılış ekranı ve daha kısa tanıtım.
+• Oyun kurma tek ekranda: rakip, kişi sayısı ve zorluk bir arada.
+• Arkadaşlar tek ekranda: gelen ve gönderilen istekler, tek dokunuşla "Oyna".
+• Canlı oyun kurarken sık oynadıklarını hızlıca seç, davet linkini doğrudan paylaş.
+• Yeni başlayanlara oyun içinde birer kez çıkan kısa ipuçları.
+• Canlı oyunda mesajın okunduğu artık iki tarafta da görünüyor; sohbet kuralları eklendi.
+• Uygulama simgesinde okunmamış bildirim sayısı.
+• Yarım kalan oyunun için hatırlatma.
+• Oyun Geçmişi'nde toplam puan ve bölge vergisi özeti.
+• Yatay iPad'de tahta ve düğmeler ekrana tam sığıyor.
+• Hata düzeltmeleri: yapay zekânın taş değişiminde taş kaybı, avatarın yüklenmemesi ve daha fazlası.
+```
+
+**Play sürüm notu — `tr-TR`, 470/500:** (iOS'a özgü simge rozeti
+maddesi YOK; "yatay iPad" → "tablet")
+```
+• Yeni, sade açılış ekranı ve daha kısa tanıtım.
+• Oyun kurma tek ekranda: rakip, kişi sayısı, zorluk.
+• Arkadaşlar tek ekranda, tek dokunuşla "Oyna".
+• Canlı oyunda sık oynadıklarını hızlı seç, davet linkini paylaş.
+• Yeni başlayanlara birer kez çıkan kısa ipuçları.
+• Canlı oyunda mesajın okunduğu görünüyor; sohbet kuralları eklendi.
+• Yarım kalan oyun için hatırlatma.
+• Oyun Geçmişi'nde puan ve vergi özeti.
+• Tablette tahta ekrana tam sığıyor.
+• Hata düzeltmeleri.
+```
+
 ## 1.1.1 (723) — ✅ İKİ MAĞAZADA YAYINDA (26 Eyl 2026)
 
 **İçerik:** merge turunun on PR'ı. Hepsi 25 Eylül'de `main`'e girdi. Liste
