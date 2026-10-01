@@ -75,7 +75,7 @@ export function MemberMessageModal({ toUserId, toEmail, toName, onClose, onSent 
             required
           />
           <p className="text-[10px] text-muted font-mono">
-            Altına otomatik olarak "Saygılarımızla, Kelimeki Müşteri Hizmetleri" imzası eklenir.
+            Altına otomatik olarak "Saygılarımızla, Kelimeki Destek" imzası eklenir.
           </p>
           {error && <p className="text-red text-xs font-mono">{error}</p>}
           <button

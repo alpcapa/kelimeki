@@ -103,7 +103,7 @@ check('bayrak açılınca üye bitişi + signup geçiyor', funnelEventAllowed('g
 
 // 6 — admin gruplaması: mevcut kohort DIŞINDA, toplam alt satırların toplamı.
 {
-  const z = { returned: 0, signed_up: 0, started: 0, finished: 0, games_started: 0, games_finished: 0 };
+  const z = { returned: 0, signed_up: 0, started: 0, finished: 0, games_started: 0, games_finished: 0, store: 0 };
   const g = groupFunnelV2(
     [
       { platform: 'web', channel: 'ig', land: 5, ...z, started: 2, games_started: 3 },

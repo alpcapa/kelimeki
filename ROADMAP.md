@@ -97,8 +97,11 @@ kod girmez.
 | | #34 | Canlı sohbet okundu bilgisi — port yarısı | Web + sunucu `main`'de; port açık |
 | | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Açık |
 | | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, bu kaldı |
-| | — | Huni v2'nin MOBİL yarısı (PR 2) | Numarasız; `docs/decisions/funnel-v2.md` |
+| | — | Huni v2'nin MOBİL yarısı (PR 2) | **5 Ekim trenine alındı** (27 Eyl, kullanıcı: *"dahil edelim"*). `docs/decisions/funnel-v2.md` → "PR 2". ⚠ Gelince admin kartındaki `PlatformTag kind="web"`i kaldır · **30 Eyl 2026, kullanıcı kararı: Play Install Referrer da 5 Ekim trenine** (27 Eyl'deki "önce kanalsız" kararı kaldırıldı) — Android kurulumunun `meta-*` etiketi `land` olayına yazılsın, paralı kanal uygulama içinde görünsün. Treni öne çekme önerisi REDDEDİLDİ (kazanç ~4 gün, 14 PR'lık paket, referrer'sız paket kanal göstermiyordu) |
+| | #41 | İlk oyun akışı v2 — sade karşılama, tek Setup ekranı, tanıtımın önündeki pencereler, misafir uyarısının kaldırılması, Arkadaşınla ekranları | Tasarım + kararlar ✅ (27 Eyl): `docs/decisions/onboarding.md` → "İlk oyun akışı v2". Web ✅ (27 Eyl, #660-#666): karşılama, Setup, Arkadaşınla ekranları, **Arkadaşlar penceresi (tek ekran)**, canlı oyun formu (Tüm oyuncular, kaydırma çubuğu, Hızlı seç şeridi). ⚠ **PORT KAPSAMI = karar tablosunun 2, 4, 7, 9-13 ve 15-24. satırları** + iki yeni RPC (`list_outgoing_friend_requests`, `my_frequent_opponents`, canlıda hazır). Sıra: karşılama (web, ✅ kodlandı) → Setup (YALNIZ web) → ≥2 hafta web verisi (iOS kontrol grubu) → Setup port yarısı + tanıtım (web+port aynı PR) aynı trende, en erken 19 Ekim → `IntroScreen` (port) |
+| | #40 | Cihaz · Cihaz Markası kartları uygulamayı da görsün | **2 haftalık trene alındı** (27 Eyl, kullanıcı kararı). Port `device_visits`e HİÇ yazmıyor, `guest_visits`e de `os_version`/`device_model` null (`visits_api.dart` başlığı: `device_info_plus` yok). İş: paketi ekle, iki alanı doldur, `device_visits`e yaz. ⚠ Gelince iki kartın `PlatformTag kind="web"`ini kaldır; Play Data safety / App Store gizlilik beyanını kontrol et (cihaz modeli yeni veri türü mü) |
 | | #26 | Web → mağaza yönlendirmesi: kalan iki satır | Android'de uygulaması yüklü misafir (`asset_statements`, mobil) · manifest `related_applications` (ÖLÇMEDEN AÇMA) |
+| | #42 | Uygulama içi puan isteği (App Store + Play) | **30 Eyl 2026, kullanıcı kararı: #41 (tasarım) yayına girdikten SONRAKİ bir trene.** App Store'da hiç yorum yok. Kendi uygulamana yorum yazmak YASAK (Review Guidelines 5.6, geliştirici hesabı riski), bu yüzden ilk yorumların yolu işletim sisteminin kendi penceresi: `in_app_review` paketi (iOS `SKStoreReviewController` — yılda en fazla 3 gösterim, Apple kısıtı; Android In-App Review API). Tetik bir KAZANÇ anında (ör. 3.-5. biten oyun ya da bir galibiyet sonrası), tanıtımda/ilk oyunda ASLA. Karar `utils/onboarding.ts` desenindeki gibi saf fonksiyonda. Web'de karşılığı yok (yalnızca port). Gelen yorumlara ASC'de `Kelimeki Destek` adıyla cevap verilebilir |
 | **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅; `admin_ai_balance` seviye kırılımı (Kolay ~%30 · Normal ~%51 · Zor ~%70) |
 | | #18 | `submit_move` puan hakemliği | GÖLGE FAZINDA (`move_shadow_diffs`) |
 | | #14 | Uzun modal listeleri tembel inşa | Eşiğe bağlı izleme |
@@ -111,7 +114,7 @@ kod girmez.
 | | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
 
 **Madde numarası kuralı (26 Eylül 2026):** yeni madde **bir sonraki boş
-numarayı** alır — şu an **#40**. Numara hiçbir zaman yeniden kullanılmaz,
+numarayı** alır — şu an **#42**. Numara hiçbir zaman yeniden kullanılmaz,
 kapanmış (arşivdeki) maddelerinki de. 26 Eylül'de iki AKTİF çakışma
 bulundu ve sonradan gelen maddeye yeni numara verildi: tahta yükseklik
 bütçesi **#26 → #38** (mağaza yönlendirmesi #26 olarak kaldı; kodda ve
@@ -328,6 +331,34 @@ gün elle `Release This Version` ile yayına alındı — senkron kapandı
 Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
 **5 Ekim 2026** — 28 Eylül kullanıcı kararıyla atlandı, `surumler.md` →
 "SÜRÜM TRENİ").
+
+⚠ **Tren incelemesi (1 Ekim 2026, ajan; kesimden önce OKU).** 17 taslak
+`[Sonraki sürüm]` PR + #675. `main` ile durum (yerelde deneme merge'ü):
+
+| Durum | PR'lar |
+|---|---|
+| Temiz | #642 · #649 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
+| Çakışma — yalnız doküman | #637, #640 (`ROADMAP.md`) · #647 (`CLAUDE.md`) · #659, #709 (`docs/decisions/funnel-v2.md`) |
+| Çakışma — KOD | #651 (`ROADMAP.md` + **`src/components/AdminDashboard.tsx`**) |
+| CI KIRMIZI | **#655** — web `test`: `tests/board-fit.spec.ts` "dizüstü 1440×800: taş harfi ve X3 hücreye sığıyor" (tahtada harf görünmüyor; 27 Eyl koşusu). `main`'de aynı test yeşil → büyük ihtimalle PR'ın kendi değişikliği (zoom balonu); kesimden önce düzeltilmeli |
+
+- **Sıra bağımlılığı:** #709, #659'un ÜSTÜNE kurulu (önce #659).
+- **Aynı dosyaya dokunanlar (kesimde metin çakışması beklenir):**
+  `online_game_screen.dart` 7 PR (#637 #640 #642 #649 #657 #670 #687) ·
+  `auth_modal.dart` 5 (#640 #642 #651 #659 #709) · `game_screen.dart` 4
+  (#642 #657 #670 #716) · `games_api.dart` 3 (#651 #659 #709) ·
+  `pubspec.yaml` 3 (#647 #659 #709). Her merge'den sonra sıradakine `main`'i
+  merge et, `flutter test` koş.
+- **#721 kapatıldı** — #651'in tekrarıydı (`tutorial_events.anon_id`).
+- **#675 taslak DEĞİL ve `main`'e girmemiş iş taşıyor** (başka oturum, 28-29
+  Eyl): kampanya kütüğünün 29 Eyl ara kesitleri (00:13 · 09:56 · 10:09 kare
+  teşhisi · 10:14 yerleşim kırılımı · 10:25 kare duraklatıldı · 17:51 · 18:00
+  · 18:03), `kare` v2 sade görselleri (iki PNG) + `scripts/play-lansman`
+  değişikliği + `marketing-assets.md`. Mobil dosyası YOK → trenle ilgisiz,
+  kütük çakışması çözülüp HEMEN merge edilebilir. → **1 Eki MERGE EDİLDİ**
+  (kullanıcı onayı; kütük kronolojik birleştirildi, iki mükerrer satır
+  elendi). Aynı gün dal temizliği gerçek modda koştu: #675 ve #721'in dalları
+  silindi, uzakta yalnızca açık PR'ı olan dallar kaldı.
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
