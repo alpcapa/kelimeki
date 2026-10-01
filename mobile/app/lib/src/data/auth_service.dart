@@ -24,6 +24,10 @@ import 'device_stamp.dart';
 
 /// `profiles` satırının bu fazda kullanılan alt kümesi (web `Profile`
 /// tipinin eşleniği; skor/lig alanları sonraki parçaların işi).
+/// Takma ismin sunucudaki durumu (`nickname_status` RPC'si): uygun · başkası
+/// kullanıyor · küfür süzgecine takıldı (ROADMAP #37).
+enum NicknameStatus { ok, taken, blocked }
+
 class KProfile {
   final String id;
   final String? displayName;
@@ -333,14 +337,20 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  /// `check_nickname_available` RPC'si — canlı UX geri bildirimi; asıl
-  /// doğruluk kaynağı DB'deki unique index (web'deki aynı not).
-  Future<bool> checkNicknameAvailable(String nickname) async {
+  /// `nickname_status` RPC'si — web `fetchNicknameStatus` portu. Canlı UX
+  /// geri bildirimi; asıl doğruluk kaynağı DB (unique index + küfür
+  /// süzgecinin `profiles` trigger'ı, ROADMAP #37). `check_nickname_available`
+  /// yalnızca eski paketler için duruyor (orada `blocked` "kullanımda" görünür).
+  Future<NicknameStatus> nicknameStatus(String nickname) async {
     final c = _client;
     if (c == null) throw const AuthException('Supabase yapılandırılmadı.');
-    final data = await c
-        .rpc('check_nickname_available', params: {'p_nickname': nickname});
-    return data == true;
+    final data =
+        await c.rpc('nickname_status', params: {'p_nickname': nickname});
+    return switch (data) {
+      'blocked' => NicknameStatus.blocked,
+      'taken' => NicknameStatus.taken,
+      _ => NicknameStatus.ok,
+    };
   }
 
   /// Şifre sıfırlama e-postası gönderir — web `sendPasswordReset`

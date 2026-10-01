@@ -431,6 +431,19 @@
 
 ### Mesajlaşma (Faz 1 sohbet + Faz 2 sessize alma/raporlama)
 
+- [ ] **Sohbet Kuralları onayı (25 Eylül 2026, Parça 215).** Kuralları hiç
+      kabul etmemiş bir hesapla ilk mesajı gönder → mesaj GİTMEDEN "SOHBET
+      KURALLARI" penceresi. "VAZGEÇ" → metin kutuda kalmalı. "KABUL
+      EDİYORUM" (İ noktalı!) → mesaj hemen gitmeli. Aynı hesapla WEB'de
+      yaz → pencere ÇIKMAMALI (onay hesaba bağlı); tersi de. "Kullanım
+      Koşulları'nın tamamı" koşulları açmalı ve §3'te yasak listesi
+      görünmeli.
+- [ ] **Küfür süzgeci + takma isim (25 Eylül 2026, ROADMAP #37).** Listede
+      olan bir kelimeyi içeren mesaj → iki tarafta da `*` ile görünmeli
+      (süzgeç sunucuda; eski paket de aynı). Kayıt/Hesap Ayarları'nda süzgece
+      takılan takma isim (ör. `Salak_Test`) → "Bu takma isim kullanılamaz."
+      ve buton pasif (eski pakette "kullanımda" yazardı).
+
 - [ ] **Buton görünürlüğü.** Board altındaki "Mesajlaşma" butonu YALNIZCA
       Canlı oyun ekranında görünmeli; yerel/YZ oyun ekranında hiç
       çizilmemeli.

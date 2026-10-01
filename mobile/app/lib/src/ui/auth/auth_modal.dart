@@ -46,14 +46,14 @@ Future<void> showLoginModal(BuildContext context, AuthService auth,
 
 enum _Mode { login, signup, forgot }
 
-enum _NickStatus { idle, checking, available, taken, error }
+enum _NickStatus { idle, checking, available, taken, blocked, error }
 
 class AuthModal extends StatefulWidget {
   final AuthService auth;
 
   /// Takma isim kontrolü — testler ağsız sahte bir denetleyici enjekte eder;
-  /// üretimde `auth.checkNicknameAvailable`.
-  final Future<bool> Function(String nickname)? nicknameChecker;
+  /// üretimde `auth.nicknameStatus`.
+  final Future<NicknameStatus> Function(String nickname)? nicknameChecker;
 
   /// Web AuthModal'ın aynı üç prop'u — Görüş Bildir'in "üyeliğine devam"
   /// teklifi modalı doğrudan kayıt modunda, e-posta önceden dolu ve
@@ -218,11 +218,14 @@ class _AuthModalState extends State<AuthModal> {
     _nickTimer = Timer(const Duration(milliseconds: 400), () async {
       try {
         final checker =
-            widget.nicknameChecker ?? widget.auth.checkNicknameAvailable;
-        final available = await checker(trimmed);
+            widget.nicknameChecker ?? widget.auth.nicknameStatus;
+        final durum = await checker(trimmed);
         if (mounted && _nickSeq == mySeq) {
-          setState(() => _nickStatus =
-              available ? _NickStatus.available : _NickStatus.taken);
+          setState(() => _nickStatus = switch (durum) {
+                NicknameStatus.ok => _NickStatus.available,
+                NicknameStatus.taken => _NickStatus.taken,
+                NicknameStatus.blocked => _NickStatus.blocked,
+              });
         }
       } catch (_) {
         if (mounted && _nickSeq == mySeq) {
@@ -293,6 +296,9 @@ class _AuthModalState extends State<AuthModal> {
       if (_nickStatus == _NickStatus.taken) {
         throw const _FormError('Bu takma isim zaten kullanılıyor.');
       }
+      if (_nickStatus == _NickStatus.blocked) {
+        throw const _FormError('Bu takma isim kullanılamaz.');
+      }
       if (_email.text.trim().isEmpty) {
         throw const _FormError('E-posta zorunludur.');
       }
@@ -348,7 +354,8 @@ class _AuthModalState extends State<AuthModal> {
     final submitDisabled = _busy ||
         (signup &&
             (_nickStatus == _NickStatus.checking ||
-                _nickStatus == _NickStatus.taken));
+                _nickStatus == _NickStatus.taken ||
+                _nickStatus == _NickStatus.blocked));
     return KModal(
       title: signup
           ? 'Kayıt'
@@ -391,6 +398,8 @@ class _AuthModalState extends State<AuthModal> {
                 const _StatusLine('Kullanılabilir', _green, icon: Icons.check),
               if (_nickStatus == _NickStatus.taken)
                 const _StatusLine('Bu takma isim kullanımda.', _red),
+              if (_nickStatus == _NickStatus.blocked)
+                const _StatusLine('Bu takma isim kullanılamaz.', _red),
               const SizedBox(height: 12),
             ],
             _labeled('E-POSTA',

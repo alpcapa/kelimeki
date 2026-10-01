@@ -637,6 +637,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           mutedUserIds: _chatState.mutedUserIds,
           reportedUserIds: _chatState.reportedUserIds,
           onOpenParticipantSettings: (id) => _openChatSettings(id),
+          loadChatRulesVersion: () => widget.chat!.chatRulesVersion(),
+          acceptChatRules: (v) => widget.chat!.acceptChatRules(v),
         ),
       ),
     ).then((_) {
