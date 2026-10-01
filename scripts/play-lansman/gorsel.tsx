@@ -30,6 +30,23 @@ export type RozetKaynaklari = Record<string, string>;
 
 export type Duzen = 'kare' | 'story' | 'dikey' | 'yatay' | 'link';
 
+/**
+ * Metin varyantı. `play` = "Artık Google Play'de" lansmanı (26 Eylül 2026).
+ * `genel` = mağazadan bağımsız (28 Eylül 2026, Meta kampanyası: tek reklam
+ * seti iOS + Android'e birlikte gidiyor; "Google Play'de" başlığı iPhone'da
+ * yanlış olurdu). Yalnızca `story` düzeninde üretiliyor — kare için
+ * `marketing/sponsored-2026-08/kelimeki-01.png` zaten mağazadan bağımsız.
+ *
+ * `sade` = 29 Eylül 2026, Meta kampanyasının `kare` reklamı için. Eski
+ * görsel (`kelimeki-01` + story) mağazaya neredeyse kimseyi göndermedi;
+ * kullanıcının teşhisi: *"çok fazla yazı, kutu var, logo çok büyük"*. Bu
+ * varyantta kahraman GERÇEK tahta (tam görünür, soluk değil), logo küçük,
+ * tek başlık, tek dip satırı; istatistik kutusu ve rozet YOK (reklamın
+ * "İndir" düğmesi o işi yapıyor, link zaten siteye gidiyor). Yalnızca `kare`
+ * ve `story` düzenlerinde üretilir (`npm run generate-meta-sade`).
+ */
+export type Metin = 'play' | 'genel' | 'sade';
+
 /** Apple Marketing Tools'un beş boyu (2× çekilince): 1080² · 1080×1920 ·
  *  720×1280 · 1280×720 · 1200×628. */
 export const OLCULER: Record<Duzen, { w: number; h: number }> = {
@@ -78,7 +95,7 @@ const OLCU = {
   link: { ikon: 0, logo: 40, baslik: 33, alt: 14, rozet: 34, dip: 11, bosluk: 11 },
 } as const;
 
-function Gorsel({ duzen, ikonSrc, rozetler }: { duzen: Duzen; ikonSrc: string; rozetler: RozetKaynaklari }) {
+function Gorsel({ duzen, ikonSrc, rozetler, metin }: { duzen: Duzen; ikonSrc: string; rozetler: RozetKaynaklari; metin: Metin }) {
   const { w, h } = OLCULER[duzen];
   const o = OLCU[duzen];
   const yan = YAN.includes(duzen);
@@ -94,12 +111,22 @@ function Gorsel({ duzen, ikonSrc, rozetler }: { duzen: Duzen; ikonSrc: string; r
       })}
     </div>
   );
-  const baslik = (
+  const baslik = metin === 'genel' ? (
+    // Üç satır, 56 px'te "tahtayı ele geçir." güvenli kutuya (%82) sığmıyor —
+    // punto 0,8× (build.mjs taşmayı ölçüp düşürüyor).
+    <p style={{ margin: 0, fontSize: Math.round(o.baslik * 0.8), lineHeight: 1.1, fontWeight: 700, letterSpacing: -0.8 }}>
+      Kelime bul,<br />bölgeni büyüt,<br /><span style={{ color: ACCENT }}>tahtayı ele geçir.</span>
+    </p>
+  ) : (
     <p style={{ margin: 0, fontSize: o.baslik, lineHeight: 1.08, fontWeight: 700, letterSpacing: -0.8 }}>
       Artık{duzen === 'kare' ? ' ' : <br />}<span style={{ color: ACCENT }}>Google Play</span>'de
     </p>
   );
-  const alt = (
+  const alt = metin === 'genel' ? (
+    <p style={{ margin: 0, fontSize: o.alt, lineHeight: 1.3, fontWeight: 500, color: '#3A4652' }}>
+      Strateji odaklı<br />Türkçe kelime oyunu
+    </p>
+  ) : (
     <p style={{ margin: 0, fontSize: o.alt, lineHeight: 1.3, fontWeight: 500, color: '#3A4652' }}>
       Kelime bul, bölgeni büyüt,{duzen === 'kare' ? ' ' : <br />}tahtayı ele geçir.
     </p>
@@ -166,10 +193,50 @@ function Gorsel({ duzen, ikonSrc, rozetler }: { duzen: Duzen; ikonSrc: string; r
   );
 }
 
-export function renderGorselHtml(duzen: Duzen, cssHref: string, ikonSrc: string, rozetler: RozetKaynaklari): string {
+/** `sade` varyantı — ayrı bileşen, çünkü düzen mantığı ötekilerden farklı:
+ *  tahta arka plan değil içeriğin kendisi. */
+function SadeGorsel({ duzen }: { duzen: 'kare' | 'story' }) {
+  const { w, h } = OLCULER[duzen];
+  const story = duzen === 'story';
+  // Story'de içerik Instagram'ın üst %14 / alt %20 bantlarının dışında.
+  const ust = story ? h * 0.14 : 0;
+  const alt = story ? h * 0.2 : 0;
+  const tahta = story ? 440 : 330;
+  const logo = story ? 34 : 26;
+  const baslik = story ? 34 : 27;
+  const dip = story ? 15 : 12;
+  const bosluk = story ? 22 : 13;
+  return (
+    <div style={{ width: w, height: h, position: 'relative', overflow: 'hidden', background: '#FFFFFF', fontFamily: SANS, color: '#1B2430' }}>
+      <LandingLogoDefs />
+      <div style={{ position: 'absolute', left: 0, right: 0, top: ust, bottom: alt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div data-guvenli-kutu="" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: bosluk, textAlign: 'center' }}>
+          <LandingLogo height={logo} />
+          <p style={{ margin: 0, fontSize: baslik, lineHeight: 1.12, fontWeight: 700, letterSpacing: -0.6 }}>
+            Kelime bul, <span style={{ color: ACCENT }}>bölgeni büyüt.</span>
+          </p>
+          <div data-tahta-sade="" style={{ width: tahta, height: tahta, borderRadius: 14, overflow: 'hidden',
+            boxShadow: '0 10px 30px rgba(27,36,48,0.16)' }}>
+            <div style={{ width: BOARD_BASE_W, transform: `scale(${tahta / BOARD_BASE_W})`, transformOrigin: 'top left' }}>
+              <GameBoardPreview snapshot={DEMO_TILES_4} playerCount={4} compact={false}
+                players={Array.from({ length: 4 }, (_, i) => ({ name: '', score: 0, is_ai: false, colorIndex: i }))} />
+            </div>
+          </div>
+          <span style={{ fontFamily: MONO, fontSize: dip, color: '#3A4652', letterSpacing: 0.3 }}>
+            Ücretsiz · iPhone, Android ve tarayıcıda
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function renderGorselHtml(duzen: Duzen, cssHref: string, ikonSrc: string, rozetler: RozetKaynaklari, metin: Metin = 'play'): string {
   return `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><title>Kelimeki Google Play ${duzen}</title>
 <link rel="stylesheet" href="${cssHref}">
 <style>html,body{margin:0;padding:0;background:#fff}</style>
-</head><body>${renderToStaticMarkup(<Gorsel duzen={duzen} ikonSrc={ikonSrc} rozetler={rozetler} />)}</body></html>`;
+</head><body>${renderToStaticMarkup(metin === 'sade'
+  ? <SadeGorsel duzen={duzen === 'story' ? 'story' : 'kare'} />
+  : <Gorsel duzen={duzen} ikonSrc={ikonSrc} rozetler={rozetler} metin={metin} />)}</body></html>`;
 }

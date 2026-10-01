@@ -47,6 +47,7 @@
 // 1 Eylül 2026, kayıt: docs/decisions/product-backlog.md).
 import 'package:clock/clock.dart';
 import 'package:flutter/widgets.dart';
+import 'package:kelimeki_core/kelimeki_core.dart' show boardSize, cornerSize;
 
 /// Zoom ölçeği. 2.0 bilinçli: 420 px ekranda hücre ~24 px → ~48 px, yani
 /// projenin kendi 48 dp dokunma hedefi kuralı (24 Ağustos 2026 turu) ve
@@ -79,6 +80,44 @@ const Duration kZoomAnimDuration = Duration(milliseconds: 180);
 /// Web ikizi `ZOOM_HINT_AUTO_HIDE_MS` (`src/utils/boardZoom.ts`) ile AYNI
 /// olmalı.
 const Duration kZoomHintAutoHide = Duration(seconds: 4);
+
+/// Tanıtım balonunun metni — web `ZOOM_HINT_TEXT` (`src/utils/boardZoom.ts`)
+/// ile BİREBİR aynı olmalı (27 Eylül 2026, kullanıcı: *"mesaj çok uzun...
+/// Boş kareye çift tık tahtayı büyütür. Şimdi Dene!"*). `\n` bilinçli: iki
+/// cümle iki satır, serbest sarmada ikinci cümle ortadan kırılıyordu.
+const String kZoomHintText = 'Boş kareye çift tık tahtayı büyütür.\nŞimdi Dene!';
+
+/// Balonun işaret ettiği kare: SOL-ALT köşe bloğunun (köşe 2, satır 9-12 ×
+/// sütun 0-3) ortasına en yakın BOŞ kare; uzaklık eşitse önce üstteki satır,
+/// sonra soldaki sütun — boş tahtada (10,1). Blok tamamen doluysa `null` →
+/// balon çizilmez.
+///
+/// 27 Eylül 2026'ya kadar balon merkez kareyi (6,6) gösteriyordu, o da X3 —
+/// kullanıcı: *"X3 üzerine göstermesi kafa karıştırıyor. Sol alt bölümün
+/// ortasına beyaz boş kareyi gösteren bir mesaj balonu olsun"*.
+///
+/// Web ikizi `zoomHintTarget` (`src/utils/boardZoom.ts`) — sıra ikisinde de
+/// aynı.
+(int, int)? zoomHintTarget(bool Function(int r, int c) isEmpty) {
+  const mr = boardSize - cornerSize / 2 - 0.5; // 10.5
+  const mc = cornerSize / 2 - 0.5; // 1.5
+  final adaylar = <(int, int)>[
+    for (var r = boardSize - cornerSize; r < boardSize; r++)
+      for (var c = 0; c < cornerSize; c++) (r, c),
+  ];
+  double d((int, int) h) =>
+      (h.$1 - mr) * (h.$1 - mr) + (h.$2 - mc) * (h.$2 - mc);
+  adaylar.sort((a, b) {
+    final f = d(a).compareTo(d(b));
+    if (f != 0) return f;
+    if (a.$1 != b.$1) return a.$1 - b.$1;
+    return a.$2 - b.$2;
+  });
+  for (final h in adaylar) {
+    if (isEmpty(h.$1, h.$2)) return h;
+  }
+  return null;
+}
 
 /// Aktif tahta kaydırması (pan) — yalnızca zoom açıkken kurulur. Ekranlar
 /// scroll kilidini buna bağladığından atamalar setState içinde yapılır

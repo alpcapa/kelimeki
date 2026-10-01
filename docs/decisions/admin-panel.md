@@ -41,6 +41,7 @@ notunda da yazılı.
 ## Admin Paneli
 
 - **Erişim:** `profiles.is_admin = true` olan hesaplarda `UserMenu`'de bir "Admin Paneli" girişi açılır (yoksa hiç görünmez). Tüm admin verisi `is_admin()` (security definer) ile korunan RPC'ler üzerinden gelir; `anon`/`authenticated` rollerinden doğrudan `revoke`, yalnızca `authenticated`'e `grant execute` verilir, RPC içinde de ayrıca `is_admin()` kontrolü yapılır (yetkisizse exception fırlatır).
+- **Kapanış YALNIZCA ✕ ile (30 Eylül 2026):** arka plana dokunuş ve Escape paneli kapatmaz (`useModalA11y(true, onClose, false)`, dış kapta `onClick` yok). Kullanıcı: *"ekranın yanlışlıkla başka yerine dokununca kapanmasın"* — kenara kaçan tek dokunuş sekmeyi, kaydırmayı ve açık satırları sıfırlıyordu. Panelin İÇİNDEKİ onay pencereleri (geri bildirim silme, engelleme) eskisi gibi dışarı dokununca kapanır; yalnızca kendilerini kapatırlar.
 - **Sekmeler (`AdminDashboard.tsx`):**
 
 ### Üyeler sekmesi
@@ -173,7 +174,7 @@ notunda da yazılı.
     - **Tarih/saat cümlesi otomatik dolduruluyor, admin elle girmiyor:** Kullanıcının istediği metin ("Tarih/saatte tarafımıza ulaşan şikayet neticesinde...") bir tarih/saat yer tutucusu içeriyordu — admin'e bunu elle yazdırmak yerine (unutma/yanlış girme riski), fonksiyon hedefin `online_game_chat_reports` tablosundaki EN GÜNCEL şikayetinin (`reported_user_id` bazında, geri çekilmiş olsa bile — Şikayetler sekmesindeki "geri çekilmiş olsa bile aksiyon alınabilmeli" ilkesiyle tutarlı) `created_at`'ini otomatik çekip `Europe/Istanbul` saatiyle ("2 Ağustos 2026 14:32" gibi) cümleye gömüyor. Hiç şikayet yoksa (admin başka bir sebeple — ör. spam mesajlar — dondurmuşsa) cümle "{tarih} tarihinde tarafımıza ulaşan bir şikayet neticesinde ve..." yerine sade "Yapmış olduğumuz incelemeler sonunda..." olarak dönüyor, var olmayan bir şikayeti uydurmuyor.
     - **"Bizimle temasa geçin" linki mevcut `?contact=1` akışını kullanıyor** — yeni bir sayfa/form icat edilmedi; `App.tsx`'in zaten okuduğu `?contact=1` parametresi (bkz. "Geri bildirim yanıtları" bölümü) genel "Görüş Bildir" formunu girişsiz de açabildiğinden (dondurulmuş hesap muhtemelen giriş yapamayacağından bu önemli), buton doğrudan `https://kelimeki.com/?contact=1`'e gidiyor.
     - **Doğrulama sınırı:** Bu ortamdan gerçek bir kullanıcı JWT'siyle Edge Function'a doğrudan HTTP isteği atılamadığından (`play-ai-turn`'ün aynı notuna bkz.), uçtan uca gönderim (gerçek bir Brevo maili) test edilmedi — yalnızca fonksiyonun production'a `ACTIVE` durumda deploy edildiği ve dosya içeriğinin (`index.ts` + `_shared/email.ts`) beklenenle birebir eşleştiği doğrulandı. Gerçek bir dondurma işlemiyle uçtan uca teyit kullanıcıdan bekleniyor.
-    **Dondurma kaldırılınca da bir e-posta (aynı gün, kullanıcı isteğiyle, `notify-account-unbanned` Edge Function'ı):** Kullanıcının gerçek bir senaryo tarif etmesiyle eklendi — dondurulan kişi giriş yapamadığından itirazını yalnızca genel "Görüş Bildir" formundan (`?contact=1`) iletebiliyor; admin bu itirazı haklı bulup dondurmayı kaldırırsa, kişi hesabının tekrar açıldığından habersiz kalıyordu (giriş deneyip başarılı olana kadar). `setUserBanned(userId, false)` artık aynı fire-and-forget desenle bu yeni fonksiyonu çağırıyor — metin sabit: "Sayın {isim}, Durumunuzu tekrar değerlendirdik ve hesabınızı aktif hale getirdik. İyi Oyunlar! Kelimeki Müşteri Hizmetleri" + bir **"Giriş Yapın"** butonu (`https://kelimeki.com`, `notify-friend-request`'teki "Kelimeki'yi Aç" butonuyla aynı desen — siteye özel bir "otomatik giriş modalı aç" query param'ı yok, kullanıcı ana sayfadaki normal "Giriş" butonunu kendisi kullanıyor). Ban e-postasının aksine burada tarih/şikayet referansı yok — metin kullanıcı tarafından sabit verildi, koşullu bir cümle gerekmiyor. `notify-account-banned` ile neredeyse birebir aynı dosya iskeleti (auth/is_admin kontrolü, service-role client, `online_game_chat_reports` sorgusu hariç) kasıtlı olarak ayrı bir fonksiyona çıkarıldı — projedeki `notify-friend-request`/`notify-game-invite` gibi her bildirim türünün kendi küçük, tek işi yapan Edge Function'ı olması deseniyle tutarlı, tek bir fonksiyona `p_banned` gibi bir dallanma parametresi eklemek yerine.
+    **Dondurma kaldırılınca da bir e-posta (aynı gün, kullanıcı isteğiyle, `notify-account-unbanned` Edge Function'ı):** Kullanıcının gerçek bir senaryo tarif etmesiyle eklendi — dondurulan kişi giriş yapamadığından itirazını yalnızca genel "Görüş Bildir" formundan (`?contact=1`) iletebiliyor; admin bu itirazı haklı bulup dondurmayı kaldırırsa, kişi hesabının tekrar açıldığından habersiz kalıyordu (giriş deneyip başarılı olana kadar). `setUserBanned(userId, false)` artık aynı fire-and-forget desenle bu yeni fonksiyonu çağırıyor — metin sabit: "Sayın {isim}, Durumunuzu tekrar değerlendirdik ve hesabınızı aktif hale getirdik. İyi Oyunlar! Kelimeki Destek" + bir **"Giriş Yapın"** butonu (`https://kelimeki.com`, `notify-friend-request`'teki "Kelimeki'yi Aç" butonuyla aynı desen — siteye özel bir "otomatik giriş modalı aç" query param'ı yok, kullanıcı ana sayfadaki normal "Giriş" butonunu kendisi kullanıyor). Ban e-postasının aksine burada tarih/şikayet referansı yok — metin kullanıcı tarafından sabit verildi, koşullu bir cümle gerekmiyor. `notify-account-banned` ile neredeyse birebir aynı dosya iskeleti (auth/is_admin kontrolü, service-role client, `online_game_chat_reports` sorgusu hariç) kasıtlı olarak ayrı bir fonksiyona çıkarıldı — projedeki `notify-friend-request`/`notify-game-invite` gibi her bildirim türünün kendi küçük, tek işi yapan Edge Function'ı olması deseniyle tutarlı, tek bir fonksiyona `p_banned` gibi bir dallanma parametresi eklemek yerine.
 
 ### Oyunlar ve Büyüme sekmeleri
 
@@ -991,6 +992,16 @@ tuzağa düşülebilirdi ve ikisi de kapatıldı:
 Değişmez canlıda 12 dilimde de doğrulandı: web + ios + android + other =
 finished.
 
+### Başlıkta "(Son 30 Gün)" — 30 Eylül 2026
+
+Kullanıcı bildirdi: *"üst kısımdaki 30/90 gün filtresi değişince veriler
+değişmiyor sanki"*. Filtre çalışıyordu (canlıda admin kimliğiyle ölçüldü:
+`admin_game_duration_summary` 30 gün → 1.534, 90 gün → 2.244 oyun; seri 30 ↔
+90 kova). Yanılgı, sabit pencereli üç panelin ikisinde pencerenin yalnızca
+`?` açıklamasında yazmasıydı — "Oyun Dağılımı (Son 30 Gün)" gibi. "Aktif
+Saatler" ve "Aktif Günler" başlıkları da artık "(Son 30 Gün)" taşıyor.
+**Kural:** kombolara BAĞLI OLMAYAN bir panel, penceresini BAŞLIĞINDA söyler.
+
 ## "Aktif Günler" — haftanın ritmi (20 Eylül 2026)
 
 Kullanıcı isteği: *"Admin oyunda saatler gibi Aktif Günler bar chartı da
@@ -1171,6 +1182,30 @@ Kaynak Hunisi'nin hemen üstünde. Yazan `src/utils/webJourney.ts`, sunucu
 `web_sessions` + `record_web_session` / `admin_web_journey`
 (`20260923103044_web_sessions_journey.sql`), kapı `npm run verify-web-journey`.
 
+### 30 Eylül 2026 — "Uygulamaya geçti" gizlendi, "Tanıtımı atladı" eklendi
+
+Kullanıcı soruları (ekran: Yeni, son 30 gün) ve canlıdan cevapları:
+
+- *"Uygulamaya geçti ile uygulama açıldı aynı değil mi?"* — pratikte evet:
+  53 = 53, geçip açılmayan 0 (tüm oturumlarda da 0). `landing_cta` kartta
+  GİZLİ (`JOURNEY_HIDDEN`), veri toplanmaya DEVAM ediyor.
+- *"53 açtı, neden 24 tanıtım?"* — tanıtım uygulama açılınca değil, Setup'ta
+  "Oyna"ya basınca açılır. 29'un 16'sı oynamadan mağazaya, 3'ü girişe
+  gitmiş, 9'u hiçbir şeye basmadan çıkmış (asıl kayıp).
+- *"24 açtı 13 bitirdi — 11 atladı mı?"* — 6'sı ATLAYIP oyuna geçmiş
+  (19 = 13 + 6), 5'i tanıtımda ayrılmış (4 gitti, 1 mağaza). Atlayanlar
+  hiçbir satırda görünmüyordu → türetilmiş **`tutorial_skip`** satırı
+  (`20260930110120_admin_web_journey_tutorial_skip.sql`): sunucu okuma
+  anında hesaplar (tutorial_start ∧ game_start ∧ ¬tutorial_done), istemci
+  GÖNDERMEZ, `v_steps`/`JOURNEY_STEPS` DEĞİŞMEDİ; `left_here` 0, kartta
+  Ayrılan/Ayrılma "—" (`JOURNEY_INFO`), en yüksek ayrılma vurgusuna girmez.
+- *"Oyun başlatan 19'dan 3 gitti, neden 16 değil 15?"* — hamle yapmayan
+  4'ün 1'i mağazaya/kayda gitmiş; Ayrılan EN İLERİ adıma göre sayıldığı
+  için o 1 sonraki satırda. Kart düz bir huni değil.
+- *"Oyun bitti'de ayrılan 3 gitti mi?"* — bitirdikten sonra kayıt/giriş/
+  mağaza yok; sekmeyi kapattı mı, aynı sekmede tekrar mı oynadı AYIRT
+  EDİLEMEZ (sekme başına tek satır, ikinci oyun yeni adım yazmaz).
+
 ### Neden vardı
 
 Mevcut tablolar huninin UÇLARINI görüyordu, ARASINI görmüyordu. Canlıdan
@@ -1281,18 +1316,66 @@ Eylül'den beri boş, ama o tarihten sonraki iki kaydın ikisi de uygulamadan
 da `signup_form`a ulaşan tek oturum yok. Tabloya `anon` rolüyle yazma denendi
 (geri alındı), çalışıyor.
 
+### Kayıt Hunisi platform satırlarına geçti (29 Eylül 2026, `20260929091355_admin_signup_funnel_platform.sql`)
+
+Kullanıcı: *"Web ve App (ya da ios, android) diye 2 satırda göstersek, altta
+toplamla birlikte."* Kart kanal (Doğrudan/Form) yerine **Web · Uygulama ·
+Toplam** satırları gösteriyor; "Web" etiketi başlıktan kalktı.
+- **Web:** Açılış + Tamamlama `signup_events`ten, değişmedi.
+- **Uygulama:** Tamamlama `profiles`tan (`signup_utm_source = 'app'`, ya da
+  damgasız + push token'ı var: 1.1.0 bazı kayıtları damgasız bırakıyor,
+  24 Eylül vakası). Açılış "—": port `signup_started`ı yalnızca Firebase'e
+  yazıyor.
+- **Ortak başlangıç:** pencere 21 Eylül 12:40 UTC'den erkene gitmez. İlk
+  denemede web 0 · uygulama 11 çıktı, çünkü uygulama satırı 30 günü, web
+  sayacı 8 günü sayıyordu.
+- **iOS / Android ayrımı yok:** 30 günde uygulamadan açılan 11 hesabın
+  yalnızca 3'ünde platform izi (push token / oyun) vardı. Doğrusu portun
+  `signup_events`e `platform` ile yazması (mobil iş, tren kuralına tabi);
+  o gelince uygulama satırı ikiye bölünür ve Açılış dolar.
+
+
+### "Ayrılan" = en ileri adım, son kayıt değil (29 Eylül 2026, `20260929074711_admin_web_journey_furthest_step.sql`)
+
+Kullanıcı sordu: *"5 kişi uygulamaya geçmiş, 1 terk etmiş, kalan 4 olması
+lazım ama sadece 1 oyun bitirmiş."* Satır satır okundu: 2'si uygulamadan
+mağazaya, 1'i giriş yaptı (oturum kapanır), 1'i 52 sn'de çıktı, 1'i oyunu
+bitirdi. Kaybolan yoktu, ama kartta bir yanlış vardı: oyunu bitiren
+li-profil oturumu **"5. hamle — Ayrılan 1 — %100"** diye kırmızı
+görünüyordu. Adımlar `first_move, game_finish, move_5` sırasıyla gelmişti
+(hamle sayacı oyun bitişinden SONRA işlendi) ve `Ayrılan` `last_step`e
+bakıyordu. `last_step` ağ sırasına bağlı, en ileri adım değil.
+
+**Çözüm (yalnızca sunucu):** çıkış adımı = `steps` içinde `v_steps`
+sırasında en sonda duran adım. Okuma anında hesaplandığı için tarihsel
+satırlar da düzeldi (canlıda 30 gün: 5. hamle 1→0, Oyun bitti 17→18,
+`landing_cta` 1→0, Uygulama açıldı 12→13). İmza/dönüş tipi aynı → `create or
+replace`; `proacl` önce/sonra aynı. `record_web_session` ve `last_step`
+kolonu DEĞİŞMEDİ (ham kayıt olarak duruyor).
+⚠ Bilinen sonucu: `store` sırada en sonda; mağazaya gidip dönüp oynayan
+oturum "Mağazaya gitti"de sayılır (başarı satırı, ✓).
+
+Aynı gün Dönen görünümünden iki gösterim düzeltmesi daha (yalnızca web):
+**Oyun bitti** artık başarı satırı (✓) — oyunu bitiren doğal olarak orada
+"ayrılıyor", kart onu en çok kaybettiren adım diye kırmızı yakıyordu. Ve
+**Dönen**'de `landing` / `landing_cta` satırları gizleniyor: oturum zaten
+uygulamada başladı, `landing_cta` orada yalnızca uygulama içi bir bağlantıdan
+sonra akışın ORTASINDA düşüyor ("Uygulamaya geçti 4" en üst satırda
+kafa karıştırıyordu). Kullanıcının sorduğu "25 − 3 = 22 olmalı" türü farkların
+hepsi oyun sırasında giriş yapan misafirlerdi (oturum girişte kapanır);
+`?` metni bunu artık söylüyor.
+
 ### "Web" etiketi + iOS/Android kapsam denetimi (27 Eylül 2026)
 
 Kullanıcı isteği: *"sadece web olanlara Web yazalım, belli olsun"* ve *"ios ve
 android verilerini sağlıklı ölçmek için eklenmesi gereken bir kod var mı?"*
 Her admin RPC'sinin kaynak tablosu canlı `pg_proc`tan, portun yazdığı tablolar
-`mobile/app/lib`ten okundu. `PlatformTag kind="web"` şu beş kartta:
+`mobile/app/lib`ten okundu. `PlatformTag kind="web"` şu beş kartta (Kayıt Hunisi 29 Eylül 2026'da çıktı, aşağı bkz.):
 
 | Kart | Kaynak | Neden web |
 |---|---|---|
 | Ziyaretçi Yolculuğu | `web_sessions` | tanım gereği (tarayıcı sekmesi) |
 | Huni v2 | `funnel_events` | port yarısı (PR 2) henüz yok — gelince etiketi KALDIR |
-| Kayıt Hunisi | `signup_events` | port aynı olayları Firebase'e yazıyor |
 | Cihaz · Cihaz Markası | `device_visits` | port bu tabloya hiç yazmıyor (`device_info_plus` yok, `visits_api.dart` başlığı) |
 
 Öteki kartlar iki tarafı da görüyor (`games`, `game_starts`, `game_finishes`,
@@ -1308,6 +1391,29 @@ Kod tarafında yapılacak iş yok, kullanıcılar güncelledikçe kendiliğinden
 kapanıyor; o zamana kadar "Oyun Sayısı" grafiğinde bu satırlar "Diğer"de.
 `games.platform`un `null`ları ise Canlı oyun satırları (sunucu yazıyor, tek bir
 platformu yok) — tasarım gereği.
+
+### `store` adımı — mağaza rozetine dokundu (28 Eylül 2026, `20260928100430_web_journey_store_step.sql`)
+
+Meta reklamı Trafik kampanyasında mağaza linkine izin vermediği için (#1487810)
+reklam `kelimeki.com/?ref=meta-…`e gidiyor; mağazaya sitedeki rozetten
+(`StoreBadges`) ya da telefon şeridinden (`AppStoreStrip`) geçiliyor. Bu adım
+olmadan "reklamdan gelen kaç kişi mağazaya gitti" hiçbir tabloda yoktu.
+
+- Adım listenin SONUNA eklendi (sıra admin kartının satır sırası; araya
+  girse mevcut satırlar kayardı). Oturum başına bir kez, oturumu KAPATMAZ.
+- Admin kartında "Mağazaya gitti", `JOURNEY_SUCCESS`te: orada ayrılmak
+  bounce değil.
+- Aynı değişiklik rozet linklerine ziyaretçinin `?ref=` etiketini ekliyor
+  (`taggedStoreUrl`): Play `utm_source=<etiket>&utm_medium=web`, App Store
+  `pt=<sağlayıcı>&ct=<etiket>`. Karşılama katmanı sunucuda render edildiği için oradaki
+  linkler `main.tsx`te (`magazaLinkleriniKur`, `data-kelimeki-magaza`)
+  yeniden yazılıyor.
+- ⚠ `verify-web-journey` 28 Eylül'e kadar adım dizisi taşıyan HER migration'ı
+  okuyordu; liste ilk kez değişince eski (canlıya uygulanmış, değiştirilemez)
+  dosyalar düşerdi. Artık yalnızca iki fonksiyonu EN SON yeniden yazan dosya
+  okunuyor — fonksiyonlardan biri yeniden yazılırsa oradaki dosya adı
+  değişmeli.
+- Kampanya planı ve etiket başına sorgu: `marketing/meta-reklam/kampanya-ekim-2026.md` §5.
 
 ## Masaüstü kipindeki iPad: iOS altında sahte "10.15.7" (23 Eylül 2026)
 
@@ -1411,4 +1517,55 @@ kanalına TAM eşleşmeyle zaten topluyor. Merge anında web dosyaları
 Eylül'den beri canlıda) girdi. Port damgası hâlâ gerekli: `backfill`
 yalnızca geçmişi `'app'` yaptı, damgasız yeni app kayıtları Üye
 Kalitesi'nde `Bilinmiyor`a düşer.
+
+### Bir haftalık döküm ve karar: kendini tanıtan botlar sayılmıyor (30 Eylül 2026)
+
+Döküm (23 Eylül 14:49 → 30 Eylül, masaüstü, benzersiz cihaz): bot 16,
+Windows 14, **Linux 13**, bilinmiyor 3, macOS 1. Masaüstü dışında 7
+"Android" ve 4 "iOS" bot. 27 botun HİÇBİRİ oyun başlatmadı. Eski 115
+cihazlık "sürüm yok" kovasının yerini büyük ölçüde Linux aldı (tek ziyaret,
+kaynaksız, her saate yayılmış, yani aynı örüntü). 13 Linux cihazdan 1'i
+oyun başlattı, bu yüzden Linux'a dokunulmadı.
+
+**Kampanya bulgusu:** 28 Eylül'de Meta kampanyası kurulurken reklam
+inceleme botları etiketli linklere geldi. Aynı saniyede, aynı etiketle
+"Windows" cihazlar da geldi (ör. 11:10:24, `meta-kare`, 3 bot + 3 Windows);
+bunlar büyük olasılıkla Meta'nın normal tarayıcı gibi görünen inceleme
+sistemleri. `meta-reel` satırında 15 gelenin 3'ü bot. Bot ziyaretlerinin
+neredeyse hepsinin karşısında `web_sessions`ta bir "karşılamada ayrıldı"
+oturumu vardı, yani Ziyaretçi Yolculuğu da şişiyordu.
+
+**Karar (kullanıcı: *"Evet, botları sayımdan çıkar"*):**
+- `20260930063329_admin_visits_exclude_bots.sql`: `guest_visits`/`device_visits`
+  okuyan sekiz admin fonksiyonuna `os_version is distinct from 'bot'`.
+  `<>` DEĞİL, çünkü null sürümlü satırlar düşerdi. Satırlar SİLİNMEDİ,
+  karar filtre kaldırılarak geri alınabilir. İmza ve dönüş tipi aynı
+  (`create or replace`), `proacl` öncesiyle aynı (canlıda okundu).
+  Cihaz toplamı (30 gün) 602 → 576.
+- `webJourney.ts` → `isAutomated`: `webdriver`a ek olarak `isBotUserAgent`
+  (`funnelEvents.ts` ile aynı kapı). `web_sessions`ta bot işareti olmadığı
+  için geçmiş bot oturumları AYIKLANAMIYOR. Çoğu 0 sn'lik "boşta" oturum
+  ve kart onları zaten saymıyor, 3–33 sn'lik olanlar kalıyor.
+- Kendini TANITMAYAN botlar (Linux kimlikli olanlar, Windows gibi görünen
+  inceleme sistemleri) sayılmaya devam ediyor. Onları ayıracak işaret yok
+  ve tahmine dayalı süzgeç reddedildi.
+
+### Kaynak grupları: "Meta" (30 Eylül 2026)
+
+Kullanıcı isteği: *"Admin'de Meta grubunu ekle ama ayrı tablo olmasın, aynı
+tablo içinde etiket değişsin sadece."* 28 Eylül'de başlayan Meta reklam
+kampanyasının etiketleri Huni v2'de web trafiğinin ~%88'iydi (`meta-karusel`
+165, `meta-kare` 54, `meta-reel` 12) ve tanınmadıkları için hepsi "Diğer"
+satırındaydı. `adminGroups.ts` → `sourceChannel`: `meta` öneki → **Meta**
+kanalı. Huni v2 ve Kanal → Üye Kalitesi aynı kuralı kullanır. Yeni tablo
+yok, yalnızca grup etiketi.
+
+- ⚠ **Meta ≠ Instagram/Facebook:** `ig-`/`fb-` etiketleri ORGANİK
+  paylaşımlar (bio, sayfa, profil). Reklam etiketleri `meta-` ile başlıyor
+  ve ayrı satırda kalmalı, yoksa ücretli ile organik aynı satıra karışır.
+- `hasPrefix` sınırı sayesinde `metin`, `metaverse` gibi etiketler Meta
+  SAYILMAZ (`verify-admin-groups`).
+- Meta, Üye Kalitesi'nin "her zaman görünür" listesine (`MEMBER_QUALITY_ALWAYS`)
+  bilerek EKLENMEDİ. İstek yalnızca etiketti, Meta satırı üye geldiğinde
+  kendiliğinden çıkar.
 

@@ -96,6 +96,7 @@ async function main() {
         return { sol: Math.round(r.left), sag: Math.round(r.right), ust: Math.round(r.top), alt: Math.round(r.bottom), h: Math.round(r.height) };
       }) };
   });
+  const hatalar = [];
   const mobilSol = (W - MOBIL_W) / 2;
   const mobilSag = W - mobilSol;
   // LinkedIn'e özgü İKİNCİ ölçüm: profil fotoğrafı kapağın SOL ALT köşesini
@@ -105,15 +106,23 @@ async function main() {
   const avatarUst = SAYFA ? H * 0.35 : LINKEDIN ? H * 0.55 : H;
   console.log(`  güvenli kutu: x ${olcum.sol}–${olcum.sag}, y ${olcum.ust}–${olcum.alt}`);
   console.log(`  telefon kırpması: x ${mobilSol}–${mobilSag}  →  ${olcum.sol >= mobilSol && olcum.sag <= mobilSag ? 'İÇERİDE ✓' : 'TAŞIYOR ✗'}`);
+  if (!LINKEDIN) {
+    // FB KİŞİSEL profilde (mobil) avatar kapağın ALT ORTASINI örtüyor —
+    // 28 Eylül 2026'da iPad önizlemesinde ölçüldü: üst kenarı kapağın
+    // ~%71'inde. %68'i sınır say; okunacak her şey onun üstünde kalmalı.
+    const sinir = Math.round(H * 0.68);
+    const altMax = Math.max(olcum.alt, ...olcum.rozetler.map((r) => r.alt));
+    console.log(`  avatar bölgesi (alt orta): y > ${sinir}  →  ${altMax <= sinir ? 'UZAKTA ✓' : 'ÇAKIŞIYOR ✗'}`);
+    if (altMax > sinir) hatalar.push('içerik FB avatarının örttüğü alt bantta');
+  }
   if (LINKEDIN) {
     const cakisma = olcum.sol < avatarSag && olcum.alt > avatarUst;
     console.log(`  avatar bölgesi: x < ${Math.round(avatarSag)} ve y > ${Math.round(avatarUst)}  →  ${cakisma ? 'ÇAKIŞIYOR ✗' : 'UZAKTA ✓'}`);
   }
 
-  // LinkedIn kapaklarında İKİ rozet (27 Eylül 2026): kırpma şeridinde,
-  // kadrajda ve eşit yükseklikte olmalı — değilse düşer.
-  const hatalar = [];
-  if (LINKEDIN) {
+  // Üç kapakta da İKİ rozet (LinkedIn 27 Eylül, FB 28 Eylül 2026): kırpma
+  // şeridinde, kadrajda ve eşit yükseklikte olmalı — değilse düşer.
+  {
     const rz = olcum.rozetler;
     console.log(`  rozetler: ${rz.map((r) => `x ${r.sol}–${r.sag} y ${r.ust}–${r.alt} h ${r.h}`).join(' · ')}`);
     if (rz.length !== 2) hatalar.push(`${rz.length} rozet (2 bekleniyordu)`);

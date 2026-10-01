@@ -9,6 +9,14 @@
 //   kelimeki-google-play-yatay-1280x720.png   — yatay banner (X/YouTube/site kapağı)
 //   kelimeki-google-play-link-1200x628.png    — link kartı (LinkedIn/Facebook)
 //
+// `--genel` (npm run generate-meta-story): YALNIZCA mağazadan bağımsız story
+// → marketing/meta-reklam/kelimeki-story-1080x1920.png (28 Eylül 2026, Meta
+// kampanyası iOS + Android'e birlikte gidiyor). Play dosyalarına dokunmaz.
+//
+// `--sade` (npm run generate-meta-sade): sade kare + story (29 Eylül 2026,
+// `kare` reklamının yeni görseli; gerekçe `gorsel.tsx` → `Metin`)
+// → marketing/meta-reklam/kelimeki-sade-{kare-1080,story-1080x1920}.png
+//
 // ⚠ `npm run build` ÖNCE koşmuş olmalı (stiller dist CSS'inden gelir) ve
 // sayfa `http://` üzerinden açılır — `file://` mutlak asset yollarını
 // çözemediğinden puntolar sessizce 16px okunur (play-store/build.mjs ile aynı).
@@ -37,6 +45,16 @@ const DOSYA = {
   yatay: 'kelimeki-google-play-yatay-1280x720.png',
   link: 'kelimeki-google-play-link-1200x628.png',
 };
+
+const GENEL = process.argv.includes('--genel');
+const SADE = process.argv.includes('--sade');
+const META = path.join(ROOT, 'marketing', 'meta-reklam');
+const ISLER = SADE
+  ? [{ duzen: 'kare', metin: 'sade', out: path.join(META, 'kelimeki-sade-kare-1080.png') },
+     { duzen: 'story', metin: 'sade', out: path.join(META, 'kelimeki-sade-story-1080x1920.png') }]
+  : GENEL
+  ? [{ duzen: 'story', metin: 'genel', out: path.join(ROOT, 'marketing', 'meta-reklam', 'kelimeki-story-1080x1920.png') }]
+  : Object.keys(DOSYA).map((duzen) => ({ duzen, metin: 'play', out: path.join(OUT_DIR, DOSYA[duzen]) }));
 
 const MIME = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript',
   '.woff2':'font/woff2', '.png':'image/png', '.svg':'image/svg+xml', '.json':'application/json' };
@@ -72,10 +90,10 @@ async function main() {
   const browser = await chromium.launch({ executablePath: process.env.CI ? undefined : '/opt/pw-browsers/chromium' });
 
   const hatalar = [];
-  for (const duzen of Object.keys(DOSYA)) {
+  for (const { duzen, metin, out } of ISLER) {
     const { w, h } = OLCULER[duzen];
-    const htmlAd = `play-lansman-${duzen}.html`;
-    writeFileSync(path.join(DIST, htmlAd), renderGorselHtml(duzen, `/assets/${cssFile}`, ikon, rozet), 'utf8');
+    const htmlAd = `play-lansman-${duzen}-${metin}.html`;
+    writeFileSync(path.join(DIST, htmlAd), renderGorselHtml(duzen, `/assets/${cssFile}`, ikon, rozet, metin), 'utf8');
     const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2 });
     await page.goto(`http://127.0.0.1:${server.address().port}/${htmlAd}`, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
@@ -90,6 +108,8 @@ async function main() {
           return { sol: Math.round(r.left), sag: Math.round(r.right), h: Math.round(r.height) };
         }),
         icSag: Math.round(Math.max(...[...document.querySelectorAll('[data-guvenli-kutu] > *')].map((e) => e.getBoundingClientRect().right))),
+        sadeTahta: (() => { const e = document.querySelector('[data-tahta-sade]'); if (!e) return null;
+          const r = e.getBoundingClientRect(); return { sol: Math.round(r.left), sag: Math.round(r.right), ust: Math.round(r.top), alt: Math.round(r.bottom) }; })(),
         tahtalar: [...document.querySelectorAll('[data-tahta] .grid, [data-tahta] > div > *')].slice(0, 1).map((e) => {
           const r = e.getBoundingClientRect();
           return { sol: Math.round(r.left), sag: Math.round(r.right), ust: Math.round(r.top), alt: Math.round(r.bottom) };
@@ -102,11 +122,18 @@ async function main() {
     console.log(`  ${duzen}: kutu x ${olcum.sol}–${olcum.sag}, y ${olcum.ust}–${olcum.alt} (kadraj ${w}×${h})`);
     if (olcum.tasmaX || olcum.tasmaY) hatalar.push(`${duzen}: sayfa taşıyor`);
     // İki rozet (App Store + Google Play) kadrajın içinde ve eşit yükseklikte.
+    // `sade` varyantında rozet BİLEREK yok; tahta tam ve kırpılmadan görünmeli.
     const rz = olcum.rozetler;
+    if (metin === 'sade') {
+      const t = olcum.sadeTahta;
+      console.log(`    tahta x ${t.sol}–${t.sag}, y ${t.ust}–${t.alt}`);
+      if (rz.length) hatalar.push(`${duzen}: sade görselde rozet var`);
+    } else {
     console.log(`    rozetler: ${rz.map((r) => `x ${r.sol}–${r.sag} h ${r.h}`).join(' · ')}`);
     if (rz.length !== 2) hatalar.push(`${duzen}: ${rz.length} rozet (2 bekleniyordu)`);
     if (rz.some((r) => r.sol < 16 || r.sag > w - 16)) hatalar.push(`${duzen}: rozet kadrajdan taşıyor`);
     if (new Set(rz.map((r) => r.h)).size > 1) hatalar.push(`${duzen}: rozetler eşit yükseklikte değil`);
+    }
     // Yan düzenlerde tahta TAMAMEN kadrajda olmalı ve metin tahtaya binmemeli.
     if (['yatay', 'link'].includes(duzen)) {
       const t = olcum.tahtalar[0];
@@ -120,7 +147,7 @@ async function main() {
     const png = await page.screenshot();
     await page.close();
     if (!hatalar.length) {
-      const out = path.join(OUT_DIR, DOSYA[duzen]);
+      mkdirSync(path.dirname(out), { recursive: true });
       await sharp(png).flatten({ background: '#ffffff' }).png({ compressionLevel: 9 }).toFile(out);
       const m = await sharp(out).metadata();
       console.log(`✓ ${path.relative(ROOT, out)}  ${m.width}×${m.height}`);
