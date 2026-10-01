@@ -53,9 +53,9 @@ Web #663/#664/#682'nin (27 Eylül) Setup yarısı `ui/setup/setup_screen.dart`a:
 web'de karşılama ayrı bir sayfa); karar 14 (`IntroScreen`) ile birlikte ele
 alınacak.
 
-**Doğrulama:** `flutter analyze lib test` temiz; tam takım yeşil. Testler
+**Doğrulama:** `flutter analyze lib test` temiz; **1.019 test yeşil**. Testler
 güncellendi: `setup_screen_test` (kadro özeti, sıra SAYI → ZORLUK → BAŞLAT →
-üyelik, kutu–düğme arası 20), `setup_cloud_test` (52/20/8/20, form koltuk
+üyelik, kutu–düğme arası 20), `auth_test` (profil beklenirken düğme kapalı), `setup_cloud_test` (52/20/8/20, form koltuk
 göstermiyor) + etiket değişen beş test dosyası.
 
 ## Parça 216 — Canlı sohbetin okundu damgası SUNUCUDA: port yarısı (26 Eylül 2026, ROADMAP #34)
