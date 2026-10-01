@@ -356,6 +356,11 @@ mobile/
                              # türetilir, 4 kişilikte ikincilik dahil), rozet metni
                              # (Normal → null) — `ai_level_parity_test` web
                              # kaynağıyla kilitler
+      util/chat_read.dart    # Canlı sohbetin okundu kararı (web `chatRead.ts`
+                             # ikizi, ROADMAP #34): sunucu (`online_game_chat_reads`)
+                             # ↔ cihaz (`chat_read_store`) damgasının büyüğü;
+                             # `chat_read_test.dart` web'in `verify-chat-read`
+                             # vakalarını birebir koşar
       util/platform.dart      # bu istemcinin platformu (ios/android/app-web) —
                              # telemetri; web `src/utils/platform.ts` karşılığı,
                              # değer kümesi sunucu kısıtıyla ELLE senkron

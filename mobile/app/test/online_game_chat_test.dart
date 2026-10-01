@@ -161,11 +161,12 @@ void main() {
     WidgetTester tester, {
     Future<AppStorage>? storage,
     bool withChat = true,
+    FakeChatGateway? chat,
   }) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     final s = _baseState();
     final onlineGw = FakeOnlineGamesGateway()..stateRow = stateJson(s);
-    final chatGw = FakeChatGateway();
+    final chatGw = chat ?? FakeChatGateway();
     final row = gameRow(
       id: 'g1',
       myId: 'me',
@@ -439,6 +440,180 @@ void main() {
       expect(find.text('Henüz mesaj yok. İlk mesajı sen gönder!'),
           findsOneWidget);
       // Aynı gerçek-zaman bekleyişi — bkz. yukarıdaki yorum.
+      await drainRealIo(tester);
+      await unmount(tester);
+    });
+  });
+
+  // ROADMAP #34 — okundu damgası SUNUCUDA (web `decideChatRead`in ikizi,
+  // karar `util/chat_read.dart`, vakaları `chat_read_test.dart`).
+  group('Okundu damgası — sunucu', () {
+    List<Map<String, Object?>> threeRows() => [
+          chatRow(
+              id: 'm1',
+              senderUserId: 'esiner',
+              message: 'eski',
+              createdAt: '2026-09-22T10:00:00.000000+00:00'),
+          chatRow(
+              id: 'm2',
+              senderUserId: 'esiner',
+              message: 'yeni 1',
+              createdAt: '2026-09-23T07:00:00.000000+00:00'),
+          chatRow(
+              id: 'm3',
+              senderUserId: 'esiner',
+              message: 'yeni 2',
+              createdAt: '2026-09-23T07:30:00.123456+00:00'),
+        ];
+
+    // KULLANICININ VAKASI (23 Eylül 2026): "Android app'i açıp Danyal ile
+    // devam eden oyuna girince mesajlaşma üstünde numara yoktu ama
+    // tıkladığımda yeni yazdığı 2 mesaj olduğunu gördüm." Bu cihazda damga
+    // yok, sunucu ise 22 Eylül'e kadar okunduğunu biliyor → rozet 2.
+    // Negatif eş: eski kod (yalnızca cihaz) burada tohumlayıp 0 derdi.
+    testWidgets('bu cihazda damga yok + sunucu damgası → yeni mesajlar sayılır',
+        (tester) async {
+      final chatGw = FakeChatGateway()
+        ..rows = threeRows()
+        ..serverLastReadAt = '2026-09-22T10:00:00+00:00';
+      await pumpScreen(tester, chat: chatGw);
+      await tester.pumpAndSettle();
+      expect(_badgeText(), '2');
+      // Sunucu zaten ilerideydi → ona gereksiz yazma yok.
+      expect(chatGw.markReadCalls, isEmpty);
+      await unmount(tester);
+    });
+
+    testWidgets(
+        'sohbeti açmak sunucuya son mesajın KENDİ damgasını yazar '
+        '(mikro saniyesiyle)', (tester) async {
+      final chatGw = FakeChatGateway()
+        ..rows = threeRows()
+        ..serverLastReadAt = '2026-09-22T10:00:00+00:00';
+      await pumpScreen(tester, chat: chatGw);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mesajlaşma'));
+      await tester.pumpAndSettle();
+      expect(chatGw.markReadCalls.last,
+          ('g1', '2026-09-23T07:30:00.123456+00:00'));
+      expect(chatGw.serverLastReadAt, '2026-09-23T07:30:00.123456+00:00');
+      await unmount(tester);
+    });
+
+    testWidgets('sunucu kesin boş + damga yok → tohum sunucuya da yazılır',
+        (tester) async {
+      final chatGw = FakeChatGateway()..rows = threeRows();
+      await pumpScreen(tester, chat: chatGw);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('chat-unread-badge')), findsNothing);
+      expect(chatGw.markReadCalls.single,
+          ('g1', '2026-09-23T07:30:00.123456+00:00'));
+      await unmount(tester);
+    });
+
+    // ⚠ Sunucu BİLİNMİYORKEN tohum yazılsaydı sunucudaki gerçek (daha eski)
+    // damganın üstüne "hepsi okundu" basılırdı; sunucu yalnızca ileri
+    // gittiğinden bu GERİ ALINAMAZ.
+    testWidgets('sunucu okunamadı + damga yok → sunucuya HİÇBİR ŞEY yazılmaz',
+        (tester) async {
+      final chatGw = FakeChatGateway()
+        ..rows = threeRows()
+        ..lastReadFailWith = Exception('ağ yok');
+      await pumpScreen(tester, chat: chatGw);
+      await tester.pumpAndSettle();
+      expect(chatGw.markReadCalls, isEmpty);
+      await unmount(tester);
+    });
+
+    testWidgets('mesajlar okunamadı → karar verilmez, tohum yazılmaz',
+        (tester) async {
+      final chatGw = FakeChatGateway()..messagesFailWith = Exception('ağ yok');
+      await pumpScreen(tester, chat: chatGw);
+      await tester.pumpAndSettle();
+      expect(chatGw.markReadCalls, isEmpty);
+      await unmount(tester);
+    });
+
+    // 26 Eylül 2026'ya kadar düşen tazeleme sohbeti BOŞ listeyle
+    // değiştiriyordu. Negatif eş: `_fetchChat`te `rows == null` dalı
+    // kaldırılırsa mesaj kaybolur ve test düşer.
+    testWidgets('ön plana dönüş tazelemesi düşerse sohbet SİLİNMEZ',
+        (tester) async {
+      final chatGw = FakeChatGateway()..rows = threeRows();
+      await pumpScreen(tester, chat: chatGw);
+      await tester.pumpAndSettle();
+      final callsBefore = chatGw.markReadCalls.length;
+
+      chatGw.messagesFailWith = Exception('ağ yok');
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(chatGw.messagesCalls, greaterThan(1));
+      expect(chatGw.markReadCalls.length, callsBefore);
+
+      await tester.tap(find.text('Mesajlaşma'));
+      await tester.pumpAndSettle();
+      expect(find.text('yeni 2'), findsOneWidget);
+      await unmount(tester);
+    });
+
+    testWidgets('sunucuya yazma düşerse ekran bozulmaz (hata yutulur)',
+        (tester) async {
+      final chatGw = FakeChatGateway()
+        ..rows = threeRows()
+        ..markReadFailWith = Exception('ağ yok');
+      await pumpScreen(tester, chat: chatGw);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mesajlaşma'));
+      await tester.pumpAndSettle();
+      expect(find.text('yeni 2'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await unmount(tester);
+    });
+
+    // Port döneminin (yalnızca cihaz) damgası sunucuda satır yokken
+    // kaybolmaz, sunucuya taşınır — web bu damgayı hiç göremiyordu.
+    testWidgets('cihaz damgası ileride → sunucu yetişir (gerçek depo)',
+        (tester) async {
+      final storage = await newStorageForWidget(tester);
+      await tester.runAsync(() => storage.chatRead.markRead('g1',
+          DateTime.parse('2026-09-23T07:00:00Z').millisecondsSinceEpoch));
+      final chatGw = FakeChatGateway()
+        ..rows = threeRows()
+        ..serverLastReadAt = '2026-09-22T10:00:00+00:00';
+      await pumpScreen(tester, storage: Future.value(storage), chat: chatGw);
+      await drainRealIo(tester);
+      await tester.pumpAndSettle();
+      expect(_badgeText(), '1');
+      expect(
+          DateTime.parse(chatGw.serverLastReadAt!),
+          DateTime.parse('2026-09-23T07:00:00Z'));
+      await drainRealIo(tester);
+      await unmount(tester);
+    });
+
+    // Öteki yön: başka cihazda okunanlar burada yeni sayılmaz ve cihaz
+    // damgası sunucuya yetişir.
+    testWidgets('sunucu ileride → cihaz yetişir, rozet yok (gerçek depo)',
+        (tester) async {
+      final storage = await newStorageForWidget(tester);
+      await tester.runAsync(() => storage.chatRead.markRead('g1',
+          DateTime.parse('2026-09-22T10:00:00Z').millisecondsSinceEpoch));
+      final chatGw = FakeChatGateway()
+        ..rows = threeRows()
+        ..serverLastReadAt = '2026-09-23T07:30:00.123456+00:00';
+      await pumpScreen(tester, storage: Future.value(storage), chat: chatGw);
+      await drainRealIo(tester);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('chat-unread-badge')), findsNothing);
+      expect(chatGw.markReadCalls, isEmpty);
+      late int? local;
+      await tester.runAsync(() async {
+        local = await storage.chatRead.lastReadAt('g1');
+      });
+      expect(local,
+          DateTime.parse('2026-09-23T07:30:00.123Z').millisecondsSinceEpoch);
       await drainRealIo(tester);
       await unmount(tester);
     });
