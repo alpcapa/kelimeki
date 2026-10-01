@@ -433,7 +433,7 @@ export function Landing() {
               (tuvaldeki "Karşılama, masaüstü" ekranı). Mobildeki sıra
               (metin → kesit → düğme) `flex-col`un doğal sırası; ızgara
               yerleşimi yalnızca `lg:` sınıflarında. */}
-          <div className="w-full max-w-[460px] px-4 min-h-[min(calc(100dvh-72px),760px)] flex flex-col gap-5 pb-4 lg:min-h-[calc(100dvh-72px)] lg:max-w-[1080px] lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:grid-rows-[auto_1fr_auto_auto_1fr] lg:gap-x-20 lg:gap-y-0">
+          <div className="w-full max-w-[460px] px-4 min-h-[min(calc(100dvh-72px),760px)] flex flex-col gap-3.5 pb-4 lg:gap-5 lg:min-h-[calc(100dvh-72px)] lg:max-w-[1080px] lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:grid-rows-[auto_1fr_auto_auto_1fr] lg:gap-x-20 lg:gap-y-0">
             {/* Logo `h1` olarak KALIR (SEO başlığı `sr-only` metinde) ve park
                 efektinin izlediği öğe bu (`#karsilama-logo`, bkz. şeritteki
                 not). `-mt-3`: şerit ile logo arasını daraltır. */}
@@ -444,7 +444,7 @@ export function Landing() {
               </span>
             </h1>
 
-            <div className="flex flex-col gap-2.5 pt-1 lg:col-start-1 lg:row-start-3">
+            <div className="flex flex-col gap-2 lg:gap-2.5 lg:pt-1 lg:col-start-1 lg:row-start-3">
               <span className="font-mono text-[10px] font-bold uppercase tracking-[1.5px] text-accent">
                 Türkçe kelime oyunu
               </span>
@@ -460,13 +460,13 @@ export function Landing() {
               </p>
             </div>
 
-            <div className="pt-2 lg:col-start-2 lg:row-start-3 lg:row-span-2 lg:self-center">
+            <div className="lg:pt-2 lg:col-start-2 lg:row-start-3 lg:row-span-2 lg:self-center">
               <BolgeKesiti />
             </div>
 
             <div className="flex-1 lg:hidden" aria-hidden="true" />
 
-            <div className="w-full flex flex-col gap-2.5 lg:col-start-1 lg:row-start-4 lg:max-w-[380px] lg:pt-8">
+            <div id="karsilama-ilk-cta" className="w-full flex flex-col gap-2.5 lg:col-start-1 lg:row-start-4 lg:max-w-[380px] lg:pt-8">
               <Oyna etiket="Hemen Oyna" buyuk />
               {/* ⚠ Bu satır "Ücretsiz · Kurulum yok · Üyelik gerekmez" idi;
                   uygulama App Store'a çıkınca "kurulum yok" rozetle ÇELİŞTİ.
@@ -824,6 +824,40 @@ export function Landing() {
             </section>
           </div>
         </main>
+
+        {/* ── Sabit alt şerit (30 Eylül 2026, yalnızca telefon/tablet) ─────
+            Kullanıcı kararı: *"Sabit alt şerit + hafif kısaltma"*. Ölçüm:
+            Meta reklamından gelenlerin %63'ü karşılamada, sayfanın medyan
+            %20'sini görüp çıkıyordu; iPhone'da (390×664 görünür alan)
+            "Hemen Oyna" YARIM, mağaza rozetleri HİÇ görünmüyordu — uygulama
+            içi tarayıcıda (Instagram/Facebook) alan daha da küçük. Şerit
+            ekran yüksekliğinden bağımsız olarak düğmeyi parmağın altında
+            tutar.
+
+            ⚠ `sticky`, `fixed` DEĞİL: kaydırma kabı belge değil `#karsilama`
+            (bkz. `index.css`), şerit o kabın sonunda durup alta yapışıyor ve
+            sayfa sonuna gelince kendi yerine oturuyor (altbilgiyi örtmez).
+            Rozet `StoreBadges`'in AYNISI (etiket, `store` adımı, sıra kuralı);
+            `main.tsx` → `altSeridiKur` cihazın OLMAYAN mağazasını gizler ve
+            ilk ekrandaki düğme+rozetler TAMAMEN görünürken şeridi saklar
+            (aynı düğme iki kez görünmesin). Script koşmazsa şerit görünür
+            kalır — yanlış tarafta kalmak düğmesiz kalmaktan iyidir. */}
+        <div
+          id="karsilama-alt-serit"
+          className="sticky bottom-0 z-20 w-full flex justify-center bg-bg border-t border-border lg:hidden"
+        >
+          <div
+            className="w-full max-w-[460px] px-4 pt-2.5 flex items-center gap-3"
+            style={{ paddingBottom: 'max(10px, env(safe-area-inset-bottom))' }}
+          >
+            <div className="flex-1 min-w-0">
+              <Oyna etiket="Hemen Oyna" buyuk />
+            </div>
+            <div id="karsilama-alt-serit-magaza" className="shrink-0">
+              <StoreBadges />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
