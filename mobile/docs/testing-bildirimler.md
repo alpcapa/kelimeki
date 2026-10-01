@@ -554,8 +554,8 @@ doğrudan çağrılarak üretildi (sıranın kullanıcıda olduğu gerçek oyunl
 - ✅ iPad bildirime dokunarak açıldı → rozet kalktı, doğru tahta açıldı.
 - ✅ İkisi arka planda, yeni bildirim → iki ikonda **1** (3 değil; sunucu 0→1).
 - ⏳ Denenmedi: farklı tür (arkadaşlık isteği) · izin kapalı cihaz · Android
-  regresyonu · 1.1.1 iOS regresyonu (tur öncesi tek 1.1.1 kaydı vardı,
-  ona rozet gitmedi — sunucu sayacı 0 kaldı).
+  regresyonu · 1.1.1 iOS regresyonu (turdan önce iPad 1.1.1 kayıtlıydı ama
+  o sürümdeyken bildirim gönderilmedi, yani kapı sahada ölçülmedi).
 
 ## 3g. iOS'ta bildirim HİÇ düşmüyor — önce APNs anahtarının ORTAMINA bak
 
