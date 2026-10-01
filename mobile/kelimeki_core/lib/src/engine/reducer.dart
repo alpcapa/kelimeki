@@ -749,12 +749,18 @@ class GameEngine {
         // taş değiştiremez. Eskiden rafın TAMAMINI atıyordu; torba 7'nin
         // altına düştüğünde bu, insan oyuncuya kapalı olan bir tazeleme
         // olurdu. Web ikizi: gameReducer.ts'in AI_PLAY dalı.
+        //
+        // ⚠ Dilimin DIŞINDA kalan kısım (`kept`) rafta KALIR — 26 Eylül
+        // 2026'ya kadar raf yalnızca yeni çekilenlerden kuruluyordu ve torba
+        // 7'nin altındayken elde kalan taşlar oyundan siliniyordu. Web ikizi
+        // aynı dal; kapı `verify-swap-invariants` §7 + run_all testSwapLimit.
         final returned = [
           for (final t in me.rack.take(maxSwapCount(state.bag.length)))
             Tile(letter: t.wild ? '?' : t.letter, pts: t.pts),
         ];
+        final kept = me.rack.sublist(returned.length);
         final bag = shuffleList([...state.bag, ...returned], rng);
-        final rack = drawTiles(bag, returned.length);
+        final rack = [...kept, ...drawTiles(bag, returned.length)];
         moved = state.copyWith(
           bag: bag,
           players: _withRack(state, rack),
@@ -770,7 +776,9 @@ class GameEngine {
               tileCount: returned.length,
             ),
           ],
-          message: '${me.name} harflerini değiştirdi.',
+          // İnsanın değişimi ve Canlı ekranla AYNI cümle (26 Eylül 2026).
+          message:
+              '${me.name} ${returned.length} taş değiştirdi ve sırasını kullandı.',
           messageType: MessageKind.warn,
         );
       } else {

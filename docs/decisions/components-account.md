@@ -182,6 +182,26 @@ portta henüz yok (ROADMAP #41'in port yarısı).
 
   **Ders — bir politikayı "gereksiz" diye düşürürken YALNIZCA okuma yolunu düşünme:** `public` bir kova okuma için RLS'i atlar ama `upsert` yazma yolu satırı GÖRMEYİ gerektirir. Aynı sınıf bir soru bu projede daha önce de yanlış cevaplanmıştı (bkz. `CountBadge`'in "şu filtre zaten eler" dersi ve `games.messages`'ın "bu satır zaten herkese açık" dersi) — "bu erişim başka bir yoldan zaten var" gerekçesi, o erişimin KULLANILDIĞI tüm yolları tek tek saymadan geçerli sayılmamalı.
 
+### Yavaş / hiç yüklenmeyen avatar (29 Eylül 2026)
+
+Kullanıcı: bekleyen oyunlardaki avatarlar *"bazen tam yüklenmiyor, bazen
+yavaş"*. **Sunucu temizdi** (canlıda ölçüldü: 4 nesne, hepsi JPEG, 68-123 KB,
+`profiles.avatar_url`'in işaret ettiği nesnelerin hiçbiri eksik değil; adres
+`list_my_online_games`le AYNI sorguda geliyor, ikinci istek yok). Neden
+yükleme davranışıydı:
+
+- **Tek hata = kalıcı baş harf.** `onError` `broken`ı kalıcı yapıyordu;
+  mobil ağda tek zaman aşımı avatarı ekran yeniden açılana kadar düşürüyordu.
+  Web: bir kez, 1,5 sn sonra yeniden deneniyor (`AVATAR_RETRY_DELAY_MS`),
+  beklerken baş harf görünüyor; ikinci hata gerçek sayılıyor.
+- **1 saatlik önbellek.** Yükleme `cacheControl` vermiyordu → `max-age=3600`;
+  proje Mumbai'de (ap-south-1). Adres her yüklemede `?v=` ile değiştiği için
+  bir yıl güvenli → `cacheControl: '31536000'`. ⚠ YALNIZCA yeni yüklemelere
+  uygulanır; mevcut 4 nesne sahibi yeniden yükleyene kadar 1 saatte kalır.
+- **Port (sürüm treni, ayrı PR):** `KAvatar` yüklenirken BOŞ gri daire
+  çiziyor (`loadingBuilder` yok), kalıcı disk önbelleği yok, 26 px için
+  512 px çözüyor (`cacheWidth` yok) ve aynı tek-hata-kalıcı davranış.
+
 ## `useAuth` — `user` nesnesinin kimliği (19 Eylül 2026)
 
 Kullanıcı bildirdi: *"Web masaüstünü açınca sürekli her şey yüklemeye

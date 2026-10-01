@@ -919,6 +919,37 @@ void main() {
       });
     }
 
+    // ⚠ REGRESYON (28 Eylül 2026, kullanıcı bildirdi): kendi skor kartında
+    // "arkadaş ekle" simgesi çıkıyordu, dokununca kişiye kendine davet
+    // göndermeyi teklif ediyordu. `relationWith` kendisi için null döner,
+    // kart null'ı "ilişki yok" diye çiziyordu. Misafirde de (oturum yok)
+    // simge çizilmez — web'in `!!user && user.id !== member.id` koşulu.
+    for (final (String ad, String? ben) in <(String, String?)>[
+      ('kendi kartı', 'u9'),
+      ('misafir', null),
+    ]) {
+      testWidgets('PlayerScoreCard ilişki simgesi YOK — $ad', (tester) async {
+        await setPhoneViewSize(tester, const Size(420, 900));
+        final gw = FakeFriendsGateway()..currentUserId = ben;
+        await tester.pumpWidget(MaterialApp(
+          theme: kelimekiTheme(),
+          home: Scaffold(
+            body: PlayerScoreCardModal(
+              stats: StatsRepo(_NullStatsGateway()),
+              userId: 'u9',
+              name: 'Bobola',
+              friends: FriendsRepo(gw),
+            ),
+          ),
+        ));
+        await tester.pump();
+        await tester.pump();
+        expect(find.byIcon(Icons.person_add_alt_1), findsNothing);
+        expect(find.byIcon(Icons.how_to_reg), findsNothing);
+        expect(find.byType(PersonPendingIcon), findsNothing);
+      });
+    }
+
     testWidgets(
         'regresyon (9 Ağustos 2026): PlayerScoreCard\'ta arkadaş isteği '
         'gönderince "iletilmiştir" sonuç diyaloğu çıkar + onay diyaloğu '

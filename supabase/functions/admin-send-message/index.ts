@@ -3,14 +3,13 @@
 // API ile gönderir. feedback-reply'dan farkı: bir feedback kaydına yanıt
 // vermiyor, YENİ bir tane açıyor (origin: 'admin') — böylece "kime ne
 // yazıldığı" admin panelinin Geri Bildirim sekmesinde kalıcı olarak görünür.
-// Kayıt e-postadan ÖNCE oluşturuluyor çünkü mail içindeki "cevap için
-// tıklayın" linkine bu kaydın id'si (?re=<id>) gömülüyor — Brevo gönderimi
-// başarısız olursa önceden oluşturulan kayıt geri alınır (silinir).
+// Kayıt e-postadan ÖNCE oluşturuluyor (mail bir zamanlar bu id'yi ?re=<id>
+// linkine gömüyordu; link 29 Eylül 2026'da kaldırıldı, sıra kaldı) — Brevo
+// gönderimi başarısız olursa önceden oluşturulan kayıt geri alınır (silinir).
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import {
   CORS_HEADERS,
   escapeHtml,
-  buildSupportReplyNoticeHtml,
   sendBrevoEmail,
   buildBrandedEmailHtml,
   brevoErrorMessage,
@@ -28,13 +27,12 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-function buildMessageHtml(message: string, feedbackId: string, subject: string, toName?: string): string {
+function buildMessageHtml(message: string, subject: string, toName?: string): string {
   const greeting = toName ? `Merhaba ${escapeHtml(toName)},` : 'Merhaba,';
   const body = `
     <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;">${greeting}</p>
     <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;white-space:pre-wrap;">${escapeHtml(message)}</p>
-    <p style="font-size:13px;color:#8A93A2;margin-top:20px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Müşteri Hizmetleri</span></p>
-    ${buildSupportReplyNoticeHtml(feedbackId)}
+    <p style="font-size:13px;color:#8A93A2;margin-top:20px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Destek</span></p>
   `;
   return buildBrandedEmailHtml(subject, body);
 }
@@ -112,7 +110,7 @@ Deno.serve(async (req: Request) => {
   const brevoRes = await sendBrevoEmail(BREVO_API_KEY, {
     to: { email: toEmail, name: toName },
     subject,
-    htmlContent: buildMessageHtml(message, inserted.id, subject, toName),
+    htmlContent: buildMessageHtml(message, subject, toName),
     sender: KELIMEKI_SUPPORT_SENDER,
     replyTo: KELIMEKI_SUPPORT_SENDER,
   });

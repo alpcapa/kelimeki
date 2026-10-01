@@ -1108,12 +1108,11 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
       "{e-posta} ile üyeliğine devam etmek ister misin?" teklifi çıkmalı.
       Web admin panelinde (Geri Bildirim sekmesi) mesaj o e-postayla,
       kaynağı oyun-sonu olarak görünmeli.
-- [ ] **Kapatmak da formu açar.** Aynı GameOver ekranında "GÖRÜŞ BİLDİR"e
-      DOKUNMADAN ✕ ile (ya da Android'de geri tuşuyla / dışarı dokunarak)
-      kapat → "Görüş Bildir" formu KENDİLİĞİNDEN açılmalı. Web'de kapatmanın
-      her yolu bunu yapıyor (`onClose` hem modalı kapatıyor hem formu
-      açıyor); portta 10 Ağustos 2026'ya kadar hiç yoktu (bkz. Parça 48).
-      Yerel/YZ oyununda ve Canlı oyunda AYRI AYRI dene.
+- [ ] **Kapatmak formu AÇMAZ** (26 Eylül 2026, kullanıcı kararı — eski
+      "kapatmak da formu açar" maddesi, Parça 48, kaldırıldı). GameOver'ı
+      "GÖRÜŞ BİLDİR"e dokunmadan ✕ / geri tuşu / dışarı dokunarak kapat →
+      form ÇIKMAMALI, tahta ve TEKRAR OYNA görünmeli. Yerel/YZ ve Canlı
+      oyunda AYRI AYRI dene.
 - [ ] **Üyelik teklifi → kayıt.** Teklifte EVET → kayıt formu doğrudan
       açılmalı, e-posta önceden dolu; kayıt tamamlanınca admin panelinde
       Üyeler tablosunda kanal "Form" görünmeli (`signup_channel='form'`).
@@ -1291,7 +1290,7 @@ listesi kök `TESTING.md` bölüm 10.
       başlatılsa da, **web'den girilse de** bir daha çıkmamalı.
 - [ ] **Banner oyun ortasında çıkmaz.** Devam eden bir YZ/Canlı oyunun
       tahtasındayken banner asla belirmemeli. Oyun bitince (GameOver
-      modalı + Görüş Bildir formu kapatıldıktan sonra — banner onların
+      modalı kapatıldıktan sonra — banner onun
       ALTINDA duruyor, web'de de öyle) kendiliğinden görünmeli.
 - [ ] **Setup'a dönünce de görünür.** Oyunu bitirmeden logoya basıp
       Setup'a dön: orada bekleyen kutlama varsa çıkmalı (Setup'ın host'u
@@ -1779,11 +1778,11 @@ Web yarısı (#561) `main`'de ve CANLIDA; buradaki kontroller **portun**
 aynı davranışı kazandığını doğrular. Gerçek bir e-posta kutusu gerekiyor.
 
 - [ ] **Kırmızı uyarının metni.** Kayıt formunu doldur → "KAYIT OL".
-      Pencere giriş moduna döner ve kırmızı satır çıkar: *"Hesap
-      oluşturuldu. **E-POSTANIZI KONTROL EDİP ONAY VERİN.**"* — eylem
-      cümlesi **KALIN ve BÜYÜK HARF**, öncesi normal.
-- [ ] ⚠ **Türkçe harflere bak:** `EDİP` ve `VERİN` noktalı **İ**
-      taşımalı. `EDIP`/`VERIN` görüyorsan biri metni `toUpperCase()`e
+      Pencere giriş moduna döner ve kırmızı satır çıkar, tamamı **KALIN ve
+      BÜYÜK HARF**: *"**LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN.**"*
+      ("Hesap oluşturuldu." 26 Eylül 2026'da kaldırıldı).
+- [ ] ⚠ **Türkçe harflere bak:** `EDİP` noktalı **İ**, `LÜTFEN`/`DOĞRULAMA`
+      Türkçe harfleriyle. `EDIP` görüyorsan biri metni `toUpperCase()`e
       bağlamış demektir (Dart'ın varsayılanı Türkçe'de i→I yapar).
 - [ ] **Onay linki pencereyi KAPATIR (asıl madde).** Yukarıdaki kırmızı
       uyarı EKRANDAYKEN uygulamayı kapatma; telefonun mail uygulamasından

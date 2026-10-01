@@ -388,10 +388,21 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
       await _showMovesNote('Bu oyun için hamle geçmişi kaydedilmemiş.');
       return;
     }
+    // Vergi kutularının koltuğu (web'le aynı): yalnızca satır GERÇEKTEN
+    // görüntüleyene aitse (listedeki `isMyRow` kuralı). `players` final
+    // SIRALAMASI, `moveHistory` KOLTUK numarası → sıradan koltuğa çevir.
+    final uid = widget.games.gateway.currentUserId;
+    final mine = widget.isMe &&
+        (uid == null || entry.userId == uid) &&
+        entry.players.isNotEmpty;
+    final rankIdx = mine ? _findMeIndex(entry, entry.players) : -1;
     await showMoveHistoryModal(
       context,
       buildSnapshotGameState(const [], entry.playerCount, entry.players)
           .copyWith(moveHistory: rows),
+      myIndex: rankIdx >= 0
+          ? _seatIndexFor(entry.players[rankIdx], rankIdx, true)
+          : -1,
     );
   }
 
