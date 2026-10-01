@@ -92,9 +92,9 @@ kod girmez.
 | Kova | # | Ne | Durum |
 |---|---|---|---|
 | **Trende (taslak PR)** | #25 | iOS simgesinde rozet SAYISI | #647'de; DB yarısı canlıda. Merge sonrası beş bildirim fonksiyonu yeniden deploy (`verify_jwt` korunarak), 1.1.2 TestFlight'ta `mobile/docs/testing-bildirimler.md` §3h |
+| | #34 | Canlı sohbet okundu bilgisi — port yarısı | Taslak PR'da (26 Eyl); web + sunucu zaten `main`'de. 1.1.2 cihaz turu: `mobile/docs/testing-arkadaslar-canli.md` → "Okundu bilgisi cihazlar arasında". Sahaya inince arşive |
 | | #37 | Küfür / müstehcenlik süzgeci | Sunucu + web canlıda; koşul metni + portun takma isim uyarısı #640'ta. #640 merge edilince arşive |
 | **Sıradaki mobil işler** | #38 | Tahtanın yükseklik bütçesi — port ikizi (katlanabilir/yatay tablet) | Web yarısı `main`'de; port açık |
-| | #34 | Canlı sohbet okundu bilgisi — port yarısı | Web + sunucu `main`'de; port açık |
 | | #35 | Kayıt Hunisi — port da `signup_events`e yazsın | Açık |
 | | #30 | Port `anon_id` — `tutorial_events` | Üç tablo ✅, bu kaldı |
 | | — | Huni v2'nin MOBİL yarısı (PR 2) | **5 Ekim trenine alındı** (27 Eyl, kullanıcı: *"dahil edelim"*). `docs/decisions/funnel-v2.md` → "PR 2". ⚠ Gelince admin kartındaki `PlatformTag kind="web"`i kaldır · **30 Eyl 2026, kullanıcı kararı: Play Install Referrer da 5 Ekim trenine** (27 Eyl'deki "önce kanalsız" kararı kaldırıldı) — Android kurulumunun `meta-*` etiketi `land` olayına yazılsın, paralı kanal uygulama içinde görünsün. Treni öne çekme önerisi REDDEDİLDİ (kazanç ~4 gün, 14 PR'lık paket, referrer'sız paket kanal göstermiyordu) |
@@ -218,8 +218,12 @@ düşünmek lazım"* → aynı gün: *"Şu anda mobilde 7 update var. Bu zaten
 oldukça fazla. Roadmap'e yaz, daha sonra bakalım."*). İki saha vakası, yedi
 alternatif, önerilen sıra ve dondurma uyumluluğu aşağıda, #32'de.
 
-**#34 — Canlı sohbet okundu bilgisinin PORT yarısı** → ⏳ **AÇIK — dondurma
-kalktı (25 Eylül 2026), sıradaki mobil işlerden** (23 Eylül 2026; web yarısı #610 ile `main`'de).
+**#34 — Canlı sohbet okundu bilgisinin PORT yarısı** → 🚆 **TRENDE — taslak
+PR (26 Eylül 2026), 5 Ekim kesiminde merge** (23 Eylül 2026; web yarısı #610 ile `main`'de).
+Port yarısı yazıldı: `util/chat_read.dart` (web'in sekiz vakası
+`chat_read_test.dart`te birebir) + `ChatRepo.chatLastReadAt`/`markChatRead`
++ `online_game_screen.dart`. Ayrıntı: Parça 216. Aşağıdaki metin işin
+ÖNCEKİ tarifi; madde 1.1.2 sahaya inince arşive gider.
 
 Okundu damgası artık sunucuda (`online_game_chat_reads` +
 `mark_online_game_chat_read` RPC'si), ama uygulama hâlâ yalnızca cihazdaki
@@ -337,12 +341,18 @@ Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
 
 | Durum | PR'lar |
 |---|---|
-| Temiz | #642 · #649 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
+| Temiz | #642 · #649 · #655 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
 | Çakışma — yalnız doküman | #637, #640 (`ROADMAP.md`) · #647 (`CLAUDE.md`) · #659, #709 (`docs/decisions/funnel-v2.md`) |
 | Çakışma — KOD | #651 (`ROADMAP.md` + **`src/components/AdminDashboard.tsx`**) |
-| CI KIRMIZI | **#655** — web `test`: `tests/board-fit.spec.ts` "dizüstü 1440×800: taş harfi ve X3 hücreye sığıyor" (tahtada harf görünmüyor; 27 Eyl koşusu). `main`'de aynı test yeşil → büyük ihtimalle PR'ın kendi değişikliği (zoom balonu); kesimden önce düzeltilmeli |
 
 - **Sıra bağımlılığı:** #709, #659'un ÜSTÜNE kurulu (önce #659).
+- **#655 YEŞİL (1 Eki).** 27 Eyl'de düşen web `test`i (`board-fit.spec.ts`)
+  RASTGELEYDİ: raftaki ilk taş joker çıkınca "Joker Hangi Harf" penceresi
+  açılıyor, harf tahtada belirmiyor (yerelde 56 koşuda 1). Düzeltme
+  `main`'de zaten var (test joker olmayan taşı seçiyor, 27 Eyl); #655'e
+  `main` merge edildi. Web yarısı #654 `main`'de olduğundan diff artık
+  yalnız port + doküman (web CI tetiklenmiyor). Başı `72f0e63`: Analiz +
+  testler · Android APK · iOS · Bütçe yeşil, çakışma yok.
 - **Aynı dosyaya dokunanlar (kesimde metin çakışması beklenir):**
   `online_game_screen.dart` 7 PR (#637 #640 #642 #649 #657 #670 #687) ·
   `auth_modal.dart` 5 (#640 #642 #651 #659 #709) · `game_screen.dart` 4
@@ -374,6 +384,7 @@ sürümün içeriği:**
 
 | Commit / PR | Ne | Neden porta dokunuyor |
 |---|---|---|
+| (26 Eyl, taslak PR) | **Canlı sohbetin okundu bilgisi artık SUNUCUDA — uygulamada okunan web'e, web'de okunan uygulamaya yansıyor** (ROADMAP #34) | ⚠ **1.1.1'DE HATA VAR, sonraki trende düzelir.** `util/chat_read.dart` (YENİ, web `chatRead.ts` ikizi) + `data/chat_api.dart` (`chatLastReadAt`/`markChatRead`) + `ui/live/online_game_screen.dart`; `chat_read_store.dart` yedek kaldı. Kullanıcının vakası: oyun bir cihazda ilk kez açılınca "ilk ziyaret" tohumu yeni mesajları da okunmuş sayıyordu (rozet 0, içeride 2 yeni mesaj). Sunucu tarafı canlıda, migration YOK. Aynı PR'da: tazeleme düşünce sohbet artık SİLİNMİYOR (web ikizi #650). Kapı: `chat_read_test.dart` (11) + `online_game_chat_test.dart` (9 yeni; eski ekranla 5'i düşüyor); app **921 test yeşil**. Cihaz maddesi `mobile/docs/testing-arkadaslar-canli.md` → "Okundu bilgisi cihazlar arasında" |
 | (26 Eyl, taslak PR) | **Uçak modunda Canlı oyun mesajı ham `Failed host lookup: '…supabase.co'` gösteriyordu** | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `util/error_message.dart`: makine kalıbına Dart'ın taşıma metinleri eklendi (`Failed host lookup` · `Connection refused/reset/closed/timed out` · `Network is unreachable` · `OS Error`). 1.1.1 cihaz turunda (D, §31 ilk madde) bulundu: `ClientException.message` sınıf adını taşımıyor, `SocketException` kalıbı `toString()`e bakıyordu. Web'de bu metinler oluşmuyor, web değişmedi; kalıp SAYISI parite için aynı (tek regex). Kapı: `error_message_parity_test.dart` üç yeni vaka; **904 test yeşil**. Metin düzeltmesi → acil istisna DEĞİL (`surumler.md` → "SÜRÜM TRENİ") |
 | (26 Eyl, taslak PR) | **Oyun sonunda kendiliğinden açılan "Görüş Bildir" formu kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/game/game_screen.dart` + `ui/live/online_game_screen.dart`: GameOver kapanınca `openFeedback()` artık çağrılmıyor; modalın içindeki "GÖRÜŞ BİLDİR" linki DURUYOR. Kullanıcı: *"Oyun sonlarında çıkan görüş bildir popup'ı kaldıralım artık."* (Parça 48'in otomatik açılışının geri alınması.) Web yarısı AYRI PR, hemen merge. Kapı: `game_screen_test.dart` + `online_game_screen_test.dart` ters çevrildi (form AÇILMAZ); **904 test yeşil**. Cihaz maddesi `mobile/TESTING.md` "Kapatmak formu AÇMAZ" |
 | (26 Eyl, taslak PR) | **Kayıt sonrası satır: "Hesap oluşturuldu." kaldırıldı** — port yarısı | ⚠ **1.1.1'e BİNMİYOR — sonraki tren.** `ui/auth/auth_modal.dart`: satır artık yalnızca *"LÜTFEN E-POSTANIZI KONTROL EDİP DOĞRULAMA YAPIN."* (tamamı kalın). Kullanıcı: insanlar hesabın hazır olduğunu sanıyor. Web yarısı #644. Kapı: `signup_info_parity_test.dart` (web kaynağını OKUR). Cihaz maddesi `mobile/TESTING.md` §30 |
