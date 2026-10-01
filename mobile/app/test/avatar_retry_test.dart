@@ -66,4 +66,37 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('IR'), findsOneWidget);
   });
+
+  // 29 Eylül 2026: ilk hatada kalıcı baş harfe düşmek yerine BİR KEZ daha
+  // denenir; yüklenirken de boş gri daire değil baş harf görünür.
+  testWidgets('ilk hatada bir kez yeniden dener, yüklenirken baş harf gösterir',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: KAvatar(
+              url: 'https://ornek.invalid/a.jpg', name: 'Ironman', size: 40),
+        ),
+      ),
+    ));
+    // Yükleme sürerken: Image ağaçta VE baş harf görünür (yer tutucu).
+    expect(find.byType(Image), findsOneWidget);
+    expect(find.text('IR'), findsOneWidget,
+        reason: 'yüklenirken çember boş kalmamalı, baş harf görünmeli');
+
+    final gorulenAnahtarlar = <Key?>{};
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+      for (final e in find.byType(Image).evaluate()) {
+        gorulenAnahtarlar.add(e.widget.key);
+      }
+    }
+    await tester.pumpAndSettle();
+    expect(gorulenAnahtarlar, contains(const ValueKey(1)),
+        reason: 'ilk hatadan sonra ikinci bir deneme (anahtar 1) başlamalı');
+    expect(find.byType(Image), findsNothing,
+        reason: 'ikinci hata gerçek sayılır: baş harfte kalır, sonsuz deneme YOK');
+    expect(find.text('IR'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
