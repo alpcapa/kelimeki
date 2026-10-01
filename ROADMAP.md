@@ -340,7 +340,7 @@ Aşağıdaki tablo SONRAKİ TRENİN içeriği (taslak #642; ilk kesim Pazartesi
 | Temiz | #642 · #649 · #657 · #670 · #676 · #678 · #687 · #697 · #716 |
 | Çakışma — yalnız doküman | #637, #640 (`ROADMAP.md`) · #647 (`CLAUDE.md`) · #659, #709 (`docs/decisions/funnel-v2.md`) |
 | Çakışma — KOD | #651 (`ROADMAP.md` + **`src/components/AdminDashboard.tsx`**) |
-| CI KIRMIZI | **#655** — web `test`: `tests/board-fit.spec.ts` "dizüstü 1440×800: taş harfi ve X3 hücreye sığıyor" (tahtada harf görünmüyor; 27 Eyl koşusu). `main`'de aynı test yeşil → büyük ihtimalle PR'ın kendi değişikliği (zoom balonu); kesimden önce düzeltilmeli |
+| ~~CI KIRMIZI~~ → ✅ | **#655** — 1 Eki ÇÖZÜLDÜ: düşen `board-fit.spec.ts` testi rastgeleydi (raftaki ilk taş joker çıkınca "Joker hangi harf" penceresi açılıyor, harf belirmiyor; yerelde 56 koşuda 1). Düzeltme `main`'de zaten vardı (#664, joker olmayan taşı seçiyor); dalına `main` merge edildi, CI yeşil (Android · iOS · analiz). Web yarısı `main`'de olduğundan diff artık yalnız mobil |
 
 - **Sıra bağımlılığı:** #709, #659'un ÜSTÜNE kurulu (önce #659).
 - **Aynı dosyaya dokunanlar (kesimde metin çakışması beklenir):**
