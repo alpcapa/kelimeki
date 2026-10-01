@@ -25,6 +25,38 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 228 — "Bildirimler kapalı" kartı: yarım oyun hatırlatması ayarlara yönlendiriyor (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
+
+- **Bildirim (1.1.2, Android, güncellemeden sonra):** *"yarım bıraktım geri
+  yaptım ama bildirim uyarısı gelmedi. Sonra ayarlardan baktım, bildirimler
+  kapalıymış."* Kart BİLEREK çıkmıyordu: ayarlardan kapatılmış izinde
+  Android sistem diyaloğunu bir daha açmıyor (`deniedPermanently`),
+  "HATIRLAT" hiçbir şey yapmazdı. Ama kullanıcı da neden hatırlatma
+  gelmeyeceğini bilemiyordu. Karar (kullanıcı): *"ayarlar kartını 12 Ekim
+  trenine ekle"*.
+- **Ne yapıldı:**
+  - `util/unfinished_reminder.dart` → `yarimOyunKartiSec` (SAF): izin
+    açık → kart yok · sistem sorabilir → "Oyunun yarım kaldı" (HATIRLAT) ·
+    sistem soramaz → **"Bildirimler kapalı" (AYARLARI AÇ)**. İkisi de
+    Canlı kartıyla ORTAK sayaçtan yer (3 kez, arada 7 gün).
+  - "Sistem soramaz" = Android `permanentlyDenied` **veya iOS `denied`** —
+    Apple kalıcı reddi ayrı bildirmiyor; eskiden iOS'ta reddeden
+    kullanıcıya işe yaramayan HATIRLAT kartı gösteriliyordu (bu da düzeldi).
+  - Kanal `kelimeki/hatirlatma`ya üçüncü metot `bildirimAyarlariniAc`:
+    Android `ACTION_APP_NOTIFICATION_SETTINGS` (+ API<26 yedeği), iOS 16+
+    `openNotificationSettingsURLString` (altı `openSettingsURLString`).
+  - **Dönüşte kurulum:** çıkış anında izin yoktu, hatırlatma kurulamadı.
+    `YarimOyunHatirlatici.ayarlaraGonder(s)` oyunu bellekte tutar;
+    `uygulamaAcildi` (öne dönüş) ÖNCE eski bekleyeni iptal eder, SONRA o oyun
+    için `oyundanAyrildi`yi dener — aynı metot içinde sırayla, çünkü iki
+    ayrı dinleyici iptal ile kurmayı yarıştırırdı. İzin açılmadıysa sessiz.
+- **Doğrulama:** 10 yeni test (`unfinished_reminder_test.dart`: saf karar,
+  dönüş akışı, dört kart senaryosu widget testi; parite testine üçüncü
+  metot + ayar niyeti), tam takım **1.048 yeşil**, `flutter analyze` temiz
+  (main'deki eski `fake_async` info'su hariç). ⚠ Ayarlar sayfasının
+  gerçekten açılması ve dönüşte hatırlatmanın kurulması YALNIZ cihazda
+  kanıtlanır: `mobile/TESTING.md` §34.
+
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
 - **Bildirim (1.1.2 cihaz turu, Canlı oyun, sıra kendisinde):** *"ipad'de
