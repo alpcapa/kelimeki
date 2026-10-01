@@ -28,6 +28,7 @@ import {
   BADGE_HEIGHT_PX,
   STORE_BADGES,
   visibleStoreBadges,
+  taggedStoreUrl,
   type StoreBadge,
 } from '../src/utils/storeLinks';
 
@@ -321,6 +322,31 @@ console.log('storeLinks — mağaza rozetleri');
     'cihaz tespiti `getDeviceType()`ten (kendi UA testi YOK — iPadOS `Macintosh` der)',
     strip.includes('getDeviceType()') && !/iPhone\|iPad/.test(strip),
   );
+}
+
+console.log('Kaynak etiketi mağazaya taşınıyor (taggedStoreUrl, 28 Eylül 2026)');
+{
+  const play = 'https://play.google.com/store/apps/details?id=com.kelimeki.kelimeki';
+  const apple = `https://apps.apple.com/app/x/id${APPLE_APP_ID}`;
+  check(
+    'Play: Install Referrer, utm_source + utm_medium=web, URL-kodlu',
+    taggedStoreUrl(play, 'googlePlay', 'meta-and-karusel') ===
+      `${play}&referrer=utm_source%3Dmeta-and-karusel%26utm_medium%3Dweb`,
+    taggedStoreUrl(play, 'googlePlay', 'meta-and-karusel'),
+  );
+  check('App Store: ?pt=…&ct=', taggedStoreUrl(apple, 'appStore', 'meta-ios-reel') === `${apple}?pt=129427325&ct=meta-ios-reel`);
+  check('App Store: adreste ? varsa &ct=', taggedStoreUrl(`${apple}?a=1`, 'appStore', 'x') === `${apple}?a=1&pt=129427325&ct=x`);
+  check('etiket yok → düz adres', taggedStoreUrl(play, 'googlePlay', null) === play);
+  for (const kotu of ['<script>', 'a b', 'ÇİĞ', 'a&b=c', '-bas', 'x'.repeat(41)]) {
+    check(`güvensiz etiket (${kotu.slice(0, 12)}) → düz adres`, taggedStoreUrl(play, 'googlePlay', kotu) === play);
+  }
+  const rozet = readFileSync('src/components/StoreBadges.tsx', 'utf8');
+  const serit = readFileSync('src/components/AppStoreStrip.tsx', 'utf8');
+  const kabuk = readFileSync('src/main.tsx', 'utf8');
+  check('StoreBadges linki etiketliyor + `store` adımı', rozet.includes('taggedStoreUrl(') && rozet.includes("journeyStep('store')"));
+  check('StoreBadges `data-kelimeki-magaza` taşıyor (karşılama katmanı onu arıyor)', rozet.includes('data-kelimeki-magaza='));
+  check('AppStoreStrip linki etiketliyor + `store` adımı', serit.includes('taggedStoreUrl(') && serit.includes("journeyStep('store')"));
+  check('main.tsx katmandaki rozetleri bağlıyor', kabuk.includes("'[data-kelimeki-magaza]'") && kabuk.includes('magazaLinkleriniKur()'));
 }
 
 console.log('');

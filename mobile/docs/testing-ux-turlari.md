@@ -471,10 +471,11 @@ hem açan hem karşı taraf kendi ilk açılışında görür.
 zorlaştırıyor). Kapanma **"denedi" SAYILMAZ** — yukarıdaki iki gösterimlik
 kural aynen duruyor.
 
-- [ ] **Uygulamayı ilk kez kurup oyun aç** → tahtanın ortasında, merkez
-      kareyi işaret eden mavi balon: **"Boş kareye veya çerçevesine çift
-      tıklama tahtayı büyütür. Hemen dene!"** Balon tahtadan taşmamalı,
-      metin sığmalı (dar telefonda 2-3 satır).
+- [ ] **Uygulamayı ilk kez kurup oyun aç** → SOL-ALT köşe bloğunun
+      ortasındaki boş kareyi (satır 10, sütun 1) işaret eden, sola yaslı
+      mavi balon: **"Boş kareye çift tık tahtayı büyütür. / Şimdi Dene!"**
+      (iki satır). X3 karesinin üstünde DEĞİL (27 Eylül 2026'dan beri);
+      balon tahtadan taşmamalı.
 - [ ] **Çift dokunup zoom yap** → balon ANINDA kaybolmalı.
 - [ ] **Oyundan çık, yeni oyun aç** → balon bir daha ÇIKMAMALI (denendi).
 - [ ] **(Temiz kurulumla)** balonu görüp zoom yapMADAN çık, yeni oyun aç →

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { getDeviceType, isStandaloneDisplay } from '../utils/visitTracking';
-import { shouldShowStoreStrip, storeForDevice } from '../utils/storeLinks';
+import { getDeviceType, getStoredUtmSource, isStandaloneDisplay } from '../utils/visitTracking';
+import { shouldShowStoreStrip, storeForDevice, taggedStoreUrl } from '../utils/storeLinks';
+import { journeyStep } from '../utils/webJourney';
 import { userHasAppInstall } from '../lib/api';
 
 /**
@@ -151,7 +152,8 @@ export function AppStoreStrip({ userId, authLoading }: { userId: string | null; 
           </p>
         </div>
         <a
-          href={store.url ?? '#'}
+          href={store.url ? taggedStoreUrl(store.url, store.key, getStoredUtmSource()) : '#'}
+          onClick={() => journeyStep('store')}
           target="_blank"
           rel="noopener noreferrer"
           className="shrink-0 btn-raised bg-accent text-white rounded-md px-3 py-1.5 text-[10px] font-bold uppercase tracking-[1px] no-underline"

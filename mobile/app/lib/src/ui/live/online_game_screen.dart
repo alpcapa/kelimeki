@@ -76,6 +76,7 @@ import '../rank/league_rewards_host.dart';
 import '../loading_note.dart';
 import '../tokens.dart';
 import '../game/invasion_confirm.dart';
+import '../../util/chat_read.dart';
 import '../../util/offline_notice.dart';
 import '../../util/uuid.dart';
 import '../../util/online_status.dart';
@@ -336,6 +337,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
 
   /// Zoom tanıtım balonu (1 Eylül 2026) — `game_screen.dart` ile aynı kural.
   bool _zoomHint = false;
+
   /// Balonun kendi kendine kapanma zamanlayıcısı — `dispose`'da ve "zoom
   /// denendi" dalında iptal edilir (sökülmüş State'te `setState` olmasın).
   Timer? _zoomHintTimer;
@@ -479,61 +481,78 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   Future<void> _fetchChat() async {
     final chat = widget.chat;
     if (chat == null || _mySlot < 0) return;
-    final results = await Future.wait([
+    final results = await Future.wait<Object?>([
       chat.myMutes(),
       chat.myActiveReports(),
       chat.messages(widget.game.id),
+      chat.chatLastReadAt(widget.game.id),
     ]);
     if (!mounted) return;
     final mutes = results[0] as Set<String>;
     final reported = results[1] as Set<String>;
     final rows = results[2] as List<OnlineGameMessageRow>?;
-    final msgs = [
-      for (final r in rows ?? const <OnlineGameMessageRow>[])
-        ChatMessage(
-            id: r.id,
-            senderUserId: r.senderUserId,
-            message: r.message,
-            createdAt: r.createdAt),
-    ];
+    final server = results[3] as ServerChatRead?;
+    // Mesaj listesi okunamadıysa (null) eski liste KORUNUR ve okundu kararı
+    // verilmez (`decideChatRead` → `rows: null`). 26 Eylül 2026'ya kadar
+    // boş listeyle değiştiriliyordu: ön plana dönüş tazelemesi düşünce
+    // ekrandaki sohbet siliniyordu (`ChatRepo.messages`in "UI eski listeyi
+    // korur" sözleşmesi burada tutulmuyordu). Web ikizi aynı düzeltme.
+    final msgs = rows == null
+        ? null
+        : [
+            for (final r in rows)
+              ChatMessage(
+                  id: r.id,
+                  senderUserId: r.senderUserId,
+                  message: r.message,
+                  createdAt: r.createdAt),
+          ];
     _chatState.update(
         messages: msgs, mutedUserIds: mutes, reportedUserIds: reported);
-    await _seedInitialUnread(msgs);
+    await _applyChatRead(msgs, server);
   }
 
-  /// Bu cihazda bu oyun için "en son okunan mesaj" damgası hiç yoksa (özellik
-  /// yeni devreye girdi ya da bu cihazda ilk kez açılıyor), mevcut TÜM
-  /// geçmişi "okunmamış" saymak yanlış pozitif üretir — damga mevcut son
-  /// mesaja (yoksa şimdiye) oturtulup okunmamış sayaç 0'da kalır; kırmızı
-  /// nokta yalnızca BUNDAN SONRA gelecek gerçek yeni mesajlar için çıkar
-  /// (web `getChatLastReadAt`/`markChatRead` ilk-ziyaret düzeltmesi).
-  Future<void> _seedInitialUnread(List<ChatMessage> msgs) async {
+  /// Okundu damgası 23 Eylül 2026'dan beri SUNUCUDA da (ROADMAP #34, web
+  /// `OnlineGameScreen` → `decideChatRead`): iki kaynağın büyüğü alınır,
+  /// geride kalan yetiştirilir. Eskiden yalnızca cihazdaydı — oyun bir
+  /// cihazda ilk kez açılınca "ilk ziyaret" tohumu yeni gelmiş mesajları da
+  /// okunmuş sayıyordu, bir cihazda okumak da ötekine ulaşmıyordu. Karar
+  /// `util/chat_read.dart`te (saf fonksiyon, web ile aynı vakalar).
+  ///
+  /// Sessize alma kırmızı noktayı ETKİLEMEZ (15 Ağustos 2026, kullanıcı
+  /// kararı) — mute yalnızca POPUP'ı bastırır. Gerekçe: oyunu bölen ve taciz
+  /// vektörü olan şey popup; alttaki nokta rahatsız etmiyor ve kullanıcı
+  /// susturduğu kişinin ne yazdığını görmek isteyebilir (şikayet için bile).
+  Future<void> _applyChatRead(
+      List<ChatMessage>? msgs, ServerChatRead? server) async {
     final storageFuture = widget.storage;
     final store = storageFuture == null ? null : (await storageFuture).chatRead;
-    final lastReadMs =
+    final localMs =
         store == null ? null : await store.lastReadAt(widget.game.id);
-    if (lastReadMs == null) {
-      final seedMs = msgs.isEmpty
-          ? DateTime.now().millisecondsSinceEpoch
-          : msgs
-              .map((m) => DateTime.parse(m.createdAt).millisecondsSinceEpoch)
-              .reduce((a, b) => a > b ? a : b);
-      await store?.markRead(widget.game.id, seedMs);
-      if (mounted) _chatState.update(unreadCount: 0);
-      return;
+    final d = decideChatRead(
+      server: server,
+      localAt: localStampIso(localMs),
+      rows: msgs == null
+          ? null
+          : [
+              for (final m in msgs)
+                ChatReadRow(
+                    senderUserId: m.senderUserId, createdAt: m.createdAt)
+            ],
+      myUserId: widget.myUserId,
+      nowIso: clock.now().toUtc().toIso8601String(),
+    );
+    final writeLocal = d.writeLocal;
+    if (writeLocal != null) {
+      await store?.markRead(
+          widget.game.id, DateTime.parse(writeLocal).millisecondsSinceEpoch);
     }
-    // Sessize alma kırmızı noktayı ETKİLEMEZ (15 Ağustos 2026, kullanıcı
-    // kararı) — mute yalnızca POPUP'ı bastırır. Gerekçe: oyunu bölen ve taciz
-    // vektörü olan şey popup; alttaki nokta rahatsız etmiyor ve kullanıcı
-    // susturduğu kişinin ne yazdığını görmek isteyebilir (şikayet için bile).
-    // Mute seti bu yüzden buraya artık hiç geçmiyor; çağıran onu yalnızca
-    // rozetler (🚫/🚩) ve popup kapısı için yüklemeye devam ediyor.
-    final unread = msgs
-        .where((m) =>
-            m.senderUserId != widget.myUserId &&
-            DateTime.parse(m.createdAt).millisecondsSinceEpoch > lastReadMs)
-        .length;
-    if (mounted) _chatState.update(unreadCount: unread);
+    final push = d.pushToServer;
+    if (push != null) {
+      unawaited(widget.chat?.markChatRead(widget.game.id, push));
+    }
+    final unread = d.unread;
+    if (unread != null && mounted) _chatState.update(unreadCount: unread);
   }
 
   void _onChatMessage(OnlineGameMessageRow row) {
@@ -551,14 +570,22 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       return;
     }
     // Nokta HER gönderen için artar; popup yalnızca susturulmamış kişiler
-    // için açılır (bkz. _seedInitialUnread'deki gerekçe).
+    // için açılır (bkz. _applyChatRead'deki gerekçe).
     _chatState.update(unreadCount: _chatState.unreadCount + 1);
     if (_chatState.mutedUserIds.contains(row.senderUserId)) return;
     _chatState.update(newMessagePopup: msg);
     if (!_popupDialogActive) unawaited(_showNewMessagePopup());
   }
 
-  Future<void> _markChatReadTo(String iso) async {
+  /// Okundu damgası hem cihaza hem sunucuya (web `markChatRead`). Sunucuya
+  /// mesajın KENDİ `created_at`i gider (mikro saniyesiyle) — cihazdaki
+  /// milisaniyeye kırpılmış hâli değil.
+  ///
+  /// [remote] `false`: damga bir mesajdan değil saatten geliyor (sohbet boş)
+  /// — sunucuya GİTMEZ, web de boş sohbette yazmıyor. Cihaz saati sunucunun
+  /// henüz ulaşmamış bir mesajını okunmuş saydırabilirdi.
+  Future<void> _markChatReadTo(String iso, {bool remote = true}) async {
+    if (remote) unawaited(widget.chat?.markChatRead(widget.game.id, iso));
     final storageFuture = widget.storage;
     if (storageFuture == null) return;
     final store = (await storageFuture).chatRead;
@@ -590,12 +617,13 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   void _openChatModal() {
     setState(() => _chatOpen = true);
     _chatState.update(unreadCount: 0);
-    final latest = _chatState.messages.isEmpty
+    final empty = _chatState.messages.isEmpty;
+    final latest = empty
         ? DateTime.now().toUtc().toIso8601String()
         : _chatState.messages
             .reduce((a, b) => a.createdAt.compareTo(b.createdAt) > 0 ? a : b)
             .createdAt;
-    unawaited(_markChatReadTo(latest));
+    unawaited(_markChatReadTo(latest, remote: !empty));
     showDialog<void>(
       context: context,
       builder: (_) => ListenableBuilder(
@@ -1731,10 +1759,10 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             if (!mounted) return;
             final auth = widget.auth;
-            // Web OnlineGameScreen.tsx (~1306-1316) — game_screen.dart ile
-            // BİREBİR aynı kural: modalı kapatmak da "Görüş Bildir" formunu
-            // açıyor. İkisi bilinçli kod tekrarı çifti, biri değişirse
-            // öteki de (bkz. mobile/CLAUDE.md "Etki Analizi").
+            // game_screen.dart ile BİREBİR aynı kural: "Görüş Bildir" formu
+            // yalnızca modalın içindeki linkle açılır; kapatınca kendiliğinden
+            // açılması 26 Eylül 2026'da kaldırıldı (kullanıcı kararı). İkisi
+            // bilinçli kod tekrarı çifti, biri değişirse öteki de.
             void openFeedback() => showFeedbackModal(context,
                 auth: auth!,
                 feedback: widget.feedback,
@@ -1750,8 +1778,6 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                     showMoveHistoryModal(context, _historyState),
                 onFeedback: auth == null ? null : openFeedback,
                 celebration: kutlama);
-            if (!mounted || auth == null) return;
-            openFeedback();
           });
         }
 
