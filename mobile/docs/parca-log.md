@@ -114,6 +114,30 @@ katlanma anındaki geçiş ölçülmedi → `mobile/docs/testing-ux-turlari.md` 
 kromu sahte uçla ölçüldü; gerçek sunucuyla bant/başlık farkı çıkarsa §33'ün
 iPad maddesi yakalar.
 
+## Parça 215 — Kendi skor kartında "arkadaş ekle" simgesi
+
+28 Eylül 2026, kullanıcı ekran görüntüsüyle bildirdi: *"bakan kişinin skor
+kartında arkadaş ekle çıkmamalı. Üstelik basınca 'kendine arkadaşlık daveti
+göndereyim mi' dememeli."*
+
+**Web'de nasıl:** `PlayerScoreCard.tsx` → `showFriendButton = !!user &&
+user.id !== member.id && relation !== undefined`. Web'de hata yok.
+
+**Kök sebep (port):** `FriendsRepo.relationWith` kendi id'si (ve oturumsuz)
+için `null` döner — "ilişki yok" ile aynı değer. Kart `_relationLoaded`
+kurulduktan sonra `null`ı `person_add` olarak çiziyordu; dokunuş "Arkadaş
+Ekle" onayını açıyordu. Web'in `user.id !== member.id` yarısı portta hiç
+yoktu.
+
+**Düzeltme:** `_loadRelation` gateway'in `currentUserId`si null ya da kartın
+sahibiyse ilişkiyi hiç yüklemiyor → `_relationLoaded` false kalır, simge
+çizilmez. Kimlik bilerek `auth`tan değil gateway'den: `auth` bir dönem her
+çağrı yerinde geçmiyordu (bkz. `initState`teki kafa kafaya notu).
+
+**Doğrulama:** `friends_test.dart` → *"ilişki simgesi YOK — kendi kartı /
+misafir"*; düzeltme geri alınınca ikisi de DÜŞÜYOR. Tam takım 903 yeşil.
+**Sınır:** cihazda bakılmadı (sonraki tren).
+
 ## Parça 214 — Kaynak Hunisi'nde app GÖRÜNMÜYORDU: dört adımın damgası
 
    > ⚠ **25 Eylül 2026, merge anında:** aşağıda anlatılan WEB yarısı
