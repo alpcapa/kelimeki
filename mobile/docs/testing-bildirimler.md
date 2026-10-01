@@ -543,6 +543,20 @@ yeniden deploy edilmiş (`get_edge_function` → `_shared/push.ts` içinde
 - [ ] **Regresyon — 1.1.1 iOS:** rozet HİÇ çıkmamalı (kapı); çıkıyorsa
       simgede takılı kalır — hemen bildir.
 
+**Tur 1 — 1 Ekim 2026, 1.1.2 (807), iPhone + iPad aynı hesap (Ironman): ✅ GEÇTİ.**
+Bildirimler ikinci hesap beklenmeden ajan tarafından `notify-your-turn`
+doğrudan çağrılarak üretildi (sıranın kullanıcıda olduğu gerçek oyunlar;
+`select net.http_post(...)` — 10 dk bastırması yalnızca trigger'da, doğrudan
+çağrıda yok). Her adım sunucuda `push_tokens.badge_count` ile de okundu.
+- ✅ 1. bildirim → iki ikonda **1** (sunucu 1/1); 2. bildirim → iPhone **2**,
+  iPad **1** (arada iPad açılmıştı → sayacı sıfırlandı: cihaz başına sayaç).
+- ✅ iPhone ikondan açıldı → rozet kalktı, iPad'inki KALDI.
+- ✅ iPad bildirime dokunarak açıldı → rozet kalktı, doğru tahta açıldı.
+- ✅ İkisi arka planda, yeni bildirim → iki ikonda **1** (3 değil; sunucu 0→1).
+- ⏳ Denenmedi: farklı tür (arkadaşlık isteği) · izin kapalı cihaz · Android
+  regresyonu · 1.1.1 iOS regresyonu (tur öncesi tek 1.1.1 kaydı vardı,
+  ona rozet gitmedi — sunucu sayacı 0 kaldı).
+
 ## 3g. iOS'ta bildirim HİÇ düşmüyor — önce APNs anahtarının ORTAMINA bak
 
 ✅ **VAKA KAPANDI (15 Eylül 2026, aynı gün).** Yeni anahtar `V85TL79C5R`
