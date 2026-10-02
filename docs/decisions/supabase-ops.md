@@ -238,6 +238,9 @@ anında canlıya çıktı.
 projeyi görüyordu (`list_deployments` → 403 / listede yalnızca `sharedxp`),
 yani panel kullanıcıda. Ajanın yapabildiği tek şey siteyi `curl`lamak — o da
 zaten kesin olan kanıt.
+⚠ **DÜZELTME (2 Ekim 2026, ölçüldü):** Vercel MCP artık `kelimeki` projesini
+görüyor — `list_deployments` (sha ile süzme dahil) çalışıyor; `create_deployment`
+(redeploy) çağrılabiliyor ama kota doluyken 402 alır.
 
 
 
@@ -256,6 +259,31 @@ sınırında olunca bir commit'in sessizce atlanması da bu tabloya uyuyor.
 yeniden deneme işe yaramaz; kota açılınca bir sonraki `main` commit'i ya da
 Vercel'de "Redeploy" canlıyı günceller — sonra sha'yı `curl` ile OKU.
 **Önlem:** bir günde çok PR açılacaksa küçük değişiklikleri tek dalda topla.
+
+**Aynı gün ikinci kez (#785, 11:00):** merge yeşil, Vercel bu commit için HİÇ
+satır açmadı, GitHub statüsü `Deployment rate limited`. Ajan
+`create_deployment` (redeploy) denedi → **402 `api-deployments-free-per-day`**:
+elle Redeploy da AYNI kotadan yer. ⚠ Hata gövdesindeki `reset` (ertesi gün)
+YANILTICI: pencere KAYAN 24 saat — 50 dk sonra (11:53) eski deployment'lar
+pencereden düşünce aynı redeploy geçti ve #785 canlıya çıktı. Yani yapılacak
+şey 20-30 dk arayla yeniden denemek, ertesi günü beklemek DEĞİL. Son 24 saatin dökümü: **100 = 65 önizleme
++ 35 production**; `main`'in son 62 commit'inin **40'ı** yalnızca doküman/
+mobil/pazarlama değiştiriyordu — siteye hiçbir şey getirmeyen derlemeler.
+
+**Kalıcı önlem — `ignoreCommand` (2 Ekim 2026, kullanıcı: *"her not için
+deploy saçma"*):** `vercel.json` → `node scripts/vercel-ignore-build.mjs`.
+Değişen dosyaların HEPSİ `*.md` · `docs/` · `mobile/` · `marketing/` ·
+`supabase/` · `tests/` · `.github/` · `.claude/` içindeyse derleme atlanır;
+tek bir başka dosya varsa derlenir. Önizleme KAPATILMADI — kullanıcı web
+değişikliklerini önizlemede bakıp onaylıyor; web'e dokunan dalda önizleme
+aynen çıkar. Taban `VERCEL_GIT_PREVIOUS_SHA` (son BAŞARILI deployment —
+atlananlar ilerletmez, fark birikir), yoksa `HEAD^`; şüphede DERLER.
+⚠ Liste ATLA listesi, izin listesi DEĞİL: yeni bir web klasörü kendiliğinden
+derlenir. Siteye giren bir şeyi bu klasörlerden birine koyarsan (ör. derlemenin
+`docs/`tan dosya okuması) listeyi daralt.
+⚠ **Açık soru:** atlanan derlemenin günlük 100'e SAYILIP sayılmadığını Vercel
+belgesi söylemiyor. İlk dolu günde `list_deployments` ile say; sayılıyorsa
+ikinci önlem kullanıcının önerisi: doküman notlarını günde bir toplu PR'da gönder.
 
 ## "Bu dal merge edilmiş mi?" — üç tuzak (CLAUDE.md'den taşındı)
 
