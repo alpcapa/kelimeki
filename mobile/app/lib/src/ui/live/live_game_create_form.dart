@@ -525,12 +525,25 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
     // Oyuncu numarası filigranı (karar 15) — tahtadaki köşe filigranıyla
     // aynı dil: mono kalın, oyuncu rengi, %20 opaklık. Yatay kartta ✕'in
     // SOLUNDA, dikeyde sağ ALTTA.
+    //
+    // ⚠ RAKAM TABAN ÇİZGİSİNE GÖRE YERLEŞİR, satır kutusuna göre DEĞİL
+    // (2 Ekim 2026, kullanıcı iki telefonu yan yana çekti: *"Android'de
+    // ortalı, iPhone'da alta yapışık"*). `height: 1` kutusunu ortalamak
+    // rakamın yerini fontun ascent/descent'inin kutuya NASIL dağıtıldığına
+    // bırakıyordu — Flutter'ın dağıtımı CSS'inkinden farklı (web
+    // `leading-none` taban çizgisini 0,88 em'e, Flutter `proportional`
+    // 0,76 em'e koyuyor) ve iki platformda aynı görünmedi. Taban çizgisi
+    // ise glifin fonta GÖMÜLÜ başlangıcı: Space Mono Bold'da rakamlar
+    // 0 → 700/1000 em (fontTools ile ölçüldü, `2` 714), yani yarısı
+    // [_kFiligranRakamYari] em. Yazı ölçeği UYGULANMAZ — web `px` ile sabit.
+    final boy = yatay ? 56.0 : 40.0;
     final filigran = Text(
       '${i + 2}',
+      textScaler: TextScaler.noScaling,
       style: TextStyle(
         fontFamily: 'SpaceMono',
         fontWeight: FontWeight.bold,
-        fontSize: yatay ? 56 : 40,
+        fontSize: boy,
         height: 1,
         color: col.base.withValues(alpha: 0.2),
       ),
@@ -556,11 +569,24 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
       ),
       child: Stack(
         children: [
-          if (yatay)
-            Positioned(
-                right: 48, top: 0, bottom: 0, child: Center(child: filigran))
-          else
-            Positioned(right: 6, bottom: 2, child: filigran),
+          // Yatay: rakamın ORTASI kartın ortasında (web `top-1/2
+          // -translate-y-1/2`). Dikey: web `bottom-0.5` + `leading-none` →
+          // taban çizgisi alttan 2 px + 0,12 em yukarıda.
+          Positioned(
+            right: yatay ? 48 : 6,
+            top: 0,
+            bottom: 0,
+            child: LayoutBuilder(
+              builder: (context, k) => Baseline(
+                key: ValueKey('koltuk-filigran-$i'),
+                baseline: yatay
+                    ? k.maxHeight / 2 + _kFiligranRakamYari * boy
+                    : k.maxHeight - 2 - _kFiligranAltBosluk * boy,
+                baselineType: TextBaseline.alphabetic,
+                child: filigran,
+              ),
+            ),
+          ),
           Padding(
             padding: yatay
                 ? const EdgeInsets.symmetric(horizontal: 12, vertical: 10)
@@ -1149,3 +1175,11 @@ class _DashedRRectPainter extends CustomPainter {
   bool shouldRepaint(_DashedRRectPainter old) =>
       old.color != color || old.width != width || old.radius != radius;
 }
+
+/// Space Mono Bold'da bir rakamın yüksekliğinin YARISI (em). Rakamlar taban
+/// çizgisinden 700/1000 em yukarı çıkıyor (fontTools, 2 Ekim 2026).
+const double _kFiligranRakamYari = 0.35;
+
+/// Web'in dikey kartında `leading-none` satır kutusunun alt kenarı ile taban
+/// çizgisi arası (em): CSS yarım boşluğu (1 − 1,481) / 2 + 0,361 = 0,12.
+const double _kFiligranAltBosluk = 0.12;

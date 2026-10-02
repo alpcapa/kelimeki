@@ -25,6 +25,29 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 230 — Koltuk filigranı taban çizgisine göre yerleşiyor: iPhone'da alta yapışıktı (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
+
+- **Bildirim (1.1.2, iki telefon yan yana):** *"Kişinin yanındaki sayı
+  android'de ortalı, iphone'da alta yapışık."* (Canlı oyun formu, 2 kişi.)
+- **Ölçüm:** widget testinde filigran KUTUSU kartta tam ortadaydı (ölçek
+  1,0/1,15/1,3 → merkez farkı 0,0); Space Mono Bold'un üç dikey ölçü
+  tablosu aynı (hhea = typo = win: 1120/−361, fontTools). Yani fark kutunun
+  yerinde değil, RAKAMIN KUTU İÇİNDEKİ yerinde — `height: 1` kutusuna
+  ascent/descent'in nasıl dağıtıldığı. Flutter `proportional` taban
+  çizgisini 0,76 em'e koyuyor, web `leading-none` 0,88 em'e; iOS cihazdaki
+  kesin dağılım bu ortamda ÖLÇÜLEMEDİ (simülatör yok), ama kutuya
+  güvenmeyen bir yerleşim her iki durumda da doğru.
+- **Düzeltme:** `live_game_create_form.dart` → filigran `Baseline` ile
+  yerleşiyor: yatayda taban çizgisi kart ortası + 0,35 em (rakam 0 → 700/1000
+  em, yarısı) → rakamın ortası kartın ortasında; dikeyde web'in
+  `bottom-0.5` + `leading-none` payı (2 px + 0,12 em). `TextScaler.noScaling`
+  (web `px` ile sabit). ⚠ Android'de rakam ~5 px AŞAĞI iner — artık web'le
+  ve iPhone'la aynı yerde.
+- **Test:** `live_games_test` → "koltuk filigranı taban çizgisinden
+  yerleşir" (ölçek 1,0 ve 1,3; yatay + dikey). Negatif eş koşuldu (eski
+  yerleşimle düşüyor). Tam takım **1.039 yeşil**. Cihaz: `mobile/TESTING.md`
+  → "Canlı oyun formu".
+
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
 - **Bildirim (1.1.2 cihaz turu, Canlı oyun, sıra kendisinde):** *"ipad'de

@@ -1236,6 +1236,71 @@ void main() {
 
     // ── ROADMAP #41 (web #663-#666, port 1 Ekim 2026) ──────────────────
 
+    // 2 Ekim 2026 — kullanıcı: *"Kişinin yanındaki sayı android'de ortalı,
+    // iphone'da alta yapışık"*. Filigran artık TABAN ÇİZGİSİNE göre
+    // yerleşiyor (satır kutusunun dağıtımı platforma göre değişiyordu):
+    // yatayda rakamın ortası kartın ortasında, dikeyde web'in alt payı.
+    // Yazı ölçeği filigranı ETKİLEMEZ (web `px`).
+    for (final olcek in [1.0, 1.3]) {
+      testWidgets('koltuk filigranı taban çizgisinden yerleşir (ölçek $olcek)',
+          (tester) async {
+        tester.platformDispatcher.textScaleFactorTestValue = olcek;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await pumpForm(tester);
+        // Taban çizgisi = metin kutusunun üstü + aynı stille ölçülen
+        // taban mesafesi (yerleşim dışında `getDistanceToBaseline`
+        // çağrılamıyor).
+        double tabanY(Finder kart) {
+          final metin = find.descendant(
+              of: find.descendant(
+                  of: kart,
+                  matching: find.byWidgetPredicate((w) =>
+                      w is Baseline &&
+                      '${w.key}'.contains('koltuk-filigran-'))),
+              matching: find.byType(Text));
+          final t = tester.widget<Text>(metin);
+          // Temanın varsayılan stili de birleşmeli (Text de öyle yapıyor).
+          final stil = DefaultTextStyle.of(tester.element(metin))
+              .style
+              .merge(t.style);
+          final tp = TextPainter(
+            text: TextSpan(text: t.data, style: stil),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          final taban =
+              tp.computeDistanceToActualBaseline(TextBaseline.alphabetic);
+          tp.dispose();
+          return tester.getTopLeft(metin).dy + taban;
+        }
+
+        await tester.ensureVisible(find.byKey(const ValueKey('friend-f1')));
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('friend-f1')));
+        await tester.pump();
+        final yatay = find.byKey(const ValueKey('koltuk-dolu-0'));
+        final ky = tester.getRect(yatay);
+        expect(tabanY(yatay) - ky.center.dy, closeTo(0.35 * 56, 0.5),
+            reason: 'yatay: rakamın ortası kartın ortasında');
+
+        await tester.ensureVisible(find.text('4 KİŞİ'));
+        await tester.pump();
+        await tester.tap(find.text('4 KİŞİ'));
+        await tester.pump();
+        if (!tester.any(find.byKey(const ValueKey('koltuk-dolu-0')))) {
+          await tester.ensureVisible(find.byKey(const ValueKey('friend-f1')));
+          await tester.pump();
+          await tester.tap(find.byKey(const ValueKey('friend-f1')));
+          await tester.pump();
+        }
+        final dikey = find.byKey(const ValueKey('koltuk-dolu-0'));
+        final kd = tester.getRect(dikey);
+        // 1 px kenarlık + web `bottom-0.5` (2 px, CSS'te kenarlığın İÇİNDEN)
+        // + `leading-none`ın taban payı (0,12 em).
+        expect(kd.bottom - tabanY(dikey), closeTo(1 + 2 + 0.12 * 40, 0.5),
+            reason: 'dikey: web `bottom-0.5` + `leading-none` payı');
+      });
+    }
+
     testWidgets(
         'koltuk kartları: renkli dolu koltuk + filigran, ✕ boşaltır; '
         '4 kişide 2 arkadaşla 3. koltuk "Yapay Zeka"', (tester) async {

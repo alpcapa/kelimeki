@@ -492,6 +492,10 @@ buradakiler ekranın gerçek bir oyundaki hâli.
         koltuk KIRMIZI zeminde, adı ve sağda soluk "2"; ✕ boşaltır. 4 kişide
         üç koltuk (kırmızı/yeşil/sarı); 2 arkadaşla üçüncü koltuk "Yapay
         Zeka". Boş koltuğa dokunmak listeye kaydırmalı, klavye AÇILMAMALI.
+      - **Koltuk numarası (filigran) iki platformda AYNI yerde (2 Eki 2026,
+        1.1.3):** 2 kişide soluk "2" kartın DİKEY ORTASINDA (iPhone ile
+        Android yan yana; 1.1.2'de iPhone'da alta yapışıktı), 4 kişide sağ
+        altta, alt kenara yapışmadan. En büyük yazı boyutunda da büyümemeli.
       - "HIZLI SEÇ" / "SIK OYNADIKLARIN" şeridi (en az 2 arkadaşın varsa):
         en çok oynadığın kişi solda; dokununca seçilmeli, halkası koltuğun
         renginde. Arama kutusuna yazınca şerit kaybolmalı.
