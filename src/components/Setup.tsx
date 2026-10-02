@@ -1003,11 +1003,13 @@ export function Setup({
               {/* "Oyuncular" koltuk listesinin YERİNE tek satır (27 Eylül
                   2026, ROADMAP #41 karar 2 — tasarımdaki standart Setup).
                   Koltukların renkleri/adları oyun ekranında zaten var;
-                  kurulumda soru yalnızca "kaç rakip". */}
+                  kurulumda soru yalnızca "kaç rakip". Metin 2 Ekim 2026'da
+                  kullanıcı isteğiyle sadeleşti; port ikizi
+                  `setup_screen.dart` (1.1.3 treni). */}
               <p className="text-[11px] text-muted font-mono leading-relaxed">
                 {count === 2
-                  ? "Sen ve 1 yapay zeka. 4 kişide 3 yapay zekaya karşı oynarsın."
-                  : "Sen ve 3 yapay zeka; herkes kendi köşesinden başlar."}
+                  ? "2 kişilik oyunda yapay zekaya karşı oynarsın."
+                  : "4 kişilik oyunda 3 yapay zekaya karşı oynarsın."}
               </p>
             </div>
 
