@@ -95,7 +95,7 @@ export function BeyinLigiList({ onSelect }: BeyinLigiListProps) {
 
   if (rows === null) {
     return (
-      <div className="h-[50vh] flex items-center justify-center">
+      <div className="h-[50vh] min-h-0 flex items-center justify-center">
         <LoadingNote py="py-0" />
       </div>
     );
@@ -115,7 +115,9 @@ export function BeyinLigiList({ onSelect }: BeyinLigiListProps) {
     : null;
 
   return (
-    <div className="flex flex-col gap-2">
+    // `min-h-0`: k-lig penceresinin gövdesi bir flex sütunu (`fillBody`),
+    // liste kalan alana küçülür, altındaki satır/kart/not hep görünür.
+    <div className="flex flex-col gap-2 min-h-0">
       <div className="flex items-center text-[9px] uppercase tracking-[1px] text-muted font-mono font-bold px-2 pb-1 gap-1">
         <span className="min-w-6 whitespace-nowrap">Sıra</span>
         <span className="flex-1">Oyuncu</span>
@@ -127,7 +129,7 @@ export function BeyinLigiList({ onSelect }: BeyinLigiListProps) {
           Henüz listeye giren yok. {BEYIN_LIGI_MIN_GAMES} oyunu tamamlayan ilk sen ol!
         </p>
       ) : (
-        <ol ref={scrollRef} className="flex flex-col gap-1 max-h-[50vh] overflow-y-auto pr-1">
+        <ol ref={scrollRef} className="flex flex-col gap-1 max-h-[50vh] min-h-0 overflow-y-auto pr-1">
           {rows.map((r) => {
             const me = user && r.user_id === user.id;
             const name = shortDisplayName(r, 'Anonim');

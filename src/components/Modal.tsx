@@ -19,9 +19,16 @@ interface ModalProps {
   // sağda durur, bu ikisinin arasında ortalanır. Verilmezse hiçbir şey
   // değişmez (justify-between eski davranışı korur).
   headerCenter?: ReactNode;
+  // Gövde bir flex sütunu olur: içerik kalan yüksekliği paylaşır, kendi
+  // listesini `min-h-0` ile küçültebilir. Altta SABİT kalması gereken bir
+  // satırı olan modal için (k-lig'in "senin sıran" satırı). Düz gövdede o
+  // satır küçük ekranda pencerenin altına itiliyordu (2 Ekim 2026). Yine de
+  // `overflow-y-auto` kalır: sabit parçalar sığmayacak kadar alçak bir
+  // ekranda gövde eskisi gibi kayar. Port ikizi `KModal.fillBody`.
+  fillBody?: boolean;
 }
 
-export function Modal({ title, onClose, children, headerLink, headerAction, headerCenter }: ModalProps) {
+export function Modal({ title, onClose, children, headerLink, headerAction, headerCenter, fillBody }: ModalProps) {
   const containerRef = useModalA11y(true, onClose);
   const titleId = useId();
   return createPortal(
@@ -69,7 +76,11 @@ export function Modal({ title, onClose, children, headerLink, headerAction, head
             </div>
           </div>
         </div>
-        <div className="overflow-y-auto px-5 pt-4 pb-5">{children}</div>
+        <div
+          className={`overflow-y-auto px-5 pt-4 pb-5 ${fillBody ? 'flex flex-col min-h-0' : ''}`}
+        >
+          {children}
+        </div>
       </div>
     </div>,
     document.body,

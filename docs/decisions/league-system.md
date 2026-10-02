@@ -130,6 +130,7 @@ olarak gösterildi, onaydan sonra kodlandı.
 | Rütbe mührü / ödül | **Yok** | Mühür toplam puandan türüyor; puansız listede yanıltıcı |
 | Açılış sekmesi | Hep **Puan Ligi**, son sekme hatırlanmaz | |
 | Alttaki not | *"YZ'ye karşı oynanan oyunlar da sayılır. OHP eşitse daha çok oyun oynayan üstte."* | Kullanıcı istedi |
+| Puan Ligi'nin alttaki notu (aynı gün eklendi) | Yalnızca *"YZ'ye karşı oynanan oyunlar da sayılır."* Puan tablosu ya da eşitlik kuralı YOK | Kullanıcı: *"bu kadar detay vermeye gerek yok"*. Eşitlik kuralı zaten girişte, puanlar Kullanım Koşulları'nda |
 
 **Sunucu** (migration `20261002173357_beyin_ligi` + `…173422_beyin_ligi_grant_daralt`):
 - `leaderboard` view'ının SONUNA `ohp_games` sütunu eklendi (`count(*) filter
@@ -160,6 +161,26 @@ Port dosyası yokken o yarıyı atlar.
 gizlenip bağlı kalır (gidip gelmek yeniden indirmez). İkonlar emoji
 (🏆/🧠) — başlıktaki 🏆 zaten emoji ve port aynı karakterleri çizebiliyor;
 taslaktaki çizim ikonlar bu yüzden kullanılmadı.
+
+**"Senin sıran" satırı pencerenin İÇİNDE kalır (2 Ekim 2026, aynı gün
+düzeltildi):** Android'den gelen ekran görüntüsünde 31. sıradaki
+kullanıcının satırı yarıdan kesikti. Liste ekranın sabit `50vh`'sini
+alıyordu, pencere `85vh` ile sınırlıydı. Sekme şeridi ve açıklama
+eklenince satır kaydırılan gövdenin altına itildi. Ölçüldü: eski kodda
+390×844'te bile kesikti. Düzeltme: `Modal` `fillBody` (gövde flex sütunu,
+`overflow-y-auto` yedek olarak durur) + `min-h-0` zinciri: liste KALAN
+alana küçülür. Port ikizi `KModal.fillBody` (#795, Parça 233 eki), orada
+sorun daha ağırdı: Flutter iç içe kaydırmayı zincirlemediği için satıra
+hiç ulaşılamıyordu.
+
+**Alttaki notlar satırı itmiyor (ölçüldü, 2 Ekim 2026).** Kullanıcının
+şartı: *"notlar şart değil, sorun yaratıyorsa ikisinden de kaldıralım"*.
+Gerçek `Leaderboard` bileşeni sahte veriyle (40 satır, sen 31.)
+Playwright'ta ölçüldü. 390×844, 375×667, 360×640 ve 320×568'de iki sekmede
+de "senin sıran" + not pencerenin içinde kalıyor, gövde kaymıyor. Notun
+bedeli listeden yaklaşık 28px (320×568'de Puan listesi 145 → 117px). Yatay
+telefon ölçülmedi, çünkü orada `LandscapeBlock` uygulamanın tamamını
+kapatıyor. Notlar bu yüzden KALDI.
 
 **Terms/Privacy değişmedi:** gizlilik metni zaten "oyun istatistikleriniz
 k-lig aracılığıyla diğer KAYITLI kullanıcılara görünür" diyor; OHP ve oyun

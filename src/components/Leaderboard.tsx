@@ -55,6 +55,11 @@ export const PUAN_LIGI_INTRO =
   'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır. ' +
   'Puanlar eşitse OHP yüksek olan üstte.';
 
+// Beyin Ligi'nin alt notunun (`BEYIN_LIGI_NOTE`) Puan Ligi eşi — aynı yer,
+// aynı stil (2 Ekim 2026, kullanıcı isteği). Eşitlik kuralı zaten girişte.
+// Port ikizi: `leaderboard_modal.dart` (`kPuanLigiNote`).
+export const PUAN_LIGI_NOTE = "YZ'ye karşı oynanan oyunlar da sayılır.";
+
 const OHP_HINT =
   'Ortalama Hamle Puanı tüm oyunlarda yapılan tüm hamlelerin ortalamasıdır. ' +
   'Puanlar eşitse OHP yüksek olan üstte sıralanır.';
@@ -69,6 +74,9 @@ function rowToPlayerSummary(r: LeaderboardRow): PlayerSummary {
     avatar_url: r.avatar_url,
   };
 }
+
+// Görünen sekmenin kabı: Modal'ın flex gövdesinden kalan yüksekliği alır.
+const KLIG_TAB_FILL = 'flex flex-col min-h-0';
 
 export function Leaderboard({ onClose }: LeaderboardProps) {
   const { user, profile } = useAuth();
@@ -172,6 +180,7 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
         </span>
       }
       onClose={onClose}
+      fillBody
     >
       <div
         role="tablist"
@@ -205,22 +214,26 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
         {tab === 'puan' ? PUAN_LIGI_INTRO : BEYIN_LIGI_INTRO}
       </p>
       {beyinMounted && (
-        <div hidden={tab !== 'beyin'}>
+        <div hidden={tab !== 'beyin'} className={tab === 'beyin' ? KLIG_TAB_FILL : undefined}>
           <BeyinLigiList onSelect={setSelected} />
         </div>
       )}
-      <div hidden={tab !== 'puan'}>
+      {/* `min-h-0` zinciri (Modal `fillBody`): liste pencerede KALAN alana
+          küçülür, "senin sıran" satırı altında hep görünür. Sınıf yalnızca
+          görünen sekmede: `flex` utility'si `[hidden]`ın display:none'ını
+          ezerdi. 2 Ekim 2026, port ikiziyle aynı gün. */}
+      <div hidden={tab !== 'puan'} className={tab === 'puan' ? KLIG_TAB_FILL : undefined}>
         {rows === null ? (
           /* Yükseklik BAŞTAN ayrılır: pencere yüksekliğini içeriğinden
              aldığından tek satırlık bir yükleme metni onu önce küçük açıp veri
              gelince büyütüyordu (kullanıcı mobil portta bildirdi, 24 Ağustos
              2026 — aynı kusur webde de vardı). 50vh, aşağıdaki listenin kendi
              tavanıyla aynı. */
-          <div className="h-[50vh] flex items-center justify-center">
+          <div className="h-[50vh] min-h-0 flex items-center justify-center">
             <LoadingNote py="py-0" />
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 min-h-0">
             <div className="flex items-center text-[9px] uppercase tracking-[1px] text-muted font-mono font-bold px-2 pb-1 gap-1">
               {/* 2 Eylül 2026 — `w-*` → `min-w-*` + `whitespace-nowrap` (sınıf
                   1+3'ün web eşleniği). Tarayıcının "asgari yazı boyutu"
@@ -275,7 +288,7 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
                 Henüz skor yok. İlk sen ol!
               </p>
             ) : (
-              <ol ref={scrollRef} className="flex flex-col gap-1 max-h-[50vh] overflow-y-auto pr-1">
+              <ol ref={scrollRef} className="flex flex-col gap-1 max-h-[50vh] min-h-0 overflow-y-auto pr-1">
                 {rows.map((r) => {
                   const me = user && r.user_id === user.id;
                   const name = rowName(r);
@@ -372,6 +385,8 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
                 </button>
               </>
             )}
+
+            <p className="text-[10px] text-muted font-mono text-center leading-relaxed pt-1">{PUAN_LIGI_NOTE}</p>
           </div>
         )}
       </div>

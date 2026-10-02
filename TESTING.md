@@ -1182,6 +1182,10 @@ Gerçek bir oturum gerektirir (view yalnızca `authenticated`a açık).
       satırı; sayısı, listeyi kaydırıp kendini bulduğunda gördüğünle AYNI.
 - [ ] **Sekmeler arası gidip gelme** listeyi yeniden indirmemeli (Beyin
       Ligi'nde aşağı kaydır → Puan Ligi → geri: kaydırma konumu duruyor).
+- [ ] **İlk 10'da OLMAYAN hesapla telefonda:** "senin sıran" satırı açılışta
+      pencerenin İÇİNDE tam görünmeli (iki sekmede de), pencereyi kaydırmak
+      gerekmemeli. Liste onun üstünde kayar. (2 Ekim 2026: satır 390×844'te
+      bile alttan kesiliyordu. `Modal` `fillBody` + `min-h-0` zinciri.)
 
 ## 11. Karşılama katmanı (18 Ağustos 2026)
 
