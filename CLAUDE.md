@@ -357,14 +357,14 @@ atlayabiliyor** (4 Eylül 2026'da ölçüldü: merge yeşildi, dağıtım listes
 o commit için HİÇ satır yoktu, üretim 30+ dakika bir öncekinde kaldı; hata
 mesajı yok, düşen iş yok). **Tek kanıt sha** — `curl` ile OKU.
 
-**Kurtarma:** dalın Preview'ını Production'a yükselt (Vercel → Deployments →
-dalın satırı → `…` → Promote to Production); squash merge'te dal başının
-AĞACI `main`'inkiyle birebir aynıdır. ⚠ **Bedeli:** sayfa artık DALIN
-sha'sını bildirir, `main`'in başını değil — bir sonraki gerçek üretim
-yayınına kadar "sha'yı `main`'le karşılaştır" kontrolü eşleşmez; bunu
-bilmeden bakan "yayın yine kaçtı" diye yanlış teşhis koyar. Vaka ve ajanın
-gözlem sınırı (Vercel paneli kullanıcıda): `docs/decisions/supabase-ops.md`
-→ "Vercel'in atladığı commit".
+**Kurtarma:** dalın Preview'ını Production'a yükselt (squash merge'te ağaç
+aynı; bedeli: sayfa DALIN sha'sını bildirir). ⚠ **Günlük kota 100
+deployment (Hobby)** — dolunca merge yayına çıkmaz, elle Redeploy da 402
+alır. `vercel.json` → `ignoreCommand` (`scripts/vercel-ignore-build.mjs`):
+yalnızca `*.md`/`docs/`/`mobile/`/`marketing/`/`supabase/`/`tests/`/
+`.github/`/`.claude/` değiştiren push DERLENMEZ — siteye giren bir dosyayı
+bu klasörlere koyma. Ayrıntı: `docs/decisions/supabase-ops.md` → "Vercel'in
+atladığı commit" + "Vercel günlük dağıtım kotası".
 
 ## Flutter / Mobil Port (`mobile/`)
 
@@ -803,14 +803,7 @@ Duyuru, ölçümler ve o istisnanın bugünkü riski:
 
 
 
-## Web'de Yapılacak İşler (mobil porttan gelen fikirler, henüz yapılmadı)
+## Web'de Yapılacak İşler (mobil porttan gelen fikirler)
 
-Mobil port (bkz. `mobile/CLAUDE.md`) cihaz testi sırasında bazen web'de de
-uygulanması gereken küçük iyileştirmeler ortaya çıkarıyor — bu bölüm o
-fikirlerin unutulmaması için bir bekleme listesi, kod DEĞİL. Bir madde
-uygulanınca buradan silinip ilgili bölümün kendi tarihli notuna taşınmalı
-(kök `CLAUDE.md`'nin genel "değişiklik = tarihli not" disipliniyle aynı).
-
-Şu an bekleyen madde YOK — Ağustos 2026'da gelen dört madde uygulandı ve
-kayıtları `docs/decisions/components*.md`'deki kendi tarihli notlarına
-taşındı (9 Eylül 2026'da bu bölümden budandı, `auto` sınıfı bütçesi).
+Bekleme listesi, kod DEĞİL; uygulanan madde buradan silinip kendi tarihli
+notuna taşınır. Şu an bekleyen madde YOK.
