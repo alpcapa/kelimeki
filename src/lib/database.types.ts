@@ -1123,11 +1123,10 @@ export interface AdminGameActivityPoint {
    * karma Canlı oyun (canlıda ölçüldü: Canlı oyunların %40'ı karma) — ve
    * şimdilik MOBİL UYGULAMADAN biten oyunlar.
    *
-   * ⚠ Sonuncusu GEÇİCİ: portun `logGameFinish`i damgayı yazmıyor, çünkü o
-   * değişiklik inceleme dondurması yüzünden AYRI bir PR'da bekliyor
-   * (16 Eylül 2026, kullanıcı kararı: *"Mobile dokunma"*). O PR merge edilip
-   * yeni bir mağaza paketi çıkana kadar `_ios`/`_android` yalnızca Canlı
-   * oyunları sayar.
+   * ⚠ Sonuncusu GEÇİCİ ve kapanıyor: portun `logGameFinish`i damgayı
+   * 1.1.1'den beri yazıyor (#565, 25 Eylül 2026). 1.1.1 öncesi paketlerden
+   * biten YZ oyunları hâlâ `_other`a düşer; güncellendikçe azalıyor (2 Ekim
+   * 2026: son 30 günde 533 platformsuz bitiş, son 2 günde 2).
    */
   games_finished_web: number;
   games_finished_ios: number;

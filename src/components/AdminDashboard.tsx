@@ -227,8 +227,9 @@ const GAME_COUNT_SERIES: ChartSeriesDef[] = [
 // bozulurdu — iOS'un macenta (mor değil) seçimi de oradaki deutan notuna
 // dayanıyor, burada yeniden karar verilmiyor.
 //
-// Sıra bilinçli: bilinen platformlar altta, "Diğer" en üstte. Bugün "Diğer"
-// kovası port PR'ı merge edilene kadar şişkin (bkz. `AdminActiveHoursRow`);
+// Sıra bilinçli: bilinen platformlar altta, "Diğer" en üstte. "Diğer" 1.1.1
+// öncesi uygulama paketlerinin platformsuz bitişleri yüzünden şişkindi (port
+// damgası 1.1.1'den beri yazılıyor; 2 Ekim 2026'da son 2 günde 2 satır);
 // en üste konunca çubuğun TABANI kararlı kalıyor ve o boşluk kapandıkça
 // grafik alttan değil üstten inceliyor.
 const FINISH_PLATFORM_SERIES: ChartSeriesDef[] = [
@@ -814,11 +815,12 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         oyunların %40'ında katılımcılar farklı platformlarda, o oyun tek bir platforma
         yazılamaz) — ve şimdilik <b>MOBİL UYGULAMADAN biten oyunlar</b>.
         <br />
-        ⚠ <b>Sonuncusu geçici ve beklenen bir durum:</b> damgayı yazan istemci kodu 16 Eylül
-        2026'da web'e girdi, portun aynı değişikliği ise inceleme dondurması yüzünden AYRI bir
-        PR'da bekliyor. O PR merge edilip yeni bir mağaza paketi çıkana kadar{' '}
-        <b>iOS ve Android serileri yalnızca Canlı oyunları sayar</b>, app'ten biten YZ oyunları
-        "Diğer"e düşer. Web tarafı ilk günden doğru sayıyor.
+        ⚠ <b>Sonuncusu geçici ve kapanıyor:</b> damgayı yazan istemci kodu 16 Eylül 2026'da
+        web'e, 1.1.1 sürümüyle uygulamaya girdi. Uygulamanın <b>1.1.1 öncesi</b> paketlerinden
+        biten YZ oyunları hâlâ "Diğer"e düşer; kullanıcılar güncelledikçe azalır (2 Ekim
+        2026'da ölçüldü: son 30 günde 533 platformsuz bitiş, son 2 günde yalnızca 2).
+        Pencere 30 gün olduğundan eski satırlar grafikten ancak o sürede çıkar. Web tarafı
+        ilk günden doğru sayıyor.
       </>
     ),
   },
@@ -850,12 +852,13 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         toplam bitişe tam olarak toplanır. <b>Diğer</b>'in tanımı "Oyun Sayısı" grafiğiyle
         birebir aynı.
         <br />
-        ⚠ <b>Bugün "Diğer" şişkin ve bu geçici:</b> <code>game_finishes.platform</code>{' '}
-        damgasını yalnızca web istemcisi yazıyor; portun aynı satırı inceleme dondurması
-        yüzünden ayrı bir PR'da bekliyor. O merge edilip yeni mağaza paketi dağılana kadar
-        app'ten biten oyunlar "Diğer"e düşer (18 Eylül 2026'da ölçüldü: 17 Eylül'ün 89
-        bitişinden 54'ü platformsuz). <b>Toplam çubuk yüksekliği bundan etkilenmez</b> —
-        yalnızca rengin dağılımı eksik.
+        ⚠ <b>"Diğer" = platformu kaydedilmemiş bitişler, neredeyse tamamı uygulamanın{' '}
+        1.1.1 öncesi sürümlerinden.</b> <code>game_finishes.platform</code> damgasını web baştan
+        beri, uygulama 1.1.1'den beri yazıyor; eski paketle biten oyunlar platformsuz düşer.
+        Kullanıcılar güncelledikçe kapanıyor (2 Ekim 2026'da ölçüldü: son 30 günde 533
+        platformsuz bitiş, son 2 günde yalnızca 2) ama pencere 30 gün olduğundan eski satırlar
+        grafikten ancak o sürede çıkar — o zamana kadar "Diğer"in çoğu aslında iOS/Android.{' '}
+        <b>Toplam çubuk yüksekliği bundan etkilenmez</b> — yalnızca rengin dağılımı eksik.
       </>
     ),
   },
@@ -887,9 +890,9 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <br />
         <b>Platform kırılımı:</b> <b>Web · iOS · Android · Diğer</b> segmentleri HER ZAMAN
         toplam bitişe tam olarak toplanır; <b>Diğer</b>'in tanımı "Oyun Sayısı" ve "Aktif
-        Saatler" ile birebir aynı. ⚠ <b>Bugün "Diğer" şişkin ve bu geçici</b> — sebep
-        "Aktif Saatler"dekiyle aynı: portun <code>platform</code> damgası inceleme
-        dondurması yüzünden ayrı bir PR'da bekliyor.
+        Saatler" ile birebir aynı. ⚠ <b>"Diğer" geçici olarak şişkin</b> — sebep "Aktif
+        Saatler"dekiyle aynı: uygulamanın 1.1.1 öncesi paketleri <code>platform</code>{' '}
+        damgasını yazmıyordu; güncellendikçe ve 30 günlük pencere kaydıkça kapanıyor.
       </>
     ),
   },
