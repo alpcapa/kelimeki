@@ -30,11 +30,16 @@
 // "CSV İndir" + `infoHint` üçlüsü, aynı padding-top oranı tekniği (bkz.
 // oradaki Safari notu). Grafikler aynı sekmede yan yana duruyor.
 //
-// ⚠ EFSANE TIKLANABİLİR DEĞİL — `GrowthChart`tan bilinçli ayrım. Orada seri
-// açıp kapatmak anlamlı (çizgiler bağımsız); burada segmentler `finished`e
-// TAM toplanıyor ve bir segmenti gizlemek çubuğu sessizce yalan söyletirdi
-// (toplam aynı kalır, parçalar tutmaz). Efsane bu yüzden yalnızca bir
-// anahtar.
+// Efsane bir FİLTRE, aç/kapa DEĞİL (2 Ekim 2026, kullanıcı isteği: *"üstteki
+// legend'lara tıklayınca o kanalı filtrelese iyi olur"*). Bir kanala dokunmak
+// grafiği YALNIZCA o kanala daraltır; aynı kanala ya da "Tümü"ne dokunmak geri
+// açar. `GrowthChart`ın aç/kapa'sından bilinçli ayrım ve 18 Eylül'deki
+// "efsane tıklanamaz" kararının gerekçesi hâlâ geçerli: segmentler `finished`e
+// TAM toplanıyor, bir segmenti GİZLEMEK çubuğu sessizce yalan söyletirdi
+// (toplam aynı kalır, parçalar tutmaz). Filtrede bu olmuyor: süzülünce çubuk
+// yüksekliği, y ekseni ve tooltip'teki sayı o KANALIN değeri olur, "Bitirilen"
+// toplamı ekranda kalmaz. Tablo ve CSV bilerek SÜZÜLMEZ (tüm kanallar, ham
+// sayı) — onlar dökümdür.
 import { useRef, useState } from 'react';
 import type { ChartSeriesDef } from './GrowthChart';
 import { downloadCsv } from '../utils/csvExport';
@@ -160,10 +165,17 @@ export function StackedBucketChart<T extends StackedBucketRow>({
 }: StackedBucketChartProps<T>) {
   const [showTable, setShowTable] = useState(false);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  /** Süzülen kanalın `key`i; `null` = tümü (yığılmış). */
+  const [solo, setSolo] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
   const n = data.length;
-  const maxRaw = Math.max(1, ...data.map((d) => d.finished));
+  const soloDef = solo ? series.find((s) => s.key === solo) ?? null : null;
+  const shown = soloDef ? [soloDef] : series;
+  // Çubuğun boyu: süzülmüşse o kanalın değeri, değilse `finished` (segmentler
+  // ona TAM toplanıyor).
+  const total = (row: T) => (soloDef ? valueOf(row, soloDef.key) : row.finished);
+  const maxRaw = Math.max(1, ...data.map(total));
   const niceMax = niceCeil(maxRaw);
   const yTicks = niceMax <= 4 ? [0, niceMax] : [0, Math.round(niceMax / 2), niceMax];
 
@@ -229,16 +241,38 @@ export function StackedBucketChart<T extends StackedBucketRow>({
         </div>
       </div>
 
-      {/* Anahtar — TIKLANABİLİR DEĞİL (dosya başındaki not). Kare rozet,
-          `GrowthChart`ın çizgi rozetinden bilerek farklı: orada çizgi, burada
-          dolu alan. */}
-      <div className="flex items-center gap-3 flex-wrap">
-        {series.map((s) => (
-          <span key={s.key} className="flex items-center gap-1.5 text-[10px] font-mono text-text">
-            <span className="inline-block w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
-            {s.label}
-          </span>
-        ))}
+      {/* Anahtar = FİLTRE (dosya başındaki not). Kare rozet, `GrowthChart`ın
+          çizgi rozetinden bilerek farklı: orada çizgi, burada dolu alan.
+          Süzülmüşken öteki kanallar soluk; "Tümü" yalnızca süzülmüşken
+          görünür (her zaman görünse "seçili" bir şey yokken anlamsız). */}
+      <div className="flex items-center gap-x-3 gap-y-1 flex-wrap">
+        {series.map((s) => {
+          const aktif = solo === s.key;
+          return (
+            <button
+              key={s.key}
+              type="button"
+              aria-pressed={aktif}
+              title={aktif ? 'Tüm kanalları göster' : `Yalnızca ${s.label}`}
+              onClick={() => setSolo(aktif ? null : s.key)}
+              className={`flex items-center gap-1.5 min-h-[28px] text-[10px] font-mono text-text transition-opacity active:opacity-70 ${
+                solo && !aktif ? 'opacity-35' : ''
+              } ${aktif ? 'font-bold underline underline-offset-2' : ''}`}
+            >
+              <span className="inline-block w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
+              {s.label}
+            </button>
+          );
+        })}
+        {solo && (
+          <button
+            type="button"
+            onClick={() => setSolo(null)}
+            className="min-h-[28px] text-[10px] font-mono font-bold text-accent active:opacity-70"
+          >
+            Tümü
+          </button>
+        )}
       </div>
 
       {n === 0 ? (
@@ -316,7 +350,7 @@ export function StackedBucketChart<T extends StackedBucketRow>({
                         opacity={0.09}
                       />
                     )}
-                    {series.map((s) => {
+                    {shown.map((s) => {
                       const v = valueOf(row, s.key);
                       const y0 = y(acc);
                       acc += v;
@@ -376,11 +410,15 @@ export function StackedBucketChart<T extends StackedBucketRow>({
                 }}
               >
                 <div className="text-muted mb-1">{bucketLabel(hover)}</div>
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="font-bold text-text text-[12px]">{hover.finished}</span>
-                  <span className="text-muted">Bitirilen</span>
-                </div>
-                {series.map((s) => (
+                {/* Süzülmüşken "Bitirilen" toplamı YOK — çubuk o kanalın
+                    boyunda, toplam yazmak ikisini karıştırırdı. */}
+                {!soloDef && (
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="font-bold text-text text-[12px]">{hover.finished}</span>
+                    <span className="text-muted">Bitirilen</span>
+                  </div>
+                )}
+                {shown.map((s) => (
                   <div key={s.key} className="flex items-center gap-1.5">
                     <span className="inline-block w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
                     <span className="font-bold text-text text-[12px]">{valueOf(hover, s.key)}</span>

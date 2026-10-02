@@ -943,7 +943,7 @@ kullanıyor (aşağı bkz.).
 | Saat dilimi `Europe/Istanbul` | Deponun tamamının kuralı. Burada süs değil **metriğin kendisi**: UTC dağılımı 3 saat kaydırıp grafiği sessizce yanlış okuturdu |
 | **Teslim satırları HARİÇ** | Teslim satırı 7 günlük/48 saatlik zaman aşımının DOLDUĞU anı taşır, bir insanın oyun bitirdiği anı değil. Dahil edilseydi dağılıma insan davranışıyla ilgisi olmayan bir saat deseni karışırdı. Son 30 günde **152 teslim / 1199 bitirilen** — %11, yuvarlama hatası değil |
 | Kombolardan BAĞIMSIZ, sabit 30 gün | Kullanıcı kararı. Kendi `useEffect`'i var ve bağımlılık dizisi boş — yukarıdaki effect'e eklenseydi her kombo değişiminde gereksiz bir RPC daha koşardı |
-| Efsane TIKLANABİLİR DEĞİL | `GrowthChart`tan bilinçli ayrım: orada çizgiler bağımsız, açıp kapatmak anlamlı. Burada segmentler `finished`e TAM toplanıyor; bir segmenti gizlemek çubuğu sessizce yalan söyletirdi (toplam aynı kalır, parçalar tutmaz) |
+| ~~Efsane TIKLANABİLİR DEĞİL~~ → **Efsane bir FİLTRE (2 Ekim 2026)** | Kullanıcı: *"üstteki legend'lara tıklayınca o kanalı filtrelese iyi olur"*. Eski gerekçe (segmentler `finished`e TAM toplanıyor, bir segmenti GİZLEMEK çubuğu yalan söyletirdi) hâlâ doğru — bu yüzden aç/kapa DEĞİL, tek kanala DARALTMA: süzülünce çubuk, y ekseni ve tooltip o kanalın değeri; "Bitirilen" toplamı ekrandan kalkar. Aynı rozet ya da "Tümü" geri açar. Tablo/CSV bilerek süzülmez. `GrowthChart`ın aç/kapa'sından hâlâ ayrı |
 | "Diğer" en ÜSTTE | Bugün şişkin (aşağı bkz.); en üste konunca çubuğun TABANI kararlı kalıyor ve boşluk kapandıkça grafik alttan değil üstten inceliyor |
 
 ### Neden `GrowthChart` kullanılmadı
@@ -1027,7 +1027,7 @@ içindeki ritim · **Aktif Günler** = haftanın içindeki ritim.
 
 "Aktif Saatler"in TÜM kararları (kaynak `game_finishes` · saat dilimi
 `Europe/Istanbul` · teslim satırları hariç · kombolardan bağımsız sabit 30
-gün · efsane tıklanamaz · "Diğer" en üstte · `niceCeil`'in ince merdiveni)
+gün · efsane tek kanala süzer (2 Ekim 2026) · "Diğer" en üstte · `niceCeil`'in ince merdiveni)
 buraya **aynen** geçti. Yukarıdaki bölümdeki tablo tekrar edilmiyor; iki
 grafik aynı sekmede yan yana duruyor ve bir karar değişirse **İKİSİ
 BİRLİKTE** değişmeli.
