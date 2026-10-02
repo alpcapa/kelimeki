@@ -30,6 +30,9 @@ const String kPuanLigiIntro =
     'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır. '
     'Puanlar eşitse OHP yüksek olan üstte.';
 
+/// Puan Ligi listesinin altındaki not — web `PUAN_LIGI_NOTE` ile BİREBİR.
+const String kPuanLigiNote = "YZ'ye karşı oynanan oyunlar da sayılır.";
+
 enum KLigTab { puan, beyin }
 
 /// k-lig sekmeleri — web `KLIG_TABS` ile BİREBİR (sıra, ikon, etiket).

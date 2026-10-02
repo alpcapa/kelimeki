@@ -162,6 +162,11 @@ void main() {
               .firstMatch(web);
       expect(puan, isNotNull, reason: 'PUAN_LIGI_INTRO biçimi değişti');
       expect(kPuanLigiIntro, puan!.group(1)! + puan.group(2)!);
+
+      final puanNote = RegExp(r'export const PUAN_LIGI_NOTE = "([^"]+)";')
+          .firstMatch(web);
+      expect(puanNote, isNotNull, reason: 'PUAN_LIGI_NOTE biçimi değişti');
+      expect(kPuanLigiNote, puanNote!.group(1));
     });
 
     test('gamesUntilBeyinLigi web gamesUntilBeyinLigi ile aynı davranır', () {
@@ -182,6 +187,7 @@ void main() {
     expect(find.text('Beyin Ligi'), findsOneWidget);
     expect(find.text(kPuanLigiIntro), findsOneWidget);
     expect(find.text('Puancı'), findsOneWidget);
+    expect(find.text(kPuanLigiNote), findsOneWidget);
     expect(find.byType(BeyinLigiList), findsNothing);
     expect(gw.beyinRequests, isEmpty);
     expect(tester.takeException(), isNull);

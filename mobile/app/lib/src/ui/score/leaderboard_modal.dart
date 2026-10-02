@@ -573,6 +573,18 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
             ),
           ],
         ],
+        // Web `PUAN_LIGI_NOTE` — Beyin Ligi'nin alt notuyla aynı yer/stil
+        // (2 Ekim 2026). Web'de de yalnızca veri gelince (boş liste dahil).
+        if (rows != null) ...[
+          const SizedBox(height: 8),
+          const Text(kPuanLigiNote,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontFamily: 'SpaceMono',
+                  fontSize: 10,
+                  height: 1.5,
+                  color: _muted)),
+        ],
       ],
     );
   }
