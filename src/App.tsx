@@ -99,6 +99,7 @@ import {
   isStandaloneDisplay,
 } from './utils/visitTracking';
 import { journeyMoves, journeyStart, journeyStep } from './utils/webJourney';
+import { whenPageVisible } from './utils/pageVisible';
 import { funnelEvent } from './utils/funnelEvents';
 import type { LocalGameSave, OnlineGame, WordMeaning } from './lib/database.types';
 import { OnlineGameScreen } from './components/OnlineGameScreen';
@@ -527,18 +528,21 @@ export default function App() {
   // anlaşılacak bir kullanıcı da yanlışlıkla misafir sayılabilir.
   useEffect(() => {
     if (!isSupabaseConfigured || authLoading || user) return;
-    if (visitAlreadyLoggedToday()) return;
-    const anonId = getOrCreateAnonId();
-    if (!anonId) return;
-    markVisitLoggedToday();
-    void logGuestVisit(
-      anonId,
-      getStoredUtmSource(),
-      getDeviceType(),
-      isStandaloneDisplay(),
-      getOsVersion(),
-      getDeviceModel(),
-    );
+    // Arka planda yüklenip hiç açılmayan sayfa sayılmaz (utils/pageVisible.ts).
+    whenPageVisible(() => {
+      if (visitAlreadyLoggedToday()) return;
+      const anonId = getOrCreateAnonId();
+      if (!anonId) return;
+      markVisitLoggedToday();
+      void logGuestVisit(
+        anonId,
+        getStoredUtmSource(),
+        getDeviceType(),
+        isStandaloneDisplay(),
+        getOsVersion(),
+        getDeviceModel(),
+      );
+    });
   }, [authLoading, user?.id]);
 
   // Cihaz/OS pingi — yukarıdaki misafir-ziyaret effect'inden BİLEREK AYRI:
@@ -554,11 +558,13 @@ export default function App() {
   // yukarıdaki effect'in damgasıyla paylaşılsaydı biri ötekini bastırabilirdi.
   useEffect(() => {
     if (!isSupabaseConfigured || authLoading) return;
-    if (deviceVisitAlreadyLoggedToday()) return;
-    const anonId = getOrCreateAnonId();
-    if (!anonId) return;
-    markDeviceVisitLoggedToday();
-    void logDeviceVisit(anonId, getDeviceType(), getOsVersion(), getDeviceModel());
+    whenPageVisible(() => {
+      if (deviceVisitAlreadyLoggedToday()) return;
+      const anonId = getOrCreateAnonId();
+      if (!anonId) return;
+      markDeviceVisitLoggedToday();
+      void logDeviceVisit(anonId, getDeviceType(), getOsVersion(), getDeviceModel());
+    });
   }, [authLoading]);
 
   // Ziyaretçi yolculuğu (`utils/webJourney.ts`, admin → "Ziyaretçi

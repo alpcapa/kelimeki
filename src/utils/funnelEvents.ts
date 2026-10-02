@@ -24,6 +24,7 @@
 // KULLANILMIYOR — `webJourney.ts` ile aynı bundle gerekçesi, düz `fetch`.
 
 import { getOrCreateAnonId, getStoredUtmSource, isBotUserAgent } from './visitTracking';
+import { whenPageVisible } from './pageVisible';
 
 /**
  * Olay adları. ⚠ `log_funnel_event`in `v_events` dizisiyle BİREBİR aynı
@@ -239,8 +240,16 @@ export function funnelOpen(captureUtm: () => void): void {
   if (!anonId) return; // depolama yoksa kimlik de yok — sayılamaz
 
   const plan = planLand(readLand(), trace, getStoredUtmSource());
+  // Kanal kararı ŞİMDİ donar (iz okuması yazmadan önce yapılmalı), ama ağa
+  // giden her şey sayfa GÖRÜNÜNCE gider: arka planda yüklenip hiç açılmayan
+  // sayfa `land`/`visit` saymaz (bkz. utils/pageVisible.ts). Görünmeden
+  // kapanırsa `sent: false` kalır ve gerçek açılış aynı kanalla gönderir.
+  if (plan.send) writeLand(plan.state);
+  whenPageVisible(() => sendOpenEvents(anonId, plan));
+}
+
+function sendOpenEvents(anonId: string, plan: { state: LandState; send: boolean }): void {
   if (plan.send) {
-    writeLand(plan.state);
     void send(anonId, 'land', plan.state.channel).then((ok) => {
       if (ok) writeLand({ ...plan.state, sent: true });
     });
