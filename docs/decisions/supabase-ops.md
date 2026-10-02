@@ -359,3 +359,19 @@ o işin ilk adımı olmalı.
 **Kural `CLAUDE.md` → "Migration'lar" bölümüne yazıldı** (her seferinde
 uygulanacak bir şey olduğu için orada; bu dosya yalnızca gerekçeyi ve
 ölçümleri tutuyor).
+
+
+## Dal silme yetkisi — `workflow_dispatch` (1 Ekim 2026)
+
+(2 Ekim 2026'da `CLAUDE.md`'den taşındı — doküman boyutu bütçesi.)
+
+⚠ **Dal silme — `workflow_dispatch` ARTIK AÇIK (1 Ekim 2026).** Kullanıcı
+Claude GitHub App'ine "Read and write access to actions" verdi; aynı gece
+`branch-cleanup.yml` `dry_run: true` ile ajan tarafından tetiklendi ve
+**204** döndü (koşu 36786438571, başarılı). Yani ajan HER `workflow_dispatch`i
+(dal temizliği, `ios-screenshots.yml`…) artık kendisi başlatabilir. Öncesi:
+4 Eylül'de üç kapı da kapalıydı, 10 Eylül'de dispatch 403 ölçülmüştü.
+Hâlâ geçerli olanlar: GitHub MCP'de ref silen araç yok; `git push --delete`
+yeniden denenmedi. Dal temizliğinde sıra aynı: önce `dry_run` AÇIK, listeyi
+kullanıcıya göster, onay gelince KAPALI ile tekrar — silme geri alınamaz,
+dispatch yetkisi onay adımını KALDIRMAZ.

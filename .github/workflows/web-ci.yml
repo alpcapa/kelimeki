@@ -193,6 +193,11 @@ jobs:
       # paths listesinde zaten var.
       - run: npm run verify-league-points
 
+      # Beyin Ligi giriş eşiği (2 Ekim 2026): sunucu view'ının `ohp_games >= N`
+      # koşulu ↔ web `BEYIN_LIGI_MIN_GAMES` (↔ port, dosya geldiğinde).
+      # Ayrışırsa "N oyun daha" kartı sunucunun listesiyle çelişir.
+      - run: npm run verify-beyin-ligi
+
       # Oyun motorunun DÖRDÜNCÜ kopyası SQL'de (`submit_move` artık hamleyi
       # kendi hesaplıyor — ROADMAP #18). Metin karşılaştırması mümkün değil
       # (farklı dil), bu yüzden bu adım mekanik olanı kilitliyor: sayısal

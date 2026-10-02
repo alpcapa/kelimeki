@@ -656,6 +656,37 @@ export interface MyLeaderboardRank {
   avg_move_score: number | null;
 }
 
+/**
+ * Beyin Ligi satırı (`beyin_ligi_siralama` view'ı, 2 Ekim 2026). Puan YOK:
+ * sıra OHP desc, eşitse `ohp_games` desc, o da eşitse user_id — sunucuda
+ * hesaplanır, dizideki indeksten TÜRETİLMEZ (`LeaderboardRow.sira` dersi).
+ * Yalnızca `ohp_games >= BEYIN_LIGI_MIN_GAMES` olanlar listede.
+ */
+export interface BeyinLigiRow {
+  sira: number;
+  user_id: string;
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  /** Hamle verisi olan (OHP'ye giren) oyun sayısı — YZ oyunları dahil. */
+  ohp_games: number;
+  /** `LeaderboardRow.avg_move_score` ile AYNI sayı. */
+  avg_move_score: number;
+}
+
+/**
+ * `my_beyin_ligi_rank` çıktısı. `rank` null = eşiğin ALTINDA (listede yok;
+ * ekran "N oyun daha" kartını çizer). Hiç oyun bitirmemiş kullanıcı için
+ * fonksiyon satır döndürmez → istemcide `null`.
+ */
+export interface MyBeyinLigiRank {
+  rank: number | null;
+  avg_move_score: number | null;
+  ohp_games: number;
+}
+
 export interface PlayerStats {
   user_id: string;
   player_count: number;
