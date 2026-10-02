@@ -294,7 +294,7 @@ void main() {
     expect(find.text('Ironman'), findsNothing);
     expect(
         find.text(
-            'Sen ve 1 yapay zeka. 4 kişide 3 yapay zekaya karşı oynarsın.'),
+            '2 kişilik oyunda yapay zekaya karşı oynarsın.'),
         findsOneWidget);
 
     await tester.tap(find.text('VAZGEÇ'));

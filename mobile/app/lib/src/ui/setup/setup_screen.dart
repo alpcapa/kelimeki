@@ -1976,8 +1976,8 @@ class _SetupScreenState extends State<SetupScreen>
         // BİREBİR (`setup_screen_test.dart` kilitliyor).
         Text(
           _count == 2
-              ? 'Sen ve 1 yapay zeka. 4 kişide 3 yapay zekaya karşı oynarsın.'
-              : 'Sen ve 3 yapay zeka; herkes kendi köşesinden başlar.',
+              ? '2 kişilik oyunda yapay zekaya karşı oynarsın.'
+              : '4 kişilik oyunda 3 yapay zekaya karşı oynarsın.',
           style: const TextStyle(
             fontFamily: 'SpaceMono',
             fontSize: 11,
