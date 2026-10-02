@@ -456,11 +456,11 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
-## 1.1.2 (831) — PLAY'DE YAYINDA · App Store incelemede (1 Eki 2026)
+## 1.1.2 (831) — ✅ İKİ MAĞAZADA YAYINDA (2 Eki 2026)
 
 **İçerik:** 1 Eki kesiminin 17 PR'ı + #41 tasarım portunun tamamı (#739-#744)
-+ 826 cihaz turunun bulguları (#746). Liste: `ROADMAP.md` → "Sıradaki sürüme
-binecekler". Paket: koşu **#831**, `05f1c1f`; `.aab` `mobile-latest`te
++ 826 cihaz turunun bulguları (#746). Liste: `docs/decisions/roadmap-arsiv.md` → "Yedinci
+taşıma" (ROADMAP'ten 2 Eki'de taşındı). Paket: koşu **#831**, `05f1c1f`; `.aab` `mobile-latest`te
 (yükleme 20:16 UTC, koşu #831'in içinde — ölçüldü).
 
 - [x] TestFlight 826 cihaz turu → bulgular #746'da düzeltildi.
@@ -477,8 +477,9 @@ binecekler". Paket: koşu **#831**, `05f1c1f`; `.aab` `mobile-latest`te
 - [x] **Play: YAYINDA** — **2 Eki 00:56 TSİ = 1 Eki 21:56 UTC** (Console'un
       yayın saati, kullanıcı okudu). Gönderim ~21:41 UTC (yükleme ~21:28 +
       "13 dk") → inceleme **~15 dk**.
-- [ ] **App Store:** onay gelince beklemeden `Release This Version`
-      ("YAYIN SIRASI").
+- [x] **App Store: YAYINDA** — 2 Eki 2026 akşamı (kullanıcı: *"Apple
+      released"*; bildirim 2 Eki ~19:25 TSİ). Onay ve `Release This Version`
+      saatleri Console'dan OKUNMADI. iOS'ta yayındaki artık `1.1.2 (831)`.
 
 **App Store "What's New" (726 karakter):**
 ```
