@@ -494,7 +494,7 @@ function Section({
   if (games.length === 0) return null;
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">{title}</div>
+      <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">{title}</div>
       <div className="flex flex-col gap-2">
         {games.map((g) => (
           <GameRow
@@ -520,7 +520,7 @@ function PendingSection({ title, games }: { title: string; games: OnlineGame[] }
   if (games.length === 0) return null;
   return (
     <div className="flex flex-col gap-2">
-      <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">{title}</div>
+      <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">{title}</div>
       <div className="flex flex-col gap-2">
         {games.map((g) => (
           <PendingGameCard key={g.id} game={g} title={`${g.player_count} Kişilik Oyun`} />
@@ -1298,7 +1298,7 @@ export function LiveGamesTab({
           <>
             {invites.length > 0 && (
               <div className="flex flex-col gap-2">
-                <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+                <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
                   Davet Bekliyor
                 </div>
                 <div className="flex flex-col gap-2">
