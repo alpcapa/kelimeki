@@ -206,9 +206,9 @@ Supabase Dashboard → Authentication → Sign In / Providers → **Email**
 karakterlik şifre formdan geçip sunucudan dönüyor, kullanıcıya YANLIŞ sınır
 söyleniyordu. Ajan da ayarı göremediği için "kural 6" dedi; kullanıcı
 Dashboard'dan okuyup düzeltti. 2 Ekim'de hepsi 8'e hizalandı (web hemen,
-port 1.1.3 treni). **Girişte uzunluk kontrolü YOK, bilerek:** ayar 8'e
-çekilmeden önce 6-7 karakterle açılmış hesap olabilir; sunucu girişte
-uzunluğa bakmaz, istemci de bakmamalı. **Bu tabloyu değiştiren her
+port 1.1.3 treni). **Ayar BAŞTAN BERİ 8** (kullanıcı teyidi) → 8'den kısa
+şifreli hesap yok; uzunluk kontrolü girişte, kayıtta ve şifre sıfırlamada,
+iki istemcide de var ("Şifre en az 8 karakter olmalı."). **Bu tabloyu değiştiren her
 Dashboard işleminden sonra buraya ve istemcilere yansıt** — ajan bu ekranı
 okuyamaz.
 
