@@ -784,7 +784,10 @@ uydurma bir Türkçe cümleyle gizlemek hata ayıklamayı imkânsız kılardı.
       Ayarları → "Passkey'ler" → PASSKEY EKLE → Face ID / parmak izi → liste
       satırı + "Passkey eklendi…". Çıkış yap → Giriş → PASSKEY İLE GİRİŞ →
       doğrudan giriş. Pencereyi iptal et → hata YOK, sessiz. Ayarlar → Sil →
-      satır kalkar. Üç ortam: iPhone Safari (iCloud Keychain), masaüstü
+      satır kalkar. **Passkey'i hiç eklenmemiş cihazda** PASSKEY İLE GİRİŞ →
+      OS penceresi AÇILMAZ, "Passkey'i giriş yaptıktan sonra Hesap
+      Ayarları'ndan ekleyebilirsin." + "Bu cihazda passkey'im var, devam et"
+      (o bağlantı töreni açar). Üç ortam: iPhone Safari (iCloud Keychain), masaüstü
       Chrome, Android Chrome. WebAuthn'suz tarayıcıda iki yüzey de HİÇ
       çizilmez.
 - [ ] **Şifre en az 8 karakter (web 2 Ekim 2026, uygulama 1.1.3).** Kayıtta

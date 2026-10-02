@@ -169,7 +169,15 @@ portta henüz yok (ROADMAP #41'in port yarısı).
   `auth.experimental.passkey: true` bayrağı olmadan fırlatır
   (`src/lib/supabase.ts`). Sunucu ayarları: `supabase-ops.md` → "Auth
   ayarları". ⚠ Gizlilik satırı web↔port tarih eşliği yüzünden #779'la
-  (12 Ekim) gidiyor.
+  (12 Ekim) gidiyor. **Aynı gün kullanıcı canlıda denedi: çalışıyor** — ama
+  passkey'i olmayan kişi düğmeye basınca Safari'nin İngilizce "You don't have
+  any passwords or passkeys saved…" penceresine düşüyordu (tarayıcı sitede
+  passkey olup olmadığını önceden SÖYLEMEZ). Çözüm: cihaz işareti
+  (`localStorage` `kelimeki.passkeyOnDevice`, ekleme ya da passkey girişinde
+  yazılır, liste boşalınca silinir). İşaret yoksa düğme önce açıklama
+  gösterir; "Bu cihazda passkey'im var, devam et" yine töreni açar
+  (senkronlanmış passkey için). İşaret yalnızca kolaylık — kaybolursa tek
+  fark bir ekstra dokunuş.
 - **`AuthModal` — 2 Ekim 2026: ad/soyad İSTEĞE BAĞLI, form "zorunlular üstte"
   düzenine geçti** (kullanıcı: *"isim soyadı zorunlu olmaktan çıkacaktı … zorunlular
   yukarıda, opsiyoneller aşağıda"*). Sıra: Takma isim · E-posta · Şifre (`*`) →
