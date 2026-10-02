@@ -250,6 +250,32 @@ yerel oyun, teslim yok):** 2 kişilik Normal 645 oyun → insan %53 / YZ %47;
 oyuncuda beklenti %25/%25 — dengeli). Kolay 1 oyun, Zor henüz canlıda
 değil (portta 1.0.8 ile).
 
+**İlk saha okuması (2 Ekim 2026, `games`, girişli yerel YZ oyunları, teslim
+yok, 7 Eylül'den beri; misafir oyunları seviye/sonuç taşımadığı için DIŞARIDA):**
+
+| 2 kişilik | Oyun | Kişi | YZ kazanma | Hedef |
+|---|---|---|---|---|
+| Kolay | 27 | 12 | %41 | ~%30 |
+| Normal | 211 | 28 | %48 | ~%51 |
+| Zor | 643 | 8 | %58 | ~%70 |
+
+⚠ **Toplam tablo seviyeyi değil OYUNCUYU ölçüyor:** Zor oyunlarının %66'sı
+tek kişiden (426), %97'si üç kişiden; Zor'u seçen zaten güçlü oyuncu.
+**Doğru ölçü KİŞİ İÇİ fark** (aynı kişi, iki seviye, her birinde ≥7 oyun):
+Normal → Zor üç kişide **+14 · +12 · +13 puan** (%29→%43 · %50→%62 ·
+%38→%51); tek kişide Kolay %14 → Normal %26 → Zor %75 (Zor 8 oyun).
+Sıralama (Kolay < Normal < Zor) her kişide tutuyor. Simülasyonun Zor ↔
+Normal %70'i (≈ +19 puan) sahada **~+13**'e iniyor — deneyimli insan
+geniş aramanın bulduğu hamlelerin bir kısmını kendisi de buluyor.
+4 kişilik okunamaz (Normal 30 oyun/7 kişi, Zor 105/3 kişi).
+
+**Karar (kullanıcı, 2 Ekim 2026): *"Zor şimdilik yeterli"*** — kadran
+değişmiyor, yeni hamle sınıfı yazılmıyor. **Kolay** için karar ERTELENDİ:
+27 oyunun GA'sı ~%24–60, hedefle de uyumlu; ~100 oyunda yeniden bakılır,
+%40'ın üstünde kalırsa tek kadran `AI_LEVEL_TOP_N.kolay` 4 → 5
+(simülasyonda %33 → %22). Normal hedefte (%48), kişiler arası yayılım
+(%19–%91) oyuncu farkı. **Bir sonraki okumada da kişi içi farkı kullan.**
+
 **Plan (ROADMAP #23 Faz 5, açık):** `admin_ai_balance` seviye kırılımı iki
 hafta; hedef Kolay ~%30 · Normal ~%51 · Zor ~%70 YZ kazanma. Sapma varsa
 **kadran ayarlanır, motor yeniden yazılmaz:**
