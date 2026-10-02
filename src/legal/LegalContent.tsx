@@ -66,6 +66,10 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             <li>Cinsiyet (isteğe bağlı)</li>
             <li>Doğum tarihi (isteğe bağlı)</li>
             <li>Profil fotoğrafı (isteğe bağlı)</li>
+            <li>
+              Passkey kullanırsanız cihazınızın açık anahtarı ve passkey'in eklenme/son kullanım
+              tarihi (isteğe bağlı; yüz/parmak izi verisi cihazınızdan çıkmaz)
+            </li>
             <li>Pazarlama iletişimi onayı ve onay tarihi (isteğe bağlı)</li>
             <li>
               Hoş geldiniz mesajı, arkadaşlık isteği, oyun daveti ve süre uyarısı gibi işlemsel

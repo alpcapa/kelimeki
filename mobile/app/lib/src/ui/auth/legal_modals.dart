@@ -318,6 +318,9 @@ class PrivacyModal extends StatelessWidget {
             'Cinsiyet (isteğe bağlı)',
             'Doğum tarihi (isteğe bağlı)',
             'Profil fotoğrafı (isteğe bağlı)',
+            "Passkey kullanırsanız cihazınızın açık anahtarı ve passkey'in "
+                'eklenme/son kullanım tarihi (isteğe bağlı; yüz/parmak izi '
+                'verisi cihazınızdan çıkmaz)',
             'Pazarlama iletişimi onayı ve onay tarihi (isteğe bağlı)',
             'Hoş geldiniz mesajı, arkadaşlık isteği, oyun daveti ve süre '
                 'uyarısı gibi işlemsel e-posta bildirimlerini alma tercihi',
