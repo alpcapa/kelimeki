@@ -275,7 +275,11 @@ export function AuthModal({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                // 8 = Supabase Auth "Minimum password length" (Dashboard →
+                // Authentication → Sign In / Providers → Email; 2 Ekim 2026'da
+                // okundu). YALNIZCA kayıtta: girişte uygulanırsa ayar 8'e
+                // çekilmeden önce 6-7 karakterle açılmış hesaplar kilitlenir.
+                minLength={mode === 'signup' ? 8 : undefined}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               />
               <button
@@ -287,6 +291,9 @@ export function AuthModal({
                 <EyeIcon open={showPassword} />
               </button>
             </div>
+            {mode === 'signup' && (
+              <p className="text-[10px] text-muted font-mono mt-1">En az 8 karakter olmalı.</p>
+            )}
           </div>
         )}
 

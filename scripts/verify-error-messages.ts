@@ -91,7 +91,7 @@ console.log('errorMessage — kullanıcıya gösterilen hata metni');
     'Supabase yapılandırılmadı.',
     'Mesaj 1-200 karakter arasında olmalı.',
     'Bu takma isim zaten kullanılıyor. Farklı bir tane dene.',
-    'Şifre çok zayıf. En az 6 karakter kullan.',
+    'Şifre çok zayıf. En az 8 karakter kullan.',
   ]) {
     check(`kendi mesajımız geçer: "${msg}"`, goster(new Error(msg)) === msg);
   }

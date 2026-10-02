@@ -3521,7 +3521,7 @@ export function friendlyAuthMessage(err: unknown): string | null {
     email_not_confirmed: 'E-posta adresini henüz doğrulamadın. Gelen kutunu (ve spam klasörünü) kontrol et.',
     user_already_exists: 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı ya da şifreni sıfırlamayı dene.',
     email_exists: 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı ya da şifreni sıfırlamayı dene.',
-    weak_password: 'Şifre çok zayıf. En az 6 karakter kullan.',
+    weak_password: 'Şifre çok zayıf. En az 8 karakter kullan.',
     same_password: 'Yeni şifre eskisiyle aynı olamaz.',
     otp_expired: 'Bağlantının süresi dolmuş. Yeni bir bağlantı iste.',
     over_email_send_rate_limit: 'Çok fazla e-posta isteği gönderildi. Birkaç dakika sonra tekrar dene.',
