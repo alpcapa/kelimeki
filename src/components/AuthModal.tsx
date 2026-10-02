@@ -543,7 +543,7 @@ export function AuthModal({
             >
               Hesabın yok mu?{' '}
               {/* Elle büyük harf (CSS `uppercase` Türkçe İ'yi bozar). */}
-              <span className="text-accent underline font-bold">KAYIT OL</span>
+              <span className="text-accent font-bold">KAYIT OL</span>
             </button>
           </>
         )}
