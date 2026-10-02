@@ -512,7 +512,7 @@ export function AuthModal({
           </button>
           {passkeyHint && (
             <div className="flex flex-col gap-1 text-center">
-              <p className="text-xs text-muted font-mono">
+              <p className="text-xs text-red font-mono">
                 Passkey'i giriş yaptıktan sonra Hesap Ayarları'ndan ekleyebilirsin.
               </p>
               <button
@@ -541,7 +541,9 @@ export function AuthModal({
               onClick={() => switchMode('signup')}
               className="w-full text-center text-xs text-muted font-mono transition-colors"
             >
-              Hesabın yok mu? <span className="text-accent underline">Kayıt ol</span>
+              Hesabın yok mu?{' '}
+              {/* Elle büyük harf (CSS `uppercase` Türkçe İ'yi bozar). */}
+              <span className="text-accent underline font-bold">KAYIT OL</span>
             </button>
           </>
         )}
