@@ -1343,6 +1343,15 @@ Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları
   **Yedek:** `archive.preload_spike_20261002_{ids,web_sessions,funnel_events,guest_visits,device_visits}`
   — `archive` şeması API'ye KAPALI (yalnız `postgres`). Geri koymak:
   `insert into public.<t> select * from archive.preload_spike_20261002_<t>`.
+  **İkinci temizlik — Meta reklam incelemesi (aynı gün):** masaüstünde
+  Meta etiketli 18 oturumun 16'sı 28 Eylül 13:15-15:55'te (yayın 17:30;
+  kampanya kütüğü zaten "17:30 öncesini dışarıda bırak" diyordu), 29 Eylül'den
+  beri masaüstünden Meta ziyareti SIFIR — reklam seti zaten "Tüm mobil
+  cihazlar", kapatılacak masaüstü yerleşimi YOK. 28 Eyl 17:30 öncesi
+  `meta%` silindi: `web_sessions` 44 (iOS 21 · masaüstü 15 · Android 8) ·
+  `funnel_events` 57 · `guest_visits` 40 · `device_visits` 38 (sonradan
+  tekrar gelen 1 cihazın yalnız yolculuk satırı). Yedek:
+  `archive.meta_review_20260928_*`.
   ⚠ Dört `delete`i TEK işlemde koşmak MCP'nin 60 sn sınırına iki kez takıldı
   (ikisinde de tamamen geri alındı, ölçüldü); tablo tablo koşunca her biri
   anında bitti.

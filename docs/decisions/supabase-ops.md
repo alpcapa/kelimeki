@@ -281,6 +281,11 @@ atlananlar ilerletmez, fark birikir), yoksa `HEAD^`; şüphede DERLER.
 ⚠ Liste ATLA listesi, izin listesi DEĞİL: yeni bir web klasörü kendiliğinden
 derlenir. Siteye giren bir şeyi bu klasörlerden birine koyarsan (ör. derlemenin
 `docs/`tan dosya okuması) listeyi daralt.
+⚠ **Ölçüldü (aynı gün):** atlanan derleme Vercel'de bir deployment KAYDI
+açıyor (`CANCELED`, "Canceled by Ignored Build Step") ve kota doluyken
+yalnızca-doküman push'u da `Deployment rate limited` aldı — yani kontrol
+ignore adımından ÖNCE. Büyük olasılıkla atlananlar da sayaca yazılıyor;
+kesin cevap ilk dolu günün sayımında.
 ⚠ **Açık soru:** atlanan derlemenin günlük 100'e SAYILIP sayılmadığını Vercel
 belgesi söylemiyor. İlk dolu günde `list_deployments` ile say; sayılıyorsa
 ikinci önlem kullanıcının önerisi: doküman notlarını günde bir toplu PR'da gönder.
