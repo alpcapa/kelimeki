@@ -359,8 +359,8 @@ mesajı yok, düşen iş yok). **Tek kanıt sha** — `curl` ile OKU.
 
 **Kurtarma:** dalın Preview'ını Production'a yükselt (squash merge'te ağaç
 aynı; bedeli: sayfa DALIN sha'sını bildirir). ⚠ **Günlük kota 100
-deployment (Hobby)** — dolunca merge yayına çıkmaz, elle Redeploy da 402
-alır. `vercel.json` → `ignoreCommand` (`scripts/vercel-ignore-build.mjs`):
+deployment (Hobby)** — dolunca merge yayına çıkmaz, Redeploy 402 alır
+(pencere KAYAN 24 saat — 20-30 dk sonra tekrar dene). `vercel.json` → `ignoreCommand` (`scripts/vercel-ignore-build.mjs`):
 yalnızca `*.md`/`docs/`/`mobile/`/`marketing/`/`supabase/`/`tests/`/
 `.github/`/`.claude/` değiştiren push DERLENMEZ — siteye giren bir dosyayı
 bu klasörlere koyma. Ayrıntı: `docs/decisions/supabase-ops.md` → "Vercel'in

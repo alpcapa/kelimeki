@@ -263,8 +263,10 @@ Vercel'de "Redeploy" canlıyı günceller — sonra sha'yı `curl` ile OKU.
 **Aynı gün ikinci kez (#785, 11:00):** merge yeşil, Vercel bu commit için HİÇ
 satır açmadı, GitHub statüsü `Deployment rate limited`. Ajan
 `create_deployment` (redeploy) denedi → **402 `api-deployments-free-per-day`**:
-elle Redeploy da AYNI kotadan yer, kurtarma yolu yok, sıfırlanmayı bekle
-(reset zamanı hata gövdesinde, ms). Son 24 saatin dökümü: **100 = 65 önizleme
+elle Redeploy da AYNI kotadan yer. ⚠ Hata gövdesindeki `reset` (ertesi gün)
+YANILTICI: pencere KAYAN 24 saat — 50 dk sonra (11:53) eski deployment'lar
+pencereden düşünce aynı redeploy geçti ve #785 canlıya çıktı. Yani yapılacak
+şey 20-30 dk arayla yeniden denemek, ertesi günü beklemek DEĞİL. Son 24 saatin dökümü: **100 = 65 önizleme
 + 35 production**; `main`'in son 62 commit'inin **40'ı** yalnızca doküman/
 mobil/pazarlama değiştiriyordu — siteye hiçbir şey getirmeyen derlemeler.
 
