@@ -322,6 +322,7 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 | #760 (2 Eki) | **Tanıtım kapısı: cihazda gerçek oyun başlayınca "görüldü"** — üye olarak oynayıp çıkış yapan cihaz misafirken tanıtıma düşmesin (web #759 ile hemen yayında) | `setup_screen.dart` (`_startNewGame`) · `live/open_online_game.dart`. Parça 229 · cihaz: `mobile/TESTING.md` §1.9 · kayıt `docs/decisions/onboarding.md` |
 | #765 (2 Eki) | **Canlı oyun formu: 1. koltuk SEN, 4 kişide 2×2, numaralar hizalı, isim numaraya binmez** (web #764 ile hemen yayında) — #762'nin (koltuk numarası iPhone'da alta yapışıktı, taban çizgisi kuralı) üstüne kurulu, #762 buna katılıp kapandı | `ui/live/live_game_create_form.dart`. Parça 230 + 231 · cihaz: `mobile/TESTING.md` → "Canlı oyun formu" · kayıt `docs/decisions/onboarding.md` |
 | #772 (2 Eki) | **Setup'ın oyuncu sayısı satırı: "2 kişilik oyunda yapay zekaya karşı oynarsın." / "4 kişilik oyunda 3 yapay zekaya karşı oynarsın."** (kullanıcı isteği; web yarısı hemen yayında) | `ui/setup/setup_screen.dart` (tek metin) + `setup_screen_test` / `setup_cloud_test` beklentileri |
+| #774 (2 Eki) | **"Tüm oyuncular →" / "← Arkadaşlar" bağlantıları başlıkla aynı tipografide, mavi + kalın** (kullanıcı isteği; web yarısı #775 ile hemen yayında) | `ui/live/live_game_create_form.dart` (`_LinkButton`) + `ui/friends/friends_modal.dart`; `trUpper` ile büyük harf, sabitler web'le birebir |
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
