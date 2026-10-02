@@ -178,6 +178,22 @@ portta henüz yok (ROADMAP #41'in port yarısı).
   gösterir; "Bu cihazda passkey'im var, devam et" yine töreni açar
   (senkronlanmış passkey için). İşaret yalnızca kolaylık — kaybolursa tek
   fark bir ekstra dokunuş.
+- **Çıkış `scope: 'local'` — 2 Ekim 2026 (passkey denemesinde bulundu).**
+  Kullanıcı iPad'de passkey'le girdi, sonra Android Chrome'da çıkış yapıp
+  passkey ekledi; iPad'e dönünce Hesap Ayarları'nda liste BOŞ, PASSKEY EKLE
+  "Auth session missing!" verdi; çıkıp yeniden girince iki passkey göründü.
+  Auth logu zinciri kesin gösterdi: Android `/logout` (14:22:09 UTC) → iPad'in
+  `/passkeys` ve `/passkeys/registration/options` istekleri 403
+  `session_not_found` (auth-js bunu `AuthSessionMissingError`a çeviriyor) →
+  iPad'in kendi `/logout`u da `session_not_found`. Sebep: supabase-js'te
+  `auth.signOut()` varsayılanı **`global`** — tek cihazdan çıkış hesabın TÜM
+  oturumlarını sunucuda siliyordu. iPad'de oyun yine çalıştı çünkü PostgREST
+  yalnızca JWT imzasına bakıyor; oturum satırını arayan tek yüzey passkey
+  uçlarıydı, bu yüzden arıza ilk kez orada görüldü (yoksa ~1 saat sonra
+  token yenilemesinde sessiz bir çıkış olurdu). Düzeltme `api.ts` →
+  `signOut({ scope: 'local' })`; port etkilenmez (`gotrue` Dart varsayılanı
+  zaten `local`). Kapı: `verify-auth-user-identity` her `auth.signOut(`
+  çağrısının kapsamı açıkça `local` vermesini tarıyor.
 - **`AuthModal` — 2 Ekim 2026: ad/soyad İSTEĞE BAĞLI, form "zorunlular üstte"
   düzenine geçti** (kullanıcı: *"isim soyadı zorunlu olmaktan çıkacaktı … zorunlular
   yukarıda, opsiyoneller aşağıda"*). Sıra: Takma isim · E-posta · Şifre (`*`) →

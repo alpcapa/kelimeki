@@ -3736,9 +3736,20 @@ export async function deletePasskey(passkeyId: string): Promise<void> {
   if (error) throw error;
 }
 
+/**
+ * Çıkış — YALNIZCA bu cihaz (`scope: 'local'`).
+ *
+ * ⚠ supabase-js'in varsayılanı `global`: hesabın TÜM cihazlardaki oturumlarını
+ * sunucuda siler. 2 Ekim 2026'da canlıda ölçüldü: Android Chrome'dan çıkış
+ * iPad'in oturumunu da öldürdü; iPad'de oyun çalışmaya devam etti (PostgREST
+ * yalnızca JWT imzasına bakıyor) ama oturumu sunucuda arayan passkey uçları
+ * `session_not_found` → ekranda "Auth session missing!" verdi. Portun
+ * `gotrue` varsayılanı zaten `local` — iki istemci artık aynı davranıyor.
+ * Kapı: `npm run verify-auth-user-identity` (kaynak taraması).
+ */
 export async function signOut() {
   if (!supabase) return;
-  await supabase.auth.signOut();
+  await supabase.auth.signOut({ scope: 'local' });
 }
 
 // ── Profil güncelleme ────────────────────────────────────────────────────────

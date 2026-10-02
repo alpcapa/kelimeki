@@ -153,5 +153,30 @@ kontrol(
 );
 for (const ihlal of ihlaller) console.log(`      ${ihlal}  →  \`user?.id\` kullan`);
 
+// ── Çıkış kapsamı ────────────────────────────────────────────────────────────
+// supabase-js'te `signOut()` varsayılanı `global` — tek cihazdaki "Çıkış Yap"
+// hesabın BÜTÜN cihazlardaki oturumlarını sunucuda siler (2 Ekim 2026: Android
+// çıkışı iPad'in passkey bölümünü "Auth session missing!"e düşürdü). Her
+// `auth.signOut(` çağrısı kapsamı AÇIKÇA `local` vermeli.
+console.log('\nÇıkış kapsamı — `auth.signOut` yalnızca bu cihaz\n');
+const cikislar: { yer: string; yerel: boolean }[] = [];
+for (const dosya of dosyalar) {
+  readFileSync(dosya, 'utf8')
+    .split('\n')
+    .forEach((satir, i) => {
+      if (!/\.auth\.signOut\(/.test(satir)) return;
+      cikislar.push({
+        yer: `${dosya.replace(process.cwd() + '/', '')}:${i + 1}`,
+        yerel: /signOut\(\{\s*scope:\s*'local'\s*\}\)/.test(satir),
+      });
+    });
+}
+kontrol(`en az bir \`auth.signOut\` çağrısı bulundu (tarama boş değil)`, cikislar.length > 0);
+kontrol(
+  `her \`auth.signOut\` çağrısı \`{ scope: 'local' }\` veriyor (${cikislar.length} çağrı)`,
+  cikislar.length > 0 && cikislar.every((c) => c.yerel),
+);
+for (const c of cikislar.filter((c) => !c.yerel)) console.log(`      ${c.yer}  →  { scope: 'local' } ekle`);
+
 console.log(dusen === 0 ? '\nTüm kontroller geçti.\n' : `\n${dusen} kontrol DÜŞTÜ\n`);
 process.exit(dusen === 0 ? 0 : 1);
