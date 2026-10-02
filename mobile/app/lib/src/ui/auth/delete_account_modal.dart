@@ -274,6 +274,7 @@ class _BolumBasligi extends StatelessWidget {
               fontFamily: 'SpaceMono',
               fontSize: 11,
               letterSpacing: 1.5,
+              fontWeight: FontWeight.w700,
               color: kAccent)),
     );
   }
