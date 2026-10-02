@@ -635,14 +635,12 @@ class _AuthModalState extends State<AuthModal> {
                 child: Text.rich(
                   TextSpan(children: [
                     const TextSpan(text: 'Hesabın yok mu? '),
-                    // Büyük harf + kalın (2 Ekim 2026, web `AuthModal.tsx` ile
+                    // Büyük harf + kalın, alt çizgisiz (2 Ekim 2026, web `AuthModal.tsx` ile
                     // aynı karar).
                     const TextSpan(
                         text: 'KAYIT OL',
                         style: TextStyle(
-                            color: _accent,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline)),
+                            color: _accent, fontWeight: FontWeight.bold)),
                   ]),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
