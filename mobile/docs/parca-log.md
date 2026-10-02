@@ -25,6 +25,29 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 231 — Canlı oyun formu: 1. koltuk SEN, 4 kişide 2×2, numaralar hizalı (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
+
+- **İstek (kullanıcı, görsel taslak dört turda onaylandı):** 2 kişide arkadaş
+  koltuğunun ÜSTÜNE 1 numaralı koltuk (kişinin kendisi); 4 kişide 1-2 üstte,
+  3-4 altta. "SEN" etiketi yok · numaralar her durumda hizalı · isim
+  numaraya binmez, "…" ile kesilir · numara ✕'e yaklaştırılır.
+- **Ne yapıldı (web #764 ikizi):** `live_game_create_form.dart` → `_seat(k)`
+  tek iskelet: avatar · isim (`Expanded`, ellipsis) · numara YUVASI · ✕
+  YUVASI. Numara artık `Stack`'te mutlak değil, AKIŞTA sabit genişlikte
+  (`OverflowBox` ile web'in `-mr-2`/`-mr-1` taşması); ✕'siz kartta yuva boş
+  `SizedBox`. Dikey yerleşim Parça 230'un taban çizgisi kuralı (rakamın
+  ortası yuvanın ortası). Başlık `OYUNCULAR` (· n/4). `kLiveFormEmptySeat4`
+  `'Boş koltuk'` → `'Boş'` (ekran okuyucu "Boş koltuk N"). Kesik çizgili
+  kartın dolgusu +1 px (dolu kartın 1 px kenarlığı Flutter'da dolguya
+  ekleniyor — iç ölçüler, dolayısıyla numaralar, aynı kalsın).
+  Parça 230'un dikey (sağ alt) kuralı ve `_kFiligranAltBosluk` KALKTI.
+- **Test:** `live_games_test` → "koltuk numaraları hizalı, isim binmez"
+  (ölçek 1,0 + 1,3; dört durum: 2 boş · 2 dolu · 4 boş · 4 dolu+YZ):
+  aynı sütun aynı x, uzun isim yuvanın solunda biter, rakam yuvada ortalı.
+  Negatif eş: ✕'siz kartın yuvası kaldırılınca "1 ve 2 numarası hizalı"
+  düşüyor. "koltuk kartları" testi 2×2 yerleşimini ve SENİN koltuğunu
+  (✕ yok, camgöbeği) kilitliyor. Tam takım **1.039 yeşil**.
+
 ## Parça 230 — Koltuk filigranı taban çizgisine göre yerleşiyor: iPhone'da alta yapışıktı (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
 
 - **Bildirim (1.1.2, iki telefon yan yana):** *"Kişinin yanındaki sayı

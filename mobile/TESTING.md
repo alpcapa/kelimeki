@@ -488,14 +488,20 @@ buradakiler ekranın gerçek bir oyundaki hâli.
       BAŞLAT".
 - [ ] **Canlı oyun formu (1 Ekim 2026, ROADMAP #41).** Arkadaşınla → "YENİ
       OYUN BAŞLAT":
-      - 2 kişide tek koltuk *"Aşağıdan bir arkadaşını seç"*; arkadaş seçince
-        koltuk KIRMIZI zeminde, adı ve sağda soluk "2"; ✕ boşaltır. 4 kişide
-        üç koltuk (kırmızı/yeşil/sarı); 2 arkadaşla üçüncü koltuk "Yapay
-        Zeka". Boş koltuğa dokunmak listeye kaydırmalı, klavye AÇILMAMALI.
-      - **Koltuk numarası (filigran) iki platformda AYNI yerde (2 Eki 2026,
-        1.1.3):** 2 kişide soluk "2" kartın DİKEY ORTASINDA (iPhone ile
-        Android yan yana; 1.1.2'de iPhone'da alta yapışıktı), 4 kişide sağ
-        altta, alt kenara yapışmadan. En büyük yazı boyutunda da büyümemeli.
+      - **1. koltuk SENSİN (2 Ekim 2026, 1.1.3):** camgöbeği kart, avatarın,
+        adın, soluk "1", ✕ YOK. Başlık "OYUNCULAR" (4 kişide "· n/4").
+        2 kişide altında tek koltuk *"Aşağıdan bir arkadaşını seç"*; arkadaş
+        seçince KIRMIZI zemin, adı, soluk "2"; ✕ boşaltır. 4 kişide 2×2:
+        üstte 1-2, altta 3-4 (kırmızı/yeşil/mor); boşlar "Boş", 2 arkadaşla
+        4. koltuk "Yapay Zeka". Boş koltuğa dokunmak listeye kaydırmalı,
+        klavye AÇILMAMALI.
+      - **Numaralar her durumda HİZALI, isim numaraya BİNMEZ:** uzun isimli
+        bir arkadaş seç → isim numaradan önce "…" ile kesilmeli; aynı
+        sütundaki numaralar (sen · arkadaş · boş · Yapay Zeka) aynı hizada.
+      - **Koltuk numarası iki platformda AYNI yerde (2 Eki 2026, 1.1.3):**
+        numaralar kartın DİKEY ORTASINDA (iPhone ile Android yan yana;
+        1.1.2'de iPhone'da alta yapışıktı). En büyük yazı boyutunda da
+        büyümemeli.
       - "HIZLI SEÇ" / "SIK OYNADIKLARIN" şeridi (en az 2 arkadaşın varsa):
         en çok oynadığın kişi solda; dokununca seçilmeli, halkası koltuğun
         renginde. Arama kutusuna yazınca şerit kaybolmalı.
