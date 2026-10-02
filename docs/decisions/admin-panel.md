@@ -1331,8 +1331,21 @@ Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları
   sayfayı "görünür" çalıştırıyor demektir; o zaman Huni v2 LAND'ı da hâlâ
   şişkin. Sorgu: `web_sessions` → `seconds between 31 and 33 and
   last_step='landing'`, `created_at` yayın sonrası.
-- ⚠ Geçmiş satırlar DÜZELMEZ; 30 günlük pencere eski yığılmayı ~1 Kasım'a
-  kadar taşır. Huni v2 LAND'ı da aynı süre şişkin (oranlar düşük görünür).
+- **Geçmiş TEMİZLENDİ (aynı gün, kullanıcı: *"Sil"*):** yığılma oturumu
+  (`seconds` 31-33, `last_step='landing'`, kaydırma ≤%25, ikinci ping
+  gelmiş) ±3 sn içindeki aynı cihaz tipi + aynı `utm_source` `guest_visits`
+  satırıyla eşlendi → `anon_id`. Yalnızca BAŞKA HİÇBİR izi olmayan cihazlar
+  (tek eşleşme, tek ziyaret, ≤1 cihaz satırı, Huni'de yalnız o günün
+  `land`/`visit`i) silindi: `web_sessions` 129 · `funnel_events` 212 ·
+  `guest_visits` 106 · `device_visits` 106. Kalan 23 cihazın yalnızca
+  yolculuk satırı gitti. Sonuç: Web LAND (30 gün) 636 → 531, Android
+  karşılama ayrılması %62 → %47.
+  **Yedek:** `archive.preload_spike_20261002_{ids,web_sessions,funnel_events,guest_visits,device_visits}`
+  — `archive` şeması API'ye KAPALI (yalnız `postgres`). Geri koymak:
+  `insert into public.<t> select * from archive.preload_spike_20261002_<t>`.
+  ⚠ Dört `delete`i TEK işlemde koşmak MCP'nin 60 sn sınırına iki kez takıldı
+  (ikisinde de tamamen geri alındı, ölçüldü); tablo tablo koşunca her biri
+  anında bitti.
 - Mobil port ETKİLENMEZ (yerel uygulama, önyükleme yok).
 
 ### Etkileşimsiz oturumlar ayrı sayılır (27 Eylül 2026, `20260927121128_admin_web_journey_idle.sql`)
