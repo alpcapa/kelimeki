@@ -776,9 +776,14 @@ uydurma bir Türkçe cümleyle gizlemek hata ayıklamayı imkânsız kılardı.
       e-posta adresinize gönderildi." Şifre doğru da yanlış da olsa aynı mesaj
       çıkar (GoTrue şifreyi doğrulamadan ban'a bakıyor, ölçüldü).
 - [ ] **Zaten kayıtlı e-posta.** Kayıt formunda mevcut bir adresle dene.
-- [ ] **Form doğrulamaları bozulmamış.** Boş ad/soyad, alınmış takma isim →
-      kendi Türkçe mesajları çıkmalı (bunlar aynı `catch`'ten geçiyor,
-      çeviri katmanı onları ezmemeli).
+- [ ] **Form doğrulamaları bozulmamış.** Alınmış takma isim, işaretlenmemiş
+      Kullanım Koşulları → kendi Türkçe mesajları çıkmalı (bunlar aynı
+      `catch`'ten geçiyor, çeviri katmanı onları ezmemeli).
+- [ ] **Ad/soyad İSTEĞE BAĞLI (web 2 Ekim 2026, uygulama 1.1.3).** Kayıt
+      formunda sıra: Takma isim · E-posta · Şifre (üçü `*`) → "İSTEĞE BAĞLI"
+      çizgisi → Ad | Soyad, Cinsiyet | Doğum Tarihi → onay kutuları. Ad/soyad
+      BOŞ bırakılarak hesap açılabilmeli; Hesap Ayarları'nda da boş ad/soyadla
+      kaydet çalışmalı. Hoş geldin maili takma isimle selamlar.
 - [ ] **E-posta linkinden gelen geri bildirim.** Bir bildirim mailindeki
       "cevap için tıklayın" ile gel, mesaj gönder: gönderim sonrası
       **üyelik teklifi çıkmamalı**, yalnızca teşekkür + "Kapat". (Uygulama
