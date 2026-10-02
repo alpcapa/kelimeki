@@ -210,7 +210,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
             disabled={uploading}
             className="btn-raised-neutral w-full bg-panel border border-border text-text rounded-md px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-50"
           >
-            {uploading ? 'Yükleniyor…' : 'Fotoğraf Değiştir'}
+            {uploading ? 'Yükleniyor…' : profile?.avatar_url ? 'Fotoğraf Değiştir' : 'Fotoğraf Yükle'}
           </button>
           <p className="text-[9px] text-muted font-mono mt-1">JPG/PNG, en fazla 10 MB</p>
         </div>
