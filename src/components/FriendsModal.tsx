@@ -135,7 +135,7 @@ interface FriendsModalProps {
 
 
 const nameCls = 'min-w-0 text-[15px] text-text font-bold truncate';
-const sectionCls = 'text-[10px] uppercase tracking-[1.5px] text-muted font-mono';
+const sectionCls = 'text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold';
 const listCls = 'flex flex-col border border-border rounded-xl overflow-hidden';
 const rowCls = 'flex items-center gap-3 min-h-[60px] pl-3.5 pr-2 py-2 bg-bg border-b border-border last:border-b-0';
 

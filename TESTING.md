@@ -1254,21 +1254,12 @@ doğrulanamayan ya da gözle bakılması gereken maddeler var (bkz. `CLAUDE.md`
       (yarım kalmamalı). Otomatik test `scrollLeft`i JS ile ayarlıyor —
       gerçek dokunmatik jestin akıcılığını ve snap'i ölçemez.
 
-- [ ] **Kurulum ekranındaki `<` düğmesi geri döndürüyor — YALNIZCA
-      GİRİŞSİZ (misafir) hesapta.** "Hemen Oyna" ile uygulamaya geç, sol
-      üstteki `<` düğmesine dokun → karşılama katmanı geri gelmeli (sayfa
-      yeniden yükleniyor, bu normal). Sonra tekrar "Hemen Oyna"ya bas ve
-      SAYFAYI YENİLE → uygulamada kalmalısın, katman geri GELMEMELİ
-      (`?tanitim=1` URL'den temizleniyor). **18 Ağustos 2026'da ikon →
-      `← Tanıtım` metne, sonra AYNI GÜN çıplak `←`'ye, sonra AYNI GÜN
-      girişli hesapta TAMAMEN GİZLENDİ, sonra AYNI GÜN büyütülüp `←`
-      glyph'i düz `<`'ye çevrildi** (bkz. `CLAUDE.md`, "Setup'taki `<`
-      düğmesi artık YALNIZCA girişsiz kullanıcıda görünüyor").
-      **Girişli hesapla dene — düğme HİÇ GÖRÜNMEMELİ:** Setup ekranını
-      girişli aç, sol üstte `<` OLMAMALI, sağda yalnızca avatar menüsü
-      olmalı (satır ortalanmadan sağa yaslı kalmalı — kutunun tek çocuğu
-      avatar). Girişsiz hesaba geç (Çıkış Yap) → aynı ekranda düğme GERİ
-      GELMELİ.
+- [ ] **Kurulum ekranında sol üstte `<` dönüş oku YOK (2 Ekim 2026'da
+      kaldırıldı).** Misafir ve girişli hesapta sol üst boş, sağda yalnızca
+      GİRİŞ/avatar. `kelimeki.com/?tanitim=1` adresine elle gidilince
+      karşılama katmanı yine açılmalı; oradan "Hemen Oyna"ya basıp SAYFAYI
+      YENİLE → uygulamada kalmalısın (`?tanitim=1` URL'den temizleniyor).
+      Eski düğmenin tarihçesi: `docs/decisions/landing-page.md`.
 
 - [ ] **Katmanın alt satırındaki hukuki bağlantılar.** "Kullanım Koşulları"
       ve "Gizlilik Politikası" → uygulamaya geçip DOĞRU pencereyi açmalı,

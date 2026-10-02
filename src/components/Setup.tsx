@@ -799,7 +799,7 @@ export function Setup({
         </div>
 
         <div className="flex flex-col gap-2">
-          <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+          <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
             Kime karşı
           </div>
           <div className="flex gap-2">
@@ -854,7 +854,7 @@ export function Setup({
           // Misafir, tekil localStorage kaydı — yeni oyun bu bitene/teslim
           // olunana kadar engellenir (cihaza özel, cihazlar arası senkron yok).
           <div className="flex flex-col gap-2">
-            <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+            <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
               Devam Eden Oyun
             </div>
             <SavedGameRow
@@ -944,7 +944,7 @@ export function Setup({
                 </p>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+                  <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
                     Devam Eden Oyunlar
                   </div>
                   {/* Silinmeye en yakın kayıt ÜSTTE (3 Eylül 2026, kullanıcı
@@ -981,7 +981,7 @@ export function Setup({
         ) : (
           <>
             <div className="flex flex-col gap-2">
-              <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+              <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
                 Oyuncu sayısı
               </div>
               <div className="flex gap-2">
@@ -1025,7 +1025,7 @@ export function Setup({
               Üç buton da `flex-1` (Zor Faz 5'le, 7 Eylül 2026'da girdi;
               tasarım kaydı docs/decisions/ai-levels.md). */}
             <div className="flex flex-col gap-2">
-              <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+              <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
                 Zorluk
               </div>
               <div className="flex gap-2" role="radiogroup" aria-label="Zorluk">

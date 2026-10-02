@@ -889,6 +889,17 @@ da HER ZAMAN aynı "GİRİŞ" düğmesini basar; `?tanitim=1` dönen-kullanıcı
 sinyallerini (`seen-intro`/yarım oyun/**oturum**/PWA) BİLEREK atladığından
 kapı bu durumda araya girmiyordu.
 
+### `<` düğmesi KALDIRILDI (2 Ekim 2026)
+
+Kullanıcı isteği: *"Tanıtım sayfasına dönüş oku da kalksın (sol üstteki)"*.
+Setup başlığındaki `<a href="/?tanitim=1" aria-label="Tanıtım sayfası">`
+silindi; başlık satırında artık yalnızca `UserMenu` var (`justify-end`).
+**`?tanitim=1` kapısı DURUYOR** (`scripts/landing-plugin.js`) — adrese elle
+yazılınca katman yine açılır, duman testi bunu doğrudan `goto` ile ölçüyor
+ve düğmenin YOKLUĞUNU da kilitliyor. Aşağıdaki iki bölüm (tarayıcı Geri
+tuşu, platform farkı) bu düğmeyi anlatıyor; artık TARİHSEL. Port
+etkilenmedi (orada bu düğmenin karşılığı hiç yoktu).
+
 ### Kayda geçen yan not — tarayıcının Geri tuşu farklı davranıyor
 
 `gec()` geçişi `history.replaceState` kullanıyor (bkz. yukarıdaki "Buton

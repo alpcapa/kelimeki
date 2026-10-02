@@ -502,7 +502,7 @@ export function PlayerScoreCard({ member, onClose, isAdminView }: PlayerScoreCar
 
       {isAdminView && (
         <div className="mt-4 pt-3 border-t border-border/60">
-          <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono mb-1.5">
+          <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold mb-1.5">
             Kayıtlar
           </div>
           {activityLog === undefined ? (

@@ -88,7 +88,7 @@ export function PasskeySection() {
 
   return (
     <div className="mt-6 pt-4 border-t border-border flex flex-col gap-2">
-      <span className="text-[9px] uppercase tracking-[1.5px] text-muted font-mono">Passkey'ler</span>
+      <span className="text-[9px] uppercase tracking-[1.5px] text-muted font-mono font-bold">Passkey'ler</span>
       <p className="text-[10px] text-muted font-mono">
         Yüz tanıma, parmak izi ya da cihaz kilidiyle şifresiz giriş.
       </p>

@@ -1486,10 +1486,6 @@ export default function App() {
 
   // ── Kurulum ekranı ─────────────────────────────────────────────────────────
   if (state.phase === 'setup') {
-    // Yalnızca GİRİŞSİZ (misafir) kullanıcıya gösterilir — bkz. aşağıdaki
-    // yorum. `authLoading` sırasında da `false`: `UserMenu`'nün kendi
-    // GİRİŞ/avatar kararıyla aynı "önce bilmeden gösterme" deseni.
-    const showTanitimLink = !authLoading && !user;
     return (
       <div className="min-h-[100dvh] w-full flex flex-col items-center overflow-x-hidden">
         {/* "Yerel uygulama mağazada" şeridi — telefonda (iOS/Android) HER
@@ -1497,53 +1493,11 @@ export default function App() {
             içeriği aşağı iter, logoyu ÖRTMEZ (bkz. AppStoreStrip'in başlığı). */}
         <AppStoreStrip userId={user?.id ?? null} authLoading={authLoading} />
         <div
-          className={`w-full max-w-[460px] flex items-center px-3.5 pt-3 ${
-            showTanitimLink ? 'justify-between' : 'justify-end'
-          }`}
+          className="w-full max-w-[460px] flex items-center justify-end px-3.5 pt-3"
         >
-          {/* Karşılama sayfasına dönüş (18 Ağustos 2026, kullanıcı isteği:
-              "Hemen Oynaya basınca geri gelemiyorsun"). Katman DOM'dan
-              siliniyor (bkz. main.tsx), dolayısıyla geri dönmenin tek yolu
-              tam bir yeniden yükleme — `?tanitim=1` kapıya "bu sefer katmanı
-              göster" diyen tek sinyal (bkz. scripts/landing-plugin.js).
-
-              Düğme ÇIPLAK bir ok karakteri (18 Ağustos 2026, aynı gün ikinci
-              tur, kullanıcı kararı) — erişilebilir ad `aria-label` üzerinden
-              ("Tanıtım sayfası") doğru anlatılıyor, yalnızca GÖRÜNÜR metin
-              sadeleşti. Punto/kutu `Modal.tsx`'in ✕ kapatma butonuyla AYNI
-              ölçek (`text-lg`/`text-xl` bandı, `w-7 h-7` dokunma kutusu) —
-              kullanıcı "bit kadar" (10px) bulunca aynı gün bir sonraki turda
-              büyütüldü, icat edilmiş yeni bir sayı değil, projedeki mevcut
-              köşe-ikon dilinin tekrarı.
-
-              Glyph `←` (ok Unicode karakteri) → düz `<` (18 Ağustos 2026,
-              aynı gün beşinci tur, kullanıcı: "O oku sevmedim. < kullan
-              yerine") — yalnızca görünen KARAKTER değişti, `aria-label`/
-              davranış/boyut AYNI kaldı.
-
-              YALNIZCA GİRİŞSİZ kullanıcıda render ediliyor (aynı gün, üçüncü
-              tur — kullanıcı sordu: "girişli kullanıcıda da geri ok çıkmamalı,
-              öyle değil mi?"). Sebep: `?tanitim=1` dönen-kullanıcı sinyallerini
-              (oturum DAHİL) bilerek atlıyor, yani girişli biri bu düğmeye
-              basarsa `Landing.tsx`'in statik (auth'tan habersiz) başlığındaki
-              GİRİŞ butonunu görüyordu — kendi oturumu açıkken bile. Katmanı
-              auth-farkında yapmak (`Landing.tsx`'in "hiçbir hook/tarayıcı
-              globali YOK" temel kısıtını ihlal ederdi) yerine, bu escape
-              hatch'in girişli bir kullanıcı için zaten bir değeri olmadığı
-              (kapı zaten girişliyi hiç göstermeden uygulamaya alıyor —
-              düğme yalnızca `?tanitim=1` ile bunu BİLEREK deliyor) kabul
-              edilip düğme koşulsuz gizlendi. `authLoading` sırasında da
-              gizli — `UserMenu`'nün kendi GİRİŞ/avatar kararıyla aynı
-              "önce bilmeden gösterme" deseni. */}
-          {showTanitimLink && (
-            <a
-              href="/?tanitim=1"
-              aria-label="Tanıtım sayfası"
-              className="shrink-0 w-7 h-7 flex items-center justify-center rounded font-mono text-xl leading-none text-muted active:scale-90 transition-transform"
-            >
-              &lt;
-            </a>
-          )}
+          {/* Karşılama sayfasına dönüş oku (`<`, `?tanitim=1`) 2 Ekim 2026'da
+            kaldırıldı (kullanıcı isteği). `?tanitim=1` kapısı DURUYOR — adrese
+            elle yazılınca katman yine açılır. Tarihçe: docs/decisions/landing-page.md. */}
           <UserMenu />
         </div>
         <main className="w-full flex flex-col items-center">
