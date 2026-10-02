@@ -25,6 +25,40 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 233 — k-lig'e Beyin Ligi sekmesi (2 Ekim 2026) — web #794'ün port yarısı
+
+- **İstek (kullanıcı):** k-lig'in altında alt ligler. **Puan Ligi** =
+  bugünkü k-lig (değişmedi), **Beyin Ligi** = puan yok, yalnızca OHP'ye göre
+  sıralama, en az 5 oyun. Kararlar ve sunucu tarafı:
+  `docs/decisions/league-system.md` → "Beyin Ligi". Web + sunucu #794 ile
+  2 Ekim'de yayına girdi; bu parça sürüm trenine binen port yarısı.
+- **Web kaynağı:** `src/components/Leaderboard.tsx` (`KLIG_TABS`,
+  `PUAN_LIGI_INTRO`), `src/components/BeyinLigiList.tsx`,
+  `src/utils/beyinLigi.ts`.
+- **Port:** `util/beyin_ligi.dart` (eşik + metinler + sekme listesi),
+  `ui/score/beyin_ligi_list.dart` (liste + "N oyun daha" kartı),
+  `leaderboard_modal.dart` (sekmeler; Beyin Ligi ilk seçimde kurulur ve
+  `Offstage` ile yaşar, Puan Ligi `if` ile söküler — verisi State'te
+  durduğundan yeniden istek atmaz), `data/stats_api.dart` (`BeyinLigiRow`,
+  `MyBeyinLigiRank`, gateway'e iki uç). `StatsGateway`e iki soyut metot
+  eklendiğinden altı sahte gateway'e (5 test + `store_frames`) boş gövde
+  eklendi.
+- **Bulunan hata (test yakaladı):** sekme değişiminde `_syncOhpHint()`
+  çağrılıyordu; Puan Ligi'nin `OverlayPortal`ı söküldüğünden kapalı bir
+  balonda `hide()` → `'_zOrderIndex != null'` doğrulaması. Artık yalnızca
+  `isShowing` iken kapatılıyor.
+- **Bilinçli farklar:** "N oyun daha" kartının çerçevesi webde kesikli,
+  portta düz (Flutter'da kesikli çerçeve ek çizim ister; anlamı taşımıyor).
+- **Kapılar:** `test/beyin_ligi_test.dart` — web metinleri/sekme
+  etiketleri/eşik PARİTESİ (web kaynağını okur → web CI'ın `parite` işi
+  de koşar; yollar `src/**` altında, `paths` listesinde zaten var) +
+  davranış (Puan Ligi ile açılış, Beyin Ligi listesi, mühür yok, eşik
+  kartı, gidip gelince tek istek). `npm run verify-beyin-ligi` artık
+  Dart sabitini de kilitliyor. Tam takım 1045/1045, `dart analyze` temiz.
+- **Doğrulama sınırı:** gerçek uçlar (`beyin_ligi_siralama`,
+  `my_beyin_ligi_rank`) yalnızca cihazda — `mobile/docs/testing-klig.md`
+  → "13.x Beyin Ligi sekmesi".
+
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
 - **Bildirim (1.1.2 cihaz turu, Canlı oyun, sıra kendisinde):** *"ipad'de

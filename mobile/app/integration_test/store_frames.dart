@@ -537,6 +537,13 @@ Future<void> settle(WidgetTester tester) async {
 /// elenir. Yerine `ÇALIŞKAN` — sözlükte var (`src/data/words.ts`) ve
 /// 8 harf, yani rafın 7 taşı + bir çapayla kurallara uygun.
 class SahteStatsGateway implements StatsGateway {
+  @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+
   static Map<String, Object?> _satir({
     int games = 34,
     int local = 21,
