@@ -383,7 +383,9 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
           KLigMark(height: 28),
         ],
       ),
+      fillBody: true,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildTabs(),
@@ -398,151 +400,180 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
                 color: _muted),
           ),
           const SizedBox(height: 12),
-          if (_beyinMounted)
-            Offstage(
-              offstage: _tab != KLigTab.beyin,
-              child: BeyinLigiList(
-                auth: widget.auth,
-                stats: widget.stats,
-                games: widget.games,
-                friends: widget.friends,
-              ),
-            ),
-          if (_tab == KLigTab.puan) ...[
-            if (rows == null)
-              // ⚠ YER BAŞTAN AYRILIR (24 Ağustos 2026, kullanıcı cihazda
-              // bildirdi): *"önce 1-2 saniye bir popup görüyorum, sonra
-              // sıralama üstüne geliyor... Halbuki tek pencere açılmalı ve
-              // datanın olduğu kısımda yükleniyor yazmalı"*. `KModal`
-              // yüksekliğini içeriğe göre aldığından tek satırlık bir yükleme
-              // metni pencereyi önce küçük açıp veri gelince büyütüyordu.
-              // Ayrılan yükseklik aşağıdaki listenin KENDİ tavanıyla (ekranın
-              // %50'si) aynı — pencere tek boyda açılıp yerinde doluyor.
-              SizedBox(
-                height: MediaQuery.sizeOf(context).height * 0.5,
-                child: const Center(child: KLoadingNote(vertical: 0)),
-              )
-            else if (rows.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Center(
-                  child: Text('Henüz skor yok. İlk sen ol!',
-                      style: TextStyle(
-                          fontFamily: 'SpaceMono', fontSize: 12, color: _muted)),
-                ),
-              )
-            else ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(children: [
-                  // 28: "SIRA" 9px SpaceMono + 1px letter-spacing'te 24'e
-                  // sığmayıp alt satıra kayıyordu (ekran görüntüsü yakaladı).
-                  // ⚠ AYNI şey ölçek 1,3'te 28'de de oldu (2 Eylül 2026, cihaz
-                  // görüntüsü: "SIR"/"A") — kutuyu büyütmek çözüm DEĞİL,
-                  // ölçekle büyümesi gerekiyor. Satırın veri hücreleri
-                  // 1 Eylül'de `ScaledCell`e çevrilmişti ama BAŞLIKLAR ve OHP
-                  // sütunu ATLANMIŞTI; bu tur onu kapatıyor.
-                  const ScaledCell(
-                      width: 28,
-                      align: Alignment.centerLeft,
-                      child: _HeadLabel('SIRA')),
-                  // Web başlığı `gap-1` (4px). "SIRA" 28'lik kutuyu ~26 px
-                  // dolduruyor; boşluksuz iPad'de "SIRAOYUNCU" diye bitişik
-                  // okundu (1 Ekim 2026, 1.1.2 cihaz turu).
-                  const SizedBox(width: 4),
-                  const Expanded(child: _HeadLabel('OYUNCU')),
-                  _buildOhpHeader(),
-                  const ScaledCell(
-                      width: 44,
-                      child: _HeadLabel('PUAN', align: TextAlign.right)),
-                ]),
-              ),
-              const SizedBox(height: 4),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                    maxHeight: MediaQuery.sizeOf(context).height * 0.5),
-                child: ListView.builder(
-                  controller: _scrollController,
-                  shrinkWrap: true,
-                  itemCount: rows.length + (_hasMore ? 1 : 0),
-                  itemBuilder: (context, i) {
-                    if (i >= rows.length) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Center(
-                          child: Text(_loadingMore ? 'Yükleniyor…' : '',
-                              style: const TextStyle(
-                                  fontFamily: 'SpaceMono',
-                                  fontSize: 10,
-                                  color: _muted)),
-                        ),
-                      );
-                    }
-                    final r = rows[i];
-                    return _Row(
-                      // Sıra SUNUCUDAN (`k_lig_siralama.sira`), listedeki
-                      // indeksten DEĞİL — "senin sıran" satırı ve Skor Kartı
-                      // başlığı da aynı sayıyı aynı view'dan okuyor. İndeksten
-                      // türetmek eşit puanlılarda ikisini ayrıştırıyordu
-                      // (20 Ağustos 2026, web ile aynı düzeltme).
-                      rank: r.sira,
-                      name: r.shortName,
-                      avatarUrl: r.avatarUrl,
-                      score: r.totalScore,
-                      avgMoveScore: r.avgMoveScore,
-                      isMe: user != null && r.userId == user.id,
-                      onTap: () => showPlayerScoreCard(
-                        context,
-                        stats: widget.stats,
-                        userId: r.userId,
-                        name: r.shortName,
-                        avatarUrl: r.avatarUrl,
-                        games: widget.games,
-                        friends: widget.friends,
-                        auth: widget.auth,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              if (user != null && !meInList && _myRank != null) ...[
-                const SizedBox(height: 8),
-                const Row(children: [
-                  Expanded(child: Divider(color: _border)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Text('SENİN SIRAN',
-                        style: TextStyle(
-                            fontFamily: 'SpaceMono',
-                            fontSize: 9,
-                            letterSpacing: 1,
-                            color: _muted)),
+          // Pencerede kalan yükseklik iki sekmeye SINIR olarak iner
+          // (`KModal.fillBody`): liste o sınıra kadar uzar, "senin sıran"
+          // satırı listenin ALTINDA her zaman görünür kalır. Stack, çünkü
+          // Offstage'deki Beyin Ligi de sınırlı bir yükseklik istiyor
+          // (içinde `Flexible` var) ve gizliyken sıfır boy bildiriyor —
+          // pencere görünen sekmenin boyunu alır.
+          Flexible(
+            child: Stack(
+              fit: StackFit.passthrough,
+              children: [
+                if (_beyinMounted)
+                  Offstage(
+                    offstage: _tab != KLigTab.beyin,
+                    child: BeyinLigiList(
+                      auth: widget.auth,
+                      stats: widget.stats,
+                      games: widget.games,
+                      friends: widget.friends,
+                    ),
                   ),
-                  Expanded(child: Divider(color: _border)),
-                ]),
-                _Row(
-                  rank: _myRank!.rank,
-                  name: 'Sen',
-                  avatarUrl: widget.auth.profile?.avatarUrl,
-                  score: _myRank!.totalScore,
-                  avgMoveScore: _myRank!.avgMoveScore,
-                  isMe: true,
-                  onTap: () => showPlayerScoreCard(
-                    context,
-                    stats: widget.stats,
-                    userId: user.id,
-                    name: widget.auth.menuName,
-                    avatarUrl: widget.auth.profile?.avatarUrl,
-                    games: widget.games,
-                    friends: widget.friends,
-                    auth: widget.auth,
-                  ),
-                ),
+                if (_tab == KLigTab.puan)
+                  _buildPuanBody(rows, user?.id, meInList),
               ],
-            ],
-          ],
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPuanBody(
+      List<LeaderboardRow>? rows, String? myId, bool meInList) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (rows == null)
+          // ⚠ YER BAŞTAN AYRILIR (24 Ağustos 2026, kullanıcı cihazda
+          // bildirdi): *"önce 1-2 saniye bir popup görüyorum, sonra
+          // sıralama üstüne geliyor... Halbuki tek pencere açılmalı ve
+          // datanın olduğu kısımda yükleniyor yazmalı"*. `KModal`
+          // yüksekliğini içeriğe göre aldığından tek satırlık bir yükleme
+          // metni pencereyi önce küçük açıp veri gelince büyütüyordu.
+          // Ayrılan yükseklik aşağıdaki listenin KENDİ tavanıyla (ekranın
+          // %50'si) aynı — pencere tek boyda açılıp yerinde doluyor.
+          Flexible(
+            child: SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.5,
+              child: const Center(child: KLoadingNote(vertical: 0)),
+            ),
+          )
+        else if (rows.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: Text('Henüz skor yok. İlk sen ol!',
+                  style: TextStyle(
+                      fontFamily: 'SpaceMono', fontSize: 12, color: _muted)),
+            ),
+          )
+        else ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(children: [
+              // 28: "SIRA" 9px SpaceMono + 1px letter-spacing'te 24'e
+              // sığmayıp alt satıra kayıyordu (ekran görüntüsü yakaladı).
+              // ⚠ AYNI şey ölçek 1,3'te 28'de de oldu (2 Eylül 2026, cihaz
+              // görüntüsü: "SIR"/"A") — kutuyu büyütmek çözüm DEĞİL,
+              // ölçekle büyümesi gerekiyor. Satırın veri hücreleri
+              // 1 Eylül'de `ScaledCell`e çevrilmişti ama BAŞLIKLAR ve OHP
+              // sütunu ATLANMIŞTI; bu tur onu kapatıyor.
+              const ScaledCell(
+                  width: 28,
+                  align: Alignment.centerLeft,
+                  child: _HeadLabel('SIRA')),
+              // Web başlığı `gap-1` (4px). "SIRA" 28'lik kutuyu ~26 px
+              // dolduruyor; boşluksuz iPad'de "SIRAOYUNCU" diye bitişik
+              // okundu (1 Ekim 2026, 1.1.2 cihaz turu).
+              const SizedBox(width: 4),
+              const Expanded(child: _HeadLabel('OYUNCU')),
+              _buildOhpHeader(),
+              const ScaledCell(
+                  width: 44,
+                  child: _HeadLabel('PUAN', align: TextAlign.right)),
+            ]),
+          ),
+          const SizedBox(height: 4),
+          // Tavan hâlâ ekranın %50'si (kısa listede pencere büyümesin),
+          // ama `Flexible` onu pencerede KALAN alana da indiriyor.
+          Flexible(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.5),
+              child: ListView.builder(
+                controller: _scrollController,
+                shrinkWrap: true,
+                itemCount: rows.length + (_hasMore ? 1 : 0),
+                itemBuilder: (context, i) {
+                  if (i >= rows.length) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Center(
+                        child: Text(_loadingMore ? 'Yükleniyor…' : '',
+                            style: const TextStyle(
+                                fontFamily: 'SpaceMono',
+                                fontSize: 10,
+                                color: _muted)),
+                      ),
+                    );
+                  }
+                  final r = rows[i];
+                  return _Row(
+                    // Sıra SUNUCUDAN (`k_lig_siralama.sira`), listedeki
+                    // indeksten DEĞİL — "senin sıran" satırı ve Skor Kartı
+                    // başlığı da aynı sayıyı aynı view'dan okuyor. İndeksten
+                    // türetmek eşit puanlılarda ikisini ayrıştırıyordu
+                    // (20 Ağustos 2026, web ile aynı düzeltme).
+                    rank: r.sira,
+                    name: r.shortName,
+                    avatarUrl: r.avatarUrl,
+                    score: r.totalScore,
+                    avgMoveScore: r.avgMoveScore,
+                    isMe: myId != null && r.userId == myId,
+                    onTap: () => showPlayerScoreCard(
+                      context,
+                      stats: widget.stats,
+                      userId: r.userId,
+                      name: r.shortName,
+                      avatarUrl: r.avatarUrl,
+                      games: widget.games,
+                      friends: widget.friends,
+                      auth: widget.auth,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          if (myId != null && !meInList && _myRank != null) ...[
+            const SizedBox(height: 8),
+            const Row(children: [
+              Expanded(child: Divider(color: _border)),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Text('SENİN SIRAN',
+                    style: TextStyle(
+                        fontFamily: 'SpaceMono',
+                        fontSize: 9,
+                        letterSpacing: 1,
+                        color: _muted)),
+              ),
+              Expanded(child: Divider(color: _border)),
+            ]),
+            _Row(
+              rank: _myRank!.rank,
+              name: 'Sen',
+              avatarUrl: widget.auth.profile?.avatarUrl,
+              score: _myRank!.totalScore,
+              avgMoveScore: _myRank!.avgMoveScore,
+              isMe: true,
+              onTap: () => showPlayerScoreCard(
+                context,
+                stats: widget.stats,
+                userId: myId,
+                name: widget.auth.menuName,
+                avatarUrl: widget.auth.profile?.avatarUrl,
+                games: widget.games,
+                friends: widget.friends,
+                auth: widget.auth,
+              ),
+            ),
+          ],
+        ],
+      ],
     );
   }
 }

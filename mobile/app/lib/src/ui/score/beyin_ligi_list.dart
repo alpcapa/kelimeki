@@ -129,7 +129,11 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
         ? gamesUntilBeyinLigi(mine.ohpGames)
         : 0;
 
+    // `mainAxisSize.min` + listede `Flexible`: k-lig penceresi gövdesini
+    // kaydırmıyor (`KModal.fillBody`), yani liste pencerede KALAN alana
+    // sığar ve altındaki "senin sıran"/eşik kartı/not her zaman görünür.
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Padding(
@@ -163,37 +167,39 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
             ),
           )
         else
-          ConstrainedBox(
-            constraints: BoxConstraints(
-                maxHeight: MediaQuery.sizeOf(context).height * 0.5),
-            child: ListView.builder(
-              controller: _scrollController,
-              shrinkWrap: true,
-              itemCount: rows.length + (_hasMore ? 1 : 0),
-              itemBuilder: (context, i) {
-                if (i >= rows.length) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Center(
-                      child: Text(_loadingMore ? 'Yükleniyor…' : '',
-                          style: const TextStyle(
-                              fontFamily: 'SpaceMono',
-                              fontSize: 10,
-                              color: kMuted)),
-                    ),
+          Flexible(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.5),
+              child: ListView.builder(
+                controller: _scrollController,
+                shrinkWrap: true,
+                itemCount: rows.length + (_hasMore ? 1 : 0),
+                itemBuilder: (context, i) {
+                  if (i >= rows.length) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Center(
+                        child: Text(_loadingMore ? 'Yükleniyor…' : '',
+                            style: const TextStyle(
+                                fontFamily: 'SpaceMono',
+                                fontSize: 10,
+                                color: kMuted)),
+                      ),
+                    );
+                  }
+                  final r = rows[i];
+                  return BeyinLigiRowTile(
+                    rank: r.sira,
+                    name: r.shortName,
+                    avatarUrl: r.avatarUrl,
+                    games: r.ohpGames,
+                    avgMoveScore: r.avgMoveScore,
+                    isMe: user != null && r.userId == user.id,
+                    onTap: () => _openCard(r.userId, r.shortName, r.avatarUrl),
                   );
-                }
-                final r = rows[i];
-                return BeyinLigiRowTile(
-                  rank: r.sira,
-                  name: r.shortName,
-                  avatarUrl: r.avatarUrl,
-                  games: r.ohpGames,
-                  avgMoveScore: r.avgMoveScore,
-                  isMe: user != null && r.userId == user.id,
-                  onTap: () => _openCard(r.userId, r.shortName, r.avatarUrl),
-                );
-              },
+                },
+              ),
             ),
           ),
         if (user != null && mine != null && mine.rank != null && !meInList) ...[

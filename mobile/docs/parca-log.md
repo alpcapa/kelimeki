@@ -58,6 +58,25 @@
 - **Doğrulama sınırı:** gerçek uçlar (`beyin_ligi_siralama`,
   `my_beyin_ligi_rank`) yalnızca cihazda — `mobile/docs/testing-klig.md`
   → "13.x Beyin Ligi sekmesi".
+- **Ek — "SENİN SIRAN" satırı pencerenin altında kesiliyordu (2 Ekim 2026,
+  kullanıcı arkadaşının Android telefonundan ekran görüntüsü; mağazadaki
+  1.1.2'de de var).** 31. sıradaki kullanıcı satırının yalnızca üst
+  yarısını görüyordu. **Web nasıl yapıyor:** liste `max-h-[50vh]`, kısayol
+  listenin ALTINDA ve kullanıcının satırı listeye YÜKLENENE kadar duruyor.
+  Port bunu aynen taşıyordu. Fark yapısaldı: Flutter iç içe kaydırmayı
+  zincirlemez (bkz. `CLAUDE.md` → "`KModal`'ın gövdesi ZATEN
+  kaydırılabilir"). Liste ekranın SABİT %50'sini aldığından, pencere %85'e
+  dayanınca satır kaydırılan gövdenin dışına itiliyordu. Parmak listenin
+  üzerindeyken oraya ulaşmanın yolu da yoktu. **Düzeltme:** `KModal.fillBody`
+  (gövde kaydırılmaz, `child` kalan yüksekliği sınır olarak alır). Pencere
+  `Flexible(Stack(passthrough))` kullanıyor: Offstage'deki Beyin Ligi gizliyken
+  sıfır boy bildirdiğinden pencere görünen sekmenin boyunu alıyor. İki
+  listede de `Flexible(ConstrainedBox(50%))` var: kısa listede pencere
+  büyümüyor, uzun listede kalan alana iniyor. **Kapı:**
+  `test/leaderboard_layout_test.dart`, iki sekme × üç bileşim
+  (390×844 · 360×740 · 360×640 @1,3) + "satır yüklenince kısayol kalkar".
+  Duyarlılık kanıtlandı: düzeltme geri alınınca 360×640 @1,3'te iki sekme de
+  DÜŞÜYOR.
 
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 

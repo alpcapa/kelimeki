@@ -261,5 +261,10 @@ Web'in eşi: kök `TESTING.md` §10.5. Sunucu (view + RPC) zaten canlıda.
       `_zOrderIndex` hatası).
 - [ ] **Ölçek 1,3 (sistem yazı boyutu en büyük):** sekme etiketleri tek
       satırda kalmalı (sığmazsa küçülür, sarmaz).
+- [ ] **İlk 10'da OLMAYAN hesapla, küçük telefonda ve en büyük yazıda:**
+      "SENİN SIRAN" satırı pencerenin İÇİNDE tam görünmeli (iki sekmede de),
+      liste onun üstünde kaydırılmalı. Aşağı kaydırıp kendi satırın listeye
+      gelince kısayol kalkmalı. (2 Ekim 2026: 1.1.2'de satır yarıdan
+      kesiliyordu, Android ekran görüntüsü.)
 
 ---
