@@ -1228,7 +1228,7 @@ void main() {
       final h = await pumpForm(tester, friendsRows: const []);
       expect(find.text('Henüz hiç arkadaşın yok.'), findsOneWidget);
       expect(find.text('ARKADAŞINI DAVET ET'), findsOneWidget);
-      expect(find.text(kLiveFormBrowseAll), findsOneWidget);
+      expect(find.text(trUpper(kLiveFormBrowseAll)), findsOneWidget);
       await tester.tap(find.text('VAZGEÇ'));
       await tester.pump();
       expect(h.cancelled, [true]);
@@ -1359,10 +1359,10 @@ void main() {
           },
         ];
       await pumpForm(tester, friendsGateway: fgw);
-      await tester.tap(find.text(kLiveFormToAll));
+      await tester.tap(find.text(trUpper(kLiveFormToAll)));
       await tester.pumpAndSettle();
       expect(find.text('TÜM OYUNCULAR'), findsOneWidget);
-      expect(find.text(kLiveFormToFriends), findsOneWidget);
+      expect(find.text(trUpper(kLiveFormToFriends)), findsOneWidget);
       expect(find.text('HIZLI SEÇ'), findsNothing);
       // Arkadaş satırı kutucukla seçilir.
       await tester.tap(find.byKey(const ValueKey('friend-f1')));
@@ -1387,7 +1387,7 @@ void main() {
       expect(fgw.acceptedRequests, ['u2']);
       expect(find.byKey(const ValueKey('friend-u2')), findsOneWidget);
       // Geri dönüş: açılış HER ZAMAN arkadaşlar.
-      await tester.tap(find.text(kLiveFormToFriends));
+      await tester.tap(find.text(trUpper(kLiveFormToFriends)));
       await tester.pumpAndSettle();
       expect(find.text('ARKADAŞLARIN'), findsOneWidget);
     });
