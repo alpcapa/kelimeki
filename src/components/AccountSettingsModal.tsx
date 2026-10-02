@@ -190,6 +190,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
     'w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-text outline-none focus:border-accent transition-colors';
   const labelCls =
     'text-[9px] uppercase tracking-[1.5px] text-muted font-mono mb-1 block';
+  const required = <span className="text-red">*</span>;
 
   return (
     <>
@@ -209,7 +210,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
             disabled={uploading}
             className="btn-raised-neutral w-full bg-panel border border-border text-text rounded-md px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-50"
           >
-            {uploading ? 'Yükleniyor…' : 'Fotoğraf Değiştir'}
+            {uploading ? 'Yükleniyor…' : profile?.avatar_url ? 'Fotoğraf Değiştir' : 'Fotoğraf Yükle'}
           </button>
           <p className="text-[9px] text-muted font-mono mt-1">JPG/PNG, en fazla 10 MB</p>
         </div>
@@ -223,31 +224,8 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
       </div>
 
       <form onSubmit={save} className="flex flex-col gap-3">
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className={labelCls}>Ad</label>
-            <input
-              className={inputCls}
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Adın"
-              autoComplete="given-name"
-            />
-          </div>
-          <div className="flex-1">
-            <label className={labelCls}>Soyad</label>
-            <input
-              className={inputCls}
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Soyadın"
-              autoComplete="family-name"
-            />
-          </div>
-        </div>
-
         <div>
-          <label className={labelCls}>Takma isim</label>
+          <label className={labelCls}>Takma isim {required}</label>
           {/* Boşluk kabul edilmiyor (tek kelime, özel karakterler serbest) —
               aksi halde biri buraya gerçek adını yazarsa (ör. "İsim Soyad")
               skor kartlarında nickname değil tam ad gibi görünüyordu.
@@ -282,7 +260,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
         </div>
 
         <div>
-          <label className={labelCls}>E-posta</label>
+          <label className={labelCls}>E-posta {required}</label>
           <input
             className={inputCls}
             type="email"
@@ -292,34 +270,74 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
           />
         </div>
 
-        <div>
-          <label className={labelCls}>Cinsiyet</label>
-          <select
-            className={inputCls}
-            value={gender}
-            onChange={(e) => setGender(e.target.value as Gender | '')}
-          >
-            <option value="">Belirtilmedi</option>
-            {GENDER_OPTIONS.map((g) => (
-              <option key={g.value} value={g.value}>
-                {g.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className={labelCls}>Doğum Tarihi (GG/AA/YYYY)</label>
-          <input
-            className={inputCls}
-            type="text"
-            inputMode="numeric"
-            value={birthDate}
-            onChange={(e) => setBirthDate(formatTrDateInput(e.target.value))}
-            placeholder="GG/AA/YYYY"
-            autoComplete="bday"
-            maxLength={10}
-          />
+        {/* Kayıt formuyla AYNI düzen (2 Ekim 2026, kullanıcı: "Hesap
+            ayarlarını da benzer şekilde düzeltelim"): zorunlular üstte,
+            İSTEĞE BAĞLILAR ayracın altında ikişerli satırda, tercihler
+            (onay kutuları) en altta. Port ikizi `account_settings_modal.dart`
+            (1.1.3 treni). */}
+        <div className="flex flex-col gap-3 pt-1">
+          <div className="flex items-center gap-2" aria-hidden="true">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[9px] uppercase tracking-[1.5px] text-muted font-mono">
+              İsteğe bağlı
+            </span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1 min-w-0">
+              <label className={labelCls}>Ad</label>
+              <input
+                className={inputCls}
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Adın"
+                autoComplete="given-name"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <label className={labelCls}>Soyad</label>
+              <input
+                className={inputCls}
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Soyadın"
+                autoComplete="family-name"
+              />
+            </div>
+          </div>
+          <p className="-mt-2 text-[10px] text-muted font-mono">
+            Aramalarda bulunmayı kolaylaştırır.
+          </p>
+          <div className="flex gap-2">
+            <div className="flex-1 min-w-0">
+              <label className={labelCls}>Cinsiyet</label>
+              <select
+                className={inputCls}
+                value={gender}
+                onChange={(e) => setGender(e.target.value as Gender | '')}
+              >
+                <option value="">Belirtilmedi</option>
+                {GENDER_OPTIONS.map((g) => (
+                  <option key={g.value} value={g.value}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1 min-w-0">
+              <label className={labelCls}>Doğum Tarihi</label>
+              <input
+                className={inputCls}
+                type="text"
+                inputMode="numeric"
+                value={birthDate}
+                onChange={(e) => setBirthDate(formatTrDateInput(e.target.value))}
+                placeholder="GG/AA/YYYY"
+                autoComplete="bday"
+                maxLength={10}
+              />
+            </div>
+          </div>
         </div>
 
         <label className="flex items-start gap-2 cursor-pointer select-none">
@@ -354,6 +372,8 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
             </span>
           </span>
         </label>
+
+        <p className="text-[9px] text-muted font-mono">{required} Zorunlu alan</p>
 
         {error && <p className="text-red text-xs font-mono">{error}</p>}
         {info && <p className="text-green text-xs font-mono">{info}</p>}
