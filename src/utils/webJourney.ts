@@ -24,6 +24,7 @@
 // `misafirZiyaretiBildir` ile aynı bundle gerekçesi, düz `fetch`.
 
 import { isBotUserAgent } from './visitTracking';
+import { pageWasVisible, whenPageVisible } from './pageVisible';
 
 /**
  * Adımlar, admin kartındaki SIRAYLA. ⚠ Sunucudaki iki fonksiyonun
@@ -310,6 +311,14 @@ let context: { deviceType: string; utmSource: string | null } = {
 
 function dispatch(ev: JourneyEvent): void {
   if (isAutomated()) return;
+  // Arka planda yüklenip henüz görünmemiş sayfa (bkz. utils/pageVisible.ts):
+  // olaylar sırasıyla bekletilir, sayfa görününce o anki saatle işlenir —
+  // yani süre de GÖRÜNDÜĞÜ andan sayılır. Görünmeden kapanırsa hiçbiri
+  // gitmez; `flush` bekletilmez (oturum yokken zaten ping üretmez).
+  if (!pageWasVisible()) {
+    if (ev.type !== 'flush') whenPageVisible(() => dispatch(ev));
+    return;
+  }
   const r = reduceJourney(load(), ev, Date.now(), randomId);
   save(r.session);
   const { deviceType, utmSource } = context;

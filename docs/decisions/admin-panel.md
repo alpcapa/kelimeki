@@ -1293,6 +1293,48 @@ sırası önemsiz. `verify-web-journey` artık adım dizisi taşıyan İKİ
 migration'ı da okuyor.
 
 
+### Görünmeyen sayfa sayılmaz — 31. saniye yığılması (2 Ekim 2026)
+
+Kullanıcı: *"Web'e gelenlerin %95'i bounce ediyor, iOS 59, Android 62 —
+Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları:
+
+| Cihaz | Oturum | Karşılamada ayrılan | 31-33 sn yığılması | Yığılmasız |
+|---|---|---|---|---|
+| Masaüstü | 25 | %92 | 7 | %89 |
+| iOS | 117 | %59 | 7 | %56 |
+| Android | 448 | %62 | **133** | **%46** |
+
+- **Sayfada hata YOK:** masaüstü derlemesi açıldı, "Hemen Oyna" Setup'a
+  geçiyor, konsol temiz. "Web %95" = MASAÜSTÜ ve 30 günde 25 oturum; 7'si
+  27-28 Eylül'de (Meta kampanyalarının kurulduğu gün, büyük olasılıkla
+  inceleme robotları — 30 Eylül'den beri bot UA'ları zaten süzülüyor), kalanı
+  telefon uygulaması reklamına bilgisayardan tıklayan ya da FB/LI paylaşım
+  linkiyle gelen. Önerilen: Meta'da masaüstü yerleşimini kapatmak (kullanıcı
+  kararı bekliyor; organik masaüstü verisi bundan etkilenmez).
+- **Android'in üçte biri ölçüm artefaktı:** "ayrılma" süresi TAM 31-33 sn,
+  kaydırma ilk ekran (~%18), 30. saniyede SIFIR, 31-32'de 124 oturum —
+  insan dağılımı böyle yığılmaz. 133'ün 133'ü Meta/Instagram etiketli,
+  ilki 28 Eylül. Hipotez: uygulama içi tarayıcı reklamın sayfasını tıklamadan
+  ÖNCE arka planda yüklüyor, açılmazsa ~30 sn sonra atıyor.
+- **Düzeltme:** `src/utils/pageVisible.ts` (`whenPageVisible`). Yolculuk
+  (`webJourney.ts` → olaylar sayfa görününce SIRAYLA işlenir, süre görünme
+  anından sayılır), Huni v2'nin `land`/`visit`i (`funnelOpen` — kanal kararı
+  ve `writeLand` HÂLÂ yüklemede, yalnızca ağ gönderimi bekler; görünmeden
+  kapanırsa `sent:false` kalır, gerçek açılış aynı kanalla gönderir) ve iki
+  eski sayaç (`guest_visits`/`device_visits`, `main.tsx` + `App.tsx`)
+  sayfa hiç görünmeden HİÇBİR ŞEY göndermez. Tarayıcıda üç senaryo ölçüldü
+  (sahte uç, mobil UA): görünür açılış → hemen; gizli açılıp 3 sn sonra
+  görünen → 3,7 sn'de hepsi, yolculuk süresi 2 sn (5 değil); hiç görünmeyen
+  → **0 istek**.
+- ⚠ **Doğrulama BEKLİYOR:** düzeltme canlıya çıktıktan sonra 31-33 sn
+  yığılması yeni satırlarda kaybolursa hipotez doğru. Kaybolmazsa önyükleme
+  sayfayı "görünür" çalıştırıyor demektir; o zaman Huni v2 LAND'ı da hâlâ
+  şişkin. Sorgu: `web_sessions` → `seconds between 31 and 33 and
+  last_step='landing'`, `created_at` yayın sonrası.
+- ⚠ Geçmiş satırlar DÜZELMEZ; 30 günlük pencere eski yığılmayı ~1 Kasım'a
+  kadar taşır. Huni v2 LAND'ı da aynı süre şişkin (oranlar düşük görünür).
+- Mobil port ETKİLENMEZ (yerel uygulama, önyükleme yok).
+
 ### Etkileşimsiz oturumlar ayrı sayılır (27 Eylül 2026, `20260927121128_admin_web_journey_idle.sql`)
 
 Kullanıcı sordu: *"20 kişinin anında bounce ettiğini söylüyor, hata olabilir

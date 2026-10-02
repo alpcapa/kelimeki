@@ -61,6 +61,7 @@ import {
 } from './utils/visitTracking';
 import { journeyScroll, journeyStart, journeyStep } from './utils/webJourney';
 import { funnelOpen } from './utils/funnelEvents';
+import { whenPageVisible } from './utils/pageVisible';
 
 /** Uygulamayı (React ağacı + PWA + sözlük ön yüklemesi) başlatır. */
 function baslat(): void {
@@ -395,8 +396,10 @@ if (document.documentElement.classList.contains('uygulama-modu')) {
   // `?ref=` etiketini ilk temas olarak sakla — `App.tsx` de aynı çağrıyı
   // yapıyor, ama karşılama katmanında uygulama hiç mount edilmiyor.
   captureUtmSource();
-  misafirZiyaretiBildir();
-  cihazZiyaretiBildir();
+  // Arka planda yüklenip hiç açılmayan sayfa ziyaret sayılmaz (bkz.
+  // utils/pageVisible.ts); yolculuk aynı kapıyı kendi içinde uyguluyor.
+  whenPageVisible(misafirZiyaretiBildir);
+  whenPageVisible(cihazZiyaretiBildir);
   yolculukKur();
   // Sayfada birden fazla "Oyna"/"Giriş" düğmesi var (başlık + kahraman +
   // sayfa sonu). Hepsi öznitelikle bağlanıyor — id ile bağlamak yalnızca
