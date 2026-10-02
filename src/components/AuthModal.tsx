@@ -3,7 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PrivacyModal';
-import { signIn, signUp, sendPasswordReset, friendlyAuthMessage, logSignupEvent } from '../lib/api';
+import {
+  signIn,
+  signUp,
+  sendPasswordReset,
+  friendlyAuthMessage,
+  logSignupEvent,
+  passkeySupported,
+  signInWithPasskey,
+} from '../lib/api';
 import { journeyStep } from '../utils/webJourney';
 import { useAuth } from '../hooks/useAuth';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
@@ -193,6 +201,29 @@ export function AuthModal({
       setError(
         friendlyAuthMessage(err) ??
           friendlyErrorMessage(err, { surface: 'giris', fallback: GENERIC_ERROR_NOTICE }),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const passkeyLogin = async () => {
+    setError(null);
+    setInfo(null);
+    setBusy(true);
+    try {
+      const ok = await signInWithPasskey();
+      if (!ok) return; // kullanıcı vazgeçti
+      journeyStep('login');
+      await refreshProfile();
+      onClose();
+    } catch (err) {
+      setError(
+        friendlyAuthMessage(err) ??
+          friendlyErrorMessage(err, {
+            surface: 'passkey-giris',
+            fallback: 'Passkey ile giriş yapılamadı. E-posta ve şifrenle dene.',
+          }),
       );
     } finally {
       setBusy(false);
@@ -452,6 +483,28 @@ export function AuthModal({
                 : 'Bağlantı Gönder'}
         </button>
       </form>
+
+      {/* Passkey ile giriş (ROADMAP #43, 2 Ekim 2026). Yalnızca giriş
+          modunda ve WebAuthn destekleyen tarayıcıda; kayıtta YOK — passkey
+          hesabın yerine geçmez, Hesap Ayarları'ndan sonradan eklenir.
+          Kullanıcı OS penceresini kapatırsa hata değil, sessiz dönüş. */}
+      {mode === 'login' && passkeySupported() && (
+        <div className="mt-3 flex flex-col gap-2">
+          <div className="flex items-center gap-2" aria-hidden="true">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[9px] uppercase tracking-[1.5px] text-muted font-mono">veya</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void passkeyLogin()}
+            className="btn-raised bg-panel text-text border border-border rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
+          >
+            Passkey ile giriş
+          </button>
+        </div>
+      )}
 
       <div className="mt-3 flex flex-col gap-1.5">
         {mode === 'login' && (

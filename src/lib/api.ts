@@ -3624,6 +3624,82 @@ export async function signIn(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email, password });
 }
 
+// ── Passkey (WebAuthn) — ROADMAP #43, 2 Ekim 2026 ───────────────────────────
+//
+// Sunucu: Supabase Auth → Passkeys (BETA), RP ID `kelimeki.com`, origin
+// `https://kelimeki.com` → Vercel önizlemelerinde ÇALIŞMAZ (origin farklı),
+// test yalnızca canlıda. Passkey kaydın YERİNE geçmez: hesap e-postayla açılır,
+// passkey sonradan Hesap Ayarları'ndan eklenir.
+
+export type PasskeyItem = {
+  id: string;
+  friendly_name?: string;
+  created_at: string;
+  last_used_at?: string;
+};
+
+/** Tarayıcı WebAuthn destekliyor mu (ve Supabase yapılandırılmış mı). */
+export function passkeySupported(): boolean {
+  return (
+    !!supabase && typeof window !== 'undefined' && typeof window.PublicKeyCredential === 'function'
+  );
+}
+
+/**
+ * Kullanıcı tarayıcının/OS'un passkey penceresini kapattı ya da süre doldu.
+ * Bu bir HATA değil — çağıran sessizce döner. auth-js `NotAllowedError`ı
+ * `ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY` koduyla, `cause` içinde taşıyor.
+ */
+function isPasskeyCancel(err: unknown): boolean {
+  const e = err as { code?: string; name?: string; cause?: { name?: string } } | null;
+  return (
+    e?.code === 'ERROR_CEREMONY_ABORTED' ||
+    e?.name === 'NotAllowedError' ||
+    e?.name === 'AbortError' ||
+    e?.cause?.name === 'NotAllowedError' ||
+    e?.cause?.name === 'AbortError'
+  );
+}
+
+function passkeyError(err: unknown): Error {
+  const code = (err as { code?: string } | null)?.code;
+  if (code === 'ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED') {
+    return new Error('Bu cihazda bu hesap için zaten bir passkey var.');
+  }
+  return err instanceof Error ? err : new Error(String(err));
+}
+
+/** Passkey ile giriş. `false` = kullanıcı vazgeçti (hata değil). */
+export async function signInWithPasskey(): Promise<boolean> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.auth.signInWithPasskey();
+  if (!error) return true;
+  if (isPasskeyCancel(error)) return false;
+  throw passkeyError(error);
+}
+
+/** Oturumdaki hesaba passkey ekler. `false` = kullanıcı vazgeçti. */
+export async function registerPasskey(): Promise<boolean> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.auth.registerPasskey();
+  if (!error) return true;
+  if (isPasskeyCancel(error)) return false;
+  throw passkeyError(error);
+}
+
+export async function listPasskeys(): Promise<PasskeyItem[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.auth.passkey.list();
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function deletePasskey(passkeyId: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.auth.passkey.delete({ passkeyId });
+  if (error) throw error;
+}
+
 export async function signOut() {
   if (!supabase) return;
   await supabase.auth.signOut();

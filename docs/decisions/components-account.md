@@ -157,6 +157,19 @@ portta henüz yok (ROADMAP #41'in port yarısı).
 
 ## `AuthModal`
 
+- **Passkey (WebAuthn) — 2 Ekim 2026, ROADMAP #43 (web yarısı).** Giriş
+  penceresinde "veya" ayracının altında **PASSKEY İLE GİRİŞ** (yalnızca giriş
+  modu; kayıtta YOK — passkey hesabın yerine geçmez). Hesap Ayarları'nda
+  formun DIŞINDA, hesap silmenin üstünde `PasskeySection` (liste · ekle ·
+  sil) — işlemler anında sunucuya gider, form kaydına karışmaz. İki yüzey de
+  `passkeySupported()` yanlışsa (WebAuthn yok / Supabase yok) HİÇ çizilmez.
+  Kullanıcının OS penceresini kapatması (`NotAllowedError`, auth-js'te
+  `ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY` + `cause`) hata DEĞİL, sessiz dönüş
+  (`isPasskeyCancel`, `api.ts`). auth-js API'leri `createClient`ın
+  `auth.experimental.passkey: true` bayrağı olmadan fırlatır
+  (`src/lib/supabase.ts`). Sunucu ayarları: `supabase-ops.md` → "Auth
+  ayarları". ⚠ Gizlilik satırı web↔port tarih eşliği yüzünden #779'la
+  (12 Ekim) gidiyor.
 - **`AuthModal` — 2 Ekim 2026: ad/soyad İSTEĞE BAĞLI, form "zorunlular üstte"
   düzenine geçti** (kullanıcı: *"isim soyadı zorunlu olmaktan çıkacaktı … zorunlular
   yukarıda, opsiyoneller aşağıda"*). Sıra: Takma isim · E-posta · Şifre (`*`) →

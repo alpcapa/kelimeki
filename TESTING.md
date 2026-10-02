@@ -779,6 +779,14 @@ uydurma bir Türkçe cümleyle gizlemek hata ayıklamayı imkânsız kılardı.
 - [ ] **Form doğrulamaları bozulmamış.** Alınmış takma isim, işaretlenmemiş
       Kullanım Koşulları → kendi Türkçe mesajları çıkmalı (bunlar aynı
       `catch`'ten geçiyor, çeviri katmanı onları ezmemeli).
+- [ ] **Passkey (web, 2 Ekim 2026 — ROADMAP #43). YALNIZCA kelimeki.com'da**
+      (RP ID; Vercel önizlemesinde tören başarısız olur). Girişliyken Hesap
+      Ayarları → "Passkey'ler" → PASSKEY EKLE → Face ID / parmak izi → liste
+      satırı + "Passkey eklendi…". Çıkış yap → Giriş → PASSKEY İLE GİRİŞ →
+      doğrudan giriş. Pencereyi iptal et → hata YOK, sessiz. Ayarlar → Sil →
+      satır kalkar. Üç ortam: iPhone Safari (iCloud Keychain), masaüstü
+      Chrome, Android Chrome. WebAuthn'suz tarayıcıda iki yüzey de HİÇ
+      çizilmez.
 - [ ] **Şifre en az 8 karakter (web 2 Ekim 2026, uygulama 1.1.3).** Kayıtta
       şifrenin altında "En az 8 karakter olmalı."; 7 karakterle KAYIT OL →
       tarayıcı/form engeller. Şifre sıfırlamada 7 karakter → "Yeni şifre en

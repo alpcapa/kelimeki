@@ -199,6 +199,10 @@ Supabase Dashboard → Authentication → Sign In / Providers → **Email**
 | Prevent use of leaked passwords | kapalı (Pro plan özelliği) |
 | Email OTP expiration | 86400 sn (24 saat) |
 | Email OTP length | 8 hane |
+| **Passkeys (BETA)** — Authentication → Passkeys | **AÇIK** (2 Eki 2026) |
+| Relying Party Display Name | `Kelimeki` |
+| Relying Party ID | `kelimeki.com` |
+| Relying Party Origins | `https://kelimeki.com` (port gelince Android `android:apk-key-hash:…` eklenecek — ROADMAP #43) |
 
 ⚠ **Vaka:** istemciler aylarca **6** diyordu (web `minLength={6}` +
 `ResetPasswordModal` · port `reset_password_modal.dart` · `weak_password`
