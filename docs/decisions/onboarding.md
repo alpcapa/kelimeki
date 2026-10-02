@@ -1151,6 +1151,28 @@ uyarısı + ilk oyun Kolay, (B) tek standart ekran, (C) Arkadaşınla ekranları
 - ⚠ Girişli dal otomatik test EDİLEMİYOR (gerçek oturum + arkadaş listesi);
   `TESTING.md` §1'e dört madde yazıldı. Girişsiz pencere duman testinde.
 
+### Canlı oyun formu: 1. koltuk SEN, 4 kişide 2×2 (2 Ekim 2026)
+
+Kullanıcı isteği: *"2 kişilikte aşağıdan arkadaş seç kutusunun üstüne 1
+numaralı koltuk (kişinin kendisi default gelsin), 4 kişilikte de 1. sırada
+1 ve 2, alt sırada 3 ve 4."* Önce görsel taslak istendi; dört turda
+netleşen kurallar:
+
+- **1. koltuk her zaman sensin** — camgöbeği (1. oyuncu rengi), avatarın ve
+  adın, ✕ YOK. "SEN" etiketi YOK (kullanıcı: *"Sen yazmana gerek yok"*).
+  Başlık "Rakibin/Rakiplerin" → **"Oyuncular"** (4 kişide `· n/4`, sen dahil).
+- **Numaralar her durumda HİZALI** (sen · dolu · boş · Yapay Zeka): numara
+  ve ✕ kartın içinde AKIŞTA, sabit genişlikte yuvalar; ✕'i olmayan kartta
+  yuva boş durur. Eski filigran mutlak konumluydu ve ✕'li/✕'siz kartta yer
+  değiştiriyordu.
+- **İsim numaranın üstüne BİNMEZ**, yuvadan önce "…" ile kesilir. Numara ✕'e
+  yaklaştırıldı (negatif sağ boşluk) — isme yer kalsın (kullanıcı).
+- **4 kişide boş koltuk "Boş"** yazar ("Boş koltuk" 2×2 kartta kesiliyordu);
+  ekran okuyucu "Boş koltuk N" duyar. "Boş 4. koltuk yapay zeka olur" notu
+  AYNEN kaldı — port'un `live_games_test` parite testi bu metinleri web
+  kaynağında arıyor; değişseydi web tek başına gidemezdi.
+- Web hemen yayında; port ikizi 12 Ekim treninde (`live_game_create_form.dart`).
+
 ### Taban ölçüm (27 Eylül 2026, kodlamadan ÖNCE)
 
 - **Huni v2, web** (`funnel_events`, `mevcut` hariç; yalnızca 25-27 Eylül,
