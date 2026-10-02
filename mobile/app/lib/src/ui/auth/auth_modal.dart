@@ -681,6 +681,7 @@ class _AuthModalState extends State<AuthModal> {
             style: const TextStyle(
               fontFamily: 'SpaceMono',
               fontSize: 9,
+              fontWeight: FontWeight.w700,
               letterSpacing: 1.5,
               color: _muted,
             ),
