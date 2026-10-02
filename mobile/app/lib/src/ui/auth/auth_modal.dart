@@ -455,8 +455,9 @@ class _AuthModalState extends State<AuthModal> {
                   ),
                 ],
               ),
-              // Web ile AYNI metin. Doğru: `search_users_for_friend` takma
-              // ismin yanında `first_name`i de tarıyor.
+              // Web ile AYNI metin. `search_users_for_friend` takma ismin
+              // yanında adı, soyadı ve "ad soyad"ı da tarıyor (soyad 2 Ekim
+              // 2026, sunucu migration'ı — istemci değişikliği gerektirmedi).
               const SizedBox(height: 4),
               const Text('Aramalarda bulunmayı kolaylaştırır.',
                   style: TextStyle(
