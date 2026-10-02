@@ -480,8 +480,14 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     NeoButton(
-                      label:
-                          _uploadingAvatar ? 'YÜKLENİYOR…' : 'FOTOĞRAF DEĞİŞTİR',
+                      // Fotoğraf yoksa "YÜKLE", varsa "DEĞİŞTİR" (2 Ekim
+                      // 2026, web `AccountSettingsModal.tsx` ile aynı karar).
+                      label: _uploadingAvatar
+                          ? 'YÜKLENİYOR…'
+                          : (_avatarUrlOverride ?? auth.profile?.avatarUrl) !=
+                                  null
+                              ? 'FOTOĞRAF DEĞİŞTİR'
+                              : 'FOTOĞRAF YÜKLE',
                       variant: NeoButtonVariant.neutral,
                       fontSize: 10,
                       padding: const EdgeInsets.symmetric(
