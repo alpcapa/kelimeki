@@ -136,8 +136,6 @@ export function AuthModal({
         setInfoTone('gold');
         setInfo('Şifre sıfırlama bağlantısı e-postana gönderildi.');
       } else {
-        if (!firstName.trim()) throw new Error('Ad zorunludur.');
-        if (!lastName.trim()) throw new Error('Soyad zorunludur.');
         if (!nickname.trim()) throw new Error('Takma isim zorunludur.');
         if (nicknameStatus === 'checking') throw new Error('Takma isim kontrol ediliyor, birazdan tekrar dene.');
         if (nicknameStatus === 'taken') throw new Error('Bu takma isim zaten kullanılıyor.');
@@ -207,31 +205,13 @@ export function AuthModal({
       <form onSubmit={submit} className="flex flex-col gap-3">
         {mode === 'signup' && (
           <>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className={labelCls}>Ad {required}</label>
-                <input
-                  className={inputCls}
-                  placeholder="Adın"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  autoComplete="given-name"
-                  required
-                />
-              </div>
-              <div className="flex-1">
-                <label className={labelCls}>Soyad {required}</label>
-                <input
-                  className={inputCls}
-                  placeholder="Soyadın"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  autoComplete="family-name"
-                  required
-                />
-              </div>
-            </div>
-
+            {/* Sıra (2 Ekim 2026, kullanıcı isteği): ZORUNLULAR üstte
+                (takma isim · e-posta · şifre), İSTEĞE BAĞLILAR altta, kendi
+                başlığının altında. Ad/soyad aynı gün zorunluluktan çıktı —
+                sunucu boşu zaten kabul ediyordu (`handle_new_user`
+                `coalesce(..., '')`, kolon varsayılanı `''`); e-postalar ve
+                ekranlar önce takma ismi kullanıyor. Port ikizi
+                `auth_modal.dart` (1.1.3 treni). */}
             <div>
               <label className={labelCls}>Takma isim {required}</label>
               {/* Boşluk kabul edilmiyor (tek kelime, özel karakterler serbest) —
@@ -284,40 +264,6 @@ export function AuthModal({
           />
         </div>
 
-        {mode === 'signup' && (
-          <>
-            <div>
-              <label className={labelCls}>Cinsiyet</label>
-              <select
-                className={inputCls}
-                value={gender}
-                onChange={(e) => setGender(e.target.value as Gender | '')}
-              >
-                <option value="">Belirtilmedi</option>
-                {GENDER_OPTIONS.map((g) => (
-                  <option key={g.value} value={g.value}>
-                    {g.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className={labelCls}>Doğum Tarihi (GG/AA/YYYY)</label>
-              <input
-                className={inputCls}
-                type="text"
-                inputMode="numeric"
-                value={birthDate}
-                onChange={(e) => setBirthDate(formatTrDateInput(e.target.value))}
-                placeholder="GG/AA/YYYY"
-                autoComplete="bday"
-                maxLength={10}
-              />
-            </div>
-          </>
-        )}
-
         {mode !== 'forgot' && (
           <div>
             {mode === 'signup' && <label className={labelCls}>Şifre {required}</label>}
@@ -340,6 +286,70 @@ export function AuthModal({
               >
                 <EyeIcon open={showPassword} />
               </button>
+            </div>
+          </div>
+        )}
+
+        {mode === 'signup' && (
+          <div className="flex flex-col gap-3 pt-1">
+            <div className="flex items-center gap-2" aria-hidden="true">
+              <span className="h-px flex-1 bg-border" />
+              <span className="text-[9px] uppercase tracking-[1.5px] text-muted font-mono">
+                İsteğe bağlı
+              </span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1 min-w-0">
+                <label className={labelCls}>Ad</label>
+                <input
+                  className={inputCls}
+                  placeholder="Adın"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  autoComplete="given-name"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <label className={labelCls}>Soyad</label>
+                <input
+                  className={inputCls}
+                  placeholder="Soyadın"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  autoComplete="family-name"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1 min-w-0">
+                <label className={labelCls}>Cinsiyet</label>
+                <select
+                  className={inputCls}
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value as Gender | '')}
+                >
+                  <option value="">Belirtilmedi</option>
+                  {GENDER_OPTIONS.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1 min-w-0">
+                <label className={labelCls}>Doğum Tarihi</label>
+                <input
+                  className={inputCls}
+                  type="text"
+                  inputMode="numeric"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(formatTrDateInput(e.target.value))}
+                  placeholder="GG/AA/YYYY"
+                  autoComplete="bday"
+                  maxLength={10}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -374,7 +384,7 @@ export function AuthModal({
               >
                 Gizlilik Politikası
               </button>
-              'nı okudum ve kabul ediyorum.
+              'nı okudum ve kabul ediyorum. {required}
             </span>
           </label>
         )}
