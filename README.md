@@ -62,6 +62,7 @@ npm run generate-golden-vectors  # Flutter portu parite fixture'ları (motor de�
 npm run generate-meanings-db     # meanings.json → portun SQLite asset'i
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ TS
 npm run verify-league-points     # k-lig puan tablosu (Kolay/Normal/Zor): SQL ↔ TS ↔ Dart
+npm run verify-beyin-ligi        # Beyin Ligi giriş eşiği (5 oyun): SQL view ↔ TS (↔ Dart)
 npm run simulate-ai-levels       # YZ seviye kadranı: üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal, YZ↔YZ (ROADMAP #23)
 npm run generate-initial-main-view-golden # giriş sekmesi kuralı: web→port davranış golden'ı
 npm run generate-demo-board-dart # karşılama tahtası → portun tanıtım ekranı için demo_board_data.dart
@@ -120,7 +121,8 @@ src/
 │   ├── ChatRulesModal.tsx       # Sohbet Kuralları onayı: ilk mesajdan önce BİR KEZ (metin `utils/chatRules.ts`te)
 │   ├── ChatSettingsModal.tsx    # oyun içi mesajlaşma Faz 2: kişi sessize alma / rapor etme ayarları (ChatModal'ın dişli ikonundan açılır)
 │   ├── GameChatHistoryModal.tsx # oyun içi mesajlaşma: bitmiş bir oyunun dondurulmuş sohbet kaydının salt-okunur görünümü
-│   ├── Leaderboard.tsx          # lider tablosu (k-lig)
+│   ├── Leaderboard.tsx          # lider tablosu (k-lig) — Puan Ligi / Beyin Ligi sekmeleri
+│   ├── BeyinLigiList.tsx        # k-lig'in OHP alt ligi (puansız, ≥5 oyun)
 │   ├── KLigMark.tsx             # "k-lig" logosu — statik SVG path (üretilmiş, bkz. scripts/generate-klig-paths.mjs), font bağımsız
 │   ├── RankSeal.tsx             # k-lig rütbe rozeti (kurdeleli roset SVG — k-lig satırları, Skor Kartı başlığı, tanıtım sayfası, ödül banner'ı)
 │   ├── RankInfoModal.tsx        # Skor Kartı'ndaki mühre dokununca açılan rütbe bilgi popup'ı (puan + ödül payı + sıradaki hedef)
@@ -213,6 +215,7 @@ src/
 │   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı kuyruğu + davet linki/metni (`?ref=arkadas`) + WhatsApp adresi
 │   ├── liveGameRequest.ts # "bu arkadaşla oyun kur" isteği (Arkadaşlar → OYNA): App kurulum ekranına döner, LiveGamesTab formu ön seçimli açar
 │   ├── csvExport.ts    # admin paneli tabloları/grafikleri için CSV indirme yardımcısı
+│   ├── beyinLigi.ts    # Beyin Ligi eşiği (BEYIN_LIGI_MIN_GAMES) — SQL view ↔ Dart ile verify-beyin-ligi kilitler
 │   ├── leaguePoints.ts # k-lig puanı hesaplama — (rank, count, surrendered, level); SQL league_points_for ↔ Dart ile verify-league-points kilitler
 │   ├── aiLevel.ts      # YZ zorluğunun ürün yüzü: etiketler, Setup'ta seçilebilir seviyeler (üçü de), null→Normal ayrıştırma
 │   ├── leagueRank.ts   # k-lig rütbe kademeleri (Çaylak→Kozmik, 9 kademe: eşik/renk/ödül — sunucudaki _award_league_rewards VE portun league_rank.dart'ı ile ELLE senkron, üç kopya)

@@ -12,6 +12,8 @@ import { KLigMark } from './KLigMark';
 import { RankSeal } from './RankSeal';
 import { tierFor } from '../utils/leagueRank';
 import { shortDisplayName } from '../utils/profileFields';
+import { BeyinLigiList, BEYIN_LIGI_INTRO } from './BeyinLigiList';
+import type { KLigTab } from '../utils/beyinLigi';
 
 interface LeaderboardProps {
   onClose: () => void;
@@ -40,6 +42,19 @@ function formatOhp(v: number | null | undefined): string {
 // = sum(move_points_sum) / sum(move_count) — yani oyun başına ortalamaların
 // ortalaması DEĞİL, tüm hamlelerin tek bir havuzdaki ortalaması (ağırlıklı).
 // İfade değişirse bu cümle de değişmeli.
+// k-lig'in alt ligleri (2 Ekim 2026, kullanıcı kararı). Pencere HER ZAMAN
+// Puan Ligi ile açılır, son sekme hatırlanmaz. İleride üçüncü bir lig bu
+// diziye bir satır olarak eklenir. Port ikizi: `leaderboard_modal.dart`
+// (`kKLigTabs`) — etiketler/ikonlar BİREBİR aynı olmalı.
+export const KLIG_TABS: { id: KLigTab; icon: string; label: string }[] = [
+  { id: 'puan', icon: '🏆', label: 'Puan Ligi' },
+  { id: 'beyin', icon: '🧠', label: 'Beyin Ligi' },
+];
+
+export const PUAN_LIGI_INTRO =
+  'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır. ' +
+  'Puanlar eşitse OHP yüksek olan üstte.';
+
 const OHP_HINT =
   'Ortalama Hamle Puanı tüm oyunlarda yapılan tüm hamlelerin ortalamasıdır. ' +
   'Puanlar eşitse OHP yüksek olan üstte sıralanır.';
@@ -62,6 +77,11 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [myRank, setMyRank] = useState<MyLeaderboardRank | null>(null);
   const [selected, setSelected] = useState<PlayerSummary | null>(null);
+  const [tab, setTab] = useState<KLigTab>('puan');
+  // Beyin Ligi ilk seçildiğinde bağlanır ve sonra bağlı KALIR (gizlenir) —
+  // sekmeler arasında gidip gelmek listeyi her seferinde yeniden indirmesin,
+  // kaydırma konumu da kaybolmasın. Puan Ligi bugünkü gibi hemen yüklenir.
+  const [beyinMounted, setBeyinMounted] = useState(false);
   // "OHP" açıklama balonu. İki ayrı kaynak, çünkü ikisinin kapanma kuralı
   // farklı: hover (masaüstü) fare çekilince kendiliğinden kapanır; tıklama
   // (dokunmatik — orada hover DİYE BİR ŞEY YOK) bir daha dokunulana ya da
@@ -153,174 +173,208 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
       }
       onClose={onClose}
     >
+      <div
+        role="tablist"
+        aria-label="k-lig alt ligleri"
+        className="grid grid-cols-2 gap-1 bg-panel border border-border rounded-xl p-1 mb-3"
+      >
+        {KLIG_TABS.map((t) => {
+          const on = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              onClick={() => {
+                setTab(t.id);
+                if (t.id === 'beyin') setBeyinMounted(true);
+              }}
+              className={[
+                'flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 font-mono text-xs font-bold whitespace-nowrap transition-colors',
+                on ? 'bg-bg text-text shadow-raised' : 'text-muted active:opacity-70',
+              ].join(' ')}
+            >
+              <span aria-hidden="true" className="text-sm leading-none">{t.icon}</span>
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
       <p className="text-[11px] text-muted font-mono text-center mb-3 leading-relaxed">
-        k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır.
-        Puanlar eşitse OHP yüksek olan üstte.
+        {tab === 'puan' ? PUAN_LIGI_INTRO : BEYIN_LIGI_INTRO}
       </p>
-      {rows === null ? (
-        /* Yükseklik BAŞTAN ayrılır: pencere yüksekliğini içeriğinden
-           aldığından tek satırlık bir yükleme metni onu önce küçük açıp veri
-           gelince büyütüyordu (kullanıcı mobil portta bildirdi, 24 Ağustos
-           2026 — aynı kusur webde de vardı). 50vh, aşağıdaki listenin kendi
-           tavanıyla aynı. */
-        <div className="h-[50vh] flex items-center justify-center">
-          <LoadingNote py="py-0" />
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center text-[9px] uppercase tracking-[1px] text-muted font-mono font-bold px-2 pb-1 gap-1">
-            {/* 2 Eylül 2026 — `w-*` → `min-w-*` + `whitespace-nowrap` (sınıf
-                1+3'ün web eşleniği). Tarayıcının "asgari yazı boyutu"
-                erişilebilirlik ayarı eşiğin altındaki puntoları yukarı
-                çekiyor, px kutular ise yerinde kalıyordu: metin ya sarıyor
-                ya komşusunun üstüne biniyordu (GameOver'da ölçüldü —
-                `tests/text-scale.spec.ts`). NORMAL ölçekte bu değişiklik
-                KANITEN etkisiz: bu kutular zaten içeriklerinden geniş
-                seçilmişti, yani `min-width` aynı sayıyı veriyor. Burası
-                gerçek bir Supabase oturumu gerektirdiğinden otomatik
-                ölçülemiyor; elle kontrol `TESTING.md` §"yazı boyutu". */}
-            <span className="min-w-6 whitespace-nowrap">Sıra</span>
-            <span className="flex-1">Oyuncu</span>
-            {/* Kutu genişliği OHP DEĞERİNİN ink genişliğine eşit (`12.78` =
-                5 monospace karakter × 11px × 0.612 ≈ 34px) — böylece sağa
-                hizalı değerlerle ORTALI başlık aynı merkeze düşüyor.
-                `w-12`(48) + `text-right` iken başlık, değerlerin 7px sağında
-                kalıyordu ("OHP" 3 karakter/9px, değer 5 karakter/11px; iki
-                dize de sağa yaslıyken merkezleri genişlik farkının yarısı
-                kadar ayrışır). Kutunun SAĞ kenarı değişmedi — daralma
-                yalnızca sol kenarı sağa çekip boşluğu "Oyuncu"ya verir,
-                yani OHP↔Puan hizası (44px) korunuyor. */}
-            <span ref={ohpRef} className="relative min-w-[34px] whitespace-nowrap shrink-0">
-              <button
-                type="button"
-                onClick={() => setOhpHintPinned((v) => !v)}
-                onMouseEnter={() => setOhpHintHover(true)}
-                onMouseLeave={() => setOhpHintHover(false)}
-                aria-label={OHP_HINT}
-                aria-expanded={ohpHintOpen}
-                className="w-full text-center uppercase tracking-[1px] underline decoration-dotted underline-offset-2 active:opacity-70"
-              >
-                OHP
-              </button>
-              {ohpHintOpen && (
-                /* Balon başlığın TAM ÜSTÜNDE. `normal-case tracking-normal`
-                   şart: başlık satırı `uppercase tracking-[1px]` taşıyor ve
-                   balon onu miras alırsa cümle büyük harfe döner. */
-                <span
-                  role="tooltip"
-                  className="absolute bottom-full right-0 mb-2 w-56 rounded-md border border-border bg-panel px-2 py-1.5 text-left text-[10px] normal-case tracking-normal leading-relaxed text-muted shadow-raised z-10"
-                >
-                  {OHP_HINT}
-                  <span className="absolute right-4 -bottom-1 h-2 w-2 rotate-45 border-b border-r border-border bg-panel" />
-                </span>
-              )}
-            </span>
-            <span className="min-w-10 whitespace-nowrap text-right">Puan</span>
-          </div>
-          {rows.length === 0 ? (
-            <p className="text-muted text-xs font-mono text-center py-4">
-              Henüz skor yok. İlk sen ol!
-            </p>
-          ) : (
-            <ol ref={scrollRef} className="flex flex-col gap-1 max-h-[50vh] overflow-y-auto pr-1">
-              {rows.map((r) => {
-                const me = user && r.user_id === user.id;
-                const name = rowName(r);
-                return (
-                  <li key={r.user_id}>
-                    <button
-                      type="button"
-                      onClick={() => setSelected(rowToPlayerSummary(r))}
-                      className={[
-                        'w-full flex items-center gap-1 text-sm font-mono rounded-md px-2 py-1.5 text-left active:opacity-70 transition-opacity',
-                        me ? 'bg-accent/10 border border-accent' : 'bg-bg',
-                      ].join(' ')}
-                    >
-                      {/* Sıra SUNUCUDAN geliyor (`k_lig_siralama.sira`), dizideki
-                          indeksten DEĞİL — "senin sıran" kısayolu ve Skor Kartı
-                          başlığı da aynı sayıyı aynı view'dan okuyor. İndeksten
-                          türetmek, eşit puanlılarda ikisinin ayrışmasına yol
-                          açıyordu (20 Ağustos 2026). */}
-                      <span
-                        className={[
-                          'w-6 font-bold shrink-0',
-                          r.sira === 1 ? 'text-gold' : r.sira <= 3 ? 'text-accent' : 'text-muted',
-                        ].join(' ')}
-                      >
-                        {r.sira}
-                      </span>
-                      <Avatar
-                        url={r.avatar_url}
-                        name={name}
-                        size={22}
-                        className="mr-1 shrink-0"
-                      />
-                      <span className="flex-1 min-w-0 flex items-center gap-1">
-                        <span className="truncate text-text">{name}</span>
-                        {/* Rütbe mührü — GÜNCEL puandan türetilir (düşmeli
-                            sürüm, bkz. leagueRank.ts), ismin hemen yanında.
-                            Bu boyda RankSeal kompakt çizer (iç halkasız,
-                            büyük harf) — 12 Ağustos 2026 okunurluk düzeltmesi. */}
-                        <RankSeal tier={tierFor(r.total_score)} size={18} className="shrink-0" />
-                      </span>
-                      {/* OHP düz gri, KALIN DEĞİL ve satırın kendi 14px'inden
-                          küçük (kullanıcı isteği) — asıl sıralama ölçütü olan
-                          "Puan"la görsel olarak yarışmasın diye. */}
-                      <span className="min-w-[34px] whitespace-nowrap text-right text-[11px] text-muted shrink-0">
-                        {formatOhp(r.avg_move_score)}
-                      </span>
-                      <span className="min-w-10 whitespace-nowrap text-right font-bold text-accent shrink-0">
-                        {r.total_score?.toLocaleString('tr-TR') ?? '—'}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-              {hasMore && (
-                <li ref={sentinelRef} className="py-2 text-center">
-                  <span className="text-muted text-[10px] font-mono">
-                    {loadingMore ? 'Yükleniyor…' : ''}
-                  </span>
-                </li>
-              )}
-            </ol>
-          )}
-
-          {user && !meInList && myRank && (
-            <>
-              <div className="flex items-center gap-2 px-2">
-                <div className="flex-1 border-t border-dashed border-border" />
-                <span className="text-[9px] text-muted font-mono uppercase tracking-[1px]">senin sıran</span>
-                <div className="flex-1 border-t border-dashed border-border" />
-              </div>
-              <button
-                type="button"
-                onClick={() =>
-                  user &&
-                  setSelected({
-                    id: user.id,
-                    username: profile?.username ?? null,
-                    first_name: profile?.first_name ?? null,
-                    last_name: profile?.last_name ?? null,
-                    display_name: profile?.display_name ?? null,
-                    avatar_url: profile?.avatar_url ?? null,
-                  })
-                }
-                className="w-full flex items-center gap-1 text-sm font-mono rounded-md px-2 py-1.5 text-left bg-accent/10 border border-accent active:opacity-70 transition-opacity"
-              >
-                <span className="min-w-6 whitespace-nowrap font-bold text-muted shrink-0">{myRank.rank}</span>
-                <span className="flex-1 text-text">Sen</span>
-                <span className="min-w-[34px] whitespace-nowrap text-right text-[11px] text-muted shrink-0">
-                  {formatOhp(myRank.avg_move_score)}
-                </span>
-                <span className="min-w-10 whitespace-nowrap text-right font-bold text-accent shrink-0">
-                  {myRank.total_score.toLocaleString('tr-TR')}
-                </span>
-              </button>
-            </>
-          )}
+      {beyinMounted && (
+        <div hidden={tab !== 'beyin'}>
+          <BeyinLigiList onSelect={setSelected} />
         </div>
       )}
+      <div hidden={tab !== 'puan'}>
+        {rows === null ? (
+          /* Yükseklik BAŞTAN ayrılır: pencere yüksekliğini içeriğinden
+             aldığından tek satırlık bir yükleme metni onu önce küçük açıp veri
+             gelince büyütüyordu (kullanıcı mobil portta bildirdi, 24 Ağustos
+             2026 — aynı kusur webde de vardı). 50vh, aşağıdaki listenin kendi
+             tavanıyla aynı. */
+          <div className="h-[50vh] flex items-center justify-center">
+            <LoadingNote py="py-0" />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center text-[9px] uppercase tracking-[1px] text-muted font-mono font-bold px-2 pb-1 gap-1">
+              {/* 2 Eylül 2026 — `w-*` → `min-w-*` + `whitespace-nowrap` (sınıf
+                  1+3'ün web eşleniği). Tarayıcının "asgari yazı boyutu"
+                  erişilebilirlik ayarı eşiğin altındaki puntoları yukarı
+                  çekiyor, px kutular ise yerinde kalıyordu: metin ya sarıyor
+                  ya komşusunun üstüne biniyordu (GameOver'da ölçüldü —
+                  `tests/text-scale.spec.ts`). NORMAL ölçekte bu değişiklik
+                  KANITEN etkisiz: bu kutular zaten içeriklerinden geniş
+                  seçilmişti, yani `min-width` aynı sayıyı veriyor. Burası
+                  gerçek bir Supabase oturumu gerektirdiğinden otomatik
+                  ölçülemiyor; elle kontrol `TESTING.md` §"yazı boyutu". */}
+              <span className="min-w-6 whitespace-nowrap">Sıra</span>
+              <span className="flex-1">Oyuncu</span>
+              {/* Kutu genişliği OHP DEĞERİNİN ink genişliğine eşit (`12.78` =
+                  5 monospace karakter × 11px × 0.612 ≈ 34px) — böylece sağa
+                  hizalı değerlerle ORTALI başlık aynı merkeze düşüyor.
+                  `w-12`(48) + `text-right` iken başlık, değerlerin 7px sağında
+                  kalıyordu ("OHP" 3 karakter/9px, değer 5 karakter/11px; iki
+                  dize de sağa yaslıyken merkezleri genişlik farkının yarısı
+                  kadar ayrışır). Kutunun SAĞ kenarı değişmedi — daralma
+                  yalnızca sol kenarı sağa çekip boşluğu "Oyuncu"ya verir,
+                  yani OHP↔Puan hizası (44px) korunuyor. */}
+              <span ref={ohpRef} className="relative min-w-[34px] whitespace-nowrap shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setOhpHintPinned((v) => !v)}
+                  onMouseEnter={() => setOhpHintHover(true)}
+                  onMouseLeave={() => setOhpHintHover(false)}
+                  aria-label={OHP_HINT}
+                  aria-expanded={ohpHintOpen}
+                  className="w-full text-center uppercase tracking-[1px] underline decoration-dotted underline-offset-2 active:opacity-70"
+                >
+                  OHP
+                </button>
+                {ohpHintOpen && (
+                  /* Balon başlığın TAM ÜSTÜNDE. `normal-case tracking-normal`
+                     şart: başlık satırı `uppercase tracking-[1px]` taşıyor ve
+                     balon onu miras alırsa cümle büyük harfe döner. */
+                  <span
+                    role="tooltip"
+                    className="absolute bottom-full right-0 mb-2 w-56 rounded-md border border-border bg-panel px-2 py-1.5 text-left text-[10px] normal-case tracking-normal leading-relaxed text-muted shadow-raised z-10"
+                  >
+                    {OHP_HINT}
+                    <span className="absolute right-4 -bottom-1 h-2 w-2 rotate-45 border-b border-r border-border bg-panel" />
+                  </span>
+                )}
+              </span>
+              <span className="min-w-10 whitespace-nowrap text-right">Puan</span>
+            </div>
+            {rows.length === 0 ? (
+              <p className="text-muted text-xs font-mono text-center py-4">
+                Henüz skor yok. İlk sen ol!
+              </p>
+            ) : (
+              <ol ref={scrollRef} className="flex flex-col gap-1 max-h-[50vh] overflow-y-auto pr-1">
+                {rows.map((r) => {
+                  const me = user && r.user_id === user.id;
+                  const name = rowName(r);
+                  return (
+                    <li key={r.user_id}>
+                      <button
+                        type="button"
+                        onClick={() => setSelected(rowToPlayerSummary(r))}
+                        className={[
+                          'w-full flex items-center gap-1 text-sm font-mono rounded-md px-2 py-1.5 text-left active:opacity-70 transition-opacity',
+                          me ? 'bg-accent/10 border border-accent' : 'bg-bg',
+                        ].join(' ')}
+                      >
+                        {/* Sıra SUNUCUDAN geliyor (`k_lig_siralama.sira`), dizideki
+                            indeksten DEĞİL — "senin sıran" kısayolu ve Skor Kartı
+                            başlığı da aynı sayıyı aynı view'dan okuyor. İndeksten
+                            türetmek, eşit puanlılarda ikisinin ayrışmasına yol
+                            açıyordu (20 Ağustos 2026). */}
+                        <span
+                          className={[
+                            'w-6 font-bold shrink-0',
+                            r.sira === 1 ? 'text-gold' : r.sira <= 3 ? 'text-accent' : 'text-muted',
+                          ].join(' ')}
+                        >
+                          {r.sira}
+                        </span>
+                        <Avatar
+                          url={r.avatar_url}
+                          name={name}
+                          size={22}
+                          className="mr-1 shrink-0"
+                        />
+                        <span className="flex-1 min-w-0 flex items-center gap-1">
+                          <span className="truncate text-text">{name}</span>
+                          {/* Rütbe mührü — GÜNCEL puandan türetilir (düşmeli
+                              sürüm, bkz. leagueRank.ts), ismin hemen yanında.
+                              Bu boyda RankSeal kompakt çizer (iç halkasız,
+                              büyük harf) — 12 Ağustos 2026 okunurluk düzeltmesi. */}
+                          <RankSeal tier={tierFor(r.total_score)} size={18} className="shrink-0" />
+                        </span>
+                        {/* OHP düz gri, KALIN DEĞİL ve satırın kendi 14px'inden
+                            küçük (kullanıcı isteği) — asıl sıralama ölçütü olan
+                            "Puan"la görsel olarak yarışmasın diye. */}
+                        <span className="min-w-[34px] whitespace-nowrap text-right text-[11px] text-muted shrink-0">
+                          {formatOhp(r.avg_move_score)}
+                        </span>
+                        <span className="min-w-10 whitespace-nowrap text-right font-bold text-accent shrink-0">
+                          {r.total_score?.toLocaleString('tr-TR') ?? '—'}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+                {hasMore && (
+                  <li ref={sentinelRef} className="py-2 text-center">
+                    <span className="text-muted text-[10px] font-mono">
+                      {loadingMore ? 'Yükleniyor…' : ''}
+                    </span>
+                  </li>
+                )}
+              </ol>
+            )}
+
+            {user && !meInList && myRank && (
+              <>
+                <div className="flex items-center gap-2 px-2">
+                  <div className="flex-1 border-t border-dashed border-border" />
+                  <span className="text-[9px] text-muted font-mono uppercase tracking-[1px]">senin sıran</span>
+                  <div className="flex-1 border-t border-dashed border-border" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    user &&
+                    setSelected({
+                      id: user.id,
+                      username: profile?.username ?? null,
+                      first_name: profile?.first_name ?? null,
+                      last_name: profile?.last_name ?? null,
+                      display_name: profile?.display_name ?? null,
+                      avatar_url: profile?.avatar_url ?? null,
+                    })
+                  }
+                  className="w-full flex items-center gap-1 text-sm font-mono rounded-md px-2 py-1.5 text-left bg-accent/10 border border-accent active:opacity-70 transition-opacity"
+                >
+                  <span className="min-w-6 whitespace-nowrap font-bold text-muted shrink-0">{myRank.rank}</span>
+                  <span className="flex-1 text-text">Sen</span>
+                  <span className="min-w-[34px] whitespace-nowrap text-right text-[11px] text-muted shrink-0">
+                    {formatOhp(myRank.avg_move_score)}
+                  </span>
+                  <span className="min-w-10 whitespace-nowrap text-right font-bold text-accent shrink-0">
+                    {myRank.total_score.toLocaleString('tr-TR')}
+                  </span>
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {selected && (
         <PlayerScoreCard member={selected} onClose={() => setSelected(null)} />

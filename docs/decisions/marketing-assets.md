@@ -345,3 +345,13 @@ gidiyor; görseldeki rozet dokunulabilir sanılıyor). Çıktı:
 `marketing/meta-reklam/kelimeki-sade-kare-1080.png` +
 `kelimeki-sade-story-1080x1920.png`. Betik story'de güvenli bandı ölçmeye
 devam ediyor, rozet kontrolü bu varyantta tersine döner (rozet varsa düşer).
+
+
+## verify-store-badges neyi kilitler
+
+(2 Ekim 2026'da `CLAUDE.md`'nin komut listesinden taşındı — doküman boyutu
+bütçesi. Satır aynen:)
+
+```
+npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT YÜKSEKLİK (24 Eyl 2026 kullanıcı kararı; 15-24 Eyl arası eşit genişlikti — oranlar farklı, Apple 3.78:1 ↔ Play 3.37:1, ikisi birden eşit olamaz), yükseklik ≥40px, clear space yüksekliğin 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + "ana ekrana ekle" kutusu YOK (24 Eyl 2026'da kaldırıldı; telefonda tek çağrı mağaza şeridi) + rozet/şerit linki ziyaretçinin `?ref=` etiketini mağazaya taşıyor (`taggedStoreUrl`, 28 Eyl 2026 — Meta kampanyası)
+```

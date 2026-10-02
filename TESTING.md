@@ -1159,6 +1159,30 @@ gerekiyor).
       (`9.50` gibi) onun rakamları da 2 basamaklılarla ondalık noktasında
       hizalı kalmalı — değerler SAĞA yaslı, yalnızca başlık ortalı.
 
+## 10.5 k-lig — Beyin Ligi sekmesi (2 Ekim 2026)
+
+Gerçek bir oturum gerektirir (view yalnızca `authenticated`a açık).
+
+- [ ] **Pencere Puan Ligi ile açılır.** Hesap menüsünden k-lig'i aç: başlığın
+      altında iki sekme (🏆 Puan Ligi · 🧠 Beyin Ligi), seçili olan Puan
+      Ligi, liste ve metin dünküyle BİREBİR aynı. Kapatıp Beyin Ligi'ne
+      geçtikten sonra yeniden aç: yine Puan Ligi'nde açılmalı (son sekme
+      hatırlanmaz — kullanıcı kararı).
+- [ ] **Beyin Ligi listesi.** Sekmeye geç: sütunlar **Sıra · Oyuncu · Oyun ·
+      OHP**, puan ve rütbe mührü YOK. OHP büyükten küçüğe; listedeki herkesin
+      "Oyun" sayısı ≥ 5. Bir satırın OHP'si o oyuncunun Skor Kartı'ndaki
+      "Ortalama Hamle Puanı" ile AYNI olmalı (satıra dokun, kart açılır).
+      En altta not: *"YZ'ye karşı oynanan oyunlar da sayılır. OHP eşitse daha
+      çok oyun oynayan üstte."*
+- [ ] **Eşiğin altındaki hesap.** 5'ten az oyunu olan bir hesapla aç: listede
+      yoksun, altta "senin durumun" ayıracı ve *"… N oyun daha oyna, listeye
+      gir."* kartı + ilerleme çubuğu (`3 / 5 oyun` gibi). Bir oyun bitir,
+      pencereyi yeniden aç: N bir azalmalı.
+- [ ] **Eşiği geçmiş ama ilk sayfada olmayan hesap:** altta "senin sıran"
+      satırı; sayısı, listeyi kaydırıp kendini bulduğunda gördüğünle AYNI.
+- [ ] **Sekmeler arası gidip gelme** listeyi yeniden indirmemeli (Beyin
+      Ligi'nde aşağı kaydır → Puan Ligi → geri: kaydırma konumu duruyor).
+
 ## 11. Karşılama katmanı (18 Ağustos 2026)
 
 Otomatik testler (`npm run test`, `tests/smoke.spec.ts`, **18 test**) katmanın

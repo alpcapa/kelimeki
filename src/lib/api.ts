@@ -71,6 +71,8 @@ import type {
   IncomingFriendRequest,
   OutgoingFriendRequest,
   LeaderboardRow,
+  BeyinLigiRow,
+  MyBeyinLigiRank,
   LeagueReward,
   LocalGameSave,
   MyLeaderboardRank,
@@ -534,6 +536,50 @@ export async function fetchLeaderboard(limit = 10, offset = 0): Promise<Leaderbo
     return [];
   }
   return (data as LeaderboardRow[]) ?? [];
+}
+
+/**
+ * Beyin Ligi (k-lig'in OHP alt ligi, 2 Ekim 2026) — `fetchLeaderboard`in
+ * ikizi: sayfalı, sıra sunucudan (`beyin_ligi_siralama.sira`).
+ */
+export async function fetchBeyinLigi(limit = 10, offset = 0): Promise<BeyinLigiRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('beyin_ligi_siralama')
+    .select('*')
+    .order('sira', { ascending: true })
+    .range(offset, offset + limit - 1);
+  if (error) {
+    console.error('[Kelimeki] fetchBeyinLigi hatası:', error.message);
+    return [];
+  }
+  return ((data as BeyinLigiRow[]) ?? []).map((r) => ({
+    ...r,
+    sira: Number(r.sira),
+    ohp_games: Number(r.ohp_games),
+    avg_move_score: Number(r.avg_move_score),
+  }));
+}
+
+/**
+ * Oturum açanın Beyin Ligi durumu. Eşiğin altındaysa `rank` null döner ama
+ * OHP ve oyun sayısı yine gelir ("N oyun daha" kartı için).
+ */
+export async function fetchMyBeyinLigiRank(userId: string): Promise<MyBeyinLigiRank | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.rpc('my_beyin_ligi_rank', { p_user_id: userId });
+  if (error) {
+    console.error('[Kelimeki] fetchMyBeyinLigiRank hatası:', error.message);
+    return null;
+  }
+  const row = Array.isArray(data) ? data[0] : null;
+  return row
+    ? {
+        rank: row.rank == null ? null : Number(row.rank),
+        avg_move_score: row.avg_move_score == null ? null : Number(row.avg_move_score),
+        ohp_games: Number(row.ohp_games ?? 0),
+      }
+    : null;
 }
 
 /**

@@ -110,3 +110,61 @@ değil satırın en sağına itilirdi. `flex-1` sarmalayıcıya taşındı.
 
 **Terms/Privacy BİLİNÇLİ değişmedi:** yeni kişisel veri toplanmıyor — rütbe/ödül, zaten herkese görünür olan lig puanından (games) türetiliyor. **Flutter portu:** trigger sunucuda olduğundan mobil oyunlar ödülü otomatik kazanır. Bu satır bir dönem "banner/mühür UI'ı portta henüz YOK" diyordu — o, bu bölüm main tabanlı bir dalda yazıldığı ve `mobile/` orada mevcut olmadığı için doğruydu; **12 Ağustos 2026'da port `main`'e merge edilince geçersizleşti.** Port UI'ı da taşıdı (`mobile/CLAUDE.md`, Parça 61-62): mühür, kutlama/düşüş banner'ı, bilgi popup'ı, ilerleme çubuğu ve 9 kademelik tablo. Kademe/ödül tablosu hâlâ **ÜÇ KOPYA ELLE SENKRON** (SQL `_award_league_rewards` ↔ `leagueRank.ts` ↔ `league_rank.dart`) — biri değişirse üçü birden değişmeli. Elle test listeleri: `TESTING.md` bölüm 10 (web), `mobile/TESTING.md` bölüm 13 (mobil).
 
+
+
+## Beyin Ligi — k-lig'in ikinci alt ligi (2 Ekim 2026)
+
+**Kullanıcı isteği:** k-lig'in altında farklı alt ligler; şimdilik iki tane.
+**Puan Ligi** = bugünkü k-lig, HİÇ değişmedi. **Beyin Ligi** = puan yok,
+yalnızca OHP'ye (ortalama hamle puanı) göre sıralama. İkisi k-lig
+penceresinde başlığın altındaki iki sekme (🏆 / 🧠). Taslak önce artefakt
+olarak gösterildi, onaydan sonra kodlandı.
+
+**Kararlar (kullanıcı onayı, 2 Ekim 2026):**
+
+| Konu | Karar | Neden |
+|---|---|---|
+| Giriş eşiği | Hamle verisi olan **en az 5 oyun** | Eşiksiz liste canlıda ölçüldü: ilk iki sıra 1 ve 2 oyunluk hesaplardı (15.23 · 15.21). Öneri 10'du (23 kişi); kullanıcı 5'i seçti (26 kişi) |
+| Hangi oyunlar | Bugünkü OHP'nin AYNISI — **YZ oyunları dahil** | Skor Kartı / Puan Ligi OHP sütunu / Beyin Ligi aynı sayıyı göstersin; ikinci bir hesap yok |
+| Eşitlik | OHP (2 basamak) eşitse **OHP'li oyun sayısı çok olan** üstte, sonra `user_id` | Sayfalama kararlı kalsın (`k_lig_siralama` dersi) |
+| Rütbe mührü / ödül | **Yok** | Mühür toplam puandan türüyor; puansız listede yanıltıcı |
+| Açılış sekmesi | Hep **Puan Ligi**, son sekme hatırlanmaz | |
+| Alttaki not | *"YZ'ye karşı oynanan oyunlar da sayılır. OHP eşitse daha çok oyun oynayan üstte."* | Kullanıcı istedi |
+
+**Sunucu** (migration `20261002173357_beyin_ligi` + `…173422_beyin_ligi_grant_daralt`):
+- `leaderboard` view'ının SONUNA `ohp_games` sütunu eklendi (`count(*) filter
+  (where move_points_sum is not null)`). Neden ayrı bir toplama değil:
+  `profiles`in SELECT politikası "yalnızca kendin ya da admin" — ad/avatar'ı
+  üyelere açan tek yol `leaderboard` (sahibin haklarıyla koşuyor).
+  Uygulamadan önce/sonra `leaderboard` ve `k_lig_siralama`nın md5 özeti
+  alındı: **bayt-eş** (51 satır).
+- `beyin_ligi_siralama` view'ı (`security_invoker`, `k_lig_siralama`
+  deseni): sıra sunucuda, `ohp_games >= 5`.
+- `my_beyin_ligi_rank(uuid)` → `(rank, avg_move_score, ohp_games)`; eşiğin
+  altındaki oyuncu `rank = null` ile YİNE bir satır alır ("N oyun daha"
+  kartı için). Hiç oyunu olmayan için satır yok.
+- ⚠ **Grant tuzağı ölçüldü:** `grant select … to authenticated` Supabase'in
+  varsayılan ACL'sinin verdiği `arwdDxtm`yi SİLMİYOR — view yeni doğduğunda
+  `authenticated` yazma haklarıyla geliyordu. İkinci migration `revoke all`
+  + `grant select` ile `k_lig_siralama` ile aynı hâle (`authenticated=r`)
+  getirdi. `anon` hiçbir şey okuyamıyor; fonksiyonun `proacl`i de
+  `anon` içermiyor (okundu).
+
+**Eşik ÜÇ yerde** (SQL `ohp_games >= 5` · web `BEYIN_LIGI_MIN_GAMES`,
+`src/utils/beyinLigi.ts` · port `kBeyinLigiMinGames`,
+`util/beyin_ligi.dart`) — `npm run verify-beyin-ligi` (CI'da) kilitler.
+Port dosyası yokken o yarıyı atlar.
+
+**Web:** `Leaderboard.tsx` (sekmeler, `KLIG_TABS`) +
+`BeyinLigiList.tsx`. Beyin Ligi sekmesi ilk seçildiğinde bağlanır, sonra
+gizlenip bağlı kalır (gidip gelmek yeniden indirmez). İkonlar emoji
+(🏆/🧠) — başlıktaki 🏆 zaten emoji ve port aynı karakterleri çizebiliyor;
+taslaktaki çizim ikonlar bu yüzden kullanılmadı.
+
+**Terms/Privacy değişmedi:** gizlilik metni zaten "oyun istatistikleriniz
+k-lig aracılığıyla diğer KAYITLI kullanıcılara görünür" diyor; OHP ve oyun
+sayısı bu kapsamda, yeni veri toplanmıyor.
+
+**Port:** ayrı taslak PR, sürüm trenine biner (`leaderboard_modal.dart` +
+`beyin_ligi_list.dart` + `util/beyin_ligi.dart`). Elle test: `TESTING.md`
+§10.5.

@@ -35,6 +35,7 @@ npm run verify-fetch-my-games    # Oyun geçmişi: ağ hatası ↔ boş liste ay
 npm run verify-device-labels     # Admin cihaz tabloları: model KODU → marka öneki + cihaz→OS sürümü ağacı (canlıdan alınmış gerçek kodlar)
 npm run verify-admin-groups      # Admin AÇILIR tabloları: `?ref=` → kanal öneki (fbi Facebook DEĞİL) + (platform, sürüm) ağacı ve sürümün SAYISAL sıralaması
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ leagueRank.ts
+npm run verify-beyin-ligi        # Beyin Ligi giriş eşiği: `beyin_ligi_siralama` SQL'i ↔ beyinLigi.ts (↔ beyin_ligi.dart)
 npm run verify-league-points     # k-lig PUAN tablosu (seviyeye göre): league_points_for SQL ↔ leaguePoints.ts ↔ league_points.dart
 npm run verify-sql-engine-parity # motorun DÖRDÜNCÜ (SQL) kopyası ↔ src/ sabitleri ve hata metinleri
 npm run simulate-ai-levels       # YZ↔YZ kadran ölçümü (ROADMAP #23): üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal; `-- --oyun 200 --n 2,3,4`
@@ -52,7 +53,7 @@ npm run verify-error-messages    # kullanıcıya gösterilen hata metni: ham mak
 npm run verify-auth-user-identity # oturum kimliği: aynı içerik → aynı nesne + `null` olay DEPOYA sorulmadan çıkış sayılmaz + KAYNAK TARAMASI (hiçbir effect bağımlılığı bare `user` değil — port'un `AccountScope` değişmezi)
 npm run verify-sw-update-loop    # service worker güncellemesi: yeniden yükleme DÖNGÜSÜ kapısı (derleme değişmediyse ikinci kez yükleme YOK) + çağrı yerinin kaynak taraması
 npm run verify-invite-queue      # davet kuyruğu: token RPC'den ÖNCE alınıyor mu (çift çağrı) + geçici arızada geri konuyor mu + ÇİFT YOL duruyor mu
-npm run verify-store-badges      # mağaza rozetleri + Safari Smart App Banner (app-id tek kaynak: `storeLinks.ts` ↔ `index.html` ↔ `render.tsx`): App Store ÖNCE (Apple'ın yazılı kuralı), EŞİT YÜKSEKLİK (24 Eyl 2026 kullanıcı kararı; 15-24 Eyl arası eşit genişlikti — oranlar farklı, Apple 3.78:1 ↔ Play 3.37:1, ikisi birden eşit olamaz), yükseklik ≥40px, clear space yüksekliğin 1/4'ü, yayında olmayan rozet HİÇ çizilmiyor + "ana ekrana ekle" kutusu YOK (24 Eyl 2026'da kaldırıldı; telefonda tek çağrı mağaza şeridi) + rozet/şerit linki ziyaretçinin `?ref=` etiketini mağazaya taşıyor (`taggedStoreUrl`, 28 Eyl 2026 — Meta kampanyası)
+npm run verify-store-badges      # mağaza rozetleri + Smart App Banner (app-id tek kaynak `storeLinks.ts`): sıra/yükseklik/clear space/`?ref=` taşıma — kuralların tam listesi `docs/decisions/marketing-assets.md` → "verify-store-badges neyi kilitler"
 npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiketi doğru seviyede mi, önekler çakışıyor mu + iOS rozeti (`aps.badge`) ve sürüm kapısı (`ROZET_ILK_SURUM`)
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ
@@ -297,16 +298,11 @@ oturumun klonu sığ olabiliyor (`git fetch --unshallow`), ve Türkçe metinde
 tek başına yetmez. Doğrusu: commit'in getirdiği İÇERİĞİ `main`'de ara. Üç
 tuzağın tam tablosu ve vakası: `docs/decisions/supabase-ops.md`.
 
-⚠ **Dal silme — `workflow_dispatch` ARTIK AÇIK (1 Ekim 2026).** Kullanıcı
-Claude GitHub App'ine "Read and write access to actions" verdi; aynı gece
-`branch-cleanup.yml` `dry_run: true` ile ajan tarafından tetiklendi ve
-**204** döndü (koşu 36786438571, başarılı). Yani ajan HER `workflow_dispatch`i
-(dal temizliği, `ios-screenshots.yml`…) artık kendisi başlatabilir. Öncesi:
-4 Eylül'de üç kapı da kapalıydı, 10 Eylül'de dispatch 403 ölçülmüştü.
-Hâlâ geçerli olanlar: GitHub MCP'de ref silen araç yok; `git push --delete`
-yeniden denenmedi. Dal temizliğinde sıra aynı: önce `dry_run` AÇIK, listeyi
-kullanıcıya göster, onay gelince KAPALI ile tekrar — silme geri alınamaz,
-dispatch yetkisi onay adımını KALDIRMAZ.
+⚠ **Dal silme:** ajan `workflow_dispatch`i (dal temizliği,
+`ios-screenshots.yml`…) kendisi başlatabilir (1 Ekim 2026'dan beri). Sıra
+değişmez: önce `dry_run` AÇIK, listeyi kullanıcıya göster, onay gelince
+KAPALI ile tekrar — silme geri alınamaz. Yetkinin geçmişi:
+`docs/decisions/supabase-ops.md` → "Dal silme yetkisi".
 
 ## Belgeleri Güncel Tutma
 
@@ -551,7 +547,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | Sözlüğe kelime/anlam ekleme prosedürü + kelime listesi code-splitting | `docs/decisions/dictionary.md` |
 | Admin paneli (tüm sekmeler, rozet zinciri, büyüme grafikleri, kaynak hunisi, retention) | `docs/decisions/admin-panel.md` |
 | **Oyun kurallarının "neden böyle" kayıtları** (iletken hücre vakası, vergi terminolojisi, logo'nun "Çık" modalı) — kuralların KENDİSİ bu dosyada, gerekçeleri orada | `docs/decisions/game-rules.md` |
-| k-lig ödül & rütbe sistemi | `docs/decisions/league-system.md` |
+| k-lig ödül & rütbe sistemi + **Beyin Ligi** (OHP alt ligi, 2 Eki 2026) | `docs/decisions/league-system.md` |
 | Seviyeli YZ (Kolay · Normal · Zor): motor (top-N ↔ geniş arama), puan tablosu, ölçümler, parite kapıları, sözleşmeler, kadranlar + **motor sözleşmesinin tam dökümü** (15 Eyl 2026'da `CLAUDE.md`'den taşındı) | `docs/decisions/ai-levels.md` |
 | Arkadaşlık sistemi (istek/kabul, davet linki ve `/davet/:token` sayfası, işlemsel e-postalar) | `docs/decisions/friends.md` |
 | Canlı Oyun — Faz 2-3.6 (veri modeli, RPC'ler, zaman aşımı, cron) | `docs/decisions/live-game.md` |
@@ -608,7 +604,7 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, onboarding, csvExport, friendInvite, liveGameRequest, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, chatRules, webJourney, pageVisible, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, beyinLigi, onboarding, csvExport, friendInvite, liveGameRequest, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, chatRules, webJourney, pageVisible, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan
