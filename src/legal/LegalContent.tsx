@@ -60,12 +60,16 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
         <Section title="2. Toplanan Veriler">
           <P>Hesap oluştururken şu bilgileri topluyoruz:</P>
           <ul className="text-xs font-sans text-text leading-relaxed list-disc list-inside flex flex-col gap-1">
-            <li>Ad ve soyad</li>
+            <li>Ad ve soyad (isteğe bağlı)</li>
             <li>E-posta adresi</li>
             <li>Takma isim (zorunlu — oyunlarda ve k-lig'de herkese görünür)</li>
             <li>Cinsiyet (isteğe bağlı)</li>
             <li>Doğum tarihi (isteğe bağlı)</li>
             <li>Profil fotoğrafı (isteğe bağlı)</li>
+            <li>
+              Passkey kullanırsanız cihazınızın açık anahtarı ve passkey'in eklenme/son kullanım
+              tarihi (isteğe bağlı; yüz/parmak izi verisi cihazınızdan çıkmaz)
+            </li>
             <li>Pazarlama iletişimi onayı ve onay tarihi (isteğe bağlı)</li>
             <li>
               Hoş geldiniz mesajı, arkadaşlık isteği, oyun daveti ve süre uyarısı gibi işlemsel

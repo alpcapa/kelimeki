@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
 import { DeleteAccountModal } from './DeleteAccountModal';
+import { PasskeySection } from './PasskeySection';
 import { updateProfile, updateEmail, uploadAvatar, friendlyAuthMessage } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
@@ -396,6 +397,8 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
           kaydediyorum" akışının parçası gibi görünmesin.
           Flutter portu (`account_settings_modal.dart`) aynı yerleşimi
           taşıyor — biri değişirse öteki de. */}
+      <PasskeySection />
+
       <div className="mt-6 pt-4 border-t border-border flex flex-col gap-1">
         <button
           type="button"

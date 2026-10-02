@@ -199,6 +199,10 @@ Supabase Dashboard → Authentication → Sign In / Providers → **Email**
 | Prevent use of leaked passwords | kapalı (Pro plan özelliği) |
 | Email OTP expiration | 86400 sn (24 saat) |
 | Email OTP length | 8 hane |
+| **Passkeys (BETA)** — Authentication → Passkeys | **AÇIK** (2 Eki 2026) |
+| Relying Party Display Name | `Kelimeki` |
+| Relying Party ID | `kelimeki.com` |
+| Relying Party Origins | `https://kelimeki.com` (port gelince Android `android:apk-key-hash:…` eklenecek — ROADMAP #43) |
 
 ⚠ **Vaka:** istemciler aylarca **6** diyordu (web `minLength={6}` +
 `ResetPasswordModal` · port `reset_password_modal.dart` · `weak_password`
@@ -238,6 +242,20 @@ zaten kesin olan kanıt.
 
 
 ---
+
+### Vercel günlük dağıtım kotası (2 Ekim 2026, ölçüldü)
+
+Hobi (ücretsiz) planı **24 saatte 100 dağıtım** sınırı koyuyor (her dal push'u
+bir önizleme = bir dağıtım). 2 Ekim'de çok sayıda küçük PR'la doldu: Vercel
+PR'lara `Deployment rate limited — retry in 24 hours`
+(`api-deployments-free-per-day`) yazdı. Aynı gün #782'nin `main` merge'ü
+canlıya ÇIKMADI (sha `23fef7a`'da kaldı), sonraki #783 merge'ü çıktı — kota
+sınırında olunca bir commit'in sessizce atlanması da bu tabloya uyuyor.
+**Belirti:** canlı sha merge'den 2-3 dk sonra değişmiyor + PR'da kırmızı
+"Vercel" statüsü/`vercel[bot]` yorumu. **Yapılacak:** kod düzeltmesi YOK,
+yeniden deneme işe yaramaz; kota açılınca bir sonraki `main` commit'i ya da
+Vercel'de "Redeploy" canlıyı günceller — sonra sha'yı `curl` ile OKU.
+**Önlem:** bir günde çok PR açılacaksa küçük değişiklikleri tek dalda topla.
 
 ## "Bu dal merge edilmiş mi?" — üç tuzak (CLAUDE.md'den taşındı)
 
