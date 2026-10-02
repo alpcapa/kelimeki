@@ -108,6 +108,7 @@ src/
 │   ├── ResetPasswordModal.tsx   # şifre sıfırlama e-postasındaki bağlantıdan sonra yeni şifre belirleme
 │   ├── AccountSettingsModal.tsx # profil düzenleme (avatar, kullanıcı adı) + "Hesabımı Sil" girişi
 │   ├── DeleteAccountModal.tsx   # hesabı uygulama içinden silme onayı (açılışta kuru çalıştırma raporu)
+│   ├── PasskeySection.tsx       # Hesap Ayarları'ndaki "Passkey'ler" bölümü: liste · ekle · sil (ROADMAP #43)
 │   ├── ScoreCard.tsx            # oyuncu istatistikleri
 │   ├── ScoreStatsSection.tsx    # "Oyuncu / Oyun İstatistikleri" kutu ızgarası (ScoreCard ve PlayerScoreCard ortak)
 │   ├── RecentGamesSection.tsx   # Setup'taki "Yapay Zeka"/"Arkadaşınla" sekmelerinde son 5 biten oyun listesi

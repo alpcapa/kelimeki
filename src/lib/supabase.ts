@@ -24,7 +24,16 @@ export const isSupabaseConfigured = Boolean(url && anonKey);
 // akışta kurtarma token'ı URL'in kendisinde taşındığından bu bağımlılık ortadan kalkar.
 export const supabase: SupabaseClient | null = isSupabaseConfigured
   ? createClient(url!, anonKey!, {
-      auth: { persistSession: true, autoRefreshToken: true, flowType: 'implicit' },
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        flowType: 'implicit',
+        // Passkey (WebAuthn) API'leri auth-js'te "experimental" bayrağın
+        // arkasında; bayraksız `registerPasskey`/`signInWithPasskey` hata
+        // fırlatır. Sunucu tarafı Dashboard → Authentication → Passkeys
+        // (RP ID `kelimeki.com`, 2 Ekim 2026). ROADMAP #43.
+        experimental: { passkey: true },
+      },
     })
   : null;
 

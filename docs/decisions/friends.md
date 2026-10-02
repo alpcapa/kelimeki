@@ -8,6 +8,19 @@
 > `live-game.md` (Canlı oyun Faz 2-3.6, sunucu tarafı), `online-game-screen.md`
 > (`OnlineGameScreen.tsx` — canlı oyun ekranının UI kararları).
 
+## Arama soyadı da tarıyor (2 Ekim 2026, `search_users_for_friend_last_name`)
+
+Kayıt formunda ad/soyad isteğe bağlı oldu ve altına *"Aramalarda bulunmayı
+kolaylaştırır."* yazıldı (kullanıcı isteği). O gün arama yalnızca takma isim
++ **adı** tarıyordu — ölçüldü — kullanıcı: *"Soyadı da ekle"*. Artık
+`last_name` ve `first_name || ' ' || last_name` ("Alp Çapa" gibi tam ad) da
+eşleşiyor. **Sonuçta yine yalnızca takma isim görünür** (`name` sütunu
+değişmedi): soyad aramaya girer, ekrana çıkmaz. İmza/dönüş tipi aynı →
+`create or replace`; `proacl` öncesi ve sonrası okundu, aynı
+(authenticated + service_role, `anon` YOK). İstemci değişmedi, iki istemci de
+aynı RPC'yi çağırıyor → sunucu değişikliği ikisine birden anında yansıdı.
+`list_users_for_friend` (filtresiz liste) etkilenmez.
+
 ## Tek ekran: sekmesiz Arkadaşlar penceresi (27 Eylül 2026, ROADMAP #41)
 
 Kullanıcı: *"arkadaşlar modalı çok kötü ve kullanışsız. Onu da yeni konsepte

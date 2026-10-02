@@ -3,7 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PrivacyModal';
-import { signIn, signUp, sendPasswordReset, friendlyAuthMessage, logSignupEvent } from '../lib/api';
+import {
+  signIn,
+  signUp,
+  sendPasswordReset,
+  friendlyAuthMessage,
+  logSignupEvent,
+  passkeySupported,
+  signInWithPasskey,
+} from '../lib/api';
 import { journeyStep } from '../utils/webJourney';
 import { useAuth } from '../hooks/useAuth';
 import { useNicknameAvailability } from '../hooks/useNicknameAvailability';
@@ -36,6 +44,11 @@ function EyeIcon({ open }: { open: boolean }) {
     </svg>
   );
 }
+
+/** Supabase Auth "Minimum password length" — baştan beri 8 (port
+ *  `auth_modal.dart` `kMinPasswordLength` ile aynı sayı ve metin). */
+const MIN_PASSWORD_LENGTH = 8;
+const PASSWORD_TOO_SHORT = 'Şifre en az 8 karakter olmalı.';
 
 export function AuthModal({
   onClose,
@@ -123,6 +136,7 @@ export function AuthModal({
     setBusy(true);
     try {
       if (mode === 'login') {
+        if (password.length < MIN_PASSWORD_LENGTH) throw new Error(PASSWORD_TOO_SHORT);
         const { error } = await signIn(email, password);
         if (error) throw error;
         // Ziyaretçi yolculuğu: misafir oturumu girişle kapanır (girişli
@@ -136,12 +150,11 @@ export function AuthModal({
         setInfoTone('gold');
         setInfo('Şifre sıfırlama bağlantısı e-postana gönderildi.');
       } else {
-        if (!firstName.trim()) throw new Error('Ad zorunludur.');
-        if (!lastName.trim()) throw new Error('Soyad zorunludur.');
         if (!nickname.trim()) throw new Error('Takma isim zorunludur.');
         if (nicknameStatus === 'checking') throw new Error('Takma isim kontrol ediliyor, birazdan tekrar dene.');
         if (nicknameStatus === 'taken') throw new Error('Bu takma isim zaten kullanılıyor.');
         if (nicknameStatus === 'blocked') throw new Error('Bu takma isim kullanılamaz.');
+        if (password.length < MIN_PASSWORD_LENGTH) throw new Error(PASSWORD_TOO_SHORT);
         if (!termsAccepted) throw new Error('Kullanım Koşulları ve Gizlilik Politikası\'nı kabul etmelisiniz.');
         const birthDateIso = trDateToIso(birthDate);
         const { data, error } = await signUp(
@@ -194,6 +207,29 @@ export function AuthModal({
     }
   };
 
+  const passkeyLogin = async () => {
+    setError(null);
+    setInfo(null);
+    setBusy(true);
+    try {
+      const ok = await signInWithPasskey();
+      if (!ok) return; // kullanıcı vazgeçti
+      journeyStep('login');
+      await refreshProfile();
+      onClose();
+    } catch (err) {
+      setError(
+        friendlyAuthMessage(err) ??
+          friendlyErrorMessage(err, {
+            surface: 'passkey-giris',
+            fallback: 'Passkey ile giriş yapılamadı. E-posta ve şifrenle dene.',
+          }),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const inputCls =
     'w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-text outline-none focus:border-accent transition-colors';
   const labelCls = 'text-[9px] uppercase tracking-[1.5px] text-muted font-mono mb-1 block';
@@ -207,31 +243,13 @@ export function AuthModal({
       <form onSubmit={submit} className="flex flex-col gap-3">
         {mode === 'signup' && (
           <>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label className={labelCls}>Ad {required}</label>
-                <input
-                  className={inputCls}
-                  placeholder="Adın"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  autoComplete="given-name"
-                  required
-                />
-              </div>
-              <div className="flex-1">
-                <label className={labelCls}>Soyad {required}</label>
-                <input
-                  className={inputCls}
-                  placeholder="Soyadın"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  autoComplete="family-name"
-                  required
-                />
-              </div>
-            </div>
-
+            {/* Sıra (2 Ekim 2026, kullanıcı isteği): ZORUNLULAR üstte
+                (takma isim · e-posta · şifre), İSTEĞE BAĞLILAR altta, kendi
+                başlığının altında. Ad/soyad aynı gün zorunluluktan çıktı —
+                sunucu boşu zaten kabul ediyordu (`handle_new_user`
+                `coalesce(..., '')`, kolon varsayılanı `''`); e-postalar ve
+                ekranlar önce takma ismi kullanıyor. Port ikizi
+                `auth_modal.dart` (1.1.3 treni). */}
             <div>
               <label className={labelCls}>Takma isim {required}</label>
               {/* Boşluk kabul edilmiyor (tek kelime, özel karakterler serbest) —
@@ -284,40 +302,6 @@ export function AuthModal({
           />
         </div>
 
-        {mode === 'signup' && (
-          <>
-            <div>
-              <label className={labelCls}>Cinsiyet</label>
-              <select
-                className={inputCls}
-                value={gender}
-                onChange={(e) => setGender(e.target.value as Gender | '')}
-              >
-                <option value="">Belirtilmedi</option>
-                {GENDER_OPTIONS.map((g) => (
-                  <option key={g.value} value={g.value}>
-                    {g.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className={labelCls}>Doğum Tarihi (GG/AA/YYYY)</label>
-              <input
-                className={inputCls}
-                type="text"
-                inputMode="numeric"
-                value={birthDate}
-                onChange={(e) => setBirthDate(formatTrDateInput(e.target.value))}
-                placeholder="GG/AA/YYYY"
-                autoComplete="bday"
-                maxLength={10}
-              />
-            </div>
-          </>
-        )}
-
         {mode !== 'forgot' && (
           <div>
             {mode === 'signup' && <label className={labelCls}>Şifre {required}</label>}
@@ -329,7 +313,12 @@ export function AuthModal({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                // 8 = Supabase Auth "Minimum password length" (Dashboard →
+                // Authentication → Sign In / Providers → Email). Kullanıcı:
+                // BAŞTAN BERİ 8 → 8'den kısa şifreli hesap yok, girişte de
+                // kontrol edilir (2 Ekim 2026). `submit()` aynı kuralı Türkçe
+                // metinle de söylüyor (tarayıcının kendi balonu yetmez).
+                minLength={MIN_PASSWORD_LENGTH}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               />
               <button
@@ -340,6 +329,80 @@ export function AuthModal({
               >
                 <EyeIcon open={showPassword} />
               </button>
+            </div>
+            {mode === 'signup' && (
+              <p className="text-[10px] text-muted font-mono mt-1">En az 8 karakter olmalı.</p>
+            )}
+          </div>
+        )}
+
+        {mode === 'signup' && (
+          <div className="flex flex-col gap-3 pt-1">
+            <div className="flex items-center gap-2" aria-hidden="true">
+              <span className="h-px flex-1 bg-border" />
+              <span className="text-[9px] uppercase tracking-[1.5px] text-muted font-mono">
+                İsteğe bağlı
+              </span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1 min-w-0">
+                <label className={labelCls}>Ad</label>
+                <input
+                  className={inputCls}
+                  placeholder="Adın"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  autoComplete="given-name"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <label className={labelCls}>Soyad</label>
+                <input
+                  className={inputCls}
+                  placeholder="Soyadın"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  autoComplete="family-name"
+                />
+              </div>
+            </div>
+            {/* `search_users_for_friend` takma ismin yanında adı, soyadı ve
+                "ad soyad"ı da tarıyor (soyad 2 Ekim 2026, migration
+                `search_users_for_friend_last_name`); sonuçta yine yalnızca
+                takma isim görünür. */}
+            <p className="-mt-2 text-[10px] text-muted font-mono">
+              Aramalarda bulunmayı kolaylaştırır.
+            </p>
+            <div className="flex gap-2">
+              <div className="flex-1 min-w-0">
+                <label className={labelCls}>Cinsiyet</label>
+                <select
+                  className={inputCls}
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value as Gender | '')}
+                >
+                  <option value="">Belirtilmedi</option>
+                  {GENDER_OPTIONS.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1 min-w-0">
+                <label className={labelCls}>Doğum Tarihi</label>
+                <input
+                  className={inputCls}
+                  type="text"
+                  inputMode="numeric"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(formatTrDateInput(e.target.value))}
+                  placeholder="GG/AA/YYYY"
+                  autoComplete="bday"
+                  maxLength={10}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -374,7 +437,7 @@ export function AuthModal({
               >
                 Gizlilik Politikası
               </button>
-              'nı okudum ve kabul ediyorum.
+              'nı okudum ve kabul ediyorum. {required}
             </span>
           </label>
         )}
@@ -420,6 +483,28 @@ export function AuthModal({
                 : 'Bağlantı Gönder'}
         </button>
       </form>
+
+      {/* Passkey ile giriş (ROADMAP #43, 2 Ekim 2026). Yalnızca giriş
+          modunda ve WebAuthn destekleyen tarayıcıda; kayıtta YOK — passkey
+          hesabın yerine geçmez, Hesap Ayarları'ndan sonradan eklenir.
+          Kullanıcı OS penceresini kapatırsa hata değil, sessiz dönüş. */}
+      {mode === 'login' && passkeySupported() && (
+        <div className="mt-3 flex flex-col gap-2">
+          <div className="flex items-center gap-2" aria-hidden="true">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[9px] uppercase tracking-[1.5px] text-muted font-mono">veya</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void passkeyLogin()}
+            className="btn-raised bg-panel text-text border border-border rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
+          >
+            Passkey ile giriş
+          </button>
+        </div>
+      )}
 
       <div className="mt-3 flex flex-col gap-1.5">
         {mode === 'login' && (

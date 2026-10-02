@@ -99,7 +99,9 @@ taşıma").
 | | #40 · Huni v2 PR 2 | Cihaz kartları + Huni v2'nin mobil yarısı + Play Install Referrer | `main`'de (#659 + #709), 1.1.2 (831) incelemede. ✅ Admin'deki "Web" etiketleri Huni v2 + iki Cihaz kartından kaldırıldı (2 Eki; Ziyaretçi Yolculuğu'nunki tanım gereği kalır). Kalan: Play Data safety / App Store gizlilik beyanını cihaz modeli için kontrol et |
 | **Sıradaki mobil işler** | #26 | Web → mağaza yönlendirmesi: kalan iki satır | Android'de uygulaması yüklü misafir (`asset_statements`, mobil) · manifest `related_applications` (ÖLÇMEDEN AÇMA) |
 | | #42 | Uygulama içi puan isteği (App Store + Play) | **30 Eyl 2026, kullanıcı kararı: #41 (tasarım) yayına girdikten SONRAKİ bir trene.** App Store'da hiç yorum yok. Kendi uygulamana yorum yazmak YASAK (Review Guidelines 5.6, geliştirici hesabı riski), bu yüzden ilk yorumların yolu işletim sisteminin kendi penceresi: `in_app_review` paketi (iOS `SKStoreReviewController` — yılda en fazla 3 gösterim, Apple kısıtı; Android In-App Review API). Tetik bir KAZANÇ anında (ör. 3.-5. biten oyun ya da bir galibiyet sonrası), tanıtımda/ilk oyunda ASLA. Karar `utils/onboarding.ts` desenindeki gibi saf fonksiyonda. Web'de karşılığı yok (yalnızca port). Gelen yorumlara ASC'de `Kelimeki Destek` adıyla cevap verilebilir |
-| **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅; `admin_ai_balance` seviye kırılımı (Kolay ~%30 · Normal ~%51 · Zor ~%70) |
+| | #43 | Passkey ile giriş — PORT yarısı | **Sonraya** (kullanıcı, 2 Eki): web yarısı sahada denendikten sonra ayrı bir trene. Yerel passkey arayüzü + iOS Associated Domains (`webcredentials:`) + Android `assetlinks.json` (`get_login_creds`). §43 |
+| **Sıradaki web işi** | #43 | Passkey ile giriş — WEB yarısı | **2 Eki 2026:** sunucu açık (RP ID `kelimeki.com`), web kodu PR'da (giriş düğmesi + Hesap Ayarları bölümü). Gizlilik satırları web'de 2 Eki'de eklendi, **tarih 25 Eylül'de BIRAKILDI** (kullanıcı kararı: `legal_text_test` web↔port tarih eşliği `main`'i 10 gün kırmızı yapardı) — #779 12 Eki'de iki tarafın tarihini birlikte 12 Ekim yapar; merge'ünde `LegalContent.tsx` çakışması beklenir, #779'un hâli alınır. Kalan: canlıda elle tur (`TESTING.md`) |
+| **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅. **İlk okuma 2 Eki:** Normal hedefte (%48), Zor kişi içi Normal'den ~+13 puan güçlü → kullanıcı: *"Zor şimdilik yeterli"*. **Açık kalan yalnızca Kolay** (27 oyun %41, ~100 oyunda yeniden bak; >%40 ise top-N 4→5). `docs/decisions/ai-levels.md` §9 |
 | | #18 | `submit_move` puan hakemliği | GÖLGE FAZINDA (`move_shadow_diffs`) |
 | | #14 | Uzun modal listeleri tembel inşa | Eşiğe bağlı izleme |
 | **Güvenlik** | #21 | Advisor gürültüsü + Auth ayarları | Kısmen yapıldı |
@@ -323,6 +325,7 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 | #765 (2 Eki) | **Canlı oyun formu: 1. koltuk SEN, 4 kişide 2×2, numaralar hizalı, isim numaraya binmez** (web #764 ile hemen yayında) — #762'nin (koltuk numarası iPhone'da alta yapışıktı, taban çizgisi kuralı) üstüne kurulu, #762 buna katılıp kapandı | `ui/live/live_game_create_form.dart`. Parça 230 + 231 · cihaz: `mobile/TESTING.md` → "Canlı oyun formu" · kayıt `docs/decisions/onboarding.md` |
 | #772 (2 Eki) | **Setup'ın oyuncu sayısı satırı: "2 kişilik oyunda yapay zekaya karşı oynarsın." / "4 kişilik oyunda 3 yapay zekaya karşı oynarsın."** (kullanıcı isteği; web yarısı hemen yayında) | `ui/setup/setup_screen.dart` (tek metin) + `setup_screen_test` / `setup_cloud_test` beklentileri |
 | #774 (2 Eki) | **"Tüm oyuncular →" / "← Arkadaşlar" bağlantıları başlıkla aynı tipografide, mavi + kalın** (kullanıcı isteği; web yarısı #775 ile hemen yayında) | `ui/live/live_game_create_form.dart` (`_LinkButton`) + `ui/friends/friends_modal.dart`; `trUpper` ile büyük harf, sabitler web'le birebir |
+| #779 (2 Eki) | **Kayıt formu: ad/soyad isteğe bağlı, zorunlular üstte + Gizlilik "Ad ve soyad (isteğe bağlı)"** (kullanıcı isteği; web formu hemen yayında) | `ui/auth/auth_modal.dart` · `account_settings_modal.dart` · `legal_modals.dart` + web `src/legal/LegalContent.tsx` (Gizlilik tarihi 12 Ekim 2026 — `legal_text_test` web↔port tarih eşliği yüzünden İKİSİ BU PR'da). Cihaz: `TESTING.md` → "Ad/soyad İSTEĞE BAĞLI" |
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
@@ -1037,6 +1040,68 @@ gider); sürüm dondurması bitmeden başlama.
    etmeli — etmiyorsa yeşil olması hiçbir şey garanti etmez.
 
 ---
+
+## 43. Passkey ile giriş (WebAuthn) — **WEB KODU PR'da · PORT sonraya** (2 Ekim 2026)
+
+Kullanıcı Supabase Dashboard → Authentication → **Passkeys (BETA)** ekranını
+gösterip sordu: *"Bunu açarsak direkt açılıyor mu? … Şifre girmesine vb gerek
+kalmaz."* Cevap: **anahtar yalnızca sunucuyu açar**, istemcide passkey kodu
+yoktu. Kullanıcı: *"Web için planı çıkar, anahtarı açıyorum. Port tarafını
+roadmap'e ekle sonrası için."*
+
+**Beklenti:** passkey kaydın YERİNE geçmez — ilk hesap yine e-postayla açılır
+(e-posta onayı dahil), passkey sonradan eklenir ve sonraki girişleri şifresiz
+yapar. Şifre yedek olarak kalır (yeni cihaz / passkey kaybı).
+
+### Web planı (tek PR, `main`'e hemen)
+
+**SDK hazır, yükseltme gerekmez:** `@supabase/auth-js` 2.108.2'de
+`auth.registerPasskey()`, `auth.signInWithPasskey()` ve `auth.passkey.list/
+update/delete` var; ama `createClient(..., { auth: { experimental: { passkey:
+true } } })` bayrağı olmadan hepsi hata fırlatıyor (`src/lib/supabase.ts`).
+
+1. **Ön koşul (kullanıcı, Dashboard):** Passkeys anahtarı açık + Relying
+   Party ID `kelimeki.com`, izinli origin `https://kelimeki.com` (ekran açılınca
+   bu alanlar çıkıyorsa; ekran görüntüsüyle teyit). ⚠ RP ID `kelimeki.com`
+   olursa Vercel önizleme adresleri (`*.vercel.app`) passkey'i KULLANAMAZ —
+   test yalnızca canlıda (kelimeki.com) yapılabilir.
+2. **İstemci bayrağı** (`src/lib/supabase.ts`): `experimental.passkey: true`.
+3. **`src/lib/api.ts` sarmalayıcıları:** `registerPasskey`, `signInWithPasskey`,
+   `listPasskeys`, `deletePasskey` — hata metinleri `friendlyAuthMessage`/
+   `friendlyErrorMessage`ten geçer; kullanıcının iptal ettiği tören
+   (`NotAllowedError`) hata DEĞİL, sessiz dönüş.
+4. **Hesap Ayarları → "Passkey'ler" bölümü** (formun altında, hesap silmenin
+   üstünde): kayıtlı passkey listesi (ad · eklenme tarihi · Sil), "Passkey
+   ekle" düğmesi. Tarayıcı WebAuthn desteklemiyorsa
+   (`window.PublicKeyCredential` yok) bölüm hiç çizilmez.
+5. **Giriş penceresi:** "Passkey ile giriş" düğmesi (e-posta/şifrenin
+   altında, ikincil). Kayıt modunda YOK. Başarıda giriş yolu aynı:
+   `journeyStep('login')` + `refreshProfile()` + kapanış.
+6. **Ölçüm:** huni/telemetriye yeni olay EKLENMEZ ilk turda; Supabase Auth
+   loglarından sayılır. Gerekirse sonra.
+7. **Hukuki metin:** Gizlilik "Toplanan Veriler"e *"Passkey kullanırsanız
+   cihazınızın açık anahtarı (biyometrik veriniz cihazınızdan çıkmaz)"*
+   satırı. ⚠ Tarih değişirse `legal_text_test.dart` web↔port tarih eşliği
+   ister → metin değişikliği **port PR'ıyla birlikte** gider (kayıt formu
+   #779'daki desen) ya da port metni de aynı PR'da güncellenir ve PR trene
+   biner. Karar web PR'ı açılırken.
+8. **Belgeler:** `docs/decisions/components-account.md` (AuthModal +
+   AccountSettingsModal notu), `TESTING.md` (elle: Safari/iCloud Keychain,
+   Chrome/Google Password Manager, Android Chrome; ekle → çıkış → passkey ile
+   giriş → sil), `supabase-ops.md` → "Auth ayarları" tablosuna Passkeys satırı.
+
+**Doğrulanamayan:** WebAuthn töreni bu ortamda koşulamaz (gerçek doğrulayıcı
+gerekir) — `npm run lint` + bileşen render + elle `TESTING.md` maddesi.
+
+### Port yarısı — SONRAYA (kullanıcı kararı)
+
+Web sahada denendikten sonra ayrı bir trene. Gereken: Flutter passkey paketi
+(Android Credential Manager · iOS AuthenticationServices), iOS Associated
+Domains `webcredentials:kelimeki.com` + `apple-app-site-association`'a
+`webcredentials` bloğu, Android `assetlinks.json`'a
+`delegate_permission/common.get_login_creds`. `supabase_flutter`'ın passkey
+API'si o gün kontrol edilmeli (bugün `passkeys_platform_interface` yalnızca
+geçişli bağımlılık olarak `pubspec.lock`ta).
 
 ## 17. Google ile giriş/kayıt — **ERTELENDİ** (2 Eylül 2026) · Play Store'a girdikten SONRA
 
