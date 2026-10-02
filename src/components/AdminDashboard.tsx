@@ -339,7 +339,9 @@ const sectionTitleCls = 'text-[10px] font-mono font-bold uppercase tracking-[1px
  *   olmadan "uygulamada kimse X yapmıyor" diye yanlış okunuyordu.
  * - **Uygulama:** kaynak yalnızca uygulamada dolu (sürüm numarası, push token).
  * ⚠ Port bir gün bir "Web" kartının tablosuna yazmaya başlarsa etiketi
- * KALDIR (Huni v2'nin mobil yarısı, cihaz kartları — ROADMAP).
+ * KALDIR. Huni v2 ve iki Cihaz kartı 2 Ekim 2026'da kaldırıldı (1.1.2 sahada,
+ * uygulama satırları canlıda görüldü); "Web" yalnızca Ziyaretçi Yolculuğu'nda
+ * kaldı — o kart tanım gereği tarayıcı sekmesi sayıyor.
  * Kapsam denetimi: `docs/decisions/admin-panel.md` → "Web etiketi".
  */
 function PlatformTag({ kind }: { kind: 'web' | 'app' }) {
@@ -596,8 +598,11 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         <b>Üye</b> sütunu ve üyelerin oyun bitişleri, gizlilik metninin 24 Eylül 2026
         güncellemesi yayına girdiği günden itibaren yazılıyor. O günden ÖNCE hesap açan ya da
         girişliyken oyun bitiren cihazlar bu sütunlarda eksik kalır (o dönemde <b>Bitiren</b>
-        yalnızca misafir bitişlerini sayıyordu). Mobil uygulama bir sonraki güncellemesiyle
-        yazmaya başlayacak; şimdilik yalnızca web var.
+        yalnızca misafir bitişlerini sayıyordu). <b>Mobil uygulama 1.1.2'den itibaren</b> bu
+        tabloya yazıyor (Android 2 Ekim 2026, iOS App Store onayıyla); öncesinde yalnızca web
+        vardı. Uygulamayı yeni kuran cihaz <b>Mobil Uygulama</b> kanalına, güncelleyen eski
+        kullanıcı <b>Eski cihaz</b>'a düşer. Android'de sitedeki mağaza rozetinden kurulan
+        cihaz reklam etiketini taşır (<code>meta-karusel</code> gibi).
         Kendini bot olarak tanıtan tarayıcılar ve otomasyon araçları sayılmaz.
         <br />
         <br />
@@ -717,6 +722,9 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         tamamen anonim (`device_visits`, `user_id` taşımaz) kaydediliyor.{' '}
         <b>"App mi web mi" DEĞİL</b> — iOS/Android satırları o cihazlardaki TARAYICIYI da
         içeriyor, yalnız kurulu uygulamayı değil ("Sürüm Dağılımı" tablosu o soruyu yanıtlıyor).
+        Kurulu uygulama da 1.1.2'den beri (Android 2 Ekim 2026, iOS App Store onayıyla) günde
+        bir kez, girişliyken de bu tabloya yazıyor; aynı telefondaki uygulama ve tarayıcı
+        ayrı ziyaretçi sayılır.
         24 Ağustos 2026'dan ÖNCEki misafir-only ölçüm (eski "Cihaz" tablosu) veritabanında
         duruyor ama artık çizilmiyor.{' '}
         <b>Satıra tıkla, işletim sistemi SÜRÜMLERİ açılır</b> — "kaç kişi hâlâ eski Android'de?"
@@ -748,7 +756,7 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
     body: (
       <>
         "Cihaz" tablosunun bir alt kırılımı: aynı ziyaretçiler, bu kez <b>üreticiye</b> göre.
-        Marka, tarayıcının bildirdiği model KODUNDAN önekle okunuyor (<code>SM-</code> →
+        Marka, tarayıcının ya da uygulamanın (1.1.2'den beri) bildirdiği model KODUNDAN önekle okunuyor (<code>SM-</code> →
         Samsung); tanınmayan kod <b>Diğer</b>'e düşer — uydurma bir marka atanmaz.{' '}
         <b>Satıra tıkla, model kırılımı açılır</b> — ham üretici kodu (<code>SM-A176B</code>)
         olduğu gibi, hiçbir yorum katılmadan. Kod → pazarlama adı çevirisi ("Galaxy A17")
@@ -4109,7 +4117,6 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Huni v2 (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <PlatformTag kind="web" />
                     </span>
                     <FunnelV2Table
                       rows={funnelV2}
@@ -4146,7 +4153,6 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Cihaz (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <PlatformTag kind="web" />
                     </span>
                     <DeviceOsTable
                       rows={
@@ -4158,7 +4164,6 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
                   <div className="flex flex-col gap-2">
                     <span className={sectionTitleCls}>
                       Cihaz Markası (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                      <PlatformTag kind="web" />
                     </span>
                     <DeviceBrandTable
                       rows={deviceModels && brandBreakdown(deviceModels)}
