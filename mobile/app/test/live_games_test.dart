@@ -713,7 +713,7 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.byType(LiveGameCreateForm), findsOneWidget);
-      expect(find.text('RAKİPLERİN · 1/3'), findsOneWidget);
+      expect(find.text('OYUNCULAR · 2/4'), findsOneWidget);
       expect(
           find.descendant(
               of: find.byKey(const ValueKey('koltuk-dolu-0')),
@@ -727,7 +727,7 @@ void main() {
           .request(const LiveGameRequest(friendId: 'f1', playerCount: 2));
       await pumpTab(tester, s);
       await tester.pump();
-      expect(find.text('RAKİBİN'), findsOneWidget);
+      expect(find.text('OYUNCULAR'), findsOneWidget);
       expect(
           find.descendant(
               of: find.byKey(const ValueKey('koltuk-dolu-0')),
@@ -1236,13 +1236,123 @@ void main() {
 
     // ── ROADMAP #41 (web #663-#666, port 1 Ekim 2026) ──────────────────
 
+    // 2 Ekim 2026 — kullanıcı: *"Kişinin yanındaki sayı android'de ortalı,
+    // iphone'da alta yapışık"* (Parça 230) + aynı gün yeni düzen (Parça 231):
+    // *"isim numaranın üzerine binmemeli, … ile kesilmeli"* ve *"numaralar
+    // her durumda hizalı olmalı"*. Üç değişmez, iki yazı ölçeğinde:
+    //   1. Numara yuvası aynı sütundaki HER kartta aynı x'te (sen · dolu ·
+    //      boş · Yapay Zeka; ✕ olsun olmasın).
+    //   2. İsim yuvanın SOLUNDA biter (uzun isim "…" ile kesilir).
+    //   3. Rakam taban çizgisinden ortalanır: rakamın ortası yuvanın ortası.
+    for (final olcek in [1.0, 1.3]) {
+      testWidgets('koltuk numaraları hizalı, isim binmez (ölçek $olcek)',
+          (tester) async {
+        tester.platformDispatcher.textScaleFactorTestValue = olcek;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await pumpForm(tester, friendsRows: [
+          {
+            'friend_id': 'f1',
+            'name': 'Mehmet Ali Karadenizlioğulları Uzunisim',
+            'avatar_url': null
+          },
+          {'friend_id': 'f2', 'name': 'Esiner Yıldızoğlu', 'avatar_url': null},
+          {'friend_id': 'f3', 'name': 'Tuna', 'avatar_url': null},
+        ]);
+        Finder yuva(int k) => find.byKey(ValueKey('koltuk-numara-$k'));
+        // Taban çizgisi = metnin üstü + aynı stille ölçülen taban mesafesi
+        // (yerleşim dışında `getDistanceToBaseline` çağrılamıyor).
+        double tabanY(int k) {
+          final metin = find.descendant(
+              of: find.byKey(ValueKey('koltuk-filigran-$k')),
+              matching: find.byType(Text));
+          final t = tester.widget<Text>(metin);
+          final stil = DefaultTextStyle.of(tester.element(metin))
+              .style
+              .merge(t.style);
+          final tp = TextPainter(
+            text: TextSpan(text: t.data, style: stil),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          final taban =
+              tp.computeDistanceToActualBaseline(TextBaseline.alphabetic);
+          tp.dispose();
+          return tester.getTopLeft(metin).dy + taban;
+        }
+
+        Future<void> sec(String id) async {
+          await tester.ensureVisible(find.byKey(ValueKey('friend-$id')));
+          await tester.pump();
+          await tester.tap(find.byKey(ValueKey('friend-$id')));
+          await tester.pump();
+        }
+
+        void dogrula(String durum, {required bool iki}) {
+          final boy = iki ? 56.0 : 34.0;
+          final n = iki ? 2 : 4;
+          for (var k = 0; k < n; k++) {
+            final r = tester.getRect(yuva(k));
+            expect(tabanY(k) - r.center.dy, closeTo(0.35 * boy, 0.5),
+                reason: '$durum: $k. yuvada rakam ortalı');
+          }
+          // 1 — aynı sütun aynı x.
+          final sutunlar = iki
+              ? [
+                  [0, 1]
+                ]
+              : [
+                  [0, 2],
+                  [1, 3]
+                ];
+          for (final s in sutunlar) {
+            expect(tester.getRect(yuva(s[0])).left,
+                closeTo(tester.getRect(yuva(s[1])).left, 0.5),
+                reason: '$durum: ${s[0] + 1} ve ${s[1] + 1} numarası hizalı');
+          }
+        }
+
+        await tester.pump();
+        dogrula('2 kişi boş', iki: true);
+        await sec('f1');
+        dogrula('2 kişi dolu', iki: true);
+        // 2 — uzun isim yuvanın solunda biter.
+        final isim = find.descendant(
+            of: find.byKey(const ValueKey('koltuk-dolu-0')),
+            matching: find.text('Mehmet Ali Karadenizlioğulları Uzunisim'));
+        expect(tester.getRect(isim).right,
+            lessThanOrEqualTo(tester.getRect(yuva(1)).left + 0.5),
+            reason: 'isim numaranın üzerine binmemeli');
+        expect(tester.widget<Text>(isim).overflow, TextOverflow.ellipsis);
+
+        await tester.ensureVisible(find.text('4 KİŞİ'));
+        await tester.pump();
+        await tester.tap(find.text('4 KİŞİ'));
+        await tester.pump();
+        dogrula('4 kişi boş', iki: false);
+        await sec('f1');
+        await sec('f2');
+        dogrula('4 kişi 2 arkadaş + Yapay Zeka', iki: false);
+      });
+    }
+
     testWidgets(
         'koltuk kartları: renkli dolu koltuk + filigran, ✕ boşaltır; '
         '4 kişide 2 arkadaşla 3. koltuk "Yapay Zeka"', (tester) async {
       await pumpForm(tester);
-      // 2 kişi: tek yatay boş koltuk.
-      expect(find.text('RAKİBİN'), findsOneWidget);
+      // 2 kişi: 1. koltuk SEN (2 Ekim 2026, kullanıcı) — ✕ yok, adın ve
+      // numaran; altında tek boş koltuk.
+      expect(find.text('OYUNCULAR'), findsOneWidget);
+      final ben = find.byKey(const ValueKey('koltuk-ben'));
+      expect(ben, findsOneWidget);
+      expect(find.descendant(of: ben, matching: find.text('1')),
+          findsOneWidget);
+      expect(find.descendant(of: ben, matching: find.byIcon(Icons.close)),
+          findsNothing);
+      expect((tester.widget<Container>(ben).decoration! as BoxDecoration)
+          .color, playerColors[0].tint);
       expect(find.text(kLiveFormEmptySeat2), findsOneWidget);
+      expect(tester.getRect(ben).bottom,
+          lessThan(tester.getRect(find.byKey(const ValueKey('koltuk-bos-0'))).top),
+          reason: 'senin koltuğun boş koltuğun ÜSTÜNDE');
       await tester.tap(find.byKey(const ValueKey('friend-f1')));
       await tester.pump();
       final dolu = find.byKey(const ValueKey('koltuk-dolu-0'));
@@ -1260,16 +1370,26 @@ void main() {
       await tester.pump();
       expect(find.byKey(const ValueKey('koltuk-dolu-0')), findsNothing);
 
-      // 4 kişi: üç dikey koltuk; 2 arkadaşla üçüncüsü Yapay Zeka.
+      // 4 kişi: 2×2 (1-2 üstte, 3-4 altta); 2 arkadaşla 4. koltuk Yapay Zeka.
       await tester.tap(find.text('4 KİŞİ'));
       await tester.pump();
-      expect(find.text('RAKİPLERİN · 0/3'), findsOneWidget);
+      expect(find.text('OYUNCULAR · 1/4'), findsOneWidget);
+      final r1 = tester.getRect(find.byKey(const ValueKey('koltuk-ben')));
+      final r2 = tester.getRect(find.byKey(const ValueKey('koltuk-bos-0')));
+      final r3 = tester.getRect(find.byKey(const ValueKey('koltuk-bos-1')));
+      final r4 = tester.getRect(find.byKey(const ValueKey('koltuk-bos-2')));
+      expect(r2.top, closeTo(r1.top, 0.5));
+      expect(r2.left, greaterThan(r1.right));
+      expect(r3.left, closeTo(r1.left, 0.5));
+      expect(r3.top, greaterThan(r1.bottom));
+      expect(r4.top, closeTo(r3.top, 0.5));
+      expect(r4.left, closeTo(r2.left, 0.5));
       expect(find.text(kLiveFormAiNote), findsOneWidget);
       expect(find.text(kLiveFormEmptySeat4), findsNWidgets(3));
       await tester.tap(find.byKey(const ValueKey('friend-f1')));
       await tester.tap(find.byKey(const ValueKey('friend-f2')));
       await tester.pump();
-      expect(find.text('RAKİPLERİN · 2/3'), findsOneWidget);
+      expect(find.text('OYUNCULAR · 3/4'), findsOneWidget);
       expect(
           find.descendant(
               of: find.byKey(const ValueKey('koltuk-bos-2')),
