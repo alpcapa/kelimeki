@@ -790,6 +790,12 @@ uydurma bir Türkçe cümleyle gizlemek hata ayıklamayı imkânsız kılardı.
       (o bağlantı töreni açar). Üç ortam: iPhone Safari (iCloud Keychain), masaüstü
       Chrome, Android Chrome. WebAuthn'suz tarayıcıda iki yüzey de HİÇ
       çizilmez.
+- [ ] **Çıkış yalnızca O cihazı kapatır (web, 2 Ekim 2026).** İki cihazda
+      (ör. iPad + Android Chrome) aynı hesapla girişli ol. Android'de Çıkış
+      Yap → iPad'de sayfayı YENİLEMEDEN Hesap Ayarları → "Passkey'ler" listesi
+      dolu gelmeli, PASSKEY EKLE "Auth session missing!" VERMEMELİ, iPad
+      girişli kalmalı. (Öncesi: web çıkışı supabase-js varsayılanıyla
+      `global`ti, öteki cihazların oturumu sunucuda siliniyordu.)
 - [ ] **Şifre en az 8 karakter (web 2 Ekim 2026, uygulama 1.1.3).** Kayıtta
       şifrenin altında "En az 8 karakter olmalı."; 7 karakterle KAYIT OL →
       tarayıcı/form engeller. Şifre sıfırlamada 7 karakter → "Yeni şifre en
