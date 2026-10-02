@@ -187,6 +187,8 @@ void main() {
     await submitExpect('E-posta zorunludur.');
     await tester.enterText(fieldByLabel('E-POSTA').first, 'a@b.co');
     await submitExpect('Şifre zorunludur.');
+    await tester.enterText(fieldByLabel('ŞİFRE').first, 'sifre12');
+    await submitExpect('Şifre en az 8 karakter olmalı.');
     await tester.enterText(fieldByLabel('ŞİFRE').first, 'sifre123');
     await submitExpect(
         "Kullanım Koşulları ve Gizlilik Politikası'nı kabul etmelisiniz.");

@@ -33,6 +33,12 @@ import '../../util/error_message.dart';
 
 import '../../data/funnel_api.dart';
 
+/// Supabase Auth "Minimum password length" (Dashboard; baştan beri 8 —
+/// `docs/decisions/supabase-ops.md` → "Auth ayarları"). Web `AuthModal.tsx`
+/// ile aynı sayı ve metin.
+const int kMinPasswordLength = 8;
+const String kPasswordTooShort = 'Şifre en az 8 karakter olmalı.';
+
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -268,6 +274,11 @@ class _AuthModalState extends State<AuthModal> {
         if (email.isEmpty || password.isEmpty) {
           throw const _FormError('E-posta ve şifre zorunludur.');
         }
+        // Supabase'in alt sınırı baştan beri 8 (kullanıcı, 2 Ekim 2026):
+        // 8'den kısa şifreli hesap YOK, girişte de sunucuya gitmeden söyle.
+        if (password.length < kMinPasswordLength) {
+          throw const _FormError(kPasswordTooShort);
+        }
         await widget.auth.signIn(email, password);
         if (mounted) Navigator.of(context).pop();
         return;
@@ -305,6 +316,9 @@ class _AuthModalState extends State<AuthModal> {
         throw const _FormError('E-posta zorunludur.');
       }
       if (_password.text.isEmpty) throw const _FormError('Şifre zorunludur.');
+      if (_password.text.length < kMinPasswordLength) {
+        throw const _FormError(kPasswordTooShort);
+      }
       if (!_termsAccepted) {
         throw const _FormError(
             "Kullanım Koşulları ve Gizlilik Politikası'nı kabul etmelisiniz.");
@@ -433,7 +447,7 @@ class _AuthModalState extends State<AuthModal> {
               // web `AuthModal.tsx` ile aynı not, yalnızca kayıtta.
               if (signup) ...[
                 const SizedBox(height: 4),
-                const Text('En az 8 karakter olmalı.',
+                const Text('En az $kMinPasswordLength karakter olmalı.',
                     style: TextStyle(
                         fontFamily: 'SpaceMono', fontSize: 10, color: _muted)),
               ],
