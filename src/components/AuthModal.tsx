@@ -10,6 +10,7 @@ import {
   friendlyAuthMessage,
   logSignupEvent,
   passkeySupported,
+  passkeyKnownOnDevice,
   signInWithPasskey,
 } from '../lib/api';
 import { journeyStep } from '../utils/webJourney';
@@ -207,7 +208,10 @@ export function AuthModal({
     }
   };
 
+  // İşaretsiz cihazda ilk dokunuş töreni AÇMAZ, açıklama gösterir.
+  const [passkeyHint, setPasskeyHint] = useState(false);
   const passkeyLogin = async () => {
+    setPasskeyHint(false);
     setError(null);
     setInfo(null);
     setBusy(true);
@@ -498,11 +502,29 @@ export function AuthModal({
           <button
             type="button"
             disabled={busy}
-            onClick={() => void passkeyLogin()}
+            onClick={() => {
+              if (passkeyKnownOnDevice()) void passkeyLogin();
+              else setPasskeyHint(true);
+            }}
             className="btn-raised bg-panel text-text border border-border rounded-md py-2.5 text-xs font-bold uppercase tracking-[1.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
           >
             Passkey ile giriş
           </button>
+          {passkeyHint && (
+            <div className="flex flex-col gap-1 text-center">
+              <p className="text-xs text-muted font-mono">
+                Passkey'i giriş yaptıktan sonra Hesap Ayarları'ndan ekleyebilirsin.
+              </p>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void passkeyLogin()}
+                className="self-center text-[11px] text-accent font-mono underline active:opacity-70 disabled:opacity-50"
+              >
+                Bu cihazda passkey'im var, devam et
+              </button>
+            </div>
+          )}
         </div>
       )}
 

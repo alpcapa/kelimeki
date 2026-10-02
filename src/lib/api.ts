@@ -3669,11 +3669,42 @@ function passkeyError(err: unknown): Error {
   return err instanceof Error ? err : new Error(String(err));
 }
 
+/**
+ * "Bu cihazda passkey var" işareti (localStorage). Tarayıcı, sitede passkey
+ * olup olmadığını önceden SÖYLEMEZ (gizlilik); işaret yokken "Passkey ile
+ * giriş" doğrudan OS penceresini açınca passkey'i olmayan kişi "You don't have
+ * any passwords or passkeys…" diye kafa karıştıran bir ekrana düşüyordu
+ * (kullanıcı, 2 Ekim 2026). İşaret yalnızca bir kolaylık: yoksa giriş
+ * penceresi önce açıklama gösterir, "devam et" yine töreni başlatır
+ * (iCloud/Google ile başka cihazdan senkronlanmış passkey için).
+ */
+const PASSKEY_DEVICE_KEY = 'kelimeki.passkeyOnDevice';
+
+export function passkeyKnownOnDevice(): boolean {
+  try {
+    return localStorage.getItem(PASSKEY_DEVICE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function setPasskeyKnownOnDevice(on: boolean): void {
+  try {
+    if (on) localStorage.setItem(PASSKEY_DEVICE_KEY, '1');
+    else localStorage.removeItem(PASSKEY_DEVICE_KEY);
+  } catch {
+    /* özel pencere / kapalı depolama — işaretsiz çalışır */
+  }
+}
+
 /** Passkey ile giriş. `false` = kullanıcı vazgeçti (hata değil). */
 export async function signInWithPasskey(): Promise<boolean> {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
   const { error } = await supabase.auth.signInWithPasskey();
-  if (!error) return true;
+  if (!error) {
+    setPasskeyKnownOnDevice(true);
+    return true;
+  }
   if (isPasskeyCancel(error)) return false;
   throw passkeyError(error);
 }
@@ -3682,7 +3713,10 @@ export async function signInWithPasskey(): Promise<boolean> {
 export async function registerPasskey(): Promise<boolean> {
   if (!supabase) throw new Error('Supabase yapılandırılmadı.');
   const { error } = await supabase.auth.registerPasskey();
-  if (!error) return true;
+  if (!error) {
+    setPasskeyKnownOnDevice(true);
+    return true;
+  }
   if (isPasskeyCancel(error)) return false;
   throw passkeyError(error);
 }
@@ -3691,6 +3725,8 @@ export async function listPasskeys(): Promise<PasskeyItem[]> {
   if (!supabase) return [];
   const { data, error } = await supabase.auth.passkey.list();
   if (error) throw error;
+  // Hesapta hiç passkey kalmadıysa cihaz işaretini de kaldır.
+  if ((data ?? []).length === 0) setPasskeyKnownOnDevice(false);
   return data ?? [];
 }
 
