@@ -55,6 +55,11 @@ export const PUAN_LIGI_INTRO =
   'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır. ' +
   'Puanlar eşitse OHP yüksek olan üstte.';
 
+// Beyin Ligi'nin alt notunun (`BEYIN_LIGI_NOTE`) Puan Ligi eşi — aynı yer,
+// aynı stil (2 Ekim 2026, kullanıcı isteği). Eşitlik kuralı zaten girişte.
+// Port ikizi: `leaderboard_modal.dart` (`kPuanLigiNote`).
+export const PUAN_LIGI_NOTE = "YZ'ye karşı oynanan oyunlar da sayılır.";
+
 const OHP_HINT =
   'Ortalama Hamle Puanı tüm oyunlarda yapılan tüm hamlelerin ortalamasıdır. ' +
   'Puanlar eşitse OHP yüksek olan üstte sıralanır.';
@@ -380,6 +385,8 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
                 </button>
               </>
             )}
+
+            <p className="text-[10px] text-muted font-mono text-center leading-relaxed pt-1">{PUAN_LIGI_NOTE}</p>
           </div>
         )}
       </div>
