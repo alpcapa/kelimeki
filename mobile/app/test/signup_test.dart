@@ -80,7 +80,7 @@ void main() {
     ));
     await tester.pump();
     // login → signup moduna geç.
-    await tester.tap(find.textContaining('Kayıt ol', findRichText: true));
+    await tester.tap(find.textContaining('KAYIT OL', findRichText: true));
     await tester.pump();
     expect(find.text('KAYIT'), findsOneWidget); // KModal başlığı
   }
@@ -97,7 +97,7 @@ void main() {
     // tekil kullanıcıyı GA4 tarafında kendisi ayrıştırır).
     await tester.tap(find.textContaining('Giriş yap', findRichText: true));
     await tester.pump();
-    await tester.tap(find.textContaining('Kayıt ol', findRichText: true));
+    await tester.tap(find.textContaining('KAYIT OL', findRichText: true));
     await tester.pump();
     expect(fake.names, ['signup_started', 'signup_started']);
   });
@@ -256,7 +256,7 @@ void main() {
       ),
     ));
     await tester.pump();
-    await tester.tap(find.textContaining('Kayıt ol', findRichText: true));
+    await tester.tap(find.textContaining('KAYIT OL', findRichText: true));
     await tester.pump();
 
     final f = fieldByLabel('DOĞUM TARİHİ').first;
