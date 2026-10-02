@@ -190,7 +190,7 @@ export function AccountSettingsModal({ onClose }: AccountSettingsModalProps) {
   const inputCls =
     'w-full bg-bg border border-border rounded-md px-3 py-2 text-sm text-text outline-none focus:border-accent transition-colors';
   const labelCls =
-    'text-[9px] uppercase tracking-[1.5px] text-muted font-mono mb-1 block';
+    'text-[9px] uppercase tracking-[1.5px] text-muted font-mono font-bold mb-1 block';
   const required = <span className="text-red">*</span>;
 
   return (

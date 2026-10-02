@@ -149,7 +149,7 @@ export function DeleteAccountModal({ onClose }: DeleteAccountModalProps) {
 
         {rapor && (
           <div>
-            <label className="block font-mono text-[10px] uppercase tracking-[1px] text-muted mb-1">
+            <label className="block font-mono font-bold text-[10px] uppercase tracking-[1px] text-muted mb-1">
               Onaylamak için <span className="text-red">{ONAY_KELIMESI}</span> yaz
             </label>
             <input
