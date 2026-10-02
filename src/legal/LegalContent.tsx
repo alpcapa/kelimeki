@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 25 Eylül 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 12 Ekim 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
@@ -60,7 +60,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
         <Section title="2. Toplanan Veriler">
           <P>Hesap oluştururken şu bilgileri topluyoruz:</P>
           <ul className="text-xs font-sans text-text leading-relaxed list-disc list-inside flex flex-col gap-1">
-            <li>Ad ve soyad</li>
+            <li>Ad ve soyad (isteğe bağlı)</li>
             <li>E-posta adresi</li>
             <li>Takma isim (zorunlu — oyunlarda ve k-lig'de herkese görünür)</li>
             <li>Cinsiyet (isteğe bağlı)</li>

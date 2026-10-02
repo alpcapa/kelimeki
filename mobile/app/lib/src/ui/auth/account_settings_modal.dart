@@ -274,14 +274,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     final auth = widget.auth;
     final profile = auth.profile;
 
-    if (_firstName.text.trim().isEmpty) {
-      setState(() => _error = 'Ad zorunludur.');
-      return;
-    }
-    if (_lastName.text.trim().isEmpty) {
-      setState(() => _error = 'Soyad zorunludur.');
-      return;
-    }
+    // Ad/soyad 2 Ekim 2026'dan beri İSTEĞE BAĞLI (kayıt formuyla aynı karar;
+    // web `AccountSettingsModal.tsx` ile birlikte).
     if (_nickname.text.trim().isEmpty) {
       setState(() => _error = 'Takma isim zorunludur.');
       return;

@@ -101,7 +101,8 @@ void main() {
         tester.widget<Checkbox>(find.byType(Checkbox).at(1)).value, isFalse);
   });
 
-  testWidgets('doğrulama sırası: Ad → Soyad → Takma isim → doğum tarihi',
+  // Ad/soyad 2 Ekim 2026'dan beri İSTEĞE BAĞLI — boşken de geçer.
+  testWidgets('doğrulama sırası: Takma isim → doğum tarihi (ad/soyad boş)',
       (tester) async {
     final auth = AuthService.fake(user: fakeUser('me'));
     await pumpSettings(tester, auth, checker: (_) async => NicknameStatus.ok);
@@ -112,12 +113,6 @@ void main() {
       expect(find.text(msg), findsOneWidget);
     }
 
-    await submitExpect('Ad zorunludur.');
-    await tester.enterText(field('first-name'), 'Deniz');
-    await tester.pump();
-    await submitExpect('Soyad zorunludur.');
-    await tester.enterText(field('last-name'), 'Can');
-    await tester.pump();
     await submitExpect('Takma isim zorunludur.');
 
     await tester.enterText(field('nickname'), 'denizcan');

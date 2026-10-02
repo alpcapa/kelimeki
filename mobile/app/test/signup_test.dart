@@ -160,11 +160,13 @@ void main() {
     expect(find.text('Bu takma isim kullanımda.'), findsNothing);
     await tester.tap(find.text('KAYIT OL'), warnIfMissed: false);
     await tester.pump();
-    // Buton pasif: form doğrulaması hiç çalışmadı ("Ad zorunludur." yok).
-    expect(find.text('Ad zorunludur.'), findsNothing);
+    // Buton pasif: form doğrulaması hiç çalışmadı (ilk hata — e-posta — yok).
+    expect(find.text('E-posta zorunludur.'), findsNothing);
   });
 
-  testWidgets('doğrulama sırası web ile aynı (Ad → ... → koşullar)',
+  // Ad/soyad 2 Ekim 2026'dan beri İSTEĞE BAĞLI: aşağıdaki akış onları HİÇ
+  // doldurmadan signUp'a kadar ulaşır — "boş ad engellemez"in kanıtı.
+  testWidgets('doğrulama sırası web ile aynı (Takma isim → ... → koşullar), ad/soyad boş',
       (tester) async {
     await pumpSignup(tester, checker: (_) async => NicknameStatus.ok);
 
@@ -175,10 +177,6 @@ void main() {
       expect(find.text(msg), findsOneWidget, reason: 'beklenen hata: $msg');
     }
 
-    await submitExpect('Ad zorunludur.');
-    await tester.enterText(fieldByLabel('AD').first, 'Alp');
-    await submitExpect('Soyad zorunludur.');
-    await tester.enterText(fieldByLabel('SOYAD').first, 'Çapa');
     await submitExpect('Takma isim zorunludur.');
 
     await tester.enterText(fieldByLabel('TAKMA İSİM').first, 'alp42');
