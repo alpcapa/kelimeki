@@ -96,7 +96,7 @@ taşıma").
 | **1.1.2'de — incelemede, SAHAYA İNİNCE arşive** | #25 | iOS simgesinde rozet SAYISI | `main`'de (#647, kesim 1 Eki); 1.1.2 (831) iki mağazada incelemede. Beş bildirim fonksiyonu yeni `_shared/push.ts` ile deploy edildi (`verify_jwt` korundu) |
 | | #34 | Canlı sohbet okundu bilgisi — port yarısı | `main`'de (kesim 1 Eki), 1.1.2 (831) incelemede |
 | | #35 · #30 | Kayıt Hunisi port yarısı · `tutorial_events` `anon_id` | `main`'de (#651), migration canlıda (`20261001104454`); 1.1.2 (831) incelemede. #30'un cihaz paydası kararı sahadaki pay ölçülünce |
-| | #40 · Huni v2 PR 2 | Cihaz kartları + Huni v2'nin mobil yarısı + Play Install Referrer | `main`'de (#659 + #709), 1.1.2 (831) incelemede. ⚠ **Sahaya inince:** admin'deki dört `PlatformTag kind="web"`i kaldır (`AdminDashboard.tsx` ~4098-4161) ve Play Data safety / App Store gizlilik beyanını cihaz modeli için kontrol et |
+| | #40 · Huni v2 PR 2 | Cihaz kartları + Huni v2'nin mobil yarısı + Play Install Referrer | `main`'de (#659 + #709), 1.1.2 (831) incelemede. ✅ Admin'deki "Web" etiketleri Huni v2 + iki Cihaz kartından kaldırıldı (2 Eki; Ziyaretçi Yolculuğu'nunki tanım gereği kalır). Kalan: Play Data safety / App Store gizlilik beyanını cihaz modeli için kontrol et |
 | **Sıradaki mobil işler** | #26 | Web → mağaza yönlendirmesi: kalan iki satır | Android'de uygulaması yüklü misafir (`asset_statements`, mobil) · manifest `related_applications` (ÖLÇMEDEN AÇMA) |
 | | #42 | Uygulama içi puan isteği (App Store + Play) | **30 Eyl 2026, kullanıcı kararı: #41 (tasarım) yayına girdikten SONRAKİ bir trene.** App Store'da hiç yorum yok. Kendi uygulamana yorum yazmak YASAK (Review Guidelines 5.6, geliştirici hesabı riski), bu yüzden ilk yorumların yolu işletim sisteminin kendi penceresi: `in_app_review` paketi (iOS `SKStoreReviewController` — yılda en fazla 3 gösterim, Apple kısıtı; Android In-App Review API). Tetik bir KAZANÇ anında (ör. 3.-5. biten oyun ya da bir galibiyet sonrası), tanıtımda/ilk oyunda ASLA. Karar `utils/onboarding.ts` desenindeki gibi saf fonksiyonda. Web'de karşılığı yok (yalnızca port). Gelen yorumlara ASC'de `Kelimeki Destek` adıyla cevap verilebilir |
 | **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅; `admin_ai_balance` seviye kırılımı (Kolay ~%30 · Normal ~%51 · Zor ~%70) |
@@ -356,8 +356,8 @@ adı ona çevrildi, `proacl` öncesiyle aynı.
 **Kalan:** (1) onaylar gelince yayın — Apple önce gelirse beklemeden
 ("YAYIN SIRASI"); (2) yarım oyun hatırlatması (#731) cihazda HENÜZ
 GÖRÜLMEDİ — ilk bildirim 3 Ekim 19:00 bekleniyor (`mobile/TESTING.md` §34);
-(3) sahaya inince bu bölüm + yukarıdaki "1.1.2'de" kovası arşive, admin'deki
-dört `PlatformTag kind="web"` kalkar.
+(3) sahaya inince bu bölüm + yukarıdaki "1.1.2'de" kovası arşive. (Admin'deki
+"Web" etiketleri 2 Ekim'de kalktı — Ziyaretçi Yolculuğu'nunki tanım gereği kalır.)
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de

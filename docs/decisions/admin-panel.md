@@ -1397,8 +1397,17 @@ Her admin RPC'sinin kaynak tablosu canlı `pg_proc`tan, portun yazdığı tablol
 | Kart | Kaynak | Neden web |
 |---|---|---|
 | Ziyaretçi Yolculuğu | `web_sessions` | tanım gereği (tarayıcı sekmesi) |
-| Huni v2 | `funnel_events` | port yarısı (PR 2) henüz yok — gelince etiketi KALDIR |
-| Cihaz · Cihaz Markası | `device_visits` | port bu tabloya hiç yazmıyor (`device_info_plus` yok, `visits_api.dart` başlığı) |
+| ~~Huni v2~~ | `funnel_events` | ~~port yarısı (PR 2) henüz yok~~ — **etiket 2 Ekim 2026'da KALDIRILDI** |
+| ~~Cihaz · Cihaz Markası~~ | `device_visits` | ~~port bu tabloya hiç yazmıyor~~ — **etiket 2 Ekim 2026'da KALDIRILDI** |
+
+**2 Ekim 2026 — üç etiket kalktı** (kullanıcı: *"Web etiketlerini kaldır"*).
+1.1.2 (#659 + #709) Play'de yayına girdi; aynı sabah canlıda ölçüldü:
+`funnel_events`te 1 Ekim'den beri 28 Android + 24 iOS satırı (hepsi
+`app_version = 1.1.2`; iOS'takiler TestFlight — App Store onayı bekliyordu),
+kanallar `app` · `mevcut` · `meta-karusel` (Install Referrer çalışıyor);
+`device_visits`e iOS satırları `iPhone`/`iPad` olarak düşüyor. Üç kartın
+`?` metni de buna göre güncellendi. "Web" artık YALNIZCA Ziyaretçi
+Yolculuğu'nda — o kart tanım gereği tarayıcı sekmesi sayıyor, kalıcı.
 
 Öteki kartlar iki tarafı da görüyor (`games`, `game_starts`, `game_finishes`,
 `guest_visits`, `tutorial_events`, `profiles`); "Sürüm Dağılımı" ve "Bildirim
