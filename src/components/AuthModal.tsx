@@ -321,8 +321,10 @@ export function AuthModal({
                 />
               </div>
             </div>
-            {/* Doğru olduğu ölçüldü: `search_users_for_friend` takma ismin
-                yanında `first_name`i de tarıyor (soyadı DEĞİL). */}
+            {/* `search_users_for_friend` takma ismin yanında adı, soyadı ve
+                "ad soyad"ı da tarıyor (soyad 2 Ekim 2026, migration
+                `search_users_for_friend_last_name`); sonuçta yine yalnızca
+                takma isim görünür. */}
             <p className="-mt-2 text-[10px] text-muted font-mono">
               Aramalarda bulunmayı kolaylaştırır.
             </p>
