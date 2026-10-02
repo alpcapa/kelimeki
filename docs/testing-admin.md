@@ -701,9 +701,13 @@ Büyüme > **Oyun** sekmesi, "Oyun Sayısı"nın hemen altında.
 - [ ] ⚠ **İlk ve SON çubuğun tooltip'i grafiğin dışına taşmıyor** (18 Eylül
       2026'da tam bu hata yakalanmıştı: son çubuğun kutusu grafiğin üstünü
       örtüyordu).
-- [ ] **Efsane tıklanamaz** — Web/iOS/Android/Diğer rozetlerine basmak hiçbir
-      şey yapmamalı (bu grafikte seri açıp kapatmak YOK; segmentler toplama
-      tam eklendiği için bir segmenti gizlemek çubuğu yalan söyletirdi).
+- [ ] **Efsane bir FİLTRE (2 Ekim 2026'dan beri; öncesinde tıklanamazdı).**
+      iOS'a dokun → çubuklar YALNIZCA iOS, tek renk; y ekseni iOS'un
+      tepesine göre yeniden ölçeklenir; öteki rozetler soluk, sağda mavi
+      **Tümü** belirir. Tooltip'te "Bitirilen" toplamı YOK, yalnızca iOS
+      sayısı. Aynı rozete ya da **Tümü**'ne dokun → yığılmış görünüm geri
+      gelir, **Tümü** kaybolur. Başka bir rozete dokunmak doğrudan ona
+      geçer. **Tablo Görünümü ve CSV süzülmez** (dört kanal da, ham sayı).
 - [ ] "Tablo Görünümü" 12 satır + `Saat · Bitirilen · Web · iOS · Android ·
       Diğer` kolonlarını veriyor; geri dönünce grafik yeniden çiziliyor.
 - [ ] "CSV İndir" aynı 12 satırı veriyor.
@@ -739,7 +743,8 @@ Büyüme > **Oyun** sekmesi, "Aktif Saatler"in hemen altında. §9.19'un
       ikisi de **1279**). Tutmuyorsa iki RPC'den biri değişmiş, öteki
       güncellenmemiştir — ikisi AYNI popülasyonu sayıyor.
 - [ ] İlk ve SON çubuğun tooltip'i grafiğin dışına taşmıyor.
-- [ ] **Efsane tıklanamaz** (§9.19 ile aynı gerekçe).
+- [ ] **Efsane bir FİLTRE** — §9.19'daki madde aynen (aynı bileşen). İki grafiğin
+      filtresi BAĞIMSIZ: birinde iOS'u seçmek ötekini değiştirmemeli.
 - [ ] "Tablo Görünümü" 7 satır + `Gün · Bitirilen · Web · iOS · Android ·
       Diğer` kolonlarını veriyor; ilk kolon başlığı **`Gün`** (`Saat` DEĞİL).
 - [ ] "CSV İndir" aynı 7 satırı veriyor, dosya adı `kelimeki-aktif-gunler-…`.
