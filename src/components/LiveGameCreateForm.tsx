@@ -70,7 +70,7 @@ export function LiveGameCreateForm({
   initialFriendId,
   initialPlayerCount,
 }: LiveGameCreateFormProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [playerCount, setPlayerCount] = useState<2 | 4>(initialPlayerCount ?? 2);
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
   const [selected, setSelected] = useState<string[]>(initialFriendId ? [initialFriendId] : []);
@@ -267,7 +267,6 @@ export function LiveGameCreateForm({
   }
 
   const byId = (id: string) => friends?.find((f) => f.friend_id === id);
-  const seatCount = playerCount - 1;
 
   return (
     <div className="w-full flex flex-col gap-5">
@@ -284,99 +283,122 @@ export function LiveGameCreateForm({
         </div>
       </div>
 
-      {/* Koltuklar (27 Eylül 2026, ROADMAP #41 karar 12): seçilen rakip,
-          oyunda oturacağı köşenin renginde — `PLAYER_COLORS[i + 1]` (0 sensin).
-          Avatar uygulamanın kendi `Avatar`ı (fotoğraf → iki harf). */}
+      {/* Koltuklar (27 Eylül 2026, ROADMAP #41 karar 12; 2 Ekim 2026'da
+          kullanıcı isteğiyle yeniden): 1. koltuk HER ZAMAN sensin, rakipler
+          oyunda oturacakları köşenin renginde (`PLAYER_COLORS[koltuk]`).
+          2 kişide alt alta, 4 kişide 2×2 (1-2 üstte, 3-4 altta).
+          ⚠ Her kart aynı iskelet: avatar · isim (`truncate`, "…") · numara
+          yuvası · ✕ yuvası. Numara ve ✕ AKIŞTA ve sabit genişlikte —
+          ✕'i olmayan kartta (sen, boş, Yapay Zeka) yuva boş durur. Böylece
+          (kullanıcı) "isim numaranın üzerine binmez" ve "numaralar her
+          durumda hizalı". Port ikizi: `live_game_create_form.dart`. */}
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between gap-2">
           <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
-            {playerCount === 2 ? 'Rakibin' : `Rakiplerin · ${selected.length}/3`}
+            {playerCount === 2 ? 'Oyuncular' : `Oyuncular · ${selected.length + 1}/4`}
           </div>
           {playerCount === 4 && (
             <span className="text-[10px] text-muted font-mono">Boş 4. koltuk yapay zeka olur</span>
           )}
         </div>
-        <div className={playerCount === 2 ? 'flex flex-col' : 'grid grid-cols-3 gap-2'}>
-          {Array.from({ length: seatCount }, (_, i) => {
-            const col = PLAYER_COLORS[i + 1];
-            const f = selected[i] ? byId(selected[i]) : undefined;
-            const ai = playerCount === 4 && i === 2 && selected.length === 2;
+        <div className={playerCount === 2 ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-2'}>
+          {Array.from({ length: playerCount }, (_, koltuk) => {
+            const col = PLAYER_COLORS[koltuk];
             const yatay = playerCount === 2;
-            if (f) {
+            const ben = koltuk === 0;
+            const f = ben ? undefined : selected[koltuk - 1] ? byId(selected[koltuk - 1]) : undefined;
+            const ai = playerCount === 4 && koltuk === 3 && selected.length === 2;
+            const dolu = ben || !!f;
+            const ad = ben ? profile?.display_name || profile?.username || 'Sen' : f?.name;
+            const numara = (
+              <span
+                aria-hidden
+                className={[
+                  'shrink-0 flex items-center justify-center font-mono font-bold leading-none select-none pointer-events-none',
+                  yatay ? 'w-10 h-9 -mr-2 text-[56px]' : 'w-[22px] h-[28px] -mr-1 text-[34px]',
+                ].join(' ')}
+                style={{ color: col.base, opacity: dolu ? 0.2 : 0.12 }}
+              >
+                {koltuk + 1}
+              </span>
+            );
+            const carpiYuvasi = yatay ? 'w-6 h-7' : 'w-4 h-7';
+            const iskelet = [
+              'w-full flex items-center rounded-xl min-w-0',
+              yatay ? 'gap-2.5 px-3 py-2.5' : 'gap-[5px] pl-2 pr-1.5 py-2',
+            ].join(' ');
+            if (dolu) {
               return (
                 <div
-                  key={i}
-                  className={[
-                    'relative overflow-hidden flex items-center rounded-xl border',
-                    yatay ? 'gap-3 px-3 py-2.5' : 'flex-col gap-1.5 px-1.5 pt-3 pb-2.5',
-                  ].join(' ')}
+                  key={koltuk}
+                  data-koltuk={koltuk + 1}
+                  className={`${iskelet} border`}
                   style={{ background: col.tint, borderColor: col.base }}
                 >
-                  {/* Oyuncu numarası filigranı (27 Eylül 2026, kullanıcı isteği):
-                      tahtadaki köşe filigranıyla AYNI dil — `Board.tsx` →
-                      `data-watermarks` (mono kalın, oyuncu rengi, %20 opaklık).
-                      Rakip i. koltukta = oyunda (i + 2). oyuncu, o köşede
-                      oynar. Yatay kartta ✕'in SOLUNDA, dikeyde sağ ALTTA —
-                      ✕'e değmesin diye. */}
+                  {ben ? (
+                    <Avatar url={profile?.avatar_url} name={ad ?? 'Sen'} size={yatay ? 36 : 28} />
+                  ) : (
+                    <Avatar url={f!.avatar_url} name={f!.name} size={yatay ? 36 : 28} />
+                  )}
                   <span
-                    aria-hidden
-                    className={[
-                      'pointer-events-none absolute font-mono font-bold leading-none select-none',
-                      yatay ? 'right-12 top-1/2 -translate-y-1/2 text-[56px]' : 'right-1.5 bottom-0.5 text-[40px]',
-                    ].join(' ')}
-                    style={{ color: col.base, opacity: 0.2 }}
-                  >
-                    {i + 2}
-                  </span>
-                  <Avatar url={f.avatar_url} name={f.name} size={36} />
-                  <span
-                    className={['font-sans text-sm font-bold truncate max-w-full', yatay ? 'flex-1 min-w-0' : 'text-xs'].join(' ')}
+                    className={['flex-1 min-w-0 truncate font-sans font-bold', yatay ? 'text-sm' : 'text-[13px]'].join(' ')}
                     style={{ color: col.text }}
                   >
-                    {f.name}
+                    {ad}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => toggleFriend(f.friend_id)}
-                    aria-label={`${f.name} koltuğunu boşalt`}
-                    className={[
-                      'w-7 h-7 flex items-center justify-center text-sm tap-expand',
-                      yatay ? 'relative' : 'absolute top-0.5 right-0.5',
-                    ].join(' ')}
-                    style={{ color: col.text }}
-                  >
-                    ✕
-                  </button>
+                  {numara}
+                  {ben ? (
+                    <span className={`${carpiYuvasi} shrink-0`} aria-hidden />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => toggleFriend(f!.friend_id)}
+                      aria-label={`${f!.name} koltuğunu boşalt`}
+                      className={`${carpiYuvasi} shrink-0 flex items-center justify-center tap-expand ${yatay ? 'text-sm' : 'text-xs'}`}
+                      style={{ color: col.text }}
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               );
             }
+            const etiket = ai ? 'Yapay Zeka' : yatay ? 'Aşağıdan bir arkadaşını seç' : 'Boş';
             const govde = (
               <>
                 <span
-                  className="w-9 h-9 rounded-full bg-void border border-border flex items-center justify-center text-lg shrink-0"
+                  className={[
+                    'rounded-full bg-void border border-border flex items-center justify-center shrink-0',
+                    yatay ? 'w-9 h-9 text-lg' : 'w-7 h-7 text-sm',
+                  ].join(' ')}
                   aria-hidden
                 >
                   {ai ? '🤖' : '+'}
                 </span>
-                <span className="font-sans text-xs font-bold text-muted">
-                  {ai ? 'Yapay Zeka' : yatay ? 'Aşağıdan bir arkadaşını seç' : 'Boş koltuk'}
+                <span
+                  className={['flex-1 min-w-0 truncate font-sans font-bold text-muted', yatay ? 'text-[13px]' : 'text-xs'].join(' ')}
+                >
+                  {etiket}
                 </span>
+                {numara}
+                <span className={`${carpiYuvasi} shrink-0`} aria-hidden />
               </>
             );
-            const kutuCls = [
-              'flex items-center rounded-xl border-[1.5px] border-dashed border-[#C7D0DC] bg-bg',
-              yatay ? 'gap-3 px-3 py-2.5' : 'flex-col justify-center gap-1.5 px-1.5 pt-3 pb-2.5',
-            ].join(' ');
+            const bosCls = `${iskelet} border-[1.5px] border-dashed border-[#C7D0DC] bg-bg`;
             return ai ? (
-              <div key={i} className={kutuCls}>
+              <div key={koltuk} data-koltuk={koltuk + 1} className={bosCls}>
                 {govde}
               </div>
             ) : (
               <button
-                key={i}
+                key={koltuk}
                 type="button"
+                data-koltuk={koltuk + 1}
+                // Görünen yazı 4 kişide kısa ("Boş", 2 Ekim 2026 — dar kartta
+                // "Boş koltuk" kesiliyordu); ekran okuyucu tam adı duyar.
+                aria-label={yatay ? undefined : `Boş koltuk ${koltuk + 1}`}
                 onClick={() => listeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                className={`${kutuCls} w-full text-left active:scale-[0.98] transition-transform`}
+                className={`${bosCls} text-left active:scale-[0.98] transition-transform`}
               >
                 {govde}
               </button>
