@@ -18,8 +18,9 @@ export function ResetPasswordModal({ onDone }: ResetPasswordModalProps) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (password.length < 6) {
-      setError('Yeni şifre en az 6 karakter olmalı.');
+    // 8 = Supabase Auth "Minimum password length" (AuthModal'daki not).
+    if (password.length < 8) {
+      setError('Yeni şifre en az 8 karakter olmalı.');
       return;
     }
     if (password !== confirm) {
@@ -78,10 +79,11 @@ export function ResetPasswordModal({ onDone }: ResetPasswordModalProps) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          minLength={6}
+          minLength={8}
           autoComplete="new-password"
           autoFocus
         />
+        <p className="-mt-2 text-[10px] text-muted font-mono">En az 8 karakter olmalı.</p>
         <input
           className={inputCls}
           type="password"

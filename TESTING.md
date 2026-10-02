@@ -779,6 +779,11 @@ uydurma bir Türkçe cümleyle gizlemek hata ayıklamayı imkânsız kılardı.
 - [ ] **Form doğrulamaları bozulmamış.** Alınmış takma isim, işaretlenmemiş
       Kullanım Koşulları → kendi Türkçe mesajları çıkmalı (bunlar aynı
       `catch`'ten geçiyor, çeviri katmanı onları ezmemeli).
+- [ ] **Şifre en az 8 karakter (web 2 Ekim 2026, uygulama 1.1.3).** Kayıtta
+      şifrenin altında "En az 8 karakter olmalı."; 7 karakterle KAYIT OL →
+      tarayıcı/form engeller. Şifre sıfırlamada 7 karakter → "Yeni şifre en
+      az 8 karakter olmalı." **Girişte** de 7 karakter → "Şifre en az 8 karakter
+      olmalı." (ayar baştan beri 8, kısa şifreli hesap yok).
 - [ ] **Ad/soyad İSTEĞE BAĞLI (web 2 Ekim 2026, uygulama 1.1.3).** Kayıt
       formunda sıra: Takma isim · E-posta · Şifre (üçü `*`) → "İSTEĞE BAĞLI"
       çizgisi → Ad | Soyad, Cinsiyet | Doğum Tarihi → onay kutuları. Ad/soyad

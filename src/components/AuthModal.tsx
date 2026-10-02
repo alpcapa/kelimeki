@@ -37,6 +37,11 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
+/** Supabase Auth "Minimum password length" — baştan beri 8 (port
+ *  `auth_modal.dart` `kMinPasswordLength` ile aynı sayı ve metin). */
+const MIN_PASSWORD_LENGTH = 8;
+const PASSWORD_TOO_SHORT = 'Şifre en az 8 karakter olmalı.';
+
 export function AuthModal({
   onClose,
   initialMode = 'login',
@@ -123,6 +128,7 @@ export function AuthModal({
     setBusy(true);
     try {
       if (mode === 'login') {
+        if (password.length < MIN_PASSWORD_LENGTH) throw new Error(PASSWORD_TOO_SHORT);
         const { error } = await signIn(email, password);
         if (error) throw error;
         // Ziyaretçi yolculuğu: misafir oturumu girişle kapanır (girişli
@@ -140,6 +146,7 @@ export function AuthModal({
         if (nicknameStatus === 'checking') throw new Error('Takma isim kontrol ediliyor, birazdan tekrar dene.');
         if (nicknameStatus === 'taken') throw new Error('Bu takma isim zaten kullanılıyor.');
         if (nicknameStatus === 'blocked') throw new Error('Bu takma isim kullanılamaz.');
+        if (password.length < MIN_PASSWORD_LENGTH) throw new Error(PASSWORD_TOO_SHORT);
         if (!termsAccepted) throw new Error('Kullanım Koşulları ve Gizlilik Politikası\'nı kabul etmelisiniz.');
         const birthDateIso = trDateToIso(birthDate);
         const { data, error } = await signUp(
@@ -275,7 +282,12 @@ export function AuthModal({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                // 8 = Supabase Auth "Minimum password length" (Dashboard →
+                // Authentication → Sign In / Providers → Email). Kullanıcı:
+                // BAŞTAN BERİ 8 → 8'den kısa şifreli hesap yok, girişte de
+                // kontrol edilir (2 Ekim 2026). `submit()` aynı kuralı Türkçe
+                // metinle de söylüyor (tarayıcının kendi balonu yetmez).
+                minLength={MIN_PASSWORD_LENGTH}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               />
               <button
@@ -287,6 +299,9 @@ export function AuthModal({
                 <EyeIcon open={showPassword} />
               </button>
             </div>
+            {mode === 'signup' && (
+              <p className="text-[10px] text-muted font-mono mt-1">En az 8 karakter olmalı.</p>
+            )}
           </div>
         )}
 

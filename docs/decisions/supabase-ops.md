@@ -187,6 +187,31 @@ sonrasında 18 geri bildirim satırı o trigger'dan geçerek girdi).
 
 ---
 
+## Auth ayarları — Dashboard'da, repoda İZ YOK (2 Ekim 2026'da okundu)
+
+Supabase Dashboard → Authentication → Sign In / Providers → **Email**
+(kullanıcının ekran görüntüsünden okundu, 2 Ekim 2026):
+
+| Ayar | Değer |
+|---|---|
+| **Minimum password length** | **8** |
+| Password requirements | seçilmemiş (harf/rakam/sembol şartı YOK) |
+| Prevent use of leaked passwords | kapalı (Pro plan özelliği) |
+| Email OTP expiration | 86400 sn (24 saat) |
+| Email OTP length | 8 hane |
+
+⚠ **Vaka:** istemciler aylarca **6** diyordu (web `minLength={6}` +
+`ResetPasswordModal` · port `reset_password_modal.dart` · `weak_password`
+çevirisi "En az 6 karakter kullan." iki tarafta). Sunucu 8 istediği için 6-7
+karakterlik şifre formdan geçip sunucudan dönüyor, kullanıcıya YANLIŞ sınır
+söyleniyordu. Ajan da ayarı göremediği için "kural 6" dedi; kullanıcı
+Dashboard'dan okuyup düzeltti. 2 Ekim'de hepsi 8'e hizalandı (web hemen,
+port 1.1.3 treni). **Ayar BAŞTAN BERİ 8** (kullanıcı teyidi) → 8'den kısa
+şifreli hesap yok; uzunluk kontrolü girişte, kayıtta ve şifre sıfırlamada,
+iki istemcide de var ("Şifre en az 8 karakter olmalı."). **Bu tabloyu değiştiren her
+Dashboard işleminden sonra buraya ve istemcilere yansıt** — ajan bu ekranı
+okuyamaz.
+
 ## Vercel'in atladığı commit (4 Eylül 2026, ölçüldü)
 
 Kök `CLAUDE.md`'den taşındı (11 Eylül 2026, `auto` sınıfı bütçesi); kural
