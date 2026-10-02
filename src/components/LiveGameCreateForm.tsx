@@ -438,7 +438,9 @@ export function LiveGameCreateForm({
 
       <div ref={listeRef} className="flex flex-col gap-2 scroll-mt-3">
         {/* Başlığın sağında dönüşümlü bağlantı — Arkadaşlar penceresiyle aynı
-            (27 Eylül 2026, kullanıcı isteği). "Tüm oyuncular"da arkadaş
+            (27 Eylül 2026, kullanıcı isteği). Bağlantı başlıkla AYNI tipografi
+            (10px mono, büyük harf, aralıklı) ama mavi + kalın (2 Ekim 2026,
+            kullanıcı isteği; FriendsModal + port ikizleri de). "Tüm oyuncular"da arkadaş
             olmayana buradan istek gidilir; oyuna yalnızca ARKADAŞ çağrılır
             (`create_online_game`: "Yalnızca arkadaşlarını davet edebilirsin."). */}
         <div className="flex items-center justify-between gap-2">
@@ -451,7 +453,7 @@ export function LiveGameCreateForm({
               setShowAll((v) => !v);
               setQuery('');
             }}
-            className="shrink-0 min-h-[36px] text-xs font-bold text-accent active:opacity-70"
+            className="shrink-0 min-h-[36px] text-[10px] uppercase tracking-[1.5px] font-mono font-bold text-accent active:opacity-70"
           >
             {showAll ? '← Arkadaşlar' : 'Tüm oyuncular →'}
           </button>
@@ -471,7 +473,7 @@ export function LiveGameCreateForm({
             <button
               type="button"
               onClick={() => setShowAll(true)}
-              className="min-h-[36px] text-xs font-bold text-accent active:opacity-70"
+              className="min-h-[36px] text-[10px] uppercase tracking-[1.5px] font-mono font-bold text-accent active:opacity-70"
             >
               Tüm oyunculara göz at →
             </button>

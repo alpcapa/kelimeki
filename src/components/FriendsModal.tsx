@@ -493,7 +493,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
             <button
               type="button"
               onClick={() => setShowAll((v) => !v)}
-              className="shrink-0 min-h-[36px] text-xs font-bold text-accent active:opacity-70"
+              className="shrink-0 min-h-[36px] text-[10px] uppercase tracking-[1.5px] font-mono font-bold text-accent active:opacity-70"
             >
               {showAll ? '← Arkadaşlar' : 'Tüm oyuncular →'}
             </button>
