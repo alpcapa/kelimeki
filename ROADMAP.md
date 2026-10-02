@@ -320,6 +320,7 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 | #756 (2 Eki) | **Tanıtımın vergi penceresi: "Rakip kullanıcısına" → "rakibine"** — port yarısı (web #755 ile hemen yayında) | `ui/tutorial/tutorial_game.dart` (tek metin; gerçek oyunun `invasion_confirm.dart`ı DEĞİŞMEDİ). Kayıt: `docs/decisions/onboarding.md` |
 | #757 (2 Eki) | **"Bildirimler kapalı" kartı** — yarım oyun çıkışında izin ayarlardan kapalıysa (Android `permanentlyDenied` · iOS `denied`) "AYARLARI AÇ"; ayarlardan dönüşte hatırlatma kurulur | `util/unfinished_reminder.dart` (`yarimOyunKartiSec`) · `data/unfinished_game_reminder.dart` · `ui/push/push_permission_flow.dart` · `setup_screen.dart` · `MainActivity.kt` + `AppDelegate.swift` (`bildirimAyarlariniAc`). Parça 228 · cihaz: `mobile/TESTING.md` §34 |
 | #760 (2 Eki) | **Tanıtım kapısı: cihazda gerçek oyun başlayınca "görüldü"** — üye olarak oynayıp çıkış yapan cihaz misafirken tanıtıma düşmesin (web #759 ile hemen yayında) | `setup_screen.dart` (`_startNewGame`) · `live/open_online_game.dart`. Parça 229 · cihaz: `mobile/TESTING.md` §1.9 · kayıt `docs/decisions/onboarding.md` |
+| #762 (2 Eki) | **Canlı oyun formunda koltuk numarası (filigran) iPhone'da alta yapışıktı** — artık taban çizgisine göre, iki platformda (ve web'le) aynı yerde; Android'de ~5 px aşağı iner | `ui/live/live_game_create_form.dart`. Parça 230 · cihaz: `mobile/TESTING.md` → "Canlı oyun formu" |
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
