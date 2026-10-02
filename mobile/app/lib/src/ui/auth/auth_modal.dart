@@ -429,6 +429,14 @@ class _AuthModalState extends State<AuthModal> {
                         onPressed: () =>
                             setState(() => _showPassword = !_showPassword),
                       ))),
+              // 8 = Supabase Auth "Minimum password length" (2 Ekim 2026);
+              // web `AuthModal.tsx` ile aynı not, yalnızca kayıtta.
+              if (signup) ...[
+                const SizedBox(height: 4),
+                const Text('En az 8 karakter olmalı.',
+                    style: TextStyle(
+                        fontFamily: 'SpaceMono', fontSize: 10, color: _muted)),
+              ],
             ] else ...[
               const SizedBox(height: 12),
               const Text(
