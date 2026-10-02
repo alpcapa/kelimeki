@@ -321,6 +321,11 @@ export function AuthModal({
                 />
               </div>
             </div>
+            {/* Doğru olduğu ölçüldü: `search_users_for_friend` takma ismin
+                yanında `first_name`i de tarıyor (soyadı DEĞİL). */}
+            <p className="-mt-2 text-[10px] text-muted font-mono">
+              Aramalarda bulunmayı kolaylaştırır.
+            </p>
             <div className="flex gap-2">
               <div className="flex-1 min-w-0">
                 <label className={labelCls}>Cinsiyet</label>
