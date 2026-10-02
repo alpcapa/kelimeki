@@ -197,7 +197,7 @@ function Bolum({
     <section id={id} className="w-full flex flex-col gap-3">
       <div className={`flex flex-col gap-0.5${baslikClassName ? ` ${baslikClassName}` : ''}`}>
         {ustBaslik ? (
-          <span className="font-mono text-[9px] uppercase tracking-[1.5px] text-accent">
+          <span className="font-mono font-bold text-[9px] uppercase tracking-[1.5px] text-accent">
             {ustBaslik}
           </span>
         ) : null}

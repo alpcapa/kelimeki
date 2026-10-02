@@ -115,7 +115,7 @@ export function DeleteAccountModal({ onClose }: DeleteAccountModalProps) {
 
         {rapor && (
           <div className="flex flex-col gap-2">
-            <h3 className="font-mono text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1">
+            <h3 className="font-mono font-bold text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1">
               Silinecekler
             </h3>
             {satirlar.length === 0 ? (
@@ -134,7 +134,7 @@ export function DeleteAccountModal({ onClose }: DeleteAccountModalProps) {
             )}
             {korunacak > 0 && (
               <>
-                <h3 className="font-mono text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1 mt-2">
+                <h3 className="font-mono font-bold text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1 mt-2">
                   Kalacaklar
                 </h3>
                 <p className="text-xs font-sans text-text leading-relaxed">

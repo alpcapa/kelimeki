@@ -158,11 +158,11 @@ export function ScoreStatsSection({
     return (
       <>
         <LoadingNote py="py-1" />
-        <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono mb-1.5">
+        <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold mb-1.5">
           Oyuncu İstatistikleri
         </div>
         <CellsGrid cells={dash(playerCells)} />
-        <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono mt-4 mb-1.5">
+        <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold mt-4 mb-1.5">
           Oyun İstatistikleri
         </div>
         <CellsGrid cells={dash(gameCells)} />
@@ -173,12 +173,12 @@ export function ScoreStatsSection({
   return (
     <>
       {!stats && <p className="text-muted text-[10px] font-mono text-center pb-2">{emptyText}</p>}
-      <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono mb-1.5">
+      <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold mb-1.5">
         Oyuncu İstatistikleri
       </div>
       <CellsGrid cells={playerCells} />
 
-      <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono mt-4 mb-1.5">
+      <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold mt-4 mb-1.5">
         Oyun İstatistikleri
       </div>
       <CellsGrid cells={gameCells} />

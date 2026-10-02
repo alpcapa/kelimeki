@@ -168,7 +168,7 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          <div className="flex items-center text-[9px] uppercase tracking-[1px] text-muted font-mono px-2 pb-1 gap-1">
+          <div className="flex items-center text-[9px] uppercase tracking-[1px] text-muted font-mono font-bold px-2 pb-1 gap-1">
             {/* 2 Eylül 2026 — `w-*` → `min-w-*` + `whitespace-nowrap` (sınıf
                 1+3'ün web eşleniği). Tarayıcının "asgari yazı boyutu"
                 erişilebilirlik ayarı eşiğin altındaki puntoları yukarı

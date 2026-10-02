@@ -28,7 +28,7 @@ export const SILME_SURESI_GUN = 30;
 
 export const Section = ({ title, children }: { title: string; children: ReactNode }) => (
   <div className="flex flex-col gap-2">
-    <h3 className="font-mono text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1">
+    <h3 className="font-mono font-bold text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1">
       {title}
     </h3>
     {children}

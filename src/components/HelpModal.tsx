@@ -31,7 +31,7 @@ type Step = 'quick' | 'detailed';
 
 const Section = ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
   <div className="flex flex-col gap-2">
-    <h3 className="flex items-center font-mono text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1">
+    <h3 className="flex items-center font-mono font-bold text-[11px] uppercase tracking-[1.5px] text-accent border-b border-border pb-1">
       {title}
     </h3>
     {children}

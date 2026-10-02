@@ -213,7 +213,7 @@ export function FriendInvitePage({ token }: FriendInvitePageProps) {
 
           {(status === 'ready' || status === 'accepting') && (
             <>
-              <p className="font-mono text-[10px] uppercase tracking-[1.5px] text-muted m-0">
+              <p className="font-mono font-bold text-[10px] uppercase tracking-[1.5px] text-muted m-0">
                 Arkadaşlık Daveti
               </p>
               <Avatar name={inviterName} size={56} />

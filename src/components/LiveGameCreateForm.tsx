@@ -271,7 +271,7 @@ export function LiveGameCreateForm({
   return (
     <div className="w-full flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+        <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
           Oyuncu Sayısı
         </div>
         <div className="flex gap-2">
@@ -294,7 +294,7 @@ export function LiveGameCreateForm({
           durumda hizalı". Port ikizi: `live_game_create_form.dart`. */}
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between gap-2">
-          <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+          <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
             {playerCount === 2 ? 'Oyuncular' : `Oyuncular · ${selected.length + 1}/4`}
           </div>
           {playerCount === 4 && (
@@ -444,7 +444,7 @@ export function LiveGameCreateForm({
             olmayana buradan istek gidilir; oyuna yalnızca ARKADAŞ çağrılır
             (`create_online_game`: "Yalnızca arkadaşlarını davet edebilirsin."). */}
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+          <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
             {showAll ? 'Tüm oyuncular' : 'Arkadaşların'}
           </span>
           <button
@@ -507,7 +507,7 @@ export function LiveGameCreateForm({
               const serit = [...sik, ...dolgu];
               return (
                 <div className="flex flex-col gap-1.5 pb-1">
-                  <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono">
+                  <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
                     {dolgu.length === 0 ? 'Sık oynadıkların' : 'Hızlı seç'}
                   </span>
                   <div className="grid grid-cols-5 gap-1">
