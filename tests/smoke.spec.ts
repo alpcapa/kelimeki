@@ -601,20 +601,21 @@ test('Kaydırınca logo kilitli başlığa park eder, tepede park etmez', async 
   await expect(katman).not.toHaveClass(/logo-parkli/);
 });
 
-test('Ev düğmesi karşılama katmanına geri döndürür (?tanitim=1)', async ({ page }) => {
+test('?tanitim=1 karşılama katmanını yeniden açar (dönüş oku YOK)', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-kelimeki-oyna]').first().click();
   await expect(page.getByText('OYUNU BAŞLAT')).toBeVisible();
 
-  // Katman DOM'dan siliniyor, yani geri dönüş tam bir yeniden yükleme —
-  // `?tanitim=1` kapıya "bu sefer katmanı göster" diyen TEK sinyal, çünkü
-  // `seen-intro` bu noktada yazılmış durumda.
-  await page.getByLabel('Tanıtım sayfası').click();
+  // Setup'taki `<` dönüş oku 2 Ekim 2026'da kaldırıldı (kullanıcı isteği);
+  // `?tanitim=1` kapısı duruyor — `seen-intro` yazılmışken katmanı açan TEK
+  // sinyal, artık yalnızca adres çubuğundan.
+  await expect(page.getByLabel('Tanıtım sayfası')).toHaveCount(0);
+  await page.goto('/?tanitim=1');
   await expect(page.locator('#karsilama')).toBeVisible();
   expect(await page.evaluate((k) => localStorage.getItem(k as string), SEEN_INTRO_KEY)).toBe('1');
 
   // ⚠ Bu bekleme ŞART (18 Ağustos 2026'da gerçek bir flake olarak görüldü):
-  // yukarıdaki "Tanıtım sayfası" tıklaması TAM BİR YENİDEN YÜKLEME başlatıyor
+  // yukarıdaki `?tanitim=1` gezinmesi TAM BİR YENİDEN YÜKLEME
   // ve OYNA düğmesi katmanın PRERENDER EDİLMİŞ statik HTML'inde zaten var —
   // yani Playwright'ın görünürlük/tıklanabilirlik kontrolleri, `main.tsx`
   // henüz çalışıp `[data-kelimeki-oyna]`ya dinleyiciyi BAĞLAMADAN önce
