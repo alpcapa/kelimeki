@@ -96,20 +96,25 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
 
 ### 5.1 Gezinme: üçüncü oyun türü ve ana sayfası (Revizyon 3)
 
-- **Giriş:** `LiveGameCreateForm` / "Yeni Canlı Oyun" üstündeki oyuncu
-  sayısı seçicisi 2 segmentten **3 segmente** çıkar: `2 kişilik | 4 kişilik |
-  🤝 Takım`. Yapay Zeka sekmesine DOKUNULMAZ (YZ'li takım oyunu yok).
-- **Takım'a basınca:** davet formu açılmaz; **Takım oyunu ana sayfası** açılır:
-  1. üstte **Oyun Aç** (aktif takımın yoksa pasif, altında "Önce bir takım kur"),
-  2. **Açık Oyunlar** (bekleyen ilanlar, yanında Kabul Et; kendi ilanında İptal),
-  3. **Takımlarım** (+ Takım Oluştur; durum: Aktif / Onay bekliyor),
-  4. sağ üstte **Sıralama ›** (k-lig Takım Ligi sekmesine kısayol).
-- **Takım Oluştur:** ana sayfadan ya da takımsız Kabul Et'ten (§6) gelinen
-  tek ekran (arkadaşlardan 1 kişi + ad + Kaydet).
-- **Setup'taki Takım Ligi kartı** (iki sekmede) bu ana sayfaya KISAYOL: ilk iki
-  açık oyun + "Tümü" (ana sayfayı açar). Aynı veri, ikinci bir liste kaynağı yok.
+- **Revizyon 4 (3 Ekim 2026, kullanıcı):** **Setup'a takım bölümü/kartı EKLENMEZ.**
+  Arkadaşınla altında takım detayı çıkmaz; Setup bugünkü gibi kalır. Takımla
+  ilgili her şey "+ Yeni Canlı Oyun" içinde. (İlk istekteki *"Setup'da Takım
+  Ligi bölümü altında açık oyunlar"* böylece Takım sekmesinin içine taşındı.)
+- **Sekmeler en üstte, şimdiki gibi:** `2 Kişi | 4 Kişi | 🤝 Takım`. Üstte
+  "‹ Yeni Canlı Oyun" geri satırı YOK. 2 ve 4 bugünkü sistemin aynısı.
+  Yapay Zeka sekmesine DOKUNULMAZ.
+- **Takım sekmesinin içeriği** (aynı sayfada, form açılmaz):
+  1. **Oyun Aç** (aktif takımın yoksa pasif, altında "Önce bir takım kur"),
+  2. **Açık Oyunlar** (yanında Kabul Et; kendi ilanında İptal),
+  3. **Takımlarım** (+ Takım Oluştur; durum: Aktif / Onay bekliyor).
+  **Takım satırlarında yalnızca sıra ve puan** ("4. sıra · 22 puan"); OHP,
+  ilanın yaşı, üye adları satırda yazmaz. Sıralama listesi k-lig'de.
+- **Takım Oluştur:** Takım sekmesinden ya da takımsız Kabul Et'ten (§6) gelinen
+  tek ekran (arkadaşlardan 1 kişi + ad + Kaydet); geri okuyla döner.
 - **Devam eden takım oyunları** Arkadaşınla'nın Aktif Oyunlar listesinde,
-  pembe bantla (ana sayfa yalnızca *kurulum* yüzeyi, oyun listesi değil).
+  pembe bantla.
+- **k-lig → Takım Ligi satırı:** sütun sırası **OHP solda, puan sağda**
+  (başlık "OHP · puan").
 
 ### 5.2 İlan ve kabul
 
@@ -185,7 +190,7 @@ galibiyet 2 puan, ikinciye puan yok. Kazanan takımın oyuncularının ikisine d
 | Sıralama | Takım puanı ↓, eşitlikte **takım OHP'si** ↓, sonra oyun sayısı ↓, sonra takım id |
 | Takım OHP'si | İki üyenin takım oyunlarındaki puanlı hamlelerinin ortalaması |
 | Giriş eşiği | Yok (en az 1 bitmiş takım oyunu) |
-| Satır | sıra · takım adı · iki avatar · puan · OHP · oyun. Rütbe mührü YOK |
+| Satır | sıra · takım adı · iki avatar · **OHP (solda) · puan (sağda)**. Rütbe mührü YOK |
 | "Senin sıran" | En iyi takımının satırı, pencerenin içinde (Beyin Ligi #796 dersi) |
 | Alttaki not | *"Galibiyet 2 puan. Puanlar eşitse takım OHP'si yüksek olan üstte."* |
 | Takım teslim cezası | Takıma ayrıca ceza YOK; teslim olan üye zaten kendi −2'sini alır |
@@ -292,8 +297,8 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 3. **Rozet zinciri:** "açık oyun" bir BEKLEYEN İŞ değil haber; "takım daveti"
    bekleyen iştir (sayaç). Yeni alanlar rozet zincirine girmeli mi kararı
    ayrıca verilir (`PendingLiveGameCounts` dersi, 3 Eylül 2026).
-4. **Misafir:** takım ve açık oyun hesap ister; Setup'ta misafire kart yerine
-   üyelik avantajları kutusuna bir satır.
+4. **Misafir:** takım ve açık oyun hesap ister; Takım sekmesi misafire içerik yerine
+   üyelik çağrısı gösterir (üyelik avantajları kutusu deseni).
 5. **Çevrimdışı:** açık ilan listesi ağ gerektirir; `friendlyErrorMessage`,
    düşen istek "boş liste" demez kuralı (`verify-live-games-load` deseni).
 6. **Realtime:** açık ilan listesi tek paylaşılan kanalı kullanmalı
