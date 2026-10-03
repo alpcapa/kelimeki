@@ -853,7 +853,7 @@ gider); sürüm dondurması bitmeden başlama.
 
 Kullanıcı (3 Ekim): *"Bence bu ok. Bunu 19 Ekim trenine düşünüyorum. Şimdilik
 roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
-**Kodlama 12 Ekim kesiminden SONRA başlar**; o güne kadar yalnızca tasarım.
+**Kodlama 12 Ekim kesiminden SONRA başlar**; o güne kadar yalnızca tasarım. Daha önemli bir iş çıkarsa bu madde kayar (kullanıcı, 3 Ekim).
 
 - **Ne:** 4'lü Canlı oyunda 2'şer kişilik takımlar (üçüncü oyun türü: Yeni
   Canlı Oyun → 2 · 4 · Takım), herkese açık ilanla rakip bulma, k-lig'de
