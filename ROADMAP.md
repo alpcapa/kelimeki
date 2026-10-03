@@ -859,7 +859,7 @@ roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
   Canlı Oyun → 2 · 4 · Takım), herkese açık ilanla rakip bulma, k-lig'de
   üçüncü alt lig (takım puanı, eşitlikte takım OHP'si). Galibiyet takıma +2,
   kazanan iki oyuncuya da +2.
-- **Kayıt:** `docs/decisions/team-league.md` (9 revizyon, kurallar, akışlar,
+- **Kayıt:** `docs/decisions/team-league.md` (16 revizyon, kurallar, akışlar,
   sunucu/istemci etkisi, Faz 0-5). **Görsel taslak** (akışlar + ekranlar):
   https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed (özel bağlantı).
   **Tıklanabilir prototip** (sahte veri, kod değil; takım kur, oyun aç, kabul
