@@ -862,6 +862,8 @@ roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
 - **Kayıt:** `docs/decisions/team-league.md` (9 revizyon, kurallar, akışlar,
   sunucu/istemci etkisi, Faz 0-5). **Görsel taslak** (akışlar + ekranlar):
   https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed (özel bağlantı).
+  **Tıklanabilir prototip** (sahte veri, kod değil; takım kur, oyun aç, kabul
+  et, takımsız yol): https://claude.ai/artifact/2NGiuSvkcduFJkdQLVtXGd
 - **Kodlamadan önce teyit edilecek (öneriyle varsayıldı, kullanıcı tek tek
   yanıtlamadı):** S13 vergi payı iki ortağa eşit bölünür · S14 beraberlik
   +1/+1 · S15 ortak bölge = motorun dört kopyasında bölge hesabı (Faz 0, L) ·
