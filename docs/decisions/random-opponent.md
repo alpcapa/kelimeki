@@ -66,7 +66,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
   (~108 px) → sayfa ne kadar ilan olursa olsun uzamaz (isteğin asıl derdi).
   Kart ~88 px: 3 tanesi 320 px'te yan yana, dördüncünün kenarı görünür (kaydırma
   ipucu). Kartta: kurucunun avatarı + kısa adı, **2 kişi / 4 kişi** rozeti
-  (iki ayrı ton), dolu koltuk noktaları (●○), **Kabul** düğmesi (≥32 px yüksek).
+  (iki ayrı ton), dolu koltuk noktaları (dolu = yeşil, boş = içi boş halka) ve altında **"N koltuk kaldı"** (kullanıcı, 3 Ekim: saat/gün yaşı yerine; zaman bilgisi karta KONMAZ, 7 günlük süre ilanı kendiliğinden kaldırır), **Kabul** düğmesi (≥32 px yüksek).
 - **Sıra:** en yeni önce; kendi ilanım şeritte YOK (altta "Bekliyor" satırı).
   Sessize aldığım/şikayet ettiğim kişinin ilanı çıkmaz.
 - **Kabul** = tek dokunuş, onay sorulmaz (Takım Ligi Rev. 9 deseni). Toast:
