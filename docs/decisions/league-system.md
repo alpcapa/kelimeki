@@ -182,6 +182,12 @@ bedeli listeden yaklaşık 28px (320×568'de Puan listesi 145 → 117px). Yatay
 telefon ölçülmedi, çünkü orada `LandscapeBlock` uygulamanın tamamını
 kapatıyor. Notlar bu yüzden KALDI.
 
+**Saha (3 Ekim 2026):** web'de kullanıcı cihazda baktı — *"Beyin ligi ok"*
+(`TESTING.md` §10.5). Aynı gün öteki oturumlar iki düzeltme ekledi: "senin
+sıran" satırı pencerenin altında kesiliyordu (#796, web) ve Puan Ligi'nin
+altına da "YZ'ye karşı oynanan oyunlar da sayılır" notu (#797, web); ikisinin
+port yarısı #795'te. Mobil saha kontrolü 1.1.3 ile.
+
 **Terms/Privacy değişmedi:** gizlilik metni zaten "oyun istatistikleriniz
 k-lig aracılığıyla diğer KAYITLI kullanıcılara görünür" diyor; OHP ve oyun
 sayısı bu kapsamda, yeni veri toplanmıyor.
