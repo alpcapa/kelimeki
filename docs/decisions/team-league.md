@@ -150,11 +150,12 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
 2. **Açık Oyunlar listesi** (girişli herkes görür): kurucu takım adı + iki
    avatar + takımın puanı/sırası + ilanın yaşı + **Kabul Et**. Kendi
    ilanlarında Kabul Et yerine **İptal**.
-3. **Kabul Et:**
-   - Takımı **yoksa** → "Önce bir takım kur" adımı (§6). İlan KİLİTLENMEZ.
-   - Kabul eden takım = **Takımlarım'da tıklanıp seçili olan takım**; seçili yoksa
-     ve tek aktif takım varsa o; birden çok aktif takım varsa seçim yapılmamışsa
-     bildirim *"Önce takımını seç"* ve Takımlarım vurgulanır (ek pencere yok).
+3. **Kabul Et (Revizyon 9, kullanıcı):** basınca **alttan takım listesi**
+   ("Hangi takımla kabul ediyorsun?") açılır; **takıma dokunduğun anda oyun
+   başlar** (ayrı onay butonu yok). Satırlarda sıra ve puan; onay bekleyen
+   takım soluk, seçilemez.
+   - **Liste boşsa** (aktif takımın yoksa): *"Henüz takımın yok. **Takım
+     oluştur.**"* — basınca Takım Oluştur adımına gider (§6). İlan KİLİTLENMEZ.
    - Kabul eden takımın ortağı OTOMATİK katılır, bildirim alır.
    - Sunucuda **tek atomik işlem** (`for update` kilidi): ilan `pending`→`active`,
      4 koltuk atanır, `init_online_game_state` çalışır. İki takım aynı anda
@@ -169,16 +170,19 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
 ## 6. Takımı olmayan biri Kabul Et'e basarsa
 
 ```
-Kabul Et ─► "Takım Oluştur" ekranı (arkadaş seç + ad)
-              └─ Kaydet ─► takım ONAY BEKLİYOR (arkadaşa davet gitti)
-                           └─ ekran: "Arkadaşın kabul edince bu oyunu tekrar
-                              seçebilirsin. Oyun senin için tutulmaz."
-                              (ilan açık listede KALIR, başkası alabilir)
+Kabul Et ─► alttan takım listesi: "Henüz takımın yok. Takım oluştur."
+              └─ Takım oluştur ─► Takım Oluştur ekranı (arkadaş seç + ad)
+                    └─ Kaydet ─► takım ONAY BEKLİYOR (arkadaşa davet gitti)
+                         └─ "Arkadaşın kabul edince Açık Oyunlar'a dönüp Kabul
+                            Et'e tekrar bas. Oyun senin için tutulmaz."
+                            (ilan açık listede KALIR, başkası alabilir)
 ```
 
-Bilinçli: ilan rezerve edilmez, yoksa onay vermeyen bir arkadaş başkasının
-oyununu bloke eder. Ekran bunu açıkça söyler. Arkadaş onaylayınca takımın
-sahibine bildirim: *"‹Takım› hazır. Açık oyunlara dön."*
+Bilinçli: ilan rezerve edilmez (kullanıcı: *"oyunu bloke edemeyiz"*), yoksa
+onay vermeyen bir arkadaş başkasının oyununu bloke eder. Takım kurulunca
+oyun otomatik başlamaz; kişi Açık Oyunlar'a dönüp Kabul Et'e tekrar basar ve
+listeden takımını seçer. Arkadaş onaylayınca takımın sahibine bildirim:
+*"‹Takım› hazır. Açık oyunlara dön."*
 
 ## 7. Oyun içi, Oyun Geçmişi, bitiş ekranı, Son Oynananlar
 
@@ -313,7 +317,6 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 | # | Soru | Öneri |
 |---|---|---|
 | S17 | Takım kutusuna dokununca ne açılsın? | Bugünkü skor kartı penceresi, iki üyenin kartı alt alta |
-| S18 | Birden çok aktif takımı olan biri Kabul Et'e basınca hangi takımla kabul eder? | Takımlarım'da tıklanıp seçili olan takımla; seçili yoksa "Önce takımını seç" bildirimi, ek pencere yok |
 | S16 | Takım oyunu istatistikte nereye girsin? (S16, §9) | Ayrı mod işareti; Skor Kartı'na Takım satırı, Genel puana dahil, 2 ve 4 kişilik satırları değişmez |
 | S4 | İlan **7 gün** mü? | 7 gün (davetle aynı). Liste şişerse 48 saat |
 | S5 | Takım başına **1 açık ilan**, kullanıcı başına **5 takım**? | Evet |
