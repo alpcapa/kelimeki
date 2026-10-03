@@ -148,6 +148,18 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
 - **Devam eden takım oyunları** Arkadaşınla'daki **Devam Edenler** listesinde,
   biten oyunlar **Son Oynananlar**'da, ikisinde de normal oyun gibi girer.
   Ayrışma hafif: zemin çok açık pembe, solda pembe çizgi, "TAKIM" etiketi.
+  **Kart düzeni DEĞİŞMEZ (Revizyon 13, kullanıcı):** bugünkü `GameRow`
+  (`LiveGamesTab`) ve `_RecentRow` aynen; sağ sütun **"SIRA SENDE ▲ / SIRA
+  RAKİPTE ●"** (ve Son Oynananlar'da ortadaki OYUN BİTTİ + sağdaki skor/k-lig
+  sütunları) yalnızca bu duruma ait, **TAKIM etiketi oraya girmez** (gerçek
+  kartta CANLI etiketi de yoktur; ilk mock'larımdaki CANLI/TAKIM rozeti uydurmaydı).
+  Etiket konumu: **Devam Edenler'de avatar+puan sütununun ALTINDA** (sol, kendi
+  satırı; yatay sıkışma yok, 320 px'te güvenli — yalnızca takım kartı ~12 px
+  uzar), **Son Oynananlar'da tarihin YANINDA** (YZ oyunundaki zorluk rozetinin
+  yeri). Avatar sırası takım gruplu (A A B B), puan satırında kişi puanı yerine
+  **takım toplamı, her çiftin ilk avatarının altında** (ikincisi boş). Port ikizi:
+  `devam_eden_govde.dart` / `_RecentRow`. Yer alternatifi (avatarların sağı)
+  320 px'te sıkışır, önerilmez.
 - **k-lig → Takım Ligi satırı:** sütun sırası **OHP solda, puan sağda**
   (başlık "OHP · puan").
 
