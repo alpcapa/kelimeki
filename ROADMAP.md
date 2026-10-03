@@ -849,6 +849,19 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
+## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAY BEKLİYOR, KOD YOK** (3 Ekim 2026)
+
+Kullanıcı isteği: 4'lü Canlı oyunda 2'şer kişilik takımlar, herkese açık
+ilanla rakip bulma, k-lig'de üçüncü alt lig (yalnızca takım puanı, eşitlikte
+takım OHP'si). Tam tasarım, 12 açık soru ve atlanabilecek ayrıntılar:
+`docs/decisions/team-league.md`. Görsel taslak (akışlar + 10 ekran):
+https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed. Motora dokunmaz (tek
+istisna: takımın tüm üyeleri teslimse bitiş, yalnızca SQL). **Sıradaki adım:**
+kullanıcı S1-S12'yi yanıtlar → karar kaydı olur → Faz 1 (takım kur/kabul).
+Sürüm: web+sunucu bayrak arkasında önce, port 1.2.0 treniyle.
+
+---
+
 ## 43. Passkey ile giriş (WebAuthn) — **WEB KODU PR'da · PORT sonraya** (2 Ekim 2026)
 
 Kullanıcı Supabase Dashboard → Authentication → **Passkeys (BETA)** ekranını
