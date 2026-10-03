@@ -53,6 +53,13 @@ export interface AvatarRowPlayer {
    * karşılaştırması.
    */
   isGuest?: boolean;
+  /**
+   * AÇIK koltuk (Rastgele Oyuncu henüz oturmadı) — kesik çerçeveli "?"
+   * (3 Ekim 2026). `isAi`den FARKLI bir görsel: açık koltuk Yapay Zeka DEĞİL.
+   * Yedek avatar ("?") ile aynı glif ama dolu bir kullanıcı gibi görünmesin
+   * diye kesik çerçeve ve soluk zemin.
+   */
+  isOpen?: boolean;
 }
 
 /**
@@ -91,7 +98,17 @@ export function PlayerAvatarRow({
           className="inline-flex rounded-full ring-2 ring-panel shrink-0"
           style={{ marginRight: i < players.length - 1 ? -AVATAR_ROW_OVERLAP : 0 }}
         >
-          {p.isAi ? (
+          {p.isOpen ? (
+            <span
+              style={{ width: size, height: size, fontSize: Math.round(size * 0.55) }}
+              className="rounded-full bg-bg border-[1.5px] border-dashed border-muted text-muted font-bold flex items-center justify-center select-none"
+              title={p.name}
+              aria-label={p.name}
+              role="img"
+            >
+              ?
+            </span>
+          ) : p.isAi ? (
             <span
               style={{ width: size, height: size, fontSize: Math.round(size * 0.55) }}
               className="rounded-full bg-void border border-border flex items-center justify-center select-none"

@@ -110,8 +110,24 @@ export type OnlineGameSlot =
       avatar_url?: string | null;
       relation?: FriendRelation | 'self' | null;
       invite_status?: 'pending' | 'accepted' | 'declined' | null;
+      /**
+       * `'random'` = bu koltuğa bir ilandan (Rastgele Oyuncu) oturulmuş —
+       * `leave_random_game` yalnızca bu koltuğu boşaltır. Arkadaş
+       * koltuklarında yok.
+       */
+      via?: 'random';
     }
-  | { type: 'ai' };
+  /**
+   * `open: true` — AÇIK koltuk, Yapay Zeka DEĞİL. `list_my_online_games`
+   * açık koltuğu eski istemcilerin ayrıştırıcısı bozulmasın diye bu maskeyle
+   * döndürüyor (3 Ekim 2026, `docs/decisions/random-opponent.md` §11); yeni
+   * istemci `open` alanıyla tanır. Gerçek YZ koltuğunda alan YOK.
+   * ⚠ Koltuğu "YZ mi" diye sorarken `type === 'ai'` TEK BAŞINA yetmez —
+   * `utils/randomGames.ts` → `isOpenSeat`/`isRealAiSeat`.
+   */
+  | { type: 'ai'; open?: boolean }
+  /** Ham açık koltuk (`create_random_game`'e giden ve `list_my_random_games`'ten gelen biçim). */
+  | { type: 'open' };
 
 export type OnlineGameStatus = 'pending' | 'active' | 'finished' | 'abandoned';
 
@@ -139,6 +155,49 @@ export interface OnlineGame {
   my_invite_status: 'pending' | 'accepted' | 'declined' | null;
   /** Çağıran davetliyse `game_invites.id` (respond_to_game_invite'a geçilir); kurucuysa null. */
   my_invite_id: string | null;
+}
+
+// ── Rastgele Oyuncu (3 Ekim 2026) — açık ilanlar ────────────────────────────
+
+/** `list_random_games` satırındaki tek koltuğun durumu. */
+export type RandomSeatState = 'creator' | 'filled' | 'invited' | 'ai' | 'open';
+
+/** Şeritteki başkasının açık ilanı (`list_random_games` RPC'sinin tek satırı). */
+export interface RandomListing {
+  id: string;
+  player_count: 2 | 4;
+  created_at: string;
+  creator_id: string | null;
+  creator_name: string | null;
+  creator_avatar_url: string | null;
+  seats: RandomSeatState[];
+  open_seats: number;
+}
+
+/** `list_my_random_games` satırı — benim açtığım / kabul edip beklediğim / arkadaş olarak davet edildiğim ilan. */
+export interface MyRandomGame {
+  id: string;
+  created_by: string | null;
+  player_count: 2 | 4;
+  status: OnlineGameStatus;
+  created_at: string;
+  expires_at: string;
+  /** Zenginleştirilmiş; AÇIK koltuk ham `{"type":"open"}` gelir. */
+  slots: OnlineGameSlot[];
+  filled_seats: number;
+  open_seats: number;
+  my_role: 'creator' | 'random' | 'friend';
+  my_invite_id: string | null;
+}
+
+/** `create_random_game` / `accept_random_game` dönüşü. */
+export interface RandomGameResult {
+  /** `true`: yeni ilan açılmadı, var olan bir ilana katıldın. */
+  joined: boolean;
+  game_id: string;
+  /** Oyun doldu ve başladı mı. */
+  started: boolean;
+  seat?: number;
 }
 
 // ── Yerel (YZ) oyun — sunucu kaydı (girişli kullanıcılar, cihazlar arası) ───

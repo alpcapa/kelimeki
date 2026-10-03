@@ -80,6 +80,9 @@ import type {
   OnlineGame,
   OnlineGameMessageRow,
   OnlineGameSlot,
+  MyRandomGame,
+  RandomGameResult,
+  RandomListing,
   OnlineGameStatePublic,
   OnlineMovePlacement,
   OnlineMoveRow,
@@ -1622,6 +1625,90 @@ export async function respondToGameInvite(inviteId: string, accept: boolean): Pr
     p_accept: accept,
   });
   if (error) rethrowSupabase(error);
+}
+
+// ── Rastgele Oyuncu (3 Ekim 2026, docs/decisions/random-opponent.md) ─────────
+
+/**
+ * Açık ilan açar ya da (kadro YALNIZCA "?" koltuklardan oluşuyorsa ve aynı
+ * boyutta açık ilan varsa) var olanına KATILIR — sunucu karar verir, dönüşteki
+ * `joined` hangisi olduğunu söyler. Arkadaş koltuğu varsa davet bildirimi
+ * `createOnlineGame` ile AYNI yoldan gider (`notify-game-invite`).
+ * Sunucunun Türkçe reddi (3 sınırı, "önce bir oyun bitir") P0001 ile gelir;
+ * `code` KORUNUR, ekranda `friendlyErrorMessage`.
+ */
+export async function createRandomGame(
+  playerCount: 2 | 4,
+  slots: OnlineGameSlot[],
+): Promise<RandomGameResult> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { data, error } = await supabase.rpc('create_random_game', {
+    p_player_count: playerCount,
+    p_slots: slots,
+  });
+  if (error) rethrowSupabase(error);
+  const sonuc = data as RandomGameResult;
+  // Yalnızca YENİ ilanda ve yalnızca arkadaş koltuğu varsa davet gider; `joined`
+  // ilanda bildirilecek davetli yok.
+  if (!sonuc.joined && slots.some((s, i) => i > 0 && s.type === 'human')) {
+    void notifyGameInvite(sonuc.game_id);
+  }
+  return sonuc;
+}
+
+/** Şeritteki bir ilanı kabul eder (tek dokunuş). `joined: true` her zaman. */
+export async function acceptRandomGame(gameId: string): Promise<RandomGameResult> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { data, error } = await supabase.rpc('accept_random_game', { p_game_id: gameId });
+  if (error) rethrowSupabase(error);
+  return data as RandomGameResult;
+}
+
+/** Kabul ettiğim ilandan, dolmadan ayrılır (koltuk yeniden açılır, ceza yok). */
+export async function leaveRandomGame(gameId: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.rpc('leave_random_game', { p_game_id: gameId });
+  if (error) rethrowSupabase(error);
+}
+
+/** Kurucu olarak kendi ilanını iptal eder. */
+export async function cancelRandomGame(gameId: string): Promise<void> {
+  if (!supabase) throw new Error('Supabase yapılandırılmadı.');
+  const { error } = await supabase.rpc('cancel_random_game', { p_game_id: gameId });
+  if (error) rethrowSupabase(error);
+}
+
+/**
+ * Başkalarının açık ilanları (şerit) — en yeni önce. `null` = "bilmiyoruz"
+ * (ağ/sunucu hatası), `[]` = "sunucu boş dedi": çağıran şeridi boşken
+ * GİZLİYOR, yani ikisini karıştırmak düşen tek bir isteğin şeridi
+ * sessizce kaldırması demek (`listMyOnlineGames` ile aynı ayrım).
+ */
+export async function fetchRandomGames(limit = 20, offset = 0): Promise<RandomListing[] | null> {
+  if (!supabase) return [];
+  const client = supabase;
+  const { data, error } = await retryOnTransientFailure(() =>
+    client.rpc('list_random_games', { p_limit: limit, p_offset: offset }),
+  );
+  if (error) {
+    console.error('[Kelimeki] fetchRandomGames hatası:', error.message);
+    reportLiveListError(error, 'list_random_games');
+    return null;
+  }
+  return (data as RandomListing[]) ?? [];
+}
+
+/** Benim ilanlarım: açtığım, kabul edip beklediğim, arkadaş olarak çağrıldığım. `null` = bilmiyoruz. */
+export async function fetchMyRandomGames(): Promise<MyRandomGame[] | null> {
+  if (!supabase) return [];
+  const client = supabase;
+  const { data, error } = await retryOnTransientFailure(() => client.rpc('list_my_random_games'));
+  if (error) {
+    console.error('[Kelimeki] fetchMyRandomGames hatası:', error.message);
+    reportLiveListError(error, 'list_my_random_games');
+    return null;
+  }
+  return (data as MyRandomGame[]) ?? [];
 }
 
 // ── Canlı oyun (Faz 3 — gerçek zamanlı senkron oynanış) ─────────────────────
