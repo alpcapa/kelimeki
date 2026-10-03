@@ -184,3 +184,32 @@ kendisi için o karar durur. Başlama onayı ayrıca beklenir (sunucu değişikl
 canlıya anında girer). Sıra: (1) sunucu (migration + eski istemci koruması) →
 (2) web → (3) port taslak PR'ı → (4) iki gerçek hesapla elle test. Port 12
 Ekim'e yetişmezse web+sunucu gider, port 19 Ekim trenine kayar.
+
+## 11. Sunucu migration'ı — uygulama durumu (3 Ekim 2026)
+
+Dosya: `supabase/migrations/20261003120000_random_games.sql` (zaman damgası YER
+TUTUCU; canlıya uygulanınca `list_migrations` ile düzeltilir). **Henüz canlıya
+UYGULANMADI.** Opus ajanı yazdı; ben okudum ve canlıyla karşılaştırdım:
+`respond_to_game_invite` canlı tanımıyla aynı (yalnızca kilit sırası + "açık koltuk
+kalmadı" şartı eklendi), `list_my_online_games` repodaki son sürümden yalnızca
+`open`→`{"type":"ai","open":true}` maskesiyle ayrışıyor, kullanılan tüm kolonlar
+canlı şemada var. Ajanın yerel testi SAHTE şema/PG16 üzerindeydi; canlıda
+(PG17) doğrulama ayrıca koşulur.
+
+Kararlar: kabul eden `game_invites`'ta `accepted` satırı alır + koltuğa `via:"random"`
+(ayrılma yalnızca bu koltuğu boşaltır); açık koltuklu oyunu aktif yapmayı bir
+TETİKLEYİCİ engeller (`init_online_game_state` açık koltuğu sessizce YZ sayardı)
+ve ilan/açık koltuk yalnızca bu RPC'lerden yazılabilir (RLS kurucuya doğrudan
+yazım izni veriyordu); bitmiş-oyun kapısı `games` tablosuna bakar (YUMUŞAK frende
+yazılabilir tablo).
+
+**İstemciyi bağlayan sonuçlar:**
+- **Şerit Realtime ile BESLENEMEZ:** Realtime RLS'e uyar, yabancının ilanı olay
+  olarak gelmez (§4'teki "tek kanal" varsayımı yanlıştı). Şerit sayfa görünürken
+  ve öne dönüşte yoklanır (aralık istemci tarafında seçilir, ölçüyle).
+- offset sayfalaması kayar → istemci id ile tekilleştirir.
+- Sessize alma yalnızca benim yönümde süzülür (v1; iki yönlüye gerek görülürse sonra).
+- Karma kadroda arkadaşın reddi tüm ilanı (oturmuş yabancılarla) kapatır
+  (bugünkü ret kuralı, değişmedi).
+- Eski sürümlü arkadaş açık koltuğu "Yapay Zeka" sanır (bilinen bedel).
+- Doğrulanmadı: oyun başlarken `_notify_your_turn` tetiklenir mi.
