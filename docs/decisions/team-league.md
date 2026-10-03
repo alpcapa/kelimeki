@@ -54,6 +54,7 @@ arkadaşının bölgesine bağlayabilirsin."* Bu doğru ve daha iyi bir oyun, am
 |---|---|
 | Koltuk / köşe | Sıra **A-B-A-B saat yönünde**: koltuk 0 = A (köşe 0, sol-üst), 1 = B (köşe 1, sağ-üst), 2 = A (köşe 3, sağ-alt), 3 = B (köşe 2, sol-alt). **Takımlar çapraz köşelerde** (A: ↖ ↘, B: ↗ ↙), ortaklar art arda oynamaz |
 | Renk | **Takım başına tek renk** (A camgöbeği, B kırmızı — 2 kişilik oyunun iki rengi). Taşlar, bölge dış hattı, bant hep takım renginde. `Player.colorIndex` zaten koltuktan ayrı bir alan, ikisi aynı değeri taşır |
+| Oyuncu/avatar renkleri (Revizyon 12, kullanıcı: *"2 kişilik oyun renkleriyle aynı olsun"*) | Yalnızca **iki renk**: takım A **camgöbeği** (`PLAYER_COLORS[0]`), takım B **kırmızı** (`[1]`) — 2 kişilik oyunun `colorIndex = i` ile atadığı renklerin aynısı (kodda doğrulandı, `gameReducer.startGame`). Ortakların avatarı AYNI renk; dört ayrı oyuncu rengi (yeşil/mor) takım oyununda KULLANILMAZ. Listelerde bir takımın iki avatarı tek renk; iki takımlı satırda (Devam ediyor) 2 camgöbeği + 2 kırmızı. İlan açan = A, kabul eden = B. Normal 4 kişilik Canlı oyun dört rengini korur. Sunucuda `init_online_game_state` takım oyununda `colorIndex` 0,1,0,1 yazar |
 | Ortak bölge | Takımın bölgesi = **iki ortağın köşelerinden ve iki ortağın taşlarından** tek zincir. Ortak bölgeyi büyütebilir; kendi bölgenden ortağın bölgesine bağlanabilirsin, iki parça birleşir |
 | Takım içi vergi | **YOK.** Ortağın bölgesi senin bölgendir. Vergi yalnızca **rakip takıma** ödenir/alınır; n (etkileşilen rakip bölge sayısı) rakip TAKIM sayısıdır (tek rakip takım = n=1) |
 | İlk hamle | Kural aynı, ortağınki değil **kendi** başlangıç karen (her oyuncunun kendi ev işareti var). Sonraki hamleler serbest |
@@ -115,9 +116,9 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
   büyük "Oyun Aç" butonu ve takım seçme sheet'i YOK. Aktif takımın satırına
   tıklayınca **sağdaki durum etiketi (Aktif) "Oyun Aç" butonuna döner**; butona
   basınca ilan **hemen** açılır (soru yok), altta kısa bildirim *"Oyun açıldı.
-  Rakip bekleniyor."* Takımın bekleyen ilanı varsa etiket **"Açık oyun"** olur ve
+  Rakip bekleniyor."* Takımın bekleyen ilanı varsa etiket **"Açık oyun"** olur; satıra tıklayınca bildirim *"Rakip bekleniyor. Biri onu kabul edince yeni oyun açabilirsin."* çıkar ve
   buton çıkmaz (takım başına 1 bekleyen ilan); biri kabul edip oyun başlayınca
-  etiket yine "Aktif"e döner ve takıma tıklayınca **tekrar Oyun Aç** çıkar
+  etiket yine **"Aktif"** olur (Revizyon 12 teyidi) ve takıma tıklayınca **tekrar Oyun Aç** çıkar; 3 devam eden oyuna ulaşınca "Oyunların dolu"
   (Revizyon 10, kullanıcı). Aktif takımın yoksa yönerge yerine
   *"Önce bir takım kur"* yazar.
 - **Kendi ilanını kabul edemezsin:** ilanı açan takımın İKİ üyesinin gözünde de
