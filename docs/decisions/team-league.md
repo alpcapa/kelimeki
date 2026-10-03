@@ -104,14 +104,22 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
   "‹ Yeni Canlı Oyun" geri satırı YOK. 2 ve 4 bugünkü sistemin aynısı.
   Yapay Zeka sekmesine DOKUNULMAZ.
 - **Takım sekmesinin içeriği** (aynı sayfada, form açılmaz), YUKARIDAN AŞAĞI:
-  1. **Oyun Aç** (aktif takımın yoksa pasif, altında "Önce bir takım kur").
-     Basınca **takım seç sheet'i** açılır; onay butonu **"Oyun Başlat"**
-     (sayfadaki "Oyun Aç"tan ayrı, çift buton görünümü olmasın),
-  2. **Takımlarım** (+ Takım Oluştur; Aktif / Onay bekliyor). **Gelen takım
-     daveti** (Zeynep seni davet etti) listenin BAŞINDA, Kabul Et / Reddet ile,
-  3. **Açık Oyunlar** (yanında Kabul Et; kendi ilanında İptal).
-  **Takım satırlarında yalnızca sıra ve puan** ("4. sıra · 22 puan"); OHP,
-  ilanın yaşı, üye adları satırda yazmaz. Sıralama listesi k-lig'de.
+  1. **Takımlarım** (+ Takım Oluştur). Altında yönerge: **"Oyun açmak için
+     takımın üstüne tıkla"**. **Gelen davet** listenin BAŞINDA: *"Zeynep seni
+     takımına davet etti"* + Kabul Et / Reddet. Satırlarda yalnızca **sıra ve
+     puan** ("4. sıra · 22 puan"); durum etiketi sağda (Aktif / Onay bekliyor),
+  2. **Açık Oyunlar** (yanında Kabul Et).
+- **Oyun açmak tek dokunuş (Revizyon 8, kullanıcı: *"çok basit olmalı"*):**
+  büyük "Oyun Aç" butonu ve takım seçme sheet'i YOK. Aktif takımın satırına
+  tıklayınca **sağdaki durum etiketi (Aktif) "Oyun Aç" butonuna döner**; butona
+  basınca ilan **hemen** açılır (soru yok), altta kısa bildirim *"Oyun açıldı.
+  Rakip bekleniyor."* Takımın zaten açık ilanı varsa etiket "İlan açık" kalır,
+  buton çıkmaz (takım başına 1 ilan). Aktif takımın yoksa yönerge yerine
+  *"Önce bir takım kur"* yazar.
+- **Kendi ilanını kabul edemezsin:** ilanı açan takımın İKİ üyesinin gözünde de
+  satırda Kabul Et yerine **"Bekliyor"** etiketi. İlanı iptal etmek için
+  satıra dokunulur (küçük onay: "İlanı iptal et"). Sunucu da reddeder
+  (`accept_open_game`: kabul eden takım ile ilan takımı üye paylaşamaz).
 - **Liste boyutu / yükleme (Revizyon 7):** sayfa TEK kaydırma alanı (iç içe
   kaydırma yok). Bu yüzden uzayabilen liste EN ALTTA: **Açık Oyunlar sunucu
   sayfalıdır, ilk 10 satır, sonra kaydırdıkça 20'şer** (`IntersectionObserver`,
@@ -127,15 +135,16 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
   deseni).
 - **Takım Oluştur:** Takım sekmesinden ya da takımsız Kabul Et'ten (§6) gelinen
   tek ekran (arkadaşlardan 1 kişi + ad + Kaydet); geri okuyla döner.
-- **Devam eden takım oyunları** Arkadaşınla'nın Aktif Oyunlar listesinde,
-  pembe bantla.
+- **Devam eden takım oyunları** Arkadaşınla'daki **Devam Edenler** listesinde,
+  biten oyunlar **Son Oynananlar**'da, ikisinde de normal oyun gibi girer.
+  Ayrışma hafif: zemin çok açık pembe, solda pembe çizgi, "TAKIM" etiketi.
 - **k-lig → Takım Ligi satırı:** sütun sırası **OHP solda, puan sağda**
   (başlık "OHP · puan").
 
 ### 5.2 İlan ve kabul
 
-1. **Oyun Aç:** üye, **aktif** takımlarından birini seçer ("takım seç → oyun
-   başlat"). İlan açılır. Ortağı OTOMATİK katılır (onay sorulmaz: takıma
+1. **Oyun Aç:** üye, aktif takımının satırına tıklar, sağdaki etiket "Oyun
+   Aç"a döner, basınca ilan açılır (§5.1). Ortağı OTOMATİK katılır (onay sorulmaz: takıma
    girerken onay verdi) ve **bildirim** alır (push + uygulama içi): *"Ali, ‹Takım›
    adına açık oyun açtı."*
 2. **Açık Oyunlar listesi** (girişli herkes görür): kurucu takım adı + iki
@@ -143,7 +152,9 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
    ilanlarında Kabul Et yerine **İptal**.
 3. **Kabul Et:**
    - Takımı **yoksa** → "Önce bir takım kur" adımı (§6). İlan KİLİTLENMEZ.
-   - Tek aktif takımı varsa onu, birden çoksa **takım seç** sheet'i.
+   - Kabul eden takım = **Takımlarım'da tıklanıp seçili olan takım**; seçili yoksa
+     ve tek aktif takım varsa o; birden çok aktif takım varsa seçim yapılmamışsa
+     bildirim *"Önce takımını seç"* ve Takımlarım vurgulanır (ek pencere yok).
    - Kabul eden takımın ortağı OTOMATİK katılır, bildirim alır.
    - Sunucuda **tek atomik işlem** (`for update` kilidi): ilan `pending`→`active`,
      4 koltuk atanır, `init_online_game_state` çalışır. İki takım aynı anda
@@ -180,10 +191,14 @@ sahibine bildirim: *"‹Takım› hazır. Açık oyunlara dön."*
   (kutuda hangi ortağın oynayacağı görünmediği için). Tahta, raf, butonlar aynı. Sırası gelen takımın
   kutusu bugünkü gibi kalın çerçeveli. Kutuya dokununca açılan skor kartı
   penceresi bugünkü gibi çalışır, takım için iki üyenin kartını gösterir (S17).
-- **Oyun Geçmişi** (`MoveHistoryModal`): dört kutu **Toplam · Takım puanı ·
-  Takım vergisi(−) · Takım vergisi(+)**. Vergi yalnızca rakip takımla olan
-  (takım içi vergi yok, §3). Hamle satırlarında oynayanın adı yazar, çünkü
-  satırın rengi takımın rengidir. `moveHistoryStats` takım bilgisini alır; web ↔ Dart.
+- **Oyun Geçmişi** (`MoveHistoryModal`) (Revizyon 8): **alt kısım (hamle
+  satırları) bugünküyle AYNI**: "sıra no. oyuncunun adı", kelime ve puanı,
+  Sınır İhlali etiketi, "N puanı X kaptı" notu. Değişen yalnızca üstteki dört
+  kutunun SAYILARI, hepsi takımın: **Toplam · (takım adı = takım puanı) ·
+  Vergi(−) · Vergi(+)** (bugünkü ikinci kutu `me.name` + skor, burada takım adı
+  + takım puanı). Vergi yalnızca rakip takımla; alan taraf takım olduğundan
+  not *"10 puanı Kıvılcım kaptı"* der. `moveHistoryStats` takım bilgisini alır;
+  web ↔ Dart.
 - **Bitiş ekranı (Revizyon 2):** mevcut `GameOver` ızgarası (`ad · Kalan ·
   Toplam · k-lig`) aynen, iki takım için iki blok:
   - **Takım satırı:** takım adı · (boş) · **takım toplamı** · **+2** (kazanan)
@@ -298,6 +313,7 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 | # | Soru | Öneri |
 |---|---|---|
 | S17 | Takım kutusuna dokununca ne açılsın? | Bugünkü skor kartı penceresi, iki üyenin kartı alt alta |
+| S18 | Birden çok aktif takımı olan biri Kabul Et'e basınca hangi takımla kabul eder? | Takımlarım'da tıklanıp seçili olan takımla; seçili yoksa "Önce takımını seç" bildirimi, ek pencere yok |
 | S16 | Takım oyunu istatistikte nereye girsin? (S16, §9) | Ayrı mod işareti; Skor Kartı'na Takım satırı, Genel puana dahil, 2 ve 4 kişilik satırları değişmez |
 | S4 | İlan **7 gün** mü? | 7 gün (davetle aynı). Liste şişerse 48 saat |
 | S5 | Takım başına **1 açık ilan**, kullanıcı başına **5 takım**? | Evet |
