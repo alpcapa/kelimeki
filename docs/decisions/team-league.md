@@ -156,8 +156,7 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
   Etiket konumu: **Devam Edenler'de avatar+puan sütununun ALTINDA** (sol, kendi
   satırı; yatay sıkışma yok, 320 px'te güvenli — yalnızca takım kartı ~12 px
   uzar), **Son Oynananlar'da tarihin YANINDA** (YZ oyunundaki zorluk rozetinin
-  yeri). Avatar sırası takım gruplu (A A B B), puan satırında kişi puanı yerine
-  **takım toplamı, her çiftin ilk avatarının altında** (ikincisi boş). Port ikizi:
+  yeri). **Avatarlar (Revizyon 14, kullanıcı): iki çift, "(●●) – (●●)"**: her çift kendi içinde diğer avatarlar gibi örtüşür (`AVATAR_ROW_OVERLAP`=6 / 26 px, yani bugünkü örtüşme), çiftler arasında muted bir "–"; puan satırında kişi puanı yerine **takım toplamı, çiftin ALTINDA ortada**. Genişlik: 2×(26+20)+ayraç ≈ 108 px (bugünkü 4 avatar ≈ 86 px); 320 px'te sol sütunda ~123 px kalıyor, sığar ama dar — port ikizinde `scoreCellWidth` mantığı çift için yeniden yazılır, 320 px testi eklenir. Port ikizi:
   `devam_eden_govde.dart` / `_RecentRow`. Yer alternatifi (avatarların sağı)
   320 px'te sıkışır, önerilmez.
 - **k-lig → Takım Ligi satırı:** sütun sırası **OHP solda, puan sağda**
