@@ -194,6 +194,12 @@ portta henüz yok (ROADMAP #41'in port yarısı).
   `signOut({ scope: 'local' })`; port etkilenmez (`gotrue` Dart varsayılanı
   zaten `local`). Kapı: `verify-auth-user-identity` her `auth.signOut(`
   çağrısının kapsamı açıkça `local` vermesini tarıyor.
+  **Sahada doğrulandı (3 Ekim 2026, kullanıcı, `TESTING.md` → "Çıkış
+  yalnızca O cihazı kapatır"):** Android'de çıkış → iPad'de yenilemeden
+  Hesap Ayarları: passkey listesi dolu, PASSKEY EKLE "Auth session missing!"
+  VERMEDİ — onun yerine kendi uyarımız *"Bu cihazda bu hesap için zaten bir
+  passkey var."* (`api.ts`, cihazda o hesabın passkey'i zaten kayıtlı; doğru
+  davranış). Android'de yeniden girişte de liste dolu geldi.
 - **`AuthModal` — 2 Ekim 2026: ad/soyad İSTEĞE BAĞLI, form "zorunlular üstte"
   düzenine geçti** (kullanıcı: *"isim soyadı zorunlu olmaktan çıkacaktı … zorunlular
   yukarıda, opsiyoneller aşağıda"*). Sıra: Takma isim · E-posta · Şifre (`*`) →
