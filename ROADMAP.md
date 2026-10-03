@@ -855,8 +855,10 @@ Kullanıcı isteği: 4'lü Canlı oyunda 2'şer kişilik takımlar, herkese aç�
 ilanla rakip bulma, k-lig'de üçüncü alt lig (yalnızca takım puanı, eşitlikte
 takım OHP'si). Tam tasarım, 12 açık soru ve atlanabilecek ayrıntılar:
 `docs/decisions/team-league.md`. Görsel taslak (akışlar + 10 ekran):
-https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed. Motora dokunmaz (tek
-istisna: takımın tüm üyeleri teslimse bitiş, yalnızca SQL). **Sıradaki adım:**
+https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed. **Revizyon 2 (3 Ekim):** ortaklar çapraz köşede, aynı renkte, ORTAK bölge
+(takım içi vergi yok) → motorun bölge hesabı dört kopyada takım bilir
+(opsiyonel `Player.team`, mevcut golden'lar bayt-eş kalmalı); takım +2,
+kazanan iki oyuncuya +2 (`games.rank` 1,1,3,3 → `league_points_for` değişmez). **Sıradaki adım:**
 kullanıcı S1-S12'yi yanıtlar → karar kaydı olur → Faz 1 (takım kur/kabul).
 Sürüm: web+sunucu bayrak arkasında önce, port 1.2.0 treniyle.
 

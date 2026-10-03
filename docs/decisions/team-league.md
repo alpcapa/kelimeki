@@ -39,21 +39,32 @@
 | **Takım Ligi** | k-lig'in üçüncü alt ligi (🤝), takım puanına göre |
 | **Takım puanı** | Üyelerin o oyundaki skorlarının TOPLAMI |
 
-## 3. Motora dokunmama ilkesi (en önemli sınır)
+## 3. Motor: ORTAK BÖLGE motora dokunur (Revizyon 2 ile değişti)
 
-Motorun dört kopyası var (web · Dart · Edge `_game/` · SQL `_km_*`). Bu özellik
-**kural motorunu DEĞİŞTİRMEZ**: tahta, raf, puan, bölge, vergi, X2/X3 aynen.
-Takım oyunu, "kim hangi takımda" üst katmanı olan sıradan bir 4 kişilik Canlı
-oyundur.
+İlk taslak "motora dokunmaz" diyordu (ortağın bölgesine girince vergi, ayrı
+renkler). Kullanıcı bunu **ters çevirdi**: *"aynı renkte oynayacaklar, 2 kişilik
+oyuncu seçildiğinde gibi. Arkadaşınla aynı bölgeyi büyüteceksin. İlk hamle
+dışında arkadaşının bölgesini de büyütebileceksin; veya kendi bölgenden
+arkadaşının bölgesine bağlayabilirsin."* Bu doğru ve daha iyi bir oyun, ama
+**bölge hesabı takım bilir hâle gelmek zorunda** (bedel §9).
 
-| Kural | Karar | Neden |
-|---|---|---|
-| Koltuk dizilimi | **A-B-A-B**: koltuk 0 ve 2 = Takım A, 1 ve 3 = Takım B | Ortak art arda oynamasın; köşeler: A sol (↖ ↙), B sağ (↗ ↘). Renkler: A camgöbeği+yeşil, B kırmızı+mor |
-| Takım içi bölge vergisi | **Aynen ödenir** (ortağın bölgesine girersen ona vergi) | Motor değişmez. Takım için net 0, yalnızca bireysel skor oynar. Onay penceresine bilgi satırı: *"Ortağının bölgesi, takımın için net 0"* (yalnızca metin) |
-| Takım vergisi (gösterim) | Yalnızca **rakip takıma** ödenen/alınan | Takım içi transfer takım toplamını değiştirmez, gürültü olur |
-| YZ | Takım oyununda YZ koltuğu YOK | 4 insan zorunlu |
-| Teslim / 48 sa zaman aşımı | Motorun kademeli teslimi aynen: teslim olanın skoru 0, rafı torbaya | Takım puanı = kalan üyenin skoru |
-| **Oyun bitişi** | Mevcut kural "aktif oyuncu 1'e düşünce biter" takım oyununda YETMEZ: A'nın iki üyesi teslimse B'de iki aktif kalır, oyun bitmez. **Yeni kural: bir takımın TÜM üyeleri teslimse biter.** | Tek motor dokunuşu. Yalnızca SQL (`check_turn_timeout` bitiş dalı) + `verify-sql-engine-parity` genişler. Canlı ekran sunucu durumunu okuduğundan web/Dart reducer'ı DEĞİŞMEZ. Golden vector gerekmez, ama bu karar onaylanınca SQL kapısı yazılmalı |
+| Kural | Karar |
+|---|---|
+| Koltuk / köşe | Sıra **A-B-A-B saat yönünde**: koltuk 0 = A (köşe 0, sol-üst), 1 = B (köşe 1, sağ-üst), 2 = A (köşe 3, sağ-alt), 3 = B (köşe 2, sol-alt). **Takımlar çapraz köşelerde** (A: ↖ ↘, B: ↗ ↙), ortaklar art arda oynamaz |
+| Renk | **Takım başına tek renk** (A camgöbeği, B kırmızı — 2 kişilik oyunun iki rengi). Taşlar, bölge dış hattı, bant hep takım renginde. `Player.colorIndex` zaten koltuktan ayrı bir alan, ikisi aynı değeri taşır |
+| Ortak bölge | Takımın bölgesi = **iki ortağın köşelerinden ve iki ortağın taşlarından** tek zincir. Ortak bölgeyi büyütebilir; kendi bölgenden ortağın bölgesine bağlanabilirsin, iki parça birleşir |
+| Takım içi vergi | **YOK.** Ortağın bölgesi senin bölgendir. Vergi yalnızca **rakip takıma** ödenir/alınır; n (etkileşilen rakip bölge sayısı) rakip TAKIM sayısıdır (tek rakip takım = n=1) |
+| İlk hamle | Kural aynı, ortağınki değil **kendi** başlangıç karen (her oyuncunun kendi ev işareti var). Sonraki hamleler serbest |
+| Takım bölgesi vergisi nereye | Tahsil edilen vergi takıma gider; skor alanı koltuklara yazıldığından **eşit bölünür** (tek kuruş artan düşük koltuğa). Ekran takım toplamını gösterdiğinden fark görünmez (S13) |
+| YZ | Takım oyununda YZ koltuğu YOK |
+| Teslim / 48 sa zaman aşımı | Motorun kademeli teslimi aynen: teslim olanın skoru 0, rafı torbaya. **Teslim olanın köşesi** doğal alana döner, ortağın zinciri sürer |
+| Oyun bitişi | "Aktif oyuncu 1'e düşünce biter" takım oyununda yetmez. **Yeni kural: bir takımın TÜM üyeleri teslimse biter.** Yalnızca SQL (`check_turn_timeout`) |
+
+**Geriye dönük güvenlik (en önemli mühendislik ilkesi):** `Player.team` alanı
+**opsiyonel**. Alan yoksa her oyuncu kendi takımıdır ve hesap **bayt-eş** eski
+davranıştır. Böylece mevcut golden vector'lar DEĞİŞMEDEN geçmeli — takım
+oyunu dışındaki hiçbir oyun etkilenmediğinin kanıtı. Yeni fixture'lar yalnızca
+takımlı durumları ekler.
 
 ## 4. Takım yaşam döngüsü
 
@@ -118,38 +129,48 @@ Bilinçli: ilan rezerve edilmez, yoksa onay vermeyen bir arkadaş başkasının
 oyununu bloke eder. Ekran bunu açıkça söyler. Arkadaş onaylayınca takımın
 sahibine bildirim: *"‹Takım› hazır. Açık oyunlara dön."*
 
-## 7. Hamle geçmişi, skor ekranı, Son Oynananlar
+## 7. Oyun içi, Oyun Geçmişi, bitiş ekranı, Son Oynananlar
 
-- **Oyun Geçmişi** (`MoveHistoryModal`) bugünkü dört kutu: Toplam · (ad) ·
-  Vergi(−) · Vergi(+). Takım oyunu için: **Toplam · Takım puanı · Takım
-  vergisi(−) · Takım vergisi(+)**. Kişisel ad/skor/vergi bilgisi kutuların
-  ALTINDA ince bir şerit olur (bkz. görsel). `moveHistoryStats`
-  saf fonksiyonu takım bilgisini alır; web ↔ Dart ikizi.
-- **Skor kartları:** her oyuncunun kartında **takım bandı** (A pembe · B
-  amber). Takım toplamları sayfa başlığında (*A 214 – 187 B*).
-- **Oyun sonu:** önce takım sonucu (KAZANDINIZ / KAYBETTİNİZ / BERABERE),
-  sonra iki takımın üyeleri ve skorları.
+- **Oyun ekranı skor kutuları (Revizyon 2):** her takım için TEK kutu:
+  **takım adı + takım toplamı**, takım renginde. Kişi başına skor GÖSTERİLMEZ.
+  Sıradaki oyuncu kutu içinde küçük bir nokta/avatarla belirtilir.
+- **Oyun Geçmişi** (`MoveHistoryModal`): dört kutu **Toplam · Takım puanı ·
+  Takım vergisi(−) · Takım vergisi(+)**. Vergi yalnızca rakip takımla olan
+  (takım içi vergi yok, §3). Hamle satırlarında oynayanın adı yazar, çünkü
+  satırın rengi takımın rengidir. `moveHistoryStats` takım bilgisini alır; web ↔ Dart.
+- **Bitiş ekranı (Revizyon 2):** mevcut `GameOver` ızgarası (`ad · Kalan ·
+  Toplam · k-lig`) aynen, iki takım için iki blok:
+  - **Takım satırı:** takım adı · (boş) · **takım toplamı** · **+2** (kazanan)
+    ya da 0. Başlıkta *"KIVILCIM KAZANDI"* (ya da BERABERE).
+  - **Altında iki kişi satırı:** ad · **Kalan** (elde kalan taşların değeri,
+    `−N`) · **Toplam** (kişinin skoru) · **k-lig** (`+2` ya da `0`; teslimde
+    `−2`). Bugünkü kuralın aynısı; yalnızca ızgaraya takım satırı eklenir.
 - **Son Oynananlar:** normal oyun gibi satır; **silik pembe bant + "TAKIM"
-  etiketi**. Bugünkü Canlı satırı `bg-panel` (gri); takım oyunu ona pembe
-  tonlu bant ekler. "Takımın adı" ve rakip takım adı satırda yazar.
-- **Renk önerisi (görselde):** bant/etiket `#F9D7E6` zemin, `#9C2A5F` yazı;
-  Takım B amber `#FCE7B2` / `#8A5A00`. Dört oyuncu rengiyle (camgöbeği,
-  kırmızı, yeşil, mor) çakışmaz; kırmızıya yakın görünmemesi için pembe
-  doygunluğu düşük tutuldu.
+  etiketi**. Gri CANLI'dan ayrışır. Takım adları satırda yazar. Bant rengi
+  `#F9D7E6` / yazı `#9C2A5F`. **Pembe yalnızca "bu bir takım oyunu"
+  işaretidir**; oyun içindeki takım renkleri camgöbeği ve kırmızıdır (Revizyon 2:
+  önceki amber/pembe takım rengi önerisi KALKTI).
 
-## 8. Puanlama ve Takım Ligi
+## 8. Puanlama ve Takım Ligi (Revizyon 2)
 
-| Konu | Karar (öneri) |
+Kullanıcı: *"Takım ligindeki puandan kastım kazanınca kazanılan takım puanı:
+galibiyet 2 puan, ikinciye puan yok. Kazanan takımın oyuncularının ikisine de
++2 yazacak ayrıca. Takım 2 puan alacak, oyuncular +2 alacak."*
+
+| Konu | Karar |
 |---|---|
-| Oyun sonucu | Takım puanı yüksek olan kazanır. Eşitlikte **berabere** |
-| Lig puanı (takıma) | Kazanan **+2** · Beraberlik **+1** (ikisi de) · Kaybeden **0** · takımında **teslim olan üye varsa −2** (sonuç ne olursa; bireysel "teslim −2" kuralının aynısı) |
-| Sıralama | **Takım puanı** ↓, eşitlikte **takım OHP'si** ↓, sonra oynanan oyun ↓, sonra takım id (sayfalama kararlı kalsın — `k_lig_siralama` dersi) |
-| Takım OHP'si | Takımın iki üyesinin **takım oyunlarındaki** tüm puanlı hamlelerinin ortalaması. Bireysel OHP'nin takım karşılığı; YZ oyunu yok |
-| Giriş eşiği | Yok (en az 1 bitmiş takım oyunu). Beyin Ligi'nin 5 oyun eşiği puana göre sıralamada gerekmiyor |
-| Satır | sıra · takım adı · iki avatar · puan · OHP · oyun. Rütbe mührü YOK (puan eşiği ödül sistemi bireysel) |
-| "Senin sıran" | Kullanıcının EN İYİ takımının satırı, pencerenin içinde (Beyin Ligi #796 dersi: `fillBody`) |
-| Alttaki not | *"Takım puanı, oyundaki iki üyenin skorlarının toplamıdır. Puanlar eşitse takım OHP'si yüksek olan üstte."* |
-| Bireysel k-lig | **Takım oyunu `games`'e normal 4 kişilik oyun gibi yazılır** (bireysel sıra bireysel skora göre) → `league_points_for` DEĞİŞMEZ, beş nesne ve `verify-league-points` etkilenmez. Hamle puanları bireysel OHP'ye (Beyin Ligi) de normal girer. Alternatif için §10 S1 |
+| Takım puanı | Kazanan **+2**, kaybeden **0**. Beraberlik tanımsız (S14, öneri +1/+1) |
+| Oyuncu k-lig puanı | Kazanan takımın İKİ oyuncusu da **+2**, kaybedenler **0**, teslim olan **−2** (bugünkü kural) |
+| **Uygulama: sunucu formülü DEĞİŞMEZ** | `games`'e yazılan **sıra**: kazananlar `rank=1,1`, kaybedenler `rank=3,3`. `league_points_for(rank, 4, surrendered, null)` zaten 1.→+2, 3.→0 verir. `verify-league-points` ve beş nesne etkilenmez. Beraberlikte dördü `rank=2` → +1 |
+| Takım puanı toplamı | Takım Ligi puanı, `team_game_results` toplamı |
+| Sıralama | Takım puanı ↓, eşitlikte **takım OHP'si** ↓, sonra oyun sayısı ↓, sonra takım id |
+| Takım OHP'si | İki üyenin takım oyunlarındaki puanlı hamlelerinin ortalaması |
+| Giriş eşiği | Yok (en az 1 bitmiş takım oyunu) |
+| Satır | sıra · takım adı · iki avatar · puan · OHP · oyun. Rütbe mührü YOK |
+| "Senin sıran" | En iyi takımının satırı, pencerenin içinde (Beyin Ligi #796 dersi) |
+| Alttaki not | *"Galibiyet 2 puan. Puanlar eşitse takım OHP'si yüksek olan üstte."* |
+| Takım teslim cezası | Takıma ayrıca ceza YOK; teslim olan üye zaten kendi −2'sini alır |
+| Bireysel OHP | Hamle puanları Beyin Ligi'ne normal girer |
 
 ## 9. Sunucu ve istemci etkisi (kod yok, kapsam haritası)
 
@@ -169,11 +190,26 @@ sahibine bildirim: *"‹Takım› hazır. Açık oyunlara dön."*
   `list_open_team_games`, `my_team_rank`; görünüm `takim_ligi_siralama`
   (`security_invoker`, `k_lig_siralama` deseni).
 - `_finish_online_game_records` (oyun bitişi) `team_game_results`'i AYNI
-  transaction'da yazar. `check_turn_timeout` takım bitiş kuralını alır (§3).
+  transaction'da yazar ve `games`'e takım sonucuna göre `rank` (1,1,3,3)
+  yazar (§8). `check_turn_timeout` takım bitiş kuralını alır (§3).
+- **Motor (Revizyon 2) — dört kopyada ortak bölge:** `Player.team?` (opsiyonel)
+  · `cornersForTeams` (koltuk→köşe 0,1,3,2; renk 0,1,0,1) ·
+  `computeConqueredChain` (tohum: takımın iki köşesi; zincir: takım üyelerinin
+  taşları) · `computeAllTerritories` (ortaklar aynı kümeyi paylaşır) ·
+  `computeInvasionSplit` (kendi takımını dışla, rakip TAKIMLARI say, payı
+  takımın koltuklarına böl). Kopyalar: `src/utils/validator.ts` · Dart
+  `kelimeki_core` · `supabase/functions/_game/validator.ts`
+  (`verify-edge-engine-parity`, `play-ai-turn` yeniden deploy) · SQL
+  `_km_all_territories`, `_km_conquered_chain`, `_km_foe_in_own_block`,
+  `_km_fresh_corners`, `_km_invasion_split` + `init_online_game_state` +
+  `submit_move` lostShares doğrulaması (hedef rakip takımın koltuğu olmalı).
+  `Board.tsx` dış hattı takım başına BİR kez çizer. Kapılar:
+  golden `territory.json`a takımlı vakalar (mevcutlar bayt-eş kalmalı),
+  `verify-sql-engine-parity`, `move_shadow_diffs` ölçümü.
 - Dönüş tipi değişen RPC'lerde `drop`+`create` ve `proacl` kontrolü (anon
   sızıntısı dersi).
 
-**Web:** `Setup.tsx` (Takım Ligi kartı), `LiveGameCreateForm.tsx`
+**Web:** `types.ts`/`constants.ts`/`validator.ts` (motor), `Setup.tsx` (Takım Ligi kartı), `LiveGameCreateForm.tsx`
 (Normal | Takım oyunu), `LiveGamesTab.tsx` (pembe bant), `RecentGamesSection`,
 `MoveHistoryModal` + `moveHistoryStats`, `PlayerScoreCard`/`GameOver`,
 `Leaderboard.tsx` (üçüncü sekme `KLIG_TABS`), yeni `TeamLeagueModal`,
@@ -193,22 +229,24 @@ oyun açtı · ilanın kabul edildi (oyun başladı) · ilanın süresi doldu. A
 gönderen kuralı: `noreply@` (makine). `verify_jwt` envanterine yeni Edge
 fonksiyonu girerse `false` listesi güncellenir.
 
-## 10. Kullanıcıya AÇIK SORULAR (onay gerektiren)
+## 10. Kullanıcıya AÇIK SORULAR
+
+**Kapandı (Revizyon 2):** S1 bireysel puan (takım kazanırsa iki üyeye +2) ·
+S2 takım içi vergi (YOK, ortak bölge) · S3 puan tablosu (+2 / 0) · S10 takım
+rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 
 | # | Soru | Öneri |
 |---|---|---|
-| S1 | Takım oyunu **bireysel Puan Ligi'ne** nasıl girsin? (a) normal 4 kişilik bireysel sıra (b) takım sonucu: kazanan takımın iki üyesi de "1." sayılsın | **(a)** — `league_points_for` ve beş nesne DEĞİŞMEZ; "normal oyun gibi girecek" cümlesine uyar. (b) bireysel sıralamayı bozar ve SQL formülünü değiştirir |
-| S2 | Takım içi bölge vergisi (§3) aynen mi, yoksa ortak bölgeye vergisiz mi? | **Aynen** (motora dokunmaz). Vergisiz = motorun dört kopyası + golden vector |
-| S3 | Lig puanı tablosu +2 / +1 / 0 / −2 (§8) uygun mu? | Evet; Puan Ligi 4 kişilik ile aynı büyüklük |
-| S4 | İlan **7 gün** mü, daha kısa mı (rakip bekleyen takım için)? | 7 gün (davetle aynı). Açık listesi şişerse 48 saate indirilir |
-| S5 | Takım başına **1 açık ilan**, kullanıcı başına **5 takım**? | Evet, kötüye kullanım ve liste şişmesi için |
-| S6 | Takımı olmayan kabul için "Takım oluştur" akışı §6'daki gibi (rezerve YOK) | Evet |
-| S7 | Ortak, oyuna **sorulmadan** katılır (takıma girerken onay verdi). Ortak uygun değilse 48 sa sonra teslim olur ve takıma −2 yazar. Ortağa "Bu oyundan çekil" hakkı verilsin mi? | Verilmesin (Canlı'da manuel teslim yok kararıyla tutarlı); bildirim yeterli |
-| S8 | **Özel takım oyunu** (açık ilan yerine belirli bir takıma meydan okuma) bu sürümde mi? | Sonraya (`product-backlog.md`), önce açık ilan |
-| S9 | **Aynı rakip çiftiyle tekrar** oynayıp puan şişirme (iki arkadaş çifti birbirine kasten yenilir) | v1: yalnızca admin izleme sekmesi. v2: aynı iki takım arası 7 günde en çok 3 puanlı oyun |
-| S10 | Takım **rengi**: sabit A pembe / B amber mı, yoksa takım kurarken renk seçilsin mi? | Sabit (iki takımı ayırt etmek yeter; seçilebilir renk çakışma çıkarır) |
-| S11 | Rövanş: takım oyunu için (aynı iki takım, aynı dizilim) rövanş düğmesi? | Sonraya. `rematchSlots` kuralı takım için yeniden yazılmalı |
-| S12 | Sürüm planı: web+sunucu önce mi, port ile birlikte mi? | **Web+sunucu bayrak arkasında önce, port 1.2.0 treniyle, açılış birlikte.** Eski mobil istemci takım oyununu sıradan 4 kişilik oyun olarak oynayabilir (bant ve takım toplamı olmadan) |
+| S4 | İlan **7 gün** mü? | 7 gün (davetle aynı). Liste şişerse 48 saat |
+| S5 | Takım başına **1 açık ilan**, kullanıcı başına **5 takım**? | Evet |
+| S7 | Ortak oyuna **sorulmadan** katılır. "Çekil" hakkı? | Verilmesin; bildirim yeter |
+| S8 | Belirli takıma özel meydan okuma bu sürümde mi? | Sonraya (`product-backlog.md`) |
+| S9 | Aynı iki takımın birbirine kasten yenilmesi | v1: admin izleme. v2: aynı çift arası 7 günde en çok 3 puanlı oyun |
+| S11 | Takım rövanşı | Sonraya |
+| S12 | Sürüm planı | Web+sunucu bayrak arkasında önce, port 1.2.0 treniyle, açılış birlikte. ⚠ Eski mobil istemci ortak bölgeyi/rengi BİLMEZ: takım oyunu onda bozuk görünür. Bu yüzden **takım oyunu açma/kabul etme, eski sürümde engellenmeli** (minimum sürüm kapısı) |
+| S13 | **Alınan vergi hangi ortağın skoruna yazılsın?** | İki ortağa eşit bölünsün (tek kuruş düşük koltuğa); ekran takım toplamı gösterdiğinden fark görünmez. Bitiş ekranındaki kişi skoru bu yüzden "üretilen + pay" olur |
+| S14 | **Beraberlik** (takım puanları eşit): puan? | Her takıma **+1**, oyunculara +1 (`rank=2`). İsterseniz "eşitlikte takım OHP'si kazandırır" |
+| S15 | **Motor değişikliği kabulü:** ortak bölge, motorun dört kopyasında bölge hesabını değiştirir (§9). Kabul mü, yoksa ortak bölgesiz (ayrı bölge, takım içi vergi var) sade sürümle mi başlansın? | Ortak bölge (istediğiniz oyun). Opsiyonel `team` alanı ve bayt-eş kapısı riski küçültür |
 
 ## 11. Atlanmış olabilecek ayrıntılar (taramada çıkanlar)
 
@@ -245,6 +283,7 @@ fonksiyonu girerse `false` listesi güncellenir.
 |---|---|---|
 | 1 | Takım kur/kabul/ayrıl (sunucu + web) | M |
 | 2 | Açık ilan + atomik kabul + bildirimler | L |
-| 3 | Oyun içi: bant, takım toplamı, Oyun Geçmişi, oyun sonu, Son Oynananlar | M |
+| 0 | **Motor: ortak bölge** (4 kopya + golden + SQL kapıları). Diğer her şeyin ön koşulu | L |
+| 3 | Oyun içi: takım kutuları, Oyun Geçmişi, oyun sonu, Son Oynananlar | M |
 | 4 | Takım Ligi sıralaması (sunucu görünümü + k-lig sekmesi) | S |
 | 5 | Port ikizi + parite kapıları + Koşullar/Gizlilik + TESTING | L |
