@@ -874,8 +874,8 @@ roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
   *"Takım oyun istatistikleri dahildir."* · S19 takım başına en çok 3 devam
   eden oyun.
 S17 takım kutusuna dokununca şimdilik hiçbir şey açılmaz.
-- **Hâlâ açık (varsayılan öneriyle):** S4/S5 ilan 7 gün, takım başına 1
-  BEKLEYEN ilan, kullanıcı başına 5 takım.
+- **S4/S5 KAPANDI (kullanıcı onayı, 3 Ekim 2026):** ilan 7 gün, takım başına
+  1 BEKLEYEN ilan, kullanıcı başına 5 takım. Tasarımda açık karar kalmadı.
 - **Sıra:** Faz 0 motor (ortak bölge, golden/SQL kapıları) → 1 takım kur →
   2 açık ilan + kabul → 3 oyun içi/geçmiş/bitiş → 4 Takım Ligi sıralaması →
   5 port ikizi + Koşullar/Gizlilik + TESTING. Web+sunucu bayrak arkasında

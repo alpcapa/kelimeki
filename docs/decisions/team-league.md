@@ -348,8 +348,8 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 | # | Soru | Öneri |
 |---|---|---|
 | S16 | **KAPANDI.** İstatistik | 2 kişilik mantığında, `player_count=2`; "Takım oyun istatistikleri dahildir" küçük yazısı (§9) |
-| S4 | İlan **7 gün** mü? | 7 gün (davetle aynı). Liste şişerse 48 saat |
-| S5 | Takım başına **1 bekleyen ilan**, kullanıcı başına **5 takım**? | Evet |
+| S4 | **KAPANDI (kullanıcı onayı, 3 Ekim 2026).** İlan süresi | 7 gün (davetle aynı). Liste şişerse 48 saat |
+| S5 | **KAPANDI (kullanıcı onayı, 3 Ekim 2026).** Sınırlar | Takım başına **1 bekleyen ilan**, kullanıcı başına **5 takım** |
 | S20 | Kabul edilen oyun açık listede kalsın mı? | **Evet (kullanıcı kararı, Revizyon 10):** listenin sonunda "Devam ediyor", bitince düşer; ileride başkaları izleyebilsin diye. İzleme ürün fikri `product-backlog.md`te |
 | S7 | Ortak oyuna **sorulmadan** katılır. "Çekil" hakkı? | Verilmesin; bildirim yeter |
 | S8 | Belirli takıma özel meydan okuma bu sürümde mi? | Sonraya (`product-backlog.md`) |
