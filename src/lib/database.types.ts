@@ -1397,15 +1397,19 @@ export interface AdminActivePlayersPoint {
  * kayıt haftasının kendisi). `active_users`: o kohorttan, o hafta AKTİF olan
  * (yukarıdaki tanım) benzersiz üye sayısı.
  *
- * **Yalnızca TAMAMLANMIŞ haftalar döner** — penceresi henüz bitmemiş bir hafta
- * her zaman yapay olarak düşük görünür ve tablonun son köşegenini yalancı bir
- * "düşüş" gibi gösterirdi.
+ * **Süren hafta da döner ama `is_partial` ile işaretli** (3 Ekim 2026,
+ * `admin_retention_cohorts_v2`) — penceresi henüz bitmemiş bir hafta her zaman
+ * yapay olarak düşük görünür ve tablonun son köşegenini yalancı bir "düşüş"
+ * gibi gösterirdi; bu yüzden gizlenmez, SOLUK çizilir ve CSV'ye KONMAZ.
+ * `is_partial` yoksa (eski fonksiyon) hücre tamamlanmış sayılır.
  */
 export interface AdminRetentionCell {
   cohort_week: string;
   cohort_size: number;
   week_offset: number;
   active_users: number;
+  /** Hücrenin haftası henüz bitmedi — şu ana kadarki aktiflik. */
+  is_partial?: boolean;
 }
 
 /**

@@ -434,8 +434,10 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         tanımı Aktif Oyuncu panelindekiyle AYNI kaynaktan geliyor.
         <br />
         <br />
-        Yalnızca TAMAMLANMIŞ haftalar gösterilir — yarım bir hafta her zaman yapay olarak düşük
-        görünür ve tablonun son köşegenini yalancı bir düşüş gibi gösterirdi.
+        Süren hafta SOLUK, italik ve kesikli çerçeveyle gösterilir: henüz bitmedi, yani sayı
+        şu ana kadarki aktiflik — yarım bir hafta her zaman yapay olarak düşük görünür ve
+        tablonun son köşegenini yalancı bir düşüş gibi gösterirdi. Soluk hücreler CSV'ye
+        girmez.
         <br />
         <br />
         Hücre tonu yalnızca ikincil bir işaret; oran her hücrede sayıyla da yazıyor. CSV yüzde
@@ -2486,6 +2488,15 @@ function MemberQualityTable({
  */
 const MAX_TINT = 0.55;
 
+/**
+ * SÜREN haftanın hücresi (3 Ekim 2026): aynı ton, `PARTIAL_TINT` ile
+ * soluklaştırılmış. Çarpan ölçülmüş bir sınır: soluk zeminde azami alfa
+ * 0.55 × 0.4 = 0.22 — yazı `text-text` kalıyor (muted 0.25 tonun üstünde AA'yı
+ * kaçırıyordu, bkz. `MAX_TINT`). Renk tek başına işaret DEĞİL: hücre ayrıca
+ * italik ve kesikli çerçeveli, tablonun altında da bir açıklama satırı var.
+ */
+const PARTIAL_TINT = 0.4;
+
 function RetentionCohortTable({
   cells,
   csvBaseName,
@@ -2497,20 +2508,26 @@ function RetentionCohortTable({
 }) {
   const grid = useMemo(() => {
     if (!cells) return null;
-    const byWeek = new Map<string, { size: number; offsets: Map<number, number> }>();
+    const byWeek = new Map<
+      string,
+      { size: number; offsets: Map<number, { active: number; partial: boolean }> }
+    >();
     let maxOffset = -1;
+    let hasPartial = false;
     for (const c of cells) {
       let row = byWeek.get(c.cohort_week);
       if (!row) {
         row = { size: c.cohort_size, offsets: new Map() };
         byWeek.set(c.cohort_week, row);
       }
-      row.offsets.set(c.week_offset, c.active_users);
+      const partial = c.is_partial === true;
+      row.offsets.set(c.week_offset, { active: c.active_users, partial });
+      if (partial) hasPartial = true;
       if (c.week_offset > maxOffset) maxOffset = c.week_offset;
     }
     // En yeni kohort üstte — taze kohort kaydırmadan görünsün.
     const weeks = [...byWeek.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
-    return { weeks, maxOffset };
+    return { weeks, maxOffset, hasPartial };
   }, [cells]);
 
   // Boş/yüklenirken de `?` çizilir (GuestBreakdownTable ile aynı gerekçe).
@@ -2528,7 +2545,7 @@ function RetentionCohortTable({
   // Destructure: `handleExportCsv` bir fonksiyon bildirimi olduğundan TS,
   // yukarıdaki `grid === null` erken dönüşünün daralttığı tipi closure içinde
   // korumuyor (TS18047).
-  const { weeks, maxOffset } = grid;
+  const { weeks, maxOffset, hasPartial } = grid;
   const offsets = Array.from({ length: maxOffset + 1 }, (_, i) => i);
 
   function handleExportCsv() {
@@ -2541,8 +2558,10 @@ function RetentionCohortTable({
         week,
         row.size,
         ...offsets.map((o) => {
+          // Süren hafta CSV'ye KONMAZ: yarım bir sayı dışarıda "düşüş" diye
+          // okunur ve ekrandaki soluk işaret dosyada yok.
           const v = row.offsets.get(o);
-          return v === undefined ? '' : v;
+          return v === undefined || v.partial ? '' : v.active;
         }),
       ]),
     );
@@ -2577,23 +2596,33 @@ function RetentionCohortTable({
                 </td>
                 <td className="py-1.5 pr-4 text-muted whitespace-nowrap text-center">{row.size}</td>
                 {offsets.map((o) => {
-                  const active = row.offsets.get(o);
-                  if (active === undefined) {
-                    // Penceresi henüz TAMAMLANMAMIŞ hafta — boş bırakılıyor.
-                    // Yarım bir haftayı çizmek tablonun son köşegenini her zaman
-                    // yalancı bir "düşüş" gibi gösterirdi.
+                  const cell = row.offsets.get(o);
+                  if (cell === undefined) {
+                    // Penceresi henüz BAŞLAMAMIŞ hafta — boş.
                     return <td key={o} className="py-1.5 px-1.5" />;
                   }
+                  const { active, partial } = cell;
                   const ratio = row.size > 0 ? active / row.size : 0;
+                  // taban 0.06 (sıfır oranda bile hücre "veri var" desin) → azami MAX_TINT
+                  const alpha = (0.06 + (MAX_TINT - 0.06) * ratio) * (partial ? PARTIAL_TINT : 1);
                   return (
                     <td
                       key={o}
-                      className="py-1.5 px-1.5 text-text text-center whitespace-nowrap"
+                      className={[
+                        'py-1.5 px-1.5 text-text text-center whitespace-nowrap',
+                        partial ? 'italic' : '',
+                      ].join(' ')}
                       style={{
-                        // taban 0.06 (sıfır oranda bile hücre "veri var" desin) → azami MAX_TINT
-                        backgroundColor: `rgba(37, 99, 235, ${(0.06 + (MAX_TINT - 0.06) * ratio).toFixed(3)})`,
+                        backgroundColor: `rgba(37, 99, 235, ${alpha.toFixed(3)})`,
+                        ...(partial
+                          ? { outline: '1px dashed rgba(37, 99, 235, 0.45)', outlineOffset: '-1px' }
+                          : null),
                       }}
-                      title={`${active}/${row.size} üye aktif`}
+                      title={
+                        partial
+                          ? `Süren hafta — şu ana kadar ${active}/${row.size} üye aktif`
+                          : `${active}/${row.size} üye aktif`
+                      }
                     >
                       %{Math.round(ratio * 100)}
                     </td>
@@ -2604,6 +2633,11 @@ function RetentionCohortTable({
           </tbody>
         </table>
       </div>
+      {hasPartial && (
+        <p className="text-[10px] font-mono text-muted leading-relaxed">
+          Soluk, italik, kesikli hücre = süren hafta (henüz bitmedi; şu ana kadarki aktiflik).
+        </p>
+      )}
     </div>
   );
 }

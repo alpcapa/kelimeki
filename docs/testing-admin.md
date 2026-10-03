@@ -41,8 +41,16 @@ tarayıcıda görülebilecek olanlar. **Admin hesabı gerekiyor.**
       **Aktivasyon ve Retention DEĞİŞMEMELİ** — ikisi bilerek periyoda bağlı
       değil (kohortun ekseni kayıt haftası, aktivasyon tüm zamanların oranı).
 - [ ] **Retention tablosu üçgen görünmeli.** En yeni kohort ÜSTTE; sağ üst
-      köşe boş (penceresi tamamlanmamış haftalar hiç çizilmiyor). Bir hücrenin
+      köşe boş (penceresi henüz BAŞLAMAMIŞ haftalar çizilmiyor). Bir hücrenin
       üstüne gel → "3/10 üye aktif" gibi bir ipucu çıkmalı.
+- [ ] **Süren hafta SOLUK görünmeli (3 Ekim 2026).** Her kohort satırının
+      son hücresi (köşegen) ve en yeni kayıt haftasının H0'ı soluk zeminli,
+      italik ve KESİKLİ çerçeveli; üstüne gelince "Süren hafta — şu ana kadar
+      N/M üye aktif". Tablonun altında "Soluk, italik, kesikli hücre = süren
+      hafta…" satırı. Pazartesi (hafta dönümü) sonrası köşegen bir hücre sağa
+      kayar ve bir önceki hafta SOLUKLUKTAN çıkıp normal hücre olur — sayı
+      biraz değişebilir (hafta kapandı). **CSV'de soluk hücreler BOŞ**
+      olmalı (yarım sayı dışarı çıkmaz).
 - [ ] **Hücre yazısı HER tonda okunabilir olmalı** — en koyu hücrede bile
       (%100'e yakın oran) rakam net görünmeli. Ton yalnızca ikincil işaret;
       oran zaten sayıyla yazıyor.

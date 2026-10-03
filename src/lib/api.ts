@@ -2750,12 +2750,12 @@ export async function fetchAdminActivePlayersSeries(
 
 /**
  * Retention kohortları (yalnızca admin — Büyüme > Kullanıcı): kayıt haftasına
- * göre, uzun (long) biçimde hücreler. Yalnızca TAMAMLANMIŞ haftalar döner —
- * gerekçesi `AdminRetentionCell`'de.
+ * göre, uzun (long) biçimde hücreler. Süren hafta `is_partial` ile işaretli
+ * döner (soluk çizilir) — gerekçesi `AdminRetentionCell`'de.
  */
 export async function fetchAdminRetentionCohorts(cohorts = 8): Promise<AdminRetentionCell[]> {
   if (!supabase) return [];
-  const { data, error } = await supabase.rpc('admin_retention_cohorts', { p_cohorts: cohorts });
+  const { data, error } = await supabase.rpc('admin_retention_cohorts_v2', { p_cohorts: cohorts });
   if (error) {
     rethrowSupabase(error);
   }
