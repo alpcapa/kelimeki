@@ -849,6 +849,55 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
+## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
+
+Kullanıcı (3 Ekim): *"Bence bu ok. Bunu 19 Ekim trenine düşünüyorum. Şimdilik
+roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
+**Kodlama 12 Ekim kesiminden SONRA başlar**; o güne kadar yalnızca tasarım. Daha önemli bir iş çıkarsa bu madde kayar (kullanıcı, 3 Ekim).
+
+- **Ne:** 4'lü Canlı oyunda 2'şer kişilik takımlar (üçüncü oyun türü: Yeni
+  Canlı Oyun → 2 · 4 · Takım), herkese açık ilanla rakip bulma, k-lig'de
+  üçüncü alt lig (takım puanı, eşitlikte takım OHP'si). Galibiyet takıma +2,
+  kazanan iki oyuncuya da +2.
+- **Kayıt:** `docs/decisions/team-league.md` (16 revizyon, kurallar, akışlar,
+  sunucu/istemci etkisi, Faz 0-5). **Görsel taslak** (akışlar + ekranlar):
+  https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed (özel bağlantı).
+  **Tıklanabilir prototip** (sahte veri, kod değil; takım kur, oyun aç, kabul
+  et, takımsız yol): https://claude.ai/artifact/2NGiuSvkcduFJkdQLVtXGd
+- **Kullanıcı kararları (3 Ekim 2026, kapandı):** S12 eski sürüm: sunucu
+  takım oyununda eski hamle çağrısını reddeder, mesaj *"Telefonunuz takım
+  oyununu desteklemiyor"* · S13 takımın vergi payı iki ortağa yarı yarıya yazılır
+  (tek puan düşük koltuğa; oyun içinde yalnızca takım toplamı görünür) · S14 beraberlik = 2 kişilik oyundaki gibi (iki taraf 1., herkes +2) · S15 ortak
+  bölge motor değişikliği KABUL, *"mevcut çalışan sistemin bozulmaması çok
+  önemli"* (regresyon güvencesi `team-league.md` §3) · S16 istatistik: takım
+  oyunu `player_count=2`, 2 kişilik istatistiğe yazılır, Skor Kartı altında
+  *"Takım oyun istatistikleri dahildir."* · S19 takım başına en çok 3 devam
+  eden oyun.
+S17 takım kutusuna dokununca şimdilik hiçbir şey açılmaz.
+- **S4/S5 KAPANDI (kullanıcı onayı, 3 Ekim 2026):** ilan 7 gün, takım başına
+  1 BEKLEYEN ilan, kullanıcı başına 5 takım. Tasarımda açık karar kalmadı.
+- **Sıra:** Faz 0 motor (ortak bölge, golden/SQL kapıları) → 1 takım kur →
+  2 açık ilan + kabul → 3 oyun içi/geçmiş/bitiş → 4 Takım Ligi sıralaması →
+  5 port ikizi + Koşullar/Gizlilik + TESTING. Web+sunucu bayrak arkasında
+  önce, açılış port ile birlikte.
+- **Pilot ölçümü (3 Ekim 2026, canlı veritabanından, yalnızca toplamlar):**
+  son 30 günde **Canlı oyun oynayan 26 oyuncu** (toplam 222 satır; son 7
+  günde 20 oyuncu / 77 satır). Platform kanıtı = `games.platform` ∪
+  `game_finishes.platform` ∪ `push_tokens` (60 gün). **11 yalnız uygulama ·
+  11 hem uygulama hem web · 3 yalnız web · 1 kanıtsız.** En çok Canlı
+  oynayan ilk 10: 4 · 3 · 3 · 0. Yani **web'e bağlı Canlı oyuncu ≈ 3**
+  (yalnız web), 14 kişi web'i de kullanıyor ama çoğu uygulama kullanıcısı.
+  **Sonuç: web'de kamuya açık pilot olmaz** (takım oyunu için en az 4 kişi
+  gerekir, yalnız-web 3 kişi). Gerçekçi pilot: kullanıcının test hesapları
+  (T1, T2, Ironman, AlpTEST…) ve elle seçilen birkaç kişi, sunucu bayrağı
+  arkasında; ya da 19 Ekim trenine kadar bayraklı kapalı deneme.
+  ⚠ Sınır: Canlı oyun satırlarını SUNUCU yazar, `games.platform` orada hep
+  boş; bu yüzden "hem uygulama hem web" olan 11 kişinin Canlı'yı HANGİ
+  yüzeyde oynadığı bu veriyle görünmez. Eski mağaza sürümleri (1.1.0) platform
+  damgası yazmıyor, o kişiler yalnızca push tokenı ile tanındı.
+
+---
+
 ## 43. Passkey ile giriş (WebAuthn) — **WEB KODU PR'da · PORT sonraya** (2 Ekim 2026)
 
 Kullanıcı Supabase Dashboard → Authentication → **Passkeys (BETA)** ekranını

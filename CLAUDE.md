@@ -562,6 +562,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | Yerel oyunun kalıcılığı, terk-edilme cezası, offline kuyruk | `docs/decisions/local-game-persistence.md` |
 | E-posta gönderenleri (`noreply@` ↔ `destek@`), Zoho rozeti, inbound webhook kurulumu | `docs/decisions/support-email.md` |
 | Supabase işletimi: Brevo SMTP/teslimat geçmişi, SPF-DKIM-DMARC'ın gerçek hâli, migration geçmişinin kopması, dal temizliği, Edge Function deploy tuzakları + **"bu dal merge edilmiş mi" üç tuzağı** (15 Eyl 2026'da `CLAUDE.md`'den taşındı) | `docs/decisions/supabase-ops.md` |
+| Takım Ligi — 2'şer kişilik takım oyunu (TASARIM ONAYLANDI, PARKTA, kod yok — hedef 19 Ekim treni, ROADMAP #44): kurallar, akışlar, puanlama, açık sorular | `docs/decisions/team-league.md` |
 | Sonraya bırakılan ürün fikirleri (karar verildi, henüz yapılmadı) | `docs/decisions/product-backlog.md` |
 | ROADMAP arşivi — kapanmış maddeler, fazlar ve sürüm turları (grep'lenir, baştan sona okunmaz) | `docs/decisions/roadmap-arsiv.md` (aktif cilt — YENİ kapananlar buraya) · `roadmap-arsiv-cilt-1.md` (27 Ağu – 12 Eyl, DONDURULDU) |
 | App Store Connect — kapanmış vaka anlatıları (`.p8` sagası, 24.2 zincirinin koşuları, kare boru hattının kuruluşu). ⚠ Cevap kağıdı `marketing/app-store/console-formlari.md`'de KALDI | `docs/decisions/app-store-gecmis.md` |
