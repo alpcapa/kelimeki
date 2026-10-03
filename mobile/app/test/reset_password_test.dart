@@ -131,22 +131,22 @@ void main() {
       final confirm = find.widgetWithText(TextField, 'Yeni şifre (tekrar)');
 
       // Web doğrulama sırası/metinleri birebir.
-      await tester.enterText(pw, '12345');
+      await tester.enterText(pw, '1234567');
       await tester.tap(find.text('ŞİFREYİ KAYDET'));
       await tester.pump();
-      expect(find.text('Yeni şifre en az 6 karakter olmalı.'), findsOneWidget);
+      expect(find.text('Yeni şifre en az 8 karakter olmalı.'), findsOneWidget);
 
-      await tester.enterText(pw, '123456');
-      await tester.enterText(confirm, '123457');
+      await tester.enterText(pw, '12345678');
+      await tester.enterText(confirm, '12345679');
       await tester.tap(find.text('ŞİFREYİ KAYDET'));
       await tester.pump();
       expect(find.text('Şifreler eşleşmiyor.'), findsOneWidget);
       expect(saved, isEmpty);
 
-      await tester.enterText(confirm, '123456');
+      await tester.enterText(confirm, '12345678');
       await tester.tap(find.text('ŞİFREYİ KAYDET'));
       await tester.pumpAndSettle();
-      expect(saved, ['123456']);
+      expect(saved, ['12345678']);
       expect(find.text('Şifren başarıyla değiştirildi.'), findsOneWidget);
 
       await tester.tap(find.text('KAPAT'));
@@ -170,9 +170,9 @@ void main() {
       ));
       await tester.pump();
       await tester.enterText(
-          find.widgetWithText(TextField, 'Yeni şifre'), '123456');
+          find.widgetWithText(TextField, 'Yeni şifre'), '12345678');
       await tester.enterText(
-          find.widgetWithText(TextField, 'Yeni şifre (tekrar)'), '123456');
+          find.widgetWithText(TextField, 'Yeni şifre (tekrar)'), '12345678');
       await tester.tap(find.text('ŞİFREYİ KAYDET'));
       await tester.pumpAndSettle();
       expect(find.text('Yeni şifre eskisiyle aynı olamaz.'), findsOneWidget);

@@ -101,7 +101,8 @@ void main() {
         tester.widget<Checkbox>(find.byType(Checkbox).at(1)).value, isFalse);
   });
 
-  testWidgets('doğrulama sırası: Ad → Soyad → Takma isim → doğum tarihi',
+  // Ad/soyad 2 Ekim 2026'dan beri İSTEĞE BAĞLI — boşken de geçer.
+  testWidgets('doğrulama sırası: Takma isim → doğum tarihi (ad/soyad boş)',
       (tester) async {
     final auth = AuthService.fake(user: fakeUser('me'));
     await pumpSettings(tester, auth, checker: (_) async => NicknameStatus.ok);
@@ -112,12 +113,6 @@ void main() {
       expect(find.text(msg), findsOneWidget);
     }
 
-    await submitExpect('Ad zorunludur.');
-    await tester.enterText(field('first-name'), 'Deniz');
-    await tester.pump();
-    await submitExpect('Soyad zorunludur.');
-    await tester.enterText(field('last-name'), 'Can');
-    await tester.pump();
     await submitExpect('Takma isim zorunludur.');
 
     await tester.enterText(field('nickname'), 'denizcan');
@@ -189,8 +184,8 @@ void main() {
         pickAvatar: () async => PickedImage(
             bytes: Uint8List.fromList([1, 2, 3]), mimeType: 'image/png'));
 
-    expect(find.text('FOTOĞRAF DEĞİŞTİR'), findsOneWidget);
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    expect(find.text('FOTOĞRAF YÜKLE'), findsOneWidget);
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
     // AuthService.fake gerçek bir Supabase client taşımıyor —
     // uploadAvatar'ın `_client == null` kontrolüne takılıp
@@ -199,7 +194,21 @@ void main() {
     // testleriyle aynı sınır/desen).
     expect(find.text('Supabase yapılandırılmadı.'), findsOneWidget);
     expect(find.text('YÜKLENİYOR…'), findsNothing);
+    expect(find.text('FOTOĞRAF YÜKLE'), findsOneWidget);
+  });
+
+  testWidgets('fotoğraf varsa düğme "FOTOĞRAF DEĞİŞTİR", yoksa "YÜKLE"',
+      (tester) async {
+    final auth = AuthService.fake(
+      user: fakeUser('me'),
+      profile: const KProfile(
+          id: 'me',
+          displayName: 'ironman',
+          avatarUrl: 'https://example.com/a.png'),
+    );
+    await pumpSettings(tester, auth);
     expect(find.text('FOTOĞRAF DEĞİŞTİR'), findsOneWidget);
+    expect(find.text('FOTOĞRAF YÜKLE'), findsNothing);
   });
 
   testWidgets(
@@ -224,7 +233,7 @@ void main() {
       },
     );
 
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
 
     expect(shrinkGirdisi, isNotNull,
@@ -248,13 +257,13 @@ void main() {
       return null;
     });
 
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
 
     expect(calls, 1);
     expect(find.text('YÜKLENİYOR…'), findsNothing);
     expect(find.text('Supabase yapılandırılmadı.'), findsNothing);
-    expect(find.text('FOTOĞRAF DEĞİŞTİR'), findsOneWidget);
+    expect(find.text('FOTOĞRAF YÜKLE'), findsOneWidget);
   });
 
   testWidgets('AccountButton menüsünde "Hesap Ayarları" satırı modalı açar',
@@ -325,14 +334,14 @@ void main() {
     await pumpSettings(tester, auth,
         pickAvatar: () async => throw Exception('izin yok'));
 
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     expect(find.textContaining('Fotoğraf seçilemedi'), findsOneWidget);
     // Buton kilitli kalmamalı — kullanıcı yeniden deneyebilmeli.
     expect(find.text('YÜKLENİYOR…'), findsNothing);
-    expect(find.text('FOTOĞRAF DEĞİŞTİR'), findsOneWidget);
+    expect(find.text('FOTOĞRAF YÜKLE'), findsOneWidget);
   });
 
   testWidgets('küçültme patlarsa da aynı hata gösterilir', (tester) async {
@@ -348,7 +357,7 @@ void main() {
       shrinkAvatar: (_) async => throw Exception('kodek yok'),
     );
 
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
