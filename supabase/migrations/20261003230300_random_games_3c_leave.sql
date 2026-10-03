@@ -2,15 +2,9 @@
 -- 3 Ekim 2026: Supabase aracı tek parça migration'da 60 sn zaman aşımına uğradığı ve
 -- `delete from` içeren gövdeyi onay beklerken kestiği için PARÇALARA bölündü.
 
--- ⚠ CANLIYA UYGULANMADI: içinde `delete from` var, Supabase aracı onay beklerken zaman aşımına
--- uğruyor → SQL Editor'a elle yapıştırılır. Uygulanınca `list_migrations`'taki gerçek versiyonla
--- dosyayı yeniden adlandır ve `_PENDING`i at.
--- ── 6. leave_random_game ──────────────────────────────────────────────────
--- Rastgele koltukla kabul eden, oyun dolmadan ayrılır: koltuk yeniden open,
--- davet satırı SİLİNİR (yoksa is_online_game_participant onu katılımcı sayar),
--- ceza yok. Kurucu ayrılamaz (cancel_random_game); arkadaş davetlisi
--- ayrılamaz (onun koltuğu kurucunun seçimi; bugünkü ret yolu geçerli).
-
+-- UYGULANDI (3 Ekim 2026) — Supabase SQL Editor'dan elle (içinde `delete from` var, MCP aracı onay
+-- beklerken zaman aşımına uğruyor). ⚠ SQL Editor `schema_migrations`a satır YAZMAZ: bu dosyanın
+-- versiyonu canlı geçmişte görünmez; zaman damgası yalnızca sıralama içindir.
 create or replace function public.leave_random_game(p_game_id uuid)
 returns void
 language plpgsql
