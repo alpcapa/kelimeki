@@ -55,7 +55,7 @@ arkadaşının bölgesine bağlayabilirsin."* Bu doğru ve daha iyi bir oyun, am
 | Ortak bölge | Takımın bölgesi = **iki ortağın köşelerinden ve iki ortağın taşlarından** tek zincir. Ortak bölgeyi büyütebilir; kendi bölgenden ortağın bölgesine bağlanabilirsin, iki parça birleşir |
 | Takım içi vergi | **YOK.** Ortağın bölgesi senin bölgendir. Vergi yalnızca **rakip takıma** ödenir/alınır; n (etkileşilen rakip bölge sayısı) rakip TAKIM sayısıdır (tek rakip takım = n=1) |
 | İlk hamle | Kural aynı, ortağınki değil **kendi** başlangıç karen (her oyuncunun kendi ev işareti var). Sonraki hamleler serbest |
-| Takım bölgesi vergisi nereye | Tahsil edilen vergi takıma gider; skor alanı koltuklara yazıldığından **eşit bölünür** (tek kuruş artan düşük koltuğa). Ekran takım toplamını gösterdiğinden fark görünmez (S13) |
+| Alınan vergi kişilere nasıl yazılır (S13) | **Ödeyen = hamleyi yapan kişi** (bugünkü gibi). **Alan = rakip takım; payı iki ortağa EŞİT bölünür**, artan tek puan koltuk sırası düşük olana. Takım puanı toplam olduğundan bölüşüm onu değiştirmez. Örnek: Selin 30 puanlık hamlede A'nın bölgesine girer, n=1 → pay 10: Selin +20, Ece +5, Mert +5. Pay 3 ise Ece +2, Mert +1. Takım içi vergi yok. Gösterim: geçmişte Selin'in satırı "−10 vergi", Takım vergisi(+) kutusu takım toplamı, bitiş ekranı kişi skoru payları içerir. Uygulama: mevcut `shares:[{index,amount}]` yapısına takımın iki koltuğu yazılır, yeni alan gerekmez. Alternatif "takım kasası" motorda takım düzeyinde yeni puan alanı ister, önerilmez |
 | YZ | Takım oyununda YZ koltuğu YOK |
 | Teslim / 48 sa zaman aşımı | Motorun kademeli teslimi aynen: teslim olanın skoru 0, rafı torbaya. **Teslim olanın köşesi** doğal alana döner, ortağın zinciri sürer |
 | Oyun bitişi | "Aktif oyuncu 1'e düşünce biter" takım oyununda yetmez. **Yeni kural: bir takımın TÜM üyeleri teslimse biter.** Yalnızca SQL (`check_turn_timeout`) |
@@ -160,7 +160,8 @@ sahibine bildirim: *"‹Takım› hazır. Açık oyunlara dön."*
   aynı boyutta ve aynı stilde kalır; yalnızca dört yerine **iki kutu**:
   üstte takım adı, altında takım puanı, takım renginde. Üste yeni bir kart
   satırı EKLENMEZ. "Sıra sende" / "Sıra: X bekleniyor" bilgisi bugünkü gibi
-  alttaki mesaj kutusunda. Tahta, raf, butonlar aynı. Sırası gelen takımın
+  alttaki mesaj kutusunda ve **X sırası gelen KİŞİNİN adıdır, takımın değil**
+  (kutuda hangi ortağın oynayacağı görünmediği için). Tahta, raf, butonlar aynı. Sırası gelen takımın
   kutusu bugünkü gibi kalın çerçeveli. Kutuya dokununca açılan skor kartı
   penceresi bugünkü gibi çalışır, takım için iki üyenin kartını gösterir (S17).
 - **Oyun Geçmişi** (`MoveHistoryModal`): dört kutu **Toplam · Takım puanı ·
@@ -289,7 +290,7 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 | S9 | Aynı iki takımın birbirine kasten yenilmesi | v1: admin izleme. v2: aynı çift arası 7 günde en çok 3 puanlı oyun |
 | S11 | Takım rövanşı | Sonraya |
 | S12 | Sürüm planı | Web+sunucu bayrak arkasında önce, port 1.2.0 treniyle, açılış birlikte. ⚠ Eski mobil istemci ortak bölgeyi/rengi BİLMEZ: takım oyunu onda bozuk görünür. Bu yüzden **takım oyunu açma/kabul etme, eski sürümde engellenmeli** (minimum sürüm kapısı) |
-| S13 | **Alınan vergi hangi ortağın skoruna yazılsın?** | İki ortağa eşit bölünsün (tek kuruş düşük koltuğa); ekran takım toplamı gösterdiğinden fark görünmez. Bitiş ekranındaki kişi skoru bu yüzden "üretilen + pay" olur |
+| S13 | **Alınan vergi kişilere nasıl yazılsın?** (§3 satırı, sayılı örnek) | İki ortağa eşit bölünsün; ödeyen hamleyi yapan kişi. Bitiş ekranındaki kişi skoru paylar dahil |
 | S14 | **Beraberlik** (takım puanları eşit): puan? | Her takıma **+1**, oyunculara +1 (`rank=2`). İsterseniz "eşitlikte takım OHP'si kazandırır" |
 | S15 | **Motor değişikliği kabulü:** ortak bölge, motorun dört kopyasında bölge hesabını değiştirir (§9). Kabul mü, yoksa ortak bölgesiz (ayrı bölge, takım içi vergi var) sade sürümle mi başlansın? | Ortak bölge (istediğiniz oyun). Opsiyonel `team` alanı ve bayt-eş kapısı riski küçültür |
 
