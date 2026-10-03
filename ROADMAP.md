@@ -282,6 +282,15 @@ bildirim (bkz. "Sayaç" bölümü).
    kolay bir hata. Kullanıcı kuralı: *"apk ile test edip sorunsuz olduğundan
    emin olmadan aab yapılmayacak"* — APK turu geçmeden `.aab` yüklenmez.
 
+## Retention: eski `admin_retention_cohorts(integer)` silinecek (3 Ekim 2026)
+
+Süren hafta soluk çizilince (`admin_retention_cohorts_v2`) eski fonksiyon
+kullanılmaz oldu ama canlıda duruyor: araç `drop function`ı yıkıcı sayıp
+onay bekliyor. **Adım:** kullanıcı onayıyla `drop function if exists
+public.admin_retention_cohorts(integer);` (+ bir migration dosyası). Web
+istemcisi v2'ye geçip deploy olduktan SONRA — bayat bir istemci hâlâ eskiyi
+çağırıyor olabilir. Kayıt: `docs/decisions/admin-panel.md` → Retention.
+
 ## Güvenlik geçişi — açık kalan maddeler (5 Eylül 2026)
 
 Play Store öncesi kapsamlı incelemenin ilk geçişi. **Kapatılan madde
