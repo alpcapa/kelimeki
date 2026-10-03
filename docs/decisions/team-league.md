@@ -58,10 +58,22 @@ arkadaşının bölgesine bağlayabilirsin."* Bu doğru ve daha iyi bir oyun, am
 | Ortak bölge | Takımın bölgesi = **iki ortağın köşelerinden ve iki ortağın taşlarından** tek zincir. Ortak bölgeyi büyütebilir; kendi bölgenden ortağın bölgesine bağlanabilirsin, iki parça birleşir |
 | Takım içi vergi | **YOK.** Ortağın bölgesi senin bölgendir. Vergi yalnızca **rakip takıma** ödenir/alınır; n (etkileşilen rakip bölge sayısı) rakip TAKIM sayısıdır (tek rakip takım = n=1) |
 | İlk hamle | Kural aynı, ortağınki değil **kendi** başlangıç karen (her oyuncunun kendi ev işareti var). Sonraki hamleler serbest |
-| Alınan vergi kişilere nasıl yazılır (S13) | **Ödeyen = hamleyi yapan kişi** (bugünkü gibi). **Alan = rakip takım; payı iki ortağa EŞİT bölünür**, artan tek puan koltuk sırası düşük olana. Takım puanı toplam olduğundan bölüşüm onu değiştirmez. Örnek: Selin 30 puanlık hamlede A'nın bölgesine girer, n=1 → pay 10: Selin +20, Ece +5, Mert +5. Pay 3 ise Ece +2, Mert +1. Takım içi vergi yok. Gösterim: geçmişte Selin'in satırı "−10 vergi", Takım vergisi(+) kutusu takım toplamı, bitiş ekranı kişi skoru payları içerir. Uygulama: mevcut `shares:[{index,amount}]` yapısına takımın iki koltuğu yazılır, yeni alan gerekmez. Alternatif "takım kasası" motorda takım düzeyinde yeni puan alanı ister, önerilmez |
+| Alınan vergi (S13 — KAPANDI, kullanıcı: *"bölüşüm yok, takıma gidiyor zaten"*) | Kullanıcıya **hiçbir bölüşüm görünmez**: ekranda yalnızca takım toplamı/takım vergisi. Motor kişi başına puan tuttuğundan payın bir yere yazılması gerekir; **dahili olarak iki ortağa eşit yazılır** (tek puan artarsa düşük koltuğa), takım toplamı değişmez. "Takım kasası" (motorda takım düzeyinde yeni puan alanı) önerilmez: daha çok yüzey, daha çok risk. Ödeyen = hamleyi yapan kişi. Takım içi vergi yok. Bitiş ekranında kişi skoru normal oyundaki gibi (vergiler dahil) |
 | YZ | Takım oyununda YZ koltuğu YOK |
 | Teslim / 48 sa zaman aşımı | Motorun kademeli teslimi aynen: teslim olanın skoru 0, rafı torbaya. **Teslim olanın köşesi** doğal alana döner, ortağın zinciri sürer |
 | Oyun bitişi | "Aktif oyuncu 1'e düşünce biter" takım oyununda yetmez. **Yeni kural: bir takımın TÜM üyeleri teslimse biter.** Yalnızca SQL (`check_turn_timeout`) |
+
+**Regresyon güvencesi (S15, kullanıcı: *"mevcut çalışan sistemin bozulması ve
+etkilenmesi çok önemli"*):** takım yolu YALNIZCA `team` alanı varken çalışır.
+(1) Mevcut TÜM golden vector'lar (`territory.json` dahil) **değişmeden** geçer;
+yeni fixture'lar yalnızca takımlı durumları ekler. (2) SQL aynası: `verify-sql-engine-parity`
++ canlıdaki gerçek hamlelerin (2.641 hamle) yeniden oynatılması **sıfır fark**
+vermeli, `move_shadow_diffs` ölçümü açık kalır. (3) Edge `_game/` kopyası aynı
+PR'da, `verify-edge-engine-parity` yeşil, `play-ai-turn` en son deploy edilir.
+(4) `submit_move` ve `list_my_online_games` imzaları korunur; takım hamlesi
+ayrı RPC'de (eski istemci çalışmaya devam eder). (5) Sunucu bayrağıyla kapalı
+başlar, önce test hesaplarıyla, sonra açılır. (6) Her adım 12 Ekim treninden
+SONRA ve ayrı PR'larda.
 
 **Geriye dönük güvenlik (en önemli mühendislik ilkesi):** `Player.team` alanı
 **opsiyonel**. Alan yoksa her oyuncu kendi takımıdır ve hesap **bayt-eş** eski
@@ -245,9 +257,9 @@ galibiyet 2 puan, ikinciye puan yok. Kazanan takımın oyuncularının ikisine d
 
 | Konu | Karar |
 |---|---|
-| Takım puanı | Kazanan **+2**, kaybeden **0**. Beraberlik tanımsız (S14, öneri +1/+1) |
+| Takım puanı | Kazanan **+2**, kaybeden **0**. **Beraberlik (S14 — KAPANDI, kullanıcı: *"diğer 2 kişide nasıl oluyorsa öyle"*):** 2 kişilik oyunda eşit skor iki tarafı da 1. yapar (`rankPlayers`, "BERABERE") ve ikisi de 1. sıra puanını alır → takım oyununda iki takım da **+2**, dört oyuncu da **+2** ("herkes kazanmış sayılır") |
 | Oyuncu k-lig puanı | Kazanan takımın İKİ oyuncusu da **+2**, kaybedenler **0**, teslim olan **−2** (bugünkü kural) |
-| **Uygulama: sunucu formülü DEĞİŞMEZ** | `games`'e yazılan **sıra**: kazananlar `rank=1,1`, kaybedenler `rank=3,3`. `league_points_for(rank, 4, surrendered, null)` zaten 1.→+2, 3.→0 verir. `verify-league-points` ve beş nesne etkilenmez. Beraberlikte dördü `rank=2` → +1 |
+| **Uygulama: sunucu formülü DEĞİŞMEZ (S16 ile güncellendi)** | Takım oyunu **2 kişilik oyun mantığındadır**, `games`'e **`player_count = 2`** (taraf sayısı) yazılır; sıra TARAFA göre: kazananlar `rank=1` (iki oyuncu), kaybedenler `rank=2` (iki oyuncu), beraberlikte dördü de `rank=1`. `league_points_for(rank, 2, surrendered, null)` zaten 1.→+2, 2.→0 verir; `verify-league-points` ve beş nesne etkilenmez. Tüketiciler (`GameOver` `players.length`, `GameHistoryModal`/`computeRanks`, head-to-head…) takım oyununda `players.length` yerine **taraf sayısını** kullanır; takım oyunu snapshot'ta `players[].team` (0/1) ile tanınır, `games`'e yeni kolon gerekmez |
 | Takım puanı toplamı | Takım Ligi puanı, `team_game_results` toplamı |
 | Sıralama | Takım puanı ↓, eşitlikte **takım OHP'si** ↓, sonra oyun sayısı ↓, sonra takım id |
 | Takım OHP'si | İki üyenin takım oyunlarındaki puanlı hamlelerinin ortalaması |
@@ -276,7 +288,7 @@ galibiyet 2 puan, ikinciye puan yok. Kazanan takımın oyuncularının ikisine d
   `list_open_team_games`, `my_team_rank`; görünüm `takim_ligi_siralama`
   (`security_invoker`, `k_lig_siralama` deseni).
 - `_finish_online_game_records` (oyun bitişi) `team_game_results`'i AYNI
-  transaction'da yazar ve `games`'e takım sonucuna göre `rank` (1,1,3,3)
+  transaction'da yazar ve `games`'e `player_count=2` ve takım sonucuna göre `rank` (1,1 / 2,2; beraberlikte 1,1,1,1)
   yazar (§8). `check_turn_timeout` takım bitiş kuralını alır (§3).
 - **Motor (Revizyon 2) — dört kopyada ortak bölge:** `Player.team?` (opsiyonel)
   · `cornersForTeams` (koltuk→köşe 0,1,3,2; renk 0,1,0,1) ·
@@ -295,19 +307,16 @@ galibiyet 2 puan, ikinciye puan yok. Kazanan takımın oyuncularının ikisine d
 - Dönüş tipi değişen RPC'lerde `drop`+`create` ve `proacl` kontrolü (anon
   sızıntısı dersi).
 
-**İstatistik (Revizyon 3, S16):** `player_stats` oyunları `player_count`
-(2/4) ile gruplar (`20260906114252` migration'ı, ölçüldü). Takım oyunu
-`player_count=4` yazılırsa 4 kişilik kazanma oranı ve Skor Kartı bozulur.
-Çözüm: `games`'e **mod işareti** (ör. `team_game_id` ya da `mode='team'`),
-`player_stats` bunu ayırır, Skor Kartı'na **Takım** satırı, `total_score`
-(k-lig Genel) takım puanlarını da toplar. Bu **beş nesnenin** (`player_stats`,
-`player_stats_overall`, `leaderboard`, `_award_league_rewards`,
-`trg_award_league_rewards`) hepsini ilgilendirir: dönüş tipi/kolon değişimi
-→ `drop`+`create` ve `proacl` kontrolü; "Genel = 2 + 4 + Takım + ödül"
-değişmezi güncellenir; `verify-league-points` formülü sınamaya devam eder,
-görünüm toplamları için yeni bir kontrol gerekir. `GameOver`/`GameHistoryModal`/
-`SharedGamePage`/head-to-head gibi `player_count`a bakan yüzeyler takım
-satırını tanımalı.
+**İstatistik (S16 — KAPANDI, kullanıcı: *"2 kişilik oyun mantığında olduğundan ona yazsın"*):**
+takım oyunu `games`'e `player_count=2` yazılır, yani `player_stats` ve k-lig
+onu **2 kişilik** satırında sayar; yeni mod kolonu, yeni Skor Kartı satırı ve
+`player_stats`/`leaderboard` görünüm değişikliği GEREKMEZ (önceki "ayrı mod
+işareti" önerisi kalktı). Skor Kartı'nın en altına küçük yazı: **"Takım oyun
+istatistikleri dahildir."** (2 Kişilik ve Genel sekmelerinde). `players` snapshot
+satırlarında `team` alanı takım oyununu işaretler (Son Oynananlar'daki TAKIM
+etiketi bunu okur). Yan etki: 2 kişilik kazanma oranına takım oyunları da
+girer; admin panelinin 2 kişilik sayıları da. `players.length` (4) ≠ taraf sayısı
+(2) olduğu için `players.length`'e bakan tüketiciler gözden geçirilir.
 
 **Web:** `types.ts`/`constants.ts`/`validator.ts` (motor), `Setup.tsx` (Takım Ligi kartı), `LiveGameCreateForm.tsx`
 (Normal | Takım oyunu), `LiveGamesTab.tsx` (pembe bant), `RecentGamesSection`,
@@ -337,8 +346,8 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 
 | # | Soru | Öneri |
 |---|---|---|
-| S17 | Takım kutusuna dokununca ne açılsın? | Bugünkü skor kartı penceresi, iki üyenin kartı alt alta |
-| S16 | Takım oyunu istatistikte nereye girsin? (S16, §9) | Ayrı mod işareti; Skor Kartı'na Takım satırı, Genel puana dahil, 2 ve 4 kişilik satırları değişmez |
+| S17 | Oyun ekranının üstündeki **iki takım kutusuna** (header'daki "Kıvılcım 214" ve "Harf Avcıları 187") dokununca ne olsun? Bugün bir oyuncunun kutusuna dokununca o oyuncunun skor kartı penceresi açılıyor | Aynı pencere, iki üyenin kartı alt alta. Ya da hiçbir şey |
+| S16 | **KAPANDI.** İstatistik | 2 kişilik mantığında, `player_count=2`; "Takım oyun istatistikleri dahildir" küçük yazısı (§9) |
 | S4 | İlan **7 gün** mü? | 7 gün (davetle aynı). Liste şişerse 48 saat |
 | S5 | Takım başına **1 bekleyen ilan**, kullanıcı başına **5 takım**? | Evet |
 | S20 | Kabul edilen oyun açık listede kalsın mı? | **Evet (kullanıcı kararı, Revizyon 10):** listenin sonunda "Devam ediyor", bitince düşer; ileride başkaları izleyebilsin diye. İzleme ürün fikri `product-backlog.md`te |
@@ -346,10 +355,9 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 | S8 | Belirli takıma özel meydan okuma bu sürümde mi? | Sonraya (`product-backlog.md`) |
 | S9 | Aynı iki takımın birbirine kasten yenilmesi | v1: admin izleme. v2: aynı çift arası 7 günde en çok 3 puanlı oyun |
 | S11 | Takım rövanşı | Sonraya |
-| S12 | Sürüm planı | Web+sunucu bayrak arkasında önce, port 1.2.0 treniyle, açılış birlikte. ⚠ Eski mobil istemci ortak bölgeyi/rengi BİLMEZ: takım oyunu onda bozuk görünür. Bu yüzden **takım oyunu açma/kabul etme, eski sürümde engellenmeli** (minimum sürüm kapısı) |
-| S13 | **Alınan vergi kişilere nasıl yazılsın?** (§3 satırı, sayılı örnek) | İki ortağa eşit bölünsün; ödeyen hamleyi yapan kişi. Bitiş ekranındaki kişi skoru paylar dahil |
-| S14 | **Beraberlik** (takım puanları eşit): puan? | Her takıma **+1**, oyunculara +1 (`rank=2`). İsterseniz "eşitlikte takım OHP'si kazandırır" |
-| S15 | **Motor değişikliği kabulü:** ortak bölge, motorun dört kopyasında bölge hesabını değiştirir (§9). Kabul mü, yoksa ortak bölgesiz (ayrı bölge, takım içi vergi var) sade sürümle mi başlansın? | Ortak bölge (istediğiniz oyun). Opsiyonel `team` alanı ve bayt-eş kapısı riski küçültür |
+| S12 | **KAPANDI.** Eski sürüm uyarısı | Eski mobil istemcide takım ekranı hiç yoktur (takım kuramaz, davetini göremez), yani yalnızca web+eski uygulama kullanan biri takım oyununa düşebilir. Korumalar: (1) sunucuda takım oyununda **eski `submit_move` çağrısı reddedilir**: *"Bu bir takım oyunu. Telefonunuz takım oyununu desteklemiyor, uygulamayı güncelleyin."* (eski istemci sunucunun Türkçe reddini olduğu gibi gösterir; `submit_move` imzası DEĞİŞMEZ, yeni istemci takım hamlesi için ayrı RPC kullanır), (2) mevcut genel sürüm kapısı (`mobile_min_supported_version`) yalnızca ACİL fren olarak durur |
+| S13 | **KAPANDI.** Vergi bölüşümü | Kullanıcıya görünmez; motorda dahili eşit yazılır (§3) |
+| S15 | **KAPANDI (kullanıcı: *"mecburen yapacağız; mevcut çalışan sistemin bozulmaması ve etkilenmemesi çok önemli"*).** Ortak bölge motorun dört kopyasında | Kabul. Regresyon güvencesi §3'te (opsiyonel `team`, bayt-eş golden, yeniden oynatma, aşamalı yayın) |
 
 ## 11. Atlanmış olabilecek ayrıntılar (taramada çıkanlar)
 

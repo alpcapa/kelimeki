@@ -864,12 +864,18 @@ roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
   https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed (özel bağlantı).
   **Tıklanabilir prototip** (sahte veri, kod değil; takım kur, oyun aç, kabul
   et, takımsız yol): https://claude.ai/artifact/2NGiuSvkcduFJkdQLVtXGd
-- **Kodlamadan önce teyit edilecek (öneriyle varsayıldı, kullanıcı tek tek
-  yanıtlamadı):** S13 vergi payı iki ortağa eşit bölünür · S14 beraberlik
-  +1/+1 · S15 ortak bölge = motorun dört kopyasında bölge hesabı (Faz 0, L) ·
-  S16 istatistikte ayrı mod işareti · S12 eski mobil istemcide takım oyunu
-  engeli · S17 takım kutusuna dokununca iki üyenin skor kartı · S4/S5 ilan 7
-  gün, takım başına 1 BEKLEYEN ilan (başlayınca yenisi açılır), kullanıcı başına 5 takım · takım başına en çok 3 devam eden oyun (onaylandı), takım etiketi bekleyen ilanda "Açık oyun" · S20 kabul edilen oyun listede "Devam ediyor" kalır (izleme: `product-backlog.md`).
+- **Kullanıcı kararları (3 Ekim 2026, kapandı):** S12 eski sürüm: sunucu
+  takım oyununda eski hamle çağrısını reddeder, mesaj *"Telefonunuz takım
+  oyununu desteklemiyor"* · S13 vergi bölüşümü kullanıcıya görünmez (dahili
+  eşit) · S14 beraberlik = 2 kişilik oyundaki gibi herkes 1. (+2) · S15 ortak
+  bölge motor değişikliği KABUL, *"mevcut çalışan sistemin bozulmaması çok
+  önemli"* (regresyon güvencesi `team-league.md` §3) · S16 istatistik: takım
+  oyunu `player_count=2`, 2 kişilik istatistiğe yazılır, Skor Kartı altında
+  *"Takım oyun istatistikleri dahildir."* · S19 takım başına en çok 3 devam
+  eden oyun.
+- **Hâlâ açık (varsayılan öneriyle):** S17 takım kutusuna dokununca ne
+  açılsın (öneri: iki üyenin skor kartı) · S4/S5 ilan 7 gün, takım başına 1
+  BEKLEYEN ilan, kullanıcı başına 5 takım.
 - **Sıra:** Faz 0 motor (ortak bölge, golden/SQL kapıları) → 1 takım kur →
   2 açık ilan + kabul → 3 oyun içi/geçmiş/bitiş → 4 Takım Ligi sıralaması →
   5 port ikizi + Koşullar/Gizlilik + TESTING. Web+sunucu bayrak arkasında
