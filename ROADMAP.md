@@ -849,13 +849,13 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
-## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **TASARIM TASLAĞI · onay bekliyor** (3 Ekim 2026)
+## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **TASARIM ONAYLANDI · hedef 12 Ekim treni (başlama onayı bekliyor)** (3 Ekim 2026)
 
 Kullanıcı (3 Ekim): arkadaş listesinin tepesine "?" avatarlı **Rastgele Oyuncu**;
 ilan Devam Edenler'in üstünde **3 kutu yan yana, yatay kayan şeritte** kabul
 edilir, kabul edilen oyun "Bekliyor" ile Devam Edenler'e girer. Motora dokunmaz.
-Kayıt, kararlar (A-F kapandı) ve öneriler: `docs/decisions/random-opponent.md`. Kodlama 12 Ekim
-kesiminden sonra; Takım Ligi (#44) ile aynı `online_games.listing` altyapısı.
+Kayıt, kararlar (A-F kapandı) ve öneriler: `docs/decisions/random-opponent.md`. Kullanıcı: 12 Ekim trenine alınabilirse alınsın (port yetişmezse 19 Ekim);
+Takım Ligi (#44) ile aynı `online_games.listing` altyapısı.
 
 ## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
 

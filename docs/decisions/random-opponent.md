@@ -1,6 +1,6 @@
 # Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik Canlı oyun
 
-**Durum: TASARIM (3 Ekim 2026, kararlar §8) · kod YOK · öneriler (§9) onay bekliyor ·
+**Durum: TASARIM (3 Ekim 2026, kararlar §8) · kod YOK · öneriler (§9) kabul · 
 ROADMAP #45.** Kodlama, Takım Ligi gibi 12 Ekim kesiminden SONRA.
 
 ## 1. İstek (kullanıcının sözleri)
@@ -67,6 +67,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
   Kart ~88 px: 3 tanesi 320 px'te yan yana, dördüncünün kenarı görünür (kaydırma
   ipucu). Kartta: kurucunun avatarı + kısa adı, **2 kişi / 4 kişi** rozeti
   (iki ayrı ton), dolu koltuk noktaları (dolu = yeşil, boş = içi boş halka) ve altında **"N koltuk kaldı"** (kullanıcı, 3 Ekim: saat/gün yaşı yerine; zaman bilgisi karta KONMAZ, 7 günlük süre ilanı kendiliğinden kaldırır), **Kabul** düğmesi (≥32 px yüksek).
+- **Şerit başlığının sağında "Rastgele oyun aç" bağlantısı** (kullanıcı, 3 Ekim; "kaydır →" ipucunun yerine): "+ Yeni Canlı Oyun"a basmakla AYNI, kurulum ekranını açar. Şerit boşken gizlendiği için bağlantı da yoktur; o durumda "+ Yeni Canlı Oyun" kalır.
 - **Sıra:** en yeni önce; kendi ilanım şeritte YOK (altta "Bekliyor" satırı).
   Sessize aldığım/şikayet ettiğim kişinin ilanı çıkmaz.
 - **Kabul** = tek dokunuş, onay sorulmaz (Takım Ligi Rev. 9 deseni). Toast:
@@ -155,7 +156,7 @@ arkadaş değilse rövanş gizlensin (öneri) ya da yeniden rastgele ilana döns
 | E | Şeritte süzgeç yok, 2 ve 4 kişilik karışık akar |
 | F | Plan aşaması. Mümkünse aynı trene (19 Ekim); öneriler §9 |
 
-## 9. Öneriler (onay bekler)
+## 9. Öneriler — HEPSİ KABUL (kullanıcı: "1-4 ok", 3 Ekim 2026)
 
 1. **Önce var olan ilana katıl, yoksa aç:** kadro YALNIZCA rastgele koltuklardan
    oluşuyorsa ve aynı boyutta açık ilan varsa "Davet Gönder" yeni ilan açmak
@@ -173,3 +174,13 @@ arkadaş değilse rövanş gizlensin (öneri) ya da yeniden rastgele ilana döns
    çakışır, bu yüzden sıralı (önce rastgele web, sonra takım) önerilir.
 5. Prototip: https://claude.ai/artifact/8CfANHX7L8N9wJmMHVz1uM (özel bağlantı,
    sahte veri).
+
+## 10. Takvim (kullanıcı isteği, 3 Ekim 2026)
+
+Kullanıcı: *"Rastgeleyi 12 Ekim trenine alabiliriz mümkünse."* (12 Ekim = ilk
+kesim günü; port taslak PR'ı o gün merge edilir.) Bu, Takım Ligi notundaki "12
+Ekim'den önce kod yok" kararını RASTGELE için değiştirir; Takım Ligi'nin
+kendisi için o karar durur. Başlama onayı ayrıca beklenir (sunucu değişikliği
+canlıya anında girer). Sıra: (1) sunucu (migration + eski istemci koruması) →
+(2) web → (3) port taslak PR'ı → (4) iki gerçek hesapla elle test. Port 12
+Ekim'e yetişmezse web+sunucu gider, port 19 Ekim trenine kayar.
