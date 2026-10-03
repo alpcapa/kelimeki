@@ -849,20 +849,44 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
-## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAY BEKLİYOR, KOD YOK** (3 Ekim 2026)
+## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
 
-Kullanıcı isteği: 4'lü Canlı oyunda 2'şer kişilik takımlar, herkese açık
-ilanla rakip bulma, k-lig'de üçüncü alt lig (yalnızca takım puanı, eşitlikte
-takım OHP'si). Tam tasarım, 12 açık soru ve atlanabilecek ayrıntılar:
-`docs/decisions/team-league.md`. Görsel taslak (akışlar + 10 ekran):
-https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed. **Revizyon 2 (3 Ekim):** ortaklar çapraz köşede, aynı renkte, ORTAK bölge
-(takım içi vergi yok) → motorun bölge hesabı dört kopyada takım bilir
-(opsiyonel `Player.team`, mevcut golden'lar bayt-eş kalmalı); takım +2,
-kazanan iki oyuncuya +2 (`games.rank` 1,1,3,3 → `league_points_for` değişmez).
-**Revizyon 3 (3 Ekim):** Takım = üçüncü oyun türü (Yeni Canlı Oyun: 2 · 4 · Takım),
-kendi ana sayfası; istatistikte ayrı mod işareti gerekir (S16). **Sıradaki adım:**
-kullanıcı S1-S12'yi yanıtlar → karar kaydı olur → Faz 1 (takım kur/kabul).
-Sürüm: web+sunucu bayrak arkasında önce, port 1.2.0 treniyle.
+Kullanıcı (3 Ekim): *"Bence bu ok. Bunu 19 Ekim trenine düşünüyorum. Şimdilik
+roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
+**Kodlama 12 Ekim kesiminden SONRA başlar**; o güne kadar yalnızca tasarım.
+
+- **Ne:** 4'lü Canlı oyunda 2'şer kişilik takımlar (üçüncü oyun türü: Yeni
+  Canlı Oyun → 2 · 4 · Takım), herkese açık ilanla rakip bulma, k-lig'de
+  üçüncü alt lig (takım puanı, eşitlikte takım OHP'si). Galibiyet takıma +2,
+  kazanan iki oyuncuya da +2.
+- **Kayıt:** `docs/decisions/team-league.md` (9 revizyon, kurallar, akışlar,
+  sunucu/istemci etkisi, Faz 0-5). **Görsel taslak** (akışlar + ekranlar):
+  https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed (özel bağlantı).
+- **Kodlamadan önce teyit edilecek (öneriyle varsayıldı, kullanıcı tek tek
+  yanıtlamadı):** S13 vergi payı iki ortağa eşit bölünür · S14 beraberlik
+  +1/+1 · S15 ortak bölge = motorun dört kopyasında bölge hesabı (Faz 0, L) ·
+  S16 istatistikte ayrı mod işareti · S12 eski mobil istemcide takım oyunu
+  engeli · S17 takım kutusuna dokununca iki üyenin skor kartı · S4/S5 ilan 7
+  gün, takım başına 1 ilan, kullanıcı başına 5 takım.
+- **Sıra:** Faz 0 motor (ortak bölge, golden/SQL kapıları) → 1 takım kur →
+  2 açık ilan + kabul → 3 oyun içi/geçmiş/bitiş → 4 Takım Ligi sıralaması →
+  5 port ikizi + Koşullar/Gizlilik + TESTING. Web+sunucu bayrak arkasında
+  önce, açılış port ile birlikte.
+- **Pilot ölçümü (3 Ekim 2026, canlı veritabanından, yalnızca toplamlar):**
+  son 30 günde **Canlı oyun oynayan 26 oyuncu** (toplam 222 satır; son 7
+  günde 20 oyuncu / 77 satır). Platform kanıtı = `games.platform` ∪
+  `game_finishes.platform` ∪ `push_tokens` (60 gün). **11 yalnız uygulama ·
+  11 hem uygulama hem web · 3 yalnız web · 1 kanıtsız.** En çok Canlı
+  oynayan ilk 10: 4 · 3 · 3 · 0. Yani **web'e bağlı Canlı oyuncu ≈ 3**
+  (yalnız web), 14 kişi web'i de kullanıyor ama çoğu uygulama kullanıcısı.
+  **Sonuç: web'de kamuya açık pilot olmaz** (takım oyunu için en az 4 kişi
+  gerekir, yalnız-web 3 kişi). Gerçekçi pilot: kullanıcının test hesapları
+  (T1, T2, Ironman, AlpTEST…) ve elle seçilen birkaç kişi, sunucu bayrağı
+  arkasında; ya da 19 Ekim trenine kadar bayraklı kapalı deneme.
+  ⚠ Sınır: Canlı oyun satırlarını SUNUCU yazar, `games.platform` orada hep
+  boş; bu yüzden "hem uygulama hem web" olan 11 kişinin Canlı'yı HANGİ
+  yüzeyde oynadığı bu veriyle görünmez. Eski mağaza sürümleri (1.1.0) platform
+  damgası yazmıyor, o kişiler yalnızca push tokenı ile tanındı.
 
 ---
 
