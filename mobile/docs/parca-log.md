@@ -25,6 +25,32 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 232 — Rastgele Oyuncu (açık ilan) port ikizi (4 Ekim 2026) — web yarısı #804
+
+> Numara: taslak PR'lardaki 228-231'den SONRA (ROADMAP "1.1.3 treni");
+> birleşirken çakışırsa yeniden numaralanır.
+
+- **Ne:** web `random-opponent.md` §12'nin Flutter ikizi — kurulum formunda "?"
+  avatarlı **Rastgele Oyuncu** satırı + esnek kadro, Devam Edenler'in üstünde
+  yatay **ilan şeridi** (Kabul, 40 sn yoklama), benim ilanım için **"Bekliyor
+  n/N"** satırı (İlanı iptal et / Ayrıl), dört kova kuralı, açık koltuk her
+  yerde "?" (ASLA "Yapay Zeka"), Gizlilik/Koşullar'a ilan görünürlüğü.
+- **Dosyalar:** `data/online_games_api.dart` (`OnlineSlot` açık koltuk + `isHuman`,
+  ilan modelleri, altı RPC, `_retrying`/`_reportListError` ortaklaştırma) ·
+  `util/random_games.dart` (saf kurallar) · `ui/live/random_games_strip.dart` ·
+  `ui/open_seat_avatar.dart` · `live_games_tab.dart` · `live_game_create_form.dart`
+  (`_filledSeat` arkadaş + "?" için ortak) · `player_avatar_row.dart` (`isOpen`) ·
+  `auth/legal_modals.dart` + web `LegalContent.tsx` (yalnız TARİH).
+- **Bulunan tuzak:** `OnlineSlot.fromJson` `ai` DIŞINDAKİ her türü insan sayıyordu;
+  açık koltuk `userId == null` bir "insan" olurdu. `isAi`yi "insan değil" diye
+  okuyan 9 yer vardı → `isHuman` getter'ı (açık koltuk ne YZ ne insan). Derleyici
+  görmez; kilit `random_games_test.dart` + `random_games_ui_test.dart`.
+- **Bilinçli:** rozet zinciri (`pendingCounts`/`decideInitialMainView`/ikon rozeti)
+  DOKUNULMADI — ilan haberdir (testle kilitli: sayaç yolu `list_my_random_games`'i
+  ÇAĞIRMAZ). Realtime YOK (RLS). Rütbe mührü (§9.2) web'de de yok → portta da yok.
+- **Doğrulama sınırı:** gerçek Supabase'e karşı hiçbir akış denenmedi (sahte uç +
+  widget testi); cihaz listesi `testing-arkadaslar-canli.md` → "Rastgele Oyuncu".
+
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
 - **Bildirim (1.1.2 cihaz turu, Canlı oyun, sıra kendisinde):** *"ipad'de

@@ -75,6 +75,9 @@ mobile/
                              # create/respond RPC'leri + sıra/son-tarih +
                              # "hafif süpürme" + Realtime aboneliği + kova
                              # filtreleri/süre etiketleri (saf fonksiyonlar)
+                             # + Rastgele Oyuncu: `OnlineSlot` açık koltuk
+                             # (`isOpen`/`isHuman`), `RandomListing`/
+                             # `MyRandomGame`/`RandomGameResult` + altı RPC
       data/cloud_save_repo.dart   # local_game_saves senkronu (girişli YZ oyunları)
       data/game_record.dart  # buildGameRecord portu (`games` satırı) — `ai_level`
                              # YALNIZCA doluysa yazılır (Normal = alan yok; fikstür
@@ -350,6 +353,9 @@ mobile/
                              # guest_live_sheet (girişsiz "Arkadaşınla"
                              # alt penceresi, #41 karar 9 — metinleri web
                              # `GuestLiveSheet`ten testle okunur),
+                             # random_games_strip (Rastgele Oyuncu: yatay
+                             # ilan şeridi + "Bekliyor n/N" satırı, web
+                             # `RandomGamesStrip.tsx` ikizi, 4 Ekim 2026),
                              # online_game_screen (TAHTA — game_screen.dart
                              # ile sürükleme/joker/mesaj desenini PAYLAŞIR,
                              # biri değişirse öteki de güncellenmeli),
@@ -357,6 +363,12 @@ mobile/
                              # listeden dokunuş da bildirim yönlendirmesi
                              # de bunu çağırır; 14 parametrelik kurulum
                              # İKİNCİ kez yazılmasın diye Faz 3'te çıkarıldı)
+      util/random_games.dart # Rastgele Oyuncu SAF kuralları (kova süzgeci, açık
+                             # koltuk ≠ YZ, esnek kadro, metinler) — web
+                             # `utils/randomGames.ts` ikizi, `random_games_test`
+                             # web dosyasını OKUR
+      ui/open_seat_avatar.dart # açık koltuğun kesik çerçeveli "?" avatarı
+                             # (şerit, kartlar, avatar şeridi, form koltuğu)
       util/deep_link.dart    # gelen URI'lerin TEK ayrıştırma noktası
                              # (davet · auth dönüşü · Canlı oyun push linki)
       util/push_rules.dart   # "izin sorulsun mu?" saf kararı (en çok 3 kez,

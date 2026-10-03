@@ -47,21 +47,50 @@ OnlineGameStatus onlineStatusFromDb(String? v) => switch (v) {
 /// Web `OnlineGameSlot` — human koltuklar sunucu tarafında isim/avatar/
 /// ilişki/davet-durumuyla zenginleştirilir; `relation=='self'` çağıranın
 /// kendi koltuğu.
+///
+/// ⚠ **Üç koltuk türü var, ikisi DEĞİL** (3 Ekim 2026, Rastgele Oyuncu —
+/// `docs/decisions/random-opponent.md`): insan, Yapay Zeka ve AÇIK koltuk
+/// (Rastgele Oyuncu henüz oturmadı). Açık koltuk iki biçimde gelir: ham
+/// `{type:'open'}` (`list_my_random_games`) ve eski istemci maskesi
+/// `{type:'ai', open:true}` (`list_my_online_games`). `fromJson` ikisini de
+/// [isOpen] yapar ve [isAi] KALMAZ — `type == 'ai'` kontrolü maskeyi "Yapay
+/// Zeka" sayardı. **"İnsan mı" diye sorarken `!isAi` YETMEZ, [isHuman]
+/// kullan** (açık koltuk ne YZ ne insan). Web ikizi `isOpenSeat`/
+/// `isRealAiSeat` (`utils/randomGames.ts`).
 class OnlineSlot {
   final bool isAi;
+
+  /// AÇIK koltuk — Rastgele Oyuncu bekleniyor; Yapay Zeka DEĞİL.
+  final bool isOpen;
   final String? userId;
   final String? name;
   final String? avatarUrl;
   final String? relation; // 'self' | 'accepted' | 'pending_*' | null
   final String? inviteStatus; // 'pending' | 'accepted' | 'declined' | null
 
+  /// `'random'` = koltuğa bir ilandan oturulmuş (`leave_random_game`
+  /// yalnızca bunu boşaltır). Arkadaş koltuklarında null.
+  final String? via;
+
   const OnlineSlot.ai()
       : isAi = true,
+        isOpen = false,
         userId = null,
         name = null,
         avatarUrl = null,
         relation = null,
-        inviteStatus = null;
+        inviteStatus = null,
+        via = null;
+
+  const OnlineSlot.open()
+      : isAi = false,
+        isOpen = true,
+        userId = null,
+        name = null,
+        avatarUrl = null,
+        relation = null,
+        inviteStatus = null,
+        via = null;
 
   const OnlineSlot.human({
     required this.userId,
@@ -69,16 +98,27 @@ class OnlineSlot {
     this.avatarUrl,
     this.relation,
     this.inviteStatus,
-  }) : isAi = false;
+    this.via,
+  })  : isAi = false,
+        isOpen = false;
+
+  /// Gerçek bir insan koltuğu (YZ de açık koltuk da DEĞİL).
+  bool get isHuman => !isAi && !isOpen;
 
   factory OnlineSlot.fromJson(Map<String, Object?> m) {
-    if (m['type'] == 'ai') return const OnlineSlot.ai();
+    final type = m['type'];
+    // Açık koltuk: ham `open` YA DA `ai` + `open:true` maskesi.
+    if (type == 'open' || (type == 'ai' && m['open'] == true)) {
+      return const OnlineSlot.open();
+    }
+    if (type == 'ai') return const OnlineSlot.ai();
     return OnlineSlot.human(
       userId: m['user_id'] as String?,
       name: m['name'] as String?,
       avatarUrl: m['avatar_url'] as String?,
       relation: m['relation'] as String?,
       inviteStatus: m['invite_status'] as String?,
+      via: m['via'] as String?,
     );
   }
 }
@@ -137,7 +177,7 @@ class OnlineGame {
 
   /// Web `mySlotIndex` — çağıranın kendi koltuğu (`relation=='self'`).
   int get mySlotIndex =>
-      slots.indexWhere((s) => !s.isAi && s.relation == 'self');
+      slots.indexWhere((s) => s.isHuman && s.relation == 'self');
 
   /// Kurucunun koltuğu — kurucu hesabını sildiyse (`createdBy == null`)
   /// null döner. `userId == createdBy` karşılaştırması NULL GÜVENLİ
@@ -146,21 +186,36 @@ class OnlineGame {
   OnlineSlot? get creatorSlot {
     if (createdBy == null) return null;
     for (final s in slots) {
-      if (!s.isAi && s.userId == createdBy) return s;
+      if (s.isHuman && s.userId == createdBy) return s;
     }
     return null;
   }
 }
 
 /// Yeni oyun kurulumundaki koltuk isteği (web istemci tarafı `slots`).
+///
+/// Üç tür: insan, Yapay Zeka ve — YALNIZCA `create_random_game`'e giden —
+/// AÇIK koltuk (`type:'open'`, Rastgele Oyuncu). `create_online_game` açık
+/// koltuk KABUL ETMEZ.
 class NewGameSlot {
-  final String? humanUserId; // null = YZ koltuğu
-  const NewGameSlot.human(String this.humanUserId);
-  const NewGameSlot.ai() : humanUserId = null;
+  final String? humanUserId; // null = YZ ya da açık koltuk
+  final bool _open;
+  const NewGameSlot.human(String this.humanUserId) : _open = false;
+  const NewGameSlot.ai()
+      : humanUserId = null,
+        _open = false;
+  const NewGameSlot.open()
+      : humanUserId = null,
+        _open = true;
 
-  Map<String, Object?> toJson() => humanUserId == null
-      ? const {'type': 'ai'}
-      : {'type': 'human', 'user_id': humanUserId};
+  /// Açık koltuk mu (`create_random_game`'in `{type:'open'}`'ı)?
+  bool get isOpen => _open;
+
+  Map<String, Object?> toJson() => _open
+      ? const {'type': 'open'}
+      : humanUserId == null
+          ? const {'type': 'ai'}
+          : {'type': 'human', 'user_id': humanUserId};
 }
 
 class OnlineGamesSnapshot {
@@ -285,9 +340,149 @@ class OnlineGameSnapshot {
   const OnlineGameSnapshot(this.state, this.myRack, this.moves);
 }
 
+// ── Rastgele Oyuncu (3 Ekim 2026) — açık ilanlar ────────────────────────────
+// Web `database.types.ts` → `RandomListing`/`MyRandomGame`/`RandomGameResult`
+// ikizleri. Tasarım: `docs/decisions/random-opponent.md`. Saf kurallar
+// `util/random_games.dart`ta.
+
+/// Şeritteki başkasının açık ilanı (`list_random_games` satırı).
+class RandomListing {
+  final String id;
+  final int playerCount;
+  final String createdAt;
+  final String? creatorId;
+  final String? creatorName;
+  final String? creatorAvatarUrl;
+
+  /// Koltuk durumları: 'creator' | 'filled' | 'invited' | 'ai' | 'open'.
+  final List<String> seats;
+  final int openSeats;
+
+  const RandomListing({
+    required this.id,
+    required this.playerCount,
+    required this.createdAt,
+    required this.creatorId,
+    required this.creatorName,
+    required this.creatorAvatarUrl,
+    required this.seats,
+    required this.openSeats,
+  });
+
+  factory RandomListing.fromJson(Map<String, Object?> m) => RandomListing(
+        id: m['id'] as String,
+        playerCount: (m['player_count'] as num).toInt(),
+        createdAt: m['created_at'] as String? ?? '',
+        creatorId: m['creator_id'] as String?,
+        creatorName: m['creator_name'] as String?,
+        creatorAvatarUrl: m['creator_avatar_url'] as String?,
+        seats: [for (final s in (m['seats'] as List? ?? const [])) '$s'],
+        openSeats: (m['open_seats'] as num?)?.toInt() ?? 0,
+      );
+}
+
+/// `list_my_random_games` satırı — benim açtığım / kabul edip beklediğim /
+/// arkadaş olarak davet edildiğim ilan.
+class MyRandomGame {
+  final String id;
+  final String? createdBy;
+  final int playerCount;
+  final OnlineGameStatus status;
+  final String createdAt;
+  final String expiresAt;
+
+  /// Zenginleştirilmiş; AÇIK koltuk ham `{"type":"open"}` gelir.
+  final List<OnlineSlot> slots;
+  final int filledSeats;
+  final int openSeats;
+
+  /// 'creator' | 'random' | 'friend'.
+  final String myRole;
+  final String? myInviteId;
+
+  const MyRandomGame({
+    required this.id,
+    required this.createdBy,
+    required this.playerCount,
+    required this.status,
+    required this.createdAt,
+    required this.expiresAt,
+    required this.slots,
+    required this.filledSeats,
+    required this.openSeats,
+    required this.myRole,
+    this.myInviteId,
+  });
+
+  factory MyRandomGame.fromJson(Map<String, Object?> m) => MyRandomGame(
+        id: m['id'] as String,
+        createdBy: m['created_by'] as String?,
+        playerCount: (m['player_count'] as num).toInt(),
+        status: onlineStatusFromDb(m['status'] as String?),
+        createdAt: m['created_at'] as String? ?? '',
+        expiresAt: m['expires_at'] as String? ?? '',
+        slots: [
+          for (final s in (m['slots'] as List? ?? const []))
+            OnlineSlot.fromJson((s as Map).cast<String, Object?>()),
+        ],
+        filledSeats: (m['filled_seats'] as num?)?.toInt() ?? 0,
+        openSeats: (m['open_seats'] as num?)?.toInt() ?? 0,
+        myRole: m['my_role'] as String? ?? 'friend',
+        myInviteId: m['my_invite_id'] as String?,
+      );
+}
+
+/// `create_random_game` / `accept_random_game` dönüşü.
+class RandomGameResult {
+  /// `true`: yeni ilan açılmadı, var olan bir ilana katıldın.
+  final bool joined;
+  final String gameId;
+
+  /// Oyun doldu ve başladı mı.
+  final bool started;
+  final int? seat;
+
+  const RandomGameResult({
+    required this.joined,
+    required this.gameId,
+    required this.started,
+    this.seat,
+  });
+
+  factory RandomGameResult.fromJson(Map<String, Object?> m) =>
+      RandomGameResult(
+        joined: m['joined'] as bool? ?? false,
+        gameId: m['game_id'] as String,
+        started: m['started'] as bool? ?? false,
+        seat: (m['seat'] as num?)?.toInt(),
+      );
+}
+
 abstract class OnlineGamesGateway {
   Future<List<Map<String, Object?>>> listMine();
   Future<String> create(int playerCount, List<Map<String, Object?>> slots);
+
+  // ── Rastgele Oyuncu (3 Ekim 2026) ───────────────────────────────────────
+
+  /// `create_random_game` — jsonb sonuç (`joined`/`game_id`/`started`).
+  Future<Map<String, Object?>> createRandom(
+      int playerCount, List<Map<String, Object?>> slots);
+
+  /// `accept_random_game` — şeritteki ilanı kabul.
+  Future<Map<String, Object?>> acceptRandom(String gameId);
+
+  /// `leave_random_game` — kabul ettiğim ilandan dolmadan ayrıl.
+  Future<void> leaveRandom(String gameId);
+
+  /// `cancel_random_game` — kurucu olarak ilanı iptal et.
+  Future<void> cancelRandom(String gameId);
+
+  /// `list_random_games` — başkalarının açık ilanları (şerit).
+  Future<List<Map<String, Object?>>> listRandom(int limit, int offset);
+
+  /// `list_my_random_games` — benim ilanlarım.
+  Future<List<Map<String, Object?>>> listMyRandom();
+
   Future<void> notifyGameInvite(String gameId);
   Future<void> respondInvite(String inviteId, bool accept);
   Future<List<Map<String, Object?>>> turns(List<String> gameIds);
@@ -433,6 +628,42 @@ class SupabaseOnlineGamesGateway implements OnlineGamesGateway {
     });
     return id as String;
   }
+
+  @override
+  Future<Map<String, Object?>> createRandom(
+      int playerCount, List<Map<String, Object?>> slots) async {
+    final data = await client.rpc('create_random_game', params: {
+      'p_player_count': playerCount,
+      'p_slots': slots,
+    });
+    return (data as Map).cast<String, Object?>();
+  }
+
+  @override
+  Future<Map<String, Object?>> acceptRandom(String gameId) async {
+    final data =
+        await client.rpc('accept_random_game', params: {'p_game_id': gameId});
+    return (data as Map).cast<String, Object?>();
+  }
+
+  @override
+  Future<void> leaveRandom(String gameId) async {
+    await client.rpc('leave_random_game', params: {'p_game_id': gameId});
+  }
+
+  @override
+  Future<void> cancelRandom(String gameId) async {
+    await client.rpc('cancel_random_game', params: {'p_game_id': gameId});
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> listRandom(int limit, int offset) async =>
+      _rows(await client.rpc('list_random_games',
+          params: {'p_limit': limit, 'p_offset': offset}));
+
+  @override
+  Future<List<Map<String, Object?>>> listMyRandom() async =>
+      _rows(await client.rpc('list_my_random_games'));
 
   @override
   Future<void> notifyGameInvite(String gameId) async {
@@ -665,20 +896,100 @@ class OnlineGamesRepo {
       // kullanıcı bu satıra her açılışta düşer. Kalan tek şey GERÇEK
       // kusurlar: ayrıştırma hataları, sunucu sözleşmesinin bozulması.
       debugPrint('[Kelimeki] Canlı oyun listesi alınamadı: $e');
-      // OTURUM KAPISI (17 Eylül 2026, web `reportLiveListError` ikizi):
-      // `authenticated`e kilitli bir RPC geçerli JWT olmadan çağrılırsa
-      // PostgREST "permission denied for function …" (42501) döner — bu bir
-      // BUG değil, beklenen auth durumu. ⚠ AMA aynı mesaj gerçek bir grant
-      // hatasının da yüzü olabilir; ikisini ayıran TEK şey oturumun
-      // varlığıdır, mesaj değil: oturum VARKEN gelen aynı hata raporlanır.
-      // Panelde bu sınıftan 6 kayıt vardı (Invalid Refresh Token).
-      final oturumDustu = _isAuthStateError(e) && !gateway.hasValidSession;
-      if (!isNetworkError(e) && !oturumDustu) {
-        errorReporter.report(e, stack: st, context: 'online_games_repo.load');
-      }
+      _reportListError(e, st, 'online_games_repo.load');
       return null;
     }
   }
+
+  /// Liste hatasının telemetri kapısı — `load` ve Rastgele Oyuncu listeleri
+  /// (web `reportLiveListError` ikizi) AYNI kuralı kullanır.
+  void _reportListError(Object e, StackTrace st, String context) {
+    // OTURUM KAPISI (17 Eylül 2026, web `reportLiveListError` ikizi):
+    // `authenticated`e kilitli bir RPC geçerli JWT olmadan çağrılırsa
+    // PostgREST "permission denied for function …" (42501) döner — bu bir
+    // BUG değil, beklenen auth durumu. ⚠ AMA aynı mesaj gerçek bir grant
+    // hatasının da yüzü olabilir; ikisini ayıran TEK şey oturumun
+    // varlığıdır, mesaj değil: oturum VARKEN gelen aynı hata raporlanır.
+    // Panelde bu sınıftan 6 kayıt vardı (Invalid Refresh Token).
+    final oturumDustu = _isAuthStateError(e) && !gateway.hasValidSession;
+    if (!isNetworkError(e) && !oturumDustu) {
+      errorReporter.report(e, stack: st, context: context);
+    }
+  }
+
+  // ── Rastgele Oyuncu (3 Ekim 2026) ─────────────────────────────────────
+
+  /// Açık ilan açar ya da (kadro YALNIZCA açık koltuklardan oluşuyorsa ve
+  /// aynı boyutta açık ilan varsa) var olanına KATILIR — sunucu karar verir,
+  /// dönüşteki [RandomGameResult.joined] hangisi olduğunu söyler. Hatalar
+  /// FIRLATILIR (form `friendErrorText` ile gösterir; sunucunun Türkçe reddi
+  /// — 3 sınırı, "önce bir oyun bitir" — P0001 koduyla korunur).
+  ///
+  /// Web `createRandomGame`: arkadaş koltuğu varsa davet bildirimi
+  /// [create] ile AYNI yoldan gider (yalnız YENİ ilanda; `joined` ilanda
+  /// bildirilecek davetli yok).
+  Future<RandomGameResult> createRandom(
+      int playerCount, List<NewGameSlot> slots) async {
+    final json = await gateway
+        .createRandom(playerCount, [for (final s in slots) s.toJson()]);
+    final sonuc = RandomGameResult.fromJson(json);
+    final arkadasVar = slots.indexed
+        .any((e) => e.$1 > 0 && !e.$2.isOpen && e.$2.humanUserId != null);
+    if (!sonuc.joined && arkadasVar) {
+      gateway.notifyGameInvite(sonuc.gameId).catchError(
+          (Object e) => debugPrint('[Kelimeki] notifyGameInvite hatası: $e'));
+    }
+    return sonuc;
+  }
+
+  /// Şeritteki bir ilanı kabul eder (tek dokunuş). Hatalar FIRLATILIR.
+  Future<RandomGameResult> acceptRandom(String gameId) async =>
+      RandomGameResult.fromJson(await gateway.acceptRandom(gameId));
+
+  /// Kabul ettiğim ilandan, dolmadan ayrılır (ceza yok). Hatalar FIRLATILIR.
+  Future<void> leaveRandom(String gameId) => gateway.leaveRandom(gameId);
+
+  /// Kurucu olarak kendi ilanını iptal eder. Hatalar FIRLATILIR.
+  Future<void> cancelRandom(String gameId) => gateway.cancelRandom(gameId);
+
+  /// Başkalarının açık ilanları (şerit) — en yeni önce. **`null` = "bilmiyoruz"
+  /// (ağ/sunucu hatası), `[]` = "sunucu boş dedi"**: çağıran şeridi boşken
+  /// GİZLİYOR, yani ikisini karıştırmak düşen tek bir isteğin şeridi
+  /// sessizce kaldırması demek (web `fetchRandomGames`, `load` ile aynı
+  /// ayrım).
+  Future<List<RandomListing>?> fetchRandomListings(
+      {int limit = 20, int offset = 0}) async {
+    try {
+      final rows = await _retrying(
+          () => gateway.listRandom(limit, offset).timeout(_callTimeout));
+      return [for (final r in rows) RandomListing.fromJson(r)];
+    } catch (e, st) {
+      debugPrint('[Kelimeki] Rastgele ilan listesi alınamadı: $e');
+      _reportListError(e, st, 'online_games_repo.random_listings');
+      return null;
+    }
+  }
+
+  /// Benim ilanlarım: açtığım, kabul edip beklediğim, arkadaş olarak
+  /// çağrıldığım. `null` = bilmiyoruz (son bilinen korunur).
+  Future<List<MyRandomGame>?> fetchMyRandom() async {
+    try {
+      final rows = await _retrying(
+          () => gateway.listMyRandom().timeout(_callTimeout));
+      return [for (final r in rows) MyRandomGame.fromJson(r)];
+    } catch (e, st) {
+      debugPrint('[Kelimeki] Benim ilanlarım alınamadı: $e');
+      _reportListError(e, st, 'online_games_repo.my_random');
+      return null;
+    }
+  }
+
+  /// Süresi dolmuş bir ilanı süpürür (`check_invite_expiry`) — hata listeyi
+  /// düşürmez, bir sonraki açılış tekrar dener.
+  Future<void> sweepInviteExpiry(String gameId) => gateway
+      .checkInviteExpiry(gameId)
+      .timeout(_callTimeout)
+      .catchError((Object e) => debugPrint('[Kelimeki] invite expiry: $e'));
 
   /// Hata OTURUMUN DÜŞMESİNDEN mi kaynaklanıyor — web `isAuthStateError`
   /// ikizi (`api.ts`). Kod eşleşmesi `PostgrestException.code`tan, metin
@@ -694,10 +1005,14 @@ class OnlineGamesRepo {
         s.contains('invalid claim');
   }
 
-  Future<OnlineGamesSnapshot> _fetchWithRetry() async {
+  Future<OnlineGamesSnapshot> _fetchWithRetry() => _retrying(_fetchOnce);
+
+  /// Düşen isteği sessizce tekrarlar (ağ hatası + geçici sunucu hatası) —
+  /// liste çağrılarının ortak merdiveni (`retryDelays`).
+  Future<T> _retrying<T>(Future<T> Function() istek) async {
     for (final gecikme in retryDelays) {
       try {
-        return await _fetchOnce();
+        return await istek();
       } catch (e) {
         // ⚠ 504 bu dala 17 Eylül 2026'da GİRDİ: `PostgrestException(code:
         // 504)` taşıma kalıplarına uymadığı için "sunucunun reddi"
@@ -707,7 +1022,7 @@ class OnlineGamesRepo {
         await _delay(gecikme);
       }
     }
-    return _fetchOnce();
+    return istek();
   }
 
   Future<OnlineGamesSnapshot> _fetchOnce() async {
@@ -1001,7 +1316,7 @@ enum InitialMainView { local, live }
 List<NewGameSlot> rematchSlots(List<OnlineSlot> slots, String myUserId) => [
       NewGameSlot.human(myUserId),
       for (final s in slots)
-        if (!s.isAi && s.userId != null && s.userId != myUserId)
+        if (s.isHuman && s.userId != null && s.userId != myUserId)
           NewGameSlot.human(s.userId!),
       for (final s in slots)
         if (s.isAi) const NewGameSlot.ai(),
@@ -1062,18 +1377,32 @@ List<OnlineGame> activeBucket(
 
 /// Rakip bekleyen kendi oyunlarım — davetlerle AYNI ölçüt (aynı kartı ve
 /// aynı süre etiketini paylaşıyorlar).
-List<OnlineGame> waitingBucket(List<OnlineGame> games) => orderByExpiry([
+///
+/// [managed] (3 Ekim 2026, Rastgele Oyuncu): kurucusu/ilandan kabul edeni
+/// olduğum oyunların id'leri — bunlar YALNIZCA "Devam Edenler"de ("Bekliyor
+/// n/N") görünür, buraya GİRMEZ. ⚠ DÖRT KOVA DERSİ: `list_my_online_games`
+/// bu oyunları AYRICA döndürür; süzülmezse aynı oyun iki sekmede görünür.
+/// Kümeyi `randomManagedIds` (`util/random_games.dart`) kurar.
+List<OnlineGame> waitingBucket(List<OnlineGame> games,
+        {Set<String> managed = const {}}) =>
+    orderByExpiry([
       for (final g in games)
-        if (g.myRole == 'creator' && g.status == OnlineGameStatus.pending) g
+        if (g.myRole == 'creator' &&
+            g.status == OnlineGameStatus.pending &&
+            !managed.contains(g.id))
+          g
     ], _davetBitis);
 
-/// Kabul ettim, öteki davetliler bekleniyor — yine aynı ölçüt.
-List<OnlineGame> acceptedWaitingBucket(List<OnlineGame> games) =>
+/// Kabul ettim, öteki davetliler bekleniyor — yine aynı ölçüt ve aynı
+/// [managed] daraltması.
+List<OnlineGame> acceptedWaitingBucket(List<OnlineGame> games,
+        {Set<String> managed = const {}}) =>
     orderByExpiry([
       for (final g in games)
         if (g.myRole == 'invitee' &&
             g.myInviteStatus == 'accepted' &&
-            g.status == OnlineGameStatus.pending)
+            g.status == OnlineGameStatus.pending &&
+            !managed.contains(g.id))
           g
     ], _davetBitis);
 

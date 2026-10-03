@@ -253,8 +253,38 @@ Kararlar/sapmalar:
   live-game.md 11 Eylül) "aynı Canlı oyundaki oyuncular arasında" olarak düzeltildi.
   ⚠ "Son güncelleme: 25 Eylül 2026" tarihi DEĞİŞMEDİ: mobil `legal_text_test.dart` o tarihi web
   kaynağından okuyor; tarihi değiştirmek mobil dosyayı gerektirir. Tarih ve Dart metni
-  PORT PR'ında birlikte güncellenir.
+  PORT PR'ında birlikte güncellenir (YAPILDI: 4 Ekim 2026, bkz. §13).
 - Yabancıyla biten oyunda "Tekrar Oyna" (§7) HÂLÂ açık.
 
-**Port (Flutter) ikizi — yapılmadı.** Ajanın çıkardığı birebir kurallar listesi
-`src/utils/randomGames.ts` başındaki notlarda ve `docs/testing-rastgele.md`'de.
+## 13. Port (Flutter) ikizi — YAZILDI, taslak PR (4 Ekim 2026)
+
+Dal `claude/random-opponent-port`; 1.1.3 trenine taslak (ROADMAP "1.1.3 treni"
+tablosu). Kurallar `src/utils/randomGames.ts`ten BİREBİR → `mobile/app/lib/src/
+util/random_games.dart`; `test/random_games_test.dart` web dosyasını OKUYUP
+sabitleri/metinleri/RPC adlarını karşılaştırır (web CI `parite` işi), ekran
+akışı `test/random_games_ui_test.dart`ta. Cihaz listesi: `mobile/docs/
+testing-arkadaslar-canli.md` → "Rastgele Oyuncu" (web belgesi 13.10 aynen
+koşulur).
+
+Port kararları/sapmaları:
+- `OnlineSlot` artık üç tür: insan / YZ / **açık** (`isOpen`; ham `{type:'open'}` ve
+  maske `{type:'ai',open:true}` ikisi de). ⚠ **"İnsan mı" için `!isAi` YETMEZ →
+  `isHuman`** (açık koltuk ne YZ ne insan); `mySlotIndex`, `creatorSlot`,
+  `rematchSlots`, kartlardaki insan süzgeçleri bu yüzden güncellendi.
+- Gateway'e altı RPC (`create/accept/leave/cancel_random_game`, `list_random_games`,
+  `list_my_random_games`); ağ hatası ↔ boş liste ayrımı web'deki gibi (`null` =
+  bilmiyoruz, son bilinen korunur). `create` arkadaş koltuğu varsa `notify-game-invite`
+  (yalnız YENİ ilanda).
+- Şerit: yatay `ListView` + **sabit yükseklik** (iç içe dikey liste YOK), kart eni
+  `(genişlik-16)/3.4` (min 84), yükseklik 176 × yazı ölçeği. Yoklama 40 sn, alt
+  aralık 8 sn, yalnızca uygulama ön plandayken + çevrimiçiyken; Realtime YOK.
+- Süresi dolmuş ilan (`expires_at`) `check_invite_expiry` ile süpürülür (web ile aynı).
+- Rozet zinciri (`pendingCounts`, `decideInitialMainView`, ikon rozeti) DOKUNULMADI;
+  `random_games_test.dart` ilan listesinin sayaç yoluna girmediğini kilitler.
+- **Yasal metin + tarih**: web `LegalContent.tsx` ve port `legal_modals.dart` İKİSİ de
+  "Son güncelleme: **4 Ekim 2026**"; `legal_text_test.dart` artık yalnız tarihi değil
+  üç cümleyi (Gizlilik §2, Koşullar §1, Koşullar §5) iki tarafta da arar.
+  ⚠ #779 (taslak) aynı tarihi 12 Ekim'e çekiyor — birleşirken TEK tarih seçilmeli.
+- "Tekrar Oyna" (§7) HÂLÂ açık; port da sunucunun Türkçe reddini gösterir.
+
+Gerçek Supabase'e karşı hiçbir akış denenmedi (sahte uç + widget testi).

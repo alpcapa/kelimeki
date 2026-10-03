@@ -82,6 +82,44 @@ void main() {
             'devam etti).');
   });
 
+  test('Rastgele Oyuncu ilan görünürlüğü + sohbet cümlesi: web ve port AYNI '
+      'sözleri taşıyor (4 Ekim 2026)', () {
+    // Tarih tek başına yetmez: tarih aynı kalıp bir cümle yalnızca bir
+    // tarafta eksik olabilir. Ayraçlar (satır kaydırma, tırnak, noktalama)
+    // atılıp yalnızca harf/rakam karşılaştırılır — JSX ile Dart dizesinin
+    // satır bölme farkı testi kırmasın.
+    String norm(String s) =>
+        s.replaceAll(RegExp(r'[^\p{L}\p{N}]', unicode: true), '');
+    final webN = norm(web);
+    final portN = norm(port);
+    const sozler = [
+      // Gizlilik §2 maddesi
+      'Rastgele Oyuncu ilanı açarsanız takma adınız ve profil fotoğrafınız, '
+          'ilan yayındayken giriş yapmış TÜM üyelere görünür',
+      'ilan dolunca ya da 7 gün sonunda kalkar',
+      // Koşullar §1
+      'Rastgele Oyuncu ilanı açtığınızda takma adınız ve profil fotoğrafınız '
+          'giriş yapmış tüm üyelere görünür',
+      'tanımadığınız kişilerle de 3. bölümdeki kurallar geçerlidir',
+      // Koşullar §5 (sohbet cümlesi: "yalnızca arkadaşlar" ZATEN yanlıştı)
+      'Oyun içi mesajlaşma, aynı Canlı oyunda oynayan kullanıcılar arasında '
+          'açıktır',
+      'oyuncuların birbiriyle arkadaş olması gerekmez',
+      'Dilediğiniz kişiyi sessize alabilir ya da şikayet edebilirsiniz',
+    ];
+    for (final s in sozler) {
+      expect(webN.contains(norm(s)), isTrue,
+          reason: 'web LegalContent.tsx içinde bulunamadı: "$s"');
+      expect(portN.contains(norm(s)), isTrue,
+          reason: 'port legal_modals.dart içinde bulunamadı: "$s" — web '
+              'metni değişti ama port almadı');
+    }
+    // Eski ve artık YANLIŞ olan cümle iki tarafta da yok.
+    expect(norm(port).contains(norm('yalnızca birbirini arkadaş olarak')),
+        isFalse);
+    expect(webN.contains(norm('yalnızca birbirini arkadaş olarak')), isFalse);
+  });
+
   test('sohbet arşivi görünürlüğü: port ARTIK YANLIŞ olan cümleyi taşımıyor',
       () {
     // Bu iddia tarihten bağımsız olarak da korunmalı: sunucu 10 Ağustos'tan

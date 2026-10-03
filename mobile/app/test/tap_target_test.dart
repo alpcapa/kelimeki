@@ -75,6 +75,13 @@ const Map<String, String> _olcusuzIstisnalar = {
   'auth/legal_modals.dart': 'akan paragrafın İÇİNDEKİ link (WidgetSpan)',
   'chat/chat_thread.dart': 'her baloncuktaki 9 puntoluk moderasyon rozeti',
   'friends/friends_modal.dart': 'liste satırı — boyu avatardan',
+  // 4 Ekim 2026 (Rastgele Oyuncu): boş koltuk ve "?" koltuk kartı TAMAMI
+  // dokunulabilir (web'de de kartın kendisi `<button>`); boyu 36 px avatar +
+  // dolgulu kutudan (≥56 px) — küçük bir metin değil. Bu satır önceden
+  // taramadan YANLIŞLIKLA geçiyordu: bir sonraki metodun `TapTarget(`i 200
+  // karakterlik pencereye giriyordu; araya yorum girince pencere kaydı.
+  'live/live_game_create_form.dart': 'boş koltuk / "?" koltuk kartı — '
+      'boyu avatar + dolgulu kutudan',
   'game/board_widget.dart': 'tahta hücresi — ızgara ölçüsü kuralın kendisi',
   'game/neo_button.dart': 'kendi dolgulu kutusunu çizen buton',
   'game/rack_widget.dart': 'raf taşı — boyu taşın kendisi',

@@ -211,6 +211,7 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 | #772 (2 Eki) | **Setup'ın oyuncu sayısı satırı: "2 kişilik oyunda yapay zekaya karşı oynarsın." / "4 kişilik oyunda 3 yapay zekaya karşı oynarsın."** (kullanıcı isteği; web yarısı hemen yayında) | `ui/setup/setup_screen.dart` (tek metin) + `setup_screen_test` / `setup_cloud_test` beklentileri |
 | #774 (2 Eki) | **"Tüm oyuncular →" / "← Arkadaşlar" bağlantıları başlıkla aynı tipografide, mavi + kalın** (kullanıcı isteği; web yarısı #775 ile hemen yayında) | `ui/live/live_game_create_form.dart` (`_LinkButton`) + `ui/friends/friends_modal.dart`; `trUpper` ile büyük harf, sabitler web'le birebir |
 | #779 (2 Eki) | **Kayıt formu: ad/soyad isteğe bağlı, zorunlular üstte + Gizlilik "Ad ve soyad (isteğe bağlı)"** (kullanıcı isteği; web formu hemen yayında) | `ui/auth/auth_modal.dart` · `account_settings_modal.dart` · `legal_modals.dart` + web `src/legal/LegalContent.tsx` (Gizlilik tarihi 12 Ekim 2026 — `legal_text_test` web↔port tarih eşliği yüzünden İKİSİ BU PR'da). Cihaz: `TESTING.md` → "Ad/soyad İSTEĞE BAĞLI" |
+| #? (4 Eki, `claude/random-opponent-port`) | **Rastgele Oyuncu (#45) port ikizi** — açık ilan: kurulum formunda "?" avatarlı satır + esnek kadro, Devam Edenler'de yatay ilan şeridi (40 sn yoklama) + "Bekliyor n/N" satırları, açık koltuk "Yapay Zeka" DEĞİL, kova kuralı. Sunucu RPC'leri canlıda; web yarısı #804. ⚠ **Yasal metin + "Son güncelleme: 4 Ekim 2026" web+port BİRLİKTE** (`legal_text_test`); #779 da aynı tarihi 12 Ekim'e çekiyor — ikisi birleşirken tek tarih seçilmeli. ⚠ `live_game_create_form.dart`i #765/#774/#779 de değiştiriyor → merge sırası/çakışma. | `data/online_games_api.dart` (`OnlineSlot` açık koltuk + `isHuman`, ilan modelleri/RPC'leri) · `util/random_games.dart` · `ui/live/random_games_strip.dart` · `live_games_tab.dart` · `live_game_create_form.dart` · `ui/open_seat_avatar.dart` · `player_avatar_row.dart` · `auth/legal_modals.dart` + web `src/legal/LegalContent.tsx` (yalnız tarih). Testler: `random_games_test.dart` · `random_games_ui_test.dart`. Cihaz: `mobile/TESTING.md` → "Rastgele Oyuncu" (`docs/testing-rastgele.md`) |
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
@@ -849,7 +850,7 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
-## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB YAZILDI (PR'da, test bekliyor) · PORT SIRADA · hedef 12 Ekim treni** (3 Ekim 2026)
+## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB YAZILDI (PR'da, test bekliyor) · PORT YAZILDI (taslak PR, cihaz testi bekliyor) · hedef 12 Ekim treni** (3 Ekim 2026)
 
 Kullanıcı (3 Ekim): arkadaş listesinin tepesine "?" avatarlı **Rastgele Oyuncu**;
 ilan Devam Edenler'in üstünde **3 kutu yan yana, yatay kayan şeritte** kabul

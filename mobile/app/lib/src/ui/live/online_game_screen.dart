@@ -230,7 +230,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   /// koltuğu. Bu yüzden dizinin uzunluğu `playerCount` ile birebir olmak
   /// ZORUNDA — aşağıdaki nöbetçi bunu kontrol ediyor.
   late final int _mySlot = widget.game.slots
-      .indexWhere((s) => !s.isAi && s.userId == widget.myUserId);
+      .indexWhere((s) => s.isHuman && s.userId == widget.myUserId);
   late final GameController _controller = GameController(
     words: widget.words,
     // YZ'nin hamlesi SUNUCUDA hesaplanır (play-ai-turn) — istemci asla
@@ -1078,7 +1078,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     if (_busy) return;
     final names = [
       for (final s in widget.game.slots)
-        if (!s.isAi && s.userId != widget.myUserId) s.name ?? 'Bir arkadaşın'
+        if (s.isHuman && s.userId != widget.myUserId) s.name ?? 'Bir arkadaşın'
     ];
     final withAi = widget.game.slots.any((s) => s.isAi);
     // Kabul butonu SOLDA (Parça 25 kuralı) — showKConfirm bunu garanti eder.
