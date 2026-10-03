@@ -94,6 +94,25 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
 
 ## 5. Açık oyun akışı
 
+### 5.1 Gezinme: üçüncü oyun türü ve ana sayfası (Revizyon 3)
+
+- **Giriş:** `LiveGameCreateForm` / "Yeni Canlı Oyun" üstündeki oyuncu
+  sayısı seçicisi 2 segmentten **3 segmente** çıkar: `2 kişilik | 4 kişilik |
+  🤝 Takım`. Yapay Zeka sekmesine DOKUNULMAZ (YZ'li takım oyunu yok).
+- **Takım'a basınca:** davet formu açılmaz; **Takım oyunu ana sayfası** açılır:
+  1. üstte **Oyun Aç** (aktif takımın yoksa pasif, altında "Önce bir takım kur"),
+  2. **Açık Oyunlar** (bekleyen ilanlar, yanında Kabul Et; kendi ilanında İptal),
+  3. **Takımlarım** (+ Takım Oluştur; durum: Aktif / Onay bekliyor),
+  4. sağ üstte **Sıralama ›** (k-lig Takım Ligi sekmesine kısayol).
+- **Takım Oluştur:** ana sayfadan ya da takımsız Kabul Et'ten (§6) gelinen
+  tek ekran (arkadaşlardan 1 kişi + ad + Kaydet).
+- **Setup'taki Takım Ligi kartı** (iki sekmede) bu ana sayfaya KISAYOL: ilk iki
+  açık oyun + "Tümü" (ana sayfayı açar). Aynı veri, ikinci bir liste kaynağı yok.
+- **Devam eden takım oyunları** Arkadaşınla'nın Aktif Oyunlar listesinde,
+  pembe bantla (ana sayfa yalnızca *kurulum* yüzeyi, oyun listesi değil).
+
+### 5.2 İlan ve kabul
+
 1. **Oyun Aç:** üye, **aktif** takımlarından birini seçer ("takım seç → oyun
    başlat"). İlan açılır. Ortağı OTOMATİK katılır (onay sorulmaz: takıma
    girerken onay verdi) ve **bildirim** alır (push + uygulama içi): *"Ali, ‹Takım›
@@ -209,6 +228,20 @@ galibiyet 2 puan, ikinciye puan yok. Kazanan takımın oyuncularının ikisine d
 - Dönüş tipi değişen RPC'lerde `drop`+`create` ve `proacl` kontrolü (anon
   sızıntısı dersi).
 
+**İstatistik (Revizyon 3, S16):** `player_stats` oyunları `player_count`
+(2/4) ile gruplar (`20260906114252` migration'ı, ölçüldü). Takım oyunu
+`player_count=4` yazılırsa 4 kişilik kazanma oranı ve Skor Kartı bozulur.
+Çözüm: `games`'e **mod işareti** (ör. `team_game_id` ya da `mode='team'`),
+`player_stats` bunu ayırır, Skor Kartı'na **Takım** satırı, `total_score`
+(k-lig Genel) takım puanlarını da toplar. Bu **beş nesnenin** (`player_stats`,
+`player_stats_overall`, `leaderboard`, `_award_league_rewards`,
+`trg_award_league_rewards`) hepsini ilgilendirir: dönüş tipi/kolon değişimi
+→ `drop`+`create` ve `proacl` kontrolü; "Genel = 2 + 4 + Takım + ödül"
+değişmezi güncellenir; `verify-league-points` formülü sınamaya devam eder,
+görünüm toplamları için yeni bir kontrol gerekir. `GameOver`/`GameHistoryModal`/
+`SharedGamePage`/head-to-head gibi `player_count`a bakan yüzeyler takım
+satırını tanımalı.
+
 **Web:** `types.ts`/`constants.ts`/`validator.ts` (motor), `Setup.tsx` (Takım Ligi kartı), `LiveGameCreateForm.tsx`
 (Normal | Takım oyunu), `LiveGamesTab.tsx` (pembe bant), `RecentGamesSection`,
 `MoveHistoryModal` + `moveHistoryStats`, `PlayerScoreCard`/`GameOver`,
@@ -237,6 +270,7 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 
 | # | Soru | Öneri |
 |---|---|---|
+| S16 | Takım oyunu istatistikte nereye girsin? (S16, §9) | Ayrı mod işareti; Skor Kartı'na Takım satırı, Genel puana dahil, 2 ve 4 kişilik satırları değişmez |
 | S4 | İlan **7 gün** mü? | 7 gün (davetle aynı). Liste şişerse 48 saat |
 | S5 | Takım başına **1 açık ilan**, kullanıcı başına **5 takım**? | Evet |
 | S7 | Ortak oyuna **sorulmadan** katılır. "Çekil" hakkı? | Verilmesin; bildirim yeter |
