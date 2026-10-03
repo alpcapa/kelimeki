@@ -1,6 +1,6 @@
 # Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik Canlı oyun
 
-**Durum: TASARIM TASLAĞI (3 Ekim 2026) · kod YOK · kullanıcı onayı bekliyor ·
+**Durum: TASARIM (3 Ekim 2026, kararlar §8) · kod YOK · öneriler (§9) onay bekliyor ·
 ROADMAP #45.** Kodlama, Takım Ligi gibi 12 Ekim kesiminden SONRA.
 
 ## 1. İstek (kullanıcının sözleri)
@@ -35,10 +35,12 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
   alt yazısı *"Biri kabul edince oyun başlar"*. "Sık oynadıkların" şeridinin
   ve arama kutusunun altında, listenin ilk satırı (aramada süzgeçten MUAF,
   hep görünür).
-- **Seçim = mod (v1, açık soru A):** Rastgele seçilince arkadaş seçimi temizlenir,
-  arkadaş seçilince Rastgele kalkar. 2 kişilikte 1 koltuk, 4 kişilikte 3 koltuk
-  "?" olur (koltuk kartları oyuncu renginde, adı "Rastgele"). Koltuk kartına
-  dokunmak seçimi kaldırır. 4 kişilikte YZ koltuğu yok (v1).
+- **ESNEK KADRO (kullanıcı kararı, 3 Ekim):** Rastgele satırına her dokunuş bir
+  boş koltuğu "?" yapar; arkadaşlarla serbestçe karışır. 2 kişilikte 1 koltuk;
+  4 kişilikte ortadaki iki koltuk dolmalı (arkadaş ya da rastgele), 2 kişi
+  seçilirse 4. koltuk **Yapay Zeka** olur (bugünkü kural). Örnekler: 1 arkadaş +
+  1 rastgele + YZ · 3 rastgele · 2 arkadaş + 1 rastgele. Koltuk kartına
+  dokunmak seçimi kaldırır; satırda seçilen rastgele sayısı (×2) görünür.
 - **Davet Gönder** → ilan açılır. Onay ekranı: *"İlanın yayında. Biri kabul
   edince oyun başlar. 7 gün içinde dolmazsa kendiliğinden kalkar."*
 - Misafir: Canlı sekmesi zaten hesap ister; yeni bir kapı gerekmez.
@@ -104,15 +106,20 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
   `list_my_random_games()` (Devam Edenler "Bekliyor" satırları).
 - ⚠ **Boş koltukla başlama tuzağı:** `respond_to_game_invite`, "tüm davetler
   kabul" olunca oyunu `active` yapar. Açık koltuğun davet satırı olmadığından
-  koşul BOŞUNA doğru olur. v1'de karma kadro (arkadaş+rastgele) yok ve kabul
-  yolu ayrı RPC olduğu için tetiklenmez; ama karma kadro açılırsa bu fonksiyona
-  "açık koltuk kalmadı" şartı eklenir. Ayrıca `accept_random_game` oyunu
+  koşul BOŞUNA doğru olur. Esnek kadro (karar A) kabul edildiği için bu
+  fonksiyona "açık koltuk kalmadı" şartı ZORUNLU eklenir (arkadaş kabul etti
+  ama rastgele koltuk boş: oyun başlamaz, ilan açık kalır). Ayrıca `accept_random_game` oyunu
   yalnızca son koltuk dolunca `active` yapıp `init_online_game_state` çağırır.
 - ⚠ **Eski istemci koruması** (Takım Ligi S12 deseni): eski `list_my_online_games`
   içinde `open` tipli koşulu görmemeli (bilinmeyen `slots` tipi eski web/Dart
   ayrıştırıcısını bozar; "koltuk indeksi çöktü" dersi). Eski RPC, açık koltuğu
   olan `pending` oyunları DÖNMEZ; yeni RPC'ler döner. Oyun dolup `active` olunca
   her iki RPC de görür — o noktada `slots` tamamen bildik tiplerde.
+  ⚠ **Karma kadroda eski istemcideki ARKADAŞ** daveti görüp kabul etmek zorunda
+  (yoksa oyun hiç dolmaz). Aday çözüm: eski RPC açık koltuğu geçici olarak
+  `{"type":"ai"}` gösterir (eski ayrıştırıcılar bu tipi bilir). Uygulamadan önce
+  web `LiveGamesTab` ve Dart `live_games_tab.dart` ayrıştırıcıları okunup
+  doğrulanır; olmazsa karma kadro eski sürümdeki arkadaşa sunucuda reddedilir.
 - `check_invite_expiry` açık ilanı da süpürmeli (7 gün → `abandoned`). Dört
   kovanın hepsi `status`e bakıyor mu dersi (`live-game.md`, 4 Ağustos 2026)
   uygulanır: yeni kovalar da `status` filtreli.
@@ -137,13 +144,32 @@ ROADMAP "Sıradaki sürüme binecekler" satırı.
 davet edebilirsin"* ile düşer. Kod okunmadı; uygulamadan önce karar: rakip
 arkadaş değilse rövanş gizlensin (öneri) ya da yeniden rastgele ilana dönsün.
 
-## 8. Kullanıcıya AÇIK SORULAR
+## 8. Kararlar (3 Ekim 2026, kullanıcı)
 
-| # | Soru | Öneri |
-|---|---|---|
-| A | 4 kişilikte arkadaş + rastgele **karışık** kadro (2 arkadaş + 1 rastgele) olsun mu? | v1 hayır: karma kadro eski-istemci davetlisini kilitleyebilir (görmediği oyunu kabul edemez) ve yukarıdaki boş-koltuk tuzağını açar. 4 kişilikte ya hepsi arkadaş ya hepsi rastgele |
-| B | 4 kişilik rastgele oyunda 4. koltuk YZ olabilsin mi? | v1 hayır (kadro basit kalsın), sonra eklenir |
-| C | Şeridin okunuşu (§1) doğru mu? | Başkalarının açık ilanları; benimkiler altta "Bekliyor" |
-| D | Kişi başı 3 eşzamanlı, 7 gün | Onay |
-| E | Şeritte 2/4 süzgeci (Hepsi · 2 · 4)? | v1 yok, karışık akar (isteğin böyle) |
-| F | Takım Ligi (19 Ekim) ile sırası | Motor değişmediği için bağımsız ve daha hafif; öneri: aynı `listing` altyapısı için Takım Ligi Faz 2'den SONRA, tarih sizin kararınız |
+| # | Karar |
+|---|---|
+| A | **Esnek kadro EVET** (arkadaş + rastgele + isteğe YZ karışık). Bedeli §6'da: boş-koltuk başlama koruması ve eski istemci görünümü |
+| B | 4. koltuk **Yapay Zeka olabilir** (rastgele kadroda da) |
+| C | Şerit = başkalarının açık ilanları (doğru okunmuş). Şeridin ALTINDA bugünkü Devam Eden Oyunlar listesi aynen durur; benim bekleyen rastgele oyunlarım orada "Bekliyor n/N" etiketiyle |
+| D | Kişi başı en çok 3 eşzamanlı rastgele, 7 gün |
+| E | Şeritte süzgeç yok, 2 ve 4 kişilik karışık akar |
+| F | Plan aşaması. Mümkünse aynı trene (19 Ekim); öneriler §9 |
+
+## 9. Öneriler (onay bekler)
+
+1. **Önce var olan ilana katıl, yoksa aç:** kadro YALNIZCA rastgele koltuklardan
+   oluşuyorsa ve aynı boyutta açık ilan varsa "Davet Gönder" yeni ilan açmak
+   yerine onu kabul eder (oyun anında başlar). Şerit şişmez, bekleme kısalır.
+   Arkadaşlı karma kadroda uygulanmaz (kurucu kendi kadrosunu istiyor).
+2. **Karta rütbe mührü** (`RankSeal`): yabancıyı seçerken seviyesini görmek ucuz
+   ve adil; süzgeç değil, yalnızca bilgi.
+3. **Açma/kabul kapısı:** en az 1 BİTMİŞ oyun (yeni/sahte hesapla şerit spam'ini
+   keser). Tek satırlık sunucu şartı.
+4. **Sıra:** motor değişmediği için bu iş Takım Ligi'nden bağımsız ve hafif. Web
+   yarısı sürüm trenine bağlı DEĞİL (hemen gidebilir); yalnızca port yarısı
+   19 Ekim trenine girer. `listing` altyapısı Takım Ligi Faz 2'nin de ön koşulu,
+   yani önce bu yapılırsa Takım Ligi ucuzlar. Risk: ikisi aynı ekranlara
+   (`LiveGameCreateForm`, `LiveGamesTab`) dokunur; aynı anda iki dal açılırsa
+   çakışır, bu yüzden sıralı (önce rastgele web, sonra takım) önerilir.
+5. Prototip: https://claude.ai/artifact/8CfANHX7L8N9wJmMHVz1uM (özel bağlantı,
+   sahte veri).

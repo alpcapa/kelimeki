@@ -854,7 +854,7 @@ gider); sürüm dondurması bitmeden başlama.
 Kullanıcı (3 Ekim): arkadaş listesinin tepesine "?" avatarlı **Rastgele Oyuncu**;
 ilan Devam Edenler'in üstünde **3 kutu yan yana, yatay kayan şeritte** kabul
 edilir, kabul edilen oyun "Bekliyor" ile Devam Edenler'e girer. Motora dokunmaz.
-Kayıt ve 6 açık soru (A-F): `docs/decisions/random-opponent.md`. Kodlama 12 Ekim
+Kayıt, kararlar (A-F kapandı) ve öneriler: `docs/decisions/random-opponent.md`. Kodlama 12 Ekim
 kesiminden sonra; Takım Ligi (#44) ile aynı `online_games.listing` altyapısı.
 
 ## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
