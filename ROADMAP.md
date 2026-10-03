@@ -869,7 +869,7 @@ roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
   +1/+1 · S15 ortak bölge = motorun dört kopyasında bölge hesabı (Faz 0, L) ·
   S16 istatistikte ayrı mod işareti · S12 eski mobil istemcide takım oyunu
   engeli · S17 takım kutusuna dokununca iki üyenin skor kartı · S4/S5 ilan 7
-  gün, takım başına 1 ilan, kullanıcı başına 5 takım.
+  gün, takım başına 1 BEKLEYEN ilan (başlayınca yenisi açılır), kullanıcı başına 5 takım · S19 takım başına en çok 3 devam eden oyun · S20 kabul edilen oyun listede "Devam ediyor" kalır (izleme: `product-backlog.md`).
 - **Sıra:** Faz 0 motor (ortak bölge, golden/SQL kapıları) → 1 takım kur →
   2 açık ilan + kabul → 3 oyun içi/geçmiş/bitiş → 4 Takım Ligi sıralaması →
   5 port ikizi + Koşullar/Gizlilik + TESTING. Web+sunucu bayrak arkasında

@@ -482,3 +482,15 @@ hepsi aynı boyutta — her çeşidi bir kez `ui.Image`'a çizip 169 kez
 `drawImageRect` ile basmak, 340 blur'u 7'ye indirir. Riski görsel (parite
 testlerinde piksel golden'ı YOK, yani regresyonu yalnızca göz yakalar), o
 yüzden mağaza turundan sonraya bırakıldı.
+
+## Takım Ligi: devam eden açık oyunları izleme (seyirci) — SONRAYA (3 Ekim 2026)
+
+Kullanıcı: kabul edilen takım oyunu açık oyunlar listesinde "Devam ediyor"
+olarak kalsın, *"ileride başkalarının da tıklayıp izleyebilmesini
+düşünüyorum"*. Bu tasarımın kapsamında DEĞİL (`docs/decisions/team-league.md`,
+S20): yalnızca satır listede kalır, dokunulmaz. İzleme eklenirken karar
+gerekenler: seyirci rakip rafını ASLA görmez (sunucu yalnızca
+`online_game_states`, raf içermeyen durum), gecikme/yayın şekli (Realtime
+aboneliği maliyeti), katılımcıların görünürlük rızası (Koşullar/Gizlilik),
+arkadaş olmayanlara sohbet görünmez.
+

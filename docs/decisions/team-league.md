@@ -86,7 +86,7 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
   i/ı duyarsız), sohbetteki engelli kelime listesinden geçer. Kullanıcı adı
   uygunluk denetimi (`useNicknameAvailability`) deseni.
 - **Sınırlar (öneri):** aynı iki kişi arasında TEK takım; kullanıcı başına en
-  çok **5 aktif takım**; takım başına aynı anda **1 açık ilan**.
+  çok **5 aktif takım**; takım başına aynı anda **1 BEKLEYEN ilan** (kabul edilmemiş). İlan kabul edilip oyun başlayınca takım yeni ilan açabilir (S19: eşzamanlı oyun sınırı).
 - **Ayrılma:** takımın açık ilanı veya aktif oyunu varken ayrılma KAPALI
   ("önce oyunları bitir"); aksi halde yarım oyunda ortak kaybolur.
 - **Hesap silme:** üyesi silinen takım `DAĞILDI` olur, lig kaydı korunur, silinen
@@ -115,8 +115,10 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
   büyük "Oyun Aç" butonu ve takım seçme sheet'i YOK. Aktif takımın satırına
   tıklayınca **sağdaki durum etiketi (Aktif) "Oyun Aç" butonuna döner**; butona
   basınca ilan **hemen** açılır (soru yok), altta kısa bildirim *"Oyun açıldı.
-  Rakip bekleniyor."* Takımın zaten açık ilanı varsa etiket "İlan açık" kalır,
-  buton çıkmaz (takım başına 1 ilan). Aktif takımın yoksa yönerge yerine
+  Rakip bekleniyor."* Takımın bekleyen ilanı varsa etiket **"Aktif oyun"** olur ve
+  buton çıkmaz (takım başına 1 bekleyen ilan); biri kabul edip oyun başlayınca
+  etiket yine "Aktif"e döner ve takıma tıklayınca **tekrar Oyun Aç** çıkar
+  (Revizyon 10, kullanıcı). Aktif takımın yoksa yönerge yerine
   *"Önce bir takım kur"* yazar.
 - **Kendi ilanını kabul edemezsin:** ilanı açan takımın İKİ üyesinin gözünde de
   satırda Kabul Et yerine **"Bekliyor"** etiketi. İlanı iptal etmek için
@@ -129,7 +131,11 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
   deseni; RPC `list_open_team_games(limit, offset)` + toplam sayı). Sıra:
   kendi ilanın üstte, sonra en yeni; kararlı sayfalama için `created_at desc,
   id`. **Takımlarım sayfalanmaz** (en çok 5 aktif takım + bekleyenler).
-  Boş durum: "Henüz açık oyun yok. İlk ilanı sen aç." Yenileme: paylaşılan tek
+  **Kabul edilen oyun listeden KALKMAZ (Revizyon 10):** satır listenin SONUNDA
+  "Devam ediyor" (iki takım adı, soluk, dokunulmaz) olarak durur; oyun bitince
+  düşer. Sıra: bekleyen ilanlar (kendi ilanın üstte, sonra en yeni), sonra
+  devam edenler (en yeni önce). Başlıktaki sayı yalnızca bekleyenleri sayar.
+  Neden: ileride başkaları tıklayıp izleyebilsin (ürün fikri, kapsam dışı). Boş durum: "Henüz açık oyun yok. İlk ilanı sen aç." Yenileme: paylaşılan tek
   Realtime kanalı (`verify-shared-realtime`) + öne dönüş; kaydırılmış listede
   yeni ilan araya girmez, üstte "N yeni ilan" der. Port: Flutter'da iç içe
   `ListView` YOK (`mobile/CLAUDE.md`, `KModal` dersi) — `KModal` gövdesi
@@ -321,7 +327,9 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 | S17 | Takım kutusuna dokununca ne açılsın? | Bugünkü skor kartı penceresi, iki üyenin kartı alt alta |
 | S16 | Takım oyunu istatistikte nereye girsin? (S16, §9) | Ayrı mod işareti; Skor Kartı'na Takım satırı, Genel puana dahil, 2 ve 4 kişilik satırları değişmez |
 | S4 | İlan **7 gün** mü? | 7 gün (davetle aynı). Liste şişerse 48 saat |
-| S5 | Takım başına **1 açık ilan**, kullanıcı başına **5 takım**? | Evet |
+| S5 | Takım başına **1 bekleyen ilan**, kullanıcı başına **5 takım**? | Evet |
+| S19 | Bir takımın AYNI ANDA sürdürebileceği oyun sayısı sınırı var mı? (başlayan ilandan sonra yenisi açılabildiği için) | Evet, 3 devam eden oyun (48 saatlik sıra süresi ve ortağın yükü; sonradan gevşetilir). Dolunca etiket "Oyunların dolu" |
+| S20 | Kabul edilen oyun açık listede kalsın mı? | **Evet (kullanıcı kararı, Revizyon 10):** listenin sonunda "Devam ediyor", bitince düşer; ileride başkaları izleyebilsin diye. İzleme ürün fikri `product-backlog.md`te |
 | S7 | Ortak oyuna **sorulmadan** katılır. "Çekil" hakkı? | Verilmesin; bildirim yeter |
 | S8 | Belirli takıma özel meydan okuma bu sürümde mi? | Sonraya (`product-backlog.md`) |
 | S9 | Aynı iki takımın birbirine kasten yenilmesi | v1: admin izleme. v2: aynı çift arası 7 günde en çok 3 puanlı oyun |
