@@ -155,9 +155,14 @@ sahibine bildirim: *"‹Takım› hazır. Açık oyunlara dön."*
 
 ## 7. Oyun içi, Oyun Geçmişi, bitiş ekranı, Son Oynananlar
 
-- **Oyun ekranı skor kutuları (Revizyon 2):** her takım için TEK kutu:
-  **takım adı + takım toplamı**, takım renginde. Kişi başına skor GÖSTERİLMEZ.
-  Sıradaki oyuncu kutu içinde küçük bir nokta/avatarla belirtilir.
+- **Oyun ekranı: düzen DEĞİŞMEZ (Revizyon 5, kullanıcı: *"Alıştığımız her
+  şey aynı kalmalı"*).** Header'daki skor kutuları (`GameHeader`) aynı yerde,
+  aynı boyutta ve aynı stilde kalır; yalnızca dört yerine **iki kutu**:
+  üstte takım adı, altında takım puanı, takım renginde. Üste yeni bir kart
+  satırı EKLENMEZ. "Sıra sende" / "Sıra: X bekleniyor" bilgisi bugünkü gibi
+  alttaki mesaj kutusunda. Tahta, raf, butonlar aynı. Sırası gelen takımın
+  kutusu bugünkü gibi kalın çerçeveli. Kutuya dokununca açılan skor kartı
+  penceresi bugünkü gibi çalışır, takım için iki üyenin kartını gösterir (S17).
 - **Oyun Geçmişi** (`MoveHistoryModal`): dört kutu **Toplam · Takım puanı ·
   Takım vergisi(−) · Takım vergisi(+)**. Vergi yalnızca rakip takımla olan
   (takım içi vergi yok, §3). Hamle satırlarında oynayanın adı yazar, çünkü
@@ -275,6 +280,7 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 
 | # | Soru | Öneri |
 |---|---|---|
+| S17 | Takım kutusuna dokununca ne açılsın? | Bugünkü skor kartı penceresi, iki üyenin kartı alt alta |
 | S16 | Takım oyunu istatistikte nereye girsin? (S16, §9) | Ayrı mod işareti; Skor Kartı'na Takım satırı, Genel puana dahil, 2 ve 4 kişilik satırları değişmez |
 | S4 | İlan **7 gün** mü? | 7 gün (davetle aynı). Liste şişerse 48 saat |
 | S5 | Takım başına **1 açık ilan**, kullanıcı başına **5 takım**? | Evet |
