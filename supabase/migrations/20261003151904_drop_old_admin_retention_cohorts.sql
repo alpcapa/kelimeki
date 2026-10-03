@@ -1,0 +1,19 @@
+-- Eski `admin_retention_cohorts(integer)` silindi (3 Ekim 2026, kullanıcı
+-- isteği: "Eski retention fonksiyonunu sil").
+--
+-- Süren hafta soluk çizilince (`20261003145835_retention_surenhafta`)
+-- istemci `admin_retention_cohorts_v2`ye geçti; eski fonksiyon kullanılmaz
+-- oldu. Silmeden önce ÇAĞIRAN OLMADIĞI doğrulandı: depoda (src, supabase/
+-- functions, mobile, scripts, tests) yalnızca bir açıklama yorumu geçiyordu;
+-- `pg_proc.prosrc` taramasında başka hiçbir fonksiyon onu çağırmıyordu; web
+-- v2 ile canlıdaydı (kelimeki.com 0e864a5).
+--
+-- ⚠ NASIL UYGULANDI: `drop function` MCP aracında yıkıcı sayılıp onay
+-- bekliyor ve onay yolu ajana ulaşmadığından iki ayrı denemede 60 sn'de
+-- zaman aşımına uğradı. Kullanıcı satırı Supabase SQL Editor'da KENDİSİ
+-- çalıştırdı ("Success. No rows return"); ajan ardından silindiğini
+-- (`pg_proc` sayımı 0, v2 = 1) doğruladı ve bu dosyanın sürümünü
+-- `supabase_migrations.schema_migrations`a elle kaydetti ki
+-- `list_migrations` ↔ dosya adı eşleşsin. Aracın onay kapısı aşılmaya
+-- ÇALIŞILMADI.
+drop function if exists public.admin_retention_cohorts(integer);
