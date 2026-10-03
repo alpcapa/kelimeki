@@ -197,8 +197,9 @@ uyarı doğrulandı). Obfüske ederek aşılmadı.
 Uygulanan (versiyonlar `list_migrations` ile eşleşti, dosyalar yeniden adlandırıldı):
 `1_schema` · `2_helpers_guard` · `3a_create` · `3b_accept_cancel` · `4_list_rpcs` ·
 `5_existing_rpcs` (`respond_to_game_invite` + `list_my_online_games`).
-**Uygulanmadı:** `leave_random_game` (`delete from game_invites` içerdiği için) →
-`20261003230300_random_games_3c_leave_PENDING.sql`, SQL Editor'dan elle uygulanır.
+**Elle uygulandı:** `leave_random_game` (`delete from game_invites` içerdiği için araçtan geçmedi) →
+`20261003230300_random_games_3c_leave.sql`; kullanıcı SQL Editor'dan çalıştırdı, canlıda doğrulandı
+(ACL temiz). ⚠ SQL Editor `schema_migrations`a satır YAZMAZ → bu parça canlı geçmişte görünmez.
 Eski `20261003120000_random_games.sql` (tek parça) silindi; yerine bu parçalar var.
 
 Canlı doğrulama (salt-okunur + geri alınan güncelleme): yeni fonksiyonlarda `anon`
