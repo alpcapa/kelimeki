@@ -162,6 +162,12 @@ jobs:
       # sunucusunda Supabase yapılandırılmadığından tarayıcıda ulaşılamıyor.
       - run: npm run verify-live-games-load
 
+      # Rastgele Oyuncu (3 Ekim 2026): kurucu/kabul eden oyunlar yalnızca
+      # "Devam Edenler"e düşer (dört kova dersi), açık koltuk "Yapay Zeka"
+      # sanılmaz, açık ilan rozetleri/giriş sekmesini ŞİŞİRMEZ. Kural saf
+      # (`utils/randomGames.ts`); duman testiyle sınanamaz (oturum ister).
+      - run: npm run verify-random-games
+
       # `subscribeMyOnlineGames` PAYLAŞILAN kanal değişmezi (5 Eylül 2026,
       # incelemenin performans geçişi): üç çağıran → TEK Realtime aboneliği.
       # Derleyici de duman testi de göremez — kanal başına ayrılırsa

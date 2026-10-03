@@ -849,7 +849,7 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
-## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **TASARIM ONAYLANDI · hedef 12 Ekim treni (başlama onayı bekliyor)** (3 Ekim 2026)
+## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB YAZILDI (PR'da, test bekliyor) · PORT SIRADA · hedef 12 Ekim treni** (3 Ekim 2026)
 
 Kullanıcı (3 Ekim): arkadaş listesinin tepesine "?" avatarlı **Rastgele Oyuncu**;
 ilan Devam Edenler'in üstünde **3 kutu yan yana, yatay kayan şeritte** kabul

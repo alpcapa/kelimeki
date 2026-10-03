@@ -229,3 +229,32 @@ kilit sırası + "açık koltuk kalmadı" şartı; `list_my_online_games` yalnı
   (bugünkü ret kuralı, değişmedi).
 - Eski sürümlü arkadaş açık koltuğu "Yapay Zeka" sanır (bilinen bedel).
 - Doğrulanmadı: oyun başlarken `_notify_your_turn` tetiklenir mi.
+
+## 12. Web yarısı — YAZILDI, canlıya alınmadı (3 Ekim 2026)
+
+Sonnet ajanı yazdı, ben okudum ve `lint`, `build`, `verify-hook-order`,
+`verify-auth-user-identity`, `verify-error-messages`, `verify-live-games-load`,
+`verify-shared-realtime`, `verify-game-list-order`, YENİ `verify-random-games` (59 kontrol)
+ve ilgili Flutter parite testlerini (web kaynağını okuyanlar) koştum: hepsi geçti.
+Saf kurallar `src/utils/randomGames.ts`'te; bileşenler `RandomGamesStrip.tsx` +
+`LiveGamesTab.tsx` + `LiveGameCreateForm.tsx`. **Gerçek Supabase'e karşı hiçbir akış
+denenmedi** (yalnızca sahte uç + izole sayfada 320/390 px görsel kontrol) → iki
+hesapla `docs/testing-rastgele.md` koşulmadan merge EDİLMEZ.
+
+Kararlar/sapmalar:
+- Kova kuralı: yalnızca `my_role` 'creator' ve 'random' Devam Edenler'e gider; 'friend'
+  (karma kadrodaki arkadaş) bugünkü davet akışında kalır (yoksa daveti kaybolurdu).
+- Şerit yoklaması 40 sn (en az 8 sn aralık), yalnızca sekme görünür+çevrimiçi iken.
+- "Rastgele Oyuncu" satırı listenin EN BAŞINDA ve aramadan muaf (belgedeki "aramanın
+  altı" konumundan sapma). Rütbe mührü (§9.2) EKLENMEDİ.
+- Kart ~173 px yüksek (tasarım notundaki ~108 değil); "N koltuk kaldı" dar kartta iki satıra sarıyor.
+- **Yasal metin:** Gizlilik §2'ye ve Koşullar §1'e ilan görünürlüğü maddesi; Koşullar §5'teki
+  "mesajlaşma yalnızca arkadaşlar arasında" cümlesi (ZATEN yanlıştı: sohbet oyun bazlı,
+  live-game.md 11 Eylül) "aynı Canlı oyundaki oyuncular arasında" olarak düzeltildi.
+  ⚠ "Son güncelleme: 25 Eylül 2026" tarihi DEĞİŞMEDİ: mobil `legal_text_test.dart` o tarihi web
+  kaynağından okuyor; tarihi değiştirmek mobil dosyayı gerektirir. Tarih ve Dart metni
+  PORT PR'ında birlikte güncellenir.
+- Yabancıyla biten oyunda "Tekrar Oyna" (§7) HÂLÂ açık.
+
+**Port (Flutter) ikizi — yapılmadı.** Ajanın çıkardığı birebir kurallar listesi
+`src/utils/randomGames.ts` başındaki notlarda ve `docs/testing-rastgele.md`'de.

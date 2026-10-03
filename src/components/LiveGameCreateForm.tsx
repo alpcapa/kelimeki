@@ -3,6 +3,13 @@
 // Yapay Zeka'ya hiç izin yok (iki koltuk da insan); 4 kişilikte yalnızca
 // 4. koltuk Yapay Zeka olabilir, en az 2 arkadaş seçilmesi zorunlu.
 //
+// 3 Ekim 2026 — RASTGELE OYUNCU (docs/decisions/random-opponent.md §3): listenin
+// en üstünde "?" avatarlı bir satır; her dokunuş bir boş koltuğu "?" yapar ve
+// arkadaşlarla karışır (esnek kadro). En az bir "?" varsa `createRandomGame`
+// (açık ilan), yoksa AŞAĞIDAKİ bugünkü `createOnlineGame` yolu AYNEN. Seçim
+// kuralları saf fonksiyonda: `utils/randomGames.ts` (`verify-random-games`).
+// 4 kişide tam 2 seçimde 4. koltuk Yapay Zeka (rastgele kadroda da).
+//
 // 27 Eylül 2026 (ROADMAP #41, kararlar 11-12): seçilen rakipler KOLTUK
 // KARTLARI olarak oyuncu renginde görünür; 4 kişide 2 arkadaş seçiliyken boş
 // 4. koltuk ekranda "Yapay Zeka" olarak durur. Bu yüzden eski "4. koltuk
@@ -14,6 +21,7 @@ import { ScrollArea } from './ScrollArea';
 import { useAuth } from '../hooks/useAuth';
 import {
   createOnlineGame,
+  createRandomGame,
   fetchFrequentOpponents,
   fetchFriendRelation,
   fetchFriends,
@@ -33,6 +41,18 @@ import { RankSeal } from './RankSeal';
 import { useRankScores } from '../hooks/useRankScores';
 import { friendlyErrorMessage } from '../utils/errorMessage';
 import { PLAYER_COLORS } from '../game/constants';
+import {
+  RANDOM_SEAT,
+  addRandomSeat,
+  aiLastSeat,
+  buildRandomSlots,
+  canSubmitSeats,
+  createdNotice,
+  randomSeatCount,
+  removeSeatAt,
+  toggleFriendSeat,
+  usesRandomSeat,
+} from '../utils/randomGames';
 
 interface LiveGameCreateFormProps {
   onCancel: () => void;
@@ -101,7 +121,12 @@ export function LiveGameCreateForm({
   // `ChatSettingsModal`'ın "Şikayetiniz iletildi." ekranlarıyla aynı desen.
   // Davet edilenlerin isimleri gönderim anında dondurulur: `onCreated` ile
   // listeye dönülene kadar `selected`/`friends` değişebilir.
-  const [sentTo, setSentTo] = useState<{ names: string[]; withAi: boolean } | null>(null);
+  const [sentTo, setSentTo] = useState<{
+    names: string[];
+    withAi: boolean;
+    /** Rastgele kadro: sunucunun sonucuna göre başlık/metin (`createdNotice`). */
+    random?: { title: string; body: string };
+  } | null>(null);
 
   const reloadFriends = () => {
     fetchFriends().then(setFriends);
@@ -148,16 +173,11 @@ export function LiveGameCreateForm({
   }, [playerCount]);
 
   const toggleFriend = (friendId: string) => {
-    if (playerCount === 2) {
-      setSelected((s) => (s.includes(friendId) ? [] : [friendId]));
-      return;
-    }
-    setSelected((s) => {
-      if (s.includes(friendId)) return s.filter((id) => id !== friendId);
-      if (s.length >= 3) return s;
-      return [...s, friendId];
-    });
+    setSelected((s) => toggleFriendSeat(s, friendId, playerCount));
   };
+  // "Rastgele Oyuncu" satırı: her dokunuş bir boş koltuğu "?" yapar.
+  const addRandom = () => setSelected((s) => addRandomSeat(s, playerCount));
+  const randomCount = randomSeatCount(selected);
 
   // Arkadaşlık isteği — Arkadaşlar penceresindekiyle aynı, onaysız tek
   // dokunuş. Kabul edilen (ya da karşılıklı isteğe dönen) kişi arkadaş
@@ -203,25 +223,30 @@ export function LiveGameCreateForm({
     });
   };
 
-  const canSubmit = playerCount === 2 ? selected.length === 1 : selected.length >= 2;
+  const canSubmit = canSubmitSeats(selected, playerCount);
 
   const submit = async (withAiLastSlot: boolean) => {
     if (!user) return;
     setBusy(true);
     setError(null);
     try {
+      const names = selected
+        .filter((id) => id !== RANDOM_SEAT)
+        .map((id) => friends?.find((f) => f.friend_id === id)?.name ?? 'Bir arkadaşın');
+      if (usesRandomSeat(selected)) {
+        // En az bir "?" → açık ilan (ya da uygun ilan varsa ona katılma; karar
+        // sunucuda, dönüşteki `joined`).
+        const sonuc = await createRandomGame(playerCount, buildRandomSlots(user.id, selected, playerCount));
+        setSentTo({ names, withAi: withAiLastSlot, random: createdNotice(sonuc) });
+        return;
+      }
       const slots: OnlineGameSlot[] = [
         { type: 'human', user_id: user.id },
         ...selected.map((id) => ({ type: 'human' as const, user_id: id })),
         ...(withAiLastSlot ? [{ type: 'ai' as const }] : []),
       ];
       await createOnlineGame(playerCount, slots);
-      setSentTo({
-        names: selected.map(
-          (id) => friends?.find((f) => f.friend_id === id)?.name ?? 'Bir arkadaşın',
-        ),
-        withAi: withAiLastSlot,
-      });
+      setSentTo({ names, withAi: withAiLastSlot });
     } catch (err) {
       setError(
         friendlyErrorMessage(err, { surface: 'canli-davet', fallback: 'Davet gönderilemedi.' }),
@@ -234,7 +259,7 @@ export function LiveGameCreateForm({
   // 4 kişide 2 arkadaş = 4. koltuk Yapay Zeka; ekrandaki koltuk kartı bunu
   // zaten gösteriyor, ayrıca sorulmaz (27 Eylül 2026, ROADMAP #41 karar 12).
   const handleSubmit = () => {
-    void submit(playerCount === 4 && selected.length === 2);
+    void submit(aiLastSeat(selected, playerCount));
   };
 
   if (sentTo) {
@@ -247,15 +272,31 @@ export function LiveGameCreateForm({
           ✓
         </span>
         <h2 className="text-2xl font-bold text-text leading-tight" style={{ margin: 0 }}>
-          Davetin gönderildi
+          {sentTo.random ? sentTo.random.title : 'Davetin gönderildi'}
         </h2>
-        <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
-          {sentTo.names.join(', ')} kabul edince oyun başlar ve ilk sıra sende olur.
-          {sentTo.withAi && ' 4. koltuk Yapay Zeka.'}
-        </p>
-        <p className="text-xs text-muted font-mono leading-relaxed" style={{ margin: 0 }}>
-          Davet 7 gün içinde kabul edilmezse iptal olur. Biri reddederse oyun kurulmaz.
-        </p>
+        {sentTo.random ? (
+          <>
+            <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
+              {sentTo.random.body}
+            </p>
+            {(sentTo.names.length > 0 || sentTo.withAi) && (
+              <p className="text-xs text-muted font-mono leading-relaxed" style={{ margin: 0 }}>
+                {sentTo.names.length > 0 && `Davet gönderilen: ${sentTo.names.join(', ')}. `}
+                {sentTo.withAi && '4. koltuk Yapay Zeka.'}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-muted leading-relaxed" style={{ margin: 0 }}>
+              {sentTo.names.join(', ')} kabul edince oyun başlar ve ilk sıra sende olur.
+              {sentTo.withAi && ' 4. koltuk Yapay Zeka.'}
+            </p>
+            <p className="text-xs text-muted font-mono leading-relaxed" style={{ margin: 0 }}>
+              Davet 7 gün içinde kabul edilmezse iptal olur. Biri reddederse oyun kurulmaz.
+            </p>
+          </>
+        )}
         <button
           onClick={onCreated}
           className="mt-2 btn-raised btn-raised-orange min-h-[52px] px-8 rounded-md bg-orange text-white text-sm font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
@@ -306,10 +347,16 @@ export function LiveGameCreateForm({
             const col = PLAYER_COLORS[koltuk];
             const yatay = playerCount === 2;
             const ben = koltuk === 0;
-            const f = ben ? undefined : selected[koltuk - 1] ? byId(selected[koltuk - 1]) : undefined;
-            const ai = playerCount === 4 && koltuk === 3 && selected.length === 2;
-            const dolu = ben || !!f;
-            const ad = ben ? profile?.display_name || profile?.username || 'Sen' : f?.name;
+            const secim = ben ? undefined : selected[koltuk - 1];
+            const rastgele = secim === RANDOM_SEAT;
+            const f = ben || rastgele || !secim ? undefined : byId(secim);
+            const ai = koltuk === 3 && aiLastSeat(selected, playerCount);
+            const dolu = ben || rastgele || !!f;
+            const ad = ben
+              ? profile?.display_name || profile?.username || 'Sen'
+              : rastgele
+                ? (yatay ? 'Rastgele oyuncu' : 'Rastgele')
+                : f?.name;
             const numara = (
               <span
                 aria-hidden
@@ -327,6 +374,49 @@ export function LiveGameCreateForm({
               'w-full flex items-center rounded-xl min-w-0',
               yatay ? 'gap-2.5 px-3 py-2.5' : 'gap-[5px] pl-2 pr-1.5 py-2',
             ].join(' ');
+            if (rastgele) {
+              // "?" koltuğu: kartın TAMAMI dokunulabilir, dokununca seçimi
+              // kaldırır (kullanıcı kararı, docs/decisions/random-opponent.md §3).
+              return (
+                <button
+                  key={koltuk}
+                  type="button"
+                  data-koltuk={koltuk + 1}
+                  onClick={() => setSelected((s) => removeSeatAt(s, koltuk - 1))}
+                  aria-label={`Rastgele oyuncu koltuğunu boşalt (koltuk ${koltuk + 1})`}
+                  className={`${iskelet} border text-left active:scale-[0.98] transition-transform`}
+                  style={{ background: col.tint, borderColor: col.base }}
+                >
+                  <span
+                    className="rounded-full bg-bg border-[1.5px] border-dashed flex items-center justify-center shrink-0 font-bold"
+                    style={{
+                      width: yatay ? 36 : 28,
+                      height: yatay ? 36 : 28,
+                      borderColor: col.base,
+                      color: col.text,
+                      fontSize: yatay ? 20 : 16,
+                    }}
+                    aria-hidden
+                  >
+                    ?
+                  </span>
+                  <span
+                    className={['flex-1 min-w-0 truncate font-sans font-bold', yatay ? 'text-sm' : 'text-[13px]'].join(' ')}
+                    style={{ color: col.text }}
+                  >
+                    {ad}
+                  </span>
+                  {numara}
+                  <span
+                    className={`${carpiYuvasi} shrink-0 flex items-center justify-center ${yatay ? 'text-sm' : 'text-xs'}`}
+                    style={{ color: col.text }}
+                    aria-hidden
+                  >
+                    ✕
+                  </span>
+                </button>
+              );
+            }
             if (dolu) {
               return (
                 <div
@@ -431,7 +521,7 @@ export function LiveGameCreateForm({
           </button>
         </div>
         <p className="text-center text-[11px] text-muted font-mono" style={{ margin: 0 }}>
-          {playerCount === 2 ? 'Arkadaşın' : 'Arkadaşların'} kabul edince oyun başlar · her hamle için 48 saat
+          {usesRandomSeat(selected) ? 'Biri' : playerCount === 2 ? 'Arkadaşın' : 'Arkadaşların'} kabul edince oyun başlar · her hamle için 48 saat
         </p>
         {error && <p className="text-xs text-red font-mono text-center" style={{ margin: 0 }}>{error}</p>}
       </div>
@@ -458,6 +548,34 @@ export function LiveGameCreateForm({
             {showAll ? '← Arkadaşlar' : 'Tüm oyuncular →'}
           </button>
         </div>
+        {/* RASTGELE OYUNCU (3 Ekim 2026): listenin ilk satırı — aramadan MUAF,
+            "Tüm oyuncular" görünümünde ve hiç arkadaşı olmayanda da hep
+            görünür (yabancıyla oynamanın tek yolu bu). Her dokunuş bir boş
+            koltuğu "?" yapar; seçilen sayısı ×N. */}
+        <button
+          type="button"
+          onClick={addRandom}
+          aria-label={`Rastgele Oyuncu — boş koltuğa ekle${randomCount > 0 ? ` (${randomCount} seçili)` : ''}`}
+          className="shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border border-border bg-panel text-left transition-transform active:scale-[0.99] shrink-0"
+        >
+          <span
+            className="w-7 h-7 rounded-full bg-bg border-[1.5px] border-dashed border-muted text-muted font-bold flex items-center justify-center text-base shrink-0"
+            aria-hidden
+          >
+            ?
+          </span>
+          <span className="flex-1 min-w-0 flex flex-col">
+            <span className="text-sm font-bold text-text truncate">Rastgele Oyuncu</span>
+            <span className="text-xs text-muted truncate">Biri kabul edince oyun başlar</span>
+          </span>
+          {randomCount > 0 ? (
+            <span className="font-mono text-xs font-bold text-accent min-w-[20px] text-right" aria-hidden>
+              ×{randomCount}
+            </span>
+          ) : (
+            <CheckMark checked={false} />
+          )}
+        </button>
         {!showAll && friends === null ? (
           <p className="text-muted text-xs font-mono py-4 text-center">Yükleniyor…</p>
         ) : !showAll && friends!.length === 0 ? (
