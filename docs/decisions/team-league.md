@@ -103,12 +103,28 @@ AKTİF ── üye "Takımdan ayrıl" ──► DAĞILDI (geçmiş + lig kaydı 
 - **Sekmeler en üstte, şimdiki gibi:** `2 Kişi | 4 Kişi | 🤝 Takım`. Üstte
   "‹ Yeni Canlı Oyun" geri satırı YOK. 2 ve 4 bugünkü sistemin aynısı.
   Yapay Zeka sekmesine DOKUNULMAZ.
-- **Takım sekmesinin içeriği** (aynı sayfada, form açılmaz):
-  1. **Oyun Aç** (aktif takımın yoksa pasif, altında "Önce bir takım kur"),
-  2. **Açık Oyunlar** (yanında Kabul Et; kendi ilanında İptal),
-  3. **Takımlarım** (+ Takım Oluştur; durum: Aktif / Onay bekliyor).
+- **Takım sekmesinin içeriği** (aynı sayfada, form açılmaz), YUKARIDAN AŞAĞI:
+  1. **Oyun Aç** (aktif takımın yoksa pasif, altında "Önce bir takım kur").
+     Basınca **takım seç sheet'i** açılır; onay butonu **"Oyun Başlat"**
+     (sayfadaki "Oyun Aç"tan ayrı, çift buton görünümü olmasın),
+  2. **Takımlarım** (+ Takım Oluştur; Aktif / Onay bekliyor). **Gelen takım
+     daveti** (Zeynep seni davet etti) listenin BAŞINDA, Kabul Et / Reddet ile,
+  3. **Açık Oyunlar** (yanında Kabul Et; kendi ilanında İptal).
   **Takım satırlarında yalnızca sıra ve puan** ("4. sıra · 22 puan"); OHP,
   ilanın yaşı, üye adları satırda yazmaz. Sıralama listesi k-lig'de.
+- **Liste boyutu / yükleme (Revizyon 7):** sayfa TEK kaydırma alanı (iç içe
+  kaydırma yok). Bu yüzden uzayabilen liste EN ALTTA: **Açık Oyunlar sunucu
+  sayfalıdır, ilk 10 satır, sonra kaydırdıkça 20'şer** (`IntersectionObserver`,
+  `Leaderboard`/`BeyinLigiList` ile aynı `INITIAL_PAGE_SIZE=10`/`PAGE_SIZE=20`
+  deseni; RPC `list_open_team_games(limit, offset)` + toplam sayı). Sıra:
+  kendi ilanın üstte, sonra en yeni; kararlı sayfalama için `created_at desc,
+  id`. **Takımlarım sayfalanmaz** (en çok 5 aktif takım + bekleyenler).
+  Boş durum: "Henüz açık oyun yok. İlk ilanı sen aç." Yenileme: paylaşılan tek
+  Realtime kanalı (`verify-shared-realtime`) + öne dönüş; kaydırılmış listede
+  yeni ilan araya girmez, üstte "N yeni ilan" der. Port: Flutter'da iç içe
+  `ListView` YOK (`mobile/CLAUDE.md`, `KModal` dersi) — `KModal` gövdesi
+  kaydırılabilir zaten, düz `Column` + alt eşikte sayfa isteme (`kAllUsersPageSize`
+  deseni).
 - **Takım Oluştur:** Takım sekmesinden ya da takımsız Kabul Et'ten (§6) gelinen
   tek ekran (arkadaşlardan 1 kişi + ad + Kaydet); geri okuyla döner.
 - **Devam eden takım oyunları** Arkadaşınla'nın Aktif Oyunlar listesinde,
