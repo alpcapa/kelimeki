@@ -58,7 +58,7 @@ arkadaşının bölgesine bağlayabilirsin."* Bu doğru ve daha iyi bir oyun, am
 | Ortak bölge | Takımın bölgesi = **iki ortağın köşelerinden ve iki ortağın taşlarından** tek zincir. Ortak bölgeyi büyütebilir; kendi bölgenden ortağın bölgesine bağlanabilirsin, iki parça birleşir |
 | Takım içi vergi | **YOK.** Ortağın bölgesi senin bölgendir. Vergi yalnızca **rakip takıma** ödenir/alınır; n (etkileşilen rakip bölge sayısı) rakip TAKIM sayısıdır (tek rakip takım = n=1) |
 | İlk hamle | Kural aynı, ortağınki değil **kendi** başlangıç karen (her oyuncunun kendi ev işareti var). Sonraki hamleler serbest |
-| Alınan vergi (S13 — KAPANDI, kullanıcı: *"bölüşüm yok, takıma gidiyor zaten"*) | Kullanıcıya **hiçbir bölüşüm görünmez**: ekranda yalnızca takım toplamı/takım vergisi. Motor kişi başına puan tuttuğundan payın bir yere yazılması gerekir; **dahili olarak iki ortağa eşit yazılır** (tek puan artarsa düşük koltuğa), takım toplamı değişmez. "Takım kasası" (motorda takım düzeyinde yeni puan alanı) önerilmez: daha çok yüzey, daha çok risk. Ödeyen = hamleyi yapan kişi. Takım içi vergi yok. Bitiş ekranında kişi skoru normal oyundaki gibi (vergiler dahil) |
+| Alınan vergi (S13 — KAPANDI, kullanıcı: *"kişinin puanına verginin yarısı girmeli, nasıl yapılacağına sen karar ver"*) | **Rakip takımın aldığı pay iki ortağa YARI YARIYA yazılır**: her ortağın skoruna `floor(pay/2)` girer; pay tek sayıysa artan 1 puan **düşük koltuk numaralı ortağa** gider (deterministik, golden vector ile sınanır, hile/rastgelelik yok). Motordaki mevcut `shares:[{index,amount}]` yapısı kullanılır, yeni alan yok. Takım toplamı değişmez. Ödeyen = hamleyi yapan kişi. Takım içi vergi yok. Gösterim: oyun içinde yalnızca takım toplamı/takım vergisi, **bitiş ekranında kişi skoru yarısını içerir** (normal oyundaki gibi). Örnek: pay 10 → 5+5; pay 3 → 2+1; pay 7 → 4+3 |
 | YZ | Takım oyununda YZ koltuğu YOK |
 | Teslim / 48 sa zaman aşımı | Motorun kademeli teslimi aynen: teslim olanın skoru 0, rafı torbaya. **Teslim olanın köşesi** doğal alana döner, ortağın zinciri sürer |
 | Oyun bitişi | "Aktif oyuncu 1'e düşünce biter" takım oyununda yetmez. **Yeni kural: bir takımın TÜM üyeleri teslimse biter.** Yalnızca SQL (`check_turn_timeout`) |
@@ -226,8 +226,9 @@ listeden takımını seçer. Arkadaş onaylayınca takımın sahibine bildirim:
   satırı EKLENMEZ. "Sıra sende" / "Sıra: X bekleniyor" bilgisi bugünkü gibi
   alttaki mesaj kutusunda ve **X sırası gelen KİŞİNİN adıdır, takımın değil**
   (kutuda hangi ortağın oynayacağı görünmediği için). Tahta, raf, butonlar aynı. Sırası gelen takımın
-  kutusu bugünkü gibi kalın çerçeveli. Kutuya dokununca açılan skor kartı
-  penceresi bugünkü gibi çalışır, takım için iki üyenin kartını gösterir (S17).
+  kutusu bugünkü gibi kalın çerçeveli. Takım kutusuna dokununca **şimdilik hiçbir
+  şey açılmaz** (Revizyon 16, kullanıcı: S17); bugünkü skor kartı penceresi bu
+  oyunlarda tetiklenmez.
 - **Oyun Geçmişi** (`MoveHistoryModal`) (Revizyon 8): **alt kısım (hamle
   satırları) bugünküyle AYNI**: "sıra no. oyuncunun adı", kelime ve puanı,
   Sınır İhlali etiketi, "N puanı X kaptı" notu. Değişen yalnızca üstteki dört
@@ -257,7 +258,7 @@ galibiyet 2 puan, ikinciye puan yok. Kazanan takımın oyuncularının ikisine d
 
 | Konu | Karar |
 |---|---|
-| Takım puanı | Kazanan **+2**, kaybeden **0**. **Beraberlik (S14 — KAPANDI, kullanıcı: *"diğer 2 kişide nasıl oluyorsa öyle"*):** 2 kişilik oyunda eşit skor iki tarafı da 1. yapar (`rankPlayers`, "BERABERE") ve ikisi de 1. sıra puanını alır → takım oyununda iki takım da **+2**, dört oyuncu da **+2** ("herkes kazanmış sayılır") |
+| Takım puanı | Kazanan **+2**, kaybeden **0**. **Beraberlik (S14 — KAPANDI, kullanıcı: *"2 kişilik oyunda beraberlik ne veriyorsa bu da öyle"*):** kodda doğrulandı (`leaguePoints`, `rankPlayers`): 2 kişilik oyunda eşit skor iki tarafı da 1. yapar ve ikisi de **1. sıra puanı olan +2**'yi alır (1 değil; 2. sıra puanı yalnızca 4 kişilikte var). Takım oyunu aynı kuralı izler → iki takım da **+2**, dört oyuncu da **+2**, ekranda "BERABERE" |
 | Oyuncu k-lig puanı | Kazanan takımın İKİ oyuncusu da **+2**, kaybedenler **0**, teslim olan **−2** (bugünkü kural) |
 | **Uygulama: sunucu formülü DEĞİŞMEZ (S16 ile güncellendi)** | Takım oyunu **2 kişilik oyun mantığındadır**, `games`'e **`player_count = 2`** (taraf sayısı) yazılır; sıra TARAFA göre: kazananlar `rank=1` (iki oyuncu), kaybedenler `rank=2` (iki oyuncu), beraberlikte dördü de `rank=1`. `league_points_for(rank, 2, surrendered, null)` zaten 1.→+2, 2.→0 verir; `verify-league-points` ve beş nesne etkilenmez. Tüketiciler (`GameOver` `players.length`, `GameHistoryModal`/`computeRanks`, head-to-head…) takım oyununda `players.length` yerine **taraf sayısını** kullanır; takım oyunu snapshot'ta `players[].team` (0/1) ile tanınır, `games`'e yeni kolon gerekmez |
 | Takım puanı toplamı | Takım Ligi puanı, `team_game_results` toplamı |
@@ -346,7 +347,6 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 
 | # | Soru | Öneri |
 |---|---|---|
-| S17 | Oyun ekranının üstündeki **iki takım kutusuna** (header'daki "Kıvılcım 214" ve "Harf Avcıları 187") dokununca ne olsun? Bugün bir oyuncunun kutusuna dokununca o oyuncunun skor kartı penceresi açılıyor | Aynı pencere, iki üyenin kartı alt alta. Ya da hiçbir şey |
 | S16 | **KAPANDI.** İstatistik | 2 kişilik mantığında, `player_count=2`; "Takım oyun istatistikleri dahildir" küçük yazısı (§9) |
 | S4 | İlan **7 gün** mü? | 7 gün (davetle aynı). Liste şişerse 48 saat |
 | S5 | Takım başına **1 bekleyen ilan**, kullanıcı başına **5 takım**? | Evet |

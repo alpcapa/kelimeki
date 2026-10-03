@@ -866,15 +866,15 @@ roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
   et, takımsız yol): https://claude.ai/artifact/2NGiuSvkcduFJkdQLVtXGd
 - **Kullanıcı kararları (3 Ekim 2026, kapandı):** S12 eski sürüm: sunucu
   takım oyununda eski hamle çağrısını reddeder, mesaj *"Telefonunuz takım
-  oyununu desteklemiyor"* · S13 vergi bölüşümü kullanıcıya görünmez (dahili
-  eşit) · S14 beraberlik = 2 kişilik oyundaki gibi herkes 1. (+2) · S15 ortak
+  oyununu desteklemiyor"* · S13 takımın vergi payı iki ortağa yarı yarıya yazılır
+  (tek puan düşük koltuğa; oyun içinde yalnızca takım toplamı görünür) · S14 beraberlik = 2 kişilik oyundaki gibi (iki taraf 1., herkes +2) · S15 ortak
   bölge motor değişikliği KABUL, *"mevcut çalışan sistemin bozulmaması çok
   önemli"* (regresyon güvencesi `team-league.md` §3) · S16 istatistik: takım
   oyunu `player_count=2`, 2 kişilik istatistiğe yazılır, Skor Kartı altında
   *"Takım oyun istatistikleri dahildir."* · S19 takım başına en çok 3 devam
   eden oyun.
-- **Hâlâ açık (varsayılan öneriyle):** S17 takım kutusuna dokununca ne
-  açılsın (öneri: iki üyenin skor kartı) · S4/S5 ilan 7 gün, takım başına 1
+S17 takım kutusuna dokununca şimdilik hiçbir şey açılmaz.
+- **Hâlâ açık (varsayılan öneriyle):** S4/S5 ilan 7 gün, takım başına 1
   BEKLEYEN ilan, kullanıcı başına 5 takım.
 - **Sıra:** Faz 0 motor (ortak bölge, golden/SQL kapıları) → 1 takım kur →
   2 açık ilan + kabul → 3 oyun içi/geçmiş/bitiş → 4 Takım Ligi sıralaması →
