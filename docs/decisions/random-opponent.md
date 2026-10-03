@@ -185,23 +185,38 @@ canlıya anında girer). Sıra: (1) sunucu (migration + eski istemci koruması) 
 (2) web → (3) port taslak PR'ı → (4) iki gerçek hesapla elle test. Port 12
 Ekim'e yetişmezse web+sunucu gider, port 19 Ekim trenine kayar.
 
-## 11. Sunucu migration'ı — uygulama durumu (3 Ekim 2026)
+## 11. Sunucu migration'ı — CANLIDA (3 Ekim 2026), tek RPC hariç
 
-Dosya: `supabase/migrations/20261003120000_random_games.sql` (zaman damgası YER
-TUTUCU; canlıya uygulanınca `list_migrations` ile düzeltilir). **Henüz canlıya
-UYGULANMADI.** Opus ajanı yazdı; ben okudum ve canlıyla karşılaştırdım:
-`respond_to_game_invite` canlı tanımıyla aynı (yalnızca kilit sırası + "açık koltuk
-kalmadı" şartı eklendi), `list_my_online_games` repodaki son sürümden yalnızca
-`open`→`{"type":"ai","open":true}` maskesiyle ayrışıyor, kullanılan tüm kolonlar
-canlı şemada var. Ajanın yerel testi SAHTE şema/PG16 üzerindeydi; canlıda
-(PG17) doğrulama ayrıca koşulur.
+Ajan (Opus) yazdı; ben okudum, canlıyla karşılaştırdım ve parçalar hâlinde uyguladım.
+**Neden parça parça:** Supabase aracı tek parça migration'da 60 sn'de zaman aşımına
+uğradı (iki deneme, ikisinde de canlıya HİÇBİR şey yazılmadı: kolon/fonksiyon/kayıt
+yoktu, takılı kilit yoktu). Bölünce `delete from` içeren gövde dışındakiler geçti →
+**araç `delete` içeren migration'larda onay beklerken kesiliyor** (devir notundaki
+uyarı doğrulandı). Obfüske ederek aşılmadı.
+
+Uygulanan (versiyonlar `list_migrations` ile eşleşti, dosyalar yeniden adlandırıldı):
+`1_schema` · `2_helpers_guard` · `3a_create` · `3b_accept_cancel` · `4_list_rpcs` ·
+`5_existing_rpcs` (`respond_to_game_invite` + `list_my_online_games`).
+**Uygulanmadı:** `leave_random_game` (`delete from game_invites` içerdiği için) →
+`20261003230300_random_games_3c_leave_PENDING.sql`, SQL Editor'dan elle uygulanır.
+Eski `20261003120000_random_games.sql` (tek parça) silindi; yerine bu parçalar var.
+
+Canlı doğrulama (salt-okunur + geri alınan güncelleme): yeni fonksiyonlarda `anon`
+YOK, yalnızca `authenticated` + `service_role` (yardımcılar ve tetikleyici
+fonksiyonu yalnızca `service_role`); `online_games_random_guard` tetikleyicisi var;
+mevcut bir oyunun no-op güncellemesi tetikleyiciden sorunsuz geçti; `listing`
+kolonu 0 satırda dolu. Yazma gerektiren senaryolar (eşzamanlı kabul, ayrıl,
+süre dolumu) HENÜZ koşulmadı → iki test hesabı gerekir. Ajanın yerel testi SAHTE
+şema/PG16 üzerindeydi; canlı PG17.
 
 Kararlar: kabul eden `game_invites`'ta `accepted` satırı alır + koltuğa `via:"random"`
 (ayrılma yalnızca bu koltuğu boşaltır); açık koltuklu oyunu aktif yapmayı bir
 TETİKLEYİCİ engeller (`init_online_game_state` açık koltuğu sessizce YZ sayardı)
 ve ilan/açık koltuk yalnızca bu RPC'lerden yazılabilir (RLS kurucuya doğrudan
-yazım izni veriyordu); bitmiş-oyun kapısı `games` tablosuna bakar (YUMUŞAK frende
-yazılabilir tablo).
+yazım izni veriyordu); bitmiş-oyun kapısı `games` tablosuna bakar (YUMUŞAK fren,
+tablo istemciden yazılabilir). `respond_to_game_invite` canlı tanımıyla aynı +
+kilit sırası + "açık koltuk kalmadı" şartı; `list_my_online_games` yalnızca
+`open`→`{"type":"ai","open":true}` maskesi farkıyla.
 
 **İstemciyi bağlayan sonuçlar:**
 - **Şerit Realtime ile BESLENEMEZ:** Realtime RLS'e uyar, yabancının ilanı olay
