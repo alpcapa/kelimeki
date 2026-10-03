@@ -207,6 +207,7 @@ class _DeleteAccountModalState extends State<DeleteAccountModal> {
                 style: TextStyle(
                     fontFamily: 'SpaceMono',
                     fontSize: 10,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 1,
                     color: kMuted)),
             const SizedBox(height: 4),
@@ -274,6 +275,7 @@ class _BolumBasligi extends StatelessWidget {
               fontFamily: 'SpaceMono',
               fontSize: 11,
               letterSpacing: 1.5,
+              fontWeight: FontWeight.w700,
               color: kAccent)),
     );
   }

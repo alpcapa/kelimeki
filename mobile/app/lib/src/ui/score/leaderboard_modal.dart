@@ -535,6 +535,7 @@ class _HeadLabel extends StatelessWidget {
           fontFamily: 'SpaceMono',
           fontSize: 9,
           letterSpacing: 1,
+          fontWeight: FontWeight.w700,
           color: _muted,
           decoration: underline ? TextDecoration.underline : null,
           decorationStyle: underline ? TextDecorationStyle.dotted : null,
