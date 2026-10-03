@@ -262,7 +262,10 @@ mobile/
                              # k-lig ÇALIŞMAZ, motora action eklenmedi). Kapı
                              # util/onboarding.dart, açan yer setup_screen.
       ui/score/              # skor kartı, k-lig, oyuncu kartı, oyun geçmişi,
-                             # score_box_row (paylaşılan görselin üst şeridi)
+                             # score_box_row (paylaşılan görselin üst şeridi),
+                             # beyin_ligi_list (k-lig'in OHP alt ligi — web
+                             # BeyinLigiList.tsx ikizi; leaderboard_modal'ın
+                             # "Beyin Ligi" sekmesi, 2 Ekim 2026)
       ui/rank/               # k-lig rütbe/ödül katmanı (Parça 61-62):
                              # rank_scores (isim yanındaki mührün puan
                              # kaynağı — leaderboard view'ı, toplu),
@@ -366,6 +369,10 @@ mobile/
       util/live_game_request.dart # Arkadaşlar → OYNA isteği kuyruğu (web
                              # liveGameRequest.ts; Setup sekmeyi açar,
                              # LiveGamesTab TÜKETİR — #41 karar 23)
+      util/beyin_ligi.dart   # Beyin Ligi eşiği (kBeyinLigiMinGames) + metinler +
+                             # sekme listesi — web beyinLigi.ts/BeyinLigiList.tsx/
+                             # Leaderboard.tsx ile beyin_ligi_test kilitler,
+                             # SQL eşiğini verify-beyin-ligi
       util/semver.dart, util/uuid.dart, util/share_board.dart,
       util/game_list_order.dart # devam eden oyun/davet listelerinin sıralaması
                              # (web `gameListOrder.ts` ikizi) — ⚠ Dart `List.sort`

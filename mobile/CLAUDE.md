@@ -942,6 +942,11 @@ bir liste gerektiğinde çözüm **iç içe `ListView`'a dönmek DEĞİL** — o
 kaydırılabilir yine TEK kalır, satırlar yine tembel inşa edilir. Eşik ve
 gerekçe: `ROADMAP.md` → madde 14.
 
+**Altta SABİT bir satır gerekiyorsa** (k-lig'in "senin sıran" satırı):
+`KModal(fillBody: true)` kullan. Gövde kaydırılmaz, liste
+`Flexible` ile kalan alana iner. Sabit `%50` tavanı + kaydırılan gövde o
+satırı küçük ekranda pencerenin dışına itiyordu (2 Ekim 2026, Parça 233 eki).
+
 Örnek/ilk kurban: `friends_modal.dart` ("Ara & Ekle"). Ayrıntı ve ölçümler:
 `docs/decisions/friends.md`, `mobile/docs/parca-log.md` → Parça 146.
 
