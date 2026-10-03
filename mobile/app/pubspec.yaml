@@ -132,6 +132,10 @@ flutter_launcher_icons:
   remove_alpha_ios: true
   adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: assets/icon/icon-adaptive-fg.png
+  # Varsayılan inset %16 — ön katman ZATEN %66 güvenli bölgeye küçültülmüş
+  # (generate-app-icon-masters.mjs), ikisi üst üste binince marka ikonun
+  # ~%45ine iniyor ve etrafı beyaz kalıyordu (2 Eki 2026, Samsung). 0 = tek küçültme.
+  adaptive_icon_foreground_inset: 0
 
 flutter_native_splash:
   color: "#ffffff"
