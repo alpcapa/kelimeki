@@ -152,7 +152,7 @@ export function RandomGamesStrip({
         <button
           type="button"
           onClick={onOpenCreate}
-          className="shrink-0 min-h-[36px] pl-2.5 text-xs font-bold text-accent underline underline-offset-[3px] active:opacity-70"
+          className="shrink-0 min-h-[36px] pl-2.5 text-[10px] uppercase tracking-[1.5px] font-mono font-bold text-accent active:opacity-70"
         >
           Rastgele oyun aç
         </button>
@@ -196,11 +196,11 @@ export function RandomGamesStrip({
               </div>
               {mine ? (
                 // "Bekliyor" soluk etiket ("N koltuk kaldı" satırının YERİNE; koltuk durumu noktalarda).
-                <span className="truncate font-mono text-[9px] font-bold uppercase tracking-[0.5px] leading-tight text-muted">
+                <span className="truncate text-center font-mono text-[9px] font-bold uppercase tracking-[0.5px] leading-tight text-muted">
                   Bekliyor
                 </span>
               ) : (
-                <span className="truncate font-mono text-[9px] leading-tight text-muted">
+                <span className="truncate text-center font-mono text-[9px] leading-tight text-muted">
                   {seatsLeftLabel(l.open_seats)}
                 </span>
               )}

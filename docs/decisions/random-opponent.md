@@ -321,3 +321,7 @@ Uygulama (web `RandomGamesStrip.tsx`): kart `aspect-square`, eni `min(7rem, (şe
 kartın 26 px'i görünür; 820 px → 112×112 (geniş ekranda daha çok kart sığar); 320 px → 84×118 (4 kişilik kartta rozet
 ile noktalar sarar, bilinçli) ve 4. kartın ~12 px'i görünür. Yatay taşma yok. **Port ikizi:** Dart şerit kartı aynı
 oranlarla (sabit `176 × ölçek` yükseklik ve `(genişlik−16)/3.4` KALKAR).
+
+**Başlık bağlantısı ve etiketler (4 Ekim 2026, kullanıcı):** "Rastgele oyun aç" bağlantısı başlıkla AYNI boy ve yazı
+(10 px mono, büyük harf, aralıklı), mavi + kalın, alt çizgisiz (Arkadaşlar penceresindeki "Tüm oyuncular →" ile aynı
+desen). Kartlardaki durum mesajları ("Bekliyor", "N koltuk kaldı") ORTALI. Port ikizi aynı.
