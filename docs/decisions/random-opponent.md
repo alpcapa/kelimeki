@@ -31,10 +31,13 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
 
 ## 3. Kurulum ekranı (`LiveGameCreateForm`)
 
-- Arkadaş listesinin EN ÜSTÜNDE tek satır: **? avatarlı "Rastgele Oyuncu"**,
-  alt yazısı *"Biri kabul edince oyun başlar"*. "Sık oynadıkların" şeridinin
-  ve arama kutusunun altında, listenin ilk satırı (aramada süzgeçten MUAF,
-  hep görünür).
+- **Arkadaş listesinin İÇİNDE, ilk satır** (kullanıcı, 4 Ekim 2026: *"diğer arkadaşlar
+  gibi listenin en üstüne koyacaksın, ayrı bir bölümde değil"*): **? avatarlı "Rastgele
+  Oyuncu"**, alt yazısı *"Biri kabul edince oyun başlar"*. Arkadaş satırlarıyla AYNI kart
+  dili ve AYNI kaydırılan liste; arama kutusunun ve "Arkadaşını davet et" düğmesinin
+  ALTINDA, arkadaşlardan ÖNCE. Ayrı bir başlık/bölüm YOK. Aramada süzgeçten MUAF, "Tüm
+  oyuncular" görünümünde ve hiç arkadaşı olmayanda da hep görünür. (İlk web sürümü
+  satırı listenin ÜSTÜNE ayrı blok olarak koymuştu; 4 Ekim'de listenin içine alındı.)
 - **ESNEK KADRO (kullanıcı kararı, 3 Ekim):** Rastgele satırına her dokunuş bir
   boş koltuğu "?" yapar; arkadaşlarla serbestçe karışır. 2 kişilikte 1 koltuk;
   4 kişilikte ortadaki iki koltuk dolmalı (arkadaş ya da rastgele), 2 kişi
@@ -245,8 +248,8 @@ Kararlar/sapmalar:
 - Kova kuralı: yalnızca `my_role` 'creator' ve 'random' Devam Edenler'e gider; 'friend'
   (karma kadrodaki arkadaş) bugünkü davet akışında kalır (yoksa daveti kaybolurdu).
 - Şerit yoklaması 40 sn (en az 8 sn aralık), yalnızca sekme görünür+çevrimiçi iken.
-- "Rastgele Oyuncu" satırı listenin EN BAŞINDA ve aramadan muaf (belgedeki "aramanın
-  altı" konumundan sapma). Rütbe mührü (§9.2) EKLENMEDİ.
+- "Rastgele Oyuncu" satırı arkadaş listesinin İÇİNDE ilk satır ve aramadan muaf (§3).
+  Rütbe mührü (§9.2) EKLENMEDİ.
 - Kart ~173 px yüksek (tasarım notundaki ~108 değil); "N koltuk kaldı" dar kartta iki satıra sarıyor.
 - **Yasal metin:** Gizlilik §2'ye ve Koşullar §1'e ilan görünürlüğü maddesi; Koşullar §5'teki
   "mesajlaşma yalnızca arkadaşlar arasında" cümlesi (ZATEN yanlıştı: sohbet oyun bazlı,
