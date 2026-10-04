@@ -546,7 +546,9 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
             ) : (
               <>
                 <span className="text-xs text-muted">"{query.trim()}" için {results.length} oyuncu</span>
-                <div className={listCls}>{results.map(userRow)}</div>
+                <div className={listCls}>
+                  <ScrollArea className="max-h-[55vh]">{results.map(userRow)}</ScrollArea>
+                </div>
               </>
             )
           ) : showAll ? (
@@ -583,13 +585,15 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
             </div>
           ) : (
             <div className={listCls}>
-              {friends.map((f) => (
-                <div key={f.friend_id} className={rowCls}>
-                  {personButton(f.friend_id, f.name, f.avatar_url, friendSinceLabel(f.since, true))}
-                  <Pill kind="oyna" ariaLabel={`${f.name} ile oyna`} onClick={() => play(f.friend_id, 2)} />
-                  {moreButton(f)}
-                </div>
-              ))}
+              <ScrollArea className="max-h-[55vh]">
+                {friends.map((f) => (
+                  <div key={f.friend_id} className={rowCls}>
+                    {personButton(f.friend_id, f.name, f.avatar_url, friendSinceLabel(f.since, true))}
+                    <Pill kind="oyna" ariaLabel={`${f.name} ile oyna`} onClick={() => play(f.friend_id, 2)} />
+                    {moreButton(f)}
+                  </div>
+                ))}
+              </ScrollArea>
             </div>
           )}
         </div>
