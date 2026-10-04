@@ -476,10 +476,10 @@ void main() {
           },
         ];
       await pumpModal(tester, gateway: gw);
-      await tester.tap(find.text('Tüm oyuncular →'));
+      await tester.tap(find.text('TÜM OYUNCULAR →'));
       await tester.pumpAndSettle();
       expect(find.text('TÜM OYUNCULAR'), findsOneWidget);
-      expect(find.text('← Arkadaşlar'), findsOneWidget);
+      expect(find.text('← ARKADAŞLAR'), findsOneWidget);
       // Arkadaş da listede (web: arkadaş olan/olmayan herkes) — OYNA ile.
       expect(satirda('user-u2', find.text('OYNA')), findsOneWidget);
       expect(satirda('user-u2', find.text('Arkadaşın')), findsOneWidget);
@@ -676,7 +676,7 @@ void main() {
             },
         ];
       await pumpModal(tester, gateway: gw, size: const Size(420, 560));
-      await tester.tap(find.text('Tüm oyuncular →'));
+      await tester.tap(find.text('TÜM OYUNCULAR →'));
       await tester.pumpAndSettle();
       expect(find.byType(ListView), findsNothing);
       expect(
