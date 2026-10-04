@@ -1,4 +1,4 @@
-// Davet kabulü sonrası "bu kişileri arkadaş ekle" önerisi —
+// Oyun SONUNDA (4 Ekim 2026; önceden davet kabulünde) "bu oyuncuları arkadaş ekle" önerisi, Devam/Vazgeç —
 // src/components/FriendSuggestModal.tsx portu. Karşılıklı istekler sunucu
 // trigger'ıyla otomatik kabul olur (web'in aynı notu); tekil hatalar (zaten
 // bekleyen istek → unique violation) sessizce yutulur, diğerlerini
@@ -19,8 +19,7 @@ class SuggestCandidate {
   final String userId;
   final String? name;
   final String? avatarUrl;
-  const SuggestCandidate(
-      {required this.userId, this.name, this.avatarUrl});
+  const SuggestCandidate({required this.userId, this.name, this.avatarUrl});
 }
 
 Future<void> showFriendSuggestModal(
@@ -90,8 +89,8 @@ class _FriendSuggestModalState extends State<FriendSuggestModal> {
           children: _done
               ? [
                   const Text('Arkadaşlık davetiniz iletilmiştir.',
-                      style: TextStyle(
-                          fontSize: 13, height: 1.5, color: _text)),
+                      style:
+                          TextStyle(fontSize: 13, height: 1.5, color: _text)),
                   const SizedBox(height: 16),
                   NeoButton(
                     label: 'TAMAM',
@@ -103,9 +102,10 @@ class _FriendSuggestModalState extends State<FriendSuggestModal> {
                   ),
                 ]
               : [
-                  const Text('Bu kişileri arkadaşın olarak eklemek ister misin?',
-                      style: TextStyle(
-                          fontSize: 13, height: 1.5, color: _text)),
+                  const Text(
+                      'Bu oyuncuları arkadaş olarak eklemek ister misin?',
+                      style:
+                          TextStyle(fontSize: 13, height: 1.5, color: _text)),
                   const SizedBox(height: 12),
                   for (final c in _sorted) ...[
                     GestureDetector(
@@ -140,14 +140,29 @@ class _FriendSuggestModalState extends State<FriendSuggestModal> {
                     ),
                   ],
                   const SizedBox(height: 8),
-                  NeoButton(
-                    label: _busy ? '…' : 'DEVAM',
-                    variant: NeoButtonVariant.accent,
-                    fontSize: 11,
-                    letterSpacing: 1,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    onPressed: _busy ? null : _continue,
-                  ),
+                  Row(children: [
+                    Expanded(
+                      child: NeoButton(
+                        label: 'VAZGEÇ',
+                        fontSize: 11,
+                        letterSpacing: 1,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        onPressed:
+                            _busy ? null : () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: NeoButton(
+                        label: _busy ? '…' : 'DEVAM',
+                        variant: NeoButtonVariant.accent,
+                        fontSize: 11,
+                        letterSpacing: 1,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        onPressed: _busy ? null : _continue,
+                      ),
+                    ),
+                  ]),
                 ],
         ),
       ),

@@ -30,7 +30,8 @@ String _norm(String s) => s.replaceAll(RegExp(r'\s+'), ' ').trim();
 String _stripComments(String src) => src.replaceAll(RegExp(r'//[^\n]*'), '');
 
 List<(int, int, String)> _cells(String block) => [
-      for (final m in RegExp(r"\{\s*r:\s*(\d+),\s*c:\s*(\d+),\s*letter:\s*'([^']+)'\s*\}")
+      for (final m in RegExp(
+              r"\{\s*r:\s*(\d+),\s*c:\s*(\d+),\s*letter:\s*'([^']+)'\s*\}")
           .allMatches(block))
         (int.parse(m.group(1)!), int.parse(m.group(2)!), m.group(3)!)
     ];
@@ -42,7 +43,8 @@ void main() {
   final gameTsx = readRepoFile('src/components/TutorialGame.tsx');
   final onboardingTs = readRepoFile('src/utils/onboarding.ts');
 
-  test('dört sahne: id · say · bubble · hamle · done · rakip cevabı birebir', () {
+  test('dört sahne: id · say · bubble · hamle · done · rakip cevabı birebir',
+      () {
     final arr = scriptTs.substring(
         scriptTs.indexOf('TUTORIAL_STEPS: TutorialStep[] = ['),
         scriptTs.indexOf('export const TUTORIAL_FINISH_TITLE'));
@@ -56,15 +58,17 @@ void main() {
       final id = p.substring(0, p.indexOf("'"));
       expect(step.id, id, reason: 'sahne $i id');
       expect(step.say, pick(p, RegExp(r"say:\s*'([^']*)'"), '$id say'));
-      expect(
-          [step.bubble.r, step.bubble.c, step.bubble.yon],
-          [
-            int.parse(pick(p, RegExp(r'bubble:\s*\{\s*r:\s*(\d+)'), '$id bubble r')),
-            int.parse(pick(p, RegExp(r'bubble:\s*\{\s*r:\s*\d+,\s*c:\s*(\d+)'),
-                '$id bubble c')),
-            pick(p, RegExp(r"yon:\s*'(\w+)'"), '$id bubble yon'),
-          ],
-          reason: '$id balon çapası/yönü');
+      expect([
+        step.bubble.r,
+        step.bubble.c,
+        step.bubble.yon
+      ], [
+        int.parse(
+            pick(p, RegExp(r'bubble:\s*\{\s*r:\s*(\d+)'), '$id bubble r')),
+        int.parse(pick(p, RegExp(r'bubble:\s*\{\s*r:\s*\d+,\s*c:\s*(\d+)'),
+            '$id bubble c')),
+        pick(p, RegExp(r"yon:\s*'(\w+)'"), '$id bubble yon'),
+      ], reason: '$id balon çapası/yönü');
       expect(step.done, pick(p, RegExp(r"done:\s*'([^']*)'"), '$id done'));
 
       final moveBlock = p.substring(p.indexOf('move: {'), p.indexOf('done:'));
@@ -73,16 +77,22 @@ void main() {
         ('hamle', moveBlock, step.move),
         ('rakip', replyBlock, step.reply),
       ]) {
-        expect(move.word, pick(block, RegExp(r"word:\s*'([^']+)'"), '$id $ad word'));
-        expect([for (final c in move.cells) (c.r, c.c, c.letter)], _cells(block),
+        expect(move.word,
+            pick(block, RegExp(r"word:\s*'([^']+)'"), '$id $ad word'));
+        expect(
+            [for (final c in move.cells) (c.r, c.c, c.letter)], _cells(block),
             reason: '$id $ad taşlar');
-        expect(move.points,
-            int.parse(pick(block, RegExp(r'points:\s*(\d+)'), '$id $ad points')));
-        expect(move.tax, int.parse(pick(block, RegExp(r'tax:\s*(\d+)'), '$id $ad tax')));
+        expect(
+            move.points,
+            int.parse(
+                pick(block, RegExp(r'points:\s*(\d+)'), '$id $ad points')));
+        expect(move.tax,
+            int.parse(pick(block, RegExp(r'tax:\s*(\d+)'), '$id $ad tax')));
         expect(move.bonus, _opt(block, RegExp(r"bonus:\s*'(x\d)'")),
             reason: '$id $ad bonus');
         final raw = _opt(block, RegExp(r'raw:\s*(\d+)'));
-        expect(move.raw, raw == null ? null : int.parse(raw), reason: '$id $ad raw');
+        expect(move.raw, raw == null ? null : int.parse(raw),
+            reason: '$id $ad raw');
       }
       expect(step.reply.note,
           pick(replyBlock, RegExp(r"note:\s*'([^']*)'"), '$id rakip note'));
@@ -90,16 +100,24 @@ void main() {
   });
 
   test('kapanış kartı, adlar, torba sırası ve başlangıç rafları birebir', () {
-    expect(tutorialFinishTitle,
-        pick(scriptTs, RegExp(r"TUTORIAL_FINISH_TITLE = '([^']*)'"), 'FINISH_TITLE'));
+    expect(
+        tutorialFinishTitle,
+        pick(scriptTs, RegExp(r"TUTORIAL_FINISH_TITLE = '([^']*)'"),
+            'FINISH_TITLE'));
     final textStmt = pick(
         scriptTs,
         RegExp(r'TUTORIAL_FINISH_TEXT =([\s\S]*?);', multiLine: true),
         'FINISH_TEXT');
-    expect(tutorialFinishText,
-        RegExp(r"'([^']*)'").allMatches(textStmt).map((m) => m.group(1)!).join());
-    expect(tutorialOpponentName,
-        pick(scriptTs, RegExp(r"TUTORIAL_OPPONENT_NAME = '([^']*)'"), 'OPPONENT'));
+    expect(
+        tutorialFinishText,
+        RegExp(r"'([^']*)'")
+            .allMatches(textStmt)
+            .map((m) => m.group(1)!)
+            .join());
+    expect(
+        tutorialOpponentName,
+        pick(scriptTs, RegExp(r"TUTORIAL_OPPONENT_NAME = '([^']*)'"),
+            'OPPONENT'));
     expect(tutorialPlayerName,
         pick(scriptTs, RegExp(r"TUTORIAL_PLAYER_NAME = '([^']*)'"), 'PLAYER'));
 
@@ -111,8 +129,10 @@ void main() {
 
     expect(tutorialDrawOrder, letters('DRAW_ORDER'));
     expect(tutorialBagFiller, letters('BAG_FILLER'));
-    final racks = pick(scriptTs,
-        RegExp(r'const START_RACKS: string\[\]\[\] = \[([\s\S]*?)\];'), 'START_RACKS');
+    final racks = pick(
+        scriptTs,
+        RegExp(r'const START_RACKS: string\[\]\[\] = \[([\s\S]*?)\];'),
+        'START_RACKS');
     final webRacks = [
       for (final m in RegExp(r'\[([^\[\]]+)\]').allMatches(racks))
         pickAll(m.group(1)!, RegExp(r"'([^']+)'"), 'START_RACKS satırı')
@@ -129,7 +149,8 @@ void main() {
         pick(scriptTs, RegExp("$name = '([^']*)'"), name);
     expect(tutorialFinishLabel, trUpper(webConst('TUTORIAL_FINISH_LABEL')));
     expect(tutorialFinishMe, trUpper(webConst('TUTORIAL_FINISH_ME')));
-    expect(tutorialFinishOpponent, trUpper(webConst('TUTORIAL_FINISH_OPPONENT')));
+    expect(
+        tutorialFinishOpponent, trUpper(webConst('TUTORIAL_FINISH_OPPONENT')));
     // `tutorialNextLine` şablonu: web template literal'i Dart'a çevrilip
     // aynı girdiyle karşılaştırılıyor.
     final sablon = pick(
@@ -141,8 +162,12 @@ void main() {
         .replaceAll(r'${playerCount}', '2');
     expect(tutorialNextLine('Kolay', 2), trUpper(web));
     // Kapanış penceresi GERÇEKTEN bu sabitleri çiziyor mu.
-    for (final c in ['TUTORIAL_FINISH_LABEL', 'TUTORIAL_FINISH_ME',
-        'TUTORIAL_FINISH_OPPONENT', 'tutorialNextLine']) {
+    for (final c in [
+      'TUTORIAL_FINISH_LABEL',
+      'TUTORIAL_FINISH_ME',
+      'TUTORIAL_FINISH_OPPONENT',
+      'tutorialNextLine'
+    ]) {
       expect(gameTsx.contains(c), isTrue, reason: c);
     }
   });
@@ -171,16 +196,22 @@ void main() {
     }
 
     for (final (webSrc, dartSrc, ad) in [
-      (boardTsx.substring(boardTsx.indexOf('data-coach')), dartBoard,
-          'tahta balonu'),
-      (gameTsx.substring(gameTsx.indexOf('function Balon')), dartTutorial,
-          'raf balonu'),
+      (
+        boardTsx.substring(boardTsx.indexOf('data-coach')),
+        dartBoard,
+        'tahta balonu'
+      ),
+      (
+        gameTsx.substring(gameTsx.indexOf('function Balon')),
+        dartTutorial,
+        'raf balonu'
+      ),
     ]) {
       final min = clampParcasi(webSrc, 1, '$ad web punto min');
       final vw = clampParcasi(webSrc, 2, '$ad web punto vw');
       final max = clampParcasi(webSrc, 3, '$ad web punto max');
-      expect(
-          dartSrc.contains('fluidSize(screenWidth, $min, 0, $vw, $max)'), isTrue,
+      expect(dartSrc.contains('fluidSize(screenWidth, $min, 0, $vw, $max)'),
+          isTrue,
           reason: '$ad puntosu ayrıştı: web clamp($min, ${vw}vw, $max), '
               'port `fluidSize(screenWidth, $min, 0, $vw, $max)` yazmıyor');
     }
@@ -206,11 +237,12 @@ void main() {
     // ekranda gözle fark edilir ama hiçbir test yakalamazdı.
     // Filigranlar (köşe numarası, X2) da `clamp` kullanıyor ama onlar balon
     // DEĞİL — 80/32vw/220 gibi dev değerler. Balonları tabanına göre ayırıyoruz.
-    final boardClamps = RegExp(r"fontSize: 'clamp\((\d+)px, ([\d.]+)vw, (\d+)px\)'")
-        .allMatches(boardTsx)
-        .where((m) => int.parse(m.group(1)!) <= 20)
-        .map((m) => '${m.group(1)}/${m.group(2)}/${m.group(3)}')
-        .toList();
+    final boardClamps =
+        RegExp(r"fontSize: 'clamp\((\d+)px, ([\d.]+)vw, (\d+)px\)'")
+            .allMatches(boardTsx)
+            .where((m) => int.parse(m.group(1)!) <= 20)
+            .map((m) => '${m.group(1)}/${m.group(2)}/${m.group(3)}')
+            .toList();
     expect(boardClamps.length, 3,
         reason: 'Board.tsx uc balon puntosu tasimali (tanitim, zoom, '
             '"Buradan basla"); sayi degistiyse bu testi de guncelle');
@@ -227,16 +259,25 @@ void main() {
         reason: 'eski (küçük) balon puntosu portta kalmış');
   });
 
-  test('ekran: süreler ve balon/mesaj metinleri TutorialGame.tsx ile birebir', () {
-    expect(kTutorialRakipTasArasi,
-        int.parse(pick(gameTsx, RegExp(r'RAKIP_TAS_ARASI = (\d+);'), 'RAKIP_TAS_ARASI')));
-    expect(kTutorialSonucOkuma,
-        int.parse(pick(gameTsx, RegExp(r'SONUC_OKUMA = (\d+);'), 'SONUC_OKUMA')));
-    expect(kTutorialRakipOkuma,
-        int.parse(pick(gameTsx, RegExp(r'RAKIP_OKUMA = (\d+);'), 'RAKIP_OKUMA')));
+  test('ekran: süreler ve balon/mesaj metinleri TutorialGame.tsx ile birebir',
+      () {
+    expect(
+        kTutorialRakipTasArasi,
+        int.parse(pick(
+            gameTsx, RegExp(r'RAKIP_TAS_ARASI = (\d+);'), 'RAKIP_TAS_ARASI')));
+    expect(
+        kTutorialSonucOkuma,
+        int.parse(
+            pick(gameTsx, RegExp(r'SONUC_OKUMA = (\d+);'), 'SONUC_OKUMA')));
+    expect(
+        kTutorialRakipOkuma,
+        int.parse(
+            pick(gameTsx, RegExp(r'RAKIP_OKUMA = (\d+);'), 'RAKIP_OKUMA')));
 
-    expect(kTutorialRakipYaptiText,
-        pick(gameTsx, RegExp(r"text: '(Rakip hamlesini[^']*)'"), 'rakip balonu'));
+    expect(
+        kTutorialRakipYaptiText,
+        pick(gameTsx, RegExp(r"text: '(Rakip hamlesini[^']*)'"),
+            'rakip balonu'));
     expect(kTutorialRakipOynuyorText,
         pick(gameTsx, RegExp(r"\? '(Rakip oynuyor[^']*)'"), 'rakip oynuyor'));
     expect(kTutorialHarfiAlText,
@@ -245,8 +286,10 @@ void main() {
     final tasi = pick(gameTsx, RegExp(r'text=\{`([^`]*)`\}'), 'taşı balonu');
     expect(kTutorialTasiBalonuText('BÜYÜ'),
         tasi.replaceAll(r'${step.move.word}', 'BÜYÜ'));
-    expect(kTutorialOynaBalonuText,
-        pick(gameTsx, RegExp(r'text="(Hamleni tamamlamak[^"]*)"'), 'OYNA balonu'));
+    expect(
+        kTutorialOynaBalonuText,
+        pick(gameTsx, RegExp(r'text="(Hamleni tamamlamak[^"]*)"'),
+            'OYNA balonu'));
     // Vergi penceresinin tek satırlık notu. Cümlenin İLK KELİMELERİNE
     // çapalamak yerine (metin değişince ayrıştırıcı sessizce kırılırdı)
     // port sabitinin web dosyasında GEÇTİĞİ doğrulanıyor; boşluklar
@@ -266,7 +309,8 @@ void main() {
             'kapanış butonu')),
         tutorialFinishButton);
     expect(
-        trUpper(pick(scriptTs,
+        trUpper(pick(
+            scriptTs,
             RegExp(r"TUTORIAL_REPLAY_FINISH_BUTTON = '([^']+)'"),
             'tekrar modunun kapanış butonu')),
         tutorialReplayFinishButton);
@@ -300,8 +344,8 @@ void main() {
       ('ANLAM_MIN_ROUNDS', onboardingHintAnlamMinRounds),
     ]) {
       expect(
-          int.parse(pick(onboardingTs,
-              RegExp('ONBOARDING_HINT_$ad = (\\d+)'), ad)),
+          int.parse(
+              pick(onboardingTs, RegExp('ONBOARDING_HINT_$ad = (\\d+)'), ad)),
           deger);
     }
     expect(
@@ -312,11 +356,8 @@ void main() {
     // edilirse ilk hak edilen gösterilir.
     final sira = pick(onboardingTs,
         RegExp(r'ONBOARDING_HINT_ORDER[^=]*=\s*\[([^\]]*)\]'), 'sıra');
-    expect([
-      for (final m in RegExp(r"'(\w+)'").allMatches(sira)) m.group(1)
-    ], [
-      for (final id in onboardingHintOrder) id.name
-    ]);
+    expect([for (final m in RegExp(r"'(\w+)'").allMatches(sira)) m.group(1)],
+        [for (final id in onboardingHintOrder) id.name]);
     // Zoom'un metni `ZOOM_HINT_TEXT` ↔ `kZoomHintText` (zoom_hint_test).
     for (final id in OnboardingHintId.values) {
       if (id == OnboardingHintId.zoom) continue;
@@ -344,14 +385,18 @@ void main() {
         pick(onboardingTs, RegExp(r"FIRST_WIN_GUEST_CTA = '([^']+)'"),
             'misafir CTA parçası'),
         firstWinGuestCta);
-    expect(firstWinTexts[FirstWinCelebrationId.misafir]!.contains(firstWinGuestCta),
+    expect(
+        firstWinTexts[FirstWinCelebrationId.misafir]!
+            .contains(firstWinGuestCta),
         isTrue,
         reason: 'CTA parçası cümlede geçmezse buton hiç çıkmaz');
   });
 
   test('kapı tarihi: TUTORIAL_LAUNCH_AT port için yeniden tarihlenmedi', () {
-    expect(tutorialLaunchAt,
-        pick(onboardingTs, RegExp(r"TUTORIAL_LAUNCH_AT = '([^']+)'"), 'LAUNCH_AT'),
+    expect(
+        tutorialLaunchAt,
+        pick(onboardingTs, RegExp(r"TUTORIAL_LAUNCH_AT = '([^']+)'"),
+            'LAUNCH_AT'),
         reason: 'anlamı "web yayınından önce hesap açan = mevcut oyuncu"; '
             'ayrı bir tarih iki platformun farklı kişilere göstermesi demek');
     // Dört sinyal de web arayüzünde var (yeni bir sinyal eklenirse port da).
@@ -361,12 +406,16 @@ void main() {
       'hasPlayed',
       'accountCreatedAt'
     ]) {
-      expect(onboardingTs.contains('$alan:'), isTrue, reason: 'web sinyali $alan');
+      expect(onboardingTs.contains('$alan:'), isTrue,
+          reason: 'web sinyali $alan');
     }
-    expect(RegExp(r'^\s+(\w+): [\w| ]+;', multiLine: true)
-        .allMatches(onboardingTs.substring(
-            onboardingTs.indexOf('interface TutorialGateInput'),
-            onboardingTs.indexOf('export function shouldShowTutorial')))
-        .length, 4, reason: 'web TutorialGateInput alan sayısı değişti — port da');
+    expect(
+        RegExp(r'^\s+(\w+): [\w| ]+;', multiLine: true)
+            .allMatches(onboardingTs.substring(
+                onboardingTs.indexOf('interface TutorialGateInput'),
+                onboardingTs.indexOf('export function shouldShowTutorial')))
+            .length,
+        4,
+        reason: 'web TutorialGateInput alan sayısı değişti — port da');
   });
 }

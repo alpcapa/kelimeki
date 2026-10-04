@@ -256,11 +256,49 @@ Kararlar/sapmalar:
   live-game.md 11 Eylül) "aynı Canlı oyundaki oyuncular arasında" olarak düzeltildi.
   ⚠ "Son güncelleme: 25 Eylül 2026" tarihi DEĞİŞMEDİ: mobil `legal_text_test.dart` o tarihi web
   kaynağından okuyor; tarihi değiştirmek mobil dosyayı gerektirir. Tarih ve Dart metni
-  PORT PR'ında birlikte güncellenir.
+  PORT PR'ında birlikte güncellenir (YAPILDI: 4 Ekim 2026, bkz. §13).
 - Yabancıyla biten oyunda "Tekrar Oyna" (§7) HÂLÂ açık.
 
-**Port (Flutter) ikizi — yapılmadı.** Ajanın çıkardığı birebir kurallar listesi
-`src/utils/randomGames.ts` başındaki notlarda ve `docs/testing-rastgele.md`'de.
+## 13. Port (Flutter) ikizi — YAZILDI, taslak PR (4 Ekim 2026)
+
+Dal `claude/random-opponent-port`; 1.1.3 trenine taslak (ROADMAP "1.1.3 treni"
+tablosu). Kurallar `src/utils/randomGames.ts`ten BİREBİR → `mobile/app/lib/src/
+util/random_games.dart`; `test/random_games_test.dart` web dosyasını OKUYUP
+sabitleri/metinleri/RPC adlarını karşılaştırır (web CI `parite` işi), ekran
+akışı `test/random_games_ui_test.dart`ta. Cihaz listesi: `mobile/docs/
+testing-arkadaslar-canli.md` → "Rastgele Oyuncu" (web belgesi 13.10 aynen
+koşulur).
+
+Port kararları/sapmaları:
+- `OnlineSlot` artık üç tür: insan / YZ / **açık** (`isOpen`; ham `{type:'open'}` ve
+  maske `{type:'ai',open:true}` ikisi de). ⚠ **"İnsan mı" için `!isAi` YETMEZ →
+  `isHuman`** (açık koltuk ne YZ ne insan); `mySlotIndex`, `creatorSlot`,
+  `rematchSlots`, kartlardaki insan süzgeçleri bu yüzden güncellendi.
+- Gateway'e altı RPC (`create/accept/leave/cancel_random_game`, `list_random_games`,
+  `list_my_random_games`); ağ hatası ↔ boş liste ayrımı web'deki gibi (`null` =
+  bilmiyoruz, son bilinen korunur). `create` arkadaş koltuğu varsa `notify-game-invite`
+  (yalnız YENİ ilanda).
+- Şerit: yatay `ListView` + **sabit yükseklik** (iç içe dikey liste YOK), kart eni
+  `(genişlik-16)/3.4` (min 84), yükseklik 176 × yazı ölçeği. Yoklama 40 sn, alt
+  aralık 8 sn, yalnızca uygulama ön plandayken + çevrimiçiyken; Realtime YOK.
+- Süresi dolmuş ilan (`expires_at`) `check_invite_expiry` ile süpürülür (web ile aynı).
+- Rozet zinciri (`pendingCounts`, `decideInitialMainView`, ikon rozeti) DOKUNULMADI;
+  `random_games_test.dart` ilan listesinin sayaç yoluna girmediğini kilitler.
+- **Yasal metin + tarih**: web `LegalContent.tsx` ve port `legal_modals.dart` İKİSİ de
+  "Son güncelleme: **4 Ekim 2026**"; `legal_text_test.dart` artık yalnız tarihi değil
+  üç cümleyi (Gizlilik §2, Koşullar §1, Koşullar §5) iki tarafta da arar.
+  ⚠ #779 (taslak) aynı tarihi 12 Ekim'e çekiyor — birleşirken TEK tarih seçilmeli.
+- "Tekrar Oyna" (§7) HÂLÂ açık; port da sunucunun Türkçe reddini gösterir.
+
+Gerçek Supabase'e karşı hiçbir akış denenmedi (sahte uç + widget testi).
+
+**§15 port ikizi (4 Ekim 2026) — YAZILDI:** şerit benim bekleyen ilanımı da kart gösterir
+(`stripListings`/`myRandomToListing`/`visibleListings(listings, excludeIds)`/`StripListing`
+→ `random_games.dart`; kart: `random_games_strip.dart`, "Bekliyor" + "İptal"/"Ayrıl" ≥32 dp,
+zemin `kAccent` %5 / kenar %30 = web `border-accent/30 bg-accent/5`; eylem
+`LiveGamesTab._handleLeaveRandom` — ikinci kopya yok). Testler: `random_games_test.dart`
+(kurallar + web metin/sınıf paritesi), `random_games_ui_test.dart` (benim kart, yalnız-benim
+şerit, İptal/Ayrıl, yinelenme yok). Cihaz maddesi: `mobile/docs/testing-arkadaslar-canli.md`.
 
 ## 14. Rastgele satırına tekrar dokunuş = GERİ AL (4 Ekim 2026, kullanıcı)
 
@@ -321,12 +359,32 @@ Uygulama (web `RandomGamesStrip.tsx`): kart `aspect-square`, eni `min(7rem, (şe
 kartın 26 px'i görünür; 820 px → 112×112 (geniş ekranda daha çok kart sığar); 320 px → 84×118 (4 kişilik kartta rozet
 ile noktalar sarar, bilinçli) ve 4. kartın ~12 px'i görünür. Yatay taşma yok. **Port ikizi:** Dart şerit kartı aynı
 oranlarla (sabit `176 × ölçek` yükseklik ve `(genişlik−16)/3.4` KALKAR).
+**Port YAZILDI (4 Ekim 2026, §13'e ek):** `randomCardWidth` = `clamp((şerit−24)/3.25, 84, 112)`; yükseklik
+`randomCardHeight` = `max(en, 108 × yazı ölçeği)` (Flutter yatay listesi SONLU yükseklik ister; 108 = web'in 390 px'te
+ölçülen içerik yüksekliği — 320/375/390/420 px ve yazı ölçeği 2,0'da taşma YOK, testle). Kart düzeni web ile aynı
+(avatar 22 + ad · rozet + noktalar `Wrap` · mesaj ORTALI · Kabul/İptal ≥32). Gölge = `kRaisedShadows` (web `shadow-raised`);
+gölge liste kırpmasına girmesin diye şeridin dikey dolgusu 8 px (`kRandomStripShadowPad`). "Rastgele oyun aç" bağlantısı
+`trUpper` + 10 px SpaceMono + 1,5 aralık + accent + kalın, altı çizili DEĞİL (artık ekranda büyük harf: `RASTGELE OYUN AÇ`).
 
 **Başlık bağlantısı ve etiketler (4 Ekim 2026, kullanıcı):** "Rastgele oyun aç" bağlantısı başlıkla AYNI boy ve yazı
 (10 px mono, büyük harf, aralıklı), mavi + kalın, alt çizgisiz (Arkadaşlar penceresindeki "Tüm oyuncular →" ile aynı
 desen). Kartlardaki durum mesajları ("Bekliyor", "N koltuk kaldı") ORTALI. Port ikizi aynı.
 
-## 18. Web ve mobil BİRLİKTE yayına çıkar (4 Ekim 2026, kullanıcı)
+## 18. Rastgele kökenli AKTİF oyun işareti (4 Ekim 2026, kullanıcı) — web #804, port #805
+
+Kullanıcı: *"devam eden oyunlarda diğerlerinden ayrışmıyor; takımdaki pembe gibi açık mavi ve rastgele tag'i ile
+gösterelim."* Kural (`isRandomOriginGame`, web `randomGames.ts` ↔ Dart `random_games.dart`): `status == 'active'` ve
+koltuklardan EN AZ BİRİ insan + `via == 'random'` (ilandan oturan HER koltuk `via:'random'` taşır; kurucunun kendisi
+taşımaz — bu yüzden TÜM koltuklara bakılır; karma kadro → true; arkadaş daveti / yalnız YZ → false). Kart: zemin
+`#EEF4FF`, solda 3 px accent çizgi, alt satırda "RASTGELE" etiketi SOLDA + kalan süre SAĞDA (süre yoksa etiket tek başına,
+sola); etiket 8 px mono kalın büyük harf, accent yazı, beyaz zemin, accent %30 çerçeve, pill. **Kart yüksekliği ARTMAZ**
+(etiket kalan-süre satırında; Flutter'da etiket satır yüksekliği 1,0 — 13/8 verince kart 4 px uzuyordu, testle yakalandı).
+Port: `DevamEdenGovde(etiket:)` (Setup'ın YZ kartı vermez → etkilenmez) + `_GameRow`; zemin `kRandomOriginBg` tek sabit
+`live_games_tab.dart`ta — `#EEF4FF` Tailwind ARBITRARY değer olduğundan `tokens.dart`a GİRMEZ (`color_tokens_test` ↔
+`tailwind.config.js` eşitliği bozulmaz). Sol çizgi `Stack` + `Positioned` (`ShapeDecorationWithCssShadows` tek tip
+kenarlık destekler). Kilitler: `random_games_test.dart` (kural + web sınıf paritesi), `random_games_ui_test.dart`.
+
+## 19. Web ve mobil BİRLİKTE yayına çıkar (4 Ekim 2026, kullanıcı)
 
 Kullanıcı: *"Yalnız web tarafını yayına alırız dedik ama bu mümkün değil sanırım. Çünkü web'de bunu yapanların mobilde
 karşılığı olmayacak, bu durumda işe yaramaz."* Doğru: Rastgele Oyuncu iki taraflı bir PAZAR YERİ — ilanı yalnızca

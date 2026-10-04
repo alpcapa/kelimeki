@@ -98,11 +98,13 @@ void main() {
     expect(errorReporter.route, kRootRouteName);
   });
 
-  test('adsız rota kök sayılır — yeni ekranın adı unutulursa kayıt yanlış olmaz',
+  test(
+      'adsız rota kök sayılır — yeni ekranın adı unutulursa kayıt yanlış olmaz',
       () {
     final observer = ErrorReporterRouteObserver();
     observer.didPush(
-      PageRouteBuilder<void>(pageBuilder: (_, __, ___) => const SizedBox.shrink()),
+      PageRouteBuilder<void>(
+          pageBuilder: (_, __, ___) => const SizedBox.shrink()),
       null,
     );
     expect(errorReporter.route, kRootRouteName);
@@ -167,7 +169,8 @@ void main() {
     expect(sink.sent, isEmpty);
   });
 
-  test('MANUEL bildirimde ağ hatası ELENMEZ — cloud_save "KAYIP" vakası', () async {
+  test('MANUEL bildirimde ağ hatası ELENMEZ — cloud_save "KAYIP" vakası',
+      () async {
     // Bu, filtrenin `kind != manual` koşulunun tek sebebi: orada sinyal
     // hatanın kendisi değil, aynanın da yazılamamış olması.
     errorReporter.report(_NetworkError(), context: 'cloud_save_repo.upsert');

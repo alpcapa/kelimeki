@@ -31,7 +31,9 @@ import 'support/web_source.dart';
 
 /// Web fonksiyonunun gövdesindeki `<path d="…" />` sırası korunarak.
 List<String> _webPaths(String src, String fnAdi) {
-  final fn = pick(src, RegExp('export function $fnAdi\\((.*?)\n}', dotAll: true),
+  final fn = pick(
+      src,
+      RegExp('export function $fnAdi\\((.*?)\n}', dotAll: true),
       '$fnAdi fonksiyonu');
   return pickAll(fn, RegExp(r'<path d="([^"]*)"'), '$fnAdi içindeki path');
 }
@@ -53,7 +55,8 @@ void main() {
     final gercek = [
       ...dartPath(pick(port, RegExp(r'Path _kisi\(\) =(.*?);\n', dotAll: true),
           '_kisi gövdesi')),
-      ...dartPath(pick(port,
+      ...dartPath(pick(
+          port,
           RegExp(r'Path _kumSaati\(\) =(.*?);\n', dotAll: true),
           '_kumSaati gövdesi')),
     ];
@@ -68,16 +71,13 @@ void main() {
   test('TurnTriangle web SVG\'siyle birebir aynı geometriyi çiziyor', () {
     final web = _webPaths(
         readRepoFile('src/components/LiveGamesTab.tsx'), 'TurnTriangle');
-    final port =
-        readRepoFile('mobile/app/lib/src/ui/live/live_games_tab.dart');
+    final port = readRepoFile('mobile/app/lib/src/ui/live/live_games_tab.dart');
 
-    expect(web, hasLength(1),
-        reason: 'TurnTriangle tek bir <path> taşımalı');
+    expect(web, hasLength(1), reason: 'TurnTriangle tek bir <path> taşımalı');
 
     final beklenen = parseSvgPath(web.single);
-    final gercek = dartPath(pick(
-        port, RegExp(r'Path ucgen\(\) =(.*?);\n', dotAll: true),
-        'ucgen gövdesi'));
+    final gercek = dartPath(pick(port,
+        RegExp(r'Path ucgen\(\) =(.*?);\n', dotAll: true), 'ucgen gövdesi'));
 
     // Üç kenar (iki `lineTo` + kapanış). Boşa geçme koruması.
     expect(beklenen, hasLength(3),

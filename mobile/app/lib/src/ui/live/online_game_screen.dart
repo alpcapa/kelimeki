@@ -79,6 +79,8 @@ import '../loading_note.dart';
 import '../tokens.dart';
 import '../game/invasion_confirm.dart';
 import '../../util/chat_read.dart';
+import '../../util/friend_suggest.dart';
+import 'friend_suggest_modal.dart';
 import '../../util/offline_notice.dart';
 import '../../util/uuid.dart';
 import '../../util/online_status.dart';
@@ -230,7 +232,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   /// koltuğu. Bu yüzden dizinin uzunluğu `playerCount` ile birebir olmak
   /// ZORUNDA — aşağıdaki nöbetçi bunu kontrol ediyor.
   late final int _mySlot = widget.game.slots
-      .indexWhere((s) => !s.isAi && s.userId == widget.myUserId);
+      .indexWhere((s) => s.isHuman && s.userId == widget.myUserId);
   late final GameController _controller = GameController(
     words: widget.words,
     // YZ'nin hamlesi SUNUCUDA hesaplanır (play-ai-turn) — istemci asla
@@ -312,6 +314,29 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   String? _lastPlacedSignature;
   List<OnlineMoveRow> _moves = const [];
   bool _gameOverShown = false;
+
+  /// Oyun sonu arkadaş önerisi (4 Ekim 2026) — GameOver kapanınca, arkadaşı
+  /// OLMAYAN insan katılımcılar varsa bir kez sorulur. Web ikizi:
+  /// `OnlineGameScreen.tsx` (`friendSuggestCandidates`).
+  Future<void> _askFriendSuggest() async {
+    final repo = widget.friends;
+    final storageFuture = widget.storage;
+    if (repo == null || storageFuture == null) return;
+    final flags = (await storageFuture).flags;
+    if (flags.friendSuggestAskedGame == widget.game.id) return;
+    final rows = await repo.friends();
+    if (rows == null || !mounted) return;
+    final candidates = friendSuggestCandidates(
+        widget.game.slots, widget.myUserId, {for (final r in rows) r.friendId});
+    if (candidates.isEmpty) return;
+    await flags.markFriendSuggestAsked(widget.game.id);
+    if (!mounted) return;
+    await showFriendSuggestModal(context, friends: repo, candidates: [
+      for (final s in candidates)
+        SuggestCandidate(
+            userId: s.userId!, name: s.name, avatarUrl: s.avatarUrl)
+    ]);
+  }
 
   // Web aiTriggeringRef/timeoutCheckingRef: aynı sekmenin ardışık
   // refresh'lerinin henüz sonuçlanmamış aynı isteği tekrar tetiklemesini
@@ -1078,7 +1103,7 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     if (_busy) return;
     final names = [
       for (final s in widget.game.slots)
-        if (!s.isAi && s.userId != widget.myUserId) s.name ?? 'Bir arkadaşın'
+        if (s.isHuman && s.userId != widget.myUserId) s.name ?? 'Bir arkadaşın'
     ];
     final withAi = widget.game.slots.any((s) => s.isAi);
     // Kabul butonu SOLDA (Parça 25 kuralı) — showKConfirm bunu garanti eder.
@@ -1855,6 +1880,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                     myIndex: _mySlot),
                 onFeedback: auth == null ? null : openFeedback,
                 celebration: kutlama);
+            if (!mounted || !context.mounted) return;
+            await _askFriendSuggest();
           });
         }
 
@@ -1999,82 +2026,86 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                         // Yükseklik bütçesi (ROADMAP #38) — web `Board`un
                                         // `fitHeight`i; gerekçe ve ölçümler `board_fit.dart`ta.
                                         constraints: BoxConstraints(
-                                            maxWidth: boardMaxWidth(boardViewportHeight(context))),
+                                            maxWidth: boardMaxWidth(
+                                                boardViewportHeight(context))),
                                         child: Padding(
-                                        // Web `Board.tsx`'in dış sarmalayıcısı:
-                                        // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
-                                        // taşımıştı, alttaki 12px hiç yoktu.
-                                        padding: const EdgeInsets.fromLTRB(
-                                            12, 6, 12, 12),
-                                        child: BoardWidget(
-                                          state: state,
-                                          // "Buradan başla" balonu, taş
-                                          // KALDIRILDIĞI anda kaybolsun diye
-                                          // sürükleme sinyalini alıyor. Bool
-                                          // bir prop olsaydı sürüklemenin
-                                          // başında/sonunda tüm ekranı
-                                          // setState'lemek gerekirdi; böyle
-                                          // yalnızca balon katmanı dinliyor
-                                          // (Parça 23'ün kuralı korunuyor).
-                                          dragListenable: _dragNotifier,
-                                          moveOverlay: moveStatus == null
-                                              ? null
-                                              : MoveOverlay(
-                                                  valid: moveStatus.valid,
-                                                  cells: moveStatus.cells,
-                                                  score: moveStatus.score,
-                                                ),
-                                          onCellTap: _handleCellTap,
-                                          gridKey: _gridKey,
-                                          zoomHint: _zoomHint,
-                                          stripHint:
-                                              _uiHint == OnboardingHintId
-                                                          .hamleler ||
-                                                      _uiHint ==
-                                                          OnboardingHintId.mesaj
-                                                  ? _uiHint
-                                                  : null,
-                                          zoom: _zoom,
-                                          viewportKey: _viewportKey,
-                                          onBoardPointerDown: _boardPointerDown,
-                                          onBoardPointerMove: _boardPointerMove,
-                                          onBoardPointerUp: _boardPointerUp,
-                                          onBoardPointerCancel: _endBoardPan,
-                                          onOpenHistory: () =>
-                                              showMoveHistoryModal(
-                                                  context, _historyState,
-                                                  myIndex: _mySlot),
-                                          onOpenHelp: () =>
-                                              showHelpModal(context),
-                                          onOpenMessaging: widget.chat == null
-                                              ? null
-                                              : _openMessaging,
-                                          unreadMessageCount:
-                                              _chatState.unreadCount,
-                                          onlineStatus: widget.onlineStatus,
-                                          dragHiddenKey:
-                                              _hiddenSource is _PlacedSource
-                                                  ? cellKey(
-                                                      (_hiddenSource
-                                                              as _PlacedSource)
-                                                          .r,
-                                                      (_hiddenSource
-                                                              as _PlacedSource)
-                                                          .c)
-                                                  : null,
-                                          onTilePointerDown: (r, c, e) {
-                                            final t =
-                                                state.placed[cellKey(r, c)];
-                                            if (t != null) {
-                                              _beginTileDrag(
-                                                  _PlacedSource(r, c, t), e);
-                                            }
-                                          },
-                                          onTilePointerMove: _moveTileDrag,
-                                          onTilePointerUp: _endTileDrag,
-                                          onTilePointerCancel: _cancelTileDrag,
+                                          // Web `Board.tsx`'in dış sarmalayıcısı:
+                                          // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
+                                          // taşımıştı, alttaki 12px hiç yoktu.
+                                          padding: const EdgeInsets.fromLTRB(
+                                              12, 6, 12, 12),
+                                          child: BoardWidget(
+                                            state: state,
+                                            // "Buradan başla" balonu, taş
+                                            // KALDIRILDIĞI anda kaybolsun diye
+                                            // sürükleme sinyalini alıyor. Bool
+                                            // bir prop olsaydı sürüklemenin
+                                            // başında/sonunda tüm ekranı
+                                            // setState'lemek gerekirdi; böyle
+                                            // yalnızca balon katmanı dinliyor
+                                            // (Parça 23'ün kuralı korunuyor).
+                                            dragListenable: _dragNotifier,
+                                            moveOverlay: moveStatus == null
+                                                ? null
+                                                : MoveOverlay(
+                                                    valid: moveStatus.valid,
+                                                    cells: moveStatus.cells,
+                                                    score: moveStatus.score,
+                                                  ),
+                                            onCellTap: _handleCellTap,
+                                            gridKey: _gridKey,
+                                            zoomHint: _zoomHint,
+                                            stripHint: _uiHint ==
+                                                        OnboardingHintId
+                                                            .hamleler ||
+                                                    _uiHint ==
+                                                        OnboardingHintId.mesaj
+                                                ? _uiHint
+                                                : null,
+                                            zoom: _zoom,
+                                            viewportKey: _viewportKey,
+                                            onBoardPointerDown:
+                                                _boardPointerDown,
+                                            onBoardPointerMove:
+                                                _boardPointerMove,
+                                            onBoardPointerUp: _boardPointerUp,
+                                            onBoardPointerCancel: _endBoardPan,
+                                            onOpenHistory: () =>
+                                                showMoveHistoryModal(
+                                                    context, _historyState,
+                                                    myIndex: _mySlot),
+                                            onOpenHelp: () =>
+                                                showHelpModal(context),
+                                            onOpenMessaging: widget.chat == null
+                                                ? null
+                                                : _openMessaging,
+                                            unreadMessageCount:
+                                                _chatState.unreadCount,
+                                            onlineStatus: widget.onlineStatus,
+                                            dragHiddenKey: _hiddenSource
+                                                    is _PlacedSource
+                                                ? cellKey(
+                                                    (_hiddenSource
+                                                            as _PlacedSource)
+                                                        .r,
+                                                    (_hiddenSource
+                                                            as _PlacedSource)
+                                                        .c)
+                                                : null,
+                                            onTilePointerDown: (r, c, e) {
+                                              final t =
+                                                  state.placed[cellKey(r, c)];
+                                              if (t != null) {
+                                                _beginTileDrag(
+                                                    _PlacedSource(r, c, t), e);
+                                              }
+                                            },
+                                            onTilePointerMove: _moveTileDrag,
+                                            onTilePointerUp: _endTileDrag,
+                                            onTilePointerCancel:
+                                                _cancelTileDrag,
+                                          ),
                                         ),
-                                      ),
                                       ),
                                       // Web: <main> içinde Board'dan hemen sonra mesaj
                                       // bloğu geliyor ve tek boşluk onun `pt-1`i (4px,
@@ -2369,43 +2400,44 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                                         show: _uiHint ==
                                                             OnboardingHintId
                                                                 .torba,
-                                                        text: onboardingHintTexts[
-                                                            OnboardingHintId
-                                                                .torba]!,
+                                                        text:
+                                                            onboardingHintTexts[
+                                                                OnboardingHintId
+                                                                    .torba]!,
                                                         yon: HintBubbleYon.ust,
                                                         hiza:
                                                             HintBubbleHiza.son,
                                                         child: NeoButton(
-                                                        letterSpacing: 1.2,
-                                                        lineHeight: 1.5,
-                                                        label:
-                                                            'TORBA ${state.bag.length}',
-                                                        // Web App.tsx ~1360 (bkz.
-                                                        // game_screen.dart'taki aynı
-                                                        // NeoButton çağrısı — ikisi de
-                                                        // AYNI PR'da güncellenmeli).
-                                                        richLabel: [
-                                                          const TextSpan(
-                                                              text: 'TORBA '),
-                                                          TextSpan(
-                                                            text:
-                                                                '${state.bag.length}',
-                                                            style:
-                                                                const TextStyle(
-                                                              fontSize: 13,
-                                                              color: kAccent,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                          letterSpacing: 1.2,
+                                                          lineHeight: 1.5,
+                                                          label:
+                                                              'TORBA ${state.bag.length}',
+                                                          // Web App.tsx ~1360 (bkz.
+                                                          // game_screen.dart'taki aynı
+                                                          // NeoButton çağrısı — ikisi de
+                                                          // AYNI PR'da güncellenmeli).
+                                                          richLabel: [
+                                                            const TextSpan(
+                                                                text: 'TORBA '),
+                                                            TextSpan(
+                                                              text:
+                                                                  '${state.bag.length}',
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 13,
+                                                                color: kAccent,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
-                                                        onPressed: () =>
-                                                            showRemainingTilesModal(
-                                                                context,
-                                                                state,
-                                                                _mySlot),
-                                                      ),
+                                                          ],
+                                                          onPressed: () =>
+                                                              showRemainingTilesModal(
+                                                                  context,
+                                                                  state,
+                                                                  _mySlot),
+                                                        ),
                                                       ),
                                                     ),
                                                   ])),

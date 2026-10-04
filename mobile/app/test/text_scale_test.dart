@@ -188,8 +188,7 @@ void main() {
   // 124,7 px çıkıyordu. Düzeltmeden sonra 151,4 / 181,4 / 221,4 —
   // yani şerit büyüdükçe boşluk da büyüyor. Test bu yüzden TEK bir
   // genişlikte değil İKİ genişlikte ölçüyor.
-  testWidgets('tahta alt şeridi ŞERİDİ DOLDURUR (kümelenmez)',
-      (tester) async {
+  testWidgets('tahta alt şeridi ŞERİDİ DOLDURUR (kümelenmez)', (tester) async {
     // Şeridin yatay dolgusu (`_footer`ın `EdgeInsets.symmetric(horizontal:
     // 10)`) — sağ/sol uçtaki linkler bu kadar içeride durmalı.
     const dolgu = 10.0;

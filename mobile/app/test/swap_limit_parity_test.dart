@@ -38,8 +38,7 @@ void main() {
       RegExp(r"^\s*'(Torbada .+?)';", multiLine: true),
       'constants.dart içinde swapLimitMessage gövdesi',
     );
-    expect(port, web,
-        reason: 'sınır uyarısı iki platformda farklı okunuyor');
+    expect(port, web, reason: 'sınır uyarısı iki platformda farklı okunuyor');
   });
 
   test('sınır TORBANIN KENDİSİ — iki tarafta da kimlik fonksiyonu', () {

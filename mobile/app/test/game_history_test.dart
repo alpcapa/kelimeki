@@ -33,12 +33,14 @@ void main() {
         ..history = [for (var i = 0; i < 25; i++) gameRow(id: 'g$i')];
       final repo = await newRepo(gw);
 
-      final first = await repo.history(userId: 'u-me', playerCount: null, offset: 0, limit: 20);
+      final first = await repo.history(
+          userId: 'u-me', playerCount: null, offset: 0, limit: 20);
       expect(first.games, hasLength(20));
       expect(first.hasMore, isTrue);
       expect(gw.listCalls.single.limit, 20);
 
-      final second = await repo.history(userId: 'u-me', playerCount: null, offset: 20, limit: 20);
+      final second = await repo.history(
+          userId: 'u-me', playerCount: null, offset: 20, limit: 20);
       expect(second.games, hasLength(5));
       expect(second.hasMore, isFalse);
     });
@@ -50,9 +52,15 @@ void main() {
           gameRow(id: 'b', playerCount: 4),
         ];
       final repo = await newRepo(gw);
-      expect((await repo.history(userId: 'u-me', playerCount: null, offset: 0)).games,
+      expect(
+          (await repo.history(userId: 'u-me', playerCount: null, offset: 0))
+              .games,
           hasLength(2));
-      expect((await repo.history(userId: 'u-me', playerCount: 4, offset: 0)).games.single.id,
+      expect(
+          (await repo.history(userId: 'u-me', playerCount: 4, offset: 0))
+              .games
+              .single
+              .id,
           'b');
     });
 
@@ -87,9 +95,17 @@ void main() {
       2,
       [
         const GamePlayerSnapshot(
-            name: 'Yapay Zeka 2', score: 200, isAi: true, surrendered: false, colorIndex: 1),
+            name: 'Yapay Zeka 2',
+            score: 200,
+            isAi: true,
+            surrendered: false,
+            colorIndex: 1),
         const GamePlayerSnapshot(
-            name: 'Ironman', score: 100, isAi: false, surrendered: false, colorIndex: 0),
+            name: 'Ironman',
+            score: 100,
+            isAi: false,
+            surrendered: false,
+            colorIndex: 0),
       ],
     );
     expect(state.players[0].name, 'Ironman'); // koltuk 0
@@ -210,7 +226,8 @@ void main() {
           snap('Yapay Zeka 2', 179, ai: true, colorIndex: 1),
         ])
       ];
-    await pumpHistory(tester, await newRepoForWidget(tester, gw), currentName: 'YeniNick');
+    await pumpHistory(tester, await newRepoForWidget(tester, gw),
+        currentName: 'YeniNick');
     expect(find.text('YeniNick'), findsOneWidget);
     expect(find.text('EskiNick'), findsNothing);
   });
@@ -219,10 +236,16 @@ void main() {
       (tester) async {
     final gw = FakeGamesGateway(userId: 'u-me')
       ..history = [
-        gameRow(id: 'old', playerCount: 4, playerScore: 100, aiScore: 150, rank: null)
+        gameRow(
+            id: 'old',
+            playerCount: 4,
+            playerScore: 100,
+            aiScore: 150,
+            rank: null)
       ];
     // currentName VERİLMEDEN: yedek satır "Sen" etiketini kullanmalı.
-    await pumpHistory(tester, await newRepoForWidget(tester, gw), currentName: null);
+    await pumpHistory(tester, await newRepoForWidget(tester, gw),
+        currentName: null);
     expect(find.text('Sen'), findsOneWidget);
     expect(find.text('En iyi rakip'), findsOneWidget);
     expect(find.textContaining('+2 diğer oyuncu'), findsOneWidget);
@@ -277,7 +300,8 @@ void main() {
   });
 
   testWidgets('hiç kayıt yoksa boş metin', (tester) async {
-    await pumpHistory(tester, await newRepoForWidget(tester, FakeGamesGateway(userId: 'u-me')));
+    await pumpHistory(tester,
+        await newRepoForWidget(tester, FakeGamesGateway(userId: 'u-me')));
     expect(find.text('Henüz kayıtlı bir oyunun yok.'), findsOneWidget);
   });
 }

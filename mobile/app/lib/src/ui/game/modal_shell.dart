@@ -101,8 +101,8 @@ class KModal extends StatelessWidget {
               // `headerLink` dalı TEK İSTİSNA: orada üst dolgu zaten 3'tü
               // ve 4 kısılamıyor (negatif olurdu), 3 → 0 ile 1 px'lik bir
               // uzama kalıyor. Tek kullanıcısı HelpModal.
-              padding: EdgeInsets.fromLTRB(
-                  20, headerLink != null ? 0 : 16, 8, 12),
+              padding:
+                  EdgeInsets.fromLTRB(20, headerLink != null ? 0 : 16, 8, 12),
               decoration: const BoxDecoration(
                 border: Border(bottom: BorderSide(color: _divider)),
               ),
@@ -126,8 +126,7 @@ class KModal extends StatelessWidget {
                         icon: Icons.close,
                         tooltip: 'Kapat',
                         color: _muted,
-                        onPressed:
-                            onClose ?? () => Navigator.of(context).pop(),
+                        onPressed: onClose ?? () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),

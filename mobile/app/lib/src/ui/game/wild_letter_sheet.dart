@@ -83,8 +83,8 @@ Future<WildLetterChoice?> showWildLetterSheet(
             itemBuilder: (context, i) {
               final letter = letters[i];
               return GestureDetector(
-                onTap: () => Navigator.of(context)
-                    .pop(WildLetterChoice.letter(letter)),
+                onTap: () =>
+                    Navigator.of(context).pop(WildLetterChoice.letter(letter)),
                 // Dolgu dinleyicinin İÇİNDE — kutu yuvanın tamamı olsun.
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 6),

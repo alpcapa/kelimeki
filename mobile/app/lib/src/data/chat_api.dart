@@ -138,9 +138,8 @@ class SupabaseChatGateway implements ChatGateway {
 
   @override
   Future<List<String>> myMutes() async {
-    final rows = await client
-        .from('online_game_message_mutes')
-        .select('muted_user_id');
+    final rows =
+        await client.from('online_game_message_mutes').select('muted_user_id');
     return [for (final r in rows) r['muted_user_id'] as String];
   }
 
@@ -204,8 +203,7 @@ class SupabaseChatGateway implements ChatGateway {
   }
 
   @override
-  Future<void> report(
-      String gameId, String targetUserId, String reason) async {
+  Future<void> report(String gameId, String targetUserId, String reason) async {
     await client.rpc('report_online_game_participant', params: {
       'p_game_id': gameId,
       'p_target_user_id': targetUserId,
@@ -265,8 +263,7 @@ class ChatRepo {
   Future<void> send(String gameId, String message) async {
     final trimmed = message.trim();
     if (trimmed.isEmpty || trimmed.length > maxMessageLength) {
-      throw Exception(
-          'Mesaj 1-$maxMessageLength karakter arasında olmalı.');
+      throw Exception('Mesaj 1-$maxMessageLength karakter arasında olmalı.');
     }
     return gateway.send(gameId, trimmed);
   }
@@ -322,7 +319,10 @@ class ChatRepo {
     try {
       return await gateway.myModeration();
     } catch (_) {
-      return (muted: const <String, String>{}, reported: const <String, String>{});
+      return (
+        muted: const <String, String>{},
+        reported: const <String, String>{}
+      );
     }
   }
 

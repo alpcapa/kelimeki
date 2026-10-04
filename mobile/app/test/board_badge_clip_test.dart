@@ -51,7 +51,8 @@ void main() {
     Future<int> disaridakiPiksel() async {
       var n = 0;
       await tester.runAsync(() async {
-        final b = kok.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final b =
+            kok.currentContext!.findRenderObject()! as RenderRepaintBoundary;
         final img = await b.toImage();
         final bd = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
         final d = bd!.buffer.asUint8List();

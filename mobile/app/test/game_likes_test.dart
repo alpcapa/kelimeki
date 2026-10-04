@@ -39,7 +39,8 @@ void main() {
         ..likedByMe = {'a'};
       final repo = await newRepo(gw);
 
-      final res = await repo.history(userId: 'u-me', playerCount: null, offset: 0);
+      final res =
+          await repo.history(userId: 'u-me', playerCount: null, offset: 0);
       expect(res.games[0].likeCount, 3);
       expect(res.games[0].likedByMe, isTrue);
       expect(res.games[1].likeCount, 0);
@@ -51,7 +52,8 @@ void main() {
       // atlıyor. Sahte uç çağrılırsa fırlatarak bunu kanıtlıyoruz.
       final gw = _NoLikeStatsGateway()..history = [gameRow(id: 'a')];
       final repo = await newRepo(gw);
-      final res = await repo.history(userId: 'u-me', playerCount: null, offset: 0);
+      final res =
+          await repo.history(userId: 'u-me', playerCount: null, offset: 0);
       expect(res.games.single.likeCount, 0);
     });
 
@@ -60,7 +62,8 @@ void main() {
       final gw = _FailingLikeStatsGateway(userId: 'u-me')
         ..history = [gameRow(id: 'a')];
       final repo = await newRepo(gw);
-      final res = await repo.history(userId: 'u-me', playerCount: null, offset: 0);
+      final res =
+          await repo.history(userId: 'u-me', playerCount: null, offset: 0);
       expect(res.games, hasLength(1));
       expect(res.games.single.likeCount, 0);
     });
@@ -83,8 +86,10 @@ void main() {
         ..likeCounts = {'theirs': 1};
       final repo = await newRepo(gw);
 
-      final all = await repo.history(userId: 'u-me', playerCount: null, offset: 0);
-      expect(all.games.map((g) => g.id), ['mine']); // listGames sahiplik filtreli
+      final all =
+          await repo.history(userId: 'u-me', playerCount: null, offset: 0);
+      expect(
+          all.games.map((g) => g.id), ['mine']); // listGames sahiplik filtreli
 
       final favs = await repo.history(
           userId: 'u-me', playerCount: null, offset: 0, favoritesOnly: true);
@@ -130,8 +135,7 @@ void main() {
     // Web: `entry.liked_by_me ? 'text-red' : 'text-muted'` — beğenilen kalp
     // KIRMIZI. Port ikonu doldurup rengi koşulsuz gri bırakmıştı (9 Ağustos
     // 2026, cihaz testinde "like yapınca kalp gri/siyah kalıyor").
-    expect(tester.widget<Icon>(_satirKalbi()).color,
-        const Color(0xFFDC2626));
+    expect(tester.widget<Icon>(_satirKalbi()).color, const Color(0xFFDC2626));
     // Sayı rozeti belirdi. Key ile aranıyor: düz '1' metni PlayerBadge'in
     // koltuk numarasıyla çakışıyor.
     expect(
@@ -581,7 +585,10 @@ void main() {
         gameRow(
           id: 'g-1',
           playerCount: 2,
-          players: [snap('Ironman', 150, colorIndex: 0), snap('YZ', 120, ai: true, colorIndex: 1)],
+          players: [
+            snap('Ironman', 150, colorIndex: 0),
+            snap('YZ', 120, ai: true, colorIndex: 1)
+          ],
         )
       ]
       ..movesByGame = {
@@ -628,8 +635,13 @@ void main() {
       ..history = [gameRow(id: 'g-1')]
       ..movesByGame = {
         'g-1': [
-          {'turn': 0, 'player': 0, 'words': <String>[], 'points': 0,
-            'action': 'pass'},
+          {
+            'turn': 0,
+            'player': 0,
+            'words': <String>[],
+            'points': 0,
+            'action': 'pass'
+          },
         ]
       }
       ..movesFail = true;
@@ -652,8 +664,7 @@ void main() {
     expect(find.text('OYUN GEÇMİŞİ'), findsOneWidget);
   });
 
-  testWidgets('dökümü olmayan kartta hamle ikonu HİÇ çizilmez',
-      (tester) async {
+  testWidgets('dökümü olmayan kartta hamle ikonu HİÇ çizilmez', (tester) async {
     // 12 Ağustos 2026, kullanıcı: "YZ oyunlarda içi boş geliyor". Kural
     // TÜR bazlı değil VERİ bazlı — aynı listede dökümü olan bir yerel oyun
     // ikonu göstermeye devam etmeli, yoksa "YZ'de hiç gösterme" gibi
@@ -665,8 +676,13 @@ void main() {
       ]
       ..movesByGame = {
         'g-yeni': [
-          {'turn': 0, 'player': 0, 'words': <String>[], 'points': 0,
-            'action': 'pass'},
+          {
+            'turn': 0,
+            'player': 0,
+            'words': <String>[],
+            'points': 0,
+            'action': 'pass'
+          },
         ]
       };
     final repo = await newRepoForWidget(tester, gw);
@@ -695,8 +711,13 @@ void main() {
       ..chatCounts['g-1'] = 3 // tek haneli: sohbet kutusunun EN DAR hâli
       ..movesByGame = {
         'g-1': [
-          {'turn': 0, 'player': 0, 'words': <String>[], 'points': 0,
-            'action': 'pass'},
+          {
+            'turn': 0,
+            'player': 0,
+            'words': <String>[],
+            'points': 0,
+            'action': 'pass'
+          },
         ]
       };
     final repo = await newRepoForWidget(tester, gw);
@@ -733,6 +754,7 @@ void main() {
     expect(find.text('Henüz kayıtlı bir oyunun yok.'), findsNothing);
   });
 }
+
 /// `game_like_stats`'e HİÇ gitmemesi gerektiğini kanıtlayan sahte uç:
 /// çağrılırsa test patlar. `currentUserId` null (misafir).
 class _NoLikeStatsGateway extends FakeGamesGateway {

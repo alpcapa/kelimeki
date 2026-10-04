@@ -155,8 +155,7 @@ class AuthService extends ChangeNotifier {
     Future<ProfileCacheStore>? profileCache,
     Future<Map<String, Object?>?> Function(String userId)? profileFetcher,
     Future<DeviceStamp>? signupStamp,
-  })
-      : _client = null,
+  })  : _client = null,
         _profileCache = profileCache,
         _signupStamp = signupStamp,
         _profileFetcher = profileFetcher,
@@ -472,7 +471,8 @@ class AuthService extends ChangeNotifier {
       // yutup genel bir metin göstermek teşhisi imkânsız kılardı.
       final d = e.details;
       final msg = d is Map ? d['error'] : null;
-      throw AuthException(msg is String ? msg : 'Hesap silme isteği başarısız.');
+      throw AuthException(
+          msg is String ? msg : 'Hesap silme isteği başarısız.');
     }
   }
 
@@ -488,7 +488,8 @@ class AuthService extends ChangeNotifier {
     final u = _user;
     if (c == null || u == null) return;
     try {
-      final row = await c.from('profiles').select().eq('id', u.id).maybeSingle();
+      final row =
+          await c.from('profiles').select().eq('id', u.id).maybeSingle();
       _profile = row == null ? null : KProfile.fromMap(row);
       notifyListeners();
     } catch (e) {

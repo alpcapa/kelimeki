@@ -192,7 +192,7 @@ class TermsModal extends StatelessWidget {
       child: _StackedSections([
         const _P(
             "Kelimeki'ye kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul "
-            'ettiğinizi beyan edersiniz. Son güncelleme: 25 Eylül 2026.'),
+            'ettiğinizi beyan edersiniz. Son güncelleme: 4 Ekim 2026.'),
         const _Section('1. Hizmet Sağlayıcı ve Kapsam', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -201,7 +201,10 @@ class TermsModal extends StatelessWidget {
               'çevrimiçi bir kelime oyunudur ve oyun tahtası, Yapay Zeka\'ya '
               'karşı ya da arkadaşlarınla gerçek zamanlı oynanan Canlı oyun, '
               'oyun içi mesajlaşma, lider tablosu (k-lig), arkadaşlık ve '
-              'kullanıcı hesabı özelliklerini kapsar. Hizmet '
+              'kullanıcı hesabı özelliklerini kapsar. Rastgele Oyuncu ilanı '
+              'açtığınızda takma adınız ve profil fotoğrafınız giriş yapmış '
+              'tüm üyelere görünür; tanımadığınız kişilerle de 3. bölümdeki '
+              'kurallar geçerlidir. Hizmet '
               'ücretsizdir ve herhangi bir bildirimde bulunmaksızın '
               'değiştirilebilir ya da sonlandırılabilir.'),
         ]),
@@ -252,8 +255,11 @@ class TermsModal extends StatelessWidget {
               'Hizmet "olduğu gibi" sunulmaktadır.'),
           _PRich([
             TextSpan(
-                text: 'Oyun içi mesajlaşma yalnızca birbirini arkadaş olarak '
-                    'kabul etmiş kullanıcılar arasında açıktır. Mesajlar bir '
+                text: 'Oyun içi mesajlaşma, aynı Canlı oyunda oynayan '
+                    'kullanıcılar arasında açıktır; oyuncuların birbiriyle '
+                    'arkadaş olması gerekmez (ör. Rastgele Oyuncu ilanıyla '
+                    'başlayan oyunlar). Dilediğiniz kişiyi sessize alabilir '
+                    'ya da şikayet edebilirsiniz. Mesajlar bir '
                     'kişi tarafından önceden okunmaz; 3. bölümde sayılan '
                     'uygunsuz ifadeler otomatik bir süzgeçle yıldızla (*) '
                     'gizlenir ve süzgece takılan takma isimler kabul edilmez. '
@@ -298,7 +304,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 25 Eylül 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 4 Ekim 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -326,6 +332,10 @@ class PrivacyModal extends StatelessWidget {
             'Arkadaşlık bağlantıları (kiminle arkadaş olduğunuz, '
                 'gönderdiğiniz/aldığınız arkadaşlık istekleri, davet '
                 'linkinizin kullanım verisi)',
+            'Rastgele Oyuncu ilanı açarsanız takma adınız ve profil '
+                'fotoğrafınız, ilan yayındayken giriş yapmış TÜM üyelere '
+                'görünür (yalnızca arkadaşlarınıza değil); ilan dolunca ya '
+                'da 7 gün sonunda kalkar',
             'Canlı oyunlarda gönderdiğiniz oyun içi sohbet mesajları',
             "Sohbet Kuralları'nı kabul ettiğiniz tarih ve kabul ettiğiniz "
                 'kural sürümü',

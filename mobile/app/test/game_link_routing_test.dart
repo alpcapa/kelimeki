@@ -61,8 +61,8 @@ void main() {
     final gw = FakeOnlineGamesGateway()
       ..rows = [gameRow(id: 'g1', myId: 'u1', status: 'active')];
     final inbox = GameLinkInbox();
-    final s = services(
-        gw: gw, inbox: inbox, auth: TestAuth(user: fakeUser('u1')));
+    final s =
+        services(gw: gw, inbox: inbox, auth: TestAuth(user: fakeUser('u1')));
     await pumpApp(tester, s);
     expect(find.byType(OnlineGameScreen), findsNothing);
 
@@ -88,8 +88,8 @@ void main() {
             myInviteId: 'i1'),
       ];
     final inbox = GameLinkInbox();
-    final s = services(
-        gw: gw, inbox: inbox, auth: TestAuth(user: fakeUser('u1')));
+    final s =
+        services(gw: gw, inbox: inbox, auth: TestAuth(user: fakeUser('u1')));
     await pumpApp(tester, s);
     // Bekleyen davet varken Setup ZATEN otomatik Arkadaşınla'ya geçer
     // (hesap başına bir kez — kendi kuralı, kendi testi var). Dinleyicinin

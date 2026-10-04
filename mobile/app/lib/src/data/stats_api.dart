@@ -37,6 +37,7 @@ class PlayerStats {
   final int gamesPlayed;
   final int localGamesPlayed;
   final int onlineGamesPlayed;
+
   /// Kazanılan oyun sayısı — `count(*) filter (where games.result = 'win')`.
   /// ⚠ [firstPlaces] ile AYNI ŞEY DEĞİL: beraberlik `result='tie'` olduğundan
   /// `wins`e girmez ama sıralamada rank 1'dir. "İlk oyununu kazandın"
@@ -280,8 +281,8 @@ class SupabaseStatsGateway implements StatsGateway {
   @override
   Future<Map<String, Object?>?> headToHead(String otherUserId) async {
     // `returns table(...)` → tek satırlık dizi (myLeaderboardRank deseni).
-    final data =
-        await client.rpc('head_to_head_stats', params: {'p_other': otherUserId});
+    final data = await client
+        .rpc('head_to_head_stats', params: {'p_other': otherUserId});
     final row = data is List && data.isNotEmpty ? data.first : data;
     return row is Map ? row.cast<String, Object?>() : null;
   }
@@ -395,8 +396,7 @@ class StatsRepo {
     } catch (e, st) {
       debugPrint('[Kelimeki] profileAgeGender hatası: $e');
       if (!isNetworkError(e)) {
-        errorReporter.report(e,
-            stack: st, context: 'stats_repo.age_gender');
+        errorReporter.report(e, stack: st, context: 'stats_repo.age_gender');
       }
       return '';
     }

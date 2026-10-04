@@ -19,6 +19,7 @@ class FlagsStore {
   static const _guestFirstPoints = 'guest_first_points_celebrated';
   static const _zoomHintShown = 'zoom_hint_shown';
   static const _zoomTried = 'zoom_tried';
+  static const _friendSuggestAsked = 'friend_suggest_asked_game';
   static const _anonId = 'anon_id';
   static const _anonVisitDate = 'anon_visit_date';
   static const _utmSource = 'utm_source';
@@ -54,6 +55,13 @@ class FlagsStore {
       prefs.getBool(_guestFirstPoints) ?? false;
   Future<void> markGuestFirstPointsCelebrated() =>
       prefs.setBool(_guestFirstPoints, true);
+
+  /// Oyun sonu arkadaş önerisi en son HANGİ oyun için soruldu (web:
+  /// `kelimeki.friendSuggest.<id>`; dinamik anahtar kuralı gereği burada tek
+  /// değer — yalnızca SON oyunu hatırlar, tekrar açılışı bastırmaya yeter).
+  String? get friendSuggestAskedGame => prefs.getString(_friendSuggestAsked);
+  Future<void> markFriendSuggestAsked(String gameId) =>
+      prefs.setString(_friendSuggestAsked, gameId);
 
   bool get seenChatIntro => prefs.getBool(_seenChatIntro) ?? false;
   Future<void> markChatIntroSeen() => prefs.setBool(_seenChatIntro, true);

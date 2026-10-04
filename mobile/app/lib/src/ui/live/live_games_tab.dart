@@ -25,7 +25,11 @@ import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart' show trUpper;
 
 import '../../bootstrap.dart';
+import '../../util/error_message.dart';
+import '../../util/random_games.dart';
 import '../../util/recent_game_avatars.dart';
+import '../open_seat_avatar.dart';
+import 'random_games_strip.dart';
 import '../devam_eden_govde.dart';
 import '../../data/online_games_api.dart';
 import '../push/push_permission_flow.dart';
@@ -40,7 +44,6 @@ import '../rank/rank_seal.dart';
 import '../setup/recent_games_section.dart';
 import '../friends/friends_modal.dart'
     show showFriendInfoDialog, kFriendActionFailed;
-import 'friend_suggest_modal.dart';
 import 'guest_live_sheet.dart';
 import '../../util/live_game_request.dart';
 import 'live_game_create_form.dart';
@@ -64,6 +67,19 @@ enum LiveSubTab { active, invites, recent }
 /// user.id → son bilinen liste (web liveGamesCache — sekme geçişinde
 /// unmount olan widget'ın spinner'sız yeniden çizimi için).
 final Map<String, OnlineGamesSnapshot> _liveGamesCache = {};
+
+/// user.id → son bilinen "benim ilanlarım" (Rastgele Oyuncu) — web
+/// `liveGamesCache.myRandom`. Aynı kural: alınamayan liste son bilineni
+/// EZMEZ.
+final Map<String, List<MyRandomGame>> _myRandomCache = {};
+
+/// Testler arası sızıntıyı kesmek için (önbellekler kullanıcı kimliğine göre
+/// GLOBAL).
+void resetLiveGamesCaches() {
+  _liveGamesCache.clear();
+  _myRandomCache.clear();
+  resetRandomStripCache();
+}
 
 class LiveGamesTab extends StatefulWidget {
   final AppServices services;
@@ -114,6 +130,17 @@ class LiveGamesTab extends StatefulWidget {
 class _LiveGamesTabState extends State<LiveGamesTab>
     with WidgetsBindingObserver {
   OnlineGamesSnapshot? _snapshot;
+
+  /// Rastgele Oyuncu: benim ilanlarım (`list_my_random_games`). null =
+  /// henüz gelmedi YA DA alınamadı — ikisinde de son bilinen korunur (boş
+  /// liste "sunucu boş dedi" demek, bkz. `OnlineGamesRepo.fetchMyRandom`).
+  List<MyRandomGame>? _myRandom;
+
+  /// "Ayrıl"/"İlanı iptal et" için meşgul kimlik + kısa süreli satır içi
+  /// ileti (kabul sonucu / sunucu reddi). Web `notice` ikizi.
+  String? _busyRandomId;
+  String? _notice;
+  Timer? _noticeTimer;
   LiveSubTab _subTab = LiveSubTab.active;
 
   /// Girişsiz pencere bu sekme ömründe gösterildi mi (bkz. build).
@@ -141,6 +168,9 @@ class _LiveGamesTabState extends State<LiveGamesTab>
   int _autoRetryStep = 0;
   Timer? _autoRetryTimer;
   bool _creating = false;
+
+  /// Şeritteki "Rastgele oyun aç": formu Rastgele Oyuncu SEÇİLİ açar (web `startRandom`).
+  bool _startRandom = false;
 
   /// Arkadaşlar penceresinin OYNA'sından gelen istek (ROADMAP #41 karar 23)
   /// — form bu arkadaş seçili açılır. `_formSeq` her istekte artar ki aynı
@@ -170,7 +200,10 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     _rankScores = RankScores(services.stats)..addListener(_onRankScores);
     final user = services.auth.user;
     _lastUserId = user?.id;
-    if (user != null) _snapshot = _liveGamesCache[user.id];
+    if (user != null) {
+      _snapshot = _liveGamesCache[user.id];
+      _myRandom = _myRandomCache[user.id];
+    }
     services.auth.addListener(_onAuthEvent);
     // OYNA isteği: sekme o an takılıysa olaydan, değilse takıldığında
     // kuyruktan alınır (web `takeLiveGameRequest`).
@@ -216,6 +249,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     services.onlineStatus.removeListener(_onConnectivity);
     _reloadDebounce?.cancel();
     _autoRetryTimer?.cancel();
+    _noticeTimer?.cancel();
     _unsubscribe?.call();
     _rankScores.removeListener(_onRankScores);
     _rankScores.dispose();
@@ -228,6 +262,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     if (r == null || !mounted) return;
     setState(() {
       _istek = r;
+      _startRandom = false;
       _formSeq++;
       _creating = true;
     });
@@ -240,6 +275,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     if (mounted) {
       setState(() {
         _snapshot = id != null ? _liveGamesCache[id] : null;
+        _myRandom = id != null ? _myRandomCache[id] : null;
         _appliedDefaultTab = false;
         _creating = false;
       });
@@ -291,13 +327,48 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     final user = services.auth.user;
     if (repo == null || user == null) return;
     final seq = ++_loadSeq;
-    final snap = await repo.load();
+    // İki liste PARALEL: ikincisi (benim ilanlarım) yalnızca KOVA kararı
+    // için gerekli — aynı anda gelmezse bir oyun bir an yanlış kovada
+    // görünürdü (web `loadGames`).
+    final ilk = await Future.wait<Object?>([repo.load(), repo.fetchMyRandom()]);
+    var snap = ilk[0] as OnlineGamesSnapshot?;
+    var rnd = ilk[1] as List<MyRandomGame>?;
     // Hesap bu arada değiştiyse ya da daha yeni bir yükleme başladıysa
     // sonucu yazma (web'in iptal jetonu deseninin sayaç karşılığı).
-    if (!mounted || seq != _loadSeq || services.auth.user?.id != user.id) {
-      return;
+    bool bayat() =>
+        !mounted || seq != _loadSeq || services.auth.user?.id != user.id;
+    if (bayat()) return;
+    if (snap != null) {
+      // Süresi dolmuş benim ilanlarım: `load()` yalnızca `created_at`
+      // tabanlı süpürür; ilan satırının kendi `expires_at`ı da `check_invite_
+      // expiry`ye gider (web `expiredInviteIds`). Sonra BİR kez yeniden çek.
+      final simdi = DateTime.now().millisecondsSinceEpoch;
+      bool doldu(MyRandomGame g) {
+        final bitis = DateTime.tryParse(g.expiresAt);
+        return g.status == OnlineGameStatus.pending &&
+            bitis != null &&
+            bitis.millisecondsSinceEpoch <= simdi;
+      }
+
+      final dolan = [
+        for (final g in rnd ?? const <MyRandomGame>[])
+          if (doldu(g)) g.id
+      ];
+      if (dolan.isNotEmpty) {
+        await Future.wait([for (final id in dolan) repo.sweepInviteExpiry(id)]);
+        if (bayat()) return;
+        final ikinci =
+            await Future.wait<Object?>([repo.load(), repo.fetchMyRandom()]);
+        if (bayat()) return;
+        snap = (ikinci[0] as OnlineGamesSnapshot?) ?? snap;
+        rnd = (ikinci[1] as List<MyRandomGame>?) ?? rnd;
+      }
     }
-    if (snap == null) {
+    // Değişmez kopyalar: `snap`/`rnd` yukarıda yeniden atandığından kapanışlar
+    // (setState) içinde terfi (null → null değil) KORUNMAZ.
+    final yeniSnap = snap;
+    final yeniRnd = rnd;
+    if (yeniSnap == null) {
       // Yükleme düştü. Eski liste KORUNUR ve ekranda kalır — üstüne yalnızca
       // "Güncellenemedi" şeridi biner (14 Ağustos'ta burada `kOffline...`
       // gösteriliyordu; 21 Ağustos'ta kaldırıldı: bağlantısı çalışan
@@ -310,25 +381,34 @@ class _LiveGamesTabState extends State<LiveGamesTab>
       }
       return;
     }
-    _liveGamesCache[user.id] = snap;
-    _clearAutoRetry();
+    _liveGamesCache[user.id] = yeniSnap;
+    if (yeniRnd != null) {
+      _myRandomCache[user.id] = yeniRnd;
+      _clearAutoRetry();
+    } else {
+      // İlan listesi alınamadı: SON BİLİNENİ koru (`_myRandom = []` demek
+      // "ilanın yok" demek olurdu); oyun listesi yine de gösterilir ve
+      // merdiven denemeyi sürdürür (web `loadGames`).
+      _scheduleAutoRetry();
+    }
     setState(() {
-      _loadFailed = false;
-      _snapshot = snap;
+      _loadFailed = yeniRnd == null;
+      _snapshot = yeniSnap;
+      if (yeniRnd != null) _myRandom = yeniRnd;
       // Varsayılan alt sekme — yalnızca taze veriyle (bu setState'e YALNIZCA
       // sunucudan dönen sonuç girer; önbellek hidrasyonu initState'te ve bu
       // karara hiç dokunmuyor — web hasFreshGames dersinin yapısal hâli),
       // bir kez.
       if (!_appliedDefaultTab) {
         _appliedDefaultTab = true;
-        if (inviteBucket(snap.games).isNotEmpty) {
+        if (inviteBucket(yeniSnap.games).isNotEmpty) {
           _subTab = LiveSubTab.invites;
         }
       }
     });
-    widget.onActionCount?.call(
-        inviteBucket(snap.games).length + myTurnCount(snap.games, snap.turns));
-    unawaited(_pushIzniniSorMaybe(snap, user.id));
+    widget.onActionCount?.call(inviteBucket(yeniSnap.games).length +
+        myTurnCount(yeniSnap.games, yeniSnap.turns));
+    unawaited(_pushIzniniSorMaybe(yeniSnap, user.id));
   }
 
   /// Bildirim izni akışının TEK tetikleyicisi.
@@ -370,28 +450,12 @@ class _LiveGamesTabState extends State<LiveGamesTab>
 
   Future<void> _handleRespond(OnlineGame game, bool accept) async {
     final repo = services.onlineGames;
-    final friends = services.friends;
     final inviteId = game.myInviteId;
     if (repo == null || inviteId == null) return;
     setState(() => _busyInviteId = inviteId);
     try {
       await repo.respondInvite(inviteId, accept: accept);
-      if (accept && friends != null && mounted) {
-        // Henüz arkadaş olunmayan katılımcılara toplu istek önerisi (web).
-        final candidates = [
-          for (final s in game.slots)
-            if (!s.isAi &&
-                s.relation != 'self' &&
-                s.relation != 'accepted' &&
-                s.userId != null)
-              SuggestCandidate(
-                  userId: s.userId!, name: s.name, avatarUrl: s.avatarUrl),
-        ];
-        if (candidates.isNotEmpty) {
-          await showFriendSuggestModal(context,
-              friends: friends, candidates: candidates);
-        }
-      }
+      // Arkadaş önerisi artık davet kabulünde DEĞİL, oyun BİTİNCE (OnlineGameScreen).
       await _reload(); // web: busy göstergesi liste tazelenene dek kalır
     } catch (e) {
       // Kullanıcı bir davete KABUL ET/REDDET dedi; hata yalnızca loglanırsa
@@ -401,6 +465,75 @@ class _LiveGamesTabState extends State<LiveGamesTab>
       if (mounted) await showFriendInfoDialog(context, kFriendActionFailed);
     } finally {
       if (mounted) setState(() => _busyInviteId = null);
+    }
+  }
+
+  /// Kurulum ekranını açar — "Yeni Oyun Başlat" ve şeridin "Rastgele oyun
+  /// aç" bağlantısı AYNI yolu kullanır (web `setCreating(true)`).
+  void _openCreateForm() => setState(() {
+        _istek = null;
+        _startRandom = false;
+        _formSeq++;
+        _creating = true;
+      });
+
+  /// Şeridin "Rastgele oyun aç" bağlantısı: aynı form, Rastgele Oyuncu SEÇİLİ.
+  void _openCreateRandom() => setState(() {
+        _istek = null;
+        _startRandom = true;
+        _formSeq++;
+        _creating = true;
+      });
+
+  Widget _noticeBox(String text) => Container(
+        key: const Key('rastgele-ileti'),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: _panel,
+          border: Border.all(color: _border),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: _text)),
+      );
+
+  /// Satır içi kısa ileti (kabul sonucu / sunucu reddi) — 5 sn sonra kalkar.
+  /// ⚠ Web ikizi (`showNotice`) de `fixed` toast DEĞİL satır içi: iOS
+  /// Safari'nin yüzen alt çubuğunun arkasına düşebiliyordu.
+  void _showNotice(String text) {
+    if (!mounted) return;
+    _noticeTimer?.cancel();
+    setState(() => _notice = text);
+    _noticeTimer = Timer(const Duration(seconds: 5), () {
+      _noticeTimer = null;
+      if (mounted) setState(() => _notice = null);
+    });
+  }
+
+  /// "Ayrıl" (kabul eden) / "İlanı iptal et" (kurucu). Ceza yok. Sunucu
+  /// reddi (ör. oyun o arada doldu) `friendlyErrorMessage` ile gösterilir;
+  /// her durumda liste tazelenir — satır ya kalkmıştır ya da gerçek durumu
+  /// görünür (web `handleLeaveRandom`).
+  Future<void> _handleLeaveRandom(MyRandomGame g) async {
+    final repo = services.onlineGames;
+    if (repo == null) return;
+    setState(() => _busyRandomId = g.id);
+    try {
+      if (g.myRole == 'creator') {
+        await repo.cancelRandom(g.id);
+      } else {
+        await repo.leaveRandom(g.id);
+      }
+      _showNotice(
+          g.myRole == 'creator' ? kRandomCancelledNotice : kRandomLeftNotice);
+    } catch (e) {
+      _showNotice(friendlyErrorMessage(e,
+          surface: 'rastgele-ayril', fallback: kRandomLeaveFallback));
+    } finally {
+      await _reload();
+      if (mounted) setState(() => _busyRandomId = null);
     }
   }
 
@@ -471,6 +604,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
         key: ValueKey('canli-form-$_formSeq'),
         initialFriendId: _istek?.friendId,
         initialPlayerCount: _istek?.playerCount,
+        initialRandom: _startRandom,
         auth: auth,
         friends: services.friends!,
         onlineGames: repo,
@@ -497,17 +631,33 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     final turns = snap?.turns ?? const <String, int>{};
     final deadlines = snap?.deadlines ?? const <String, String?>{};
     final scores = snap?.scores ?? const <String, List<int>>{};
-    final invites = inviteBucket(games);
-    final active = activeBucket(games, turns, deadlines: deadlines);
-    final waiting = waitingBucket(games);
-    final acceptedWaiting = acceptedWaitingBucket(games);
+    // ⚠ DÖRT KOVA DERSİ, Rastgele Oyuncu'da yeniden (3 Ekim 2026): kurucu ve
+    // ilandan kabul eden oyunlar `list_my_online_games`ta 'Rakip Bekleniyor'
+    // / 'Kabul Ettin' olarak da döner; yalnızca "Devam Edenler"de ("Bekliyor
+    // n/N") görünmeleri için `managed` kümesi `waiting`/`acceptedWaiting`i
+    // daraltır. `invites` ve `active` DOKUNULMAZ (karma kadrodaki arkadaşın
+    // daveti bugünkü gibi; dolup başlayan oyun normal oyun). Kural saf
+    // fonksiyonda: `util/random_games.dart` (web ikizi `utils/randomGames.ts`).
+    final managed = randomManagedIds(_myRandom, games);
+    final kovalar =
+        classifyLiveGames(games, managed, turns: turns, deadlines: deadlines);
+    final invites = kovalar.invites;
+    final active = kovalar.active;
+    final waiting = kovalar.waiting;
+    final acceptedWaiting = kovalar.acceptedWaiting;
+    // "Devam Edenler"deki "Bekliyor n/N" satırları — en yeni ilan üstte.
+    final randomWaiting = myWaitingRandomGames(_myRandom)
+      ..sort((a, b) =>
+          (DateTime.tryParse(b.createdAt)?.millisecondsSinceEpoch ?? 0)
+              .compareTo(
+                  DateTime.tryParse(a.createdAt)?.millisecondsSinceEpoch ?? 0));
     // Kartlarda gösterilecek katılımcıların rütbe puanı — `ensure` yalnızca
     // EKSİK id'ler için ağa gider ve bildirimini bir sonraki microtask'a
     // ertelediğinden build içinden çağrılması güvenli.
     _rankScores.ensure([
       for (final g in [...invites, ...waiting, ...acceptedWaiting])
         for (final sl in g.slots)
-          if (!sl.isAi) sl.userId,
+          if (sl.isHuman) sl.userId,
     ]);
     final myTurns = myTurnCount(games, turns);
 
@@ -526,11 +676,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
             variant: NeoButtonVariant.orange,
             fontSize: 16,
             letterSpacing: 1,
-            onPressed: () => setState(() {
-              _istek = null;
-              _formSeq++;
-              _creating = true;
-            }),
+            onPressed: _openCreateForm,
           ),
         ),
         const SizedBox(height: 20),
@@ -593,19 +739,51 @@ class _LiveGamesTabState extends State<LiveGamesTab>
           const KLoadingNote()
         else
           switch (_subTab) {
-            LiveSubTab.active => active.isEmpty
-                ? _empty('Devam eden bir Canlı oyunun yok.')
-                : _section('Devam Eden Oyunlar', [
-                    for (final g in active)
-                      _GameRow(
-                        key: ValueKey('game-${g.id}'),
-                        game: g,
-                        isMyTurn: turns[g.id] == g.mySlotIndex,
-                        deadline: deadlines[g.id],
-                        scores: scores[g.id],
-                        onOpen: () => _openGame(g),
-                      ),
-                  ]),
+            LiveSubTab.active => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_notice != null) _noticeBox(_notice!),
+                  // Rastgele Oyunlar şeridi: Devam Eden Oyunlar'ın ÜSTÜNDE.
+                  // Liste boşken kendini TAMAMEN gizler ama bağlı kalır
+                  // (yoklama sürer, yeni ilan gelince şerit belirir).
+                  RandomGamesStrip(
+                    key: ValueKey('rastgele-serit-${user.id}'),
+                    repo: repo,
+                    onlineStatus: services.onlineStatus,
+                    userId: user.id,
+                    myRandom: _myRandom,
+                    busyRandomId: _busyRandomId,
+                    onLeaveMine: _handleLeaveRandom,
+                    onOpenCreate: _openCreateRandom,
+                    onAccepted: (r) {
+                      _showNotice(acceptNotice(started: r.started));
+                      unawaited(_reload());
+                    },
+                    onNotice: _showNotice,
+                  ),
+                  if (active.isEmpty && randomWaiting.isEmpty)
+                    _empty('Devam eden bir Canlı oyunun yok.')
+                  else
+                    _section('Devam Eden Oyunlar', [
+                      for (final g in active)
+                        _GameRow(
+                          key: ValueKey('game-${g.id}'),
+                          game: g,
+                          isMyTurn: turns[g.id] == g.mySlotIndex,
+                          deadline: deadlines[g.id],
+                          scores: scores[g.id],
+                          onOpen: () => _openGame(g),
+                        ),
+                      for (final g in randomWaiting)
+                        RandomWaitingRow(
+                          key: ValueKey('bekliyor-${g.id}'),
+                          game: g,
+                          busy: _busyRandomId == g.id,
+                          onLeave: () => _handleLeaveRandom(g),
+                        ),
+                    ]),
+                ],
+              ),
             LiveSubTab.invites =>
               (invites.isEmpty && acceptedWaiting.isEmpty && waiting.isEmpty)
                   ? _empty('Bekleyen bir davet ya da oyunun yok.')
@@ -672,8 +850,9 @@ class _LiveGamesTabState extends State<LiveGamesTab>
                               slots: [
                                 for (final sl in g.slots)
                                   AvatarSlot(
-                                      name: sl.isAi ? null : sl.name,
-                                      avatarUrl: sl.isAi ? null : sl.avatarUrl),
+                                      name: sl.isHuman ? sl.name : null,
+                                      avatarUrl:
+                                          sl.isHuman ? sl.avatarUrl : null),
                               ],
                             ),
                         ],
@@ -850,66 +1029,135 @@ class _GameRow extends StatelessWidget {
     final remaining = isMyTurn
         ? remainingTimeLabel(deadline, DateTime.now().millisecondsSinceEpoch)
         : null;
-    return GestureDetector(
-      onTap: onOpen,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: const ShapeDecorationWithCssShadows(
-          color: _panel, borderColor: _border, radius: 6,
-          shadows: kRaisedShadows, // web shadow-raised
+    // Rastgele ilandan doğan aktif oyun (4 Ekim 2026): çok açık mavi zemin +
+    // solda 3 px accent çizgi + alt satırda "RASTGELE" etiketi. Düzen
+    // DEĞİŞMEZ (etiket kalan-süre satırında).
+    final rastgele = game.status == OnlineGameStatus.active &&
+        isRandomOriginGame(game.slots);
+    final kart = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: ShapeDecorationWithCssShadows(
+        color: rastgele ? kRandomOriginBg : _panel,
+        borderColor: _border,
+        radius: 6,
+        shadows: kRaisedShadows, // web shadow-raised
+      ),
+      // 2 EYLÜL 2026 — DÜZEN AYRIŞMASI DÜZELTİLDİ (kullanıcı, cihazda,
+      // 1.0.5 `Derleme 4a0a29b`): süre buradaki sağ sütunun İÇİNDEYDİ,
+      // yani sütunun enini o belirliyordu ve "X açtı" satırına biniyordu.
+      // Setup'ın YZ kartı aynı gün doğru şekle sokulmuştu ama gövde orada
+      // PRIVATE kalınca bu kart dokunulmadan kaldı. Ortak gövde artık
+      // `devam_eden_govde.dart`'ta; ölçümler ve gerekçe orada.
+      child: DevamEdenGovde(
+        sol: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PlayerAvatarRow(players: [
+              for (final s in game.slots)
+                s.isOpen
+                    // Açık koltuk "Yapay Zeka" DEĞİL (3 Ekim 2026).
+                    ? const AvatarRowPlayer(
+                        name: kRandomWaitingSeat, isOpen: true)
+                    : s.isAi
+                        ? const AvatarRowPlayer(name: 'Yapay Zeka', isAi: true)
+                        : AvatarRowPlayer(
+                            name: s.name ?? 'Oyuncu', avatarUrl: s.avatarUrl),
+            ]),
+            // 6 Eylül 2026 — "X açtı" satırı KALKTI, yerine PUAN SATIRI
+            // (kullanıcı: *"Ironman açtı kalksın çünkü zaten ilk baştaki
+            // her zaman oyunu başlatan oluyor"* — `slots[0]` her zaman
+            // kurucu, avatar şeridi o bilgiyi zaten taşıyor). Puanlar
+            // HİZALI: her sayı kendi avatarının TAM altında
+            // (`AvatarScoreRow`, 6 Eylül 2026 ikinci tur — tek dize hâli
+            // 4 kişilikte kayıyordu, kullanıcı bildirdi). Setup'ın YZ
+            // kartı ve "Son Oynadıklarım" aynı bileşeni çiziyor.
+            if (scores case final s? when s.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              AvatarScoreRow(scores: s),
+            ],
+          ],
         ),
-        // 2 EYLÜL 2026 — DÜZEN AYRIŞMASI DÜZELTİLDİ (kullanıcı, cihazda,
-        // 1.0.5 `Derleme 4a0a29b`): süre buradaki sağ sütunun İÇİNDEYDİ,
-        // yani sütunun enini o belirliyordu ve "X açtı" satırına biniyordu.
-        // Setup'ın YZ kartı aynı gün doğru şekle sokulmuştu ama gövde orada
-        // PRIVATE kalınca bu kart dokunulmadan kaldı. Ortak gövde artık
-        // `devam_eden_govde.dart`'ta; ölçümler ve gerekçe orada.
-        child: DevamEdenGovde(
-          sol: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        durum: Text.rich(
+          TextSpan(
+            text: trUpper(onlineStatusLabel(game, isMyTurn: isMyTurn)),
             children: [
-              PlayerAvatarRow(players: [
-                for (final s in game.slots)
-                  s.isAi
-                      ? const AvatarRowPlayer(name: 'Yapay Zeka', isAi: true)
-                      : AvatarRowPlayer(
-                          name: s.name ?? 'Oyuncu', avatarUrl: s.avatarUrl),
-              ]),
-              // 6 Eylül 2026 — "X açtı" satırı KALKTI, yerine PUAN SATIRI
-              // (kullanıcı: *"Ironman açtı kalksın çünkü zaten ilk baştaki
-              // her zaman oyunu başlatan oluyor"* — `slots[0]` her zaman
-              // kurucu, avatar şeridi o bilgiyi zaten taşıyor). Puanlar
-              // HİZALI: her sayı kendi avatarının TAM altında
-              // (`AvatarScoreRow`, 6 Eylül 2026 ikinci tur — tek dize hâli
-              // 4 kişilikte kayıyordu, kullanıcı bildirdi). Setup'ın YZ
-              // kartı ve "Son Oynadıklarım" aynı bileşeni çiziyor.
-              if (scores case final s? when s.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                AvatarScoreRow(scores: s),
-              ],
+              if (game.status == OnlineGameStatus.active)
+                isMyTurn ? turnTriangleSpan(_green) : turnDotSpan(_red),
             ],
           ),
-          durum: Text.rich(
-            TextSpan(
-              text: trUpper(onlineStatusLabel(game, isMyTurn: isMyTurn)),
-              children: [
-                if (game.status == OnlineGameStatus.active)
-                  isMyTurn ? turnTriangleSpan(_green) : turnDotSpan(_red),
-              ],
-            ),
-            style: devamEdenDurumStil(isMyTurn ? _green : _red),
-          ),
-          sure: remaining == null
-              ? null
-              : Text(
-                  trUpper(remaining.text),
-                  style: devamEdenSureStil(remaining.urgent ? _red : _muted),
-                ),
+          style: devamEdenDurumStil(isMyTurn ? _green : _red),
         ),
+        sure: remaining == null
+            ? null
+            : Text(
+                trUpper(remaining.text),
+                style: devamEdenSureStil(remaining.urgent ? _red : _muted),
+              ),
+        etiket: rastgele ? const _RandomOriginTag() : null,
+      ),
+    );
+    return GestureDetector(
+      onTap: onOpen,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: rastgele
+            ? Stack(children: [
+                kart,
+                // Web `border-l-[3px] border-l-accent`.
+                const Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 3,
+                  child: DecoratedBox(
+                    key: Key('rastgele-cizgi'),
+                    decoration: BoxDecoration(
+                      color: _accent,
+                      borderRadius:
+                          BorderRadius.horizontal(left: Radius.circular(6)),
+                    ),
+                  ),
+                ),
+              ])
+            : kart,
       ),
     );
   }
+}
+
+/// Web `isRandomOrigin` zemini `bg-[#EEF4FF]` — Tailwind ARBITRARY değer,
+/// `tailwind.config.js`te token DEĞİL; bu yüzden `tokens.dart`a girmez
+/// (`color_tokens_test` ↔ tailwind eşitliği bozulmasın). Tek kaynak burası.
+const Color kRandomOriginBg = Color(0xFFEEF4FF);
+
+/// "RASTGELE" etiketi: 8 px mono kalın büyük harf, accent yazı, beyaz zemin,
+/// accent %30 çerçeve, pill. Web: `rounded-full border border-accent/30
+/// bg-white px-1.5 font-mono text-[8px]`. Satır yüksekliği Flutter'da 1,0:
+/// etiket kalan-süre yazısından UZUN olmamalı, yoksa kart uzar (test kilitler).
+class _RandomOriginTag extends StatelessWidget {
+  const _RandomOriginTag();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        key: const Key('rastgele-etiket'),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: _accent.withValues(alpha: 0.3)),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: const Text(
+          'RASTGELE',
+          style: TextStyle(
+            fontFamily: 'SpaceMono',
+            fontSize: 8,
+            height: 1,
+            letterSpacing: 0.5,
+            fontWeight: FontWeight.bold,
+            color: _accent,
+          ),
+        ),
+      );
 }
 
 /// Üçgenin ve noktanın yazıdan uzaklığı — web `TurnTriangle`/`TurnDot` ile
@@ -1081,9 +1329,12 @@ class _PendingGameCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final humanSlots = [
       for (final s in game.slots)
-        if (!s.isAi) s
+        if (s.isHuman) s
     ];
+    // `isAi` GERÇEK Yapay Zeka'dır; açık koltuk (Rastgele Oyuncu, eski
+    // istemci maskesi `{type:'ai',open:true}` dahil) ayrı sayılır.
     final hasAi = game.slots.any((s) => s.isAi);
+    final openCount = game.slots.where((s) => s.isOpen).length;
     final remaining = remainingInviteLabel(
         game.createdAt, DateTime.now().millisecondsSinceEpoch);
     return Container(
@@ -1155,6 +1406,21 @@ class _PendingGameCard extends StatelessWidget {
                         fontSize: 9,
                         letterSpacing: 0.5,
                         color: _participantLabelColor(s, game))),
+              ]),
+            ),
+          for (var i = 0; i < openCount; i++)
+            Padding(
+              key: ValueKey('acik-koltuk-$i'),
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(children: [
+                const OpenSeatAvatar(size: 26, fontSize: 14),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(kRandomWaitingSeat,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: _muted)),
+                ),
               ]),
             ),
           if (hasAi)

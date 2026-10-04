@@ -126,8 +126,8 @@ class _ResetPasswordModalState extends State<ResetPasswordModal> {
           const SizedBox(height: 12),
           _field(_password, hint: 'Yeni şifre', autofocus: true),
           const SizedBox(height: 12),
-          _field(_confirm, hint: 'Yeni şifre (tekrar)',
-              onSubmitted: (_) => _submit()),
+          _field(_confirm,
+              hint: 'Yeni şifre (tekrar)', onSubmitted: (_) => _submit()),
           if (_error != null) ...[
             const SizedBox(height: 10),
             Text(_error!,

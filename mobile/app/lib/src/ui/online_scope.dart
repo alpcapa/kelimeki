@@ -23,7 +23,8 @@ import 'package:flutter/widgets.dart';
 import '../util/online_status.dart';
 
 class OnlineScope extends InheritedNotifier<OnlineStatus> {
-  const OnlineScope({super.key, required OnlineStatus status, required super.child})
+  const OnlineScope(
+      {super.key, required OnlineStatus status, required super.child})
       : super(notifier: status);
 
   /// Kapsam yoksa `null` — çağıran "çevrimiçi" varsaymalı.

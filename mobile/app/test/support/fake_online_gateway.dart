@@ -115,6 +115,107 @@ class FakeOnlineGamesGateway implements OnlineGamesGateway {
     return 'new-game';
   }
 
+  // ── Rastgele Oyuncu (3 Ekim 2026) ───────────────────────────────────────
+
+  /// `list_random_games` satırları (şerit) ve `list_my_random_games`
+  /// satırları (benim ilanlarım). Varsayılan boş = "ilan yok".
+  List<Map<String, Object?>> randomRows = [];
+  List<Map<String, Object?>> myRandomRows = [];
+
+  /// `listMyRandom()` bu kadar çağrı AĞ hatasıyla düşer — "ilan listesi
+  /// alınamadı" yolu için (`myRandom == null`).
+  int myRandomNetFailFirst = 0;
+  int myRandomNetFailCalls = 0;
+  int myRandomCalls = 0;
+  int randomListCalls = 0;
+  final randomListOffsets = <int>[];
+
+  /// `listRandom()` ağ hatası verir mi.
+  bool randomListFails = false;
+
+  final createdRandom = <(int, List<Map<String, Object?>>)>[];
+  final acceptedRandom = <String>[];
+  final leftRandom = <String>[];
+  final cancelledRandom = <String>[];
+
+  /// `create_random_game`/`accept_random_game` dönüşü (jsonb).
+  Map<String, Object?> createRandomResult = {
+    'joined': false,
+    'game_id': 'ilan-1',
+    'started': false,
+  };
+  Map<String, Object?> acceptRandomResult = {
+    'joined': true,
+    'game_id': 'ilan-1',
+    'started': false,
+    'seat': 1,
+  };
+
+  /// Sunucunun Türkçe reddi (P0001) gibi hatalar için.
+  Object? createRandomError;
+  Object? acceptRandomError;
+  Object? leaveRandomError;
+
+  /// Kabul/ayrıl/iptal sunucu etkisini taklit eder (liste satırlarını
+  /// değiştirmek için).
+  void Function(String gameId)? onAcceptRandom;
+  void Function(String gameId)? onLeaveRandom;
+  void Function(String gameId)? onCancelRandom;
+
+  @override
+  Future<Map<String, Object?>> createRandom(
+      int playerCount, List<Map<String, Object?>> slots) async {
+    final e = createRandomError;
+    if (e != null) throw e;
+    createdRandom.add((playerCount, slots));
+    return createRandomResult;
+  }
+
+  @override
+  Future<Map<String, Object?>> acceptRandom(String gameId) async {
+    final e = acceptRandomError;
+    acceptedRandom.add(gameId);
+    if (e != null) throw e;
+    onAcceptRandom?.call(gameId);
+    return acceptRandomResult;
+  }
+
+  @override
+  Future<void> leaveRandom(String gameId) async {
+    final e = leaveRandomError;
+    leftRandom.add(gameId);
+    if (e != null) throw e;
+    onLeaveRandom?.call(gameId);
+  }
+
+  @override
+  Future<void> cancelRandom(String gameId) async {
+    final e = leaveRandomError;
+    cancelledRandom.add(gameId);
+    if (e != null) throw e;
+    onCancelRandom?.call(gameId);
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> listRandom(int limit, int offset) async {
+    randomListCalls++;
+    randomListOffsets.add(offset);
+    if (randomListFails) {
+      throw Exception('ClientException: Failed to fetch');
+    }
+    return [for (final r in randomRows) Map<String, Object?>.of(r)];
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> listMyRandom() async {
+    myRandomCalls++;
+    if (myRandomNetFailCalls < myRandomNetFailFirst) {
+      myRandomNetFailCalls++;
+      throw Exception('ClientException: Failed to fetch');
+    }
+    return [for (final r in myRandomRows) Map<String, Object?>.of(r)];
+  }
+
   @override
   Future<void> notifyGameInvite(String gameId) async {
     final f = notifyFailWith;
@@ -384,8 +485,7 @@ class FakeChatGateway implements ChatGateway {
     if (f != null) throw f;
     markReadCalls.add((gameId, readAt));
     final cur = serverLastReadAt;
-    if (cur == null ||
-        DateTime.parse(readAt).isAfter(DateTime.parse(cur))) {
+    if (cur == null || DateTime.parse(readAt).isAfter(DateTime.parse(cur))) {
       serverLastReadAt = readAt;
     }
   }
@@ -526,7 +626,7 @@ class FakeFriendsGateway implements FriendsGateway {
 // ── Satır kurucuları (list_my_online_games şekli) ───────────────────────────
 
 Map<String, Object?> slotHuman(String userId,
-        {String? name, String? relation, String? inviteStatus}) =>
+        {String? name, String? relation, String? inviteStatus, String? via}) =>
     {
       'type': 'human',
       'user_id': userId,
@@ -534,6 +634,7 @@ Map<String, Object?> slotHuman(String userId,
       'avatar_url': null,
       'relation': relation,
       'invite_status': inviteStatus,
+      if (via != null) 'via': via,
     };
 
 /// Hesabı silinmiş bir oyuncunun koltuğu: uuid `online_games.slots` içinde
@@ -549,6 +650,73 @@ Map<String, Object?> slotDeletedHuman(String userId) => {
     };
 
 const Map<String, Object?> slotAi = {'type': 'ai'};
+
+/// Ham AÇIK koltuk (`list_my_random_games`, Rastgele Oyuncu).
+const Map<String, Object?> slotOpen = {'type': 'open'};
+
+/// Eski istemci MASKESİ: `list_my_online_games` açık koltuğu böyle döndürür.
+/// ⚠ `type == 'ai'` — gerçek Yapay Zeka'dan TEK farkı `open: true`.
+const Map<String, Object?> slotOpenMasked = {'type': 'ai', 'open': true};
+
+/// `list_random_games` satırı (şerit kartı).
+Map<String, Object?> randomListingRow({
+  required String id,
+  String creatorId = 'kurucu',
+  String? creatorName = 'Ayşe',
+  int playerCount = 2,
+  List<String>? seats,
+  int? openSeats,
+  String? createdAt,
+}) {
+  final koltuklar = seats ??
+      [
+        'creator',
+        for (var i = 1; i < playerCount; i++) 'open',
+      ];
+  return {
+    'id': id,
+    'player_count': playerCount,
+    'created_at': createdAt ?? DateTime.now().toUtc().toIso8601String(),
+    'creator_id': creatorId,
+    'creator_name': creatorName,
+    'creator_avatar_url': null,
+    'seats': koltuklar,
+    'open_seats': openSeats ?? koltuklar.where((s) => s == 'open').length,
+  };
+}
+
+/// `list_my_random_games` satırı.
+Map<String, Object?> myRandomRow({
+  required String id,
+  String myRole = 'creator',
+  String status = 'pending',
+  int playerCount = 2,
+  List<Map<String, Object?>>? slots,
+  String? createdAt,
+  String? expiresAt,
+  String? myInviteId,
+}) {
+  final koltuklar = slots ??
+      [
+        slotHuman('me', name: 'Ironman', relation: 'self'),
+        for (var i = 1; i < playerCount; i++) slotOpen,
+      ];
+  final bos = koltuklar.where((s) => s['type'] == 'open').length;
+  return {
+    'id': id,
+    'created_by': 'me',
+    'player_count': playerCount,
+    'status': status,
+    'created_at': createdAt ?? DateTime.now().toUtc().toIso8601String(),
+    'expires_at': expiresAt ??
+        DateTime.now().toUtc().add(const Duration(days: 7)).toIso8601String(),
+    'slots': koltuklar,
+    'filled_seats': koltuklar.length - bos,
+    'open_seats': bos,
+    'my_role': myRole,
+    'my_invite_id': myInviteId,
+  };
+}
 
 /// `created_by` BİLEREK nullable: kurucusu hesabını silmiş bir oyunda sunucu
 /// NULL döndürüyor (`on delete set null`, bkz. account-deletion kararı).

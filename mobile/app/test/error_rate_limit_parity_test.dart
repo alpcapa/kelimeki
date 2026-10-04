@@ -30,8 +30,7 @@ void main() {
   final dartKaynak =
       readRepoFile('mobile/app/lib/src/data/error_reporter.dart');
   final webBetik = readRepoFile('scripts/verify-error-reporting.ts');
-  final dartTest =
-      readRepoFile('mobile/app/test/error_reporter_test.dart');
+  final dartTest = readRepoFile('mobile/app/test/error_reporter_test.dart');
 
   test('pencere başına kayıt tavanı web ile aynı', () {
     final web = int.parse(pick(

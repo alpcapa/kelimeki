@@ -86,7 +86,8 @@ void main() {
   }
 
   /// GA4 hunisinin ÜST ucu: kayıt formunun görülmesi (Faz 3).
-  testWidgets('analytics: "Kayıt ol"a geçiş signup_started loglar; '
+  testWidgets(
+      'analytics: "Kayıt ol"a geçiş signup_started loglar; '
       'geri dönüp tekrar geçmek yeniden loglar', (tester) async {
     final fake = FakeAnalytics();
     analytics.configure(fake);
@@ -233,8 +234,8 @@ void main() {
     // düştü — metin web'den birebir taşınıyor (bkz. legal_text_test.dart).
     // İddia, o bölümün İKİ yeni gerçeğine bağlandı: uygulama içi yol VAR ve
     // talep yolu hâlâ 30 gün.
-    expect(find.textContaining('Hesap Ayarları › Hesabımı Sil'),
-        findsOneWidget);
+    expect(
+        find.textContaining('Hesap Ayarları › Hesabımı Sil'), findsOneWidget);
     expect(find.textContaining('en geç 30 gün içinde sonuçlandırılır'),
         findsOneWidget);
     await tester.tap(find.byTooltip('Kapat').last);
@@ -251,7 +252,8 @@ void main() {
         key: key,
         child: Scaffold(
           body: AuthModal(
-              auth: AuthService.fake(), nicknameChecker: (_) async => NicknameStatus.ok),
+              auth: AuthService.fake(),
+              nicknameChecker: (_) async => NicknameStatus.ok),
         ),
       ),
     ));

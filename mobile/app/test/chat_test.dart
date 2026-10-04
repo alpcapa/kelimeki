@@ -43,8 +43,7 @@ void main() {
       final gw = FakeChatGateway();
       final repo = ChatRepo(gw);
       await expectLater(repo.send('g1', '   '), throwsException);
-      await expectLater(
-          repo.send('g1', 'x' * 201), throwsException);
+      await expectLater(repo.send('g1', 'x' * 201), throwsException);
       expect(gw.sent, isEmpty); // gateway'e hiç gitmedi
 
       await repo.send('g1', '  Merhaba  ');
@@ -72,8 +71,7 @@ void main() {
     test('report: 500 karakter üstü reddedilir', () async {
       final gw = FakeChatGateway();
       final repo = ChatRepo(gw);
-      await expectLater(
-          repo.report('g1', 'u1', 'x' * 501), throwsException);
+      await expectLater(repo.report('g1', 'u1', 'x' * 501), throwsException);
       await expectLater(repo.report('g1', 'u1', '  '), throwsException);
       expect(gw.reportedCalls, isEmpty);
 
@@ -129,7 +127,8 @@ void main() {
       );
       if (boundaryKey != null) {
         dialog = RepaintBoundary(
-            key: boundaryKey, child: ColoredBox(color: Colors.white, child: dialog));
+            key: boundaryKey,
+            child: ColoredBox(color: Colors.white, child: dialog));
       }
       await tester.pumpWidget(MaterialApp(
         theme: kelimekiTheme(),
@@ -185,8 +184,8 @@ void main() {
       expect(find.text('0/200'), findsOneWidget);
       expect(find.text('🚫'), findsOneWidget); // u2 sessize alınmış
 
-      final sendButton =
-          tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'Gönder'));
+      final sendButton = tester.widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, 'Gönder'));
       expect(sendButton.onPressed, isNull);
 
       await tester.runAsync(() async {
@@ -231,7 +230,8 @@ void main() {
       expect(find.textContaining('Mesaj gönderilemedi.'), findsOneWidget);
     });
 
-    testWidgets('başkasının mesajına dokunmak onOpenParticipantSettings çağırır',
+    testWidgets(
+        'başkasının mesajına dokunmak onOpenParticipantSettings çağırır',
         (tester) async {
       String? opened;
       await pumpModal(
@@ -429,8 +429,7 @@ void main() {
 
     testWidgets('liste: rozetler görünür, satıra dokunmak detay açar',
         (tester) async {
-      await pumpSettings(tester,
-          mutedUserIds: {'u2'}, reportedUserIds: {'u3'});
+      await pumpSettings(tester, mutedUserIds: {'u2'}, reportedUserIds: {'u3'});
       expect(find.text('Esiner'), findsOneWidget);
       expect(find.text('Bobola'), findsOneWidget);
       expect(find.text('🚫'), findsOneWidget); // u2 sessize
@@ -484,8 +483,8 @@ void main() {
       expect(find.textContaining('neden şikayet ediyorsunuz'), findsOneWidget);
 
       // Boşken Devam Et pasif.
-      final devam =
-          tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'DEVAM ET'));
+      final devam = tester.widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, 'DEVAM ET'));
       expect(devam.onPressed, isNull);
 
       await tester.enterText(find.byType(TextField), 'Uygunsuz dil');
@@ -521,7 +520,8 @@ void main() {
       await tester.pump();
       expect(find.text('Emin misiniz?'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'ŞİKAYETİ GERİ ÇEK'));
+      await tester
+          .tap(find.widgetWithText(ElevatedButton, 'ŞİKAYETİ GERİ ÇEK'));
       await tester.pump();
       await tester.pump();
       expect(h.gw.withdrawnCalls, ['u2']);

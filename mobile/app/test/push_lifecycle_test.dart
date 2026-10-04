@@ -37,7 +37,8 @@ import 'package:kelimeki/src/ui/auth/reset_password_modal.dart';
 class FakeMessaging implements PushMessaging {
   PushPermission izin;
   String? tokenDegeri;
-  FakeMessaging({this.izin = PushPermission.granted, this.tokenDegeri = 'tok-1'});
+  FakeMessaging(
+      {this.izin = PushPermission.granted, this.tokenDegeri = 'tok-1'});
 
   @override
   Future<String?> token() async => tokenDegeri;
@@ -151,7 +152,8 @@ void main() {
             'Canlı sekmesine girmeden token durumu güncellenmiyor');
   });
 
-  testWidgets('ÖNE DÖNÜŞTE sistem ayarındaki kapatma yakalanır', (tester) async {
+  testWidgets('ÖNE DÖNÜŞTE sistem ayarındaki kapatma yakalanır',
+      (tester) async {
     final s = kur();
     await ac(tester, s);
     await tester.pumpAndSettle();
@@ -246,7 +248,8 @@ void main() {
             'bastığı yerin Kelimeki olduğunu doğrulayacak hiçbir şey '
             'göremiyor.');
     // Logo modalın ÜSTÜNDE durmalı, altında değil.
-    final logoY = tester.getCenter(find.byKey(const ValueKey('recovery-logo'))).dy;
+    final logoY =
+        tester.getCenter(find.byKey(const ValueKey('recovery-logo'))).dy;
     final modalY = tester.getCenter(find.byType(ResetPasswordModal)).dy;
     expect(logoY, lessThan(modalY),
         reason: 'Logo modalın altına düşmüş — ekranın üst yarısında olmalı');

@@ -21,9 +21,8 @@ OnlineSlot _human(String id, {String? name}) =>
 const _ai = OnlineSlot.ai();
 
 /// Kadroyu okunur bir dizgeye indirger — beklentiler böyle daha net.
-String _ozet(List<NewGameSlot> slots) => slots
-    .map((s) => s.humanUserId == null ? 'YZ' : s.humanUserId!)
-    .join(',');
+String _ozet(List<NewGameSlot> slots) =>
+    slots.map((s) => s.humanUserId == null ? 'YZ' : s.humanUserId!).join(',');
 
 void main() {
   group('rematchSlots', () {

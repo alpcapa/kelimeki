@@ -881,7 +881,7 @@ void main() {
     });
 
     testWidgets(
-        'Kabul → respondInvite + FriendSuggestModal (yalnız arkadaş olmayanlar)',
+        'Kabul → respondInvite; öneri modalı ARTIK çıkmaz (oyun sonuna taşındı)',
         (tester) async {
       final fgw = FakeFriendsGateway(currentUserId: 'u-tab2');
       final gw = FakeOnlineGamesGateway();
@@ -909,21 +909,9 @@ void main() {
       await tester.tap(find.text('KABUL ET'));
       await tester.pumpAndSettle();
       expect(gw.responded, [('i1', true)]);
-      // Öneri modalı: Esiner (accepted) DEĞİL, yalnız Bobola. Arkadaki davet
-      // kartı da aynı isimleri çizdiğinden finder Dialog'a daraltılır.
-      Finder inDialog(String s) =>
-          find.descendant(of: find.byType(Dialog), matching: find.text(s));
-      expect(find.text('Bu kişileri arkadaşın olarak eklemek ister misin?'),
-          findsOneWidget);
-      expect(inDialog('Bobola'), findsOneWidget);
-      expect(inDialog('Esiner'), findsNothing);
-
-      await tester.tap(find.text('DEVAM'));
-      await tester.pumpAndSettle();
-      expect(fgw.sentRequests, ['bobola']);
-      expect(find.text('Arkadaşlık davetiniz iletilmiştir.'), findsOneWidget);
-      await tester.tap(find.text('TAMAM'));
-      await tester.pumpAndSettle();
+      // Arkadaş önerisi artık oyun SONUNDA (friend_suggest_test.dart).
+      expect(find.byType(Dialog), findsNothing);
+      expect(fgw.sentRequests, isEmpty);
     });
 
     testWidgets(

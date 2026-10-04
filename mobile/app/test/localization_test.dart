@@ -73,8 +73,7 @@ void main() {
     expect(MaterialLocalizations.of(ctx).pasteButtonLabel, 'Yapıştır');
   });
 
-  test('iOS paketi kendini TÜRKÇE ilan eder (App Store "LANGUAGE" satırı)',
-      () {
+  test('iOS paketi kendini TÜRKÇE ilan eder (App Store "LANGUAGE" satırı)', () {
     // Apple ürün sayfasındaki dili Connect'ten DEĞİL paketten okuyor: önce
     // CFBundleLocalizations, yoksa CFBundleDevelopmentRegion. 15 Eylül
     // 2026'ya kadar birincisi hiç yoktu, ikincisi `$(DEVELOPMENT_LANGUAGE)`
@@ -92,14 +91,12 @@ void main() {
             r'<key>CFBundleLocalizations</key>\s*<array>(.*?)</array>',
             dotAll: true)
         .firstMatch(plist);
-    expect(locs, isNotNull,
-        reason: 'CFBundleLocalizations anahtarı bulunmalı');
+    expect(locs, isNotNull, reason: 'CFBundleLocalizations anahtarı bulunmalı');
     expect(locs!.group(1), contains('<string>tr</string>'));
 
     // Xcode projesi de aynı şeyi söylemeli — ikisi ayrışırsa hangisinin
     // kazandığı derlemeye/araca göre değişir, yani sessiz bir tuzak olur.
-    final pbx =
-        File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
+    final pbx = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
     expect(pbx, contains('developmentRegion = tr;'));
   });
 }

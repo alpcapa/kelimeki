@@ -154,8 +154,7 @@ void main() {
       expect(doneCalls, 1);
     });
 
-    testWidgets('sunucu hatası friendlyAuthMessage\'tan geçer',
-        (tester) async {
+    testWidgets('sunucu hatası friendlyAuthMessage\'tan geçer', (tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       await tester.pumpWidget(MaterialApp(
         theme: kelimekiTheme(),

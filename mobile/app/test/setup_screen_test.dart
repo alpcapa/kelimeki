@@ -97,7 +97,6 @@ AppServices liveBadgeServices(AuthService auth, OnlineGamesRepo onlineGames,
       friends: friends,
     );
 
-
 /// "ARKADAŞINLA" sekmesinin KENDİ rozeti. `find.byType(CountBadge)` tek
 /// başına yetmiyor: sekme açıldığında `LiveGamesTab`in alt sekmeleri de
 /// rozet taşıyabiliyor, yani genel arama yanlış rozeti bulabilir.
@@ -286,10 +285,10 @@ void main() {
 
   testWidgets(
       'ZORLUK: Kolay seçilip OYUNU BAŞLAT → state.aiLevel = kolay ve JSON\'da '
-      'yazılı (bulut kaydı/web okuyacak)',
-      (tester) async {
+      'yazılı (bulut kaydı/web okuyacak)', (tester) async {
     await setPhoneViewSize(tester, const Size(420, 950));
-    await pumpSetup(tester, services(auth: AuthService.fake(user: fakeUser('me'))));
+    await pumpSetup(
+        tester, services(auth: AuthService.fake(user: fakeUser('me'))));
 
     await tester.tap(find.text('KOLAY'));
     await tester.pump();
@@ -300,7 +299,6 @@ void main() {
     expect(screen.controller.state.aiLevel, AiLevel.kolay);
     // JSON'da da yazılı — bulut kaydı/web bunu okuyacak.
     expect(gameStateToJson(screen.controller.state)['aiLevel'], 'kolay');
-
   });
 
   // Negatif eş — AYRI test: aynı testte ikinci bir pumpSetup, ilk oyunun
@@ -350,7 +348,8 @@ void main() {
     // ConstrainedBox'ın DIŞINA koyduğundan içerik 460 kalıyordu (%7.5
     // geniş). Ölçülen değer artık burada: tam genişlik bir buton (Column
     // `stretch`) tam olarak 428 olmalı.
-    final baslat = tester.getSize(find.widgetWithText(NeoButton, 'OYUNU BAŞLAT'));
+    final baslat =
+        tester.getSize(find.widgetWithText(NeoButton, 'OYUNU BAŞLAT'));
     expect(baslat.width, 428,
         reason: 'içerik genişliği web ile aynı olmalı: 460 − 2×16 (px-4)');
   });
@@ -403,9 +402,8 @@ void main() {
     // (20). 10 Eylül–1 Ekim 2026 arası düğme ekranın altına yapışıktı ve
     // bu iddia "çubuk içeriği gizlemesin" ölçüyordu; düğme akışa döndü
     // (ROADMAP #41 karar 2), eski iddia geri geldi.
-    final baslatAlt = tester
-        .getBottomLeft(find.widgetWithText(NeoButton, 'OYUNU BAŞLAT'))
-        .dy;
+    final baslatAlt =
+        tester.getBottomLeft(find.widgetWithText(NeoButton, 'OYUNU BAŞLAT')).dy;
     final kutuUst = tester
         .getTopLeft(find.ancestor(
             of: find.text('Neden Ücretsiz Üye Olmalıyım?'),
@@ -482,7 +480,8 @@ void main() {
       expect(find.text(kGuestLiveBody), findsOneWidget);
     }
 
-    testWidgets('"Yapay Zekayla devam et" → pencere kapanır, Yapay Zeka sekmesi',
+    testWidgets(
+        '"Yapay Zekayla devam et" → pencere kapanır, Yapay Zeka sekmesi',
         (tester) async {
       await arkadasinla(tester);
       await tester.tap(find.text('YAPAY ZEKAYLA DEVAM ET'));
@@ -499,7 +498,8 @@ void main() {
       expect(find.text('OYUNU BAŞLAT'), findsOneWidget);
     });
 
-    testWidgets('GİRİŞ YAP → giriş penceresi; vazgeçince alt pencere geri gelir',
+    testWidgets(
+        'GİRİŞ YAP → giriş penceresi; vazgeçince alt pencere geri gelir',
         (tester) async {
       await arkadasinla(tester);
       await tester.tap(find.descendant(
@@ -507,19 +507,22 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(AuthModal), findsOneWidget);
       expect(find.text(kGuestLiveTitle), findsNothing);
-      expect(find.textContaining('TAKMA İSİM', findRichText: true), findsNothing); // giriş modu
+      expect(find.textContaining('TAKMA İSİM', findRichText: true),
+          findsNothing); // giriş modu
       Navigator.of(tester.element(find.byType(AuthModal))).pop();
       await tester.pumpAndSettle();
       expect(find.byType(AuthModal), findsNothing);
       expect(find.text(kGuestLiveTitle), findsOneWidget);
     });
 
-    testWidgets('ÜYE OL → giriş penceresi KAYIT modunda açılır', (tester) async {
+    testWidgets('ÜYE OL → giriş penceresi KAYIT modunda açılır',
+        (tester) async {
       await arkadasinla(tester);
       await tester.tap(find.text('ÜYE OL'));
       await tester.pumpAndSettle();
       expect(find.byType(AuthModal), findsOneWidget);
-      expect(find.textContaining('TAKMA İSİM', findRichText: true), findsOneWidget);
+      expect(find.textContaining('TAKMA İSİM', findRichText: true),
+          findsOneWidget);
     });
 
     test('metinler web `GuestLiveSheet` ile BİREBİR', () {
@@ -555,7 +558,10 @@ void main() {
       // bir 0" beklentisi CI'da rastgele düşüyordu (PR #475'te bir kez).
       // Testin konusu düzen, YZ'nin hamlesi değil — raf sabitlendi.
       final c = GameController(
-          words: words, autoPlayAi: false, nowIso: () => '', rng: Mulberry32(7));
+          words: words,
+          autoPlayAi: false,
+          nowIso: () => '',
+          rng: Mulberry32(7));
       final session = repo.attach(c);
       c.dispatch(StartAction(const [
         PlayerSetup(name: guestPlayerName, isAI: false),
@@ -618,7 +624,10 @@ void main() {
       storage = await openTestStorage();
       final repo = LocalGameRepo(storage);
       final c = GameController(
-          words: words, autoPlayAi: false, nowIso: () => '', rng: Mulberry32(7));
+          words: words,
+          autoPlayAi: false,
+          nowIso: () => '',
+          rng: Mulberry32(7));
       final session = repo.attach(c);
       c.dispatch(StartAction(const [
         PlayerSetup(name: guestPlayerName, isAI: false),
@@ -705,8 +714,8 @@ void main() {
     // kullanıcı onu tercih edince web `-mt-3`ten `-mt-5`e çekildi.
     await setPhoneViewSize(tester, const Size(1000, 800));
     final gw = FakeOnlineGamesGateway();
-    await pumpSetup(tester,
-        liveBadgeServices(AuthService.fake(), OnlineGamesRepo(gw)));
+    await pumpSetup(
+        tester, liveBadgeServices(AuthService.fake(), OnlineGamesRepo(gw)));
 
     final ekran = tester.getRect(find.byType(SetupScreen));
     final giris = tester.getRect(find.byType(AccountButton));
@@ -811,8 +820,7 @@ void main() {
     expect(find.text(' · '), findsNothing);
   });
 
-  testWidgets(
-      '"Nasıl oynanır?" satırı ORTALI (web text-center paritesi)',
+  testWidgets('"Nasıl oynanır?" satırı ORTALI (web text-center paritesi)',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await tester.pumpWidget(MaterialApp(
@@ -829,8 +837,8 @@ void main() {
         .first;
     expect(
       tester.getCenter(links).dx,
-      moreOrLessEquals(
-          tester.getCenter(find.byType(LogoMark).first).dx, epsilon: 1),
+      moreOrLessEquals(tester.getCenter(find.byType(LogoMark).first).dx,
+          epsilon: 1),
     );
   });
 
@@ -985,7 +993,8 @@ void main() {
   // 19 Ağustos 2026 (kullanıcı isteği): "Paylaş" artık GİRİŞTEN BAĞIMSIZ —
   // web `Setup.tsx` de onu `user &&` koşuluna bağlamıyor. Yani misafir de
   // girişli de AYNI üç maddeli footer'ı görüyor.
-  testWidgets('footer: "Paylaş" misafirde de görünür (giriş şartı YOK) ve '
+  testWidgets(
+      'footer: "Paylaş" misafirde de görünür (giriş şartı YOK) ve '
       'altında "© Kelimeki" satırı var', (tester) async {
     await setPhoneViewSize(tester, const Size(420, 950));
     await pumpSetup(tester, services());
@@ -1247,10 +1256,7 @@ void main() {
     // Sahte uç hiçbir Realtime olayı yayınlamıyor — kanal kopuk gibi.
     gw.rows = [
       gameRow(
-          id: 'inv',
-          myId: 'me',
-          myInviteStatus: 'accepted',
-          myInviteId: 'i1'),
+          id: 'inv', myId: 'me', myInviteStatus: 'accepted', myInviteId: 'i1'),
     ];
     gw.turnRows = [
       {'online_game_id': 'inv', 'current': 0},
@@ -1301,7 +1307,10 @@ void main() {
       // bir 0" beklentisi CI'da rastgele düşüyordu (PR #475'te bir kez).
       // Testin konusu düzen, YZ'nin hamlesi değil — raf sabitlendi.
       final c = GameController(
-          words: words, autoPlayAi: false, nowIso: () => '', rng: Mulberry32(7));
+          words: words,
+          autoPlayAi: false,
+          nowIso: () => '',
+          rng: Mulberry32(7));
       final session = repo.attach(c);
       c.dispatch(StartAction(const [
         PlayerSetup(name: guestPlayerName, isAI: false),
@@ -1340,7 +1349,8 @@ void main() {
       // avatarının hizasında (hiza iddiası `score_line_test`te; burada
       // satırın YERİ). İnsan pas geçti (0), YZ oynadı.
       final puan = find.descendant(
-          of: find.byKey(kDevamEdenSolKey), matching: find.byType(AvatarScoreRow));
+          of: find.byKey(kDevamEdenSolKey),
+          matching: find.byType(AvatarScoreRow));
       expect(puan, findsOneWidget, reason: 'puan satırı avatarların altında');
       expect(
           find.descendant(of: puan, matching: find.text('0')), findsOneWidget);
@@ -1463,8 +1473,8 @@ Future<AppStorage> openStorageWith(Map<String, Object> prefs) async {
 /// (bu dosyanın "devam eden oyun" testiyle aynı desen).
 Future<void> gorunmesiniBekle(WidgetTester tester, Finder f) async {
   for (var i = 0; i < 100 && !tester.any(f); i++) {
-    await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)));
+    await tester
+        .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
     await tester.pump();
   }
   expect(f, findsOneWidget);
@@ -1475,7 +1485,8 @@ Future<void> formuBekle(WidgetTester tester) =>
 
 void tanitimKapisiTestleri() {
   group('tanıtım kapısı', () {
-    testWidgets('tertemiz depoda misafir: OYUNU BAŞLAT → tanıtım; ATLA → '
+    testWidgets(
+        'tertemiz depoda misafir: OYUNU BAŞLAT → tanıtım; ATLA → '
         'gerçek oyun; bayrak AÇILIRKEN yazıldı', (tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       final storage = (await tester.runAsync(() => openStorageWith({})))!;
@@ -1542,8 +1553,8 @@ void tanitimKapisiTestleri() {
 
     testWidgets('tanıtımı görmüş depoda doğrudan GameScreen', (tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
-      final storage =
-          (await tester.runAsync(() => openStorageWith({'seen_tutorial': true})))!;
+      final storage = (await tester
+          .runAsync(() => openStorageWith({'seen_tutorial': true})))!;
       await pumpSetup(tester, services(storage: Future.value(storage)));
       await formuBekle(tester);
       await tester.tap(find.text('OYUNU BAŞLAT'));
@@ -1552,7 +1563,8 @@ void tanitimKapisiTestleri() {
       await tester.runAsync(() => storage.close());
     });
 
-    testWidgets('girişli — hesap tanıtımdan ESKİ: tertemiz depoda bile '
+    testWidgets(
+        'girişli — hesap tanıtımdan ESKİ: tertemiz depoda bile '
         'tanıtım açılmaz (kapının asıl işi)', (tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
       final storage = (await tester.runAsync(() => openStorageWith({})))!;
@@ -1569,8 +1581,13 @@ void tanitimKapisiTestleri() {
       expect(storage.flags.seenTutorial, isFalse);
       // Negatif eş: oynamış (ilk oyun değil) GİRİŞLİ kullanıcı Normal
       // (alan yazılmaz) — misafirdeki "her zaman Kolay" ona sızmamalı.
-      expect(tester.widget<GameScreen>(find.byType(GameScreen))
-          .controller.state.aiLevel, isNull);
+      expect(
+          tester
+              .widget<GameScreen>(find.byType(GameScreen))
+              .controller
+              .state
+              .aiLevel,
+          isNull);
       await tester.runAsync(() => storage.close());
     });
 

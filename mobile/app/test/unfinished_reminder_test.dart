@@ -109,7 +109,8 @@ void main() {
         );
 
     test('yarım oyun + izin → kur', () => expect(karar(), isTrue));
-    test('bitmiş oyun → kurma', () => expect(karar(oyunSuruyor: false), isFalse));
+    test('bitmiş oyun → kurma',
+        () => expect(karar(oyunSuruyor: false), isFalse));
     test('hiç oynanmamış (turnCount < 2) → kurma',
         () => expect(karar(turSayisi: 1), isFalse));
     test('kimliksiz state → kurma', () => expect(karar(oyun: ''), isFalse));

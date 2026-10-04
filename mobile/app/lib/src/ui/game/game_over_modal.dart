@@ -132,8 +132,8 @@ class GameOverModal extends StatelessWidget {
                 color: kAccent.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: _KutlamaMetni(
-                  celebration: celebration!, onSignIn: onSignIn),
+              child:
+                  _KutlamaMetni(celebration: celebration!, onSignIn: onSignIn),
             ),
           ],
           const SizedBox(height: 18),
@@ -177,8 +177,7 @@ class GameOverModal extends StatelessWidget {
                   children: [
                     const Text(
                       'Toplam hamle',
-                      style:
-                          TextStyle(fontSize: 12, color: kMuted),
+                      style: TextStyle(fontSize: 12, color: kMuted),
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -301,8 +300,7 @@ class _PlayerRow extends StatelessWidget {
                   '${entry.rank}. ${p.name}',
                   overflow: TextOverflow.ellipsis,
                   softWrap: false,
-                  style:
-                      const TextStyle(fontSize: 15, color: kText),
+                  style: const TextStyle(fontSize: 15, color: kText),
                 ),
               ),
               if (p.surrendered)
