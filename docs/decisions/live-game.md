@@ -1114,19 +1114,51 @@ sohbetinde).
   istek reddedildi · engel kalkınca geçti · engelliyken link reddedildi · engel
   kalkınca link `accepted` ilişki kurdu. `proacl` önce/sonra aynı.
 
-**İSTEMCİ — açık, ROADMAP E** (web + port, port mobil dosya → **19 Ekim
-treni**, taslak PR):
-1. **"Sessize al" → "Engelle"** (terim; sohbet ayarları, arkadaş yönetim paneli,
-   rozetler, hata/onay metinleri; port ikizleri). Engel artık yalnızca sohbet
-   bildirimini değil davet + arkadaşlık isteği + rastgele eşleşmeyi de kapatır.
-   ⚠ Bugün web'de (bu PR'dan önce yazılmış) sohbet ayarları metni hâlâ "sessize
-   al … davetler durur" diyor; terim değişince o metin de "Engelle"ye döner.
-2. **Davet kartı** (oyun daveti): Kabul/Reddet yanına **"Engelle"** (yalnızca
-   engel — oyun daveti kartından şikayet YOK).
-3. **Arkadaşlık isteği kartı**: yalnızca **"Engelle"** (karar: istek kartında
-   başka seçenek yok).
-4. **Şikayet yalnızca oyuna özel** kalır (sohbette, `online_game_chat_reports`
-   `online_game_id` zorunlu — admin şikayetle ilgisiz bir yazışma okumasın).
-5. **Arkadaşlar ekranında "Engellediklerim" listesi**: engellediğin/şikayet
-   ettiğin HERKES (arkadaş olsun olmasın) → **Engeli Kaldır / Şikayeti Geri
-   Çek**. Arkadaş OLMAYAN birini geri almanın tek yolu bu (bugün yok).
+**İSTEMCİ — WEB YAPILDI (5 Ekim 2026), PORT AÇIK (19 Ekim treni, taslak PR):**
+
+Sunucuya ek (`20261004203040_user_blocks`): oyundan BAĞIMSIZ `user_blocks` tablosu
++ `block_user` / `unblock_user` / `list_blocked_users`. Gerekçe: eski sohbet
+engeli (`online_game_message_mutes`) bir OYUNA bağlı ve RPC'si yalnızca kabul
+etmiş katılımcıyı kabul ediyor — istek/davet kartından engelleyenin ortak oyunu
+YOK. Engel üç kaynağın birleşimi (`_is_blocked_by`: `user_blocks` + sohbet
+engeli + açık şikayet); `_random_blocked` aynı yardımcıya bağlandı. **Anlam:**
+`unblock_user` engeli + sohbet engellerini temizler, açık ŞİKAYETE DOKUNMAZ
+(şikayeti geri çekmek ayrı adım — sohbet ayarlarındaki eski ayrım korundu; açık
+şikayet sürdükçe kişi engelli sayılır). ⚠ `unblock_user` gövdesinde `DELETE`
+olduğundan MCP aracıyla uygulanamadı (60 sn zaman aşımı, sorgu HİÇ çalışmadı —
+tablo/RPC sayısı 0 kaldı, doğrulandı); migration geri kalanı o fonksiyon
+OLMADAN uygulandı, fonksiyon panelden elle çalıştırılır.
+
+Web'de yapılanlar: (1) **"Sessize al" → "Engelle"** terimi (sohbet ayarları,
+sohbet balonu aria, arkadaş yönetim paneli, rozet başlığı); (2) **oyun davet
+kartında** ve **arkadaşlık isteği kartında yalnızca "Engelle"** (şikayet YOK;
+`BlockConfirmModal` ortak onay — önce engel, sonra ret: engel başarısızsa davet/
+istek yerinde kalır); (3) **Arkadaşlar → "Engellediklerim"**
+(`BlockedUsersModal`; arkadaş olmayanı geri almanın tek yolu); (4) sohbet
+ayarlarında engeli KALDIRMA artık `unblock_user` (yoksa kartlardan yapılan
+`user_blocks` satırı kalır ve sohbette "engel yok" görünürdü); arkadaş listesi
+rozet/menü durumu `list_blocked_users`tan (eski `fetchMyChatModeration` yalnızca
+sohbet engelini görürdü, o fonksiyon artık çağrılmıyor ama silinmedi).
+
+⚠ **Parite kilidi yüzünden web'de BİLEREK DEĞİŞMEYEN metinler** (Dart ikizleri
+ve testleri var; web tek başına değişirse web CI'ın `parite` işi düşer; mobil
+dosya olduğundan port PR'ı 19 Ekim'e kadar merge edilmez): arkadaş ⋯
+menüsündeki **"Sessize alma / şikayet ayarları"** etiketi
+(`kFriendsMenuModeration`, `friends_test.dart` web kaynağını okur), sohbet
+kuralları cümlesi (`utils/chatRules.ts` ↔ `chat_rules.dart`), **hukuki metinler**
+(`LegalContent.tsx`: 95, 179-180, 365 — "kimleri sessize aldığınız yalnızca size
+görünür"; `user_blocks` yeni bir ilişki verisi, aynı cümleye "engellediğiniz"
+eklenmeli + yasal metin tarihi) ve karşılama cümlesi (`Landing.tsx` 717). Hepsi
+port PR'ında BİRLİKTE değişir. `friendlyErrorMessage` yüzey anahtarı
+`'sessize-al'` iç telemetri anahtarı, bilerek dokunulmadı.
+
+Bilinen kenar: kartlardan engellenen biri sonradan aynı oyunun sohbetinde
+bulunursa o sohbetteki "yeni mesaj" balonu susturma listesinden (yalnızca sohbet
+engeli) beslendiği için bastırılmaz; davet/istek/eşleşme kapıları ise
+`user_blocks`u okur.
+
+**PORT İKİZİ (19 Ekim, taslak PR, ROADMAP E):** terim; davet + istek kartında
+"Engelle" + onay; `blocked_users_sheet.dart` ("Engellediklerim");
+`friend_moderation_sheet.dart` (`blocked` bayrağı, `unblock_user`); sohbet
+ayarları metni; yukarıdaki dört parite-kilitli metin; `blockUser`/`unblockUser`/
+`fetchBlockedUsers` (`games_api.dart` ya da `friends_api.dart`).
