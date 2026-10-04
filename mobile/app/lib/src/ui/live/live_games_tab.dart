@@ -1135,7 +1135,8 @@ const Color kRandomOriginBg = Color(0xFFEEF4FF);
 
 /// "RASTGELE" etiketi: 8 px mono kalın büyük harf, accent yazı, beyaz zemin,
 /// accent %30 çerçeve, pill. Web: `rounded-full border border-accent/30
-/// bg-white px-1.5 font-mono text-[8px] leading-[13px]`.
+/// bg-white px-1.5 font-mono text-[8px]`. Satır yüksekliği Flutter'da 1,0:
+/// etiket kalan-süre yazısından UZUN olmamalı, yoksa kart uzar (test kilitler).
 class _RandomOriginTag extends StatelessWidget {
   const _RandomOriginTag();
 
@@ -1153,7 +1154,7 @@ class _RandomOriginTag extends StatelessWidget {
           style: TextStyle(
             fontFamily: 'SpaceMono',
             fontSize: 8,
-            height: 13 / 8,
+            height: 1,
             letterSpacing: 0.5,
             fontWeight: FontWeight.bold,
             color: _accent,

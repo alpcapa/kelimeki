@@ -486,6 +486,48 @@ void main() {
     });
   });
 
+  group('isRandomOriginGame (4 Ekim 2026)', () {
+    List<OnlineSlot> sl(List<Map<String, Object?>> r) =>
+        [for (final m in r) OnlineSlot.fromJson(m)];
+    test('ilandan oturan → true (kurucunun koltuğu via taşımasa da)', () {
+      expect(
+          isRandomOriginGame(sl([
+            slotHuman('k'),
+            slotHuman('r', via: 'random'),
+          ])),
+          isTrue);
+    });
+    test('arkadaş daveti oyunu → false', () {
+      expect(
+          isRandomOriginGame(sl([
+            slotHuman('k'),
+            slotHuman('f', relation: 'accepted', inviteStatus: 'accepted'),
+          ])),
+          isFalse);
+    });
+    test('karma kadro (arkadaş + rastgele) → true', () {
+      expect(
+          isRandomOriginGame(sl([
+            slotHuman('k'),
+            slotHuman('f', relation: 'accepted'),
+            slotHuman('r', via: 'random'),
+            slotAi,
+          ])),
+          isTrue);
+    });
+    test('yalnız YZ / açık koltuk → false', () {
+      expect(isRandomOriginGame(sl([slotHuman('k'), slotAi])), isFalse);
+      expect(isRandomOriginGame(sl([slotHuman('k'), slotOpen])), isFalse);
+    });
+    test('web kuralı AYNI: `s.type === human && s.via === random`', () {
+      final web = readRepoFile('src/utils/randomGames.ts');
+      expect(
+          web.contains(
+              "slots.some((s) => s.type === 'human' && s.via === 'random')"),
+          isTrue);
+    });
+  });
+
   group('web ↔ port parite (readRepoFile)', () {
     final webKurallar = readRepoFile('src/utils/randomGames.ts');
     final webSerit = readRepoFile('src/components/RandomGamesStrip.tsx');
@@ -504,6 +546,24 @@ void main() {
       expect(
           pick(webKurallar, RegExp(r"RANDOM_SEAT\s*=\s*'(.)'"), 'RANDOM_SEAT'),
           kRandomSeat);
+    });
+
+    test('kare kart + şerit stili web ile AYNI sayılar/sınıflar', () {
+      expect(webSerit.contains('min(7rem,calc((100%-24px)/3.25))'), isTrue,
+          reason: 'kart eni formülü ayrıştı (3 tam + 4.nün ~1/4ü)');
+      expect(webSerit.contains('min-w-[84px]'), isTrue);
+      expect(webSerit.contains('aspect-square'), isTrue);
+      expect(webSerit.contains('shadow-raised'), isTrue);
+      expect(
+          webSerit.contains(
+              'text-[10px] uppercase tracking-[1.5px] font-mono font-bold text-accent'),
+          isTrue,
+          reason: '"Rastgele oyun aç" stili ayrıştı');
+      expect(webSerit.contains('text-center font-mono text-[9px]'), isTrue,
+          reason: 'durum mesajı ortalı olmalı');
+      final webTab = readRepoFile('src/components/LiveGamesTab.tsx');
+      expect(webTab.contains('bg-[#EEF4FF]'), isTrue);
+      expect(webTab.contains('border-l-[3px] border-l-accent'), isTrue);
     });
 
     test('metinler web ile BİREBİR', () {

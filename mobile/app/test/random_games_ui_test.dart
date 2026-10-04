@@ -15,7 +15,10 @@ import 'package:kelimeki/src/data/auth_service.dart';
 import 'package:kelimeki/src/data/friends_api.dart';
 import 'package:kelimeki/src/data/meaning_store.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
+import 'package:kelimeki/src/ui/devam_eden_govde.dart';
+import 'package:kelimeki/src/ui/game/neo_box.dart';
 import 'package:kelimeki/src/ui/game/neo_button.dart';
+import 'package:kelimeki/src/ui/tokens.dart';
 import 'package:kelimeki/src/ui/live/live_game_create_form.dart';
 import 'package:kelimeki/src/ui/live/live_games_tab.dart';
 import 'package:kelimeki/src/ui/live/random_games_strip.dart';
@@ -98,7 +101,7 @@ void main() {
       await pumpTab(tester, servis('serit1', gw));
 
       expect(find.text('RASTGELE OYUNLAR · 2'), findsOneWidget);
-      expect(find.text('Rastgele oyun aç'), findsOneWidget);
+      expect(find.text('RASTGELE OYUN AÇ'), findsOneWidget);
       expect(kart('a'), findsOneWidget);
       expect(kart('b'), findsOneWidget);
       expect(find.text('Ayşe'), findsOneWidget);
@@ -124,11 +127,12 @@ void main() {
                   w.key is ValueKey &&
                   (w.key! as ValueKey).value.toString().endsWith('-bos'))),
           findsNWidgets(2));
-      // Sabit yükseklik: ilan sayısı kaç olursa olsun sayfa uzamaz.
-      final h = tester.getSize(find.byKey(const Key('random-strip-list')));
-      expect(h.height, kRandomCardHeight);
-      // 3 kart yan yana değil, en az 2 sığıyor ve kenar ipucu için genişlik
-      // (listWidth-16)/3.4: yan yana iki kartın SOLU ortak satırda.
+      // Şerit yüksekliği ilan sayısına BAĞLI değil (sayfa uzamaz): kare kart
+      // + gölge dolgusu.
+      final liste = tester.getSize(find.byKey(const Key('random-strip-list')));
+      final k = tester.getSize(kart('a'));
+      expect(liste.height, k.height + kRandomStripShadowPad * 2);
+      // İki kart AYNI satırda.
       expect(tester.getTopLeft(kart('a')).dy, tester.getTopLeft(kart('b')).dy);
       await bitir(tester);
     });
@@ -139,7 +143,7 @@ void main() {
       final gw = FakeOnlineGamesGateway();
       await pumpTab(tester, servis('serit-bos', gw));
       expect(find.textContaining('RASTGELE OYUNLAR'), findsNothing);
-      expect(find.text('Rastgele oyun aç'), findsNothing);
+      expect(find.text('RASTGELE OYUN AÇ'), findsNothing);
       expect(find.byKey(const Key('random-strip-list')), findsNothing);
       expect(find.text('YENİ OYUN BAŞLAT'), findsOneWidget);
       // Ama yoklama için widget BAĞLI: ilk yükleme yapıldı.
@@ -197,7 +201,7 @@ void main() {
       final gw = FakeOnlineGamesGateway()
         ..randomRows = [randomListingRow(id: 'a')];
       await pumpTab(tester, servis('serit-ac', gw));
-      await tester.tap(find.text('Rastgele oyun aç'));
+      await tester.tap(find.text('RASTGELE OYUN AÇ'));
       await tester.pumpAndSettle();
       expect(find.byType(LiveGameCreateForm), findsOneWidget);
       await bitir(tester);
@@ -955,6 +959,241 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('En fazla 3 rastgele oyunun olabilir.'), findsOneWidget);
       expect(find.text('İlanın yayında'), findsNothing);
+    });
+  });
+
+  group('kare kart + şerit stili (4 Ekim 2026)', () {
+    for (final genislik in [320.0, 375.0, 390.0, 420.0]) {
+      testWidgets(
+          '$genislik px: kart KARE (en ≈ boy), 3 TAM kart + 4.\'nün '
+          '~1/4\'ü görünür, taşma YOK', (tester) async {
+        final gw = FakeOnlineGamesGateway()
+          ..randomRows = [
+            for (var i = 0; i < 6; i++)
+              randomListingRow(
+                  id: 'k$i',
+                  creatorName: 'Oyuncu Uzun Adlı $i',
+                  playerCount: i.isEven ? 4 : 2,
+                  seats: i.isEven
+                      ? ['creator', 'open', 'open', 'open']
+                      : ['creator', 'open']),
+          ];
+        await pumpTab(tester, servis('kare$genislik', gw),
+            size: Size(genislik, 900));
+        // pumpTab 12 px kenar dolgusu verir → şerit genişliği = ekran − 24.
+        final serit = genislik - 24;
+        final w = randomCardWidth(serit);
+        expect(w, closeTo(((serit - 24) / 3.25).clamp(84, 112), 0.01));
+        final k0 = tester.getSize(kart('k0'));
+        expect(k0.width, closeTo(w, 0.01));
+        // Kare: boy en az en kadar, içerik yüzünden en fazla ~25 px uzar.
+        expect(k0.height, greaterThanOrEqualTo(k0.width - 0.01));
+        expect(
+            k0.height,
+            lessThanOrEqualTo(
+                (w > kRandomCardMinHeight ? w : kRandomCardMinHeight) + 0.01));
+        final listeSag =
+            tester.getTopRight(find.byKey(const Key('random-strip-list'))).dx;
+        final sag = [
+          for (final i in [0, 1, 2, 3]) tester.getTopRight(kart('k$i')).dx
+        ];
+        // İlk üç kart tamamen içeride, dördüncü sağ kenardan taşar.
+        expect(sag[2], lessThanOrEqualTo(listeSag));
+        expect(sag[3], greaterThan(listeSag));
+        final gorunen = listeSag - tester.getTopLeft(kart('k3')).dx;
+        expect(gorunen, closeTo(w * 0.25, w * 0.12),
+            reason: 'dördüncü kartın ~1/4\'ü görünür olmalı');
+        expect(tester.takeException(), isNull);
+        await bitir(tester);
+      });
+    }
+
+    testWidgets('yazı ölçeği 2.0 ve 320 px: kart uzar, taşma YOK',
+        (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..randomRows = [
+          randomListingRow(id: 'a', creatorName: 'Çok Uzun Bir Oyuncu Adı'),
+          randomListingRow(
+              id: 'b',
+              playerCount: 4,
+              seats: ['creator', 'filled', 'open', 'open']),
+        ];
+      await setPhoneViewSize(tester, const Size(320, 900));
+      await tester.pumpWidget(MaterialApp(
+        theme: kelimekiTheme(),
+        builder: (c, child) => MediaQuery(
+            data: MediaQuery.of(c)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!),
+        home: Scaffold(
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(12),
+            child: LiveGamesTab(
+                services: servis('olcek', gw), onFinishesSeen: () {}),
+          ),
+        ),
+      ));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+      expect(kart('a'), findsOneWidget);
+      expect(tester.getSize(kart('a')).height,
+          greaterThanOrEqualTo(kRandomCardMinHeight * 2 - 0.01));
+      expect(tester.takeException(), isNull);
+      await bitir(tester);
+    });
+
+    testWidgets(
+        '"Rastgele oyun aç": başlıkla AYNI boy/yazı, accent + kalın, '
+        'altı ÇİZİLİ DEĞİL', (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..randomRows = [randomListingRow(id: 'a')];
+      await pumpTab(tester, servis('baglanti', gw));
+      final link = tester.widget<Text>(find.text('RASTGELE OYUN AÇ'));
+      final baslik = tester.widget<Text>(find.text('RASTGELE OYUNLAR · 1'));
+      expect(link.style!.fontSize, baslik.style!.fontSize);
+      expect(link.style!.fontSize, 10);
+      expect(link.style!.fontFamily, baslik.style!.fontFamily);
+      expect(link.style!.letterSpacing, baslik.style!.letterSpacing);
+      expect(link.style!.fontWeight, FontWeight.bold);
+      expect(link.style!.color, kAccent);
+      expect(link.style!.decoration, isNot(TextDecoration.underline));
+      await bitir(tester);
+    });
+
+    testWidgets('durum mesajları ORTALI + kart gölgeli', (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..randomRows = [randomListingRow(id: 'a')]
+        ..myRandomRows = [myRandomRow(id: 'm')];
+      await pumpTab(tester, servis('ortali', gw));
+      expect(tester.widget<Text>(find.byKey(const Key('ilan-kalan'))).textAlign,
+          TextAlign.center);
+      expect(
+          tester.widget<Text>(find.byKey(const Key('ilan-bekliyor'))).textAlign,
+          TextAlign.center);
+      for (final id in ['a', 'm']) {
+        final d = tester
+            .widget<Container>(kart(id).evaluate().isEmpty
+                ? find.byKey(ValueKey('ilan-$id'))
+                : find
+                    .descendant(of: kart(id), matching: find.byType(Container))
+                    .first)
+            .decoration;
+        expect(d, isA<ShapeDecorationWithCssShadows>());
+        expect((d! as ShapeDecorationWithCssShadows).shadows, kRaisedShadows);
+      }
+      await bitir(tester);
+    });
+  });
+
+  group('rastgele kökenli aktif oyun kartı (4 Ekim 2026)', () {
+    Future<void> pumpAktif(
+        WidgetTester tester, List<Map<String, Object?>> slots,
+        {String sira = 'ben'}) async {
+      final gw = FakeOnlineGamesGateway()
+        ..rows = [
+          gameRow(id: 'g1', myId: 'ben', status: 'active', slots: slots)
+        ]
+        ..turnRows = [
+          {'online_game_id': 'g1', 'current': sira == 'ben' ? 1 : 0}
+        ]
+        ..deadlineRows = [
+          {
+            'online_game_id': 'g1',
+            'turn_deadline': DateTime.now()
+                .toUtc()
+                .add(const Duration(hours: 30))
+                .toIso8601String(),
+            'players': [],
+          }
+        ];
+      await pumpTab(tester, servis('ben', gw), size: const Size(320, 900));
+    }
+
+    Color? zemin(WidgetTester tester) {
+      final c = tester.widget<Container>(find
+          .ancestor(
+              of: find.byType(DevamEdenGovde), matching: find.byType(Container))
+          .first);
+      return (c.decoration! as ShapeDecorationWithCssShadows).color;
+    }
+
+    testWidgets(
+        'ilandan oturan var: mavi zemin + sol çizgi + etiket SOLDA, '
+        'kalan süre SAĞDA AYNI satırda', (tester) async {
+      await pumpAktif(tester, [
+        slotHuman('esiner', name: 'Esiner'),
+        slotHuman('ben', name: 'Ironman', relation: 'self', via: 'random'),
+      ]);
+      expect(find.byKey(const Key('rastgele-etiket')), findsOneWidget);
+      expect(find.text('RASTGELE'), findsOneWidget);
+      expect(find.byKey(const Key('rastgele-cizgi')), findsOneWidget);
+      expect(zemin(tester), kRandomOriginBg);
+      expect(tester.takeException(), isNull);
+      final et = tester.getRect(find.byKey(const Key('rastgele-etiket')));
+      final sure = tester.getRect(find.textContaining('TESLİM'));
+      expect((et.center.dy - sure.center.dy).abs(), lessThan(3),
+          reason: 'etiket ve kalan süre AYNI satırda');
+      expect(et.left, lessThan(sure.left));
+      await bitir(tester);
+    });
+
+    testWidgets(
+        'kart yüksekliği süre satırı varken ARTMAZ (etiket aynı '
+        'satırda)', (tester) async {
+      await pumpAktif(tester, [
+        slotHuman('esiner', name: 'Esiner'),
+        slotHuman('ben', name: 'Ironman', relation: 'self', via: 'random'),
+      ]);
+      final rastgeleH = tester
+          .getSize(find
+              .ancestor(
+                  of: find.byType(DevamEdenGovde),
+                  matching: find.byType(Container))
+              .first)
+          .height;
+      await bitir(tester);
+      await pumpAktif(tester, [
+        slotHuman('esiner', name: 'Esiner'),
+        slotHuman('ben', name: 'Ironman', relation: 'self'),
+      ]);
+      final duzH = tester
+          .getSize(find
+              .ancestor(
+                  of: find.byType(DevamEdenGovde),
+                  matching: find.byType(Container))
+              .first)
+          .height;
+      expect(rastgeleH, closeTo(duzH, 1.5));
+      await bitir(tester);
+    });
+
+    testWidgets('sıra rakipte (süre yok): etiket tek başına, SOLA yaslı',
+        (tester) async {
+      await pumpAktif(
+          tester,
+          [
+            slotHuman('esiner', name: 'Esiner'),
+            slotHuman('ben', name: 'Ironman', relation: 'self', via: 'random'),
+          ],
+          sira: 'rakip');
+      expect(find.byKey(const Key('rastgele-etiket')), findsOneWidget);
+      final kartR = tester.getRect(find.byType(DevamEdenGovde));
+      expect(tester.getRect(find.byKey(const Key('rastgele-etiket'))).left,
+          closeTo(kartR.left, 1));
+      await bitir(tester);
+    });
+
+    testWidgets('arkadaş daveti oyunu: etiket/çizgi YOK, beyaz zemin',
+        (tester) async {
+      await pumpAktif(tester, [
+        slotHuman('esiner', name: 'Esiner'),
+        slotHuman('ben', name: 'Ironman', relation: 'self'),
+      ]);
+      expect(find.byKey(const Key('rastgele-etiket')), findsNothing);
+      expect(find.byKey(const Key('rastgele-cizgi')), findsNothing);
+      expect(zemin(tester), isNot(kRandomOriginBg));
+      await bitir(tester);
     });
   });
 }

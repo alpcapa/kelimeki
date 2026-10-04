@@ -626,7 +626,7 @@ class FakeFriendsGateway implements FriendsGateway {
 // ── Satır kurucuları (list_my_online_games şekli) ───────────────────────────
 
 Map<String, Object?> slotHuman(String userId,
-        {String? name, String? relation, String? inviteStatus}) =>
+        {String? name, String? relation, String? inviteStatus, String? via}) =>
     {
       'type': 'human',
       'user_id': userId,
@@ -634,6 +634,7 @@ Map<String, Object?> slotHuman(String userId,
       'avatar_url': null,
       'relation': relation,
       'invite_status': inviteStatus,
+      if (via != null) 'via': via,
     };
 
 /// Hesabı silinmiş bir oyuncunun koltuğu: uuid `online_games.slots` içinde

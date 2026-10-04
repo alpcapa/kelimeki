@@ -61,7 +61,7 @@ double randomCardWidth(double listWidth) {
 /// dolgu/çerçeve) 1,0 ölçekte sığdığı alt sınır. Web `aspect-square` içerik
 /// sığmazsa uzar (390 px'te ölçüldü: 103×108); Flutter yatay listede sonlu
 /// yükseklik ister, bu yüzden `max(en, bu × yazı ölçeği)`.
-const double kRandomCardMinHeight = 116;
+const double kRandomCardMinHeight = 108;
 
 /// Kart yüksekliği: kare; içerik sığmazsa ya da yazı ölçeği büyürse uzar.
 double randomCardHeight(double width, double textScale) {
