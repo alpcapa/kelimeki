@@ -743,6 +743,8 @@ export function LiveGamesTab({
   // Girişsiz uyarı sekme her açıldığında bir kez (bkz. `GuestLiveSheet`).
   const [guestSheetOpen, setGuestSheetOpen] = useState(true);
   const [creating, setCreating] = useState(false);
+  // Şeritteki "Rastgele oyun aç" (4 Ekim 2026, kullanıcı): formu Rastgele Oyuncu SEÇİLİ açar.
+  const [startRandom, setStartRandom] = useState(false);
   // Arkadaşlar penceresinin OYNA'sı (27 Eylül 2026): formu o arkadaş seçili
   // aç. Takılırken kuyruktakini al, takılıyken olayı dinle
   // (`utils/liveGameRequest.ts`). `onKey`: aynı formdayken yeni bir istek
@@ -1153,12 +1155,15 @@ export function LiveGamesTab({
           key={preset?.onKey ?? 0}
           initialFriendId={preset?.friendId}
           initialPlayerCount={preset?.playerCount}
+          initialRandom={startRandom}
           onCancel={() => {
             setCreating(false);
+            setStartRandom(false);
             setPreset(null);
           }}
           onCreated={() => {
             setCreating(false);
+            setStartRandom(false);
             setPreset(null);
             reload();
           }}
@@ -1423,7 +1428,10 @@ export function LiveGamesTab({
             myRandom={myRandom}
             busyRandomId={busyRandomId}
             onLeaveMine={(g) => void handleLeaveRandom(g)}
-            onOpenCreate={() => setCreating(true)}
+            onOpenCreate={() => {
+              setStartRandom(true);
+              setCreating(true);
+            }}
             onAccepted={(r) => {
               showNotice(acceptNotice(r));
               reload();
