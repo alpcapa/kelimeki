@@ -459,8 +459,11 @@ notu). Daha eskisi burada görünmez.
 ## 1.1.3 — PLANLANAN (kesim Pazartesi 12 Ekim 2026)
 
 **Durum (4 Eki):** hiçbir iş `main`'de değil; tren taslak PR'larda. Sürüm adı
-`pubspec.yaml` → `1.1.3+N` kesim günü, ilk mobil merge ile birlikte yükseltilir
-(şu an `1.1.2+1`; yükseltmeyi önceden yapma — `mobile/` dosyası, merge'de derleme tetikler).
+`pubspec.yaml` + `env.dart` `appVersion` → `1.1.3+1`, **#805'in KENDİ dalında** yükseltildi
+(4 Eki; `app_version_parity_test` ikisini eşler). #805 zaten ilk mobil merge olduğundan sürüm
+adı onunla birlikte, tek adımda `main`'e girer; başka bir mobil PR'a bu bump'ı TAŞIMA.
+Gizlilik/Koşullar "Son güncelleme" tarihi de her iki tarafta **12 Ekim 2026** (web
+`LegalContent.tsx` + Dart `legal_modals.dart`).
 
 **Merge SIRASI (4 Eki hazırlık turunda çıkarıldı, kullanıcı "merge et" demeden merge yok):**
 
