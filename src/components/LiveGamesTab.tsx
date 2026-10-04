@@ -48,6 +48,7 @@ import {
   classifyLiveGames,
   isOpenSeat,
   isRealAiSeat,
+  isRandomOriginGame,
   myWaitingRandomGames,
   randomManagedIds,
 } from '../utils/randomGames';
@@ -436,14 +437,17 @@ function GameRow({ game, onRespond, busy, onOpen, isMyTurn, deadline, scores }: 
   // de gizli kalır — yanlış tarafa ait bir sürenin bir an görünmesindense
   // hiç görünmemesi tercih edildi.
   const remaining = isMyTurn ? remainingTimeLabel(deadline) : null;
+  const isRandomOrigin = game.status === 'active' && isRandomOriginGame(game.slots);
   const Wrapper = onOpen ? 'button' : 'div';
   return (
     <Wrapper
       type={onOpen ? 'button' : undefined}
       onClick={onOpen}
-      className={`shadow-raised flex flex-col rounded-md px-2.5 py-2 border border-border bg-panel w-full text-left ${
-        onOpen ? 'active:scale-[0.99] transition-transform' : ''
-      }`}
+      className={`shadow-raised flex flex-col rounded-md px-2.5 py-2 border w-full text-left ${
+        // Rastgele ilandan doğan oyun (4 Ekim 2026): çok açık mavi zemin + solda mavi çizgi + "RASTGELE"
+        // etiketi (Takım Ligi'nin pembe işaretiyle AYNI fikir). Kart düzeni DEĞİŞMEZ.
+        isRandomOrigin ? 'border-border border-l-[3px] border-l-accent bg-[#EEF4FF]' : 'border-border bg-panel'
+      } ${onOpen ? 'active:scale-[0.99] transition-transform' : ''}`}
     >
       {/* 2 Eylül 2026 — SÜRE SATIRI KARTIN ALTINA ALINDI. Setup'ın YZ kartı
           aynı gün bu şekle sokulmuştu, burası dokunulmadan kalmıştı ve iki
@@ -480,6 +484,12 @@ function GameRow({ game, onRespond, busy, onOpen, isMyTurn, deadline, scores }: 
               (`SavedGameRow`) ve "Son Oynananlar" aynı satırı çiziyor; port
               ikizi `_GameRow`. */}
           {scores && <AvatarScoreRow scores={scores} />}
+          {/* Etiket avatar+puan sütununun ALTINDA, solda (Takım Ligi tasarımıyla aynı yer). */}
+          {isRandomOrigin && (
+            <span className="self-start mt-0.5 rounded-full border border-accent/30 bg-white px-1.5 py-[1px] font-mono text-[9px] font-bold uppercase tracking-[0.5px] leading-tight text-accent">
+              Rastgele
+            </span>
+          )}
         </span>
         {/* 11 → 13 px (30 Ağustos 2026) → 15 px (2 Eylül 2026, kullanıcı
             isteği: "Sıra Sende ve Sıra Rakipte fontu biraz daha büyüt").
