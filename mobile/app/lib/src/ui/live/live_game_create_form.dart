@@ -131,8 +131,11 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
   bool _busy = false;
   String? _error;
   final _query = TextEditingController();
-  ({List<String> names, bool withAi, ({String title, String body})? random})?
-      _sentTo;
+  ({
+    List<String> names,
+    bool withAi,
+    ({String title, String body})? random
+  })? _sentTo;
   String? _lastUserId;
   bool _showAll = false;
   String? _busyId;
@@ -239,12 +242,10 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
 
   /// "Rastgele Oyuncu" satırı: her dokunuş bir boş koltuğu "?" yapar
   /// (esnek kadro; 2 kişide tek rakip DEĞİŞTİRİLİR).
-  void _addRandom() =>
-      _applySelected(addRandomSeat(_selected, _playerCount));
+  void _addRandom() => _applySelected(addRandomSeat(_selected, _playerCount));
 
   /// "?" koltuk kartına dokunuş: o koltuğu boşaltır.
-  void _removeSeat(int index) =>
-      _applySelected(removeSeatAt(_selected, index));
+  void _removeSeat(int index) => _applySelected(removeSeatAt(_selected, index));
 
   void _toggleShowAll() {
     setState(() {
@@ -304,7 +305,8 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
         'with_ai': withAiLastSlot ? 1 : 0, // GA4 parametresi bool almaz
       });
       if (!mounted) return;
-      setState(() => _sentTo = (names: names, withAi: withAiLastSlot, random: null));
+      setState(
+          () => _sentTo = (names: names, withAi: withAiLastSlot, random: null));
     } catch (e) {
       if (mounted) setState(() => _error = friendErrorText(e));
     } finally {
@@ -489,8 +491,7 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
         onClear: () => _removeSeat(i),
         wholeCardTap: true,
         keyPrefix: 'koltuk-rastgele',
-        semanticLabel:
-            'Rastgele oyuncu koltuğunu boşalt (koltuk ${i + 2})',
+        semanticLabel: 'Rastgele oyuncu koltuğunu boşalt (koltuk ${i + 2})',
       );
     }
     final f = secim != null ? _byId(secim) : null;
@@ -736,17 +737,13 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
               onTap: _toggleShowAll),
         ]),
         const SizedBox(height: 8),
-        // RASTGELE OYUNCU (3 Ekim 2026): listenin ilk satırı — aramadan
-        // MUAF, "Tüm oyuncular" görünümünde ve hiç arkadaşı olmayanda da hep
-        // görünür (yabancıyla oynamanın tek yolu bu). Her dokunuş bir boş
-        // koltuğu "?" yapar; seçilen sayısı ×N.
-        _randomRow(),
-        const SizedBox(height: 6),
-        if (!_showAll && friends == null)
-          const KLoadingNote(vertical: 16)
-        else if (!_showAll && friends!.isEmpty)
-          _noFriends()
-        else ...[
+        if (!_showAll && friends == null) ...[
+          _randomRowPadded(),
+          const KLoadingNote(vertical: 16),
+        ] else if (!_showAll && friends!.isEmpty) ...[
+          _randomRowPadded(),
+          _noFriends(),
+        ] else ...[
           if (strip != null) strip,
           TextField(
             controller: _query,
@@ -778,7 +775,7 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
                 padding: const EdgeInsets.only(right: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: _listRows(),
+                  children: [_randomRowPadded(), ..._listRows()],
                 ),
               ),
             ),
@@ -788,14 +785,22 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
     );
   }
 
+  /// RASTGELE OYUNCU (3-4 Ekim 2026, kullanıcı: "diğer arkadaşlar gibi listenin en
+  /// üstüne, ayrı bir bölümde değil"): arkadaş satırlarıyla AYNI kaydırılan
+  /// listenin İLK satırı — aramadan MUAF; "Tüm oyuncular"da ve hiç arkadaşı
+  /// olmayanda da hep görünür (yabancıyla oynamanın tek yolu bu).
+  Widget _randomRowPadded() => Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: _randomRow(),
+      );
+
   /// "Rastgele Oyuncu" satırı — `_friendRow` ile AYNI kart dili; avatar yerine
   /// kesik çerçeveli "?", alt yazı, kutucuk yerine seçilen sayısı (×N).
   Widget _randomRow() {
     final n = randomSeatCount(_selected);
     return Semantics(
       button: true,
-      label:
-          'Rastgele Oyuncu — boş koltuğa ekle${n > 0 ? ' ($n seçili)' : ''}',
+      label: 'Rastgele Oyuncu — boş koltuğa ekle${n > 0 ? ' ($n seçili)' : ''}',
       excludeSemantics: true,
       child: GestureDetector(
         key: const ValueKey('rastgele-satir'),

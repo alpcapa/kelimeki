@@ -630,19 +630,30 @@ void main() {
     final satir = find.byKey(const ValueKey('rastgele-satir'));
     Finder koltuk(int i) => find.byKey(ValueKey('koltuk-rastgele-$i'));
 
-    testWidgets('satır listenin EN ÜSTÜNDE, arama kutusundan önce; alt yazı '
-        've "?" avatarı', (tester) async {
+    testWidgets('satır arkadaş listesinin İÇİNDE, ilk satır (ayrı bölüm DEĞİL); '
+        'alt yazı ve "?" avatarı', (tester) async {
       await pumpForm(tester);
       expect(satir, findsOneWidget);
       expect(find.text('Rastgele Oyuncu'), findsOneWidget);
       expect(find.text('Biri kabul edince oyun başlar'), findsOneWidget);
       expect(find.descendant(of: satir, matching: find.byType(OpenSeatAvatar)),
           findsOneWidget);
-      // Listenin ilk satırı: arkadaşlardan ve arama kutusundan ÖNCE.
+      // Kullanıcı (4 Ekim 2026): "diğer arkadaşlar gibi listenin en üstüne,
+      // ayrı bir bölümde değil" → arama kutusunun ALTINDA, kaydırılan listenin
+      // ilk satırı; arkadaş satırlarıyla AYNI kaydırma alanında.
       expect(tester.getTopLeft(satir).dy,
-          lessThan(tester.getTopLeft(find.byType(TextField)).dy));
+          greaterThan(tester.getTopLeft(find.byType(TextField)).dy));
+      final friend1 = find.byKey(const ValueKey('friend-f1'));
       expect(tester.getTopLeft(satir).dy,
-          lessThan(tester.getTopLeft(find.byKey(const ValueKey('friend-f1'))).dy));
+          lessThan(tester.getTopLeft(friend1).dy));
+      expect(
+          find.ancestor(
+              of: satir, matching: find.byType(SingleChildScrollView)),
+          findsWidgets);
+      expect(
+          find.ancestor(
+              of: friend1, matching: find.byType(SingleChildScrollView)),
+          findsWidgets);
     });
 
     testWidgets('arama kutusuna yazınca satır KAYBOLMAZ; "Tüm oyuncular" '
