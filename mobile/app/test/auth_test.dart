@@ -118,7 +118,8 @@ void main() {
     });
   });
 
-  testWidgets('Setup girişli: sağ üstte avatar, oyunun 1. oyuncusu hesap sahibi',
+  testWidgets(
+      'Setup girişli: sağ üstte avatar, oyunun 1. oyuncusu hesap sahibi',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     final auth = AuthService.fake(user: fakeUser(), profile: ironman);

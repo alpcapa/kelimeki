@@ -94,48 +94,48 @@ class RackWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 1.5),
             child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                // Yalnızca oyuncunun adı. Web de swap modunda buraya bir
-                // "— değiştirilecek taşları seç" ekliyordu; kullanıcı
-                // 6 Ağustos 2026'da portta, 17 Ağustos 2026'da web'de
-                // (Rack.tsx) kaldırttı — aksiyon metni zaten tahtanın
-                // altındaki mesaj satırında yazıyor, rafta tekrar edilmesi
-                // gereksiz. İKİ TARAF ARTIK AYNI: geri eklenecekse ikisine
-                // birden eklenmeli.
-                child: Text(
-                  title,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    // #D97706 BİLİNÇLİ olarak token DEĞİL — web `Rack.tsx`
-                    // de tam bu değeri sabit yazıyor (`text-gold` #B7791F
-                    // değil). Renk denetiminde "token'a çek" diye
-                    // düzeltilmemeli.
-                    color: swapMode ? const Color(0xFFD97706) : color.text,
-                    fontFamily: 'SpaceMono',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 9,
-                    letterSpacing: 1.5,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  // Yalnızca oyuncunun adı. Web de swap modunda buraya bir
+                  // "— değiştirilecek taşları seç" ekliyordu; kullanıcı
+                  // 6 Ağustos 2026'da portta, 17 Ağustos 2026'da web'de
+                  // (Rack.tsx) kaldırttı — aksiyon metni zaten tahtanın
+                  // altındaki mesaj satırında yazıyor, rafta tekrar edilmesi
+                  // gereksiz. İKİ TARAF ARTIK AYNI: geri eklenecekse ikisine
+                  // birden eklenmeli.
+                  child: Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      // #D97706 BİLİNÇLİ olarak token DEĞİL — web `Rack.tsx`
+                      // de tam bu değeri sabit yazıyor (`text-gold` #B7791F
+                      // değil). Renk denetiminde "token'a çek" diye
+                      // düzeltilmemeli.
+                      color: swapMode ? const Color(0xFFD97706) : color.text,
+                      fontFamily: 'SpaceMono',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 9,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ),
-              ),
-              // Taş sayısı ("7 harf") 17 Ağustos 2026'da kullanıcı isteğiyle
-              // İKİ platformdan da kaldırıldı — rafta zaten görünen bir şeyi
-              // tekrar yazıyordu. Swap modundaki seçim sayacı bir DURUM
-              // bilgisi taşıdığından kalıyor (web Rack.tsx de öyle).
-              if (swapMode)
-                Text(
-                  '${swapSelection.length} seçili',
-                  style: const TextStyle(
-                    color: Color(0xFF8A93A2),
-                    fontFamily: 'SpaceMono',
-                    fontSize: 9,
-                    letterSpacing: 1.5,
+                // Taş sayısı ("7 harf") 17 Ağustos 2026'da kullanıcı isteğiyle
+                // İKİ platformdan da kaldırıldı — rafta zaten görünen bir şeyi
+                // tekrar yazıyordu. Swap modundaki seçim sayacı bir DURUM
+                // bilgisi taşıdığından kalıyor (web Rack.tsx de öyle).
+                if (swapMode)
+                  Text(
+                    '${swapSelection.length} seçili',
+                    style: const TextStyle(
+                      color: Color(0xFF8A93A2),
+                      fontFamily: 'SpaceMono',
+                      fontSize: 9,
+                      letterSpacing: 1.5,
+                    ),
                   ),
-                ),
-            ],
-          ),
+              ],
+            ),
           ),
           const SizedBox(height: 6),
           SizedBox(
@@ -176,9 +176,8 @@ class RackWidget extends StatelessWidget {
                 TileWidget(
                   tile: tiles[i],
                   variant: TileVariant.rack,
-                  selected: swapMode
-                      ? swapSelection.contains(i)
-                      : selectedTile == i,
+                  selected:
+                      swapMode ? swapSelection.contains(i) : selectedTile == i,
                 ),
                 // Halka kutunun DIŞINDA (web `outline: 2px solid` +
                 // `outline-offset: 1px`): 1 px boşluk + 2 px çizgi.

@@ -1999,82 +1999,86 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                         // Yükseklik bütçesi (ROADMAP #38) — web `Board`un
                                         // `fitHeight`i; gerekçe ve ölçümler `board_fit.dart`ta.
                                         constraints: BoxConstraints(
-                                            maxWidth: boardMaxWidth(boardViewportHeight(context))),
+                                            maxWidth: boardMaxWidth(
+                                                boardViewportHeight(context))),
                                         child: Padding(
-                                        // Web `Board.tsx`'in dış sarmalayıcısı:
-                                        // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
-                                        // taşımıştı, alttaki 12px hiç yoktu.
-                                        padding: const EdgeInsets.fromLTRB(
-                                            12, 6, 12, 12),
-                                        child: BoardWidget(
-                                          state: state,
-                                          // "Buradan başla" balonu, taş
-                                          // KALDIRILDIĞI anda kaybolsun diye
-                                          // sürükleme sinyalini alıyor. Bool
-                                          // bir prop olsaydı sürüklemenin
-                                          // başında/sonunda tüm ekranı
-                                          // setState'lemek gerekirdi; böyle
-                                          // yalnızca balon katmanı dinliyor
-                                          // (Parça 23'ün kuralı korunuyor).
-                                          dragListenable: _dragNotifier,
-                                          moveOverlay: moveStatus == null
-                                              ? null
-                                              : MoveOverlay(
-                                                  valid: moveStatus.valid,
-                                                  cells: moveStatus.cells,
-                                                  score: moveStatus.score,
-                                                ),
-                                          onCellTap: _handleCellTap,
-                                          gridKey: _gridKey,
-                                          zoomHint: _zoomHint,
-                                          stripHint:
-                                              _uiHint == OnboardingHintId
-                                                          .hamleler ||
-                                                      _uiHint ==
-                                                          OnboardingHintId.mesaj
-                                                  ? _uiHint
-                                                  : null,
-                                          zoom: _zoom,
-                                          viewportKey: _viewportKey,
-                                          onBoardPointerDown: _boardPointerDown,
-                                          onBoardPointerMove: _boardPointerMove,
-                                          onBoardPointerUp: _boardPointerUp,
-                                          onBoardPointerCancel: _endBoardPan,
-                                          onOpenHistory: () =>
-                                              showMoveHistoryModal(
-                                                  context, _historyState,
-                                                  myIndex: _mySlot),
-                                          onOpenHelp: () =>
-                                              showHelpModal(context),
-                                          onOpenMessaging: widget.chat == null
-                                              ? null
-                                              : _openMessaging,
-                                          unreadMessageCount:
-                                              _chatState.unreadCount,
-                                          onlineStatus: widget.onlineStatus,
-                                          dragHiddenKey:
-                                              _hiddenSource is _PlacedSource
-                                                  ? cellKey(
-                                                      (_hiddenSource
-                                                              as _PlacedSource)
-                                                          .r,
-                                                      (_hiddenSource
-                                                              as _PlacedSource)
-                                                          .c)
-                                                  : null,
-                                          onTilePointerDown: (r, c, e) {
-                                            final t =
-                                                state.placed[cellKey(r, c)];
-                                            if (t != null) {
-                                              _beginTileDrag(
-                                                  _PlacedSource(r, c, t), e);
-                                            }
-                                          },
-                                          onTilePointerMove: _moveTileDrag,
-                                          onTilePointerUp: _endTileDrag,
-                                          onTilePointerCancel: _cancelTileDrag,
+                                          // Web `Board.tsx`'in dış sarmalayıcısı:
+                                          // `px-3 pt-1.5 pb-3` — port yalnızca yatayı
+                                          // taşımıştı, alttaki 12px hiç yoktu.
+                                          padding: const EdgeInsets.fromLTRB(
+                                              12, 6, 12, 12),
+                                          child: BoardWidget(
+                                            state: state,
+                                            // "Buradan başla" balonu, taş
+                                            // KALDIRILDIĞI anda kaybolsun diye
+                                            // sürükleme sinyalini alıyor. Bool
+                                            // bir prop olsaydı sürüklemenin
+                                            // başında/sonunda tüm ekranı
+                                            // setState'lemek gerekirdi; böyle
+                                            // yalnızca balon katmanı dinliyor
+                                            // (Parça 23'ün kuralı korunuyor).
+                                            dragListenable: _dragNotifier,
+                                            moveOverlay: moveStatus == null
+                                                ? null
+                                                : MoveOverlay(
+                                                    valid: moveStatus.valid,
+                                                    cells: moveStatus.cells,
+                                                    score: moveStatus.score,
+                                                  ),
+                                            onCellTap: _handleCellTap,
+                                            gridKey: _gridKey,
+                                            zoomHint: _zoomHint,
+                                            stripHint: _uiHint ==
+                                                        OnboardingHintId
+                                                            .hamleler ||
+                                                    _uiHint ==
+                                                        OnboardingHintId.mesaj
+                                                ? _uiHint
+                                                : null,
+                                            zoom: _zoom,
+                                            viewportKey: _viewportKey,
+                                            onBoardPointerDown:
+                                                _boardPointerDown,
+                                            onBoardPointerMove:
+                                                _boardPointerMove,
+                                            onBoardPointerUp: _boardPointerUp,
+                                            onBoardPointerCancel: _endBoardPan,
+                                            onOpenHistory: () =>
+                                                showMoveHistoryModal(
+                                                    context, _historyState,
+                                                    myIndex: _mySlot),
+                                            onOpenHelp: () =>
+                                                showHelpModal(context),
+                                            onOpenMessaging: widget.chat == null
+                                                ? null
+                                                : _openMessaging,
+                                            unreadMessageCount:
+                                                _chatState.unreadCount,
+                                            onlineStatus: widget.onlineStatus,
+                                            dragHiddenKey: _hiddenSource
+                                                    is _PlacedSource
+                                                ? cellKey(
+                                                    (_hiddenSource
+                                                            as _PlacedSource)
+                                                        .r,
+                                                    (_hiddenSource
+                                                            as _PlacedSource)
+                                                        .c)
+                                                : null,
+                                            onTilePointerDown: (r, c, e) {
+                                              final t =
+                                                  state.placed[cellKey(r, c)];
+                                              if (t != null) {
+                                                _beginTileDrag(
+                                                    _PlacedSource(r, c, t), e);
+                                              }
+                                            },
+                                            onTilePointerMove: _moveTileDrag,
+                                            onTilePointerUp: _endTileDrag,
+                                            onTilePointerCancel:
+                                                _cancelTileDrag,
+                                          ),
                                         ),
-                                      ),
                                       ),
                                       // Web: <main> içinde Board'dan hemen sonra mesaj
                                       // bloğu geliyor ve tek boşluk onun `pt-1`i (4px,
@@ -2369,43 +2373,44 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                                                         show: _uiHint ==
                                                             OnboardingHintId
                                                                 .torba,
-                                                        text: onboardingHintTexts[
-                                                            OnboardingHintId
-                                                                .torba]!,
+                                                        text:
+                                                            onboardingHintTexts[
+                                                                OnboardingHintId
+                                                                    .torba]!,
                                                         yon: HintBubbleYon.ust,
                                                         hiza:
                                                             HintBubbleHiza.son,
                                                         child: NeoButton(
-                                                        letterSpacing: 1.2,
-                                                        lineHeight: 1.5,
-                                                        label:
-                                                            'TORBA ${state.bag.length}',
-                                                        // Web App.tsx ~1360 (bkz.
-                                                        // game_screen.dart'taki aynı
-                                                        // NeoButton çağrısı — ikisi de
-                                                        // AYNI PR'da güncellenmeli).
-                                                        richLabel: [
-                                                          const TextSpan(
-                                                              text: 'TORBA '),
-                                                          TextSpan(
-                                                            text:
-                                                                '${state.bag.length}',
-                                                            style:
-                                                                const TextStyle(
-                                                              fontSize: 13,
-                                                              color: kAccent,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                          letterSpacing: 1.2,
+                                                          lineHeight: 1.5,
+                                                          label:
+                                                              'TORBA ${state.bag.length}',
+                                                          // Web App.tsx ~1360 (bkz.
+                                                          // game_screen.dart'taki aynı
+                                                          // NeoButton çağrısı — ikisi de
+                                                          // AYNI PR'da güncellenmeli).
+                                                          richLabel: [
+                                                            const TextSpan(
+                                                                text: 'TORBA '),
+                                                            TextSpan(
+                                                              text:
+                                                                  '${state.bag.length}',
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 13,
+                                                                color: kAccent,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
-                                                        onPressed: () =>
-                                                            showRemainingTilesModal(
-                                                                context,
-                                                                state,
-                                                                _mySlot),
-                                                      ),
+                                                          ],
+                                                          onPressed: () =>
+                                                              showRemainingTilesModal(
+                                                                  context,
+                                                                  state,
+                                                                  _mySlot),
+                                                        ),
                                                       ),
                                                     ),
                                                   ])),

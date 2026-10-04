@@ -449,8 +449,7 @@ class RandomGameResult {
     this.seat,
   });
 
-  factory RandomGameResult.fromJson(Map<String, Object?> m) =>
-      RandomGameResult(
+  factory RandomGameResult.fromJson(Map<String, Object?> m) => RandomGameResult(
         joined: m['joined'] as bool? ?? false,
         gameId: m['game_id'] as String,
         started: m['started'] as bool? ?? false,
@@ -974,8 +973,8 @@ class OnlineGamesRepo {
   /// çağrıldığım. `null` = bilmiyoruz (son bilinen korunur).
   Future<List<MyRandomGame>?> fetchMyRandom() async {
     try {
-      final rows = await _retrying(
-          () => gateway.listMyRandom().timeout(_callTimeout));
+      final rows =
+          await _retrying(() => gateway.listMyRandom().timeout(_callTimeout));
       return [for (final r in rows) MyRandomGame.fromJson(r)];
     } catch (e, st) {
       debugPrint('[Kelimeki] Benim ilanlarım alınamadı: $e');

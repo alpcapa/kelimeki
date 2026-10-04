@@ -527,8 +527,7 @@ class _TutorialGameState extends State<TutorialGame> {
         rakip: _state.players.length > 1 ? _state.players[1].score : 0,
         nextLine: widget.source == 'replay' || next == null
             ? null
-            : tutorialNextLine(
-                aiLevelLabel[next.aiLevel]!, next.playerCount),
+            : tutorialNextLine(aiLevelLabel[next.aiLevel]!, next.playerCount),
         buttonLabel: widget.source == 'replay'
             ? tutorialReplayFinishButton
             : tutorialFinishButton,
@@ -706,26 +705,28 @@ class _TutorialGameState extends State<TutorialGame> {
                               // Yükseklik bütçesi (ROADMAP #38) — web `Board`un
                               // `fitHeight`i; gerekçe ve ölçümler `board_fit.dart`ta.
                               constraints: BoxConstraints(
-                                  maxWidth: boardMaxWidth(boardViewportHeight(context))),
+                                  maxWidth: boardMaxWidth(
+                                      boardViewportHeight(context))),
                               child: Padding(
-                              padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
-                              child: BoardWidget(
-                                state: state,
-                                onCellTap: _handleCellTap,
-                                moveOverlay: moveStatus == null
-                                    ? null
-                                    : MoveOverlay(
-                                        valid: moveStatus.valid,
-                                        cells: moveStatus.cells,
-                                        score: moveStatus.score,
-                                      ),
-                                gridKey: _gridKey,
-                                hideFooter: true,
-                                targets: targets,
-                                coach: tahtaBalonu,
-                                dragListenable: _dragNotifier,
+                                padding:
+                                    const EdgeInsets.fromLTRB(12, 6, 12, 12),
+                                child: BoardWidget(
+                                  state: state,
+                                  onCellTap: _handleCellTap,
+                                  moveOverlay: moveStatus == null
+                                      ? null
+                                      : MoveOverlay(
+                                          valid: moveStatus.valid,
+                                          cells: moveStatus.cells,
+                                          score: moveStatus.score,
+                                        ),
+                                  gridKey: _gridKey,
+                                  hideFooter: true,
+                                  targets: targets,
+                                  coach: tahtaBalonu,
+                                  dragListenable: _dragNotifier,
+                                ),
                               ),
-                            ),
                             ),
                             Padding(
                               // ⚠ Mesaj şeridi ve raf satırı TEK Stack'in
@@ -1061,8 +1062,8 @@ class _BitisKarti extends StatelessWidget {
               const Padding(
                 padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
                 child: Text(tutorialFinishText,
-                    style: TextStyle(
-                        fontSize: 15, height: 23 / 15, color: kText)),
+                    style:
+                        TextStyle(fontSize: 15, height: 23 / 15, color: kText)),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),

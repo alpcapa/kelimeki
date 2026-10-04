@@ -395,8 +395,7 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
               TextSpan(text: '$totalScore'),
               const TextSpan(
                 text: ' puan',
-                style: TextStyle(
-                    fontWeight: FontWeight.normal, color: _muted),
+                style: TextStyle(fontWeight: FontWeight.normal, color: _muted),
               ),
             ]),
             style: const TextStyle(
@@ -496,46 +495,46 @@ class _PlayerScoreCardModalState extends State<PlayerScoreCardModal> {
             // buton merkezi ile bar merkezi arasındaki fark 7,75 → 0 px.
             // Blok simetrisi bozulursa bu hiza da bozulur.
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-              GestureDetector(
-                onTap: () async {
-                  final games = await widget.games!;
-                  if (!context.mounted) return;
-                  await showGameHistory(
-                    context,
-                    games: games,
-                    userId: widget.userId,
-                    playerCount: _tab.playerCount,
-                    currentName: widget.name,
-                    isMe: false,
-                    stats: widget.stats,
-                    auth: widget.auth,
-                  );
-                },
-                behavior: HitTestBehavior.opaque,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    'TÜM OYUNLAR',
-                    style: TextStyle(
-                        fontFamily: 'SpaceMono',
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                        color: kAccent),
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () async {
+                      final games = await widget.games!;
+                      if (!context.mounted) return;
+                      await showGameHistory(
+                        context,
+                        games: games,
+                        userId: widget.userId,
+                        playerCount: _tab.playerCount,
+                        currentName: widget.name,
+                        isMe: false,
+                        stats: widget.stats,
+                        auth: widget.auth,
+                      );
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        'TÜM OYUNLAR',
+                        style: TextStyle(
+                            fontFamily: 'SpaceMono',
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                            color: kAccent),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              if (hasHeadToHead(_h2h))
-                _KafaKafaya(
-                  data: _h2h!,
-                  theirAvatarUrl: widget.avatarUrl,
-                  theirName: widget.name,
-                  myAvatarUrl: widget.auth?.profile?.avatarUrl,
-                ),
-            ]),
+                  if (hasHeadToHead(_h2h))
+                    _KafaKafaya(
+                      data: _h2h!,
+                      theirAvatarUrl: widget.avatarUrl,
+                      theirName: widget.name,
+                      myAvatarUrl: widget.auth?.profile?.avatarUrl,
+                    ),
+                ]),
           ],
         ],
       ),
@@ -653,16 +652,22 @@ class _KafaKafaya extends StatelessWidget {
                   // boyanmıyor. `stretch` dikey kısıtı TIGHT yapıyor.
                   // Test artık boyanan ALANI ölçüyor (varlık yetmez); bu satır
                   // kaldırılırsa GERÇEKTEN düşer.
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    if (bar.left > 0)
-                      Expanded(flex: bar.left, child: const ColoredBox(color: kRed)),
-                    if (bar.middle > 0)
-                      Expanded(
-                          flex: bar.middle, child: const ColoredBox(color: kMuted)),
-                    if (bar.right > 0)
-                      Expanded(
-                          flex: bar.right, child: const ColoredBox(color: kGreen)),
-                  ]),
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (bar.left > 0)
+                          Expanded(
+                              flex: bar.left,
+                              child: const ColoredBox(color: kRed)),
+                        if (bar.middle > 0)
+                          Expanded(
+                              flex: bar.middle,
+                              child: const ColoredBox(color: kMuted)),
+                        if (bar.right > 0)
+                          Expanded(
+                              flex: bar.right,
+                              child: const ColoredBox(color: kGreen)),
+                      ]),
                 ),
               ),
               const SizedBox(height: 2),

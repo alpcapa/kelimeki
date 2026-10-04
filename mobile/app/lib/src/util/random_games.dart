@@ -121,24 +121,114 @@ List<MyRandomGame> myWaitingRandomGames(List<MyRandomGame>? myRandom) => [
 
 // ── Şerit ───────────────────────────────────────────────────────────────────
 
-/// Şeridin gösterebileceği ilanlar: id ile TEKİLLEŞTİR (offset sayfalaması
-/// kayar, sunucu aynı satırı iki kez verebilir), kendi ilanımı ve zaten
-/// içinde olduğum oyunları ÇIKAR (sunucu zaten eler; ikinci emniyet), sırayı
-/// koru (sunucu: en yeni önce). Web `visibleListings`.
+/// Şerit kartı: başkasının ilanı ya da BENİM ilanım ([mine] = rolüm:
+/// 'creator' | 'random'; null = başkasınınki). 4 Ekim 2026, §15. Web
+/// `StripListing`.
+class StripListing extends RandomListing {
+  final String? mine;
+  const StripListing({
+    required super.id,
+    required super.playerCount,
+    required super.createdAt,
+    required super.creatorId,
+    required super.creatorName,
+    required super.creatorAvatarUrl,
+    required super.seats,
+    required super.openSeats,
+    this.mine,
+  });
+
+  factory StripListing.of(RandomListing l, {String? mine}) => StripListing(
+        id: l.id,
+        playerCount: l.playerCount,
+        createdAt: l.createdAt,
+        creatorId: l.creatorId,
+        creatorName: l.creatorName,
+        creatorAvatarUrl: l.creatorAvatarUrl,
+        seats: l.seats,
+        openSeats: l.openSeats,
+        mine: mine,
+      );
+}
+
+/// Başkalarının ilanlarını şeride hazırlar: id ile TEKİLLEŞTİR (offset
+/// sayfalaması kayar, sunucu aynı satırı iki kez verebilir), [excludeIds]
+/// (benim ilan/oyun id'lerim — kartım ayrıca eklenir, "benim kartım
+/// kazanır") dışında bırak, sırayı koru (sunucu: en yeni önce). ⚠ 4 Ekim
+/// 2026'dan beri kendi ilanımı `creatorId`'ye bakıp ÇIKARMAZ (§15). Web
+/// `visibleListings`.
 List<RandomListing> visibleListings(
-  List<RandomListing> listings,
-  String? myUserId,
-  Set<String> myGameIds,
-) {
+  List<RandomListing> listings, [
+  Set<String> excludeIds = const {},
+]) {
   final seen = <String>{};
   final out = <RandomListing>[];
   for (final l in listings) {
     if (!seen.add(l.id)) continue;
-    if (myUserId != null && l.creatorId == myUserId) continue;
-    if (myGameIds.contains(l.id)) continue;
+    if (excludeIds.contains(l.id)) continue;
     out.add(l);
   }
   return out;
+}
+
+/// Benim bekleyen ilanım → şerit kartı. Kurucu kimliği `createdBy` (kurucu
+/// ben değilsem slots içinden ad/avatar). Koltuk durumları `list_random_games`
+/// ile AYNI anlamda: açık → 'open', gerçek YZ → 'ai', kurucu → 'creator',
+/// yanıtı beklenen/reddeden davetli → 'invited', diğer insan → 'filled'.
+/// Web `myRandomToListing`.
+StripListing myRandomToListing(MyRandomGame g) {
+  OnlineSlot? creatorSlot;
+  for (final s in g.slots) {
+    if (s.isHuman && s.userId == g.createdBy) {
+      creatorSlot = s;
+      break;
+    }
+  }
+  final seats = [
+    for (final s in g.slots)
+      if (isOpenSeat(s))
+        'open'
+      else if (isRealAiSeat(s))
+        'ai'
+      else if (s.isHuman)
+        s.userId == g.createdBy
+            ? 'creator'
+            : (s.inviteStatus == 'pending' || s.inviteStatus == 'declined')
+                ? 'invited'
+                : 'filled'
+      else
+        'filled'
+  ];
+  return StripListing(
+    id: g.id,
+    playerCount: g.playerCount,
+    createdAt: g.createdAt,
+    creatorId: g.createdBy,
+    creatorName: creatorSlot?.name,
+    creatorAvatarUrl: creatorSlot?.avatarUrl,
+    seats: seats,
+    openSeats: g.openSeats,
+    mine: g.myRole == 'random' ? 'random' : 'creator',
+  );
+}
+
+/// Şeridin TAM listesi (§15): önce BENİM bekleyen ilanlarım (en yeni önce),
+/// sonra başkalarınınki (sunucu sırası). Kimliği [myRandom]da geçen hiçbir
+/// başkası-satırı tekrar eklenmez (benim kartım kazanır; arkadaş/aktif oyun
+/// da şeritte çıkmaz). Web `stripListings`.
+List<StripListing> stripListings(
+  List<RandomListing> others,
+  List<MyRandomGame>? myRandom,
+) {
+  final mine = myWaitingRandomGames(myRandom).toList()
+    ..sort((a, b) =>
+        (DateTime.tryParse(b.createdAt)?.millisecondsSinceEpoch ?? 0).compareTo(
+            DateTime.tryParse(a.createdAt)?.millisecondsSinceEpoch ?? 0));
+  final exclude = {for (final g in myRandom ?? const <MyRandomGame>[]) g.id};
+  return [
+    for (final g in mine) myRandomToListing(g),
+    for (final l in visibleListings(others, exclude)) StripListing.of(l),
+  ];
 }
 
 /// Şerit kartındaki "N koltuk kaldı" — zaman/yaş bilgisi KONMAZ.
@@ -277,6 +367,8 @@ const String kRandomWaitingFriend = 'Arkadaş yanıtı bekleniyor';
 const String kRandomWaitingStarting = 'Oyun başlıyor';
 const String kRandomCancelLabel = 'İlanı iptal et';
 const String kRandomLeaveLabel = 'Ayrıl';
+const String kRandomMineWaiting = 'Bekliyor';
+const String kRandomMineCancel = 'İptal';
 const String kRandomCancelledNotice = 'İlan iptal edildi.';
 const String kRandomLeftNotice = 'Ayrıldın. Koltuk yeniden açıldı.';
 const String kRandomLeaveFallback = 'İşlem tamamlanamadı.';

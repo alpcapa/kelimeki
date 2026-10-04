@@ -33,13 +33,20 @@ void main() {
   test('temanın tüm metin stilleri sıfır tracking taşır', () {
     final t = kelimekiTheme().textTheme;
     final styles = <String, TextStyle?>{
-      'displayLarge': t.displayLarge, 'displayMedium': t.displayMedium,
-      'displaySmall': t.displaySmall, 'headlineLarge': t.headlineLarge,
-      'headlineMedium': t.headlineMedium, 'headlineSmall': t.headlineSmall,
-      'titleLarge': t.titleLarge, 'titleMedium': t.titleMedium,
-      'titleSmall': t.titleSmall, 'bodyLarge': t.bodyLarge,
-      'bodyMedium': t.bodyMedium, 'bodySmall': t.bodySmall,
-      'labelLarge': t.labelLarge, 'labelMedium': t.labelMedium,
+      'displayLarge': t.displayLarge,
+      'displayMedium': t.displayMedium,
+      'displaySmall': t.displaySmall,
+      'headlineLarge': t.headlineLarge,
+      'headlineMedium': t.headlineMedium,
+      'headlineSmall': t.headlineSmall,
+      'titleLarge': t.titleLarge,
+      'titleMedium': t.titleMedium,
+      'titleSmall': t.titleSmall,
+      'bodyLarge': t.bodyLarge,
+      'bodyMedium': t.bodyMedium,
+      'bodySmall': t.bodySmall,
+      'labelLarge': t.labelLarge,
+      'labelMedium': t.labelMedium,
       'labelSmall': t.labelSmall,
     };
     styles.forEach((ad, s) {

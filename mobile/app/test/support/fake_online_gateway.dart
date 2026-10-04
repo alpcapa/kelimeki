@@ -485,8 +485,7 @@ class FakeChatGateway implements ChatGateway {
     if (f != null) throw f;
     markReadCalls.add((gameId, readAt));
     final cur = serverLastReadAt;
-    if (cur == null ||
-        DateTime.parse(readAt).isAfter(DateTime.parse(cur))) {
+    if (cur == null || DateTime.parse(readAt).isAfter(DateTime.parse(cur))) {
       serverLastReadAt = readAt;
     }
   }

@@ -35,9 +35,13 @@ void main() {
     expect(cases, hasLength(112),
         reason: 'golden beklenen vaka sayısını vermedi — üreticiyi koştur: '
             'npm run generate-initial-main-view-golden');
-    expect({for (final c in cases) '${(c as Map)['expected']}'},
-        {'live', 'local', 'null'},
-        reason: 'golden üç sonucu da içermeli');
+    expect({
+      for (final c in cases) '${(c as Map)['expected']}'
+    }, {
+      'live',
+      'local',
+      'null'
+    }, reason: 'golden üç sonucu da içermeli');
 
     for (final raw in cases) {
       final c = raw as Map;

@@ -1052,7 +1052,8 @@ class _SetupScreenState extends State<SetupScreen>
   /// tanıtım AÇILIRKEN konur, bitince değil — kullanıcı isteği "bir kere"
   /// ve yarıda kapatılan tanıtım sonsuz döngüye dönüşmemeli.
   Future<void> _runTutorial(String me, SetWordSource words,
-      {String source = 'auto', ({AiLevel aiLevel, int playerCount})? next}) async {
+      {String source = 'auto',
+      ({AiLevel aiLevel, int playerCount})? next}) async {
     final storage = widget.services.storage;
     if (storage != null) {
       try {

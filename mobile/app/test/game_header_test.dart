@@ -162,17 +162,14 @@ void main() {
 
   // Etiket eklenirken skor kutularının logoyla hizası BOZULMAMALIYDI
   // ("header'ı bozmadan" — kullanıcının şartı).
-  testWidgets('etiket skor kutularının logo hizasını bozmuyor',
-      (tester) async {
+  testWidgets('etiket skor kutularının logo hizasını bozmuyor', (tester) async {
     for (final w in [360.0, 390.0, 834.0]) {
       await setPhoneViewSize(tester, Size(w, 400));
       await tester.pumpWidget(MaterialApp(
         theme: kelimekiTheme(),
         home: Scaffold(
           body: GameHeader(
-              state: headerState(),
-              onLogoTap: () {},
-              auth: AuthService.fake()),
+              state: headerState(), onLogoTap: () {}, auth: AuthService.fake()),
         ),
       ));
       await tester.pump();

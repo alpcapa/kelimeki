@@ -48,7 +48,8 @@ const List<(String, String)> _silinecekEtiket = [
 ];
 
 /// `true` döner = hesap SİLİNDİ (çağıran ekranı Setup'a döndürmeli).
-Future<bool> showDeleteAccountModal(BuildContext context, AuthService auth) async {
+Future<bool> showDeleteAccountModal(
+    BuildContext context, AuthService auth) async {
   final silindi = await showDialog<bool>(
     context: context,
     builder: (context) => DeleteAccountModal(auth: auth),
@@ -90,7 +91,8 @@ class _DeleteAccountModalState extends State<DeleteAccountModal> {
       if (!mounted) return;
       setState(() {
         _error = friendlyErrorMessage(e,
-            surface: 'hesap-silme-ozet', fallback: 'Hesap bilgileri okunamadı.');
+            surface: 'hesap-silme-ozet',
+            fallback: 'Hesap bilgileri okunamadı.');
         _yukleniyor = false;
       });
     }
@@ -167,7 +169,10 @@ class _DeleteAccountModalState extends State<DeleteAccountModal> {
               const Text(
                 'Hesabına bağlı bir oyun/mesaj kaydı yok — yalnızca profilin silinecek.',
                 style: TextStyle(
-                    fontFamily: 'SpaceGrotesk', fontSize: 12, height: 1.6, color: kMuted),
+                    fontFamily: 'SpaceGrotesk',
+                    fontSize: 12,
+                    height: 1.6,
+                    color: kMuted),
               )
             else
               for (final (etiket, n) in satirlar)
@@ -186,7 +191,9 @@ class _DeleteAccountModalState extends State<DeleteAccountModal> {
                       const SizedBox(width: 12),
                       Text('$n',
                           style: const TextStyle(
-                              fontFamily: 'SpaceMono', fontSize: 11, color: kMuted)),
+                              fontFamily: 'SpaceMono',
+                              fontSize: 11,
+                              color: kMuted)),
                     ],
                   ),
                 ),
@@ -199,7 +206,10 @@ class _DeleteAccountModalState extends State<DeleteAccountModal> {
                 'kendi verisidir, silinmez — ama o kayıtlarda adın “Silinmiş oyuncu” '
                 'olarak değiştirilir.',
                 style: const TextStyle(
-                    fontFamily: 'SpaceGrotesk', fontSize: 12, height: 1.6, color: kText),
+                    fontFamily: 'SpaceGrotesk',
+                    fontSize: 12,
+                    height: 1.6,
+                    color: kText),
               ),
             ],
             const SizedBox(height: 16),
@@ -237,7 +247,8 @@ class _DeleteAccountModalState extends State<DeleteAccountModal> {
                 fontSize: 12,
                 letterSpacing: 1.5,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                onPressed: _busy ? null : () => Navigator.of(context).pop(false),
+                onPressed:
+                    _busy ? null : () => Navigator.of(context).pop(false),
               ),
             ),
             const SizedBox(width: 8),
@@ -248,7 +259,8 @@ class _DeleteAccountModalState extends State<DeleteAccountModal> {
                 fontSize: 12,
                 letterSpacing: 1.5,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                onPressed: (_busy || rapor == null || !onayVerildi) ? null : _sil,
+                onPressed:
+                    (_busy || rapor == null || !onayVerildi) ? null : _sil,
               ),
             ),
           ]),

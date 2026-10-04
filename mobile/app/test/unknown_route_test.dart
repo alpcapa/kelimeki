@@ -57,16 +57,18 @@ void main() {
     // katman. Bayrak sessizce kaybolursa (ör. manifest yeniden üretilir)
     // motor rota göndermeye başlar ve çökme sınıfı geri gelir; o yüzden
     // testle kilitli. Linkleri `app_links` yakalıyor, kaybedilen yol YOK.
-    final manifest = File(
-        '../../mobile/app/android/app/src/main/AndroidManifest.xml');
+    final manifest =
+        File('../../mobile/app/android/app/src/main/AndroidManifest.xml');
     expect(manifest.existsSync(), isTrue);
-    final xml = manifest.readAsStringSync().replaceAll(RegExp(r'<!--[\s\S]*?-->'), '');
+    final xml =
+        manifest.readAsStringSync().replaceAll(RegExp(r'<!--[\s\S]*?-->'), '');
     final deger = RegExp(
             r'android:name="flutter_deeplinking_enabled"[\s\S]*?android:value="([^"]+)"')
         .firstMatch(xml)
         ?.group(1);
     expect(deger, 'false',
-        reason: 'flutter_deeplinking_enabled false DEĞİL — çökme sınıfı geri gelir');
+        reason:
+            'flutter_deeplinking_enabled false DEĞİL — çökme sınıfı geri gelir');
   });
 
   testWidgets('bilinmeyen rota ÇÖKERTMEZ ve ekranı değiştirmez',

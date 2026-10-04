@@ -15,7 +15,8 @@
 // ⚠ Bu satır 2 Eylül 2026'ya kadar "İki çağrı yeri var" diyordu ve BAYATTI —
 // Canlı kartı sonradan eklenmiş, yorum güncellenmemişti. Boyut değiştirmeye
 // gelen biri kapsamı eksik ölçerdi.
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 
 import '../../util/score_line.dart';

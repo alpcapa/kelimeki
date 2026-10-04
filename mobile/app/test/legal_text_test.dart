@@ -56,7 +56,8 @@ void main() {
   final web = File(_webKaynak).readAsStringSync();
 
   // Portta iki tarih var (Koşullar önce, Gizlilik sonra) — sırayla.
-  final portDates = RegExp(r'Son güncelleme:\s*([0-9]{1,2}\s+\p{L}+\s+[0-9]{4})',
+  final portDates = RegExp(
+          r'Son güncelleme:\s*([0-9]{1,2}\s+\p{L}+\s+[0-9]{4})',
           unicode: true)
       .allMatches(port)
       .map((m) => m.group(1))
@@ -82,7 +83,8 @@ void main() {
             'devam etti).');
   });
 
-  test('Rastgele Oyuncu ilan görünürlüğü + sohbet cümlesi: web ve port AYNI '
+  test(
+      'Rastgele Oyuncu ilan görünürlüğü + sohbet cümlesi: web ve port AYNI '
       'sözleri taşıyor (4 Ekim 2026)', () {
     // Tarih tek başına yetmez: tarih aynı kalıp bir cümle yalnızca bir
     // tarafta eksik olabilir. Ayraçlar (satır kaydırma, tırnak, noktalama)

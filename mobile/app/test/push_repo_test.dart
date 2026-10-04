@@ -201,7 +201,8 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(s.yazilanlar.last['token'], 'tok-2');
     expect(s.silinenler, ['tok-1'],
-        reason: 'eski satır kalırsa aynı cihaza iki kez gönderilmeye çalışılır');
+        reason:
+            'eski satır kalırsa aynı cihaza iki kez gönderilmeye çalışılır');
   });
 
   test('FCM ya da tablo patlarsa FIRLATMAZ', () async {

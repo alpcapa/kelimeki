@@ -153,7 +153,9 @@ class _FriendModerationSheetState extends State<_FriendModerationSheet> {
           NeoButton(
             label: 'Şikayeti Geri Çek',
             variant: NeoButtonVariant.neutral,
-            onPressed: _busy ? null : () => setState(() => _view = _View.withdrawConfirm),
+            onPressed: _busy
+                ? null
+                : () => setState(() => _view = _View.withdrawConfirm),
           ),
           const SizedBox(height: 8),
         ],
@@ -161,14 +163,20 @@ class _FriendModerationSheetState extends State<_FriendModerationSheet> {
           NeoButton(
             label: 'Sessizden Çıkar',
             variant: NeoButtonVariant.neutral,
-            onPressed: _busy ? null : () => setState(() => _view = _View.unmuteConfirm),
+            onPressed: _busy
+                ? null
+                : () => setState(() => _view = _View.unmuteConfirm),
           ),
           const SizedBox(height: 8),
         ],
         const Text(
           'Şikayet etmek ve sessize almak, o kişiyle oynadığın Canlı oyunun '
           'mesajlaşma ayarlarından yapılır.',
-          style: TextStyle(fontFamily: 'SpaceMono', fontSize: 10, color: _muted, height: 1.5),
+          style: TextStyle(
+              fontFamily: 'SpaceMono',
+              fontSize: 10,
+              color: _muted,
+              height: 1.5),
         ),
       ];
 
@@ -176,7 +184,8 @@ class _FriendModerationSheetState extends State<_FriendModerationSheet> {
     final unmute = _view == _View.unmuteConfirm;
     return [
       const Text('Emin misiniz?',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _text)),
+          style: TextStyle(
+              fontSize: 14, fontWeight: FontWeight.bold, color: _text)),
       const SizedBox(height: 8),
       Text(
         unmute

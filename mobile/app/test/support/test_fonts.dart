@@ -62,8 +62,8 @@ Future<void> loadAppFonts() async {
   ]);
   // Yalnızca k-lig rütbe rozetinde kullanılıyor — yüklenmezse mührün harfi
   // Ahem bloğuna döner ve mürekkep-ortalama testi (rank_seal) anlamsızlaşır.
-  await _loadFamily('MPlusRounded1c',
-      ['assets/fonts/MPLUSRounded1c-ExtraBold-subset.ttf']);
+  await _loadFamily(
+      'MPlusRounded1c', ['assets/fonts/MPLUSRounded1c-ExtraBold-subset.ttf']);
 }
 
 /// Eski ad — çağıranlar için geriye dönük sarmalayıcı (SDK Roboto'suna artık

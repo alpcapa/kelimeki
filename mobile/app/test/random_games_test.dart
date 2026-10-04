@@ -224,25 +224,72 @@ void main() {
 
   group('şerit', () {
     test(
-        'visibleListings: id tekilleştirir, kendi ilanımı ve içinde '
-        'olduğum oyunları çıkarır, sırayı korur', () {
-      final out = visibleListings(
-          [
-            listing('a'),
-            listing('b'),
-            listing('a'), // offset sayfalaması aynı satırı iki kez verebilir
-            listing('benim', creator: 'me'),
-            listing('icindeyim'),
-            listing('c'),
-          ],
-          'me',
-          {'icindeyim'});
-      expect([for (final l in out) l.id], ['a', 'b', 'c']);
+        'visibleListings: id tekilleştirir, excludeIds\'i çıkarır, sırayı '
+        'korur; kurucu BEN olsam da çıkarmaz (§15)', () {
+      final out = visibleListings([
+        listing('a'),
+        listing('b'),
+        listing('a'), // offset sayfalaması aynı satırı iki kez verebilir
+        listing('benim', creator: 'me'),
+        listing('icindeyim'),
+        listing('c'),
+      ], {
+        'icindeyim'
+      });
+      expect([for (final l in out) l.id], ['a', 'b', 'benim', 'c']);
     });
 
-    test('myUserId null iken kendi-ilan süzgeci uygulanmaz', () {
-      final out = visibleListings([listing('x', creator: 'me')], null, {});
-      expect(out, hasLength(1));
+    test('myRandomToListing: kurucu/ad/avatar slots\'tan, koltuk eşlemesi', () {
+      final g = mine('m1', playerCount: 4, slots: [
+        slotHuman('me', name: 'Ben', relation: 'self'),
+        slotHuman('d1', name: 'D1', inviteStatus: 'pending'),
+        slotHuman('d2', name: 'D2', inviteStatus: 'declined'),
+        slotHuman('d3', name: 'D3', inviteStatus: 'accepted'),
+      ]);
+      final l = myRandomToListing(g);
+      expect(l.mine, 'creator');
+      expect(l.id, 'm1');
+      expect(l.creatorName, isNotNull);
+      expect(l.seats, ['creator', 'invited', 'invited', 'filled']);
+      final k = myRandomToListing(mine('m2', slots: [
+        slotHuman('me', name: 'Ben', relation: 'self'),
+        slotOpen,
+      ]));
+      expect(k.seats, ['creator', 'open']);
+      final r =
+          myRandomToListing(mine('m3', role: 'random', playerCount: 4, slots: [
+        slotHuman('me', name: 'Ben'),
+        slotOpen,
+        slotAi,
+        slotHuman('y', name: 'Y'),
+      ]));
+      expect(r.mine, 'random');
+      expect(r.seats, ['creator', 'open', 'ai', 'filled']);
+    });
+
+    test(
+        'stripListings: benimkiler ÖNCE (en yeni önce), çakışan id\'de benim '
+        'kartım kazanır, friend/active görünmez', () {
+      MyRandomGame at(String id, String ts,
+              {String role = 'creator', String status = 'pending'}) =>
+          MyRandomGame.fromJson(
+              myRandomRow(id: id, myRole: role, status: status, createdAt: ts));
+      final out = stripListings([
+        listing('o1'),
+        listing('m-yeni'), // sunucu bana da gösteriyor → tekrar OLMAZ
+        listing('o2'),
+        listing('arkadas'),
+      ], [
+        at('m-eski', '2026-10-01T10:00:00Z'),
+        at('m-yeni', '2026-10-03T10:00:00Z', role: 'random'),
+        at('arkadas', '2026-10-04T10:00:00Z', role: 'friend'),
+        at('aktif', '2026-10-04T10:00:00Z', status: 'active'),
+      ]);
+      expect([for (final l in out) l.id], ['m-yeni', 'm-eski', 'o1', 'o2']);
+      expect([for (final l in out) l.mine], ['random', 'creator', null, null]);
+      expect(stripListings([listing('x')], null), hasLength(1));
+      expect(stripListings(const [], [at('a', '2026-10-01T10:00:00Z')]),
+          hasLength(1));
     });
 
     test('seatsLeftLabel: zaman/yaş bilgisi KONMAZ', () {
@@ -488,6 +535,14 @@ void main() {
       }
       expect(RegExp('>\\s*$kRandomAcceptLabel\\s*<').hasMatch(webSerit), isTrue,
           reason: 'Kabul düğmesi etiketi ayrıştı');
+      expect(RegExp('>\\s*$kRandomMineWaiting\\s*<').hasMatch(webSerit), isTrue,
+          reason: 'Bekliyor etiketi ayrıştı');
+      expect(webSerit.contains("'$kRandomMineCancel'"), isTrue,
+          reason: 'İptal etiketi ayrıştı');
+      expect(webSerit.contains("'$kRandomLeaveLabel'"), isTrue);
+      expect(webSerit.contains('stripListings('), isTrue);
+      expect(webSerit.contains('border-accent/30 bg-accent/5'), isTrue,
+          reason: 'benim kartımın zemini ayrıştı');
       expect(webSerit.contains(kRandomAcceptFallback), isTrue);
       expect(webSerit.contains("surface: 'rastgele-kabul'"), isTrue);
       for (final t in [

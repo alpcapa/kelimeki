@@ -47,8 +47,8 @@ void main() {
   testWidgets(
       'tahta harfi GENİŞ ekranda (iPad, >631px) web gibi 24px tavana kilitlenir '
       '— önceki sabit 20px BURADA gerçekten farklı çıkardı', (tester) async {
-    final size = await _letterFontSizeAt(tester, 1024, TileVariant.board,
-        color: board);
+    final size =
+        await _letterFontSizeAt(tester, 1024, TileVariant.board, color: board);
     expect(size, 24);
   });
 
@@ -56,15 +56,15 @@ void main() {
       'tahta harfi DAR ekranda (iPhone, 390px) web`in ölçeğiyle ~14.8px olur '
       '— sabit 20px yerine küçülüyor (13x13 ızgarada web de aynı şekilde küçük)',
       (tester) async {
-    final size = await _letterFontSizeAt(tester, 390, TileVariant.board,
-        color: board);
+    final size =
+        await _letterFontSizeAt(tester, 390, TileVariant.board, color: board);
     expect(size, closeTo(14.82, 0.01));
   });
 
   testWidgets('tahta harfi 631px altında TABANA (14px) kilitlenir',
       (tester) async {
-    final size = await _letterFontSizeAt(tester, 300, TileVariant.board,
-        color: board);
+    final size =
+        await _letterFontSizeAt(tester, 300, TileVariant.board, color: board);
     expect(size, 14);
   });
 

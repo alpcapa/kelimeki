@@ -89,7 +89,8 @@ void main() {
 
     test('eşik web ile birebir aynı', () {
       final src = web.readAsStringSync();
-      final m = RegExp(r'export const LONG_AWAY_MS = ([\d\s*]+);').firstMatch(src);
+      final m =
+          RegExp(r'export const LONG_AWAY_MS = ([\d\s*]+);').firstMatch(src);
       expect(m, isNotNull, reason: 'LONG_AWAY_MS okunamadı');
       final ms = m!
           .group(1)!

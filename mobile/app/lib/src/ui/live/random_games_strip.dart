@@ -1,7 +1,8 @@
 // Rastgele Oyuncu (3 Ekim 2026) — "Devam Edenler"in üstündeki yatay kayan
 // ilan şeridi + benim bekleyen ilanım için "Bekliyor n/N" satırı. Web
 // `src/components/RandomGamesStrip.tsx` portu; tasarım ve gerekçeler:
-// `docs/decisions/random-opponent.md` (§4, §11). Saf kurallar (süzgeç,
+// `docs/decisions/random-opponent.md` (§4, §11, §15). §15 (4 Ekim 2026): şerit BENİM bekleyen ilanımı da kart
+// olarak gösterir. Saf kurallar (süzgeç,
 // metinler, aralıklar): `util/random_games.dart`.
 //
 // ⚠ Şerit Realtime ile BESLENEMEZ: Realtime RLS'e uyar ve başkasının açtığı
@@ -64,8 +65,16 @@ class RandomGamesStrip extends StatefulWidget {
   /// Oturumun kullanıcı kimliği (STRING — `user` nesnesi değil).
   final String userId;
 
-  /// Zaten içinde olduğum oyunların id'leri (şeritte tekrar gösterilmez).
-  final List<String> myGameIds;
+  /// `list_my_random_games` sonucu (`null` = alınamadı). Bekleyen creator/
+  /// random ilanlarım şeride KART olarak eklenir (§15); kimlikleri
+  /// başkaları listesinden düşülür.
+  final List<MyRandomGame>? myRandom;
+
+  /// İptal/Ayrıl sürerken o ilanın id'si (düğme kilitli).
+  final String? busyRandomId;
+
+  /// Kartımdaki "İptal" (kurucu) / "Ayrıl" (kabul eden).
+  final void Function(MyRandomGame game) onLeaveMine;
 
   /// Başlıktaki "Rastgele oyun aç" — "Yeni Oyun Başlat" ile AYNI: kurulum
   /// ekranını açar.
@@ -85,7 +94,9 @@ class RandomGamesStrip extends StatefulWidget {
     required this.repo,
     required this.onlineStatus,
     required this.userId,
-    required this.myGameIds,
+    required this.myRandom,
+    this.busyRandomId,
+    required this.onLeaveMine,
     required this.onOpenCreate,
     required this.onAccepted,
     required this.onNotice,
@@ -105,8 +116,7 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
   int _last = 0;
   Timer? _timer;
 
-  int _now() =>
-      (widget.nowMs ?? () => DateTime.now().millisecondsSinceEpoch)();
+  int _now() => (widget.nowMs ?? () => DateTime.now().millisecondsSinceEpoch)();
 
   /// Uygulama ön planda mı — web `document.visibilityState === 'visible'`.
   /// `null` (henüz bildirilmedi) görünür sayılır.
@@ -150,7 +160,8 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
     if (!force && now - _last < kRandomStripMinGap.inMilliseconds) return;
     _inflight = true;
     _last = now;
-    final rows = await widget.repo.fetchRandomListings(limit: kRandomStripLimit);
+    final rows =
+        await widget.repo.fetchRandomListings(limit: kRandomStripLimit);
     _inflight = false;
     if (!mounted) return;
     // `null` = bilmiyoruz: ELDEKİ listeyi koru (boşla ezmek şeridi
@@ -186,8 +197,7 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
 
   @override
   Widget build(BuildContext context) {
-    final visible = visibleListings(
-        _listings, widget.userId, widget.myGameIds.toSet());
+    final visible = stripListings(_listings, widget.myRandom);
     if (visible.isEmpty) return const SizedBox.shrink();
     final yukseklik = MediaQuery.textScalerOf(context).scale(kRandomCardHeight);
     return Padding(
@@ -242,7 +252,17 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
                     key: ValueKey('ilan-${visible[i].id}'),
                     listing: visible[i],
                     busy: _busyId != null,
+                    leaveBusy: widget.busyRandomId == visible[i].id,
                     onAccept: () => _accept(visible[i]),
+                    onLeave: () {
+                      for (final g
+                          in widget.myRandom ?? const <MyRandomGame>[]) {
+                        if (g.id == visible[i].id) {
+                          widget.onLeaveMine(g);
+                          return;
+                        }
+                      }
+                    },
                   ),
                 ),
               );
@@ -273,7 +293,8 @@ class _SeatDots extends StatelessWidget {
           for (var i = 0; i < seats.length; i++) ...[
             if (i > 0) const SizedBox(width: 3),
             Container(
-              key: ValueKey('nokta-$i-${seatDotFilled(seats[i]) ? 'dolu' : 'bos'}'),
+              key: ValueKey(
+                  'nokta-$i-${seatDotFilled(seats[i]) ? 'dolu' : 'bos'}'),
               width: 8,
               height: 8,
               decoration: BoxDecoration(
@@ -292,25 +313,32 @@ class _SeatDots extends StatelessWidget {
 }
 
 class _ListingCard extends StatelessWidget {
-  final RandomListing listing;
+  final StripListing listing;
   final bool busy;
+  final bool leaveBusy;
   final VoidCallback onAccept;
+  final VoidCallback onLeave;
   const _ListingCard(
       {super.key,
       required this.listing,
       required this.busy,
-      required this.onAccept});
+      required this.leaveBusy,
+      required this.onAccept,
+      required this.onLeave});
 
   @override
   Widget build(BuildContext context) {
     final l = listing;
     final iki = l.playerCount == 2;
     final ad = l.creatorName ?? 'Oyuncu';
+    final mine = l.mine;
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: _panel,
-        border: Border.all(color: _border),
+        // Benim ilanım: web `border-accent/30 bg-accent/5`.
+        color: mine != null ? _accent.withValues(alpha: 0.05) : _panel,
+        border: Border.all(
+            color: mine != null ? _accent.withValues(alpha: 0.3) : _border),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -342,30 +370,70 @@ class _ListingCard extends StatelessWidget {
                         : const Color(0xFF4A1A90))),
           ),
           _SeatDots(seats: l.seats),
-          Text(seatsLeftLabel(l.openSeats),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'SpaceMono',
-                  fontSize: 10,
-                  height: 1.25,
-                  color: _muted)),
-          Semantics(
-            button: true,
-            label: '$ad ilanını kabul et',
-            excludeSemantics: true,
-            child: SizedBox(
-              width: double.infinity,
-              height: 32,
-              child: NeoButton(
-                label: trUpper(kRandomAcceptLabel),
-                variant: NeoButtonVariant.accent,
-                fontSize: 11,
-                letterSpacing: 0.5,
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                onPressed: busy ? null : onAccept,
+          if (mine != null)
+            // "Bekliyor" soluk etiket ("N koltuk kaldı"nın YERİNE: dar kartta
+            // etiket + eylem yan yana sığmıyor; koltuk durumu noktalarda).
+            Text(trUpper(kRandomMineWaiting),
+                key: const Key('ilan-bekliyor'),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontFamily: 'SpaceMono',
+                    fontSize: 10,
+                    height: 1.25,
+                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.bold,
+                    color: _muted))
+          else
+            Text(seatsLeftLabel(l.openSeats),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontFamily: 'SpaceMono',
+                    fontSize: 10,
+                    height: 1.25,
+                    color: _muted)),
+          if (mine != null)
+            // Benim ilanım (§15): "Kabul" YOK; küçük eylem.
+            Semantics(
+              button: true,
+              label: mine == 'creator' ? kRandomCancelLabel : 'İlandan ayrıl',
+              excludeSemantics: true,
+              child: TapTarget(
+                key: const Key('ilan-benim-eylem'),
+                onTap: leaveBusy ? null : onLeave,
+                minHeight: 32,
+                minWidth: 32,
+                child: Opacity(
+                  opacity: leaveBusy ? 0.5 : 1,
+                  child: Text(
+                    mine == 'creator' ? kRandomMineCancel : kRandomLeaveLabel,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: kRed,
+                      decoration: TextDecoration.underline,
+                      decorationColor: kRed,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else
+            Semantics(
+              button: true,
+              label: '$ad ilanını kabul et',
+              excludeSemantics: true,
+              child: SizedBox(
+                width: double.infinity,
+                height: 32,
+                child: NeoButton(
+                  label: trUpper(kRandomAcceptLabel),
+                  variant: NeoButtonVariant.accent,
+                  fontSize: 11,
+                  letterSpacing: 0.5,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  onPressed: busy ? null : onAccept,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

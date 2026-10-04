@@ -155,13 +155,14 @@ class SupabaseFriendsGateway implements FriendsGateway {
   @override
   String? get currentUserId => client.auth.currentUser?.id;
 
-  List<Map<String, Object?>> _rows(dynamic data) =>
-      [for (final r in (data as List? ?? const [])) (r as Map).cast<String, Object?>()];
+  List<Map<String, Object?>> _rows(dynamic data) => [
+        for (final r in (data as List? ?? const []))
+          (r as Map).cast<String, Object?>()
+      ];
 
   @override
-  Future<List<Map<String, Object?>>> searchUsers(String query) async =>
-      _rows(await client
-          .rpc('search_users_for_friend', params: {'p_query': query}));
+  Future<List<Map<String, Object?>>> searchUsers(String query) async => _rows(
+      await client.rpc('search_users_for_friend', params: {'p_query': query}));
 
   @override
   Future<List<Map<String, Object?>>> listUsers(int offset, int limit) async =>
@@ -204,9 +205,11 @@ class SupabaseFriendsGateway implements FriendsGateway {
   Future<void> deleteRelation(String otherId) async {
     final user = client.auth.currentUser;
     if (user == null) throw StateError('Oturum açık değil.');
-    await client.from('friend_requests').delete().or(
-        'and(user_id.eq.${user.id},friend_id.eq.$otherId),'
-        'and(user_id.eq.$otherId,friend_id.eq.${user.id})');
+    await client
+        .from('friend_requests')
+        .delete()
+        .or('and(user_id.eq.${user.id},friend_id.eq.$otherId),'
+            'and(user_id.eq.$otherId,friend_id.eq.${user.id})');
   }
 
   @override
@@ -236,8 +239,8 @@ class SupabaseFriendsGateway implements FriendsGateway {
 
   @override
   Future<String?> inviteInfo(String token) async {
-    final data = await client
-        .rpc('get_friend_invite_info', params: {'p_token': token});
+    final data =
+        await client.rpc('get_friend_invite_info', params: {'p_token': token});
     final row = (data is List && data.isNotEmpty) ? data.first as Map : null;
     return row?['inviter_name'] as String?;
   }
@@ -352,10 +355,9 @@ class FriendsRepo {
     });
   }
 
-  Future<void> respond(String requesterId, {required bool accept}) =>
-      accept
-          ? gateway.acceptRequest(requesterId)
-          : gateway.deleteRelation(requesterId);
+  Future<void> respond(String requesterId, {required bool accept}) => accept
+      ? gateway.acceptRequest(requesterId)
+      : gateway.deleteRelation(requesterId);
 
   /// Arkadaşlıktan çıkma VE gönderilmiş isteği iptal — aynı silme.
   Future<void> removeOrCancel(String otherId) =>

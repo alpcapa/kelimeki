@@ -132,8 +132,8 @@ class GameSessionHost {
       _guest?.detach();
       _guest = null;
       _cloud?.detach();
-      _cloud = CloudGameSession(controller, c!, nextUserId,
-          debounce: cloudDebounce);
+      _cloud =
+          CloudGameSession(controller, c!, nextUserId, debounce: cloudDebounce);
       final repo = guestRepo;
       // ⚠ Slot YALNIZCA çalışan oyun onu gerçekten yazmışsa silinir
       // (`turnCount >= 2`, autosave'in kendi eşiği). Daha erken bir girişte

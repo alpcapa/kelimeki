@@ -50,8 +50,7 @@ void main() {
   group('magazaGuncellemesiniCalistir', () {
     test('güncelleme varsa Immediate akışı BAŞLATILIR ve soru kapanır',
         () async {
-      final gw = FakeStoreUpdate(
-          durum: StoreUpdateDurumu.hemenGuncellenebilir);
+      final gw = FakeStoreUpdate(durum: StoreUpdateDurumu.hemenGuncellenebilir);
       expect(await magazaGuncellemesiniCalistir(gw), isTrue);
       expect(gw.guncelleSayisi, 1);
     });
@@ -65,8 +64,7 @@ void main() {
     // ⚠ Bu dal, özelliğin var oluş sebebinin kendisi: "soramadım"ı
     // "güncel" saymak, açılışta ağı olmayan kullanıcıyı sonsuza dek eski
     // sürümde bırakırdı — 1.0.0'da 93 kişiyle yaşanan tam olarak buydu.
-    test('sorulamadıysa soru KAPANMAZ (öne dönüşte tekrar denenir)',
-        () async {
+    test('sorulamadıysa soru KAPANMAZ (öne dönüşte tekrar denenir)', () async {
       final gw = FakeStoreUpdate(durum: StoreUpdateDurumu.bilinmiyor);
       expect(await magazaGuncellemesiniCalistir(gw), isFalse);
       expect(gw.guncelleSayisi, 0);
@@ -78,8 +76,7 @@ void main() {
     test('kullanıcı vazgeçerse soru kapanır (öne dönüşte tekrar AÇILMAZ)',
         () async {
       final gw = FakeStoreUpdate(
-          durum: StoreUpdateDurumu.hemenGuncellenebilir,
-          akisBasarili: false);
+          durum: StoreUpdateDurumu.hemenGuncellenebilir, akisBasarili: false);
       expect(await magazaGuncellemesiniCalistir(gw), isTrue);
       expect(gw.guncelleSayisi, 1);
     });
@@ -87,8 +84,7 @@ void main() {
 
   group('UpdateRequiredScreen (acil fren)', () {
     testWidgets('buton önce uygulama İÇİNDEKİ akışı dener', (tester) async {
-      final gw = FakeStoreUpdate(
-          durum: StoreUpdateDurumu.hemenGuncellenebilir);
+      final gw = FakeStoreUpdate(durum: StoreUpdateDurumu.hemenGuncellenebilir);
       await tester.pumpWidget(MaterialApp(
         theme: kelimekiTheme(),
         home: UpdateRequiredScreen(storeUpdate: gw),
@@ -168,8 +164,7 @@ void main() {
     testWidgets('soru kapandıysa öne dönüşte TEKRAR sorulmaz', (tester) async {
       final gw = await pumpApp(tester);
       expect(gw.kontrolSayisi, 1);
-      tester.binding
-          .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
       expect(gw.kontrolSayisi, 1, reason: 'Kapanmış soru yeniden soruldu');
     });
@@ -179,8 +174,7 @@ void main() {
     testWidgets('sorulamadıysa öne dönüşte TEKRAR sorulur', (tester) async {
       final gw = await pumpApp(tester, durum: StoreUpdateDurumu.bilinmiyor);
       expect(gw.kontrolSayisi, 1);
-      tester.binding
-          .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
       expect(gw.kontrolSayisi, 2,
           reason: 'Ağsız açılıştan sonra bir daha hiç sorulmadı');

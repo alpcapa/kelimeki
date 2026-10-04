@@ -642,8 +642,8 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     // daveti bugünkü gibi; dolup başlayan oyun normal oyun). Kural saf
     // fonksiyonda: `util/random_games.dart` (web ikizi `utils/randomGames.ts`).
     final managed = randomManagedIds(_myRandom, games);
-    final kovalar = classifyLiveGames(games, managed,
-        turns: turns, deadlines: deadlines);
+    final kovalar =
+        classifyLiveGames(games, managed, turns: turns, deadlines: deadlines);
     final invites = kovalar.invites;
     final active = kovalar.active;
     final waiting = kovalar.waiting;
@@ -653,8 +653,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
       ..sort((a, b) =>
           (DateTime.tryParse(b.createdAt)?.millisecondsSinceEpoch ?? 0)
               .compareTo(
-                  DateTime.tryParse(a.createdAt)?.millisecondsSinceEpoch ??
-                      0));
+                  DateTime.tryParse(a.createdAt)?.millisecondsSinceEpoch ?? 0));
     // Kartlarda gösterilecek katılımcıların rütbe puanı — `ensure` yalnızca
     // EKSİK id'ler için ağa gider ve bildirimini bir sonraki microtask'a
     // ertelediğinden build içinden çağrılması güvenli.
@@ -755,7 +754,9 @@ class _LiveGamesTabState extends State<LiveGamesTab>
                     repo: repo,
                     onlineStatus: services.onlineStatus,
                     userId: user.id,
-                    myGameIds: [for (final g in _myRandom ?? const []) g.id],
+                    myRandom: _myRandom,
+                    busyRandomId: _busyRandomId,
+                    onLeaveMine: _handleLeaveRandom,
                     onOpenCreate: _openCreateForm,
                     onAccepted: (r) {
                       _showNotice(acceptNotice(started: r.started));
@@ -1060,8 +1061,7 @@ class _GameRow extends StatelessWidget {
                           ? const AvatarRowPlayer(
                               name: 'Yapay Zeka', isAi: true)
                           : AvatarRowPlayer(
-                              name: s.name ?? 'Oyuncu',
-                              avatarUrl: s.avatarUrl),
+                              name: s.name ?? 'Oyuncu', avatarUrl: s.avatarUrl),
               ]),
               // 6 Eylül 2026 — "X açtı" satırı KALKTI, yerine PUAN SATIRI
               // (kullanıcı: *"Ironman açtı kalksın çünkü zaten ilk baştaki

@@ -88,7 +88,8 @@ void main() {
     await tester.tap(find.text('BİLDİRİMLERİ AÇ'));
     await tester.pumpAndSettle();
     expect(m.istekSayisi, 1);
-    expect(s.yazilanlar, hasLength(1), reason: 'izin verilince token yazılmalı');
+    expect(s.yazilanlar, hasLength(1),
+        reason: 'izin verilince token yazılmalı');
   });
 
   testWidgets('KALICI reddedilmişse kart HİÇ gösterilmez', (tester) async {

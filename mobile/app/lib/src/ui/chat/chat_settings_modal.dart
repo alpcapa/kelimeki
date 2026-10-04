@@ -316,8 +316,8 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
                   height: 16,
                   decoration: BoxDecoration(
                     color: muted ? _accent : _bg,
-                    border: Border.all(
-                        color: muted ? _accent : _muted, width: 2),
+                    border:
+                        Border.all(color: muted ? _accent : _muted, width: 2),
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: muted
@@ -451,8 +451,8 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
               style: _NeoButtonStyle.danger,
               onPressed: _reasonController.text.trim().isEmpty
                   ? null
-                  : () => setState(() => _view = _ReportConfirmView(
-                      p, _reasonController.text.trim())),
+                  : () => setState(() => _view =
+                      _ReportConfirmView(p, _reasonController.text.trim())),
             ),
           ),
           const SizedBox(width: 8),
@@ -495,8 +495,8 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
             border: Border.all(color: _border),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Text(reason,
-              style: const TextStyle(fontSize: 11, color: _muted)),
+          child:
+              Text(reason, style: const TextStyle(fontSize: 11, color: _muted)),
         ),
         if (_error != null) ...[
           const SizedBox(height: 8),
@@ -518,8 +518,9 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
             child: _NeoTextButton(
               label: 'VAZGEÇ',
               style: _NeoButtonStyle.neutral,
-              onPressed:
-                  _busy ? null : () => setState(() => _view = _ReportReasonView(p)),
+              onPressed: _busy
+                  ? null
+                  : () => setState(() => _view = _ReportReasonView(p)),
             ),
           ),
         ]),
@@ -610,8 +611,8 @@ class _ConfirmView extends StatelessWidget {
             : Text.rich(TextSpan(children: [
                 TextSpan(
                     text: body.substring(0, idx),
-                    style:
-                        const TextStyle(fontSize: 13, height: 1.5, color: _text)),
+                    style: const TextStyle(
+                        fontSize: 13, height: 1.5, color: _text)),
                 TextSpan(
                     text: boldName,
                     style: const TextStyle(
@@ -620,8 +621,8 @@ class _ConfirmView extends StatelessWidget {
                         color: _text)),
                 TextSpan(
                     text: body.substring(idx + boldName.length),
-                    style:
-                        const TextStyle(fontSize: 13, height: 1.5, color: _text)),
+                    style: const TextStyle(
+                        fontSize: 13, height: 1.5, color: _text)),
               ])),
         if (error != null) ...[
           const SizedBox(height: 8),

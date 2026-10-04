@@ -19,8 +19,7 @@ import 'package:kelimeki_core/kelimeki_core.dart';
 import 'game_screen_test.dart' show craftedState;
 import 'support/test_view.dart';
 
-const _uzunMesaj =
-    'Asnmzr: +9 puan (5 puanı Ironman kaptı) Kelimeler: İTİ, İP';
+const _uzunMesaj = 'Asnmzr: +9 puan (5 puanı Ironman kaptı) Kelimeler: İTİ, İP';
 
 void main() {
   Future<double> yukseklikFarki(WidgetTester tester, double olcek) async {
@@ -32,10 +31,10 @@ void main() {
       theme: kelimekiTheme(),
       home: Builder(
         builder: (ctx) => MediaQuery(
-          data: MediaQuery.of(ctx)
-              .copyWith(textScaler: TextScaler.linear(olcek)),
-          child: GameScreen(
-              controller: c, words: words, auth: AuthService.fake()),
+          data:
+              MediaQuery.of(ctx).copyWith(textScaler: TextScaler.linear(olcek)),
+          child:
+              GameScreen(controller: c, words: words, auth: AuthService.fake()),
         ),
       ),
     ));

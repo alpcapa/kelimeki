@@ -75,6 +75,9 @@ void main() {
   }
 
   Finder kart(String id) => find.byKey(ValueKey('ilan-$id'));
+  // "Devam Edenler" satırındaki Ayrıl (şerit kartındakiyle karışmasın).
+  final satirdaAyril = find.descendant(
+      of: find.byType(RandomWaitingRow), matching: find.text('Ayrıl'));
 
   group('şerit', () {
     testWidgets(
@@ -89,9 +92,8 @@ void main() {
               creatorName: 'Can',
               playerCount: 4,
               seats: ['creator', 'filled', 'open', 'open']),
-          // Kendi ilanım: şeritte olmamalı (altta "Bekliyor" satırı).
-          randomListingRow(
-              id: 'benim', creatorId: 'serit1', creatorName: 'Ben'),
+          // Sunucu kendi ilanımı vermez; verse bile (myRandom'da yok) başkası
+          // satırı gibi çıkar — §15'te creator_id ile ELENMEZ.
         ];
       await pumpTab(tester, servis('serit1', gw));
 
@@ -99,7 +101,6 @@ void main() {
       expect(find.text('Rastgele oyun aç'), findsOneWidget);
       expect(kart('a'), findsOneWidget);
       expect(kart('b'), findsOneWidget);
-      expect(kart('benim'), findsNothing);
       expect(find.text('Ayşe'), findsOneWidget);
       expect(find.text('Can'), findsOneWidget);
       expect(find.text('2 kişi'), findsOneWidget);
@@ -160,7 +161,8 @@ void main() {
               repo: repoOf(gw),
               onlineStatus: OnlineStatus.fake(),
               userId: 'me',
-              myGameIds: const [],
+              myRandom: const [],
+              onLeaveMine: (_) {},
               onOpenCreate: () {},
               onAccepted: (_) {},
               onNotice: (_) {},
@@ -267,15 +269,111 @@ void main() {
       await bitir(tester);
     });
 
-    testWidgets('benim ilanlarımın id\'si şeritte tekrar gösterilmez',
+    testWidgets(
+        'benim ilanım ŞERİTTE (§15): başlık sayısı benimkini sayar, '
+        'benimkiler ÖNCE, Kabul YOK, "Bekliyor" + "İptal"', (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..randomRows = [randomListingRow(id: 'o1', creatorName: 'Ayşe')]
+        ..myRandomRows = [
+          myRandomRow(id: 'm1', createdAt: DateTime.now().toIso8601String())
+        ];
+      await pumpTab(tester, servis('benim-serit', gw));
+      expect(find.text('RASTGELE OYUNLAR · 2'), findsOneWidget);
+      // Sıra: benim kartım başkasınınkinin SOLUNDA.
+      expect(tester.getTopLeft(kart('m1')).dx,
+          lessThan(tester.getTopLeft(kart('o1')).dx));
+      // Boyut AYNI.
+      expect(tester.getSize(kart('m1')), tester.getSize(kart('o1')));
+      // Kabul yok, Bekliyor etiketi + İptal; "N koltuk kaldı" yerine geçer.
+      expect(
+          find.descendant(
+              of: kart('m1'),
+              matching: find.widgetWithText(NeoButton, 'KABUL')),
+          findsNothing);
+      expect(find.descendant(of: kart('m1'), matching: find.text('BEKLİYOR')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: kart('m1'), matching: find.textContaining('koltuk kaldı')),
+          findsNothing);
+      expect(find.descendant(of: kart('m1'), matching: find.text('İptal')),
+          findsOneWidget);
+      // Başkasınınki eskisi gibi.
+      expect(
+          find.descendant(
+              of: kart('o1'),
+              matching: find.widgetWithText(NeoButton, 'KABUL')),
+          findsOneWidget);
+      // Dokunma hedefi >= 32.
+      final hedef = tester.getSize(find.descendant(
+          of: kart('m1'), matching: find.byKey(const Key('ilan-benim-eylem'))));
+      expect(hedef.height, greaterThanOrEqualTo(32));
+      expect(hedef.width, greaterThanOrEqualTo(32));
+      // "Devam Edenler"deki Bekliyor satırı da DURUR (yinelenme bilinçli).
+      expect(find.text('BEKLİYOR 1/2'), findsOneWidget);
+      await bitir(tester);
+    });
+
+    testWidgets(
+        'şeritte yalnız BENİM ilanım varken de şerit görünür; kartta '
+        'İptal → cancel_random_game, ileti', (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..myRandomRows = [myRandomRow(id: 'm1')];
+      gw.onCancelRandom = (id) => gw.myRandomRows.clear();
+      await pumpTab(tester, servis('benim-iptal', gw));
+      expect(find.text('RASTGELE OYUNLAR · 1'), findsOneWidget);
+      await tester
+          .tap(find.descendant(of: kart('m1'), matching: find.text('İptal')));
+      await tester.pumpAndSettle();
+      expect(gw.cancelledRandom, ['m1']);
+      expect(gw.leftRandom, isEmpty);
+      expect(find.text('İlan iptal edildi.'), findsOneWidget);
+      expect(kart('m1'), findsNothing);
+      await bitir(tester);
+    });
+
+    testWidgets('kabul ettiğim ilanın kartında "Ayrıl" → leave_random_game',
         (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..myRandomRows = [
+          myRandomRow(id: 'r1', myRole: 'random', playerCount: 4, slots: [
+            slotHuman('baska', name: 'Baska', relation: 'accepted'),
+            {
+              ...slotHuman('benim-ayril', name: 'Ironman', relation: 'self'),
+              'via': 'random'
+            },
+            slotOpen,
+            slotOpen,
+          ])
+        ];
+      gw.onLeaveRandom = (id) => gw.myRandomRows.clear();
+      await pumpTab(tester, servis('benim-ayril', gw));
+      expect(find.descendant(of: kart('r1'), matching: find.text('İptal')),
+          findsNothing);
+      await tester
+          .tap(find.descendant(of: kart('r1'), matching: find.text('Ayrıl')));
+      await tester.pumpAndSettle();
+      expect(gw.leftRandom, ['r1']);
+      expect(gw.cancelledRandom, isEmpty);
+      expect(find.text('Ayrıldın. Koltuk yeniden açıldı.'), findsOneWidget);
+      await bitir(tester);
+    });
+
+    testWidgets(
+        'myRandom\'da geçen id başkaları kısmında TEKRAR çıkmaz '
+        '(benim kartım kazanır)', (tester) async {
       final gw = FakeOnlineGamesGateway()
         ..randomRows = [randomListingRow(id: 'x', creatorId: 'baska')]
         ..myRandomRows = [
           myRandomRow(id: 'x', myRole: 'random', playerCount: 4)
         ];
       await pumpTab(tester, servis('serit-benim', gw));
-      expect(kart('x'), findsNothing);
+      expect(kart('x'), findsOneWidget);
+      expect(find.text('RASTGELE OYUNLAR · 1'), findsOneWidget);
+      expect(
+          find.descendant(
+              of: kart('x'), matching: find.widgetWithText(NeoButton, 'KABUL')),
+          findsNothing);
       await bitir(tester);
     });
   });
@@ -292,7 +390,8 @@ void main() {
               repo: repoOf(gw),
               onlineStatus: OnlineStatus.fake(online: online),
               userId: 'me',
-              myGameIds: const [],
+              myRandom: const [],
+              onLeaveMine: (_) {},
               onOpenCreate: () {},
               onAccepted: (_) {},
               onNotice: (_) {},
@@ -447,14 +546,14 @@ void main() {
       gw.onLeaveRandom = (id) => gw.myRandomRows.clear();
       await pumpTab(tester, servis('kabul2', gw));
       expect(find.text('BEKLİYOR 2/4'), findsOneWidget);
-      expect(find.text('Ayrıl'), findsOneWidget);
+      expect(satirdaAyril, findsOneWidget);
       expect(find.byType(OpenSeatAvatar), findsNWidgets(2));
       await tester.tap(find.text('OYUN DAVETLERİ'));
       await tester.pump();
       expect(find.textContaining('KABUL ETTİN'), findsNothing);
       await tester.tap(find.text('DEVAM EDENLER'));
       await tester.pump();
-      await tester.tap(find.text('Ayrıl'));
+      await tester.tap(satirdaAyril);
       await tester.pumpAndSettle();
       expect(gw.leftRandom, ['r1']);
       expect(find.text('Ayrıldın. Koltuk yeniden açıldı.'), findsOneWidget);
@@ -469,7 +568,7 @@ void main() {
             message: 'Oyun başladı, ayrılamazsın.', code: 'P0001');
       await pumpTab(tester, servis('ayril-red', gw));
       final once = gw.myRandomCalls;
-      await tester.tap(find.text('Ayrıl'));
+      await tester.tap(satirdaAyril);
       await tester.pumpAndSettle();
       expect(find.text('Oyun başladı, ayrılamazsın.'), findsOneWidget);
       expect(gw.myRandomCalls, greaterThan(once));

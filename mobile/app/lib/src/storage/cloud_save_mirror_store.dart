@@ -99,8 +99,7 @@ class CloudSaveMirrorStore {
         'reason': reason,
         'quarantined_at': nowMs(),
       });
-      await txn
-          .delete('pending_cloud_saves', where: 'id = ?', whereArgs: [id]);
+      await txn.delete('pending_cloud_saves', where: 'id = ?', whereArgs: [id]);
     });
   }
 }
@@ -121,11 +120,11 @@ class CloudSaveCacheStore {
   /// Bu kullanıcının önbelleğini TAMAMEN değiştirir — sunucudan başarılı bir
   /// liste geldiğinde çağrılır. Silinen satırların önbellekte kalmaması için
   /// tek transaction'da önce temizler, sonra yazar.
-  Future<void> replaceAll(
-      String userId, List<({String id, GameState state, int updatedAtMs})> rows) async {
+  Future<void> replaceAll(String userId,
+      List<({String id, GameState state, int updatedAtMs})> rows) async {
     await db.transaction((txn) async {
-      await txn
-          .delete('cloud_save_cache', where: 'user_id = ?', whereArgs: [userId]);
+      await txn.delete('cloud_save_cache',
+          where: 'user_id = ?', whereArgs: [userId]);
       for (final r in rows) {
         await txn.insert('cloud_save_cache', {
           'id': r.id,
@@ -148,8 +147,8 @@ class CloudSaveCacheStore {
       final version = row['payload_version'] as int;
       if (version != kSavePayloadVersion) continue;
       try {
-        final json =
-            (jsonDecode(row['payload'] as String) as Map).cast<String, Object?>();
+        final json = (jsonDecode(row['payload'] as String) as Map)
+            .cast<String, Object?>();
         out.add(MirroredSave(
           id: row['id'] as String,
           state: gameStateFromJson(json),
@@ -166,7 +165,6 @@ class CloudSaveCacheStore {
     await db.delete('cloud_save_cache', where: 'id = ?', whereArgs: [id]);
   }
 }
-
 
 /// Sunucuda silinmeyi bekleyen bulut kayıtları (Parça 46). Yalnızca id
 /// taşır — silinecek satırın içeriğini saklamanın anlamı yok; `user_id`

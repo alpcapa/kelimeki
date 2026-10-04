@@ -37,7 +37,8 @@ class AiLevelBadge extends StatelessWidget {
   final AiLevel? level;
   final AiLevelBadgeSize size;
 
-  const AiLevelBadge({super.key, required this.level, this.size = AiLevelBadgeSize.xs});
+  const AiLevelBadge(
+      {super.key, required this.level, this.size = AiLevelBadgeSize.xs});
 
   @override
   Widget build(BuildContext context) {

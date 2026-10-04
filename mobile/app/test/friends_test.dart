@@ -180,10 +180,10 @@ void main() {
       expect(parseInviteToken(Uri.parse('http://kelimeki.com/davet/t')), 't');
       // Auth callback'leri ve alakasız yollar davet DEĞİL.
       expect(parseInviteToken(Uri.parse('kelimeki://reset?code=xyz')), isNull);
-      expect(parseInviteToken(Uri.parse('https://kelimeki.com/game/abc')),
-          isNull);
-      expect(parseInviteToken(Uri.parse('https://ornek.com/davet/abc')),
-          isNull);
+      expect(
+          parseInviteToken(Uri.parse('https://kelimeki.com/game/abc')), isNull);
+      expect(
+          parseInviteToken(Uri.parse('https://ornek.com/davet/abc')), isNull);
       expect(parseInviteToken(Uri.parse('kelimeki://davet/')), isNull);
       expect(parseInviteToken(Uri.parse('kelimeki://davet/a/b')), isNull);
     });
@@ -193,7 +193,8 @@ void main() {
       // üye olan herkes admin panelindeki Kaynak Hunisi'nde `direkt` satırına
       // düşüyor ve gerçek doğrudan trafiği şişiriyor. Web'in
       // `FriendsModal.tsx`'indeki aynı fonksiyonla birebir olmak zorunda.
-      expect(buildInviteUrl('tok'), 'https://kelimeki.com/davet/tok?ref=arkadas');
+      expect(
+          buildInviteUrl('tok'), 'https://kelimeki.com/davet/tok?ref=arkadas');
       // Etiketli link uygulamaya düşerse token yine doğru çözülmeli —
       // `uri.pathSegments` sorgu dizesini içermez.
       expect(parseInviteToken(Uri.parse(buildInviteUrl('tok'))), 'tok');
@@ -846,15 +847,34 @@ void main() {
     // ("EKLE" / "KABUL ET", web `Pill` ile aynı) — `hap` doluysa o metin
     // çizilmeli ve HİÇBİR ilişki ikonu çizilmemeli. DURUM dalları (⌛, ✓)
     // ikon kaldı.
-    for (final (String ad, Map<String, Object?>? satir, IconData? glyph,
-            Color? renk, String? hap)
-        in <(String, Map<String, Object?>?, IconData?, Color?, String?)>[
-      ('istek gönderdim', {'user_id': 'me', 'status': 'pending'}, null,
-          kMuted, null),
-      ('bana istek geldi', {'user_id': 'u9', 'status': 'pending'}, null,
-          null, 'KABUL ET'),
-      ('arkadaşız', {'user_id': 'me', 'status': 'accepted'}, Icons.how_to_reg,
-          kGreen, null),
+    for (final (
+          String ad,
+          Map<String, Object?>? satir,
+          IconData? glyph,
+          Color? renk,
+          String? hap
+        ) in <(String, Map<String, Object?>?, IconData?, Color?, String?)>[
+      (
+        'istek gönderdim',
+        {'user_id': 'me', 'status': 'pending'},
+        null,
+        kMuted,
+        null
+      ),
+      (
+        'bana istek geldi',
+        {'user_id': 'u9', 'status': 'pending'},
+        null,
+        null,
+        'KABUL ET'
+      ),
+      (
+        'arkadaşız',
+        {'user_id': 'me', 'status': 'accepted'},
+        Icons.how_to_reg,
+        kGreen,
+        null
+      ),
       ('ilişki yok', null, null, null, 'EKLE'),
     ]) {
       testWidgets('PlayerScoreCard ilişki simgesi — $ad', (tester) async {
@@ -963,8 +983,8 @@ void main() {
       // sınırını GERÇEKTEN uyguladığını kanıtlıyor.
       final renderedWidth = tester
           .getSize(find
-              .byWidgetPredicate((w) =>
-                  w is ConstrainedBox && w.constraints.maxWidth == 384)
+              .byWidgetPredicate(
+                  (w) => w is ConstrainedBox && w.constraints.maxWidth == 384)
               .first)
           .width;
       expect(renderedWidth, lessThanOrEqualTo(384));
@@ -997,8 +1017,7 @@ void main() {
     // Negatif eş: geri koyma satırı silinirse ilk expect düşer; koşul
     // `isNetworkError`dan geniş bir şeye çevrilirse ikinci expect düşer
     // (P0001 geri konarsa her açılışta aynı diyalog çıkardı).
-    test('ağ hatasında token kuyruğa GERİ konur, kalıcı ret KONMAZ',
-        () async {
+    test('ağ hatasında token kuyruğa GERİ konur, kalıcı ret KONMAZ', () async {
       final storage = await openTestStorage();
       final gw = FakeFriendsGateway();
       final repo = FriendsRepo(gw);
@@ -1033,8 +1052,7 @@ void main() {
       //    "Kendi linkinle arkadaş olamazsın." diyaloğu çıkardı.
       await isle(PostgrestException(
           message: 'Kendi linkinle arkadaş olamazsın.', code: 'P0001'));
-      expect(
-          await storage.events.takeAll(friendInviteTokenKind), isEmpty,
+      expect(await storage.events.takeAll(friendInviteTokenKind), isEmpty,
           reason: 'kalıcı ret ölümsüz kayıt üretmemeli');
     });
 
@@ -1044,7 +1062,8 @@ void main() {
           message: 'Kendi linkinle arkadaş olamazsın.', code: 'P0001');
       expect(inviteAcceptErrorText(ret), 'Kendi linkinle arkadaş olamazsın.');
       expect(inviteAcceptKaliciRet(ret), isTrue,
-          reason: 'kalıcı ret → tekrar denemek anlamsız, telemetriye de gitmez');
+          reason:
+              'kalıcı ret → tekrar denemek anlamsız, telemetriye de gitmez');
     });
 
     test('inviteAcceptErrorText: ağ hatası ile bilinmeyen hata AYRI konuşur',
@@ -1064,7 +1083,6 @@ void main() {
       expect(inviteAcceptKaliciRet(bilinmeyen), isFalse,
           reason: 'geçici olabilir → telemetriye düşmeli');
     });
-
 
     test('girişliyken takeAll → acceptInvite; hata token düşürür', () async {
       // Setup'ın _processInvites'inin veri katmanı sözleşmesi burada repo +
@@ -1090,8 +1108,7 @@ void main() {
     // link hem `uriLinkStream`den hem `getInitialLink()` kurtarmasından
     // düşebiliyor. Dedup olmadan kullanıcı üst üste iki "artık arkadaşsınız"
     // diyaloğu görür ve ikinci bir gereksiz RPC atılır.
-    test('parti içinde mükerrer token bir kez işlenir, bozuk kayıt elenir',
-        () {
+    test('parti içinde mükerrer token bir kez işlenir, bozuk kayıt elenir', () {
       expect(
         inviteTokensFromEvents([
           {'token': 'tok-1'},
@@ -1105,13 +1122,12 @@ void main() {
       );
       // Dedup PARTİ bazında: kalıcı bir "görüldü" listesi TUTULMUYOR, yani
       // bir sonraki oturumda aynı linke yeniden dokunmak hâlâ çalışır.
-      expect(inviteTokensFromEvents([
-        {'token': 'tok-1'}
-      ]), ['tok-1']);
+      expect(
+          inviteTokensFromEvents([
+            {'token': 'tok-1'}
+          ]),
+          ['tok-1']);
     });
-
-
-
   });
 }
 

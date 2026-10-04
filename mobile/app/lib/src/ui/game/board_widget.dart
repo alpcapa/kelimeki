@@ -1044,25 +1044,25 @@ class BoardWidget extends StatelessWidget {
                   yon: HintBubbleYon.ust,
                   hiza: HintBubbleHiza.bas,
                   child: TapTarget(
-                  onTap: onOpenHistory,
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      DocumentIcon(),
-                      SizedBox(width: 4),
-                      Text(
-                        'Hamleler',
-                        style: TextStyle(
-                          fontFamily: 'SpaceMono',
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                          color: kAccent,
+                    onTap: onOpenHistory,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DocumentIcon(),
+                        SizedBox(width: 4),
+                        Text(
+                          'Hamleler',
+                          style: TextStyle(
+                            fontFamily: 'SpaceMono',
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                            color: kAccent,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 ),
               // Zorluk rozeti — YZ oyununda "Hamleler"in sağında, Canlı'daki
               // "· Mesajlaşma"nın yerinde; ayraç aynı görünümde (web
@@ -1087,67 +1087,67 @@ class BoardWidget extends StatelessWidget {
                   yon: HintBubbleYon.ust,
                   hiza: HintBubbleHiza.bas,
                   child: TapTarget(
-                  onTap: onOpenMessaging,
-                  // Rozet `Positioned(top: -4, right: -4)` ile Row'un
-                  // kutusuna çapalı — TapTarget çocuğu ORTALADIĞI için
-                  // (dolgu eklemediği için) rozetin çapası bozulmuyor.
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // ÇEVRİMDIŞIYKEN ETİKET DÜŞER, ikon ve sayaç kalır
-                      // (2 Eylül 2026, kullanıcı sordu: *"Çevrimdışı da
-                      // gelince 2 satıra gelip o alanı büyütüyor mu?"*).
-                      // ÖLÇÜLDÜ — şeridin tek satırda kalması için gereken
-                      // en az genişlik: yerel oyun çevrimdışı+tavan 282 px
-                      // (her telefonda sığar), ama CANLI oyun
-                      // çevrimdışı+tavan **405 px** → 320/360/390'da şerit
-                      // 48 → 96 px'e çıkıyordu. `Wrap` taşmaz SARAR, yani
-                      // ne hata basılır ne de "taşma yok" diyen test görür.
-                      // Etiketi düşürmek eşiği ~348 px'e indiriyor: 360 ve
-                      // 390 kurtulur. ⚠ 320 px'te tavanda HÂLÂ iki satır —
-                      // bilinen ve kabul edilen sınır, gizlenmesin.
-                      // Neden ETİKET seçildi: çevrimdışıyken mesaj zaten
-                      // gönderilemiyor; ikon okumak için duruyor ve
-                      // okunmamış sayacı (asıl bilgi) hiç kaybolmuyor.
-                      // ⚠ WEB İKİZİ BİLEREK DEĞİŞMEDİ — parite "aynı kod"
-                      // değil "aynı sonuç": web'de sistem yazı ölçeği yok
-                      // ve ölçüldü ki `Board.tsx` şeridi 320 px'te bile
-                      // çevrimdışıyken tek satır (48 px). Orada çözülecek
-                      // bir sorun olmadığı için etiket kaldırmak yalnızca
-                      // bilgi kaybı olurdu.
-                      if (onlineStatus == null)
-                        _mesajlasmaIcerik(etiketli: true)
-                      else
-                        ListenableBuilder(
-                          listenable: onlineStatus!,
-                          builder: (context, _) =>
-                              _mesajlasmaIcerik(etiketli: onlineStatus!.online),
-                        ),
-                      // Konum web'de ölçülerek seçildi (`-top-1 -right-1`):
-                      // rozet satır içi olsaydı şeride ~20px eklerdi ve dar
-                      // telefonlarda "Nasıl Oynanır?" ile çakışırdı (⚠ o
-                      // ölçüm ESKİ etiketle; 2 Eylül 2026'da "Yardım" olunca
-                      // boşluk arttı — gerekçe duruyor, rakam yeniden
-                      // ölçülmeden alıntılanmamalı). Beyaz
-                      // halka web'in `ring-2 ring-panel`i — rozet altındaki
-                      // mavi etiketten ayrışsın diye.
-                      if (unreadMessageCount > 0)
-                        Positioned(
-                          top: -4,
-                          right: -4,
-                          child: Container(
-                            key: const ValueKey('chat-unread-badge'),
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: CountBadge(count: unreadMessageCount),
+                    onTap: onOpenMessaging,
+                    // Rozet `Positioned(top: -4, right: -4)` ile Row'un
+                    // kutusuna çapalı — TapTarget çocuğu ORTALADIĞI için
+                    // (dolgu eklemediği için) rozetin çapası bozulmuyor.
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // ÇEVRİMDIŞIYKEN ETİKET DÜŞER, ikon ve sayaç kalır
+                        // (2 Eylül 2026, kullanıcı sordu: *"Çevrimdışı da
+                        // gelince 2 satıra gelip o alanı büyütüyor mu?"*).
+                        // ÖLÇÜLDÜ — şeridin tek satırda kalması için gereken
+                        // en az genişlik: yerel oyun çevrimdışı+tavan 282 px
+                        // (her telefonda sığar), ama CANLI oyun
+                        // çevrimdışı+tavan **405 px** → 320/360/390'da şerit
+                        // 48 → 96 px'e çıkıyordu. `Wrap` taşmaz SARAR, yani
+                        // ne hata basılır ne de "taşma yok" diyen test görür.
+                        // Etiketi düşürmek eşiği ~348 px'e indiriyor: 360 ve
+                        // 390 kurtulur. ⚠ 320 px'te tavanda HÂLÂ iki satır —
+                        // bilinen ve kabul edilen sınır, gizlenmesin.
+                        // Neden ETİKET seçildi: çevrimdışıyken mesaj zaten
+                        // gönderilemiyor; ikon okumak için duruyor ve
+                        // okunmamış sayacı (asıl bilgi) hiç kaybolmuyor.
+                        // ⚠ WEB İKİZİ BİLEREK DEĞİŞMEDİ — parite "aynı kod"
+                        // değil "aynı sonuç": web'de sistem yazı ölçeği yok
+                        // ve ölçüldü ki `Board.tsx` şeridi 320 px'te bile
+                        // çevrimdışıyken tek satır (48 px). Orada çözülecek
+                        // bir sorun olmadığı için etiket kaldırmak yalnızca
+                        // bilgi kaybı olurdu.
+                        if (onlineStatus == null)
+                          _mesajlasmaIcerik(etiketli: true)
+                        else
+                          ListenableBuilder(
+                            listenable: onlineStatus!,
+                            builder: (context, _) => _mesajlasmaIcerik(
+                                etiketli: onlineStatus!.online),
                           ),
-                        ),
-                    ],
+                        // Konum web'de ölçülerek seçildi (`-top-1 -right-1`):
+                        // rozet satır içi olsaydı şeride ~20px eklerdi ve dar
+                        // telefonlarda "Nasıl Oynanır?" ile çakışırdı (⚠ o
+                        // ölçüm ESKİ etiketle; 2 Eylül 2026'da "Yardım" olunca
+                        // boşluk arttı — gerekçe duruyor, rakam yeniden
+                        // ölçülmeden alıntılanmamalı). Beyaz
+                        // halka web'in `ring-2 ring-panel`i — rozet altındaki
+                        // mavi etiketten ayrışsın diye.
+                        if (unreadMessageCount > 0)
+                          Positioned(
+                            top: -4,
+                            right: -4,
+                            child: Container(
+                              key: const ValueKey('chat-unread-badge'),
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: CountBadge(count: unreadMessageCount),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
                 ),
               ],
             ],

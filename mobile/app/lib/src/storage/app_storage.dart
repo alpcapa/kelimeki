@@ -17,6 +17,7 @@ import 'pending_queue_store.dart';
 class AppStorage {
   final Database db;
   final LocalSaveStore saves;
+
   /// Girişli kullanıcının bulut kayıtlarının offline aynası (Parça 38).
   final CloudSaveMirrorStore cloudMirror;
 

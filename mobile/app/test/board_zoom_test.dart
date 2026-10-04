@@ -42,8 +42,7 @@ Future<GameController> pumpZoomGame(WidgetTester tester,
       controller: controller, words: words, auth: AuthService.fake());
   if (boundaryKey != null) {
     ekran = RepaintBoundary(
-        key: boundaryKey,
-        child: ColoredBox(color: Colors.white, child: ekran));
+        key: boundaryKey, child: ColoredBox(color: Colors.white, child: ekran));
   }
   await tester.pumpWidget(MaterialApp(theme: kelimekiTheme(), home: ekran));
   await tester.pump();
@@ -167,8 +166,7 @@ void main() {
   testWidgets(
       'harf seçiliyken çift dokunuş: taş KONUR ve KONDUĞU YERDE KALIR, '
       'zoom açılır — kullanıcı kararı: "taşı geri almadan, koyduğu yerde '
-      'bırakarak zoomlamak lazım" (1 Eylül 2026)',
-      (tester) async {
+      'bırakarak zoomlamak lazım" (1 Eylül 2026)', (tester) async {
     final controller = await pumpZoomGame(tester);
     await tester.tap(rackTile(0)); // K seçili
     await tester.pump();
@@ -215,8 +213,7 @@ void main() {
 
   testWidgets(
       'taslak taşa çift dokunuş ZOOM AÇMAZ: tap1 normal geri alma, taşa '
-      'dokunuş çift BAŞLATAMAZ (çift yalnızca boş kare jesti)',
-      (tester) async {
+      'dokunuş çift BAŞLATAMAZ (çift yalnızca boş kare jesti)', (tester) async {
     final controller = await pumpZoomGame(tester);
     await tester.tap(rackTile(0)); // K
     await tester.pump();
@@ -235,8 +232,7 @@ void main() {
 
   testWidgets(
       'JOKER akışının zoom\'la İLİŞKİSİ YOK: pencere tek dokunuşta ANINDA '
-      'açılır, zoom açılmaz (kullanıcı kararı, 1 Eylül 2026)',
-      (tester) async {
+      'açılır, zoom açılmaz (kullanıcı kararı, 1 Eylül 2026)', (tester) async {
     final controller = await pumpZoomGame(tester);
     await tester.tap(rackTile(6)); // '?'
     await tester.pump();
@@ -489,8 +485,8 @@ void main() {
     await tester.tap(boardCell(0, 0));
     await tester.pump();
 
-    final rozet = find.byWidgetPredicate(
-        (w) => w is Text && (w.data ?? '').startsWith('+'));
+    final rozet = find
+        .byWidgetPredicate((w) => w is Text && (w.data ?? '').startsWith('+'));
     expect(rozet, findsOneWidget, reason: 'hamle rozeti hiç çizilmemiş');
 
     // Kanıt YAPISAL: rozet, IZGARANIN kırpılan dalında OLMAMALI (kendi

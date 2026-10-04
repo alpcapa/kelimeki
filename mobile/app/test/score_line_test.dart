@@ -67,7 +67,8 @@ void main() {
   // kötü hâl) ve yazı ölçeği tavanı. Tavan bilerek burada: hücre `ScaledCell`
   // DEĞİL (avatarlar ölçekle büyümüyor), yani ölçek hizayı kaydırmamalı.
   for (final olcek in [1.0, kMaxTextScale]) {
-    testWidgets('AvatarScoreRow: her puan kendi avatarının merkezinde '
+    testWidgets(
+        'AvatarScoreRow: her puan kendi avatarının merkezinde '
         '(4 kişilik, üç haneli, ölçek $olcek)', (tester) async {
       const puanlar = [238, 179, 103, 87];
       await setPhoneViewSize(tester, const Size(320, 600));
@@ -103,8 +104,7 @@ void main() {
       final serit = tester.getRect(find.byType(PlayerAvatarRow));
       for (var i = 0; i < puanlar.length; i++) {
         final puan = tester.getRect(find.text('${puanlar[i]}'));
-        expect((puan.center.dx - _avatarCenter(serit, i)).abs(),
-            lessThan(0.5),
+        expect((puan.center.dx - _avatarCenter(serit, i)).abs(), lessThan(0.5),
             reason: '${puanlar[i]} puanı $i. avatarın altında değil '
                 '(${puan.center.dx.toStringAsFixed(1)} ↔ '
                 '${_avatarCenter(serit, i).toStringAsFixed(1)})');

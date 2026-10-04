@@ -65,8 +65,8 @@ void main() {
   group('AuthModal → signup_events', () {
     Future<void> pump(WidgetTester tester, Widget modal) async {
       await setPhoneViewSize(tester, const Size(420, 900));
-      await tester.pumpWidget(MaterialApp(
-          theme: kelimekiTheme(), home: Scaffold(body: modal)));
+      await tester.pumpWidget(
+          MaterialApp(theme: kelimekiTheme(), home: Scaffold(body: modal)));
       await tester.pump();
     }
 

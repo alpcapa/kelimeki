@@ -163,8 +163,7 @@ class KDialogCard extends StatelessWidget {
         // sürüm CI'da o testi düşürdü). ✕ VARSA dolgu çocuğa iner: aksi
         // halde Container'ın 24'ü içindeki bir `Positioned` kartın
         // kenarından 12 değil 36 uzakta çizilirdi (web `top-3 right-3`).
-        padding:
-            onClose == null ? const EdgeInsets.all(kDialogPadding) : null,
+        padding: onClose == null ? const EdgeInsets.all(kDialogPadding) : null,
         child: _withCloseButton(
           Column(
             mainAxisSize: MainAxisSize.min,
@@ -181,8 +180,7 @@ class KDialogCard extends StatelessWidget {
     if (onClose == null) return body;
     return Stack(
       children: [
-        Padding(
-            padding: const EdgeInsets.all(kDialogPadding), child: body),
+        Padding(padding: const EdgeInsets.all(kDialogPadding), child: body),
         // Dokunma kutusu 28×28'di (web'in `w-7 h-7`'si birebir taşınmıştı) —
         // projedeki EN KÜÇÜK dokunma hedefi, Material asgarisinin yarısından
         // az. 48'e çıkarıldı ve `Positioned` 12 → 2 ile telafi edildi:

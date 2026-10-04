@@ -462,8 +462,8 @@ class _NeoBoxPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final pad = _pad;
     final img = _rasterCache.obtain(
-      _NeoKey(color, gradient, borderRadius, insetShadows, outerShadows, size,
-          dpr),
+      _NeoKey(
+          color, gradient, borderRadius, insetShadows, outerShadows, size, dpr),
       size,
       pad,
       dpr,
@@ -484,8 +484,9 @@ class _NeoBoxPainter extends CustomPainter {
       gradient: gradient,
       borderRadius: borderRadius,
       boxShadow: outerShadows,
-    ).createBoxPainter().paint(
-        canvas, Offset.zero, ImageConfiguration(size: size));
+    )
+        .createBoxPainter()
+        .paint(canvas, Offset.zero, ImageConfiguration(size: size));
     if (insetShadows.isEmpty) return;
     canvas.save();
     canvas.clipRRect(borderRadius.toRRect(Offset.zero & size));

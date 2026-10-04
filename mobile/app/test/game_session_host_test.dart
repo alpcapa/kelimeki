@@ -140,7 +140,8 @@ void main() {
     await storage.close();
   });
 
-  test('aynı hesabın tekrar bildirimi (token/profil tazelenmesi) YENİ satır açmaz',
+  test(
+      'aynı hesabın tekrar bildirimi (token/profil tazelenmesi) YENİ satır açmaz',
       () async {
     final storage = await openTestStorage();
     final gw = FakeSaveGateway(nowMs: () => clock);

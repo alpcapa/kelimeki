@@ -35,15 +35,17 @@ class _WebTier {
   final int color;
   final int threshold;
   final int reward;
-  const _WebTier(this.name, this.letter, this.color, this.threshold, this.reward);
+  const _WebTier(
+      this.name, this.letter, this.color, this.threshold, this.reward);
 }
 
 /// `{ name: 'Çaylak', letter: 'Ç', color: '#8A93A2', threshold: 0, reward: 0 }`
 List<_WebTier> _webTiers() {
   final src = File('${_root.path}/src/utils/leagueRank.ts').readAsStringSync();
-  final block = RegExp(r'RANK_TIERS:\s*RankTier\[\]\s*=\s*\[(.*?)\n\];', dotAll: true)
-      .firstMatch(src)
-      ?.group(1);
+  final block =
+      RegExp(r'RANK_TIERS:\s*RankTier\[\]\s*=\s*\[(.*?)\n\];', dotAll: true)
+          .firstMatch(src)
+          ?.group(1);
   expect(block, isNotNull,
       reason: 'leagueRank.ts içinde RANK_TIERS dizisi bulunamadı — dosyanın '
           'yapısı değiştiyse bu testin ayrıştırıcısı da güncellenmeli');

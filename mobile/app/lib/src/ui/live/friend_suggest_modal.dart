@@ -19,8 +19,7 @@ class SuggestCandidate {
   final String userId;
   final String? name;
   final String? avatarUrl;
-  const SuggestCandidate(
-      {required this.userId, this.name, this.avatarUrl});
+  const SuggestCandidate({required this.userId, this.name, this.avatarUrl});
 }
 
 Future<void> showFriendSuggestModal(
@@ -90,8 +89,8 @@ class _FriendSuggestModalState extends State<FriendSuggestModal> {
           children: _done
               ? [
                   const Text('Arkadaşlık davetiniz iletilmiştir.',
-                      style: TextStyle(
-                          fontSize: 13, height: 1.5, color: _text)),
+                      style:
+                          TextStyle(fontSize: 13, height: 1.5, color: _text)),
                   const SizedBox(height: 16),
                   NeoButton(
                     label: 'TAMAM',
@@ -103,9 +102,10 @@ class _FriendSuggestModalState extends State<FriendSuggestModal> {
                   ),
                 ]
               : [
-                  const Text('Bu kişileri arkadaşın olarak eklemek ister misin?',
-                      style: TextStyle(
-                          fontSize: 13, height: 1.5, color: _text)),
+                  const Text(
+                      'Bu kişileri arkadaşın olarak eklemek ister misin?',
+                      style:
+                          TextStyle(fontSize: 13, height: 1.5, color: _text)),
                   const SizedBox(height: 12),
                   for (final c in _sorted) ...[
                     GestureDetector(

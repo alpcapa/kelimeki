@@ -279,6 +279,7 @@ NewGameRecord? buildGameRecord(
   int? surrenderingIndex,
   required String Function() newId,
   required DateTime Function() now,
+
   /// Oyunun gerçekten BİTTİĞİ an (epoch ms). Verilmezse [now] kullanılır —
   /// normal bitişte doğrusu budur.
   ///

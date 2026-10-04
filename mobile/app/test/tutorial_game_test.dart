@@ -139,7 +139,9 @@ void main() {
     expect(find.text('Buradan başla'), findsNothing);
     // OYNA hamle tamamlanmadan kapalı.
     expect(
-        tester.widget<NeoButton>(find.widgetWithText(NeoButton, 'OYNA')).onPressed,
+        tester
+            .widget<NeoButton>(find.widgetWithText(NeoButton, 'OYNA'))
+            .onPressed,
         isNull);
 
     for (var s = 0; s < tutorialSteps.length; s++) {
@@ -190,9 +192,8 @@ void main() {
     // Kartın kendi rota sınırı (diyalog ayrı bir rotada çiziliyor).
     await tester.pump(const Duration(milliseconds: 300));
     await tester.runAsync(() async {
-      final boundary = tester.renderObject<RenderRepaintBoundary>(find
-          .ancestor(of: kart, matching: find.byType(RepaintBoundary))
-          .last);
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+          find.ancestor(of: kart, matching: find.byType(RepaintBoundary)).last);
       final image = await boundary.toImage(pixelRatio: 2);
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       final out = File('build/screenshots/tutorial_finish.png');
@@ -205,7 +206,8 @@ void main() {
     expect(finished, isTrue);
   });
 
-  testWidgets('sürükleyerek yerleştirme: taş parmağın üstünde, hedefe iner ve '
+  testWidgets(
+      'sürükleyerek yerleştirme: taş parmağın üstünde, hedefe iner ve '
       'YERİNDE kalır; vurgusuz taş sürüklenemez', (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await pumpTutorial(tester);
@@ -249,7 +251,8 @@ void main() {
     // Vurgusuz taş (Z, artık indeks 3) sürüklenemez: hedef kareye bile inmez.
     final z = tester.getCenter(rackTile(3));
     final g = await tester.startGesture(z);
-    await g.moveTo(tester.getCenter(boardCell(0, 1)) + const Offset(0, kDragLift));
+    await g
+        .moveTo(tester.getCenter(boardCell(0, 1)) + const Offset(0, kDragLift));
     await tester.pump();
     await g.up();
     await tester.pump();
@@ -325,7 +328,8 @@ void main() {
   // Bu test GERİ ALINMAYI yakalar ve gözle değil ÖLÇEREK: balonun yatay
   // merkezi kuyruğun (çapa karesinin) merkezine yakın olmalı; tahtanın sol
   // kenarına yapışmış bir kutu bu iddiayı geçemez.
-  testWidgets('balon hizası: orta sütunda ORTALI, kenar sütunda o kenarda '
+  testWidgets(
+      'balon hizası: orta sütunda ORTALI, kenar sütunda o kenarda '
       '— kuyruk her hâlde balonun altında', (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     await pumpTutorial(tester);

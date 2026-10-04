@@ -32,7 +32,7 @@ void main() {
   const migrationDizin = 'supabase/migrations';
   const fnAdi = 'register_push_token';
 
-  late String istemci;      // yorumları ATILMIŞ hâli
+  late String istemci; // yorumları ATILMIŞ hâli
   late String istemciHam;
 
   setUpAll(() {
