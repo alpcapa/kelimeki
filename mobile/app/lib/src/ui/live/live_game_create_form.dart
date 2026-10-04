@@ -63,7 +63,7 @@ const String kLiveFormSentTitle = 'Davetin gönderildi';
 const String kLiveFormSentNote =
     'Davet 7 gün içinde kabul edilmezse iptal olur. Biri reddederse oyun kurulmaz.';
 const String kLiveFormEmptySeat2 = 'Aşağıdan bir arkadaşını seç';
-const String kLiveFormEmptySeat4 = 'Boş koltuk';
+const String kLiveFormEmptySeat4 = 'Boş';
 const String kLiveFormAiSeat = 'Yapay Zeka';
 const String kLiveFormAiNote = 'Boş 4. koltuk yapay zeka olur';
 const String kLiveFormHintTail =
@@ -412,7 +412,10 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
   // ── Koltuklar ────────────────────────────────────────────────────────
 
   Widget _seatsBlock() {
-    final seatCount = _playerCount - 1;
+    final iki = _playerCount == 2;
+    final kartlar = [
+      for (var k = 0; k < _playerCount; k++) _seat(k, yatay: iki),
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -420,46 +423,72 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
-              child: _SectionLabel(_playerCount == 2
-                  ? 'RAKİBİN'
-                  : 'RAKİPLERİN · ${_selected.length}/3'),
+              child: _SectionLabel(iki
+                  ? 'OYUNCULAR'
+                  : 'OYUNCULAR · ${_selected.length + 1}/4'),
             ),
-            if (_playerCount == 4)
+            if (!iki)
               const Text(kLiveFormAiNote,
                   style: TextStyle(
                       fontFamily: 'SpaceMono', fontSize: 10, color: _muted)),
           ],
         ),
         const SizedBox(height: 8),
-        if (_playerCount == 2)
-          _seat(0, yatay: true)
-        else
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var i = 0; i < seatCount; i++) ...[
-                  if (i > 0) const SizedBox(width: 8),
-                  Expanded(child: _seat(i, yatay: false)),
-                ],
-              ],
-            ),
-          ),
+        // 2 kişi: alt alta. 4 kişi: 2×2 — 1-2 üstte, 3-4 altta (2 Ekim
+        // 2026, kullanıcı; web `grid grid-cols-2 gap-2`).
+        if (iki) ...[
+          kartlar[0],
+          const SizedBox(height: 8),
+          kartlar[1],
+        ] else
+          for (var satir = 0; satir < 2; satir++) ...[
+            if (satir > 0) const SizedBox(height: 8),
+            Row(children: [
+              Expanded(child: kartlar[satir * 2]),
+              const SizedBox(width: 8),
+              Expanded(child: kartlar[satir * 2 + 1]),
+            ]),
+          ],
       ],
     );
   }
 
-  Widget _seat(int i, {required bool yatay}) {
-    // Rakip i. koltukta = oyunda (i + 2). oyuncu → `playerColors[i + 1]`.
-    final col = playerColors[i + 1];
-    final f = i < _selected.length ? _byId(_selected[i]) : null;
-    final ai = _playerCount == 4 && i == 2 && _selected.length == 2;
-    if (f != null) return _filledSeat(i, f, col, yatay: yatay);
+  /// Koltuk kartı — web `LiveGameCreateForm.tsx` ikizi (2 Ekim 2026).
+  ///
+  /// [k] OYUNDAKİ koltuk (0 = sen). 1. koltuk HER ZAMAN oturum sahibi
+  /// (camgöbeği, ✕ yok); rakipler `playerColors[k]`.
+  ///
+  /// ⚠ Her kart AYNI iskelet: avatar · isim (…) · numara yuvası · ✕ yuvası.
+  /// Numara ve ✕ AKIŞTA ve sabit genişlikte — ✕'i olmayan kartta yuva boş
+  /// durur. Kullanıcı: *"isim numaranın üzerine binmemeli"* ve *"numaralar
+  /// her durumda hizalı olmalı"*. Eski filigran `Stack` içinde mutlak
+  /// konumluydu, ✕'li ve ✕'siz kartta yeri değişiyordu.
+  Widget _seat(int k, {required bool yatay}) {
+    final col = playerColors[k];
+    final ben = k == 0;
+    final f = !ben && k - 1 < _selected.length ? _byId(_selected[k - 1]) : null;
+    final ai = _playerCount == 4 && k == 3 && _selected.length == 2;
+    final dolu = ben || f != null;
+    final profil = widget.auth.profile;
+    final benimAdim = [profil?.displayName, profil?.username]
+            .whereType<String>()
+            .where((s) => s.trim().isNotEmpty)
+            .firstOrNull ??
+        'Sen';
+    final avatarBoy = yatay ? 36.0 : 28.0;
 
-    final govde = <Widget>[
-      Container(
-        width: 36,
-        height: 36,
+    final Widget avatar;
+    final String yazi;
+    if (ben) {
+      avatar = KAvatar(url: profil?.avatarUrl, name: benimAdim, size: avatarBoy);
+      yazi = benimAdim;
+    } else if (f != null) {
+      avatar = KAvatar(url: f.avatarUrl, name: f.name, size: avatarBoy);
+      yazi = f.name;
+    } else {
+      avatar = Container(
+        width: avatarBoy,
+        height: avatarBoy,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: kVoid,
@@ -467,123 +496,132 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
           border: Border.all(color: _border),
         ),
         child: Text(ai ? '🤖' : '+',
-            style: const TextStyle(fontSize: 18, height: 1, color: _muted)),
+            style: TextStyle(
+                fontSize: yatay ? 18 : 14, height: 1, color: _muted)),
+      );
+      yazi = ai
+          ? kLiveFormAiSeat
+          : yatay
+              ? kLiveFormEmptySeat2
+              : kLiveFormEmptySeat4;
+    }
+
+    final ad = Text(
+      yazi,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: dolu ? (yatay ? 14 : 13) : (yatay ? 13 : 12),
+        fontWeight: FontWeight.bold,
+        color: dolu ? col.text : _muted,
       ),
-      SizedBox(width: yatay ? 12 : 0, height: yatay ? 0 : 6),
-      Flexible(
-        child: Text(
-          ai
-              ? kLiveFormAiSeat
-              : yatay
-                  ? kLiveFormEmptySeat2
-                  : kLiveFormEmptySeat4,
-          textAlign: yatay ? TextAlign.start : TextAlign.center,
-          style: const TextStyle(
-              fontSize: 12, fontWeight: FontWeight.bold, color: _muted),
+    );
+
+    // Numara (karar 15): mono kalın, oyuncu rengi; boş koltukta daha soluk.
+    // ⚠ TABAN ÇİZGİSİNE göre ortalanır, satır kutusuna göre DEĞİL — kutunun
+    // ascent/descent dağılımı Flutter'da CSS'ten farklı ve iki platformda
+    // aynı görünmedi (Parça 230). Space Mono Bold'da rakam 0 → 700/1000 em,
+    // yarısı [_kFiligranRakamYari]. Yazı ölçeği UYGULANMAZ (web `px`).
+    final boy = yatay ? 56.0 : 34.0;
+    final yuvaY = yatay ? 36.0 : 28.0;
+    // Web `w-10 -mr-2` / `w-[22px] -mr-1`: yuva ✕'in altına biraz taşar —
+    // numara ✕'e yaklaşır, isme yer kalır (kullanıcı).
+    final yuvaG = yatay ? 40.0 : 22.0;
+    final tasma = yatay ? 8.0 : 4.0;
+    final numara = SizedBox(
+      key: ValueKey('koltuk-numara-$k'),
+      width: yuvaG - tasma,
+      height: yuvaY,
+      child: OverflowBox(
+        alignment: Alignment.centerLeft,
+        minWidth: yuvaG,
+        maxWidth: yuvaG,
+        child: Baseline(
+          key: ValueKey('koltuk-filigran-$k'),
+          baseline: yuvaY / 2 + _kFiligranRakamYari * boy,
+          baselineType: TextBaseline.alphabetic,
+          child: SizedBox(
+            width: yuvaG,
+            child: Text(
+              '${k + 1}',
+              textAlign: TextAlign.center,
+              textScaler: TextScaler.noScaling,
+              style: TextStyle(
+                fontFamily: 'SpaceMono',
+                fontWeight: FontWeight.bold,
+                fontSize: boy,
+                height: 1,
+                color: col.base.withValues(alpha: dolu ? 0.2 : 0.12),
+              ),
+            ),
+          ),
         ),
       ),
-    ];
+    );
+
+    final carpiG = yatay ? 24.0 : 16.0;
+    final carpi = f == null
+        ? SizedBox(width: carpiG, height: 28)
+        : Semantics(
+            label: '${f.name} koltuğunu boşalt',
+            button: true,
+            excludeSemantics: true,
+            child: TapTarget(
+              onTap: () => _toggleFriend(f.friendId),
+              minHeight: 28,
+              minWidth: carpiG,
+              // Gömülü yazı tiplerinde ✕ yok → ikon (KModal'ın kapatması gibi).
+              child: Icon(Icons.close, size: yatay ? 16 : 13, color: col.text),
+            ),
+          );
+
+    final satir = Row(children: [
+      avatar,
+      SizedBox(width: yatay ? 10 : 5),
+      Expanded(child: ad),
+      numara,
+      carpi,
+    ]);
+    final dolgu = yatay
+        ? const EdgeInsets.symmetric(horizontal: 12, vertical: 10)
+        : const EdgeInsets.fromLTRB(8, 8, 6, 8);
+
+    if (dolu) {
+      return Container(
+        key: ValueKey(ben ? 'koltuk-ben' : 'koltuk-dolu-${k - 1}'),
+        padding: dolgu,
+        decoration: BoxDecoration(
+          color: col.tint,
+          border: Border.all(color: col.base),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: satir,
+      );
+    }
     final kutu = CustomPaint(
-      key: ValueKey('koltuk-bos-$i'),
+      key: ValueKey('koltuk-bos-${k - 1}'),
       foregroundPainter: const _DashedRRectPainter(
           color: Color(0xFFC7D0DC), width: 1.5, radius: 12),
       child: Container(
-        padding: yatay
-            ? const EdgeInsets.symmetric(horizontal: 12, vertical: 10)
-            : const EdgeInsets.fromLTRB(6, 12, 6, 10),
+        // Kesik çizgi 1,5 px ama dolu kartın kenarlığı 1 px — iç ölçü aynı
+        // kalsın diye dolguya kenarlık kadar pay (numaralar hizalı).
+        padding: dolgu + const EdgeInsets.all(1),
         decoration: BoxDecoration(
           color: kBg,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: yatay
-            ? Row(children: govde)
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center, children: govde),
+        child: satir,
       ),
     );
     if (ai) return kutu;
     // Boş koltuk → listeye kaydır. Odak VERİLMEZ: arama kutusuna odak
-    // klavyeyi açıp listeyi örterdi (karar 18).
-    return GestureDetector(
-        behavior: HitTestBehavior.opaque, onTap: _scrollToList, child: kutu);
-  }
-
-  Widget _filledSeat(int i, FriendRow f, PlayerColor col,
-      {required bool yatay}) {
-    final kapat = Semantics(
-      label: '${f.name} koltuğunu boşalt',
+    // klavyeyi açıp listeyi örterdi (karar 18). 4 kişide görünen yazı kısa
+    // ("Boş"); ekran okuyucu tam adı duyar.
+    return Semantics(
+      label: yatay ? null : 'Boş koltuk ${k + 1}',
       button: true,
-      excludeSemantics: true,
-      child: TapTarget(
-        onTap: () => _toggleFriend(f.friendId),
-        minHeight: 28,
-        minWidth: 28,
-        // Gömülü yazı tiplerinde ✕ yok → ikon (KModal'ın kapatması gibi).
-        child: Icon(Icons.close, size: 16, color: col.text),
-      ),
-    );
-    // Oyuncu numarası filigranı (karar 15) — tahtadaki köşe filigranıyla
-    // aynı dil: mono kalın, oyuncu rengi, %20 opaklık. Yatay kartta ✕'in
-    // SOLUNDA, dikeyde sağ ALTTA.
-    final filigran = Text(
-      '${i + 2}',
-      style: TextStyle(
-        fontFamily: 'SpaceMono',
-        fontWeight: FontWeight.bold,
-        fontSize: yatay ? 56 : 40,
-        height: 1,
-        color: col.base.withValues(alpha: 0.2),
-      ),
-    );
-    final ad = Text(
-      f.name,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      textAlign: yatay ? TextAlign.start : TextAlign.center,
-      style: TextStyle(
-        fontSize: yatay ? 14 : 12,
-        fontWeight: FontWeight.bold,
-        color: col.text,
-      ),
-    );
-    return Container(
-      key: ValueKey('koltuk-dolu-$i'),
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        color: col.tint,
-        border: Border.all(color: col.base),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Stack(
-        children: [
-          if (yatay)
-            Positioned(
-                right: 48, top: 0, bottom: 0, child: Center(child: filigran))
-          else
-            Positioned(right: 6, bottom: 2, child: filigran),
-          Padding(
-            padding: yatay
-                ? const EdgeInsets.symmetric(horizontal: 12, vertical: 10)
-                : const EdgeInsets.fromLTRB(6, 12, 6, 10),
-            child: yatay
-                ? Row(children: [
-                    KAvatar(url: f.avatarUrl, name: f.name, size: 36),
-                    const SizedBox(width: 12),
-                    Expanded(child: ad),
-                    kapat,
-                  ])
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      KAvatar(url: f.avatarUrl, name: f.name, size: 36),
-                      const SizedBox(height: 6),
-                      ad,
-                    ],
-                  ),
-          ),
-          if (!yatay) Positioned(top: 2, right: 2, child: kapat),
-        ],
-      ),
+      child: GestureDetector(
+          behavior: HitTestBehavior.opaque, onTap: _scrollToList, child: kutu),
     );
   }
 
@@ -1149,3 +1187,7 @@ class _DashedRRectPainter extends CustomPainter {
   bool shouldRepaint(_DashedRRectPainter old) =>
       old.color != color || old.width != width || old.radius != radius;
 }
+
+/// Space Mono Bold'da bir rakamın yüksekliğinin YARISI (em). Rakamlar taban
+/// çizgisinden 700/1000 em yukarı çıkıyor (fontTools, 2 Ekim 2026).
+const double _kFiligranRakamYari = 0.35;
