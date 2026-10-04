@@ -292,8 +292,13 @@ Port kararları/sapmaları:
 
 Gerçek Supabase'e karşı hiçbir akış denenmedi (sahte uç + widget testi).
 
-**Port (Flutter) ikizi — yapılmadı.** Ajanın çıkardığı birebir kurallar listesi
-`src/utils/randomGames.ts` başındaki notlarda ve `docs/testing-rastgele.md`'de.
+**§15 port ikizi (4 Ekim 2026) — YAZILDI:** şerit benim bekleyen ilanımı da kart gösterir
+(`stripListings`/`myRandomToListing`/`visibleListings(listings, excludeIds)`/`StripListing`
+→ `random_games.dart`; kart: `random_games_strip.dart`, "Bekliyor" + "İptal"/"Ayrıl" ≥32 dp,
+zemin `kAccent` %5 / kenar %30 = web `border-accent/30 bg-accent/5`; eylem
+`LiveGamesTab._handleLeaveRandom` — ikinci kopya yok). Testler: `random_games_test.dart`
+(kurallar + web metin/sınıf paritesi), `random_games_ui_test.dart` (benim kart, yalnız-benim
+şerit, İptal/Ayrıl, yinelenme yok). Cihaz maddesi: `mobile/docs/testing-arkadaslar-canli.md`.
 
 ## 14. Rastgele satırına tekrar dokunuş = GERİ AL (4 Ekim 2026, kullanıcı)
 

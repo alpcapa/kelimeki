@@ -576,6 +576,14 @@
       320 px (iPhone SE) ve 390 px'te ~3 kart yan yana, dördüncünün kenarı
       görünür. Şerit yüksekliği ilan sayısıyla UZAMAZ; yazı ölçeği büyütülünce
       kart içeriği taşmaz/kesilmez.
+- [ ] **Benim ilanım şeritte (4 Ekim 2026, §15)**: ilan açınca şeritte BENİM
+      kartım ilk sırada (başkalarınınki sağında), soluk accent zemin; "Kabul"
+      YOK, "BEKLİYOR" etiketi ("N koltuk kaldı" yerine) + altta kırmızı altı
+      çizili "İptal" (kurucu) / "Ayrıl" (ilandan oturan). Yalnız benim ilanım
+      varken de şerit görünür; başlık sayısı benimkini sayar. İptal/Ayrıl:
+      "İlan iptal edildi." / "Ayrıldın. Koltuk yeniden açıldı."; kart kalkar.
+      "Devam Edenler"deki "Bekliyor n/N" satırı da durur (yinelenme bilinçli).
+      Kart eni/yüksekliği diğerleriyle aynı; 320 px'te taşmaz.
 - [ ] **Kabul**: tek dokunuş, onay YOK; satır içi ileti ("Kabul ettin. Diğer
       oyuncular bekleniyor." / 2 kişilikte "Kabul ettin. Oyun başladı.") 5 sn
       sonra kalkar; kabul edilen kart şeritten hemen kaybolur. Çift dokunuşta
