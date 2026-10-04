@@ -60,8 +60,8 @@ arkadaşının bölgesine bağlayabilirsin."* Bu doğru ve daha iyi bir oyun, am
 | İlk hamle | Kural aynı, ortağınki değil **kendi** başlangıç karen (her oyuncunun kendi ev işareti var). Sonraki hamleler serbest |
 | Alınan vergi (S13 — KAPANDI, kullanıcı: *"kişinin puanına verginin yarısı girmeli, nasıl yapılacağına sen karar ver"*) | **Rakip takımın aldığı pay iki ortağa YARI YARIYA yazılır**: her ortağın skoruna `floor(pay/2)` girer; pay tek sayıysa artan 1 puan **düşük koltuk numaralı ortağa** gider (deterministik, golden vector ile sınanır, hile/rastgelelik yok). Motordaki mevcut `shares:[{index,amount}]` yapısı kullanılır, yeni alan yok. Takım toplamı değişmez. Ödeyen = hamleyi yapan kişi. Takım içi vergi yok. Gösterim: oyun içinde yalnızca takım toplamı/takım vergisi, **bitiş ekranında kişi skoru yarısını içerir** (normal oyundaki gibi). Örnek: pay 10 → 5+5; pay 3 → 2+1; pay 7 → 4+3 |
 | YZ | Takım oyununda YZ koltuğu YOK |
-| Teslim / 48 sa zaman aşımı | Motorun kademeli teslimi aynen: teslim olanın skoru 0, rafı torbaya. **Teslim olanın köşesi** doğal alana döner, ortağın zinciri sürer |
-| Oyun bitişi | "Aktif oyuncu 1'e düşünce biter" takım oyununda yetmez. **Yeni kural: bir takımın TÜM üyeleri teslimse biter.** Yalnızca SQL (`check_turn_timeout`) |
+| Teslim / 48 sa zaman aşımı (**Revizyon 17, kullanıcı, 4 Ekim 2026 — ÖNCEKİ "kademeli teslim, ortağın zinciri sürer" kuralının YERİNE geçer**) | **Bir üyenin teslimi (48 saat hamle yapmaması dahil) TÜM TAKIMI teslim yapar.** Takım oyunu 2 taraflı olduğundan teslim olan takımın üyeleri teslim sayılınca oyun HEMEN biter (4 kişilik olsa da; "devam eden ortak" yok). Teslim olan takımın İKİ oyuncusu da k-lig'de **−2** alır VE **takım Takım Ligi puanında −2** alır; kazanan takımın iki oyuncusu **+2**, **takım +2** (kullanıcı: *"arkadaşı teslim olan takımı da teslim yapar. 4 kişide de bitecek ve takım oyuncuları ve takım −2 alacak. Kazanan oyuncular ve takım +2 alacak."*). Rastgele oyundan FARKLI: rastgele oyun normal Canlı oyunla aynı (4 kişide kalanlar devam eder, yalnız süresi dolan −2) — `random-opponent.md` §16 |
+| Oyun bitişi | Bir takımın tüm üyeleri teslimse biter; Revizyon 17 ile "bir üye teslim = takım teslim" olduğundan pratikte **ilk teslim oyunu bitirir**. Yalnızca SQL (`check_turn_timeout`: `listing='team'` iken teslim olan oyuncunun TAKIM ARKADAŞI da `surrendered` işaretlenir ve bitiş yolu çalışır; `_finish_online_game_records` iki üyeye −2'yi ve takıma −2'yi yazar) |
 
 **Regresyon güvencesi (S15, kullanıcı: *"mevcut çalışan sistemin bozulması ve
 etkilenmesi çok önemli"*):** takım yolu YALNIZCA `team` alanı varken çalışır.
@@ -259,7 +259,7 @@ galibiyet 2 puan, ikinciye puan yok. Kazanan takımın oyuncularının ikisine d
 | Konu | Karar |
 |---|---|
 | Takım puanı | Kazanan **+2**, kaybeden **0**. **Beraberlik (S14 — KAPANDI, kullanıcı: *"2 kişilik oyunda beraberlik ne veriyorsa bu da öyle"*):** kodda doğrulandı (`leaguePoints`, `rankPlayers`): 2 kişilik oyunda eşit skor iki tarafı da 1. yapar ve ikisi de **1. sıra puanı olan +2**'yi alır (1 değil; 2. sıra puanı yalnızca 4 kişilikte var). Takım oyunu aynı kuralı izler → iki takım da **+2**, dört oyuncu da **+2**, ekranda "BERABERE" |
-| Oyuncu k-lig puanı | Kazanan takımın İKİ oyuncusu da **+2**, kaybedenler **0**, teslim olan **−2** (bugünkü kural) |
+| Oyuncu k-lig puanı | Kazanan takımın İKİ oyuncusu da **+2**, kaybedenler **0**; **teslim olan takımın İKİ oyuncusu da −2** (Revizyon 17: bir üyenin teslimi takımı teslim yapar) |
 | **Uygulama: sunucu formülü DEĞİŞMEZ (S16 ile güncellendi)** | Takım oyunu **2 kişilik oyun mantığındadır**, `games`'e **`player_count = 2`** (taraf sayısı) yazılır; sıra TARAFA göre: kazananlar `rank=1` (iki oyuncu), kaybedenler `rank=2` (iki oyuncu), beraberlikte dördü de `rank=1`. `league_points_for(rank, 2, surrendered, null)` zaten 1.→+2, 2.→0 verir; `verify-league-points` ve beş nesne etkilenmez. Tüketiciler (`GameOver` `players.length`, `GameHistoryModal`/`computeRanks`, head-to-head…) takım oyununda `players.length` yerine **taraf sayısını** kullanır; takım oyunu snapshot'ta `players[].team` (0/1) ile tanınır, `games`'e yeni kolon gerekmez |
 | Takım puanı toplamı | Takım Ligi puanı, `team_game_results` toplamı |
 | Sıralama | Takım puanı ↓, eşitlikte **takım OHP'si** ↓, sonra oyun sayısı ↓, sonra takım id |
@@ -268,7 +268,7 @@ galibiyet 2 puan, ikinciye puan yok. Kazanan takımın oyuncularının ikisine d
 | Satır | sıra · takım adı · iki avatar · **OHP (solda) · puan (sağda)**. Rütbe mührü YOK |
 | "Senin sıran" | En iyi takımının satırı, pencerenin içinde (Beyin Ligi #796 dersi) |
 | Alttaki not | *"Galibiyet 2 puan. Puanlar eşitse takım OHP'si yüksek olan üstte."* |
-| Takım teslim cezası | Takıma ayrıca ceza YOK; teslim olan üye zaten kendi −2'sini alır |
+| Takım teslim cezası | **Revizyon 17 (4 Ekim 2026): takıma −2 yazılır** (teslim olan takım Takım Ligi puanında −2; kazanan takım +2). Önceki "takıma ayrıca ceza YOK" kuralı GEÇERSİZ. Takım puanı eksiye düşebilir → sıralama/gösterim ve `team_game_results` kısıtları buna göre tasarlanır |
 | Bireysel OHP | Hamle puanları Beyin Ligi'ne normal girer |
 
 ## 9. Sunucu ve istemci etkisi (kod yok, kapsam haritası)
@@ -398,3 +398,15 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
 | 3 | Oyun içi: takım kutuları, Oyun Geçmişi, oyun sonu, Son Oynananlar | M |
 | 4 | Takım Ligi sıralaması (sunucu görünümü + k-lig sekmesi) | S |
 | 5 | Port ikizi + parite kapıları + Koşullar/Gizlilik + TESTING | L |
+
+## Revizyon 17 (4 Ekim 2026) — teslim = takım teslimi
+
+Kullanıcı (Rastgele Oyuncu görüşmesinde bir yanlış anlaşılmadan sonra netleştirdi): *"Takım liginde arkadaşı
+teslim olan takımı da teslim yapar. Kural bu. 2 kişide zaten bitiyor. 4 kişide de bitecek ve takım oyuncuları ve
+takım −2 alacak. Kazanan oyuncular ve takım +2 alacak."* Etki: (1) §3 teslim/bitiş satırları ve §8 puan satırları
+yukarıda değişti; (2) **`check_turn_timeout` Takım Ligi için ayrı dal ister** (`listing='team'`: teslim olanın ortağını da
+işaretle, oyunu bitir; 3 Ekim canlı gövdesi `v_active_count <= 1` ile bitiriyor, rastgele oyun bu yüzden DEĞİŞMEDİ);
+(3) `team_game_results` takım puanı −2 tutabilmeli (check kısıtı varsa gevşet); (4) takım sıralaması eksi puanı
+gösterebilmeli; (5) Yardım/Koşullar metni: *"takım arkadaşın süresinde oynamazsa takımınız teslim sayılır"* uyarısı
+oyun açma/kabul anında da görünmeli (ilan kartı alt yazısı önerisi, kullanıcıya sorulur); (6) golden vector GEREKMEZ:
+bu SQL kuralıdır, motoru (kopya 1-3) değiştirmez ama SQL aynası (`verify-sql-engine-parity`) kapsamı gözden geçirilir.

@@ -48,6 +48,7 @@ import {
   classifyLiveGames,
   isOpenSeat,
   isRealAiSeat,
+  isRandomOriginGame,
   myWaitingRandomGames,
   randomManagedIds,
 } from '../utils/randomGames';
@@ -436,14 +437,17 @@ function GameRow({ game, onRespond, busy, onOpen, isMyTurn, deadline, scores }: 
   // de gizli kalır — yanlış tarafa ait bir sürenin bir an görünmesindense
   // hiç görünmemesi tercih edildi.
   const remaining = isMyTurn ? remainingTimeLabel(deadline) : null;
+  const isRandomOrigin = game.status === 'active' && isRandomOriginGame(game.slots);
   const Wrapper = onOpen ? 'button' : 'div';
   return (
     <Wrapper
       type={onOpen ? 'button' : undefined}
       onClick={onOpen}
-      className={`shadow-raised flex flex-col rounded-md px-2.5 py-2 border border-border bg-panel w-full text-left ${
-        onOpen ? 'active:scale-[0.99] transition-transform' : ''
-      }`}
+      className={`shadow-raised flex flex-col rounded-md px-2.5 py-2 border w-full text-left ${
+        // Rastgele ilandan doğan oyun (4 Ekim 2026): çok açık mavi zemin + solda mavi çizgi + "RASTGELE"
+        // etiketi (Takım Ligi'nin pembe işaretiyle AYNI fikir). Kart düzeni DEĞİŞMEZ.
+        isRandomOrigin ? 'border-border border-l-[3px] border-l-accent bg-[#EEF4FF]' : 'border-border bg-panel'
+      } ${onOpen ? 'active:scale-[0.99] transition-transform' : ''}`}
     >
       {/* 2 Eylül 2026 — SÜRE SATIRI KARTIN ALTINA ALINDI. Setup'ın YZ kartı
           aynı gün bu şekle sokulmuştu, burası dokunulmadan kalmıştı ve iki
@@ -497,15 +501,27 @@ function GameRow({ game, onRespond, busy, onOpen, isMyTurn, deadline, scores }: 
           {game.status === 'active' && (isMyTurn ? <TurnTriangle /> : <TurnDot />)}
         </span>
       </span>
-      {remaining && (
+      {/* Alt satır: "RASTGELE" etiketi SOLDA, kalan süre SAĞDA — aynı hizada, kart uzamasın
+          (4 Ekim 2026, kullanıcı). Süre yoksa (sıra rakipte) etiket tek başına bu satırda kalır. */}
+      {(remaining || isRandomOrigin) && (
         <span
-          /* mt-1.5 — SavedGameRow'la aynı: süre satırı durum etiketine
-             YAPIŞMASIN (kullanıcı isteği). */
-          className={`mt-1.5 self-end text-[8px] font-mono uppercase tracking-[0.5px] ${
-            remaining.urgent ? 'text-red' : 'text-muted'
-          }`}
+          /* mt-1.5 — SavedGameRow'la aynı: alt satır durum etiketine YAPIŞMASIN (kullanıcı isteği). */
+          className={`mt-1.5 flex items-center gap-2 ${isRandomOrigin ? 'justify-between' : 'justify-end'}`}
         >
-          {remaining.text}
+          {isRandomOrigin && (
+            <span className="rounded-full border border-accent/30 bg-white px-1.5 font-mono text-[8px] font-bold uppercase leading-[13px] tracking-[0.5px] text-accent">
+              Rastgele
+            </span>
+          )}
+          {remaining && (
+            <span
+              className={`text-[8px] font-mono uppercase tracking-[0.5px] ${
+                remaining.urgent ? 'text-red' : 'text-muted'
+              }`}
+            >
+              {remaining.text}
+            </span>
+          )}
         </span>
       )}
     </Wrapper>

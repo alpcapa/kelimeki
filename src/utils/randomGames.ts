@@ -48,6 +48,18 @@ export function filledSeatCount(slots: readonly OnlineGameSlot[]): number {
   }).length;
 }
 
+/**
+ * Oyun bir RASTGELE ilandan mı doğdu (4 Ekim 2026, kullanıcı: "devam eden oyunlarda diğerlerinden
+ * ayrışmıyor; takımdaki pembe gibi açık mavi ve rastgele tag'i ile gösterelim")? İlandan oturan HER
+ * koltuk `via:'random'` taşır (`_random_take_seat`) ve `list_my_online_games` insan koltuğunu `||`
+ * ile zenginleştirdiğinden alan korunur → bir ilandan başlayan oyunda EN AZ BİR koltukta vardır
+ * (karma kadroda arkadaş koltukları taşımaz, ama rastgele koltuk taşır). Kurucunun kendi koltuğu
+ * taşımaz — bu yüzden tek koltuğa değil TÜM koltuklara bakılır.
+ */
+export function isRandomOriginGame(slots: readonly OnlineGameSlot[]): boolean {
+  return slots.some((s) => s.type === 'human' && s.via === 'random');
+}
+
 // ── Kova sınıflandırması (LiveGamesTab) ─────────────────────────────────────
 
 /**

@@ -1,18 +1,9 @@
--- ⚠ GERİ ALINDI (aynı gün): bkz. 20261004070422_revert_random_timeout_ends_game.sql. Kural kullanıcıyla
--- yanlış anlaşılma sonucu (takım oyunuyla karıştırıldı) ~25 dakika canlıda kaldı.
--- Rastgele Oyuncu (ROADMAP #45) — 48 saat zaman aşımı oyunu BİTİRİR (4 Ekim 2026, kullanıcı):
--- "bu oyunlarda da diğer oyunlar gibi teslim yok, sadece süre dolunca bir kişi 48 içinde hamle
--- yapmazsa oyun biter, normalde 4 kişide diğerleri devam edebiliyordu. Yani arkadaşının cezasını
--- sen de çekersin."
---
--- check_turn_timeout'un CANLI gövdesinden (4 Ekim 2026, pg_get_functiondef) İKİ fark:
---   (1) `og.listing` okunuyor (v_listing);
---   (2) bitiş koşulu `v_active_count <= 1` → `v_active_count <= 1 or v_listing = 'random'`.
--- Zaman aşımına uğrayan oyuncu yine teslim sayılır (skor 0, raf torbaya) ama listing='random'
--- oyunda kalan oyuncular DEVAM ETMEZ: oyun aynı bitiş yolundan (raf puanı düşümü,
--- _finish_online_game_records, end_reason 'surrender', e-posta) kapanır. 2 kişilik oyunda
--- davranış zaten buydu; 4 kişilik random oyunda (YZ koltuğu dahil) fark yaratır.
--- listing NULL (arkadaş daveti) oyunlarda DAVRANIŞ DEĞİŞMEZ. İmza/dönüş/proacl aynı (create or replace).
+-- Rastgele Oyuncu — 20261004065336_random_timeout_ends_game GERİ ALINDI (4 Ekim 2026, kullanıcı):
+-- "Rastgele oyunda 4 kişilik oyunda olduğu gibi teslim olunca diğer oyuncular devam edebilmeli
+-- (diğer oyunlar gibi). Sadece süresinde oynamayan -2 almalı. 2 kişi ise oyun biter, teslim -2
+-- alır, diğeri +2 alır. 4 kişide oyun devam eder."  Yani rastgele oyunlar zaman aşımında NORMAL
+-- Canlı oyunlarla BİREBİR aynı davranır; bu dosya check_turn_timeout'u 3 Ekim 2026 canlı
+-- gövdesine (listing'e hiç bakmayan, `v_active_count <= 1` ile biten hâl) döndürür.
 create or replace function public.check_turn_timeout(p_game_id uuid)
 returns void
 language plpgsql
@@ -23,7 +14,6 @@ declare
   v_uid uuid := auth.uid();
   v_player_count int;
   v_slots jsonb;
-  v_listing text;
   v_players jsonb;
   v_board jsonb;
   v_current int;
@@ -48,7 +38,7 @@ begin
     raise exception 'Bu oyunun katılımcısı değilsin.';
   end if;
 
-  select og.player_count, og.slots, og.listing into v_player_count, v_slots, v_listing
+  select og.player_count, og.slots into v_player_count, v_slots
   from public.online_games og
   where og.id = p_game_id
   for update;
@@ -121,8 +111,7 @@ begin
     '[]'::jsonb, null, 0, null, 0, null, 0, false
   );
 
-  -- Rastgele ilanla başlayan oyunda tek bir zaman aşımı oyunu BİTİRİR (kalanlar devam etmez).
-  if v_active_count <= 1 or v_listing = 'random' then
+  if v_active_count <= 1 then
     for i in 0 .. v_player_count - 1 loop
       v_remaining := 0;
       for k in 0 .. jsonb_array_length(v_new_racks -> i) - 1 loop

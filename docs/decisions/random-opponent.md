@@ -333,3 +333,33 @@ ilanım şeritte YOK" kararını bu değiştirir).
 - Şerit yalnızca benim ilanım olsa bile görünür; "Rastgele Oyunlar · N" benimkini de sayar.
 - **Bilinçli yinelenme:** "Devam Eden Oyunlar"daki "Bekliyor n/N" satırları (`RandomWaitingRow`) ŞİMDİLİK durur;
   aynı ilan iki yerde görünür. Kapı: `verify-random-games`.
+
+## 16. Zaman aşımı: rastgele oyun NORMAL oyunla BİREBİR aynı (4 Ekim 2026, kullanıcı)
+
+Önce *"süre dolunca oyun biter, 4 kişide de; arkadaşın da -2 alacak, takımın da"* denmişti;
+`check_turn_timeout` buna göre değiştirildi (`20261004065336_random_timeout_ends_game`) ve ~25
+dakika canlıda kaldı. Kullanıcı sonra *"takımla karıştırdım"* dedi ve kuralı netleştirdi:
+**rastgele oyunlar zaman aşımında diğer Canlı oyunlarla BİREBİR aynıdır** — teslim yok, yalnızca
+48 saat hamle yapmayan otomatik teslim sayılır ve **yalnızca o** -2 alır; 2 kişilikte oyun biter
+(teslim olan -2, rakip +2); 4 kişilikte oyun DEVAM EDER. Değişiklik geri alındı
+(`20261004070422_revert_random_timeout_ends_game`, canlıda doğrulandı: orijinal koşul, ACL aynı).
+`check_turn_timeout` rastgele ilan için ÖZEL bir şey yapmaz; `listing` kolonuna hiç bakmaz.
+⚠ "Ortağın/takımın da -2 alır" kuralı, kullanıcı Takım Ligi'ni kastetmiş olabilir: o tasarımda
+(`team-league.md` §3 "Teslim / 48 sa zaman aşımı") şu an yazılı olan "teslim olanın köşesi doğal alana
+döner, ortağın zinciri sürer" + "bir takımın TÜM üyeleri teslimse biter"dir; ortağın da -2 alması
+yazılı DEĞİL — Takım Ligi koduna başlanırken kullanıcıya sorulacak.
+
+## 17. Şerit kartları KARE (4 Ekim 2026, kullanıcı)
+
+Önizlemede (iPad) kullanıcı: *"dikey kartlar mobil ekranda alttaki asıl devam eden oyunları görünmez yapabilir.
+Dikey uzun yerine kare yapalım, 4 tane ama 4.sünün sadece 1/4'ü ya da bir kısmı gözüksün ki devamı olduğu belli olsun."*
+Uygulama (web `RandomGamesStrip.tsx`): kart `aspect-square`, eni `min(7rem, (şerit − 24px) / 3.25)` (en az 84 px) →
+3 tam kart + 4.'nün ~1/4'ü. İçerik tek sıkı düzende: [avatar 22 + ad] · [rozet + koltuk noktaları] · ["N koltuk kaldı" /
+"Bekliyor"] · [Kabul / İptal-Ayrıl ≥32 px]. Ölçüldü (derlenmiş CSS, gerçek işaretleme): 390 px → 103×108, 4.
+kartın 26 px'i görünür; 820 px → 112×112 (geniş ekranda daha çok kart sığar); 320 px → 84×118 (4 kişilik kartta rozet
+ile noktalar sarar, bilinçli) ve 4. kartın ~12 px'i görünür. Yatay taşma yok. **Port ikizi:** Dart şerit kartı aynı
+oranlarla (sabit `176 × ölçek` yükseklik ve `(genişlik−16)/3.4` KALKAR).
+
+**Başlık bağlantısı ve etiketler (4 Ekim 2026, kullanıcı):** "Rastgele oyun aç" bağlantısı başlıkla AYNI boy ve yazı
+(10 px mono, büyük harf, aralıklı), mavi + kalın, alt çizgisiz (Arkadaşlar penceresindeki "Tüm oyuncular →" ile aynı
+desen). Kartlardaki durum mesajları ("Bekliyor", "N koltuk kaldı") ORTALI. Port ikizi aynı.

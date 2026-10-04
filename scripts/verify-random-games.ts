@@ -18,6 +18,7 @@ import {
   RANDOM_SEAT,
   acceptNotice,
   addRandomSeat,
+  isRandomOriginGame,
   aiLastSeat,
   buildRandomSlots,
   canSubmitSeats,
@@ -268,6 +269,11 @@ async function main() {
   check('"N koltuk kaldı" (zaman YOK)', seatsLeftLabel(1) === '1 koltuk kaldı' && seatsLeftLabel(3) === '3 koltuk kaldı');
 
   // ── 5) Esnek kadro ────────────────────────────────────────────────────────
+  console.log('\nRastgele kökenli oyun işareti (Devam Edenler)');
+  check('ilandan oturan koltuk (via:random) → rastgele kökenli', isRandomOriginGame([{ type: 'human', user_id: 'a' }, { type: 'human', user_id: 'b', via: 'random' }]));
+  check('arkadaş daveti oyunu (via yok) → rastgele DEĞİL', !isRandomOriginGame([{ type: 'human', user_id: 'a' }, { type: 'human', user_id: 'b' }]));
+  check('karma kadro: arkadaş + ilandan oturan → rastgele kökenli', isRandomOriginGame([{ type: 'human', user_id: 'a' }, { type: 'human', user_id: 'f' }, { type: 'human', user_id: 'r', via: 'random' }, { type: 'ai' }]));
+  check('yalnız YZ koltuğu → rastgele DEĞİL', !isRandomOriginGame([{ type: 'human', user_id: 'a' }, { type: 'ai' }]));
   console.log('\nEsnek kadro (kurulum formu)');
   check('2 kişi: ? ekler', addRandomSeat([], 2).join() === RANDOM_SEAT);
   check('2 kişi: ? seçiliyken tekrar dokunuş GERİ ALIR', addRandomSeat([RANDOM_SEAT], 2).length === 0);
