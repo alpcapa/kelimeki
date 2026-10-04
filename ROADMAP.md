@@ -857,6 +857,7 @@ ilan Devam Edenler'in üstünde **3 kutu yan yana, yatay kayan şeritte** kabul
 edilir, kabul edilen oyun "Bekliyor" ile Devam Edenler'e girer. Motora dokunmaz.
 Kayıt, kararlar (A-F kapandı) ve öneriler: `docs/decisions/random-opponent.md`. Kullanıcı: 12 Ekim trenine alınabilirse alınsın (port yetişmezse 19 Ekim);
 Takım Ligi (#44) ile aynı `online_games.listing` altyapısı.
+⚠ **4 Ekim (kullanıcı): web (#804) ve port (#805) AYNI GÜN merge edilir** (iki taraflı pazar yeri; web tek başına işe yaramaz) — `random-opponent.md` §19.
 
 ## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
 

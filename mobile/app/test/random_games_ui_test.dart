@@ -204,6 +204,22 @@ void main() {
       await tester.tap(find.text('RASTGELE OYUN AÇ'));
       await tester.pumpAndSettle();
       expect(find.byType(LiveGameCreateForm), findsOneWidget);
+      // Kullanıcı (4 Ekim 2026): "Rastgele oyun aç'a basınca rasgele oyuncu direkt seçili gelsin."
+      expect(find.byKey(const ValueKey('koltuk-rastgele-0')), findsOneWidget,
+          reason: 'şeritten açılan formda "?" koltuğu SEÇİLİ gelir');
+      expect(find.text('×1'), findsOneWidget);
+      await bitir(tester);
+    });
+
+    testWidgets('"+ Yeni Canlı Oyun" formu BOŞ açar (Rastgele seçili DEĞİL)',
+        (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..randomRows = [randomListingRow(id: 'a')];
+      await pumpTab(tester, servis('serit-yeni', gw));
+      await tester.tap(find.widgetWithText(NeoButton, 'YENİ OYUN BAŞLAT'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LiveGameCreateForm), findsOneWidget);
+      expect(find.text('×1'), findsNothing);
       await bitir(tester);
     });
 

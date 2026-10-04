@@ -383,3 +383,17 @@ Port: `DevamEdenGovde(etiket:)` (Setup'ın YZ kartı vermez → etkilenmez) + `_
 `live_games_tab.dart`ta — `#EEF4FF` Tailwind ARBITRARY değer olduğundan `tokens.dart`a GİRMEZ (`color_tokens_test` ↔
 `tailwind.config.js` eşitliği bozulmaz). Sol çizgi `Stack` + `Positioned` (`ShapeDecorationWithCssShadows` tek tip
 kenarlık destekler). Kilitler: `random_games_test.dart` (kural + web sınıf paritesi), `random_games_ui_test.dart`.
+
+## 19. Web ve mobil BİRLİKTE yayına çıkar (4 Ekim 2026, kullanıcı)
+
+Kullanıcı: *"Yalnız web tarafını yayına alırız dedik ama bu mümkün değil sanırım. Çünkü web'de bunu yapanların mobilde
+karşılığı olmayacak, bu durumda işe yaramaz."* Doğru: Rastgele Oyuncu iki taraflı bir PAZAR YERİ — ilanı yalnızca
+özelliği olan istemciler görür/kabul eder. Web'de açılan ilanı mobil kullanıcı (çoğunluk) göremez/kabul edemez, ilan 7 gün
+bekler, ilk izlenim "çalışmıyor" olur. Bu yüzden kök CLAUDE.md'deki *"Web+port birlikte değişiyorsa iki PR'a böl, web yarısı
+hemen gider"* kuralı bu özellik için UYGULANMAZ: **#804 (web) ve #805 (port) AYNI GÜN merge edilir** (12 Ekim kesimi).
+Merge öncesi web, Vercel önizlemesinde (canlı veritabanına bağlı) test edilir. Sunucu parçaları ZATEN canlıda ve
+zararsız (kullanan istemci yok). ⚠ Kalan boşluk: mobil derleme TestFlight'a gitse bile kullanıcılar mağazadan
+güncelleyene kadar eski sürümde kalır; o aralıkta web'de açılan ilanı mobil kullanıcılar göremez. Çözüm adayı olan sunucu
+bayrağı (özellik yalnızca test hesaplarında açık, mağaza sürümü yayına çıkınca herkese açılır) KULLANICI KARARIYLA
+YAPILMAYACAK (4 Ekim: *"Bence gerek yok. 12 Ekim'de birlikte yayına alırız. Daha 1 hafta var. Bu arada testlerimizi yapabiliriz."*);
+kabul edilen bedel: mağaza güncellemesi gelene kadar web'de açılan ilanlar mobil kullanıcılara görünmez.

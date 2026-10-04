@@ -99,6 +99,10 @@ class LiveGameCreateForm extends StatefulWidget {
   final String? initialFriendId;
   final int? initialPlayerCount;
 
+  /// Şeritteki "Rastgele oyun aç"tan gelince (4 Ekim 2026, kullanıcı: "rasgele oyuncu
+  /// direkt seçili gelsin"): Rastgele Oyuncu SEÇİLİ açılır (web `initialRandom`).
+  final bool initialRandom;
+
   /// Test kancası — verilmezse sistem paylaşım sayfası.
   final InviteSharer? sharer;
 
@@ -115,6 +119,7 @@ class LiveGameCreateForm extends StatefulWidget {
     this.chat,
     this.initialFriendId,
     this.initialPlayerCount,
+    this.initialRandom = false,
     this.sharer,
   });
 
@@ -126,7 +131,10 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
   late int _playerCount = widget.initialPlayerCount == 4 ? 4 : 2;
   List<FriendRow>? _friends;
   late final List<String> _selected = [
-    if (widget.initialFriendId != null) widget.initialFriendId!,
+    if (widget.initialFriendId != null)
+      widget.initialFriendId!
+    else if (widget.initialRandom)
+      kRandomSeat,
   ];
   bool _busy = false;
   String? _error;

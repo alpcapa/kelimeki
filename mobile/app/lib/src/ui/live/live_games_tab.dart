@@ -170,6 +170,9 @@ class _LiveGamesTabState extends State<LiveGamesTab>
   Timer? _autoRetryTimer;
   bool _creating = false;
 
+  /// Şeritteki "Rastgele oyun aç": formu Rastgele Oyuncu SEÇİLİ açar (web `startRandom`).
+  bool _startRandom = false;
+
   /// Arkadaşlar penceresinin OYNA'sından gelen istek (ROADMAP #41 karar 23)
   /// — form bu arkadaş seçili açılır. `_formSeq` her istekte artar ki aynı
   /// açık form yeni istekle YENİDEN kurulsun.
@@ -260,6 +263,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     if (r == null || !mounted) return;
     setState(() {
       _istek = r;
+      _startRandom = false;
       _formSeq++;
       _creating = true;
     });
@@ -485,6 +489,15 @@ class _LiveGamesTabState extends State<LiveGamesTab>
   /// aç" bağlantısı AYNI yolu kullanır (web `setCreating(true)`).
   void _openCreateForm() => setState(() {
         _istek = null;
+        _startRandom = false;
+        _formSeq++;
+        _creating = true;
+      });
+
+  /// Şeridin "Rastgele oyun aç" bağlantısı: aynı form, Rastgele Oyuncu SEÇİLİ.
+  void _openCreateRandom() => setState(() {
+        _istek = null;
+        _startRandom = true;
         _formSeq++;
         _creating = true;
       });
@@ -608,6 +621,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
         key: ValueKey('canli-form-$_formSeq'),
         initialFriendId: _istek?.friendId,
         initialPlayerCount: _istek?.playerCount,
+        initialRandom: _startRandom,
         auth: auth,
         friends: services.friends!,
         onlineGames: repo,
@@ -757,7 +771,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
                     myRandom: _myRandom,
                     busyRandomId: _busyRandomId,
                     onLeaveMine: _handleLeaveRandom,
-                    onOpenCreate: _openCreateForm,
+                    onOpenCreate: _openCreateRandom,
                     onAccepted: (r) {
                       _showNotice(acceptNotice(started: r.started));
                       unawaited(_reload());

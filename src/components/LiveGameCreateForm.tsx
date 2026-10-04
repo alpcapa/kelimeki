@@ -61,6 +61,8 @@ interface LiveGameCreateFormProps {
    * (`utils/liveGameRequest.ts`, 27 Eylül 2026). */
   initialFriendId?: string;
   initialPlayerCount?: 2 | 4;
+  /** Şeritteki "Rastgele oyun aç"tan gelince (4 Ekim 2026): Rastgele Oyuncu SEÇİLİ açılır. */
+  initialRandom?: boolean;
 }
 
 const toggleBtnCls = (active: boolean) =>
@@ -89,11 +91,14 @@ export function LiveGameCreateForm({
   onCreated,
   initialFriendId,
   initialPlayerCount,
+  initialRandom,
 }: LiveGameCreateFormProps) {
   const { user, profile } = useAuth();
   const [playerCount, setPlayerCount] = useState<2 | 4>(initialPlayerCount ?? 2);
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
-  const [selected, setSelected] = useState<string[]>(initialFriendId ? [initialFriendId] : []);
+  const [selected, setSelected] = useState<string[]>(
+    initialFriendId ? [initialFriendId] : initialRandom ? [RANDOM_SEAT] : [],
+  );
   // Sıfırlama yalnızca sayı GERÇEKTEN değişince — mount'ta (StrictMode'un
   // çift koşusu dahil) koşarsa OYNA'dan gelen ön seçim silinirdi.
   const oncekiSayiRef = useRef(playerCount);
