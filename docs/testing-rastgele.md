@@ -49,3 +49,10 @@ yalnızca saf kuralları sınar: `npm run verify-random-games`.
 **13.10.7 Yan etkiler**
 - [ ] Gizlilik/Kullanım Koşulları metninde Rastgele Oyuncu maddesi var (pencere + `/gizlilik/`, `/kullanim-kosullari/`).
 - [ ] Yabancıyla biten oyunda "Tekrar Oyna" (rövanş): sunucu "Yalnızca arkadaşlarını davet edebilirsin" diyebilir — davranışı not et (karar bekliyor, `random-opponent.md` §7).
+
+## Bilinçle ATLANAN test: 48 saat zaman aşımı (4 Ekim 2026, kullanıcı kararı)
+
+Rastgele ilanla başlayan oyunda zaman aşımı **normal Canlı oyunla birebir aynıdır** (`check_turn_timeout` `listing`
+kolonuna HİÇ bakmaz; ara bir değişiklik aynı gün geri alındı, bkz. `random-opponent.md` §16). Yani teslim/−2/+2 mantığı bu
+özellikle değişmedi ve burada ayrıca test EDİLMEZ; normal Canlı oyun testleri (`TESTING.md`) kapsar. Bu yüzden listede bir
+"süreyi geçmişe al" adımı YOK.
