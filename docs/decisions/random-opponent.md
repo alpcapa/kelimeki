@@ -33,7 +33,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
 
 - **Arkadaş listesinin İÇİNDE, ilk satır** (kullanıcı, 4 Ekim 2026: *"diğer arkadaşlar
   gibi listenin en üstüne koyacaksın, ayrı bir bölümde değil"*): **? avatarlı "Rastgele
-  Oyuncu"**, alt yazısı *"Bunu seçerseniz rasgele oyun açarsınız."* (kullanıcı, 4 Ekim 2026; yazım "rasgele"). Arkadaş satırlarıyla AYNI kart
+  Oyuncu"**, alt yazısı *"Açık oyun başlatır. Oyuna herkes katılabilir."* (kullanıcı, 4 Ekim 2026; önce "Bunu seçerseniz rasgele oyun açarsınız." idi, aynı gün bu metne döndü). Arkadaş satırlarıyla AYNI kart
   dili ve AYNI kaydırılan liste; arama kutusunun ve "Arkadaşını davet et" düğmesinin
   ALTINDA, arkadaşlardan ÖNCE. Ayrı bir başlık/bölüm YOK. Aramada süzgeçten MUAF, "Tüm
   oyuncular" görünümünde ve hiç arkadaşı olmayanda da hep görünür. (İlk web sürümü
