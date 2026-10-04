@@ -91,6 +91,18 @@ Deno.serve(async (req: Request) => {
     .limit(1)
     .maybeSingle();
 
+  // HİÇ hamle yoksa bu çağrı `_notify_random_game_started`tan (oyun yeni
+  // doldu): sıra el değiştirmedi, ilk sıradaki ilan sahibine "başladı" denir.
+  if (!lastMove) {
+    const started = await sendPushToUser(db, targetId, {
+      title: 'Oyun başladı!',
+      body: `${game.player_count} kişilik rastgele oyunun başladı — ilk hamle sende.`,
+      link: `kelimeki://oyun/${gameId}`,
+      tag: `sira:${gameId}`,
+    });
+    return jsonResponse({ ok: true, pushed: started, reason: 'started' });
+  }
+
   let actorName = 'Yapay Zeka';
   if (lastMove?.player_user_id) {
     const { data: prof } = await db

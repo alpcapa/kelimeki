@@ -216,7 +216,7 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 
 Kod YOK; karar kaydı. #804/#805 olduğu gibi **12 Ekim**'de çıkar (kesim riski
 alınmaz); A/B/C ayrı küçük PR'larla `origin/main`'den yeni dallarda yapılır,
-mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner. Tasarım:
+mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunucu yarısı canlıda). Tasarım:
 `docs/decisions/random-opponent.md` (#804'te).
 
 - **A. Yabancıyla biten oyunda "Tekrar Oyna": gösterilsin — ama yalnızca TÜM
@@ -226,7 +226,7 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner. Tasarım:
   (ör. 4 kişide 1 yabancı) düğme gizli mi, yabancısız mı kurulsun — uygularken
   karar ver, `rematchSlots` ↔ `rematch_slots.dart` + `verify-rematch-slots`.
 - **B. Rütbe mührü kartlarda OLSUN** (şerit kartı / bekleyen oyun satırı).
-- **C. İlan kabul edildi bildirimi OLSUN:** oyun dolup başlayınca ilan sahibine
+- **C. İlan kabul edildi bildirimi OLSUN — ✅ SUNUCU YARISI CANLIDA, 12 Ekim'e DAHİL (4 Ekim 2026, kullanıcı: "12 Ekim'de bildirim de yayında olmalı"; A/B 19 Ekim'de kalır).** Yalnızca sunucu, istemci/sürüm gerektirmez: `_notify_random_game_started` (`after insert` on `online_game_states`, yalnızca `via: random` koltuklu oyun) → mevcut `notify-your-turn` (hiç hamle yoksa "Oyun başladı! … ilk hamle sende.", etiket `sira:<id>`). Migration'lar `20261004100205`/`…100300`, Edge v4 (`verify_jwt: false` korundu). Normal davetli oyunun başlangıcı DEĞİŞMEDİ. Eski not: oyun dolup başlayınca ilan sahibine
   "oyun başladı" bildirimi (sıra ondaysa ilk hamleyi hemen yapsın, yoksa oyun
   açık kalır). ⚠ Rozet zinciri kuralı: yeni bildirim rozete GİRMELİ Mİ ayrıca
   karar ver; web + port + push yükü (`verify-push-payload`) birlikte.
