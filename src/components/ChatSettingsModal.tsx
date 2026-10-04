@@ -146,7 +146,7 @@ export function ChatSettingsModal({
       {view.kind === 'list' && (
         <div className="flex flex-col gap-3">
           <p className="text-xs text-muted leading-relaxed">
-            Buradan kişileri sessize alabilir ve/veya uygunsuz paylaşımları şikayet edebilirsiniz.
+            Buradan kişileri sessize alabilir (mesaj bildirimleri ve oyun davetleri durur) ve/veya uygunsuz paylaşımları şikayet edebilirsiniz.
           </p>
           <div className="flex flex-col gap-1.5">
             {participants.map((p) => {
@@ -262,13 +262,13 @@ export function ChatSettingsModal({
               <>
                 <span className="font-bold">{view.participant.name}</span> kullanıcısını sessize almak istediğinize
                 emin misiniz? Kullanıcının mesajları sohbette görünmeye devam eder ama sizin ekranınıza bildirim
-                olarak gelmez.
+                olarak gelmez. Ayrıca bu kullanıcı size oyun daveti gönderemez.
               </>
             ) : (
               <>
                 <span className="font-bold">{view.participant.name}</span> kullanıcısını sessizden çıkarmak
                 istediğinize emin misiniz? Kullanıcıdan gelen yeni mesajlar için tekrar bildirim almaya
-                başlarsınız.
+                başlarsınız ve oyun davetleri de tekrar açılır.
               </>
             )}
           </p>

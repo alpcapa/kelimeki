@@ -270,12 +270,17 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       dener → "Bu arkadaşına zaten yanıtlanmamış bir 2 kişilik davetin var…".
       (b) Aynı anda A, B'ye 4 kişilik davet gönderebilmeli (ayrı hak); ikinci
       4 kişilik reddedilmeli. (c) B kabul edince A yeni 2 kişilik gönderebilmeli.
-      (d) A, 10 farklı arkadaşına birer 2 kişilik gönderebilmeli (genel tavan
+      (d) A, kaç arkadaşı varsa her birine birer 2 kişilik gönderebilmeli (genel tavan
       YOK). (e) B, A'yı sohbette SESSİZE alır (ya da şikayet eder) → A, B'ye
       davet dener → "<B'nin takma adı> kullanıcısı sizi engelledi." görünmeli;
       susturma/şikayet geri alınınca davet geçmeli. (f) Rastgele ilan (en
       çok 3) bu sınırlardan bağımsız; arkadaş koltuğu olan rastgele ilanda
-      aynı kişiye çift davet de reddedilmeli. ⚠ Beklenen yan etki: "sessize
+      aynı kişiye çift davet de reddedilmeli.
+      (g) **Engel arkadaşlık yolunda (4 Ekim 2026):** B, A'yı engeller (sohbette
+      sessize alma ya da şikayet) → A, B'ye ARKADAŞLIK isteği dener → "<B> kullanıcısı
+      sizi engelledi."; B'nin arkadaş DAVET LİNKİNİ A açınca da aynı mesaj, arkadaş
+      OLUNMAMALI. Engel kalkınca ikisi de geçmeli. ⚠ Arkadaş olmayan birini engelleyince
+      geri alma yolu henüz YOK (ROADMAP E, "Engellediklerim" listesi). ⚠ Beklenen yan etki: "sessize
       al" artık davetleri de kapatır. **Biten oyunu SEN
       kurmamışsan da çalışmalı** (davet edilen taraf da rövanş açabilir).
       ⚠ **Bir YZ oyununun kartında "Tekrar Oyna" ÇIKMAMALI** — kapsam
