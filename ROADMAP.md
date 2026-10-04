@@ -212,6 +212,25 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 | #774 (2 Eki) | **"Tüm oyuncular →" / "← Arkadaşlar" bağlantıları başlıkla aynı tipografide, mavi + kalın** (kullanıcı isteği; web yarısı #775 ile hemen yayında) | `ui/live/live_game_create_form.dart` (`_LinkButton`) + `ui/friends/friends_modal.dart`; `trUpper` ile büyük harf, sabitler web'le birebir |
 | #779 (2 Eki) | **Kayıt formu: ad/soyad isteğe bağlı, zorunlular üstte + Gizlilik "Ad ve soyad (isteğe bağlı)"** (kullanıcı isteği; web formu hemen yayında) | `ui/auth/auth_modal.dart` · `account_settings_modal.dart` · `legal_modals.dart` + web `src/legal/LegalContent.tsx` (Gizlilik tarihi 12 Ekim 2026 — `legal_text_test` web↔port tarih eşliği yüzünden İKİSİ BU PR'da). Cihaz: `TESTING.md` → "Ad/soyad İSTEĞE BAĞLI" |
 
+### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
+
+Kod YOK; karar kaydı. #804/#805 olduğu gibi **12 Ekim**'de çıkar (kesim riski
+alınmaz); A/B/C ayrı küçük PR'larla `origin/main`'den yeni dallarda yapılır,
+mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner. Tasarım:
+`docs/decisions/random-opponent.md` (#804'te).
+
+- **A. Yabancıyla biten oyunda "Tekrar Oyna": gösterilsin — ama yalnızca TÜM
+  rakipler arkadaşsa.** Sunucu rövanşta "Yalnızca arkadaşlarını davet
+  edebilirsin" der; arkadaş olmayana düğme gösterilmez, oyun sonu arkadaş
+  önerisi (zaten var) bu yolu açar. Açık nokta: kısmen arkadaş kadroda
+  (ör. 4 kişide 1 yabancı) düğme gizli mi, yabancısız mı kurulsun — uygularken
+  karar ver, `rematchSlots` ↔ `rematch_slots.dart` + `verify-rematch-slots`.
+- **B. Rütbe mührü kartlarda OLSUN** (şerit kartı / bekleyen oyun satırı).
+- **C. İlan kabul edildi bildirimi OLSUN:** oyun dolup başlayınca ilan sahibine
+  "oyun başladı" bildirimi (sıra ondaysa ilk hamleyi hemen yapsın, yoksa oyun
+  açık kalır). ⚠ Rozet zinciri kuralı: yeni bildirim rozete GİRMELİ Mİ ayrıca
+  karar ver; web + port + push yükü (`verify-push-payload`) birlikte.
+
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
 ⚠ **DURUM (2 Ekim 2026): 1.1.2 (831) İKİ MAĞAZADA YAYINDA** — Play 2 Eki 00:56 TSİ, App Store 2 Eki akşamı (kullanıcı: *"Apple released"*). Mağazadaki paket = `05f1c1f` (koşu #831). Sıradaki sürüm **1.1.3**, kesim **Pazartesi 12 Ekim** (yukarıdaki "1.1.3 treni" tablosu); mobil işler taslak PR olarak bekler. 1.1.2'nin içerik tablosu, kesim kaydı ve gönderim kararları arşivde: `docs/decisions/roadmap-arsiv.md` → "Yedinci taşıma". Kayıt: `surumler.md` → "1.1.2 (831)".
