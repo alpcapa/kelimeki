@@ -25,6 +25,24 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 233 — Rastgele şerit KARE kart + rastgele kökenli aktif oyun işareti (4 Ekim 2026) — #805
+
+> Numara 232'nin devamı (taslak PR'lar birleşirken çakışırsa yeniden numaralanır).
+
+- **Ne:** web kullanıcı kararlarının (c306e7e, ee1631c, ba2af3b, da7001a, def0f12) port ikizi: şerit kartları KARE
+  (en `clamp((şerit−24)/3.25, 84, 112)` → 3 tam + 4.'nün ~1/4'ü), kart gölgesi (`kRaisedShadows`), "Rastgele oyun aç"
+  başlık stilinde (`RASTGELE OYUN AÇ`), durum mesajları ortalı; "Devam Edenler"de rastgele ilandan doğan AKTİF oyun
+  kartı açık mavi `#EEF4FF` + 3 px accent çizgi + alt satırda "RASTGELE" etiketi (solda) / kalan süre (sağda).
+- **Dosyalar:** `ui/live/random_games_strip.dart` · `ui/live/live_games_tab.dart` (`_GameRow`, `_RandomOriginTag`,
+  `kRandomOriginBg`) · `ui/devam_eden_govde.dart` (`etiket` parametresi) · `util/random_games.dart`
+  (`isRandomOriginGame`) · testler `random_games_test.dart` + `random_games_ui_test.dart` · `support/fake_online_gateway.dart`
+  (`slotHuman(via:)`).
+- **Bulunan tuzaklar:** (1) Flutter yatay `ListView` sonlu yükseklik ister, web `aspect-square` içerikle uzar → yükseklik
+  `max(en, 108 × ölçek)`; (2) etiketin satır yüksekliği 13/8 verilince kart 4 px uzadı (kalan-süre yazısından uzun) →
+  1,0; test "kart yüksekliği ARTMAZ"ı kilitler; (3) `ShapeDecorationWithCssShadows` tek tip kenarlık → sol çizgi `Stack`;
+  (4) gölge liste kırpmasına girer → 8 px dikey dolgu; (5) `#EEF4FF` Tailwind arbitrary değer, `tokens.dart`a eklenmedi.
+- **Doğrulama sınırı:** widget testleri (320/375/390/420 px + yazı ölçeği 2,0); gerçek cihazda görünüm ÖLÇÜLMEDİ.
+
 ## Parça 232 — Rastgele Oyuncu (açık ilan) port ikizi (4 Ekim 2026) — web yarısı #804
 
 > Numara: taslak PR'lardaki 228-231'den SONRA (ROADMAP "1.1.3 treni");

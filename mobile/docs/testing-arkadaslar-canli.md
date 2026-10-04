@@ -584,6 +584,19 @@
       "İlan iptal edildi." / "Ayrıldın. Koltuk yeniden açıldı."; kart kalkar.
       "Devam Edenler"deki "Bekliyor n/N" satırı da durur (yinelenme bilinçli).
       Kart eni/yüksekliği diğerleriyle aynı; 320 px'te taşmaz.
+- [ ] **Kare kart + şerit stili (4 Ekim 2026, §17)**: kartlar KARE (390 px'te
+      ~105×108); 3 tam kart + dördüncünün ~1/4'ü görünür (kaydırma ipucu);
+      320/375/390 px'te ve en büyük yazı ölçeğinde taşma/kesilme YOK; şerit
+      altındaki "Devam Edenler" artık itilmiyor. Kartlarda diğer kartlardaki
+      gölge var (üst/alt kırpılmıyor). "RASTGELE OYUN AÇ" başlıkla AYNI boy,
+      mavi + kalın, altı çizili DEĞİL. "BEKLİYOR" / "N koltuk kaldı" ORTALI.
+- [ ] **Rastgele kökenli aktif oyun (4 Ekim 2026, §18)**: bir ilandan başlayan
+      oyun "Devam Edenler"de açık mavi zeminli, solda mavi çizgili; alt
+      satırda "RASTGELE" etiketi SOLDA, kalan süre SAĞDA (aynı satır, kart
+      diğerlerinden uzun DEĞİL); sıra rakipteyken etiket tek başına solda.
+      Arkadaş daveti oyunu ve YZ'li Setup kartı AYNI (beyaz) kalır; karma
+      kadro (arkadaş + rastgele) işaretli. Eski oyunlar için `via` yoksa
+      işaret çıkmaz (bilinen).
 - [ ] **Kabul**: tek dokunuş, onay YOK; satır içi ileti ("Kabul ettin. Diğer
       oyuncular bekleniyor." / 2 kişilikte "Kabul ettin. Oyun başladı.") 5 sn
       sonra kalkar; kabul edilen kart şeritten hemen kaybolur. Çift dokunuşta

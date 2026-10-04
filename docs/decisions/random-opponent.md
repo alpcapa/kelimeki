@@ -359,7 +359,27 @@ Uygulama (web `RandomGamesStrip.tsx`): kart `aspect-square`, eni `min(7rem, (şe
 kartın 26 px'i görünür; 820 px → 112×112 (geniş ekranda daha çok kart sığar); 320 px → 84×118 (4 kişilik kartta rozet
 ile noktalar sarar, bilinçli) ve 4. kartın ~12 px'i görünür. Yatay taşma yok. **Port ikizi:** Dart şerit kartı aynı
 oranlarla (sabit `176 × ölçek` yükseklik ve `(genişlik−16)/3.4` KALKAR).
+**Port YAZILDI (4 Ekim 2026, §13'e ek):** `randomCardWidth` = `clamp((şerit−24)/3.25, 84, 112)`; yükseklik
+`randomCardHeight` = `max(en, 108 × yazı ölçeği)` (Flutter yatay listesi SONLU yükseklik ister; 108 = web'in 390 px'te
+ölçülen içerik yüksekliği — 320/375/390/420 px ve yazı ölçeği 2,0'da taşma YOK, testle). Kart düzeni web ile aynı
+(avatar 22 + ad · rozet + noktalar `Wrap` · mesaj ORTALI · Kabul/İptal ≥32). Gölge = `kRaisedShadows` (web `shadow-raised`);
+gölge liste kırpmasına girmesin diye şeridin dikey dolgusu 8 px (`kRandomStripShadowPad`). "Rastgele oyun aç" bağlantısı
+`trUpper` + 10 px SpaceMono + 1,5 aralık + accent + kalın, altı çizili DEĞİL (artık ekranda büyük harf: `RASTGELE OYUN AÇ`).
 
 **Başlık bağlantısı ve etiketler (4 Ekim 2026, kullanıcı):** "Rastgele oyun aç" bağlantısı başlıkla AYNI boy ve yazı
 (10 px mono, büyük harf, aralıklı), mavi + kalın, alt çizgisiz (Arkadaşlar penceresindeki "Tüm oyuncular →" ile aynı
 desen). Kartlardaki durum mesajları ("Bekliyor", "N koltuk kaldı") ORTALI. Port ikizi aynı.
+
+## 18. Rastgele kökenli AKTİF oyun işareti (4 Ekim 2026, kullanıcı) — web #804, port #805
+
+Kullanıcı: *"devam eden oyunlarda diğerlerinden ayrışmıyor; takımdaki pembe gibi açık mavi ve rastgele tag'i ile
+gösterelim."* Kural (`isRandomOriginGame`, web `randomGames.ts` ↔ Dart `random_games.dart`): `status == 'active'` ve
+koltuklardan EN AZ BİRİ insan + `via == 'random'` (ilandan oturan HER koltuk `via:'random'` taşır; kurucunun kendisi
+taşımaz — bu yüzden TÜM koltuklara bakılır; karma kadro → true; arkadaş daveti / yalnız YZ → false). Kart: zemin
+`#EEF4FF`, solda 3 px accent çizgi, alt satırda "RASTGELE" etiketi SOLDA + kalan süre SAĞDA (süre yoksa etiket tek başına,
+sola); etiket 8 px mono kalın büyük harf, accent yazı, beyaz zemin, accent %30 çerçeve, pill. **Kart yüksekliği ARTMAZ**
+(etiket kalan-süre satırında; Flutter'da etiket satır yüksekliği 1,0 — 13/8 verince kart 4 px uzuyordu, testle yakalandı).
+Port: `DevamEdenGovde(etiket:)` (Setup'ın YZ kartı vermez → etkilenmez) + `_GameRow`; zemin `kRandomOriginBg` tek sabit
+`live_games_tab.dart`ta — `#EEF4FF` Tailwind ARBITRARY değer olduğundan `tokens.dart`a GİRMEZ (`color_tokens_test` ↔
+`tailwind.config.js` eşitliği bozulmaz). Sol çizgi `Stack` + `Positioned` (`ShapeDecorationWithCssShadows` tek tip
+kenarlık destekler). Kilitler: `random_games_test.dart` (kural + web sınıf paritesi), `random_games_ui_test.dart`.
