@@ -45,7 +45,7 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: 'Method not allowed' }, 405);
   }
 
-  let body: { online_game_id?: string };
+  let body: { online_game_id?: string; started?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -91,12 +91,16 @@ Deno.serve(async (req: Request) => {
     .limit(1)
     .maybeSingle();
 
-  // HİÇ hamle yoksa bu çağrı `_notify_random_game_started`tan (oyun yeni
-  // doldu): sıra el değiştirmedi, ilk sıradaki ilan sahibine "başladı" denir.
-  if (!lastMove) {
+  // `started` bayrağı YALNIZ tetikleyiciden gelir (yalnızca metni seçer, hedef
+  // yine canlı durumdan). Hamlesiz zaman aşımı devri bu dala DÜŞMEZ. Bu çağrı `_notify_game_started`tan (oyun yeni başladı:
+  // davet kabul edildi ya da rastgele ilan doldu): sıra el değiştirmedi, ilk
+  // sıradaki oyuncuya "başladı, ilk hamle sende" denir. Başlıkta "Oyun
+  // başladı" YOK — gövde zaten söylüyor (kullanıcı kararı, 4 Ekim 2026).
+  if (body.started === true && !lastMove) {
+    const random = slots.some((x) => (x as { via?: string }).via === 'random');
     const started = await sendPushToUser(db, targetId, {
-      title: 'Oyun başladı!',
-      body: `${game.player_count} kişilik rastgele oyunun başladı — ilk hamle sende.`,
+      title: 'Sıra sende!',
+      body: `${game.player_count} kişilik ${random ? 'rastgele ' : ''}oyunun başladı — ilk hamle sende!`,
       link: `kelimeki://oyun/${gameId}`,
       tag: `sira:${gameId}`,
     });
