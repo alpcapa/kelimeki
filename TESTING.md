@@ -265,6 +265,14 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       + YZ'li bir oyunda YZ yine 4. koltukta kalmalı. Rakibi arkadaşlıktan
       çıkarıp denersen "Yalnızca arkadaşlarını davet edebilirsin." görünmeli
       ve ekranda kalınmalı.
+- [ ] **Davet kuralları (4 Ekim 2026; iki hesap).** (a) A, B'ye davet gönderir;
+      B YANITLAMADAN A aynı B'ye ikinci daveti dener → "Bu arkadaşına zaten
+      yanıtlanmamış bir davetin var…" görünmeli. (b) B kabul edince A yeni
+      davet gönderebilmeli. (c) A, 5 farklı arkadaşına bekleyen davet
+      gönderince altıncıda "En fazla 5 bekleyen davetin olabilir…"
+      görünmeli; biri kabul edilince/süresi dolunca tekrar serbest.
+      (d) Rastgele ilanlar bu 5'e GİRMEZ (kendi sınırı 3). (e) Arkadaşı
+      olan rastgele ilanda aynı kişiye çift davet de reddedilmeli.
 - [ ] **Oyun GEÇMİŞİNDEN "Tekrar Oyna" (4 Eylül 2026).** "Tüm Oyunlarım"da
       bitmiş bir **Canlı** oyunun kartını aç, tahta önizlemesine tıkla:
       menüde **Paylaş · Tekrar Oyna · Kapat** olmalı. Tekrar Oyna → oyun

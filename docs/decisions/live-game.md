@@ -1036,3 +1036,36 @@ Duyarlılığı kanıtlandı: yüklem `false` döndürülünce dört vaka düş�
 `isAuthStateError` + oturum kontrolü kapısı da yok; portun raporladığı
 "Invalid Refresh Token" satırları (6 kayıt) o yüzden panele düşüyor.
 
+## Davet kuralları: çift davet yok + kota 5 (4 Ekim 2026)
+
+Kullanıcı kararı: *"Bir kişiye davet gönderen aynı kişiye bir daha davet
+gönderemiyor… kabul edilirse ancak diğer daveti gönderebilmeli. Bir de kota
+olmalı"*; kota **5**, yalnızca **bekleyen** davetleri sayar. Önce canlıdan
+ölçüldü: kural YOKTU (`create_online_game` yalnızca arkadaşlık + koltuk
+kurallarına bakıyordu), kötüye kullanım da yoktu (254 davet / 68 tekil çift,
+mükerrer bekleyen 0, kurucu başına en çok 2 bekleyen).
+
+- **Çift davet:** `_assert_invite_allowed(uid, invitee)` — aynı kurucudan aynı
+  kişiye `game_invites.status='pending'` + `online_games.status='pending'` +
+  7 günden genç bir satır varsa reddeder. Kabul (`accepted`) kapıyı açar; ret
+  oyunu zaten `abandoned` yapıyor.
+- **Kota:** kurucu başına `listing is null` + `pending` + 7 günden genç oyun
+  sayısı ≥ 5 → reddedilir. Yalnızca BEKLEMEYE DÜŞECEK oyunu sayar (insan
+  davetlisi olmayan oyun anında başlar). Kullanıcı başına advisory lock:
+  eşzamanlı iki çağrı kotayı birlikte aşamaz.
+- **Rastgele ilan AYRI:** `_random_preflight` zaten en çok 3 ilan tutuyor;
+  iki sayı birbirine karışmaz (kota `listing is null` sayar). Ama arkadaş
+  koltuğu olan rastgele ilan da `game_invites` yazdığından `create_random_game`
+  da çift davet kapısını çağırır.
+- ⚠ **"Bekleyen" yaşa da bakar (7 gün):** süresi dolmuş davet,
+  `check_invite_expiry` istemci süpürmesi gelene kadar `pending` kalıyor;
+  yaşa bakılmazsa terk edilmiş davet kotayı ve çift-davet kapısını sonsuza
+  dek tutardı.
+- **İstemci işi YOK:** hata Türkçe `raise exception` (P0001) →
+  `friendlyErrorMessage` olduğu gibi gösterir. İki imza/dönüş tipi DEĞİŞMEDİ,
+  `create or replace` yetti (`proacl` önce/sonra aynı: `authenticated` +
+  `service_role`); yardımcı yalnızca `service_role`.
+- **Canlıda doğrulandı** (geri alınan işlemle, gerçek arkadaş çifti): ilk
+  davet OK · ikinci engellendi · kabulden sonra yenisi OK · 5 bekleyen varken
+  6. engellendi · 4 normal + 1 rastgele ilan varken OK. Migration:
+  `20261004183426_invite_dedupe_and_quota.sql`.
