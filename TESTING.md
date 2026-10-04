@@ -279,8 +279,19 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       (g) **Engel arkadaşlık yolunda (4 Ekim 2026):** B, A'yı engeller (sohbette
       sessize alma ya da şikayet) → A, B'ye ARKADAŞLIK isteği dener → "<B> kullanıcısı
       sizi engelledi."; B'nin arkadaş DAVET LİNKİNİ A açınca da aynı mesaj, arkadaş
-      OLUNMAMALI. Engel kalkınca ikisi de geçmeli. ⚠ Arkadaş olmayan birini engelleyince
-      geri alma yolu henüz YOK (ROADMAP E, "Engellediklerim" listesi). ⚠ Beklenen yan etki: "sessize
+      OLUNMAMALI. Engel kalkınca ikisi de geçmeli. (h) **Engelle (5 Ekim 2026; iki hesap).** B'nin gelen arkadaşlık isteği
+      kartında YALNIZCA "Reddet / Kabul et" + küçük "Engelle" olmalı (şikayet
+      YOK). Engelle → onay penceresi → onaylayınca istek kaybolmalı; A tekrar
+      istek/davet gönderince "<B> kullanıcısı sizi engelledi.". Aynısı bekleyen
+      OYUN DAVETİ kartında (Kabul Et / Reddet + "Engelle"); engelleyince davet
+      listeden kalkmalı. (i) **Arkadaşlar → "Engellediklerim"** (listenin en
+      altında): A burada görünmeli (arkadaş olmasa da); "Engeli Kaldır" onayla →
+      A yeniden davet/istek gönderebilmeli. Şikayet ETMİŞSEN satırda 🚩 ve
+      "Şikayeti Geri Çek" de olmalı; şikayet açıkken "Engeli Kaldır" tek başına
+      kişiyi SERBEST bırakmaz (iki adım). (j) Sohbet ayarlarında "Kişiyi Engelle"
+      / "Engeli Kaldır" metinleri ("sessize al" kalmamalı). ⚠ Beklenen: arkadaş
+      ⋯ menüsündeki madde etiketi hâlâ "Sessize alma / şikayet ayarları" (port
+      PR'ında değişecek). ⚠ Beklenen yan etki: "sessize
       al" artık davetleri de kapatır. **Biten oyunu SEN
       kurmamışsan da çalışmalı** (davet edilen taraf da rövanş açabilir).
       ⚠ **Bir YZ oyununun kartında "Tekrar Oyna" ÇIKMAMALI** — kapsam

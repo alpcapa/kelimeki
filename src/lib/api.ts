@@ -2199,6 +2199,65 @@ export async function withdrawChatReports(targetUserId: string): Promise<void> {
   if (error) rethrowSupabase(error);
 }
 
+// ── Engel (4 Ekim 2026) ───────────────────────────────────────────────────
+//
+// "Sessize al" 4 Ekim 2026'da "Engelle" oldu (kullanıcı kararı): engellenen
+// kişi oyun davetini, arkadaşlık isteğini, arkadaş davet linkini ve rastgele
+// eşleşmeyi KAPATIR (sunucuda `_is_blocked_by`, ayrıntı:
+// docs/decisions/live-game.md → "Engel arkadaşlık yoluna da uzandı").
+//
+// `block_user` OYUNDAN BAĞIMSIZ — istek/davet kartından engelleyen kişinin
+// ortak oyunu yok, eski `mute_online_game_participant` ise yalnızca kabul
+// etmiş katılımcıları kabul eder. Üç kaynağın birleşimi (user_blocks + sohbet
+// engelleri + açık şikayet) `list_blocked_users`ta; `unblock_user` ilk ikisini
+// temizler, açık ŞİKAYETE dokunmaz (şikayeti geri çekmek ayrı adım:
+// `withdrawChatReports`).
+
+export interface BlockedUser {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  /** Aktif şikayet de var — engel, şikayet geri çekilene kadar sürer. */
+  reported: boolean;
+}
+
+/** Kişiyi engeller (oyundan bağımsız). */
+export async function blockUser(targetUserId: string): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('block_user', { p_target: targetUserId });
+  if (error) rethrowSupabase(error);
+}
+
+/** Engeli (ve sohbet engellerini) kaldırır; açık şikayete dokunmaz. */
+export async function unblockUser(targetUserId: string): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.rpc('unblock_user', { p_target: targetUserId });
+  if (error) rethrowSupabase(error);
+}
+
+/**
+ * "Engellediklerim": engellediğim / sohbette engellediğim / şikayet ettiğim
+ * HERKES — arkadaş olsun olmasın. Hata FIRLATILIR (liste "boş" sanılmasın).
+ */
+export async function fetchBlockedUsers(): Promise<BlockedUser[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('list_blocked_users');
+  if (error) rethrowSupabase(error);
+  return ((data ?? []) as {
+    blocked_user_id: string;
+    blocked_name: string;
+    blocked_avatar_url: string | null;
+    is_reported: boolean;
+  }[])
+    .map((r) => ({
+      userId: r.blocked_user_id,
+      name: r.blocked_name,
+      avatarUrl: r.blocked_avatar_url,
+      reported: r.is_reported,
+    }))
+    .sort((a, b) => trCompare(a.name, b.name));
+}
+
 /**
  * `online_games`/`game_invites`/`online_game_states`'teki HERHANGİ bir
  * değişiklikte `onChange`'i tetikler (Realtime) — LiveGamesTab'ın liste/rozet

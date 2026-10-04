@@ -1,5 +1,9 @@
 // Arkadaş listesinden moderasyon durumunu YÖNETME paneli.
 //
+// 5 Ekim 2026: "Sessizden Çıkar" → "Engeli Kaldır" (terim: Engelle) ve kaldırma
+// artık `unblock_user` (oyundan bağımsız). Aşağıdaki gerekçe anlatısı o
+// dönemin dilini ('sessize alma') korur.
+//
 // NEDEN VAR (14 Ağustos 2026, kullanıcı isteği): sessize alma/şikayet 3
 // Ağustos'tan beri KİŞİ bazlı — kişiyle birlikte oyunlar arası taşınıyor.
 // Ama geri almanın TEK giriş noktası, o kişiyle AKTİF bir oyunun sohbet
@@ -27,16 +31,16 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
-import { setChatMute, withdrawChatReports } from '../lib/api';
+import { unblockUser, withdrawChatReports } from '../lib/api';
 import { friendlyErrorMessage } from '../utils/errorMessage';
 
 export interface FriendModerationTarget {
   userId: string;
   name: string;
   avatarUrl?: string | null;
-  /** Sessize alınmışsa, kaydın geldiği oyun id'si (RPC'nin katılımcılık
-   *  kontrolü için — bkz. `fetchMyChatModeration`). */
-  mutedGameId?: string;
+  /** Engelliyse true (4 Ekim 2026'dan beri oyun id'si GEREKMİYOR: kaldırma
+   *  `unblock_user` ile, engel oyundan bağımsız — bkz. `BlockedUsersModal`). */
+  blocked: boolean;
   /** Aktif şikayet varsa true (geri çekme oyun id'si İSTEMİYOR). */
   reported: boolean;
 }
@@ -56,7 +60,7 @@ export function FriendModerationModal({
   const [doneMsg, setDoneMsg] = useState('');
   const [changed, setChanged] = useState(false);
 
-  const muted = !!target.mutedGameId;
+  const blocked = target.blocked;
 
   async function run(action: () => Promise<void>, msg: string) {
     setBusy(true);
@@ -91,11 +95,11 @@ export function FriendModerationModal({
         {view === 'menu' && (
           <>
             <p className="text-xs text-muted leading-relaxed">
-              {target.reported && muted
-                ? 'Bu kişiyi şikayet ettiniz ve sessize aldınız.'
+              {target.reported && blocked
+                ? 'Bu kişiyi şikayet ettiniz ve engellediniz.'
                 : target.reported
-                  ? 'Bu kişiyi şikayet ettiniz.'
-                  : 'Bu kişiyi sessize aldınız.'}
+                  ? 'Bu kişiyi şikayet ettiniz; şikayetiniz açıkken kişi engelli sayılır.'
+                  : 'Bu kişiyi engellediniz.'}
             </p>
 
             {target.reported && (
@@ -103,15 +107,16 @@ export function FriendModerationModal({
                 Şikayeti Geri Çek
               </button>
             )}
-            {muted && (
+            {blocked && (
               <button type="button" disabled={busy} className={btnNeutral} onClick={() => setView('unmute-confirm')}>
-                Sessizden Çıkar
+                Engeli Kaldır
               </button>
             )}
 
             <p className="text-[10px] font-mono text-muted leading-relaxed">
-              Şikayet etmek ve sessize almak, o kişiyle oynadığın Canlı oyunun
-              mesajlaşma ayarlarından yapılır.
+              Şikayet etmek, o kişiyle oynadığın Canlı oyunun mesajlaşma
+              ayarlarından yapılır. Arkadaş olmadığın kişiler için Arkadaşlar
+              ekranındaki "Engellediklerim" listesine bak.
             </p>
           </>
         )}
@@ -121,7 +126,7 @@ export function FriendModerationModal({
             <p className="text-sm text-text font-bold">Emin misiniz?</p>
             <p className="text-sm text-text leading-relaxed">
               {view === 'unmute-confirm'
-                ? `${target.name} artık sessize alınmayacak; mesajları için bildirim almaya devam edeceksiniz.`
+                ? `${target.name} için engeliniz kalkacak; size tekrar oyun daveti ve arkadaşlık isteği gönderebilir, rastgele eşleşmede karşınıza çıkabilir.`
                 : `${target.name} hakkındaki şikayetiniz geri çekilecek. Dilerseniz daha sonra tekrar şikayet edebilirsiniz.`}
             </p>
             <div className="flex gap-2">
@@ -132,13 +137,13 @@ export function FriendModerationModal({
                 onClick={() =>
                   view === 'unmute-confirm'
                     ? run(
-                        () => setChatMute(target.mutedGameId!, target.userId, false),
-                        'Kişi sessizden çıkarıldı.',
+                        () => unblockUser(target.userId),
+                        'Engel kaldırıldı.',
                       )
                     : run(() => withdrawChatReports(target.userId), 'Şikayetiniz geri çekildi.')
                 }
               >
-                {busy ? '...' : view === 'unmute-confirm' ? 'Sessizden Çıkar' : 'Geri Çek'}
+                {busy ? '...' : view === 'unmute-confirm' ? 'Engeli Kaldır' : 'Geri Çek'}
               </button>
               <button type="button" disabled={busy} className={btnNeutral + ' flex-1'} onClick={() => setView('menu')}>
                 Vazgeç
