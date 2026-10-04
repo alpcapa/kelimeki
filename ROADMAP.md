@@ -211,6 +211,7 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 | #772 (2 Eki) | **Setup'ın oyuncu sayısı satırı: "2 kişilik oyunda yapay zekaya karşı oynarsın." / "4 kişilik oyunda 3 yapay zekaya karşı oynarsın."** (kullanıcı isteği; web yarısı hemen yayında) | `ui/setup/setup_screen.dart` (tek metin) + `setup_screen_test` / `setup_cloud_test` beklentileri |
 | #774 (2 Eki) | **"Tüm oyuncular →" / "← Arkadaşlar" bağlantıları başlıkla aynı tipografide, mavi + kalın** (kullanıcı isteği; web yarısı #775 ile hemen yayında) | `ui/live/live_game_create_form.dart` (`_LinkButton`) + `ui/friends/friends_modal.dart`; `trUpper` ile büyük harf, sabitler web'le birebir |
 | #779 (2 Eki) | **Kayıt formu: ad/soyad isteğe bağlı, zorunlular üstte + Gizlilik "Ad ve soyad (isteğe bağlı)"** (kullanıcı isteği; web formu hemen yayında) | `ui/auth/auth_modal.dart` · `account_settings_modal.dart` · `legal_modals.dart` + web `src/legal/LegalContent.tsx` (Gizlilik tarihi 12 Ekim 2026 — `legal_text_test` web↔port tarih eşliği yüzünden İKİSİ BU PR'da). Cihaz: `TESTING.md` → "Ad/soyad İSTEĞE BAĞLI" |
+| #805 (4 Eki) | **Rastgele Oyuncu + oyun sonu arkadaş önerisi + Detaylı Kurallar "Rastgele Oyun"** — port yarısı; **web #804 ile BİRLİKTE 12 Ekim'de merge** (kullanıcı kararı 4 Eki: web tek başına işe yaramaz, bayrak yok). Merge sırası: #804 → #805 (base main'e çevrilir) | `ui/live/*` (şerit, kurulum formu, kartlar, oyun sonu önerisi) · `util/random_games.dart` · `util/friend_suggest.dart` · `ui/game/help_modal.dart` · `storage/flags_store.dart`. Çakışma beklenir: #765/#774/#779 (`live_game_create_form.dart`, `legal_modals.dart`); Gizlilik tarihi #779'da 12 Ekim — #804/#805'in 4 Ekim'i ona uydurulur (web+Dart birlikte). Cihaz: `docs/testing-rastgele.md` + `mobile/TESTING.md` |
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
@@ -849,7 +850,7 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
-## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB YAZILDI (PR'da, test bekliyor) · PORT SIRADA · hedef 12 Ekim treni** (3 Ekim 2026)
+## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB (#804) + PORT (#805) YAZILDI, taslak PR'da · 12 Ekim treni, İKİSİ BİRLİKTE MERGE** (3-4 Ekim 2026)
 
 Kullanıcı (3 Ekim): arkadaş listesinin tepesine "?" avatarlı **Rastgele Oyuncu**;
 ilan Devam Edenler'in üstünde **3 kutu yan yana, yatay kayan şeritte** kabul
