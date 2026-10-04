@@ -1054,7 +1054,7 @@ dedi ve sessize alma/şikayeti davete bağladı. Geçerli kurallar:
   metin/yardım bunu söylemiyor (istemci işi, aşağı bkz.).
 - **Çift başına sınır:** aynı kişiye, o kişi yanıtlamadan, en çok **1 adet 2
   kişilik + 1 adet 4 kişilik** bekleyen davet. Kabul edince yenisi serbest.
-  **Genel tavan YOK** (tur 1'in 5'i kalktı) → 10 arkadaşa en çok 20 davet.
+  **Genel tavan YOK** (tur 1'in 5'i kalktı) → sınır arkadaş sayısına bakmaz, her arkadaşa ayrı 2 hak (1×2 + 1×4 kişilik); toplam arkadaş sayısının 2 katı kadar kendiliğinden belirlenir (kullanıcı: *"10 arkadaşa 20 davet örnek için söylendi"*).
   Gerekçe: bugünkü en yüksek kurucu başına bekleyen 2 idi, tavan hiç
   tetiklenmezdi; asıl koruma engel + çift sınırı.
 - **Rastgele ilan:** `_random_preflight`'in KENDİ sınırı (en çok 3 ilan)

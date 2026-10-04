@@ -270,7 +270,7 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       dener → "Bu arkadaşına zaten yanıtlanmamış bir 2 kişilik davetin var…".
       (b) Aynı anda A, B'ye 4 kişilik davet gönderebilmeli (ayrı hak); ikinci
       4 kişilik reddedilmeli. (c) B kabul edince A yeni 2 kişilik gönderebilmeli.
-      (d) A, 10 farklı arkadaşına birer 2 kişilik gönderebilmeli (genel tavan
+      (d) A, kaç arkadaşı varsa her birine birer 2 kişilik gönderebilmeli (genel tavan
       YOK). (e) B, A'yı sohbette SESSİZE alır (ya da şikayet eder) → A, B'ye
       davet dener → "<B'nin takma adı> kullanıcısı sizi engelledi." görünmeli;
       susturma/şikayet geri alınınca davet geçmeli. (f) Rastgele ilan (en

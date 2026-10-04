@@ -10,7 +10,8 @@
 --   2. ÇİFT BAŞINA SINIR: aynı kişiye, o kişi yanıtlamadan, en çok 1 adet
 --      2 KİŞİLİK + 1 adet 4 KİŞİLİK bekleyen davet. Kabul edince yenisi
 --      serbest. Genel tavan YOK (önceki "kurucu başına 5" kalktı): sınır
---      kişi başınadır, yani 10 arkadaşa en çok 20 davet.
+--      kişi başınadır: her arkadaşa 2 hak (1×2 + 1×4 kişilik), toplam arkadaş
+--      sayısının 2 katı kadar kendiliğinden belirlenir ("10 arkadaşa 20" yalnızca örnekti).
 --
 -- ⚠ "Bekleyen" = status 'pending' VE 7 günden genç (süresi dolmuş davet
 -- `check_invite_expiry` süpürmesi gelene kadar 'pending' kalıyor).
