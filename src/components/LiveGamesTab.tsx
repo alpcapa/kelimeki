@@ -484,12 +484,6 @@ function GameRow({ game, onRespond, busy, onOpen, isMyTurn, deadline, scores }: 
               (`SavedGameRow`) ve "Son Oynananlar" aynı satırı çiziyor; port
               ikizi `_GameRow`. */}
           {scores && <AvatarScoreRow scores={scores} />}
-          {/* Etiket avatar+puan sütununun ALTINDA, solda (Takım Ligi tasarımıyla aynı yer). */}
-          {isRandomOrigin && (
-            <span className="self-start mt-0.5 rounded-full border border-accent/30 bg-white px-1.5 py-[1px] font-mono text-[9px] font-bold uppercase tracking-[0.5px] leading-tight text-accent">
-              Rastgele
-            </span>
-          )}
         </span>
         {/* 11 → 13 px (30 Ağustos 2026) → 15 px (2 Eylül 2026, kullanıcı
             isteği: "Sıra Sende ve Sıra Rakipte fontu biraz daha büyüt").
@@ -507,15 +501,27 @@ function GameRow({ game, onRespond, busy, onOpen, isMyTurn, deadline, scores }: 
           {game.status === 'active' && (isMyTurn ? <TurnTriangle /> : <TurnDot />)}
         </span>
       </span>
-      {remaining && (
+      {/* Alt satır: "RASTGELE" etiketi SOLDA, kalan süre SAĞDA — aynı hizada, kart uzamasın
+          (4 Ekim 2026, kullanıcı). Süre yoksa (sıra rakipte) etiket tek başına bu satırda kalır. */}
+      {(remaining || isRandomOrigin) && (
         <span
-          /* mt-1.5 — SavedGameRow'la aynı: süre satırı durum etiketine
-             YAPIŞMASIN (kullanıcı isteği). */
-          className={`mt-1.5 self-end text-[8px] font-mono uppercase tracking-[0.5px] ${
-            remaining.urgent ? 'text-red' : 'text-muted'
-          }`}
+          /* mt-1.5 — SavedGameRow'la aynı: alt satır durum etiketine YAPIŞMASIN (kullanıcı isteği). */
+          className={`mt-1.5 flex items-center gap-2 ${isRandomOrigin ? 'justify-between' : 'justify-end'}`}
         >
-          {remaining.text}
+          {isRandomOrigin && (
+            <span className="rounded-full border border-accent/30 bg-white px-1.5 font-mono text-[8px] font-bold uppercase leading-[13px] tracking-[0.5px] text-accent">
+              Rastgele
+            </span>
+          )}
+          {remaining && (
+            <span
+              className={`text-[8px] font-mono uppercase tracking-[0.5px] ${
+                remaining.urgent ? 'text-red' : 'text-muted'
+              }`}
+            >
+              {remaining.text}
+            </span>
+          )}
         </span>
       )}
     </Wrapper>
