@@ -266,7 +266,7 @@ const int kRandomStripLimit = 20;
 
 // Ekran metinleri — web bileşenleriyle aynı dizeler.
 const String kRandomRowTitle = 'Rastgele Oyuncu';
-const String kRandomRowSub = 'Bunu seçerseniz rasgele oyun açarsınız.';
+const String kRandomRowSub = 'Açık oyun başlatır. Oyuna herkes katılabilir.';
 const String kRandomSeatLabel2 = 'Rastgele oyuncu';
 const String kRandomSeatLabel4 = 'Rastgele';
 const String kRandomStripTitle = 'Rastgele Oyunlar';

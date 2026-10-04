@@ -641,8 +641,8 @@ void main() {
       await pumpForm(tester);
       expect(satir, findsOneWidget);
       expect(find.text('Rastgele Oyuncu'), findsOneWidget);
-      expect(
-          find.text('Bunu seçerseniz rasgele oyun açarsınız.'), findsOneWidget);
+      expect(find.text('Açık oyun başlatır. Oyuna herkes katılabilir.'),
+          findsOneWidget);
       expect(find.descendant(of: satir, matching: find.byType(OpenSeatAvatar)),
           findsOneWidget);
       // Kullanıcı (4 Ekim 2026): "diğer arkadaşlar gibi listenin en üstüne,
