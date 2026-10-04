@@ -187,33 +187,35 @@ export function RandomGamesStrip({
                 {l.player_count} kişi
               </span>
               <SeatDots seats={l.seats} />
-              <span className="text-center font-mono text-[10px] leading-tight text-muted">
-                {seatsLeftLabel(l.open_seats)}
-              </span>
               {mine ? (
-                // Benim ilanım (§15): "Kabul" YOK. Düğme gibi görünmeyen soluk
-                // "Bekliyor" etiketi + küçük eylem (kurucu İptal, kabul eden Ayrıl).
-                <div className="flex w-full min-h-[32px] items-center justify-between gap-1">
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-[0.5px] text-muted">
-                    Bekliyor
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => myGame && onLeaveMine(myGame)}
-                    disabled={!myGame || busyRandomId === l.id}
-                    aria-label={mine === 'creator' ? 'İlanı iptal et' : 'İlandan ayrıl'}
-                    className="min-h-[32px] min-w-[32px] px-1 text-[11px] text-red underline underline-offset-[3px] active:opacity-70 disabled:opacity-50"
-                  >
-                    {mine === 'creator' ? 'İptal' : 'Ayrıl'}
-                  </button>
-                </div>
+                // "Bekliyor" soluk etiket ("N koltuk kaldı" satırının YERİNE: dar
+                // kartta etiket + eylem yan yana sığmıyor; koltuk durumu noktalarda).
+                <span className="text-center font-mono text-[10px] font-bold uppercase tracking-[0.5px] leading-tight text-muted">
+                  Bekliyor
+                </span>
+              ) : (
+                <span className="text-center font-mono text-[10px] leading-tight text-muted">
+                  {seatsLeftLabel(l.open_seats)}
+                </span>
+              )}
+              {mine ? (
+                // Benim ilanım (§15): "Kabul" YOK; küçük eylem (kurucu İptal, kabul eden Ayrıl).
+                <button
+                  type="button"
+                  onClick={() => myGame && onLeaveMine(myGame)}
+                  disabled={!myGame || busyRandomId === l.id}
+                  aria-label={mine === 'creator' ? 'İlanı iptal et' : 'İlandan ayrıl'}
+                  className="mt-auto w-full min-h-[32px] text-[11px] text-red underline underline-offset-[3px] active:opacity-70 disabled:opacity-50"
+                >
+                  {mine === 'creator' ? 'İptal' : 'Ayrıl'}
+                </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => void accept(l)}
                   disabled={busyId !== null}
                   aria-label={`${l.creator_name ?? 'Oyuncu'} ilanını kabul et`}
-                  className="w-full min-h-[32px] btn-raised bg-accent text-white rounded-md text-[11px] font-bold uppercase tracking-[0.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
+                  className="mt-auto w-full min-h-[32px] btn-raised bg-accent text-white rounded-md text-[11px] font-bold uppercase tracking-[0.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
                 >
                   Kabul
                 </button>

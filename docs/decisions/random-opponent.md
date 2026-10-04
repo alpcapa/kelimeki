@@ -287,7 +287,7 @@ ilanım şeritte YOK" kararını bu değiştirir).
 - **Sıra:** benimkiler ÖNCE (en yeni önce), sonra başkaları. Id ile tekilleştirme: `myRandom`da geçen
   her id başkaları listesinden düşer (benim kartım kazanır; arkadaş/aktif oyun da şeritte çıkmaz).
   `visibleListings` artık `creator_id`'ye bakıp kendi ilanımı ÇIKARMAZ.
-- **Kart:** aynı en/boy. "Kabul" YOK; yerine soluk "Bekliyor" etiketi (düğme değil) + küçük kırmızı eylem:
+- **Kart:** aynı en/boy. "Kabul" YOK; yerine soluk "Bekliyor" etiketi (düğme değil; "N koltuk kaldı" satırının YERİNE — 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda) + altında küçük kırmızı eylem:
   `creator` → "İptal" (`cancelRandomGame`), `random` → "Ayrıl" (`leaveRandomGame`); ≥32 px. Ayrışma: `border-accent/30 bg-accent/5`.
   Eylem mantığı/iletileri `LiveGamesTab.handleLeaveRandom`'dan (ikinci kopya yok).
 - **Koltuk durumları** (`list_random_games` ile aynı anlam): açık→`open`, gerçek YZ→`ai`, kurucu (`created_by`)→`creator`,
