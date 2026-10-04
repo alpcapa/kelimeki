@@ -283,4 +283,4 @@ $function$;
 -- TEMİZLİK (MCP aracı DROP'ta onay bekleyip zaman aşımına uğruyor → Supabase
 -- panelinden ELLE çalıştırılır; eski 2 argümanlı yardımcı artık HİÇBİR
 -- yerden çağrılmıyor, bırakılması zararsız):
---   drop function public._assert_invite_allowed(uuid, uuid);
+--   drop function public._assert_invite_allowed(uuid, uuid);   -- ✅ 4 Ekim 2026 panelden çalıştırıldı

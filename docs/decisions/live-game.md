@@ -1062,10 +1062,10 @@ dedi ve sessize alma/şikayeti davete bağladı. Geçerli kurallar:
   yazdığından `create_random_game` aynı yardımcıyı (engel + çift sınırı)
   çağırır.
 - **Yardımcı:** `_assert_invite_allowed(uid, invitee, player_count)` —
-  yalnızca `service_role`. ⚠ Eski 2 argümanlı (tur 1) sürüm canlıda DURUYOR,
-  artık hiçbir yerden çağrılmıyor; MCP aracı `DROP`'ta zaman aşımına uğradığı
-  için panelden `drop function public._assert_invite_allowed(uuid, uuid);`
-  çalıştırılacak (zararsız temizlik).
+  yalnızca `service_role`. Eski 2 argümanlı (tur 1) sürüm 4 Ekim 2026'da
+  panelden DÜŞÜRÜLDÜ (MCP aracı `DROP`'ta zaman aşımına uğradığı için kullanıcı
+  SQL Editor'den çalıştırdı); doğrulama: `pg_proc`ta yalnızca
+  `(p_uid uuid, p_invitee uuid, p_player_count integer)` kaldı.
 - ⚠ "Bekleyen" = `pending` + 7 günden genç (süresi dolmuş davet
   `check_invite_expiry` süpürmesi gelene kadar `pending` kalıyor). ⚠ Engelden
   ÖNCE gönderilmiş bekleyen davetler iptal EDİLMEZ; kapı yalnızca yeni
