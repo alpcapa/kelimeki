@@ -1127,7 +1127,7 @@ engeli + açık şikayet); `_random_blocked` aynı yardımcıya bağlandı. **An
 şikayet sürdükçe kişi engelli sayılır). ⚠ `unblock_user` gövdesinde `DELETE`
 olduğundan MCP aracıyla uygulanamadı (60 sn zaman aşımı, sorgu HİÇ çalışmadı —
 tablo/RPC sayısı 0 kaldı, doğrulandı); migration geri kalanı o fonksiyon
-OLMADAN uygulandı, fonksiyon panelden elle çalıştırılır.
+OLMADAN uygulandı, fonksiyon panelden çalıştırıldı (5 Ekim 2026, kullanıcı) ve canlıda doğrulandı: `proacl` `authenticated`+`service_role`, yalnızca `user_blocks` + sohbet engeli siliniyor, şikayete dokunmuyor; engel → davet reddi → `unblock_user` → davet geçti (geri alınan işlemle).
 
 Web'de yapılanlar: (1) **"Sessize al" → "Engelle"** terimi (sohbet ayarları,
 sohbet balonu aria, arkadaş yönetim paneli, rozet başlığı); (2) **oyun davet

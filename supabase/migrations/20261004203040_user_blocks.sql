@@ -101,7 +101,7 @@ $function$;
 -- geçtiği için Supabase MCP aracı onay bekleyip 60 sn'de zaman aşımına uğruyor
 -- (sorgu HİÇ çalışmıyor — doğrulandı: tablo/RPC sayısı 0 kaldı). Migration'ın
 -- geri kalanı bu fonksiyon OLMADAN uygulandı (`20261004203040`); bu fonksiyon
--- Supabase panelinde SQL Editor'den ELLE çalıştırılır (durum: ROADMAP E).
+-- Supabase panelinde SQL Editor'den ELLE çalıştırılır — ✅ 5 Ekim 2026 çalıştırıldı ve doğrulandı.
 create or replace function public.unblock_user(p_target uuid)
 returns void
 language plpgsql
