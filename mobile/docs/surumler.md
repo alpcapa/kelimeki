@@ -456,6 +456,37 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
+## 1.1.3 — PLANLANAN (kesim Pazartesi 12 Ekim 2026)
+
+**Durum (4 Eki):** hiçbir iş `main`'de değil; tren taslak PR'larda. Sürüm adı
+`pubspec.yaml` → `1.1.3+N` kesim günü, ilk mobil merge ile birlikte yükseltilir
+(şu an `1.1.2+1`; yükseltmeyi önceden yapma — `mobile/` dosyası, merge'de derleme tetikler).
+
+**Merge SIRASI (4 Eki hazırlık turunda çıkarıldı, kullanıcı "merge et" demeden merge yok):**
+
+1. **#804** (web, Rastgele Oyuncu) — mobil dosya YOK, yalnızca Vercel. CI'daki
+   `parite` işi bu PR'da KIRMIZI: web `HelpModal.tsx` "Rastgele Oyun" bölümünü
+   aldı, Dart `help_modal.dart` `main`'de henüz almadı
+   (`help_text_parity_test.dart`; yerelde 1036 geçti / 1 düştü, başka kırık yok).
+   Beklenen — #805 `help_modal.dart:630`'da ekliyor. **#804 ile #805 aynı
+   oturumda art arda merge edilir**, aralarında başka merge olmaz.
+2. **#805** (port ikizi) — base `main`'e çevrilir. ⚠ Mobil derlemeyi tetikler:
+   `mobile-latest` ezilir, TestFlight'a yeni build gider.
+3. **#765** → **#774** → **#779**, her biri öncekinden SONRA rebase.
+   #765/#774 `live_game_create_form.dart` + `live_games_test.dart` ortak
+   (#774 ayrıca `friends_test.dart`); #779 `legal_modals.dart`,
+   `LegalContent.tsx`, `account_settings_modal.dart`, `auth_service.dart`,
+   `reset_password_modal.dart` + 6 test dosyası ortak.
+
+**TEK yasal tarih:** #805 "Son güncelleme"yi 4 Ekim 2026 yapıyor, #779 12 Ekim 2026.
+Kesimde SON merge edilen hangisiyse tarih **12 Ekim** olmalı (web `LegalContent.tsx`
++ Dart `legal_modals.dart` BİRLİKTE, `legal_text_test.dart` zorluyor).
+
+**Merge öncesi açık:** `docs/testing-rastgele.md` iki gerçek hesapla koşulmadı
+(cihazda/gerçek Supabase'e karşı hiçbir akış denenmedi). Açık kararlar:
+yabancıyla biten oyunda "Tekrar Oyna", rütbe mührü kartlarda yok, ilan
+kabul edildi bildirimi yok.
+
 ## 1.1.2 (831) — ✅ İKİ MAĞAZADA YAYINDA (2 Eki 2026)
 
 **İçerik:** 1 Eki kesiminin 17 PR'ı + #41 tasarım portunun tamamı (#739-#744)
