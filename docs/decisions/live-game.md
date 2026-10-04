@@ -1081,15 +1081,52 @@ dedi ve sessize alma/şikayeti davete bağladı. Geçerli kurallar:
   aracı `DELETE` içeren sorguda onay bekleyip 60 sn'de zaman aşımına uğruyor
   (sorgu HİÇ çalışmıyor) — testlerde `update`/`insert` kullan.
 
-### Açık iş: istemci (bu tur kodu değiştirmedi)
+### Engel arkadaşlık yoluna da uzandı + "Engelle" terimi (4 Ekim 2026)
 
-Kullanıcı fikri: davet kartında Kabul/Reddet yanına **sessize al + şikayet et**.
-Sunucu yarısı hazır (engel kapısı); istemci yarısı — davet kartında "⋯" menüsü
-(mevcut `report_online_game_participant` + mute RPC'leri), sohbet sessize alma
-metnine "davetleri de durdurur" ibaresi — web + port, mobil dosya taşıdığından
-**19 Ekim treni**, taslak PR.
+Kullanıcı kararları: *"sessize alan kişi bir daha onunla oyunda veya başka
+yerde karşılaşmayacağı için 'Sessize al' yerine 'Engelle' demeliyiz. Şikayet
+sadece oyuna özel olsun. İstek kartında sadece Engelle olsun."* Gerekçe
+(ölçüldü): arkadaşlık yolundaki HİÇBİR fonksiyon engeli okumuyordu; sessize
+aldığın biri arkadaşlık isteği gönderebiliyordu, arkadaş değilse geri alma
+yolu da yoktu (geri alma yalnızca arkadaş listesi ⋯ menüsünde + aktif oyun
+sohbetinde).
 
-**Sohbet ayarları metni (4 Ekim 2026): WEB YARISI YAPILDI** (`ChatSettingsModal.tsx`: giriş satırı "(mesaj bildirimleri ve oyun davetleri durur)"; sessize alma onayında "Ayrıca bu kullanıcı size oyun daveti gönderemez."; sessizden çıkarmada "ve oyun davetleri de tekrar açılır"). **Port ikizi AÇIK:** `mobile/app/lib/src/ui/chat/chat_settings_modal.dart` (üç aynı metin, `_buildMuteConfirm` + giriş `Text`i) — taslak PR, 19 Ekim treni. Karar bekleyen: davetteki şikayetin admin
-panelindeki "Şikayetler"e hangi gerekçeyle düşeceği (sohbet şikayeti
-`online_game_chat_reports` tablosunda `online_game_id` zorunlu, davet oyunu da
-bir `online_games` satırı olduğundan uyuyor).
+**SUNUCU — canlıda** (`20261004202039_block_friend_requests`):
+- Tek kaynak: `_is_blocked_by(blocker, blocked)` + `_assert_not_blocked(actor,
+  target)` ("<ad> kullanıcısı sizi engelledi."). `_assert_invite_allowed` artık
+  bunu çağırır — aynı kural iki yerde yaşamasın. Engel = sessize alma satırı
+  YA DA geri çekilmemiş şikayet (`_random_blocked` aynı iki kaynağı okuyor).
+- **Arkadaşlık isteği:** `handle_friend_request_insert` (BEFORE INSERT) —
+  engelleyene istek gönderilemez.
+- **Arkadaş davet linki:** `accept_friend_invite` — link sahibi tıklayanı
+  engellemişse arkadaş olunamaz (yoksa link isteğin kapısını aşardı). Fonksiyonun
+  içindeki `friend_requests` insert'i tetikleyiciyi de çalıştırır ve yönü
+  terstir → yerel bayrak `kelimeki.friend_link` ile tetikleyici o insert için
+  atlanır.
+- ⚠ **`PERFORM` `FOUND`'u sıfırlar:** insert'in "satır eklendi mi" sonucu
+  `set_config` çağrısından SONRA `found` ile okunsaydı yarış dalı yanlış
+  çalışırdı → `get diagnostics v_rows = row_count` insert'ten hemen sonra
+  alınır (yazarken yakalandı, canlıya girmeden).
+- Önceden açılmış bekleyen istekler iptal EDİLMEZ. Engelleyen kendisi istek
+  gönderirse engellediği kişiye de gönderebilir (kapı yalnızca "karşı taraf
+  beni engelledi mi"ye bakar).
+- **Canlıda doğrulandı** (geri alınan işlemle, gerçek hesaplarla): engelliyken
+  istek reddedildi · engel kalkınca geçti · engelliyken link reddedildi · engel
+  kalkınca link `accepted` ilişki kurdu. `proacl` önce/sonra aynı.
+
+**İSTEMCİ — açık, ROADMAP E** (web + port, port mobil dosya → **19 Ekim
+treni**, taslak PR):
+1. **"Sessize al" → "Engelle"** (terim; sohbet ayarları, arkadaş yönetim paneli,
+   rozetler, hata/onay metinleri; port ikizleri). Engel artık yalnızca sohbet
+   bildirimini değil davet + arkadaşlık isteği + rastgele eşleşmeyi de kapatır.
+   ⚠ Bugün web'de (bu PR'dan önce yazılmış) sohbet ayarları metni hâlâ "sessize
+   al … davetler durur" diyor; terim değişince o metin de "Engelle"ye döner.
+2. **Davet kartı** (oyun daveti): Kabul/Reddet yanına **"Engelle"** (yalnızca
+   engel — oyun daveti kartından şikayet YOK).
+3. **Arkadaşlık isteği kartı**: yalnızca **"Engelle"** (karar: istek kartında
+   başka seçenek yok).
+4. **Şikayet yalnızca oyuna özel** kalır (sohbette, `online_game_chat_reports`
+   `online_game_id` zorunlu — admin şikayetle ilgisiz bir yazışma okumasın).
+5. **Arkadaşlar ekranında "Engellediklerim" listesi**: engellediğin/şikayet
+   ettiğin HERKES (arkadaş olsun olmasın) → **Engeli Kaldır / Şikayeti Geri
+   Çek**. Arkadaş OLMAYAN birini geri almanın tek yolu bu (bugün yok).
