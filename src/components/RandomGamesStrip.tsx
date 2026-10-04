@@ -1,6 +1,7 @@
 // Kelimeki — Rastgele Oyuncu (3 Ekim 2026): "Devam Edenler"in üstündeki yatay
 // kayan ilan şeridi + benim bekleyen ilanım için "Bekliyor n/N" satırı.
-// Tasarım ve gerekçeler: docs/decisions/random-opponent.md (§4, §11).
+// Tasarım ve gerekçeler: docs/decisions/random-opponent.md (§4, §11, §15).
+// §15 (4 Ekim 2026): şerit BENİM bekleyen ilanımı da kart olarak gösterir.
 // Saf kurallar (süzgeç, metinler, aralıklar): `utils/randomGames.ts`.
 //
 // ⚠ Şerit Realtime ile BESLENEMEZ: Realtime RLS'e uyar ve başkasının açtığı
@@ -23,7 +24,7 @@ import {
   filledSeatCount,
   isOpenSeat,
   seatsLeftLabel,
-  visibleListings,
+  stripListings,
 } from '../utils/randomGames';
 import { Avatar } from './Avatar';
 import { PlayerAvatarRow } from './PlayerAvatarRow';
@@ -53,8 +54,16 @@ function SeatDots({ seats }: { seats: RandomListing['seats'] }) {
 interface RandomGamesStripProps {
   /** Oturumun kullanıcı kimliği (STRING — `user` nesnesi değil: effect bağımlılığı). */
   userId: string;
-  /** Zaten içinde olduğum oyunların id'leri (şeritte tekrar gösterilmez). */
-  myGameIds: readonly string[];
+  /**
+   * `list_my_random_games` sonucu (`null` = alınamadı). Bekleyen creator/random
+   * ilanlarım şeride KART olarak eklenir (§15); kimlikleri başkaları listesinden
+   * düşülür.
+   */
+  myRandom: readonly MyRandomGame[] | null;
+  /** İptal/Ayrıl sürerken o ilanın id'si (düğme kilitli). */
+  busyRandomId: string | null;
+  /** Kartımdaki "İptal" (kurucu) / "Ayrıl" (kabul eden) — `LiveGamesTab.handleLeaveRandom`. */
+  onLeaveMine: (game: MyRandomGame) => void;
   /** Başlıktaki "Rastgele oyun aç" — "Yeni Oyun Başlat" ile AYNI: kurulum ekranını açar. */
   onOpenCreate: () => void;
   /** Kabul başarılı: üst bileşen iletiyi gösterir, listeyi tazeler. */
@@ -65,7 +74,9 @@ interface RandomGamesStripProps {
 
 export function RandomGamesStrip({
   userId,
-  myGameIds,
+  myRandom,
+  busyRandomId,
+  onLeaveMine,
   onOpenCreate,
   onAccepted,
   onNotice,
@@ -112,7 +123,7 @@ export function RandomGamesStrip({
     };
   }, [userId]);
 
-  const visible = visibleListings(listings, userId, new Set(myGameIds));
+  const visible = stripListings(listings, myRandom);
   if (visible.length === 0) return null;
 
   const accept = async (l: RandomListing) => {
@@ -151,40 +162,67 @@ export function RandomGamesStrip({
         role="list"
         aria-label="Rastgele oyun ilanları"
       >
-        {visible.map((l) => (
-          <div
-            key={l.id}
-            role="listitem"
-            className="snap-start shrink-0 min-w-[84px] basis-[calc((100%-16px)/3.4)] flex flex-col items-center gap-[5px] rounded-[10px] border border-border bg-panel p-2"
-          >
-            <Avatar url={l.creator_avatar_url} name={l.creator_name} size={30} />
-            <span className="w-full truncate text-center text-xs font-bold text-text">
-              {l.creator_name ?? 'Oyuncu'}
-            </span>
-            <span
-              className={`rounded-full border px-1.5 py-[1px] font-mono text-[10px] font-bold ${
-                l.player_count === 2
-                  ? 'text-[#0A6076] bg-[#E7F6FA] border-[#A9E4EF]'
-                  : 'text-[#4A1A90] bg-[#F3ECFE] border-[#DCC8FC]'
+        {visible.map((l) => {
+          const mine = l.mine;
+          const myGame = mine ? (myRandom ?? []).find((g) => g.id === l.id) : undefined;
+          return (
+            <div
+              key={l.id}
+              role="listitem"
+              className={`snap-start shrink-0 min-w-[84px] basis-[calc((100%-16px)/3.4)] flex flex-col items-center gap-[5px] rounded-[10px] border p-2 ${
+                mine ? 'border-accent/30 bg-accent/5' : 'border-border bg-panel'
               }`}
             >
-              {l.player_count} kişi
-            </span>
-            <SeatDots seats={l.seats} />
-            <span className="text-center font-mono text-[10px] leading-tight text-muted">
-              {seatsLeftLabel(l.open_seats)}
-            </span>
-            <button
-              type="button"
-              onClick={() => void accept(l)}
-              disabled={busyId !== null}
-              aria-label={`${l.creator_name ?? 'Oyuncu'} ilanını kabul et`}
-              className="w-full min-h-[32px] btn-raised bg-accent text-white rounded-md text-[11px] font-bold uppercase tracking-[0.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
-            >
-              Kabul
-            </button>
-          </div>
-        ))}
+              <Avatar url={l.creator_avatar_url} name={l.creator_name} size={30} />
+              <span className="w-full truncate text-center text-xs font-bold text-text">
+                {l.creator_name ?? 'Oyuncu'}
+              </span>
+              <span
+                className={`rounded-full border px-1.5 py-[1px] font-mono text-[10px] font-bold ${
+                  l.player_count === 2
+                    ? 'text-[#0A6076] bg-[#E7F6FA] border-[#A9E4EF]'
+                    : 'text-[#4A1A90] bg-[#F3ECFE] border-[#DCC8FC]'
+                }`}
+              >
+                {l.player_count} kişi
+              </span>
+              <SeatDots seats={l.seats} />
+              {mine ? (
+                // "Bekliyor" soluk etiket ("N koltuk kaldı" satırının YERİNE: dar
+                // kartta etiket + eylem yan yana sığmıyor; koltuk durumu noktalarda).
+                <span className="text-center font-mono text-[10px] font-bold uppercase tracking-[0.5px] leading-tight text-muted">
+                  Bekliyor
+                </span>
+              ) : (
+                <span className="text-center font-mono text-[10px] leading-tight text-muted">
+                  {seatsLeftLabel(l.open_seats)}
+                </span>
+              )}
+              {mine ? (
+                // Benim ilanım (§15): "Kabul" YOK; küçük eylem (kurucu İptal, kabul eden Ayrıl).
+                <button
+                  type="button"
+                  onClick={() => myGame && onLeaveMine(myGame)}
+                  disabled={!myGame || busyRandomId === l.id}
+                  aria-label={mine === 'creator' ? 'İlanı iptal et' : 'İlandan ayrıl'}
+                  className="mt-auto w-full min-h-[32px] text-[11px] text-red underline underline-offset-[3px] active:opacity-70 disabled:opacity-50"
+                >
+                  {mine === 'creator' ? 'İptal' : 'Ayrıl'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void accept(l)}
+                  disabled={busyId !== null}
+                  aria-label={`${l.creator_name ?? 'Oyuncu'} ilanını kabul et`}
+                  className="mt-auto w-full min-h-[32px] btn-raised bg-accent text-white rounded-md text-[11px] font-bold uppercase tracking-[0.5px] active:scale-[0.97] transition-transform disabled:opacity-50"
+                >
+                  Kabul
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

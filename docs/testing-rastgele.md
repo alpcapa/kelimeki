@@ -19,7 +19,7 @@ yalnızca saf kuralları sınar: `npm run verify-random-games`.
 **13.10.2 İlan — sonuç ekranı ve şerit (T1 aç, T2 gör)**
 - [ ] T1 yalnızca "?" ile 2 kişilik ilan açar → "İlanın yayında. Biri kabul edince oyun başlar. 7 gün içinde dolmazsa kendiliğinden kalkar, ceza yok."
 - [ ] T1'in Devam Edenler'inde "Bekliyor 1/2" satırı: avatar + kesik çerçeveli "?", "Rastgele oyuncu bekleniyor", "İlanı iptal et". Oyun Davetleri sekmesinde AYNI oyun GÖRÜNMEZ (dört kova).
-- [ ] T2'nin Devam Edenler'inde, Devam Eden Oyunlar'ın ÜSTÜNDE "Rastgele Oyunlar · N" şeridi: T1 avatarı + ad, "2 kişi", koltuk noktaları, "1 koltuk kaldı" (saat/gün YOK), Kabul. T1'in KENDİ ilanı T1'in şeridinde YOK.
+- [ ] T2'nin Devam Edenler'inde, Devam Eden Oyunlar'ın ÜSTÜNDE "Rastgele Oyunlar · N" şeridi: T1 avatarı + ad, "2 kişi", koltuk noktaları, "1 koltuk kaldı" (saat/gün YOK), Kabul. T1'in KENDİ ilanı T1'in şeridinde de VAR (§15): en başta, "Kabul" yerine soluk "Bekliyor" etiketi + "İptal" (kabul ettiğim ilanda "Ayrıl"); "İptal" kartı kaldırır, ceza yok. Yalnızca benim ilanım varken şerit görünür; başlık sayısı onu da sayar; ilan Devam Edenler'deki "Bekliyor n/N" satırıyla yinelenir (kabul edildi).
 - [ ] Hiç ilan yokken şerit TAMAMEN gizli (başlık da yok); "Yeni Oyun Başlat" kalır.
 - [ ] Şerit yatay kayar (320 px'te ~3 kart, dördüncünün kenarı görünür); sayfa yatay taşmaz. Başlığın sağındaki "Rastgele oyun aç" kurulum ekranını açar.
 - [ ] Şerit yoklaması (Realtime YOK, RLS): T2 şeride bakarken T1 yeni ilan açar → en geç ~40 sn içinde belirir; sekme arka plandayken istek ATILMAZ (ağ sekmesinden bak), öne dönünce bir kez yoklar.

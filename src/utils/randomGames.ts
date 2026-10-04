@@ -13,6 +13,7 @@ import type {
   OnlineGameSlot,
   RandomGameResult,
   RandomListing,
+  RandomSeatState,
 } from '../lib/database.types';
 
 // ── Koltuk türleri ──────────────────────────────────────────────────────────
@@ -138,27 +139,81 @@ export function myWaitingRandomGames(
 
 // ── Şerit ───────────────────────────────────────────────────────────────────
 
+/** Şerit kartı: başkasının ilanı ya da BENİM ilanım (`mine` = rolüm; 4 Ekim 2026, §15). */
+export interface StripListing extends RandomListing {
+  mine?: 'creator' | 'random';
+}
+
 /**
- * Şeridin gösterebileceği ilanlar: id ile TEKİLLEŞTİR (offset sayfalaması
- * kayar, sunucu aynı satırı iki kez verebilir), kendi ilanımı ve zaten içinde
- * olduğum oyunları ÇIKAR (sunucu zaten eler; ikinci emniyet), sırayı koru
- * (sunucu: en yeni önce).
+ * Başkalarının ilanlarını şeride hazırlar: id ile TEKİLLEŞTİR (offset
+ * sayfalaması kayar, sunucu aynı satırı iki kez verebilir), `excludeIds`
+ * (benim ilan/oyun id'lerim — kartım ayrıca eklenir, "benim kartım kazanır")
+ * dışında bırak, sırayı koru (sunucu: en yeni önce). ⚠ 4 Ekim 2026'dan beri
+ * kendi ilanımı `creator_id`'ye bakıp ÇIKARMAZ (§15).
  */
 export function visibleListings(
   listings: readonly RandomListing[],
-  myUserId: string | null,
-  myGameIds: ReadonlySet<string>,
+  excludeIds: ReadonlySet<string> = new Set(),
 ): RandomListing[] {
   const seen = new Set<string>();
   const out: RandomListing[] = [];
   for (const l of listings) {
     if (seen.has(l.id)) continue;
     seen.add(l.id);
-    if (myUserId && l.creator_id === myUserId) continue;
-    if (myGameIds.has(l.id)) continue;
+    if (excludeIds.has(l.id)) continue;
     out.push(l);
   }
   return out;
+}
+
+/**
+ * Benim bekleyen ilanım → şerit kartı. Kurucu kimliği `created_by` (kurucu
+ * ben değilsem slots içinden ad/avatar). Koltuk durumları `list_random_games`
+ * ile AYNI anlamda: açık → 'open', gerçek YZ → 'ai', kurucu → 'creator',
+ * yanıtı beklenen/reddeden davetli → 'invited', diğer insan → 'filled'
+ * (`filledSeatCount` ile tutarlı: yalnızca `pending` dolu sayılmaz).
+ */
+export function myRandomToListing(g: MyRandomGame): StripListing {
+  const creatorSlot = g.slots.find((s) => s.type === 'human' && s.user_id === g.created_by);
+  const human = creatorSlot && creatorSlot.type === 'human' ? creatorSlot : null;
+  const seats = g.slots.map<RandomSeatState>((s) => {
+    if (isOpenSeat(s)) return 'open';
+    if (isRealAiSeat(s)) return 'ai';
+    if (s.type === 'human') {
+      if (s.user_id === g.created_by) return 'creator';
+      return s.invite_status === 'pending' || s.invite_status === 'declined' ? 'invited' : 'filled';
+    }
+    return 'filled';
+  });
+  return {
+    id: g.id,
+    player_count: g.player_count,
+    created_at: g.created_at,
+    creator_id: g.created_by,
+    creator_name: human?.name ?? null,
+    creator_avatar_url: human?.avatar_url ?? null,
+    seats,
+    open_seats: g.open_seats,
+    mine: g.my_role === 'random' ? 'random' : 'creator',
+  };
+}
+
+/**
+ * Şeridin TAM listesi (§15): önce BENİM bekleyen ilanlarım (en yeni önce),
+ * sonra başkalarınınki (sunucu sırası). Kimliği `myRandom`da geçen hiçbir
+ * başkası-satırı tekrar eklenmez (benim kartım kazanır; arkadaş/aktif oyun
+ * da şeritte çıkmaz).
+ */
+export function stripListings(
+  others: readonly RandomListing[],
+  myRandom: readonly MyRandomGame[] | null,
+): StripListing[] {
+  const mine = myWaitingRandomGames(myRandom)
+    .slice()
+    .sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0))
+    .map(myRandomToListing);
+  const exclude = new Set((myRandom ?? []).map((g) => g.id));
+  return [...mine, ...visibleListings(others, exclude)];
 }
 
 /** Şerit kartındaki "N koltuk kaldı" — zaman/yaş bilgisi KONMAZ. */

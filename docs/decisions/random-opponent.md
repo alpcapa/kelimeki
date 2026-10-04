@@ -71,7 +71,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
   ipucu). Kartta: kurucunun avatarı + kısa adı, **2 kişi / 4 kişi** rozeti
   (iki ayrı ton), dolu koltuk noktaları (dolu = yeşil, boş = içi boş halka) ve altında **"N koltuk kaldı"** (kullanıcı, 3 Ekim: saat/gün yaşı yerine; zaman bilgisi karta KONMAZ, 7 günlük süre ilanı kendiliğinden kaldırır), **Kabul** düğmesi (≥32 px yüksek).
 - **Şerit başlığının sağında "Rastgele oyun aç" bağlantısı** (kullanıcı, 3 Ekim; "kaydır →" ipucunun yerine): "+ Yeni Canlı Oyun"a basmakla AYNI, kurulum ekranını açar. Şerit boşken gizlendiği için bağlantı da yoktur; o durumda "+ Yeni Canlı Oyun" kalır.
-- **Sıra:** en yeni önce; kendi ilanım şeritte YOK (altta "Bekliyor" satırı).
+- **Sıra:** en yeni önce; kendi ilanım şeritte YOK (altta "Bekliyor" satırı). ⚠ 4 Ekim: DEĞİŞTİ, bkz. §15.
   Sessize aldığım/şikayet ettiğim kişinin ilanı çıkmaz.
 - **Kabul** = tek dokunuş, onay sorulmaz (Takım Ligi Rev. 9 deseni). Toast:
   *"Kabul ettin. Diğer oyuncular bekleniyor."* Oyun doluysa kart Devam Edenler'de
@@ -305,3 +305,26 @@ dolu arkadaş koltuğu "?" ile DEĞİŞİR, 4 kişide etkisiz. Tek kaynak `addRa
 (`randomGames.ts` ↔ `random_games.dart`); tek bir "?" koltuğunu boşaltmak hâlâ koltuk kartına
 dokunmakla. ⚠ "×3'de 3 kere" cümlesi iki biçimde okunabilir; yanlışsa değişen yer yalnızca bu
 fonksiyon ve `verify-random-games` kontrolleri.
+
+## 15. Şerit benim ilanımı da gösterir (4 Ekim 2026, kullanıcı)
+
+Kullanıcı: *"Bu yanlış: şeritte tüm oyunlar, benimki dahil, görünmeli. Sadece bana kabul et
+yerine bekliyor yazsın ki benim ilan ne oldu, gitti mi gitmedi mi kafa karıştırmasın. Bakınca
+hemen geldiğini görsün. Ama iptal de edebilsin haliyle."* Gerekçe: ilan açınca şerit
+boş/başkalarının ilanlarıyla kalıyor, "benimki yayında mı" belirsiz kalıyordu (§4'ün "kendi
+ilanım şeritte YOK" kararını bu değiştirir).
+
+- **Kaynak:** sunucunun `list_random_games`'i (başkaları) + `list_my_random_games`'ten (LiveGamesTab'ın
+  zaten çektiği `myRandom`) BEKLEYEN ve `my_role` `creator`/`random` olanlar. Saf: `myWaitingRandomGames`,
+  `myRandomToListing`, `stripListings` (`randomGames.ts`).
+- **Sıra:** benimkiler ÖNCE (en yeni önce), sonra başkaları. Id ile tekilleştirme: `myRandom`da geçen
+  her id başkaları listesinden düşer (benim kartım kazanır; arkadaş/aktif oyun da şeritte çıkmaz).
+  `visibleListings` artık `creator_id`'ye bakıp kendi ilanımı ÇIKARMAZ.
+- **Kart:** aynı en/boy. "Kabul" YOK; yerine soluk "Bekliyor" etiketi (düğme değil; "N koltuk kaldı" satırının YERİNE — 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda) + altında küçük kırmızı eylem:
+  `creator` → "İptal" (`cancelRandomGame`), `random` → "Ayrıl" (`leaveRandomGame`); ≥32 px. Ayrışma: `border-accent/30 bg-accent/5`.
+  Eylem mantığı/iletileri `LiveGamesTab.handleLeaveRandom`'dan (ikinci kopya yok).
+- **Koltuk durumları** (`list_random_games` ile aynı anlam): açık→`open`, gerçek YZ→`ai`, kurucu (`created_by`)→`creator`,
+  `invite_status` pending/declined→`invited`, diğer insan→`filled` (`filledSeatCount` ile tutarlı).
+- Şerit yalnızca benim ilanım olsa bile görünür; "Rastgele Oyunlar · N" benimkini de sayar.
+- **Bilinçli yinelenme:** "Devam Eden Oyunlar"daki "Bekliyor n/N" satırları (`RandomWaitingRow`) ŞİMDİLİK durur;
+  aynı ilan iki yerde görünür. Kapı: `verify-random-games`.
