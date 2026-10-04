@@ -335,5 +335,7 @@ bekler, ilk izlenim "çalışmıyor" olur. Bu yüzden kök CLAUDE.md'deki *"Web+
 hemen gider"* kuralı bu özellik için UYGULANMAZ: **#804 (web) ve #805 (port) AYNI GÜN merge edilir** (12 Ekim kesimi).
 Merge öncesi web, Vercel önizlemesinde (canlı veritabanına bağlı) test edilir. Sunucu parçaları ZATEN canlıda ve
 zararsız (kullanan istemci yok). ⚠ Kalan boşluk: mobil derleme TestFlight'a gitse bile kullanıcılar mağazadan
-güncelleyene kadar eski sürümde kalır; o aralıkta web'de açılan ilanı mobil kullanıcılar göremez. Çözüm adayı: sunucu
-bayrağı (özellik yalnızca test hesaplarında açık, mağaza sürümü yayına çıkınca herkese açılır) — karar bekliyor.
+güncelleyene kadar eski sürümde kalır; o aralıkta web'de açılan ilanı mobil kullanıcılar göremez. Çözüm adayı olan sunucu
+bayrağı (özellik yalnızca test hesaplarında açık, mağaza sürümü yayına çıkınca herkese açılır) KULLANICI KARARIYLA
+YAPILMAYACAK (4 Ekim: *"Bence gerek yok. 12 Ekim'de birlikte yayına alırız. Daha 1 hafta var. Bu arada testlerimizi yapabiliriz."*);
+kabul edilen bedel: mağaza güncellemesi gelene kadar web'de açılan ilanlar mobil kullanıcılara görünmez.
