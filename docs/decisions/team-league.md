@@ -422,3 +422,16 @@ pembe olur — §8'de BELİRLENEN liste işareti pembesi (bant `#F9D7E6`, yazı 
 (3) Devam Edenler'deki kart da aynı kural: rastgele kökenli kart açık mavi + "Rastgele" etiketi (kodda), takım
 kartı pembe + "Takım" etiketi; (4) kapı: `randomGames.ts` ↔ `random_games.dart` aynı PR'da, `verify-random-games`
 takım ilanını da kapsamalı. Kod YOK, Takım Ligi kodlanırken uygulanır.
+
+## Yardım ve hukuki metin — Takım Ligi yayına girerken (4 Ekim 2026)
+
+Rastgele Oyun'un "Detaylı Kurallar" bölümü (`HelpModal.tsx` ↔ `help_modal.dart`) yazıldı ve 12 Ekim'le gidiyor.
+**"Takım Oyunu" bölümü BİLEREK eklenmedi:** özellik kodlanmadan Yardım'da anlatılırsa 12 Ekim sürümü olmayan bir
+özelliği tarif eder. Takım Ligi kodlanırken AYNI PR'da (web + port, `help_text_parity_test` bölüm başlığını okur):
+- **Yardım taslağı ("Takım Oyunu"):** 2'şer kişilik iki takım, 4 kişilik oyun; takımlar kalıcıdır (ad + iki üye); ortağınla
+  ortak bölge, takım içi vergi yok; **bir üye süresinde oynamaz ya da teslim olursa bütün takım teslim sayılır**, oyun
+  biter, takımın iki üyesi ve takım −2, kazanan takımın üyeleri ve takım +2 (Revizyon 17); açık takım ilanları
+  Rastgele Oyun şeridinde pembe "Takım" etiketiyle görünür (Revizyon 18); oyun sonu arkadaş önerisi aynı.
+- **Koşullar/Gizlilik:** takım adı, takım üyeliği ve takım sıralaması (herkese açık mı?) yeni kullanıcı verisi/görünürlük
+  → `LegalContent.tsx` + port `legal_modals.dart` + "Son güncelleme" tarihi iki tarafta birlikte; ayrıca "bir üyenin
+  teslimi takımı bağlar" kuralı Koşullar'da açıkça yazılmalı.
