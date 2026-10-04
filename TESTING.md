@@ -265,11 +265,18 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       + YZ'li bir oyunda YZ yine 4. koltukta kalmalı. Rakibi arkadaşlıktan
       çıkarıp denersen "Yalnızca arkadaşlarını davet edebilirsin." görünmeli
       ve ekranda kalınmalı.
-- [ ] **Oyun GEÇMİŞİNDEN "Tekrar Oyna" (4 Eylül 2026).** "Tüm Oyunlarım"da
-      bitmiş bir **Canlı** oyunun kartını aç, tahta önizlemesine tıkla:
-      menüde **Paylaş · Tekrar Oyna · Kapat** olmalı. Tekrar Oyna → oyun
-      sonundakiyle AYNI onay metni → onayla → "Davetiniz gönderilmiştir."
-      ve yeni oyun "Rakip Bekleniyor"da görünmeli. **Biten oyunu SEN
+- [ ] **Davet kuralları (4 Ekim 2026; iki hesap).** (a) A, B'ye 2 kişilik
+      davet gönderir; B YANITLAMADAN A aynı B'ye ikinci 2 kişilik daveti
+      dener → "Bu arkadaşına zaten yanıtlanmamış bir 2 kişilik davetin var…".
+      (b) Aynı anda A, B'ye 4 kişilik davet gönderebilmeli (ayrı hak); ikinci
+      4 kişilik reddedilmeli. (c) B kabul edince A yeni 2 kişilik gönderebilmeli.
+      (d) A, 10 farklı arkadaşına birer 2 kişilik gönderebilmeli (genel tavan
+      YOK). (e) B, A'yı sohbette SESSİZE alır (ya da şikayet eder) → A, B'ye
+      davet dener → "<B'nin takma adı> kullanıcısı sizi engelledi." görünmeli;
+      susturma/şikayet geri alınınca davet geçmeli. (f) Rastgele ilan (en
+      çok 3) bu sınırlardan bağımsız; arkadaş koltuğu olan rastgele ilanda
+      aynı kişiye çift davet de reddedilmeli. ⚠ Beklenen yan etki: "sessize
+      al" artık davetleri de kapatır. **Biten oyunu SEN
       kurmamışsan da çalışmalı** (davet edilen taraf da rövanş açabilir).
       ⚠ **Bir YZ oyununun kartında "Tekrar Oyna" ÇIKMAMALI** — kapsam
       bilerek yalnızca Canlı oyunlar (yerel yeni oyun, kaydedilmiş devam

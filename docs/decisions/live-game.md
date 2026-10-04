@@ -1036,3 +1036,58 @@ Duyarlılığı kanıtlandı: yüklem `false` döndürülünce dört vaka düş�
 `isAuthStateError` + oturum kontrolü kapısı da yok; portun raporladığı
 "Invalid Refresh Token" satırları (6 kayıt) o yüzden panele düşüyor.
 
+## Davet kuralları: engel + çift başına sınır (4 Ekim 2026)
+
+Kullanıcı kararları (aynı gün iki tur). **Tur 1** (`20261004183426`): çift davet
+yok + kurucu başına 5 bekleyen kota. **Tur 2** (`20261004193412`, tur 1'in
+YERİNE geçti): kullanıcı *"arkadaş davetinde sınır olması doğru mu bilemedim"*
+dedi ve sessize alma/şikayeti davete bağladı. Geçerli kurallar:
+
+- **Engel:** davet edilen kişi daveti edeni SESSİZE ALMIŞSA ya da (geri
+  çekilmemiş) ŞİKAYET ETMİŞSE davet gönderilemez; gönderen açık mesaj görür:
+  *"<takma ad> kullanıcısı sizi engelledi."* (`profiles.display_name`).
+  Kullanıcı kararı — sessiz ret önerilmişti, açık mesaj seçildi (bedeli:
+  kimin kimi engellediği gönderene görünür). Kaynaklar `_random_blocked`'in
+  rastgele eşleşmede zaten kullandığı ikisi: `online_game_message_mutes` +
+  `online_game_chat_reports` (`withdrawn_at is null`). ⚠ "Sessize al" artık
+  YALNIZCA sohbet bildirimini değil davetleri de kapatır — sohbet ekranındaki
+  metin/yardım bunu söylemiyor (istemci işi, aşağı bkz.).
+- **Çift başına sınır:** aynı kişiye, o kişi yanıtlamadan, en çok **1 adet 2
+  kişilik + 1 adet 4 kişilik** bekleyen davet. Kabul edince yenisi serbest.
+  **Genel tavan YOK** (tur 1'in 5'i kalktı) → 10 arkadaşa en çok 20 davet.
+  Gerekçe: bugünkü en yüksek kurucu başına bekleyen 2 idi, tavan hiç
+  tetiklenmezdi; asıl koruma engel + çift sınırı.
+- **Rastgele ilan:** `_random_preflight`'in KENDİ sınırı (en çok 3 ilan)
+  duruyor, ayrı sayılır. Arkadaş koltuğu olan rastgele ilan da `game_invites`
+  yazdığından `create_random_game` aynı yardımcıyı (engel + çift sınırı)
+  çağırır.
+- **Yardımcı:** `_assert_invite_allowed(uid, invitee, player_count)` —
+  yalnızca `service_role`. ⚠ Eski 2 argümanlı (tur 1) sürüm canlıda DURUYOR,
+  artık hiçbir yerden çağrılmıyor; MCP aracı `DROP`'ta zaman aşımına uğradığı
+  için panelden `drop function public._assert_invite_allowed(uuid, uuid);`
+  çalıştırılacak (zararsız temizlik).
+- ⚠ "Bekleyen" = `pending` + 7 günden genç (süresi dolmuş davet
+  `check_invite_expiry` süpürmesi gelene kadar `pending` kalıyor). ⚠ Engelden
+  ÖNCE gönderilmiş bekleyen davetler iptal EDİLMEZ; kapı yalnızca yeni
+  gönderimi durdurur.
+- Kullanıcıya hata `friendlyErrorMessage` ile olduğu gibi gider (P0001, Türkçe
+  `raise exception`) → istemci kodu değişmedi. `proacl`: iki `create_*`
+  fonksiyonunda önce/sonra aynı (`authenticated` + `service_role`).
+- **Canlıda doğrulandı** (geri alınan işlemle, gerçek arkadaş çifti): ilk 2
+  kişilik OK · ikinci 2 kişilik engellendi · aynı kişiye 4 kişilik OK · ikinci
+  4 kişilik engellendi · susturulmuşken *"Ironman kullanıcısı sizi
+  engelledi."* · susturma kalkınca OK. Kabulden sonra yeni davetin serbest
+  kalması tur 1'de doğrulandı, tur 2'de kod aynı. ⚠ Test tuzağı: Supabase
+  aracı `DELETE` içeren sorguda onay bekleyip 60 sn'de zaman aşımına uğruyor
+  (sorgu HİÇ çalışmıyor) — testlerde `update`/`insert` kullan.
+
+### Açık iş: istemci (bu tur kodu değiştirmedi)
+
+Kullanıcı fikri: davet kartında Kabul/Reddet yanına **sessize al + şikayet et**.
+Sunucu yarısı hazır (engel kapısı); istemci yarısı — davet kartında "⋯" menüsü
+(mevcut `report_online_game_participant` + mute RPC'leri), sohbet sessize alma
+metnine "davetleri de durdurur" ibaresi — web + port, mobil dosya taşıdığından
+**19 Ekim treni**, taslak PR. Karar bekleyen: davetteki şikayetin admin
+panelindeki "Şikayetler"e hangi gerekçeyle düşeceği (sohbet şikayeti
+`online_game_chat_reports` tablosunda `online_game_id` zorunlu, davet oyunu da
+bir `online_games` satırı olduğundan uyuyor).
