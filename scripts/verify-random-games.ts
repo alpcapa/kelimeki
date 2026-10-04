@@ -14,6 +14,7 @@
 import { readFileSync } from 'node:fs';
 import { fetchRandomGames, fetchMyRandomGames } from '../src/lib/api';
 import type { MyRandomGame, OnlineGame, OnlineGameSlot, RandomListing } from '../src/lib/database.types';
+import { friendSuggestCandidates } from '../src/utils/friendSuggest';
 import {
   RANDOM_SEAT,
   acceptNotice,
@@ -335,6 +336,18 @@ async function main() {
 
   const strip8 = readFileSync('src/components/RandomGamesStrip.tsx', 'utf8');
   check('şerit "Bekliyor" etiketi + İptal/Ayrıl içeriyor; LiveGamesTab handleLeaveRandom\'u geçiriyor', /Bekliyor/.test(strip8) && /'İptal'/.test(strip8) && /onLeaveMine=\{/.test(tab));
+
+  // Oyun sonu arkadaş önerisi (4 Ekim 2026)
+  {
+    const H = (id: string, relation?: 'self' | 'accepted' | 'pending_outgoing' | 'pending_incoming' | null): OnlineGameSlot =>
+      ({ type: 'human', user_id: id, name: id, relation }) as OnlineGameSlot;
+    const slots: OnlineGameSlot[] = [H('me', 'self'), H('a', 'accepted'), H('b', 'pending_outgoing'), H('c', 'pending_incoming'), H('d', null), { type: 'ai' } as OnlineGameSlot, H('d', null)];
+    const ids = friendSuggestCandidates(slots, 'me', new Set()).map((c) => c.user_id);
+    check('öneri: yalnız gelen-istek + ilişkisiz (c, d), tekrarsız', ids.join(',') === 'c,d', ids.join(','));
+    const ids2 = friendSuggestCandidates(slots, 'me', new Set(['d'])).map((c) => c.user_id);
+    check('öneri: güncel arkadaş listesindeki (d) elenir — slot.relation bayat olabilir', ids2.join(',') === 'c', ids2.join(','));
+    check('öneri: açık koltuk/YZ aday olmaz', friendSuggestCandidates([{ type: 'open' } as OnlineGameSlot, { type: 'ai' } as OnlineGameSlot], 'me', new Set()).length === 0);
+  }
 
   console.log(failures === 0 ? '\nTümü geçti.' : `\n${failures} kontrol düştü.`);
   process.exit(failures === 0 ? 0 : 1);

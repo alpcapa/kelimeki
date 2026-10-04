@@ -20,6 +20,8 @@ import { Board } from './Board';
 import { Rack } from './Rack';
 import { GameHeader } from './GameHeader';
 import { GameOver } from './GameOver';
+import { FriendSuggestModal } from './FriendSuggestModal';
+import { friendSuggestCandidates, type FriendSuggestCandidate } from '../utils/friendSuggest';
 import { MeaningModal } from './MeaningModal';
 import { RemainingTilesModal } from './RemainingTilesModal';
 import { PlayerScoreCard, type PlayerSummary } from './PlayerScoreCard';
@@ -71,6 +73,7 @@ import { HintBubble } from './HintBubble';
 import {
   checkOnlineGameTurnTimeout,
   createOnlineGame,
+  fetchFriends,
   fetchMeaning,
   fetchMyActiveChatReports,
   fetchMyChatMutes,
@@ -332,6 +335,10 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
   const [scoreCardPlayer, setScoreCardPlayer] = useState<PlayerSummary | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [gameOverDismissed, setGameOverDismissed] = useState(false);
+  // Oyun sonu arkadaş önerisi (4 Ekim 2026): GameOver kapanınca, arkadaşı
+  // OLMAYAN insan katılımcılar varsa bir kez sorulur (oyun başına).
+  const [suggestCandidates, setSuggestCandidates] = useState<FriendSuggestCandidate[] | null>(null);
+  const suggestAskedRef = useRef<string | null>(null);
 
   // Bitiş modalını GÖRDÜ → bu oyun için "Son Oynananlar"da "YENİ" rozeti
   // çıkmasın (3 Eylül 2026). Bunu yapmazsak oyunu bitiren hamleyi yapan
@@ -375,6 +382,27 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.isGameOver, game.id]);
+  useEffect(() => {
+    if (!state.isGameOver || !gameOverDismissed || suggestAskedRef.current === game.id) return;
+    suggestAskedRef.current = game.id;
+    const key = `kelimeki.friendSuggest.${game.id}`;
+    try {
+      if (localStorage.getItem(key)) return;
+    } catch {
+      /* depo yoksa her açılışta bir kez sorulur — zararsız yön */
+    }
+    void fetchFriends().then((rows) => {
+      const candidates = friendSuggestCandidates(game.slots, myUserId, new Set(rows.map((r) => r.friend_id)));
+      if (candidates.length === 0) return;
+      try {
+        localStorage.setItem(key, '1');
+      } catch {
+        /* yoksay */
+      }
+      setSuggestCandidates(candidates);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.isGameOver, gameOverDismissed, game.id]);
   const [showPassConfirm, setShowPassConfirm] = useState(false);
   /**
    * Oyun bitince "Tekrar Oyna" akışı: onay → aynı kadroyla yeni bir Canlı
@@ -1998,6 +2026,10 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         // kendiliğinden açılması 26 Eylül 2026'da kaldırıldı (kullanıcı kararı).
         onClose={() => setGameOverDismissed(true)}
       />
+
+      {suggestCandidates && (
+        <FriendSuggestModal candidates={suggestCandidates} onDone={() => setSuggestCandidates(null)} />
+      )}
 
       {showFeedback && <FeedbackModal source="game_end" onClose={() => setShowFeedback(false)} />}
 
