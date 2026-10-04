@@ -1087,7 +1087,9 @@ Kullanıcı fikri: davet kartında Kabul/Reddet yanına **sessize al + şikayet 
 Sunucu yarısı hazır (engel kapısı); istemci yarısı — davet kartında "⋯" menüsü
 (mevcut `report_online_game_participant` + mute RPC'leri), sohbet sessize alma
 metnine "davetleri de durdurur" ibaresi — web + port, mobil dosya taşıdığından
-**19 Ekim treni**, taslak PR. Karar bekleyen: davetteki şikayetin admin
+**19 Ekim treni**, taslak PR.
+
+**Sohbet ayarları metni (4 Ekim 2026): WEB YARISI YAPILDI** (`ChatSettingsModal.tsx`: giriş satırı "(mesaj bildirimleri ve oyun davetleri durur)"; sessize alma onayında "Ayrıca bu kullanıcı size oyun daveti gönderemez."; sessizden çıkarmada "ve oyun davetleri de tekrar açılır"). **Port ikizi AÇIK:** `mobile/app/lib/src/ui/chat/chat_settings_modal.dart` (üç aynı metin, `_buildMuteConfirm` + giriş `Text`i) — taslak PR, 19 Ekim treni. Karar bekleyen: davetteki şikayetin admin
 panelindeki "Şikayetler"e hangi gerekçeyle düşeceği (sohbet şikayeti
 `online_game_chat_reports` tablosunda `online_game_id` zorunlu, davet oyunu da
 bir `online_games` satırı olduğundan uyuyor).
