@@ -174,9 +174,16 @@ export function seatsLeftLabel(open: number): string {
  */
 export const RANDOM_SEAT = '?';
 
-/** Rastgele satırına dokunuş: boş bir koltuğu "?" yapar. 2 kişide dolu koltuk DEĞİŞTİRİLİR (tek rakip). */
+/**
+ * Rastgele satırına dokunuş (kullanıcı, 4 Ekim 2026: "seçildikten sonra tekrar
+ * üstüne basınca geri alsın"): boş bir koltuğu "?" yapar. Boş koltuk KALMADIYSA ve
+ * seçimde "?" varsa dokunuş TÜM "?" koltuklarını geri alır (2 kişide ikinci
+ * dokunuş = geri al; 4 kişide ×3'ten sonraki dokunuş = geri al). Dolu ve "?" yoksa:
+ * 2 kişide dolu arkadaş koltuğu DEĞİŞTİRİLİR (tek rakip), 4 kişide dokunuş etkisiz.
+ */
 export function addRandomSeat(selected: readonly string[], playerCount: 2 | 4): string[] {
   if (selected.length < playerCount - 1) return [...selected, RANDOM_SEAT];
+  if (selected.includes(RANDOM_SEAT)) return selected.filter((s) => s !== RANDOM_SEAT);
   if (playerCount === 2) return [RANDOM_SEAT];
   return [...selected];
 }

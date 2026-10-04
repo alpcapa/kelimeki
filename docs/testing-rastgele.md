@@ -10,7 +10,7 @@ Tasarım ve sunucu sonuçları: `docs/decisions/random-opponent.md`. Otomatik ka
 yalnızca saf kuralları sınar: `npm run verify-random-games`.
 
 **13.10.1 İlan aç — kurulum ekranı**
-- [ ] Canlı → Yeni Oyun Başlat: listenin EN ÜSTÜNDE "?" avatarlı "Rastgele Oyuncu" satırı, alt yazı "Biri kabul edince oyun başlar". Arama kutusuna bir şey yaz: satır KAYBOLMAZ. "Tüm oyuncular" görünümünde ve hiç arkadaşı olmayan hesapta da görünür.
+- [ ] Canlı → Yeni Oyun Başlat: listenin EN ÜSTÜNDE "?" avatarlı "Rastgele Oyuncu" satırı, alt yazı "Bunu seçerseniz rasgele oyun açarsınız.". Satıra tekrar tekrar dokun: her dokunuş bir "?" koltuğu ekler; boş koltuk kalmayınca (2 kişide 1., 4 kişide ×3'ten sonra) bir sonraki dokunuş TÜM "?"leri GERİ ALIR. Arama kutusuna bir şey yaz: satır KAYBOLMAZ. "Tüm oyuncular" görünümünde ve hiç arkadaşı olmayan hesapta da görünür.
 - [ ] 2 kişi: satıra dokun → 2. koltuk "?" ("Rastgele oyuncu") olur; tekrar dokun → değişmez (tek rakip). Bir arkadaşa dokun → "?" yerine arkadaş geçer.
 - [ ] 4 kişi: her dokunuş bir boş koltuğu "?" yapar (en çok 3, satırda ×N). Arkadaş + "?" karışabilir. Tek seçimde "Davet Gönder" kapalı; tam 2 seçimde 4. koltuk "Yapay Zeka" görünür; 3 seçimde YZ yok.
 - [ ] "?" koltuk kartına dokun → seçim kalkar.

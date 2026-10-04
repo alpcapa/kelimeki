@@ -235,6 +235,10 @@ async function main() {
   // ── 5) Esnek kadro ────────────────────────────────────────────────────────
   console.log('\nEsnek kadro (kurulum formu)');
   check('2 kişi: ? ekler', addRandomSeat([], 2).join() === RANDOM_SEAT);
+  check('2 kişi: ? seçiliyken tekrar dokunuş GERİ ALIR', addRandomSeat([RANDOM_SEAT], 2).length === 0);
+  check('4 kişi: ×3 doluyken dokunuş tüm ?\'leri geri alır', addRandomSeat([RANDOM_SEAT, RANDOM_SEAT, RANDOM_SEAT], 4).length === 0);
+  check('4 kişi: arkadaş + ?? doluyken dokunuş yalnız ?\'leri geri alır', addRandomSeat(['f1', RANDOM_SEAT, RANDOM_SEAT], 4).join() === 'f1');
+  check('4 kişi: ×2 doluyken (boş koltuk var) dokunuş ÜÇÜNCÜYÜ ekler', randomSeatCount(addRandomSeat([RANDOM_SEAT, RANDOM_SEAT], 4)) === 3);
   check('2 kişi: dolu koltukta ? onu DEĞİŞTİRİR (tek rakip)', addRandomSeat(['f1'], 2).join() === RANDOM_SEAT);
   check('2 kişi: arkadaş dolu ?\'yi değiştirir', toggleFriendSeat([RANDOM_SEAT], 'f1', 2).join() === 'f1');
   check('4 kişi: ? ve arkadaş karışır', addRandomSeat(['f1'], 4).join() === `f1,${RANDOM_SEAT}`);

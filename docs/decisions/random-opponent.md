@@ -33,7 +33,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
 
 - **Arkadaş listesinin İÇİNDE, ilk satır** (kullanıcı, 4 Ekim 2026: *"diğer arkadaşlar
   gibi listenin en üstüne koyacaksın, ayrı bir bölümde değil"*): **? avatarlı "Rastgele
-  Oyuncu"**, alt yazısı *"Biri kabul edince oyun başlar"*. Arkadaş satırlarıyla AYNI kart
+  Oyuncu"**, alt yazısı *"Bunu seçerseniz rasgele oyun açarsınız."* (kullanıcı, 4 Ekim 2026; yazım "rasgele"). Arkadaş satırlarıyla AYNI kart
   dili ve AYNI kaydırılan liste; arama kutusunun ve "Arkadaşını davet et" düğmesinin
   ALTINDA, arkadaşlardan ÖNCE. Ayrı bir başlık/bölüm YOK. Aramada süzgeçten MUAF, "Tüm
   oyuncular" görünümünde ve hiç arkadaşı olmayanda da hep görünür. (İlk web sürümü
@@ -261,3 +261,14 @@ Kararlar/sapmalar:
 
 **Port (Flutter) ikizi — yapılmadı.** Ajanın çıkardığı birebir kurallar listesi
 `src/utils/randomGames.ts` başındaki notlarda ve `docs/testing-rastgele.md`'de.
+
+## 14. Rastgele satırına tekrar dokunuş = GERİ AL (4 Ekim 2026, kullanıcı)
+
+Kullanıcı: *"Rastgele seçildikten sonra tekrar üstüne basınca geri alsın. X3'de 3 kere
+basınca."* Uygulanan okuma: her dokunuş bir boş koltuğu "?" yapar; **boş koltuk kalmayınca
+ve seçimde "?" varsa bir sonraki dokunuş TÜM "?" koltuklarını geri alır** (2 kişide ikinci
+dokunuş; 4 kişide ×3'ten sonraki dokunuş; arkadaşlar korunur). Dolu ve "?" yoksa: 2 kişide
+dolu arkadaş koltuğu "?" ile DEĞİŞİR, 4 kişide etkisiz. Tek kaynak `addRandomSeat`
+(`randomGames.ts` ↔ `random_games.dart`); tek bir "?" koltuğunu boşaltmak hâlâ koltuk kartına
+dokunmakla. ⚠ "×3'de 3 kere" cümlesi iki biçimde okunabilir; yanlışsa değişen yer yalnızca bu
+fonksiyon ve `verify-random-games` kontrolleri.
