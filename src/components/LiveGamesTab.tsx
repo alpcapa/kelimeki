@@ -1404,7 +1404,9 @@ export function LiveGamesTab({
               boşken kendini TAMAMEN gizler ama bağlı kalır (yoklama sürer). */}
           <RandomGamesStrip
             userId={user.id}
-            myGameIds={(myRandom ?? []).map((g) => g.id)}
+            myRandom={myRandom}
+            busyRandomId={busyRandomId}
+            onLeaveMine={(g) => void handleLeaveRandom(g)}
             onOpenCreate={() => setCreating(true)}
             onAccepted={(r) => {
               showNotice(acceptNotice(r));
