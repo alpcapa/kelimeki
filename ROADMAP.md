@@ -214,8 +214,9 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 
 ### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
 
-Kod YOK; karar kaydı. İş 12 Ekim kesimine DEĞİL, **19 Ekim trenine** girer
-(acil bir durum çıkmazsa). Tasarım: `docs/decisions/random-opponent.md` (#804'te).
+Kod YOK; karar kaydı. Bunlar **12 Ekim treninin** konusu (#804/#805'in
+kapsamı); 19 Ekim treni ayrı, farklı konulara ayrılır. Tasarım:
+`docs/decisions/random-opponent.md` (#804'te).
 
 - **A. Yabancıyla biten oyunda "Tekrar Oyna": gösterilsin — ama yalnızca TÜM
   rakipler arkadaşsa.** Sunucu rövanşta "Yalnızca arkadaşlarını davet
