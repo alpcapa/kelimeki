@@ -295,3 +295,18 @@ ilanım şeritte YOK" kararını bu değiştirir).
 - Şerit yalnızca benim ilanım olsa bile görünür; "Rastgele Oyunlar · N" benimkini de sayar.
 - **Bilinçli yinelenme:** "Devam Eden Oyunlar"daki "Bekliyor n/N" satırları (`RandomWaitingRow`) ŞİMDİLİK durur;
   aynı ilan iki yerde görünür. Kapı: `verify-random-games`.
+
+## 16. Zaman aşımı: rastgele oyun NORMAL oyunla BİREBİR aynı (4 Ekim 2026, kullanıcı)
+
+Önce *"süre dolunca oyun biter, 4 kişide de; arkadaşın da -2 alacak, takımın da"* denmişti;
+`check_turn_timeout` buna göre değiştirildi (`20261004065336_random_timeout_ends_game`) ve ~25
+dakika canlıda kaldı. Kullanıcı sonra *"takımla karıştırdım"* dedi ve kuralı netleştirdi:
+**rastgele oyunlar zaman aşımında diğer Canlı oyunlarla BİREBİR aynıdır** — teslim yok, yalnızca
+48 saat hamle yapmayan otomatik teslim sayılır ve **yalnızca o** -2 alır; 2 kişilikte oyun biter
+(teslim olan -2, rakip +2); 4 kişilikte oyun DEVAM EDER. Değişiklik geri alındı
+(`20261004070422_revert_random_timeout_ends_game`, canlıda doğrulandı: orijinal koşul, ACL aynı).
+`check_turn_timeout` rastgele ilan için ÖZEL bir şey yapmaz; `listing` kolonuna hiç bakmaz.
+⚠ "Ortağın/takımın da -2 alır" kuralı, kullanıcı Takım Ligi'ni kastetmiş olabilir: o tasarımda
+(`team-league.md` §3 "Teslim / 48 sa zaman aşımı") şu an yazılı olan "teslim olanın köşesi doğal alana
+döner, ortağın zinciri sürer" + "bir takımın TÜM üyeleri teslimse biter"dir; ortağın da -2 alması
+yazılı DEĞİL — Takım Ligi koduna başlanırken kullanıcıya sorulacak.
