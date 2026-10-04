@@ -172,7 +172,7 @@ export function RandomGamesStrip({
               // KARE kart (4 Ekim 2026, kullanıcı: dikey uzun kart alttaki asıl Devam Eden
               // Oyunlar'ı iter): 3 tam kart + 4.'nün ~1/4'ü görünür (devamı olduğu belli olsun).
               // eni = (şerit − 3 aralık) / 3.25, en çok 7rem (geniş ekranda daha çok kart sığar).
-              className={`snap-start shrink-0 min-w-[84px] basis-[min(7rem,calc((100%-24px)/3.25))] aspect-square flex flex-col gap-1 rounded-[10px] border p-1.5 ${
+              className={`snap-start shrink-0 min-w-[84px] basis-[min(7rem,calc((100%-24px)/3.25))] aspect-square flex flex-col gap-1 rounded-[10px] border p-1.5 shadow-raised ${
                 mine ? 'border-accent/30 bg-accent/5' : 'border-border bg-panel'
               }`}
             >
