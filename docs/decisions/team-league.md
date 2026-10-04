@@ -377,7 +377,9 @@ rengi (camgöbeği / kırmızı, pembe yalnızca liste işareti).
    (`verify-shared-realtime`, kanal çarpanı maliyeti).
 7. **Tanıtım (Oynayarak öğren) ve YZ oyunu** takımdan etkilenmez.
 8. **Arkadaş önerisi:** oyun bitince `FriendSuggestModal` rakip takımı da
-   önerir (zaten "arkadaş olmayan katılımcılar" mantığı).
+   önerir (zaten "arkadaş olmayan katılımcılar" mantığı). ✅ 4 Ekim 2026: modal
+   artık TÜM Canlı oyunlarda (Takım/Rastgele/davetli) oyun SONUNDA çıkar,
+   davet kabulünde değil — bkz. `docs/decisions/friends.md` → "Oyun sonu arkadaş önerisi".
 9. **Yarım oyun hatırlatması / sıra bildirimi:** takım oyununda ortağın sırası
    da bildirim sayar; iki ortağın telefonu aynı anda ötmez (sırayı yalnızca
    sırası gelen alır, mevcut davranış).

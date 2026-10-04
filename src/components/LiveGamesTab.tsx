@@ -69,7 +69,6 @@ import {
   STALE_DATA_NOTICE,
 } from '../utils/offlineNotice';
 import { AvatarScoreRow, PlayerAvatarRow } from './PlayerAvatarRow';
-import { FriendSuggestModal } from './FriendSuggestModal';
 import { LiveGameCreateForm } from './LiveGameCreateForm';
 import { LIVE_GAME_REQUEST_EVENT, takeLiveGameRequest, type LiveGameRequest } from '../utils/liveGameRequest';
 import { PRIMARY_ACTION_BTN } from './actionButton';
@@ -762,9 +761,6 @@ export function LiveGamesTab({
     return () => window.removeEventListener(LIVE_GAME_REQUEST_EVENT, al);
   }, []);
   const [busyInviteId, setBusyInviteId] = useState<string | null>(null);
-  // Bir daveti kabul ettikten sonra, o oyundaki henüz arkadaş olunmayan
-  // katılımcılara toplu istek gönderme önerisi (bkz. FriendSuggestModal).
-  const [suggestCandidates, setSuggestCandidates] = useState<HumanSlot[] | null>(null);
 
   // İlk yükleme (mount effect) ve sonraki tüm reload() çağrıları (Realtime,
   // foreground, davet yanıtı, yeni oyun oluşturma) AYNI unmount korumasını
@@ -1213,12 +1209,7 @@ export function LiveGamesTab({
     setBusyInviteId(game.my_invite_id);
     try {
       await respondToGameInvite(game.my_invite_id, accept);
-      if (accept) {
-        const candidates = game.slots.filter(
-          (s): s is HumanSlot => s.type === 'human' && s.relation !== 'self' && s.relation !== 'accepted',
-        );
-        if (candidates.length > 0) setSuggestCandidates(candidates);
-      }
+      // Arkadaş önerisi artık davet kabulünde DEĞİL, oyun BİTİNCE (OnlineGameScreen).
       // reload()'un aksine (fire-and-forget) burada bilerek await ediliyor —
       // önceden busy göstergesi liste tazelenmeden kayboluyordu, kullanıcı
       // aynı davete art arda iki kez tıklayabiliyordu.
@@ -1334,9 +1325,6 @@ export function LiveGamesTab({
   return (
     <RankTierProvider userIds={participantIds}>
     <div className="w-full flex flex-col gap-5">
-      {suggestCandidates && (
-        <FriendSuggestModal candidates={suggestCandidates} onDone={() => setSuggestCandidates(null)} />
-      )}
 
 
       {/* "Yeni Oyun Başlat" listenin ÜSTÜNDE (27 Eylül 2026, ROADMAP #41 karar

@@ -56,3 +56,9 @@ Rastgele ilanla başlayan oyunda zaman aşımı **normal Canlı oyunla birebir a
 kolonuna HİÇ bakmaz; ara bir değişiklik aynı gün geri alındı, bkz. `random-opponent.md` §16). Yani teslim/−2/+2 mantığı bu
 özellikle değişmedi ve burada ayrıca test EDİLMEZ; normal Canlı oyun testleri (`TESTING.md`) kapsar. Bu yüzden listede bir
 "süreyi geçmişe al" adımı YOK.
+
+## Oyun sonu arkadaş önerisi
+- [ ] Arkadaşın olmayan biriyle (rastgele) oyun bitir → GameOver'ı kapat → "Bu oyuncuları arkadaş olarak eklemek ister misin?" listesi (hepsi seçili) · **Vazgeç** pencereyi kapatır, istek GİTMEZ.
+- [ ] **Devam** → "Arkadaşlık davetiniz iletilmiştir." · karşı hesapta istek görünür.
+- [ ] Aynı oyunu tekrar aç → öneri BİR KEZ çıkar, ikinci kez çıkmaz.
+- [ ] Tüm rakipler zaten arkadaşsa pencere HİÇ çıkmaz. Davet kabulünde artık pencere çıkmaz.
