@@ -252,7 +252,7 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
     reported: Set<string>;
   }>({ blocked: new Set(), reported: new Set() });
   const [moderationTarget, setModerationTarget] = useState<FriendModerationTarget | null>(null);
-  const [blockTarget, setBlockTarget] = useState<{ id: string; name: string } | null>(null);
+  const [blockTarget, setBlockTarget] = useState<{ id: string; name: string; isFriend?: boolean } | null>(null);
   const [blockedListOpen, setBlockedListOpen] = useState(false);
   const reloadModeration = () =>
     void fetchBlockedUsers()
@@ -645,24 +645,26 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
                 // OYNA düğmesi 2 kişilik kurar; menü ikisini de açıkça sunar.
                 { label: '2 kişilik oyun kur', act: () => play(menuFor.friend_id, 2) },
                 { label: '4 kişilik oyun kur', act: () => play(menuFor.friend_id, 4) },
-                // Moderasyon menüsü DEĞİL, "geri al" kısayolu — yalnızca bir
-                // durum varsa (yeni şikayet sohbette açılır, bkz.
-                // FriendModerationModal).
-                ...(moderation.reported.has(menuFor.friend_id) || moderation.blocked.has(menuFor.friend_id)
-                  ? [
-                      {
-                        label: 'Sessize alma / şikayet ayarları',
-                        act: () =>
-                          setModerationTarget({
-                            userId: menuFor.friend_id,
-                            name: menuFor.name,
-                            avatarUrl: menuFor.avatar_url,
-                            blocked: moderation.blocked.has(menuFor.friend_id),
-                            reported: moderation.reported.has(menuFor.friend_id),
-                          }),
-                      },
-                    ]
-                  : []),
+                // Engelle / Engeli kaldır (5 Ekim 2026, kullanıcı isteği): durum
+                // yoksa "Engelle" (onaylı, yalnızca engel — şikayet sohbette
+                // açılır, bkz. FriendModerationModal); durum varsa geri alma
+                // paneli (engel kaldır / şikayeti geri çek).
+                moderation.reported.has(menuFor.friend_id) || moderation.blocked.has(menuFor.friend_id)
+                  ? {
+                      label: moderation.reported.has(menuFor.friend_id) ? 'Engel / şikayet ayarları' : 'Engeli kaldır',
+                      act: () =>
+                        setModerationTarget({
+                          userId: menuFor.friend_id,
+                          name: menuFor.name,
+                          avatarUrl: menuFor.avatar_url,
+                          blocked: moderation.blocked.has(menuFor.friend_id),
+                          reported: moderation.reported.has(menuFor.friend_id),
+                        }),
+                    }
+                  : {
+                      label: 'Engelle',
+                      act: () => setBlockTarget({ id: menuFor.friend_id, name: menuFor.name, isFriend: true }),
+                    },
                 { label: 'Arkadaşlıktan çıkar', danger: true, act: () => setConfirmRemove(menuFor) },
               ].map((it) => (
                 <button
@@ -692,9 +694,11 @@ export function FriendsModal({ onClose, initialTab = 'friends' }: FriendsModalPr
             // kalır (kullanıcı "engelledim" sanmaz); ret başarısız olursa engel
             // kalır ve istek zaten engelli kişiden geldiğinden zararsızdır.
             await blockUser(blockTarget.id);
-            await respondFriendRequest(blockTarget.id, false);
-            patchRelation(blockTarget.id, null);
-            reloadRequests();
+            if (!blockTarget.isFriend) {
+              await respondFriendRequest(blockTarget.id, false);
+              patchRelation(blockTarget.id, null);
+              reloadRequests();
+            }
             reloadModeration();
           }}
           onClose={() => setBlockTarget(null)}
