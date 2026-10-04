@@ -325,3 +325,15 @@ oranlarla (sabit `176 × ölçek` yükseklik ve `(genişlik−16)/3.4` KALKAR).
 **Başlık bağlantısı ve etiketler (4 Ekim 2026, kullanıcı):** "Rastgele oyun aç" bağlantısı başlıkla AYNI boy ve yazı
 (10 px mono, büyük harf, aralıklı), mavi + kalın, alt çizgisiz (Arkadaşlar penceresindeki "Tüm oyuncular →" ile aynı
 desen). Kartlardaki durum mesajları ("Bekliyor", "N koltuk kaldı") ORTALI. Port ikizi aynı.
+
+## 18. Web ve mobil BİRLİKTE yayına çıkar (4 Ekim 2026, kullanıcı)
+
+Kullanıcı: *"Yalnız web tarafını yayına alırız dedik ama bu mümkün değil sanırım. Çünkü web'de bunu yapanların mobilde
+karşılığı olmayacak, bu durumda işe yaramaz."* Doğru: Rastgele Oyuncu iki taraflı bir PAZAR YERİ — ilanı yalnızca
+özelliği olan istemciler görür/kabul eder. Web'de açılan ilanı mobil kullanıcı (çoğunluk) göremez/kabul edemez, ilan 7 gün
+bekler, ilk izlenim "çalışmıyor" olur. Bu yüzden kök CLAUDE.md'deki *"Web+port birlikte değişiyorsa iki PR'a böl, web yarısı
+hemen gider"* kuralı bu özellik için UYGULANMAZ: **#804 (web) ve #805 (port) AYNI GÜN merge edilir** (12 Ekim kesimi).
+Merge öncesi web, Vercel önizlemesinde (canlı veritabanına bağlı) test edilir. Sunucu parçaları ZATEN canlıda ve
+zararsız (kullanan istemci yok). ⚠ Kalan boşluk: mobil derleme TestFlight'a gitse bile kullanıcılar mağazadan
+güncelleyene kadar eski sürümde kalır; o aralıkta web'de açılan ilanı mobil kullanıcılar göremez. Çözüm adayı: sunucu
+bayrağı (özellik yalnızca test hesaplarında açık, mağaza sürümü yayına çıkınca herkese açılır) — karar bekliyor.
