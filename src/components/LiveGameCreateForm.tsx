@@ -329,7 +329,7 @@ export function LiveGameCreateForm({
       </span>
       <span className="flex-1 min-w-0 flex flex-col">
         <span className="text-sm font-bold text-text truncate">Rastgele Oyuncu</span>
-        <span className="text-xs text-muted truncate">Bunu seçerseniz rasgele oyun açarsınız.</span>
+        <span className="text-xs text-muted truncate">Açık oyun başlatır. Oyuna herkes katılabilir.</span>
       </span>
       {randomCount > 0 ? (
         <span className="font-mono text-xs font-bold text-accent min-w-[20px] text-right" aria-hidden>
