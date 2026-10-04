@@ -36,7 +36,7 @@ const stripCache = new Map<string, RandomListing[]>();
 function SeatDots({ seats }: { seats: RandomListing['seats'] }) {
   const dolu = seats.filter((s) => s === 'creator' || s === 'filled' || s === 'ai').length;
   return (
-    <span className="flex gap-[3px]" role="img" aria-label={`${seats.length} koltuktan ${dolu} dolu`}>
+    <span className="flex gap-[2px]" role="img" aria-label={`${seats.length} koltuktan ${dolu} dolu`}>
       {seats.map((s, i) => (
         <span
           key={i}
@@ -169,32 +169,38 @@ export function RandomGamesStrip({
             <div
               key={l.id}
               role="listitem"
-              className={`snap-start shrink-0 min-w-[84px] basis-[calc((100%-16px)/3.4)] flex flex-col items-center gap-[5px] rounded-[10px] border p-2 ${
+              // KARE kart (4 Ekim 2026, kullanıcı: dikey uzun kart alttaki asıl Devam Eden
+              // Oyunlar'ı iter): 3 tam kart + 4.'nün ~1/4'ü görünür (devamı olduğu belli olsun).
+              // eni = (şerit − 3 aralık) / 3.25, en çok 7rem (geniş ekranda daha çok kart sığar).
+              className={`snap-start shrink-0 min-w-[84px] basis-[min(7rem,calc((100%-24px)/3.25))] aspect-square flex flex-col gap-1 rounded-[10px] border p-1.5 ${
                 mine ? 'border-accent/30 bg-accent/5' : 'border-border bg-panel'
               }`}
             >
-              <Avatar url={l.creator_avatar_url} name={l.creator_name} size={30} />
-              <span className="w-full truncate text-center text-xs font-bold text-text">
-                {l.creator_name ?? 'Oyuncu'}
-              </span>
-              <span
-                className={`rounded-full border px-1.5 py-[1px] font-mono text-[10px] font-bold ${
-                  l.player_count === 2
-                    ? 'text-[#0A6076] bg-[#E7F6FA] border-[#A9E4EF]'
-                    : 'text-[#4A1A90] bg-[#F3ECFE] border-[#DCC8FC]'
-                }`}
-              >
-                {l.player_count} kişi
-              </span>
-              <SeatDots seats={l.seats} />
+              <div className="flex items-center gap-1 min-w-0">
+                <Avatar url={l.creator_avatar_url} name={l.creator_name} size={22} />
+                <span className="min-w-0 flex-1 truncate text-[11px] font-bold text-text">
+                  {l.creator_name ?? 'Oyuncu'}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-x-1 gap-y-0.5 min-w-0">
+                <span
+                  className={`shrink-0 rounded-full border px-1 py-[1px] font-mono text-[10px] font-bold leading-tight ${
+                    l.player_count === 2
+                      ? 'text-[#0A6076] bg-[#E7F6FA] border-[#A9E4EF]'
+                      : 'text-[#4A1A90] bg-[#F3ECFE] border-[#DCC8FC]'
+                  }`}
+                >
+                  {l.player_count} kişi
+                </span>
+                <SeatDots seats={l.seats} />
+              </div>
               {mine ? (
-                // "Bekliyor" soluk etiket ("N koltuk kaldı" satırının YERİNE: dar
-                // kartta etiket + eylem yan yana sığmıyor; koltuk durumu noktalarda).
-                <span className="text-center font-mono text-[10px] font-bold uppercase tracking-[0.5px] leading-tight text-muted">
+                // "Bekliyor" soluk etiket ("N koltuk kaldı" satırının YERİNE; koltuk durumu noktalarda).
+                <span className="truncate font-mono text-[9px] font-bold uppercase tracking-[0.5px] leading-tight text-muted">
                   Bekliyor
                 </span>
               ) : (
-                <span className="text-center font-mono text-[10px] leading-tight text-muted">
+                <span className="truncate font-mono text-[9px] leading-tight text-muted">
                   {seatsLeftLabel(l.open_seats)}
                 </span>
               )}

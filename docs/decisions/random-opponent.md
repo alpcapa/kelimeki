@@ -310,3 +310,14 @@ dakika canlıda kaldı. Kullanıcı sonra *"takımla karıştırdım"* dedi ve k
 (`team-league.md` §3 "Teslim / 48 sa zaman aşımı") şu an yazılı olan "teslim olanın köşesi doğal alana
 döner, ortağın zinciri sürer" + "bir takımın TÜM üyeleri teslimse biter"dir; ortağın da -2 alması
 yazılı DEĞİL — Takım Ligi koduna başlanırken kullanıcıya sorulacak.
+
+## 17. Şerit kartları KARE (4 Ekim 2026, kullanıcı)
+
+Önizlemede (iPad) kullanıcı: *"dikey kartlar mobil ekranda alttaki asıl devam eden oyunları görünmez yapabilir.
+Dikey uzun yerine kare yapalım, 4 tane ama 4.sünün sadece 1/4'ü ya da bir kısmı gözüksün ki devamı olduğu belli olsun."*
+Uygulama (web `RandomGamesStrip.tsx`): kart `aspect-square`, eni `min(7rem, (şerit − 24px) / 3.25)` (en az 84 px) →
+3 tam kart + 4.'nün ~1/4'ü. İçerik tek sıkı düzende: [avatar 22 + ad] · [rozet + koltuk noktaları] · ["N koltuk kaldı" /
+"Bekliyor"] · [Kabul / İptal-Ayrıl ≥32 px]. Ölçüldü (derlenmiş CSS, gerçek işaretleme): 390 px → 103×108, 4.
+kartın 26 px'i görünür; 820 px → 112×112 (geniş ekranda daha çok kart sığar); 320 px → 84×118 (4 kişilik kartta rozet
+ile noktalar sarar, bilinçli) ve 4. kartın ~12 px'i görünür. Yatay taşma yok. **Port ikizi:** Dart şerit kartı aynı
+oranlarla (sabit `176 × ölçek` yükseklik ve `(genişlik−16)/3.4` KALKAR).
