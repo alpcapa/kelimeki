@@ -48,15 +48,30 @@ final Map<String, List<RandomListing>> _stripCache = {};
 /// Testler arası sızıntıyı kesmek için.
 void resetRandomStripCache() => _stripCache.clear();
 
-/// Kart sabit yüksekliği (web ~173) — yazı ölçeğiyle büyür.
-const double kRandomCardHeight = 176;
-
-/// Kart eni: web `basis-[calc((100%-16px)/3.4)] min-w-[84px]` — 3 kart
-/// yan yana, dördüncünün kenarı görünür (kaydırma ipucu).
+/// KARE kart (4 Ekim 2026, kullanıcı): eni web
+/// `basis-[min(7rem,calc((100%-24px)/3.25))] min-w-[84px]` — 3 TAM kart +
+/// dördüncünün ~1/4'ü görünür (devamı olduğu belli olsun). 3 aralık = 24.
 double randomCardWidth(double listWidth) {
-  final w = (listWidth - 16) / 3.4;
-  return w < 84 ? 84 : w;
+  final w = (listWidth - 24) / 3.25;
+  final capped = w > 112 ? 112.0 : w;
+  return capped < 84 ? 84 : capped;
 }
+
+/// İçeriğin (avatar satırı + rozet/nokta satırı + durum + 32 px eylem +
+/// dolgu/çerçeve) 1,0 ölçekte sığdığı alt sınır. Web `aspect-square` içerik
+/// sığmazsa uzar (390 px'te ölçüldü: 103×108); Flutter yatay listede sonlu
+/// yükseklik ister, bu yüzden `max(en, bu × yazı ölçeği)`.
+const double kRandomCardMinHeight = 116;
+
+/// Kart yüksekliği: kare; içerik sığmazsa ya da yazı ölçeği büyürse uzar.
+double randomCardHeight(double width, double textScale) {
+  final min = kRandomCardMinHeight * textScale;
+  return width > min ? width : min;
+}
+
+/// Gölge (web `shadow-raised`: ~8 px aşağı/sağ taşar) liste kırpmasına
+/// girmesin diye şeridin dikey dolgusu.
+const double kRandomStripShadowPad = 8;
 
 class RandomGamesStrip extends StatefulWidget {
   final OnlineGamesRepo repo;
@@ -199,7 +214,7 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
   Widget build(BuildContext context) {
     final visible = stripListings(_listings, widget.myRandom);
     if (visible.isEmpty) return const SizedBox.shrink();
-    final yukseklik = MediaQuery.textScalerOf(context).scale(kRandomCardHeight);
+    final olcek = MediaQuery.textScalerOf(context).scale(1);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -223,31 +238,39 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
                 onTap: widget.onOpenCreate,
                 minHeight: 36,
                 minWidth: 36,
-                child: const Text(
-                  kRandomStripCreate,
-                  style: TextStyle(
-                    fontSize: 12,
+                // Başlıkla AYNI boy/yazı (10 px mono, büyük harf, harf
+                // aralıklı), mavi + kalın, altı çizili DEĞİL — Arkadaşlar
+                // penceresinin "Tüm oyuncular →" bağlantısıyla aynı desen.
+                child: Text(
+                  trUpper(kRandomStripCreate),
+                  style: const TextStyle(
+                    fontFamily: 'SpaceMono',
+                    fontSize: 10,
+                    letterSpacing: 1.5,
                     fontWeight: FontWeight.bold,
                     color: _accent,
-                    decoration: TextDecoration.underline,
-                    decorationColor: _accent,
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          SizedBox(
-            key: const Key('random-strip-list'),
-            height: yukseklik,
-            child: LayoutBuilder(builder: (context, c) {
-              final w = randomCardWidth(c.maxWidth);
-              return ListView.separated(
+          LayoutBuilder(builder: (context, c) {
+            final w = randomCardWidth(c.maxWidth);
+            final h = randomCardHeight(w, olcek);
+            return SizedBox(
+              key: const Key('random-strip-list'),
+              height: h + kRandomStripShadowPad * 2,
+              child: ListView.separated(
+                padding:
+                    const EdgeInsets.symmetric(vertical: kRandomStripShadowPad),
+                clipBehavior: Clip.hardEdge,
                 scrollDirection: Axis.horizontal,
                 itemCount: visible.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (_, i) => SizedBox(
                   width: w,
+                  height: h,
                   child: _ListingCard(
                     key: ValueKey('ilan-${visible[i].id}'),
                     listing: visible[i],
@@ -265,9 +288,9 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
                     },
                   ),
                 ),
-              );
-            }),
-          ),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -291,7 +314,7 @@ class _SeatDots extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           for (var i = 0; i < seats.length; i++) ...[
-            if (i > 0) const SizedBox(width: 3),
+            if (i > 0) const SizedBox(width: 2),
             Container(
               key: ValueKey(
                   'nokta-$i-${seatDotFilled(seats[i]) ? 'dolu' : 'bos'}'),
@@ -333,62 +356,83 @@ class _ListingCard extends StatelessWidget {
     final ad = l.creatorName ?? 'Oyuncu';
     final mine = l.mine;
     return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(6),
+      decoration: ShapeDecorationWithCssShadows(
         // Benim ilanım: web `border-accent/30 bg-accent/5`.
         color: mine != null ? _accent.withValues(alpha: 0.05) : _panel,
-        border: Border.all(
-            color: mine != null ? _accent.withValues(alpha: 0.3) : _border),
-        borderRadius: BorderRadius.circular(10),
+        borderColor: mine != null ? _accent.withValues(alpha: 0.3) : _border,
+        radius: 10,
+        shadows: kRaisedShadows, // web shadow-raised
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          KAvatar(url: l.creatorAvatarUrl, name: l.creatorName, size: 30),
-          Text(ad,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.bold, color: _text)),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-            decoration: BoxDecoration(
-              color: iki ? const Color(0xFFE7F6FA) : const Color(0xFFF3ECFE),
-              border: Border.all(
-                  color:
-                      iki ? const Color(0xFFA9E4EF) : const Color(0xFFDCC8FC)),
-              borderRadius: BorderRadius.circular(999),
+          Row(children: [
+            KAvatar(url: l.creatorAvatarUrl, name: l.creatorName, size: 22),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(ad,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 11, fontWeight: FontWeight.bold, color: _text)),
             ),
-            child: Text('${l.playerCount} kişi',
-                style: TextStyle(
-                    fontFamily: 'SpaceMono',
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: iki
-                        ? const Color(0xFF0A6076)
-                        : const Color(0xFF4A1A90))),
+          ]),
+          // Rozet + koltuk noktaları; dar kartta SARABİLİR (web flex-wrap).
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
+            runSpacing: 2,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color:
+                      iki ? const Color(0xFFE7F6FA) : const Color(0xFFF3ECFE),
+                  border: Border.all(
+                      color: iki
+                          ? const Color(0xFFA9E4EF)
+                          : const Color(0xFFDCC8FC)),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text('${l.playerCount} kişi',
+                    style: TextStyle(
+                        fontFamily: 'SpaceMono',
+                        fontSize: 10,
+                        height: 1.2,
+                        fontWeight: FontWeight.bold,
+                        color: iki
+                            ? const Color(0xFF0A6076)
+                            : const Color(0xFF4A1A90))),
+              ),
+              _SeatDots(seats: l.seats),
+            ],
           ),
-          _SeatDots(seats: l.seats),
+          // Durum mesajı ORTALI (web `text-center`).
           if (mine != null)
-            // "Bekliyor" soluk etiket ("N koltuk kaldı"nın YERİNE: dar kartta
-            // etiket + eylem yan yana sığmıyor; koltuk durumu noktalarda).
             Text(trUpper(kRandomMineWaiting),
                 key: const Key('ilan-bekliyor'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     fontFamily: 'SpaceMono',
-                    fontSize: 10,
+                    fontSize: 9,
                     height: 1.25,
                     letterSpacing: 0.5,
                     fontWeight: FontWeight.bold,
                     color: _muted))
           else
             Text(seatsLeftLabel(l.openSeats),
+                key: const Key('ilan-kalan'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     fontFamily: 'SpaceMono',
-                    fontSize: 10,
+                    fontSize: 9,
                     height: 1.25,
                     color: _muted)),
           if (mine != null)

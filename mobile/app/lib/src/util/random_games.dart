@@ -36,6 +36,14 @@ int filledSeatCount(List<OnlineSlot> slots) => slots.where((s) {
       return true;
     }).length;
 
+/// Oyun bir RASTGELE ilandan mı doğdu (4 Ekim 2026)? İlandan oturan HER
+/// insan koltuğu `via == 'random'` taşır (`list_my_online_games` alanı
+/// korur); kurucunun kendi koltuğu taşımaz — bu yüzden TÜM koltuklara
+/// bakılır, karma kadro (arkadaş + rastgele) da `true`. Yalnız-YZ ve salt
+/// arkadaş daveti oyunu `false`. Web `isRandomOriginGame`.
+bool isRandomOriginGame(List<OnlineSlot> slots) =>
+    slots.any((s) => s.isHuman && s.via == 'random');
+
 // ── Kova sınıflandırması (LiveGamesTab) ─────────────────────────────────────
 
 /// Rastgele ilanın KURUCUSU / ilandan KABUL EDENİ olduğum oyunların id'leri —

@@ -1032,71 +1032,134 @@ class _GameRow extends StatelessWidget {
     final remaining = isMyTurn
         ? remainingTimeLabel(deadline, DateTime.now().millisecondsSinceEpoch)
         : null;
-    return GestureDetector(
-      onTap: onOpen,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: const ShapeDecorationWithCssShadows(
-          color: _panel, borderColor: _border, radius: 6,
-          shadows: kRaisedShadows, // web shadow-raised
+    // Rastgele ilandan doğan aktif oyun (4 Ekim 2026): çok açık mavi zemin +
+    // solda 3 px accent çizgi + alt satırda "RASTGELE" etiketi. Düzen
+    // DEĞİŞMEZ (etiket kalan-süre satırında).
+    final rastgele = game.status == OnlineGameStatus.active &&
+        isRandomOriginGame(game.slots);
+    final kart = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: ShapeDecorationWithCssShadows(
+        color: rastgele ? kRandomOriginBg : _panel,
+        borderColor: _border,
+        radius: 6,
+        shadows: kRaisedShadows, // web shadow-raised
+      ),
+      // 2 EYLÜL 2026 — DÜZEN AYRIŞMASI DÜZELTİLDİ (kullanıcı, cihazda,
+      // 1.0.5 `Derleme 4a0a29b`): süre buradaki sağ sütunun İÇİNDEYDİ,
+      // yani sütunun enini o belirliyordu ve "X açtı" satırına biniyordu.
+      // Setup'ın YZ kartı aynı gün doğru şekle sokulmuştu ama gövde orada
+      // PRIVATE kalınca bu kart dokunulmadan kaldı. Ortak gövde artık
+      // `devam_eden_govde.dart`'ta; ölçümler ve gerekçe orada.
+      child: DevamEdenGovde(
+        sol: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PlayerAvatarRow(players: [
+              for (final s in game.slots)
+                s.isOpen
+                    // Açık koltuk "Yapay Zeka" DEĞİL (3 Ekim 2026).
+                    ? const AvatarRowPlayer(
+                        name: kRandomWaitingSeat, isOpen: true)
+                    : s.isAi
+                        ? const AvatarRowPlayer(name: 'Yapay Zeka', isAi: true)
+                        : AvatarRowPlayer(
+                            name: s.name ?? 'Oyuncu', avatarUrl: s.avatarUrl),
+            ]),
+            // 6 Eylül 2026 — "X açtı" satırı KALKTI, yerine PUAN SATIRI
+            // (kullanıcı: *"Ironman açtı kalksın çünkü zaten ilk baştaki
+            // her zaman oyunu başlatan oluyor"* — `slots[0]` her zaman
+            // kurucu, avatar şeridi o bilgiyi zaten taşıyor). Puanlar
+            // HİZALI: her sayı kendi avatarının TAM altında
+            // (`AvatarScoreRow`, 6 Eylül 2026 ikinci tur — tek dize hâli
+            // 4 kişilikte kayıyordu, kullanıcı bildirdi). Setup'ın YZ
+            // kartı ve "Son Oynadıklarım" aynı bileşeni çiziyor.
+            if (scores case final s? when s.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              AvatarScoreRow(scores: s),
+            ],
+          ],
         ),
-        // 2 EYLÜL 2026 — DÜZEN AYRIŞMASI DÜZELTİLDİ (kullanıcı, cihazda,
-        // 1.0.5 `Derleme 4a0a29b`): süre buradaki sağ sütunun İÇİNDEYDİ,
-        // yani sütunun enini o belirliyordu ve "X açtı" satırına biniyordu.
-        // Setup'ın YZ kartı aynı gün doğru şekle sokulmuştu ama gövde orada
-        // PRIVATE kalınca bu kart dokunulmadan kaldı. Ortak gövde artık
-        // `devam_eden_govde.dart`'ta; ölçümler ve gerekçe orada.
-        child: DevamEdenGovde(
-          sol: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        durum: Text.rich(
+          TextSpan(
+            text: trUpper(onlineStatusLabel(game, isMyTurn: isMyTurn)),
             children: [
-              PlayerAvatarRow(players: [
-                for (final s in game.slots)
-                  s.isOpen
-                      // Açık koltuk "Yapay Zeka" DEĞİL (3 Ekim 2026).
-                      ? const AvatarRowPlayer(
-                          name: kRandomWaitingSeat, isOpen: true)
-                      : s.isAi
-                          ? const AvatarRowPlayer(
-                              name: 'Yapay Zeka', isAi: true)
-                          : AvatarRowPlayer(
-                              name: s.name ?? 'Oyuncu', avatarUrl: s.avatarUrl),
-              ]),
-              // 6 Eylül 2026 — "X açtı" satırı KALKTI, yerine PUAN SATIRI
-              // (kullanıcı: *"Ironman açtı kalksın çünkü zaten ilk baştaki
-              // her zaman oyunu başlatan oluyor"* — `slots[0]` her zaman
-              // kurucu, avatar şeridi o bilgiyi zaten taşıyor). Puanlar
-              // HİZALI: her sayı kendi avatarının TAM altında
-              // (`AvatarScoreRow`, 6 Eylül 2026 ikinci tur — tek dize hâli
-              // 4 kişilikte kayıyordu, kullanıcı bildirdi). Setup'ın YZ
-              // kartı ve "Son Oynadıklarım" aynı bileşeni çiziyor.
-              if (scores case final s? when s.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                AvatarScoreRow(scores: s),
-              ],
+              if (game.status == OnlineGameStatus.active)
+                isMyTurn ? turnTriangleSpan(_green) : turnDotSpan(_red),
             ],
           ),
-          durum: Text.rich(
-            TextSpan(
-              text: trUpper(onlineStatusLabel(game, isMyTurn: isMyTurn)),
-              children: [
-                if (game.status == OnlineGameStatus.active)
-                  isMyTurn ? turnTriangleSpan(_green) : turnDotSpan(_red),
-              ],
-            ),
-            style: devamEdenDurumStil(isMyTurn ? _green : _red),
-          ),
-          sure: remaining == null
-              ? null
-              : Text(
-                  trUpper(remaining.text),
-                  style: devamEdenSureStil(remaining.urgent ? _red : _muted),
-                ),
+          style: devamEdenDurumStil(isMyTurn ? _green : _red),
         ),
+        sure: remaining == null
+            ? null
+            : Text(
+                trUpper(remaining.text),
+                style: devamEdenSureStil(remaining.urgent ? _red : _muted),
+              ),
+        etiket: rastgele ? const _RandomOriginTag() : null,
+      ),
+    );
+    return GestureDetector(
+      onTap: onOpen,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: rastgele
+            ? Stack(children: [
+                kart,
+                // Web `border-l-[3px] border-l-accent`.
+                const Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 3,
+                  child: DecoratedBox(
+                    key: Key('rastgele-cizgi'),
+                    decoration: BoxDecoration(
+                      color: _accent,
+                      borderRadius:
+                          BorderRadius.horizontal(left: Radius.circular(6)),
+                    ),
+                  ),
+                ),
+              ])
+            : kart,
       ),
     );
   }
+}
+
+/// Web `isRandomOrigin` zemini `bg-[#EEF4FF]` — Tailwind ARBITRARY değer,
+/// `tailwind.config.js`te token DEĞİL; bu yüzden `tokens.dart`a girmez
+/// (`color_tokens_test` ↔ tailwind eşitliği bozulmasın). Tek kaynak burası.
+const Color kRandomOriginBg = Color(0xFFEEF4FF);
+
+/// "RASTGELE" etiketi: 8 px mono kalın büyük harf, accent yazı, beyaz zemin,
+/// accent %30 çerçeve, pill. Web: `rounded-full border border-accent/30
+/// bg-white px-1.5 font-mono text-[8px] leading-[13px]`.
+class _RandomOriginTag extends StatelessWidget {
+  const _RandomOriginTag();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        key: const Key('rastgele-etiket'),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: _accent.withValues(alpha: 0.3)),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: const Text(
+          'RASTGELE',
+          style: TextStyle(
+            fontFamily: 'SpaceMono',
+            fontSize: 8,
+            height: 13 / 8,
+            letterSpacing: 0.5,
+            fontWeight: FontWeight.bold,
+            color: _accent,
+          ),
+        ),
+      );
 }
 
 /// Üçgenin ve noktanın yazıdan uzaklığı — web `TurnTriangle`/`TurnDot` ile
