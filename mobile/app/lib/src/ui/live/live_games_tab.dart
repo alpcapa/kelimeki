@@ -44,7 +44,6 @@ import '../rank/rank_seal.dart';
 import '../setup/recent_games_section.dart';
 import '../friends/friends_modal.dart'
     show showFriendInfoDialog, kFriendActionFailed;
-import 'friend_suggest_modal.dart';
 import 'guest_live_sheet.dart';
 import '../../util/live_game_request.dart';
 import 'live_game_create_form.dart';
@@ -451,28 +450,12 @@ class _LiveGamesTabState extends State<LiveGamesTab>
 
   Future<void> _handleRespond(OnlineGame game, bool accept) async {
     final repo = services.onlineGames;
-    final friends = services.friends;
     final inviteId = game.myInviteId;
     if (repo == null || inviteId == null) return;
     setState(() => _busyInviteId = inviteId);
     try {
       await repo.respondInvite(inviteId, accept: accept);
-      if (accept && friends != null && mounted) {
-        // Henüz arkadaş olunmayan katılımcılara toplu istek önerisi (web).
-        final candidates = [
-          for (final s in game.slots)
-            if (s.isHuman &&
-                s.relation != 'self' &&
-                s.relation != 'accepted' &&
-                s.userId != null)
-              SuggestCandidate(
-                  userId: s.userId!, name: s.name, avatarUrl: s.avatarUrl),
-        ];
-        if (candidates.isNotEmpty) {
-          await showFriendSuggestModal(context,
-              friends: friends, candidates: candidates);
-        }
-      }
+      // Arkadaş önerisi artık davet kabulünde DEĞİL, oyun BİTİNCE (OnlineGameScreen).
       await _reload(); // web: busy göstergesi liste tazelenene dek kalır
     } catch (e) {
       // Kullanıcı bir davete KABUL ET/REDDET dedi; hata yalnızca loglanırsa

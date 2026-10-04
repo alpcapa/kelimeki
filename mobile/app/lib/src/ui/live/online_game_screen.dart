@@ -79,6 +79,8 @@ import '../loading_note.dart';
 import '../tokens.dart';
 import '../game/invasion_confirm.dart';
 import '../../util/chat_read.dart';
+import '../../util/friend_suggest.dart';
+import 'friend_suggest_modal.dart';
 import '../../util/offline_notice.dart';
 import '../../util/uuid.dart';
 import '../../util/online_status.dart';
@@ -312,6 +314,29 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   String? _lastPlacedSignature;
   List<OnlineMoveRow> _moves = const [];
   bool _gameOverShown = false;
+
+  /// Oyun sonu arkadaş önerisi (4 Ekim 2026) — GameOver kapanınca, arkadaşı
+  /// OLMAYAN insan katılımcılar varsa bir kez sorulur. Web ikizi:
+  /// `OnlineGameScreen.tsx` (`friendSuggestCandidates`).
+  Future<void> _askFriendSuggest() async {
+    final repo = widget.friends;
+    final storageFuture = widget.storage;
+    if (repo == null || storageFuture == null) return;
+    final flags = (await storageFuture).flags;
+    if (flags.friendSuggestAskedGame == widget.game.id) return;
+    final rows = await repo.friends();
+    if (rows == null || !mounted) return;
+    final candidates = friendSuggestCandidates(
+        widget.game.slots, widget.myUserId, {for (final r in rows) r.friendId});
+    if (candidates.isEmpty) return;
+    await flags.markFriendSuggestAsked(widget.game.id);
+    if (!mounted) return;
+    await showFriendSuggestModal(context, friends: repo, candidates: [
+      for (final s in candidates)
+        SuggestCandidate(
+            userId: s.userId!, name: s.name, avatarUrl: s.avatarUrl)
+    ]);
+  }
 
   // Web aiTriggeringRef/timeoutCheckingRef: aynı sekmenin ardışık
   // refresh'lerinin henüz sonuçlanmamış aynı isteği tekrar tetiklemesini
@@ -1855,6 +1880,8 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
                     myIndex: _mySlot),
                 onFeedback: auth == null ? null : openFeedback,
                 celebration: kutlama);
+            if (!mounted || !context.mounted) return;
+            await _askFriendSuggest();
           });
         }
 

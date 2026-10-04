@@ -1,4 +1,4 @@
-// Davet kabulü sonrası "bu kişileri arkadaş ekle" önerisi —
+// Oyun SONUNDA (4 Ekim 2026; önceden davet kabulünde) "bu oyuncuları arkadaş ekle" önerisi, Devam/Vazgeç —
 // src/components/FriendSuggestModal.tsx portu. Karşılıklı istekler sunucu
 // trigger'ıyla otomatik kabul olur (web'in aynı notu); tekil hatalar (zaten
 // bekleyen istek → unique violation) sessizce yutulur, diğerlerini
@@ -103,7 +103,7 @@ class _FriendSuggestModalState extends State<FriendSuggestModal> {
                 ]
               : [
                   const Text(
-                      'Bu kişileri arkadaşın olarak eklemek ister misin?',
+                      'Bu oyuncuları arkadaş olarak eklemek ister misin?',
                       style:
                           TextStyle(fontSize: 13, height: 1.5, color: _text)),
                   const SizedBox(height: 12),
@@ -140,14 +140,29 @@ class _FriendSuggestModalState extends State<FriendSuggestModal> {
                     ),
                   ],
                   const SizedBox(height: 8),
-                  NeoButton(
-                    label: _busy ? '…' : 'DEVAM',
-                    variant: NeoButtonVariant.accent,
-                    fontSize: 11,
-                    letterSpacing: 1,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    onPressed: _busy ? null : _continue,
-                  ),
+                  Row(children: [
+                    Expanded(
+                      child: NeoButton(
+                        label: 'VAZGEÇ',
+                        fontSize: 11,
+                        letterSpacing: 1,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        onPressed:
+                            _busy ? null : () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: NeoButton(
+                        label: _busy ? '…' : 'DEVAM',
+                        variant: NeoButtonVariant.accent,
+                        fontSize: 11,
+                        letterSpacing: 1,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        onPressed: _busy ? null : _continue,
+                      ),
+                    ),
+                  ]),
                 ],
         ),
       ),
