@@ -26,11 +26,13 @@ import {
   filledSeatCount,
   isOpenSeat,
   isRealAiSeat,
+  myRandomToListing,
   myWaitingRandomGames,
   randomManagedIds,
   randomSeatCount,
   removeSeatAt,
   seatsLeftLabel,
+  stripListings,
   toggleFriendSeat,
   usesRandomSeat,
   visibleListings,
@@ -227,9 +229,42 @@ async function main() {
     open_seats: 1,
   });
   check(
-    'id ile tekilleştirir, kendi ilanımı ve içinde olduğum oyunu çıkarır, sırayı korur',
-    ids(visibleListings([L('a', 'x'), L('b', 'u1'), L('a', 'x'), L('c', 'y'), L('d', 'z')], 'u1', new Set(['d']))) === 'a,c',
+    'id ile tekilleştirir, dışlananı (excludeIds) çıkarır, sırayı korur; kendi ilanımı creator_id\'ye bakıp ÇIKARMAZ',
+    ids(visibleListings([L('a', 'x'), L('b', 'u1'), L('a', 'x'), L('c', 'y'), L('d', 'z')], new Set(['d']))) === 'a,b,c',
   );
+  // §15: benim ilanım şeritte
+  const mine1: MyRandomGame = {
+    ...mr('m1', 'creator'),
+    created_at: '2026-10-04T09:00:00Z',
+    slots: [{ type: 'human', user_id: 'u1', name: 'Ben', avatar_url: 'a.png', relation: 'self' }, { type: 'open' }],
+  };
+  const mine2: MyRandomGame = {
+    ...mr('m2', 'random'),
+    created_by: 'u2',
+    player_count: 4,
+    open_seats: 1,
+    created_at: '2026-10-04T10:00:00Z',
+    slots: [
+      { type: 'human', user_id: 'u2', name: 'Kurucu', avatar_url: null },
+      { type: 'human', user_id: 'u1', via: 'random', invite_status: 'accepted', relation: 'self' },
+      { type: 'human', user_id: 'u9', invite_status: 'pending' },
+      { type: 'open' },
+    ],
+  };
+  const l1 = myRandomToListing(mine1);
+  check('benim kartım: kurucu adı/avatarı + koltuklar [creator, open]', l1.creator_name === 'Ben' && l1.creator_avatar_url === 'a.png' && l1.seats.join() === 'creator,open' && l1.open_seats === 1);
+  const l2 = myRandomToListing(mine2);
+  check('kabul ettiğim ilan: kurucu slots\'tan, koltuklar [creator, filled, invited, open]', l2.creator_name === 'Kurucu' && l2.seats.join() === 'creator,filled,invited,open', l2.seats.join());
+  check('koltuk: gerçek YZ → ai, maske → open', myRandomToListing({ ...mine1, slots: [ME, { type: 'ai' }, OPEN_MASK] }).seats.join() === 'creator,ai,open');
+  check('eylem rolü: creator → creator (İptal), random → random (Ayrıl)', l1.mine === 'creator' && l2.mine === 'random');
+  const strip = stripListings([L('a', 'x'), L('m1', 'u1'), L('c', 'y'), L('a', 'x')], [mine1, mine2, mr('f', 'friend'), mr('x', 'creator', 'active')]);
+  check('şeritte benim ilanım VAR; benimkiler ÖNCE (en yeni önce), sonra başkaları', ids(strip) === 'm2,m1,a,c', ids(strip));
+  check('yinelenme yok: sunucu listesindeki kendi id\'m düşer, benim kartım kazanır', strip.filter((x) => x.id === 'm1').length === 1 && strip.find((x) => x.id === 'm1')?.mine === 'creator');
+  check('Kabul YOK = yalnızca mine olmayan kartlar kabul edilebilir (a, c)', strip.filter((x) => !x.mine).map((x) => x.id).join() === 'a,c');
+  check('yalnız benim ilanım varken şerit görünür (başkaları boş)', ids(stripListings([], [mine1])) === 'm1');
+  check('ilan yok → şerit boş', stripListings([], []).length === 0 && stripListings([], null).length === 0);
+  check('başlık sayısı benimkileri de sayar', stripListings([L('a', 'x')], [mine1]).length === 2);
+  check('arkadaş/aktif oyun şeritte çıkmaz (başkaları listesinde olsa bile)', ids(stripListings([L('f', 'x'), L('x', 'y')], [mr('f', 'friend'), mr('x', 'creator', 'active')])) === '');
   check('"N koltuk kaldı" (zaman YOK)', seatsLeftLabel(1) === '1 koltuk kaldı' && seatsLeftLabel(3) === '3 koltuk kaldı');
 
   // ── 5) Esnek kadro ────────────────────────────────────────────────────────
@@ -291,6 +326,9 @@ async function main() {
   }
   const tab = readFileSync('src/components/LiveGamesTab.tsx', 'utf8');
   check('LiveGamesTab kovaları classifyLiveGames\'ten alıyor', /classifyLiveGames\(/.test(tab) && /randomManagedIds\(/.test(tab));
+
+  const strip8 = readFileSync('src/components/RandomGamesStrip.tsx', 'utf8');
+  check('şerit "Bekliyor" etiketi + İptal/Ayrıl içeriyor; LiveGamesTab handleLeaveRandom\'u geçiriyor', /Bekliyor/.test(strip8) && /'İptal'/.test(strip8) && /onLeaveMine=\{/.test(tab));
 
   console.log(failures === 0 ? '\nTümü geçti.' : `\n${failures} kontrol düştü.`);
   process.exit(failures === 0 ? 0 : 1);
