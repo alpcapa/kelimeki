@@ -184,8 +184,8 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
               // diye. Bkz. `_kOhpColumnWidth`.
               width: _kOhpColumnWidth,
               align: Alignment.center,
-              child:
-                  _HeadLabel('OHP', align: TextAlign.center, underline: true),
+              child: _HeadLabel('OHP',
+                  align: TextAlign.center, underline: true),
             ),
           ),
         ),
@@ -196,7 +196,9 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
   @override
   void initState() {
     super.initState();
-    widget.stats.leaderboard(limit: _initialPageSize, offset: 0).then((rows) {
+    widget.stats
+        .leaderboard(limit: _initialPageSize, offset: 0)
+        .then((rows) {
       if (!mounted) return;
       setState(() {
         _rows = rows;

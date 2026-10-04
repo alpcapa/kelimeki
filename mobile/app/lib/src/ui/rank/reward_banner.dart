@@ -243,10 +243,7 @@ class _RewardBannerState extends State<RewardBanner>
                     // için devreye girdiğinden kutlama başlıklarını hiç
                     // etkilemiyor. Projedeki diğer altı emoji kullanım
                     // yeriyle aynı liste.
-                    fontFamilyFallback: [
-                      'Noto Color Emoji',
-                      'Apple Color Emoji'
-                    ],
+                    fontFamilyFallback: ['Noto Color Emoji', 'Apple Color Emoji'],
                     color: kText),
               ),
               if (rankDown != null)

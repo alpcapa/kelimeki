@@ -35,8 +35,7 @@ const double kSealCy = 16.6;
 const double kSealTipR = 15;
 const double kSealValleyR = 12.675; // 0.845 × uç — referanstaki dalga derinliği
 const int kSealLobes = 14;
-const double kSealEdgeW =
-    2; // yuvarlatma: StrokeJoin.round ile lob uçları yumuşar
+const double kSealEdgeW = 2; // yuvarlatma: StrokeJoin.round ile lob uçları yumuşar
 const double kSealRingR = 11;
 const double kSealRingW = 1.3;
 

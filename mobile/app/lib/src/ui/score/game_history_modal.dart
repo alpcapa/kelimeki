@@ -177,7 +177,6 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
 
   /// Hedef karta kaydırmak için: id → o kartın anahtarı.
   final _entryKeys = <String, GlobalKey>{};
-
   /// Kart içindeki küçük ikonların kutularını ölçmek için (bkz.
   /// `icon_tap_rescue.dart`) — kart anahtarlarıyla aynı ömür.
   final _iconKeys =
@@ -435,8 +434,7 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
         widget.games.gateway.currentUserId != null &&
         OnlineGamesScope.maybeOf(context) != null;
     await showActionSheet(context, actions: [
-      ActionSheetItem(
-          label: 'Paylaş', onSelect: () => unawaited(_share(entry))),
+      ActionSheetItem(label: 'Paylaş', onSelect: () => unawaited(_share(entry))),
       if (canRematch)
         ActionSheetItem(
             label: 'Tekrar Oyna',
@@ -573,95 +571,95 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
 
   Widget _buildList(List<GameHistoryEntry>? entries) {
     return entries == null
-        ? const KLoadingNote()
-        : entries.isEmpty
-            ? Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Center(
-                  child: Text(
-                      _loadFailed
-                          ? 'Oyun geçmişi yüklenemedi. Bağlantını kontrol '
-                              'edip tekrar dene.'
-                          : _favoritesOnly
-                              ? (widget.isMe
-                                  ? 'Henüz favori işaretlediğin bir oyun yok.'
-                                  : 'Bu oyuncunun henüz favori işaretlediği bir oyun yok.')
-                              : 'Henüz kayıtlı bir oyunun yok.',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontFamily: 'SpaceMono',
-                          fontSize: 12,
-                          color: _muted)),
-                ),
-              )
-            : ConstrainedBox(
-                constraints: BoxConstraints(
-                    maxHeight: MediaQuery.sizeOf(context).height * 0.6),
-                child: ListView.builder(
-                  controller: _scrollController,
-                  shrinkWrap: true,
-                  itemCount: entries.length + (_hasMore ? 1 : 0),
-                  itemBuilder: (context, i) {
-                    if (i >= entries.length) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Center(
-                          child: Text(_loadingMore ? 'Yükleniyor…' : '',
-                              style: const TextStyle(
-                                  fontFamily: 'SpaceMono',
-                                  fontSize: 10,
-                                  color: _muted)),
+          ? const KLoadingNote()
+          : entries.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                        _loadFailed
+                            ? 'Oyun geçmişi yüklenemedi. Bağlantını kontrol '
+                                'edip tekrar dene.'
+                            : _favoritesOnly
+                                ? (widget.isMe
+                                    ? 'Henüz favori işaretlediğin bir oyun yok.'
+                                    : 'Bu oyuncunun henüz favori işaretlediği bir oyun yok.')
+                                : 'Henüz kayıtlı bir oyunun yok.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontFamily: 'SpaceMono',
+                            fontSize: 12,
+                            color: _muted)),
+                  ),
+                )
+              : ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxHeight: MediaQuery.sizeOf(context).height * 0.6),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    shrinkWrap: true,
+                    itemCount: entries.length + (_hasMore ? 1 : 0),
+                    itemBuilder: (context, i) {
+                      if (i >= entries.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Center(
+                            child: Text(_loadingMore ? 'Yükleniyor…' : '',
+                                style: const TextStyle(
+                                    fontFamily: 'SpaceMono',
+                                    fontSize: 10,
+                                    color: _muted)),
+                          ),
+                        );
+                      }
+                      final e = entries[i];
+                      return _EntryCard(
+                        // Kaydırma hedefi olabilmesi için sabit anahtar.
+                        key: _entryKeys.putIfAbsent(e.id, GlobalKey.new),
+                        // Küçük ikonların kutularını ÇALIŞMA ZAMANINDA
+                        // ölçebilmek için kalıcı anahtarlar (bkz.
+                        // `icon_tap_rescue.dart`). `_entryKeys` ile aynı
+                        // önbellek deseni — her yeniden çizimde yenisini
+                        // üretmek GlobalKey sözleşmesini bozardı.
+                        iconKeys: _iconKeys.putIfAbsent(
+                            e.id,
+                            () => (
+                                  like: GlobalKey(),
+                                  chat: GlobalKey(),
+                                  moves: GlobalKey(),
+                                )),
+                        captureKey: _expandedId == e.id ? _captureKey : null,
+                        entry: e,
+                        currentName: widget.currentName,
+                        // Favoriler listesinde bir satır, görüntüleyenin
+                        // SAHİP OLMADIĞI bir oyuna ait olabilir (başkasının
+                        // kartından beğenilmiş) — o durumda entry.rank/
+                        // player_score o satırın gerçek sahibine ait
+                        // olduğundan "ben" hesaplamak yanlış oyuncuyu
+                        // vurgulardı (web'in aynı koruması).
+                        isMyRow: widget.isMe &&
+                            (widget.games.gateway.currentUserId == null ||
+                                e.userId == widget.games.gateway.currentUserId),
+                        expanded: _expandedId == e.id,
+                        snapshotLoading: _snapshotLoadingId == e.id,
+                        snapshotFetched: _snapshots.containsKey(e.id),
+                        snapshot: _snapshots[e.id],
+                        onTap: () => _toggleBoard(e),
+                        onToggleLike: () => _toggleLike(e),
+                        onShowLikers: () => _showLikers(e),
+                        onShowChat: () => showGameChatHistory(
+                          context,
+                          games: widget.games,
+                          gameId: e.id,
+                          onlineGameId: e.onlineGameId,
                         ),
+                        onShowMoves: () => _showMoves(e),
+                        movesLoading: _movesLoadingId == e.id,
+                        onTapBoard: () => _openBoardSheet(e),
                       );
-                    }
-                    final e = entries[i];
-                    return _EntryCard(
-                      // Kaydırma hedefi olabilmesi için sabit anahtar.
-                      key: _entryKeys.putIfAbsent(e.id, GlobalKey.new),
-                      // Küçük ikonların kutularını ÇALIŞMA ZAMANINDA
-                      // ölçebilmek için kalıcı anahtarlar (bkz.
-                      // `icon_tap_rescue.dart`). `_entryKeys` ile aynı
-                      // önbellek deseni — her yeniden çizimde yenisini
-                      // üretmek GlobalKey sözleşmesini bozardı.
-                      iconKeys: _iconKeys.putIfAbsent(
-                          e.id,
-                          () => (
-                                like: GlobalKey(),
-                                chat: GlobalKey(),
-                                moves: GlobalKey(),
-                              )),
-                      captureKey: _expandedId == e.id ? _captureKey : null,
-                      entry: e,
-                      currentName: widget.currentName,
-                      // Favoriler listesinde bir satır, görüntüleyenin
-                      // SAHİP OLMADIĞI bir oyuna ait olabilir (başkasının
-                      // kartından beğenilmiş) — o durumda entry.rank/
-                      // player_score o satırın gerçek sahibine ait
-                      // olduğundan "ben" hesaplamak yanlış oyuncuyu
-                      // vurgulardı (web'in aynı koruması).
-                      isMyRow: widget.isMe &&
-                          (widget.games.gateway.currentUserId == null ||
-                              e.userId == widget.games.gateway.currentUserId),
-                      expanded: _expandedId == e.id,
-                      snapshotLoading: _snapshotLoadingId == e.id,
-                      snapshotFetched: _snapshots.containsKey(e.id),
-                      snapshot: _snapshots[e.id],
-                      onTap: () => _toggleBoard(e),
-                      onToggleLike: () => _toggleLike(e),
-                      onShowLikers: () => _showLikers(e),
-                      onShowChat: () => showGameChatHistory(
-                        context,
-                        games: widget.games,
-                        gameId: e.id,
-                        onlineGameId: e.onlineGameId,
-                      ),
-                      onShowMoves: () => _showMoves(e),
-                      movesLoading: _movesLoadingId == e.id,
-                      onTapBoard: () => _openBoardSheet(e),
-                    );
-                  },
-                ),
-              );
+                    },
+                  ),
+                );
   }
 }
 
@@ -782,8 +780,7 @@ class _LikersModal extends StatelessWidget {
                       behavior: HitTestBehavior.opaque,
                       child: Row(
                         children: [
-                          KAvatar(
-                              url: l.avatarUrl, name: l.shortName, size: 22),
+                          KAvatar(url: l.avatarUrl, name: l.shortName, size: 22),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(l.shortName,
@@ -979,21 +976,21 @@ class _EntryCard extends StatelessWidget {
                         child: KeyedSubtree(
                           key: iconKeys.like,
                           child: Padding(
-                            padding: const EdgeInsets.only(right: 2),
-                            child: Icon(
-                              entry.likedByMe
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              size: 13,
-                              // Web: `entry.liked_by_me ? 'text-red' :
-                              // 'text-muted'` — beğenilen kalp KIRMIZI.
-                              // Port ikonun DOLU/BOŞ hâlini taşımış ama
-                              // rengi koşulsuz `_muted` bırakmıştı, yani
-                              // beğeni yapınca kalp doluyor ama gri kalıyordu
-                              // (9 Ağustos 2026, cihaz testinde bulundu).
-                              color: entry.likedByMe ? _red : _muted,
-                            ),
+                          padding: const EdgeInsets.only(right: 2),
+                          child: Icon(
+                            entry.likedByMe
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            size: 13,
+                            // Web: `entry.liked_by_me ? 'text-red' :
+                            // 'text-muted'` — beğenilen kalp KIRMIZI.
+                            // Port ikonun DOLU/BOŞ hâlini taşımış ama
+                            // rengi koşulsuz `_muted` bırakmıştı, yani
+                            // beğeni yapınca kalp doluyor ama gri kalıyordu
+                            // (9 Ağustos 2026, cihaz testinde bulundu).
+                            color: entry.likedByMe ? _red : _muted,
                           ),
+                        ),
                         ),
                       ),
                       if (entry.likeCount > 0)
@@ -1027,7 +1024,8 @@ class _EntryCard extends StatelessWidget {
                       if (isOnline) ...[
                         const SizedBox(width: 6),
                         const _Badge(text: 'Canlı', color: _green),
-                      ] else if (hasSnapshot && players.any((p) => p.isAi)) ...[
+                      ] else if (hasSnapshot &&
+                          players.any((p) => p.isAi)) ...[
                         const SizedBox(width: 6),
                         const _Badge(text: 'Yapay Zeka', color: _accent),
                       ],
@@ -1039,8 +1037,8 @@ class _EntryCard extends StatelessWidget {
                       if (!isOnline) ...[
                         const SizedBox(width: 6),
                         AiLevelBadge(
-                            level:
-                                aiLevelForBadge(entry.aiLevel, isAiGame: true)),
+                            level: aiLevelForBadge(entry.aiLevel,
+                                isAiGame: true)),
                       ],
                       if (entry.messageCount > 0) ...[
                         const SizedBox(width: 6),
@@ -1051,18 +1049,18 @@ class _EntryCard extends StatelessWidget {
                           child: KeyedSubtree(
                             key: iconKeys.chat,
                             child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.chat_bubble_outline,
-                                    size: 11, color: _muted),
-                                const SizedBox(width: 2),
-                                Text('${entry.messageCount}',
-                                    style: const TextStyle(
-                                        fontFamily: 'SpaceMono',
-                                        fontSize: 9,
-                                        color: _muted)),
-                              ],
-                            ),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.chat_bubble_outline,
+                                  size: 11, color: _muted),
+                              const SizedBox(width: 2),
+                              Text('${entry.messageCount}',
+                                  style: const TextStyle(
+                                      fontFamily: 'SpaceMono',
+                                      fontSize: 9,
+                                      color: _muted)),
+                            ],
+                          ),
                           ),
                         ),
                       ],
@@ -1108,20 +1106,19 @@ class _EntryCard extends StatelessWidget {
                             child: KeyedSubtree(
                               key: iconKeys.moves,
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 4, vertical: 1),
-                                child: movesLoading
-                                    // Sohbet rozetiyle aynı 11px kutuda kalır ki
-                                    // yükleme sırasında satır kaymasın.
-                                    ? const SizedBox(
-                                        width: 11,
-                                        height: 11,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 1.5, color: _muted),
-                                      )
-                                    : const DocumentIcon(
-                                        size: 11, color: _muted),
-                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 1),
+                              child: movesLoading
+                                  // Sohbet rozetiyle aynı 11px kutuda kalır ki
+                                  // yükleme sırasında satır kaymasın.
+                                  ? const SizedBox(
+                                      width: 11,
+                                      height: 11,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 1.5, color: _muted),
+                                    )
+                                  : const DocumentIcon(size: 11, color: _muted),
+                            ),
                             ),
                           ),
                         ),

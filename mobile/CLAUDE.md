@@ -53,6 +53,11 @@ Commit'ten önce, sırayla:
    dokümana girdi.
 4. **`README.md`**: mobil ağacı/durum cümlesi hâlâ doğru mu? ("iskelet"
    gibi bir niteleme üç faz sonra bayatlamıştı.)
+4b. **`dart format` YALNIZCA kendi değiştirdiğin dosyalara** (4 Ekim 2026): klasöre/depoya toplu
+   `dart format` çalıştırmak ilgisiz 13 dosyayı yeniden biçimlendirdi ve kaynağın YAPISINI okuyan iki testi
+   (`layout_parity_test` "RankSeal geometrisi" → `kSealEdgeW` ayrıştırıcısı, `tap_target_test` 200 karakterlik
+   pencere taraması) kırdı; "eskiden beri var" sanıldı, oysa temiz `main`'de ikisi de geçiyordu. Bir test
+   kırmızıysa önce **temiz `origin/main`'de koş** (git worktree), sonra "bana ait değil" de.
 5. Motor dosyası değiştiyse golden vector akışı (aşağıdaki bölüm), asset
    üreticisi değiştiyse ilgili `npm run generate-*` — ikisi de opsiyonel
    değil.

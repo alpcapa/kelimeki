@@ -59,9 +59,8 @@ class _Cell {
     _Cell('En Yüksek Puanlı Kelime', '${s?.bestWordScore ?? 0}', color: _gold),
     // "(OHP)" — k-lig listesindeki OHP sütunuyla AYNI sayı olduğunu söyleyen
     // tek ipucu bu (kullanıcı isteği, 20 Ağustos 2026; web ile birebir).
-    _Cell(
-        'Ortalama Hamle Puanı (OHP)', (s?.avgMoveScore ?? 0).toStringAsFixed(2),
-        color: _accent),
+    _Cell('Ortalama Hamle Puanı (OHP)',
+        (s?.avgMoveScore ?? 0).toStringAsFixed(2), color: _accent),
     _Cell('En Uzun Kelime', s?.longestWord ?? '—', span2: true),
   ];
   return (player: player, game: game);
@@ -97,7 +96,8 @@ class ScoreTabsBar extends StatelessWidget {
                   color: tab == t ? _accent : _panel,
                   borderColor: tab == t ? _accent : _border,
                   radius: 6,
-                  shadows: tab == t ? kRaisedAccentShadows : kRaisedShadows,
+                  shadows:
+                      tab == t ? kRaisedAccentShadows : kRaisedShadows,
                 ),
                 child: Column(
                   children: [

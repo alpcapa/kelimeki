@@ -75,15 +75,11 @@ const Map<String, String> _olcusuzIstisnalar = {
   'auth/legal_modals.dart': 'akan paragrafın İÇİNDEKİ link (WidgetSpan)',
   'chat/chat_thread.dart': 'her baloncuktaki 9 puntoluk moderasyon rozeti',
   'friends/friends_modal.dart': 'liste satırı — boyu avatardan',
-  // 4 Ekim 2026 (Rastgele Oyuncu): boş koltuk ve "?" koltuk kartı TAMAMI
-  // dokunulabilir (web'de de kartın kendisi `<button>`); boyu 36 px avatar +
-  // dolgulu kutudan (≥56 px) — küçük bir metin değil. Bu satır önceden
-  // taramadan YANLIŞLIKLA geçiyordu: bir sonraki metodun `TapTarget(`i 200
-  // karakterlik pencereye giriyordu; araya yorum girince pencere kaydı.
-  'live/live_game_create_form.dart': 'boş koltuk / "?" koltuk kartı — '
-      'boyu avatar + dolgulu kutudan',
   'game/board_widget.dart': 'tahta hücresi — ızgara ölçüsü kuralın kendisi',
   'game/neo_button.dart': 'kendi dolgulu kutusunu çizen buton',
+  // 4 Ekim 2026 (Rastgele Oyuncu): boş koltuk ve "?" koltuk kartı TAMAMI dokunulabilir (web'de de kartın
+  // kendisi `<button>`); boyu 36 px avatar + dolgulu kutudan (≥56 px) — küçük bir metin değil.
+  'live/live_game_create_form.dart': 'boş koltuk / "?" koltuk kartı — boyu avatar + dolgulu kutudan',
   'game/rack_widget.dart': 'raf taşı — boyu taşın kendisi',
   'rank/rank_header_seal.dart': 'başlıktaki 34 px mühür; bilgi kısayolu',
   'score/game_history_modal.dart': 'liste satırı, tahta önizlemesi ve '
@@ -155,8 +151,7 @@ Size _tapBox(WidgetTester t, Finder inner, String label) {
   // yukarıdaki alakasız bir GestureDetector'ı ölçme riski taşıyordu.)
   final f = find.ancestor(
     of: inner,
-    matching:
-        find.byWidgetPredicate((w) => w is GestureDetector || w is InkWell),
+    matching: find.byWidgetPredicate((w) => w is GestureDetector || w is InkWell),
   );
   if (f.evaluate().isNotEmpty) return t.getSize(f.first);
   fail('$label: çevresinde GestureDetector/InkWell YOK — '
@@ -189,8 +184,7 @@ void main() {
 
   tearDownAll(() {
     // ignore: avoid_print
-    print(
-        '\n=== DOKUNMA HEDEFİ ÖLÇÜMLERİ (390×844) ===\n${_rapor.join('\n')}\n');
+    print('\n=== DOKUNMA HEDEFİ ÖLÇÜMLERİ (390×844) ===\n${_rapor.join('\n')}\n');
   });
 
   // Widget testi DEĞİL: ekranı olmayan yüzeyleri de kapsayan kaynak
@@ -208,8 +202,7 @@ void main() {
         .where((f) => f.path.endsWith('.dart'))) {
       final src = f.readAsStringSync();
       final rel = f.path.split('lib/src/ui/').last;
-      for (final m
-          in RegExp(r'\b(GestureDetector|InkWell)\(').allMatches(src)) {
+      for (final m in RegExp(r'\b(GestureDetector|InkWell)\(').allMatches(src)) {
         final seg = src.substring(
             m.start, m.start + 700 > src.length ? src.length : m.start + 700);
         if (!seg
@@ -219,8 +212,7 @@ void main() {
         }
         if (olcuVeren.hasMatch(seg)) continue;
         if (_olcusuzIstisnalar.containsKey(rel)) continue;
-        bulunan.add(
-            '$rel:${'\n'.allMatches(src.substring(0, m.start)).length + 1}');
+        bulunan.add('$rel:${'\n'.allMatches(src.substring(0, m.start)).length + 1}');
       }
     }
     expect(bulunan, isEmpty,
@@ -249,7 +241,8 @@ void main() {
     _olc(tester, find.text('Yardım'), 'alt şerit: Yardım');
   });
 
-  testWidgets('oyun başlığı: ← Geri (girişsiz — GİRİŞ butonu)', (tester) async {
+  testWidgets('oyun başlığı: ← Geri (girişsiz — GİRİŞ butonu)',
+      (tester) async {
     await setPhoneViewSize(tester, const Size(390, 844));
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
@@ -356,8 +349,7 @@ void main() {
   testWidgets('raf taşı: hedef büyüdü, taş KIPIRDAMADI', (tester) async {
     await setPhoneViewSize(tester, const Size(390, 844));
     final tiles = <Tile>[
-      for (final l in ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
-        Tile(letter: l, pts: 1),
+      for (final l in ['A', 'B', 'C', 'D', 'E', 'F', 'G']) Tile(letter: l, pts: 1),
     ];
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
@@ -401,8 +393,7 @@ void main() {
     for (var i = 0; i < 7; i++) {
       final hedef = tester.getRect(find.byKey(ValueKey('rack-$i')));
       final gorsel = tester.getRect(find.descendant(
-          of: find.byKey(ValueKey('rack-$i')),
-          matching: find.byType(TileWidget)));
+          of: find.byKey(ValueKey('rack-$i')), matching: find.byType(TileWidget)));
       _rapor.add('  ${'raf taşı $i'.padRight(28)} '
           '${hedef.width.toStringAsFixed(1)} × ${hedef.height.toStringAsFixed(1)}'
           '  (görsel ${gorsel.width.toStringAsFixed(1)} × '
@@ -412,11 +403,9 @@ void main() {
       expect(hedef.height, greaterThanOrEqualTo(kMinTapTarget));
       // Görsel: 0,05 px'lik ızgara yuvarlaması dışında birebir aynı.
       final b = gorselBeklenen[i];
-      expect((gorsel.left - b.left).abs(), lessThan(0.05),
-          reason: 'taş $i sol');
+      expect((gorsel.left - b.left).abs(), lessThan(0.05), reason: 'taş $i sol');
       expect((gorsel.top - b.top).abs(), lessThan(0.05), reason: 'taş $i üst');
-      expect((gorsel.right - b.right).abs(), lessThan(0.05),
-          reason: 'taş $i sağ');
+      expect((gorsel.right - b.right).abs(), lessThan(0.05), reason: 'taş $i sağ');
       expect((gorsel.bottom - b.bottom).abs(), lessThan(0.05),
           reason: 'taş $i alt');
     }
@@ -463,9 +452,9 @@ void main() {
     expect(t0.height, closeTo(44.0, 0.05));
     expect(tester.getRect(tiles.at(6)).top - t0.top, closeTo(50.0, 0.05));
 
-    Rect kutu(int i) => tester.getRect(find
-        .ancestor(of: tiles.at(i), matching: find.byType(GestureDetector))
-        .first);
+    Rect kutu(int i) => tester.getRect(
+        find.ancestor(of: tiles.at(i), matching: find.byType(GestureDetector))
+            .first);
     // Dikeyde ARALIKSIZ (eskiden 6 px ölü bant vardı).
     expect(kutu(6).top - kutu(0).bottom, closeTo(0.0, 0.05));
     // Yatayda 6 px BİLEREK duruyor: genişlik zaten 48 ve boşluğu hücreye
@@ -473,7 +462,8 @@ void main() {
     expect(kutu(1).left - kutu(0).right, closeTo(6.0, 0.05));
   });
 
-  testWidgets('joker DÜZENLEME dalı: GERİ AL kılı kıpırdamadı', (tester) async {
+  testWidgets('joker DÜZENLEME dalı: GERİ AL kılı kıpırdamadı',
+      (tester) async {
     // Izgara 6 px uzadı, üstündeki boşluk 6 px kısıldı — düzenleme dalında
     // toplam yükseklik ve buton konumu birebir korunuyor. (Düzenleme
     // OLMAYAN dalda kart 6 px uzuyor; ortalandığı için içerik 3 px yukarı

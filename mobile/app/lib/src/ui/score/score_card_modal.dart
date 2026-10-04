@@ -32,8 +32,8 @@ Future<void> showScoreCard(
 }) {
   return showDialog<void>(
     context: context,
-    builder: (_) => ScoreCardModal(
-        auth: auth, stats: stats, games: games, friends: friends),
+    builder: (_) =>
+        ScoreCardModal(auth: auth, stats: stats, games: games, friends: friends),
   );
 }
 

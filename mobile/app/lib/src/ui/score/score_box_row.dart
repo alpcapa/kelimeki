@@ -43,11 +43,10 @@ class ScoreBoxRow extends StatelessWidget {
       children: [
         for (var i = 0; i < players.length; i++) ...[
           if (i > 0) const SizedBox(width: 6),
-          Expanded(
-              child: _Box(
+          Expanded(child: _Box(
             player: players[i],
-            color:
-                playerColors[seatIndexOf(players[i], i) % playerColors.length],
+            color: playerColors[
+                seatIndexOf(players[i], i) % playerColors.length],
             label: i == meIndex && currentName != null
                 ? currentName!
                 : players[i].name,

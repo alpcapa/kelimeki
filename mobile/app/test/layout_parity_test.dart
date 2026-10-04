@@ -37,7 +37,9 @@ import 'support/web_source.dart';
 
 List<double> _webClamp(String src, String name, String file) {
   final body = pick(
-      src, RegExp("const $name = '(clamp\\([^']+\\))'"), '$file içinde $name');
+      src,
+      RegExp("const $name = '(clamp\\([^']+\\))'"),
+      '$file içinde $name');
   final m = RegExp(
           r'clamp\(\s*(-?[\d.]+)px,\s*calc\(\s*(-?[\d.]+)px\s*\+\s*(-?[\d.]+)vw\s*\),\s*(-?[\d.]+)px\s*\)')
       .firstMatch(body);
@@ -50,8 +52,7 @@ List<double> _dartFluid(String src, String name, String file) {
   final m = RegExp(
           '$name = fluidSize\\(\\w+, (-?[\\d.]+), (-?[\\d.]+), (-?[\\d.]+), (-?[\\d.]+)\\)')
       .firstMatch(src);
-  expect(m, isNotNull,
-      reason: '$file içinde `$name = fluidSize(...)` bulunamadı');
+  expect(m, isNotNull, reason: '$file içinde `$name = fluidSize(...)` bulunamadı');
   return [for (var i = 1; i <= 4; i++) double.parse(m!.group(i)!)];
 }
 
@@ -136,14 +137,13 @@ void main() {
 
   test('GameOver sağ blok sütun genişlikleri', () {
     final web = readRepoFile('src/components/GameOver.tsx');
-    final port =
-        readRepoFile('mobile/app/lib/src/ui/game/game_over_modal.dart');
+    final port = readRepoFile('mobile/app/lib/src/ui/game/game_over_modal.dart');
 
     // Tailwind boşluk birimi 4px: `w-5` = 20px.
     int webKalan = int.parse(
         pick(web, RegExp(r'w-\[(\d+)px\][^"]*">Kalan<'), 'GameOver "Kalan"'));
-    int webToplam = int.parse(
-        pick(web, RegExp(r'w-\[(\d+)px\][^"]*">Toplam<'), 'GameOver "Toplam"'));
+    int webToplam = int.parse(pick(
+        web, RegExp(r'w-\[(\d+)px\][^"]*">Toplam<'), 'GameOver "Toplam"'));
     int webKlig = int.parse(
             pick(web, RegExp(r'w-(\d+)[^"]*">k-lig<'), 'GameOver "k-lig"')) *
         4;
@@ -168,19 +168,15 @@ void main() {
     expect(port, web);
   });
 
-  test(
-      'Canlı liste dayanıklılığı: tekrar gecikmeleri + merdiven + '
+  test('Canlı liste dayanıklılığı: tekrar gecikmeleri + merdiven + '
       'çevrimdışı doğrulama', () {
     // 1) Ağ-özel tekrar (ms)
-    final webRetry = pick(
-            readRepoFile('src/lib/api.ts'),
-            RegExp(r'RETRY_DELAYS_MS = \[([\d, ]+)\]'),
-            'api.ts RETRY_DELAYS_MS')
+    final webRetry = pick(readRepoFile('src/lib/api.ts'),
+            RegExp(r'RETRY_DELAYS_MS = \[([\d, ]+)\]'), 'api.ts RETRY_DELAYS_MS')
         .split(',')
         .map((s) => int.parse(s.trim()))
         .toList();
-    final portApi =
-        readRepoFile('mobile/app/lib/src/data/online_games_api.dart');
+    final portApi = readRepoFile('mobile/app/lib/src/data/online_games_api.dart');
     final retryBlok = pick(portApi,
         RegExp(r'retryDelays = \[(.*?)\];', dotAll: true), 'retryDelays bloğu');
     final portRetry = pickAll(retryBlok, RegExp(r'milliseconds: (\d+)'),
@@ -197,37 +193,30 @@ void main() {
         .split(',')
         .map((s) => int.parse(s.trim()))
         .toList();
-    final portTab =
-        readRepoFile('mobile/app/lib/src/ui/live/live_games_tab.dart');
-    final ladderBlok = pick(
-        portTab,
-        RegExp(r'autoRetrySteps = \[(.*?)\];', dotAll: true),
-        'autoRetrySteps bloğu');
-    final portLadder = pickAll(ladderBlok, RegExp(r'seconds: (\d+)'),
-            'autoRetrySteps içindeki seconds')
+    final portTab = readRepoFile('mobile/app/lib/src/ui/live/live_games_tab.dart');
+    final ladderBlok = pick(portTab,
+        RegExp(r'autoRetrySteps = \[(.*?)\];', dotAll: true), 'autoRetrySteps bloğu');
+    final portLadder = pickAll(
+            ladderBlok, RegExp(r'seconds: (\d+)'), 'autoRetrySteps içindeki seconds')
         .map((s) => int.parse(s) * 1000)
         .toList();
     expect(portLadder, webLadder, reason: 'otomatik merdiven ayrışmış');
 
     // 3) Çevrimdışıya geçişin doğrulanma süresi
-    final webConfirm = int.parse(pick(
-        readRepoFile('src/hooks/useOnlineStatus.ts'),
-        RegExp(r'OFFLINE_CONFIRM_MS = (\d+)'),
-        'useOnlineStatus OFFLINE_CONFIRM_MS'));
+    final webConfirm = int.parse(pick(readRepoFile('src/hooks/useOnlineStatus.ts'),
+        RegExp(r'OFFLINE_CONFIRM_MS = (\d+)'), 'useOnlineStatus OFFLINE_CONFIRM_MS'));
     final portConfirm = int.parse(pick(
         readRepoFile('mobile/app/lib/src/util/online_status.dart'),
         RegExp(r'kOfflineConfirmDelay = Duration\(milliseconds: (\d+)\)'),
         'online_status.dart kOfflineConfirmDelay'));
-    expect(portConfirm, webConfirm,
-        reason: 'çevrimdışı doğrulama süresi ayrışmış');
+    expect(portConfirm, webConfirm, reason: 'çevrimdışı doğrulama süresi ayrışmış');
   });
 
   test('"← Geri" etiketi: punto ve logoyla arası', () {
     final web = readRepoFile('src/components/GameHeader.tsx');
     final port = readRepoFile('mobile/app/lib/src/ui/game/game_header.dart');
     expect(
-        int.parse(
-            pick(port, RegExp(r'kBackFontSize = (\d+)'), 'kBackFontSize')),
+        int.parse(pick(port, RegExp(r'kBackFontSize = (\d+)'), 'kBackFontSize')),
         int.parse(
             pick(web, RegExp(r"BACK_FONT_SIZE = '(\d+)px'"), 'BACK_FONT_SIZE')),
         reason: 'etiket puntosu ayrışmış');
@@ -236,7 +225,8 @@ void main() {
     // AYNISI"). 24 Ağustos–1 Ekim arası ayrı bir dokunulabilir satırdı ve
     // `BACK_GAP` karşılaştırılmıyordu; o satır başlığı web'den 25 px
     // uzatıyor, yatay iPad'de alt düğmeleri ekran dışına itiyordu.
-    expect(int.parse(pick(port, RegExp(r'kBackGap = (\d+)'), 'kBackGap')),
+    expect(
+        int.parse(pick(port, RegExp(r'kBackGap = (\d+)'), 'kBackGap')),
         int.parse(pick(web, RegExp(r'BACK_GAP = (\d+)'), 'BACK_GAP')),
         reason: 'logo ↔ "← Geri" arası ayrışmış');
   });
@@ -276,8 +266,7 @@ void main() {
 
     // Kurdele rengi: kademe renginin bir tık koyusu — katsayı iki tarafta da
     // aynı olmalı, yoksa kurdele sessizce farklı tonda çizilir.
-    final katsayi = double.parse(pick(
-        web,
+    final katsayi = double.parse(pick(web,
         RegExp(r'function darken\(hex: string, f = ([\d.]+)\)'),
         'RankSeal.tsx darken katsayısı'));
     final portKatsayilari = pickAll(port, RegExp(r'\* 255 \* ([\d.]+)\)'),
@@ -301,8 +290,7 @@ void main() {
     // Gövdedeki sayılar SIRAYLA karşılaştırılıyor — eşik ve punto birlikte.
     List<double> merdiven(String src, RegExp bas, String ne) {
       final govde = pick(src, bas, ne);
-      return pickAll(
-              govde, RegExp(r'(?<![\w.])(\d+(?:\.\d+)?)'), '$ne sayıları')
+      return pickAll(govde, RegExp(r'(?<![\w.])(\d+(?:\.\d+)?)'), '$ne sayıları')
           .map(double.parse)
           .toList();
     }
@@ -425,7 +413,8 @@ void main() {
       ('TAP_SLOP_ON_RELEASE', 'kTapSlopOnRelease'),
       ('DRAG_LIFT', 'kDragLift'),
     ]) {
-      expect(pick(dOrtak, RegExp('const double $dartAd = ([\\d.]+);'), dartAd),
+      expect(
+          pick(dOrtak, RegExp('const double $dartAd = ([\\d.]+);'), dartAd),
           pick(ortak, RegExp('export const $webAd = ([\\d.]+);'), webAd),
           reason: '$dartAd ↔ $webAd ayrıştı');
     }
@@ -433,9 +422,7 @@ void main() {
     for (final f in dartFiles) {
       final src = readRepoFile(f);
       expect(
-          pick(
-              src,
-              RegExp(r'distance < (dragThresholdFor\(e\.kind\))\) return;'),
+          pick(src, RegExp(r'distance < (dragThresholdFor\(e\.kind\))\) return;'),
               '$f eşik karşılaştırması pointer türüne bağlı değil'),
           'dragThresholdFor(e.kind)');
       // Yerel kopya YASAK: değer yalnızca ortak dosyada yaşamalı.
@@ -471,9 +458,7 @@ void main() {
             '$web alt şerit kabı — dikey dolgu hâlâ KAPTA mı?'),
         'px-[10px]');
     expect(
-        pick(
-            d,
-            RegExp(r'padding: const (EdgeInsets\.symmetric\(horizontal: 10\))'),
+        pick(d, RegExp(r'padding: const (EdgeInsets\.symmetric\(horizontal: 10\))'),
             '$dart alt şerit kabı yalnızca yatay dolgu taşımıyor'),
         'EdgeInsets.symmetric(horizontal: 10)');
 
@@ -493,26 +478,19 @@ void main() {
             'olmalı (Hamleler, Mesajlaşma, Nasıl Oynanır?)');
     // Tıklanamaz ikisi DİKEY dolgu taşımamalı — taşısaydı 48px'lik satırda
     // ortalanmayıp kayarlardı (22 Ağustos'taki 4/10 asimetrisinin dersi).
-    expect(
-        RegExp(r'EdgeInsets\.fromLTRB\(\d+, \d+, \d+, \d+\)')
-            .allMatches(footer)
-            .length,
-        0,
+    expect(RegExp(r'EdgeInsets\.fromLTRB\(\d+, \d+, \d+, \d+\)')
+        .allMatches(footer).length, 0,
         reason: '$dart: alt şeritte dikey bileşenli bir dolgu kalmış');
 
     // 3) Rozet METİN kutusuna çapalı kalmalı: web'de `relative` iç span'de,
     //    portta Stack TapTarget'ın İÇİNDE. 48px'lik kutuya çapalanırsa
     //    rozet metinden kopup satırın üst kenarına kaçar.
     expect(
-        pick(
-            w,
-            RegExp(r'<span className="(relative flex items-center gap-1)">'),
+        pick(w, RegExp(r'<span className="(relative flex items-center gap-1)">'),
             '$web: rozetin çapası iç `relative` span değil'),
         'relative flex items-center gap-1');
     expect(
-        pick(
-            d,
-            RegExp(r'onTap: onOpenMessaging,[\s\S]{0,400}?child: (Stack)\('),
+        pick(d, RegExp(r'onTap: onOpenMessaging,[\s\S]{0,400}?child: (Stack)\('),
             '$dart: Mesajlaşma\'nın rozeti Stack ile çapalı değil'),
         'Stack');
   });

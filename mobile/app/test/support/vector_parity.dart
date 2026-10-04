@@ -182,8 +182,7 @@ List<String> dartPath(String src) {
         y = startY;
         break;
       default:
-        final off =
-            nums(RegExp(r'Offset\(([^)]*)\)').firstMatch(arg)!.group(1)!);
+        final off = nums(RegExp(r'Offset\(([^)]*)\)').firstMatch(arg)!.group(1)!);
         final r = double.parse(
             RegExp(r'Radius\.circular\(([\d.]+)\)').firstMatch(arg)!.group(1)!);
         final sweep = arg.contains('clockwise: true') ? 1.0 : 0.0;
