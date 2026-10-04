@@ -19,6 +19,7 @@
 import { useEffect, useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
+import { ScrollArea } from './ScrollArea';
 import { fetchBlockedUsers, unblockUser, withdrawChatReports, type BlockedUser } from '../lib/api';
 import { friendlyErrorMessage } from '../utils/errorMessage';
 
@@ -119,7 +120,7 @@ export function BlockedUsersModal({ onClose }: { onClose: (changed: boolean) => 
               Engellediğin kişiler sana oyun daveti ya da arkadaşlık isteği gönderemez ve rastgele eşleşmede karşına
               çıkmaz.
             </p>
-            <div className="flex flex-col gap-2">
+            <ScrollArea className="flex flex-col gap-2 max-h-[55vh]">
               {users.map((u) => (
                 <div key={u.userId} className="flex flex-col gap-2 p-2.5 rounded-md border border-border bg-panel">
                   <div className="flex items-center gap-2">
@@ -156,7 +157,7 @@ export function BlockedUsersModal({ onClose }: { onClose: (changed: boolean) => 
                   )}
                 </div>
               ))}
-            </div>
+            </ScrollArea>
           </>
         )}
       </div>
