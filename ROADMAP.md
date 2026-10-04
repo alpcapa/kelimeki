@@ -872,6 +872,7 @@ roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
   https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed (özel bağlantı).
   **Tıklanabilir prototip** (sahte veri, kod değil; takım kur, oyun aç, kabul
   et, takımsız yol): https://claude.ai/artifact/2NGiuSvkcduFJkdQLVtXGd
+- **Revizyon 17 (4 Ekim 2026, kullanıcı):** bir üyenin teslimi (48 saat dahil) TÜM TAKIMI teslim yapar, oyun hemen biter (4 kişide de); teslim olan takımın iki oyuncusu −2, takım −2; kazanan iki oyuncu +2, takım +2. Ayrıntı: `team-league.md` §3, §8, "Revizyon 17".
 - **Kullanıcı kararları (3 Ekim 2026, kapandı):** S12 eski sürüm: sunucu
   takım oyununda eski hamle çağrısını reddeder, mesaj *"Telefonunuz takım
   oyununu desteklemiyor"* · S13 takımın vergi payı iki ortağa yarı yarıya yazılır
