@@ -410,3 +410,13 @@ işaretle, oyunu bitir; 3 Ekim canlı gövdesi `v_active_count <= 1` ile bitiriy
 gösterebilmeli; (5) Yardım/Koşullar metni: *"takım arkadaşın süresinde oynamazsa takımınız teslim sayılır"* uyarısı
 oyun açma/kabul anında da görünmeli (ilan kartı alt yazısı önerisi, kullanıcıya sorulur); (6) golden vector GEREKMEZ:
 bu SQL kuralıdır, motoru (kopya 1-3) değiştirmez ama SQL aynası (`verify-sql-engine-parity`) kapsamı gözden geçirilir.
+
+## Revizyon 18 (4 Ekim 2026) — takım ilanları Rastgele Oyuncu şeridinde
+
+Kullanıcı kararı: *"Şeritte karışık gözüksünler. 2 kişi, 4 kişi tag'ı yerine Takım yazsın ve kendi renginde olsun.
+Rastgele mavi, takım pembe."* Etki: (1) `online_games.listing='team'` ilanları `list_random_games` şeridinde
+`'random'` ilanlarla KARIŞIK görünür (ayrı şerit YOK); (2) kart etiketi oyuncu sayısı yerine **"Takım"** yazar ve
+pembe (takım rengi, `PlayerBadge`/ScoreCard'daki takım pembesiyle aynı token) olur; Rastgele kartı mavi kalır;
+(3) Devam Edenler'deki kart da aynı kural: rastgele kökenli kart açık mavi + "Rastgele" etiketi (kodda), takım
+kartı pembe + "Takım" etiketi; (4) kapı: `randomGames.ts` ↔ `random_games.dart` aynı PR'da, `verify-random-games`
+takım ilanını da kapsamalı. Kod YOK, Takım Ligi kodlanırken uygulanır.
