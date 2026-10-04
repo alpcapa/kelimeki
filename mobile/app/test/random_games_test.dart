@@ -156,7 +156,8 @@ void main() {
 
     List<String> ids(List<OnlineGame> l) => [for (final g in l) g.id];
 
-    test('kurucu ve kabul eden YALNIZ Devam Edenler\'e: waiting/acceptedWaiting '
+    test(
+        'kurucu ve kabul eden YALNIZ Devam Edenler\'e: waiting/acceptedWaiting '
         'kovalarına GİRMEZ', () {
       final managed = randomManagedIds(
           [mine('k1'), mine('r1', role: 'random', playerCount: 4)], hepsi);
@@ -200,13 +201,14 @@ void main() {
     });
 
     test('açık koltuksuz kurucu oyunu (arkadaş daveti) yönetilmez', () {
-      final g = game(gameRow(
-          id: 'w1', myId: 'me', status: 'pending', myRole: 'creator'));
+      final g = game(
+          gameRow(id: 'w1', myId: 'me', status: 'pending', myRole: 'creator'));
       expect(randomManagedIds(null, [g]), isEmpty);
       expect(randomManagedIds([mine('x', role: 'friend')], [g]), isEmpty);
     });
 
-    test('myWaitingRandomGames: bekleyen creator/random; friend, biten ve '
+    test(
+        'myWaitingRandomGames: bekleyen creator/random; friend, biten ve '
         'null YOK', () {
       final l = myWaitingRandomGames([
         mine('a'),
@@ -221,16 +223,20 @@ void main() {
   });
 
   group('şerit', () {
-    test('visibleListings: id tekilleştirir, kendi ilanımı ve içinde '
+    test(
+        'visibleListings: id tekilleştirir, kendi ilanımı ve içinde '
         'olduğum oyunları çıkarır, sırayı korur', () {
-      final out = visibleListings([
-        listing('a'),
-        listing('b'),
-        listing('a'), // offset sayfalaması aynı satırı iki kez verebilir
-        listing('benim', creator: 'me'),
-        listing('icindeyim'),
-        listing('c'),
-      ], 'me', {'icindeyim'});
+      final out = visibleListings(
+          [
+            listing('a'),
+            listing('b'),
+            listing('a'), // offset sayfalaması aynı satırı iki kez verebilir
+            listing('benim', creator: 'me'),
+            listing('icindeyim'),
+            listing('c'),
+          ],
+          'me',
+          {'icindeyim'});
       expect([for (final l in out) l.id], ['a', 'b', 'c']);
     });
 
@@ -247,9 +253,16 @@ void main() {
     });
 
     test('seatDotFilled: creator/filled/ai dolu; open/invited boş', () {
-      expect(
-          [for (final s in ['creator', 'filled', 'ai', 'open', 'invited']) seatDotFilled(s)],
-          [true, true, true, false, false]);
+      expect([
+        for (final s in ['creator', 'filled', 'ai', 'open', 'invited'])
+          seatDotFilled(s)
+      ], [
+        true,
+        true,
+        true,
+        false,
+        false
+      ]);
     });
 
     test('yoklama sabitleri', () {
@@ -260,15 +273,23 @@ void main() {
   });
 
   group('esnek kadro (kurulum formu)', () {
-    test('addRandomSeat: boş koltuğu "?" yapar; 2 kişide değiştirir, 4 kişide '
-        'doluysa dokunmaz', () {
+    test('addRandomSeat: boş koltuğu "?" yapar; DOLUYSA ve "?" varsa geri alır',
+        () {
       expect(addRandomSeat([], 2), ['?']);
       expect(addRandomSeat(['u1'], 2), ['?'],
-          reason: '2 kişide tek rakip: dolu koltuk DEĞİŞTİRİLİR');
-      expect(addRandomSeat(['?'], 2), ['?']);
+          reason: '2 kişide tek rakip: dolu ARKADAŞ koltuğu DEĞİŞTİRİLİR');
+      expect(addRandomSeat(['?'], 2), isEmpty,
+          reason: '2 kişide "?" seçiliyken tekrar dokunuş GERİ ALIR');
       expect(addRandomSeat([], 4), ['?']);
       expect(addRandomSeat(['?', 'u1'], 4), ['?', 'u1', '?']);
-      expect(addRandomSeat(['u1', 'u2', 'u3'], 4), ['u1', 'u2', 'u3']);
+      expect(addRandomSeat(['?', '?'], 4), ['?', '?', '?'],
+          reason: '×2: boş koltuk var, üçüncüyü ekler');
+      expect(addRandomSeat(['?', '?', '?'], 4), isEmpty,
+          reason: '×3 dolu: dokunuş tüm "?" koltuklarını geri alır');
+      expect(addRandomSeat(['u1', '?', '?'], 4), ['u1'],
+          reason: 'arkadaş korunur, yalnız "?" geri alınır');
+      expect(addRandomSeat(['u1', 'u2', 'u3'], 4), ['u1', 'u2', 'u3'],
+          reason: 'dolu ve "?" yok: 4 kişide etkisiz');
     });
 
     test('toggleFriendSeat: "?" koltukları korunur, 3 sınırı', () {
@@ -350,7 +371,8 @@ void main() {
   });
 
   group('rozet zinciri DEĞİŞMEZ (ilan HABERDİR, bekleyen iş değil)', () {
-    test('yalnız ilanı açık/bekleyen kullanıcıda sayaçlar ve giriş kararı '
+    test(
+        'yalnız ilanı açık/bekleyen kullanıcıda sayaçlar ve giriş kararı '
         'ARTMAZ; ilan listesi sayaç yoluna HİÇ girmez', () async {
       final gw = FakeOnlineGamesGateway()
         ..rows = [
@@ -425,15 +447,15 @@ void main() {
     final webApi = readRepoFile('src/lib/api.ts');
 
     test('sabitler: yoklama aralığı, alt aralık, sayfa boyu, "?" işareti', () {
-      int sayi(String ad) => int.parse(pick(
-          webKurallar,
-          RegExp('export const $ad\\s*=\\s*([0-9_]+)'),
-          ad).replaceAll('_', ''));
+      int sayi(String ad) => int.parse(
+          pick(webKurallar, RegExp('export const $ad\\s*=\\s*([0-9_]+)'), ad)
+              .replaceAll('_', ''));
       expect(kRandomStripPoll.inMilliseconds, sayi('RANDOM_STRIP_POLL_MS'));
-      expect(kRandomStripMinGap.inMilliseconds,
-          sayi('RANDOM_STRIP_MIN_GAP_MS'));
+      expect(
+          kRandomStripMinGap.inMilliseconds, sayi('RANDOM_STRIP_MIN_GAP_MS'));
       expect(kRandomStripLimit, sayi('RANDOM_STRIP_LIMIT'));
-      expect(pick(webKurallar, RegExp(r"RANDOM_SEAT\s*=\s*'(.)'"), 'RANDOM_SEAT'),
+      expect(
+          pick(webKurallar, RegExp(r"RANDOM_SEAT\s*=\s*'(.)'"), 'RANDOM_SEAT'),
           kRandomSeat);
     });
 
@@ -449,7 +471,8 @@ void main() {
         '1 koltuk kaldı',
         'koltuk kaldı',
       ]) {
-        expect(webKurallar.contains(t), isTrue, reason: 'web metni ayrıştı: "$t"');
+        expect(webKurallar.contains(t), isTrue,
+            reason: 'web metni ayrıştı: "$t"');
       }
       for (final t in [
         kRandomStripTitle,
@@ -492,7 +515,8 @@ void main() {
     });
 
     test('RPC adları ve parametreleri: web api.ts ↔ port gateway', () {
-      final dart = readRepoFile('mobile/app/lib/src/data/online_games_api.dart');
+      final dart =
+          readRepoFile('mobile/app/lib/src/data/online_games_api.dart');
       // RPC adları iki tarafta da tırnaklı; parametre adları webde nesne
       // anahtarı (tırnaksız), portta harita anahtarı (tırnaklı).
       for (final t in [

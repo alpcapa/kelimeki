@@ -90,7 +90,8 @@ void main() {
               playerCount: 4,
               seats: ['creator', 'filled', 'open', 'open']),
           // Kendi ilanım: şeritte olmamalı (altta "Bekliyor" satırı).
-          randomListingRow(id: 'benim', creatorId: 'serit1', creatorName: 'Ben'),
+          randomListingRow(
+              id: 'benim', creatorId: 'serit1', creatorName: 'Ben'),
         ];
       await pumpTab(tester, servis('serit1', gw));
 
@@ -127,12 +128,12 @@ void main() {
       expect(h.height, kRandomCardHeight);
       // 3 kart yan yana değil, en az 2 sığıyor ve kenar ipucu için genişlik
       // (listWidth-16)/3.4: yan yana iki kartın SOLU ortak satırda.
-      expect(tester.getTopLeft(kart('a')).dy,
-          tester.getTopLeft(kart('b')).dy);
+      expect(tester.getTopLeft(kart('a')).dy, tester.getTopLeft(kart('b')).dy);
       await bitir(tester);
     });
 
-    testWidgets('liste BOŞSA şerit TAMAMEN gizli (başlık da yok); "Yeni Oyun '
+    testWidgets(
+        'liste BOŞSA şerit TAMAMEN gizli (başlık da yok); "Yeni Oyun '
         'Başlat" kalır', (tester) async {
       final gw = FakeOnlineGamesGateway();
       await pumpTab(tester, servis('serit-bos', gw));
@@ -200,12 +201,13 @@ void main() {
       await bitir(tester);
     });
 
-    testWidgets('KABUL: onay sorulmaz, ileti sonuca göre; ilan şeritten '
+    testWidgets(
+        'KABUL: onay sorulmaz, ileti sonuca göre; ilan şeritten '
         'hemen kalkar', (tester) async {
       final gw = FakeOnlineGamesGateway()
         ..randomRows = [randomListingRow(id: 'a'), randomListingRow(id: 'b')];
-      gw.onAcceptRandom = (id) =>
-          gw.randomRows.removeWhere((r) => r['id'] == id);
+      gw.onAcceptRandom =
+          (id) => gw.randomRows.removeWhere((r) => r['id'] == id);
       await pumpTab(tester, servis('kabul1', gw));
       await tester.tap(find.descendant(
           of: kart('a'), matching: find.widgetWithText(NeoButton, 'KABUL')));
@@ -230,12 +232,13 @@ void main() {
       await bitir(tester);
     });
 
-    testWidgets('KABUL reddi (ör. "Bu oyun doldu."): sunucunun Türkçe metni '
+    testWidgets(
+        'KABUL reddi (ör. "Bu oyun doldu."): sunucunun Türkçe metni '
         'olduğu gibi, ham hata YOK; şerit tazelenir', (tester) async {
       final gw = FakeOnlineGamesGateway()
         ..randomRows = [randomListingRow(id: 'a')]
-        ..acceptRandomError = const PostgrestException(
-            message: 'Bu oyun doldu.', code: 'P0001');
+        ..acceptRandomError =
+            const PostgrestException(message: 'Bu oyun doldu.', code: 'P0001');
       await pumpTab(tester, servis('kabul-red', gw));
       final once = gw.randomListCalls;
       await tester.tap(find.descendant(
@@ -259,8 +262,8 @@ void main() {
           of: kart('a'), matching: find.widgetWithText(NeoButton, 'KABUL')));
       await tester.pumpAndSettle();
       expect(find.textContaining('Gateway Timeout'), findsNothing);
-      expect(find.textContaining('Sunucuya şu anda ulaşılamıyor'),
-          findsOneWidget);
+      expect(
+          find.textContaining('Sunucuya şu anda ulaşılamıyor'), findsOneWidget);
       await bitir(tester);
     });
 
@@ -301,7 +304,8 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets('~40 sn\'de bir yoklar; arka plandayken İSTEK ATILMAZ, öne '
+    testWidgets(
+        '~40 sn\'de bir yoklar; arka plandayken İSTEK ATILMAZ, öne '
         'dönünce bir kez', (tester) async {
       addTearDown(() => tester.binding
           .handleAppLifecycleStateChanged(AppLifecycleState.resumed));
@@ -405,7 +409,8 @@ void main() {
       await bitir(tester);
     });
 
-    testWidgets('kabul eden: "Bekliyor 2/4" + "Ayrıl" → leave_random_game '
+    testWidgets(
+        'kabul eden: "Bekliyor 2/4" + "Ayrıl" → leave_random_game '
         '(ceza yok), "Kabul Ettin" kovasında GÖRÜNMEZ', (tester) async {
       final gw = FakeOnlineGamesGateway()
         ..rows = [
@@ -489,9 +494,7 @@ void main() {
               slots: [
                 slotHuman('kurucu', name: 'Kurucu', relation: 'accepted'),
                 slotHuman('karma1',
-                    name: 'Ironman',
-                    relation: 'self',
-                    inviteStatus: 'pending'),
+                    name: 'Ironman', relation: 'self', inviteStatus: 'pending'),
                 slotOpenMasked,
                 slotAi,
               ]),
@@ -554,7 +557,8 @@ void main() {
       await bitir(tester);
     });
 
-    testWidgets('biten/dolup başlayan oyun normal oyun gibi "Devam Eden '
+    testWidgets(
+        'biten/dolup başlayan oyun normal oyun gibi "Devam Eden '
         'Oyunlar"da (çift satır yok)', (tester) async {
       final gw = FakeOnlineGamesGateway()
         ..rows = [gameRow(id: 'a1', myId: 'dolu1', status: 'active')]
@@ -571,7 +575,8 @@ void main() {
       await bitir(tester);
     });
 
-    testWidgets('süresi dolmuş ilan (expires_at geçmiş) check_invite_expiry '
+    testWidgets(
+        'süresi dolmuş ilan (expires_at geçmiş) check_invite_expiry '
         'ile süpürülür', (tester) async {
       final gw = FakeOnlineGamesGateway()
         ..myRandomRows = [
@@ -630,12 +635,14 @@ void main() {
     final satir = find.byKey(const ValueKey('rastgele-satir'));
     Finder koltuk(int i) => find.byKey(ValueKey('koltuk-rastgele-$i'));
 
-    testWidgets('satır arkadaş listesinin İÇİNDE, ilk satır (ayrı bölüm DEĞİL); '
+    testWidgets(
+        'satır arkadaş listesinin İÇİNDE, ilk satır (ayrı bölüm DEĞİL); '
         'alt yazı ve "?" avatarı', (tester) async {
       await pumpForm(tester);
       expect(satir, findsOneWidget);
       expect(find.text('Rastgele Oyuncu'), findsOneWidget);
-      expect(find.text('Biri kabul edince oyun başlar'), findsOneWidget);
+      expect(
+          find.text('Bunu seçerseniz rasgele oyun açarsınız.'), findsOneWidget);
       expect(find.descendant(of: satir, matching: find.byType(OpenSeatAvatar)),
           findsOneWidget);
       // Kullanıcı (4 Ekim 2026): "diğer arkadaşlar gibi listenin en üstüne,
@@ -644,8 +651,8 @@ void main() {
       expect(tester.getTopLeft(satir).dy,
           greaterThan(tester.getTopLeft(find.byType(TextField)).dy));
       final friend1 = find.byKey(const ValueKey('friend-f1'));
-      expect(tester.getTopLeft(satir).dy,
-          lessThan(tester.getTopLeft(friend1).dy));
+      expect(
+          tester.getTopLeft(satir).dy, lessThan(tester.getTopLeft(friend1).dy));
       expect(
           find.ancestor(
               of: satir, matching: find.byType(SingleChildScrollView)),
@@ -656,7 +663,8 @@ void main() {
           findsWidgets);
     });
 
-    testWidgets('arama kutusuna yazınca satır KAYBOLMAZ; "Tüm oyuncular" '
+    testWidgets(
+        'arama kutusuna yazınca satır KAYBOLMAZ; "Tüm oyuncular" '
         've hiç arkadaşı olmayan hesapta da görünür', (tester) async {
       await pumpForm(tester);
       await tester.enterText(find.byType(TextField), 'zzz');
@@ -673,9 +681,9 @@ void main() {
       expect(find.text('Henüz hiç arkadaşın yok.'), findsOneWidget);
     });
 
-    testWidgets('2 kişi: dokun → "?" koltuğu; ikinci dokunuş DEĞİŞMEZ (tek '
-        'rakip); arkadaş "?" yerine geçer; koltuğa dokunmak boşaltır',
-        (tester) async {
+    testWidgets(
+        '2 kişi: dokun → "?" koltuğu; ikinci dokunuş GERİ ALIR; arkadaş '
+        '"?" yerine geçer; koltuğa dokunmak boşaltır', (tester) async {
       await pumpForm(tester);
       await tester.tap(satir);
       await tester.pump();
@@ -685,7 +693,12 @@ void main() {
       expect(find.text('×1'), findsOneWidget);
       await tester.tap(satir);
       await tester.pump();
-      expect(find.text('×1'), findsOneWidget, reason: 'tek rakip: değişmez');
+      expect(koltuk(0), findsNothing,
+          reason: '"?" seçiliyken tekrar dokunuş geri alır');
+      expect(find.text('×1'), findsNothing);
+      await tester.tap(satir);
+      await tester.pump();
+      expect(koltuk(0), findsOneWidget);
       // Arkadaşa dokun → "?" yerine arkadaş.
       await tester.tap(find.byKey(const ValueKey('friend-f1')));
       await tester.pump();
@@ -703,7 +716,8 @@ void main() {
       expect(find.byKey(const ValueKey('rastgele-adet')), findsNothing);
     });
 
-    testWidgets('4 kişi: her dokunuş bir koltuk (×N); tek seçimde gönder '
+    testWidgets(
+        '4 kişi: her dokunuş bir koltuk (×N), ×3 sonrası dokunuş geri alır; tek seçimde gönder '
         'KAPALI, tam 2 seçimde 3. koltuk "Yapay Zeka", 3 seçimde YZ YOK',
         (tester) async {
       final h = await pumpForm(tester);
@@ -711,8 +725,8 @@ void main() {
       await tester.pump();
       await tester.tap(satir);
       await tester.pump();
-      NeoButton gonder() =>
-          tester.widget<NeoButton>(find.widgetWithText(NeoButton, 'DAVET GÖNDER'));
+      NeoButton gonder() => tester
+          .widget<NeoButton>(find.widgetWithText(NeoButton, 'DAVET GÖNDER'));
       expect(gonder().onPressed, isNull, reason: 'tek seçim: kapalı');
       await tester.tap(satir);
       await tester.pump();
@@ -724,14 +738,17 @@ void main() {
       await tester.pump();
       expect(find.text('×3'), findsOneWidget);
       expect(find.text(kLiveFormAiSeat), findsNothing);
-      // Dördüncü dokunuş: 3 üst sınır.
+      // Dördüncü dokunuş: boş koltuk kalmadı → tüm "?" geri alınır (4 Ekim 2026).
       await tester.tap(satir);
       await tester.pump();
-      expect(find.text('×3'), findsOneWidget);
+      expect(find.text('×3'), findsNothing);
+      expect(find.text('×1'), findsNothing);
+      expect(gonder().onPressed, isNull, reason: 'seçim boşaldı: kapalı');
       expect(h.gw.createdRandom, isEmpty);
     });
 
-    testWidgets('"Biri kabul edince" ipucu YALNIZ "?" varken; yoksa '
+    testWidgets(
+        '"Biri kabul edince" ipucu YALNIZ "?" varken; yoksa '
         '"Arkadaşın"', (tester) async {
       await pumpForm(tester);
       expect(find.textContaining('Arkadaşın kabul edince'), findsOneWidget);
@@ -741,7 +758,8 @@ void main() {
       expect(find.textContaining('Arkadaşın kabul edince'), findsNothing);
     });
 
-    testWidgets('DAVET GÖNDER (4 kişi, 2×"?"): create_random_game, slotlar '
+    testWidgets(
+        'DAVET GÖNDER (4 kişi, 2×"?"): create_random_game, slotlar '
         'doğru, "İlanın yayında" ekranı; create_online_game ÇAĞRILMAZ',
         (tester) async {
       final h = await pumpForm(tester);
@@ -791,7 +809,8 @@ void main() {
       expect(h.gw.notified, isEmpty);
     });
 
-    testWidgets('karma kadro (arkadaş + "?" + YZ): davet bildirimi gider, '
+    testWidgets(
+        'karma kadro (arkadaş + "?" + YZ): davet bildirimi gider, '
         'ekranda davet gönderilen isim', (tester) async {
       final h = await pumpForm(tester);
       await tester.tap(find.text('4 KİŞİ'));
@@ -811,7 +830,8 @@ void main() {
       expect(find.textContaining('Davet gönderilen: Bobola.'), findsOneWidget);
     });
 
-    testWidgets('"?" YOKKEN akış bugünküyle AYNI (create_online_game, '
+    testWidgets(
+        '"?" YOKKEN akış bugünküyle AYNI (create_online_game, '
         '"Davetin gönderildi")', (tester) async {
       final h = await pumpForm(tester);
       await tester.tap(find.byKey(const ValueKey('friend-f1')));
@@ -824,7 +844,8 @@ void main() {
       expect(find.text(kLiveFormSentNote), findsOneWidget);
     });
 
-    testWidgets('sunucunun Türkçe reddi (3 sınırı / önce bir oyun bitir) '
+    testWidgets(
+        'sunucunun Türkçe reddi (3 sınırı / önce bir oyun bitir) '
         'formda görünür, ham hata değil', (tester) async {
       final h = await pumpForm(tester);
       h.gw.createRandomError = const PostgrestException(
@@ -833,8 +854,7 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('DAVET GÖNDER'));
       await tester.pumpAndSettle();
-      expect(find.text('En fazla 3 rastgele oyunun olabilir.'),
-          findsOneWidget);
+      expect(find.text('En fazla 3 rastgele oyunun olabilir.'), findsOneWidget);
       expect(find.text('İlanın yayında'), findsNothing);
     });
   });

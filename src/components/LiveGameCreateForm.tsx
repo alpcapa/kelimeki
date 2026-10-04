@@ -309,6 +309,38 @@ export function LiveGameCreateForm({
 
   const byId = (id: string) => friends?.find((f) => f.friend_id === id);
 
+  // RASTGELE OYUNCU (3-4 Ekim 2026, kullanıcı: "diğer arkadaşlar gibi listenin en
+  // üstüne, ayrı bir bölümde değil"): arkadaş satırlarıyla AYNI listenin (ScrollArea)
+  // İLK satırı — aramadan MUAF (süzgeç yalnızca arkadaşlara uygulanır), "Tüm
+  // oyuncular" görünümünde ve hiç arkadaşı olmayanda da hep görünür. Her dokunuş
+  // bir boş koltuğu "?" yapar; seçilen sayısı ×N.
+  const randomRow = (
+    <button
+      type="button"
+      onClick={addRandom}
+      aria-label={`Rastgele Oyuncu — boş koltuğa ekle${randomCount > 0 ? ` (${randomCount} seçili)` : ''}`}
+      className="shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border border-border bg-panel text-left transition-transform active:scale-[0.99] shrink-0"
+    >
+      <span
+        className="w-7 h-7 rounded-full bg-bg border-[1.5px] border-dashed border-muted text-muted font-bold flex items-center justify-center text-base shrink-0"
+        aria-hidden
+      >
+        ?
+      </span>
+      <span className="flex-1 min-w-0 flex flex-col">
+        <span className="text-sm font-bold text-text truncate">Rastgele Oyuncu</span>
+        <span className="text-xs text-muted truncate">Bunu seçerseniz rasgele oyun açarsınız.</span>
+      </span>
+      {randomCount > 0 ? (
+        <span className="font-mono text-xs font-bold text-accent min-w-[20px] text-right" aria-hidden>
+          ×{randomCount}
+        </span>
+      ) : (
+        <CheckMark checked={false} />
+      )}
+    </button>
+  );
+
   return (
     <div className="w-full flex flex-col gap-5">
       <div className="flex flex-col gap-2">
@@ -548,38 +580,15 @@ export function LiveGameCreateForm({
             {showAll ? '← Arkadaşlar' : 'Tüm oyuncular →'}
           </button>
         </div>
-        {/* RASTGELE OYUNCU (3 Ekim 2026): listenin ilk satırı — aramadan MUAF,
-            "Tüm oyuncular" görünümünde ve hiç arkadaşı olmayanda da hep
-            görünür (yabancıyla oynamanın tek yolu bu). Her dokunuş bir boş
-            koltuğu "?" yapar; seçilen sayısı ×N. */}
-        <button
-          type="button"
-          onClick={addRandom}
-          aria-label={`Rastgele Oyuncu — boş koltuğa ekle${randomCount > 0 ? ` (${randomCount} seçili)` : ''}`}
-          className="shadow-raised flex items-center gap-2.5 rounded-md px-2.5 py-2 border border-border bg-panel text-left transition-transform active:scale-[0.99] shrink-0"
-        >
-          <span
-            className="w-7 h-7 rounded-full bg-bg border-[1.5px] border-dashed border-muted text-muted font-bold flex items-center justify-center text-base shrink-0"
-            aria-hidden
-          >
-            ?
-          </span>
-          <span className="flex-1 min-w-0 flex flex-col">
-            <span className="text-sm font-bold text-text truncate">Rastgele Oyuncu</span>
-            <span className="text-xs text-muted truncate">Biri kabul edince oyun başlar</span>
-          </span>
-          {randomCount > 0 ? (
-            <span className="font-mono text-xs font-bold text-accent min-w-[20px] text-right" aria-hidden>
-              ×{randomCount}
-            </span>
-          ) : (
-            <CheckMark checked={false} />
-          )}
-        </button>
         {!showAll && friends === null ? (
-          <p className="text-muted text-xs font-mono py-4 text-center">Yükleniyor…</p>
+          <div className="flex flex-col gap-1.5">
+            {randomRow}
+            <p className="text-muted text-xs font-mono py-4 text-center">Yükleniyor…</p>
+          </div>
         ) : !showAll && friends!.length === 0 ? (
-          <div className="flex flex-col items-center gap-2.5 py-4">
+          <div className="flex flex-col gap-1.5">
+            {randomRow}
+            <div className="flex flex-col items-center gap-2.5 py-4">
             <p className="text-muted text-xs font-mono text-center">Henüz hiç arkadaşın yok.</p>
             <button
               type="button"
@@ -595,6 +604,7 @@ export function LiveGameCreateForm({
             >
               Tüm oyunculara göz at →
             </button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">
@@ -679,6 +689,7 @@ export function LiveGameCreateForm({
               <span aria-hidden className="text-base leading-none">+</span> Arkadaşını davet et
             </button>
             <ScrollArea scrollRef={dir.scrollRef} className="flex flex-col gap-1.5 max-h-[280px]">
+              {randomRow}
               {(() => {
                 const friendRow = (f: { friend_id: string; name: string; avatar_url: string | null }) => {
                   const isSelected = selected.includes(f.friend_id);

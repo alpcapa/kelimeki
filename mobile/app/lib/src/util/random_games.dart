@@ -156,10 +156,20 @@ bool seatDotFilled(String seat) =>
 /// kimliği (uuid) ile ÇAKIŞAMAZ.
 const String kRandomSeat = '?';
 
-/// Rastgele satırına dokunuş: boş bir koltuğu "?" yapar. 2 kişide dolu
-/// koltuk DEĞİŞTİRİLİR (tek rakip). Web `addRandomSeat`.
+/// Rastgele satırına dokunuş (kullanıcı, 4 Ekim 2026: "seçildikten sonra tekrar
+/// üstüne basınca geri alsın"): boş bir koltuğu "?" yapar. Boş koltuk
+/// KALMADIYSA ve seçimde "?" varsa dokunuş TÜM "?" koltuklarını geri alır
+/// (2 kişide ikinci dokunuş; 4 kişide ×3'ten sonraki dokunuş). Dolu ve "?"
+/// yoksa: 2 kişide dolu arkadaş koltuğu DEĞİŞTİRİLİR, 4 kişide etkisiz.
+/// Web `addRandomSeat`.
 List<String> addRandomSeat(List<String> selected, int playerCount) {
   if (selected.length < playerCount - 1) return [...selected, kRandomSeat];
+  if (selected.contains(kRandomSeat)) {
+    return [
+      for (final s in selected)
+        if (s != kRandomSeat) s
+    ];
+  }
   if (playerCount == 2) return const [kRandomSeat];
   return [...selected];
 }
@@ -256,7 +266,7 @@ const int kRandomStripLimit = 20;
 
 // Ekran metinleri — web bileşenleriyle aynı dizeler.
 const String kRandomRowTitle = 'Rastgele Oyuncu';
-const String kRandomRowSub = 'Biri kabul edince oyun başlar';
+const String kRandomRowSub = 'Bunu seçerseniz rasgele oyun açarsınız.';
 const String kRandomSeatLabel2 = 'Rastgele oyuncu';
 const String kRandomSeatLabel4 = 'Rastgele';
 const String kRandomStripTitle = 'Rastgele Oyunlar';
