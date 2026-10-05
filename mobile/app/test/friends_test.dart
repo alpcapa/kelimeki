@@ -22,6 +22,8 @@ import 'package:kelimeki/src/storage/pending_event_store.dart';
 import 'package:kelimeki/src/util/offline_notice.dart' show isNetworkError;
 import 'package:kelimeki/src/ui/auth/account_button.dart';
 import 'package:kelimeki/src/ui/auth/k_avatar.dart';
+import 'package:kelimeki/src/ui/friends/block_confirm_sheet.dart';
+import 'package:kelimeki/src/ui/friends/blocked_users_sheet.dart';
 import 'package:kelimeki/src/ui/friends/friends_modal.dart';
 import 'package:kelimeki/src/ui/game/dialog_shell.dart';
 import 'package:kelimeki/src/util/friend_since.dart';
@@ -180,10 +182,10 @@ void main() {
       expect(parseInviteToken(Uri.parse('http://kelimeki.com/davet/t')), 't');
       // Auth callback'leri ve alakasız yollar davet DEĞİL.
       expect(parseInviteToken(Uri.parse('kelimeki://reset?code=xyz')), isNull);
-      expect(parseInviteToken(Uri.parse('https://kelimeki.com/game/abc')),
-          isNull);
-      expect(parseInviteToken(Uri.parse('https://ornek.com/davet/abc')),
-          isNull);
+      expect(
+          parseInviteToken(Uri.parse('https://kelimeki.com/game/abc')), isNull);
+      expect(
+          parseInviteToken(Uri.parse('https://ornek.com/davet/abc')), isNull);
       expect(parseInviteToken(Uri.parse('kelimeki://davet/')), isNull);
       expect(parseInviteToken(Uri.parse('kelimeki://davet/a/b')), isNull);
     });
@@ -193,7 +195,8 @@ void main() {
       // üye olan herkes admin panelindeki Kaynak Hunisi'nde `direkt` satırına
       // düşüyor ve gerçek doğrudan trafiği şişiriyor. Web'in
       // `FriendsModal.tsx`'indeki aynı fonksiyonla birebir olmak zorunda.
-      expect(buildInviteUrl('tok'), 'https://kelimeki.com/davet/tok?ref=arkadas');
+      expect(
+          buildInviteUrl('tok'), 'https://kelimeki.com/davet/tok?ref=arkadas');
       // Etiketli link uygulamaya düşerse token yine doğru çözülmeli —
       // `uri.pathSegments` sorgu dizesini içermez.
       expect(parseInviteToken(Uri.parse(buildInviteUrl('tok'))), 'tok');
@@ -587,8 +590,9 @@ void main() {
       expect(fakeAnalytics.events.single.$2, {'source': 'friends_modal'});
     });
 
-    // 14 Ağustos 2026'dan beri sessize alma/şikayet KİŞİ bazlı geri
-    // alınabiliyor. Tek ekranda giriş noktası ⋯ menüsü; durum adın yanında.
+    // 14 Ağustos 2026'dan beri engel/şikayet KİŞİ bazlı geri alınabiliyor
+    // (5 Ekim 2026: terim "Engelle", kaynak `list_blocked_users`). Tek ekranda
+    // giriş noktası ⋯ menüsü; durum adın yanında.
     testWidgets('yalnızca moderasyon durumu OLAN satırda 🚫/🚩 + menü maddesi',
         (tester) async {
       final gw = FakeFriendsGateway()
@@ -598,8 +602,10 @@ void main() {
           {'friend_id': 'c', 'name': 'Temiz', 'avatar_url': null},
         ];
       final chat = FakeChatGateway()
-        ..moderationMuted = const {'a': 'g1'}
-        ..moderationReported = const {'b': 'g2'};
+        ..blockedRows = [
+          blockedRow('a', 'Esiner'),
+          blockedRow('b', 'Ironman', reported: true),
+        ];
       await pumpModal(tester, gateway: gw, chat: chat);
       await tester.pumpAndSettle();
       expect(satirda('friend-a', find.text('🚫')), findsOneWidget);
@@ -607,9 +613,178 @@ void main() {
       expect(satirda('friend-c', find.text('🚫')), findsNothing);
       expect(satirda('friend-c', find.text('🚩')), findsNothing);
 
+      // Durumu OLMAYAN satırın menüsünde "Engelle" var, geri alma maddesi YOK.
       await tester.tap(find.byKey(const ValueKey('more-c')));
       await tester.pumpAndSettle();
+      expect(find.text(kFriendsMenuBlock), findsOneWidget);
+      expect(find.text(kFriendsMenuUnblock), findsNothing);
       expect(find.text(kFriendsMenuModeration), findsNothing);
+    });
+
+    testWidgets(
+        'menü etiketi duruma göre: yalnızca engelli → "Engeli kaldır", '
+        'şikayetli → "Engel / şikayet ayarları"', (tester) async {
+      final gw = FakeFriendsGateway()
+        ..friendsRows = [
+          {'friend_id': 'a', 'name': 'Esiner', 'avatar_url': null},
+          {'friend_id': 'b', 'name': 'Ironman', 'avatar_url': null},
+        ];
+      final chat = FakeChatGateway()
+        ..blockedRows = [
+          blockedRow('a', 'Esiner'),
+          blockedRow('b', 'Ironman', reported: true),
+        ];
+      await pumpModal(tester, gateway: gw, chat: chat);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('more-a')));
+      await tester.pumpAndSettle();
+      expect(find.text(kFriendsMenuUnblock), findsOneWidget);
+      expect(find.text(kFriendsMenuBlock), findsNothing);
+      expect(find.text(kFriendsMenuModeration), findsNothing);
+      await tester.tapAt(const Offset(5, 5)); // alt sayfayı kapat
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('more-b')));
+      await tester.pumpAndSettle();
+      expect(find.text(kFriendsMenuModeration), findsOneWidget);
+      expect(find.text(kFriendsMenuUnblock), findsNothing);
+    });
+
+    testWidgets(
+        '⋯ → Engelle → onay → block_user çağrılır, 🚫 çıkar (VAZGEÇ hiçbir '
+        'şey yapmaz)', (tester) async {
+      final gw = FakeFriendsGateway()
+        ..friendsRows = [
+          {'friend_id': 'c', 'name': 'Temiz', 'avatar_url': null},
+        ];
+      final chat = FakeChatGateway();
+      await pumpModal(tester, gateway: gw, chat: chat);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('more-c')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kFriendsMenuBlock));
+      await tester.pumpAndSettle();
+      expect(find.text(kBlockSure), findsOneWidget);
+      await tester.tap(find.text(kBlockCancelLabel));
+      await tester.pumpAndSettle();
+      expect(chat.blockedCalls, isEmpty);
+
+      await tester.tap(find.byKey(const ValueKey('more-c')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kFriendsMenuBlock));
+      await tester.pumpAndSettle();
+      chat.blockedRows = [blockedRow('c', 'Temiz')]; // sunucu engeli yazdı
+      await tester.tap(find.text(kBlockConfirmLabel));
+      await tester.pumpAndSettle();
+      expect(chat.blockedCalls, ['c']);
+      expect(satirda('friend-c', find.text('🚫')), findsOneWidget);
+    });
+
+    testWidgets(
+        'engel başarısızsa pencere AÇIK kalır ve hata gösterir; hiçbir '
+        'şey "engellendi" sayılmaz', (tester) async {
+      final gw = FakeFriendsGateway()
+        ..friendsRows = [
+          {'friend_id': 'c', 'name': 'Temiz', 'avatar_url': null},
+        ];
+      final chat = FakeChatGateway()
+        ..blockFailWith = Exception('Failed host lookup: x.supabase.co');
+      await pumpModal(tester, gateway: gw, chat: chat);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('more-c')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kFriendsMenuBlock));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kBlockConfirmLabel));
+      await tester.pumpAndSettle();
+      expect(find.text(kBlockSure), findsOneWidget); // hâlâ açık
+      expect(find.text('İşlem başarısız oldu.'), findsOneWidget);
+      expect(find.text('🚫'), findsNothing);
+    });
+
+    testWidgets(
+        'istek kartı: yalnızca "Engelle" (şikayet YOK) → önce engel, SONRA '
+        'istek reddedilir', (tester) async {
+      final gw = FakeFriendsGateway()
+        ..requestRows = [
+          {'requester_id': 'r1', 'name': 'Tuna', 'avatar_url': null},
+        ];
+      final chat = FakeChatGateway();
+      await pumpModal(tester, gateway: gw, chat: chat);
+      await tester.pumpAndSettle();
+      expect(find.text('ŞİKAYET ET'), findsNothing);
+      await tester.tap(find.text('ENGELLE'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kBlockConfirmLabel));
+      await tester.pumpAndSettle();
+      expect(chat.blockedCalls, ['r1']);
+      expect(gw.deleted, ['r1']); // ret = ilişki satırını silmek
+    });
+
+    testWidgets('chat yoksa Engelle/Engellediklerim hiç çizilmez',
+        (tester) async {
+      final gw = FakeFriendsGateway()
+        ..requestRows = [
+          {'requester_id': 'r1', 'name': 'Tuna', 'avatar_url': null},
+        ];
+      await pumpModal(tester, gateway: gw);
+      await tester.pumpAndSettle();
+      expect(find.text('ENGELLE'), findsNothing);
+      expect(find.text('ENGELLEDİKLERİM'), findsNothing);
+    });
+
+    testWidgets(
+        '"Engellediklerim": arkadaş OLMAYAN kişi de listelenir; engeli '
+        'kaldırınca unblock_user çağrılır ve satır kaybolur', (tester) async {
+      final chat = FakeChatGateway()
+        ..blockedRows = [
+          blockedRow('z', 'Zehra'),
+          blockedRow('a', 'Ayşe', reported: true),
+        ];
+      await pumpModal(tester, gateway: FakeFriendsGateway(), chat: chat);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ENGELLEDİKLERİM'));
+      await tester.pumpAndSettle();
+      expect(find.text(kBlockedIntro), findsOneWidget);
+      // trCompare sırası: Ayşe < Zehra.
+      expect(tester.getTopLeft(find.text('Ayşe')).dy,
+          lessThan(tester.getTopLeft(find.text('Zehra')).dy));
+      // Yalnızca şikayetli satırda "Şikayeti Geri Çek" + açıklama.
+      expect(find.text('Şikayeti Geri Çek'), findsOneWidget);
+      expect(find.text(kBlockedReportedNote), findsOneWidget);
+
+      await tester.tap(find.text('Engeli Kaldır').last); // Zehra
+      await tester.pumpAndSettle();
+      expect(find.text('Emin misiniz?'), findsOneWidget);
+      chat.blockedRows = [blockedRow('a', 'Ayşe', reported: true)];
+      await tester.tap(find.text('Engeli Kaldır'));
+      await tester.pumpAndSettle();
+      expect(chat.unblockedCalls, ['z']);
+      expect(find.text('Zehra'), findsNothing);
+      expect(find.text('Ayşe'), findsOneWidget);
+    });
+
+    testWidgets(
+        '"Engellediklerim": liste yüklenemezse hata + Tekrar dene, '
+        'BOŞ liste sanılmaz', (tester) async {
+      final chat = FakeChatGateway()
+        ..moderationFailWith = Exception('Failed host lookup: x.supabase.co');
+      await pumpModal(tester, gateway: FakeFriendsGateway(), chat: chat);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ENGELLEDİKLERİM'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tekrar dene'), findsOneWidget);
+      expect(find.text(kBlockedEmpty), findsNothing);
+    });
+
+    testWidgets('"Engellediklerim": kimse yoksa boş durum metni',
+        (tester) async {
+      await pumpModal(tester,
+          gateway: FakeFriendsGateway(), chat: FakeChatGateway());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ENGELLEDİKLERİM'));
+      await tester.pumpAndSettle();
+      expect(find.text(kBlockedEmpty), findsOneWidget);
     });
 
     testWidgets('⋯ → ayarlar → şikayeti geri çek → 🚩 KAYBOLUR',
@@ -618,7 +793,8 @@ void main() {
         ..friendsRows = [
           {'friend_id': 'a', 'name': 'Esiner', 'avatar_url': null},
         ];
-      final chat = FakeChatGateway()..moderationReported = const {'a': 'g1'};
+      final chat = FakeChatGateway()
+        ..blockedRows = [blockedRow('a', 'Esiner', reported: true)];
       await pumpModal(tester, gateway: gw, chat: chat);
       await tester.pumpAndSettle();
 
@@ -626,7 +802,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text(kFriendsMenuModeration));
       await tester.pumpAndSettle();
-      expect(find.text('Bu kişiyi şikayet ettiniz.'), findsOneWidget);
+      expect(find.text('Bu kişiyi şikayet ettiniz ve engellediniz.'),
+          findsOneWidget);
       await tester.tap(find.text('Şikayeti Geri Çek'));
       await tester.pumpAndSettle();
       // Onay adımı ATLANMAZ — kazara dokunuş bir şikayeti düşürmemeli.
@@ -634,30 +811,32 @@ void main() {
       await tester.tap(find.text('Geri Çek'));
       await tester.pumpAndSettle();
       expect(chat.withdrawnCalls, ['a']);
-      chat.moderationReported = const {};
+      chat.blockedRows = [];
       await tester.tap(find.text('Tamam'));
       await tester.pumpAndSettle();
       expect(find.text('🚩'), findsNothing);
     });
 
-    testWidgets('sessizden çıkarma, kaydın geldiği oyun id\'siyle çağrılır',
+    testWidgets(
+        'engeli kaldırma `unblock_user` ile çağrılır — oyun id\'si GEREKMEZ',
         (tester) async {
       final gw = FakeFriendsGateway()
         ..friendsRows = [
           {'friend_id': 'a', 'name': 'Esiner', 'avatar_url': null},
         ];
-      final chat = FakeChatGateway()..moderationMuted = const {'a': 'g7'};
+      final chat = FakeChatGateway()..blockedRows = [blockedRow('a', 'Esiner')];
       await pumpModal(tester, gateway: gw, chat: chat);
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('more-a')));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(kFriendsMenuModeration));
+      await tester.tap(find.text(kFriendsMenuUnblock));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sessizden Çıkar'));
+      await tester.tap(find.text('Engeli Kaldır'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sessizden Çıkar').last);
+      await tester.tap(find.text('Engeli Kaldır').last);
       await tester.pumpAndSettle();
-      expect(chat.mutedCalls, [('g7', 'a', false)]);
+      expect(chat.unblockedCalls, ['a']);
+      expect(chat.mutedCalls, isEmpty);
     });
 
     // 27 Ağustos 2026 vakası (kaydırma takılıyordu): modalda TEK
@@ -714,6 +893,9 @@ void main() {
         kFriendsMenuPlay2,
         kFriendsMenuPlay4,
         kFriendsMenuModeration,
+        kFriendsMenuUnblock,
+        kFriendsMenuBlock,
+        kFriendsBlockedListLink,
         kFriendsMenuRemove,
         'Gönderdiğin istekler',
         'Tüm oyuncular →',
@@ -846,15 +1028,34 @@ void main() {
     // ("EKLE" / "KABUL ET", web `Pill` ile aynı) — `hap` doluysa o metin
     // çizilmeli ve HİÇBİR ilişki ikonu çizilmemeli. DURUM dalları (⌛, ✓)
     // ikon kaldı.
-    for (final (String ad, Map<String, Object?>? satir, IconData? glyph,
-            Color? renk, String? hap)
-        in <(String, Map<String, Object?>?, IconData?, Color?, String?)>[
-      ('istek gönderdim', {'user_id': 'me', 'status': 'pending'}, null,
-          kMuted, null),
-      ('bana istek geldi', {'user_id': 'u9', 'status': 'pending'}, null,
-          null, 'KABUL ET'),
-      ('arkadaşız', {'user_id': 'me', 'status': 'accepted'}, Icons.how_to_reg,
-          kGreen, null),
+    for (final (
+          String ad,
+          Map<String, Object?>? satir,
+          IconData? glyph,
+          Color? renk,
+          String? hap
+        ) in <(String, Map<String, Object?>?, IconData?, Color?, String?)>[
+      (
+        'istek gönderdim',
+        {'user_id': 'me', 'status': 'pending'},
+        null,
+        kMuted,
+        null
+      ),
+      (
+        'bana istek geldi',
+        {'user_id': 'u9', 'status': 'pending'},
+        null,
+        null,
+        'KABUL ET'
+      ),
+      (
+        'arkadaşız',
+        {'user_id': 'me', 'status': 'accepted'},
+        Icons.how_to_reg,
+        kGreen,
+        null
+      ),
       ('ilişki yok', null, null, null, 'EKLE'),
     ]) {
       testWidgets('PlayerScoreCard ilişki simgesi — $ad', (tester) async {
@@ -963,8 +1164,8 @@ void main() {
       // sınırını GERÇEKTEN uyguladığını kanıtlıyor.
       final renderedWidth = tester
           .getSize(find
-              .byWidgetPredicate((w) =>
-                  w is ConstrainedBox && w.constraints.maxWidth == 384)
+              .byWidgetPredicate(
+                  (w) => w is ConstrainedBox && w.constraints.maxWidth == 384)
               .first)
           .width;
       expect(renderedWidth, lessThanOrEqualTo(384));
@@ -997,8 +1198,7 @@ void main() {
     // Negatif eş: geri koyma satırı silinirse ilk expect düşer; koşul
     // `isNetworkError`dan geniş bir şeye çevrilirse ikinci expect düşer
     // (P0001 geri konarsa her açılışta aynı diyalog çıkardı).
-    test('ağ hatasında token kuyruğa GERİ konur, kalıcı ret KONMAZ',
-        () async {
+    test('ağ hatasında token kuyruğa GERİ konur, kalıcı ret KONMAZ', () async {
       final storage = await openTestStorage();
       final gw = FakeFriendsGateway();
       final repo = FriendsRepo(gw);
@@ -1033,8 +1233,7 @@ void main() {
       //    "Kendi linkinle arkadaş olamazsın." diyaloğu çıkardı.
       await isle(PostgrestException(
           message: 'Kendi linkinle arkadaş olamazsın.', code: 'P0001'));
-      expect(
-          await storage.events.takeAll(friendInviteTokenKind), isEmpty,
+      expect(await storage.events.takeAll(friendInviteTokenKind), isEmpty,
           reason: 'kalıcı ret ölümsüz kayıt üretmemeli');
     });
 
@@ -1044,7 +1243,8 @@ void main() {
           message: 'Kendi linkinle arkadaş olamazsın.', code: 'P0001');
       expect(inviteAcceptErrorText(ret), 'Kendi linkinle arkadaş olamazsın.');
       expect(inviteAcceptKaliciRet(ret), isTrue,
-          reason: 'kalıcı ret → tekrar denemek anlamsız, telemetriye de gitmez');
+          reason:
+              'kalıcı ret → tekrar denemek anlamsız, telemetriye de gitmez');
     });
 
     test('inviteAcceptErrorText: ağ hatası ile bilinmeyen hata AYRI konuşur',
@@ -1064,7 +1264,6 @@ void main() {
       expect(inviteAcceptKaliciRet(bilinmeyen), isFalse,
           reason: 'geçici olabilir → telemetriye düşmeli');
     });
-
 
     test('girişliyken takeAll → acceptInvite; hata token düşürür', () async {
       // Setup'ın _processInvites'inin veri katmanı sözleşmesi burada repo +
@@ -1090,8 +1289,7 @@ void main() {
     // link hem `uriLinkStream`den hem `getInitialLink()` kurtarmasından
     // düşebiliyor. Dedup olmadan kullanıcı üst üste iki "artık arkadaşsınız"
     // diyaloğu görür ve ikinci bir gereksiz RPC atılır.
-    test('parti içinde mükerrer token bir kez işlenir, bozuk kayıt elenir',
-        () {
+    test('parti içinde mükerrer token bir kez işlenir, bozuk kayıt elenir', () {
       expect(
         inviteTokensFromEvents([
           {'token': 'tok-1'},
@@ -1105,13 +1303,12 @@ void main() {
       );
       // Dedup PARTİ bazında: kalıcı bir "görüldü" listesi TUTULMUYOR, yani
       // bir sonraki oturumda aynı linke yeniden dokunmak hâlâ çalışır.
-      expect(inviteTokensFromEvents([
-        {'token': 'tok-1'}
-      ]), ['tok-1']);
+      expect(
+          inviteTokensFromEvents([
+            {'token': 'tok-1'}
+          ]),
+          ['tok-1']);
     });
-
-
-
   });
 }
 

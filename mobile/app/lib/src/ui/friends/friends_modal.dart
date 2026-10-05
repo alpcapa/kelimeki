@@ -13,8 +13,10 @@
 // 3. "ARKADAŞLARIN · N" / "TÜM OYUNCULAR" başlığı + sağda dönüşümlü bağlantı.
 // 4. Arama kutusu listenin hemen üstünde; yazınca sonuçlar (sunucu).
 // 5. Arkadaş satırı: rütbe, "3 haftadır", OYNA (2 kişilik), ⋯ (skor kartı ·
-//    2/4 kişilik oyun kur · sessize alma/şikayet ayarları YALNIZ önceden
-//    varsa · arkadaşlıktan çıkar).
+//    2/4 kişilik oyun kur · Engelle / Engeli kaldır (durum varsa şikayet de
+//    yönetilir) · arkadaşlıktan çıkar). Listenin altında "Engellediklerim".
+//    İstek kartında yalnızca "Engelle" (şikayet YOK — şikayet oyunun sohbetine
+//    özel; web 4-5 Ekim 2026).
 //
 // OYNA / "N kişilik oyun kur": pencere kapanır, Canlı sekmesinde form o
 // arkadaş seçili açılır (`util/live_game_request.dart`; oyun ekranı açıksa
@@ -23,7 +25,9 @@
 // ⚠ Pencerede TEK kaydırılabilir var (`KModal` gövdesi) — "Tüm oyuncular"
 // sayfalaması gövdenin kaydırmasına bağlı (bkz. mobile/CLAUDE.md →
 // "KModal'ın gövdesi ZATEN kaydırılabilir"). Web'in `max-h-[55vh]` iç
-// kaydırması bilinçli olarak taşınmadı.
+// kaydırması (arkadaş/arama listesi, 4 Ekim 2026) bilinçli olarak taşınmadı:
+// web'de nedeni "Engellediklerim bağlantısı uzun listenin altında kaybolmasın"
+// idi; burada tüm gövde kayıyor, bağlantı kaydırınca erişilir.
 //
 // Metinler web'le BİREBİR — `friends_test.dart` web kaynağını okur.
 import 'dart:async';
@@ -52,6 +56,8 @@ import '../tap_target.dart';
 import '../tokens.dart';
 import '../loading_note.dart';
 import '../form_input.dart';
+import 'block_confirm_sheet.dart';
+import 'blocked_users_sheet.dart';
 import 'friend_moderation_sheet.dart';
 import 'k_pill.dart';
 import 'player_directory.dart';
@@ -88,7 +94,11 @@ const String kFriendsNoMorePlayers = 'Başka oyuncu yok.';
 const String kFriendsMenuCard = 'Skor kartını gör';
 const String kFriendsMenuPlay2 = '2 kişilik oyun kur';
 const String kFriendsMenuPlay4 = '4 kişilik oyun kur';
-const String kFriendsMenuModeration = 'Sessize alma / şikayet ayarları';
+const String kFriendsMenuModeration = 'Engel / şikayet ayarları';
+const String kFriendsMenuUnblock = 'Engeli kaldır';
+const String kFriendsMenuBlock = 'Engelle';
+const String kFriendsBlockLink = 'Engelle';
+const String kFriendsBlockedListLink = 'Engellediklerim';
 const String kFriendsMenuRemove = 'Arkadaşlıktan çıkar';
 
 Future<void> showFriendsModal(
@@ -165,9 +175,10 @@ class _FriendsModalState extends State<FriendsModal> {
   /// İsimlerin yanındaki rütbe mührü.
   late final RankScores _rankScores;
 
-  /// Sessize aldığım/şikayet ettiğim kişiler → kaynak oyun id'si.
-  Map<String, String> _modMuted = const {};
-  Map<String, String> _modReported = const {};
+  /// Engellediğim / şikayet ettiğim kişiler — kaynak `list_blocked_users`
+  /// (engel + sohbet engeli + açık şikayet birleşimi).
+  Set<String> _modBlocked = const {};
+  Set<String> _modReported = const {};
 
   /// "+ ARKADAŞINI DAVET ET"in kendi kutusu — iPad popover ankrajı BURADAN
   /// (State.context modalın tamamını ankraj yapıyordu ve iPad'de paylaşım
@@ -266,7 +277,7 @@ class _FriendsModalState extends State<FriendsModal> {
     final m = await chat.myModeration();
     if (!mounted) return;
     setState(() {
-      _modMuted = m.muted;
+      _modBlocked = m.blocked;
       _modReported = m.reported;
     });
   }
@@ -404,10 +415,40 @@ class _FriendsModalState extends State<FriendsModal> {
         userId: f.friendId,
         name: f.name,
         avatarUrl: f.avatarUrl,
-        mutedGameId: _modMuted[f.friendId],
-        reported: _modReported.containsKey(f.friendId),
+        blocked: _modBlocked.contains(f.friendId),
+        reported: _modReported.contains(f.friendId),
       ),
     );
+    if (changed) await _reloadModeration();
+  }
+
+  /// "Engelle" onayı — istek kartı (`isFriend: false`) ve arkadaş ⋯ menüsü.
+  /// Önce engel, sonra isteği reddet: engel başarısızsa istek yerinde kalır
+  /// (kullanıcı "engelledim" sanmaz); ret başarısız olursa engel kalır ve istek
+  /// zaten engelli kişiden geldiğinden zararsızdır.
+  Future<void> _confirmBlock(String id, String name,
+      {required bool isFriend}) async {
+    final chat = widget.chat;
+    if (chat == null) return;
+    final ok = await showBlockConfirm(
+      context,
+      name: name,
+      onConfirm: () async {
+        await chat.blockUser(id);
+        if (!isFriend) {
+          await widget.friends.respond(id, accept: false);
+          _dir.patchRelation(id, null);
+          _reloadRequests();
+        }
+      },
+    );
+    if (ok) await _reloadModeration();
+  }
+
+  Future<void> _openBlockedList() async {
+    final chat = widget.chat;
+    if (chat == null) return;
+    final changed = await showBlockedUsers(context, chat: chat);
     if (changed) await _reloadModeration();
   }
 
@@ -506,6 +547,16 @@ class _FriendsModalState extends State<FriendsModal> {
           ),
           const SizedBox(height: 8),
           ..._body(),
+          if (widget.chat != null) ...[
+            const SizedBox(height: 12),
+            Center(
+              child: _TextLink(
+                label: kFriendsBlockedListLink,
+                fontSize: 11,
+                onTap: _openBlockedList,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -690,6 +741,20 @@ class _FriendsModalState extends State<FriendsModal> {
               ),
             ),
           ]),
+          // Yalnızca "Engelle" (web 4 Ekim 2026, kullanıcı kararı): istek
+          // kartında şikayet YOK — şikayet oyunun sohbetine özeldir.
+          if (widget.chat != null)
+            Align(
+              alignment: Alignment.center,
+              child: _TextLink(
+                label: kFriendsBlockLink,
+                fontSize: 11,
+                onTap: busy
+                    ? null
+                    : () =>
+                        _confirmBlock(r.requesterId, r.name, isFriend: false),
+              ),
+            ),
         ],
       ),
     );
@@ -698,9 +763,9 @@ class _FriendsModalState extends State<FriendsModal> {
   /// Avatar + isim (+ rütbe, + 🚩/🚫) + alt satır; dokununca skor kartı.
   Widget _person(String id, String name, String? avatarUrl, String? meta) {
     final tier = _rankScores.tierOf(id);
-    final mod = _modReported.containsKey(id)
+    final mod = _modReported.contains(id)
         ? '🚩'
-        : _modMuted.containsKey(id)
+        : _modBlocked.contains(id)
             ? '🚫'
             : null;
     return Expanded(
@@ -805,9 +870,9 @@ class _FriendsModalState extends State<FriendsModal> {
   // ── ⋯ kişi menüsü — alttan açılır ────────────────────────────────────────
 
   Future<void> _openMenu(FriendRow f) async {
-    final modVar = widget.chat != null &&
-        (_modReported.containsKey(f.friendId) ||
-            _modMuted.containsKey(f.friendId));
+    final chatVar = widget.chat != null;
+    final reported = _modReported.contains(f.friendId);
+    final blockedNow = _modBlocked.contains(f.friendId);
     final items = <(String, bool, VoidCallback)>[
       (
         kFriendsMenuCard,
@@ -817,9 +882,22 @@ class _FriendsModalState extends State<FriendsModal> {
       // OYNA 2 kişilik kurar; menü ikisini de açıkça sunar.
       (kFriendsMenuPlay2, false, () => _play(f.friendId, 2)),
       (kFriendsMenuPlay4, false, () => _play(f.friendId, 4)),
-      // Moderasyon menüsü DEĞİL, "geri al" kısayolu — yalnızca bir durum
-      // varsa (yeni şikayet oyun içi sohbetten açılır).
-      if (modVar) (kFriendsMenuModeration, false, () => _openModeration(f)),
+      // Engelle / Engeli kaldır (web 5 Ekim 2026): durum yoksa "Engelle"
+      // (onaylı, yalnızca engel — şikayet oyun içi sohbetten açılır); durum
+      // varsa geri alma paneli (engel kaldır / şikayeti geri çek).
+      if (chatVar)
+        if (reported || blockedNow)
+          (
+            reported ? kFriendsMenuModeration : kFriendsMenuUnblock,
+            false,
+            () => _openModeration(f)
+          )
+        else
+          (
+            kFriendsMenuBlock,
+            false,
+            () => _confirmBlock(f.friendId, f.name, isFriend: true)
+          ),
       (kFriendsMenuRemove, true, () => _confirmRemove(f.friendId, f.name)),
     ];
     final secilen = await showModalBottomSheet<VoidCallback>(
@@ -898,6 +976,31 @@ class _FriendsModalState extends State<FriendsModal> {
     if (!mounted) return;
     secilen?.call();
   }
+}
+
+/// Web'in `underline underline-offset-2` küçük metin bağlantısı
+/// ("Engelle", "Engellediklerim").
+class _TextLink extends StatelessWidget {
+  final String label;
+  final double fontSize;
+  final VoidCallback? onTap;
+  const _TextLink({required this.label, required this.fontSize, this.onTap});
+
+  @override
+  Widget build(BuildContext context) => TapTarget(
+        onTap: onTap,
+        minHeight: 36,
+        child: Text(
+          trUpper(label),
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+            color: _muted,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      );
 }
 
 class _SectionLabel extends StatelessWidget {

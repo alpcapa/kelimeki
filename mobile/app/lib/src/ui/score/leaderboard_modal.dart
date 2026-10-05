@@ -52,6 +52,19 @@ const ohpHint =
     'Ortalama Hamle Puanı tüm oyunlarda yapılan tüm hamlelerin ortalamasıdır. '
     'Puanlar eşitse OHP yüksek olan üstte sıralanır.';
 
+/// Puan Ligi açıklaması (web `PUAN_LIGI_INTRO`) — eşitlik cümlesi 5 Ekim
+/// 2026'da buradan [kPuanLigiNote]a taşındı (web #814, kullanıcı isteği).
+const kPuanLigiIntro =
+    'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir '
+    'yarışmadır.';
+
+/// Listenin ALTINDAki küçük not (web `PUAN_LIGI_NOTE`, 10px mono, ortalı).
+/// Beyin Ligi'nin alt notunun Puan Ligi eşi — port'ta Beyin Ligi sekmesi
+/// henüz yok, yalnızca Puan Ligi notu var.
+const kPuanLigiNote =
+    "YZ'ye karşı oynanan oyunlar da sayılır. Puanlar eşitse OHP yüksek olan "
+    'üstte.';
+
 /// Web INITIAL_PAGE_SIZE / PAGE_SIZE — ilk açılışta "ilk 10", sonra 20'şer.
 const _initialPageSize = 10;
 const _pageSize = 20;
@@ -184,8 +197,8 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
               // diye. Bkz. `_kOhpColumnWidth`.
               width: _kOhpColumnWidth,
               align: Alignment.center,
-              child: _HeadLabel('OHP',
-                  align: TextAlign.center, underline: true),
+              child:
+                  _HeadLabel('OHP', align: TextAlign.center, underline: true),
             ),
           ),
         ),
@@ -196,9 +209,7 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
   @override
   void initState() {
     super.initState();
-    widget.stats
-        .leaderboard(limit: _initialPageSize, offset: 0)
-        .then((rows) {
+    widget.stats.leaderboard(limit: _initialPageSize, offset: 0).then((rows) {
       if (!mounted) return;
       setState(() {
         _rows = rows;
@@ -292,8 +303,7 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Text(
-            'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre '
-            'oluşan bir yarışmadır. Puanlar eşitse OHP yüksek olan üstte.',
+            kPuanLigiIntro,
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontFamily: 'SpaceMono',
@@ -432,6 +442,16 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
                 ),
               ),
             ],
+            const SizedBox(height: 4),
+            const Text(
+              kPuanLigiNote,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontFamily: 'SpaceMono',
+                  fontSize: 10,
+                  height: 1.5,
+                  color: _muted),
+            ),
           ],
         ],
       ),

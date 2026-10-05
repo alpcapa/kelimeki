@@ -25,6 +25,38 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 232 — Engelle'nin port ikizi: istek/davet kartı, Engellediklerim, ⋯ menüsü, sohbet terimi (5 Ekim 2026, 19 Ekim treni)
+
+- **Ne:** web #810/#811/#812/#813/#814'ün port yarısı. `block_confirm_sheet.dart`
+  (ortak onay: önce engel, SONRA ret — engel düşerse pencere AÇIK kalır, davet/
+  istek yerinde durur) · `blocked_users_sheet.dart` ("Engellediklerim": arkadaş
+  olmayanı geri almanın tek yolu; "Engeli Kaldır" şikayete DOKUNMAZ, şikayetli
+  satırda ayrıca "Şikayeti Geri Çek") · `friend_moderation_sheet.dart`
+  (`mutedGameId` → `blocked`; kaldırma `unblock_user`, oyun id'si GEREKMİYOR) ·
+  `friends_modal.dart` (kaynak `list_blocked_users`; istek kartı "ENGELLE";
+  ⋯ menüsü Engelle / Engeli kaldır / Engel-şikayet ayarları; altta
+  "ENGELLEDİKLERİM") · `live_games_tab.dart` (davet kartı "ENGELLE") ·
+  `chat_settings_modal.dart` (terim; KALDIRMA `unblock_user` — kartlardan
+  yapılan oyundan bağımsız engel de temizlensin) · `chat_api.dart`
+  (`blockUser`/`unblockUser`/`blockedUsers`; `myModeration` artık kümeler döndürür).
+- **Parite-kilitli metinler web'le BİRLİKTE değişti** (web CI `parite` işi
+  okuyor): arkadaş menüsü etiketleri, `chatRules.ts`, `LegalContent.tsx`
+  ("Son güncelleme: 19 Ekim 2026" — `legal_text_test` web↔port tarih eşliği),
+  `Landing.tsx`. ⚠ Hukuki metin YALNIZ terim değiştirmedi: "sessize alınan kişi
+  bunu hiçbir zaman göremez" engelle ile YANLIŞ (engellenen, davet/istek
+  denerse "sizi engelledi" görür) — cümle yeniden yazıldı.
+- **Bilinçli fark:** web'in `max-h-[55vh]` liste sınırı taşınmadı (`KModal`
+  gövdesi zaten kayıyor, Flutter iç içe kaydırmayı zincirlemiyor — 27 Ağustos
+  vakası). Puan Ligi: portta Beyin Ligi sekmesi/alt notu hiç yoktu;
+  `kPuanLigiIntro` + `kPuanLigiNote` eklendi (eşitlik cümlesi alt notta).
+- **Ders:** ROADMAP'in "port ikizi" maddesi `kPuanLigiNote`'un VAR olduğunu
+  varsayıyordu — yoktu. İkiz yazmadan önce karşılığın portta gerçekten
+  bulunduğunu grep'le doğrula.
+- **Doğrulama:** `friends_test` · `chat_test` · `live_games_test` · yeni
+  `block_parity_test` + tam takım yeşil. **SINIR:** iki gerçek hesapla
+  davet/istek/engel akışı otomatik KANITLANAMAZ — cihaz listesi
+  `mobile/docs/testing-arkadaslar-canli.md` → "Engelle / Engellediklerim".
+
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
 - **Bildirim (1.1.2 cihaz turu, Canlı oyun, sıra kendisinde):** *"ipad'de
