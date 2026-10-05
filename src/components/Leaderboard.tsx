@@ -52,13 +52,14 @@ export const KLIG_TABS: { id: KLigTab; icon: string; label: string }[] = [
 ];
 
 export const PUAN_LIGI_INTRO =
-  'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır. ' +
-  'Puanlar eşitse OHP yüksek olan üstte.';
+  'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır.';
 
 // Beyin Ligi'nin alt notunun (`BEYIN_LIGI_NOTE`) Puan Ligi eşi — aynı yer,
-// aynı stil (2 Ekim 2026, kullanıcı isteği). Eşitlik kuralı zaten girişte.
+// aynı stil (2 Ekim 2026, kullanıcı isteği). Eşitlik kuralı da buraya,
+// "YZ'ye karşı…" cümlesinin yanına taşındı (5 Ekim 2026, kullanıcı isteği).
 // Port ikizi: `leaderboard_modal.dart` (`kPuanLigiNote`).
-export const PUAN_LIGI_NOTE = "YZ'ye karşı oynanan oyunlar da sayılır.";
+export const PUAN_LIGI_NOTE =
+  "YZ'ye karşı oynanan oyunlar da sayılır. Puanlar eşitse OHP yüksek olan üstte.";
 
 const OHP_HINT =
   'Ortalama Hamle Puanı tüm oyunlarda yapılan tüm hamlelerin ortalamasıdır. ' +
