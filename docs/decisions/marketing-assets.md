@@ -284,8 +284,7 @@ cevabını veriyor.
 ## Kısa videolar — Reels / Shorts / TikTok (`scripts/reel/shorts*`, 5 Ekim 2026)
 
 `npm run build && npm run generate-shorts [1|2|3]` → `marketing/shorts-2026-10/`
-(1080×1920, H.264, **sessiz** AAC izi — müzik/ses platformun düzenleyicisinde
-eklenir). Kullanıcı isteği: üç kısa video, hepsi *"Kelimeki'ye gel, kendin
+(1080×1920, H.264, AAC). **Müzik videonun içinde** (5 Ekim, kullanıcı: *"müzikleri sen ekle"*): `scripts/reel/muzik.mjs` özgün bir döngüyü SENTEZLER (C–Am–F–G, 112 BPM, pluck arpej + bas + vuruş; son 1,2 sn kısılır) — internetten ses indirilmiyor (ortam kapalı + telif tarayıcısı riski yok). ⚠ Kulakla dinlenmedi, yalnızca seviye ölçüldü (ort. −19 dB, tepe −3 dB). Paylaşım metinleri: `marketing/shorts-2026-10/metin.md`. Instagram ve TikTok AYRI hesaplar (kullanıcı, 5 Ekim); yayın sırası: IG günde bir video (1→2→3), TikTok sonra, Shorts en son (`ALT` → "Link açıklamada" gerekir). Kullanıcı isteği: üç kısa video, hepsi *"Kelimeki'ye gel, kendin
 dene!"* + *"Link bio'da"* kapanışıyla (2,8 sn tam ekran kart, mağaza
 rozetleri dahil).
 

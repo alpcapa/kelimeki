@@ -1,4 +1,4 @@
-// Kelimeki — Reels/Shorts/TikTok için üç kısa video (1080×1920, MP4, ses izi sessiz).
+// Kelimeki — Reels/Shorts/TikTok için üç kısa video (1080×1920, MP4, sentezlenmiş müzikli).
 //
 //   npm run build && node scripts/reel/shorts.mjs [1|2|3 ...]      (npm: generate-shorts)
 //
@@ -13,6 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { build as esbuild } from 'esbuild';
+import { muzikYaz } from './muzik.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const DIST = path.join(ROOT, 'dist');
@@ -233,12 +234,15 @@ async function main() {
     const listeDosya = path.join(FRAMES, 'liste.txt');
     writeFileSync(listeDosya, `${liste}\nfile '${kareler[kareler.length - 1].dosya}'\n`, 'utf8');
     const out = path.join(OUT_DIR, `video-${v.no}-${v.ad}.mp4`);
-    execFileSync('ffmpeg', ['-y', '-f', 'concat', '-safe', '0', '-i', listeDosya,
-      '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
-      '-vf', `fps=${FPS},format=yuv420p`, '-map', '0:v', '-map', '1:a', '-shortest',
-      '-c:v', 'libx264', '-preset', 'slow', '-crf', '19', '-c:a', 'aac', '-b:a', '96k', '-movflags', '+faststart', out],
-      { stdio: ['ignore', 'ignore', 'pipe'] });
     const sure = kareler.reduce((a, k) => a + k.sure, 0);
+    // Müzik: sentezlenmiş özgün döngü (muzik.mjs), videonun süresine kırpılıp son 1,2 sn'de kısılır.
+    const muzik = path.join(FRAMES, 'muzik.wav');
+    muzikYaz(muzik, sure + 1);
+    execFileSync('ffmpeg', ['-y', '-f', 'concat', '-safe', '0', '-i', listeDosya, '-i', muzik,
+      '-vf', `fps=${FPS},format=yuv420p`, '-af', `afade=t=in:d=0.4,afade=t=out:st=${(sure - 1.2).toFixed(2)}:d=1.2`,
+      '-map', '0:v', '-map', '1:a', '-t', sure.toFixed(3),
+      '-c:v', 'libx264', '-preset', 'slow', '-crf', '19', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', out],
+      { stdio: ['ignore', 'ignore', 'pipe'] });
     console.log(`✓ ${path.relative(ROOT, out)}  ${kareler.length} kare  ~${sure.toFixed(1)} sn`);
   }
   await browser.close();
