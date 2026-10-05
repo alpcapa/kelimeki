@@ -26,6 +26,13 @@ import 'support/test_fonts.dart';
 import 'support/test_view.dart';
 
 class FakeStatsGateway implements StatsGateway {
+  @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+
   /// playerCount → satır (null anahtarı 'Genel' = player_stats_overall).
   final Map<String, Map<int?, Map<String, Object?>>> stats;
   final List<Map<String, Object?>> rows;
@@ -1053,6 +1060,13 @@ void main() {
 }
 
 class _ThrowingGateway implements StatsGateway {
+  @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+
   @override
   Future<Map<String, Object?>?> playerStats(String userId, int? playerCount) =>
       Future.error(Exception('ağ'));

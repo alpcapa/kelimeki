@@ -192,6 +192,7 @@ port yarısı #795'te. Mobil saha kontrolü 1.1.3 ile.
 k-lig aracılığıyla diğer KAYITLI kullanıcılara görünür" diyor; OHP ve oyun
 sayısı bu kapsamda, yeni veri toplanmıyor.
 
-**Port:** ayrı taslak PR, sürüm trenine biner (`leaderboard_modal.dart` +
-`beyin_ligi_list.dart` + `util/beyin_ligi.dart`). Elle test: `TESTING.md`
-§10.5.
+**Port:** ayrı taslak PR #795, 12 Ekim sürüm trenine biner
+(`leaderboard_modal.dart` + `beyin_ligi_list.dart` + `util/beyin_ligi.dart`,
+Parça 233). Metin/eşik paritesi `beyin_ligi_test.dart`te. Elle test:
+`TESTING.md` §10.5 (web), `mobile/docs/testing-klig.md` → "13.x" (mobil).

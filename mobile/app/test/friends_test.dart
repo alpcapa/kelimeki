@@ -1117,6 +1117,13 @@ void main() {
 
 class _NullStatsGateway implements StatsGateway {
   @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+
+  @override
   Future<List<Map<String, Object?>>> leaderboard(int limit, int offset) async =>
       [];
 

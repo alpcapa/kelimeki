@@ -9,10 +9,12 @@ import '../../data/auth_service.dart';
 import '../../data/friends_api.dart';
 import '../../data/games_api.dart';
 import '../../data/stats_api.dart';
+import '../../util/beyin_ligi.dart';
 import '../auth/k_avatar.dart';
 import '../game/modal_shell.dart';
 import '../rank/league_rank.dart';
 import '../rank/rank_seal.dart';
+import 'beyin_ligi_list.dart';
 import 'klig_mark.dart';
 import 'player_score_card_modal.dart';
 import '../tokens.dart';
@@ -97,6 +99,99 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
   bool _hasMore = true;
   bool _loadingMore = false;
   MyLeaderboardRank? _myRank;
+
+  /// k-lig alt ligi (2 Ekim 2026). Pencere HER ZAMAN Puan Ligi ile açılır,
+  /// son sekme hatırlanmaz (kullanıcı kararı, web ile aynı).
+  KLigTab _tab = KLigTab.puan;
+
+  /// Beyin Ligi ilk seçildiğinde kurulur, sonra `Offstage` ile gizlenip
+  /// yaşamaya devam eder — gidip gelmek listeyi yeniden indirmesin
+  /// (web `beyinMounted`). Puan Ligi'nin verisi bu State'te durduğundan
+  /// onun sekmesi gizlenince yeniden İSTEK atılmaz.
+  bool _beyinMounted = false;
+
+  void _selectTab(KLigTab t) {
+    setState(() {
+      _tab = t;
+      if (t == KLigTab.beyin) _beyinMounted = true;
+      // Açık OHP balonu gizlenen sekmenin üstünde asılı kalmasın.
+      _ohpHintPinned = false;
+      _ohpHintHover = false;
+    });
+    // `_syncOhpHint` DEĞİL: o, açık olmayan bir balonda da `hide()` çağırır
+    // ve Puan Ligi'nin `OverlayPortal`ı sekme değişiminde söküldüğünden
+    // `_zOrderIndex != null` doğrulamasına takılır (test yakaladı).
+    if (_ohpPortal.isShowing) _ohpPortal.hide();
+  }
+
+  /// Puan Ligi / Beyin Ligi sekmeleri — web `KLIG_TABS` düğmeleri.
+  Widget _buildTabs() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: _panel,
+        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(children: [
+        for (final (i, t) in kKLigTabs.indexed) ...[
+          if (i > 0) const SizedBox(width: 4),
+          Expanded(
+            child: Semantics(
+              selected: _tab == t.id,
+              button: true,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _selectTab(t.id),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: _tab == t.id ? Colors.white : Colors.transparent,
+                    borderRadius: BorderRadius.circular(9),
+                    boxShadow: _tab == t.id
+                        ? const [
+                            BoxShadow(
+                                color: Color(0x261B2430),
+                                blurRadius: 3,
+                                offset: Offset(0, 1)),
+                          ]
+                        : null,
+                  ),
+                  // Ölçek 1,3'te etiket sarmasın, sığmazsa küçülsün
+                  // (`ScaledCell` ile aynı sınıf 3 ilkesi).
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(t.icon,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontFamilyFallback: [
+                                'Noto Color Emoji',
+                                'Apple Color Emoji'
+                              ],
+                            )),
+                        const SizedBox(width: 6),
+                        Text(t.label,
+                            maxLines: 1,
+                            style: TextStyle(
+                                fontFamily: 'SpaceMono',
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: _tab == t.id ? _text : _muted)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ]),
+    );
+  }
 
   /// "OHP" açıklama balonu — başlığın TAM ÜSTÜNDE, aşağı bakan kuyruklu.
   /// İki ayrı kaynak, çünkü kapanma kuralları farklı (web ile aynı ayrım):
@@ -288,12 +383,15 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
           KLigMark(height: 28),
         ],
       ),
+      fillBody: true,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre '
-            'oluşan bir yarışmadır. Puanlar eşitse OHP yüksek olan üstte.',
+          _buildTabs(),
+          const SizedBox(height: 12),
+          Text(
+            _tab == KLigTab.puan ? kPuanLigiIntro : kBeyinLigiIntro,
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontFamily: 'SpaceMono',
@@ -302,56 +400,97 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
                 color: _muted),
           ),
           const SizedBox(height: 12),
-          if (rows == null)
-            // ⚠ YER BAŞTAN AYRILIR (24 Ağustos 2026, kullanıcı cihazda
-            // bildirdi): *"önce 1-2 saniye bir popup görüyorum, sonra
-            // sıralama üstüne geliyor... Halbuki tek pencere açılmalı ve
-            // datanın olduğu kısımda yükleniyor yazmalı"*. `KModal`
-            // yüksekliğini içeriğe göre aldığından tek satırlık bir yükleme
-            // metni pencereyi önce küçük açıp veri gelince büyütüyordu.
-            // Ayrılan yükseklik aşağıdaki listenin KENDİ tavanıyla (ekranın
-            // %50'si) aynı — pencere tek boyda açılıp yerinde doluyor.
-            SizedBox(
+          // Pencerede kalan yükseklik iki sekmeye SINIR olarak iner
+          // (`KModal.fillBody`): liste o sınıra kadar uzar, "senin sıran"
+          // satırı listenin ALTINDA her zaman görünür kalır. Stack, çünkü
+          // Offstage'deki Beyin Ligi de sınırlı bir yükseklik istiyor
+          // (içinde `Flexible` var) ve gizliyken sıfır boy bildiriyor —
+          // pencere görünen sekmenin boyunu alır.
+          Flexible(
+            child: Stack(
+              fit: StackFit.passthrough,
+              children: [
+                if (_beyinMounted)
+                  Offstage(
+                    offstage: _tab != KLigTab.beyin,
+                    child: BeyinLigiList(
+                      auth: widget.auth,
+                      stats: widget.stats,
+                      games: widget.games,
+                      friends: widget.friends,
+                    ),
+                  ),
+                if (_tab == KLigTab.puan)
+                  _buildPuanBody(rows, user?.id, meInList),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPuanBody(
+      List<LeaderboardRow>? rows, String? myId, bool meInList) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (rows == null)
+          // ⚠ YER BAŞTAN AYRILIR (24 Ağustos 2026, kullanıcı cihazda
+          // bildirdi): *"önce 1-2 saniye bir popup görüyorum, sonra
+          // sıralama üstüne geliyor... Halbuki tek pencere açılmalı ve
+          // datanın olduğu kısımda yükleniyor yazmalı"*. `KModal`
+          // yüksekliğini içeriğe göre aldığından tek satırlık bir yükleme
+          // metni pencereyi önce küçük açıp veri gelince büyütüyordu.
+          // Ayrılan yükseklik aşağıdaki listenin KENDİ tavanıyla (ekranın
+          // %50'si) aynı — pencere tek boyda açılıp yerinde doluyor.
+          Flexible(
+            child: SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.5,
               child: const Center(child: KLoadingNote(vertical: 0)),
-            )
-          else if (rows.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(
-                child: Text('Henüz skor yok. İlk sen ol!',
-                    style: TextStyle(
-                        fontFamily: 'SpaceMono', fontSize: 12, color: _muted)),
-              ),
-            )
-          else ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(children: [
-                // 28: "SIRA" 9px SpaceMono + 1px letter-spacing'te 24'e
-                // sığmayıp alt satıra kayıyordu (ekran görüntüsü yakaladı).
-                // ⚠ AYNI şey ölçek 1,3'te 28'de de oldu (2 Eylül 2026, cihaz
-                // görüntüsü: "SIR"/"A") — kutuyu büyütmek çözüm DEĞİL,
-                // ölçekle büyümesi gerekiyor. Satırın veri hücreleri
-                // 1 Eylül'de `ScaledCell`e çevrilmişti ama BAŞLIKLAR ve OHP
-                // sütunu ATLANMIŞTI; bu tur onu kapatıyor.
-                const ScaledCell(
-                    width: 28,
-                    align: Alignment.centerLeft,
-                    child: _HeadLabel('SIRA')),
-                // Web başlığı `gap-1` (4px). "SIRA" 28'lik kutuyu ~26 px
-                // dolduruyor; boşluksuz iPad'de "SIRAOYUNCU" diye bitişik
-                // okundu (1 Ekim 2026, 1.1.2 cihaz turu).
-                const SizedBox(width: 4),
-                const Expanded(child: _HeadLabel('OYUNCU')),
-                _buildOhpHeader(),
-                const ScaledCell(
-                    width: 44,
-                    child: _HeadLabel('PUAN', align: TextAlign.right)),
-              ]),
             ),
-            const SizedBox(height: 4),
-            ConstrainedBox(
+          )
+        else if (rows.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: Text('Henüz skor yok. İlk sen ol!',
+                  style: TextStyle(
+                      fontFamily: 'SpaceMono', fontSize: 12, color: _muted)),
+            ),
+          )
+        else ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(children: [
+              // 28: "SIRA" 9px SpaceMono + 1px letter-spacing'te 24'e
+              // sığmayıp alt satıra kayıyordu (ekran görüntüsü yakaladı).
+              // ⚠ AYNI şey ölçek 1,3'te 28'de de oldu (2 Eylül 2026, cihaz
+              // görüntüsü: "SIR"/"A") — kutuyu büyütmek çözüm DEĞİL,
+              // ölçekle büyümesi gerekiyor. Satırın veri hücreleri
+              // 1 Eylül'de `ScaledCell`e çevrilmişti ama BAŞLIKLAR ve OHP
+              // sütunu ATLANMIŞTI; bu tur onu kapatıyor.
+              const ScaledCell(
+                  width: 28,
+                  align: Alignment.centerLeft,
+                  child: _HeadLabel('SIRA')),
+              // Web başlığı `gap-1` (4px). "SIRA" 28'lik kutuyu ~26 px
+              // dolduruyor; boşluksuz iPad'de "SIRAOYUNCU" diye bitişik
+              // okundu (1 Ekim 2026, 1.1.2 cihaz turu).
+              const SizedBox(width: 4),
+              const Expanded(child: _HeadLabel('OYUNCU')),
+              _buildOhpHeader(),
+              const ScaledCell(
+                  width: 44,
+                  child: _HeadLabel('PUAN', align: TextAlign.right)),
+            ]),
+          ),
+          const SizedBox(height: 4),
+          // Tavan hâlâ ekranın %50'si (kısa listede pencere büyümesin),
+          // ama `Flexible` onu pencerede KALAN alana da indiriyor.
+          Flexible(
+            child: ConstrainedBox(
               constraints: BoxConstraints(
                   maxHeight: MediaQuery.sizeOf(context).height * 0.5),
               child: ListView.builder(
@@ -383,7 +522,7 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
                     avatarUrl: r.avatarUrl,
                     score: r.totalScore,
                     avgMoveScore: r.avgMoveScore,
-                    isMe: user != null && r.userId == user.id,
+                    isMe: myId != null && r.userId == myId,
                     onTap: () => showPlayerScoreCard(
                       context,
                       stats: widget.stats,
@@ -398,43 +537,55 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
                 },
               ),
             ),
-            if (user != null && !meInList && _myRank != null) ...[
-              const SizedBox(height: 8),
-              const Row(children: [
-                Expanded(child: Divider(color: _border)),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Text('SENİN SIRAN',
-                      style: TextStyle(
-                          fontFamily: 'SpaceMono',
-                          fontSize: 9,
-                          letterSpacing: 1,
-                          color: _muted)),
-                ),
-                Expanded(child: Divider(color: _border)),
-              ]),
-              _Row(
-                rank: _myRank!.rank,
-                name: 'Sen',
-                avatarUrl: widget.auth.profile?.avatarUrl,
-                score: _myRank!.totalScore,
-                avgMoveScore: _myRank!.avgMoveScore,
-                isMe: true,
-                onTap: () => showPlayerScoreCard(
-                  context,
-                  stats: widget.stats,
-                  userId: user.id,
-                  name: widget.auth.menuName,
-                  avatarUrl: widget.auth.profile?.avatarUrl,
-                  games: widget.games,
-                  friends: widget.friends,
-                  auth: widget.auth,
-                ),
+          ),
+          if (myId != null && !meInList && _myRank != null) ...[
+            const SizedBox(height: 8),
+            const Row(children: [
+              Expanded(child: Divider(color: _border)),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Text('SENİN SIRAN',
+                    style: TextStyle(
+                        fontFamily: 'SpaceMono',
+                        fontSize: 9,
+                        letterSpacing: 1,
+                        color: _muted)),
               ),
-            ],
+              Expanded(child: Divider(color: _border)),
+            ]),
+            _Row(
+              rank: _myRank!.rank,
+              name: 'Sen',
+              avatarUrl: widget.auth.profile?.avatarUrl,
+              score: _myRank!.totalScore,
+              avgMoveScore: _myRank!.avgMoveScore,
+              isMe: true,
+              onTap: () => showPlayerScoreCard(
+                context,
+                stats: widget.stats,
+                userId: myId,
+                name: widget.auth.menuName,
+                avatarUrl: widget.auth.profile?.avatarUrl,
+                games: widget.games,
+                friends: widget.friends,
+                auth: widget.auth,
+              ),
+            ),
           ],
         ],
-      ),
+        // Web `PUAN_LIGI_NOTE` — Beyin Ligi'nin alt notuyla aynı yer/stil
+        // (2 Ekim 2026). Web'de de yalnızca veri gelince (boş liste dahil).
+        if (rows != null) ...[
+          const SizedBox(height: 8),
+          const Text(kPuanLigiNote,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontFamily: 'SpaceMono',
+                  fontSize: 10,
+                  height: 1.5,
+                  color: _muted)),
+        ],
+      ],
     );
   }
 }
