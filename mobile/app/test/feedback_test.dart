@@ -411,7 +411,7 @@ void main() {
         ),
       ));
       await tester.pump();
-      await tester.tap(find.textContaining('Kayıt ol', findRichText: true));
+      await tester.tap(find.textContaining('KAYIT OL', findRichText: true));
       await tester.pump();
       await tester.tapOnText(find.textRange.ofSubstring('Kullanım Koşulları'));
       await tester.pumpAndSettle();
