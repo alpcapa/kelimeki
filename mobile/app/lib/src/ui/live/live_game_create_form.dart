@@ -1044,6 +1044,7 @@ class _SectionLabel extends StatelessWidget {
           fontFamily: 'SpaceMono',
           fontSize: 10,
           letterSpacing: 1.5,
+          fontWeight: FontWeight.w700,
           color: _muted,
         ),
       );
