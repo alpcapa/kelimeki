@@ -291,7 +291,7 @@ rozetleri dahil).
 
 | # | Dosya | Süre | Kurgu |
 |---|---|---|---|
-| 1 | `video-1-en-yuksek-puan.mp4` | ~13,5 sn | "Bu rafla en yüksek puanlı hamle kaç puan?" → 3-2-1 geri sayım → **ÖVEÇ = 97 puan** (merkez ×3 karesi) |
+| 1 | `video-1-en-yuksek-puan.mp4` | ~13,5 sn | Tek altyazı "En yüksek puanlı kelimeyi bul" (kullanıcı kararı, 5 Ekim) → 3-2-1 geri sayım → **ÖVEÇ = 97 puan** (merkez ×3 karesi; puanı uygulamanın kendi +97 rozeti gösterir, altyazı yok) |
 | 2 | `video-2-hangisini-oynardin.mp4` | ~20 sn | "Sen hangisini oynardın?" → A: CIVATA 38 puan (**sınır ihlali onay penceresi: 13 puan rakibe vergi**) → geri al → B: CUMA 24 puan vergisiz → hesap: A fark **+12**, B fark **+24** |
 | 3 | `video-3-cift-yildiz-bitis.mp4` | ~16 sn | "40 puan geride! Torba boş, elinde 2 joker ★★" → DAĞCI + **çift joker bitişi +50** → gerçek "SEN KAZANDI" ekranı **229–203** |
 

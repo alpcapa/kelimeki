@@ -114,17 +114,14 @@ async function oyna(page, n = 4) {
 // ── Senaryolar ────────────────────────────────────────────────────────────
 async function video1(page, s) {
   const { hamle } = s.enYuksek;
-  await cap(page, 'Bu rafla <b>en yüksek puanlı</b> hamle kaç puan?');
+  await cap(page, '<b>En yüksek puanlı</b> kelimeyi bul');
   await bekle(page, 1.6);
   for (const n of ['3', '2', '1']) { await pop(page, n); await bekle(page, 0.95); }
   await popKapat(page);
-  await cap(page, `İşte cevap: <b>${hamle.kelime}</b>`);
   await kare(page, 0.4);
   for (const a of hamle.adimlar) await surukle(page, a);
   await bekle(page, 1.0);
-  await cap(page, `<b>${hamle.kelime}</b> = <u>${hamle.brut} PUAN!</u>`);
   await bekle(page, 2.0);
-  await cap(page, 'Merkez <b>×3</b> karesine yerleşti');
   await oyna(page, 4);
   await bekle(page, 1.2);
 }
