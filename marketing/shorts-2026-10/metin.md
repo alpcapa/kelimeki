@@ -70,7 +70,7 @@ Kelimeki'de oyun son hamleye kadar bitmez. Kendin dene → link bio'da
 ## Yayın durumu (repo dışında yapılan iş — kullanıcı bildirdi)
 | Video | Platform | Tarih | Not |
 |---|---|---|---|
-| 1 En yüksek puan | Instagram (Reel) + Facebook | 5 Ekim 2026 | Kullanıcı yükledi. Sıradaki: İçgörüler (24 saat sonra, 6 Ekim) |
+| 1 En yüksek puan | Instagram (Reel) + Facebook | 5 Ekim 2026 | Kullanıcı yükledi (Reel + FB). Hikayeler: marka hesabında 2 (otomatik + `kelimeki.com` bağlantı çıkartmalı), kişisel hesapta 1 (`kelimeki.com`). Sıradaki: İçgörüler (24 saat sonra, 6 Ekim) |
 | 2 Hangisini oynardın | Instagram | planlı: 6 Ekim | — |
 | 3 Çift yıldız | Instagram | planlı: 7 Ekim | — |
 | 1-3 | TikTok (ayrı hesap) | IG'de ilk iki sonuç görüldükten sonra | — |
