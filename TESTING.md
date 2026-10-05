@@ -1046,7 +1046,7 @@ gerekiyor).
       olmalı. **İkinci kontrol (sayfalama):** listeyi sonuna kadar kaydır —
       hiçbir oyuncu İKİ KEZ görünmemeli ve kimse atlanmamalı (eski sıralama
       eşitlikte kararsızdı, `.range()` ile sayfalanınca bu mümkündü).
-      Açıklama satırında "Puanlar eşitse OHP yüksek olan üstte." yazmalı.
+      Listenin ALTINDAKİ nottaki "YZ'ye karşı oynanan oyunlar da sayılır." cümlesinin yanında "Puanlar eşitse OHP yüksek olan üstte." yazmalı (üst açıklamada artık YOK, 5 Ekim 2026).
       Skor Kartı'ndaki metrik etiketi de "Ortalama Hamle Puanı (OHP)"
       olmalı — dar bir telefonda kutuyu taşırmadan sarmalı.
 - [ ] **Kutlama banner'ı bir kez çıkar.** Görülmemiş bir ödülün varken
