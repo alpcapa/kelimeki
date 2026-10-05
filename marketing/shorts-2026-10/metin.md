@@ -66,3 +66,12 @@ Kelimeki'de oyun son hamleye kadar bitmez. Kendin dene → link bio'da
 - Hashtag sayısı bilerek az (IG 7-8, TikTok 5-6); eski tek-tek konuşma "tavan" tartışması yok, denenip ölçülsün.
 - Video 2'deki rakamlar videodaki sahneyle birebir (A: CIVATA 38 puan, 13'ü rakibe; B: CUMA 24 puan vergisiz). Açıklama metnini değiştirirsen rakamı videoya göre tut.
 - Video 3 bir ÖRNEK sahnedir (puan farkı sahnelendi); açıklamada "gerçek oyunumuz" demiyor, "gerideydik" örnek anlatımı.
+
+## Yayın durumu (repo dışında yapılan iş — kullanıcı bildirdi)
+| Video | Platform | Tarih | Not |
+|---|---|---|---|
+| 1 En yüksek puan | Instagram (Reel) + Facebook | 5 Ekim 2026 | Kullanıcı yükledi. Sıradaki: İçgörüler (24 saat sonra, 6 Ekim) |
+| 2 Hangisini oynardın | Instagram | planlı: 6 Ekim | — |
+| 3 Çift yıldız | Instagram | planlı: 7 Ekim | — |
+| 1-3 | TikTok (ayrı hesap) | IG'de ilk iki sonuç görüldükten sonra | — |
+| 1-3 | YouTube Shorts | en son; `ALT` → "Link açıklamada" ile yeniden üretilecek | — |
