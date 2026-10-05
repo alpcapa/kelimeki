@@ -38,6 +38,7 @@ import '../rank/league_rank.dart';
 import '../rank/rank_scores.dart';
 import '../rank/rank_seal.dart';
 import '../setup/recent_games_section.dart';
+import '../friends/block_confirm_sheet.dart';
 import '../friends/friends_modal.dart'
     show showFriendInfoDialog, kFriendActionFailed;
 import 'friend_suggest_modal.dart';
@@ -45,6 +46,7 @@ import 'guest_live_sheet.dart';
 import '../../util/live_game_request.dart';
 import 'live_game_create_form.dart';
 import 'open_online_game.dart';
+import '../tap_target.dart';
 import '../tokens.dart';
 import '../loading_note.dart';
 import '../game/neo_box.dart';
@@ -404,6 +406,30 @@ class _LiveGamesTabState extends State<LiveGamesTab>
     }
   }
 
+  /// Daveti gönderen kişiyi ENGELLE (web 4 Ekim 2026, kullanıcı kararı: davet
+  /// kartında yalnızca "Engelle", şikayet YOK — şikayet sohbete özeldir).
+  /// Önce engel, sonra daveti reddet: engel başarısızsa davet yerinde kalır;
+  /// ret başarısız olursa engel kalır (davet zaten engellenen kişiden) ve
+  /// liste bir sonraki tazelemede düzelir.
+  Future<void> _handleBlock(OnlineGame game) async {
+    final repo = services.onlineGames;
+    final chat = services.chat;
+    final inviteId = game.myInviteId;
+    final creator = game.createdBy;
+    if (repo == null || chat == null || inviteId == null || creator == null) {
+      return;
+    }
+    final ok = await showBlockConfirm(
+      context,
+      name: game.creatorSlot?.name ?? 'Bu kullanıcı',
+      onConfirm: () async {
+        await chat.blockUser(creator);
+        await repo.respondInvite(inviteId, accept: false);
+      },
+    );
+    if (ok && mounted) await _reload();
+  }
+
   /// Aktif bir oyuna dokunulunca Canlı tahtayı açar; dönüşte liste
   /// tazelenir (oyunda oynanan hamle "Devam Edenler"deki sıra etiketini
   /// değiştirmiş olabilir — Realtime da tetikler ama dönüş anı garanti).
@@ -622,6 +648,10 @@ class _LiveGamesTabState extends State<LiveGamesTab>
                                     '${g.creatorSlot?.name ?? 'Bir arkadaşın'} seni ${g.playerCount} kişilik oyuna davet etti',
                                 busy: _busyInviteId == g.myInviteId,
                                 onRespond: (a) => _handleRespond(g, a),
+                                onBlock:
+                                    g.createdBy != null && services.chat != null
+                                        ? () => _handleBlock(g)
+                                        : null,
                                 tierOf: _rankScores.tierOf,
                               ),
                           ]),
@@ -1066,6 +1096,9 @@ class _PendingGameCard extends StatelessWidget {
   final bool busy;
   final void Function(bool accept)? onRespond;
 
+  /// Daveti gönderen kişiyi ENGELLE (web `onBlock`) — yalnızca davet kartında.
+  final VoidCallback? onBlock;
+
   /// Katılımcının rütbesi — puan bilinmiyorsa null (mühür çizilmez).
   final RankTier? Function(String? userId) tierOf;
   const _PendingGameCard({
@@ -1075,6 +1108,7 @@ class _PendingGameCard extends StatelessWidget {
     required this.tierOf,
     this.busy = false,
     this.onRespond,
+    this.onBlock,
   });
 
   @override
@@ -1209,6 +1243,24 @@ class _PendingGameCard extends StatelessWidget {
               ),
             ]),
           ],
+          if (onRespond != null && onBlock != null)
+            Align(
+              alignment: Alignment.center,
+              child: TapTarget(
+                onTap: busy ? null : onBlock,
+                minHeight: 36,
+                child: Text(
+                  'ENGELLE',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                    color: _muted,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

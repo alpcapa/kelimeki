@@ -384,26 +384,40 @@ class FakeChatGateway implements ChatGateway {
     if (f != null) throw f;
     markReadCalls.add((gameId, readAt));
     final cur = serverLastReadAt;
-    if (cur == null ||
-        DateTime.parse(readAt).isAfter(DateTime.parse(cur))) {
+    if (cur == null || DateTime.parse(readAt).isAfter(DateTime.parse(cur))) {
       serverLastReadAt = readAt;
     }
   }
 
-  /// Kişi → kaynak oyun id'si. Sahte uç GERÇEK ucun sözleşmesini taklit
-  /// etmek ZORUNDA (Parça 46'nın dersi): gerçek `myModeration` oyun id'sini
-  /// de döndürüyor ve sessizden çıkarma o id'ye bağlı — sahte yalnızca
-  /// kimlikleri döndürseydi, o bağın kopması testlerde görünmezdi.
-  Map<String, String> moderationMuted = const {};
-  Map<String, String> moderationReported = const {};
+  /// `list_blocked_users` satırları (`blocked_user_id`/`blocked_name`/
+  /// `blocked_avatar_url`/`is_reported`) — sahte uç GERÇEK ucun ham şeklini
+  /// döndürür, ayrıştırma `BlockedUser.fromJson`da sınansın.
+  List<Map<String, Object?>> blockedRows = [];
   Object? moderationFailWith;
+  final blockedCalls = <String>[];
+  final unblockedCalls = <String>[];
+  Object? blockFailWith;
+  Object? unblockFailWith;
 
   @override
-  Future<({Map<String, String> muted, Map<String, String> reported})>
-      myModeration() async {
+  Future<List<Map<String, Object?>>> blockedUsers() async {
     final f = moderationFailWith;
     if (f != null) throw f;
-    return (muted: moderationMuted, reported: moderationReported);
+    return blockedRows;
+  }
+
+  @override
+  Future<void> blockUser(String targetUserId) async {
+    final f = blockFailWith;
+    if (f != null) throw f;
+    blockedCalls.add(targetUserId);
+  }
+
+  @override
+  Future<void> unblockUser(String targetUserId) async {
+    final f = unblockFailWith;
+    if (f != null) throw f;
+    unblockedCalls.add(targetUserId);
   }
 
   @override
@@ -599,3 +613,13 @@ User fakeUser(String id) => User(
       createdAt: '2026-01-01T00:00:00Z',
       email: '$id@ornek.com',
     );
+
+/// `list_blocked_users` ham satırı (bkz. `FakeChatGateway.blockedRows`).
+Map<String, Object?> blockedRow(String id, String name,
+        {bool reported = false}) =>
+    {
+      'blocked_user_id': id,
+      'blocked_name': name,
+      'blocked_avatar_url': null,
+      'is_reported': reported,
+    };

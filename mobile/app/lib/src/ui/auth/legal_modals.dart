@@ -192,7 +192,7 @@ class TermsModal extends StatelessWidget {
       child: _StackedSections([
         const _P(
             "Kelimeki'ye kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul "
-            'ettiğinizi beyan edersiniz. Son güncelleme: 25 Eylül 2026.'),
+            'ettiğinizi beyan edersiniz. Son güncelleme: 19 Ekim 2026.'),
         const _Section('1. Hizmet Sağlayıcı ve Kapsam', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -264,7 +264,7 @@ class TermsModal extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold)),
             TextSpan(
                 text: ' Uygunsuz bir mesajla karşılaşan kullanıcı, sohbet '
-                    'ekranındaki ayarlardan o kişiyi sessize alabilir ve '
+                    'ekranındaki ayarlardan o kişiyi engelleyebilir ve '
                     'şikâyet edebilir. Bize ulaşan şikâyetler incelenir. 3. '
                     'bölüme aykırı içerik kaldırılabilir ve gönderenin '
                     'hesabı önceden bildirim yapılmaksızın askıya alınabilir '
@@ -298,7 +298,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 25 Eylül 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 19 Ekim 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -335,7 +335,7 @@ class PrivacyModal extends StatelessWidget {
             '"Görüş Bildir" formundan ilettiğiniz mesajlar ve size yanıt '
                 'verebilmemiz için formda belirttiğiniz e-posta adresi — '
                 'girişsiz (misafir) gönderdiğinizde de saklanır',
-            'Bir Canlı oyunda kimleri sessize aldığınız ve gönderdiğiniz '
+            'Kimleri engellediğiniz ve bir Canlı oyunda gönderdiğiniz '
                 'uygunsuz paylaşım şikayetleri (şikayetin nedeni dahil)',
             'Bir oyunu hangi istemciden oynadığınız (web sitesi ya da mobil '
                 'uygulama) — yalnızca hangi platformun ne kadar kullanıldığını '
@@ -406,10 +406,10 @@ class PrivacyModal extends StatelessWidget {
               'katılımcılarına ve (şikayet incelemesi amacıyla) yönetici '
               'ekibine açıktır — oyunun skoru ve tahtası tüm kayıtlı '
               'kullanıcılara görünür olsa bile sohbet içeriği görünmez.'),
-          _P('Bir Canlı oyunda kimi sessize aldığınız yalnızca size '
-              'görünür, diğer katılımcılar (sessize alınan kişi dahil) bunu '
-              'hiçbir zaman göremez. Gönderdiğiniz uygunsuz paylaşım '
-              'şikayetleri yalnızca inceleme amacıyla yönetici ekibiyle '
+          _P('Kimi engellediğiniz diğer katılımcılara gösterilmez; yalnızca '
+              'engellediğiniz kişi size oyun daveti ya da arkadaşlık isteği '
+              'göndermeyi denerse, engellendiğini belirten bir uyarı görür. '
+              'Gönderdiğiniz uygunsuz paylaşım şikayetleri yalnızca inceleme amacıyla yönetici ekibiyle '
               'paylaşılır; şikayet edilen kullanıcıya şikayet edildiği, '
               'kimin şikayet ettiği ya da şikayetin içeriği hiçbir şekilde '
               'bildirilmez.'),

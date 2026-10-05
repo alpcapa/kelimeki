@@ -15,9 +15,17 @@
 //   etmen onunla oynadığın HER oyunda geçerli).
 // - Rapor otomatik olarak hedefi de sessize alır (sunucu tarafında, RPC
 //   gövdesi) — istemci ayrıca bir setMute çağırmaz.
+// - ENGEL (4-5 Ekim 2026, web #811/#813): "sessize al" terimi "Engelle" oldu
+//   ve engel oyundan BAĞIMSIZ (`block_user`/`unblock_user`/`list_blocked_users`
+//   → `blockUser`/`unblockUser`/`blockedUsers`). Engellenen kişi oyun davetini,
+//   arkadaşlık isteğini, arkadaş davet linkini ve rastgele eşleşmeyi kapatır.
+//   `unblock_user` engeli + sohbet engellerini temizler, açık ŞİKAYETE
+//   dokunmaz (şikayeti geri çekmek ayrı adım: `withdrawReports`).
 import 'dart:async';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:kelimeki_core/kelimeki_core.dart' show trCompare;
 
 import '../util/chat_read.dart';
 
@@ -43,6 +51,30 @@ class OnlineGameMessageRow {
       );
 }
 
+/// "Engellediklerim" satırı — web `BlockedUser` (`src/lib/api.ts`).
+class BlockedUser {
+  final String userId;
+  final String name;
+  final String? avatarUrl;
+
+  /// Aktif şikayet de var — engel, şikayet geri çekilene kadar sürer.
+  final bool reported;
+
+  const BlockedUser({
+    required this.userId,
+    required this.name,
+    required this.avatarUrl,
+    required this.reported,
+  });
+
+  factory BlockedUser.fromJson(Map<String, Object?> j) => BlockedUser(
+        userId: j['blocked_user_id'] as String,
+        name: j['blocked_name'] as String,
+        avatarUrl: j['blocked_avatar_url'] as String?,
+        reported: j['is_reported'] == true,
+      );
+}
+
 abstract class ChatGateway {
   Future<List<Map<String, Object?>>> messages(String gameId);
   Future<void> send(String gameId, String message);
@@ -64,19 +96,17 @@ abstract class ChatGateway {
   /// `markChatReadRemote`.
   Future<void> markChatRead(String gameId, String readAt);
 
-  /// Sessize alınan/şikayet edilen kişi → KAYNAK oyun id'si.
-  ///
-  /// Arkadaş listesinden moderasyon durumunu yönetebilmek için (bkz.
-  /// `FriendModerationSheet`). Oyun id'si şart, çünkü
-  /// `mute_online_game_participant` katılımcılık kontrolünü `p_muted`
-  /// dalından ÖNCE yapıyor — sessizden ÇIKARMA bile geçerli bir ortak oyun
-  /// istiyor. Mute/rapor satırının kendisi `online_game_id` taşıyor ve o
-  /// satır ancak ikisi de o oyunun katılımcısıyken yazılabildiğinden
-  /// provenance olarak kullanılabiliyor; sunucuda değişiklik gerekmiyor.
-  /// (Canlıda doğrulandı: BİTMİŞ bir oyunun id'siyle de geçiyor —
-  /// `is_online_game_participant` oyunun status'üne bakmıyor.)
-  Future<({Map<String, String> muted, Map<String, String> reported})>
-      myModeration();
+  /// Engellediğim / sohbette engellediğim / şikayet ettiğim HERKES
+  /// (`list_blocked_users`) — arkadaş olsun olmasın. Hata FIRLATILIR.
+  Future<List<Map<String, Object?>>> blockedUsers();
+
+  /// Kişiyi engeller (oyundan bağımsız, `block_user`).
+  Future<void> blockUser(String targetUserId);
+
+  /// Engeli + sohbet engellerini kaldırır (`unblock_user`); açık şikayete
+  /// dokunmaz.
+  Future<void> unblockUser(String targetUserId);
+
   Future<void> setMute(String gameId, String targetUserId, bool muted);
   Future<void> report(String gameId, String targetUserId, String reason);
   Future<void> withdrawReports(String targetUserId);
@@ -138,9 +168,8 @@ class SupabaseChatGateway implements ChatGateway {
 
   @override
   Future<List<String>> myMutes() async {
-    final rows = await client
-        .from('online_game_message_mutes')
-        .select('muted_user_id');
+    final rows =
+        await client.from('online_game_message_mutes').select('muted_user_id');
     return [for (final r in rows) r['muted_user_id'] as String];
   }
 
@@ -172,26 +201,19 @@ class SupabaseChatGateway implements ChatGateway {
   }
 
   @override
-  Future<({Map<String, String> muted, Map<String, String> reported})>
-      myModeration() async {
-    final mutes = await client
-        .from('online_game_message_mutes')
-        .select('muted_user_id, online_game_id');
-    final reports = await client
-        .from('online_game_chat_reports')
-        .select('reported_user_id, online_game_id')
-        .filter('withdrawn_at', 'is', null);
-    final muted = <String, String>{};
-    for (final r in mutes) {
-      muted.putIfAbsent(
-          r['muted_user_id'] as String, () => r['online_game_id'] as String);
-    }
-    final reported = <String, String>{};
-    for (final r in reports) {
-      reported.putIfAbsent(
-          r['reported_user_id'] as String, () => r['online_game_id'] as String);
-    }
-    return (muted: muted, reported: reported);
+  Future<List<Map<String, Object?>>> blockedUsers() async {
+    final rows = await client.rpc('list_blocked_users');
+    return [for (final r in (rows as List)) (r as Map).cast<String, Object?>()];
+  }
+
+  @override
+  Future<void> blockUser(String targetUserId) async {
+    await client.rpc('block_user', params: {'p_target': targetUserId});
+  }
+
+  @override
+  Future<void> unblockUser(String targetUserId) async {
+    await client.rpc('unblock_user', params: {'p_target': targetUserId});
   }
 
   @override
@@ -204,8 +226,7 @@ class SupabaseChatGateway implements ChatGateway {
   }
 
   @override
-  Future<void> report(
-      String gameId, String targetUserId, String reason) async {
+  Future<void> report(String gameId, String targetUserId, String reason) async {
     await client.rpc('report_online_game_participant', params: {
       'p_game_id': gameId,
       'p_target_user_id': targetUserId,
@@ -265,8 +286,7 @@ class ChatRepo {
   Future<void> send(String gameId, String message) async {
     final trimmed = message.trim();
     if (trimmed.isEmpty || trimmed.length > maxMessageLength) {
-      throw Exception(
-          'Mesaj 1-$maxMessageLength karakter arasında olmalı.');
+      throw Exception('Mesaj 1-$maxMessageLength karakter arasında olmalı.');
     }
     return gateway.send(gameId, trimmed);
   }
@@ -315,16 +335,41 @@ class ChatRepo {
     } catch (_) {}
   }
 
-  /// Ağ hatasında boş haritalar — `myMutes` ile aynı gerekçe: eksik veri
-  /// en fazla ikonu geçici gizler.
-  Future<({Map<String, String> muted, Map<String, String> reported})>
-      myModeration() async {
+  /// "Engellediklerim": engellediğim / sohbette engellediğim / şikayet
+  /// ettiğim HERKES, ada göre (`trCompare`; web `fetchBlockedUsers`). Hata
+  /// FIRLATILIR — liste "boş" sanılmasın.
+  Future<List<BlockedUser>> blockedUsers() async {
+    final rows = await gateway.blockedUsers();
+    final list = [for (final r in rows) BlockedUser.fromJson(r)];
+    list.sort((a, b) => trCompare(a.name, b.name));
+    return list;
+  }
+
+  /// Arkadaş listesindeki 🚫/🚩 için: engelli ve şikayetli kimlik kümeleri.
+  /// Ağ hatasında boş kümeler — rozet süs, eksik veri en fazla ikonu geçici
+  /// gizler (web `reloadModeration`un hatada boş kalmasıyla aynı).
+  Future<({Set<String> blocked, Set<String> reported})> myModeration() async {
     try {
-      return await gateway.myModeration();
+      final list = await blockedUsers();
+      return (
+        blocked: {for (final u in list) u.userId},
+        reported: {
+          for (final u in list)
+            if (u.reported) u.userId
+        },
+      );
     } catch (_) {
-      return (muted: const <String, String>{}, reported: const <String, String>{});
+      return (blocked: const <String>{}, reported: const <String>{});
     }
   }
+
+  /// Oyundan bağımsız engel — istek/davet kartı ve arkadaş ⋯ menüsü.
+  Future<void> blockUser(String targetUserId) =>
+      gateway.blockUser(targetUserId);
+
+  /// Engeli (ve sohbet engellerini) kaldırır; açık şikayete dokunmaz.
+  Future<void> unblockUser(String targetUserId) =>
+      gateway.unblockUser(targetUserId);
 
   Future<void> setMute(String gameId, String targetUserId, bool muted) =>
       gateway.setMute(gameId, targetUserId, muted);

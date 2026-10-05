@@ -1157,7 +1157,31 @@ bulunursa o sohbetteki "yeni mesaj" balonu susturma listesinden (yalnızca sohbe
 engeli) beslendiği için bastırılmaz; davet/istek/eşleşme kapıları ise
 `user_blocks`u okur.
 
-**PORT İKİZİ (19 Ekim, taslak PR, ROADMAP E):** terim; davet + istek kartında
+**PORT İKİZİ — YAZILDI (5 Ekim 2026, taslak PR `claude/engelle-port-ikizi`, 19 Ekim treni; ROADMAP E):**
+`block_confirm_sheet.dart` · `blocked_users_sheet.dart` · `friend_moderation_sheet.dart`
+(`blocked` bayrağı, `unblock_user`) · `friends_modal.dart` (kaynak
+`list_blocked_users`; istek kartında "ENGELLE", ⋯ menüsü Engelle/Engeli
+kaldır/Engel-şikayet ayarları, altta "ENGELLEDİKLERİM") · `live_games_tab.dart`
+(davet kartı) · `chat_settings_modal.dart` (terim + KALDIRMA `unblock_user`) ·
+`chat_api.dart` (`blockUser`/`unblockUser`/`blockedUsers`; eski `myModeration`
+oyun-id'li haritası KALKTI). Parite-kilitli dört metin web'le BİRLİKTE
+değişti: arkadaş menüsü etiketleri, `chatRules.ts` ↔ `chat_rules.dart`
+(sürüm 1 AYNI — küçük düzeltme), hukuki metinler (`LegalContent.tsx` ↔
+`legal_modals.dart`, "Son güncelleme: 19 Ekim 2026") ve karşılama cümlesi
+(`Landing.tsx`; portta ikizi YOK). ⚠ **Hukuki metin yalnızca terim
+değiştirmedi:** eski "sessize alınan kişi bunu hiçbir zaman göremez" cümlesi
+ENGELLE ile YANLIŞ olur (engellenen, davet/istek denerse "sizi engelledi"
+uyarısını görür) — yeni cümle bunu açıkça söylüyor. ⚠ **Web'in `max-h-[55vh]`
+iç kaydırması TAŞINMADI** (kullanıcı listesinde istenmişti): `KModal` gövdesi
+zaten kayıyor ve Flutter iç içe kaydırmayı zincirlemiyor
+(`KModal.bodyController` yorumu, 27 Ağustos 2026 vakası); web'deki gerekçe
+("Engellediklerim bağlantısı uzun listenin altında kaybolmasın") portta
+kaydırınca bağlantıya ulaşılarak karşılanıyor. Puan Ligi: portta Beyin Ligi
+sekmesi/alt notu HİÇ yoktu — `kPuanLigiIntro` + `kPuanLigiNote` (web #814'ün
+son hâli) eklendi. Testler: `friends_test` · `chat_test` · `live_games_test`
+· `block_parity_test` (web kaynağını okur).
+
+**Eski plan (yazıldığı hâliyle):** terim; davet + istek kartında
 "Engelle" + onay; `blocked_users_sheet.dart` ("Engellediklerim");
 `friend_moderation_sheet.dart` (`blocked` bayrağı, `unblock_user`); sohbet
 ayarları metni; yukarıdaki dört parite-kilitli metin; `blockUser`/`unblockUser`/

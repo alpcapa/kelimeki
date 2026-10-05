@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 25 Eylül 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 19 Ekim 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
@@ -92,7 +92,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
               saklanır
             </li>
             <li>
-              Bir Canlı oyunda kimleri sessize aldığınız ve gönderdiğiniz uygunsuz paylaşım
+              Kimleri engellediğiniz ve bir Canlı oyunda gönderdiğiniz uygunsuz paylaşım
               şikayetleri (şikayetin nedeni dahil)
             </li>
             <li>
@@ -176,9 +176,9 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             olsa bile sohbet içeriği görünmez.
           </P>
           <P>
-            Bir Canlı oyunda kimi sessize aldığınız yalnızca size görünür, diğer katılımcılar
-            (sessize alınan kişi dahil) bunu hiçbir zaman göremez. Gönderdiğiniz uygunsuz
-            paylaşım şikayetleri yalnızca inceleme amacıyla yönetici ekibiyle paylaşılır;
+            Kimi engellediğiniz diğer katılımcılara gösterilmez; yalnızca engellediğiniz kişi size
+            oyun daveti ya da arkadaşlık isteği göndermeyi denerse, engellendiğini belirten bir
+            uyarı görür. Gönderdiğiniz uygunsuz paylaşım şikayetleri yalnızca inceleme amacıyla yönetici ekibiyle paylaşılır;
             şikayet edilen kullanıcıya şikayet edildiği, kimin şikayet ettiği ya da şikayetin içeriği
             hiçbir şekilde bildirilmez.
           </P>
@@ -291,7 +291,7 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki'ye kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
-          Son güncelleme: 25 Eylül 2026.
+          Son güncelleme: 19 Ekim 2026.
         </P>
 
         <Section title="1. Hizmet Sağlayıcı ve Kapsam">
@@ -362,7 +362,7 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
               kullanıcı sorumludur.
             </strong>{' '}
             Uygunsuz bir mesajla karşılaşan kullanıcı, sohbet ekranındaki ayarlardan o kişiyi
-            sessize alabilir ve şikâyet edebilir. Bize ulaşan şikâyetler incelenir. 3. bölüme aykırı
+            engelleyebilir ve şikâyet edebilir. Bize ulaşan şikâyetler incelenir. 3. bölüme aykırı
             içerik kaldırılabilir ve gönderenin hesabı önceden bildirim yapılmaksızın askıya
             alınabilir veya silinebilir. Yasal olarak zorunlu hâllerde ilgili bilgiler yetkili
             mercilerle paylaşılabilir.

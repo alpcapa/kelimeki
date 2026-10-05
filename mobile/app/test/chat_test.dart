@@ -43,8 +43,7 @@ void main() {
       final gw = FakeChatGateway();
       final repo = ChatRepo(gw);
       await expectLater(repo.send('g1', '   '), throwsException);
-      await expectLater(
-          repo.send('g1', 'x' * 201), throwsException);
+      await expectLater(repo.send('g1', 'x' * 201), throwsException);
       expect(gw.sent, isEmpty); // gateway'e hiç gitmedi
 
       await repo.send('g1', '  Merhaba  ');
@@ -72,13 +71,50 @@ void main() {
     test('report: 500 karakter üstü reddedilir', () async {
       final gw = FakeChatGateway();
       final repo = ChatRepo(gw);
-      await expectLater(
-          repo.report('g1', 'u1', 'x' * 501), throwsException);
+      await expectLater(repo.report('g1', 'u1', 'x' * 501), throwsException);
       await expectLater(repo.report('g1', 'u1', '  '), throwsException);
       expect(gw.reportedCalls, isEmpty);
 
       await repo.report('g1', 'u1', '  spam  ');
       expect(gw.reportedCalls.single, ('g1', 'u1', 'spam'));
+    });
+
+    test('blockedUsers: ham satırlar BlockedUser\'a, ada göre (trCompare)',
+        () async {
+      final gw = FakeChatGateway()
+        ..blockedRows = [
+          blockedRow('1', 'Zeynep'),
+          blockedRow('2', 'Çağlar', reported: true),
+          blockedRow('3', 'Ayşe'),
+        ];
+      final repo = ChatRepo(gw);
+      final list = await repo.blockedUsers();
+      expect([for (final u in list) u.name], ['Ayşe', 'Çağlar', 'Zeynep']);
+      expect(list[1].reported, isTrue);
+      expect(list[0].reported, isFalse);
+      final m = await repo.myModeration();
+      expect(m.blocked, {'1', '2', '3'});
+      expect(m.reported, {'2'});
+    });
+
+    test('blockedUsers hatayı FIRLATIR; myModeration boş kümeye düşer',
+        () async {
+      final gw = FakeChatGateway()
+        ..moderationFailWith = Exception('Failed host lookup: x.supabase.co');
+      final repo = ChatRepo(gw);
+      await expectLater(repo.blockedUsers(), throwsException);
+      final m = await repo.myModeration();
+      expect(m.blocked, isEmpty);
+      expect(m.reported, isEmpty);
+    });
+
+    test('blockUser/unblockUser gateway\'e delege eder', () async {
+      final gw = FakeChatGateway();
+      final repo = ChatRepo(gw);
+      await repo.blockUser('u1');
+      await repo.unblockUser('u2');
+      expect(gw.blockedCalls, ['u1']);
+      expect(gw.unblockedCalls, ['u2']);
     });
 
     test('setMute/withdrawReports gateway\'e delege eder', () async {
@@ -129,7 +165,8 @@ void main() {
       );
       if (boundaryKey != null) {
         dialog = RepaintBoundary(
-            key: boundaryKey, child: ColoredBox(color: Colors.white, child: dialog));
+            key: boundaryKey,
+            child: ColoredBox(color: Colors.white, child: dialog));
       }
       await tester.pumpWidget(MaterialApp(
         theme: kelimekiTheme(),
@@ -185,8 +222,8 @@ void main() {
       expect(find.text('0/200'), findsOneWidget);
       expect(find.text('🚫'), findsOneWidget); // u2 sessize alınmış
 
-      final sendButton =
-          tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'Gönder'));
+      final sendButton = tester.widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, 'Gönder'));
       expect(sendButton.onPressed, isNull);
 
       await tester.runAsync(() async {
@@ -231,7 +268,8 @@ void main() {
       expect(find.textContaining('Mesaj gönderilemedi.'), findsOneWidget);
     });
 
-    testWidgets('başkasının mesajına dokunmak onOpenParticipantSettings çağırır',
+    testWidgets(
+        'başkasının mesajına dokunmak onOpenParticipantSettings çağırır',
         (tester) async {
       String? opened;
       await pumpModal(
@@ -429,50 +467,66 @@ void main() {
 
     testWidgets('liste: rozetler görünür, satıra dokunmak detay açar',
         (tester) async {
-      await pumpSettings(tester,
-          mutedUserIds: {'u2'}, reportedUserIds: {'u3'});
+      await pumpSettings(tester, mutedUserIds: {'u2'}, reportedUserIds: {'u3'});
       expect(find.text('Esiner'), findsOneWidget);
       expect(find.text('Bobola'), findsOneWidget);
-      expect(find.text('🚫'), findsOneWidget); // u2 sessize
+      expect(find.text('🚫'), findsOneWidget); // u2 engelli
       expect(find.text('🚩'), findsOneWidget); // u3 rapor edilmiş (öncelikli)
 
       await tester.tap(find.text('Esiner'));
       await tester.pump();
-      expect(find.text('Kişiyi Sessize Al'), findsOneWidget);
+      expect(find.text('Kişiyi Engelle'), findsOneWidget);
       expect(find.text('KİŞİYİ ŞİKAYET ET'), findsOneWidget);
     });
 
     testWidgets('initialParticipantId doğrudan detay görünümüyle açar',
         (tester) async {
       await pumpSettings(tester, initialParticipantId: 'u2');
-      expect(find.text('Kişiyi Sessize Al'), findsOneWidget);
+      expect(find.text('Kişiyi Engelle'), findsOneWidget);
       expect(find.text('← Geri'), findsOneWidget);
     });
 
-    testWidgets('sessize alma: onay adımı + RPC + callback', (tester) async {
+    testWidgets('engelleme: onay adımı + RPC + callback', (tester) async {
       final h = await pumpSettings(tester, initialParticipantId: 'u2');
-      await tester.tap(find.text('Kişiyi Sessize Al'));
+      await tester.tap(find.text('Kişiyi Engelle'));
       await tester.pump();
       expect(find.text('Emin misiniz?'), findsOneWidget);
-      expect(find.text('SESSİZE AL'), findsOneWidget);
+      expect(find.text('ENGELLE'), findsOneWidget);
 
-      await tester.tap(find.text('SESSİZE AL'));
+      await tester.tap(find.text('ENGELLE'));
       await tester.pump();
       await tester.pump();
       expect(h.gw.mutedCalls.single, ('g1', 'u2', true));
       expect(h.muteChanges.single, ('u2', true));
       // Onaydan sonra detaya döner, checkbox işaretli görünür.
-      expect(find.text('Kişiyi Sessize Al'), findsOneWidget);
+      expect(find.text('Kişiyi Engelle'), findsOneWidget);
     });
 
-    testWidgets('sessize alma onayında VAZGEÇ RPC çağırmaz', (tester) async {
+    testWidgets(
+        'engeli KALDIRMA oyun bağlamlı RPC değil `unblock_user` çağırır '
+        '(kartlardan yapılan oyundan bağımsız engel de temizlensin)',
+        (tester) async {
+      final h = await pumpSettings(tester,
+          initialParticipantId: 'u2', mutedUserIds: {'u2'});
+      await tester.tap(find.text('Kişiyi Engelle')); // işaretliyken = kaldır
+      await tester.pump();
+      expect(find.text('ENGELİ KALDIR'), findsOneWidget);
+      await tester.tap(find.text('ENGELİ KALDIR'));
+      await tester.pump();
+      await tester.pump();
+      expect(h.gw.unblockedCalls, ['u2']);
+      expect(h.gw.mutedCalls, isEmpty);
+      expect(h.muteChanges.single, ('u2', false));
+    });
+
+    testWidgets('engelleme onayında VAZGEÇ RPC çağırmaz', (tester) async {
       final h = await pumpSettings(tester, initialParticipantId: 'u2');
-      await tester.tap(find.text('Kişiyi Sessize Al'));
+      await tester.tap(find.text('Kişiyi Engelle'));
       await tester.pump();
       await tester.tap(find.text('VAZGEÇ'));
       await tester.pump();
       expect(h.gw.mutedCalls, isEmpty);
-      expect(find.text('Kişiyi Sessize Al'), findsOneWidget);
+      expect(find.text('Kişiyi Engelle'), findsOneWidget);
     });
 
     testWidgets(
@@ -484,8 +538,8 @@ void main() {
       expect(find.textContaining('neden şikayet ediyorsunuz'), findsOneWidget);
 
       // Boşken Devam Et pasif.
-      final devam =
-          tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'DEVAM ET'));
+      final devam = tester.widget<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, 'DEVAM ET'));
       expect(devam.onPressed, isNull);
 
       await tester.enterText(find.byType(TextField), 'Uygunsuz dil');
@@ -521,7 +575,8 @@ void main() {
       await tester.pump();
       expect(find.text('Emin misiniz?'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'ŞİKAYETİ GERİ ÇEK'));
+      await tester
+          .tap(find.widgetWithText(ElevatedButton, 'ŞİKAYETİ GERİ ÇEK'));
       await tester.pump();
       await tester.pump();
       expect(h.gw.withdrawnCalls, ['u2']);
@@ -532,10 +587,10 @@ void main() {
     testWidgets('RPC hatası mesaj satırında gösterilir, view değişmez',
         (tester) async {
       final h = await pumpSettings(tester, initialParticipantId: 'u2');
-      h.gw.muteFailWith = Exception('ağ hatası');
-      await tester.tap(find.text('Kişiyi Sessize Al'));
+      h.gw.muteFailWith = Exception('Failed host lookup: x.supabase.co');
+      await tester.tap(find.text('Kişiyi Engelle'));
       await tester.pump();
-      await tester.tap(find.text('SESSİZE AL'));
+      await tester.tap(find.text('ENGELLE'));
       await tester.pump();
       await tester.pump();
       expect(find.text('İşlem başarısız oldu.'), findsOneWidget);

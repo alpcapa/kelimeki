@@ -9,7 +9,11 @@
 // kişiyle YENİ bir oyun açmak gerekiyordu. Kullanıcı cihaz testinde bu
 // duvara çarptı.
 //
-// KAPSAM bilinçli olarak yalnızca GERİ ALMA (sessizden çıkar / şikayeti
+// 5 Ekim 2026 (web): "Sessizden Çıkar" → "Engeli Kaldır" (terim: Engelle) ve
+// kaldırma artık `unblock_user` — oyundan bağımsız, oyun id'si GEREKMİYOR.
+// Yukarıdaki gerekçe anlatısı o dönemin dilini ('sessize alma') korur.
+//
+// KAPSAM bilinçli olarak yalnızca GERİ ALMA (engeli kaldır / şikayeti
 // geri çek). YENİ şikayet burada YOK: bir şikayet hakkında olduğu
 // KONUŞMAYA bağlı (`online_game_chat_reports.online_game_id`) ve admin
 // panelindeki "Sohbeti Görüntüle" o dökümü açıyor; arkadaş listesinden
@@ -20,10 +24,12 @@
 import 'package:flutter/material.dart';
 
 import '../../data/chat_api.dart';
+import '../../util/error_message.dart';
 import '../auth/k_avatar.dart';
 import '../game/modal_shell.dart';
 import '../game/neo_button.dart';
 import '../tokens.dart';
+import 'blocked_users_sheet.dart' show kUnblockConfirmBody;
 
 const _muted = kMuted;
 const _text = kText;
@@ -33,16 +39,18 @@ class FriendModerationTarget {
   final String name;
   final String? avatarUrl;
 
-  /// Sessize alınmışsa kaydın geldiği oyun id'si — RPC'nin katılımcılık
-  /// kontrolü için (bkz. `ChatRepo.myModeration`).
-  final String? mutedGameId;
+  /// Engelliyse true (4 Ekim 2026'dan beri oyun id'si GEREKMİYOR: kaldırma
+  /// `unblock_user` ile, engel oyundan bağımsız — bkz. `blocked_users_sheet`).
+  final bool blocked;
+
+  /// Aktif şikayet varsa true (geri çekme oyun id'si İSTEMİYOR).
   final bool reported;
 
   const FriendModerationTarget({
     required this.userId,
     required this.name,
     required this.avatarUrl,
-    required this.mutedGameId,
+    required this.blocked,
     required this.reported,
   });
 }
@@ -60,7 +68,7 @@ Future<bool> showFriendModeration(
   return changed ?? false;
 }
 
-enum _View { menu, unmuteConfirm, withdrawConfirm, done }
+enum _View { menu, unblockConfirm, withdrawConfirm, done }
 
 class _FriendModerationSheet extends StatefulWidget {
   final ChatRepo chat;
@@ -79,7 +87,7 @@ class _FriendModerationSheetState extends State<_FriendModerationSheet> {
   String _doneMsg = '';
   bool _changed = false;
 
-  bool get _isMuted => widget.target.mutedGameId != null;
+  bool get _isBlocked => widget.target.blocked;
 
   Future<void> _run(Future<void> Function() action, String msg) async {
     setState(() {
@@ -94,11 +102,12 @@ class _FriendModerationSheetState extends State<_FriendModerationSheet> {
         _doneMsg = msg;
         _view = _View.done;
       });
-    } catch (_) {
+    } catch (e) {
       // Sessizce yutma YOK — kullanıcı gerçekleşmemiş bir sonucu "olmuş"
       // sanmamalı (Parça 89'un dersi).
       if (!mounted) return;
-      setState(() => _error = 'İşlem başarısız oldu.');
+      setState(() => _error = friendlyErrorMessage(e,
+          surface: 'arkadas-moderasyon', fallback: 'İşlem başarısız oldu.'));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -125,7 +134,7 @@ class _FriendModerationSheetState extends State<_FriendModerationSheet> {
           ]),
           const SizedBox(height: 12),
           if (_view == _View.menu) ..._menu(t),
-          if (_view == _View.unmuteConfirm || _view == _View.withdrawConfirm)
+          if (_view == _View.unblockConfirm || _view == _View.withdrawConfirm)
             ..._confirm(t),
           if (_view == _View.done) ..._done(),
           if (_error != null) ...[
@@ -141,11 +150,11 @@ class _FriendModerationSheetState extends State<_FriendModerationSheet> {
 
   List<Widget> _menu(FriendModerationTarget t) => [
         Text(
-          t.reported && _isMuted
-              ? 'Bu kişiyi şikayet ettiniz ve sessize aldınız.'
+          t.reported && _isBlocked
+              ? 'Bu kişiyi şikayet ettiniz ve engellediniz.'
               : t.reported
-                  ? 'Bu kişiyi şikayet ettiniz.'
-                  : 'Bu kişiyi sessize aldınız.',
+                  ? 'Bu kişiyi şikayet ettiniz; şikayetiniz açıkken kişi engelli sayılır.'
+                  : 'Bu kişiyi engellediniz.',
           style: const TextStyle(fontSize: 12, color: _muted, height: 1.5),
         ),
         const SizedBox(height: 12),
@@ -153,35 +162,44 @@ class _FriendModerationSheetState extends State<_FriendModerationSheet> {
           NeoButton(
             label: 'Şikayeti Geri Çek',
             variant: NeoButtonVariant.neutral,
-            onPressed: _busy ? null : () => setState(() => _view = _View.withdrawConfirm),
+            onPressed: _busy
+                ? null
+                : () => setState(() => _view = _View.withdrawConfirm),
           ),
           const SizedBox(height: 8),
         ],
-        if (_isMuted) ...[
+        if (_isBlocked) ...[
           NeoButton(
-            label: 'Sessizden Çıkar',
+            label: 'Engeli Kaldır',
             variant: NeoButtonVariant.neutral,
-            onPressed: _busy ? null : () => setState(() => _view = _View.unmuteConfirm),
+            onPressed: _busy
+                ? null
+                : () => setState(() => _view = _View.unblockConfirm),
           ),
           const SizedBox(height: 8),
         ],
         const Text(
-          'Şikayet etmek ve sessize almak, o kişiyle oynadığın Canlı oyunun '
-          'mesajlaşma ayarlarından yapılır.',
-          style: TextStyle(fontFamily: 'SpaceMono', fontSize: 10, color: _muted, height: 1.5),
+          'Şikayet etmek, o kişiyle oynadığın Canlı oyunun mesajlaşma '
+          'ayarlarından yapılır. Arkadaş olmadığın kişiler için Arkadaşlar '
+          'ekranındaki "Engellediklerim" listesine bak.',
+          style: TextStyle(
+              fontFamily: 'SpaceMono',
+              fontSize: 10,
+              color: _muted,
+              height: 1.5),
         ),
       ];
 
   List<Widget> _confirm(FriendModerationTarget t) {
-    final unmute = _view == _View.unmuteConfirm;
+    final unblock = _view == _View.unblockConfirm;
     return [
       const Text('Emin misiniz?',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _text)),
+          style: TextStyle(
+              fontSize: 14, fontWeight: FontWeight.bold, color: _text)),
       const SizedBox(height: 8),
       Text(
-        unmute
-            ? '${t.name} artık sessize alınmayacak; mesajları için bildirim '
-                'almaya devam edeceksiniz.'
+        unblock
+            ? '${t.name}$kUnblockConfirmBody'
             : '${t.name} hakkındaki şikayetiniz geri çekilecek. Dilerseniz '
                 'daha sonra tekrar şikayet edebilirsiniz.',
         style: const TextStyle(fontSize: 14, color: _text, height: 1.5),
@@ -192,14 +210,12 @@ class _FriendModerationSheetState extends State<_FriendModerationSheet> {
         Expanded(
           child: NeoButton(
             variant: NeoButtonVariant.accent,
-            label: _busy ? '...' : (unmute ? 'Sessizden Çıkar' : 'Geri Çek'),
+            label: _busy ? '...' : (unblock ? 'Engeli Kaldır' : 'Geri Çek'),
             onPressed: _busy
                 ? null
-                : () => unmute
-                    ? _run(
-                        () => widget.chat
-                            .setMute(t.mutedGameId!, t.userId, false),
-                        'Kişi sessizden çıkarıldı.')
+                : () => unblock
+                    ? _run(() => widget.chat.unblockUser(t.userId),
+                        'Engel kaldırıldı.')
                     : _run(() => widget.chat.withdrawReports(t.userId),
                         'Şikayetiniz geri çekildi.'),
           ),

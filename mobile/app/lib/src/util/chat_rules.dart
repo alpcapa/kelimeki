@@ -13,7 +13,7 @@ const String kChatRulesIntro = 'Mesajlaşmaya başlamadan önce:';
 const List<String> kChatRulesItems = [
   'Gönderdiğin mesajlardan ve doğabilecek hukuki sonuçlardan sen sorumlusun.',
   'Cinsel içerik, hakaret, nefret söylemi, tehdit ve taciz yasaktır. Kurallara uymayan hesap uyarı yapılmadan kapatılabilir.',
-  'Rahatsız olursan sohbet ayarlarından kişiyi sessize alabilir ve şikâyet edebilirsin.',
+  'Rahatsız olursan sohbet ayarlarından kişiyi engelleyebilir ve şikâyet edebilirsin.',
 ];
 const String kChatRulesTermsLink = "Kullanım Koşulları'nın tamamı";
 const String kChatRulesAccept = 'Kabul ediyorum';
