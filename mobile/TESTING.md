@@ -1528,6 +1528,13 @@ geçici olarak öne çekme; aşağıdaki maddeler ayrılış saatini seçerek ko
 - [ ] **Bildirim düşüyor:** izin verilmiş cihazda yarım oyundan çık, uygulamayı
       KAPATMADAN arka plana al ve saati bekle → panelde *"Oyunun yarım kaldı"*.
       Dokununca uygulama açılır, Setup'ta "Devam Eden Oyun" kartı görünür.
+- [ ] **GERÇEK KULLANICI YOLU — uygulamayı KAYDIRIP KAPAT (6 Ekim 2026, kullanıcı):** oyun
+      ekranındayken (en az 2 tur) uygulama değiştiriciden uygulamayı yukarı at,
+      uygulamayı bir daha AÇMA → ayrılıştan en az 12 saat sonraki ilk 19:00'da
+      bildirim düşmeli. Reklamdan gelen kullanıcı oyunu bırakınca tam böyle yapıyor;
+      "arka planda açık tut" maddeleri bu yolu SINAMAZ. ⚠ Android'de üretici
+      katmanı (Xiaomi/Huawei/Oppo…) kaydırınca alarmı silebilir — en az bir iOS ve
+      bir Android (farklı marka) cihazda koş, sonucu cihaz modeliyle yaz.
 - [ ] **Telefonu bırakarak ayrılmak da kurar:** oyun ekranındayken (logoya
       basmadan) ana ekrana dön → bildirim yine düşer.
 - [ ] **Erken dönüş iptal eder:** kurulduktan sonra saatinden ÖNCE uygulamayı
