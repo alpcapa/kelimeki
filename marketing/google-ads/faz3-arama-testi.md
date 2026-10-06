@@ -34,10 +34,37 @@ etiketle elle okunur. Önerim (a): küçük, ve test sonucu panelde ayrı satır
 
 ## Negatif kelimeler (baştan ekle)
 kelimelik · kelime bulucu · harf bulucu · kelime bul(ucu) · cevap · cevapları · hile · apk · mod · tdk · sözlük ·
-anlamı · eş anlamlı · çalışma kağıdı · etkinlik · pdf · yazdır · çocuk · okul · öğretmen · wordle · scrabble ·
+kelime gezmece · words of wonders · anlamı · eş anlamlı · çalışma kağıdı · etkinlik · pdf · yazdır · çocuk · okul · öğretmen · wordle · scrabble ·
 çözücü · yardımcı
 
 *(wordle/scrabble bilerek hariç: komşu ürünler, ilk testte bütçeyi bölmesin; sonra ayrı denenebilir.)*
+
+## Keyword Planner okuması (6 Ekim 2026 16:56, Türkiye · Türkçe · Eyl 2025–Ağu 2026; kullanıcının ekran görüntüleri)
+"Sayfanın üstü teklifi" = Google'ın TAHMİNİ teklif aralığı (düşük–yüksek), GERÇEK tıklama maliyeti DEĞİL; hiç
+harcaması olmayan yeni hesapta aralıklar geniş çıkıyor. Rekabet sütunu reklamverenler arası (arama hacmi değil).
+
+| Anahtar kelime | Ort. aylık arama | Teklif (düşük–yüksek) | Rekabet |
+|---|---|---|---|
+| kelime oyunu | 10 B–100 B | ₺2,46–₺14,75 | Düşük |
+| **kelime oyunu oyna** | 10 B–100 B (yıllık **+%900**) | **₺0,69**–₺13,27 | Düşük |
+| türkçe kelime oyunu | 100–1 B | ₺4,92–₺29,49 | Düşük |
+| online kelime oyunu | 100–1 B | ₺6,15–₺26,55 | Düşük |
+| kelime oyunu indir | 1 B–10 B | ₺2,95–₺13,27 | Orta |
+| kelime bulmaca *(fikir)* | 100 B–1 Mn | ₺3,45–₺14,75 | Düşük |
+| kelime gezmece *(fikir, RAKİP oyun adı)* | 1 B–10 B | ₺2,46–₺10,81 | Düşük |
+| words of wonders… *(fikir, RAKİP oyun adı)* | 1 B–10 B | ₺2,46–₺17,20 | Düşük |
+
+`arkadaşla kelime oyunu` ve ötekiler ilk ekran görüntülerinde görünmüyordu (tablo kaydırılmadı) — okunmadı.
+
+**Okuma:** hacim yeterli (üstteki iki kelime 10 B–100 B/ay; ₺100/gün ≈ ayda 600 tıklama civarı, tavana yakın değil).
+Asıl soru maliyet: **başa baş tıklama→kurulum oranı = tıklama maliyeti ÷ ₺17,7**. Meta'da yönlendirme sayfası görüntülemesinden
+kuruluma oran ≈ %10 (88 kurulum / 909 görüntüleme, 6 Eki). Yani ₺2,5 tıklamada %14, ₺5'te %28, ₺10'da %56 gerekir;
+arama niyeti Meta'dan 1,5-3 kat iyi dönüştürmezse Meta'yı geçemez. ₺700'lük testte ~140 tıklama → ~14-40 kurulum: **örnek küçük**,
+kesin hüküm değil yön verir.
+
+**Revize öncelik:** (1) `kelime oyunu oyna` · (2) `kelime oyunu indir` (kurulum niyeti) · (3) `kelime oyunu`. `türkçe kelime oyunu` /
+`online kelime oyunu`: hacim düşük, teklif yüksek → ilk testte DIŞARIDA. **Tıklama başı üst sınır (max CPC) ₺6.** `kelime bulmaca`
+niyet farklı → bu testte yok. `kelime gezmece` / `words of wonders` rakip oyun adları → **bid edilmez, negatif listeye eklenir.**
 
 ## Duyuru (Responsive Search Ad) taslağı — karakter sınırları ölçüldü
 Başlıklar (≤30): Türkçe Kelime Oyunu (19) · Kelimeki: Kelime Oyunu (22) · Ücretsiz Kelime Oyunu (21) ·
