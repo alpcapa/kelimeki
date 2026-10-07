@@ -85,6 +85,7 @@ import {
   dayAxisLabel,
 } from './StackedBucketChart';
 import { trCompare, trLower } from '../utils/turkish';
+import type { AiLevel } from '../game/types';
 import {
   deviceTree,
   osVersionLabel,
@@ -977,9 +978,9 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         sonuçta bu %50 olurdu — birincilik ve ikincilik yüzdelerini toplayıp o değerle karşılaştır.
         <br />
         <br />
-        <b>Seviye kırılımı:</b> kutular oyuncu sayısı × YZ seviyesi başına. Seviyesiz (eski)
-        kayıtlar Normal'dir ve etiketsiz kutuda toplanır; Kolay/Zor oynanmaya başlayınca kendi
-        kutusunu açar. Hedefler YZ'nin kazanma oranı olarak Kolay ~%30, Normal ~%51, Zor ~%70 —
+        <b>Düzen (7 Ekim 2026):</b> sabit 3 × 3 ızgara, sütunlar YZ seviyesi (Kolay · Normal · Zor).
+        Üst satır 2 kişilik birincilik, ortadaki 4 kişilik birincilik, alttaki 4 kişilik ikincilik.
+        O seviyede henüz oyun yoksa kutu <b>—</b> gösterir. Seviyesiz (eski) kayıtlar Normal'dir. Hedefler YZ'nin kazanma oranı olarak Kolay ~%30, Normal ~%51, Zor ~%70 —
         yani insan birinciliği Kolay'da ~%70, Zor'da ~%30 bandında olmalı.
       </>
     ),
@@ -3182,45 +3183,51 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
   );
 
   /**
-   * "YZ Dengesi" kutuları. Satır başına bir kutu DEĞİL: 4 kişilik oyunlar
-   * ikinci bir "İkincilik" kutusu daha üretiyor (17 Ağustos 2026, kullanıcı
-   * isteği) — 4 kişilikte k-lig ikinciliğe de puan verdiğinden yalnız
+   * "YZ Dengesi" kutuları — SABİT 3 × 3 IZGARA (7 Ekim 2026, kullanıcı isteği:
+   * *"İlk satır 2 kişilik kolay, normal, zor; ikinci satır 4 kişilik kolay,
+   * normal, zor. 3. satır ikincilikler olsun"*). Sütun = YZ seviyesi (Kolay ·
+   * Normal · Zor), satır = ölçü:
+   *   1. 2 kişilik — insan birinciliği
+   *   2. 4 kişilik — insan birinciliği
+   *   3. 4 kişilik — insan İKİNCİLİĞİ
+   * Üç seviye de HER ZAMAN çizilir: o seviyede henüz oyun yoksa kutu "—"
+   * gösterir (yoksa ızgara kayardı ve "Zor neden yok?" sorusu doğardı).
+   *
+   * İkincilik satırı 2 kişilik için BİLEREK yok (17 Ağustos 2026): orada
+   * rank=2 kaybetmenin kendisi (canlıda ölçüldü: second_places === losses) ve
+   * k-lig puanı getirmiyor, yani kutu yeni bir şey söylemeyip kayıp oranını
+   * ikinci kez yazardı. 4 kişilikte k-lig ikinciliğe de puan verdiğinden yalnız
    * birinciliğe bakmak "insan puan alıyor mu" sorusunun yarısını ölçüyordu.
    *
-   * İkincilik kutusu 2 kişilikte BİLEREK YOK: orada rank=2 kaybetmenin
-   * kendisi (canlıda ölçüldü: second_places === losses) ve k-lig puanı
-   * getirmiyor, yani kutu yeni bir şey söylemeyip kayıp oranını ikinci kez
-   * yazardı.
-   *
-   * Rastgele referansı iki kutuda da `100 / oyuncu sayısı`: rastgele bir
-   * sonuçta 1. olma da 2. olma da aynı olasılıkta (4 kişilikte %25).
+   * Rastgele referansı `100 / oyuncu sayısı`: rastgele bir sonuçta 1. olma da
+   * 2. olma da aynı olasılıkta (4 kişilikte %25).
    */
-  const aiBalanceCards = useMemo(() => {
-    const cards: { key: string; rate: number | null; label: string; detail: string }[] = [];
-    for (const r of aiBalance ?? []) {
-      const baseline = Math.round(100 / r.players);
-      // Seviye kırılımı (ROADMAP #23, Faz 1): satırlar artık (oyuncu
-      // sayısı, seviye) başına. Normal'de etiket BUGÜNKÜ gibi (tüm eski
-      // kayıtlar orada), Kolay/Zor satırı ancak Faz 3 o değeri yazmaya
-      // başlayınca gelir ve kendi kutusunu açar — anahtar da seviyeyi
-      // içeriyor, yoksa iki satır aynı `key`de çakışırdı.
-      const level = r.ai_level === 'kolay' ? ' · Kolay' : r.ai_level === 'zor' ? ' · Zor' : '';
-      cards.push({
-        key: `${r.players}-${r.ai_level}-first`,
-        rate: r.games > 0 ? Math.round((100 * r.wins) / r.games) : null,
-        label: `${r.players} Kişilik${level} — İnsan Birincilik`,
-        detail: `${r.wins}G / ${r.ties}B / ${r.losses}M · rastgele %${baseline}`,
+  const aiBalanceRows = useMemo(() => {
+    type Card = { key: string; rate: number | null; label: string; detail: string };
+    const levels: { id: AiLevel; ad: string }[] = [
+      { id: 'kolay', ad: 'Kolay' },
+      { id: 'normal', ad: 'Normal' },
+      { id: 'zor', ad: 'Zor' },
+    ];
+    const bul = (players: number, level: AiLevel) =>
+      (aiBalance ?? []).find((r) => r.players === players && r.ai_level === level);
+    const kart = (players: 2 | 4, kind: 'first' | 'second'): Card[] =>
+      levels.map(({ id, ad }) => {
+        const r = bul(players, id);
+        const baseline = Math.round(100 / players);
+        const sayi = r ? (kind === 'first' ? r.wins : r.second_places) : 0;
+        const oyun = r?.games ?? 0;
+        return {
+          key: `${players}-${id}-${kind}`,
+          rate: oyun > 0 ? Math.round((100 * sayi) / oyun) : null,
+          label: `${players} Kişilik · ${ad} — İnsan ${kind === 'first' ? 'Birincilik' : 'İkincilik'}`,
+          detail:
+            kind === 'first'
+              ? `${r?.wins ?? 0}G / ${r?.ties ?? 0}B / ${r?.losses ?? 0}M · rastgele %${baseline}`
+              : `${sayi}/${oyun} · rastgele %${baseline}`,
+        };
       });
-      if (r.players > 2) {
-        cards.push({
-          key: `${r.players}-${r.ai_level}-second`,
-          rate: r.games > 0 ? Math.round((100 * r.second_places) / r.games) : null,
-          label: `${r.players} Kişilik${level} — İnsan İkincilik`,
-          detail: `${r.second_places}/${r.games} · rastgele %${baseline}`,
-        });
-      }
-    }
-    return cards;
+    return [kart(2, 'first'), kart(4, 'first'), kart(4, 'second')];
   }, [aiBalance]);
 
   /**
@@ -4434,18 +4441,12 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
                         Henüz Yapay Zeka'ya karşı tamamlanmış oyun yok.
                       </div>
                     ) : (
-                      /* Kutu sayısı satır sayısına bağlı (1-3) olduğundan
-                         sütun sayısı inline `style` ile veriliyor: Tailwind
-                         yalnızca KAYNAKTA geçen sınıfları üretir, çalışma
-                         anında kurulan bir `grid-cols-${n}` sessizce
-                         uygulanmazdı (bkz. CountBadge'in ölçüm tuzağı). */
-                      <div
-                        className="grid gap-2"
-                        style={{
-                          gridTemplateColumns: `repeat(${Math.min(aiBalanceCards.length, 3)}, minmax(0, 1fr))`,
-                        }}
-                      >
-                        {aiBalanceCards.map((c) => (
+                      /* Sabit 3 sütun (Kolay · Normal · Zor), 3 satır — bkz.
+                         `aiBalanceRows`. `grid-cols-3` kaynakta LİTERAL durduğu
+                         için Tailwind üretir (çalışma anında kurulan
+                         `grid-cols-${n}` sessizce uygulanmazdı). */
+                      <div className="grid grid-cols-3 gap-2">
+                        {aiBalanceRows.flat().map((c) => (
                           <div
                             key={c.key}
                             className="btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center"
