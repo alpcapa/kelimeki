@@ -19,7 +19,8 @@ import sharp from 'sharp';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const DIST = path.join(ROOT, 'dist');
 const OUT_DIR = path.join(ROOT, 'marketing', 'meta-reklam', 'teaser');
-const KANCALAR = ['h1', 'h2', 'h3'];
+const TAHTA = process.argv.includes('--tahta');
+const KANCALAR = process.argv.includes('--h1') ? ['h1'] : ['h1', 'h2', 'h3'];
 const DOSYA = { feed: 'feed-1080x1350', story: 'story-1080x1920' };
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript',
@@ -55,8 +56,8 @@ async function main() {
   for (const kanca of KANCALAR) {
     for (const duzen of Object.keys(DOSYA)) {
       const { w, h } = OLCULER[duzen];
-      const htmlAd = `meta-teaser-${kanca}-${duzen}.html`;
-      writeFileSync(path.join(DIST, htmlAd), renderGorselHtml(duzen, kanca, `/assets/${cssFile}`), 'utf8');
+      const htmlAd = `meta-teaser-${kanca}-${duzen}${TAHTA ? '-tahta' : ''}.html`;
+      writeFileSync(path.join(DIST, htmlAd), renderGorselHtml(duzen, kanca, `/assets/${cssFile}`, TAHTA), 'utf8');
       const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2 });
       await page.goto(`http://127.0.0.1:${server.address().port}/${htmlAd}`, { waitUntil: 'networkidle' });
       await page.evaluate(() => document.fonts.ready);
@@ -80,7 +81,7 @@ async function main() {
       const png = await page.screenshot();
       await page.close();
       if (!hatalar.length) {
-        const out = path.join(OUT_DIR, `kelimeki-teaser-${kanca}-${DOSYA[duzen]}.png`);
+        const out = path.join(OUT_DIR, `kelimeki-teaser-${kanca}${TAHTA ? '-tahta' : ''}-${DOSYA[duzen]}.png`);
         await sharp(png).flatten({ background: '#ffffff' }).png({ compressionLevel: 9 }).toFile(out);
         const m = await sharp(out).metadata();
         console.log(`✓ ${path.relative(ROOT, out)}  ${m.width}×${m.height}`);

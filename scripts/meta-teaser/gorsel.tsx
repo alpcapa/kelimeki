@@ -10,9 +10,12 @@
 // 540×960 → 1080×1920 (9:16). Tailwind SINIFI YOK (scripts/ content'te değil).
 import { renderToStaticMarkup } from 'react-dom/server';
 import { LandingLogo, LandingLogoDefs } from '../../src/landing/LandingLogo';
+import { GameBoardPreview } from '../../src/components/GameBoardPreview';
+import { DEMO_TILES_4 } from '../../src/landing/demoBoard';
 
 const SANS = '"Space Grotesk", sans-serif';
 const ACCENT = '#2563EB';
+const BOARD_BASE_W = 680;
 
 export type Duzen = 'feed' | 'story';
 export type Kanca = 'h1' | 'h2' | 'h3';
@@ -29,7 +32,23 @@ const KANCALAR: Record<Kanca, { onu: string; vurgu: string }> = {
   h3: { onu: 'Değişik bir kelime oyunu arıyorsanız ', vurgu: "Kelimeki'ye gelin." },
 };
 
-function Gorsel({ duzen, kanca }: { duzen: Duzen; kanca: Kanca }) {
+/** Sağ alta TAŞAN dolu tahta (4 kişilik demo, üretimdeki `GameBoardPreview`).
+ *  Metin sol/üstte kalır; tahta kadrajdan taşar, yani kesit görünür. */
+function AltTahta({ duzen }: { duzen: Duzen }) {
+  const kenar = duzen === 'story' ? 400 : 360;
+  const tasma = duzen === 'story' ? 110 : 100;
+  return (
+    <div data-tahta="" style={{ position: 'absolute', right: -tasma, bottom: -tasma, width: kenar, height: kenar,
+      overflow: 'hidden', borderRadius: 16, boxShadow: '0 12px 36px rgba(27,36,48,0.18)' }}>
+      <div style={{ width: BOARD_BASE_W, transform: `scale(${kenar / BOARD_BASE_W})`, transformOrigin: 'top left' }}>
+        <GameBoardPreview snapshot={DEMO_TILES_4} playerCount={4} compact={false}
+          players={Array.from({ length: 4 }, (_, i) => ({ name: '', score: 0, is_ai: false, colorIndex: i }))} />
+      </div>
+    </div>
+  );
+}
+
+function Gorsel({ duzen, kanca, tahta }: { duzen: Duzen; kanca: Kanca; tahta: boolean }) {
   const { w, h } = OLCULER[duzen];
   const story = duzen === 'story';
   // Story'de Instagram üstte profil çubuğunu (~%14), altta yanıt kutusunu (~%20) bindirir.
@@ -40,7 +59,8 @@ function Gorsel({ duzen, kanca }: { duzen: Duzen; kanca: Kanca }) {
   return (
     <div style={{ width: w, height: h, position: 'relative', overflow: 'hidden', background: '#FFFFFF', fontFamily: SANS, color: '#1B2430' }}>
       <LandingLogoDefs />
-      <div style={{ position: 'absolute', left: 0, right: 0, top: ust, bottom: alt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {tahta && <AltTahta duzen={duzen} />}
+      <div style={{ position: 'absolute', left: 0, right: 0, top: ust, bottom: alt, display: 'flex', alignItems: tahta ? 'flex-start' : 'center', justifyContent: 'center', paddingTop: tahta ? (story ? 36 : 56) : 0 }}>
         <div data-guvenli-kutu="" style={{ width: w * 0.8, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: story ? 40 : 34 }}>
           <div style={{ width: 56, height: 6, borderRadius: 3, background: ACCENT }} />
           <p style={{ margin: 0, fontSize: punto, lineHeight: 1.12, fontWeight: 700, letterSpacing: -1 }}>
@@ -53,10 +73,10 @@ function Gorsel({ duzen, kanca }: { duzen: Duzen; kanca: Kanca }) {
   );
 }
 
-export function renderGorselHtml(duzen: Duzen, kanca: Kanca, cssHref: string): string {
+export function renderGorselHtml(duzen: Duzen, kanca: Kanca, cssHref: string, tahta = false): string {
   return `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8"><title>Kelimeki teaser ${kanca} ${duzen}</title>
 <link rel="stylesheet" href="${cssHref}">
 <style>html,body{margin:0;padding:0;background:#fff}</style>
-</head><body>${renderToStaticMarkup(<Gorsel duzen={duzen} kanca={kanca} />)}</body></html>`;
+</head><body>${renderToStaticMarkup(<Gorsel duzen={duzen} kanca={kanca} tahta={tahta} />)}</body></html>`;
 }

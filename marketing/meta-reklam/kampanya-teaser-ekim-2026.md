@@ -106,7 +106,10 @@ Kazanan kancayla, bu sefer yalnızca biçim değişir. Kontrol kolu eski karusel
 
 - **Kare:** 4:5 + 9:16 ayrı üretim; iki varyant: (a) yalnızca tipografi
   (Aşama 1'in kazananı), (b) tipografi + dört köşe renkli bölgesiyle tahta
-  kesiti (`GameBoardPreview`). Mağaza rozeti/kutu YOK.
+  kesiti (`GameBoardPreview`). Mağaza rozeti/kutu YOK. **(b) için prototip
+  hazır:** `npm run generate-meta-teaser -- --tahta [--h1]` (sağ alta taşan
+  tahta; H1 önizlemesi `teaser/kelimeki-teaser-h1-tahta-*.png`). Story'de tahtanın
+  alt satırı Instagram yanıt bandına girer (dekoratif, kabul).
 - **Karusel (teaser):** kart 1 = kanca; kalan kartlar kuralı kanıtlar (köşe →
   bölge → vergi → gerçek tahta). "İki rozetli" kartlar yeniden kullanılabilir.
 - **Reel:** 7-10 sn; ilk 1,5 sn'de kanca yazısı; kapanışta **mağaza butonlu**
