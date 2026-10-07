@@ -677,6 +677,42 @@ macOS'un dondurulmuş sürüm dizesi. Masaüstü User-Agent'ı veren cihazlar
 kimse bu ayrımı bugüne kadar sormadı; tablo hatayı gizlemek yerine
 gösteriyor (etiket platformu HER ZAMAN yazıyor, bu yüzden).
 
+### Cihaz ağacı: Marka tablosu "Cihaz"la birleşti, model altına SÜRÜM girdi (7 Ekim 2026)
+
+Kullanıcı isteği (sözleri birebir): *"Admin büyümedeki cihaz ve cihaz markası
+tabloları birleşemez mi? Android → Marka → Model gibi"*, ardından *"Şu anda
+zaten Samsung Android 13'te kaç kişi var. Modelin alt kırılımı olabilir"*.
+**"Cihaz Markası" ayrı tablo olmaktan çıktı**; `DeviceOsTable` +
+`DeviceBrandTable` tek `DeviceTreeTable` oldu (ağacı kuran saf fonksiyon
+`deviceTree`, `src/utils/deviceLabels.ts`; `osBreakdown`/`brandBreakdown` onun
+yapı taşı olarak duruyor).
+
+```
+Platform ▸ Marka ▸ Model ▸ İşletim sistemi sürümü
+         ▸ Sürümler ▸ (platformun TÜM sürümleri, markadan bağımsız)
+Masaüstü ▸ yalnızca sürümler (hiçbir tarayıcı model vermiyor)
+```
+
+- **Marka × sürüm ÇAPRAZI için yeni RPC:** `admin_device_model_os_breakdown`
+  (`20261007053639`; platform × model × sürüm başına `count(distinct anon_id)`,
+  aynı bot süzgeci, `proacl` kardeş fonksiyonlarla AYNI: `anon` yok). İki eski
+  RPC ayrı sorular soruyor, çaprazı yalnızca tek satırda (`device_visits`)
+  hesaplanabilir. Canlıda ilk ölçüm (30 gün): **Samsung + Android 13 = 70**.
+- **"Sürümler" dalı bilerek duruyor:** "kaç kişi hâlâ eski Android'de?" sorusu
+  markaya bakmadan buradan okunur; ağaçtan çıkarılsaydı o soru cevapsız kalırdı.
+- ⚠ **Üst satır alt toplamın toplamı DEĞİL** (üç RPC, her biri kendi
+  benzersizini sayıyor): platform → `admin_device_breakdown`, marka/model →
+  `admin_device_model_breakdown`, model altındaki sürümler → yeni RPC. Aynı
+  ziyaretçi pencerede OS güncellerse iki sürüm satırında görünür (canlıda 30
+  gün: çapraz toplam **1655**, gerçek benzersiz **1648**). Yüzdeler GENEL
+  toplamın payı (eski iki tablonun kuralı).
+- **CSV ağacı DÜZ verir**, her satırda `Seviye` sütunu (platform · marka ·
+  model · model-sürüm · platform-sürüm).
+- Kapı: `npm run verify-device-labels` (12 yeni vaka: Samsung → model → Android
+  13 toplamı, platformlar arası model karışmaması, masaüstünde marka yok…).
+  Ekran görüntüsü doğrulaması: bileşen sahte veriyle gerçek tarayıcıda çizilip
+  tıklandı (admin hesabı olmadığından canlı panel görülmedi).
+
 ### Aşama 2 — gerçek cihaz modeli (YAPILMADI)
 
 *"iPhone 17 ↔ iPhone 14"* ayrımı **web'den çıkmaz**: Safari'nin

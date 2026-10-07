@@ -32,7 +32,7 @@ npm run verify-recent-game-avatars # "Son Oynananlar" avatar çözümü: eşleme
 npm run verify-rematch-slots     # Rövanş kadrosu: ilk koltuk çağıran, YZ'ler sonda (create_online_game kısıtları)
 npm run verify-head-to-head      # Kafa kafaya oran çubuğu: üç dilim TAM 100 eder mi (kümülatif yuvarlama)
 npm run verify-fetch-my-games    # Oyun geçmişi: ağ hatası ↔ boş liste ayrımı (sahte Supabase ucu)
-npm run verify-device-labels     # Admin cihaz tabloları: model KODU → marka öneki + cihaz→OS sürümü ağacı (canlıdan alınmış gerçek kodlar)
+npm run verify-device-labels     # Admin cihaz AĞACI (Platform ▸ Marka ▸ Model ▸ Sürüm): model KODU → marka öneki + marka×sürüm çaprazı (canlıdan alınmış gerçek kodlar)
 npm run verify-admin-groups      # Admin AÇILIR tabloları: `?ref=` → kanal öneki (fbi Facebook DEĞİL) + (platform, sürüm) ağacı ve sürümün SAYISAL sıralaması
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ leagueRank.ts
 npm run verify-beyin-ligi        # Beyin Ligi giriş eşiği: `beyin_ligi_siralama` SQL'i ↔ beyinLigi.ts (↔ beyin_ligi.dart)

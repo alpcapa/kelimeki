@@ -328,3 +328,90 @@ export function osBreakdown(
       trCompare(platformLabel(a.deviceType), platformLabel(b.deviceType)),
   );
 }
+
+// ─── Cihaz AĞACI: Platform > Marka > Model > İşletim sistemi sürümü ─────────
+//
+// 7 Ekim 2026, kullanıcı isteği: *"Admin büyümedeki cihaz ve cihaz markası
+// tabloları birleşemez mi? Android → Marka → Model gibi"* ve ardından
+// *"Samsung Android 13'te kaç kişi var — modelin alt kırılımı olabilir"*.
+// Önceki iki tablo (`osBreakdown` + `brandBreakdown`) tek ağaca girdi; marka ×
+// sürüm ÇAPRAZI için `admin_device_model_os_breakdown` RPC'si eklendi.
+//
+// ⚠ **Sayılar ÜÇ ayrı RPC'den geliyor ve tam toplanmayabilir** (aynı tablo,
+// aynı pencere, ama her biri kendi benzersizini sayıyor): platform satırı
+// `admin_device_breakdown`, marka/model satırı `admin_device_model_breakdown`,
+// model altındaki sürümler `admin_device_model_os_breakdown`. Bir ziyaretçi
+// pencere içinde OS güncellerse iki sürüm satırında birden görünür (canlıda
+// 30 gün: çapraz toplam 1655, gerçek benzersiz 1648). Üst satırı alt
+// satırların toplamıyla DEĞİL kendi RPC'siyle gösteriyoruz.
+//
+// ⚠ Masaüstünde marka YOK (hiçbir tarayıcı model vermiyor): o platform
+// yalnızca sürümlerini taşır, `brands` boş döner.
+
+export interface DeviceTreeVersion {
+  osVersion: string | null;
+  visitors: number;
+}
+export interface DeviceTreeModel {
+  deviceModel: string | null;
+  visitors: number;
+  versions: DeviceTreeVersion[];
+}
+export interface DeviceTreeBrand {
+  brand: DeviceBrand;
+  visitors: number;
+  models: DeviceTreeModel[];
+}
+export interface DeviceTreePlatform {
+  deviceType: string;
+  visitors: number;
+  brands: DeviceTreeBrand[];
+  /** Platformun TÜM sürümleri (marka ayrımı olmadan) — "kaç kişi eski Android'de?". */
+  versions: DeviceTreeVersion[];
+}
+
+type ModelRow = { device_type: string | null; device_model: string | null; visitors: number };
+type ModelOsRow = ModelRow & { os_version: string | null };
+
+export function deviceTree(
+  devices: ReadonlyArray<{ device_type: string; visitors: number }>,
+  osRows: ReadonlyArray<{ device_type: string; os_version: string | null; visitors: number }>,
+  modelRows: ReadonlyArray<ModelRow>,
+  modelOsRows: ReadonlyArray<ModelOsRow>,
+): DeviceTreePlatform[] {
+  const siralaSurum = (a: DeviceTreeVersion, b: DeviceTreeVersion) =>
+    b.visitors - a.visitors || compareOsVersionDesc(a.osVersion, b.osVersion);
+  const anahtar = (t: string | null, m: string | null) => `${t ?? ''}\u0000${m ?? ''}`;
+
+  const surumlerByModel = new Map<string, DeviceTreeVersion[]>();
+  for (const r of modelOsRows) {
+    const k = anahtar(r.device_type, r.device_model);
+    const l = surumlerByModel.get(k) ?? [];
+    l.push({ osVersion: r.os_version, visitors: r.visitors });
+    surumlerByModel.set(k, l);
+  }
+
+  return osBreakdown(devices, osRows).map((g) => {
+    const platformSatirlari = modelRows.filter((r) => (r.device_type ?? 'bilinmiyor') === g.deviceType);
+    const brands: DeviceTreeBrand[] =
+      g.deviceType === 'desktop'
+        ? []
+        : brandBreakdown(platformSatirlari).map((b) => ({
+            brand: b.brand,
+            visitors: b.visitors,
+            models: b.models.map((m) => ({
+              deviceModel: m.deviceModel,
+              visitors: m.visitors,
+              versions: (surumlerByModel.get(anahtar(m.deviceType, m.deviceModel)) ?? [])
+                .slice()
+                .sort(siralaSurum),
+            })),
+          }));
+    return {
+      deviceType: g.deviceType,
+      visitors: g.visitors,
+      brands,
+      versions: g.versions,
+    };
+  });
+}

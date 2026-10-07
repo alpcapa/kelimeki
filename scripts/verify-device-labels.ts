@@ -16,6 +16,7 @@ import {
   compareOsVersionDesc,
   deviceBrand,
   deviceModelLabel,
+  deviceTree,
   osBreakdown,
   osVersionLabel,
   platformLabel,
@@ -235,6 +236,86 @@ console.log('Cihaz + işletim sistemi ağacı (12 Eylül 2026)');
     b?.versions.length === 1, `gelen=${b?.visitors}`);
   check('boş sürüm listesi de sorun değil (OS satırı hiç yoksa)',
     osBreakdown(devices, []).every((x) => x.versions.length === 0));
+}
+
+// ─── Cihaz AĞACI: Platform > Marka > Model > Sürüm (7 Ekim 2026) ──────────────
+console.log('\ndeviceTree');
+{
+  // Kullanıcının sorusu: "Samsung Android 13'te kaç kişi var". Canlıdan
+  // (7 Ekim 2026, 30 gün) bu kırılım 70'ti; burada küçültülmüş ama AYNI şekilli veri.
+  const devices = [
+    { device_type: 'android', visitors: 100 },
+    { device_type: 'ios', visitors: 40 },
+    { device_type: 'desktop', visitors: 30 },
+  ];
+  const osRows = [
+    { device_type: 'android', os_version: '13', visitors: 70 },
+    { device_type: 'android', os_version: '16', visitors: 30 },
+    { device_type: 'ios', os_version: '26.6.1', visitors: 40 },
+    { device_type: 'desktop', os_version: '10.15.7', visitors: 30 },
+  ];
+  const modelRows = [
+    { device_type: 'android', device_model: 'SM-A176B', visitors: 50 },
+    { device_type: 'android', device_model: 'SM-S918B', visitors: 20 },
+    { device_type: 'android', device_model: '24116RACCG', visitors: 20 },
+    { device_type: 'android', device_model: null, visitors: 10 },
+    { device_type: 'ios', device_model: 'iPhone', visitors: 40 },
+    { device_type: 'desktop', device_model: null, visitors: 30 },
+  ];
+  const modelOsRows = [
+    { device_type: 'android', device_model: 'SM-A176B', os_version: '13', visitors: 35 },
+    { device_type: 'android', device_model: 'SM-A176B', os_version: '16', visitors: 15 },
+    { device_type: 'android', device_model: 'SM-S918B', os_version: '13', visitors: 20 },
+    { device_type: 'android', device_model: '24116RACCG', os_version: '16', visitors: 15 },
+    { device_type: 'android', device_model: '24116RACCG', os_version: '13', visitors: 5 },
+    { device_type: 'android', device_model: null, os_version: '13', visitors: 10 },
+    { device_type: 'ios', device_model: 'iPhone', os_version: '26.6.1', visitors: 40 },
+    { device_type: 'desktop', device_model: null, os_version: '10.15.7', visitors: 30 },
+  ];
+  const t = deviceTree(devices, osRows, modelRows, modelOsRows);
+  const android = t.find((p) => p.deviceType === 'android');
+  const samsung = android?.brands.find((b) => b.brand === 'Samsung');
+  const sm = (samsung?.models ?? []).flatMap((m) => m.versions).filter((v) => v.osVersion === '13');
+  check('platform sırası: çoktan aza', t.map((p) => p.deviceType).join(',') === 'android,ios,desktop',
+    t.map((p) => p.deviceType).join(','));
+  check('Samsung → modeller → Android 13 toplamı doğru (35+20=55)',
+    sm.reduce((a, v) => a + v.visitors, 0) === 55, `gelen=${sm.reduce((a, v) => a + v.visitors, 0)}`);
+  check('Samsung satırı iki model taşır, çoktan aza (SM-A176B önce)',
+    samsung?.models.map((m) => m.deviceModel).join(',') === 'SM-A176B,SM-S918B',
+    samsung?.models.map((m) => m.deviceModel).join(','));
+  check('modelin sürümleri çoktan aza (13 → 16)',
+    samsung?.models[0].versions.map((v) => v.osVersion).join(',') === '13,16');
+  check('Xiaomi kodu (sayıyla başlayan) Xiaomi altında', !!android?.brands.find((b) => b.brand === 'Xiaomi'));
+  check('model bildirmeyen Android → "Bilinmiyor" markası, sürümü kaybolmadı',
+    android?.brands.find((b) => b.brand === 'Bilinmiyor')?.models[0].versions[0].visitors === 10);
+  check('üst satır "Cihaz" RPC\'sinin sayısı (100)', android?.visitors === 100);
+  check('Android platform sürümleri markadan bağımsız (13 → 70)',
+    android?.versions[0].osVersion === '13' && android?.versions[0].visitors === 70);
+  const ios = t.find((p) => p.deviceType === 'ios');
+  check('iOS → Apple → iPhone → 26.6.1',
+    ios?.brands[0].brand === 'Apple' && ios?.brands[0].models[0].versions[0].osVersion === '26.6.1');
+  const desktop = t.find((p) => p.deviceType === 'desktop');
+  check('masaüstünde marka YOK, yalnızca sürümler',
+    desktop?.brands.length === 0 && desktop?.versions.length === 1);
+  // Aynı model dizesi iki platformda KARIŞMAZ (anahtar platformu içeriyor).
+  const karisik = deviceTree(
+    [{ device_type: 'android', visitors: 1 }, { device_type: 'ios', visitors: 1 }],
+    [],
+    [
+      { device_type: 'android', device_model: 'X1', visitors: 1 },
+      { device_type: 'ios', device_model: 'X1', visitors: 1 },
+    ],
+    [
+      { device_type: 'android', device_model: 'X1', os_version: '9', visitors: 1 },
+      { device_type: 'ios', device_model: 'X1', os_version: '18', visitors: 1 },
+    ],
+  );
+  check('aynı model dizesi platformlar arası karışmaz',
+    karisik.find((p) => p.deviceType === 'android')?.brands[0].models[0].versions[0].osVersion === '9' &&
+      karisik.find((p) => p.deviceType === 'ios')?.brands[0].models[0].versions[0].osVersion === '18');
+  check('çapraz satır yoksa model satırı yine görünür (sürümsüz)',
+    deviceTree(devices, osRows, modelRows, []).find((p) => p.deviceType === 'android')
+      ?.brands.every((b) => b.models.every((m) => m.versions.length === 0)) === true);
 }
 
 console.log(failures === 0 ? '\nTÜMÜ GEÇTİ' : `\n${failures} BAŞARISIZ`);
