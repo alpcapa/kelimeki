@@ -54,6 +54,7 @@
     "generate-play-assets": "node scripts/play-store/build.mjs",
     "generate-play-lansman": "node scripts/play-lansman/build.mjs",
     "generate-meta-story": "node scripts/play-lansman/build.mjs --genel",
+    "generate-meta-teaser": "node scripts/meta-teaser/build.mjs",
     "generate-meta-sade": "node scripts/play-lansman/build.mjs --sade",
     "generate-store-header": "node scripts/store-header/build.mjs",
     "preview-store-frames": "npm run preview-store-frames:iphone && npm run preview-store-frames:ipad",
