@@ -51,6 +51,7 @@ import type {
   AdminDeviceBreakdownRow,
   AdminDeviceModelRow,
   AdminOsVersionRow,
+  AdminDeviceModelOsRow,
   AdminGuestDeviceRow,
   AdminGuestStandaloneRow,
   AdminMember,
@@ -3083,6 +3084,21 @@ export async function fetchAdminDeviceModelBreakdown(days = 30): Promise<AdminDe
     rethrowSupabase(error);
   }
   return (data as AdminDeviceModelRow[]) ?? [];
+}
+
+/**
+ * Son `days` günde platform × model × işletim sistemi SÜRÜMÜ başına
+ * benzersiz ziyaretçi (yalnızca admin — Büyüme > Kullanıcı, "Cihaz" ağacında
+ * modelin altındaki sürüm kırılımı; 7 Ekim 2026). Marka, model kodundan
+ * istemcide okunur (`deviceBrand`).
+ */
+export async function fetchAdminDeviceModelOsBreakdown(days = 30): Promise<AdminDeviceModelOsRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('admin_device_model_os_breakdown', { p_days: days });
+  if (error) {
+    rethrowSupabase(error);
+  }
+  return (data as AdminDeviceModelOsRow[]) ?? [];
 }
 
 /**
