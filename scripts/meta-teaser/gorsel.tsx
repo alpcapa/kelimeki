@@ -66,7 +66,7 @@ function Gorsel({ duzen, kanca, tahta }: { duzen: Duzen; kanca: Kanca; tahta: bo
           <p style={{ margin: 0, fontSize: punto, lineHeight: 1.12, fontWeight: 700, letterSpacing: -1 }}>
             {k.onu}<span style={{ color: ACCENT }}>{k.vurgu}</span>
           </p>
-          <LandingLogo height={story ? 30 : 28} />
+          <div style={{ marginTop: story ? 28 : 24 }}><LandingLogo height={story ? 46 : 42} /></div>
         </div>
       </div>
     </div>
