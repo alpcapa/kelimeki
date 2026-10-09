@@ -135,12 +135,10 @@ Kazanan kancayla, bu sefer yalnızca biçim değişir. Kontrol kolu eski karusel
 
 ## 4 · Başlamadan önce (kullanıcıda)
 
-1. ⚠ **Hesap harcama limiti:** ₺3.000'e çıkarılmıştı. Limit hesap için
-   birikimliyse ₺2.245 harcandığından kalan ~₺755 — Ads Manager'dan kontrol
-   edip bu plan için yükseltilmeli (Aşama 1+2 ≈ ₺2.500).
+1. ✅ **Hesap harcama limiti (9 Eki 2026):** ₺6.000'e çıkarıldı ve kaydedildi; sıfırlanma **aylık (her ayın 1'i)**, ekimde ₺1.683,78 harcandı → **₺4.316,22 kaldı**, plan (~₺2.500) sığar. Limit vergi/ücret içermez; karttan çekilen tutar daha yüksek olur. (Önceki 'birikimli, ~₺755 kaldı' varsayımı yanlıştı.)
 2. **Zamanlama:** kapanışın kesin kurulum sayıları 8-9 Ekim'de oturuyor;
    Aşama 1 en erken **10 Ekim**'de başlar.
-3. Görsellerin `main`'de olması için bu PR merge edilmeli (indirme linkleri).
+3. ✅ Görseller `main`'de (PR #820, 9 Eki 2026) — indirme linkleri çalışır.
 
 ## 5 · Yayın kütüğü
 
