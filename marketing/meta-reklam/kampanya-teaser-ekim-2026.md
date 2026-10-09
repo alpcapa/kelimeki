@@ -26,7 +26,7 @@ satırı). **Ölçüt (5 Eki kararı):** ayda 2+ oyun oynayan aktif kullanıcı.
 
 | | Aşama 1 · Kanca | Aşama 2 · Biçim |
 |---|---|---|
-| Süre / bütçe | 3 gün · 3 set × ₺100/gün = **₺900** | 4 gün · 4 set × ₺100/gün = **₺1.600** |
+| Süre / bütçe | **5 gün** (9 Eki kararı; önce 3'tü) · 3 set × ₺100/gün = **₺1.500** | 4 gün · 4 set × ₺100/gün = **₺1.600** |
 | Değişen | Yalnızca metin (görsel aynı) | Yalnızca biçim (kazanan kancayla) |
 | Kollar | `h1` · `h2` · `h3` | Kontrol (eski karusel) · yeni kare · teaser karusel · yeni reel |
 | Etiket | `meta-h1` · `meta-h2` · `meta-h3` | `meta-karusel` (kontrol) · `meta-kare2` · `meta-kar2` · `meta-reel2` |
@@ -121,11 +121,21 @@ Kazanan kancayla, bu sefer yalnızca biçim değişir. Kontrol kolu eski karusel
 
 - **Kazanan ölçüsü:** reklam başına **mağazaya giden oturum başı maliyet**
   (`web_sessions`, §5 sorgusu), sonra kurulum başı maliyet (Android GA4 /
-  Play Install Referrer; iOS ASC `ct=`). Kolda **en az ~100 oturum** olmadan
-  kazanan ilan edilmez.
-- **Kalite kapısı:** kazananın 2+ oyun başlatan oranı ve ertesi gün dönüşü
-  kontrolden belirgin kötü olmamalı ("kurulum ucuz ama oynamıyorsa kazanan
-  sayılmaz").
+  Play Install Referrer; iOS ASC `ct=`). **Eşik (9 Eki 2026 netleştirildi):**
+  kol başına en az **150 karşılama oturumu VE 40 mağaza oturumu** olmadan
+  kazanan ilan edilmez ("~100 oturum" ifadesi belirsizdi). **Fark kuralı:**
+  mağazaya giden oturum başı maliyet farkı göreli **%25'ten azsa BERABERE**
+  sayılır (bu örneklemde daha küçük fark gürültü); berabere ise kanca seçimi
+  veriye değil marka tercihine kalır.
+  *Gerekçe (hesap, ölçüm değil):* ₺100/gün/set ≈ 57 görüntüleme/gün (₺1,76,
+  önceki kampanya) ve %24 mağaza oranı → 5 günde kol başına ~285 görüntüleme,
+  ~68 mağaza oturumu; 3 günde ~170/~41 olurdu ve ancak ~9-10 puanlık mağaza
+  oranı farkı gürültüden ayrılırdı (5 günde ~7 puan). 5 gün 10-14 Ekim'i,
+  yani hafta sonunu da hafta içini de kapsar.
+- **Kalite kapısı (YALNIZCA Aşama 2'de):** kazananın 2+ oyun başlatan oranı ve
+  ertesi gün dönüşü kontrolden belirgin kötü olmamalı ("kurulum ucuz ama
+  oynamıyorsa kazanan sayılmaz"). ⚠ **Aşama 1'de ÖLÇÜLEMEZ:** kontrolün 2+ oyun
+  oranı ~%2 → kol başına 3-6 kişi; Aşama 1 yalnızca üst huniyle karar verir.
 - **Erken durdurma:** bir kol 40 oturumda mağaza oranı %5'in altındaysa
   KAPATILIR (`kare` vakası). Bunun dışında ilk 2 gün dokunulmaz.
 - **Etiket yeniden kullanılmaz** (`kampanya-ekim-2026.md` §8).
@@ -137,7 +147,11 @@ Kazanan kancayla, bu sefer yalnızca biçim değişir. Kontrol kolu eski karusel
 
 1. ✅ **Hesap harcama limiti (9 Eki 2026):** ₺6.000'e çıkarıldı ve kaydedildi; sıfırlanma **aylık (her ayın 1'i)**, ekimde ₺1.683,78 harcandı → **₺4.316,22 kaldı**, plan (~₺2.500) sığar. Limit vergi/ücret içermez; karttan çekilen tutar daha yüksek olur. (Önceki 'birikimli, ~₺755 kaldı' varsayımı yanlıştı.)
 2. **Zamanlama:** kapanışın kesin kurulum sayıları 8-9 Ekim'de oturuyor;
-   Aşama 1 en erken **10 Ekim**'de başlar.
+   Aşama 1 en erken **10 Ekim**'de başlar. Kapanış sayıları 9 Eki'de okundu
+   (103 kurulum, ~₺21,8) → bu şart geçti; "yarın" teknik bir zorunluluk
+   DEĞİL, tarih "en erken". **Önerilen:** bugün kur, reklam incelemesi
+   bitsin, **10 Ekim 00:00 (TSİ) için zamanla** (ilk gün tam bütçeyle başlar);
+   üç set AYNI anda başlamalı. Başlangıç tarihi kararı kullanıcıda.
 3. ✅ Görseller `main`'de (PR #820, 9 Eki 2026) — indirme linkleri çalışır.
 
 ## 5 · Yayın kütüğü
@@ -145,3 +159,4 @@ Kazanan kancayla, bu sefer yalnızca biçim değişir. Kontrol kolu eski karusel
 | Ne zaman | Ne | Kaynak |
 |---|---|---|
 | 7 Eki 2026 | Plan onaylandı; Aşama 1 görselleri üretildi (`npm run generate-meta-teaser`, 6 PNG) | Kullanıcı kararı |
+| 9 Eki 2026 | **Karar (kullanıcı): Aşama 1 = 5 gün (₺1.500), kazanan ölçütü = mağazaya giden oturum başı maliyet; eşik kol başına 150 karşılama + 40 mağaza oturumu, fark <%25 → berabere; kalite kapısı Aşama 2'ye taşındı.** Toplam plan ₺3.100 (Aşama 1 ₺1.500 + Aşama 2 ₺1.600), ekim limitinin kalanına (₺4.316,22) sığar; vergi limite dahil değil. Gerekçe §3'te | Kullanıcı kararı |
