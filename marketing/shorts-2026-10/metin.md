@@ -88,8 +88,9 @@ Bağlantı `?ref=linkedin` taşıyor (admin: `li`/`linkedin` öneki → LinkedIn
 | Kelimeki FB sayfası (Hakkında/Web sitesi) + Video 2 FB metni | `fb` | Facebook |
 | Alp Çapa FB profil bio bağlantısı | `fb-profil-bio` | Facebook |
 | LinkedIn Kelimeki sayfası gönderisi | `linkedin` | LinkedIn |
-| Instagram bio (marka) / hikâye bağlantı çıkartması | sade `kelimeki.com` (ref YOK → "Direkt") | Direkt |
-⚠ Instagram bio ve hikâyelere `?ref=ig` / `?ref=ig-profil-bio` eklenmedikçe o trafik panelde "Direkt"e düşer. Önek kuralı: `adminGroups.ts` → `fb`/`ig`/`li` + `-` ile ayrılan etiketler kanala girer; `fbprofil` gibi tiresiz etiket "Diğer"e düşer.
+| Instagram bio (marka) | `ig-bio` (7 Eki 2026'da kullanıcının ekran görüntüsünde doğrulandı: `kelimeki.com/?ref=ig-bio`, başından beri) | Instagram |
+| Kullanıcının kendi profilinden paylaştığı videonun üstündeki bağlantı | sade `kelimeki.com` (ref YOK → "Direkt"); paylaşım sonrası Instagram bağlantıyı DEĞİŞTİRTMİYOR, kabul edildi | Direkt |
+⚠ Bio'da ref var (bayat not düzeltildi, 7 Eki 2026). Yeni hikâye bağlantı çıkartmalarına `?ref=ig-hikaye` gibi etiket koy; eskisi (değiştirilemeyen video bağlantısı) panelde "Direkt"e düşer. Önek kuralı: `adminGroups.ts` → `fb`/`ig`/`li` + `-` ile ayrılan etiketler kanala girer; `fbprofil` gibi tiresiz etiket "Diğer"e düşer.
 
 ## Yayın durumu (repo dışında yapılan iş — kullanıcı bildirdi)
 | Video | Platform | Tarih | Not |
