@@ -211,6 +211,9 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 | #772 (2 Eki) | **Setup'ın oyuncu sayısı satırı: "2 kişilik oyunda yapay zekaya karşı oynarsın." / "4 kişilik oyunda 3 yapay zekaya karşı oynarsın."** (kullanıcı isteği; web yarısı hemen yayında) | `ui/setup/setup_screen.dart` (tek metin) + `setup_screen_test` / `setup_cloud_test` beklentileri |
 | #774 (2 Eki) | **"Tüm oyuncular →" / "← Arkadaşlar" bağlantıları başlıkla aynı tipografide, mavi + kalın** (kullanıcı isteği; web yarısı #775 ile hemen yayında) | `ui/live/live_game_create_form.dart` (`_LinkButton`) + `ui/friends/friends_modal.dart`; `trUpper` ile büyük harf, sabitler web'le birebir |
 | #779 (2 Eki) | **Kayıt formu: ad/soyad isteğe bağlı, zorunlular üstte + Gizlilik "Ad ve soyad (isteğe bağlı)"** (kullanıcı isteği; web formu hemen yayında) | `ui/auth/auth_modal.dart` · `account_settings_modal.dart` · `legal_modals.dart` + web `src/legal/LegalContent.tsx` (Gizlilik tarihi 12 Ekim 2026 — `legal_text_test` web↔port tarih eşliği yüzünden İKİSİ BU PR'da). Cihaz: `TESTING.md` → "Ad/soyad İSTEĞE BAĞLI" |
+| #789 (2 Eki) | **Bölüm başlıkları + form etiketleri KALIN** ("yazılar silik" geri bildirimi; web #788 + #790 ikizi) — SpaceMono 700 | `setup_screen` · `live_games_tab` · `recent_games_section` · `live_game_create_form` · `score_stats_section` · `friends_modal` · `help_modal` · `legal_modals` · `delete_account_modal` · `leaderboard_modal` · `auth_modal` · `account_settings_modal` (yalnızca `fontWeight: w700`) |
+| #791 (2 Eki) | **Android ikonu: adaptive ön katman İKİ KEZ küçülmesin** (Samsung'da ikon ortada küçük, etrafı beyazdı) — `adaptive_icon_foreground_inset: 0` | `pubspec.yaml` + üretilmiş `mipmap-anydpi-v26/ic_launcher.xml` (`16%`→`0%`). Parça 232 · cihaz: `mobile/TESTING.md` ikon maddesi; yalnızca mağaza paketinde görülür |
+| #795 (2 Eki) | **k-lig: Puan Ligi / Beyin Ligi sekmeleri** (web #794 ikizi) + **"SENİN SIRAN" satırı kesiliyordu** düzeltmesi (`KModal` `fillBody`; mağazadaki 1.1.2'de de var) | `util/beyin_ligi.dart` · `ui/score/beyin_ligi_list.dart` · `leaderboard_modal.dart` · `stats_api.dart` · `KModal`. Cihaz: `mobile/docs/testing-klig.md` → "13.x Beyin Ligi sekmesi" |
 
 ### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
 
@@ -218,6 +221,8 @@ Kod YOK; karar kaydı. #804/#805 olduğu gibi **12 Ekim**'de çıkar (kesim risk
 alınmaz); A/B/C ayrı küçük PR'larla `origin/main`'den yeni dallarda yapılır,
 mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunucu yarısı canlıda). Tasarım:
 `docs/decisions/random-opponent.md` (#804'te).
+
+⚠ **10 Ekim 2026 (kullanıcı): #804 iki hesapla test EDİLECEK** (`docs/testing-rastgele.md`); 12 Ekim kesimine yetişmezse **1-2 gün kayar, sorun değil** — #804/#805 testten sonra, diğer 1.1.3 işleriyle aynı sürümde çıkar (kesim günü sabit, bu iki PR için bekleme payı). Sürüm numarası 1.1.3 kalır.
 
 - **A. Yabancıyla biten oyunda "Tekrar Oyna": gösterilsin — ama yalnızca TÜM
   rakipler arkadaşsa.** Sunucu rövanşta "Yalnızca arkadaşlarını davet
