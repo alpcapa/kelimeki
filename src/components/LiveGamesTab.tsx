@@ -26,21 +26,35 @@
 // dizisinden çıkıp rozet kendiliğinden 1'e iner, sıfıra inmeden rozet asla
 // erken kaybolmaz (yalnızca gerçekten 0 olunca `tab.badge > 0` koşuluyla
 // gizlenir).
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import {
   blockUser,
+  cancelRandomGame,
   checkInviteExpiry,
   checkOnlineGameTurnTimeout,
   fetchOnlineGameGlances,
+  fetchMyRandomGames,
   fetchOnlineGameTurns,
+  leaveRandomGame,
   listMyOnlineGames,
   markGameFinishesSeen,
   respondToGameInvite,
   subscribeMyOnlineGames,
 } from '../lib/api';
 import { ABANDON_TIMEOUT_MS } from '../utils/gameStorage';
-import type { OnlineGame, OnlineGameSlot } from '../lib/database.types';
+import type { MyRandomGame, OnlineGame, OnlineGameSlot } from '../lib/database.types';
+import {
+  acceptNotice,
+  classifyLiveGames,
+  isOpenSeat,
+  isRealAiSeat,
+  isRandomOriginGame,
+  myWaitingRandomGames,
+  randomManagedIds,
+} from '../utils/randomGames';
+import { friendlyErrorMessage } from '../utils/errorMessage';
+import { RandomGamesStrip, RandomWaitingRow } from './RandomGamesStrip';
 import { countPendingActions } from '../utils/pendingLiveGames';
 import type { OnlineGameGlance } from '../lib/api';
 import { Avatar } from './Avatar';
@@ -57,7 +71,6 @@ import {
   STALE_DATA_NOTICE,
 } from '../utils/offlineNotice';
 import { AvatarScoreRow, PlayerAvatarRow } from './PlayerAvatarRow';
-import { FriendSuggestModal } from './FriendSuggestModal';
 import { LiveGameCreateForm } from './LiveGameCreateForm';
 import { LIVE_GAME_REQUEST_EVENT, takeLiveGameRequest, type LiveGameRequest } from '../utils/liveGameRequest';
 import { PRIMARY_ACTION_BTN } from './actionButton';
@@ -78,7 +91,12 @@ type SubTab = 'active' | 'invites' | 'recent';
 // veriyi çekip hem state'i hem bu önbelleği günceller.
 const liveGamesCache = new Map<
   string,
-  { games: OnlineGame[]; turns: Record<string, number>; glances: Record<string, OnlineGameGlance> }
+  {
+    games: OnlineGame[];
+    turns: Record<string, number>;
+    glances: Record<string, OnlineGameGlance>;
+    myRandom: MyRandomGame[] | null;
+  }
 >();
 
 type HumanSlot = Extract<OnlineGameSlot, { type: 'human' }>;
@@ -311,7 +329,10 @@ function PendingGameCard({
   busy?: boolean;
 }) {
   const humanSlots = game.slots.filter((s): s is HumanSlot => s.type === 'human');
-  const hasAi = game.slots.some((s) => s.type === 'ai');
+  // `type === 'ai'` TEK BAŞINA yetmez: açık koltuk eski istemci maskesiyle
+  // `{type:'ai', open:true}` gelir (bkz. `isOpenSeat`) — "Yapay Zeka" DEĞİL.
+  const hasAi = game.slots.some(isRealAiSeat);
+  const openCount = game.slots.filter(isOpenSeat).length;
   const remaining = remainingInviteDays(game.created_at);
 
   return (
@@ -330,6 +351,17 @@ function PendingGameCard({
         <div className="text-[9px] uppercase tracking-[1px] text-muted font-mono">Oyuncular</div>
         {humanSlots.map((slot) => (
           <ParticipantRow key={slot.user_id} slot={slot} game={game} />
+        ))}
+        {Array.from({ length: openCount }, (_, i) => (
+          <div key={`open-${i}`} className="flex items-center gap-2">
+            <span
+              className="w-[26px] h-[26px] rounded-full bg-bg border-[1.5px] border-dashed border-muted text-muted font-bold flex items-center justify-center text-sm shrink-0"
+              aria-hidden
+            >
+              ?
+            </span>
+            <span className="flex-1 min-w-0 text-xs text-muted truncate">Rastgele oyuncu bekleniyor</span>
+          </div>
         ))}
         {hasAi && (
           <div className="flex items-center gap-2">
@@ -422,14 +454,17 @@ function GameRow({ game, onRespond, onBlock, busy, onOpen, isMyTurn, deadline, s
   // de gizli kalır — yanlış tarafa ait bir sürenin bir an görünmesindense
   // hiç görünmemesi tercih edildi.
   const remaining = isMyTurn ? remainingTimeLabel(deadline) : null;
+  const isRandomOrigin = game.status === 'active' && isRandomOriginGame(game.slots);
   const Wrapper = onOpen ? 'button' : 'div';
   return (
     <Wrapper
       type={onOpen ? 'button' : undefined}
       onClick={onOpen}
-      className={`shadow-raised flex flex-col rounded-md px-2.5 py-2 border border-border bg-panel w-full text-left ${
-        onOpen ? 'active:scale-[0.99] transition-transform' : ''
-      }`}
+      className={`shadow-raised flex flex-col rounded-md px-2.5 py-2 border w-full text-left ${
+        // Rastgele ilandan doğan oyun (4 Ekim 2026): çok açık mavi zemin + solda mavi çizgi + "RASTGELE"
+        // etiketi (Takım Ligi'nin pembe işaretiyle AYNI fikir). Kart düzeni DEĞİŞMEZ.
+        isRandomOrigin ? 'border-border border-l-[3px] border-l-accent bg-[#EEF4FF]' : 'border-border bg-panel'
+      } ${onOpen ? 'active:scale-[0.99] transition-transform' : ''}`}
     >
       {/* 2 Eylül 2026 — SÜRE SATIRI KARTIN ALTINA ALINDI. Setup'ın YZ kartı
           aynı gün bu şekle sokulmuştu, burası dokunulmadan kalmıştı ve iki
@@ -451,7 +486,9 @@ function GameRow({ game, onRespond, onBlock, busy, onOpen, isMyTurn, deadline, s
             players={game.slots.map((s) =>
               s.type === 'human'
                 ? { name: s.name ?? 'Oyuncu', avatarUrl: s.avatar_url }
-                : { name: 'Yapay Zeka', isAi: true },
+                : isOpenSeat(s)
+                  ? { name: 'Rastgele oyuncu bekleniyor', isOpen: true }
+                  : { name: 'Yapay Zeka', isAi: true },
             )}
           />
           {/* 6 Eylül 2026 — "X açtı" satırı KALKTI, yerine PUAN SATIRI
@@ -481,15 +518,27 @@ function GameRow({ game, onRespond, onBlock, busy, onOpen, isMyTurn, deadline, s
           {game.status === 'active' && (isMyTurn ? <TurnTriangle /> : <TurnDot />)}
         </span>
       </span>
-      {remaining && (
+      {/* Alt satır: "RASTGELE" etiketi SOLDA, kalan süre SAĞDA — aynı hizada, kart uzamasın
+          (4 Ekim 2026, kullanıcı). Süre yoksa (sıra rakipte) etiket tek başına bu satırda kalır. */}
+      {(remaining || isRandomOrigin) && (
         <span
-          /* mt-1.5 — SavedGameRow'la aynı: süre satırı durum etiketine
-             YAPIŞMASIN (kullanıcı isteği). */
-          className={`mt-1.5 self-end text-[8px] font-mono uppercase tracking-[0.5px] ${
-            remaining.urgent ? 'text-red' : 'text-muted'
-          }`}
+          /* mt-1.5 — SavedGameRow'la aynı: alt satır durum etiketine YAPIŞMASIN (kullanıcı isteği). */
+          className={`mt-1.5 flex items-center gap-2 ${isRandomOrigin ? 'justify-between' : 'justify-end'}`}
         >
-          {remaining.text}
+          {isRandomOrigin && (
+            <span className="rounded-full border border-accent/30 bg-white px-1.5 font-mono text-[8px] font-bold uppercase leading-[13px] tracking-[0.5px] text-accent">
+              Rastgele
+            </span>
+          )}
+          {remaining && (
+            <span
+              className={`text-[8px] font-mono uppercase tracking-[0.5px] ${
+                remaining.urgent ? 'text-red' : 'text-muted'
+              }`}
+            >
+              {remaining.text}
+            </span>
+          )}
         </span>
       )}
     </Wrapper>
@@ -502,14 +551,17 @@ function Section({
   onOpenGame,
   turns,
   glances,
+  children,
 }: {
   title: string;
   games: OnlineGame[];
   onOpenGame?: (game: OnlineGame) => void;
   turns?: Record<string, number>;
   glances?: Record<string, OnlineGameGlance>;
+  /** Oyun satırlarının ALTINA eklenen satırlar ("Bekliyor n/N" rastgele ilanlar). */
+  children?: ReactNode;
 }) {
-  if (games.length === 0) return null;
+  if (games.length === 0 && !children) return null;
   return (
     <div className="flex flex-col gap-2">
       <div className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">{title}</div>
@@ -524,6 +576,7 @@ function Section({
             scores={glances ? glances[g.id]?.scores : undefined}
           />
         ))}
+        {children}
       </div>
     </div>
   );
@@ -676,11 +729,39 @@ export function LiveGamesTab({
   // istek `[]` olarak geldiğinden ekran "Devam eden bir Canlı oyunun yok."
   // diyordu — sunucunun gerçekten boş dediği durumdan ayırt edilemiyordu.
   const [loadFailed, setLoadFailed] = useState(false);
+  // Rastgele Oyuncu (3 Ekim 2026): benim ilanlarım (`list_my_random_games`).
+  // null = henüz gelmedi YA DA alınamadı — ikisinde de son bilinen korunur
+  // (boş dizi "sunucu boş dedi" demek, bkz. `fetchMyRandomGames`).
+  const [myRandom, setMyRandom] = useState<MyRandomGame[] | null>(
+    () => (user ? (liveGamesCache.get(user.id)?.myRandom ?? null) : null),
+  );
+  // "Ayrıl"/"İlanı iptal et" için meşgul kimlik + kısa süreli ileti (kabul
+  // sonucu / sunucu reddi). İleti satır içi — `fixed` toast iOS Safari'nin
+  // yüzen alt çubuğunun arkasına düşebiliyor (bkz. `actionButton.ts`).
+  const [busyRandomId, setBusyRandomId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const noticeTimerRef = useRef<number | null>(null);
+  const showNotice = (text: string) => {
+    setNotice(text);
+    if (noticeTimerRef.current != null) window.clearTimeout(noticeTimerRef.current);
+    noticeTimerRef.current = window.setTimeout(() => {
+      noticeTimerRef.current = null;
+      setNotice(null);
+    }, 5000);
+  };
+  useEffect(
+    () => () => {
+      if (noticeTimerRef.current != null) window.clearTimeout(noticeTimerRef.current);
+    },
+    [],
+  );
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'signup' | 'login'>('login');
   // Girişsiz uyarı sekme her açıldığında bir kez (bkz. `GuestLiveSheet`).
   const [guestSheetOpen, setGuestSheetOpen] = useState(true);
   const [creating, setCreating] = useState(false);
+  // Şeritteki "Rastgele oyun aç" (4 Ekim 2026, kullanıcı): formu Rastgele Oyuncu SEÇİLİ açar.
+  const [startRandom, setStartRandom] = useState(false);
   // Arkadaşlar penceresinin OYNA'sı (27 Eylül 2026): formu o arkadaş seçili
   // aç. Takılırken kuyruktakini al, takılıyken olayı dinle
   // (`utils/liveGameRequest.ts`). `onKey`: aynı formdayken yeni bir istek
@@ -700,9 +781,6 @@ export function LiveGamesTab({
   const [busyInviteId, setBusyInviteId] = useState<string | null>(null);
   // "Engelle" onayı bekleyen davet (4 Ekim 2026): kişiyi engeller + daveti reddeder.
   const [blockInvite, setBlockInvite] = useState<{ game: OnlineGame; name: string } | null>(null);
-  // Bir daveti kabul ettikten sonra, o oyundaki henüz arkadaş olunmayan
-  // katılımcılara toplu istek gönderme önerisi (bkz. FriendSuggestModal).
-  const [suggestCandidates, setSuggestCandidates] = useState<HumanSlot[] | null>(null);
 
   // İlk yükleme (mount effect) ve sonraki tüm reload() çağrıları (Realtime,
   // foreground, davet yanıtı, yeni oyun oluşturma) AYNI unmount korumasını
@@ -787,7 +865,9 @@ export function LiveGamesTab({
   };
 
   const loadGames = async (cancelledRef?: { current: boolean }) => {
-    const rows = await listMyOnlineGames();
+    // İki liste paralel: ikincisi (benim ilanlarım) yalnızca KOVA kararı için
+    // gerekli — aynı anda gelmezse bir oyun bir an yanlış kovada görünürdü.
+    const [rows, rnd] = await Promise.all([listMyOnlineGames(), fetchMyRandomGames()]);
     if (cancelledRef?.current) return;
     if (rows === null) {
       // ELDE VAR OLANI EZME. `setGames([])` demek "sunucu boş dedi" demekti.
@@ -795,15 +875,32 @@ export function LiveGamesTab({
       scheduleAutoRetry();
       return;
     }
-    setLoadFailed(false);
-    clearAutoRetry();
-    autoRetryStepRef.current = 0;
+    if (rnd === null) {
+      // İlan listesi alınamadı: SON BİLİNENİ koru (`setMyRandom([])` demek
+      // "ilanın yok" demek olurdu), oyun listesi yine de gösterilir.
+      setLoadFailed(true);
+      scheduleAutoRetry();
+    } else {
+      setMyRandom(rnd);
+      setLoadFailed(false);
+      clearAutoRetry();
+      autoRetryStepRef.current = 0;
+    }
     setGames(rows);
     setHasFreshGames(true);
 
-    const expiredInviteIds = rows
-      .filter((g) => g.status === 'pending' && Date.parse(g.created_at) + ABANDON_TIMEOUT_MS <= Date.now())
-      .map((g) => g.id);
+    // Süresi dolmuş bekleyen oyunlar: `created_at` (davetler + rastgele) ve
+    // ilan satırının kendi `expires_at`ı — ikisi de `check_invite_expiry`'ye.
+    const expiredInviteIds = [
+      ...new Set([
+        ...rows
+          .filter((g) => g.status === 'pending' && Date.parse(g.created_at) + ABANDON_TIMEOUT_MS <= Date.now())
+          .map((g) => g.id),
+        ...(rnd ?? [])
+          .filter((g) => g.status === 'pending' && Date.parse(g.expires_at) <= Date.now())
+          .map((g) => g.id),
+      ]),
+    ];
     const activeIds = rows.filter((g) => g.status === 'active').map((g) => g.id);
     if (activeIds.length === 0 && expiredInviteIds.length === 0) {
       setTurns({});
@@ -846,7 +943,7 @@ export function LiveGamesTab({
       ...expiredInviteIds.map((id) => checkInviteExpiry(id)),
     ]);
     if (cancelledRef?.current) return;
-    const rows2 = await listMyOnlineGames();
+    const [rows2, rnd2] = await Promise.all([listMyOnlineGames(), fetchMyRandomGames()]);
     if (cancelledRef?.current) return;
     if (rows2 === null) {
       setLoadFailed(true);
@@ -854,6 +951,7 @@ export function LiveGamesTab({
       return;
     }
     setGames(rows2);
+    if (rnd2 !== null) setMyRandom(rnd2);
     const activeIds2 = rows2.filter((g) => g.status === 'active').map((g) => g.id);
     if (activeIds2.length === 0) {
       setTurns({});
@@ -936,6 +1034,7 @@ export function LiveGamesTab({
     }
     if (!user) {
       setGames(null);
+      setMyRandom(null);
       return;
     }
     // Her çalıştırma KENDİ iptal jetonunu alır; `cancelledRef` yalnızca
@@ -1012,8 +1111,8 @@ export function LiveGamesTab({
   // gösterebileceği "son bilinen" durum.
   useEffect(() => {
     if (!user || games === null) return;
-    liveGamesCache.set(user.id, { games, turns, glances });
-  }, [user?.id, games, turns, glances]);
+    liveGamesCache.set(user.id, { games, turns, glances, myRandom });
+  }, [user?.id, games, turns, glances, myRandom]);
 
   // ⚠ AŞAĞIDAKİ İKİ HOOK ERKEN `return`LERİN ÜSTÜNDE KALMAK ZORUNDA.
   // 3 Eylül 2026: eklendikleri turda dosyanın SONUNA, yani `if (creating)` /
@@ -1072,12 +1171,15 @@ export function LiveGamesTab({
           key={preset?.onKey ?? 0}
           initialFriendId={preset?.friendId}
           initialPlayerCount={preset?.playerCount}
+          initialRandom={startRandom}
           onCancel={() => {
             setCreating(false);
+            setStartRandom(false);
             setPreset(null);
           }}
           onCreated={() => {
             setCreating(false);
+            setStartRandom(false);
             setPreset(null);
             reload();
           }}
@@ -1127,12 +1229,7 @@ export function LiveGamesTab({
     setBusyInviteId(game.my_invite_id);
     try {
       await respondToGameInvite(game.my_invite_id, accept);
-      if (accept) {
-        const candidates = game.slots.filter(
-          (s): s is HumanSlot => s.type === 'human' && s.relation !== 'self' && s.relation !== 'accepted',
-        );
-        if (candidates.length > 0) setSuggestCandidates(candidates);
-      }
+      // Arkadaş önerisi artık davet kabulünde DEĞİL, oyun BİTİNCE (OnlineGameScreen).
       // reload()'un aksine (fire-and-forget) burada bilerek await ediliyor —
       // önceden busy göstergesi liste tazelenmeden kayboluyordu, kullanıcı
       // aynı davete art arda iki kez tıklayabiliyordu.
@@ -1141,6 +1238,25 @@ export function LiveGamesTab({
       console.error('[Kelimeki] respondToGameInvite hatası:', err);
     } finally {
       setBusyInviteId(null);
+    }
+  };
+
+  // "Ayrıl" (kabul eden) / "İlanı iptal et" (kurucu). Ceza yok. Sunucu reddi
+  // (ör. oyun o arada doldu) `friendlyErrorMessage` ile gösterilir; her
+  // durumda liste tazelenir — satır ya kalkmıştır ya da gerçek durumu görünür.
+  const handleLeaveRandom = async (g: MyRandomGame) => {
+    setBusyRandomId(g.id);
+    try {
+      if (g.my_role === 'creator') await cancelRandomGame(g.id);
+      else await leaveRandomGame(g.id);
+      showNotice(g.my_role === 'creator' ? 'İlan iptal edildi.' : 'Ayrıldın. Koltuk yeniden açıldı.');
+    } catch (err) {
+      showNotice(
+        friendlyErrorMessage(err, { surface: 'rastgele-ayril', fallback: 'İşlem tamamlanamadı.' }),
+      );
+    } finally {
+      await loadGames(cancelledRef.current);
+      setBusyRandomId(null);
     }
   };
 
@@ -1154,12 +1270,16 @@ export function LiveGamesTab({
   // Davet süresi `created_at + ABANDON_TIMEOUT_MS` (bkz.
   // `remainingInviteDays`), yani EN ESKİ davet en yakın olandır.
   const davetBitis = (g: OnlineGame) => Date.parse(g.created_at) || null;
-  const invites = orderByExpiry(
-    (games ?? []).filter(
-      (g) => g.my_role === 'invitee' && g.my_invite_status === 'pending' && g.status === 'pending',
-    ),
-    davetBitis,
-  );
+  // ⚠ DÖRT KOVA DERSİ, Rastgele Oyuncu'da yeniden (3 Ekim 2026): kurucu ve
+  // ilandan kabul eden oyunlar `list_my_online_games`ta 'Rakip Bekleniyor' /
+  // 'Kabul Ettin' olarak da döner; yalnızca "Devam Edenler"de ("Bekliyor n/N")
+  // görünmeleri için `managed` kümesi `waiting`/`acceptedWaiting`i daraltır.
+  // `invites` ve `active` DOKUNULMAZ (karma kadrodaki arkadaşın daveti
+  // bugünkü gibi; dolup başlayan oyun normal oyun). Kural saf fonksiyonda:
+  // `utils/randomGames.ts` + `npm run verify-random-games`.
+  const managed = randomManagedIds(myRandom, games ?? []);
+  const buckets = classifyLiveGames(games ?? [], managed);
+  const invites = orderByExpiry(buckets.invites, davetBitis);
   // Sırası kendisinde olan oyunlar ("Senin Hamlen Bekleniyor") listenin en
   // üstünde — dikkat gerektiren oyunlar her zaman ilk bakışta görünsün diye.
   // İKİNCİ ölçüt: son oynanan üstte.
@@ -1184,23 +1304,19 @@ export function LiveGamesTab({
     return d ? new Date(d).getTime() : null;
   };
   const active = orderActiveGames(
-    (games ?? []).filter((g) => g.status === 'active'),
+    buckets.active,
     { myTurn: (g) => turns[g.id] === mySlotIndex(g), deadlineMs: sonHamle },
   );
-  const waiting = orderByExpiry(
-    (games ?? []).filter((g) => g.my_role === 'creator' && g.status === 'pending'),
-    davetBitis,
-  );
+  const waiting = orderByExpiry(buckets.waiting, davetBitis);
   // Daveti kabul ettin ama oyun (4 kişilikte diğer davetliler henüz
   // kabul etmediğinden) hâlâ 'pending' — `invites`/`active`/`waiting`
   // hiçbirine düşmediğinden bir kategori eksikti, oyun listede hiç
   // görünmüyordu (kabul ettikten sonra "kayboluyor" gibi görünüyordu).
-  const acceptedWaiting = orderByExpiry(
-    (games ?? []).filter(
-      (g) => g.my_role === 'invitee' && g.my_invite_status === 'accepted' && g.status === 'pending',
-    ),
-    davetBitis,
-  );
+  const acceptedWaiting = orderByExpiry(buckets.acceptedWaiting, davetBitis);
+  // "Devam Edenler"deki "Bekliyor n/N" satırları — en yeni ilan üstte.
+  const randomWaiting = myWaitingRandomGames(myRandom)
+    .slice()
+    .sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
   // İlk iki tabın kırmızı rozeti — Setup'taki "Arkadaşınla (N)" rozetiyle
   // aynı iki sayı: gerçekten hamle bekleyen (sırası çağıranda olan) aktif
   // oyun sayısı, ve yanıt bekleyen davet sayısı. "Kabul Ettin — Diğerleri
@@ -1229,9 +1345,6 @@ export function LiveGamesTab({
   return (
     <RankTierProvider userIds={participantIds}>
     <div className="w-full flex flex-col gap-5">
-      {suggestCandidates && (
-        <FriendSuggestModal candidates={suggestCandidates} onDone={() => setSuggestCandidates(null)} />
-      )}
       {blockInvite && (
         <BlockConfirmModal
           name={blockInvite.name}
@@ -1322,11 +1435,50 @@ export function LiveGamesTab({
             </p>
           )}
           {subTab === 'active' ? (
-        active.length === 0 ? (
-          <p className="text-center text-xs text-muted font-mono py-8">Devam eden bir Canlı oyunun yok.</p>
-        ) : (
-          <Section title="Devam Eden Oyunlar" games={active} onOpenGame={onOpenGame} turns={turns} glances={glances} />
-        )
+        <>
+          {notice && (
+            <p
+              role="status"
+              className="text-center text-xs text-text font-sans bg-panel border border-border rounded-md px-3 py-2"
+              style={{ margin: 0 }}
+            >
+              {notice}
+            </p>
+          )}
+          {/* Rastgele Oyunlar şeridi: Devam Eden Oyunlar'ın ÜSTÜNDE. Liste
+              boşken kendini TAMAMEN gizler ama bağlı kalır (yoklama sürer). */}
+          <RandomGamesStrip
+            userId={user.id}
+            myRandom={myRandom}
+            busyRandomId={busyRandomId}
+            onLeaveMine={(g) => void handleLeaveRandom(g)}
+            onOpenCreate={() => {
+              setStartRandom(true);
+              setCreating(true);
+            }}
+            onAccepted={(r) => {
+              showNotice(acceptNotice(r));
+              reload();
+            }}
+            onNotice={showNotice}
+          />
+          {active.length === 0 && randomWaiting.length === 0 ? (
+            <p className="text-center text-xs text-muted font-mono py-8">Devam eden bir Canlı oyunun yok.</p>
+          ) : (
+            <Section title="Devam Eden Oyunlar" games={active} onOpenGame={onOpenGame} turns={turns} glances={glances}>
+              {randomWaiting.length > 0
+                ? randomWaiting.map((g) => (
+                    <RandomWaitingRow
+                      key={g.id}
+                      game={g}
+                      busy={busyRandomId === g.id}
+                      onLeave={() => void handleLeaveRandom(g)}
+                    />
+                  ))
+                : null}
+            </Section>
+          )}
+        </>
       ) : subTab === 'invites' ? (
         invites.length === 0 && acceptedWaiting.length === 0 && waiting.length === 0 ? (
           <p className="text-center text-xs text-muted font-mono py-8">Bekleyen bir davet ya da oyunun yok.</p>

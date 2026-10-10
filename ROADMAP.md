@@ -211,6 +211,7 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 | #772 (2 Eki) | **Setup'ın oyuncu sayısı satırı: "2 kişilik oyunda yapay zekaya karşı oynarsın." / "4 kişilik oyunda 3 yapay zekaya karşı oynarsın."** (kullanıcı isteği; web yarısı hemen yayında) | `ui/setup/setup_screen.dart` (tek metin) + `setup_screen_test` / `setup_cloud_test` beklentileri |
 | #774 (2 Eki) | **"Tüm oyuncular →" / "← Arkadaşlar" bağlantıları başlıkla aynı tipografide, mavi + kalın** (kullanıcı isteği; web yarısı #775 ile hemen yayında) | `ui/live/live_game_create_form.dart` (`_LinkButton`) + `ui/friends/friends_modal.dart`; `trUpper` ile büyük harf, sabitler web'le birebir |
 | #779 (2 Eki) | **Kayıt formu: ad/soyad isteğe bağlı, zorunlular üstte + Gizlilik "Ad ve soyad (isteğe bağlı)"** (kullanıcı isteği; web formu hemen yayında) | `ui/auth/auth_modal.dart` · `account_settings_modal.dart` · `legal_modals.dart` + web `src/legal/LegalContent.tsx` (Gizlilik tarihi 12 Ekim 2026 — `legal_text_test` web↔port tarih eşliği yüzünden İKİSİ BU PR'da). Cihaz: `TESTING.md` → "Ad/soyad İSTEĞE BAĞLI" |
+| #805 (4 Eki) | **Rastgele Oyuncu + oyun sonu arkadaş önerisi + Detaylı Kurallar "Rastgele Oyun"** — port yarısı; **web #804 ile BİRLİKTE 12 Ekim'de merge** (kullanıcı kararı 4 Eki: web tek başına işe yaramaz, bayrak yok). Merge sırası: #804 → #805 (base main'e çevrilir) | `ui/live/*` (şerit, kurulum formu, kartlar, oyun sonu önerisi) · `util/random_games.dart` · `util/friend_suggest.dart` · `ui/game/help_modal.dart` · `storage/flags_store.dart`. Çakışma beklenir: #765/#774/#779 (`live_game_create_form.dart`, `legal_modals.dart`); Gizlilik tarihi #779'da 12 Ekim — #804/#805'in 4 Ekim'i ona uydurulur (web+Dart birlikte). Cihaz: `docs/testing-rastgele.md` + `mobile/TESTING.md` |
 
 ### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
 
@@ -870,6 +871,15 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
+## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB (#804) + PORT (#805) YAZILDI, taslak PR'da · 12 Ekim treni, İKİSİ BİRLİKTE MERGE** (3-4 Ekim 2026)
+
+Kullanıcı (3 Ekim): arkadaş listesinin tepesine "?" avatarlı **Rastgele Oyuncu**;
+ilan Devam Edenler'in üstünde **3 kutu yan yana, yatay kayan şeritte** kabul
+edilir, kabul edilen oyun "Bekliyor" ile Devam Edenler'e girer. Motora dokunmaz.
+Kayıt, kararlar (A-F kapandı) ve öneriler: `docs/decisions/random-opponent.md`. Kullanıcı: 12 Ekim trenine alınabilirse alınsın (port yetişmezse 19 Ekim);
+Takım Ligi (#44) ile aynı `online_games.listing` altyapısı.
+⚠ **4 Ekim (kullanıcı): web (#804) ve port (#805) AYNI GÜN merge edilir** (iki taraflı pazar yeri; web tek başına işe yaramaz) — `random-opponent.md` §18.
+
 ## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
 
 Kullanıcı (3 Ekim): *"Bence bu ok. Bunu 19 Ekim trenine düşünüyorum. Şimdilik
@@ -885,6 +895,7 @@ roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
   https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed (özel bağlantı).
   **Tıklanabilir prototip** (sahte veri, kod değil; takım kur, oyun aç, kabul
   et, takımsız yol): https://claude.ai/artifact/2NGiuSvkcduFJkdQLVtXGd
+- **Revizyon 17 (4 Ekim 2026, kullanıcı):** bir üyenin teslimi (48 saat dahil) TÜM TAKIMI teslim yapar, oyun hemen biter (4 kişide de); teslim olan takımın iki oyuncusu −2, takım −2; kazanan iki oyuncu +2, takım +2. Ayrıntı: `team-league.md` §3, §8, "Revizyon 17".
 - **Kullanıcı kararları (3 Ekim 2026, kapandı):** S12 eski sürüm: sunucu
   takım oyununda eski hamle çağrısını reddeder, mesaj *"Telefonunuz takım
   oyununu desteklemiyor"* · S13 takımın vergi payı iki ortağa yarı yarıya yazılır
