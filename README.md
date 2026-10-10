@@ -156,6 +156,8 @@ src/
 │   ├── actionButton.ts          # Setup'ın turuncu "Yeni Oyun Başlat" düğmesi (YZ + Arkadaşınla listeleri) — "altta sabit" iOS Safari'de denendi, geri alındı
 │   ├── FriendSuggestModal.tsx   # bir Canlı davet kabul edildikten sonra, henüz arkadaş olunmayan katılımcılara toplu istek gönderme önerisi
 │   ├── FriendModerationModal.tsx # arkadaş satırındaki 🚫/🚩 rozetinden açılan geri alma paneli (sessizden çıkar / raporu geri çek)
+│   ├── BlockedUsersModal.tsx     # "Engellediklerim": engellediğin/şikayet ettiğin HERKES (arkadaş olmayan dahil) → Engeli Kaldır / Şikayeti Geri Çek
+│   ├── BlockConfirmModal.tsx     # "Engelle" onayı — arkadaşlık isteği kartı + oyun daveti kartı ortak kullanır
 │   ├── OnlineGameScreen.tsx     # gerçek Canlı oyun ekranı — Board/Rack/GameHeader'ı Supabase state'ine (Realtime) bağlar
 │   ├── RelationIcons.tsx        # arkadaşlık ilişkisi ikonları (ekle · bekliyor · kabul et · çıkar) — FriendsModal ve PlayerScoreCard ortak; üçünün path'i Flutter portuyla aynı fonttan, "bekliyor" (kişi + kum saati) elle çizildi ve porta parite testiyle bağlandı
 │   ├── Avatar.tsx               # profil fotoğrafı bileşeni

@@ -1072,6 +1072,19 @@ export interface AdminDeviceModelRow {
 }
 
 /**
+ * `admin_device_model_os_breakdown` RPC çıktısındaki tek satır (Büyüme >
+ * Kullanıcı → "Cihaz" ağacı, model altındaki sürüm kırılımı). Platform ×
+ * model × sürüm başına benzersiz ziyaretçi; `device_model` ve `os_version`
+ * NULL olabilir.
+ */
+export interface AdminDeviceModelOsRow {
+  device_type: string;
+  device_model: string | null;
+  os_version: string | null;
+  visitors: number;
+}
+
+/**
  * `admin_os_version_breakdown` RPC çıktısındaki tek satır (Büyüme >
  * Kullanıcı → "İşletim Sistemi" tablosu). `os_version` ayrıştırılamazsa
  * null.

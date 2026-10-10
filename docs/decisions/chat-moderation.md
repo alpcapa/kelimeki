@@ -142,3 +142,13 @@ Kullanıcı kararları: **maskele** · **takma isim dahil** (orada RET) ·
 - **Kapsam dışı (v1):** harf tekrarı (`salaaak`) ve araya konan karakter
   (`s.a.l.a.k`) normalizasyonu — maskenin orijinale hizalanmasını bozar;
   listede yaygın varyantlar zaten var. Gerekirse ayrı iş.
+
+## "Sessize al" → "Engelle" (5 Ekim 2026)
+
+Kullanıcı kararı: sessize alan kişi o kişiyle oyunda ya da başka yerde bir daha
+karşılaşmayacağı için terim **Engelle**. Bu doküman yukarıda "sessize alma"
+diyor — o dönemin dili, davranış aynı; ama artık engel sohbet bildiriminin
+ötesinde oyun davetini, arkadaşlık isteğini, davet linkini ve rastgele
+eşleşmeyi de kapatır. Tam kayıt ve web/port durumu: `live-game.md` → "Engel
+arkadaşlık yoluna da uzandı". Şikayet YALNIZCA oyunun sohbetinden yapılır
+(davet/istek kartında yok).

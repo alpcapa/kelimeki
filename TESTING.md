@@ -265,11 +265,34 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       + YZ'li bir oyunda YZ yine 4. koltukta kalmalı. Rakibi arkadaşlıktan
       çıkarıp denersen "Yalnızca arkadaşlarını davet edebilirsin." görünmeli
       ve ekranda kalınmalı.
-- [ ] **Oyun GEÇMİŞİNDEN "Tekrar Oyna" (4 Eylül 2026).** "Tüm Oyunlarım"da
-      bitmiş bir **Canlı** oyunun kartını aç, tahta önizlemesine tıkla:
-      menüde **Paylaş · Tekrar Oyna · Kapat** olmalı. Tekrar Oyna → oyun
-      sonundakiyle AYNI onay metni → onayla → "Davetiniz gönderilmiştir."
-      ve yeni oyun "Rakip Bekleniyor"da görünmeli. **Biten oyunu SEN
+- [ ] **Davet kuralları (4 Ekim 2026; iki hesap).** (a) A, B'ye 2 kişilik
+      davet gönderir; B YANITLAMADAN A aynı B'ye ikinci 2 kişilik daveti
+      dener → "Bu arkadaşına zaten yanıtlanmamış bir 2 kişilik davetin var…".
+      (b) Aynı anda A, B'ye 4 kişilik davet gönderebilmeli (ayrı hak); ikinci
+      4 kişilik reddedilmeli. (c) B kabul edince A yeni 2 kişilik gönderebilmeli.
+      (d) A, kaç arkadaşı varsa her birine birer 2 kişilik gönderebilmeli (genel tavan
+      YOK). (e) B, A'yı sohbette SESSİZE alır (ya da şikayet eder) → A, B'ye
+      davet dener → "<B'nin takma adı> kullanıcısı sizi engelledi." görünmeli;
+      susturma/şikayet geri alınınca davet geçmeli. (f) Rastgele ilan (en
+      çok 3) bu sınırlardan bağımsız; arkadaş koltuğu olan rastgele ilanda
+      aynı kişiye çift davet de reddedilmeli.
+      (g) **Engel arkadaşlık yolunda (4 Ekim 2026):** B, A'yı engeller (sohbette
+      sessize alma ya da şikayet) → A, B'ye ARKADAŞLIK isteği dener → "<B> kullanıcısı
+      sizi engelledi."; B'nin arkadaş DAVET LİNKİNİ A açınca da aynı mesaj, arkadaş
+      OLUNMAMALI. Engel kalkınca ikisi de geçmeli. (h) **Engelle (5 Ekim 2026; iki hesap).** B'nin gelen arkadaşlık isteği
+      kartında YALNIZCA "Reddet / Kabul et" + küçük "Engelle" olmalı (şikayet
+      YOK). Engelle → onay penceresi → onaylayınca istek kaybolmalı; A tekrar
+      istek/davet gönderince "<B> kullanıcısı sizi engelledi.". Aynısı bekleyen
+      OYUN DAVETİ kartında (Kabul Et / Reddet + "Engelle"); engelleyince davet
+      listeden kalkmalı. (i) **Arkadaşlar → "Engellediklerim"** (listenin en
+      altında): A burada görünmeli (arkadaş olmasa da); "Engeli Kaldır" onayla →
+      A yeniden davet/istek gönderebilmeli. Şikayet ETMİŞSEN satırda 🚩 ve
+      "Şikayeti Geri Çek" de olmalı; şikayet açıkken "Engeli Kaldır" tek başına
+      kişiyi SERBEST bırakmaz (iki adım). (j) Sohbet ayarlarında "Kişiyi Engelle"
+      / "Engeli Kaldır" metinleri ("sessize al" kalmamalı). ⚠ Beklenen: arkadaş
+      ⋯ menüsündeki madde etiketi hâlâ "Sessize alma / şikayet ayarları" (port
+      PR'ında değişecek). ⚠ Beklenen yan etki: "sessize
+      al" artık davetleri de kapatır. **Biten oyunu SEN
       kurmamışsan da çalışmalı** (davet edilen taraf da rövanş açabilir).
       ⚠ **Bir YZ oyununun kartında "Tekrar Oyna" ÇIKMAMALI** — kapsam
       bilerek yalnızca Canlı oyunlar (yerel yeni oyun, kaydedilmiş devam
@@ -1023,7 +1046,7 @@ gerekiyor).
       olmalı. **İkinci kontrol (sayfalama):** listeyi sonuna kadar kaydır —
       hiçbir oyuncu İKİ KEZ görünmemeli ve kimse atlanmamalı (eski sıralama
       eşitlikte kararsızdı, `.range()` ile sayfalanınca bu mümkündü).
-      Açıklama satırında "Puanlar eşitse OHP yüksek olan üstte." yazmalı.
+      Listenin ALTINDAKİ nottaki "YZ'ye karşı oynanan oyunlar da sayılır." cümlesinin yanında "Puanlar eşitse OHP yüksek olan üstte." yazmalı (üst açıklamada artık YOK, 5 Ekim 2026).
       Skor Kartı'ndaki metrik etiketi de "Ortalama Hamle Puanı (OHP)"
       olmalı — dar bir telefonda kutuyu taşırmadan sarmalı.
 - [ ] **Kutlama banner'ı bir kez çıkar.** Görülmemiş bir ödülün varken

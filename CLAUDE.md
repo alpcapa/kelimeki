@@ -32,7 +32,7 @@ npm run verify-recent-game-avatars # "Son Oynananlar" avatar çözümü: eşleme
 npm run verify-rematch-slots     # Rövanş kadrosu: ilk koltuk çağıran, YZ'ler sonda (create_online_game kısıtları)
 npm run verify-head-to-head      # Kafa kafaya oran çubuğu: üç dilim TAM 100 eder mi (kümülatif yuvarlama)
 npm run verify-fetch-my-games    # Oyun geçmişi: ağ hatası ↔ boş liste ayrımı (sahte Supabase ucu)
-npm run verify-device-labels     # Admin cihaz tabloları: model KODU → marka öneki + cihaz→OS sürümü ağacı (canlıdan alınmış gerçek kodlar)
+npm run verify-device-labels     # Admin cihaz AĞACI (Platform ▸ Marka ▸ Model ▸ Sürüm): model KODU → marka öneki + marka×sürüm çaprazı (canlıdan alınmış gerçek kodlar)
 npm run verify-admin-groups      # Admin AÇILIR tabloları: `?ref=` → kanal öneki (fbi Facebook DEĞİL) + (platform, sürüm) ağacı ve sürümün SAYISAL sıralaması
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ leagueRank.ts
 npm run verify-beyin-ligi        # Beyin Ligi giriş eşiği: `beyin_ligi_siralama` SQL'i ↔ beyinLigi.ts (↔ beyin_ligi.dart)
@@ -67,6 +67,7 @@ npm run generate-klig-paths      # KLigMark.tsx + portun klig_mark_data.dart'ın
 npm run generate-icons           # favicon / app icon (public/) — og-image DEĞİL
 npm run generate-og-image        # public/og-image.png (sosyal paylaşım kartı)
 npm run generate-play-assets     # Play mağaza ikonu (512) + öne çıkan görsel (1024×500) + Promotional content kartı (1920×1080, metinsiz)
+npm run generate-meta-teaser    # Meta teaser kampanyası Aşama 1 görselleri (3 kanca × feed/story; `npm run build` ÖNCE) — marketing/meta-reklam/kampanya-teaser-ekim-2026.md
 npm run generate-store-header    # marketing/store/ — mağaza başlık görseli (4096×2304, ≤1 MB)
 npm run preview-store-frames     # App Store karelerinin YEREL önizlemesi (iPhone + iPad, ~14 sn, Linux) — mağazaya giden set yine CI'ın
 # Öteki pazarlama üreticileri (generate-reel, generate-fb-cover) bu listede

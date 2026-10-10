@@ -29,6 +29,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import {
+  blockUser,
   cancelRandomGame,
   checkInviteExpiry,
   checkOnlineGameTurnTimeout,
@@ -58,6 +59,7 @@ import { countPendingActions } from '../utils/pendingLiveGames';
 import type { OnlineGameGlance } from '../lib/api';
 import { Avatar } from './Avatar';
 import { AuthModal } from './AuthModal';
+import { BlockConfirmModal } from './BlockConfirmModal';
 import { CountBadge } from './CountBadge';
 import { createAwayTracker } from '../utils/awayReturn';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
@@ -315,11 +317,15 @@ function PendingGameCard({
   game,
   title,
   onRespond,
+  onBlock,
   busy,
 }: {
   game: OnlineGame;
   title: string;
   onRespond?: (accept: boolean) => void;
+  /** Daveti gönderen kişiyi ENGELLE (4 Ekim 2026, kullanıcı kararı: davet
+   *  kartında yalnızca "Engelle", şikayet YOK — şikayet sohbete özeldir). */
+  onBlock?: () => void;
   busy?: boolean;
 }) {
   const humanSlots = game.slots.filter((s): s is HumanSlot => s.type === 'human');
@@ -387,6 +393,16 @@ function PendingGameCard({
           </button>
         </div>
       )}
+      {onRespond && onBlock && (
+        <button
+          type="button"
+          onClick={onBlock}
+          disabled={busy}
+          className="self-center text-[10px] font-bold uppercase tracking-[0.5px] text-muted underline underline-offset-2 active:opacity-70 disabled:opacity-50"
+        >
+          Engelle
+        </button>
+      )}
     </div>
   );
 }
@@ -394,6 +410,7 @@ function PendingGameCard({
 interface GameRowProps {
   game: OnlineGame;
   onRespond?: (accept: boolean) => void;
+  onBlock?: () => void;
   busy?: boolean;
   /** Yalnızca `status==='active'` oyunlarda verilir — satıra tıklanınca gerçek oyun ekranını açar. */
   onOpen?: () => void;
@@ -409,7 +426,7 @@ interface GameRowProps {
   scores?: number[];
 }
 
-function GameRow({ game, onRespond, busy, onOpen, isMyTurn, deadline, scores }: GameRowProps) {
+function GameRow({ game, onRespond, onBlock, busy, onOpen, isMyTurn, deadline, scores }: GameRowProps) {
   const isPendingInvite = game.my_role === 'invitee' && game.my_invite_status === 'pending';
 
   if (isPendingInvite && onRespond) {
@@ -421,6 +438,7 @@ function GameRow({ game, onRespond, busy, onOpen, isMyTurn, deadline, scores }: 
         game={game}
         title={`${inviterName ?? 'Bir arkadaşın'} seni ${game.player_count} kişilik oyuna davet etti`}
         onRespond={onRespond}
+        onBlock={onBlock}
         busy={busy}
       />
     );
@@ -761,6 +779,8 @@ export function LiveGamesTab({
     return () => window.removeEventListener(LIVE_GAME_REQUEST_EVENT, al);
   }, []);
   const [busyInviteId, setBusyInviteId] = useState<string | null>(null);
+  // "Engelle" onayı bekleyen davet (4 Ekim 2026): kişiyi engeller + daveti reddeder.
+  const [blockInvite, setBlockInvite] = useState<{ game: OnlineGame; name: string } | null>(null);
 
   // İlk yükleme (mount effect) ve sonraki tüm reload() çağrıları (Realtime,
   // foreground, davet yanıtı, yeni oyun oluşturma) AYNI unmount korumasını
@@ -1325,6 +1345,22 @@ export function LiveGamesTab({
   return (
     <RankTierProvider userIds={participantIds}>
     <div className="w-full flex flex-col gap-5">
+      {blockInvite && (
+        <BlockConfirmModal
+          name={blockInvite.name}
+          onConfirm={async () => {
+            const g = blockInvite.game;
+            if (!g.created_by || !g.my_invite_id) return;
+            // Önce engel, sonra daveti reddet: engel başarısızsa davet yerinde
+            // kalır; ret başarısız olursa engel kalır (davet zaten engellenen
+            // kişiden) ve liste bir sonraki tazelemede düzelir.
+            await blockUser(g.created_by);
+            await respondToGameInvite(g.my_invite_id, false);
+            await loadGames(cancelledRef.current);
+          }}
+          onClose={() => setBlockInvite(null)}
+        />
+      )}
 
 
       {/* "Yeni Oyun Başlat" listenin ÜSTÜNDE (27 Eylül 2026, ROADMAP #41 karar
@@ -1459,6 +1495,18 @@ export function LiveGamesTab({
                       key={g.id}
                       game={g}
                       onRespond={(accept) => handleRespond(g, accept)}
+                      onBlock={
+                        g.created_by
+                          ? () =>
+                              setBlockInvite({
+                                game: g,
+                                name:
+                                  g.slots.find(
+                                    (sl): sl is HumanSlot => sl.type === 'human' && sl.user_id === g.created_by,
+                                  )?.name ?? 'Bu kullanıcı',
+                              })
+                          : undefined
+                      }
                       busy={busyInviteId === g.my_invite_id}
                     />
                   ))}

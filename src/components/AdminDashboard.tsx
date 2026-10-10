@@ -22,6 +22,7 @@ import {
   fetchAdminTutorialFunnel,
   fetchAdminDeviceBreakdown,
   fetchAdminDeviceModelBreakdown,
+  fetchAdminDeviceModelOsBreakdown,
   fetchAdminOsVersionBreakdown,
   fetchAdminAppVersionBreakdown,
   fetchAdminPushVersionBreakdown,
@@ -62,6 +63,7 @@ import type {
   AdminDeviceBreakdownRow,
   AdminDeviceModelRow,
   AdminOsVersionRow,
+  AdminDeviceModelOsRow,
   AdminActivityGranularity,
   AdminFeedbackRow,
   AdminChatReportRow,
@@ -83,14 +85,12 @@ import {
   dayAxisLabel,
 } from './StackedBucketChart';
 import { trCompare, trLower } from '../utils/turkish';
+import type { AiLevel } from '../game/types';
 import {
-  brandBreakdown,
-  deviceModelLabel,
-  osBreakdown,
+  deviceTree,
   osVersionLabel,
   platformLabel,
-  type BrandGroup,
-  type DeviceOsGroup,
+  type DeviceTreePlatform,
 } from '../utils/deviceLabels';
 import {
   clientPlatformLabel,
@@ -699,7 +699,7 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         yani tablo bu soruyu tam olarak cevaplıyor.
         <br />
         <br />
-        <b>Satıra tıkla, sürüm kırılımı açılır</b> — "Cihaz"/"Cihaz Markası" tablolarındaki
+        <b>Satıra tıkla, sürüm kırılımı açılır</b> — "Cihaz" ağacındaki
         desenin aynısı. <b>Platform satırı ve TOPLAM, alt satırların toplamı DEĞİL:</b> üçü
         de sunucuda ayrı ayrı benzersiz KİŞİ sayılıyor (<code>grouping sets</code>). İki
         telefonu olan biri iki satırda birden görünür ve toplansaydı iki kez sayılırdı.
@@ -718,59 +718,47 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
     title: 'Cihaz',
     body: (
       <>
-        Gelen TÜM ziyaretçilerin (girişli VEYA girişsiz) işletim sistemi — iOS mü Android mi
-        masaüstü mü. <b>Kaynak Hunisi'nden BAĞIMSIZ</b> — huni bilinçli olarak yalnızca misafir
-        trafiğini izole ediyor (bkz. huni'nin kendi açıklaması), bu tablo ise o ayrımı hiç
-        yapmadan herkesi sayıyor; girişli bir ziyaret hiçbir hesap kimliğiyle eşleştirilmeden,
-        tamamen anonim (`device_visits`, `user_id` taşımaz) kaydediliyor.{' '}
-        <b>"App mi web mi" DEĞİL</b> — iOS/Android satırları o cihazlardaki TARAYICIYI da
-        içeriyor, yalnız kurulu uygulamayı değil ("Sürüm Dağılımı" tablosu o soruyu yanıtlıyor).
-        Kurulu uygulama da 1.1.2'den beri (Android 2 Ekim 2026, iOS App Store onayıyla) günde
-        bir kez, girişliyken de bu tabloya yazıyor; aynı telefondaki uygulama ve tarayıcı
-        ayrı ziyaretçi sayılır.
-        24 Ağustos 2026'dan ÖNCEki misafir-only ölçüm (eski "Cihaz" tablosu) veritabanında
-        duruyor ama artık çizilmiyor.{' '}
-        <b>Satıra tıkla, işletim sistemi SÜRÜMLERİ açılır</b> — "kaç kişi hâlâ eski Android'de?"
-        sorusunun cevabı (12 Eylül 2026'ya kadar ayrı bir "İşletim Sistemi" tablosuydu).{' '}
+        Gelen TÜM ziyaretçilerin (girişli VEYA girişsiz) cihazı — tek ağaç:{' '}
+        <b>Platform → Marka → Model → İşletim sistemi sürümü</b>. <b>Kaynak Hunisi'nden
+        BAĞIMSIZ</b> — huni bilinçli olarak yalnızca misafir trafiğini izole ediyor, bu tablo ise
+        o ayrımı hiç yapmadan herkesi sayıyor; girişli bir ziyaret hiçbir hesap kimliğiyle
+        eşleştirilmeden, tamamen anonim (<code>device_visits</code>, <code>user_id</code> taşımaz)
+        kaydediliyor. <b>"App mi web mi" DEĞİL</b> — iOS/Android satırları o cihazlardaki
+        TARAYICIYI da içeriyor ("Sürüm Dağılımı" tablosu o soruyu yanıtlıyor). Kurulu uygulama da
+        1.1.2'den beri (Android 2 Ekim 2026, iOS App Store onayıyla) günde bir kez, girişliyken de
+        yazıyor; aynı telefondaki uygulama ve tarayıcı ayrı ziyaretçi sayılır.
+        <br />
+        <br />
+        <b>Satıra tıkla, kırılım açılır.</b> Platform satırı iki dal verir: <b>markalar</b> (her
+        biri model → o modelin işletim sistemi sürümleri; "Samsung'da kaç kişi Android 13'te?"
+        buradan okunur) ve <b>Sürümler</b> (platformun TÜM sürümleri, markadan bağımsız — "kaç
+        kişi hâlâ eski Android'de?"). Marka, tarayıcının ya da uygulamanın bildirdiği model
+        KODUNDAN önekle okunur (<code>SM-</code> → Samsung); tanınmayan kod <b>Diğer</b>'e düşer,
+        uydurma marka atanmaz. Model satırı ham üretici kodudur (<code>SM-A176B</code>): kod →
+        pazarlama adı çevirisi ("Galaxy A17") bilerek YAPILMIYOR, elle bakımı gereken bir tablo
+        olurdu. <b>Apple her zaman "iPhone/iPad" düzeyinde</b>: Safari gerçek modeli (17 ↔ 14) hiç
+        vermiyor. <b>Masaüstünde marka yok</b> (hiçbir tarayıcı model vermiyor), yalnızca sürümler.
+        <b>Bilinmiyor</b> markası = modeli gizleyen Android tarayıcıları.
+        <br />
+        <br />
         <b>Masaüstü sürümlerinin başında işletim sistemi yazıyor</b> (<code>macOS</code>,{' '}
-        <code>Windows</code>). ⚠ Oradaki sayı gerçek sürüm DEĞİL: tarayıcılar bütün
-        Mac'lerde <code>10.15.7</code> gönderiyor, Windows 11 de kendini Windows 10 gibi
-        bildiriyor (bu yüzden <b>Windows 10/11</b> tek satır). Yani o satırlar "kaç Mac, kaç
-        Windows" sorusunu yanıtlar, sürümü yanıtlamaz.{' '}
-        <b>Masaüstü "bilinmiyor"</b> = işletim sistemi hiç tanınmadı: Windows ve Mac her zaman
-        tanınır, <b>Linux</b> / <b>ChromeOS</b> 23 Eylül 2026'dan beri adıyla yazılıyor.{' '}
-        <b>Botlar sayılmıyor (30 Eylül 2026'dan beri):</b> tarayıcı kimliğinde Googlebot,
-        bingbot, Meta'nın reklam inceleme botu gibi bir bot adı geçen ziyaretler bu tablonun,
-        ziyaret serisinin ve huninin DIŞINDA; kayıtları silinmedi, yalnızca sayılmıyor.
-        Kendini tanıtmayan botlar (Linux kimliğiyle gelenler, Windows gibi görünen reklam
-        inceleme sistemleri) ayırt edilemediği için sayılmaya devam ediyor.{' '}
-        <b>iPad "sürüm yok":</b> iPad Safari varsayılan olarak "masaüstü sitesi" kipinde
-        açılıp kendini Mac gibi tanıtıyor ve gerçek sürümünü göndermiyor (23 Eylül 2026'ya
-        kadar bu satırlar yanlışlıkla <code>iOS 10.15.7</code> görünüyordu). <b>Açılan sürüm satırlarının
-        toplamı üstteki cihaz satırından BÜYÜK olabilir</b> — aynı ziyaretçi aralık içinde
-        işletim sistemini güncellerse iki sürümde de sayılır (canlıda 12 Eylül 2026'da tek
-        vaka: iOS <code>26.5.2</code> → <code>26.6.1</code>). Üstteki sayı ve tablonun TOPLAMI
-        her zaman benzersiz ziyaretçidir; yüzdeler açılan satırlarda da GENEL toplamın payı.
-      </>
-    ),
-  },
-  'cihaz-markasi': {
-    title: 'Cihaz Markası',
-    body: (
-      <>
-        "Cihaz" tablosunun bir alt kırılımı: aynı ziyaretçiler, bu kez <b>üreticiye</b> göre.
-        Marka, tarayıcının ya da uygulamanın (1.1.2'den beri) bildirdiği model KODUNDAN önekle okunuyor (<code>SM-</code> →
-        Samsung); tanınmayan kod <b>Diğer</b>'e düşer — uydurma bir marka atanmaz.{' '}
-        <b>Satıra tıkla, model kırılımı açılır</b> — ham üretici kodu (<code>SM-A176B</code>)
-        olduğu gibi, hiçbir yorum katılmadan. Kod → pazarlama adı çevirisi ("Galaxy A17")
-        bilerek YAPILMIYOR: elle bakımı gereken, her yeni cihazla bayatlayan bir tablo
-        olurdu. Canlıda 174 farklı model kodu var, o yüzden varsayılan KAPALI.{' '}
-        <b>Apple satırı her zaman "iPhone/iPad" düzeyinde</b>: Safari gerçek modeli
-        (iPhone 17 ↔ 14) hiç vermiyor, o ayrım ancak kurulu uygulamadan ölçülebilir.{' '}
-        <b>Bilinmiyor</b> ≈ masaüstü (hiçbir tarayıcı model vermiyor) + modeli gizleyen
-        Android tarayıcıları. Sayılar <b>benzersiz ziyaretçi</b>; yüzdeler açılan
-        satırlarda da GENEL toplamın payı, markanın değil. CSV marka ve modeli birlikte,
-        düz olarak indirir.
+        <code>Windows</code>). ⚠ Oradaki sayı gerçek sürüm DEĞİL: tarayıcılar bütün Mac'lerde{' '}
+        <code>10.15.7</code> gönderiyor, Windows 11 de kendini Windows 10 gibi bildiriyor (bu yüzden{' '}
+        <b>Windows 10/11</b> tek satır). <b>Masaüstü "bilinmiyor"</b> = işletim sistemi tanınmadı
+        (<b>Linux</b> / <b>ChromeOS</b> 23 Eylül 2026'dan beri adıyla yazılıyor).{' '}
+        <b>Botlar sayılmıyor (30 Eylül 2026'dan beri):</b> tarayıcı kimliğinde Googlebot, bingbot,
+        Meta'nın reklam inceleme botu gibi bir bot adı geçen ziyaretler dışarıda; kendini
+        tanıtmayan botlar ayırt edilemediği için sayılmaya devam ediyor.{' '}
+        <b>iPad "sürüm yok":</b> iPad Safari varsayılan olarak "masaüstü sitesi" kipinde açılıp
+        kendini Mac gibi tanıtıyor ve gerçek sürümünü göndermiyor.
+        <br />
+        <br />
+        <b>Üst satırın sayısı alt satırların toplamı olmayabilir:</b> platform, marka/model ve
+        model-sürüm sayıları üç ayrı sorgudan geliyor, her biri kendi BENZERSİZ ziyaretçisini
+        sayıyor. Aynı ziyaretçi aralık içinde işletim sistemini güncellerse iki sürüm satırında
+        birden görünür (canlıda 30 gün: çapraz toplam 1655, gerçek benzersiz 1648). Üstteki sayı
+        ve TOPLAM her zaman benzersiz ziyaretçidir; yüzdeler açılan satırlarda da GENEL toplamın
+        payı. CSV ağacı düz verir, her satırın <b>Seviye</b>'si yazılı.
       </>
     ),
   },
@@ -990,9 +978,9 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         sonuçta bu %50 olurdu — birincilik ve ikincilik yüzdelerini toplayıp o değerle karşılaştır.
         <br />
         <br />
-        <b>Seviye kırılımı:</b> kutular oyuncu sayısı × YZ seviyesi başına. Seviyesiz (eski)
-        kayıtlar Normal'dir ve etiketsiz kutuda toplanır; Kolay/Zor oynanmaya başlayınca kendi
-        kutusunu açar. Hedefler YZ'nin kazanma oranı olarak Kolay ~%30, Normal ~%51, Zor ~%70 —
+        <b>Düzen (7 Ekim 2026):</b> sabit 3 × 3 ızgara, sütunlar YZ seviyesi (Kolay · Normal · Zor).
+        Üst satır 2 kişilik birincilik, ortadaki 4 kişilik birincilik, alttaki 4 kişilik ikincilik.
+        O seviyede henüz oyun yoksa kutu <b>—</b> gösterir. Seviyesiz (eski) kayıtlar Normal'dir. Hedefler YZ'nin kazanma oranı olarak Kolay ~%30, Normal ~%51, Zor ~%70 —
         yani insan birinciliği Kolay'da ~%70, Zor'da ~%30 bandında olmalı.
       </>
     ),
@@ -1164,7 +1152,7 @@ function csvFilename(baseName: string): string {
  * İki çağıranı var ve ikisi AYNI soruyu farklı ölçüyle sorduğundan tek
  * gövdeyi paylaşıyorlar — "Sürüm Dağılımı" (oyun açılışı) ve "Bildirim İzni
  * Verenler" (kişi). Ayrışırlarsa okuyan "bunlar neden farklı davranıyor" diye
- * sorar; `DeviceOsTable`/`DeviceBrandTable` çiftinde alınmış ders.
+ * sorar; eski `DeviceOsTable`/`DeviceBrandTable` çiftinde (şimdi `DeviceTreeTable`) alınmış ders.
  *
  * ⚠ **[total] AYRI bir parametre, `groups`tan TOPLANMIYOR.** Bildirim izni
  * tablosunda değerler benzersiz KİŞİ ve iki gruba birden düşen biri toplamada
@@ -1172,11 +1160,11 @@ function csvFilename(baseName: string): string {
  * `grouping sets` ile ayrı ayrı `distinct` hesaplıyor. Oyun açılışı sayan
  * tabloda toplama zaten doğru, ama sözleşme tek: toplamı ÇAĞIRAN verir.
  * Bu yüzden grup toplamlarının aritmetik olarak `total`a eşit olma
- * ZORUNLULUĞU YOKTUR (`DeviceOsTable`teki aynı durum).
+ * ZORUNLULUĞU YOKTUR (`DeviceTreeTable`teki aynı durum).
  *
  * ⚠ Yüzdeler HER ZAMAN genel toplamın payı — açılan satırlar da. Grubun payı
  * gösterilseydi açık satırların yüzdeleri kapalı satırlarınkiyle
- * kıyaslanamazdı (`DeviceBrandTable`in kuralının aynısı).
+ * kıyaslanamazdı (`DeviceTreeTable`in kuralının aynısı).
  *
  * ⚠ `useState` erken `return`ün ÜSTÜNDE — altına inerse boş/yüklenen durumda
  * hook atlanır ve React #300 patlar (`npm run verify-hook-order`).
@@ -1230,7 +1218,7 @@ function PlatformVersionTable({
   }
 
   // CSV platformu VE sürümü birlikte, DÜZ olarak verir — tabloyu katlamak
-  // veriyi gizlemek değil, ekranı kısaltmak içindi (`DeviceOsTable` ile aynı).
+  // veriyi gizlemek değil, ekranı kısaltmak içindi (`DeviceTreeTable` ile aynı).
   function handleExportCsv() {
     downloadCsv(
       csvFilename(csvBaseName),
@@ -1335,28 +1323,30 @@ function PlatformVersionTable({
 
 
 /**
- * Cihaz — satır AÇILINCA o cihaz tipinin işletim sistemi kırılımını gösterir.
+ * Cihaz AĞACI — Platform → Marka → Model → İşletim sistemi sürümü.
  *
- * ⚠ **Neden ayrı bir "İşletim Sistemi" tablosu YOK (12 Eylül 2026, kullanıcı
- * isteği):** *"Admin ekranında işletim sistemi kırılımlarını da cihaz altına
- * alalım, ayrı tabloya gerek yok. Cihaz markasında yaptığımız gibi Android
- * oka basınca altında detayı görelim."* `DeviceBrandTable` ile BİREBİR aynı
- * desen ve aynı görsel dil — ikisi yan yana duruyor, ayrışırlarsa okuyan
- * "bunlar neden farklı davranıyor" diye sorar.
+ * 7 Ekim 2026, kullanıcı isteği: *"Cihaz ve cihaz markası tabloları
+ * birleşemez mi? Android → Marka → Model"* + *"Samsung Android 13'te kaç kişi
+ * var — modelin alt kırılımı olabilir"*. Önceki `DeviceOsTable` (platform →
+ * sürüm) ve `DeviceBrandTable` (marka → model) bu tabloda birleşti; ayrı bir
+ * "Cihaz Markası" tablosu YOK. Platform satırı açılınca iki dal çıkar:
+ * **markalar** (her biri açılır: model → o modelin sürümleri) ve **Sürümler**
+ * (platformun TÜM sürümleri, markadan bağımsız — "kaç kişi eski Android'de?"
+ * sorusu markaya bakmadan bu daldan okunur). Masaüstünde marka yok, yalnızca
+ * sürümler.
  *
- * ⚠ **Üst satırın sayısı alt satırların toplamı DEĞİL** (tek fark burası):
- * "Cihaz" tablosunun kendi RPC'si benzersiz ziyaretçi sayıyor, aynı cihaz
- * pencere içinde OS güncellerse iki sürüm satırında birden görünür. Gerekçe
- * ve canlı ölçüm: `osBreakdown` (`src/utils/deviceLabels.ts`).
- *
- * ⚠ `useState` erken `return`ün ÜSTÜNDE — altına inerse boş/yüklenen
- * durumda hook atlanır ve React #300 patlar (`npm run verify-hook-order`).
+ * ⚠ Yüzdeler HER ZAMAN genel toplamın payı — açılan satırlar da; yoksa açık
+ * satırlar kapalılarla kıyaslanamaz (eski iki tablonun kuralı).
+ * ⚠ Üst satırın sayısı alt satırların toplamı DEĞİL: üç ayrı RPC, bkz.
+ * `deviceTree` (`src/utils/deviceLabels.ts`).
+ * ⚠ `useState` erken `return`ün ÜSTÜNDE — altına inerse boş/yüklenen durumda
+ * hook atlanır ve React #300 patlar (`npm run verify-hook-order`).
  */
-function DeviceOsTable({
+function DeviceTreeTable({
   rows,
   infoHint,
 }: {
-  rows: DeviceOsGroup[] | null;
+  rows: DeviceTreePlatform[] | null;
   infoHint?: ReactNode;
 }) {
   const [acik, setAcik] = useState<ReadonlySet<string>>(() => new Set());
@@ -1379,34 +1369,129 @@ function DeviceOsTable({
   const toplam = gruplar.reduce((sum, r) => sum + r.visitors, 0);
   const yuzde = (n: number) => (toplam > 0 ? ((n / toplam) * 100).toFixed(2) : '0.00');
 
-  function toggle(deviceType: string) {
+  function toggle(anahtar: string) {
     setAcik((onceki) => {
       const y = new Set(onceki);
-      if (y.has(deviceType)) y.delete(deviceType);
-      else y.add(deviceType);
+      if (y.has(anahtar)) y.delete(anahtar);
+      else y.add(anahtar);
       return y;
     });
   }
 
-  // CSV cihazı VE sürümü birlikte, DÜZ olarak verir — tabloyu katlamak
+  // CSV ağacı DÜZ verir ve her satırın seviyesini yazar — tabloyu katlamak
   // veriyi gizlemek değil, ekranı kısaltmak içindi.
   function handleExportCsv() {
+    const satirlar: (string | number)[][] = [];
+    for (const g of gruplar) {
+      const p = platformLabel(g.deviceType);
+      satirlar.push([p, '', '', '', 'platform', g.visitors, yuzde(g.visitors)]);
+      for (const b of g.brands) {
+        satirlar.push([p, b.brand, '', '', 'marka', b.visitors, yuzde(b.visitors)]);
+        for (const m of b.models) {
+          const ad = m.deviceModel ?? 'model bildirmiyor';
+          satirlar.push([p, b.brand, ad, '', 'model', m.visitors, yuzde(m.visitors)]);
+          for (const v of m.versions) {
+            satirlar.push([p, b.brand, ad, osVersionLabel(g.deviceType, v.osVersion), 'model-sürüm', v.visitors, yuzde(v.visitors)]);
+          }
+        }
+      }
+      for (const v of g.versions) {
+        satirlar.push([p, '', '', osVersionLabel(g.deviceType, v.osVersion), 'platform-sürüm', v.visitors, yuzde(v.visitors)]);
+      }
+    }
+    satirlar.push(['TOPLAM', '', '', '', '', toplam, '100.00']);
     downloadCsv(
-      csvFilename('kelimeki-cihaz-os'),
-      ['Cihaz', 'İşletim Sistemi', 'Ziyaretçi', '%'],
-      [
-        ...gruplar.flatMap((g) => [
-          [platformLabel(g.deviceType), '(cihaz toplamı)', g.visitors, yuzde(g.visitors)],
-          ...g.versions.map((v) => [
-            platformLabel(g.deviceType),
-            osVersionLabel(g.deviceType, v.osVersion),
-            v.visitors,
-            yuzde(v.visitors),
-          ]),
-        ]),
-        ['TOPLAM', '', toplam, '100.00'],
-      ],
+      csvFilename('kelimeki-cihaz-agaci'),
+      ['Platform', 'Marka', 'Model', 'İşletim Sistemi', 'Seviye', 'Ziyaretçi', '%'],
+      satirlar,
     );
+  }
+
+  /** Tek satır: [seviye] girinti, açılabiliyorsa dönen ok, sayı ve yüzde. */
+  function satir(
+    anahtar: string,
+    seviye: 0 | 1 | 2 | 3,
+    etiket: string,
+    visitors: number,
+    acilabilir: boolean,
+    ariaEk: string,
+  ) {
+    const open = acik.has(anahtar);
+    const girinti = ['', 'pl-4', 'pl-8', 'pl-12'][seviye];
+    return (
+      <tr key={anahtar} className={`border-b border-border/50 ${seviye > 0 ? 'bg-panel/40' : ''}`}>
+        <td className={`${seviye === 0 ? 'py-1.5 text-text' : 'py-1 text-muted'} pr-8 whitespace-nowrap ${girinti}`}>
+          {acilabilir ? (
+            <button
+              type="button"
+              onClick={() => toggle(anahtar)}
+              aria-expanded={open}
+              aria-label={`${etiket} — ${ariaEk} ${open ? 'kapat' : 'aç'}`}
+              className="tap-expand relative inline-flex items-center gap-1.5 active:opacity-70 transition-opacity"
+            >
+              {/* Ok DÖNÜYOR, iki ayrı ikon değil — açık/kapalı aynı öğenin iki hâli. */}
+              <svg
+                viewBox="0 0 10 6"
+                className={`w-[8px] h-[5px] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+                aria-hidden="true"
+              >
+                <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {etiket}
+            </button>
+          ) : (
+            // Açılacak alt satır YOKSA ok da yok — açılmayan oka basmak "bozuk" hissi verir.
+            <span className="inline-block pl-[14px]">{etiket}</span>
+          )}
+        </td>
+        <td className={`${seviye === 0 ? 'py-1.5' : 'py-1'} pr-8 text-muted whitespace-nowrap text-center`}>{visitors}</td>
+        <td className={`${seviye === 0 ? 'py-1.5' : 'py-1'} text-muted whitespace-nowrap text-center`}>{yuzde(visitors)}%</td>
+      </tr>
+    );
+  }
+
+  const govde: ReactNode[] = [];
+  for (const g of gruplar) {
+    const pk = `p|${g.deviceType}`;
+    const etiket = platformLabel(g.deviceType);
+    govde.push(satir(pk, 0, etiket, g.visitors, g.brands.length + g.versions.length > 0, 'kırılımı'));
+    if (!acik.has(pk)) continue;
+    for (const b of g.brands) {
+      const bk = `b|${g.deviceType}|${b.brand}`;
+      govde.push(satir(bk, 1, b.brand, b.visitors, b.models.length > 0, 'model kırılımını'));
+      if (!acik.has(bk)) continue;
+      for (const m of b.models) {
+        const mk = `m|${g.deviceType}|${b.brand}|${m.deviceModel ?? ''}`;
+        govde.push(
+          satir(mk, 2, m.deviceModel ?? 'model bildirmiyor', m.visitors, m.versions.length > 0, 'sürüm kırılımını'),
+        );
+        if (!acik.has(mk)) continue;
+        for (const v of m.versions) {
+          govde.push(
+            satir(`${mk}|${v.osVersion ?? ''}`, 3, osVersionLabel(g.deviceType, v.osVersion), v.visitors, false, ''),
+          );
+        }
+      }
+    }
+    // Platformun markadan bağımsız sürümleri. Marka dalı olmayan platformda
+    // (masaüstü) doğrudan listelenir, ek bir "Sürümler" başlığına gerek yok.
+    if (g.brands.length === 0) {
+      for (const v of g.versions) {
+        govde.push(satir(`v|${g.deviceType}|${v.osVersion ?? ''}`, 1, osVersionLabel(g.deviceType, v.osVersion), v.visitors, false, ''));
+      }
+    } else if (g.versions.length > 0) {
+      const sk = `s|${g.deviceType}`;
+      govde.push(
+        satir(sk, 1, 'Sürümler', g.versions.reduce((a, v) => a + v.visitors, 0), true, 'tüm sürümleri'),
+      );
+      if (acik.has(sk)) {
+        for (const v of g.versions) {
+          govde.push(
+            satir(`${sk}|${v.osVersion ?? ''}`, 2, osVersionLabel(g.deviceType, v.osVersion), v.visitors, false, ''),
+          );
+        }
+      }
+    }
   }
 
   return (
@@ -1427,207 +1512,7 @@ function DeviceOsTable({
             </tr>
           </thead>
           <tbody>
-            {gruplar.map((g) => {
-              const open = acik.has(g.deviceType);
-              const etiket = platformLabel(g.deviceType);
-              return (
-                <Fragment key={g.deviceType}>
-                  <tr className="border-b border-border/50">
-                    <td className="py-1.5 pr-8 text-text whitespace-nowrap">
-                      {/* Sürüm satırı YOKSA ok da yok — açılmayan bir oka
-                          basmak "bozuk" hissi verir. Beklenmeyen bir durum
-                          (iki RPC aynı pencereyi okuyor), ama boş liste
-                          yükleniyor sayılmadığından mümkün. */}
-                      {g.versions.length === 0 ? (
-                        <span className="inline-block pl-[14px]">{etiket}</span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => toggle(g.deviceType)}
-                          aria-expanded={open}
-                          aria-label={`${etiket} — işletim sistemi kırılımını ${open ? 'kapat' : 'aç'}`}
-                          className="tap-expand relative inline-flex items-center gap-1.5 active:opacity-70 transition-opacity"
-                        >
-                          {/* Ok DÖNÜYOR, iki ayrı ikon değil — marka tablosuyla
-                              aynı öğe, aynı hareket. */}
-                          <svg
-                            viewBox="0 0 10 6"
-                            className={`w-[8px] h-[5px] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-                            aria-hidden="true"
-                          >
-                            <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          {etiket}
-                        </button>
-                      )}
-                    </td>
-                    <td className="py-1.5 pr-8 text-muted whitespace-nowrap text-center">{g.visitors}</td>
-                    <td className="py-1.5 text-muted whitespace-nowrap text-center">{yuzde(g.visitors)}%</td>
-                  </tr>
-                  {open &&
-                    g.versions.map((v) => (
-                      <tr
-                        key={`${g.deviceType}|${v.osVersion ?? ''}`}
-                        className="border-b border-border/50 bg-panel/40"
-                      >
-                        <td className="py-1 pr-8 pl-5 text-muted whitespace-nowrap">
-                          {osVersionLabel(g.deviceType, v.osVersion)}
-                        </td>
-                        <td className="py-1 pr-8 text-muted whitespace-nowrap text-center">{v.visitors}</td>
-                        <td className="py-1 text-muted whitespace-nowrap text-center">{yuzde(v.visitors)}%</td>
-                      </tr>
-                    ))}
-                </Fragment>
-              );
-            })}
-            <tr className="border-b border-border/50">
-              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
-              <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{toplam}</td>
-              <td className="py-1.5 text-text font-bold whitespace-nowrap text-center">100.00%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Cihaz markası — satır AÇILINCA o markanın model kırılımını gösterir.
- *
- * ⚠ **Neden tek tablo (11 Eylül 2026, kullanıcı isteği):** "Cihaz Markası"
- * ve "Cihaz Modeli" ayrı ayrı duruyordu ve canlıda **174 farklı model kodu**
- * var — sayfa gereksiz uzuyordu. Kullanıcı: *"Cihazlara minik aşağı ok koy,
- * tıklayınca açılsın ve model kırılımını göstersin. Böyle çok uzun ve
- * gereksiz detay oluyor. İstenirse bakılsın."* Varsayılan KAPALI.
- *
- * ⚠ `useState` erken `return`'ün ÜSTÜNDE — altına inerse boş/yüklenen
- * durumda hook atlanır ve React #300 patlar (`npm run verify-hook-order`
- * bu deponun kapısı).
- *
- * ⚠ Yüzdeler HER ZAMAN genel toplamın payı: alt satırlar da markanın değil
- * TOPLAMIN yüzdesini gösteriyor, yoksa açılan satırların yüzdeleri kapalı
- * satırlarınkiyle kıyaslanamaz hale gelirdi.
- */
-function DeviceBrandTable({
-  rows,
-  infoHint,
-}: {
-  rows: BrandGroup[] | null;
-  infoHint?: ReactNode;
-}) {
-  const [acik, setAcik] = useState<ReadonlySet<string>>(() => new Set());
-
-  // Boş/yüklenirken de `?` çizilir — GuestBreakdownTable ile aynı gerekçe.
-  if (rows === null || rows.length === 0) {
-    return (
-      <div className="flex flex-col gap-1.5">
-        {infoHint && <div className="self-end">{infoHint}</div>}
-        <div className="text-xs font-mono text-muted text-center py-6">
-          {rows === null ? 'Yükleniyor…' : 'Bu aralıkta ziyaret yok.'}
-        </div>
-      </div>
-    );
-  }
-
-  // ⚠ Yerel `const`a alınıyor: `handleExportCsv` bir fonksiyon bildirimi ve
-  // TS, erken `return`ün daraltmasını kapanışın içine taşımıyor.
-  const gruplar = rows;
-  const toplam = gruplar.reduce((sum, r) => sum + r.visitors, 0);
-  const yuzde = (n: number) => (toplam > 0 ? ((n / toplam) * 100).toFixed(2) : '0.00');
-
-  function toggle(brand: string) {
-    setAcik((onceki) => {
-      const y = new Set(onceki);
-      if (y.has(brand)) y.delete(brand);
-      else y.add(brand);
-      return y;
-    });
-  }
-
-  // CSV marka VE modeli birlikte, DÜZ olarak verir — tabloyu katlamak
-  // veriyi gizlemek değil, ekranı kısaltmak içindi.
-  function handleExportCsv() {
-    downloadCsv(
-      csvFilename('kelimeki-cihaz-marka-model'),
-      ['Marka', 'Model', 'Ziyaretçi', '%'],
-      [
-        ...gruplar.flatMap((g) => [
-          [g.brand, '(marka toplamı)', g.visitors, yuzde(g.visitors)],
-          ...g.models.map((m) => [
-            g.brand,
-            deviceModelLabel(m.deviceType, m.deviceModel),
-            m.visitors,
-            yuzde(m.visitors),
-          ]),
-        ]),
-        ['TOPLAM', '', toplam, '100.00'],
-      ],
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-end gap-2">
-        {infoHint}
-        <button type="button" onClick={handleExportCsv} className={csvLinkCls}>
-          CSV İndir
-        </button>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-auto text-[11px] font-mono border-collapse">
-          <thead>
-            <tr className="text-left text-muted border-b border-border">
-              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px]">Marka</th>
-              <th className="py-1.5 pr-8 font-bold uppercase tracking-[1px] text-center">Ziyaretçi</th>
-              <th className="py-1.5 font-bold uppercase tracking-[1px] text-center">%</th>
-            </tr>
-          </thead>
-          <tbody>
-            {gruplar.map((g) => {
-              const open = acik.has(g.brand);
-              return (
-                <Fragment key={g.brand}>
-                  <tr className="border-b border-border/50">
-                    <td className="py-1.5 pr-8 text-text whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => toggle(g.brand)}
-                        aria-expanded={open}
-                        aria-label={`${g.brand} — model kırılımını ${open ? 'kapat' : 'aç'}`}
-                        className="tap-expand relative inline-flex items-center gap-1.5 active:opacity-70 transition-opacity"
-                      >
-                        {/* Ok DÖNÜYOR, iki ayrı ikon değil — açık/kapalı
-                            aynı öğenin iki hâli olduğunda göz takip ediyor. */}
-                        <svg
-                          viewBox="0 0 10 6"
-                          className={`w-[8px] h-[5px] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-                          aria-hidden="true"
-                        >
-                          <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        {g.brand}
-                      </button>
-                    </td>
-                    <td className="py-1.5 pr-8 text-muted whitespace-nowrap text-center">{g.visitors}</td>
-                    <td className="py-1.5 text-muted whitespace-nowrap text-center">{yuzde(g.visitors)}%</td>
-                  </tr>
-                  {open &&
-                    g.models.map((m) => (
-                      <tr
-                        key={`${g.brand}|${m.deviceType}|${m.deviceModel ?? ''}`}
-                        className="border-b border-border/50 bg-panel/40"
-                      >
-                        <td className="py-1 pr-8 pl-5 text-muted whitespace-nowrap">
-                          {deviceModelLabel(m.deviceType, m.deviceModel)}
-                        </td>
-                        <td className="py-1 pr-8 text-muted whitespace-nowrap text-center">{m.visitors}</td>
-                        <td className="py-1 text-muted whitespace-nowrap text-center">{yuzde(m.visitors)}%</td>
-                      </tr>
-                    ))}
-                </Fragment>
-              );
-            })}
+            {govde}
             <tr className="border-b border-border/50">
               <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap">TOPLAM</td>
               <td className="py-1.5 pr-8 text-text font-bold whitespace-nowrap text-center">{toplam}</td>
@@ -2870,6 +2755,7 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
   const [deviceBreakdown, setDeviceBreakdown] = useState<AdminDeviceBreakdownRow[] | null>(null);
   const [deviceModels, setDeviceModels] = useState<AdminDeviceModelRow[] | null>(null);
   const [osVersions, setOsVersions] = useState<AdminOsVersionRow[] | null>(null);
+  const [deviceModelOs, setDeviceModelOs] = useState<AdminDeviceModelOsRow[] | null>(null);
   const [appVersions, setAppVersions] = useState<AdminAppVersionRow[] | null>(null);
   const [pushVersions, setPushVersions] = useState<AdminPushVersionRow[] | null>(null);
   const [activePlayers, setActivePlayers] = useState<AdminActivePlayersPoint[] | null>(null);
@@ -3060,6 +2946,7 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
       fetchAdminDeviceBreakdown(days).then(setDeviceBreakdown),
       fetchAdminDeviceModelBreakdown(days).then(setDeviceModels),
       fetchAdminOsVersionBreakdown(days).then(setOsVersions),
+      fetchAdminDeviceModelOsBreakdown(days).then(setDeviceModelOs),
       fetchAdminAppVersionBreakdown(days).then(setAppVersions),
       fetchAdminPushVersionBreakdown(days).then(setPushVersions),
       fetchAdminActivePlayersSeries(userPeriod, userGranularity).then(setActivePlayers),
@@ -3296,45 +3183,51 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
   );
 
   /**
-   * "YZ Dengesi" kutuları. Satır başına bir kutu DEĞİL: 4 kişilik oyunlar
-   * ikinci bir "İkincilik" kutusu daha üretiyor (17 Ağustos 2026, kullanıcı
-   * isteği) — 4 kişilikte k-lig ikinciliğe de puan verdiğinden yalnız
+   * "YZ Dengesi" kutuları — SABİT 3 × 3 IZGARA (7 Ekim 2026, kullanıcı isteği:
+   * *"İlk satır 2 kişilik kolay, normal, zor; ikinci satır 4 kişilik kolay,
+   * normal, zor. 3. satır ikincilikler olsun"*). Sütun = YZ seviyesi (Kolay ·
+   * Normal · Zor), satır = ölçü:
+   *   1. 2 kişilik — insan birinciliği
+   *   2. 4 kişilik — insan birinciliği
+   *   3. 4 kişilik — insan İKİNCİLİĞİ
+   * Üç seviye de HER ZAMAN çizilir: o seviyede henüz oyun yoksa kutu "—"
+   * gösterir (yoksa ızgara kayardı ve "Zor neden yok?" sorusu doğardı).
+   *
+   * İkincilik satırı 2 kişilik için BİLEREK yok (17 Ağustos 2026): orada
+   * rank=2 kaybetmenin kendisi (canlıda ölçüldü: second_places === losses) ve
+   * k-lig puanı getirmiyor, yani kutu yeni bir şey söylemeyip kayıp oranını
+   * ikinci kez yazardı. 4 kişilikte k-lig ikinciliğe de puan verdiğinden yalnız
    * birinciliğe bakmak "insan puan alıyor mu" sorusunun yarısını ölçüyordu.
    *
-   * İkincilik kutusu 2 kişilikte BİLEREK YOK: orada rank=2 kaybetmenin
-   * kendisi (canlıda ölçüldü: second_places === losses) ve k-lig puanı
-   * getirmiyor, yani kutu yeni bir şey söylemeyip kayıp oranını ikinci kez
-   * yazardı.
-   *
-   * Rastgele referansı iki kutuda da `100 / oyuncu sayısı`: rastgele bir
-   * sonuçta 1. olma da 2. olma da aynı olasılıkta (4 kişilikte %25).
+   * Rastgele referansı `100 / oyuncu sayısı`: rastgele bir sonuçta 1. olma da
+   * 2. olma da aynı olasılıkta (4 kişilikte %25).
    */
-  const aiBalanceCards = useMemo(() => {
-    const cards: { key: string; rate: number | null; label: string; detail: string }[] = [];
-    for (const r of aiBalance ?? []) {
-      const baseline = Math.round(100 / r.players);
-      // Seviye kırılımı (ROADMAP #23, Faz 1): satırlar artık (oyuncu
-      // sayısı, seviye) başına. Normal'de etiket BUGÜNKÜ gibi (tüm eski
-      // kayıtlar orada), Kolay/Zor satırı ancak Faz 3 o değeri yazmaya
-      // başlayınca gelir ve kendi kutusunu açar — anahtar da seviyeyi
-      // içeriyor, yoksa iki satır aynı `key`de çakışırdı.
-      const level = r.ai_level === 'kolay' ? ' · Kolay' : r.ai_level === 'zor' ? ' · Zor' : '';
-      cards.push({
-        key: `${r.players}-${r.ai_level}-first`,
-        rate: r.games > 0 ? Math.round((100 * r.wins) / r.games) : null,
-        label: `${r.players} Kişilik${level} — İnsan Birincilik`,
-        detail: `${r.wins}G / ${r.ties}B / ${r.losses}M · rastgele %${baseline}`,
+  const aiBalanceRows = useMemo(() => {
+    type Card = { key: string; rate: number | null; label: string; detail: string };
+    const levels: { id: AiLevel; ad: string }[] = [
+      { id: 'kolay', ad: 'Kolay' },
+      { id: 'normal', ad: 'Normal' },
+      { id: 'zor', ad: 'Zor' },
+    ];
+    const bul = (players: number, level: AiLevel) =>
+      (aiBalance ?? []).find((r) => r.players === players && r.ai_level === level);
+    const kart = (players: 2 | 4, kind: 'first' | 'second'): Card[] =>
+      levels.map(({ id, ad }) => {
+        const r = bul(players, id);
+        const baseline = Math.round(100 / players);
+        const sayi = r ? (kind === 'first' ? r.wins : r.second_places) : 0;
+        const oyun = r?.games ?? 0;
+        return {
+          key: `${players}-${id}-${kind}`,
+          rate: oyun > 0 ? Math.round((100 * sayi) / oyun) : null,
+          label: `${players} Kişilik · ${ad} — İnsan ${kind === 'first' ? 'Birincilik' : 'İkincilik'}`,
+          detail:
+            kind === 'first'
+              ? `${r?.wins ?? 0}G / ${r?.ties ?? 0}B / ${r?.losses ?? 0}M · rastgele %${baseline}`
+              : `${sayi}/${oyun} · rastgele %${baseline}`,
+        };
       });
-      if (r.players > 2) {
-        cards.push({
-          key: `${r.players}-${r.ai_level}-second`,
-          rate: r.games > 0 ? Math.round((100 * r.second_places) / r.games) : null,
-          label: `${r.players} Kişilik${level} — İnsan İkincilik`,
-          detail: `${r.second_places}/${r.games} · rastgele %${baseline}`,
-        });
-      }
-    }
-    return cards;
+    return [kart(2, 'first'), kart(4, 'first'), kart(4, 'second')];
   }, [aiBalance]);
 
   /**
@@ -3803,7 +3696,7 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
               {/* "Yalnızca onaylanmamışlar" (16 Eylül 2026, ROADMAP #9).
                   ⚠ Onaysız hesap YOKKEN düğme çizilmiyor: basılacak ama
                   hiçbir şey yapmayacak bir kontrol "bozuk" hissi verir
-                  (`DeviceOsTable`teki "sürüm satırı yoksa ok da yok"
+                  (`DeviceTreeTable`teki "alt satır yoksa ok da yok"
                   kuralının aynısı). Sayı başlıkta yazıyor çünkü asıl bilgi
                   ZATEN o — filtre yalnızca listeyi daraltıyor. */}
               {unconfirmedCount > 0 && (
@@ -4191,20 +4084,13 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
                     <span className={sectionTitleCls}>
                       Cihaz (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
                     </span>
-                    <DeviceOsTable
+                    <DeviceTreeTable
                       rows={
-                        deviceBreakdown && osVersions && osBreakdown(deviceBreakdown, osVersions)
+                        deviceBreakdown && osVersions && deviceModels && deviceModelOs
+                          ? deviceTree(deviceBreakdown, osVersions, deviceModels, deviceModelOs)
+                          : null
                       }
                       infoHint={<InfoHint id="cihaz" onOpen={setHint} />}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <span className={sectionTitleCls}>
-                      Cihaz Markası (Son {userPeriod} {PERIOD_UNIT_LABEL[userGranularity]})
-                    </span>
-                    <DeviceBrandTable
-                      rows={deviceModels && brandBreakdown(deviceModels)}
-                      infoHint={<InfoHint id="cihaz-markasi" onOpen={setHint} />}
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -4555,18 +4441,12 @@ export function AdminDashboard({ onClose, initialTab }: AdminDashboardProps) {
                         Henüz Yapay Zeka'ya karşı tamamlanmış oyun yok.
                       </div>
                     ) : (
-                      /* Kutu sayısı satır sayısına bağlı (1-3) olduğundan
-                         sütun sayısı inline `style` ile veriliyor: Tailwind
-                         yalnızca KAYNAKTA geçen sınıfları üretir, çalışma
-                         anında kurulan bir `grid-cols-${n}` sessizce
-                         uygulanmazdı (bkz. CountBadge'in ölçüm tuzağı). */
-                      <div
-                        className="grid gap-2"
-                        style={{
-                          gridTemplateColumns: `repeat(${Math.min(aiBalanceCards.length, 3)}, minmax(0, 1fr))`,
-                        }}
-                      >
-                        {aiBalanceCards.map((c) => (
+                      /* Sabit 3 sütun (Kolay · Normal · Zor), 3 satır — bkz.
+                         `aiBalanceRows`. `grid-cols-3` kaynakta LİTERAL durduğu
+                         için Tailwind üretir (çalışma anında kurulan
+                         `grid-cols-${n}` sessizce uygulanmazdı). */
+                      <div className="grid grid-cols-3 gap-2">
+                        {aiBalanceRows.flat().map((c) => (
                           <div
                             key={c.key}
                             className="btn-raised-neutral bg-bg border border-border rounded-md py-3 px-1 text-center"

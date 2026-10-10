@@ -1036,3 +1036,129 @@ Duyarlılığı kanıtlandı: yüklem `false` döndürülünce dört vaka düş�
 `isAuthStateError` + oturum kontrolü kapısı da yok; portun raporladığı
 "Invalid Refresh Token" satırları (6 kayıt) o yüzden panele düşüyor.
 
+## Davet kuralları: engel + çift başına sınır (4 Ekim 2026)
+
+Kullanıcı kararları (aynı gün iki tur). **Tur 1** (`20261004183426`): çift davet
+yok + kurucu başına 5 bekleyen kota. **Tur 2** (`20261004193412`, tur 1'in
+YERİNE geçti): kullanıcı *"arkadaş davetinde sınır olması doğru mu bilemedim"*
+dedi ve sessize alma/şikayeti davete bağladı. Geçerli kurallar:
+
+- **Engel:** davet edilen kişi daveti edeni SESSİZE ALMIŞSA ya da (geri
+  çekilmemiş) ŞİKAYET ETMİŞSE davet gönderilemez; gönderen açık mesaj görür:
+  *"<takma ad> kullanıcısı sizi engelledi."* (`profiles.display_name`).
+  Kullanıcı kararı — sessiz ret önerilmişti, açık mesaj seçildi (bedeli:
+  kimin kimi engellediği gönderene görünür). Kaynaklar `_random_blocked`'in
+  rastgele eşleşmede zaten kullandığı ikisi: `online_game_message_mutes` +
+  `online_game_chat_reports` (`withdrawn_at is null`). ⚠ "Sessize al" artık
+  YALNIZCA sohbet bildirimini değil davetleri de kapatır — sohbet ekranındaki
+  metin/yardım bunu söylemiyor (istemci işi, aşağı bkz.).
+- **Çift başına sınır:** aynı kişiye, o kişi yanıtlamadan, en çok **1 adet 2
+  kişilik + 1 adet 4 kişilik** bekleyen davet. Kabul edince yenisi serbest.
+  **Genel tavan YOK** (tur 1'in 5'i kalktı) → sınır arkadaş sayısına bakmaz, her arkadaşa ayrı 2 hak (1×2 + 1×4 kişilik); toplam arkadaş sayısının 2 katı kadar kendiliğinden belirlenir (kullanıcı: *"10 arkadaşa 20 davet örnek için söylendi"*).
+  Gerekçe: bugünkü en yüksek kurucu başına bekleyen 2 idi, tavan hiç
+  tetiklenmezdi; asıl koruma engel + çift sınırı.
+- **Rastgele ilan:** `_random_preflight`'in KENDİ sınırı (en çok 3 ilan)
+  duruyor, ayrı sayılır. Arkadaş koltuğu olan rastgele ilan da `game_invites`
+  yazdığından `create_random_game` aynı yardımcıyı (engel + çift sınırı)
+  çağırır.
+- **Yardımcı:** `_assert_invite_allowed(uid, invitee, player_count)` —
+  yalnızca `service_role`. Eski 2 argümanlı (tur 1) sürüm 4 Ekim 2026'da
+  panelden DÜŞÜRÜLDÜ (MCP aracı `DROP`'ta zaman aşımına uğradığı için kullanıcı
+  SQL Editor'den çalıştırdı); doğrulama: `pg_proc`ta yalnızca
+  `(p_uid uuid, p_invitee uuid, p_player_count integer)` kaldı.
+- ⚠ "Bekleyen" = `pending` + 7 günden genç (süresi dolmuş davet
+  `check_invite_expiry` süpürmesi gelene kadar `pending` kalıyor). ⚠ Engelden
+  ÖNCE gönderilmiş bekleyen davetler iptal EDİLMEZ; kapı yalnızca yeni
+  gönderimi durdurur.
+- Kullanıcıya hata `friendlyErrorMessage` ile olduğu gibi gider (P0001, Türkçe
+  `raise exception`) → istemci kodu değişmedi. `proacl`: iki `create_*`
+  fonksiyonunda önce/sonra aynı (`authenticated` + `service_role`).
+- **Canlıda doğrulandı** (geri alınan işlemle, gerçek arkadaş çifti): ilk 2
+  kişilik OK · ikinci 2 kişilik engellendi · aynı kişiye 4 kişilik OK · ikinci
+  4 kişilik engellendi · susturulmuşken *"Ironman kullanıcısı sizi
+  engelledi."* · susturma kalkınca OK. Kabulden sonra yeni davetin serbest
+  kalması tur 1'de doğrulandı, tur 2'de kod aynı. ⚠ Test tuzağı: Supabase
+  aracı `DELETE` içeren sorguda onay bekleyip 60 sn'de zaman aşımına uğruyor
+  (sorgu HİÇ çalışmıyor) — testlerde `update`/`insert` kullan.
+
+### Engel arkadaşlık yoluna da uzandı + "Engelle" terimi (4 Ekim 2026)
+
+Kullanıcı kararları: *"sessize alan kişi bir daha onunla oyunda veya başka
+yerde karşılaşmayacağı için 'Sessize al' yerine 'Engelle' demeliyiz. Şikayet
+sadece oyuna özel olsun. İstek kartında sadece Engelle olsun."* Gerekçe
+(ölçüldü): arkadaşlık yolundaki HİÇBİR fonksiyon engeli okumuyordu; sessize
+aldığın biri arkadaşlık isteği gönderebiliyordu, arkadaş değilse geri alma
+yolu da yoktu (geri alma yalnızca arkadaş listesi ⋯ menüsünde + aktif oyun
+sohbetinde).
+
+**SUNUCU — canlıda** (`20261004202039_block_friend_requests`):
+- Tek kaynak: `_is_blocked_by(blocker, blocked)` + `_assert_not_blocked(actor,
+  target)` ("<ad> kullanıcısı sizi engelledi."). `_assert_invite_allowed` artık
+  bunu çağırır — aynı kural iki yerde yaşamasın. Engel = sessize alma satırı
+  YA DA geri çekilmemiş şikayet (`_random_blocked` aynı iki kaynağı okuyor).
+- **Arkadaşlık isteği:** `handle_friend_request_insert` (BEFORE INSERT) —
+  engelleyene istek gönderilemez.
+- **Arkadaş davet linki:** `accept_friend_invite` — link sahibi tıklayanı
+  engellemişse arkadaş olunamaz (yoksa link isteğin kapısını aşardı). Fonksiyonun
+  içindeki `friend_requests` insert'i tetikleyiciyi de çalıştırır ve yönü
+  terstir → yerel bayrak `kelimeki.friend_link` ile tetikleyici o insert için
+  atlanır.
+- ⚠ **`PERFORM` `FOUND`'u sıfırlar:** insert'in "satır eklendi mi" sonucu
+  `set_config` çağrısından SONRA `found` ile okunsaydı yarış dalı yanlış
+  çalışırdı → `get diagnostics v_rows = row_count` insert'ten hemen sonra
+  alınır (yazarken yakalandı, canlıya girmeden).
+- Önceden açılmış bekleyen istekler iptal EDİLMEZ. Engelleyen kendisi istek
+  gönderirse engellediği kişiye de gönderebilir (kapı yalnızca "karşı taraf
+  beni engelledi mi"ye bakar).
+- **Canlıda doğrulandı** (geri alınan işlemle, gerçek hesaplarla): engelliyken
+  istek reddedildi · engel kalkınca geçti · engelliyken link reddedildi · engel
+  kalkınca link `accepted` ilişki kurdu. `proacl` önce/sonra aynı.
+
+**İSTEMCİ — WEB YAPILDI (5 Ekim 2026), PORT AÇIK (19 Ekim treni, taslak PR):**
+
+Sunucuya ek (`20261004203040_user_blocks`): oyundan BAĞIMSIZ `user_blocks` tablosu
++ `block_user` / `unblock_user` / `list_blocked_users`. Gerekçe: eski sohbet
+engeli (`online_game_message_mutes`) bir OYUNA bağlı ve RPC'si yalnızca kabul
+etmiş katılımcıyı kabul ediyor — istek/davet kartından engelleyenin ortak oyunu
+YOK. Engel üç kaynağın birleşimi (`_is_blocked_by`: `user_blocks` + sohbet
+engeli + açık şikayet); `_random_blocked` aynı yardımcıya bağlandı. **Anlam:**
+`unblock_user` engeli + sohbet engellerini temizler, açık ŞİKAYETE DOKUNMAZ
+(şikayeti geri çekmek ayrı adım — sohbet ayarlarındaki eski ayrım korundu; açık
+şikayet sürdükçe kişi engelli sayılır). ⚠ `unblock_user` gövdesinde `DELETE`
+olduğundan MCP aracıyla uygulanamadı (60 sn zaman aşımı, sorgu HİÇ çalışmadı —
+tablo/RPC sayısı 0 kaldı, doğrulandı); migration geri kalanı o fonksiyon
+OLMADAN uygulandı, fonksiyon panelden çalıştırıldı (5 Ekim 2026, kullanıcı) ve canlıda doğrulandı: `proacl` `authenticated`+`service_role`, yalnızca `user_blocks` + sohbet engeli siliniyor, şikayete dokunmuyor; engel → davet reddi → `unblock_user` → davet geçti (geri alınan işlemle).
+
+Web'de yapılanlar: (1) **"Sessize al" → "Engelle"** terimi (sohbet ayarları,
+sohbet balonu aria, arkadaş yönetim paneli, rozet başlığı); (2) **oyun davet
+kartında** ve **arkadaşlık isteği kartında yalnızca "Engelle"** (şikayet YOK;
+`BlockConfirmModal` ortak onay — önce engel, sonra ret: engel başarısızsa davet/
+istek yerinde kalır); (3) **Arkadaşlar → "Engellediklerim"**
+(`BlockedUsersModal`; arkadaş olmayanı geri almanın tek yolu); (4) sohbet
+ayarlarında engeli KALDIRMA artık `unblock_user` (yoksa kartlardan yapılan
+`user_blocks` satırı kalır ve sohbette "engel yok" görünürdü); arkadaş listesi
+rozet/menü durumu `list_blocked_users`tan (eski `fetchMyChatModeration` yalnızca
+sohbet engelini görürdü, o fonksiyon artık çağrılmıyor ama silinmedi).
+
+⚠ **Parite kilidi yüzünden web'de BİLEREK DEĞİŞMEYEN metinler** (Dart ikizleri
+ve testleri var; web tek başına değişirse web CI'ın `parite` işi düşer; mobil
+dosya olduğundan port PR'ı 19 Ekim'e kadar merge edilmez): arkadaş ⋯
+menüsündeki **"Sessize alma / şikayet ayarları"** etiketi
+(`kFriendsMenuModeration`, `friends_test.dart` web kaynağını okur), sohbet
+kuralları cümlesi (`utils/chatRules.ts` ↔ `chat_rules.dart`), **hukuki metinler**
+(`LegalContent.tsx`: 95, 179-180, 365 — "kimleri sessize aldığınız yalnızca size
+görünür"; `user_blocks` yeni bir ilişki verisi, aynı cümleye "engellediğiniz"
+eklenmeli + yasal metin tarihi) ve karşılama cümlesi (`Landing.tsx` 717). Hepsi
+port PR'ında BİRLİKTE değişir. `friendlyErrorMessage` yüzey anahtarı
+`'sessize-al'` iç telemetri anahtarı, bilerek dokunulmadı.
+
+Bilinen kenar: kartlardan engellenen biri sonradan aynı oyunun sohbetinde
+bulunursa o sohbetteki "yeni mesaj" balonu susturma listesinden (yalnızca sohbet
+engeli) beslendiği için bastırılmaz; davet/istek/eşleşme kapıları ise
+`user_blocks`u okur.
+
+**PORT İKİZİ (19 Ekim, taslak PR, ROADMAP E):** terim; davet + istek kartında
+"Engelle" + onay; `blocked_users_sheet.dart` ("Engellediklerim");
+`friend_moderation_sheet.dart` (`blocked` bayrağı, `unblock_user`); sohbet
+ayarları metni; yukarıdaki dört parite-kilitli metin; `blockUser`/`unblockUser`/
+`fetchBlockedUsers` (`games_api.dart` ya da `friends_api.dart`).

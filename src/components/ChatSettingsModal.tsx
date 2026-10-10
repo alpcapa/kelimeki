@@ -35,7 +35,7 @@ import { useState } from 'react';
 import { Modal } from './Modal';
 import { Avatar } from './Avatar';
 import type { ChatParticipant } from './ChatModal';
-import { setChatMute, reportChatParticipant, withdrawChatReports } from '../lib/api';
+import { setChatMute, unblockUser, reportChatParticipant, withdrawChatReports } from '../lib/api';
 import { friendlyErrorMessage } from '../utils/errorMessage';
 
 interface ChatSettingsModalProps {
@@ -89,7 +89,12 @@ export function ChatSettingsModal({
     setBusy(true);
     setError(null);
     try {
-      await setChatMute(gameId, participant.userId, nextMuted);
+      // Engelleme sohbet bildirimini de susturduğundan oyun bağlamlı RPC;
+      // KALDIRMA ise `unblock_user` — oyundan bağımsız `user_blocks` satırı da
+      // (kartlardan yapılan "Engelle") temizlensin, yoksa sohbette "engel yok"
+      // görünür ama davet kapısı kapalı kalırdı.
+      if (nextMuted) await setChatMute(gameId, participant.userId, true);
+      else await unblockUser(participant.userId);
       onMuteChange(participant.userId, nextMuted);
     } catch (err) {
       setError(
@@ -146,7 +151,7 @@ export function ChatSettingsModal({
       {view.kind === 'list' && (
         <div className="flex flex-col gap-3">
           <p className="text-xs text-muted leading-relaxed">
-            Buradan kişileri sessize alabilir ve/veya uygunsuz paylaşımları şikayet edebilirsiniz.
+            Buradan kişileri engelleyebilir (mesaj bildirimleri, oyun davetleri ve arkadaşlık istekleri durur) ve/veya uygunsuz paylaşımları şikayet edebilirsiniz.
           </p>
           <div className="flex flex-col gap-1.5">
             {participants.map((p) => {
@@ -169,7 +174,7 @@ export function ChatSettingsModal({
                       🚩
                     </span>
                   ) : muted ? (
-                    <span aria-label="Sessize alındı" title="Sessize alındı" className="text-sm shrink-0">
+                    <span aria-label="Engellendi" title="Engellendi" className="text-sm shrink-0">
                       🚫
                     </span>
                   ) : null}
@@ -210,7 +215,7 @@ export function ChatSettingsModal({
             >
               ✓
             </span>
-            <span className="text-sm text-text">Kişiyi Sessize Al</span>
+            <span className="text-sm text-text">Kişiyi Engelle</span>
           </button>
 
           {reportedUserIds.has(view.participant.userId) ? (
@@ -260,15 +265,16 @@ export function ChatSettingsModal({
           <p className="text-sm text-text leading-relaxed">
             {view.nextMuted ? (
               <>
-                <span className="font-bold">{view.participant.name}</span> kullanıcısını sessize almak istediğinize
+                <span className="font-bold">{view.participant.name}</span> kullanıcısını engellemek istediğinize
                 emin misiniz? Kullanıcının mesajları sohbette görünmeye devam eder ama sizin ekranınıza bildirim
-                olarak gelmez.
+                olarak gelmez. Ayrıca bu kullanıcı size oyun daveti ya da arkadaşlık isteği gönderemez ve rastgele
+                eşleşmede karşınıza çıkmaz.
               </>
             ) : (
               <>
-                <span className="font-bold">{view.participant.name}</span> kullanıcısını sessizden çıkarmak
+                <span className="font-bold">{view.participant.name}</span> kullanıcısının engelini kaldırmak
                 istediğinize emin misiniz? Kullanıcıdan gelen yeni mesajlar için tekrar bildirim almaya
-                başlarsınız.
+                başlarsınız; oyun davetleri ve arkadaşlık istekleri de tekrar açılır.
               </>
             )}
           </p>
@@ -283,7 +289,7 @@ export function ChatSettingsModal({
               }}
               className="flex-1 btn-raised rounded-md py-2.5 text-xs font-bold uppercase tracking-[1px] bg-accent text-white active:scale-[0.97] transition-transform disabled:opacity-50"
             >
-              {busy ? '...' : view.nextMuted ? 'Sessize Al' : 'Sessizden Çıkar'}
+              {busy ? '...' : view.nextMuted ? 'Engelle' : 'Engeli Kaldır'}
             </button>
             <button
               type="button"
@@ -302,8 +308,8 @@ export function ChatSettingsModal({
           <p className="text-sm text-text font-bold">Emin misiniz?</p>
           <p className="text-sm text-text leading-relaxed">
             <span className="font-bold">{view.participant.name}</span> için gönderdiğiniz şikayeti geri çekmek
-            istediğinize emin misiniz? Bu kullanıcı hakkındaki tüm açık şikayetleriniz geri çekilir ama sessize alma
-            durumu devam eder; isterseniz ayrıca mesajlaşma ayarlarından onu da kaldırabilirsiniz.
+            istediğinize emin misiniz? Bu kullanıcı hakkındaki tüm açık şikayetleriniz geri çekilir ama engeliniz
+            devam eder; isterseniz ayrıca mesajlaşma ayarlarından onu da kaldırabilirsiniz.
           </p>
           {error && <p className="text-red text-[10px] font-mono">{error}</p>}
           <div className="flex gap-2">
@@ -402,7 +408,7 @@ export function ChatSettingsModal({
           <p className="text-sm text-text font-bold">Şikayetiniz iletildi.</p>
           <p className="text-sm text-text leading-relaxed">
             <span className="font-bold">{view.participant.name}</span> hakkındaki şikayetiniz Kelimeki ekibine
-            ulaştı. Bu kişi aynı zamanda sizin için sessize alındı; dilerseniz şikayetinizi buradan geri
+            ulaştı. Bu kişi aynı zamanda sizin için engellendi; dilerseniz şikayetinizi buradan geri
             çekebilirsiniz.
           </p>
           <button
