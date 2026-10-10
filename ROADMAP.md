@@ -54,6 +54,10 @@ Aşağıdaki ikisinin kaydı kök `CLAUDE.md` → Kaynak Hunisi bölümünde:
 
 ---
 
+## AÇIK — Asnmzr raporu: "oyun başlarken Değiştir'e basınca BERABERE bitiyor" (10 Ekim 2026, YENİDEN ÜRETİLEMEDİ)
+
+Android ekran görüntüsü (Zor, 2 kişi): 0-0, "Toplam hamle 0", KALAN -20/-19, k-lig +4/+4 BERABERE; arkada hâlâ `DEĞİŞTİR (6)` düğmesi (devre dışı) yani **oyun takas modu AÇIKKEN bitmiş**. Ölçüm (10 Eki): TS motoru (`gameReducer`) ve Dart motoru (`GameEngine`) ayrı ayrı 300'er oyun — insan başta 6 taş değiştirir, YZ oynar, bir kez daha — **0/300 bitiş** (YZ 2. tur dahil ilk turunda ~%2,3 raf değiştirir; oyunun bitmesi için art arda 4 puansız tur gerekir, `activePlayerCount × MAX_PASS_ROUNDS`). Yani raporlanan sonuç bu motor yolundan çıkmıyor. İpucu: `CONFIRM_SWAP` çıkışında `swapMode=false` yazıyor; takas modu açık kalan bitiş yalnızca `AI_PLAY` (satır ~585/803) ya da teslim dalından geçer → insan takas modundayken YZ turu bitirmiş olabilir. Aday: mağazadaki 1.1.2 (831) ile `main` farkı, ya da kayıttan devam edilmiş oyun (`consecutivePasses` taşınıyor mu). **EK (10 Ekim, kullanıcı): modalı kapatınca OYUN DEVAM ETMİŞ.** Bu, `isGameOver`un gerçekten true olmadığını/geri döndüğünü gösterir; reducer'da `isGameOver`u false'a çeviren tek yol `START` ve `controller.restore` (kayıttan devam: `setup_screen.dart` `_resumeSavedGame`/`_resumeCloudSave`). Ayrıca `game_screen.dart` modalı `_ilkKutlama(state)` ASYNC beklemesinden sonra, o ANKİ `state` kopyasıyla açıyor — modal bayat bir anlık görüntüyü gösterebilir. Önce şu ikisi ayrıştırılmalı: (a) oyun "Devam eden oyun"dan mı açıldı, (b) modal açıkken YZ/başka işlem state'i değiştirdi mi. **Bekleyen:** kullanıcıdan Setup teşhis satırı (`Derleme …`), kaç kez Değiştir'e bastığı, oyunun yeni mi kayıttan mı olduğu. Bilinen sonuç: 4 puansız tur (pas/takas, ikisi de) oyunu bitirir — kural gereği, hata değil; sorun beraberliğin 0 hamleyle gelmesi olabilir (ürün kararı: hiç kelime oynanmadan bitişte uyarı/k-lig ödülü).
+
 ## Faz planı — kalan işlerin YAYIN sırası (29 Ağustos 2026)
 
 Kullanıcı isteği: *"Tüm işleri fazlandırıp plan yapalım. Uygun gördüğün
