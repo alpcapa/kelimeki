@@ -222,6 +222,8 @@ alınmaz); A/B/C ayrı küçük PR'larla `origin/main`'den yeni dallarda yapıl�
 mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunucu yarısı canlıda). Tasarım:
 `docs/decisions/random-opponent.md` (#804'te).
 
+⚠ **10 Ekim 2026 (kullanıcı): #804 iki hesapla test EDİLECEK** (`docs/testing-rastgele.md`); 12 Ekim kesimine yetişmezse **1-2 gün kayar, sorun değil** — #804/#805 testten sonra, diğer 1.1.3 işleriyle aynı sürümde çıkar (kesim günü sabit, bu iki PR için bekleme payı). Sürüm numarası 1.1.3 kalır.
+
 - **A. Yabancıyla biten oyunda "Tekrar Oyna": gösterilsin — ama yalnızca TÜM
   rakipler arkadaşsa.** Sunucu rövanşta "Yalnızca arkadaşlarını davet
   edebilirsin" der; arkadaş olmayana düğme gösterilmez, oyun sonu arkadaş
