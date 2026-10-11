@@ -189,6 +189,13 @@ arkadaş değilse rövanş gizlensin (öneri) ya da yeniden rastgele ilana döns
 - **Sınır tanımı netleşti:** "en çok 3" yalnızca BEKLEYEN (başlamamış) ilanları sayar; başlamış oyunlar sayılmaz (mesaj: "Biri başlayınca ya da iptal edince yenisini açabilirsin"). Elle doğrulandı: 3 açık ilan + 2 aktif oyunda 4. ilan Türkçe sunucu metniyle reddedildi.
 - **Elle test edilenler (hepsi geçti):** kurulum ekranı 2/4 kişi, ilan sonuç ekranı, şerit + yoklama, kabul (2 kişi), 4 kişi kabul/ayrıl/iptal, eşzamanlı kabul (tek oyun doğdu), 3 sınırı, mevcut ilana katılma, 7 gün dolumu (`created_at` −8 gün → `check_invite_expiry` → `abandoned`), karma kadro daveti. Kalan: karma kadro kabul/ret, eski istemci maskesi, rozetler, yasal metin, oyun sonu arkadaş önerisi, rövanş.
 
+### Rövanş gözlemi — yabancıyla biten oyunda "Tekrar Oyna" (11 Ekim 2026, elle test, T2 ↔ T3 yabancı)
+
+**Gözlenen davranış (KARAR değil, kayıt):** "Tekrar Oyna" yabancı rakiple biten oyunda GÖRÜNÜYOR; dokunulunca sunucu reddi ya da hata yerine **arkadaşlık daveti** akışı çıkıyor (iki tarafta da aynı). Bir taraf davet gönderince diğer tarafta da aynı çıktı; **ikinci taraf da gönderince otomatik arkadaş olundu** (karşılıklı bekleyen istek = kabul). Yani bugünkü kod rövanşı yabancıya kapatmıyor, önce arkadaşlığa yönlendiriyor — ROADMAP #45-A'daki "yalnızca TÜM rakipler arkadaşsa düğme" kararının uygulanmış bir karşılığı değil, ama kullanıcıyı çıkmaza sokmuyor. A kararının nihai biçimi (düğmeyi gizle mi, arkadaşlığa yönlendir mi) hâlâ ürün kararı.
+Aynı oyunda oyun sonu arkadaş önerisi (Vazgeç/Devam, tek seferlik) doğru çalıştı.
+
+**Elle test özeti (11 Ekim 2026, önizleme `8a7edda`, T1 = Ironman, T2, T3):** 12 (eski istemci maskesi) ATLANDI — eski istemci yok; "bilinen bedel" olarak kayıtlı. Geri kalan tüm adımlar geçti; bulunan beş sorun aynı gün düzeltildi (yukarıdaki iki madde + Canlı liste yarışı + yoklama 30 sn + yasal metin tarihi sırası).
+
 ## 10. Takvim (kullanıcı isteği, 3 Ekim 2026)
 
 Kullanıcı: *"Rastgeleyi 12 Ekim trenine alabiliriz mümkünse."* (12 Ekim = ilk
