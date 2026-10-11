@@ -147,6 +147,12 @@
   yerleşir" (ölçek 1,0 ve 1,3; yatay + dikey). Negatif eş koşuldu (eski
   yerleşimle düşüyor). Tam takım **1.039 yeşil**. Cihaz: `mobile/TESTING.md`
   → "Canlı oyun formu".
+## Parça 232 — Android ikonu küçük ve etrafı beyazdı: adaptive ön katman İKİ KEZ küçülüyordu (2 Ekim 2026)
+
+- **Bildirim (Samsung, ana ekran fotoğrafı):** *"Android'de ikon normal gözükmüyor. Ortada küçülmüş ve etrafı beyaz kalmış."*
+- **Kök sebep:** `icon-adaptive-fg.png` üreticide (`mobile/scripts/generate-app-icon-masters.mjs`) ZATEN %66 güvenli bölgeye küçültülüyor; `flutter_launcher_icons` 0.14 ise ön katmana ayrıca varsayılan `android:inset="16%"` ekliyor. Sonuç: içerik katmanın 0,66 × 0,68 ≈ %45'i — görünen 72 dp alanın ancak ~2/3'ü, gerisi beyaz zemin. iOS ve eski Android (LEGACY mipmap, `icon-source.png`) ETKİLENMİYOR.
+- **Düzeltme:** `pubspec.yaml` → `adaptive_icon_foreground_inset: 0` + `dart run flutter_launcher_icons` (tek değişen üretilmiş dosya `mipmap-anydpi-v26/ic_launcher.xml`: `16%` → `0%`). Tek küçültme üreticide kaldı; "kelimeki" yazısı görünen alanın ~%90'ı, yani 66 dp güvenli dairenin sınırında — yuvarlak maskede de kırpılmaz, tahta filigranının köşeleri kırpılır (doku, bilgi değil). Splash aynı PNG'yi kullanıyor ama inset yalnızca launcher XML'inde — splash DEĞİŞMEDİ.
+- **Doğrulama:** sharp ile önizleme (katman 108 → görünen 72 → squircle maske): eski hâli fotoğraftakiyle birebir. **Sınır:** gerçek launcher'da görmek mağaza paketini ister (12 Ekim treni); ikon önbelleği yüzünden güncellemeden sonra launcher eski ikonu bir süre gösterebilir.
 
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 

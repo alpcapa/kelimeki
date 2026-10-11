@@ -249,6 +249,7 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
   açık kalır). ⚠ Rozet zinciri kuralı: yeni bildirim rozete GİRMELİ Mİ ayrıca
   karar ver; web + port + push yükü (`verify-push-payload`) birlikte.
 | #789 (2 Eki) | **Bölüm başlıkları kalın** — port yarısı (web #788; kullanıcı: *"yazılar silik ve okunaksız"*) | `fontWeight: w700`: `setup_screen` · `live_games_tab` · `recent_games_section` · `live_game_create_form` · `score_stats_section` · `friends_modal` · `help_modal` (×2) · `legal_modals` · `delete_account_modal` · `leaderboard_modal` (sütun başlıkları). **+ Form etiketleri** (aynı gün ikinci tur, web eşi ayrı PR): `auth_modal` · `account_settings_modal` (`_labeled`) · `delete_account_modal` (onay etiketi). Ara yazılar dışarıda. App **1.037 test yeşil** |
+| #791 (2 Eki) | **Android ikonu küçük ve etrafı beyazdı** — adaptive ön katman iki kez küçülüyordu (üretici %66 + `flutter_launcher_icons` varsayılan inset %16) | `pubspec.yaml` (`adaptive_icon_foreground_inset: 0`) + üretilmiş `mipmap-anydpi-v26/ic_launcher.xml`. Parça 232 · iOS etkilenmez |
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 

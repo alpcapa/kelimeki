@@ -67,6 +67,10 @@ sözleşmesi — tek taraflı bakmak bir hatayı gizleyebilir.
       "kelimeki" el yazısı ikonu görünmeli — Flutter'ın varsayılan mavi kuş
       DEĞİL (7 Ağustos 2026'ya kadar bu hiç üretilmemişti, ilk Appetize
       denemesinde fark edildi).
+      **Android (8+):** yazı ikonun kutusunu YATAYDA neredeyse doldurmalı,
+      etrafında kalın beyaz çerçeve OLMAMALI (2 Ekim 2026'ya kadar ikon
+      ortada küçük kalıyordu — Parça 232). Launcher ikon önbelleğini geç
+      tazeleyebilir; gerekirse ikonu ana ekrandan kaldırıp yeniden ekle.
 - [ ] **Splash ekranı.** Uygulama açılırken kısa bir an beyaz zemin
       üzerinde "kelimeki" logosu görünmeli — siyah ekran ya da mavi kuş
       GÖRÜNMEMELİ. Android'de sistem karanlık modda olsa bile splash beyaz
