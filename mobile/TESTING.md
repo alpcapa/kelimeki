@@ -1576,6 +1576,8 @@ geçici olarak öne çekme; aşağıdaki maddeler ayrılış saatini seçerek ko
       hatırlatma silinir — hata DEĞİL, bilinçli (BOOT_COMPLETED alıcısı yok).
 - [ ] **iOS:** aynı maddeler; uygulama ÖNDEYKEN zamanı gelirse iOS bildirimi
       göstermez (beklenen — kullanıcı zaten oyunda).
+- [ ] **Ölçüm satırları (11 Ekim 2026):** kart/izin/kurma/izinsiz-düşme olayları
+      `reminder_events`e düşer — maddeler `mobile/docs/testing-olcum.md` §34.
 
 ## Test ortamları ve derleme dağıtımı → `mobile/docs/test-ortamlari.md`
 

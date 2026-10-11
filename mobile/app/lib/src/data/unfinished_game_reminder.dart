@@ -26,6 +26,7 @@ import 'package:kelimeki_core/kelimeki_core.dart';
 import '../storage/app_storage.dart';
 import '../util/unfinished_reminder.dart';
 import 'push_repo.dart';
+import 'reminder_events.dart';
 
 /// Tek bir yerel bildirimi kuran/iptal eden dikiş. Testte sahtesi verilir.
 abstract class HatirlatmaZamanlayici {
@@ -98,6 +99,10 @@ class YarimOyunHatirlatici {
 
   final DateTime Function() _saat;
 
+  /// Ölçüm (11 Ekim 2026, `reminder_events`): hatırlatma kuruldu / uygun
+  /// ayrılıştı ama izin yoktu. Kimliksiz, fırlatmaz.
+  final ReminderEventLogger _olay;
+
   /// "Bildirimler kapalı" kartından ayarlara gönderilen oyun. Kullanıcı
   /// ayarlardan DÖNÜNCE (`uygulamaAcildi`) hatırlatma bu oyun için yeniden
   /// denenir — çıkış anında izin yoktu, kurulamamıştı. Bellekte tutulur:
@@ -109,7 +114,9 @@ class YarimOyunHatirlatici {
     required this.zamanlayici,
     required this.messaging,
     DateTime Function()? saat,
-  }) : _saat = saat ?? DateTime.now;
+    ReminderEventLogger? olay,
+  })  : _saat = saat ?? DateTime.now,
+        _olay = olay ?? reminderEvents.log;
 
   Future<bool> _izinVar() async {
     final m = messaging;
@@ -125,17 +132,26 @@ class YarimOyunHatirlatici {
   Future<void> oyundanAyrildi(GameState s) async {
     try {
       final flags = (await storage).flags;
-      final kurulmali = yarimOyunHatirlatmasiKurulmali(
-        oyunSuruyor: s.phase == GamePhase.play && !s.isGameOver,
-        turSayisi: s.turnCount,
-        oyunKimligi: s.startedAt,
-        hatirlatilanOyun: flags.yarimOyunHatirlatilan,
-        izinVar: await _izinVar(),
-      );
-      if (!kurulmali) return;
+      bool kurulmaliMi(bool izinVar) => yarimOyunHatirlatmasiKurulmali(
+            oyunSuruyor: s.phase == GamePhase.play && !s.isGameOver,
+            turSayisi: s.turnCount,
+            oyunKimligi: s.startedAt,
+            hatirlatilanOyun: flags.yarimOyunHatirlatilan,
+            izinVar: izinVar,
+          );
+      // Önce İZİN HARİÇ her koşul: uygun bir ayrılış mıydı? Değilse ölçülecek
+      // bir şey yok (1 turluk oyun, bitmiş oyun, zaten hatırlatılmış oyun).
+      if (!kurulmaliMi(true)) return;
+      if (!kurulmaliMi(await _izinVar())) {
+        // Yeni gelenin ASIL yolu: telefonu bırakarak ayrıldı, izin hiç
+        // verilmemişti, kart da çıkmadı → hiçbir şey kurulmadı.
+        _olay(kReminderSkipNoPermission);
+        return;
+      }
       final zaman = yarimOyunHatirlatmaZamani(_saat());
       await zamanlayici.kur(zaman, kYarimOyunBaslik, kYarimOyunGovde);
       await flags.yarimOyunKuruldu(s.startedAt, zaman);
+      _olay(kReminderSet);
     } catch (e) {
       debugPrint('[Kelimeki] yarım oyun hatırlatma akışı hatası: $e');
     }
