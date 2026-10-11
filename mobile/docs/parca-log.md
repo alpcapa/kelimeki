@@ -25,6 +25,14 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 239 — Koltuk numarası alt yarıdan kırpılıyordu: `Text.overflow` varsayılanı `clip` (11 Ekim 2026, 1.1.3 TestFlight)
+
+Kullanıcı iPad'de gördü: *"koltuk numaraları yarınsından kesilmiş"*. Numara rakamı 56/34 px, yuvası 36/28 px; `Baseline` rakamı yuvanın üstüne taşıyordu ama `Text`in varsayılan `overflow: clip`i onu paragrafın KENDİ kutusuna (36 px) kırpıyordu. Bulgu `debugDumpRenderTree`de (`RenderParagraph size 36, overflow: clip`), düzeltme `overflow: TextOverflow.visible` (`live_game_create_form.dart`). Parça 230/231'in geometri testi konumu ölçüyor, KIRPMAYI görmüyordu → yeni test `koltuk numarası kırpılmaz`. Ders: taşırarak konumlanan metinde `overflow: visible` şart; kırpma yalnızca görüntü alınınca görünüyor.
+
+**Aynı PR, ikinci düzeltme — yeni arkadaşlık isteği rozeti çıkmıyordu** (aynı TestFlight turu): `friend_requests` Realtime'da değil, sayı yalnızca açılışta/pencere kapanınca çekiliyordu. `AccountButton` artık sayıyı menü HER açılışta ve uygulama öne dönünce (`WidgetsBindingObserver`) tazeliyor; açık menüdeki "Arkadaşlar" rozeti `ValueNotifier` ile canlı (`_myRank` ile aynı `itemBuilder` tuzağı). Web ikizi `UserMenu.tsx`: `open` ve `visibilitychange` effect'leri. Test: `account_button_test.dart` → "yeni arkadaşlık isteği…".
+
+**Üçüncü düzeltme — avatarın etrafında gri halka kalıyordu** (iPad, menüyü açıp kapatınca, kendiliğinden gitmiyor): `PopupMenuButton`ın `InkWell`i menü kapanınca düğmeye dönen odak ya da iPad imlecinin bayat "üstünde" durumu yüzünden `focusColor`/`hoverColor` halkasını çiziyordu. `_avatarMenu` Theme ile ikisini şeffaflaştırıyor (web: `focus:outline-none`, zemin vurgusu yok); bedel: menü satırlarında imleç-hover tonu yok. ⚠ NEDEN iki adaydan hangisi olduğu cihazda AYRIŞTIRILMADI (testte yeniden üretilemedi; odak testi düzeltme olmadan da geçti → atıldı) — ikisini de kapatan düzeltme seçildi. Cihazda doğrulanacak.
+
 ## Parça 228 — "Bildirimler kapalı" kartı: yarım oyun hatırlatması ayarlara yönlendiriyor (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
 
 - **Bildirim (1.1.2, Android, güncellemeden sonra):** *"yarım bıraktım geri
