@@ -177,6 +177,7 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
 
   /// Hedef karta kaydırmak için: id → o kartın anahtarı.
   final _entryKeys = <String, GlobalKey>{};
+
   /// Kart içindeki küçük ikonların kutularını ölçmek için (bkz.
   /// `icon_tap_rescue.dart`) — kart anahtarlarıyla aynı ömür.
   final _iconKeys =
@@ -395,7 +396,8 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
     final mine = widget.isMe &&
         (uid == null || entry.userId == uid) &&
         entry.players.isNotEmpty;
-    final rankIdx = mine ? _findMeIndex(entry, entry.players) : -1;
+    final rankIdx =
+        mine ? _findMeIndex(entry, entry.players, widget.currentName) : -1;
     await showMoveHistoryModal(
       context,
       buildSnapshotGameState(const [], entry.playerCount, entry.players)
@@ -434,7 +436,8 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
         widget.games.gateway.currentUserId != null &&
         OnlineGamesScope.maybeOf(context) != null;
     await showActionSheet(context, actions: [
-      ActionSheetItem(label: 'Paylaş', onSelect: () => unawaited(_share(entry))),
+      ActionSheetItem(
+          label: 'Paylaş', onSelect: () => unawaited(_share(entry))),
       if (canRematch)
         ActionSheetItem(
             label: 'Tekrar Oyna',
@@ -458,7 +461,7 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
     final onlineId = entry.onlineGameId;
     if (repo == null || myId == null || onlineId == null) return;
 
-    final meIndex = _findMeIndex(entry, entry.players);
+    final meIndex = _findMeIndex(entry, entry.players, widget.currentName);
     final names = <String>[
       for (var i = 0; i < entry.players.length; i++)
         if (!entry.players[i].isAi && i != meIndex) entry.players[i].name,
@@ -571,95 +574,95 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
 
   Widget _buildList(List<GameHistoryEntry>? entries) {
     return entries == null
-          ? const KLoadingNote()
-          : entries.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: Text(
-                        _loadFailed
-                            ? 'Oyun geçmişi yüklenemedi. Bağlantını kontrol '
-                                'edip tekrar dene.'
-                            : _favoritesOnly
-                                ? (widget.isMe
-                                    ? 'Henüz favori işaretlediğin bir oyun yok.'
-                                    : 'Bu oyuncunun henüz favori işaretlediği bir oyun yok.')
-                                : 'Henüz kayıtlı bir oyunun yok.',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontFamily: 'SpaceMono',
-                            fontSize: 12,
-                            color: _muted)),
-                  ),
-                )
-              : ConstrainedBox(
-                  constraints: BoxConstraints(
-                      maxHeight: MediaQuery.sizeOf(context).height * 0.6),
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    shrinkWrap: true,
-                    itemCount: entries.length + (_hasMore ? 1 : 0),
-                    itemBuilder: (context, i) {
-                      if (i >= entries.length) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Center(
-                            child: Text(_loadingMore ? 'Yükleniyor…' : '',
-                                style: const TextStyle(
-                                    fontFamily: 'SpaceMono',
-                                    fontSize: 10,
-                                    color: _muted)),
-                          ),
-                        );
-                      }
-                      final e = entries[i];
-                      return _EntryCard(
-                        // Kaydırma hedefi olabilmesi için sabit anahtar.
-                        key: _entryKeys.putIfAbsent(e.id, GlobalKey.new),
-                        // Küçük ikonların kutularını ÇALIŞMA ZAMANINDA
-                        // ölçebilmek için kalıcı anahtarlar (bkz.
-                        // `icon_tap_rescue.dart`). `_entryKeys` ile aynı
-                        // önbellek deseni — her yeniden çizimde yenisini
-                        // üretmek GlobalKey sözleşmesini bozardı.
-                        iconKeys: _iconKeys.putIfAbsent(
-                            e.id,
-                            () => (
-                                  like: GlobalKey(),
-                                  chat: GlobalKey(),
-                                  moves: GlobalKey(),
-                                )),
-                        captureKey: _expandedId == e.id ? _captureKey : null,
-                        entry: e,
-                        currentName: widget.currentName,
-                        // Favoriler listesinde bir satır, görüntüleyenin
-                        // SAHİP OLMADIĞI bir oyuna ait olabilir (başkasının
-                        // kartından beğenilmiş) — o durumda entry.rank/
-                        // player_score o satırın gerçek sahibine ait
-                        // olduğundan "ben" hesaplamak yanlış oyuncuyu
-                        // vurgulardı (web'in aynı koruması).
-                        isMyRow: widget.isMe &&
-                            (widget.games.gateway.currentUserId == null ||
-                                e.userId == widget.games.gateway.currentUserId),
-                        expanded: _expandedId == e.id,
-                        snapshotLoading: _snapshotLoadingId == e.id,
-                        snapshotFetched: _snapshots.containsKey(e.id),
-                        snapshot: _snapshots[e.id],
-                        onTap: () => _toggleBoard(e),
-                        onToggleLike: () => _toggleLike(e),
-                        onShowLikers: () => _showLikers(e),
-                        onShowChat: () => showGameChatHistory(
-                          context,
-                          games: widget.games,
-                          gameId: e.id,
-                          onlineGameId: e.onlineGameId,
+        ? const KLoadingNote()
+        : entries.isEmpty
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text(
+                      _loadFailed
+                          ? 'Oyun geçmişi yüklenemedi. Bağlantını kontrol '
+                              'edip tekrar dene.'
+                          : _favoritesOnly
+                              ? (widget.isMe
+                                  ? 'Henüz favori işaretlediğin bir oyun yok.'
+                                  : 'Bu oyuncunun henüz favori işaretlediği bir oyun yok.')
+                              : 'Henüz kayıtlı bir oyunun yok.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontFamily: 'SpaceMono',
+                          fontSize: 12,
+                          color: _muted)),
+                ),
+              )
+            : ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight: MediaQuery.sizeOf(context).height * 0.6),
+                child: ListView.builder(
+                  controller: _scrollController,
+                  shrinkWrap: true,
+                  itemCount: entries.length + (_hasMore ? 1 : 0),
+                  itemBuilder: (context, i) {
+                    if (i >= entries.length) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Center(
+                          child: Text(_loadingMore ? 'Yükleniyor…' : '',
+                              style: const TextStyle(
+                                  fontFamily: 'SpaceMono',
+                                  fontSize: 10,
+                                  color: _muted)),
                         ),
-                        onShowMoves: () => _showMoves(e),
-                        movesLoading: _movesLoadingId == e.id,
-                        onTapBoard: () => _openBoardSheet(e),
                       );
-                    },
-                  ),
-                );
+                    }
+                    final e = entries[i];
+                    return _EntryCard(
+                      // Kaydırma hedefi olabilmesi için sabit anahtar.
+                      key: _entryKeys.putIfAbsent(e.id, GlobalKey.new),
+                      // Küçük ikonların kutularını ÇALIŞMA ZAMANINDA
+                      // ölçebilmek için kalıcı anahtarlar (bkz.
+                      // `icon_tap_rescue.dart`). `_entryKeys` ile aynı
+                      // önbellek deseni — her yeniden çizimde yenisini
+                      // üretmek GlobalKey sözleşmesini bozardı.
+                      iconKeys: _iconKeys.putIfAbsent(
+                          e.id,
+                          () => (
+                                like: GlobalKey(),
+                                chat: GlobalKey(),
+                                moves: GlobalKey(),
+                              )),
+                      captureKey: _expandedId == e.id ? _captureKey : null,
+                      entry: e,
+                      currentName: widget.currentName,
+                      // Favoriler listesinde bir satır, görüntüleyenin
+                      // SAHİP OLMADIĞI bir oyuna ait olabilir (başkasının
+                      // kartından beğenilmiş) — o durumda entry.rank/
+                      // player_score o satırın gerçek sahibine ait
+                      // olduğundan "ben" hesaplamak yanlış oyuncuyu
+                      // vurgulardı (web'in aynı koruması).
+                      isMyRow: widget.isMe &&
+                          (widget.games.gateway.currentUserId == null ||
+                              e.userId == widget.games.gateway.currentUserId),
+                      expanded: _expandedId == e.id,
+                      snapshotLoading: _snapshotLoadingId == e.id,
+                      snapshotFetched: _snapshots.containsKey(e.id),
+                      snapshot: _snapshots[e.id],
+                      onTap: () => _toggleBoard(e),
+                      onToggleLike: () => _toggleLike(e),
+                      onShowLikers: () => _showLikers(e),
+                      onShowChat: () => showGameChatHistory(
+                        context,
+                        games: widget.games,
+                        gameId: e.id,
+                        onlineGameId: e.onlineGameId,
+                      ),
+                      onShowMoves: () => _showMoves(e),
+                      movesLoading: _movesLoadingId == e.id,
+                      onTapBoard: () => _openBoardSheet(e),
+                    );
+                  },
+                ),
+              );
   }
 }
 
@@ -780,7 +783,8 @@ class _LikersModal extends StatelessWidget {
                       behavior: HitTestBehavior.opaque,
                       child: Row(
                         children: [
-                          KAvatar(url: l.avatarUrl, name: l.shortName, size: 22),
+                          KAvatar(
+                              url: l.avatarUrl, name: l.shortName, size: 22),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(l.shortName,
@@ -826,13 +830,38 @@ class _LikersModal extends StatelessWidget {
 
 /// Web `findMeIndex`: `rank` doğrudan final sıralamasındaki konumu verir;
 /// eski kayıtlarda puana göre eşleşen ilk insan satırına düşülür.
-int _findMeIndex(GameHistoryEntry e, List<GamePlayerSnapshot> players) {
+///
+/// ⚠ BERABERLİKTE `rank - 1` YANLIŞ SATIRI VERİR (11 Ekim 2026, web'de
+/// kullanıcı kendi geçmişinde gördü): iki oyuncu 218-218 bitince İKİSİNİN de
+/// rank'ı 1 ve `players` sunucuda koltuk sırasıyla yazılıyor; `rank - 1`
+/// herkes için 0. satırı, yani 1. koltuktakini "ben" saydırıyordu. 2.
+/// koltuktaki oyuncu geçmişinde rakibinin adı yerine KENDİ adını iki kez
+/// görüyor, hamle geçmişi rakibin puanını "benim" diye gösteriyor ve
+/// "Tekrar Oyna" rakip yerine KENDİNİ davet listesine alıyordu. Aynı puanda
+/// birden çok insan satırı varsa güncel takma adla eşleşen satır seçilir;
+/// eşleşme yoksa (takma ad sonradan değişmiş) eski davranış.
+int _findMeIndex(GameHistoryEntry e, List<GamePlayerSnapshot> players,
+    [String? myName]) {
+  final tied = <int>[
+    for (var i = 0; i < players.length; i++)
+      if (!players[i].isAi && players[i].score == e.playerScore) i,
+  ];
+  if (tied.length > 1 && myName != null && myName.isNotEmpty) {
+    final wanted = trLower(myName);
+    final byName = tied.where((i) => trLower(players[i].name) == wanted);
+    if (byName.length == 1) return byName.first;
+  }
   final r = e.rank;
   if (r != null && r >= 1 && r <= players.length) return r - 1;
   final byScore =
       players.indexWhere((p) => !p.isAi && p.score == e.playerScore);
   return byScore >= 0 ? byScore : 0;
 }
+
+@visibleForTesting
+int findMeIndexForTest(GameHistoryEntry e, List<GamePlayerSnapshot> players,
+        [String? myName]) =>
+    _findMeIndex(e, players, myName);
 
 /// Web `seatIndexFor`: rozet rengi/numarası final sıralamasından BAĞIMSIZ,
 /// sabit koltuk kimliğidir. `colorIndex` eski kayıtlarda yok → varsayılan
@@ -923,7 +952,7 @@ class _EntryCard extends StatelessWidget {
       unknownCount = 0;
       // Satır bana ait değilse hiçbir slot "ben" değil (-1) — aksi halde
       // başkasının skoruna kendi güncel adım yapıştırılırdı.
-      meIndex = isMyRow ? _findMeIndex(entry, players) : -1;
+      meIndex = isMyRow ? _findMeIndex(entry, players, currentName) : -1;
     } else {
       final fb = _fallbackPlayers(entry, isMyRow, currentName);
       players = fb.known;
@@ -976,21 +1005,21 @@ class _EntryCard extends StatelessWidget {
                         child: KeyedSubtree(
                           key: iconKeys.like,
                           child: Padding(
-                          padding: const EdgeInsets.only(right: 2),
-                          child: Icon(
-                            entry.likedByMe
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            size: 13,
-                            // Web: `entry.liked_by_me ? 'text-red' :
-                            // 'text-muted'` — beğenilen kalp KIRMIZI.
-                            // Port ikonun DOLU/BOŞ hâlini taşımış ama
-                            // rengi koşulsuz `_muted` bırakmıştı, yani
-                            // beğeni yapınca kalp doluyor ama gri kalıyordu
-                            // (9 Ağustos 2026, cihaz testinde bulundu).
-                            color: entry.likedByMe ? _red : _muted,
+                            padding: const EdgeInsets.only(right: 2),
+                            child: Icon(
+                              entry.likedByMe
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              size: 13,
+                              // Web: `entry.liked_by_me ? 'text-red' :
+                              // 'text-muted'` — beğenilen kalp KIRMIZI.
+                              // Port ikonun DOLU/BOŞ hâlini taşımış ama
+                              // rengi koşulsuz `_muted` bırakmıştı, yani
+                              // beğeni yapınca kalp doluyor ama gri kalıyordu
+                              // (9 Ağustos 2026, cihaz testinde bulundu).
+                              color: entry.likedByMe ? _red : _muted,
+                            ),
                           ),
-                        ),
                         ),
                       ),
                       if (entry.likeCount > 0)
@@ -1024,8 +1053,7 @@ class _EntryCard extends StatelessWidget {
                       if (isOnline) ...[
                         const SizedBox(width: 6),
                         const _Badge(text: 'Canlı', color: _green),
-                      ] else if (hasSnapshot &&
-                          players.any((p) => p.isAi)) ...[
+                      ] else if (hasSnapshot && players.any((p) => p.isAi)) ...[
                         const SizedBox(width: 6),
                         const _Badge(text: 'Yapay Zeka', color: _accent),
                       ],
@@ -1037,8 +1065,8 @@ class _EntryCard extends StatelessWidget {
                       if (!isOnline) ...[
                         const SizedBox(width: 6),
                         AiLevelBadge(
-                            level: aiLevelForBadge(entry.aiLevel,
-                                isAiGame: true)),
+                            level:
+                                aiLevelForBadge(entry.aiLevel, isAiGame: true)),
                       ],
                       if (entry.messageCount > 0) ...[
                         const SizedBox(width: 6),
@@ -1049,18 +1077,18 @@ class _EntryCard extends StatelessWidget {
                           child: KeyedSubtree(
                             key: iconKeys.chat,
                             child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.chat_bubble_outline,
-                                  size: 11, color: _muted),
-                              const SizedBox(width: 2),
-                              Text('${entry.messageCount}',
-                                  style: const TextStyle(
-                                      fontFamily: 'SpaceMono',
-                                      fontSize: 9,
-                                      color: _muted)),
-                            ],
-                          ),
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.chat_bubble_outline,
+                                    size: 11, color: _muted),
+                                const SizedBox(width: 2),
+                                Text('${entry.messageCount}',
+                                    style: const TextStyle(
+                                        fontFamily: 'SpaceMono',
+                                        fontSize: 9,
+                                        color: _muted)),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -1106,19 +1134,20 @@ class _EntryCard extends StatelessWidget {
                             child: KeyedSubtree(
                               key: iconKeys.moves,
                               child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 1),
-                              child: movesLoading
-                                  // Sohbet rozetiyle aynı 11px kutuda kalır ki
-                                  // yükleme sırasında satır kaymasın.
-                                  ? const SizedBox(
-                                      width: 11,
-                                      height: 11,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 1.5, color: _muted),
-                                    )
-                                  : const DocumentIcon(size: 11, color: _muted),
-                            ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 1),
+                                child: movesLoading
+                                    // Sohbet rozetiyle aynı 11px kutuda kalır ki
+                                    // yükleme sırasında satır kaymasın.
+                                    ? const SizedBox(
+                                        width: 11,
+                                        height: 11,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 1.5, color: _muted),
+                                      )
+                                    : const DocumentIcon(
+                                        size: 11, color: _muted),
+                              ),
                             ),
                           ),
                         ),
