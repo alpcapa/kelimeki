@@ -205,7 +205,7 @@ acil bir fren gerekirse eşiği yükseltmek YETER.
 aynı başlık; 24 Eylül 2026'da taşındı). Sayacın yeri, tester sayısının
 nereden okunacağı ve kartın "12" tavanı orada.
 
-## 1.1.3 treni — KESİLDİ 11 Ekim 2026 (#826, `main` `95917368`; build 871, TestFlight'ta)
+## 1.1.3 treni — KESİLDİ 11 Ekim 2026 (#826, `main` `95917368`; düzeltme turu #832 `877b43e` → **build 875**, TestFlight'ta)
 
 ✅ 11 Ekim: kesim 12'den bugüne alındı (kullanıcı), 15 PR tek squash'ta + web Vercel'de (`9591736`). ⬜ **Sıradaki:** TestFlight cihaz turu (özellikle Rastgele Oyuncu portu — cihazda hiç denenmedi) → ASC'ye gönderim → Play `.aab`. Aşağıdaki satırlar mağazada yayına girince `roadmap-arsiv.md`'ye taşınır. (Eski başlık: taslak PR'lar.)
 
