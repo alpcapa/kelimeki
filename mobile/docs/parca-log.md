@@ -56,7 +56,7 @@
   (main'deki eski `fake_async` info'su hariç). ⚠ Ayarlar sayfasının
   gerçekten açılması ve dönüşte hatırlatmanın kurulması YALNIZ cihazda
   kanıtlanır: `mobile/TESTING.md` §34.
-## Parça 232 — Engelle'nin port ikizi: istek/davet kartı, Engellediklerim, ⋯ menüsü, sohbet terimi (5 Ekim 2026, 19 Ekim treni)
+## Parça 236 — Engelle'nin port ikizi: istek/davet kartı, Engellediklerim, ⋯ menüsü, sohbet terimi (5 Ekim 2026, 19 Ekim treni)
 
 - **Ne:** web #810/#811/#812/#813/#814'ün port yarısı. `block_confirm_sheet.dart`
   (ortak onay: önce engel, SONRA ret — engel düşerse pencere AÇIK kalır, davet/
@@ -205,7 +205,7 @@
   (390×844 · 360×740 · 360×640 @1,3) + "satır yüklenince kısayol kalkar".
   Duyarlılık kanıtlandı: düzeltme geri alınınca 360×640 @1,3'te iki sekme de
   DÜŞÜYOR.
-## Parça 233 — Oyun geçmişi: beraberlikte "ben" satırı yanlıştı (11 Ekim 2026) — web ikizi #828
+## Parça 235 — Oyun geçmişi: beraberlikte "ben" satırı yanlıştı (11 Ekim 2026) — web ikizi #828
 
 Kullanıcı (web) kendi geçmişinde 218-218 bir Canlı oyunda iki satırda da kendi adını gördü; hamle geçmişi rakibin puanına bağlıydı. Kayıt sunucuda doğruydu, hata `findMeIndex`te: "ben"i `rank - 1` ile buluyordu, beraberlikte iki oyuncunun da rank'ı 1 ve satırlar koltuk sırasıyla yazıldığından herkes için 0. satır çıkıyordu. Port AYNI hatayı taşıyordu (`_findMeIndex`) ve ek olarak "Tekrar Oyna" (`_handleRematch`) davet listesini `meIndex` dışındakilerden kurduğu için beraberlikte rakip yerine kendini alırdı.
 
