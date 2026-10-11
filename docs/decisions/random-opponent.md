@@ -182,6 +182,13 @@ arkadaş değilse rövanş gizlensin (öneri) ya da yeniden rastgele ilana döns
 
 Önizleme (`ef281fb`, canlı Supabase) üzerinde **T1 = Ironman, T5 (hiç oyunu yok)** ile test edildi: ilan AÇMA reddi ve başkasının ilanını KABUL reddi çalıştı (Türkçe sunucu mesajı, ham hata yok); oyun bitince geçiş çalıştı. Kapının gerekçesi sorgulandı (yeni üyelerin yalnızca ~%24'ü oyun bitiriyor — `funnel-v2.md` 10 Ekim okuması; yani çoğu yeni üye Rastgele'yi kullanamayacak) ve **karar: "bitmiş 1 oyun" kapısı OLDUĞU GİBİ KALIR** (kullanıcı: *"1 kalsın"*). Yumuşatma (örn. "oyun BAŞLATMIŞ") ve kurulum ekranında önceden ipucu satırı (web+port, sunucu aynı) ertelendi: önce spam gerçekten sorun olur ya da yeni üye dönüşümü düşük kalırsa gözden geçirilir; ipucu satırı 19 Ekim treni adayı. ⚠ Test hesabı kuralı: gerçek üyelerin hesabı (ör. Asnmzr) teste KATILMAZ; kapı testi için yeni açılmış, oyunsuz bir hesap kullanılır.
 
+### Elle test bulguları (11 Ekim 2026, önizleme `96a51c4` sonrası)
+
+- **Düzeltildi:** "Ayrıl"/"İlanı iptal et" sonrası şerit listesi hemen tazelenmiyordu (şerit kendi ilan listesini ayrı çekiyor; yalnızca "benim oyunlarım" yeniden yükleniyordu) → `RandomGamesStrip.refreshSignal`.
+- **Düzeltildi (davet kartı):** açık koltuk satırı "Rastgele oyuncu bekleniyor" diyordu; kullanıcı: *"sadece Rastgele oyuncu yazmalı, Bekliyor sağ tarafta diğerleri gibi"* → ad "Rastgele oyuncu", sağda `participantLabel`in "yanıtlamamış" dalıyla aynı kırmızı "Bekliyor". ⚠ **Port ikizi #805'te AYNI satır değişmeli** (davet kartının açık koltuk satırı) — #805 12 Ekim'e girerken kontrol et.
+- **Sınır tanımı netleşti:** "en çok 3" yalnızca BEKLEYEN (başlamamış) ilanları sayar; başlamış oyunlar sayılmaz (mesaj: "Biri başlayınca ya da iptal edince yenisini açabilirsin"). Elle doğrulandı: 3 açık ilan + 2 aktif oyunda 4. ilan Türkçe sunucu metniyle reddedildi.
+- **Elle test edilenler (hepsi geçti):** kurulum ekranı 2/4 kişi, ilan sonuç ekranı, şerit + yoklama, kabul (2 kişi), 4 kişi kabul/ayrıl/iptal, eşzamanlı kabul (tek oyun doğdu), 3 sınırı, mevcut ilana katılma, 7 gün dolumu (`created_at` −8 gün → `check_invite_expiry` → `abandoned`), karma kadro daveti. Kalan: karma kadro kabul/ret, eski istemci maskesi, rozetler, yasal metin, oyun sonu arkadaş önerisi, rövanş.
+
 ## 10. Takvim (kullanıcı isteği, 3 Ekim 2026)
 
 Kullanıcı: *"Rastgeleyi 12 Ekim trenine alabiliriz mümkünse."* (12 Ekim = ilk

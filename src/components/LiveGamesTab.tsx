@@ -360,7 +360,14 @@ function PendingGameCard({
             >
               ?
             </span>
-            <span className="flex-1 min-w-0 text-xs text-muted truncate">Rastgele oyuncu bekleniyor</span>
+            {/* Ad yalnızca "Rastgele oyuncu"; "bekleniyor" diğer katılımcı
+                satırlarındaki gibi SAĞDA durum etiketi (11 Ekim 2026, elle test:
+                kullanıcı *"Sadece Rastgele oyuncu yazmalı. Bekliyor sağ tarafta
+                diğerleri gibi yazmalı"*). Etiket/renk `participantLabel`in
+                "yanıtlamamış" dalıyla AYNI ("Bekliyor", kırmızı) — açık koltuğun
+                `invite_status`'ü yok, o yüzden burada sabit. */}
+            <span className="flex-1 min-w-0 text-xs text-text truncate">Rastgele oyuncu</span>
+            <span className="text-[9px] font-mono uppercase tracking-[0.5px] shrink-0 text-red">Bekliyor</span>
           </div>
         ))}
         {hasAi && (
