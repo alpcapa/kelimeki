@@ -1,6 +1,6 @@
-// Kelimeki — Bir Canlı oyun davetini kabul ettikten sonra, o oyundaki henüz
-// arkadaş olunmayan diğer katılımcılara toplu arkadaşlık isteği gönderme
-// önerisi. Karşılıklı istekler mevcut `handle_friend_request_insert`
+// Kelimeki — Canlı oyun BİTİNCE (4 Ekim 2026; önceden davet kabulünde çıkıyordu),
+// o oyundaki henüz arkadaş olunmayan diğer katılımcılara toplu arkadaşlık isteği
+// gönderme önerisi (Devam / Vazgeç). Karşılıklı istekler mevcut `handle_friend_request_insert`
 // trigger'ı (friends_system migration'ı) sayesinde otomatik kabul olur.
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -80,7 +80,7 @@ export function FriendSuggestModal({ candidates, onDone }: FriendSuggestModalPro
         {stage === 'select' ? (
           <>
             <p className="text-sm text-text font-sans leading-relaxed">
-              Bu kişileri arkadaşın olarak eklemek ister misin?
+              Bu oyuncuları arkadaş olarak eklemek ister misin?
             </p>
             <div className="flex flex-col gap-1.5">
               {sortedCandidates.map((c) => (
@@ -98,13 +98,22 @@ export function FriendSuggestModal({ candidates, onDone }: FriendSuggestModalPro
                 </button>
               ))}
             </div>
-            <button
-              onClick={handleContinue}
-              disabled={busy}
-              className="btn-raised py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-50"
-            >
-              {busy ? '…' : 'Devam'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={onDone}
+                disabled={busy}
+                className="btn-raised flex-1 py-2.5 rounded-md bg-bg text-muted text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-50"
+              >
+                Vazgeç
+              </button>
+              <button
+                onClick={handleContinue}
+                disabled={busy}
+                className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform disabled:opacity-50"
+              >
+                {busy ? '…' : 'Devam'}
+              </button>
+            </div>
           </>
         ) : (
           <>

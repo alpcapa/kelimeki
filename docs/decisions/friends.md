@@ -584,3 +584,15 @@ alır ve kuyruk sonsuza dek dolu kalırdı. Sayfadaki "Tekrar Dene" bellekteki
 ⚠ **Çift yolu kaldırma.** Kapı (`npm run verify-invite-queue`, CI'da) sırayı,
 kurtarma yolunu ve çift yolun DURDUĞUNU birlikte sınıyor — biri kaldırılırsa
 düşer. Duyarlılığı düzeltme geri alınarak kanıtlandı.
+
+## Oyun sonu arkadaş önerisi (4 Ekim 2026)
+
+Kullanıcı kararı: *"Takım, rastgele veya arkadaşının seni dahil ettiği canlı oyunlarda arkadaşın olmayan kişiler varsa
+… bu oyuncuları arkadaş eklemek ister misin? (Seçmeli) … Devam/Vazgeç … Devam olursa isteğiniz iletildi … Vazgeç
+pencereyi kapatmalı."* Önceden `FriendSuggestModal` davet KABULÜNDE çıkıyordu (`LiveGamesTab.handleRespond`) ve
+rastgele akışta (`accept_random_game`) hiç çıkmıyordu; o çağrı KALDIRILDI. Şimdi `OnlineGameScreen`, GameOver
+kapandıktan sonra çıkarır. Kural `utils/friendSuggest.ts` (port: `util/friend_suggest.dart`; kapı
+`verify-random-games`): insan koltuğu, ben değilim, `relation` accepted/pending_outgoing değil VE güncel
+`fetchFriends()` listesinde yok (`slot.relation` yükleme anının görüntüsü, bayat olabilir). Oyun başına BİR kez
+(`localStorage` `kelimeki.friendSuggest.<id>`). Gelen istek (`pending_incoming`) elenmez: karşılıklı istek
+sunucuda otomatik kabul olur.

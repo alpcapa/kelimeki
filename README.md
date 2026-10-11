@@ -37,6 +37,7 @@ npm run test     # Playwright testleri (tests/*.spec.ts — duman + yazı ölçe
 # Birim test çatısı yok; riskli saf mantık ayrı doğrulama betikleriyle sınanır:
 npm run verify-cloud-save-mirror # bulut kaydının çevrimdışı karar mantığı
 npm run verify-fetch-my-games    # oyun geçmişi: ağ hatası ↔ boş liste ayrımı
+npm run verify-random-games       # Rastgele Oyuncu: kova sınıflandırması, açık koltuk ≠ YZ, rozetler değişmez
 npm run verify-live-games-load    # canlı oyun listesi: düşen istek sessizce tekrarlanır
 npm run verify-shared-realtime    # canlı oyun aboneliği: üç çağıran → tek Realtime kanalı
 npm run verify-tutorial-script   # "oynayarak öğren" tanıtımı: senaryo gerçek motorda oynatılır (ekrandaki puanlar dahil)
@@ -160,6 +161,7 @@ src/
 │   ├── OnlineGameScreen.tsx     # gerçek Canlı oyun ekranı — Board/Rack/GameHeader'ı Supabase state'ine (Realtime) bağlar
 │   ├── RelationIcons.tsx        # arkadaşlık ilişkisi ikonları (ekle · bekliyor · kabul et · çıkar) — FriendsModal ve PlayerScoreCard ortak; üçünün path'i Flutter portuyla aynı fonttan, "bekliyor" (kişi + kum saati) elle çizildi ve porta parite testiyle bağlandı
 │   ├── Avatar.tsx               # profil fotoğrafı bileşeni
+│   ├── RandomGamesStrip.tsx     # Rastgele Oyuncu: "Devam Edenler" üstündeki yatay ilan şeridi (Kabul) + benim bekleyen ilanım için "Bekliyor n/N" satırı
 │   ├── PlayerAvatarRow.tsx      # oyun kartlarında "N Kişilik Oyun" başlığı yerine geçen katılımcı avatarları (YZ → robot, misafir → "?")
 │   ├── PlayerBadge.tsx          # renkli oyuncu sıra/koltuk rozeti
 │   ├── AiLevelBadge.tsx         # YZ zorluk rozeti (Kolay/Zor; Normal'de render edilmez) — 4 oyun kartı + Setup "devam eden oyun" satırı
@@ -221,6 +223,7 @@ src/
 │   ├── leaguePoints.ts # k-lig puanı hesaplama — (rank, count, surrendered, level); SQL league_points_for ↔ Dart ile verify-league-points kilitler
 │   ├── aiLevel.ts      # YZ zorluğunun ürün yüzü: etiketler, Setup'ta seçilebilir seviyeler (üçü de), null→Normal ayrıştırma
 │   ├── leagueRank.ts   # k-lig rütbe kademeleri (Çaylak→Kozmik, 9 kademe: eşik/renk/ödül — sunucudaki _award_league_rewards VE portun league_rank.dart'ı ile ELLE senkron, üç kopya)
+│   ├── randomGames.ts     # Rastgele Oyuncu saf kuralları: kova süzgeci, açık koltuk ≠ YZ, esnek kadro, şerit süzgeci (`npm run verify-random-games`)
 │   ├── pendingLiveGames.ts # Canlı taraftaki "bekleyen iş" sayısı (bekleyen davet + sırası sende olan oyun) — Setup rozeti ve PWA ikon rozeti ortak
 │   ├── gameListOrder.ts # devam eden oyun/davet listelerinin sıralaması: "sıra bende" bitmeye en yakın ÜSTTE, "sıra rakipte" en geç ÜSTTE, son tarihi olmayan en sona (npm run verify-game-list-order; portun game_list_order.dart'ıyla senkron)
 │   ├── scoreLine.ts    # kart altı puan satırının HİZASI (devam eden + son oynanan kartlar): her puan kendi avatarının tam altında — hücre eni avatar adımı, kaydırma binişmenin yarısı (portun score_line.dart'ıyla aynı formül)

@@ -1657,6 +1657,14 @@ o boyda krom tek başına ~308px, viewport 375–430 — hiçbir sınır değeri
 oynanabilir yapmaz. Doğru davranış banner'ın "dikeye dön" demesi. Telefon
 yatayı gerçekten açmak YAN YANA bir düzen ister (ROADMAP #38 — eski #26).
 
+## 13.10 Rastgele Oyuncu — açık ilan (3 Ekim 2026) → `docs/testing-rastgele.md`
+
+İki gerçek hesap (+ eşzamanlı kabul için üçüncü) ve eski sürümlü bir istemci
+ister: ilan aç/kabul/ayrıl/iptal, 3 sınırı, "önce bir oyun bitir" kapısı, karma
+kadro, eski istemci maskesi, rozetlerin DEĞİŞMEMESİ, şerit yoklaması. TESTING.md
+uyarı bandına girdiği için ayrı dosyada (kök `CLAUDE.md` → "Doküman Boyutu
+Bütçesi"); yeni Rastgele Oyuncu kontrolleri BURAYA değil oraya yazılır.
+
 ## 14+ — Tarihli turlar → `docs/testing-turlari.md`
 
 Belirli bir düzeltmenin gerilemediğini doğrulayan tarihli turlar (14'ten

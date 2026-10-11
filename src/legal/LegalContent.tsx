@@ -80,6 +80,11 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
               Arkadaşlık bağlantıları (kiminle arkadaş olduğunuz, gönderdiğiniz/aldığınız
               arkadaşlık istekleri, davet linkinizin kullanım verisi)
             </li>
+            <li>
+              Rastgele Oyuncu ilanı açarsanız takma adınız ve profil fotoğrafınız, ilan yayındayken
+              giriş yapmış TÜM üyelere görünür (yalnızca arkadaşlarınıza değil); ilan dolunca ya da
+              7 gün sonunda kalkar
+            </li>
             <li>Canlı oyunlarda gönderdiğiniz oyun içi sohbet mesajları</li>
             <li>Sohbet Kuralları'nı kabul ettiğiniz tarih ve kabul ettiğiniz kural sürümü</li>
             <li>
@@ -301,7 +306,9 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
             Sarıyer, İstanbul'dur. Hizmet, Türkçe kelimelerle oynanan çevrimiçi bir kelime
             oyunudur ve oyun tahtası, Yapay Zeka'ya karşı ya da arkadaşlarınla gerçek zamanlı
             oynanan Canlı oyun, oyun içi mesajlaşma, lider tablosu (k-lig), arkadaşlık ve
-            kullanıcı hesabı özelliklerini kapsar. Hizmet ücretsizdir ve herhangi bir bildirimde bulunmaksızın değiştirilebilir
+            kullanıcı hesabı özelliklerini kapsar. Rastgele Oyuncu ilanı açtığınızda takma adınız ve
+            profil fotoğrafınız giriş yapmış tüm üyelere görünür; tanımadığınız kişilerle de 3.
+            bölümdeki kurallar geçerlidir. Hizmet ücretsizdir ve herhangi bir bildirimde bulunmaksızın değiştirilebilir
             ya da sonlandırılabilir.
           </P>
         </Section>
@@ -353,8 +360,9 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
             kaynaklanan zararlardan sorumlu değildir. Hizmet "olduğu gibi" sunulmaktadır.
           </P>
           <P>
-            Oyun içi mesajlaşma yalnızca birbirini arkadaş olarak kabul etmiş kullanıcılar arasında
-            açıktır. Mesajlar bir kişi tarafından önceden okunmaz; 3. bölümde sayılan
+            Oyun içi mesajlaşma, aynı Canlı oyunda oynayan kullanıcılar arasında açıktır; oyuncuların
+            birbiriyle arkadaş olması gerekmez (ör. Rastgele Oyuncu ilanıyla başlayan oyunlar).
+            Dilediğiniz kişiyi sessize alabilir ya da şikayet edebilirsiniz. Mesajlar bir kişi tarafından önceden okunmaz; 3. bölümde sayılan
             uygunsuz ifadeler otomatik bir süzgeçle yıldızla (*) gizlenir ve süzgece
             takılan takma isimler kabul edilmez. Hiçbir süzgeç kusursuz değildir.{' '}
             <strong>
