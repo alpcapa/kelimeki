@@ -33,6 +33,12 @@ import '../../util/error_message.dart';
 
 import '../../data/funnel_api.dart';
 
+/// Supabase Auth "Minimum password length" (Dashboard; baştan beri 8 —
+/// `docs/decisions/supabase-ops.md` → "Auth ayarları"). Web `AuthModal.tsx`
+/// ile aynı sayı ve metin.
+const int kMinPasswordLength = 8;
+const String kPasswordTooShort = 'Şifre en az 8 karakter olmalı.';
+
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -268,6 +274,11 @@ class _AuthModalState extends State<AuthModal> {
         if (email.isEmpty || password.isEmpty) {
           throw const _FormError('E-posta ve şifre zorunludur.');
         }
+        // Supabase'in alt sınırı baştan beri 8 (kullanıcı, 2 Ekim 2026):
+        // 8'den kısa şifreli hesap YOK, girişte de sunucuya gitmeden söyle.
+        if (password.length < kMinPasswordLength) {
+          throw const _FormError(kPasswordTooShort);
+        }
         await widget.auth.signIn(email, password);
         if (mounted) Navigator.of(context).pop();
         return;
@@ -288,12 +299,6 @@ class _AuthModalState extends State<AuthModal> {
         return;
       }
       // ── Kayıt (web submit doğrulama sırası) ──────────────────────────
-      if (_firstName.text.trim().isEmpty) {
-        throw const _FormError('Ad zorunludur.');
-      }
-      if (_lastName.text.trim().isEmpty) {
-        throw const _FormError('Soyad zorunludur.');
-      }
       if (_nickname.text.trim().isEmpty) {
         throw const _FormError('Takma isim zorunludur.');
       }
@@ -311,6 +316,9 @@ class _AuthModalState extends State<AuthModal> {
         throw const _FormError('E-posta zorunludur.');
       }
       if (_password.text.isEmpty) throw const _FormError('Şifre zorunludur.');
+      if (_password.text.length < kMinPasswordLength) {
+        throw const _FormError(kPasswordTooShort);
+      }
       if (!_termsAccepted) {
         throw const _FormError(
             "Kullanım Koşulları ve Gizlilik Politikası'nı kabul etmelisiniz.");
@@ -379,24 +387,12 @@ class _AuthModalState extends State<AuthModal> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Sıra (2 Ekim 2026, web `AuthModal.tsx` ile AYNI): ZORUNLULAR
+            // üstte (takma isim · e-posta · şifre), İSTEĞE BAĞLILAR şifrenin
+            // altında kendi ayracıyla. Ad/soyad aynı gün zorunluluktan çıktı;
+            // sunucu boşu zaten kabul ediyordu (`handle_new_user`
+            // `coalesce(..., '')`).
             if (signup) ...[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _labeled('AD',
-                        required: true,
-                        child: _field(_firstName, hint: 'Adın')),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _labeled('SOYAD',
-                        required: true,
-                        child: _field(_lastName, hint: 'Soyadın')),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
               _labeled('TAKMA İSİM',
                   required: true,
                   child: _field(_nickname,
@@ -420,40 +416,6 @@ class _AuthModalState extends State<AuthModal> {
                     hint: signup ? 'Doğrulama linki gönderilir' : 'E-posta',
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email])),
-            if (signup) ...[
-              const SizedBox(height: 12),
-              _labeled('CİNSİYET',
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _gender,
-                    onChanged:
-                        _busy ? null : (v) => setState(() => _gender = v ?? ''),
-                    decoration: kInputDecoration(),
-                    // fontFamily şart: Dropdown'un `style`'ı tema fontunu
-                    // MİRAS ALMAZ (ButtonStyle.textStyle dersiyle aynı) —
-                    // verilmezse cihazda Roboto'ya, testte Ahem bloğuna düşer.
-                    style: kInputTextStyle,
-                    items: [
-                      const DropdownMenuItem(
-                          value: '', child: Text('Belirtilmedi')),
-                      for (final (value, label) in genderOptions)
-                        DropdownMenuItem(value: value, child: Text(label)),
-                    ],
-                  )),
-              const SizedBox(height: 12),
-              _labeled('DOĞUM TARİHİ (GG/AA/YYYY)',
-                  child: _field(_birthDate,
-                      hint: 'GG/AA/YYYY',
-                      keyboardType: TextInputType.number,
-                      maxLength: 10, onChanged: (v) {
-                    final f = formatTrDateInput(v);
-                    if (f != v) {
-                      _birthDate.value = TextEditingValue(
-                        text: f,
-                        selection: TextSelection.collapsed(offset: f.length),
-                      );
-                    }
-                  })),
-            ],
             if (!forgot) ...[
               const SizedBox(height: 12),
               _labeled('ŞİFRE',
@@ -481,6 +443,14 @@ class _AuthModalState extends State<AuthModal> {
                         onPressed: () =>
                             setState(() => _showPassword = !_showPassword),
                       ))),
+              // 8 = Supabase Auth "Minimum password length" (2 Ekim 2026);
+              // web `AuthModal.tsx` ile aynı not, yalnızca kayıtta.
+              if (signup) ...[
+                const SizedBox(height: 4),
+                const Text('En az $kMinPasswordLength karakter olmalı.',
+                    style: TextStyle(
+                        fontFamily: 'SpaceMono', fontSize: 10, color: _muted)),
+              ],
             ] else ...[
               const SizedBox(height: 12),
               const Text(
@@ -490,6 +460,79 @@ class _AuthModalState extends State<AuthModal> {
               ),
             ],
             if (signup) ...[
+              const SizedBox(height: 16),
+              const _OptionalDivider(),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _labeled('AD',
+                        child: _field(_firstName, hint: 'Adın')),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _labeled('SOYAD',
+                        child: _field(_lastName, hint: 'Soyadın')),
+                  ),
+                ],
+              ),
+              // Web ile AYNI metin. `search_users_for_friend` takma ismin
+              // yanında adı, soyadı ve "ad soyad"ı da tarıyor (soyad 2 Ekim
+              // 2026, sunucu migration'ı — istemci değişikliği gerektirmedi).
+              const SizedBox(height: 4),
+              const Text('Aramalarda bulunmayı kolaylaştırır.',
+                  style: TextStyle(
+                      fontFamily: 'SpaceMono', fontSize: 10, color: _muted)),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _labeled('CİNSİYET',
+                        child: DropdownButtonFormField<String>(
+                          initialValue: _gender,
+                          // Yarım genişlikte: değer kutuya sığsın diye
+                          // `isExpanded` (yoksa menü öğesinin doğal
+                          // genişliği taşar).
+                          isExpanded: true,
+                          onChanged: _busy
+                              ? null
+                              : (v) => setState(() => _gender = v ?? ''),
+                          decoration: kInputDecoration(),
+                          // fontFamily şart: Dropdown'un `style`'ı tema
+                          // fontunu MİRAS ALMAZ (ButtonStyle.textStyle
+                          // dersiyle aynı) — verilmezse cihazda Roboto'ya,
+                          // testte Ahem bloğuna düşer.
+                          style: kInputTextStyle,
+                          items: [
+                            const DropdownMenuItem(
+                                value: '', child: Text('Belirtilmedi')),
+                            for (final (value, label) in genderOptions)
+                              DropdownMenuItem(
+                                  value: value, child: Text(label)),
+                          ],
+                        )),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _labeled('DOĞUM TARİHİ',
+                        child: _field(_birthDate,
+                            hint: 'GG/AA/YYYY',
+                            keyboardType: TextInputType.number,
+                            maxLength: 10, onChanged: (v) {
+                          final f = formatTrDateInput(v);
+                          if (f != v) {
+                            _birthDate.value = TextEditingValue(
+                              text: f,
+                              selection:
+                                  TextSelection.collapsed(offset: f.length),
+                            );
+                          }
+                        })),
+                  ),
+                ],
+              ),
               const SizedBox(height: 12),
               // Koşullar satırı: kutu işareti checkbox'tan, linkler kendi
               // modallerini açar (dokunuş linke gittiğinde kutu DEĞİŞMEZ —
@@ -514,6 +557,7 @@ class _AuthModalState extends State<AuthModal> {
                             decoration: TextDecoration.underline),
                         recognizer: _privacyRec),
                     const TextSpan(text: "'nı okudum ve kabul ediyorum."),
+                    const TextSpan(text: ' *', style: TextStyle(color: _red)),
                   ]),
                   style:
                       const TextStyle(fontSize: 12, height: 1.4, color: _muted),
@@ -591,11 +635,12 @@ class _AuthModalState extends State<AuthModal> {
                 child: Text.rich(
                   TextSpan(children: [
                     const TextSpan(text: 'Hesabın yok mu? '),
-                    TextSpan(
-                        text: 'Kayıt ol',
-                        style: const TextStyle(
-                            color: _accent,
-                            decoration: TextDecoration.underline)),
+                    // Büyük harf + kalın, alt çizgisiz (2 Ekim 2026, web `AuthModal.tsx` ile
+                    // aynı karar).
+                    const TextSpan(
+                        text: 'KAYIT OL',
+                        style: TextStyle(
+                            color: _accent, fontWeight: FontWeight.bold)),
                   ]),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
@@ -760,4 +805,23 @@ class _StatusLine extends StatelessWidget {
       ]),
     );
   }
+}
+
+/// "İSTEĞE BAĞLI" ayracı — web `AuthModal.tsx`teki çizgi + etiket + çizgi.
+class _OptionalDivider extends StatelessWidget {
+  const _OptionalDivider();
+  @override
+  Widget build(BuildContext context) => const Row(children: [
+        Expanded(child: Divider(height: 1, thickness: 1, color: kBorder)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          child: Text('İSTEĞE BAĞLI',
+              style: TextStyle(
+                  fontFamily: 'SpaceMono',
+                  fontSize: 9,
+                  letterSpacing: 1.5,
+                  color: _muted)),
+        ),
+        Expanded(child: Divider(height: 1, thickness: 1, color: kBorder)),
+      ]);
 }

@@ -74,7 +74,7 @@ void main() {
         (tester) async {
       await pump(tester, AuthModal(auth: AuthService.fake()));
       expect(sink.rows, isEmpty); // giriş formu kayıt sayılmaz
-      await tester.tap(find.textContaining('Kayıt ol', findRichText: true));
+      await tester.tap(find.textContaining('KAYIT OL', findRichText: true));
       await tester.pump();
       expect(sink.rows.single['event'], 'started');
       expect(sink.rows.single['channel'], 'direct');

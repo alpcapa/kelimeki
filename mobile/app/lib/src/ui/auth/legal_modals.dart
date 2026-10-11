@@ -298,7 +298,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 25 Eylül 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 12 Ekim 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -312,12 +312,15 @@ class PrivacyModal extends StatelessWidget {
         const _Section('2. Toplanan Veriler', [
           _P('Hesap oluştururken şu bilgileri topluyoruz:'),
           _Bullets([
-            'Ad ve soyad',
+            'Ad ve soyad (isteğe bağlı)',
             'E-posta adresi',
             'Takma isim (zorunlu — oyunlarda ve k-lig\'de herkese görünür)',
             'Cinsiyet (isteğe bağlı)',
             'Doğum tarihi (isteğe bağlı)',
             'Profil fotoğrafı (isteğe bağlı)',
+            "Passkey kullanırsanız cihazınızın açık anahtarı ve passkey'in "
+                'eklenme/son kullanım tarihi (isteğe bağlı; yüz/parmak izi '
+                'verisi cihazınızdan çıkmaz)',
             'Pazarlama iletişimi onayı ve onay tarihi (isteğe bağlı)',
             'Hoş geldiniz mesajı, arkadaşlık isteği, oyun daveti ve süre '
                 'uyarısı gibi işlemsel e-posta bildirimlerini alma tercihi',

@@ -61,8 +61,10 @@ class _ResetPasswordModalState extends State<ResetPasswordModal> {
   Future<void> _submit() async {
     setState(() => _error = null);
     // Web submit doğrulama sırası/metinleri birebir.
-    if (_password.text.length < 6) {
-      setState(() => _error = 'Yeni şifre en az 6 karakter olmalı.');
+    // 8 = Supabase Auth "Minimum password length" (2 Ekim 2026'da okundu;
+    // `docs/decisions/supabase-ops.md` → "Auth ayarları").
+    if (_password.text.length < 8) {
+      setState(() => _error = 'Yeni şifre en az 8 karakter olmalı.');
       return;
     }
     if (_password.text != _confirm.text) {
@@ -125,6 +127,10 @@ class _ResetPasswordModalState extends State<ResetPasswordModal> {
                   fontFamily: 'SpaceMono', fontSize: 12, color: _muted)),
           const SizedBox(height: 12),
           _field(_password, hint: 'Yeni şifre', autofocus: true),
+          const SizedBox(height: 4),
+          const Text('En az 8 karakter olmalı.',
+              style: TextStyle(
+                  fontFamily: 'SpaceMono', fontSize: 10, color: _muted)),
           const SizedBox(height: 12),
           _field(_confirm, hint: 'Yeni şifre (tekrar)',
               onSubmitted: (_) => _submit()),
