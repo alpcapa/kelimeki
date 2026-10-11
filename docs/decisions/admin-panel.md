@@ -252,6 +252,7 @@ notunda da yazılı.
     - **Doğrulama:** canlıda gerçek admin JWT'siyle (`set local role authenticated`) koşuldu — yıllık/yerel kova **18,1 / 841,9 dakika** döndü, yani migration'dan ÖNCE bağımsız olarak yapılan doğrudan ölçümle BİREBİR aynı; admin olmayan çağrı `Yetkisiz erişim.` ile reddedildi; grant'ler diğer admin RPC'leriyle aynı (`authenticated`+`service_role`, `anon` YOK) ve her ad tek bir overload taşıyor.
 
 #### "YZ Dengesi" paneli
+  - **Sabit 3 × 3 ızgara (7 Ekim 2026, kullanıcı isteği: *"İlk satır 2 kişilik kolay, normal, zor; ikinci satır 4 kişilik kolay, normal, zor. 3. satır ikincilikler olsun"*):** sütun = YZ seviyesi (Kolay · Normal · Zor), satırlar 2 kişilik birincilik · 4 kişilik birincilik · 4 kişilik İKİNCİLİK (`aiBalanceRows`). Üç seviye HER ZAMAN çizilir; o seviyede oyun yoksa kutu `—` (eskiden kutu sayısı veriye bağlıydı, Kolay/Zor gelince ızgara kayıyordu). 2 kişilik ikincilik bilerek yok (= kayıp oranı). RPC değişmedi.
 
   - **"YZ Dengesi" paneli (16 Ağustos 2026, `admin_ai_balance` migration'ı)** — aynı denetimin üçüncü bulgusu: veri `games`te BAŞTAN BERİ vardı ve hiçbir yerde gösterilmiyordu, oysa bu, YZ'ye (`src/utils/ai.ts` ve onun Dart kopyası) dokunan her değişikliğin regresyonunu yakalayan tek sayı. `admin_ai_balance()` yerel (`online_game_id is null`) oyunlarda İNSANIN sonuç dağılımını oyuncu sayısı bazında döner (`games`/`wins`/`ties`/`losses`/`second_places`); Büyüme > Oyun'un tepesindeki angajman kutularının altında kutu olarak gösteriliyor.
     - **Teslim satırları HARİÇ** (`not surrendered`) — onlar bir beceri sonucu değil, 7 günlük terk-edilme cezasının kaydı (bkz. "Terk edilen oyunun otomatik temizliği"); dahil edilselerdi YZ olduğundan güçlü görünürdü.
@@ -676,6 +677,42 @@ macOS'un dondurulmuş sürüm dizesi. Masaüstü User-Agent'ı veren cihazlar
 — `getDeviceType`ı değiştirmek geçmiş verinin anlamını da kaydırırdı ve
 kimse bu ayrımı bugüne kadar sormadı; tablo hatayı gizlemek yerine
 gösteriyor (etiket platformu HER ZAMAN yazıyor, bu yüzden).
+
+### Cihaz ağacı: Marka tablosu "Cihaz"la birleşti, model altına SÜRÜM girdi (7 Ekim 2026)
+
+Kullanıcı isteği (sözleri birebir): *"Admin büyümedeki cihaz ve cihaz markası
+tabloları birleşemez mi? Android → Marka → Model gibi"*, ardından *"Şu anda
+zaten Samsung Android 13'te kaç kişi var. Modelin alt kırılımı olabilir"*.
+**"Cihaz Markası" ayrı tablo olmaktan çıktı**; `DeviceOsTable` +
+`DeviceBrandTable` tek `DeviceTreeTable` oldu (ağacı kuran saf fonksiyon
+`deviceTree`, `src/utils/deviceLabels.ts`; `osBreakdown`/`brandBreakdown` onun
+yapı taşı olarak duruyor).
+
+```
+Platform ▸ Marka ▸ Model ▸ İşletim sistemi sürümü
+         ▸ Sürümler ▸ (platformun TÜM sürümleri, markadan bağımsız)
+Masaüstü ▸ yalnızca sürümler (hiçbir tarayıcı model vermiyor)
+```
+
+- **Marka × sürüm ÇAPRAZI için yeni RPC:** `admin_device_model_os_breakdown`
+  (`20261007053639`; platform × model × sürüm başına `count(distinct anon_id)`,
+  aynı bot süzgeci, `proacl` kardeş fonksiyonlarla AYNI: `anon` yok). İki eski
+  RPC ayrı sorular soruyor, çaprazı yalnızca tek satırda (`device_visits`)
+  hesaplanabilir. Canlıda ilk ölçüm (30 gün): **Samsung + Android 13 = 70**.
+- **"Sürümler" dalı bilerek duruyor:** "kaç kişi hâlâ eski Android'de?" sorusu
+  markaya bakmadan buradan okunur; ağaçtan çıkarılsaydı o soru cevapsız kalırdı.
+- ⚠ **Üst satır alt toplamın toplamı DEĞİL** (üç RPC, her biri kendi
+  benzersizini sayıyor): platform → `admin_device_breakdown`, marka/model →
+  `admin_device_model_breakdown`, model altındaki sürümler → yeni RPC. Aynı
+  ziyaretçi pencerede OS güncellerse iki sürüm satırında görünür (canlıda 30
+  gün: çapraz toplam **1655**, gerçek benzersiz **1648**). Yüzdeler GENEL
+  toplamın payı (eski iki tablonun kuralı).
+- **CSV ağacı DÜZ verir**, her satırda `Seviye` sütunu (platform · marka ·
+  model · model-sürüm · platform-sürüm).
+- Kapı: `npm run verify-device-labels` (12 yeni vaka: Samsung → model → Android
+  13 toplamı, platformlar arası model karışmaması, masaüstünde marka yok…).
+  Ekran görüntüsü doğrulaması: bileşen sahte veriyle gerçek tarayıcıda çizilip
+  tıklandı (admin hesabı olmadığından canlı panel görülmedi).
 
 ### Aşama 2 — gerçek cihaz modeli (YAPILMADI)
 

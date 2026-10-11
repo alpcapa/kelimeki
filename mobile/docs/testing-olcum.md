@@ -142,7 +142,7 @@ Kontroller admin panelinden (Büyüme > Kullanıcı) ya da Supabase'den okunur.
       yeni satır: `device_type` = `ios`/`android`, `os_version` dolu (`18.1`
       / `14` biçimi), `device_model` iOS'ta `iPhone`/`iPad` (makine kodu
       DEĞİL), Android'de model kodu (`SM-…`). Aynı gün ikinci açılış yazmaz.
-- [ ] **Panel:** "Cihaz" ve "Cihaz Markası" kartlarında uygulama satırları
+- [ ] **Panel:** "Cihaz" ağacında (Platform → Marka → Model → Sürüm; 7 Ekim 2026'da "Cihaz Markası" ile birleşti) uygulama satırları
       görünür (iOS → Apple, Android → marka). Görününce kartlardaki "Web"
       etiketini kaldır (ROADMAP #40), Huni v2'de iOS/Android satırları
       görününce onunkini de.

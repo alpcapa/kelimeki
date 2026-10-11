@@ -290,3 +290,33 @@ kanala `utm_source` üzerinden bağlanır (etiketsiz → `direkt`), yalnızca we
 satırlarında dolu. Yüzdesi Land'e göre; reklam ziyaretçisinde oturum ≈ kişi.
 Kart metni (`?`) bunu söylüyor. Dönüş tipi değişti → DROP + CREATE,
 `proacl` öncesiyle aynı (authenticated + service_role).
+
+## Okuma: yeni üyeler oyunu bitirmiyor (10 Ekim 2026)
+
+Kullanıcı: *"Çok yeni üye var ama neredeyse hiçbiri bir oyun bitirmedi."*
+Canlı `funnel_events` / `game_starts` / `game_finishes` / `web_sessions`
+okundu (yalnızca toplamlar, kimlik yok). **Örneklem küçük; teşhis değil,
+başlangıç noktası.**
+
+- **5-10 Eki yeni cihaz (`land`):** Android 48 → 35 oyun başlattı (%73) → 8
+  bitirdi (%17); iOS 32 → 22 (%69) → 5 (%16); web 560 → 8 başlattı. Web
+  beklenen sonuç: Meta trafiği web'de oynamıyor, mağazaya gidiyor.
+- **Takip süresi tanınınca (ilk başlatması 5-8 Eki, bitiş sonradan da
+  sayılır):** Android 29 cihazın 7'si (%24), iOS 25'in 6'sı (%24) bitirmiş.
+  Yani ilk gün oranı alt sınır; gerçek tavan ~%24.
+- **Başlatıp bırakıyorlar, çok başlatıyorlar:** 2 kişilik oyunda Android'de
+  41 cihaz 158 oyun başlattı (cihaz başı ~3,9), bitiren yalnız 11 cihaz.
+  iOS 27 cihaz / 74 oyun, 7 bitiren. Kayıp başlatma ile bitirme ARASINDA.
+- **Biten oyunlar kısa:** Android medyan 8,5 dk (p90 51 dk); iOS medyan 14,7
+  dk (p90 ~19 sa — yarım kalıp sonra bitenler). Bitenlerin bir kısmı teslim:
+  Android 6/96, iOS 5/56, web 11/37. 4 kişilik bitirmeler tek tük cihazdan
+  (Android 3, iOS 0 cihaz) — yorumlanmaz.
+- **Nedeni bu veriden ÇIKMAZ.** Adaylar (hiçbiri kanıtlanmadı): oyun uzun,
+  ilk gerçek oyun zor, iOS'ta yarım oyun hatırlatması yok/geç (4. deneme 10
+  Eki 19:00'da bekleniyor). Hamle sayısı bırakma noktası misafir cihaz için
+  tutulmuyor (`local_game_saves` yalnız üye) → bir sonraki ölçüm adayı:
+  başlatan-bitirmeyen için "kaçıncı hamlede bıraktı".
+- **Meta mağaza geçişi (9 Eki 13:00 sonrası, `web_sessions`, `store` adımı
+  görülen / oturum):** h3 8/54 (%15), h2 4/36 (%11), h1 5/36 (%14); eşik
+  (kol başına 40 mağaza oturumu) dolmadı, karar YOK. h3 ort. oturum 31 sn
+  (h2 302, h1 192) — erken, yalnızca not.

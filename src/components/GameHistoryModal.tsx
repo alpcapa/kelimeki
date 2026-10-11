@@ -1,4 +1,5 @@
 // Kelimeki — oturum açan kullanıcının geçmiş tüm oyunlarının listesi (lazy load)
+import { trLower } from '../utils/turkish';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { LoadingNote } from './LoadingNote';
 import { Modal } from './Modal';
@@ -111,8 +112,29 @@ function fallbackPlayers(
  * sahibinin) satırının indeksini bulur. `rank` alanı (1 = birinci) bu
  * sıralamadaki pozisyonu doğrudan verir; eski kayıtlarda rank bilinmiyorsa
  * puanı entry.player_score'a eşit olan ve YZ olmayan ilk satıra düşülür.
+ *
+ * ⚠ BERABERLİKTE `rank - 1` YANLIŞ SATIRI VERİR (11 Ekim 2026, kullanıcı
+ * kendi geçmişinde gördü): iki oyuncu 218-218 bitince İKİSİNİN de rank'ı 1
+ * ve `players` sunucuda koltuk sırasıyla (eşitlikte `gs asc`) yazılıyor;
+ * `rank - 1` herkes için 0. satırı, yani 1. koltuktakini "ben" saydırıyordu.
+ * 2. koltuktaki oyuncu geçmişinde rakibinin adı yerine KENDİ adını iki kez
+ * görüyor, hamle geçmişi de rakibin puanını "benim" diye gösteriyordu.
+ * Aynı puanda birden çok insan satırı varsa güncel takma adla eşleşen
+ * satır seçilir; eşleşme yoksa (takma ad sonradan değişmiş) eski davranış.
  */
-function findMeIndex(entry: GameHistoryEntry, players: GamePlayerSnapshot[]): number {
+function findMeIndex(
+  entry: GameHistoryEntry,
+  players: GamePlayerSnapshot[],
+  myName?: string | null,
+): number {
+  const tied = players
+    .map((p, i) => (!p.is_ai && p.score === entry.player_score ? i : -1))
+    .filter((i) => i >= 0);
+  if (tied.length > 1 && myName) {
+    const wanted = trLower(myName);
+    const byName = tied.filter((i) => trLower(players[i].name) === wanted);
+    if (byName.length === 1) return byName[0];
+  }
   if (entry.rank !== null && entry.rank >= 1 && entry.rank <= players.length) {
     return entry.rank - 1;
   }
@@ -671,7 +693,7 @@ export function GameHistoryModal({
             const fallback = hasSnapshot ? null : fallbackPlayers(entry, isMyRow, targetName ?? null);
             const players = hasSnapshot ? entry.players! : fallback!.known;
             const unknownCount = fallback?.unknownCount ?? 0;
-            const meIndex = isMyRow ? (hasSnapshot ? findMeIndex(entry, players) : fallback!.meIndex) : -1;
+            const meIndex = isMyRow ? (hasSnapshot ? findMeIndex(entry, players, myCurrentName) : fallback!.meIndex) : -1;
             const ranks = computeRanks(players);
             const expanded = expandedId === entry.id;
             const isOnline = !!entry.online_game_id;
@@ -1016,7 +1038,7 @@ export function GameHistoryModal({
         // `moveHistory` ise KOLTUK numarası taşıyor → sıradan koltuğa çevir.
         const snap = entry?.players ?? [];
         const mine = !!entry && !!user && entry.user_id === user.id && snap.length > 0;
-        const rankIdx = mine ? findMeIndex(entry!, snap) : -1;
+        const rankIdx = mine ? findMeIndex(entry!, snap, myCurrentName) : -1;
         const myIndex = rankIdx >= 0 ? seatIndexFor(snap[rankIdx], rankIdx, true) : -1;
         return <MoveHistoryModal state={state} myIndex={myIndex} onClose={close} />;
       })()}
