@@ -1566,7 +1566,14 @@ void tanitimKapisiTestleri() {
       await tester.tap(find.text('OYUNU BAŞLAT'));
       await gorunmesiniBekle(tester, find.byType(GameScreen));
       expect(find.byType(TutorialGame), findsNothing);
-      expect(storage.flags.seenTutorial, isFalse);
+      // 2 Ekim 2026 — kural DEĞİŞTİ: gerçek oyun başlayınca cihaz bayrağı
+      // konur. Eskiden `isFalse`tı ve tam bu açığı kilitliyordu: aynı cihaz
+      // çıkış yapınca misafir olarak tanıtıma düşüyordu (1.1.2'de ölçüldü,
+      // `docs/decisions/onboarding.md`). Yazım `unawaited` — köprüden bekle.
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)));
+      expect(storage.flags.seenTutorial, isTrue,
+          reason: 'bu cihazda oynandı — çıkış yapınca tanıtım AÇILMAMALI');
       // Negatif eş: oynamış (ilk oyun değil) GİRİŞLİ kullanıcı Normal
       // (alan yazılmaz) — misafirdeki "her zaman Kolay" ona sızmamalı.
       expect(tester.widget<GameScreen>(find.byType(GameScreen))

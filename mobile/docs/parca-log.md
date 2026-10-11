@@ -87,6 +87,21 @@
   `block_parity_test` + tam takım yeşil. **SINIR:** iki gerçek hesapla
   davet/istek/engel akışı otomatik KANITLANAMAZ — cihaz listesi
   `mobile/docs/testing-arkadaslar-canli.md` → "Engelle / Engellediklerim".
+## Parça 229 — Tanıtım kapısı: cihazda gerçek oyun başlayınca "görüldü" (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
+
+- **Bildirim (1.1.2, Android):** güncellemeden sonra çıkış yapmış hâlde YZ
+  oyunu başlatınca tanıtım açıldı. Ölçüm: aynı `anon_id` 26-30 Eylül'de ÜYE
+  olarak 3 oyun oynamıştı. Kapı üyeyi hesap yaşıyla durduruyor ama cihaza
+  bayrak koymuyordu; misafir yalnızca yarım kayda bakılarak "yeni" sayıldı.
+- **Ne yapıldı:** `setup_screen.dart` `_startNewGame` (gerçek oyun
+  dispatch'inden sonra) ve `live/open_online_game.dart` (Canlı tahtanın tek
+  kapısı) `markTutorialSeen()` çağırıyor — web #759'un ikizi (`App.tsx`
+  `startLocalGame` + `onlineGame` effect'i). Kapının saf fonksiyonu
+  (`shouldShowTutorial`) DEĞİŞMEDİ. (Parça 228 = #757, aynı trende.)
+- **Test:** `setup_screen_test` → "girişli — hesap tanıtımdan ESKİ" artık
+  `seenTutorial == true` bekliyor (eskiden `isFalse`tı ve AÇIĞI kilitliyordu).
+  Negatif eş koşuldu: çağrı kaldırılınca test düşüyor. Tam takım **1.037
+  yeşil**, `flutter analyze` temiz. Cihaz: `mobile/TESTING.md` §1.9.
 
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
