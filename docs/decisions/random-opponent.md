@@ -178,6 +178,10 @@ arkadaş değilse rövanş gizlensin (öneri) ya da yeniden rastgele ilana döns
 5. Prototip: https://claude.ai/artifact/8CfANHX7L8N9wJmMHVz1uM (özel bağlantı,
    sahte veri).
 
+### Kapı kararı yeniden teyit edildi + ilk elle test (11 Ekim 2026, kullanıcı)
+
+Önizleme (`ef281fb`, canlı Supabase) üzerinde **T1 = Ironman, T5 (hiç oyunu yok)** ile test edildi: ilan AÇMA reddi ve başkasının ilanını KABUL reddi çalıştı (Türkçe sunucu mesajı, ham hata yok); oyun bitince geçiş çalıştı. Kapının gerekçesi sorgulandı (yeni üyelerin yalnızca ~%24'ü oyun bitiriyor — `funnel-v2.md` 10 Ekim okuması; yani çoğu yeni üye Rastgele'yi kullanamayacak) ve **karar: "bitmiş 1 oyun" kapısı OLDUĞU GİBİ KALIR** (kullanıcı: *"1 kalsın"*). Yumuşatma (örn. "oyun BAŞLATMIŞ") ve kurulum ekranında önceden ipucu satırı (web+port, sunucu aynı) ertelendi: önce spam gerçekten sorun olur ya da yeni üye dönüşümü düşük kalırsa gözden geçirilir; ipucu satırı 19 Ekim treni adayı. ⚠ Test hesabı kuralı: gerçek üyelerin hesabı (ör. Asnmzr) teste KATILMAZ; kapı testi için yeni açılmış, oyunsuz bir hesap kullanılır.
+
 ## 10. Takvim (kullanıcı isteği, 3 Ekim 2026)
 
 Kullanıcı: *"Rastgeleyi 12 Ekim trenine alabiliriz mümkünse."* (12 Ekim = ilk
