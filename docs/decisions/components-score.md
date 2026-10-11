@@ -110,3 +110,23 @@
   **`StatsGateway`'e metot eklemek `implements` eden BEŞ test sahtesini birden bozar** (yukarıdaki `profileAgeGender` notunun aynısı) — hepsi aynı PR'da tamamlandı.
   **⚠ Portta çubuk bir yolda SESSİZCE kayboldu, çünkü "ben kimim" PARAMETREYLE taşınıyor:** `PlayerScoreCardModal`ın beş çağrı yerinin dördü `auth` geçiyordu, "Beğenenler" listesinden açılan kart (`game_history_modal.dart`) geçmiyordu — o yoldan açılan kartta çubuk çizilmiyor ve hiçbir derleyici/test bunu söylemiyordu (`showGameHistory` artık `auth`u taşıyor). **Web'de bu tuzak yok:** orada `useAuth()` bir BAĞLAM, prop değil — aynı bileşen nereden açılırsa açılsın "ben kimim"i biliyor. Porta bir ekran daha eklenirken bu farkı hatırla; altıncı çağrı yerinde parametre taşımak yerine `OnlineScope` gibi bir kapsam yazmak daha ucuz olacak.
   **Regresyon:** web tarafında saf kural `npm run verify-head-to-head` ile (Playwright duman testi Supabase oturumu gerektirdiğinden kartı çizemez); portta `test/score_card_test.dart`'a üç test — başkasının kartında oyun sayısı + TAM İKİ dilim (0 beraberlikte orta dilim çizilmez) ve isim yazılmaz · kendi kartında hiç çizilmez · games=0'da hiç çizilmez. Negatif eş koşuldu.
+
+## Oyun geçmişinde "ben" satırı — beraberlikte `rank - 1` yanlıştı (11 Ekim 2026)
+
+Kullanıcı (Ironman) kendi geçmişinde 10 Ekim'deki 218-218 Canlı oyununa
+baktı: iki satırda da kendi adı yazıyordu ("Ironman / Ironman"), "Oyun
+Geçmişi"nde ise hamleler ve toplam rakibinin (Asnmzr) puanına bağlıydı.
+Kayıt sunucuda DOĞRUYDU (`games.players` = Asnmzr 218, Ironman 218); hata
+istemcide: `findMeIndex` "ben"i `entry.rank - 1` ile buluyordu. Beraberlikte
+iki oyuncunun da rank'ı 1 ve `_finish_online_game_records` satırları
+eşitlikte koltuk sırasıyla (`gs asc`) yazar → `rank - 1` herkes için 0. satır.
+Bu yüzden 1. koltuktaki oyuncu hep kendini doğru, 2. koltuktaki hep yanlış
+görüyordu; "Tekrar Oyna" da (`meIndex` dışındaki insanları davet eder)
+rakip yerine KENDİNİ listeye alırdı.
+
+**Düzeltme:** aynı puanda birden çok insan satırı varsa güncel takma adla
+(`trLower`) eşleşen satır seçilir; tek eşleşme yoksa eski davranış. ⚠ Takma ad
+oyundan sonra değiştiyse beraberlikte eski davranışa düşer (kayıtta koltuk
+indeksi yok — kalıcı çözüm `games`e `seat` yazmak olurdu, şimdilik gerekmedi).
+Port ikizi `game_history_modal.dart` → `_findMeIndex`, testi
+`game_history_find_me_test.dart`.
