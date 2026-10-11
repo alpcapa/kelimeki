@@ -205,6 +205,11 @@
   (390×844 · 360×740 · 360×640 @1,3) + "satır yüklenince kısayol kalkar".
   Duyarlılık kanıtlandı: düzeltme geri alınınca 360×640 @1,3'te iki sekme de
   DÜŞÜYOR.
+## Parça 233 — Oyun geçmişi: beraberlikte "ben" satırı yanlıştı (11 Ekim 2026) — web ikizi #828
+
+Kullanıcı (web) kendi geçmişinde 218-218 bir Canlı oyunda iki satırda da kendi adını gördü; hamle geçmişi rakibin puanına bağlıydı. Kayıt sunucuda doğruydu, hata `findMeIndex`te: "ben"i `rank - 1` ile buluyordu, beraberlikte iki oyuncunun da rank'ı 1 ve satırlar koltuk sırasıyla yazıldığından herkes için 0. satır çıkıyordu. Port AYNI hatayı taşıyordu (`_findMeIndex`) ve ek olarak "Tekrar Oyna" (`_handleRematch`) davet listesini `meIndex` dışındakilerden kurduğu için beraberlikte rakip yerine kendini alırdı.
+
+**Düzeltme:** aynı puanda birden çok insan satırı varsa güncel takma adla (`trLower`) eşleşen satır seçilir (web ile aynı); tek eşleşme yoksa eski davranış. **Test:** `game_history_find_me_test.dart` (4 senaryo: 2 kişi beraberlik iki taraf, ad değişmiş, beraberlik yok, 4 kişide ilk ikisi berabere). **Sınır:** takma ad oyundan sonra değiştiyse beraberlikte eski davranışa düşer (kayıtta koltuk indeksi yok). ⚠ Numara: 228-232 açık taslak PR'larda; kesimde çakışırsa yeniden numaralandır.
 
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
