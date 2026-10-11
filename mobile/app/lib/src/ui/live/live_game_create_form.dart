@@ -24,7 +24,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:kelimeki_core/kelimeki_core.dart' show trLower;
+import 'package:kelimeki_core/kelimeki_core.dart' show trLower, trUpper;
 import 'package:share_plus/share_plus.dart';
 
 import '../../data/analytics.dart';
@@ -1058,9 +1058,17 @@ class _LinkButton extends StatelessWidget {
   Widget build(BuildContext context) => TapTarget(
         onTap: onTap,
         minHeight: 36,
-        child: Text(text,
+        // Başlıkla (`_SectionLabel`) AYNI tipografi, mavi + kalın (2 Ekim
+        // 2026, kullanıcı isteği; web `LiveGameCreateForm.tsx` ↔
+        // `friends_modal.dart`). Web `uppercase` sınıfıyla büyütüyor, sabit
+        // metin web kaynağıyla birebir kalsın diye burada `trUpper`.
+        child: Text(trUpper(text),
             style: const TextStyle(
-                fontSize: 12, fontWeight: FontWeight.bold, color: _accent)),
+                fontFamily: 'SpaceMono',
+                fontSize: 10,
+                letterSpacing: 1.5,
+                fontWeight: FontWeight.bold,
+                color: _accent)),
       );
 }
 

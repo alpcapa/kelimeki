@@ -486,9 +486,14 @@ class _FriendsModalState extends State<FriendsModal> {
             TapTarget(
               onTap: _toggleShowAll,
               minHeight: 36,
-              child: Text(_showAll ? '← Arkadaşlar' : 'Tüm oyuncular →',
+              // Başlıkla AYNI tipografi, mavi + kalın (2 Ekim 2026,
+              // kullanıcı isteği; web FriendsModal `uppercase` sınıfı).
+              child: Text(
+                  trUpper(_showAll ? '← Arkadaşlar' : 'Tüm oyuncular →'),
                   style: const TextStyle(
-                      fontSize: 12,
+                      fontFamily: 'SpaceMono',
+                      fontSize: 10,
+                      letterSpacing: 1.5,
                       fontWeight: FontWeight.bold,
                       color: _accent)),
             ),
