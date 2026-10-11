@@ -1,5 +1,5 @@
 Submission ID,Gönderim,Yayın,Süre (dk),Kapsam,Durum,Sürüm (eşleme)
-23,2026-10-11 15:41,,,Production,⏳ In review,"1.1.3 (875) — `.aab` `mobile-latest`ten (koşu 875, `877b43e`); saatler Console görüntüsü (TSİ), ekran görüntüsünden OKUNDU. iOS 1.1.3 (875) 15:31 TSİ'de gönderilmişti → iki mağaza 10 dk arayla, AYNI paket. Yenilikler metni iOS ile aynı (kısa Play sürümü)"
+23,2026-10-11 15:41,2026-10-11 16:06,25,Production,Published,"1.1.3 (875) — `.aab` `mobile-latest`ten (koşu 875, `877b43e`); saatler Console görüntüsü (TSİ), ekran görüntüsünden OKUNDU. iOS 1.1.3 (875) 15:31 TSİ'de gönderilmişti → iki mağaza 10 dk arayla, AYNI paket. Yenilikler metni iOS ile aynı (kısa Play sürümü). 16:06 TSİ Published (Start full rollout) — Submission 23 ekran görüntüsünden OKUNDU; iOS hâlâ incelemede"
 22,2026-10-02 00:27,,,Production,Published,"1.1.2 (831) — ekran görüntüsünden (11 Eki 2026, Console TSİ); yayın saati/süre OKUNMADI (kayıt bu turda eklendi, önceki turda atlanmıştı)"
 21,2026-09-26 16:13,,,Production,Published,"1.1.1 (723) — ekran görüntüsünden; surumler.md: 16:13 gönderildi, 16:42 yayında"
 20,2026-09-25 15:34,,,Store Listing,Published,"paket DEĞİL — mağaza girişi değişikliği (ekran görüntüsünden); içeriği bu turda OKUNMADI"
