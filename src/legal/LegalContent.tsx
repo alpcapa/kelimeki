@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 19 Ekim 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 12 Ekim 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
@@ -291,7 +291,7 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki'ye kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
-          Son güncelleme: 19 Ekim 2026.
+          Son güncelleme: 12 Ekim 2026.
         </P>
 
         <Section title="1. Hizmet Sağlayıcı ve Kapsam">
