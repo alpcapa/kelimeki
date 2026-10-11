@@ -323,6 +323,24 @@ class _AccountButtonState extends State<AccountButton>
       );
 
   Widget _avatarMenu(BuildContext context) {
+    // ⚠ Odak/hover halkası KAPALI (11 Ekim 2026, iPad TestFlight: menüyü açıp
+    // kapatınca avatarın etrafında gri yuvarlak kalıyor, gitmiyor). Menü
+    // kapanınca odak düğmeye döner / iPad imleci bayat "üstünde" kalır ve
+    // `PopupMenuButton`ın `InkWell`i `focusColor`/`hoverColor` ile halka çizer.
+    // Web'de `focus:outline-none` + hiç zemin vurgusu yok. Basılı vurgusu
+    // (`highlightColor`) ve sıçrama KALIR. Bedel: Theme açılan menüye de taşınır
+    // → menü satırlarında imleç-hover tonu yok (dokunmatikte zaten yoktu).
+    final tema = Theme.of(context);
+    return Theme(
+      data: tema.copyWith(
+        focusColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+      ),
+      child: _avatarPopup(context),
+    );
+  }
+
+  Widget _avatarPopup(BuildContext context) {
     return PopupMenuButton<String>(
       // Menü HER açılışta puanı tazeliyor.
       //

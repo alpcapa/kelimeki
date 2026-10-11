@@ -521,4 +521,24 @@ void main() {
     expect(gw.cagri, greaterThan(onceki), reason: 'öne dönüş tazelemeli');
     expect(find.text('2'), findsWidgets);
   });
+
+  // 11 Ekim 2026 (1.1.3 TestFlight, iPad): menüyü açıp kapatınca avatarın
+  // etrafında gri YUVARLAK vurgu kalıyordu ("ilk açılışta yok, menüye tıklayıp
+  // kapatınca kalıyor ve gitmiyor"). `PopupMenuButton`ın `InkWell`i, menü
+  // kapanınca odak düğmeye döndüğünde ya da imleç (iPad) bayat "üstünde" kaldığında
+  // `focusColor`/`hoverColor` ile halkayı çiziyor. Web'de `focus:outline-none` ve
+  // hiç zemin vurgusu yok — port da aynı: ikisi şeffaf.
+  testWidgets('avatar düğmesi odak/hover halkası ÇİZMEZ (şeffaf)',
+      (tester) async {
+    await pumpMenu(tester, stats: StatsRepo(_FakeStatsGateway()));
+    await tester.tapAt(const Offset(10, 500));
+    await tester.pumpAndSettle();
+    final ink = find.descendant(
+        of: find.byType(PopupMenuButton<String>),
+        matching: find.byType(InkWell));
+    expect(ink, findsOneWidget);
+    final tema = Theme.of(tester.element(ink));
+    expect(tema.focusColor, Colors.transparent);
+    expect(tema.hoverColor, Colors.transparent);
+  });
 }
