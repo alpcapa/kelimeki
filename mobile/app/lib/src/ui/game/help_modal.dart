@@ -151,6 +151,7 @@ class _Section extends StatelessWidget {
                   fontFamily: 'SpaceMono',
                   fontSize: 11,
                   letterSpacing: 1.5,
+                  fontWeight: FontWeight.w700,
                   color: _accent,
                 ),
               ),
@@ -582,6 +583,7 @@ class _DetailedRules extends StatelessWidget {
               fontFamily: 'SpaceMono',
               fontSize: 11,
               letterSpacing: 1.5,
+              fontWeight: FontWeight.w700,
               color: _accent,
             ),
             children: const [

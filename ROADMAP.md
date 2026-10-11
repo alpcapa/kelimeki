@@ -248,6 +248,7 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
   "oyun başladı" bildirimi (sıra ondaysa ilk hamleyi hemen yapsın, yoksa oyun
   açık kalır). ⚠ Rozet zinciri kuralı: yeni bildirim rozete GİRMELİ Mİ ayrıca
   karar ver; web + port + push yükü (`verify-push-payload`) birlikte.
+| #789 (2 Eki) | **Bölüm başlıkları kalın** — port yarısı (web #788; kullanıcı: *"yazılar silik ve okunaksız"*) | `fontWeight: w700`: `setup_screen` · `live_games_tab` · `recent_games_section` · `live_game_create_form` · `score_stats_section` · `friends_modal` · `help_modal` (×2) · `legal_modals` · `delete_account_modal` · `leaderboard_modal` (sütun başlıkları). **+ Form etiketleri** (aynı gün ikinci tur, web eşi ayrı PR): `auth_modal` · `account_settings_modal` (`_labeled`) · `delete_account_modal` (onay etiketi). Ara yazılar dışarıda. App **1.037 test yeşil** |
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
