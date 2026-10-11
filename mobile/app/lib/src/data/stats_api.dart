@@ -189,6 +189,64 @@ class MyLeaderboardRank {
   });
 }
 
+/// Beyin Ligi satırı (`beyin_ligi_siralama` view'ı, 2 Ekim 2026) — web
+/// `BeyinLigiRow`. Puan YOK: sıra OHP desc, eşitse `ohp_games` desc, o da
+/// eşitse user_id — sunucuda hesaplanır, listedeki indeksten TÜRETİLMEZ.
+class BeyinLigiRow {
+  final int sira;
+  final String userId;
+  final String? displayName;
+  final String? firstName;
+  final String? avatarUrl;
+
+  /// Hamle verisi olan (OHP'ye giren) oyun sayısı — YZ oyunları dahil.
+  final int ohpGames;
+
+  /// [LeaderboardRow.avgMoveScore] ile AYNI sayı.
+  final double avgMoveScore;
+
+  const BeyinLigiRow({
+    required this.sira,
+    required this.userId,
+    required this.displayName,
+    required this.firstName,
+    required this.avatarUrl,
+    required this.ohpGames,
+    required this.avgMoveScore,
+  });
+
+  /// [LeaderboardRow.shortName] ile aynı kural.
+  String get shortName => (displayName?.isNotEmpty ?? false)
+      ? displayName!
+      : (firstName?.isNotEmpty ?? false)
+          ? firstName!
+          : 'Anonim';
+
+  factory BeyinLigiRow.fromJson(Map<String, Object?> j) => BeyinLigiRow(
+        sira: (j['sira'] as num?)?.toInt() ?? 0,
+        userId: j['user_id'] as String,
+        displayName: j['display_name'] as String?,
+        firstName: j['first_name'] as String?,
+        avatarUrl: j['avatar_url'] as String?,
+        ohpGames: (j['ohp_games'] as num?)?.toInt() ?? 0,
+        avgMoveScore: parseNullableDouble(j['avg_move_score']) ?? 0,
+      );
+}
+
+/// Web `MyBeyinLigiRank` — `my_beyin_ligi_rank` çıktısı. [rank] null =
+/// eşiğin ALTINDA (listede yok; ekran "N oyun daha" kartını çizer).
+class MyBeyinLigiRank {
+  final int? rank;
+  final double? avgMoveScore;
+  final int ohpGames;
+
+  const MyBeyinLigiRank({
+    required this.rank,
+    required this.avgMoveScore,
+    required this.ohpGames,
+  });
+}
+
 /// Üç sorgunun soyutlaması — testler bellek içi sahteyle çalışır, gerçek uç
 /// (`SupabaseStatsGateway`) cihazda doğrulanır.
 abstract class StatsGateway {
@@ -199,6 +257,12 @@ abstract class StatsGateway {
   Future<List<Map<String, Object?>>> leaderboard(int limit, int offset);
 
   Future<Map<String, Object?>?> myLeaderboardRank(String userId);
+
+  /// Beyin Ligi sayfası (`beyin_ligi_siralama`, sıra artan).
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset);
+
+  /// `my_beyin_ligi_rank` — hiç oyun bitirmemiş kullanıcıda null.
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId);
 
   /// Verilen kullanıcıların k-lig toplam puanları (`leaderboard` view'ından
   /// `user_id,total_score`) — isimlerin yanındaki rütbe mührü için.
@@ -256,6 +320,24 @@ class SupabaseStatsGateway implements StatsGateway {
   Future<Map<String, Object?>?> myLeaderboardRank(String userId) async {
     final data =
         await client.rpc('my_leaderboard_rank', params: {'p_user_id': userId});
+    final row = data is List && data.isNotEmpty ? data.first : data;
+    return row is Map ? row.cast<String, Object?>() : null;
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async {
+    final rows = await client
+        .from('beyin_ligi_siralama')
+        .select()
+        .order('sira', ascending: true)
+        .range(offset, offset + limit - 1);
+    return [for (final r in rows) (r as Map).cast<String, Object?>()];
+  }
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async {
+    final data =
+        await client.rpc('my_beyin_ligi_rank', params: {'p_user_id': userId});
     final row = data is List && data.isNotEmpty ? data.first : data;
     return row is Map ? row.cast<String, Object?>() : null;
   }
@@ -329,6 +411,38 @@ class StatsRepo {
     } catch (e) {
       debugPrint('[Kelimeki] leaderboard hatası: $e');
       return const [];
+    }
+  }
+
+  /// Beyin Ligi sayfası — hata durumunda boş liste ([leaderboard] deseni).
+  Future<List<BeyinLigiRow>> beyinLigi(
+      {required int limit, required int offset}) async {
+    try {
+      final rows = await gateway.beyinLigi(limit, offset);
+      return [for (final r in rows) BeyinLigiRow.fromJson(r)];
+    } catch (e) {
+      debugPrint('[Kelimeki] beyinLigi hatası: $e');
+      return const [];
+    }
+  }
+
+  /// Oturum açanın Beyin Ligi durumu; satır yoksa ya da hata varsa null.
+  Future<MyBeyinLigiRank?> myBeyinRank(String userId) async {
+    try {
+      final row = await gateway.myBeyinLigiRank(userId);
+      if (row == null) return null;
+      return MyBeyinLigiRank(
+        rank: (row['rank'] as num?)?.toInt(),
+        avgMoveScore: parseNullableDouble(row['avg_move_score']),
+        ohpGames: ((row['ohp_games'] as num?) ?? 0).toInt(),
+      );
+    } catch (e, st) {
+      debugPrint('[Kelimeki] myBeyinLigiRank hatası: $e');
+      if (!isNetworkError(e)) {
+        errorReporter.report(e,
+            stack: st, context: 'stats_repo.my_beyin_rank');
+      }
+      return null;
     }
   }
 

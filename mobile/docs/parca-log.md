@@ -153,6 +153,58 @@
 - **Kök sebep:** `icon-adaptive-fg.png` üreticide (`mobile/scripts/generate-app-icon-masters.mjs`) ZATEN %66 güvenli bölgeye küçültülüyor; `flutter_launcher_icons` 0.14 ise ön katmana ayrıca varsayılan `android:inset="16%"` ekliyor. Sonuç: içerik katmanın 0,66 × 0,68 ≈ %45'i — görünen 72 dp alanın ancak ~2/3'ü, gerisi beyaz zemin. iOS ve eski Android (LEGACY mipmap, `icon-source.png`) ETKİLENMİYOR.
 - **Düzeltme:** `pubspec.yaml` → `adaptive_icon_foreground_inset: 0` + `dart run flutter_launcher_icons` (tek değişen üretilmiş dosya `mipmap-anydpi-v26/ic_launcher.xml`: `16%` → `0%`). Tek küçültme üreticide kaldı; "kelimeki" yazısı görünen alanın ~%90'ı, yani 66 dp güvenli dairenin sınırında — yuvarlak maskede de kırpılmaz, tahta filigranının köşeleri kırpılır (doku, bilgi değil). Splash aynı PNG'yi kullanıyor ama inset yalnızca launcher XML'inde — splash DEĞİŞMEDİ.
 - **Doğrulama:** sharp ile önizleme (katman 108 → görünen 72 → squircle maske): eski hâli fotoğraftakiyle birebir. **Sınır:** gerçek launcher'da görmek mağaza paketini ister (12 Ekim treni); ikon önbelleği yüzünden güncellemeden sonra launcher eski ikonu bir süre gösterebilir.
+## Parça 233 — k-lig'e Beyin Ligi sekmesi (2 Ekim 2026) — web #794'ün port yarısı
+
+- **İstek (kullanıcı):** k-lig'in altında alt ligler. **Puan Ligi** =
+  bugünkü k-lig (değişmedi), **Beyin Ligi** = puan yok, yalnızca OHP'ye göre
+  sıralama, en az 5 oyun. Kararlar ve sunucu tarafı:
+  `docs/decisions/league-system.md` → "Beyin Ligi". Web + sunucu #794 ile
+  2 Ekim'de yayına girdi; bu parça sürüm trenine binen port yarısı.
+- **Web kaynağı:** `src/components/Leaderboard.tsx` (`KLIG_TABS`,
+  `PUAN_LIGI_INTRO`), `src/components/BeyinLigiList.tsx`,
+  `src/utils/beyinLigi.ts`.
+- **Port:** `util/beyin_ligi.dart` (eşik + metinler + sekme listesi),
+  `ui/score/beyin_ligi_list.dart` (liste + "N oyun daha" kartı),
+  `leaderboard_modal.dart` (sekmeler; Beyin Ligi ilk seçimde kurulur ve
+  `Offstage` ile yaşar, Puan Ligi `if` ile söküler — verisi State'te
+  durduğundan yeniden istek atmaz), `data/stats_api.dart` (`BeyinLigiRow`,
+  `MyBeyinLigiRank`, gateway'e iki uç). `StatsGateway`e iki soyut metot
+  eklendiğinden altı sahte gateway'e (5 test + `store_frames`) boş gövde
+  eklendi.
+- **Bulunan hata (test yakaladı):** sekme değişiminde `_syncOhpHint()`
+  çağrılıyordu; Puan Ligi'nin `OverlayPortal`ı söküldüğünden kapalı bir
+  balonda `hide()` → `'_zOrderIndex != null'` doğrulaması. Artık yalnızca
+  `isShowing` iken kapatılıyor.
+- **Bilinçli farklar:** "N oyun daha" kartının çerçevesi webde kesikli,
+  portta düz (Flutter'da kesikli çerçeve ek çizim ister; anlamı taşımıyor).
+- **Kapılar:** `test/beyin_ligi_test.dart` — web metinleri/sekme
+  etiketleri/eşik PARİTESİ (web kaynağını okur → web CI'ın `parite` işi
+  de koşar; yollar `src/**` altında, `paths` listesinde zaten var) +
+  davranış (Puan Ligi ile açılış, Beyin Ligi listesi, mühür yok, eşik
+  kartı, gidip gelince tek istek). `npm run verify-beyin-ligi` artık
+  Dart sabitini de kilitliyor. Tam takım 1045/1045, `dart analyze` temiz.
+- **Doğrulama sınırı:** gerçek uçlar (`beyin_ligi_siralama`,
+  `my_beyin_ligi_rank`) yalnızca cihazda — `mobile/docs/testing-klig.md`
+  → "13.x Beyin Ligi sekmesi".
+- **Ek — "SENİN SIRAN" satırı pencerenin altında kesiliyordu (2 Ekim 2026,
+  kullanıcı arkadaşının Android telefonundan ekran görüntüsü; mağazadaki
+  1.1.2'de de var).** 31. sıradaki kullanıcı satırının yalnızca üst
+  yarısını görüyordu. **Web nasıl yapıyor:** liste `max-h-[50vh]`, kısayol
+  listenin ALTINDA ve kullanıcının satırı listeye YÜKLENENE kadar duruyor.
+  Port bunu aynen taşıyordu. Fark yapısaldı: Flutter iç içe kaydırmayı
+  zincirlemez (bkz. `CLAUDE.md` → "`KModal`'ın gövdesi ZATEN
+  kaydırılabilir"). Liste ekranın SABİT %50'sini aldığından, pencere %85'e
+  dayanınca satır kaydırılan gövdenin dışına itiliyordu. Parmak listenin
+  üzerindeyken oraya ulaşmanın yolu da yoktu. **Düzeltme:** `KModal.fillBody`
+  (gövde kaydırılmaz, `child` kalan yüksekliği sınır olarak alır). Pencere
+  `Flexible(Stack(passthrough))` kullanıyor: Offstage'deki Beyin Ligi gizliyken
+  sıfır boy bildirdiğinden pencere görünen sekmenin boyunu alıyor. İki
+  listede de `Flexible(ConstrainedBox(50%))` var: kısa listede pencere
+  büyümüyor, uzun listede kalan alana iniyor. **Kapı:**
+  `test/leaderboard_layout_test.dart`, iki sekme × üç bileşim
+  (390×844 · 360×740 · 360×640 @1,3) + "satır yüklenince kısayol kalkar".
+  Duyarlılık kanıtlandı: düzeltme geri alınınca 360×640 @1,3'te iki sekme de
+  DÜŞÜYOR.
 
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 

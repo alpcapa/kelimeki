@@ -32,6 +32,13 @@ const _ironman = KProfile(id: 'u-test', displayName: 'Ironman');
 
 class _FakeStatsGateway implements StatsGateway {
   @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+
+  @override
   Future<Map<String, Object?>?> playerStats(String userId, int? playerCount) async =>
       null;
 

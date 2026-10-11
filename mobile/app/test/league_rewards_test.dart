@@ -65,6 +65,13 @@ List<LeagueReward> parse(List<Map<String, Object?>> rows) =>
     [for (final r in rows) LeagueReward.fromJson(r)];
 
 class FakeStatsGatewayForRank implements StatsGateway {
+  @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+
   final Map<String, Object?>? rank;
   FakeStatsGatewayForRank(this.rank);
 
