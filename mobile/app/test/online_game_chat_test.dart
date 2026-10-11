@@ -14,7 +14,8 @@ import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/data/chat_api.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
 import 'package:kelimeki/src/storage/app_storage.dart';
-import 'package:kelimeki/src/ui/chat/chat_modal.dart' show resetChatRulesCacheForTest;
+import 'package:kelimeki/src/ui/chat/chat_modal.dart'
+    show resetChatRulesCacheForTest;
 import 'package:kelimeki/src/ui/chat/chat_rules_modal.dart';
 import 'package:kelimeki/src/ui/live/online_game_screen.dart';
 import 'package:kelimeki/src/util/chat_rules.dart';
@@ -229,8 +230,8 @@ void main() {
       // Storage yok → FlagsStore de yok → tanıtım diyaloğu ATLANIR (bilinçli
       // derece bozulma) — doğrudan boş-sohbet metni görünür.
       expect(find.textContaining('hoşgeldiniz'), findsNothing);
-      expect(find.text('Henüz mesaj yok. İlk mesajı sen gönder!'),
-          findsOneWidget);
+      expect(
+          find.text('Henüz mesaj yok. İlk mesajı sen gönder!'), findsOneWidget);
 
       await tester.enterText(find.byType(TextField), 'Selam!');
       await tester.pump();
@@ -258,8 +259,7 @@ void main() {
       // "Ironman" arkadaki GameHeader'da da geçiyor — Ayarlar diyaloğuna
       // (en üstteki Dialog) daraltılmış finder kullanılmalı.
       final settingsDialog = find.byType(Dialog).last;
-      expect(
-          find.descendant(of: settingsDialog, matching: find.text('Esiner')),
+      expect(find.descendant(of: settingsDialog, matching: find.text('Esiner')),
           findsOneWidget);
       expect(
           find.descendant(of: settingsDialog, matching: find.text('Ironman')),
@@ -425,8 +425,8 @@ void main() {
 
       await tester.tap(find.text('DEVAM'));
       await tester.pumpAndSettle();
-      expect(find.text('Henüz mesaj yok. İlk mesajı sen gönder!'),
-          findsOneWidget);
+      expect(
+          find.text('Henüz mesaj yok. İlk mesajı sen gönder!'), findsOneWidget);
 
       await tester.runAsync(() async {
         expect(storage.flags.seenChatIntro, isTrue);
@@ -450,8 +450,8 @@ void main() {
       await tester.tap(find.text('Mesajlaşma'));
       await tester.pumpAndSettle();
       expect(find.text('Oyun içi mesajlaşmaya hoşgeldiniz!'), findsNothing);
-      expect(find.text('Henüz mesaj yok. İlk mesajı sen gönder!'),
-          findsOneWidget);
+      expect(
+          find.text('Henüz mesaj yok. İlk mesajı sen gönder!'), findsOneWidget);
       // Aynı gerçek-zaman bekleyişi — bkz. yukarıdaki yorum.
       await drainRealIo(tester);
       await unmount(tester);
@@ -590,8 +590,8 @@ void main() {
     testWidgets('cihaz damgası ileride → sunucu yetişir (gerçek depo)',
         (tester) async {
       final storage = await newStorageForWidget(tester);
-      await tester.runAsync(() => storage.chatRead.markRead('g1',
-          DateTime.parse('2026-09-23T07:00:00Z').millisecondsSinceEpoch));
+      await tester.runAsync(() => storage.chatRead.markRead(
+          'g1', DateTime.parse('2026-09-23T07:00:00Z').millisecondsSinceEpoch));
       final chatGw = FakeChatGateway()
         ..rows = threeRows()
         ..serverLastReadAt = '2026-09-22T10:00:00+00:00';
@@ -599,8 +599,7 @@ void main() {
       await drainRealIo(tester);
       await tester.pumpAndSettle();
       expect(_badgeText(), '1');
-      expect(
-          DateTime.parse(chatGw.serverLastReadAt!),
+      expect(DateTime.parse(chatGw.serverLastReadAt!),
           DateTime.parse('2026-09-23T07:00:00Z'));
       await drainRealIo(tester);
       await unmount(tester);
@@ -611,8 +610,8 @@ void main() {
     testWidgets('sunucu ileride → cihaz yetişir, rozet yok (gerçek depo)',
         (tester) async {
       final storage = await newStorageForWidget(tester);
-      await tester.runAsync(() => storage.chatRead.markRead('g1',
-          DateTime.parse('2026-09-22T10:00:00Z').millisecondsSinceEpoch));
+      await tester.runAsync(() => storage.chatRead.markRead(
+          'g1', DateTime.parse('2026-09-22T10:00:00Z').millisecondsSinceEpoch));
       final chatGw = FakeChatGateway()
         ..rows = threeRows()
         ..serverLastReadAt = '2026-09-23T07:30:00.123456+00:00';

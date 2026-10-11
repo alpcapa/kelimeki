@@ -41,8 +41,8 @@ void main() {
   });
 
   test('3 — cihaz ileride → sunucu yetişir', () {
-    final d = decide((at: '2026-09-22T11:00:00+00:00'),
-        '2026-09-23T07:00:00.000000+00:00');
+    final d = decide(
+        (at: '2026-09-22T11:00:00+00:00'), '2026-09-23T07:00:00.000000+00:00');
     expect(d.unread, 1);
     expect(d.pushToServer, '2026-09-23T07:00:00.000000+00:00');
     expect(d.writeLocal, isNull);
@@ -78,8 +78,7 @@ void main() {
   test('8 — kendi mesajım sayılmaz; laterOf biçimden bağımsız', () {
     final d = decide((at: '2026-09-22T09:00:00Z'), null);
     expect(d.unread, 3);
-    expect(
-        laterOf('2026-09-23T07:00:00Z', '2026-09-23T07:00:00.500000+00:00'),
+    expect(laterOf('2026-09-23T07:00:00Z', '2026-09-23T07:00:00.500000+00:00'),
         '2026-09-23T07:00:00.500000+00:00');
   });
 
@@ -105,10 +104,10 @@ void main() {
   test(
       'cihazın milisaniyeye kırpılmış damgası = sunucunun mikro saniyelisi → '
       'her yüklemede boşuna yazma YOK', () {
-    final localMs =
-        DateTime.parse('2026-09-23T07:30:00.123456+00:00').millisecondsSinceEpoch;
-    final d = decide((at: '2026-09-23T07:30:00.123456+00:00'),
-        localStampIso(localMs));
+    final localMs = DateTime.parse('2026-09-23T07:30:00.123456+00:00')
+        .millisecondsSinceEpoch;
+    final d = decide(
+        (at: '2026-09-23T07:30:00.123456+00:00'), localStampIso(localMs));
     expect(d.writeLocal, isNull);
     expect(d.pushToServer, isNull);
   });

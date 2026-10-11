@@ -76,8 +76,8 @@ abstract class CloudSaveGateway {
   /// repo yakalar.
   Future<List<Map<String, Object?>>> list();
 
-  Future<void> upsert(
-      String id, String userId, Map<String, Object?> stateJson, int playerCount);
+  Future<void> upsert(String id, String userId, Map<String, Object?> stateJson,
+      int playerCount);
 
   Future<void> delete(String id);
 
@@ -104,8 +104,8 @@ class SupabaseCloudSaveGateway implements CloudSaveGateway {
   }
 
   @override
-  Future<void> upsert(String id, String userId,
-      Map<String, Object?> stateJson, int playerCount) async {
+  Future<void> upsert(String id, String userId, Map<String, Object?> stateJson,
+      int playerCount) async {
     await client.from('local_game_saves').upsert({
       'id': id,
       'user_id': userId,
@@ -264,9 +264,8 @@ class CloudSaveRepo {
       return _offlineList(userId, mirrored);
     }
     final cutoffMs = _nowMs() - abandonTimeout.inMilliseconds;
-    final cutoffIso =
-        DateTime.fromMillisecondsSinceEpoch(cutoffMs, isUtc: true)
-            .toIso8601String();
+    final cutoffIso = DateTime.fromMillisecondsSinceEpoch(cutoffMs, isUtc: true)
+        .toIso8601String();
     final result = <CloudSave>[];
     final abandoned = <AbandonedCloudSave>[];
     for (final row in rows) {
@@ -299,8 +298,8 @@ class CloudSaveRepo {
       // Süresi dolmuş — iddia et. Claim de kuyruktan geçer (bir silme).
       Map<String, Object?>? claimed;
       try {
-        claimed = await _queue
-            .enqueue(() => gateway.claimAbandoned(id, cutoffIso));
+        claimed =
+            await _queue.enqueue(() => gateway.claimAbandoned(id, cutoffIso));
       } catch (e) {
         debugPrint('[Kelimeki] terk edilmiş kayıt iddia edilemedi: $e');
         continue;
@@ -331,12 +330,12 @@ class CloudSaveRepo {
         continue;
       }
       if (m.savedAtMs > cutoffMs) {
-        result.add(
-            CloudSave(id: m.id, state: m.state, updatedAtMs: m.savedAtMs));
+        result
+            .add(CloudSave(id: m.id, state: m.state, updatedAtMs: m.savedAtMs));
         continue;
       }
-      abandoned.add(
-          AbandonedCloudSave(state: m.state, updatedAtMs: m.savedAtMs));
+      abandoned
+          .add(AbandonedCloudSave(state: m.state, updatedAtMs: m.savedAtMs));
       await _tryMirror((x) => x.remove(m.id));
     }
     result.sort((a, b) => b.updatedAtMs.compareTo(a.updatedAtMs));
@@ -394,8 +393,7 @@ class CloudSaveRepo {
     for (final s in byId.values) {
       if (s.state.phase != GamePhase.play || s.state.isGameOver) continue;
       if (s.savedAtMs <= cutoffMs) continue;
-      result.add(
-          CloudSave(id: s.id, state: s.state, updatedAtMs: s.savedAtMs));
+      result.add(CloudSave(id: s.id, state: s.state, updatedAtMs: s.savedAtMs));
     }
     result.sort((a, b) => b.updatedAtMs.compareTo(a.updatedAtMs));
     return CloudSaveList(result, const []);
@@ -576,7 +574,8 @@ class CloudSaveRepo {
     }
     final ok = await upsert(uuidV4(), userId, toUpload);
     if (!ok) {
-      debugPrint('[Kelimeki] Misafir oyunu hesaba taşınamadı, tekrar denenecek.');
+      debugPrint(
+          '[Kelimeki] Misafir oyunu hesaba taşınamadı, tekrar denenecek.');
       return false;
     }
     await guestRepo.clearSave();

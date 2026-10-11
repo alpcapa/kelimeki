@@ -264,8 +264,8 @@ class _ChatModalState extends State<ChatModal> {
                   disabledForegroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6)),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
                 child: Text(_sending ? 'Gönderiliyor…' : 'Gönder',
                     style: const TextStyle(

@@ -44,8 +44,8 @@ Future<void> showMeaningModal(
   if (unique.isEmpty) return Future.value();
   return showDialog<void>(
     context: context,
-    builder: (context) =>
-        MeaningModal(lookup: lookup, words: unique, isUnavailable: isUnavailable),
+    builder: (context) => MeaningModal(
+        lookup: lookup, words: unique, isUnavailable: isUnavailable),
   );
 }
 

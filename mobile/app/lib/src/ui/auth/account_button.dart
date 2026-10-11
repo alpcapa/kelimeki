@@ -496,8 +496,7 @@ class _AccountButtonState extends State<AccountButton> {
                                           const TextSpan(text: '·'),
                                           const WidgetSpan(
                                               child: SizedBox(width: 2)),
-                                          TextSpan(
-                                              text: '${rank.totalScore}'),
+                                          TextSpan(text: '${rank.totalScore}'),
                                           const TextSpan(
                                             text: ' puan',
                                             style: TextStyle(

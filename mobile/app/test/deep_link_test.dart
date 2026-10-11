@@ -40,8 +40,10 @@ void main() {
     test('`?ref=arkadas` etiketi token\'ı bozmaz', () {
       // buildInviteUrl etiketi ZORUNLU olarak ekliyor (ROADMAP #7); sorgu
       // dizesi pathSegments'e girmediğinden ayrıştırma etkilenmemeli.
-      expect((parseDeepLink(Uri.parse(buildInviteUrl('tok'))) as KFriendInviteLink)
-          .token, 'tok');
+      expect(
+          (parseDeepLink(Uri.parse(buildInviteUrl('tok'))) as KFriendInviteLink)
+              .token,
+          'tok');
     });
   });
 
@@ -49,12 +51,16 @@ void main() {
     test('kelimeki://oyun/<id> çözülür ve buildOnlineGameLink ile gidip gelir',
         () {
       const id = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
-      expect((parseDeepLink(Uri.parse('kelimeki://oyun/$id')) as KOnlineGameLink)
-          .gameId, id);
+      expect(
+          (parseDeepLink(Uri.parse('kelimeki://oyun/$id')) as KOnlineGameLink)
+              .gameId,
+          id);
       // Gidiş-dönüş: sunucu (Edge Function) bu biçimi ELLE kuruyor. İki
       // taraftan biri değişirse bildirime dokunmak hiçbir şey açmaz.
-      expect((parseDeepLink(Uri.parse(buildOnlineGameLink(id))) as KOnlineGameLink)
-          .gameId, id);
+      expect(
+          (parseDeepLink(Uri.parse(buildOnlineGameLink(id))) as KOnlineGameLink)
+              .gameId,
+          id);
     });
 
     test('https karşılığı BİLEREK YOK', () {
@@ -69,10 +75,16 @@ void main() {
     test('auth ve reset ayırt edilir (işlenmez, yalnızca sınıflandırılır)', () {
       // Oturumu supabase_flutter kendi dinleyicisinden kuruyor; buradaki
       // amaç bunların "bilinmeyen" sayılıp yanlış bir dala düşmemesi.
-      expect((parseDeepLink(Uri.parse('kelimeki://auth?code=xyz'))
-          as KAuthReturnLink).kind, 'auth');
-      expect((parseDeepLink(Uri.parse('kelimeki://reset?code=xyz'))
-          as KAuthReturnLink).kind, 'reset');
+      expect(
+          (parseDeepLink(Uri.parse('kelimeki://auth?code=xyz'))
+                  as KAuthReturnLink)
+              .kind,
+          'auth');
+      expect(
+          (parseDeepLink(Uri.parse('kelimeki://reset?code=xyz'))
+                  as KAuthReturnLink)
+              .kind,
+          'reset');
     });
 
     test('kayıt onayı https App Link biçiminde de tanınır', () {
@@ -81,11 +93,14 @@ void main() {
       // URI'nin İKİ biçimi de aynı sınıfa düşmeli.
       expect(
           (parseDeepLink(Uri.parse('$authRedirectUri?code=xyz'))
-              as KAuthReturnLink).kind,
+                  as KAuthReturnLink)
+              .kind,
           'auth');
       expect(
-          (parseDeepLink(Uri.parse('https://kelimeki.com/auth?error=access_denied'))
-              as KAuthReturnLink).kind,
+          (parseDeepLink(Uri.parse(
+                      'https://kelimeki.com/auth?error=access_denied'))
+                  as KAuthReturnLink)
+              .kind,
           'auth');
     });
 
@@ -118,7 +133,8 @@ void main() {
       // `/game/` özellikle önemli: o BİTMİŞ oyunun paylaşım sayfası ve
       // Canlı oyunla karıştırılmamalı.
       expect(parseDeepLink(Uri.parse('https://kelimeki.com/game/abc')), isNull);
-      expect(parseDeepLink(Uri.parse('https://kelimeki.com/gizlilik/')), isNull);
+      expect(
+          parseDeepLink(Uri.parse('https://kelimeki.com/gizlilik/')), isNull);
       expect(parseDeepLink(Uri.parse('https://kelimeki.com/')), isNull);
     });
   });
@@ -134,7 +150,8 @@ void main() {
       expect((parseDeepLink(uri)! as KOnlineGameLink).gameId, 'g1');
     });
 
-    test('link yok / boş / yanlış tip → sessizce null (teslim uyarısı '
+    test(
+        'link yok / boş / yanlış tip → sessizce null (teslim uyarısı '
         'bildirimi link TAŞIMIYOR, bu beklenen yol)', () {
       expect(pushMessageLink(const {}), isNull);
       expect(pushMessageLink(const {'link': ''}), isNull);
@@ -165,8 +182,7 @@ void main() {
       await ctrl.close();
     });
 
-    test('take oku-ve-temizle; üst üste dokunuşta SONUNCUSU kazanır',
-        () async {
+    test('take oku-ve-temizle; üst üste dokunuşta SONUNCUSU kazanır', () async {
       final inbox = GameLinkInbox();
       final ctrl = StreamController<Uri>();
       inbox.attach(ctrl.stream);

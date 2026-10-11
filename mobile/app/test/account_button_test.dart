@@ -51,8 +51,9 @@ class _FakeStatsGateway implements StatsGateway {
       {'rank': 3, 'total_score': 47};
 
   @override
-  Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async =>
-      [for (final id in userIds) {'user_id': id, 'total_score': 47}];
+  Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async => [
+        for (final id in userIds) {'user_id': id, 'total_score': 47}
+      ];
 
   @override
   Future<Map<String, Object?>?> profileAgeGender(String userId) async => null;
@@ -96,7 +97,8 @@ class _FakeFriendsGateway implements FriendsGateway {
   @override
   String? get currentUserId => 'u-test';
   @override
-  Future<List<Map<String, Object?>>> searchUsers(String query) async => const [];
+  Future<List<Map<String, Object?>>> searchUsers(String query) async =>
+      const [];
   @override
   Future<List<Map<String, Object?>>> listUsers(int offset, int limit) async =>
       const [];
@@ -257,8 +259,7 @@ void main() {
   testWidgets(
       'regresyon (Parça 28): madde sırası web ile aynı — Arkadaşlar → '
       'Skor Kartı → Nasıl Oynanır? → Hesap Ayarları → (çizgi) → '
-      'Çıkış Yap',
-      (tester) async {
+      'Çıkış Yap', (tester) async {
     final stats = StatsRepo(_FakeStatsGateway());
     final friends = FriendsRepo(_FakeFriendsGateway());
     await pumpMenu(tester, stats: stats, friends: friends);
@@ -293,9 +294,8 @@ void main() {
     await pumpMenu(tester, stats: stats, friends: friends);
 
     double topOf(Finder f) => tester.getTopLeft(f).dy;
-    final rowSpacing =
-        topOf(find.textContaining('Skor Kartı')) -
-            topOf(find.textContaining('Arkadaşlar'));
+    final rowSpacing = topOf(find.textContaining('Skor Kartı')) -
+        topOf(find.textContaining('Arkadaşlar'));
     // Web satırı ~py-2.5 (20px dolgu) + 12px punto ≈ 35-40px — Flutter'ın
     // varsayılan `kMinInteractiveDimension`ı (48px) kullanılıyorsa bu her
     // zaman >=48 olurdu.
@@ -305,7 +305,8 @@ void main() {
 
     final itemBox = tester.getSize(find
         .ancestor(
-            of: find.textContaining('Arkadaşlar'), matching: find.byType(SizedBox))
+            of: find.textContaining('Arkadaşlar'),
+            matching: find.byType(SizedBox))
         .first);
     expect(itemBox.width, closeTo(200, 1),
         reason: 'Satır içerik genişliği sabitlenmemiş — menü web\'in '
@@ -355,8 +356,7 @@ void main() {
 
     // Başlığın altındaki Container'ın decoration'ı bottom border taşımalı.
     final headerContainer = tester.widget<Container>(find
-        .ancestor(
-            of: find.text('Ironman'), matching: find.byType(Container))
+        .ancestor(of: find.text('Ironman'), matching: find.byType(Container))
         .first);
     final headerDecoration = headerContainer.decoration as BoxDecoration;
     expect(headerDecoration.border?.bottom.width, 1);
@@ -367,7 +367,8 @@ void main() {
     // aralığına (< 44px) yakın kalmalı.
     final signOutContainer = tester.widget<Container>(find
         .ancestor(
-            of: find.textContaining('Çıkış Yap'), matching: find.byType(Container))
+            of: find.textContaining('Çıkış Yap'),
+            matching: find.byType(Container))
         .first);
     final signOutDecoration = signOutContainer.decoration as BoxDecoration;
     expect(signOutDecoration.border?.top.width, 1);
@@ -389,12 +390,13 @@ void main() {
     final friends = FriendsRepo(_FakeFriendsGateway());
     await pumpMenu(tester, stats: stats, friends: friends);
 
-    final cardFinder = find.byWidgetPredicate(
-        (w) => w is Material && w.type == MaterialType.card);
+    final cardFinder = find
+        .byWidgetPredicate((w) => w is Material && w.type == MaterialType.card);
     final cardTop = tester.getTopLeft(cardFinder).dy;
     final cardBottom = tester.getRect(cardFinder).bottom;
     final headerTop = tester.getTopLeft(find.text('Ironman')).dy;
-    final signOutBottom = tester.getBottomLeft(find.textContaining('Çıkış Yap')).dy;
+    final signOutBottom =
+        tester.getBottomLeft(find.textContaining('Çıkış Yap')).dy;
 
     // Varsayılan `menuPadding` (8px) hâlâ devredeyse bu farklar sırasıyla
     // ~20 (8+12 başlık dolgusu) ve ~18 (8+10 satır dolgusu) olurdu.
@@ -434,8 +436,8 @@ void main() {
     // bir probe ile yapıldı ve düzeltmeyi kanıtladı: basılıyken dairenin
     // DIŞINDA boyanmış piksel 120 → 0 (dokunulmamış durumda zaten 0).
     // Parça 34'ün deseni: bir kez ölç, kalıcı testte sözleşmeyi sabitle.
-    final button =
-        tester.widget<PopupMenuButton<String>>(find.byType(PopupMenuButton<String>));
+    final button = tester
+        .widget<PopupMenuButton<String>>(find.byType(PopupMenuButton<String>));
     final size = tester.getSize(find.byType(PopupMenuButton<String>));
     expect(button.borderRadius, isNotNull,
         reason: 'borderRadius null — ink dikdörtgen boyanır, avatarın '
@@ -470,5 +472,4 @@ void main() {
     final sealX = tester.getTopLeft(find.byType(RankSeal).first).dx;
     expect(sealX, greaterThanOrEqualTo(nameX));
   });
-
 }

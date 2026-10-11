@@ -93,8 +93,8 @@ void main() {
   sqfliteFfiInit();
 
   setUpAll(loadAppFonts);
-  setUp(() => clock = DateTime.parse('2026-08-07T12:00:00Z')
-      .millisecondsSinceEpoch);
+  setUp(() =>
+      clock = DateTime.parse('2026-08-07T12:00:00Z').millisecondsSinceEpoch);
 
   group('FeedbackRepo', () {
     test('başarılı gönderim: kuyruk boş kalır, pencereye sayılır', () async {
@@ -122,9 +122,12 @@ void main() {
           email: 'a@b.c',
           source: FeedbackSource.gameEnd);
 
-      final offline = newRepo(null, storage); // web: configured değilken de kuyruk
+      final offline =
+          newRepo(null, storage); // web: configured değilken de kuyruk
       await offline.submitDurable(
-          message: 'offline mesaj', email: null, source: FeedbackSource.general);
+          message: 'offline mesaj',
+          email: null,
+          source: FeedbackSource.general);
 
       final s = await storage;
       final q = await s.queue.readAll(feedbackKind);
@@ -134,7 +137,8 @@ void main() {
       expect(q.first.payload['source'], 'game_end');
     });
 
-    test('rate limit: 10 dakikada 3 — dördüncüsü reddedilir, pencere geçince açılır',
+    test(
+        'rate limit: 10 dakikada 3 — dördüncüsü reddedilir, pencere geçince açılır',
         () async {
       final storage = openTestStorage();
       final gw = MemFeedbackGateway();
@@ -159,7 +163,8 @@ void main() {
           FeedbackSubmitResult.accepted);
     });
 
-    test('flushPending: oturum ŞARTSIZ gönderir, başarısız kuyrukta kalır, bozuk düşer',
+    test(
+        'flushPending: oturum ŞARTSIZ gönderir, başarısız kuyrukta kalır, bozuk düşer',
         () async {
       final storage = openTestStorage();
       final gw = MemFeedbackGateway()..failWith = Exception('ağ');
@@ -276,8 +281,8 @@ void main() {
       await tester.tap(find.text('EVET'));
       await tester.pumpAndSettle();
       expect(find.text('KAYIT'), findsOneWidget);
-      expect(find.widgetWithText(TextField, 'misafir@ornek.com'),
-          findsOneWidget);
+      expect(
+          find.widgetWithText(TextField, 'misafir@ornek.com'), findsOneWidget);
     });
 
     testWidgets('girişli: e-posta alanı yerine "Yanıt e-postan", teklif yok',
@@ -334,12 +339,12 @@ void main() {
       expect(find.text('KAPAT'), findsOneWidget);
     });
 
-    testWidgets('1.5sn altı gönderim: hiçbir şey kaydetmeden sahte "gönderildi"',
+    testWidgets(
+        '1.5sn altı gönderim: hiçbir şey kaydetmeden sahte "gönderildi"',
         (tester) async {
       final gw = MemFeedbackGateway();
       final (_, storage) = await pumpForm(tester, gw: gw, minSubmitOffsetMs: 0);
-      await tester.enterText(
-          find.widgetWithText(TextField, 'Mesajın'), 'bot');
+      await tester.enterText(find.widgetWithText(TextField, 'Mesajın'), 'bot');
       await tester.tap(find.text('GÖNDER'));
       await tester.pumpAndSettle();
       expect(find.text('Teşekkürler, mesajın bize ulaştı.'), findsOneWidget);
@@ -361,19 +366,21 @@ void main() {
       await tester.tap(find.text('GÖNDER'));
       await tester.pumpAndSettle();
       expect(
-          find.text('Çok fazla mesaj gönderdin, birkaç dakika sonra tekrar dene.'),
+          find.text(
+              'Çok fazla mesaj gönderdin, birkaç dakika sonra tekrar dene.'),
           findsOneWidget);
       expect(gw.inserted, hasLength(3));
     });
   });
 
   group('Bağlamalar', () {
-    testWidgets('GameOver: onFeedback verilirse GÖRÜŞ BİLDİR çizilir ve çağrılır',
+    testWidgets(
+        'GameOver: onFeedback verilirse GÖRÜŞ BİLDİR çizilir ve çağrılır',
         (tester) async {
       await setPhoneViewSize(tester, const Size(420, 900));
-      final golden = jsonDecode(File(
-              '../kelimeki_core/test/goldens/reducer_ai4.json')
-          .readAsStringSync()) as Map<String, dynamic>;
+      final golden = jsonDecode(
+          File('../kelimeki_core/test/goldens/reducer_ai4.json')
+              .readAsStringSync()) as Map<String, dynamic>;
       final steps = golden['steps'] as List;
       final state = gameStateFromJson(
           ((steps.last as Map)['state'] as Map).cast<String, Object?>());
@@ -381,7 +388,10 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         theme: kelimekiTheme(),
         home: Scaffold(
-            body: GameOverModal(state: state, onOpenHistory: () {}, onFeedback: () => opened++)),
+            body: GameOverModal(
+                state: state,
+                onOpenHistory: () {},
+                onFeedback: () => opened++)),
       ));
       await tester.pump();
       await tester.tap(find.text('GÖRÜŞ BİLDİR'));
@@ -396,7 +406,8 @@ void main() {
       expect(find.text('GÖRÜŞ BİLDİR'), findsNothing);
     });
 
-    testWidgets('Kayıt formu → Kullanım Koşulları → "Görüş Bildir formu" formu açar',
+    testWidgets(
+        'Kayıt formu → Kullanım Koşulları → "Görüş Bildir formu" formu açar',
         (tester) async {
       await setPhoneViewSize(tester, const Size(420, 1000));
       final storage = await tester.runAsync(openTestStorage);

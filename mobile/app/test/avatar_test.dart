@@ -103,7 +103,8 @@ void main() {
     expect(deco.color, _accent);
   });
 
-  testWidgets('ekran görüntüsü: misafir "?" + isimli avatar + YZ robotu yan yana',
+  testWidgets(
+      'ekran görüntüsü: misafir "?" + isimli avatar + YZ robotu yan yana',
       (tester) async {
     final key = GlobalKey();
     await tester.pumpWidget(MaterialApp(
@@ -156,11 +157,13 @@ void main() {
   // üzerine taşıyordu. Web'de (CSS `border-radius` + `border`) halka her
   // yönde eşittir. `ClipOval` görüntüyü tam halkanın İÇ dairesine kırpar —
   // bu test o geometriyi sabitliyor (düzeltme sonrası 24/24 ölçüldü).
-  testWidgets('fotoğraflı avatar halkanın İÇ dairesine kırpılır', (tester) async {
+  testWidgets('fotoğraflı avatar halkanın İÇ dairesine kırpılır',
+      (tester) async {
     await tester.pumpWidget(const MaterialApp(
       home: Scaffold(
         body: Center(
-          child: KAvatar(url: 'https://example.com/a.png', name: 'Ironman', size: 64),
+          child: KAvatar(
+              url: 'https://example.com/a.png', name: 'Ironman', size: 64),
         ),
       ),
     ));

@@ -59,15 +59,14 @@ MeaningStore newStore() => MeaningStore(
 /// `store == null` dalı zaten erken dönüyor, yani test korumayı DEĞİL
 /// eksikliği ölçerdi. Bu yüzden kaynak seviyesinde ve SIRAYA bakarak:
 /// koruma, tahta-taşı dalının İÇİNDE ve anlam çağrısından ÖNCE olmalı.
-void _guardCheck(String dosya, String dalBasi, String anlamCagrisi,
-    String koruma) {
+void _guardCheck(
+    String dosya, String dalBasi, String anlamCagrisi, String koruma) {
   final src = readRepoFile(dosya);
   final dal = src.indexOf(dalBasi);
   expect(dal, greaterThanOrEqualTo(0),
       reason: '$dosya: tahta-taşı dalı bulunamadı — ayrıştırıcı bayatlamış');
   final anlam = src.indexOf(anlamCagrisi, dal);
-  expect(anlam, greaterThan(dal),
-      reason: '$dosya: anlam çağrısı bulunamadı');
+  expect(anlam, greaterThan(dal), reason: '$dosya: anlam çağrısı bulunamadı');
   final g = src.indexOf(koruma, dal);
   expect(g, greaterThan(dal),
       reason: '$dosya: taslak koruması YOK — kullanıcı 24 Ağustos 2026\'da '
@@ -134,14 +133,20 @@ void main() {
   test('taslak hamle sürerken anlam AÇILMAZ — dört yüzeyde de', () {
     _guardCheck('src/App.tsx', 'if (state.board[r][c]) {', 'openMeaning(',
         'if (Object.keys(state.placed).length > 0) {');
-    _guardCheck('src/components/OnlineGameScreen.tsx',
-        'if (state.board[r][c]) {', 'openMeaning(',
+    _guardCheck(
+        'src/components/OnlineGameScreen.tsx',
+        'if (state.board[r][c]) {',
+        'openMeaning(',
         'if (Object.keys(state.placed).length > 0) {');
-    _guardCheck('mobile/app/lib/src/ui/game/game_screen.dart',
-        'if (state.board[r][c] != null) {', 'showMeaningModal(',
+    _guardCheck(
+        'mobile/app/lib/src/ui/game/game_screen.dart',
+        'if (state.board[r][c] != null) {',
+        'showMeaningModal(',
         'if (state.placed.isNotEmpty) {');
-    _guardCheck('mobile/app/lib/src/ui/live/online_game_screen.dart',
-        'if (state.board[r][c] != null) {', 'showMeaningModal(',
+    _guardCheck(
+        'mobile/app/lib/src/ui/live/online_game_screen.dart',
+        'if (state.board[r][c] != null) {',
+        'showMeaningModal(',
         'if (state.placed.isNotEmpty) {');
   });
 

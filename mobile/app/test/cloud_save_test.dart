@@ -51,8 +51,8 @@ class FakeGateway implements CloudSaveGateway {
   }
 
   @override
-  Future<void> upsert(String id, String userId,
-      Map<String, Object?> stateJson, int playerCount) async {
+  Future<void> upsert(String id, String userId, Map<String, Object?> stateJson,
+      int playerCount) async {
     upsertCalls++;
     if (offline) throw Exception('ağ yok');
     if (failNextUpsert) {
@@ -63,14 +63,15 @@ class FakeGateway implements CloudSaveGateway {
       'state': stateJson,
       'user_id': userId,
       'player_count': playerCount,
-      'updated_at':
-          DateTime.fromMillisecondsSinceEpoch(clock, isUtc: true).toIso8601String(),
+      'updated_at': DateTime.fromMillisecondsSinceEpoch(clock, isUtc: true)
+          .toIso8601String(),
     };
   }
 
   @override
   Future<void> delete(String id) async {
-    if (slowDelete) await Future<void>.delayed(const Duration(milliseconds: 20));
+    if (slowDelete)
+      await Future<void>.delayed(const Duration(milliseconds: 20));
     // Parça 46'ya kadar burada `offline` kontrolü YOKTU — yani "uçak
     // modunda silme başarısız olur" senaryosu testlerde hiç oluşmuyordu ve
     // bütün bir hata sınıfı (silinemeyen satırın listeye geri gelmesi)
@@ -205,14 +206,15 @@ void main() {
     final (repo, gw) = newRepo();
     gw.rows['bad'] = {
       'state': {'garbage': 1},
-      'updated_at':
-          DateTime.fromMillisecondsSinceEpoch(clock, isUtc: true).toIso8601String(),
+      'updated_at': DateTime.fromMillisecondsSinceEpoch(clock, isUtc: true)
+          .toIso8601String(),
     };
     await repo.upsert('good', 'user-1', newPlayState());
     final list = await repo.list();
     expect(list!.saves.single.id, 'good');
     await repo.idle;
-    expect(gw.rows.containsKey('bad'), isTrue); // web istemcisi için geçerli olabilir
+    expect(gw.rows.containsKey('bad'),
+        isTrue); // web istemcisi için geçerli olabilir
   });
 
   test('upsert hatası yutulur (false), kuyruk kilitlenmez', () async {
@@ -252,8 +254,8 @@ void main() {
   test('CloudGameSession: oyun bitince satır silinir', () async {
     final (repo, gw) = newRepo();
     final controller = newController();
-    final session = CloudGameSession(controller, repo, 'user-1',
-        debounce: Duration.zero);
+    final session =
+        CloudGameSession(controller, repo, 'user-1', debounce: Duration.zero);
     controller.dispatch(const StartAction([
       PlayerSetup(name: 'Ironman', isAI: false),
       PlayerSetup(name: 'Yapay Zeka 2', isAI: true),
@@ -279,8 +281,8 @@ void main() {
     // yani web dahil her cihazda — hayalet olarak kalırdı.
     final (repo, gw) = newRepo();
     final controller = newController();
-    final session = CloudGameSession(controller, repo, 'user-1',
-        debounce: Duration.zero);
+    final session =
+        CloudGameSession(controller, repo, 'user-1', debounce: Duration.zero);
     controller.dispatch(const StartAction([
       PlayerSetup(name: 'Ironman', isAI: false),
       PlayerSetup(name: 'Yapay Zeka 2', isAI: true),
@@ -626,7 +628,8 @@ void main() {
     return (stale, played);
   }
 
-  test('bayat satırdan devam offline hamleleri SİLMEZ (ayna daha yeniyse '
+  test(
+      'bayat satırdan devam offline hamleleri SİLMEZ (ayna daha yeniyse '
       'oyun onunla açılır)', () async {
     final (repo, gw, storage) = await newMirroredRepo();
     final (stale, played) = await staleRowThenOfflineMove(repo, gw);
@@ -681,7 +684,8 @@ void main() {
     await storage.db.close();
   });
 
-  test('taze listede newerPendingState null döner (gereksiz yeniden yükleme '
+  test(
+      'taze listede newerPendingState null döner (gereksiz yeniden yükleme '
       'yok)', () async {
     final (repo, gw, storage) = await newMirroredRepo();
     final (_, played) = await staleRowThenOfflineMove(repo, gw);
@@ -690,8 +694,7 @@ void main() {
     // dokunulduğunda damgalar eşittir, yani değiştirilecek bir şey yok.
     final fresh = (await repo.list(userId: 'user-1'))!.saves.single;
     expect(fresh.state.turnCount, played.turnCount);
-    expect(
-        await repo.newerPendingState('id-1', 'user-1', fresh.updatedAtMs),
+    expect(await repo.newerPendingState('id-1', 'user-1', fresh.updatedAtMs),
         isNull);
 
     // Aynası olmayan bir satırda da null.
@@ -712,8 +715,7 @@ void main() {
   Future<CloudSaveCacheStore> brokenCache() =>
       Future.delayed(Duration.zero, () => throw StateError('depo yok'));
 
-  test('depo açılamasa bile hamle SUNUCUYA yazılır ve akış fırlamaz',
-      () async {
+  test('depo açılamasa bile hamle SUNUCUYA yazılır ve akış fırlamaz', () async {
     final gw = FakeGateway();
     final repo = CloudSaveRepo(gw,
         nowMs: () => clock,
@@ -752,8 +754,7 @@ void main() {
   // yerde durmuyordu; ağ dönünce sunucudaki BİTMEMİŞ eski kopya listeye
   // "devam eden oyun" olarak geri geliyordu (kullanıcı 8.6'da gördü).
 
-  test('offline silme kuyruğa girer ve ağ dönünce gerçekten silinir',
-      () async {
+  test('offline silme kuyruğa girer ve ağ dönünce gerçekten silinir', () async {
     final (repo, gw, storage) = await newMirroredRepo();
     expect(await repo.upsert('id-1', 'user-1', newPlayState()), isTrue);
     expect((await repo.list(userId: 'user-1'))!.saves, hasLength(1));

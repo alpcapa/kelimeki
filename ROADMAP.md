@@ -230,6 +230,10 @@ build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasınd
 | (11 Eki) | **Oyun sonu modalı yeni oyunda "BERABERE" diye açılıyordu** (Asnmzr raporu): TEKRAR OYNA'ya yavaş ağda basınca eski oyunun modalı CANLI state ile açılıyordu — biten durum artık donduruluyor, yeni oyun başladıysa modal açılmıyor | `ui/game/game_screen.dart` (modal bloğu) + `test/game_over_stale_modal_test.dart`. Parça 234 |
 | #805 (4 Eki) | **Rastgele Oyuncu + oyun sonu arkadaş önerisi + Detaylı Kurallar "Rastgele Oyun"** — port yarısı; **web #804 ile BİRLİKTE 12 Ekim'de merge** (kullanıcı kararı 4 Eki: web tek başına işe yaramaz, bayrak yok). Merge sırası: #804 → #805 (base main'e çevrilir) | `ui/live/*` (şerit, kurulum formu, kartlar, oyun sonu önerisi) · `util/random_games.dart` · `util/friend_suggest.dart` · `ui/game/help_modal.dart` · `storage/flags_store.dart`. Çakışma beklenir: #765/#774/#779 (`live_game_create_form.dart`, `legal_modals.dart`); Gizlilik tarihi #779'da 12 Ekim — #804/#805'in 4 Ekim'i ona uydurulur (web+Dart birlikte). Cihaz: `docs/testing-rastgele.md` + `mobile/TESTING.md` |
 
+### Rastgele Oyuncu (#804/#805) — 11 Ekim 2026: 1.1.3 trenine ALINDI (kullanıcı)
+
+Web (#804) iki hesapla elle test edildi (`docs/testing-rastgele.md`, bulgular `random-opponent.md`). Kullanıcı: *"Herşeyi gönder, TestFlight'da test yaparım sonra."* → #804 + #805, #826 tren dalına birleştirildi (tek merge: web Vercel'e + mobil TestFlight'a aynı anda). Port yarısı CİHAZDA denenmedi — TestFlight turu bekliyor; port tarafında ayrıca web testinde bulunan iki değişiklik yansıtıldı: davet kartında açık koltuk "Rastgele oyuncu" + sağda kırmızı "Bekliyor", şerit yoklaması 30 sn.
+
 ### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
 
 Kod YOK; karar kaydı. #804/#805 olduğu gibi **12 Ekim**'de çıkar (kesim riski
@@ -254,6 +258,7 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
   karar ver; web + port + push yükü (`verify-push-payload`) birlikte.
 | #789 (2 Eki) | **Bölüm başlıkları kalın** — port yarısı (web #788; kullanıcı: *"yazılar silik ve okunaksız"*) | `fontWeight: w700`: `setup_screen` · `live_games_tab` · `recent_games_section` · `live_game_create_form` · `score_stats_section` · `friends_modal` · `help_modal` (×2) · `legal_modals` · `delete_account_modal` · `leaderboard_modal` (sütun başlıkları). **+ Form etiketleri** (aynı gün ikinci tur, web eşi ayrı PR): `auth_modal` · `account_settings_modal` (`_labeled`) · `delete_account_modal` (onay etiketi). Ara yazılar dışarıda. App **1.037 test yeşil** |
 | #791 (2 Eki) | **Android ikonu küçük ve etrafı beyazdı** — adaptive ön katman iki kez küçülüyordu (üretici %66 + `flutter_launcher_icons` varsayılan inset %16) | `pubspec.yaml` (`adaptive_icon_foreground_inset: 0`) + üretilmiş `mipmap-anydpi-v26/ic_launcher.xml`. Parça 232 · iOS etkilenmez |
+| #805 (4 Eki, `claude/random-opponent-port`) | **Rastgele Oyuncu (#45) port ikizi** — açık ilan: kurulum formunda "?" avatarlı satır + esnek kadro, Devam Edenler'de yatay KARE ilan şeridi (30 sn yoklama; 3 tam + 4.'nün ~1/4'ü) + "Bekliyor n/N" satırları, **rastgele kökenli aktif oyun kartı (açık mavi + "RASTGELE" etiketi)**, açık koltuk "Yapay Zeka" DEĞİL, kova kuralı. Sunucu RPC'leri canlıda; web yarısı #804. ⚠ **Yasal metin + "Son güncelleme: 4 Ekim 2026" web+port BİRLİKTE** (`legal_text_test`); #779 da aynı tarihi 12 Ekim'e çekiyor — ikisi birleşirken tek tarih seçilmeli. ⚠ `live_game_create_form.dart`i #765/#774/#779 de değiştiriyor → merge sırası/çakışma. | `data/online_games_api.dart` (`OnlineSlot` açık koltuk + `isHuman`, ilan modelleri/RPC'leri) · `util/random_games.dart` · `ui/live/random_games_strip.dart` · `live_games_tab.dart` · `live_game_create_form.dart` · `ui/open_seat_avatar.dart` · `player_avatar_row.dart` · `auth/legal_modals.dart` + web `src/legal/LegalContent.tsx` (yalnız tarih). Testler: `random_games_test.dart` · `random_games_ui_test.dart`. Cihaz: `mobile/TESTING.md` → "Rastgele Oyuncu" (`docs/testing-rastgele.md`) |
 
 ## Sıradaki sürüme binecekler — `main`'de var, MAĞAZADA yok
 
@@ -893,13 +898,14 @@ gider); sürüm dondurması bitmeden başlama.
 ---
 
 ## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB (#804) + PORT (#805) YAZILDI, taslak PR'da · 12 Ekim treni, İKİSİ BİRLİKTE MERGE** (3-4 Ekim 2026)
+## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB YAZILDI (PR'da, test bekliyor) · PORT YAZILDI (taslak PR, cihaz testi bekliyor) · hedef 12 Ekim treni** (3 Ekim 2026)
 
 Kullanıcı (3 Ekim): arkadaş listesinin tepesine "?" avatarlı **Rastgele Oyuncu**;
 ilan Devam Edenler'in üstünde **3 kutu yan yana, yatay kayan şeritte** kabul
 edilir, kabul edilen oyun "Bekliyor" ile Devam Edenler'e girer. Motora dokunmaz.
 Kayıt, kararlar (A-F kapandı) ve öneriler: `docs/decisions/random-opponent.md`. Kullanıcı: 12 Ekim trenine alınabilirse alınsın (port yetişmezse 19 Ekim);
 Takım Ligi (#44) ile aynı `online_games.listing` altyapısı.
-⚠ **4 Ekim (kullanıcı): web (#804) ve port (#805) AYNI GÜN merge edilir** (iki taraflı pazar yeri; web tek başına işe yaramaz) — `random-opponent.md` §18.
+⚠ **4 Ekim (kullanıcı): web (#804) ve port (#805) AYNI GÜN merge edilir** (iki taraflı pazar yeri; web tek başına işe yaramaz) — `random-opponent.md` §19.
 
 ## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
 

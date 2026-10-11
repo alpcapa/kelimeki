@@ -6,7 +6,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/ui/friends/block_confirm_sheet.dart';
 import 'package:kelimeki/src/ui/friends/blocked_users_sheet.dart';
-import 'package:kelimeki/src/ui/score/leaderboard_modal.dart';
 import 'package:kelimeki/src/util/beyin_ligi.dart';
 
 import 'support/web_source.dart';

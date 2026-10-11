@@ -53,14 +53,20 @@ void main() {
     expect(sor(soruldu: 2, sonSorulma: t0.subtract(const Duration(days: 30))),
         isTrue);
     expect(sor(soruldu: 3, sonSorulma: t0.subtract(const Duration(days: 30))),
-        isFalse, reason: 'üçüncüden sonra bir daha sorulmaz');
+        isFalse,
+        reason: 'üçüncüden sonra bir daha sorulmaz');
   });
 
   test('iki sorma arasında en az yedi gün', () {
-    expect(sor(soruldu: 1, sonSorulma: t0.subtract(const Duration(days: 6, hours: 23))),
-        isFalse, reason: 'yedi gün dolmadan tekrar sorulmaz');
+    expect(
+        sor(
+            soruldu: 1,
+            sonSorulma: t0.subtract(const Duration(days: 6, hours: 23))),
+        isFalse,
+        reason: 'yedi gün dolmadan tekrar sorulmaz');
     expect(sor(soruldu: 1, sonSorulma: t0.subtract(const Duration(days: 7))),
-        isTrue, reason: 'tam yedi gün dolduğunda sorulabilir');
+        isTrue,
+        reason: 'tam yedi gün dolduğunda sorulabilir');
   });
 
   test('hiç sorulmadıysa aralık aranmaz', () {

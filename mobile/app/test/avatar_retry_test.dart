@@ -95,7 +95,8 @@ void main() {
     expect(gorulenAnahtarlar, contains(const ValueKey(1)),
         reason: 'ilk hatadan sonra ikinci bir deneme (anahtar 1) başlamalı');
     expect(find.byType(Image), findsNothing,
-        reason: 'ikinci hata gerçek sayılır: baş harfte kalır, sonsuz deneme YOK');
+        reason:
+            'ikinci hata gerçek sayılır: baş harfte kalır, sonsuz deneme YOK');
     expect(find.text('IR'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

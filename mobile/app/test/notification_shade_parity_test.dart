@@ -60,20 +60,25 @@ void main() {
   test('kanal adı Dart ile Kotlin\'de BİREBİR aynı', () {
     final dartAd =
         RegExp(r"MethodChannel\('([^']+)'\)").firstMatch(dart)?.group(1);
-    final kotlinAd = RegExp(r'MethodChannel\(\s*flutterEngine[\s\S]*?,\s*"([^"]+)"\s*\)')
-        .firstMatch(kotlin)
-        ?.group(1);
+    final kotlinAd =
+        RegExp(r'MethodChannel\(\s*flutterEngine[\s\S]*?,\s*"([^"]+)"\s*\)')
+            .firstMatch(kotlin)
+            ?.group(1);
 
-    expect(dartAd, isNotNull, reason: 'Dart tarafında MethodChannel(...) bulunamadı');
-    expect(kotlinAd, isNotNull, reason: 'Kotlin tarafında MethodChannel(...) bulunamadı');
+    expect(dartAd, isNotNull,
+        reason: 'Dart tarafında MethodChannel(...) bulunamadı');
+    expect(kotlinAd, isNotNull,
+        reason: 'Kotlin tarafında MethodChannel(...) bulunamadı');
     expect(dartAd, kotlinAd,
-        reason: 'Kanal adı uyuşmuyor — çağrı sessizce düşer, rozet temizlenmez');
+        reason:
+            'Kanal adı uyuşmuyor — çağrı sessizce düşer, rozet temizlenmez');
   });
 
   test('metot adı Dart ile Kotlin\'de BİREBİR aynı', () {
     final dartMetot =
         RegExp(r"metot\s*=\s*'([^']+)'").firstMatch(dart)?.group(1);
-    expect(dartMetot, isNotNull, reason: 'Dart tarafında metot sabiti bulunamadı');
+    expect(dartMetot, isNotNull,
+        reason: 'Dart tarafında metot sabiti bulunamadı');
     // Kotlin: when (call.method) { "<metot>" -> ... }
     expect(kotlin, contains('"$dartMetot" ->'),
         reason:
@@ -99,20 +104,24 @@ void main() {
   test('kanal adı Dart ile Swift\'te BİREBİR aynı', () {
     final dartAd =
         RegExp(r"MethodChannel\('([^']+)'\)").firstMatch(dart)?.group(1);
-    final swiftAd =
-        RegExp(r'FlutterMethodChannel\(\s*name:\s*"([^"]+)"').firstMatch(swift)?.group(1);
+    final swiftAd = RegExp(r'FlutterMethodChannel\(\s*name:\s*"([^"]+)"')
+        .firstMatch(swift)
+        ?.group(1);
 
-    expect(dartAd, isNotNull, reason: 'Dart tarafında MethodChannel(...) bulunamadı');
+    expect(dartAd, isNotNull,
+        reason: 'Dart tarafında MethodChannel(...) bulunamadı');
     expect(swiftAd, isNotNull,
         reason: 'Swift tarafında FlutterMethodChannel(name:) bulunamadı');
     expect(dartAd, swiftAd,
-        reason: 'Kanal adı uyuşmuyor — çağrı sessizce düşer, panel temizlenmez');
+        reason:
+            'Kanal adı uyuşmuyor — çağrı sessizce düşer, panel temizlenmez');
   });
 
   test('metot adı Dart ile Swift\'te BİREBİR aynı', () {
     final dartMetot =
         RegExp(r"metot\s*=\s*'([^']+)'").firstMatch(dart)?.group(1);
-    expect(dartMetot, isNotNull, reason: 'Dart tarafında metot sabiti bulunamadı');
+    expect(dartMetot, isNotNull,
+        reason: 'Dart tarafında metot sabiti bulunamadı');
     // Swift: switch cagri.method { case "<metot>": ... }
     expect(swift, contains('case "$dartMetot":'),
         reason:

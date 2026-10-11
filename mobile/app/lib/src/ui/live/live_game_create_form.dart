@@ -35,8 +35,10 @@ import '../../data/friends_api.dart';
 import '../../data/online_games_api.dart';
 import '../../data/games_api.dart';
 import '../../data/stats_api.dart';
+import '../../util/random_games.dart';
 import '../../util/share_board.dart' show shareOriginFrom;
 import '../auth/k_avatar.dart';
+import '../open_seat_avatar.dart';
 import '../friends/k_pill.dart';
 import '../friends/player_directory.dart';
 import '../game/neo_box.dart';
@@ -97,6 +99,10 @@ class LiveGameCreateForm extends StatefulWidget {
   final String? initialFriendId;
   final int? initialPlayerCount;
 
+  /// Şeritteki "Rastgele oyun aç"tan gelince (4 Ekim 2026, kullanıcı: "rasgele oyuncu
+  /// direkt seçili gelsin"): Rastgele Oyuncu SEÇİLİ açılır (web `initialRandom`).
+  final bool initialRandom;
+
   /// Test kancası — verilmezse sistem paylaşım sayfası.
   final InviteSharer? sharer;
 
@@ -113,6 +119,7 @@ class LiveGameCreateForm extends StatefulWidget {
     this.chat,
     this.initialFriendId,
     this.initialPlayerCount,
+    this.initialRandom = false,
     this.sharer,
   });
 
@@ -124,12 +131,19 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
   late int _playerCount = widget.initialPlayerCount == 4 ? 4 : 2;
   List<FriendRow>? _friends;
   late final List<String> _selected = [
-    if (widget.initialFriendId != null) widget.initialFriendId!,
+    if (widget.initialFriendId != null)
+      widget.initialFriendId!
+    else if (widget.initialRandom)
+      kRandomSeat,
   ];
   bool _busy = false;
   String? _error;
   final _query = TextEditingController();
-  ({List<String> names, bool withAi})? _sentTo;
+  ({
+    List<String> names,
+    bool withAi,
+    ({String title, String body})? random
+  })? _sentTo;
   String? _lastUserId;
   bool _showAll = false;
   String? _busyId;
@@ -223,26 +237,23 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
     });
   }
 
-  void _toggleFriend(String friendId) {
-    setState(() {
-      if (_playerCount == 2) {
-        if (_selected.contains(friendId)) {
-          _selected.clear();
-        } else {
-          _selected
-            ..clear()
-            ..add(friendId);
-        }
-        return;
-      }
-      if (_selected.contains(friendId)) {
-        _selected.remove(friendId);
-        return;
-      }
-      if (_selected.length >= 3) return;
-      _selected.add(friendId);
-    });
-  }
+  /// Seçimi saf fonksiyonun sonucuyla değiştirir (kurallar
+  /// `util/random_games.dart`ta — web ikizi `utils/randomGames.ts`).
+  void _applySelected(List<String> next) => setState(() {
+        _selected
+          ..clear()
+          ..addAll(next);
+      });
+
+  void _toggleFriend(String friendId) =>
+      _applySelected(toggleFriendSeat(_selected, friendId, _playerCount));
+
+  /// "Rastgele Oyuncu" satırı: her dokunuş bir boş koltuğu "?" yapar
+  /// (esnek kadro; 2 kişide tek rakip DEĞİŞTİRİLİR).
+  void _addRandom() => _applySelected(addRandomSeat(_selected, _playerCount));
+
+  /// "?" koltuk kartına dokunuş: o koltuğu boşaltır.
+  void _removeSeat(int index) => _applySelected(removeSeatAt(_selected, index));
 
   void _toggleShowAll() {
     setState(() {
@@ -254,8 +265,7 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
     if (_listScroll.hasClients) _listScroll.jumpTo(0);
   }
 
-  bool get _canSubmit =>
-      _playerCount == 2 ? _selected.length == 1 : _selected.length >= 2;
+  bool get _canSubmit => canSubmitSeats(_selected, _playerCount);
 
   FriendRow? _byId(String id) => (_friends ?? const <FriendRow>[])
       .where((f) => f.friendId == id)
@@ -269,6 +279,29 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
       _error = null;
     });
     try {
+      final names = [
+        for (final id in _selected)
+          if (id != kRandomSeat) _byId(id)?.name ?? 'Bir arkadaşın',
+      ];
+      if (usesRandomSeat(_selected)) {
+        // En az bir "?" → açık ilan (ya da uygun ilan varsa ona katılma;
+        // karar sunucuda, dönüşteki `joined`). Web `createRandomGame`.
+        final sonuc = await widget.onlineGames.createRandom(
+            _playerCount, buildRandomSlots(user.id, _selected, _playerCount));
+        analytics.log('live_game_created', {
+          'player_count': _playerCount,
+          'with_ai': withAiLastSlot ? 1 : 0,
+          'random': 1,
+        });
+        if (!mounted) return;
+        setState(() => _sentTo = (
+              names: names,
+              withAi: withAiLastSlot,
+              random:
+                  createdNotice(joined: sonuc.joined, started: sonuc.started),
+            ));
+        return;
+      }
       final slots = [
         NewGameSlot.human(user.id),
         for (final id in _selected) NewGameSlot.human(id),
@@ -280,12 +313,8 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
         'with_ai': withAiLastSlot ? 1 : 0, // GA4 parametresi bool almaz
       });
       if (!mounted) return;
-      setState(() => _sentTo = (
-            names: [
-              for (final id in _selected) _byId(id)?.name ?? 'Bir arkadaşın',
-            ],
-            withAi: withAiLastSlot,
-          ));
+      setState(
+          () => _sentTo = (names: names, withAi: withAiLastSlot, random: null));
     } catch (e) {
       if (mounted) setState(() => _error = friendErrorText(e));
     } finally {
@@ -296,7 +325,7 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
   /// 4 kişilik + 2 arkadaş: 4. koltuk Yapay Zeka — ekrandaki koltuk kartı
   /// bunu zaten gösteriyor, ayrıca sorulmaz (ROADMAP #41 karar 12).
   Future<void> _handleSubmit() =>
-      _submit(withAiLastSlot: _playerCount == 4 && _selected.length == 2);
+      _submit(withAiLastSlot: aiLastSeat(_selected, _playerCount));
 
   /// "Arkadaşını davet et" → DOĞRUDAN paylaşım (karar 17; web
   /// `useInviteShare`). Ankraj düğmenin KENDİ kutusu (iPad popover'ı
@@ -423,9 +452,8 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
-              child: _SectionLabel(iki
-                  ? 'OYUNCULAR'
-                  : 'OYUNCULAR · ${_selected.length + 1}/4'),
+              child: _SectionLabel(
+                  iki ? 'OYUNCULAR' : 'OYUNCULAR · ${_selected.length + 1}/4'),
             ),
             if (!iki)
               const Text(kLiveFormAiNote,
@@ -466,9 +494,13 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
   Widget _seat(int k, {required bool yatay}) {
     final col = playerColors[k];
     final ben = k == 0;
-    final f = !ben && k - 1 < _selected.length ? _byId(_selected[k - 1]) : null;
-    final ai = _playerCount == 4 && k == 3 && _selected.length == 2;
-    final dolu = ben || f != null;
+    final secim = !ben && k - 1 < _selected.length ? _selected[k - 1] : null;
+    // "?" koltuğu (Rastgele Oyuncu): dolu kart, kartın TAMAMI dokunulabilir,
+    // dokununca seçimi kaldırır (web `LiveGameCreateForm`).
+    final rastgele = secim == kRandomSeat;
+    final f = secim != null && !rastgele ? _byId(secim) : null;
+    final ai = k == 3 && aiLastSeat(_selected, _playerCount);
+    final dolu = ben || f != null || rastgele;
     final profil = widget.auth.profile;
     final benimAdim = [profil?.displayName, profil?.username]
             .whereType<String>()
@@ -480,8 +512,17 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
     final Widget avatar;
     final String yazi;
     if (ben) {
-      avatar = KAvatar(url: profil?.avatarUrl, name: benimAdim, size: avatarBoy);
+      avatar =
+          KAvatar(url: profil?.avatarUrl, name: benimAdim, size: avatarBoy);
       yazi = benimAdim;
+    } else if (rastgele) {
+      avatar = OpenSeatAvatar(
+        size: avatarBoy,
+        borderColor: col.base,
+        textColor: col.text,
+        fontSize: yatay ? 20 : 16,
+      );
+      yazi = yatay ? kRandomSeatLabel2 : kRandomSeatLabel4;
     } else if (f != null) {
       avatar = KAvatar(url: f.avatarUrl, name: f.name, size: avatarBoy);
       yazi = f.name;
@@ -496,8 +537,8 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
           border: Border.all(color: _border),
         ),
         child: Text(ai ? '🤖' : '+',
-            style: TextStyle(
-                fontSize: yatay ? 18 : 14, height: 1, color: _muted)),
+            style:
+                TextStyle(fontSize: yatay ? 18 : 14, height: 1, color: _muted)),
       );
       yazi = ai
           ? kLiveFormAiSeat
@@ -560,20 +601,30 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
     );
 
     final carpiG = yatay ? 24.0 : 16.0;
-    final carpi = f == null
-        ? SizedBox(width: carpiG, height: 28)
-        : Semantics(
-            label: '${f.name} koltuğunu boşalt',
-            button: true,
-            excludeSemantics: true,
-            child: TapTarget(
-              onTap: () => _toggleFriend(f.friendId),
-              minHeight: 28,
-              minWidth: carpiG,
-              // Gömülü yazı tiplerinde ✕ yok → ikon (KModal'ın kapatması gibi).
-              child: Icon(Icons.close, size: yatay ? 16 : 13, color: col.text),
-            ),
-          );
+    final rastgeleAciklama =
+        'Rastgele oyuncu koltuğunu boşalt (koltuk ${k + 1})';
+    final carpi = rastgele
+        // Kartın TAMAMI dokunulabilir; ✕ yalnızca görsel (iç içe hedef yok).
+        ? SizedBox(
+            width: carpiG,
+            height: 28,
+            child: Icon(Icons.close, size: yatay ? 16 : 13, color: col.text),
+          )
+        : f == null
+            ? SizedBox(width: carpiG, height: 28)
+            : Semantics(
+                label: '${f.name} koltuğunu boşalt',
+                button: true,
+                excludeSemantics: true,
+                child: TapTarget(
+                  onTap: () => _toggleFriend(f.friendId),
+                  minHeight: 28,
+                  minWidth: carpiG,
+                  // Gömülü yazı tiplerinde ✕ yok → ikon (KModal'ın kapatması gibi).
+                  child:
+                      Icon(Icons.close, size: yatay ? 16 : 13, color: col.text),
+                ),
+              );
 
     final satir = Row(children: [
       avatar,
@@ -586,6 +637,27 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
         ? const EdgeInsets.symmetric(horizontal: 12, vertical: 10)
         : const EdgeInsets.fromLTRB(8, 8, 6, 8);
 
+    if (rastgele) {
+      return Semantics(
+        button: true,
+        label: rastgeleAciklama,
+        excludeSemantics: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _removeSeat(k - 1),
+          child: Container(
+            key: ValueKey('koltuk-rastgele-${k - 1}'),
+            padding: dolgu,
+            decoration: BoxDecoration(
+              color: col.tint,
+              border: Border.all(color: col.base),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: satir,
+          ),
+        ),
+      );
+    }
     if (dolu) {
       return Container(
         key: ValueKey(ben ? 'koltuk-ben' : 'koltuk-dolu-${k - 1}'),
@@ -663,7 +735,7 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
         ]),
         const SizedBox(height: 8),
         Text(
-          '${_playerCount == 2 ? 'Arkadaşın' : 'Arkadaşların'} $kLiveFormHintTail',
+          '${usesRandomSeat(_selected) ? 'Biri' : _playerCount == 2 ? 'Arkadaşın' : 'Arkadaşların'} $kLiveFormHintTail',
           textAlign: TextAlign.center,
           style: const TextStyle(
               fontFamily: 'SpaceMono', fontSize: 11, color: _muted),
@@ -696,11 +768,13 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
               onTap: _toggleShowAll),
         ]),
         const SizedBox(height: 8),
-        if (!_showAll && friends == null)
-          const KLoadingNote(vertical: 16)
-        else if (!_showAll && friends!.isEmpty)
-          _noFriends()
-        else ...[
+        if (!_showAll && friends == null) ...[
+          _randomRowPadded(),
+          const KLoadingNote(vertical: 16),
+        ] else if (!_showAll && friends!.isEmpty) ...[
+          _randomRowPadded(),
+          _noFriends(),
+        ] else ...[
           if (strip != null) strip,
           TextField(
             controller: _query,
@@ -732,13 +806,83 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
                 padding: const EdgeInsets.only(right: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: _listRows(),
+                  children: [_randomRowPadded(), ..._listRows()],
                 ),
               ),
             ),
           ),
         ],
       ],
+    );
+  }
+
+  /// RASTGELE OYUNCU (3-4 Ekim 2026, kullanıcı: "diğer arkadaşlar gibi listenin en
+  /// üstüne, ayrı bir bölümde değil"): arkadaş satırlarıyla AYNI kaydırılan
+  /// listenin İLK satırı — aramadan MUAF; "Tüm oyuncular"da ve hiç arkadaşı
+  /// olmayanda da hep görünür (yabancıyla oynamanın tek yolu bu).
+  Widget _randomRowPadded() => Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: _randomRow(),
+      );
+
+  /// "Rastgele Oyuncu" satırı — `_friendRow` ile AYNI kart dili; avatar yerine
+  /// kesik çerçeveli "?", alt yazı, kutucuk yerine seçilen sayısı (×N).
+  Widget _randomRow() {
+    final n = randomSeatCount(_selected);
+    return Semantics(
+      button: true,
+      label: 'Rastgele Oyuncu — boş koltuğa ekle${n > 0 ? ' ($n seçili)' : ''}',
+      excludeSemantics: true,
+      child: GestureDetector(
+        key: const ValueKey('rastgele-satir'),
+        behavior: HitTestBehavior.opaque,
+        onTap: _addRandom,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: ShapeDecorationWithCssShadows(
+            color: _panel,
+            borderColor: _border,
+            radius: 6,
+            shadows: kRaisedShadows,
+          ),
+          child: Row(children: [
+            const OpenSeatAvatar(size: 28, fontSize: 16),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(kRandomRowTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: _text)),
+                  Text(kRandomRowSub,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: _muted)),
+                ],
+              ),
+            ),
+            if (n > 0)
+              SizedBox(
+                width: 20,
+                child: Text('×$n',
+                    key: const ValueKey('rastgele-adet'),
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                        fontFamily: 'SpaceMono',
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _accent)),
+              )
+            else
+              const _CheckMark(checked: false),
+          ]),
+        ),
+      ),
     );
   }
 
@@ -1010,7 +1154,13 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
 
   // ── Gönderildi ekranı ────────────────────────────────────────────────
 
-  Widget _sentView(({List<String> names, bool withAi}) sent) {
+  Widget _sentView(
+      ({
+        List<String> names,
+        bool withAi,
+        ({String title, String body})? random
+      }) sent) {
+    final rastgele = sent.random;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
@@ -1030,28 +1180,51 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(kLiveFormSentTitle,
+          Text(rastgele?.title ?? kLiveFormSentTitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 24,
                   height: 1.25,
                   fontWeight: FontWeight.bold,
                   color: _text)),
           const SizedBox(height: 12),
-          Text(
-            '${sent.names.join(', ')} kabul edince oyun başlar ve ilk sıra '
-            'sende olur.${sent.withAi ? ' 4. koltuk Yapay Zeka.' : ''}',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, height: 1.6, color: _muted),
-          ),
-          const SizedBox(height: 12),
-          const Text(kLiveFormSentNote,
+          if (rastgele != null) ...[
+            // Rastgele kadro: sunucunun sonucuna göre başlık/metin
+            // (`createdNotice`, web ile BİREBİR).
+            Text(
+              rastgele.body,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontFamily: 'SpaceMono',
-                  fontSize: 12,
-                  height: 1.6,
-                  color: _muted)),
+              style: const TextStyle(fontSize: 14, height: 1.6, color: _muted),
+            ),
+            if (sent.names.isNotEmpty || sent.withAi) ...[
+              const SizedBox(height: 12),
+              Text(
+                '${sent.names.isNotEmpty ? 'Davet gönderilen: ${sent.names.join(', ')}. ' : ''}'
+                '${sent.withAi ? '4. koltuk Yapay Zeka.' : ''}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontFamily: 'SpaceMono',
+                    fontSize: 12,
+                    height: 1.6,
+                    color: _muted),
+              ),
+            ],
+          ] else ...[
+            Text(
+              '${sent.names.join(', ')} kabul edince oyun başlar ve ilk sıra '
+              'sende olur.${sent.withAi ? ' 4. koltuk Yapay Zeka.' : ''}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 14, height: 1.6, color: _muted),
+            ),
+            const SizedBox(height: 12),
+            const Text(kLiveFormSentNote,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontFamily: 'SpaceMono',
+                    fontSize: 12,
+                    height: 1.6,
+                    color: _muted)),
+          ],
           const SizedBox(height: 20),
           Center(
             child: SizedBox(

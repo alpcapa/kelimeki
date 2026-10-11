@@ -511,7 +511,8 @@ void main() {
       expect(find.text('Çaylak'), findsOneWidget);
     });
 
-    testWidgets('kapatma sağ üstteki ✕ ile; "KAPAT" butonu YOK, kartta beyaz '
+    testWidgets(
+        'kapatma sağ üstteki ✕ ile; "KAPAT" butonu YOK, kartta beyaz '
         'hale yok', (tester) async {
       await pumpInfo(tester, total: 83, bonus: 5);
       // Salt bilgi veren bir popup'ın altına tam genişlikte aksiyon butonu
@@ -623,7 +624,8 @@ void main() {
       expect(sealShowsRing('+1000', compact: false), isFalse);
     });
 
-    testWidgets('kurdele her boyda; iç halka yalnızca tam boyda', (tester) async {
+    testWidgets('kurdele her boyda; iç halka yalnızca tam boyda',
+        (tester) async {
       await setPhoneViewSize(tester, const Size(200, 200));
       await tester.pumpWidget(const MaterialApp(
         home: Scaffold(
@@ -729,7 +731,8 @@ void main() {
               }
             }
           }
-          expect(top.isFinite, isTrue, reason: "$letter için mürekkep bulunamadı");
+          expect(top.isFinite, isTrue,
+              reason: "$letter için mürekkep bulunamadı");
           // viewBox birimine çevir, merkeze göre sapma.
           return ((top + bottom + 1) / 2 - cy) / s;
         }) as double;

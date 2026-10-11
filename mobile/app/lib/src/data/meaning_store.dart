@@ -143,7 +143,8 @@ class MeaningStore {
   /// tutmanın karşılığı da yok): yeni damga = yeni ad = kendiliğinden yeniden
   /// kopyalama. Eski ad IndexedDB'de kalır, zararsız.
   Future<Database?> _openWeb(DatabaseFactory f) async {
-    final assetStamp = (await _bundle.loadString(meaningsStampAssetPath)).trim();
+    final assetStamp =
+        (await _bundle.loadString(meaningsStampAssetPath)).trim();
     final dbPath = 'meanings-$assetStamp.db';
     if (!await f.databaseExists(dbPath)) {
       final bytes = await _bundle.load(meaningsAssetPath);

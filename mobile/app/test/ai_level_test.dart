@@ -52,7 +52,8 @@ void main() {
                 child: GameOverModal(
                     state: finished,
                     onOpenHistory: () {},
-                    aiLevel: aiLevelForBadge(finished.aiLevel, isAiGame: true)))),
+                    aiLevel:
+                        aiLevelForBadge(finished.aiLevel, isAiGame: true)))),
       ));
       await tester.pumpAndSettle();
       expect(find.byType(AiLevelBadge), findsOneWidget);
@@ -62,7 +63,8 @@ void main() {
       expect(find.text('+2'), findsNothing);
     });
 
-    testWidgets('Normal golden (YZ ekranı): turuncu "Normal" rozeti, birinci +2',
+    testWidgets(
+        'Normal golden (YZ ekranı): turuncu "Normal" rozeti, birinci +2',
         (tester) async {
       final finished = _lastState('reducer_ai2');
       expect(finished.aiLevel, isNull);
@@ -74,7 +76,8 @@ void main() {
                 child: GameOverModal(
                     state: finished,
                     onOpenHistory: () {},
-                    aiLevel: aiLevelForBadge(finished.aiLevel, isAiGame: true)))),
+                    aiLevel:
+                        aiLevelForBadge(finished.aiLevel, isAiGame: true)))),
       ));
       await tester.pumpAndSettle();
       expect(find.byType(AiLevelBadge), findsOneWidget);
@@ -176,8 +179,7 @@ void main() {
 
   testWidgets(
       'RecentGamesSection: Kolay satırında tarihin yanında yeşil rozet ve +1, '
-      'Normal satırında turuncu rozet ve +2',
-      (tester) async {
+      'Normal satırında turuncu rozet ve +2', (tester) async {
     final gw = FakeGamesGateway(userId: 'u-me')
       ..history = [
         gameRow(

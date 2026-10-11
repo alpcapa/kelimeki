@@ -39,6 +39,7 @@ import '../tokens.dart';
 import '../form_input.dart';
 import '../tap_target.dart';
 import '../../util/error_message.dart';
+
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -180,7 +181,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     // zaman `true` — ama mevcut isimle aynıysa (kişi kendi ismini yazdı)
     // kontrolü atlar (`currentValue` parametresi). Aynı sonucu burada:
     // mevcut isimle eşitse idle'da bırak, sunucuya sorma.
-    if (trimmed.isEmpty || trimmed == (widget.auth.profile?.displayName ?? '')) {
+    if (trimmed.isEmpty ||
+        trimmed == (widget.auth.profile?.displayName ?? '')) {
       setState(() => _nickStatus = _NickStatus.idle);
       return;
     }
@@ -188,8 +190,7 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     final mySeq = ++_nickSeq;
     _nickTimer = Timer(const Duration(milliseconds: 400), () async {
       try {
-        final checker =
-            widget.nicknameChecker ?? widget.auth.nicknameStatus;
+        final checker = widget.nicknameChecker ?? widget.auth.nicknameStatus;
         final durum = await checker(trimmed);
         if (mounted && _nickSeq == mySeq) {
           setState(() => _nickStatus = switch (durum) {
@@ -242,8 +243,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     } catch (e) {
       debugPrint('[Kelimeki] avatar seçilemedi: $e');
       if (mounted) {
-        setState(() => _error =
-            'Fotoğraf seçilemedi. Galeri izni verildiğinden emin ol.');
+        setState(() =>
+            _error = 'Fotoğraf seçilemedi. Galeri izni verildiğinden emin ol.');
       }
       return;
     }
@@ -319,7 +320,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
       if (_gender != (profile?.gender ?? '')) {
         patch['gender'] = _gender.isEmpty ? null : _gender;
       }
-      if (birthDateIso != profile?.birthDate) patch['birth_date'] = birthDateIso;
+      if (birthDateIso != profile?.birthDate)
+        patch['birth_date'] = birthDateIso;
       if (_marketingConsent != (profile?.marketingConsent ?? false)) {
         patch['marketing_consent'] = _marketingConsent;
       }
@@ -461,7 +463,9 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     // baş harfler için.
     final name = _nickname.text.isNotEmpty
         ? _nickname.text
-        : (_firstName.text.isNotEmpty ? _firstName.text : (auth.user?.email ?? 'Oyuncu'));
+        : (_firstName.text.isNotEmpty
+            ? _firstName.text
+            : (auth.user?.email ?? 'Oyuncu'));
 
     return KModal(
       title: 'HESAP AYARLARI',

@@ -50,18 +50,18 @@ class MemGateway implements CloudSaveGateway {
   Future<List<Map<String, Object?>>> list() async {
     listCalls++;
     return [
-        for (final e in rows.entries)
-          {
-            'id': e.key,
-            'state': e.value['state'],
-            'updated_at': e.value['updated_at'],
-          }
+      for (final e in rows.entries)
+        {
+          'id': e.key,
+          'state': e.value['state'],
+          'updated_at': e.value['updated_at'],
+        }
     ];
   }
 
   @override
-  Future<void> upsert(String id, String userId,
-      Map<String, Object?> stateJson, int playerCount) async {
+  Future<void> upsert(String id, String userId, Map<String, Object?> stateJson,
+      int playerCount) async {
     rows[id] = {
       'state': stateJson,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
@@ -202,7 +202,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('girişli: liste varsayılan, satır teslim diliyle + ekran görüntüsü',
+  testWidgets(
+      'girişli: liste varsayılan, satır teslim diliyle + ekran görüntüsü',
       (tester) async {
     final gw = MemGateway();
     await seedSave(gw, 'save-1');
@@ -211,7 +212,8 @@ void main() {
     final key = GlobalKey();
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
-      home: RepaintBoundary(key: key, child: SetupScreen(services: services(gw))),
+      home:
+          RepaintBoundary(key: key, child: SetupScreen(services: services(gw))),
     ));
     await tester.pumpAndSettle();
 
@@ -259,8 +261,8 @@ void main() {
     final gw = MemGateway();
     await pumpSetup(tester, gw);
 
-    final buton = tester.getRect(
-        find.widgetWithText(NeoButton, 'YENİ OYUN BAŞLAT'));
+    final buton =
+        tester.getRect(find.widgetWithText(NeoButton, 'YENİ OYUN BAŞLAT'));
     // Sekme KUTUSU (metin, kutunun 10px dolgusunun içinde ortalı — metin
     // kenarından boşluk ölçmek yanıltıcı olurdu).
     Rect kutu(String etiket) => tester.getRect(find
@@ -318,8 +320,8 @@ void main() {
       final stack =
           find.ancestor(of: find.text(label), matching: find.byType(Stack));
       if (stack.evaluate().isEmpty) return null;
-      final badge = find.descendant(
-          of: stack.first, matching: find.byType(CountBadge));
+      final badge =
+          find.descendant(of: stack.first, matching: find.byType(CountBadge));
       if (badge.evaluate().isEmpty) return null;
       return tester.widget<CountBadge>(badge.first).count;
     }
@@ -402,7 +404,8 @@ void main() {
     expect(find.textContaining('SIRA SENDE'), findsOneWidget);
   });
 
-  testWidgets('satırdan devam: aynada DAHA YENİ state varsa oyun ONUNLA '
+  testWidgets(
+      'satırdan devam: aynada DAHA YENİ state varsa oyun ONUNLA '
       'açılır (bayat satır offline hamleleri silmez)', (tester) async {
     final gw = MemGateway();
     final seeded = await seedSave(gw, 'save-1');
@@ -468,9 +471,8 @@ void main() {
 
     // Oyunu bitmiş hâle getir (gerçek bir bitişin reducer sonucu yerine
     // doğrudan state — burada test edilen şey KAYIT tetikleyicisi).
-    final controller = tester
-        .widget<GameScreen>(find.byType(GameScreen))
-        .controller;
+    final controller =
+        tester.widget<GameScreen>(find.byType(GameScreen)).controller;
     controller.restore(controller.state.copyWith(isGameOver: true));
     await tester.pumpAndSettle();
 
@@ -519,7 +521,9 @@ void main() {
     }
     await tester.tap(find.text('TEKRAR OYNA'));
     await tester.pumpAndSettle();
-    await tester.tap(find.descendant(of: find.byType(KDialogCard), matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
+    await tester.tap(find.descendant(
+        of: find.byType(KDialogCard),
+        matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
     await tester.pumpAndSettle();
 
     // Aynı kadroyla TAZE bir oyun.
@@ -570,10 +574,8 @@ void main() {
     expect(before, greaterThan(0), reason: 'mount senkronu zaten koşmalı');
 
     // Uygulama arka plana alınıp öne dönüyor (ağın geri gelmesiyle aynı an).
-    tester.binding
-        .handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    tester.binding
-        .handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await tester.pump(const Duration(milliseconds: 400)); // debounce
     await tester.pumpAndSettle();
 
@@ -618,5 +620,4 @@ void main() {
         reason: 'bir adım fırlasa da liste çizilmeli');
     expect(find.text('Devam eden bir Yapay Zeka oyunun yok.'), findsOneWidget);
   });
-
 }

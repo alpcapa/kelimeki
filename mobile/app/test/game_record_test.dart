@@ -57,8 +57,8 @@ void main() {
   late Map<String, Object?> fixture;
   setUpAll(() {
     fixture = (jsonDecode(
-            File('test/fixtures/web_game_record.json').readAsStringSync())
-        as Map)
+                File('test/fixtures/web_game_record.json').readAsStringSync())
+            as Map)
         .cast<String, Object?>();
   });
 
@@ -123,7 +123,8 @@ void main() {
       expect(record.rank, 4);
     });
 
-    test('ai_level (ROADMAP #23 Faz 4): Kolay state → satırda `kolay`; '
+    test(
+        'ai_level (ROADMAP #23 Faz 4): Kolay state → satırda `kolay`; '
         'Normal/eski state → anahtar HİÇ yok (web gameRecord.ts sözleşmesi)',
         () {
       final (state, expected) = scenario('finishedNormal');
@@ -226,8 +227,8 @@ void main() {
       expect(gw.finishes.single['ended_by_surrender'], true);
 
       // Aynı kaydı tekrar göndermek (kuyruktan retry) İKİNCİ mail göndermez.
-      final record = NewGameRecord.fromJson(
-          (fixture['abandonedSurrender'] as Map)['record'] as Map<String, Object?>);
+      final record = NewGameRecord.fromJson((fixture['abandonedSurrender']
+          as Map)['record'] as Map<String, Object?>);
       await repo.saveDurable(record);
       expect(gw.inserted, hasLength(1));
       expect(gw.notified, hasLength(1)); // hâlâ tek
@@ -257,12 +258,17 @@ void main() {
           reason: 'game_finishes süpürme anına yazılıyor');
       // (b) `games` satırı — ikisi AYNI anı taşımalı, yoksa iki tablo farklı
       //     güne düşer ve panel ile oyun geçmişi birbirini tutmaz.
-      expect(gw.inserted.single['created_at'],
-          DateTime.fromMillisecondsSinceEpoch(beklenen).toUtc().toIso8601String(),
+      expect(
+          gw.inserted.single['created_at'],
+          DateTime.fromMillisecondsSinceEpoch(beklenen)
+              .toUtc()
+              .toIso8601String(),
           reason: 'games satırı süpürme anına yazılıyor');
       // (c) Ve bu an GERÇEKTEN geçmişte: 23 gün önce.
-      expect(DateTime.parse(gw.inserted.single['created_at'] as String)
-          .isBefore(fixedNow), isTrue);
+      expect(
+          DateTime.parse(gw.inserted.single['created_at'] as String)
+              .isBefore(fixedNow),
+          isTrue);
     });
 
     test('normal bitişte terk bildirimi GİTMEZ', () async {
@@ -305,8 +311,7 @@ void main() {
       final started = DateTime.utc(2026, 8, 1, 12);
       await repo.recordAbandoned(
         state.copyWith(startedAt: started.toIso8601String()),
-        endedAtMs:
-            started.add(const Duration(hours: 2)).millisecondsSinceEpoch,
+        endedAtMs: started.add(const Duration(hours: 2)).millisecondsSinceEpoch,
       );
       expect(gw.finishes.single['duration_seconds'], 7200);
     });

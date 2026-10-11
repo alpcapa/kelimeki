@@ -151,7 +151,8 @@ void main() {
 
     expect(kRankTiers.length, 9); // kaynak gerçekten dokuz kademe mi
     for (final t in kRankTiers) {
-      expect(find.text(t.letter), findsWidgets, reason: 'harf yok: ${t.letter}');
+      expect(find.text(t.letter), findsWidgets,
+          reason: 'harf yok: ${t.letter}');
       // Ad + eşik tek bir TextSpan zincirinde; düz metin araması yeterli.
       expectText(t.name);
       expectText('${t.threshold} puan');

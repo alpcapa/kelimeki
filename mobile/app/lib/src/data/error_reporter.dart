@@ -208,7 +208,8 @@ class ErrorReporter {
 
       // İmza mesajın BAŞINDAN türetiliyor: aynı hatanın farklı satır
       // numaralarıyla gelen kopyaları tek kayda inmeli.
-      final imza = '$kind|${mesaj.length > 120 ? mesaj.substring(0, 120) : mesaj}';
+      final imza =
+          '$kind|${mesaj.length > 120 ? mesaj.substring(0, 120) : mesaj}';
       if (_imzaZamanlari.containsKey(imza)) return;
       _imzaZamanlari[imza] = simdi;
       _gonderimZamanlari.add(simdi);

@@ -30,6 +30,7 @@ class OnlineStatus extends ChangeNotifier with WidgetsBindingObserver {
   bool _observing = false;
   Timer? _offlineTimer;
   final Duration _confirmDelay;
+
   /// İlk ölçüm yapıldı mı — debounce yalnızca GEÇİŞLERE uygulanır.
   bool _measured = false;
 

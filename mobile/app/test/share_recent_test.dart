@@ -142,9 +142,11 @@ void main() {
     final origin = calls.single.origin;
     expect(origin, isNotNull);
     expect(origin!.isEmpty, isFalse, reason: 'CGRectIsEmpty olmamalı');
-    final screen = Offset.zero & tester.view.physicalSize / tester.view.devicePixelRatio;
+    final screen =
+        Offset.zero & tester.view.physicalSize / tester.view.devicePixelRatio;
     expect(screen.contains(origin.topLeft), isTrue);
-    expect(screen.contains(origin.bottomRight - const Offset(0.01, 0.01)), isTrue,
+    expect(
+        screen.contains(origin.bottomRight - const Offset(0.01, 0.01)), isTrue,
         reason: 'ankraj kök view koordinat uzayının İÇİNDE kalmalı');
     // ⚠ ÜÇÜNCÜ İDDİA — 2 Eylül 2026'da EKLENDİ, çünkü yukarıdaki ikisi
     // GERÇEK BİR HATAYI KAÇIRDI. Ekranın tamamını kaplayan bir ankraj hem
@@ -153,8 +155,9 @@ void main() {
     // iPad Air / iOS 16.2). İki çağrı yeri tam bu yüzden kırıktı ve testler
     // yeşildi. İddia "küçük olsun" DEĞİL — tahtanın ankrajı meşru biçimde
     // büyük; ankraj kök view'ın KENDİSİ olmasın.
-    expect(origin.width < screen.width * 0.95 ||
-        origin.height < screen.height * 0.95,
+    expect(
+        origin.width < screen.width * 0.95 ||
+            origin.height < screen.height * 0.95,
         isTrue,
         reason: 'ankraj ekranın tamamı OLMAMALI — öyleyse `State.context` '
             'geçilmiş demektir ve iPad\'de popover görünmez');
@@ -163,11 +166,11 @@ void main() {
     // çekip diske yazıyoruz — ekran görüntüsü, paylaşılan PNG'nin birebir
     // aynısı (skor şeridi + tahta).
     await tester.runAsync(() async {
-      final boundary = tester
-          .renderObject<RenderRepaintBoundary>(find.ancestor(
+      final boundary = tester.renderObject<RenderRepaintBoundary>(find
+          .ancestor(
               of: find.byType(ScoreBoxRow),
               matching: find.byType(RepaintBoundary))
-            .first);
+          .first);
       final image = await boundary.toImage(pixelRatio: 2);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       final dir = Directory('build/screenshots')..createSync(recursive: true);
@@ -361,7 +364,8 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: RepaintBoundary(
         key: key,
-        child: const ColoredBox(color: Colors.red, child: SizedBox(width: 100, height: 100)),
+        child: const ColoredBox(
+            color: Colors.red, child: SizedBox(width: 100, height: 100)),
       ),
     ));
     await tester.pumpAndSettle();
@@ -409,8 +413,7 @@ void main() {
 
     expect(calls, hasLength(1), reason: 'yedek metin paylaşımı çağrılmalı');
     final args = calls.single.arguments as Map;
-    expect(args['text'],
-        '$shareMessage\nhttps://kelimeki.com/game/a');
+    expect(args['text'], '$shareMessage\nhttps://kelimeki.com/game/a');
     // Dosya yolu YOK — görselli dal başarısız olduğu için metne düşüldü.
     expect(args['uri'], isNull);
   });
@@ -436,16 +439,16 @@ void main() {
     final calls = <MethodCall>[];
     final tempRoot = Directory.systemTemp.createTempSync('kelimeki_share_');
 
-    tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(shareChannel, (call) async {
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(shareChannel,
+        (call) async {
       calls.add(call);
       return '';
     });
     // share_plus, path'i BOŞ olan bir XFile'ı kendisi geçici dizine yazar
     // (`method_channel_share.dart`, `_getFile`) — yani dosya yazma işi
     // bizden kütüphaneye geçti; bu mock o yolu açıyor.
-    tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(pathChannel, (call) async {
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(pathChannel,
+        (call) async {
       return call.method == 'getTemporaryDirectory' ? tempRoot.path : null;
     });
     addTearDown(() {
@@ -495,8 +498,8 @@ void main() {
     await setPhoneViewSize(tester, const Size(420, 520));
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
-        body: RecentGamesSection(
-            games: repo, userId: 'u-me', onlineOnly: false),
+        body:
+            RecentGamesSection(games: repo, userId: 'u-me', onlineOnly: false),
       ),
     ));
     await tester.pumpAndSettle();
@@ -519,8 +522,8 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
       home: Scaffold(
-        body: RecentGamesSection(
-            games: repo, userId: 'u-me', onlineOnly: false),
+        body:
+            RecentGamesSection(games: repo, userId: 'u-me', onlineOnly: false),
       ),
     ));
     await tester.pumpAndSettle();
@@ -556,18 +559,44 @@ void main() {
     final gw = FakeGamesGateway(userId: 'u-me')
       ..history = [
         // 2 kişilik, üç basamaklı skor
-        gameRow(id: 'g1', onlineGameId: 'o1', playerScore: 253, aiScore: 100,
-            rank: 1, createdAt: '2026-09-03T10:00:00.000Z',
-            players: [snap('Ben', 253, colorIndex: 0), snap('Be', 100, colorIndex: 1)]),
+        gameRow(
+            id: 'g1',
+            onlineGameId: 'o1',
+            playerScore: 253,
+            aiScore: 100,
+            rank: 1,
+            createdAt: '2026-09-03T10:00:00.000Z',
+            players: [
+              snap('Ben', 253, colorIndex: 0),
+              snap('Be', 100, colorIndex: 1)
+            ]),
         // 4 KİŞİLİK (sol sütun daha geniş) + tek basamaklı k-lig farkı
-        gameRow(id: 'g2', onlineGameId: 'o2', playerScore: 123, aiScore: 200,
-            rank: 2, playerCount: 4, createdAt: '2026-09-02T10:00:00.000Z',
-            players: [snap('Ben', 123, colorIndex: 0), snap('Fb', 200, colorIndex: 1),
-                      snap('X', 90, colorIndex: 2), snap('Y', 80, colorIndex: 3)]),
+        gameRow(
+            id: 'g2',
+            onlineGameId: 'o2',
+            playerScore: 123,
+            aiScore: 200,
+            rank: 2,
+            playerCount: 4,
+            createdAt: '2026-09-02T10:00:00.000Z',
+            players: [
+              snap('Ben', 123, colorIndex: 0),
+              snap('Fb', 200, colorIndex: 1),
+              snap('X', 90, colorIndex: 2),
+              snap('Y', 80, colorIndex: 3)
+            ]),
         // TEK BASAMAKLI skor
-        gameRow(id: 'g3', onlineGameId: 'o3', playerScore: 0, aiScore: 100,
-            rank: 1, createdAt: '2026-09-02T09:00:00.000Z',
-            players: [snap('Ben', 0, colorIndex: 0), snap('Vi', 100, colorIndex: 1)]),
+        gameRow(
+            id: 'g3',
+            onlineGameId: 'o3',
+            playerScore: 0,
+            aiScore: 100,
+            rank: 1,
+            createdAt: '2026-09-02T09:00:00.000Z',
+            players: [
+              snap('Ben', 0, colorIndex: 0),
+              snap('Vi', 100, colorIndex: 1)
+            ]),
       ];
     final repo = await newRepoForWidget(tester, gw);
     await setPhoneViewSize(tester, const Size(412, 900));
@@ -632,8 +661,8 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
       home: Scaffold(
-        body: RecentGamesSection(
-            games: repo, userId: 'u-me', onlineOnly: false),
+        body:
+            RecentGamesSection(games: repo, userId: 'u-me', onlineOnly: false),
       ),
     ));
     await tester.pumpAndSettle();
@@ -657,8 +686,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
       home: Scaffold(
-        body: RecentGamesSection(
-            games: repo, userId: 'u-me', onlineOnly: true),
+        body: RecentGamesSection(games: repo, userId: 'u-me', onlineOnly: true),
       ),
     ));
     await tester.pumpAndSettle();
@@ -692,8 +720,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
       home: Scaffold(
-        body: RecentGamesSection(
-            games: repo, userId: 'u-me', onlineOnly: true),
+        body: RecentGamesSection(games: repo, userId: 'u-me', onlineOnly: true),
       ),
     ));
     await tester.pumpAndSettle();
@@ -727,8 +754,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
       home: Scaffold(
-        body: RecentGamesSection(
-            games: repo, userId: 'u-me', onlineOnly: true),
+        body: RecentGamesSection(games: repo, userId: 'u-me', onlineOnly: true),
       ),
     ));
     await tester.pumpAndSettle();
