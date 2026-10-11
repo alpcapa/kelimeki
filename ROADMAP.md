@@ -109,6 +109,7 @@ kadar mobil işler taslak PR. 2 Ekim'de kapanıp arşive taşınanlar: #25, #34,
 | | #43 | Passkey ile giriş — PORT yarısı | **Sonraya** (kullanıcı, 2 Eki): web yarısı sahada denendikten sonra ayrı bir trene. Yerel passkey arayüzü + iOS Associated Domains (`webcredentials:`) + Android `assetlinks.json` (`get_login_creds`). §43 |
 | **Sıradaki web işi** | #43 | Passkey ile giriş — WEB yarısı | **2 Eki 2026:** sunucu açık (RP ID `kelimeki.com`), web kodu PR'da (giriş düğmesi + Hesap Ayarları bölümü). Gizlilik satırları web'de 2 Eki'de eklendi, **tarih 25 Eylül'de BIRAKILDI** (kullanıcı kararı: `legal_text_test` web↔port tarih eşliği `main`'i 10 gün kırmızı yapardı) — #779 12 Eki'de iki tarafın tarihini birlikte 12 Ekim yapar; merge'ünde `LegalContent.tsx` çakışması beklenir, #779'un hâli alınır. **Kullanıcı canlıda denedi (2 Eki): çalışıyor**; passkey'siz cihazda OS penceresi yerine açıklama gösteren düzeltme ayrı PR. Kalan: Android Chrome + masaüstü Chrome turu (`TESTING.md`) |
 | **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅. **İlk okuma 2 Eki:** Normal hedefte (%48), Zor kişi içi Normal'den ~+13 puan güçlü → kullanıcı: *"Zor şimdilik yeterli"*. **Açık kalan yalnızca Kolay** (27 oyun %41, ~100 oyunda yeniden bak; >%40 ise top-N 4→5). `docs/decisions/ai-levels.md` §9 |
+| | #46 | **MAU hedefi: 11 Eki 2027'ye kadar 1.200** | **11 Eki 2026, kullanıcı hedefi.** Tanım: oyun başlatan benzersiz cihaz, 28 gün (`game_starts`) — bugün **317**. Önce atıf (kurulum sonrası `app`e düşen kaynak) + geri dönüş + arkadaş daveti; ücretli trafik sonra. Gövde aşağıda |
 | | #18 | `submit_move` puan hakemliği | GÖLGE FAZINDA (`move_shadow_diffs`) |
 | | #14 | Uzun modal listeleri tembel inşa | Eşiğe bağlı izleme |
 | **Güvenlik** | #21 | Advisor gürültüsü + Auth ayarları | Kısmen yapıldı |
@@ -120,7 +121,7 @@ kadar mobil işler taslak PR. 2 Ekim'de kapanıp arşive taşınanlar: #25, #34,
 | | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
 
 **Madde numarası kuralı (26 Eylül 2026):** yeni madde **bir sonraki boş
-numarayı** alır — şu an **#43**. Numara hiçbir zaman yeniden kullanılmaz,
+numarayı** alır — şu an **#47**. Numara hiçbir zaman yeniden kullanılmaz,
 kapanmış (arşivdeki) maddelerinki de. 26 Eylül'de iki AKTİF çakışma
 bulundu ve sonradan gelen maddeye yeni numara verildi: tahta yükseklik
 bütçesi **#26 → #38** (mağaza yönlendirmesi #26 olarak kaldı; kodda ve
@@ -899,6 +900,42 @@ gider); sürüm dondurması bitmeden başlama.
    etmeli — etmiyorsa yeşil olması hiçbir şey garanti etmez.
 
 ---
+
+## 46. MAU hedefi — 11 Ekim 2027'ye kadar 1.200 — **AÇIK, ölçüm ve plan** (11 Ekim 2026, kullanıcı)
+
+**Hedef (kullanıcı, 11 Eki 2026):** *"seneye bu gün 1200 MAU"* ve buna göre en etkili
+kampanyayı bulmak.
+
+**Tanım (kullanıcı onayı, 11 Eki):** MAU = son 28 günde `game_starts`ta en az bir
+yerel oyun başlatan benzersiz `anon_id`. ⚠ Projede bilerek "MAU" yok
+(`docs/decisions/admin-panel.md` → "Bu bilerek MAU DEĞİL"); bu tanım yalnızca bu
+hedef içindir. Eksiği: yalnızca-Canlı oynayan girişli oyuncu sayılmaz. Alternatifler
+ölçüldü: `device_visits` 28 gün **2.283** (karşılamada çıkıp gidenleri de sayar, şişkin);
+Play Console "aylık aktif" **20** (30 Eyl).
+
+**Başlangıç (11 Eki 2026, canlı SQL):** 28 gün **317** (önceki 28 gün 194, +%63 —
+28 Eyl'deki Meta kampanyasının etkisi) · 7 gün 126 · üye 101 (28 günde +49).
+Hedef 317 → 1.200 = ×3,8 → yaklaşık **ayda %12** büyüme, 12 ay boyunca.
+
+**Kaynağa göre kalite (28 gün, `game_starts.utm_source`):** `app` 220 oyuncu, %15 geri
+dönen, kişi başı 4,0 oyun · `direkt` 23, %39, 16 · `arkadas` 5, %60, 3,4 ·
+`meta-karusel` 23, **%0**, 1,1 · `instagram` 21, %10, 2,6 · `li-profil` 17, %0, 1,1 ·
+`meta-h1/h2/h3` toplam 5 oyuncu. ⚠ Küçük örneklem (`arkadas` 5, `direkt` 23) — yön
+gösterir, kanıt değil. ⚠ **Atıf kopuk:** reklamdan mağazaya gidip kuranlar kurulumdan
+sonra `app` olarak görünür; reklamın gerçek getirisi bu tablodan OKUNAMAZ.
+
+**Sonuç / sıra:** cold trafik oyuncuya dönse bile geri dönüş %0-15; geri dönenler
+direkt girenler ve arkadaşla gelenler. En etkili kampanya = önce geri dönüş + arkadaş
+daveti, ücretli trafik ikinci.
+1. **Atıf:** ilk kurulum kaynağını uygulamaya taşı (Play Install Referrer zaten var,
+   #40; iOS tarafı `pt`/`ct` + ASC 5-kurulum eşiği yüzünden zayıf) — `game_starts`
+   `utm_source`u kurulum kaynağıyla dolsun.
+2. **Geri dönüş:** arkadaş daveti ve bildirimle ikinci oyuna dönüş.
+3. **Ücretli trafik** ancak 1-2'nin ölçümü çalışınca ölçeklenir; karar ölçütü
+   "mağaza oturumu başı maliyet" yerine **geri dönen oyuncu başı maliyet**.
+
+**Açık:** 1-3 için ayrı maddeler/PR'lar henüz AÇILMADI; Meta teaser Aşama 1 kararı
+(`marketing/meta-reklam/kampanya-teaser-ekim-2026.md`) bu ölçütle yeniden bakılacak.
 
 ## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB (#804) + PORT (#805) YAZILDI, taslak PR'da · 12 Ekim treni, İKİSİ BİRLİKTE MERGE** (3-4 Ekim 2026)
 ## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB YAZILDI (PR'da, test bekliyor) · PORT YAZILDI (taslak PR, cihaz testi bekliyor) · hedef 12 Ekim treni** (3 Ekim 2026)
