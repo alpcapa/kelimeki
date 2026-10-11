@@ -207,7 +207,7 @@ nereden okunacağı ve kartın "12" tavanı orada.
 
 ## 1.1.3 treni — KESİLDİ 11 Ekim 2026 (#826, `main` `95917368`; düzeltme turu #832 `877b43e` → **build 875**, TestFlight'ta)
 
-✅ 11 Ekim: kesim 12'den bugüne alındı (kullanıcı), 15 PR tek squash'ta + web Vercel'de (`9591736`). ⬜ **Sıradaki:** TestFlight cihaz turu (özellikle Rastgele Oyuncu portu — cihazda hiç denenmedi) → ASC'ye gönderim → Play `.aab`. Aşağıdaki satırlar mağazada yayına girince `roadmap-arsiv.md`'ye taşınır. (Eski başlık: taslak PR'lar.)
+✅ 11 Ekim: kesim 12'den bugüne alındı (kullanıcı), 15 PR tek squash'ta + web Vercel'de (`9591736`). ✅ iPad TestFlight turu temiz (build 875) → ✅ ASC'ye gönderildi (11 Eki 12:31 UTC, `Waiting for Review`). ✅ Play Production'a gönderildi (#23, 15:41 TSİ, `In review`). ⬜ **Sıradaki:** iki mağazada onay → iOS `Release This Version`. Aşağıdaki satırlar mağazada yayına girince `roadmap-arsiv.md`'ye taşınır. (Eski başlık: taslak PR'lar.)
 
 ⚠ **Kesimde sürüm numarası da 1.1.3'e çıkmalı** (`pubspec.yaml` + `config/env.dart`,
 `app_version_parity_test`) — 1.1.2 App Store'da onaylanınca o trene yeni
