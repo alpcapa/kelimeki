@@ -157,14 +157,13 @@ void main() {
         for (final t in kKLigTabs) (t.id.name, t.icon, t.label),
       ]);
 
-      final puan =
-          RegExp(r"export const PUAN_LIGI_INTRO =\s*'([^']+)' \+\s*'([^']+)';")
-              .firstMatch(web);
-      expect(puan, isNotNull, reason: 'PUAN_LIGI_INTRO biçimi değişti');
-      expect(kPuanLigiIntro, puan!.group(1)! + puan.group(2)!);
-
-      final puanNote = RegExp(r'export const PUAN_LIGI_NOTE = "([^"]+)";')
+      final puan = RegExp(r"export const PUAN_LIGI_INTRO =\s*'([^']+)';")
           .firstMatch(web);
+      expect(puan, isNotNull, reason: 'PUAN_LIGI_INTRO biçimi değişti');
+      expect(kPuanLigiIntro, puan!.group(1));
+
+      final puanNote =
+          RegExp(r'export const PUAN_LIGI_NOTE =\s*"([^"]+)";').firstMatch(web);
       expect(puanNote, isNotNull, reason: 'PUAN_LIGI_NOTE biçimi değişti');
       expect(kPuanLigiNote, puanNote!.group(1));
     });

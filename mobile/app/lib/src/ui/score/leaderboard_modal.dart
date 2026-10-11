@@ -54,19 +54,6 @@ const ohpHint =
     'Ortalama Hamle Puanı tüm oyunlarda yapılan tüm hamlelerin ortalamasıdır. '
     'Puanlar eşitse OHP yüksek olan üstte sıralanır.';
 
-/// Puan Ligi açıklaması (web `PUAN_LIGI_INTRO`) — eşitlik cümlesi 5 Ekim
-/// 2026'da buradan [kPuanLigiNote]a taşındı (web #814, kullanıcı isteği).
-const kPuanLigiIntro =
-    'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir '
-    'yarışmadır.';
-
-/// Listenin ALTINDAki küçük not (web `PUAN_LIGI_NOTE`, 10px mono, ortalı).
-/// Beyin Ligi'nin alt notunun Puan Ligi eşi — port'ta Beyin Ligi sekmesi
-/// henüz yok, yalnızca Puan Ligi notu var.
-const kPuanLigiNote =
-    "YZ'ye karşı oynanan oyunlar da sayılır. Puanlar eşitse OHP yüksek olan "
-    'üstte.';
-
 /// Web INITIAL_PAGE_SIZE / PAGE_SIZE — ilk açılışta "ilk 10", sonra 20'şer.
 const _initialPageSize = 10;
 const _pageSize = 20;

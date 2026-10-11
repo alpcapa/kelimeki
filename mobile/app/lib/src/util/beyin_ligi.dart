@@ -27,11 +27,11 @@ const String kBeyinLigiNote =
 
 /// Puan Ligi sekmesinin açıklaması — web `PUAN_LIGI_INTRO` ile BİREBİR.
 const String kPuanLigiIntro =
-    'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır. '
-    'Puanlar eşitse OHP yüksek olan üstte.';
+    'k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara göre oluşan bir yarışmadır.';
 
 /// Puan Ligi listesinin altındaki not — web `PUAN_LIGI_NOTE` ile BİREBİR.
-const String kPuanLigiNote = "YZ'ye karşı oynanan oyunlar da sayılır.";
+const String kPuanLigiNote =
+    "YZ'ye karşı oynanan oyunlar da sayılır. Puanlar eşitse OHP yüksek olan üstte.";
 
 enum KLigTab { puan, beyin }
 

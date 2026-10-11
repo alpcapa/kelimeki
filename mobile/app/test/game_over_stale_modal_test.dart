@@ -42,6 +42,11 @@ class _YavasStats implements StatsGateway {
   Future<List<Map<String, Object?>>> leaderboard(int limit, int offset) async =>
       const [];
   @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+  @override
   Future<Map<String, Object?>?> myLeaderboardRank(String userId) async => null;
   @override
   Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async =>
