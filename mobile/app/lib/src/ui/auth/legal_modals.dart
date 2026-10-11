@@ -58,6 +58,7 @@ class _Section extends StatelessWidget {
               fontFamily: 'SpaceMono',
               fontSize: 11,
               letterSpacing: 1.5,
+              fontWeight: FontWeight.w700,
               color: _accent,
             ),
           ),
@@ -192,7 +193,7 @@ class TermsModal extends StatelessWidget {
       child: _StackedSections([
         const _P(
             "Kelimeki'ye kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul "
-            'ettiğinizi beyan edersiniz. Son güncelleme: 25 Eylül 2026.'),
+            'ettiğinizi beyan edersiniz. Son güncelleme: 12 Ekim 2026.'),
         const _Section('1. Hizmet Sağlayıcı ve Kapsam', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -201,7 +202,10 @@ class TermsModal extends StatelessWidget {
               'çevrimiçi bir kelime oyunudur ve oyun tahtası, Yapay Zeka\'ya '
               'karşı ya da arkadaşlarınla gerçek zamanlı oynanan Canlı oyun, '
               'oyun içi mesajlaşma, lider tablosu (k-lig), arkadaşlık ve '
-              'kullanıcı hesabı özelliklerini kapsar. Hizmet '
+              'kullanıcı hesabı özelliklerini kapsar. Rastgele Oyuncu ilanı '
+              'açtığınızda takma adınız ve profil fotoğrafınız giriş yapmış '
+              'tüm üyelere görünür; tanımadığınız kişilerle de 3. bölümdeki '
+              'kurallar geçerlidir. Hizmet '
               'ücretsizdir ve herhangi bir bildirimde bulunmaksızın '
               'değiştirilebilir ya da sonlandırılabilir.'),
         ]),
@@ -252,8 +256,11 @@ class TermsModal extends StatelessWidget {
               'Hizmet "olduğu gibi" sunulmaktadır.'),
           _PRich([
             TextSpan(
-                text: 'Oyun içi mesajlaşma yalnızca birbirini arkadaş olarak '
-                    'kabul etmiş kullanıcılar arasında açıktır. Mesajlar bir '
+                text: 'Oyun içi mesajlaşma, aynı Canlı oyunda oynayan '
+                    'kullanıcılar arasında açıktır; oyuncuların birbiriyle '
+                    'arkadaş olması gerekmez (ör. Rastgele Oyuncu ilanıyla '
+                    'başlayan oyunlar). Dilediğiniz kişiyi sessize alabilir '
+                    'ya da şikayet edebilirsiniz. Mesajlar bir '
                     'kişi tarafından önceden okunmaz; 3. bölümde sayılan '
                     'uygunsuz ifadeler otomatik bir süzgeçle yıldızla (*) '
                     'gizlenir ve süzgece takılan takma isimler kabul edilmez. '
@@ -264,7 +271,7 @@ class TermsModal extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold)),
             TextSpan(
                 text: ' Uygunsuz bir mesajla karşılaşan kullanıcı, sohbet '
-                    'ekranındaki ayarlardan o kişiyi sessize alabilir ve '
+                    'ekranındaki ayarlardan o kişiyi engelleyebilir ve '
                     'şikâyet edebilir. Bize ulaşan şikâyetler incelenir. 3. '
                     'bölüme aykırı içerik kaldırılabilir ve gönderenin '
                     'hesabı önceden bildirim yapılmaksızın askıya alınabilir '
@@ -298,7 +305,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 25 Eylül 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 12 Ekim 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -312,12 +319,15 @@ class PrivacyModal extends StatelessWidget {
         const _Section('2. Toplanan Veriler', [
           _P('Hesap oluştururken şu bilgileri topluyoruz:'),
           _Bullets([
-            'Ad ve soyad',
+            'Ad ve soyad (isteğe bağlı)',
             'E-posta adresi',
             'Takma isim (zorunlu — oyunlarda ve k-lig\'de herkese görünür)',
             'Cinsiyet (isteğe bağlı)',
             'Doğum tarihi (isteğe bağlı)',
             'Profil fotoğrafı (isteğe bağlı)',
+            "Passkey kullanırsanız cihazınızın açık anahtarı ve passkey'in "
+                'eklenme/son kullanım tarihi (isteğe bağlı; yüz/parmak izi '
+                'verisi cihazınızdan çıkmaz)',
             'Pazarlama iletişimi onayı ve onay tarihi (isteğe bağlı)',
             'Hoş geldiniz mesajı, arkadaşlık isteği, oyun daveti ve süre '
                 'uyarısı gibi işlemsel e-posta bildirimlerini alma tercihi',
@@ -326,6 +336,10 @@ class PrivacyModal extends StatelessWidget {
             'Arkadaşlık bağlantıları (kiminle arkadaş olduğunuz, '
                 'gönderdiğiniz/aldığınız arkadaşlık istekleri, davet '
                 'linkinizin kullanım verisi)',
+            'Rastgele Oyuncu ilanı açarsanız takma adınız ve profil '
+                'fotoğrafınız, ilan yayındayken giriş yapmış TÜM üyelere '
+                'görünür (yalnızca arkadaşlarınıza değil); ilan dolunca ya '
+                'da 7 gün sonunda kalkar',
             'Canlı oyunlarda gönderdiğiniz oyun içi sohbet mesajları',
             "Sohbet Kuralları'nı kabul ettiğiniz tarih ve kabul ettiğiniz "
                 'kural sürümü',
@@ -335,7 +349,7 @@ class PrivacyModal extends StatelessWidget {
             '"Görüş Bildir" formundan ilettiğiniz mesajlar ve size yanıt '
                 'verebilmemiz için formda belirttiğiniz e-posta adresi — '
                 'girişsiz (misafir) gönderdiğinizde de saklanır',
-            'Bir Canlı oyunda kimleri sessize aldığınız ve gönderdiğiniz '
+            'Kimleri engellediğiniz ve bir Canlı oyunda gönderdiğiniz '
                 'uygunsuz paylaşım şikayetleri (şikayetin nedeni dahil)',
             'Bir oyunu hangi istemciden oynadığınız (web sitesi ya da mobil '
                 'uygulama) — yalnızca hangi platformun ne kadar kullanıldığını '
@@ -406,10 +420,10 @@ class PrivacyModal extends StatelessWidget {
               'katılımcılarına ve (şikayet incelemesi amacıyla) yönetici '
               'ekibine açıktır — oyunun skoru ve tahtası tüm kayıtlı '
               'kullanıcılara görünür olsa bile sohbet içeriği görünmez.'),
-          _P('Bir Canlı oyunda kimi sessize aldığınız yalnızca size '
-              'görünür, diğer katılımcılar (sessize alınan kişi dahil) bunu '
-              'hiçbir zaman göremez. Gönderdiğiniz uygunsuz paylaşım '
-              'şikayetleri yalnızca inceleme amacıyla yönetici ekibiyle '
+          _P('Kimi engellediğiniz diğer katılımcılara gösterilmez; yalnızca '
+              'engellediğiniz kişi size oyun daveti ya da arkadaşlık isteği '
+              'göndermeyi denerse, engellendiğini belirten bir uyarı görür. '
+              'Gönderdiğiniz uygunsuz paylaşım şikayetleri yalnızca inceleme amacıyla yönetici ekibiyle '
               'paylaşılır; şikayet edilen kullanıcıya şikayet edildiği, '
               'kimin şikayet ettiği ya da şikayetin içeriği hiçbir şekilde '
               'bildirilmez.'),

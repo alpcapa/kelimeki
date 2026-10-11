@@ -80,13 +80,14 @@ void main() {
     ));
     await tester.pump();
     // login → signup moduna geç.
-    await tester.tap(find.textContaining('Kayıt ol', findRichText: true));
+    await tester.tap(find.textContaining('KAYIT OL', findRichText: true));
     await tester.pump();
     expect(find.text('KAYIT'), findsOneWidget); // KModal başlığı
   }
 
   /// GA4 hunisinin ÜST ucu: kayıt formunun görülmesi (Faz 3).
-  testWidgets('analytics: "Kayıt ol"a geçiş signup_started loglar; '
+  testWidgets(
+      'analytics: "Kayıt ol"a geçiş signup_started loglar; '
       'geri dönüp tekrar geçmek yeniden loglar', (tester) async {
     final fake = FakeAnalytics();
     analytics.configure(fake);
@@ -97,7 +98,7 @@ void main() {
     // tekil kullanıcıyı GA4 tarafında kendisi ayrıştırır).
     await tester.tap(find.textContaining('Giriş yap', findRichText: true));
     await tester.pump();
-    await tester.tap(find.textContaining('Kayıt ol', findRichText: true));
+    await tester.tap(find.textContaining('KAYIT OL', findRichText: true));
     await tester.pump();
     expect(fake.names, ['signup_started', 'signup_started']);
   });
@@ -160,11 +161,13 @@ void main() {
     expect(find.text('Bu takma isim kullanımda.'), findsNothing);
     await tester.tap(find.text('KAYIT OL'), warnIfMissed: false);
     await tester.pump();
-    // Buton pasif: form doğrulaması hiç çalışmadı ("Ad zorunludur." yok).
-    expect(find.text('Ad zorunludur.'), findsNothing);
+    // Buton pasif: form doğrulaması hiç çalışmadı (ilk hata — e-posta — yok).
+    expect(find.text('E-posta zorunludur.'), findsNothing);
   });
 
-  testWidgets('doğrulama sırası web ile aynı (Ad → ... → koşullar)',
+  // Ad/soyad 2 Ekim 2026'dan beri İSTEĞE BAĞLI: aşağıdaki akış onları HİÇ
+  // doldurmadan signUp'a kadar ulaşır — "boş ad engellemez"in kanıtı.
+  testWidgets('doğrulama sırası web ile aynı (Takma isim → ... → koşullar), ad/soyad boş',
       (tester) async {
     await pumpSignup(tester, checker: (_) async => NicknameStatus.ok);
 
@@ -175,10 +178,6 @@ void main() {
       expect(find.text(msg), findsOneWidget, reason: 'beklenen hata: $msg');
     }
 
-    await submitExpect('Ad zorunludur.');
-    await tester.enterText(fieldByLabel('AD').first, 'Alp');
-    await submitExpect('Soyad zorunludur.');
-    await tester.enterText(fieldByLabel('SOYAD').first, 'Çapa');
     await submitExpect('Takma isim zorunludur.');
 
     await tester.enterText(fieldByLabel('TAKMA İSİM').first, 'alp42');
@@ -189,6 +188,8 @@ void main() {
     await submitExpect('E-posta zorunludur.');
     await tester.enterText(fieldByLabel('E-POSTA').first, 'a@b.co');
     await submitExpect('Şifre zorunludur.');
+    await tester.enterText(fieldByLabel('ŞİFRE').first, 'sifre12');
+    await submitExpect('Şifre en az 8 karakter olmalı.');
     await tester.enterText(fieldByLabel('ŞİFRE').first, 'sifre123');
     await submitExpect(
         "Kullanım Koşulları ve Gizlilik Politikası'nı kabul etmelisiniz.");
@@ -233,8 +234,8 @@ void main() {
     // düştü — metin web'den birebir taşınıyor (bkz. legal_text_test.dart).
     // İddia, o bölümün İKİ yeni gerçeğine bağlandı: uygulama içi yol VAR ve
     // talep yolu hâlâ 30 gün.
-    expect(find.textContaining('Hesap Ayarları › Hesabımı Sil'),
-        findsOneWidget);
+    expect(
+        find.textContaining('Hesap Ayarları › Hesabımı Sil'), findsOneWidget);
     expect(find.textContaining('en geç 30 gün içinde sonuçlandırılır'),
         findsOneWidget);
     await tester.tap(find.byTooltip('Kapat').last);
@@ -251,12 +252,13 @@ void main() {
         key: key,
         child: Scaffold(
           body: AuthModal(
-              auth: AuthService.fake(), nicknameChecker: (_) async => NicknameStatus.ok),
+              auth: AuthService.fake(),
+              nicknameChecker: (_) async => NicknameStatus.ok),
         ),
       ),
     ));
     await tester.pump();
-    await tester.tap(find.textContaining('Kayıt ol', findRichText: true));
+    await tester.tap(find.textContaining('KAYIT OL', findRichText: true));
     await tester.pump();
 
     final f = fieldByLabel('DOĞUM TARİHİ').first;

@@ -155,8 +155,7 @@ class AuthService extends ChangeNotifier {
     Future<ProfileCacheStore>? profileCache,
     Future<Map<String, Object?>?> Function(String userId)? profileFetcher,
     Future<DeviceStamp>? signupStamp,
-  })
-      : _client = null,
+  })  : _client = null,
         _profileCache = profileCache,
         _signupStamp = signupStamp,
         _profileFetcher = profileFetcher,
@@ -472,7 +471,8 @@ class AuthService extends ChangeNotifier {
       // yutup genel bir metin göstermek teşhisi imkânsız kılardı.
       final d = e.details;
       final msg = d is Map ? d['error'] : null;
-      throw AuthException(msg is String ? msg : 'Hesap silme isteği başarısız.');
+      throw AuthException(
+          msg is String ? msg : 'Hesap silme isteği başarısız.');
     }
   }
 
@@ -488,7 +488,8 @@ class AuthService extends ChangeNotifier {
     final u = _user;
     if (c == null || u == null) return;
     try {
-      final row = await c.from('profiles').select().eq('id', u.id).maybeSingle();
+      final row =
+          await c.from('profiles').select().eq('id', u.id).maybeSingle();
       _profile = row == null ? null : KProfile.fromMap(row);
       notifyListeners();
     } catch (e) {
@@ -710,7 +711,7 @@ String? friendlyAuthMessage(Object? err) {
         'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı ya da şifreni sıfırlamayı dene.',
     'email_exists':
         'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı ya da şifreni sıfırlamayı dene.',
-    'weak_password': 'Şifre çok zayıf. En az 6 karakter kullan.',
+    'weak_password': 'Şifre çok zayıf. En az 8 karakter kullan.',
     'same_password': 'Yeni şifre eskisiyle aynı olamaz.',
     'otp_expired': 'Bağlantının süresi dolmuş. Yeni bir bağlantı iste.',
     'over_email_send_rate_limit':

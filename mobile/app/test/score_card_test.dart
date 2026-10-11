@@ -26,6 +26,13 @@ import 'support/test_fonts.dart';
 import 'support/test_view.dart';
 
 class FakeStatsGateway implements StatsGateway {
+  @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+
   /// playerCount → satır (null anahtarı 'Genel' = player_stats_overall).
   final Map<String, Map<int?, Map<String, Object?>>> stats;
   final List<Map<String, Object?>> rows;
@@ -46,7 +53,8 @@ class FakeStatsGateway implements StatsGateway {
   });
 
   @override
-  Future<Map<String, Object?>?> playerStats(String userId, int? playerCount) async =>
+  Future<Map<String, Object?>?> playerStats(
+          String userId, int? playerCount) async =>
       stats[userId]?[playerCount];
 
   @override
@@ -223,7 +231,9 @@ void main() {
     // EŞLEŞMEZ; test hem metni hem 2px'lik boşluğu doğruluyor.
     final kligLine = tester.widgetList<Text>(find.byType(Text)).firstWhere(
         (w) =>
-            w.textSpan?.toPlainText(includePlaceholders: false).contains('#3') ??
+            w.textSpan
+                ?.toPlainText(includePlaceholders: false)
+                .contains('#3') ??
             false);
     expect(kligLine.textSpan!.toPlainText(includePlaceholders: false),
         '#3·8 puan');
@@ -329,9 +339,19 @@ void main() {
       stats: {
         'u-me': {
           // En uzun gerçek içerik: 3 haneli rakamlar + 8 harfli kelime.
-          null: statRow(games: 89, local: 74, online: 15, first: 35,
-              second: 32, surrendered: 6, bestScore: 333, bestMove: 96,
-              bestWord: 36, avgMove: 12.72, longest: 'ÇALIŞKAN', total: 70),
+          null: statRow(
+              games: 89,
+              local: 74,
+              online: 15,
+              first: 35,
+              second: 32,
+              surrendered: 6,
+              bestScore: 333,
+              bestMove: 96,
+              bestWord: 36,
+              avgMove: 12.72,
+              longest: 'ÇALIŞKAN',
+              total: 70),
         },
       },
       rank: const {'rank': 1, 'total_score': 70},
@@ -373,8 +393,8 @@ void main() {
     final kapat = tester.getRect(find.byType(IconButton).first);
     // 18 Ağustos 2026'dan beri kartta İKİ mühür var (başlıktaki 34px +
     // ismin yanındaki 20px) — sıraya güvenme, BOYA göre seç.
-    final muhur = tester.getRect(
-        find.byWidgetPredicate((w) => w is RankSeal && w.size == 34));
+    final muhur = tester
+        .getRect(find.byWidgetPredicate((w) => w is RankSeal && w.size == 34));
 
     // Web'de ✕'in merkezi sağ kenardan 35.0px içeride (ölçüldü: p-5 dolgu +
     // 28px buton). Portta buton daha büyük (40px, dokunma hedefi) ve sağ
@@ -494,7 +514,9 @@ void main() {
           }
       ],
       rank: const {'rank': 42, 'total_score': 5},
-      stats: {'u-0': {null: statRow()}},
+      stats: {
+        'u-0': {null: statRow()}
+      },
     );
     final auth = AuthService.fake(user: fakeUser(), profile: ironman);
 
@@ -581,7 +603,8 @@ void main() {
     expect(find.text('SENİN SIRAN'), findsNothing);
     expect(find.text('Sen'), findsNothing);
     expect(find.text('Ironman'), findsOneWidget);
-    expect(find.text('89'), findsOneWidget); // gerçek puanı — myRank'in 89'u değil
+    expect(
+        find.text('89'), findsOneWidget); // gerçek puanı — myRank'in 89'u değil
   });
 
   testWidgets(
@@ -668,7 +691,9 @@ void main() {
       '(auth verilmişse) k-lig açılır', (tester) async {
     final gw = FakeStatsGateway(
       rank: const {'rank': 7, 'total_score': 33},
-      stats: {'u-9': {null: statRow(total: 33)}},
+      stats: {
+        'u-9': {null: statRow(total: 33)}
+      },
     );
     final auth = AuthService.fake(user: fakeUser(), profile: ironman);
     await pumpModal(
@@ -698,7 +723,9 @@ void main() {
       "RPC'sinden gelir (o satırın SELECT RLS'i başkasına kapalı)",
       (tester) async {
     final gw = FakeStatsGateway(
-      stats: {'u-9': {null: statRow(total: 33)}},
+      stats: {
+        'u-9': {null: statRow(total: 33)}
+      },
       ageGender: const {
         'u-9': {'age': 59, 'gender': 'male'},
       },
@@ -719,7 +746,9 @@ void main() {
       'yaş/cinsiyet satırı: veri girilmemişse (RPC null alanlar döndürür) '
       'satır HİÇ çizilmez — boş bir satır yer kaplamamalı', (tester) async {
     final gw = FakeStatsGateway(
-      stats: {'u-9': {null: statRow(total: 33)}},
+      stats: {
+        'u-9': {null: statRow(total: 33)}
+      },
       ageGender: const {
         'u-9': {'age': null, 'gender': null},
       },
@@ -789,8 +818,8 @@ void main() {
       final kutu = tester.renderObject<RenderBox>(find
           .descendant(
               of: find.byType(Semantics),
-              matching: find.byWidgetPredicate(
-                  (w) => w is ColoredBox && w.color == renk))
+              matching: find
+                  .byWidgetPredicate((w) => w is ColoredBox && w.color == renk))
           .first);
       expect(kutu.size.height, greaterThan(0),
           reason: 'dilim SIFIR yükseklikte — saran Row `stretch` olmalı');
@@ -960,8 +989,8 @@ void main() {
     // kutuyu DOLDURMUYOR, kendi mürekkebine küçülüyor: başlık 19,5 px,
     // değer 33,7 px ölçüldü ve bu iddia düştü. Sözleşme değişmedi —
     // ölçülecek şey KUTU, ve kutu artık `ScaledCell`.
-    Rect hucre(String metin) => tester.getRect(find.ancestor(
-        of: find.text(metin), matching: find.byType(ScaledCell)));
+    Rect hucre(String metin) => tester.getRect(
+        find.ancestor(of: find.text(metin), matching: find.byType(ScaledCell)));
     final ohpBox = hucre('12.78');
     final hdrBox = hucre('OHP');
     expect(hdrBox.width, closeTo(ohpBox.width, 0.5),
@@ -999,6 +1028,19 @@ void main() {
     expect(puan.style?.color, kAccent);
     expect(puan.style?.fontWeight, FontWeight.bold);
     expect(puan.style?.fontSize, 14);
+
+    // 5 Ekim 2026 (web #814, kullanıcı isteği): eşitlik cümlesi üst
+    // açıklamadan ALT NOTA taşındı ("YZ'ye karşı…" yanına). Metinler BİLEREK
+    // dizeyle yazılıyor, sabitle değil (sabite bağlı assertion widget notu hiç
+    // çizmese de derlenir).
+    expect(
+        find.text('k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara '
+            'göre oluşan bir yarışmadır.'),
+        findsOneWidget);
+    expect(
+        find.text("YZ'ye karşı oynanan oyunlar da sayılır. Puanlar eşitse OHP "
+            'yüksek olan üstte.'),
+        findsOneWidget);
 
     // Verisi olmayan satır ve "senin sıran" kısayolu.
     expect(find.text('—'), findsOneWidget); // Oyuncu1
@@ -1053,6 +1095,13 @@ void main() {
 }
 
 class _ThrowingGateway implements StatsGateway {
+  @override
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+
   @override
   Future<Map<String, Object?>?> playerStats(String userId, int? playerCount) =>
       Future.error(Exception('ağ'));

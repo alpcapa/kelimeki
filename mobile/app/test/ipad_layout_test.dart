@@ -85,7 +85,9 @@ void ekraninIcinde(WidgetTester tester, String ad, Finder f) {
   expect(f, findsWidgets, reason: '$ad bulunamadı');
   final r = tester.getRect(f.first);
   final ekran = Offset.zero & tester.view.physicalSize;
-  expect(ekran.contains(r.topLeft) && ekran.contains(r.bottomRight - const Offset(0.01, 0.01)),
+  expect(
+      ekran.contains(r.topLeft) &&
+          ekran.contains(r.bottomRight - const Offset(0.01, 0.01)),
       isTrue,
       reason: '$ad ekranın dışına taşıyor: $r (ekran $ekran)');
 }
@@ -93,7 +95,8 @@ void ekraninIcinde(WidgetTester tester, String ad, Finder f) {
 /// Tahtayı GERÇEK motorla, tohumlu olarak doldurur — elle "güzel" bir tahta
 /// uydurulmaz. Dolu tahta düzenin ZOR hâli; boş tahta hiçbir şey kanıtlamaz.
 GameState doluTahta() {
-  final engine = GameEngine(words: words, rng: Mulberry32(11), nowIso: () => '');
+  final engine =
+      GameEngine(words: words, rng: Mulberry32(11), nowIso: () => '');
   var s = engine.reduce(
     createInitialState(),
     const StartAction([

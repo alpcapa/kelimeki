@@ -127,8 +127,8 @@ class _KAvatarState extends State<KAvatar> {
     final text = avatarInitials(widget.name);
     // Web dersi: iki harfe göre ayarlı 0.4 oranı tek karakterde ("?") optik
     // olarak zayıf kalıyor → tek karakter 0.55 (bkz. PlayerAvatarRow notu).
-    final fontSize = (widget.size * (text.length == 1 ? 0.55 : 0.4))
-        .roundToDouble();
+    final fontSize =
+        (widget.size * (text.length == 1 ? 0.55 : 0.4)).roundToDouble();
     final u = widget.url;
     final showImage = u != null && u.isNotEmpty && !_broken;
     return Container(

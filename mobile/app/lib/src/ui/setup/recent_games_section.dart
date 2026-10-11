@@ -253,6 +253,7 @@ class _RecentGamesSectionState extends State<RecentGamesSection> {
                       fontFamily: 'SpaceMono',
                       fontSize: 10,
                       letterSpacing: 1.5,
+                      fontWeight: FontWeight.w700,
                       color: _muted)),
             ),
             TapTarget(
@@ -380,8 +381,8 @@ class _RecentRow extends StatelessWidget {
                     if (entry.onlineGameId == null) ...[
                       const SizedBox(width: 6), // web gap-1.5
                       AiLevelBadge(
-                          level: aiLevelForBadge(entry.aiLevel,
-                              isAiGame: true)),
+                          level:
+                              aiLevelForBadge(entry.aiLevel, isAiGame: true)),
                     ],
                   ]),
                   const SizedBox(height: 2),
@@ -567,7 +568,8 @@ class _RecentRow extends StatelessWidget {
                       fontFamily: 'SpaceMono',
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: points > 0 ? _green : (points < 0 ? _red : _muted))),
+                      color:
+                          points > 0 ? _green : (points < 0 ? _red : _muted))),
             ),
           ],
         ),

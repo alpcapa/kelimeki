@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 25 Eylül 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 12 Ekim 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
@@ -80,6 +80,11 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
               Arkadaşlık bağlantıları (kiminle arkadaş olduğunuz, gönderdiğiniz/aldığınız
               arkadaşlık istekleri, davet linkinizin kullanım verisi)
             </li>
+            <li>
+              Rastgele Oyuncu ilanı açarsanız takma adınız ve profil fotoğrafınız, ilan yayındayken
+              giriş yapmış TÜM üyelere görünür (yalnızca arkadaşlarınıza değil); ilan dolunca ya da
+              7 gün sonunda kalkar
+            </li>
             <li>Canlı oyunlarda gönderdiğiniz oyun içi sohbet mesajları</li>
             <li>Sohbet Kuralları'nı kabul ettiğiniz tarih ve kabul ettiğiniz kural sürümü</li>
             <li>
@@ -92,7 +97,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
               saklanır
             </li>
             <li>
-              Bir Canlı oyunda kimleri sessize aldığınız ve gönderdiğiniz uygunsuz paylaşım
+              Kimleri engellediğiniz ve bir Canlı oyunda gönderdiğiniz uygunsuz paylaşım
               şikayetleri (şikayetin nedeni dahil)
             </li>
             <li>
@@ -176,9 +181,9 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             olsa bile sohbet içeriği görünmez.
           </P>
           <P>
-            Bir Canlı oyunda kimi sessize aldığınız yalnızca size görünür, diğer katılımcılar
-            (sessize alınan kişi dahil) bunu hiçbir zaman göremez. Gönderdiğiniz uygunsuz
-            paylaşım şikayetleri yalnızca inceleme amacıyla yönetici ekibiyle paylaşılır;
+            Kimi engellediğiniz diğer katılımcılara gösterilmez; yalnızca engellediğiniz kişi size
+            oyun daveti ya da arkadaşlık isteği göndermeyi denerse, engellendiğini belirten bir
+            uyarı görür. Gönderdiğiniz uygunsuz paylaşım şikayetleri yalnızca inceleme amacıyla yönetici ekibiyle paylaşılır;
             şikayet edilen kullanıcıya şikayet edildiği, kimin şikayet ettiği ya da şikayetin içeriği
             hiçbir şekilde bildirilmez.
           </P>
@@ -291,7 +296,7 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki'ye kaydolarak aşağıdaki koşulları okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
-          Son güncelleme: 25 Eylül 2026.
+          Son güncelleme: 12 Ekim 2026.
         </P>
 
         <Section title="1. Hizmet Sağlayıcı ve Kapsam">
@@ -301,7 +306,9 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
             Sarıyer, İstanbul'dur. Hizmet, Türkçe kelimelerle oynanan çevrimiçi bir kelime
             oyunudur ve oyun tahtası, Yapay Zeka'ya karşı ya da arkadaşlarınla gerçek zamanlı
             oynanan Canlı oyun, oyun içi mesajlaşma, lider tablosu (k-lig), arkadaşlık ve
-            kullanıcı hesabı özelliklerini kapsar. Hizmet ücretsizdir ve herhangi bir bildirimde bulunmaksızın değiştirilebilir
+            kullanıcı hesabı özelliklerini kapsar. Rastgele Oyuncu ilanı açtığınızda takma adınız ve
+            profil fotoğrafınız giriş yapmış tüm üyelere görünür; tanımadığınız kişilerle de 3.
+            bölümdeki kurallar geçerlidir. Hizmet ücretsizdir ve herhangi bir bildirimde bulunmaksızın değiştirilebilir
             ya da sonlandırılabilir.
           </P>
         </Section>
@@ -353,8 +360,9 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
             kaynaklanan zararlardan sorumlu değildir. Hizmet "olduğu gibi" sunulmaktadır.
           </P>
           <P>
-            Oyun içi mesajlaşma yalnızca birbirini arkadaş olarak kabul etmiş kullanıcılar arasında
-            açıktır. Mesajlar bir kişi tarafından önceden okunmaz; 3. bölümde sayılan
+            Oyun içi mesajlaşma, aynı Canlı oyunda oynayan kullanıcılar arasında açıktır; oyuncuların
+            birbiriyle arkadaş olması gerekmez (ör. Rastgele Oyuncu ilanıyla başlayan oyunlar).
+            Dilediğiniz kişiyi sessize alabilir ya da şikayet edebilirsiniz. Mesajlar bir kişi tarafından önceden okunmaz; 3. bölümde sayılan
             uygunsuz ifadeler otomatik bir süzgeçle yıldızla (*) gizlenir ve süzgece
             takılan takma isimler kabul edilmez. Hiçbir süzgeç kusursuz değildir.{' '}
             <strong>
@@ -362,7 +370,7 @@ export function TermsBody({ contact }: { contact: ReactNode }) {
               kullanıcı sorumludur.
             </strong>{' '}
             Uygunsuz bir mesajla karşılaşan kullanıcı, sohbet ekranındaki ayarlardan o kişiyi
-            sessize alabilir ve şikâyet edebilir. Bize ulaşan şikâyetler incelenir. 3. bölüme aykırı
+            engelleyebilir ve şikâyet edebilir. Bize ulaşan şikâyetler incelenir. 3. bölüme aykırı
             içerik kaldırılabilir ve gönderenin hesabı önceden bildirim yapılmaksızın askıya
             alınabilir veya silinebilir. Yasal olarak zorunlu hâllerde ilgili bilgiler yetkili
             mercilerle paylaşılabilir.

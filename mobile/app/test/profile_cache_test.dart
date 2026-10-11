@@ -55,16 +55,14 @@ void main() {
 
   test('BOZUK kayıt uygulamayı düşürmez, yok sayılır', () async {
     // Depolama katmanının disiplini: güvenme, ama patlatma da.
-    SharedPreferences.setMockInitialValues(
-        {'profile_cache_u1': '{bozuk json'});
+    SharedPreferences.setMockInitialValues({'profile_cache_u1': '{bozuk json'});
     final s2 = ProfileCacheStore(await SharedPreferences.getInstance());
     expect(s2.read('u1'), isNull);
   });
 
   // ─── ASIL DÜZELTME: çekim düşünce önbellekten devam ─────────────────────
 
-  test('çekim DÜŞERSE hesap adı e-postaya değil YEREL KOPYAYA düşer',
-      () async {
+  test('çekim DÜŞERSE hesap adı e-postaya değil YEREL KOPYAYA düşer', () async {
     await store.write('u1', {'id': 'u1', 'display_name': 'T2'});
     final auth = AuthService.fake(
       user: _user('u1', 'kelimekitest2@example.com'),

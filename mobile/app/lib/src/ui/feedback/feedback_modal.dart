@@ -125,8 +125,8 @@ class _FeedbackModalState extends State<FeedbackModal> {
       );
       if (!mounted) return;
       if (result == FeedbackSubmitResult.rateLimited) {
-        setState(() =>
-            _error = 'Çok fazla mesaj gönderdin, birkaç dakika sonra tekrar dene.');
+        setState(() => _error =
+            'Çok fazla mesaj gönderdin, birkaç dakika sonra tekrar dene.');
       } else {
         setState(() => _sent = true);
       }
@@ -247,8 +247,7 @@ class _FeedbackModalState extends State<FeedbackModal> {
             TextSpan(children: [
               const TextSpan(text: 'Yanıt e-postan: '),
               TextSpan(
-                  text: '${user.email}',
-                  style: const TextStyle(color: _text)),
+                  text: '${user.email}', style: const TextStyle(color: _text)),
             ]),
             style: const TextStyle(
                 fontFamily: 'SpaceMono', fontSize: 10, color: _muted),
@@ -280,5 +279,4 @@ class _FeedbackModalState extends State<FeedbackModal> {
       ],
     );
   }
-
 }

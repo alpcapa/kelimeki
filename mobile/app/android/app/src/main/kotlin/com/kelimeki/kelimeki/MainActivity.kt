@@ -2,8 +2,11 @@ package com.kelimeki.kelimeki
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -65,6 +68,24 @@ class MainActivity : FlutterActivity() {
                     "yarimOyunIptal" -> {
                         YarimOyunHatirlatmasi.iptal(this)
                         result.success(null)
+                    }
+                    // "Bildirimler kapalı" kartı (2 Ekim 2026): sistem izin
+                    // diyaloğu artık açılmadığında tek yol uygulamanın
+                    // bildirim ayarları. API 26+ doğrudan o sayfa, altı
+                    // uygulama bilgisi sayfası.
+                    "bildirimAyarlariniAc" -> {
+                        val niyet = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                        } else {
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
+                        }
+                        try {
+                            startActivity(niyet)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.success(false)
+                        }
                     }
                     else -> result.notImplemented()
                 }

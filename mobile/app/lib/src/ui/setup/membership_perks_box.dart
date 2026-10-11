@@ -74,7 +74,8 @@ class MembershipPerksBox extends StatelessWidget {
           ],
         ),
         foregroundDecoration: BoxDecoration(
-          border: Border.all(color: const Color(0x4D2563EB)), // border-accent/30
+          border:
+              Border.all(color: const Color(0x4D2563EB)), // border-accent/30
           borderRadius: BorderRadius.circular(6),
         ),
         child: Column(
@@ -125,7 +126,8 @@ class MembershipPerksBox extends StatelessWidget {
                 variant: NeoButtonVariant.neutral,
                 fontSize: 12,
                 letterSpacing: 1,
-                onPressed: () => showLoginModal(context, auth, feedback: feedback),
+                onPressed: () =>
+                    showLoginModal(context, auth, feedback: feedback),
               ),
             ),
           ],

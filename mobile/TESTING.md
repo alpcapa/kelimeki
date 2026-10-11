@@ -67,6 +67,10 @@ sözleşmesi — tek taraflı bakmak bir hatayı gizleyebilir.
       "kelimeki" el yazısı ikonu görünmeli — Flutter'ın varsayılan mavi kuş
       DEĞİL (7 Ağustos 2026'ya kadar bu hiç üretilmemişti, ilk Appetize
       denemesinde fark edildi).
+      **Android (8+):** yazı ikonun kutusunu YATAYDA neredeyse doldurmalı,
+      etrafında kalın beyaz çerçeve OLMAMALI (2 Ekim 2026'ya kadar ikon
+      ortada küçük kalıyordu — Parça 232). Launcher ikon önbelleğini geç
+      tazeleyebilir; gerekirse ikonu ana ekrandan kaldırıp yeniden ekle.
 - [ ] **Splash ekranı.** Uygulama açılırken kısa bir an beyaz zemin
       üzerinde "kelimeki" logosu görünmeli — siyah ekran ya da mavi kuş
       GÖRÜNMEMELİ. Android'de sistem karanlık modda olsa bile splash beyaz
@@ -340,6 +344,11 @@ silinmiş** (tertemiz kurulum) bir cihazla koş.
       penceresi de yok) doğrudan tanıtım EKRANI ("TANITIM · 1/4"). Setup
       teşhis satırındaki `Derleme` sha'sı bu PR'ın merge commit'iyle
       eşleşmeli — eşleşmiyorsa paket bayat.
+- [ ] **Üyeden misafire geçen cihaz tanıtıma DÜŞMEZ (2 Ekim 2026, 1.1.3):**
+      eski bir hesapla giriş yap, bir YZ oyunu başlat (tanıtım açılmaz) →
+      çıkış yap → misafir olarak "OYUNU BAŞLAT" → tanıtım AÇILMAMALI,
+      doğrudan oyun. 1.1.2'de açılıyordu (vaka: `docs/decisions/onboarding.md`).
+      Aynısı yalnızca bir Canlı oyun açıp çıkan üye için de.
 - [ ] **Kapanış penceresi (1 Ekim 2026, ROADMAP #41 karar 6):** yeşil onay
       mührü + "TANITIM TAMAM · 4/4", "Hazırsın!", SEN 80 / RAKİP 48 kutuları,
       gri şeritte "SIRADAKİ: YAPAY ZEKA · KOLAY · 2 KİŞİ" (Setup'taki seçim —
@@ -488,10 +497,20 @@ buradakiler ekranın gerçek bir oyundaki hâli.
       BAŞLAT".
 - [ ] **Canlı oyun formu (1 Ekim 2026, ROADMAP #41).** Arkadaşınla → "YENİ
       OYUN BAŞLAT":
-      - 2 kişide tek koltuk *"Aşağıdan bir arkadaşını seç"*; arkadaş seçince
-        koltuk KIRMIZI zeminde, adı ve sağda soluk "2"; ✕ boşaltır. 4 kişide
-        üç koltuk (kırmızı/yeşil/sarı); 2 arkadaşla üçüncü koltuk "Yapay
-        Zeka". Boş koltuğa dokunmak listeye kaydırmalı, klavye AÇILMAMALI.
+      - **1. koltuk SENSİN (2 Ekim 2026, 1.1.3):** camgöbeği kart, avatarın,
+        adın, soluk "1", ✕ YOK. Başlık "OYUNCULAR" (4 kişide "· n/4").
+        2 kişide altında tek koltuk *"Aşağıdan bir arkadaşını seç"*; arkadaş
+        seçince KIRMIZI zemin, adı, soluk "2"; ✕ boşaltır. 4 kişide 2×2:
+        üstte 1-2, altta 3-4 (kırmızı/yeşil/mor); boşlar "Boş", 2 arkadaşla
+        4. koltuk "Yapay Zeka". Boş koltuğa dokunmak listeye kaydırmalı,
+        klavye AÇILMAMALI.
+      - **Numaralar her durumda HİZALI, isim numaraya BİNMEZ:** uzun isimli
+        bir arkadaş seç → isim numaradan önce "…" ile kesilmeli; aynı
+        sütundaki numaralar (sen · arkadaş · boş · Yapay Zeka) aynı hizada.
+      - **Koltuk numarası iki platformda AYNI yerde (2 Eki 2026, 1.1.3):**
+        numaralar kartın DİKEY ORTASINDA (iPhone ile Android yan yana;
+        1.1.2'de iPhone'da alta yapışıktı). En büyük yazı boyutunda da
+        büyümemeli.
       - "HIZLI SEÇ" / "SIK OYNADIKLARIN" şeridi (en az 2 arkadaşın varsa):
         en çok oynadığın kişi solda; dokununca seçilmeli, halkası koltuğun
         renginde. Arama kutusuna yazınca şerit kaybolmalı.
@@ -811,7 +830,7 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
       karta bak: iki platform aynı hissi vermeli.
 - [ ] **Sohbet arşivi.** Web'de oynanmış, mesajlaşılmış bir Canlı oyunun
       kartında konuşma balonu rozeti + mesaj sayısı olmalı; dokununca
-      dondurulmuş sohbet açılmalı. Sessize aldığın biri varsa isminin
+      dondurulmuş sohbet açılmalı. Engellediğin biri varsa isminin
       yanında 🚫 görünmeli.
       **Sıralama: en yeni mesaj EN ÜSTTE** (9 Ağustos 2026 — arşiv o güne
       kadar ters duruyordu, bkz. Parça 36). Kural her yerde aynı: canlı
@@ -1523,6 +1542,14 @@ geçici olarak öne çekme; aşağıdaki maddeler ayrılış saatini seçerek ko
       kaldı — Yarın akşam bir kez hatırlatalım mı?"* kartı. **ŞİMDİ DEĞİL**
       sistem diyaloğunu AÇMAZ; **HATIRLAT** açar.
 - [ ] **Hiç oynanmamış oyun (turnCount < 2)** çıkışında kart ÇIKMAZ.
+- [ ] **"Bildirimler kapalı" kartı (2 Ekim 2026, 1.1.3):** telefon
+      ayarlarından Kelimeki bildirimlerini KAPAT → yarım oyundan logoyla çık →
+      *"Bildirimler kapalı"* kartı (AYARLARI AÇ / ŞİMDİ DEĞİL). AYARLARI AÇ
+      doğrudan uygulamanın BİLDİRİM sayfasını açar (Android 8+ / iOS 16+;
+      daha eskide genel uygulama ayarı). Bildirimi aç, uygulamaya dön →
+      hatırlatma KURULUR (saatini bekle, düşmeli). Açmadan dönersen hiçbir
+      şey olmaz. iOS'ta izin bir kez REDDEDİLDİYSE de bu kart çıkar (Apple
+      bir daha sormuyor).
 - [ ] **Kart sayacı Canlı kartıyla ORTAK:** iki kart toplamda en fazla üç kez,
       aralarında yedi gün.
 - [ ] **Bildirim düşüyor:** izin verilmiş cihazda yarım oyundan çık, uygulamayı

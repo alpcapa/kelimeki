@@ -249,7 +249,10 @@ görüyor — `list_deployments` (sha ile süzme dahil) çalışıyor; `create_d
 ### Vercel günlük dağıtım kotası (2 Ekim 2026, ölçüldü)
 
 Hobi (ücretsiz) planı **24 saatte 100 dağıtım** sınırı koyuyor (her dal push'u
-bir önizleme = bir dağıtım). 2 Ekim'de çok sayıda küçük PR'la doldu: Vercel
+bir önizleme = bir dağıtım). ⚠ **Ölçüldü (aynı gün 10:40):** kota doluyken
+PR ÖNİZLEMELERİ reddedildi ama `main` merge'ünün ÜRETİM dağıtımı (#784,
+`900726c`) ~1 dk'da yayına çıktı — yani kota önizlemeyi kesiyor, üretimi
+her zaman değil. 2 Ekim'de çok sayıda küçük PR'la doldu: Vercel
 PR'lara `Deployment rate limited — retry in 24 hours`
 (`api-deployments-free-per-day`) yazdı. Aynı gün #782'nin `main` merge'ü
 canlıya ÇIKMADI (sha `23fef7a`'da kaldı), sonraki #783 merge'ü çıktı — kota

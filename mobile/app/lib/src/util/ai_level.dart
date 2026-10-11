@@ -24,7 +24,11 @@ const Map<AiLevel, String> aiLevelLabel = {
 /// Faz 5'e (7 Eylül 2026) kadar YOKTU — motoru gelmeden "Zor" sunup Normal'i
 /// oynatmak ürün yalanı olurdu; geniş arama motoru (`aiLevelSearch`) ile
 /// web'le aynı PR'da açıldı.
-const List<AiLevel> selectableAiLevels = [AiLevel.kolay, AiLevel.normal, AiLevel.zor];
+const List<AiLevel> selectableAiLevels = [
+  AiLevel.kolay,
+  AiLevel.normal,
+  AiLevel.zor
+];
 
 /// Seçicinin altındaki açıklamanın İLK cümlesi — seviye kime göre,
 /// kullanıcıya hitapla (web `AI_LEVEL_PITCH`, parite testi birebir
@@ -37,9 +41,8 @@ const Map<AiLevel, String> aiLevelPitch = {
   AiLevel.normal:
       'Orta-iyi seviye bir oyuncuyum, sıradan oyunculardan biraz daha iyiyim '
           'diyorsanız burası size göre.',
-  AiLevel.zor:
-      'Çok iyi oyuncuyum, genelde %80+ kazanırım diyorsanız bunu '
-          'denemelisiniz.',
+  AiLevel.zor: 'Çok iyi oyuncuyum, genelde %80+ kazanırım diyorsanız bunu '
+      'denemelisiniz.',
 };
 
 /// Puan cümlesinin fiili — kullanıcının verdiği metinde Zor'unki farklı
@@ -62,7 +65,8 @@ const Map<AiLevel, String> _aiLevelVerb = {
 /// Girişsizde ([signedIn] false) puan cümlesinin ARDINDAN, ayrı bir not
 /// olarak "(Puan takibi üyelik gerektirir)" gelir; nokta CÜMLENİN sonunda,
 /// parantezin önünde — web `aiLevelDescription(level, count, signedIn)`.
-String aiLevelDescription(AiLevel level, int playerCount, {required bool signedIn}) {
+String aiLevelDescription(AiLevel level, int playerCount,
+    {required bool signedIn}) {
   final birinci = leaguePoints(1, playerCount, aiLevel: level);
   final ikinci = leaguePoints(2, playerCount, aiLevel: level);
   final fiil = _aiLevelVerb[level]!;

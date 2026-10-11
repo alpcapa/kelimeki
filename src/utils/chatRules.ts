@@ -23,7 +23,7 @@ export const CHAT_RULES_INTRO = 'Mesajlaşmaya başlamadan önce:';
 export const CHAT_RULES_ITEMS: readonly string[] = [
   'Gönderdiğin mesajlardan ve doğabilecek hukuki sonuçlardan sen sorumlusun.',
   'Cinsel içerik, hakaret, nefret söylemi, tehdit ve taciz yasaktır. Kurallara uymayan hesap uyarı yapılmadan kapatılabilir.',
-  'Rahatsız olursan sohbet ayarlarından kişiyi sessize alabilir ve şikâyet edebilirsin.',
+  'Rahatsız olursan sohbet ayarlarından kişiyi engelleyebilir ve şikâyet edebilirsin.',
 ];
 export const CHAT_RULES_TERMS_LINK = 'Kullanım Koşulları\'nın tamamı';
 export const CHAT_RULES_ACCEPT = 'Kabul ediyorum';

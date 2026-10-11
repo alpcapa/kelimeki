@@ -151,6 +151,7 @@ class _Section extends StatelessWidget {
                   fontFamily: 'SpaceMono',
                   fontSize: 11,
                   letterSpacing: 1.5,
+                  fontWeight: FontWeight.w700,
                   color: _accent,
                 ),
               ),
@@ -582,6 +583,7 @@ class _DetailedRules extends StatelessWidget {
               fontFamily: 'SpaceMono',
               fontSize: 11,
               letterSpacing: 1.5,
+              fontWeight: FontWeight.w700,
               color: _accent,
             ),
             children: const [
@@ -624,6 +626,32 @@ class _DetailedRules extends StatelessWidget {
               'sona erer. Bu durumda da tüm oyuncuların puanından elinde '
               'kalan taşların değeri düşer. En yüksek puana sahip oyuncu '
               'kazanır.'),
+        ],
+      ),
+      const _Section(
+        title: 'Rastgele Oyun',
+        children: [
+          _P('Arkadaşın olmadan da Canlı oyun oynayabilirsin. Oyun kurarken '
+              'listenin en üstündeki **Rastgele Oyuncu**\'yu seçersen açık bir '
+              'oyun başlatırsın; kalan koltuklara giriş yapmış herhangi bir '
+              'üye katılabilir. İstersen arkadaşlarını da aynı oyuna '
+              'ekleyebilirsin.'),
+          _P('**Açık oyunlar:** Oyunlar sekmesinde Devam Edenler\'in üstündeki '
+              'şeritte "kaç koltuk kaldı" yazan açık oyunlar görünür. Birini '
+              'kabul edersen oyun Devam Edenler\'e girer; bütün koltuklar '
+              'dolunca başlar. Açık oyun yayındayken takma adın ve profil '
+              'fotoğrafın giriş yapmış tüm üyelere görünür.'),
+          _P('**Beklerken:** Kurduğun ya da katıldığın oyun başlamadan önce '
+              '"Bekliyor" görünür; kurduysan iptal edebilir, katıldıysan '
+              'ayrılabilirsin. Koltuklar 7 gün içinde dolmazsa oyun kalkar. '
+              'Aynı anda en fazla 3 rastgele oyunda yer alabilirsin ve '
+              'kullanmak için en az bir oyun bitirmiş olman gerekir.'),
+          _P('**Kurallar:** Başladıktan sonra normal bir Canlı oyundur. 48 '
+              'saat içinde hamle yapmayan oyuncu teslim sayılır ve **−2** '
+              'puan alır. 2 kişilik oyun biter ve rakibi **+2** alır; 4 '
+              'kişilik oyun diğer oyuncularla devam eder.'),
+          _P('**Oyun sonu:** Oyun bitince arkadaşın olmayan oyuncuları '
+              'arkadaş olarak ekleyebilirsin; istersen vazgeçebilirsin.'),
         ],
       ),
       const _Section(

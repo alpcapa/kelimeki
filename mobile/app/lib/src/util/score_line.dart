@@ -11,7 +11,8 @@
 // Sıra AVATAR SIRASIDIR (koltuk / snapshot sırası), sıralama DEĞİL.
 
 /// Bir puan hücresinin eni = avatar ADIMI (bindirme yüzünden çaptan küçük).
-double scoreCellWidth(double avatarSize, double overlap) => avatarSize - overlap;
+double scoreCellWidth(double avatarSize, double overlap) =>
+    avatarSize - overlap;
 
 /// Satırın sola kaydırması: `(çap - adım)/2 = binişme/2` (26/6 için 3 px).
 /// Çap parametre DEĞİL, çünkü sadeleşince düşüyor — iki taraf da öyle.

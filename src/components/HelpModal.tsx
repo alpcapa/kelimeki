@@ -322,6 +322,36 @@ export function DetailedRules() {
         </P>
       </Section>
 
+      <Section title="Rastgele Oyun">
+        <P>
+          Arkadaşın olmadan da Canlı oyun oynayabilirsin. Oyun kurarken listenin en üstündeki{' '}
+          <strong>Rastgele Oyuncu</strong>'yu seçersen açık bir oyun başlatırsın; kalan koltuklara
+          giriş yapmış herhangi bir üye katılabilir. İstersen arkadaşlarını da aynı oyuna
+          ekleyebilirsin.
+        </P>
+        <P>
+          <strong>Açık oyunlar:</strong> Oyunlar sekmesinde Devam Edenler'in üstündeki şeritte
+          "kaç koltuk kaldı" yazan açık oyunlar görünür. Birini kabul edersen oyun Devam
+          Edenler'e girer; bütün koltuklar dolunca başlar. Açık oyun yayındayken takma adın ve
+          profil fotoğrafın giriş yapmış tüm üyelere görünür.
+        </P>
+        <P>
+          <strong>Beklerken:</strong> Kurduğun ya da katıldığın oyun başlamadan önce "Bekliyor"
+          görünür; kurduysan iptal edebilir, katıldıysan ayrılabilirsin. Koltuklar 7 gün içinde
+          dolmazsa oyun kalkar. Aynı anda en fazla 3 rastgele oyunda yer alabilirsin ve
+          kullanmak için en az bir oyun bitirmiş olman gerekir.
+        </P>
+        <P>
+          <strong>Kurallar:</strong> Başladıktan sonra normal bir Canlı oyundur. 48 saat içinde
+          hamle yapmayan oyuncu teslim sayılır ve <strong>−2</strong> puan alır. 2 kişilik oyun
+          biter ve rakibi <strong>+2</strong> alır; 4 kişilik oyun diğer oyuncularla devam eder.
+        </P>
+        <P>
+          <strong>Oyun sonu:</strong> Oyun bitince arkadaşın olmayan oyuncuları arkadaş olarak
+          ekleyebilirsin; istersen vazgeçebilirsin.
+        </P>
+      </Section>
+
       <Section title="Skor Kartı ve Puanlama">
         <P>
           Oyun oynamak için giriş yapman gerekmez. Sadece arkadaşınla canlı oyun, k-lig

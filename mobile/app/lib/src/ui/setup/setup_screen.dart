@@ -979,7 +979,14 @@ class _SetupScreenState extends State<SetupScreen>
       try {
         final flags = (await storage).flags;
         if (mounted) {
-          await yarimOyunIzniAkisi(context, messaging: messaging, flags: flags);
+          final ayaraGit = await yarimOyunIzniAkisi(context,
+              messaging: messaging, flags: flags);
+          // "Bildirimler kapalı" → ayarlar açılır, hatırlatma DÖNÜŞTE
+          // denenir (`YarimOyunHatirlatici.uygulamaAcildi`).
+          if (ayaraGit) {
+            await hatirlatici.ayarlaraGonder(s);
+            return;
+          }
         }
       } catch (_) {
         // Depo açılamadıysa kart çıkmaz — akış durmaz.
@@ -1052,7 +1059,8 @@ class _SetupScreenState extends State<SetupScreen>
   /// tanıtım AÇILIRKEN konur, bitince değil — kullanıcı isteği "bir kere"
   /// ve yarıda kapatılan tanıtım sonsuz döngüye dönüşmemeli.
   Future<void> _runTutorial(String me, SetWordSource words,
-      {String source = 'auto', ({AiLevel aiLevel, int playerCount})? next}) async {
+      {String source = 'auto',
+      ({AiLevel aiLevel, int playerCount})? next}) async {
     final storage = widget.services.storage;
     if (storage != null) {
       try {
@@ -1130,11 +1138,26 @@ class _SetupScreenState extends State<SetupScreen>
       // Kolay/Zor state'e yazılır; oyun boyunca değişmez.
       aiLevel: level == AiLevel.normal ? null : level,
     ));
+    // Bu cihazda gerçek bir oyun oynandı → tanıtım bir daha "ilk oyun"
+    // sayılmaz (2 Ekim 2026, web `App.startLocalGame` ikizi). Kapı misafirde
+    // yalnızca cihaz bayrağına ve YARIM kayda bakıyor; üye olarak oynayıp
+    // (hesap eski → tanıtım yok, bayrak da konmuyordu) çıkış yapan biri
+    // misafir olarak tanıtımı görüyordu. Kayıt: `docs/decisions/onboarding.md`.
+    unawaited(_tanitimiGorulduSay());
     // Anonim başlangıç sayacı (web `logGameStart` paritesi, ROADMAP #9).
     // Fire-and-forget ve AWAIT EDİLMEZ: telemetri oyunun açılmasını
     // geciktiremez, hatası da `logStart`ın içinde yutuluyor.
     unawaited(_logGameStart(_count));
     await _openGame(controller, words);
+  }
+
+  Future<void> _tanitimiGorulduSay() async {
+    try {
+      final storage = widget.services.storage;
+      if (storage != null) await (await storage).flags.markTutorialSeen();
+    } catch (_) {
+      // Depo açılamadıysa kapı zaten "gösterme" tarafında.
+    }
   }
 
   Future<void> _resumeSavedGame(SetWordSource words) async {
@@ -1976,8 +1999,8 @@ class _SetupScreenState extends State<SetupScreen>
         // BİREBİR (`setup_screen_test.dart` kilitliyor).
         Text(
           _count == 2
-              ? 'Sen ve 1 yapay zeka. 4 kişide 3 yapay zekaya karşı oynarsın.'
-              : 'Sen ve 3 yapay zeka; herkes kendi köşesinden başlar.',
+              ? '2 kişilik oyunda yapay zekaya karşı oynarsın.'
+              : '4 kişilik oyunda 3 yapay zekaya karşı oynarsın.',
           style: const TextStyle(
             fontFamily: 'SpaceMono',
             fontSize: 11,
@@ -2048,6 +2071,7 @@ class _SectionLabel extends StatelessWidget {
         fontFamily: 'SpaceMono',
         fontSize: 10,
         letterSpacing: 1.5,
+        fontWeight: FontWeight.w700,
         color: _muted,
       ),
     );

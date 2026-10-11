@@ -87,8 +87,17 @@ class DevamEdenGovde extends StatelessWidget {
   /// bir an görünmesindense hiç görünmemesi tercih edildi).
   final Widget? sure;
 
+  /// Alt satırın SOLUNDAki etiket (4 Ekim 2026: "RASTGELE"). Süre sağda,
+  /// etiket solda AYNI satırda — kart uzamaz; süre yoksa etiket tek başına
+  /// satırda, sola yaslı. Setup'ın YZ kartı vermez.
+  final Widget? etiket;
+
   const DevamEdenGovde(
-      {super.key, required this.sol, required this.durum, this.sure});
+      {super.key,
+      required this.sol,
+      required this.durum,
+      this.sure,
+      this.etiket});
 
   @override
   Widget build(BuildContext context) {
@@ -108,11 +117,20 @@ class DevamEdenGovde extends StatelessWidget {
           ),
           durum,
         ]),
-        if (sure != null) ...[
+        if (sure != null || etiket != null) ...[
           // 8 px — web `gap-0.5` + `mt-1.5` (kullanıcı isteği): süre satırı
           // durum etiketine YAPIŞMASIN.
           const SizedBox(height: 8),
-          Align(alignment: Alignment.centerRight, child: sure),
+          if (etiket == null)
+            Align(alignment: Alignment.centerRight, child: sure)
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                etiket!,
+                if (sure != null) ...[const SizedBox(width: 8), sure!],
+              ],
+            ),
         ],
       ],
     );

@@ -117,8 +117,8 @@ Map<String, List<String>> _dartIcons(String src) {
   for (final fn in fnRe.allMatches(src)) {
     var body = fn.group(2)!.replaceAll(RegExp(r'//[^\n]*'), '');
     // `final ad = Path()..…;` → `drawPath(ad, …)` çağrısına yerine koy.
-    for (final v
-        in RegExp(r'final (\w+) = (Path\(\).*?);\n', dotAll: true).allMatches(body)) {
+    for (final v in RegExp(r'final (\w+) = (Path\(\).*?);\n', dotAll: true)
+        .allMatches(body)) {
       body = body
           .replaceAll('drawPath(${v.group(1)},', 'drawPath(${v.group(2)},')
           .replaceAll(v.group(0)!, '');
@@ -142,7 +142,8 @@ Map<String, List<String>> _dartIcons(String src) {
         case 'Circle':
           final off =
               nums(RegExp(r'Offset\(([^)]*)\)').firstMatch(arg)!.group(1)!);
-          final r = val(RegExp(r'\)\s*,\s*([^,]+),').firstMatch(arg)!.group(1)!);
+          final r =
+              val(RegExp(r'\)\s*,\s*([^,]+),').firstMatch(arg)!.group(1)!);
           items.add('$kind circle ${f(off[0])} ${f(off[1])} ${f(r)}');
           break;
         default:

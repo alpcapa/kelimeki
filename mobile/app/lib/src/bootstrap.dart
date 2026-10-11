@@ -224,8 +224,8 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   analytics.configure(firebaseHazir ? FirebaseAnalyticsLogger() : null);
   // Kayıt Hunisi sayacı (`signup_events`, ROADMAP #35) — aynı "açılışta bir
   // kez" deseni; Firebase'e DEĞİL Supabase'e bağlı.
-  signupEvents.configure(
-      supabase != null ? SupabaseSignupEventsSink(supabase) : null);
+  signupEvents
+      .configure(supabase != null ? SupabaseSignupEventsSink(supabase) : null);
   final pushRepo = firebaseHazir && supabase != null
       ? PushRepo(
           messaging: FirebasePushMessaging(),

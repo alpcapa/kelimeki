@@ -42,8 +42,24 @@
       oyun ekranı kapanmalı (oyun kayıtlı, Devam Edenler'de), form açılmalı.
 - [ ] **⋯ menüsü.** Skor kartı · 2/4 kişilik oyun kur · arkadaşlıktan
       çıkar (ONAY sorar). Sessize aldığın/şikayet ettiğin birinde adın
-      yanında 🚫/🚩 ve menüde "Sessize alma / şikayet ayarları" çıkmalı;
-      öteki satırlarda o madde OLMAMALI.
+      yanında 🚫/🚩 ve menüde "Engeli kaldır" ("Engel / şikayet ayarları",
+      şikayet de varsa) çıkmalı; durumu OLMAYAN satırda menüde "Engelle"
+      olmalı (onay → engel; 🚫 hemen çıkmalı). 19 Ekim 2026 (port ikizi).
+- [ ] **Engelle / Engellediklerim (19 Ekim 2026, port ikizi; iki gerçek
+      hesap — otomatik test KANITLAMAZ).** (a) B'nin gelen arkadaşlık isteği
+      kartında "REDDET / KABUL ET" + küçük "ENGELLE" (şikayet YOK): onayla →
+      istek kalkmalı; A tekrar istek/davet atınca "<B> kullanıcısı sizi
+      engelledi.". (b) Bekleyen OYUN DAVETİ kartında aynı "ENGELLE";
+      engelleyince davet listeden kalkmalı. (c) Engel BAŞARISIZ olursa
+      (uçak modu) onay penceresi açık kalıp hata göstermeli, davet/istek
+      yerinde durmalı. (d) Arkadaşlar → listenin altında "ENGELLEDİKLERİM":
+      arkadaş OLMAYAN biri de görünmeli; "Engeli Kaldır" onayla → A yeniden
+      davet/istek atabilmeli; şikayetli satırda 🚩 + "Şikayeti Geri Çek",
+      şikayet açıkken "Engeli Kaldır" tek başına serbest bırakmaz. (e)
+      Sohbet ayarlarında "Kişiyi Engelle" / "ENGELİ KALDIR" metinleri
+      ("sessize al" kalmamalı). (f) Uzun arkadaş listesinde "ENGELLEDİKLERİM"
+      bağlantısına kaydırarak ulaşılabilmeli (web'deki 55vh iç kaydırması
+      BİLEREK taşınmadı — gövde kayıyor).
 - [ ] **Tüm oyuncular (eski "Ara & Ekle") — liste SONUNA KADAR kaydırılabiliyor (27 Ağustos 2026,
       kullanıcı bildirdi).** Klavye açıkken (kutu `autofocus`, yani modal
       açılır açılmaz açık) parmağını doğrudan BİR ÜYE SATIRININ üzerine koy
@@ -154,7 +170,8 @@
       düşsün). Arkadaşlar → "Arkadaşlar": o kişinin satırında,
       "arkadaşlıktan çıkar" ikonunun **SOLUNDA** 🚩 (yalnızca sessize
       aldıysan 🚫) çıkmalı. Dokun → "Kişi Ayarları" paneli; oradan
-      "Şikayeti Geri Çek" / "Sessizden Çıkar" → **onay adımı** → sonuç
+      "Şikayeti Geri Çek" / "Engeli Kaldır" (eski "Sessizden Çıkar", 19 Ekim
+      2026) → **onay adımı** → sonuç
       mesajı. Panel kapanınca ikon **HEMEN** kaybolmalı.
       **Asıl kanıt burada:** oyun bittikten sonra sohbet penceresine
       artık girilemediğinden, bu panel olmadan şikayeti geri çekmenin
@@ -513,8 +530,8 @@
       0 çıkıp mesajlar içeride "yeni" duruyordu). (d) Uçak modunda oyuna
       gir → rozet saçmalamamalı; bağlantı gelince bir sonraki tazelemede
       doğru sayıya dönmeli.
-- [ ] **Sessize alma.** Dişli ikonundan bir katılımcıyı seç → "Kişiyi
-      Sessize Al" → onay → 🚫 rozeti hem ayarlar listesinde hem o kişinin
+- [ ] **Engelleme (eski "Sessize alma", 19 Ekim 2026'dan beri "Engelle").**
+      Dişli ikonundan bir katılımcıyı seç → "Kişiyi Engelle" → onay → 🚫 rozeti hem ayarlar listesinde hem o kişinin
       mesaj balonlarının yanında görünmeli. O kişiden yeni bir mesaj
       gelirse **popup AÇILMAMALI** ama **rozet ARTMALI**
       (15 Ağustos 2026 kararı: mute yalnızca popup'ı bastırır) ve mesaj
@@ -559,3 +576,73 @@
 - [ ] **Sohbet arşivi ile tutarlılık.** Oyun bitince (bkz. bölüm 5 "Sohbet
       arşivi") dondurulmuş sohbette de aynı mute/rapor rozetleri (bugünkü
       GÜNCEL duruma göre, o oyundaki değil) görünmeli.
+
+### Rastgele Oyuncu — açık ilan (4 Ekim 2026, web ikizi `docs/testing-rastgele.md` §13.10)
+
+> İKİ gerçek hesap (T1, T2; eşzamanlı kabul için üçüncü T3 çok iyi olur) ve bir
+> de ESKİ sürümlü istemci (mağazadaki 1.1.2) ister. Sunucu RPC'leri canlıda;
+> kural tablosu ve beklenen metinler web belgesinde — **o belgenin 13.10.1–
+> 13.10.7 maddeleri bu portta da AYNEN koşulur** (aynı metinler, aynı sayılar).
+> Aşağıdakiler yalnızca PORTA ÖZGÜ ek kontroller. Otomatik kapı yalnız saf
+> kuralları ve ekran akışını sahte uçla sınar (`random_games_test.dart`,
+> `random_games_ui_test.dart`); gerçek RPC/yoklama/eşzamanlılık cihazda.
+
+- [ ] **Şerit yatay kayar, dikey kaydırmayı ÇALMAZ.** T2'nin Devam Edenler'inde
+      ≥4 ilan varken şeridin ÜZERİNDE parmağı aşağı/yukarı sürükle → sayfa
+      kayar (iç içe kaydırma sorunu yok); sağa/sola sürükle → kartlar kayar.
+      320 px (iPhone SE) ve 390 px'te ~3 kart yan yana, dördüncünün kenarı
+      görünür. Şerit yüksekliği ilan sayısıyla UZAMAZ; yazı ölçeği büyütülünce
+      kart içeriği taşmaz/kesilmez.
+- [ ] **Benim ilanım şeritte (4 Ekim 2026, §15)**: ilan açınca şeritte BENİM
+      kartım ilk sırada (başkalarınınki sağında), soluk accent zemin; "Kabul"
+      YOK, "BEKLİYOR" etiketi ("N koltuk kaldı" yerine) + altta kırmızı altı
+      çizili "İptal" (kurucu) / "Ayrıl" (ilandan oturan). Yalnız benim ilanım
+      varken de şerit görünür; başlık sayısı benimkini sayar. İptal/Ayrıl:
+      "İlan iptal edildi." / "Ayrıldın. Koltuk yeniden açıldı."; kart kalkar.
+      "Devam Edenler"deki "Bekliyor n/N" satırı da durur (yinelenme bilinçli).
+      Kart eni/yüksekliği diğerleriyle aynı; 320 px'te taşmaz.
+- [ ] **Kare kart + şerit stili (4 Ekim 2026, §17)**: kartlar KARE (390 px'te
+      ~105×108); 3 tam kart + dördüncünün ~1/4'ü görünür (kaydırma ipucu);
+      320/375/390 px'te ve en büyük yazı ölçeğinde taşma/kesilme YOK; şerit
+      altındaki "Devam Edenler" artık itilmiyor. Kartlarda diğer kartlardaki
+      gölge var (üst/alt kırpılmıyor). "RASTGELE OYUN AÇ" başlıkla AYNI boy,
+      mavi + kalın, altı çizili DEĞİL. "BEKLİYOR" / "N koltuk kaldı" ORTALI.
+- [ ] **Rastgele kökenli aktif oyun (4 Ekim 2026, §18)**: bir ilandan başlayan
+      oyun "Devam Edenler"de açık mavi zeminli, solda mavi çizgili; alt
+      satırda "RASTGELE" etiketi SOLDA, kalan süre SAĞDA (aynı satır, kart
+      diğerlerinden uzun DEĞİL); sıra rakipteyken etiket tek başına solda.
+      Arkadaş daveti oyunu ve YZ'li Setup kartı AYNI (beyaz) kalır; karma
+      kadro (arkadaş + rastgele) işaretli. Eski oyunlar için `via` yoksa
+      işaret çıkmaz (bilinen).
+- [ ] **Kabul**: tek dokunuş, onay YOK; satır içi ileti ("Kabul ettin. Diğer
+      oyuncular bekleniyor." / 2 kişilikte "Kabul ettin. Oyun başladı.") 5 sn
+      sonra kalkar; kabul edilen kart şeritten hemen kaybolur. Çift dokunuşta
+      ikinci istek atılmaz (düğme meşgulken pasif).
+- [ ] **Yoklama (Realtime YOK)**: T2 şeride bakarken T1 ilan açar → en geç ~40
+      sn içinde belirir. Uygulama ARKA PLANDAYKEN istek atılmaz; öne dönünce
+      bir kez yoklar (uçak modundayken de atılmaz). `Derleme <sha>` satırını
+      ÖNCE oku (kök CLAUDE.md "Deploy Doğrulaması").
+- [ ] **Açık koltuk her yerde "?" kesikli çerçeve**: Devam Edenler "Bekliyor
+      n/N" satırı, karma kadrodaki arkadaşın davet kartı, "Rastgele oyuncu
+      bekleniyor" — hiçbir yerde "Yapay Zeka" robotu YOK (gerçek YZ koltuğu
+      hariç). Eski sürümlü cihazda aynı koltuk "Yapay Zeka" görünür (BİLİNEN
+      bedel — hata değil).
+- [ ] **Kurulum formu**: "Rastgele Oyuncu" satırı listenin EN ÜSTÜNDE, arama
+      kutusuna yazınca kaybolmaz, "Tüm oyuncular →"da ve hiç arkadaşı olmayan
+      hesapta da var; 2 kişide ikinci dokunuş değişmez, 4 kişide ×1/×2/×3 ve
+      3'te durur; "?" koltuk kartına dokunmak seçimi kaldırır. Klavye açıkken
+      de satır erişilebilir.
+- [ ] **Sonuç ekranı**: yalnız "?" → "İlanın yayında…7 gün…ceza yok"; uygun ilan
+      varken → "Oyuna katıldın"; arkadaş + "?" → "Davet gönderilen: …" satırı
+      ve arkadaşa e-posta/bildirim gider (yalnız YENİ ilanda).
+- [ ] **Rozetler DEĞİŞMEZ**: yalnız ilan açık/bekleyen hesapta Setup'taki
+      "Arkadaşınla" rozeti, alt sekme rozetleri ve uygulama ikonu rozeti
+      ARTMAZ; giriş sekmesi Canlı'ya ZORLANMAZ (ilan haberdir). Karma kadroda
+      arkadaşın bekleyen daveti bugünkü gibi sayılır.
+- [ ] **Yasal metin**: Gizlilik (§2 maddesi) ve Koşullar (§1, §5 sohbet cümlesi)
+      pencerelerinde Rastgele Oyuncu görünürlüğü var, "Son güncelleme: 4 Ekim
+      2026" (web `/gizlilik/` ile aynı).
+- [ ] **"Tekrar Oyna" (rövanş)**: yabancıyla biten oyunda sunucu "Yalnızca
+      arkadaşlarını davet edebilirsin" diyebilir — ham hata değil Türkçe metin
+      çıkmalı; davranışı not et (karar bekliyor, `docs/decisions/
+      random-opponent.md` §7).

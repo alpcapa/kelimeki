@@ -39,6 +39,7 @@ import '../tokens.dart';
 import '../form_input.dart';
 import '../tap_target.dart';
 import '../../util/error_message.dart';
+
 const Color _muted = kMuted;
 const Color _accent = kAccent;
 const Color _red = kRed;
@@ -180,7 +181,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     // zaman `true` — ama mevcut isimle aynıysa (kişi kendi ismini yazdı)
     // kontrolü atlar (`currentValue` parametresi). Aynı sonucu burada:
     // mevcut isimle eşitse idle'da bırak, sunucuya sorma.
-    if (trimmed.isEmpty || trimmed == (widget.auth.profile?.displayName ?? '')) {
+    if (trimmed.isEmpty ||
+        trimmed == (widget.auth.profile?.displayName ?? '')) {
       setState(() => _nickStatus = _NickStatus.idle);
       return;
     }
@@ -188,8 +190,7 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     final mySeq = ++_nickSeq;
     _nickTimer = Timer(const Duration(milliseconds: 400), () async {
       try {
-        final checker =
-            widget.nicknameChecker ?? widget.auth.nicknameStatus;
+        final checker = widget.nicknameChecker ?? widget.auth.nicknameStatus;
         final durum = await checker(trimmed);
         if (mounted && _nickSeq == mySeq) {
           setState(() => _nickStatus = switch (durum) {
@@ -242,8 +243,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     } catch (e) {
       debugPrint('[Kelimeki] avatar seçilemedi: $e');
       if (mounted) {
-        setState(() => _error =
-            'Fotoğraf seçilemedi. Galeri izni verildiğinden emin ol.');
+        setState(() =>
+            _error = 'Fotoğraf seçilemedi. Galeri izni verildiğinden emin ol.');
       }
       return;
     }
@@ -274,14 +275,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     final auth = widget.auth;
     final profile = auth.profile;
 
-    if (_firstName.text.trim().isEmpty) {
-      setState(() => _error = 'Ad zorunludur.');
-      return;
-    }
-    if (_lastName.text.trim().isEmpty) {
-      setState(() => _error = 'Soyad zorunludur.');
-      return;
-    }
+    // Ad/soyad 2 Ekim 2026'dan beri İSTEĞE BAĞLI (kayıt formuyla aynı karar;
+    // web `AccountSettingsModal.tsx` ile birlikte).
     if (_nickname.text.trim().isEmpty) {
       setState(() => _error = 'Takma isim zorunludur.');
       return;
@@ -325,7 +320,8 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
       if (_gender != (profile?.gender ?? '')) {
         patch['gender'] = _gender.isEmpty ? null : _gender;
       }
-      if (birthDateIso != profile?.birthDate) patch['birth_date'] = birthDateIso;
+      if (birthDateIso != profile?.birthDate)
+        patch['birth_date'] = birthDateIso;
       if (_marketingConsent != (profile?.marketingConsent ?? false)) {
         patch['marketing_consent'] = _marketingConsent;
       }
@@ -385,17 +381,24 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     );
   }
 
-  Widget _labeled(String label, {required Widget child}) {
+  Widget _labeled(String label,
+      {bool required = false, required Widget child}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 4),
-          child: Text(label,
+          child: Text.rich(
+              TextSpan(children: [
+                TextSpan(text: label),
+                if (required)
+                  const TextSpan(text: ' *', style: TextStyle(color: _red)),
+              ]),
               style: const TextStyle(
                 fontFamily: 'SpaceMono',
                 fontSize: 9,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 1.5,
                 color: _muted,
               )),
@@ -460,7 +463,9 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
     // baş harfler için.
     final name = _nickname.text.isNotEmpty
         ? _nickname.text
-        : (_firstName.text.isNotEmpty ? _firstName.text : (auth.user?.email ?? 'Oyuncu'));
+        : (_firstName.text.isNotEmpty
+            ? _firstName.text
+            : (auth.user?.email ?? 'Oyuncu'));
 
     return KModal(
       title: 'HESAP AYARLARI',
@@ -480,8 +485,14 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     NeoButton(
-                      label:
-                          _uploadingAvatar ? 'YÜKLENİYOR…' : 'FOTOĞRAF DEĞİŞTİR',
+                      // Fotoğraf yoksa "YÜKLE", varsa "DEĞİŞTİR" (2 Ekim
+                      // 2026, web `AccountSettingsModal.tsx` ile aynı karar).
+                      label: _uploadingAvatar
+                          ? 'YÜKLENİYOR…'
+                          : (_avatarUrlOverride ?? auth.profile?.avatarUrl) !=
+                                  null
+                              ? 'FOTOĞRAF DEĞİŞTİR'
+                              : 'FOTOĞRAF YÜKLE',
                       variant: NeoButtonVariant.neutral,
                       fontSize: 10,
                       padding: const EdgeInsets.symmetric(
@@ -503,25 +514,12 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
               ),
             ]),
             const SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                    child: _labeled('AD',
-                        child: _field(_firstName,
-                            key: const ValueKey('field-first-name'),
-                            hint: 'Adın', autofillHints: const ['given-name']))),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: _labeled('SOYAD',
-                        child: _field(_lastName,
-                            key: const ValueKey('field-last-name'),
-                            hint: 'Soyadın',
-                            autofillHints: const ['family-name']))),
-              ],
-            ),
-            const SizedBox(height: 12),
+            // Kayıt formuyla AYNI düzen (2 Ekim 2026, web
+            // `AccountSettingsModal.tsx` ile birlikte): zorunlular üstte,
+            // İSTEĞE BAĞLILAR ayracın altında ikişerli satırda, tercihler en
+            // altta.
             _labeled('TAKMA İSİM',
+                required: true,
                 child: _field(_nickname,
                     key: const ValueKey('field-nickname'),
                     hint: 'Herkese görünen ismin (boşluksuz)',
@@ -541,41 +539,77 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
                   _muted),
             const SizedBox(height: 12),
             _labeled('E-POSTA',
+                required: true,
                 child: _field(_email,
                     key: const ValueKey('field-email'),
                     hint: 'E-posta',
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const ['email'])),
+            const SizedBox(height: 16),
+            const _OptionalDivider(),
             const SizedBox(height: 12),
-            _labeled('CİNSİYET',
-                child: DropdownButtonFormField<String>(
-                  initialValue: _gender,
-                  onChanged:
-                      _busy ? null : (v) => setState(() => _gender = v ?? ''),
-                  decoration: kInputDecoration(),
-                  style: kInputTextStyle,
-                  items: [
-                    const DropdownMenuItem(
-                        value: '', child: Text('Belirtilmedi')),
-                    for (final (value, label) in genderOptions)
-                      DropdownMenuItem(value: value, child: Text(label)),
-                  ],
-                )),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                    child: _labeled('AD',
+                        child: _field(_firstName,
+                            key: const ValueKey('field-first-name'),
+                            hint: 'Adın', autofillHints: const ['given-name']))),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: _labeled('SOYAD',
+                        child: _field(_lastName,
+                            key: const ValueKey('field-last-name'),
+                            hint: 'Soyadın',
+                            autofillHints: const ['family-name']))),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text('Aramalarda bulunmayı kolaylaştırır.',
+                style: TextStyle(
+                    fontFamily: 'SpaceMono', fontSize: 10, color: _muted)),
             const SizedBox(height: 12),
-            _labeled('DOĞUM TARİHİ (GG/AA/YYYY)',
-                child: _field(_birthDate,
-                    key: const ValueKey('field-birth-date'),
-                    hint: 'GG/AA/YYYY',
-                    keyboardType: TextInputType.number,
-                    maxLength: 10, onChanged: (v) {
-                  final f = formatTrDateInput(v);
-                  if (f != v) {
-                    _birthDate.value = TextEditingValue(
-                      text: f,
-                      selection: TextSelection.collapsed(offset: f.length),
-                    );
-                  }
-                })),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                    child: _labeled('CİNSİYET',
+                        child: DropdownButtonFormField<String>(
+                          initialValue: _gender,
+                          isExpanded: true,
+                          onChanged: _busy
+                              ? null
+                              : (v) => setState(() => _gender = v ?? ''),
+                          decoration: kInputDecoration(),
+                          style: kInputTextStyle,
+                          items: [
+                            const DropdownMenuItem(
+                                value: '', child: Text('Belirtilmedi')),
+                            for (final (value, label) in genderOptions)
+                              DropdownMenuItem(
+                                  value: value, child: Text(label)),
+                          ],
+                        ))),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: _labeled('DOĞUM TARİHİ',
+                        child: _field(_birthDate,
+                            key: const ValueKey('field-birth-date'),
+                            hint: 'GG/AA/YYYY',
+                            keyboardType: TextInputType.number,
+                            maxLength: 10, onChanged: (v) {
+                          final f = formatTrDateInput(v);
+                          if (f != v) {
+                            _birthDate.value = TextEditingValue(
+                              text: f,
+                              selection:
+                                  TextSelection.collapsed(offset: f.length),
+                            );
+                          }
+                        }))),
+              ],
+            ),
             const SizedBox(height: 12),
             _checkboxRow(
               value: _marketingConsent,
@@ -595,6 +629,10 @@ class _AccountSettingsModalState extends State<AccountSettingsModal> {
               subtitle:
                   'Bunu kapatsan da hesap güvenliğiyle ilgili mailleri (şifre sıfırlama, hesap durumu vb.) almaya devam edersin.',
             ),
+            const SizedBox(height: 8),
+            const Text('* Zorunlu alan',
+                style: TextStyle(
+                    fontFamily: 'SpaceMono', fontSize: 9, color: _muted)),
             if (_error != null) ...[
               const SizedBox(height: 10),
               Text(_error!,
@@ -715,4 +753,24 @@ class _StatusLine extends StatelessWidget {
       ]),
     );
   }
+}
+
+/// "İSTEĞE BAĞLI" ayracı — web `AccountSettingsModal.tsx`teki çizgi + etiket
+/// + çizgi (kayıt formundaki `auth_modal.dart` ikiziyle aynı görünüm).
+class _OptionalDivider extends StatelessWidget {
+  const _OptionalDivider();
+  @override
+  Widget build(BuildContext context) => const Row(children: [
+        Expanded(child: Divider(height: 1, thickness: 1, color: kBorder)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          child: Text('İSTEĞE BAĞLI',
+              style: TextStyle(
+                  fontFamily: 'SpaceMono',
+                  fontSize: 9,
+                  letterSpacing: 1.5,
+                  color: _muted)),
+        ),
+        Expanded(child: Divider(height: 1, thickness: 1, color: kBorder)),
+      ]);
 }

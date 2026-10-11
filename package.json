@@ -42,6 +42,7 @@
     "verify-error-messages": "esbuild scripts/verify-error-messages.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/kelimeki/verify-error-messages.mjs --log-level=error && node node_modules/.cache/kelimeki/verify-error-messages.mjs",
     "verify-error-reporting": "node scripts/run-verify-error-reporting.mjs",
     "verify-live-games-load": "node scripts/run-verify-live-games-load.mjs",
+    "verify-random-games": "node scripts/run-verify-random-games.mjs",
     "verify-shared-realtime": "node scripts/run-verify-shared-realtime.mjs",
     "verify-remaining-tiles": "esbuild scripts/verify-remaining-tiles.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/kelimeki/verify-remaining-tiles.mjs --log-level=error && node node_modules/.cache/kelimeki/verify-remaining-tiles.mjs",
     "verify-push-payload": "esbuild scripts/verify-push-payload.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/kelimeki/verify-push-payload.mjs --log-level=error && node node_modules/.cache/kelimeki/verify-push-payload.mjs",
