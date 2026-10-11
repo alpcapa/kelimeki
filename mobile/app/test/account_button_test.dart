@@ -8,6 +8,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kelimeki/src/ui/game/count_badge.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/ui/rank/rank_seal.dart';
@@ -39,7 +40,8 @@ class _FakeStatsGateway implements StatsGateway {
   Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
 
   @override
-  Future<Map<String, Object?>?> playerStats(String userId, int? playerCount) async =>
+  Future<Map<String, Object?>?> playerStats(
+          String userId, int? playerCount) async =>
       null;
 
   @override
@@ -90,6 +92,21 @@ class _DegisenStatsGateway extends _FakeStatsGateway {
   Future<Map<String, Object?>?> myLeaderboardRank(String userId) async {
     cagri++;
     return {'rank': 1, 'total_score': puan};
+  }
+}
+
+/// Gelen istek listesi testten değiştirilebilir (`friend_requests` Realtime'da
+/// değil — sayı yalnızca istemci tazelemesiyle düzelir).
+class _IstekliFriendsGateway extends _FakeFriendsGateway {
+  int adet = 0;
+  int cagri = 0;
+  @override
+  Future<List<Map<String, Object?>>> listIncomingRequests() async {
+    cagri++;
+    return [
+      for (var i = 0; i < adet; i++)
+        {'requester_id': 'r$i', 'name': 'Biri $i', 'avatar_url': null},
+    ];
   }
 }
 
@@ -471,5 +488,37 @@ void main() {
     final nameX = tester.getTopRight(find.text('Ironman')).dx;
     final sealX = tester.getTopLeft(find.byType(RankSeal).first).dx;
     expect(sealX, greaterThanOrEqualTo(nameX));
+  });
+
+  // 11 Ekim 2026 (1.1.3 TestFlight, kullanıcı): yeni arkadaşlık isteği gelince
+  // avatarda ve menüde "1" çıkmadı — `friend_requests` Realtime'da değil, sayı
+  // yalnızca açılışta/pencere kapanınca çekiliyordu. Artık menü her açılışta
+  // (açık menü kendiliğinden güncellenir) ve uygulama öne dönünce tazeleniyor.
+  testWidgets(
+      'yeni arkadaşlık isteği: menü açılışında ve öne dönüşte rozet gelir',
+      (tester) async {
+    final gw = _IstekliFriendsGateway();
+    await pumpMenu(tester,
+        stats: StatsRepo(_FakeStatsGateway()), friends: FriendsRepo(gw));
+    expect(find.byType(CountBadge), findsNothing);
+
+    // İstek menü AÇIKKEN gelir; kapatıp yeniden açınca rozet görünür.
+    gw.adet = 1;
+    await tester.tapAt(const Offset(10, 500));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+    expect(find.byType(CountBadge), findsWidgets,
+        reason: 'menü açılışı sayıyı yeniden çekmeli');
+
+    // Menüyü kapat; ikinci istek uygulama arka plandayken gelir → öne dönüş.
+    await tester.tapAt(const Offset(10, 500));
+    await tester.pumpAndSettle();
+    gw.adet = 2;
+    final onceki = gw.cagri;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(gw.cagri, greaterThan(onceki), reason: 'öne dönüş tazelemeli');
+    expect(find.text('2'), findsWidgets);
   });
 }
