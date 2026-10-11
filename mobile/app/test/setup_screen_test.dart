@@ -202,12 +202,12 @@ void main() {
     expect(find.text('Yapay Zeka 2'), findsNothing);
     expect(
         find.text(
-            'Sen ve 1 yapay zeka. 4 kişide 3 yapay zekaya karşı oynarsın.'),
+            '2 kişilik oyunda yapay zekaya karşı oynarsın.'),
         findsOneWidget);
 
     await tester.tap(find.text('4 KİŞİ'));
     await tester.pump();
-    expect(find.text('Sen ve 3 yapay zeka; herkes kendi köşesinden başlar.'),
+    expect(find.text('4 kişilik oyunda 3 yapay zekaya karşı oynarsın.'),
         findsOneWidget);
 
     await tester.runAsync(() async {
