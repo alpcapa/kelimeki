@@ -54,6 +54,10 @@ Aşağıdaki ikisinin kaydı kök `CLAUDE.md` → Kaynak Hunisi bölümünde:
 
 ---
 
+## ⚠ `main` web-ci `parite` işi KIRMIZI (4 Ekim 2026'dan beri) — bilinen, #815 ile kapanacak
+
+Tek düşen test: `friends_test.dart` → *"FriendsModal metinler web `FriendsModal.tsx` ile BİREBİR"* (web ⋯ menüsünde "Engel / şikayet ayarları" var — #813 — port hâlâ "Sessize alma / şikayet ayarları"). 11 Ekim'de ölçüldü: `main`'in son sekiz web CI koşusu aynı yüzden kırmızı; #828/#829/#830 de yalnızca bu testle kırmızı (tam takım 1037 geçti, 1 düştü). **Bilerek YAPILMADI:** yalnız etiketi değiştiren kısmi bir port yaması — menü "Engel…" derken içindeki pencere hâlâ sessize alma anlatırdı (1.1.3'te kullanıcıya yarım özellik vaadi). Kapanış #815 (Engelle port ikizi, tam özellik; gövdesi 19 Ekim diyor). Karar kullanıcıda: #815 12 Ekim'e alınırsa kırmızı Pazartesi kapanır; 19'da kalırsa 1.1.3 boyunca her mobil PR bu tek testle kırmızı görünür — yeni kırmızıyı maskelememek için PR'larda *"yalnızca friends_test düştü"* diye bakılır.
+
 ## ✅ ÇÖZÜLDÜ (11 Ekim 2026, taslak PR #830 — 12 Ekim trenine biner) — Asnmzr raporu: "oyun başlarken Değiştir'e basınca BERABERE"
 
 **KÖK NEDEN BULUNDU (11 Ekim):** motor değil UI. Oyun sonu modalı, girişli kullanıcıda AĞ isteği olan `_ilkKutlama` beklendikten sonra CANLI `state` ile açılıyordu; istek yavaşken kullanıcı TEKRAR OYNA'ya basarsa modal yeni oyunun (0-0, dolu raflar) durumuyla "BERABERE" diye açılıyordu. Yeniden üretildi (`game_over_stale_modal_test.dart`, düzeltmesiz kodda düşüyor). Düzeltme: biten durum donduruluyor + yeni oyun başladıysa modal açılmıyor (#830). Aşağıdaki kayıt TARİHÇE; PR merge edilince bu madde `docs/decisions/roadmap-arsiv.md`'ye taşınır.
