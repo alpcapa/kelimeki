@@ -42,8 +42,24 @@
       oyun ekranı kapanmalı (oyun kayıtlı, Devam Edenler'de), form açılmalı.
 - [ ] **⋯ menüsü.** Skor kartı · 2/4 kişilik oyun kur · arkadaşlıktan
       çıkar (ONAY sorar). Sessize aldığın/şikayet ettiğin birinde adın
-      yanında 🚫/🚩 ve menüde "Sessize alma / şikayet ayarları" çıkmalı;
-      öteki satırlarda o madde OLMAMALI.
+      yanında 🚫/🚩 ve menüde "Engeli kaldır" ("Engel / şikayet ayarları",
+      şikayet de varsa) çıkmalı; durumu OLMAYAN satırda menüde "Engelle"
+      olmalı (onay → engel; 🚫 hemen çıkmalı). 19 Ekim 2026 (port ikizi).
+- [ ] **Engelle / Engellediklerim (19 Ekim 2026, port ikizi; iki gerçek
+      hesap — otomatik test KANITLAMAZ).** (a) B'nin gelen arkadaşlık isteği
+      kartında "REDDET / KABUL ET" + küçük "ENGELLE" (şikayet YOK): onayla →
+      istek kalkmalı; A tekrar istek/davet atınca "<B> kullanıcısı sizi
+      engelledi.". (b) Bekleyen OYUN DAVETİ kartında aynı "ENGELLE";
+      engelleyince davet listeden kalkmalı. (c) Engel BAŞARISIZ olursa
+      (uçak modu) onay penceresi açık kalıp hata göstermeli, davet/istek
+      yerinde durmalı. (d) Arkadaşlar → listenin altında "ENGELLEDİKLERİM":
+      arkadaş OLMAYAN biri de görünmeli; "Engeli Kaldır" onayla → A yeniden
+      davet/istek atabilmeli; şikayetli satırda 🚩 + "Şikayeti Geri Çek",
+      şikayet açıkken "Engeli Kaldır" tek başına serbest bırakmaz. (e)
+      Sohbet ayarlarında "Kişiyi Engelle" / "ENGELİ KALDIR" metinleri
+      ("sessize al" kalmamalı). (f) Uzun arkadaş listesinde "ENGELLEDİKLERİM"
+      bağlantısına kaydırarak ulaşılabilmeli (web'deki 55vh iç kaydırması
+      BİLEREK taşınmadı — gövde kayıyor).
 - [ ] **Tüm oyuncular (eski "Ara & Ekle") — liste SONUNA KADAR kaydırılabiliyor (27 Ağustos 2026,
       kullanıcı bildirdi).** Klavye açıkken (kutu `autofocus`, yani modal
       açılır açılmaz açık) parmağını doğrudan BİR ÜYE SATIRININ üzerine koy
@@ -154,7 +170,8 @@
       düşsün). Arkadaşlar → "Arkadaşlar": o kişinin satırında,
       "arkadaşlıktan çıkar" ikonunun **SOLUNDA** 🚩 (yalnızca sessize
       aldıysan 🚫) çıkmalı. Dokun → "Kişi Ayarları" paneli; oradan
-      "Şikayeti Geri Çek" / "Sessizden Çıkar" → **onay adımı** → sonuç
+      "Şikayeti Geri Çek" / "Engeli Kaldır" (eski "Sessizden Çıkar", 19 Ekim
+      2026) → **onay adımı** → sonuç
       mesajı. Panel kapanınca ikon **HEMEN** kaybolmalı.
       **Asıl kanıt burada:** oyun bittikten sonra sohbet penceresine
       artık girilemediğinden, bu panel olmadan şikayeti geri çekmenin
@@ -513,8 +530,8 @@
       0 çıkıp mesajlar içeride "yeni" duruyordu). (d) Uçak modunda oyuna
       gir → rozet saçmalamamalı; bağlantı gelince bir sonraki tazelemede
       doğru sayıya dönmeli.
-- [ ] **Sessize alma.** Dişli ikonundan bir katılımcıyı seç → "Kişiyi
-      Sessize Al" → onay → 🚫 rozeti hem ayarlar listesinde hem o kişinin
+- [ ] **Engelleme (eski "Sessize alma", 19 Ekim 2026'dan beri "Engelle").**
+      Dişli ikonundan bir katılımcıyı seç → "Kişiyi Engelle" → onay → 🚫 rozeti hem ayarlar listesinde hem o kişinin
       mesaj balonlarının yanında görünmeli. O kişiden yeni bir mesaj
       gelirse **popup AÇILMAMALI** ama **rozet ARTMALI**
       (15 Ağustos 2026 kararı: mute yalnızca popup'ı bastırır) ve mesaj

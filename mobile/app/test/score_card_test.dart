@@ -1000,6 +1000,19 @@ void main() {
     expect(puan.style?.fontWeight, FontWeight.bold);
     expect(puan.style?.fontSize, 14);
 
+    // 5 Ekim 2026 (web #814, kullanıcı isteği): eşitlik cümlesi üst
+    // açıklamadan ALT NOTA taşındı ("YZ'ye karşı…" yanına). Metinler BİLEREK
+    // dizeyle yazılıyor, sabitle değil (sabite bağlı assertion widget notu hiç
+    // çizmese de derlenir).
+    expect(
+        find.text('k-lig, senin gibi kayıtlı kullanıcıların aldığı puanlara '
+            'göre oluşan bir yarışmadır.'),
+        findsOneWidget);
+    expect(
+        find.text("YZ'ye karşı oynanan oyunlar da sayılır. Puanlar eşitse OHP "
+            'yüksek olan üstte.'),
+        findsOneWidget);
+
     // Verisi olmayan satır ve "senin sıran" kısayolu.
     expect(find.text('—'), findsOneWidget); // Oyuncu1
     expect(find.text('6.70'), findsOneWidget); // myRank

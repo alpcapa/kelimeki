@@ -119,7 +119,7 @@ src/
 │   ├── ChatThread.tsx           # oyun içi mesajlaşma: paylaşılan sohbet baloncuğu listesi (canlı + arşiv)
 │   ├── ChatModal.tsx            # oyun içi mesajlaşma: Canlı oyunda gerçek sohbet penceresi (yalnızca Canlı oyunlar)
 │   ├── ChatRulesModal.tsx       # Sohbet Kuralları onayı: ilk mesajdan önce BİR KEZ (metin `utils/chatRules.ts`te)
-│   ├── ChatSettingsModal.tsx    # oyun içi mesajlaşma Faz 2: kişi sessize alma / rapor etme ayarları (ChatModal'ın dişli ikonundan açılır)
+│   ├── ChatSettingsModal.tsx    # oyun içi mesajlaşma Faz 2: kişi engelleme / rapor etme ayarları (ChatModal'ın dişli ikonundan açılır)
 │   ├── GameChatHistoryModal.tsx # oyun içi mesajlaşma: bitmiş bir oyunun dondurulmuş sohbet kaydının salt-okunur görünümü
 │   ├── Leaderboard.tsx          # lider tablosu (k-lig) — Puan Ligi / Beyin Ligi sekmeleri
 │   ├── BeyinLigiList.tsx        # k-lig'in OHP alt ligi (puansız, ≥5 oyun)
@@ -280,7 +280,7 @@ mobile/                    # Flutter (iOS+Android) portu — ayrıntı: mobile/C
     │                      # arşivi, hamle dökümü, paylaşma), Son Oynadıklarım,
     │                      # Görüş Bildir, arkadaşlık sistemi (davet linki dahil),
     │                      # Canlı (çok oyunculu) oyun: davet/kabul + gerçek
-    │                      # zamanlı tahta + oyun içi mesajlaşma (sessize alma/
+    │                      # zamanlı tahta + oyun içi mesajlaşma (engelleme/
     │                      # raporlama dahil), ilk açılış tanıtımı (4 sayfalık
     │                      # IntroScreen — web'in karşılama katmanının porta
     │                      # taşınan hikâye kısmı), push bildirimleri (FCM —

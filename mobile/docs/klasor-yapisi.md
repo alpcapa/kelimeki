@@ -333,6 +333,10 @@ mobile/
                              # paylaşılan onay/sonuç diyalogları) +
                              # friend_moderation_sheet (satırdaki 🚫/🚩
                              # ikonundan açılan GERİ ALMA paneli) +
+                             # block_confirm_sheet (ortak "Engelle" onayı:
+                             # istek/davet kartı + ⋯ menüsü) +
+                             # blocked_users_sheet ("Engellediklerim",
+                             # arkadaş olmayanı geri almanın yolu) +
                              # relation_icons.dart — ilişki ikonlarının
                              # dördünden ÜÇÜ gerçek Material glyph'i
                              # (Icons.* ile çizilir, senkron sorunu yok);

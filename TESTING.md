@@ -277,7 +277,7 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       çok 3) bu sınırlardan bağımsız; arkadaş koltuğu olan rastgele ilanda
       aynı kişiye çift davet de reddedilmeli.
       (g) **Engel arkadaşlık yolunda (4 Ekim 2026):** B, A'yı engeller (sohbette
-      sessize alma ya da şikayet) → A, B'ye ARKADAŞLIK isteği dener → "<B> kullanıcısı
+      engelleme ya da şikayet) → A, B'ye ARKADAŞLIK isteği dener → "<B> kullanıcısı
       sizi engelledi."; B'nin arkadaş DAVET LİNKİNİ A açınca da aynı mesaj, arkadaş
       OLUNMAMALI. Engel kalkınca ikisi de geçmeli. (h) **Engelle (5 Ekim 2026; iki hesap).** B'nin gelen arkadaşlık isteği
       kartında YALNIZCA "Reddet / Kabul et" + küçük "Engelle" olmalı (şikayet
@@ -289,10 +289,10 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       A yeniden davet/istek gönderebilmeli. Şikayet ETMİŞSEN satırda 🚩 ve
       "Şikayeti Geri Çek" de olmalı; şikayet açıkken "Engeli Kaldır" tek başına
       kişiyi SERBEST bırakmaz (iki adım). (j) Sohbet ayarlarında "Kişiyi Engelle"
-      / "Engeli Kaldır" metinleri ("sessize al" kalmamalı). ⚠ Beklenen: arkadaş
-      ⋯ menüsündeki madde etiketi hâlâ "Sessize alma / şikayet ayarları" (port
-      PR'ında değişecek). ⚠ Beklenen yan etki: "sessize
-      al" artık davetleri de kapatır. **Biten oyunu SEN
+      / "Engeli Kaldır" metinleri ("sessize al" kalmamalı). ⚠ Beklenen yan etki:
+      engel artık davetleri de kapatır. Arkadaş ⋯ menüsü: durum yoksa
+      "Engelle" (onaylı), yalnızca engelliyse "Engeli kaldır", şikayet de
+      varsa "Engel / şikayet ayarları" (5 Ekim 2026; port ikizi 19 Ekim). **Biten oyunu SEN
       kurmamışsan da çalışmalı** (davet edilen taraf da rövanş açabilir).
       ⚠ **Bir YZ oyununun kartında "Tekrar Oyna" ÇIKMAMALI** — kapsam
       bilerek yalnızca Canlı oyunlar (yerel yeni oyun, kaydedilmiş devam
@@ -466,26 +466,26 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
 - [ ] **Geç giriş.** Uygulama kapalıyken mesaj gelsin; tekrar girince rozet
       doğru sayıyla çıkmalı. Hiç yeni mesaj yokken **çıkmamalı** (ilk sürümde
       yanlış pozitif veriyordu).
-- [ ] **Sessize alma.** Sohbet başlığındaki dişli → kişi → "Kişiyi Sessize Al"
+- [ ] **Engelleme (eski "Sessize alma").** Sohbet başlığındaki dişli → kişi → "Kişiyi Engelle"
       → onay. Artık o kişiden **popup ÇIKMAMALI**, ama **rozet ARTMALI**
       (15 Ağustos 2026 kararı: mute yalnızca popup'ı bastırır) ve mesajları
       sohbette görünmeye devam etmeli. İsminin yanında 🚫 çıkmalı.
       Aynı oyunda susturulMAMIŞ başka biri yazarsa hem rozet hem popup
       çıkmalı (4 kişilik bir oyunda kontrol edilebilir).
 - [ ] **Rapor etme.** Aynı panelden neden yazıp gönder → onay → **"Şikayetiniz
-      iletildi."** ekranı. Rozet 🚩'a dönmeli (rapor otomatik olarak sessize
-      de alır). Raporlanan kişide **hiçbir değişiklik olmamalı** (bilinçli:
+      iletildi."** ekranı. Rozet 🚩'a dönmeli (rapor otomatik olarak engeller
+      de). Raporlanan kişide **hiçbir değişiklik olmamalı** (bilinçli:
       endüstri standardı, misilleme riski).
 - [ ] **Mesaja dokunma.** Karşı tarafın mesaj balonuna dokununca da aynı ayar
       paneli o kişiyle açılmalı.
 - [ ] **Kişi bazlı kalıcılık.** Aynı kişiyle YENİ bir Canlı oyun aç: 🚫/🚩
       rozetleri orada da görünmeli (durum oyuna değil kişiye bağlı).
-- [ ] **Geri çekme.** "Raporu Geri Çek" → onay. Bayrak kalkmalı; sessize alma
+- [ ] **Geri çekme.** "Raporu Geri Çek" → onay. Bayrak kalkmalı; engel
       bundan etkilenmemeli (bağımsız). Aynı kişi tekrar raporlanabilmeli.
 - [ ] **Oyun BİTTİKTEN sonra geri alma (14 Ağustos 2026).** Şikayet ettiğin
       kişiyle oyun bitsin (ya da listeden düşsün). Hesap menüsü → Arkadaşlar →
       "Arkadaşlar": o kişinin satırında, "arkadaşlıktan çıkar" ikonunun
-      **SOLUNDA** 🚩 (yalnızca sessize aldıysan 🚫) çıkmalı; dokununca
+      **SOLUNDA** 🚩 (yalnızca engellediysen 🚫) çıkmalı; dokununca
       "Kişi Ayarları" paneli açılmalı ve oradan şikayet geri çekilip/sessizden
       çıkılabilmeli. Panel kapanınca ikon **HEMEN** kaybolmalı.
       **Negatif eş:** hiçbir moderasyon durumu OLMAYAN bir arkadaşın satırında
@@ -700,7 +700,7 @@ Her birinde gerçekten bekleyen bir iş varken ekranı **kapatıp yeniden aç**.
       Arkadaşınla → form O ARKADAŞ SEÇİLİ, 2 kişi. Aynısını oyun ekranının
       başlığındaki hesap menüsünden dene: oyun kaydedilip kurulum ekranına
       dönmeli. **⋯** → Skor kartı · 2 kişilik oyun kur · 4 kişilik oyun kur
-      (form o kişi sayısıyla) · (yalnızca sessize alınmış/şikayet edilmişse)
+      (form o kişi sayısıyla) · (durum yoksa "Engelle"; engelli/şikayet edilmişse geri alma)
       ayarlar · Arkadaşlıktan çıkar (TEK onaylı eylem). Aramada ("ay") her
       satırda duruma göre TEK düğme: OYNA · EKLE · İSTEK GİTTİ (dokun →
       iptal) · KABUL ET. "Tüm oyuncular →" → başlık "TÜM OYUNCULAR" (SAYISIZ),

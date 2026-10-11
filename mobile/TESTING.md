@@ -811,7 +811,7 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
       karta bak: iki platform aynı hissi vermeli.
 - [ ] **Sohbet arşivi.** Web'de oynanmış, mesajlaşılmış bir Canlı oyunun
       kartında konuşma balonu rozeti + mesaj sayısı olmalı; dokununca
-      dondurulmuş sohbet açılmalı. Sessize aldığın biri varsa isminin
+      dondurulmuş sohbet açılmalı. Engellediğin biri varsa isminin
       yanında 🚫 görünmeli.
       **Sıralama: en yeni mesaj EN ÜSTTE** (9 Ağustos 2026 — arşiv o güne
       kadar ters duruyordu, bkz. Parça 36). Kural her yerde aynı: canlı

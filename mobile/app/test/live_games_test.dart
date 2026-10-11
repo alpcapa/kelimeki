@@ -21,7 +21,10 @@ import 'package:kelimeki/src/ui/tokens.dart';
 import 'package:kelimeki/src/bootstrap.dart';
 import 'package:kelimeki/src/config/version_gate.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
+import 'package:kelimeki/src/data/chat_api.dart';
 import 'package:kelimeki/src/data/friends_api.dart';
+import 'package:kelimeki/src/ui/friends/block_confirm_sheet.dart'
+    show kBlockConfirmLabel, kBlockSure;
 import 'package:kelimeki/src/ui/friends/k_pill.dart';
 import 'package:kelimeki/src/util/live_game_request.dart';
 import 'package:kelimeki/src/ui/game/player_colors.dart';
@@ -617,6 +620,7 @@ void main() {
     PushMessaging? pushMessaging,
     PushRepo? push,
     Future<AppStorage>? storage,
+    ChatRepo? chat,
   }) =>
       AppServices(
         onlineStatus: OnlineStatus.fake(online: online),
@@ -630,6 +634,7 @@ void main() {
         pushMessaging: pushMessaging,
         push: push,
         storage: storage,
+        chat: chat,
       );
 
   Future<void> pumpTab(WidgetTester tester, AppServices s,
@@ -924,6 +929,90 @@ void main() {
       expect(find.text('Arkadaşlık davetiniz iletilmiştir.'), findsOneWidget);
       await tester.tap(find.text('TAMAM'));
       await tester.pumpAndSettle();
+    });
+
+    // Web 4 Ekim 2026 (kullanıcı kararı): davet kartında yalnızca "Engelle",
+    // şikayet YOK. Önce engel, sonra ret — engel başarısızsa davet yerinde kalır.
+    testWidgets(
+        'davet kartı: ENGELLE → onay → önce block_user, SONRA daveti reddet',
+        (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..rows = [
+          gameRow(
+              id: 'g1',
+              myId: 'u-blk1',
+              status: 'pending',
+              myInviteStatus: 'pending',
+              myInviteId: 'i1'),
+        ];
+      final chat = FakeChatGateway();
+      await pumpTab(tester,
+          liveServices(userId: 'u-blk1', gateway: gw, chat: ChatRepo(chat)));
+      expect(find.text('ŞİKAYET ET'), findsNothing);
+      await tester.tap(find.text('ENGELLE'));
+      await tester.pumpAndSettle();
+      expect(find.text(kBlockSure), findsOneWidget);
+      expect(chat.blockedCalls, isEmpty);
+      expect(gw.responded, isEmpty);
+      await tester.tap(find.text(kBlockConfirmLabel));
+      await tester.pumpAndSettle();
+      expect(chat.blockedCalls, ['esiner']);
+      expect(gw.responded, [('i1', false)]);
+    });
+
+    testWidgets('davet kartı: engel başarısızsa davet REDDEDİLMEZ',
+        (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..rows = [
+          gameRow(
+              id: 'g1',
+              myId: 'u-blk2',
+              status: 'pending',
+              myInviteStatus: 'pending',
+              myInviteId: 'i1'),
+        ];
+      final chat = FakeChatGateway()
+        ..blockFailWith = Exception('Failed host lookup: x.supabase.co');
+      await pumpTab(tester,
+          liveServices(userId: 'u-blk2', gateway: gw, chat: ChatRepo(chat)));
+      await tester.tap(find.text('ENGELLE'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kBlockConfirmLabel));
+      await tester.pumpAndSettle();
+      expect(gw.responded, isEmpty);
+      expect(find.text(kBlockSure), findsOneWidget); // pencere açık, hata var
+    });
+
+    testWidgets(
+        'kurucusu silinmiş davet kartında ENGELLE çıkmaz; chat yoksa da',
+        (tester) async {
+      final gw = FakeOnlineGamesGateway()
+        ..rows = [
+          gameRow(
+              id: 'g1',
+              myId: 'u-blk3',
+              createdBy: null,
+              status: 'pending',
+              myInviteStatus: 'pending',
+              myInviteId: 'i1'),
+        ];
+      await pumpTab(
+          tester,
+          liveServices(
+              userId: 'u-blk3',
+              gateway: gw,
+              chat: ChatRepo(FakeChatGateway())));
+      expect(find.text('ENGELLE'), findsNothing);
+      gw.rows = [
+        gameRow(
+            id: 'g2',
+            myId: 'u-blk3',
+            status: 'pending',
+            myInviteStatus: 'pending',
+            myInviteId: 'i2'),
+      ];
+      await pumpTab(tester, liveServices(userId: 'u-blk3', gateway: gw));
+      expect(find.text('ENGELLE'), findsNothing);
     });
 
     testWidgets(

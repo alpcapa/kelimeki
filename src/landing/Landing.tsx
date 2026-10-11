@@ -714,7 +714,7 @@ export function Landing() {
                 <Ozellik
                   ikon={<SohbetIkon />}
                   baslik="Oyun içi sohbet"
-                  metin="Canlı oyunlarda masadan ayrılmadan yazışın; rahatsız eden olursa sessize al ya da bildir."
+                  metin="Canlı oyunlarda masadan ayrılmadan yazışın; rahatsız eden olursa engelle ya da bildir."
                 />
                 <Ozellik
                   ikon={<CevrimdisiIkon />}
