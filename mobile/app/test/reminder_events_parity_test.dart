@@ -31,7 +31,7 @@ void main() {
     expect(kReminderCards, _sqlList(sql, 'card'));
   });
 
-  test('istemci kimlik göndermiyor: anon_id kolonu KULLANILMIYOR', () {
+  test('istemci kimlik göndermiyor (tabloda da kimlik kolonu yok)', () {
     final row = ReminderEvents.row(kReminderSet, null);
     expect(row.containsKey('anon_id'), isFalse);
     expect(row.containsKey('user_id'), isFalse);

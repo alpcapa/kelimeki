@@ -162,6 +162,6 @@ Kimliksiz sayaç (`anon_id`/`user_id` YOK). Okuma: Supabase SQL (admin kartı yo
       `card_accept` (`ayar`); ŞİMDİ DEĞİL → `card_decline` (`ayar`).
 - [ ] **İzin AÇIKKEN yarım oyundan çık:** kart çıkmaz, yalnız `set`.
 - [ ] **Satırda kimlik yok:** `platform` (`ios`/`android`) + `app_version` dolu,
-      `anon_id` NULL, başka kimlik kolonu yok.
+      tabloda kimlik kolonu YOK (`anon_id` 11 Ekim'de kaldırıldı).
 - [ ] ⚠ Aynı ayrılış birden çok satır yazabilir (her arka plana gidiş) — hata
       değil, sayım kişi değil olay sayar.
