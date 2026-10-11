@@ -979,7 +979,14 @@ class _SetupScreenState extends State<SetupScreen>
       try {
         final flags = (await storage).flags;
         if (mounted) {
-          await yarimOyunIzniAkisi(context, messaging: messaging, flags: flags);
+          final ayaraGit = await yarimOyunIzniAkisi(context,
+              messaging: messaging, flags: flags);
+          // "Bildirimler kapalı" → ayarlar açılır, hatırlatma DÖNÜŞTE
+          // denenir (`YarimOyunHatirlatici.uygulamaAcildi`).
+          if (ayaraGit) {
+            await hatirlatici.ayarlaraGonder(s);
+            return;
+          }
         }
       } catch (_) {
         // Depo açılamadıysa kart çıkmaz — akış durmaz.

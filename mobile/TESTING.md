@@ -1523,6 +1523,14 @@ geçici olarak öne çekme; aşağıdaki maddeler ayrılış saatini seçerek ko
       kaldı — Yarın akşam bir kez hatırlatalım mı?"* kartı. **ŞİMDİ DEĞİL**
       sistem diyaloğunu AÇMAZ; **HATIRLAT** açar.
 - [ ] **Hiç oynanmamış oyun (turnCount < 2)** çıkışında kart ÇIKMAZ.
+- [ ] **"Bildirimler kapalı" kartı (2 Ekim 2026, 1.1.3):** telefon
+      ayarlarından Kelimeki bildirimlerini KAPAT → yarım oyundan logoyla çık →
+      *"Bildirimler kapalı"* kartı (AYARLARI AÇ / ŞİMDİ DEĞİL). AYARLARI AÇ
+      doğrudan uygulamanın BİLDİRİM sayfasını açar (Android 8+ / iOS 16+;
+      daha eskide genel uygulama ayarı). Bildirimi aç, uygulamaya dön →
+      hatırlatma KURULUR (saatini bekle, düşmeli). Açmadan dönersen hiçbir
+      şey olmaz. iOS'ta izin bir kez REDDEDİLDİYSE de bu kart çıkar (Apple
+      bir daha sormuyor).
 - [ ] **Kart sayacı Canlı kartıyla ORTAK:** iki kart toplamda en fazla üç kez,
       aralarında yedi gün.
 - [ ] **Bildirim düşüyor:** izin verilmiş cihazda yarım oyundan çık, uygulamayı

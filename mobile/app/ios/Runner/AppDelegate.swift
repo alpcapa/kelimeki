@@ -114,6 +114,20 @@ import UserNotifications
       case "yarimOyunIptal":
         merkez.removePendingNotificationRequests(withIdentifiers: [AppDelegate.yarimOyunKimligi])
         sonuc(nil)
+      // "Bildirimler kapalı" kartı (2 Ekim 2026): iOS reddedilen izni bir
+      // daha SORMAZ; tek yol Ayarlar. iOS 16+ doğrudan bildirim sayfası.
+      case "bildirimAyarlariniAc":
+        let adres: String
+        if #available(iOS 16.0, *) {
+          adres = UIApplication.openNotificationSettingsURLString
+        } else {
+          adres = UIApplication.openSettingsURLString
+        }
+        guard let url = URL(string: adres) else {
+          sonuc(false)
+          return
+        }
+        UIApplication.shared.open(url, options: [:]) { acildi in sonuc(acildi) }
       default:
         sonuc(FlutterMethodNotImplemented)
       }
