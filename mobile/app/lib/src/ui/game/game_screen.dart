@@ -1236,6 +1236,13 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           _gameOverShown = true;
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             if (!mounted) return;
+            // ⚠ BİTEN oyunun durumu BURADA donduruluyor: `state` CANLI bir
+            // getter ve aşağıdaki `await` (girişli kullanıcıda AĞ isteği)
+            // sürerken kullanıcı TEKRAR OYNA'ya basabiliyor. Eskiden modal
+            // `await` sonrası canlı `state`e bakıyordu → yeni oyun 0-0
+            // "BERABERE" diye açılıyor, Değiştir basan kullanıcı "oyun
+            // bitti" sanıyordu (11 Ekim 2026, Asnmzr).
+            final ended = state;
             final auth = widget.auth;
             // "Görüş Bildir" formu YALNIZCA modalın içindeki linkle açılır.
             // Modalı kapatınca form KENDİLİĞİNDEN açılıyordu (Parça 48, web
@@ -1248,19 +1255,22 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 source: FeedbackSource.gameEnd);
             // Oyun sonu kutlaması (12 Eylül 2026) — karar
             // `pickFirstWinCelebration`da (web ile TEK kaynak).
-            final kutlama = await _ilkKutlama(state);
+            final kutlama = await _ilkKutlama(ended);
             // ⚠ `context` burada builder'ın context'i (State'inki DEĞİL), o
             // yüzden `mounted` tek başına yetmiyor — analiz de bunu söylüyor.
             if (!mounted || !context.mounted) return;
-            await showGameOverModal(context, state,
+            // Beklerken oyun artık bitmiş DEĞİLSE (TEKRAR OYNA ile yenisi
+            // başladı) eski oyunun modalı gösterilmez.
+            if (!state.isGameOver) return;
+            await showGameOverModal(context, ended,
                 // Yerel oyunda hamle geçmişi reducer'ın kendi state'inde —
                 // tahta altındaki "Hamleler" linkiyle AYNI kaynak.
                 onOpenHistory: () =>
-                    showMoveHistoryModal(context, state, myIndex: 0),
+                    showMoveHistoryModal(context, ended, myIndex: 0),
                 onFeedback: auth == null ? null : openFeedback,
                 // Yerel oyun = YZ oyunu → rozet her seviyede; Canlı ekran
                 // bu parametreyi hiç geçirmez.
-                aiLevel: aiLevelForBadge(state.aiLevel, isAiGame: true),
+                aiLevel: aiLevelForBadge(ended.aiLevel, isAiGame: true),
                 celebration: kutlama);
           });
         } else if (!state.isGameOver && _gameOverShown) {

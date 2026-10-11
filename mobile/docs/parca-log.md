@@ -210,6 +210,15 @@
 Kullanıcı (web) kendi geçmişinde 218-218 bir Canlı oyunda iki satırda da kendi adını gördü; hamle geçmişi rakibin puanına bağlıydı. Kayıt sunucuda doğruydu, hata `findMeIndex`te: "ben"i `rank - 1` ile buluyordu, beraberlikte iki oyuncunun da rank'ı 1 ve satırlar koltuk sırasıyla yazıldığından herkes için 0. satır çıkıyordu. Port AYNI hatayı taşıyordu (`_findMeIndex`) ve ek olarak "Tekrar Oyna" (`_handleRematch`) davet listesini `meIndex` dışındakilerden kurduğu için beraberlikte rakip yerine kendini alırdı.
 
 **Düzeltme:** aynı puanda birden çok insan satırı varsa güncel takma adla (`trLower`) eşleşen satır seçilir (web ile aynı); tek eşleşme yoksa eski davranış. **Test:** `game_history_find_me_test.dart` (4 senaryo: 2 kişi beraberlik iki taraf, ad değişmiş, beraberlik yok, 4 kişide ilk ikisi berabere). **Sınır:** takma ad oyundan sonra değiştiyse beraberlikte eski davranışa düşer (kayıtta koltuk indeksi yok). ⚠ Numara: 228-232 açık taslak PR'larda; kesimde çakışırsa yeniden numaralandır.
+## Parça 234 — Oyun sonu modalı yeni oyunda "BERABERE" diye açılıyordu (11 Ekim 2026)
+
+Kullanıcı (Asnmzr, Android, girişli): TEKRAR OYNA ile yeni oyun açtı, ilk eli uygun olmadığı için Değiştir'e bastı, **YZ oynamadan** 0-0 "BERABERE" modalı çıktı; kapatınca oyun devam etti. İki gün boyunca motor yolunda (TS/Dart 300'er oyun, widget testi) yeniden üretilemedi; ekran görüntüsü ipucuydu: "Toplam hamle 0", KALAN -20/-19 (= yeni oyunun dolu rafları), takas modu açık.
+
+**Kök neden:** `game_screen.dart` oyun bitince modalı post-frame callback'te açıyor ve önce `_ilkKutlama`yı bekliyor — girişli kullanıcıda bu bir AĞ isteği (`stats.playerStats`). Beklerken kullanıcı tahtadaki TEKRAR OYNA'ya basabiliyor (modal henüz açılmadığı için tahta tıklanabilir). İstek dönünce modal CANLI `state` getter'ıyla açılıyordu → YENİ oyunun (0-0, dolu raflar) durumu "bitmiş oyun" gibi gösteriliyordu. Yavaş ağ + hızlı rövanş.
+
+**Düzeltme:** biten durum callback'in başında `final ended = state` ile DONDURULUR; `await` sonrası canlı `state.isGameOver` false ise (yeni oyun başlamış) modal hiç açılmaz; açılırsa `ended` ile açılır (hamle geçmişi ve YZ rozeti dahil). **Test:** `game_over_stale_modal_test.dart` — yavaş `StatsGateway` ile oyunu bitir → TEKRAR OYNA → ağ cevabı gelir → modal ÇIKMAMALI. Düzeltmesiz kodda test DÜŞÜYOR (doğrulandı), düzeltmeyle geçiyor; `game_screen_test` (46) yeşil.
+
+**Kapsam notu:** `online_game_screen.dart` aynı kalıbı taşıyor (`await _ilkKutlama()` sonrası canlı `state`) ama orada rövanş yeni bir ekranla açıldığı ve oyun bittikten sonra durum geri dönmediği için aynı yarış oluşmuyor; dokunulmadı. Web etkilenmez (modal durum-güdümlü, async bekleme yok).
 
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
