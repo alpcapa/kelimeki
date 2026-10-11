@@ -587,6 +587,10 @@ class _LiveGameCreateFormState extends State<LiveGameCreateForm> {
               '${k + 1}',
               textAlign: TextAlign.center,
               textScaler: TextScaler.noScaling,
+              // ⚠ `visible`: yuva 36/28 px, rakam 56/34 px. Varsayılan `clip`
+              // rakamı paragrafın KENDİ kutusuna kırpıyordu → iPad'de rakamın
+              // alt yarısı yoktu (11 Ekim 2026, 1.1.3 TestFlight, kullanıcı).
+              overflow: TextOverflow.visible,
               style: TextStyle(
                 fontFamily: 'SpaceMono',
                 fontWeight: FontWeight.bold,

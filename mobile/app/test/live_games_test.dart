@@ -1321,6 +1321,17 @@ void main() {
     //      boş · Yapay Zeka; ✕ olsun olmasın).
     //   2. İsim yuvanın SOLUNDA biter (uzun isim "…" ile kesilir).
     //   3. Rakam taban çizgisinden ortalanır: rakamın ortası yuvanın ortası.
+    // 11 Ekim 2026 (1.1.3 TestFlight, iPad): numara 56/34 px ama yuva 36/28 px;
+    // Text'in varsayılan `overflow: clip`i rakamı paragrafın kendi kutusuna
+    // kırpıp alt yarısını siliyordu. Görüntü alınarak doğrulandı.
+    testWidgets('koltuk numarası kırpılmaz (overflow visible)', (tester) async {
+      await pumpForm(tester, friendsRows: const []);
+      final metin = find.descendant(
+          of: find.byKey(const ValueKey('koltuk-filigran-0')),
+          matching: find.byType(Text));
+      expect(tester.widget<Text>(metin).overflow, TextOverflow.visible);
+    });
+
     for (final olcek in [1.0, 1.3]) {
       testWidgets('koltuk numaraları hizalı, isim binmez (ölçek $olcek)',
           (tester) async {
@@ -1343,9 +1354,8 @@ void main() {
               of: find.byKey(ValueKey('koltuk-filigran-$k')),
               matching: find.byType(Text));
           final t = tester.widget<Text>(metin);
-          final stil = DefaultTextStyle.of(tester.element(metin))
-              .style
-              .merge(t.style);
+          final stil =
+              DefaultTextStyle.of(tester.element(metin)).style.merge(t.style);
           final tp = TextPainter(
             text: TextSpan(text: t.data, style: stil),
             textDirection: TextDirection.ltr,
@@ -1420,15 +1430,17 @@ void main() {
       expect(find.text('OYUNCULAR'), findsOneWidget);
       final ben = find.byKey(const ValueKey('koltuk-ben'));
       expect(ben, findsOneWidget);
-      expect(find.descendant(of: ben, matching: find.text('1')),
-          findsOneWidget);
+      expect(
+          find.descendant(of: ben, matching: find.text('1')), findsOneWidget);
       expect(find.descendant(of: ben, matching: find.byIcon(Icons.close)),
           findsNothing);
-      expect((tester.widget<Container>(ben).decoration! as BoxDecoration)
-          .color, playerColors[0].tint);
+      expect((tester.widget<Container>(ben).decoration! as BoxDecoration).color,
+          playerColors[0].tint);
       expect(find.text(kLiveFormEmptySeat2), findsOneWidget);
-      expect(tester.getRect(ben).bottom,
-          lessThan(tester.getRect(find.byKey(const ValueKey('koltuk-bos-0'))).top),
+      expect(
+          tester.getRect(ben).bottom,
+          lessThan(
+              tester.getRect(find.byKey(const ValueKey('koltuk-bos-0'))).top),
           reason: 'senin koltuğun boş koltuğun ÜSTÜNDE');
       await tester.tap(find.byKey(const ValueKey('friend-f1')));
       await tester.pump();
