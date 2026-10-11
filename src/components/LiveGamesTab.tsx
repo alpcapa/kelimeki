@@ -779,6 +779,8 @@ export function LiveGamesTab({
     return () => window.removeEventListener(LIVE_GAME_REQUEST_EVENT, al);
   }, []);
   const [busyInviteId, setBusyInviteId] = useState<string | null>(null);
+  // Rastgele şeridine "listeni yeniden çek" sinyali (Ayrıl/İptal sonrası).
+  const [stripRefresh, setStripRefresh] = useState(0);
   // "Engelle" onayı bekleyen davet (4 Ekim 2026): kişiyi engeller + daveti reddeder.
   const [blockInvite, setBlockInvite] = useState<{ game: OnlineGame; name: string } | null>(null);
 
@@ -1257,6 +1259,9 @@ export function LiveGamesTab({
     } finally {
       await loadGames(cancelledRef.current);
       setBusyRandomId(null);
+      // Ayrıldığım ilan ŞERİTE geri döner (iptal edilen ise kalkar) — şeridin
+      // listesi `myRandom`dan ayrı çekiliyor, onu da hemen tazele.
+      setStripRefresh((n) => n + 1);
     }
   };
 
@@ -1461,6 +1466,7 @@ export function LiveGamesTab({
               reload();
             }}
             onNotice={showNotice}
+            refreshSignal={stripRefresh}
           />
           {active.length === 0 && randomWaiting.length === 0 ? (
             <p className="text-center text-xs text-muted font-mono py-8">Devam eden bir Canlı oyunun yok.</p>

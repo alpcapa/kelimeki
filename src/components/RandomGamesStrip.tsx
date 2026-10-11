@@ -70,6 +70,14 @@ interface RandomGamesStripProps {
   onAccepted: (result: RandomGameResult) => void;
   /** Kabul reddedildi (ör. "Bu oyun doldu."): sunucunun Türkçe metni. */
   onNotice: (text: string) => void;
+  /**
+   * Üst bileşen "şeridin kaynağı değişti" dediğinde artırdığı sayaç (ör.
+   * `Ayrıl`/`İlanı iptal et` sonrası): şerit KENDİ listesini çeker (`myRandom`
+   * "benim oyunlarım"dır, şerit ise herkesin ilanları), yoklamayı ya da sekme
+   * değişimini beklemeden. 11 Ekim 2026, elle testte yakalandı: Ayrıl'a
+   * basınca ilan şeride hemen dönmüyor, sekmeye gidip gelince dönüyordu.
+   */
+  refreshSignal?: number;
 }
 
 export function RandomGamesStrip({
@@ -80,6 +88,7 @@ export function RandomGamesStrip({
   onOpenCreate,
   onAccepted,
   onNotice,
+  refreshSignal = 0,
 }: RandomGamesStripProps) {
   const [listings, setListings] = useState<RandomListing[]>(() => stripCache.get(userId) ?? []);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -122,6 +131,12 @@ export function RandomGamesStrip({
       window.removeEventListener('online', onForeground);
     };
   }, [userId]);
+
+  // İlk değer (0) mount'taki `load(true)` ile zaten karşılanıyor; yalnızca
+  // SAYAÇ ARTINCA zorla tazele.
+  useEffect(() => {
+    if (refreshSignal > 0) refreshRef.current(true);
+  }, [refreshSignal]);
 
   const visible = stripListings(listings, myRandom);
   if (visible.length === 0) return null;
