@@ -83,6 +83,26 @@ export function UserMenu() {
     fetchIncomingFriendRequests().then((r) => setIncomingRequestCount(r.length));
   };
 
+  // Yeni arkadaşlık isteği rozeti (11 Ekim 2026, kullanıcı: istek geldi, avatarda
+  // ve menüde "1" çıkmadı). `friend_requests` Realtime'da DEĞİL (aşağıdaki not),
+  // sayı yalnızca açılışta/pencere kapanınca çekiliyordu. İki ucuz an eklendi:
+  // menü her AÇILIŞTA ve sekme/uygulama öne DÖNÜNCE (portun `AccountButton`ıyla
+  // AYNI iki an).
+  useEffect(() => {
+    if (open) refreshIncomingRequestCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    if (!user) return;
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refreshIncomingRequestCount();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   useEffect(() => {
     if (!user) return;
     let cancelled = false;

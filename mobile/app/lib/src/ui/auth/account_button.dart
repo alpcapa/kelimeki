@@ -21,8 +21,9 @@
 // sorulur. k-lig/Skor Kartı `stats`, Arkadaşlar `friends` verildiğinde
 // (Supabase yapılandırılmışsa) görünür. Bekleyen istek sayısı web
 // UserMenu'yle aynı anlarda tazelenir: mount + FriendsModal kapanınca
-// (içeride yanıtlanmış olabilir); Realtime aboneliği web'de de bilinçli
-// yok (friend_requests publication'da değil).
+// (içeride yanıtlanmış olabilir) + (11 Ekim 2026) menü her AÇILIŞTA ve
+// uygulama öne DÖNÜNCE; Realtime aboneliği web'de de bilinçli yok
+// (friend_requests publication'da değil).
 import 'package:flutter/material.dart';
 
 import '../../data/auth_service.dart';
@@ -97,7 +98,8 @@ class AccountButton extends StatefulWidget {
   State<AccountButton> createState() => _AccountButtonState();
 }
 
-class _AccountButtonState extends State<AccountButton> {
+class _AccountButtonState extends State<AccountButton>
+    with WidgetsBindingObserver {
   AuthService get auth => widget.auth;
   StatsRepo? get stats => widget.stats;
   Future<GamesRepo>? get games => widget.games;
@@ -108,6 +110,17 @@ class _AccountButtonState extends State<AccountButton> {
   double get avatarSize => widget.avatarSize;
 
   int _incomingRequests = 0;
+
+  /// Açık menüdeki "Arkadaşlar" rozeti için (`PopupMenuButton` `itemBuilder`ı
+  /// menü açılırken BİR kez koşar — `_myRank` ile aynı sebep): menü-açılış
+  /// tazelemesi gelince açık menü kendiliğinden güncellensin.
+  final ValueNotifier<int> _incomingNotifier = ValueNotifier(0);
+
+  void _setIncoming(int n) {
+    _incomingNotifier.value = n;
+    if (mounted) setState(() => _incomingRequests = n);
+  }
+
   String? _lastUserId;
 
   /// Menü başlığındaki (isim satırının altındaki) tıklanabilir k-lig
@@ -131,6 +144,7 @@ class _AccountButtonState extends State<AccountButton> {
   void initState() {
     super.initState();
     _lastUserId = auth.user?.id;
+    WidgetsBinding.instance.addObserver(this);
     _refreshRequestCount();
     _refreshMyRank();
     auth.addListener(_onAuthEvent);
@@ -138,8 +152,10 @@ class _AccountButtonState extends State<AccountButton> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     auth.removeListener(_onAuthEvent);
     _myRank.dispose();
+    _incomingNotifier.dispose();
     super.dispose();
   }
 
@@ -150,16 +166,23 @@ class _AccountButtonState extends State<AccountButton> {
     if (id == _lastUserId) return;
     _lastUserId = id;
     _myRank.value = null;
-    if (mounted) setState(() => _incomingRequests = 0);
+    _setIncoming(0);
     _refreshRequestCount();
     _refreshMyRank();
+  }
+
+  // Uygulama öne dönünce (11 Ekim 2026, kullanıcı: yeni arkadaşlık isteği
+  // avatarda "1" olarak çıkmadı) — `friend_requests` Realtime'da değil.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshRequestCount();
   }
 
   void _refreshRequestCount() {
     final friends = widget.friends;
     if (friends == null || auth.user == null) return;
     friends.incomingRequests().then((r) {
-      if (mounted && r != null) setState(() => _incomingRequests = r.length);
+      if (mounted && r != null) _setIncoming(r.length);
     });
   }
 
@@ -300,6 +323,24 @@ class _AccountButtonState extends State<AccountButton> {
       );
 
   Widget _avatarMenu(BuildContext context) {
+    // ⚠ Odak/hover halkası KAPALI (11 Ekim 2026, iPad TestFlight: menüyü açıp
+    // kapatınca avatarın etrafında gri yuvarlak kalıyor, gitmiyor). Menü
+    // kapanınca odak düğmeye döner / iPad imleci bayat "üstünde" kalır ve
+    // `PopupMenuButton`ın `InkWell`i `focusColor`/`hoverColor` ile halka çizer.
+    // Web'de `focus:outline-none` + hiç zemin vurgusu yok. Basılı vurgusu
+    // (`highlightColor`) ve sıçrama KALIR. Bedel: Theme açılan menüye de taşınır
+    // → menü satırlarında imleç-hover tonu yok (dokunmatikte zaten yoktu).
+    final tema = Theme.of(context);
+    return Theme(
+      data: tema.copyWith(
+        focusColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+      ),
+      child: _avatarPopup(context),
+    );
+  }
+
+  Widget _avatarPopup(BuildContext context) {
     return PopupMenuButton<String>(
       // Menü HER açılışta puanı tazeliyor.
       //
@@ -317,7 +358,10 @@ class _AccountButtonState extends State<AccountButton> {
       // menü açılışı seyrek bir kullanıcı eylemi ve istek tek satırlık bir
       // RPC — donmuş bir puan göstermenin bedeli daha ağır. Web ikizi
       // `UserMenu.tsx`'te aynı kararla `open` effect bağımlılığına eklendi.
-      onOpened: _refreshMyRank,
+      onOpened: () {
+        _refreshMyRank();
+        _refreshRequestCount();
+      },
       // Uzun basınca çıkan ipucu kullanıcı isteğiyle kaldırıldı (9 Ağustos
       // 2026) — web'deki `title` attribute'u da aynı anda kaldırıldı.
       // Parametreyi tamamen SİLMEK yanlış olurdu: PopupMenuButton null
@@ -535,10 +579,15 @@ class _AccountButtonState extends State<AccountButton> {
               width: _menuItemWidth,
               child: Row(children: [
                 _menuLabel('👥  Arkadaşlar'),
-                if (_incomingRequests > 0) ...[
-                  const SizedBox(width: 8),
-                  CountBadge(count: _incomingRequests),
-                ],
+                ValueListenableBuilder<int>(
+                  valueListenable: _incomingNotifier,
+                  builder: (_, n, __) => n > 0
+                      ? Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: CountBadge(count: n),
+                        )
+                      : const SizedBox.shrink(),
+                ),
               ]),
             ),
           ),
