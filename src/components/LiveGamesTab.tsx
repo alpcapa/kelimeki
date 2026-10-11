@@ -846,7 +846,7 @@ export function LiveGamesTab({
   // çağırır, loadGames merdiveni kurar) çağrı bir ref üzerinden yapılıyor.
   const loadGamesRef = useRef<(t?: { current: boolean }) => void>(() => {});
   // `loadGames` çağrılarının SIRA numarası (11 Ekim 2026, elle test: T2 kabul
-  // edip hemen "Ayrıl"a basınca satır ~40 sn sonra kalktı). Kabul'ün
+  // edip hemen "Ayrıl"a basınca satır ~40 sn (o gün yoklama süresi) sonra kalktı). Kabul'ün
   // fire-and-forget `reload()`u yavaş dönerse, "Ayrıl"ın taze listesinin
   // ÜSTÜNE yazıyordu (eski yanıt geç gelir, "son yazan kazanır"). Artık daha
   // yeni bir çağrı başladıysa eski çağrının yanıtı atılır.

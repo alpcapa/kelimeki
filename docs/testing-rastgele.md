@@ -22,7 +22,7 @@ yalnızca saf kuralları sınar: `npm run verify-random-games`.
 - [ ] T2'nin Devam Edenler'inde, Devam Eden Oyunlar'ın ÜSTÜNDE "Rastgele Oyunlar · N" şeridi: T1 avatarı + ad, "2 kişi", koltuk noktaları, "1 koltuk kaldı" (saat/gün YOK), Kabul. T1'in KENDİ ilanı T1'in şeridinde de VAR (§15): en başta, "Kabul" yerine soluk "Bekliyor" etiketi + "İptal" (kabul ettiğim ilanda "Ayrıl"); "İptal" kartı kaldırır, ceza yok. Yalnızca benim ilanım varken şerit görünür; başlık sayısı onu da sayar; ilan Devam Edenler'deki "Bekliyor n/N" satırıyla yinelenir (kabul edildi).
 - [ ] Hiç ilan yokken şerit TAMAMEN gizli (başlık da yok); "Yeni Oyun Başlat" kalır.
 - [ ] Şerit yatay kayar (320 px'te ~3 kart, dördüncünün kenarı görünür); sayfa yatay taşmaz. Başlığın sağındaki "Rastgele oyun aç" kurulum ekranını açar.
-- [ ] Şerit yoklaması (Realtime YOK, RLS): T2 şeride bakarken T1 yeni ilan açar → en geç ~40 sn içinde belirir; sekme arka plandayken istek ATILMAZ (ağ sekmesinden bak), öne dönünce bir kez yoklar.
+- [ ] Şerit yoklaması (Realtime YOK, RLS): T2 şeride bakarken T1 yeni ilan açar → en geç ~30 sn içinde belirir; sekme arka plandayken istek ATILMAZ (ağ sekmesinden bak), öne dönünce bir kez yoklar.
 
 **13.10.3 Kabul / ayrıl / iptal**
 - [ ] T2 "Kabul": onay sorulmaz. 2 kişilikte "Kabul ettin. Oyun başladı." ve oyun Devam Edenler'de normal oyun (sıra T1'de); 4 kişilikte "Kabul ettin. Diğer oyuncular bekleniyor." + T2'de "Bekliyor 2/4" ve "Ayrıl". T1 tarafında koltuk dolar (Realtime ya da öne dönüş).

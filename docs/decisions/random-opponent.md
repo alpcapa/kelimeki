@@ -258,7 +258,7 @@ hesapla `docs/testing-rastgele.md` koşulmadan merge EDİLMEZ.
 Kararlar/sapmalar:
 - Kova kuralı: yalnızca `my_role` 'creator' ve 'random' Devam Edenler'e gider; 'friend'
   (karma kadrodaki arkadaş) bugünkü davet akışında kalır (yoksa daveti kaybolurdu).
-- Şerit yoklaması 40 sn (en az 8 sn aralık), yalnızca sekme görünür+çevrimiçi iken.
+- Şerit yoklaması 30 sn (11 Ekim 2026 elle test kararı: 40 → 30; en az 8 sn aralık), yalnızca sekme görünür+çevrimiçi iken.
 - "Rastgele Oyuncu" satırı arkadaş listesinin İÇİNDE ilk satır ve aramadan muaf (§3).
   Rütbe mührü (§9.2) EKLENMEDİ.
 - Kart ~173 px yüksek (tasarım notundaki ~108 değil); "N koltuk kaldı" dar kartta iki satıra sarıyor.

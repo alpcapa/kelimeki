@@ -332,7 +332,7 @@ export function createdNotice(r: Pick<RandomGameResult, 'joined' | 'started'>): 
 }
 
 /** Şeridin ve kartların sabit yoklama aralığı (ms) — Realtime RLS yüzünden şerit olayla beslenemez. */
-export const RANDOM_STRIP_POLL_MS = 40_000;
+export const RANDOM_STRIP_POLL_MS = 30_000;
 /** Öne dönüş/odak yoklamasının en sık tekrar aralığı (ms). */
 export const RANDOM_STRIP_MIN_GAP_MS = 8_000;
 /** Şerit yalnızca ilk sayfayı çeker. */
