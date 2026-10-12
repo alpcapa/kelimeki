@@ -62,6 +62,7 @@ import {
 import { journeyScroll, journeyStart, journeyStep } from './utils/webJourney';
 import { funnelOpen } from './utils/funnelEvents';
 import { whenPageVisible } from './utils/pageVisible';
+import { startVisibilityProbe } from './utils/visibilityProbe';
 
 /** Uygulamayı (React ağacı + PWA + sözlük ön yüklemesi) başlatır. */
 function baslat(): void {
@@ -401,6 +402,8 @@ if (document.documentElement.classList.contains('uygulama-modu')) {
   whenPageVisible(misafirZiyaretiBildir);
   whenPageVisible(cihazZiyaretiBildir);
   yolculukKur();
+  // GEÇİCİ teşhis (12 Eki 2026): 31-33 sn yığılmasının kaynağı — silinecek.
+  if (import.meta.env.VITE_SUPABASE_URL) startVisibilityProbe(getDeviceType(), getStoredUtmSource());
   // Sayfada birden fazla "Oyna"/"Giriş" düğmesi var (başlık + kahraman +
   // sayfa sonu). Hepsi öznitelikle bağlanıyor — id ile bağlamak yalnızca
   // başlıktakileri yakalardı ve yeni bir düğme eklendiğinde SESSİZCE ölü
