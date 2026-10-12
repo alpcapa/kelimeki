@@ -1384,7 +1384,21 @@ Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları
   Bu hâlâ BİR HİPOTEZ; "hayalet" olduklarının kanıtı da yok. Sonuç:
   Android karşılama ayrılması ve Huni v2 `land` hâlâ şişkin olabilir.
   Araştırma planı aşağıda ("Yığılmanın kaynağını bulma").
-- **Yığılmanın kaynağını bulma (plan, 12 Ekim 2026 — HENÜZ YAPILMADI):**
+- **Yığılmanın kaynağını bulma (plan, 12 Ekim 2026 — ADIM 1 YAZILDI,
+  `main`'e MERGE EDİLMEDİ → henüz veri toplamıyor):** ölçüm kodu
+  `src/utils/visibilityProbe.ts` (karşılamada mobil için bir kez başlar,
+  `main.tsx`te tek çağrı) → `record_visibility_probe` RPC'si →
+  `visibility_probe` tablosu (sayfa başına 1 satır; `vis_state`, `has_focus`,
+  `load_ms`, `in_app`, `became_visible_ms`, `first_input_ms`, `input_count`,
+  `alive_ms`). Migration'lar canlıda: `20261012093127_visibility_probe` +
+  `20261012100000_visibility_probe_null_fix` (⚠ `greatest(null,0)` Postgres'te
+  0 döner → "girdi yok" ile "0. ms'de girdi" karışıyordu; canlı doğrulamada
+  yakalandı). İstemci okuyamaz (`anon` yalnızca fonksiyonu çağırır). Canlıda
+  iki test satırı kaldı (`utm_source='meta_test'`, id `00000000-…0001/2`) —
+  silme çağrısı MCP'de zaman aşımına uğradı; sorgularda `utm_source <>
+  'meta_test'` ile ele. ⚠ GEÇİCİ: ölçüm bitince modül, `main.tsx` çağrısı,
+  tablo ve fonksiyon silinir. Okuma sorgusu: `in_app`, `vis_state` ve
+  `first_input_ms is null` kırılımında 31-33 sn grubu ile ötekileri karşılaştır.
   `web_sessions`'ta user-agent kolonu YOK (id, entry, device_type,
   utm_source, steps, last_step, moves, seconds, scroll_pct, created_at,
   updated_at), yani sorun yalnızca bu tablodan ÇÖZÜLEMEZ.
