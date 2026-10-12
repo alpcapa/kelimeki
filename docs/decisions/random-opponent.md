@@ -343,7 +343,7 @@ ilanım şeritte YOK" kararını bu değiştirir).
 - **Sıra:** benimkiler ÖNCE (en yeni önce), sonra başkaları. Id ile tekilleştirme: `myRandom`da geçen
   her id başkaları listesinden düşer (benim kartım kazanır; arkadaş/aktif oyun da şeritte çıkmaz).
   `visibleListings` artık `creator_id`'ye bakıp kendi ilanımı ÇIKARMAZ.
-- **Kart:** aynı en/boy. "Kabul" YOK; yerine soluk "Bekliyor" etiketi (düğme değil; "N koltuk kaldı" satırının YERİNE — 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda) + altında küçük kırmızı eylem:
+- **Kart:** aynı en/boy. "Kabul" YOK; yerine durum satırı + altında küçük kırmızı eylem. ⚠ 12 Ekim 2026: durum satırı artık "N koltuk kaldı" (başkalarınınkiyle AYNI, §20); önceden soluk "Bekliyor" etiketiydi (düğme değil; 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda). Eylem:
   `creator` → "İptal" (`cancelRandomGame`), `random` → "Ayrıl" (`leaveRandomGame`); ≥32 px. Ayrışma: `border-accent/30 bg-accent/5`.
   Eylem mantığı/iletileri `LiveGamesTab.handleLeaveRandom`'dan (ikinci kopya yok).
 - **Koltuk durumları** (`list_random_games` ile aynı anlam): açık→`open`, gerçek YZ→`ai`, kurucu (`created_by`)→`creator`,
@@ -437,3 +437,10 @@ karar, birbirini çözer: şerit hep görünürse balonun çapası da hep vardı
 - **Ölçüm:** yeni telemetri YOK; başarı ölçütü `online_games` → `listing='random'` ilanlarının günlük sayısı ve FARKLI
   kurucu sayısı (taban: 11 Ekim 22, 12 Ekim 6 ilan; çoğu kurucunun/test hesaplarının). Sorgu `docs/testing-rastgele.md` → "Boş şerit + tanıtım balonu".
 - **Kapı:** `verify-random-games` ("Boş şerit + balon"); mobil parite grubu (`random_games_test.dart`) port PR'ında.
+- **Kart durum satırı (12 Ekim 2026, kullanıcı: *"kartlarda bekliyor yerine x koltuk kaldı yazması daha etkili"*):** benim
+  kartım da başkalarınınki gibi **"N koltuk kaldı"** der (`cardShowsWaiting`, web `randomGames.ts` ↔ Dart `random_games.dart`).
+  ⚠ Benim kartımda açık koltuk 0 olabilir (kalan koltuklar arkadaş davetlisi): "0 koltuk kaldı" yanlış olurdu → o durumda
+  "Bekliyor" kalır. Kartın "benim ilanım" ayrışması değişmedi: accent tonlu zemin + kırmızı "İptal"/"Ayrıl". Devam Edenler'deki
+  "Bekliyor n/N" SATIRI (`RandomWaitingRow`) etkilenmez. ⚠ Web, mobil `random_games_test.dart`ın web kaynağında aradığı
+  `>Bekliyor<` ve `seatsLeftLabel(` kalıplarını KORUR (web PR'ı mobil dosyasına dokunmadan yeşil kalsın); port PR'ı o testi
+  yeni davranışa çevirir.

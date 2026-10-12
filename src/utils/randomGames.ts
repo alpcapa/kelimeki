@@ -233,6 +233,18 @@ export function seatsLeftLabel(open: number): string {
   return open === 1 ? '1 koltuk kaldı' : `${open} koltuk kaldı`;
 }
 
+/**
+ * Şerit kartında "N koltuk kaldı" yerine "BEKLİYOR" yazılacak mı (12 Ekim 2026,
+ * kullanıcı: *"kartlarda bekliyor yerine x koltuk kaldı yazması daha etkili"*).
+ * Önceden BENİM kartım her zaman "Bekliyor" yazıyordu (§15); artık başkalarınınkiyle
+ * AYNI "N koltuk kaldı". Tek istisna: benim kartımda açık koltuk 0 (kalan koltuklar
+ * arkadaş davetlisi, yanıt bekleniyor) — "0 koltuk kaldı" yanlış olurdu.
+ * Başkasının ilanında `open_seats` ≥ 1 (sunucu yalnızca açık koltuklu ilanı döndürür).
+ */
+export function cardShowsWaiting(open: number, mine: boolean): boolean {
+  return mine && open <= 0;
+}
+
 // ── Kurulum formu: esnek kadro ──────────────────────────────────────────────
 
 /**

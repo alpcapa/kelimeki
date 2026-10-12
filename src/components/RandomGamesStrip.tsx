@@ -29,6 +29,7 @@ import {
   RANDOM_STRIP_LIMIT,
   RANDOM_STRIP_MIN_GAP_MS,
   RANDOM_STRIP_POLL_MS,
+  cardShowsWaiting,
   filledSeatCount,
   isOpenSeat,
   randomStripMode,
@@ -260,8 +261,11 @@ export function RandomGamesStrip({
                 </span>
                 <SeatDots seats={l.seats} />
               </div>
-              {mine ? (
-                // "Bekliyor" soluk etiket ("N koltuk kaldı" satırının YERİNE; koltuk durumu noktalarda).
+              {cardShowsWaiting(l.open_seats, !!mine) ? (
+                // Yalnızca benim kartımda ve açık koltuk KALMADIYSA (kalanlar arkadaş
+                // davetlisi, yanıt bekleniyor): "0 koltuk kaldı" yanlış olurdu. Diğer her
+                // durumda "N koltuk kaldı" (12 Ekim 2026, kullanıcı: "bekliyor yerine
+                // x koltuk kaldı daha etkili").
                 <span className="truncate text-center font-mono text-[9px] font-bold uppercase tracking-[0.5px] leading-tight text-muted">
                   Bekliyor
                 </span>

@@ -23,6 +23,7 @@ import {
   aiLastSeat,
   buildRandomSlots,
   canSubmitSeats,
+  cardShowsWaiting,
   classifyLiveGames,
   createdNotice,
   filledSeatCount,
@@ -347,6 +348,10 @@ async function main() {
   check('kartlar varsa mod "cards" (yüklenmiş olsun olmasın)', randomStripMode(true, 3) === 'cards' && randomStripMode(false, 1) === 'cards');
   check('sunucu BAŞARIYLA boş dedi → "empty"', randomStripMode(true, 0) === 'empty');
   check('ilk çekim sürerken/ağ hatasında boş durum GÖSTERİLMEZ ("hidden")', randomStripMode(false, 0) === 'hidden');
+  check('kart: başkasının ilanında "Bekliyor" YOK', !cardShowsWaiting(1, false) && !cardShowsWaiting(3, false));
+  check('kart: BENİM ilanımda açık koltuk varken "N koltuk kaldı" (Bekliyor DEĞİL)', !cardShowsWaiting(2, true) && !cardShowsWaiting(1, true));
+  check('kart: benim ilanımda koltuk kalmadıysa "Bekliyor" ("0 koltuk kaldı" yanlış olurdu)', cardShowsWaiting(0, true));
+  check('şerit kartı kararı cardShowsWaiting\'ten', /cardShowsWaiting\(l\.open_seats/.test(strip8));
   check('boş durum metni kullanıcının cümlesi', RANDOM_EMPTY_TEXT === 'Bekleyen oyun yok.' && RANDOM_EMPTY_LINK === 'Hemen aç.');
   check(
     'balon metni kullanıcının üç cümlesi, "Rastgele" yazımıyla',
