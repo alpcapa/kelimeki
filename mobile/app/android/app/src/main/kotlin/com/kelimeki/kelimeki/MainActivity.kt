@@ -69,6 +69,7 @@ class MainActivity : FlutterActivity() {
                         YarimOyunHatirlatmasi.iptal(this)
                         result.success(null)
                     }
+                    "yarimOyunDurum" -> result.success(YarimOyunHatirlatmasi.durum(this))
                     // "Bildirimler kapalı" kartı (2 Ekim 2026): sistem izin
                     // diyaloğu artık açılmadığında tek yol uygulamanın
                     // bildirim ayarları. API 26+ doğrudan o sayfa, altı

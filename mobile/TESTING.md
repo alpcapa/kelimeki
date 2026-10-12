@@ -1571,6 +1571,13 @@ geçici olarak öne çekme; aşağıdaki maddeler ayrılış saatini seçerek ko
       (`_HomeGate._gizlendi` koşulu).
 - [ ] **Aynı oyun bir kez:** bildirim düştükten sonra uygulamayı açıp aynı
       oyundan tekrar çık → ikinci bildirim YOK. Yeni bir oyunda yine var.
+      ⚠ 1.1.4'ten beri "düştü" = platform GÖSTERDİ (12 Ekim 2026, Parça 240);
+      bildirim görünmeden saat geçtiyse aynı oyun YİNE hatırlatılır.
+- [ ] **Teşhis satırı (1.1.4):** yarım oyundan logoyla çık → Setup'ın en
+      altındaki satırda `hatırlatma GG.AA 19:00` görünür (platform isteği
+      gerçekten bekletiyor). `hatırlatma KURULAMADI` görünürse kurma
+      platformda BAŞARISIZ — ekran görüntüsünü yolla. Günlerce beklemeden
+      kurulup kurulmadığını anlamanın yolu bu.
 - [ ] **Oyun bitince iptal:** hatırlatma kuruluyken oyuna dön ve bitir → GELMEZ.
 - [ ] **Bilinen sınır (Android):** cihaz yeniden başlatılırsa bekleyen
       hatırlatma silinir — hata DEĞİL, bilinçli (BOOT_COMPLETED alıcısı yok).

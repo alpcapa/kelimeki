@@ -25,6 +25,37 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 240 — Yarım oyun hatırlatması: "hatırlatıldı" işareti sessizce kilitliyordu (12 Ekim 2026) — `[Sonraki sürüm]`, 1.1.4 treni
+
+**Vaka:** hatırlatma (#731, 1.1.2'den beri) cihazda dört denemede hiç
+görülmedi. Kullanıcı dördünü de AYNI yarım oyunla yaptı. Kural "aynı oyun bir
+kez hatırlatılır" ve "teslim edildi" = *zamanı geçtikten sonra uygulama
+açıldı* idi: ilk denemenin saatinden sonraki ilk açılış oyunu
+`yarim_oyun_hatirlatilan`a yazdı, sonraki üç denemede
+`yarimOyunHatirlatmasiKurulmali` false döndü ve HİÇBİR ŞEY kurulmadı —
+hata yok, iz yok.
+
+**Düzeltme:**
+- "Teslim" artık platformdan: yeni kanal metodu `yarimOyunDurum`
+  (`{bekliyor, teslim}`). iOS: bekleyen/teslim edilmiş istek listesi +
+  `hepsiniTemizle` paneli silmeden önce kanıtı `UserDefaults`a yazar (Dart
+  sorusu temizlikten SONRA geliyor). Android: alıcı `notify` anında
+  `SharedPreferences`a yazar; `iptal` PendingIntent'i de iptal eder
+  (`FLAG_NO_CREATE` sorgusu için). Bilinmiyorsa (web) teslim SAYILMAZ.
+- Anahtar `yarim_oyun_hatirlatilan_v2`: eski, yanlış dolmuş işaretler bir
+  kereye mahsus düşer.
+- Setup teşhis satırı: `hatırlatma 13.10 19:00` (platform bekletiyor) ·
+  `hatırlatma KURULAMADI` (Dart kurdu sanıyor, platformda yok) — günlerce
+  beklemeden doğrulama.
+
+**Bilinçli bedel:** iOS'ta görülüp Bildirim Merkezi'nden silinen hatırlatma
+kanıt bırakmaz → aynı oyun bir kez daha hatırlatılabilir (güvenli yön).
+
+**Doğrulama:** `flutter test` 1186 yeşil; regresyon testi (*"saat GEÇTİ ama
+platform göstermedi"*) eski kural geri konunca DÜŞÜYOR. Parite testi yeni
+metot adını ve `bekliyor`/`teslim` anahtarlarını Kotlin+Swift'te arıyor.
+**Sınır:** Swift/Kotlin bu ortamda derlenmedi (CI); cihazda §34.
+
 ## Parça 239 — Koltuk numarası alt yarıdan kırpılıyordu: `Text.overflow` varsayılanı `clip` (11 Ekim 2026, 1.1.3 TestFlight)
 
 Kullanıcı iPad'de gördü: *"koltuk numaraları yarınsından kesilmiş"*. Numara rakamı 56/34 px, yuvası 36/28 px; `Baseline` rakamı yuvanın üstüne taşıyordu ama `Text`in varsayılan `overflow: clip`i onu paragrafın KENDİ kutusuna (36 px) kırpıyordu. Bulgu `debugDumpRenderTree`de (`RenderParagraph size 36, overflow: clip`), düzeltme `overflow: TextOverflow.visible` (`live_game_create_form.dart`). Parça 230/231'in geometri testi konumu ölçüyor, KIRPMAYI görmüyordu → yeni test `koltuk numarası kırpılmaz`. Ders: taşırarak konumlanan metinde `overflow: visible` şart; kırpma yalnızca görüntü alınınca görünüyor.
