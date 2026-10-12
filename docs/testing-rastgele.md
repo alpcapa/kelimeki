@@ -55,7 +55,7 @@ yalnızca saf kuralları sınar: `npm run verify-random-games`.
 - [ ] Satıra dokun → kurulum ekranı açılır, Rastgele Oyuncu zaten seçili (başlıktaki bağlantıyla AYNI).
 - [ ] Uçak modu/ağ yokken ilk açılışta satır "Bekleyen oyun yok" DİYEMEZ (gizli kalır); ağ gelince ilan yoksa satır belirir.
 - [ ] Bir ilan düşünce (başka hesaptan) satır kaybolur, kartlar + "Rastgele oyun aç" bağlantısı gelir.
-- [ ] Balon: cihazda İLK kez bu ekran → başlığın ÜSTÜNDE mavi balon ("Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen herkes katılsın. Önce gelen koltuğu kapar."), ~7 sn sonra kendiliğinden kapanır; sekmeden çıkıp dönünce BİR DAHA ÇIKMAZ. Balon altındaki satırı/kartı örtmez, dokunuşu engellemez.
+- [ ] Balon: cihazda İLK kez bu ekran → başlığın ÜSTÜNDE mavi balon ("Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen katılsın. Önce gelen koltuğu kapar."), ~7 sn sonra kendiliğinden kapanır; sekmeden çıkıp dönünce BİR DAHA ÇIKMAZ. Balon altındaki satırı/kartı örtmez, dokunuşu engellemez.
 - [ ] Başarı ölçütü (merge sonrası günlük): `select (created_at at time zone 'Europe/Istanbul')::date, count(*), count(distinct created_by) from online_games where listing='random' group by 1 order by 1;`
 
 ## Bilinçle ATLANAN test: 48 saat zaman aşımı (4 Ekim 2026, kullanıcı kararı)

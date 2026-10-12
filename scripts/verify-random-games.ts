@@ -351,7 +351,7 @@ async function main() {
   check(
     'balon metni kullanıcının üç cümlesi, "Rastgele" yazımıyla',
     RANDOM_HINT_TEXT ===
-      'Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen herkes katılsın. Önce gelen koltuğu kapar.',
+      'Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen katılsın. Önce gelen koltuğu kapar.',
   );
   check('balon süresi genel 4 sn\'den uzun (üç cümle)', RANDOM_HINT_MS > 4000);
   check(

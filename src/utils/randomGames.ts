@@ -354,7 +354,7 @@ export const RANDOM_EMPTY_LINK = 'Hemen aç.';
  * "rasgele" geçti, tutarlılık için bilerek "Rastgele").
  */
 export const RANDOM_HINT_TEXT =
-  'Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen herkes katılsın. Önce gelen koltuğu kapar.';
+  'Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen katılsın. Önce gelen koltuğu kapar.';
 
 /** Üç cümle 4 sn'de okunmaz (genel balon süresi `ONBOARDING_HINT_MS`). */
 export const RANDOM_HINT_MS = 7000;
