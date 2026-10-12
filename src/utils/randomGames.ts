@@ -234,15 +234,25 @@ export function seatsLeftLabel(open: number): string {
 }
 
 /**
- * Şerit kartında "N koltuk kaldı" yerine "BEKLİYOR" yazılacak mı (12 Ekim 2026,
- * kullanıcı: *"kartlarda bekliyor yerine x koltuk kaldı yazması daha etkili"*).
- * Önceden BENİM kartım her zaman "Bekliyor" yazıyordu (§15); artık başkalarınınkiyle
- * AYNI "N koltuk kaldı". Tek istisna: benim kartımda açık koltuk 0 (kalan koltuklar
- * arkadaş davetlisi, yanıt bekleniyor) — "0 koltuk kaldı" yanlış olurdu.
- * Başkasının ilanında `open_seats` ≥ 1 (sunucu yalnızca açık koltuklu ilanı döndürür).
+ * HENÜZ DOLMAMIŞ koltuk sayısı = açık + yanıtı beklenen/reddeden davetli (12 Ekim
+ * 2026, kullanıcı: *"her yerde x koltuk kaldı yazsın"*). "Bekliyor" etiketleri
+ * (benim kartım, Devam Edenler "Bekliyor n/N") bununla değişti.
+ * Neden `open_seats` değil: karma kadroda (arkadaş + rastgele koltuk) son açık
+ * koltuğu biri kapsa da oyun, arkadaş yanıtlayana kadar `pending` kalır
+ * (`_random_take_seat`: açık 0 VE bekleyen davet 0 → `active`). O durumda açık
+ * koltuk 0'dır ama oyun başlamamıştır; "0 koltuk kaldı" yanlış okunurdu. Dolmamış
+ * koltuk sayısı bekleyen oyunda ≥1 olur ve `Bekliyor n/N`deki N − dolu ile AYNI.
  */
-export function cardShowsWaiting(open: number, mine: boolean): boolean {
-  return mine && open <= 0;
+export function unfilledSeatCount(seats: readonly RandomSeatState[]): number {
+  return seats.filter((s) => s === 'open' || s === 'invited').length;
+}
+
+/**
+ * Şerit kartındaki "N koltuk kaldı" sayısı: BAŞKASININ ilanında kabul edebileceğim
+ * AÇIK koltuklar (`open_seats`); BENİM ilanımda dolmamış koltuklar.
+ */
+export function cardSeatsLeft(l: Pick<StripListing, 'open_seats' | 'seats' | 'mine'>): number {
+  return l.mine ? unfilledSeatCount(l.seats) : l.open_seats;
 }
 
 // ── Kurulum formu: esnek kadro ──────────────────────────────────────────────

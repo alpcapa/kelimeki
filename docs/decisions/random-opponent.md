@@ -437,10 +437,17 @@ karar, birbirini çözer: şerit hep görünürse balonun çapası da hep vardı
 - **Ölçüm:** yeni telemetri YOK; başarı ölçütü `online_games` → `listing='random'` ilanlarının günlük sayısı ve FARKLI
   kurucu sayısı (taban: 11 Ekim 22, 12 Ekim 6 ilan; çoğu kurucunun/test hesaplarının). Sorgu `docs/testing-rastgele.md` → "Boş şerit + tanıtım balonu".
 - **Kapı:** `verify-random-games` ("Boş şerit + balon"); mobil parite grubu (`random_games_test.dart`) port PR'ında.
-- **Kart durum satırı (12 Ekim 2026, kullanıcı: *"kartlarda bekliyor yerine x koltuk kaldı yazması daha etkili"*):** benim
-  kartım da başkalarınınki gibi **"N koltuk kaldı"** der (`cardShowsWaiting`, web `randomGames.ts` ↔ Dart `random_games.dart`).
-  ⚠ Benim kartımda açık koltuk 0 olabilir (kalan koltuklar arkadaş davetlisi): "0 koltuk kaldı" yanlış olurdu → o durumda
-  "Bekliyor" kalır. Kartın "benim ilanım" ayrışması değişmedi: accent tonlu zemin + kırmızı "İptal"/"Ayrıl". Devam Edenler'deki
-  "Bekliyor n/N" SATIRI (`RandomWaitingRow`) etkilenmez. ⚠ Web, mobil `random_games_test.dart`ın web kaynağında aradığı
-  `>Bekliyor<` ve `seatsLeftLabel(` kalıplarını KORUR (web PR'ı mobil dosyasına dokunmadan yeşil kalsın); port PR'ı o testi
-  yeni davranışa çevirir.
+- **"N koltuk kaldı" HER YERDE (12 Ekim 2026, kullanıcı: *"kartlarda bekliyor yerine x koltuk kaldı yazması daha etkili"*, sonra
+  *"her yerde x koltuk kaldı yazsın"*):** şerit kartında benim ilanım da başkalarınınki gibi "N koltuk kaldı" der; Devam
+  Edenler'deki "Bekliyor n/N" satırının etiketi de "N koltuk kaldı" oldu (alt satırlar — "Rastgele oyuncu bekleniyor" /
+  "Arkadaş yanıtı bekleniyor" / "Oyun başlıyor" — aynen kalır).
+  **Sayı neden `open_seats` değil, `unfilledSeatCount` (açık + yanıtı beklenen/reddeden davetli):** saf rastgele ilanda son
+  açık koltuk dolunca oyun HEMEN `active` olur ve ilan şeritten kalkar — "0 koltuk" hiç görünmez. Ama KARMA kadroda
+  (arkadaş + rastgele koltuk) sunucu oyunu yalnızca açık koltuk 0 **ve** bekleyen davet 0 olunca başlatır
+  (`_random_take_seat`): rastgele koltuğu biri kapsa da arkadaş yanıtlamadıysa oyun `pending` kalır, açık koltuk 0'dır —
+  "0 koltuk kaldı" yanlış okunurdu. Dolmamış koltuk sayısı bekleyen oyunda ≥1 olur ve eski "n/N"deki N − dolu ile AYNI.
+  Başkasının ilanında sayı `open_seats` kalır (kabul edebileceğim koltuklar; o liste yalnızca açık koltuklu ilanları verir).
+  Saf kurallar: web `randomGames.ts` (`unfilledSeatCount`, `cardSeatsLeft`) ↔ Dart `random_games.dart` (port PR'ı).
+  Kartın "benim ilanım" ayrışması değişmedi: accent tonlu zemin + kırmızı "İptal"/"Ayrıl".
+  ⚠ Mobil `random_games_test.dart`ın web kaynağında aradığı `>Bekliyor<` kalıbı bu yüzden o testte `cardSeatsLeft(`e
+  çevrildi (web PR'ında; mobil derlemeyi tetikler, port PR'ıyla birlikte gider).

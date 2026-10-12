@@ -23,7 +23,7 @@ import {
   aiLastSeat,
   buildRandomSlots,
   canSubmitSeats,
-  cardShowsWaiting,
+  cardSeatsLeft,
   classifyLiveGames,
   createdNotice,
   filledSeatCount,
@@ -42,6 +42,7 @@ import {
   seatsLeftLabel,
   stripListings,
   toggleFriendSeat,
+  unfilledSeatCount,
   usesRandomSeat,
   visibleListings,
 } from '../src/utils/randomGames';
@@ -348,10 +349,10 @@ async function main() {
   check('kartlar varsa mod "cards" (yüklenmiş olsun olmasın)', randomStripMode(true, 3) === 'cards' && randomStripMode(false, 1) === 'cards');
   check('sunucu BAŞARIYLA boş dedi → "empty"', randomStripMode(true, 0) === 'empty');
   check('ilk çekim sürerken/ağ hatasında boş durum GÖSTERİLMEZ ("hidden")', randomStripMode(false, 0) === 'hidden');
-  check('kart: başkasının ilanında "Bekliyor" YOK', !cardShowsWaiting(1, false) && !cardShowsWaiting(3, false));
-  check('kart: BENİM ilanımda açık koltuk varken "N koltuk kaldı" (Bekliyor DEĞİL)', !cardShowsWaiting(2, true) && !cardShowsWaiting(1, true));
-  check('kart: benim ilanımda koltuk kalmadıysa "Bekliyor" ("0 koltuk kaldı" yanlış olurdu)', cardShowsWaiting(0, true));
-  check('şerit kartı kararı cardShowsWaiting\'ten', /cardShowsWaiting\(l\.open_seats/.test(strip8));
+  check('kart: başkasının ilanında sayı = kabul edebileceğim AÇIK koltuk (open_seats)', cardSeatsLeft({ open_seats: 2, seats: ['creator', 'open', 'open', 'filled'] }) === 2);
+  check('kart: BENİM ilanımda sayı = açık + yanıtı beklenen davetli', cardSeatsLeft({ open_seats: 1, seats: ['creator', 'open', 'invited', 'filled'], mine: 'creator' }) === 2);
+  check('KARMA KADRO: son açık koltuk kapıldı ama arkadaş yanıtlamadı → "0 koltuk kaldı" DEĞİL, 1', cardSeatsLeft({ open_seats: 0, seats: ['creator', 'filled', 'invited'], mine: 'creator' }) === 1 && unfilledSeatCount(['creator', 'filled', 'invited']) === 1);
+  check('şerit kartı sayısı cardSeatsLeft\'ten; Devam Edenler satırı N − dolu (ham "Bekliyor" etiketi YOK)', /cardSeatsLeft\(l\)/.test(strip8) && /seatsLeftLabel\(game\.player_count - dolu\)/.test(strip8) && !/>\s*Bekliyor\b/.test(strip8));
   check('boş durum metni kullanıcının cümlesi', RANDOM_EMPTY_TEXT === 'Bekleyen oyun yok.' && RANDOM_EMPTY_LINK === 'Hemen aç.');
   check(
     'balon metni kullanıcının üç cümlesi, "Rastgele" yazımıyla',
