@@ -436,7 +436,7 @@ karar, birbirini çözer: şerit hep görünürse balonun çapası da hep vardı
   effect (mod boş → kartlar değişince sayaç sıfırlanmasın).
 - **Ölçüm:** yeni telemetri YOK; başarı ölçütü `online_games` → `listing='random'` ilanlarının günlük sayısı ve FARKLI
   kurucu sayısı (taban: 11 Ekim 22, 12 Ekim 6 ilan; çoğu kurucunun/test hesaplarının). Sorgu `docs/testing-rastgele.md` → "Boş şerit + tanıtım balonu".
-- **Kapı:** `verify-random-games` ("Boş şerit + balon"); mobil parite grubu (`random_games_test.dart`) port PR'ında.
+- **Kapı:** `verify-random-games` ("Boş şerit + balon" + koltuk sayısı); mobil `random_games_test.dart` (saf kurallar + web parite) ve `random_games_ui_test.dart` (boş satır, balon, karma kadro). Port: Parça 240, `ui/live/random_games_strip.dart` (`RandomStripMode`, `HintAnchor`), `FlagsStore.seenRandomHint`.
 - **"N koltuk kaldı" HER YERDE (12 Ekim 2026, kullanıcı: *"kartlarda bekliyor yerine x koltuk kaldı yazması daha etkili"*, sonra
   *"her yerde x koltuk kaldı yazsın"*):** şerit kartında benim ilanım da başkalarınınki gibi "N koltuk kaldı" der; Devam
   Edenler'deki "Bekliyor n/N" satırının etiketi de "N koltuk kaldı" oldu (alt satırlar — "Rastgele oyuncu bekleniyor" /
@@ -447,7 +447,7 @@ karar, birbirini çözer: şerit hep görünürse balonun çapası da hep vardı
   (`_random_take_seat`): rastgele koltuğu biri kapsa da arkadaş yanıtlamadıysa oyun `pending` kalır, açık koltuk 0'dır —
   "0 koltuk kaldı" yanlış okunurdu. Dolmamış koltuk sayısı bekleyen oyunda ≥1 olur ve eski "n/N"deki N − dolu ile AYNI.
   Başkasının ilanında sayı `open_seats` kalır (kabul edebileceğim koltuklar; o liste yalnızca açık koltuklu ilanları verir).
-  Saf kurallar: web `randomGames.ts` (`unfilledSeatCount`, `cardSeatsLeft`) ↔ Dart `random_games.dart` (port PR'ı).
+  Saf kurallar: web `randomGames.ts` (`unfilledSeatCount`, `cardSeatsLeft`) ↔ Dart `random_games.dart`.
   Kartın "benim ilanım" ayrışması değişmedi: accent tonlu zemin + kırmızı "İptal"/"Ayrıl".
   ⚠ Mobil `random_games_test.dart`ın web kaynağında aradığı `>Bekliyor<` kalıbı bu yüzden o testte `cardSeatsLeft(`e
-  çevrildi (web PR'ında; mobil derlemeyi tetikler, port PR'ıyla birlikte gider).
+  çevrildi (web PR'ında; mobil derlemeyi tetikler, port PR'ıyla AYNI GÜN gider).
