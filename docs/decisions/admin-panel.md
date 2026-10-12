@@ -1363,11 +1363,51 @@ Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları
   (sahte uç, mobil UA): görünür açılış → hemen; gizli açılıp 3 sn sonra
   görünen → 3,7 sn'de hepsi, yolculuk süresi 2 sn (5 değil); hiç görünmeyen
   → **0 istek**.
-- ⚠ **Doğrulama BEKLİYOR:** düzeltme canlıya çıktıktan sonra 31-33 sn
+- ⚠ **Doğrulama (SONUÇ aşağıda: 12 Ekim'de yığılma kaybolmadı):** düzeltme canlıya çıktıktan sonra 31-33 sn
   yığılması yeni satırlarda kaybolursa hipotez doğru. Kaybolmazsa önyükleme
   sayfayı "görünür" çalıştırıyor demektir; o zaman Huni v2 LAND'ı da hâlâ
   şişkin. Sorgu: `web_sessions` → `seconds between 31 and 33 and
   last_step='landing'`, `created_at` yayın sonrası.
+- ❌ **Doğrulama SONUCU (12 Ekim 2026): düzeltme yığılmayı GİDERMEDİ.**
+  #787 `main`'e 2 Ekim 15:52'de girdi; canlı derleme `877b43e` onu içeriyor
+  (`git merge-base --is-ancestor`, `curl` ile okundu) — bayat derleme
+  açıklaması YOK. `web_sessions`, `last_step='landing'`, 2 Ekim 13:30 UTC
+  sonrası: 1298 oturumun **528'i (%41) 31-33 sn**; günlük 2 Ekim 40/104,
+  6 Ekim 130/237, 11 Ekim 68/227, 12 Ekim 21/78. Komşu aralıklar (28-30,
+  34-36) sivri değil. Yığılmanın TAMAMI Meta etiketli ve **Android'e özgü**:
+  Meta kaynaklı 509 yığılmanın 507'si Android, iOS'ta 245 Meta oturumundan
+  yalnızca 2'si. ⚠ "Öncesi" sayıları (25 Eyl–2 Eki: 13/267) KARŞILAŞTIRMA
+  DEĞİL — geçmiş aynı gün silindi (aşağıdaki "Geçmiş TEMİZLENDİ"). Anlamı:
+  Android'in Meta tarayıcısı, arka planda yüklenirken de
+  `visibilityState !== 'hidden'` döndürüyor (ya da bu kapıya hiç
+  takılmayan başka bir yol var) → `whenPageVisible` onu "görünür" sayıyor.
+  Bu hâlâ BİR HİPOTEZ; "hayalet" olduklarının kanıtı da yok. Sonuç:
+  Android karşılama ayrılması ve Huni v2 `land` hâlâ şişkin olabilir.
+  Araştırma planı aşağıda ("Yığılmanın kaynağını bulma").
+- **Yığılmanın kaynağını bulma (plan, 12 Ekim 2026 — HENÜZ YAPILMADI):**
+  `web_sessions`'ta user-agent kolonu YOK (id, entry, device_type,
+  utm_source, steps, last_step, moves, seconds, scroll_pct, created_at,
+  updated_at), yani sorun yalnızca bu tablodan ÇÖZÜLEMEZ.
+  1. **Ölç, tahmin etme:** `whenPageVisible` ilk karar anında
+     `visibilityState`, `document.hidden`, `document.hasFocus()` ve
+     `performance.now()`'u bir `client_errors`/geçici telemetri satırına
+     yazsın (yalnızca Meta+Android örneklemi, birkaç yüz satır yeter). Hangi
+     sinyalin hayalet ile gerçek ziyareti ayırdığını CANLIDAN gör.
+  2. **Ayırt edici ara:** gerçek ziyaretçi etkileşir (dokunma, kaydırma
+     OLAYI, `focus`), hayalet etkileşmez. `scroll_pct` hiçbir yığılma
+     satırında 0 değil (ort. %17) → kaydırma yüzdesi ilk ekranın kendisi,
+     etkileşim kanıtı DEĞİL; gerçek bir `touchstart`/`scroll` olayı sayacı
+     gerekir.
+  3. **Karar ölçütü:** yeni sinyal koyduktan sonra yığılma %41 → <%5
+     düşmeli. Düşmezse hipotez yanlış (yığılma başka yerden geliyor:
+     ör. sunucu tarafı ping tekrarı, `updated_at` aralığı).
+  4. **Uygulama:** kapıyı `whenPageVisible`e değil, "etkileşim ya da
+     gerçek odak oldu mu"ya bağla; hem Yolculuk hem Huni v2 `land`ı, hem
+     eski sayaçları (`guest_visits`/`device_visits`) kapsasın. Motor/oyun
+     koduna dokunmaz; mobil port etkilenmez.
+  5. **Raporlama:** düzeltme gelene dek Android karşılama ayrılma oranı
+     güvenilmez; kampanya kararlarında (ROADMAP Meta teaser) yığılmasız
+     sayıyı (`not (seconds between 31 and 33)`) kullan.
 - **Geçmiş TEMİZLENDİ (aynı gün, kullanıcı: *"Sil"*):** yığılma oturumu
   (`seconds` 31-33, `last_step='landing'`, kaydırma ≤%25, ikinci ping
   gelmiş) ±3 sn içindeki aynı cihaz tipi + aynı `utm_source` `guest_visits`
