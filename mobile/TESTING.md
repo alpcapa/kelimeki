@@ -641,6 +641,16 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
       taşımadığından bu doğru davranış; `direkt`e düşüyorsa web'in gerçek
       doğrudan trafiği şişiyor demektir. "Oyun" sütunu (bitmiş oyun)
       DEĞİŞMEMELİ. Oyun sonu "Tekrar Oyna" da aynı şekilde 1 artırmalı.
+- [ ] **Engellediğin biriyle "Tekrar Oyna" (13 Ekim 2026, Parça 243).** İki hesap,
+      aynı oyun. A, B'yi oyunun sohbet ayarlarından engellesin, oyun bitsin.
+      **A'da:** "Tekrar Oyna" AÇIK; onaydan sonra oyun KURULMAMALI, diyalog
+      "B kullanıcısını engellediğiniz için önce engeli kaldırmanız gerekiyor."
+      demeli + **ENGEL AYARLARI**. Engellediklerim açılsın; B'yi kaldırıp kapat →
+      rövanş KENDİLİĞİNDEN gönderilmeli. Aynısını Skor Kartı → Tüm Oyunlar →
+      tahtaya dokun → "Tekrar Oyna"dan da dene (ikinci yüzey). **B'de:** düğme
+      açık, basınca "A kullanıcısı sizi engelledi." (eskisi gibi). 4 kişilikte iki
+      rakibi engelle → ikisi de adıyla ("A ve B kullanıcılarını …"). Uçak
+      modunda: liste okunamayınca akış ENGELLENMEZ (sunucu zaten reddeder).
 - [ ] **Oyun bitir → webde gör.** Mobilde bir oyunu sonuna kadar oyna.
       Web'deki Skor Kartı'nda oyun sayısı artmalı, k-lig puanı doğru
       değişmeli (2 kişilikte 1.=+2, 2.=0).

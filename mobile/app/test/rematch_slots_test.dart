@@ -15,6 +15,7 @@
 // oyunun ayrıca okunmuş `slots` dizisi tutuyor.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
+import 'package:kelimeki/src/util/rematch_slots.dart';
 
 OnlineSlot _human(String id, {String? name}) =>
     OnlineSlot.human(userId: id, name: name);
@@ -83,6 +84,75 @@ void main() {
           .map((s) => s.toJson())
           .toList();
       expect(json[1], {'type': 'ai'});
+    });
+  });
+
+  // ── Engellediğim rakip (13 Ekim 2026, kullanıcı kararı) ──────────────────
+  // Vakalar web `verify-rematch-slots` (6) ve (7) bölümleriyle BİREBİR aynı.
+  group('rematchBlockedOpponents', () {
+    ({String userId, String name}) engelli1(String id) =>
+        (userId: id, name: id.toUpperCase());
+    List<({String userId, String name})> engelli(List<String> ids) =>
+        [for (final id in ids) engelli1(id)];
+
+    test('engelli rakip yok → boş', () {
+      expect(rematchBlockedOpponents([_human('ben'), _human('a')], 'ben', []),
+          isEmpty);
+    });
+
+    test('2 kişilik: engellediğim rakip → adı döner', () {
+      expect(
+          rematchBlockedOpponents(
+              [_human('ben'), _human('a')], 'ben', engelli(['a'])),
+          ['A']);
+    });
+
+    test('kendim engelli listesinde olsam da sayılmam', () {
+      expect(
+          rematchBlockedOpponents(
+              [_human('ben'), _human('a')], 'ben', engelli(['ben'])),
+          isEmpty);
+    });
+
+    test('kadroda OLMAYAN engelli sayılmaz', () {
+      expect(
+          rematchBlockedOpponents(
+              [_human('ben'), _human('a')], 'ben', engelli(['z'])),
+          isEmpty);
+    });
+
+    test('4 kişilik: iki engelli, KOLTUK sırasıyla (listenin sırasıyla değil)',
+        () {
+      expect(
+          rematchBlockedOpponents(
+              [_human('ben'), _human('c'), _human('a'), _human('b')],
+              'ben',
+              engelli(['a', 'c'])),
+          ['C', 'A']);
+    });
+
+    test('YZ koltuğu engelli sayılmaz', () {
+      expect(
+          rematchBlockedOpponents(
+              [_human('ben'), _human('a'), _ai, _ai], 'ben', engelli(['a'])),
+          ['A']);
+    });
+  });
+
+  group('rematchBlockedMessage', () {
+    test('tekil', () {
+      expect(rematchBlockedMessage(['Ali']),
+          'Ali kullanıcısını engellediğiniz için önce engeli kaldırmanız gerekiyor.');
+    });
+
+    test('iki kişi', () {
+      expect(rematchBlockedMessage(['Ali', 'Veli']),
+          'Ali ve Veli kullanıcılarını engellediğiniz için önce engeli kaldırmanız gerekiyor.');
+    });
+
+    test('üç kişi', () {
+      expect(rematchBlockedMessage(['Ali', 'Veli', 'Can']),
+          'Ali, Veli ve Can kullanıcılarını engellediğiniz için önce engeli kaldırmanız gerekiyor.');
     });
   });
 }

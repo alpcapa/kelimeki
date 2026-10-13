@@ -25,6 +25,20 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 243 — "Tekrar Oyna": engellediğin rakiple oyun kurulmaz, önce engeli kaldırman istenir (13 Ekim 2026, taslak PR — 19 Ekim treni)
+
+Kullanıcı kararı (#45-A S1): *"sadece engelleyen taraf da tekrar oynaya basabilsin ancak ona xyz kullanıcısını engellediğiniz için önce engeli kaldırmanız lazım mesajı ile engel ayarlarını getirebiliriz."* Web yarısı ayrı PR'da (`rematchSlots.ts` → `rematchBlockedOpponents`/`rematchBlockedMessage`, iki çağıran, `verify-rematch-slots`); karar kaydı `docs/decisions/random-opponent.md` §20.
+
+**Ne yapıldı:** (1) `util/rematch_slots.dart` — saf kural + mesaj (web ikizi; vakalar `rematch_slots_test.dart`ta `verify-rematch-slots` ile BİREBİR). (2) `ChatRepo.rematchBlockedNames` (web `fetchRematchBlockedNames`): engel listesi OKUNAMAZSA boş döner — kolaylık denetimi, güvenlik kapısı değil, sunucu kapısı zaten var. (3) `ui/chat_scope.dart` + `app.dart`ta kök kapsam: oyun geçmişi modalı `ChatRepo` taşımıyordu ve üç çağrı zinciri var (`OnlineGamesScope` ile AYNI karar). (4) İki yüzey (`online_game_screen.dart`, `game_history_modal.dart`) aynı döngüyü uyguluyor: onay → engel kontrolü → *"<ad> kullanıcısını engellediğiniz için önce engeli kaldırmanız gerekiyor."* + **ENGEL AYARLARI** (`showBlockedUsers`) → kapanınca liste YENİDEN okunur: kalktıysa rövanş devam eder, hâlâ engelli biri varsa aynı uyarı döner (web ile aynı). VAZGEÇ hiçbir şey kurmaz.
+
+**Engellenen taraf DEĞİŞMEDİ** (düğme açık, sunucunun "sizi engelledi" mesajı). Sunucu DEĞİŞMEDİ, migration yok.
+
+**Web ↔ port farkı (bilinçli):** web'de rövanş penceresi tek bileşen, `blocked` bir FAZ; portta pencere diyalog zinciri (`showKConfirm` → `showKConfirm` → `showBlockedUsers`), yani web'deki "rövanş penceresini GİZLE (z-200 ↔ `Modal` z-150)" önlemi portta GEREKMEZ (diyaloglar zaten üst üste biniyor).
+
+**Bulunan/öğrenilen:** (a) `GameHistoryModal`'da `ChatScope.maybeOf(context)` ilk yazımda `await`ten SONRA çağrılmıştı → `use_build_context_synchronously`; fonksiyonun başına, `OnlineGamesScope.maybeOf`un yanına taşındı. (b) Temel `FakeChatGateway.unblockUser` yalnızca çağrıyı kaydediyor, listeyi değiştirmiyor — "engel kalkınca devam" testi için `UnblockingChatGateway` (`test/support/fake_online_gateway.dart`) eklendi (temel sahteyi değiştirmek mevcut engel testlerini etkilerdi). (c) **Duyarlılık İKİ yüzeyde de kanıtlandı:** döngü koşulu devre dışı bırakılınca blokaj testleri DÜŞÜYOR, geri konunca geçiyor. (İlk deneme geçersizdi: `dart format` satırı bölünce metin değişikliği hiç uygulanmamıştı ve "testler hâlâ geçiyor" yanlış güven verirdi — değişikliğin gerçekten uygulandığı `count == 1` ile doğrulanmadan duyarlılık kontrolüne güvenme.)
+
+**Doğrulama:** `dart analyze lib test` yeni uyarı yok (3 eski info) · `flutter test` **1195 test yeşil** (yeni: 9 saf kural, 3 oyun ekranı, 1 geçmiş penceresi). **Doğrulama SINIRI:** iki gerçek hesapla cihazda DENENMEDİ (`mobile/TESTING.md` yeni madde); `GameHistoryModal`ın gerçek `ChatScope` bağlantısı (`app.dart`) yalnızca kaynak düzeyinde doğrulandı, kök kapsamla uçtan uca bir widget testi yok.
+
 ## Parça 239 — Koltuk numarası alt yarıdan kırpılıyordu: `Text.overflow` varsayılanı `clip` (11 Ekim 2026, 1.1.3 TestFlight)
 
 Kullanıcı iPad'de gördü: *"koltuk numaraları yarınsından kesilmiş"*. Numara rakamı 56/34 px, yuvası 36/28 px; `Baseline` rakamı yuvanın üstüne taşıyordu ama `Text`in varsayılan `overflow: clip`i onu paragrafın KENDİ kutusuna (36 px) kırpıyordu. Bulgu `debugDumpRenderTree`de (`RenderParagraph size 36, overflow: clip`), düzeltme `overflow: TextOverflow.visible` (`live_game_create_form.dart`). Parça 230/231'in geometri testi konumu ölçüyor, KIRPMAYI görmüyordu → yeni test `koltuk numarası kırpılmaz`. Ders: taşırarak konumlanan metinde `overflow: visible` şart; kırpma yalnızca görüntü alınınca görünüyor.

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
+import 'package:kelimeki/src/data/chat_api.dart';
 import 'package:kelimeki/src/ui/text_scale.dart' show kMaxTextScale;
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/util/online_status.dart';
@@ -335,6 +336,7 @@ void main() {
       OnlineStatus? onlineStatus,
       double textScale = 1.0,
       Size view = const Size(420, 900),
+      ChatRepo? chat,
     }) async {
       await setPhoneViewSize(tester, view);
       final s = _baseState(opponentIsAi: opponentIsAi);
@@ -358,6 +360,7 @@ void main() {
         words: words,
         auth: AuthService.fake(user: fakeUser('me')),
         onlineStatus: onlineStatus,
+        chat: chat,
       );
       if (boundaryKey != null) {
         screen = RepaintBoundary(key: boundaryKey, child: screen);
@@ -1206,6 +1209,104 @@ void main() {
           reason: 'Metin tek satır değil — textContaining ile aranmalı.');
       expect(find.textContaining('Davetiniz gönderilmiştir.'), findsOneWidget);
 
+      await tester.tap(find.text('TAMAM'));
+      await tester.pumpAndSettle();
+      await unmount(tester);
+    });
+
+    // ── Engellediğim rakip (13 Ekim 2026, kullanıcı kararı; web ikizi
+    // `OnlineGameScreen.tsx` `blocked` fazı): oyun KURULMAZ, önce engel
+    // kaldırılır; Engel Ayarları kapanınca rövanş KENDİLİĞİNDEN devam eder.
+    Future<void> tekrarOynaOnayla(WidgetTester tester) async {
+      await tester.tap(find.text('TEKRAR OYNA'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.descendant(
+          of: find.byType(KDialogCard),
+          matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('TEKRAR OYNA: engellediğim rakip → oyun KURULMAZ, uyarı çıkar',
+        (tester) async {
+      final chatGw = FakeChatGateway()
+        ..blockedRows = [blockedRow('esiner', 'Esiner')];
+      final gw =
+          await pumpScreen(tester, isGameOver: true, chat: ChatRepo(chatGw));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Kapat')); // GameOver
+      await tester.pumpAndSettle();
+
+      await tekrarOynaOnayla(tester);
+
+      expect(
+          find.text('Esiner kullanıcısını engellediğiniz için önce engeli '
+              'kaldırmanız gerekiyor.'),
+          findsOneWidget);
+      expect(find.text('ENGEL AYARLARI'), findsOneWidget);
+      expect(gw.createdSlots, isEmpty, reason: 'Oyun kurulmamalı.');
+
+      // VAZGEÇ: hiçbir şey kurulmaz, ekran ayakta kalır.
+      await tester.tap(find.text('VAZGEÇ'));
+      await tester.pumpAndSettle();
+      expect(gw.createdSlots, isEmpty);
+      expect(find.text('TEKRAR OYNA'), findsOneWidget);
+      await unmount(tester);
+    });
+
+    testWidgets(
+        'TEKRAR OYNA: Engel Ayarları → engeli kaldır → rövanş KENDİLİĞİNDEN devam eder',
+        (tester) async {
+      final chatGw = UnblockingChatGateway()
+        ..blockedRows = [blockedRow('esiner', 'Esiner')];
+      final gw =
+          await pumpScreen(tester, isGameOver: true, chat: ChatRepo(chatGw));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Kapat')); // GameOver
+      await tester.pumpAndSettle();
+
+      await tekrarOynaOnayla(tester);
+      await tester.tap(find.text('ENGEL AYARLARI'));
+      await tester.pumpAndSettle();
+      expect(find.text('Esiner'), findsOneWidget,
+          reason: 'Engel Ayarları açılmalı, engelli kişi listede olmalı.');
+
+      // Satırdaki "Engeli Kaldır" → onay paneli → onayla.
+      await tester.tap(find.text('Engeli Kaldır'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Engeli Kaldır').last);
+      await tester.pumpAndSettle();
+      expect(chatGw.unblockedCalls, ['esiner']);
+      expect(gw.createdSlots, isEmpty, reason: 'Modal açıkken kurulmamalı.');
+
+      await tester.tap(find.byTooltip('Kapat').last); // Engellediklerim
+      await tester.pumpAndSettle();
+
+      expect(gw.createdSlots.single, [
+        {'type': 'human', 'user_id': 'me'},
+        {'type': 'human', 'user_id': 'esiner'},
+      ]);
+      expect(find.textContaining('Davetiniz gönderilmiştir.'), findsOneWidget);
+      await tester.tap(find.text('TAMAM'));
+      await tester.pumpAndSettle();
+      await unmount(tester);
+    });
+
+    testWidgets(
+        'TEKRAR OYNA: engel listesi OKUNAMAZSA akış engellenmez (sunucu kapısı geçerli)',
+        (tester) async {
+      final chatGw = FakeChatGateway()
+        ..moderationFailWith = Exception('ağ yok');
+      final gw =
+          await pumpScreen(tester, isGameOver: true, chat: ChatRepo(chatGw));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Kapat')); // GameOver
+      await tester.pumpAndSettle();
+
+      await tekrarOynaOnayla(tester);
+
+      expect(gw.createdSlots, hasLength(1),
+          reason: 'Kolaylık denetimi, güvenlik kapısı DEĞİL.');
+      expect(find.text('ENGEL AYARLARI'), findsNothing);
       await tester.tap(find.text('TAMAM'));
       await tester.pumpAndSettle();
       await unmount(tester);

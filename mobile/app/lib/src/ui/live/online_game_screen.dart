@@ -78,6 +78,7 @@ import '../rank/league_rewards_host.dart';
 import '../loading_note.dart';
 import '../tokens.dart';
 import '../game/invasion_confirm.dart';
+import '../friends/blocked_users_sheet.dart';
 import '../../util/chat_read.dart';
 import '../../util/friend_suggest.dart';
 import 'friend_suggest_modal.dart';
@@ -85,6 +86,7 @@ import '../../util/offline_notice.dart';
 import '../../util/uuid.dart';
 import '../../util/online_status.dart';
 import '../../util/onboarding.dart';
+import '../../util/rematch_slots.dart';
 import '../../data/error_reporter.dart';
 import '../../util/error_message.dart';
 
@@ -1116,6 +1118,27 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
       confirmLabel: 'TEKRAR OYNA',
     );
     if (!ok || !mounted) return;
+    // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
+    // kararı; web `OnlineGameScreen.tsx` → `blocked` fazı): önce engel
+    // kaldırılır. Engel Ayarları kapanınca liste YENİDEN okunur — kalktıysa
+    // rövanş devam eder, hâlâ engelli biri varsa aynı uyarı döner (web ile
+    // aynı). Kural `rematchBlockedOpponents`ta.
+    final chat = widget.chat;
+    while (chat != null) {
+      final blocked =
+          await chat.rematchBlockedNames(widget.game.slots, widget.myUserId);
+      if (!mounted) return;
+      if (blocked.isEmpty) break;
+      final openSettings = await showKConfirm(
+        context,
+        title: 'Tekrar Oyna',
+        message: rematchBlockedMessage(blocked),
+        confirmLabel: 'ENGEL AYARLARI',
+      );
+      if (!openSettings || !mounted) return;
+      await showBlockedUsers(context, chat: chat);
+      if (!mounted) return;
+    }
     setState(() => _busy = true);
     String? error;
     try {

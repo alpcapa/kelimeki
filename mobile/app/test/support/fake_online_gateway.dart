@@ -792,3 +792,13 @@ Map<String, Object?> blockedRow(String id, String name,
       'blocked_avatar_url': null,
       'is_reported': reported,
     };
+
+/// `unblockUser` listeden de düşer — gerçek sunucudaki gibi; temel
+/// `FakeChatGateway` yalnızca çağrıyı kaydeder (liste sabit kalır).
+class UnblockingChatGateway extends FakeChatGateway {
+  @override
+  Future<void> unblockUser(String targetUserId) async {
+    await super.unblockUser(targetUserId);
+    blockedRows.removeWhere((r) => r['blocked_user_id'] == targetUserId);
+  }
+}

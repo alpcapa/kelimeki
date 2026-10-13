@@ -23,6 +23,9 @@ import '../../util/share_board.dart';
 import '../../data/auth_service.dart';
 import '../../data/friends_api.dart' show friendErrorText;
 import '../../data/online_games_api.dart' show rematchSlots;
+import '../../util/rematch_slots.dart';
+import '../chat_scope.dart';
+import '../friends/blocked_users_sheet.dart';
 import '../online_games_scope.dart';
 import '../game/dialog_shell.dart';
 import '../auth/k_avatar.dart';
@@ -457,6 +460,8 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
   /// okunuyor; sıralama kuralı `rematchSlots`ta, oyun ekranıyla TEK kaynak.
   Future<void> _handleRematch(GameHistoryEntry entry) async {
     final repo = OnlineGamesScope.maybeOf(context);
+    // `await`ten ÖNCE okunur (BuildContext asenkron boşluktan sonra kullanılmaz).
+    final chat = ChatScope.maybeOf(context);
     final myId = widget.games.gateway.currentUserId;
     final onlineId = entry.onlineGameId;
     if (repo == null || myId == null || onlineId == null) return;
@@ -485,6 +490,25 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
       if (slots == null) {
         error = 'Bu oyunun kadrosuna ulaşılamadı, rövanş açılamıyor.';
       } else {
+        // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
+        // kararı; web `GameHistoryModal.tsx` → `blocked` fazı): önce engel
+        // kaldırılır, kaldırılırsa rövanş devam eder. Oyun ekranıyla AYNI
+        // döngü ve kural (`rematchBlockedOpponents`); `ChatScope` yoksa
+        // (testler/Supabase'siz) denetim atlanır, sunucu kapısı geçerli.
+        while (chat != null) {
+          final blocked = await chat.rematchBlockedNames(slots, myId);
+          if (!mounted) return;
+          if (blocked.isEmpty) break;
+          final openSettings = await showKConfirm(
+            context,
+            title: 'Tekrar Oyna',
+            message: rematchBlockedMessage(blocked),
+            confirmLabel: 'ENGEL AYARLARI',
+          );
+          if (!openSettings || !mounted) return;
+          await showBlockedUsers(context, chat: chat);
+          if (!mounted) return;
+        }
         await repo.create(entry.playerCount, rematchSlots(slots, myId));
       }
     } catch (e) {
