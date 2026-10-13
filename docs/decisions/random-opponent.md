@@ -436,7 +436,7 @@ karar, birbirini çözer: şerit hep görünürse balonun çapası da hep vardı
   effect (mod boş → kartlar değişince sayaç sıfırlanmasın).
 - **Ölçüm:** yeni telemetri YOK; başarı ölçütü `online_games` → `listing='random'` ilanlarının günlük sayısı ve FARKLI
   kurucu sayısı (taban: 11 Ekim 22, 12 Ekim 6 ilan; çoğu kurucunun/test hesaplarının). Sorgu `docs/testing-rastgele.md` → "Boş şerit + tanıtım balonu".
-- **Kapı:** `verify-random-games` ("Boş şerit + balon" + koltuk sayısı); mobil `random_games_test.dart` (saf kurallar + web parite) ve `random_games_ui_test.dart` (boş satır, balon, karma kadro). Port: Parça 240, `ui/live/random_games_strip.dart` (`RandomStripMode`, `HintAnchor`), `FlagsStore.seenRandomHint`.
+- **Kapı:** `verify-random-games` ("Boş şerit + balon" + koltuk sayısı); mobil `random_games_test.dart` (saf kurallar + web parite) ve `random_games_ui_test.dart` (boş satır, balon, karma kadro). Port: Parça 242, `ui/live/random_games_strip.dart` (`RandomStripMode`, `HintAnchor`), `FlagsStore.seenRandomHint`.
 - **"N koltuk kaldı" HER YERDE (12 Ekim 2026, kullanıcı: *"kartlarda bekliyor yerine x koltuk kaldı yazması daha etkili"*, sonra
   *"her yerde x koltuk kaldı yazsın"*):** şerit kartında benim ilanım da başkalarınınki gibi "N koltuk kaldı" der; Devam
   Edenler'deki "Bekliyor n/N" satırının etiketi de "N koltuk kaldı" oldu (alt satırlar — "Rastgele oyuncu bekleniyor" /

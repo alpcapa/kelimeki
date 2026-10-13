@@ -25,7 +25,7 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
-## Parça 240 — Rastgele Oyuncu: şerit hep görünür + "N koltuk kaldı" her yerde + tek seferlik tanıtım balonu (12 Ekim 2026, 19 Ekim treni) — `[Sonraki sürüm]`
+## Parça 242 — Rastgele Oyuncu: şerit hep görünür + "N koltuk kaldı" her yerde + tek seferlik tanıtım balonu (12 Ekim 2026, 19 Ekim treni) — `[Sonraki sürüm]`
 
 Web ikizi `RandomGamesStrip.tsx` + `randomGames.ts` + `onboarding.ts` (taslak PR #850; karar: `docs/decisions/random-opponent.md` §20).
 Kullanıcı: *"Rastgele oyun yoksa kutu çıkmıyor. Halbuki hep çıksa … 'Bekleyen oyun yok. Hemen aç.'"*, balon metni, *"her yerde x koltuk kaldı yazsın"*.
