@@ -907,7 +907,7 @@ daveti, ücretli trafik ikinci.
 3. **Ücretli trafik** ancak 1-2'nin ölçümü çalışınca ölçeklenir; karar ölçütü
    "mağaza oturumu başı maliyet" yerine **geri dönen oyuncu başı maliyet**.
 
-**Tasarım notları (11 Eki):** #46-1 (atıf) → `docs/decisions/funnel-v2.md` → "#46-1 tasarım notu"; #45-A (Tekrar Oyna) → `docs/decisions/random-opponent.md` §20. İkisi 19 Ekim (1.1.4) treni, kod henüz YOK, kullanıcı kararı bekleyen sorular notlarda. **Açık:** 1-3 için ayrı maddeler/PR'lar henüz AÇILMADI; Meta teaser Aşama 1 kararı
+**Tasarım notları (11 Eki):** #46-1 (atıf) → `docs/decisions/funnel-v2.md` → "#46-1 tasarım notu"; #45-A (Tekrar Oyna) → `docs/decisions/random-opponent.md` §20. İkisi 19 Ekim (1.1.4) treni, kod henüz YOK, kullanıcı kararı bekleyen sorular notlarda. ⚠ **13 Ekim 2026 (kullanıcı kararı):** Takım Ligi (#44) kaydırılırken bu ikisi sorulup **19 Ekim'de KALDI** (#45-A: Rastgele'nin düzeltmesi, oyuncuya yeni kavram öğretmiyor; #46-1: oyuncuya görünmez). Kod hâlâ YOK ve açık sorular cevapsız (#45-A S1/S2, #46-1 madde 1/2) → ikisi de kesime YETİŞMEYEBİLİR; yetişmezse bir sonraki trene kayar, kullanıcıya sorulmadan başka karar alınmaz. **Açık:** 1-3 için ayrı maddeler/PR'lar henüz AÇILMADI; Meta teaser Aşama 1 kararı
 (`marketing/meta-reklam/kampanya-teaser-ekim-2026.md`) bu ölçütle yeniden bakılacak.
 
 ## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB (#804) + PORT (#805) YAZILDI, taslak PR'da · 12 Ekim treni, İKİSİ BİRLİKTE MERGE** (3-4 Ekim 2026)
