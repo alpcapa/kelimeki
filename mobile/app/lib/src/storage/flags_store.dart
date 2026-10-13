@@ -144,6 +144,15 @@ class FlagsStore {
   Future<void> setDeviceVisitDate(String yyyymmdd) =>
       prefs.setString(_deviceVisitDate, yyyymmdd);
 
+  /// Kurulum kaynağı damgası için referrer'ın okunup okunmadığı (#46-1,
+  /// 13 Ekim 2026). `funnel_v2_land_*` bayraklarından AYRI: `land` kanalına
+  /// dokunulmaz, eski cihazlarda da (kohortu şişirmeden) bir kez okunur.
+  static const _installSourceStamped = 'install_source_stamped';
+  bool get installSourceStamped =>
+      prefs.getBool(_installSourceStamped) ?? false;
+  Future<void> setInstallSourceStamped() =>
+      prefs.setBool(_installSourceStamped, true);
+
   String? get anonVisitDate => prefs.getString(_anonVisitDate);
   Future<void> setAnonVisitDate(String yyyymmdd) =>
       prefs.setString(_anonVisitDate, yyyymmdd);

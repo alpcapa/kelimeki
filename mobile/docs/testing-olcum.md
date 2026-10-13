@@ -127,6 +127,16 @@ Kontroller admin panelinden (Büyüme > Kullanıcı) ya da Supabase'den okunur.
       edilmiş `.apk` ya da iç test dışı yollar `app` yazar (beklenen).
       Mağazadaki paket yeni sürüme geçmeden bu madde koşulamaz — sürüm
       yayına girince ilk iş. Rozetsiz, doğrudan Play'den kurulum → `app`.
+- [ ] **Android, reklam etiketli kurulum → oyun/kayıt satırları da etiketli
+      (#46-1, 1.1.4).** Yukarıdaki `?ref=test-referrer` kurulumunu yap, açılışta
+      tanıtımı ATLAMADAN bir oyun başlat → `game_starts.utm_source =
+      'test-referrer'` (aynısı `game_finishes`, `guest_visits`, kayıtta
+      `profiles.signup_utm_source`). Tanıtımı HEMEN atlayıp oyun başlatırsan
+      `app` kalabilir (bilinen yarış, kullanıcı kararı); bu satırların oranı
+      ölçülecek. ⚠ Mağazadan kurulum şart, sideload'da `app` yazar.
+- [ ] **Eski cihaz güncellenince damga geriye dönük dolar (#46-1).** Reklam
+      etiketiyle kurulmuş eski bir cihazı 1.1.4'e GÜNCELLE → `land` satırı
+      `mevcut` kalır AMA sonraki `game_starts.utm_source` etiketli gelir.
 - [ ] **Güncelleyen eski kullanıcı → `mevcut`.** Önceki sürümü kurulu bir
       cihazı GÜNCELLE, aç → `land` satırı `channel = 'mevcut'`. Panelde
       "Eski cihaz (kohort dışı)" sayısı artar, kohort satırları ARTMAZ.
