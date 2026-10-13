@@ -121,7 +121,7 @@ Deno.serve(async (req: Request) => {
     else if (profile?.marketing_consent !== true) skipped.push({ id, reason: 'no_marketing_consent' });
     else if (profile?.email_notifications_enabled === false) skipped.push({ id, reason: 'opted_out' });
     else if ((count ?? 0) > 0) skipped.push({ id, reason: 'already_finished_a_game' });
-    else eligible.push({ id, email, name: profile?.display_name || profile?.first_name || undefined });
+    else eligible.push({ id, email, name: profile?.first_name?.trim() || profile?.display_name || undefined });
   }
 
   if (dryRun) {
