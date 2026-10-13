@@ -440,7 +440,8 @@ class StatsRepo {
     } catch (e, st) {
       debugPrint('[Kelimeki] myBeyinLigiRank hatası: $e');
       if (!isNetworkError(e)) {
-        errorReporter.report(e, stack: st, context: 'stats_repo.my_beyin_rank');
+        errorReporter.report(e,
+            stack: st, context: 'stats_repo.my_beyin_rank');
       }
       return null;
     }
