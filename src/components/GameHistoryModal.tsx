@@ -12,15 +12,29 @@ import {
   markGameShared,
   fetchFinishedGameSlots,
   createOnlineGame,
+  createRandomGame,
   fetchRematchBlockedNames,
+  fetchRematchFriends,
 } from '../lib/api';
-import type { BoardSnapshotTile, GameHistoryEntry, GameLiker, GamePlayerSnapshot } from '../lib/database.types';
+import type {
+  BoardSnapshotTile,
+  GameHistoryEntry,
+  GameLiker,
+  GamePlayerSnapshot,
+  OnlineGameSlot,
+} from '../lib/database.types';
 import type { HistoryEntry } from '../game/types';
 import { buildSnapshotGameState } from '../utils/boardSnapshot';
 import { BlockedUsersModal } from './BlockedUsersModal';
 import { MoveHistoryModal } from './MoveHistoryModal';
 import { useAuth } from '../hooks/useAuth';
-import { buildRematchSlots, rematchBlockedMessage } from '../utils/rematchSlots';
+import {
+  buildRematchPlan,
+  rematchBlockedMessage,
+  rematchConfirmText,
+  rematchSentNotice,
+  type RematchPlan,
+} from '../utils/rematchSlots';
 import { PLAYER_COLORS } from '../game/constants';
 import { PlayerBadge } from './PlayerBadge';
 import { AiLevelBadge } from './AiLevelBadge';
@@ -343,8 +357,13 @@ export function GameHistoryModal({
     playerCount: number;
     names: string[];
     withAi: boolean;
-    phase: 'confirm' | 'busy' | 'blocked' | 'sent' | 'error';
+    phase: 'checking' | 'confirm' | 'busy' | 'blocked' | 'sent' | 'error';
     message?: string;
+    /** Biten oyunun kadrosu + plan (S2): `checking` bitince dolar, gönderimde yeniden okunmaz. */
+    slots?: OnlineGameSlot[];
+    plan?: RematchPlan;
+    /** Rastgele planın sonuç metni ('random' + `sent`). */
+    notice?: { title: string; body: string };
     /** `phase: 'blocked'` — kadrodaki, BENİM engellediğim rakiplerin adları. */
     blockedNames?: string[];
   } | null>(null);
@@ -392,31 +411,71 @@ export function GameHistoryModal({
   }, [likersByGame]);
 
   /**
-   * Rövanşı açar. Kadro geçmiş kaydından ÇIKMIYOR (`GamePlayerSnapshot`
-   * `user_id` taşımaz), o yüzden biten oyunun `online_games.slots` satırı
-   * ayrıca okunuyor; sıralama kuralı `buildRematchSlots`ta, oyun
-   * ekranındakiyle TEK kaynaktan.
+   * Onay penceresini açar: biten oyunun kadrosu ve arkadaş listesi okunup plan
+   * kurulur (13 Ekim 2026, S2) — metin kimin davet edileceğini ÖNCEDEN söylemeli.
+   * Gönderimde (`handleRematch`) kadro yeniden okunmaz.
+   */
+  const openRematch = useCallback(
+    async (init: { gameId: string; playerCount: number; names: string[]; withAi: boolean }) => {
+      if (!user?.id) return;
+      setRematch({ ...init, phase: 'checking' });
+      try {
+        const slots = await fetchFinishedGameSlots(init.gameId);
+        if (!slots) {
+          throw new Error('Bu oyunun kadrosuna ulaşılamadı, rövanş açılamıyor.');
+        }
+        const plan = buildRematchPlan(slots, user.id, await fetchRematchFriends());
+        // "Vazgeç" araya girdiyse pencereyi YENİDEN açma.
+        setRematch((cur) =>
+          cur && cur.phase === 'checking' && cur.gameId === init.gameId
+            ? { ...init, phase: 'confirm', slots, plan }
+            : cur,
+        );
+      } catch (err) {
+        setRematch((cur) =>
+          cur && cur.phase === 'checking'
+            ? {
+                ...init,
+                phase: 'error',
+                message: friendlyErrorMessage(err, {
+                  surface: 'revans',
+                  fallback: 'Davet gönderilemedi.',
+                }),
+              }
+            : cur,
+        );
+      }
+    },
+    [user?.id],
+  );
+
+  /**
+   * Rövanşı açar. Kadro ve plan `openRematch`te hazırlandı (geçmiş kaydı
+   * `user_id` taşımaz, `online_games.slots` ayrıca okunuyor); plan kuralı
+   * `buildRematchPlan`da, oyun ekranıyla TEK kaynak.
    */
   const handleRematch = useCallback(async () => {
     const st = rematchRef.current;
-    if (!st || !user?.id) return;
+    if (!st || !user?.id || !st.slots || !st.plan) return;
     setRematch({ ...st, phase: 'busy' });
     try {
-      const slots = await fetchFinishedGameSlots(st.gameId);
-      if (!slots) {
-        throw new Error('Bu oyunun kadrosuna ulaşılamadı, rövanş açılamıyor.');
-      }
       // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
-      // kararı): önce engel kaldırılır. Kural `rematchBlockedOpponents`ta,
-      // oyun ekranındakiyle TEK kaynaktan; adlar `list_blocked_users`tan
-      // geliyor (kadro ham `slots`ta isim yok).
-      const blockedNames = await fetchRematchBlockedNames(slots, user.id);
+      // kararı): önce engel kaldırılır. Kural `rematchBlockedOpponents`ta;
+      // adlar `list_blocked_users`tan geliyor (kadro ham `slots`ta isim yok).
+      const blockedNames = await fetchRematchBlockedNames(st.slots, user.id);
       if (blockedNames.length > 0) {
         setRematch({ ...st, phase: 'blocked', blockedNames });
         return;
       }
-      await createOnlineGame(st.playerCount as 2 | 4, buildRematchSlots(slots, user.id));
-      setRematch({ ...st, phase: 'sent' });
+      if (st.plan.kind === 'random') {
+        // Arkadaş olmayan rakip(ler) → açık koltuklu ilan (S2); sunucu saf
+        // rastgele kadroda uygun ilana KATILABİLİR, metin iki dalı ayırır.
+        const sonuc = await createRandomGame(st.playerCount as 2 | 4, st.plan.slots);
+        setRematch({ ...st, phase: 'sent', notice: rematchSentNotice(st.plan, sonuc) });
+      } else {
+        await createOnlineGame(st.playerCount as 2 | 4, st.plan.slots);
+        setRematch({ ...st, phase: 'sent' });
+      }
     } catch (err) {
       setRematch({
         ...st,
@@ -948,14 +1007,13 @@ export function GameHistoryModal({
                             {
                               label: 'Tekrar Oyna',
                               onSelect: () =>
-                                setRematch({
+                                void openRematch({
                                   gameId: entry.online_game_id!,
                                   playerCount: entry.player_count,
                                   names: players
                                     .filter((p, i) => !p.is_ai && i !== meIndex)
                                     .map((p) => p.name),
                                   withAi: players.some((p) => p.is_ai),
-                                  phase: 'confirm',
                                 }),
                             },
                           ]
@@ -1069,7 +1127,28 @@ export function GameHistoryModal({
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none">
             <p className="text-base font-bold text-text font-sans">Tekrar Oyna</p>
-            {rematch.phase === 'sent' ? (
+            {rematch.phase === 'checking' ? (
+              <>
+                <p className="text-sm text-text font-sans leading-relaxed">Kadro kontrol ediliyor…</p>
+                <button
+                  onClick={() => setRematch(null)}
+                  className="btn-raised-neutral py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                >
+                  Vazgeç
+                </button>
+              </>
+            ) : rematch.phase === 'sent' && rematch.notice ? (
+              <>
+                <p className="text-sm text-text font-sans leading-relaxed">{rematch.notice.title}</p>
+                <p className="text-xs text-muted font-mono leading-relaxed">{rematch.notice.body}</p>
+                <button
+                  onClick={() => setRematch(null)}
+                  className="btn-raised py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                >
+                  Tamam
+                </button>
+              </>
+            ) : rematch.phase === 'sent' ? (
               <>
                 <p className="text-sm text-text font-sans leading-relaxed">Davetiniz gönderilmiştir.</p>
                 <p className="text-xs text-muted font-mono leading-relaxed">
@@ -1116,9 +1195,16 @@ export function GameHistoryModal({
             ) : (
               <>
                 <p className="text-sm text-text font-sans leading-relaxed">
-                  {rematch.names.join(', ')} ile aynı kadroda yeni bir oyun açılacak ve davet
-                  gönderilecek.
-                  {rematch.withAi && ' 4. koltuk yine Yapay Zeka olacak.'} Emin misin?
+                  {rematch.plan
+                    ? rematchConfirmText(
+                        // 'friends' planında adlar geçmiş kartındaki isimlerdir (ham
+                        // kadro isim taşımaz) — bugünkü cümle BİREBİR korunur.
+                        rematch.plan.kind === 'friends'
+                          ? { ...rematch.plan, friendNames: rematch.names }
+                          : rematch.plan,
+                        rematch.withAi,
+                      )
+                    : ''}
                 </p>
                 <div className="flex gap-2 mt-1">
                   <button

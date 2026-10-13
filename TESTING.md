@@ -298,6 +298,15 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       bilerek yalnızca Canlı oyunlar (yerel yeni oyun, kaydedilmiş devam
       eden oyunu ezebilirdi). ⚠ Admin panelinden BAŞKA bir üyenin geçmişine
       bakarken de çıkmamalı (o oyunun tarafı değilsin).
+- [ ] **Yabancıyla biten oyunda "Tekrar Oyna" (S2, 13 Ekim 2026, `random-opponent.md` §20).**
+      Rastgele ilandan eşleşip biten bir oyunu (rakip ARKADAŞ DEĞİL) aç → "Tekrar Oyna". Önce kısa bir
+      "Kadro kontrol ediliyor…", sonra onay: *"Arkadaşınız olmayan oyuncunun yerine rastgele bir oyuncu
+      aranacak."* Onayla → "İlanın yayında" (ya da uygun ilan varsa "Oyuna katıldın"); sunucu
+      "Yalnızca arkadaşlarını davet edebilirsin" DEMEMELİ. 4 kişilikte arkadaş + yabancı karışık: arkadaşa
+      davet gitmeli ("<ad> davet edildi."), yabancı koltukları açık kalmalı, **YZ kendiliğinden
+      eklenmemeli** (eski oyunda YZ yoksa). Tüm rakipler arkadaşsa eski akış AYNEN. Aynısını oyun
+      geçmişinden de dene. Uçak modunda arkadaş listesi okunamayınca eski akışa düşmeli (herkes yabancı
+      sayılıp ilan açılmamalı).
 - [ ] **Engellediğin biriyle "Tekrar Oyna" (13 Ekim 2026, `random-opponent.md` §20).**
       İki hesap, aynı oyunda. A, B'yi oyunun sohbet ayarlarından engellesin, oyun bitsin.
       **A'da:** "Tekrar Oyna" AÇIK; onaydan sonra oyun KURULMAMALI, pencere "B kullanıcısını

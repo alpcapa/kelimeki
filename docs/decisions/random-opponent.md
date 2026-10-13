@@ -460,7 +460,7 @@ engellediğiniz için önce engeli kaldırmanız lazım mesajı ile engel ayarla
   `npm run verify-rematch-slots` (9 yeni vaka). Port ikizi: `rematch_slots.dart` + iki yüzey + `rematch_slots_test.dart`
   AYNI vakalarla (19 Ekim treni, taslak PR).
 
-**Yabancılı rövanş kuralı (S2, 13 Ekim 2026, kullanıcı kararı — HENÜZ KOD YOK):** kullanıcı: *"mevcut 4 kişilik oyunda olduğu gibi
+**Yabancılı rövanş kuralı (S2, 13 Ekim 2026, kullanıcı kararı — WEB YAZILDI, port taslak PR'da henüz YOK):** kullanıcı: *"mevcut 4 kişilik oyunda olduğu gibi
 4. koltuk YZ olsun ama rastgele ve arkadaş eklenebilsin."* Sunucu bunu ZATEN destekliyor: `create_random_game(p_player_count,
 p_slots)` arkadaş (insan) + açık koltuk + 4 kişilikte SON koltukta YZ karışımını kabul ediyor, ilk koltuk çağıran, en az bir açık
 koltuk şart. Yeni sunucu işi YOK (migration yok).
@@ -476,10 +476,20 @@ koltuk şart. Yeni sunucu işi YOK (migration yok).
 - ⚠ **`create_random_game` saf rastgele kadroda (arkadaş YOK, YZ YOK) var olan bir ilana KATILABİLİR** (`joined`): `ben+S` →
   `ben,açık` sonucu yeni ilan değil "bir ilana katıldın" olabilir; sonuç metni iki dalı da ayırmalı (`LiveGameCreateForm`un
   sonuç işleyişi emsal).
-- **S1 ile etkileşimi (AÇIK, kullanıcıya sorulacak):** engellediğim bir yabancı artık "açık koltuk" olurdu (`_random_blocked`
-  eşleşmede onu zaten dışlıyor); S1 ise kadrodaki engelli herkes için "önce engeli kaldırın" diyor. Mevcut hâl: S1 AYNEN kalır
-  (engel kontrolü plandan ÖNCE). Alternatif: engelli yabancıyı sessizce açık koltuğa çevirmek.
+- **S1 ile etkileşimi (karar: S1 AYNEN KALIR, kullanıcı önerimi onayladı):** engellediğim bir yabancı artık "açık koltuk" olurdu
+  (`_random_blocked` eşleşmede onu zaten dışlıyor) ama S1 kadrodaki engelli herkes için "önce engeli kaldırın" diyor; engel
+  kontrolü onaydan SONRA, plandan bağımsız çalışır. ⚠ Tuhaf bir sonuç: onay metni "yerine rastgele oyuncu aranacak" dedikten
+  sonra engelli yabancı için "önce engeli kaldırın" çıkabilir. Alternatif (engelli yabancıyı sessizce açık koltuğa çevirmek)
+  S1'in sözüyle çeliştiği için YAPILMADI; kullanıcı şikâyet ederse yeniden bakılır.
 - **Etki analizi:** web `OnlineGameScreen.tsx` + `GameHistoryModal.tsx` (ikisi `fetchFriends` + yeni plan), `api.ts`, `rematchSlots.ts`,
   `verify-rematch-slots` (yeni vakalar); port `rematch_slots.dart` + iki yüzey + testler; `TESTING.md` + `mobile/TESTING.md`
   (iki hesap, bir yabancı). Boyut: orta. Web hemen, port 19 Ekim treni.
+- **Uygulama (web, 13 Ekim 2026):** saf kural `buildRematchPlan` + `rematchConfirmText` + `rematchSentNotice`
+  (`src/utils/rematchSlots.ts`), arkadaş kaynağı `fetchRematchFriends` (`lib/api.ts`). ⚠ `fetchFriends` hatada SESSİZCE boş
+  liste döndürdüğünden kullanılmadı: boş liste "hiç arkadaşım yok" demek, herkesi yabancı yapıp rastgele ilan açtırırdı;
+  yeni fonksiyon hatada `null` döner ve `null` bugünkü akışa (`create_online_game`) düşer. Onay penceresi açılırken önce
+  "Kadro kontrol ediliyor…" fazı vardır (arkadaş listesi okunur, plan kurulur); metin kimin davet edileceğini ÖNCEDEN
+  söyler. 'friends' planının cümlesi bugünküyle BİREBİR aynı. Sonuç metni `createdNotice` (`randomGames.ts`) üzerinden:
+  yeni ilan → "İlanın yayında" (+ arkadaş varsa "<ad> davet edildi."), var olan ilana katılma → "Oyuna katıldın".
+  "Vazgeç" araya girerse gecikmeli gelen liste pencereyi YENİDEN açmaz. Kapı: `verify-rematch-slots` (S2 için 19 yeni vaka).
 

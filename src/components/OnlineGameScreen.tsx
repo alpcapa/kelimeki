@@ -54,10 +54,12 @@ import {
 import { getFormedWords, getFullWordAt, key } from '../utils/board';
 import { nearbyDraftCell } from '../utils/draftRescue';
 import {
-  buildRematchSlots,
+  buildRematchPlan,
   rematchBlockedMessage,
+  rematchConfirmText,
   rematchHasAi,
-  rematchOpponentNames,
+  rematchSentNotice,
+  type RematchPlan,
 } from '../utils/rematchSlots';
 import { trLower } from '../utils/turkish';
 import { rankPlayers } from '../utils/ranking';
@@ -79,7 +81,9 @@ import { HintBubble } from './HintBubble';
 import {
   checkOnlineGameTurnTimeout,
   createOnlineGame,
+  createRandomGame,
   fetchRematchBlockedNames,
+  fetchRematchFriends,
   fetchFriends,
   fetchMeaning,
   fetchMyActiveChatReports,
@@ -417,16 +421,21 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
    * `sent` fazı sunucunun reddini (ör. artık arkadaş değilseniz) gösterir.
    */
   const [rematch, setRematch] = useState<
+    | { phase: 'checking' }
     | { phase: 'confirm' }
     | { phase: 'busy' }
     | { phase: 'blocked'; names: string[] }
-    | { phase: 'sent'; names: string[]; withAi: boolean }
+    | { phase: 'sent'; names: string[]; withAi: boolean; notice?: { title: string; body: string } }
     | { phase: 'error'; message: string }
     | null
   >(null);
   // "Engel Ayarları" açıkken rövanş penceresi GİZLENİR (z-200, `Modal` z-150:
   // ayarlar pencerenin arkasında kalırdı); rövanş durumu korunur.
   const [showBlockedSettings, setShowBlockedSettings] = useState(false);
+  // Rövanşın PLANI (13 Ekim 2026, S2): rakiplerin arkadaş olup olmadığına göre
+  // `create_online_game` ya da `create_random_game`. Onay penceresi açılırken
+  // kurulur — metin kimin davet edileceğini ÖNCEDEN söylemeli.
+  const [rematchPlan, setRematchPlan] = useState<RematchPlan | null>(null);
   const [pendingWild, setPendingWild] = useState<
     { r: number; c: number; rackIndex?: number; editing?: boolean } | null
   >(null);
@@ -1424,10 +1433,20 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
    * `src/utils/rematchSlots.ts` (aynı mantık oyun geçmişindeki "Tekrar
    * Oyna"da da kullanılıyor; kopyalanırsa ayrışır).
    */
-  const opponentNames = rematchOpponentNames(game.slots, myUserId);
   const hasAiSlot = rematchHasAi(game.slots);
 
+  /** Onay penceresini açar: önce arkadaş listesi okunup plan kurulur. */
+  const openRematch = async () => {
+    setRematch({ phase: 'checking' });
+    const plan = buildRematchPlan(game.slots, myUserId, await fetchRematchFriends());
+    setRematchPlan(plan);
+    // "Vazgeç" araya girdiyse (cur artık 'checking' değil) pencereyi YENİDEN açma.
+    setRematch((cur) => (cur?.phase === 'checking' ? { phase: 'confirm' } : cur));
+  };
+
   const handleRematch = async () => {
+    const plan = rematchPlan;
+    if (!plan) return;
     setRematch({ phase: 'busy' });
     try {
       // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
@@ -1437,8 +1456,20 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         setRematch({ phase: 'blocked', names: blockedNames });
         return;
       }
-      await createOnlineGame(game.player_count as 2 | 4, buildRematchSlots(game.slots, myUserId));
-      setRematch({ phase: 'sent', names: opponentNames, withAi: hasAiSlot });
+      if (plan.kind === 'random') {
+        // Arkadaş olmayan rakip(ler) → açık koltuklu ilan (S2). Sunucu saf
+        // rastgele kadroda uygun ilana KATILABİLİR; sonuç metni iki dalı ayırır.
+        const sonuc = await createRandomGame(game.player_count as 2 | 4, plan.slots);
+        setRematch({
+          phase: 'sent',
+          names: plan.friendNames,
+          withAi: hasAiSlot,
+          notice: rematchSentNotice(plan, sonuc),
+        });
+      } else {
+        await createOnlineGame(game.player_count as 2 | 4, plan.slots);
+        setRematch({ phase: 'sent', names: plan.friendNames, withAi: hasAiSlot });
+      }
     } catch (err) {
       setRematch({
         phase: 'error',
@@ -1685,7 +1716,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
             {!state.swapMode && (
               state.isGameOver ? (
                 <button
-                  onClick={() => setRematch({ phase: 'confirm' })}
+                  onClick={() => void openRematch()}
                   className="btn-raised shrink-0 px-5 rounded-lg font-sans text-[15px] font-bold uppercase tracking-[1.2px] bg-accent text-white active:scale-[0.97]"
                 >
                   Tekrar Oyna
@@ -1831,7 +1862,28 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none">
             <p className="text-base font-bold text-text font-sans">Tekrar Oyna</p>
-            {rematch.phase === 'sent' ? (
+            {rematch.phase === 'checking' ? (
+              <>
+                <p className="text-sm text-text font-sans leading-relaxed">Kadro kontrol ediliyor…</p>
+                <button
+                  onClick={() => setRematch(null)}
+                  className="btn-raised-neutral py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                >
+                  Vazgeç
+                </button>
+              </>
+            ) : rematch.phase === 'sent' && rematch.notice ? (
+              <>
+                <p className="text-sm text-text font-sans leading-relaxed">{rematch.notice.title}</p>
+                <p className="text-xs text-muted font-mono leading-relaxed">{rematch.notice.body}</p>
+                <button
+                  onClick={onBack}
+                  className="btn-raised py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                >
+                  Tamam
+                </button>
+              </>
+            ) : rematch.phase === 'sent' ? (
               <>
                 <p className="text-sm text-text font-sans leading-relaxed">Davetiniz gönderilmiştir.</p>
                 <p className="text-xs text-muted font-mono leading-relaxed">
@@ -1878,9 +1930,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
             ) : (
               <>
                 <p className="text-sm text-text font-sans leading-relaxed">
-                  {opponentNames.join(', ')} ile aynı kadroda yeni bir oyun açılacak ve davet
-                  gönderilecek.
-                  {hasAiSlot && ' 4. koltuk yine Yapay Zeka olacak.'} Emin misin?
+                  {rematchPlan ? rematchConfirmText(rematchPlan, hasAiSlot) : ''}
                 </p>
                 <div className="flex gap-2 mt-1">
                   <button

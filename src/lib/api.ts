@@ -2368,6 +2368,24 @@ export async function fetchRematchBlockedNames(
 }
 
 /**
+ * "Tekrar Oyna" planı için: arkadaş kimliği → ad. Liste OKUNAMAZSA `null`
+ * (ağ hatası, oturum yok, Supabase yok) — ⚠ `fetchFriends`in tersine hata
+ * SESSİZCE boş listeye ÇEVRİLMEZ: boş liste "hiç arkadaşım yok" demektir ve
+ * rövanşta herkesi yabancı yapıp rastgele ilan açtırırdı. `null` bugünkü akışa
+ * (`create_online_game`, sunucu kapısı) düşer — bkz. `buildRematchPlan`.
+ */
+export async function fetchRematchFriends(): Promise<Map<string, string> | null> {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.rpc('list_friends');
+    if (error) return null;
+    return new Map(((data as FriendRow[]) ?? []).map((f) => [f.friend_id, f.name]));
+  } catch {
+    return null;
+  }
+}
+
+/**
  * `online_games`/`game_invites`/`online_game_states`'teki HERHANGİ bir
  * değişiklikte `onChange`'i tetikler (Realtime) — LiveGamesTab'ın liste/rozet
  * verisini (davet gönderildi/kabul edildi/reddedildi, oyun active'e geçti,
