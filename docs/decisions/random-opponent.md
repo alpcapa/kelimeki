@@ -415,3 +415,24 @@ güncelleyene kadar eski sürümde kalır; o aralıkta web'de açılan ilanı mo
 bayrağı (özellik yalnızca test hesaplarında açık, mağaza sürümü yayına çıkınca herkese açılır) KULLANICI KARARIYLA
 YAPILMAYACAK (4 Ekim: *"Bence gerek yok. 12 Ekim'de birlikte yayına alırız. Daha 1 hafta var. Bu arada testlerimizi yapabiliriz."*);
 kabul edilen bedel: mağaza güncellemesi gelene kadar web'de açılan ilanlar mobil kullanıcılara görünmez.
+
+## 20. #45-A tasarım notu — yabancıyla biten oyunda "Tekrar Oyna" (11 Ekim 2026, 19 Ekim / 1.1.4 treni)
+
+**Durum: TASARIM, kod yok. Karar kullanıcıda (aşağıda iki soru).** Önce bugünkü davranışı yanlış okumamak için üç doğrulanmış gerçek:
+
+1. **Sunucu kısıtı (okundu, `20261004193412_invite_block_and_pair_limit.sql`):** `create_online_game` her insan koltuğunda `friend_requests` ile arkadaşlık arıyor (*"Yalnızca arkadaşlarını davet edebilirsin."*), YZ yalnız **4 kişilik oyunun son koltuğunda** olabiliyor (*"Yapay Zeka yalnızca 4 kişilik oyunun son koltuğunda olabilir."*) → bir kadroda **en çok 1 YZ**, 2 kişilikte hiç yok.
+2. **Bugünkü gözlem (11 Ekim, elle test, §"Rövanş gözlemi"):** yabancıyla biten oyunda düğme GÖRÜNÜYOR ve çıkmaza sokmuyor, arkadaşlık daveti akışına yönlendiriyor; karşılıklı bekleyen istek = otomatik arkadaşlık. Yani bu bir hata değil; A'nın "düğmeyi gizle" kararı o çalışan yolu KALDIRIR.
+3. **İki çağıran, iki veri kaynağı:** `OnlineGameScreen.tsx` kadroyu `list_my_online_games`ten alıyor (`relation` alanı VAR), `GameHistoryModal.tsx` ise `fetchFinishedGameSlots`tan ham `online_games.slots` okuyor (isim de `relation` da YOK). Süzgeç ikisinde de aynı olmalı → kural `rematchSlots.ts`e girer, geçmişte arkadaş listesi ayrıca verilmeli.
+
+**Kural önerisi (saf fonksiyon, `rematchSlots.ts` ↔ `rematch_slots.dart`):** `rematchAvailability(slots, myUserId, friendIds)` üç sonuç döner:
+- `full` — rakip insanların HEPSİ arkadaş → bugünkü gibi aynen kurulur.
+- `withAi` — 4 kişilik, `yabancı + mevcut YZ ≤ 1` → tek yabancının yerine son koltuğa YZ konur (onay metni *"X yerine 4. koltuk Yapay Zeka olacak"*).
+- `blocked` — 2 kişilikte yabancı, ya da 4 kişilikte `yabancı + YZ ≥ 2` (ikinci YZ sunucuda reddedilir) → düğme gizli, oyun sonu arkadaş önerisi (zaten var) yolu açar.
+
+**Açık sorular (kullanıcı):**
+- **S1.** `blocked` durumda düğme GİZLENSİN mi (ROADMAP A'nın yazılı hâli), yoksa bugünkü "arkadaşlığa yönlendir" akışı KALSIN mı? Öneri: yönlendirme kalsın (çalışıyor, ilk oturumda kullanıcıyı çıkmaza sokmuyor), yalnız sunucunun kesin reddedeceği `blocked` hâli için gizle.
+- **S2.** `withAi` (4 kişide 1 yabancı → YZ) istenir mi? Yabancı yerine YZ koymak sessiz bir kadro değişikliği; öneri: yalnız açık onay metniyle.
+
+**Etki analizi (derleyicinin göremeyeceği):** web `OnlineGameScreen.tsx` + `GameHistoryModal.tsx` · port `online_game_screen.dart` + geçmiş ikizi · `rematch_slots.dart` · `npm run verify-rematch-slots` (yeni vakalar: 2 kişi yabancı, 4 kişi 1 yabancı, 4 kişi 1 yabancı + 1 YZ, 2 yabancı) ve `rematch_slots_test.dart` AYNI vakalarla · `TESTING.md` + `mobile/TESTING.md` (iki gerçek hesap) · ROADMAP "Sıradaki sürüme binecekler". Sunucuya DOKUNMAZ.
+
+**Boyut:** küçük (yarım gün). Web hemen yayınlanabilir, port taslak PR olarak 19 Ekim kesimine biner (web+port iki PR'a bölünür).
