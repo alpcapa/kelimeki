@@ -130,4 +130,33 @@ export const EXTRA_WORDS = {
     pos: 'a.',
     meanings: ['Eski Türkçede ve halk ağzında sahip, iye, malik.'],
   },
+  fuleli: {
+    pos: 'sf.',
+    meanings: ['Adım aralığı geniş olan, uzun adımlarla hareket eden.'],
+  },
+  tartolet: {
+    pos: 'a.',
+    meanings: [
+      'Normal tartların tek kişilik ve daha küçük boyutta olan, içi krema dolgulu minik bir tür tatlı veya hamur işi.',
+    ],
+  },
+  pa: {
+    pos: 'a.',
+    meanings: [
+      'Eski Türkçede veya köken olarak ayak (paça, patika gibi sözcüklerin kökeniyle ilişkilendirilir).',
+    ],
+  },
+  regl: {
+    pos: 'a.',
+    meanings: [
+      'Aybaşı; belirli yaşlar arasında kadınların ayda bir adet görmesi durumu (ay hâli).',
+    ],
+  },
+  kufi: {
+    pos: 'a.',
+    meanings: [
+      'Hat sanatında, Arap alfabesinin dik, sert, köşeli ve geometrik çizgilerle yazılan en eski biçimi; adını Irak\'ın Kûfe şehrinden alır, İslamiyetin ilk dönemlerinde Kur\'an-ı Kerim yazımlarında ve yapı kitabelerinde sıkça kullanılmıştır.',
+      'Bazı Müslümanların günlük hayatta veya namaz kılarken kafalarına taktığı takke benzeri başlık.',
+    ],
+  },
 };

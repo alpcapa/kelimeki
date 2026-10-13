@@ -1384,8 +1384,8 @@ Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları
   Bu hâlâ BİR HİPOTEZ; "hayalet" olduklarının kanıtı da yok. Sonuç:
   Android karşılama ayrılması ve Huni v2 `land` hâlâ şişkin olabilir.
   Araştırma planı aşağıda ("Yığılmanın kaynağını bulma").
-- **Yığılmanın kaynağını bulma (plan, 12 Ekim 2026 — ADIM 1 YAZILDI,
-  `main`'e MERGE EDİLMEDİ → henüz veri toplamıyor):** ölçüm kodu
+- **Yığılmanın kaynağını bulma (plan, 12 Ekim 2026 — ADIM 1 CANLIDA (#847), 12 Ekim'den beri
+  veri topluyor):** ölçüm kodu
   `src/utils/visibilityProbe.ts` (karşılamada mobil için bir kez başlar,
   `main.tsx`te tek çağrı) → `record_visibility_probe` RPC'si →
   `visibility_probe` tablosu (sayfa başına 1 satır; `vis_state`, `has_focus`,
@@ -1399,6 +1399,36 @@ Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları
   'meta_test'` ile ele. ⚠ GEÇİCİ: ölçüm bitince modül, `main.tsx` çağrısı,
   tablo ve fonksiyon silinir. Okuma sorgusu: `in_app`, `vis_state` ve
   `first_input_ms is null` kırılımında 31-33 sn grubu ile ötekileri karşılaştır.
+  **İLK GÜN VERİSİ (13 Ekim 2026, 217 satır, ~24 sa):** (a) 31,4–34,0 sn'de
+  53 sayfa bitti; 49'unda hiç girdi yok, 47'si Instagram, kalanı Facebook,
+  **iOS'ta bu aralıkta tek satır yok**. Android + Meta girdisiz 94 sayfanın
+  52'si 30-40 sn kovasında; girdili sayfalar dağınık. (b) `vis_state` ve
+  `has_focus` **ayırt ETMİYOR**: neredeyse her sayfa `visible` +
+  `has_focus=false`, gerçek (girdili) kullanıcılar da — webview'da bu iki
+  sinyal bilgi taşımıyor, #787'nin `visibilityState` kapısının neden
+  yığılmayı gidermediğinin açıklaması bu. (c) `alive_ms` son ping'in saati
+  (ping'ler: yükleme, 20. sn, `hidden`, `pagehide`); 31-34 sn dar bir pencere
+  → ölçüm artefaktı değil, o anda gerçek bir `hidden`/`pagehide` var.
+  (d) iOS girdisiz sayfalar 20-30 sn kovasında toplanıyor (muhtemelen 20.
+  sn ping'inin kendisi; doğrulanmadı). **Hâlâ bilinmeyen:** o olayı kimin
+  attığı → ADIM 2.
+  **ADIM 2 (13 Ekim 2026, `claude/visibility-probe-tetikleyici`):** yeni
+  kolonlar `end_event` (`load|timer|hidden|pagehide`, ömrü en uzun ping'in
+  olayı), `first_hidden_ms`, `hidden_count`, `persisted` (`pagehide`
+  bfcache mi). Migration `20261013092347_visibility_probe_trigger` canlıda.
+  ⚠ **Eski 11 argümanlı fonksiyon BİLEREK duruyor** (canlıdaki istemci onu
+  çağırıyor; yeni istemci merge edilene kadar veri akar). İki imza
+  adlandırılmış argümanlarla ayrışıyor; ölçüm bitince İKİSİ DE silinir.
+  Yeni satırlarda `end_event is null` = eski istemci. Test satırları:
+  `utm_source='meta_test'` (bu turda `…0a1` eklendi, silme çağrısı MCP'de yine
+  zaman aşımına uğradı). Okuma: 31-33 sn grubunu `end_event`, `first_hidden_ms`
+  ve `persisted` kırılımında ötekilerle karşılaştır.
+  **Reklam kırılımı (13 Ekim 2026, son 3 gün, kaynak = `utm_source`):**
+  `meta-h1` 76 sayfa / 23 yığılma (%30), `meta-h2` 66 / 20 (%30), `meta-h3`
+  68 / 10 (%15); `meta-karusel` 4 / 0. Yığılma reklama göre değişiyor, yani
+  kampanya kararlarında Meta'nın LPV'si ve `web_sessions` oturumu 'girdili
+  sayfa' ile birlikte okunmalı. Kampanya yorumu:
+  `marketing/meta-reklam/kampanya-teaser-ekim-2026.md` §5, 13 Eki satırı.
   `web_sessions`'ta user-agent kolonu YOK (id, entry, device_type,
   utm_source, steps, last_step, moves, seconds, scroll_pct, created_at,
   updated_at), yani sorun yalnızca bu tablodan ÇÖZÜLEMEZ.
