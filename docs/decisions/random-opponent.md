@@ -430,9 +430,66 @@ kabul edilen bedel: mağaza güncellemesi gelene kadar web'de açılan ilanlar m
 - `blocked` — 2 kişilikte yabancı, ya da 4 kişilikte `yabancı + YZ ≥ 2` (ikinci YZ sunucuda reddedilir) → düğme gizli, oyun sonu arkadaş önerisi (zaten var) yolu açar.
 
 **Açık sorular (kullanıcı):**
-- **S1.** `blocked` durumda düğme GİZLENSİN mi (ROADMAP A'nın yazılı hâli), yoksa bugünkü "arkadaşlığa yönlendir" akışı KALSIN mı? Öneri: yönlendirme kalsın (çalışıyor, ilk oturumda kullanıcıyı çıkmaza sokmuyor), yalnız sunucunun kesin reddedeceği `blocked` hâli için gizle.
-- **S2.** `withAi` (4 kişide 1 yabancı → YZ) istenir mi? Yabancı yerine YZ koymak sessiz bir kadro değişikliği; öneri: yalnız açık onay metniyle.
+- **S1 — KAPANDI (13 Ekim 2026, kullanıcı):** düğme GİZLENMEZ; engel yoksa bugünkü "arkadaşlığa yönlendir" akışı KALIR, **engel varsa** ayrı kural — aşağıda "Engelli rakip kuralı". (Bu notta `blocked` = "sunucu reddeder" demekti, gerçek engel DEĞİL; karışmasın diye aşağıda `engel` kelimesi yalnız gerçek engel için.)
+- **S2 — KAPANDI (13 Ekim 2026, kullanıcı; kod YAZILMADI):** yabancı yerine YZ konmaz; **yabancı koltukları rastgele (açık) koltuğa döner, arkadaşlar davetli kalır, YZ yalnızca eski oyunda zaten varsa son koltukta** — aşağıda "Yabancılı rövanş kuralı".
 
 **Etki analizi (derleyicinin göremeyeceği):** web `OnlineGameScreen.tsx` + `GameHistoryModal.tsx` · port `online_game_screen.dart` + geçmiş ikizi · `rematch_slots.dart` · `npm run verify-rematch-slots` (yeni vakalar: 2 kişi yabancı, 4 kişi 1 yabancı, 4 kişi 1 yabancı + 1 YZ, 2 yabancı) ve `rematch_slots_test.dart` AYNI vakalarla · `TESTING.md` + `mobile/TESTING.md` (iki gerçek hesap) · ROADMAP "Sıradaki sürüme binecekler". Sunucuya DOKUNMAZ.
 
 **Boyut:** küçük (yarım gün). Web hemen yayınlanabilir, port taslak PR olarak 19 Ekim kesimine biner (web+port iki PR'a bölünür).
+
+**Engelli rakip kuralı (13 Ekim 2026, kullanıcı kararı — web YAZILDI, port taslak PR'da):**
+kullanıcı: *"Kişi engellediği kişi ile neden arkadaş olsun ki? Engelle normalde arkadaşlık tekliflerini de engellemiyor mu?
+Doğal akış nasılsa öyle olmalı"*, sonra: *"sadece engelleyen taraf da tekrar oynaya basabilsin ancak ona xyz kullanıcısını
+engellediğiniz için önce engeli kaldırmanız lazım mesajı ile engel ayarlarını getirebiliriz."*
+
+- **Engelleyen taraf:** "Tekrar Oyna" AÇIK; basınca kadrodaki insan rakiplerden biri `list_blocked_users` birleşiminde
+  (engel + sohbet engeli + açık şikayet) varsa oyun KURULMAZ, pencere *"<ad> kullanıcısını engellediğiniz için önce engeli
+  kaldırmanız gerekiyor."* der (çoğulda "A, B ve C kullanıcılarını") + **Engel Ayarları** (`BlockedUsersModal`) + Vazgeç.
+  Engel kaldırılıp modal kapanınca (`changed`) rövanş **kendiliğinden devam eder** (liste yeniden okunur; hâlâ engelli biri
+  varsa yine bu pencereye döner). 4 kişilikte tek engelli bile TÜM kadroyu durdurur (kadro sessizce değişmez).
+- **Engellenen taraf DEĞİŞMEDİ:** düğme açık, sunucunun *"<ad> kullanıcısı sizi engelledi."* mesajı çıkar (4 Ekim kararı).
+  Düğmeyi o taraf için devre dışı bırakmak hem sunucuya yeni sorgu gerektirir hem "beni engelledi" bilgisini sızdırır.
+- **Sunucu DEĞİŞMEDİ:** `_assert_invite_allowed` yalnızca "karşı taraf beni engelledi mi" bakıyor, engelleyen kendi
+  engellediğine davet atabiliyor (4 Ekim kararı); kural bilinçli olarak İSTEMCİDE, çünkü amaç kullanıcının kendi engelini
+  hatırlatmak.
+- **Engel listesi okunamazsa akış ENGELLENMEZ** (`fetchRematchBlockedNames` boş döner): bu bir kolaylık denetimi, güvenlik
+  kapısı değil; ağ hatasında rövanşı kapatmak kullanıcıyı çıkmaza sokardı.
+- **Kod:** saf kural `rematchBlockedOpponents` + `rematchBlockedMessage` (`src/utils/rematchSlots.ts`), iki çağıran
+  `OnlineGameScreen.tsx` + `GameHistoryModal.tsx` (`fetchRematchBlockedNames`, `lib/api.ts`). ⚠ Rövanş penceresi `z-[200]`,
+  `Modal` `z-[150]`: Engel Ayarları açıkken rövanş penceresi GİZLENİR (yoksa ayarlar arkada kalır). Kapı:
+  `npm run verify-rematch-slots` (9 yeni vaka). Port ikizi: `rematch_slots.dart` + iki yüzey + `rematch_slots_test.dart`
+  AYNI vakalarla (19 Ekim treni, taslak PR).
+
+**Yabancılı rövanş kuralı (S2, 13 Ekim 2026, kullanıcı kararı — WEB YAZILDI, port taslak PR'da henüz YOK):** kullanıcı: *"mevcut 4 kişilik oyunda olduğu gibi
+4. koltuk YZ olsun ama rastgele ve arkadaş eklenebilsin."* Sunucu bunu ZATEN destekliyor: `create_random_game(p_player_count,
+p_slots)` arkadaş (insan) + açık koltuk + 4 kişilikte SON koltukta YZ karışımını kabul ediyor, ilk koltuk çağıran, en az bir açık
+koltuk şart. Yeni sunucu işi YOK (migration yok).
+
+- **Kural (saf fonksiyon, web `rematchSlots.ts` ↔ Dart ikizi, vakalar iki tarafta aynı):** rakip insanlar arkadaş listesine göre
+  ikiye ayrılır. Hepsi arkadaşsa (ya da arkadaş listesi OKUNAMADIYSA) bugünkü akış (`create_online_game`, aynı kadro). Arkadaş
+  olmayan varsa: `create_random_game` ile `[ben, arkadaşlar(davet)…, açık × yabancı sayısı, YZ × eski kadrodaki YZ sayısı]`;
+  YZ SON koltukta (sunucu kısıtı). Örnekler: `ben+F+S1+S2` → `ben,F,açık,açık`; `ben+F+S+YZ` → `ben,F,açık,YZ`; 2 kişilik
+  `ben+S` → `ben,açık`.
+- **Yabancı yerine YZ KONMAZ** (S2'nin ilk önerisi elendi: sessiz kadro değişikliği). YZ kendiliğinden eklenmez.
+- **Pencere metni açık olmalı:** "<arkadaş adları> davet edilecek, <N> koltuk için rastgele oyuncu aranacak." (arkadaş adları
+  arkadaş listesinden gelir; geçmişteki kadro ham `slots` isim taşımaz). 2 kişilikte: "<ad> yerine rastgele bir rakip aranacak."
+- ⚠ **`create_random_game` saf rastgele kadroda (arkadaş YOK, YZ YOK) var olan bir ilana KATILABİLİR** (`joined`): `ben+S` →
+  `ben,açık` sonucu yeni ilan değil "bir ilana katıldın" olabilir; sonuç metni iki dalı da ayırmalı (`LiveGameCreateForm`un
+  sonuç işleyişi emsal).
+- **S1 ile etkileşimi (karar: S1 AYNEN KALIR, kullanıcı önerimi onayladı):** engellediğim bir yabancı artık "açık koltuk" olurdu
+  (`_random_blocked` eşleşmede onu zaten dışlıyor) ama S1 kadrodaki engelli herkes için "önce engeli kaldırın" diyor; engel
+  kontrolü onaydan SONRA, plandan bağımsız çalışır. ⚠ Tuhaf bir sonuç: onay metni "yerine rastgele oyuncu aranacak" dedikten
+  sonra engelli yabancı için "önce engeli kaldırın" çıkabilir. Alternatif (engelli yabancıyı sessizce açık koltuğa çevirmek)
+  S1'in sözüyle çeliştiği için YAPILMADI; kullanıcı şikâyet ederse yeniden bakılır.
+- **Etki analizi:** web `OnlineGameScreen.tsx` + `GameHistoryModal.tsx` (ikisi `fetchFriends` + yeni plan), `api.ts`, `rematchSlots.ts`,
+  `verify-rematch-slots` (yeni vakalar); port `rematch_slots.dart` + iki yüzey + testler; `TESTING.md` + `mobile/TESTING.md`
+  (iki hesap, bir yabancı). Boyut: orta. Web hemen, port 19 Ekim treni.
+- **Uygulama (web, 13 Ekim 2026):** saf kural `buildRematchPlan` + `rematchConfirmText` + `rematchSentNotice`
+  (`src/utils/rematchSlots.ts`), arkadaş kaynağı `fetchRematchFriends` (`lib/api.ts`). ⚠ `fetchFriends` hatada SESSİZCE boş
+  liste döndürdüğünden kullanılmadı: boş liste "hiç arkadaşım yok" demek, herkesi yabancı yapıp rastgele ilan açtırırdı;
+  yeni fonksiyon hatada `null` döner ve `null` bugünkü akışa (`create_online_game`) düşer. Onay penceresi açılırken önce
+  "Kadro kontrol ediliyor…" fazı vardır (arkadaş listesi okunur, plan kurulur); metin kimin davet edileceğini ÖNCEDEN
+  söyler. 'friends' planının cümlesi bugünküyle BİREBİR aynı. Sonuç metni `createdNotice` (`randomGames.ts`) üzerinden:
+  yeni ilan → "İlanın yayında" (+ arkadaş varsa "<ad> davet edildi."), var olan ilana katılma → "Oyuna katıldın".
+  "Vazgeç" araya girerse gecikmeli gelen liste pencereyi YENİDEN açmaz. Kapı: `verify-rematch-slots` (S2 için 19 yeni vaka).
+
