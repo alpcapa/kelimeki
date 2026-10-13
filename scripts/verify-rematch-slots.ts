@@ -13,7 +13,13 @@
 // iki yüzeyin de aynı kuralı kullandığını değil, KURALIN kendisini korur.
 //
 // Koşum: npm run verify-rematch-slots
-import { buildRematchSlots, rematchHasAi, rematchOpponentNames } from '../src/utils/rematchSlots';
+import {
+  buildRematchSlots,
+  rematchBlockedMessage,
+  rematchBlockedOpponents,
+  rematchHasAi,
+  rematchOpponentNames,
+} from '../src/utils/rematchSlots';
 import type { OnlineGameSlot } from '../src/lib/database.types';
 
 let failures = 0;
@@ -82,6 +88,58 @@ check(
 );
 check('YZ var mı — yok', rematchHasAi([human('ben'), human('a')]) === false);
 check('YZ var mı — var', rematchHasAi([human('ben'), ai()]) === true);
+
+// (6) Engellediğim rakip (13 Ekim 2026, kullanıcı kararı): oyun KURULMAZ, önce
+// engel kaldırılır. Engelli listesi `fetchBlockedUsers()` çıktısıdır; yalnızca
+// `userId`/`name` okunur. Dart ikizi `rematch_slots_test.dart` AYNI vakalarla.
+const engelli = (...ids: string[]) => ids.map((id) => ({ userId: id, name: id.toUpperCase() }));
+check(
+  'engelli rakip yok → boş',
+  rematchBlockedOpponents([human('ben'), human('a')], 'ben', []).length === 0,
+);
+check(
+  '2 kişilik: engellediğim rakip → adı döner',
+  rematchBlockedOpponents([human('ben'), human('a')], 'ben', engelli('a')).join('|') === 'A',
+);
+check(
+  'kendim engelli listesinde olsam da sayılmam',
+  rematchBlockedOpponents([human('ben'), human('a')], 'ben', engelli('ben')).length === 0,
+);
+check(
+  'kadroda OLMAYAN engelli sayılmaz',
+  rematchBlockedOpponents([human('ben'), human('a')], 'ben', engelli('z')).length === 0,
+);
+check(
+  '4 kişilik: iki engelli, KOLTUK sırasıyla (listenin sırasıyla değil)',
+  rematchBlockedOpponents(
+    [human('ben'), human('c'), human('a'), human('b')],
+    'ben',
+    engelli('a', 'c'),
+  ).join('|') === 'C|A',
+);
+check(
+  'YZ koltuğu engelli sayılmaz',
+  rematchBlockedOpponents([human('ben'), human('a'), ai(), ai()], 'ben', engelli('a')).join('|') ===
+    'A',
+);
+
+// (7) Mesaj — tekil / çoğul / üçlü; "engeli kaldırmanız" yönlendirmesi sabit.
+check(
+  'mesaj tekil',
+  rematchBlockedMessage(['Ali']) ===
+    'Ali kullanıcısını engellediğiniz için önce engeli kaldırmanız gerekiyor.',
+  rematchBlockedMessage(['Ali']),
+);
+check(
+  'mesaj iki kişi',
+  rematchBlockedMessage(['Ali', 'Veli']) ===
+    'Ali ve Veli kullanıcılarını engellediğiniz için önce engeli kaldırmanız gerekiyor.',
+);
+check(
+  'mesaj üç kişi',
+  rematchBlockedMessage(['Ali', 'Veli', 'Can']) ===
+    'Ali, Veli ve Can kullanıcılarını engellediğiniz için önce engeli kaldırmanız gerekiyor.',
+);
 
 console.log(failures === 0 ? '\nTümü geçti.' : `\n${failures} kontrol DÜŞTÜ.`);
 process.exit(failures === 0 ? 0 : 1);

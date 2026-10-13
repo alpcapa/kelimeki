@@ -20,6 +20,7 @@ import { Board } from './Board';
 import { Rack } from './Rack';
 import { GameHeader } from './GameHeader';
 import { GameOver } from './GameOver';
+import { BlockedUsersModal } from './BlockedUsersModal';
 import { FriendSuggestModal } from './FriendSuggestModal';
 import { friendSuggestCandidates, type FriendSuggestCandidate } from '../utils/friendSuggest';
 import { MeaningModal } from './MeaningModal';
@@ -52,7 +53,12 @@ import {
 } from '../utils/validator';
 import { getFormedWords, getFullWordAt, key } from '../utils/board';
 import { nearbyDraftCell } from '../utils/draftRescue';
-import { buildRematchSlots, rematchHasAi, rematchOpponentNames } from '../utils/rematchSlots';
+import {
+  buildRematchSlots,
+  rematchBlockedMessage,
+  rematchHasAi,
+  rematchOpponentNames,
+} from '../utils/rematchSlots';
 import { trLower } from '../utils/turkish';
 import { rankPlayers } from '../utils/ranking';
 import {
@@ -73,6 +79,7 @@ import { HintBubble } from './HintBubble';
 import {
   checkOnlineGameTurnTimeout,
   createOnlineGame,
+  fetchRematchBlockedNames,
   fetchFriends,
   fetchMeaning,
   fetchMyActiveChatReports,
@@ -412,10 +419,14 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
   const [rematch, setRematch] = useState<
     | { phase: 'confirm' }
     | { phase: 'busy' }
+    | { phase: 'blocked'; names: string[] }
     | { phase: 'sent'; names: string[]; withAi: boolean }
     | { phase: 'error'; message: string }
     | null
   >(null);
+  // "Engel Ayarları" açıkken rövanş penceresi GİZLENİR (z-200, `Modal` z-150:
+  // ayarlar pencerenin arkasında kalırdı); rövanş durumu korunur.
+  const [showBlockedSettings, setShowBlockedSettings] = useState(false);
   const [pendingWild, setPendingWild] = useState<
     { r: number; c: number; rackIndex?: number; editing?: boolean } | null
   >(null);
@@ -1419,6 +1430,13 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
   const handleRematch = async () => {
     setRematch({ phase: 'busy' });
     try {
+      // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
+      // kararı): önce engel kaldırılır. Kural `rematchBlockedOpponents`ta.
+      const blockedNames = await fetchRematchBlockedNames(game.slots, myUserId);
+      if (blockedNames.length > 0) {
+        setRematch({ phase: 'blocked', names: blockedNames });
+        return;
+      }
       await createOnlineGame(game.player_count as 2 | 4, buildRematchSlots(game.slots, myUserId));
       setRematch({ phase: 'sent', names: opponentNames, withAi: hasAiSlot });
     } catch (err) {
@@ -1809,7 +1827,7 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
         </div>
       )}
 
-      {rematch && (
+      {rematch && !showBlockedSettings && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none">
             <p className="text-base font-bold text-text font-sans">Tekrar Oyna</p>
@@ -1826,6 +1844,26 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
                 >
                   Tamam
                 </button>
+              </>
+            ) : rematch.phase === 'blocked' ? (
+              <>
+                <p className="text-sm text-text font-sans leading-relaxed">
+                  {rematchBlockedMessage(rematch.names)}
+                </p>
+                <div className="flex gap-2 mt-1">
+                  <button
+                    onClick={() => setShowBlockedSettings(true)}
+                    className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                  >
+                    Engel Ayarları
+                  </button>
+                  <button
+                    onClick={() => setRematch(null)}
+                    className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                  >
+                    Vazgeç
+                  </button>
+                </div>
               </>
             ) : rematch.phase === 'error' ? (
               <>
@@ -1864,6 +1902,17 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
             )}
           </div>
         </div>
+      )}
+
+      {showBlockedSettings && (
+        <BlockedUsersModal
+          onClose={(changed) => {
+            setShowBlockedSettings(false);
+            // Engel kaldırıldıysa rövanş KENDİLİĞİNDEN devam eder (liste yeniden
+            // okunur; hâlâ engelli biri kaldıysa yine bu pencereye döner).
+            if (changed) void handleRematch();
+          }}
+        />
       )}
 
       {scoreCardPlayer && (

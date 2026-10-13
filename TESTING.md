@@ -298,6 +298,15 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       bilerek yalnızca Canlı oyunlar (yerel yeni oyun, kaydedilmiş devam
       eden oyunu ezebilirdi). ⚠ Admin panelinden BAŞKA bir üyenin geçmişine
       bakarken de çıkmamalı (o oyunun tarafı değilsin).
+- [ ] **Engellediğin biriyle "Tekrar Oyna" (13 Ekim 2026, `random-opponent.md` §20).**
+      İki hesap, aynı oyunda. A, B'yi oyunun sohbet ayarlarından engellesin, oyun bitsin.
+      **A'da:** "Tekrar Oyna" AÇIK; onaydan sonra oyun KURULMAMALI, pencere "B kullanıcısını
+      engellediğiniz için önce engeli kaldırmanız gerekiyor." demeli + **Engel Ayarları**.
+      Engel Ayarları pencerenin ÖNÜNDE açılmalı (arkada kalmamalı); B'yi kaldırıp kapat → rövanş
+      kendiliğinden gönderilmeli. Aynısını oyun geçmişindeki "Tekrar Oyna"dan da dene.
+      **B'de:** düğme açık, basınca "A kullanıcısı sizi engelledi." (eskisi gibi). 4 kişilikte iki
+      rakibi engelle → ikisi de adıyla listelenmeli ("A ve B kullanıcılarını …"). Flight modu/ağ
+      yokken: liste okunamayınca akış ENGELLENMEZ (sunucu zaten reddeder).
 - [ ] **Yerel/YZ oyununda da "Tekrar Oyna" (11 Ağustos 2026).** Bir YZ oyununu
       bitir: buton "Yeni Oyun Aç" DEĞİL "Tekrar Oyna" olmalı; onaydan sonra
       Setup'a uğramadan aynı kadroyla taze bir oyun açılmalı. **Aynı ekranda

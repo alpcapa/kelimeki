@@ -12,13 +12,15 @@ import {
   markGameShared,
   fetchFinishedGameSlots,
   createOnlineGame,
+  fetchRematchBlockedNames,
 } from '../lib/api';
 import type { BoardSnapshotTile, GameHistoryEntry, GameLiker, GamePlayerSnapshot } from '../lib/database.types';
 import type { HistoryEntry } from '../game/types';
 import { buildSnapshotGameState } from '../utils/boardSnapshot';
+import { BlockedUsersModal } from './BlockedUsersModal';
 import { MoveHistoryModal } from './MoveHistoryModal';
 import { useAuth } from '../hooks/useAuth';
-import { buildRematchSlots } from '../utils/rematchSlots';
+import { buildRematchSlots, rematchBlockedMessage } from '../utils/rematchSlots';
 import { PLAYER_COLORS } from '../game/constants';
 import { PlayerBadge } from './PlayerBadge';
 import { AiLevelBadge } from './AiLevelBadge';
@@ -341,9 +343,14 @@ export function GameHistoryModal({
     playerCount: number;
     names: string[];
     withAi: boolean;
-    phase: 'confirm' | 'busy' | 'sent' | 'error';
+    phase: 'confirm' | 'busy' | 'blocked' | 'sent' | 'error';
     message?: string;
+    /** `phase: 'blocked'` — kadrodaki, BENİM engellediğim rakiplerin adları. */
+    blockedNames?: string[];
   } | null>(null);
+  // "Engel Ayarları" açıkken rövanş penceresi GİZLENİR (z-200, `Modal` z-150:
+  // ayarlar pencerenin arkasında kalırdı); rövanş durumu korunur.
+  const [showBlockedSettings, setShowBlockedSettings] = useState(false);
   // `handleRematch` useCallback'i state'e bağımlı olmasın diye (her tuşta
   // yeniden kurulmasın); okuduğu değer her zaman en güncel olan.
   const rematchRef = useRef<typeof rematch>(null);
@@ -398,6 +405,15 @@ export function GameHistoryModal({
       const slots = await fetchFinishedGameSlots(st.gameId);
       if (!slots) {
         throw new Error('Bu oyunun kadrosuna ulaşılamadı, rövanş açılamıyor.');
+      }
+      // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
+      // kararı): önce engel kaldırılır. Kural `rematchBlockedOpponents`ta,
+      // oyun ekranındakiyle TEK kaynaktan; adlar `list_blocked_users`tan
+      // geliyor (kadro ham `slots`ta isim yok).
+      const blockedNames = await fetchRematchBlockedNames(slots, user.id);
+      if (blockedNames.length > 0) {
+        setRematch({ ...st, phase: 'blocked', blockedNames });
+        return;
       }
       await createOnlineGame(st.playerCount as 2 | 4, buildRematchSlots(slots, user.id));
       setRematch({ ...st, phase: 'sent' });
@@ -1049,7 +1065,7 @@ export function GameHistoryModal({
         öteki de. z-[200]: Modal 150, ActionSheet 160 — bunun ikisinin de
         üstünde kalması gerekiyor.
       */}
-      {rematch && (
+      {rematch && !showBlockedSettings && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none">
             <p className="text-base font-bold text-text font-sans">Tekrar Oyna</p>
@@ -1066,6 +1082,26 @@ export function GameHistoryModal({
                 >
                   Tamam
                 </button>
+              </>
+            ) : rematch.phase === 'blocked' ? (
+              <>
+                <p className="text-sm text-text font-sans leading-relaxed">
+                  {rematchBlockedMessage(rematch.blockedNames ?? [])}
+                </p>
+                <div className="flex gap-2 mt-1">
+                  <button
+                    onClick={() => setShowBlockedSettings(true)}
+                    className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                  >
+                    Engel Ayarları
+                  </button>
+                  <button
+                    onClick={() => setRematch(null)}
+                    className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                  >
+                    Vazgeç
+                  </button>
+                </div>
               </>
             ) : rematch.phase === 'error' ? (
               <>
@@ -1104,6 +1140,16 @@ export function GameHistoryModal({
             )}
           </div>
         </div>
+      )}
+      {showBlockedSettings && (
+        <BlockedUsersModal
+          onClose={(changed) => {
+            setShowBlockedSettings(false);
+            // Engel kaldırıldıysa rövanş KENDİLİĞİNDEN devam eder (liste yeniden
+            // okunur; hâlâ engelli biri kaldıysa yine bu pencereye döner).
+            if (changed) void handleRematch();
+          }}
+        />
       )}
     </Modal>
   );

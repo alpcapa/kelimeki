@@ -76,3 +76,45 @@ export function rematchOpponentNames(
 export function rematchHasAi(slots: OnlineGameSlot[]): boolean {
   return slots.some((s) => s.type === 'ai');
 }
+
+/**
+ * ÇAĞIRANIN engellediği kişilerden, rövanş kadrosundaki İNSAN rakiplerin
+ * adları (koltuk sırasıyla). Boş dizi = engelli rakip yok.
+ *
+ * NEDEN İSTEMCİDE (13 Ekim 2026, kullanıcı kararı): sunucu yalnızca "karşı
+ * taraf beni engelledi mi" diye bakıyor (`_assert_invite_allowed`), yani
+ * ENGELLEYEN kendi engellediği kişiye davet gönderebiliyor. Kullanıcı bunu
+ * istemedi: engellediğiniz biriyle rövanşa basılırsa oyun KURULMAZ, önce
+ * engeli kaldırmanız istenir ("Engel Ayarları" → `BlockedUsersModal`).
+ * ⚠ Engellenen taraf için DEĞİŞMEDİ: istemci başkasının engel listesini
+ * okuyamaz; düğme açık kalır, sunucunun "sizi engelledi" mesajı çıkar —
+ * devre dışı bir düğme "beni engelledi" demek olurdu.
+ *
+ * `blocked`: `fetchBlockedUsers()` çıktısı (engel + sohbet engeli + açık
+ * şikayet birleşimi). Yalnızca `userId`/`name` okunur.
+ * Dart ikizi: `mobile/app/lib/src/util/rematch_slots.dart`.
+ */
+export function rematchBlockedOpponents(
+  slots: OnlineGameSlot[],
+  myUserId: string,
+  blocked: { userId: string; name: string }[],
+): string[] {
+  const names = new Map(blocked.map((b) => [b.userId, b.name]));
+  const out: string[] = [];
+  for (const s of slots) {
+    if (s.type !== 'human' || s.user_id === myUserId) continue;
+    const name = names.get(s.user_id);
+    if (name !== undefined) out.push(name);
+  }
+  return out;
+}
+
+/** "A kullanıcısını …" / "A ve B kullanıcılarını …" / "A, B ve C kullanıcılarını …". */
+export function rematchBlockedMessage(names: string[]): string {
+  const list =
+    names.length <= 1
+      ? (names[0] ?? '')
+      : `${names.slice(0, -1).join(', ')} ve ${names[names.length - 1]}`;
+  const noun = names.length > 1 ? 'kullanıcılarını' : 'kullanıcısını';
+  return `${list} ${noun} engellediğiniz için önce engeli kaldırmanız gerekiyor.`;
+}

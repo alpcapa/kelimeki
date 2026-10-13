@@ -95,6 +95,7 @@ import type {
 import { getLocalMeaning } from '../data/meanings';
 import { CLIENT_PLATFORM } from '../utils/platform';
 import { trCompare, trLower } from '../utils/turkish';
+import { rematchBlockedOpponents } from '../utils/rematchSlots';
 import { getOrCreateAnonId, getStoredUtmSource } from '../utils/visitTracking';
 import { isNetworkError, isTransientServerError } from '../utils/offlineNotice';
 import { reportClientError } from '../utils/errorReporting';
@@ -2344,6 +2345,26 @@ export async function fetchBlockedUsers(): Promise<BlockedUser[]> {
       reported: r.is_reported,
     }))
     .sort((a, b) => trCompare(a.name, b.name));
+}
+
+/**
+ * "Tekrar Oyna" öncesi: kadrodaki insan rakiplerden BENİM engellediklerimin
+ * adları (kural `rematchBlockedOpponents`ta, iki çağıran — oyun ekranı ve
+ * oyun geçmişi — TEK kaynaktan).
+ *
+ * ⚠ Liste OKUNAMAZSA boş döner (kasıtlı, `fetchBlockedUsers`un tersi): bu bir
+ * kolaylık denetimi, güvenlik kapısı DEĞİL — sunucu kendi kapısını zaten
+ * uyguluyor; ağ hatasında rövanşı hiç açtırmamak kullanıcıyı çıkmaza sokardı.
+ */
+export async function fetchRematchBlockedNames(
+  slots: OnlineGameSlot[],
+  myUserId: string,
+): Promise<string[]> {
+  try {
+    return rematchBlockedOpponents(slots, myUserId, await fetchBlockedUsers());
+  } catch {
+    return [];
+  }
 }
 
 /**
