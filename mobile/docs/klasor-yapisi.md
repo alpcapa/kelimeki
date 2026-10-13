@@ -325,6 +325,12 @@ mobile/
                              # taşınmıyordu ve üç çağrı zinciri var —
                              # OnlineGamesScope ile AYNI karar, gerekçe orada.
                              # `maybeOf`: kapsam yoksa denetim ATLANIR
+      ui/friends_scope.dart  # FriendsScope — arkadaş deposu (FriendsRepo) AĞAÇ
+                             # GENELİNDE (kökte bir kez, ChatScope'un içinde).
+                             # Tüketicisi geçmişteki "Tekrar Oyna"nın planı
+                             # (arkadaş olmayan rakip → açık koltuk, S2,
+                             # Parça 243). `maybeOf`: kapsam yoksa liste
+                             # OKUNAMADI sayılır → bugünkü akış
       ui/online_scope.dart   # OnlineScope — bağlantı durumunun AĞAÇ GENELİNDE
                              # erişilebilir hâli (InheritedNotifier, kökte bir
                              # kez kurulur). Tüketicisi bugün KAvatar: çevrimiçine

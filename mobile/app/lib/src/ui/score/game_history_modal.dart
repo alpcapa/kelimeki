@@ -22,9 +22,10 @@ import '../../data/stats_api.dart';
 import '../../util/share_board.dart';
 import '../../data/auth_service.dart';
 import '../../data/friends_api.dart' show friendErrorText;
-import '../../data/online_games_api.dart' show rematchSlots;
+import '../../data/online_games_api.dart' show OnlineSlot;
 import '../../util/rematch_slots.dart';
 import '../chat_scope.dart';
+import '../friends_scope.dart';
 import '../friends/blocked_users_sheet.dart';
 import '../online_games_scope.dart';
 import '../game/dialog_shell.dart';
@@ -462,6 +463,7 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
     final repo = OnlineGamesScope.maybeOf(context);
     // `await`ten ÖNCE okunur (BuildContext asenkron boşluktan sonra kullanılmaz).
     final chat = ChatScope.maybeOf(context);
+    final friendsRepo = FriendsScope.maybeOf(context);
     final myId = widget.games.gateway.currentUserId;
     final onlineId = entry.onlineGameId;
     if (repo == null || myId == null || onlineId == null) return;
@@ -473,54 +475,91 @@ class _GameHistoryModalState extends State<GameHistoryModal> {
     ];
     final withAi = entry.players.any((p) => p.isAi);
 
+    // Plan (13 Ekim 2026, S2; web `openRematch`): kadro ve arkadaş listesi
+    // onaydan ÖNCE okunur — metin kimin davet edileceğini önceden söylemeli.
+    // Liste OKUNAMAZSA (`null`) bugünkü akış (`create_online_game`).
+    final List<OnlineSlot> slots;
+    final RematchPlan plan;
+    try {
+      final read = await repo.finishedGameSlots(onlineId);
+      if (read == null) {
+        if (!mounted) return;
+        await showKInfo(
+          context,
+          title: 'Tekrar Oyna',
+          message: 'Bu oyunun kadrosuna ulaşılamadı, rövanş açılamıyor.',
+          buttonLabel: 'KAPAT',
+        );
+        return;
+      }
+      slots = read;
+      plan = buildRematchPlan(slots, myId, await friendsRepo?.rematchFriends());
+    } catch (e) {
+      if (!mounted) return;
+      // LiveGameCreateForm/oyun ekranıyla AYNI helper: sunucunun Türkçe
+      // reddini ham toString() gürültüsü olmadan gösterir.
+      await showKInfo(
+        context,
+        title: 'Tekrar Oyna',
+        message: friendErrorText(e),
+        buttonLabel: 'KAPAT',
+      );
+      return;
+    }
+    if (!mounted) return;
+
     // Kabul butonu SOLDA (Parça 25 kuralı) — showKConfirm bunu garanti eder.
+    // Arkadaş planında adlar geçmiş kartındaki isimlerdir (ham kadro isim
+    // taşımaz) — bugünkü cümle BİREBİR korunur.
     final ok = await showKConfirm(
       context,
       title: 'Tekrar Oyna',
-      message: '${names.join(', ')} ile aynı kadroda yeni bir oyun açılacak ve '
-          'davet gönderilecek.'
-          '${withAi ? ' 4. koltuk yine Yapay Zeka olacak.' : ''} Emin misin?',
+      message: rematchConfirmText(
+          plan.random ? plan : plan.withFriendNames(names),
+          hasAi: withAi),
       confirmLabel: 'TEKRAR OYNA',
     );
     if (!ok || !mounted) return;
 
     String? error;
+    ({String title, String body})? notice;
     try {
-      final slots = await repo.finishedGameSlots(onlineId);
-      if (slots == null) {
-        error = 'Bu oyunun kadrosuna ulaşılamadı, rövanş açılamıyor.';
+      // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
+      // kararı; web `GameHistoryModal.tsx` → `blocked` fazı): önce engel
+      // kaldırılır, kaldırılırsa rövanş devam eder. Oyun ekranıyla AYNI
+      // döngü ve kural (`rematchBlockedOpponents`); `ChatScope` yoksa
+      // (testler/Supabase'siz) denetim atlanır, sunucu kapısı geçerli.
+      while (chat != null) {
+        final blocked = await chat.rematchBlockedNames(slots, myId);
+        if (!mounted) return;
+        if (blocked.isEmpty) break;
+        final openSettings = await showKConfirm(
+          context,
+          title: 'Tekrar Oyna',
+          message: rematchBlockedMessage(blocked),
+          confirmLabel: 'ENGEL AYARLARI',
+        );
+        if (!openSettings || !mounted) return;
+        await showBlockedUsers(context, chat: chat);
+        if (!mounted) return;
+      }
+      if (plan.random) {
+        // Sunucu saf rastgele kadroda uygun ilana KATILABİLİR; sonuç metni iki
+        // dalı ayırır (web `rematchSentNotice`).
+        final r = await repo.createRandom(entry.playerCount, plan.slots);
+        notice = rematchSentNotice(plan, joined: r.joined, started: r.started);
       } else {
-        // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
-        // kararı; web `GameHistoryModal.tsx` → `blocked` fazı): önce engel
-        // kaldırılır, kaldırılırsa rövanş devam eder. Oyun ekranıyla AYNI
-        // döngü ve kural (`rematchBlockedOpponents`); `ChatScope` yoksa
-        // (testler/Supabase'siz) denetim atlanır, sunucu kapısı geçerli.
-        while (chat != null) {
-          final blocked = await chat.rematchBlockedNames(slots, myId);
-          if (!mounted) return;
-          if (blocked.isEmpty) break;
-          final openSettings = await showKConfirm(
-            context,
-            title: 'Tekrar Oyna',
-            message: rematchBlockedMessage(blocked),
-            confirmLabel: 'ENGEL AYARLARI',
-          );
-          if (!openSettings || !mounted) return;
-          await showBlockedUsers(context, chat: chat);
-          if (!mounted) return;
-        }
-        await repo.create(entry.playerCount, rematchSlots(slots, myId));
+        await repo.create(entry.playerCount, plan.slots);
       }
     } catch (e) {
-      // LiveGameCreateForm/oyun ekranıyla AYNI helper: sunucunun Türkçe
-      // reddini ham toString() gürültüsü olmadan gösterir.
       error = friendErrorText(e);
     }
     if (!mounted) return;
     await showKInfo(
       context,
-      title: 'Tekrar Oyna',
+      title: error == null && notice != null ? notice.title : 'Tekrar Oyna',
       message: error ??
+          notice?.body ??
           'Davetiniz gönderilmiştir.\n\n'
               '${names.join(', ')} yanıt verince oyun başlayacak.'
               '${withAi ? ' 4. koltuk Yapay Zeka.' : ''}',

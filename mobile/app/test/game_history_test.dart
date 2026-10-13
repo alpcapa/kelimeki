@@ -9,7 +9,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/data/chat_api.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
+import 'package:kelimeki/src/data/friends_api.dart';
 import 'package:kelimeki/src/ui/chat_scope.dart';
+import 'package:kelimeki/src/ui/friends_scope.dart';
 import 'package:kelimeki/src/ui/game/dialog_shell.dart' show KDialogCard;
 import 'package:kelimeki/src/ui/game/neo_button.dart' show NeoButton;
 import 'package:kelimeki/src/ui/online_games_scope.dart';
@@ -25,7 +27,12 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'support/fake_games_gateway.dart';
 import 'support/fake_online_gateway.dart'
-    show FakeOnlineGamesGateway, UnblockingChatGateway, blockedRow, slotHuman;
+    show
+        FakeFriendsGateway,
+        FakeOnlineGamesGateway,
+        UnblockingChatGateway,
+        blockedRow,
+        slotHuman;
 import 'support/game_rows.dart';
 import 'support/test_fonts.dart';
 import 'support/test_view.dart';
@@ -240,6 +247,83 @@ void main() {
       {'type': 'human', 'user_id': 'esiner'},
     ]);
     expect(find.textContaining('Davetiniz gönderilmiştir.'), findsOneWidget);
+  });
+
+  // Yabancılı rövanş (S2, 13 Ekim 2026): geçmişten "Tekrar Oyna" da oyun
+  // ekranıyla AYNI planı uygular — arkadaş olmayan rakip → açık koltuklu ilan.
+  testWidgets('geçmişten TEKRAR OYNA: rakip ARKADAŞ DEĞİL → açık koltuklu ilan',
+      (tester) async {
+    final gw = FakeGamesGateway(userId: 'u-me')
+      ..history = [
+        gameRow(
+          id: 'g-online',
+          createdAt: '2026-08-03T09:30:00.000Z',
+          playerCount: 2,
+          playerScore: 150,
+          rank: 1,
+          onlineGameId: 'og-1',
+          players: [
+            snap('Ironman', 150, colorIndex: 0),
+            snap('Esiner', 120, colorIndex: 1),
+          ],
+        ),
+      ]
+      ..snapshots = {
+        'g-online': [
+          {'r': 0, 'c': 0, 'l': 'K', 'o': 0},
+          {'r': 0, 'c': 1, 'l': 'E', 'o': 0},
+        ],
+      };
+    final repo = await newRepoForWidget(tester, gw);
+    final onlineGw = FakeOnlineGamesGateway()
+      ..finishedSlots = {
+        'og-1': [slotHuman('u-me'), slotHuman('esiner')],
+      };
+
+    await setPhoneViewSize(tester, const Size(420, 900));
+    await tester.pumpWidget(MaterialApp(
+      theme: kelimekiTheme(),
+      home: OnlineGamesScope(
+        repo: OnlineGamesRepo(onlineGw),
+        child: FriendsScope(
+          // Boş arkadaş listesi (OKUNDU, hata değil) → Esiner yabancı.
+          repo: FriendsRepo(FakeFriendsGateway(currentUserId: 'u-me')),
+          child: Scaffold(
+            body: GameHistoryModal(
+              games: repo,
+              userId: 'u-me',
+              playerCount: null,
+              currentName: 'Ironman',
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('03.08.2026'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(ScoreBoxRow));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tekrar Oyna'));
+    await tester.pumpAndSettle();
+
+    expect(
+        find.text('Arkadaşınız olmayan oyuncunun yerine rastgele bir oyuncu '
+            'aranacak. Emin misin?'),
+        findsOneWidget);
+    await tester.tap(find.descendant(
+        of: find.byType(KDialogCard),
+        matching: find.widgetWithText(NeoButton, 'TEKRAR OYNA')));
+    await tester.pumpAndSettle();
+
+    expect(onlineGw.createdSlots, isEmpty,
+        reason: 'create_online_game çağrılmamalı.');
+    expect(onlineGw.createdRandom.single.$2, [
+      {'type': 'human', 'user_id': 'u-me'},
+      {'type': 'open'},
+    ]);
+    expect(find.text('İlanın yayında'), findsOneWidget);
   });
 
   testWidgets('kart: tarih, rozet, sıra/puan/SL sütunları + ekran görüntüsü',

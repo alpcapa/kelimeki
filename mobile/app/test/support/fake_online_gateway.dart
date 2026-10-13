@@ -585,8 +585,16 @@ class FakeFriendsGateway implements FriendsGateway {
   List<Map<String, Object?>> friendsRows = [];
   final sentRequests = <String>[];
 
+  /// Doluysa `listFriends` bunu fırlatır — "arkadaş listesi OKUNAMADI" yolu
+  /// (rövanş planı hatada `null` alır, boş liste DEĞİL).
+  Object? listFriendsFailWith;
+
   @override
-  Future<List<Map<String, Object?>>> listFriends() async => friendsRows;
+  Future<List<Map<String, Object?>>> listFriends() async {
+    final f = listFriendsFailWith;
+    if (f != null) throw f;
+    return friendsRows;
+  }
 
   @override
   Future<String> sendRequest(String targetId) async {

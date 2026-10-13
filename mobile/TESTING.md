@@ -641,6 +641,15 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
       taşımadığından bu doğru davranış; `direkt`e düşüyorsa web'in gerçek
       doğrudan trafiği şişiyor demektir. "Oyun" sütunu (bitmiş oyun)
       DEĞİŞMEMELİ. Oyun sonu "Tekrar Oyna" da aynı şekilde 1 artırmalı.
+- [ ] **Yabancıyla biten oyunda "Tekrar Oyna" (S2, 13 Ekim 2026, Parça 243).** Rastgele
+      ilandan eşleşip biten bir oyun (rakip ARKADAŞ DEĞİL) → "Tekrar Oyna": onay metni
+      *"Arkadaşınız olmayan oyuncunun yerine rastgele bir oyuncu aranacak."* demeli; onayla →
+      "İlanın yayında" (uygun ilan varsa "Oyuna katıldın"); sunucu "Yalnızca arkadaşlarını
+      davet edebilirsin" DEMEMELİ. 4 kişilikte arkadaş + yabancı: arkadaşa davet gitmeli
+      ("<ad> davet edildi."), yabancı koltukları açık kalmalı, **YZ kendiliğinden
+      eklenmemeli**. Tüm rakipler arkadaşsa eski akış AYNEN. Aynısını Skor Kartı → Tüm
+      Oyunlar → tahta → "Tekrar Oyna"dan da dene. Uçak modunda arkadaş listesi okunamayınca
+      eski akışa düşmeli (herkes yabancı sayılıp ilan açılmamalı).
 - [ ] **Engellediğin biriyle "Tekrar Oyna" (13 Ekim 2026, Parça 243).** İki hesap,
       aynı oyun. A, B'yi oyunun sohbet ayarlarından engellesin, oyun bitsin.
       **A'da:** "Tekrar Oyna" AÇIK; onaydan sonra oyun KURULMAMALI, diyalog
