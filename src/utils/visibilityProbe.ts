@@ -35,7 +35,16 @@ export interface ProbeState {
   firstInputMs: number | null;
   inputCount: number;
   aliveMs: number;
+  /** Bu ping'i atan olay — 31-33 sn'de sayfayı kimin kapattığını ayırır. */
+  endEvent: ProbeEndEvent;
+  /** Sayfa ilk kez 'hidden' olduğunda (yüklemeden itibaren ms); hiç olmadıysa null. */
+  firstHiddenMs: number | null;
+  hiddenCount: number;
+  /** `pagehide.persisted` (bfcache'e gitti mi); pagehide gelmediyse null. */
+  persisted: boolean | null;
 }
+
+export type ProbeEndEvent = 'load' | 'timer' | 'hidden' | 'pagehide';
 
 /** Saf: gövdeyi kurar (test edilebilsin diye ağdan ayrı). */
 export function buildProbeBody(
@@ -56,6 +65,10 @@ export function buildProbeBody(
     p_first_input_ms: s.firstInputMs === null ? null : Math.round(s.firstInputMs),
     p_input_count: s.inputCount,
     p_alive_ms: Math.round(s.aliveMs),
+    p_end_event: s.endEvent,
+    p_first_hidden_ms: s.firstHiddenMs === null ? null : Math.round(s.firstHiddenMs),
+    p_hidden_count: s.hiddenCount,
+    p_persisted: s.persisted,
   };
 }
 
@@ -117,18 +130,25 @@ export function startVisibilityProbe(deviceType: string, utmSource: string | nul
       firstInputMs: null,
       inputCount: 0,
       aliveMs: 0,
+      endEvent: 'load',
+      firstHiddenMs: null,
+      hiddenCount: 0,
+      persisted: null,
     };
-    const ping = (): void => {
+    const ping = (event: ProbeEndEvent): void => {
       state.aliveMs = performance.now();
+      state.endEvent = event;
       send(buildProbeBody(id, deviceType, utmSource, state));
     };
-    ping();
+    ping('load');
 
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && state.becameVisibleMs === null) {
         state.becameVisibleMs = performance.now();
       } else if (document.visibilityState === 'hidden') {
-        ping();
+        state.hiddenCount += 1;
+        if (state.firstHiddenMs === null) state.firstHiddenMs = performance.now();
+        ping('hidden');
       }
     });
     const onInput = (e: Event): void => {
@@ -140,8 +160,11 @@ export function startVisibilityProbe(deviceType: string, utmSource: string | nul
       // Kaydırma karşılama kabında (`#karsilama`) olabilir: yakalama evresi.
       document.addEventListener(name, onInput, { capture: true, passive: true });
     }
-    window.setTimeout(ping, FINAL_PING_MS);
-    window.addEventListener('pagehide', ping);
+    window.setTimeout(() => ping('timer'), FINAL_PING_MS);
+    window.addEventListener('pagehide', (e) => {
+      state.persisted = (e as PageTransitionEvent).persisted === true;
+      ping('pagehide');
+    });
   } catch {
     // Telemetri hiçbir koşulda akışı bozmaz.
   }
