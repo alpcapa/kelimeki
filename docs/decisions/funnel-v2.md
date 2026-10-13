@@ -344,4 +344,7 @@ başlangıç noktası.**
 
 **Boyut:** orta (1 gün; yarış ve eski-cihaz kararı belirleyici). Mobil dosya → taslak PR olarak 19 Ekim kesimine biner.
 
-**Karar bekleyen:** madde 2 (eski cihazlarda geriye dönük okuma) ve madde 1 (yarış çözümü).
+**KARARLAR (13 Ekim 2026, kullanıcı — iki açık soru KAPANDI, kod HENÜZ YOK):**
+- **Madde 1 (yarış) → açılışta başlat, BEKLEMEDEN damgala.** Referrer uygulama açılır açılmaz okunur, sonuç gelince `captureUtmSource` ile damga yazılır; oyun başlatma/kayıt okuma bitmeden olursa o satır `app` kalır. Gerekçe: yeni kurulumda ilk oyundan önce 60 sn'lik tanıtım ekranı var (`docs/decisions/onboarding.md`), yani yarış ancak tanıtımı ATLAYANLARDA yaşanır ve `app` kalan satırlar küçük bir kayıp; kullanıcıya hiçbir gecikme eklenmez. Elenen: damga yazılmadan okumayı BEKLEMEK (5 sn'ye kadar donma hissi), sonradan düzeltmek (yeni sunucu yolu + anonim kodla eşleştirme + gizlilik kontrolü, 19 Ekim'e sığmaz). ⚠ Yine de cihazda ölçülmeli: tanıtımı atlayan kullanıcıda `app` kalan satır oranı (`mobile/docs/testing-olcum.md` §33'e eklenecek).
+- **Madde 2 (eski cihazlar) → EVET, damga için bir kez oku.** Eski cihazlarda referrer bir kez okunur, YALNIZCA damga için (ayrı bayrak; Huni v2 `land` kanalına DOKUNULMAZ, kohort şişmez). Play bilgiyi yaklaşık 90 gün tutuyor varsayımıyla (Play dokümanından hatırlanan süre, burada DOĞRULANMADI) 1.1.4'e güncelleyen son ~3 ayın kurulumları geriye dönük etiketlenir. Yeni veri türü yok, aynı anonim kod; beyan büyük ihtimalle değişmez (madde 5'teki `legal_text_test` kontrolü yine yapılacak).
+- **Sıradaki:** kodlama (orta boyut, ~1 gün), taslak PR, 19 Ekim kesimine yetişirse biner; yetişmezse bir sonraki trene kayar (ROADMAP #46).
