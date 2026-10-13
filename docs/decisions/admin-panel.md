@@ -1423,6 +1423,12 @@ Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları
   `utm_source='meta_test'` (bu turda `…0a1` eklendi, silme çağrısı MCP'de yine
   zaman aşımına uğradı). Okuma: 31-33 sn grubunu `end_event`, `first_hidden_ms`
   ve `persisted` kırılımında ötekilerle karşılaştır.
+  **Reklam kırılımı (13 Ekim 2026, son 3 gün, kaynak = `utm_source`):**
+  `meta-h1` 76 sayfa / 23 yığılma (%30), `meta-h2` 66 / 20 (%30), `meta-h3`
+  68 / 10 (%15); `meta-karusel` 4 / 0. Yığılma reklama göre değişiyor, yani
+  kampanya kararlarında Meta'nın LPV'si ve `web_sessions` oturumu 'girdili
+  sayfa' ile birlikte okunmalı. Kampanya yorumu:
+  `marketing/meta-reklam/kampanya-teaser-ekim-2026.md` §5, 13 Eki satırı.
   `web_sessions`'ta user-agent kolonu YOK (id, entry, device_type,
   utm_source, steps, last_step, moves, seconds, scroll_pct, created_at,
   updated_at), yani sorun yalnızca bu tablodan ÇÖZÜLEMEZ.
