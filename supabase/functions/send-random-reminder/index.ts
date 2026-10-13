@@ -43,6 +43,13 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// İlk harf Türkçe kurallarıyla büyür (i→İ, ı→I); gerisine DOKUNULMAZ ("McX" bozulmasın).
+function capFirst(s: string | undefined): string | undefined {
+  if (!s) return s;
+  const [first, ...rest] = Array.from(s);
+  return first.toLocaleUpperCase('tr-TR') + rest.join('');
+}
+
 function mask(email: string): string {
   const [local, domain] = email.split('@');
   return `${local.slice(0, 1)}***@${domain ?? '?'}`;
@@ -121,7 +128,7 @@ Deno.serve(async (req: Request) => {
     else if (profile?.marketing_consent !== true) skipped.push({ id, reason: 'no_marketing_consent' });
     else if (profile?.email_notifications_enabled === false) skipped.push({ id, reason: 'opted_out' });
     else if ((count ?? 0) > 0) skipped.push({ id, reason: 'already_finished_a_game' });
-    else eligible.push({ id, email, name: profile?.first_name?.trim() || profile?.display_name || undefined });
+    else eligible.push({ id, email, name: capFirst(profile?.first_name?.trim() || profile?.display_name || undefined) });
   }
 
   if (dryRun) {
