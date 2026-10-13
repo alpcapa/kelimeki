@@ -1861,6 +1861,53 @@ sürümün içeriği:**
 | (1 Eki) | **Yatay iPad'de alt düğmeler ~10 pt taşıyordu → oyun başlığı web geometrisine indi** (kartın üstü 88 → 62, web 63; "← Geri" yine logonun altına taşan etiket, dokunma alanı satırın tam boyu) (Parça 227) | **1.1.2.** `ui/game/game_header.dart`, `ui/tap_target.dart` (`TapTargetScope`), `board_fit.dart` yorumu; testler `board_fit_test`, `online_game_screen_test`, `game_header_test`, `layout_parity_test`. Cihaz: Geri/logo/avatar/skor kutusu dokunuşları yeniden denenmeli |
 
 
+## Sekizinci taşıma — 1.1.3 treni (11 Ekim 2026)
+
+> 1.1.3 (875) iki mağazada yayında: Play 11 Eki 16:06 TSİ, App Store aynı gün
+> (kullanıcı: *"Just released ios 1.1.3"*; tam saat ASC'den okunmadı). ROADMAP'in
+> "1.1.3 treni" bölümündeki içerik tablosu ve Rastgele Oyuncu TestFlight notu
+> aşağıda, DEĞİŞTİRİLMEDEN. ROADMAP'te kalanlar: dal temizliği paragrafı
+> (tutulan 5 dal) ve "üç açık karar" altbaşlığı (A hâlâ açık).
+
+### 1.1.3 treni — içerik tablosu ve kesim kaydı
+
+✅ 11 Ekim: kesim 12'den bugüne alındı (kullanıcı), 15 PR tek squash'ta + web Vercel'de (`9591736`). ✅ iPad TestFlight turu temiz (build 875) → ✅ ASC'ye gönderildi (11 Eki 12:31 UTC, `Waiting for Review`). ✅ Play Production'a gönderildi (#23, 15:41 TSİ, `In review`). ⬜ **Sıradaki:** iki mağazada onay → iOS `Release This Version`. Aşağıdaki satırlar mağazada yayına girince `roadmap-arsiv.md`'ye taşınır. (Eski başlık: taslak PR'lar.)
+
+⚠ **Kesimde sürüm numarası da 1.1.3'e çıkmalı** (`pubspec.yaml` + `config/env.dart`,
+`app_version_parity_test`) — 1.1.2 App Store'da onaylanınca o trene yeni
+build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasında
+ÖLÇÜLDÜ").
+
+| Taslak PR | Ne | Dokunduğu yer |
+|---|---|---|
+| #756 (2 Eki) | **Tanıtımın vergi penceresi: "Rakip kullanıcısına" → "rakibine"** — port yarısı (web #755 ile hemen yayında) | `ui/tutorial/tutorial_game.dart` (tek metin; gerçek oyunun `invasion_confirm.dart`ı DEĞİŞMEDİ). Kayıt: `docs/decisions/onboarding.md` |
+| #757 (2 Eki) | **"Bildirimler kapalı" kartı** — yarım oyun çıkışında izin ayarlardan kapalıysa (Android `permanentlyDenied` · iOS `denied`) "AYARLARI AÇ"; ayarlardan dönüşte hatırlatma kurulur | `util/unfinished_reminder.dart` (`yarimOyunKartiSec`) · `data/unfinished_game_reminder.dart` · `ui/push/push_permission_flow.dart` · `setup_screen.dart` · `MainActivity.kt` + `AppDelegate.swift` (`bildirimAyarlariniAc`). Parça 228 · cihaz: `mobile/TESTING.md` §34 |
+| #760 (2 Eki) | **Tanıtım kapısı: cihazda gerçek oyun başlayınca "görüldü"** — üye olarak oynayıp çıkış yapan cihaz misafirken tanıtıma düşmesin (web #759 ile hemen yayında) | `setup_screen.dart` (`_startNewGame`) · `live/open_online_game.dart`. Parça 229 · cihaz: `mobile/TESTING.md` §1.9 · kayıt `docs/decisions/onboarding.md` |
+| #765 (2 Eki) | **Canlı oyun formu: 1. koltuk SEN, 4 kişide 2×2, numaralar hizalı, isim numaraya binmez** (web #764 ile hemen yayında) — #762'nin (koltuk numarası iPhone'da alta yapışıktı, taban çizgisi kuralı) üstüne kurulu, #762 buna katılıp kapandı | `ui/live/live_game_create_form.dart`. Parça 230 + 231 · cihaz: `mobile/TESTING.md` → "Canlı oyun formu" · kayıt `docs/decisions/onboarding.md` |
+| #772 (2 Eki) | **Setup'ın oyuncu sayısı satırı: "2 kişilik oyunda yapay zekaya karşı oynarsın." / "4 kişilik oyunda 3 yapay zekaya karşı oynarsın."** (kullanıcı isteği; web yarısı hemen yayında) | `ui/setup/setup_screen.dart` (tek metin) + `setup_screen_test` / `setup_cloud_test` beklentileri |
+| #774 (2 Eki) | **"Tüm oyuncular →" / "← Arkadaşlar" bağlantıları başlıkla aynı tipografide, mavi + kalın** (kullanıcı isteği; web yarısı #775 ile hemen yayında) | `ui/live/live_game_create_form.dart` (`_LinkButton`) + `ui/friends/friends_modal.dart`; `trUpper` ile büyük harf, sabitler web'le birebir |
+| #795 (2 Eki) | **k-lig: Puan Ligi / Beyin Ligi sekmeleri** — port yarısı (web + sunucu #794 ile hemen yayında). Beyin Ligi: puansız, OHP'ye göre, ≥5 oyun | `ui/score/leaderboard_modal.dart` · yeni `ui/score/beyin_ligi_list.dart` + `util/beyin_ligi.dart` · `data/stats_api.dart`. Parça 233 · cihaz: `mobile/docs/testing-klig.md` → "13.x Beyin Ligi" · **+ düzeltme:** "SENİN SIRAN" satırı küçük ekranda pencerenin altında kesiliyordu (1.1.2'de de var; `KModal.fillBody`, `test/leaderboard_layout_test.dart`) · **+ Puan Ligi alt notu** *"YZ'ye karşı oynanan oyunlar da sayılır."* (web #797 ikizi, `kPuanLigiNote`, parite `test/beyin_ligi_test.dart`) · kayıt `docs/decisions/league-system.md` |
+| #779 (2 Eki) | **Kayıt formu: ad/soyad isteğe bağlı, zorunlular üstte + Gizlilik "Ad ve soyad (isteğe bağlı)"** (kullanıcı isteği; web formu hemen yayında) | `ui/auth/auth_modal.dart` · `account_settings_modal.dart` · `legal_modals.dart` + web `src/legal/LegalContent.tsx` (Gizlilik tarihi 12 Ekim 2026 — `legal_text_test` web↔port tarih eşliği yüzünden İKİSİ BU PR'da). Cihaz: `TESTING.md` → "Ad/soyad İSTEĞE BAĞLI" |
+| #789 (2 Eki) | **Bölüm başlıkları + form etiketleri KALIN** ("yazılar silik" geri bildirimi; web #788 + #790 ikizi) — SpaceMono 700 | `setup_screen` · `live_games_tab` · `recent_games_section` · `live_game_create_form` · `score_stats_section` · `friends_modal` · `help_modal` · `legal_modals` · `delete_account_modal` · `leaderboard_modal` · `auth_modal` · `account_settings_modal` (yalnızca `fontWeight: w700`) |
+| #791 (2 Eki) | **Android ikonu: adaptive ön katman İKİ KEZ küçülmesin** (Samsung'da ikon ortada küçük, etrafı beyazdı) — `adaptive_icon_foreground_inset: 0` | `pubspec.yaml` + üretilmiş `mipmap-anydpi-v26/ic_launcher.xml` (`16%`→`0%`). Parça 232 · cihaz: `mobile/TESTING.md` ikon maddesi; yalnızca mağaza paketinde görülür |
+| #795 (2 Eki) | **k-lig: Puan Ligi / Beyin Ligi sekmeleri** (web #794 ikizi) + **"SENİN SIRAN" satırı kesiliyordu** düzeltmesi (`KModal` `fillBody`; mağazadaki 1.1.2'de de var) | `util/beyin_ligi.dart` · `ui/score/beyin_ligi_list.dart` · `leaderboard_modal.dart` · `stats_api.dart` · `KModal`. Cihaz: `mobile/docs/testing-klig.md` → "13.x Beyin Ligi sekmesi" |
+| (11 Eki, 1.1.3 TestFlight) | **Koltuk numarası alt yarıdan kırpılıyordu** (iPad, kullanıcı): `Text.overflow` varsayılanı `clip` rakamı paragraf kutusuna kesiyordu → `visible` | `ui/live/live_game_create_form.dart` + `test/live_games_test.dart`. Parça 239 · **+ yeni arkadaşlık isteği rozeti** menü açılışında/öne dönüşte tazelenir (web `UserMenu.tsx` ikizi aynı PR'da; Realtime YOK, bilinçli) · **+ avatar etrafında gri halka** (iPad, menü kapanınca; odak/hover şeffaf — cihazda doğrulanacak) · 1.1.3'ün ASC gönderiminden ÖNCE gitmeli |
+| #815 (5 Eki) | **12 Ekim treni (11 Ekim kararı: 19'dan öne alındı, `main` parite kırmızısını kapatmak için) — Engelle port ikizi** (taslak): istek/davet kartında Engelle, Engellediklerim, ⋯ menüsü, sohbet terimi, Puan Ligi alt notu + parite-kilitli 4 metin (hukuki tarih **12 Ekim** — #779'la aynı satırlar, aynı değer; ikisi birlikte denendi: çakışma YOK, tam takım 1057 yeşil) | `ui/friends/*` · `live_games_tab.dart` · `chat_settings_modal.dart` · `chat_api.dart` · `legal_modals.dart` · `leaderboard_modal.dart`. Parça 236 · cihaz: `mobile/docs/testing-arkadaslar-canli.md` → "Engelle / Engellediklerim" · kayıt `docs/decisions/live-game.md` |
+| (11 Eki) | **Oyun geçmişi: beraberlikte "ben" satırı** — `rank - 1` yerine aynı puanlı insan satırları arasında güncel takma adla eşleşme (web ikizi #828 hemen yayında; Canlı beraberlikte 2. koltuk rakibinin adını/puanını görüyor, "Tekrar Oyna" kendini davet ediyordu) | `ui/score/game_history_modal.dart` (`_findMeIndex`) + `test/game_history_find_me_test.dart`. Parça 235 |
+| (11 Eki) | **Oyun sonu modalı yeni oyunda "BERABERE" diye açılıyordu** (Asnmzr raporu): TEKRAR OYNA'ya yavaş ağda basınca eski oyunun modalı CANLI state ile açılıyordu — biten durum artık donduruluyor, yeni oyun başladıysa modal açılmıyor | `ui/game/game_screen.dart` (modal bloğu) + `test/game_over_stale_modal_test.dart`. Parça 234 |
+| #805 (4 Eki) | **Rastgele Oyuncu + oyun sonu arkadaş önerisi + Detaylı Kurallar "Rastgele Oyun"** — port yarısı; **web #804 ile BİRLİKTE 12 Ekim'de merge** (kullanıcı kararı 4 Eki: web tek başına işe yaramaz, bayrak yok). Merge sırası: #804 → #805 (base main'e çevrilir) | `ui/live/*` (şerit, kurulum formu, kartlar, oyun sonu önerisi) · `util/random_games.dart` · `util/friend_suggest.dart` · `ui/game/help_modal.dart` · `storage/flags_store.dart`. Çakışma beklenir: #765/#774/#779 (`live_game_create_form.dart`, `legal_modals.dart`); Gizlilik tarihi #779'da 12 Ekim — #804/#805'in 4 Ekim'i ona uydurulur (web+Dart birlikte). Cihaz: `docs/testing-rastgele.md` + `mobile/TESTING.md` |
+
+### Rastgele Oyuncu (#804/#805) — TestFlight'a alınma notu
+
+Web (#804) iki hesapla elle test edildi (`docs/testing-rastgele.md`, bulgular `random-opponent.md`). Kullanıcı: *"Herşeyi gönder, TestFlight'da test yaparım sonra."* → #804 + #805, #826 tren dalına birleştirildi (tek merge: web Vercel'e + mobil TestFlight'a aynı anda). Port yarısı CİHAZDA denenmedi — TestFlight turu bekliyor; port tarafında ayrıca web testinde bulunan iki değişiklik yansıtıldı: davet kartında açık koltuk "Rastgele oyuncu" + sağda kırmızı "Bekliyor", şerit yoklaması 30 sn.
+
+### Tren tablosunun artık satırları (#789 · #791 · #805 ikinci biçimi)
+
+| #789 (2 Eki) | **Bölüm başlıkları kalın** — port yarısı (web #788; kullanıcı: *"yazılar silik ve okunaksız"*) | `fontWeight: w700`: `setup_screen` · `live_games_tab` · `recent_games_section` · `live_game_create_form` · `score_stats_section` · `friends_modal` · `help_modal` (×2) · `legal_modals` · `delete_account_modal` · `leaderboard_modal` (sütun başlıkları). **+ Form etiketleri** (aynı gün ikinci tur, web eşi ayrı PR): `auth_modal` · `account_settings_modal` (`_labeled`) · `delete_account_modal` (onay etiketi). Ara yazılar dışarıda. App **1.037 test yeşil** |
+| #791 (2 Eki) | **Android ikonu küçük ve etrafı beyazdı** — adaptive ön katman iki kez küçülüyordu (üretici %66 + `flutter_launcher_icons` varsayılan inset %16) | `pubspec.yaml` (`adaptive_icon_foreground_inset: 0`) + üretilmiş `mipmap-anydpi-v26/ic_launcher.xml`. Parça 232 · iOS etkilenmez |
+| #805 (4 Eki, `claude/random-opponent-port`) | **Rastgele Oyuncu (#45) port ikizi** — açık ilan: kurulum formunda "?" avatarlı satır + esnek kadro, Devam Edenler'de yatay KARE ilan şeridi (30 sn yoklama; 3 tam + 4.'nün ~1/4'ü) + "Bekliyor n/N" satırları, **rastgele kökenli aktif oyun kartı (açık mavi + "RASTGELE" etiketi)**, açık koltuk "Yapay Zeka" DEĞİL, kova kuralı. Sunucu RPC'leri canlıda; web yarısı #804. ⚠ **Yasal metin + "Son güncelleme: 4 Ekim 2026" web+port BİRLİKTE** (`legal_text_test`); #779 da aynı tarihi 12 Ekim'e çekiyor — ikisi birleşirken tek tarih seçilmeli. ⚠ `live_game_create_form.dart`i #765/#774/#779 de değiştiriyor → merge sırası/çakışma. | `data/online_games_api.dart` (`OnlineSlot` açık koltuk + `isHuman`, ilan modelleri/RPC'leri) · `util/random_games.dart` · `ui/live/random_games_strip.dart` · `live_games_tab.dart` · `live_game_create_form.dart` · `ui/open_seat_avatar.dart` · `player_avatar_row.dart` · `auth/legal_modals.dart` + web `src/legal/LegalContent.tsx` (yalnız tarih). Testler: `random_games_test.dart` · `random_games_ui_test.dart`. Cihaz: `mobile/TESTING.md` → "Rastgele Oyuncu" (`docs/testing-rastgele.md`) |
+
+
 ## İçindekiler
 
 > Madde 0 (FAZ B), merge turu, #33/#36, madde 31, madde 24 (FAZ C),
@@ -1869,6 +1916,7 @@ sürümün içeriği:**
 
 | Ne | Kapanış |
 |---|---|
+| ROADMAP "1.1.3 treni" — 15 PR'lık içerik tablosu + kesim kaydı + Rastgele Oyuncu TestFlight notu (#804/#805) | 11 Ekim 2026 (1.1.3 iki mağazada) |
 | ROADMAP #25 (iOS simge rozeti sayısı) · #34 (canlı sohbet okundu — port) · #35 (Kayıt Hunisi — port) + 1.1.2 (831) içerik tablosu ve kesim kaydı | 2 Ekim 2026 (1.1.2 iki mağazada) |
 | ROADMAP #37 (küfür süzgeci — koşul metni + port #640) · #38 (tahta yükseklik bütçesi, port #657) · #41 (ilk oyun akışı v2 — port #739-#746, 1.1.2 cihaz turu ✅) | 1 Ekim 2026 |
 | ROADMAP'in 2 Eylül tarihli "tek bakışta" özet tablosu (kovaların hepsi kapanmıştı) + "Sonra / bloke"daki kapalı satırlar (#8 · #11 · #12 · #15 · #33 · #36 · iOS/App Store) | 26 Eylül 2026 |
