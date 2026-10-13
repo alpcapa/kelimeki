@@ -54,6 +54,16 @@ Aşağıdaki ikisinin kaydı kök `CLAUDE.md` → Kaynak Hunisi bölümünde:
 
 ---
 
+## ⚠ `main` web-ci `parite` işi KIRMIZI (4 Ekim 2026'dan beri) — bilinen, #815 ile kapanacak
+
+Tek düşen test: `friends_test.dart` → *"FriendsModal metinler web `FriendsModal.tsx` ile BİREBİR"* (web ⋯ menüsünde "Engel / şikayet ayarları" var — #813 — port hâlâ "Sessize alma / şikayet ayarları"). 11 Ekim'de ölçüldü: `main`'in son sekiz web CI koşusu aynı yüzden kırmızı; #828/#829/#830 de yalnızca bu testle kırmızı (tam takım 1037 geçti, 1 düştü). **Bilerek YAPILMADI:** yalnız etiketi değiştiren kısmi bir port yaması — menü "Engel…" derken içindeki pencere hâlâ sessize alma anlatırdı (1.1.3'te kullanıcıya yarım özellik vaadi). Kapanış #815 (Engelle port ikizi, tam özellik). **KARAR (11 Ekim, kullanıcı: *"12 Ekime alalım, her şey yeşil olsun"*): #815 12 Ekim kesimine ALINDI.** Birleşik durum (#815 + #779 + main) tam takım 1057 yeşil. ⚠ **Sıra:** #815 ilk merge edilenlerden olmalı (kırmızıyı kapatan o); diğer taslakların CI'ı o merge'den sonra yeniden koşulmalı (eski koşular kırmızı kalır).
+
+## ✅ ÇÖZÜLDÜ (11 Ekim 2026, taslak PR #830 — 12 Ekim trenine biner) — Asnmzr raporu: "oyun başlarken Değiştir'e basınca BERABERE"
+
+**KÖK NEDEN BULUNDU (11 Ekim):** motor değil UI. Oyun sonu modalı, girişli kullanıcıda AĞ isteği olan `_ilkKutlama` beklendikten sonra CANLI `state` ile açılıyordu; istek yavaşken kullanıcı TEKRAR OYNA'ya basarsa modal yeni oyunun (0-0, dolu raflar) durumuyla "BERABERE" diye açılıyordu. Yeniden üretildi (`game_over_stale_modal_test.dart`, düzeltmesiz kodda düşüyor). Düzeltme: biten durum donduruluyor + yeni oyun başladıysa modal açılmıyor (#830). Aşağıdaki kayıt TARİHÇE; PR merge edilince bu madde `docs/decisions/roadmap-arsiv.md`'ye taşınır.
+
+Android ekran görüntüsü (Zor, 2 kişi): 0-0, "Toplam hamle 0", KALAN -20/-19, k-lig +4/+4 BERABERE; arkada hâlâ `DEĞİŞTİR (6)` düğmesi (devre dışı) yani **oyun takas modu AÇIKKEN bitmiş**. Ölçüm (10 Eki): TS motoru (`gameReducer`) ve Dart motoru (`GameEngine`) ayrı ayrı 300'er oyun — insan başta 6 taş değiştirir, YZ oynar, bir kez daha — **0/300 bitiş** (YZ 2. tur dahil ilk turunda ~%2,3 raf değiştirir; oyunun bitmesi için art arda 4 puansız tur gerekir, `activePlayerCount × MAX_PASS_ROUNDS`). Yani raporlanan sonuç bu motor yolundan çıkmıyor. İpucu: `CONFIRM_SWAP` çıkışında `swapMode=false` yazıyor; takas modu açık kalan bitiş yalnızca `AI_PLAY` (satır ~585/803) ya da teslim dalından geçer → insan takas modundayken YZ turu bitirmiş olabilir. Aday: mağazadaki 1.1.2 (831) ile `main` farkı, ya da kayıttan devam edilmiş oyun (`consecutivePasses` taşınıyor mu). **EK (10 Ekim, kullanıcı): modalı kapatınca OYUN DEVAM ETMİŞ.** Bu, `isGameOver`un gerçekten true olmadığını/geri döndüğünü gösterir; reducer'da `isGameOver`u false'a çeviren tek yol `START` ve `controller.restore` (kayıttan devam: `setup_screen.dart` `_resumeSavedGame`/`_resumeCloudSave`). Ayrıca `game_screen.dart` modalı `_ilkKutlama(state)` ASYNC beklemesinden sonra, o ANKİ `state` kopyasıyla açıyor — modal bayat bir anlık görüntüyü gösterebilir. Önce şu ikisi ayrıştırılmalı: (a) oyun "Devam eden oyun"dan mı açıldı, (b) modal açıkken YZ/başka işlem state'i değiştirdi mi. **EK 2 (11 Ekim, kullanıcı cevabı):** oyun "TEKRAR OYNA" ile (rövanş, `_handleRematch`) yeni başlamış, yarım oyun YOKMUŞ; ilk eli uygun olmadığı için Değiştir'e basmış, **YZ'nin hamlesinden ÖNCE modal çıkmış** ve oyun devam etmiş. Yeniden üretim denemeleri (hepsi temiz): TS motoru 300 oyun · Dart motoru 300 oyun · **GameScreen widget testi** (Zor, teslimle biten oyun → modal kapat → TEKRAR OYNA onayı → Değiştir 6 taş → onay → YZ turu): modal ÇIKMADI, `consecutivePasses` 0→1→0, YZ kelime oynadı. Canlı DB (11 Eki): son 2 günde Android'de bu olaya uyan bitmiş oyun kaydı YOK (`games`/`game_finishes` — yalnızca 9 Eki 13:32'deki teslim) → oyun gerçekten bitmemiş, modal SAHTE/bayat olabilir. Elenen: oyun içinde `isGameOver`u true yapabilen tek yollar Pas/Değiştir/YZ (4 puansız tur gerekir); false'a çeviren tek yollar `START`/`restore`. Kalan şüpheli: `game_screen.dart` modal bloğu (`_gameOverShown` + `_ilkKutlama` async beklemesi + modalın o anki `state`i alması) ve rövanş sonrası `setState(_gameOverShown=false)` sırası. Aday savunma (YAPILMADI, kullanıcı onayı bekliyor, mobil → 12 Ekim taslak PR): modalı açmadan hemen önce `controller.state.isGameOver`u yeniden doğrula. **Bekleyen:** kullanıcıdan Setup teşhis satırı (`Derleme …`), kaç kez Değiştir'e bastığı, oyunun yeni mi kayıttan mı olduğu. Bilinen sonuç: 4 puansız tur (pas/takas, ikisi de) oyunu bitirir — kural gereği, hata değil; sorun beraberliğin 0 hamleyle gelmesi olabilir (ürün kararı: hiç kelime oynanmadan bitişte uyarı/k-lig ödülü).
+
 ## Faz planı — kalan işlerin YAYIN sırası (29 Ağustos 2026)
 
 Kullanıcı isteği: *"Tüm işleri fazlandırıp plan yapalım. Uygun gördüğün
@@ -99,6 +109,7 @@ kadar mobil işler taslak PR. 2 Ekim'de kapanıp arşive taşınanlar: #25, #34,
 | | #43 | Passkey ile giriş — PORT yarısı | **Sonraya** (kullanıcı, 2 Eki): web yarısı sahada denendikten sonra ayrı bir trene. Yerel passkey arayüzü + iOS Associated Domains (`webcredentials:`) + Android `assetlinks.json` (`get_login_creds`). §43 |
 | **Sıradaki web işi** | #43 | Passkey ile giriş — WEB yarısı | **2 Eki 2026:** sunucu açık (RP ID `kelimeki.com`), web kodu PR'da (giriş düğmesi + Hesap Ayarları bölümü). Gizlilik satırları web'de 2 Eki'de eklendi, **tarih 25 Eylül'de BIRAKILDI** (kullanıcı kararı: `legal_text_test` web↔port tarih eşliği `main`'i 10 gün kırmızı yapardı) — #779 12 Eki'de iki tarafın tarihini birlikte 12 Ekim yapar; merge'ünde `LegalContent.tsx` çakışması beklenir, #779'un hâli alınır. **Kullanıcı canlıda denedi (2 Eki): çalışıyor**; passkey'siz cihazda OS penceresi yerine açıklama gösteren düzeltme ayrı PR. Kalan: Android Chrome + masaüstü Chrome turu (`TESTING.md`) |
 | **Ölçüm / izleme** | #23 | Seviyeli YZ — Faz 5 SAHA ölçümü | Kod ✅. **İlk okuma 2 Eki:** Normal hedefte (%48), Zor kişi içi Normal'den ~+13 puan güçlü → kullanıcı: *"Zor şimdilik yeterli"*. **Açık kalan yalnızca Kolay** (27 oyun %41, ~100 oyunda yeniden bak; >%40 ise top-N 4→5). `docs/decisions/ai-levels.md` §9 |
+| | #46 | **MAU hedefi: 11 Eki 2027'ye kadar 1.200** | **11 Eki 2026, kullanıcı hedefi.** Tanım: oyun başlatan benzersiz cihaz, 28 gün (`game_starts`) — bugün **317**. Önce atıf (kurulum sonrası `app`e düşen kaynak) + geri dönüş + arkadaş daveti; ücretli trafik sonra. Gövde aşağıda |
 | | #18 | `submit_move` puan hakemliği | GÖLGE FAZINDA (`move_shadow_diffs`) |
 | | #14 | Uzun modal listeleri tembel inşa | Eşiğe bağlı izleme |
 | **Güvenlik** | #21 | Advisor gürültüsü + Auth ayarları | Kısmen yapıldı |
@@ -110,7 +121,7 @@ kadar mobil işler taslak PR. 2 Ekim'de kapanıp arşive taşınanlar: #25, #34,
 | | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
 
 **Madde numarası kuralı (26 Eylül 2026):** yeni madde **bir sonraki boş
-numarayı** alır — şu an **#43**. Numara hiçbir zaman yeniden kullanılmaz,
+numarayı** alır — şu an **#47**. Numara hiçbir zaman yeniden kullanılmaz,
 kapanmış (arşivdeki) maddelerinki de. 26 Eylül'de iki AKTİF çakışma
 bulundu ve sonradan gelen maddeye yeni numara verildi: tahta yükseklik
 bütçesi **#26 → #38** (mağaza yönlendirmesi #26 olarak kaldı; kodda ve
@@ -195,22 +206,13 @@ acil bir fren gerekirse eşiği yükseltmek YETER.
 aynı başlık; 24 Eylül 2026'da taşındı). Sayacın yeri, tester sayısının
 nereden okunacağı ve kartın "12" tavanı orada.
 
-## 1.1.3 treni — kesim Pazartesi 12 Ekim 2026 (taslak PR'lar, `main`'de DEĞİL)
+## 1.1.3 treni — ✅ İKİ MAĞAZADA YAYINDA (11 Ekim 2026) → ARŞİVDE
 
-⚠ **Kesimde sürüm numarası da 1.1.3'e çıkmalı** (`pubspec.yaml` + `config/env.dart`,
-`app_version_parity_test`) — 1.1.2 App Store'da onaylanınca o trene yeni
-build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasında
-ÖLÇÜLDÜ").
+✅ **KAPANDI 11 Ekim 2026:** 1.1.3 (875) Play'de 16:06 TSİ'de, App Store'da kullanıcının "Release This Version"ına basmasıyla yayında (kullanıcı: *"Just released ios 1.1.3"*). İçerik tablosu (15 PR + düzeltme turu), kesim kaydı ve Rastgele Oyuncu TestFlight notu aynen `docs/decisions/roadmap-arsiv.md` → "Sekizinci taşıma"da. Sürüm/gönderim kaydı: `mobile/docs/surumler.md` → "1.1.3", `gonderimler-ios.csv` #16.
 
-| Taslak PR | Ne | Dokunduğu yer |
-|---|---|---|
-| #756 (2 Eki) | **Tanıtımın vergi penceresi: "Rakip kullanıcısına" → "rakibine"** — port yarısı (web #755 ile hemen yayında) | `ui/tutorial/tutorial_game.dart` (tek metin; gerçek oyunun `invasion_confirm.dart`ı DEĞİŞMEDİ). Kayıt: `docs/decisions/onboarding.md` |
-| #757 (2 Eki) | **"Bildirimler kapalı" kartı** — yarım oyun çıkışında izin ayarlardan kapalıysa (Android `permanentlyDenied` · iOS `denied`) "AYARLARI AÇ"; ayarlardan dönüşte hatırlatma kurulur | `util/unfinished_reminder.dart` (`yarimOyunKartiSec`) · `data/unfinished_game_reminder.dart` · `ui/push/push_permission_flow.dart` · `setup_screen.dart` · `MainActivity.kt` + `AppDelegate.swift` (`bildirimAyarlariniAc`). Parça 228 · cihaz: `mobile/TESTING.md` §34 |
-| #760 (2 Eki) | **Tanıtım kapısı: cihazda gerçek oyun başlayınca "görüldü"** — üye olarak oynayıp çıkış yapan cihaz misafirken tanıtıma düşmesin (web #759 ile hemen yayında) | `setup_screen.dart` (`_startNewGame`) · `live/open_online_game.dart`. Parça 229 · cihaz: `mobile/TESTING.md` §1.9 · kayıt `docs/decisions/onboarding.md` |
-| #765 (2 Eki) | **Canlı oyun formu: 1. koltuk SEN, 4 kişide 2×2, numaralar hizalı, isim numaraya binmez** (web #764 ile hemen yayında) — #762'nin (koltuk numarası iPhone'da alta yapışıktı, taban çizgisi kuralı) üstüne kurulu, #762 buna katılıp kapandı | `ui/live/live_game_create_form.dart`. Parça 230 + 231 · cihaz: `mobile/TESTING.md` → "Canlı oyun formu" · kayıt `docs/decisions/onboarding.md` |
-| #772 (2 Eki) | **Setup'ın oyuncu sayısı satırı: "2 kişilik oyunda yapay zekaya karşı oynarsın." / "4 kişilik oyunda 3 yapay zekaya karşı oynarsın."** (kullanıcı isteği; web yarısı hemen yayında) | `ui/setup/setup_screen.dart` (tek metin) + `setup_screen_test` / `setup_cloud_test` beklentileri |
-| #774 (2 Eki) | **"Tüm oyuncular →" / "← Arkadaşlar" bağlantıları başlıkla aynı tipografide, mavi + kalın** (kullanıcı isteği; web yarısı #775 ile hemen yayında) | `ui/live/live_game_create_form.dart` (`_LinkButton`) + `ui/friends/friends_modal.dart`; `trUpper` ile büyük harf, sabitler web'le birebir |
-| #779 (2 Eki) | **Kayıt formu: ad/soyad isteğe bağlı, zorunlular üstte + Gizlilik "Ad ve soyad (isteğe bağlı)"** (kullanıcı isteği; web formu hemen yayında) | `ui/auth/auth_modal.dart` · `account_settings_modal.dart` · `legal_modals.dart` + web `src/legal/LegalContent.tsx` (Gizlilik tarihi 12 Ekim 2026 — `legal_text_test` web↔port tarih eşliği yüzünden İKİSİ BU PR'da). Cihaz: `TESTING.md` → "Ad/soyad İSTEĞE BAĞLI" |
+✅ 11 Ekim: **dal temizliği** (workflow `Dal temizliği`, ajan tetikledi, kullanıcı onayladı). 16 `claude/*` dalı silindi; ölçüt commit sayısı değil, her commit'in eklediği satırların `main`'deki dosyada durması (≥%91, kalanı yalnız ROADMAP satırı). Geri yükleme için son SHA'lar: `kayit-113-play-yayinda`, `meta-teaser-ilk-okuma`, `roadmap-mau-hedefi` (#836 ile `main`'de) · `android-adaptive-icon-inset` `0631d11` · `beyin-ligi-port` `f0f3690` · `bildirim-ayarlari-karti` `7ec1eb8` · `engelle-port-ikizi` `b8b46a4` · `gecmis-beraberlik-ben-port` `afb3f8c` · `kayit-formu-port` `5499db4` · `oyun-sonu-modal-bayat` `90a656d` · `shorts-videolar` `1c0e31a` · `tanitim-kapisi-cihaz-port` `d910107` · `setup-oyuncu-metni-port` `18e0ee4` · `tum-oyuncular-link-port` `ad781ca` · `vercel-build-page-visibility-2dakrv` `898f2fa` · `vergi-metni-rakibine-port` `b9541a8`. **Bilerek TUTULAN 5 dal:** `koltuk-1-sen-port` (`live_game_create_form.dart` farkı bakılmadı), `random-opponent-port` + `team-league-phase-0-motor-pab2ye` (%84 / %71 — gerçek iş olabilir), `roadmap-b-rutbe-iptal` (#816) ve `yarim-oyun-izin-olaylari` (#837). Not: `kayit-toplu-11-eki` uzakta hiç yoktu.
+
+⚠ **Kesimde sürüm numarası da yükselmeli** (`pubspec.yaml` + `config/env.dart`, `app_version_parity_test`): sıradaki sürüm **1.1.4** (kesim 19 Ekim). Mağazada onaylanmış bir sürüme yeni build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasında ÖLÇÜLDÜ").
 
 ### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
 
@@ -219,6 +221,8 @@ alınmaz); A/B/C ayrı küçük PR'larla `origin/main`'den yeni dallarda yapıl�
 mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunucu yarısı canlıda). Tasarım:
 `docs/decisions/random-opponent.md` (#804'te).
 
+⚠ **10 Ekim 2026 (kullanıcı): #804 iki hesapla test EDİLECEK** (`docs/testing-rastgele.md`); 12 Ekim kesimine yetişmezse **1-2 gün kayar, sorun değil** — #804/#805 testten sonra, diğer 1.1.3 işleriyle aynı sürümde çıkar (kesim günü sabit, bu iki PR için bekleme payı). Sürüm numarası 1.1.3 kalır.
+
 - **A. Yabancıyla biten oyunda "Tekrar Oyna": gösterilsin — ama yalnızca TÜM
   rakipler arkadaşsa.** Sunucu rövanşta "Yalnızca arkadaşlarını davet
   edebilirsin" der; arkadaş olmayana düğme gösterilmez, oyun sonu arkadaş
@@ -226,7 +230,7 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
   (ör. 4 kişide 1 yabancı) düğme gizli mi, yabancısız mı kurulsun — uygularken
   karar ver, `rematchSlots` ↔ `rematch_slots.dart` + `verify-rematch-slots`.
 - **B. Rütbe mührü kartlarda OLSUN — ❌ VAZGEÇİLDİ (5 Ekim 2026, kullanıcı: *"Bu kutuya mühür koymayalım, yer yok."*).** Şerit kutusu kare ve eni en çok 7rem; ad zaten kırpılıyor. Bekleyen oyun satırında mühür zaten vardı (`ParticipantRow`, `LiveGamesTab.tsx`), yapılacak iş kalmadı. Devam Edenler avatar şeridine (`PlayerAvatarRow`, adsız) mühür de konmayacak. Yeniden açılırsa önce kutunun düzeni değişmeli.
-- **E. Davet kuralları: engel + çift başına sınır + arkadaşlık yolu — ✅ SUNUCU CANLIDA (4 Ekim 2026, kullanıcı kararı).** Engel (sessize alma YA DA şikayet) oyun davetini, arkadaşlık isteğini ve arkadaş davet linkini kapatır ("<ad> kullanıcısı sizi engelledi."); aynı kişiye 1 adet 2 kişilik + 1 adet 4 kişilik bekleyen davet, genel tavan YOK (her arkadaşa 2 hak; toplam = arkadaş sayısı × 2). Migration'lar `…193412_invite_block_and_pair_limit` + `…202039_block_friend_requests` (yalnızca sunucu, sürüm gerektirmez). Eski 2 argümanlı yardımcı panelden düşürüldü ✅. **İSTEMCİ: WEB ✅ (5 Ekim 2026, merge bekliyor — kullanıcı görünümü onaylayınca), PORT AÇIK (19 Ekim treni, taslak PR).** Web: "Sessize al" → "Engelle" terimi, oyun davet + arkadaşlık isteği kartında yalnızca Engelle (şikayet yok), Arkadaşlar → "Engellediklerim" (arkadaş olmayanı geri almanın yolu), oyundan bağımsız `user_blocks` (`20261004203040`). `unblock_user` panelden çalıştırıldı ✅ (5 Ekim 2026, kullanıcı; gövdesinde DELETE, MCP aracı onay bekleyip zaman aşımına uğradığı için) ve canlıda doğrulandı. **Port 19 Ekim'de:** aynı özellikler + listeler kendi içinde kayar (arkadaş/arama/Engellediklerim, `max-h-[55vh]`, web 4 Ekim 2026) + arkadaşın ⋯ menüsünde Engelle / Engeli kaldır (web 5 Ekim 2026); Puan Ligi'nde "Puanlar eşitse OHP yüksek olan üstte." üst açıklamadan alt nota ("YZ'ye karşı…" yanına) taşındı — `leaderboard_modal.dart` (`kPuanLigiNote`) + `score_card_test` aynı şekilde + parite-kilitli dört metin (arkadaş menüsü etiketi, `chatRules.ts`, hukuki metinler + yasal metin tarihi, karşılama cümlesi). Ayrıntı: `docs/decisions/live-game.md` → "Davet kuralları" + "Engel arkadaşlık yoluna da uzandı".
+- **E. Davet kuralları: engel + çift başına sınır + arkadaşlık yolu — ✅ SUNUCU CANLIDA (4 Ekim 2026, kullanıcı kararı).** Engel (sessize alma YA DA şikayet) oyun davetini, arkadaşlık isteğini ve arkadaş davet linkini kapatır ("<ad> kullanıcısı sizi engelledi."); aynı kişiye 1 adet 2 kişilik + 1 adet 4 kişilik bekleyen davet, genel tavan YOK (her arkadaşa 2 hak; toplam = arkadaş sayısı × 2). Migration'lar `…193412_invite_block_and_pair_limit` + `…202039_block_friend_requests` (yalnızca sunucu, sürüm gerektirmez). Eski 2 argümanlı yardımcı panelden düşürüldü ✅. **İSTEMCİ: WEB ✅ (5 Ekim 2026, merge bekliyor — kullanıcı görünümü onaylayınca), PORT HAZIR — taslak PR #815, **12 Ekim treni** (11 Ekim 2026 kararı; önce 19 Ekim'di).** Web: "Sessize al" → "Engelle" terimi, oyun davet + arkadaşlık isteği kartında yalnızca Engelle (şikayet yok), Arkadaşlar → "Engellediklerim" (arkadaş olmayanı geri almanın yolu), oyundan bağımsız `user_blocks` (`20261004203040`). `unblock_user` panelden çalıştırıldı ✅ (5 Ekim 2026, kullanıcı; gövdesinde DELETE, MCP aracı onay bekleyip zaman aşımına uğradığı için) ve canlıda doğrulandı. **Port (yazıldı, 12 Ekim'de merge):** aynı özellikler + listeler kendi içinde kayar (arkadaş/arama/Engellediklerim, `max-h-[55vh]`, web 4 Ekim 2026) + arkadaşın ⋯ menüsünde Engelle / Engeli kaldır (web 5 Ekim 2026); Puan Ligi'nde "Puanlar eşitse OHP yüksek olan üstte." üst açıklamadan alt nota ("YZ'ye karşı…" yanına) taşındı — `leaderboard_modal.dart` (`kPuanLigiNote`) + `score_card_test` aynı şekilde + parite-kilitli dört metin (arkadaş menüsü etiketi, `chatRules.ts`, hukuki metinler + yasal metin tarihi, karşılama cümlesi). Ayrıntı: `docs/decisions/live-game.md` → "Davet kuralları" + "Engel arkadaşlık yoluna da uzandı".
 - **D. Eski istemcide açık koltuk "Yapay Zeka" görünür — OLDUĞU GİBİ KALSIN (4 Ekim 2026, kullanıcı: *"Böyle kalsın"*).** Cihazda yakalandı: "Oyun Davetleri → Bekleyen Oyunlar"da `Ironman` + `Yapay Zeka`, "Davet gönderen", 6 gün 18 saat kaldı. Canlıda doğrulandı: oyun `listing='random'`, ikinci koltuk `open`; `list_my_online_games` onu eski istemciler için `{type:'ai',open:true}`e maskeliyor, `main`'deki web + Dart `fromJson` `open`'ı tanımadığından YZ sanıyor. Tasarım kararı (`random-opponent.md` §6, "bilinen bedel"); #804/#805 12 Ekim'de düzeltir. Reddedilen: sunucu maskesini değiştirmek (canlıya anında yazılır, eski istemcinin boş `user_id` ile davranışı ölçülmedi), web'e öne çekilmiş yama (#804 ile çakışır). Gerekçe: ilan henüz kullanılmıyor, etki yalnızca görünüm.
 - **C. İlan kabul edildi bildirimi OLSUN — ✅ SUNUCU YARISI CANLIDA, 12 Ekim'e DAHİL (4 Ekim 2026, kullanıcı: "12 Ekim'de bildirim de yayında olmalı"; A/B 19 Ekim'de kalır).** Yalnızca sunucu, istemci/sürüm gerektirmez: `_notify_random_game_started` (`after insert` on `online_game_states`, yalnızca `via: random` koltuklu oyun) → mevcut `notify-your-turn` (hiç hamle yoksa "Oyun başladı! … ilk hamle sende.", etiket `sira:<id>`). Migration'lar `20261004100205`/`…100300`, Edge v4 (`verify_jwt: false` korundu). **Normal davet de KAPSANDI** (kullanıcı sorusu: davetçi de kabulden haberdar olmuyordu — ölçüldü, başlangıcı haber veren tetikleyici yoktu): tetikleyici `_notify_game_started`, TÜM canlı oyunlar; metin "2 kişilik [rastgele ]oyunun başladı — ilk hamle sende!" (başlıkta "Oyun başladı" yok, başlık "Sıra sende!"). Edge v5. Eski rastgele-yalnız tetikleyici + fonksiyonu canlıdan DÜŞÜRÜLDÜ (kullanıcı Supabase panelinden çalıştırdı; araç DROP'ta onay bekleyip zaman aşımına uğruyor, DROP'u panelden yaptır). Canlı doğrulandı: yalnızca `notify_started` + `notify_turn` etkin. Eski not: oyun dolup başlayınca ilan sahibine
   "oyun başladı" bildirimi (sıra ondaysa ilk hamleyi hemen yapsın, yoksa oyun
@@ -237,7 +241,7 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
 
 ⚠ **DURUM (2 Ekim 2026): 1.1.2 (831) İKİ MAĞAZADA YAYINDA** — Play 2 Eki 00:56 TSİ, App Store 2 Eki akşamı (kullanıcı: *"Apple released"*). Mağazadaki paket = `05f1c1f` (koşu #831). Sıradaki sürüm **1.1.3**, kesim **Pazartesi 12 Ekim** (yukarıdaki "1.1.3 treni" tablosu); mobil işler taslak PR olarak bekler. 1.1.2'nin içerik tablosu, kesim kaydı ve gönderim kararları arşivde: `docs/decisions/roadmap-arsiv.md` → "Yedinci taşıma". Kayıt: `surumler.md` → "1.1.2 (831)".
 
-**1.1.2'den açık kalan tek saha kontrolü:** yarım oyun hatırlatması (#731) cihazda HENÜZ GÖRÜLMEDİ — ilk bildirim 3 Ekim 19:00 bekleniyor (`mobile/TESTING.md` §34). **Etki ölçümü (3 Eki, kullanıcı kararı): telemetri EKLENMEYECEK** — `reminder_set`/`reminder_open` funnel olayları önerildi, *"gerek yok"*. Etki yalnızca vekille izlenir: `game_finishes` mobil `multi_session` + TSİ 19-22 bitişleri (taban ~0-1/gün, atfa yetmez).
+**1.1.2'den açık kalan tek saha kontrolü:** yarım oyun hatırlatması (#731) cihazda HENÜZ GÖRÜLMEDİ (6 Eki: kullanıcıda gelmedi — izin/sürüm/ayar tamam, uygulamayı 19:00'dan önce yeniden açmış olabilir → bu iptal eder, hata DEĞİL; test geçersiz sayıldı, TESTING.md §34 "Bildirim düşüyor" maddesi uygulamayı hiç açmadan yeniden koşulacak) — **8 Eki 2026: ikinci deneme de GELMEDİ** (iPhone, girişsiz YZ oyunu, 8-10 hamle, "← Geri", uygulama kaydırılıp kapatıldı, bir daha AÇILMADI; bu kez iptal açıklaması YOK). Kodda üç aday: (1) iOS'ta izin `denied` ise kart HATIRLAT dese de `requestPermission()` sessizce no-op → `izinVar` false → hiçbir şey kurulmaz (#757 "Bildirimler kapalı" kartı henüz `main`'de DEĞİL); (2) kurma, route pop'unun ARDINDAN async çalışıyor (`host.end()` → izin kartı → `oyundanAyrildi`) — "Geri"den hemen sonra kaydırıp kapatmak kurmadan önce süreci öldürebilir; (3) zaman: ayrılıştan ≥12 sa sonraki İLK 19:00. Cihaz bilgisi (izin durumu · kart çıktı mı · ayrılış saati) kullanıcıdan bekleniyor. **8 Eki: bildirim ayarı AÇIKTI (kullanıcı) → aday 1 büyük ölçüde elendi.** Üçüncü deneme: oyun ekranındayken uygulamadan çıkış (gerçek kullanıcı yolu, `onHide`), ardından kapatma; beklenen **9 Eki 19:00** — **⚠ 9 Eki: üçüncü deneme GEÇERSİZ** (kullanıcı ayrıldıktan sonra oyuna tekrar girip oynadı → sayaç sıfırlandı, hata DEĞİL; bildirim gelmedi çünkü gelmemesi gerekiyordu). **Dördüncü deneme:** 9 Eki ~10:40'ta oyundan çıkıldı, uygulama bir daha AÇILMAYACAK (Odaklanma kapalı); bugünün 19:00'ı ≥12 sa kuralını sağlamıyor (~8 sa) → beklenen **10 Eki 19:00**, 19:30'a kadar gelmezse sorun var sayılır — **⚠ 12 Eki: dördüncü deneme de GELMEDİ (kullanıcı: *"Görmedim"*) → geçerli koşullarda iki başarısızlık (8 Eki + 10 Eki), artık HATA sayılır; kök neden araştırılacak (aday 2: kurma route pop'unun ardından async, ve iOS'ta zamanlanmış yerel bildirimin gerçekten kurulduğu hiç doğrulanmadı)** — ilk bildirim 3 Ekim 19:00 bekleniyor (`mobile/TESTING.md` §34). **Etki ölçümü (3 Eki, kullanıcı kararı): telemetri EKLENMEYECEK** — `reminder_set`/`reminder_open` funnel olayları önerildi, *"gerek yok"*. Etki yalnızca vekille izlenir: `game_finishes` mobil `multi_session` + TSİ 19-22 bitişleri (taban ~0-1/gün, atfa yetmez).
 
 ⚠ **`mobile-latest` her mobil derlemede ÜZERİNE yazılır** — sıradaki sürüm
 adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
@@ -870,7 +874,56 @@ gider); sürüm dondurması bitmeden başlama.
 
 ---
 
-## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
+## 46. MAU hedefi — 11 Ekim 2027'ye kadar 1.200 — **AÇIK, ölçüm ve plan** (11 Ekim 2026, kullanıcı)
+
+**Hedef (kullanıcı, 11 Eki 2026):** *"seneye bu gün 1200 MAU"* ve buna göre en etkili
+kampanyayı bulmak.
+
+**Tanım (kullanıcı onayı, 11 Eki):** MAU = son 28 günde `game_starts`ta en az bir
+yerel oyun başlatan benzersiz `anon_id`. ⚠ Projede bilerek "MAU" yok
+(`docs/decisions/admin-panel.md` → "Bu bilerek MAU DEĞİL"); bu tanım yalnızca bu
+hedef içindir. Eksiği: yalnızca-Canlı oynayan girişli oyuncu sayılmaz. Alternatifler
+ölçüldü: `device_visits` 28 gün **2.283** (karşılamada çıkıp gidenleri de sayar, şişkin);
+Play Console "aylık aktif" **20** (30 Eyl).
+
+**Başlangıç (11 Eki 2026, canlı SQL):** 28 gün **317** (önceki 28 gün 194, +%63 —
+28 Eyl'deki Meta kampanyasının etkisi) · 7 gün 126 · üye 101 (28 günde +49).
+Hedef 317 → 1.200 = ×3,8 → yaklaşık **ayda %12** büyüme, 12 ay boyunca.
+
+**Kaynağa göre kalite (28 gün, `game_starts.utm_source`):** `app` 220 oyuncu, %15 geri
+dönen, kişi başı 4,0 oyun · `direkt` 23, %39, 16 · `arkadas` 5, %60, 3,4 ·
+`meta-karusel` 23, **%0**, 1,1 · `instagram` 21, %10, 2,6 · `li-profil` 17, %0, 1,1 ·
+`meta-h1/h2/h3` toplam 5 oyuncu. ⚠ Küçük örneklem (`arkadas` 5, `direkt` 23) — yön
+gösterir, kanıt değil. ⚠ **Atıf kopuk:** reklamdan mağazaya gidip kuranlar kurulumdan
+sonra `app` olarak görünür; reklamın gerçek getirisi bu tablodan OKUNAMAZ.
+
+**Sonuç / sıra:** cold trafik oyuncuya dönse bile geri dönüş %0-15; geri dönenler
+direkt girenler ve arkadaşla gelenler. En etkili kampanya = önce geri dönüş + arkadaş
+daveti, ücretli trafik ikinci.
+1. **Atıf:** ilk kurulum kaynağını uygulamaya taşı (Play Install Referrer zaten var,
+   #40; iOS tarafı `pt`/`ct` + ASC 5-kurulum eşiği yüzünden zayıf) — `game_starts`
+   `utm_source`u kurulum kaynağıyla dolsun.
+2. **Geri dönüş:** arkadaş daveti ve bildirimle ikinci oyuna dönüş.
+3. **Ücretli trafik** ancak 1-2'nin ölçümü çalışınca ölçeklenir; karar ölçütü
+   "mağaza oturumu başı maliyet" yerine **geri dönen oyuncu başı maliyet**.
+
+**Tasarım notları (11 Eki):** #46-1 (atıf) → `docs/decisions/funnel-v2.md` → "#46-1 tasarım notu"; #45-A (Tekrar Oyna) → `docs/decisions/random-opponent.md` §20. İkisi 19 Ekim (1.1.4) treni, kod henüz YOK, kullanıcı kararı bekleyen sorular notlarda. ⚠ **13 Ekim 2026 (kullanıcı kararı):** Takım Ligi (#44) kaydırılırken bu ikisi sorulup **19 Ekim'de KALDI** (#45-A: Rastgele'nin düzeltmesi, oyuncuya yeni kavram öğretmiyor; #46-1: oyuncuya görünmez). **Güncel durum (13 Ekim akşamı):** **#45-A: S1 ve S2 KAPANDI** (S1: engellediğin rakiple oyun kurulmaz, önce engeli kaldırırsın; S2: arkadaş olmayan rakibin koltuğu rastgele/açık koltuğa döner, arkadaşlar davetli kalır, YZ yalnızca eski oyunda varsa son koltukta — kararlar `random-opponent.md` §20) → **web YAZILDI (#858, merge bekliyor), port taslak PR'da (#859, Parça 243) → 19 Ekim kesimine GİRİYOR.** **#46-1: kod hâlâ YOK ve açık sorular cevapsız (madde 1/2) → kesime YETİŞMEYEBİLİR;** yetişmezse bir sonraki trene kayar, kullanıcıya sorulmadan başka karar alınmaz. **Açık:** 1-3 için ayrı maddeler/PR'lar henüz AÇILMADI; Meta teaser Aşama 1 kararı
+(`marketing/meta-reklam/kampanya-teaser-ekim-2026.md`) bu ölçütle yeniden bakılacak.
+
+## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB (#804) + PORT (#805) YAZILDI, taslak PR'da · 12 Ekim treni, İKİSİ BİRLİKTE MERGE** (3-4 Ekim 2026)
+## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB YAZILDI (PR'da, test bekliyor) · PORT YAZILDI (taslak PR, cihaz testi bekliyor) · hedef 12 Ekim treni** (3 Ekim 2026)
+
+Kullanıcı (3 Ekim): arkadaş listesinin tepesine "?" avatarlı **Rastgele Oyuncu**;
+ilan Devam Edenler'in üstünde **3 kutu yan yana, yatay kayan şeritte** kabul
+edilir, kabul edilen oyun "Bekliyor" ile Devam Edenler'e girer. Motora dokunmaz.
+Kayıt, kararlar (A-F kapandı) ve öneriler: `docs/decisions/random-opponent.md`. Kullanıcı: 12 Ekim trenine alınabilirse alınsın (port yetişmezse 19 Ekim);
+Takım Ligi (#44) ile aynı `online_games.listing` altyapısı.
+⚠ **4 Ekim (kullanıcı): web (#804) ve port (#805) AYNI GÜN merge edilir** (iki taraflı pazar yeri; web tek başına işe yaramaz) — `random-opponent.md` §19.
+
+## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · İLERİKİ SÜRÜMLERE KAYDIRILDI (13 Ekim 2026; eski hedef: 19 Ekim treni)**
+
+⚠ **13 Ekim 2026 (kullanıcı kararı):** *"Bence takım ligi olayını ileriki sürümlere kaydıralım. Daha yeni rastgele başladı. İnsanlar önce onu özümsesin, sonra yeni bir şey gelsin. Arka arkaya kafalar karışabilir."* **Gerekçe ürün sırası, teknik değil:** Rastgele Oyuncu (#45) yeni yayında, oyuncular onu özümsemeden ikinci bir yeni oyun türü getirilmesin. **Yeni hedef sürüm YOK** — Rastgele'nin kullanımı (günlük ilan/farklı kurucu, bkz. #45 ölçümü) oturunca kullanıcı yeniden karar verir. 19 Ekim (1.1.4) kesimine Takım Ligi kodu GİRMEZ; aşağıdaki "19 Ekim" ve "12 Ekim kesiminden sonra" ifadeleri TARİHÇEDİR. Tasarım (`docs/decisions/team-league.md`) olduğu gibi geçerli. `listing` altyapısı Rastgele ile paylaşıldığından ön koşul zaten canlıda.
+
 
 Kullanıcı (3 Ekim): *"Bence bu ok. Bunu 19 Ekim trenine düşünüyorum. Şimdilik
 roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
@@ -885,6 +938,7 @@ roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
   https://claude.ai/artifact/GQcCRXeb8xmAfrEWQLXXed (özel bağlantı).
   **Tıklanabilir prototip** (sahte veri, kod değil; takım kur, oyun aç, kabul
   et, takımsız yol): https://claude.ai/artifact/2NGiuSvkcduFJkdQLVtXGd
+- **Revizyon 17 (4 Ekim 2026, kullanıcı):** bir üyenin teslimi (48 saat dahil) TÜM TAKIMI teslim yapar, oyun hemen biter (4 kişide de); teslim olan takımın iki oyuncusu −2, takım −2; kazanan iki oyuncu +2, takım +2. Ayrıntı: `team-league.md` §3, §8, "Revizyon 17".
 - **Kullanıcı kararları (3 Ekim 2026, kapandı):** S12 eski sürüm: sunucu
   takım oyununda eski hamle çağrısını reddeder, mesaj *"Telefonunuz takım
   oyununu desteklemiyor"* · S13 takımın vergi payı iki ortağa yarı yarıya yazılır

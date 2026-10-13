@@ -252,6 +252,7 @@ notunda da yazılı.
     - **Doğrulama:** canlıda gerçek admin JWT'siyle (`set local role authenticated`) koşuldu — yıllık/yerel kova **18,1 / 841,9 dakika** döndü, yani migration'dan ÖNCE bağımsız olarak yapılan doğrudan ölçümle BİREBİR aynı; admin olmayan çağrı `Yetkisiz erişim.` ile reddedildi; grant'ler diğer admin RPC'leriyle aynı (`authenticated`+`service_role`, `anon` YOK) ve her ad tek bir overload taşıyor.
 
 #### "YZ Dengesi" paneli
+  - **Sabit 3 × 3 ızgara (7 Ekim 2026, kullanıcı isteği: *"İlk satır 2 kişilik kolay, normal, zor; ikinci satır 4 kişilik kolay, normal, zor. 3. satır ikincilikler olsun"*):** sütun = YZ seviyesi (Kolay · Normal · Zor), satırlar 2 kişilik birincilik · 4 kişilik birincilik · 4 kişilik İKİNCİLİK (`aiBalanceRows`). Üç seviye HER ZAMAN çizilir; o seviyede oyun yoksa kutu `—` (eskiden kutu sayısı veriye bağlıydı, Kolay/Zor gelince ızgara kayıyordu). 2 kişilik ikincilik bilerek yok (= kayıp oranı). RPC değişmedi.
 
   - **"YZ Dengesi" paneli (16 Ağustos 2026, `admin_ai_balance` migration'ı)** — aynı denetimin üçüncü bulgusu: veri `games`te BAŞTAN BERİ vardı ve hiçbir yerde gösterilmiyordu, oysa bu, YZ'ye (`src/utils/ai.ts` ve onun Dart kopyası) dokunan her değişikliğin regresyonunu yakalayan tek sayı. `admin_ai_balance()` yerel (`online_game_id is null`) oyunlarda İNSANIN sonuç dağılımını oyuncu sayısı bazında döner (`games`/`wins`/`ties`/`losses`/`second_places`); Büyüme > Oyun'un tepesindeki angajman kutularının altında kutu olarak gösteriliyor.
     - **Teslim satırları HARİÇ** (`not surrendered`) — onlar bir beceri sonucu değil, 7 günlük terk-edilme cezasının kaydı (bkz. "Terk edilen oyunun otomatik temizliği"); dahil edilselerdi YZ olduğundan güçlü görünürdü.
@@ -676,6 +677,42 @@ macOS'un dondurulmuş sürüm dizesi. Masaüstü User-Agent'ı veren cihazlar
 — `getDeviceType`ı değiştirmek geçmiş verinin anlamını da kaydırırdı ve
 kimse bu ayrımı bugüne kadar sormadı; tablo hatayı gizlemek yerine
 gösteriyor (etiket platformu HER ZAMAN yazıyor, bu yüzden).
+
+### Cihaz ağacı: Marka tablosu "Cihaz"la birleşti, model altına SÜRÜM girdi (7 Ekim 2026)
+
+Kullanıcı isteği (sözleri birebir): *"Admin büyümedeki cihaz ve cihaz markası
+tabloları birleşemez mi? Android → Marka → Model gibi"*, ardından *"Şu anda
+zaten Samsung Android 13'te kaç kişi var. Modelin alt kırılımı olabilir"*.
+**"Cihaz Markası" ayrı tablo olmaktan çıktı**; `DeviceOsTable` +
+`DeviceBrandTable` tek `DeviceTreeTable` oldu (ağacı kuran saf fonksiyon
+`deviceTree`, `src/utils/deviceLabels.ts`; `osBreakdown`/`brandBreakdown` onun
+yapı taşı olarak duruyor).
+
+```
+Platform ▸ Marka ▸ Model ▸ İşletim sistemi sürümü
+         ▸ Sürümler ▸ (platformun TÜM sürümleri, markadan bağımsız)
+Masaüstü ▸ yalnızca sürümler (hiçbir tarayıcı model vermiyor)
+```
+
+- **Marka × sürüm ÇAPRAZI için yeni RPC:** `admin_device_model_os_breakdown`
+  (`20261007053639`; platform × model × sürüm başına `count(distinct anon_id)`,
+  aynı bot süzgeci, `proacl` kardeş fonksiyonlarla AYNI: `anon` yok). İki eski
+  RPC ayrı sorular soruyor, çaprazı yalnızca tek satırda (`device_visits`)
+  hesaplanabilir. Canlıda ilk ölçüm (30 gün): **Samsung + Android 13 = 70**.
+- **"Sürümler" dalı bilerek duruyor:** "kaç kişi hâlâ eski Android'de?" sorusu
+  markaya bakmadan buradan okunur; ağaçtan çıkarılsaydı o soru cevapsız kalırdı.
+- ⚠ **Üst satır alt toplamın toplamı DEĞİL** (üç RPC, her biri kendi
+  benzersizini sayıyor): platform → `admin_device_breakdown`, marka/model →
+  `admin_device_model_breakdown`, model altındaki sürümler → yeni RPC. Aynı
+  ziyaretçi pencerede OS güncellerse iki sürüm satırında görünür (canlıda 30
+  gün: çapraz toplam **1655**, gerçek benzersiz **1648**). Yüzdeler GENEL
+  toplamın payı (eski iki tablonun kuralı).
+- **CSV ağacı DÜZ verir**, her satırda `Seviye` sütunu (platform · marka ·
+  model · model-sürüm · platform-sürüm).
+- Kapı: `npm run verify-device-labels` (12 yeni vaka: Samsung → model → Android
+  13 toplamı, platformlar arası model karışmaması, masaüstünde marka yok…).
+  Ekran görüntüsü doğrulaması: bileşen sahte veriyle gerçek tarayıcıda çizilip
+  tıklandı (admin hesabı olmadığından canlı panel görülmedi).
 
 ### Aşama 2 — gerçek cihaz modeli (YAPILMADI)
 
@@ -1326,11 +1363,95 @@ Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları
   (sahte uç, mobil UA): görünür açılış → hemen; gizli açılıp 3 sn sonra
   görünen → 3,7 sn'de hepsi, yolculuk süresi 2 sn (5 değil); hiç görünmeyen
   → **0 istek**.
-- ⚠ **Doğrulama BEKLİYOR:** düzeltme canlıya çıktıktan sonra 31-33 sn
+- ⚠ **Doğrulama (SONUÇ aşağıda: 12 Ekim'de yığılma kaybolmadı):** düzeltme canlıya çıktıktan sonra 31-33 sn
   yığılması yeni satırlarda kaybolursa hipotez doğru. Kaybolmazsa önyükleme
   sayfayı "görünür" çalıştırıyor demektir; o zaman Huni v2 LAND'ı da hâlâ
   şişkin. Sorgu: `web_sessions` → `seconds between 31 and 33 and
   last_step='landing'`, `created_at` yayın sonrası.
+- ❌ **Doğrulama SONUCU (12 Ekim 2026): düzeltme yığılmayı GİDERMEDİ.**
+  #787 `main`'e 2 Ekim 15:52'de girdi; canlı derleme `877b43e` onu içeriyor
+  (`git merge-base --is-ancestor`, `curl` ile okundu) — bayat derleme
+  açıklaması YOK. `web_sessions`, `last_step='landing'`, 2 Ekim 13:30 UTC
+  sonrası: 1298 oturumun **528'i (%41) 31-33 sn**; günlük 2 Ekim 40/104,
+  6 Ekim 130/237, 11 Ekim 68/227, 12 Ekim 21/78. Komşu aralıklar (28-30,
+  34-36) sivri değil. Yığılmanın TAMAMI Meta etiketli ve **Android'e özgü**:
+  Meta kaynaklı 509 yığılmanın 507'si Android, iOS'ta 245 Meta oturumundan
+  yalnızca 2'si. ⚠ "Öncesi" sayıları (25 Eyl–2 Eki: 13/267) KARŞILAŞTIRMA
+  DEĞİL — geçmiş aynı gün silindi (aşağıdaki "Geçmiş TEMİZLENDİ"). Anlamı:
+  Android'in Meta tarayıcısı, arka planda yüklenirken de
+  `visibilityState !== 'hidden'` döndürüyor (ya da bu kapıya hiç
+  takılmayan başka bir yol var) → `whenPageVisible` onu "görünür" sayıyor.
+  Bu hâlâ BİR HİPOTEZ; "hayalet" olduklarının kanıtı da yok. Sonuç:
+  Android karşılama ayrılması ve Huni v2 `land` hâlâ şişkin olabilir.
+  Araştırma planı aşağıda ("Yığılmanın kaynağını bulma").
+- **Yığılmanın kaynağını bulma (plan, 12 Ekim 2026 — ADIM 1 CANLIDA (#847), 12 Ekim'den beri
+  veri topluyor):** ölçüm kodu
+  `src/utils/visibilityProbe.ts` (karşılamada mobil için bir kez başlar,
+  `main.tsx`te tek çağrı) → `record_visibility_probe` RPC'si →
+  `visibility_probe` tablosu (sayfa başına 1 satır; `vis_state`, `has_focus`,
+  `load_ms`, `in_app`, `became_visible_ms`, `first_input_ms`, `input_count`,
+  `alive_ms`). Migration'lar canlıda: `20261012093127_visibility_probe` +
+  `20261012100000_visibility_probe_null_fix` (⚠ `greatest(null,0)` Postgres'te
+  0 döner → "girdi yok" ile "0. ms'de girdi" karışıyordu; canlı doğrulamada
+  yakalandı). İstemci okuyamaz (`anon` yalnızca fonksiyonu çağırır). Canlıda
+  iki test satırı kaldı (`utm_source='meta_test'`, id `00000000-…0001/2`) —
+  silme çağrısı MCP'de zaman aşımına uğradı; sorgularda `utm_source <>
+  'meta_test'` ile ele. ⚠ GEÇİCİ: ölçüm bitince modül, `main.tsx` çağrısı,
+  tablo ve fonksiyon silinir. Okuma sorgusu: `in_app`, `vis_state` ve
+  `first_input_ms is null` kırılımında 31-33 sn grubu ile ötekileri karşılaştır.
+  **İLK GÜN VERİSİ (13 Ekim 2026, 217 satır, ~24 sa):** (a) 31,4–34,0 sn'de
+  53 sayfa bitti; 49'unda hiç girdi yok, 47'si Instagram, kalanı Facebook,
+  **iOS'ta bu aralıkta tek satır yok**. Android + Meta girdisiz 94 sayfanın
+  52'si 30-40 sn kovasında; girdili sayfalar dağınık. (b) `vis_state` ve
+  `has_focus` **ayırt ETMİYOR**: neredeyse her sayfa `visible` +
+  `has_focus=false`, gerçek (girdili) kullanıcılar da — webview'da bu iki
+  sinyal bilgi taşımıyor, #787'nin `visibilityState` kapısının neden
+  yığılmayı gidermediğinin açıklaması bu. (c) `alive_ms` son ping'in saati
+  (ping'ler: yükleme, 20. sn, `hidden`, `pagehide`); 31-34 sn dar bir pencere
+  → ölçüm artefaktı değil, o anda gerçek bir `hidden`/`pagehide` var.
+  (d) iOS girdisiz sayfalar 20-30 sn kovasında toplanıyor (muhtemelen 20.
+  sn ping'inin kendisi; doğrulanmadı). **Hâlâ bilinmeyen:** o olayı kimin
+  attığı → ADIM 2.
+  **ADIM 2 (13 Ekim 2026, `claude/visibility-probe-tetikleyici`):** yeni
+  kolonlar `end_event` (`load|timer|hidden|pagehide`, ömrü en uzun ping'in
+  olayı), `first_hidden_ms`, `hidden_count`, `persisted` (`pagehide`
+  bfcache mi). Migration `20261013092347_visibility_probe_trigger` canlıda.
+  ⚠ **Eski 11 argümanlı fonksiyon BİLEREK duruyor** (canlıdaki istemci onu
+  çağırıyor; yeni istemci merge edilene kadar veri akar). İki imza
+  adlandırılmış argümanlarla ayrışıyor; ölçüm bitince İKİSİ DE silinir.
+  Yeni satırlarda `end_event is null` = eski istemci. Test satırları:
+  `utm_source='meta_test'` (bu turda `…0a1` eklendi, silme çağrısı MCP'de yine
+  zaman aşımına uğradı). Okuma: 31-33 sn grubunu `end_event`, `first_hidden_ms`
+  ve `persisted` kırılımında ötekilerle karşılaştır.
+  **Reklam kırılımı (13 Ekim 2026, son 3 gün, kaynak = `utm_source`):**
+  `meta-h1` 76 sayfa / 23 yığılma (%30), `meta-h2` 66 / 20 (%30), `meta-h3`
+  68 / 10 (%15); `meta-karusel` 4 / 0. Yığılma reklama göre değişiyor, yani
+  kampanya kararlarında Meta'nın LPV'si ve `web_sessions` oturumu 'girdili
+  sayfa' ile birlikte okunmalı. Kampanya yorumu:
+  `marketing/meta-reklam/kampanya-teaser-ekim-2026.md` §5, 13 Eki satırı.
+  `web_sessions`'ta user-agent kolonu YOK (id, entry, device_type,
+  utm_source, steps, last_step, moves, seconds, scroll_pct, created_at,
+  updated_at), yani sorun yalnızca bu tablodan ÇÖZÜLEMEZ.
+  1. **Ölç, tahmin etme:** `whenPageVisible` ilk karar anında
+     `visibilityState`, `document.hidden`, `document.hasFocus()` ve
+     `performance.now()`'u bir `client_errors`/geçici telemetri satırına
+     yazsın (yalnızca Meta+Android örneklemi, birkaç yüz satır yeter). Hangi
+     sinyalin hayalet ile gerçek ziyareti ayırdığını CANLIDAN gör.
+  2. **Ayırt edici ara:** gerçek ziyaretçi etkileşir (dokunma, kaydırma
+     OLAYI, `focus`), hayalet etkileşmez. `scroll_pct` hiçbir yığılma
+     satırında 0 değil (ort. %17) → kaydırma yüzdesi ilk ekranın kendisi,
+     etkileşim kanıtı DEĞİL; gerçek bir `touchstart`/`scroll` olayı sayacı
+     gerekir.
+  3. **Karar ölçütü:** yeni sinyal koyduktan sonra yığılma %41 → <%5
+     düşmeli. Düşmezse hipotez yanlış (yığılma başka yerden geliyor:
+     ör. sunucu tarafı ping tekrarı, `updated_at` aralığı).
+  4. **Uygulama:** kapıyı `whenPageVisible`e değil, "etkileşim ya da
+     gerçek odak oldu mu"ya bağla; hem Yolculuk hem Huni v2 `land`ı, hem
+     eski sayaçları (`guest_visits`/`device_visits`) kapsasın. Motor/oyun
+     koduna dokunmaz; mobil port etkilenmez.
+  5. **Raporlama:** düzeltme gelene dek Android karşılama ayrılma oranı
+     güvenilmez; kampanya kararlarında (ROADMAP Meta teaser) yığılmasız
+     sayıyı (`not (seconds between 31 and 33)`) kullan.
 - **Geçmiş TEMİZLENDİ (aynı gün, kullanıcı: *"Sil"*):** yığılma oturumu
   (`seconds` 31-33, `last_step='landing'`, kaydırma ≤%25, ikinci ping
   gelmiş) ±3 sn içindeki aynı cihaz tipi + aynı `utm_source` `guest_visits`

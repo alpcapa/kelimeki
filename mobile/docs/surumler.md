@@ -388,6 +388,7 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
+| **1.1.3** | **875** | `877b43e` | 11 Eki 2026 (haftalık tren, 15 PR — #826 squash `9591736` + #832 düzeltme turu; kesim 12'den öne alındı) | ✅ **App Store: YAYINDA** (11 Eki, kullanıcı: *"Just released ios 1.1.3"* — "Release This Version"a basıldı; saat ASC'den okunmadı; incelemeye gönderim 11 Eki 15:31 TSİ / 12:31 UTC, ASC ekran görüntüsünden ölçüldü) · **Play: 11 Eki 15:41 TSİ gönderildi → 16:06 TSİ ✅ YAYINDA (`Published`, Start full rollout, 25 dk)** (Submission #23, Console ekran görüntüsünden ölçüldü; `.aab` 875) — TestFlight'a 11 Eki'de düştü (koşu 38137173645; ilk paket 871 / koşu 38132174191 iPad turunda bulunan 3 hatayla geçersiz); `.apk`/`.aab` `mobile-latest`te | ✅ **iPad TestFlight turu temiz** (875: koltuk numarası · avatar halkası · istek rozeti; Rastgele Oyuncu + Engelle akışları elle denendi) — web aynı anda Vercel'de | `ROADMAP.md` → "1.1.3 treni" |
 | **1.1.2** | **807** | `927e7bc` | 1 Eki 2026 (haftalık trenin ilk kesimi, 17 PR) | ⏳ Henüz GÖNDERİLMEDİ — TestFlight'a 1 Eki 14:14'te düştü (koşu 36851189379, kullanıcı gördü); `.apk`/`.aab` `mobile-latest`te | 🧪 **CİHAZ TURU + #41 TASARIM PORTU** (1 Eki kullanıcı kararı: tasarımın tamamı 1.1.2'ye, tek gönderim; build 810 = `7246ca2` balon düzeltmesi; rozet ✅, Kayıt Hunisi ✅) | `ROADMAP.md` → "Sıradaki sürüme binecekler" |
 | **1.1.1** | **723** | `8c1828f` | 25 Eyl 2026 (tur sonu PR'ı) | **App Store: 25 Eyl 13:21 incelemeye GÖNDERİLDİ, 25 Eyl 22:49 ONAYLANDI** (`Pending Developer Release`, elle yayın — Play'le aynı gün) · **Play: 26 Eyl 16:13 gönderildi, 16:42 YAYINDA (#21)** · iOS aynı gün yayında | ✅ **İKİ MAĞAZADA YAYINDA** | Merge turunun on PR'ı (#565 · #562 · #579 · #576 · #554 · #557 · #547 · #601 · #611 · #626); ayrıntı aşağıda |
 | **1.1.0** | **665** (iOS ✅ + Play ⏳) | `9c62289` | 12 Eyl 2026 (PR #533 merge'i) | ✅ ASC: **665 iliştirildi + sürüm İNCELEMEDE** (12 Eyl 17:32, `Waiting for Review`, elle yayın) · ⏳ Play: 13 Eyl'de yüklenecek | ✅ **senkron KAPANDI** — Play production #19 yayında 24 Eyl 17:44, iki mağaza 665 | PR #533'ün merge'inin YAN ÜRÜNÜ (koşu #665). 659'dan farkı üç iş: mesaj satırı kırpması · ipucu tavanı 2→1 · oyun sonu kutlaması. Aşağı bkz. |
@@ -455,6 +456,45 @@ buradaki satır sayısı bilerek tutmuyor.
 
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
+
+## 1.1.3 — KESİLDİ (11 Ekim 2026, build 875)
+
+**11 Ekim (kullanıcı: *"Yarın yerine bugün gönderelim, onay 1-2 gün sürüyor"* ve *"Herşeyi gönder, TestFlight'da test yaparım sonra"*):** tek dal `claude/surum-1-1-3-kesim` (#826) üstünde 15 PR birleştirildi (#756 #757 #760 #765 #772 #774 #779 #789 #791 #795 #804 #805 #815 #829 #830), CI tam yeşil, squash `95917368`. Web `kelimeki.com` `9591736`e geçti; `Mobil derleme` (koşu 871) yeşil → TestFlight 1.1.3 (871). Aşağıdaki "Merge SIRASI" planı UYGULANMADI — tek birleşik dal kullanıldı. Kesimde elle çözülenler: #795↔#815 (`leaderboard_modal.dart`, k-lig metinleri web'le aynı), #805 koltuk kartı ↔ #765/#774 yeni kart, Parça numaraları (232-238). **TestFlight turu (11 Eki, iPad) 3 hata buldu → #832 (`877b43e`, build 875 = geçerli paket; 871 GÖNDERİLMEZ):** koltuk numarası kırpılıyordu (`Text.overflow`), yeni arkadaşlık isteği rozeti gelmiyordu (menü açılışı/öne dönüşte tazele; web ikizi), avatarda gri halka. **✅ Tur temiz → ASC gönderildi (12:31 UTC, `Waiting for Review`).** **✅ Play da gönderildi (#23, 15:41 TSİ) ve 16:06'da YAYINDA — iki mağaza AYNI paket (875).** **Açık:** iOS onayı → `Release This Version` (Apple beklemez kuralı); yayına girince ROADMAP'teki 1.1.3 satırları `roadmap-arsiv.md`'ye taşınır. ⚠ Gönderim açıkken `main`'e mobil merge ETME (875'i ezer).
+
+(Aşağısı 4 Ekim hazırlık notu, tarihsel.)
+
+
+**Durum (4 Eki):** hiçbir iş `main`'de değil; tren taslak PR'larda. Sürüm adı
+`pubspec.yaml` + `env.dart` `appVersion` → `1.1.3+1`, **#805'in KENDİ dalında** yükseltildi
+(4 Eki; `app_version_parity_test` ikisini eşler). #805 zaten ilk mobil merge olduğundan sürüm
+adı onunla birlikte, tek adımda `main`'e girer; başka bir mobil PR'a bu bump'ı TAŞIMA.
+Gizlilik/Koşullar "Son güncelleme" tarihi de her iki tarafta **12 Ekim 2026** (web
+`LegalContent.tsx` + Dart `legal_modals.dart`).
+
+**Merge SIRASI (4 Eki hazırlık turunda çıkarıldı, kullanıcı "merge et" demeden merge yok):**
+
+1. **#804** (web, Rastgele Oyuncu) — mobil dosya YOK, yalnızca Vercel. CI'daki
+   `parite` işi bu PR'da KIRMIZI: web `HelpModal.tsx` "Rastgele Oyun" bölümünü
+   aldı, Dart `help_modal.dart` `main`'de henüz almadı
+   (`help_text_parity_test.dart`; yerelde 1036 geçti / 1 düştü, başka kırık yok).
+   Beklenen — #805 `help_modal.dart:630`'da ekliyor. **#804 ile #805 aynı
+   oturumda art arda merge edilir**, aralarında başka merge olmaz.
+2. **#805** (port ikizi) — base `main`'e çevrilir. ⚠ Mobil derlemeyi tetikler:
+   `mobile-latest` ezilir, TestFlight'a yeni build gider.
+3. **#765** → **#774** → **#779**, her biri öncekinden SONRA rebase.
+   #765/#774 `live_game_create_form.dart` + `live_games_test.dart` ortak
+   (#774 ayrıca `friends_test.dart`); #779 `legal_modals.dart`,
+   `LegalContent.tsx`, `account_settings_modal.dart`, `auth_service.dart`,
+   `reset_password_modal.dart` + 6 test dosyası ortak.
+
+**TEK yasal tarih:** #805 "Son güncelleme"yi 4 Ekim 2026 yapıyor, #779 12 Ekim 2026.
+Kesimde SON merge edilen hangisiyse tarih **12 Ekim** olmalı (web `LegalContent.tsx`
++ Dart `legal_modals.dart` BİRLİKTE, `legal_text_test.dart` zorluyor).
+
+**Merge öncesi açık:** `docs/testing-rastgele.md` iki gerçek hesapla koşulmadı
+(cihazda/gerçek Supabase'e karşı hiçbir akış denenmedi). Açık kararlar:
+yabancıyla biten oyunda "Tekrar Oyna", rütbe mührü kartlarda yok, ilan
+kabul edildi bildirimi yok.
 
 ## 1.1.2 (831) — ✅ İKİ MAĞAZADA YAYINDA (2 Eki 2026)
 

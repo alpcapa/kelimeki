@@ -88,7 +88,8 @@ KDeepLink? parseDeepLink(Uri uri) {
   // onayı. Manifest `https://kelimeki.com`'un TAMAMINI talep ediyor (yol
   // kısıtı yok), yani buraya `/gizlilik/` gibi sayfalar da düşebilir;
   // onları tanımıyoruz ve tanımamalıyız.
-  if ((uri.scheme == 'https' || uri.scheme == 'http') && uri.host == _kWebHost) {
+  if ((uri.scheme == 'https' || uri.scheme == 'http') &&
+      uri.host == _kWebHost) {
     final seg = uri.pathSegments;
     if (seg.length == 2 && seg.first == 'davet' && seg[1].isNotEmpty) {
       return KFriendInviteLink(seg[1]);

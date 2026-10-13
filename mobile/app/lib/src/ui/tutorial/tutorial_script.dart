@@ -221,7 +221,6 @@ const List<TutorialStep> tutorialSteps = [
 // 2026'da KALKTI — ROADMAP #41 karar 5, web `tutorialScript.ts` ile aynı PR:
 // 1. sahne doğrudan açılır.
 
-
 /// Kapanış kartı (metin kullanıcı kararı, 7 Eylül 2026).
 const String tutorialFinishTitle = 'Hazırsın!';
 const String tutorialFinishText =
@@ -281,7 +280,16 @@ const List<String> tutorialDrawOrder = [
 /// Torbanın DİBİNDE bekleyen, hiç çekilmeyen taşlar — boş torba + boşalan
 /// raf `endGame`i tetiklerdi; tanıtım oyunun sonuna gelmeden bitmeli.
 const List<String> tutorialBagFiller = [
-  'E', 'L', 'M', 'R', 'T', 'K', 'A', 'N', 'O', 'S',
+  'E',
+  'L',
+  'M',
+  'R',
+  'T',
+  'K',
+  'A',
+  'N',
+  'O',
+  'S',
 ];
 
 /// Başlangıç rafları — senaryodaki ilk hamlelerin harfleri.

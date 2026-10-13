@@ -41,7 +41,8 @@ double _webConst(String src, String name) => double.parse(pick(
 
 double _webCqw(String css, String selector) => double.parse(pick(
     css,
-    RegExp('${RegExp.escape(selector)}\\s*\\{\\s*font-size:\\s*min\\([^;]*?,\\s*([\\d.]+)cqw\\);'),
+    RegExp(
+        '${RegExp.escape(selector)}\\s*\\{\\s*font-size:\\s*min\\([^;]*?,\\s*([\\d.]+)cqw\\);'),
     'src/index.css içinde $selector cqw tavanı'));
 
 /// Gerçek oyun ekranı, dolu tahtayla — `ipad_layout_test`in deseni.
@@ -101,8 +102,10 @@ void main() {
 
     test('taş harfi/puanı ve X3 tavan oranları `index.css` ile BİREBİR', () {
       final css = readRepoFile('src/index.css');
-      expect(kTileLetterPerGrid * 100, closeTo(_webCqw(css, '.tile-board-letter'), 1e-9));
-      expect(kTilePtsPerGrid * 100, closeTo(_webCqw(css, '.tile-board-pts'), 1e-9));
+      expect(kTileLetterPerGrid * 100,
+          closeTo(_webCqw(css, '.tile-board-letter'), 1e-9));
+      expect(kTilePtsPerGrid * 100,
+          closeTo(_webCqw(css, '.tile-board-pts'), 1e-9));
       expect(kX3LabelPerGrid * 100,
           closeTo(_webCqw(css, '[data-board-grid] .board-x3-label'), 1e-9));
     });

@@ -79,29 +79,24 @@ void main() {
 
     expect(tester.widget<TextField>(field('first-name')).controller!.text,
         'Deniz');
-    expect(tester.widget<TextField>(field('last-name')).controller!.text,
-        'Can');
     expect(
-        tester.widget<TextField>(field('nickname')).controller!.text,
+        tester.widget<TextField>(field('last-name')).controller!.text, 'Can');
+    expect(tester.widget<TextField>(field('nickname')).controller!.text,
         'ironman');
     expect(tester.widget<TextField>(field('email')).controller!.text,
         'ironman@ornek.com');
-    expect(
-        tester
-            .widget<TextField>(field('birth-date'))
-            .controller!
-            .text,
+    expect(tester.widget<TextField>(field('birth-date')).controller!.text,
         '20/05/1990');
     // Pazarlama onayı işaretli + kabul tarihi (yerel saate çevrilmiş).
     expect(find.byType(Checkbox).at(0), findsOneWidget);
     expect(tester.widget<Checkbox>(find.byType(Checkbox).at(0)).value, isTrue);
     expect(find.textContaining('Kabul tarihi:'), findsOneWidget);
     // E-posta bildirimi tercihi kapalı gelmiş.
-    expect(
-        tester.widget<Checkbox>(find.byType(Checkbox).at(1)).value, isFalse);
+    expect(tester.widget<Checkbox>(find.byType(Checkbox).at(1)).value, isFalse);
   });
 
-  testWidgets('doğrulama sırası: Ad → Soyad → Takma isim → doğum tarihi',
+  // Ad/soyad 2 Ekim 2026'dan beri İSTEĞE BAĞLI — boşken de geçer.
+  testWidgets('doğrulama sırası: Takma isim → doğum tarihi (ad/soyad boş)',
       (tester) async {
     final auth = AuthService.fake(user: fakeUser('me'));
     await pumpSettings(tester, auth, checker: (_) async => NicknameStatus.ok);
@@ -112,12 +107,6 @@ void main() {
       expect(find.text(msg), findsOneWidget);
     }
 
-    await submitExpect('Ad zorunludur.');
-    await tester.enterText(field('first-name'), 'Deniz');
-    await tester.pump();
-    await submitExpect('Soyad zorunludur.');
-    await tester.enterText(field('last-name'), 'Can');
-    await tester.pump();
     await submitExpect('Takma isim zorunludur.');
 
     await tester.enterText(field('nickname'), 'denizcan');
@@ -125,8 +114,7 @@ void main() {
     await tester.pump();
     expect(find.text('Kullanılabilir'), findsOneWidget);
 
-    await tester.enterText(
-        field('birth-date'), '31/13/1990');
+    await tester.enterText(field('birth-date'), '31/13/1990');
     await tester.pump();
     await submitExpect('Doğum ayı geçersiz.');
 
@@ -165,7 +153,8 @@ void main() {
       profile: const KProfile(
           id: 'me', firstName: 'D', lastName: 'C', displayName: 'eskiisim'),
     );
-    await pumpSettings(tester, auth, checker: (_) async => NicknameStatus.taken);
+    await pumpSettings(tester, auth,
+        checker: (_) async => NicknameStatus.taken);
 
     await tester.enterText(field('nickname'), 'ironman');
     await tester.pump(const Duration(milliseconds: 450));
@@ -189,8 +178,8 @@ void main() {
         pickAvatar: () async => PickedImage(
             bytes: Uint8List.fromList([1, 2, 3]), mimeType: 'image/png'));
 
-    expect(find.text('FOTOĞRAF DEĞİŞTİR'), findsOneWidget);
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    expect(find.text('FOTOĞRAF YÜKLE'), findsOneWidget);
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
     // AuthService.fake gerçek bir Supabase client taşımıyor —
     // uploadAvatar'ın `_client == null` kontrolüne takılıp
@@ -199,7 +188,21 @@ void main() {
     // testleriyle aynı sınır/desen).
     expect(find.text('Supabase yapılandırılmadı.'), findsOneWidget);
     expect(find.text('YÜKLENİYOR…'), findsNothing);
+    expect(find.text('FOTOĞRAF YÜKLE'), findsOneWidget);
+  });
+
+  testWidgets('fotoğraf varsa düğme "FOTOĞRAF DEĞİŞTİR", yoksa "YÜKLE"',
+      (tester) async {
+    final auth = AuthService.fake(
+      user: fakeUser('me'),
+      profile: const KProfile(
+          id: 'me',
+          displayName: 'ironman',
+          avatarUrl: 'https://example.com/a.png'),
+    );
+    await pumpSettings(tester, auth);
     expect(find.text('FOTOĞRAF DEĞİŞTİR'), findsOneWidget);
+    expect(find.text('FOTOĞRAF YÜKLE'), findsNothing);
   });
 
   testWidgets(
@@ -210,8 +213,8 @@ void main() {
       user: fakeUser('me'),
       profile: const KProfile(id: 'me', displayName: 'ironman'),
     );
-    final buyuk = PickedImage(
-        bytes: Uint8List(3 * 1024 * 1024), mimeType: 'image/jpeg');
+    final buyuk =
+        PickedImage(bytes: Uint8List(3 * 1024 * 1024), mimeType: 'image/jpeg');
     PickedImage? shrinkGirdisi;
     await pumpSettings(
       tester,
@@ -219,12 +222,11 @@ void main() {
       pickAvatar: () async => buyuk,
       shrinkAvatar: (p) async {
         shrinkGirdisi = p;
-        return PickedImage(
-            bytes: Uint8List(40 * 1024), mimeType: 'image/png');
+        return PickedImage(bytes: Uint8List(40 * 1024), mimeType: 'image/png');
       },
     );
 
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
 
     expect(shrinkGirdisi, isNotNull,
@@ -248,13 +250,13 @@ void main() {
       return null;
     });
 
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
 
     expect(calls, 1);
     expect(find.text('YÜKLENİYOR…'), findsNothing);
     expect(find.text('Supabase yapılandırılmadı.'), findsNothing);
-    expect(find.text('FOTOĞRAF DEĞİŞTİR'), findsOneWidget);
+    expect(find.text('FOTOĞRAF YÜKLE'), findsOneWidget);
   });
 
   testWidgets('AccountButton menüsünde "Hesap Ayarları" satırı modalı açar',
@@ -290,7 +292,8 @@ void main() {
   test('MIME baytlardan çözülür — uzantı yalan söylese bile', () {
     final jpeg = Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0, 0, 0, 0, 0]);
     expect(
-      resolveAvatarMime(bytes: jpeg, declaredMime: null, path: '/t/scaled_IMG_1.heic'),
+      resolveAvatarMime(
+          bytes: jpeg, declaredMime: null, path: '/t/scaled_IMG_1.heic'),
       'image/jpeg',
     );
   });
@@ -311,12 +314,15 @@ void main() {
 
   test('tanınmayan baytta bildirilen tip, o da yoksa uzantı kullanılır', () {
     final junk = Uint8List.fromList([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-    expect(resolveAvatarMime(bytes: junk, declaredMime: 'image/png'), 'image/png');
+    expect(
+        resolveAvatarMime(bytes: junk, declaredMime: 'image/png'), 'image/png');
     expect(resolveAvatarMime(bytes: junk, path: 'a/b.WebP'), 'image/webp');
-    expect(resolveAvatarMime(bytes: junk, path: 'a/b'), 'application/octet-stream');
+    expect(resolveAvatarMime(bytes: junk, path: 'a/b'),
+        'application/octet-stream');
   });
 
-  testWidgets('galeri patlarsa kullanıcıya görünür hata verilir', (tester) async {
+  testWidgets('galeri patlarsa kullanıcıya görünür hata verilir',
+      (tester) async {
     final auth = AuthService.fake(
       user: fakeUser('me'),
       profile: const KProfile(id: 'me', displayName: 'ironman'),
@@ -325,14 +331,14 @@ void main() {
     await pumpSettings(tester, auth,
         pickAvatar: () async => throw Exception('izin yok'));
 
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
     expect(find.textContaining('Fotoğraf seçilemedi'), findsOneWidget);
     // Buton kilitli kalmamalı — kullanıcı yeniden deneyebilmeli.
     expect(find.text('YÜKLENİYOR…'), findsNothing);
-    expect(find.text('FOTOĞRAF DEĞİŞTİR'), findsOneWidget);
+    expect(find.text('FOTOĞRAF YÜKLE'), findsOneWidget);
   });
 
   testWidgets('küçültme patlarsa da aynı hata gösterilir', (tester) async {
@@ -348,7 +354,7 @@ void main() {
       shrinkAvatar: (_) async => throw Exception('kodek yok'),
     );
 
-    await tester.tap(find.text('FOTOĞRAF DEĞİŞTİR'));
+    await tester.tap(find.text('FOTOĞRAF YÜKLE'));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);

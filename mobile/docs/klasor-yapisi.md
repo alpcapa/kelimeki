@@ -75,6 +75,9 @@ mobile/
                              # create/respond RPC'leri + sıra/son-tarih +
                              # "hafif süpürme" + Realtime aboneliği + kova
                              # filtreleri/süre etiketleri (saf fonksiyonlar)
+                             # + Rastgele Oyuncu: `OnlineSlot` açık koltuk
+                             # (`isOpen`/`isHuman`), `RandomListing`/
+                             # `MyRandomGame`/`RandomGameResult` + altı RPC
       data/cloud_save_repo.dart   # local_game_saves senkronu (girişli YZ oyunları)
       data/game_record.dart  # buildGameRecord portu (`games` satırı) — `ai_level`
                              # YALNIZCA doluysa yazılır (Normal = alan yok; fikstür
@@ -262,7 +265,10 @@ mobile/
                              # k-lig ÇALIŞMAZ, motora action eklenmedi). Kapı
                              # util/onboarding.dart, açan yer setup_screen.
       ui/score/              # skor kartı, k-lig, oyuncu kartı, oyun geçmişi,
-                             # score_box_row (paylaşılan görselin üst şeridi)
+                             # score_box_row (paylaşılan görselin üst şeridi),
+                             # beyin_ligi_list (k-lig'in OHP alt ligi — web
+                             # BeyinLigiList.tsx ikizi; leaderboard_modal'ın
+                             # "Beyin Ligi" sekmesi, 2 Ekim 2026)
       ui/rank/               # k-lig rütbe/ödül katmanı (Parça 61-62):
                              # rank_scores (isim yanındaki mührün puan
                              # kaynağı — leaderboard view'ı, toplu),
@@ -333,6 +339,10 @@ mobile/
                              # paylaşılan onay/sonuç diyalogları) +
                              # friend_moderation_sheet (satırdaki 🚫/🚩
                              # ikonundan açılan GERİ ALMA paneli) +
+                             # block_confirm_sheet (ortak "Engelle" onayı:
+                             # istek/davet kartı + ⋯ menüsü) +
+                             # blocked_users_sheet ("Engellediklerim",
+                             # arkadaş olmayanı geri almanın yolu) +
                              # relation_icons.dart — ilişki ikonlarının
                              # dördünden ÜÇÜ gerçek Material glyph'i
                              # (Icons.* ile çizilir, senkron sorunu yok);
@@ -350,6 +360,9 @@ mobile/
                              # guest_live_sheet (girişsiz "Arkadaşınla"
                              # alt penceresi, #41 karar 9 — metinleri web
                              # `GuestLiveSheet`ten testle okunur),
+                             # random_games_strip (Rastgele Oyuncu: yatay
+                             # ilan şeridi + "Bekliyor n/N" satırı, web
+                             # `RandomGamesStrip.tsx` ikizi, 4 Ekim 2026),
                              # online_game_screen (TAHTA — game_screen.dart
                              # ile sürükleme/joker/mesaj desenini PAYLAŞIR,
                              # biri değişirse öteki de güncellenmeli),
@@ -357,6 +370,12 @@ mobile/
                              # listeden dokunuş da bildirim yönlendirmesi
                              # de bunu çağırır; 14 parametrelik kurulum
                              # İKİNCİ kez yazılmasın diye Faz 3'te çıkarıldı)
+      util/random_games.dart # Rastgele Oyuncu SAF kuralları (kova süzgeci, açık
+                             # koltuk ≠ YZ, esnek kadro, metinler) — web
+                             # `utils/randomGames.ts` ikizi, `random_games_test`
+                             # web dosyasını OKUR
+      ui/open_seat_avatar.dart # açık koltuğun kesik çerçeveli "?" avatarı
+                             # (şerit, kartlar, avatar şeridi, form koltuğu)
       util/deep_link.dart    # gelen URI'lerin TEK ayrıştırma noktası
                              # (davet · auth dönüşü · Canlı oyun push linki)
       util/push_rules.dart   # "izin sorulsun mu?" saf kararı (en çok 3 kez,
@@ -366,6 +385,10 @@ mobile/
       util/live_game_request.dart # Arkadaşlar → OYNA isteği kuyruğu (web
                              # liveGameRequest.ts; Setup sekmeyi açar,
                              # LiveGamesTab TÜKETİR — #41 karar 23)
+      util/beyin_ligi.dart   # Beyin Ligi eşiği (kBeyinLigiMinGames) + metinler +
+                             # sekme listesi — web beyinLigi.ts/BeyinLigiList.tsx/
+                             # Leaderboard.tsx ile beyin_ligi_test kilitler,
+                             # SQL eşiğini verify-beyin-ligi
       util/semver.dart, util/uuid.dart, util/share_board.dart,
       util/game_list_order.dart # devam eden oyun/davet listelerinin sıralaması
                              # (web `gameListOrder.ts` ikizi) — ⚠ Dart `List.sort`

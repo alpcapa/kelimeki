@@ -38,7 +38,8 @@ Future<void> pumpRow(WidgetTester tester, {double size = 26}) =>
     ));
 
 void main() {
-  testWidgets('iOS: ölçülen düzeltme uygulanır (em cinsinden, font boyutuyla ölçekli)',
+  testWidgets(
+      'iOS: ölçülen düzeltme uygulanır (em cinsinden, font boyutuyla ölçekli)',
       (tester) async {
     // ⚠ `addTearDown` ÇOK GEÇ: foundation'ın "debug değişkeni sıfırlandı mı"
     // kontrolü test GÖVDESİ biter bitmez, tearDown'dan ÖNCE koşuyor

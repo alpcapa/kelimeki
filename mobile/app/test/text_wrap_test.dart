@@ -128,7 +128,8 @@ void main() {
     final yetersiz = <String>[];
     for (final (yer, kutu, aile, punto, aralik, metinler) in _sutunlar) {
       for (final m in metinler) {
-        if (kutu / _dogalGenislik(m, aile, punto, aralik, kMaxTextScale) < enAzOran) {
+        if (kutu / _dogalGenislik(m, aile, punto, aralik, kMaxTextScale) <
+            enAzOran) {
           yetersiz.add('$yer · "$m"');
         }
       }
@@ -157,8 +158,8 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
       home: Scaffold(
-          body: Center(
-              child: GameOverModal(state: state, onOpenHistory: () {}))),
+          body:
+              Center(child: GameOverModal(state: state, onOpenHistory: () {}))),
     ));
     await tester.pumpAndSettle();
 
@@ -188,7 +189,8 @@ void main() {
 
       // Hücrenin GERÇEK kutusu: ScaledCell'in SizedBox'ı.
       final hucre = find
-          .ancestor(of: find.byWidget(e.widget), matching: find.byType(SizedBox))
+          .ancestor(
+              of: find.byWidget(e.widget), matching: find.byType(SizedBox))
           .evaluate()
           .first
           .renderObject as RenderBox;

@@ -55,6 +55,14 @@ class KModal extends StatelessWidget {
   /// denetleyicisini BURAYA verir ve listeyi düz bir Column olarak çizer.
   final ScrollController? bodyController;
 
+  /// `true` iken gövde KAYDIRILMAZ: [child] pencerede kalan yüksekliği
+  /// sınır olarak alır ve taşmayı kendi içinde (`Flexible` + kendi listesi)
+  /// çözmek zorundadır. Altta SABİT kalması gereken bir satırı olan modal
+  /// için (k-lig'in "senin sıran" satırı): kaydırılan gövdede o satır,
+  /// üstteki metin uzayınca pencerenin dışına itiliyordu (2 Ekim 2026,
+  /// Android'de ekran görüntüsü — satırın yarısı görünüyordu).
+  final bool fillBody;
+
   const KModal({
     super.key,
     required this.title,
@@ -65,6 +73,7 @@ class KModal extends StatelessWidget {
     this.headerCenter,
     this.onClose,
     this.bodyController,
+    this.fillBody = false,
   });
 
   @override
@@ -101,8 +110,8 @@ class KModal extends StatelessWidget {
               // `headerLink` dalı TEK İSTİSNA: orada üst dolgu zaten 3'tü
               // ve 4 kısılamıyor (negatif olurdu), 3 → 0 ile 1 px'lik bir
               // uzama kalıyor. Tek kullanıcısı HelpModal.
-              padding: EdgeInsets.fromLTRB(
-                  20, headerLink != null ? 0 : 16, 8, 12),
+              padding:
+                  EdgeInsets.fromLTRB(20, headerLink != null ? 0 : 16, 8, 12),
               decoration: const BoxDecoration(
                 border: Border(bottom: BorderSide(color: _divider)),
               ),
@@ -126,8 +135,7 @@ class KModal extends StatelessWidget {
                         icon: Icons.close,
                         tooltip: 'Kapat',
                         color: _muted,
-                        onPressed:
-                            onClose ?? () => Navigator.of(context).pop(),
+                        onPressed: onClose ?? () => Navigator.of(context).pop(),
                       ),
                     ],
                   ),
@@ -135,11 +143,16 @@ class KModal extends StatelessWidget {
               ),
             ),
             Flexible(
-              child: SingleChildScrollView(
-                controller: bodyController,
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: child,
-              ),
+              child: fillBody
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                      child: child,
+                    )
+                  : SingleChildScrollView(
+                      controller: bodyController,
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                      child: child,
+                    ),
             ),
           ],
         ),

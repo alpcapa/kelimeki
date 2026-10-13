@@ -28,7 +28,8 @@ void main() {
     final block = RegExp(r'AI_LEVEL_LABEL[^{]*\{([^}]*)\}').firstMatch(web);
     expect(block, isNotNull, reason: 'aiLevel.ts yeniden düzenlendiyse regex');
     final labels = <String, String>{
-      for (final m in RegExp(r"(\w+):\s*'([^']+)'").allMatches(block!.group(1)!))
+      for (final m
+          in RegExp(r"(\w+):\s*'([^']+)'").allMatches(block!.group(1)!))
         m.group(1)!: m.group(2)!,
     };
     expect(labels.length, 3);
@@ -38,9 +39,11 @@ void main() {
     }
   });
 
-  test('SELECTABLE_AI_LEVELS ↔ selectableAiLevels: aynı küme, aynı sıra '
+  test(
+      'SELECTABLE_AI_LEVELS ↔ selectableAiLevels: aynı küme, aynı sıra '
       '(Zor Faz 5\'e kadar ikisinde de YOK)', () {
-    final m = RegExp(r'SELECTABLE_AI_LEVELS[^=]*=\s*\[([^\]]*)\]').firstMatch(web);
+    final m =
+        RegExp(r'SELECTABLE_AI_LEVELS[^=]*=\s*\[([^\]]*)\]').firstMatch(web);
     expect(m, isNotNull);
     final webList = RegExp(r"'(\w+)'")
         .allMatches(m!.group(1)!)
@@ -52,10 +55,12 @@ void main() {
   });
 
   test('AI_LEVEL_PITCH ↔ aiLevelPitch: üç hitap cümlesi birebir', () {
-    final block = RegExp(r'AI_LEVEL_PITCH[^{]*\{([\s\S]*?)\n\};').firstMatch(web);
+    final block =
+        RegExp(r'AI_LEVEL_PITCH[^{]*\{([\s\S]*?)\n\};').firstMatch(web);
     expect(block, isNotNull, reason: 'aiLevel.ts yeniden düzenlendiyse regex');
     final pitches = <String, String>{
-      for (final m in RegExp(r"(\w+):\s*'([^']+)'").allMatches(block!.group(1)!))
+      for (final m
+          in RegExp(r"(\w+):\s*'([^']+)'").allMatches(block!.group(1)!))
         m.group(1)!: m.group(2)!,
     };
     expect(pitches.length, 3);
@@ -65,7 +70,8 @@ void main() {
     }
   });
 
-  test('aiLevelDescription: altı bileşim tam metin (web smoke testi aynı '
+  test(
+      'aiLevelDescription: altı bileşim tam metin (web smoke testi aynı '
       'metinleri Setup\'ta okuyor; sayılar leaguePoints tablosundan)', () {
     const kolay = 'Çok iyi değilim, daha yeni yeni alışıyorum, karşımda o '
         'kadar zor bir rakip istemiyorum diyorsanız doğru yerdesiniz.';
@@ -73,40 +79,48 @@ void main() {
         'daha iyiyim diyorsanız burası size göre.';
     const zor = 'Çok iyi oyuncuyum, genelde %80+ kazanırım diyorsanız bunu '
         'denemelisiniz.';
-    expect(aiLevelDescription(AiLevel.kolay, 2, signedIn: true),
+    expect(
+        aiLevelDescription(AiLevel.kolay, 2, signedIn: true),
         '$kolay Bu seviyede birincilik 1 k-lig puanı kazandırır, ikincilik '
         'puan kazandırmaz.');
-    expect(aiLevelDescription(AiLevel.kolay, 4, signedIn: true),
+    expect(
+        aiLevelDescription(AiLevel.kolay, 4, signedIn: true),
         '$kolay Bu seviyede birincilik 1 k-lig puanı kazandırır, ikincilik '
         'puan kazandırmaz.');
-    expect(aiLevelDescription(AiLevel.normal, 2, signedIn: true),
+    expect(
+        aiLevelDescription(AiLevel.normal, 2, signedIn: true),
         '$normal Bu seviyede birincilik 2 k-lig puanı kazandırır, ikincilik '
         'puan kazandırmaz.');
-    expect(aiLevelDescription(AiLevel.normal, 4, signedIn: true),
+    expect(
+        aiLevelDescription(AiLevel.normal, 4, signedIn: true),
         '$normal Bu seviyede birincilik 2, ikincilik 1 k-lig puanı '
         'kazandırır.');
-    expect(aiLevelDescription(AiLevel.zor, 2, signedIn: true),
+    expect(
+        aiLevelDescription(AiLevel.zor, 2, signedIn: true),
         '$zor Bu seviyede birincilik 4 k-lig puanı kazandırıyor, ikincilik '
         'puan kazandırmaz. Bol şans!');
-    expect(aiLevelDescription(AiLevel.zor, 4, signedIn: true),
+    expect(
+        aiLevelDescription(AiLevel.zor, 4, signedIn: true),
         '$zor Bu seviyede birincilik 4, ikincilik 2 k-lig puanı kazandırıyor. '
         'Bol şans!');
     // Girişsiz: not AYRI, noktadan SONRA (kullanıcı isteği 7 Eylül 2026 —
     // "nokta cümlenin sonunda olmalı"); Zor'da "Bol şans!" en sonda. Web
     // smoke testi misafir olduğundan tam bu metinleri okuyor.
-    expect(aiLevelDescription(AiLevel.normal, 2, signedIn: false),
+    expect(
+        aiLevelDescription(AiLevel.normal, 2, signedIn: false),
         '$normal Bu seviyede birincilik 2 k-lig puanı kazandırır, ikincilik '
         'puan kazandırmaz. (Puan takibi üyelik gerektirir)');
-    expect(aiLevelDescription(AiLevel.zor, 4, signedIn: false),
+    expect(
+        aiLevelDescription(AiLevel.zor, 4, signedIn: false),
         '$zor Bu seviyede birincilik 4, ikincilik 2 k-lig puanı kazandırıyor. '
         '(Puan takibi üyelik gerektirir) Bol şans!');
   });
 
-  test('HelpModal zorluk paragrafı iki tarafta da var (aynı cümle başı ve '
+  test(
+      'HelpModal zorluk paragrafı iki tarafta da var (aynı cümle başı ve '
       'aynı sayılar)', () {
     final help = File('../../src/components/HelpModal.tsx').readAsStringSync();
-    final port =
-        File('lib/src/ui/game/help_modal.dart').readAsStringSync();
+    final port = File('lib/src/ui/game/help_modal.dart').readAsStringSync();
     // `<strong>`/`**` işaretleri ve JSX `{' '}` ekleri atılır; Dart'ın satır
     // satır birleşen dize literalleri (`'… '\n'…'`) tek metne dikilir.
     String plain(String s) => _norm(s
@@ -123,7 +137,8 @@ void main() {
     expect(p, w);
   });
 
-  test('rozet seviyesi: YZ oyununda her seviye (null = Normal), Canlı\'da yok', () {
+  test('rozet seviyesi: YZ oyununda her seviye (null = Normal), Canlı\'da yok',
+      () {
     expect(aiLevelForBadge(null, isAiGame: true), AiLevel.normal);
     expect(aiLevelForBadge(AiLevel.kolay, isAiGame: true), AiLevel.kolay);
     expect(aiLevelForBadge(AiLevel.kolay, isAiGame: false), isNull);

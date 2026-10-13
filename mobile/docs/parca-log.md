@@ -25,6 +25,252 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 239 — Koltuk numarası alt yarıdan kırpılıyordu: `Text.overflow` varsayılanı `clip` (11 Ekim 2026, 1.1.3 TestFlight)
+
+Kullanıcı iPad'de gördü: *"koltuk numaraları yarınsından kesilmiş"*. Numara rakamı 56/34 px, yuvası 36/28 px; `Baseline` rakamı yuvanın üstüne taşıyordu ama `Text`in varsayılan `overflow: clip`i onu paragrafın KENDİ kutusuna (36 px) kırpıyordu. Bulgu `debugDumpRenderTree`de (`RenderParagraph size 36, overflow: clip`), düzeltme `overflow: TextOverflow.visible` (`live_game_create_form.dart`). Parça 230/231'in geometri testi konumu ölçüyor, KIRPMAYI görmüyordu → yeni test `koltuk numarası kırpılmaz`. Ders: taşırarak konumlanan metinde `overflow: visible` şart; kırpma yalnızca görüntü alınınca görünüyor.
+
+**Aynı PR, ikinci düzeltme — yeni arkadaşlık isteği rozeti çıkmıyordu** (aynı TestFlight turu): `friend_requests` Realtime'da değil, sayı yalnızca açılışta/pencere kapanınca çekiliyordu. `AccountButton` artık sayıyı menü HER açılışta ve uygulama öne dönünce (`WidgetsBindingObserver`) tazeliyor; açık menüdeki "Arkadaşlar" rozeti `ValueNotifier` ile canlı (`_myRank` ile aynı `itemBuilder` tuzağı). Web ikizi `UserMenu.tsx`: `open` ve `visibilitychange` effect'leri. Test: `account_button_test.dart` → "yeni arkadaşlık isteği…".
+
+**Üçüncü düzeltme — avatarın etrafında gri halka kalıyordu** (iPad, menüyü açıp kapatınca, kendiliğinden gitmiyor): `PopupMenuButton`ın `InkWell`i menü kapanınca düğmeye dönen odak ya da iPad imlecinin bayat "üstünde" durumu yüzünden `focusColor`/`hoverColor` halkasını çiziyordu. `_avatarMenu` Theme ile ikisini şeffaflaştırıyor (web: `focus:outline-none`, zemin vurgusu yok); bedel: menü satırlarında imleç-hover tonu yok. ⚠ NEDEN iki adaydan hangisi olduğu cihazda AYRIŞTIRILMADI (testte yeniden üretilemedi; odak testi düzeltme olmadan da geçti → atıldı) — ikisini de kapatan düzeltme seçildi. Cihazda doğrulanacak.
+
+## Parça 228 — "Bildirimler kapalı" kartı: yarım oyun hatırlatması ayarlara yönlendiriyor (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
+
+- **Bildirim (1.1.2, Android, güncellemeden sonra):** *"yarım bıraktım geri
+  yaptım ama bildirim uyarısı gelmedi. Sonra ayarlardan baktım, bildirimler
+  kapalıymış."* Kart BİLEREK çıkmıyordu: ayarlardan kapatılmış izinde
+  Android sistem diyaloğunu bir daha açmıyor (`deniedPermanently`),
+  "HATIRLAT" hiçbir şey yapmazdı. Ama kullanıcı da neden hatırlatma
+  gelmeyeceğini bilemiyordu. Karar (kullanıcı): *"ayarlar kartını 12 Ekim
+  trenine ekle"*.
+- **Ne yapıldı:**
+  - `util/unfinished_reminder.dart` → `yarimOyunKartiSec` (SAF): izin
+    açık → kart yok · sistem sorabilir → "Oyunun yarım kaldı" (HATIRLAT) ·
+    sistem soramaz → **"Bildirimler kapalı" (AYARLARI AÇ)**. İkisi de
+    Canlı kartıyla ORTAK sayaçtan yer (3 kez, arada 7 gün).
+  - "Sistem soramaz" = Android `permanentlyDenied` **veya iOS `denied`** —
+    Apple kalıcı reddi ayrı bildirmiyor; eskiden iOS'ta reddeden
+    kullanıcıya işe yaramayan HATIRLAT kartı gösteriliyordu (bu da düzeldi).
+  - Kanal `kelimeki/hatirlatma`ya üçüncü metot `bildirimAyarlariniAc`:
+    Android `ACTION_APP_NOTIFICATION_SETTINGS` (+ API<26 yedeği), iOS 16+
+    `openNotificationSettingsURLString` (altı `openSettingsURLString`).
+  - **Dönüşte kurulum:** çıkış anında izin yoktu, hatırlatma kurulamadı.
+    `YarimOyunHatirlatici.ayarlaraGonder(s)` oyunu bellekte tutar;
+    `uygulamaAcildi` (öne dönüş) ÖNCE eski bekleyeni iptal eder, SONRA o oyun
+    için `oyundanAyrildi`yi dener — aynı metot içinde sırayla, çünkü iki
+    ayrı dinleyici iptal ile kurmayı yarıştırırdı. İzin açılmadıysa sessiz.
+- **Doğrulama:** 10 yeni test (`unfinished_reminder_test.dart`: saf karar,
+  dönüş akışı, dört kart senaryosu widget testi; parite testine üçüncü
+  metot + ayar niyeti), tam takım **1.048 yeşil**, `flutter analyze` temiz
+  (main'deki eski `fake_async` info'su hariç). ⚠ Ayarlar sayfasının
+  gerçekten açılması ve dönüşte hatırlatmanın kurulması YALNIZ cihazda
+  kanıtlanır: `mobile/TESTING.md` §34.
+## Parça 236 — Engelle'nin port ikizi: istek/davet kartı, Engellediklerim, ⋯ menüsü, sohbet terimi (5 Ekim 2026, 19 Ekim treni)
+
+- **Ne:** web #810/#811/#812/#813/#814'ün port yarısı. `block_confirm_sheet.dart`
+  (ortak onay: önce engel, SONRA ret — engel düşerse pencere AÇIK kalır, davet/
+  istek yerinde durur) · `blocked_users_sheet.dart` ("Engellediklerim": arkadaş
+  olmayanı geri almanın tek yolu; "Engeli Kaldır" şikayete DOKUNMAZ, şikayetli
+  satırda ayrıca "Şikayeti Geri Çek") · `friend_moderation_sheet.dart`
+  (`mutedGameId` → `blocked`; kaldırma `unblock_user`, oyun id'si GEREKMİYOR) ·
+  `friends_modal.dart` (kaynak `list_blocked_users`; istek kartı "ENGELLE";
+  ⋯ menüsü Engelle / Engeli kaldır / Engel-şikayet ayarları; altta
+  "ENGELLEDİKLERİM") · `live_games_tab.dart` (davet kartı "ENGELLE") ·
+  `chat_settings_modal.dart` (terim; KALDIRMA `unblock_user` — kartlardan
+  yapılan oyundan bağımsız engel de temizlensin) · `chat_api.dart`
+  (`blockUser`/`unblockUser`/`blockedUsers`; `myModeration` artık kümeler döndürür).
+- **Parite-kilitli metinler web'le BİRLİKTE değişti** (web CI `parite` işi
+  okuyor): arkadaş menüsü etiketleri, `chatRules.ts`, `LegalContent.tsx`
+  ("Son güncelleme: 19 Ekim 2026" — `legal_text_test` web↔port tarih eşliği),
+  `Landing.tsx`. ⚠ Hukuki metin YALNIZ terim değiştirmedi: "sessize alınan kişi
+  bunu hiçbir zaman göremez" engelle ile YANLIŞ (engellenen, davet/istek
+  denerse "sizi engelledi" görür) — cümle yeniden yazıldı.
+- **Bilinçli fark:** web'in `max-h-[55vh]` liste sınırı taşınmadı (`KModal`
+  gövdesi zaten kayıyor, Flutter iç içe kaydırmayı zincirlemiyor — 27 Ağustos
+  vakası). Puan Ligi: portta Beyin Ligi sekmesi/alt notu hiç yoktu;
+  `kPuanLigiIntro` + `kPuanLigiNote` eklendi (eşitlik cümlesi alt notta).
+- **Ders:** ROADMAP'in "port ikizi" maddesi `kPuanLigiNote`'un VAR olduğunu
+  varsayıyordu — yoktu. İkiz yazmadan önce karşılığın portta gerçekten
+  bulunduğunu grep'le doğrula.
+- **Doğrulama:** `friends_test` · `chat_test` · `live_games_test` · yeni
+  `block_parity_test` + tam takım yeşil. **SINIR:** iki gerçek hesapla
+  davet/istek/engel akışı otomatik KANITLANAMAZ — cihaz listesi
+  `mobile/docs/testing-arkadaslar-canli.md` → "Engelle / Engellediklerim".
+## Parça 229 — Tanıtım kapısı: cihazda gerçek oyun başlayınca "görüldü" (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
+
+- **Bildirim (1.1.2, Android):** güncellemeden sonra çıkış yapmış hâlde YZ
+  oyunu başlatınca tanıtım açıldı. Ölçüm: aynı `anon_id` 26-30 Eylül'de ÜYE
+  olarak 3 oyun oynamıştı. Kapı üyeyi hesap yaşıyla durduruyor ama cihaza
+  bayrak koymuyordu; misafir yalnızca yarım kayda bakılarak "yeni" sayıldı.
+- **Ne yapıldı:** `setup_screen.dart` `_startNewGame` (gerçek oyun
+  dispatch'inden sonra) ve `live/open_online_game.dart` (Canlı tahtanın tek
+  kapısı) `markTutorialSeen()` çağırıyor — web #759'un ikizi (`App.tsx`
+  `startLocalGame` + `onlineGame` effect'i). Kapının saf fonksiyonu
+  (`shouldShowTutorial`) DEĞİŞMEDİ. (Parça 228 = #757, aynı trende.)
+- **Test:** `setup_screen_test` → "girişli — hesap tanıtımdan ESKİ" artık
+  `seenTutorial == true` bekliyor (eskiden `isFalse`tı ve AÇIĞI kilitliyordu).
+  Negatif eş koşuldu: çağrı kaldırılınca test düşüyor. Tam takım **1.037
+  yeşil**, `flutter analyze` temiz. Cihaz: `mobile/TESTING.md` §1.9.
+## Parça 231 — Canlı oyun formu: 1. koltuk SEN, 4 kişide 2×2, numaralar hizalı (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
+
+- **İstek (kullanıcı, görsel taslak dört turda onaylandı):** 2 kişide arkadaş
+  koltuğunun ÜSTÜNE 1 numaralı koltuk (kişinin kendisi); 4 kişide 1-2 üstte,
+  3-4 altta. "SEN" etiketi yok · numaralar her durumda hizalı · isim
+  numaraya binmez, "…" ile kesilir · numara ✕'e yaklaştırılır.
+- **Ne yapıldı (web #764 ikizi):** `live_game_create_form.dart` → `_seat(k)`
+  tek iskelet: avatar · isim (`Expanded`, ellipsis) · numara YUVASI · ✕
+  YUVASI. Numara artık `Stack`'te mutlak değil, AKIŞTA sabit genişlikte
+  (`OverflowBox` ile web'in `-mr-2`/`-mr-1` taşması); ✕'siz kartta yuva boş
+  `SizedBox`. Dikey yerleşim Parça 230'un taban çizgisi kuralı (rakamın
+  ortası yuvanın ortası). Başlık `OYUNCULAR` (· n/4). `kLiveFormEmptySeat4`
+  `'Boş koltuk'` → `'Boş'` (ekran okuyucu "Boş koltuk N"). Kesik çizgili
+  kartın dolgusu +1 px (dolu kartın 1 px kenarlığı Flutter'da dolguya
+  ekleniyor — iç ölçüler, dolayısıyla numaralar, aynı kalsın).
+  Parça 230'un dikey (sağ alt) kuralı ve `_kFiligranAltBosluk` KALKTI.
+- **Test:** `live_games_test` → "koltuk numaraları hizalı, isim binmez"
+  (ölçek 1,0 + 1,3; dört durum: 2 boş · 2 dolu · 4 boş · 4 dolu+YZ):
+  aynı sütun aynı x, uzun isim yuvanın solunda biter, rakam yuvada ortalı.
+  Negatif eş: ✕'siz kartın yuvası kaldırılınca "1 ve 2 numarası hizalı"
+  düşüyor. "koltuk kartları" testi 2×2 yerleşimini ve SENİN koltuğunu
+  (✕ yok, camgöbeği) kilitliyor. Tam takım **1.039 yeşil**.
+
+## Parça 230 — Koltuk filigranı taban çizgisine göre yerleşiyor: iPhone'da alta yapışıktı (2 Ekim 2026) — `[Sonraki sürüm]`, 1.1.3 treni
+
+- **Bildirim (1.1.2, iki telefon yan yana):** *"Kişinin yanındaki sayı
+  android'de ortalı, iphone'da alta yapışık."* (Canlı oyun formu, 2 kişi.)
+- **Ölçüm:** widget testinde filigran KUTUSU kartta tam ortadaydı (ölçek
+  1,0/1,15/1,3 → merkez farkı 0,0); Space Mono Bold'un üç dikey ölçü
+  tablosu aynı (hhea = typo = win: 1120/−361, fontTools). Yani fark kutunun
+  yerinde değil, RAKAMIN KUTU İÇİNDEKİ yerinde — `height: 1` kutusuna
+  ascent/descent'in nasıl dağıtıldığı. Flutter `proportional` taban
+  çizgisini 0,76 em'e koyuyor, web `leading-none` 0,88 em'e; iOS cihazdaki
+  kesin dağılım bu ortamda ÖLÇÜLEMEDİ (simülatör yok), ama kutuya
+  güvenmeyen bir yerleşim her iki durumda da doğru.
+- **Düzeltme:** `live_game_create_form.dart` → filigran `Baseline` ile
+  yerleşiyor: yatayda taban çizgisi kart ortası + 0,35 em (rakam 0 → 700/1000
+  em, yarısı) → rakamın ortası kartın ortasında; dikeyde web'in
+  `bottom-0.5` + `leading-none` payı (2 px + 0,12 em). `TextScaler.noScaling`
+  (web `px` ile sabit). ⚠ Android'de rakam ~5 px AŞAĞI iner — artık web'le
+  ve iPhone'la aynı yerde.
+- **Test:** `live_games_test` → "koltuk filigranı taban çizgisinden
+  yerleşir" (ölçek 1,0 ve 1,3; yatay + dikey). Negatif eş koşuldu (eski
+  yerleşimle düşüyor). Tam takım **1.039 yeşil**. Cihaz: `mobile/TESTING.md`
+  → "Canlı oyun formu".
+## Parça 232 — Android ikonu küçük ve etrafı beyazdı: adaptive ön katman İKİ KEZ küçülüyordu (2 Ekim 2026)
+
+- **Bildirim (Samsung, ana ekran fotoğrafı):** *"Android'de ikon normal gözükmüyor. Ortada küçülmüş ve etrafı beyaz kalmış."*
+- **Kök sebep:** `icon-adaptive-fg.png` üreticide (`mobile/scripts/generate-app-icon-masters.mjs`) ZATEN %66 güvenli bölgeye küçültülüyor; `flutter_launcher_icons` 0.14 ise ön katmana ayrıca varsayılan `android:inset="16%"` ekliyor. Sonuç: içerik katmanın 0,66 × 0,68 ≈ %45'i — görünen 72 dp alanın ancak ~2/3'ü, gerisi beyaz zemin. iOS ve eski Android (LEGACY mipmap, `icon-source.png`) ETKİLENMİYOR.
+- **Düzeltme:** `pubspec.yaml` → `adaptive_icon_foreground_inset: 0` + `dart run flutter_launcher_icons` (tek değişen üretilmiş dosya `mipmap-anydpi-v26/ic_launcher.xml`: `16%` → `0%`). Tek küçültme üreticide kaldı; "kelimeki" yazısı görünen alanın ~%90'ı, yani 66 dp güvenli dairenin sınırında — yuvarlak maskede de kırpılmaz, tahta filigranının köşeleri kırpılır (doku, bilgi değil). Splash aynı PNG'yi kullanıyor ama inset yalnızca launcher XML'inde — splash DEĞİŞMEDİ.
+- **Doğrulama:** sharp ile önizleme (katman 108 → görünen 72 → squircle maske): eski hâli fotoğraftakiyle birebir. **Sınır:** gerçek launcher'da görmek mağaza paketini ister (12 Ekim treni); ikon önbelleği yüzünden güncellemeden sonra launcher eski ikonu bir süre gösterebilir.
+## Parça 233 — k-lig'e Beyin Ligi sekmesi (2 Ekim 2026) — web #794'ün port yarısı
+
+- **İstek (kullanıcı):** k-lig'in altında alt ligler. **Puan Ligi** =
+  bugünkü k-lig (değişmedi), **Beyin Ligi** = puan yok, yalnızca OHP'ye göre
+  sıralama, en az 5 oyun. Kararlar ve sunucu tarafı:
+  `docs/decisions/league-system.md` → "Beyin Ligi". Web + sunucu #794 ile
+  2 Ekim'de yayına girdi; bu parça sürüm trenine binen port yarısı.
+- **Web kaynağı:** `src/components/Leaderboard.tsx` (`KLIG_TABS`,
+  `PUAN_LIGI_INTRO`), `src/components/BeyinLigiList.tsx`,
+  `src/utils/beyinLigi.ts`.
+- **Port:** `util/beyin_ligi.dart` (eşik + metinler + sekme listesi),
+  `ui/score/beyin_ligi_list.dart` (liste + "N oyun daha" kartı),
+  `leaderboard_modal.dart` (sekmeler; Beyin Ligi ilk seçimde kurulur ve
+  `Offstage` ile yaşar, Puan Ligi `if` ile söküler — verisi State'te
+  durduğundan yeniden istek atmaz), `data/stats_api.dart` (`BeyinLigiRow`,
+  `MyBeyinLigiRank`, gateway'e iki uç). `StatsGateway`e iki soyut metot
+  eklendiğinden altı sahte gateway'e (5 test + `store_frames`) boş gövde
+  eklendi.
+- **Bulunan hata (test yakaladı):** sekme değişiminde `_syncOhpHint()`
+  çağrılıyordu; Puan Ligi'nin `OverlayPortal`ı söküldüğünden kapalı bir
+  balonda `hide()` → `'_zOrderIndex != null'` doğrulaması. Artık yalnızca
+  `isShowing` iken kapatılıyor.
+- **Bilinçli farklar:** "N oyun daha" kartının çerçevesi webde kesikli,
+  portta düz (Flutter'da kesikli çerçeve ek çizim ister; anlamı taşımıyor).
+- **Kapılar:** `test/beyin_ligi_test.dart` — web metinleri/sekme
+  etiketleri/eşik PARİTESİ (web kaynağını okur → web CI'ın `parite` işi
+  de koşar; yollar `src/**` altında, `paths` listesinde zaten var) +
+  davranış (Puan Ligi ile açılış, Beyin Ligi listesi, mühür yok, eşik
+  kartı, gidip gelince tek istek). `npm run verify-beyin-ligi` artık
+  Dart sabitini de kilitliyor. Tam takım 1045/1045, `dart analyze` temiz.
+- **Doğrulama sınırı:** gerçek uçlar (`beyin_ligi_siralama`,
+  `my_beyin_ligi_rank`) yalnızca cihazda — `mobile/docs/testing-klig.md`
+  → "13.x Beyin Ligi sekmesi".
+- **Ek — "SENİN SIRAN" satırı pencerenin altında kesiliyordu (2 Ekim 2026,
+  kullanıcı arkadaşının Android telefonundan ekran görüntüsü; mağazadaki
+  1.1.2'de de var).** 31. sıradaki kullanıcı satırının yalnızca üst
+  yarısını görüyordu. **Web nasıl yapıyor:** liste `max-h-[50vh]`, kısayol
+  listenin ALTINDA ve kullanıcının satırı listeye YÜKLENENE kadar duruyor.
+  Port bunu aynen taşıyordu. Fark yapısaldı: Flutter iç içe kaydırmayı
+  zincirlemez (bkz. `CLAUDE.md` → "`KModal`'ın gövdesi ZATEN
+  kaydırılabilir"). Liste ekranın SABİT %50'sini aldığından, pencere %85'e
+  dayanınca satır kaydırılan gövdenin dışına itiliyordu. Parmak listenin
+  üzerindeyken oraya ulaşmanın yolu da yoktu. **Düzeltme:** `KModal.fillBody`
+  (gövde kaydırılmaz, `child` kalan yüksekliği sınır olarak alır). Pencere
+  `Flexible(Stack(passthrough))` kullanıyor: Offstage'deki Beyin Ligi gizliyken
+  sıfır boy bildirdiğinden pencere görünen sekmenin boyunu alıyor. İki
+  listede de `Flexible(ConstrainedBox(50%))` var: kısa listede pencere
+  büyümüyor, uzun listede kalan alana iniyor. **Kapı:**
+  `test/leaderboard_layout_test.dart`, iki sekme × üç bileşim
+  (390×844 · 360×740 · 360×640 @1,3) + "satır yüklenince kısayol kalkar".
+  Duyarlılık kanıtlandı: düzeltme geri alınınca 360×640 @1,3'te iki sekme de
+  DÜŞÜYOR.
+## Parça 235 — Oyun geçmişi: beraberlikte "ben" satırı yanlıştı (11 Ekim 2026) — web ikizi #828
+
+Kullanıcı (web) kendi geçmişinde 218-218 bir Canlı oyunda iki satırda da kendi adını gördü; hamle geçmişi rakibin puanına bağlıydı. Kayıt sunucuda doğruydu, hata `findMeIndex`te: "ben"i `rank - 1` ile buluyordu, beraberlikte iki oyuncunun da rank'ı 1 ve satırlar koltuk sırasıyla yazıldığından herkes için 0. satır çıkıyordu. Port AYNI hatayı taşıyordu (`_findMeIndex`) ve ek olarak "Tekrar Oyna" (`_handleRematch`) davet listesini `meIndex` dışındakilerden kurduğu için beraberlikte rakip yerine kendini alırdı.
+
+**Düzeltme:** aynı puanda birden çok insan satırı varsa güncel takma adla (`trLower`) eşleşen satır seçilir (web ile aynı); tek eşleşme yoksa eski davranış. **Test:** `game_history_find_me_test.dart` (4 senaryo: 2 kişi beraberlik iki taraf, ad değişmiş, beraberlik yok, 4 kişide ilk ikisi berabere). **Sınır:** takma ad oyundan sonra değiştiyse beraberlikte eski davranışa düşer (kayıtta koltuk indeksi yok). ⚠ Numara: 228-232 açık taslak PR'larda; kesimde çakışırsa yeniden numaralandır.
+## Parça 234 — Oyun sonu modalı yeni oyunda "BERABERE" diye açılıyordu (11 Ekim 2026)
+
+Kullanıcı (Asnmzr, Android, girişli): TEKRAR OYNA ile yeni oyun açtı, ilk eli uygun olmadığı için Değiştir'e bastı, **YZ oynamadan** 0-0 "BERABERE" modalı çıktı; kapatınca oyun devam etti. İki gün boyunca motor yolunda (TS/Dart 300'er oyun, widget testi) yeniden üretilemedi; ekran görüntüsü ipucuydu: "Toplam hamle 0", KALAN -20/-19 (= yeni oyunun dolu rafları), takas modu açık.
+
+**Kök neden:** `game_screen.dart` oyun bitince modalı post-frame callback'te açıyor ve önce `_ilkKutlama`yı bekliyor — girişli kullanıcıda bu bir AĞ isteği (`stats.playerStats`). Beklerken kullanıcı tahtadaki TEKRAR OYNA'ya basabiliyor (modal henüz açılmadığı için tahta tıklanabilir). İstek dönünce modal CANLI `state` getter'ıyla açılıyordu → YENİ oyunun (0-0, dolu raflar) durumu "bitmiş oyun" gibi gösteriliyordu. Yavaş ağ + hızlı rövanş.
+
+**Düzeltme:** biten durum callback'in başında `final ended = state` ile DONDURULUR; `await` sonrası canlı `state.isGameOver` false ise (yeni oyun başlamış) modal hiç açılmaz; açılırsa `ended` ile açılır (hamle geçmişi ve YZ rozeti dahil). **Test:** `game_over_stale_modal_test.dart` — yavaş `StatsGateway` ile oyunu bitir → TEKRAR OYNA → ağ cevabı gelir → modal ÇIKMAMALI. Düzeltmesiz kodda test DÜŞÜYOR (doğrulandı), düzeltmeyle geçiyor; `game_screen_test` (46) yeşil.
+
+**Kapsam notu:** `online_game_screen.dart` aynı kalıbı taşıyor (`await _ilkKutlama()` sonrası canlı `state`) ama orada rövanş yeni bir ekranla açıldığı ve oyun bittikten sonra durum geri dönmediği için aynı yarış oluşmuyor; dokunulmadı. Web etkilenmez (modal durum-güdümlü, async bekleme yok).
+## Parça 238 — Rastgele şerit KARE kart + rastgele kökenli aktif oyun işareti (4 Ekim 2026) — #805
+
+> Numara 232'nin devamı (taslak PR'lar birleşirken çakışırsa yeniden numaralanır).
+
+- **Ne:** web kullanıcı kararlarının (c306e7e, ee1631c, ba2af3b, da7001a, def0f12) port ikizi: şerit kartları KARE
+  (en `clamp((şerit−24)/3.25, 84, 112)` → 3 tam + 4.'nün ~1/4'ü), kart gölgesi (`kRaisedShadows`), "Rastgele oyun aç"
+  başlık stilinde (`RASTGELE OYUN AÇ`), durum mesajları ortalı; "Devam Edenler"de rastgele ilandan doğan AKTİF oyun
+  kartı açık mavi `#EEF4FF` + 3 px accent çizgi + alt satırda "RASTGELE" etiketi (solda) / kalan süre (sağda).
+- **Dosyalar:** `ui/live/random_games_strip.dart` · `ui/live/live_games_tab.dart` (`_GameRow`, `_RandomOriginTag`,
+  `kRandomOriginBg`) · `ui/devam_eden_govde.dart` (`etiket` parametresi) · `util/random_games.dart`
+  (`isRandomOriginGame`) · testler `random_games_test.dart` + `random_games_ui_test.dart` · `support/fake_online_gateway.dart`
+  (`slotHuman(via:)`).
+- **Bulunan tuzaklar:** (1) Flutter yatay `ListView` sonlu yükseklik ister, web `aspect-square` içerikle uzar → yükseklik
+  `max(en, 108 × ölçek)`; (2) etiketin satır yüksekliği 13/8 verilince kart 4 px uzadı (kalan-süre yazısından uzun) →
+  1,0; test "kart yüksekliği ARTMAZ"ı kilitler; (3) `ShapeDecorationWithCssShadows` tek tip kenarlık → sol çizgi `Stack`;
+  (4) gölge liste kırpmasına girer → 8 px dikey dolgu; (5) `#EEF4FF` Tailwind arbitrary değer, `tokens.dart`a eklenmedi.
+- **Doğrulama sınırı:** widget testleri (320/375/390/420 px + yazı ölçeği 2,0); gerçek cihazda görünüm ÖLÇÜLMEDİ.
+
+## Parça 237 — Rastgele Oyuncu (açık ilan) port ikizi (4 Ekim 2026) — web yarısı #804
+
+> Numara: taslak PR'lardaki 228-231'den SONRA (ROADMAP "1.1.3 treni");
+> birleşirken çakışırsa yeniden numaralanır.
+
+- **Ne:** web `random-opponent.md` §12'nin Flutter ikizi — kurulum formunda "?"
+  avatarlı **Rastgele Oyuncu** satırı + esnek kadro, Devam Edenler'in üstünde
+  yatay **ilan şeridi** (Kabul, 40 sn yoklama), benim ilanım için **"Bekliyor
+  n/N"** satırı (İlanı iptal et / Ayrıl), dört kova kuralı, açık koltuk her
+  yerde "?" (ASLA "Yapay Zeka"), Gizlilik/Koşullar'a ilan görünürlüğü.
+- **Dosyalar:** `data/online_games_api.dart` (`OnlineSlot` açık koltuk + `isHuman`,
+  ilan modelleri, altı RPC, `_retrying`/`_reportListError` ortaklaştırma) ·
+  `util/random_games.dart` (saf kurallar) · `ui/live/random_games_strip.dart` ·
+  `ui/open_seat_avatar.dart` · `live_games_tab.dart` · `live_game_create_form.dart`
+  (`_filledSeat` arkadaş + "?" için ortak) · `player_avatar_row.dart` (`isOpen`) ·
+  `auth/legal_modals.dart` + web `LegalContent.tsx` (yalnız TARİH).
+- **Bulunan tuzak:** `OnlineSlot.fromJson` `ai` DIŞINDAKİ her türü insan sayıyordu;
+  açık koltuk `userId == null` bir "insan" olurdu. `isAi`yi "insan değil" diye
+  okuyan 9 yer vardı → `isHuman` getter'ı (açık koltuk ne YZ ne insan). Derleyici
+  görmez; kilit `random_games_test.dart` + `random_games_ui_test.dart`.
+- **Bilinçli:** rozet zinciri (`pendingCounts`/`decideInitialMainView`/ikon rozeti)
+  DOKUNULMADI — ilan haberdir (testle kilitli: sayaç yolu `list_my_random_games`'i
+  ÇAĞIRMAZ). Realtime YOK (RLS). Rütbe mührü (§9.2) web'de de yok → portta da yok.
+- **Doğrulama sınırı:** gerçek Supabase'e karşı hiçbir akış denenmedi (sahte uç +
+  widget testi); cihaz listesi `testing-arkadaslar-canli.md` → "Rastgele Oyuncu".
+
 ## Parça 227 — Yatay iPad'de alt düğmeler taşıyordu: oyun başlığı WEB GEOMETRİSİNE indi (1 Ekim 2026)
 
 - **Bildirim (1.1.2 cihaz turu, Canlı oyun, sıra kendisinde):** *"ipad'de

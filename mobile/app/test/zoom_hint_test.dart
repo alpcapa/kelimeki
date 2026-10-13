@@ -106,8 +106,8 @@ void main() {
 
   testWidgets('bir kez gösterildiyse bir daha ÇIKMAZ — sıra hamlelere geçer',
       (tester) async {
-    final (_, storage) = await _pump(tester,
-        prefs: {..._zoomSirada, 'zoom_hint_shown': 1});
+    final (_, storage) =
+        await _pump(tester, prefs: {..._zoomSirada, 'zoom_hint_shown': 1});
     expect(find.text(_metin), findsNothing);
     expect(storage.flags.zoomHintShown, 1, reason: 'sayaç boşuna artmamalı');
     expect(find.text('Buradan tüm hamleleri görebilirsin.'), findsOneWidget);
@@ -129,7 +129,8 @@ void main() {
     final torba = tester.getRect(find.textContaining('TORBA'));
     expect(balon.bottom, lessThanOrEqualTo(torba.top));
     expect(balon.bottom, greaterThan(torba.top - 30));
-    await tester.pump(onboardingHintDuration + const Duration(milliseconds: 50));
+    await tester
+        .pump(onboardingHintDuration + const Duration(milliseconds: 50));
     expect(find.text(metin), findsNothing);
   });
 

@@ -34,6 +34,10 @@ abstract class HatirlatmaZamanlayici {
 
   /// Bekleyen hatırlatmayı iptal eder (yoksa hiçbir şey yapmaz). FIRLATMAZ.
   Future<void> iptal();
+
+  /// Telefonun bu uygulamaya ait BİLDİRİM ayarlarını açar (2 Ekim 2026,
+  /// "Bildirimler kapalı" kartı). Açılabildiyse `true`. FIRLATMAZ.
+  Future<bool> bildirimAyarlariniAc();
 }
 
 /// Gerçek uç — `MainActivity.kt` + `AppDelegate.swift`teki işleyiciler.
@@ -44,6 +48,7 @@ class PlatformHatirlatmaZamanlayici implements HatirlatmaZamanlayici {
   static const kanal = MethodChannel('kelimeki/hatirlatma');
   static const kurMetot = 'yarimOyunKur';
   static const iptalMetot = 'yarimOyunIptal';
+  static const ayarMetot = 'bildirimAyarlariniAc';
 
   const PlatformHatirlatmaZamanlayici();
 
@@ -68,6 +73,16 @@ class PlatformHatirlatmaZamanlayici implements HatirlatmaZamanlayici {
       debugPrint('[Kelimeki] yarım oyun hatırlatması iptal edilemedi: $e');
     }
   }
+
+  @override
+  Future<bool> bildirimAyarlariniAc() async {
+    try {
+      return await kanal.invokeMethod<bool>(ayarMetot) ?? false;
+    } catch (e) {
+      debugPrint('[Kelimeki] bildirim ayarları açılamadı: $e');
+      return false;
+    }
+  }
 }
 
 /// Akışın tamamı: ne zaman kurulur, ne zaman iptal edilir, ne zaman
@@ -82,6 +97,12 @@ class YarimOyunHatirlatici {
   final PushMessaging? messaging;
 
   final DateTime Function() _saat;
+
+  /// "Bildirimler kapalı" kartından ayarlara gönderilen oyun. Kullanıcı
+  /// ayarlardan DÖNÜNCE (`uygulamaAcildi`) hatırlatma bu oyun için yeniden
+  /// denenir — çıkış anında izin yoktu, kurulamamıştı. Bellekte tutulur:
+  /// uygulama o arada kapanırsa kaybolur (bedeli: bir hatırlatma).
+  GameState? _ayardanDonusBekleyen;
 
   YarimOyunHatirlatici({
     required this.storage,
@@ -120,6 +141,14 @@ class YarimOyunHatirlatici {
     }
   }
 
+  /// Kullanıcı "Bildirimler kapalı" kartından ayarlara gitti: ayarları açar
+  /// ve dönüşte hatırlatmayı [s] için yeniden denemek üzere işaretler.
+  Future<void> ayarlaraGonder(GameState s) async {
+    _ayardanDonusBekleyen = s;
+    final acildi = await zamanlayici.bildirimAyarlariniAc();
+    if (!acildi) _ayardanDonusBekleyen = null;
+  }
+
   /// Oyun BİTTİ — yarım kalan bir şey yok, bekleyen hatırlatma düşer.
   Future<void> oyunBitti() async {
     try {
@@ -135,21 +164,31 @@ class YarimOyunHatirlatici {
   /// Uygulama açıldı ya da öne geldi — kullanıcı döndü, bekleyen hatırlatma
   /// düşer. Zamanı geçmişse bildirim teslim edilmiştir: o oyun bir daha
   /// hatırlatılmaz.
+  ///
+  /// Ayarlardan dönüşse ([ayarlaraGonder]) iptalden SONRA o oyun için
+  /// hatırlatma yeniden denenir — aynı metodun içinde, sırayla: iki ayrı
+  /// dinleyici olsaydı iptal ile kurma yarışırdı.
   Future<void> uygulamaAcildi() async {
     try {
       final flags = (await storage).flags;
       final oyun = flags.yarimOyunKurulanOyun;
-      if (oyun == null) return;
-      if (yarimOyunHatirlatmasiTeslimEdildi(
-        kurulanZaman: flags.yarimOyunKurulanZaman,
-        simdi: _saat(),
-      )) {
-        await flags.yarimOyunHatirlatildi(oyun);
+      if (oyun != null) {
+        if (yarimOyunHatirlatmasiTeslimEdildi(
+          kurulanZaman: flags.yarimOyunKurulanZaman,
+          simdi: _saat(),
+        )) {
+          await flags.yarimOyunHatirlatildi(oyun);
+        }
+        await zamanlayici.iptal();
+        await flags.yarimOyunKurulanTemizle();
       }
-      await zamanlayici.iptal();
-      await flags.yarimOyunKurulanTemizle();
     } catch (e) {
       debugPrint('[Kelimeki] yarım oyun hatırlatma akışı hatası: $e');
+    }
+    final bekleyen = _ayardanDonusBekleyen;
+    if (bekleyen != null) {
+      _ayardanDonusBekleyen = null;
+      await oyundanAyrildi(bekleyen);
     }
   }
 }

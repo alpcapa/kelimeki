@@ -204,10 +204,19 @@ portta henüz yok (ROADMAP #41'in port yarısı).
   düzenine geçti** (kullanıcı: *"isim soyadı zorunlu olmaktan çıkacaktı … zorunlular
   yukarıda, opsiyoneller aşağıda"*). Sıra: Takma isim · E-posta · Şifre (`*`) →
   "İSTEĞE BAĞLI" ayracı → Ad | Soyad · Cinsiyet | Doğum Tarihi (ikişerli satır) →
-  Kullanım Koşulları (`*` artık onda da) → pazarlama izni. **Sunucu değişmedi:**
-  `profiles.first_name/last_name` `NOT NULL default ''` ve `handle_new_user`
-  `coalesce(..., '')` — boş ad baştan beri kabul ediliyordu, zorunluluk YALNIZCA
-  istemcideydi. Okuyucular tarandı: tüm e-posta/bildirim fonksiyonları
+  Kullanım Koşulları (`*` artık onda da) → pazarlama izni. **⚠ "Sunucu değişmedi" YANLIŞTI (12 Ekim 2026'da düzeltildi):** bu cümle
+  "boş ad baştan beri kabul ediliyordu, zorunluluk YALNIZCA istemcideydi" diyordu
+  ve sunucuya hiç bakılmadan yazılmıştı. `profiles_name_required` (17 Temmuz)
+  `profiles_first_name_not_blank` / `profiles_last_name_not_blank` CHECK
+  kısıtlarını koymuştu; `handle_new_user` boş adı `''` yazar, kısıt reddeder ve
+  GoTrue istemciye yalnızca genel "Database error saving new user" (500)
+  döndürür → adı boş bırakan her yeni kullanıcı KAYIT OLAMIYORDU (web 2 Ekim'den,
+  Android 1.1.3 11 Ekim'den; dolaylı kanıt — başarısız denemelerin gövdesi geri
+  alındığından kayıtlı değil). `20261012112152_profiles_names_optional` iki
+  kısıtı kaldırdı (kolonlar `NOT NULL default ''` kalır). **Ders: bir alanı
+  istemcide isteğe bağlı yaparken sunucudaki kısıtları (CHECK/trigger) ayrıca
+  oku — "kolon NOT NULL default ''" boş değeri kabul ettiğini KANITLAMAZ.**
+  Ek olarak kolonlar `NOT NULL default ''`. Okuyucular tarandı: tüm e-posta/bildirim fonksiyonları
   `display_name || first_name` (takma isim zorunlu → ad hiç devreye girmiyor).
   `AccountSettingsModal`'ın ad/soyad zorunluluğu da AYNI PR'da kalktı — yoksa
   adsız açılan hesap ayarlarını kaydedemezdi. Port ikizi (`auth_modal.dart` +

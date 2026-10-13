@@ -20,6 +20,7 @@ hashtag setleri, reklam kurulum notları).
 npm run build                          # derlenmiş CSS ŞART (aşağı bkz.)
 node scripts/sponsored-post/build.mjs  # 5 PNG'yi yeniden yazar
 npm run generate-reel                  # kelimeki-reel.mp4 (bkz. aşağıdaki reel notu)
+npm run generate-shorts                # Reels/Shorts/TikTok için 3 kısa video (bkz. "Kısa videolar")
 node scripts/generate-klig-logo.mjs    # "k-lig" wordmark'ının tek başına SVG/PNG/JPG hâli
 ```
 
@@ -279,6 +280,60 @@ cevabını veriyor.
 - **ffmpeg bu ortamda apt ile kuruldu** — Playwright'ın kendi ffmpeg'i
   (`/opt/pw-browsers/ffmpeg-1011`) yalnızca VP8/webm derlenmiş, H.264 yok.
 
+
+## Kısa videolar — Reels / Shorts / TikTok (`scripts/reel/shorts*`, 5 Ekim 2026)
+
+`npm run build && npm run generate-shorts [1|2|3]` → `marketing/shorts-2026-10/`
+(1080×1920, H.264, AAC). **Müzik videonun içinde** (5 Ekim, kullanıcı: *"müzikleri sen ekle"*): `scripts/reel/muzik.mjs` özgün bir döngüyü SENTEZLER (C–Am–F–G, 112 BPM, pluck arpej + bas + vuruş; son 1,2 sn kısılır) — internetten ses indirilmiyor (ortam kapalı + telif tarayıcısı riski yok). ⚠ Kulakla dinlenmedi, yalnızca seviye ölçüldü (ort. −19 dB, tepe −3 dB). Paylaşım metinleri: `marketing/shorts-2026-10/metin.md`. Instagram ve TikTok AYRI hesaplar (kullanıcı, 5 Ekim); yayın sırası: IG günde bir video (1→2→3), TikTok sonra, Shorts en son (`ALT` → "Link açıklamada" gerekir). Kullanıcı isteği: üç kısa video, hepsi *"Kelimeki'ye gel, kendin
+dene!"* + *"Link bio'da"* kapanışıyla (2,8 sn tam ekran kart, mağaza
+rozetleri dahil).
+
+| # | Dosya | Süre | Kurgu |
+|---|---|---|---|
+| 1 | `video-1-en-yuksek-puan.mp4` | ~13,5 sn | Tek altyazı "En yüksek puanlı kelimeyi bul" (kullanıcı kararı, 5 Ekim) → 3-2-1 geri sayım → **ÖVEÇ = 97 puan** (merkez ×3 karesi; puanı uygulamanın kendi +97 rozeti gösterir, altyazı yok) |
+| 2 | `video-2-hangisini-oynardin.mp4` | ~20 sn | "Sen hangisini oynardın?" → A: CIVATA 38 puan (**sınır ihlali onay penceresi: 13 puan rakibe vergi**) → geri al → B: CUMA 24 puan vergisiz → hesap: A fark **+12**, B fark **+24** |
+| 3 | `video-3-cift-yildiz-bitis.mp4` | ~16 sn | "40 puan geride! Torba boş, elinde 2 joker ★★" → DAĞCI + **çift joker bitişi +50** → gerçek "SEN KAZANDI" ekranı **229–203** |
+
+- **Hamleler elle seçilmedi, motordan ÖLÇÜLDÜ** (`shorts-state.ts`; seçim
+  ölçütleri `kesif.ts` / `kesif-v2.ts` / `kesif-v3.ts`). V1: tanıtım
+  tahtası + `ÇÖVÜZÜI` rafının `findAIMoves` (Zor genişliği) en iyisi; V2:
+  YZ↔YZ gerçek oyun (tohum 21, 14. tur), `computeInvasionSplit` ile vergi
+  payı, ölçüt "A'nın net puanı B'nin brütünü geçsin AMA fark (net − rakip
+  payı) B'nin altında kalsın" — yani ilk bakışta yüksek puan cazip, hesap
+  tersini söylüyor; V3: YZ↔YZ oyunun torbası boşaldığı ilk an (tohum 4).
+- ⚠ **`findAIMoves` vergisiz hamle varsa SADECE onları döner** (güvenli
+  tercih) — vergili/vergisiz çifti ölçerken oyuncuları `surrendered: true`
+  yapıp (bölge boşalır) TÜM hamleleri alıyor, vergiyi sonra gerçek
+  oyuncularla hesaplıyoruz (`shorts-state.ts` → `tumHamleler`). Elle
+  yazılmış "vergili/vergisiz" çifti yerine bu ölçüm, demo tahtasında çiftin
+  HİÇ çıkmadığı görüldüğü için gerekti (merkez ×3 vergisiz hamle hep daha
+  yüksekti).
+- **V3 bir SAHNELEME:** gerçek oyunun sonundan bir durum alınıp insanın
+  rafı iki jokerle, puanı rakipten 40 geriye ayarlandı (kullanıcı örneği:
+  *"40 puan gerideyken çift yıldız bitme"*). Oyuncunun eski rafındaki
+  taşlar kaybolur (torba zaten boş) — ekranda sayılabilecek bir şey değil.
+  Kazanma ve +50 motorun kendisinden: `endGame` + `jokerFinishBonus(2)`.
+- **Uygulama bir IFRAME içinde** (`shorts-kabuk.html`, `renderSarmalHtml`):
+  üstte altyazı (108 CSS px), altta adres şeridi, ortada 540×816 uygulama.
+  `build.mjs`in "viewport + alt bant" düzeninden farkı: altyazı DOM'da
+  olduğu için her karede değiştirilebiliyor. Fare koordinatları sayfa
+  koordinatı → iframe içi ölçüye `CAP_H` EKLENİR (sürükleme hedefi hâlâ
+  +30 px, `DRAG_LIFT`).
+- **Joker penceresi başlığı `Joker Hangi Harf Olsun?`** (düzenleme modundaki
+  `Jokeri Hangi Harfe Çevir?` DEĞİL); harf, ızgaradaki hücreye
+  `click()` ile seçilir.
+- **Rafta tahtaya konan taş raftan düşer** — "kullanıldı" işareti tutmaya
+  GEREK YOK (ilk sürüm `dataset` işaretliyordu; iki joker aynı öğeyi
+  yeniden kullanıp "Rafta '?' yok" ile düştü).
+- ⚠ **Altyazıda `<b>/<i>/<u>` bir `<span>` İÇİNDE olmalı** — `#cap`
+  `display:flex` olduğundan çıplak etiketler arası boşluk yutuluyor.
+- **Güvenli bölge:** Reels/TikTok altta ~%35, üstte ~%14'ü arayüze
+  verir; bu videolar ona UYMUYOR (altyazı üst ~%11'de, raf alt kısımda).
+  Aynı tercih ilk reel'de de yapıldı; sorun çıkarsa kabuk ölçüleri
+  (`CAP_H`, `FOOT_H`) tek yerden değişir.
+- **Kapanış metni** `shorts.mjs` başındaki `SLOGAN` / `ALT`: YouTube
+  Shorts'ta "bio" yok → o platform için `ALT` "Link açıklamada" yapılıp
+  yeniden üretilmeli (henüz yapılmadı).
 
 **28 Eylül 2026 — iki mağaza rozeti (Meta kampanyası):** alt bant artık logo +
 adres yerine **iki rozet + adres** (`visibleStoreBadges`, App Store önce, eşit

@@ -118,7 +118,8 @@ void main() {
     });
   });
 
-  testWidgets('Setup girişli: sağ üstte avatar, oyunun 1. oyuncusu hesap sahibi',
+  testWidgets(
+      'Setup girişli: sağ üstte avatar, oyunun 1. oyuncusu hesap sahibi',
       (tester) async {
     await setPhoneViewSize(tester, const Size(420, 900));
     final auth = AuthService.fake(user: fakeUser(), profile: ironman);
@@ -187,6 +188,15 @@ void main() {
     await tester.tap(find.text('GİRİŞ YAP'));
     await tester.pump();
     expect(find.text('E-posta ve şifre zorunludur.'), findsOneWidget);
+
+    // 8'den kısa şifre girişte de sunucuya gitmeden reddedilir (Supabase
+    // alt sınırı baştan beri 8; 2 Ekim 2026).
+    await tester.enterText(
+        find.widgetWithText(TextField, 'E-posta'), 'alp@ornek.com');
+    await tester.enterText(find.widgetWithText(TextField, 'Şifre'), '1234567');
+    await tester.tap(find.text('GİRİŞ YAP'));
+    await tester.pump();
+    expect(find.text('Şifre en az 8 karakter olmalı.'), findsOneWidget);
 
     // "Şifremi unuttum" artık gerçek forgot moduna geçer (eski "kelimeki.com
     // üzerinden" yönlendirme diyaloğu şifre sıfırlama parçasıyla kalktı) —

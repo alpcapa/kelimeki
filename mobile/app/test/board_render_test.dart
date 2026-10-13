@@ -82,7 +82,6 @@ Future<void> pumpBoard(WidgetTester tester, GlobalKey key, GameState state,
   await tester.pump();
 }
 
-
 /// Boş tahtalı, 2 kişilik bir oyun — filigranlar (köşe numarası / X2 / X3)
 /// yalnızca BOŞ hücrelerde çizildiğinden bitmiş bir fixture bunun için
 /// kullanılamaz (merkez hücre dolu olabilir).
@@ -237,7 +236,8 @@ void main() {
   // küçülmez). 23 Eylül 2026, kullanıcı cihazda bildirdi: "2" tahtanın alt
   // kenarından, "X2" 5×5 bölgeden taşıyordu. Punto artık tahtanın kendi
   // genişliğiyle de sınırlı.
-  testWidgets('filigran tahtadan taşmaz — geniş ekran, küçük tahta (iPad yatay)',
+  testWidgets(
+      'filigran tahtadan taşmaz — geniş ekran, küçük tahta (iPad yatay)',
       (tester) async {
     await setPhoneViewSize(tester, const Size(1180, 820));
     await pumpBoardSized(tester, emptyBoardState(), 370);
@@ -297,8 +297,8 @@ void main() {
     ));
     await tester.pump();
 
-    final clip = tester
-        .widget<ClipPath>(find.byKey(const ValueKey('board-watermarks')));
+    final clip =
+        tester.widget<ClipPath>(find.byKey(const ValueKey('board-watermarks')));
     final size = tester.getSize(find.byKey(const ValueKey('board-watermarks')));
     final path = clip.clipper!.getClip(size);
 
@@ -354,7 +354,8 @@ void main() {
       final evKare = tester.getRect(find.byType(NeoBox).first);
       final izgara = tester.getRect(find.byType(GridView));
       expect((evKare.left - izgara.left).abs(), lessThan(1),
-          reason: 'ilk NeoBox (0,0) hücresi değil — iddia yanlış kutuya bakıyor');
+          reason:
+              'ilk NeoBox (0,0) hücresi değil — iddia yanlış kutuya bakıyor');
       expect((evKare.top - izgara.top).abs(), lessThan(1));
 
       final b = tester.getRect(balon);
@@ -370,7 +371,9 @@ void main() {
     testWidgets('tahtada taş varsa ÇIKMAZ', (tester) async {
       await setPhoneViewSize(tester, const Size(390, 844));
       final s = emptyBoardState();
-      final board = [for (final row in s.board) [...row]];
+      final board = [
+        for (final row in s.board) [...row]
+      ];
       board[6][6] = const Tile(letter: 'A', pts: 1);
       await pump(tester, s.copyWith(board: board));
       expect(find.text('Buradan başla'), findsNothing);
@@ -382,8 +385,7 @@ void main() {
       await setPhoneViewSize(tester, const Size(390, 844));
       final s = emptyBoardState();
       await pump(
-          tester,
-          s.copyWith(placed: const {'0,0': Tile(letter: 'A', pts: 1)}));
+          tester, s.copyWith(placed: const {'0,0': Tile(letter: 'A', pts: 1)}));
       expect(find.text('Buradan başla'), findsNothing);
     });
 

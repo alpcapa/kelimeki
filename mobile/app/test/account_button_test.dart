@@ -8,6 +8,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kelimeki/src/ui/game/count_badge.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
 import 'package:kelimeki/src/ui/theme.dart';
 import 'package:kelimeki/src/ui/rank/rank_seal.dart';
@@ -32,7 +33,15 @@ const _ironman = KProfile(id: 'u-test', displayName: 'Ironman');
 
 class _FakeStatsGateway implements StatsGateway {
   @override
-  Future<Map<String, Object?>?> playerStats(String userId, int? playerCount) async =>
+  Future<List<Map<String, Object?>>> beyinLigi(int limit, int offset) async =>
+      const [];
+
+  @override
+  Future<Map<String, Object?>?> myBeyinLigiRank(String userId) async => null;
+
+  @override
+  Future<Map<String, Object?>?> playerStats(
+          String userId, int? playerCount) async =>
       null;
 
   @override
@@ -44,8 +53,9 @@ class _FakeStatsGateway implements StatsGateway {
       {'rank': 3, 'total_score': 47};
 
   @override
-  Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async =>
-      [for (final id in userIds) {'user_id': id, 'total_score': 47}];
+  Future<List<Map<String, Object?>>> rankScores(List<String> userIds) async => [
+        for (final id in userIds) {'user_id': id, 'total_score': 47}
+      ];
 
   @override
   Future<Map<String, Object?>?> profileAgeGender(String userId) async => null;
@@ -85,11 +95,27 @@ class _DegisenStatsGateway extends _FakeStatsGateway {
   }
 }
 
+/// Gelen istek listesi testten değiştirilebilir (`friend_requests` Realtime'da
+/// değil — sayı yalnızca istemci tazelemesiyle düzelir).
+class _IstekliFriendsGateway extends _FakeFriendsGateway {
+  int adet = 0;
+  int cagri = 0;
+  @override
+  Future<List<Map<String, Object?>>> listIncomingRequests() async {
+    cagri++;
+    return [
+      for (var i = 0; i < adet; i++)
+        {'requester_id': 'r$i', 'name': 'Biri $i', 'avatar_url': null},
+    ];
+  }
+}
+
 class _FakeFriendsGateway implements FriendsGateway {
   @override
   String? get currentUserId => 'u-test';
   @override
-  Future<List<Map<String, Object?>>> searchUsers(String query) async => const [];
+  Future<List<Map<String, Object?>>> searchUsers(String query) async =>
+      const [];
   @override
   Future<List<Map<String, Object?>>> listUsers(int offset, int limit) async =>
       const [];
@@ -250,8 +276,7 @@ void main() {
   testWidgets(
       'regresyon (Parça 28): madde sırası web ile aynı — Arkadaşlar → '
       'Skor Kartı → Nasıl Oynanır? → Hesap Ayarları → (çizgi) → '
-      'Çıkış Yap',
-      (tester) async {
+      'Çıkış Yap', (tester) async {
     final stats = StatsRepo(_FakeStatsGateway());
     final friends = FriendsRepo(_FakeFriendsGateway());
     await pumpMenu(tester, stats: stats, friends: friends);
@@ -286,9 +311,8 @@ void main() {
     await pumpMenu(tester, stats: stats, friends: friends);
 
     double topOf(Finder f) => tester.getTopLeft(f).dy;
-    final rowSpacing =
-        topOf(find.textContaining('Skor Kartı')) -
-            topOf(find.textContaining('Arkadaşlar'));
+    final rowSpacing = topOf(find.textContaining('Skor Kartı')) -
+        topOf(find.textContaining('Arkadaşlar'));
     // Web satırı ~py-2.5 (20px dolgu) + 12px punto ≈ 35-40px — Flutter'ın
     // varsayılan `kMinInteractiveDimension`ı (48px) kullanılıyorsa bu her
     // zaman >=48 olurdu.
@@ -298,7 +322,8 @@ void main() {
 
     final itemBox = tester.getSize(find
         .ancestor(
-            of: find.textContaining('Arkadaşlar'), matching: find.byType(SizedBox))
+            of: find.textContaining('Arkadaşlar'),
+            matching: find.byType(SizedBox))
         .first);
     expect(itemBox.width, closeTo(200, 1),
         reason: 'Satır içerik genişliği sabitlenmemiş — menü web\'in '
@@ -348,8 +373,7 @@ void main() {
 
     // Başlığın altındaki Container'ın decoration'ı bottom border taşımalı.
     final headerContainer = tester.widget<Container>(find
-        .ancestor(
-            of: find.text('Ironman'), matching: find.byType(Container))
+        .ancestor(of: find.text('Ironman'), matching: find.byType(Container))
         .first);
     final headerDecoration = headerContainer.decoration as BoxDecoration;
     expect(headerDecoration.border?.bottom.width, 1);
@@ -360,7 +384,8 @@ void main() {
     // aralığına (< 44px) yakın kalmalı.
     final signOutContainer = tester.widget<Container>(find
         .ancestor(
-            of: find.textContaining('Çıkış Yap'), matching: find.byType(Container))
+            of: find.textContaining('Çıkış Yap'),
+            matching: find.byType(Container))
         .first);
     final signOutDecoration = signOutContainer.decoration as BoxDecoration;
     expect(signOutDecoration.border?.top.width, 1);
@@ -382,12 +407,13 @@ void main() {
     final friends = FriendsRepo(_FakeFriendsGateway());
     await pumpMenu(tester, stats: stats, friends: friends);
 
-    final cardFinder = find.byWidgetPredicate(
-        (w) => w is Material && w.type == MaterialType.card);
+    final cardFinder = find
+        .byWidgetPredicate((w) => w is Material && w.type == MaterialType.card);
     final cardTop = tester.getTopLeft(cardFinder).dy;
     final cardBottom = tester.getRect(cardFinder).bottom;
     final headerTop = tester.getTopLeft(find.text('Ironman')).dy;
-    final signOutBottom = tester.getBottomLeft(find.textContaining('Çıkış Yap')).dy;
+    final signOutBottom =
+        tester.getBottomLeft(find.textContaining('Çıkış Yap')).dy;
 
     // Varsayılan `menuPadding` (8px) hâlâ devredeyse bu farklar sırasıyla
     // ~20 (8+12 başlık dolgusu) ve ~18 (8+10 satır dolgusu) olurdu.
@@ -427,8 +453,8 @@ void main() {
     // bir probe ile yapıldı ve düzeltmeyi kanıtladı: basılıyken dairenin
     // DIŞINDA boyanmış piksel 120 → 0 (dokunulmamış durumda zaten 0).
     // Parça 34'ün deseni: bir kez ölç, kalıcı testte sözleşmeyi sabitle.
-    final button =
-        tester.widget<PopupMenuButton<String>>(find.byType(PopupMenuButton<String>));
+    final button = tester
+        .widget<PopupMenuButton<String>>(find.byType(PopupMenuButton<String>));
     final size = tester.getSize(find.byType(PopupMenuButton<String>));
     expect(button.borderRadius, isNotNull,
         reason: 'borderRadius null — ink dikdörtgen boyanır, avatarın '
@@ -464,4 +490,55 @@ void main() {
     expect(sealX, greaterThanOrEqualTo(nameX));
   });
 
+  // 11 Ekim 2026 (1.1.3 TestFlight, kullanıcı): yeni arkadaşlık isteği gelince
+  // avatarda ve menüde "1" çıkmadı — `friend_requests` Realtime'da değil, sayı
+  // yalnızca açılışta/pencere kapanınca çekiliyordu. Artık menü her açılışta
+  // (açık menü kendiliğinden güncellenir) ve uygulama öne dönünce tazeleniyor.
+  testWidgets(
+      'yeni arkadaşlık isteği: menü açılışında ve öne dönüşte rozet gelir',
+      (tester) async {
+    final gw = _IstekliFriendsGateway();
+    await pumpMenu(tester,
+        stats: StatsRepo(_FakeStatsGateway()), friends: FriendsRepo(gw));
+    expect(find.byType(CountBadge), findsNothing);
+
+    // İstek menü AÇIKKEN gelir; kapatıp yeniden açınca rozet görünür.
+    gw.adet = 1;
+    await tester.tapAt(const Offset(10, 500));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+    expect(find.byType(CountBadge), findsWidgets,
+        reason: 'menü açılışı sayıyı yeniden çekmeli');
+
+    // Menüyü kapat; ikinci istek uygulama arka plandayken gelir → öne dönüş.
+    await tester.tapAt(const Offset(10, 500));
+    await tester.pumpAndSettle();
+    gw.adet = 2;
+    final onceki = gw.cagri;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(gw.cagri, greaterThan(onceki), reason: 'öne dönüş tazelemeli');
+    expect(find.text('2'), findsWidgets);
+  });
+
+  // 11 Ekim 2026 (1.1.3 TestFlight, iPad): menüyü açıp kapatınca avatarın
+  // etrafında gri YUVARLAK vurgu kalıyordu ("ilk açılışta yok, menüye tıklayıp
+  // kapatınca kalıyor ve gitmiyor"). `PopupMenuButton`ın `InkWell`i, menü
+  // kapanınca odak düğmeye döndüğünde ya da imleç (iPad) bayat "üstünde" kaldığında
+  // `focusColor`/`hoverColor` ile halkayı çiziyor. Web'de `focus:outline-none` ve
+  // hiç zemin vurgusu yok — port da aynı: ikisi şeffaf.
+  testWidgets('avatar düğmesi odak/hover halkası ÇİZMEZ (şeffaf)',
+      (tester) async {
+    await pumpMenu(tester, stats: StatsRepo(_FakeStatsGateway()));
+    await tester.tapAt(const Offset(10, 500));
+    await tester.pumpAndSettle();
+    final ink = find.descendant(
+        of: find.byType(PopupMenuButton<String>),
+        matching: find.byType(InkWell));
+    expect(ink, findsOneWidget);
+    final tema = Theme.of(tester.element(ink));
+    expect(tema.focusColor, Colors.transparent);
+    expect(tema.hoverColor, Colors.transparent);
+  });
 }

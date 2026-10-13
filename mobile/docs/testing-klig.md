@@ -244,4 +244,27 @@ listesi kök `TESTING.md` bölüm 10.
       eşik ödülü" — mod bazlı sekmelerin toplamı ödül kadar EKSİK olur,
       bu doğru; fark popup'taki "+N eşik ödülü dahil" satırıdır).
 
+### 13.x Beyin Ligi sekmesi (2 Ekim 2026, Parça 233)
+
+Web'in eşi: kök `TESTING.md` §10.5. Sunucu (view + RPC) zaten canlıda.
+
+- [ ] **Pencere Puan Ligi ile açılır.** k-lig'i aç: başlığın altında iki
+      sekme (🏆 Puan Ligi · 🧠 Beyin Ligi) — emojiler KUTU (□) değil gerçek
+      emoji olarak çizilmeli; liste dünküyle aynı. Kapat/aç: yine Puan Ligi.
+- [ ] **Beyin Ligi listesi.** Sütunlar SIRA · OYUNCU · OYUN · OHP; puan ve
+      rütbe mührü YOK. Aynı hesapla webde de aç: sıralar ve OHP'ler BİREBİR
+      aynı olmalı. Altta YZ/eşitlik notu.
+- [ ] **5 oyundan az oynamış hesap:** "SENİN DURUMUN" + "… N oyun daha
+      oyna, listeye gir." kartı ve ilerleme çubuğu.
+- [ ] **OHP balonu açıkken sekme değiştir** (OHP başlığına dokun → Beyin
+      Ligi'ne geç): balon kaybolmalı, çökme/donma YOK (testin yakaladığı
+      `_zOrderIndex` hatası).
+- [ ] **Ölçek 1,3 (sistem yazı boyutu en büyük):** sekme etiketleri tek
+      satırda kalmalı (sığmazsa küçülür, sarmaz).
+- [ ] **İlk 10'da OLMAYAN hesapla, küçük telefonda ve en büyük yazıda:**
+      "SENİN SIRAN" satırı pencerenin İÇİNDE tam görünmeli (iki sekmede de),
+      liste onun üstünde kaydırılmalı. Aşağı kaydırıp kendi satırın listeye
+      gelince kısayol kalkmalı. (2 Ekim 2026: 1.1.2'de satır yarıdan
+      kesiliyordu, Android ekran görüntüsü.)
+
 ---

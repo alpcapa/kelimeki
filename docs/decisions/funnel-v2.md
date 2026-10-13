@@ -290,3 +290,58 @@ kanala `utm_source` üzerinden bağlanır (etiketsiz → `direkt`), yalnızca we
 satırlarında dolu. Yüzdesi Land'e göre; reklam ziyaretçisinde oturum ≈ kişi.
 Kart metni (`?`) bunu söylüyor. Dönüş tipi değişti → DROP + CREATE,
 `proacl` öncesiyle aynı (authenticated + service_role).
+
+## Okuma: yeni üyeler oyunu bitirmiyor (10 Ekim 2026)
+
+Kullanıcı: *"Çok yeni üye var ama neredeyse hiçbiri bir oyun bitirmedi."*
+Canlı `funnel_events` / `game_starts` / `game_finishes` / `web_sessions`
+okundu (yalnızca toplamlar, kimlik yok). **Örneklem küçük; teşhis değil,
+başlangıç noktası.**
+
+- **5-10 Eki yeni cihaz (`land`):** Android 48 → 35 oyun başlattı (%73) → 8
+  bitirdi (%17); iOS 32 → 22 (%69) → 5 (%16); web 560 → 8 başlattı. Web
+  beklenen sonuç: Meta trafiği web'de oynamıyor, mağazaya gidiyor.
+- **Takip süresi tanınınca (ilk başlatması 5-8 Eki, bitiş sonradan da
+  sayılır):** Android 29 cihazın 7'si (%24), iOS 25'in 6'sı (%24) bitirmiş.
+  Yani ilk gün oranı alt sınır; gerçek tavan ~%24.
+- **Başlatıp bırakıyorlar, çok başlatıyorlar:** 2 kişilik oyunda Android'de
+  41 cihaz 158 oyun başlattı (cihaz başı ~3,9), bitiren yalnız 11 cihaz.
+  iOS 27 cihaz / 74 oyun, 7 bitiren. Kayıp başlatma ile bitirme ARASINDA.
+- **Biten oyunlar kısa:** Android medyan 8,5 dk (p90 51 dk); iOS medyan 14,7
+  dk (p90 ~19 sa — yarım kalıp sonra bitenler). Bitenlerin bir kısmı teslim:
+  Android 6/96, iOS 5/56, web 11/37. 4 kişilik bitirmeler tek tük cihazdan
+  (Android 3, iOS 0 cihaz) — yorumlanmaz.
+- **Nedeni bu veriden ÇIKMAZ.** Adaylar (hiçbiri kanıtlanmadı): oyun uzun,
+  ilk gerçek oyun zor, iOS'ta yarım oyun hatırlatması yok/geç (4. deneme 10
+  Eki 19:00'da bekleniyor). Hamle sayısı bırakma noktası misafir cihaz için
+  tutulmuyor (`local_game_saves` yalnız üye) → bir sonraki ölçüm adayı:
+  başlatan-bitirmeyen için "kaçıncı hamlede bıraktı".
+- **Meta mağaza geçişi (9 Eki 13:00 sonrası, `web_sessions`, `store` adımı
+  görülen / oturum):** h3 8/54 (%15), h2 4/36 (%11), h1 5/36 (%14); eşik
+  (kol başına 40 mağaza oturumu) dolmadı, karar YOK. h3 ort. oturum 31 sn
+  (h2 302, h1 192) — erken, yalnızca not.
+
+## #46-1 tasarım notu — kurulum kaynağı `game_starts` / `game_finishes` / kayıt damgasına da yazılsın (11 Ekim 2026, 19 Ekim / 1.1.4 treni)
+
+**Durum: TASARIM, kod yok.** Amaç (ROADMAP #46, MAU hedefi): reklamdan mağazaya gidip kuranlar bugün `app` olarak görünüyor, yani hangi kanalın gerçekten oyuncu getirdiği OKUNAMIYOR.
+
+**Bugünkü boşluk (kodda doğrulandı):**
+- Android'de Play Install Referrer zaten okunuyor (`install_referrer.dart`, `channelFromInstallReferrer`) ve etiket **yalnızca `funnel_events.land`a** yazılıyor (`funnel_api.dart`: *"Referrer YALNIZCA bu tabloya yazılır, `DeviceStamp`e bilerek dokunulmadı"*).
+- `game_starts.utm_source`, `game_finishes.utm_source`, `guest_visits.utm_source` ve kayıt damgası (`signup_utm_source`) ise `DeviceStamp.source`tan geliyor = `flags.utmSource ?? 'app'`, ve `captureUtmSource`ı çağıran bir yol YOK → hepsi sabit `app`.
+- 27 Eylül'deki *"önce kanalsız"* kararı `funnel_events` için 30 Eylül'de kalktı; aynı karar öteki üç tabloya HİÇ uygulanmadı. Bu not o boşluğu kapatır.
+
+**Öneri (mobil, küçük):** Referrer okunduğunda geçerli bir etiket varsa `FlagsStore.captureUtmSource(etiket)` çağrılır (first-touch, bir kez yazılır — mevcut ilke). `DeviceStamp.source` değişmez, yalnızca değer dolar. Sonuç: `game_starts`/`game_finishes`/kayıt satırları da aynı kanalı taşır; Admin Kaynak Hunisi'ndeki `app` satırı kanallara dağılır.
+
+**Dikkat edilecek noktalar (kararı etkiler):**
+1. **Yarış:** `DeviceStamp.source` senkron okunuyor, referrer okuması ise 5 sn'ye kadar sürebilen asenkron bir iş. İlk oyun ilk açılıştan hemen sonra başlarsa damga henüz yazılmamış olabilir → ya referrer açılışta beklenip yazılır ya da `source` getter'ı asenkron olur. Cihazda ölçülmeden karar verme.
+2. **Eski cihazlar:** `funnel_events` eski cihazı `mevcut` sayıp referrer'ı hiç okumuyor (kohortu şişirmemek için). Ama damga için okumak FAYDALI: Play referrer bilgisinin yaklaşık 90 gün okunabildiği varsayımıyla (Play dokümanından hatırlanan süre, burada DOĞRULANMADI)  1.1.4'e güncelleyen son ~3 ayın kurulumları geriye dönük etiketlenir. Öneri: damga için eski cihazlarda da bir kez oku, `land` kanalına DOKUNMA (ayrı bayrak). Bedel: bu kararı kullanıcı onaylamalı.
+3. **Kalite tablosu kayar:** ROADMAP #46'daki "kaynağa göre kalite" (`app` 220 oyuncu %15 geri dönen…) bu değişiklikten sonra yeni satırlar için `app`ten `meta-karusel`, `instagram`… satırlarına DAĞILIR. 11 Ekim başlangıç ölçümü (317) sabit kalır (tanım kaynaktan bağımsız), ama kaynak kırılımı için de yeni bir başlangıç tarihi yazılmalı.
+4. **iOS:** Apple kişi bazında kanal vermiyor (MMP+ATT yapılmayacak, yukarıdaki tablo). iOS satırları `app` kalır; kırılım yalnız ASC → Kampanyalar'dan toplu okunur. ⚠ Bu, MAU'nun iOS yarısı için atıfı çözmez.
+5. **Gizlilik / beyan:** etiket aynı anonim kodla (`anon_id`) zaten giden tablolara yazılıyor, hesaba bağlı değil, yeni veri türü yok → Play Data safety / App Store beyanı büyük olasılıkla DEĞİŞMEZ, ama `LegalContent.tsx` "kaynak etiketi" cümlesi (oyun başlatma/bitirme için) `game_starts`te etiketin artık kurulum kaynağı olduğunu kapsıyor mu bak; kapsamıyorsa metin + `legal_text_test` tarih eşliği birlikte güncellenir.
+6. **Kayıt damgası:** `profiles.signup_utm_source` kayıtta `DeviceStamp.source`tan okunuyor → kurulum kanalı kullanıcı profiline de geçer (Admin Üyeler "kaynak" sütunu). Yeni bir kolon/migration GEREKMİYOR.
+
+**Etki analizi:** `data/install_referrer.dart` + `funnel_api.dart` (okuma yeri) + `storage/flags_store.dart` + `device_stamp.dart` · testler: `funnel_events_parity_test.dart` (kalıp), yeni bir `device_stamp_referrer_test.dart` (sıra: eski cihaz / geçerli etiket / organik / bozuk dize / yarış) · `mobile/docs/testing-olcum.md` §33 (mağazadan kurulum şart, sideload'da çalışmaz) · web DEĞİŞMEZ · sunucu DEĞİŞMEZ.
+
+**Boyut:** orta (1 gün; yarış ve eski-cihaz kararı belirleyici). Mobil dosya → taslak PR olarak 19 Ekim kesimine biner.
+
+**Karar bekleyen:** madde 2 (eski cihazlarda geriye dönük okuma) ve madde 1 (yarış çözümü).

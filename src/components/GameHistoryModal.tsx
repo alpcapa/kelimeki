@@ -1,4 +1,5 @@
 // Kelimeki — oturum açan kullanıcının geçmiş tüm oyunlarının listesi (lazy load)
+import { trLower } from '../utils/turkish';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { LoadingNote } from './LoadingNote';
 import { Modal } from './Modal';
@@ -11,13 +12,29 @@ import {
   markGameShared,
   fetchFinishedGameSlots,
   createOnlineGame,
+  createRandomGame,
+  fetchRematchBlockedNames,
+  fetchRematchFriends,
 } from '../lib/api';
-import type { BoardSnapshotTile, GameHistoryEntry, GameLiker, GamePlayerSnapshot } from '../lib/database.types';
+import type {
+  BoardSnapshotTile,
+  GameHistoryEntry,
+  GameLiker,
+  GamePlayerSnapshot,
+  OnlineGameSlot,
+} from '../lib/database.types';
 import type { HistoryEntry } from '../game/types';
 import { buildSnapshotGameState } from '../utils/boardSnapshot';
+import { BlockedUsersModal } from './BlockedUsersModal';
 import { MoveHistoryModal } from './MoveHistoryModal';
 import { useAuth } from '../hooks/useAuth';
-import { buildRematchSlots } from '../utils/rematchSlots';
+import {
+  buildRematchPlan,
+  rematchBlockedMessage,
+  rematchConfirmText,
+  rematchSentNotice,
+  type RematchPlan,
+} from '../utils/rematchSlots';
 import { PLAYER_COLORS } from '../game/constants';
 import { PlayerBadge } from './PlayerBadge';
 import { AiLevelBadge } from './AiLevelBadge';
@@ -111,8 +128,29 @@ function fallbackPlayers(
  * sahibinin) satırının indeksini bulur. `rank` alanı (1 = birinci) bu
  * sıralamadaki pozisyonu doğrudan verir; eski kayıtlarda rank bilinmiyorsa
  * puanı entry.player_score'a eşit olan ve YZ olmayan ilk satıra düşülür.
+ *
+ * ⚠ BERABERLİKTE `rank - 1` YANLIŞ SATIRI VERİR (11 Ekim 2026, kullanıcı
+ * kendi geçmişinde gördü): iki oyuncu 218-218 bitince İKİSİNİN de rank'ı 1
+ * ve `players` sunucuda koltuk sırasıyla (eşitlikte `gs asc`) yazılıyor;
+ * `rank - 1` herkes için 0. satırı, yani 1. koltuktakini "ben" saydırıyordu.
+ * 2. koltuktaki oyuncu geçmişinde rakibinin adı yerine KENDİ adını iki kez
+ * görüyor, hamle geçmişi de rakibin puanını "benim" diye gösteriyordu.
+ * Aynı puanda birden çok insan satırı varsa güncel takma adla eşleşen
+ * satır seçilir; eşleşme yoksa (takma ad sonradan değişmiş) eski davranış.
  */
-function findMeIndex(entry: GameHistoryEntry, players: GamePlayerSnapshot[]): number {
+function findMeIndex(
+  entry: GameHistoryEntry,
+  players: GamePlayerSnapshot[],
+  myName?: string | null,
+): number {
+  const tied = players
+    .map((p, i) => (!p.is_ai && p.score === entry.player_score ? i : -1))
+    .filter((i) => i >= 0);
+  if (tied.length > 1 && myName) {
+    const wanted = trLower(myName);
+    const byName = tied.filter((i) => trLower(players[i].name) === wanted);
+    if (byName.length === 1) return byName[0];
+  }
   if (entry.rank !== null && entry.rank >= 1 && entry.rank <= players.length) {
     return entry.rank - 1;
   }
@@ -319,9 +357,19 @@ export function GameHistoryModal({
     playerCount: number;
     names: string[];
     withAi: boolean;
-    phase: 'confirm' | 'busy' | 'sent' | 'error';
+    phase: 'checking' | 'confirm' | 'busy' | 'blocked' | 'sent' | 'error';
     message?: string;
+    /** Biten oyunun kadrosu + plan (S2): `checking` bitince dolar, gönderimde yeniden okunmaz. */
+    slots?: OnlineGameSlot[];
+    plan?: RematchPlan;
+    /** Rastgele planın sonuç metni ('random' + `sent`). */
+    notice?: { title: string; body: string };
+    /** `phase: 'blocked'` — kadrodaki, BENİM engellediğim rakiplerin adları. */
+    blockedNames?: string[];
   } | null>(null);
+  // "Engel Ayarları" açıkken rövanş penceresi GİZLENİR (z-200, `Modal` z-150:
+  // ayarlar pencerenin arkasında kalırdı); rövanş durumu korunur.
+  const [showBlockedSettings, setShowBlockedSettings] = useState(false);
   // `handleRematch` useCallback'i state'e bağımlı olmasın diye (her tuşta
   // yeniden kurulmasın); okuduğu değer her zaman en güncel olan.
   const rematchRef = useRef<typeof rematch>(null);
@@ -363,22 +411,71 @@ export function GameHistoryModal({
   }, [likersByGame]);
 
   /**
-   * Rövanşı açar. Kadro geçmiş kaydından ÇIKMIYOR (`GamePlayerSnapshot`
-   * `user_id` taşımaz), o yüzden biten oyunun `online_games.slots` satırı
-   * ayrıca okunuyor; sıralama kuralı `buildRematchSlots`ta, oyun
-   * ekranındakiyle TEK kaynaktan.
+   * Onay penceresini açar: biten oyunun kadrosu ve arkadaş listesi okunup plan
+   * kurulur (13 Ekim 2026, S2) — metin kimin davet edileceğini ÖNCEDEN söylemeli.
+   * Gönderimde (`handleRematch`) kadro yeniden okunmaz.
+   */
+  const openRematch = useCallback(
+    async (init: { gameId: string; playerCount: number; names: string[]; withAi: boolean }) => {
+      if (!user?.id) return;
+      setRematch({ ...init, phase: 'checking' });
+      try {
+        const slots = await fetchFinishedGameSlots(init.gameId);
+        if (!slots) {
+          throw new Error('Bu oyunun kadrosuna ulaşılamadı, rövanş açılamıyor.');
+        }
+        const plan = buildRematchPlan(slots, user.id, await fetchRematchFriends());
+        // "Vazgeç" araya girdiyse pencereyi YENİDEN açma.
+        setRematch((cur) =>
+          cur && cur.phase === 'checking' && cur.gameId === init.gameId
+            ? { ...init, phase: 'confirm', slots, plan }
+            : cur,
+        );
+      } catch (err) {
+        setRematch((cur) =>
+          cur && cur.phase === 'checking'
+            ? {
+                ...init,
+                phase: 'error',
+                message: friendlyErrorMessage(err, {
+                  surface: 'revans',
+                  fallback: 'Davet gönderilemedi.',
+                }),
+              }
+            : cur,
+        );
+      }
+    },
+    [user?.id],
+  );
+
+  /**
+   * Rövanşı açar. Kadro ve plan `openRematch`te hazırlandı (geçmiş kaydı
+   * `user_id` taşımaz, `online_games.slots` ayrıca okunuyor); plan kuralı
+   * `buildRematchPlan`da, oyun ekranıyla TEK kaynak.
    */
   const handleRematch = useCallback(async () => {
     const st = rematchRef.current;
-    if (!st || !user?.id) return;
+    if (!st || !user?.id || !st.slots || !st.plan) return;
     setRematch({ ...st, phase: 'busy' });
     try {
-      const slots = await fetchFinishedGameSlots(st.gameId);
-      if (!slots) {
-        throw new Error('Bu oyunun kadrosuna ulaşılamadı, rövanş açılamıyor.');
+      // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
+      // kararı): önce engel kaldırılır. Kural `rematchBlockedOpponents`ta;
+      // adlar `list_blocked_users`tan geliyor (kadro ham `slots`ta isim yok).
+      const blockedNames = await fetchRematchBlockedNames(st.slots, user.id);
+      if (blockedNames.length > 0) {
+        setRematch({ ...st, phase: 'blocked', blockedNames });
+        return;
       }
-      await createOnlineGame(st.playerCount as 2 | 4, buildRematchSlots(slots, user.id));
-      setRematch({ ...st, phase: 'sent' });
+      if (st.plan.kind === 'random') {
+        // Arkadaş olmayan rakip(ler) → açık koltuklu ilan (S2); sunucu saf
+        // rastgele kadroda uygun ilana KATILABİLİR, metin iki dalı ayırır.
+        const sonuc = await createRandomGame(st.playerCount as 2 | 4, st.plan.slots);
+        setRematch({ ...st, phase: 'sent', notice: rematchSentNotice(st.plan, sonuc) });
+      } else {
+        await createOnlineGame(st.playerCount as 2 | 4, st.plan.slots);
+        setRematch({ ...st, phase: 'sent' });
+      }
     } catch (err) {
       setRematch({
         ...st,
@@ -671,7 +768,7 @@ export function GameHistoryModal({
             const fallback = hasSnapshot ? null : fallbackPlayers(entry, isMyRow, targetName ?? null);
             const players = hasSnapshot ? entry.players! : fallback!.known;
             const unknownCount = fallback?.unknownCount ?? 0;
-            const meIndex = isMyRow ? (hasSnapshot ? findMeIndex(entry, players) : fallback!.meIndex) : -1;
+            const meIndex = isMyRow ? (hasSnapshot ? findMeIndex(entry, players, myCurrentName) : fallback!.meIndex) : -1;
             const ranks = computeRanks(players);
             const expanded = expandedId === entry.id;
             const isOnline = !!entry.online_game_id;
@@ -910,14 +1007,13 @@ export function GameHistoryModal({
                             {
                               label: 'Tekrar Oyna',
                               onSelect: () =>
-                                setRematch({
+                                void openRematch({
                                   gameId: entry.online_game_id!,
                                   playerCount: entry.player_count,
                                   names: players
                                     .filter((p, i) => !p.is_ai && i !== meIndex)
                                     .map((p) => p.name),
                                   withAi: players.some((p) => p.is_ai),
-                                  phase: 'confirm',
                                 }),
                             },
                           ]
@@ -1016,7 +1112,7 @@ export function GameHistoryModal({
         // `moveHistory` ise KOLTUK numarası taşıyor → sıradan koltuğa çevir.
         const snap = entry?.players ?? [];
         const mine = !!entry && !!user && entry.user_id === user.id && snap.length > 0;
-        const rankIdx = mine ? findMeIndex(entry!, snap) : -1;
+        const rankIdx = mine ? findMeIndex(entry!, snap, myCurrentName) : -1;
         const myIndex = rankIdx >= 0 ? seatIndexFor(snap[rankIdx], rankIdx, true) : -1;
         return <MoveHistoryModal state={state} myIndex={myIndex} onClose={close} />;
       })()}
@@ -1027,11 +1123,32 @@ export function GameHistoryModal({
         öteki de. z-[200]: Modal 150, ActionSheet 160 — bunun ikisinin de
         üstünde kalması gerekiyor.
       */}
-      {rematch && (
+      {rematch && !showBlockedSettings && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
           <div className="w-full max-w-sm bg-panel border border-[#B8C2D1] rounded-2xl shadow-[0_20px_45px_rgba(15,23,42,0.5)] p-6 flex flex-col gap-4 outline-none">
             <p className="text-base font-bold text-text font-sans">Tekrar Oyna</p>
-            {rematch.phase === 'sent' ? (
+            {rematch.phase === 'checking' ? (
+              <>
+                <p className="text-sm text-text font-sans leading-relaxed">Kadro kontrol ediliyor…</p>
+                <button
+                  onClick={() => setRematch(null)}
+                  className="btn-raised-neutral py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                >
+                  Vazgeç
+                </button>
+              </>
+            ) : rematch.phase === 'sent' && rematch.notice ? (
+              <>
+                <p className="text-sm text-text font-sans leading-relaxed">{rematch.notice.title}</p>
+                <p className="text-xs text-muted font-mono leading-relaxed">{rematch.notice.body}</p>
+                <button
+                  onClick={() => setRematch(null)}
+                  className="btn-raised py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                >
+                  Tamam
+                </button>
+              </>
+            ) : rematch.phase === 'sent' ? (
               <>
                 <p className="text-sm text-text font-sans leading-relaxed">Davetiniz gönderilmiştir.</p>
                 <p className="text-xs text-muted font-mono leading-relaxed">
@@ -1044,6 +1161,26 @@ export function GameHistoryModal({
                 >
                   Tamam
                 </button>
+              </>
+            ) : rematch.phase === 'blocked' ? (
+              <>
+                <p className="text-sm text-text font-sans leading-relaxed">
+                  {rematchBlockedMessage(rematch.blockedNames ?? [])}
+                </p>
+                <div className="flex gap-2 mt-1">
+                  <button
+                    onClick={() => setShowBlockedSettings(true)}
+                    className="btn-raised flex-1 py-2.5 rounded-md bg-accent text-white text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                  >
+                    Engel Ayarları
+                  </button>
+                  <button
+                    onClick={() => setRematch(null)}
+                    className="btn-raised-neutral flex-1 py-2.5 rounded-md bg-void border border-border text-text text-xs font-bold uppercase tracking-[1px] active:scale-[0.97] transition-transform"
+                  >
+                    Vazgeç
+                  </button>
+                </div>
               </>
             ) : rematch.phase === 'error' ? (
               <>
@@ -1058,9 +1195,16 @@ export function GameHistoryModal({
             ) : (
               <>
                 <p className="text-sm text-text font-sans leading-relaxed">
-                  {rematch.names.join(', ')} ile aynı kadroda yeni bir oyun açılacak ve davet
-                  gönderilecek.
-                  {rematch.withAi && ' 4. koltuk yine Yapay Zeka olacak.'} Emin misin?
+                  {rematch.plan
+                    ? rematchConfirmText(
+                        // 'friends' planında adlar geçmiş kartındaki isimlerdir (ham
+                        // kadro isim taşımaz) — bugünkü cümle BİREBİR korunur.
+                        rematch.plan.kind === 'friends'
+                          ? { ...rematch.plan, friendNames: rematch.names }
+                          : rematch.plan,
+                        rematch.withAi,
+                      )
+                    : ''}
                 </p>
                 <div className="flex gap-2 mt-1">
                   <button
@@ -1082,6 +1226,16 @@ export function GameHistoryModal({
             )}
           </div>
         </div>
+      )}
+      {showBlockedSettings && (
+        <BlockedUsersModal
+          onClose={(changed) => {
+            setShowBlockedSettings(false);
+            // Engel kaldırıldıysa rövanş KENDİLİĞİNDEN devam eder (liste yeniden
+            // okunur; hâlâ engelli biri kaldıysa yine bu pencereye döner).
+            if (changed) void handleRematch();
+          }}
+        />
       )}
     </Modal>
   );

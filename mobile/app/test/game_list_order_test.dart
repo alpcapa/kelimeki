@@ -20,15 +20,14 @@ class _G {
 }
 
 void main() {
-  String sirala(List<_G> gs) => orderActiveGames(gs,
-          myTurn: (g) => g.mine, deadlineMs: (g) => g.dl)
-      .map((g) => g.id)
-      .join(',');
+  String sirala(List<_G> gs) =>
+      orderActiveGames(gs, myTurn: (g) => g.mine, deadlineMs: (g) => g.dl)
+          .map((g) => g.id)
+          .join(',');
 
   group('aktif oyunlar', () {
     test('sırası bende olanlar HER ZAMAN üstte', () {
-      expect(
-          sirala(const [_G('rakip', false, 900), _G('bende', true, 100)]),
+      expect(sirala(const [_G('rakip', false, 900), _G('bende', true, 100)]),
           'bende,rakip');
     });
 
@@ -62,8 +61,7 @@ void main() {
 
     test('deadline null "sıra rakipte" grubunda da EN SONA düşer', () {
       expect(
-          sirala(
-              const [_G('bilinmiyor', false, null), _G('yeni', false, 900)]),
+          sirala(const [_G('bilinmiyor', false, null), _G('yeni', false, 900)]),
           'yeni,bilinmiyor');
     });
 

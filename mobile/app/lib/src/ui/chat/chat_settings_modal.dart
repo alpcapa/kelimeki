@@ -23,6 +23,7 @@ import '../../data/chat_api.dart';
 import '../auth/k_avatar.dart';
 import '../game/modal_shell.dart';
 import 'chat_modal.dart' show ChatParticipant;
+import '../../util/error_message.dart';
 import '../tokens.dart';
 import '../form_input.dart';
 
@@ -161,10 +162,19 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
       _error = null;
     });
     try {
-      await widget.chat.setMute(widget.gameId, p.userId, nextMuted);
+      // Engelleme sohbet bildirimini de susturduğundan oyun bağlamlı RPC;
+      // KALDIRMA ise `unblock_user` — oyundan bağımsız `user_blocks` satırı da
+      // (kartlardan yapılan "Engelle") temizlensin, yoksa sohbette "engel yok"
+      // görünür ama davet kapısı kapalı kalırdı (web ChatSettingsModal).
+      if (nextMuted) {
+        await widget.chat.setMute(widget.gameId, p.userId, true);
+      } else {
+        await widget.chat.unblockUser(p.userId);
+      }
       widget.onMuteChange(p.userId, nextMuted);
     } catch (e) {
-      setState(() => _error = 'İşlem başarısız oldu.');
+      setState(() => _error = friendlyErrorMessage(e,
+          surface: 'sessize-al', fallback: 'İşlem başarısız oldu.'));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -231,7 +241,8 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          'Buradan kişileri sessize alabilir ve/veya uygunsuz paylaşımları '
+          'Buradan kişileri engelleyebilir (mesaj bildirimleri, oyun davetleri '
+          've arkadaşlık istekleri durur) ve/veya uygunsuz paylaşımları '
           'şikayet edebilirsiniz.',
           style: TextStyle(fontSize: 12, height: 1.5, color: _muted),
         ),
@@ -266,7 +277,7 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
                     if (widget.reportedUserIds.contains(p.userId))
                       const _EmojiBadge('🚩', label: 'Şikayet edildi')
                     else if (widget.mutedUserIds.contains(p.userId))
-                      const _EmojiBadge('🚫', label: 'Sessize alındı'),
+                      const _EmojiBadge('🚫', label: 'Engellendi'),
                   ],
                 ),
               ),
@@ -316,8 +327,8 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
                   height: 16,
                   decoration: BoxDecoration(
                     color: muted ? _accent : _bg,
-                    border: Border.all(
-                        color: muted ? _accent : _muted, width: 2),
+                    border:
+                        Border.all(color: muted ? _accent : _muted, width: 2),
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: muted
@@ -325,7 +336,7 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
                       : null,
                 ),
                 const SizedBox(width: 10),
-                const Text('Kişiyi Sessize Al',
+                const Text('Kişiyi Engelle',
                     style: TextStyle(fontSize: 13, color: _text)),
               ]),
             ),
@@ -378,16 +389,19 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
     return _ConfirmView(
       title: 'Emin misiniz?',
       body: nextMuted
-          ? '${p.name} kullanıcısını sessize almak istediğinize emin '
+          ? '${p.name} kullanıcısını engellemek istediğinize emin '
               'misiniz? Kullanıcının mesajları sohbette görünmeye devam '
-              'eder ama sizin ekranınıza bildirim olarak gelmez.'
-          : '${p.name} kullanıcısını sessizden çıkarmak istediğinize emin '
+              'eder ama sizin ekranınıza bildirim olarak gelmez. Ayrıca bu '
+              'kullanıcı size oyun daveti ya da arkadaşlık isteği gönderemez '
+              've rastgele eşleşmede karşınıza çıkmaz.'
+          : '${p.name} kullanıcısının engelini kaldırmak istediğinize emin '
               'misiniz? Kullanıcıdan gelen yeni mesajlar için tekrar '
-              'bildirim almaya başlarsınız.',
+              'bildirim almaya başlarsınız; oyun davetleri ve arkadaşlık '
+              'istekleri de tekrar açılır.',
       boldName: p.name,
       error: _error,
       busy: _busy,
-      confirmLabel: nextMuted ? 'SESSİZE AL' : 'SESSİZDEN ÇIKAR',
+      confirmLabel: nextMuted ? 'ENGELLE' : 'ENGELİ KALDIR',
       onConfirm: () async {
         await _toggleMute(p);
         if (mounted) setState(() => _view = _DetailView(p));
@@ -401,7 +415,7 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
       title: 'Emin misiniz?',
       body: '${p.name} için gönderdiğiniz şikayeti geri çekmek istediğinize '
           'emin misiniz? Bu kullanıcı hakkındaki tüm açık şikayetleriniz '
-          'geri çekilir ama sessize alma durumu devam eder; isterseniz '
+          'geri çekilir ama engeliniz devam eder; isterseniz '
           'ayrıca mesajlaşma ayarlarından onu da kaldırabilirsiniz.',
       boldName: p.name,
       error: _error,
@@ -451,8 +465,8 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
               style: _NeoButtonStyle.danger,
               onPressed: _reasonController.text.trim().isEmpty
                   ? null
-                  : () => setState(() => _view = _ReportConfirmView(
-                      p, _reasonController.text.trim())),
+                  : () => setState(() => _view =
+                      _ReportConfirmView(p, _reasonController.text.trim())),
             ),
           ),
           const SizedBox(width: 8),
@@ -495,8 +509,8 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
             border: Border.all(color: _border),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Text(reason,
-              style: const TextStyle(fontSize: 11, color: _muted)),
+          child:
+              Text(reason, style: const TextStyle(fontSize: 11, color: _muted)),
         ),
         if (_error != null) ...[
           const SizedBox(height: 8),
@@ -518,8 +532,9 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
             child: _NeoTextButton(
               label: 'VAZGEÇ',
               style: _NeoButtonStyle.neutral,
-              onPressed:
-                  _busy ? null : () => setState(() => _view = _ReportReasonView(p)),
+              onPressed: _busy
+                  ? null
+                  : () => setState(() => _view = _ReportReasonView(p)),
             ),
           ),
         ]),
@@ -542,7 +557,7 @@ class _ChatSettingsModalState extends State<ChatSettingsModal> {
                   fontWeight: FontWeight.bold, color: _text, fontSize: 13)),
           const TextSpan(
               text: ' hakkındaki şikayetiniz Kelimeki ekibine ulaştı. Bu '
-                  'kişi aynı zamanda sizin için sessize alındı; dilerseniz '
+                  'kişi aynı zamanda sizin için engellendi; dilerseniz '
                   'şikayetinizi buradan geri çekebilirsiniz.',
               style: TextStyle(color: _text, fontSize: 13, height: 1.5)),
         ])),
@@ -610,8 +625,8 @@ class _ConfirmView extends StatelessWidget {
             : Text.rich(TextSpan(children: [
                 TextSpan(
                     text: body.substring(0, idx),
-                    style:
-                        const TextStyle(fontSize: 13, height: 1.5, color: _text)),
+                    style: const TextStyle(
+                        fontSize: 13, height: 1.5, color: _text)),
                 TextSpan(
                     text: boldName,
                     style: const TextStyle(
@@ -620,8 +635,8 @@ class _ConfirmView extends StatelessWidget {
                         color: _text)),
                 TextSpan(
                     text: body.substring(idx + boldName.length),
-                    style:
-                        const TextStyle(fontSize: 13, height: 1.5, color: _text)),
+                    style: const TextStyle(
+                        fontSize: 13, height: 1.5, color: _text)),
               ])),
         if (error != null) ...[
           const SizedBox(height: 8),

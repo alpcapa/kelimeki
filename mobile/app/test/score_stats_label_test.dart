@@ -66,7 +66,8 @@ void main() {
 
       final boyut = tester.getSize(f);
       expect(boyut.width, lessThanOrEqualTo(etiketAlani + 0.5),
-          reason: '"$etiket" hücreye sığmıyor: ${boyut.width.toStringAsFixed(1)} '
+          reason:
+              '"$etiket" hücreye sığmıyor: ${boyut.width.toStringAsFixed(1)} '
               '> $etiketAlani. FittedBox geri gelmiş olabilir — o, çocuğuna '
               'sınırsız genişlik verip metni tek satıra dizer ve sonra '
               'küçültür; web ise punto sabit tutup SARDIRIR.');

@@ -147,7 +147,9 @@ Future<Database> openAppDatabase({
   // ffi_web'de "veritabanı dizini" kavramı yok — ad doğrudan IndexedDB
   // anahtarı olur, getDatabasesPath() anlamsız.
   final dbPath = path ??
-      (web != null ? 'kelimeki.db' : '${await f.getDatabasesPath()}/kelimeki.db');
+      (web != null
+          ? 'kelimeki.db'
+          : '${await f.getDatabasesPath()}/kelimeki.db');
   return f.openDatabase(
     dbPath,
     options: OpenDatabaseOptions(

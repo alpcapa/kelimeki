@@ -85,7 +85,8 @@ const Duration kZoomHintAutoHide = Duration(seconds: 4);
 /// ile BİREBİR aynı olmalı (27 Eylül 2026, kullanıcı: *"mesaj çok uzun...
 /// Boş kareye çift tık tahtayı büyütür. Şimdi Dene!"*). `\n` bilinçli: iki
 /// cümle iki satır, serbest sarmada ikinci cümle ortadan kırılıyordu.
-const String kZoomHintText = 'Boş kareye çift tık tahtayı büyütür.\nŞimdi Dene!';
+const String kZoomHintText =
+    'Boş kareye çift tık tahtayı büyütür.\nŞimdi Dene!';
 
 /// Balonun işaret ettiği kare: SOL-ALT köşe bloğunun (köşe 2, satır 9-12 ×
 /// sütun 0-3) ortasına en yakın BOŞ kare; uzaklık eşitse önce üstteki satır,

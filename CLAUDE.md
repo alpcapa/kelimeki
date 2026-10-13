@@ -32,7 +32,7 @@ npm run verify-recent-game-avatars # "Son Oynananlar" avatar çözümü: eşleme
 npm run verify-rematch-slots     # Rövanş kadrosu: ilk koltuk çağıran, YZ'ler sonda (create_online_game kısıtları)
 npm run verify-head-to-head      # Kafa kafaya oran çubuğu: üç dilim TAM 100 eder mi (kümülatif yuvarlama)
 npm run verify-fetch-my-games    # Oyun geçmişi: ağ hatası ↔ boş liste ayrımı (sahte Supabase ucu)
-npm run verify-device-labels     # Admin cihaz tabloları: model KODU → marka öneki + cihaz→OS sürümü ağacı (canlıdan alınmış gerçek kodlar)
+npm run verify-device-labels     # Admin cihaz AĞACI (Platform ▸ Marka ▸ Model ▸ Sürüm): model KODU → marka öneki + marka×sürüm çaprazı (canlıdan alınmış gerçek kodlar)
 npm run verify-admin-groups      # Admin AÇILIR tabloları: `?ref=` → kanal öneki (fbi Facebook DEĞİL) + (platform, sürüm) ağacı ve sürümün SAYISAL sıralaması
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ leagueRank.ts
 npm run verify-beyin-ligi        # Beyin Ligi giriş eşiği: `beyin_ligi_siralama` SQL'i ↔ beyinLigi.ts (↔ beyin_ligi.dart)
@@ -41,6 +41,7 @@ npm run verify-sql-engine-parity # motorun DÖRDÜNCÜ (SQL) kopyası ↔ src/ s
 npm run simulate-ai-levels       # YZ↔YZ kadran ölçümü (ROADMAP #23): üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal; `-- --oyun 200 --n 2,3,4`
 npm run generate-initial-main-view-golden # Giriş sekmesi kuralı: web→port davranış golden'ı (CI tazeliği zorluyor)
 npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz) — ağ hatası VE geçici sunucu hatası (504/503/502/408); 500 ve 429 bilerek DIŞARIDA
+npm run verify-random-games     # Rastgele Oyuncu: kurucu/kabul eden oyun yalnız Devam Edenler'e (dört kova), açık koltuk YZ sanılmaz, ilan rozetleri ŞİŞİRMEZ, esnek kadro kuralları
 npm run verify-shared-realtime    # Canlı oyun aboneliği: üç çağıran → TEK Realtime kanalı (sunucu maliyeti çarpanı)
 npm run verify-tutorial-script   # "Oynayarak öğren" tanıtımı: senaryo GERÇEK motorda oynatılır (ekrandaki puanlar dahil)
 npm run verify-demo-board        # Karşılama katmanındaki tanıtım tahtaları + ilk ekran kesiti sözlüğe karşı doğrulanır
@@ -66,6 +67,7 @@ npm run generate-klig-paths      # KLigMark.tsx + portun klig_mark_data.dart'ın
 npm run generate-icons           # favicon / app icon (public/) — og-image DEĞİL
 npm run generate-og-image        # public/og-image.png (sosyal paylaşım kartı)
 npm run generate-play-assets     # Play mağaza ikonu (512) + öne çıkan görsel (1024×500) + Promotional content kartı (1920×1080, metinsiz)
+npm run generate-meta-teaser    # Meta teaser kampanyası Aşama 1 görselleri (3 kanca × feed/story; `npm run build` ÖNCE) — marketing/meta-reklam/kampanya-teaser-ekim-2026.md
 npm run generate-store-header    # marketing/store/ — mağaza başlık görseli (4096×2304, ≤1 MB)
 npm run preview-store-frames     # App Store karelerinin YEREL önizlemesi (iPhone + iPad, ~14 sn, Linux) — mağazaya giden set yine CI'ın
 # Öteki pazarlama üreticileri (generate-reel, generate-fb-cover) bu listede
@@ -563,6 +565,7 @@ olabilir — atıf bulunamazsa önce buradaki tabloya bak.
 | E-posta gönderenleri (`noreply@` ↔ `destek@`), Zoho rozeti, inbound webhook kurulumu | `docs/decisions/support-email.md` |
 | Supabase işletimi: Brevo SMTP/teslimat geçmişi, SPF-DKIM-DMARC'ın gerçek hâli, migration geçmişinin kopması, dal temizliği, Edge Function deploy tuzakları + **"bu dal merge edilmiş mi" üç tuzağı** (15 Eyl 2026'da `CLAUDE.md`'den taşındı) | `docs/decisions/supabase-ops.md` |
 | Takım Ligi — 2'şer kişilik takım oyunu (TASARIM ONAYLANDI, PARKTA, kod yok — hedef 19 Ekim treni, ROADMAP #44): kurallar, akışlar, puanlama, açık sorular | `docs/decisions/team-league.md` |
+| Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik Canlı oyun (sunucu canlıda · web + port ikizi yazıldı, taslak PR, ROADMAP #45): kurulum, yatay şerit, sınırlar, sunucu tuzakları, port kararları (§13) | `docs/decisions/random-opponent.md` |
 | Sonraya bırakılan ürün fikirleri (karar verildi, henüz yapılmadı) | `docs/decisions/product-backlog.md` |
 | ROADMAP arşivi — kapanmış maddeler, fazlar ve sürüm turları (grep'lenir, baştan sona okunmaz) | `docs/decisions/roadmap-arsiv.md` (aktif cilt — YENİ kapananlar buraya) · `roadmap-arsiv-cilt-1.md` (27 Ağu – 12 Eyl, DONDURULDU) |
 | App Store Connect — kapanmış vaka anlatıları (`.p8` sagası, 24.2 zincirinin koşuları, kare boru hattının kuruluşu). ⚠ Cevap kağıdı `marketing/app-store/console-formlari.md`'de KALDI | `docs/decisions/app-store-gecmis.md` |
@@ -605,7 +608,7 @@ src/
     constants.ts    # Tahta sabitleri, köşe hesapları, bonus konumları
     gameReducer.ts  # useReducer tabanlı oyun state makinesi
     types.ts        # GameState, Player, Tile tipleri
-  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, beyinLigi, onboarding, csvExport, friendInvite, liveGameRequest, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, chatRules, webJourney, pageVisible, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
+  utils/        # Saf fonksiyonlar (validator, board, boardSnapshot, ai, bag, gameStorage, cloudSaveMirror, gameRecord, gameSync, feedbackSync, visitTracking, ranking, leaguePoints, leagueRank, beyinLigi, onboarding, csvExport, friendInvite, liveGameRequest, profileFields, platform, offlineNotice, shareLink, shareBoardImage, pendingLiveGames, errorReporting, errorMessage, storeLinks, ghostClick, dragFeel, draftRescue, boardZoom, gameListOrder, randomGames, recentGameAvatars, headToHead, rematchSlots, awayReturn, chatRead, chatRules, webJourney, pageVisible, funnelEvents, aiLevel, tutorialScript, scoreLine, deviceLabels, adminGroups, outline...)
   data/         # Kelime listesi (~63k), harf dağılımı, kelime anlamları, wordSetLoader (lazy chunk)
   lib/          # Supabase istemcisi ve API sarmalayıcısı
   fonts/        # @font-face tanımları (main.tsx import eder) + files/*.woff2 — bunlardan

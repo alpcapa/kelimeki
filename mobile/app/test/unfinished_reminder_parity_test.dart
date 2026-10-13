@@ -44,6 +44,7 @@ void main() {
   final kanal = PlatformHatirlatmaZamanlayici.kanal.name;
   const kur = PlatformHatirlatmaZamanlayici.kurMetot;
   const iptal = PlatformHatirlatmaZamanlayici.iptalMetot;
+  const ayar = PlatformHatirlatmaZamanlayici.ayarMetot;
 
   test('kanal adı Kotlin ve Swift\'te BİREBİR aynı', () {
     expect(kotlin, contains('"$kanal"'),
@@ -53,7 +54,7 @@ void main() {
   });
 
   test('metot adları iki platformda da tanınıyor', () {
-    for (final m in [kur, iptal]) {
+    for (final m in [kur, iptal, ayar]) {
       expect(kotlin, contains('"$m" ->'), reason: 'Kotlin `when` "$m" yok');
       expect(swift, contains('case "$m":'), reason: 'Swift `switch` "$m" yok');
     }
@@ -84,5 +85,14 @@ void main() {
   test('iOS: İŞİ yapıyor (istek ekle + bekleyeni kaldır)', () {
     expect(swift, contains('UNTimeIntervalNotificationTrigger('));
     expect(swift, contains('removePendingNotificationRequests('));
+  });
+
+  test('"Bildirimler kapalı" kartı: iki platform da UYGULAMANIN bildirim '
+      'ayarını açıyor', () {
+    expect(kotlin, contains('Settings.ACTION_APP_NOTIFICATION_SETTINGS'));
+    expect(kotlin, contains('Settings.EXTRA_APP_PACKAGE'));
+    expect(swift, contains('UIApplication.openNotificationSettingsURLString'));
+    expect(swift, contains('UIApplication.openSettingsURLString'),
+        reason: 'iOS 16 altı için genel Ayarlar yedeği');
   });
 }

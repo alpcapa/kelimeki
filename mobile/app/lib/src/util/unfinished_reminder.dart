@@ -17,6 +17,8 @@
 //   - Web karşılığı YOK (tarayıcı kapalıyken zamanlanmış bildirim yok).
 library;
 
+import 'push_rules.dart';
+
 /// Hatırlatmanın saati (yerel saat). Akşam: günün oyun oynanan dilimi.
 const int kYarimOyunHatirlatmaSaati = 19;
 
@@ -84,3 +86,51 @@ bool yarimOyunHatirlatmasiTeslimEdildi({
   required DateTime simdi,
 }) =>
     kurulanZaman != null && !simdi.isBefore(kurulanZaman);
+
+/// Yarım bir oyundan çıkarken hangi kart gösterilir (2 Ekim 2026).
+enum YarimOyunKarti {
+  /// "Hatırlatalım mı?" → HATIRLAT sistem izin diyaloğunu açar.
+  izinIste,
+
+  /// "Bildirimler kapalı" → AYARLARI AÇ telefonun bildirim ayarlarını açar.
+  /// Sistem diyaloğu artık AÇILAMIYORSA tek yol bu.
+  ayaraGonder,
+}
+
+/// Yarım oyun çıkışında gösterilecek kart; `null` → kart yok.
+///
+/// **NEDEN İKİ KART (2 Ekim 2026, kullanıcı 1.1.2'de Android'de gördü):**
+/// bildirimleri telefon ayarlarından kapatmış kullanıcıya hiçbir şey
+/// söylenmiyordu — sistem diyaloğu bir daha açılamadığı için "Hatırlatalım
+/// mı?" kartı bilerek gösterilmiyordu (HATIRLAT'a basınca hiçbir şey
+/// olmazdı) ve kullanıcı hatırlatmanın neden gelmediğini bilemiyordu.
+/// Kullanıcı kararı: *"ayarlar kartını 12 Ekim trenine ekle"*.
+///
+/// [izinVerildi] — sistem izni açık; kart yok.
+/// [sistemTekrarSoramaz] — sistem diyaloğu artık açılmaz: Android'de
+///   `deniedPermanently`, iOS'ta `denied` (Apple kalıcı reddi ayrı
+///   bildirmiyor; bir kez reddedilen izin bir daha SORULAMAZ).
+/// [soruldu] / [sonSorulma] / [simdi] — `pushIzniSorulmali`nin sayacı:
+///   iki kart da Canlı kartıyla AYNI sayaçtan yer (en fazla üç kez, arada
+///   yedi gün). Ayar kartı ayrı sayılsaydı kapatmış birine toplamda altı
+///   kez söylenirdi.
+YarimOyunKarti? yarimOyunKartiSec({
+  required bool izinVerildi,
+  required bool sistemTekrarSoramaz,
+  required int soruldu,
+  required DateTime? sonSorulma,
+  required DateTime simdi,
+}) {
+  final sorulabilir = pushIzniSorulmali(
+    aktifOyunVar: true,
+    izinZatenVerildi: izinVerildi,
+    kaliciReddedildi: false,
+    soruldu: soruldu,
+    sonSorulma: sonSorulma,
+    simdi: simdi,
+  );
+  if (!sorulabilir) return null;
+  return sistemTekrarSoramaz
+      ? YarimOyunKarti.ayaraGonder
+      : YarimOyunKarti.izinIste;
+}

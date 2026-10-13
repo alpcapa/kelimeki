@@ -15,11 +15,13 @@
 // ⚠ Bu satır 2 Eylül 2026'ya kadar "İki çağrı yeri var" diyordu ve BAYATTI —
 // Canlı kartı sonradan eklenmiş, yorum güncellenmemişti. Boyut değiştirmeye
 // gelen biri kapsamı eksik ölçerdi.
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 
 import '../../util/score_line.dart';
 import '../auth/k_avatar.dart';
+import '../open_seat_avatar.dart';
 import '../tokens.dart';
 
 const _border = kBorder;
@@ -60,11 +62,17 @@ class AvatarRowPlayer {
   /// yedeğini ("?") seçtirir, yeni bir görsel icat edilmedi.
   final bool isGuest;
 
+  /// AÇIK koltuk (Rastgele Oyuncu henüz oturmadı) — kesik çerçeveli "?"
+  /// (3 Ekim 2026, web `isOpen`). `isAi`den FARKLI bir görsel: açık koltuk
+  /// Yapay Zeka DEĞİL.
+  final bool isOpen;
+
   const AvatarRowPlayer({
     required this.name,
     this.avatarUrl,
     this.isAi = false,
     this.isGuest = false,
+    this.isOpen = false,
   });
 }
 
@@ -147,6 +155,14 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (player.isOpen) {
+      return Semantics(
+        label: player.name,
+        image: true,
+        excludeSemantics: true,
+        child: OpenSeatAvatar(size: size),
+      );
+    }
     if (player.isAi) {
       // Web `bg-void border-border` zemin + gerçek 🤖 emoji (Material
       // `Icons.smart_toy_outlined` ikonuyla İLK PORTTA yanlışlıkla
