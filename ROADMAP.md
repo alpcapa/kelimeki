@@ -214,6 +214,8 @@ nereden okunacağı ve kartın "12" tavanı orada.
 
 ⚠ **Kesimde sürüm numarası da yükselmeli** (`pubspec.yaml` + `config/env.dart`, `app_version_parity_test`): sıradaki sürüm **1.1.4** (kesim 19 Ekim). Mağazada onaylanmış bir sürüme yeni build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasında ÖLÇÜLDÜ").
 
+**1.1.4'e binecekler (19 Ekim kesimi; kendi PR'ı dahil):** sözlük paketi (13 Ekim: efes, fuleli, tartolet, pa, regl, kufi) — mobil yarısı `words_tr.txt` + `meanings.db` + `reducer_ai2_zor.json` golden'ı, taslak PR. Sunucu + web yarısı ayrı PR'da hemen gider; o zamana kadar app'te bu 6 kelime geçersiz.
+
 ### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
 
 Kod YOK; karar kaydı. #804/#805 olduğu gibi **12 Ekim**'de çıkar (kesim riski
