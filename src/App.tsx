@@ -1,5 +1,5 @@
 // Kelimeki — ana uygulama: kurulum, çok oyunculu sıra akışı ve düzen
-import { LIVE_GAME_REQUEST_EVENT } from './utils/liveGameRequest';
+import { LIVE_GAME_REQUEST_EVENT, requestRandomGameOpen } from './utils/liveGameRequest';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { GameHeader } from './components/GameHeader';
@@ -805,6 +805,21 @@ export default function App() {
     params.delete('gizlilik');
     const rest = params.toString();
     window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : ''));
+  }, []);
+
+  // Hatırlatma e-postasındaki "Rastgele Oyun Aç" düğmesi (`?rastgele=1`, 13
+  // Ekim 2026): Canlı sekmesini aç + Rastgele Oyuncu seçili formu iste. Form
+  // `LiveGamesTab`te, oturum varken açılır. `?contact=1` ile AYNI kalıp:
+  // parametre okunur, URL'den temizlenir (`ref` gibi ötekiler KALIR). Kapı
+  // script'i de bu parametreyi görünce karşılama katmanını atlar.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('rastgele') !== '1') return;
+    params.delete('rastgele');
+    const rest = params.toString();
+    window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : ''));
+    requestRandomGameOpen();
+    setMainView('live');
   }, []);
 
   // Oyun sonu ekranı kapatıldı mı (X'e basıldı mı) — board'u görmek için.

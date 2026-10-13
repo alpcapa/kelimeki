@@ -493,3 +493,20 @@ koltuk şart. Yeni sunucu işi YOK (migration yok).
   yeni ilan → "İlanın yayında" (+ arkadaş varsa "<ad> davet edildi."), var olan ilana katılma → "Oyuna katıldın".
   "Vazgeç" araya girerse gecikmeli gelen liste pencereyi YENİDEN açmaz. Kapı: `verify-rematch-slots` (S2 için 19 yeni vaka).
 
+
+## 21. `?rastgele=1` bağlantısı — hatırlatma e-postasının düğmesi (13 Ekim 2026, kullanıcı kararı)
+
+*"Düğme direkt linkle rastgele oyun aç butonunu çalıştırsın."* Hiç oyun bitirmemiş, pazarlama izni veren 28 üyeye
+tek seferlik hatırlatma e-postası gidiyor; düğme `kelimeki.com/?rastgele=1`e gider ve şeritteki "Rastgele oyun aç"ın
+AYNI eylemini yapar: Canlı sekmesi açılır, kurulum formu Rastgele Oyuncu SEÇİLİ gelir.
+
+- **Üç halka:** (1) `<head>` kapı script'i (`scripts/landing-plugin.js`, madde 2b) parametreyi görünce karşılama katmanını
+  ATLAR — oturumu olmayan yeni cihazda da; (2) `App.tsx` parametreyi okur, URL'den temizler (`ref` gibi ötekiler KALIR,
+  first-touch etiketi bozulmaz), `setMainView('live')` + `requestRandomGameOpen()`; (3) `LiveGamesTab` isteği YALNIZCA oturum
+  varken tüketir (`user?.id`), formu `startRandom` + `creating` ile açar. Girişsiz gelen kişi giriş yapınca formu görür.
+- **Kuyruk ayrı** (`utils/liveGameRequest.ts` → `RANDOM_OPEN_EVENT`): arkadaş isteğinin kuyruğu bir `friendId` ister.
+- **Yalnızca web.** Mobilde karşılığı YOK; e-postadaki bağlantı tarayıcıda açılır.
+- **Ölçüm:** alıcılar `?ref=` ile ölçülemez — etiket FIRST-TOUCH ve bu üyelerin cihazında zaten bir etiket (ya da hiçbiri) var.
+  Sonuç alıcı kimlikleriyle okunur: o üyelerin `online_games` içinde `listing='random'` kurucu olması + oyun bitirmesi.
+- **Sınır:** gerçek oturumla uçtan uca denenmedi; kapı + parametre temizliği Chromium'da denendi. Kontrol:
+  `docs/testing-rastgele.md` → "`?rastgele=1` bağlantısı".
