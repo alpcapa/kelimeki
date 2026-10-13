@@ -920,7 +920,10 @@ Kayıt, kararlar (A-F kapandı) ve öneriler: `docs/decisions/random-opponent.md
 Takım Ligi (#44) ile aynı `online_games.listing` altyapısı.
 ⚠ **4 Ekim (kullanıcı): web (#804) ve port (#805) AYNI GÜN merge edilir** (iki taraflı pazar yeri; web tek başına işe yaramaz) — `random-opponent.md` §19.
 
-## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
+## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · İLERİKİ SÜRÜMLERE KAYDIRILDI (13 Ekim 2026; eski hedef: 19 Ekim treni)**
+
+⚠ **13 Ekim 2026 (kullanıcı kararı):** *"Bence takım ligi olayını ileriki sürümlere kaydıralım. Daha yeni rastgele başladı. İnsanlar önce onu özümsesin, sonra yeni bir şey gelsin. Arka arkaya kafalar karışabilir."* **Gerekçe ürün sırası, teknik değil:** Rastgele Oyuncu (#45) yeni yayında, oyuncular onu özümsemeden ikinci bir yeni oyun türü getirilmesin. **Yeni hedef sürüm YOK** — Rastgele'nin kullanımı (günlük ilan/farklı kurucu, bkz. #45 ölçümü) oturunca kullanıcı yeniden karar verir. 19 Ekim (1.1.4) kesimine Takım Ligi kodu GİRMEZ; aşağıdaki "19 Ekim" ve "12 Ekim kesiminden sonra" ifadeleri TARİHÇEDİR. Tasarım (`docs/decisions/team-league.md`) olduğu gibi geçerli. `listing` altyapısı Rastgele ile paylaşıldığından ön koşul zaten canlıda.
+
 
 Kullanıcı (3 Ekim): *"Bence bu ok. Bunu 19 Ekim trenine düşünüyorum. Şimdilik
 roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
