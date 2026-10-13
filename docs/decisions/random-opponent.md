@@ -52,7 +52,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
 
 ```
 ┌ Rastgele Oyunlar · 5 ─────────────────────┐   ← başlık + sayı; liste BOŞSA tek satır
-│ ┌──────┐ ┌──────┐ ┌──────┐ ┌─ ← kaydır    │     "Bekleyen oyun yok. Hemen aç." (§20)
+│ ┌──────┐ ┌──────┐ ┌──────┐ ┌─ ← kaydır    │     "Bekleyen oyun yok. Hemen aç." (§21)
 │ │ (A)  │ │ (B)  │ │ (C)  │ │ (D           │
 │ │Ayşe  │ │Can   │ │Elif  │ │              │
 │ │2 kişi│ │4 kişi│ │2 kişi│ │              │
@@ -70,7 +70,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
   Kart ~88 px: 3 tanesi 320 px'te yan yana, dördüncünün kenarı görünür (kaydırma
   ipucu). Kartta: kurucunun avatarı + kısa adı, **2 kişi / 4 kişi** rozeti
   (iki ayrı ton), dolu koltuk noktaları (dolu = yeşil, boş = içi boş halka) ve altında **"N koltuk kaldı"** (kullanıcı, 3 Ekim: saat/gün yaşı yerine; zaman bilgisi karta KONMAZ, 7 günlük süre ilanı kendiliğinden kaldırır), **Kabul** düğmesi (≥32 px yüksek).
-- **Şerit başlığının sağında "Rastgele oyun aç" bağlantısı** (kullanıcı, 3 Ekim; "kaydır →" ipucunun yerine): "+ Yeni Canlı Oyun"a basmakla AYNI, kurulum ekranını açar. ⚠ 12 Ekim 2026'dan beri ŞERİT BOŞKEN DE GÖRÜNÜR (§20): başlıktaki bağlantı boşken gizli, yerine tek satırlık "Bekleyen oyun yok. Hemen aç." düğmesi var.
+- **Şerit başlığının sağında "Rastgele oyun aç" bağlantısı** (kullanıcı, 3 Ekim; "kaydır →" ipucunun yerine): "+ Yeni Canlı Oyun"a basmakla AYNI, kurulum ekranını açar. ⚠ 12 Ekim 2026'dan beri ŞERİT BOŞKEN DE GÖRÜNÜR (§21): başlıktaki bağlantı boşken gizli, yerine tek satırlık "Bekleyen oyun yok. Hemen aç." düğmesi var.
 - **Sıra:** en yeni önce; kendi ilanım şeritte YOK (altta "Bekliyor" satırı). ⚠ 4 Ekim: DEĞİŞTİ, bkz. §15.
   Sessize aldığım/şikayet ettiğim kişinin ilanı çıkmaz.
 - **Kabul** = tek dokunuş, onay sorulmaz (Takım Ligi Rev. 9 deseni). Toast:
@@ -343,7 +343,7 @@ ilanım şeritte YOK" kararını bu değiştirir).
 - **Sıra:** benimkiler ÖNCE (en yeni önce), sonra başkaları. Id ile tekilleştirme: `myRandom`da geçen
   her id başkaları listesinden düşer (benim kartım kazanır; arkadaş/aktif oyun da şeritte çıkmaz).
   `visibleListings` artık `creator_id`'ye bakıp kendi ilanımı ÇIKARMAZ.
-- **Kart:** aynı en/boy. "Kabul" YOK; yerine durum satırı + altında küçük kırmızı eylem. ⚠ 12 Ekim 2026: durum satırı artık "N koltuk kaldı" (başkalarınınkiyle AYNI, §20); önceden soluk "Bekliyor" etiketiydi (düğme değil; 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda). Eylem:
+- **Kart:** aynı en/boy. "Kabul" YOK; yerine durum satırı + altında küçük kırmızı eylem. ⚠ 12 Ekim 2026: durum satırı artık "N koltuk kaldı" (başkalarınınkiyle AYNI, §21); önceden soluk "Bekliyor" etiketiydi (düğme değil; 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda). Eylem:
   `creator` → "İptal" (`cancelRandomGame`), `random` → "Ayrıl" (`leaveRandomGame`); ≥32 px. Ayrışma: `border-accent/30 bg-accent/5`.
   Eylem mantığı/iletileri `LiveGamesTab.handleLeaveRandom`'dan (ikinci kopya yok).
 - **Koltuk durumları** (`list_random_games` ile aynı anlam): açık→`open`, gerçek YZ→`ai`, kurucu (`created_by`)→`creator`,
@@ -416,7 +416,28 @@ bayrağı (özellik yalnızca test hesaplarında açık, mağaza sürümü yayı
 YAPILMAYACAK (4 Ekim: *"Bence gerek yok. 12 Ekim'de birlikte yayına alırız. Daha 1 hafta var. Bu arada testlerimizi yapabiliriz."*);
 kabul edilen bedel: mağaza güncellemesi gelene kadar web'de açılan ilanlar mobil kullanıcılara görünmez.
 
-## 20. Şerit HEP görünür + tek seferlik tanıtım balonu (12 Ekim 2026, kullanıcı)
+## 20. #45-A tasarım notu — yabancıyla biten oyunda "Tekrar Oyna" (11 Ekim 2026, 19 Ekim / 1.1.4 treni)
+
+**Durum: TASARIM, kod yok. Karar kullanıcıda (aşağıda iki soru).** Önce bugünkü davranışı yanlış okumamak için üç doğrulanmış gerçek:
+
+1. **Sunucu kısıtı (okundu, `20261004193412_invite_block_and_pair_limit.sql`):** `create_online_game` her insan koltuğunda `friend_requests` ile arkadaşlık arıyor (*"Yalnızca arkadaşlarını davet edebilirsin."*), YZ yalnız **4 kişilik oyunun son koltuğunda** olabiliyor (*"Yapay Zeka yalnızca 4 kişilik oyunun son koltuğunda olabilir."*) → bir kadroda **en çok 1 YZ**, 2 kişilikte hiç yok.
+2. **Bugünkü gözlem (11 Ekim, elle test, §"Rövanş gözlemi"):** yabancıyla biten oyunda düğme GÖRÜNÜYOR ve çıkmaza sokmuyor, arkadaşlık daveti akışına yönlendiriyor; karşılıklı bekleyen istek = otomatik arkadaşlık. Yani bu bir hata değil; A'nın "düğmeyi gizle" kararı o çalışan yolu KALDIRIR.
+3. **İki çağıran, iki veri kaynağı:** `OnlineGameScreen.tsx` kadroyu `list_my_online_games`ten alıyor (`relation` alanı VAR), `GameHistoryModal.tsx` ise `fetchFinishedGameSlots`tan ham `online_games.slots` okuyor (isim de `relation` da YOK). Süzgeç ikisinde de aynı olmalı → kural `rematchSlots.ts`e girer, geçmişte arkadaş listesi ayrıca verilmeli.
+
+**Kural önerisi (saf fonksiyon, `rematchSlots.ts` ↔ `rematch_slots.dart`):** `rematchAvailability(slots, myUserId, friendIds)` üç sonuç döner:
+- `full` — rakip insanların HEPSİ arkadaş → bugünkü gibi aynen kurulur.
+- `withAi` — 4 kişilik, `yabancı + mevcut YZ ≤ 1` → tek yabancının yerine son koltuğa YZ konur (onay metni *"X yerine 4. koltuk Yapay Zeka olacak"*).
+- `blocked` — 2 kişilikte yabancı, ya da 4 kişilikte `yabancı + YZ ≥ 2` (ikinci YZ sunucuda reddedilir) → düğme gizli, oyun sonu arkadaş önerisi (zaten var) yolu açar.
+
+**Açık sorular (kullanıcı):**
+- **S1.** `blocked` durumda düğme GİZLENSİN mi (ROADMAP A'nın yazılı hâli), yoksa bugünkü "arkadaşlığa yönlendir" akışı KALSIN mı? Öneri: yönlendirme kalsın (çalışıyor, ilk oturumda kullanıcıyı çıkmaza sokmuyor), yalnız sunucunun kesin reddedeceği `blocked` hâli için gizle.
+- **S2.** `withAi` (4 kişide 1 yabancı → YZ) istenir mi? Yabancı yerine YZ koymak sessiz bir kadro değişikliği; öneri: yalnız açık onay metniyle.
+
+**Etki analizi (derleyicinin göremeyeceği):** web `OnlineGameScreen.tsx` + `GameHistoryModal.tsx` · port `online_game_screen.dart` + geçmiş ikizi · `rematch_slots.dart` · `npm run verify-rematch-slots` (yeni vakalar: 2 kişi yabancı, 4 kişi 1 yabancı, 4 kişi 1 yabancı + 1 YZ, 2 yabancı) ve `rematch_slots_test.dart` AYNI vakalarla · `TESTING.md` + `mobile/TESTING.md` (iki gerçek hesap) · ROADMAP "Sıradaki sürüme binecekler". Sunucuya DOKUNMAZ.
+
+**Boyut:** küçük (yarım gün). Web hemen yayınlanabilir, port taslak PR olarak 19 Ekim kesimine biner (web+port iki PR'a bölünür).
+
+## 21. Şerit HEP görünür + tek seferlik tanıtım balonu (12 Ekim 2026, kullanıcı)
 
 Veri (12 Ekim akşamı): özellik yayında 1,5 gün; 32 ilanın 15'i eşleşmiş, eşleşmelerin 13'ünde kurucunun kendi hesabı var,
 yabancı iki kişinin birbiriyle eşleştiği oyun YOK. Kullanıcı: *"Çoğu insan bilmiyor … Rastgele oyun yoksa kutu çıkmıyor.
