@@ -25,7 +25,7 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
-## Parça 240 — Yarım oyun hatırlatması: "hatırlatıldı" işareti sessizce kilitliyordu (12 Ekim 2026) — `[Sonraki sürüm]`, 1.1.4 treni
+## Parça 241 — Yarım oyun hatırlatması: "hatırlatıldı" işareti sessizce kilitliyordu (12 Ekim 2026) — `[Sonraki sürüm]`, 1.1.4 treni
 
 **Vaka:** hatırlatma (#731, 1.1.2'den beri) cihazda dört denemede hiç
 görülmedi. Kullanıcı dördünü de AYNI yarım oyunla yaptı. Kural "aynı oyun bir
