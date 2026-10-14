@@ -99,7 +99,7 @@ Bağlantı `?ref=linkedin` taşıyor (admin: `li`/`linkedin` öneki → LinkedIn
 | 1 En yüksek puan | LinkedIn (Kelimeki sayfası) | 7 Ekim 2026 | `?ref=linkedin` bağlantılı gönderi; Alp Çapa profilinden repost (düz repost → ayrı analitik yok) |
 | 2 Hangisini oynardın | Instagram + Facebook (Kelimeki sayfaları, Reel olarak) | 7 Ekim 2026 | Instagram metninde "link bio'da"; Facebook gönderi metnine sonradan `?ref=fb` bağlantısı eklendi. Hikâye: `kelimeki.com` bağlantılı paylaşım + Alp Çapa profilinden bağlantılı hikâye repost'u |
 | 3 Çift yıldız | Instagram | planlı: 8 Ekim akşamı | — |
-| 1 En yüksek puan | TikTok (ayrı hesap) — **story** | 14 Ekim 2026 | Kullanıcı paylaştı (Reel değil, hikâye). Bağlantı/`?ref=` durumu bildirilmedi. Video 2-3 TikTok'ta henüz yok |
+| 1 En yüksek puan | TikTok (ayrı hesap) — **story** | 14 Ekim 2026 | Kullanıcı paylaştı (Reel değil, hikâye). Hikâyede link yok. Bio'da sade `kelimeki.com` (14 Ekim kararı): TikTok'ta bio linki tıklanamıyor (tıklanabilir alan işletme hesabı ister, şirket yok → kişisel hesap kaldı), insanlar elle yazacağından `?ref=` uzantısı anlamsız; TikTok ziyaretçisi panelde "Direkt"e düşer. `/tiktok` yönlendirmesi + `adminGroups.ts` öneki düşünüldü, hacim küçük olduğu için YAPILMADI. Video 2-3 TikTok'ta henüz yok |
 | 2-3 | TikTok (ayrı hesap) | belirsiz | — |
 | 1-3 | YouTube Shorts | en son; `ALT` → "Link açıklamada" ile yeniden üretilecek | — |
 | 2-3 | LinkedIn | belirsiz | Kullanıcı kararı bekleniyor |
