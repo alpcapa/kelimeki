@@ -99,12 +99,27 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   if (req.headers.get('x-reminder-key') !== KEY) return json({ error: 'Yetkisiz.' }, 401);
 
-  let body: { user_ids?: string[]; dry_run?: boolean };
+  let body: { user_ids?: string[]; dry_run?: boolean; test_to?: string; test_name?: string };
   try {
     body = await req.json();
   } catch {
     return json({ error: 'Geçersiz istek.' }, 400);
   }
+  // TEST: tek adrese örnek kopya ([TEST] önekli). Uygunluk kontrolü YOK, yalnız KEY ile çalışır.
+  if (typeof body.test_to === 'string') {
+    const to = body.test_to.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return json({ error: 'test_to geçersiz.' }, 400);
+    if (!BREVO_API_KEY) return json({ error: 'BREVO_API_KEY yok.' }, 500);
+    const testName = capFirst(body.test_name?.trim() || undefined);
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ sender: SENDER, to: [{ email: to, name: testName }], subject: `[TEST] ${SUBJECT}`, htmlContent: buildHtml(testName) }),
+    });
+    if (!res.ok) console.error('[send-random-reminder] test Brevo hatası:', res.status, await res.text());
+    return json({ test: true, sent: res.ok, status: res.status, to: mask(to) });
+  }
+
   const ids = Array.from(new Set((body.user_ids ?? []).map((s) => String(s).trim()).filter(Boolean)));
   if (ids.length === 0 || ids.length > MAX_RECIPIENTS) {
     return json({ error: `user_ids 1-${MAX_RECIPIENTS} arası olmalı.` }, 400);
