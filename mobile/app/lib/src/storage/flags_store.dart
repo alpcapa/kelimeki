@@ -193,7 +193,12 @@ class FlagsStore {
   // en fazla BİR bekleyen hatırlatma olur, bu üç anahtar onu tarif eder.
   static const _yarimOyunKurulanOyun = 'yarim_oyun_kurulan_oyun';
   static const _yarimOyunKurulanZaman = 'yarim_oyun_kurulan_zaman';
-  static const _yarimOyunHatirlatilan = 'yarim_oyun_hatirlatilan';
+  // ⚠ `_v2` (12 Ekim 2026): eski anahtar "saat geçti + uygulama açıldı"
+  // kuralıyla doluyordu ve bildirim hiç görünmemiş oyunları da kilitliyordu
+  // (kullanıcının test oyunu dört denemede hiç hatırlatılmadı). Yeni kural
+  // yalnızca platform "gösterdim" derse yazar; ad değişikliği eski, yanlış
+  // dolmuş işaretleri bir kereye mahsus sıfırlar.
+  static const _yarimOyunHatirlatilan = 'yarim_oyun_hatirlatilan_v2';
 
   /// Bekleyen hatırlatmanın oyunu (`startedAt`) — yoksa null.
   String? get yarimOyunKurulanOyun => prefs.getString(_yarimOyunKurulanOyun);
