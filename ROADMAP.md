@@ -13,7 +13,6 @@ ve `git branch -r` ile PR'sız dalları kontrol et.
 
 | Ne zaman | İş | Sıradaki adım |
 |---|---|---|
-| **15 Eki (BUGÜN)** | **Rastgele Oyun hatırlatma e-postası** (hiç oyun bitirmemiş + pazarlama izinli ~28 üye; `?rastgele=1`) | Fonksiyon `send-random-reminder` canlıda (v3, ACTIVE), dal `claude/rastgele-hatirlatma-maili` PR'SIZ. Önce `dry_run` → alıcı sayısı/listesi kullanıcıya → onay → gerçek gönderim → fonksiyonu 410 taslağıyla değiştir → dalı PR ile `main`'e al (anahtar yer tutucu kalır) |
 | 17-18 Eki | Meta Teaser Aşama 2 ilk okuma (`Kare2` ↔ `Kar2`) | `kampanya-teaser-ekim-2026.md` §5; pencere `Kar2` 18:09 TSİ sonrası; Meta'dan bağlantı tıklaması/CTR/yerleşim ekran görüntüleri iste |
 | 19 Eki | **1.1.4 treni** | Taslak PR'lar #837 #842 #850 #851 #855 #859 #862: `main`'i hepsine birleştir (çakışma yalnız `docs/decisions/*.md`: #850 #851 #862), `pubspec.yaml` + `config/env.dart` = 1.1.4, `surumler.md` sürüm senkronu, merge ÖNCESİ "mobil derlemeyi tetikler" uyarısı |
 | 19 Eki haftası | #46-1 atıf kodu (~1 gün; yetişmezse sonraki tren) | `funnel-v2.md` |
