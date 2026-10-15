@@ -84,6 +84,19 @@ export interface JourneySession {
   /** Kapanış adımı gönderildi — artık hiçbir şey yazılmaz. */
   closed: boolean;
   startMs: number;
+  /**
+   * GÖRÜNÜR süre birikimi (15 Ekim 2026). `seconds` artık duvar saati DEĞİL:
+   * Android Meta uygulama-içi tarayıcıda reklama dokunup ~2 sn'de dönen kişinin
+   * sayfası arka planda ~30 sn daha yaşıyor ve `pagehide` o ana kadarki duvar
+   * saatini yazıyordu ("32 sn kaldı" yığılması; `visibility_probe` ölçümü,
+   * `docs/decisions/admin-panel.md` → "Yığılmanın kaynağını bulma").
+   * `visibleMs` kapanmış görünür aralıkların toplamı, `visibleSince` açık
+   * aralığın başlangıcı (`null` = şu an gizli). ⚠ İKİSİ DE opsiyonel: bu alanlar
+   * gelmeden önce `sessionStorage`a yazılmış bir oturum (sekme açıkken deploy)
+   * eski anlamıyla sürer, bkz. `visibleState`.
+   */
+  visibleMs?: number;
+  visibleSince?: number | null;
   moves: number;
   scrollPct: number | null;
   sent: JourneyStep[];
@@ -104,11 +117,30 @@ export type JourneyEvent =
   | { type: 'step'; step: JourneyStep }
   | { type: 'moves'; count: number }
   | { type: 'scroll'; pct: number }
-  | { type: 'flush' };
+  /** Sekme gizlendi / sayfa kapanıyor (`visibilitychange: hidden`, `pagehide`): görünür aralığı kapatır + adımsız ping. */
+  | { type: 'hide' }
+  /** Sekme yeniden göründü (`visibilitychange: visible`, bfcache dönüşü): yeni görünür aralık, ping YOK. */
+  | { type: 'show' };
 
 export interface JourneyResult {
   session: JourneySession | null;
   pings: JourneyPing[];
+}
+
+/**
+ * Oturumun görünür-süre durumu. Alanları olmayan (eski sürümden kalma) oturum
+ * eski anlamıyla sürer: o âna kadarki duvar saati birikmiş sayılır ve açık bir
+ * aralık başlar — bir kerelik küçük sapma, bundan sonrası doğru.
+ */
+function visibleState(s: JourneySession, nowMs: number): { ms: number; since: number | null } {
+  if (s.visibleMs === undefined) return { ms: Math.max(0, nowMs - s.startMs), since: nowMs };
+  return { ms: s.visibleMs, since: s.visibleSince ?? null };
+}
+
+/** Şu ana kadar GÖRÜNÜR kalınan süre (ms). Gizliyken artmaz. */
+function visibleTotalMs(s: JourneySession, nowMs: number): number {
+  const { ms, since } = visibleState(s, nowMs);
+  return ms + (since === null ? 0 : Math.max(0, nowMs - since));
 }
 
 function ping(s: JourneySession, step: JourneyStep | null, nowMs: number): JourneyPing {
@@ -117,7 +149,7 @@ function ping(s: JourneySession, step: JourneyStep | null, nowMs: number): Journ
     entry: s.entry,
     step,
     moves: s.moves,
-    seconds: Math.max(0, Math.round((nowMs - s.startMs) / 1000)),
+    seconds: Math.max(0, Math.round(visibleTotalMs(s, nowMs) / 1000)),
     scrollPct: s.scrollPct,
   };
 }
@@ -157,6 +189,8 @@ export function reduceJourney(
           member: ev.member,
           closed: false,
           startMs: nowMs,
+          visibleMs: 0,
+          visibleSince: nowMs,
           moves: 0,
           scrollPct: null,
           sent: [],
@@ -166,10 +200,14 @@ export function reduceJourney(
       }
       // Mevcut oturum: karşılamadan uygulamaya geçildi ya da sekme yeniden
       // yüklendi. Uygulama bir giriş görürse yazım durur (sessizce — kapanış
-      // adımını AuthModal kendisi gönderir).
-      if (ev.member) return { session: { ...s, member: true }, pings: [] };
-      if (!writing(s) || ev.entry !== 'app') return { session: s, pings: [] };
-      return withStep(s, 'app', nowMs);
+      // adımını AuthModal kendisi gönderir). Sayfa YENİ yüklendiği için yeni
+      // bir görünür aralık başlar (önceki sayfa `pagehide`ta kapattı; kapatamadan
+      // ölmüşse o aralığın süresi kaybolur — fazladan saymaktan iyi).
+      const v = visibleState(s, nowMs);
+      const resumed: JourneySession = { ...s, visibleMs: v.ms, visibleSince: nowMs };
+      if (ev.member) return { session: { ...resumed, member: true }, pings: [] };
+      if (!writing(resumed) || ev.entry !== 'app') return { session: resumed, pings: [] };
+      return withStep(resumed, 'app', nowMs);
     }
     case 'step': {
       if (!s || !s.guest || s.closed) return { session: s, pings: [] };
@@ -198,9 +236,23 @@ export function reduceJourney(
       if (s.scrollPct !== null && pct <= s.scrollPct) return { session: s, pings: [] };
       return { session: { ...s, scrollPct: pct }, pings: [] };
     }
-    case 'flush': {
+    case 'hide': {
       if (!writing(s)) return { session: s, pings: [] };
-      return { session: s, pings: [ping(s, null, nowMs)] };
+      // Açık aralığı KAPAT; ikinci bir `hide` (gizlendikten sonra `pagehide`)
+      // süreyi ARTIRMAZ — "32 sn" yığılmasının düzeltmesi tam burada.
+      const v = visibleState(s, nowMs);
+      const closed: JourneySession = {
+        ...s,
+        visibleMs: v.ms + (v.since === null ? 0 : Math.max(0, nowMs - v.since)),
+        visibleSince: null,
+      };
+      return { session: closed, pings: [ping(closed, null, nowMs)] };
+    }
+    case 'show': {
+      if (!writing(s)) return { session: s, pings: [] };
+      const v = visibleState(s, nowMs);
+      if (v.since !== null && s.visibleMs !== undefined) return { session: s, pings: [] };
+      return { session: { ...s, visibleMs: v.ms, visibleSince: nowMs }, pings: [] };
     }
   }
 }
@@ -314,9 +366,9 @@ function dispatch(ev: JourneyEvent): void {
   // Arka planda yüklenip henüz görünmemiş sayfa (bkz. utils/pageVisible.ts):
   // olaylar sırasıyla bekletilir, sayfa görününce o anki saatle işlenir —
   // yani süre de GÖRÜNDÜĞÜ andan sayılır. Görünmeden kapanırsa hiçbiri
-  // gitmez; `flush` bekletilmez (oturum yokken zaten ping üretmez).
+  // gitmez; `hide`/`show` bekletilmez (oturum yokken zaten bir şey üretmezler).
   if (!pageWasVisible()) {
-    if (ev.type !== 'flush') whenPageVisible(() => dispatch(ev));
+    if (ev.type !== 'hide' && ev.type !== 'show') whenPageVisible(() => dispatch(ev));
     return;
   }
   const r = reduceJourney(load(), ev, Date.now(), randomId);
@@ -336,11 +388,14 @@ let flushInstalled = false;
 function installFlush(): void {
   if (flushInstalled || typeof document === 'undefined') return;
   flushInstalled = true;
-  const flush = () => dispatch({ type: 'flush' });
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flush();
+    dispatch({ type: document.visibilityState === 'hidden' ? 'hide' : 'show' });
   });
-  window.addEventListener('pagehide', flush);
+  window.addEventListener('pagehide', () => dispatch({ type: 'hide' }));
+  // bfcache'ten dönüş: sayfa yeniden göründü ama `visibilitychange` ateşlenmeyebilir.
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) dispatch({ type: 'show' });
+  });
 }
 
 /**

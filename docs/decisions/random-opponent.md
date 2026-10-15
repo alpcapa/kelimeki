@@ -52,7 +52,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
 
 ```
 ┌ Rastgele Oyunlar · 5 ─────────────────────┐   ← başlık + sayı; liste BOŞSA tek satır
-│ ┌──────┐ ┌──────┐ ┌──────┐ ┌─ ← kaydır    │     "Bekleyen oyun yok. Hemen aç." (§21)
+│ ┌──────┐ ┌──────┐ ┌──────┐ ┌─ ← kaydır    │     "Bekleyen oyun yok. Hemen aç." (§22)
 │ │ (A)  │ │ (B)  │ │ (C)  │ │ (D           │
 │ │Ayşe  │ │Can   │ │Elif  │ │              │
 │ │2 kişi│ │4 kişi│ │2 kişi│ │              │
@@ -70,7 +70,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
   Kart ~88 px: 3 tanesi 320 px'te yan yana, dördüncünün kenarı görünür (kaydırma
   ipucu). Kartta: kurucunun avatarı + kısa adı, **2 kişi / 4 kişi** rozeti
   (iki ayrı ton), dolu koltuk noktaları (dolu = yeşil, boş = içi boş halka) ve altında **"N koltuk kaldı"** (kullanıcı, 3 Ekim: saat/gün yaşı yerine; zaman bilgisi karta KONMAZ, 7 günlük süre ilanı kendiliğinden kaldırır), **Kabul** düğmesi (≥32 px yüksek).
-- **Şerit başlığının sağında "Rastgele oyun aç" bağlantısı** (kullanıcı, 3 Ekim; "kaydır →" ipucunun yerine): "+ Yeni Canlı Oyun"a basmakla AYNI, kurulum ekranını açar. ⚠ 12 Ekim 2026'dan beri ŞERİT BOŞKEN DE GÖRÜNÜR (§21): başlıktaki bağlantı boşken gizli, yerine tek satırlık "Bekleyen oyun yok. Hemen aç." düğmesi var.
+- **Şerit başlığının sağında "Rastgele oyun aç" bağlantısı** (kullanıcı, 3 Ekim; "kaydır →" ipucunun yerine): "+ Yeni Canlı Oyun"a basmakla AYNI, kurulum ekranını açar. ⚠ 12 Ekim 2026'dan beri ŞERİT BOŞKEN DE GÖRÜNÜR (§22): başlıktaki bağlantı boşken gizli, yerine tek satırlık "Bekleyen oyun yok. Hemen aç." düğmesi var.
 - **Sıra:** en yeni önce; kendi ilanım şeritte YOK (altta "Bekliyor" satırı). ⚠ 4 Ekim: DEĞİŞTİ, bkz. §15.
   Sessize aldığım/şikayet ettiğim kişinin ilanı çıkmaz.
 - **Kabul** = tek dokunuş, onay sorulmaz (Takım Ligi Rev. 9 deseni). Toast:
@@ -343,7 +343,7 @@ ilanım şeritte YOK" kararını bu değiştirir).
 - **Sıra:** benimkiler ÖNCE (en yeni önce), sonra başkaları. Id ile tekilleştirme: `myRandom`da geçen
   her id başkaları listesinden düşer (benim kartım kazanır; arkadaş/aktif oyun da şeritte çıkmaz).
   `visibleListings` artık `creator_id`'ye bakıp kendi ilanımı ÇIKARMAZ.
-- **Kart:** aynı en/boy. "Kabul" YOK; yerine durum satırı + altında küçük kırmızı eylem. ⚠ 12 Ekim 2026: durum satırı artık "N koltuk kaldı" (başkalarınınkiyle AYNI, §21); önceden soluk "Bekliyor" etiketiydi (düğme değil; 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda). Eylem:
+- **Kart:** aynı en/boy. "Kabul" YOK; yerine durum satırı + altında küçük kırmızı eylem. ⚠ 12 Ekim 2026: durum satırı artık "N koltuk kaldı" (başkalarınınkiyle AYNI, §22); önceden soluk "Bekliyor" etiketiydi (düğme değil; 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda). Eylem:
   `creator` → "İptal" (`cancelRandomGame`), `random` → "Ayrıl" (`leaveRandomGame`); ≥32 px. Ayrışma: `border-accent/30 bg-accent/5`.
   Eylem mantığı/iletileri `LiveGamesTab.handleLeaveRandom`'dan (ikinci kopya yok).
 - **Koltuk durumları** (`list_random_games` ile aynı anlam): açık→`open`, gerçek YZ→`ai`, kurucu (`created_by`)→`creator`,
@@ -430,14 +430,93 @@ kabul edilen bedel: mağaza güncellemesi gelene kadar web'de açılan ilanlar m
 - `blocked` — 2 kişilikte yabancı, ya da 4 kişilikte `yabancı + YZ ≥ 2` (ikinci YZ sunucuda reddedilir) → düğme gizli, oyun sonu arkadaş önerisi (zaten var) yolu açar.
 
 **Açık sorular (kullanıcı):**
-- **S1.** `blocked` durumda düğme GİZLENSİN mi (ROADMAP A'nın yazılı hâli), yoksa bugünkü "arkadaşlığa yönlendir" akışı KALSIN mı? Öneri: yönlendirme kalsın (çalışıyor, ilk oturumda kullanıcıyı çıkmaza sokmuyor), yalnız sunucunun kesin reddedeceği `blocked` hâli için gizle.
-- **S2.** `withAi` (4 kişide 1 yabancı → YZ) istenir mi? Yabancı yerine YZ koymak sessiz bir kadro değişikliği; öneri: yalnız açık onay metniyle.
+- **S1 — KAPANDI (13 Ekim 2026, kullanıcı):** düğme GİZLENMEZ; engel yoksa bugünkü "arkadaşlığa yönlendir" akışı KALIR, **engel varsa** ayrı kural — aşağıda "Engelli rakip kuralı". (Bu notta `blocked` = "sunucu reddeder" demekti, gerçek engel DEĞİL; karışmasın diye aşağıda `engel` kelimesi yalnız gerçek engel için.)
+- **S2 — KAPANDI (13 Ekim 2026, kullanıcı; kod YAZILMADI):** yabancı yerine YZ konmaz; **yabancı koltukları rastgele (açık) koltuğa döner, arkadaşlar davetli kalır, YZ yalnızca eski oyunda zaten varsa son koltukta** — aşağıda "Yabancılı rövanş kuralı".
 
 **Etki analizi (derleyicinin göremeyeceği):** web `OnlineGameScreen.tsx` + `GameHistoryModal.tsx` · port `online_game_screen.dart` + geçmiş ikizi · `rematch_slots.dart` · `npm run verify-rematch-slots` (yeni vakalar: 2 kişi yabancı, 4 kişi 1 yabancı, 4 kişi 1 yabancı + 1 YZ, 2 yabancı) ve `rematch_slots_test.dart` AYNI vakalarla · `TESTING.md` + `mobile/TESTING.md` (iki gerçek hesap) · ROADMAP "Sıradaki sürüme binecekler". Sunucuya DOKUNMAZ.
 
 **Boyut:** küçük (yarım gün). Web hemen yayınlanabilir, port taslak PR olarak 19 Ekim kesimine biner (web+port iki PR'a bölünür).
 
-## 21. Şerit HEP görünür + tek seferlik tanıtım balonu (12 Ekim 2026, kullanıcı)
+**Engelli rakip kuralı (13 Ekim 2026, kullanıcı kararı — web YAZILDI, port taslak PR'da):**
+kullanıcı: *"Kişi engellediği kişi ile neden arkadaş olsun ki? Engelle normalde arkadaşlık tekliflerini de engellemiyor mu?
+Doğal akış nasılsa öyle olmalı"*, sonra: *"sadece engelleyen taraf da tekrar oynaya basabilsin ancak ona xyz kullanıcısını
+engellediğiniz için önce engeli kaldırmanız lazım mesajı ile engel ayarlarını getirebiliriz."*
+
+- **Engelleyen taraf:** "Tekrar Oyna" AÇIK; basınca kadrodaki insan rakiplerden biri `list_blocked_users` birleşiminde
+  (engel + sohbet engeli + açık şikayet) varsa oyun KURULMAZ, pencere *"<ad> kullanıcısını engellediğiniz için önce engeli
+  kaldırmanız gerekiyor."* der (çoğulda "A, B ve C kullanıcılarını") + **Engel Ayarları** (`BlockedUsersModal`) + Vazgeç.
+  Engel kaldırılıp modal kapanınca (`changed`) rövanş **kendiliğinden devam eder** (liste yeniden okunur; hâlâ engelli biri
+  varsa yine bu pencereye döner). 4 kişilikte tek engelli bile TÜM kadroyu durdurur (kadro sessizce değişmez).
+- **Engellenen taraf DEĞİŞMEDİ:** düğme açık, sunucunun *"<ad> kullanıcısı sizi engelledi."* mesajı çıkar (4 Ekim kararı).
+  Düğmeyi o taraf için devre dışı bırakmak hem sunucuya yeni sorgu gerektirir hem "beni engelledi" bilgisini sızdırır.
+- **Sunucu DEĞİŞMEDİ:** `_assert_invite_allowed` yalnızca "karşı taraf beni engelledi mi" bakıyor, engelleyen kendi
+  engellediğine davet atabiliyor (4 Ekim kararı); kural bilinçli olarak İSTEMCİDE, çünkü amaç kullanıcının kendi engelini
+  hatırlatmak.
+- **Engel listesi okunamazsa akış ENGELLENMEZ** (`fetchRematchBlockedNames` boş döner): bu bir kolaylık denetimi, güvenlik
+  kapısı değil; ağ hatasında rövanşı kapatmak kullanıcıyı çıkmaza sokardı.
+- **Kod:** saf kural `rematchBlockedOpponents` + `rematchBlockedMessage` (`src/utils/rematchSlots.ts`), iki çağıran
+  `OnlineGameScreen.tsx` + `GameHistoryModal.tsx` (`fetchRematchBlockedNames`, `lib/api.ts`). ⚠ Rövanş penceresi `z-[200]`,
+  `Modal` `z-[150]`: Engel Ayarları açıkken rövanş penceresi GİZLENİR (yoksa ayarlar arkada kalır). Kapı:
+  `npm run verify-rematch-slots` (9 yeni vaka). Port ikizi: `rematch_slots.dart` + iki yüzey + `rematch_slots_test.dart`
+  AYNI vakalarla (19 Ekim treni, taslak PR).
+
+**Yabancılı rövanş kuralı (S2, 13 Ekim 2026, kullanıcı kararı — WEB YAZILDI, port taslak PR'da henüz YOK):** kullanıcı: *"mevcut 4 kişilik oyunda olduğu gibi
+4. koltuk YZ olsun ama rastgele ve arkadaş eklenebilsin."* Sunucu bunu ZATEN destekliyor: `create_random_game(p_player_count,
+p_slots)` arkadaş (insan) + açık koltuk + 4 kişilikte SON koltukta YZ karışımını kabul ediyor, ilk koltuk çağıran, en az bir açık
+koltuk şart. Yeni sunucu işi YOK (migration yok).
+
+- **Kural (saf fonksiyon, web `rematchSlots.ts` ↔ Dart ikizi, vakalar iki tarafta aynı):** rakip insanlar arkadaş listesine göre
+  ikiye ayrılır. Hepsi arkadaşsa (ya da arkadaş listesi OKUNAMADIYSA) bugünkü akış (`create_online_game`, aynı kadro). Arkadaş
+  olmayan varsa: `create_random_game` ile `[ben, arkadaşlar(davet)…, açık × yabancı sayısı, YZ × eski kadrodaki YZ sayısı]`;
+  YZ SON koltukta (sunucu kısıtı). Örnekler: `ben+F+S1+S2` → `ben,F,açık,açık`; `ben+F+S+YZ` → `ben,F,açık,YZ`; 2 kişilik
+  `ben+S` → `ben,açık`.
+- **Yabancı yerine YZ KONMAZ** (S2'nin ilk önerisi elendi: sessiz kadro değişikliği). YZ kendiliğinden eklenmez.
+- **Pencere metni açık olmalı:** "<arkadaş adları> davet edilecek, <N> koltuk için rastgele oyuncu aranacak." (arkadaş adları
+  arkadaş listesinden gelir; geçmişteki kadro ham `slots` isim taşımaz). 2 kişilikte: "<ad> yerine rastgele bir rakip aranacak."
+- ⚠ **`create_random_game` saf rastgele kadroda (arkadaş YOK, YZ YOK) var olan bir ilana KATILABİLİR** (`joined`): `ben+S` →
+  `ben,açık` sonucu yeni ilan değil "bir ilana katıldın" olabilir; sonuç metni iki dalı da ayırmalı (`LiveGameCreateForm`un
+  sonuç işleyişi emsal).
+- **S1 ile etkileşimi (karar: S1 AYNEN KALIR, kullanıcı önerimi onayladı):** engellediğim bir yabancı artık "açık koltuk" olurdu
+  (`_random_blocked` eşleşmede onu zaten dışlıyor) ama S1 kadrodaki engelli herkes için "önce engeli kaldırın" diyor; engel
+  kontrolü onaydan SONRA, plandan bağımsız çalışır. ⚠ Tuhaf bir sonuç: onay metni "yerine rastgele oyuncu aranacak" dedikten
+  sonra engelli yabancı için "önce engeli kaldırın" çıkabilir. Alternatif (engelli yabancıyı sessizce açık koltuğa çevirmek)
+  S1'in sözüyle çeliştiği için YAPILMADI; kullanıcı şikâyet ederse yeniden bakılır.
+- **Etki analizi:** web `OnlineGameScreen.tsx` + `GameHistoryModal.tsx` (ikisi `fetchFriends` + yeni plan), `api.ts`, `rematchSlots.ts`,
+  `verify-rematch-slots` (yeni vakalar); port `rematch_slots.dart` + iki yüzey + testler; `TESTING.md` + `mobile/TESTING.md`
+  (iki hesap, bir yabancı). Boyut: orta. Web hemen, port 19 Ekim treni.
+- **Uygulama (web, 13 Ekim 2026):** saf kural `buildRematchPlan` + `rematchConfirmText` + `rematchSentNotice`
+  (`src/utils/rematchSlots.ts`), arkadaş kaynağı `fetchRematchFriends` (`lib/api.ts`). ⚠ `fetchFriends` hatada SESSİZCE boş
+  liste döndürdüğünden kullanılmadı: boş liste "hiç arkadaşım yok" demek, herkesi yabancı yapıp rastgele ilan açtırırdı;
+  yeni fonksiyon hatada `null` döner ve `null` bugünkü akışa (`create_online_game`) düşer. Onay penceresi açılırken önce
+  "Kadro kontrol ediliyor…" fazı vardır (arkadaş listesi okunur, plan kurulur); metin kimin davet edileceğini ÖNCEDEN
+  söyler. 'friends' planının cümlesi bugünküyle BİREBİR aynı. Sonuç metni `createdNotice` (`randomGames.ts`) üzerinden:
+  yeni ilan → "İlanın yayında" (+ arkadaş varsa "<ad> davet edildi."), var olan ilana katılma → "Oyuna katıldın".
+  "Vazgeç" araya girerse gecikmeli gelen liste pencereyi YENİDEN açmaz. Kapı: `verify-rematch-slots` (S2 için 19 yeni vaka).
+
+
+## 21. `?rastgele=1` bağlantısı — hatırlatma e-postasının düğmesi (13 Ekim 2026, kullanıcı kararı)
+
+*"Düğme direkt linkle rastgele oyun aç butonunu çalıştırsın."* Hiç oyun bitirmemiş, pazarlama izni veren 28 üyeye
+tek seferlik hatırlatma e-postası gidiyor; düğme `kelimeki.com/?rastgele=1`e gider ve şeritteki "Rastgele oyun aç"ın
+AYNI eylemini yapar: Canlı sekmesi açılır, kurulum formu Rastgele Oyuncu SEÇİLİ gelir.
+
+- **Üç halka:** (1) `<head>` kapı script'i (`scripts/landing-plugin.js`, madde 2b) parametreyi görünce karşılama katmanını
+  ATLAR — oturumu olmayan yeni cihazda da; (2) `App.tsx` parametreyi okur, URL'den temizler (`ref` gibi ötekiler KALIR,
+  first-touch etiketi bozulmaz), `setMainView('live')` + `requestRandomGameOpen()`; (3) `LiveGamesTab` isteği YALNIZCA oturum
+  varken tüketir (`user?.id`), formu `startRandom` + `creating` ile açar. Girişsiz gelen kişi giriş yapınca formu görür.
+- **Kuyruk ayrı** (`utils/liveGameRequest.ts` → `RANDOM_OPEN_EVENT`): arkadaş isteğinin kuyruğu bir `friendId` ister.
+- **Yalnızca web.** Mobilde karşılığı YOK; e-postadaki bağlantı tarayıcıda açılır.
+- **Ölçüm:** alıcılar `?ref=` ile ölçülemez — etiket FIRST-TOUCH ve bu üyelerin cihazında zaten bir etiket (ya da hiçbiri) var.
+  Sonuç alıcı kimlikleriyle okunur: o üyelerin `online_games` içinde `listing='random'` kurucu olması + oyun bitirmesi.
+- **Sınır:** gerçek oturumla uçtan uca denenmedi; kapı + parametre temizliği Chromium'da denendi. Kontrol:
+  `docs/testing-rastgele.md` → "`?rastgele=1` bağlantısı".
+- **GÖNDERİLDİ — 15 Ekim 2026, 20:19 TSİ (kullanıcı, Supabase Dashboard → Edge Functions → Test):** 25 üye, `attempted 25 · sent 25 · skipped 0` (13 Ekim'deki 28'den 3 kişi, bu arada oyun bitirdiği/izni değiştirdiği için eksildi; fonksiyon her alıcıyı gönderimde yeniden doğruluyor). Konu: *Kelimeki'de ilk oyununu açmaya ne dersin?* — gövde "sen" hitabıyla, kapanış "İyi oyunlar, Kelimeki Destek", düğme `?rastgele=1`. Kaynak `supabase/functions/send-random-reminder/index.ts` (anahtar yer tutucu); canlı kopya 410 taslağıyla değiştirildi (sürüm 8). **Dersler:** (1) ajan ortamından Supabase fonksiyon adresine ÇIKIŞ YOK ve `pg_net` kurulu değil → fonksiyon çağrısını kullanıcı Dashboard'daki Test panelinden yapar; (2) fonksiyon kime gönderdiğini KAYDETMEZ — iki kez basılırsa ikinci mail gider; (3) sonuç ölçümü alıcı kimlikleriyle: bu 25 üyenin `online_games` içinde `listing='random'` kurucu olması + oyun bitirmesi (§21 ölçüm maddesi).
+
+- **TAKİP ÖLÇÜMÜ (kullanıcı kararı, 15 Ekim 2026: *"bu 25 kişinin nasıl tepki verdiğine, emaile tıklayıp gelip oyun bitirip bitirmediklerine bakalım"*) — ilk bakış 22 Ekim (1 hafta), kontrol 17-18 Ekim'de ön okuma.** Kohort KAYDI (alıcı kimlikleri, gönderim 15 Ekim 2026 17:19 UTC = 20:19 TSİ; uygunluk kuralı sonradan değiştiği için bu liste başka yoldan yeniden ÜRETİLEMEZ):
+  `7f91b487 d1543d74 d521fd94 d3cf0976 c248a414 bec566c5 8292852c b63171b2 bdd442ed f47353b2 f5421dcb 385ff628 e94c4049 d9077570 9acd3924 bcbabae1 d7c0b574 20e99e5e 2de89f6a ea6e722d 007cc19a f9aa3aaa 91f1b2e8 976ee44a b7662ec7` (her biri `…-xxxx-xxxx-xxxx-xxxxxxxxxxxx`: tam UUID'ler Supabase'te `profiles.id`'den `id::text like '<önek>%'` ile bulunur).
+  **Ölçülecekler:** (a) e-postadan geldi mi: `web_sessions` içinde gönderimden sonra bu üyelerin oturumu + `?rastgele=1` ile açılış (`ref` etiketi first-touch olduğundan DOLAYLI; üyenin Canlı sekmesini açması + `create_random_game` çağrısı daha güvenilir); (b) `online_games` → `listing='random'`, kurucu bu üye, `created_at > '2026-10-15 17:19+00'`; (c) bu üyenin `games` satırı (oyun BİTİRDİ mi: gönderimden önce 0 idi, `created_at >` damgası); (d) ikinci oyuna geçti mi. **Brevo tarafı** (açıldı/tıklandı sayıları) kullanıcıdan ekran görüntüsüyle: Brevo → Transactional → Logs, konu *"Kelimeki'de ilk oyununu açmaya ne dersin?"*, 15 Ekim 20:19-20:21 TSİ. **Karşılaştırma tabanı:** aynı dönemde bu e-postayı ALMAYAN ama hiç oyun bitirmemiş üyeler (pazarlama izni vermeyenler dahil) — yoksa organik dönüşle e-postanın etkisi ayrılamaz.
+
+## 22. Şerit HEP görünür + tek seferlik tanıtım balonu (12 Ekim 2026, kullanıcı)
 
 Veri (12 Ekim akşamı): özellik yayında 1,5 gün; 32 ilanın 15'i eşleşmiş, eşleşmelerin 13'ünde kurucunun kendi hesabı var,
 yabancı iki kişinin birbiriyle eşleştiği oyun YOK. Kullanıcı: *"Çoğu insan bilmiyor … Rastgele oyun yoksa kutu çıkmıyor.

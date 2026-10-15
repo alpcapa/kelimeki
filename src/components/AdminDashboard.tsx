@@ -1836,6 +1836,7 @@ function WebJourneyTable({
               <th className="text-right py-1 px-2 font-normal">Ulaşan</th>
               <th className="text-right py-1 px-2 font-normal">Ayrılan</th>
               <th className="text-right py-1 px-2 font-normal">Ayrılma</th>
+              <th className="text-right py-1 px-2 font-normal">Hemen çıkan (&lt;3 sn)</th>
               <th className="text-right py-1 pl-2 font-normal">Süre</th>
             </tr>
           </thead>
@@ -1855,6 +1856,9 @@ function WebJourneyTable({
                   <td className="text-right py-1 px-2 text-text">{bilgi ? '—' : row.left_here}</td>
                   <td className={`text-right py-1 px-2 ${zirve ? 'text-red font-bold' : 'text-text'}`}>
                     {basari ? '✓' : bilgi ? '—' : `%${Math.round(oran * 100)}`}
+                  </td>
+                  <td className="text-right py-1 px-2 text-text">
+                    {bilgi || row.left_fast === undefined ? '—' : row.left_fast}
                   </td>
                   <td className="text-right py-1 pl-2 text-muted">
                     {formatJourneySeconds(row.median_seconds)}
