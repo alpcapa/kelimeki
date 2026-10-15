@@ -1,3 +1,5 @@
+// ✅ KULLANILDI — 15 Ekim 2026 20:19 TSİ: 25 uygun üyeye 25/25 gönderildi (kullanıcı, Supabase Dashboard → Test).
+// Canlı kopya aynı gün 410 taslağıyla değiştirildi (sürüm 8); bu dosya KAYIT olarak durur, yeniden yayınlama.
 // Kelimeki — BİR SEFERLİK hatırlatma e-postası (13 Ekim 2026, kullanıcı kararı):
 // hiç oyun bitirmemiş, pazarlama izni veren üyelere "Rastgele Oyun" duyurusu.
 // Düğme `kelimeki.com/?rastgele=1` (Rastgele Oyuncu seçili formu açar,
