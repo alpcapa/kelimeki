@@ -114,8 +114,23 @@ Kazanan kancayla, bu sefer yalnızca biçim değişir. Kontrol kolu eski karusel
   hazır:** `npm run generate-meta-teaser -- --tahta [--h1]` (sağ alta taşan
   tahta; H1 önizlemesi `teaser/kelimeki-teaser-h1-tahta-*.png`). Story'de tahtanın
   alt satırı Instagram yanıt bandına girer (dekoratif, kabul).
-- **Karusel (teaser):** kart 1 = kanca; kalan kartlar kuralı kanıtlar (köşe →
-  bölge → vergi → gerçek tahta). "İki rozetli" kartlar yeniden kullanılabilir.
+- **Karusel (teaser) — ÜRETİLDİ (15 Eki 2026, ajan):** 4 kart, 1:1 (1080×1080),
+  `npm run build && npm run generate-meta-teaser -- --karusel` →
+  `marketing/meta-reklam/teaser/kelimeki-teaser-karusel-{1..4}-1080x1080.png`.
+  Kart 1 = h3 kancası ("Değişik bir kelime oyunu arıyorsanız Kelimeki'ye gelin." +
+  "Kaydır →") · kart 2 = "Kelime kur, bölgeni büyüt." + gerçek 4 kişilik tahta
+  (`GameBoardPreview`) · kart 3 = "Rakibin bölgesine girersen vergisini ödersin." +
+  karşılamanın `BolgeKesiti`si (FA/SAAT/TA, +7 ve "Vergi: puanın 1/3'ü rakibe") ·
+  kart 4 = "Yapay zekaya karşı ya da arkadaşlarınla." + ücretsiz · reklamsız · satın
+  alma yok · internetsiz de oynanır. Kart 2-3 üretimdeki bileşenlerden gelir (kural
+  değişirse görsel de değişir). Rakip adı / üstünlük iddiası YOK. **Reklam kurulumu:**
+  Aşama 2 kampanyasında `Kare2` setini çoğalt → `Kar2`; reklam biçimi **Carousel**
+  (çoğaltılan reklam tek görselde kalıyor, biçimi elle değiştir), 4 kart sırayla,
+  "Kartları otomatik sırala" KAPALI, "tek medya/koleksiyon" kapalı, kart başına URL
+  `https://kelimeki.com/?ref=meta-kar2`, ana metin/başlık/açıklama/İndir `Kare2` ile
+  aynı. İlk görsel dosyaları `main`'e girince indirme linkleri
+  `https://github.com/alpcapa/kelimeki/raw/main/marketing/meta-reklam/teaser/kelimeki-teaser-karusel-N-1080x1080.png`.
+  (Eski "iki rozetli" `sponsored-2026-08` kartları kontrol referansı olarak kaldı.)
 - **Reel:** 7-10 sn; ilk 1,5 sn'de kanca yazısı; kapanışta **mağaza butonlu**
   kart ("Link bio'da" reklamda yanlış). Organik shorts'tan
   (`marketing/shorts-2026-10/`) yeniden kurgulanır. **Kendi setinde ve kendi
