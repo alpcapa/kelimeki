@@ -21,6 +21,7 @@ const DIST = path.join(ROOT, 'dist');
 const OUT_DIR = path.join(ROOT, 'marketing', 'meta-reklam', 'teaser');
 const TAHTA = process.argv.includes('--tahta');
 const KANCALAR = process.argv.includes('--h1') ? ['h1'] : ['h1', 'h2', 'h3'];
+const KARUSEL = process.argv.includes('--karusel');
 const DOSYA = { feed: 'feed-1080x1350', story: 'story-1080x1920' };
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript',
@@ -38,7 +39,7 @@ async function main() {
     external: ['react', 'react-dom', 'react-dom/server'],
     loader: { '.css': 'empty' }, outfile: outMjs, logLevel: 'error',
   });
-  const { renderGorselHtml, OLCULER } = await import(`file://${outMjs}?t=${Date.now()}`);
+  const { renderGorselHtml, renderKarusel, KARUSEL_KART_SAYISI, KARUSEL_OLCU, OLCULER } = await import(`file://${outMjs}?t=${Date.now()}`);
 
   const server = createServer(async (req, res) => {
     const f = path.join(DIST, decodeURIComponent((req.url ?? '/').split('?')[0]));
@@ -53,6 +54,37 @@ async function main() {
   const browser = await chromium.launch({ executablePath: process.env.CI ? undefined : '/opt/pw-browsers/chromium' });
 
   const hatalar = [];
+  if (KARUSEL) {
+    const { w, h } = KARUSEL_OLCU;
+    for (let kart = 1; kart <= KARUSEL_KART_SAYISI; kart++) {
+      const htmlAd = `meta-teaser-karusel-${kart}.html`;
+      writeFileSync(path.join(DIST, htmlAd), renderKarusel(kart, `/assets/${cssFile}`), 'utf8');
+      const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2 });
+      await page.goto(`http://127.0.0.1:${server.address().port}/${htmlAd}`, { waitUntil: 'networkidle' });
+      await page.evaluate(() => document.fonts.ready);
+      const olcum = await page.evaluate(() => {
+        const b = document.querySelector('[data-guvenli-kutu]').getBoundingClientRect();
+        const de = document.documentElement;
+        return { sol: Math.round(b.left), sag: Math.round(b.right), ust: Math.round(b.top), alt: Math.round(b.bottom),
+          tasmaX: de.scrollWidth - de.clientWidth, tasmaY: de.scrollHeight - de.clientHeight,
+          font: document.fonts.check('700 20px "Space Grotesk"') };
+      });
+      console.log(`  karusel/${kart}: kutu x ${olcum.sol}–${olcum.sag}, y ${olcum.ust}–${olcum.alt} (kadraj ${w}×${h})`);
+      if (olcum.tasmaX || olcum.tasmaY) hatalar.push(`karusel/${kart}: sayfa taşıyor`);
+      if (!olcum.font) hatalar.push(`karusel/${kart}: Space Grotesk yüklenmedi`);
+      if (olcum.sol < 16 || olcum.sag > w - 16 || olcum.ust < 16 || olcum.alt > h - 16) hatalar.push(`karusel/${kart}: içerik güvenli alanın dışında`);
+      const png = await page.screenshot();
+      await page.close();
+      if (!hatalar.length) {
+        const out = path.join(OUT_DIR, `kelimeki-teaser-karusel-${kart}-1080x1080.png`);
+        await sharp(png).flatten({ background: '#ffffff' }).png({ compressionLevel: 9 }).toFile(out);
+        console.log(`✓ ${path.relative(ROOT, out)}`);
+      }
+    }
+    await browser.close(); server.close();
+    if (hatalar.length) { console.error('✗ ' + hatalar.join('; ')); process.exit(1); }
+    return;
+  }
   for (const kanca of KANCALAR) {
     for (const duzen of Object.keys(DOSYA)) {
       const { w, h } = OLCULER[duzen];
