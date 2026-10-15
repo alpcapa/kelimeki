@@ -1,7 +1,9 @@
 # Takım Ligi — 2'şer kişilik takım oyunu (TASARIM ÖNERİSİ, 3 Ekim 2026)
 
-> **Durum: TASARIM ONAYLANDI, PARKTA (3 Ekim 2026) — KOD YOK; kodlama 12 Ekim
-> treninden sonra, hedef 19 Ekim treni (ROADMAP #44).** Eski satır: ~~ÖNERİ,
+> **Durum: TASARIM ONAYLANDI, PARKTA (3 Ekim 2026) — KOD YOK. 13 Ekim 2026'da
+> İLERİKİ SÜRÜMLERE KAYDIRILDI (kullanıcı: Rastgele Oyuncu yeni yayında, önce
+> onu özümsesinler; yeni hedef tarih YOK, ROADMAP #44).** Eski satır: ~~kodlama
+> 12 Ekim treninden sonra, hedef 19 Ekim treni~~. Eski satır: ~~ÖNERİ,
 > onay bekliyor~~. Kullanıcı isteği
 > (3 Ekim 2026): *"Bu fikri analiz edip tüm akışı ve görselleri hazırla,
 > kodlama yok henüz. Atladığım detaylar varsa hepsini ekle. Her şey

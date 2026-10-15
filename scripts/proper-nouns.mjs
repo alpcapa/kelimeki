@@ -122,6 +122,7 @@ export const PROPER_NOUNS = {
   "estonyaca": "Bir dil.",
   "esvatini": "Afrika'da bir ülke.",
   "etiyopya": "Afrika'da bir ülke.",
+  "efes": "Günümüzde İzmir'in Selçuk ilçesinde yer alan, antik çağın en önemli ve görkemli liman kentlerinden biri.",
   "farsça": "Bir dil.",
   "fas": "Afrika'da bir ülke.",
   "felemenkçe": "Bir dil.",
