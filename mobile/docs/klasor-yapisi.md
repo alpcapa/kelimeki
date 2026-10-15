@@ -317,6 +317,20 @@ mobile/
                              # yerinden birinin auth geçmemesi yüzünden kafa
                              # kafaya çubuğu bir kez sessizce kaybolmuştu
                              # (Parça 185)
+      ui/chat_scope.dart     # ChatScope — sohbet/engel deposu (ChatRepo) AĞAÇ
+                             # GENELİNDE (InheritedWidget, kökte bir kez; app.dart,
+                             # OnlineGamesScope'un içinde). Tüketicisi oyun
+                             # geçmişindeki "Tekrar Oyna"nın engel denetimi
+                             # (13 Ekim 2026, Parça 243): modala ChatRepo
+                             # taşınmıyordu ve üç çağrı zinciri var —
+                             # OnlineGamesScope ile AYNI karar, gerekçe orada.
+                             # `maybeOf`: kapsam yoksa denetim ATLANIR
+      ui/friends_scope.dart  # FriendsScope — arkadaş deposu (FriendsRepo) AĞAÇ
+                             # GENELİNDE (kökte bir kez, ChatScope'un içinde).
+                             # Tüketicisi geçmişteki "Tekrar Oyna"nın planı
+                             # (arkadaş olmayan rakip → açık koltuk, S2,
+                             # Parça 243). `maybeOf`: kapsam yoksa liste
+                             # OKUNAMADI sayılır → bugünkü akış
       ui/online_scope.dart   # OnlineScope — bağlantı durumunun AĞAÇ GENELİNDE
                              # erişilebilir hâli (InheritedNotifier, kökte bir
                              # kez kurulur). Tüketicisi bugün KAvatar: çevrimiçine
@@ -376,6 +390,13 @@ mobile/
                              # web dosyasını OKUR
       ui/open_seat_avatar.dart # açık koltuğun kesik çerçeveli "?" avatarı
                              # (şerit, kartlar, avatar şeridi, form koltuğu)
+      util/rematch_slots.dart # "Tekrar Oyna" ENGELLEDİĞİM rakip kuralı
+                             # (`rematchBlockedOpponents` + `rematchBlockedMessage`;
+                             # web `src/utils/rematchSlots.ts`in ikizi, vakalar
+                             # `verify-rematch-slots` ile BİREBİR). ⚠ Kadro kurma
+                             # kuralı `rematchSlots` bilerek data/online_games_api
+                             # .dart'ta KALDI (4 Eylül kararı) — burada yalnızca
+                             # engel kuralı (Parça 243)
       util/deep_link.dart    # gelen URI'lerin TEK ayrıştırma noktası
                              # (davet · auth dönüşü · Canlı oyun push linki)
       util/push_rules.dart   # "izin sorulsun mu?" saf kararı (en çok 3 kez,
