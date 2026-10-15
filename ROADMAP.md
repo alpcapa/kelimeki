@@ -1,5 +1,26 @@
 # Kelimeki — Sıradaki İşler (22 Ağustos 2026)
 
+## ⏰ BEKLEYEN, TARİHLİ İŞLER — oturuma başlarken İLK burayı oku (15 Ekim 2026'da eklendi)
+
+Neden var: 15 Ekim'de bir oturum "Rastgele Oyun" hatırlatma e-postasının BUGÜN
+gönderileceğini bilmiyordu. Karar `random-opponent.md` §21'de yazılıydı ama
+yalnızca *niyet* olarak ("gidiyor"), **tarih ve sahibi yoktu**; fonksiyon PR'sız
+bir dalda duruyordu; devir notunda geçmiyordu. Belgeler *ne olduğunu* tutuyordu,
+*bugün ne bekliyor* sorusunun tek bir yeri yoktu. Bu kutu o yer: **en fazla ~10
+satır, her satırda tarih + sahip + sıradaki adım. Biten satır silinir (arşive
+gerek yok), yeni karar/iş doğunca buraya BİR SATIR eklenir.** Oturum başında bunu
+ve `git branch -r` ile PR'sız dalları kontrol et.
+
+| Ne zaman | İş | Sıradaki adım |
+|---|---|---|
+| **15 Eki (BUGÜN)** | **Rastgele Oyun hatırlatma e-postası** (hiç oyun bitirmemiş + pazarlama izinli ~28 üye; `?rastgele=1`) | Fonksiyon `send-random-reminder` canlıda (v3, ACTIVE), dal `claude/rastgele-hatirlatma-maili` PR'SIZ. Önce `dry_run` → alıcı sayısı/listesi kullanıcıya → onay → gerçek gönderim → fonksiyonu 410 taslağıyla değiştir → dalı PR ile `main`'e al (anahtar yer tutucu kalır) |
+| 17-18 Eki | Meta Teaser Aşama 2 ilk okuma (`Kare2` ↔ `Kar2`) | `kampanya-teaser-ekim-2026.md` §5; pencere `Kar2` 18:09 TSİ sonrası; Meta'dan bağlantı tıklaması/CTR/yerleşim ekran görüntüleri iste |
+| 19 Eki | **1.1.4 treni** | Taslak PR'lar #837 #842 #850 #851 #855 #859 #862: `main`'i hepsine birleştir (çakışma yalnız `docs/decisions/*.md`: #850 #851 #862), `pubspec.yaml` + `config/env.dart` = 1.1.4, `surumler.md` sürüm senkronu, merge ÖNCESİ "mobil derlemeyi tetikler" uyarısı |
+| 19 Eki haftası | #46-1 atıf kodu (~1 gün; yetişmezse sonraki tren) | `funnel-v2.md` |
+| 21 Eki 14:22 | Meta Teaser Aşama 2 BİTİŞ | kapanış okuması |
+| birkaç gün sonra | Admin → Ziyaretçi Yolculuğu "Hemen çıkan" sütunu | eski 32 sn yığılmasıyla karışık; birkaç gün sonra bak |
+| açık | PR'sız eski dallar: `koltuk-1-sen-port`, `random-opponent-port`, `team-league-phase-0-motor-pab2ye` | içerikleri `main`'de mi doğrula, sonra sil |
+
 **Bu dosya bir FİKİR LİSTESİ DEĞİL, sıralı bir yürütme planı.** Kök
 `CLAUDE.md`'deki "Sonraya Bırakılan Ürün Fikirleri" bölümü *ne* yapılacağını
 ve *neden* ertelendiğini anlatır; burası *hangi sırayla*, *hangi modelle* ve
