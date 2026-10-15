@@ -12,6 +12,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { LandingLogo, LandingLogoDefs } from '../../src/landing/LandingLogo';
 import { GameBoardPreview } from '../../src/components/GameBoardPreview';
 import { DEMO_TILES_4 } from '../../src/landing/demoBoard';
+import { BolgeKesiti } from '../../src/landing/BolgeKesiti';
 
 const SANS = '"Space Grotesk", sans-serif';
 const ACCENT = '#2563EB';
@@ -79,4 +80,74 @@ export function renderGorselHtml(duzen: Duzen, kanca: Kanca, cssHref: string, ta
 <link rel="stylesheet" href="${cssHref}">
 <style>html,body{margin:0;padding:0;background:#fff}</style>
 </head><body>${renderToStaticMarkup(<Gorsel duzen={duzen} kanca={kanca} tahta={tahta} />)}</body></html>`;
+}
+
+// ─── Aşama 2 · teaser KARUSEL (kart 1 = h3 kancası, kalan kartlar kuralı kanıtlar) ───
+// 1:1, 4 kart. Metinler Aşama 1'in onaylı reklam metniyle AYNI iddialar (rakip adı yok,
+// üstünlük iddiası yok). Tahta/kesit üretimdeki bileşenlerden gelir (kural değişince
+// görsel de değişir): `GameBoardPreview` ve karşılamanın `BolgeKesiti`si.
+export const KARUSEL_KART_SAYISI = 4;
+export const KARUSEL_OLCU = { w: 540, h: 540 };
+
+function KartGovde({ kart }: { kart: number }) {
+  const metin = (onu: string, vurgu: string, punto = 40) => (
+    <p style={{ margin: 0, fontSize: punto, lineHeight: 1.14, fontWeight: 700, letterSpacing: -0.8 }}>
+      {onu}<span style={{ color: ACCENT }}>{vurgu}</span>
+    </p>
+  );
+  if (kart === 1) {
+    return (<>
+      <div style={{ width: 56, height: 6, borderRadius: 3, background: ACCENT }} />
+      {metin(KANCALAR.h3.onu, KANCALAR.h3.vurgu, 52)}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: 12 }}>
+        <LandingLogo height={42} />
+        <span style={{ fontSize: 22, fontWeight: 700, color: ACCENT }}>Kaydır →</span>
+      </div>
+    </>);
+  }
+  if (kart === 2) {
+    const kenar = 360;
+    return (<>
+      {metin('Kelime kur, ', 'bölgeni büyüt.')}
+      <div style={{ alignSelf: 'center', width: kenar, height: kenar, overflow: 'hidden', borderRadius: 14, boxShadow: '0 10px 30px rgba(27,36,48,0.16)' }}>
+        <div style={{ width: BOARD_BASE_W, transform: `scale(${kenar / BOARD_BASE_W})`, transformOrigin: 'top left' }}>
+          <GameBoardPreview snapshot={DEMO_TILES_4} playerCount={4} compact={false}
+            players={Array.from({ length: 4 }, (_, i) => ({ name: '', score: 0, is_ai: false, colorIndex: i }))} />
+        </div>
+      </div>
+    </>);
+  }
+  if (kart === 3) {
+    return (<>
+      {metin('Rakibin bölgesine girersen ', 'vergisini ödersin.')}
+      <div style={{ alignSelf: 'center', width: 340, transform: 'scale(1.22)', transformOrigin: 'top center', marginBottom: 62 }}>
+        <BolgeKesiti />
+      </div>
+    </>);
+  }
+  return (<>
+    <div style={{ width: 56, height: 6, borderRadius: 3, background: ACCENT }} />
+    {metin('Yapay zekaya karşı ya da ', 'arkadaşlarınla.', 44)}
+    <p style={{ margin: 0, fontSize: 28, lineHeight: 1.35, fontWeight: 500, color: '#475467' }}>
+      Ücretsiz · reklamsız<br />Satın alma yok<br />İnternetsiz de oynanır
+    </p>
+    <div style={{ marginTop: 10 }}><LandingLogo height={42} /></div>
+  </>);
+}
+
+export function renderKarusel(kart: number, cssHref: string): string {
+  const { w, h } = KARUSEL_OLCU;
+  const govde = (
+    <div style={{ width: w, height: h, position: 'relative', overflow: 'hidden', background: '#FFFFFF', fontFamily: SANS, color: '#1B2430', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <LandingLogoDefs />
+      <div data-guvenli-kutu="" style={{ width: w * 0.84, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 26 }}>
+        <KartGovde kart={kart} />
+      </div>
+    </div>
+  );
+  return `<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>Kelimeki teaser karusel ${kart}</title>
+<link rel="stylesheet" href="${cssHref}">
+<style>html,body{margin:0;padding:0;background:#fff}</style>
+</head><body>${renderToStaticMarkup(govde)}</body></html>`;
 }

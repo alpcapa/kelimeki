@@ -72,7 +72,13 @@ import {
 } from '../utils/offlineNotice';
 import { AvatarScoreRow, PlayerAvatarRow } from './PlayerAvatarRow';
 import { LiveGameCreateForm } from './LiveGameCreateForm';
-import { LIVE_GAME_REQUEST_EVENT, takeLiveGameRequest, type LiveGameRequest } from '../utils/liveGameRequest';
+import {
+  LIVE_GAME_REQUEST_EVENT,
+  RANDOM_OPEN_EVENT,
+  takeLiveGameRequest,
+  takeRandomGameOpen,
+  type LiveGameRequest,
+} from '../utils/liveGameRequest';
 import { PRIMARY_ACTION_BTN } from './actionButton';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { RecentGamesSection } from './RecentGamesSection';
@@ -785,6 +791,20 @@ export function LiveGamesTab({
     window.addEventListener(LIVE_GAME_REQUEST_EVENT, al);
     return () => window.removeEventListener(LIVE_GAME_REQUEST_EVENT, al);
   }, []);
+  // `?rastgele=1` bağlantısı (13 Ekim 2026, `utils/liveGameRequest.ts`):
+  // Rastgele Oyuncu SEÇİLİ formu aç. Yalnızca OTURUM varken tüketilir — girişsiz
+  // gelen giriş yapınca (`user?.id` değişince) formu görür, istek düşmez.
+  useEffect(() => {
+    if (authLoading || !user) return;
+    const al = () => {
+      if (!takeRandomGameOpen()) return;
+      setStartRandom(true);
+      setCreating(true);
+    };
+    al();
+    window.addEventListener(RANDOM_OPEN_EVENT, al);
+    return () => window.removeEventListener(RANDOM_OPEN_EVENT, al);
+  }, [user?.id, authLoading]);
   const [busyInviteId, setBusyInviteId] = useState<string | null>(null);
   // Rastgele şeridine "listeni yeniden çek" sinyali (Ayrıl/İptal sonrası).
   const [stripRefresh, setStripRefresh] = useState(0);
