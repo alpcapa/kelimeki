@@ -1478,6 +1478,32 @@ Web'de bir sorun var."* Canlıdan, son 30 gün, "Yeni" (karşılama) oturumları
   anında bitti.
 - Mobil port ETKİLENMEZ (yerel uygulama, önyükleme yok).
 
+### Görünür süre + "Hemen çıkan (<3 sn)" (15 Ekim 2026, `20261015120000_admin_web_journey_left_fast.sql`)
+
+`visibility_probe` bulgusu (PR #865): Android + Meta uygulama-içi tarayıcıda
+31-33 sn'de "ayrılan" oturumlar yüklemeden ~2 sn sonra GİZLENİYOR, ~30 sn sonra
+webview sayfayı yıkıyor; istemci duvar saatini yazdığı için 32 sn çıkıyordu
+(son 7 gün Android Meta: 848 oturumun %35'i 30-35 sn, ortanca 32). Kullanıcı
+kararı "1 + 2":
+
+1. **`web_sessions.seconds` artık GÖRÜNÜR süre** (`webJourney.ts`: `hide`/`show`
+   olayları, `visibleMs` + `visibleSince`; `flush` kalktı). Sunucuda
+   `record_web_session` DEĞİŞMEDİ (`greatest(eski, yeni)`). Yenileme ölü zamanı
+   sayılmaz; alanları olmayan eski sekme oturumu (güncelleme geçişi) donuk kalır.
+2. **`left_fast` sütunu:** o adımda AYRILANLARDAN görünür süresi `< v_fast` (**3 sn**)
+   olanlar. Eşik OKUMA anında (SQL sabiti), yani 3→5 tek sabit ve geçmişe de
+   uygulanır. 3 sn'nin gerekçesi: girdisiz sayfaların ilk gizlenmesi 1-2 sn'de 38,
+   3 sn'de 6, 4 sn'de 5; dokunmuş sayfalardan yalnızca 1 tanesi 3 sn'den önce →
+   etiketin ~%97'si dokunmamış sayfa (5 sn'de %84). ⚠ `web_sessions` dokunma
+   sayısı TUTMAZ; tanım yalnızca "görünür süre < eşik".
+
+⚠ **Geçmiş satırlar DÜZELMEZ** (görünür süre hiç saklanmamıştı): 15 Ekim öncesi
+satırlar 32 sn yığılmasını taşımaya devam eder; 7/30 günlük pencere geçiş
+tarihinden sonra karışık veri gösterir. `not (seconds between 31 and 33)`
+önerisi bu yüzden YALNIZCA 15 Ekim öncesi veri için geçerli.
+⚠ Dönüş tipi değişti → `drop` + `create`; `proacl` yeniden kuruldu (anon YOK).
+Arayüz `left_fast` gelmezse "—" gösterir (migration–deploy sırası güvenli).
+
 ### Etkileşimsiz oturumlar ayrı sayılır (27 Eylül 2026, `20260927121128_admin_web_journey_idle.sql`)
 
 Kullanıcı sordu: *"20 kişinin anında bounce ettiğini söylüyor, hata olabilir
