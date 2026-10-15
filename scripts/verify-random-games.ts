@@ -23,19 +23,26 @@ import {
   aiLastSeat,
   buildRandomSlots,
   canSubmitSeats,
+  cardSeatsLeft,
   classifyLiveGames,
   createdNotice,
   filledSeatCount,
   isOpenSeat,
   isRealAiSeat,
+  RANDOM_EMPTY_LINK,
+  RANDOM_EMPTY_TEXT,
+  RANDOM_HINT_MS,
+  RANDOM_HINT_TEXT,
   myRandomToListing,
   myWaitingRandomGames,
   randomManagedIds,
+  randomStripMode,
   randomSeatCount,
   removeSeatAt,
   seatsLeftLabel,
   stripListings,
   toggleFriendSeat,
+  unfilledSeatCount,
   usesRandomSeat,
   visibleListings,
 } from '../src/utils/randomGames';
@@ -336,6 +343,28 @@ async function main() {
 
   const strip8 = readFileSync('src/components/RandomGamesStrip.tsx', 'utf8');
   check('şerit "Bekliyor" etiketi + İptal/Ayrıl içeriyor; LiveGamesTab handleLeaveRandom\'u geçiriyor', /Bekliyor/.test(strip8) && /'İptal'/.test(strip8) && /onLeaveMine=\{/.test(tab));
+
+  // Boş şerit + tanıtım balonu (12 Ekim 2026)
+  console.log('\nBoş şerit + balon');
+  check('kartlar varsa mod "cards" (yüklenmiş olsun olmasın)', randomStripMode(true, 3) === 'cards' && randomStripMode(false, 1) === 'cards');
+  check('sunucu BAŞARIYLA boş dedi → "empty"', randomStripMode(true, 0) === 'empty');
+  check('ilk çekim sürerken/ağ hatasında boş durum GÖSTERİLMEZ ("hidden")', randomStripMode(false, 0) === 'hidden');
+  check('kart: başkasının ilanında sayı = kabul edebileceğim AÇIK koltuk (open_seats)', cardSeatsLeft({ open_seats: 2, seats: ['creator', 'open', 'open', 'filled'] }) === 2);
+  check('kart: BENİM ilanımda sayı = açık + yanıtı beklenen davetli', cardSeatsLeft({ open_seats: 1, seats: ['creator', 'open', 'invited', 'filled'], mine: 'creator' }) === 2);
+  check('KARMA KADRO: son açık koltuk kapıldı ama arkadaş yanıtlamadı → "0 koltuk kaldı" DEĞİL, 1', cardSeatsLeft({ open_seats: 0, seats: ['creator', 'filled', 'invited'], mine: 'creator' }) === 1 && unfilledSeatCount(['creator', 'filled', 'invited']) === 1);
+  check('şerit kartı sayısı cardSeatsLeft\'ten; Devam Edenler satırı N − dolu (ham "Bekliyor" etiketi YOK)', /cardSeatsLeft\(l\)/.test(strip8) && /seatsLeftLabel\(game\.player_count - dolu\)/.test(strip8) && !/>\s*Bekliyor\b/.test(strip8));
+  check('boş durum metni kullanıcının cümlesi', RANDOM_EMPTY_TEXT === 'Bekleyen oyun yok.' && RANDOM_EMPTY_LINK === 'Hemen aç.');
+  check(
+    'balon metni kullanıcının üç cümlesi, "Rastgele" yazımıyla',
+    RANDOM_HINT_TEXT ===
+      'Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen katılsın. Önce gelen koltuğu kapar.',
+  );
+  check('balon süresi genel 4 sn\'den uzun (üç cümle)', RANDOM_HINT_MS > 4000);
+  check(
+    'şerit bileşeni erken `return null` yalnızca "hidden"da (boş durum gizlenmez)',
+    /if \(mode === 'hidden'\) return null;/.test(strip8) && !/if \(visible\.length === 0\) return null;/.test(strip8),
+  );
+  check('boş satır başlıktakiyle AYNI eylemi (onOpenCreate) çağırıyor', (strip8.match(/onClick=\{onOpenCreate\}/g) ?? []).length >= 2);
 
   // Oyun sonu arkadaş önerisi (4 Ekim 2026)
   {

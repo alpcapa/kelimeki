@@ -16,6 +16,7 @@ class FlagsStore {
   static const _seenQuickstart = 'seen_quickstart';
   static const _seenTutorial = 'seen_tutorial';
   static const _seenChatIntro = 'seen_chat_intro';
+  static const _seenRandomHint = 'seen_random_hint';
   static const _guestFirstPoints = 'guest_first_points_celebrated';
   static const _zoomHintShown = 'zoom_hint_shown';
   static const _zoomTried = 'zoom_tried';
@@ -65,6 +66,13 @@ class FlagsStore {
 
   bool get seenChatIntro => prefs.getBool(_seenChatIntro) ?? false;
   Future<void> markChatIntroSeen() => prefs.setBool(_seenChatIntro, true);
+
+  /// Rastgele Oyuncu tanıtım balonu (12 Ekim 2026): Canlı sekmesindeki şeridin
+  /// başlığında BİR kez; gösterim kararında işaretlenir, "denedi" şartı YOK
+  /// (kalıcı balon oyuncuyu bezdirir). Web ikizi `kelimeki:seen-random-hint`
+  /// (`src/utils/onboarding.ts`).
+  bool get seenRandomHint => prefs.getBool(_seenRandomHint) ?? false;
+  Future<void> markRandomHintSeen() => prefs.setBool(_seenRandomHint, true);
 
   /// Tahta zoom'u tanıtım balonu (1 Eylül 2026, kullanıcı isteği) — İKİ
   /// değer, çünkü kural iki şeye birden bakıyor: *"Deneyip büyütenlere bir
