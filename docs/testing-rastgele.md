@@ -62,3 +62,11 @@ kolonuna HİÇ bakmaz; ara bir değişiklik aynı gün geri alındı, bkz. `rand
 - [ ] **Devam** → "Arkadaşlık davetiniz iletilmiştir." · karşı hesapta istek görünür.
 - [ ] Aynı oyunu tekrar aç → öneri BİR KEZ çıkar, ikinci kez çıkmaz.
 - [ ] Tüm rakipler zaten arkadaşsa pencere HİÇ çıkmaz. Davet kabulünde artık pencere çıkmaz.
+
+## `?rastgele=1` bağlantısı (13 Ekim 2026)
+
+- [ ] Girişli hesapla `kelimeki.com/?rastgele=1` aç → Canlı sekmesi açılır, kurulum formu **Rastgele Oyuncu seçili** gelir; adres çubuğunda `?rastgele=1` kalmaz.
+- [ ] `?rastgele=1&ref=x` → `ref` KALIR, yalnızca `rastgele` silinir.
+- [ ] Hiç oturumu olmayan cihaz/tarayıcıda aç → karşılama katmanı GÖRÜNMEZ, uygulama açılır; giriş yapınca form açılır.
+- [ ] Formu kapat → ikinci kez kendiliğinden açılmaz (istek bir kez tüketilir).
+- [ ] Yerel oyun sürerken aç → oyunun bozulmadığını doğrula (bu yol yarım oyunu terk ettirmez; form oyun bitince/Canlı'ya geçince çıkabilir — beklenen).

@@ -78,7 +78,7 @@ console.log('webJourney — ziyaretçi yolculuğu');
     { type: 'step', step: 'game_start' },
     { type: 'moves', count: 3 },
     { type: 'step', step: 'signup_form' },
-    { type: 'flush' },
+    { type: 'hide' },
   ]);
   check('girişli oturum hiçbir ping üretmiyor', steps.length === 0, JSON.stringify(steps));
 }
@@ -102,7 +102,7 @@ console.log('webJourney — ziyaretçi yolculuğu');
     { type: 'step', step: 'game_start' },
     { type: 'step', step: 'signup_done' },
     { type: 'step', step: 'login' },
-    { type: 'flush' },
+    { type: 'hide' },
   ]);
   check(
     'üyelik sonrası yalnızca kapanış adımı geçiyor, sonra oturum kapanıyor',
@@ -118,7 +118,7 @@ console.log('webJourney — ziyaretçi yolculuğu');
     { type: 'step', step: 'login' },
     { type: 'start', entry: 'app', member: true },
     { type: 'step', step: 'game_start' },
-    { type: 'flush' },
+    { type: 'hide' },
   ]);
   check('girişten sonra hiçbir şey yazılmıyor', JSON.stringify(steps) === JSON.stringify(['landing', 'login']));
 }
@@ -145,28 +145,84 @@ console.log('webJourney — ziyaretçi yolculuğu');
   check('ikinci oyun başlangıcı yazılıyor', steps.filter((x) => x === 'game_start').length === 2);
 }
 
-// 8 — flush adımsızdır, süreyi taşır; kaydırma ping ÜRETMEZ.
+// 8 — hide (sekme gizlendi / pagehide) adımsızdır, görünür süreyi taşır; kaydırma ping ÜRETMEZ.
 {
   const { pings } = run([
     { type: 'start', entry: 'landing', member: false },
     { type: 'scroll', pct: 20 },
     { type: 'scroll', pct: 150 },
     { type: 'scroll', pct: 10 },
-    { type: 'flush' },
+    { type: 'hide' },
   ]);
   const son = pings[pings.length - 1];
   check('kaydırma ping üretmiyor', pings.length === 2);
-  check('flush adımsız', son?.step === null);
-  check('flush süreyi taşıyor', son?.seconds === 4, String(son?.seconds));
+  check('hide adımsız', son?.step === null);
+  check('hide görünür süreyi taşıyor', son?.seconds === 4, String(son?.seconds));
   check('kaydırma %100 ile sınırlı ve geriye gitmiyor', son?.scrollPct === 100, String(son?.scrollPct));
 }
 
-// 9 — oturum yokken adım/hamle/flush hiçbir şey yazmaz (Supabase yokken App başlatmıyor).
+// 8b — GÖRÜNÜR SÜRE (15 Ekim 2026). Android Meta uygulama-içi tarayıcıda
+// reklama dokunup ~2 sn'de dönen kişinin sayfası arka planda ~30 sn yaşıyor ve
+// `pagehide` o ana kadarki DUVAR SAATİNİ yazıyordu ("32 sn kaldı" yığılması).
+// Düzeltme: süre yalnızca sekme görünürken birikir.
+{
+  // `run` her olay arasında 1 sn ilerletir; burada saati elle sürüyoruz.
+  const adim = (ev: JourneyEvent, t: number, s: JourneySession | null) => reduceJourney(s, ev, t, () => 'id-1');
+  let t = 1_000_000;
+  let r = adim({ type: 'start', entry: 'landing', member: false }, t, null);
+  t += 2_000; // 2 sn görünür
+  r = adim({ type: 'hide' }, t, r.session);
+  check('2 sn sonra gizlendi → 2 sn yazılıyor', r.pings[0]?.seconds === 2, String(r.pings[0]?.seconds));
+  t += 30_000; // 30 sn gizli bekledi, sonra webview sayfayı yıktı
+  r = adim({ type: 'hide' }, t, r.session); // pagehide
+  check(
+    'gizliyken gelen ikinci hide (pagehide) süreyi ARTIRMAZ (32 sn yığılmasının düzeltmesi)',
+    r.pings[0]?.seconds === 2,
+    String(r.pings[0]?.seconds),
+  );
+  // Geri gelirse biriktirmeye devam eder: 2 + (60 sn başka uygulamada) + 5 sn = 7.
+  let u = adim({ type: 'start', entry: 'landing', member: false }, 2_000_000, null);
+  u = adim({ type: 'hide' }, 2_002_000, u.session);
+  u = adim({ type: 'show' }, 2_062_000, u.session);
+  check('show ping ÜRETMEZ', u.pings.length === 0);
+  u = adim({ type: 'hide' }, 2_067_000, u.session);
+  check('gizli kalınan 60 sn sayılmaz, dönünce görünür süre sürer (2+5=7)', u.pings[0]?.seconds === 7, String(u.pings[0]?.seconds));
+  // Adım pingi de görünür süreyi taşır.
+  let a = adim({ type: 'start', entry: 'landing', member: false }, 3_000_000, null);
+  a = adim({ type: 'hide' }, 3_001_000, a.session);
+  a = adim({ type: 'show' }, 3_091_000, a.session); // 90 sn sonra döndü
+  a = adim({ type: 'step', step: 'landing_cta' }, 3_094_000, a.session);
+  check('adım pingi görünür süreyi taşıyor (1+3=4, 90 sn gizli sayılmaz)', a.pings[0]?.seconds === 4, String(a.pings[0]?.seconds));
+  // Sayfa yeniden yüklendi: mevcut oturum, yeni görünür aralık; ölü zaman sayılmaz.
+  let y = adim({ type: 'start', entry: 'landing', member: false }, 4_000_000, null);
+  y = adim({ type: 'hide' }, 4_003_000, y.session); // 3 sn; pagehide
+  y = adim({ type: 'start', entry: 'app', member: false }, 4_500_000, y.session); // 497 sn sonra yeni sayfa
+  y = adim({ type: 'hide' }, 4_502_000, y.session);
+  check('yeniden yüklemede aradaki ölü zaman sayılmıyor (3+2=5)', y.pings[0]?.seconds === 5, String(y.pings[0]?.seconds));
+  // Eski sürümden kalma oturum (görünür-süre alanları YOK) çökmez, eski anlamıyla sürer.
+  const eski: JourneySession = {
+    id: 'eski',
+    entry: 'landing',
+    guest: true,
+    member: false,
+    closed: false,
+    startMs: 5_000_000,
+    moves: 0,
+    scrollPct: null,
+    sent: ['landing'],
+  };
+  const e = adim({ type: 'hide' }, 5_010_000, eski);
+  check('alanları olmayan eski oturum çökmeden sürer (10 sn)', e.pings[0]?.seconds === 10, String(e.pings[0]?.seconds));
+  const e2 = adim({ type: 'hide' }, 5_100_000, e.session);
+  check('…ve artık gizliyken ARTMAZ', e2.pings[0]?.seconds === 10, String(e2.pings[0]?.seconds));
+}
+
+// 9 — oturum yokken adım/hamle/hide hiçbir şey yazmaz (Supabase yokken App başlatmıyor).
 {
   const { steps, ids } = run([
     { type: 'step', step: 'game_start' },
     { type: 'moves', count: 3 },
-    { type: 'flush' },
+    { type: 'hide' },
   ]);
   check('oturumsuz olaylar sessiz', steps.length === 0 && ids === 0);
 }
@@ -200,7 +256,7 @@ console.log('webJourney — ziyaretçi yolculuğu');
 {
   const dosyalar: [string, number][] = [
     ['supabase/migrations/20260928100430_web_journey_store_step.sql', 2], // record_web_session (`store`); admin_web_journey'yi aşağıdaki yeniden yazdı
-    ['supabase/migrations/20260930110120_admin_web_journey_tutorial_skip.sql', 1], // admin_web_journey (en ileri adım + türetilmiş `tutorial_skip`, v_steps'e GİRMEZ)
+    ['supabase/migrations/20261015120000_admin_web_journey_left_fast.sql', 1], // admin_web_journey (EN SON yeniden yazan: `left_fast` sütunu; öncesi en ileri adım + türetilmiş `tutorial_skip`, v_steps'e GİRMEZ)
   ];
   for (const [dosya, beklenen] of dosyalar) {
     const sql = readFileSync(dosya, 'utf8');

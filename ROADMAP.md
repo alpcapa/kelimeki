@@ -1,5 +1,26 @@
 # Kelimeki — Sıradaki İşler (22 Ağustos 2026)
 
+## ⏰ BEKLEYEN, TARİHLİ İŞLER — oturuma başlarken İLK burayı oku (15 Ekim 2026'da eklendi)
+
+Neden var: 15 Ekim'de bir oturum "Rastgele Oyun" hatırlatma e-postasının BUGÜN
+gönderileceğini bilmiyordu. Karar `random-opponent.md` §21'de yazılıydı ama
+yalnızca *niyet* olarak ("gidiyor"), **tarih ve sahibi yoktu**; fonksiyon PR'sız
+bir dalda duruyordu; devir notunda geçmiyordu. Belgeler *ne olduğunu* tutuyordu,
+*bugün ne bekliyor* sorusunun tek bir yeri yoktu. Bu kutu o yer: **en fazla ~10
+satır, her satırda tarih + sahip + sıradaki adım. Biten satır silinir (arşive
+gerek yok), yeni karar/iş doğunca buraya BİR SATIR eklenir.** Oturum başında bunu
+ve `git branch -r` ile PR'sız dalları kontrol et.
+
+| Ne zaman | İş | Sıradaki adım |
+|---|---|---|
+| 17-18 Eki | Meta Teaser Aşama 2 ilk okuma (`Kare2` ↔ `Kar2`) | `kampanya-teaser-ekim-2026.md` §5; pencere `Kar2` 18:09 TSİ sonrası; Meta'dan bağlantı tıklaması/CTR/yerleşim ekran görüntüleri iste |
+| 19 Eki | **1.1.4 treni** | Taslak PR'lar #837 #842 #850 #851 #855 #859 #862: `main`'i hepsine birleştir (çakışma yalnız `docs/decisions/*.md`: #850 #851 #862), `pubspec.yaml` + `config/env.dart` = 1.1.4, `surumler.md` sürüm senkronu, merge ÖNCESİ "mobil derlemeyi tetikler" uyarısı |
+| 19 Eki haftası | #46-1 atıf kodu (~1 gün; yetişmezse sonraki tren) | `funnel-v2.md` |
+| 21 Eki 14:22 | Meta Teaser Aşama 2 BİTİŞ | kapanış okuması |
+| birkaç gün sonra | Admin → Ziyaretçi Yolculuğu "Hemen çıkan" sütunu | eski 32 sn yığılmasıyla karışık; birkaç gün sonra bak |
+| **22 Eki** (ön okuma 17-18 Eki) | **Rastgele Oyun hatırlatma e-postasının SONUCU** — 15 Eki'de 25 üyeye gitti; kim tıkladı, geldi, oyun açtı/bitirdi | `random-opponent.md` §21 → "TAKİP ÖLÇÜMÜ": kohort önekleri + ölçüm listesi orada; Brevo açılma/tıklama sayısı kullanıcıdan |
+| açık | PR'sız eski dallar: `koltuk-1-sen-port`, `random-opponent-port`, `team-league-phase-0-motor-pab2ye` | içerikleri `main`'de mi doğrula, sonra sil |
+
 **Bu dosya bir FİKİR LİSTESİ DEĞİL, sıralı bir yürütme planı.** Kök
 `CLAUDE.md`'deki "Sonraya Bırakılan Ürün Fikirleri" bölümü *ne* yapılacağını
 ve *neden* ertelendiğini anlatır; burası *hangi sırayla*, *hangi modelle* ve
@@ -231,7 +252,7 @@ mobil dosya taşıyorsa taslak olarak **19 Ekim trenine** biner (C hariç: sunuc
   önerisi (zaten var) bu yolu açar. Açık nokta: kısmen arkadaş kadroda
   (ör. 4 kişide 1 yabancı) düğme gizli mi, yabancısız mı kurulsun — uygularken
   karar ver, `rematchSlots` ↔ `rematch_slots.dart` + `verify-rematch-slots`.
-- **B. Rütbe mührü kartlarda OLSUN** (şerit kartı / bekleyen oyun satırı).
+- **B. Rütbe mührü kartlarda OLSUN — ❌ VAZGEÇİLDİ (5 Ekim 2026, kullanıcı: *"Bu kutuya mühür koymayalım, yer yok."*).** Şerit kutusu kare ve eni en çok 7rem; ad zaten kırpılıyor. Bekleyen oyun satırında mühür zaten vardı (`ParticipantRow`, `LiveGamesTab.tsx`), yapılacak iş kalmadı. Devam Edenler avatar şeridine (`PlayerAvatarRow`, adsız) mühür de konmayacak. Yeniden açılırsa önce kutunun düzeni değişmeli.
 - **E. Davet kuralları: engel + çift başına sınır + arkadaşlık yolu — ✅ SUNUCU CANLIDA (4 Ekim 2026, kullanıcı kararı).** Engel (sessize alma YA DA şikayet) oyun davetini, arkadaşlık isteğini ve arkadaş davet linkini kapatır ("<ad> kullanıcısı sizi engelledi."); aynı kişiye 1 adet 2 kişilik + 1 adet 4 kişilik bekleyen davet, genel tavan YOK (her arkadaşa 2 hak; toplam = arkadaş sayısı × 2). Migration'lar `…193412_invite_block_and_pair_limit` + `…202039_block_friend_requests` (yalnızca sunucu, sürüm gerektirmez). Eski 2 argümanlı yardımcı panelden düşürüldü ✅. **İSTEMCİ: WEB ✅ (5 Ekim 2026, merge bekliyor — kullanıcı görünümü onaylayınca), PORT HAZIR — taslak PR #815, **12 Ekim treni** (11 Ekim 2026 kararı; önce 19 Ekim'di).** Web: "Sessize al" → "Engelle" terimi, oyun davet + arkadaşlık isteği kartında yalnızca Engelle (şikayet yok), Arkadaşlar → "Engellediklerim" (arkadaş olmayanı geri almanın yolu), oyundan bağımsız `user_blocks` (`20261004203040`). `unblock_user` panelden çalıştırıldı ✅ (5 Ekim 2026, kullanıcı; gövdesinde DELETE, MCP aracı onay bekleyip zaman aşımına uğradığı için) ve canlıda doğrulandı. **Port (yazıldı, 12 Ekim'de merge):** aynı özellikler + listeler kendi içinde kayar (arkadaş/arama/Engellediklerim, `max-h-[55vh]`, web 4 Ekim 2026) + arkadaşın ⋯ menüsünde Engelle / Engeli kaldır (web 5 Ekim 2026); Puan Ligi'nde "Puanlar eşitse OHP yüksek olan üstte." üst açıklamadan alt nota ("YZ'ye karşı…" yanına) taşındı — `leaderboard_modal.dart` (`kPuanLigiNote`) + `score_card_test` aynı şekilde + parite-kilitli dört metin (arkadaş menüsü etiketi, `chatRules.ts`, hukuki metinler + yasal metin tarihi, karşılama cümlesi). Ayrıntı: `docs/decisions/live-game.md` → "Davet kuralları" + "Engel arkadaşlık yoluna da uzandı".
 - **D. Eski istemcide açık koltuk "Yapay Zeka" görünür — OLDUĞU GİBİ KALSIN (4 Ekim 2026, kullanıcı: *"Böyle kalsın"*).** Cihazda yakalandı: "Oyun Davetleri → Bekleyen Oyunlar"da `Ironman` + `Yapay Zeka`, "Davet gönderen", 6 gün 18 saat kaldı. Canlıda doğrulandı: oyun `listing='random'`, ikinci koltuk `open`; `list_my_online_games` onu eski istemciler için `{type:'ai',open:true}`e maskeliyor, `main`'deki web + Dart `fromJson` `open`'ı tanımadığından YZ sanıyor. Tasarım kararı (`random-opponent.md` §6, "bilinen bedel"); #804/#805 12 Ekim'de düzeltir. Reddedilen: sunucu maskesini değiştirmek (canlıya anında yazılır, eski istemcinin boş `user_id` ile davranışı ölçülmedi), web'e öne çekilmiş yama (#804 ile çakışır). Gerekçe: ilan henüz kullanılmıyor, etki yalnızca görünüm.
 - **C. İlan kabul edildi bildirimi OLSUN — ✅ SUNUCU YARISI CANLIDA, 12 Ekim'e DAHİL (4 Ekim 2026, kullanıcı: "12 Ekim'de bildirim de yayında olmalı"; A/B 19 Ekim'de kalır).** Yalnızca sunucu, istemci/sürüm gerektirmez: `_notify_random_game_started` (`after insert` on `online_game_states`, yalnızca `via: random` koltuklu oyun) → mevcut `notify-your-turn` (hiç hamle yoksa "Oyun başladı! … ilk hamle sende.", etiket `sira:<id>`). Migration'lar `20261004100205`/`…100300`, Edge v4 (`verify_jwt: false` korundu). **Normal davet de KAPSANDI** (kullanıcı sorusu: davetçi de kabulden haberdar olmuyordu — ölçüldü, başlangıcı haber veren tetikleyici yoktu): tetikleyici `_notify_game_started`, TÜM canlı oyunlar; metin "2 kişilik [rastgele ]oyunun başladı — ilk hamle sende!" (başlıkta "Oyun başladı" yok, başlık "Sıra sende!"). Edge v5. Eski rastgele-yalnız tetikleyici + fonksiyonu canlıdan DÜŞÜRÜLDÜ (kullanıcı Supabase panelinden çalıştırdı; araç DROP'ta onay bekleyip zaman aşımına uğruyor, DROP'u panelden yaptır). Canlı doğrulandı: yalnızca `notify_started` + `notify_turn` etkin. Eski not: oyun dolup başlayınca ilan sahibine
@@ -909,7 +930,7 @@ daveti, ücretli trafik ikinci.
 3. **Ücretli trafik** ancak 1-2'nin ölçümü çalışınca ölçeklenir; karar ölçütü
    "mağaza oturumu başı maliyet" yerine **geri dönen oyuncu başı maliyet**.
 
-**Açık:** 1-3 için ayrı maddeler/PR'lar henüz AÇILMADI; Meta teaser Aşama 1 kararı
+**Tasarım notları (11 Eki):** #46-1 (atıf) → `docs/decisions/funnel-v2.md` → "#46-1 tasarım notu"; #45-A (Tekrar Oyna) → `docs/decisions/random-opponent.md` §20. İkisi 19 Ekim (1.1.4) treni, kod henüz YOK, kullanıcı kararı bekleyen sorular notlarda. ⚠ **13 Ekim 2026 (kullanıcı kararı):** Takım Ligi (#44) kaydırılırken bu ikisi sorulup **19 Ekim'de KALDI** (#45-A: Rastgele'nin düzeltmesi, oyuncuya yeni kavram öğretmiyor; #46-1: oyuncuya görünmez). **Güncel durum (13 Ekim akşamı):** **#45-A: S1 ve S2 KAPANDI** (S1: engellediğin rakiple oyun kurulmaz, önce engeli kaldırırsın; S2: arkadaş olmayan rakibin koltuğu rastgele/açık koltuğa döner, arkadaşlar davetli kalır, YZ yalnızca eski oyunda varsa son koltukta — kararlar `random-opponent.md` §20) → **web YAZILDI (#858, merge bekliyor), port taslak PR'da (#859, Parça 243) → 19 Ekim kesimine GİRİYOR.** **#46-1: iki açık soru KAPANDI (13 Ekim 2026: yarış → açılışta başlat, beklemeden damgala; eski cihazlar → damga için bir kez oku, `land` kanalına dokunmadan; `funnel-v2.md` → "#46-1 tasarım notu"), kod hâlâ YOK** → ~1 günlük iş, kesime YETİŞMEYEBİLİR; yetişmezse bir sonraki trene kayar, kullanıcıya sorulmadan başka karar alınmaz. **Açık:** 1-3 için ayrı maddeler/PR'lar henüz AÇILMADI; Meta teaser Aşama 1 kararı
 (`marketing/meta-reklam/kampanya-teaser-ekim-2026.md`) bu ölçütle yeniden bakılacak.
 
 ## 45. Rastgele Oyuncu — açık ilanla yabancıyla 2/4 kişilik oyun — **SUNUCU CANLIDA · WEB (#804) + PORT (#805) YAZILDI, taslak PR'da · 12 Ekim treni, İKİSİ BİRLİKTE MERGE** (3-4 Ekim 2026)
@@ -922,7 +943,10 @@ Kayıt, kararlar (A-F kapandı) ve öneriler: `docs/decisions/random-opponent.md
 Takım Ligi (#44) ile aynı `online_games.listing` altyapısı.
 ⚠ **4 Ekim (kullanıcı): web (#804) ve port (#805) AYNI GÜN merge edilir** (iki taraflı pazar yeri; web tek başına işe yaramaz) — `random-opponent.md` §19.
 
-## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · hedef 19 Ekim treni** (3 Ekim 2026)
+## 44. Takım Ligi — 2'şer kişilik takım oyunu — **TASARIM ONAYLANDI · PARKTA · İLERİKİ SÜRÜMLERE KAYDIRILDI (13 Ekim 2026; eski hedef: 19 Ekim treni)**
+
+⚠ **13 Ekim 2026 (kullanıcı kararı):** *"Bence takım ligi olayını ileriki sürümlere kaydıralım. Daha yeni rastgele başladı. İnsanlar önce onu özümsesin, sonra yeni bir şey gelsin. Arka arkaya kafalar karışabilir."* **Gerekçe ürün sırası, teknik değil:** Rastgele Oyuncu (#45) yeni yayında, oyuncular onu özümsemeden ikinci bir yeni oyun türü getirilmesin. **Yeni hedef sürüm YOK** — Rastgele'nin kullanımı (günlük ilan/farklı kurucu, bkz. #45 ölçümü) oturunca kullanıcı yeniden karar verir. 19 Ekim (1.1.4) kesimine Takım Ligi kodu GİRMEZ; aşağıdaki "19 Ekim" ve "12 Ekim kesiminden sonra" ifadeleri TARİHÇEDİR. Tasarım (`docs/decisions/team-league.md`) olduğu gibi geçerli. `listing` altyapısı Rastgele ile paylaşıldığından ön koşul zaten canlıda.
+
 
 Kullanıcı (3 Ekim): *"Bence bu ok. Bunu 19 Ekim trenine düşünüyorum. Şimdilik
 roadmap'e park edelim, kodlama vb. işleri 12 treninden sonra yaparız."*
