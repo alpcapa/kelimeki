@@ -595,8 +595,12 @@ void main() {
       }
       expect(RegExp('>\\s*$kRandomAcceptLabel\\s*<').hasMatch(webSerit), isTrue,
           reason: 'Kabul düğmesi etiketi ayrıştı');
-      expect(RegExp('>\\s*$kRandomMineWaiting\\s*<').hasMatch(webSerit), isTrue,
-          reason: 'Bekliyor etiketi ayrıştı');
+      // 12 Ekim 2026 (kullanıcı: "her yerde x koltuk kaldı"): web şeridinde kartın
+      // "Bekliyor" etiketi KALKTI; kart sayısı `cardSeatsLeft` (açık + yanıtı
+      // beklenen davetli). Port aynı davranışa geçince (port PR'ı) bu satır web'in
+      // yeni kalıbını okur; Dart'ın `kRandomMineWaiting`i o PR'da kalkar.
+      expect(webSerit.contains('cardSeatsLeft('), isTrue,
+          reason: 'kart "N koltuk kaldı" sayısı ayrıştı');
       expect(webSerit.contains("'$kRandomMineCancel'"), isTrue,
           reason: 'İptal etiketi ayrıştı');
       expect(webSerit.contains("'$kRandomLeaveLabel'"), isTrue);
