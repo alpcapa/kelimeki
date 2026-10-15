@@ -27,7 +27,7 @@
 
 ## Parça 242 — Rastgele Oyuncu: şerit hep görünür + "N koltuk kaldı" her yerde + tek seferlik tanıtım balonu (12 Ekim 2026, 19 Ekim treni) — `[Sonraki sürüm]`
 
-Web ikizi `RandomGamesStrip.tsx` + `randomGames.ts` + `onboarding.ts` (taslak PR #850; karar: `docs/decisions/random-opponent.md` §21).
+Web ikizi `RandomGamesStrip.tsx` + `randomGames.ts` + `onboarding.ts` (taslak PR #850; karar: `docs/decisions/random-opponent.md` §22).
 Kullanıcı: *"Rastgele oyun yoksa kutu çıkmıyor. Halbuki hep çıksa … 'Bekleyen oyun yok. Hemen aç.'"*, balon metni, *"her yerde x koltuk kaldı yazsın"*.
 
 - **Şerit hep görünür** (`RandomStripMode`: `cards` · `empty` · `hidden`; `util/random_games.dart`): sunucu BAŞARIYLA boş dediyse tek satır (`random-strip-empty`, kare kart DEĞİL — alttaki Devam Eden Oyunlar itilmesin), tamamı düğme = başlıktaki "Rastgele oyun aç" ile AYNI eylem, boşken o bağlantı gizli. İlk çekim sürerken / ağ hatasında `hidden`: `_loaded` yalnızca BAŞARILI çekimde (ya da önbellekte) true — "Bekleyen oyun yok" yalan olmasın.
