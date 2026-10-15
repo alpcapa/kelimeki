@@ -388,6 +388,7 @@ yolu budur.
 | 1.0.5 | **501** | `4a0a29b` | 1 Eyl 2026 (`f28b3da`) | **2 Eyl, 14:22** (paket) · sürüm 17:58'de güncellendi | yayınlandı → **pasif** (4 Eyl, 1.0.6 devraldı) | Tahta zoom'u + zoom tanıtım balonu + yazı ölçeği + mesaj kutusu etiketi + cihaz turu düzeltmeleri (rozet kırpması · alt şerit · çevrimdışı şerit · zoom çerçevesi · filigranlar). `.aab` 63.146.275 bayt, SHA-256 `200e82b9…451d4`. İnceleme ≈23 dk. Yayın sonrası cihazda doğrulandı (kullanıcı: *"1.0.5 turu testi tamam."*) |
 | 1.0.6 | **525** | `711eaaa` | 3 Eyl 2026 (`a33fdaa`) | **4 Eyl, 15:53** (Submission 12) | yayınlandı → **pasif** (6 Eyl, 1.0.7 devraldı) | Aşağı bkz. |
 | **1.0.7** | **545** | `78383eb` | 6 Eyl 2026 (`78383eb`) | **6 Eyl** (gönderim saati ÖLÇÜLMEDİ — Console okunmadı) | yayınlandı → **pasif** (7 Eyl, 1.0.8 devraldı) | Seviyesiz son paket: taş değiştirme motor düzeltmesi, hesap menüsü k-lig bayatlığı, arka plandan dönüş, kafa kafaya hizası, yardım cümlesi. Aşağı bkz. |
+| **1.1.4** | — (henüz derlenmedi) | — | 15 Eki 2026 hazırlık (`claude/merge-version-1-1-4-axx8r1`: `pubspec.yaml` + `env.dart` = 1.1.4); kesim **19 Eki** | ⏳ Henüz GÖNDERİLMEDİ | 🧰 **HAZIRLIK** — 7 taslak PR `main`'le birleştirildi, merge kullanıcı onayını bekliyor | #837 #842 #850 #851 #855 #859 #862 + bu PR; ayrıntı aşağıda "1.1.4 — HAZIRLIK" |
 | **1.1.3** | **875** | `877b43e` | 11 Eki 2026 (haftalık tren, 15 PR — #826 squash `9591736` + #832 düzeltme turu; kesim 12'den öne alındı) | ✅ **App Store: YAYINDA** (11 Eki, kullanıcı: *"Just released ios 1.1.3"* — "Release This Version"a basıldı; saat ASC'den okunmadı; incelemeye gönderim 11 Eki 15:31 TSİ / 12:31 UTC, ASC ekran görüntüsünden ölçüldü) · **Play: 11 Eki 15:41 TSİ gönderildi → 16:06 TSİ ✅ YAYINDA (`Published`, Start full rollout, 25 dk)** (Submission #23, Console ekran görüntüsünden ölçüldü; `.aab` 875) — TestFlight'a 11 Eki'de düştü (koşu 38137173645; ilk paket 871 / koşu 38132174191 iPad turunda bulunan 3 hatayla geçersiz); `.apk`/`.aab` `mobile-latest`te | ✅ **iPad TestFlight turu temiz** (875: koltuk numarası · avatar halkası · istek rozeti; Rastgele Oyuncu + Engelle akışları elle denendi) — web aynı anda Vercel'de | `ROADMAP.md` → "1.1.3 treni" |
 | **1.1.2** | **807** | `927e7bc` | 1 Eki 2026 (haftalık trenin ilk kesimi, 17 PR) | ⏳ Henüz GÖNDERİLMEDİ — TestFlight'a 1 Eki 14:14'te düştü (koşu 36851189379, kullanıcı gördü); `.apk`/`.aab` `mobile-latest`te | 🧪 **CİHAZ TURU + #41 TASARIM PORTU** (1 Eki kullanıcı kararı: tasarımın tamamı 1.1.2'ye, tek gönderim; build 810 = `7246ca2` balon düzeltmesi; rozet ✅, Kayıt Hunisi ✅) | `ROADMAP.md` → "Sıradaki sürüme binecekler" |
 | **1.1.1** | **723** | `8c1828f` | 25 Eyl 2026 (tur sonu PR'ı) | **App Store: 25 Eyl 13:21 incelemeye GÖNDERİLDİ, 25 Eyl 22:49 ONAYLANDI** (`Pending Developer Release`, elle yayın — Play'le aynı gün) · **Play: 26 Eyl 16:13 gönderildi, 16:42 YAYINDA (#21)** · iOS aynı gün yayında | ✅ **İKİ MAĞAZADA YAYINDA** | Merge turunun on PR'ı (#565 · #562 · #579 · #576 · #554 · #557 · #547 · #601 · #611 · #626); ayrıntı aşağıda |
@@ -456,6 +457,16 @@ buradaki satır sayısı bilerek tutmuyor.
 
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
+
+## 1.1.4 — HAZIRLIK (15 Ekim 2026; kesim 19 Ekim)
+
+**15 Ekim:** yedi taslak PR'ın her birine `main` birleştirildi (merge commit, rebase/force YOK): #837 #842 #855 #859 (temiz), #850 (`random-opponent.md` §21 çakışması), #851 (#850'yi taşıyor), #862 (`funnel-v2.md`). Sürüm adı bu PR'da (`pubspec.yaml` + `env.dart` → `1.1.4+1`; `app_version_parity_test` yeşil). Merge ÖNCESİ kullanıcıya "mobil derlemeyi tetikler" uyarısı verilir; onay gelmeden merge yok.
+
+- **§21 numara çakışması:** #850 "Şerit HEP görünür" bölümünü `random-opponent.md` §21 diye yazmıştı, `main` aynı numarayı `?rastgele=1` bölümüne vermişti (`send-random-reminder` ve ROADMAP o §21'e atıf yapıyor). Şerit bölümü **§22**'ye alındı; atıflar (`testing-rastgele.md`, `parca-log.md` Parça 242, ROADMAP F satırı) düzeltildi.
+- **#850 ↔ #851 AYNI GÜN, önce #850.** #851 #850'nin commit'lerini taşıyor; #850 squash edilince #851 `main`e çevrilir.
+- **Kuru koşu (7 dal + bu PR birleştirme sırası denemesi):** gerçek çakışma YALNIZCA ekleme-ekleme türünde: `mobile/docs/parca-log.md` (Parça 240/241/242/243 art arda eklenmiş — hepsi KORUNUR, sıra 240 → 243) ve `ROADMAP.md` 1.1.4 tablosu (#855 ile). Her merge'den sonra gelen ilk PR'a `main` yeniden birleştirilip bu iki dosyada iki tarafı da tut.
+- **#862 gizlilik metnini değiştirir** (`LegalContent.tsx` + Dart kopyası): web ve port AYNI merge turunda gitmeli.
+- **Kimlik notu:** `funnel-v2.md` #46-1'de 15 Ekim "19 Ekim'de kalsın" notu, kodun #862'de 13 Ekim'de yazıldığı bilgisiyle birlikte korundu.
 
 ## 1.1.3 — KESİLDİ (11 Ekim 2026, build 875)
 

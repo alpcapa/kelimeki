@@ -14,12 +14,12 @@ ve `git branch -r` ile PR'sız dalları kontrol et.
 | Ne zaman | İş | Sıradaki adım |
 |---|---|---|
 | 17-18 Eki | Meta Teaser Aşama 2 ilk okuma (`Kare2` ↔ `Kar2`) | `kampanya-teaser-ekim-2026.md` §5; pencere `Kar2` 18:09 TSİ sonrası; Meta'dan bağlantı tıklaması/CTR/yerleşim ekran görüntüleri iste |
-| 19 Eki | **1.1.4 treni** | Taslak PR'lar #837 #842 #850 #851 #855 #859 #862: `main`'i hepsine birleştir (çakışma yalnız `docs/decisions/*.md`: #850 #851 #862), `pubspec.yaml` + `config/env.dart` = 1.1.4, `surumler.md` sürüm senkronu, merge ÖNCESİ "mobil derlemeyi tetikler" uyarısı |
+| 19 Eki | **1.1.4 treni** | ✅ 15 Eki: `main` yedi PR'a birleştirildi (#850'de `random-opponent.md` §21 çakışması → Şerit bölümü §22'ye alındı), sürüm 1.1.4 + `surumler.md` hazırlığı `claude/merge-version-1-1-4-axx8r1`'de. **Kalan: merge ÖNCESİ "mobil derlemeyi tetikler" uyarısı + kullanıcı onayı; sıra #850→#851, kalanlar art arda (ekleme-ekleme çakışması `parca-log.md`/ROADMAP'te çıkarsa iki tarafı da tut)**; #862 gizlilik metni: web+port aynı turda |
 | 19 Eki haftası | #46-1 atıf kodu (~1 gün; yetişmezse sonraki tren) | `funnel-v2.md` |
 | 21 Eki 14:22 | Meta Teaser Aşama 2 BİTİŞ | kapanış okuması |
 | birkaç gün sonra | Admin → Ziyaretçi Yolculuğu "Hemen çıkan" sütunu | eski 32 sn yığılmasıyla karışık; birkaç gün sonra bak |
 | **22 Eki** (ön okuma 17-18 Eki) | **Rastgele Oyun hatırlatma e-postasının SONUCU** — 15 Eki'de 25 üyeye gitti; kim tıkladı, geldi, oyun açtı/bitirdi | `random-opponent.md` §21 → "TAKİP ÖLÇÜMÜ": kohort önekleri + ölçüm listesi orada; Brevo açılma/tıklama sayısı kullanıcıdan |
-| açık | PR'sız eski dallar: `koltuk-1-sen-port`, `random-opponent-port`, `team-league-phase-0-motor-pab2ye` | içerikleri `main`'de mi doğrula, sonra sil |
+| açık | PR'sız eski dallar: `koltuk-1-sen-port`, `random-opponent-port`, `team-league-phase-0-motor-pab2ye` | 15 Eki: içerik taraması YAPILDI (eklenen satırların %99'u `main`'de; eksikler sonradan yeniden yazılmış kod/tablolar) → silmeye aday; silme `dry_run` listesi + kullanıcı onayı bekliyor |
 
 **Bu dosya bir FİKİR LİSTESİ DEĞİL, sıralı bir yürütme planı.** Kök
 `CLAUDE.md`'deki "Sonraya Bırakılan Ürün Fikirleri" bölümü *ne* yapılacağını
