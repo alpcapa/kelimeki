@@ -19,7 +19,6 @@ ve `git branch -r` ile PR'sız dalları kontrol et.
 | 21 Eki 14:22 | Meta Teaser Aşama 2 BİTİŞ | kapanış okuması |
 | birkaç gün sonra | Admin → Ziyaretçi Yolculuğu "Hemen çıkan" sütunu | eski 32 sn yığılmasıyla karışık; birkaç gün sonra bak |
 | **22 Eki** (ön okuma 17-18 Eki) | **Rastgele Oyun hatırlatma e-postasının SONUCU** — 15 Eki'de 25 üyeye gitti; kim tıkladı, geldi, oyun açtı/bitirdi | `random-opponent.md` §21 → "TAKİP ÖLÇÜMÜ": kohort önekleri + ölçüm listesi orada; Brevo açılma/tıklama sayısı kullanıcıdan |
-| açık | PR'sız eski dallar: `koltuk-1-sen-port`, `random-opponent-port`, `team-league-phase-0-motor-pab2ye` | 15 Eki: içerik taraması YAPILDI (eklenen satırların %99'u `main`'de; eksikler sonradan yeniden yazılmış kod/tablolar) → silmeye aday; silme `dry_run` listesi + kullanıcı onayı bekliyor |
 
 **Bu dosya bir FİKİR LİSTESİ DEĞİL, sıralı bir yürütme planı.** Kök
 `CLAUDE.md`'deki "Sonraya Bırakılan Ürün Fikirleri" bölümü *ne* yapılacağını
