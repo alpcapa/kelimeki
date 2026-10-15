@@ -66,7 +66,7 @@ function buildHtml(name: string | undefined): string {
       <a href="${BUTTON_URL}" style="display:inline-block;background-color:#2563EB;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:8px;">Rastgele Oyun Aç</a>
     </p>
     <p style="font-size:12px;line-height:1.5;color:#8A93A2;margin:0 0 16px 0;">Bu e-postayı Kelimeki’ye üye olduğun ve bilgilendirme e-postalarını kabul ettiğin için aldın. Bu tek seferlik bir hatırlatmadır. Tercihlerini hesap ayarlarından değiştirebilirsin.</p>
-    <p style="font-size:13px;color:#8A93A2;margin-top:20px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Destek</span></p>
+    <p style="font-size:13px;color:#8A93A2;margin-top:20px;">İyi oyunlar,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Destek</span></p>
   `;
   const notice = `
     <p style="margin: 24px 0 0 0; padding-top: 12px; border-top: 1px solid #DCE2EA; font-size: 12px; color: #8A93A2; font-style: italic;">
