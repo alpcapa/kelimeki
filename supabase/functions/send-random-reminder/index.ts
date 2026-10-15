@@ -61,7 +61,7 @@ function buildHtml(name: string | undefined): string {
   const inner = `
     <p style="${p}">${greeting}</p>
     <p style="${p}">Kelimeki’ye üye oldunuz ama henüz bir oyunu bitirmediniz.</p>
-    <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#1B2430;"><strong>Yeni: Rastgele Oyun.</strong> Bir oyun açın, katılmak isteyen ilk kişiyle canlı oynayın. Arkadaşınızın olması gerekmez.</p>
+    <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#1B2430;"><strong>Yeni özellik:</strong> Rastgele Oyun ile arkadaşınız olmayan kişilerle de oynayabilirsiniz. Bir oyun açın, katılmak isteyen ilk kişiyle canlı oynayın.</p>
     <p style="margin:0 0 24px 0;">
       <a href="${BUTTON_URL}" style="display:inline-block;background-color:#2563EB;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:8px;">Rastgele Oyun Aç</a>
     </p>
