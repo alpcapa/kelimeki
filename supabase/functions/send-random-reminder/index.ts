@@ -24,7 +24,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const MAX_RECIPIENTS = 50;
-const SUBJECT = 'Kelimeki’de ilk oyununuzu açmaya ne dersiniz?';
+const SUBJECT = 'Kelimeki’de ilk oyununu açmaya ne dersin?';
 const BUTTON_URL = 'https://kelimeki.com/?rastgele=1';
 const SENDER = { name: 'Kelimeki', email: 'noreply@kelimeki.com' };
 const SUPPORT_EMAIL = 'destek@kelimeki.com';
@@ -60,12 +60,12 @@ function buildHtml(name: string | undefined): string {
   const p = 'margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#1B2430;';
   const inner = `
     <p style="${p}">${greeting}</p>
-    <p style="${p}">Kelimeki’ye üye oldunuz ama henüz bir oyunu bitirmediniz.</p>
-    <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#1B2430;"><strong>Yeni özellik:</strong> Rastgele Oyun ile arkadaşınız olmayan kişilerle de oynayabilirsiniz. Bir oyun açın, katılmak isteyen ilk kişiyle canlı oynayın.</p>
+    <p style="${p}">Kelimeki’ye üye oldun ama henüz bir oyunu bitirmedin.</p>
+    <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#1B2430;"><strong>Yeni özellik:</strong> Rastgele Oyun ile arkadaşın olmayan kişilerle de oynayabilirsin. Bir oyun aç, katılmak isteyen ilk kişiyle canlı oyna.</p>
     <p style="margin:0 0 24px 0;">
       <a href="${BUTTON_URL}" style="display:inline-block;background-color:#2563EB;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:8px;">Rastgele Oyun Aç</a>
     </p>
-    <p style="font-size:12px;line-height:1.5;color:#8A93A2;margin:0 0 16px 0;">Bu e-postayı Kelimeki’ye üye olduğunuz ve bilgilendirme e-postalarını kabul ettiğiniz için aldınız. Bu tek seferlik bir hatırlatmadır. Tercihlerinizi hesap ayarlarınızdan değiştirebilirsiniz.</p>
+    <p style="font-size:12px;line-height:1.5;color:#8A93A2;margin:0 0 16px 0;">Bu e-postayı Kelimeki’ye üye olduğun ve bilgilendirme e-postalarını kabul ettiğin için aldın. Bu tek seferlik bir hatırlatmadır. Tercihlerini hesap ayarlarından değiştirebilirsin.</p>
     <p style="font-size:13px;color:#8A93A2;margin-top:20px;">Saygılarımızla,<br/><span style="display: inline-block; margin-top: 4px;">Kelimeki Destek</span></p>
   `;
   const notice = `
