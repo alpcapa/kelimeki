@@ -157,6 +157,10 @@ mobile/
       data/signup_events.dart # Kayıt Hunisi sayacı (`signup_events`, ROADMAP
                              # #35) — web `logSignupEvent` ikizi, analytics
                              # deseni (global + configure); KİMLİKSİZ
+      data/reminder_events.dart # yarım oyun hatırlatmasının sayacı (`reminder_events`,
+                             # 11 Ekim 2026) — signup_events deseni; KİMLİKSİZ
+                             # (anon_id GÖNDERİLMEZ → gizlilik metni değişmez);
+                             # olay/kart adları migration check'iyle parite testli
       data/analytics.dart    # GA4 olay kanalı — errorReporter deseni
                              # (global tek örnek, fire-and-forget,
                              # yapılandırılmamışken no-op). Olay adları

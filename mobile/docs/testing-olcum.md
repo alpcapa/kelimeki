@@ -146,3 +146,22 @@ Kontroller admin panelinden (Büyüme > Kullanıcı) ya da Supabase'den okunur.
       görünür (iOS → Apple, Android → marka). Görününce kartlardaki "Web"
       etiketini kaldır (ROADMAP #40), Huni v2'de iOS/Android satırları
       görününce onunkini de.
+
+## 34. Yarım oyun hatırlatması — `reminder_events` satırları (11 Ekim 2026, 19 Ekim treni)
+
+Kimliksiz sayaç (`anon_id`/`user_id` YOK). Okuma: Supabase SQL (admin kartı yok).
+`select event, card, platform, count(*) from reminder_events group by 1,2,3 order by 1,2;`
+
+- [ ] **Telefonu bırakarak ayrıl, izin HİÇ verilmemiş cihazda:** YZ oyununda ≥2
+      tur oyna, ana ekrana dön → `skip_no_permission` düşer (kart ÇIKMAZ, bu bir
+      kusur değil tespit: yeni gelenin asıl yolu).
+- [ ] **Logoyla çıkış, izin yok:** `card_shown` (`izin`) → HATIRLAT → `card_accept`
+      (`izin`) → sistem diyaloğu → `os_granted` YA DA `os_denied`; ŞİMDİ DEĞİL →
+      `card_decline`. Ardından hatırlatma kurulduysa `set`.
+- [ ] **İzin kapalıyken ayar kartı:** `card_shown` (`ayar`) → AYARLARI AÇ →
+      `card_accept` (`ayar`); ŞİMDİ DEĞİL → `card_decline` (`ayar`).
+- [ ] **İzin AÇIKKEN yarım oyundan çık:** kart çıkmaz, yalnız `set`.
+- [ ] **Satırda kimlik yok:** `platform` (`ios`/`android`) + `app_version` dolu,
+      tabloda kimlik kolonu YOK (`anon_id` 11 Ekim'de kaldırıldı).
+- [ ] ⚠ Aynı ayrılış birden çok satır yazabilir (her arka plana gidiş) — hata
+      değil, sayım kişi değil olay sayar.
