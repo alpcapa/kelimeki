@@ -50,7 +50,7 @@ yalnızca saf kuralları sınar: `npm run verify-random-games`.
 - [ ] Gizlilik/Kullanım Koşulları metninde Rastgele Oyuncu maddesi var (pencere + `/gizlilik/`, `/kullanim-kosullari/`).
 - [ ] Yabancıyla biten oyunda "Tekrar Oyna" (rövanş): sunucu "Yalnızca arkadaşlarını davet edebilirsin" diyebilir — davranışı not et (karar bekliyor, `random-opponent.md` §7).
 
-## Boş şerit + tanıtım balonu (12 Ekim 2026, `random-opponent.md` §21)
+## Boş şerit + tanıtım balonu (12 Ekim 2026, `random-opponent.md` §22)
 - [ ] Hiç ilan yokken Canlı → Devam Edenler: "RASTGELE OYUNLAR" başlığı + tek satır **"Bekleyen oyun yok. Hemen aç."** (başlıkta "Rastgele oyun aç" bağlantısı YOK).
 - [ ] Satıra dokun → kurulum ekranı açılır, Rastgele Oyuncu zaten seçili (başlıktaki bağlantıyla AYNI).
 - [ ] Uçak modu/ağ yokken ilk açılışta satır "Bekleyen oyun yok" DİYEMEZ (gizli kalır); ağ gelince ilan yoksa satır belirir.
@@ -71,3 +71,11 @@ kolonuna HİÇ bakmaz; ara bir değişiklik aynı gün geri alındı, bkz. `rand
 - [ ] **Devam** → "Arkadaşlık davetiniz iletilmiştir." · karşı hesapta istek görünür.
 - [ ] Aynı oyunu tekrar aç → öneri BİR KEZ çıkar, ikinci kez çıkmaz.
 - [ ] Tüm rakipler zaten arkadaşsa pencere HİÇ çıkmaz. Davet kabulünde artık pencere çıkmaz.
+
+## `?rastgele=1` bağlantısı (13 Ekim 2026)
+
+- [ ] Girişli hesapla `kelimeki.com/?rastgele=1` aç → Canlı sekmesi açılır, kurulum formu **Rastgele Oyuncu seçili** gelir; adres çubuğunda `?rastgele=1` kalmaz.
+- [ ] `?rastgele=1&ref=x` → `ref` KALIR, yalnızca `rastgele` silinir.
+- [ ] Hiç oturumu olmayan cihaz/tarayıcıda aç → karşılama katmanı GÖRÜNMEZ, uygulama açılır; giriş yapınca form açılır.
+- [ ] Formu kapat → ikinci kez kendiliğinden açılmaz (istek bir kez tüketilir).
+- [ ] Yerel oyun sürerken aç → oyunun bozulmadığını doğrula (bu yol yarım oyunu terk ettirmez; form oyun bitince/Canlı'ya geçince çıkabilir — beklenen).

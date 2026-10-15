@@ -146,6 +146,10 @@ function kapiScript(bootHref) {
     //    (seen-intro/oturum/PWA) BİLEREK atlayan tek kapıdır. `gec()` geçişte
     //    URL'yi temizlediğinden bir sonraki açılışta yine uygulamaya düşülür.
     `if(location.search.indexOf('tanitim=1')>=0)return;` +
+    // 2b) `?rastgele=1` — hatırlatma e-postasındaki "Rastgele Oyun Aç" bağlantısı:
+    //    hedef uygulamanın kendisi, karşılama katmanı araya girmesin (oturumu
+    //    olmayan cihazda da). Parametreyi `App.tsx` okur ve temizler.
+    `if(location.search.indexOf('rastgele=1')>=0)return g();` +
     // 3) Katmanı zaten geçmiş VEYA yarım kalmış yerel oyunu var.
     `if(l.getItem('kelimeki:seen-intro')||l.getItem('kelimeki:game-state'))return g();` +
     // 4) Supabase oturumu var (giriş yapmış).
