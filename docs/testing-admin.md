@@ -831,6 +831,11 @@ yalnızca ilk kez gelene gösteriliyor.
       gelen oturum yalnızca Yeni'de (ve Tümü'nde) görünmeli. Aynı sekmede sayfayı
       kapatıp `kelimeki.com`u normal sekmede yeniden açınca (karşılama atlanır)
       oturum Dönen'de görünmeli.
+- [ ] **Görünür süre + Hemen çıkan (15 Ekim 2026):** gizli sekmede karşılamayı
+      aç, ~2 sn bekle, başka sekmeye geç, 40 sn sonra sekmeyi kapat → kartta
+      "Karşılama" satırının Süre'si ~2 sn (40 DEĞİL) ve "Hemen çıkan (<3 sn)" +1.
+      Aynısını Android'de Meta/Instagram uygulama-içi tarayıcıdan yap (32 sn
+      yığılması buradan geliyordu). Migration canlıya inmediyse sütun "—" göstermeli.
 - [ ] **`?` popup'ı (`ziyaretci-yolculugu`)** "OTURUM sayar, kişi değil",
       "adımlar bir sıra DEĞİL, bir küme" ve "Dönen = karşılama atlandı; linkle
       gelen yeni ziyaretçi de burada" uyarılarını taşımalı.

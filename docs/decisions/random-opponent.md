@@ -493,3 +493,26 @@ koltuk şart. Yeni sunucu işi YOK (migration yok).
   yeni ilan → "İlanın yayında" (+ arkadaş varsa "<ad> davet edildi."), var olan ilana katılma → "Oyuna katıldın".
   "Vazgeç" araya girerse gecikmeli gelen liste pencereyi YENİDEN açmaz. Kapı: `verify-rematch-slots` (S2 için 19 yeni vaka).
 
+
+## 21. `?rastgele=1` bağlantısı — hatırlatma e-postasının düğmesi (13 Ekim 2026, kullanıcı kararı)
+
+*"Düğme direkt linkle rastgele oyun aç butonunu çalıştırsın."* Hiç oyun bitirmemiş, pazarlama izni veren 28 üyeye
+tek seferlik hatırlatma e-postası gidiyor; düğme `kelimeki.com/?rastgele=1`e gider ve şeritteki "Rastgele oyun aç"ın
+AYNI eylemini yapar: Canlı sekmesi açılır, kurulum formu Rastgele Oyuncu SEÇİLİ gelir.
+
+- **Üç halka:** (1) `<head>` kapı script'i (`scripts/landing-plugin.js`, madde 2b) parametreyi görünce karşılama katmanını
+  ATLAR — oturumu olmayan yeni cihazda da; (2) `App.tsx` parametreyi okur, URL'den temizler (`ref` gibi ötekiler KALIR,
+  first-touch etiketi bozulmaz), `setMainView('live')` + `requestRandomGameOpen()`; (3) `LiveGamesTab` isteği YALNIZCA oturum
+  varken tüketir (`user?.id`), formu `startRandom` + `creating` ile açar. Girişsiz gelen kişi giriş yapınca formu görür.
+- **Kuyruk ayrı** (`utils/liveGameRequest.ts` → `RANDOM_OPEN_EVENT`): arkadaş isteğinin kuyruğu bir `friendId` ister.
+- **Yalnızca web.** Mobilde karşılığı YOK; e-postadaki bağlantı tarayıcıda açılır.
+- **Ölçüm:** alıcılar `?ref=` ile ölçülemez — etiket FIRST-TOUCH ve bu üyelerin cihazında zaten bir etiket (ya da hiçbiri) var.
+  Sonuç alıcı kimlikleriyle okunur: o üyelerin `online_games` içinde `listing='random'` kurucu olması + oyun bitirmesi.
+- **Sınır:** gerçek oturumla uçtan uca denenmedi; kapı + parametre temizliği Chromium'da denendi. Kontrol:
+  `docs/testing-rastgele.md` → "`?rastgele=1` bağlantısı".
+- **GÖNDERİLDİ — 15 Ekim 2026, 20:19 TSİ (kullanıcı, Supabase Dashboard → Edge Functions → Test):** 25 üye, `attempted 25 · sent 25 · skipped 0` (13 Ekim'deki 28'den 3 kişi, bu arada oyun bitirdiği/izni değiştirdiği için eksildi; fonksiyon her alıcıyı gönderimde yeniden doğruluyor). Konu: *Kelimeki'de ilk oyununu açmaya ne dersin?* — gövde "sen" hitabıyla, kapanış "İyi oyunlar, Kelimeki Destek", düğme `?rastgele=1`. Kaynak `supabase/functions/send-random-reminder/index.ts` (anahtar yer tutucu); canlı kopya 410 taslağıyla değiştirildi (sürüm 8). **Dersler:** (1) ajan ortamından Supabase fonksiyon adresine ÇIKIŞ YOK ve `pg_net` kurulu değil → fonksiyon çağrısını kullanıcı Dashboard'daki Test panelinden yapar; (2) fonksiyon kime gönderdiğini KAYDETMEZ — iki kez basılırsa ikinci mail gider; (3) sonuç ölçümü alıcı kimlikleriyle: bu 25 üyenin `online_games` içinde `listing='random'` kurucu olması + oyun bitirmesi (§21 ölçüm maddesi).
+
+- **TAKİP ÖLÇÜMÜ (kullanıcı kararı, 15 Ekim 2026: *"bu 25 kişinin nasıl tepki verdiğine, emaile tıklayıp gelip oyun bitirip bitirmediklerine bakalım"*) — ilk bakış 22 Ekim (1 hafta), kontrol 17-18 Ekim'de ön okuma.** Kohort KAYDI (alıcı kimlikleri, gönderim 15 Ekim 2026 17:19 UTC = 20:19 TSİ; uygunluk kuralı sonradan değiştiği için bu liste başka yoldan yeniden ÜRETİLEMEZ):
+  `7f91b487 d1543d74 d521fd94 d3cf0976 c248a414 bec566c5 8292852c b63171b2 bdd442ed f47353b2 f5421dcb 385ff628 e94c4049 d9077570 9acd3924 bcbabae1 d7c0b574 20e99e5e 2de89f6a ea6e722d 007cc19a f9aa3aaa 91f1b2e8 976ee44a b7662ec7` (her biri `…-xxxx-xxxx-xxxx-xxxxxxxxxxxx`: tam UUID'ler Supabase'te `profiles.id`'den `id::text like '<önek>%'` ile bulunur).
+  **Ölçülecekler:** (a) e-postadan geldi mi: `web_sessions` içinde gönderimden sonra bu üyelerin oturumu + `?rastgele=1` ile açılış (`ref` etiketi first-touch olduğundan DOLAYLI; üyenin Canlı sekmesini açması + `create_random_game` çağrısı daha güvenilir); (b) `online_games` → `listing='random'`, kurucu bu üye, `created_at > '2026-10-15 17:19+00'`; (c) bu üyenin `games` satırı (oyun BİTİRDİ mi: gönderimden önce 0 idi, `created_at >` damgası); (d) ikinci oyuna geçti mi. **Brevo tarafı** (açıldı/tıklandı sayıları) kullanıcıdan ekran görüntüsüyle: Brevo → Transactional → Logs, konu *"Kelimeki'de ilk oyununu açmaya ne dersin?"*, 15 Ekim 20:19-20:21 TSİ. **Karşılaştırma tabanı:** aynı dönemde bu e-postayı ALMAYAN ama hiç oyun bitirmemiş üyeler (pazarlama izni vermeyenler dahil) — yoksa organik dönüşle e-postanın etkisi ayrılamaz.
+

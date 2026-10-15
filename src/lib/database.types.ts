@@ -1624,6 +1624,12 @@ export interface AdminWebJourneyRow {
   /** Burada ayrılanların karşılamadaki kaydırma derinliği (%, medyan). */
   median_scroll: number | null;
   /**
+   * Burada ayrılanlardan GÖRÜNÜR süresi < 3 sn olanlar ("hemen çıkan"). Eşik
+   * sunucuda okuma anında (`v_fast`). Migration henüz canlıya inmediyse alan
+   * hiç gelmez → istemci `undefined`ı "bilinmiyor" sayar (15 Ekim 2026).
+   */
+  left_fast?: number;
+  /**
    * Etkileşimsiz oturum sayısı — yalnızca İLK pingi ulaşmış (sekme kapanış
    * pingi hiç gelmemiş) oturumlar; çoğu önizleme/tarama botu. Adım
    * satırlarından DÜŞÜLMÜŞTÜR, her satırda aynı değer (27 Eylül 2026).
