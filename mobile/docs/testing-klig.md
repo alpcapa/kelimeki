@@ -254,6 +254,12 @@ Web'in eşi: kök `TESTING.md` §10.5. Sunucu (view + RPC) zaten canlıda.
 - [ ] **Beyin Ligi listesi.** Sütunlar SIRA · OYUNCU · OYUN · OHP; puan ve
       rütbe mührü YOK. Aynı hesapla webde de aç: sıralar ve OHP'ler BİREBİR
       aynı olmalı. Altta YZ/eşitlik notu.
+- [ ] **10. sıradaki hesap — "senin sıran" sabit satırı (16 Ekim 2026,
+      Parça 245).** Listede senden önce 8-9 kişi olsun (iPad'de ilk ekran 8
+      satır): satırın YÜKLÜ ama görünmüyorken altta "SENİN SIRAN" satırı
+      çıkmalı; listeyi kaydırıp kendi satırına gelince kaybolmalı, geri
+      kaydırınca dönmeli — titreme/yanıp sönme YOK. Hem Puan Ligi hem
+      Beyin Ligi'nde.
 - [ ] **5 oyundan az oynamış hesap:** "SENİN DURUMUN" + "… N oyun daha
       oyna, listeye gir." kartı ve ilerleme çubuğu.
 - [ ] **OHP balonu açıkken sekme değiştir** (OHP başlığına dokun → Beyin

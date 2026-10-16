@@ -235,6 +235,8 @@ nereden okunacağı ve kartın "12" tavanı orada.
 
 ⚠ **Kesimde sürüm numarası da yükselmeli** (`pubspec.yaml` + `config/env.dart`, `app_version_parity_test`): sıradaki sürüm **1.1.4** (kesim 19 Ekim). Mağazada onaylanmış bir sürüme yeni build girmez (`90186`/`90062`, `surumler.md` → "Neden 1.1.1 — tur sırasında ÖLÇÜLDÜ").
 
+**1.1.4'e biner (16 Ekim 2026, taslak PR, web yarısı `main`e hemen gider):** k-lig "senin sıran" sabit satırı artık "görünür alanda mı" ölçer, "yüklü mü" değil (Parça 245: `own_row_pin.dart`, iki liste). Kullanıcı bildirdi: Beyin Ligi'nde 10. sıradaydı, satır yüklü ama görünmüyordu. Web ikizi `claude/klig-benim-siram-gorunur` (`verify-own-row-pin`).
+
 ### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
 
 Kod YOK; karar kaydı. #804/#805 olduğu gibi **12 Ekim**'de çıkar (kesim riski
