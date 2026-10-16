@@ -36,6 +36,7 @@ npm run verify-device-labels     # Admin cihaz AĞACI (Platform ▸ Marka ▸ Mo
 npm run verify-admin-groups      # Admin AÇILIR tabloları: `?ref=` → kanal öneki (fbi Facebook DEĞİL) + (platform, sürüm) ağacı ve sürümün SAYISAL sıralaması
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ leagueRank.ts
 npm run verify-beyin-ligi        # Beyin Ligi giriş eşiği: `beyin_ligi_siralama` SQL'i ↔ beyinLigi.ts (↔ beyin_ligi.dart)
+npm run verify-own-row-pin       # k-lig listelerinde sabit "senin sıran" satırı: satır YÜKLÜ ama görünmüyorsa gösterilir (ownRowPin.ts ↔ own_row_pin.dart)
 npm run verify-league-points     # k-lig PUAN tablosu (seviyeye göre): league_points_for SQL ↔ leaguePoints.ts ↔ league_points.dart
 npm run verify-sql-engine-parity # motorun DÖRDÜNCÜ (SQL) kopyası ↔ src/ sabitleri ve hata metinleri
 npm run simulate-ai-levels       # YZ↔YZ kadran ölçümü (ROADMAP #23): üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal; `-- --oyun 200 --n 2,3,4`
