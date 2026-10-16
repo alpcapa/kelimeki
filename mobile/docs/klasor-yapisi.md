@@ -268,7 +268,10 @@ mobile/
                              # score_box_row (paylaşılan görselin üst şeridi),
                              # beyin_ligi_list (k-lig'in OHP alt ligi — web
                              # BeyinLigiList.tsx ikizi; leaderboard_modal'ın
-                             # "Beyin Ligi" sekmesi, 2 Ekim 2026)
+                             # "Beyin Ligi" sekmesi, 2 Ekim 2026),
+                             # own_row_pin (sabit "senin sıran" satırının
+                             # kararı + görünürlük ölçümü — web ownRowPin.ts
+                             # ikizi, parite testi oranı okur; 16 Ekim 2026)
       ui/rank/               # k-lig rütbe/ödül katmanı (Parça 61-62):
                              # rank_scores (isim yanındaki mührün puan
                              # kaynağı — leaderboard view'ı, toplu),

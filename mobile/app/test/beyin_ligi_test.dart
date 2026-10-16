@@ -255,4 +255,63 @@ void main() {
     expect(gw.beyinRequests, hasLength(1));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+      '10. sıradaki kullanıcı: satır YÜKLÜ ama görünmüyorsa "senin sıran" '
+      'sabit kalır, kaydırıp satıra ulaşınca kaybolur, geri kayınca döner',
+      (tester) async {
+    final rows = [
+      for (var i = 1; i <= 12; i++)
+        {
+          'sira': i,
+          'user_id': i == 10 ? 'u-me' : 'u-$i',
+          'display_name': i == 10 ? 'Ben' : 'Oyuncu$i',
+          'ohp_games': 20 + i,
+          'avg_move_score': 16.0 - i * 0.1,
+        },
+    ];
+    final gw = _Gateway(
+      beyinRows: rows,
+      mine: const {'rank': 10, 'avg_move_score': 15.0, 'ohp_games': 30},
+    );
+    // Pencere/liste yüksekliği 12 satırdan azını gösterecek kadar küçük:
+    // 10. satır ilk açılışta görünür alanın dışında kalır (iPad'deki 8
+    // satırlık durumun karşılığı).
+    await setPhoneViewSize(tester, const Size(390, 760));
+    await tester.pumpWidget(MaterialApp(
+      theme: kelimekiTheme(),
+      home: Scaffold(
+        body: LeaderboardModal(
+          auth: AuthService.fake(user: _user()),
+          stats: StatsRepo(gw),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Beyin Ligi'));
+    await tester.pumpAndSettle();
+
+    // Satır yüklü (ilk sayfa 10 satır) ama ekranın dışında → sabit satır var.
+    expect(find.text('SENİN SIRAN'), findsOneWidget);
+
+    // Listeyi kaydır: 10. satır görünür alana girince sabit satır kaybolur.
+    final list = find.descendant(
+        of: find.byType(BeyinLigiList), matching: find.byType(ListView));
+    // Küçük adımlarla kaydır (satır tembel inşa edilir, tek hamlede
+    // ensureVisible bulamaz); satır görünür alana girince sabit satır gider.
+    for (var i = 0;
+        i < 30 && find.text('SENİN SIRAN').evaluate().isNotEmpty;
+        i++) {
+      await tester.drag(list, const Offset(0, -30));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Ben'), findsOneWidget);
+    expect(find.text('SENİN SIRAN'), findsNothing);
+
+    // Başa dön: satır tekrar görünmez → sabit satır geri gelir.
+    await tester.drag(list, const Offset(0, 2000));
+    await tester.pumpAndSettle();
+    expect(find.text('SENİN SIRAN'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

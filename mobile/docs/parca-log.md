@@ -25,6 +25,18 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 245 — k-lig: sabit "senin sıran" satırı "yüklü mü" değil "görünür mü" ölçer (16 Ekim 2026, kullanıcı bildirdi)
+
+*"k-lig tablolarında kişi ilk görünen listede yoksa alt kısımda sabit görünür, kaydığında kendi sıralamasına gelince kaybolur şekilde değil miydi? Beyin liginde 10. sıradayım ve altta kalıyor."* Web ikizi (taslak değil, `main`e gider): `claude/klig-benim-siram-gorunur` — `utils/ownRowPin.ts` + `hooks/useRowInView.ts`.
+
+**Kök neden:** kural `meInList` = "satır yüklenen satırlar arasında mı". İlk sayfa 10 satır, iPad'de liste penceresi 8 satır gösteriyor → 9.-10. sıradaki oyuncunun satırı YÜKLÜ ama görünmez, sabit satır da hiç çıkmıyordu. Puan Ligi'nde aynı.
+
+**Düzeltme:** `ui/score/own_row_pin.dart` — saf `shouldPinOwnRow` (web ile birebir) + `rowMostlyInView` (satırın ≥%90'ı) + `OwnRowTracker` (`GlobalKey` ikilisi, `RenderBox.localToGlobal` ile ölçer). İki yüzey: `beyin_ligi_list.dart`, `leaderboard_modal.dart` (kendi satırı `KeyedSubtree`, liste `viewKey`). Kare sonunda ve kaydırmada ölçülür, yalnızca DEĞİŞİNCE `setState`.
+
+**Bulunan hata (testte yakalandı):** `ListView.builder` tembel — satır görünür alan + önbellek payının ötesindeyse HİÇ inşa edilmiyor. İlk sürüm "satır bulunamadı"yı `null` (ölçülemedi) saydı → `null` iken yüklüyse gizli → sabit satır gider → liste uzar → satır inşa edilir → görünmez → satır geri gelir: **sonsuz titreşim** (`pumpAndSettle` zaman aşımı). Düzeltme: görünüm VAR ama satır widget'ı YOKSA bu kesin `false` ("görünmüyor"), `null` yalnızca görünüm/boyut henüz yokken.
+
+**Doğrulama:** `flutter test` yeni `own_row_pin_test.dart` (web parite: oran + 7 karar vakası web `verify-own-row-pin` ile birebir + 6 geometri vakası) + `beyin_ligi_test.dart`te 10. sıra widget senaryosu (sabit satır var → kaydır → kaybolur → başa dön → geri gelir). Duyarlılık: `shouldPinOwnRow` `inView == false` dalı kapatılınca widget testi DÜŞÜYOR. **Sınır:** gerçek iPad'de denenmedi (`mobile/docs/testing-klig.md` §13.x yeni madde).
+
 ## Parça 239 — Koltuk numarası alt yarıdan kırpılıyordu: `Text.overflow` varsayılanı `clip` (11 Ekim 2026, 1.1.3 TestFlight)
 
 Kullanıcı iPad'de gördü: *"koltuk numaraları yarınsından kesilmiş"*. Numara rakamı 56/34 px, yuvası 36/28 px; `Baseline` rakamı yuvanın üstüne taşıyordu ama `Text`in varsayılan `overflow: clip`i onu paragrafın KENDİ kutusuna (36 px) kırpıyordu. Bulgu `debugDumpRenderTree`de (`RenderParagraph size 36, overflow: clip`), düzeltme `overflow: TextOverflow.visible` (`live_game_create_form.dart`). Parça 230/231'in geometri testi konumu ölçüyor, KIRPMAYI görmüyordu → yeni test `koltuk numarası kırpılmaz`. Ders: taşırarak konumlanan metinde `overflow: visible` şart; kırpma yalnızca görüntü alınınca görünüyor.
