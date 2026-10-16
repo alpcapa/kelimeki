@@ -15,7 +15,7 @@ ve `git branch -r` ile PR'sız dalları kontrol et.
 |---|---|---|
 | 17-18 Eki | Meta Teaser Aşama 2 ilk okuma (`Kare2` ↔ `Kar2`) | `kampanya-teaser-ekim-2026.md` §5; pencere `Kar2` 18:09 TSİ sonrası; Meta'dan bağlantı tıklaması/CTR/yerleşim ekran görüntüleri iste |
 | 19 Eki | **1.1.4 treni** | ✅ 15 Eki: `main` yedi PR'a birleştirildi (#850'de `random-opponent.md` §21 çakışması → Şerit bölümü §22'ye alındı), sürüm 1.1.4 + `surumler.md` hazırlığı `claude/merge-version-1-1-4-axx8r1`'de. **Kalan: merge ÖNCESİ "mobil derlemeyi tetikler" uyarısı + kullanıcı onayı; sıra #850→#851, kalanlar art arda (ekleme-ekleme çakışması `parca-log.md`/ROADMAP'te çıkarsa iki tarafı da tut)**; #862 gizlilik metni: web+port aynı turda |
-| 19 Eki haftası | #46-1 atıf kodu (~1 gün; yetişmezse sonraki tren) | `funnel-v2.md` |
+| 19 Eki | **#46-1 atıf kodu = taslak PR #862** (kod 13 Eki'de YAZILDI, 1.1.4 trenine biner; ayrı iş yok) | `funnel-v2.md` §#46-1. Açık: gerçek Play referrer'ı cihazda denenmedi (`testing-olcum.md` §33, mağaza kurulumu şart); Play Data safety eşlemesi BAKILMADI; kalite tablosu için kaynak kırılımının yeni başlangıç tarihi; gizlilik metni cümlesi web+port aynı turda |
 | 21 Eki 14:22 | Meta Teaser Aşama 2 BİTİŞ | kapanış okuması |
 | birkaç gün sonra | Admin → Ziyaretçi Yolculuğu "Hemen çıkan" sütunu | eski 32 sn yığılmasıyla karışık; birkaç gün sonra bak |
 | **22 Eki** (ön okuma 17-18 Eki) | **Rastgele Oyun hatırlatma e-postasının SONUCU** — 15 Eki'de 25 üyeye gitti; kim tıkladı, geldi, oyun açtı/bitirdi | `random-opponent.md` §21 → "TAKİP ÖLÇÜMÜ": kohort önekleri + ölçüm listesi orada; Brevo açılma/tıklama sayısı kullanıcıdan |
