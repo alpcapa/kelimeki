@@ -134,6 +134,9 @@ class SupabaseCloudSaveGateway implements CloudSaveGateway {
   }
 }
 
+/// Sunucu listesi isteğinin üst sınırı — aşılırsa ağ hatası gibi ele alınır.
+const Duration kCloudListTimeout = Duration(seconds: 8);
+
 class CloudSaveRepo {
   final CloudSaveGateway gateway;
   final int Function() _nowMs;
@@ -183,11 +186,15 @@ class CloudSaveRepo {
     }
   }
 
+  /// Testler kısaltır (gerçek 8 sn'yi beklememek için).
+  final Duration listTimeout;
+
   CloudSaveRepo(this.gateway,
       {int Function()? nowMs,
       this.mirrorStore,
       this.cacheStore,
-      this.deleteQueue})
+      this.deleteQueue,
+      this.listTimeout = kCloudListTimeout})
       : _nowMs = nowMs ?? (() => DateTime.now().millisecondsSinceEpoch);
 
   /// Depolama katmanına yapılan HER erişim buradan geçer. Gerekçe (10 Ağustos
@@ -247,7 +254,14 @@ class CloudSaveRepo {
   /// eklenir. Bindirme, terk-edilme kararından ÖNCE uygulanır — aksi halde
   /// dün offline oynanmış bir oyun, sunucudaki satırı 7 günden eski diye
   /// haksız yere -2 cezasıyla süpürülürdü.
-  Future<CloudSaveList?> list({String? userId}) async {
+  ///
+  /// [offline] = çağıran bağlantının OLMADIĞINI zaten biliyor (`OnlineStatus`):
+  /// ağa HİÇ gidilmez, liste doğrudan [_offlineList]ten kurulur. Gerekçe
+  /// (17 Ekim 2026, uçak yolculuğunda ölçüldü): ağ denemesinin düşmesini
+  /// beklemek uçak modunda 20-30 sn sürüyor — `getSession` süresi dolmuş
+  /// token'ı geri çekilmeli tekrarlarla yenilemeye çalışıyor — ve "Devam
+  /// Edenler" o süre boyunca "Yükleniyor…" kalıyordu, oysa liste elde.
+  Future<CloudSaveList?> list({String? userId, bool offline = false}) async {
     final Map<String, MirroredSave> mirrored = {};
     if (userId != null) {
       await _tryMirror((m) async {
@@ -256,9 +270,13 @@ class CloudSaveRepo {
         }
       });
     }
+    if (offline) return _offlineList(userId, mirrored);
     final List<Map<String, Object?>> rows;
     try {
-      rows = await _queue.read(gateway.list);
+      // Zaman aşımı "bağlantı var görünüyor ama istek askıda" (captive portal,
+      // zayıf sinyal) içindir; `OnlineStatus` iyimser bir sinyal. Aşım da
+      // ağ hatasıyla AYNI yola düşer (önbellek + ayna), yani ek bir dal yok.
+      rows = await _queue.read(() => gateway.list().timeout(listTimeout));
     } catch (e) {
       debugPrint('[Kelimeki] cloud save listesi alınamadı: $e');
       return _offlineList(userId, mirrored);
