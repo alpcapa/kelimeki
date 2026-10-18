@@ -864,6 +864,15 @@ sayılmaz). Sayılar İstanbul GÜNÜNE göre; "2+ Gün" ertesi gün kontrol edi
       o kanalın 2+ Gün'ü +1 (aynı gün ikinci açılış SAYILMAMALI).
 - [ ] **`?` popup'ı (`huni-v2`)** "KOHORT", "Eski cihaz (kohort dışı)" ve
       "Şimdilik eksik olanlar" paragraflarını taşımalı.
+- [ ] **"Mağaza (cihaz)" + "Mağaza (oturum)" (18 Ekim 2026, ROADMAP #47;
+      migration `20261018190000` UYGULANDIKTAN ve web yayınlandıktan sonra).**
+      Gizli sekmede `kelimeki.com/?ref=test-magaza` aç, sayfadaki mağaza
+      rozetine dokun → Web ▸ `test-magaza` satırında Land +1, **Mağaza (cihaz)
+      +1 (yüzdesi %100'ü AŞMAMALI)**, Mağaza (oturum) +1 ve yüzdesiz. Aynı
+      sekmede geri dönüp rozete bir kez daha dokun → (oturum) HÂLÂ +1 (tek
+      oturum), (cihaz) +1. Yeni gizli sekme + aynı etiket → (oturum) +1, (cihaz)
+      +1 yeni cihaz olarak (land da +1). **18 Ekim'den ÖNCEKİ oturumlar (cihaz)
+      sütununda GÖRÜNMEZ** (cihaz kodu yoktu) — beklenen. CSV'de iki sütun var.
 
 ## 9.24. Admin — "Kanal → Üye Kalitesi" tablosu (24 Eylül 2026)
 
