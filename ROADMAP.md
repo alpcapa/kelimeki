@@ -143,7 +143,7 @@ kadar mobil işler taslak PR. 2 Ekim'de kapanıp arşive taşınanlar: #25, #34,
 | | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
 
 **Madde numarası kuralı (26 Eylül 2026):** yeni madde **bir sonraki boş
-numarayı** alır — şu an **#47**. Numara hiçbir zaman yeniden kullanılmaz,
+numarayı** alır — şu an **#48**. Numara hiçbir zaman yeniden kullanılmaz,
 kapanmış (arşivdeki) maddelerinki de. 26 Eylül'de iki AKTİF çakışma
 bulundu ve sonradan gelen maddeye yeni numara verildi: tahta yükseklik
 bütçesi **#26 → #38** (mağaza yönlendirmesi #26 olarak kaldı; kodda ve
