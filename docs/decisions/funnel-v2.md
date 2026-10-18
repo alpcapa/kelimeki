@@ -349,3 +349,13 @@ başlangıç noktası.**
 - **Madde 2 (eski cihazlar) → EVET, damga için bir kez oku.** Eski cihazlarda referrer bir kez okunur, YALNIZCA damga için (ayrı bayrak; Huni v2 `land` kanalına DOKUNULMAZ, kohort şişmez). Play bilgiyi yaklaşık 90 gün tutuyor varsayımıyla (Play dokümanından hatırlanan süre, burada DOĞRULANMADI) 1.1.4'e güncelleyen son ~3 ayın kurulumları geriye dönük etiketlenir. Yeni veri türü yok, aynı anonim kod; beyan büyük ihtimalle değişmez (madde 5'teki `legal_text_test` kontrolü yine yapılacak).
 - **Sıradaki:** kodlama (orta boyut, ~1 gün), taslak PR, 19 Ekim kesimine yetişirse biner; yetişmezse bir sonraki trene kayar (ROADMAP #46).
 - **15 Ekim 2026 (kullanıcı):** kodlama başlatılsın mı sorusuna *"19 Ekim'de kalsın"* — yani iş kesim haftasında (bugünden sonra) başlar; bu hafta başlatılmadı. Yetişmezse kayma kuralı değişmedi.
+
+## Okuma: "Instagram" satırı 18 land / 41 mağaza — neden mağaza > land? (18 Ekim 2026, kullanıcı sordu)
+
+Canlı veri okundu (yalnızca toplamlar). **Rakamlar tutarlı, iki sütun FARKLI birim ve FARKLI bakış sayıyor:**
+- **Land 18** = web `funnel_events` land: `ig-bio` **16** + `instagram` **2** (Android'in Play referrer'lı 11 `instagram` land'i ayrı satır/platform). **Mağaza 41** = `web_sessions` `store` adımı: `instagram` **38** + `ig-bio` **3** (grup satırı ikisini toplar).
+- **Birim:** land = pencerede İLK KEZ gelen CİHAZ, kanalı İLK DOKUNUŞTA donar; mağaza = o kanala etiketli OTURUM, herhangi bir günde, tekrarlı. Aynı kişi 3 oturumda 3 kez mağazaya gidebilir ve land'i bir kez sayılır. `web_sessions`te `anon_id` YOK → oturum cihaza bağlanamıyor.
+- **İlk dokunuş etkisi:** `utm_source=instagram` oturumu 180 (24 Eyl–18 Eki) ama `instagram` land'i yalnızca 2: bu oturumların çoğu, ilk kez başka kanaldan (ör. `meta-*` reklam) gelip sonra Instagram bağlantısıyla DÖNEN kişiler olabilir — land `meta-*`e yazılmıştı. (Doğrulanamadı: cihaz bağı yok.)
+- **`entry='app'` oturumları:** `instagram` etiketli 180 oturumun 83'ü `entry=app` (23'ü mağaza), 92'si `landing` (14'ü mağaza); ikisi de ağırlıkla Android. `entry=app`ın tam anlamı bu okumada doğrulanmadı.
+- **Sonuç:** "mağaza / land" bir DÖNÜŞÜM ORANI DEĞİL (>%100 çıkabilir). Kart metni zaten birim farkını söylüyor; oran gibi okunmamalı. Cihaz bazlı gerçek oran için `web_sessions`e `anon_id` gerekir (gizlilik metni etkisi: aynı kimliksiz kod, yeni bir durum değil — ama karar kullanıcıda; YAPILMADI).
+
