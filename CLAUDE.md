@@ -60,7 +60,7 @@ npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiket
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ
 npm run verify-funnel-events     # Huni v2: eski cihaz → `mevcut`, İstanbul günü, gizlilik metni bayrağı + olay listesi ↔ migration SQL'i
-npm run verify-web-journey       # Web ziyaretçi yolculuğu (admin → "Ziyaretçi Yolculuğu"): misafir/üye kapısı, adım tekrarı + adım listesi ↔ migration SQL'i
+npm run verify-web-journey       # Web ziyaretçi yolculuğu (admin → "Ziyaretçi Yolculuğu"): misafir/üye kapısı, adım tekrarı + adım listesi ↔ migration SQL'i + anonim cihaz kodu (UUID değilse gönderilmez)
 npm run augment-dictionary       # Sözlüğe elle madde ekleme (GTS'siz — bkz. "Sözlüğe Kelime/Anlam Ekleme")
 npm run build:dict               # Sözlüğün TAM üretimi — 100 MB'lık GTS kaynağını ister
 npm run generate-logo-paths      # LogoMark.tsx + portun logo_mark_data.dart'ını birlikte üretir

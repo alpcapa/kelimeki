@@ -214,7 +214,7 @@ src/
 │   ├── chatRead.ts      # Canlı sohbetin okundu kararı — sunucu (`online_game_chat_reads`) ↔ cihaz damgasının büyüğü; kapı `verify-chat-read`
 │   ├── chatRules.ts     # Sohbet Kuralları onayı — metin + sürüm (`CHAT_RULES_VERSION`) tek kaynak; ilk mesajdan önce BİR KEZ, hesaba bağlı (`accept_chat_rules`)
 │   ├── funnelEvents.ts  # Huni v2 — cihaz başına anonim olaylar (`funnel_events`: land/visit/signup/game_start/game_finish), admin'de kohort tablosu; kapı `verify-funnel-events`
-│   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına kimliksiz oturum (`web_sessions`), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
+│   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına oturum + cihazın anonim kodu (`web_sessions.anon_id`, 18 Ekim 2026; admin Huni v2 "Mağaza (cihaz)"), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
 │   ├── pageVisible.ts   # Web telemetrisinin ortak eşiği: sayfa hiç GÖRÜNMEDEN hiçbir ping gitmez (uygulama içi tarayıcının arka plan yüklemesi ziyaret sayılmasın)
 │   ├── storeLinks.ts    # mağaza rozetleri (ROADMAP #26): URL'ler (`null` = yayında değil → rozet HİÇ çizilmez), sıra (App Store önce — Apple'ın yazılı kuralı) ve yerleşim ölçüleri
 │   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı kuyruğu + davet linki/metni (`?ref=arkadas`) + WhatsApp adresi
