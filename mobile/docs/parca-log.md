@@ -25,6 +25,16 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 247 — Gizlilik metni: anonim kod SEKİZ durumda gider (web oturum kaydı `anon_id`, 18 Ekim 2026, ROADMAP #47)
+
+Web ikizi (`claude/web-sessions-anon-id`): `web_sessions`e cihazın anonim kodu eklendi (admin Huni v2 "Mağaza (cihaz)"); bu, gizlilik metnindeki "yedi durum"u **sekize** çıkarır (madde (8): girişsiz web ziyaretinin adım/mağaza/süre/etiket kaydı) ve "Son güncelleme" tarihini **18 Ekim 2026** yapar. Port `legal_modals.dart` aynı metni BİREBİR taşır (yedi → sekiz, (8) cümlesi, "Bu sekiz kaydın…", Gizlilik tarihi); Koşullar tarihi (12 Ekim) DEĞİŞMEDİ.
+
+**Kapı:** `legal_text_test.dart` tarihi web kaynağından okuyordu; tarih tek başına yetmez, bu yüzden `sozler` listesine dört cümle eklendi (sayı + (8) + "reklamdan gelenlerin kaçının mağazaya gittiği…" + "Bu sekiz kaydın…"). Duyarlılık kanıtlandı: port metni geri alınınca 2 test DÜŞÜYOR.
+
+⚠ **#862 aynı paragrafı değiştiriyor** (Android kurulum kaynağı cümlesi, "Son güncelleme" 13 Ekim): ikisinden sonra gelen metin çakışmasını çözer; tarih TEK ve en geç olan (18 Ekim) kalır, iki yeni cümle de korunur. Web+port AYNI turda merge (web `parite` işi).
+
+**Sınır:** hukuki metnin kendisi (sekizinci durumun kapsamı) kullanıcı onayına bağlı; cihazda görülecek bir şey yok. Parça numarası 247 (#877=246) — başka bir taslak aynı numarayı aldıysa kesimde yeniden numaralanır.
+
 ## Parça 239 — Koltuk numarası alt yarıdan kırpılıyordu: `Text.overflow` varsayılanı `clip` (11 Ekim 2026, 1.1.3 TestFlight)
 
 Kullanıcı iPad'de gördü: *"koltuk numaraları yarınsından kesilmiş"*. Numara rakamı 56/34 px, yuvası 36/28 px; `Baseline` rakamı yuvanın üstüne taşıyordu ama `Text`in varsayılan `overflow: clip`i onu paragrafın KENDİ kutusuna (36 px) kırpıyordu. Bulgu `debugDumpRenderTree`de (`RenderParagraph size 36, overflow: clip`), düzeltme `overflow: TextOverflow.visible` (`live_game_create_form.dart`). Parça 230/231'in geometri testi konumu ölçüyor, KIRPMAYI görmüyordu → yeni test `koltuk numarası kırpılmaz`. Ders: taşırarak konumlanan metinde `overflow: visible` şart; kırpma yalnızca görüntü alınınca görünüyor.
