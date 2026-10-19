@@ -18137,6 +18137,7 @@ efendileşme
 efendileşmek
 efendilik
 efendim
+efes
 efildeme
 efildemek
 efileme
@@ -21468,6 +21469,7 @@ fukuslar
 ful
 fular
 fule
+fuleli
 fulya
 funafuti
 funda
@@ -35631,6 +35633,7 @@ kudüm
 kudümzen
 kudümzenlik
 kudüs
+kufi
 kuğu
 kuğurdama
 kuğurdamak
@@ -44547,6 +44550,7 @@ ozuga
 özverililik
 özverisiz
 özverisizlik
+pa
 pabuç
 pabuççu
 pabuççuluk
@@ -47126,6 +47130,7 @@ reformist
 reftar
 reftiye
 refüj
+regl
 reglan
 regresyon
 regülasyon
@@ -54922,6 +54927,7 @@ tartıştırma
 tartıştırmak
 tartma
 tartmak
+tartolet
 tarttırma
 tarttırmak
 tartura

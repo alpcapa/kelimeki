@@ -641,6 +641,25 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
       taşımadığından bu doğru davranış; `direkt`e düşüyorsa web'in gerçek
       doğrudan trafiği şişiyor demektir. "Oyun" sütunu (bitmiş oyun)
       DEĞİŞMEMELİ. Oyun sonu "Tekrar Oyna" da aynı şekilde 1 artırmalı.
+- [ ] **Yabancıyla biten oyunda "Tekrar Oyna" (S2, 13 Ekim 2026, Parça 243).** Rastgele
+      ilandan eşleşip biten bir oyun (rakip ARKADAŞ DEĞİL) → "Tekrar Oyna": onay metni
+      *"Arkadaşınız olmayan oyuncunun yerine rastgele bir oyuncu aranacak."* demeli; onayla →
+      "İlanın yayında" (uygun ilan varsa "Oyuna katıldın"); sunucu "Yalnızca arkadaşlarını
+      davet edebilirsin" DEMEMELİ. 4 kişilikte arkadaş + yabancı: arkadaşa davet gitmeli
+      ("<ad> davet edildi."), yabancı koltukları açık kalmalı, **YZ kendiliğinden
+      eklenmemeli**. Tüm rakipler arkadaşsa eski akış AYNEN. Aynısını Skor Kartı → Tüm
+      Oyunlar → tahta → "Tekrar Oyna"dan da dene. Uçak modunda arkadaş listesi okunamayınca
+      eski akışa düşmeli (herkes yabancı sayılıp ilan açılmamalı).
+- [ ] **Engellediğin biriyle "Tekrar Oyna" (13 Ekim 2026, Parça 243).** İki hesap,
+      aynı oyun. A, B'yi oyunun sohbet ayarlarından engellesin, oyun bitsin.
+      **A'da:** "Tekrar Oyna" AÇIK; onaydan sonra oyun KURULMAMALI, diyalog
+      "B kullanıcısını engellediğiniz için önce engeli kaldırmanız gerekiyor."
+      demeli + **ENGEL AYARLARI**. Engellediklerim açılsın; B'yi kaldırıp kapat →
+      rövanş KENDİLİĞİNDEN gönderilmeli. Aynısını Skor Kartı → Tüm Oyunlar →
+      tahtaya dokun → "Tekrar Oyna"dan da dene (ikinci yüzey). **B'de:** düğme
+      açık, basınca "A kullanıcısı sizi engelledi." (eskisi gibi). 4 kişilikte iki
+      rakibi engelle → ikisi de adıyla ("A ve B kullanıcılarını …"). Uçak
+      modunda: liste okunamayınca akış ENGELLENMEZ (sunucu zaten reddeder).
 - [ ] **Oyun bitir → webde gör.** Mobilde bir oyunu sonuna kadar oyna.
       Web'deki Skor Kartı'nda oyun sayısı artmalı, k-lig puanı doğru
       değişmeli (2 kişilikte 1.=+2, 2.=0).
@@ -1571,11 +1590,20 @@ geçici olarak öne çekme; aşağıdaki maddeler ayrılış saatini seçerek ko
       (`_HomeGate._gizlendi` koşulu).
 - [ ] **Aynı oyun bir kez:** bildirim düştükten sonra uygulamayı açıp aynı
       oyundan tekrar çık → ikinci bildirim YOK. Yeni bir oyunda yine var.
+      ⚠ 1.1.4'ten beri "düştü" = platform GÖSTERDİ (12 Ekim 2026, Parça 241);
+      bildirim görünmeden saat geçtiyse aynı oyun YİNE hatırlatılır.
+- [ ] **Teşhis satırı (1.1.4):** yarım oyundan logoyla çık → Setup'ın en
+      altındaki satırda `hatırlatma GG.AA 19:00` görünür (platform isteği
+      gerçekten bekletiyor). `hatırlatma KURULAMADI` görünürse kurma
+      platformda BAŞARISIZ — ekran görüntüsünü yolla. Günlerce beklemeden
+      kurulup kurulmadığını anlamanın yolu bu.
 - [ ] **Oyun bitince iptal:** hatırlatma kuruluyken oyuna dön ve bitir → GELMEZ.
 - [ ] **Bilinen sınır (Android):** cihaz yeniden başlatılırsa bekleyen
       hatırlatma silinir — hata DEĞİL, bilinçli (BOOT_COMPLETED alıcısı yok).
 - [ ] **iOS:** aynı maddeler; uygulama ÖNDEYKEN zamanı gelirse iOS bildirimi
       göstermez (beklenen — kullanıcı zaten oyunda).
+- [ ] **Ölçüm satırları (11 Ekim 2026):** kart/izin/kurma/izinsiz-düşme olayları
+      `reminder_events`e düşer — maddeler `mobile/docs/testing-olcum.md` §34.
 
 ## Test ortamları ve derleme dağıtımı → `mobile/docs/test-ortamlari.md`
 

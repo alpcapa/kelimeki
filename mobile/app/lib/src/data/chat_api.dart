@@ -28,6 +28,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:kelimeki_core/kelimeki_core.dart' show trCompare;
 
 import '../util/chat_read.dart';
+import '../util/rematch_slots.dart';
+import 'online_games_api.dart' show OnlineSlot;
 
 class OnlineGameMessageRow {
   final String id;
@@ -343,6 +345,23 @@ class ChatRepo {
     final list = [for (final r in rows) BlockedUser.fromJson(r)];
     list.sort((a, b) => trCompare(a.name, b.name));
     return list;
+  }
+
+  /// "Tekrar Oyna" öncesi: kadrodaki insan rakiplerden BENİM engellediklerimin
+  /// adları (kural `rematchBlockedOpponents`ta; web `fetchRematchBlockedNames`).
+  ///
+  /// ⚠ Liste OKUNAMAZSA boş döner (kasıtlı — `blockedUsers`ın tersi): bu bir
+  /// kolaylık denetimi, güvenlik kapısı DEĞİL; sunucu kendi kapısını zaten
+  /// uyguluyor, ağ hatasında rövanşı hiç açtırmamak kullanıcıyı çıkmaza sokardı.
+  Future<List<String>> rematchBlockedNames(
+      List<OnlineSlot> slots, String myUserId) async {
+    try {
+      final list = await blockedUsers();
+      return rematchBlockedOpponents(slots, myUserId,
+          [for (final u in list) (userId: u.userId, name: u.name)]);
+    } catch (_) {
+      return const [];
+    }
   }
 
   /// Arkadaş listesindeki 🚫/🚩 için: engelli ve şikayetli kimlik kümeleri.
