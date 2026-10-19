@@ -241,6 +241,8 @@ nereden okunacağı ve kartın "12" tavanı orada.
 |---|---|---|
 | (bu PR) `claude/yarim-oyun-hatirlatma-kok` | Yarım oyun hatırlatması: "hatırlatıldı" işareti yalnızca platform GÖSTERDİYSE; eski işaretler sıfırlanır (`_v2`); Setup teşhis satırında `hatırlatma 13.10 19:00` / `KURULAMADI` | Parça 241. Cihaz testi: `mobile/TESTING.md` §34 |
 
+**1.1.4'e binecekler (19 Ekim kesimi; kendi PR'ı dahil):** sözlük paketi (13 Ekim: efes, fuleli, tartolet, pa, regl, kufi) — mobil yarısı `words_tr.txt` + `meanings.db` + `reducer_ai2_zor.json` golden'ı, taslak PR. Sunucu + web yarısı ayrı PR'da hemen gider; o zamana kadar app'te bu 6 kelime geçersiz.
+
 ### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
 
 Kod YOK; karar kaydı. #804/#805 olduğu gibi **12 Ekim**'de çıkar (kesim riski
