@@ -25,6 +25,18 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 245 — k-lig: sabit "senin sıran" satırı "yüklü mü" değil "görünür mü" ölçer (16 Ekim 2026, kullanıcı bildirdi)
+
+*"k-lig tablolarında kişi ilk görünen listede yoksa alt kısımda sabit görünür, kaydığında kendi sıralamasına gelince kaybolur şekilde değil miydi? Beyin liginde 10. sıradayım ve altta kalıyor."* Web ikizi (taslak değil, `main`e gider): `claude/klig-benim-siram-gorunur` — `utils/ownRowPin.ts` + `hooks/useRowInView.ts`.
+
+**Kök neden:** kural `meInList` = "satır yüklenen satırlar arasında mı". İlk sayfa 10 satır, iPad'de liste penceresi 8 satır gösteriyor → 9.-10. sıradaki oyuncunun satırı YÜKLÜ ama görünmez, sabit satır da hiç çıkmıyordu. Puan Ligi'nde aynı.
+
+**Düzeltme:** `ui/score/own_row_pin.dart` — saf `shouldPinOwnRow` (web ile birebir) + `rowMostlyInView` (satırın ≥%90'ı) + `OwnRowTracker` (`GlobalKey` ikilisi, `RenderBox.localToGlobal` ile ölçer). İki yüzey: `beyin_ligi_list.dart`, `leaderboard_modal.dart` (kendi satırı `KeyedSubtree`, liste `viewKey`). Kare sonunda ve kaydırmada ölçülür, yalnızca DEĞİŞİNCE `setState`.
+
+**Bulunan hata (testte yakalandı):** `ListView.builder` tembel — satır görünür alan + önbellek payının ötesindeyse HİÇ inşa edilmiyor. İlk sürüm "satır bulunamadı"yı `null` (ölçülemedi) saydı → `null` iken yüklüyse gizli → sabit satır gider → liste uzar → satır inşa edilir → görünmez → satır geri gelir: **sonsuz titreşim** (`pumpAndSettle` zaman aşımı). Düzeltme: görünüm VAR ama satır widget'ı YOKSA bu kesin `false` ("görünmüyor"), `null` yalnızca görünüm/boyut henüz yokken.
+
+**Doğrulama:** `flutter test` yeni `own_row_pin_test.dart` (web parite: oran + 7 karar vakası web `verify-own-row-pin` ile birebir + 6 geometri vakası) + `beyin_ligi_test.dart`te 10. sıra widget senaryosu (sabit satır var → kaydır → kaybolur → başa dön → geri gelir). Duyarlılık: `shouldPinOwnRow` `inView == false` dalı kapatılınca widget testi DÜŞÜYOR. **Sınır:** gerçek iPad'de denenmedi (`mobile/docs/testing-klig.md` §13.x yeni madde).
+
 ## Parça 243 — "Tekrar Oyna": engellediğin rakiple oyun kurulmaz (S1) + arkadaş olmayan rakip → rastgele koltuk (S2) (13 Ekim 2026, taslak PR — 19 Ekim treni)
 
 Kullanıcı kararı (#45-A S1): *"sadece engelleyen taraf da tekrar oynaya basabilsin ancak ona xyz kullanıcısını engellediğiniz için önce engeli kaldırmanız lazım mesajı ile engel ayarlarını getirebiliriz."* Web yarısı ayrı PR'da (`rematchSlots.ts` → `rematchBlockedOpponents`/`rematchBlockedMessage`, iki çağıran, `verify-rematch-slots`); karar kaydı `docs/decisions/random-opponent.md` §20.

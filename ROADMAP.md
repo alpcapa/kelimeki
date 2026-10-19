@@ -245,6 +245,8 @@ nereden okunacağı ve kartın "12" tavanı orada.
 
 **1.1.4'e binecekler (19 Ekim kesimi; kendi PR'ı dahil):** sözlük paketi (13 Ekim: efes, fuleli, tartolet, pa, regl, kufi) — mobil yarısı `words_tr.txt` + `meanings.db` + `reducer_ai2_zor.json` golden'ı, taslak PR. Sunucu + web yarısı ayrı PR'da hemen gider; o zamana kadar app'te bu 6 kelime geçersiz.
 
+**1.1.4'e biner (16 Ekim 2026, taslak PR, web yarısı `main`e hemen gider):** k-lig "senin sıran" sabit satırı artık "görünür alanda mı" ölçer, "yüklü mü" değil (Parça 245: `own_row_pin.dart`, iki liste). Kullanıcı bildirdi: Beyin Ligi'nde 10. sıradaydı, satır yüklü ama görünmüyordu. Web ikizi `claude/klig-benim-siram-gorunur` (`verify-own-row-pin`).
+
 ### Rastgele Oyuncu (#804/#805) — üç açık karar KAPANDI (4 Ekim 2026, kullanıcı)
 
 Kod YOK; karar kaydı. #804/#805 olduğu gibi **12 Ekim**'de çıkar (kesim riski
