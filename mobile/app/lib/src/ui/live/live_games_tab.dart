@@ -769,9 +769,9 @@ class _LiveGamesTabState extends State<LiveGamesTab>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (_notice != null) _noticeBox(_notice!),
-                  // Rastgele Oyunlar şeridi: Devam Eden Oyunlar'ın ÜSTÜNDE.
-                  // Liste boşken kendini TAMAMEN gizler ama bağlı kalır
-                  // (yoklama sürer, yeni ilan gelince şerit belirir).
+                  // Rastgele Oyunlar şeridi: Devam Eden Oyunlar'ın ÜSTÜNDE. Artık
+                  // liste boşken de görünür ("Bekleyen oyun yok. Hemen aç.",
+                  // 12 Ekim 2026); ilk çekim sürerken/ağ hatasında gizli kalır.
                   RandomGamesStrip(
                     key: ValueKey('rastgele-serit-${user.id}'),
                     repo: repo,
@@ -786,6 +786,7 @@ class _LiveGamesTabState extends State<LiveGamesTab>
                       unawaited(_reload());
                     },
                     onNotice: _showNotice,
+                    flags: services.storage?.then((s) => s.flags),
                   ),
                   if (active.isEmpty && randomWaiting.isEmpty)
                     _empty('Devam eden bir Canlı oyunun yok.')

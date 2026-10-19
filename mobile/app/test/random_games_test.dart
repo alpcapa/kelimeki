@@ -299,6 +299,45 @@ void main() {
       expect(seatsLeftLabel(2), isNot(contains('gün')));
     });
 
+    // "N koltuk kaldı" HER YERDE (12 Ekim 2026, kullanıcı): sayı benim
+    // ilanımda dolmamış koltuk (açık + yanıtı beklenen davetli).
+    test('unfilledSeatCount: açık + davetli sayılır, dolu/YZ/kurucu sayılmaz',
+        () {
+      expect(unfilledSeatCount(['creator', 'open']), 1);
+      expect(unfilledSeatCount(['creator', 'open', 'open', 'filled']), 2);
+      expect(unfilledSeatCount(['creator', 'invited', 'ai', 'filled']), 1);
+      expect(unfilledSeatCount(['creator', 'filled']), 0);
+    });
+
+    test('cardSeatsLeft: başkasınınkinde AÇIK koltuk, benimkinde dolmamış', () {
+      final baskasi = StripListing.of(listing('b', open: 2, playerCount: 4));
+      expect(cardSeatsLeft(baskasi), 2);
+      final benim = myRandomToListing(mine('m'));
+      expect(cardSeatsLeft(benim), 1);
+    });
+
+    test(
+        'KARMA KADRO: son açık koltuk kapıldı ama arkadaş yanıtlamadı → '
+        '"0 koltuk kaldı" DEĞİL, 1 (sunucu oyunu başlatmaz)', () {
+      final karma = myRandomToListing(mine('karma', playerCount: 4, slots: [
+        slotHuman('me', name: 'Ironman', relation: 'self'),
+        slotHuman('arkadas', inviteStatus: 'pending'),
+        slotHuman('yabanci', via: 'random'),
+        slotAi,
+      ]));
+      expect(karma.openSeats, 0);
+      expect(cardSeatsLeft(karma), 1);
+    });
+
+    test('randomStripMode: kart · sunucu BAŞARIYLA boş · ilk çekim/ağ hatası',
+        () {
+      expect(randomStripMode(true, 3), RandomStripMode.cards);
+      expect(randomStripMode(false, 1), RandomStripMode.cards);
+      expect(randomStripMode(true, 0), RandomStripMode.empty);
+      expect(randomStripMode(false, 0), RandomStripMode.hidden,
+          reason: 'ilk çekim sürerken/ağ hatasında "yok" demek yalan olurdu');
+    });
+
     test('seatDotFilled: creator/filled/ai dolu; open/invited boş', () {
       expect([
         for (final s in ['creator', 'filled', 'ai', 'open', 'invited'])
@@ -595,10 +634,9 @@ void main() {
       }
       expect(RegExp('>\\s*$kRandomAcceptLabel\\s*<').hasMatch(webSerit), isTrue,
           reason: 'Kabul düğmesi etiketi ayrıştı');
-      // 12 Ekim 2026 (kullanıcı: "her yerde x koltuk kaldı"): web şeridinde kartın
-      // "Bekliyor" etiketi KALKTI; kart sayısı `cardSeatsLeft` (açık + yanıtı
-      // beklenen davetli). Port aynı davranışa geçince (port PR'ı) bu satır web'in
-      // yeni kalıbını okur; Dart'ın `kRandomMineWaiting`i o PR'da kalkar.
+      // 12 Ekim 2026 (kullanıcı: "her yerde x koltuk kaldı"): şeritte kartın
+      // "Bekliyor" etiketi KALKTI (iki tarafta da); kart sayısı `cardSeatsLeft`
+      // (açık + yanıtı beklenen davetli).
       expect(webSerit.contains('cardSeatsLeft('), isTrue,
           reason: 'kart "N koltuk kaldı" sayısı ayrıştı');
       expect(webSerit.contains("'$kRandomMineCancel'"), isTrue,
@@ -627,6 +665,31 @@ void main() {
         expect(webForm.contains(t), isTrue,
             reason: 'LiveGameCreateForm.tsx metni ayrıştı: "$t"');
       }
+    });
+
+    test('boş şerit + balon metinleri ve süre web ile BİREBİR (12 Ekim 2026)',
+        () {
+      for (final t in [kRandomEmptyText, kRandomEmptyLink, kRandomHintText]) {
+        expect(webKurallar.contains("'$t'") || webKurallar.contains(t), isTrue,
+            reason: 'web metni ayrıştı: "$t"');
+      }
+      expect(webKurallar.contains('RANDOM_HINT_MS = 7000'), isTrue);
+      expect(kRandomHintDuration.inMilliseconds, 7000);
+      // Balon cümleleri web'de iki dize olarak kırılabilir; birleşik hâli tam.
+      expect(kRandomHintText.contains('isteyen katılsın.'), isTrue);
+      expect(kRandomHintText.contains('isteyen herkes'), isFalse);
+      // Web şeridi aynı kuralları kullanıyor (port ikizi aynı fonksiyonlar).
+      for (final f in [
+        'randomStripMode(',
+        'cardSeatsLeft(',
+        'unfilledSeatCount'
+      ]) {
+        expect(webKurallar.contains(f) || webSerit.contains(f), isTrue,
+            reason: 'web kuralı ayrıştı: $f');
+      }
+      expect(
+          webSerit.contains('seatsLeftLabel(game.player_count - dolu)'), isTrue,
+          reason: 'bekleyen satır etiketi: N − dolu');
     });
 
     test('şerit kartı: "N koltuk kaldı" zaman bilgisi taşımaz (web de)', () {
