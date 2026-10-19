@@ -11,6 +11,8 @@ import { Avatar } from './Avatar';
 import { fetchBeyinLigi, fetchMyBeyinLigiRank } from '../lib/api';
 import type { BeyinLigiRow, MyBeyinLigiRank } from '../lib/database.types';
 import { useAuth } from '../hooks/useAuth';
+import { useRowInView } from '../hooks/useRowInView';
+import { shouldPinOwnRow } from '../utils/ownRowPin';
 import type { PlayerSummary } from './PlayerScoreCard';
 import { shortDisplayName } from '../utils/profileFields';
 import { BEYIN_LIGI_MIN_GAMES, gamesUntilBeyinLigi } from '../utils/beyinLigi';
@@ -48,6 +50,7 @@ export function BeyinLigiList({ onSelect }: BeyinLigiListProps) {
   const [mine, setMine] = useState<MyBeyinLigiRank | null>(null);
   const scrollRef = useRef<HTMLOListElement | null>(null);
   const sentinelRef = useRef<HTMLLIElement | null>(null);
+  const { ref: meRowRef, inView: meInView } = useRowInView(scrollRef);
 
   useEffect(() => {
     fetchBeyinLigi(INITIAL_PAGE_SIZE, 0).then((r) => {
@@ -134,7 +137,7 @@ export function BeyinLigiList({ onSelect }: BeyinLigiListProps) {
             const me = user && r.user_id === user.id;
             const name = shortDisplayName(r, 'Anonim');
             return (
-              <li key={r.user_id}>
+              <li key={r.user_id} ref={me ? meRowRef : undefined}>
                 <button
                   type="button"
                   onClick={() => onSelect(rowToPlayerSummary(r))}
@@ -171,7 +174,7 @@ export function BeyinLigiList({ onSelect }: BeyinLigiListProps) {
         </ol>
       )}
 
-      {user && mine && mine.rank != null && !meInList && (
+      {user && mine && shouldPinOwnRow({ hasRank: mine.rank != null, inList: meInList, inView: meInView }) && (
         <>
           <Divider label="senin sıran" />
           <button

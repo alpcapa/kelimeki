@@ -469,6 +469,7 @@ notu). Daha eskisi burada görünmez.
 - **Kuru koşu (7 dal + bu PR birleştirme sırası denemesi):** gerçek çakışma YALNIZCA ekleme-ekleme türünde: `mobile/docs/parca-log.md` (Parça 240/241/242/243 art arda eklenmiş — hepsi KORUNUR, sıra 240 → 243) ve `ROADMAP.md` 1.1.4 tablosu (#855 ile). Her merge'den sonra gelen ilk PR'a `main` yeniden birleştirilip bu iki dosyada iki tarafı da tut.
 - **#862 gizlilik metnini değiştirir** (`LegalContent.tsx` + Dart kopyası): web ve port AYNI merge turunda gitmeli.
 - **Kimlik notu:** `funnel-v2.md` #46-1'de 15 Ekim "19 Ekim'de kalsın" notu, kodun #862'de 13 Ekim'de yazıldığı bilgisiyle birlikte korundu.
+- **19 Ekim — merge turu (kullanıcı onayıyla, squash):** #850 → #851 → #837 → #842 → #855 → #859 → #862 → #876 → #877 → #879 → #874 (en son). #851/#837/#842/#855/#859/#862/#876/#877/#879'da `main` önce dala birleştirildi (merge commit); çakışmalar yalnızca `parca-log.md` (iki taraf da tutuldu), ROADMAP tablosu ve gizlilik tarihi (tek: 18 Ekim). `main`'de gizlilik web↔port parite kırığı #879 ile kapandı. Bu merge `mobile-build.yml`'i tetikler: `mobile-latest` ezildi, TestFlight build'i CI'dan izlenecek; build numarası ve kayıt satırı (yukarıdaki kütük) build gelince güncellenir.
 
 ## 1.1.3 — KESİLDİ (11 Ekim 2026, build 875)
 

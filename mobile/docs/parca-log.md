@@ -25,6 +25,116 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 247 — Gizlilik metni: anonim kod SEKİZ durumda gider (web oturum kaydı `anon_id`, 18 Ekim 2026, ROADMAP #47)
+
+Web ikizi (`claude/web-sessions-anon-id`): `web_sessions`e cihazın anonim kodu eklendi (admin Huni v2 "Mağaza (cihaz)"); bu, gizlilik metnindeki "yedi durum"u **sekize** çıkarır (madde (8): girişsiz web ziyaretinin adım/mağaza/süre/etiket kaydı) ve "Son güncelleme" tarihini **18 Ekim 2026** yapar. Port `legal_modals.dart` aynı metni BİREBİR taşır (yedi → sekiz, (8) cümlesi, "Bu sekiz kaydın…", Gizlilik tarihi); Koşullar tarihi (12 Ekim) DEĞİŞMEDİ.
+
+**Kapı:** `legal_text_test.dart` tarihi web kaynağından okuyordu; tarih tek başına yetmez, bu yüzden `sozler` listesine dört cümle eklendi (sayı + (8) + "reklamdan gelenlerin kaçının mağazaya gittiği…" + "Bu sekiz kaydın…"). Duyarlılık kanıtlandı: port metni geri alınınca 2 test DÜŞÜYOR.
+
+⚠ **#862 aynı paragrafı değiştiriyor** (Android kurulum kaynağı cümlesi, "Son güncelleme" 13 Ekim): ikisinden sonra gelen metin çakışmasını çözer; tarih TEK ve en geç olan (18 Ekim) kalır, iki yeni cümle de korunur. Web+port AYNI turda merge (web `parite` işi).
+
+**Sınır:** hukuki metnin kendisi (sekizinci durumun kapsamı) kullanıcı onayına bağlı; cihazda görülecek bir şey yok. Parça numarası 247 (#877=246) — başka bir taslak aynı numarayı aldıysa kesimde yeniden numaralanır.
+
+## Parça 246 — Uçak modunda açılış 20-30 sn "Yükleniyor…" kalıyordu: çevrimdışıyken ağa HİÇ gitme (17 Ekim 2026)
+
+Kullanıcı uçakta, uçak modunda gerçek deneyimi ölçtü: uygulama ~30 sn "yükleniyor", sonra "internet yok ama Yapay Zeka ile oynayabilirsin"; ertesi gün çevrimdışı bırakılan oyun "Devam Edenler"e yine 20-30 sn geç düşüyor. **İki şikâyet tek kök neden:** `SetupScreen._syncCloud` çevrimdışı olduğunu (`OnlineStatus`, 14 Ağustos) BİLİYORDU ama misafir taşıma → `flushPending` → `flushMirrored` → `list` zincirini yine de ağa gönderiyordu; her çağrı `getSession` içinde süresi dolmuş token'ı yenilemeye çalışıyor (gotrue `_refreshAccessToken`, 10 sn'lik tick penceresine kadar geri çekilmeli tekrar) ve liste ancak ağ denemesi DÜŞTÜKTEN sonra yerel aynadan kuruluyordu. Mesaj (`_offlineAiNotice`) da `saves != null` koşuluna bağlı olduğundan aynı süre kadar gecikiyordu.
+
+**Düzeltme (web karşılığı: `navigator.onLine` ile anında karar):**
+- `_syncCloud`: bağlantı yoksa ağ adımları (misafir taşıma, `games.flushPending`, `flushMirrored`) atlanır, `cloud.list(offline: true)` ağa gitmeden `_offlineList`ten (önbellek + ayna) kurar. 7 günlük ceza yine uygulanmaz (offline dalın değişmezi).
+- `CloudSaveRepo.list`: `offline` parametresi + sunucu isteğine `kCloudListTimeout` (8 sn) — iyimser sinyalin yanıldığı durum (captive portal, askıda istek) ağ hatasıyla AYNI yola düşer.
+- `_onConnectivity`: bağlantı DÖNÜNCE `_scheduleCloudSync()` — hızlı yol ağı atladığı için bunun olması şart (önceden yalnızca öne dönüşte senkron vardı; "bilinen sınır" notu TESTING §8'de).
+- Çevrimdışı + ne önbellek ne ayna varsa (girişten sonraki ilk açılış uçak modunda) `_cloudSaves` boş listeye çekilir — aksi halde `list == null` ekranı sonsuza dek "Yükleniyor…"da bırakırdı (önceden de vardı, 30 sn sonra aynı yere düşüyordu).
+- `bootstrap.dart`: açılışta çevrimdışıysa `checkVersionGate` atlanır (kapı zaten fail-open; splash 5 sn zaman aşımı kadar tutuluyordu). `OnlineStatus` artık erken kuruluyor.
+
+**Testler:** `cloud_save_test.dart` (offline:true sunucuya istek atmaz; takılan bağlantı zaman aşımıyla offline yola düşer), `setup_cloud_test.dart` (çevrimdışı açılışta `listCalls == 0`, "Yükleniyor…" yok, bağlantı dönünce liste gelir — düzeltme geri alınınca DÜŞÜYOR). **Doğrulama sınırı:** gerçek uçak modu cihazda ölçülmeli (`mobile/TESTING.md` §8).
+
+## Parça 245 — k-lig: sabit "senin sıran" satırı "yüklü mü" değil "görünür mü" ölçer (16 Ekim 2026, kullanıcı bildirdi)
+
+*"k-lig tablolarında kişi ilk görünen listede yoksa alt kısımda sabit görünür, kaydığında kendi sıralamasına gelince kaybolur şekilde değil miydi? Beyin liginde 10. sıradayım ve altta kalıyor."* Web ikizi (taslak değil, `main`e gider): `claude/klig-benim-siram-gorunur` — `utils/ownRowPin.ts` + `hooks/useRowInView.ts`.
+
+**Kök neden:** kural `meInList` = "satır yüklenen satırlar arasında mı". İlk sayfa 10 satır, iPad'de liste penceresi 8 satır gösteriyor → 9.-10. sıradaki oyuncunun satırı YÜKLÜ ama görünmez, sabit satır da hiç çıkmıyordu. Puan Ligi'nde aynı.
+
+**Düzeltme:** `ui/score/own_row_pin.dart` — saf `shouldPinOwnRow` (web ile birebir) + `rowMostlyInView` (satırın ≥%90'ı) + `OwnRowTracker` (`GlobalKey` ikilisi, `RenderBox.localToGlobal` ile ölçer). İki yüzey: `beyin_ligi_list.dart`, `leaderboard_modal.dart` (kendi satırı `KeyedSubtree`, liste `viewKey`). Kare sonunda ve kaydırmada ölçülür, yalnızca DEĞİŞİNCE `setState`.
+
+**Bulunan hata (testte yakalandı):** `ListView.builder` tembel — satır görünür alan + önbellek payının ötesindeyse HİÇ inşa edilmiyor. İlk sürüm "satır bulunamadı"yı `null` (ölçülemedi) saydı → `null` iken yüklüyse gizli → sabit satır gider → liste uzar → satır inşa edilir → görünmez → satır geri gelir: **sonsuz titreşim** (`pumpAndSettle` zaman aşımı). Düzeltme: görünüm VAR ama satır widget'ı YOKSA bu kesin `false` ("görünmüyor"), `null` yalnızca görünüm/boyut henüz yokken.
+
+**Doğrulama:** `flutter test` yeni `own_row_pin_test.dart` (web parite: oran + 7 karar vakası web `verify-own-row-pin` ile birebir + 6 geometri vakası) + `beyin_ligi_test.dart`te 10. sıra widget senaryosu (sabit satır var → kaydır → kaybolur → başa dön → geri gelir). Duyarlılık: `shouldPinOwnRow` `inView == false` dalı kapatılınca widget testi DÜŞÜYOR. **Sınır:** gerçek iPad'de denenmedi (`mobile/docs/testing-klig.md` §13.x yeni madde).
+
+## Parça 243 — "Tekrar Oyna": engellediğin rakiple oyun kurulmaz (S1) + arkadaş olmayan rakip → rastgele koltuk (S2) (13 Ekim 2026, taslak PR — 19 Ekim treni)
+
+Kullanıcı kararı (#45-A S1): *"sadece engelleyen taraf da tekrar oynaya basabilsin ancak ona xyz kullanıcısını engellediğiniz için önce engeli kaldırmanız lazım mesajı ile engel ayarlarını getirebiliriz."* Web yarısı ayrı PR'da (`rematchSlots.ts` → `rematchBlockedOpponents`/`rematchBlockedMessage`, iki çağıran, `verify-rematch-slots`); karar kaydı `docs/decisions/random-opponent.md` §20.
+
+**Ne yapıldı:** (1) `util/rematch_slots.dart` — saf kural + mesaj (web ikizi; vakalar `rematch_slots_test.dart`ta `verify-rematch-slots` ile BİREBİR). (2) `ChatRepo.rematchBlockedNames` (web `fetchRematchBlockedNames`): engel listesi OKUNAMAZSA boş döner — kolaylık denetimi, güvenlik kapısı değil, sunucu kapısı zaten var. (3) `ui/chat_scope.dart` + `app.dart`ta kök kapsam: oyun geçmişi modalı `ChatRepo` taşımıyordu ve üç çağrı zinciri var (`OnlineGamesScope` ile AYNI karar). (4) İki yüzey (`online_game_screen.dart`, `game_history_modal.dart`) aynı döngüyü uyguluyor: onay → engel kontrolü → *"<ad> kullanıcısını engellediğiniz için önce engeli kaldırmanız gerekiyor."* + **ENGEL AYARLARI** (`showBlockedUsers`) → kapanınca liste YENİDEN okunur: kalktıysa rövanş devam eder, hâlâ engelli biri varsa aynı uyarı döner (web ile aynı). VAZGEÇ hiçbir şey kurmaz.
+
+**Engellenen taraf DEĞİŞMEDİ** (düğme açık, sunucunun "sizi engelledi" mesajı). Sunucu DEĞİŞMEDİ, migration yok.
+
+**S2 (aynı PR, kullanıcı kararı):** *"mevcut 4 kişilik oyunda olduğu gibi 4. koltuk YZ olsun ama rastgele ve arkadaş eklenebilsin."* → arkadaş olmayan rakibin koltuğu AÇIK (rastgele) koltuğa döner, arkadaşlar davetli kalır, YZ yalnızca eski oyunda varsa son koltukta (kendiliğinden eklenmez). Sunucu `create_random_game` bunu ZATEN destekliyor. Web ikizi #858 (`buildRematchPlan`/`rematchConfirmText`/`rematchSentNotice`); port: `util/rematch_slots.dart` (`RematchPlan` + üç fonksiyon, vakalar web `verify-rematch-slots` (8)(9) ile BİREBİR), `FriendsRepo.rematchFriends` (hatada `null` — `friends()` zaten null döner, web'deki "fetchFriends hatada boş liste" tuzağı portta YOKTU), `ui/friends_scope.dart` (geçmiş modalına `FriendsRepo` taşımak yerine kök kapsam, `ChatScope`/`OnlineGamesScope` ile aynı karar), iki yüzeyde plan: kadro + arkadaş listesi onaydan ÖNCE okunur (metin kimin davet edileceğini önceden söyler), liste okunamazsa bugünkü akış, sonuç metni `createdNotice` üzerinden (yeni ilan "İlanın yayında" + "<ad> davet edildi." / katılma "Oyuna katıldın"). Oyun geçmişinde arkadaş planının cümlesi kart isimleriyle kurulur (`RematchPlan.withFriendNames`) — bugünkü metin BİREBİR.
+
+**Web ↔ port farkı (bilinçli, S2):** web onay penceresinde bir "Kadro kontrol ediliyor…" FAZI gösteriyor; portta pencere diyalog zinciri olduğundan okuma sürerken yalnız `_busy` çift dokunuşu engelliyor (oyun ekranı) / hiçbir şey çizilmiyor (geçmiş, kadro okuması onaydan önce). Okuma saniyenin altında; görünür bir ara faz gerekirse sonraya.
+
+**Web ↔ port farkı (bilinçli):** web'de rövanş penceresi tek bileşen, `blocked` bir FAZ; portta pencere diyalog zinciri (`showKConfirm` → `showKConfirm` → `showBlockedUsers`), yani web'deki "rövanş penceresini GİZLE (z-200 ↔ `Modal` z-150)" önlemi portta GEREKMEZ (diyaloglar zaten üst üste biniyor).
+
+**Bulunan/öğrenilen:** (a) `GameHistoryModal`'da `ChatScope.maybeOf(context)` ilk yazımda `await`ten SONRA çağrılmıştı → `use_build_context_synchronously`; fonksiyonun başına, `OnlineGamesScope.maybeOf`un yanına taşındı. (b) Temel `FakeChatGateway.unblockUser` yalnızca çağrıyı kaydediyor, listeyi değiştirmiyor — "engel kalkınca devam" testi için `UnblockingChatGateway` (`test/support/fake_online_gateway.dart`) eklendi (temel sahteyi değiştirmek mevcut engel testlerini etkilerdi). (c) **Duyarlılık İKİ yüzeyde de kanıtlandı (S1 döngüsü ve S2 rastgele dalı için ayrı ayrı):** döngü koşulu devre dışı bırakılınca blokaj testleri DÜŞÜYOR, geri konunca geçiyor. (İlk deneme geçersizdi: `dart format` satırı bölünce metin değişikliği hiç uygulanmamıştı ve "testler hâlâ geçiyor" yanlış güven verirdi — değişikliğin gerçekten uygulandığı `count == 1` ile doğrulanmadan duyarlılık kontrolüne güvenme.)
+
+**Doğrulama:** `dart analyze lib test` yeni uyarı yok (3 eski info) · `flutter test` **1213 test yeşil** (yeni: S1 — 9 saf kural, 3 oyun ekranı, 1 geçmiş; S2 — 17 saf kural/metin, 4 oyun ekranı, 1 geçmiş). **Doğrulama SINIRI:** iki gerçek hesapla cihazda DENENMEDİ (`mobile/TESTING.md` yeni madde); `GameHistoryModal`ın gerçek `ChatScope` bağlantısı (`app.dart`) yalnızca kaynak düzeyinde doğrulandı, kök kapsamla uçtan uca bir widget testi yok.
+
+## Parça 241 — Yarım oyun hatırlatması: "hatırlatıldı" işareti sessizce kilitliyordu (12 Ekim 2026) — `[Sonraki sürüm]`, 1.1.4 treni
+
+**Vaka:** hatırlatma (#731, 1.1.2'den beri) cihazda dört denemede hiç
+görülmedi. Kullanıcı dördünü de AYNI yarım oyunla yaptı. Kural "aynı oyun bir
+kez hatırlatılır" ve "teslim edildi" = *zamanı geçtikten sonra uygulama
+açıldı* idi: ilk denemenin saatinden sonraki ilk açılış oyunu
+`yarim_oyun_hatirlatilan`a yazdı, sonraki üç denemede
+`yarimOyunHatirlatmasiKurulmali` false döndü ve HİÇBİR ŞEY kurulmadı —
+hata yok, iz yok.
+
+**Düzeltme:**
+- "Teslim" artık platformdan: yeni kanal metodu `yarimOyunDurum`
+  (`{bekliyor, teslim}`). iOS: bekleyen/teslim edilmiş istek listesi +
+  `hepsiniTemizle` paneli silmeden önce kanıtı `UserDefaults`a yazar (Dart
+  sorusu temizlikten SONRA geliyor). Android: alıcı `notify` anında
+  `SharedPreferences`a yazar; `iptal` PendingIntent'i de iptal eder
+  (`FLAG_NO_CREATE` sorgusu için). Bilinmiyorsa (web) teslim SAYILMAZ.
+- Anahtar `yarim_oyun_hatirlatilan_v2`: eski, yanlış dolmuş işaretler bir
+  kereye mahsus düşer.
+- Setup teşhis satırı: `hatırlatma 13.10 19:00` (platform bekletiyor) ·
+  `hatırlatma KURULAMADI` (Dart kurdu sanıyor, platformda yok) — günlerce
+  beklemeden doğrulama.
+
+**Bilinçli bedel:** iOS'ta görülüp Bildirim Merkezi'nden silinen hatırlatma
+kanıt bırakmaz → aynı oyun bir kez daha hatırlatılabilir (güvenli yön).
+
+**Doğrulama:** `flutter test` 1186 yeşil; regresyon testi (*"saat GEÇTİ ama
+platform göstermedi"*) eski kural geri konunca DÜŞÜYOR. Parite testi yeni
+metot adını ve `bekliyor`/`teslim` anahtarlarını Kotlin+Swift'te arıyor.
+**Sınır:** Swift/Kotlin bu ortamda derlenmedi (CI); cihazda §34.
+
+## Parça 242 — Rastgele Oyuncu: şerit hep görünür + "N koltuk kaldı" her yerde + tek seferlik tanıtım balonu (12 Ekim 2026, 19 Ekim treni) — `[Sonraki sürüm]`
+
+Web ikizi `RandomGamesStrip.tsx` + `randomGames.ts` + `onboarding.ts` (taslak PR #850; karar: `docs/decisions/random-opponent.md` §22).
+Kullanıcı: *"Rastgele oyun yoksa kutu çıkmıyor. Halbuki hep çıksa … 'Bekleyen oyun yok. Hemen aç.'"*, balon metni, *"her yerde x koltuk kaldı yazsın"*.
+
+- **Şerit hep görünür** (`RandomStripMode`: `cards` · `empty` · `hidden`; `util/random_games.dart`): sunucu BAŞARIYLA boş dediyse tek satır (`random-strip-empty`, kare kart DEĞİL — alttaki Devam Eden Oyunlar itilmesin), tamamı düğme = başlıktaki "Rastgele oyun aç" ile AYNI eylem, boşken o bağlantı gizli. İlk çekim sürerken / ağ hatasında `hidden`: `_loaded` yalnızca BAŞARILI çekimde (ya da önbellekte) true — "Bekleyen oyun yok" yalan olmasın.
+- **Balon:** `HintAnchor` (mevcut `hint_bubble.dart`) şerit BAŞLIĞINA çapalı, başlığın ÜSTÜNDE (aşağıda açılınca anlattığı satırı/kartları örtüyordu — web önizlemesinde görüldü). BİR kez: `FlagsStore.seenRandomHint` (web `kelimeki:seen-random-hint`), gösterim KARARINDA işaretlenir, 7 sn (`kRandomHintDuration`) sonra kapanır. Karar ile kapanış ayrı (mod değişince sayaç sıfırlanmasın). `flags` verilmezse (depo yok) balon HİÇ çıkmaz — web'de depolama kapalıysa "görüldü" varsayımının karşılığı. `LiveGamesTab` `services.storage?.then((s) => s.flags)` geçirir.
+- **"N koltuk kaldı" her yerde:** kart durum satırı (`ilan-kalan`, benimkiler dahil; `ilan-bekliyor` anahtarı ve `kRandomMineWaiting` KALKTI) ve `RandomWaitingRow` etiketi (eskiden "Bekliyor n/N"). Sayı benim ilanımda `unfilledSeatCount` (açık + yanıtı beklenen davetli), başkasınınkinde `openSeats` (`cardSeatsLeft`). Neden: karma kadroda (arkadaş + "?") son açık koltuğu biri kapsa da sunucu oyunu açık 0 **ve** bekleyen davet 0 olunca başlatır (`_random_take_seat`) → açık koltuk 0 ama oyun `pending`; "0 koltuk kaldı" yanlış okunurdu.
+- **Testler:** `random_games_test.dart` (saf kurallar: `unfilledSeatCount` · `cardSeatsLeft` · KARMA KADRO · `randomStripMode`; web parite: metinler + süre + `cardSeatsLeft(`/`seatsLeftLabel(game.player_count - dolu)` kalıpları), `random_games_ui_test.dart` (boş satır · dokununca form + "?" seçili · ilk çekim hatasında GİZLİ · balon bir kez/7 sn/ikinci açılışta yok · depo yokken yok · karma kadro kartta+satırda "1 koltuk kaldı"). Tam takım 1192 yeşil, `dart analyze` yeni uyarı yok (3 bilgi `main`'de de var).
+- **Doğrulama SINIRI:** gerçek Canlı sekmesi yerleşiminde balon/üstteki sekme çubuğu çakışması ve karma kadro senaryosu cihazda görülmedi → `docs/testing-rastgele.md` → "Boş şerit + tanıtım balonu". Web önizlemesi (Chromium, 390 px) kullanıcıya gösterildi; Flutter widget'ı için ayrıca ekran görüntüsü ALINMADI.
+- **Merge:** web #850 ile AYNI GÜN (19 Ekim kesimi); #850 zaten `mobile/app/test/random_games_test.dart`a dokunduğundan tek başına da mobil derlemeyi tetikler.
+
+## Parça 240 — Yarım oyun hatırlatması ölçülmüyordu: `reminder_events` (11 Ekim 2026, taslak PR — 19 Ekim treni)
+
+Kullanıcı: hatırlatma dört denemede de gelmedi; sonra *"ilk giren bildirim ayarlarını açmamış olacak, buna nasıl bildirim çıkartacaksın?"* ve *"Kimse kabul etmez bence. Ama kart gösterildi / kabul edildi / reddedildi olaylarını koymak lazım."* Kodu okuyunca: izin kartı yalnızca logoyla çıkışta (`SetupScreen._yarimOyunCikisi`); telefonu bırakarak ayrılma (`AppLifecycleListener.onHide`) doğrudan `oyundanAyrildi`ye gidiyor ve izin yoksa SESSİZCE hiçbir şey kuruyor — tam hedef kitle (yeni gelen) için. Bu yolda hiç sayı yoktu (3 Ekim'de telemetri *"gerek yok"* denmişti; karar bugün değişti).
+
+**Ne yapıldı:** kimliksiz `reminder_events` (`data/reminder_events.dart`, `signup_events` deseni: global tek örnek + `configure`, fire-and-forget). Olaylar: `card_shown` / `card_accept` / `card_decline` (+ `card`: `izin`|`ayar`), `os_granted` / `os_denied` (HATIRLAT'tan sonra sistem diyaloğu), `set` (kuruldu), `skip_no_permission` (uygun ayrılış ama izin yok). Kancalar: `yarimOyunIzniAkisi` (`olay:` parametresi) ve `YarimOyunHatirlatici.oyundanAyrildi` (`olay:` ctor parametresi; "uygun mu" önce İZİN HARİÇ tüm koşullarla, sonra izinle ölçülür). Bootstrap `reminderEvents.configure` (signup_events'in yanında).
+
+**Kararlar / dersler:**
+- **`funnel_events`e DEĞİL, ayrı tablo:** oraya yeni olay gizlilik metnindeki "yedi durum"u değiştirir (`funnel-v2.md` → "Mağaza sütunu").
+- **`anon_id` GÖNDERİLMEZ:** kimliksiz sayaç yeni bir durum açmaz → web+port hukuki metin DEĞİŞMEDİ. Bedeli: oranlar okunur, "kaç kişi" okunmaz; aynı cihaz her arka plana gidişte yeni `set`/`skip_no_permission` yazabilir. `anon_id` kolonu ilk sürümde açılmıştı ve KALDIRILDI (`20261011170500`): MCP `apply_migration` üç denemede zaman aşımına uğradı, kullanıcı SQL Editor'da elle çalıştırdı. ⚠ SQL Editor `schema_migrations`a kayıt yazmaz — migration dosyası kaydı kendisi ekliyor (`insert … where not exists`); elle uygulanan her migration için aynısı gerekir. Doğrulandı: kolonlar `id, event, card, platform, app_version, created_at`, üç sürüm kayıtlı.
+- **Grant dersi (tekrar):** `grant insert … to anon, authenticated` YETMİYOR — bu projede Supabase `anon`/`authenticated`a varsayılan olarak TÜM yetkileri de veriyor (canlıda ölçüldü: SELECT/UPDATE/DELETE/TRUNCATE dahil). RLS'te yalnız INSERT politikası olduğundan fiilen kapalıydı ama ikinci migration `revoke all` + dar grant yazdı (`beyin_ligi_grant_daralt` ile aynı ders).
+- **MCP `apply_migration` zaman aşımı SONUCU BELİRSİZ bırakır:** her denemeden sonra `to_regclass`/`schema_migrations` ile ölç, kör tekrar etme; küçültülmüş sorgu işe yaradı.
+
+**Doğrulama:** `flutter test` 1.202 test yeşil (yeni: `reminder_events_test` 6 · `reminder_events_parity_test` 3 · `unfinished_reminder_test`e 11 ölçüm testi); `dart analyze` yeni uyarı yok. **Doğrulama SINIRI:** gerçek insert'i istemci yoluyla (PostgREST, anon anahtarı) bu ortamdan DENEYEMEDİM — proxy `*.supabase.co`yu reddediyor; RLS/grant SQL'den doğrulandı, uçtan uca cihazda (bkz. `mobile/docs/testing-olcum.md` §34 ölçüm maddeleri).
+
 ## Parça 239 — Koltuk numarası alt yarıdan kırpılıyordu: `Text.overflow` varsayılanı `clip` (11 Ekim 2026, 1.1.3 TestFlight)
 
 Kullanıcı iPad'de gördü: *"koltuk numaraları yarınsından kesilmiş"*. Numara rakamı 56/34 px, yuvası 36/28 px; `Baseline` rakamı yuvanın üstüne taşıyordu ama `Text`in varsayılan `overflow: clip`i onu paragrafın KENDİ kutusuna (36 px) kırpıyordu. Bulgu `debugDumpRenderTree`de (`RenderParagraph size 36, overflow: clip`), düzeltme `overflow: TextOverflow.visible` (`live_game_create_form.dart`). Parça 230/231'in geometri testi konumu ölçüyor, KIRPMAYI görmüyordu → yeni test `koltuk numarası kırpılmaz`. Ders: taşırarak konumlanan metinde `overflow: visible` şart; kırpma yalnızca görüntü alınınca görünüyor.
@@ -2875,3 +2985,21 @@ satır düştü mü" CEVAPLANMADI. Cihaz maddesi `mobile/TESTING.md`'de.
        kullanıcı kararı: *"Bunu apk ile test edip sorunsuz olduğundan emin
        olmadan aab yapılmayacak."* Cihaz listesi: `mobile/TESTING.md`
        § 24.
+
+   - ✅ **Parça 244 — kurulum kaynağı `DeviceStamp`e yazılıyor (#46-1, 13 Ekim
+     2026; 19 Ekim / 1.1.4 treni, taslak PR).** Play Install Referrer'daki
+     `utm_source` artık yalnız `funnel_events.land`a değil `FlagsStore.
+     captureUtmSource`a (first-touch) da yazılıyor → `game_starts`,
+     `game_finishes`, `guest_visits` ve `signup_utm_source` aynı kanalı
+     taşır; admin Kaynak Hunisi'ndeki `app` satırı kanallara dağılır.
+     Kararlar (kullanıcı, 13 Ekim): yarış → açılışta başlat, BEKLEME (bitmeden
+     başlayan ilk oyun `app` kalır); eski cihaz → damga için bir kez oku, ayrı
+     bayrak (`install_source_stamped`), `land` kanalına dokunma.
+     `install_source_stamp.dart` + `bootstrap.dart` (`unawaited`).
+     **Doğrulama:** `install_source_stamp_test.dart` (8 test: geçerli etiket,
+     organik, bozuk dize, eski cihaz, first-touch, tek sefer, okuma düşerse
+     bayrak yazılmaz, iOS okumaz). **SINIR:** gerçek Play referrer'ı cihazda
+     denenmedi (yalnız mağaza kurulumunda çalışır) → `testing-olcum.md` §33.
+     Gizlilik metni: aynı anonim kodla zaten giden tablolara yazılıyor, yeni
+     veri türü yok; `LegalContent.tsx` "kaynak etiketi" cümlesi ayrıca
+     okunacak (açık). iOS satırları `app` kalır.

@@ -78,6 +78,7 @@ import '../rank/league_rewards_host.dart';
 import '../loading_note.dart';
 import '../tokens.dart';
 import '../game/invasion_confirm.dart';
+import '../friends/blocked_users_sheet.dart';
 import '../../util/chat_read.dart';
 import '../../util/friend_suggest.dart';
 import 'friend_suggest_modal.dart';
@@ -85,6 +86,7 @@ import '../../util/offline_notice.dart';
 import '../../util/uuid.dart';
 import '../../util/online_status.dart';
 import '../../util/onboarding.dart';
+import '../../util/rematch_slots.dart';
 import '../../data/error_reporter.dart';
 import '../../util/error_message.dart';
 
@@ -1101,28 +1103,62 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
   /// (ör. artık arkadaş değilsiniz) olduğu gibi gösterilir.
   Future<void> _handleRematch() async {
     if (_busy) return;
-    final names = [
-      for (final s in widget.game.slots)
-        if (s.isHuman && s.userId != widget.myUserId) s.name ?? 'Bir arkadaşın'
-    ];
     final withAi = widget.game.slots.any((s) => s.isAi);
+    // Plan (13 Ekim 2026, S2; web `openRematch`): rakipler arkadaş mı? Hepsi
+    // arkadaşsa bugünkü akış, değilse yabancı koltukları açık koltuğa döner
+    // (`create_random_game`). Liste OKUNAMAZSA (`null`) bugünkü akış. Okuma
+    // sürerken `_busy` yeniden girişi (çift dokunuş) engeller.
+    setState(() => _busy = true);
+    Map<String, String>? friends;
+    try {
+      friends = await widget.friends?.rematchFriends();
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+    if (!mounted) return;
+    final plan = buildRematchPlan(widget.game.slots, widget.myUserId, friends);
     // Kabul butonu SOLDA (Parça 25 kuralı) — showKConfirm bunu garanti eder.
     final ok = await showKConfirm(
       context,
       title: 'Tekrar Oyna',
-      message: '${names.join(', ')} ile aynı kadroda yeni bir oyun açılacak ve '
-          'davet gönderilecek.'
-          '${withAi ? ' 4. koltuk yine Yapay Zeka olacak.' : ''} Emin misin?',
+      message: rematchConfirmText(plan, hasAi: withAi),
       confirmLabel: 'TEKRAR OYNA',
     );
     if (!ok || !mounted) return;
+    // Engellediğim biri kadrodaysa oyun KURULMAZ (13 Ekim 2026, kullanıcı
+    // kararı; web `OnlineGameScreen.tsx` → `blocked` fazı): önce engel
+    // kaldırılır. Engel Ayarları kapanınca liste YENİDEN okunur — kalktıysa
+    // rövanş devam eder, hâlâ engelli biri varsa aynı uyarı döner (web ile
+    // aynı). Kural `rematchBlockedOpponents`ta.
+    final chat = widget.chat;
+    while (chat != null) {
+      final blocked =
+          await chat.rematchBlockedNames(widget.game.slots, widget.myUserId);
+      if (!mounted) return;
+      if (blocked.isEmpty) break;
+      final openSettings = await showKConfirm(
+        context,
+        title: 'Tekrar Oyna',
+        message: rematchBlockedMessage(blocked),
+        confirmLabel: 'ENGEL AYARLARI',
+      );
+      if (!openSettings || !mounted) return;
+      await showBlockedUsers(context, chat: chat);
+      if (!mounted) return;
+    }
     setState(() => _busy = true);
     String? error;
+    ({String title, String body})? notice;
     try {
-      await widget.onlineGames.create(
-        widget.game.playerCount,
-        rematchSlots(widget.game.slots, widget.myUserId),
-      );
+      if (plan.random) {
+        // Sunucu saf rastgele kadroda uygun ilana KATILABİLİR; sonuç metni iki
+        // dalı ayırır (web `rematchSentNotice`).
+        final r = await widget.onlineGames
+            .createRandom(widget.game.playerCount, plan.slots);
+        notice = rematchSentNotice(plan, joined: r.joined, started: r.started);
+      } else {
+        await widget.onlineGames.create(widget.game.playerCount, plan.slots);
+      }
     } catch (e) {
       // LiveGameCreateForm ile AYNI helper: `create_online_game`in Türkçe
       // reddini (PostgrestException.message) ham `toString()` gürültüsü
@@ -1134,10 +1170,11 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     if (!mounted) return;
     await showKInfo(
       context,
-      title: 'Tekrar Oyna',
+      title: error == null && notice != null ? notice.title : 'Tekrar Oyna',
       message: error ??
+          notice?.body ??
           'Davetiniz gönderilmiştir.\n\n'
-              '${names.join(', ')} yanıt verince oyun başlayacak.'
+              '${plan.friendNames.join(', ')} yanıt verince oyun başlayacak.'
               '${withAi ? ' 4. koltuk Yapay Zeka.' : ''}',
       // web'de bu iki durum AYRI dallar: gönderim başarılıysa "Tamam",
       // sunucu reddettiyse "Kapat" (OnlineGameScreen.tsx, `sent` vs `error`

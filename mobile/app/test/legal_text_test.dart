@@ -108,6 +108,20 @@ void main() {
           'açıktır',
       'oyuncuların birbiriyle arkadaş olması gerekmez',
       'Dilediğiniz kişiyi sessize alabilir ya da şikayet edebilirsiniz',
+      // Gizlilik: anonim kod SEKİZ durumda gider (18 Ekim 2026, ROADMAP #47 —
+      // web oturum kaydı `web_sessions.anon_id`). Sayı ve (8) cümlesi iki
+      // tarafta da bulunmalı; yedi → sekiz tek tarafta kalırsa metin yalan olur.
+      'Bu kod sekiz durumda sunucuya iletilir',
+      '(8) Siteyi (web) girişsiz (misafir) ziyaret ederken',
+      'reklamdan gelenlerin kaçının mağazaya gittiğini kişileri tanımadan '
+          'sayabiliyoruz',
+      'Bu sekiz kaydın hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA '
+          'YER ALMAZ',
+      // Gizlilik §2 etiket maddesi (#46-1, 13 Ekim 2026)
+      'Android\'de bu etiket, siteden Google Play\'e geçtiğinizde Play\'in '
+          'kurulum yönlendirme bilgisiyle (Install Referrer) uygulamaya da '
+          'taşınır; yalnızca kanal ölçümü içindir, kimliğinizi ya da reklam '
+          'kimliğinizi içermez',
     ];
     for (final s in sozler) {
       expect(webN.contains(norm(s)), isTrue,

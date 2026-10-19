@@ -11,6 +11,7 @@
 import { readFileSync } from 'node:fs';
 import {
   JOURNEY_STEPS,
+  journeyAnonId,
   reduceJourney,
   type JourneyEvent,
   type JourneySession,
@@ -255,7 +256,7 @@ console.log('webJourney — ziyaretçi yolculuğu');
 // o migration'la DEĞİŞTİRİLMELİ.
 {
   const dosyalar: [string, number][] = [
-    ['supabase/migrations/20260928100430_web_journey_store_step.sql', 2], // record_web_session (`store`); admin_web_journey'yi aşağıdaki yeniden yazdı
+    ['supabase/migrations/20261018190000_web_sessions_anon_id.sql', 1], // record_web_session (EN SON yeniden yazan: `p_anon_id`; öncesi `20260928100430_web_journey_store_step.sql` — onun admin_web_journey'si de aşağıdakiyle geçersiz)
     ['supabase/migrations/20261015120000_admin_web_journey_left_fast.sql', 1], // admin_web_journey (EN SON yeniden yazan: `left_fast` sütunu; öncesi en ileri adım + türetilmiş `tutorial_skip`, v_steps'e GİRMEZ)
   ];
   for (const [dosya, beklenen] of dosyalar) {
@@ -273,6 +274,41 @@ console.log('webJourney — ziyaretçi yolculuğu');
       );
     }
   }
+}
+
+// 18 Ekim 2026 (ROADMAP #47): her ping cihazın anonim kodunu taşır — YALNIZCA
+// geçerli bir UUID ise (sunucu parametresi `uuid`: bozuk bir değer RPC'yi
+// 400'le düşürür ve ping'in TAMAMI kaybolur).
+{
+  console.log('Anonim cihaz kodu (journeyAnonId) + migration sözleşmesi');
+  const g = globalThis as { localStorage?: unknown };
+  const onceki = g.localStorage;
+  const depo = (v: string | null) => {
+    const kayit = new Map<string, string>();
+    if (v !== null) kayit.set('kelimeki:anon-id', v);
+    g.localStorage = {
+      getItem: (k: string) => kayit.get(k) ?? null,
+      setItem: (k: string, x: string) => void kayit.set(k, x),
+    };
+  };
+  const uuid = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
+  depo(uuid);
+  check('geçerli UUID aynen gider', journeyAnonId() === uuid, String(journeyAnonId()));
+  depo('bozuk-kod');
+  check('bozuk kod GÖNDERİLMEZ (null)', journeyAnonId() === null, String(journeyAnonId()));
+  depo('');
+  check('boş kayıtta yeni UUID üretilir ve geçerlidir', /^[0-9a-f-]{36}$/i.test(String(journeyAnonId())));
+  g.localStorage = undefined;
+  check('localStorage yoksa null (ping kodsuz gider)', journeyAnonId() === null);
+  g.localStorage = onceki;
+
+  const mig = readFileSync('supabase/migrations/20261018190000_web_sessions_anon_id.sql', 'utf8');
+  check('migration: eski 8 parametreli imza DROP', /drop function if exists public\.record_web_session \(uuid, text, text, text, text, integer, integer, integer\);/.test(mig));
+  check('migration: p_anon_id uuid default null', /p_anon_id\s+uuid default null/.test(mig));
+  check('migration: anon_id yalnızca İLK yazımda atanır (coalesce)', /anon_id\s*=\s*coalesce\(w\.anon_id, excluded\.anon_id\)/.test(mig));
+  check('migration: admin_funnel anon yetkisi YOK', /revoke all on function public\.admin_funnel \(integer, text\) from public, anon;/.test(mig));
+  const ts = readFileSync('src/utils/webJourney.ts', 'utf8');
+  check('istemci: RPC gövdesi p_anon_id taşıyor', /p_anon_id:\s*journeyAnonId\(\)/.test(ts));
 }
 
 if (failures > 0) {
