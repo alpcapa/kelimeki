@@ -15,6 +15,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/push_repo.dart';
+import '../../data/reminder_events.dart';
 import '../../storage/flags_store.dart';
 import '../../util/push_rules.dart';
 import '../../util/unfinished_reminder.dart';
@@ -139,7 +140,11 @@ Future<bool> yarimOyunIzniAkisi(
   required FlagsStore flags,
   DateTime? simdi,
   bool? ios,
+  ReminderEventLogger? olay,
 }) async {
+  // Ölçüm (11 Ekim 2026, `reminder_events`): kart gösterildi / onaylandı /
+  // ertelendi + sistem diyaloğunun sonucu. Kimliksiz, fırlatmaz.
+  final kaydet = olay ?? reminderEvents.log;
   try {
     final izin = await messaging.permission();
     final apple = ios ?? defaultTargetPlatform == TargetPlatform.iOS;
@@ -157,17 +162,25 @@ Future<bool> yarimOyunIzniAkisi(
     await flags.pushSorulduIsaretle(simdi ?? DateTime.now());
     if (!context.mounted) return false;
 
+    final kartAdi = kart == YarimOyunKarti.ayaraGonder
+        ? kReminderCardAyar
+        : kReminderCardIzin;
+    kaydet(kReminderCardShown, card: kartAdi);
+
     if (kart == YarimOyunKarti.ayaraGonder) {
       // Sistem diyaloğu bir daha açılamıyor — tek yol telefonun ayarları.
       // Ayarları açan ve dönüşte hatırlatmayı yeniden deneyen çağıran
       // (`YarimOyunHatirlatici.ayarlaraGonder`); burası yalnızca soruyor.
-      return await showKConfirm(
+      final ayaraGit = await showKConfirm(
         context,
         title: kYarimOyunAyarBaslik,
         message: kYarimOyunAyarMetni,
         confirmLabel: 'AYARLARI AÇ',
         cancelLabel: 'ŞİMDİ DEĞİL',
       );
+      kaydet(ayaraGit ? kReminderCardAccept : kReminderCardDecline,
+          card: kartAdi);
+      return ayaraGit;
     }
 
     final kabul = await showKConfirm(
@@ -178,7 +191,13 @@ Future<bool> yarimOyunIzniAkisi(
       confirmLabel: 'HATIRLAT',
       cancelLabel: 'ŞİMDİ DEĞİL',
     );
-    if (kabul) await messaging.requestPermission();
+    kaydet(kabul ? kReminderCardAccept : kReminderCardDecline, card: kartAdi);
+    if (kabul) {
+      final sonuc = await messaging.requestPermission();
+      kaydet(sonuc == PushPermission.granted
+          ? kReminderOsGranted
+          : kReminderOsDenied);
+    }
     return false;
   } catch (e) {
     debugPrint('[Kelimeki] yarım oyun izin akışı hatası: $e');
