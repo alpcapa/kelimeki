@@ -291,6 +291,47 @@ satırlarında dolu. Yüzdesi Land'e göre; reklam ziyaretçisinde oturum ≈ ki
 Kart metni (`?`) bunu söylüyor. Dönüş tipi değişti → DROP + CREATE,
 `proacl` öncesiyle aynı (authenticated + service_role).
 
+## "Mağaza (cihaz)" — `web_sessions`e anonim cihaz kodu (18 Ekim 2026, ROADMAP #47)
+
+Kullanıcı: Admin Huni v2'de Instagram satırı 18 land / 41 mağaza göstermişti
+(`ig-bio` 16 + `instagram` 2 land; `instagram` 38 + `ig-bio` 3 mağaza OTURUMU).
+**Sebep birim farkı:** land = ilk dokunuşta kanalı donan CİHAZ, mağaza = etiketli
+OTURUM (tekrarlı, herhangi bir gün) ve `web_sessions`te cihaz kodu yoktu → oturum
+kohorta bağlanamıyor, mağaza ÷ land oran olarak okunamıyordu.
+
+**Karar (kullanıcı, 18 Ekim 2026: *"Başla"*):** `web_sessions.anon_id` (nullable,
+`funnel_events.anon_id` ile AYNI kod) + `admin_funnel`e `store_devices` (kohort
+CİHAZI, her zaman ≤ land). Eski `store` (oturum) AYNEN kalır; `anon_id`siz geçmiş
+oturumlar yalnızca onda görünür. Admin kartında iki sütun: **Mağaza (cihaz)**
+(yüzdeli) ve **Mağaza (oturum)** (düz sayı, YÜZDESİZ).
+- **Sunucu:** `supabase/migrations/20261018190000_web_sessions_anon_id.sql`.
+  `record_web_session`e 9. parametre (`p_anon_id uuid default null`): eski 8
+  parametreli imza DROP (iki imza yan yana kalmasın), kod yalnızca İLK yazımda
+  atanır (`coalesce`), eski istemci varsayılan null ile çalışır. `admin_funnel`
+  dönüş tipi değişti → DROP + CREATE; `proacl` canlıdaki ile aynı (record: anon +
+  authenticated + service_role; admin: authenticated + service_role). **Yerel
+  PostgreSQL 16'da denendi** (canlı şemanın imzalarıyla): eski çağrı çalışıyor,
+  ilk kod korunuyor, null iken sonraki ping atıyor, tek imza, `proacl` aynı,
+  `admin_funnel` land 2 / store 2 (oturum) / `store_devices` 1. **Canlıya UYGULANMADI.**
+- **İstemci:** `webJourney.ts` her ping'e `p_anon_id` ekler — YALNIZCA geçerli bir
+  UUID ise (bozuk değer RPC'yi 400'le düşürüp ping'in TAMAMINI kaybettirirdi),
+  yoksa null. Kapı: `npm run verify-web-journey`.
+- **⚠ GİZLİLİK — ÖNCEKİ ÇIKARIMIM YANLIŞTI.** Sohbette "gizlilik metni muhtemelen
+  değişmez" demiştim; `web_sessions` 23 Eylül 2026'dan beri BİLEREK kimliksizdi
+  (*"Gizlilik metnine dokunmadan başla"*) ve metin anonim kodun sunucuya gittiği
+  durumları sayıyor (yedi madde). Oturum tablosuna kod eklemek **sekizinci durum**:
+  web `LegalContent.tsx` (yedi → sekiz, madde (8), "Son güncelleme" 18 Ekim 2026) ve
+  portun `legal_modals.dart`ı AYNI turda; `legal_text_test.dart` tarihi web
+  kaynağından okur → web tek başına merge edilirse web CI'ın `parite` işi düşer.
+  Bu yüzden web PR'ı port PR'ıyla AYNI GÜN (1.1.4 treni) gider. #862 de aynı
+  paragrafı değiştiriyor (kurulum kaynağı cümlesi) → ikisinden sonra gelen
+  çakışmayı çözer; "Son güncelleme" TEK tarih ve en geç olan (18 Ekim) kalır.
+- **Sıra:** önce sunucu migration'ı canlıya (kullanıcı onayıyla, zararsız: sütun/
+  parametre isteğe bağlı), sonra web+port+gizlilik metni AYNI turda. İstemci
+  metin yayında değilken `anon_id` GÖNDERMEMELİ.
+- **Sınır:** gerçek bir kampanya trafiğiyle uçtan uca denenmedi; kontrol maddesi
+  `docs/testing-admin.md` §9.23.
+
 ## Okuma: yeni üyeler oyunu bitirmiyor (10 Ekim 2026)
 
 Kullanıcı: *"Çok yeni üye var ama neredeyse hiçbiri bir oyun bitirmedi."*
@@ -347,5 +388,6 @@ başlangıç noktası.**
 **KARARLAR (13 Ekim 2026, kullanıcı — iki açık soru KAPANDI, kod HENÜZ YOK):**
 - **Madde 1 (yarış) → açılışta başlat, BEKLEMEDEN damgala.** Referrer uygulama açılır açılmaz okunur, sonuç gelince `captureUtmSource` ile damga yazılır; oyun başlatma/kayıt okuma bitmeden olursa o satır `app` kalır. Gerekçe: yeni kurulumda ilk oyundan önce 60 sn'lik tanıtım ekranı var (`docs/decisions/onboarding.md`), yani yarış ancak tanıtımı ATLAYANLARDA yaşanır ve `app` kalan satırlar küçük bir kayıp; kullanıcıya hiçbir gecikme eklenmez. Elenen: damga yazılmadan okumayı BEKLEMEK (5 sn'ye kadar donma hissi), sonradan düzeltmek (yeni sunucu yolu + anonim kodla eşleştirme + gizlilik kontrolü, 19 Ekim'e sığmaz). ⚠ Yine de cihazda ölçülmeli: tanıtımı atlayan kullanıcıda `app` kalan satır oranı (`mobile/docs/testing-olcum.md` §33'e eklenecek).
 - **Madde 2 (eski cihazlar) → EVET, damga için bir kez oku.** Eski cihazlarda referrer bir kez okunur, YALNIZCA damga için (ayrı bayrak; Huni v2 `land` kanalına DOKUNULMAZ, kohort şişmez). Play bilgiyi yaklaşık 90 gün tutuyor varsayımıyla (Play dokümanından hatırlanan süre, burada DOĞRULANMADI) 1.1.4'e güncelleyen son ~3 ayın kurulumları geriye dönük etiketlenir. Yeni veri türü yok, aynı anonim kod; beyan büyük ihtimalle değişmez (madde 5'teki `legal_text_test` kontrolü yine yapılacak).
-- **Sıradaki:** kodlama (orta boyut, ~1 gün), taslak PR, 19 Ekim kesimine yetişirse biner; yetişmezse bir sonraki trene kayar (ROADMAP #46).
-- **15 Ekim 2026 (kullanıcı):** kodlama başlatılsın mı sorusuna *"19 Ekim'de kalsın"* — yani iş kesim haftasında (bugünden sonra) başlar; bu hafta başlatılmadı. Yetişmezse kayma kuralı değişmedi.
+- **Platform kırılımı → AYRI İŞ AÇILMAYACAK (13 Ekim 2026, kullanıcı: *"Huni v2 yeterli, ayrı iş açmayalım"*).** Şema ölçüldü: `funnel_events`, `game_starts`, `game_finishes` `platform`, `guest_visits` `device_type` taşıyor; `profiles` taşımıyor. `utm_source='app'` satırları platforma göre: `game_starts` android 1.554 / ios 384 / app-web 15, `game_finishes` android 1.052 / ios 209 / boş 220, `guest_visits` android 286 / ios 151 → `app` ≠ iOS, hepsini iOS saymak yanlış. Admin'de Huni v2 tablosu (`FunnelV2Table`) zaten platform → kanal gruplu, 1.1.4 sonrası Android kanallara dağılır, iOS `Mobil Uygulama` kalır. **Bilinen sınır:** "Kanal → Üye Kalitesi" (`admin_member_quality`) platform boyutu taşımıyor; #46-1 sonrası `app` satırı iOS üyeleri + Android'in etiketsiz üyelerini karışık gösterir. Kullanıcı bunu bilerek kabul etti; `funnel_events` ile anonim kod eşleştirmesi denenmedi.
+- **KOD YAZILDI (13 Ekim 2026, taslak PR):** `data/install_source_stamp.dart` (`stampInstallSource`) + `FlagsStore.installSourceStamped` + `bootstrap.dart` (`unawaited`) + `install_source_stamp_test.dart`. Tek deneme; okuma BAŞARIYLA bitince bayrak yazılır (etiket çıksa da çıkmasa da), düşerse bayrak yazılmaz ve sonraki açılış yeniden dener. **Gizlilik metni (13 Ekim 2026, kullanıcı onayı):** `LegalContent.tsx` + `legal_modals.dart` etiket maddesine Install Referrer cümlesi eklendi, Gizlilik "Son güncelleme" 13 Ekim 2026 (Koşullar 12 Ekim kaldı); cümle `legal_text_test.dart` `sozler` listesinde web↔port kilitli. **Play Data safety: DEĞİŞİKLİK YOK (13 Ekim 2026, kullanıcı: *"bulamadıysan yoktur… mevcut hali koruyoruz"*).** Gerekçe: form veri türüne göre dolduruyor; etiket zaten beyanlı `App interactions` (Analytics) ve `Device or other IDs` (`anon_id`) türlerine giriyor, reklam kimliği içermiyor. ⚠ Google'ın Install Referrer için resmi bir Data safety görüşü ARANDI ama BULUNAMADI (developer.android.com belgesi Data safety'den söz etmiyor); karar bir çıkarım, Google teyidi değil. Play Console'dan bir uyarı/ret gelirse buraya dön. Kalan: cihaz kontrolü (`testing-olcum.md` §33), kaynak kırılımı için yeni başlangıç tarihi (madde 3).
+- **15 Ekim 2026 (kullanıcı):** kodlama başlatılsın mı sorusuna *"19 Ekim'de kalsın"* — yani iş kesim haftasında (bugünden sonra) başlar; bu hafta başlatılmadı. Yetişmezse kayma kuralı değişmedi. ⚠ Not (1.1.4 treni hazırlığı): bu satır yazıldığında kod hâlâ yazılmamış sanılıyordu, oysa kod 13 Ekim'de taslak PR #862'de YAZILMIŞTI (yukarıdaki "KOD YAZILDI" satırı); "Sıradaki: kodlama" satırı bu yüzden düşürüldü. #862 kesimde diğer PR'larla birlikte merge edilir.

@@ -86,8 +86,8 @@ Future<void> _pump(WidgetTester tester, Size size, double scale) async {
   await tester.pumpWidget(MaterialApp(
     theme: kelimekiTheme(),
     builder: (context, child) => MediaQuery(
-      data: MediaQuery.of(context)
-          .copyWith(textScaler: TextScaler.linear(scale)),
+      data:
+          MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
       child: child!,
     ),
     home: Scaffold(
@@ -139,13 +139,19 @@ void main() {
     });
   }
 
-  testWidgets('kullanıcının satırı listeye yüklenince kısayol kalkar',
+  testWidgets('kullanıcının satırı GÖRÜNÜR alana gelince kısayol kalkar',
       (tester) async {
     await _pump(tester, const Size(390, 844), 1.0);
     expect(find.text('SENİN SIRAN'), findsOneWidget);
-    // Kaydırdıkça 20'şer yükleniyor; 31. sıra ikinci sayfayla gelir.
-    for (var i = 0; i < 6; i++) {
-      await tester.drag(find.byType(ListView).first, const Offset(0, -600));
+    // Kaydırdıkça 20'şer yükleniyor; 31. sıra ikinci sayfayla gelir. 16 Ekim
+    // 2026'dan beri kısayol satırın YÜKLÜ olmasıyla değil GÖRÜNÜR olmasıyla
+    // kalkar (web `ownRowPin.ts` ikizi): küçük adımlarla kaydır, satır
+    // görünür alana girince kısayol gitmeli. Satır görünür alanı aşıp
+    // geçerse kısayol geri gelir — o yön `beyin_ligi_test.dart`ta.
+    for (var i = 0;
+        i < 80 && find.text('SENİN SIRAN').evaluate().isNotEmpty;
+        i++) {
+      await tester.drag(find.byType(ListView).first, const Offset(0, -150));
       await tester.pumpAndSettle();
     }
     expect(find.text('SENİN SIRAN'), findsNothing);

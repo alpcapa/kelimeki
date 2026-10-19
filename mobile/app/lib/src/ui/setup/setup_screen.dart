@@ -224,6 +224,10 @@ class _SetupScreenState extends State<SetupScreen>
   String _diagStorage = 'depo…';
   int _diagPendingMirrors = 0;
 
+  /// Yarım oyun hatırlatmasının platformdaki durumu (12 Ekim 2026,
+  /// `YarimOyunHatirlatici.teshis`) — null ise satıra hiçbir şey eklenmez.
+  String? _diagHatirlatma;
+
   LocalGameRepo? _repo;
   GamesRepo? _games;
   bool _saveChecked = false;
@@ -865,6 +869,7 @@ class _SetupScreenState extends State<SetupScreen>
   }
 
   Future<void> _refreshSaveStatus() async {
+    unawaited(_refreshReminderDiag());
     final repo = _repo;
     if (repo == null) return;
     final state = await repo.loadSave();
@@ -875,6 +880,13 @@ class _SetupScreenState extends State<SetupScreen>
       _savedState = state;
       _savedAtMs = at;
     });
+  }
+
+  Future<void> _refreshReminderDiag() async {
+    final h = widget.services.yarimOyun;
+    if (h == null || !widget.showDiagnostics) return;
+    final t = await h.teshis();
+    if (mounted && t != _diagHatirlatma) setState(() => _diagHatirlatma = t);
   }
 
   Future<void> _openGame(GameController controller, SetWordSource words,
@@ -1607,6 +1619,7 @@ class _SetupScreenState extends State<SetupScreen>
                                 if (_diagPendingMirrors < 0) 'bekleyen ?',
                                 if (_diagPendingMirrors > 0)
                                   'bekleyen $_diagPendingMirrors',
+                                if (_diagHatirlatma != null) _diagHatirlatma!,
                               ].join(' · '),
                               textAlign: TextAlign.center,
                               style: const TextStyle(

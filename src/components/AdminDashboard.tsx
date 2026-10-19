@@ -581,11 +581,14 @@ const HINTS: Record<string, { title: string; body: ReactNode }> = {
         ADETLERİNİ gösterir.
         <br />
         <br />
-        <b>Mağaza</b> = mağaza rozetine / şeridine dokunan web oturumu (yüzdesi <b>Land</b>'e
-        göre). ⚠ Kohortun DIŞINDAN, Ziyaretçi Yolculuğu kaydından gelir: birimi cihaz değil{' '}
-        <b>oturum</b>, kanala <code>?ref=</code> etiketiyle bağlanır ve yalnızca web
-        satırlarında doludur. Reklamdan gelen telefon ziyaretçisi sitede oynamaz, mağazaya
-        gider; öteki sütunlar bu trafiği hiç görmez, bu sütun görür (29 Eylül 2026).
+        <b>Mağaza (cihaz)</b> = Land'e giren cihazlardan mağaza rozetine / şeridine dokunanlar
+        (yüzdesi <b>Land</b>'e göre, hep ≤ %100). Ziyaretçi Yolculuğu kaydını cihaz koduyla
+        kohorta bağlar; <b>18 Ekim 2026'dan ÖNCEKİ oturumlarda cihaz kodu yoktur</b>, onlar
+        bu sütunda sayılmaz. <b>Mağaza (oturum)</b> = aynı dokunuşun OTURUM sayısı: kohortun
+        DIŞINDAN gelir, kanala <code>?ref=</code> etiketiyle bağlanır, aynı kişi birden çok
+        oturum açabilir ve yüzde VERİLMEZ (Land ile aynı birim değil, oran okunmamalı).
+        Yalnızca web satırlarında doludur. Reklamdan gelen telefon ziyaretçisi sitede
+        oynamaz, mağazaya gider; öteki sütunlar bu trafiği hiç görmez (29 Eylül 2026).
         <br />
         <br />
         <b>"Kişi" = anonim cihaz kodu</b>, hesap değil: aynı insan web'de ve uygulamada iki
@@ -2014,16 +2017,17 @@ function FunnelV2Table({
       r.games_started,
       r.games_finished,
       r.store,
+      r.store_devices,
     ];
     downloadCsv(
       csvFilename('kelimeki-huni-v2'),
-      ['Platform', 'Kanal', 'Kaynak', 'Land', 'Geri Gelen (2+ gün)', 'Üye', 'Oyun Başlatan', 'Oyun Bitiren', 'Başlayan Oyun', 'Biten Oyun', 'Mağaza (oturum)'],
+      ['Platform', 'Kanal', 'Kaynak', 'Land', 'Geri Gelen (2+ gün)', 'Üye', 'Oyun Başlatan', 'Oyun Bitiren', 'Başlayan Oyun', 'Biten Oyun', 'Mağaza (oturum)', 'Mağaza (cihaz)'],
       [
         ...g.platforms.flatMap((p) =>
           p.channels.flatMap((c) => c.sources.map((src) => satir(p.label, c.label, src.source, src))),
         ),
         satir('TOPLAM', '', '', g.total),
-        ['Eski cihaz (kohort dışı)', FUNNEL_EXISTING_CHANNEL, '', g.existing, '', '', '', '', '', '', ''],
+        ['Eski cihaz (kohort dışı)', FUNNEL_EXISTING_CHANNEL, '', g.existing, '', '', '', '', '', '', '', ''],
       ],
     );
   }
@@ -2043,7 +2047,7 @@ function FunnelV2Table({
 
   const basliklar =
     gorunum === 'kisi'
-      ? ['Land', 'Mağaza', '2+ Gün', 'Üye', 'Başlatan', 'Bitiren']
+      ? ['Land', 'Mağaza (cihaz)', 'Mağaza (oturum)', '2+ Gün', 'Üye', 'Başlatan', 'Bitiren']
       : ['Başlayan Oyun', 'Biten Oyun', 'Oyun / Kişi'];
 
   function hucreler(r: FunnelV2Totals): ReactNode[] {
@@ -2052,8 +2056,11 @@ function FunnelV2Table({
         String(r.land),
         // Mağaza (29 Eylül 2026): reklamın telefon ziyaretçisi sitede
         // oynamıyor, mağazaya gidiyor — öteki sütunlar onu hiç görmüyordu.
-        // Birim OTURUM (`web_sessions`), taban yine Land.
-        hucre(r.store, r.land),
+        // `store_devices` (18 Ekim 2026): kohort CİHAZI, taban Land → oran
+        // okunabilir. `store` ise OTURUM (`web_sessions`, `?ref=`): Land ile
+        // aynı birim DEĞİL, yüzdesiz düz sayı.
+        hucre(r.store_devices, r.land),
+        String(r.store),
         hucre(r.returned, r.land),
         hucre(uyeVar ? r.signed_up : null, r.land),
         hucre(r.started, r.land),

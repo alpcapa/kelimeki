@@ -585,8 +585,16 @@ class FakeFriendsGateway implements FriendsGateway {
   List<Map<String, Object?>> friendsRows = [];
   final sentRequests = <String>[];
 
+  /// Doluysa `listFriends` bunu fırlatır — "arkadaş listesi OKUNAMADI" yolu
+  /// (rövanş planı hatada `null` alır, boş liste DEĞİL).
+  Object? listFriendsFailWith;
+
   @override
-  Future<List<Map<String, Object?>>> listFriends() async => friendsRows;
+  Future<List<Map<String, Object?>>> listFriends() async {
+    final f = listFriendsFailWith;
+    if (f != null) throw f;
+    return friendsRows;
+  }
 
   @override
   Future<String> sendRequest(String targetId) async {
@@ -792,3 +800,13 @@ Map<String, Object?> blockedRow(String id, String name,
       'blocked_avatar_url': null,
       'is_reported': reported,
     };
+
+/// `unblockUser` listeden de düşer — gerçek sunucudaki gibi; temel
+/// `FakeChatGateway` yalnızca çağrıyı kaydeder (liste sabit kalır).
+class UnblockingChatGateway extends FakeChatGateway {
+  @override
+  Future<void> unblockUser(String targetUserId) async {
+    await super.unblockUser(targetUserId);
+    blockedRows.removeWhere((r) => r['blocked_user_id'] == targetUserId);
+  }
+}

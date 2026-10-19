@@ -16,6 +16,7 @@ import '../rank/league_rank.dart';
 import '../rank/rank_seal.dart';
 import 'beyin_ligi_list.dart';
 import 'klig_mark.dart';
+import 'own_row_pin.dart';
 import 'player_score_card_modal.dart';
 import '../tokens.dart';
 import '../loading_note.dart';
@@ -204,6 +205,7 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
   final _ohpLink = LayerLink();
   final _ohpPortal = OverlayPortalController();
   final _scrollController = ScrollController();
+  final _ownRow = OwnRowTracker();
 
   /// Balonun görünürlüğünü iki bayrağın BİRLEŞİMİNDEN türetir — çağıranlar
   /// yalnızca bayrağı değiştirip bunu çağırır, "kim açtı/kim kapatır"
@@ -310,6 +312,15 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
       if (!_scrollController.hasClients) return;
       final pos = _scrollController.position;
       if (pos.pixels >= pos.maxScrollExtent - 80) _loadMore();
+      _measureOwnRow();
+    });
+  }
+
+  /// Kendi satırı görünür alanda mı? Karede ve kaydırmada ölçülür; yalnızca
+  /// DEĞİŞİNCE `setState` (döngü yok). Web `useRowInView` ikizi.
+  void _measureOwnRow() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _ownRow.measure()) setState(() {});
     });
   }
 
@@ -363,6 +374,7 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
     final user = widget.auth.user;
     final meInList =
         user != null && rows != null && rows.any((r) => r.userId == user.id);
+    _measureOwnRow();
 
     return KModal(
       title: '',
@@ -480,8 +492,7 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
               const Expanded(child: _HeadLabel('OYUNCU')),
               _buildOhpHeader(),
               const ScaledCell(
-                  width: 44,
-                  child: _HeadLabel('PUAN', align: TextAlign.right)),
+                  width: 44, child: _HeadLabel('PUAN', align: TextAlign.right)),
             ]),
           ),
           const SizedBox(height: 4),
@@ -492,6 +503,7 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
               constraints: BoxConstraints(
                   maxHeight: MediaQuery.sizeOf(context).height * 0.5),
               child: ListView.builder(
+                key: _ownRow.viewKey,
                 controller: _scrollController,
                 shrinkWrap: true,
                 itemCount: rows.length + (_hasMore ? 1 : 0),
@@ -509,7 +521,8 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
                     );
                   }
                   final r = rows[i];
-                  return _Row(
+                  final isMe = myId != null && r.userId == myId;
+                  final tile = _Row(
                     // Sıra SUNUCUDAN (`k_lig_siralama.sira`), listedeki
                     // indeksten DEĞİL — "senin sıran" satırı ve Skor Kartı
                     // başlığı da aynı sayıyı aynı view'dan okuyor. İndeksten
@@ -520,7 +533,7 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
                     avatarUrl: r.avatarUrl,
                     score: r.totalScore,
                     avgMoveScore: r.avgMoveScore,
-                    isMe: myId != null && r.userId == myId,
+                    isMe: isMe,
                     onTap: () => showPlayerScoreCard(
                       context,
                       stats: widget.stats,
@@ -532,11 +545,17 @@ class _LeaderboardModalState extends State<LeaderboardModal> {
                       auth: widget.auth,
                     ),
                   );
+                  return isMe
+                      ? KeyedSubtree(key: _ownRow.rowKey, child: tile)
+                      : tile;
                 },
               ),
             ),
           ),
-          if (myId != null && !meInList && _myRank != null) ...[
+          if (myId != null &&
+              _myRank != null &&
+              shouldPinOwnRow(
+                  hasRank: true, inList: meInList, inView: _ownRow.inView)) ...[
             const SizedBox(height: 8),
             const Row(children: [
               Expanded(child: Divider(color: _border)),

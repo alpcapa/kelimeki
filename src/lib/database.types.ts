@@ -926,6 +926,13 @@ export interface AdminFunnelRow {
    * üzerinden bağlanır, yalnızca `web` satırlarında dolu.
    */
   store: number;
+  /**
+   * Mağazaya giden land-kohortu CİHAZI (`web_sessions.anon_id`, 18 Ekim 2026;
+   * ROADMAP #47). Kohort birimi → her zaman ≤ `land`. `anon_id` yazılmadan
+   * ÖNCEKİ oturumlar sayılmaz (yalnızca `store`da görünür). Migration henüz
+   * uygulanmamışsa RPC bu alanı hiç döndürmez → `fetchAdminFunnel` 0 yazar.
+   */
+  store_devices: number;
 }
 
 /**

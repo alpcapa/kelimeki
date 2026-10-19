@@ -243,6 +243,32 @@ List<StripListing> stripListings(
 String seatsLeftLabel(int open) =>
     open == 1 ? '1 koltuk kaldı' : '$open koltuk kaldı';
 
+/// HENÜZ DOLMAMIŞ koltuk sayısı = açık + yanıtı beklenen/reddeden davetli
+/// (12 Ekim 2026, kullanıcı: "her yerde x koltuk kaldı yazsın"). Web
+/// `unfilledSeatCount`. Neden `openSeats` değil: karma kadroda (arkadaş +
+/// rastgele koltuk) son açık koltuğu biri kapsa da oyun, arkadaş yanıtlayana
+/// kadar `pending` kalır (`_random_take_seat`: açık 0 VE bekleyen davet 0 →
+/// `active`) — açık koltuk 0'dır ama oyun başlamamıştır; "0 koltuk kaldı"
+/// yanlış okunurdu. Bekleyen oyunda ≥1 olur.
+int unfilledSeatCount(List<String> seats) =>
+    seats.where((s) => s == 'open' || s == 'invited').length;
+
+/// Şerit kartındaki "N koltuk kaldı" sayısı: BAŞKASININ ilanında kabul
+/// edebileceğim AÇIK koltuklar; BENİM ilanımda dolmamış koltuklar. Web
+/// `cardSeatsLeft`.
+int cardSeatsLeft(StripListing l) =>
+    l.mine != null ? unfilledSeatCount(l.seats) : l.openSeats;
+
+/// Şeridin üç hâli (12 Ekim 2026): kartlar var · sunucu BAŞARIYLA boş dedi
+/// (tek satır "Bekleyen oyun yok. Hemen aç.") · ilk çekim sürüyor/ağ hatası
+/// (gizli — "yok" demek yalan olurdu). Web `randomStripMode`.
+enum RandomStripMode { hidden, empty, cards }
+
+RandomStripMode randomStripMode(bool loaded, int visibleCount) {
+  if (visibleCount > 0) return RandomStripMode.cards;
+  return loaded ? RandomStripMode.empty : RandomStripMode.hidden;
+}
+
 /// Şerit kartındaki nokta: dolu (yeşil) mü, boş (içi boş halka) mı?
 /// Web `SeatDots`: 'creator' | 'filled' | 'ai' dolu; 'open'/'invited' boş.
 bool seatDotFilled(String seat) =>
@@ -369,13 +395,23 @@ const String kRandomSeatLabel2 = 'Rastgele oyuncu';
 const String kRandomSeatLabel4 = 'Rastgele';
 const String kRandomStripTitle = 'Rastgele Oyunlar';
 const String kRandomStripCreate = 'Rastgele oyun aç';
+
+// Boş şerit + tek seferlik tanıtım balonu (12 Ekim 2026) — web `randomGames.ts`
+// ile BİREBİR (parite testi okur). "Rastgele" yazımı bilerek (ürün her yerde).
+const String kRandomEmptyText = 'Bekleyen oyun yok.';
+const String kRandomEmptyLink = 'Hemen aç.';
+const String kRandomHintText =
+    'Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen katılsın. '
+    'Önce gelen koltuğu kapar.';
+
+/// Üç cümle 4 sn'de okunmaz (web `RANDOM_HINT_MS` = 7000).
+const Duration kRandomHintDuration = Duration(milliseconds: 7000);
 const String kRandomAcceptLabel = 'Kabul';
 const String kRandomWaitingSeat = 'Rastgele oyuncu bekleniyor';
 const String kRandomWaitingFriend = 'Arkadaş yanıtı bekleniyor';
 const String kRandomWaitingStarting = 'Oyun başlıyor';
 const String kRandomCancelLabel = 'İlanı iptal et';
 const String kRandomLeaveLabel = 'Ayrıl';
-const String kRandomMineWaiting = 'Bekliyor';
 const String kRandomMineCancel = 'İptal';
 const String kRandomCancelledNotice = 'İlan iptal edildi.';
 const String kRandomLeftNotice = 'Ayrıldın. Koltuk yeniden açıldı.';

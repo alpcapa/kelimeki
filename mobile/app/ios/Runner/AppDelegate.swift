@@ -58,13 +58,25 @@ import UserNotifications
     kanal.setMethodCallHandler { cagri, sonuc in
       switch cagri.method {
       case "hepsiniTemizle":
-        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
-        if #available(iOS 16.0, *) {
-          UNUserNotificationCenter.current().setBadgeCount(0)
-        } else {
-          UIApplication.shared.applicationIconBadgeNumber = 0
+        let merkez = UNUserNotificationCenter.current()
+        // Yarım oyun hatırlatması panelde duruyorsa silmeden ÖNCE kanıtını
+        // yaz (12 Ekim 2026): Dart "gösterildi mi?" sorusunu bu temizlikten
+        // SONRA soruyor; kanıt kaydedilmeseydi gösterilmiş hatırlatma
+        // "gösterilmedi" sayılırdı (`yarimOyunDurum`).
+        merkez.getDeliveredNotifications { teslimler in
+          if teslimler.contains(where: { $0.request.identifier == AppDelegate.yarimOyunKimligi }) {
+            UserDefaults.standard.set(true, forKey: AppDelegate.yarimOyunTeslimAnahtari)
+          }
+          DispatchQueue.main.async {
+            merkez.removeAllDeliveredNotifications()
+            if #available(iOS 16.0, *) {
+              merkez.setBadgeCount(0)
+            } else {
+              UIApplication.shared.applicationIconBadgeNumber = 0
+            }
+            sonuc(nil)
+          }
         }
-        sonuc(nil)
       default:
         sonuc(FlutterMethodNotImplemented)
       }
@@ -79,6 +91,10 @@ import UserNotifications
   /// Android'den farkı: `UNTimeIntervalNotificationTrigger` yeniden
   /// başlatmaya dayanıklı; izin yoksa iOS isteği sessizce düşürür.
   private static let yarimOyunKimligi = "kelimeki.yarimOyun"
+
+  /// "Hatırlatma kullanıcıya gösterildi" kanıtı (12 Ekim 2026). Panel
+  /// temizlenirken (`hepsiniTemizle`) yazılır, kur/iptal siler.
+  private static let yarimOyunTeslimAnahtari = "kelimeki.yarimOyun.teslim"
 
   private func kurHatirlatmaKanali(_ registry: FlutterPluginRegistry) {
     guard let registrar = registry.registrar(forPlugin: "KelimekiHatirlatma") else { return }
@@ -109,11 +125,27 @@ import UserNotifications
         // Aynı kimlik → bekleyen istek YENİSİYLE değişir (en fazla bir tane).
         let istek = UNNotificationRequest(
           identifier: AppDelegate.yarimOyunKimligi, content: icerik, trigger: tetik)
+        UserDefaults.standard.removeObject(forKey: AppDelegate.yarimOyunTeslimAnahtari)
         merkez.add(istek) { _ in }
         sonuc(nil)
       case "yarimOyunIptal":
         merkez.removePendingNotificationRequests(withIdentifiers: [AppDelegate.yarimOyunKimligi])
+        UserDefaults.standard.removeObject(forKey: AppDelegate.yarimOyunTeslimAnahtari)
         sonuc(nil)
+      // Bekleyen istek var mı + kullanıcıya gösterildi mi (12 Ekim 2026).
+      // Gösterildi = teslim edilenler listesinde ya da panel temizlenirken
+      // orada görülmüş (`hepsiniTemizle`).
+      case "yarimOyunDurum":
+        merkez.getPendingNotificationRequests { bekleyenler in
+          let bekliyor = bekleyenler.contains(where: { $0.identifier == AppDelegate.yarimOyunKimligi })
+          merkez.getDeliveredNotifications { teslimler in
+            let teslim = teslimler.contains(where: { $0.request.identifier == AppDelegate.yarimOyunKimligi })
+              || UserDefaults.standard.bool(forKey: AppDelegate.yarimOyunTeslimAnahtari)
+            DispatchQueue.main.async {
+              sonuc(["bekliyor": bekliyor, "teslim": teslim])
+            }
+          }
+        }
       // "Bildirimler kapalı" kartı (2 Ekim 2026): iOS reddedilen izni bir
       // daha SORMAZ; tek yol Ayarlar. iOS 16+ doğrudan bildirim sayfası.
       case "bildirimAyarlariniAc":

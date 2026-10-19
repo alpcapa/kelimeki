@@ -127,6 +127,16 @@ Kontroller admin panelinden (Büyüme > Kullanıcı) ya da Supabase'den okunur.
       edilmiş `.apk` ya da iç test dışı yollar `app` yazar (beklenen).
       Mağazadaki paket yeni sürüme geçmeden bu madde koşulamaz — sürüm
       yayına girince ilk iş. Rozetsiz, doğrudan Play'den kurulum → `app`.
+- [ ] **Android, reklam etiketli kurulum → oyun/kayıt satırları da etiketli
+      (#46-1, 1.1.4).** Yukarıdaki `?ref=test-referrer` kurulumunu yap, açılışta
+      tanıtımı ATLAMADAN bir oyun başlat → `game_starts.utm_source =
+      'test-referrer'` (aynısı `game_finishes`, `guest_visits`, kayıtta
+      `profiles.signup_utm_source`). Tanıtımı HEMEN atlayıp oyun başlatırsan
+      `app` kalabilir (bilinen yarış, kullanıcı kararı); bu satırların oranı
+      ölçülecek. ⚠ Mağazadan kurulum şart, sideload'da `app` yazar.
+- [ ] **Eski cihaz güncellenince damga geriye dönük dolar (#46-1).** Reklam
+      etiketiyle kurulmuş eski bir cihazı 1.1.4'e GÜNCELLE → `land` satırı
+      `mevcut` kalır AMA sonraki `game_starts.utm_source` etiketli gelir.
 - [ ] **Güncelleyen eski kullanıcı → `mevcut`.** Önceki sürümü kurulu bir
       cihazı GÜNCELLE, aç → `land` satırı `channel = 'mevcut'`. Panelde
       "Eski cihaz (kohort dışı)" sayısı artar, kohort satırları ARTMAZ.
@@ -146,3 +156,22 @@ Kontroller admin panelinden (Büyüme > Kullanıcı) ya da Supabase'den okunur.
       görünür (iOS → Apple, Android → marka). Görününce kartlardaki "Web"
       etiketini kaldır (ROADMAP #40), Huni v2'de iOS/Android satırları
       görününce onunkini de.
+
+## 34. Yarım oyun hatırlatması — `reminder_events` satırları (11 Ekim 2026, 19 Ekim treni)
+
+Kimliksiz sayaç (`anon_id`/`user_id` YOK). Okuma: Supabase SQL (admin kartı yok).
+`select event, card, platform, count(*) from reminder_events group by 1,2,3 order by 1,2;`
+
+- [ ] **Telefonu bırakarak ayrıl, izin HİÇ verilmemiş cihazda:** YZ oyununda ≥2
+      tur oyna, ana ekrana dön → `skip_no_permission` düşer (kart ÇIKMAZ, bu bir
+      kusur değil tespit: yeni gelenin asıl yolu).
+- [ ] **Logoyla çıkış, izin yok:** `card_shown` (`izin`) → HATIRLAT → `card_accept`
+      (`izin`) → sistem diyaloğu → `os_granted` YA DA `os_denied`; ŞİMDİ DEĞİL →
+      `card_decline`. Ardından hatırlatma kurulduysa `set`.
+- [ ] **İzin kapalıyken ayar kartı:** `card_shown` (`ayar`) → AYARLARI AÇ →
+      `card_accept` (`ayar`); ŞİMDİ DEĞİL → `card_decline` (`ayar`).
+- [ ] **İzin AÇIKKEN yarım oyundan çık:** kart çıkmaz, yalnız `set`.
+- [ ] **Satırda kimlik yok:** `platform` (`ios`/`android`) + `app_version` dolu,
+      tabloda kimlik kolonu YOK (`anon_id` 11 Ekim'de kaldırıldı).
+- [ ] ⚠ Aynı ayrılış birden çok satır yazabilir (her arka plana gidiş) — hata
+      değil, sayım kişi değil olay sayar.

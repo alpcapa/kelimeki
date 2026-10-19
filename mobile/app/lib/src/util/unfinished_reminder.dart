@@ -75,17 +75,29 @@ bool yarimOyunHatirlatmasiKurulmali({
 }
 
 /// Kurulmuş bir hatırlatma, uygulama öne geldiğinde TESLİM edilmiş sayılır
-/// mı — zamanı geçmişse evet (bildirim panele düştü).
+/// mı — yalnızca PLATFORM "bu bildirimi gösterdim" derse ([platformGosterdi]).
 ///
-/// ⚠ Yaklaşık bir sinyal: kullanıcı bildirimleri sistemden kapatmışsa ya da
-/// cihaz o arada yeniden başladıysa (Android alarmı yeniden başlatmada
-/// silinir) bildirim görünmemiş olabilir. Bedeli küçük ve güvenli yönde:
-/// o oyun bir daha hatırlatılmaz.
-bool yarimOyunHatirlatmasiTeslimEdildi({
-  required DateTime? kurulanZaman,
-  required DateTime simdi,
-}) =>
-    kurulanZaman != null && !simdi.isBefore(kurulanZaman);
+/// **12 Ekim 2026'ya kadar kural "zamanı geçmişse evet"ti** ve sessiz bir
+/// kilit üretiyordu: bildirim herhangi bir sebeple ekrana düşmese bile,
+/// saat geçtikten sonra uygulamayı açmak o oyunu "hatırlatıldı" diye
+/// işaretliyordu; aynı yarım oyun bir daha HİÇ hatırlatılmıyordu. Kullanıcı
+/// dört deneme boyunca aynı oyunla test etti ve hiçbirinde bildirim görmedi.
+/// Kaynak artık platformun kendisi: iOS teslim edilmiş bildirimler listesi,
+/// Android alıcının `notify` anında yazdığı işaret.
+///
+/// ⚠ Bilinen bedel (güvenli yönde): iOS'ta bildirim görülüp Bildirim
+/// Merkezi'nden SİLİNDİYSE kanıt kalmaz → aynı oyun, kullanıcı ondan yine
+/// ayrılırsa bir kez daha hatırlatılabilir. Bilinmiyorsa (`null`: web, kanal
+/// yok) teslim SAYILMAZ.
+bool yarimOyunHatirlatmasiTeslimEdildi({required bool? platformGosterdi}) =>
+    platformGosterdi == true;
+
+/// Teşhis satırındaki zaman biçimi: `13.10 19:00` (Setup'ın `Derleme
+/// a1b2c3d · 15.08 11:42` biçimiyle aynı).
+String yarimOyunTeshisZamani(DateTime t) {
+  String iki(int n) => n.toString().padLeft(2, '0');
+  return '${iki(t.day)}.${iki(t.month)} ${iki(t.hour)}:${iki(t.minute)}';
+}
 
 /// Yarım bir oyundan çıkarken hangi kart gösterilir (2 Ekim 2026).
 enum YarimOyunKarti {

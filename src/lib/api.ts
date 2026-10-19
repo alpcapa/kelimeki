@@ -3134,7 +3134,8 @@ export async function fetchAdminFunnel(days = 30): Promise<AdminFunnelRow[]> {
   if (!supabase) return [];
   const { data, error } = await supabase.rpc('admin_funnel', { p_days: days });
   if (error) rethrowSupabase(error);
-  return (data as AdminFunnelRow[]) ?? [];
+  // `store_devices` 18 Ekim 2026 migration'ıyla geldi; eski RPC'de yok → 0.
+  return ((data as AdminFunnelRow[]) ?? []).map((r) => ({ ...r, store_devices: r.store_devices ?? 0 }));
 }
 
 /**

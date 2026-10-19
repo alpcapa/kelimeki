@@ -16,6 +16,7 @@ class FlagsStore {
   static const _seenQuickstart = 'seen_quickstart';
   static const _seenTutorial = 'seen_tutorial';
   static const _seenChatIntro = 'seen_chat_intro';
+  static const _seenRandomHint = 'seen_random_hint';
   static const _guestFirstPoints = 'guest_first_points_celebrated';
   static const _zoomHintShown = 'zoom_hint_shown';
   static const _zoomTried = 'zoom_tried';
@@ -65,6 +66,13 @@ class FlagsStore {
 
   bool get seenChatIntro => prefs.getBool(_seenChatIntro) ?? false;
   Future<void> markChatIntroSeen() => prefs.setBool(_seenChatIntro, true);
+
+  /// Rastgele Oyuncu tanıtım balonu (12 Ekim 2026): Canlı sekmesindeki şeridin
+  /// başlığında BİR kez; gösterim kararında işaretlenir, "denedi" şartı YOK
+  /// (kalıcı balon oyuncuyu bezdirir). Web ikizi `kelimeki:seen-random-hint`
+  /// (`src/utils/onboarding.ts`).
+  bool get seenRandomHint => prefs.getBool(_seenRandomHint) ?? false;
+  Future<void> markRandomHintSeen() => prefs.setBool(_seenRandomHint, true);
 
   /// Tahta zoom'u tanıtım balonu (1 Eylül 2026, kullanıcı isteği) — İKİ
   /// değer, çünkü kural iki şeye birden bakıyor: *"Deneyip büyütenlere bir
@@ -144,6 +152,15 @@ class FlagsStore {
   Future<void> setDeviceVisitDate(String yyyymmdd) =>
       prefs.setString(_deviceVisitDate, yyyymmdd);
 
+  /// Kurulum kaynağı damgası için referrer'ın okunup okunmadığı (#46-1,
+  /// 13 Ekim 2026). `funnel_v2_land_*` bayraklarından AYRI: `land` kanalına
+  /// dokunulmaz, eski cihazlarda da (kohortu şişirmeden) bir kez okunur.
+  static const _installSourceStamped = 'install_source_stamped';
+  bool get installSourceStamped =>
+      prefs.getBool(_installSourceStamped) ?? false;
+  Future<void> setInstallSourceStamped() =>
+      prefs.setBool(_installSourceStamped, true);
+
   String? get anonVisitDate => prefs.getString(_anonVisitDate);
   Future<void> setAnonVisitDate(String yyyymmdd) =>
       prefs.setString(_anonVisitDate, yyyymmdd);
@@ -193,7 +210,12 @@ class FlagsStore {
   // en fazla BİR bekleyen hatırlatma olur, bu üç anahtar onu tarif eder.
   static const _yarimOyunKurulanOyun = 'yarim_oyun_kurulan_oyun';
   static const _yarimOyunKurulanZaman = 'yarim_oyun_kurulan_zaman';
-  static const _yarimOyunHatirlatilan = 'yarim_oyun_hatirlatilan';
+  // ⚠ `_v2` (12 Ekim 2026): eski anahtar "saat geçti + uygulama açıldı"
+  // kuralıyla doluyordu ve bildirim hiç görünmemiş oyunları da kilitliyordu
+  // (kullanıcının test oyunu dört denemede hiç hatırlatılmadı). Yeni kural
+  // yalnızca platform "gösterdim" derse yazar; ad değişikliği eski, yanlış
+  // dolmuş işaretleri bir kereye mahsus sıfırlar.
+  static const _yarimOyunHatirlatilan = 'yarim_oyun_hatirlatilan_v2';
 
   /// Bekleyen hatırlatmanın oyunu (`startedAt`) — yoksa null.
   String? get yarimOyunKurulanOyun => prefs.getString(_yarimOyunKurulanOyun);
