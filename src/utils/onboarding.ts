@@ -121,6 +121,30 @@ export function markChatIntroSeen(): void {
   }
 }
 
+// Rastgele Oyuncu tanıtım balonu (12 Ekim 2026): Canlı sekmesindeki şeridin
+// başlığında BİR kez. Kalıcı bir balon oyuncuyu bezdirir (16 Eylül zoom
+// vakası) — gösterim kararında işaretlenir, "denedi" şartı YOK.
+// Metin/süre/kural: `utils/randomGames.ts`. Port ikizi `util/onboarding.dart`.
+const RANDOM_HINT_KEY = 'kelimeki:seen-random-hint';
+
+export function hasSeenRandomHint(): boolean {
+  try {
+    return localStorage.getItem(RANDOM_HINT_KEY) === '1';
+  } catch {
+    // Depolama kapalıysa "görüldü" varsay: her açılışta göstermek, hiç
+    // göstermemekten kötü.
+    return true;
+  }
+}
+
+export function markRandomHintSeen(): void {
+  try {
+    localStorage.setItem(RANDOM_HINT_KEY, '1');
+  } catch {
+    // yoksay
+  }
+}
+
 // Oyun İçi Mesajlaşma — okunmamış mesaj göstergesi (rozet/sayı değil,
 // yalnızca "Mesajlaşma" butonunun üstünde küçük bir kırmızı nokta). Oyuncu
 // sohbeti bu oyun için en son ne zaman açtığını (son görülen mesajın
