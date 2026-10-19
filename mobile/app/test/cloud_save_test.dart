@@ -7,6 +7,7 @@
 // atomik olarak iddia edilip silinir (cezaya çevirme GamesRepo'nun işi),
 // yazma-okuma yarışı TableWriteQueue ile kapalı, misafir kaydı isim
 // düzeltmesiyle hesaba taşınır.
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -31,12 +32,18 @@ class FakeGateway implements CloudSaveGateway {
   /// Kalıcı ağ kesintisi (uçak modu) — upsert VE list boyunca fırlatır.
   bool offline = false;
 
+  /// `list()` kaç kez çağrıldı / sonsuza dek asılı mı (takılan bağlantı).
+  int listCalls = 0;
+  bool hangList = false;
+
   /// Yavaş silme — yazma-okuma yarışını görünür kılmak için (kuyruk yoksa
   /// liste, silme sunucuda işlenmeden dönebilirdi).
   bool slowDelete = false;
 
   @override
   Future<List<Map<String, Object?>>> list() async {
+    listCalls++;
+    if (hangList) return Completer<List<Map<String, Object?>>>().future;
     if (offline) throw Exception('ağ yok');
     final list = rows.entries
         .map((e) => <String, Object?>{
@@ -570,6 +577,41 @@ void main() {
         offlineState.turnCount,
         reason: 'ayna önbellekten YENİ: offline hamleler görünmeli');
     expect(list.abandoned, isEmpty);
+    await storage.db.close();
+  });
+
+  test('list(offline: true): AĞA HİÇ GİDİLMEZ, liste önbellek+aynadan gelir',
+      () async {
+    final (repo, gw, storage) = await newMirroredRepo();
+    final a = newPlayState();
+    expect(await repo.upsert('id-a', 'user-1', a), isTrue);
+    expect((await repo.list(userId: 'user-1'))!.saves, hasLength(1));
+    final calls = gw.listCalls;
+
+    // Sunucu SAĞLIKLI — yine de sorulmamalı: çağıran bağlantının olmadığını
+    // biliyor (uçak modunda ağ denemesi 20-30 sn sürüyordu).
+    final list = await repo.list(userId: 'user-1', offline: true);
+    expect(gw.listCalls, calls, reason: 'offline: sunucuya istek ATILMAZ');
+    expect(list!.saves.map((s) => s.id), ['id-a']);
+    expect(list.abandoned, isEmpty);
+    await storage.db.close();
+  });
+
+  test('takılan bağlantı: liste zaman aşımıyla offline yola düşer', () async {
+    final gw = FakeGateway();
+    final storage = await openTestStorage();
+    final repo = CloudSaveRepo(gw,
+        nowMs: () => clock,
+        mirrorStore: Future.value(storage.cloudMirror),
+        cacheStore: Future.value(storage.cloudCache),
+        listTimeout: const Duration(milliseconds: 50));
+    expect(await repo.upsert('id-a', 'user-1', newPlayState()), isTrue);
+    expect((await repo.list(userId: 'user-1'))!.saves, hasLength(1));
+
+    gw.hangList = true; // istek asılı kalır, hata bile dönmez
+    final list = await repo.list(userId: 'user-1');
+    expect(list, isNotNull, reason: 'aşım ağ hatasıyla AYNI yola düşmeli');
+    expect(list!.saves.map((s) => s.id), ['id-a']);
     await storage.db.close();
   });
 

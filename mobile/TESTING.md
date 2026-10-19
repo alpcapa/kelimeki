@@ -1086,6 +1086,16 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
       alınmadan, ÖNDEYKEN ağ geri gelirse senkron yine beklemez (web'in
       `online` olayının Flutter'da paketsiz karşılığı yok); veri kaybı
       yok, yalnızca gecikme.
+- [ ] **Uçak modunda AÇILIŞ hızlı olmalı (Parça 246, 17 Ekim 2026).**
+      Girişli hesapla, en az bir devam eden YZ oyunu varken uygulamayı
+      TAMAMEN kapat, uçak moduna geç, uygulamayı aç. Beklenen: splash birkaç
+      saniyeyi geçmez, "Devam Edenler" listesi ve "Devam eden oyunlar" ANINDA
+      gelir (≤ ~2 sn), "Yükleniyor…" kalmaz. Hesapta hiç devam eden oyun yoksa
+      "internet yok ama Yapay Zeka ile oynayabilirsin" mesajı yine anında
+      çıkar. Sonra uçak modunu kapat: liste kendiliğinden tazelenmeli
+      (uygulamayı arka plana alıp döndürmeye GEREK yok). Önceki ölçüm: 20-30 sn.
+      Ek: uçak modundayken oyun oyna, uçak modunu kapat — oyun sunucuya
+      itilmeli (web'den aynı hesapla aç, hamleler orada görünmeli).
 - [ ] **Uçak modunda kelime anlamı — bu bir HATA DEĞİL (web derlemesinde).**
       Tahtadaki bir kelimeye dokununca "Bu kelimenin anlamı bulunamadı."
       çıkması `alpcapa.github.io` derlemesinde BEKLENEN: asset'ler

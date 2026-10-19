@@ -213,7 +213,15 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   // native'de birkaç ms; sonrasında `push` alanının dolu olup olmadığı
   // tek bir sorunun cevabı olur ("bu cihaz token kaydedebilir mi").
   final firebaseHazir = await initFirebase();
-  final versionGate = await checkVersionGate(supabase);
+  // Bağlantı YOKSA sürüm kapısına sorulmaz (17 Ekim 2026, uçak modunda
+  // ölçüldü): kapı fail-open olduğundan sonuç zaten `ok` olacaktı, ama ona
+  // varmak splash'ı 5 sn zaman aşımı kadar tutuyordu. İlk ölçüm bir platform
+  // çağrısı (ms); okunamazsa `online` iyimser `true` kalır ve eski yol işler.
+  final onlineStatus = OnlineStatus();
+  await onlineStatus.refresh();
+  final versionGate = onlineStatus.online
+      ? await checkVersionGate(supabase)
+      : VersionGateStatus.ok;
   // Hata telemetrisi — Supabase hazır olur olmaz bağlanır (ROADMAP #3).
   // Kimlik `FlagsStore.anonId()`ten geliyor ve BEKLENMİYOR: açılışı bir
   // telemetri alanı için geciktirmek, telemetrinin kendisini bir açılış
@@ -252,7 +260,7 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   if (pushRepo != null) auth.registerBeforeSignOut(pushRepo.temizle);
 
   return AppServices(
-    onlineStatus: OnlineStatus(),
+    onlineStatus: onlineStatus,
     dictionary: dictionary,
     meanings: meanings,
     auth: auth,

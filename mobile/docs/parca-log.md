@@ -25,6 +25,19 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 246 — Uçak modunda açılış 20-30 sn "Yükleniyor…" kalıyordu: çevrimdışıyken ağa HİÇ gitme (17 Ekim 2026)
+
+Kullanıcı uçakta, uçak modunda gerçek deneyimi ölçtü: uygulama ~30 sn "yükleniyor", sonra "internet yok ama Yapay Zeka ile oynayabilirsin"; ertesi gün çevrimdışı bırakılan oyun "Devam Edenler"e yine 20-30 sn geç düşüyor. **İki şikâyet tek kök neden:** `SetupScreen._syncCloud` çevrimdışı olduğunu (`OnlineStatus`, 14 Ağustos) BİLİYORDU ama misafir taşıma → `flushPending` → `flushMirrored` → `list` zincirini yine de ağa gönderiyordu; her çağrı `getSession` içinde süresi dolmuş token'ı yenilemeye çalışıyor (gotrue `_refreshAccessToken`, 10 sn'lik tick penceresine kadar geri çekilmeli tekrar) ve liste ancak ağ denemesi DÜŞTÜKTEN sonra yerel aynadan kuruluyordu. Mesaj (`_offlineAiNotice`) da `saves != null` koşuluna bağlı olduğundan aynı süre kadar gecikiyordu.
+
+**Düzeltme (web karşılığı: `navigator.onLine` ile anında karar):**
+- `_syncCloud`: bağlantı yoksa ağ adımları (misafir taşıma, `games.flushPending`, `flushMirrored`) atlanır, `cloud.list(offline: true)` ağa gitmeden `_offlineList`ten (önbellek + ayna) kurar. 7 günlük ceza yine uygulanmaz (offline dalın değişmezi).
+- `CloudSaveRepo.list`: `offline` parametresi + sunucu isteğine `kCloudListTimeout` (8 sn) — iyimser sinyalin yanıldığı durum (captive portal, askıda istek) ağ hatasıyla AYNI yola düşer.
+- `_onConnectivity`: bağlantı DÖNÜNCE `_scheduleCloudSync()` — hızlı yol ağı atladığı için bunun olması şart (önceden yalnızca öne dönüşte senkron vardı; "bilinen sınır" notu TESTING §8'de).
+- Çevrimdışı + ne önbellek ne ayna varsa (girişten sonraki ilk açılış uçak modunda) `_cloudSaves` boş listeye çekilir — aksi halde `list == null` ekranı sonsuza dek "Yükleniyor…"da bırakırdı (önceden de vardı, 30 sn sonra aynı yere düşüyordu).
+- `bootstrap.dart`: açılışta çevrimdışıysa `checkVersionGate` atlanır (kapı zaten fail-open; splash 5 sn zaman aşımı kadar tutuluyordu). `OnlineStatus` artık erken kuruluyor.
+
+**Testler:** `cloud_save_test.dart` (offline:true sunucuya istek atmaz; takılan bağlantı zaman aşımıyla offline yola düşer), `setup_cloud_test.dart` (çevrimdışı açılışta `listCalls == 0`, "Yükleniyor…" yok, bağlantı dönünce liste gelir — düzeltme geri alınınca DÜŞÜYOR). **Doğrulama sınırı:** gerçek uçak modu cihazda ölçülmeli (`mobile/TESTING.md` §8).
+
 ## Parça 245 — k-lig: sabit "senin sıran" satırı "yüklü mü" değil "görünür mü" ölçer (16 Ekim 2026, kullanıcı bildirdi)
 
 *"k-lig tablolarında kişi ilk görünen listede yoksa alt kısımda sabit görünür, kaydığında kendi sıralamasına gelince kaybolur şekilde değil miydi? Beyin liginde 10. sıradayım ve altta kalıyor."* Web ikizi (taslak değil, `main`e gider): `claude/klig-benim-siram-gorunur` — `utils/ownRowPin.ts` + `hooks/useRowInView.ts`.
