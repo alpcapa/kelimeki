@@ -36,6 +36,7 @@ npm run verify-device-labels     # Admin cihaz AĞACI (Platform ▸ Marka ▸ Mo
 npm run verify-admin-groups      # Admin AÇILIR tabloları: `?ref=` → kanal öneki (fbi Facebook DEĞİL) + (platform, sürüm) ağacı ve sürümün SAYISAL sıralaması
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ leagueRank.ts
 npm run verify-beyin-ligi        # Beyin Ligi giriş eşiği: `beyin_ligi_siralama` SQL'i ↔ beyinLigi.ts (↔ beyin_ligi.dart)
+npm run verify-own-row-pin       # k-lig listelerinde sabit "senin sıran" satırı: satır YÜKLÜ ama görünmüyorsa gösterilir (ownRowPin.ts ↔ own_row_pin.dart)
 npm run verify-league-points     # k-lig PUAN tablosu (seviyeye göre): league_points_for SQL ↔ leaguePoints.ts ↔ league_points.dart
 npm run verify-sql-engine-parity # motorun DÖRDÜNCÜ (SQL) kopyası ↔ src/ sabitleri ve hata metinleri
 npm run simulate-ai-levels       # YZ↔YZ kadran ölçümü (ROADMAP #23): üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal; `-- --oyun 200 --n 2,3,4`
@@ -59,7 +60,7 @@ npm run verify-push-payload      # FCM yükünün ŞEKLİ: çakıştırma etiket
 npm run verify-away-return       # "uzun aradan sonra öne dönüş = ekrana yeniden giriş" eşiği
 npm run verify-chat-read         # Canlı sohbetin okundu kararı: sunucu ↔ cihaz damgasının büyüğü, bilinmeyen sunucuya tohum YAZILMAZ
 npm run verify-funnel-events     # Huni v2: eski cihaz → `mevcut`, İstanbul günü, gizlilik metni bayrağı + olay listesi ↔ migration SQL'i
-npm run verify-web-journey       # Web ziyaretçi yolculuğu (admin → "Ziyaretçi Yolculuğu"): misafir/üye kapısı, adım tekrarı + adım listesi ↔ migration SQL'i
+npm run verify-web-journey       # Web ziyaretçi yolculuğu (admin → "Ziyaretçi Yolculuğu"): misafir/üye kapısı, adım tekrarı + adım listesi ↔ migration SQL'i + anonim cihaz kodu (UUID değilse gönderilmez)
 npm run augment-dictionary       # Sözlüğe elle madde ekleme (GTS'siz — bkz. "Sözlüğe Kelime/Anlam Ekleme")
 npm run build:dict               # Sözlüğün TAM üretimi — 100 MB'lık GTS kaynağını ister
 npm run generate-logo-paths      # LogoMark.tsx + portun logo_mark_data.dart'ını birlikte üretir

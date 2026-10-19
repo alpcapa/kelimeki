@@ -36,6 +36,33 @@ object YarimOyunHatirlatmasi {
     // ayarlarında ikinci bir anahtar demek olurdu.
     private const val KANAL = "kelimeki_oyun"
 
+    // "Hatırlatma kullanıcıya gösterildi" kanıtı (12 Ekim 2026): alıcı
+    // `notify` anında yazar, kur/iptal siler. Dart bunu uygulama açılınca
+    // okur — eskiden "saat geçtiyse gösterildi" sayılıyordu ve gösterilmemiş
+    // bir hatırlatma oyunu kalıcı olarak kilitliyordu.
+    private const val TERCIHLER = "kelimeki_hatirlatma"
+    private const val TESLIM = "teslim"
+
+    private fun teslimYaz(context: Context, deger: Boolean) {
+        context.getSharedPreferences(TERCIHLER, Context.MODE_PRIVATE)
+            .edit().putBoolean(TESLIM, deger).apply()
+    }
+
+    /** `{bekliyor, teslim}` — Dart `yarimOyunDurum`. */
+    fun durum(context: Context): Map<String, Boolean> {
+        val teslim = context.getSharedPreferences(TERCIHLER, Context.MODE_PRIVATE)
+            .getBoolean(TESLIM, false)
+        // FLAG_NO_CREATE: yalnızca kurulmuş (iptal edilmemiş) istek varsa
+        // döner. Alarm çaldıktan sonra da durur, bu yüzden teslimle süzülür.
+        val pi = PendingIntent.getBroadcast(
+            context,
+            ISTEK_KODU,
+            Intent(context, YarimOyunAlicisi::class.java),
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE,
+        )
+        return mapOf("bekliyor" to (pi != null && !teslim), "teslim" to teslim)
+    }
+
     private fun bekleyen(context: Context, baslik: String?, govde: String?): PendingIntent {
         val intent = Intent(context, YarimOyunAlicisi::class.java).apply {
             if (baslik != null) putExtra(EK_BASLIK, baslik)
@@ -51,6 +78,7 @@ object YarimOyunHatirlatmasi {
 
     fun kur(context: Context, zamanMs: Long, baslik: String, govde: String) {
         val alarm = context.getSystemService(AlarmManager::class.java) ?: return
+        teslimYaz(context, false)
         // Aynı istek kodu + FLAG_UPDATE_CURRENT → bekleyen alarm YENİSİYLE
         // değişir; cihazda en fazla BİR hatırlatma olur.
         alarm.setAndAllowWhileIdle(
@@ -61,8 +89,13 @@ object YarimOyunHatirlatmasi {
     }
 
     fun iptal(context: Context) {
+        teslimYaz(context, false)
         val alarm = context.getSystemService(AlarmManager::class.java) ?: return
-        alarm.cancel(bekleyen(context, null, null))
+        val pi = bekleyen(context, null, null)
+        alarm.cancel(pi)
+        // PendingIntent'in kendisi de iptal: yoksa `durum` FLAG_NO_CREATE ile
+        // onu bulup "bekliyor" derdi.
+        pi.cancel()
     }
 
     fun goster(context: Context, intent: Intent) {
@@ -101,6 +134,7 @@ object YarimOyunHatirlatmasi {
             .build()
         context.getSystemService(NotificationManager::class.java)
             ?.notify(BILDIRIM_ID, bildirim)
+        teslimYaz(context, true)
     }
 }
 

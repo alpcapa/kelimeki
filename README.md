@@ -64,6 +64,7 @@ npm run generate-meanings-db     # meanings.json → portun SQLite asset'i
 npm run verify-league-tiers      # k-lig kademe/ödül tablosu: migration SQL'i ↔ TS
 npm run verify-league-points     # k-lig puan tablosu (Kolay/Normal/Zor): SQL ↔ TS ↔ Dart
 npm run verify-beyin-ligi        # Beyin Ligi giriş eşiği (5 oyun): SQL view ↔ TS (↔ Dart)
+npm run verify-own-row-pin       # k-lig: sabit "senin sıran" satırı kararı (satır yüklü ama görünmüyorsa gösterilir)
 npm run simulate-ai-levels       # YZ seviye kadranı: üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal, YZ↔YZ (ROADMAP #23)
 npm run generate-initial-main-view-golden # giriş sekmesi kuralı: web→port davranış golden'ı
 npm run generate-demo-board-dart # karşılama tahtası → portun tanıtım ekranı için demo_board_data.dart
@@ -213,7 +214,7 @@ src/
 │   ├── chatRead.ts      # Canlı sohbetin okundu kararı — sunucu (`online_game_chat_reads`) ↔ cihaz damgasının büyüğü; kapı `verify-chat-read`
 │   ├── chatRules.ts     # Sohbet Kuralları onayı — metin + sürüm (`CHAT_RULES_VERSION`) tek kaynak; ilk mesajdan önce BİR KEZ, hesaba bağlı (`accept_chat_rules`)
 │   ├── funnelEvents.ts  # Huni v2 — cihaz başına anonim olaylar (`funnel_events`: land/visit/signup/game_start/game_finish), admin'de kohort tablosu; kapı `verify-funnel-events`
-│   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına kimliksiz oturum (`web_sessions`), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
+│   ├── webJourney.ts    # Web ziyaretçi yolculuğu — sekme başına oturum + cihazın anonim kodu (`web_sessions.anon_id`, 18 Ekim 2026; admin Huni v2 "Mağaza (cihaz)"), admin'de "nerede ayrıldı"; kapı `verify-web-journey`
 │   ├── pageVisible.ts   # Web telemetrisinin ortak eşiği: sayfa hiç GÖRÜNMEDEN hiçbir ping gitmez (uygulama içi tarayıcının arka plan yüklemesi ziyaret sayılmasın)
 │   ├── storeLinks.ts    # mağaza rozetleri (ROADMAP #26): URL'ler (`null` = yayında değil → rozet HİÇ çizilmez), sıra (App Store önce — Apple'ın yazılı kuralı) ve yerleşim ölçüleri
 │   ├── friendInvite.ts # bekleyen arkadaşlık davet token'ı kuyruğu + davet linki/metni (`?ref=arkadas`) + WhatsApp adresi

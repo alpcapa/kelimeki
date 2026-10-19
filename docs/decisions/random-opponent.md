@@ -51,8 +51,8 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
 ## 4. Liste ekranı (`LiveGamesTab` → Devam Edenler)
 
 ```
-┌ Rastgele Oyunlar · 5 ─────────────────────┐   ← başlık + sayı; liste BOŞSA
-│ ┌──────┐ ┌──────┐ ┌──────┐ ┌─ ← kaydır    │     şerit TAMAMEN gizlenir
+┌ Rastgele Oyunlar · 5 ─────────────────────┐   ← başlık + sayı; liste BOŞSA tek satır
+│ ┌──────┐ ┌──────┐ ┌──────┐ ┌─ ← kaydır    │     "Bekleyen oyun yok. Hemen aç." (§22)
 │ │ (A)  │ │ (B)  │ │ (C)  │ │ (D           │
 │ │Ayşe  │ │Can   │ │Elif  │ │              │
 │ │2 kişi│ │4 kişi│ │2 kişi│ │              │
@@ -70,7 +70,7 @@ paylaşmalı** (`online_games.listing` ayrımı, §6).
   Kart ~88 px: 3 tanesi 320 px'te yan yana, dördüncünün kenarı görünür (kaydırma
   ipucu). Kartta: kurucunun avatarı + kısa adı, **2 kişi / 4 kişi** rozeti
   (iki ayrı ton), dolu koltuk noktaları (dolu = yeşil, boş = içi boş halka) ve altında **"N koltuk kaldı"** (kullanıcı, 3 Ekim: saat/gün yaşı yerine; zaman bilgisi karta KONMAZ, 7 günlük süre ilanı kendiliğinden kaldırır), **Kabul** düğmesi (≥32 px yüksek).
-- **Şerit başlığının sağında "Rastgele oyun aç" bağlantısı** (kullanıcı, 3 Ekim; "kaydır →" ipucunun yerine): "+ Yeni Canlı Oyun"a basmakla AYNI, kurulum ekranını açar. Şerit boşken gizlendiği için bağlantı da yoktur; o durumda "+ Yeni Canlı Oyun" kalır.
+- **Şerit başlığının sağında "Rastgele oyun aç" bağlantısı** (kullanıcı, 3 Ekim; "kaydır →" ipucunun yerine): "+ Yeni Canlı Oyun"a basmakla AYNI, kurulum ekranını açar. ⚠ 12 Ekim 2026'dan beri ŞERİT BOŞKEN DE GÖRÜNÜR (§22): başlıktaki bağlantı boşken gizli, yerine tek satırlık "Bekleyen oyun yok. Hemen aç." düğmesi var.
 - **Sıra:** en yeni önce; kendi ilanım şeritte YOK (altta "Bekliyor" satırı). ⚠ 4 Ekim: DEĞİŞTİ, bkz. §15.
   Sessize aldığım/şikayet ettiğim kişinin ilanı çıkmaz.
 - **Kabul** = tek dokunuş, onay sorulmaz (Takım Ligi Rev. 9 deseni). Toast:
@@ -343,7 +343,7 @@ ilanım şeritte YOK" kararını bu değiştirir).
 - **Sıra:** benimkiler ÖNCE (en yeni önce), sonra başkaları. Id ile tekilleştirme: `myRandom`da geçen
   her id başkaları listesinden düşer (benim kartım kazanır; arkadaş/aktif oyun da şeritte çıkmaz).
   `visibleListings` artık `creator_id`'ye bakıp kendi ilanımı ÇIKARMAZ.
-- **Kart:** aynı en/boy. "Kabul" YOK; yerine soluk "Bekliyor" etiketi (düğme değil; "N koltuk kaldı" satırının YERİNE — 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda) + altında küçük kırmızı eylem:
+- **Kart:** aynı en/boy. "Kabul" YOK; yerine durum satırı + altında küçük kırmızı eylem. ⚠ 12 Ekim 2026: durum satırı artık "N koltuk kaldı" (başkalarınınkiyle AYNI, §22); önceden soluk "Bekliyor" etiketiydi (düğme değil; 320 px'te etiket+eylem yan yana sığmadı, koltuk durumu noktalarda). Eylem:
   `creator` → "İptal" (`cancelRandomGame`), `random` → "Ayrıl" (`leaveRandomGame`); ≥32 px. Ayrışma: `border-accent/30 bg-accent/5`.
   Eylem mantığı/iletileri `LiveGamesTab.handleLeaveRandom`'dan (ikinci kopya yok).
 - **Koltuk durumları** (`list_random_games` ile aynı anlam): açık→`open`, gerçek YZ→`ai`, kurucu (`created_by`)→`creator`,
@@ -516,3 +516,38 @@ AYNI eylemini yapar: Canlı sekmesi açılır, kurulum formu Rastgele Oyuncu SE�
   `7f91b487 d1543d74 d521fd94 d3cf0976 c248a414 bec566c5 8292852c b63171b2 bdd442ed f47353b2 f5421dcb 385ff628 e94c4049 d9077570 9acd3924 bcbabae1 d7c0b574 20e99e5e 2de89f6a ea6e722d 007cc19a f9aa3aaa 91f1b2e8 976ee44a b7662ec7` (her biri `…-xxxx-xxxx-xxxx-xxxxxxxxxxxx`: tam UUID'ler Supabase'te `profiles.id`'den `id::text like '<önek>%'` ile bulunur).
   **Ölçülecekler:** (a) e-postadan geldi mi: `web_sessions` içinde gönderimden sonra bu üyelerin oturumu + `?rastgele=1` ile açılış (`ref` etiketi first-touch olduğundan DOLAYLI; üyenin Canlı sekmesini açması + `create_random_game` çağrısı daha güvenilir); (b) `online_games` → `listing='random'`, kurucu bu üye, `created_at > '2026-10-15 17:19+00'`; (c) bu üyenin `games` satırı (oyun BİTİRDİ mi: gönderimden önce 0 idi, `created_at >` damgası); (d) ikinci oyuna geçti mi. **Brevo tarafı** (açıldı/tıklandı sayıları) kullanıcıdan ekran görüntüsüyle: Brevo → Transactional → Logs, konu *"Kelimeki'de ilk oyununu açmaya ne dersin?"*, 15 Ekim 20:19-20:21 TSİ. **Karşılaştırma tabanı:** aynı dönemde bu e-postayı ALMAYAN ama hiç oyun bitirmemiş üyeler (pazarlama izni vermeyenler dahil) — yoksa organik dönüşle e-postanın etkisi ayrılamaz.
 
+## 22. Şerit HEP görünür + tek seferlik tanıtım balonu (12 Ekim 2026, kullanıcı)
+
+Veri (12 Ekim akşamı): özellik yayında 1,5 gün; 32 ilanın 15'i eşleşmiş, eşleşmelerin 13'ünde kurucunun kendi hesabı var,
+yabancı iki kişinin birbiriyle eşleştiği oyun YOK. Kullanıcı: *"Çoğu insan bilmiyor … Rastgele oyun yoksa kutu çıkmıyor.
+Halbuki hep çıksa, üzerinde "Bekleyen oyun yok. Hemen aç." … Bir de balon çıkartacaksak, koyacak bir yer olmalı."* İki
+karar, birbirini çözer: şerit hep görünürse balonun çapası da hep vardır.
+
+- **Boş durum (`randomStripMode`, web `randomGames.ts` ↔ Dart `random_games.dart`):** `cards` (≥1 kart) · `empty`
+  (sunucu BAŞARIYLA boş dedi) · `hidden` (ilk çekim sürüyor / ağ hatası). ⚠ `hidden` şart: ağ hatasında "Bekleyen oyun yok"
+  demek yalan olurdu (bugünkü kod hatada eldeki listeyi koruyor — `rows !== null`). Boşken tek satır (kare kart DEĞİL —
+  alttaki Devam Eden Oyunlar'ı itmesin, §17), tamamı düğme, "Hemen aç." başlıktaki "Rastgele oyun aç" ile AYNI eylem
+  (`onOpenCreate`); aynı eylem iki kez görünmesin diye boşken başlık bağlantısı gizli.
+- **Balon:** metin kullanıcının üç cümlesi (`RANDOM_HINT_TEXT`) — ⚠ "Rastgele" yazımıyla (kullanıcı mesajında "rasgele"
+  geçti; ürünün her yerinde "Rastgele"). BİR kez (`kelimeki:seen-random-hint`, gösterim kararında işaretlenir, "denedi" şartı
+  YOK), 7 sn'de kendiliğinden kapanır (`RANDOM_HINT_MS`; genel balon süresi 4 sn üç cümleye yetmez; kalıcı balon oyuncuyu
+  bezdirir — 16 Eylül zoom vakası). `HintBubble` şerit BAŞLIĞINA çapalı, **üstte** (`yon: 'ust'`): aşağıda açılınca
+  anlattığı şeyin kendisini (boş satır/kartlar) örtüyordu — önizlemede görüldü, düzeltildi. Gösterim kararı ile kapanış ayrı
+  effect (mod boş → kartlar değişince sayaç sıfırlanmasın).
+- **Ölçüm:** yeni telemetri YOK; başarı ölçütü `online_games` → `listing='random'` ilanlarının günlük sayısı ve FARKLI
+  kurucu sayısı (taban: 11 Ekim 22, 12 Ekim 6 ilan; çoğu kurucunun/test hesaplarının). Sorgu `docs/testing-rastgele.md` → "Boş şerit + tanıtım balonu".
+- **Kapı:** `verify-random-games` ("Boş şerit + balon" + koltuk sayısı); mobil `random_games_test.dart` (saf kurallar + web parite) ve `random_games_ui_test.dart` (boş satır, balon, karma kadro). Port: Parça 242, `ui/live/random_games_strip.dart` (`RandomStripMode`, `HintAnchor`), `FlagsStore.seenRandomHint`.
+- **"N koltuk kaldı" HER YERDE (12 Ekim 2026, kullanıcı: *"kartlarda bekliyor yerine x koltuk kaldı yazması daha etkili"*, sonra
+  *"her yerde x koltuk kaldı yazsın"*):** şerit kartında benim ilanım da başkalarınınki gibi "N koltuk kaldı" der; Devam
+  Edenler'deki "Bekliyor n/N" satırının etiketi de "N koltuk kaldı" oldu (alt satırlar — "Rastgele oyuncu bekleniyor" /
+  "Arkadaş yanıtı bekleniyor" / "Oyun başlıyor" — aynen kalır).
+  **Sayı neden `open_seats` değil, `unfilledSeatCount` (açık + yanıtı beklenen/reddeden davetli):** saf rastgele ilanda son
+  açık koltuk dolunca oyun HEMEN `active` olur ve ilan şeritten kalkar — "0 koltuk" hiç görünmez. Ama KARMA kadroda
+  (arkadaş + rastgele koltuk) sunucu oyunu yalnızca açık koltuk 0 **ve** bekleyen davet 0 olunca başlatır
+  (`_random_take_seat`): rastgele koltuğu biri kapsa da arkadaş yanıtlamadıysa oyun `pending` kalır, açık koltuk 0'dır —
+  "0 koltuk kaldı" yanlış okunurdu. Dolmamış koltuk sayısı bekleyen oyunda ≥1 olur ve eski "n/N"deki N − dolu ile AYNI.
+  Başkasının ilanında sayı `open_seats` kalır (kabul edebileceğim koltuklar; o liste yalnızca açık koltuklu ilanları verir).
+  Saf kurallar: web `randomGames.ts` (`unfilledSeatCount`, `cardSeatsLeft`) ↔ Dart `random_games.dart`.
+  Kartın "benim ilanım" ayrışması değişmedi: accent tonlu zemin + kırmızı "İptal"/"Ayrıl".
+  ⚠ Mobil `random_games_test.dart`ın web kaynağında aradığı `>Bekliyor<` kalıbı bu yüzden o testte `cardSeatsLeft(`e
+  çevrildi (web PR'ında; mobil derlemeyi tetikler, port PR'ıyla AYNI GÜN gider).

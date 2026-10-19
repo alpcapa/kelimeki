@@ -114,6 +114,11 @@ jobs:
       # Playwright'a gerek yok, saniyeler sürüyor — lint'in hemen yanında.
       - run: npm run verify-remaining-tiles
 
+      # k-lig listelerinde sabit "senin sıran" satırı: satır YÜKLÜ ama görünür
+      # alanın dışındaysa (10. sıra, iPad'de 8 satır görünür) gösterilir
+      # (16 Ekim 2026). Saf karar, saniyeler.
+      - run: npm run verify-own-row-pin
+
       # Admin panelinin AÇILIR tablolarının gruplama kuralları (16 Eylül
       # 2026): `?ref=` etiketi → kanal, (platform, sürüm) → ağaç. Etiketlerin
       # merkezî bir kaydı YOK, kural önek-bazlı — yani "yeni etiket sessizce
