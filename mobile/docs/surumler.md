@@ -41,6 +41,8 @@ tablosu (Pazartesi kesim · Salı–Çarşamba tur · Perşembe gönderim) yenid
 birebir geçerli, yalnızca aralık 1 hafta. **2 haftaya dönüş ölçütü:**
 kullanıcı kararı, iş akışı azalınca — ajan önerebilir, kendisi değiştirmez.
 
+⚠ **19 Ekim 2026, kullanıcı kararı — 26 Ekim treni YOK:** *"Bir sonraki, 1.1.5 ise sonraki 2 Kasım Pazartesi olacak, 26 Ekim değil."* Sebep: kullanıcı yurtdışında, App Store Connect girişi için SMS'e erişemiyor; 1.1.4 (933) iOS **ve** Google Play gönderimi Cuma 23 Ekim'de AYNI ANDA yapılacak. Yani bu tur haftalık ritim 2 haftaya çıktı (tek seferlik); **bir sonraki kesim 2 Kasım Pazartesi (1.1.5)**. Kesimden önce `mobile/` dokunan işler taslak PR olarak bekler (gönderim yapılana kadar `main`e mobil merge YOK).
+
 ⚠ **Aynı gün, daha önce (1 Ekim):** *"Bence bizim gibi yeni uygulamalar
 daha sık güncelleme geçiyorlardır. … 19 Ekim'i de haftaya bu günlere çekme
 taraftarıyım."* → 1.1.2 kesimi 5 Ekim beklenmeden **1 Ekim (Perşembe)**
