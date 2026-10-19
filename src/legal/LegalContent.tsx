@@ -44,7 +44,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
       <div className="flex flex-col gap-5">
         <P>
           Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, hangi verileri topladığımızı,
-          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 12 Ekim 2026</P>
+          nasıl kullandığımızı ve haklarınızı açıklar. Son güncelleme: 18 Ekim 2026</P>
 
         <Section title="1. Veri Sorumlusu">
           <P>
@@ -225,7 +225,7 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             veya pazarlama amaçlı herhangi bir çerez ya da izleme teknolojisi kullanılmamaktadır.
             Kaç benzersiz ziyaretçimiz olduğunu, hangi cihaz/işletim sistemlerinden geldiğimizi
             ve kaç kişinin oyuna başladığını anlayabilmek için cihazınızda rastgele, kimliğinizle
-            hiçbir şekilde ilişkilendirilmeyen anonim bir kod üretilir. Bu kod yedi durumda
+            hiçbir şekilde ilişkilendirilmeyen anonim bir kod üretilir. Bu kod sekiz durumda
             sunucuya iletilir: (1) HER ziyarette — oturum açık olsun olmasın — işletim sistemi
             tipiyle (iOS/Android/masaüstü) ve, tarayıcınızdan elde edilebiliyorsa, işletim
             sistemi sürümü/cihaz modeliyle birlikte (bu ikisi bazı tarayıcı ve cihazlarda hiç
@@ -253,7 +253,13 @@ export function PrivacyBody({ contact }: { contact: ReactNode }) {
             geliyorsa uygulama sürümü ve olayın GÜNÜ anonim kodla birlikte kaydedilir. Bu iki
             kayda hesap kimliğiniz YAZILMAZ ve saat tutulmaz — yalnızca gün tutulduğu için kayıt,
             hesabınızın açıldığı anla da eşleştirilemez; böylece yeni gelenlerin kaçının üye
-            olup oynamayı sürdürdüğünü kişileri tanımadan sayabiliyoruz. Bu yedi kaydın
+            olup oynamayı sürdürdüğünü kişileri tanımadan sayabiliyoruz. (8) Siteyi (web)
+            girişsiz (misafir) ziyaret ederken: ziyaretinizin hangi adımda sona erdiği
+            (karşılama sayfasında, uygulama ekranında, bir oyunda ya da mağaza bağlantısında), mağaza
+            bağlantısına dokunup dokunmadığınız, oturumun süresi ve varsa kaynak etiketi anonim
+            kodla birlikte kaydedilir; böylece ziyaretçilerin hangi noktada ayrıldığını ve
+            reklamdan gelenlerin kaçının mağazaya gittiğini kişileri tanımadan sayabiliyoruz.
+            Bu sekiz kaydın
             hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA YER ALMAZ: girişli
             olsanız bile bu veriler hiçbir üçüncü tarafla paylaşılmaz ve hesabınızla asla
             eşleştirilmez. Yazı tipleri de dahil tüm statik

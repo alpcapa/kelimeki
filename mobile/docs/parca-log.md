@@ -25,6 +25,63 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 241 — Yarım oyun hatırlatması: "hatırlatıldı" işareti sessizce kilitliyordu (12 Ekim 2026) — `[Sonraki sürüm]`, 1.1.4 treni
+
+**Vaka:** hatırlatma (#731, 1.1.2'den beri) cihazda dört denemede hiç
+görülmedi. Kullanıcı dördünü de AYNI yarım oyunla yaptı. Kural "aynı oyun bir
+kez hatırlatılır" ve "teslim edildi" = *zamanı geçtikten sonra uygulama
+açıldı* idi: ilk denemenin saatinden sonraki ilk açılış oyunu
+`yarim_oyun_hatirlatilan`a yazdı, sonraki üç denemede
+`yarimOyunHatirlatmasiKurulmali` false döndü ve HİÇBİR ŞEY kurulmadı —
+hata yok, iz yok.
+
+**Düzeltme:**
+- "Teslim" artık platformdan: yeni kanal metodu `yarimOyunDurum`
+  (`{bekliyor, teslim}`). iOS: bekleyen/teslim edilmiş istek listesi +
+  `hepsiniTemizle` paneli silmeden önce kanıtı `UserDefaults`a yazar (Dart
+  sorusu temizlikten SONRA geliyor). Android: alıcı `notify` anında
+  `SharedPreferences`a yazar; `iptal` PendingIntent'i de iptal eder
+  (`FLAG_NO_CREATE` sorgusu için). Bilinmiyorsa (web) teslim SAYILMAZ.
+- Anahtar `yarim_oyun_hatirlatilan_v2`: eski, yanlış dolmuş işaretler bir
+  kereye mahsus düşer.
+- Setup teşhis satırı: `hatırlatma 13.10 19:00` (platform bekletiyor) ·
+  `hatırlatma KURULAMADI` (Dart kurdu sanıyor, platformda yok) — günlerce
+  beklemeden doğrulama.
+
+**Bilinçli bedel:** iOS'ta görülüp Bildirim Merkezi'nden silinen hatırlatma
+kanıt bırakmaz → aynı oyun bir kez daha hatırlatılabilir (güvenli yön).
+
+**Doğrulama:** `flutter test` 1186 yeşil; regresyon testi (*"saat GEÇTİ ama
+platform göstermedi"*) eski kural geri konunca DÜŞÜYOR. Parite testi yeni
+metot adını ve `bekliyor`/`teslim` anahtarlarını Kotlin+Swift'te arıyor.
+**Sınır:** Swift/Kotlin bu ortamda derlenmedi (CI); cihazda §34.
+
+## Parça 242 — Rastgele Oyuncu: şerit hep görünür + "N koltuk kaldı" her yerde + tek seferlik tanıtım balonu (12 Ekim 2026, 19 Ekim treni) — `[Sonraki sürüm]`
+
+Web ikizi `RandomGamesStrip.tsx` + `randomGames.ts` + `onboarding.ts` (taslak PR #850; karar: `docs/decisions/random-opponent.md` §22).
+Kullanıcı: *"Rastgele oyun yoksa kutu çıkmıyor. Halbuki hep çıksa … 'Bekleyen oyun yok. Hemen aç.'"*, balon metni, *"her yerde x koltuk kaldı yazsın"*.
+
+- **Şerit hep görünür** (`RandomStripMode`: `cards` · `empty` · `hidden`; `util/random_games.dart`): sunucu BAŞARIYLA boş dediyse tek satır (`random-strip-empty`, kare kart DEĞİL — alttaki Devam Eden Oyunlar itilmesin), tamamı düğme = başlıktaki "Rastgele oyun aç" ile AYNI eylem, boşken o bağlantı gizli. İlk çekim sürerken / ağ hatasında `hidden`: `_loaded` yalnızca BAŞARILI çekimde (ya da önbellekte) true — "Bekleyen oyun yok" yalan olmasın.
+- **Balon:** `HintAnchor` (mevcut `hint_bubble.dart`) şerit BAŞLIĞINA çapalı, başlığın ÜSTÜNDE (aşağıda açılınca anlattığı satırı/kartları örtüyordu — web önizlemesinde görüldü). BİR kez: `FlagsStore.seenRandomHint` (web `kelimeki:seen-random-hint`), gösterim KARARINDA işaretlenir, 7 sn (`kRandomHintDuration`) sonra kapanır. Karar ile kapanış ayrı (mod değişince sayaç sıfırlanmasın). `flags` verilmezse (depo yok) balon HİÇ çıkmaz — web'de depolama kapalıysa "görüldü" varsayımının karşılığı. `LiveGamesTab` `services.storage?.then((s) => s.flags)` geçirir.
+- **"N koltuk kaldı" her yerde:** kart durum satırı (`ilan-kalan`, benimkiler dahil; `ilan-bekliyor` anahtarı ve `kRandomMineWaiting` KALKTI) ve `RandomWaitingRow` etiketi (eskiden "Bekliyor n/N"). Sayı benim ilanımda `unfilledSeatCount` (açık + yanıtı beklenen davetli), başkasınınkinde `openSeats` (`cardSeatsLeft`). Neden: karma kadroda (arkadaş + "?") son açık koltuğu biri kapsa da sunucu oyunu açık 0 **ve** bekleyen davet 0 olunca başlatır (`_random_take_seat`) → açık koltuk 0 ama oyun `pending`; "0 koltuk kaldı" yanlış okunurdu.
+- **Testler:** `random_games_test.dart` (saf kurallar: `unfilledSeatCount` · `cardSeatsLeft` · KARMA KADRO · `randomStripMode`; web parite: metinler + süre + `cardSeatsLeft(`/`seatsLeftLabel(game.player_count - dolu)` kalıpları), `random_games_ui_test.dart` (boş satır · dokununca form + "?" seçili · ilk çekim hatasında GİZLİ · balon bir kez/7 sn/ikinci açılışta yok · depo yokken yok · karma kadro kartta+satırda "1 koltuk kaldı"). Tam takım 1192 yeşil, `dart analyze` yeni uyarı yok (3 bilgi `main`'de de var).
+- **Doğrulama SINIRI:** gerçek Canlı sekmesi yerleşiminde balon/üstteki sekme çubuğu çakışması ve karma kadro senaryosu cihazda görülmedi → `docs/testing-rastgele.md` → "Boş şerit + tanıtım balonu". Web önizlemesi (Chromium, 390 px) kullanıcıya gösterildi; Flutter widget'ı için ayrıca ekran görüntüsü ALINMADI.
+- **Merge:** web #850 ile AYNI GÜN (19 Ekim kesimi); #850 zaten `mobile/app/test/random_games_test.dart`a dokunduğundan tek başına da mobil derlemeyi tetikler.
+
+## Parça 240 — Yarım oyun hatırlatması ölçülmüyordu: `reminder_events` (11 Ekim 2026, taslak PR — 19 Ekim treni)
+
+Kullanıcı: hatırlatma dört denemede de gelmedi; sonra *"ilk giren bildirim ayarlarını açmamış olacak, buna nasıl bildirim çıkartacaksın?"* ve *"Kimse kabul etmez bence. Ama kart gösterildi / kabul edildi / reddedildi olaylarını koymak lazım."* Kodu okuyunca: izin kartı yalnızca logoyla çıkışta (`SetupScreen._yarimOyunCikisi`); telefonu bırakarak ayrılma (`AppLifecycleListener.onHide`) doğrudan `oyundanAyrildi`ye gidiyor ve izin yoksa SESSİZCE hiçbir şey kuruyor — tam hedef kitle (yeni gelen) için. Bu yolda hiç sayı yoktu (3 Ekim'de telemetri *"gerek yok"* denmişti; karar bugün değişti).
+
+**Ne yapıldı:** kimliksiz `reminder_events` (`data/reminder_events.dart`, `signup_events` deseni: global tek örnek + `configure`, fire-and-forget). Olaylar: `card_shown` / `card_accept` / `card_decline` (+ `card`: `izin`|`ayar`), `os_granted` / `os_denied` (HATIRLAT'tan sonra sistem diyaloğu), `set` (kuruldu), `skip_no_permission` (uygun ayrılış ama izin yok). Kancalar: `yarimOyunIzniAkisi` (`olay:` parametresi) ve `YarimOyunHatirlatici.oyundanAyrildi` (`olay:` ctor parametresi; "uygun mu" önce İZİN HARİÇ tüm koşullarla, sonra izinle ölçülür). Bootstrap `reminderEvents.configure` (signup_events'in yanında).
+
+**Kararlar / dersler:**
+- **`funnel_events`e DEĞİL, ayrı tablo:** oraya yeni olay gizlilik metnindeki "yedi durum"u değiştirir (`funnel-v2.md` → "Mağaza sütunu").
+- **`anon_id` GÖNDERİLMEZ:** kimliksiz sayaç yeni bir durum açmaz → web+port hukuki metin DEĞİŞMEDİ. Bedeli: oranlar okunur, "kaç kişi" okunmaz; aynı cihaz her arka plana gidişte yeni `set`/`skip_no_permission` yazabilir. `anon_id` kolonu ilk sürümde açılmıştı ve KALDIRILDI (`20261011170500`): MCP `apply_migration` üç denemede zaman aşımına uğradı, kullanıcı SQL Editor'da elle çalıştırdı. ⚠ SQL Editor `schema_migrations`a kayıt yazmaz — migration dosyası kaydı kendisi ekliyor (`insert … where not exists`); elle uygulanan her migration için aynısı gerekir. Doğrulandı: kolonlar `id, event, card, platform, app_version, created_at`, üç sürüm kayıtlı.
+- **Grant dersi (tekrar):** `grant insert … to anon, authenticated` YETMİYOR — bu projede Supabase `anon`/`authenticated`a varsayılan olarak TÜM yetkileri de veriyor (canlıda ölçüldü: SELECT/UPDATE/DELETE/TRUNCATE dahil). RLS'te yalnız INSERT politikası olduğundan fiilen kapalıydı ama ikinci migration `revoke all` + dar grant yazdı (`beyin_ligi_grant_daralt` ile aynı ders).
+- **MCP `apply_migration` zaman aşımı SONUCU BELİRSİZ bırakır:** her denemeden sonra `to_regclass`/`schema_migrations` ile ölç, kör tekrar etme; küçültülmüş sorgu işe yaradı.
+
+**Doğrulama:** `flutter test` 1.202 test yeşil (yeni: `reminder_events_test` 6 · `reminder_events_parity_test` 3 · `unfinished_reminder_test`e 11 ölçüm testi); `dart analyze` yeni uyarı yok. **Doğrulama SINIRI:** gerçek insert'i istemci yoluyla (PostgREST, anon anahtarı) bu ortamdan DENEYEMEDİM — proxy `*.supabase.co`yu reddediyor; RLS/grant SQL'den doğrulandı, uçtan uca cihazda (bkz. `mobile/docs/testing-olcum.md` §34 ölçüm maddeleri).
+
 ## Parça 239 — Koltuk numarası alt yarıdan kırpılıyordu: `Text.overflow` varsayılanı `clip` (11 Ekim 2026, 1.1.3 TestFlight)
 
 Kullanıcı iPad'de gördü: *"koltuk numaraları yarınsından kesilmiş"*. Numara rakamı 56/34 px, yuvası 36/28 px; `Baseline` rakamı yuvanın üstüne taşıyordu ama `Text`in varsayılan `overflow: clip`i onu paragrafın KENDİ kutusuna (36 px) kırpıyordu. Bulgu `debugDumpRenderTree`de (`RenderParagraph size 36, overflow: clip`), düzeltme `overflow: TextOverflow.visible` (`live_game_create_form.dart`). Parça 230/231'in geometri testi konumu ölçüyor, KIRPMAYI görmüyordu → yeni test `koltuk numarası kırpılmaz`. Ders: taşırarak konumlanan metinde `overflow: visible` şart; kırpma yalnızca görüntü alınınca görünüyor.

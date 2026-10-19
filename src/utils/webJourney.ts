@@ -8,11 +8,14 @@
 // sekme gizlenirken aynı satır güncellenir; admin panelindeki "Ziyaretçi
 // Yolculuğu" kartı her adımda kaç oturumun SON adımının o olduğunu sayar.
 //
-// ⚠ KİMLİK YOK (kullanıcı kararı: *"Gizlilik metnine dokunmadan başla"*):
-// oturum kodu `sessionStorage`'da durur, sekme kapanınca silinir ve cihazdaki
-// kalıcı anonim kodla (`getOrCreateAnonId`) hiçbir bağı yoktur. Buraya
-// `anon_id` EKLEMEK gizlilik metnini (ve portun kopyasını) değiştirmeyi
-// gerektirir — bkz. ROADMAP #33.
+// ⚠ ANONİM CİHAZ KODU (18 Ekim 2026'dan beri, ROADMAP #47): oturum kodu hâlâ
+// `sessionStorage`'da durur ve sekme kapanınca silinir, ama her ping artık
+// cihazdaki kalıcı anonim kodu (`getOrCreateAnonId`, `funnel_events.anon_id`
+// ile AYNI) da taşır — admin Huni v2 "Mağaza (cihaz)" sütunu oturumu land
+// kohortuna buradan bağlar. Bu, 23 Eylül'deki *"Gizlilik metnine dokunmadan
+// başla"* kararını DEĞİŞTİRİR: gizlilik metni (web `LegalContent.tsx` + portun
+// `legal_modals.dart`) sekizinci durum olarak AYNI turda güncellenmeli;
+// sunucu: `supabase/migrations/20261018190000_web_sessions_anon_id.sql`.
 //
 // ⚠ Yalnızca MİSAFİR oturumu yazılır. Girişli başlayan oturum hiç yazılmaz;
 // misafir başlayıp giriş/kayıt yapan oturum `login`/`signup_done` ile kapanır.
@@ -25,6 +28,7 @@
 
 import { isBotUserAgent } from './visitTracking';
 import { pageWasVisible, whenPageVisible } from './pageVisible';
+import { getOrCreateAnonId } from './visitTracking';
 
 /**
  * Adımlar, admin kartındaki SIRAYLA. ⚠ Sunucudaki iki fonksiyonun
@@ -321,6 +325,18 @@ function endpoint(): { url: string; key: string } | null {
   return url && key ? { url, key } : null;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Cihazın anonim kodu — YALNIZCA geçerli bir UUID ise (sunucu parametresi `uuid`;
+ * bozuk bir değer RPC'yi 400'le düşürüp ping'in TAMAMINI kaybettirirdi) ve
+ * localStorage yoksa/engelliyse `null` (ping yine gider, kodsuz).
+ */
+export function journeyAnonId(): string | null {
+  const id = getOrCreateAnonId();
+  return id && UUID_RE.test(id) ? id : null;
+}
+
 function post(p: JourneyPing, deviceType: string, utmSource: string | null): Promise<void> {
   const ep = endpoint();
   if (!ep) return Promise.resolve();
@@ -342,6 +358,7 @@ function post(p: JourneyPing, deviceType: string, utmSource: string | null): Pro
       p_moves: p.moves,
       p_seconds: p.seconds,
       p_scroll_pct: p.scrollPct,
+      p_anon_id: journeyAnonId(),
     }),
   }).then(
     () => undefined,
