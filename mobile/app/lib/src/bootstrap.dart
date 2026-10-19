@@ -2,6 +2,7 @@
 //
 // Widget testleri KelimekiApp'i sahte bir AppServices ile pump edebilsin
 // diye tüm dış dünya (Supabase, asset, sürüm kapısı) burada toplanır.
+import 'dart:async';
 import 'package:flutter/foundation.dart' show ValueNotifier;
 import 'package:flutter/services.dart' show AssetBundle;
 import 'package:kelimeki_core/kelimeki_core.dart';
@@ -38,6 +39,7 @@ import 'data/reminder_events.dart';
 import 'data/signup_events.dart';
 import 'data/funnel_api.dart';
 import 'data/install_referrer.dart';
+import 'data/install_source_stamp.dart';
 import 'data/visits_api.dart';
 
 class AppServices {
@@ -198,6 +200,12 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
             // Yalnızca Android'de kullanılır (`FunnelRepo.create` süzer).
             readInstallReferrer: readPlayInstallReferrer,
           )));
+  // Kurulum kaynağı → `DeviceStamp.source` (#46-1). Açılışı BEKLETMEZ:
+  // okuma bitmeden başlayan ilk oyun `app` kalır (kullanıcı kararı).
+  unawaited(storage.then((s) => stampInstallSource(
+        flags: s.flags,
+        readInstallReferrer: readPlayInstallReferrer,
+      )));
   final auth = AuthService(supabase,
       profileCache: storage.then((s) => s.profileCache), signupStamp: stamp);
   // Firebase açılışı BEKLETİLİYOR ama fırlatmıyor (bkz. push_init.dart):

@@ -105,6 +105,8 @@ mobile/
       data/install_referrer.dart # Play Install Referrer okuması (Android) →
                              # land kanalı (`channelFromInstallReferrer`,
                              # funnel_api.dart; Parça 218)
+      data/install_source_stamp.dart # referrer → DeviceStamp.source (first-touch,
+                             # eski cihazda da bir kez; `land`a dokunmaz; #46-1)
       data/stats_api.dart    # player_stats / leaderboard / my_leaderboard_rank
       data/league_rewards_api.dart # k-lig ödül/rütbe kayıtları (league_rewards
                              # + mark_league_rewards_seen) — kutlama banner'ı

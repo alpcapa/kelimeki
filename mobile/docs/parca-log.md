@@ -2950,3 +2950,21 @@ satır düştü mü" CEVAPLANMADI. Cihaz maddesi `mobile/TESTING.md`'de.
        kullanıcı kararı: *"Bunu apk ile test edip sorunsuz olduğundan emin
        olmadan aab yapılmayacak."* Cihaz listesi: `mobile/TESTING.md`
        § 24.
+
+   - ✅ **Parça 244 — kurulum kaynağı `DeviceStamp`e yazılıyor (#46-1, 13 Ekim
+     2026; 19 Ekim / 1.1.4 treni, taslak PR).** Play Install Referrer'daki
+     `utm_source` artık yalnız `funnel_events.land`a değil `FlagsStore.
+     captureUtmSource`a (first-touch) da yazılıyor → `game_starts`,
+     `game_finishes`, `guest_visits` ve `signup_utm_source` aynı kanalı
+     taşır; admin Kaynak Hunisi'ndeki `app` satırı kanallara dağılır.
+     Kararlar (kullanıcı, 13 Ekim): yarış → açılışta başlat, BEKLEME (bitmeden
+     başlayan ilk oyun `app` kalır); eski cihaz → damga için bir kez oku, ayrı
+     bayrak (`install_source_stamped`), `land` kanalına dokunma.
+     `install_source_stamp.dart` + `bootstrap.dart` (`unawaited`).
+     **Doğrulama:** `install_source_stamp_test.dart` (8 test: geçerli etiket,
+     organik, bozuk dize, eski cihaz, first-touch, tek sefer, okuma düşerse
+     bayrak yazılmaz, iOS okumaz). **SINIR:** gerçek Play referrer'ı cihazda
+     denenmedi (yalnız mağaza kurulumunda çalışır) → `testing-olcum.md` §33.
+     Gizlilik metni: aynı anonim kodla zaten giden tablolara yazılıyor, yeni
+     veri türü yok; `LegalContent.tsx` "kaynak etiketi" cümlesi ayrıca
+     okunacak (açık). iOS satırları `app` kalır.

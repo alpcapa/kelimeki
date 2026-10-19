@@ -305,7 +305,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 12 Ekim 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 13 Ekim 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -361,7 +361,11 @@ class PrivacyModal extends StatelessWidget {
                 'kadar oyun oynadığını ölçmek için. Hesabınıza kayıt anında tek '
                 'seferlik yazılır ve sonradan değişmez; ayrıca yapay zekaya '
                 'karşı oynanan bir oyunun başlangıç ve bitiş sayacına da '
-                'eklenir. Bağlantı yoksa "direkt" olarak kaydedilir. Bu etiket, '
+                'eklenir. Bağlantı yoksa "direkt" olarak kaydedilir. '
+                'Android\'de bu etiket, siteden Google Play\'e geçtiğinizde '
+                'Play\'in kurulum yönlendirme bilgisiyle (Install Referrer) '
+                'uygulamaya da taşınır; yalnızca kanal ölçümü içindir, '
+                'kimliğinizi ya da reklam kimliğinizi içermez. Bu etiket, '
                 'aşağıda anlatılan anonim ziyaretçi sayacındaki kayıtlarla '
                 'EŞLEŞTİRİLMEZ',
           ]),

@@ -61,8 +61,9 @@ class DeviceStamp {
   /// satırında KALMALI. `FlagsStore.captureUtmSource` first-touch yazıyor
   /// (bir kez, üzerine yazılmaz) — web `captureUtmSource`ın aynı ilkesi.
   ///
-  /// ⚠ Bugün `captureUtmSource`ı çağıran bir yol YOK (deep link ayrıştırması
-  /// portta hiç yazılmadı), yani pratikte her zaman `'app'` dönüyor. Yol
-  /// eklendiğinde BURASI değişmez — yalnızca değer dolar.
+  /// Android'de değeri `stampInstallSource` doldurur (Play Install Referrer,
+  /// #46-1, 13 Ekim 2026): açılışta BEKLENMEDEN başlar, bitmeden başlayan ilk
+  /// oyun/kayıt `'app'` kalır. iOS'ta kanal yok → `'app'`. Deep link
+  /// ayrıştırması hâlâ yok; yol eklenirse BURASI değişmez.
   String get source => flags.utmSource ?? kAppSource;
 }
