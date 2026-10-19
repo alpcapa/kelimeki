@@ -21,12 +21,30 @@ class _FakeZamanlayici implements HatirlatmaZamanlayici {
   @override
   Future<void> kur(DateTime zaman, String baslik, String govde) async {
     kurulanlar.add(zaman);
+    bekliyor = true;
+    teslim = false;
     this.baslik = baslik;
     this.govde = govde;
   }
 
   @override
-  Future<void> iptal() async => iptalSayisi += 1;
+  Future<void> iptal() async {
+    iptalSayisi += 1;
+    // Gerçek uç gibi: iptal hem bekleyeni hem "gösterildi" kanıtını siler.
+    bekliyor = false;
+    teslim = false;
+  }
+
+  /// Platformun bildiği — gerçek uçta iOS/Android sorgusu. `null` dönsün
+  /// istenirse [durumBilinmiyor].
+  bool bekliyor = false;
+  bool teslim = false;
+  bool durumBilinmiyor = false;
+
+  @override
+  Future<HatirlatmaDurumu?> durum() async => durumBilinmiyor
+      ? null
+      : HatirlatmaDurumu(bekliyor: bekliyor, teslim: teslim);
 
   int ayarAcmaSayisi = 0;
   bool ayarAcilabilir = true;
@@ -242,7 +260,10 @@ void main() {
 
     test('bildirimden sonra dönüş: aynı oyun bir daha hatırlatılmaz', () async {
       await h.oyundanAyrildi(_oyun());
-      simdi = DateTime(2026, 10, 2, 19, 30); // bildirim düştü
+      simdi = DateTime(2026, 10, 2, 19, 30);
+      zamanlayici
+        ..bekliyor = false
+        ..teslim = true; // platform: bildirim GÖSTERİLDİ
       await h.uygulamaAcildi();
       expect(storage.flags.yarimOyunHatirlatilan, _oyun().startedAt);
       await h.oyundanAyrildi(_oyun());
@@ -251,6 +272,40 @@ void main() {
       // Başka bir oyun ise yine hatırlatılır.
       await h.oyundanAyrildi(_oyun(startedAt: '2026-10-02T20:00:00.000Z'));
       expect(zamanlayici.kurulanlar, hasLength(2));
+    });
+
+    // 12 Ekim 2026 regresyonu: kullanıcı aynı oyunla dört kez denedi, hiç
+    // bildirim görmedi. Eski kural "saat geçtiyse gösterildi" diyordu ve
+    // ilk açılışta oyunu kalıcı olarak kilitliyordu.
+    test('saat GEÇTİ ama platform göstermedi: oyun kilitlenmez, yine kurulur',
+        () async {
+      await h.oyundanAyrildi(_oyun());
+      simdi = DateTime(2026, 10, 2, 19, 30);
+      zamanlayici
+        ..bekliyor = false
+        ..teslim = false;
+      await h.uygulamaAcildi();
+      expect(storage.flags.yarimOyunHatirlatilan, isNull);
+      await h.oyundanAyrildi(_oyun());
+      expect(zamanlayici.kurulanlar, hasLength(2));
+    });
+
+    test('platform durumu bilinmiyorsa (web) teslim SAYILMAZ', () async {
+      await h.oyundanAyrildi(_oyun());
+      simdi = DateTime(2026, 10, 2, 19, 30);
+      zamanlayici.durumBilinmiyor = true;
+      await h.uygulamaAcildi();
+      expect(storage.flags.yarimOyunHatirlatilan, isNull);
+    });
+
+    test('teşhis: bekliyorsa zaman, platformda yoksa KURULAMADI', () async {
+      expect(await h.teshis(), isNull, reason: 'kurulmuş bir şey yok');
+      await h.oyundanAyrildi(_oyun());
+      expect(await h.teshis(), 'hatırlatma 02.10 19:00');
+      zamanlayici.bekliyor = false; // Dart kurdu sanıyor, platformda yok
+      expect(await h.teshis(), 'hatırlatma KURULAMADI');
+      zamanlayici.durumBilinmiyor = true;
+      expect(await h.teshis(), isNull);
     });
 
     test('oyun bitince bekleyen hatırlatma iptal edilir', () async {

@@ -25,6 +25,37 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 241 — Yarım oyun hatırlatması: "hatırlatıldı" işareti sessizce kilitliyordu (12 Ekim 2026) — `[Sonraki sürüm]`, 1.1.4 treni
+
+**Vaka:** hatırlatma (#731, 1.1.2'den beri) cihazda dört denemede hiç
+görülmedi. Kullanıcı dördünü de AYNI yarım oyunla yaptı. Kural "aynı oyun bir
+kez hatırlatılır" ve "teslim edildi" = *zamanı geçtikten sonra uygulama
+açıldı* idi: ilk denemenin saatinden sonraki ilk açılış oyunu
+`yarim_oyun_hatirlatilan`a yazdı, sonraki üç denemede
+`yarimOyunHatirlatmasiKurulmali` false döndü ve HİÇBİR ŞEY kurulmadı —
+hata yok, iz yok.
+
+**Düzeltme:**
+- "Teslim" artık platformdan: yeni kanal metodu `yarimOyunDurum`
+  (`{bekliyor, teslim}`). iOS: bekleyen/teslim edilmiş istek listesi +
+  `hepsiniTemizle` paneli silmeden önce kanıtı `UserDefaults`a yazar (Dart
+  sorusu temizlikten SONRA geliyor). Android: alıcı `notify` anında
+  `SharedPreferences`a yazar; `iptal` PendingIntent'i de iptal eder
+  (`FLAG_NO_CREATE` sorgusu için). Bilinmiyorsa (web) teslim SAYILMAZ.
+- Anahtar `yarim_oyun_hatirlatilan_v2`: eski, yanlış dolmuş işaretler bir
+  kereye mahsus düşer.
+- Setup teşhis satırı: `hatırlatma 13.10 19:00` (platform bekletiyor) ·
+  `hatırlatma KURULAMADI` (Dart kurdu sanıyor, platformda yok) — günlerce
+  beklemeden doğrulama.
+
+**Bilinçli bedel:** iOS'ta görülüp Bildirim Merkezi'nden silinen hatırlatma
+kanıt bırakmaz → aynı oyun bir kez daha hatırlatılabilir (güvenli yön).
+
+**Doğrulama:** `flutter test` 1186 yeşil; regresyon testi (*"saat GEÇTİ ama
+platform göstermedi"*) eski kural geri konunca DÜŞÜYOR. Parite testi yeni
+metot adını ve `bekliyor`/`teslim` anahtarlarını Kotlin+Swift'te arıyor.
+**Sınır:** Swift/Kotlin bu ortamda derlenmedi (CI); cihazda §34.
+
 ## Parça 242 — Rastgele Oyuncu: şerit hep görünür + "N koltuk kaldı" her yerde + tek seferlik tanıtım balonu (12 Ekim 2026, 19 Ekim treni) — `[Sonraki sürüm]`
 
 Web ikizi `RandomGamesStrip.tsx` + `randomGames.ts` + `onboarding.ts` (taslak PR #850; karar: `docs/decisions/random-opponent.md` §22).
