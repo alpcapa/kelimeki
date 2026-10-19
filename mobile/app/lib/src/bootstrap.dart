@@ -35,6 +35,7 @@ import 'data/unfinished_game_reminder.dart';
 import 'storage/app_storage.dart';
 import 'util/online_status.dart';
 import 'data/device_stamp.dart';
+import 'data/reminder_events.dart';
 import 'data/signup_events.dart';
 import 'data/funnel_api.dart';
 import 'data/install_referrer.dart';
@@ -234,6 +235,10 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   // kez" deseni; Firebase'e DEĞİL Supabase'e bağlı.
   signupEvents
       .configure(supabase != null ? SupabaseSignupEventsSink(supabase) : null);
+  // Yarım kalan oyun hatırlatmasının sayacı (`reminder_events`) — aynı desen,
+  // kimliksiz (bkz. `data/reminder_events.dart`).
+  reminderEvents.configure(
+      supabase != null ? SupabaseReminderEventsSink(supabase) : null);
   final pushRepo = firebaseHazir && supabase != null
       ? PushRepo(
           messaging: FirebasePushMessaging(),

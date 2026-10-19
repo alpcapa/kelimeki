@@ -10,23 +10,34 @@
 // çevrimiçine dönüşte de bir kez. Yalnızca ilk sayfa (20) — offset sayfalaması
 // kayar, id ile tekilleştirilir.
 //
-// ⚠ Liste boşken şerit TAMAMEN gizlenir ama bileşen BAĞLI kalır (yoklama
-// sürsün, yeni ilan gelince şerit belirsin) — hook'lar erken `return`ün
-// ÜSTÜNDE (verify-hook-order).
+// ⚠ Liste boşken şerit artık GİZLENMEZ (12 Ekim 2026, kullanıcı): sunucu
+// BAŞARIYLA boş dediyse tek satır "Bekleyen oyun yok. Hemen aç." çıkar
+// (`randomStripMode`); ilk çekim sürerken/ağ hatasında gizli kalır (yalan
+// "yok" demesin). Bileşen her durumda BAĞLI (yoklama sürsün) — hook'lar erken
+// `return`ün ÜSTÜNDE (verify-hook-order). Başlıktaki tek seferlik tanıtım
+// balonu (`RANDOM_HINT_TEXT`) bu hep-görünür başlığa çapalı.
 import { useEffect, useRef, useState } from 'react';
 import { acceptRandomGame, fetchRandomGames } from '../lib/api';
 import type { MyRandomGame, RandomGameResult, RandomListing } from '../lib/database.types';
 import { friendlyErrorMessage } from '../utils/errorMessage';
+import { hasSeenRandomHint, markRandomHintSeen } from '../utils/onboarding';
 import {
+  RANDOM_EMPTY_LINK,
+  RANDOM_EMPTY_TEXT,
+  RANDOM_HINT_MS,
+  RANDOM_HINT_TEXT,
   RANDOM_STRIP_LIMIT,
   RANDOM_STRIP_MIN_GAP_MS,
   RANDOM_STRIP_POLL_MS,
+  cardSeatsLeft,
   filledSeatCount,
   isOpenSeat,
+  randomStripMode,
   seatsLeftLabel,
   stripListings,
 } from '../utils/randomGames';
 import { Avatar } from './Avatar';
+import { HintBubble } from './HintBubble';
 import { PlayerAvatarRow } from './PlayerAvatarRow';
 
 /** `user.id` → son çekilen ilanlar. Sekme değişince yeniden mount'ta şerit boş başlamasın. */
@@ -92,6 +103,11 @@ export function RandomGamesStrip({
 }: RandomGamesStripProps) {
   const [listings, setListings] = useState<RandomListing[]>(() => stripCache.get(userId) ?? []);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Sunucu en az bir kez BAŞARIYLA yanıt verdi mi (önbellek de sayılır): boş
+  // durum yalnızca o zaman "Bekleyen oyun yok" der.
+  const [loaded, setLoaded] = useState(() => stripCache.has(userId));
+  const [hintOn, setHintOn] = useState(false);
+  const hintDecided = useRef(false);
   const refreshRef = useRef<(force: boolean) => void>(() => {});
 
   useEffect(() => {
@@ -114,6 +130,7 @@ export function RandomGamesStrip({
       if (rows !== null) {
         stripCache.set(userId, rows);
         setListings(rows);
+        setLoaded(true);
       }
     };
     refreshRef.current = (force) => void load(force);
@@ -139,7 +156,25 @@ export function RandomGamesStrip({
   }, [refreshSignal]);
 
   const visible = stripListings(listings, myRandom);
-  if (visible.length === 0) return null;
+  const mode = randomStripMode(loaded, visible.length);
+
+  // Tek seferlik tanıtım balonu: şerit görünür olduğu ilk anda KARAR verilir
+  // (işaretlenir), 7 sn sonra kendiliğinden kapanır. Karar ile kapanış AYRI
+  // effect: mod değişince (boş → kartlar) kapanış sayacı sıfırlanmasın.
+  useEffect(() => {
+    if (mode === 'hidden' || hintDecided.current) return;
+    hintDecided.current = true;
+    if (hasSeenRandomHint()) return;
+    markRandomHintSeen();
+    setHintOn(true);
+  }, [mode]);
+  useEffect(() => {
+    if (!hintOn) return;
+    const t = window.setTimeout(() => setHintOn(false), RANDOM_HINT_MS);
+    return () => window.clearTimeout(t);
+  }, [hintOn]);
+
+  if (mode === 'hidden') return null;
 
   const accept = async (l: RandomListing) => {
     if (busyId) return;
@@ -161,17 +196,34 @@ export function RandomGamesStrip({
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
-          Rastgele Oyunlar · {visible.length}
+        {/* Balon bu başlığa çapalı: şerit artık hep görünür, yani çapa hep var. */}
+        <span className="relative inline-block text-[10px] uppercase tracking-[1.5px] text-muted font-mono font-bold">
+          Rastgele Oyunlar{mode === 'cards' ? ` · ${visible.length}` : ''}
+          {hintOn && <HintBubble text={RANDOM_HINT_TEXT} yon="ust" hiza="bas" />}
         </span>
+        {mode === 'cards' && (
+          <button
+            type="button"
+            onClick={onOpenCreate}
+            className="shrink-0 min-h-[36px] pl-2.5 text-[10px] uppercase tracking-[1.5px] font-mono font-bold text-accent active:opacity-70"
+          >
+            Rastgele oyun aç
+          </button>
+        )}
+      </div>
+      {mode === 'empty' ? (
+        // Boş durum: tek satır (kare kart DEĞİL — alttaki Devam Eden Oyunlar'ı
+        // itmesin, 4 Ekim kararı). Tamamı düğme: "Hemen aç." başlıktaki
+        // "Rastgele oyun aç" ile AYNI eylem (boşken o bağlantı gizli).
         <button
           type="button"
           onClick={onOpenCreate}
-          className="shrink-0 min-h-[36px] pl-2.5 text-[10px] uppercase tracking-[1.5px] font-mono font-bold text-accent active:opacity-70"
+          className="w-full min-h-[44px] rounded-[10px] border border-border bg-panel shadow-raised px-3 py-2 text-center font-mono text-xs text-muted active:opacity-70"
         >
-          Rastgele oyun aç
+          {RANDOM_EMPTY_TEXT}{' '}
+          <span className="font-bold text-accent underline underline-offset-[3px]">{RANDOM_EMPTY_LINK}</span>
         </button>
-      </div>
+      ) : (
       <div
         className="no-scrollbar flex gap-2 overflow-x-auto pb-1 snap-x snap-proximity overscroll-x-contain"
         role="list"
@@ -209,16 +261,12 @@ export function RandomGamesStrip({
                 </span>
                 <SeatDots seats={l.seats} />
               </div>
-              {mine ? (
-                // "Bekliyor" soluk etiket ("N koltuk kaldı" satırının YERİNE; koltuk durumu noktalarda).
-                <span className="truncate text-center font-mono text-[9px] font-bold uppercase tracking-[0.5px] leading-tight text-muted">
-                  Bekliyor
-                </span>
-              ) : (
-                <span className="truncate text-center font-mono text-[9px] leading-tight text-muted">
-                  {seatsLeftLabel(l.open_seats)}
-                </span>
-              )}
+              {/* "N koltuk kaldı" HER kartta (12 Ekim 2026, kullanıcı: "bekliyor yerine x koltuk
+                  kaldı daha etkili"; sonra "her yerde"). Benim kartımda sayı dolmamış koltuk
+                  (açık + yanıtı beklenen davetli) — bkz. `unfilledSeatCount`. */}
+              <span className="truncate text-center font-mono text-[9px] leading-tight text-muted">
+                {seatsLeftLabel(cardSeatsLeft(l))}
+              </span>
               {mine ? (
                 // Benim ilanım (§15): "Kabul" YOK; küçük eylem (kurucu İptal, kabul eden Ayrıl).
                 <button
@@ -245,6 +293,7 @@ export function RandomGamesStrip({
           );
         })}
       </div>
+      )}
     </div>
   );
 }
@@ -282,8 +331,8 @@ export function RandomWaitingRow({
             )}
           />
         </span>
-        <span className="shrink-0 font-mono text-[13px] font-bold uppercase tracking-[1px] text-orange">
-          Bekliyor {dolu}/{game.player_count}
+        <span className="shrink-0 font-mono text-[13px] font-bold tracking-[0.5px] text-orange">
+          {seatsLeftLabel(game.player_count - dolu)}
         </span>
       </div>
       <div className="flex items-center justify-between gap-2">

@@ -233,6 +233,28 @@ export function seatsLeftLabel(open: number): string {
   return open === 1 ? '1 koltuk kaldı' : `${open} koltuk kaldı`;
 }
 
+/**
+ * HENÜZ DOLMAMIŞ koltuk sayısı = açık + yanıtı beklenen/reddeden davetli (12 Ekim
+ * 2026, kullanıcı: *"her yerde x koltuk kaldı yazsın"*). "Bekliyor" etiketleri
+ * (benim kartım, Devam Edenler "Bekliyor n/N") bununla değişti.
+ * Neden `open_seats` değil: karma kadroda (arkadaş + rastgele koltuk) son açık
+ * koltuğu biri kapsa da oyun, arkadaş yanıtlayana kadar `pending` kalır
+ * (`_random_take_seat`: açık 0 VE bekleyen davet 0 → `active`). O durumda açık
+ * koltuk 0'dır ama oyun başlamamıştır; "0 koltuk kaldı" yanlış okunurdu. Dolmamış
+ * koltuk sayısı bekleyen oyunda ≥1 olur ve `Bekliyor n/N`deki N − dolu ile AYNI.
+ */
+export function unfilledSeatCount(seats: readonly RandomSeatState[]): number {
+  return seats.filter((s) => s === 'open' || s === 'invited').length;
+}
+
+/**
+ * Şerit kartındaki "N koltuk kaldı" sayısı: BAŞKASININ ilanında kabul edebileceğim
+ * AÇIK koltuklar (`open_seats`); BENİM ilanımda dolmamış koltuklar.
+ */
+export function cardSeatsLeft(l: Pick<StripListing, 'open_seats' | 'seats' | 'mine'>): number {
+  return l.mine ? unfilledSeatCount(l.seats) : l.open_seats;
+}
+
 // ── Kurulum formu: esnek kadro ──────────────────────────────────────────────
 
 /**
@@ -337,3 +359,37 @@ export const RANDOM_STRIP_POLL_MS = 30_000;
 export const RANDOM_STRIP_MIN_GAP_MS = 8_000;
 /** Şerit yalnızca ilk sayfayı çeker. */
 export const RANDOM_STRIP_LIMIT = 20;
+
+// ── Boş şerit + tanıtım balonu (12 Ekim 2026, kullanıcı) ───────────────────
+// Eskiden liste boşken şerit TAMAMEN gizleniyordu — özellik tam bilinmesi
+// gereken anda görünmüyordu. Artık şerit HEP görünür; boşken tek satır
+// "Bekleyen oyun yok. Hemen aç." ("Hemen aç." = başlıktaki "Rastgele oyun aç"
+// ile AYNI eylem). Port ikizi: `util/random_games.dart` (parite testi okur).
+
+/** Boş şeridin düz metni; "Hemen aç." ayrı (bağlantı gibi vurgulanır). */
+export const RANDOM_EMPTY_TEXT = 'Bekleyen oyun yok.';
+export const RANDOM_EMPTY_LINK = 'Hemen aç.';
+
+/**
+ * Tek seferlik tanıtım balonu (kullanıcının cümleleri, 12 Ekim 2026).
+ * ⚠ "Rastgele" yazımı: ürünün her yerinde böyle (kullanıcı mesajında
+ * "rasgele" geçti, tutarlılık için bilerek "Rastgele").
+ */
+export const RANDOM_HINT_TEXT =
+  'Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen katılsın. Önce gelen koltuğu kapar.';
+
+/** Üç cümle 4 sn'de okunmaz (genel balon süresi `ONBOARDING_HINT_MS`). */
+export const RANDOM_HINT_MS = 7000;
+
+/**
+ * Boş durum yalnızca sunucu BAŞARIYLA yanıt verdikten sonra gösterilir:
+ * `loaded=false` (ilk çekim sürüyor ya da ağ hatası) iken "Bekleyen oyun yok"
+ * demek yalan olurdu — bugünkü kod ağ hatasında eldeki listeyi koruyor
+ * (`rows !== null` kuralı), burada da aynı ilke.
+ */
+export type RandomStripMode = 'hidden' | 'empty' | 'cards';
+
+export function randomStripMode(loaded: boolean, visibleCount: number): RandomStripMode {
+  if (visibleCount > 0) return 'cards';
+  return loaded ? 'empty' : 'hidden';
+}

@@ -291,6 +291,47 @@ satırlarında dolu. Yüzdesi Land'e göre; reklam ziyaretçisinde oturum ≈ ki
 Kart metni (`?`) bunu söylüyor. Dönüş tipi değişti → DROP + CREATE,
 `proacl` öncesiyle aynı (authenticated + service_role).
 
+## "Mağaza (cihaz)" — `web_sessions`e anonim cihaz kodu (18 Ekim 2026, ROADMAP #47)
+
+Kullanıcı: Admin Huni v2'de Instagram satırı 18 land / 41 mağaza göstermişti
+(`ig-bio` 16 + `instagram` 2 land; `instagram` 38 + `ig-bio` 3 mağaza OTURUMU).
+**Sebep birim farkı:** land = ilk dokunuşta kanalı donan CİHAZ, mağaza = etiketli
+OTURUM (tekrarlı, herhangi bir gün) ve `web_sessions`te cihaz kodu yoktu → oturum
+kohorta bağlanamıyor, mağaza ÷ land oran olarak okunamıyordu.
+
+**Karar (kullanıcı, 18 Ekim 2026: *"Başla"*):** `web_sessions.anon_id` (nullable,
+`funnel_events.anon_id` ile AYNI kod) + `admin_funnel`e `store_devices` (kohort
+CİHAZI, her zaman ≤ land). Eski `store` (oturum) AYNEN kalır; `anon_id`siz geçmiş
+oturumlar yalnızca onda görünür. Admin kartında iki sütun: **Mağaza (cihaz)**
+(yüzdeli) ve **Mağaza (oturum)** (düz sayı, YÜZDESİZ).
+- **Sunucu:** `supabase/migrations/20261018190000_web_sessions_anon_id.sql`.
+  `record_web_session`e 9. parametre (`p_anon_id uuid default null`): eski 8
+  parametreli imza DROP (iki imza yan yana kalmasın), kod yalnızca İLK yazımda
+  atanır (`coalesce`), eski istemci varsayılan null ile çalışır. `admin_funnel`
+  dönüş tipi değişti → DROP + CREATE; `proacl` canlıdaki ile aynı (record: anon +
+  authenticated + service_role; admin: authenticated + service_role). **Yerel
+  PostgreSQL 16'da denendi** (canlı şemanın imzalarıyla): eski çağrı çalışıyor,
+  ilk kod korunuyor, null iken sonraki ping atıyor, tek imza, `proacl` aynı,
+  `admin_funnel` land 2 / store 2 (oturum) / `store_devices` 1. **Canlıya UYGULANMADI.**
+- **İstemci:** `webJourney.ts` her ping'e `p_anon_id` ekler — YALNIZCA geçerli bir
+  UUID ise (bozuk değer RPC'yi 400'le düşürüp ping'in TAMAMINI kaybettirirdi),
+  yoksa null. Kapı: `npm run verify-web-journey`.
+- **⚠ GİZLİLİK — ÖNCEKİ ÇIKARIMIM YANLIŞTI.** Sohbette "gizlilik metni muhtemelen
+  değişmez" demiştim; `web_sessions` 23 Eylül 2026'dan beri BİLEREK kimliksizdi
+  (*"Gizlilik metnine dokunmadan başla"*) ve metin anonim kodun sunucuya gittiği
+  durumları sayıyor (yedi madde). Oturum tablosuna kod eklemek **sekizinci durum**:
+  web `LegalContent.tsx` (yedi → sekiz, madde (8), "Son güncelleme" 18 Ekim 2026) ve
+  portun `legal_modals.dart`ı AYNI turda; `legal_text_test.dart` tarihi web
+  kaynağından okur → web tek başına merge edilirse web CI'ın `parite` işi düşer.
+  Bu yüzden web PR'ı port PR'ıyla AYNI GÜN (1.1.4 treni) gider. #862 de aynı
+  paragrafı değiştiriyor (kurulum kaynağı cümlesi) → ikisinden sonra gelen
+  çakışmayı çözer; "Son güncelleme" TEK tarih ve en geç olan (18 Ekim) kalır.
+- **Sıra:** önce sunucu migration'ı canlıya (kullanıcı onayıyla, zararsız: sütun/
+  parametre isteğe bağlı), sonra web+port+gizlilik metni AYNI turda. İstemci
+  metin yayında değilken `anon_id` GÖNDERMEMELİ.
+- **Sınır:** gerçek bir kampanya trafiğiyle uçtan uca denenmedi; kontrol maddesi
+  `docs/testing-admin.md` §9.23.
+
 ## Okuma: yeni üyeler oyunu bitirmiyor (10 Ekim 2026)
 
 Kullanıcı: *"Çok yeni üye var ama neredeyse hiçbiri bir oyun bitirmedi."*
