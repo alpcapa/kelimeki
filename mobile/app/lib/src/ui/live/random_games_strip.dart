@@ -11,8 +11,12 @@
 // yoklanır; öne dönüşte/çevrimiçine dönüşte de bir kez. Yalnızca ilk sayfa
 // (20) — offset sayfalaması kayar, id ile tekilleştirilir.
 //
-// ⚠ Liste boşken şerit TAMAMEN gizlenir ama widget BAĞLI kalır (yoklama
-// sürsün, yeni ilan gelince şerit belirsin).
+// ⚠ Liste boşken şerit artık GİZLENMEZ (12 Ekim 2026, kullanıcı): sunucu
+// BAŞARIYLA boş dediyse tek satır "Bekleyen oyun yok. Hemen aç." çıkar
+// (`randomStripMode`); ilk çekim sürerken/ağ hatasında gizli kalır (yalan
+// "yok" demesin). Widget her durumda BAĞLI (yoklama sürsün). Başlıktaki
+// tek seferlik tanıtım balonu (`kRandomHintText`) bu hep-görünür başlığa
+// çapalı. Web `RandomGamesStrip.tsx` ikizi.
 //
 // ⚠ Yatay kaydırma + SABİT yükseklik, iç içe DİKEY liste YOK
 // (`mobile/CLAUDE.md` → "KModal'ın gövdesi ZATEN kaydırılabilir"): şerit
@@ -24,11 +28,13 @@ import 'package:flutter/material.dart';
 import 'package:kelimeki_core/kelimeki_core.dart' show trUpper;
 
 import '../../data/online_games_api.dart';
+import '../../storage/flags_store.dart';
 import '../../util/error_message.dart';
 import '../../util/online_status.dart';
 import '../../util/random_games.dart';
 import '../auth/k_avatar.dart';
 import '../game/neo_box.dart';
+import '../game/hint_bubble.dart';
 import '../game/neo_button.dart';
 import '../game/player_avatar_row.dart';
 import '../tap_target.dart';
@@ -104,6 +110,10 @@ class RandomGamesStrip extends StatefulWidget {
   /// Test kancası — saat.
   final int Function()? nowMs;
 
+  /// Bayrak deposu (tek seferlik tanıtım balonu için). `null` = depo yok →
+  /// balon HİÇ çıkmaz (web: depolama kapalıysa "görüldü" varsayılır).
+  final Future<FlagsStore>? flags;
+
   const RandomGamesStrip({
     super.key,
     required this.repo,
@@ -116,6 +126,7 @@ class RandomGamesStrip extends StatefulWidget {
     required this.onAccepted,
     required this.onNotice,
     this.nowMs,
+    this.flags,
   });
 
   @override
@@ -130,6 +141,12 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
   bool _inflight = false;
   int _last = 0;
   Timer? _timer;
+  // Sunucu en az bir kez BAŞARIYLA yanıt verdi mi (önbellek de sayılır): boş
+  // durum yalnızca o zaman "Bekleyen oyun yok" der.
+  late bool _loaded = _stripCache.containsKey(widget.userId);
+  bool _hintOn = false;
+  bool _hintDecided = false;
+  Timer? _hintTimer;
 
   int _now() => (widget.nowMs ?? () => DateTime.now().millisecondsSinceEpoch)();
 
@@ -154,6 +171,7 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
     WidgetsBinding.instance.removeObserver(this);
     widget.onlineStatus.removeListener(_onConnectivity);
     _timer?.cancel();
+    _hintTimer?.cancel();
     super.dispose();
   }
 
@@ -183,8 +201,27 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
     // sessizce kaldırırdı).
     if (rows != null) {
       _stripCache[widget.userId] = rows;
-      setState(() => _listings = rows);
+      setState(() {
+        _listings = rows;
+        _loaded = true;
+      });
     }
+  }
+
+  /// Tek seferlik tanıtım balonu: şerit görünür olduğu ilk anda KARAR verilir
+  /// (işaretlenir), [kRandomHintDuration] sonra kendiliğinden kapanır. Karar ile
+  /// kapanış ayrı: mod değişince (boş → kartlar) kapanış sayacı sıfırlanmaz.
+  Future<void> _decideHint() async {
+    final f = widget.flags;
+    if (f == null) return;
+    final flags = await f;
+    if (!mounted || flags.seenRandomHint) return;
+    await flags.markRandomHintSeen();
+    if (!mounted) return;
+    setState(() => _hintOn = true);
+    _hintTimer = Timer(kRandomHintDuration, () {
+      if (mounted) setState(() => _hintOn = false);
+    });
   }
 
   Future<void> _accept(RandomListing l) async {
@@ -213,7 +250,14 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
   @override
   Widget build(BuildContext context) {
     final visible = stripListings(_listings, widget.myRandom);
-    if (visible.isEmpty) return const SizedBox.shrink();
+    final mode = randomStripMode(_loaded, visible.length);
+    if (mode == RandomStripMode.hidden) return const SizedBox.shrink();
+    if (!_hintDecided) {
+      _hintDecided = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_decideHint());
+      });
+    }
     final olcek = MediaQuery.textScalerOf(context).scale(1);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -224,73 +268,136 @@ class _RandomGamesStripState extends State<RandomGamesStrip>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Text(
-                  trUpper('$kRandomStripTitle · ${visible.length}'),
-                  style: const TextStyle(
+                // Balon bu başlığa çapalı, başlığın ÜSTÜNDE (aşağıda açılınca
+                // anlattığı satırı/kartları örterdi). Başlık metni kadar yer
+                // kaplasın diye `Align` + hedef sarmalayıcı.
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: HintAnchor(
+                    show: _hintOn,
+                    text: kRandomHintText,
+                    yon: HintBubbleYon.ust,
+                    hiza: HintBubbleHiza.bas,
+                    child: Text(
+                      trUpper(mode == RandomStripMode.cards
+                          ? '$kRandomStripTitle · ${visible.length}'
+                          : kRandomStripTitle),
+                      style: const TextStyle(
+                          fontFamily: 'SpaceMono',
+                          fontSize: 10,
+                          letterSpacing: 1.5,
+                          fontWeight: FontWeight.bold,
+                          color: _muted),
+                    ),
+                  ),
+                ),
+              ),
+              if (mode == RandomStripMode.cards)
+                TapTarget(
+                  onTap: widget.onOpenCreate,
+                  minHeight: 36,
+                  minWidth: 36,
+                  // Başlıkla AYNI boy/yazı (10 px mono, büyük harf, harf
+                  // aralıklı), mavi + kalın, altı çizili DEĞİL — Arkadaşlar
+                  // penceresinin "Tüm oyuncular →" bağlantısıyla aynı desen.
+                  child: Text(
+                    trUpper(kRandomStripCreate),
+                    style: const TextStyle(
                       fontFamily: 'SpaceMono',
                       fontSize: 10,
                       letterSpacing: 1.5,
                       fontWeight: FontWeight.bold,
-                      color: _muted),
-                ),
-              ),
-              TapTarget(
-                onTap: widget.onOpenCreate,
-                minHeight: 36,
-                minWidth: 36,
-                // Başlıkla AYNI boy/yazı (10 px mono, büyük harf, harf
-                // aralıklı), mavi + kalın, altı çizili DEĞİL — Arkadaşlar
-                // penceresinin "Tüm oyuncular →" bağlantısıyla aynı desen.
-                child: Text(
-                  trUpper(kRandomStripCreate),
-                  style: const TextStyle(
-                    fontFamily: 'SpaceMono',
-                    fontSize: 10,
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.bold,
-                    color: _accent,
+                      color: _accent,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 4),
-          LayoutBuilder(builder: (context, c) {
-            final w = randomCardWidth(c.maxWidth);
-            final h = randomCardHeight(w, olcek);
-            return SizedBox(
-              key: const Key('random-strip-list'),
-              height: h + kRandomStripShadowPad * 2,
-              child: ListView.separated(
-                padding:
-                    const EdgeInsets.symmetric(vertical: kRandomStripShadowPad),
-                clipBehavior: Clip.hardEdge,
-                scrollDirection: Axis.horizontal,
-                itemCount: visible.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (_, i) => SizedBox(
-                  width: w,
-                  height: h,
-                  child: _ListingCard(
-                    key: ValueKey('ilan-${visible[i].id}'),
-                    listing: visible[i],
-                    busy: _busyId != null,
-                    leaveBusy: widget.busyRandomId == visible[i].id,
-                    onAccept: () => _accept(visible[i]),
-                    onLeave: () {
-                      for (final g
-                          in widget.myRandom ?? const <MyRandomGame>[]) {
-                        if (g.id == visible[i].id) {
-                          widget.onLeaveMine(g);
-                          return;
-                        }
-                      }
-                    },
+          if (mode == RandomStripMode.empty)
+            // Boş durum: tek satır (kare kart DEĞİL — alttaki Devam Eden
+            // Oyunlar'ı itmesin, 4 Ekim kararı). Tamamı düğme: "Hemen aç."
+            // başlıktaki "Rastgele oyun aç" ile AYNI eylem (boşken o bağlantı
+            // gizli). Web: `min-h-[44px] rounded-[10px] border bg-panel`.
+            Semantics(
+              button: true,
+              label: '$kRandomEmptyText $kRandomEmptyLink',
+              excludeSemantics: true,
+              child: TapTarget(
+                key: const Key('random-strip-empty'),
+                onTap: widget.onOpenCreate,
+                minHeight: 44,
+                child: Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 44),
+                  alignment: Alignment.center,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: const ShapeDecorationWithCssShadows(
+                    color: _panel,
+                    borderColor: _border,
+                    radius: 10,
+                    shadows: kRaisedShadows, // web shadow-raised
+                  ),
+                  child: Text.rich(
+                    TextSpan(
+                      style: const TextStyle(
+                          fontFamily: 'SpaceMono', fontSize: 12, color: _muted),
+                      children: [
+                        const TextSpan(text: '$kRandomEmptyText '),
+                        TextSpan(
+                          text: kRandomEmptyLink,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _accent,
+                            decoration: TextDecoration.underline,
+                            decorationColor: _accent,
+                          ),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
-            );
-          }),
+            )
+          else
+            LayoutBuilder(builder: (context, c) {
+              final w = randomCardWidth(c.maxWidth);
+              final h = randomCardHeight(w, olcek);
+              return SizedBox(
+                key: const Key('random-strip-list'),
+                height: h + kRandomStripShadowPad * 2,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: kRandomStripShadowPad),
+                  clipBehavior: Clip.hardEdge,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: visible.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) => SizedBox(
+                    width: w,
+                    height: h,
+                    child: _ListingCard(
+                      key: ValueKey('ilan-${visible[i].id}'),
+                      listing: visible[i],
+                      busy: _busyId != null,
+                      leaveBusy: widget.busyRandomId == visible[i].id,
+                      onAccept: () => _accept(visible[i]),
+                      onLeave: () {
+                        for (final g
+                            in widget.myRandom ?? const <MyRandomGame>[]) {
+                          if (g.id == visible[i].id) {
+                            widget.onLeaveMine(g);
+                            return;
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              );
+            }),
         ],
       ),
     );
@@ -410,31 +517,19 @@ class _ListingCard extends StatelessWidget {
               _SeatDots(seats: l.seats),
             ],
           ),
-          // Durum mesajı ORTALI (web `text-center`).
-          if (mine != null)
-            Text(trUpper(kRandomMineWaiting),
-                key: const Key('ilan-bekliyor'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontFamily: 'SpaceMono',
-                    fontSize: 9,
-                    height: 1.25,
-                    letterSpacing: 0.5,
-                    fontWeight: FontWeight.bold,
-                    color: _muted))
-          else
-            Text(seatsLeftLabel(l.openSeats),
-                key: const Key('ilan-kalan'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontFamily: 'SpaceMono',
-                    fontSize: 9,
-                    height: 1.25,
-                    color: _muted)),
+          // Durum mesajı ORTALI (web `text-center`). "N koltuk kaldı" HER kartta
+          // (12 Ekim 2026): benim ilanımda dolmamış koltuk sayısı
+          // (`cardSeatsLeft`/`unfilledSeatCount`), başkasınınkinde açık koltuk.
+          Text(seatsLeftLabel(cardSeatsLeft(l)),
+              key: const Key('ilan-kalan'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontFamily: 'SpaceMono',
+                  fontSize: 9,
+                  height: 1.25,
+                  color: _muted)),
           if (mine != null)
             // Benim ilanım (§15): "Kabul" YOK; küçük eylem.
             Semantics(
@@ -486,7 +581,7 @@ class _ListingCard extends StatelessWidget {
 
 /// Benim bekleyen ilanım ("Devam Edenler" listesinde, oyun satırlarının
 /// altında): koltuk avatarları (dolu = avatar, açık = kesik çerçeveli "?"),
-/// "Bekliyor n/N", kurucu için "İlanı iptal et", kabul eden için "Ayrıl"
+/// "N koltuk kaldı" (eskiden "Bekliyor n/N"), kurucu için "İlanı iptal et", kabul eden için "Ayrıl"
 /// (ceza yok). Satıra dokunmak bir şey açmaz — oyun henüz başlamadı. Web
 /// `RandomWaitingRow`.
 class RandomWaitingRow extends StatelessWidget {
@@ -542,12 +637,14 @@ class RandomWaitingRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
+            // "N koltuk kaldı" (12 Ekim 2026; eskiden "Bekliyor n/N"): N − dolu
+            // = açık + yanıtı beklenen davetli (kart sayısıyla AYNI).
             Text(
-              trUpper('Bekliyor $dolu/${game.playerCount}'),
+              seatsLeftLabel(game.playerCount - dolu),
               style: const TextStyle(
                   fontFamily: 'SpaceMono',
                   fontSize: 13,
-                  letterSpacing: 1,
+                  letterSpacing: 0.5,
                   fontWeight: FontWeight.bold,
                   color: kOrange),
             ),
