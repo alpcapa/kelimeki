@@ -187,6 +187,8 @@ export interface FunnelV2Totals {
   games_finished: number;
   /** Mağazaya giden web oturumu (birim: oturum, bkz. `AdminFunnelRow.store`). */
   store: number;
+  /** Mağazaya giden land-kohortu CİHAZI (≤ land; bkz. `AdminFunnelRow.store_devices`). */
+  store_devices: number;
 }
 
 export interface FunnelV2ChannelGroup extends FunnelV2Totals {
@@ -219,10 +221,11 @@ const FUNNEL_V2_KEYS = [
   'games_started',
   'games_finished',
   'store',
+  'store_devices',
 ] as const satisfies readonly (keyof FunnelV2Totals)[];
 
 function emptyFunnelV2(): FunnelV2Totals {
-  return { land: 0, returned: 0, signed_up: 0, started: 0, finished: 0, games_started: 0, games_finished: 0, store: 0 };
+  return { land: 0, returned: 0, signed_up: 0, started: 0, finished: 0, games_started: 0, games_finished: 0, store: 0, store_devices: 0 };
 }
 
 function addFunnelV2(into: FunnelV2Totals, r: FunnelV2Totals): void {

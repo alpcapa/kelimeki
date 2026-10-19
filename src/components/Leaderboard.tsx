@@ -7,6 +7,8 @@ import { fetchLeaderboard, fetchMyLeaderboardRank } from '../lib/api';
 import { swallowNextClick } from '../utils/ghostClick';
 import type { LeaderboardRow, MyLeaderboardRank } from '../lib/database.types';
 import { useAuth } from '../hooks/useAuth';
+import { useRowInView } from '../hooks/useRowInView';
+import { shouldPinOwnRow } from '../utils/ownRowPin';
 import { PlayerScoreCard, type PlayerSummary } from './PlayerScoreCard';
 import { KLigMark } from './KLigMark';
 import { RankSeal } from './RankSeal';
@@ -103,6 +105,7 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
   const ohpRef = useRef<HTMLSpanElement | null>(null);
   const scrollRef = useRef<HTMLOListElement | null>(null);
   const sentinelRef = useRef<HTMLLIElement | null>(null);
+  const { ref: meRowRef, inView: meInView } = useRowInView(scrollRef);
 
   // Dışarı dokunuş balonu kapatır. Sarmalayıcının İÇİ bilerek muaf: aksi
   // halde bu dinleyici, butonun kendi onClick'i çalışmadan hemen önce
@@ -294,7 +297,7 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
                   const me = user && r.user_id === user.id;
                   const name = rowName(r);
                   return (
-                    <li key={r.user_id}>
+                    <li key={r.user_id} ref={me ? meRowRef : undefined}>
                       <button
                         type="button"
                         onClick={() => setSelected(rowToPlayerSummary(r))}
@@ -353,7 +356,7 @@ export function Leaderboard({ onClose }: LeaderboardProps) {
               </ol>
             )}
 
-            {user && !meInList && myRank && (
+            {user && myRank && shouldPinOwnRow({ hasRank: true, inList: meInList, inView: meInView }) && (
               <>
                 <div className="flex items-center gap-2 px-2">
                   <div className="flex-1 border-t border-dashed border-border" />
