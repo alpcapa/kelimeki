@@ -17,6 +17,7 @@ import '../auth/k_avatar.dart';
 import '../loading_note.dart';
 import '../text_scale.dart';
 import '../tokens.dart';
+import 'own_row_pin.dart';
 import 'player_score_card_modal.dart';
 
 const _initialPageSize = 10;
@@ -46,6 +47,7 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
   bool _loadingMore = false;
   MyBeyinLigiRank? _mine;
   final _scrollController = ScrollController();
+  final _ownRow = OwnRowTracker();
 
   @override
   void initState() {
@@ -68,6 +70,7 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
       if (!_scrollController.hasClients) return;
       final pos = _scrollController.position;
       if (pos.pixels >= pos.maxScrollExtent - 80) _loadMore();
+      _measureOwnRow();
     });
   }
 
@@ -75,6 +78,14 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Kendi satırı görünür alanda mı? Karede ve kaydırmada ölçülür; yalnızca
+  /// DEĞİŞİNCE `setState` (döngü yok).
+  void _measureOwnRow() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _ownRow.measure()) setState(() {});
+    });
   }
 
   void _maybeAutoLoadIfNotScrollable() {
@@ -125,6 +136,7 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
     final user = widget.auth.user;
     final mine = _mine;
     final meInList = user != null && rows.any((r) => r.userId == user.id);
+    _measureOwnRow();
     final remaining = mine != null && mine.rank == null
         ? gamesUntilBeyinLigi(mine.ohpGames)
         : 0;
@@ -172,6 +184,7 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
               constraints: BoxConstraints(
                   maxHeight: MediaQuery.sizeOf(context).height * 0.5),
               child: ListView.builder(
+                key: _ownRow.viewKey,
                 controller: _scrollController,
                 shrinkWrap: true,
                 itemCount: rows.length + (_hasMore ? 1 : 0),
@@ -189,20 +202,29 @@ class _BeyinLigiListState extends State<BeyinLigiList> {
                     );
                   }
                   final r = rows[i];
-                  return BeyinLigiRowTile(
+                  final isMe = user != null && r.userId == user.id;
+                  final tile = BeyinLigiRowTile(
                     rank: r.sira,
                     name: r.shortName,
                     avatarUrl: r.avatarUrl,
                     games: r.ohpGames,
                     avgMoveScore: r.avgMoveScore,
-                    isMe: user != null && r.userId == user.id,
+                    isMe: isMe,
                     onTap: () => _openCard(r.userId, r.shortName, r.avatarUrl),
                   );
+                  return isMe
+                      ? KeyedSubtree(key: _ownRow.rowKey, child: tile)
+                      : tile;
                 },
               ),
             ),
           ),
-        if (user != null && mine != null && mine.rank != null && !meInList) ...[
+        if (user != null &&
+            mine != null &&
+            shouldPinOwnRow(
+                hasRank: mine.rank != null,
+                inList: meInList,
+                inView: _ownRow.inView)) ...[
           const SizedBox(height: 8),
           const _Divider('SENİN SIRAN'),
           BeyinLigiRowTile(

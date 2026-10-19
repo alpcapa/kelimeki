@@ -361,7 +361,11 @@ class PrivacyModal extends StatelessWidget {
                 'kadar oyun oynadığını ölçmek için. Hesabınıza kayıt anında tek '
                 'seferlik yazılır ve sonradan değişmez; ayrıca yapay zekaya '
                 'karşı oynanan bir oyunun başlangıç ve bitiş sayacına da '
-                'eklenir. Bağlantı yoksa "direkt" olarak kaydedilir. Bu etiket, '
+                'eklenir. Bağlantı yoksa "direkt" olarak kaydedilir. '
+                'Android\'de bu etiket, siteden Google Play\'e geçtiğinizde '
+                'Play\'in kurulum yönlendirme bilgisiyle (Install Referrer) '
+                'uygulamaya da taşınır; yalnızca kanal ölçümü içindir, '
+                'kimliğinizi ya da reklam kimliğinizi içermez. Bu etiket, '
                 'aşağıda anlatılan anonim ziyaretçi sayacındaki kayıtlarla '
                 'EŞLEŞTİRİLMEZ',
           ]),

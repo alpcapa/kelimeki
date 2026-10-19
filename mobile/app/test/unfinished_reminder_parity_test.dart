@@ -45,6 +45,7 @@ void main() {
   const kur = PlatformHatirlatmaZamanlayici.kurMetot;
   const iptal = PlatformHatirlatmaZamanlayici.iptalMetot;
   const ayar = PlatformHatirlatmaZamanlayici.ayarMetot;
+  const durum = PlatformHatirlatmaZamanlayici.durumMetot;
 
   test('kanal adı Kotlin ve Swift\'te BİREBİR aynı', () {
     expect(kotlin, contains('"$kanal"'),
@@ -54,7 +55,7 @@ void main() {
   });
 
   test('metot adları iki platformda da tanınıyor', () {
-    for (final m in [kur, iptal, ayar]) {
+    for (final m in [kur, iptal, ayar, durum]) {
       expect(kotlin, contains('"$m" ->'), reason: 'Kotlin `when` "$m" yok');
       expect(swift, contains('case "$m":'), reason: 'Swift `switch` "$m" yok');
     }
@@ -67,6 +68,19 @@ void main() {
       expect(kotlin, contains('"$a"'), reason: 'Kotlin "$a" okumuyor');
       expect(swift, contains('arg["$a"]'), reason: 'Swift "$a" okumuyor');
     }
+  });
+
+  // 12 Ekim 2026: `durum` cevabının anahtarları Dart'ın okuduklarıyla aynı
+  // olmalı — yanlış ad `false` okunur ve "gösterildi" kanıtı sessizce kaybolur.
+  test('durum cevabı (bekliyor/teslim) iki platformda aynı anahtarlarla', () {
+    for (final a in ['bekliyor', 'teslim']) {
+      expect(alarm, contains('"$a" to'), reason: 'Kotlin "$a" döndürmüyor');
+      expect(swift, contains('"$a":'), reason: 'Swift "$a" döndürmüyor');
+    }
+    // Kanıt panel temizlenirken de korunmalı (iOS) ve notify anında yazılmalı
+    // (Android) — yoksa gösterilmiş hatırlatma "gösterilmedi" sayılır.
+    expect(swift, contains('getDeliveredNotifications'));
+    expect(alarm, contains('teslimYaz(context, true)'));
   });
 
   test('Android: İŞİ yapıyor (alarm + iptal + bildirim) ve alıcı manifestte',

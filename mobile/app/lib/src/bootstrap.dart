@@ -2,6 +2,7 @@
 //
 // Widget testleri KelimekiApp'i sahte bir AppServices ile pump edebilsin
 // diye tüm dış dünya (Supabase, asset, sürüm kapısı) burada toplanır.
+import 'dart:async';
 import 'package:flutter/foundation.dart' show ValueNotifier;
 import 'package:flutter/services.dart' show AssetBundle;
 import 'package:kelimeki_core/kelimeki_core.dart';
@@ -34,9 +35,11 @@ import 'data/unfinished_game_reminder.dart';
 import 'storage/app_storage.dart';
 import 'util/online_status.dart';
 import 'data/device_stamp.dart';
+import 'data/reminder_events.dart';
 import 'data/signup_events.dart';
 import 'data/funnel_api.dart';
 import 'data/install_referrer.dart';
+import 'data/install_source_stamp.dart';
 import 'data/visits_api.dart';
 
 class AppServices {
@@ -197,6 +200,12 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
             // Yalnızca Android'de kullanılır (`FunnelRepo.create` süzer).
             readInstallReferrer: readPlayInstallReferrer,
           )));
+  // Kurulum kaynağı → `DeviceStamp.source` (#46-1). Açılışı BEKLETMEZ:
+  // okuma bitmeden başlayan ilk oyun `app` kalır (kullanıcı kararı).
+  unawaited(storage.then((s) => stampInstallSource(
+        flags: s.flags,
+        readInstallReferrer: readPlayInstallReferrer,
+      )));
   final auth = AuthService(supabase,
       profileCache: storage.then((s) => s.profileCache), signupStamp: stamp);
   // Firebase açılışı BEKLETİLİYOR ama fırlatmıyor (bkz. push_init.dart):
@@ -204,7 +213,15 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   // native'de birkaç ms; sonrasında `push` alanının dolu olup olmadığı
   // tek bir sorunun cevabı olur ("bu cihaz token kaydedebilir mi").
   final firebaseHazir = await initFirebase();
-  final versionGate = await checkVersionGate(supabase);
+  // Bağlantı YOKSA sürüm kapısına sorulmaz (17 Ekim 2026, uçak modunda
+  // ölçüldü): kapı fail-open olduğundan sonuç zaten `ok` olacaktı, ama ona
+  // varmak splash'ı 5 sn zaman aşımı kadar tutuyordu. İlk ölçüm bir platform
+  // çağrısı (ms); okunamazsa `online` iyimser `true` kalır ve eski yol işler.
+  final onlineStatus = OnlineStatus();
+  await onlineStatus.refresh();
+  final versionGate = onlineStatus.online
+      ? await checkVersionGate(supabase)
+      : VersionGateStatus.ok;
   // Hata telemetrisi — Supabase hazır olur olmaz bağlanır (ROADMAP #3).
   // Kimlik `FlagsStore.anonId()`ten geliyor ve BEKLENMİYOR: açılışı bir
   // telemetri alanı için geciktirmek, telemetrinin kendisini bir açılış
@@ -226,6 +243,10 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   // kez" deseni; Firebase'e DEĞİL Supabase'e bağlı.
   signupEvents
       .configure(supabase != null ? SupabaseSignupEventsSink(supabase) : null);
+  // Yarım kalan oyun hatırlatmasının sayacı (`reminder_events`) — aynı desen,
+  // kimliksiz (bkz. `data/reminder_events.dart`).
+  reminderEvents.configure(
+      supabase != null ? SupabaseReminderEventsSink(supabase) : null);
   final pushRepo = firebaseHazir && supabase != null
       ? PushRepo(
           messaging: FirebasePushMessaging(),
@@ -239,7 +260,7 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   if (pushRepo != null) auth.registerBeforeSignOut(pushRepo.temizle);
 
   return AppServices(
-    onlineStatus: OnlineStatus(),
+    onlineStatus: onlineStatus,
     dictionary: dictionary,
     meanings: meanings,
     auth: auth,

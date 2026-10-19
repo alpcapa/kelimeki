@@ -21,12 +21,30 @@ class _FakeZamanlayici implements HatirlatmaZamanlayici {
   @override
   Future<void> kur(DateTime zaman, String baslik, String govde) async {
     kurulanlar.add(zaman);
+    bekliyor = true;
+    teslim = false;
     this.baslik = baslik;
     this.govde = govde;
   }
 
   @override
-  Future<void> iptal() async => iptalSayisi += 1;
+  Future<void> iptal() async {
+    iptalSayisi += 1;
+    // Gerçek uç gibi: iptal hem bekleyeni hem "gösterildi" kanıtını siler.
+    bekliyor = false;
+    teslim = false;
+  }
+
+  /// Platformun bildiği — gerçek uçta iOS/Android sorgusu. `null` dönsün
+  /// istenirse [durumBilinmiyor].
+  bool bekliyor = false;
+  bool teslim = false;
+  bool durumBilinmiyor = false;
+
+  @override
+  Future<HatirlatmaDurumu?> durum() async => durumBilinmiyor
+      ? null
+      : HatirlatmaDurumu(bekliyor: bekliyor, teslim: teslim);
 
   int ayarAcmaSayisi = 0;
   bool ayarAcilabilir = true;
@@ -50,6 +68,12 @@ class _FakeMessaging implements PushMessaging {
   Future<String?> token() async => null;
   @override
   Stream<String> onTokenRefresh() => const Stream.empty();
+}
+
+class _VerenMessaging extends _FakeMessaging {
+  _VerenMessaging() : super(PushPermission.notDetermined);
+  @override
+  Future<PushPermission> requestPermission() async => PushPermission.granted;
 }
 
 GameState _oyun({
@@ -138,6 +162,7 @@ void main() {
     late _FakeMessaging messaging;
     late DateTime simdi;
     late YarimOyunHatirlatici h;
+    final olaylar = <String>[];
 
     setUp(() async {
       sqfliteFfiInit();
@@ -155,7 +180,9 @@ void main() {
         zamanlayici: zamanlayici,
         messaging: messaging,
         saat: () => simdi,
+        olay: (e, {card}) => olaylar.add(e),
       );
+      olaylar.clear();
     });
 
     test('ayrılınca ertesi gün 19:00 kurulur, metin tek kaynaktan', () async {
@@ -171,6 +198,41 @@ void main() {
       await h.oyundanAyrildi(_oyun());
       expect(zamanlayici.kurulanlar, isEmpty);
       expect(storage.flags.yarimOyunKurulanOyun, isNull);
+    });
+
+    group('ölçüm — reminder_events (11 Ekim 2026)', () {
+      test('kurulunca `set` yazılır', () async {
+        await h.oyundanAyrildi(_oyun());
+        expect(olaylar, ['set']);
+      });
+
+      test(
+          'uygun ayrılış ama izin YOK → `skip_no_permission` (yeni gelenin '
+          'asıl yolu)', () async {
+        messaging.izin = PushPermission.notDetermined;
+        await h.oyundanAyrildi(_oyun());
+        expect(olaylar, ['skip_no_permission']);
+        expect(zamanlayici.kurulanlar, isEmpty);
+      });
+
+      test('uygun OLMAYAN ayrılış (1 tur) izinsiz bile olsa SAYILMAZ',
+          () async {
+        messaging.izin = PushPermission.notDetermined;
+        await h.oyundanAyrildi(_oyun(turnCount: 1));
+        expect(olaylar, isEmpty);
+      });
+
+      test('bitmiş oyun SAYILMAZ', () async {
+        messaging.izin = PushPermission.notDetermined;
+        await h.oyundanAyrildi(_oyun(bitti: true));
+        expect(olaylar, isEmpty);
+      });
+
+      test('aynı oyun zaten hatırlatılmışsa SAYILMAZ', () async {
+        await storage.flags.yarimOyunHatirlatildi(_oyun().startedAt);
+        await h.oyundanAyrildi(_oyun());
+        expect(olaylar, isEmpty);
+      });
     });
 
     test('Firebase yoksa (messaging null) hiçbir şey kurulmaz', () async {
@@ -198,7 +260,10 @@ void main() {
 
     test('bildirimden sonra dönüş: aynı oyun bir daha hatırlatılmaz', () async {
       await h.oyundanAyrildi(_oyun());
-      simdi = DateTime(2026, 10, 2, 19, 30); // bildirim düştü
+      simdi = DateTime(2026, 10, 2, 19, 30);
+      zamanlayici
+        ..bekliyor = false
+        ..teslim = true; // platform: bildirim GÖSTERİLDİ
       await h.uygulamaAcildi();
       expect(storage.flags.yarimOyunHatirlatilan, _oyun().startedAt);
       await h.oyundanAyrildi(_oyun());
@@ -207,6 +272,40 @@ void main() {
       // Başka bir oyun ise yine hatırlatılır.
       await h.oyundanAyrildi(_oyun(startedAt: '2026-10-02T20:00:00.000Z'));
       expect(zamanlayici.kurulanlar, hasLength(2));
+    });
+
+    // 12 Ekim 2026 regresyonu: kullanıcı aynı oyunla dört kez denedi, hiç
+    // bildirim görmedi. Eski kural "saat geçtiyse gösterildi" diyordu ve
+    // ilk açılışta oyunu kalıcı olarak kilitliyordu.
+    test('saat GEÇTİ ama platform göstermedi: oyun kilitlenmez, yine kurulur',
+        () async {
+      await h.oyundanAyrildi(_oyun());
+      simdi = DateTime(2026, 10, 2, 19, 30);
+      zamanlayici
+        ..bekliyor = false
+        ..teslim = false;
+      await h.uygulamaAcildi();
+      expect(storage.flags.yarimOyunHatirlatilan, isNull);
+      await h.oyundanAyrildi(_oyun());
+      expect(zamanlayici.kurulanlar, hasLength(2));
+    });
+
+    test('platform durumu bilinmiyorsa (web) teslim SAYILMAZ', () async {
+      await h.oyundanAyrildi(_oyun());
+      simdi = DateTime(2026, 10, 2, 19, 30);
+      zamanlayici.durumBilinmiyor = true;
+      await h.uygulamaAcildi();
+      expect(storage.flags.yarimOyunHatirlatilan, isNull);
+    });
+
+    test('teşhis: bekliyorsa zaman, platformda yoksa KURULAMADI', () async {
+      expect(await h.teshis(), isNull, reason: 'kurulmuş bir şey yok');
+      await h.oyundanAyrildi(_oyun());
+      expect(await h.teshis(), 'hatırlatma 02.10 19:00');
+      zamanlayici.bekliyor = false; // Dart kurdu sanıyor, platformda yok
+      expect(await h.teshis(), 'hatırlatma KURULAMADI');
+      zamanlayici.durumBilinmiyor = true;
+      expect(await h.teshis(), isNull);
     });
 
     test('oyun bitince bekleyen hatırlatma iptal edilir', () async {
@@ -320,8 +419,11 @@ void main() {
       );
     });
 
+    final olaylar = <String>[];
+
     Future<bool?> calistir(WidgetTester tester, PushPermission izin,
         {required bool ios, String? bas}) async {
+      olaylar.clear();
       bool? sonuc;
       await tester.pumpWidget(MaterialApp(
         home: Builder(
@@ -330,7 +432,8 @@ void main() {
               sonuc = await yarimOyunIzniAkisi(context,
                   messaging: _FakeMessaging(izin),
                   flags: storage.flags,
-                  ios: ios);
+                  ios: ios,
+                  olay: (e, {card}) => olaylar.add('$e:${card ?? '-'}'));
             },
             child: const Text('çık'),
           ),
@@ -373,6 +476,64 @@ void main() {
       final sonuc = await calistir(tester, PushPermission.permanentlyDenied,
           ios: false, bas: 'ŞİMDİ DEĞİL');
       expect(sonuc, isFalse);
+    });
+
+    testWidgets('ölçüm: izin kartı → HATIRLAT → sistem izni verildi',
+        (tester) async {
+      await calistir(tester, PushPermission.notDetermined,
+          ios: true, bas: 'HATIRLAT');
+      // Sahte `requestPermission` mevcut izni döndürür → notDetermined = ret.
+      expect(olaylar, ['card_shown:izin', 'card_accept:izin', 'os_denied:-']);
+    });
+
+    testWidgets('ölçüm: sistem diyaloğu izin verirse os_granted',
+        (tester) async {
+      olaylar.clear();
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => yarimOyunIzniAkisi(context,
+                messaging: _VerenMessaging(),
+                flags: storage.flags,
+                ios: true,
+                olay: (e, {card}) => olaylar.add('$e:${card ?? '-'}')),
+            child: const Text('çık'),
+          ),
+        ),
+      ));
+      await tester.tap(find.text('çık'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('HATIRLAT'));
+      await tester.pumpAndSettle();
+      expect(olaylar, ['card_shown:izin', 'card_accept:izin', 'os_granted:-']);
+    });
+
+    testWidgets(
+        'ölçüm: izin kartında ŞİMDİ DEĞİL → card_decline, sistem '
+        'diyaloğu HİÇ açılmaz', (tester) async {
+      await calistir(tester, PushPermission.notDetermined,
+          ios: true, bas: 'ŞİMDİ DEĞİL');
+      expect(olaylar, ['card_shown:izin', 'card_decline:izin']);
+    });
+
+    testWidgets('ölçüm: ayar kartı → AYARLARI AÇ → card_accept:ayar',
+        (tester) async {
+      await calistir(tester, PushPermission.permanentlyDenied,
+          ios: false, bas: 'AYARLARI AÇ');
+      expect(olaylar, ['card_shown:ayar', 'card_accept:ayar']);
+    });
+
+    testWidgets('ölçüm: ayar kartı → ŞİMDİ DEĞİL → card_decline:ayar',
+        (tester) async {
+      await calistir(tester, PushPermission.permanentlyDenied,
+          ios: false, bas: 'ŞİMDİ DEĞİL');
+      expect(olaylar, ['card_shown:ayar', 'card_decline:ayar']);
+    });
+
+    testWidgets('ölçüm: kart ÇIKMAYINCA (izin zaten var) hiçbir olay yok',
+        (tester) async {
+      await calistir(tester, PushPermission.granted, ios: true);
+      expect(olaylar, isEmpty);
     });
   });
 }

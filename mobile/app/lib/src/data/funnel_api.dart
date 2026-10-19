@@ -20,9 +20,10 @@
 // Play'e taşıyor, `taggedStoreUrl`), (2) `DeviceStamp.source` — deep link'ten
 // yakalanmış bir `?ref=` varsa o, yoksa `app` (panelde "Mobil Uygulama",
 // `sourceChannel('app')`). 27 Eylül'deki ilk karar *"önce kanalsız"*dı.
-// ⚠ Referrer YALNIZCA bu tabloya yazılır, `DeviceStamp`e (öteki üç tablo)
-// BİLEREK değil — o damga kayıt/oyun satırlarını da değiştirirdi, kapsam
-// dışı. iOS'ta Apple kişi bazında kanal vermiyor → `app`.
+// ⚠ Bu tablodaki `land` kanalı referrer'ı kendi başına okur. Öteki üç tablo
+// + kayıt damgası için referrer AYRICA `stampInstallSource`la (#46-1, 13
+// Ekim 2026) `DeviceStamp.source`a yazılır — ayrı bayrak, `land` kanalına
+// dokunmaz (eski cihaz burada `mevcut` kalır, damgada etiketlenir). iOS'ta Apple kişi bazında kanal vermiyor → `app`.
 // Plandaki `app-store`/`play-organik` BİLEREK kullanılmadı: panel onları
 // "Diğer"e atardı, platform ayrımı zaten `platform` sütununda. Eski cihaz
 // (ölçüm v2'den önce iz bırakmış) `mevcut` — referrer'dan ÖNCE gelir.

@@ -37,6 +37,7 @@ import 'support/game_rows.dart' show gameRow;
 import 'support/real_io.dart';
 import 'support/test_fonts.dart';
 import 'support/test_view.dart';
+import 'package:kelimeki/src/util/offline_notice.dart';
 import 'package:kelimeki/src/util/online_status.dart';
 
 class MemGateway implements CloudSaveGateway {
@@ -152,9 +153,10 @@ class FresherStateRepo extends CloudSaveRepo {
 AppServices services(MemGateway gw,
         {Future<GamesRepo>? games,
         FeedbackRepo? feedback,
-        CloudSaveRepo? cloud}) =>
+        CloudSaveRepo? cloud,
+        OnlineStatus? status}) =>
     AppServices(
-      onlineStatus: OnlineStatus.fake(),
+      onlineStatus: status ?? OnlineStatus.fake(),
       dictionary: Future.value(SetWordSource(const ['ab', 'aba', 'kelime'])),
       meanings: MeaningStore(bundle: rootBundle),
       auth: AuthService.fake(user: fakeUser(), profile: ironman),
@@ -191,13 +193,14 @@ void main() {
   Future<void> pumpSetup(WidgetTester tester, MemGateway gw,
       {Future<GamesRepo>? games,
       FeedbackRepo? feedback,
-      CloudSaveRepo? cloud}) async {
+      CloudSaveRepo? cloud,
+      OnlineStatus? status}) async {
     await setPhoneViewSize(tester, const Size(420, 950));
     await tester.pumpWidget(MaterialApp(
       theme: kelimekiTheme(),
       home: SetupScreen(
-          services:
-              services(gw, games: games, feedback: feedback, cloud: cloud)),
+          services: services(gw,
+              games: games, feedback: feedback, cloud: cloud, status: status)),
     ));
     await tester.pumpAndSettle();
   }
@@ -294,9 +297,7 @@ void main() {
     // "Oyuncular" koltuk listesi YOK (ROADMAP #41 karar 2) — yerine tek
     // satırlık kadro özeti.
     expect(find.text('Ironman'), findsNothing);
-    expect(
-        find.text(
-            '2 kişilik oyunda yapay zekaya karşı oynarsın.'),
+    expect(find.text('2 kişilik oyunda yapay zekaya karşı oynarsın.'),
         findsOneWidget);
 
     await tester.tap(find.text('VAZGEÇ'));
@@ -581,6 +582,28 @@ void main() {
 
     expect(gw.listCalls, greaterThan(before),
         reason: 'resumed → _syncCloud (flush + liste) yeniden koşmalı');
+  });
+
+  testWidgets(
+      'ÇEVRİMDIŞI açılış: sunucuya HİÇ gidilmez, "Yükleniyor…" kalmaz; '
+      'bağlantı dönünce liste tazelenir (17 Ekim 2026, uçakta 20-30 sn sürdü)',
+      (tester) async {
+    final gw = MemGateway();
+    await seedSave(gw, 'save-1');
+    final status = OnlineStatus.fake(online: false);
+    await pumpSetup(tester, gw, status: status);
+
+    expect(gw.listCalls, 0, reason: 'bağlantı yokken ağ denemesi BEKLENMEZ');
+    expect(find.text('Yükleniyor…'), findsNothing,
+        reason: 'liste elde (burada: boş) — spinner bekleyecek ağ yok');
+    expect(find.textContaining(kOfflineAiSuggestion), findsOneWidget);
+
+    status.debugSetOnline(true);
+    await tester.pump(const Duration(milliseconds: 400)); // debounce
+    await tester.pumpAndSettle();
+    expect(gw.listCalls, 1, reason: 'dönünce senkron yeniden koşmalı');
+    expect(find.textContaining('SIRA SENDE'), findsOneWidget,
+        reason: 'sunucudaki oyun bağlantı dönünce listeye gelir');
   });
 
   testWidgets(

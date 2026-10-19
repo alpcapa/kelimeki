@@ -224,6 +224,10 @@ class _SetupScreenState extends State<SetupScreen>
   String _diagStorage = 'depo…';
   int _diagPendingMirrors = 0;
 
+  /// Yarım oyun hatırlatmasının platformdaki durumu (12 Ekim 2026,
+  /// `YarimOyunHatirlatici.teshis`) — null ise satıra hiçbir şey eklenmez.
+  String? _diagHatirlatma;
+
   LocalGameRepo? _repo;
   GamesRepo? _games;
   bool _saveChecked = false;
@@ -748,6 +752,12 @@ class _SetupScreenState extends State<SetupScreen>
     // istisna `_syncCloud`'u yarıda kesiyor, `_cloudSaves` sonsuza dek null
     // kalıyor ve "Yükleniyor…" TERMİNAL bir duruma dönüşüyordu — üstelik
     // çağrı `unawaited` olduğundan hata da görünmüyordu.
+    // Bağlantı YOKSA ağ adımlarının hiçbiri denenmez (17 Ekim 2026, uçakta
+    // ölçüldü): her biri düşmek için 10+ sn bekliyor ve yerel aynadan kurulan
+    // liste "Yükleniyor…" arkasında 20-30 sn gecikiyordu. Bağlantı dönünce
+    // `_onConnectivity` senkronu yeniden koşturur; bekleyen ayna/kuyruk o
+    // turda sunucuya iner, yani atlanan hiçbir şey kaybolmaz.
+    final offline = !widget.services.onlineStatus.online;
     final repo = _repo;
     // ⚠ `_gameRouteOpen` iken migrasyon KOŞMAZ (bkz. alanın kendi notu):
     // o slot şu an oynanan oyunundur ve misafir→bulut devrini
@@ -755,6 +765,7 @@ class _SetupScreenState extends State<SetupScreen>
     // yeniden çağırdığından bekleyen gerçek bir misafir kaydı gecikmeli de
     // olsa taşınır.
     if (repo != null &&
+        !offline &&
         !auth.profileLoading &&
         !_migratingGuest &&
         !_gameRouteOpen) {
@@ -783,7 +794,7 @@ class _SetupScreenState extends State<SetupScreen>
     } catch (e) {
       debugPrint('[Kelimeki] games deposu alınamadı, listeye devam: $e');
     }
-    if (games != null) unawaited(games.flushPending());
+    if (games != null && !offline) unawaited(games.flushPending());
 
     // Offline'da yerel aynada biriken devam eden oyunları ÖNCE sunucuya it
     // (Parça 38) — listeleme bunu beklemeli ki taze satırları görsün.
@@ -794,13 +805,13 @@ class _SetupScreenState extends State<SetupScreen>
     // — 7 günlük süpürme dahil — bloke ediyordu. Repo artık hatayı kendi
     // içinde yutuyor, bu try ikinci bir güvenlik ağı.
     try {
-      await cloud.flushMirrored(user.id);
+      if (!offline) await cloud.flushMirrored(user.id);
     } catch (e) {
       debugPrint('[Kelimeki] ayna itilemedi, listeye devam: $e');
     }
     CloudSaveList? list;
     try {
-      list = await cloud.list(userId: user.id);
+      list = await cloud.list(userId: user.id, offline: offline);
       if (list != null) {
         // 7 günü dolup bu turda iddia edilen kayıtlar → -2 cezalı teslim
         // (web refreshCloudSaves'in claim dalı). Ceza yazımı FIRLARSA liste
@@ -830,7 +841,12 @@ class _SetupScreenState extends State<SetupScreen>
     }
     setState(() {
       _cloudSavesFailed = list == null;
-      _cloudSaves = list?.saves;
+      // Çevrimdışı + yerelde ne önbellek ne ayna var (ör. girişten sonraki
+      // İLK açılış uçak modunda): liste "bilinmiyor" ama bekleyecek bir ağ
+      // da yok. null bırakmak ekranı sonsuza dek "Yükleniyor…"da tutardı;
+      // boş liste çevrimdışı bilgilendirmesini (YZ ile oyna) gösterir ve
+      // bağlantı dönünce senkron gerçek listeyi getirir.
+      _cloudSaves = list?.saves ?? (offline ? const <CloudSave>[] : null);
       _diagPendingMirrors = pending;
     });
     // YZ listesi artık biliniyor — sayılar önce geldiyse ertelenen karar
@@ -853,6 +869,7 @@ class _SetupScreenState extends State<SetupScreen>
   }
 
   Future<void> _refreshSaveStatus() async {
+    unawaited(_refreshReminderDiag());
     final repo = _repo;
     if (repo == null) return;
     final state = await repo.loadSave();
@@ -863,6 +880,13 @@ class _SetupScreenState extends State<SetupScreen>
       _savedState = state;
       _savedAtMs = at;
     });
+  }
+
+  Future<void> _refreshReminderDiag() async {
+    final h = widget.services.yarimOyun;
+    if (h == null || !widget.showDiagnostics) return;
+    final t = await h.teshis();
+    if (mounted && t != _diagHatirlatma) setState(() => _diagHatirlatma = t);
   }
 
   Future<void> _openGame(GameController controller, SetWordSource words,
@@ -1595,6 +1619,7 @@ class _SetupScreenState extends State<SetupScreen>
                                 if (_diagPendingMirrors < 0) 'bekleyen ?',
                                 if (_diagPendingMirrors > 0)
                                   'bekleyen $_diagPendingMirrors',
+                                if (_diagHatirlatma != null) _diagHatirlatma!,
                               ].join(' · '),
                               textAlign: TextAlign.center,
                               style: const TextStyle(
@@ -1667,7 +1692,13 @@ class _SetupScreenState extends State<SetupScreen>
   /// isteği). Link "+ YENİ YAPAY ZEKA OYUNU AÇ" ile AYNI şeyi yapar —
   /// ikisi de `_creatingLocal = true`; biri değişirse öteki de.
   void _onConnectivity() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    // Bağlantı DÖNÜNCE bulut senkronu yeniden koşar: çevrimdışıyken liste
+    // yalnızca yerel aynadan kuruldu (`_syncCloud` → `offline`), bekleyen
+    // ayna itilmedi, 7 günlük süpürme yapılmadı. Olay kaçarsa öne dönüş
+    // (`_scheduleCloudSync` zaten orada) aynı işi yapar.
+    if (widget.services.onlineStatus.online) _scheduleCloudSync();
   }
 
   Widget _offlineAiNotice() => Padding(

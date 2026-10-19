@@ -26,6 +26,19 @@ import 'package:kelimeki_core/kelimeki_core.dart';
 import '../storage/app_storage.dart';
 import '../util/unfinished_reminder.dart';
 import 'push_repo.dart';
+import 'reminder_events.dart';
+
+/// Platformun bekleyen hatırlatma hakkında BİLDİĞİ (12 Ekim 2026).
+class HatirlatmaDurumu {
+  /// Sistemde hâlâ zamanını bekleyen bir istek var.
+  final bool bekliyor;
+
+  /// Bildirim kullanıcıya GÖSTERİLDİ (iOS: teslim edilenler listesinde ya da
+  /// panel temizlenirken orada görüldü; Android: alıcı `notify` etti).
+  final bool teslim;
+
+  const HatirlatmaDurumu({required this.bekliyor, required this.teslim});
+}
 
 /// Tek bir yerel bildirimi kuran/iptal eden dikiş. Testte sahtesi verilir.
 abstract class HatirlatmaZamanlayici {
@@ -34,6 +47,11 @@ abstract class HatirlatmaZamanlayici {
 
   /// Bekleyen hatırlatmayı iptal eder (yoksa hiçbir şey yapmaz). FIRLATMAZ.
   Future<void> iptal();
+
+  /// Bekleyen/gösterilmiş hatırlatmanın platformdaki durumu; bilinmiyorsa
+  /// (web, kanal yok, hata) `null`. FIRLATMAZ. ⚠ [iptal]den ÖNCE okunmalı:
+  /// iptal platformdaki "gösterildi" işaretini de siler.
+  Future<HatirlatmaDurumu?> durum();
 
   /// Telefonun bu uygulamaya ait BİLDİRİM ayarlarını açar (2 Ekim 2026,
   /// "Bildirimler kapalı" kartı). Açılabildiyse `true`. FIRLATMAZ.
@@ -49,6 +67,7 @@ class PlatformHatirlatmaZamanlayici implements HatirlatmaZamanlayici {
   static const kurMetot = 'yarimOyunKur';
   static const iptalMetot = 'yarimOyunIptal';
   static const ayarMetot = 'bildirimAyarlariniAc';
+  static const durumMetot = 'yarimOyunDurum';
 
   const PlatformHatirlatmaZamanlayici();
 
@@ -71,6 +90,21 @@ class PlatformHatirlatmaZamanlayici implements HatirlatmaZamanlayici {
       await kanal.invokeMethod<void>(iptalMetot);
     } catch (e) {
       debugPrint('[Kelimeki] yarım oyun hatırlatması iptal edilemedi: $e');
+    }
+  }
+
+  @override
+  Future<HatirlatmaDurumu?> durum() async {
+    try {
+      final m = await kanal.invokeMapMethod<String, Object?>(durumMetot);
+      if (m == null) return null;
+      return HatirlatmaDurumu(
+        bekliyor: m['bekliyor'] == true,
+        teslim: m['teslim'] == true,
+      );
+    } catch (e) {
+      debugPrint('[Kelimeki] yarım oyun hatırlatma durumu okunamadı: $e');
+      return null;
     }
   }
 
@@ -98,6 +132,10 @@ class YarimOyunHatirlatici {
 
   final DateTime Function() _saat;
 
+  /// Ölçüm (11 Ekim 2026, `reminder_events`): hatırlatma kuruldu / uygun
+  /// ayrılıştı ama izin yoktu. Kimliksiz, fırlatmaz.
+  final ReminderEventLogger _olay;
+
   /// "Bildirimler kapalı" kartından ayarlara gönderilen oyun. Kullanıcı
   /// ayarlardan DÖNÜNCE (`uygulamaAcildi`) hatırlatma bu oyun için yeniden
   /// denenir — çıkış anında izin yoktu, kurulamamıştı. Bellekte tutulur:
@@ -109,7 +147,9 @@ class YarimOyunHatirlatici {
     required this.zamanlayici,
     required this.messaging,
     DateTime Function()? saat,
-  }) : _saat = saat ?? DateTime.now;
+    ReminderEventLogger? olay,
+  })  : _saat = saat ?? DateTime.now,
+        _olay = olay ?? reminderEvents.log;
 
   Future<bool> _izinVar() async {
     final m = messaging;
@@ -125,19 +165,49 @@ class YarimOyunHatirlatici {
   Future<void> oyundanAyrildi(GameState s) async {
     try {
       final flags = (await storage).flags;
-      final kurulmali = yarimOyunHatirlatmasiKurulmali(
-        oyunSuruyor: s.phase == GamePhase.play && !s.isGameOver,
-        turSayisi: s.turnCount,
-        oyunKimligi: s.startedAt,
-        hatirlatilanOyun: flags.yarimOyunHatirlatilan,
-        izinVar: await _izinVar(),
-      );
-      if (!kurulmali) return;
+      bool kurulmaliMi(bool izinVar) => yarimOyunHatirlatmasiKurulmali(
+            oyunSuruyor: s.phase == GamePhase.play && !s.isGameOver,
+            turSayisi: s.turnCount,
+            oyunKimligi: s.startedAt,
+            hatirlatilanOyun: flags.yarimOyunHatirlatilan,
+            izinVar: izinVar,
+          );
+      // Önce İZİN HARİÇ her koşul: uygun bir ayrılış mıydı? Değilse ölçülecek
+      // bir şey yok (1 turluk oyun, bitmiş oyun, zaten hatırlatılmış oyun).
+      if (!kurulmaliMi(true)) return;
+      if (!kurulmaliMi(await _izinVar())) {
+        // Yeni gelenin ASIL yolu: telefonu bırakarak ayrıldı, izin hiç
+        // verilmemişti, kart da çıkmadı → hiçbir şey kurulmadı.
+        _olay(kReminderSkipNoPermission);
+        return;
+      }
       final zaman = yarimOyunHatirlatmaZamani(_saat());
       await zamanlayici.kur(zaman, kYarimOyunBaslik, kYarimOyunGovde);
       await flags.yarimOyunKuruldu(s.startedAt, zaman);
+      _olay(kReminderSet);
     } catch (e) {
       debugPrint('[Kelimeki] yarım oyun hatırlatma akışı hatası: $e');
+    }
+  }
+
+  /// Setup'ın teşhis satırı için (12 Ekim 2026): kurulmuş bir hatırlatma
+  /// varsa platformun onu GERÇEKTEN beklettiğini doğrular. Sonuç:
+  /// `hatırlatma 13.10 19:00` (bekliyor) · `hatırlatma KURULAMADI` (Dart
+  /// kurdu sanıyor, platformda istek yok ve zamanı gelmedi) · `null` (yok ya
+  /// da bilinmiyor). Gerekçe: bu özellik dört deneme boyunca cihazda
+  /// "gelmedi" dendi ve kurulup kurulmadığı hiçbir yerden okunamıyordu.
+  Future<String?> teshis() async {
+    try {
+      final flags = (await storage).flags;
+      final zaman = flags.yarimOyunKurulanZaman;
+      if (flags.yarimOyunKurulanOyun == null || zaman == null) return null;
+      final d = await zamanlayici.durum();
+      if (d == null) return null;
+      if (d.bekliyor) return 'hatırlatma ${yarimOyunTeshisZamani(zaman)}';
+      if (zaman.isAfter(_saat()) && !d.teslim) return 'hatırlatma KURULAMADI';
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -162,8 +232,9 @@ class YarimOyunHatirlatici {
   }
 
   /// Uygulama açıldı ya da öne geldi — kullanıcı döndü, bekleyen hatırlatma
-  /// düşer. Zamanı geçmişse bildirim teslim edilmiştir: o oyun bir daha
-  /// hatırlatılmaz.
+  /// düşer. Platform bildirimi GÖSTERDİYSE o oyun bir daha hatırlatılmaz
+  /// (12 Ekim 2026'ya kadar "zamanı geçtiyse" sayılıyordu — bkz.
+  /// `yarimOyunHatirlatmasiTeslimEdildi`).
   ///
   /// Ayarlardan dönüşse ([ayarlaraGonder]) iptalden SONRA o oyun için
   /// hatırlatma yeniden denenir — aynı metodun içinde, sırayla: iki ayrı
@@ -173,10 +244,9 @@ class YarimOyunHatirlatici {
       final flags = (await storage).flags;
       final oyun = flags.yarimOyunKurulanOyun;
       if (oyun != null) {
-        if (yarimOyunHatirlatmasiTeslimEdildi(
-          kurulanZaman: flags.yarimOyunKurulanZaman,
-          simdi: _saat(),
-        )) {
+        // Durum İPTALDEN ÖNCE okunur: iptal platformdaki işareti de siler.
+        final d = await zamanlayici.durum();
+        if (yarimOyunHatirlatmasiTeslimEdildi(platformGosterdi: d?.teslim)) {
           await flags.yarimOyunHatirlatildi(oyun);
         }
         await zamanlayici.iptal();

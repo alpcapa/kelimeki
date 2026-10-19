@@ -117,6 +117,11 @@ void main() {
           'sayabiliyoruz',
       'Bu sekiz kaydın hiçbirinde anonim kod ile hesap kimliğiniz BİR ARADA '
           'YER ALMAZ',
+      // Gizlilik §2 etiket maddesi (#46-1, 13 Ekim 2026)
+      'Android\'de bu etiket, siteden Google Play\'e geçtiğinizde Play\'in '
+          'kurulum yönlendirme bilgisiyle (Install Referrer) uygulamaya da '
+          'taşınır; yalnızca kanal ölçümü içindir, kimliğinizi ya da reklam '
+          'kimliğinizi içermez',
     ];
     for (final s in sozler) {
       expect(webN.contains(norm(s)), isTrue,

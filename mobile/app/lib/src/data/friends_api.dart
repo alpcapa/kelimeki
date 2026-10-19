@@ -319,6 +319,16 @@ class FriendsRepo {
     }
   }
 
+  /// "Tekrar Oyna" planı için: arkadaş kimliği → ad. Liste OKUNAMAZSA `null`
+  /// (web `fetchRematchFriends`) — boş harita "hiç arkadaşım yok" demektir ve
+  /// rövanşta herkesi yabancı yapıp rastgele ilan açtırırdı; `null` bugünkü
+  /// akışa düşer (bkz. `buildRematchPlan`).
+  Future<Map<String, String>?> rematchFriends() async {
+    final list = await friends();
+    if (list == null) return null;
+    return {for (final f in list) f.friendId: f.name};
+  }
+
   /// Bana gelen bekleyen istekler — sıralama RPC'nin kendi sırası
   /// (created_at desc, en yeni önce): bir SEÇİM listesi değil, web'de de
   /// bilinçli olarak trCompare'e çekilMEmişti.
