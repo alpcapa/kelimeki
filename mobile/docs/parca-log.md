@@ -25,6 +25,16 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 247 — Gizlilik metni: anonim kod SEKİZ durumda gider (web oturum kaydı `anon_id`, 18 Ekim 2026, ROADMAP #47)
+
+Web ikizi (`claude/web-sessions-anon-id`): `web_sessions`e cihazın anonim kodu eklendi (admin Huni v2 "Mağaza (cihaz)"); bu, gizlilik metnindeki "yedi durum"u **sekize** çıkarır (madde (8): girişsiz web ziyaretinin adım/mağaza/süre/etiket kaydı) ve "Son güncelleme" tarihini **18 Ekim 2026** yapar. Port `legal_modals.dart` aynı metni BİREBİR taşır (yedi → sekiz, (8) cümlesi, "Bu sekiz kaydın…", Gizlilik tarihi); Koşullar tarihi (12 Ekim) DEĞİŞMEDİ.
+
+**Kapı:** `legal_text_test.dart` tarihi web kaynağından okuyordu; tarih tek başına yetmez, bu yüzden `sozler` listesine dört cümle eklendi (sayı + (8) + "reklamdan gelenlerin kaçının mağazaya gittiği…" + "Bu sekiz kaydın…"). Duyarlılık kanıtlandı: port metni geri alınınca 2 test DÜŞÜYOR.
+
+⚠ **#862 aynı paragrafı değiştiriyor** (Android kurulum kaynağı cümlesi, "Son güncelleme" 13 Ekim): ikisinden sonra gelen metin çakışmasını çözer; tarih TEK ve en geç olan (18 Ekim) kalır, iki yeni cümle de korunur. Web+port AYNI turda merge (web `parite` işi).
+
+**Sınır:** hukuki metnin kendisi (sekizinci durumun kapsamı) kullanıcı onayına bağlı; cihazda görülecek bir şey yok. Parça numarası 247 (#877=246) — başka bir taslak aynı numarayı aldıysa kesimde yeniden numaralanır.
+
 ## Parça 246 — Uçak modunda açılış 20-30 sn "Yükleniyor…" kalıyordu: çevrimdışıyken ağa HİÇ gitme (17 Ekim 2026)
 
 Kullanıcı uçakta, uçak modunda gerçek deneyimi ölçtü: uygulama ~30 sn "yükleniyor", sonra "internet yok ama Yapay Zeka ile oynayabilirsin"; ertesi gün çevrimdışı bırakılan oyun "Devam Edenler"e yine 20-30 sn geç düşüyor. **İki şikâyet tek kök neden:** `SetupScreen._syncCloud` çevrimdışı olduğunu (`OnlineStatus`, 14 Ağustos) BİLİYORDU ama misafir taşıma → `flushPending` → `flushMirrored` → `list` zincirini yine de ağa gönderiyordu; her çağrı `getSession` içinde süresi dolmuş token'ı yenilemeye çalışıyor (gotrue `_refreshAccessToken`, 10 sn'lik tick penceresine kadar geri çekilmeli tekrar) ve liste ancak ağ denemesi DÜŞTÜKTEN sonra yerel aynadan kuruluyordu. Mesaj (`_offlineAiNotice`) da `saves != null` koşuluna bağlı olduğundan aynı süre kadar gecikiyordu.

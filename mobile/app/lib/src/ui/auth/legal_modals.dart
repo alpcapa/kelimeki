@@ -305,7 +305,7 @@ class PrivacyModal extends StatelessWidget {
       child: _StackedSections([
         const _P('Kelimeki olarak gizliliğinize önem veriyoruz. Bu politika, '
             'hangi verileri topladığımızı, nasıl kullandığımızı ve '
-            'haklarınızı açıklar. Son güncelleme: 13 Ekim 2026.'),
+            'haklarınızı açıklar. Son güncelleme: 18 Ekim 2026.'),
         const _Section('1. Veri Sorumlusu', [
           _P('Kelimeki, herhangi bir şirket ya da tüzel kişilik '
               'bulunmaksızın, bağımsız bir geliştirici tarafından bireysel '
@@ -471,7 +471,7 @@ class PrivacyModal extends StatelessWidget {
               'hangi cihaz/işletim sistemlerinden geldiğimizi ve kaç '
               'kişinin oyuna başladığını anlayabilmek için cihazınızda '
               'rastgele, kimliğinizle hiçbir şekilde ilişkilendirilmeyen '
-              'anonim bir kod üretilir. Bu kod yedi durumda sunucuya '
+              'anonim bir kod üretilir. Bu kod sekiz durumda sunucuya '
               'iletilir: '
               '(1) HER ziyarette — oturum açık olsun olmasın — işletim '
               'sistemi tipiyle (iOS/Android/masaüstü) ve, tarayıcınızdan '
@@ -511,7 +511,15 @@ class PrivacyModal extends StatelessWidget {
               'tutulduğu için kayıt, hesabınızın açıldığı anla da '
               'eşleştirilemez; böylece yeni gelenlerin kaçının üye olup '
               'oynamayı sürdürdüğünü kişileri tanımadan sayabiliyoruz. '
-              'Bu yedi kaydın hiçbirinde anonim kod ile hesap '
+              '(8) Siteyi (web) girişsiz (misafir) ziyaret ederken: '
+              'ziyaretinizin hangi adımda sona erdiği (karşılama sayfasında, '
+              'uygulama ekranında, bir oyunda ya da mağaza bağlantısında), '
+              'mağaza bağlantısına dokunup dokunmadığınız, oturumun süresi '
+              've varsa kaynak etiketi anonim kodla birlikte kaydedilir; '
+              'böylece ziyaretçilerin hangi noktada ayrıldığını ve '
+              'reklamdan gelenlerin kaçının mağazaya gittiğini kişileri '
+              'tanımadan sayabiliyoruz. '
+              'Bu sekiz kaydın hiçbirinde anonim kod ile hesap '
               'kimliğiniz BİR ARADA YER ALMAZ: girişli olsanız bile bu '
               'veriler hiçbir üçüncü tarafla paylaşılmaz ve hesabınızla asla '
               'eşleştirilmez. Yazı '
