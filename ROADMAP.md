@@ -293,6 +293,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.
 
+**1.1.5'e binecek (20 Ekim, taslak PR, kesim 2 Kasım):** gölge önbelleği öne dönüşte boşaltılıyor + ön planda değilken önbelleğe görüntü girmiyor (`ui/game/neo_box.dart` + `ui/app.dart`; Parça 248). Kullanıcı 1.1.4'te Setup'ta gölgeli düğmelerin üstünde koyu dikdörtgenler gördü (uygulama arkadayken e-posta linkiyle öne gelmişti); tekrarlanamadı, önlem. Cihaz kontrolü: `mobile/docs/testing-ux-turlari.md` §34.
+
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
 web canlı, CI derlemesi hazır, ama Play'e giden hiçbir otomatik yol YOK

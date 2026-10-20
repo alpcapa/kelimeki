@@ -25,6 +25,18 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 248 — Gölge önbelleği: öne dönüşte boşalt, ön planda değilken üretme (20 Ekim 2026, kullanıcı bildirdi)
+
+**Belirti (1.1.4, `bf550a3`, iPhone):** Setup'ta "Kime karşı" düğmelerinin ve üstündeki alanın üzerinde KOYU/SİYAH dikdörtgenler — gölgeli yüzeylerin gölge alanlarıyla örtüşüyor. Uygulama arkada açıkken bir e-posta linki (Safari → "Open") ile öne getirilmişti; uygulama kapalıyken aynı akış tekrarlanınca görülmedi.
+
+**Tahmin (cihazda KANITLANMADI):** `neo_box.dart`ın raster önbelleği (`Picture.toImageSync`, Parça 144) bir görüntüyü uygulama öne dönerken, GPU henüz kullanılamazken üretti ve bozuk kaldı. Önbellek girdileri hiç atılmadığından bozuk görüntü kalıcıydı.
+
+**Önlem (iki parça):** (1) `obtain` yaşam döngüsü `resumed` değilken (`null` = bilinmiyor, izinli) YENİ görüntü üretmiyor, doğrudan çizime düşüyor; (2) `invalidateNeoBoxRasterCache()` — `app.dart` her `resumed`da çağırıyor: önbelleği boşaltıp render ağacının TAMAMINI boyamaya işaretliyor. Yalnızca `clear()` yetmezdi: ressamların `shouldRepaint`i (alanlar aynı) yeniden boyamayı tetiklemez, ekrandaki katman eski görüntüyü taşımaya devam ederdi. Bedel: öne her dönüşte bir tam boyama + ~10 desenin yeniden rasterleştirilmesi.
+
+**Kapı:** `test/neo_box_lifecycle_test.dart` (2 test). ⚠ Testte `paused` KULLANILAMAZ — Flutter o durumda hiç kare çizmez; ölçülebilir ara durum `inactive`. Duyarlılık: kapı (1) kaldırılınca ilk test düşüyor. Tam takım 1273/1273 yeşil (ilk koşuda `game_session_host_test` bir kez düştü, tek başına ve ikinci tam koşuda geçti — aralıklı, bu değişiklikten bağımsız).
+
+**Sınır:** bozuk görüntünün kendisi Linux'ta üretilemiyor; önlemin işe yaradığı ancak sahada sorunun bir daha görülmemesiyle anlaşılır. Cihaz maddesi: `mobile/docs/testing-ux-turlari.md` §34.
+
 ## Parça 247 — Gizlilik metni: anonim kod SEKİZ durumda gider (web oturum kaydı `anon_id`, 18 Ekim 2026, ROADMAP #47)
 
 Web ikizi (`claude/web-sessions-anon-id`): `web_sessions`e cihazın anonim kodu eklendi (admin Huni v2 "Mağaza (cihaz)"); bu, gizlilik metnindeki "yedi durum"u **sekize** çıkarır (madde (8): girişsiz web ziyaretinin adım/mağaza/süre/etiket kaydı) ve "Son güncelleme" tarihini **18 Ekim 2026** yapar. Port `legal_modals.dart` aynı metni BİREBİR taşır (yedi → sekiz, (8) cümlesi, "Bu sekiz kaydın…", Gizlilik tarihi); Koşullar tarihi (12 Ekim) DEĞİŞMEDİ.
