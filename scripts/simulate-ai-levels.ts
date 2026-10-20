@@ -36,6 +36,7 @@
 //   npm run simulate-ai-levels                       # N ∈ {1,2,3,5}, 100 oyun, tohum 1
 //   npm run simulate-ai-levels -- --oyun 200 --n 2,3,4 --tohum 42
 //   npm run simulate-ai-levels -- --oyun 200 --motor zor   # Zor motoru (Faz 5 kapısı: ≥%70)
+//   npm run simulate-ai-levels -- --oyun 200 --n 4,5,8 --harf 7,5   # top-N × kelime uzunluğu tavanı (Kolay kadranı, 20 Ekim 2026)
 import { performance } from 'node:perf_hooks';
 import type { GameState } from '../src/game/types';
 import { gameReducer, createInitialState, isFirstMove, type Action } from '../src/game/gameReducer';
@@ -66,11 +67,13 @@ interface Args {
   games: number;
   ns: number[];
   motors: string[];
+  /** `--harf`: top-N koltuklarının (dar arama) kelime uzunluğu tavanları. */
+  harfs: number[];
   seed: number;
 }
 
 function parseArgs(argv: string[]): Args {
-  const a: Args = { games: 100, ns: [], motors: [], seed: 1 };
+  const a: Args = { games: 100, ns: [], motors: [], harfs: [], seed: 1 };
   let nsGiven = false;
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
@@ -90,6 +93,9 @@ function parseArgs(argv: string[]): Args {
         break;
       case '--motor':
         a.motors = need().split(',').map((s) => s.trim()).filter(Boolean);
+        break;
+      case '--harf':
+        a.harfs = need().split(',').map((s) => Number(s.trim())).filter((n) => n >= 2);
         break;
       case '--tohum':
         a.seed = Number(need());
@@ -223,7 +229,15 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   await preloadWordSet();
   const seats: Seat[] = [
-    ...args.ns.map((n) => ({ n, label: `Top${n}` })),
+    ...(args.harfs.length === 0
+      ? args.ns.map((n) => ({ n, label: `Top${n}` }))
+      : args.ns.flatMap((n) =>
+          args.harfs.map((h) => ({
+            n,
+            search: { wide: false, maxWordLen: h },
+            label: `Top${n}/${h}harf`,
+          })),
+        )),
     ...args.motors.map((m) => ({ n: 1, search: parseMotor(m), label: m })),
   ];
   console.log(
