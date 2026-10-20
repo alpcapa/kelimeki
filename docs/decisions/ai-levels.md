@@ -300,8 +300,10 @@ iniyordu (≈0,7 sıkışma). Bu oranla bugünkü Kolay'dan (sim %34, saha YZ %4
 hedefe (~%30) inmek simülasyonda ≈24 puanlık düşüş ister → sim ~%10 civarı:
 **Top8/5 harf** (tahmini saha ~%32) · Top5/4 harf (~%30) · Top4/4 harf
 (~%27). ⚠ 0,7 Zor'dan ödünç bir varsayım; ölçüm değil.
-⏳ Karar kullanıcıda; uygulama 2 Kasım treninde (iki sabit × üç kopya +
-golden'lar + Edge deploy).
+**KARAR (20 Ekim 2026, kullanıcı: *"Önerin ok"*): Top8 + 5 harf** —
+`AI_LEVEL_TOP_N.kolay` 4 → 8, `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç
+kopyada. 2 Kasım treninde (taslak PR #886); `play-ai-turn` merge gününde deploy.
+**Sonraki okuma:** yayından ~3 hafta sonra, kişi içi farkla; hedef YZ ~%30.
 
 **Plan (ROADMAP #23 Faz 5, açık):** `admin_ai_balance` seviye kırılımı iki
 hafta; hedef Kolay ~%30 · Normal ~%51 · Zor ~%70 YZ kazanma. Sapma varsa
