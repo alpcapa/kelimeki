@@ -22,6 +22,7 @@ import 'push/push_permission_flow.dart';
 import 'update_required_screen.dart';
 import 'text_scale.dart';
 import 'game/logo_mark.dart';
+import 'game/neo_box.dart' show invalidateNeoBoxRasterCache;
 import 'live/open_online_game.dart';
 import 'online_scope.dart';
 import 'online_games_scope.dart';
@@ -422,6 +423,9 @@ class _HomeGateState extends State<_HomeGate> with WidgetsBindingObserver {
       _gizlendi = true;
     }
     if (state == AppLifecycleState.resumed) {
+      // Gölge önbelleği arka planda bozulmuş olabilir (20 Ekim 2026, koyu
+      // dikdörtgenler) — gerekçe `invalidateNeoBoxRasterCache`.
+      invalidateNeoBoxRasterCache();
       // Huni v2: öne geliş = ziyaret (günde bir; plan "PR 2"). Açık kalan
       // uygulamada ertesi gün "döndü" sütunu ancak burada dolar.
       funnel.open();
