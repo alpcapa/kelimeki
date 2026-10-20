@@ -1054,7 +1054,7 @@ bağlı değil.)
     vergileri, doğal bitiş.
   - `reducer_ai2_kolay.json` — 2 kişilik tam YZ oyunu, `START`
     payload'ında `aiLevel: 'kolay'` (ROADMAP #23 Faz 2, 6 Eylül 2026): iki
-    YZ de her hamlede en iyi 4'ten tohumlu seçer. `pickTopMove`ün
+    YZ de her hamlede en iyi 8'den (havuz 2-5 harf) tohumlu seçer. `pickTopMove`ün
     rastgelelik sözleşmesini (tek elemanda çağrı YOK, çoklu listede TEK
     `nextDouble()`, torbayla AYNI `rng`) ve `_insertBounded`'ın "eşitte ilk
     bulunan önde" sıralı eklemesini kilitler — `sort` kullanılsaydı eşit
@@ -1062,8 +1062,8 @@ bağlı değil.)
     `aiLevel` anahtarı JSON'a hiç yazılmaz (web `JSON.stringify` +
     `codec.dart`ın `if (s.aiLevel != null)` sözleşmesi); eski fixture'lar bu
     sayede Faz 2'de bayt-eş kaldı.
-  - `ai_level.json` — `AI_LEVEL_TOP_N` ↔ `aiLevelTopN` (Kolay 4 · Normal 1 ·
-    Zor 1) ve `AI_LEVEL_SEARCH` ↔ `aiLevelSearch` (Zor: `wide` + havuz 8)
+  - `ai_level.json` — `AI_LEVEL_TOP_N` ↔ `aiLevelTopN` (Kolay 8 · Normal 1 ·
+    Zor 1) ve `AI_LEVEL_SEARCH` ↔ `aiLevelSearch` (Kolay havuz 5 · Zor: `wide` + havuz 8)
     kilidi; üçüncü kopya (Edge) `verify-edge-engine-parity`de.
   - `reducer_ai2_zor.json` — Zor (Faz 5, 7 Eylül 2026): iki YZ de GENİŞ
     aramayla oynar (kanca hücresinden paralel diziş + çok çapalı kelime).

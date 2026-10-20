@@ -15,7 +15,7 @@ Faz 5 (7 Eylül 2026, PR #475). Kullanıcı kararları tırnak içinde.
 
 | Seviye | Motor | Hedef (YZ'nin insana karşı kazanma oranı) | k-lig: birinci | 4 kişilikte ikinci |
 |---|---|---|---|---|
-| **Kolay** | bugünkü arama, **en iyi 4 hamleden rastgele biri** | ~%30 | +1 | 0 |
+| **Kolay** | dar arama, havuz 2-5 harf, **en iyi 8 hamleden rastgele biri** (20 Eki 2026'ya kadar 4 / 2-7) | ~%30 | +1 | 0 |
 | **Normal** | bugünkü arama, en iyi hamle — DEĞİŞMEZ, sıfır çizgisi | ~%51 (sahada ölçülmüş) | +2 | +1 |
 | **Zor** | **geniş arama** (§3), en iyi hamle | ~%70 | +4 | +2 |
 
@@ -145,7 +145,7 @@ bakış ve (torba boşken çıkarsanabilir raflarla çalışan) oyun sonu çöz�
 silindi; motorda rakip rafını okuyan HİÇBİR yol yok. Aynı mesajdaki öneri
 (*"7 harfli kelime üretme sınırını açmak"*) geniş aramayı doğurdu.
 
-## 4. Kolay = en iyi 4'ten rastgele (Faz 0)
+## 4. Kolay = en iyi 4'ten rastgele (Faz 0) — 20 Ekim 2026'da 8 + 5 harfe çevrildi (§9)
 
 Faz 0 ölçümü (6 Eylül 2026; 200 oyun/N, tohum 1-200, koltuk değişimli;
 tablo `product-backlog.md` → "YZ zorluk seviyesi"):
@@ -300,8 +300,10 @@ iniyordu (≈0,7 sıkışma). Bu oranla bugünkü Kolay'dan (sim %34, saha YZ %4
 hedefe (~%30) inmek simülasyonda ≈24 puanlık düşüş ister → sim ~%10 civarı:
 **Top8/5 harf** (tahmini saha ~%32) · Top5/4 harf (~%30) · Top4/4 harf
 (~%27). ⚠ 0,7 Zor'dan ödünç bir varsayım; ölçüm değil.
-⏳ Karar kullanıcıda; uygulama 2 Kasım treninde (iki sabit × üç kopya +
-golden'lar + Edge deploy).
+**KARAR (20 Ekim 2026, kullanıcı: *"Önerin ok"*): Top8 + 5 harf** —
+`AI_LEVEL_TOP_N.kolay` 4 → 8, `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç
+kopyada. 2 Kasım treninde (taslak PR); `play-ai-turn` merge gününde deploy.
+**Sonraki okuma:** yayından ~3 hafta sonra, kişi içi farkla; hedef YZ ~%30.
 
 **Plan (ROADMAP #23 Faz 5, açık):** `admin_ai_balance` seviye kırılımı iki
 hafta; hedef Kolay ~%30 · Normal ~%51 · Zor ~%70 YZ kazanma. Sapma varsa

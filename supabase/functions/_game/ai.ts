@@ -427,7 +427,7 @@ export function pickTopMove(list: AIMove[]): AIMove | null {
 /**
  * Sırası gelen YZ oyuncusu için oynanacak hamle (yoksa null → pas/değişim).
  * `level` iki kadrana çevrilir: `AI_LEVEL_TOP_N` (Normal = en iyi hamle,
- * Kolay = en iyi 4'ten rastgele biri, Zor = en iyi hamle) ve `AI_LEVEL_SEARCH`
+ * Kolay = en iyi 8'den rastgele biri, Zor = en iyi hamle) ve `AI_LEVEL_SEARCH`
  * (Zor geniş arar, bkz. findAIMoves). Rastgelelik `pickTopMove`'un
  * sözleşmesinde — Zor da Normal gibi hiç rastgele değer tüketmez.
  */
