@@ -290,3 +290,26 @@ Bir gün panelde tam yazışma istenirse gereken parçalar: giden mailin Brevo
 eşleştirmek, gövdeyi saklamak ve `feedback`'i tek-satır-tek-mesaj modeline
 geçirmek. Bugünkü `related_to` (tek seviyeli, yalnızca site formundan gelen
 cevaplar için) bunun yerine geçmez.
+
+## Brevo TIKLAMA İZLEMESİ uygulamayı açtırmıyor (20 Ekim 2026)
+
+Kullanıcı bildirdi: oyun daveti e-postasındaki "Daveti Gör" butonu iPhone'da
+uygulamayı (kurulu) değil Safari'yi açıyor. Kaynakta link düz
+`https://kelimeki.com` (`notify-game-invite`) ve Universal Links çalışıyor
+(Safari'nin "Open in the Kelimeki app" bandı çıkıyor) — yani kusur bizde
+değil.
+
+**Teşhis — ÖLÇÜLDÜ:** kullanıcı butona uzun basıp gerçek adresi okudu:
+`https://bbgjfjch.r.bh.d.sendibt3.com/tr/cl/…`. Brevo Transactional API
+linkleri kendi izleme alan adına sarıyor; iOS Universal Link kararını İLK
+dokunulan adrese göre verir, o adres `kelimeki.com` olmadığı için Safari
+açılır, yönlendirme sonradan `kelimeki.com`a varsa da uygulamaya geçmez.
+Android App Links de aynı sebeple etkilenir.
+
+**Kapsam:** `sendBrevoEmail`den çıkan HER link (davet, sıra sende, arkadaşlık,
+terk cezası…), tek bir fonksiyona özgü değil.
+
+**Çözüm (panel işi, koddan YAPILAMAZ):** Brevo'da transactional e-postaların
+tıklama izlemesini kapatmak. Bedeli: Brevo istatistiklerinde "tıklama"
+sayısı kaybolur — bugün hiçbir karar o sayıya dayanmıyor.
+⏳ Durum: kullanıcıya iletildi, panelde kapatılınca buraya tarihli satır.
