@@ -302,7 +302,7 @@ hedefe (~%30) inmek simülasyonda ≈24 puanlık düşüş ister → sim ~%10 ci
 (~%27). ⚠ 0,7 Zor'dan ödünç bir varsayım; ölçüm değil.
 **KARAR (20 Ekim 2026, kullanıcı: *"Önerin ok"*): Top8 + 5 harf** —
 `AI_LEVEL_TOP_N.kolay` 4 → 8, `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç
-kopyada. 2 Kasım treninde (taslak PR); `play-ai-turn` merge gününde deploy.
+kopyada. 2 Kasım treninde (taslak PR #886); `play-ai-turn` merge gününde deploy.
 **Sonraki okuma:** yayından ~3 hafta sonra, kişi içi farkla; hedef YZ ~%30.
 
 **Plan (ROADMAP #23 Faz 5, açık):** `admin_ai_balance` seviye kırılımı iki
