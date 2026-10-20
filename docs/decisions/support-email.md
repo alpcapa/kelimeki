@@ -309,7 +309,14 @@ Android App Links de aynı sebeple etkilenir.
 **Kapsam:** `sendBrevoEmail`den çıkan HER link (davet, sıra sende, arkadaşlık,
 terk cezası…), tek bir fonksiyona özgü değil.
 
-**Çözüm (panel işi, koddan YAPILAMAZ):** Brevo'da transactional e-postaların
+**DÜZELTME — aynı gün, kullanıcı tekrar denedi:** uygulama KAPALIYKEN
+linke basınca Safari bir an açılıyor, yönlendirme `kelimeki.com`a varınca
+iOS **"Open in "Kelimeki"?"** diye soruyor, Open → uygulama açılıp davete
+gidiyor. Yani akış ÇALIŞIYOR, yalnızca bir onay adımı fazla. İlk denemedeki
+"Safari'de kaldı" hâli (uygulama arkada açıkken) tekrarlanamadı. İzleme
+kapatılırsa Safari ara durağı ve onay sorusu tamamen kalkar.
+
+**Çözüm (panel işi, koddan YAPILAMAZ, artık ACİL DEĞİL):** Brevo'da transactional e-postaların
 tıklama izlemesini kapatmak. Bedeli: Brevo istatistiklerinde "tıklama"
 sayısı kaybolur — bugün hiçbir karar o sayıya dayanmıyor.
 ⏳ Durum: kullanıcıya iletildi, panelde kapatılınca buraya tarihli satır.
