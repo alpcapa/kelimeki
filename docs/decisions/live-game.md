@@ -1202,6 +1202,7 @@ erken döner (`surrendered`), yani süre dolsa da kimse sırayı ilerletmez. Web
   `proacl` değişmedi (postgres/service_role/authenticated).
 - **Canlı veri onarımı:** takılı tek oyun (`4d4c07cc…`) `current` 1→2 yapıldı, süre 48 saat yenilendi.
   Takılı oyun taraması: `online_game_states` içinde `not is_game_over and players->(current)->>'surrendered'='true'`.
-- **AÇIK, düzeltilmedi:** `v_consecutive_passes >= v_player_count * v_max_pass_rounds` pas-turu eşiği
-  TÜM oyuncuları sayıyor; web motoru yalnızca aktif oyuncuları sayar (`activePlayerCount`). Teslimli
-  oyunda üst üste pas ile bitiş sunucuda geç kalır. Etkisi kilit değil gecikme; ayrıca ölçülmeli.
+- **Pas sayacı (aynı gün düzeltildi):** `20261022190035_submit_move_pass_rounds_active_players.sql` —
+  "üst üste pas ile bitiş" eşiği artık `teslim olmamış oyuncu sayısı * MAX_PASS_ROUNDS` (web:
+  `activePlayerCount(players) * MAX_PASS_ROUNDS`). Öncesinde sunucu TÜM koltukları sayıyordu: 4 kişilik,
+  1 teslimli oyunda web 6 pasta, sunucu 8 pasta bitiriyordu. Aynı yöntem (canlı gövdede tek ifade).
