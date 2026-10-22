@@ -1206,3 +1206,5 @@ erken döner (`surrendered`), yani süre dolsa da kimse sırayı ilerletmez. Web
   "üst üste pas ile bitiş" eşiği artık `teslim olmamış oyuncu sayısı * MAX_PASS_ROUNDS` (web:
   `activePlayerCount(players) * MAX_PASS_ROUNDS`). Öncesinde sunucu TÜM koltukları sayıyordu: 4 kişilik,
   1 teslimli oyunda web 6 pasta, sunucu 8 pasta bitiriyordu. Aynı yöntem (canlı gövdede tek ifade).
+- **Sahada doğrulandı (22 Ekim 2026):** bildiren kullanıcı onarılan oyunun düzeldiğini onayladı (PR #888 merge edildi,
+  `8a3dd2a`). Teslimli oyunda pas eşiğinin uçtan uca denemesi hâlâ YOK — yalnızca canlı gövde okunarak doğrulandı.
