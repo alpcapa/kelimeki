@@ -172,6 +172,13 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       kullanıcının "kaybeden -2 aldı, kazanan puan almadı" diye bildirdiği
       karışıklık tam olarak buydu ve kart o gün DOĞRUYDU, yalnızca lig
       katkısını göstermiyordu.
+- [ ] **Teslim olan oyuncu sırada ATLANIR (22 Ekim 2026).** 4 kişilik Canlı
+      oyunda biri süre aşımıyla teslim olsun (ya da test için `online_game_states`
+      satırında `players->i->>'surrendered'`ı elle işaretle); kalan üç kişi
+      sırayla oynasın. **Sıra hiçbir turda teslim olana düşmemeli** — başlıkta
+      "SIRA: … BEKLENİYOR" teslim olanın adıyla görünüyorsa oyun kilitlenmiştir.
+      Vaka: `docs/decisions/live-game.md` → "`submit_move` teslim olmuş oyuncuyu
+      ATLAMIYORDU".
 - [ ] **Üç sütunun sayısı da kolonun SAĞINA yapışık (21 Ağustos 2026).**
       Özellikle k-lig'in `-` gösterdiği ve skorun 2 haneli olduğu bir satıra
       bak (ör. 4 kişilikte 3./4. sıra): skor ORTALI durmamalı, sağ komşusuna
