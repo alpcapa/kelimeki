@@ -43,6 +43,12 @@ export const dragThresholdFor = (pointerType: string): number =>
 ///
 /// 24, tahta hücresinin (~26 px) hemen altında: bir hücreden az giden bir
 /// jest zaten bir hedef ifade edemiyor.
+//
+// ⚠ Bu eşik KONMUŞ TAŞ için bir İSTİSNAYLA birlikte okunur (23 Ekim 2026):
+// bırakma noktası `DRAG_LIFT` kadar kaldırıldığından "bir üst hücreye taşı"
+// jesti parmağın 0-16 px oynaması demek ve eşiğin altında kalıp taşı rafa
+// döndürüyordu. Hayalet boş bir hücreyi gösteriyorsa jest TAŞIMA'dır
+// (`App.tsx`/`OnlineGameScreen.tsx` `tasimaHedefi`; port ikizi aynı).
 export const TAP_SLOP_ON_RELEASE = 24;
 
 // Sürüklenen taşın görseli, parmağın altında kalıp görüşü engellememesi için
