@@ -233,6 +233,12 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       `meanings.json` 6.3 MB, precache'e bilerek alınmıyor). Çevrimiçiyken
       gerçekten sözlükte olmayan bir kelimede hâlâ "bulunamadı" demeli.
       **Uygulamada (Flutter) bu mesaj HİÇ çıkmamalı** — orada sözlük pakette.
+- [ ] **Son taslak taşı geri alınca bayat "onayla" mesajı KALMAZ (23 Ekim 2026).**
+      Bir harfi tahtaya koy (ör. geçersiz bir kelime olsun), sonra o harfi geri
+      al (taşa dokun ya da rafa sürükle). Mesaj satırında "Oyna tuşuyla
+      kelimeyi onayla." **kalmamalı** — Oyna'ya basınca "Harf yerleştirilmedi."
+      çıkıyordu, yani yazı yanlış yönlendiriyordu. Hem yerel/YZ hem Canlı oyunda
+      dene; iki taş koyup yalnızca birini almak mesajı DEĞİŞTİRMEMELİ.
 - [ ] **Gönderim hatası GÖRÜNÜR (14 Ağustos 2026).** Geçerli bir kelime
       kurup uçak modunda OYNA'ya bas: mesaj satırında bir ağ hatası
       görünmeli — "Oyna tuşuyla kelimeyi onayla." DEĞİL. Alttaki

@@ -293,6 +293,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.
 
+**Sıradaki treni bekleyen (23 Ekim 2026):** son taslak taş geri alınınca bayat "Oyna tuşuyla kelimeyi onayla." mesajı silinsin (kullanıcı ekran görüntüsüyle bildirdi) — `kelimeki_core` `RecallCellAction` + web `RECALL_CELL` ikizi + `reducer_human2.json` golden'ı. Taslak PR.
+
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
 web canlı, CI derlemesi hazır, ama Play'e giden hiçbir otomatik yol YOK
