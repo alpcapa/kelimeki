@@ -297,6 +297,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **Aynı tren (23 Ekim 2026):** konmuş taşı bir üst hücreye taşımak taşı rafa döndürüyordu (kullanıcı bildirdi) — web + port, hayalet ne gösteriyorsa o olsun (Parça 248). Taslak PR.
 
+**Aynı tren (23 Ekim 2026):** uçak modunda avatar 45 sn "…" / Başlat 45 sn "HAZIRLANIYOR…" — profil çekimi çevrimdışıyken ağa gitmesin + 8 sn zaman aşımı (Parça 249). Taslak PR #889'da.
+
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
 web canlı, CI derlemesi hazır, ama Play'e giden hiçbir otomatik yol YOK

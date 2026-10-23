@@ -25,6 +25,19 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 249 — Uçak modunda avatar 45 sn "…", Başlat 45 sn "HAZIRLANIYOR…": profil çekimi de ağa gidiyordu (23 Ekim 2026, kullanıcı ölçtü)
+
+**Bulgu (1.1.4 / 933, iPhone, uçak modu; Parça 246'nın ikinci turu):** bekleyen YZ oyunu hemen geliyor (246 çalışıyor), ama avatar "…" 45 sn sonra "IR"ye dönüyor ve "YENİ OYUN BAŞLAT"ın düğmesi 45 sn "HAZIRLANIYOR…" yazıyor.
+
+**Kök neden (246 yalnızca bulut senkronunu kapsamıştı):** ikisi de aynı bayrağa bağlı — `AuthService._profileLoading`: avatar `identityLoading`, Başlat düğmesi `accountPending` (`user != null && accountName == null`) ile bekliyor. `_fetchProfile` çevrimdışıyken de `profiles`e gidiyor; supabase_flutter süresi dolmuş token'ı yenilemeye çalışıp geri çekilmeli tekrarla ~45 sn bekliyor, ancak sonra düşüp (Parça 29 Ağustos) yerel kopyaya geçiyor. Zaman aşımı da yoktu.
+
+**Düzeltme:**
+- `AuthService(isOnline:)`: bağlantı yoksa profil çekimi ağa HİÇ gitmez, doğrudan yerel kopyadan kurulur (246'daki "çevrimdışıyken ağa gitme" kuralı). `bootstrap.dart` `OnlineStatus`u `AuthService`ten ÖNCE kuruyor.
+- `kProfileFetchTimeout` (8 sn): iyimser sinyal yanıldığında (captive portal, askıda istek) çekim düşmüş sayılıp aynı yola girer.
+- Web ikizi YOK: web'de profil önbelleği yok (port bilerek ekledi, 29 Ağustos) ve bu yol portun kendi kararı.
+
+**Testler:** `profile_cache_test.dart` iki yeni test (çevrimdışıyken fetcher HİÇ çağrılmaz + `identityLoading`/`accountPending` false; askıda çekim 8 sn sonra düşer). Tam takım 1274 geçti, `dart analyze` temiz (yeni test `fake_async` import'u `live_games_test`teki mevcut info ile aynı). **Sınır:** cihazda ölçülmedi — `mobile/TESTING.md` §8 maddesi güncellendi. Çevrimdışı açılışta yerel profil kopyası YOKSA (girişten sonraki ilk açılış uçak modunda) e-posta önekine düşer; bu eski, bilinen davranış.
+
 ## Parça 248 — Konmuş taşı BİR ÜST hücreye taşımak taşı rafa döndürüyordu (23 Ekim 2026, kullanıcı bildirdi)
 
 **Bulgu:** *"Tahtaya koyduğum taşı alta veya başka bir kareye taşıyabiliyorum ama bir üstündeki kareye olmuyor, taş rafa dönüyor."*

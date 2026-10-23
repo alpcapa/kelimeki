@@ -84,6 +84,13 @@ class KProfile {
       );
 }
 
+/// Profil çekimine tanınan süre. Süre dolarsa çekim DÜŞMÜŞ sayılır ve yerel
+/// kopyadan devam edilir (`_fetchProfile` catch dalı). Bağlantısızken
+/// supabase_flutter süresi dolmuş token'ı yenilemeye çalışıp geri çekilmeli
+/// tekrarla ~45 sn bekleyebiliyor (23 Ekim 2026, uçak modunda ölçüldü:
+/// avatar 45 sn "…", "OYUNU BAŞLAT" 45 sn "HAZIRLANIYOR…").
+const Duration kProfileFetchTimeout = Duration(seconds: 8);
+
 class AuthService extends ChangeNotifier {
   final SupabaseClient? _client;
 
@@ -114,14 +121,21 @@ class AuthService extends ChangeNotifier {
   /// üretimde her zaman dolu (`bootstrap.dart`).
   final Future<DeviceStamp>? _signupStamp;
 
+  /// Şu an bağlantı var mı (iyimser: null ya da okunamazsa `true`). `false`
+  /// ise profil çekimi ağa HİÇ gitmez, doğrudan yerel kopyadan kurulur —
+  /// Parça 246'nın bulut senkronundaki aynı kuralı (çevrimdışıyken ağa gitme).
+  final bool Function()? _isOnline;
+
   AuthService(SupabaseClient? client,
       {Future<ProfileCacheStore>? profileCache,
       Future<DeviceStamp>? signupStamp,
-      Future<Map<String, Object?>?> Function(String userId)? profileFetcher})
+      Future<Map<String, Object?>?> Function(String userId)? profileFetcher,
+      bool Function()? isOnline})
       : _client = client,
         _profileCache = profileCache,
         _signupStamp = signupStamp,
         _profileFetcher = profileFetcher,
+        _isOnline = isOnline,
         _loading = client != null,
         _profileLoading = client != null {
     final c = _client;
@@ -155,10 +169,12 @@ class AuthService extends ChangeNotifier {
     Future<ProfileCacheStore>? profileCache,
     Future<Map<String, Object?>?> Function(String userId)? profileFetcher,
     Future<DeviceStamp>? signupStamp,
+    bool Function()? isOnline,
   })  : _client = null,
         _profileCache = profileCache,
         _signupStamp = signupStamp,
         _profileFetcher = profileFetcher,
+        _isOnline = isOnline,
         _user = user,
         _profile = profile,
         _loading = false,
@@ -614,9 +630,18 @@ class AuthService extends ChangeNotifier {
     final fetcher = _profileFetcher;
     if (c == null && fetcher == null) return;
     try {
+      // Bağlantı yoksa ağa HİÇ gitme: aşağıdaki catch yerel kopyadan kurar.
+      if (_isOnline?.call() == false) {
+        throw TimeoutException('çevrimdışı — profil yerel kopyadan');
+      }
       final row = fetcher != null
-          ? await fetcher(userId)
-          : await c!.from('profiles').select().eq('id', userId).maybeSingle();
+          ? await fetcher(userId).timeout(kProfileFetchTimeout)
+          : await c!
+              .from('profiles')
+              .select()
+              .eq('id', userId)
+              .maybeSingle()
+              .timeout(kProfileFetchTimeout);
       if (_currentUserId != userId) return; // bu arada hesap değişti
       _profile = row == null ? null : KProfile.fromMap(row);
       // Taze satırı diske yaz — bir sonraki BAĞLANTISIZ açılışın tek kaynağı.
