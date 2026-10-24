@@ -287,7 +287,7 @@ adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
 değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
 derleme sha'sını `main`'in başıyla karşılaştır.
 
-**Yayındaki paket:** 1.1.4 (933) = commit `bf550a3` (iki mağaza: Play 23 Eki 23:42 TSİ, App Store 24 Eki). Doğrulama:
+**Yayındaki paket:** 1.1.4 (933) = commit `bf550a3` (iki mağaza: Play 23 Eki 23:42 TSİ, App Store 24 Eki 08:03 TSİ). Doğrulama:
 `git log --oneline bf550a3..origin/main -- mobile/app mobile/kelimeki_core`
 (24 Ekim'de BOŞ — 1.1.5 treninin işleri (#884 #886 #889) taslak PR'da, `main`'de değil).
 
