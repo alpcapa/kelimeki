@@ -20,11 +20,12 @@ const int bingoBonus = 25;
 const int rackSize = 7;
 
 /// YZ seviyesi → "en iyi N hamleden rastgele biri" kadranı.
-/// (TS: AI_LEVEL_TOP_N — golden `ai_level.json` üçlüyü kilitler.) Kolay = 4
-/// Faz 0'ın 200 oyunluk ölçümü; Zor da N=1 — gücü aramanın genişliğinden
+/// (TS: AI_LEVEL_TOP_N — golden `ai_level.json` üçlüyü kilitler.) Kolay = 8
+/// + kelime tavanı 5 (20 Ekim 2026, saha + simülasyon; gerekçe TS sabitinde);
+/// Zor da N=1 — gücü aramanın genişliğinden
 /// gelir ([aiLevelSearch]).
 const Map<AiLevel, int> aiLevelTopN = {
-  AiLevel.kolay: 4,
+  AiLevel.kolay: 8,
   AiLevel.normal: 1,
   AiLevel.zor: 1,
 };
@@ -40,11 +41,12 @@ class AiSearch {
 }
 
 /// YZ seviyesi → arama genişliği (TS: AI_LEVEL_SEARCH — golden `ai_level.json`
-/// kilitler; ROADMAP #23 Faz 5). Normal/Kolay dar arama (tek çapa, havuz 2-7);
+/// kilitler; ROADMAP #23 Faz 5). Normal dar arama (tek çapa, havuz 2-7), Kolay
+/// aynı dar arama havuz 2-5 (20 Ekim 2026);
 /// Zor GENİŞ arama: kanca hücresinden paralel diziş + çok çapalı kelime,
 /// havuz 2-8. Ölçüm ve gerekçe TS sabitinin yorumunda.
 const Map<AiLevel, AiSearch> aiLevelSearch = {
-  AiLevel.kolay: AiSearch(wide: false, maxWordLen: 7),
+  AiLevel.kolay: AiSearch(wide: false, maxWordLen: 5),
   AiLevel.normal: AiSearch(wide: false, maxWordLen: 7),
   AiLevel.zor: AiSearch(wide: true, maxWordLen: 8),
 };

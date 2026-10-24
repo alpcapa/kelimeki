@@ -293,6 +293,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.
 
+**1.1.5'e binecek (20 Ekim, taslak PR, kesim 2 Kasım) — Kolay YZ kolaylaştı:** `AI_LEVEL_TOP_N.kolay` 4 → 8 + `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç motor kopyası (`src/` · `kelimeki_core` · Edge `_game/`) + golden'lar (`ai_level.json`, `reducer_ai2_kolay.json`). Saha: Kolay'da YZ %47 kazanıyordu (hedef ~%30); simülasyon Normal'e karşı %34 → %13. ⚠ Merge günü `play-ai-turn` yeniden deploy (`verify_jwt` değerini önce oku). Gerekçe: `docs/decisions/ai-levels.md` §9.
+
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
 web canlı, CI derlemesi hazır, ama Play'e giden hiçbir otomatik yol YOK

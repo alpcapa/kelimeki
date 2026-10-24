@@ -44,7 +44,7 @@ extension MessageKindJson on MessageKind {
 }
 
 /// YZ zorluk seviyesi (TS: AiLevel = 'kolay' | 'normal' | 'zor', ROADMAP #23).
-/// Normal = en yüksek puanlı hamle (N=1), Kolay = en iyi `aiLevelTopN` (4)
+/// Normal = en yüksek puanlı hamle (N=1), Kolay = en iyi `aiLevelTopN` (8)
 /// hamleden rastgele biri, Zor = Faz 5'in yeni motoru (o güne kadar Normal).
 enum AiLevel { kolay, normal, zor }
 
