@@ -233,6 +233,18 @@ e-posta görünümünü gerçek bir gelen kutusunda doğrula.
       `meanings.json` 6.3 MB, precache'e bilerek alınmıyor). Çevrimiçiyken
       gerçekten sözlükte olmayan bir kelimede hâlâ "bulunamadı" demeli.
       **Uygulamada (Flutter) bu mesaj HİÇ çıkmamalı** — orada sözlük pakette.
+- [ ] **Konmuş taşı BİR ÜST hücreye taşıyabilmeli (23 Ekim 2026).** Tahtanın
+      orta bir satırına bir harf koy; o harfi parmağınla tutup hayaleti bir
+      üstteki BOŞ hücrenin üstüne getirip bırak. Taş o hücreye GİTMELİ, rafa
+      dönmemeli. Aşağı / sola / sağa taşıma da eskisi gibi çalışmalı. Taşa kısa
+      dokunuş yine geri almalı (üst hücre boşsa 10-24 px kaydıran dokunuş artık
+      taşı yukarı taşıyabilir — bilinçli). Yerel ve Canlı oyunda dene.
+- [ ] **Son taslak taşı geri alınca bayat "onayla" mesajı KALMAZ (23 Ekim 2026).**
+      Bir harfi tahtaya koy (ör. geçersiz bir kelime olsun), sonra o harfi geri
+      al (taşa dokun ya da rafa sürükle). Mesaj satırında "Oyna tuşuyla
+      kelimeyi onayla." **kalmamalı** — Oyna'ya basınca "Harf yerleştirilmedi."
+      çıkıyordu, yani yazı yanlış yönlendiriyordu. Hem yerel/YZ hem Canlı oyunda
+      dene; iki taş koyup yalnızca birini almak mesajı DEĞİŞTİRMEMELİ.
 - [ ] **Gönderim hatası GÖRÜNÜR (14 Ağustos 2026).** Geçerli bir kelime
       kurup uçak modunda OYNA'ya bas: mesaj satırında bir ağ hatası
       görünmeli — "Oyna tuşuyla kelimeyi onayla." DEĞİL. Alttaki
