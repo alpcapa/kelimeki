@@ -287,9 +287,9 @@ adı Play'e yüklenene kadar `main`'e giren her mobil iş bu paketi de
 değiştirir (1.0.4/467 dersi, arşivde). Yüklemeden önce indirdiğin `.aab`nin
 derleme sha'sını `main`'in başıyla karşılaştır.
 
-**Yayındaki paket:** 1.1.2 (831) = commit `05f1c1f` (iki mağaza). Doğrulama:
-`git log --oneline 05f1c1f..origin/main -- mobile/app mobile/kelimeki_core`
-(2 Ekim'de BOŞ — 1.1.3 treninin işleri taslak PR'da, `main`'de değil).
+**Yayındaki paket:** 1.1.4 (933) = commit `bf550a3` (iki mağaza: Play 23 Eki 23:42 TSİ, App Store 24 Eki 08:03 TSİ). Doğrulama:
+`git log --oneline bf550a3..origin/main -- mobile/app mobile/kelimeki_core`
+(24 Ekim'de BOŞ — 1.1.5 treninin işleri (#884 #886 #889) taslak PR'da, `main`'de değil).
 
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.
 
