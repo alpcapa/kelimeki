@@ -535,3 +535,33 @@ Bana özel app push da olabilir."* Kararlar (kullanıcı seçti): kanal
   yorumları kısaltılmış kopyalar (davranış aynı; kullanılmayan
   `sanitizeForSubject`/`brevoErrorMessage` pakete girmedi). Bir sonraki
   deploy repodaki tam dosyalarla yapılabilir.
+
+## Günlük hata özeti okuması: 522'ler (26 Ekim 2026)
+
+Kullanıcı günlük özet e-postasını (*"2 kez · 2 cihaz"*) gösterip son
+dönemdeki hata loglarına bakılmasını istedi. Okuma sonucu, sonraki
+okuyucunun aynı soruyu baştan sormaması için burada.
+
+- **Son 7 gün `client_errors` = 5 kayıt** (14 günde günde 0-4 kayıt, en
+  fazla 2 cihaz; artış YOK). Dağılım: `online_games_repo.load`
+  `AuthRetryableFetchException` 522 × 2 (Android 1.1.4 · iOS 1.1.3, 25 Eki
+  21:48 / 22:31 TSİ) · `stats_repo.my_rank` `PostgrestException` 522 × 2
+  (Android 1.1.4 24 Eki; iOS 1.1.3 19 Eki) · web `[auth-null]
+  INITIAL_SESSION · depo=BOŞ` × 3 (20-21 Eki, üç ayrı cihaz — boş depoyla
+  gelen yeni ziyaretçinin normal davranışı, 21 Eki'den sonra yok).
+- **522 = Cloudflare "kaynak sunucuya bağlanamadım":** istek bize
+  ULAŞMADAN ağ katmanında koptu. Doğrulama: 25 Eki 18:00-20:00 UTC
+  (21:00-23:00 TSİ) penceresinde Supabase `edge_logs`'ta **tek bir 5xx
+  satırı yok** — yani sunucu tarafı kaydı boş, kanıt yalnız istemci
+  telemetrisinde. Dört kayıt farklı gün ve cihaz; örüntü yok → izole
+  ağ arızası, eyleme gerek yok.
+- **Kısmi açık nokta (ACİL DEĞİL):** `verify-live-games-load`'un sessiz
+  yeniden deneme kümesi yalnızca 504/503/502/408 (500 ve 429 bilerek
+  dışarıda). **522 o kümede yok** — `online_games_repo.load` bir 522'de
+  yeniden denenmeden telemetriye düşüyor. 4 kayıtla eklemeye değmez;
+  tekrar ederse küme 522'yi de kapsayabilir (ağ katmanı, 504 sınıfı).
+- **Sorgu ipucu:** `query_logs` bu projede ClickHouse; `logs` tablosu,
+  `source='edge_logs'`, durum kodu `log_attributes['status_code']`
+  (metin → `toUInt32OrZero`). Pencere en fazla 24 saat, aralık verilmezse
+  son 24 saat. İlk deneme `service` anahtarı (eski şema) ve `logs`
+  yerine `edge_logs` kullanılınca hata verdi.
