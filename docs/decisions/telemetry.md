@@ -565,3 +565,9 @@ okuyucunun aynı soruyu baştan sormaması için burada.
   (metin → `toUInt32OrZero`). Pencere en fazla 24 saat, aralık verilmezse
   son 24 saat. İlk deneme `service` anahtarı (eski şema) ve `logs`
   yerine `edge_logs` kullanılınca hata verdi.
+
+> **Düzeltme (28 Ekim 2026):** yukarıdaki "522 kümede yok" tespiti YANLIŞTI —
+> `522`/`524` `isTransientServerError` kümesinde zaten vardı (web + port).
+> Gerçek açık: `AuthRetryableFetchException` durumu `code`'da değil
+> `statusCode`'da taşıyor; port bunu 28 Ekim'de düzeltti (`mobile/docs/parca-log.md`
+> → Parça 248).

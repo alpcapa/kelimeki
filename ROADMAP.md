@@ -291,6 +291,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 `git log --oneline bf550a3..origin/main -- mobile/app mobile/kelimeki_core`
 (24 Ekim'de BOŞ — 1.1.5 treninin işleri (#884 #886 #889) taslak PR'da, `main`'de değil).
 
+**1.1.5'e binecek (28 Ekim, taslak PR, kesim 2 Kasım):** `AuthRetryableFetchException(522)` artık sessizce yeniden deneniyor — durum kodu `statusCode` alanından da okunuyor (Parça 248; 25-27 Eki'de 8 kayıt, sunucuda iz yok). Cihaz kontrolü gerekmez; `client_errors`ta `online_games_repo.load` 522 satırlarının azalması izlenir.
+
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
