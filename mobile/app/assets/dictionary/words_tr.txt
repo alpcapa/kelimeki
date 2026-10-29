@@ -3039,6 +3039,7 @@ arabeskleşme
 arabeskleşmek
 arabi
 arabist
+arabistan
 arabistanlı
 arabistik
 arabizasyon
@@ -8725,6 +8726,7 @@ bordür
 borik
 borikli
 borina
+borneo
 bornova
 bornoz
 borsa
@@ -9224,6 +9226,7 @@ briketçilik
 briketleme
 briketlemek
 brit
+britanya
 briyantin
 briyantinli
 briyantinsiz
@@ -11992,6 +11995,7 @@ cüzzamlı
 çeçe
 çeçen
 çeçence
+çeçenistan
 çeçenistanlı
 çedene
 çedik
@@ -12158,6 +12162,7 @@ cüzzamlı
 çekmen
 çekmenli
 çekoslovak
+çekoslovakya
 çekpas
 çektirebilme
 çektirebilmek
@@ -13777,6 +13782,7 @@ dağınık
 dağınıkça
 dağınıklık
 dağıntı
+dağıstan
 dağıstanlı
 dağıtabilme
 dağıtabilmek
@@ -21918,6 +21924,7 @@ gazölçer
 gazsız
 gazsızlık
 gazve
+gazze
 gdansk
 ge
 gebe
@@ -28453,6 +28460,7 @@ iskitler
 iskoç
 iskoçça
 iskoççe
+iskoçya
 iskonto
 iskontolu
 iskontosuz
@@ -29716,6 +29724,7 @@ kafiyeli
 kafiyelilik
 kafiyesiz
 kafiyesizlik
+kafkasya
 kafkasyalı
 kaftan
 kaftancı
@@ -30072,6 +30081,7 @@ kalibre
 kalifikasyon
 kalifiye
 kalifiyelik
+kaliforniya
 kaliforniyum
 kaligrafi
 kaliko
@@ -31527,6 +31537,7 @@ kataloglama
 kataloglamak
 kataloglatma
 kataloglatmak
+katalonya
 katalpa
 katamaran
 katana
@@ -39390,6 +39401,7 @@ mezkür
 mezmur
 mezoderm
 mezon
+mezopotamya
 mezosefal
 mezosfer
 mezoterm
@@ -42743,6 +42755,7 @@ okuyuvermek
 oküler
 okültizm
 okyanus
+okyanusya
 okyanusyalı
 okyanusyalılık
 ol
@@ -47611,6 +47624,7 @@ rulo
 rum
 rumba
 rumca
+rumeli
 rumelili
 rumelililik
 rumen
@@ -50651,6 +50665,7 @@ sibakusiyak
 siber
 sibernasyon
 sibernetik
+sibirya
 sibop
 siborgiyum
 sicil
@@ -52206,6 +52221,7 @@ suluova
 sulusaray
 suma
 sumak
+sumatra
 sumaymuncuğu
 sumaymunu
 sumbas
@@ -55141,6 +55157,7 @@ tatar
 tatarca
 tatarcık
 tatarı
+tataristan
 tataristanlı
 tatava
 tatavacı
@@ -56767,6 +56784,7 @@ tıynetli
 tıynetsiz
 tıynetsizlik
 ti
+tibet
 tibetçe
 tibetli
 ticani
@@ -57398,6 +57416,7 @@ töz
 tözcülük
 tözel
 trablus
+trablusgarp
 trabzon
 trabzonlu
 trabzonluluk
@@ -57443,6 +57462,7 @@ transformatör
 transformist
 transformizm
 transfüzyon
+transilvanya
 transistör
 transit
 transkribe
@@ -58036,6 +58056,7 @@ türkçe
 türkçeci
 türkçecilik
 türkçülük
+türkistan
 türkiyat
 türkiye
 türkkıyması
@@ -62777,6 +62798,7 @@ yufkacı
 yufkacılık
 yufkalık
 yugoslav
+yugoslavya
 yugoslavyalı
 yuh
 yuha

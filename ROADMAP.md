@@ -293,6 +293,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.
 
+**1.1.5'e binen (29 Ekim) — sözlük:** 22 yer adı eklendi (kafkasya, rumeli, okyanusya, arabistan, türkistan, trablusgarp, yugoslavya, mezopotamya, sibirya, tibet vb.; kök: `kafkasyalı` sözlükte vardı, `kafkasya` yoktu). `proper-nouns.mjs` → `augment-dictionary`; migration `20261029164819_add_words` CANLIDA (sunucu anında geçerli, web deploy'a, app paketine bağlı). `words_tr.txt`/`meanings.db` yenilendi (63.933 kelime). Taslak PR, 2 Kasım treni. Adaylar TDK'den doğrulanmadı (GTS kaynağı/erişim yok); kişi adları bilerek eklenmedi; Trakya/Fırat/Tuna/Bizans gibi ikinci grup kullanıcı kontrolünde bekliyor.
+
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
 web canlı, CI derlemesi hazır, ama Play'e giden hiçbir otomatik yol YOK

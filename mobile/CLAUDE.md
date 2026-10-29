@@ -492,7 +492,7 @@ diye atıf yapıyor; atıf 31 Ağustos 2026'ya kadar KIRIKTI.
    web JSON'u fetch edip TAMAMINI RAM'de tutuyor; mobilde bu 6.5 MB'lık bir
    parse gecikmesi + onlarca MB kalıcı bellek demekti. Asset build-time'da
    tek tablolu bir SQLite'a çevriliyor (`npm run generate-meanings-db` →
-   `mobile/app/assets/dictionary/meanings.db`, 63.911 kelime, **5.26 MB ham
+   `mobile/app/assets/dictionary/meanings.db`, 63.933 kelime, **5.26 MB ham
    / ~2.0 MB gzip** — ölçüldü), uygulama sorgu anında TEK SATIR okuyor:
    açılış maliyeti sıfır, bellek maliyeti sıfıra yakın. Auth fazı gelince
    web'in iki yollu sırası kurulabilir (önce Supabase `word_meaning` RPC,
