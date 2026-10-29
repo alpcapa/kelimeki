@@ -574,4 +574,5 @@ export const PROPER_NOUNS = {
   "babil": "Mezopotamya'da kurulmuş eski bir devlet.",
   "asur": "Mezopotamya'da kurulmuş eski bir devlet.",
   "kartaca": "Kuzey Afrika'da kurulmuş eski bir devlet.",
+  "aral": "Kazakistan ile Özbekistan arasında bir göl.",
 };

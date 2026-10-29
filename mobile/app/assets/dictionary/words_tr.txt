@@ -3078,6 +3078,7 @@ araklayabilmek
 araklayıverme
 araklayıvermek
 araklı
+aral
 aralama
 aralamak
 aralanış
