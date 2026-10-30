@@ -16,6 +16,7 @@ ve `git branch -r` ile PR'sız dalları kontrol et.
 | birkaç gün sonra | Admin → Ziyaretçi Yolculuğu "Hemen çıkan" sütunu | eski 32 sn yığılmasıyla karışık; birkaç gün sonra bak |
 | **Pzt 2 Kas** | **1.1.5 treni (kesim günü)** — taslak PR'lar #889, #886, #884, #896, #898 (30 Eki: hepsi `main` ile senkron, CI yeşil) | Hepsini merge et. ⚠ Merge ÖNCESİ mobil derleme uyarısını ver (`mobile-latest` ezilir, TestFlight'a yeni build gider; `surumler.md` sürüm senkronu). **#886 sonrası:** `list_edge_functions` ile `play-ai-turn`ün `verify_jwt` değerini oku, AYNI değerle deploy et. **#896 deploy olunca:** web sözlüğünü `curl` ile doğrula. Açık dal: `claude/meta-stage-3-mobile-prs-ug0fbd` (#896) |
 | **3 Kas** | Meta Kare3 son okuması, `h` serisiyle yan yana | 30 Eki bulgusu: hemen çıkış Kare3'te %62-65, `h` serisinde %16-25. ⚠ Mobil Ads Manager'da düzenlenip kaydedilen reklam Messenger'a dönüyor: çalışan `Kare3d - Copy` reklamına DOKUNMA, Advantage+ ve Reels önerilerini UYGULAMA |
+| Tarihsiz (kullanıcı: *"daha sonra bakarım"*, 30 Eki) | #46-1 açık iki doğrulama: **Parça 218** `land` kanalı etiketi (Play'den kurulumla `?ref=test-referrer`) · **Play Data safety** formu ↔ ürün karşılaştırması | Adımlar `mobile/docs/testing-olcum.md` §33 ve `console-formlari.md` §3.8. Sonucu kullanıcı bildirince kütüğe işle; bitince bu satırı sil |
 
 **Bu dosya bir FİKİR LİSTESİ DEĞİL, sıralı bir yürütme planı.** Kök
 `CLAUDE.md`'deki "Sonraya Bırakılan Ürün Fikirleri" bölümü *ne* yapılacağını
