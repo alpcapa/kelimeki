@@ -278,6 +278,33 @@ void main() {
   //
   // Artık iki AYRI karar var: hayalet 10 px'te belirir, bırakma ise jest
   // gerçekten bir yere gittiyse "bırakma" sayılır.
+  // 23 Ekim 2026, kullanıcı: *"taşı alta/başka kareye taşıyabiliyorum ama bir
+  // üstündeki kareye olmuyor, taş rafa dönüyor."* Bırakma noktası 30 px
+  // KALDIRILDIĞINDAN bir üst hücreye taşıma jesti parmağın ~0-16 px oynaması
+  // demekti ve `kTapSlopOnRelease` (24) altında kalıp taşı rafa döndürüyordu.
+  // Hayalet boş bir hücreyi gösteriyorsa jest TAŞIMA'dır.
+  testWidgets('konmuş taşı BİR ÜST hücreye taşımak taşı rafa DÖNDÜRMEZ',
+      (tester) async {
+    await setPhoneViewSize(tester, const Size(420, 900));
+    final controller = await pumpGame(tester, GlobalKey());
+    controller.dispatch(PlaceTileAction(r: 3, c: 3, rackIndex: 0));
+    await tester.pump();
+    final harf = controller.state.placed['3,3']?.letter;
+    expect(harf, isNotNull);
+
+    final g = await tester.startGesture(tester.getCenter(boardCell(3, 3)));
+    await tester.pump(const Duration(milliseconds: 20));
+    // Hayalet (parmağın 30 px üstünde) bir üst hücrenin üstüne düşer.
+    await g.moveBy(const Offset(0, 14));
+    await tester.pump(const Duration(milliseconds: 20));
+    await g.up();
+    await tester.pumpAndSettle();
+
+    expect(controller.state.placed['2,3']?.letter, harf,
+        reason: 'bir üst hücreye taşıma dokunuş sayılıp taş rafa döndü');
+    expect(controller.state.placed.containsKey('3,3'), isFalse);
+  });
+
   for (final kayma in const [6.0, 12.0, 20.0]) {
     testWidgets(
         'titreşimli dokunuş (${kayma.toInt()} px) taslak taşı GERİ ALIR',
