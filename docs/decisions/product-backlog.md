@@ -545,3 +545,10 @@ son tarifi ikili) — ölçüm (aşağıda) kademeli puanın seviyeleri çok yak
   kelime hamleleri; "cevap NÜ idi" hayal kırıklığı riski → filtre adayı: tek kelimelik/anlamı bilinen cevap.
 - Süre (Node): medyan 111 ms, p90 160, en çok 384 → üretim çevrimdışı banka için sorun değil; istemcide canlı
   çözüm gerekmez (mobil ölçülmedi).
+
+**KARAR (30 Ekim 2026, kullanıcı: *"Sadece en iyi olsun. Gerekirse süresi 3 dk gibi kısaltabiliriz"*):** 3/2/1
+kademeli puan YOK — bulmaca ikili: net puanı anahtarın en iyi seviyesine ulaşan her hamle doğru ("Tebrikler"),
+aksi hâlde süre bitince "Üzgünüz". Eşit net puanlı tüm hamleler doğru sayılır; anahtardan YÜKSEK bir hamle
+(çözücü ≤8 harf) de doğru. Süre bir SABİT olmalı (başlangıç 5 dk, saha denemesinde 3 dk'ya inebilir).
+Etki: ölçümdeki "1.→2. açıklık" artık adalet ölçüsü değil zorluk ölçüsü; asıl kalite filtresi "en iyi
+seviyeye ulaşan hamle sayısı" ve cevabın tanınır bir kelime olması.
