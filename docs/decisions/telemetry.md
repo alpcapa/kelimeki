@@ -580,3 +580,11 @@ yeniden denenmiyor (`verify-live-games-load` kümesi 504/503/502/408).
 **Karar bekliyor** (kullanıcı onayı): yeniden deneme kümesine 522 eklensin mi
 (web `offlineNotice.ts` zaten 522'yi geçici sayıyor; port `online_games_api.dart`
 ve `verify-live-games-load` ile birlikte, port ikizi AYNI PR'da).
+
+> **Düzeltme (28 Ekim 2026):** yukarıdaki "522 kümede yok" tespiti YANLIŞTI —
+> `522`/`524` `isTransientServerError` kümesinde zaten vardı (web + port).
+> Gerçek açık: `AuthRetryableFetchException` durumu `code`'da değil
+> `statusCode`'da taşıyor; port bunu 28 Ekim'de düzeltti (`mobile/docs/parca-log.md`
+> → Parça 248).
+> Yukarıdaki "Karar bekliyor" maddesi bu düzeltmeyle KAPANDI: küme zaten 522'yi
+> içeriyordu, eksik olan `statusCode` okumasıydı (kümeye ekleme gerekmedi).
