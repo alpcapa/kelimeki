@@ -494,3 +494,32 @@ gerekenler: seyirci rakip rafını ASLA görmez (sunucu yalnızca
 aboneliği maliyeti), katılımcıların görünürlük rızası (Koşullar/Gizlilik),
 arkadaş olmayanlara sohbet görünmez.
 
+
+## "En iyi hamleyi bul" bulmaca modu — FİKİR + ANALİZ, KARAR YOK (30 Ekim 2026)
+
+Kullanıcı fikri: satrançtaki bulmacalar gibi rastgele pozisyonlar, süreli (örn. 5 dk),
+puanlı: en yüksek puanlı hamle 3, ikinci 2, üçüncü 1. İsim ve UI konumu açık.
+
+**Bulgular (koddan okundu, ölçülmedi):**
+- Çekirdek hazır: `findAIMoves(..., n, search)` zaten sıralı en iyi N hamleyi veriyor (= cevap anahtarı);
+  oyuncunun hamlesi mevcut validator + `wordPoints` ile puanlanır. **Motora dokunulmaz** → golden vector,
+  Edge/SQL kopyaları etkilenmez (anahtar çevrimdışı üretilir).
+- Anahtar ≠ gerçek en iyi: `ai.ts` havuzu 2-7 harf, Normal tek çapa, Zor geniş. Oyuncu anahtarda olmayan
+  daha yüksek hamle bulabilir → puan SIRAYLA değil EŞİKLE (net puan ≥ en iyi → 3, ≥ ikinci seviye → 2 …;
+  eşit puanlar tek seviye). Anahtar Zor (wide) ile üretilmeli.
+- Vergi: `findAIMoves` vergisiz hamle varsa listeyi YALNIZCA onlardan kurar; vergili ama net puanı yüksek
+  hamle anahtarda görünmez. Seçenekler: pozisyon seçerken ayrıca doğrula · bu modda vergili hamle geçersiz.
+- Hile: sözlük istemcide, çözücü konsolda koşar. Liderlik tablosu yoksa önemsiz; varsa sunucu doğrulaması
+  (`_km_*` SQL motoru hamle puanlıyor) + sunucu damgalı süre.
+- Pozisyon: YZ↔YZ oyunundan (`simulate-ai-levels` altyapısı, `setRandomSource` ile tohumlu) rastgele tur
+  kesiti; önceden üretilmiş BANKA (istemci çözücü çalıştırmaz). Kalite filtresi: en iyi ile 3. arasında açıklık,
+  en iyi kelime sözlükte anlamlı.
+- UI: ana görünüm iki parçalı (`'local'|'live'`, rozet zinciri + `decideInitialMainView`); üçüncü sekme tüm
+  zincire dokunur. `TutorialGame` (kendi reducer'ı, "oyun DEĞİLDİR" yalıtımı) hazır şablon.
+- İsim: "bulmaca" Türkçede çapraz bulmaca → karışır. "Hamle" projenin kendi terimi. Adaylar: Hamle Avı ·
+  En İyi Hamle · Günün Hamlesi (günlük formatsa) · Hamle Bul.
+
+**Açık kararlar:** 5 dk toplam mı bulmaca başına mı (öneri: 5 bulmaca / 5 dk ortak havuz, azami 15) ·
+v1'de liderlik tablosu (öneri: yok, kişisel rekor) · vergi · günlük mü sınırsız mı · isim · ürün sırası
+(13 Ekim ilkesi: Takım Ligi parkta, arka arkaya yeni mod kafa karıştırır) · k-lig puanına KARIŞMAZ (formül 5 kopya).
+**İlk adım önerisi:** 50 pozisyonluk üretici betik → 1.-3. açıklığı ve Zor aramanın süresini ölç.
