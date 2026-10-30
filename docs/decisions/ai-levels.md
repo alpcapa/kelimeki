@@ -15,7 +15,7 @@ Faz 5 (7 Eylül 2026, PR #475). Kullanıcı kararları tırnak içinde.
 
 | Seviye | Motor | Hedef (YZ'nin insana karşı kazanma oranı) | k-lig: birinci | 4 kişilikte ikinci |
 |---|---|---|---|---|
-| **Kolay** | bugünkü arama, **en iyi 4 hamleden rastgele biri** | ~%30 | +1 | 0 |
+| **Kolay** | dar arama, havuz 2-5 harf, **en iyi 8 hamleden rastgele biri** (20 Eki 2026'ya kadar 4 / 2-7) | ~%30 | +1 | 0 |
 | **Normal** | bugünkü arama, en iyi hamle — DEĞİŞMEZ, sıfır çizgisi | ~%51 (sahada ölçülmüş) | +2 | +1 |
 | **Zor** | **geniş arama** (§3), en iyi hamle | ~%70 | +4 | +2 |
 
@@ -145,7 +145,7 @@ bakış ve (torba boşken çıkarsanabilir raflarla çalışan) oyun sonu çöz�
 silindi; motorda rakip rafını okuyan HİÇBİR yol yok. Aynı mesajdaki öneri
 (*"7 harfli kelime üretme sınırını açmak"*) geniş aramayı doğurdu.
 
-## 4. Kolay = en iyi 4'ten rastgele (Faz 0)
+## 4. Kolay = en iyi 4'ten rastgele (Faz 0) — 20 Ekim 2026'da 8 + 5 harfe çevrildi (§9)
 
 Faz 0 ölçümü (6 Eylül 2026; 200 oyun/N, tohum 1-200, koltuk değişimli;
 tablo `product-backlog.md` → "YZ zorluk seviyesi"):
