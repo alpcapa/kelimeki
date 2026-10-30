@@ -127,8 +127,8 @@ Kontroller admin panelinden (Büyüme > Kullanıcı) ya da Supabase'den okunur.
       edilmiş `.apk` ya da iç test dışı yollar `app` yazar (beklenen).
       Mağazadaki paket yeni sürüme geçmeden bu madde koşulamaz — sürüm
       yayına girince ilk iş. Rozetsiz, doğrudan Play'den kurulum → `app`.
-- [ ] **Android, reklam etiketli kurulum → oyun/kayıt satırları da etiketli
-      (#46-1, 1.1.4).** Yukarıdaki `?ref=test-referrer` kurulumunu yap, açılışta
+- [x] **Android, reklam etiketli kurulum → oyun/kayıt satırları da etiketli
+      (#46-1, 1.1.4).** ✅ 30 Eki 2026, kullanıcı: *"play referrer da ok"*. Yukarıdaki `?ref=test-referrer` kurulumunu yap, açılışta
       tanıtımı ATLAMADAN bir oyun başlat → `game_starts.utm_source =
       'test-referrer'` (aynısı `game_finishes`, `guest_visits`, kayıtta
       `profiles.signup_utm_source`). Tanıtımı HEMEN atlayıp oyun başlatırsan
