@@ -135,12 +135,13 @@ kadar mobil işler taslak PR. 2 Ekim'de kapanıp arşive taşınanlar: #25, #34,
 | | #22 | `feedback` hız sınırı XFF ile atlanabilir | Açık, ölçülmedi |
 | **Ertelendi (kullanıcı kararı)** | #32 | E-posta onayı bir kullanıcı kaybı kapısı | "Daha sonra bakalım" (20 Eyl) |
 | | #39 | Takma isim değişince geçmiş oyunlarda eski isim | "Sonra bakılacak" (23 Eyl) |
+| | #48 | **Hamle Avı** — süreli "en iyi hamleyi bul" bulmaca modu | **PARKTA (30 Eki 2026, kullanıcı: *"Takım ligi gibi backlog'da yazalım, zamanı gelince yapacağız"*).** Tasarım kararları + fizibilite ölçümü (`npm run measure-hamle-avi`): `docs/decisions/product-backlog.md` → "En iyi hamleyi bul". Kod YOK; ölçüm betiği dışında hiçbir şey yazılmadı |
 | | #17 | Google ile giriş/kayıt | Sunucu → web → mobil; migration BLOKER |
 | **İsteğe bağlı** | #5 | k-lig puan grafiği | — |
 | | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
 
 **Madde numarası kuralı (26 Eylül 2026):** yeni madde **bir sonraki boş
-numarayı** alır — şu an **#48**. Numara hiçbir zaman yeniden kullanılmaz,
+numarayı** alır — şu an **#49**. Numara hiçbir zaman yeniden kullanılmaz,
 kapanmış (arşivdeki) maddelerinki de. 26 Eylül'de iki AKTİF çakışma
 bulundu ve sonradan gelen maddeye yeni numara verildi: tahta yükseklik
 bütçesi **#26 → #38** (mağaza yönlendirmesi #26 olarak kaldı; kodda ve

@@ -495,7 +495,9 @@ aboneliği maliyeti), katılımcıların görünürlük rızası (Koşullar/Gizl
 arkadaş olmayanlara sohbet görünmez.
 
 
-## "En iyi hamleyi bul" bulmaca modu — FİKİR + ANALİZ, KARAR YOK (30 Ekim 2026)
+## "En iyi hamleyi bul" bulmaca modu = HAMLE AVI (ROADMAP #48) — PARKTA (30 Ekim 2026)
+
+**Durum: PARKTA, kod yok** (kullanıcı: *"Takım ligi gibi backlog'da yazalım. Zamanı gelince yapacağız."*). Aşağıdaki karar ve ölçümler hazır; başlarken yeniden analiz gerekmez. Başlangıç sırası: pozisyon üretici + banka → oyun ekranı (`TutorialGame` kalıbı) → Tebrikler/Üzgünüz pencereleri → tanıtım modalı → port ikizi (ayrı PR, tren).
 
 Kullanıcı fikri: satrançtaki bulmacalar gibi rastgele pozisyonlar, süreli (örn. 5 dk),
 puanlı: en yüksek puanlı hamle 3, ikinci 2, üçüncü 1. İsim ve UI konumu açık.
