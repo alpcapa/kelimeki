@@ -566,8 +566,25 @@ okuyucunun aynı soruyu baştan sormaması için burada.
   son 24 saat. İlk deneme `service` anahtarı (eski şema) ve `logs`
   yerine `edge_logs` kullanılınca hata verdi.
 
+### 28 Ekim 2026 güncellemesi — aynı 522 ailesi, 3 günde 8 kayıt
+
+Günlük özet (*"5 kayıt · 3 cihaz"*): `stats_repo.my_rank` 522 × 3 (Android+iOS)
+ve `online_games_repo.load` 522 × 2 (Android). `client_errors`te 25-27 Eki
+arası toplam **8** 522 kaydı (25 Eki 2 · 26 Eki 1 · 27 Eki 5: 08:03-12:20 UTC
+arası dört dalga). Aynı 24 saatlik pencerede Supabase `edge_logs`'ta **tek
+bir 5xx satırı yok** → önceki okumayla aynı sonuç: istek bize ulaşmadan
+ağ katmanında (Cloudflare) kopuyor, sunucu tarafında iz yok. Artış YOK ama
+**tekrar ediyor** (3 gün üst üste). 26 Eki'deki "tekrar ederse kümeye 522'yi
+ekle" şartı artık sağlanıyor: `online_games_repo.load` hâlâ 522'de sessizce
+yeniden denenmiyor (`verify-live-games-load` kümesi 504/503/502/408).
+**Karar bekliyor** (kullanıcı onayı): yeniden deneme kümesine 522 eklensin mi
+(web `offlineNotice.ts` zaten 522'yi geçici sayıyor; port `online_games_api.dart`
+ve `verify-live-games-load` ile birlikte, port ikizi AYNI PR'da).
+
 > **Düzeltme (28 Ekim 2026):** yukarıdaki "522 kümede yok" tespiti YANLIŞTI —
 > `522`/`524` `isTransientServerError` kümesinde zaten vardı (web + port).
 > Gerçek açık: `AuthRetryableFetchException` durumu `code`'da değil
 > `statusCode`'da taşıyor; port bunu 28 Ekim'de düzeltti (`mobile/docs/parca-log.md`
 > → Parça 248).
+> Yukarıdaki "Karar bekliyor" maddesi bu düzeltmeyle KAPANDI: küme zaten 522'yi
+> içeriyordu, eksik olan `statusCode` okumasıydı (kümeye ekleme gerekmedi).
