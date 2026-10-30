@@ -1186,3 +1186,25 @@ son hâli) eklendi. Testler: `friends_test` · `chat_test` · `live_games_test`
 `friend_moderation_sheet.dart` (`blocked` bayrağı, `unblock_user`); sohbet
 ayarları metni; yukarıdaki dört parite-kilitli metin; `blockUser`/`unblockUser`/
 `fetchBlockedUsers` (`games_api.dart` ya da `friends_api.dart`).
+
+## `submit_move` teslim olmuş oyuncuyu ATLAMIYORDU — 4 kişilik oyun kilitlendi (22 Ekim 2026)
+
+Saha raporu: 4 kişilik Canlı oyunda bir oyuncu süre aşımıyla teslim oldu, sıra ona geri geldi ve oyun
+takıldı. Kök neden: `submit_move` sırayı `(v_current + 1) % v_player_count` ile ilerletiyordu
+(teslim bayrağına bakmadan); yalnızca `check_turn_timeout`un kendi dalı bir sonraki AKTİF oyuncuyu
+seçiyordu. Teslim → üç oyuncu normal oynadı → sonuncunun hamlesi sırayı teslim olmuşa verdi. Kilit
+kapanmıyordu: insan oynayamaz (`Sıra sende değil`), `check_turn_timeout` da sıradaki teslim olmuşsa
+erken döner (`surrendered`), yani süre dolsa da kimse sırayı ilerletmez. Web (`nextActiveIndex`) ve
+`check_turn_timeout` doğruydu; yalnızca bu SQL satırı kopuktu (4 kişilik + teslim kombinasyonu nadir).
+
+- **Düzeltme:** `20261022185758_submit_move_skip_surrendered.sql` — `check_turn_timeout` ile aynı
+  atlama döngüsü. Migration canlı gövdeyi okuyup tek satırı değiştirir (eşleşme yoksa HATA).
+  `proacl` değişmedi (postgres/service_role/authenticated).
+- **Canlı veri onarımı:** takılı tek oyun (`4d4c07cc…`) `current` 1→2 yapıldı, süre 48 saat yenilendi.
+  Takılı oyun taraması: `online_game_states` içinde `not is_game_over and players->(current)->>'surrendered'='true'`.
+- **Pas sayacı (aynı gün düzeltildi):** `20261022190035_submit_move_pass_rounds_active_players.sql` —
+  "üst üste pas ile bitiş" eşiği artık `teslim olmamış oyuncu sayısı * MAX_PASS_ROUNDS` (web:
+  `activePlayerCount(players) * MAX_PASS_ROUNDS`). Öncesinde sunucu TÜM koltukları sayıyordu: 4 kişilik,
+  1 teslimli oyunda web 6 pasta, sunucu 8 pasta bitiriyordu. Aynı yöntem (canlı gövdede tek ifade).
+- **Sahada doğrulandı (22 Ekim 2026):** bildiren kullanıcı onarılan oyunun düzeldiğini onayladı (PR #888 merge edildi,
+  `8a3dd2a`). Teslimli oyunda pas eşiğinin uçtan uca denemesi hâlâ YOK — yalnızca canlı gövde okunarak doğrulandı.

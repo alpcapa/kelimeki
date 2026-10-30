@@ -276,6 +276,35 @@ değişmiyor, yeni hamle sınıfı yazılmıyor. **Kolay** için karar ERTELEND�
 (simülasyonda %33 → %22). Normal hedefte (%48), kişiler arası yayılım
 (%19–%91) oyuncu farkı. **Bir sonraki okumada da kişi içi farkı kullan.**
 
+**İkinci okuma — Kolay (20 Ekim 2026, kullanıcı: *"kolay ile normal arasında çok fark yok"*).**
+Saha (`games`, 2 kişilik yerel, teslim yok, 7 Eylül'den beri — paneldeki
+Normal satırı kolondan önceki `null` oyunları da sayıyor, burada dışarıda):
+Kolay **89 oyun / 23 kişi → YZ %47** · Normal 418 / 38 → %54 · Zor 952 / 12
+→ %61. Kolay, 2 Ekim'in %40 eşiğini aştı. Kişi içi (her iki seviyede ≥3
+oyun): Kolay→Normal **+7** (%18→%25, 11/24 oyun) ve **+22** (%40→%62,
+10/136 oyun); en çok Kolay oynayan kişi (24 oyun, YALNIZCA Kolay) %63
+kaybediyor — Kolay'ın asıl hedef kitlesi.
+
+Simülasyon (Normal'e karşı kazanma, 200'er oyun, tohum 1, `--harf` bu turda
+eklendi: top-N koltuğunun dar aramasına kelime uzunluğu tavanı):
+
+| En iyi N ↓ / tavan → | 7 harf | 5 harf | 4 harf |
+|---|---|---|---|
+| **4 (bugün)** | **%34** (GA 28–41) | %18 (13–23) | %6 (3–10) |
+| 5 | %22 (16–28) | %20 (15–26) | %10 (7–15) |
+| 8 | %19 (14–25) | %13 (9–18) | %3 (1–6) |
+
+Okuma: N ekseni 5'ten sonra doyuyor (Faz 0 ile aynı); **kelime tavanı daha
+güçlü kadran**. Sahaya çeviri kaba: Zor'da simülasyonun +19'u sahada ~+13'e
+iniyordu (≈0,7 sıkışma). Bu oranla bugünkü Kolay'dan (sim %34, saha YZ %47)
+hedefe (~%30) inmek simülasyonda ≈24 puanlık düşüş ister → sim ~%10 civarı:
+**Top8/5 harf** (tahmini saha ~%32) · Top5/4 harf (~%30) · Top4/4 harf
+(~%27). ⚠ 0,7 Zor'dan ödünç bir varsayım; ölçüm değil.
+**KARAR (20 Ekim 2026, kullanıcı: *"Önerin ok"*): Top8 + 5 harf** —
+`AI_LEVEL_TOP_N.kolay` 4 → 8, `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç
+kopyada. 2 Kasım treninde (taslak PR #886); `play-ai-turn` merge gününde deploy.
+**Sonraki okuma:** yayından ~3 hafta sonra, kişi içi farkla; hedef YZ ~%30.
+
 **Plan (ROADMAP #23 Faz 5, açık):** `admin_ai_balance` seviye kırılımı iki
 hafta; hedef Kolay ~%30 · Normal ~%51 · Zor ~%70 YZ kazanma. Sapma varsa
 **kadran ayarlanır, motor yeniden yazılmaz:**
