@@ -20,6 +20,8 @@ ve `git branch -r` ile PR'sız dalları kontrol et.
 | 21 Eki 14:22 | Meta Teaser Aşama 2 BİTİŞ | kapanış okuması |
 | birkaç gün sonra | Admin → Ziyaretçi Yolculuğu "Hemen çıkan" sütunu | eski 32 sn yığılmasıyla karışık; birkaç gün sonra bak |
 | **22 Eki** (ön okuma 17-18 Eki) | **Rastgele Oyun hatırlatma e-postasının SONUCU** — 15 Eki'de 25 üyeye gitti; kim tıkladı, geldi, oyun açtı/bitirdi | `random-opponent.md` §21 → "TAKİP ÖLÇÜMÜ": kohort önekleri + ölçüm listesi orada; Brevo açılma/tıklama sayısı kullanıcıdan |
+| **Pzt 2 Kas** | **1.1.5 treni (kesim günü)** — taslak PR'lar #889, #886, #884, #896, #898 (30 Eki: hepsi `main` ile senkron, CI yeşil) | Hepsini merge et. ⚠ Merge ÖNCESİ mobil derleme uyarısını ver (`mobile-latest` ezilir, TestFlight'a yeni build gider; `surumler.md` sürüm senkronu). **#886 sonrası:** `list_edge_functions` ile `play-ai-turn`ün `verify_jwt` değerini oku, AYNI değerle deploy et. **#896 deploy olunca:** web sözlüğünü `curl` ile doğrula. Açık dal: `claude/meta-stage-3-mobile-prs-ug0fbd` (#896) |
+| **3 Kas** | Meta Kare3 son okuması, `h` serisiyle yan yana | 30 Eki bulgusu: hemen çıkış Kare3'te %62-65, `h` serisinde %16-25. ⚠ Mobil Ads Manager'da düzenlenip kaydedilen reklam Messenger'a dönüyor: çalışan `Kare3d - Copy` reklamına DOKUNMA, Advantage+ ve Reels önerilerini UYGULAMA |
 
 **Bu dosya bir FİKİR LİSTESİ DEĞİL, sıralı bir yürütme planı.** Kök
 `CLAUDE.md`'deki "Sonraya Bırakılan Ürün Fikirleri" bölümü *ne* yapılacağını
@@ -773,6 +775,10 @@ lazım."*
    Zaman çizgisi: 01:02 `tutorial start` (`src=auto`, sıfırdan kurulum) ·
    01:05 misafir oyun · 01:24 ve 01:27 iki kayıt · 02:19 yine misafir oyun.
    **Kişi uygulamayı bırakmadı, HESABI bırakamadı.**
+
+**30 Ekim 2026 — repo dışı müdahale (Supabase SQL Editor, elle):** bir üyenin
+iki onaysız kaydı (`smart95`, `smart95.`) silindi; onaylı `Samrt95` hesabı yerinde.
+Elle silme geçici bir çare; yapısal çözüm bu maddenin açık kısmı.
 
 ### Ölçüm — ve ölçümün kör noktası
 
