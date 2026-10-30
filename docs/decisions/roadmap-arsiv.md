@@ -1958,4 +1958,6 @@ ROADMAP'te bırakılmıştı çünkü üç işin cihaz doğrulaması ⬜'dü; ku
 gün *"1.0.5 turu testi tamam. Herşey düzgün çalışıyor."* deyince tur kapandı
 ve kural gereği aynı gün taşındı.
 
+**Apple Ads kredi/bitiş takibi KAPANDI** (30 Ekim 2026, kullanıcı: *"Konuyu kapatabilirsin. O tarihte duracak. Bir kaç dolar az/çok önemli değil."*): iki ad grubuna da bitiş tarihi 16 Kas 2026 00:00 girilmişti (27 Eki); ROADMAP'teki "~12 Kas: kredi bitince DURDUR" satırı ve apple-ads.md'deki "~10 Kas'ta bakiyeyi oku, ≤$5 ise elle durdur" adımı İPTAL — bakiye okunmayacak, elle durdurma yok. Kredi 16 Kas'tan önce biterse kartan birkaç dolar çıkması KABUL EDİLDİ. Kayıt: `marketing/app-store/apple-ads.md`.
+
 ---
