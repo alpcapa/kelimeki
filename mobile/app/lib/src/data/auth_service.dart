@@ -742,6 +742,9 @@ String? friendlyAuthMessage(Object? err) {
         byCode['over_request_rate_limit']!,
     RegExp('unable to validate email address|invalid format',
         caseSensitive: false): 'Geçerli bir e-posta adresi gir.',
+    // Web ile aynı: GoTrue `handle_new_user` trigger hatasını bu metne çevirir.
+    RegExp('database error saving new user', caseSensitive: false):
+        'Yeni kullanıcı kayıt hatası oluştu.',
   };
   for (final entry in byMessage.entries) {
     if (entry.key.hasMatch(msg)) return entry.value;
