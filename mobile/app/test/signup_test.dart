@@ -167,7 +167,8 @@ void main() {
 
   // Ad/soyad 2 Ekim 2026'dan beri İSTEĞE BAĞLI: aşağıdaki akış onları HİÇ
   // doldurmadan signUp'a kadar ulaşır — "boş ad engellemez"in kanıtı.
-  testWidgets('doğrulama sırası web ile aynı (Takma isim → ... → koşullar), ad/soyad boş',
+  testWidgets(
+      'doğrulama sırası web ile aynı (Takma isim → ... → koşullar), ad/soyad boş',
       (tester) async {
     await pumpSignup(tester, checker: (_) async => NicknameStatus.ok);
 
@@ -204,6 +205,59 @@ void main() {
     // signUp'a KADAR geldiğinin kanıtı.
     await tester.enterText(fieldByLabel('DOĞUM TARİHİ').first, '01/01/1990');
     await submitExpect('Supabase yapılandırılmadı.');
+  });
+
+  // 31 Ekim 2026: yazarken yapılan kontrol bayatlayabilir ya da hiç
+  // tamamlanamamış olabilir; çakışma ancak Auth'un 500'ünde
+  // ("Database error saving new user") görünüyordu. Gönderimde TAZE kontrol.
+  Future<void> fillValidSignup(WidgetTester tester) async {
+    await tester.enterText(fieldByLabel('TAKMA İSİM').first, 'alp42');
+    await tester.pump(const Duration(milliseconds: 450));
+    await tester.pump();
+    await tester.enterText(fieldByLabel('E-POSTA').first, 'a@b.co');
+    await tester.enterText(fieldByLabel('ŞİFRE').first, 'sifre123');
+    await tester.tap(find.byType(Checkbox).first);
+    await tester.pump();
+    await tester.enterText(fieldByLabel('DOĞUM TARİHİ').first, '01/01/1990');
+  }
+
+  Future<void> submitSignup(WidgetTester tester) async {
+    await tester.ensureVisible(find.text('KAYIT OL'));
+    await tester.tap(find.text('KAYIT OL'));
+    await tester.pump();
+    await tester.pump();
+  }
+
+  testWidgets(
+      'gönderimde taze kontrol: isim arada alındıysa "zaten kullanılıyor"',
+      (tester) async {
+    var calls = 0;
+    await pumpSignup(tester, checker: (_) async {
+      calls++;
+      return calls == 1 ? NicknameStatus.ok : NicknameStatus.taken;
+    });
+    await fillValidSignup(tester);
+    await submitSignup(tester);
+    expect(calls, 2);
+    expect(find.text('Bu takma isim zaten kullanılıyor.'), findsWidgets);
+    expect(find.text('Supabase yapılandırılmadı.'), findsNothing);
+  });
+
+  testWidgets('gönderimde taze kontrol yapılamazsa kayıt GÖNDERİLMEZ',
+      (tester) async {
+    var calls = 0;
+    await pumpSignup(tester, checker: (_) async {
+      calls++;
+      if (calls == 1) return NicknameStatus.ok;
+      throw Exception('ağ düştü');
+    });
+    await fillValidSignup(tester);
+    await submitSignup(tester);
+    expect(
+        find.text(
+            'Takma isim kontrol edilemedi. Bağlantını kontrol edip tekrar dene.'),
+        findsOneWidget);
+    expect(find.text('Supabase yapılandırılmadı.'), findsNothing);
   });
 
   testWidgets('koşullar linkleri Terms/Privacy portlarını açar (metin birebir)',
