@@ -3790,6 +3790,9 @@ export function friendlyAuthMessage(err: unknown): string | null {
     [/token has expired or is invalid/i, byCode.otp_expired],
     [/for security purposes|rate limit/i, byCode.over_request_rate_limit],
     [/unable to validate email address|invalid format/i, 'Geçerli bir e-posta adresi gir.'],
+    // GoTrue, `handle_new_user` trigger'ının HER hatasını bu metne çevirir ve asıl
+    // nedeni yutar (31 Ekim 2026: iOS 1.1.4, 12 Ekim: Android 1.1.3).
+    [/database error saving new user/i, 'Yeni kullanıcı kayıt hatası oluştu.'],
   ];
   for (const [re, text] of byMessage) {
     if (re.test(msg)) return text;
