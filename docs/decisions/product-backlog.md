@@ -494,3 +494,63 @@ gerekenler: seyirci rakip rafını ASLA görmez (sunucu yalnızca
 aboneliği maliyeti), katılımcıların görünürlük rızası (Koşullar/Gizlilik),
 arkadaş olmayanlara sohbet görünmez.
 
+
+## "En iyi hamleyi bul" bulmaca modu = HAMLE AVI (ROADMAP #48) — PARKTA (30 Ekim 2026)
+
+**Durum: PARKTA, kod yok** (kullanıcı: *"Takım ligi gibi backlog'da yazalım. Zamanı gelince yapacağız."*). Aşağıdaki karar ve ölçümler hazır; başlarken yeniden analiz gerekmez. Başlangıç sırası: pozisyon üretici + banka → oyun ekranı (`TutorialGame` kalıbı) → Tebrikler/Üzgünüz pencereleri → tanıtım modalı → port ikizi (ayrı PR, tren).
+
+Kullanıcı fikri: satrançtaki bulmacalar gibi rastgele pozisyonlar, süreli (örn. 5 dk),
+puanlı: en yüksek puanlı hamle 3, ikinci 2, üçüncü 1. İsim ve UI konumu açık.
+
+**Bulgular (koddan okundu, ölçülmedi):**
+- Çekirdek hazır: `findAIMoves(..., n, search)` zaten sıralı en iyi N hamleyi veriyor (= cevap anahtarı);
+  oyuncunun hamlesi mevcut validator + `wordPoints` ile puanlanır. **Motora dokunulmaz** → golden vector,
+  Edge/SQL kopyaları etkilenmez (anahtar çevrimdışı üretilir).
+- Anahtar ≠ gerçek en iyi: `ai.ts` havuzu 2-7 harf, Normal tek çapa, Zor geniş. Oyuncu anahtarda olmayan
+  daha yüksek hamle bulabilir → puan SIRAYLA değil EŞİKLE (net puan ≥ en iyi → 3, ≥ ikinci seviye → 2 …;
+  eşit puanlar tek seviye). Anahtar Zor (wide) ile üretilmeli.
+- Vergi: `findAIMoves` vergisiz hamle varsa listeyi YALNIZCA onlardan kurar; vergili ama net puanı yüksek
+  hamle anahtarda görünmez. Seçenekler: pozisyon seçerken ayrıca doğrula · bu modda vergili hamle geçersiz.
+- Hile: sözlük istemcide, çözücü konsolda koşar. Liderlik tablosu yoksa önemsiz; varsa sunucu doğrulaması
+  (`_km_*` SQL motoru hamle puanlıyor) + sunucu damgalı süre.
+- Pozisyon: YZ↔YZ oyunundan (`simulate-ai-levels` altyapısı, `setRandomSource` ile tohumlu) rastgele tur
+  kesiti; önceden üretilmiş BANKA (istemci çözücü çalıştırmaz). Kalite filtresi: en iyi ile 3. arasında açıklık,
+  en iyi kelime sözlükte anlamlı.
+- UI: ana görünüm iki parçalı (`'local'|'live'`, rozet zinciri + `decideInitialMainView`); üçüncü sekme tüm
+  zincire dokunur. `TutorialGame` (kendi reducer'ı, "oyun DEĞİLDİR" yalıtımı) hazır şablon.
+- İsim: "bulmaca" Türkçede çapraz bulmaca → karışır. "Hamle" projenin kendi terimi. Adaylar: Hamle Avı ·
+  En İyi Hamle · Günün Hamlesi (günlük formatsa) · Hamle Bul.
+
+**Açık kararlar:** 5 dk toplam mı bulmaca başına mı (öneri: 5 bulmaca / 5 dk ortak havuz, azami 15) ·
+v1'de liderlik tablosu (öneri: yok, kişisel rekor) · vergi · günlük mü sınırsız mı · isim · ürün sırası
+(13 Ekim ilkesi: Takım Ligi parkta, arka arkaya yeni mod kafa karıştırır) · k-lig puanına KARIŞMAZ (formül 5 kopya).
+**İlk adım önerisi:** 50 pozisyonluk üretici betik → 1.-3. açıklığı ve Zor aramanın süresini ölç.
+
+**KARARLAR (30 Ekim 2026, kullanıcı):** isim **Hamle Avı** · k-lig puanı/ödülü YOK · doğru hamleyi bulunca
+"Tebrikler" penceresi (Sonraki / İptal), istediği kadar devam · süre **her bulmaca için 5 dk** · süre bitip
+bulamazsa "Üzgünüz bulamadınız — en yüksek hamle puanı X (kelime) idi" penceresi · **bölge vergisi DAHİL**
+(gerçek oyunla uyumlu; ham puanı yüksek vergili hamle vergisizden değersiz olabilir — oyuncunun bunu hesaba
+katması hedef) · ilk girişte kısa tanıtım penceresi, "bir daha gösterme" işaretlenene kadar HER girişte.
+⚠ Belirsiz kaldı: 3/2/1 kademeli puan hâlâ geçerli mi, yoksa yalnızca "en iyiyi buldu/bulamadı" mı (kullanıcının
+son tarifi ikili) — ölçüm (aşağıda) kademeli puanın seviyeleri çok yakın olduğunu gösteriyor.
+
+**ÖLÇÜM (`npm run measure-hamle-avi`, 50 pozisyon, tohum 1, Zor arama, vergi dahil):**
+- Motora dokunmadan vergi dahil sıralama: rakipler "teslim olmuş" kopyalanır (bölgeleri boş → `findAIMoves`
+  ham puana göre n=300 listeler), sonra her aday `computeInvasionSplit` ile net puana çevrilir. **50/50 pozisyonda
+  en iyi hamle gerçek reducer'da oynatıldı, skor farkı = net puan.** Liste yetersizliği 0/50.
+- Vergi gerçek bir boyut: en iyi net hamle vergili **15/50**, "en yüksek HAM puanlı hamle net en iyi değil"
+  (tuzak) **24/50**. Vergisiz-only anahtar 3 pozisyondan birinde yanlış olurdu.
+- Açıklık (net, TEKİL puan seviyeleri): 1.→2. medyan **2**, ≥3 olan 17/50, ≥5 olan 5/50; 1.→3. medyan 4,
+  ≥10 olan 1/50. Yani 3/2/1 seviyeleri çoğu pozisyonda 1-2 puan arayla — 20/19/18 gibi. Kalite filtresi şart
+  (öneri: 1.→2. ≥3), filtre sonrası havuz ~%34 → 50 pozisyonun ~17'si; ~500'lük banka için ~1.500 aday.
+- En iyi kelime **2 harfli 11/50** (US, İĞ, AŞ, NÜ, Tİ…), medyan 4 harf, ≥8 harf yalnızca 2/50 — bonus/çapraz
+  kelime hamleleri; "cevap NÜ idi" hayal kırıklığı riski → filtre adayı: tek kelimelik/anlamı bilinen cevap.
+- Süre (Node): medyan 111 ms, p90 160, en çok 384 → üretim çevrimdışı banka için sorun değil; istemcide canlı
+  çözüm gerekmez (mobil ölçülmedi).
+
+**KARAR (30 Ekim 2026, kullanıcı: *"Sadece en iyi olsun. Gerekirse süresi 3 dk gibi kısaltabiliriz"*):** 3/2/1
+kademeli puan YOK — bulmaca ikili: net puanı anahtarın en iyi seviyesine ulaşan her hamle doğru ("Tebrikler"),
+aksi hâlde süre bitince "Üzgünüz". Eşit net puanlı tüm hamleler doğru sayılır; anahtardan YÜKSEK bir hamle
+(çözücü ≤8 harf) de doğru. Süre bir SABİT olmalı (başlangıç 5 dk, saha denemesinde 3 dk'ya inebilir).
+Etki: ölçümdeki "1.→2. açıklık" artık adalet ölçüsü değil zorluk ölçüsü; asıl kalite filtresi "en iyi
+seviyeye ulaşan hamle sayısı" ve cevabın tanınır bir kelime olması.

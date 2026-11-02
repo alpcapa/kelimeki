@@ -2124,6 +2124,7 @@ alpaks
 alperen
 alpinist
 alpinizm
+alpler
 alplık
 alpu
 alpyıldızı
@@ -3039,6 +3040,7 @@ arabeskleşme
 arabeskleşmek
 arabi
 arabist
+arabistan
 arabistanlı
 arabistik
 arabizasyon
@@ -3076,6 +3078,7 @@ araklayabilmek
 araklayıverme
 araklayıvermek
 araklı
+aral
 aralama
 aralamak
 aralanış
@@ -3114,6 +3117,7 @@ arapgir
 araplık
 arapsaçı
 ararot
+aras
 arasat
 arasız
 arasta
@@ -3789,6 +3793,7 @@ asude
 asudelik
 asuman
 asuncion
+asur
 asurca
 asya
 asyalı
@@ -4119,6 +4124,7 @@ atlanılma
 atlanılmak
 atlanma
 atlanmak
+atlantik
 atlas
 atlatabilme
 atlatabilmek
@@ -4921,6 +4927,7 @@ babıali
 babıldama
 babıldamak
 babi
+babil
 babilhane
 babilik
 babun
@@ -8374,6 +8381,7 @@ biyoşimi
 biyotit
 biyotop
 biz
+bizans
 bizar
 bizarlık
 bizatihi
@@ -8459,6 +8467,7 @@ boğasamak
 boğası
 boğata
 boğaz
+boğaziçi
 boğazkale
 boğazkesen
 boğazlama
@@ -8725,6 +8734,7 @@ bordür
 borik
 borikli
 borina
+borneo
 bornova
 bornoz
 borsa
@@ -8737,6 +8747,7 @@ boruk
 borulu
 borumsu
 borusuz
+bosna
 bostan
 bostana
 bostancı
@@ -9224,6 +9235,7 @@ briketçilik
 briketleme
 briketlemek
 brit
+britanya
 briyantin
 briyantinli
 briyantinsiz
@@ -11992,6 +12004,7 @@ cüzzamlı
 çeçe
 çeçen
 çeçence
+çeçenistan
 çeçenistanlı
 çedene
 çedik
@@ -12158,6 +12171,7 @@ cüzzamlı
 çekmen
 çekmenli
 çekoslovak
+çekoslovakya
 çekpas
 çektirebilme
 çektirebilmek
@@ -13412,6 +13426,7 @@ cüzzamlı
 çorbacılık
 çorbalık
 çorlu
+çoruh
 çorum
 çorumlu
 çorumluluk
@@ -13777,6 +13792,7 @@ dağınık
 dağınıkça
 dağınıklık
 dağıntı
+dağıstan
 dağıstanlı
 dağıtabilme
 dağıtabilmek
@@ -19170,6 +19186,7 @@ erce
 ercecik
 ercik
 erciş
+erciyes
 erdek
 erdem
 erdemli
@@ -20727,6 +20744,7 @@ fındıkkıran
 fındıklı
 fındıklık
 fır
+fırat
 fırça
 fırçacı
 fırçacılık
@@ -21444,6 +21462,7 @@ frezecilik
 frezeleme
 frezelemek
 frezya
+frig
 frigo
 frigorifik
 frijider
@@ -21918,6 +21937,7 @@ gazölçer
 gazsız
 gazsızlık
 gazve
+gazze
 gdansk
 ge
 gebe
@@ -25963,6 +25983,7 @@ hilozoizm
 hilti
 hilvan
 hilye
+himalaya
 himaye
 himayeci
 himayecilik
@@ -28453,6 +28474,7 @@ iskitler
 iskoç
 iskoçça
 iskoççe
+iskoçya
 iskonto
 iskontolu
 iskontosuz
@@ -29536,6 +29558,7 @@ kaçışma
 kaçışmak
 kaçıverme
 kaçıvermek
+kaçkarlar
 kaçkın
 kaçkınımsı
 kaçlı
@@ -29716,6 +29739,8 @@ kafiyeli
 kafiyelilik
 kafiyesiz
 kafiyesizlik
+kafkaslar
+kafkasya
 kafkasyalı
 kaftan
 kaftancı
@@ -30072,6 +30097,7 @@ kalibre
 kalifikasyon
 kalifiye
 kalifiyelik
+kaliforniya
 kaliforniyum
 kaligrafi
 kaliko
@@ -30532,6 +30558,7 @@ kaolinli
 kaos
 kaotik
 kap
+kapadokya
 kapak
 kapakçık
 kapaklanış
@@ -30795,6 +30822,7 @@ karahanlı
 karahanlıca
 karahindiba
 karahumma
+karaibler
 karaiğne
 karaim
 karaimce
@@ -31252,6 +31280,7 @@ karşıtlı
 karşıtlık
 karşıyaka
 kart
+kartaca
 kartal
 kartalcı
 kartalcılık
@@ -31527,6 +31556,7 @@ kataloglama
 kataloglamak
 kataloglatma
 kataloglatmak
+katalonya
 katalpa
 katamaran
 katana
@@ -33613,6 +33643,7 @@ kızılcahamam
 kızılcık
 kızılcıkgiller
 kızılçam
+kızıldeniz
 kızılderili
 kızılelma
 kızılgeyik
@@ -37106,6 +37137,7 @@ libyalı
 lice
 lider
 liderlik
+lidya
 liet
 lif
 lifçik
@@ -39390,6 +39422,7 @@ mezkür
 mezmur
 mezoderm
 mezon
+mezopotamya
 mezosefal
 mezosfer
 mezoterm
@@ -39818,7 +39851,9 @@ miskinhane
 miskinleşme
 miskinleşmek
 miskinlik
+misli
 miso
+missisipi
 mistik
 mistiklik
 mistisizm
@@ -42743,6 +42778,7 @@ okuyuvermek
 oküler
 okültizm
 okyanus
+okyanusya
 okyanusyalı
 okyanusyalılık
 ol
@@ -43235,6 +43271,7 @@ orta
 ortaca
 ortaç
 ortada
+ortadoğu
 ortahisar
 ortak
 ortakça
@@ -43963,6 +44000,7 @@ ozuga
 ölmüş
 ölmüşlük
 ölü
+ölüdeniz
 ölüdoğa
 ölüevi
 ölük
@@ -45042,6 +45080,7 @@ pasata
 pasavan
 pasçı
 pasif
+pasifik
 pasifikasyon
 pasifleşme
 pasifleşmek
@@ -45117,6 +45156,7 @@ paşazade
 pat
 pata
 patadak
+patagonya
 patak
 pataklama
 pataklamak
@@ -45864,6 +45904,7 @@ pirelenme
 pirelenmek
 pireler
 pireli
+pireneler
 pirifani
 pirina
 pirinç
@@ -47611,6 +47652,7 @@ rulo
 rum
 rumba
 rumca
+rumeli
 rumelili
 rumelililik
 rumen
@@ -50651,6 +50693,7 @@ sibakusiyak
 siber
 sibernasyon
 sibernetik
+sibirya
 sibop
 siborgiyum
 sicil
@@ -52206,6 +52249,7 @@ suluova
 sulusaray
 suma
 sumak
+sumatra
 sumaymuncuğu
 sumaymunu
 sumbas
@@ -52472,6 +52516,7 @@ süpermarket
 süpermarketçi
 süpermarketçilik
 süperstar
+süphan
 süphanallah
 süprüntü
 süprüntücü
@@ -55141,6 +55186,7 @@ tatar
 tatarca
 tatarcık
 tatarı
+tataristan
 tataristanlı
 tatava
 tatavacı
@@ -56767,6 +56813,7 @@ tıynetli
 tıynetsiz
 tıynetsizlik
 ti
+tibet
 tibetçe
 tibetli
 ticani
@@ -57398,6 +57445,7 @@ töz
 tözcülük
 tözel
 trablus
+trablusgarp
 trabzon
 trabzonlu
 trabzonluluk
@@ -57424,6 +57472,7 @@ traktör
 traktörcü
 traktörcülük
 trakunya
+trakya
 trampa
 trampet
 trampetçi
@@ -57443,6 +57492,7 @@ transformatör
 transformist
 transformizm
 transfüzyon
+transilvanya
 transistör
 transit
 transkribe
@@ -57608,6 +57658,7 @@ tumturak
 tumturaklı
 tumturaklılık
 tun
+tuna
 tunceli
 tuncelili
 tuncelililik
@@ -58036,6 +58087,7 @@ türkçe
 türkçeci
 türkçecilik
 türkçülük
+türkistan
 türkiyat
 türkiye
 türkkıyması
@@ -58361,6 +58413,7 @@ ultraviyole
 ulu
 ulubey
 uluborlu
+uludağ
 uludere
 ulufe
 ulufeci
@@ -58540,10 +58593,12 @@ upuygun
 upuzun
 ur
 urağan
+urallar
 uran
 uranüs
 uranyum
 uranyumlu
+urartu
 uray
 urba
 urbalı
@@ -58971,6 +59026,7 @@ uyuzluk
 uz
 uzak
 uzakça
+uzakdoğu
 uzaklanma
 uzaklanmak
 uzaklaşabilme
@@ -60199,6 +60255,7 @@ voleybol
 voleybolcu
 voleybolculuk
 volfram
+volga
 volgograd
 voli
 volkan
@@ -60507,6 +60564,7 @@ yakınabilme
 yakınabilmek
 yakında
 yakından
+yakındoğu
 yakınış
 yakınlama
 yakınlamak
@@ -62039,6 +62097,7 @@ yeşilbağa
 yeşilbaş
 yeşilçekirge
 yeşilhisar
+yeşilırmak
 yeşilimsi
 yeşilimtırak
 yeşillendirme
@@ -62777,6 +62836,7 @@ yufkacı
 yufkacılık
 yufkalık
 yugoslav
+yugoslavya
 yugoslavyalı
 yuh
 yuha

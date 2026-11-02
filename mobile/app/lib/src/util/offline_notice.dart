@@ -116,8 +116,7 @@ bool isNetworkError(Object? e) {
 const _geciciDurumKodlari = {'408', '502', '503', '504', '522', '524'};
 
 bool isTransientServerError(Object? e) {
-  final kod = _durumKodu(e);
-  if (kod != null && _geciciDurumKodlari.contains(kod)) return true;
+  if (_durumKodlari(e).any(_geciciDurumKodlari.contains)) return true;
   // Kalıplar İngilizce ağ geçidi metinleri; sunucunun Türkçe reddi
   // ("Sıra sende değil.") bunların hiçbirine denk gelmez.
   final s = e.toString().toLowerCase();
@@ -127,19 +126,27 @@ bool isTransientServerError(Object? e) {
       s.contains('request time');
 }
 
-/// `PostgrestException.code` gibi bir alanı, tipi İTHAL ETMEDEN okur —
-/// web ikizindeki `(err as {code?}).code` erişiminin aynısı. Alan yoksa
-/// `NoSuchMethodError` düşer ve null döneriz.
-String? _durumKodu(Object? e) {
-  try {
-    final dynamic d = e;
-    final kod = d?.code;
-    if (kod is String) return kod;
-    if (kod is int) return kod.toString();
-  } catch (_) {
-    // alan yok — sorun değil
+/// `PostgrestException.code` / `AuthException.statusCode` gibi bir alanı, tipi
+/// İTHAL ETMEDEN okur — web ikizindeki `(err as {code?}).code` erişiminin
+/// aynısı. Alan yoksa `NoSuchMethodError` düşer ve o alan atlanır.
+///
+/// ⚠ **İKİ alan, ikisi de bakılır (28 Ekim 2026):** `PostgrestException`
+/// durumu `code`'da taşır, ama `AuthRetryableFetchException(message: error
+/// code: 522, statusCode: 522)` onu `statusCode`'da taşır ve `code`'u null'dır —
+/// yalnızca `code`'a bakan sürüm bir 522'yi `online_games_repo.load`'da
+/// tekrarlamıyordu (`client_errors`: 3 günde 5 kayıt). İlk bulunan DEĞİL,
+/// kümede olan sayılır: biri başka bir değer taşıyabilir.
+Iterable<String> _durumKodlari(Object? e) sync* {
+  final dynamic d = e;
+  for (final oku in <Object? Function()>[() => d?.code, () => d?.statusCode]) {
+    try {
+      final kod = oku();
+      if (kod is String) yield kod;
+      if (kod is int) yield kod.toString();
+    } catch (_) {
+      // alan yok — sorun değil
+    }
   }
-  return null;
 }
 
 /// Kelime anlamı penceresi — sözlük AÇILAMADIĞINDA (kelime bulunamadı'dan

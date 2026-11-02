@@ -159,4 +159,11 @@ export const EXTRA_WORDS = {
       'Bazı Müslümanların günlük hayatta veya namaz kılarken kafalarına taktığı takke benzeri başlık.',
     ],
   },
+  misli: {
+    pos: 'a.',
+    meanings: [
+      'Benzer, örnek, eşdeğer.',
+      'Kat (bir sayının kendisiyle çarpıldığı miktar).',
+    ],
+  },
 };
