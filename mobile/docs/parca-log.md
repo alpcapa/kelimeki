@@ -25,6 +25,18 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 248 — Gölge önbelleği: öne dönüşte boşalt, ön planda değilken üretme (20 Ekim 2026, kullanıcı bildirdi)
+
+**Belirti (1.1.4, `bf550a3`, iPhone):** Setup'ta "Kime karşı" düğmelerinin ve üstündeki alanın üzerinde KOYU/SİYAH dikdörtgenler — gölgeli yüzeylerin gölge alanlarıyla örtüşüyor. Uygulama arkada açıkken bir e-posta linki (Safari → "Open") ile öne getirilmişti; uygulama kapalıyken aynı akış tekrarlanınca görülmedi.
+
+**Tahmin (cihazda KANITLANMADI):** `neo_box.dart`ın raster önbelleği (`Picture.toImageSync`, Parça 144) bir görüntüyü uygulama öne dönerken, GPU henüz kullanılamazken üretti ve bozuk kaldı. Önbellek girdileri hiç atılmadığından bozuk görüntü kalıcıydı.
+
+**Önlem (iki parça):** (1) `obtain` yaşam döngüsü `resumed` değilken (`null` = bilinmiyor, izinli) YENİ görüntü üretmiyor, doğrudan çizime düşüyor; (2) `invalidateNeoBoxRasterCache()` — `app.dart` her `resumed`da çağırıyor: önbelleği boşaltıp render ağacının TAMAMINI boyamaya işaretliyor. Yalnızca `clear()` yetmezdi: ressamların `shouldRepaint`i (alanlar aynı) yeniden boyamayı tetiklemez, ekrandaki katman eski görüntüyü taşımaya devam ederdi. Bedel: öne her dönüşte bir tam boyama + ~10 desenin yeniden rasterleştirilmesi.
+
+**Kapı:** `test/neo_box_lifecycle_test.dart` (2 test). ⚠ Testte `paused` KULLANILAMAZ — Flutter o durumda hiç kare çizmez; ölçülebilir ara durum `inactive`. Duyarlılık: kapı (1) kaldırılınca ilk test düşüyor. Tam takım 1273/1273 yeşil (ilk koşuda `game_session_host_test` bir kez düştü, tek başına ve ikinci tam koşuda geçti — aralıklı, bu değişiklikten bağımsız).
+
+**Sınır:** bozuk görüntünün kendisi Linux'ta üretilemiyor; önlemin işe yaradığı ancak sahada sorunun bir daha görülmemesiyle anlaşılır. Cihaz maddesi: `mobile/docs/testing-ux-turlari.md` §34.
+
 ## Parça 248 — `AuthRetryableFetchException(522)` yeniden denenmiyordu: durum kodu `statusCode`'da (28 Ekim 2026, günlük hata özeti)
 
 Günlük özet (*"5 kayıt · 3 cihaz"*): `online_games_repo.load` → `AuthRetryableFetchException(message: error code: 522, statusCode: 522)` ve `stats_repo.my_rank` → `PostgrestException(code: 522)`; 25-27 Eki'de toplam 8 kayıt, aynı pencerede Supabase `edge_logs`'ta 5xx YOK (istek Cloudflare'de kopuyor). **Bulgu, istenenden farklı çıktı:** `522`/`524` zaten `isTransientServerError` kümesindeydi (web `GECICI_DURUM_KODLARI` ↔ `_geciciDurumKodlari`) — yani `PostgrestException(code: 522)` zaten tekrarlanıyordu. Kaçan şey auth istisnası: durumu `code`'da DEĞİL `statusCode`'da taşıyor, `_durumKodu` yalnızca `code`'a bakıyordu → liste yeniden denenmeden telemetriye düşüyordu. **Düzeltme:** `_durumKodlari` her iki alanı da okur (`util/offline_notice.dart`). Kapsam BİLEREK dar: küme değişmedi (500/429 dışarıda), auth'un kendi reddi (401) tekrarlanmaz — ikisi de testli (`live_games_test.dart`; düzeltme geri alınınca yeni test DÜŞÜYOR). **Web ikizi YOK:** web'in liste yolu PostgREST'ten geçiyor (`code` zaten okunuyor); `supabase-js` auth hatası bu yolda liste çağrısını düşürmüyor. `stats_repo.my_rank` bu parçada DEĞİŞMEDİ (tekrar denemesi yok, tek seferlik okuma; tekrar ederse ayrı karar). Doğrulama sınırı: cihazda 522 üretilemez; yalnız birim testi + `client_errors`ta bu satırın azalması izlenir (`mobile/docs/testing-olcum.md`).
