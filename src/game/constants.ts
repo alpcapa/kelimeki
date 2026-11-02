@@ -19,15 +19,16 @@ export const RACK_SIZE = 7;
 /**
  * YZ seviyesi → "en iyi N hamleden rastgele biri" kadranı (ROADMAP #23).
  * `findAIMove` N=1'de hiç rastgele değer tüketmez (Normal bayt-eş kalır),
- * N>1'de tek `nextRandom()` çağrısıyla listeden seçer. Kolay = 4: Faz 0'ın
- * 200 oyunluk YZ↔YZ koşumu (N=3 %36 · N=4 %33 · N=5 %22; hedef insana karşı
- * ~%30) — saha ayarı `admin_ai_balance` kırılımına göre N=3/5. Zor da N=1:
+ * N>1'de tek `nextRandom()` çağrısıyla listeden seçer. Kolay = 8 + kelime
+ * tavanı 5 (`AI_LEVEL_SEARCH.kolay`; 20 Ekim 2026, kullanıcı onayı): sahada
+ * N=4/7 harf YZ'ye %47 kazandırıyordu (hedef ~%30); simülasyonda Normal'e
+ * karşı %34 → %13. Tablo: docs/decisions/ai-levels.md §9. Zor da N=1:
  * gücü N'den değil aramanın genişliğinden gelir (`AI_LEVEL_SEARCH`).
  * ⚠ ÜÇ kopya: Dart `constants.dart` (`aiLevelTopN`, golden `ai_level.json`
  * kilitler) ve Edge `_game/constants.ts` (`verify-edge-engine-parity`
  * kilitler) — biri değişirse üçü de.
  */
-export const AI_LEVEL_TOP_N: Record<AiLevel, number> = { kolay: 4, normal: 1, zor: 1 };
+export const AI_LEVEL_TOP_N: Record<AiLevel, number> = { kolay: 8, normal: 1, zor: 1 };
 
 /** YZ aramasının genişliği (bkz. `findAIMoves`, `src/utils/ai.ts`). */
 export interface AiSearch {
@@ -38,8 +39,10 @@ export interface AiSearch {
 }
 
 /**
- * YZ seviyesi → arama genişliği (ROADMAP #23 Faz 5, 7 Eylül 2026). Normal ve
- * Kolay bugüne kadarki dar arama (tek çapa, havuz 2-7); Zor = GENİŞ arama:
+ * YZ seviyesi → arama genişliği (ROADMAP #23 Faz 5, 7 Eylül 2026). Normal
+ * dar arama (tek çapa, havuz 2-7); Kolay aynı dar arama ama havuz 2-5
+ * (20 Ekim 2026 — N ekseni 5'ten sonra doyuyordu, kelime tavanı daha güçlü
+ * kadran); Zor = GENİŞ arama:
  * bir taşa komşu boş hücreden başlayan paralel dizişler + aynı hattaki
  * birden çok taştan geçen kelimeler, havuz 2-8 (8 = çapa + tam raf). Ölçüm
  * (200 oyun, koltuk değişimli, YZ↔YZ): geniş arama Normal'i **%70** yeniyor
@@ -52,7 +55,7 @@ export interface AiSearch {
  * kilitler) ve Edge `_game/constants.ts` (`verify-edge-engine-parity`).
  */
 export const AI_LEVEL_SEARCH: Record<AiLevel, AiSearch> = {
-  kolay: { wide: false, maxWordLen: 7 },
+  kolay: { wide: false, maxWordLen: 5 },
   normal: { wide: false, maxWordLen: 7 },
   zor: { wide: true, maxWordLen: 8 },
 };

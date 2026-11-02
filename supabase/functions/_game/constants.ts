@@ -20,7 +20,7 @@ export const RACK_SIZE = 7;
  * YZ seviyesi → "en iyi N'den rastgele" kadranı — src/game/constants.ts'teki
  * AI_LEVEL_TOP_N'in kopyası (`verify-edge-engine-parity` eşitliği kilitler).
  */
-export const AI_LEVEL_TOP_N: Record<AiLevel, number> = { kolay: 4, normal: 1, zor: 1 };
+export const AI_LEVEL_TOP_N: Record<AiLevel, number> = { kolay: 8, normal: 1, zor: 1 };
 
 /** YZ aramasının genişliği — src/game/constants.ts'teki AiSearch'ün kopyası. */
 export interface AiSearch {
@@ -34,7 +34,7 @@ export interface AiSearch {
  * Normal verir; Zor dalı canlıda ÇAĞRILMAZ, yalnızca kopya eş tutulur.
  */
 export const AI_LEVEL_SEARCH: Record<AiLevel, AiSearch> = {
-  kolay: { wide: false, maxWordLen: 7 },
+  kolay: { wide: false, maxWordLen: 5 },
   normal: { wide: false, maxWordLen: 7 },
   zor: { wide: true, maxWordLen: 8 },
 };
