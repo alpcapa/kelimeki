@@ -1674,7 +1674,17 @@ class _OnlineGameScreenState extends State<OnlineGameScreen>
     // dokunuş sessizce kayboluyordu.
     final s = d.source;
     final rafinUstunde = s is _RackSource && _rackContains(e.position);
-    if (rafinUstunde || (e.position - d.start).distance < kTapSlopOnRelease) {
+    // İSTİSNA (23 Ekim 2026): konmuş taş hayaletin gösterdiği boş hücreye
+    // bırakıldıysa TAŞIMA — `game_screen.dart`'taki aynı kural.
+    var tasimaHedefi = false;
+    if (s is _PlacedSource) {
+      final hedef =
+          _cellAtGlobal(Offset(e.position.dx, _liftedY(e.position.dy)));
+      tasimaHedefi = hedef != null && _isCellFreeFor(s, hedef.$1, hedef.$2);
+    }
+    if (rafinUstunde ||
+        (!tasimaHedefi &&
+            (e.position - d.start).distance < kTapSlopOnRelease)) {
       await _dokunusOlarakIsle(s, e.position);
       return;
     }

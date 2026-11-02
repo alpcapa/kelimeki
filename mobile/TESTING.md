@@ -1086,6 +1086,11 @@ Bu bölüm portun en kritik sözleşmesi: **aynı `local_game_saves` tablosu**.
       alınmadan, ÖNDEYKEN ağ geri gelirse senkron yine beklemez (web'in
       `online` olayının Flutter'da paketsiz karşılığı yok); veri kaybı
       yok, yalnızca gecikme.
+- [ ] **Uçak modunda avatar ve "OYUNU BAŞLAT" da ANINDA hazır olmalı (Parça 249,
+      23 Ekim 2026).** Girişliyken uygulamayı kapat, uçak modunu aç, aç.
+      Sağ üstteki avatar "…"da KALMAMALI (isim/baş harfler hemen gelmeli) ve
+      Yeni Oyun → "OYUNU BAŞLAT" düğmesi "HAZIRLANIYOR…" yazmamalı. Önceki
+      ölçüm: ikisi de ~45 sn. Bağlantı gelince bir şey bozulmamalı.
 - [ ] **Uçak modunda AÇILIŞ hızlı olmalı (Parça 246, 17 Ekim 2026).**
       Girişli hesapla, en az bir devam eden YZ oyunu varken uygulamayı
       TAMAMEN kapat, uçak moduna geç, uygulamayı aç. Beklenen: splash birkaç

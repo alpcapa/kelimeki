@@ -968,10 +968,24 @@ export function OnlineGameScreen({ game, myUserId, onBack }: OnlineGameScreenPro
     // Gerekçe/ölçümler `src/App.tsx`teki `TAP_SLOP_ON_RELEASE` yanında.
     const rafinUstunde =
       d.source.kind === 'rack' && !!dropTargetsAt(e.clientX, e.clientY).rackEl;
+    // ⚠ İSTİSNA (23 Ekim 2026, kullanıcı): konmuş taş, hayaletin GÖSTERDİĞİ
+    // boş bir hücreye bırakıldıysa bu bir TAŞIMA'dır, dokunuş değil. Bırakma
+    // noktası `DRAG_LIFT` kadar kaldırıldığından "bir üst hücreye taşı" jesti
+    // parmağın ~0-16 px oynaması demek ve 24 px kuralına takılıp taşı rafa
+    // döndürüyordu (aşağı/yana taşımak ~27 px olduğundan çalışıyordu).
+    // Kural: hayalet ne gösteriyorsa o olur.
+    const tasimaHedefi = (() => {
+      if (d.source.kind !== 'placed') return false;
+      const { cellEl } = dropTargetsAt(e.clientX, liftedPoint(e.clientY));
+      if (!cellEl?.dataset.cell) return false;
+      const [r, c] = cellEl.dataset.cell.split(',').map(Number);
+      return isCellFreeFor(d.source, r, c);
+    })();
     if (
       rafinUstunde ||
-      Math.hypot(e.clientX - d.startX, e.clientY - d.startY) <
-        TAP_SLOP_ON_RELEASE
+      (!tasimaHedefi &&
+        Math.hypot(e.clientX - d.startX, e.clientY - d.startY) <
+          TAP_SLOP_ON_RELEASE)
     ) {
       dokunusOlarakIsle();
       return;

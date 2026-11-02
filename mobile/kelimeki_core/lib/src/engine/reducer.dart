@@ -420,10 +420,16 @@ class GameEngine {
             ...state.players[state.current].rack,
             Tile(letter: tile.wild ? '?' : tile.letter, pts: tile.pts),
           ];
+          // Son taslak taş da geri alındıysa "Oyna tuşuyla kelimeyi onayla."
+          // BAYATLAR — gameReducer.ts `RECALL_CELL`deki aynı kural.
+          final stale = placed.isEmpty &&
+              state.message == 'Oyna tuşuyla kelimeyi onayla.';
           return state.copyWith(
             placed: placed,
             players: _withRack(state, rack),
             selectedTile: null,
+            message: stale ? '' : null,
+            messageType: stale ? MessageKind.none : null,
           );
         }
 

@@ -1063,13 +1063,23 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     // ⚠ Taslak taş için eşik kaçınılmaz olarak bir belirsizliği çözüyor:
     // bırakma noktası 30 px KALDIRILMIŞ olduğundan (`_liftedY`), "taşı bir
     // üst hücreye taşı" jesti de parmağın neredeyse HİÇ kıpırdamaması
-    // demek — yani "geri al" ile aynı jest. Belirsizlik, açık ara daha sık
-    // olan niyet lehine çözülüyor: kısa jest = GERİ AL. Taşı taşımak hâlâ
-    // mümkün (daha uzun bir jestle, ya da geri alıp yeniden koyarak).
+    // demek — yani "geri al" ile aynı jest. 23 Ekim 2026'ya kadar belirsizlik
+    // "kısa jest = GERİ AL" diye çözülüyordu ve yukarı taşıma imkânsızdı
+    // (kullanıcı bildirdi); artık hayalet boş bir hücreyi gösteriyorsa TAŞIMA.
     final s = d.source;
     final gittigiMesafe = (e.position - d.start).distance;
     final rafinUstunde = s is _RackSource && _rackContains(e.position);
-    if (rafinUstunde || gittigiMesafe < kTapSlopOnRelease) {
+    // İSTİSNA (23 Ekim 2026, kullanıcı): konmuş taş hayaletin GÖSTERDİĞİ boş
+    // bir hücreye bırakıldıysa bu TAŞIMA'dır — yukarıdaki "kısa jest = geri
+    // al" belirsizliği artık yalnızca hedef YOKSA geri alma lehine çözülür.
+    // Web `App.tsx` `tasimaHedefi` ile aynı kural.
+    var tasimaHedefi = false;
+    if (s is _PlacedSource) {
+      final hedef =
+          _cellAtGlobal(Offset(e.position.dx, _liftedY(e.position.dy)));
+      tasimaHedefi = hedef != null && _isCellFreeFor(s, hedef.$1, hedef.$2);
+    }
+    if (rafinUstunde || (!tasimaHedefi && gittigiMesafe < kTapSlopOnRelease)) {
       await _dokunusOlarakIsle(s, e.position);
       return;
     }

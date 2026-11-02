@@ -537,11 +537,19 @@ export function gameReducer(state: GameState, action: Action): GameState {
         ...state.players[state.current].rack,
         { letter: tile.wild ? '?' : tile.letter, pts: tile.pts },
       ];
+      // Son taslak taş da geri alındıysa "Oyna tuşuyla kelimeyi onayla."
+      // BAYATLAR: onaylanacak bir şey kalmadı, Oyna'ya basınca "Harf
+      // yerleştirilmedi." çıkıyor (23 Ekim 2026, kullanıcı). Yalnızca o metin
+      // silinir — başka bir mesaj (ör. "Taşlar rafa geri alındı.") korunur.
+      const stale =
+        Object.keys(placed).length === 0 &&
+        state.message === 'Oyna tuşuyla kelimeyi onayla.';
       return {
         ...state,
         placed,
         players: withRack(state, rack),
         selectedTile: null,
+        ...(stale ? { message: '', messageType: '' as const } : {}),
       };
     }
 
