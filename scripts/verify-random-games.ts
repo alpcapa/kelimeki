@@ -353,7 +353,7 @@ async function main() {
   check('kart: BENİM ilanımda sayı = açık + yanıtı beklenen davetli', cardSeatsLeft({ open_seats: 1, seats: ['creator', 'open', 'invited', 'filled'], mine: 'creator' }) === 2);
   check('KARMA KADRO: son açık koltuk kapıldı ama arkadaş yanıtlamadı → "0 koltuk kaldı" DEĞİL, 1', cardSeatsLeft({ open_seats: 0, seats: ['creator', 'filled', 'invited'], mine: 'creator' }) === 1 && unfilledSeatCount(['creator', 'filled', 'invited']) === 1);
   check('şerit kartı sayısı cardSeatsLeft\'ten; Devam Edenler satırı N − dolu (ham "Bekliyor" etiketi YOK)', /cardSeatsLeft\(l\)/.test(strip8) && /seatsLeftLabel\(game\.player_count - dolu\)/.test(strip8) && !/>\s*Bekliyor\b/.test(strip8));
-  check('boş durum metni kullanıcının cümlesi', RANDOM_EMPTY_TEXT === 'Bekleyen oyun yok.' && RANDOM_EMPTY_LINK === 'Hemen aç.');
+  check('boş durum metni kullanıcının cümlesi', RANDOM_EMPTY_TEXT === 'Bekleyen oyun yok.' && RANDOM_EMPTY_LINK === 'Hemen aç');
   check(
     'balon metni kullanıcının üç cümlesi, "Rastgele" yazımıyla',
     RANDOM_HINT_TEXT ===

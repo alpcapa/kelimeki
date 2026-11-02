@@ -288,6 +288,8 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 `git log --oneline bf550a3..origin/main -- mobile/app mobile/kelimeki_core`
 (24 Ekim'de BOŞ — 1.1.5 treninin işleri (#884 #886 #889) taslak PR'da, `main`'de değil).
 
+**1.1.5'e binecek (28 Ekim, taslak PR #898, kesim 2 Kasım):** `AuthRetryableFetchException(522)` artık sessizce yeniden deneniyor — durum kodu `statusCode` alanından da okunuyor (Parça 248; 25-27 Eki'de 8 kayıt, sunucuda iz yok). Cihaz kontrolü gerekmez; `client_errors`ta `online_games_repo.load` 522 satırlarının azalması izlenir.
+
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.
 
 **1.1.5'e binen (29 Ekim) — sözlük:** 59 yer/tarih adı eklendi (22 + ikinci grup 37 [aral dahil]: trakya, fırat, tuna, bizans, kapadokya, himalaya vb.) (kafkasya, rumeli, okyanusya, arabistan, türkistan, trablusgarp, yugoslavya, mezopotamya, sibirya, tibet vb.; kök: `kafkasyalı` sözlükte vardı, `kafkasya` yoktu). `proper-nouns.mjs` → `augment-dictionary`; migrationlar `20261029164819` + `20261029165053` + `20261029165409_add_words` CANLIDA (sunucu anında geçerli, web deploy'a, app paketine bağlı). `words_tr.txt`/`meanings.db` yenilendi (63.970 kelime). **31 Eki:** #896 KAPATILDI, ikiye bölündü — web+sunucu yarısı #904 `main`'de ve canlı (`c32daa2`), mobil varlıklar #903'te (+ `misli`, #902 `main`'de canlı; `words_tr.txt`/`meanings.db` 63.971 kelime). 2 Kasım treni. Adaylar TDK'den doğrulanmadı (GTS kaynağı/erişim yok); ikinci grup kullanıcı kararıyla eklendi; kişi adları bilerek eklenmedi.

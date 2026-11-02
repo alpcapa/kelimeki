@@ -29,7 +29,8 @@ import 'package:kelimeki/src/ui/friends/k_pill.dart';
 import 'package:kelimeki/src/util/live_game_request.dart';
 import 'package:kelimeki/src/ui/game/player_colors.dart';
 import 'package:kelimeki/src/data/error_reporter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthApiException, AuthRetryableFetchException, PostgrestException;
 import 'package:kelimeki/src/data/meaning_store.dart';
 import 'package:kelimeki/src/data/online_games_api.dart';
 import 'package:kelimeki/src/ui/live/live_game_create_form.dart';
@@ -400,6 +401,38 @@ void main() {
       final repo = OnlineGamesRepo(gw, nowMs: () => nowMs, delay: noDelay);
       expect((await repo.load())!.games, hasLength(1));
       expect(gw.listCalls, 2);
+    });
+
+    // 28 Ekim 2026 — günlük hata özeti: `online_games_repo.load` →
+    // `AuthRetryableFetchException(message: error code: 522, statusCode: 522)`
+    // (3 günde 5 kayıt). Durum kodu bu istisnada `code`'da DEĞİL `statusCode`'da
+    // olduğundan `isTransientServerError` onu tanımıyor, liste yeniden
+    // denenmeden telemetriye düşüyordu. Sunucu tarafı temiz (`edge_logs`'ta
+    // 5xx yok): istek Cloudflare'de kopuyor, yeniden denenmesi gereken şey.
+    test('load: Auth 522 (statusCode alanı) sessizce tekrarlanır', () async {
+      final gw = FakeOnlineGamesGateway()
+        ..netFailFirst = 1
+        ..netFailError = AuthRetryableFetchException(
+            message: 'error code: 522\n', statusCode: '522')
+        ..rows = [gameRow(id: 'g1', myId: 'me', status: 'active')]
+        ..turnRows = [
+          {'online_game_id': 'g1', 'current': 0},
+        ];
+      final repo = OnlineGamesRepo(gw, nowMs: () => nowMs, delay: noDelay);
+      final snap = await repo.load();
+      expect(snap, isNotNull, reason: '522 boş liste gibi okunmamalı');
+      expect(snap!.games, hasLength(1));
+      expect(gw.listCalls, 2, reason: 'bir kez tekrar denendi');
+    });
+
+    // Sınır: auth'un KENDİ reddi (geçersiz oturum) bir karardır, tekrarlanmaz.
+    test('load: Auth 401 (statusCode alanı) tekrarlanMAZ', () async {
+      final gw = FakeOnlineGamesGateway()
+        ..failWith =
+            AuthApiException('Invalid Refresh Token', statusCode: '401');
+      final repo = OnlineGamesRepo(gw, nowMs: () => nowMs, delay: noDelay);
+      expect(await repo.load(), isNull);
+      expect(gw.listCalls, 1);
     });
 
     // ⚠ SINIR: 500 ve 429 BİLEREK bu sınıfın DIŞINDA — biri gerçek bir
