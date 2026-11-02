@@ -12,6 +12,7 @@ import {
   passkeySupported,
   passkeyKnownOnDevice,
   signInWithPasskey,
+  fetchNicknameStatus,
 } from '../lib/api';
 import { journeyStep } from '../utils/webJourney';
 import { useAuth } from '../hooks/useAuth';
@@ -157,6 +158,20 @@ export function AuthModal({
         if (nicknameStatus === 'blocked') throw new Error('Bu takma isim kullanılamaz.');
         if (password.length < MIN_PASSWORD_LENGTH) throw new Error(PASSWORD_TOO_SHORT);
         if (!termsAccepted) throw new Error('Kullanım Koşulları ve Gizlilik Politikası\'nı kabul etmelisiniz.');
+        // Gönderimden hemen önce TAZE kontrol (31 Ekim 2026): yazarken yapılan
+        // kontrol başarısız olduysa (`error`) ya da arada bir başkası aynı ismi
+        // aldıysa, çakışma ancak Auth'un 500'ünde ("Database error saving new
+        // user") ortaya çıkıyordu — GoTrue trigger hatasının metnini yuttuğundan
+        // kullanıcıya anlamlı bir şey söylenemiyordu. Kontrol yine yapılamazsa
+        // kayıt gönderilmez: aynı Supabase'e ulaşılamıyorsa kayıt da düşerdi.
+        let tazeDurum: Awaited<ReturnType<typeof fetchNicknameStatus>>;
+        try {
+          tazeDurum = await fetchNicknameStatus(nickname.trim());
+        } catch {
+          throw new Error('Takma isim kontrol edilemedi. Bağlantını kontrol edip tekrar dene.');
+        }
+        if (tazeDurum === 'taken') throw new Error('Bu takma isim zaten kullanılıyor.');
+        if (tazeDurum === 'blocked') throw new Error('Bu takma isim kullanılamaz.');
         const birthDateIso = trDateToIso(birthDate);
         const { data, error } = await signUp(
           email,
@@ -284,9 +299,8 @@ export function AuthModal({
                 <p className="text-[10px] text-red font-mono mt-1">Bu takma isim kullanılamaz.</p>
               )}
               {nicknameStatus === 'error' && (
-                // Kontrol başarısız olsa bile kayıt engellenmiyor — DB'deki
-                // unique kısıt gerçek doğruluk kaynağı, çakışma olursa
-                // friendlyNicknameError dostane bir hataya çeviriyor.
+                // Düğme kapanmaz, ama gönderimde kontrol TEKRARLANIR; o da
+                // başarısız olursa kayıt gönderilmez (bkz. submit).
                 <p className="text-[10px] text-muted font-mono mt-1">Kullanılabilirlik kontrol edilemedi, kayıt sırasında tekrar denenecek.</p>
               )}
             </div>
