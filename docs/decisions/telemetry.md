@@ -585,6 +585,6 @@ ve `verify-live-games-load` ile birlikte, port ikizi AYNI PR'da).
 > `522`/`524` `isTransientServerError` kümesinde zaten vardı (web + port).
 > Gerçek açık: `AuthRetryableFetchException` durumu `code`'da değil
 > `statusCode`'da taşıyor; port bunu 28 Ekim'de düzeltti (`mobile/docs/parca-log.md`
-> → Parça 248).
+> → Parça 251).
 > Yukarıdaki "Karar bekliyor" maddesi bu düzeltmeyle KAPANDI: küme zaten 522'yi
 > içeriyordu, eksik olan `statusCode` okumasıydı (kümeye ekleme gerekmedi).

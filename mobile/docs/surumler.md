@@ -460,6 +460,16 @@ buradaki satır sayısı bilerek tutmuyor.
 ⚠ Console'un kaydı **1 Mayıs 2026'dan itibaren** tutuluyor (sayfanın kendi
 notu). Daha eskisi burada görünmez.
 
+## 1.1.5 — KESİM (2 Kasım 2026)
+
+**Merge sırası (kullanıcı: *"Evet, kesimi yap"*):** #905 (doküman) → #903 (sözlük mobil varlıkları) → #898 (522 yeniden deneme) → #907 (kayıt takma isim) → #909 (Rastgele boş durum) → #884 (gölge önbelleği) → #889 (taslak taş geri alma + taş taşıma + uçak modunda profil) → #886 (Kolay YZ) → bu PR (sürüm `1.1.5+1`). Her PR'dan önce `main` dala birleştirildi (merge commit); çakışmalar yalnızca `ROADMAP.md` ve `parca-log.md`de ekleme-ekleme türündeydi, iki taraf da tutuldu.
+
+- **Kuru koşu (merge ÖNCESİ, dokuz dalın yerel birleşimi):** `flutter test` 1281/1281, `npm run lint`, `verify-edge-engine-parity`, `verify-sql-engine-parity`, `verify-error-messages` yeşil; Dart core TEK hata verdi → aşağıdaki golden.
+- **Golden çakışması (kod değil, veri):** #886'nın `reducer_ai2_kolay.json`u eski sözlükle üretilmişti, #903 `words_tr.txt`yi değiştirdi (63.971 kelime) → YZ farklı hamle buldu. #903'ten SONRA #886'da `npm run generate-golden-vectors` koşuldu, yalnızca bu dosya değişti, Dart core 6897/6897.
+- **Parça numarası çakışması:** üç dal ayrı ayrı "Parça 248" almıştı → tarih sırasıyla 248 (gölge, 20 Eki) · 249 (uçak modu profil, 23 Eki, değişmedi) · **250** (taş taşıma, 23 Eki) · **251** (522, 28 Eki); ROADMAP + `telemetry.md` atıfları düzeltildi.
+- **`play-ai-turn` yeniden YÜKLENMEDİ (bilinçli):** canlı v10 ile repo karşılaştırıldı (`get_edge_function`), tek davranış farkı `AI_LEVEL_TOP_N.kolay`/`AI_LEVEL_SEARCH.kolay`; fonksiyon seviye parametresi almıyor (Canlı oyun seviyesiz → hep Normal), yani fark canlıda ölü kod. Yükleme yalnızca 56 KB'ı MCP'ye elle aktararak mümkün (CLI yok) ve yazım hatası riski getirisinden büyük. Bir sonraki davranış değiştiren `_game/` değişikliğinde birlikte gider.
+- **Sırada:** bu PR'ın `main` derlemesi (TestFlight build numarası buraya), Android `.apk` cihaz turu, Perşembe iki mağazaya gönderim.
+
 ## 1.1.4 — HAZIRLIK (15 Ekim 2026; kesim 19 Ekim)
 
 **15 Ekim:** yedi taslak PR'ın her birine `main` birleştirildi (merge commit, rebase/force YOK): #837 #842 #855 #859 (temiz), #850 (`random-opponent.md` §21 çakışması), #851 (#850'yi taşıyor), #862 (`funnel-v2.md`). Sürüm adı bu PR'da (`pubspec.yaml` + `env.dart` → `1.1.4+1`; `app_version_parity_test` yeşil). Merge ÖNCESİ kullanıcıya "mobil derlemeyi tetikler" uyarısı verilir; onay gelmeden merge yok.

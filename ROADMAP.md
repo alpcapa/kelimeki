@@ -14,7 +14,7 @@ ve `git branch -r` ile PR'sız dalları kontrol et.
 | Ne zaman | İş | Sıradaki adım |
 |---|---|---|
 | birkaç gün sonra | Admin → Ziyaretçi Yolculuğu "Hemen çıkan" sütunu | eski 32 sn yığılmasıyla karışık; birkaç gün sonra bak |
-| **Pzt 2 Kas** | **1.1.5 treni (kesim günü)** — taslak PR'lar #889, #886, #884, #898, **#903** (sözlük mobil varlıkları; #896'nın yerini aldı), **#907** (kayıt takma isim kontrolü, mobil yarısı), #905 (yalnız doküman) (30-31 Eki: hepsi `main` ile senkron, CI yeşil) | Hepsini merge et. ⚠ Merge ÖNCESİ mobil derleme uyarısını ver (`mobile-latest` ezilir, TestFlight'a yeni build gider; `surumler.md` sürüm senkronu). **#886 sonrası:** `list_edge_functions` ile `play-ai-turn`ün `verify_jwt` değerini oku, AYNI değerle deploy et. **#896 deploy olunca:** web sözlüğünü `curl` ile doğrula. Açık dal: `claude/meta-stage-3-mobile-prs-ug0fbd` (#896) |
+| **Salı–Çarş 3-4 Kas** | **1.1.5 KESİLDİ (2 Kas):** dokuz PR `main`'de (#905 #903 #898 #907 #909 #884 #889 #886 + sürüm PR'ı) | Sürüm PR'ının `main` derlemesini izle (mobile-build, TestFlight). Sonra Android `.apk` cihaz turu (`mobile/docs/surumler.md` → "1.1.5"), Perşembe gönderim. ⚠ `play-ai-turn` BİLEREK yeniden yüklenmedi: canlı (v10) ↔ repo farkı yalnızca Kolay sabitleri ve fonksiyon seviye almıyor (hep Normal) — bir sonraki davranış değiştiren `_game/` değişikliğinde birlikte gider |
 | **3 Kas** | Meta Kare3 son okuması, `h` serisiyle yan yana | 30 Eki bulgusu: hemen çıkış Kare3'te %62-65, `h` serisinde %16-25. ⚠ Mobil Ads Manager'da düzenlenip kaydedilen reklam Messenger'a dönüyor: çalışan `Kare3d - Copy` reklamına DOKUNMA, Advantage+ ve Reels önerilerini UYGULAMA |
 | Tarihsiz (kullanıcı: *"daha sonra bakarım"*, 30 Eki) | #46-1 açık iki doğrulama: **Parça 218** `land` kanalı etiketi (Play'den kurulumla `?ref=test-referrer`) · **Play Data safety** formu ↔ ürün karşılaştırması | Adımlar `mobile/docs/testing-olcum.md` §33 ve `console-formlari.md` §3.8. Sonucu kullanıcı bildirince kütüğe işle; bitince bu satırı sil |
 
@@ -288,7 +288,7 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 `git log --oneline bf550a3..origin/main -- mobile/app mobile/kelimeki_core`
 (24 Ekim'de BOŞ — 1.1.5 treninin işleri (#884 #886 #889) taslak PR'da, `main`'de değil).
 
-**1.1.5'e binecek (28 Ekim, taslak PR #898, kesim 2 Kasım):** `AuthRetryableFetchException(522)` artık sessizce yeniden deneniyor — durum kodu `statusCode` alanından da okunuyor (Parça 248; 25-27 Eki'de 8 kayıt, sunucuda iz yok). Cihaz kontrolü gerekmez; `client_errors`ta `online_games_repo.load` 522 satırlarının azalması izlenir.
+**1.1.5'e binecek (28 Ekim, taslak PR #898, kesim 2 Kasım):** `AuthRetryableFetchException(522)` artık sessizce yeniden deneniyor — durum kodu `statusCode` alanından da okunuyor (Parça 251; 25-27 Eki'de 8 kayıt, sunucuda iz yok). Cihaz kontrolü gerekmez; `client_errors`ta `online_games_repo.load` 522 satırlarının azalması izlenir.
 
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.
 
@@ -296,7 +296,7 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 
 **Sıradaki treni bekleyen (23 Ekim 2026):** son taslak taş geri alınınca bayat "Oyna tuşuyla kelimeyi onayla." mesajı silinsin (kullanıcı ekran görüntüsüyle bildirdi) — `kelimeki_core` `RecallCellAction` + web `RECALL_CELL` ikizi + `reducer_human2.json` golden'ı. **Taslak PR #889, 2 Kasım 1.1.5 trenine biner** (kullanıcı kararı 23 Ekim: 1.1.4 gönderimi bitmeden `main`'e mobil merge YOK).
 
-**Aynı tren (23 Ekim 2026):** konmuş taşı bir üst hücreye taşımak taşı rafa döndürüyordu (kullanıcı bildirdi) — web + port, hayalet ne gösteriyorsa o olsun (Parça 248). Taslak PR.
+**Aynı tren (23 Ekim 2026):** konmuş taşı bir üst hücreye taşımak taşı rafa döndürüyordu (kullanıcı bildirdi) — web + port, hayalet ne gösteriyorsa o olsun (Parça 250). Taslak PR.
 
 **Aynı tren (23 Ekim 2026):** uçak modunda avatar 45 sn "…" / Başlat 45 sn "HAZIRLANIYOR…" — profil çekimi çevrimdışıyken ağa gitmesin + 8 sn zaman aşımı (Parça 249). Taslak PR #889'da.
 
