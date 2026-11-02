@@ -25,6 +25,10 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 248 — `AuthRetryableFetchException(522)` yeniden denenmiyordu: durum kodu `statusCode`'da (28 Ekim 2026, günlük hata özeti)
+
+Günlük özet (*"5 kayıt · 3 cihaz"*): `online_games_repo.load` → `AuthRetryableFetchException(message: error code: 522, statusCode: 522)` ve `stats_repo.my_rank` → `PostgrestException(code: 522)`; 25-27 Eki'de toplam 8 kayıt, aynı pencerede Supabase `edge_logs`'ta 5xx YOK (istek Cloudflare'de kopuyor). **Bulgu, istenenden farklı çıktı:** `522`/`524` zaten `isTransientServerError` kümesindeydi (web `GECICI_DURUM_KODLARI` ↔ `_geciciDurumKodlari`) — yani `PostgrestException(code: 522)` zaten tekrarlanıyordu. Kaçan şey auth istisnası: durumu `code`'da DEĞİL `statusCode`'da taşıyor, `_durumKodu` yalnızca `code`'a bakıyordu → liste yeniden denenmeden telemetriye düşüyordu. **Düzeltme:** `_durumKodlari` her iki alanı da okur (`util/offline_notice.dart`). Kapsam BİLEREK dar: küme değişmedi (500/429 dışarıda), auth'un kendi reddi (401) tekrarlanmaz — ikisi de testli (`live_games_test.dart`; düzeltme geri alınınca yeni test DÜŞÜYOR). **Web ikizi YOK:** web'in liste yolu PostgREST'ten geçiyor (`code` zaten okunuyor); `supabase-js` auth hatası bu yolda liste çağrısını düşürmüyor. `stats_repo.my_rank` bu parçada DEĞİŞMEDİ (tekrar denemesi yok, tek seferlik okuma; tekrar ederse ayrı karar). Doğrulama sınırı: cihazda 522 üretilemez; yalnız birim testi + `client_errors`ta bu satırın azalması izlenir (`mobile/docs/testing-olcum.md`).
+
 ## Parça 247 — Gizlilik metni: anonim kod SEKİZ durumda gider (web oturum kaydı `anon_id`, 18 Ekim 2026, ROADMAP #47)
 
 Web ikizi (`claude/web-sessions-anon-id`): `web_sessions`e cihazın anonim kodu eklendi (admin Huni v2 "Mağaza (cihaz)"); bu, gizlilik metnindeki "yedi durum"u **sekize** çıkarır (madde (8): girişsiz web ziyaretinin adım/mağaza/süre/etiket kaydı) ve "Son güncelleme" tarihini **18 Ekim 2026** yapar. Port `legal_modals.dart` aynı metni BİREBİR taşır (yedi → sekiz, (8) cümlesi, "Bu sekiz kaydın…", Gizlilik tarihi); Koşullar tarihi (12 Ekim) DEĞİŞMEDİ.
