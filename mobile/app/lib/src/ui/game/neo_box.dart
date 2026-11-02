@@ -16,6 +16,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show kDebugMode, visibleForTesting;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RendererBinding;
+import 'package:flutter/scheduler.dart' show SchedulerBinding;
 
 /// ÖLÇÜM ARACI (26 Ağustos 2026) — kaç kez GERÇEK bir `MaskFilter.blur`
 /// çizimi yapıldığını sayar. Yalnızca `kDebugMode`de artar, üretimde ölü.
@@ -94,6 +96,11 @@ class _RasterCache {
   ) {
     final cached = _rasterCacheMap[key];
     if (cached != null) return cached;
+    // Uygulama ÖN PLANDA değilken yeni görüntü ÜRETME (20 Ekim 2026) — bkz.
+    // `invalidateNeoBoxRasterCache`. Doğrudan çizime düşmek yalnızca o birkaç
+    // karede yavaş; bozuk bir görüntüyü önbelleğe almak ise kalıcı.
+    final yasam = SchedulerBinding.instance.lifecycleState;
+    if (yasam != null && yasam != AppLifecycleState.resumed) return null;
     if (!size.isFinite || size.isEmpty) return null;
     if (!dpr.isFinite || dpr <= 0) return null;
     final wPx = ((size.width + pad * 2) * dpr).ceil();
@@ -118,6 +125,34 @@ class _RasterCache {
     _rasterCachePx += wPx * hPx;
     return img;
   }
+}
+
+/// Önbelleği boşaltıp ekranın TAMAMINI yeniden boyatır. Uygulama ön plana
+/// her döndüğünde çağrılır (`ui/app.dart` → `didChangeAppLifecycleState`).
+///
+/// NEDEN (20 Ekim 2026, kullanıcının iPhone ekran görüntüsü, 1.1.4): Setup
+/// ekranında gölgeli düğmelerin gölge alanlarına denk gelen KOYU/SİYAH
+/// dikdörtgenler. Uygulama arkada açıkken bir e-posta linkiyle öne
+/// getirilmişti; aynı akış uygulama kapalıyken tekrarlanınca görülmedi.
+/// Tahmin (cihazda KANITLANMADI): `toImageSync` görüntüsü uygulama öne
+/// dönerken, GPU henüz kullanılamazken üretildi ve bozuk kaldı. Önbellek
+/// girdileri hiç atılmadığından bozuk görüntü ekranda kalıcıydı.
+///
+/// Yalnızca `clear()` YETMEZ: ekrandaki katmanlar eski görüntüyü taşıyan
+/// resimleri tutuyor ve ressamların `shouldRepaint`i (alanlar aynı) yeniden
+/// boyamayı tetiklemez — bu yüzden ağacın tamamı boyamaya işaretleniyor.
+/// Bedeli öne her dönüşte tek bir tam boyama + ~10 desenin yeniden
+/// rasterleştirilmesi.
+void invalidateNeoBoxRasterCache() {
+  _rasterCache.clear();
+  for (final view in RendererBinding.instance.renderViews) {
+    _boyamayaIsaretle(view);
+  }
+}
+
+void _boyamayaIsaretle(RenderObject r) {
+  r.markNeedsPaint();
+  r.visitChildren(_boyamayaIsaretle);
 }
 
 final Paint _blitPaint = Paint()..filterQuality = FilterQuality.low;

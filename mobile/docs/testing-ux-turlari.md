@@ -548,3 +548,12 @@ yok sayıp saymadığı (ölçülmedi, hedef SDK'ya bağlı).
       sürümle aynı boyda (bütçe orada bağlamıyor; testli, gözle de bak).
 - [ ] **Küçülmüş tahtada taş harfi hücreye sığıyor** (iPad yatay / Fold):
       harf ve köşedeki puan hücreden taşmıyor, X3 etiketi okunuyor.
+
+## 34. Arka plandan dönüşte gölgeler bozulmuyor (20 Ekim 2026, Parça 248)
+
+Önlem; asıl hata tekrarlanamadı, yani bu madde "bir daha görülmüyor mu" gözlemidir.
+
+- [ ] Uygulama Setup'ta açıkken ana ekrana çık, bir e-posta davet linkine bas → Safari → **Open** → Setup'taki düğmelerde ve çevresinde koyu/siyah dikdörtgen YOK.
+- [ ] Aynısını bir oyun ekranındayken dene (tahta hücreleri, raf, butonlar).
+- [ ] Uygulamayı birkaç dakika arkada bekletip öne getir — aynı kontrol.
+

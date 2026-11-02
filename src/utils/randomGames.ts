@@ -368,7 +368,7 @@ export const RANDOM_STRIP_LIMIT = 20;
 
 /** Boş şeridin düz metni; "Hemen aç." ayrı (bağlantı gibi vurgulanır). */
 export const RANDOM_EMPTY_TEXT = 'Bekleyen oyun yok.';
-export const RANDOM_EMPTY_LINK = 'Hemen aç.';
+export const RANDOM_EMPTY_LINK = 'Hemen aç';
 
 /**
  * Tek seferlik tanıtım balonu (kullanıcının cümleleri, 12 Ekim 2026).
