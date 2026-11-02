@@ -304,6 +304,12 @@ hedefe (~%30) inmek simülasyonda ≈24 puanlık düşüş ister → sim ~%10 ci
 `AI_LEVEL_TOP_N.kolay` 4 → 8, `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç
 kopyada. 2 Kasım treninde (taslak PR #886); `play-ai-turn` merge gününde deploy.
 **Sonraki okuma:** yayından ~3 hafta sonra, kişi içi farkla; hedef YZ ~%30.
+**2 Kasım 2026, TestFlight 982 turu (kullanıcı):** Kolay YZ en fazla 5 harflik
+kelime kuruyor, 6+ görülmedi — ayar sahada doğru çalışıyor. **Hedef netleşti
+(kullanıcı): admin "YZ dengesi" kartında Kolay için İNSAN birinciliği ~%65**
+(≈ YZ %35; önceki ~%30 YZ hedefiyle uyumlu, panelin diliyle). Okuma 26 Kasım
+2026'da (hatırlatma kurulu); yalnızca 1.1.5'ten SONRAKİ oyunlar sayılır,
+kişi içi farkla birlikte.
 
 **Plan (ROADMAP #23 Faz 5, açık):** `admin_ai_balance` seviye kırılımı iki
 hafta; hedef Kolay ~%30 · Normal ~%51 · Zor ~%70 YZ kazanma. Sapma varsa
