@@ -206,8 +206,15 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
         flags: s.flags,
         readInstallReferrer: readPlayInstallReferrer,
       )));
+  // Bağlantı durumu AuthService'ten ÖNCE kurulur: profil çekimi çevrimdışıyken
+  // ağa gitmesin (bkz. `AuthService._isOnline`). İlk ölçüm bir platform çağrısı
+  // (ms); okunamazsa `online` iyimser `true` kalır ve eski yol işler.
+  final onlineStatus = OnlineStatus();
+  await onlineStatus.refresh();
   final auth = AuthService(supabase,
-      profileCache: storage.then((s) => s.profileCache), signupStamp: stamp);
+      profileCache: storage.then((s) => s.profileCache),
+      signupStamp: stamp,
+      isOnline: () => onlineStatus.online);
   // Firebase açılışı BEKLETİLİYOR ama fırlatmıyor (bkz. push_init.dart):
   // web/masaüstünde ve yapılandırma yoksa sessizce false döner. Maliyeti
   // native'de birkaç ms; sonrasında `push` alanının dolu olup olmadığı
@@ -215,10 +222,8 @@ Future<AppServices> bootstrap(AssetBundle bundle) async {
   final firebaseHazir = await initFirebase();
   // Bağlantı YOKSA sürüm kapısına sorulmaz (17 Ekim 2026, uçak modunda
   // ölçüldü): kapı fail-open olduğundan sonuç zaten `ok` olacaktı, ama ona
-  // varmak splash'ı 5 sn zaman aşımı kadar tutuyordu. İlk ölçüm bir platform
-  // çağrısı (ms); okunamazsa `online` iyimser `true` kalır ve eski yol işler.
-  final onlineStatus = OnlineStatus();
-  await onlineStatus.refresh();
+  // varmak splash'ı 5 sn zaman aşımı kadar tutuyordu. (`onlineStatus` yukarıda,
+  // AuthService'ten önce kuruldu.)
   final versionGate = onlineStatus.online
       ? await checkVersionGate(supabase)
       : VersionGateStatus.ok;

@@ -25,6 +25,47 @@
 > `npm run check-doc-size` (bkz. kök `CLAUDE.md` → "Doküman Boyutu
 > Bütçesi") — bu cilt de sınıra gelince yenisi açılır.
 
+## Parça 249 — Uçak modunda avatar 45 sn "…", Başlat 45 sn "HAZIRLANIYOR…": profil çekimi de ağa gidiyordu (23 Ekim 2026, kullanıcı ölçtü)
+
+**Bulgu (1.1.4 / 933, iPhone, uçak modu; Parça 246'nın ikinci turu):** bekleyen YZ oyunu hemen geliyor (246 çalışıyor), ama avatar "…" 45 sn sonra "IR"ye dönüyor ve "YENİ OYUN BAŞLAT"ın düğmesi 45 sn "HAZIRLANIYOR…" yazıyor.
+
+**Kök neden (246 yalnızca bulut senkronunu kapsamıştı):** ikisi de aynı bayrağa bağlı — `AuthService._profileLoading`: avatar `identityLoading`, Başlat düğmesi `accountPending` (`user != null && accountName == null`) ile bekliyor. `_fetchProfile` çevrimdışıyken de `profiles`e gidiyor; supabase_flutter süresi dolmuş token'ı yenilemeye çalışıp geri çekilmeli tekrarla ~45 sn bekliyor, ancak sonra düşüp (Parça 29 Ağustos) yerel kopyaya geçiyor. Zaman aşımı da yoktu.
+
+**Düzeltme:**
+- `AuthService(isOnline:)`: bağlantı yoksa profil çekimi ağa HİÇ gitmez, doğrudan yerel kopyadan kurulur (246'daki "çevrimdışıyken ağa gitme" kuralı). `bootstrap.dart` `OnlineStatus`u `AuthService`ten ÖNCE kuruyor.
+- `kProfileFetchTimeout` (8 sn): iyimser sinyal yanıldığında (captive portal, askıda istek) çekim düşmüş sayılıp aynı yola girer.
+- Web ikizi YOK: web'de profil önbelleği yok (port bilerek ekledi, 29 Ağustos) ve bu yol portun kendi kararı.
+
+**Testler:** `profile_cache_test.dart` iki yeni test (çevrimdışıyken fetcher HİÇ çağrılmaz + `identityLoading`/`accountPending` false; askıda çekim 8 sn sonra düşer). Tam takım 1274 geçti, `dart analyze` temiz (yeni test `fake_async` import'u `live_games_test`teki mevcut info ile aynı). **Sınır:** cihazda ölçülmedi — `mobile/TESTING.md` §8 maddesi güncellendi. Çevrimdışı açılışta yerel profil kopyası YOKSA (girişten sonraki ilk açılış uçak modunda) e-posta önekine düşer; bu eski, bilinen davranış.
+
+## Parça 248 — Konmuş taşı BİR ÜST hücreye taşımak taşı rafa döndürüyordu (23 Ekim 2026, kullanıcı bildirdi)
+
+**Bulgu:** *"Tahtaya koyduğum taşı alta veya başka bir kareye taşıyabiliyorum ama bir üstündeki kareye olmuyor, taş rafa dönüyor."*
+
+**Kök neden (web'de ÖNCE okundu, port ikizi aynı):** bırakma noktası `DRAG_LIFT` (30 px) kadar KALDIRILMIŞ (hayalet parmağın üstünde). Hücre ~27 px olduğundan taşı bir üst hücreye taşımak parmağın yalnızca ~0-16 px oynaması demek; bırakma kararındaki `TAP_SLOP_ON_RELEASE` (24 px, "bir hücreden az giden jest hedef ifade edemez" varsayımıyla) bunu "titreşimli dokunuş" sayıp taşı GERİ ALIYORDU. Aşağı/yana taşıma ~27 px gerektirdiğinden eşiği geçiyordu — bu yüzden yalnızca yukarı bozuktu. Varsayım yükseltme yokken doğruydu; 27 Ağustos'ta eşik eklenirken yükseltmeyle çarpışması hesaba katılmamıştı (`game_screen.dart`taki eski yorum belirsizliği BİLİYORDU ve "kısa jest = geri al" diye çözmüştü — kullanıcı bunu hata olarak bildirdi).
+
+**Düzeltme (kullanıcı kararı: seçenek A, "hayalet ne gösteriyorsa o olsun"):** konmuş taş, hayaletin GÖSTERDİĞİ boş bir hücreye bırakıldıysa (`tasimaHedefi`) bu TAŞIMA'dır, 24 px kuralı devreye girmez. Web: `App.tsx` + `OnlineGameScreen.tsx`; port: `game_screen.dart` + `online_game_screen.dart`. Tanıtım ekranı etkilenmez (taslak geri sürükleme yok).
+
+**Bilinçli bedel:** konmuş taşa dokunurken parmağı 10-24 px kaydıran biri, üstteki hücre BOŞSA taşı geri almak yerine bir yukarı taşır. Hedef hücre yoksa/doluysa ya da taş en üst satırdaysa eski davranış (geri al) aynen. Mevcut 6/12/20 px titreme testleri (0,0 hücresi) geçiyor.
+
+**Doğrulama:** `game_screen_test.dart` yeni test (düzeltme geri alınınca DÜŞÜYOR — duyarlılık kanıtlandı), tam takım 1272 geçti, `dart analyze` temiz, web `tsc` temiz. **Sınır:** web'de otomatik test YOK (yalnızca kod okuma + lint); cihazda denenmedi — `mobile/TESTING.md` / kök `TESTING.md` kontrol maddesi eklendi.
+
+## Parça 248 — Gölge önbelleği: öne dönüşte boşalt, ön planda değilken üretme (20 Ekim 2026, kullanıcı bildirdi)
+
+**Belirti (1.1.4, `bf550a3`, iPhone):** Setup'ta "Kime karşı" düğmelerinin ve üstündeki alanın üzerinde KOYU/SİYAH dikdörtgenler — gölgeli yüzeylerin gölge alanlarıyla örtüşüyor. Uygulama arkada açıkken bir e-posta linki (Safari → "Open") ile öne getirilmişti; uygulama kapalıyken aynı akış tekrarlanınca görülmedi.
+
+**Tahmin (cihazda KANITLANMADI):** `neo_box.dart`ın raster önbelleği (`Picture.toImageSync`, Parça 144) bir görüntüyü uygulama öne dönerken, GPU henüz kullanılamazken üretti ve bozuk kaldı. Önbellek girdileri hiç atılmadığından bozuk görüntü kalıcıydı.
+
+**Önlem (iki parça):** (1) `obtain` yaşam döngüsü `resumed` değilken (`null` = bilinmiyor, izinli) YENİ görüntü üretmiyor, doğrudan çizime düşüyor; (2) `invalidateNeoBoxRasterCache()` — `app.dart` her `resumed`da çağırıyor: önbelleği boşaltıp render ağacının TAMAMINI boyamaya işaretliyor. Yalnızca `clear()` yetmezdi: ressamların `shouldRepaint`i (alanlar aynı) yeniden boyamayı tetiklemez, ekrandaki katman eski görüntüyü taşımaya devam ederdi. Bedel: öne her dönüşte bir tam boyama + ~10 desenin yeniden rasterleştirilmesi.
+
+**Kapı:** `test/neo_box_lifecycle_test.dart` (2 test). ⚠ Testte `paused` KULLANILAMAZ — Flutter o durumda hiç kare çizmez; ölçülebilir ara durum `inactive`. Duyarlılık: kapı (1) kaldırılınca ilk test düşüyor. Tam takım 1273/1273 yeşil (ilk koşuda `game_session_host_test` bir kez düştü, tek başına ve ikinci tam koşuda geçti — aralıklı, bu değişiklikten bağımsız).
+
+**Sınır:** bozuk görüntünün kendisi Linux'ta üretilemiyor; önlemin işe yaradığı ancak sahada sorunun bir daha görülmemesiyle anlaşılır. Cihaz maddesi: `mobile/docs/testing-ux-turlari.md` §34.
+
+## Parça 248 — `AuthRetryableFetchException(522)` yeniden denenmiyordu: durum kodu `statusCode`'da (28 Ekim 2026, günlük hata özeti)
+
+Günlük özet (*"5 kayıt · 3 cihaz"*): `online_games_repo.load` → `AuthRetryableFetchException(message: error code: 522, statusCode: 522)` ve `stats_repo.my_rank` → `PostgrestException(code: 522)`; 25-27 Eki'de toplam 8 kayıt, aynı pencerede Supabase `edge_logs`'ta 5xx YOK (istek Cloudflare'de kopuyor). **Bulgu, istenenden farklı çıktı:** `522`/`524` zaten `isTransientServerError` kümesindeydi (web `GECICI_DURUM_KODLARI` ↔ `_geciciDurumKodlari`) — yani `PostgrestException(code: 522)` zaten tekrarlanıyordu. Kaçan şey auth istisnası: durumu `code`'da DEĞİL `statusCode`'da taşıyor, `_durumKodu` yalnızca `code`'a bakıyordu → liste yeniden denenmeden telemetriye düşüyordu. **Düzeltme:** `_durumKodlari` her iki alanı da okur (`util/offline_notice.dart`). Kapsam BİLEREK dar: küme değişmedi (500/429 dışarıda), auth'un kendi reddi (401) tekrarlanmaz — ikisi de testli (`live_games_test.dart`; düzeltme geri alınınca yeni test DÜŞÜYOR). **Web ikizi YOK:** web'in liste yolu PostgREST'ten geçiyor (`code` zaten okunuyor); `supabase-js` auth hatası bu yolda liste çağrısını düşürmüyor. `stats_repo.my_rank` bu parçada DEĞİŞMEDİ (tekrar denemesi yok, tek seferlik okuma; tekrar ederse ayrı karar). Doğrulama sınırı: cihazda 522 üretilemez; yalnız birim testi + `client_errors`ta bu satırın azalması izlenir (`mobile/docs/testing-olcum.md`).
+
 ## Parça 247 — Gizlilik metni: anonim kod SEKİZ durumda gider (web oturum kaydı `anon_id`, 18 Ekim 2026, ROADMAP #47)
 
 Web ikizi (`claude/web-sessions-anon-id`): `web_sessions`e cihazın anonim kodu eklendi (admin Huni v2 "Mağaza (cihaz)"); bu, gizlilik metnindeki "yedi durum"u **sekize** çıkarır (madde (8): girişsiz web ziyaretinin adım/mağaza/süre/etiket kaydı) ve "Son güncelleme" tarihini **18 Ekim 2026** yapar. Port `legal_modals.dart` aynı metni BİREBİR taşır (yedi → sekiz, (8) cümlesi, "Bu sekiz kaydın…", Gizlilik tarihi); Koşullar tarihi (12 Ekim) DEĞİŞMEDİ.

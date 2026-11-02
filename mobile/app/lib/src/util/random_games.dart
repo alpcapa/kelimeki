@@ -399,7 +399,7 @@ const String kRandomStripCreate = 'Rastgele oyun aç';
 // Boş şerit + tek seferlik tanıtım balonu (12 Ekim 2026) — web `randomGames.ts`
 // ile BİREBİR (parite testi okur). "Rastgele" yazımı bilerek (ürün her yerde).
 const String kRandomEmptyText = 'Bekleyen oyun yok.';
-const String kRandomEmptyLink = 'Hemen aç.';
+const String kRandomEmptyLink = 'Hemen aç';
 const String kRandomHintText =
     'Rastgele oyun ile herkesle oynayabilirsin. Oyun aç, isteyen katılsın. '
     'Önce gelen koltuğu kapar.';

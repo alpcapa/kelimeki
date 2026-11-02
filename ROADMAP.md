@@ -13,13 +13,10 @@ ve `git branch -r` ile PR'sız dalları kontrol et.
 
 | Ne zaman | İş | Sıradaki adım |
 |---|---|---|
-| 17-18 Eki | Meta Teaser Aşama 2 ilk okuma (`Kare2` ↔ `Kar2`) | `kampanya-teaser-ekim-2026.md` §5; pencere `Kar2` 18:09 TSİ sonrası; Meta'dan bağlantı tıklaması/CTR/yerleşim ekran görüntüleri iste |
-| 19 Eki | **1.1.4 treni** | ✅ 19 Eki 05:39–05:47 UTC: 11 PR `main`e girdi (kullanıcı kendisi merge etti; sıra #850 → #851 → #837 → #842 → #855 → #859 → #862 → #876 → #877 → #879 → #874, `bf550a3`); ayrıntı `mobile/docs/surumler.md` → '1.1.4 — HAZIRLIK'. **Kalan:** `Mobil derleme` koşusu 39206404237 (`bf550a3`) TAMAMEN YEŞİL, TestFlight yüklemesi 19 Eki 06:17 UTC'de bitti → build **933** (kullanıcı bildirdi, kütük satırına yazıldı); TestFlight turu 933 ✅ TEMİZ (19 Eki, kullanıcı; ayrıntı `surumler.md` → 'TESTFLIGHT TURU 933'); **kalan: iOS gönderimi (ASC)** ve Android kurulum kaynağı (#862) yalnızca Play kurulumuyla. Gizlilik parite testi (`legal_text_test`) yerelde YEŞİL; `Web CI` `main`de #879 sonrası için koşmadı/okunmadı (son kayıtlı koşular #879 ÖNCESİ, kırmızı) |
-| 19 Eki | **#46-1 atıf kodu = #862, `main`de** (19 Eki 05:45 UTC, 1.1.4'e biner) | `funnel-v2.md` §#46-1. Açık: gerçek Play referrer'ı cihazda denenmedi (`testing-olcum.md` §33, mağaza kurulumu şart); Play Data safety eşlemesi BAKILMADI; kalite tablosu için kaynak kırılımının yeni başlangıç tarihi |
-| **Cuma 23 Eki** | **1.1.4 (933): iOS (ASC) + Google Play AYNI ANDA gönderim** — kullanıcı yurtdışında, ASC girişi için SMS'e erişemiyor (19 Eki), Cuma dönünce ikisini birlikte gönderecek. **Sonraki tren (1.1.5): 2 Kasım Pazartesi** (26 Eki treni YOK, kullanıcı kararı 19 Eki) | `surumler.md` → 1.1.4 + 'SÜRÜM TRENİ'. TestFlight turu 933 temiz. ⚠ Gönderim yapılana kadar `main`e mobil merge ETME (yeni build 933'ün yerine geçer, test edilmemiş paket gider); mobil işler 2 Kasım'a kadar taslak PR. Play `.aab` `mobile-latest`te |
-| 21 Eki 14:22 | Meta Teaser Aşama 2 BİTİŞ | kapanış okuması |
 | birkaç gün sonra | Admin → Ziyaretçi Yolculuğu "Hemen çıkan" sütunu | eski 32 sn yığılmasıyla karışık; birkaç gün sonra bak |
-| **22 Eki** (ön okuma 17-18 Eki) | **Rastgele Oyun hatırlatma e-postasının SONUCU** — 15 Eki'de 25 üyeye gitti; kim tıkladı, geldi, oyun açtı/bitirdi | `random-opponent.md` §21 → "TAKİP ÖLÇÜMÜ": kohort önekleri + ölçüm listesi orada; Brevo açılma/tıklama sayısı kullanıcıdan |
+| **Pzt 2 Kas** | **1.1.5 treni (kesim günü)** — taslak PR'lar #889, #886, #884, #898, **#903** (sözlük mobil varlıkları; #896'nın yerini aldı), **#907** (kayıt takma isim kontrolü, mobil yarısı), #905 (yalnız doküman) (30-31 Eki: hepsi `main` ile senkron, CI yeşil) | Hepsini merge et. ⚠ Merge ÖNCESİ mobil derleme uyarısını ver (`mobile-latest` ezilir, TestFlight'a yeni build gider; `surumler.md` sürüm senkronu). **#886 sonrası:** `list_edge_functions` ile `play-ai-turn`ün `verify_jwt` değerini oku, AYNI değerle deploy et. **#896 deploy olunca:** web sözlüğünü `curl` ile doğrula. Açık dal: `claude/meta-stage-3-mobile-prs-ug0fbd` (#896) |
+| **3 Kas** | Meta Kare3 son okuması, `h` serisiyle yan yana | 30 Eki bulgusu: hemen çıkış Kare3'te %62-65, `h` serisinde %16-25. ⚠ Mobil Ads Manager'da düzenlenip kaydedilen reklam Messenger'a dönüyor: çalışan `Kare3d - Copy` reklamına DOKUNMA, Advantage+ ve Reels önerilerini UYGULAMA |
+| Tarihsiz (kullanıcı: *"daha sonra bakarım"*, 30 Eki) | #46-1 açık iki doğrulama: **Parça 218** `land` kanalı etiketi (Play'den kurulumla `?ref=test-referrer`) · **Play Data safety** formu ↔ ürün karşılaştırması | Adımlar `mobile/docs/testing-olcum.md` §33 ve `console-formlari.md` §3.8. Sonucu kullanıcı bildirince kütüğe işle; bitince bu satırı sil |
 
 **Bu dosya bir FİKİR LİSTESİ DEĞİL, sıralı bir yürütme planı.** Kök
 `CLAUDE.md`'deki "Sonraya Bırakılan Ürün Fikirleri" bölümü *ne* yapılacağını
@@ -138,12 +135,13 @@ kadar mobil işler taslak PR. 2 Ekim'de kapanıp arşive taşınanlar: #25, #34,
 | | #22 | `feedback` hız sınırı XFF ile atlanabilir | Açık, ölçülmedi |
 | **Ertelendi (kullanıcı kararı)** | #32 | E-posta onayı bir kullanıcı kaybı kapısı | "Daha sonra bakalım" (20 Eyl) |
 | | #39 | Takma isim değişince geçmiş oyunlarda eski isim | "Sonra bakılacak" (23 Eyl) |
+| | #48 | **Hamle Avı** — süreli "en iyi hamleyi bul" bulmaca modu | **PARKTA (30 Eki 2026, kullanıcı: *"Takım ligi gibi backlog'da yazalım, zamanı gelince yapacağız"*).** Tasarım kararları + fizibilite ölçümü (`npm run measure-hamle-avi`): `docs/decisions/product-backlog.md` → "En iyi hamleyi bul". Kod YOK; ölçüm betiği dışında hiçbir şey yazılmadı |
 | | #17 | Google ile giriş/kayıt | Sunucu → web → mobil; migration BLOKER |
 | **İsteğe bağlı** | #5 | k-lig puan grafiği | — |
 | | #9 | Admin Üyeler'e "onaylanmamış" filtresi | Gövdesi dondurulmuş arşivde (`roadmap-arsiv-cilt-1.md` → "9.") |
 
 **Madde numarası kuralı (26 Eylül 2026):** yeni madde **bir sonraki boş
-numarayı** alır — şu an **#48**. Numara hiçbir zaman yeniden kullanılmaz,
+numarayı** alır — şu an **#49**. Numara hiçbir zaman yeniden kullanılmaz,
 kapanmış (arşivdeki) maddelerinki de. 26 Eylül'de iki AKTİF çakışma
 bulundu ve sonradan gelen maddeye yeni numara verildi: tahta yükseklik
 bütçesi **#26 → #38** (mağaza yönlendirmesi #26 olarak kaldı; kodda ve
@@ -290,9 +288,25 @@ derleme sha'sını `main`'in başıyla karşılaştır.
 `git log --oneline bf550a3..origin/main -- mobile/app mobile/kelimeki_core`
 (24 Ekim'de BOŞ — 1.1.5 treninin işleri (#884 #886 #889) taslak PR'da, `main`'de değil).
 
+**1.1.5'e binecek (28 Ekim, taslak PR #898, kesim 2 Kasım):** `AuthRetryableFetchException(522)` artık sessizce yeniden deneniyor — durum kodu `statusCode` alanından da okunuyor (Parça 248; 25-27 Eki'de 8 kayıt, sunucuda iz yok). Cihaz kontrolü gerekmez; `client_errors`ta `online_games_repo.load` 522 satırlarının azalması izlenir.
+
 **1.1.4'e binen (17 Ekim):** uçak modunda açılış hızı — çevrimdışıyken bulut senkronu ağa gitmiyor, "Devam Edenler" anında geliyor (Parça 246; kullanıcı uçakta ölçtü: 20-30 sn). Taslak PR, kesim 19 Ekim. Cihaz kontrolü: `mobile/TESTING.md` §8.
 
 **1.1.5'e binecek (20 Ekim, taslak PR, kesim 2 Kasım) — Kolay YZ kolaylaştı:** `AI_LEVEL_TOP_N.kolay` 4 → 8 + `AI_LEVEL_SEARCH.kolay.maxWordLen` 7 → 5, üç motor kopyası (`src/` · `kelimeki_core` · Edge `_game/`) + golden'lar (`ai_level.json`, `reducer_ai2_kolay.json`). Saha: Kolay'da YZ %47 kazanıyordu (hedef ~%30); simülasyon Normal'e karşı %34 → %13. ⚠ Merge günü `play-ai-turn` yeniden deploy (`verify_jwt` değerini önce oku). Gerekçe: `docs/decisions/ai-levels.md` §9.
+
+**Sıradaki treni bekleyen (23 Ekim 2026):** son taslak taş geri alınınca bayat "Oyna tuşuyla kelimeyi onayla." mesajı silinsin (kullanıcı ekran görüntüsüyle bildirdi) — `kelimeki_core` `RecallCellAction` + web `RECALL_CELL` ikizi + `reducer_human2.json` golden'ı. **Taslak PR #889, 2 Kasım 1.1.5 trenine biner** (kullanıcı kararı 23 Ekim: 1.1.4 gönderimi bitmeden `main`'e mobil merge YOK).
+
+**Aynı tren (23 Ekim 2026):** konmuş taşı bir üst hücreye taşımak taşı rafa döndürüyordu (kullanıcı bildirdi) — web + port, hayalet ne gösteriyorsa o olsun (Parça 248). Taslak PR.
+
+**Aynı tren (23 Ekim 2026):** uçak modunda avatar 45 sn "…" / Başlat 45 sn "HAZIRLANIYOR…" — profil çekimi çevrimdışıyken ağa gitmesin + 8 sn zaman aşımı (Parça 249). Taslak PR #889'da.
+
+**1.1.5'e binecek (20 Ekim, taslak PR, kesim 2 Kasım):** gölge önbelleği öne dönüşte boşaltılıyor + ön planda değilken önbelleğe görüntü girmiyor (`ui/game/neo_box.dart` + `ui/app.dart`; Parça 248). Kullanıcı 1.1.4'te Setup'ta gölgeli düğmelerin üstünde koyu dikdörtgenler gördü (uygulama arkadayken e-posta linkiyle öne gelmişti); tekrarlanamadı, önlem. Cihaz kontrolü: `mobile/docs/testing-ux-turlari.md` §34.
+
+**1.1.5'e binen (29 Ekim) — sözlük:** 59 yer/tarih adı eklendi (22 + ikinci grup 37 [aral dahil]: trakya, fırat, tuna, bizans, kapadokya, himalaya vb.) (kafkasya, rumeli, okyanusya, arabistan, türkistan, trablusgarp, yugoslavya, mezopotamya, sibirya, tibet vb.; kök: `kafkasyalı` sözlükte vardı, `kafkasya` yoktu). `proper-nouns.mjs` → `augment-dictionary`; migrationlar `20261029164819` + `20261029165053` + `20261029165409_add_words` CANLIDA (sunucu anında geçerli, web deploy'a, app paketine bağlı). `words_tr.txt`/`meanings.db` yenilendi (63.970 kelime). **31 Eki:** #896 KAPATILDI, ikiye bölündü — web+sunucu yarısı #904 `main`'de ve canlı (`c32daa2`), mobil varlıklar #903'te (+ `misli`, #902 `main`'de canlı; `words_tr.txt`/`meanings.db` 63.971 kelime). 2 Kasım treni. Adaylar TDK'den doğrulanmadı (GTS kaynağı/erişim yok); ikinci grup kullanıcı kararıyla eklendi; kişi adları bilerek eklenmedi.
+
+**1.1.5'e binen (31 Ekim) — Rastgele Oyunlar boş durum metni:** "Hemen aç." → "Hemen aç" (sondaki nokta kalktı; `kRandomEmptyLink`, web ikizi `RANDOM_EMPTY_LINK` main'de). Taslak PR, kesim 2 Kasım.
+
+**31 Ekim 2026 — "Database error saving new user" (kayıt/giriş ekranında ham 500).** `client_errors`: 11-12 Ekim Android 1.1.3 ×3, 30 Ekim iOS 1.1.4 ×1. GoTrue `handle_new_user` trigger hatasının metnini YUTUYOR (P0001 Türkçe mesajı kullanıcıya ulaşmaz), asıl neden Postgres logundan OKUNAMADI (`query_logs` bu oturumda çalışmadı) — güçlü şüphe: `profiles_display_name_tr_lower_key` çakışması (trigger yalnızca `profiles_username_key`'de yeniden deniyor; 12 Ekim düzeltmesi yalnız onu kapatmıştı). Kayıt formu "Bu takma isim kullanımda." uyarısını ZATEN veriyordu (web+mobil, canlı `nickname_status` RPC'si); açık kalan yol: kontrol `error` ile bitince gönderim engellenmiyordu (eski "DB unique kısıt doğruluk kaynağı" kararı — trigger yolunda mesaj yutulduğu için yanlış çıktı), ya da isim arada alınıyordu. **Kullanıcı kararı (31 Eki): hepsi yapılsın.** Yapılan: (1) gönderimde taze kontrol, yapılamazsa kayıt gönderilmez, (2) `friendlyAuthMessage`: ham metin → "Yeni kullanıcı kayıt hatası oluştu." PR'lar: web #906, mobil #907 (taslak, 2 Kasım treni). **Yapılmadı (bilinçli):** `handle_new_user`'da sessiz sonek — kullanıcının seçtiği adı sessizce değiştirirdi. Açık: neden doğrulanmadı; hata yeniden gelirse Postgres logu (`unique_violation` mı, `check` mi, engelli ad mı) okunmalı. Kök neden başka çıkarsa bu madde güncellenir.
 
 `main` ile mağazadaki paket bilerek ayrışabilir; bu bölüm o farkı görünür
 tutuyor, çünkü fark tam da unutulmaya müsait yerde duruyor — `main` yeşil,
@@ -775,6 +789,10 @@ lazım."*
    Zaman çizgisi: 01:02 `tutorial start` (`src=auto`, sıfırdan kurulum) ·
    01:05 misafir oyun · 01:24 ve 01:27 iki kayıt · 02:19 yine misafir oyun.
    **Kişi uygulamayı bırakmadı, HESABI bırakamadı.**
+
+**30 Ekim 2026 — repo dışı müdahale (Supabase SQL Editor, elle):** bir üyenin
+iki onaysız kaydı (`smart95`, `smart95.`) silindi; onaylı `Samrt95` hesabı yerinde.
+Elle silme geçici bir çare; yapısal çözüm bu maddenin açık kısmı.
 
 ### Ölçüm — ve ölçümün kör noktası
 

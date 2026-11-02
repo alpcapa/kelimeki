@@ -40,6 +40,7 @@ npm run verify-own-row-pin       # k-lig listelerinde sabit "senin sıran" satı
 npm run verify-league-points     # k-lig PUAN tablosu (seviyeye göre): league_points_for SQL ↔ leaguePoints.ts ↔ league_points.dart
 npm run verify-sql-engine-parity # motorun DÖRDÜNCÜ (SQL) kopyası ↔ src/ sabitleri ve hata metinleri
 npm run simulate-ai-levels       # YZ↔YZ kadran ölçümü (ROADMAP #23): üretimin findAIMoves+pickTopMove çiftiyle "en iyi N'den rastgele" ↔ Normal; `-- --oyun 200 --n 2,3,4`
+npm run measure-hamle-avi       # "Hamle Avı" fizibilite ölçümü: N rastgele pozisyonda vergi DAHİL 1./2./3. puan açıklığı + çözücü süresi + reducer doğrulaması (`-- --n 50 --tohum 1 --json yol`); motora dokunmaz
 npm run generate-initial-main-view-golden # Giriş sekmesi kuralı: web→port davranış golden'ı (CI tazeliği zorluyor)
 npm run verify-live-games-load    # Canlı oyun listesi: düşen istek sessizce tekrarlanır (boş liste sanılmaz) — ağ hatası VE geçici sunucu hatası (504/503/502/408); 500 ve 429 bilerek DIŞARIDA
 npm run verify-random-games     # Rastgele Oyuncu: kurucu/kabul eden oyun yalnız Devam Edenler'e (dört kova), açık koltuk YZ sanılmaz, ilan rozetleri ŞİŞİRMEZ, esnek kadro kuralları

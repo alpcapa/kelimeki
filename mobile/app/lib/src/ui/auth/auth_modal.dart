@@ -323,6 +323,24 @@ class _AuthModalState extends State<AuthModal> {
         throw const _FormError(
             "Kullanım Koşulları ve Gizlilik Politikası'nı kabul etmelisiniz.");
       }
+      // Gönderimden hemen önce TAZE kontrol (web ile aynı, 31 Ekim 2026):
+      // yazarken yapılan kontrol başarısız olduysa ya da isim arada alındıysa
+      // çakışma ancak Auth'un 500'ünde ("Database error saving new user")
+      // görünüyordu ve GoTrue asıl nedeni yutuyor.
+      final NicknameStatus tazeDurum;
+      try {
+        tazeDurum = await (widget.nicknameChecker ??
+            widget.auth.nicknameStatus)(_nickname.text.trim());
+      } catch (_) {
+        throw const _FormError(
+            'Takma isim kontrol edilemedi. Bağlantını kontrol edip tekrar dene.');
+      }
+      if (tazeDurum == NicknameStatus.taken) {
+        throw const _FormError('Bu takma isim zaten kullanılıyor.');
+      }
+      if (tazeDurum == NicknameStatus.blocked) {
+        throw const _FormError('Bu takma isim kullanılamaz.');
+      }
       final birthDateIso = trDateToIso(_birthDate.text); // bozuksa fırlatır
       final sessionOpened = await widget.auth.signUp(
         email: _email.text.trim(),
@@ -467,8 +485,8 @@ class _AuthModalState extends State<AuthModal> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: _labeled('AD',
-                        child: _field(_firstName, hint: 'Adın')),
+                    child:
+                        _labeled('AD', child: _field(_firstName, hint: 'Adın')),
                   ),
                   const SizedBox(width: 8),
                   Expanded(

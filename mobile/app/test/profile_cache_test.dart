@@ -6,6 +6,8 @@
 // `menuName` zinciri en sona (e-posta) iniyor ve avatar
 // `kelimekitest2@…`'dan "KE" türetiyor — kullanıcı GİRİŞLİ ama kim olduğu
 // yanlış görünüyor. Web'de de aynı zincir var (`UserMenu.tsx`).
+import 'dart:async';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kelimeki/src/storage/profile_cache_store.dart';
 import 'package:kelimeki/src/data/auth_service.dart';
@@ -107,5 +109,53 @@ void main() {
     expect(store.read('u1')?['display_name'], 'T2',
         reason: 'Taze satır yazılmazsa bir sonraki bağlantısız açılışta '
             'okunacak hiçbir şey olmaz — düzeltme yarım kalır.');
+  });
+
+  // ─── 23 Ekim 2026: uçak modunda avatar 45 sn "…", Başlat 45 sn "HAZIRLANIYOR…"
+  // Çevrimdışıyken profil çekimi ağa gidip token yenilemeyi bekliyordu.
+
+  test('ÇEVRİMDIŞIYKEN profil çekimi ağa HİÇ gitmez, yerel kopya hemen gelir',
+      () async {
+    await store.write('u1', {'id': 'u1', 'display_name': 'T2'});
+    var cagri = 0;
+    final auth = AuthService.fake(
+      user: _user('u1', 'kelimekitest2@example.com'),
+      profileCache: Future.value(store),
+      profileFetcher: (_) async {
+        cagri++;
+        return {'id': 'u1', 'display_name': 'AĞDAN'};
+      },
+      isOnline: () => false,
+    );
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cagri, 0, reason: 'bağlantı yokken ağa gidildi — 45 sn beklenir');
+    expect(auth.identityLoading, isFalse,
+        reason: 'avatar "…"da kaldı (uçak modu bildirimi)');
+    expect(auth.accountPending, isFalse,
+        reason: '"HAZIRLANIYOR…" yerel kopya varken çıkmamalı');
+    expect(auth.menuName, 'T2');
+  });
+
+  test('ASKIDA kalan çekim zaman aşımıyla yerel kopyaya düşer', () {
+    fakeAsync((async) {
+      store.write('u1', {'id': 'u1', 'display_name': 'T2'});
+      async.flushMicrotasks();
+      final auth = AuthService.fake(
+        user: _user('u1', 'kelimekitest2@example.com'),
+        profileCache: Future.value(store),
+        // İyimser sinyal yanıldı (captive portal): istek hiç dönmüyor.
+        profileFetcher: (_) => Completer<Map<String, Object?>?>().future,
+        isOnline: () => true,
+      );
+      async.flushMicrotasks();
+      expect(auth.identityLoading, isTrue);
+
+      async.elapse(kProfileFetchTimeout + const Duration(seconds: 1));
+      expect(auth.identityLoading, isFalse,
+          reason: 'askıdaki çekim kimliği sonsuza dek "…"da bırakıyor');
+      expect(auth.menuName, 'T2');
+    });
   });
 }
